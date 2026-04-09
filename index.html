@@ -2,9 +2,697 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>WOLKO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WOLKO 월코 — Word of Life Korea</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&family=Montserrat:wght@600;700;800;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-dark: #004f68;
+      --blue-mid: #007ea1;
+      --blue-light: #73d1f5;
+      --red: #c42a36;
+      --text-dark: #12303c;
+      --text-mid: #5a6f79;
+      --text-light: #8aa1ab;
+      --nav-h: 72px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Noto Sans KR', sans-serif; color: var(--text-dark); overflow-x: hidden; }
+
+    /* ═══════════════════════════════ NAV ═══════════════════════════════ */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      padding: 0 5%;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .nav.scrolled {
+      background: rgba(255,255,255,0.97);
+      box-shadow: 0 1px 0 rgba(0,79,104,0.08), 0 4px 20px rgba(0,79,104,0.06);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo { flex-shrink: 0; margin-right: 40px; }
+    .nav-logo img { height: 38px; width: auto; display: block; }
+
+    .nav-menu { display: flex; align-items: center; gap: 4px; list-style: none; flex: 1; }
+
+    .nav-item { position: relative; }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.92);
+      transition: color 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+
+    .nav.scrolled .nav-link { color: var(--text-dark); }
+    .nav-link:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .nav.scrolled .nav-link:hover { background: rgba(0,79,104,0.06); color: var(--blue-dark); }
+    .nav-link.active { color: var(--blue-light); }
+    .nav.scrolled .nav-link.active { color: var(--blue-mid); }
+
+    .nav-link.has-dropdown::after {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: rotate(45deg) translateY(-2px);
+      transition: transform 0.2s;
+    }
+    .nav-item:hover .nav-link.has-dropdown::after { transform: rotate(-135deg) translateY(-2px); }
+
+    .nav-dropdown {
+      position: absolute;
+      top: calc(100% + 8px); left: 0;
+      min-width: 160px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0,79,104,0.12), 0 2px 8px rgba(0,79,104,0.06);
+      border: 1px solid rgba(0,79,104,0.06);
+      padding: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px);
+      transition: opacity 0.2s, transform 0.2s;
+      list-style: none;
+    }
+
+    .nav-item:hover .nav-dropdown { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+    .nav-dropdown a {
+      display: block;
+      padding: 10px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .nav-dropdown a:hover { background: rgba(0,79,104,0.06); color: var(--blue-dark); }
+
+    .nav-right { margin-left: auto; display: flex; align-items: center; }
+
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      padding: 3px;
+      cursor: pointer;
+      position: relative;
+      width: 160px; height: 36px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .nav.scrolled .lang-toggle { background: rgba(0,79,104,0.05); border-color: rgba(0,79,104,0.12); }
+
+    .lang-slider {
+      position: absolute;
+      left: 3px;
+      width: 78px; height: 28px;
+      background: #fff;
+      border-radius: 999px;
+      transition: left 0.25s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .nav.scrolled .lang-slider { background: var(--blue-dark); }
+
+    .lang-side {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      width: 80px;
+      z-index: 2;
+    }
+    .lang-side img { width: 16px; height: 11px; object-fit: cover; border-radius: 2px; }
+    .lang-side span { font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .lang-side.is-active span { color: var(--blue-dark); font-weight: 700; }
+    .nav.scrolled .lang-side.is-active span { color: #fff; }
+    .lang-side.is-inactive span { color: rgba(255,255,255,0.7); }
+    .nav.scrolled .lang-side.is-inactive span { color: var(--text-mid); }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 8px;
+      margin-left: 12px;
+    }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: rgba(255,255,255,0.9); border-radius: 2px; transition: background 0.3s; }
+    .nav.scrolled .nav-hamburger span { background: var(--text-dark); }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: var(--nav-h); left: 0; right: 0;
+      background: #fff;
+      box-shadow: 0 8px 32px rgba(0,79,104,0.1);
+      z-index: 999;
+      padding: 16px 0 24px;
+      max-height: calc(100vh - var(--nav-h));
+      overflow-y: auto;
+    }
+    .mobile-menu.open { display: block; }
+    .mobile-menu-item > a { display: block; padding: 14px 24px; font-size: 15px; font-weight: 700; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid rgba(0,79,104,0.06); }
+    .mobile-sub { list-style: none; background: rgba(0,79,104,0.02); }
+    .mobile-sub a { display: block; padding: 12px 24px 12px 40px; font-size: 14px; color: var(--text-mid); text-decoration: none; font-weight: 500; }
+
+    /* ═══════════════════════════════ HERO ═══════════════════════════════ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-image: url('images/hero-bg.jpg');
+      background-size: cover;
+      background-position: center 30%;
+      transform: scale(1.05);
+      animation: heroZoom 12s ease-out forwards;
+    }
+    @keyframes heroZoom { to { transform: scale(1); } }
+
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(160deg, rgba(0,30,44,0.78) 0%, rgba(0,60,84,0.62) 50%, rgba(0,20,32,0.72) 100%);
+    }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      text-align: center;
+      padding: 130px 20px 120px;
+      color: #fff;
+      max-width: 780px;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      margin: 0 0 24px;
+      padding: 7px 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(6px);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.88);
+      font-family: 'Montserrat', sans-serif;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: fadeUp 0.7s ease 0.2s forwards;
+    }
+
+    .hero-title {
+      margin: 0 0 24px;
+      font-size: 52px;
+      font-weight: 900;
+      line-height: 1.28;
+      letter-spacing: -0.03em;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: translateY(14px);
+      animation: fadeUp 0.7s ease 0.4s forwards;
+    }
+
+    .hero-desc {
+      margin: 0 auto 44px;
+      max-width: 480px;
+      font-size: 17px;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.82);
+      opacity: 0;
+      transform: translateY(14px);
+      animation: fadeUp 0.7s ease 0.6s forwards;
+    }
+
+    .hero-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: fadeUp 0.7s ease 0.75s forwards;
+    }
+
+    .hero-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 170px;
+      padding: 16px 30px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 700;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }
+    .hero-btn.primary { background: #fff; color: var(--blue-dark); box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
+    .hero-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(0,0,0,0.24); }
+    .hero-btn.secondary { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+    .hero-btn.secondary:hover { transform: translateY(-2px); background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.6); }
+
+    .hero-scroll {
+      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+      z-index: 2;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 1.2s forwards;
+    }
+    .hero-scroll span { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: rgba(255,255,255,0.5); font-family: 'Montserrat', sans-serif; }
+    .hero-scroll-line { width: 1px; height: 40px; background: linear-gradient(to bottom, rgba(255,255,255,0.5), transparent); animation: scrollLine 1.8s ease-in-out infinite; }
+    @keyframes scrollLine { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* ═══════════════════════════════ PARTNERSHIP ═══════════════════════════════ */
+    .wolko-partnership-v2 {
+      padding: 110px 20px 120px;
+      background: radial-gradient(circle at 14% 12%, rgba(115,209,245,0.08), transparent 30%), radial-gradient(circle at 86% 82%, rgba(0,79,104,0.05), transparent 24%), linear-gradient(180deg, #f9fcfd 0%, #ffffff 100%);
+    }
+    .wolko-partnership-v2 * { box-sizing: border-box; word-break: keep-all; }
+    .wolko-partnership-v2__inner { max-width: 1180px; margin: 0 auto; }
+    .wolko-partnership-v2__top { max-width: 760px; margin: 0 auto 56px; text-align: center; }
+    .wolko-partnership-v2__badge { display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; margin-bottom: 18px; border-radius: 999px; background: rgba(0,79,104,0.05); border: 1px solid rgba(0,79,104,0.08); color: #006f90; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; }
+    .wolko-partnership-v2__title { margin: 0 0 16px; color: var(--blue-dark); font-size: 50px; line-height: 1.16; letter-spacing: -0.03em; font-weight: 800; }
+    .wolko-partnership-v2__subtitle { margin: 0; color: #647983; font-size: 18px; line-height: 1.8; }
+    .wolko-partnership-v2__grid { display: grid; grid-template-columns: 1.06fr 0.94fr; gap: 30px; align-items: start; }
+    .wolko-partnership-v2__copy, .wolko-partnership-v2__side { display: flex; flex-direction: column; gap: 18px; }
+    .wolko-partnership-v2__panel, .wolko-partnership-v2__mini-card, .wolko-partnership-v2__stat-card { background: rgba(255,255,255,0.88); border: 1px solid rgba(0,79,104,0.08); border-radius: 28px; box-shadow: 0 18px 40px rgba(18,55,72,0.06), 0 3px 10px rgba(18,55,72,0.03); }
+    .wolko-partnership-v2__panel { padding: 30px 30px 28px; }
+    .wolko-partnership-v2__eyebrow { margin: 0 0 12px; color: #00708f; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; }
+    .wolko-partnership-v2__panel-title { margin: 0 0 14px; color: #12303c; font-size: 26px; line-height: 1.35; letter-spacing: -0.02em; font-weight: 800; }
+    .wolko-partnership-v2__text { margin: 0; color: #667b84; font-size: 17px; line-height: 1.85; }
+    .wolko-partnership-v2__info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .wolko-partnership-v2__mini-card { padding: 22px 22px 20px; }
+    .wolko-partnership-v2__mini-label { margin: 0 0 10px; color: var(--blue-dark); font-size: 16px; font-weight: 800; }
+    .wolko-partnership-v2__mini-text { margin: 0; color: #6c8089; font-size: 15px; line-height: 1.75; }
+    .wolko-partnership-v2__stat-card { padding: 34px 30px 30px; text-align: center; }
+    .wolko-partnership-v2__stat-label { margin: 0 0 12px; color: #7b8d95; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+    .wolko-partnership-v2__stat-value { margin: 0 0 14px; color: var(--blue-dark); font-size: 86px; line-height: 1; font-weight: 800; letter-spacing: -0.05em; }
+    .wolko-partnership-v2__stat-value span { margin-left: 4px; font-size: 28px; font-weight: 700; }
+    .wolko-partnership-v2__stat-text { margin: 0; color: #60747d; font-size: 17px; line-height: 1.75; }
+    .wolko-partnership-v2__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .wolko-partnership-v2__btn { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 16px 18px; border-radius: 999px; text-decoration: none !important; font-size: 16px; font-weight: 700; transition: transform 0.24s ease, box-shadow 0.24s ease; }
+    .wolko-partnership-v2__btn.is-primary, .wolko-partnership-v2__btn.is-primary:link, .wolko-partnership-v2__btn.is-primary:visited { background: linear-gradient(135deg, #004f68 0%, #0d6f8c 44%, #73d1f5 100%); color: #fff !important; box-shadow: 0 16px 34px rgba(0,79,104,0.20); }
+    .wolko-partnership-v2__btn.is-primary:hover { transform: translateY(-2px); box-shadow: 0 22px 42px rgba(0,79,104,0.24); }
+    .wolko-partnership-v2__btn.is-secondary, .wolko-partnership-v2__btn.is-secondary:link, .wolko-partnership-v2__btn.is-secondary:visited { background: #fff; color: var(--blue-dark); border: 1px solid rgba(0,79,104,0.12); box-shadow: 0 10px 22px rgba(20,50,70,0.05); }
+    .wolko-partnership-v2__btn.is-secondary:hover { transform: translateY(-2px); }
+    .wolko-partnership-v2__video { margin-top: 64px; padding-top: 56px; border-top: 1px solid rgba(0,79,104,0.08); text-align: center; }
+    .wolko-partnership-v2__video-label { margin: 0 0 20px; color: #00708f; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; }
+    .wolko-partnership-v2__video-wrap { position: relative; width: 100%; max-width: 860px; margin: 0 auto; padding-bottom: 48.4%; border-radius: 20px; overflow: hidden; background: #0a1e28; box-shadow: 0 24px 56px rgba(0,79,104,0.14), 0 4px 14px rgba(0,79,104,0.06); }
+    .wolko-partnership-v2__video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    .wolko-partnership-v2__video-caption { margin: 20px 0 0; color: #8a9ea7; font-size: 14px; line-height: 1.6; }
+
+    /* ═══════════════════════════════ VISION ═══════════════════════════════ */
+    .wh-vision-section { padding: 120px 20px; background: radial-gradient(ellipse at 18% 8%, rgba(115,209,245,0.09), transparent 36%), radial-gradient(ellipse at 84% 88%, rgba(0,79,104,0.05), transparent 28%), linear-gradient(180deg, #ffffff 0%, #f8fbfc 100%); overflow: hidden; }
+    .wh-vision-section * { box-sizing: border-box; word-break: keep-all; }
+    .wh-vision-inner { max-width: 880px; margin: 0 auto; }
+    .wh-vision-head { text-align: center; margin-bottom: 64px; }
+    .wh-badge { display: inline-block; padding: 6px 14px; border-radius: 999px; background: rgba(0,79,104,0.06); border: 1px solid rgba(0,79,104,0.08); color: #00708f; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 16px; }
+    .wh-vision-title { margin: 0 0 10px; font-size: 46px; line-height: 1.15; color: var(--blue-dark); font-weight: 800; letter-spacing: -0.03em; }
+    .wh-vision-subtitle { margin: 0; color: #7a909a; font-size: 16px; line-height: 1.7; }
+    .wh-vision-list { display: flex; flex-direction: column; }
+    .wh-vision-item { position: relative; border-bottom: 1px solid rgba(0,79,104,0.08); opacity: 0; transform: translateY(16px); animation: whItemReveal 0.55s cubic-bezier(0.23,1,0.32,1) forwards; animation-delay: calc(0.08s * var(--wh-i)); }
+    .wh-vision-item:first-child { border-top: 1px solid rgba(0,79,104,0.08); }
+    @keyframes whItemReveal { to { opacity: 1; transform: translateY(0); } }
+    .wh-vision-accent { position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: linear-gradient(180deg, #004f68, #73d1f5); border-radius: 0 3px 3px 0; transform: scaleY(0); transform-origin: top center; transition: transform 0.35s cubic-bezier(0.23,1,0.32,1); pointer-events: none; }
+    .wh-vision-item.is-active .wh-vision-accent { transform: scaleY(1); }
+    .wh-vision-trigger { width: 100%; display: flex; align-items: center; gap: 22px; padding: 30px 12px 30px 20px; border: none; background: transparent; cursor: pointer; text-align: left; transition: background 0.25s ease; position: relative; }
+    .wh-vision-trigger:hover { background: rgba(0,79,104,0.018); }
+    .wh-vision-item.is-active .wh-vision-trigger { background: rgba(0,79,104,0.025); }
+    .wh-vision-num { flex: 0 0 auto; font-size: 28px; font-weight: 800; color: rgba(0,79,104,0.12); letter-spacing: -0.02em; min-width: 44px; transition: color 0.3s ease; font-family: 'Montserrat', sans-serif; }
+    .wh-vision-item.is-active .wh-vision-num { color: #73d1f5; }
+    .wh-vision-titles { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .wh-vision-label { font-size: 21px; font-weight: 700; color: #1a2e38; line-height: 1.35; transition: color 0.3s ease; }
+    .wh-vision-item.is-active .wh-vision-label { color: var(--blue-dark); }
+    .wh-vision-label-en { font-size: 13px; font-weight: 600; color: rgba(0,79,104,0.28); letter-spacing: 0.02em; font-family: 'Montserrat', sans-serif; }
+    .wh-vision-item.is-active .wh-vision-label-en { color: rgba(0,79,104,0.48); }
+    .wh-vision-chevron { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; position: relative; margin-left: auto; background: rgba(0,79,104,0.04); transition: background 0.3s ease, transform 0.3s cubic-bezier(0.23,1,0.32,1); }
+    .wh-vision-item.is-active .wh-vision-chevron { background: rgba(0,79,104,0.08); transform: rotate(180deg); }
+    .wh-vision-chevron::before, .wh-vision-chevron::after { content: ""; position: absolute; top: 11px; width: 8px; height: 1.8px; background: #8aa1ab; border-radius: 2px; transition: background 0.3s ease; }
+    .wh-vision-chevron::before { left: 5px; transform: rotate(40deg); transform-origin: right center; }
+    .wh-vision-chevron::after { right: 5px; transform: rotate(-40deg); transform-origin: left center; }
+    .wh-vision-item.is-active .wh-vision-chevron::before, .wh-vision-item.is-active .wh-vision-chevron::after { background: var(--blue-dark); }
+    .wh-vision-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.23,1,0.32,1), opacity 0.3s ease; opacity: 0; }
+    .wh-vision-body p { margin: 0; padding: 0 16px 28px 86px; color: #5a6f79; font-size: 15px; line-height: 1.95; }
+    .wh-vision-item.is-active .wh-vision-body { max-height: 320px; opacity: 1; }
+
+    /* ═══════════════════════════════ FOOTER ═══════════════════════════════ */
+    .footer { background: #0a1e28; color: rgba(255,255,255,0.6); padding: 56px 5% 40px; }
+    .footer-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .footer-logo img { height: 32px; width: auto; margin-bottom: 16px; filter: brightness(0) invert(1) opacity(0.85); }
+    .footer-desc { font-size: 13px; line-height: 1.8; color: rgba(255,255,255,0.45); }
+    .footer-col-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: rgba(255,255,255,0.35); margin-bottom: 16px; font-family: 'Montserrat', sans-serif; }
+    .footer-col a { display: block; font-size: 14px; color: rgba(255,255,255,0.55); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; }
+    .footer-col a:hover { color: rgba(255,255,255,0.9); }
+    .footer-bottom { max-width: 1180px; margin: 0 auto; padding-top: 28px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: rgba(255,255,255,0.28); }
+
+    /* ═══════════════════════════════ RESPONSIVE ═══════════════════════════════ */
+    @media (max-width: 900px) {
+      .nav-menu { display: none; }
+      .nav-hamburger { display: flex; }
+      .lang-toggle { margin-left: auto; }
+      .wolko-partnership-v2__grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .hero-title { font-size: 34px; }
+      .hero-desc { font-size: 15px; }
+      .hero-btn { width: 100%; max-width: 260px; }
+      .wolko-partnership-v2 { padding: 78px 20px 88px; }
+      .wolko-partnership-v2__title { font-size: 36px; }
+      .wolko-partnership-v2__info-row { grid-template-columns: 1fr; }
+      .wolko-partnership-v2__actions { grid-template-columns: 1fr; }
+      .wolko-partnership-v2__stat-value { font-size: 58px; }
+      .wolko-partnership-v2__video-wrap { padding-bottom: 56.25%; border-radius: 14px; }
+      .wh-vision-section { padding: 80px 20px; }
+      .wh-vision-title { font-size: 34px; }
+      .wh-vision-body p { padding: 0 8px 22px 54px; }
+      .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
+    }
+  </style>
 </head>
 <body>
-  <h1>WOLKO 테스트 페이지</h1>
+
+  <!-- NAV -->
+  <nav class="nav" id="mainNav">
+    <a href="/" class="nav-logo">
+      <img src="images/WOLKO_logo_transparent.png" alt="WOLKO 월코">
+    </a>
+    <ul class="nav-menu">
+      <li class="nav-item"><a href="/" class="nav-link active">HOME</a></li>
+      <li class="nav-item">
+        <a href="#" class="nav-link has-dropdown">소개</a>
+        <ul class="nav-dropdown">
+          <li><a href="/about">월코소개</a></li>
+          <li><a href="/team">섬기는이</a></li>
+          <li><a href="/endorsements">추천사</a></li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link has-dropdown">사역</a>
+        <ul class="nav-dropdown">
+          <li><a href="/camp">캠프사역</a></li>
+          <li><a href="/wolbi-jeju">제주월비</a></li>
+          <li><a href="/youth">청소년 사역</a></li>
+          <li><a href="/jr-syme">Jr. SYME</a></li>
+          <li><a href="/vietnam">베트남 선교</a></li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link has-dropdown">소통</a>
+        <ul class="nav-dropdown">
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/testimonies">간증 / 사역 후기</a></li>
+          <li><a href="/mission-report">선교보고</a></li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link has-dropdown">후원</a>
+        <ul class="nav-dropdown">
+          <li><a href="/give">월코후원</a></li>
+        </ul>
+      </li>
+      <li class="nav-item"><a href="/location" class="nav-link">오시는길</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle" id="langToggle" onclick="toggleLang()">
+        <div class="lang-slider" id="langSlider"></div>
+        <div class="lang-side is-active" id="langKo">
+          <img src="https://flagcdn.com/w40/kr.png" alt="KR">
+          <span>한국어</span>
+        </div>
+        <div class="lang-side is-inactive" id="langEn">
+          <img src="https://flagcdn.com/w40/us.png" alt="US">
+          <span>English</span>
+        </div>
+      </div>
+      <div class="nav-hamburger" id="hamburger" onclick="toggleMobile()">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 모바일 메뉴 -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-item"><a href="/">HOME</a></div>
+    <div class="mobile-menu-item">
+      <a href="#">소개</a>
+      <ul class="mobile-sub">
+        <li><a href="/about">월코소개</a></li>
+        <li><a href="/team">섬기는이</a></li>
+        <li><a href="/endorsements">추천사</a></li>
+      </ul>
+    </div>
+    <div class="mobile-menu-item">
+      <a href="#">사역</a>
+      <ul class="mobile-sub">
+        <li><a href="/camp">캠프사역</a></li>
+        <li><a href="/wolbi-jeju">제주월비</a></li>
+        <li><a href="/youth">청소년 사역</a></li>
+        <li><a href="/jr-syme">Jr. SYME</a></li>
+        <li><a href="/vietnam">베트남 선교</a></li>
+      </ul>
+    </div>
+    <div class="mobile-menu-item">
+      <a href="#">소통</a>
+      <ul class="mobile-sub">
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/testimonies">간증 / 사역 후기</a></li>
+        <li><a href="/mission-report">선교보고</a></li>
+      </ul>
+    </div>
+    <div class="mobile-menu-item">
+      <a href="#">후원</a>
+      <ul class="mobile-sub">
+        <li><a href="/give">월코후원</a></li>
+      </ul>
+    </div>
+    <div class="mobile-menu-item"><a href="/location">오시는길</a></div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-eyebrow">WORD OF LIFE KOREA</span>
+      <h1 class="hero-title">복음전파와 제자훈련으로<br>한국의 다음 세대를 섬깁니다</h1>
+      <p class="hero-desc">다음 세대를 세우는 사역에 함께해주세요</p>
+      <div class="hero-buttons">
+        <a class="hero-btn primary" href="/give">사역 참여 방법 확인</a>
+        <a class="hero-btn secondary" href="/about">더 알아보기</a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <span>SCROLL</span>
+      <div class="hero-scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- PARTNERSHIP -->
+  <section class="wolko-partnership-v2">
+    <div class="wolko-partnership-v2__inner">
+      <div class="wolko-partnership-v2__top">
+        <span class="wolko-partnership-v2__badge">WOLKO PARTNERSHIP</span>
+        <h2 class="wolko-partnership-v2__title">여러분의 참여가<br>다음 세대를 바꿉니다</h2>
+        <p class="wolko-partnership-v2__subtitle">한 사람의 변화가 또 다른 삶을 변화시키는<br>복음의 흐름에 함께해 주세요.</p>
+      </div>
+      <div class="wolko-partnership-v2__grid">
+        <div class="wolko-partnership-v2__copy">
+          <div class="wolko-partnership-v2__panel is-main">
+            <p class="wolko-partnership-v2__eyebrow">WHY IT MATTERS</p>
+            <h3 class="wolko-partnership-v2__panel-title">지금도 많은 청소년들이<br>복음을 듣지 못한 채 살아가고 있습니다.</h3>
+            <p class="wolko-partnership-v2__text">월코는 다음 세대를 향해 복음을 전하고, 제자를 세우며, 삶의 변화가 이어지는 복음 배가운동을 감당하고 있습니다.</p>
+          </div>
+          <div class="wolko-partnership-v2__info-row">
+            <div class="wolko-partnership-v2__mini-card">
+              <p class="wolko-partnership-v2__mini-label">기도를 통해...</p>
+              <p class="wolko-partnership-v2__mini-text">사역의 필요와 다음 세대를 위해 중보로 기도합니다.</p>
+            </div>
+            <div class="wolko-partnership-v2__mini-card">
+              <p class="wolko-partnership-v2__mini-label">직접 참여함으로...</p>
+              <p class="wolko-partnership-v2__mini-text">후원, 재능기부, 사역 참여로 하나님께 영광드릴 수 있습니다.</p>
+            </div>
+          </div>
+        </div>
+        <div class="wolko-partnership-v2__side">
+          <div class="wolko-partnership-v2__stat-card">
+            <p class="wolko-partnership-v2__stat-label">KOREAN YOUTH GOSPEL RATE</p>
+            <div class="wolko-partnership-v2__stat-value">3<span>% 미만</span></div>
+            <p class="wolko-partnership-v2__stat-text"></p>
+          </div>
+          <div class="wolko-partnership-v2__actions">
+            <a href="/give" class="wolko-partnership-v2__btn is-primary">함께하기</a>
+            <a href="/contact" class="wolko-partnership-v2__btn is-secondary">문의하기</a>
+          </div>
+        </div>
+      </div>
+      <div class="wolko-partnership-v2__video">
+        <p class="wolko-partnership-v2__video-label">OUR STORY</p>
+        <div class="wolko-partnership-v2__video-wrap">
+          <iframe src="https://www.youtube.com/embed/pDTo4oNcAMg" title="Word of Life Korea" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <p class="wolko-partnership-v2__video-caption">월코가 걸어온 길, 그리고 함께 만들어갈 다음 세대의 이야기</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISION -->
+  <section class="wh-vision-section">
+    <div class="wh-vision-inner">
+      <div class="wh-vision-head">
+        <span class="wh-badge">WOLKO VISION</span>
+        <h2 class="wh-vision-title">월코 사역목표 및 비전</h2>
+        <p class="wh-vision-subtitle">하나님의 말씀 위에 다음 세대를 세우기 위한 월코의 핵심 사역 방향입니다.</p>
+      </div>
+      <div class="wh-vision-list">
+        <div class="wh-vision-item" style="--wh-i:0">
+          <button class="wh-vision-trigger" type="button">
+            <span class="wh-vision-accent"></span>
+            <span class="wh-vision-num">01</span>
+            <div class="wh-vision-titles"><span class="wh-vision-label">성경중심</span><span class="wh-vision-label-en">Scripture-Centered</span></div>
+            <span class="wh-vision-chevron"></span>
+          </button>
+          <div class="wh-vision-body"><p>월코(Word of Life Korea)의 모든 사역 중심에는 변치 않는 성경의 진리가 있습니다. 성경은 단순한 책이 아닙니다. 우리의 기초이자 삶의 지침이며, 흔들리지 않는 희망의 원천입니다. 캠프사역부터 제주월비의 깊이 있는 성경 연구에 이르기까지, 월코의 모든 사역은 하나님의 말씀 위에 굳게 세워져 있습니다.</p></div>
+        </div>
+        <div class="wh-vision-item" style="--wh-i:1">
+          <button class="wh-vision-trigger" type="button">
+            <span class="wh-vision-accent"></span>
+            <span class="wh-vision-num">02</span>
+            <div class="wh-vision-titles"><span class="wh-vision-label">청소년 사역 중심</span><span class="wh-vision-label-en">Youth-Focused</span></div>
+            <span class="wh-vision-chevron"></span>
+          </button>
+          <div class="wh-vision-body"><p>월코(Word of Life Korea)를 움직이는 힘은 다음 세대를 향한 열정입니다. 젊은이들 안에는 그리스도를 위해 세상을 바꿀 놀라운 가능성이 있습니다. 그 가능성을 믿기에, 월코는 오늘도 모든 사역에 온 힘을 쏟습니다.</p></div>
+        </div>
+        <div class="wh-vision-item" style="--wh-i:2">
+          <button class="wh-vision-trigger" type="button">
+            <span class="wh-vision-accent"></span>
+            <span class="wh-vision-num">03</span>
+            <div class="wh-vision-titles"><span class="wh-vision-label">복음전파</span><span class="wh-vision-label-en">Evangelism</span></div>
+            <span class="wh-vision-chevron"></span>
+          </button>
+          <div class="wh-vision-body"><p>월코(Word of Life Korea)가 전하는 메시지는 단순하지만, 삶을 바꾸는 힘이 있습니다. 바로 예수 그리스도가 해답이라는 것입니다. 역동적인 청소년 사역, 성경학교 캠퍼스, 국제 선교, 청소년 캠프를 통해 월코는 모든 세대에 복음을 전하는 일에 헌신합니다.</p></div>
+        </div>
+        <div class="wh-vision-item" style="--wh-i:3">
+          <button class="wh-vision-trigger" type="button">
+            <span class="wh-vision-accent"></span>
+            <span class="wh-vision-num">04</span>
+            <div class="wh-vision-titles"><span class="wh-vision-label">제자훈련</span><span class="wh-vision-label-en">Discipleship</span></div>
+            <span class="wh-vision-chevron"></span>
+          </button>
+          <div class="wh-vision-body"><p>월코(Word of Life Korea)는 복음이 너무나 위대하기에 혼자 간직할 수 없는 것이라고 믿습니다. 복음은 반드시 전해져야 합니다. 신자들이 다른 사람들을 제자로 삼아 믿음을 넓혀갈 수 있도록 준비시키는 것, 그것이 월코가 존재하는 이유입니다.</p></div>
+        </div>
+        <div class="wh-vision-item" style="--wh-i:4">
+          <button class="wh-vision-trigger" type="button">
+            <span class="wh-vision-accent"></span>
+            <span class="wh-vision-num">05</span>
+            <div class="wh-vision-titles"><span class="wh-vision-label">High-Energy</span><span class="wh-vision-label-en">Passion-Driven</span></div>
+            <span class="wh-vision-chevron"></span>
+          </button>
+          <div class="wh-vision-body"><p>월코(Word of Life Korea)는 열정과 목적, 복음을 전하려는 하나된 헌신으로 세워졌습니다. 그리스도를 위해 사는 것, 그것이 우리가 아는 가장 위대한 모험입니다. 그 흥분과 확신이 월코의 모든 사역을 이끌어갑니다.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="images/WOLKO_logo_transparent.png" alt="WOLKO 월코">
+        <p class="footer-desc">복음전파와 제자훈련으로<br>한국의 다음 세대를 섬깁니다.<br><br>한국생명의말씀협회<br>Word of Life Korea</p>
+      </div>
+      <div class="footer-col">
+        <p class="footer-col-title">MINISTRY</p>
+        <a href="/camp">캠프사역</a>
+        <a href="/wolbi-jeju">제주월비</a>
+        <a href="/youth">청소년 사역</a>
+        <a href="/jr-syme">Jr. SYME</a>
+        <a href="/vietnam">베트남 선교</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-col-title">CONNECT</p>
+        <a href="/contact">Contact</a>
+        <a href="/give">월코후원</a>
+        <a href="/location">오시는길</a>
+        <a href="/testimonies">간증 / 사역 후기</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Word of Life Korea. All rights reserved.</span>
+      <span>경기도 평택 | 제주도</span>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById('mainNav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    let isKo = true;
+    function toggleLang() {
+      isKo = !isKo;
+      const slider = document.getElementById('langSlider');
+      const ko = document.getElementById('langKo');
+      const en = document.getElementById('langEn');
+      if (isKo) {
+        slider.style.left = '3px';
+        ko.className = 'lang-side is-active';
+        en.className = 'lang-side is-inactive';
+      } else {
+        slider.style.left = 'calc(100% - 81px)';
+        ko.className = 'lang-side is-inactive';
+        en.className = 'lang-side is-active';
+      }
+    }
+
+    function toggleMobile() {
+      document.getElementById('mobileMenu').classList.toggle('open');
+    }
+
+    document.querySelectorAll('.wh-vision-item').forEach(item => {
+      item.querySelector('.wh-vision-trigger').addEventListener('click', () => {
+        const isOpen = item.classList.contains('is-active');
+        document.querySelectorAll('.wh-vision-item').forEach(i => i.classList.remove('is-active'));
+        if (!isOpen) item.classList.add('is-active');
+      });
+    });
+  </script>
 </body>
 </html>
