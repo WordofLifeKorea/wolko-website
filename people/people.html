@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>섬기는이 — WOLKO 월코</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&family=Montserrat:wght@600;700;800;900&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue-dark: #004f68;
+      --blue-mid: #007ea1;
+      --blue-light: #73d1f5;
+      --red: #c42a36;
+      --text-dark: #12303c;
+      --text-mid: #5a6f79;
+      --nav-h: 72px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Noto Sans KR', sans-serif; color: var(--text-dark); overflow-x: hidden; }
+
+    /* ── 언어 표시/숨김 ── */
+    .wl-ko { display: block; }
+    .wl-en { display: none; }
+    span.wl-ko { display: inline; }
+    span.wl-en { display: none; }
+    .lang-en .wl-ko { display: none !important; }
+    .lang-en .wl-en { display: block; }
+    .lang-en span.wl-en { display: inline; }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      height: var(--nav-h); display: flex; align-items: center; padding: 0 5%;
+      background: rgba(255,255,255,0.97);
+      box-shadow: 0 1px 0 rgba(0,79,104,0.08), 0 4px 20px rgba(0,79,104,0.06);
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo { flex-shrink: 0; margin-right: 40px; }
+    .nav-logo img { height: 38px; width: auto; display: block; }
+    .nav-menu { display: flex; align-items: center; gap: 4px; list-style: none; flex: 1; }
+    .nav-item { position: relative; }
+    .nav-link {
+      display: flex; align-items: center; gap: 4px;
+      padding: 8px 16px; border-radius: 8px; text-decoration: none;
+      font-size: 15px; font-weight: 700; color: var(--text-dark);
+      transition: color 0.2s, background 0.2s; white-space: nowrap;
+    }
+    .nav-link:hover { background: rgba(0,79,104,0.06); color: var(--blue-dark); }
+    .nav-link.active { color: var(--blue-mid); }
+    .nav-link.has-dropdown::after {
+      content: ''; display: inline-block; width: 6px; height: 6px;
+      border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+      transform: rotate(45deg) translateY(-2px); transition: transform 0.2s;
+    }
+    .nav-item:hover .nav-link.has-dropdown::after { transform: rotate(-135deg) translateY(-2px); }
+    .nav-dropdown {
+      position: absolute; top: 100%; left: 0;
+      padding-top: 12px; min-width: 160px; opacity: 0; pointer-events: none;
+      transform: translateY(2px); transition: opacity 0.2s, transform 0.2s; list-style: none;
+    }
+    .nav-dropdown-inner {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0,79,104,0.12), 0 2px 8px rgba(0,79,104,0.06);
+      border: 1px solid rgba(0,79,104,0.06); padding: 8px;
+    }
+    .nav-item:hover .nav-dropdown { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .nav-dropdown a {
+      display: block; padding: 10px 14px; border-radius: 8px;
+      text-decoration: none; font-size: 14px; font-weight: 500;
+      color: var(--text-dark); transition: background 0.15s, color 0.15s; white-space: nowrap;
+    }
+    .nav-dropdown a:hover { background: rgba(0,79,104,0.06); color: var(--blue-dark); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; }
+
+    /* 언어 토글 (nav 버전) */
+    .lang-toggle {
+      display: flex; align-items: center;
+      background: rgba(0,79,104,0.05); border: 1px solid rgba(0,79,104,0.12);
+      border-radius: 999px; padding: 3px; cursor: pointer;
+      position: relative; width: 160px; height: 36px;
+    }
+    .lang-slider {
+      position: absolute; left: 3px; width: 78px; height: 28px;
+      background: var(--blue-dark); border-radius: 999px;
+      transition: left 0.25s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .lang-side { display: flex; align-items: center; justify-content: center; gap: 5px; width: 80px; z-index: 2; }
+    .lang-side img { width: 16px; height: 11px; object-fit: cover; border-radius: 2px; }
+    .lang-side span { font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .lang-side.is-active span { color: #fff; font-weight: 700; }
+    .lang-side.is-inactive span { color: var(--text-mid); }
+
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; margin-left: 12px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-dark); border-radius: 2px; }
+    .mobile-menu {
+      display: none; position: fixed; top: var(--nav-h); left: 0; right: 0;
+      background: #fff; box-shadow: 0 8px 32px rgba(0,79,104,0.1);
+      z-index: 999; padding: 16px 0 24px;
+      max-height: calc(100vh - var(--nav-h)); overflow-y: auto;
+    }
+    .mobile-menu.open { display: block; }
+    .mobile-menu-item > a { display: block; padding: 14px 24px; font-size: 15px; font-weight: 700; color: var(--text-dark); text-decoration: none; border-bottom: 1px solid rgba(0,79,104,0.06); }
+    .mobile-sub { list-style: none; background: rgba(0,79,104,0.02); }
+    .mobile-sub a { display: block; padding: 12px 24px 12px 40px; font-size: 14px; color: var(--text-mid); text-decoration: none; font-weight: 500; }
+
+    /* ── PAGE BODY ── */
+    .page-body {
+      padding-top: var(--nav-h);
+    }
+
+    /* ===== wp- (wolko-people) ===== */
+    .wp-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+    .wp-wrap {
+      --wp-blue-deep: #004f68;
+      --wp-blue-mid: #007ea1;
+      --wp-blue-light: #73d1f5;
+      --wp-red: #c42a36;
+      --wp-gray-bg: #f4f7fa;
+      --wp-gray-line: #e0e8ef;
+      --wp-text-main: #1a2634;
+      --wp-text-sub: #4a6070;
+      --wp-text-light: #8fa8b8;
+      --wp-white: #ffffff;
+      --wp-card-shadow: 0 4px 20px rgba(0,79,104,0.10);
+      --wp-card-shadow-hover: 0 10px 36px rgba(0,79,104,0.18);
+      --wp-radius: 14px;
+      font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+      color: var(--wp-text-main);
+      background: var(--wp-white);
+    }
+
+    /* ── Hero ── */
+    .wp-hero {
+      position: relative;
+      background: linear-gradient(135deg, var(--wp-blue-deep) 0%, var(--wp-blue-mid) 100%);
+      padding: 80px 24px 70px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .wp-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='rgba(255,255,255,0.07)'/%3E%3C/svg%3E") repeat;
+    }
+    .wp-hero-label {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--wp-blue-light); margin-bottom: 16px; position: relative;
+    }
+    .wp-hero-title {
+      font-size: clamp(32px, 5vw, 52px); font-weight: 800;
+      color: var(--wp-white); line-height: 1.15; position: relative; margin-bottom: 12px;
+    }
+    .wp-hero-title em { font-style: normal; color: var(--wp-blue-light); }
+    .wp-hero-sub {
+      font-size: 15px; color: rgba(255,255,255,0.7);
+      position: relative; letter-spacing: 0.3px;
+    }
+
+    /* ── Accordion ── */
+    .wp-accordion-wrap {
+      max-width: 1080px; margin: 0 auto;
+      padding: 48px 24px 72px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .wp-acc-item {
+      border-radius: var(--wp-radius); overflow: hidden;
+      box-shadow: var(--wp-card-shadow); background: var(--wp-white);
+    }
+    .wp-acc-trigger {
+      width: 100%; display: flex; align-items: center; gap: 16px;
+      padding: 24px 28px; background: var(--wp-white);
+      border: none; cursor: pointer; text-align: left; transition: background 0.2s;
+    }
+    .wp-acc-trigger:hover { background: var(--wp-gray-bg); }
+    .wp-loc-badge {
+      display: flex; align-items: center; justify-content: center;
+      width: 44px; height: 44px; border-radius: 10px;
+      background: var(--wp-blue-deep); color: var(--wp-white);
+      font-size: 17px; font-weight: 900; flex-shrink: 0;
+    }
+    .wp-acc-item.wp-acc-jeju .wp-loc-badge { background: var(--wp-blue-mid); }
+    .wp-acc-label { flex: 1; min-width: 0; }
+    .wp-loc-text-en {
+      font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--wp-blue-mid); margin-bottom: 3px;
+    }
+    .wp-loc-text-ko { font-size: 20px; font-weight: 800; color: var(--wp-text-main); line-height: 1; }
+    .wp-acc-meta {
+      font-size: 12px; color: var(--wp-text-light);
+      font-weight: 600; white-space: nowrap; margin-right: 12px;
+    }
+    .wp-acc-chevron {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--wp-gray-bg); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; transition: background 0.2s;
+    }
+    .wp-acc-chevron svg { display: block; transition: transform 0.35s ease; }
+    .wp-acc-chevron svg path { stroke: var(--wp-blue-deep); }
+    .wp-acc-item.wp-acc-open .wp-acc-chevron { background: var(--wp-blue-deep); }
+    .wp-acc-item.wp-acc-open .wp-acc-chevron svg path { stroke: #fff; }
+    .wp-acc-item.wp-acc-open .wp-acc-chevron svg { transform: rotate(180deg); }
+    .wp-acc-item.wp-acc-jeju.wp-acc-open .wp-acc-chevron { background: var(--wp-blue-mid); }
+    .wp-acc-body { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .wp-acc-item.wp-acc-open .wp-acc-body { max-height: 4000px; }
+    .wp-acc-inner { padding: 36px 28px 40px; border-top: 1px solid var(--wp-gray-line); }
+
+    /* ── Group ── */
+    .wp-group { margin-bottom: 56px; }
+    .wp-group:last-child { margin-bottom: 0; }
+    .wp-group-title { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .wp-group-title-bar { width: 4px; height: 22px; border-radius: 3px; background: var(--wp-blue-deep); flex-shrink: 0; }
+    .wp-group-title-ko { font-size: 17px; font-weight: 800; color: var(--wp-text-main); }
+    .wp-group-title-en { font-size: 12px; font-weight: 600; color: var(--wp-text-light); letter-spacing: 1px; text-transform: uppercase; }
+    .wp-group-count { margin-left: auto; font-size: 12px; color: var(--wp-text-light); font-weight: 600; background: var(--wp-gray-bg); padding: 3px 10px; border-radius: 20px; }
+
+    /* ── Card Grid ── */
+    .wp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .wp-card {
+      background: var(--wp-white); border-radius: var(--wp-radius);
+      overflow: hidden; box-shadow: var(--wp-card-shadow);
+      text-decoration: none; display: block;
+      transition: transform 0.25s, box-shadow 0.25s;
+      opacity: 0; transform: translateY(20px);
+    }
+    .wp-card.wp-visible {
+      opacity: 1; transform: translateY(0);
+      transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.25s;
+    }
+    .wp-card:hover { transform: translateY(-5px); box-shadow: var(--wp-card-shadow-hover); }
+    .wp-card-photo-wrap {
+      position: relative; width: 100%; padding-top: 100%;
+      background: var(--wp-gray-bg); overflow: hidden;
+    }
+    .wp-card-photo-wrap img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; transition: transform 0.4s ease;
+    }
+    .wp-card:hover .wp-card-photo-wrap img { transform: scale(1.05); }
+    .wp-card-role-badge {
+      position: absolute; bottom: 10px; left: 10px;
+      background: rgba(0,79,104,0.85); color: var(--wp-white);
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .wp-card-role-badge.wp-badge-director { background: rgba(196,42,54,0.9); }
+    .wp-card-info { padding: 18px 18px 20px; }
+    .wp-card-name { font-size: 15px; font-weight: 800; color: var(--wp-text-main); margin-bottom: 5px; line-height: 1.35; }
+    .wp-card-title { font-size: 12px; color: var(--wp-text-sub); line-height: 1.5; }
+    .wp-card-arrow {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700; color: var(--wp-blue-mid);
+      margin-top: 10px; letter-spacing: 0.5px;
+    }
+    .wp-card-arrow::after { content: '→'; transition: transform 0.2s; }
+    .wp-card:hover .wp-card-arrow::after { transform: translateX(3px); }
+
+    /* ── FOOTER ── */
+    .footer { background: #0a1e28; color: rgba(255,255,255,0.6); padding: 56px 5% 40px; }
+    .footer-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .footer-logo img { height: 32px; width: auto; margin-bottom: 16px; filter: brightness(0) invert(1) opacity(0.85); }
+    .footer-desc { font-size: 13px; line-height: 1.8; color: rgba(255,255,255,0.45); }
+    .footer-col-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: rgba(255,255,255,0.35); margin-bottom: 16px; font-family: 'Montserrat', sans-serif; }
+    .footer-col a { display: block; font-size: 14px; color: rgba(255,255,255,0.55); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; }
+    .footer-col a:hover { color: rgba(255,255,255,0.9); }
+    .footer-bottom { max-width: 1180px; margin: 0 auto; padding-top: 28px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: rgba(255,255,255,0.28); }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .nav-menu { display: none; }
+      .nav-hamburger { display: flex; }
+      .lang-toggle { margin-left: auto; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 860px) {
+      .wp-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+      .wp-accordion-wrap { padding: 32px 16px 56px; }
+      .wp-acc-trigger { padding: 20px; }
+      .wp-acc-inner { padding: 28px 16px 32px; }
+    }
+    @media (max-width: 768px) {
+      .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+    @media (max-width: 540px) {
+      .wp-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .wp-card-info { padding: 12px 12px 14px; }
+      .wp-card-name { font-size: 13px; }
+      .wp-acc-meta { display: none; }
+    }
+    @media (max-width: 380px) {
+      .wp-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav class="nav" id="mainNav">
+    <a href="/" class="nav-logo">
+      <img src="images/WOLKO_logo_transparent.png" alt="WOLKO 월코">
+    </a>
+    <ul class="nav-menu">
+      <li class="nav-item"><a href="/" class="nav-link">HOME</a></li>
+      <li class="nav-item">
+        <a href="/about" class="nav-link has-dropdown active">소개</a>
+        <ul class="nav-dropdown"><div class="nav-dropdown-inner">
+          <li><a href="/about">월코소개</a></li>
+          <li><a href="/team">섬기는이</a></li>
+          <li><a href="/endorsements">추천사</a></li>
+        </div></ul>
+      </li>
+      <li class="nav-item">
+        <a href="/camp" class="nav-link has-dropdown">사역</a>
+        <ul class="nav-dropdown"><div class="nav-dropdown-inner">
+          <li><a href="/camp">캠프사역</a></li>
+          <li><a href="/wolbi-jeju">제주월비</a></li>
+          <li><a href="/youth">청소년 사역</a></li>
+          <li><a href="/jr-syme">Jr. SYME</a></li>
+          <li><a href="/vietnam">베트남 선교</a></li>
+        </div></ul>
+      </li>
+      <li class="nav-item">
+        <a href="/mission-report" class="nav-link has-dropdown">소통</a>
+        <ul class="nav-dropdown"><div class="nav-dropdown-inner">
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/mission-report">선교보고</a></li>
+        </div></ul>
+      </li>
+      <li class="nav-item">
+        <a href="/give" class="nav-link has-dropdown">후원</a>
+        <ul class="nav-dropdown"><div class="nav-dropdown-inner">
+          <li><a href="/give">월코후원</a></li>
+        </div></ul>
+      </li>
+      <li class="nav-item"><a href="/location" class="nav-link">오시는길</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle" id="langToggle" onclick="toggleLang()">
+        <div class="lang-slider" id="langSlider"></div>
+        <div class="lang-side is-active" id="langKo">
+          <img src="https://flagcdn.com/w40/kr.png" alt="KR">
+          <span>한국어</span>
+        </div>
+        <div class="lang-side is-inactive" id="langEn">
+          <img src="https://flagcdn.com/w40/us.png" alt="US">
+          <span>English</span>
+        </div>
+      </div>
+      <div class="nav-hamburger" id="hamburger" onclick="toggleMobile()">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 모바일 메뉴 -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-item"><a href="/">HOME</a></div>
+    <div class="mobile-menu-item">
+      <a href="#">소개</a>
+      <ul class="mobile-sub">
+        <li><a href="/about">월코소개</a></li>
+        <li><a href="/team">섬기는이</a></li>
+        <li><a href="/endorsements">추천사</a></li>
+      </ul>
+    </div>
+    <div class="mobile-menu-item">
+      <a href="#">사역</a>
+      <ul class="mobile-sub">
+        <li><a href="/camp">캠프사역</a></li>
+        <li><a href="/wolbi-jeju">제주월비</a></li>
+        <li><a href="/youth">청소년 사역</a></li>
+        <li><a href="/jr-syme">Jr. SYME</a></li>
+        <li><a href="/vietnam">베트남 선교</a></li>
+      </ul>
+    </div>
+    <div class="mobile-menu-item">
+      <a href="#">소통</a>
+      <ul class="mobile-sub">
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/mission-report">선교보고</a></li>
+      </ul>
+    </div>
+    <div class="mobile-menu-item">
+      <a href="#">후원</a>
+      <ul class="mobile-sub"><li><a href="/give">월코후원</a></li></ul>
+    </div>
+    <div class="mobile-menu-item"><a href="/location">오시는길</a></div>
+  </div>
+
+  <!-- ── PAGE BODY ── -->
+  <div class="page-body">
+  <div class="wp-wrap" id="wp-lang-root">
+
+    <!-- Hero -->
+    <section class="wp-hero">
+      <div class="wp-hero-label">Our Team · Word of Life Korea</div>
+      <h1 class="wp-hero-title">
+        <span class="wl-ko">함께 <em>사역하는</em> 이들</span>
+        <span class="wl-en">Meet Our <em>Ministry Team</em></span>
+      </h1>
+      <p class="wp-hero-sub">
+        <span class="wl-ko">하나님의 부르심을 따라 다음 세대를 위해 헌신하는 월코의 사역자들을 소개합니다</span>
+        <span class="wl-en">Called by God and committed to the next generation — meet the people of Word of Life Korea</span>
+      </p>
+    </section>
+
+    <!-- ===== Accordion ===== -->
+    <div class="wp-accordion-wrap">
+
+      <!-- ① 평택 -->
+      <div class="wp-acc-item wp-acc-open" id="wp-pyeongtaek">
+        <button class="wp-acc-trigger" aria-expanded="true">
+          <div class="wp-loc-badge">P</div>
+          <div class="wp-acc-label">
+            <div class="wp-loc-text-en">Pyeongtaek · Main Campus</div>
+            <div class="wp-loc-text-ko">
+              <span class="wl-ko">평택 월코센터</span>
+              <span class="wl-en">Pyeongtaek WOLKO Center</span>
+            </div>
+          </div>
+          <span class="wp-acc-meta">
+            <span class="wl-ko">선교사 6 · 단기 6</span>
+            <span class="wl-en">Missionaries 6 · STW 6</span>
+          </span>
+          <div class="wp-acc-chevron">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 5l5 5 5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </button>
+        <div class="wp-acc-body">
+          <div class="wp-acc-inner">
+
+            <!-- 선교사 -->
+            <div class="wp-group">
+              <div class="wp-group-title">
+                <div class="wp-group-title-bar"></div>
+                <span class="wp-group-title-ko wl-ko">선교사</span>
+                <span class="wp-group-title-en wl-ko">Missionaries</span>
+                <span class="wp-group-title-ko wl-en">Missionaries</span>
+                <span class="wp-group-count">6</span>
+              </div>
+              <div class="wp-grid">
+
+                <a href="/team/morse" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Morse.jpg" alt="몰스 제이콥 & 몰스 크리스탈" loading="lazy">
+                    <span class="wp-card-role-badge wp-badge-director">Field Director</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">몰스 제이콥 & 몰스 크리스탈</span>
+                      <span class="wl-en">Jacob & Crystal Morse</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">월코 대표 · Field Director</span>
+                      <span class="wl-en">WOLKO Director · Field Director</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/song" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Samuel.jpg" alt="송승현" loading="lazy">
+                    <span class="wp-card-role-badge">Missionary</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">송승현</span>
+                      <span class="wl-en">Seunghyun Song</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">선교사 · Missionary</span>
+                      <span class="wl-en">Missionary</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/chae" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/채병국 선교사님.jpeg" alt="채병국 & 김미영" loading="lazy">
+                    <span class="wp-card-role-badge">Missionaries</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">채병국 & 김미영</span>
+                      <span class="wl-en">Byungkook Chae & Miyoung Kim</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">선교사 · Missionaries</span>
+                      <span class="wl-en">Missionaries</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/min" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Min.jpg" alt="민경찬 & 김유진" loading="lazy">
+                    <span class="wp-card-role-badge">Missionaries</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">민경찬 & 김유진</span>
+                      <span class="wl-en">Gyeongchan Min & Yujin Kim</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">선교사 · Missionaries</span>
+                      <span class="wl-en">Missionaries</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/kim" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Kim.JPEG" alt="김환규 & 김씬띠아" loading="lazy">
+                    <span class="wp-card-role-badge">Missionaries</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">김환규 & 김씬띠아</span>
+                      <span class="wl-en">Hwangyu Kim & Cynthia Kim</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">선교사 · Missionaries</span>
+                      <span class="wl-en">Missionaries</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/anderson" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Anderson.jpg" alt="앤더슨 제이슨 & 앤더슨 찬주" loading="lazy">
+                    <span class="wp-card-role-badge">Missionaries</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">앤더슨 제이슨 & 앤더슨 찬주</span>
+                      <span class="wl-en">Jason & Chanju Anderson</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">선교사 · Missionaries</span>
+                      <span class="wl-en">Missionaries</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+              </div>
+            </div><!-- /선교사 -->
+
+            <!-- 단기 사역자 -->
+            <div class="wp-group">
+              <div class="wp-group-title">
+                <div class="wp-group-title-bar"></div>
+                <span class="wp-group-title-ko wl-ko">단기 사역자</span>
+                <span class="wp-group-title-en wl-ko">Short-term Workers</span>
+                <span class="wp-group-title-ko wl-en">Short-term Workers</span>
+                <span class="wp-group-count">6</span>
+              </div>
+              <div class="wp-grid">
+
+                <a href="/team/jenny" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Jenny.JPEG" alt="손진영" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">손진영</span>
+                      <span class="wl-en">Jinyoung Son</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">간사 · Short-term Worker</span>
+                      <span class="wl-en">Staff · Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/aiden" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Aiden.jpg" alt="박예능" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">박예능</span>
+                      <span class="wl-en">Yeneung Park</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">간사 · Short-term Worker</span>
+                      <span class="wl-en">Staff · Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/ella" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Ella.jpg" alt="임현지" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">임현지</span>
+                      <span class="wl-en">Hyunji Im</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">간사 · Short-term Worker</span>
+                      <span class="wl-en">Staff · Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/estelle" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Estelle.jpg" alt="소이 에스텔" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">소이 에스텔</span>
+                      <span class="wl-en">Estelle Soy</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/zach" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Zach.jpg" alt="프래지어 잭" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">프래지어 잭</span>
+                      <span class="wl-en">Zach Frazier</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/molly" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Molly.png" alt="그램 몰리" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">그램 몰리</span>
+                      <span class="wl-en">Molly Graham</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+              </div>
+            </div><!-- /단기 사역자 -->
+
+          </div>
+        </div>
+      </div><!-- /평택 -->
+
+      <!-- ② 제주 -->
+      <div class="wp-acc-item wp-acc-jeju wp-acc-open" id="wp-jeju">
+        <button class="wp-acc-trigger" aria-expanded="true">
+          <div class="wp-loc-badge">J</div>
+          <div class="wp-acc-label">
+            <div class="wp-loc-text-en">Jeju · Wolbi Campus</div>
+            <div class="wp-loc-text-ko">
+              <span class="wl-ko">제주 월비</span>
+              <span class="wl-en">Jeju WOLBI</span>
+            </div>
+          </div>
+          <span class="wp-acc-meta">
+            <span class="wl-ko">선교사 5 · 단기 7</span>
+            <span class="wl-en">Missionaries 5 · STW 7</span>
+          </span>
+          <div class="wp-acc-chevron">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 5l5 5 5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </button>
+        <div class="wp-acc-body">
+          <div class="wp-acc-inner">
+
+            <!-- 선교사 -->
+            <div class="wp-group">
+              <div class="wp-group-title">
+                <div class="wp-group-title-bar"></div>
+                <span class="wp-group-title-ko wl-ko">선교사</span>
+                <span class="wp-group-title-en wl-ko">Missionaries</span>
+                <span class="wp-group-title-ko wl-en">Missionaries</span>
+                <span class="wp-group-count">5</span>
+              </div>
+              <div class="wp-grid">
+
+                <a href="/team/nicholes" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/스티브 란다.PNG" alt="스티브 & 란다 니콜스" loading="lazy">
+                    <span class="wp-card-role-badge wp-badge-director">Jeju Director</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">스티브 & 란다 니콜스</span>
+                      <span class="wl-en">Steve & Randa Nicholes</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">제주월비 대표 · Ministry Director & Executive Dean</span>
+                      <span class="wl-en">Ministry Director & Executive Dean</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/baek" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Beak.png" alt="백남규 & 조안나" loading="lazy">
+                    <span class="wp-card-role-badge">Missionaries</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">백남규 & 조안나</span>
+                      <span class="wl-en">Namkyu Baek & Joanna</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">선교사 · Missionaries</span>
+                      <span class="wl-en">Missionaries</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/jang" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/장성남 선교사님.jpeg" alt="장성남 & 김미정" loading="lazy">
+                    <span class="wp-card-role-badge">Missionaries</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">장성남 & 김미정</span>
+                      <span class="wl-en">Seongnam Jang & Mijeong Kim</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">선교사 · Missionaries</span>
+                      <span class="wl-en">Missionaries</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/rodgers" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Rodgers.jpg" alt="제레미 & 엘스벳 라저스" loading="lazy">
+                    <span class="wp-card-role-badge">Missionaries</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">제레미 & 엘스벳 라저스</span>
+                      <span class="wl-en">Jeremy & Elsbeth Rodgers</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">선교사 · Missionaries</span>
+                      <span class="wl-en">Missionaries</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/joe" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Joe.png" alt="챕먼 조" loading="lazy">
+                    <span class="wp-card-role-badge">Missionary</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">챕먼 조</span>
+                      <span class="wl-en">Joe Chapman</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">선교사 · Missionary</span>
+                      <span class="wl-en">Missionary</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+              </div>
+            </div><!-- /선교사 -->
+
+            <!-- 단기 사역자 -->
+            <div class="wp-group">
+              <div class="wp-group-title">
+                <div class="wp-group-title-bar"></div>
+                <span class="wp-group-title-ko wl-ko">단기 사역자</span>
+                <span class="wp-group-title-en wl-ko">Short-term Workers</span>
+                <span class="wp-group-title-ko wl-en">Short-term Workers</span>
+                <span class="wp-group-count">7</span>
+              </div>
+              <div class="wp-grid">
+
+                <a href="/team/javaris" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Javaris Richardson.png" alt="자바리스" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">자바리스</span>
+                      <span class="wl-en">Javaris Richardson</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/rose" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Rose.png" alt="이예영" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">이예영</span>
+                      <span class="wl-en">Yeyoung Lee</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/grace" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Grace Webster.png" alt="웹스터 그레이스" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">웹스터 그레이스</span>
+                      <span class="wl-en">Grace Webster</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/kazuto" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Kazuto Tanaka.png" alt="다나카 카즈토" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">다나카 카즈토</span>
+                      <span class="wl-en">Kazuto Tanaka</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/brinkley" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Brinkley Moseley.png" alt="모슬리 브링클리" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">모슬리 브링클리</span>
+                      <span class="wl-en">Brinkley Moseley</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/joanna" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Joanna Jung.png" alt="정 조안나" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">정 조안나</span>
+                      <span class="wl-en">Joanna Jung</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="/team/abby" class="wp-card">
+                  <div class="wp-card-photo-wrap">
+                    <img src="https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Abby Nicholes.png" alt="애비 니콜스" loading="lazy">
+                    <span class="wp-card-role-badge">Short-term Worker</span>
+                  </div>
+                  <div class="wp-card-info">
+                    <div class="wp-card-name">
+                      <span class="wl-ko">애비 니콜스</span>
+                      <span class="wl-en">Abby Nicholes</span>
+                    </div>
+                    <div class="wp-card-title">
+                      <span class="wl-ko">단기 사역자 · Short-term Worker</span>
+                      <span class="wl-en">Short-term Worker</span>
+                    </div>
+                    <div class="wp-card-arrow">
+                      <span class="wl-ko">프로필 보기</span>
+                      <span class="wl-en">View Profile</span>
+                    </div>
+                  </div>
+                </a>
+
+              </div>
+            </div><!-- /단기 사역자 -->
+
+          </div>
+        </div>
+      </div><!-- /제주 -->
+
+    </div><!-- /accordion-wrap -->
+
+  </div><!-- /wp-wrap -->
+  </div><!-- /page-body -->
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="images/WOLKO_logo_transparent.png" alt="WOLKO 월코">
+        <p class="footer-desc">복음전파와 제자훈련으로<br>한국의 다음 세대를 섬깁니다.<br><br>한국생명의말씀협회<br>Word of Life Korea</p>
+      </div>
+      <div class="footer-col">
+        <p class="footer-col-title">MINISTRY</p>
+        <a href="/camp">캠프사역</a>
+        <a href="/wolbi-jeju">제주월비</a>
+        <a href="/youth">청소년 사역</a>
+        <a href="/jr-syme">Jr. SYME</a>
+        <a href="/vietnam">베트남 선교</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-col-title">CONNECT</p>
+        <a href="/contact">Contact</a>
+        <a href="/give">월코후원</a>
+        <a href="/location">오시는길</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Word of Life Korea. All rights reserved.</span>
+      <span>경기도 평택 | 제주도</span>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+
+    /* ── 언어 토글 ── */
+    var root = document.getElementById('wp-lang-root');
+    var slider = document.getElementById('langSlider');
+    var koSide = document.getElementById('langKo');
+    var enSide = document.getElementById('langEn');
+    var isEn = false;
+
+    function applyLang(en) {
+      isEn = en;
+      if (en) {
+        slider.style.left = 'calc(100% - 81px)';
+        koSide.className = 'lang-side is-inactive';
+        enSide.className = 'lang-side is-active';
+        root.classList.add('lang-en');
+      } else {
+        slider.style.left = '3px';
+        koSide.className = 'lang-side is-active';
+        enSide.className = 'lang-side is-inactive';
+        root.classList.remove('lang-en');
+      }
+      try { localStorage.setItem('wolko-lang', en ? 'en' : 'ko'); } catch(e) {}
+    }
+
+    window.toggleLang = function () { applyLang(!isEn); };
+
+    try {
+      if (localStorage.getItem('wolko-lang') === 'en') applyLang(true);
+    } catch(e) {}
+
+    /* ── 모바일 메뉴 ── */
+    window.toggleMobile = function () {
+      document.getElementById('mobileMenu').classList.toggle('open');
+    };
+
+    /* ── 아코디언 ── */
+    document.querySelectorAll('.wp-acc-trigger').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var item = btn.closest('.wp-acc-item');
+        var isOpen = item.classList.contains('wp-acc-open');
+        item.classList.toggle('wp-acc-open', !isOpen);
+        btn.setAttribute('aria-expanded', String(!isOpen));
+      });
+    });
+
+    /* ── 카드 스크롤 reveal ── */
+    var cards = document.querySelectorAll('.wp-card');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var el = entry.target;
+            var delay = (parseInt(el.dataset.wpDelay) || 0) * 80;
+            setTimeout(function () { el.classList.add('wp-visible'); }, delay);
+            io.unobserve(el);
+          }
+        });
+      }, { threshold: 0.08 });
+      cards.forEach(function (card, i) {
+        card.dataset.wpDelay = i % 3;
+        io.observe(card);
+      });
+    } else {
+      cards.forEach(function (c) { c.classList.add('wp-visible'); });
+    }
+
+  })();
+  </script>
+</body>
+</html>
