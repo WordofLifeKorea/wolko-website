@@ -1,0 +1,292 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const team = await getCollection('team');
+  return team.map(person => ({
+    params: { slug: person.slug },
+    props: { person },
+  }));
+}
+
+const { person } = Astro.props;
+const d = person.data;
+
+const campusLabel = d.campus === 'pyeongtaek'
+  ? { ko: '평택 월코센터', en: 'Pyeongtaek WOLKO Center' }
+  : { ko: '제주 월비', en: 'Jeju WOLBI' };
+
+const hasBio = (d.bio_ko && d.bio_ko.trim()) || (d.bio_en && d.bio_en.trim());
+---
+
+<BaseLayout
+  title={`${d.name_ko} (${d.name_en}) — WOLKO 월코`}
+  description={`${d.name_en} | ${d.title_en} | Word of Life Korea`}
+  activeNav="about"
+  whiteNav={true}
+>
+  <style>
+    .tp-wrap {
+      --tp-blue: #004f68; --tp-mid: #007ea1; --tp-light: #73d1f5;
+      --tp-red: #c42a36; --tp-bg: #f4f7fa; --tp-line: #e0e8ef;
+      --tp-text: #1a2634; --tp-sub: #4a6070; --tp-muted: #8fa8b8;
+      --tp-white: #ffffff;
+      --tp-shadow: 0 8px 40px rgba(0,79,104,0.12);
+      font-family: 'Noto Sans KR', sans-serif;
+      color: var(--tp-text);
+      background: var(--tp-bg);
+      min-height: 100vh;
+    }
+
+    /* ── Back bar ── */
+    .tp-back-bar {
+      background: var(--tp-white);
+      border-bottom: 1px solid var(--tp-line);
+      padding: 0 5%;
+    }
+    .tp-back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 0; font-size: 13px; font-weight: 600;
+      color: var(--tp-sub); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .tp-back-link:hover { color: var(--tp-blue); }
+    .tp-back-link svg { flex-shrink: 0; }
+
+    /* ── Profile card ── */
+    .tp-main {
+      max-width: 900px; margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    .tp-card {
+      background: var(--tp-white); border-radius: 24px;
+      box-shadow: var(--tp-shadow); overflow: hidden;
+    }
+    .tp-card-inner {
+      display: grid; grid-template-columns: 320px 1fr;
+    }
+
+    /* Photo column */
+    .tp-photo-col {
+      position: relative; background: var(--tp-bg);
+    }
+    .tp-photo-wrap {
+      position: sticky; top: 0;
+    }
+    .tp-photo-wrap img {
+      width: 100%; aspect-ratio: 3/4;
+      object-fit: cover; display: block;
+    }
+    .tp-photo-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(0,20,32,0.7) 0%, transparent 60%);
+      padding: 24px 20px 20px;
+    }
+    .tp-badge {
+      display: inline-block;
+      background: rgba(0,79,104,0.9); color: #fff;
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; padding: 5px 12px; border-radius: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .tp-badge.tp-badge-director { background: rgba(196,42,54,0.9); }
+
+    /* Info column */
+    .tp-info-col {
+      padding: 44px 40px 44px 36px;
+      display: flex; flex-direction: column;
+    }
+    .tp-campus-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--tp-mid);
+      margin-bottom: 20px;
+    }
+    .tp-campus-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--tp-mid); flex-shrink: 0;
+    }
+    .tp-name {
+      font-size: clamp(24px, 3.5vw, 34px);
+      font-weight: 900; line-height: 1.2;
+      color: var(--tp-text); margin-bottom: 8px;
+    }
+    .tp-title {
+      font-size: 15px; color: var(--tp-sub);
+      line-height: 1.6; margin-bottom: 28px;
+    }
+    .tp-divider {
+      width: 40px; height: 3px; border-radius: 2px;
+      background: var(--tp-light); margin-bottom: 28px;
+    }
+
+    /* Bio */
+    .tp-bio-section { flex: 1; }
+    .tp-bio-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--tp-muted);
+      margin-bottom: 14px;
+    }
+    .tp-bio-text {
+      font-size: 15px; line-height: 1.9;
+      color: var(--tp-sub); white-space: pre-line;
+    }
+    .tp-bio-empty {
+      font-size: 14px; color: var(--tp-muted);
+      font-style: italic; line-height: 1.7;
+    }
+
+    /* Prayer card */
+    .tp-prayer {
+      margin-top: 32px;
+      background: linear-gradient(135deg, rgba(0,79,104,0.04), rgba(0,126,161,0.06));
+      border: 1px solid rgba(0,79,104,0.08);
+      border-radius: 14px; padding: 20px 22px;
+    }
+    .tp-prayer-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--tp-mid); margin-bottom: 8px;
+    }
+    .tp-prayer-text {
+      font-size: 14px; line-height: 1.75; color: var(--tp-sub);
+    }
+
+    /* Bottom nav */
+    .tp-nav-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 28px 40px; border-top: 1px solid var(--tp-line);
+    }
+    .tp-nav-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 700; color: var(--tp-blue);
+      text-decoration: none; padding: 10px 18px;
+      border: 1.5px solid var(--tp-line); border-radius: 10px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .tp-nav-btn:hover { background: var(--tp-bg); border-color: var(--tp-blue); }
+    .tp-nav-btn.tp-btn-primary {
+      background: var(--tp-blue); color: #fff;
+      border-color: var(--tp-blue);
+    }
+    .tp-nav-btn.tp-btn-primary:hover { background: var(--tp-mid); border-color: var(--tp-mid); }
+
+    /* Responsive */
+    @media (max-width: 720px) {
+      .tp-card-inner { grid-template-columns: 1fr; }
+      .tp-photo-wrap img { aspect-ratio: 4/3; }
+      .tp-info-col { padding: 28px 24px; }
+      .tp-nav-row { padding: 20px 24px; }
+    }
+    @media (max-width: 480px) {
+      .tp-main { padding: 24px 16px 60px; }
+    }
+  </style>
+
+  <div class="tp-wrap">
+
+    <!-- 뒤로 가기 -->
+    <div class="tp-back-bar">
+      <a href="/people" class="tp-back-link">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="wl-ko">섬기는이 전체 보기</span>
+        <span class="wl-en">Back to Our Team</span>
+      </a>
+    </div>
+
+    <div class="tp-main">
+      <div class="tp-card">
+        <div class="tp-card-inner">
+
+          <!-- 사진 -->
+          <div class="tp-photo-col">
+            <div class="tp-photo-wrap">
+              <img
+                src={d.photo_url || '/images/placeholder.jpg'}
+                alt={d.name_ko}
+                loading="eager"
+              />
+              <div class="tp-photo-overlay">
+                <span class={`tp-badge${d.role_badge.includes('Director') ? ' tp-badge-director' : ''}`}>
+                  {d.role_badge}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 정보 -->
+          <div class="tp-info-col">
+            <div class="tp-campus-tag">
+              <span class="tp-campus-dot"></span>
+              <span class="wl-ko">{campusLabel.ko}</span>
+              <span class="wl-en">{campusLabel.en}</span>
+            </div>
+
+            <h1 class="tp-name">
+              <span class="wl-ko">{d.name_ko}</span>
+              <span class="wl-en">{d.name_en}</span>
+            </h1>
+            <p class="tp-title">
+              <span class="wl-ko">{d.title_ko}</span>
+              <span class="wl-en">{d.title_en}</span>
+            </p>
+            <div class="tp-divider"></div>
+
+            <!-- 소개 -->
+            <div class="tp-bio-section">
+              <div class="tp-bio-label">
+                <span class="wl-ko">소개</span>
+                <span class="wl-en">About</span>
+              </div>
+              {hasBio ? (
+                <>
+                  {d.bio_ko && <p class="tp-bio-text wl-ko">{d.bio_ko}</p>}
+                  {d.bio_en && <p class="tp-bio-text wl-en">{d.bio_en}</p>}
+                </>
+              ) : (
+                <p class="tp-bio-empty">
+                  <span class="wl-ko">소개 내용이 곧 업데이트됩니다.</span>
+                  <span class="wl-en">Bio coming soon.</span>
+                </p>
+              )}
+            </div>
+
+            <!-- 기도 요청 안내 -->
+            <div class="tp-prayer">
+              <div class="tp-prayer-label">
+                <span class="wl-ko">기도 요청</span>
+                <span class="wl-en">Prayer</span>
+              </div>
+              <p class="tp-prayer-text">
+                <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
+                <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 하단 네비 -->
+        <div class="tp-nav-row">
+          <a href="/people" class="tp-nav-btn">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M9 11L5 7l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="wl-ko">전체 팀 보기</span>
+            <span class="wl-en">All Team Members</span>
+          </a>
+          <a href="/give" class="tp-nav-btn tp-btn-primary">
+            <span class="wl-ko">후원하기</span>
+            <span class="wl-en">Support This Ministry</span>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</BaseLayout>

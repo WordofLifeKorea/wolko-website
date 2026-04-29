@@ -7,12 +7,6 @@ backend:
 media_folder: public/images/uploads
 public_folder: /images/uploads
 
-# 한/영 다국어 구조
-i18n:
-  structure: multiple_files
-  locales: [ko, en]
-  default_locale: ko
-
 collections:
 
   # ── 팀원 (섬기는이) ──────────────────────────────────────
@@ -22,7 +16,6 @@ collections:
     folder: "src/content/team"
     create: true
     slug: "{{slug}}"
-    i18n: true
     fields:
       - { label: "이름 (한국어)", name: "name_ko", widget: "string" }
       - { label: "Name (English)", name: "name_en", widget: "string" }
@@ -49,12 +42,10 @@ collections:
         options:
           - { label: "선교사 (Missionary)", value: "missionary" }
           - { label: "단기 사역자 (Short-term Worker)", value: "stw" }
-      - { label: "순서", name: "order", widget: "number", default: 99 }
-      - { label: "사진", name: "photo", widget: "image", required: false }
-      - { label: "사진 URL (NAS 등 외부)", name: "photo_url", widget: "string", required: false, hint: "사진 파일 대신 외부 URL 직접 입력" }
-      - { label: "프로필 링크", name: "profile_link", widget: "string", required: false }
-      - { label: "프로필 소개 (한국어)", name: "bio_ko", widget: "markdown", required: false, i18n: true }
-      - { label: "Bio (English)", name: "bio_en", widget: "markdown", required: false, i18n: true }
+      - { label: "순서 (숫자 낮을수록 먼저 표시)", name: "order", widget: "number", default: 99 }
+      - { label: "사진 URL (NAS 등 외부 링크)", name: "photo_url", widget: "string", required: false, hint: "예: https://wolko.synology.me/Web_Contents/Photos/..." }
+      - { label: "소개 (한국어)", name: "bio_ko", widget: "text", required: false }
+      - { label: "Bio (English)", name: "bio_en", widget: "text", required: false }
 
   # ── 소식 / 선교보고 ──────────────────────────────────────
   - name: "news"
