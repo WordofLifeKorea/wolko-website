@@ -1,0 +1,498 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="캠프 사역 — Word of Life Korea"
+  description="복음을 듣고 삶의 방향을 다시 세우는 월코 캠프 — 영어캠프, 제주캠프, 연합캠프"
+  activeNav="ministry"
+>
+
+<style>
+  :root {
+    --c-deep: #004f68; --c-mid: #0a5b76; --c-light: #73d1f5;
+    --c-red: #c42a36; --c-bg: #f4f8fb; --c-white: #ffffff;
+    --c-text: #152028; --c-muted: #5b6b78;
+    --c-line: rgba(0,79,104,0.12);
+    --r-xl: 28px; --r-lg: 20px; --r-md: 14px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; overflow: hidden;
+    padding: 160px 24px 100px; text-align: center;
+    background:
+      linear-gradient(180deg, rgba(5,24,36,0.45) 0%, rgba(5,24,36,0.62) 100%),
+      url("https://wolko.synology.me/Web_Contents/Photos/Camp/Camp_Banner.jpg") center / cover no-repeat;
+    background-color: #004f68;
+  }
+  .hero::before {
+    content:""; position:absolute; inset:0;
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px; pointer-events:none;
+  }
+  .hero-inner { position:relative; z-index:2; max-width:860px; margin:0 auto; }
+  .hero-eyebrow {
+    display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border-radius:999px;
+    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.22);
+    font-size:11px; font-weight:800; letter-spacing:0.09em; color:rgba(255,255,255,0.9);
+    margin-bottom:22px; text-transform:uppercase;
+  }
+  .hero-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--c-light); }
+  .hero-inner h1 {
+    font-size: clamp(36px, 5.5vw, 60px); font-weight:800; line-height:1.13;
+    letter-spacing:-0.04em; color:#fff; margin-bottom:18px;
+    text-shadow: 0 6px 24px rgba(0,0,0,0.24);
+  }
+  .hero-inner h1 em { font-style:normal; color:#9ae3ff; display:block; }
+  .hero-sub {
+    font-size:17px; line-height:1.88; color:rgba(255,255,255,0.82);
+    max-width:640px; margin:0 auto 32px; text-shadow:0 3px 14px rgba(0,0,0,0.18);
+  }
+  .hero-btns { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:32px; }
+  .btn-primary {
+    display:inline-flex; align-items:center; gap:8px; padding:15px 28px; border-radius:999px;
+    background:#fff; color:var(--c-deep); font-size:14px; font-weight:800;
+    text-decoration:none; box-shadow:0 10px 28px rgba(0,0,0,0.18); transition:transform .18s, box-shadow .18s;
+  }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,0.22); }
+  .btn-outline {
+    display:inline-flex; align-items:center; gap:8px; padding:15px 28px; border-radius:999px;
+    background:transparent; border:2px solid rgba(255,255,255,0.5); color:#fff;
+    font-size:14px; font-weight:800; text-decoration:none; transition:background .18s, border-color .18s;
+  }
+  .btn-outline:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.8); }
+
+  /* Stats bar */
+  .hero-stats {
+    position:relative; z-index:2; display:flex; justify-content:center;
+    margin:56px auto 0; max-width:760px;
+    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.16);
+    border-radius:18px; backdrop-filter:blur(8px); overflow:hidden;
+  }
+  .hero-stat { flex:1; padding:20px 16px; text-align:center; border-right:1px solid rgba(255,255,255,0.12); }
+  .hero-stat:last-child { border-right:none; }
+  .hero-stat-icon { font-size:20px; margin-bottom:6px; }
+  .hero-stat-label { font-size:11.5px; font-weight:700; color:rgba(255,255,255,0.7); line-height:1.35; }
+
+  /* ── SECTIONS ── */
+  .section { padding:96px 24px; }
+  .section--alt { background:var(--c-bg); }
+  .page-wrap { max-width:1140px; margin:0 auto; }
+
+  .sec-badge {
+    display:inline-block; padding:7px 14px; border-radius:999px;
+    background:rgba(0,79,104,0.08); color:var(--c-deep);
+    font-size:11px; font-weight:800; letter-spacing:0.06em;
+  }
+  .sec-title {
+    font-size:clamp(30px,4vw,44px); font-weight:800; line-height:1.2;
+    letter-spacing:-0.035em; color:var(--c-text); margin:14px 0 16px;
+  }
+  .sec-desc { font-size:16.5px; line-height:1.9; color:var(--c-muted); max-width:680px; }
+
+  /* Quote */
+  .quote-bar {
+    background:linear-gradient(135deg, var(--c-deep) 0%, var(--c-mid) 100%);
+    padding:36px 24px; text-align:center;
+  }
+  .quote-text { font-size:18px; font-style:italic; color:rgba(255,255,255,0.92); max-width:680px; margin:0 auto 10px; line-height:1.7; }
+  .quote-attr { font-size:12px; font-weight:700; letter-spacing:0.06em; color:rgba(255,255,255,0.55); text-transform:uppercase; }
+
+  /* Highlights grid */
+  .highlights-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:18px; margin-top:48px; }
+  .highlight-card {
+    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-xl);
+    padding:32px 28px; display:flex; flex-direction:column; gap:12px;
+    box-shadow:0 4px 20px rgba(0,79,104,0.07); transition:transform .22s, box-shadow .22s, border-color .22s;
+    position:relative; overflow:hidden;
+  }
+  .highlight-card::after { content:""; position:absolute; right:-20px; bottom:-24px; width:90px; height:90px; border-radius:50%; background:rgba(0,79,104,0.04); }
+  .highlight-card:hover { transform:translateY(-4px); box-shadow:0 12px 36px rgba(0,79,104,0.14); border-color:rgba(0,79,104,0.22); }
+  .highlight-icon { width:48px; height:48px; border-radius:14px; background:rgba(0,79,104,0.08); color:var(--c-deep); display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .highlight-tag { font-size:11px; font-weight:800; letter-spacing:0.06em; color:var(--c-mid); }
+  .highlight-title { font-size:18px; font-weight:800; color:var(--c-text); }
+  .highlight-desc { font-size:14px; line-height:1.8; color:var(--c-muted); }
+
+  /* Programs */
+  .programs-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:20px; margin-top:48px; }
+  .program-card {
+    border-radius:var(--r-xl); overflow:hidden;
+    box-shadow:0 6px 28px rgba(0,79,104,0.10);
+    display:flex; flex-direction:column;
+    transition:transform .22s, box-shadow .22s;
+  }
+  .program-card:hover { transform:translateY(-4px); box-shadow:0 14px 40px rgba(0,79,104,0.16); }
+  .program-card-head {
+    padding:28px 28px 22px;
+    background:linear-gradient(135deg, var(--c-deep) 0%, var(--c-mid) 100%);
+    position:relative; overflow:hidden;
+  }
+  .program-card-head::after { content:""; position:absolute; right:-30px; bottom:-36px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.07); }
+  .program-pill {
+    display:inline-block; padding:5px 12px; border-radius:999px;
+    background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3);
+    font-size:11px; font-weight:800; letter-spacing:0.06em; color:#fff; margin-bottom:14px;
+  }
+  .program-title { font-size:24px; font-weight:800; color:#fff; position:relative; z-index:1; }
+  .program-card-body { background:var(--c-white); padding:24px 28px; flex:1; }
+  .program-desc { font-size:14.5px; line-height:1.85; color:var(--c-muted); margin-bottom:20px; }
+  .program-link {
+    display:inline-flex; align-items:center; gap:6px; padding:11px 20px; border-radius:999px;
+    background:rgba(0,79,104,0.08); color:var(--c-deep); font-size:13px; font-weight:800;
+    text-decoration:none; transition:background .18s;
+  }
+  .program-link:hover { background:rgba(0,79,104,0.15); }
+
+  /* Features */
+  .features-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:16px; margin-top:48px; }
+  .feature-card {
+    background:linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(244,248,251,0.98) 100%);
+    border:1px solid var(--c-line); border-radius:var(--r-lg); padding:28px 24px;
+    display:flex; flex-direction:column; gap:10px;
+    box-shadow:0 3px 16px rgba(0,79,104,0.06);
+    transition:transform .22s, box-shadow .22s;
+  }
+  .feature-card:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(0,79,104,0.12); }
+  .feature-icon { font-size:26px; }
+  .feature-tag { font-size:10.5px; font-weight:800; letter-spacing:0.07em; color:var(--c-mid); text-transform:uppercase; }
+  .feature-title { font-size:17px; font-weight:800; color:var(--c-text); }
+  .feature-desc { font-size:13.5px; line-height:1.78; color:var(--c-muted); }
+
+  /* Flow steps */
+  .flow-steps { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:0; margin-top:48px; position:relative; }
+  .flow-step {
+    display:flex; flex-direction:column; gap:12px; padding:32px 28px;
+    border-right:1px solid var(--c-line); background:var(--c-white);
+    border-radius:0; position:relative;
+  }
+  .flow-step:first-child { border-radius:var(--r-xl) 0 0 var(--r-xl); }
+  .flow-step:last-child { border-right:none; border-radius:0 var(--r-xl) var(--r-xl) 0; }
+  .flow-num { width:40px; height:40px; border-radius:50%; background:var(--c-deep); color:#fff; font-size:16px; font-weight:900; display:flex; align-items:center; justify-content:center; }
+  .flow-title { font-size:17px; font-weight:800; color:var(--c-text); }
+  .flow-desc { font-size:14px; line-height:1.8; color:var(--c-muted); }
+
+  /* CTA section */
+  .cta-section { background:linear-gradient(135deg, var(--c-deep) 0%, var(--c-mid) 100%); padding:88px 24px; text-align:center; }
+  .cta-section h2 { font-size:clamp(28px,3.5vw,42px); font-weight:800; color:#fff; margin-bottom:14px; letter-spacing:-0.03em; }
+  .cta-section p { font-size:16px; color:rgba(255,255,255,0.78); max-width:580px; margin:0 auto 40px; line-height:1.85; }
+  .cta-cards { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-bottom:40px; }
+  .cta-card {
+    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.2);
+    border-radius:var(--r-lg); padding:24px 28px; text-align:left; min-width:200px;
+    text-decoration:none; transition:background .18s, transform .18s;
+  }
+  .cta-card:hover { background:rgba(255,255,255,0.18); transform:translateY(-2px); }
+  .cta-card-title { font-size:15px; font-weight:800; color:#fff; margin-bottom:6px; }
+  .cta-card-desc { font-size:12px; color:rgba(255,255,255,0.6); }
+  .cta-contact { font-size:13px; color:rgba(255,255,255,0.6); line-height:1.8; }
+  .cta-contact a { color:rgba(255,255,255,0.85); font-weight:700; text-decoration:none; }
+  .btn-white {
+    display:inline-flex; align-items:center; gap:8px; padding:16px 30px; border-radius:999px;
+    background:#fff; color:var(--c-deep); font-size:15px; font-weight:800;
+    text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.18); margin-top:28px;
+    transition:transform .18s, box-shadow .18s;
+  }
+  .btn-white:hover { transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,0.22); }
+
+  /* lang */
+  .lang-en .wl-ko { display:none; }
+  body:not(.lang-en) .wl-en { display:none; }
+
+  @media (max-width: 640px) {
+    .flow-steps { grid-template-columns:1fr; }
+    .flow-step { border-right:none; border-bottom:1px solid var(--c-line); }
+    .flow-step:first-child { border-radius:var(--r-xl) var(--r-xl) 0 0; }
+    .flow-step:last-child { border-bottom:none; border-radius:0 0 var(--r-xl) var(--r-xl); }
+  }
+</style>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-dot"></span>
+      <span class="wl-ko">WOLKO 캠프 사역</span>
+      <span class="wl-en">WOLKO Camp Ministry</span>
+    </div>
+    <h1>
+      <span class="wl-ko">복음을 듣고,<br>삶의 방향을 다시 세우는<em>월코 캠프</em></span>
+      <span class="wl-en">Hear the Gospel.<br>Redirect Your Life.<em>WOLKO Camp</em></span>
+    </h1>
+    <p class="hero-sub">
+      <span class="wl-ko">영어라는 도구를 통해 복음을 전하고, 제자훈련을 통해 다음 세대의 삶이 변화되도록 돕는 사역입니다.</span>
+      <span class="wl-en">We share the Gospel through English as a tool, and through discipleship training we help shape the lives of the next generation.</span>
+    </p>
+    <div class="hero-btns">
+      <a href="/contact" class="btn-primary">
+        <span class="wl-ko">캠프 관련 문의 →</span>
+        <span class="wl-en">Camp Inquiry →</span>
+      </a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-icon">📖</div>
+      <div class="hero-stat-label"><span class="wl-ko">말씀 중심<br>복음 특화 말씀</span><span class="wl-en">Word-Centered<br>Gospel Teaching</span></div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-icon">🌍</div>
+      <div class="hero-stat-label"><span class="wl-ko">영어 환경<br>원어민과 함께</span><span class="wl-en">English Immersion<br>Native Speakers</span></div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-icon">🏕️</div>
+      <div class="hero-stat-label"><span class="wl-ko">3가지 프로그램<br>영어 · 제주 · 연합</span><span class="wl-en">3 Programs<br>English · Jeju · Union</span></div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-icon">🤝</div>
+      <div class="hero-stat-label"><span class="wl-ko">가족 같은 공동체<br>훈련된 상담자</span><span class="wl-en">Family Atmosphere<br>Trained Counselors</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-bar">
+  <p class="quote-text">
+    <span class="wl-ko">"한 번의 캠프가 평생을 바꾸는 경험이 됩니다."</span>
+    <span class="wl-en">"One camp can become an experience that changes your life forever."</span>
+  </p>
+  <p class="quote-attr">
+    <span class="wl-ko">— 월코 캠프 참가자 간증</span>
+    <span class="wl-en">— WOLKO Camp Participant</span>
+  </p>
+</div>
+
+<!-- INTRODUCTION -->
+<section class="section section--alt">
+  <div class="page-wrap">
+    <span class="sec-badge"><span class="wl-ko">캠프 소개</span><span class="wl-en">Camp Introduction</span></span>
+    <h2 class="sec-title">
+      <span class="wl-ko">월코 캠프는 다음 세대를 위한 변화의 자리입니다</span>
+      <span class="wl-en">WOLKO Camp Is a Place of Transformation for the Next Generation</span>
+    </h2>
+    <p class="sec-desc">
+      <span class="wl-ko">말씀을 통해 삶의 방향을 다시 세우고, 훈련된 리더와 공동체 안에서 자신을 돌아보며, 복음 안에서 새로운 비전과 기쁨을 경험하도록 돕는 것이 월코 캠프의 핵심입니다.</span>
+      <span class="wl-en">The heart of WOLKO Camp is helping young people realign their lives through God's Word, reflect on themselves within a trained community, and discover fresh vision and joy in the Gospel.</span>
+    </p>
+    <p class="sec-desc" style="margin-top:16px;">
+      <span class="wl-ko">단순한 행사로 끝나는 것이 아니라, 복음 전도와 제자훈련을 통해 삶의 변화를 목표로 합니다. 가족 같은 분위기 속에서 친구들과 선생님을 만나며, 행복하고 오래 남는 공동체 경험을 제공합니다.</span>
+      <span class="wl-en">It doesn't end as a mere event. Through evangelism and discipleship training, we aim for real life change. In a warm, family-like atmosphere, campers meet friends and mentors and walk away with lasting community memories.</span>
+    </p>
+  </div>
+</section>
+
+<!-- HIGHLIGHTS -->
+<section class="section">
+  <div class="page-wrap">
+    <span class="sec-badge"><span class="wl-ko">월코 캠프만의 특별한 경험</span><span class="wl-en">What Makes WOLKO Camp Unique</span></span>
+    <h2 class="sec-title">
+      <span class="wl-ko">말씀과 공동체, 영어와 훈련이 하나로 연결되는 캠프</span>
+      <span class="wl-en">Where the Word, community, English, and training come together</span>
+    </h2>
+    <div class="highlights-grid">
+      <div class="highlight-card">
+        <div class="highlight-icon">📖</div>
+        <div class="highlight-tag"><span class="wl-ko">말씀</span><span class="wl-en">Word</span></div>
+        <div class="highlight-title"><span class="wl-ko">말씀 중심</span><span class="wl-en">Word-Centered</span></div>
+        <div class="highlight-desc"><span class="wl-ko">선교사님들이 전하는 하나님의 복음 특화 말씀을 통해 캠퍼들이 인생의 방향과 비전을 발견하도록 돕습니다.</span><span class="wl-en">Through Gospel-focused teaching from our missionary staff, campers are guided to discover the direction and vision God has for their lives.</span></div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon">🤝</div>
+        <div class="highlight-tag"><span class="wl-ko">공동체</span><span class="wl-en">People</span></div>
+        <div class="highlight-title"><span class="wl-ko">상담자 · 친구 공동체</span><span class="wl-en">Counselors & Community</span></div>
+        <div class="highlight-desc"><span class="wl-ko">훈련된 성숙한 상담자들과 함께 지내며 인생의 고민을 나누고, 복음 안에서 답을 찾는 시간을 가집니다.</span><span class="wl-en">Campers live alongside trained, mature counselors, sharing life questions and finding answers rooted in the Gospel.</span></div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon">🌐</div>
+        <div class="highlight-tag"><span class="wl-ko">영어</span><span class="wl-en">English</span></div>
+        <div class="highlight-title"><span class="wl-ko">영어 환경</span><span class="wl-en">English Environment</span></div>
+        <div class="highlight-desc"><span class="wl-ko">영어 원어민들과 함께 생활하며 다양한 문화 스펙트럼을 경험하고 더욱 확장된 시야와 자신감을 갖도록 돕습니다.</span><span class="wl-en">Living alongside native English speakers, campers encounter a broader cultural spectrum and grow in confidence and perspective.</span></div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon">😊</div>
+        <div class="highlight-tag"><span class="wl-ko">기쁨</span><span class="wl-en">Joy</span></div>
+        <div class="highlight-title"><span class="wl-ko">가족 같은 분위기</span><span class="wl-en">Family-Like Atmosphere</span></div>
+        <div class="highlight-desc"><span class="wl-ko">친구, 선생님, 공동체 안에서 기쁨과 소속감을 누리며 행복하고 오래 남는 캠프 경험을 만들어갑니다.</span><span class="wl-en">Campers experience joy and belonging among friends, staff, and community — creating memories that last a lifetime.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAMS -->
+<section class="section section--alt">
+  <div class="page-wrap">
+    <span class="sec-badge"><span class="wl-ko">주요 프로그램</span><span class="wl-en">Main Programs</span></span>
+    <h2 class="sec-title">
+      <span class="wl-ko">세 가지 캠프 프로그램</span>
+      <span class="wl-en">Three Camp Programs</span>
+    </h2>
+    <div class="programs-grid">
+      <!-- English Camp -->
+      <div class="program-card">
+        <div class="program-card-head">
+          <div class="program-pill"><span class="wl-ko">영어 캠프</span><span class="wl-en">English Camp</span></div>
+          <div class="program-title"><span class="wl-ko">영어캠프</span><span class="wl-en">English Camp</span></div>
+        </div>
+        <div class="program-card-body">
+          <p class="program-desc">
+            <span class="wl-ko">캠프 대부분의 일정이 영어로 진행되며, 원어민 선생님들과 함께 생활하는 가운데 영어 실력뿐 아니라 영적 성장을 함께 경험할 수 있도록 구성된 프로그램입니다. 초등학교 4학년부터 중학교 3학년까지 신청이 가능합니다.</span>
+            <span class="wl-en">Most of the camp schedule runs in English, and living alongside native-speaking staff, campers grow not only in their English ability but also spiritually. Open to students from 4th grade through 9th grade.</span>
+          </p>
+          <a href="/contact" class="program-link">
+            <span class="wl-ko">내륙캠프 참여 문의 →</span>
+            <span class="wl-en">Inquire About Inland Camp →</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Jeju Camp -->
+      <div class="program-card">
+        <div class="program-card-head" style="background:linear-gradient(135deg,#0a5b76 0%,#0e7a9e 100%);">
+          <div class="program-pill"><span class="wl-ko">제주 캠프</span><span class="wl-en">Jeju Camp</span></div>
+          <div class="program-title"><span class="wl-ko">제주캠프</span><span class="wl-en">Jeju Camp</span></div>
+        </div>
+        <div class="program-card-body">
+          <p class="program-desc">
+            <span class="wl-ko">제주 월비캠퍼스에서 진행되는 영어 캠프 및 모멘텀 캠프 등 다양한 프로그램이 운영됩니다. 중학생부터 고등학생까지 참여할 수 있는 캠프입니다.</span>
+            <span class="wl-en">A variety of programs — including English Camp and Momentum Camp — are held at the WOLBI Jeju Campus. Open to middle and high school students.</span>
+          </p>
+          <a href="/contact" class="program-link">
+            <span class="wl-ko">제주캠프 참여 문의 →</span>
+            <span class="wl-en">Inquire About Jeju Camp →</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Union Camp -->
+      <div class="program-card">
+        <div class="program-card-head" style="background:linear-gradient(135deg,#083d51 0%,#004f68 100%);">
+          <div class="program-pill"><span class="wl-ko">연합 캠프</span><span class="wl-en">Union Camp</span></div>
+          <div class="program-title"><span class="wl-ko">연합캠프</span><span class="wl-en">Union Camp</span></div>
+        </div>
+        <div class="program-card-body">
+          <p class="program-desc">
+            <span class="wl-ko">월코는 교회가 복음 사역의 중심이 되기를 바랍니다. 교회와 연합하여 청소년을 섬기고, 다음 세대의 실질적인 변화를 이끄는 캠프를 진행합니다.</span>
+            <span class="wl-en">WOLKO believes the local church should be at the center of Gospel ministry. We partner with churches to serve youth and lead the next generation toward real transformation.</span>
+          </p>
+          <a href="/contact" class="program-link">
+            <span class="wl-ko">연합캠프 참여 문의 →</span>
+            <span class="wl-en">Inquire About Union Camp →</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY FEATURES -->
+<section class="section">
+  <div class="page-wrap">
+    <span class="sec-badge"><span class="wl-ko">캠프의 특징</span><span class="wl-en">Key Features</span></span>
+    <h2 class="sec-title">
+      <span class="wl-ko">월코 캠프가 특별한 이유</span>
+      <span class="wl-en">Why WOLKO Camp Is Different</span>
+    </h2>
+    <p class="sec-desc">
+      <span class="wl-ko">단순한 여름 행사가 아닙니다. 복음 전도와 제자훈련을 통해 다음 세대의 삶이 실질적으로 변화되는 캠프 사역입니다.</span>
+      <span class="wl-en">This isn't just a summer program. It's a camp ministry where the next generation experiences real, lasting transformation through evangelism and discipleship training.</span>
+    </p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-tag"><span class="wl-ko">비전</span><span class="wl-en">Vision</span></div>
+        <div class="feature-title"><span class="wl-ko">복음과 제자훈련이 중심</span><span class="wl-en">Gospel & Discipleship First</span></div>
+        <div class="feature-desc"><span class="wl-ko">단순한 행사로 끝나는 것이 아니라, 복음 전도와 제자훈련을 통해 삶의 변화를 목표로 합니다.</span><span class="wl-en">More than an event — we aim for genuine life change through evangelism and discipleship training.</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📖</div>
+        <div class="feature-tag"><span class="wl-ko">말씀</span><span class="wl-en">Word</span></div>
+        <div class="feature-title"><span class="wl-ko">선교사님들의 말씀 사역</span><span class="wl-en">Teaching by Missionaries</span></div>
+        <div class="feature-desc"><span class="wl-ko">선교사님들이 전하는 하나님의 복음 특화 말씀을 통해 캠퍼들이 인생의 방향과 비전을 발견하도록 돕습니다.</span><span class="wl-en">Our missionary staff deliver Gospel-focused teaching that helps campers find the direction and vision God has for their lives.</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💙</div>
+        <div class="feature-tag"><span class="wl-ko">돌봄</span><span class="wl-en">Care</span></div>
+        <div class="feature-title"><span class="wl-ko">훈련된 상담자와 함께</span><span class="wl-en">With Trained Counselors</span></div>
+        <div class="feature-desc"><span class="wl-ko">훈련된 성숙한 상담자들과 함께 지내며 인생의 고민을 나누고, 복음 안에서 답을 찾는 시간을 가집니다.</span><span class="wl-en">Campers live with trained, mature counselors — sharing life's struggles and discovering Gospel-centered answers together.</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌟</div>
+        <div class="feature-tag"><span class="wl-ko">기쁨</span><span class="wl-en">Joy</span></div>
+        <div class="feature-title"><span class="wl-ko">행복하고 오래 남는 경험</span><span class="wl-en">Joyful, Lasting Memories</span></div>
+        <div class="feature-desc"><span class="wl-ko">가족 같은 분위기 속에서 친구들과 선생님을 만나며, 행복하고 오래 남는 공동체 경험을 제공합니다.</span><span class="wl-en">In a warm, family-like setting, campers meet friends and mentors — building joyful community memories that stay with them for years.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAMP FLOW -->
+<section class="section section--alt">
+  <div class="page-wrap">
+    <span class="sec-badge"><span class="wl-ko">캠프 흐름</span><span class="wl-en">Camp Flow</span></span>
+    <h2 class="sec-title">
+      <span class="wl-ko">캠프를 통한 핵심 경험</span>
+      <span class="wl-en">The Core Experience of Camp</span>
+    </h2>
+    <p class="sec-desc">
+      <span class="wl-ko">캠프는 단순한 이벤트가 아닙니다. 관심에서 변화까지, 하나님이 이끄시는 과정 안에서 다음 세대가 성장합니다.</span>
+      <span class="wl-en">Camp is more than an event. From first interest to lasting transformation, the next generation grows within a process led by God.</span>
+    </p>
+    <div class="flow-steps" style="margin-top:48px; box-shadow:0 6px 28px rgba(0,79,104,0.08); border:1px solid var(--c-line); border-radius:var(--r-xl); overflow:hidden;">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-title"><span class="wl-ko">관심과 참여</span><span class="wl-en">Interest & Participation</span></div>
+        <div class="flow-desc"><span class="wl-ko">캠프에 대해 알아보고, 자신에게 맞는 영어캠프·교회캠프·학교캠프를 확인합니다.</span><span class="wl-en">Explore what camp is all about and find the right fit — English Camp, Church Camp, or School Camp.</span></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-title"><span class="wl-ko">말씀과 훈련</span><span class="wl-en">The Word & Training</span></div>
+        <div class="flow-desc"><span class="wl-ko">캠프 기간 동안 말씀, 공동체, 상담, 활동을 통해 복음과 삶을 깊이 있게 연결합니다.</span><span class="wl-en">Throughout the camp, the Word, community, counseling, and activities work together to deeply connect the Gospel to everyday life.</span></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-title"><span class="wl-ko">변화와 연결</span><span class="wl-en">Transformation & Connection</span></div>
+        <div class="flow-desc"><span class="wl-ko">캠프 이후에도 관계와 기억이 이어지고, 다음 세대의 신앙 여정 안에서 실제적인 변화가 자라납니다.</span><span class="wl-en">Even after camp ends, relationships and memories carry on — and real transformation continues to grow within each camper's faith journey.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="page-wrap">
+    <h2>
+      <span class="wl-ko">캠프 관련 문의가 있으신가요?</span>
+      <span class="wl-en">Have a Question About Camp?</span>
+    </h2>
+    <p>
+      <span class="wl-ko">참가 문의, 교회 협력, 학교 연계, 프로그램 관련 궁금한 점이나 제안이 있으시면 편하게 문의해 주세요.</span>
+      <span class="wl-en">Whether you have questions about registration, church partnerships, school connections, or program details, feel free to reach out.</span>
+    </p>
+    <div class="cta-cards">
+      <a href="/contact" class="cta-card">
+        <div class="cta-card-title"><span class="wl-ko">캠프 관련 문의</span><span class="wl-en">General Camp Inquiry</span></div>
+        <div class="cta-card-desc"><span class="wl-ko">문의 페이지로 연결됩니다</span><span class="wl-en">Go to our contact page</span></div>
+      </a>
+      <a href="https://cafe.naver.com" target="_blank" rel="noopener" class="cta-card">
+        <div class="cta-card-title"><span class="wl-ko">내륙캠프 안내</span><span class="wl-en">Inland Camp Info</span></div>
+        <div class="cta-card-desc"><span class="wl-ko">영어캠프 · 연합캠프 네이버 카페</span><span class="wl-en">English & Union Camp — Naver Cafe</span></div>
+      </a>
+      <a href="https://cafe.naver.com" target="_blank" rel="noopener" class="cta-card">
+        <div class="cta-card-title"><span class="wl-ko">제주캠프 안내</span><span class="wl-en">Jeju Camp Info</span></div>
+        <div class="cta-card-desc"><span class="wl-ko">제주 캠프 네이버 카페</span><span class="wl-en">Jeju Camp — Naver Cafe</span></div>
+      </a>
+    </div>
+    <p class="cta-contact">
+      <span class="wl-ko">월코 캠프사역 문의 | 한국생명의말씀협회</span>
+      <span class="wl-en">WOLKO Camp Ministry Inquiry | Word of Life Korea</span><br>
+      <a href="tel:031-611-9216">031-611-9216</a> · <a href="mailto:wolkorea1@gmail.com">wolkorea1@gmail.com</a>
+    </p>
+    <a href="/contact" class="btn-white">
+      <span class="wl-ko">캠프 참가 문의 →</span>
+      <span class="wl-en">Camp Inquiry →</span>
+    </a>
+  </div>
+</section>
+
+</BaseLayout>

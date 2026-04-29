@@ -29,4 +29,17 @@ const news = defineCollection({
   }),
 });
 
-export const collections = { team, news };
+const mission_report = defineCollection({
+  type: 'data',
+  schema: z.object({
+    title_ko: z.string(),
+    title_en: z.string(),
+    date: z.coerce.date(),
+    pdf_url: z.string(),
+    thumbnail_url: z.string().optional(),
+    description_ko: z.string().optional(),
+    description_en: z.string().optional(),
+  }),
+});
+
+export const collections = { team, news, mission_report };

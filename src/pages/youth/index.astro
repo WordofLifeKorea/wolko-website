@@ -1,0 +1,346 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="청소년 사역 — Word of Life Korea"
+  description="복음으로 청소년을 세웁니다 — 월코 청소년 사역 소개"
+  activeNav="ministry"
+>
+
+<style>
+  :root {
+    --c-deep: #004f68; --c-mid: #0a5b76; --c-light: #73d1f5;
+    --c-bg: #f4f8fb; --c-white: #ffffff;
+    --c-text: #152028; --c-muted: #5b6b78;
+    --c-line: rgba(0,79,104,0.12);
+    --r-xl: 28px; --r-lg: 20px;
+  }
+
+  .hero {
+    position:relative; overflow:hidden;
+    padding:160px 24px 100px; text-align:center;
+    background:
+      linear-gradient(180deg, rgba(5,24,36,0.44) 0%, rgba(5,24,36,0.62) 100%),
+      url("https://wolko.synology.me/Web_Contents/Photos/Youth_Ministry/Youth_Banner.jpg") center / cover no-repeat;
+    background-color:#004f68;
+  }
+  .hero::before {
+    content:""; position:absolute; inset:0;
+    background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+    background-size:60px 60px; pointer-events:none;
+  }
+  .hero-inner { position:relative; z-index:2; max-width:860px; margin:0 auto; }
+  .hero-eyebrow {
+    display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border-radius:999px;
+    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.22);
+    font-size:11px; font-weight:800; letter-spacing:0.09em; color:rgba(255,255,255,0.9);
+    margin-bottom:22px; text-transform:uppercase;
+  }
+  .hero-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--c-light); }
+  .hero-inner h1 {
+    font-size:clamp(36px,5.5vw,60px); font-weight:800; line-height:1.13;
+    letter-spacing:-0.04em; color:#fff; margin-bottom:18px;
+    text-shadow:0 6px 24px rgba(0,0,0,0.26);
+  }
+  .hero-inner h1 em { font-style:normal; color:#9ae3ff; display:block; }
+  .hero-sub { font-size:17px; line-height:1.88; color:rgba(255,255,255,0.82); max-width:640px; margin:0 auto; }
+  .hero-btns { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:32px; }
+  .btn-primary {
+    display:inline-flex; align-items:center; gap:8px; padding:15px 28px; border-radius:999px;
+    background:#fff; color:var(--c-deep); font-size:14px; font-weight:800;
+    text-decoration:none; box-shadow:0 10px 28px rgba(0,0,0,0.18); transition:transform .18s, box-shadow .18s;
+  }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,0.22); }
+
+  .hero-stats {
+    position:relative; z-index:2; display:flex; justify-content:center;
+    margin:56px auto 0; max-width:760px;
+    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.16);
+    border-radius:18px; backdrop-filter:blur(8px); overflow:hidden;
+  }
+  .hero-stat { flex:1; padding:20px 14px; text-align:center; border-right:1px solid rgba(255,255,255,0.12); }
+  .hero-stat:last-child { border-right:none; }
+  .hero-stat-icon { font-size:20px; margin-bottom:6px; }
+  .hero-stat-label { font-size:11px; font-weight:700; color:rgba(255,255,255,0.72); line-height:1.4; }
+
+  .section { padding:96px 24px; }
+  .section--alt { background:var(--c-bg); }
+  .page-wrap { max-width:1140px; margin:0 auto; }
+
+  .sec-badge {
+    display:inline-block; padding:7px 14px; border-radius:999px;
+    background:rgba(0,79,104,0.08); color:var(--c-deep);
+    font-size:11px; font-weight:800; letter-spacing:0.06em;
+  }
+  .sec-title {
+    font-size:clamp(28px,4vw,44px); font-weight:800; line-height:1.2;
+    letter-spacing:-0.035em; color:var(--c-text); margin:14px 0 16px;
+  }
+  .sec-desc { font-size:16px; line-height:1.9; color:var(--c-muted); max-width:700px; }
+
+  .quote-bar {
+    background:linear-gradient(135deg, var(--c-deep) 0%, var(--c-mid) 100%);
+    padding:36px 24px; text-align:center;
+  }
+  .quote-text { font-size:18px; font-style:italic; color:rgba(255,255,255,0.92); max-width:680px; margin:0 auto 10px; line-height:1.7; }
+  .quote-attr { font-size:12px; font-weight:700; letter-spacing:0.06em; color:rgba(255,255,255,0.55); text-transform:uppercase; }
+
+  .intro-card {
+    position:relative; background:linear-gradient(180deg,#fff 0%,#f6f9fb 100%);
+    border:1px solid var(--c-line); border-radius:var(--r-xl); padding:44px 42px 38px;
+    box-shadow:0 22px 56px rgba(16,32,40,0.08); overflow:hidden; margin-top:48px;
+  }
+  .intro-card::before { content:""; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg, var(--c-deep) 0%, var(--c-mid) 55%, var(--c-light) 100%); }
+  .intro-card p { font-size:17px; line-height:2.0; color:#3a4e58; margin-bottom:14px; }
+  .intro-card p:last-child { margin-bottom:0; }
+
+  .pillars-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-top:48px; }
+  .pillar-card {
+    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-xl);
+    padding:32px 28px; display:flex; flex-direction:column; gap:12px;
+    box-shadow:0 4px 18px rgba(0,79,104,0.07); transition:transform .22s, box-shadow .22s;
+    position:relative; overflow:hidden;
+  }
+  .pillar-card::after { content:""; position:absolute; right:-20px; bottom:-24px; width:90px; height:90px; border-radius:50%; background:rgba(0,79,104,0.04); }
+  .pillar-card:hover { transform:translateY(-4px); box-shadow:0 12px 36px rgba(0,79,104,0.14); }
+  .pillar-icon { font-size:26px; }
+  .pillar-num { font-size:11px; font-weight:800; letter-spacing:0.06em; color:var(--c-mid); }
+  .pillar-title { font-size:19px; font-weight:800; color:var(--c-text); }
+  .pillar-desc { font-size:14px; line-height:1.82; color:var(--c-muted); }
+
+  .stats-row {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-top:48px;
+  }
+  .stat-card {
+    background:linear-gradient(135deg, var(--c-deep) 0%, var(--c-mid) 100%);
+    border-radius:var(--r-lg); padding:28px 24px; text-align:center;
+    box-shadow:0 6px 24px rgba(0,79,104,0.18);
+  }
+  .stat-num { font-size:40px; font-weight:900; letter-spacing:-0.05em; color:#fff; line-height:1; margin-bottom:8px; }
+  .stat-desc { font-size:12.5px; font-weight:700; color:rgba(255,255,255,0.72); line-height:1.4; }
+
+  .how-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px; margin-top:48px; }
+  .how-card {
+    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-lg);
+    padding:28px 26px; box-shadow:0 3px 14px rgba(0,79,104,0.06);
+    transition:transform .2s, box-shadow .2s;
+  }
+  .how-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,79,104,0.12); }
+  .how-step { font-size:11px; font-weight:800; letter-spacing:0.07em; color:var(--c-mid); text-transform:uppercase; margin-bottom:8px; }
+  .how-title { font-size:17px; font-weight:800; color:var(--c-text); margin-bottom:8px; }
+  .how-desc { font-size:13.5px; line-height:1.8; color:var(--c-muted); }
+
+  .cta-section { background:linear-gradient(135deg, var(--c-deep) 0%, var(--c-mid) 100%); padding:88px 24px; text-align:center; }
+  .cta-section h2 { font-size:clamp(26px,3.5vw,42px); font-weight:800; color:#fff; margin-bottom:14px; letter-spacing:-0.03em; }
+  .cta-section p { font-size:16px; color:rgba(255,255,255,0.78); max-width:560px; margin:0 auto 40px; line-height:1.85; }
+  .btn-white {
+    display:inline-flex; align-items:center; gap:8px; padding:16px 30px; border-radius:999px;
+    background:#fff; color:var(--c-deep); font-size:15px; font-weight:800;
+    text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.18); transition:transform .18s, box-shadow .18s;
+  }
+  .btn-white:hover { transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,0.22); }
+  .cta-contact { font-size:13px; color:rgba(255,255,255,0.65); margin-top:24px; line-height:1.9; }
+  .cta-contact a { color:rgba(255,255,255,0.9); font-weight:800; text-decoration:none; }
+
+  .lang-en .wl-ko { display:none; }
+  body:not(.lang-en) .wl-en { display:none; }
+</style>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-dot"></span>
+      <span class="wl-ko">청소년 사역</span>
+      <span class="wl-en">Youth Ministry</span>
+    </div>
+    <h1>
+      <span class="wl-ko">복음으로<br>다음 세대를 세웁니다<em>청소년 사역</em></span>
+      <span class="wl-en">Building the Next Generation<br>Through the Gospel<em>Youth Ministry</em></span>
+    </h1>
+    <p class="hero-sub">
+      <span class="wl-ko">월코는 한국의 청소년들이 예수 그리스도를 개인의 구주로 만나고, 그 믿음 위에서 삶을 세워가도록 돕습니다.</span>
+      <span class="wl-en">WOLKO exists to help Korean youth meet Jesus Christ as their personal Savior and build their lives on that foundation of faith.</span>
+    </p>
+    <div class="hero-btns">
+      <a href="/contact" class="btn-primary">
+        <span class="wl-ko">사역 문의 →</span>
+        <span class="wl-en">Ministry Inquiry →</span>
+      </a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-icon">📊</div>
+      <div class="hero-stat-label"><span class="wl-ko">한국 청소년<br>복음화율 약 3%</span><span class="wl-en">~3%<br>Gospel reach in Korean youth</span></div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-icon">🙏</div>
+      <div class="hero-stat-label"><span class="wl-ko">복음 전도<br>제자훈련</span><span class="wl-en">Evangelism<br>& Discipleship</span></div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-icon">🏕️</div>
+      <div class="hero-stat-label"><span class="wl-ko">캠프 · 학교<br>교회 사역</span><span class="wl-en">Camp · School<br>Church Ministry</span></div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-icon">🌏</div>
+      <div class="hero-stat-label"><span class="wl-ko">평택 · 제주<br>두 캠퍼스</span><span class="wl-en">Pyeongtaek · Jeju<br>Two Campuses</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-bar">
+  <p class="quote-text">
+    <span class="wl-ko">"한국 청소년 100명 중 97명이 아직 복음을 듣지 못했습니다."</span>
+    <span class="wl-en">"97 out of every 100 Korean youth have yet to hear the Gospel."</span>
+  </p>
+  <p class="quote-attr">
+    <span class="wl-ko">— 월코 청소년 사역의 출발점</span>
+    <span class="wl-en">— The heartbeat of WOLKO Youth Ministry</span>
+  </p>
+</div>
+
+<!-- INTRO -->
+<section class="section section--alt">
+  <div class="page-wrap">
+    <span class="sec-badge"><span class="wl-ko">사역 소개</span><span class="wl-en">Ministry Introduction</span></span>
+    <h2 class="sec-title">
+      <span class="wl-ko">청소년의 삶 한가운데서 복음을 나눕니다</span>
+      <span class="wl-en">Sharing the Gospel in the Heart of Youth Life</span>
+    </h2>
+    <div class="intro-card">
+      <p>
+        <span class="wl-ko">월코 청소년 사역은 한국의 다음 세대가 예수 그리스도를 만나고, 그분 안에서 삶의 의미와 방향을 찾도록 돕는 사역입니다. 학교와 교회, 캠프 현장에서 직접 청소년들을 만나며, 복음을 명확하고 따뜻하게 전합니다.</span>
+        <span class="wl-en">WOLKO Youth Ministry exists to help the next generation of Koreans encounter Jesus Christ and find meaning and direction for their lives in Him. We meet youth where they are — at schools, churches, and camps — sharing the Gospel with clarity and warmth.</span>
+      </p>
+      <p>
+        <span class="wl-ko">단순한 프로그램 참여로 끝나는 것이 아닙니다. 복음을 전하고, 훈련된 상담자와 관계를 맺고, 제자로 성장해가는 전 과정이 월코 청소년 사역의 핵심입니다. 우리는 각 청소년 한 명 한 명이 하나님 앞에 소중한 존재임을 믿습니다.</span>
+        <span class="wl-en">It doesn't end with program participation. Proclaiming the Gospel, building relationships through trained mentors, and growing as disciples — this is the full arc of WOLKO Youth Ministry. We believe every single young person is precious before God.</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PILLARS -->
+<section class="section">
+  <div class="page-wrap">
+    <span class="sec-badge"><span class="wl-ko">사역의 핵심 가치</span><span class="wl-en">Core Values</span></span>
+    <h2 class="sec-title">
+      <span class="wl-ko">월코 청소년 사역이 서 있는 네 기둥</span>
+      <span class="wl-en">The Four Pillars of WOLKO Youth Ministry</span>
+    </h2>
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-icon">✝️</div>
+        <div class="pillar-num">01</div>
+        <div class="pillar-title"><span class="wl-ko">복음 전도</span><span class="wl-en">Evangelism</span></div>
+        <div class="pillar-desc"><span class="wl-ko">모든 사역의 중심은 예수 그리스도의 복음입니다. 캠프, 학교, 교회 등 모든 접점에서 구원의 기쁜 소식을 명확하게 전합니다.</span><span class="wl-en">The Gospel of Jesus Christ is at the center of everything. At every touchpoint — camp, school, church — we share the good news of salvation clearly and boldly.</span></div>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">📖</div>
+        <div class="pillar-num">02</div>
+        <div class="pillar-title"><span class="wl-ko">말씀 훈련</span><span class="wl-en">Bible Training</span></div>
+        <div class="pillar-desc"><span class="wl-ko">하나님의 말씀이 청소년들의 삶의 기초가 되도록, 체계적인 성경 교육과 제자훈련을 통해 말씀 안에서 성장하도록 돕습니다.</span><span class="wl-en">We help youth grow in God's Word through systematic Bible teaching and discipleship training, so that Scripture becomes the foundation of their lives.</span></div>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🤝</div>
+        <div class="pillar-num">03</div>
+        <div class="pillar-title"><span class="wl-ko">관계 중심 돌봄</span><span class="wl-en">Relational Care</span></div>
+        <div class="pillar-desc"><span class="wl-ko">훈련된 선교사와 사역자들이 청소년들과 진정한 관계를 맺고, 삶의 고민과 기쁨을 함께 나누며 복음 안에서 동행합니다.</span><span class="wl-en">Trained missionaries and workers build genuine relationships with youth, walking alongside them through life's questions and joys — together in the Gospel.</span></div>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🌱</div>
+        <div class="pillar-num">04</div>
+        <div class="pillar-title"><span class="wl-ko">다음 세대 리더 양성</span><span class="wl-en">Next-Gen Leadership</span></div>
+        <div class="pillar-desc"><span class="wl-ko">복음을 받아들인 청소년들이 다음 세대의 리더로 세워지도록, 지속적인 훈련과 사역 참여 기회를 제공합니다.</span><span class="wl-en">We provide ongoing training and ministry opportunities so that youth who receive the Gospel grow into leaders for the next generation.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section section--alt">
+  <div class="page-wrap">
+    <span class="sec-badge"><span class="wl-ko">사역의 현장</span><span class="wl-en">Ministry Reach</span></span>
+    <h2 class="sec-title">
+      <span class="wl-ko">한국 전역의 청소년들 곁에 있습니다</span>
+      <span class="wl-en">Reaching Youth Across Korea</span>
+    </h2>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num"><span class="wl-ko">60+</span><span class="wl-en">60+</span></div>
+        <div class="stat-desc"><span class="wl-ko">년의 사역 역사<br>(Word of Life 설립 기준)</span><span class="wl-en">Years of Ministry History<br>(Word of Life founded)</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num"><span class="wl-ko">2</span><span class="wl-en">2</span></div>
+        <div class="stat-desc"><span class="wl-ko">캠퍼스<br>평택 · 제주</span><span class="wl-en">Campuses<br>Pyeongtaek · Jeju</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num"><span class="wl-ko">3%</span><span class="wl-en">3%</span></div>
+        <div class="stat-desc"><span class="wl-ko">한국 청소년<br>기독교 복음화율</span><span class="wl-en">Korean Youth<br>Gospel Reach Rate</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num"><span class="wl-ko">∞</span><span class="wl-en">∞</span></div>
+        <div class="stat-desc"><span class="wl-ko">복음이 바꾸는<br>인생들</span><span class="wl-en">Lives Changed<br>by the Gospel</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW WE REACH YOUTH -->
+<section class="section">
+  <div class="page-wrap">
+    <span class="sec-badge"><span class="wl-ko">사역 방법</span><span class="wl-en">How We Reach Youth</span></span>
+    <h2 class="sec-title">
+      <span class="wl-ko">다양한 방식으로 청소년에게 다가갑니다</span>
+      <span class="wl-en">Reaching Youth Through Multiple Avenues</span>
+    </h2>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-step"><span class="wl-ko">방법 01</span><span class="wl-en">Method 01</span></div>
+        <div class="how-title"><span class="wl-ko">캠프 사역</span><span class="wl-en">Camp Ministry</span></div>
+        <div class="how-desc"><span class="wl-ko">영어캠프, 제주캠프, 연합캠프를 통해 청소년들을 만나고, 말씀과 공동체 안에서 복음을 전합니다.</span><span class="wl-en">Through English Camp, Jeju Camp, and Union Camp, we meet youth and share the Gospel within community and the Word.</span></div>
+      </div>
+      <div class="how-card">
+        <div class="how-step"><span class="wl-ko">방법 02</span><span class="wl-en">Method 02</span></div>
+        <div class="how-title"><span class="wl-ko">학교 사역</span><span class="wl-en">School Ministry</span></div>
+        <div class="how-desc"><span class="wl-ko">영어 프로그램을 통해 학교 현장에 접근하며, 자연스럽게 복음을 나눌 수 있는 기회를 만들어갑니다.</span><span class="wl-en">Using English programs as a bridge, we access school environments and create natural opportunities to share the Gospel.</span></div>
+      </div>
+      <div class="how-card">
+        <div class="how-step"><span class="wl-ko">방법 03</span><span class="wl-en">Method 03</span></div>
+        <div class="how-title"><span class="wl-ko">교회 협력 사역</span><span class="wl-en">Church Partnership</span></div>
+        <div class="how-desc"><span class="wl-ko">지역 교회와 연합하여 청소년 사역을 지원하고, 교회가 다음 세대 복음화의 중심이 되도록 협력합니다.</span><span class="wl-en">We partner with local churches to support youth ministry and help the church become the center of Gospel work for the next generation.</span></div>
+      </div>
+      <div class="how-card">
+        <div class="how-step"><span class="wl-ko">방법 04</span><span class="wl-en">Method 04</span></div>
+        <div class="how-title"><span class="wl-ko">제자훈련 프로그램</span><span class="wl-en">Discipleship Programs</span></div>
+        <div class="how-desc"><span class="wl-ko">SYME, 월비 등의 제자훈련 프로그램을 통해 복음을 받아들인 청소년들이 말씀 안에서 깊어지도록 돕습니다.</span><span class="wl-en">Through programs like SYME and WOLBI, we help youth who have received the Gospel grow deeper in God's Word.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="page-wrap">
+    <h2>
+      <span class="wl-ko">청소년 사역에 함께하시겠습니까?</span>
+      <span class="wl-en">Will You Join the Youth Ministry?</span>
+    </h2>
+    <p>
+      <span class="wl-ko">월코 청소년 사역에 관심이 있으시다면 언제든지 문의해 주세요. 기도와 재정 후원, 자원봉사 등 다양한 방법으로 함께하실 수 있습니다.</span>
+      <span class="wl-en">If you're interested in WOLKO Youth Ministry, please don't hesitate to reach out. You can join through prayer, financial support, or volunteering.</span>
+    </p>
+    <a href="/contact" class="btn-white">
+      <span class="wl-ko">사역 문의하기 →</span>
+      <span class="wl-en">Get in Touch →</span>
+    </a>
+    <p class="cta-contact">
+      <a href="tel:031-611-9216">031-611-9216</a> · <a href="mailto:wolkorea1@gmail.com">wolkorea1@gmail.com</a>
+    </p>
+  </div>
+</section>
+
+</BaseLayout>

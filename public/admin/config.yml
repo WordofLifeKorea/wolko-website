@@ -86,6 +86,24 @@ collections:
       - { label: "내용 (한국어)", name: "body_ko", widget: "markdown" }
       - { label: "Content (English)", name: "body_en", widget: "markdown", required: false }
 
+  # ── 선교보고 ──────────────────────────────────────────
+  - name: "mission_report"
+    label: "선교보고 (Mission Reports)"
+    label_singular: "선교보고"
+    folder: "src/content/mission_report"
+    create: true
+    slug: "{{year}}-{{month}}-{{slug}}"
+    extension: "json"
+    format: "json"
+    fields:
+      - { label: "제목 (한국어)", name: "title_ko", widget: "string" }
+      - { label: "Title (English)", name: "title_en", widget: "string" }
+      - { label: "날짜", name: "date", widget: "datetime" }
+      - { label: "PDF URL", name: "pdf_url", widget: "string", hint: "PDF 파일 URL (예: /images/uploads/report-2025-01.pdf 또는 외부 링크)" }
+      - { label: "썸네일 이미지 URL", name: "thumbnail_url", widget: "string", required: false, hint: "소식지 표지 이미지 URL" }
+      - { label: "소개 (한국어)", name: "description_ko", widget: "text", required: false }
+      - { label: "Description (English)", name: "description_en", widget: "text", required: false }
+
   # ── 사이트 설정 ────────────────────────────────────────
   - name: "settings"
     label: "사이트 설정 (Settings)"

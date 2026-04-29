@@ -1,0 +1,471 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+// Get mission reports, sorted newest first
+let reports: any[] = [];
+try {
+  reports = (await getCollection('mission_report')).sort(
+    (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+  );
+} catch (e) {
+  // collection may not have entries yet
+}
+
+const latestReport = reports[0] ?? null;
+---
+
+<BaseLayout
+  title="선교보고 — Word of Life Korea"
+  description="월코 선교보고 — PDF 소식지를 통해 현장의 이야기를 전합니다"
+  activeNav="connect"
+>
+
+<style>
+  :root {
+    --c-deep: #004f68; --c-mid: #0a5b76; --c-light: #73d1f5;
+    --c-bg: #f4f8fb; --c-white: #ffffff;
+    --c-text: #152028; --c-muted: #5b6b78;
+    --c-line: rgba(0,79,104,0.12);
+    --r-xl: 28px; --r-lg: 20px;
+  }
+
+  /* HERO */
+  .hero {
+    position:relative; overflow:hidden;
+    padding:100px 24px 64px; text-align:center;
+    background:linear-gradient(135deg, #083d51 0%, var(--c-deep) 60%, var(--c-mid) 100%);
+  }
+  .hero::before {
+    content:""; position:absolute; inset:0;
+    background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+    background-size:60px 60px; pointer-events:none;
+  }
+  .hero-inner { position:relative; z-index:2; max-width:760px; margin:0 auto; }
+  .hero-eyebrow {
+    display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border-radius:999px;
+    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.22);
+    font-size:11px; font-weight:800; letter-spacing:0.09em; color:rgba(255,255,255,0.9);
+    margin-bottom:22px; text-transform:uppercase;
+  }
+  .hero-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--c-light); }
+  .hero-inner h1 {
+    font-size:clamp(32px,5vw,56px); font-weight:800; line-height:1.13;
+    letter-spacing:-0.04em; color:#fff; margin-bottom:14px;
+  }
+  .hero-inner h1 em { font-style:normal; color:#9ae3ff; }
+  .hero-sub { font-size:16px; line-height:1.88; color:rgba(255,255,255,0.8); max-width:580px; margin:0 auto; }
+
+  /* Archive row */
+  .archive-bar { background:var(--c-bg); border-bottom:1px solid var(--c-line); padding:18px 24px; }
+  .archive-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .archive-label { font-size:12px; font-weight:800; color:var(--c-deep); text-transform:uppercase; letter-spacing:0.06em; margin-right:4px; }
+  .archive-btn {
+    padding:8px 16px; border-radius:999px; border:1px solid var(--c-line); background:var(--c-white);
+    font-size:12.5px; font-weight:700; color:var(--c-muted); cursor:pointer;
+    transition:background .18s, border-color .18s, color .18s;
+    white-space:nowrap;
+  }
+  .archive-btn:hover, .archive-btn.active { background:var(--c-deep); border-color:var(--c-deep); color:#fff; }
+
+  /* FLIPBOOK AREA */
+  .flipbook-section { padding:48px 24px 80px; background:var(--c-white); }
+  .flipbook-wrap { max-width:1100px; margin:0 auto; }
+
+  /* No PDF state */
+  .no-pdf {
+    text-align:center; padding:80px 24px;
+    border:2px dashed var(--c-line); border-radius:var(--r-xl);
+    background:var(--c-bg);
+  }
+  .no-pdf-icon { font-size:48px; margin-bottom:16px; }
+  .no-pdf h3 { font-size:22px; font-weight:800; color:var(--c-text); margin-bottom:10px; }
+  .no-pdf p { font-size:15px; color:var(--c-muted); max-width:420px; margin:0 auto; line-height:1.8; }
+
+  /* Report meta */
+  .report-meta {
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid var(--c-line);
+  }
+  .report-title { font-size:22px; font-weight:800; color:var(--c-text); flex:1; }
+  .report-date { font-size:12px; font-weight:700; color:var(--c-muted); }
+  .download-btn {
+    display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:999px;
+    background:rgba(0,79,104,0.08); color:var(--c-deep); font-size:13px; font-weight:800;
+    text-decoration:none; transition:background .18s; border:1px solid var(--c-line);
+    white-space:nowrap;
+  }
+  .download-btn:hover { background:rgba(0,79,104,0.16); }
+
+  /* Flipbook container */
+  #flipbook-container {
+    position:relative; width:100%; background:#1a1a2e;
+    border-radius:var(--r-xl); overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,0.28);
+    min-height:500px;
+    display:flex; flex-direction:column;
+  }
+
+  /* Controls bar */
+  .fb-controls {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 20px; background:rgba(255,255,255,0.06);
+    border-bottom:1px solid rgba(255,255,255,0.08); gap:12px; flex-wrap:wrap;
+  }
+  .fb-nav { display:flex; align-items:center; gap:8px; }
+  .fb-btn {
+    width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.08); color:#fff; cursor:pointer; display:flex;
+    align-items:center; justify-content:center; font-size:16px;
+    transition:background .18s; user-select:none;
+  }
+  .fb-btn:hover { background:rgba(255,255,255,0.18); }
+  .fb-btn:disabled { opacity:0.3; cursor:default; }
+  .fb-page-info { font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); min-width:80px; text-align:center; }
+  .fb-zoom-btns { display:flex; gap:6px; }
+  .fb-zoom-btn {
+    padding:6px 14px; border-radius:999px; border:1px solid rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.8); cursor:pointer;
+    font-size:12px; font-weight:700; transition:background .18s;
+  }
+  .fb-zoom-btn:hover { background:rgba(255,255,255,0.18); }
+  .fb-fullscreen-btn {
+    padding:6px 14px; border-radius:999px; border:1px solid rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.8); cursor:pointer;
+    font-size:12px; font-weight:700; transition:background .18s;
+    white-space:nowrap;
+  }
+  .fb-fullscreen-btn:hover { background:rgba(255,255,255,0.18); }
+
+  /* Spread viewport */
+  #spread-viewport {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    padding:24px; min-height:480px; position:relative; overflow:hidden;
+  }
+
+  /* Two-page spread */
+  #spread {
+    display:flex; gap:2px; align-items:center; justify-content:center;
+    transform-origin:center center; transition:transform .2s ease;
+  }
+  .fb-page-slot {
+    position:relative; overflow:hidden; background:#2a2a3e;
+    box-shadow:0 4px 24px rgba(0,0,0,0.5);
+    flex-shrink:0;
+  }
+  .fb-page-slot canvas { display:block; }
+  .fb-page-slot.loading::after {
+    content:""; position:absolute; inset:0;
+    background:rgba(30,30,50,0.7);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .fb-loading-indicator {
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:14px; color:rgba(255,255,255,0.5);
+    font-size:13px; font-weight:600;
+  }
+  .fb-spinner {
+    width:36px; height:36px; border:3px solid rgba(255,255,255,0.15);
+    border-top-color:var(--c-light); border-radius:50%; animation:spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* Page flip animation */
+  .fb-page-slot { transition:opacity .2s ease; }
+
+  /* Archive list */
+  .archive-section { padding:56px 24px 80px; background:var(--c-bg); }
+  .archive-grid { max-width:1100px; margin:0 auto; }
+  .archive-grid-title { font-size:18px; font-weight:800; color:var(--c-text); margin-bottom:24px; }
+  .archive-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+  .archive-card {
+    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-lg);
+    padding:22px 20px; cursor:pointer; transition:transform .2s, box-shadow .2s, border-color .2s;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .archive-card:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(0,79,104,0.12); border-color:rgba(0,79,104,0.22); }
+  .archive-card.current { border-color:var(--c-deep); background:rgba(0,79,104,0.04); }
+  .ac-icon { font-size:28px; }
+  .ac-title { font-size:14px; font-weight:800; color:var(--c-text); line-height:1.3; }
+  .ac-date { font-size:12px; color:var(--c-muted); }
+  .ac-badge {
+    display:inline-block; padding:3px 10px; border-radius:999px;
+    background:rgba(0,79,104,0.08); color:var(--c-deep); font-size:11px; font-weight:800;
+    width:fit-content;
+  }
+
+  .lang-en .wl-ko { display:none; }
+  body:not(.lang-en) .wl-en { display:none; }
+
+  @media (max-width:640px) {
+    .fb-controls { padding:10px 14px; }
+    .fb-fullscreen-btn, .fb-zoom-btns { display:none; }
+  }
+</style>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-dot"></span>
+      <span class="wl-ko">월코 선교보고</span>
+      <span class="wl-en">WOLKO Mission Report</span>
+    </div>
+    <h1>
+      <span class="wl-ko">현장의 이야기를 <em>전합니다</em></span>
+      <span class="wl-en">Stories from <em>the Field</em></span>
+    </h1>
+    <p class="hero-sub">
+      <span class="wl-ko">월코 선교사들이 전하는 복음의 현장 이야기를 담은 소식지입니다. 기도와 후원으로 함께해 주시는 분들께 감사드립니다.</span>
+      <span class="wl-en">A newsletter sharing stories from the Gospel frontlines by WOLKO missionaries. Thank you to all who partner with us through prayer and support.</span>
+    </p>
+  </div>
+</section>
+
+<!-- FLIPBOOK -->
+<section class="flipbook-section">
+  <div class="flipbook-wrap">
+    {latestReport ? (
+      <>
+        <div class="report-meta">
+          <div>
+            <div class="report-title">
+              <span class="wl-ko">{latestReport.data.title_ko}</span>
+              <span class="wl-en">{latestReport.data.title_en}</span>
+            </div>
+            <div class="report-date">
+              {new Date(latestReport.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}
+            </div>
+          </div>
+          <a href={latestReport.data.pdf_url} target="_blank" rel="noopener" class="download-btn">
+            ⬇ <span class="wl-ko">PDF 다운로드</span><span class="wl-en">Download PDF</span>
+          </a>
+        </div>
+
+        <div id="flipbook-container">
+          <div class="fb-controls">
+            <div class="fb-nav">
+              <button class="fb-btn" id="fb-first" title="처음 페이지">⏮</button>
+              <button class="fb-btn" id="fb-prev" title="이전 페이지">◀</button>
+              <span class="fb-page-info" id="fb-page-info">1 / —</span>
+              <button class="fb-btn" id="fb-next" title="다음 페이지">▶</button>
+              <button class="fb-btn" id="fb-last" title="마지막 페이지">⏭</button>
+            </div>
+            <div class="fb-zoom-btns">
+              <button class="fb-zoom-btn" id="fb-zoom-out">－ <span class="wl-ko">축소</span><span class="wl-en">Out</span></button>
+              <button class="fb-zoom-btn" id="fb-zoom-in">＋ <span class="wl-ko">확대</span><span class="wl-en">In</span></button>
+            </div>
+            <button class="fb-fullscreen-btn" id="fb-fullscreen">⛶ <span class="wl-ko">전체화면</span><span class="wl-en">Fullscreen</span></button>
+          </div>
+          <div id="spread-viewport">
+            <div id="fb-loading" class="fb-loading-indicator">
+              <div class="fb-spinner"></div>
+              <span class="wl-ko">PDF를 불러오는 중입니다...</span><span class="wl-en">Loading PDF...</span>
+            </div>
+            <div id="spread" style="display:none;">
+              <div class="fb-page-slot" id="page-left"><canvas id="canvas-left"></canvas></div>
+              <div class="fb-page-slot" id="page-right"><canvas id="canvas-right"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </>
+    ) : (
+      <div class="no-pdf">
+        <div class="no-pdf-icon">📄</div>
+        <h3><span class="wl-ko">선교보고 소식지 준비 중</span><span class="wl-en">Mission Report Coming Soon</span></h3>
+        <p><span class="wl-ko">월코 선교보고 소식지가 곧 업로드됩니다. 기도와 관심으로 함께해 주셔서 감사합니다.</span><span class="wl-en">The WOLKO mission report newsletter will be uploaded soon. Thank you for your prayers and support.</span></p>
+      </div>
+    )}
+  </div>
+</section>
+
+{/* Archive */}
+{reports.length > 1 && (
+  <section class="archive-section">
+    <div class="archive-grid">
+      <div class="archive-grid-title">
+        <span class="wl-ko">지난 선교보고 보기</span>
+        <span class="wl-en">Previous Reports</span>
+      </div>
+      <div class="archive-list" id="archive-list">
+        {reports.map((r, i) => (
+          <div
+            class={`archive-card${i === 0 ? ' current' : ''}`}
+            data-pdf={r.data.pdf_url}
+            data-title-ko={r.data.title_ko}
+            data-title-en={r.data.title_en}
+            data-date={r.data.date}
+          >
+            <div class="ac-icon">📋</div>
+            <div class="ac-title">
+              <span class="wl-ko">{r.data.title_ko}</span>
+              <span class="wl-en">{r.data.title_en}</span>
+            </div>
+            <div class="ac-date">{new Date(r.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}</div>
+            {i === 0 && <span class="ac-badge"><span class="wl-ko">최신</span><span class="wl-en">Latest</span></span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<script>
+// PDF.js flipbook
+(async () => {
+  const pdfUrlEl = document.querySelector('[data-pdf]');
+  if (!pdfUrlEl) return; // no reports yet
+
+  // Load PDF.js from CDN
+  const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.mjs');
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.mjs';
+
+  let pdfDoc = null;
+  let currentSpread = 1; // left page number (odd = right page in spread view)
+  let scale = 1.4;
+  let isSinglePage = window.innerWidth < 640;
+
+  const loadingEl = document.getElementById('fb-loading');
+  const spreadEl = document.getElementById('spread');
+  const canvasLeft = document.getElementById('canvas-left');
+  const canvasRight = document.getElementById('canvas-right');
+  const pageLeft = document.getElementById('page-left');
+  const pageRight = document.getElementById('page-right');
+  const pageInfo = document.getElementById('fb-page-info');
+
+  function getEffectiveScale() {
+    const vw = document.getElementById('spread-viewport')?.clientWidth ?? 800;
+    return Math.min(scale, vw / 900);
+  }
+
+  async function renderPage(canvas, pageNum) {
+    if (!pdfDoc || pageNum < 1 || pageNum > pdfDoc.numPages) {
+      canvas.width = 0; canvas.height = 0;
+      canvas.closest('.fb-page-slot').style.display = 'none';
+      return;
+    }
+    canvas.closest('.fb-page-slot').style.display = 'block';
+    const page = await pdfDoc.getPage(pageNum);
+    const eff = getEffectiveScale();
+    const vp = page.getViewport({ scale: eff });
+    canvas.width = vp.width; canvas.height = vp.height;
+    canvas.closest('.fb-page-slot').style.width = vp.width + 'px';
+    canvas.closest('.fb-page-slot').style.height = vp.height + 'px';
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  }
+
+  async function renderSpread(leftPage) {
+    if (!pdfDoc) return;
+    spreadEl.style.opacity = '0.4';
+    await renderPage(canvasLeft, leftPage);
+    if (!isSinglePage) {
+      await renderPage(canvasRight, leftPage + 1);
+    } else {
+      canvasRight.width = 0; canvasRight.height = 0;
+      pageRight.style.display = 'none';
+    }
+    spreadEl.style.opacity = '1';
+    const total = pdfDoc.numPages;
+    const rightNum = isSinglePage ? leftPage : leftPage + 1;
+    pageInfo.textContent = `${leftPage}${rightNum <= total ? '–' + Math.min(rightNum, total) : ''} / ${total}`;
+    document.getElementById('fb-prev').disabled = leftPage <= 1;
+    document.getElementById('fb-first').disabled = leftPage <= 1;
+    document.getElementById('fb-next').disabled = (isSinglePage ? leftPage : leftPage + 1) >= total;
+    document.getElementById('fb-last').disabled = (isSinglePage ? leftPage : leftPage + 1) >= total;
+  }
+
+  async function loadPdf(url) {
+    loadingEl.style.display = 'flex';
+    spreadEl.style.display = 'none';
+    try {
+      pdfDoc = await pdfjsLib.getDocument(url).promise;
+      currentSpread = 1;
+      loadingEl.style.display = 'none';
+      spreadEl.style.display = 'flex';
+      await renderSpread(currentSpread);
+    } catch (err) {
+      loadingEl.innerHTML = '<span style="color:#f87171;">PDF를 불러오지 못했습니다. / Could not load PDF.</span>';
+    }
+  }
+
+  // Load initial PDF
+  const firstCard = document.querySelector('.archive-card[data-pdf]') || document.querySelector('[data-pdf]');
+  if (firstCard) {
+    await loadPdf(firstCard.dataset.pdf);
+  }
+
+  // Navigation
+  document.getElementById('fb-prev')?.addEventListener('click', async () => {
+    const step = isSinglePage ? 1 : 2;
+    if (currentSpread > 1) { currentSpread = Math.max(1, currentSpread - step); await renderSpread(currentSpread); }
+  });
+  document.getElementById('fb-next')?.addEventListener('click', async () => {
+    const step = isSinglePage ? 1 : 2;
+    if (!pdfDoc) return;
+    const max = isSinglePage ? pdfDoc.numPages : pdfDoc.numPages - 1;
+    if (currentSpread < max) { currentSpread = Math.min(max, currentSpread + step); await renderSpread(currentSpread); }
+  });
+  document.getElementById('fb-first')?.addEventListener('click', async () => {
+    currentSpread = 1; await renderSpread(currentSpread);
+  });
+  document.getElementById('fb-last')?.addEventListener('click', async () => {
+    if (!pdfDoc) return;
+    currentSpread = isSinglePage ? pdfDoc.numPages : (pdfDoc.numPages % 2 === 0 ? pdfDoc.numPages - 1 : pdfDoc.numPages);
+    await renderSpread(currentSpread);
+  });
+
+  // Zoom
+  document.getElementById('fb-zoom-in')?.addEventListener('click', async () => {
+    scale = Math.min(scale + 0.2, 3.0); await renderSpread(currentSpread);
+  });
+  document.getElementById('fb-zoom-out')?.addEventListener('click', async () => {
+    scale = Math.max(scale - 0.2, 0.5); await renderSpread(currentSpread);
+  });
+
+  // Fullscreen
+  document.getElementById('fb-fullscreen')?.addEventListener('click', () => {
+    const container = document.getElementById('flipbook-container');
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      container?.requestFullscreen();
+    }
+  });
+
+  // Keyboard nav
+  document.addEventListener('keydown', async (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      document.getElementById('fb-next')?.click();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      document.getElementById('fb-prev')?.click();
+    }
+  });
+
+  // Archive cards
+  document.querySelectorAll('.archive-card[data-pdf]').forEach(card => {
+    card.addEventListener('click', async () => {
+      document.querySelectorAll('.archive-card').forEach(c => c.classList.remove('current'));
+      card.classList.add('current');
+      const url = card.dataset.pdf;
+      if (url) {
+        await loadPdf(url);
+        document.getElementById('flipbook-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Resize
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(async () => {
+      isSinglePage = window.innerWidth < 640;
+      await renderSpread(currentSpread);
+    }, 250);
+  });
+})();
+</script>
+
+</BaseLayout>
