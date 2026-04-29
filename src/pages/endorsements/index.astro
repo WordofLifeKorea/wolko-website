@@ -1,0 +1,344 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const endorsements = [
+  {
+    name_ko: "조지 H. 크뤼거",
+    name_en: "George H. Krueger",
+    title_ko: "Word of Life Fellowship 총재",
+    title_en: "President, Word of Life Fellowship",
+    org: "Word of Life Fellowship International",
+    quote_ko: "월코는 한국의 다음 세대를 향한 하나님의 마음을 품고 사역합니다. 복음과 제자훈련에 대한 이들의 헌신은 전 세계 Word of Life 사역의 정신을 고스란히 담고 있습니다. 이 귀한 사역을 기쁨으로 추천합니다.",
+    quote_en: "Word of Life Korea carries the heart of God for the next generation of Korea. Their commitment to the Gospel and discipleship reflects the spirit of the Word of Life movement worldwide. I wholeheartedly commend this ministry.",
+    photo: "",
+  },
+  {
+    name_ko: "조 조단",
+    name_en: "Joe Jordan",
+    title_ko: "Word of Life Fellowship 창립 사역자",
+    title_en: "Founding Director, Word of Life Fellowship",
+    org: "Word of Life Fellowship",
+    quote_ko: "처음 Word of Life를 시작했을 때, 우리의 꿈은 전 세계 청소년들이 복음을 듣고 제자로 세워지는 것이었습니다. 한국에서 그 꿈이 이루어지고 있는 것을 볼 때 하나님께 감사를 드립니다.",
+    quote_en: "When we first began Word of Life, our dream was to see youth around the world hear the Gospel and be discipled. Seeing that vision come alive in Korea fills my heart with gratitude to God.",
+    photo: "",
+  },
+  {
+    name_ko: "추천 목사님",
+    name_en: "Endorsing Pastor",
+    title_ko: "담임목사",
+    title_en: "Senior Pastor",
+    org: "한국 협력 교회 / Korean Partner Church",
+    quote_ko: "월코 선교사들의 삶 자체가 복음의 증거입니다. 청소년들과 함께하며 복음을 전하고 삶으로 제자훈련을 하는 이들의 모습을 보며 교회로서 든든한 파트너를 얻었음을 확신합니다.",
+    quote_en: "The lives of WOLKO missionaries are themselves a testimony of the Gospel. Seeing them walk alongside youth, sharing the Good News and modeling discipleship, I am confident we have a trustworthy ministry partner.",
+    photo: "",
+  },
+  {
+    name_ko: "협력 단체 대표",
+    name_en: "Partner Ministry Leader",
+    title_ko: "대표",
+    title_en: "Director",
+    org: "한국 협력 사역 단체 / Korean Partner Ministry",
+    quote_ko: "제주월비(WOLBI)는 단순한 성경학교가 아닙니다. 학생들의 삶을 근본에서부터 변화시키는 11개월의 여정입니다. 이 훈련을 통해 일어난 변화들을 직접 목격했기에 주저 없이 추천합니다.",
+    quote_en: "WOLBI Jeju is not simply a Bible school — it is an 11-month journey that transforms students from the inside out. Having witnessed the life change this program produces, I recommend it without hesitation.",
+    photo: "",
+  },
+];
+---
+
+<BaseLayout
+  title="추천사 — Word of Life Korea"
+  description="Word of Life Korea의 사역을 추천하는 목사님들과 사역 지도자들의 소중한 말씀입니다."
+  activeNav="about"
+>
+
+<style>
+  :root {
+    --d:#004f68; --m:#007ea1; --l:#73d1f5;
+    --r:#c42a36; --k:#0d1b24; --s:#3d5a6a;
+    --bg:#f4f8fb; --line:rgba(0,79,104,0.1);
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600&display=swap');
+
+  /* HERO */
+  .en-hero {
+    background: linear-gradient(140deg, #070f16 0%, #004f68 55%, #00788f 100%);
+    padding:150px 24px 110px; text-align:center;
+    position:relative; overflow:hidden;
+  }
+  .en-hero::before {
+    content:""; position:absolute; inset:0;
+    background-image: radial-gradient(ellipse at 60% 40%, rgba(115,209,245,0.08) 0%, transparent 55%),
+                      radial-gradient(ellipse at 20% 80%, rgba(115,209,245,0.04) 0%, transparent 45%);
+    pointer-events:none;
+  }
+  .en-hero::after {
+    content:""; position:absolute; inset:0;
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),
+                      linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+    background-size:60px 60px; pointer-events:none;
+  }
+  .en-hero-in { position:relative; z-index:2; max-width:720px; margin:0 auto; }
+  .en-eyebrow {
+    display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:999px; background:rgba(115,209,245,0.15);
+    border:1px solid rgba(115,209,245,0.3);
+    font-size:11px; font-weight:800; letter-spacing:0.1em; color:var(--l);
+    text-transform:uppercase; margin-bottom:20px;
+  }
+  .en-hero h1 {
+    font-family:'Cormorant Garamond', Georgia, serif;
+    font-size:clamp(40px,6vw,68px); font-weight:600; line-height:1.1;
+    color:#fff; margin-bottom:18px; letter-spacing:-0.02em;
+  }
+  .en-hero h1 em { font-style:italic; color:var(--l); }
+  .en-hero-sub {
+    font-size:17px; line-height:1.85; color:rgba(255,255,255,0.78); max-width:580px; margin:0 auto;
+  }
+
+  /* INTRO VERSE */
+  .en-verse-bar {
+    background:#0d1b24; padding:48px 24px; text-align:center;
+  }
+  .en-verse-text {
+    font-family:'Cormorant Garamond', Georgia, serif;
+    font-size:clamp(18px,2.5vw,26px); font-style:italic;
+    color:rgba(255,255,255,0.88); line-height:1.6;
+    max-width:720px; margin:0 auto 12px;
+  }
+  .en-verse-ref {
+    font-size:13px; font-weight:700; color:var(--l);
+    letter-spacing:0.06em;
+  }
+
+  /* SECTION */
+  .en-section { padding:80px 24px 90px; background:var(--bg); }
+  .en-section-inner { max-width:1040px; margin:0 auto; }
+  .en-sec-tag {
+    text-align:center; font-size:11px; font-weight:800; letter-spacing:0.1em;
+    color:var(--m); text-transform:uppercase; margin-bottom:8px;
+  }
+  .en-sec-title {
+    text-align:center;
+    font-size:clamp(24px,3.5vw,34px); font-weight:800;
+    color:var(--k); margin-bottom:56px; letter-spacing:-0.02em;
+  }
+
+  /* ENDORSEMENT CARDS */
+  .en-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:28px;
+  }
+  .en-card {
+    background:#fff; border-radius:20px; padding:36px;
+    box-shadow:0 4px 24px rgba(0,79,104,0.08); border:1px solid var(--line);
+    position:relative; overflow:hidden;
+    transition:transform .22s, box-shadow .22s;
+    opacity:0; transform:translateY(28px);
+    transition:opacity .55s ease, transform .55s ease, box-shadow .22s;
+  }
+  .en-card.in { opacity:1; transform:translateY(0); }
+  .en-card:hover { box-shadow:0 12px 40px rgba(0,79,104,0.13); }
+  .en-card::before {
+    content:"\201C"; position:absolute; top:-8px; left:24px;
+    font-family:'Cormorant Garamond', Georgia, serif;
+    font-size:120px; font-style:italic; line-height:1;
+    color:rgba(0,79,104,0.07); pointer-events:none;
+  }
+  .en-quote {
+    font-size:15px; line-height:1.85; color:#2c3e4a;
+    font-style:italic; margin-bottom:28px; position:relative; z-index:1;
+    padding-top:16px;
+  }
+  .en-author { display:flex; align-items:center; gap:16px; }
+  .en-avatar {
+    width:52px; height:52px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--d), var(--m));
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; font-weight:800; color:#fff;
+    letter-spacing:-0.02em;
+  }
+  .en-author-name {
+    font-size:15px; font-weight:800; color:var(--k); margin-bottom:3px;
+  }
+  .en-author-title { font-size:12px; color:var(--s); line-height:1.5; }
+  .en-author-org {
+    display:inline-block; margin-top:6px; padding:3px 10px;
+    border-radius:999px; background:rgba(0,79,104,0.07);
+    font-size:11px; font-weight:700; color:var(--m);
+  }
+
+  /* FEATURED large quote */
+  .en-featured {
+    background:linear-gradient(135deg, var(--k) 0%, #1a3343 100%);
+    border-radius:24px; padding:56px 52px; margin-bottom:32px;
+    position:relative; overflow:hidden;
+    opacity:0; transform:translateY(24px);
+    transition:opacity .6s ease, transform .6s ease;
+  }
+  .en-featured.in { opacity:1; transform:translateY(0); }
+  .en-featured::before {
+    content:"\201C"; position:absolute; top:-16px; left:32px;
+    font-family:'Cormorant Garamond', Georgia, serif;
+    font-size:200px; font-style:italic; line-height:1;
+    color:rgba(115,209,245,0.08); pointer-events:none;
+  }
+  .en-featured-quote {
+    font-family:'Cormorant Garamond', Georgia, serif;
+    font-size:clamp(20px,2.8vw,28px); font-style:italic;
+    color:rgba(255,255,255,0.92); line-height:1.65;
+    margin-bottom:32px; position:relative; z-index:1;
+  }
+  .en-featured-author { display:flex; align-items:center; gap:18px; }
+  .en-featured-avatar {
+    width:60px; height:60px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--m), var(--l));
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; font-weight:800; color:var(--k);
+  }
+  .en-featured-name { font-size:16px; font-weight:800; color:#fff; margin-bottom:4px; }
+  .en-featured-title { font-size:13px; color:rgba(255,255,255,0.65); }
+  .en-featured-org {
+    display:inline-block; margin-top:6px; padding:4px 12px;
+    border-radius:999px; background:rgba(115,209,245,0.15);
+    border:1px solid rgba(115,209,245,0.25);
+    font-size:11px; font-weight:700; color:var(--l); letter-spacing:0.04em;
+  }
+
+  /* CTA */
+  .en-cta {
+    margin-top:64px; background:rgba(0,79,104,0.05);
+    border-radius:20px; padding:40px; text-align:center;
+    border:1px solid var(--line);
+  }
+  .en-cta h3 { font-size:20px; font-weight:800; color:var(--d); margin-bottom:10px; }
+  .en-cta p { font-size:14px; color:var(--s); line-height:1.75; margin-bottom:20px; }
+  .en-cta-btn {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:13px 28px; border-radius:999px;
+    background:var(--d); color:#fff; font-size:14px; font-weight:800;
+    text-decoration:none; transition:background .2s, transform .2s;
+  }
+  .en-cta-btn:hover { background:var(--m); transform:translateY(-2px); }
+
+  /* RESP */
+  @media(max-width:760px) {
+    .en-grid { grid-template-columns:1fr; }
+    .en-featured { padding:36px 28px; }
+    .en-featured::before { font-size:140px; }
+  }
+  @media(max-width:540px) {
+    .en-card { padding:26px 22px; }
+    .en-featured { padding:28px 20px; }
+  }
+</style>
+
+<!-- HERO -->
+<section class="en-hero">
+  <div class="en-hero-in">
+    <div class="en-eyebrow">✍️ <span class="wl-ko">추천사</span><span class="wl-en">Endorsements</span></div>
+    <h1>
+      <span class="wl-ko-b">함께 증언하는<br><em>신뢰의 목소리들</em></span>
+      <span class="wl-en-b">Voices of trust<br>speaking <em>together</em></span>
+    </h1>
+    <p class="en-hero-sub">
+      <span class="wl-ko-b">월코의 사역을 함께 걸어온 지도자들의 진심 어린 추천을 나눕니다.</span>
+      <span class="wl-en-b">Those who have walked alongside WOLKO share their heartfelt commendations of this ministry.</span>
+    </p>
+  </div>
+</section>
+
+<!-- VERSE BAR -->
+<div class="en-verse-bar">
+  <p class="en-verse-text">
+    <span class="wl-ko-b">"그러므로 너희는 가서 모든 족속으로 제자를 삼아 아버지와 아들과 성령의 이름으로 세례를 베풀고"</span>
+    <span class="wl-en-b">"Go therefore and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit."</span>
+  </p>
+  <p class="en-verse-ref">마태복음 / Matthew 28:19</p>
+</div>
+
+<!-- ENDORSEMENTS SECTION -->
+<section class="en-section" id="lang-root">
+  <div class="en-section-inner">
+    <p class="en-sec-tag"><span class="wl-ko">추천의 말씀</span><span class="wl-en">Words of Endorsement</span></p>
+    <h2 class="en-sec-title">
+      <span class="wl-ko-b">지도자들의 추천</span>
+      <span class="wl-en-b">Commendations from Ministry Leaders</span>
+    </h2>
+
+    <!-- Featured (first endorsement) -->
+    <div class="en-featured en-rv">
+      <p class="en-featured-quote">
+        <span class="wl-ko-b">"{endorsements[0].quote_ko}"</span>
+        <span class="wl-en-b">"{endorsements[0].quote_en}"</span>
+      </p>
+      <div class="en-featured-author">
+        <div class="en-featured-avatar">
+          {endorsements[0].name_en.split(' ').map(w => w[0]).join('').slice(0,2)}
+        </div>
+        <div>
+          <div class="en-featured-name">
+            <span class="wl-ko">{endorsements[0].name_ko}</span>
+            <span class="wl-en">{endorsements[0].name_en}</span>
+          </div>
+          <div class="en-featured-title">
+            <span class="wl-ko">{endorsements[0].title_ko}</span>
+            <span class="wl-en">{endorsements[0].title_en}</span>
+          </div>
+          <span class="en-featured-org">{endorsements[0].org}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="en-grid">
+      {endorsements.slice(1).map((e, i) => (
+        <div class="en-card en-rv" style={`transition-delay:${i * 0.1}s`}>
+          <p class="en-quote">
+            <span class="wl-ko">"{e.quote_ko}"</span>
+            <span class="wl-en">"{e.quote_en}"</span>
+          </p>
+          <div class="en-author">
+            <div class="en-avatar">
+              {e.name_en.split(' ').map((w: string) => w[0]).join('').slice(0,2)}
+            </div>
+            <div>
+              <div class="en-author-name">
+                <span class="wl-ko">{e.name_ko}</span>
+                <span class="wl-en">{e.name_en}</span>
+              </div>
+              <div class="en-author-title">
+                <span class="wl-ko">{e.title_ko}</span>
+                <span class="wl-en">{e.title_en}</span>
+              </div>
+              <span class="en-author-org">{e.org}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- CTA -->
+    <div class="en-cta">
+      <h3>
+        <span class="wl-ko">사역에 대해 더 알고 싶으신가요?</span>
+        <span class="wl-en">Want to learn more about the ministry?</span>
+      </h3>
+      <p>
+        <span class="wl-ko-b">월코의 사역 현황과 파트너십에 관심이 있으신 분들은 언제든지 연락해 주세요.</span>
+        <span class="wl-en-b">Whether you're considering partnership or simply want to know more, we'd love to connect with you.</span>
+      </p>
+      <a class="en-cta-btn" href="/contact">
+        📨 <span class="wl-ko">문의하기</span><span class="wl-en">Contact Us</span>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<script>
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.en-rv').forEach(el => obs.observe(el));
+</script>
+
+</BaseLayout>

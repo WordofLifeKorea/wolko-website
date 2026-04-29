@@ -1,0 +1,456 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="후원 — Word of Life Korea"
+  description="월코의 사역을 함께 이어가실 후원자를 모십니다. 당신의 나눔이 다음 세대를 복음으로 세웁니다."
+  activeNav="connect"
+>
+
+<style>
+  :root {
+    --d:#004f68; --m:#007ea1; --l:#73d1f5;
+    --r:#c42a36; --k:#0d1b24; --s:#3d5a6a;
+    --bg:#f4f8fb; --line:rgba(0,79,104,0.1);
+  }
+
+  /* HERO */
+  .gv-hero {
+    background: linear-gradient(150deg, #0a1e2b 0%, #004f68 50%, #c42a36 130%);
+    padding:140px 24px 100px; text-align:center;
+    position:relative; overflow:hidden;
+  }
+  .gv-hero::before {
+    content:""; position:absolute; inset:0;
+    background-image: radial-gradient(circle at 70% 35%, rgba(196,42,54,0.15) 0%, transparent 50%),
+                      radial-gradient(circle at 20% 65%, rgba(115,209,245,0.07) 0%, transparent 45%);
+    pointer-events:none;
+  }
+  .gv-hero::after {
+    content:""; position:absolute; inset:0;
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),
+                      linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+    background-size:60px 60px; pointer-events:none;
+  }
+  .gv-hero-in { position:relative; z-index:2; max-width:740px; margin:0 auto; }
+  .gv-eyebrow {
+    display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:999px; background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.22);
+    font-size:11px; font-weight:800; letter-spacing:0.1em; color:rgba(255,255,255,0.9);
+    text-transform:uppercase; margin-bottom:20px;
+  }
+  .gv-hero h1 {
+    font-size:clamp(34px,5vw,56px); font-weight:800; line-height:1.12;
+    color:#fff; margin-bottom:16px; letter-spacing:-0.03em;
+  }
+  .gv-hero h1 em { font-style:normal; color:#ffa0a0; }
+  .gv-hero-sub {
+    font-size:17px; line-height:1.88; color:rgba(255,255,255,0.82);
+    max-width:600px; margin:0 auto 0;
+  }
+  .gv-verse {
+    display:inline-block; margin-top:28px; padding:16px 24px;
+    border-radius:14px; background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.15);
+    font-size:14px; font-style:italic; color:rgba(255,255,255,0.85);
+    line-height:1.7; max-width:500px;
+  }
+  .gv-verse cite { display:block; margin-top:6px; font-style:normal; font-size:12px; font-weight:700; color:var(--l); }
+
+  /* IMPACT STRIP */
+  .gv-impact {
+    background:#fff; border-bottom:1px solid var(--line);
+    padding:40px 24px;
+  }
+  .gv-impact-inner {
+    max-width:960px; margin:0 auto;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+  }
+  .gv-impact-stat {
+    text-align:center; padding:16px;
+    border-right:1px solid var(--line);
+  }
+  .gv-impact-stat:last-child { border-right:none; }
+  .gv-impact-num {
+    font-size:clamp(28px,4vw,40px); font-weight:900;
+    color:var(--d); letter-spacing:-0.03em; line-height:1;
+    margin-bottom:6px;
+  }
+  .gv-impact-num span { color:var(--r); }
+  .gv-impact-label { font-size:12.5px; color:var(--s); line-height:1.5; font-weight:600; }
+
+  /* SECTION */
+  .gv-section { padding:80px 24px; background:var(--bg); }
+  .gv-section.white { background:#fff; }
+  .gv-section-inner { max-width:1040px; margin:0 auto; }
+  .gv-sec-tag {
+    font-size:11px; font-weight:800; letter-spacing:0.1em; color:var(--m);
+    text-transform:uppercase; margin-bottom:8px;
+  }
+  .gv-sec-title {
+    font-size:clamp(24px,3.5vw,34px); font-weight:800;
+    color:var(--k); letter-spacing:-0.02em; margin-bottom:40px; line-height:1.25;
+  }
+
+  /* WHY CARDS */
+  .gv-why-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:0; }
+  .gv-why-card {
+    background:#fff; border-radius:18px; padding:32px 28px;
+    box-shadow:0 3px 18px rgba(0,79,104,0.07); border:1px solid var(--line);
+    border-top:3px solid var(--d);
+  }
+  .gv-why-card.red { border-top-color:var(--r); }
+  .gv-why-card.teal { border-top-color:var(--m); }
+  .gv-why-icon { font-size:28px; margin-bottom:14px; }
+  .gv-why-title { font-size:16px; font-weight:800; color:var(--k); margin-bottom:10px; line-height:1.3; }
+  .gv-why-desc { font-size:14px; color:var(--s); line-height:1.75; }
+
+  /* ACCOUNT CARDS */
+  .gv-accounts { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:48px; }
+  .gv-account {
+    background:#fff; border-radius:18px; overflow:hidden;
+    box-shadow:0 4px 22px rgba(0,79,104,0.09); border:1px solid var(--line);
+  }
+  .gv-account-head {
+    padding:24px 28px;
+    background:linear-gradient(135deg, var(--d) 0%, #006080 100%);
+  }
+  .gv-account-head.red { background:linear-gradient(135deg, #9b1e29 0%, var(--r) 100%); }
+  .gv-account-badge {
+    display:inline-block; padding:3px 10px; border-radius:999px;
+    background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.28);
+    font-size:10px; font-weight:800; letter-spacing:0.08em; color:#fff;
+    text-transform:uppercase; margin-bottom:10px;
+  }
+  .gv-account-head h3 { font-size:18px; font-weight:800; color:#fff; margin:0 0 4px; }
+  .gv-account-head p { font-size:13px; color:rgba(255,255,255,0.75); margin:0; }
+  .gv-account-body { padding:24px 28px; }
+  .gv-acc-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:11px 0; border-bottom:1px solid var(--line);
+  }
+  .gv-acc-row:last-child { border-bottom:none; padding-bottom:0; }
+  .gv-acc-key { font-size:12px; font-weight:700; color:var(--s); }
+  .gv-acc-val { font-size:14px; font-weight:800; color:var(--k); letter-spacing:0.03em; }
+  .gv-copy-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 14px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fff; font-size:12px; font-weight:700; color:var(--d);
+    cursor:pointer; transition:background .18s, border-color .18s; font-family:inherit;
+  }
+  .gv-copy-btn:hover { background:rgba(0,79,104,0.06); border-color:var(--m); }
+  .gv-copy-btn.copied { background:rgba(0,79,104,0.08); color:var(--m); }
+
+  /* GIVING CATEGORIES */
+  .gv-cats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .gv-cat {
+    background:#fff; border-radius:14px; padding:24px 20px;
+    border:2px solid var(--line); text-align:center;
+    transition:border-color .2s, box-shadow .2s;
+    cursor:default;
+  }
+  .gv-cat:hover { border-color:var(--m); box-shadow:0 6px 22px rgba(0,79,104,0.09); }
+  .gv-cat-icon { font-size:30px; margin-bottom:10px; }
+  .gv-cat-title { font-size:14px; font-weight:800; color:var(--k); margin-bottom:6px; line-height:1.3; }
+  .gv-cat-desc { font-size:12.5px; color:var(--s); line-height:1.65; }
+
+  /* CTA BANNER */
+  .gv-cta {
+    background:linear-gradient(135deg, #0a1e2b 0%, var(--d) 60%, #006a8a 100%);
+    padding:72px 24px; text-align:center;
+    position:relative; overflow:hidden;
+  }
+  .gv-cta::before {
+    content:""; position:absolute; inset:0;
+    background-image: radial-gradient(circle at 80% 50%, rgba(115,209,245,0.06) 0%, transparent 50%);
+    pointer-events:none;
+  }
+  .gv-cta-in { position:relative; z-index:2; max-width:640px; margin:0 auto; }
+  .gv-cta h2 { font-size:clamp(24px,3.5vw,36px); font-weight:800; color:#fff; margin-bottom:12px; line-height:1.25; }
+  .gv-cta p { font-size:16px; color:rgba(255,255,255,0.8); margin-bottom:28px; line-height:1.75; }
+  .gv-cta-btn {
+    display:inline-flex; align-items:center; gap:9px;
+    padding:15px 32px; border-radius:999px;
+    background:#fff; color:var(--d); font-size:15px; font-weight:800;
+    text-decoration:none; transition:transform .18s, box-shadow .18s;
+    box-shadow:0 8px 24px rgba(0,0,0,0.18);
+  }
+  .gv-cta-btn:hover { transform:translateY(-2px); box-shadow:0 14px 36px rgba(0,0,0,0.22); }
+
+  /* RESP */
+  @media(max-width:860px) {
+    .gv-impact-inner { grid-template-columns:repeat(2,1fr); }
+    .gv-impact-stat:nth-child(2) { border-right:none; }
+    .gv-impact-stat:nth-child(1), .gv-impact-stat:nth-child(2) { border-bottom:1px solid var(--line); }
+    .gv-why-grid { grid-template-columns:1fr; }
+    .gv-accounts { grid-template-columns:1fr; }
+    .gv-cats { grid-template-columns:1fr 1fr; }
+  }
+  @media(max-width:580px) {
+    .gv-cats { grid-template-columns:1fr; }
+    .gv-impact-inner { grid-template-columns:1fr 1fr; }
+    .gv-account-body { padding:20px; }
+    .gv-account-head { padding:20px; }
+  }
+</style>
+
+<!-- HERO -->
+<section class="gv-hero">
+  <div class="gv-hero-in">
+    <div class="gv-eyebrow">❤️ <span class="wl-ko">후원</span><span class="wl-en">Give</span></div>
+    <h1>
+      <span class="wl-ko-b">당신의 나눔이<br>다음 세대를 <em>세웁니다</em></span>
+      <span class="wl-en-b">Your giving raises up<br>the <em>next generation</em></span>
+    </h1>
+    <p class="gv-hero-sub">
+      <span class="wl-ko-b">한국의 청소년 97%가 아직 복음을 듣지 못했습니다.<br>월코와 함께 이 사명을 감당해 주십시오.</span>
+      <span class="wl-en-b">97% of Korean youth have yet to hear the Gospel.<br>Join us in this mission through your generous support.</span>
+    </p>
+    <div class="gv-verse">
+      <span class="wl-ko-b">"각각 그 마음에 정한 대로 할 것이요 인색함으로나<br>억지로 하지 말지니 하나님은 즐겨 내는 자를 사랑하시느니라"</span>
+      <span class="wl-en-b">"Each of you should give what you have decided in your heart to give,<br>not reluctantly or under compulsion, for God loves a cheerful giver."</span>
+      <cite>고린도후서 / 2 Corinthians 9:7</cite>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT STRIP -->
+<div class="gv-impact">
+  <div class="gv-impact-inner">
+    <div class="gv-impact-stat">
+      <div class="gv-impact-num">24<span>+</span></div>
+      <div class="gv-impact-label"><span class="wl-ko">섬기는 선교사 / 사역자</span><span class="wl-en">Missionaries & Workers</span></div>
+    </div>
+    <div class="gv-impact-stat">
+      <div class="gv-impact-num">2</div>
+      <div class="gv-impact-label"><span class="wl-ko">캠퍼스 (평택·제주)</span><span class="wl-en">Campuses (Pyeongtaek · Jeju)</span></div>
+    </div>
+    <div class="gv-impact-stat">
+      <div class="gv-impact-num">60<span>+</span></div>
+      <div class="gv-impact-label"><span class="wl-ko">연간 캠프 참가 청소년</span><span class="wl-en">Youth Reached Annually</span></div>
+    </div>
+    <div class="gv-impact-stat">
+      <div class="gv-impact-num"><span>3</span>%</div>
+      <div class="gv-impact-label"><span class="wl-ko">한국 청소년 복음화율</span><span class="wl-en">Korean Youth Gospel Rate</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="lang-root">
+
+<!-- WHY GIVE -->
+<section class="gv-section white">
+  <div class="gv-section-inner">
+    <p class="gv-sec-tag"><span class="wl-ko">후원이 필요한 이유</span><span class="wl-en">Why Your Support Matters</span></p>
+    <h2 class="gv-sec-title">
+      <span class="wl-ko-b">당신의 후원으로<br>변화가 일어납니다</span>
+      <span class="wl-en-b">Real transformation<br>through your generosity</span>
+    </h2>
+    <div class="gv-why-grid">
+      <div class="gv-why-card">
+        <div class="gv-why-icon">🌱</div>
+        <div class="gv-why-title">
+          <span class="wl-ko-b">복음 전파</span>
+          <span class="wl-en-b">Gospel Proclamation</span>
+        </div>
+        <div class="gv-why-desc">
+          <span class="wl-ko-b">캠프, 학교 사역, 제자훈련 등 다양한 방법으로 한국 청소년들에게 복음을 전합니다. 후원을 통해 더 많은 청소년이 예수님을 만날 수 있습니다.</span>
+          <span class="wl-en-b">Through camps, school ministry, and discipleship, we bring the Gospel to Korean youth. Your support means more young people can encounter Jesus.</span>
+        </div>
+      </div>
+      <div class="gv-why-card red">
+        <div class="gv-why-icon">📖</div>
+        <div class="gv-why-title">
+          <span class="wl-ko-b">다음 세대 제자훈련</span>
+          <span class="wl-en-b">Next-Gen Discipleship</span>
+        </div>
+        <div class="gv-why-desc">
+          <span class="wl-ko-b">제주월비(WOLBI)와 Jr. SYME을 통해 청소년들이 말씀 위에 굳게 서고 사역자로 성장하도록 훈련합니다.</span>
+          <span class="wl-en-b">Through WOLBI Jeju and Jr. SYME, young people are trained to stand on the Word and grow as future ministry leaders.</span>
+        </div>
+      </div>
+      <div class="gv-why-card teal">
+        <div class="gv-why-icon">🌍</div>
+        <div class="gv-why-title">
+          <span class="wl-ko-b">선교사 파송 지원</span>
+          <span class="wl-en-b">Missionary Support</span>
+        </div>
+        <div class="gv-why-desc">
+          <span class="wl-ko-b">평택과 제주에서 헌신하는 선교사들이 사역에 집중할 수 있도록 생활 및 사역 자금을 지원합니다.</span>
+          <span class="wl-en-b">Help our missionaries in Pyeongtaek and Jeju focus fully on their calling with financial and ministry support.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BANK ACCOUNTS -->
+<section class="gv-section">
+  <div class="gv-section-inner">
+    <p class="gv-sec-tag"><span class="wl-ko">후원 계좌</span><span class="wl-en">Giving Accounts</span></p>
+    <h2 class="gv-sec-title">
+      <span class="wl-ko-b">계좌이체로 후원하기</span>
+      <span class="wl-en-b">Give by Bank Transfer</span>
+    </h2>
+    <div class="gv-accounts">
+
+      <!-- General Fund -->
+      <div class="gv-account">
+        <div class="gv-account-head">
+          <div class="gv-account-badge">일반 후원 / General Fund</div>
+          <h3><span class="wl-ko">월코 일반 후원</span><span class="wl-en">General Ministry Fund</span></h3>
+          <p><span class="wl-ko">캠프 · 청소년 사역 · 운영비</span><span class="wl-en">Camps · Youth ministry · Operations</span></p>
+        </div>
+        <div class="gv-account-body">
+          <div class="gv-acc-row">
+            <span class="gv-acc-key"><span class="wl-ko">은행</span><span class="wl-en">Bank</span></span>
+            <span class="gv-acc-val">
+              <span class="wl-ko">국민은행</span><span class="wl-en">KB Kookmin Bank</span>
+            </span>
+          </div>
+          <div class="gv-acc-row">
+            <span class="gv-acc-key"><span class="wl-ko">계좌번호</span><span class="wl-en">Account No.</span></span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="gv-acc-val" id="acc-general">000-000-000000</span>
+              <button class="gv-copy-btn" onclick="copyAcc('acc-general', this)">📋 <span class="wl-ko">복사</span><span class="wl-en">Copy</span></button>
+            </div>
+          </div>
+          <div class="gv-acc-row">
+            <span class="gv-acc-key"><span class="wl-ko">예금주</span><span class="wl-en">Account Holder</span></span>
+            <span class="gv-acc-val">한국생명의말씀협회</span>
+          </div>
+          <div class="gv-acc-row">
+            <span class="gv-acc-key"><span class="wl-ko">비고</span><span class="wl-en">Note</span></span>
+            <span class="gv-acc-val" style="font-size:12px; font-weight:600; color:var(--s);">
+              <span class="wl-ko-b">입금자명에 성함 기재</span>
+              <span class="wl-en-b">Include your name in the transfer note</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Missionary Support -->
+      <div class="gv-account">
+        <div class="gv-account-head red">
+          <div class="gv-account-badge">선교사 후원 / Missionary Support</div>
+          <h3><span class="wl-ko">선교사 개인 후원</span><span class="wl-en">Individual Missionary Support</span></h3>
+          <p><span class="wl-ko">특정 선교사를 지정하여 후원 가능합니다</span><span class="wl-en">You can designate support to a specific missionary</span></p>
+        </div>
+        <div class="gv-account-body">
+          <div class="gv-acc-row">
+            <span class="gv-acc-key"><span class="wl-ko">은행</span><span class="wl-en">Bank</span></span>
+            <span class="gv-acc-val">
+              <span class="wl-ko">국민은행</span><span class="wl-en">KB Kookmin Bank</span>
+            </span>
+          </div>
+          <div class="gv-acc-row">
+            <span class="gv-acc-key"><span class="wl-ko">계좌번호</span><span class="wl-en">Account No.</span></span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="gv-acc-val" id="acc-mission">000-000-000000</span>
+              <button class="gv-copy-btn" onclick="copyAcc('acc-mission', this)">📋 <span class="wl-ko">복사</span><span class="wl-en">Copy</span></button>
+            </div>
+          </div>
+          <div class="gv-acc-row">
+            <span class="gv-acc-key"><span class="wl-ko">예금주</span><span class="wl-en">Account Holder</span></span>
+            <span class="gv-acc-val">한국생명의말씀협회</span>
+          </div>
+          <div class="gv-acc-row">
+            <span class="gv-acc-key"><span class="wl-ko">비고</span><span class="wl-en">Note</span></span>
+            <span class="gv-acc-val" style="font-size:12px; font-weight:600; color:var(--s);">
+              <span class="wl-ko-b">입금자명: 성함 + 후원 선교사 이름</span>
+              <span class="wl-en-b">Note: Your name + Missionary's name</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Note box -->
+    <div style="background:rgba(0,79,104,0.06); border-radius:14px; padding:22px 26px; border-left:4px solid var(--m); margin-bottom:0;">
+      <p style="font-size:13.5px; color:var(--k); line-height:1.8; margin:0;">
+        <span class="wl-ko-b">💡 <strong>후원금 영수증:</strong> 정기 후원자 분들께 연말 기부금 영수증을 발급해 드립니다. 문의: <a href="mailto:wolkorea@gmail.com" style="color:var(--d);">wolkorea@gmail.com</a> 또는 <a href="tel:070-4190-6084" style="color:var(--d);">070-4190-6084</a></span>
+        <span class="wl-en-b">💡 <strong>Tax Receipt:</strong> We issue year-end donation receipts for recurring supporters. Contact us at <a href="mailto:wolkorea@gmail.com" style="color:var(--d);">wolkorea@gmail.com</a> or <a href="tel:070-4190-6084" style="color:var(--d);">070-4190-6084</a></span>
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- GIVING CATEGORIES -->
+<section class="gv-section white">
+  <div class="gv-section-inner">
+    <p class="gv-sec-tag"><span class="wl-ko">후원 분야</span><span class="wl-en">Giving Categories</span></p>
+    <h2 class="gv-sec-title">
+      <span class="wl-ko-b">원하는 사역에<br>지정 후원하실 수 있습니다</span>
+      <span class="wl-en-b">Designate your giving<br>to a specific ministry area</span>
+    </h2>
+    <div class="gv-cats">
+      <div class="gv-cat">
+        <div class="gv-cat-icon">⛺</div>
+        <div class="gv-cat-title"><span class="wl-ko">캠프 사역 후원</span><span class="wl-en">Camp Ministry</span></div>
+        <div class="gv-cat-desc"><span class="wl-ko-b">영어캠프 · 제주캠프 · 연합캠프 등 캠프 운영을 지원합니다.</span><span class="wl-en-b">Supports English, Jeju, and Union camp operations.</span></div>
+      </div>
+      <div class="gv-cat">
+        <div class="gv-cat-icon">📖</div>
+        <div class="gv-cat-title"><span class="wl-ko">제주월비 후원</span><span class="wl-en">WOLBI Jeju</span></div>
+        <div class="gv-cat-desc"><span class="wl-ko-b">11개월 성경학교 프로그램의 장학금 및 운영을 지원합니다.</span><span class="wl-en-b">Supports scholarships and operations of the 11-month Bible institute.</span></div>
+      </div>
+      <div class="gv-cat">
+        <div class="gv-cat-icon">🧑‍🤝‍🧑</div>
+        <div class="gv-cat-title"><span class="wl-ko">청소년 사역 후원</span><span class="wl-en">Youth Ministry</span></div>
+        <div class="gv-cat-desc"><span class="wl-ko-b">학교 사역, 제자훈련, 관계 돌봄 사역을 지원합니다.</span><span class="wl-en-b">Supports school outreach, discipleship, and relational ministry.</span></div>
+      </div>
+      <div class="gv-cat">
+        <div class="gv-cat-icon">✈️</div>
+        <div class="gv-cat-title"><span class="wl-ko">해외 선교 후원</span><span class="wl-en">Missions Fund</span></div>
+        <div class="gv-cat-desc"><span class="wl-ko-b">베트남 등 해외 단기선교팀 파송을 지원합니다.</span><span class="wl-en-b">Supports short-term mission trips including Vietnam outreach.</span></div>
+      </div>
+      <div class="gv-cat">
+        <div class="gv-cat-icon">🙏</div>
+        <div class="gv-cat-title"><span class="wl-ko">선교사 개인 후원</span><span class="wl-en">Missionary Support</span></div>
+        <div class="gv-cat-desc"><span class="wl-ko-b">특정 선교사의 생활비와 사역비를 직접 후원하실 수 있습니다.</span><span class="wl-en-b">Directly support a specific missionary's living and ministry expenses.</span></div>
+      </div>
+      <div class="gv-cat">
+        <div class="gv-cat-icon">🏢</div>
+        <div class="gv-cat-title"><span class="wl-ko">일반 운영 후원</span><span class="wl-en">General Operations</span></div>
+        <div class="gv-cat-desc"><span class="wl-ko-b">사무소 운영, 행정, 자료 제작 등 전반적인 사역을 지원합니다.</span><span class="wl-en-b">Supports office operations, administration, and resource production.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- end lang-root -->
+
+<!-- CTA -->
+<section class="gv-cta">
+  <div class="gv-cta-in">
+    <h2>
+      <span class="wl-ko-b">함께 이 사명을<br>감당해 주세요</span>
+      <span class="wl-en-b">Partner with us<br>in this sacred calling</span>
+    </h2>
+    <p>
+      <span class="wl-ko-b">후원이나 헌신에 대해 더 알고 싶으시면<br>언제든 연락해 주십시오. 기쁘게 섬기겠습니다.</span>
+      <span class="wl-en-b">If you have questions about giving or partnering with us,<br>we'd love to connect and share more.</span>
+    </p>
+    <a class="gv-cta-btn" href="/contact">
+      💌 <span class="wl-ko">문의하기</span><span class="wl-en">Get in Touch</span>
+    </a>
+  </div>
+</section>
+
+<script>
+function copyAcc(id, btn) {
+  const text = document.getElementById(id).textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ <span class="wl-ko">복사됨</span><span class="wl-en">Copied!</span>';
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+
+</BaseLayout>

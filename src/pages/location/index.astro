@@ -1,0 +1,366 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="오시는 길 — Word of Life Korea"
+  description="월코 평택 본부와 제주 사무소 오시는 길 안내. Word of Life Korea location and directions."
+  activeNav="connect"
+>
+
+<style>
+  :root {
+    --d:#004f68; --m:#007ea1; --l:#73d1f5;
+    --r:#c42a36; --k:#0d1b24; --s:#3d5a6a;
+    --bg:#f4f8fb; --line:rgba(0,79,104,0.1);
+  }
+
+  /* HERO */
+  .lo-hero {
+    background: linear-gradient(135deg, #061820 0%, #004f68 55%, #00788f 100%);
+    padding:140px 24px 90px; text-align:center;
+    position:relative; overflow:hidden;
+  }
+  .lo-hero::before {
+    content:""; position:absolute; inset:0;
+    background-image: radial-gradient(circle at 75% 40%, rgba(115,209,245,0.07) 0%, transparent 55%),
+                      radial-gradient(circle at 15% 70%, rgba(115,209,245,0.04) 0%, transparent 45%);
+    pointer-events:none;
+  }
+  .lo-hero::after {
+    content:""; position:absolute; inset:0;
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),
+                      linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+    background-size:60px 60px; pointer-events:none;
+  }
+  .lo-hero-in { position:relative; z-index:2; max-width:700px; margin:0 auto; }
+  .lo-eyebrow {
+    display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:999px; background:rgba(115,209,245,0.15);
+    border:1px solid rgba(115,209,245,0.3);
+    font-size:11px; font-weight:800; letter-spacing:0.1em; color:var(--l);
+    text-transform:uppercase; margin-bottom:20px;
+  }
+  .lo-hero h1 {
+    font-size:clamp(34px,5vw,54px); font-weight:800; line-height:1.15;
+    color:#fff; margin-bottom:14px; letter-spacing:-0.03em;
+  }
+  .lo-hero h1 em { font-style:normal; color:var(--l); }
+  .lo-hero-sub {
+    font-size:17px; line-height:1.85; color:rgba(255,255,255,0.78); max-width:560px; margin:0 auto;
+  }
+
+  /* CAMPUS TABS */
+  .lo-tabs {
+    display:flex; justify-content:center; gap:0;
+    background:#fff; border-bottom:2px solid var(--line);
+    position:sticky; top:68px; z-index:10;
+  }
+  .lo-tab {
+    padding:18px 36px; font-size:14px; font-weight:800;
+    color:var(--s); border:none; background:none; cursor:pointer;
+    border-bottom:3px solid transparent; margin-bottom:-2px;
+    transition:color .2s, border-color .2s; font-family:inherit;
+  }
+  .lo-tab.active { color:var(--d); border-bottom-color:var(--d); }
+  .lo-tab:hover:not(.active) { color:var(--m); }
+
+  /* CAMPUS PANEL */
+  .lo-panel { display:none; padding:64px 24px 80px; background:var(--bg); }
+  .lo-panel.active { display:block; }
+  .lo-panel-inner { max-width:1040px; margin:0 auto; }
+
+  /* MAP */
+  .lo-map-wrap {
+    border-radius:20px; overflow:hidden;
+    box-shadow:0 4px 24px rgba(0,79,104,0.10);
+    border:1px solid var(--line);
+    height:420px; position:relative;
+    margin-bottom:40px; background:#dde8f0;
+  }
+  .lo-map-wrap iframe {
+    width:100%; height:100%; border:none; display:block;
+  }
+  .lo-map-placeholder {
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:12px;
+    background:linear-gradient(135deg, #d8eaf3, #eef4f8);
+  }
+  .lo-map-placeholder-icon { font-size:52px; }
+  .lo-map-placeholder-text { font-size:15px; font-weight:700; color:var(--d); }
+  .lo-map-placeholder-sub { font-size:13px; color:var(--s); }
+  .lo-map-btn {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:12px 24px; border-radius:999px; background:var(--d); color:#fff;
+    font-size:14px; font-weight:800; text-decoration:none;
+    transition:background .2s; margin-top:4px;
+  }
+  .lo-map-btn:hover { background:var(--m); }
+
+  /* INFO GRID */
+  .lo-info-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:40px;
+  }
+  .lo-info-card {
+    background:#fff; border-radius:16px; padding:28px;
+    box-shadow:0 2px 14px rgba(0,79,104,0.06); border:1px solid var(--line);
+  }
+  .lo-info-card-title {
+    font-size:13px; font-weight:800; color:var(--m); letter-spacing:0.07em;
+    text-transform:uppercase; margin-bottom:16px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .lo-info-row { padding:11px 0; border-bottom:1px solid var(--line); }
+  .lo-info-row:last-child { border-bottom:none; padding-bottom:0; }
+  .lo-info-dt { font-size:11px; font-weight:700; color:var(--s); margin-bottom:4px; letter-spacing:0.04em; }
+  .lo-info-dd { font-size:14px; font-weight:600; color:var(--k); line-height:1.6; }
+  .lo-info-dd a { color:var(--d); text-decoration:none; }
+  .lo-info-dd a:hover { text-decoration:underline; }
+
+  /* DIRECTIONS */
+  .lo-dir {
+    background:#fff; border-radius:16px; padding:32px;
+    box-shadow:0 2px 14px rgba(0,79,104,0.06); border:1px solid var(--line);
+  }
+  .lo-dir-title {
+    font-size:15px; font-weight:800; color:var(--d); margin-bottom:20px;
+    padding-bottom:12px; border-bottom:2px solid var(--line);
+    display:flex; align-items:center; gap:8px;
+  }
+  .lo-dir-list { display:flex; flex-direction:column; gap:0; }
+  .lo-dir-item {
+    display:flex; align-items:flex-start; gap:14px;
+    padding:14px 0; border-bottom:1px solid var(--line);
+  }
+  .lo-dir-item:last-child { border-bottom:none; padding-bottom:0; }
+  .lo-dir-icon {
+    width:34px; height:34px; border-radius:10px; flex-shrink:0;
+    background:rgba(0,79,104,0.07); display:flex; align-items:center; justify-content:center;
+    font-size:16px; margin-top:2px;
+  }
+  .lo-dir-label { font-size:12px; font-weight:700; color:var(--m); margin-bottom:4px; }
+  .lo-dir-desc { font-size:14px; color:var(--k); line-height:1.65; }
+
+  /* RESPONSIVE */
+  @media(max-width:760px) {
+    .lo-info-grid { grid-template-columns:1fr; }
+    .lo-map-wrap { height:280px; }
+    .lo-tab { padding:14px 20px; font-size:13px; }
+    .lo-panel { padding:40px 16px 60px; }
+  }
+</style>
+
+<!-- HERO -->
+<section class="lo-hero">
+  <div class="lo-hero-in">
+    <div class="lo-eyebrow">📍 Location</div>
+    <h1>
+      <span class="wl-ko-b">오시는 <em>길 안내</em></span>
+      <span class="wl-en-b">Find <em>Our Offices</em></span>
+    </h1>
+    <p class="lo-hero-sub">
+      <span class="wl-ko-b">평택 본부와 제주 사무소로 방문하시거나 연락 주세요.</span>
+      <span class="wl-en-b">Visit our Pyeongtaek headquarters or Jeju office anytime.</span>
+    </p>
+  </div>
+</section>
+
+<!-- TABS -->
+<div class="lo-tabs">
+  <button class="lo-tab active" onclick="showPanel('pyeongtaek', this)">
+    🏢 <span class="wl-ko">평택 본부</span><span class="wl-en">Pyeongtaek HQ</span>
+  </button>
+  <button class="lo-tab" onclick="showPanel('jeju', this)">
+    🌊 <span class="wl-ko">제주 사무소</span><span class="wl-en">Jeju Office</span>
+  </button>
+</div>
+
+<div id="lang-root">
+
+<!-- PYEONGTAEK PANEL -->
+<div class="lo-panel active" id="panel-pyeongtaek">
+  <div class="lo-panel-inner">
+
+    <!-- Map -->
+    <div class="lo-map-wrap">
+      <div class="lo-map-placeholder">
+        <div class="lo-map-placeholder-icon">🗺️</div>
+        <div class="lo-map-placeholder-text">
+          <span class="wl-ko">평택 본부 지도</span>
+          <span class="wl-en">Pyeongtaek HQ Map</span>
+        </div>
+        <div class="lo-map-placeholder-sub">
+          <span class="wl-ko">경기도 평택시</span>
+          <span class="wl-en">Pyeongtaek, Gyeonggi-do</span>
+        </div>
+        <a class="lo-map-btn"
+           href="https://map.kakao.com/link/search/한국생명의말씀협회+평택"
+           target="_blank" rel="noopener">
+          🗺️ <span class="wl-ko">카카오맵으로 보기</span><span class="wl-en">Open in Kakao Map</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Info grid -->
+    <div class="lo-info-grid">
+      <div class="lo-info-card">
+        <div class="lo-info-card-title">📍 <span class="wl-ko">주소 및 연락처</span><span class="wl-en">Address & Contact</span></div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">주소</span><span class="wl-en">Address</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">경기도 평택시<br><small style="color:var(--s)">(정확한 주소는 사전 문의 바랍니다)</small></span>
+            <span class="wl-en-b">Pyeongtaek, Gyeonggi-do<br><small style="color:var(--s)">(Contact us for the full address)</small></span>
+          </div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">전화</span><span class="wl-en">Phone</span></div>
+          <div class="lo-info-dd"><a href="tel:070-4190-6084">070-4190-6084</a></div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt">Email</div>
+          <div class="lo-info-dd"><a href="mailto:wolkorea@gmail.com">wolkorea@gmail.com</a></div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">운영 시간</span><span class="wl-en">Hours</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">월–금 09:00–18:00<br>주말 및 공휴일 휴무</span>
+            <span class="wl-en-b">Mon–Fri 9 AM–6 PM<br>Closed weekends & holidays</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lo-info-card">
+        <div class="lo-info-card-title">🚆 <span class="wl-ko">교통편</span><span class="wl-en">Getting Here</span></div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">지하철 / 기차</span><span class="wl-en">Subway / Train</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">1호선 또는 SRT 평택역 하차<br>택시 또는 버스 이용</span>
+            <span class="wl-en-b">Line 1 or SRT to Pyeongtaek Station<br>then taxi or local bus</span>
+          </div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">버스</span><span class="wl-en">Bus</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">시내버스 이용 (문의 시 상세 안내)</span>
+            <span class="wl-en-b">Local city bus (details on request)</span>
+          </div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">자동차</span><span class="wl-en">By Car</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">서해안고속도로 또는 경부고속도로 이용<br>네비게이션: "한국생명의말씀협회" 검색</span>
+            <span class="wl-en-b">Via West Coast or Gyeongbu Expressway<br>Search "Word of Life Korea" on navigation</span>
+          </div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">주차</span><span class="wl-en">Parking</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">건물 내 주차 가능</span>
+            <span class="wl-en-b">On-site parking available</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- JEJU PANEL -->
+<div class="lo-panel" id="panel-jeju">
+  <div class="lo-panel-inner">
+
+    <!-- Map embed (Kakao iframe) -->
+    <div class="lo-map-wrap">
+      <iframe
+        src="https://map.kakao.com/link/embed/622+광상로+애월읍+제주시"
+        title="제주 사무소 지도"
+        allowfullscreen
+        loading="lazy">
+      </iframe>
+    </div>
+
+    <!-- Info grid -->
+    <div class="lo-info-grid">
+      <div class="lo-info-card">
+        <div class="lo-info-card-title">📍 <span class="wl-ko">주소 및 연락처</span><span class="wl-en">Address & Contact</span></div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">주소</span><span class="wl-en">Address</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">제주특별자치도 제주시<br>애월읍 광상로 622</span>
+            <span class="wl-en-b">622 Gwangsang-ro, Aewol-eup<br>Jeju-si, Jeju Special Self-Governing Province</span>
+          </div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">전화</span><span class="wl-en">Phone</span></div>
+          <div class="lo-info-dd"><a href="tel:064-799-3707">064-799-3707</a></div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt">Email</div>
+          <div class="lo-info-dd"><a href="mailto:wolkorea@gmail.com">wolkorea@gmail.com</a></div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">운영 시간</span><span class="wl-en">Hours</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">월–금 09:00–18:00<br>주말 및 공휴일 휴무</span>
+            <span class="wl-en-b">Mon–Fri 9 AM–6 PM<br>Closed weekends & holidays</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lo-info-card">
+        <div class="lo-info-card-title">✈️ <span class="wl-ko">교통편</span><span class="wl-en">Getting Here</span></div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">공항에서</span><span class="wl-en">From Airport</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">제주국제공항에서 약 25–35분<br>택시 또는 렌터카 이용 권장</span>
+            <span class="wl-en-b">About 25–35 minutes from Jeju Int'l Airport<br>Taxi or rental car recommended</span>
+          </div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">버스</span><span class="wl-en">Bus</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">제주 시내버스 이용 (애월읍 방면)<br>정류장 하차 후 도보 이동</span>
+            <span class="wl-en-b">Local bus toward Aewol-eup<br>Short walk from nearest bus stop</span>
+          </div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">자동차</span><span class="wl-en">By Car</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">네비게이션: "광상로 622" 또는<br>"한국생명의말씀협회 제주" 검색</span>
+            <span class="wl-en-b">Navigation: "622 Gwangsang-ro, Aewol-eup"<br>or search "Word of Life Korea Jeju"</span>
+          </div>
+        </div>
+        <div class="lo-info-row">
+          <div class="lo-info-dt"><span class="wl-ko">주차</span><span class="wl-en">Parking</span></div>
+          <div class="lo-info-dd">
+            <span class="wl-ko-b">건물 내 주차 가능</span>
+            <span class="wl-en-b">On-site parking available</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kakao Map direct link -->
+    <div style="text-align:center; margin-top:8px;">
+      <a class="lo-map-btn"
+         href="https://map.kakao.com/link/search/제주시+애월읍+광상로+622"
+         target="_blank" rel="noopener">
+        🗺️ <span class="wl-ko">카카오맵으로 보기</span><span class="wl-en">Open in Kakao Map</span>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- end lang-root -->
+
+<script>
+function showPanel(id, btn) {
+  document.querySelectorAll('.lo-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.lo-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+
+</BaseLayout>
