@@ -1,0 +1,109 @@
+backend:
+  name: github
+  repo: WordofLifeKorea/wolko-website
+  branch: main
+  base_url: https://wolko.org
+
+media_folder: public/images/uploads
+public_folder: /images/uploads
+
+# 한/영 다국어 구조
+i18n:
+  structure: multiple_files
+  locales: [ko, en]
+  default_locale: ko
+
+collections:
+
+  # ── 팀원 (섬기는이) ──────────────────────────────────────
+  - name: "team"
+    label: "섬기는이 (Team)"
+    label_singular: "팀원"
+    folder: "src/content/team"
+    create: true
+    slug: "{{slug}}"
+    i18n: true
+    fields:
+      - { label: "이름 (한국어)", name: "name_ko", widget: "string" }
+      - { label: "Name (English)", name: "name_en", widget: "string" }
+      - { label: "직책 (한국어)", name: "title_ko", widget: "string" }
+      - { label: "Title (English)", name: "title_en", widget: "string" }
+      - label: "역할 배지"
+        name: "role_badge"
+        widget: "select"
+        options:
+          - { label: "Field Director", value: "Field Director" }
+          - { label: "Jeju Director", value: "Jeju Director" }
+          - { label: "Missionary", value: "Missionary" }
+          - { label: "Missionaries", value: "Missionaries" }
+          - { label: "Short-term Worker", value: "Short-term Worker" }
+      - label: "캠퍼스"
+        name: "campus"
+        widget: "select"
+        options:
+          - { label: "평택 (Pyeongtaek)", value: "pyeongtaek" }
+          - { label: "제주 (Jeju)", value: "jeju" }
+      - label: "구분"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "선교사 (Missionary)", value: "missionary" }
+          - { label: "단기 사역자 (Short-term Worker)", value: "stw" }
+      - { label: "순서", name: "order", widget: "number", default: 99 }
+      - { label: "사진", name: "photo", widget: "image", required: false }
+      - { label: "사진 URL (NAS 등 외부)", name: "photo_url", widget: "string", required: false, hint: "사진 파일 대신 외부 URL 직접 입력" }
+      - { label: "프로필 링크", name: "profile_link", widget: "string", required: false }
+      - { label: "프로필 소개 (한국어)", name: "bio_ko", widget: "markdown", required: false, i18n: true }
+      - { label: "Bio (English)", name: "bio_en", widget: "markdown", required: false, i18n: true }
+
+  # ── 소식 / 선교보고 ──────────────────────────────────────
+  - name: "news"
+    label: "소식 (News)"
+    label_singular: "소식"
+    folder: "src/content/news"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    i18n: true
+    fields:
+      - { label: "제목 (한국어)", name: "title_ko", widget: "string" }
+      - { label: "Title (English)", name: "title_en", widget: "string" }
+      - { label: "날짜", name: "date", widget: "datetime" }
+      - { label: "썸네일 이미지", name: "thumbnail", widget: "image", required: false }
+      - label: "카테고리"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "선교보고", value: "mission-report" }
+          - { label: "캠프 소식", value: "camp" }
+          - { label: "제주월비", value: "wolbi" }
+          - { label: "청소년 사역", value: "youth" }
+          - { label: "일반 소식", value: "general" }
+      - { label: "내용 (한국어)", name: "body_ko", widget: "markdown" }
+      - { label: "Content (English)", name: "body_en", widget: "markdown", required: false }
+
+  # ── 기도 제목 ──────────────────────────────────────────
+  - name: "prayer"
+    label: "기도 제목 (Prayer Requests)"
+    label_singular: "기도 제목"
+    folder: "src/content/prayer"
+    create: true
+    slug: "{{year}}-{{month}}-{{slug}}"
+    fields:
+      - { label: "제목 (한국어)", name: "title_ko", widget: "string" }
+      - { label: "Title (English)", name: "title_en", widget: "string" }
+      - { label: "날짜", name: "date", widget: "datetime" }
+      - { label: "내용 (한국어)", name: "body_ko", widget: "markdown" }
+      - { label: "Content (English)", name: "body_en", widget: "markdown", required: false }
+
+  # ── 사이트 설정 ────────────────────────────────────────
+  - name: "settings"
+    label: "사이트 설정 (Settings)"
+    files:
+      - name: "general"
+        label: "일반 설정"
+        file: "src/content/settings/general.json"
+        fields:
+          - { label: "사이트 제목 (KO)", name: "site_title_ko", widget: "string" }
+          - { label: "Site Title (EN)", name: "site_title_en", widget: "string" }
+          - { label: "유튜브 영상 ID", name: "youtube_id", widget: "string", hint: "예: pDTo4oNcAMg" }
+          - { label: "한국청소년 복음화율 통계", name: "gospel_rate", widget: "string", default: "3" }
