@@ -1,0 +1,427 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Contact — Word of Life Korea"
+  description="월코에 문의하거나 연락하세요. 평택 본부와 제주 사무소로 언제든지 연락 주세요."
+  activeNav="connect"
+>
+
+<style>
+  :root {
+    --d:#004f68; --m:#007ea1; --l:#73d1f5;
+    --r:#c42a36; --k:#0d1b24; --s:#3d5a6a;
+    --bg:#f4f8fb; --line:rgba(0,79,104,0.1);
+  }
+
+  /* ── HERO ── */
+  .ct-hero {
+    background: linear-gradient(135deg, #0a1e2b 0%, #004f68 60%, #006a8a 100%);
+    padding: 140px 24px 100px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .ct-hero::before {
+    content:""; position:absolute; inset:0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(115,209,245,0.07) 0%, transparent 55%),
+                      radial-gradient(circle at 80% 30%, rgba(115,209,245,0.05) 0%, transparent 50%);
+    pointer-events:none;
+  }
+  .ct-hero::after {
+    content:""; position:absolute; inset:0;
+    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px; pointer-events:none;
+  }
+  .ct-hero-inner { position:relative; z-index:2; max-width:720px; margin:0 auto; }
+  .ct-eyebrow {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 16px; border-radius:999px;
+    background:rgba(115,209,245,0.15); border:1px solid rgba(115,209,245,0.3);
+    font-size:11px; font-weight:800; letter-spacing:0.1em; color:var(--l);
+    text-transform:uppercase; margin-bottom:20px;
+  }
+  .ct-hero h1 {
+    font-size: clamp(34px, 5vw, 54px); font-weight:800; line-height:1.15;
+    color:#fff; margin-bottom:16px; letter-spacing:-0.03em;
+  }
+  .ct-hero h1 em { font-style:normal; color:var(--l); }
+  .ct-hero-sub {
+    font-size:17px; line-height:1.85; color:rgba(255,255,255,0.78);
+    max-width:580px; margin:0 auto;
+  }
+
+  /* ── SECTION ── */
+  .ct-section { padding:80px 24px; background:var(--bg); }
+  .ct-section-inner { max-width:1060px; margin:0 auto; }
+  .ct-section-title {
+    font-size:clamp(22px, 3vw, 30px); font-weight:800;
+    color:var(--d); margin-bottom:40px; letter-spacing:-0.02em;
+  }
+  .ct-section-title span { display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; color:var(--m); text-transform:uppercase; margin-bottom:6px; }
+
+  /* ── OFFICE CARDS ── */
+  .ct-offices {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:24px; margin-bottom:64px;
+  }
+  .ct-office {
+    background:#fff; border-radius:20px; overflow:hidden;
+    box-shadow:0 4px 24px rgba(0,79,104,0.08);
+    border:1px solid var(--line);
+    transition:transform .2s, box-shadow .2s;
+  }
+  .ct-office:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,79,104,0.13); }
+  .ct-office-top {
+    padding:32px 32px 24px;
+    background:linear-gradient(135deg, var(--d) 0%, #006080 100%);
+    position:relative; overflow:hidden;
+  }
+  .ct-office-top::after {
+    content:""; position:absolute; right:-20px; top:-20px;
+    width:120px; height:120px; border-radius:50%;
+    background:rgba(255,255,255,0.04);
+  }
+  .ct-office-badge {
+    display:inline-block; padding:4px 12px; border-radius:999px;
+    background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25);
+    font-size:10px; font-weight:800; letter-spacing:0.1em; color:var(--l);
+    text-transform:uppercase; margin-bottom:12px;
+  }
+  .ct-office-top h2 { font-size:22px; font-weight:800; color:#fff; margin:0; line-height:1.2; }
+  .ct-office-top p { font-size:13px; color:rgba(255,255,255,0.7); margin:6px 0 0; }
+  .ct-office-body { padding:28px 32px; }
+  .ct-info-row {
+    display:flex; align-items:flex-start; gap:14px;
+    padding:14px 0; border-bottom:1px solid var(--line);
+  }
+  .ct-info-row:last-child { border-bottom:none; padding-bottom:0; }
+  .ct-info-icon {
+    width:36px; height:36px; border-radius:10px;
+    background:rgba(0,79,104,0.07); display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; font-size:16px; margin-top:2px;
+  }
+  .ct-info-label { font-size:11px; font-weight:700; color:var(--m); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:3px; }
+  .ct-info-val { font-size:15px; font-weight:600; color:var(--k); line-height:1.6; }
+  .ct-info-val a { color:var(--d); text-decoration:none; }
+  .ct-info-val a:hover { text-decoration:underline; }
+
+  /* ── CONTACT METHODS ── */
+  .ct-methods {
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:16px; margin-bottom:64px;
+  }
+  .ct-method {
+    background:#fff; border-radius:16px; padding:28px 20px;
+    text-align:center; border:1px solid var(--line);
+    box-shadow:0 2px 12px rgba(0,79,104,0.05);
+    text-decoration:none; transition:transform .2s, box-shadow .2s;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+  }
+  .ct-method:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(0,79,104,0.12); }
+  .ct-method-icon {
+    width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+  }
+  .ct-method-icon.phone { background:rgba(0,79,104,0.08); }
+  .ct-method-icon.email { background:rgba(196,42,54,0.08); }
+  .ct-method-icon.naver { background:rgba(3,199,90,0.1); }
+  .ct-method-icon.youtube { background:rgba(255,0,0,0.08); }
+  .ct-method-name { font-size:13px; font-weight:800; color:var(--k); }
+  .ct-method-desc { font-size:12px; color:var(--s); line-height:1.5; }
+
+  /* ── FORM ── */
+  .ct-form-wrap {
+    background:#fff; border-radius:20px; padding:48px;
+    box-shadow:0 4px 24px rgba(0,79,104,0.08);
+    border:1px solid var(--line);
+  }
+  .ct-form-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;
+  }
+  .ct-field { display:flex; flex-direction:column; gap:8px; }
+  .ct-field.full { grid-column:1/-1; }
+  .ct-field label {
+    font-size:12px; font-weight:700; color:var(--d); letter-spacing:0.05em; text-transform:uppercase;
+  }
+  .ct-field input, .ct-field select, .ct-field textarea {
+    width:100%; padding:13px 16px; border:1.5px solid rgba(0,79,104,0.18);
+    border-radius:10px; font-size:15px; color:var(--k);
+    background:#fafcfe; transition:border-color .2s, box-shadow .2s;
+    font-family:inherit; outline:none; box-sizing:border-box;
+  }
+  .ct-field input:focus, .ct-field select:focus, .ct-field textarea:focus {
+    border-color:var(--m); box-shadow:0 0 0 3px rgba(0,126,161,0.1);
+    background:#fff;
+  }
+  .ct-field textarea { resize:vertical; min-height:130px; }
+  .ct-form-btn {
+    display:inline-flex; align-items:center; gap:10px;
+    padding:15px 36px; border-radius:999px;
+    background:var(--d); color:#fff; border:none; cursor:pointer;
+    font-size:15px; font-weight:800; letter-spacing:0.02em;
+    transition:background .2s, transform .2s;
+    font-family:inherit;
+  }
+  .ct-form-btn:hover { background:var(--m); transform:translateY(-2px); }
+  .ct-form-note {
+    font-size:13px; color:var(--s); margin-top:14px;
+    padding:14px 16px; background:rgba(0,79,104,0.04);
+    border-radius:10px; border-left:3px solid var(--m); line-height:1.7;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:900px) {
+    .ct-offices { grid-template-columns:1fr; }
+    .ct-methods { grid-template-columns:repeat(2,1fr); }
+  }
+  @media(max-width:640px) {
+    .ct-form-wrap { padding:28px 20px; }
+    .ct-form-grid { grid-template-columns:1fr; }
+    .ct-methods { grid-template-columns:1fr 1fr; }
+    .ct-office-body { padding:20px; }
+    .ct-office-top { padding:24px 20px 18px; }
+  }
+</style>
+
+<!-- HERO -->
+<section class="ct-hero">
+  <div class="ct-hero-inner">
+    <div class="ct-eyebrow">📬 Contact</div>
+    <h1>
+      <span class="wl-ko-b">언제든지<br><em>연락해 주세요</em></span>
+      <span class="wl-en-b">We'd love<br><em>to hear from you</em></span>
+    </h1>
+    <p class="ct-hero-sub">
+      <span class="wl-ko-b">사역 문의, 후원, 기도 제목 나눔 — 어떤 이유로든 연락 주시면 성심껏 답변 드리겠습니다.</span>
+      <span class="wl-en-b">Whether it's a ministry inquiry, partnership, or prayer request — we're here and ready to respond.</span>
+    </p>
+  </div>
+</section>
+
+<!-- MAIN SECTION -->
+<section class="ct-section" id="lang-root">
+  <div class="ct-section-inner">
+
+    <!-- CONTACT METHODS -->
+    <p class="ct-section-title">
+      <span class="wl-ko-b">빠른 연락처</span>
+      <span class="wl-en-b">Quick Contact</span>
+    </p>
+    <div class="ct-methods">
+      <a class="ct-method" href="tel:070-4190-6084">
+        <div class="ct-method-icon phone">📞</div>
+        <div class="ct-method-name">
+          <span class="wl-ko">평택 본부</span><span class="wl-en">Pyeongtaek HQ</span>
+        </div>
+        <div class="ct-method-desc">070-4190-6084</div>
+      </a>
+      <a class="ct-method" href="tel:064-799-3707">
+        <div class="ct-method-icon phone">📞</div>
+        <div class="ct-method-name">
+          <span class="wl-ko">제주 사무소</span><span class="wl-en">Jeju Office</span>
+        </div>
+        <div class="ct-method-desc">064-799-3707</div>
+      </a>
+      <a class="ct-method" href="mailto:wolkorea@gmail.com">
+        <div class="ct-method-icon email">✉️</div>
+        <div class="ct-method-name">Email</div>
+        <div class="ct-method-desc">wolkorea@gmail.com</div>
+      </a>
+      <a class="ct-method" href="https://www.youtube.com/@wolko" target="_blank" rel="noopener">
+        <div class="ct-method-icon youtube">▶️</div>
+        <div class="ct-method-name">YouTube</div>
+        <div class="ct-method-desc">
+          <span class="wl-ko">사역 영상</span><span class="wl-en">Ministry Videos</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- OFFICE CARDS -->
+    <p class="ct-section-title">
+      <span class="wl-ko-b">사무소 안내</span>
+      <span class="wl-en-b">Our Offices</span>
+    </p>
+    <div class="ct-offices">
+
+      <!-- Pyeongtaek -->
+      <div class="ct-office">
+        <div class="ct-office-top">
+          <div class="ct-office-badge">HQ · Pyeongtaek</div>
+          <h2><span class="wl-ko">평택 본부</span><span class="wl-en">Pyeongtaek Headquarters</span></h2>
+          <p><span class="wl-ko">한국생명의말씀협회 본부 사무소</span><span class="wl-en">Main administrative office of Word of Life Korea</span></p>
+        </div>
+        <div class="ct-office-body">
+          <div class="ct-info-row">
+            <div class="ct-info-icon">📍</div>
+            <div>
+              <div class="ct-info-label"><span class="wl-ko">주소</span><span class="wl-en">Address</span></div>
+              <div class="ct-info-val">
+                <span class="wl-ko-b">경기도 평택시<br><small style="color:var(--s); font-weight:500; font-size:12px;">(정확한 주소는 문의 시 안내해 드립니다)</small></span>
+                <span class="wl-en-b">Pyeongtaek, Gyeonggi-do<br><small style="color:var(--s); font-weight:500; font-size:12px;">(Full address provided upon inquiry)</small></span>
+              </div>
+            </div>
+          </div>
+          <div class="ct-info-row">
+            <div class="ct-info-icon">📞</div>
+            <div>
+              <div class="ct-info-label"><span class="wl-ko">전화</span><span class="wl-en">Phone</span></div>
+              <div class="ct-info-val"><a href="tel:070-4190-6084">070-4190-6084</a></div>
+            </div>
+          </div>
+          <div class="ct-info-row">
+            <div class="ct-info-icon">✉️</div>
+            <div>
+              <div class="ct-info-label">Email</div>
+              <div class="ct-info-val"><a href="mailto:wolkorea@gmail.com">wolkorea@gmail.com</a></div>
+            </div>
+          </div>
+          <div class="ct-info-row">
+            <div class="ct-info-icon">🕐</div>
+            <div>
+              <div class="ct-info-label"><span class="wl-ko">운영 시간</span><span class="wl-en">Office Hours</span></div>
+              <div class="ct-info-val">
+                <span class="wl-ko-b">월–금 09:00–18:00</span>
+                <span class="wl-en-b">Mon–Fri 9 AM – 6 PM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jeju -->
+      <div class="ct-office">
+        <div class="ct-office-top">
+          <div class="ct-office-badge">Jeju · WOLBI</div>
+          <h2><span class="wl-ko">제주 사무소</span><span class="wl-en">Jeju Office</span></h2>
+          <p><span class="wl-ko">제주월비 및 제주 사역 담당 사무소</span><span class="wl-en">WOLBI Jeju & Jeju campus ministry office</span></p>
+        </div>
+        <div class="ct-office-body">
+          <div class="ct-info-row">
+            <div class="ct-info-icon">📍</div>
+            <div>
+              <div class="ct-info-label"><span class="wl-ko">주소</span><span class="wl-en">Address</span></div>
+              <div class="ct-info-val">
+                <span class="wl-ko-b">제주시 애월읍 광상로 622</span>
+                <span class="wl-en-b">622 Gwangsang-ro, Aewol-eup, Jeju-si</span>
+              </div>
+            </div>
+          </div>
+          <div class="ct-info-row">
+            <div class="ct-info-icon">📞</div>
+            <div>
+              <div class="ct-info-label"><span class="wl-ko">전화</span><span class="wl-en">Phone</span></div>
+              <div class="ct-info-val"><a href="tel:064-799-3707">064-799-3707</a></div>
+            </div>
+          </div>
+          <div class="ct-info-row">
+            <div class="ct-info-icon">✉️</div>
+            <div>
+              <div class="ct-info-label">Email</div>
+              <div class="ct-info-val"><a href="mailto:wolkorea@gmail.com">wolkorea@gmail.com</a></div>
+            </div>
+          </div>
+          <div class="ct-info-row">
+            <div class="ct-info-icon">🕐</div>
+            <div>
+              <div class="ct-info-label"><span class="wl-ko">운영 시간</span><span class="wl-en">Office Hours</span></div>
+              <div class="ct-info-val">
+                <span class="wl-ko-b">월–금 09:00–18:00</span>
+                <span class="wl-en-b">Mon–Fri 9 AM – 6 PM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CONTACT FORM -->
+    <p class="ct-section-title">
+      <span class="wl-ko-b">문의 보내기</span>
+      <span class="wl-en-b">Send a Message</span>
+    </p>
+    <div class="ct-form-wrap">
+      <form name="contact" method="POST" data-netlify="true" action="/contact/success"
+            onsubmit="handleSubmit(event)">
+        <input type="hidden" name="form-name" value="contact" />
+        <div class="ct-form-grid">
+          <div class="ct-field">
+            <label for="ct-name">
+              <span class="wl-ko">이름 *</span><span class="wl-en">Name *</span>
+            </label>
+            <input type="text" id="ct-name" name="name" required
+              placeholder="홍길동 / John Smith" />
+          </div>
+          <div class="ct-field">
+            <label for="ct-email">
+              <span class="wl-ko">이메일 *</span><span class="wl-en">Email *</span>
+            </label>
+            <input type="email" id="ct-email" name="email" required
+              placeholder="example@email.com" />
+          </div>
+          <div class="ct-field">
+            <label for="ct-phone">
+              <span class="wl-ko">연락처</span><span class="wl-en">Phone</span>
+            </label>
+            <input type="tel" id="ct-phone" name="phone"
+              placeholder="010-0000-0000" />
+          </div>
+          <div class="ct-field">
+            <label for="ct-type">
+              <span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span>
+            </label>
+            <select id="ct-type" name="type">
+              <option value="general"><span class="wl-ko">일반 문의</span><span class="wl-en">General Inquiry</span></option>
+              <option value="ministry">사역 협력 / Ministry Partnership</option>
+              <option value="wolbi">제주월비 입학 / WOLBI Admissions</option>
+              <option value="camp">캠프 신청 / Camp Registration</option>
+              <option value="mission">선교팀 / Mission Trip</option>
+              <option value="give">후원 / Giving</option>
+              <option value="prayer">기도 제목 / Prayer Request</option>
+            </select>
+          </div>
+          <div class="ct-field full">
+            <label for="ct-msg">
+              <span class="wl-ko">내용 *</span><span class="wl-en">Message *</span>
+            </label>
+            <textarea id="ct-msg" name="message" required
+              placeholder="문의 내용을 자유롭게 작성해 주세요. / Please write your message freely."></textarea>
+          </div>
+        </div>
+        <button type="submit" class="ct-form-btn">
+          <span>📨</span>
+          <span class="wl-ko">문의 보내기</span><span class="wl-en">Send Message</span>
+        </button>
+        <p class="ct-form-note">
+          <span class="wl-ko-b">📌 보내주신 문의는 영업일 기준 1–2일 내로 답변 드리겠습니다. 긴급한 사항은 전화로 연락해 주세요.</span>
+          <span class="wl-en-b">📌 We typically respond within 1–2 business days. For urgent matters, please call us directly.</span>
+        </p>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<script>
+function handleSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  fetch('/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(data).toString(),
+  })
+  .then(() => {
+    form.innerHTML = '<div style="text-align:center;padding:48px 0;"><div style="font-size:48px;margin-bottom:16px;">✅</div><p style="font-size:18px;font-weight:800;color:#004f68;" class="wl-ko">문의가 접수되었습니다.<br>곧 연락 드리겠습니다.</p><p style="font-size:18px;font-weight:800;color:#004f68;" class="wl-en">Your message has been received.<br>We\'ll be in touch soon.</p></div>';
+  })
+  .catch(() => {
+    alert('전송 중 오류가 발생했습니다. 이메일로 직접 연락해 주세요.\nAn error occurred. Please contact us via email.');
+  });
+}
+</script>
+
+</BaseLayout>
