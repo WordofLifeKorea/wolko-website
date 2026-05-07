@@ -11,7 +11,11 @@ const d = person.data;
 const campusKo = d.campus === 'pyeongtaek' ? '평택 월코센터' : '제주 월비캠퍼스';
 const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju WOLBI Campus';
 const hasBio = (d.bio_ko && d.bio_ko.trim()) || (d.bio_en && d.bio_en.trim());
+const hasBio2 = (d.bio_ko_2 && d.bio_ko_2.trim()) || (d.bio_en_2 && d.bio_en_2.trim());
 const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
+// 부부 선교사 이름 분리 (예: "몰스 제이콥 & 몰스 크리스탈" → ["몰스 제이콥", "몰스 크리스탈"])
+const [name1Ko, name2Ko] = d.name_ko.includes(' & ') ? d.name_ko.split(' & ') : [d.name_ko, null];
+const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : [d.name_en, null];
 ---
 <BaseLayout title={`${d.name_ko} — WOLKO 월코`} description={`${d.name_en} | ${d.title_en} | Word of Life Korea`} activeNav="about">
 <style>
@@ -137,12 +141,13 @@ const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
 }
 
 .mp-hero-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(30px, 4vw, 52px); font-weight: 600;
-  color: var(--c-white); line-height: 1.15;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: clamp(20px, 2.6vw, 38px); font-weight: 800;
+  color: var(--c-white); line-height: 1.25;
   margin-bottom: 16px; animation: mp-fade-up 1s 0.35s both;
+  word-break: keep-all;
 }
-.mp-hero-title em { font-style: italic; color: var(--c-light); }
+.mp-hero-title em { font-style: italic; color: var(--c-light); font-family: 'Cormorant Garamond', serif; font-size: 1.1em; }
 
 .mp-hero-role {
   font-size: 12px; font-weight: 700;
@@ -251,6 +256,18 @@ const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
   border-radius: 14px; padding: 28px 24px;
   font-size: 14px; color: var(--c-muted); font-style: italic; line-height: 1.8;
 }
+
+.mp-story-divider {
+  border: none; border-top: 1px solid var(--c-line);
+  margin: 56px 0;
+}
+
+/* 두 번째 스토리 블록: 텍스트 왼쪽, 사진 오른쪽 */
+.mp-story-block--reverse {
+  direction: ltr;
+}
+.mp-story-block--reverse .mp-story-text { order: 1; }
+.mp-story-block--reverse .mp-story-photo { order: 2; }
 
 /* PRAYER */
 .mp-prayer {
@@ -377,6 +394,8 @@ const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
 
   <!-- Story -->
   <section class="mp-story">
+
+    <!-- 블록 1: 사진 왼쪽, 텍스트 오른쪽 -->
     <div class="mp-story-block mp-reveal">
       <div class="mp-story-photo">
         <div class="mp-story-photo-placeholder">
@@ -386,22 +405,19 @@ const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
           </svg>
         </div>
         {d.photo_url && (
-          <img src={d.photo_url} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;"/>
+          <img src={d.photo_url} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
         )}
-        <span class="mp-story-photo-tag">
-          <span class="wl-ko">{d.role_badge}</span>
-          <span class="wl-en">{d.role_badge}</span>
-        </span>
+        <span class="mp-story-photo-tag">{d.role_badge}</span>
       </div>
 
       <div class="mp-story-text">
         <div class="mp-story-label">
           <span class="wl-ko">선교사 이야기</span>
-          <span class="wl-en">Their Story</span>
+          <span class="wl-en">{name2Ko ? "Jacob's Story" : "Their Story"}</span>
         </div>
         <h2 class="mp-story-name">
-          <span class="wl-ko">{d.name_ko}</span>
-          <span class="wl-en">{d.name_en}</span>
+          <span class="wl-ko">{name1Ko}</span>
+          <span class="wl-en">{name1En}</span>
         </h2>
         {hasBio ? (
           <>
@@ -416,6 +432,41 @@ const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
         )}
       </div>
     </div>
+
+    <!-- 블록 2 (부부 선교사용): 텍스트 왼쪽, 사진 오른쪽 -->
+    {hasBio2 && (
+      <>
+        <hr class="mp-story-divider"/>
+        <div class="mp-story-block mp-story-block--reverse mp-reveal">
+          <div class="mp-story-text">
+            <div class="mp-story-label">
+              <span class="wl-ko">선교사 이야기</span>
+              <span class="wl-en">Crystal's Story</span>
+            </div>
+            <h2 class="mp-story-name">
+              <span class="wl-ko">{name2Ko}</span>
+              <span class="wl-en">{name2En}</span>
+            </h2>
+            {d.bio_ko_2 && <p class="mp-story-body wl-ko-block">{d.bio_ko_2}</p>}
+            {d.bio_en_2 && <p class="mp-story-body wl-en-block">{d.bio_en_2}</p>}
+          </div>
+
+          <div class="mp-story-photo">
+            <div class="mp-story-photo-placeholder">
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="30" r="16" fill="#8fa8b8"/>
+                <ellipse cx="40" cy="68" rx="26" ry="16" fill="#8fa8b8"/>
+              </svg>
+            </div>
+            {d.photo_url_2 && (
+              <img src={d.photo_url_2} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
+            )}
+            <span class="mp-story-photo-tag">{d.role_badge}</span>
+          </div>
+        </div>
+      </>
+    )}
+
   </section>
 
   <!-- Prayer -->
