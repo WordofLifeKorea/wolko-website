@@ -1,425 +1,665 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
-
 <BaseLayout
   title="베트남 선교 — Word of Life Korea"
-  description="베트남 복음 사역 — 올여름 베트남 청소년 캠프에 함께하세요. 2026년 6월 5-13일"
+  description="올여름 베트남 청소년 캠프에 함께하세요. 복음 중심 단기선교 · 2026년 6월 5–13일"
   activeNav="ministry"
 >
 
+<!-- WOLKO 베트남 선교 본문 | 한/영 이중언어 | 플로팅 바 분리 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
-  :root {
-    --c-deep: #004f68; --c-mid: #0a5b76; --c-light: #73d1f5;
-    --c-red: #c42a36;
-    --c-bg: #f4f8fb; --c-white: #ffffff;
-    --c-text: #152028; --c-muted: #5b6b78;
-    --c-line: rgba(0,79,104,0.12);
-    --r-xl: 28px; --r-lg: 20px; --r-md: 14px;
-  }
+/* ══ 언어 표시/숨김 — 모든 요소 타입 커버 ══ */
+.wl-en,
+p.wl-en, h2.wl-en, h3.wl-en, h4.wl-en,
+dt.wl-en, dd.wl-en, span.wl-en, div.wl-en,
+li.wl-en { display: none !important; }
 
-  /* HERO */
-  .hero {
-    position:relative; overflow:hidden;
-    padding:160px 24px 100px; text-align:center;
-    background:
-      linear-gradient(180deg, rgba(5,24,36,0.48) 0%, rgba(5,24,36,0.65) 100%),
-      url("https://wolko.synology.me/Web_Contents/Photos/Vietnam/Vietnam_Banner.jpg") center / cover no-repeat;
-    background-color:#083d51;
-  }
-  .hero::before {
-    content:""; position:absolute; inset:0;
-    background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
-    background-size:60px 60px; pointer-events:none;
-  }
-  .hero-inner { position:relative; z-index:2; max-width:860px; margin:0 auto; }
-  .hero-eyebrow {
-    display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border-radius:999px;
-    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.22);
-    font-size:11px; font-weight:800; letter-spacing:0.09em; color:rgba(255,255,255,0.9);
-    margin-bottom:22px; text-transform:uppercase;
-  }
-  .hero-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--c-light); }
-  .hero-inner h1 {
-    font-size:clamp(36px,5.5vw,60px); font-weight:800; line-height:1.13;
-    letter-spacing:-0.04em; color:#fff; margin-bottom:18px;
-    text-shadow:0 6px 24px rgba(0,0,0,0.28);
-  }
-  .hero-inner h1 em { font-style:normal; color:#9ae3ff; display:block; }
-  .hero-sub { font-size:17px; line-height:1.88; color:rgba(255,255,255,0.82); max-width:640px; margin:0 auto 32px; }
-  .hero-btns { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:32px; }
-  .btn-primary {
-    display:inline-flex; align-items:center; gap:8px; padding:15px 28px; border-radius:999px;
-    background:#fff; color:var(--c-deep); font-size:14px; font-weight:800;
-    text-decoration:none; box-shadow:0 10px 28px rgba(0,0,0,0.18); transition:transform .18s, box-shadow .18s;
-  }
-  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,0.22); }
-  .btn-outline {
-    display:inline-flex; align-items:center; gap:8px; padding:15px 28px; border-radius:999px;
-    background:transparent; border:2px solid rgba(255,255,255,0.5); color:#fff;
-    font-size:14px; font-weight:800; text-decoration:none; transition:background .18s;
-  }
-  .btn-outline:hover { background:rgba(255,255,255,0.12); }
+.wl-ko { display: block; }
+span.wl-ko { display: inline; }
 
-  /* Deadline banner */
-  .deadline-bar {
-    background:var(--c-red); padding:14px 24px; text-align:center;
-    font-size:14px; font-weight:800; color:#fff; letter-spacing:0.03em;
-  }
-  .deadline-bar span { opacity:0.8; margin:0 8px; }
+.lang-en .wl-ko { display: none !important; }
+.lang-en .wl-en { display: block !important; }
+.lang-en span.wl-en { display: inline !important; }
+.lang-en p.wl-en { display: block !important; }
+.lang-en h2.wl-en, .lang-en h3.wl-en, .lang-en h4.wl-en { display: block !important; }
+.lang-en dt.wl-en, .lang-en dd.wl-en { display: block !important; }
+.lang-en li.wl-en { display: list-item !important; }
 
-  .hero-stats {
-    position:relative; z-index:2; display:flex; justify-content:center;
-    margin:56px auto 0; max-width:800px;
-    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.16);
-    border-radius:18px; backdrop-filter:blur(8px); overflow:hidden;
-  }
-  .hero-stat { flex:1; padding:20px 14px; text-align:center; border-right:1px solid rgba(255,255,255,0.12); }
-  .hero-stat:last-child { border-right:none; }
-  .hero-stat-icon { font-size:22px; margin-bottom:6px; }
-  .hero-stat-label { font-size:11px; font-weight:700; color:rgba(255,255,255,0.72); line-height:1.4; }
+/* ══ 전용 클래스 — strong/span CSS 충돌 완전 우회 ══ */
+.vn-stat-num { display: block; margin-bottom: 6px; font-size: 28px; line-height: 1.1; font-weight: 900; color: #fff; }
+.vn-stat-lbl { display: block; font-size: 14px; color: rgba(255,255,255,0.84); margin: 0; }
+.vn-ts-lbl  { margin-bottom: 8px; font-size: 11px; color: #9de5fb; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; }
+.vn-ts-val  { margin-bottom: 4px; font-size: clamp(18px,2.2vw,24px); line-height: 1.2; font-weight: 900; color: #fff; }
+.vn-ts-sub  { font-size: 13px; color: rgba(255,255,255,0.58); margin: 0; }
+.vn-pt-ttl  { display: block; margin-bottom: 4px; font-size: 16px; color: #10212a; font-weight: 700; }
+.vn-pt-dsc  { display: block; font-size: 15px; color: #5d6a73; line-height: 1.7; }
+.vn-cd-ttl  { margin: 0 0 10px; font-size: 22px; line-height: 1.24; letter-spacing: -0.02em; font-weight: 800; }
+.vn-cd-dsc  { margin: 0; font-size: 15px; color: #5d6a73; }
+.vn-ps-ttl  { display: block; margin-bottom: 8px; font-size: 15px; font-weight: 800; color: #fff; }
+.vn-ps-dsc  { display: block; font-size: 13px; line-height: 1.68; color: rgba(255,255,255,0.62); margin: 0; }
+.vn-cl-ttl  { display: block; margin-bottom: 6px; font-size: 20px; line-height: 1.25; font-weight: 900; color: #fff; }
+.vn-cl-sub  { display: block; font-size: 14px; color: rgba(255,255,255,0.64); margin: 0; }
 
-  /* SECTIONS */
-  .section { padding:96px 24px; }
-  .section--alt { background:var(--c-bg); }
-  .page-wrap { max-width:1140px; margin:0 auto; }
+/* ══ 기본 스타일 ══ */
+.wolko-vnlp * { box-sizing: border-box; }
+.wolko-vnlp {
+  --primary: #004f68; --primary-deep: #083847; --primary-2: #0b6d88;
+  --accent: #73d1f5; --bg: #f7fbfc; --text: #14222a; --muted: #5d6a73;
+  --line: rgba(0,79,104,0.12); --white: #ffffff;
+  --shadow: 0 18px 48px rgba(10,38,48,0.08);
+  --shadow-strong: 0 28px 70px rgba(10,38,48,0.14);
+  --radius-xl: 32px; --radius-lg: 24px; --max: 1200px;
+  --side: 28px; --section: 110px;
+  width: 100%; overflow: hidden;
+  background: linear-gradient(180deg, #f8fcfd 0%, #ffffff 16%, #ffffff 100%);
+  color: var(--text);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  line-height: 1.72;
+}
+.wolko-vnlp a { text-decoration: none; color: inherit; }
+.wolko-vnlp img { display: block; width: 100%; }
+.wolko-vnlp-inner { width: 100%; max-width: var(--max); margin: 0 auto; padding-left: var(--side); padding-right: var(--side); }
+.wolko-vnlp-section { padding: var(--section) 0; }
 
-  .sec-badge {
-    display:inline-block; padding:7px 14px; border-radius:999px;
-    background:rgba(0,79,104,0.08); color:var(--c-deep);
-    font-size:11px; font-weight:800; letter-spacing:0.06em;
-  }
-  .sec-title {
-    font-size:clamp(28px,4vw,44px); font-weight:800; line-height:1.2;
-    letter-spacing:-0.035em; color:var(--c-text); margin:14px 0 16px;
-  }
-  .sec-desc { font-size:16px; line-height:1.9; color:var(--c-muted); max-width:700px; }
+.wolko-vnlp-kicker { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px; background: rgba(0,79,104,0.08); color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 18px; }
+.wolko-vnlp-title { margin: 0 0 14px; font-size: clamp(32px,5vw,58px); line-height: 1.08; letter-spacing: -0.045em; font-weight: 900; color: #0f2028; }
+.wolko-vnlp-subtitle { margin: 0; max-width: 760px; font-size: clamp(16px,2vw,19px); line-height: 1.9; color: var(--muted); }
+.wolko-vnlp-btn-row { display: flex; flex-wrap: wrap; gap: 14px; }
+.wolko-vnlp-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 58px; padding: 0 24px; border-radius: 999px; font-size: 15px; font-weight: 800; letter-spacing: -0.01em; transition: transform .22s ease, box-shadow .22s ease, background .22s ease; border: 1px solid transparent; cursor: pointer; }
+.wolko-vnlp-btn:hover { transform: translateY(-3px); }
+.wolko-vnlp-btn.primary { background: linear-gradient(135deg, #91e3fb 0%, #73d1f5 100%); color: #052633; box-shadow: 0 14px 36px rgba(115,209,245,0.34); }
+.wolko-vnlp-btn.primary:hover { box-shadow: 0 18px 44px rgba(115,209,245,0.42); }
+.wolko-vnlp-btn.ghost { background: rgba(255,255,255,0.10); color: #fff; border-color: rgba(255,255,255,0.18); backdrop-filter: blur(8px); }
+.wolko-vnlp-btn.ghost:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.28); }
+.wolko-vnlp-btn.white { background: #fff; color: var(--primary); box-shadow: 0 12px 26px rgba(10,38,48,0.08); }
 
-  /* Overview card */
-  .overview-card {
-    position:relative; background:linear-gradient(180deg, #fff 0%, #f6f9fb 100%);
-    border:1px solid var(--c-line); border-radius:var(--r-xl); padding:44px 42px 38px;
-    box-shadow:0 22px 56px rgba(16,32,40,0.08); overflow:hidden; margin-top:48px;
-  }
-  .overview-card::before { content:""; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg, var(--c-deep) 0%, var(--c-mid) 55%, var(--c-light) 100%); }
-  .overview-tagline { font-size:15px; font-weight:800; color:var(--c-deep); margin-bottom:20px; }
-  .overview-body { font-size:16.5px; line-height:2.0; color:#3a4e58; margin-bottom:14px; }
+/* HERO */
+.wolko-vnlp-hero { padding: 0; }
+.wolko-vnlp-hero-shell { position: relative; width: 100%; min-height: 900px; display: flex; align-items: flex-end; overflow: hidden; background: linear-gradient(180deg, rgba(7,31,42,0.16) 0%, rgba(7,31,42,0.62) 100%), url('https://wolko.synology.me/Web_Contents/Photos/Vietnam_Camp_2025/Hero.JPG') center center / cover no-repeat; }
+.wolko-vnlp-hero-shell::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 18% 18%, rgba(255,255,255,0.14), transparent 28%), linear-gradient(135deg, rgba(115,209,245,0.12), transparent 36%); pointer-events: none; }
+.wolko-vnlp-hero-content { position: relative; z-index: 2; width: 100%; padding: 56px 0 64px; color: #fff; }
+.wolko-vnlp-hero-badge { display: inline-flex; align-items: center; min-height: 38px; padding: 0 16px; border-radius: 999px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(6px); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 20px; }
+.wolko-vnlp-hero-title { margin: 0 0 18px; max-width: 760px; font-size: clamp(42px,7vw,78px); line-height: 1.02; letter-spacing: -0.055em; font-weight: 900; }
+.wolko-vnlp-hero-text { margin: 0 0 28px; max-width: 720px; font-size: clamp(16px,2vw,19px); line-height: 1.88; color: rgba(255,255,255,0.9); }
+.wolko-vnlp-hero-stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; max-width: 980px; margin-top: 36px; }
+.wolko-vnlp-stat { padding: 22px 20px; border-radius: 22px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(10px); }
 
-  /* Who we're looking for */
-  .candidates-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px; margin-top:48px; }
-  .candidate-card {
-    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-xl);
-    padding:32px 28px; display:flex; flex-direction:column; gap:12px;
-    box-shadow:0 4px 18px rgba(0,79,104,0.07); transition:transform .22s, box-shadow .22s;
-  }
-  .candidate-card:hover { transform:translateY(-4px); box-shadow:0 12px 34px rgba(0,79,104,0.14); }
-  .candidate-icon { font-size:28px; }
-  .candidate-title { font-size:18px; font-weight:800; color:var(--c-text); }
-  .candidate-desc { font-size:14px; line-height:1.82; color:var(--c-muted); }
+/* INTRO */
+.wolko-vnlp-intro-grid { display: grid; grid-template-columns: 1.04fr 0.96fr; gap: 34px; align-items: center; }
+.wolko-vnlp-media { position: relative; min-height: 600px; overflow: hidden; border-radius: var(--radius-xl); background: #d7edf3; box-shadow: var(--shadow); }
+.wolko-vnlp-media img { width: 100%; height: 100%; object-fit: cover; }
+.wolko-vnlp-media-note { position: absolute; left: 22px; right: 22px; bottom: 22px; padding: 16px 18px; border-radius: 18px; background: rgba(255,255,255,0.92); color: var(--primary-deep); font-size: 14px; font-weight: 700; box-shadow: 0 12px 28px rgba(10,38,48,0.08); }
+.wolko-vnlp-copy h2 { margin: 0 0 18px; font-size: clamp(28px,4vw,44px); line-height: 1.18; letter-spacing: -0.035em; font-weight: 900; color: #10222a; }
+.wolko-vnlp-copy p { margin: 0 0 16px; font-size: 17px; color: var(--muted); }
+.wolko-vnlp-copy strong { color: var(--primary); }
+.wolko-vnlp-points { display: grid; gap: 14px; margin-top: 28px; }
+.wolko-vnlp-point { display: flex; gap: 14px; padding: 18px 20px; border-radius: 20px; background: #fff; border: 1px solid var(--line); box-shadow: 0 10px 24px rgba(10,38,48,0.04); }
+.wolko-vnlp-point-no { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 14px; background: rgba(0,79,104,0.08); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; }
 
-  /* Distinctives */
-  .distinctives-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:48px; }
-  .distinctive-card {
-    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-lg);
-    padding:28px 26px; box-shadow:0 3px 14px rgba(0,79,104,0.06);
-    transition:transform .2s, box-shadow .2s;
-  }
-  .distinctive-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,79,104,0.12); }
-  .distinctive-icon { font-size:24px; margin-bottom:12px; }
-  .distinctive-title { font-size:17px; font-weight:800; color:var(--c-text); margin-bottom:8px; }
-  .distinctive-desc { font-size:13.5px; line-height:1.8; color:var(--c-muted); }
+/* VALUE */
+.wolko-vnlp-value { background: linear-gradient(180deg, #f7fbfc 0%, #eef7f9 100%); border-top: 1px solid rgba(0,79,104,0.06); border-bottom: 1px solid rgba(0,79,104,0.06); }
+.wolko-vnlp-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 20px; margin-top: 34px; }
+.wolko-vnlp-card { height: 100%; padding: 30px 24px; border-radius: 26px; background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow); }
+.wolko-vnlp-card-no { width: 54px; height: 54px; border-radius: 16px; margin-bottom: 18px; background: linear-gradient(135deg, rgba(0,79,104,0.08), rgba(115,209,245,0.18)); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; }
 
-  /* Schedule */
-  .schedule-card {
-    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-xl);
-    padding:36px 38px; box-shadow:0 6px 28px rgba(0,79,104,0.09);
-    display:grid; grid-template-columns:1fr 1fr; gap:28px; margin-top:48px; flex-wrap:wrap;
-  }
-  .schedule-item { display:flex; flex-direction:column; gap:6px; }
-  .schedule-label { font-size:11px; font-weight:800; letter-spacing:0.07em; color:var(--c-mid); text-transform:uppercase; }
-  .schedule-value { font-size:17px; font-weight:800; color:var(--c-text); }
-  .schedule-note { font-size:13px; color:var(--c-muted); line-height:1.6; }
+/* GALLERY */
+.wolko-vnlp-gallery-grid { display: grid; grid-template-columns: 1.2fr .8fr .8fr; grid-template-rows: 280px 280px; gap: 18px; margin-top: 34px; }
+.wolko-vnlp-gallery-item { position: relative; overflow: hidden; border-radius: 24px; box-shadow: var(--shadow); }
+.wolko-vnlp-gallery-item.large { grid-row: 1 / span 2; }
+.wolko-vnlp-gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
+.wolko-vnlp-gallery-item:hover img { transform: scale(1.04); }
+.wolko-vnlp-gallery-caption { position: absolute; left: 18px; bottom: 18px; padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,0.92); color: #10212a; font-size: 13px; font-weight: 800; }
 
-  /* Tags */
-  .tags-wrap { display:flex; flex-wrap:wrap; gap:10px; margin-top:32px; }
-  .tag {
-    padding:8px 16px; border-radius:999px; background:rgba(0,79,104,0.08);
-    color:var(--c-deep); font-size:13px; font-weight:700;
-    border:1px solid rgba(0,79,104,0.14);
-  }
+/* LETTER */
+.wolko-vnlp-letter { position: relative; overflow: hidden; background: linear-gradient(160deg, #062635 0%, #004f68 54%, #083d52 100%); color: #fff; }
+.wolko-vnlp-letter::before { content: ""; position: absolute; width: 760px; height: 760px; border-radius: 50%; top: -220px; right: -220px; background: radial-gradient(circle, rgba(115,209,245,0.12) 0%, transparent 68%); pointer-events: none; }
+.wolko-vnlp-letter::after { content: ""; position: absolute; width: 520px; height: 520px; border-radius: 50%; bottom: -120px; left: -120px; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%); pointer-events: none; }
+.wolko-vnlp-letter .wolko-vnlp-inner { position: relative; z-index: 2; }
+.wolko-vnlp-deadline { display: inline-flex; align-items: center; min-height: 36px; padding: 0 15px; border-radius: 999px; background: rgba(196,42,54,0.18); border: 1px solid rgba(196,42,54,0.30); color: #ffb8be; font-size: 13px; font-weight: 800; margin-bottom: 18px; }
+.wolko-vnlp-letter-title { margin: 0 0 18px; font-size: clamp(34px,5.5vw,64px); line-height: 1.08; letter-spacing: -0.045em; font-weight: 900; color: #fff; }
+.wolko-vnlp-letter-lead { max-width: 760px; margin: 0 0 42px; font-size: clamp(16px,2vw,19px); line-height: 1.9; color: rgba(255,255,255,0.82); }
+.wolko-vnlp-top-stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 1px; overflow: hidden; border-radius: 24px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.10); margin-bottom: 28px; }
+.wolko-vnlp-top-stat { padding: 26px 22px; background: rgba(255,255,255,0.04); backdrop-filter: blur(4px); }
+.wolko-vnlp-letter-grid { display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 24px; align-items: start; }
+.wolko-vnlp-letter-card, .wolko-vnlp-info-card, .wolko-vnlp-process-card, .wolko-vnlp-contact-bar { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 18px 40px rgba(0,0,0,0.08); backdrop-filter: blur(8px); }
+.wolko-vnlp-letter-card { border-radius: 30px; padding: 38px 34px; }
+.wolko-vnlp-letter-card h3 { margin: 0 0 14px; font-size: clamp(24px,3vw,32px); line-height: 1.28; letter-spacing: -0.03em; font-weight: 900; color: #fff; }
+.wolko-vnlp-letter-card p { margin: 0 0 18px; color: rgba(255,255,255,0.82); font-size: 16px; line-height: 1.9; }
+.wolko-vnlp-quote { margin: 0 0 24px; padding: 18px 18px 18px 20px; border-left: 3px solid #8fe0fa; border-radius: 18px; background: rgba(255,255,255,0.05); color: #dff7ff; font-size: 16px; line-height: 1.86; }
+.wolko-vnlp-tag-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 28px; }
+.wolko-vnlp-tag { padding: 8px 15px; border-radius: 999px; background: rgba(115,209,245,0.14); border: 1px solid rgba(115,209,245,0.22); color: #b8efff; font-size: 14px; font-weight: 700; }
+.wolko-vnlp-info-stack { display: grid; gap: 12px; }
+.wolko-vnlp-info-card { border-radius: 22px; padding: 18px; display: flex; gap: 14px; align-items: flex-start; }
+.wolko-vnlp-info-no { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px; background: rgba(115,209,245,0.12); border: 1px solid rgba(115,209,245,0.18); color: #9de5fb; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; letter-spacing: 0.04em; }
+.wolko-vnlp-info-card dt { margin-bottom: 4px; font-size: 12px; font-weight: 800; letter-spacing: 0.06em; color: #9de5fb; text-transform: uppercase; }
+.wolko-vnlp-info-card dd { margin: 0; font-size: 14px; color: rgba(255,255,255,0.86); line-height: 1.68; }
+.wolko-vnlp-process-card { margin-top: 24px; border-radius: 28px; padding: 34px; }
+.wolko-vnlp-process-label { margin-bottom: 12px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #9de5fb; text-transform: uppercase; }
+.wolko-vnlp-process-card h3 { margin: 0 0 24px; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #fff; }
+.wolko-vnlp-process-steps { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+.wolko-vnlp-process-step { padding: 22px 20px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+.wolko-vnlp-process-num { width: 34px; height: 34px; margin-bottom: 12px; border-radius: 50%; background: #8fe0fa; color: #062635; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; }
+.wolko-vnlp-contact-bar { margin-top: 24px; border-radius: 24px; padding: 28px 30px; display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: center; justify-content: space-between; }
+.wolko-vnlp-contact-items { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.wolko-vnlp-contact-item { font-size: 14px; color: rgba(255,255,255,0.82); }
+.wolko-vnlp-contact-item b { color: #9de5fb; font-weight: 800; }
+.wolko-vnlp-contact-item a { color: rgba(255,255,255,0.82); }
 
-  /* Steps */
-  .steps { display:flex; flex-direction:column; gap:0; margin-top:48px;
-    border:1px solid var(--c-line); border-radius:var(--r-xl); overflow:hidden;
-    box-shadow:0 6px 24px rgba(0,79,104,0.08); }
-  .step { display:flex; gap:24px; padding:28px 32px; background:var(--c-white); align-items:flex-start; border-bottom:1px solid var(--c-line); }
-  .step:last-child { border-bottom:none; }
-  .step-num { width:40px; height:40px; min-width:40px; border-radius:50%; background:var(--c-deep); color:#fff; font-size:16px; font-weight:900; display:flex; align-items:center; justify-content:center; }
-  .step-content { flex:1; }
-  .step-title { font-size:17px; font-weight:800; color:var(--c-text); margin-bottom:6px; }
-  .step-desc { font-size:14px; line-height:1.8; color:var(--c-muted); }
+/* FINAL CTA */
+.wolko-vnlp-final-cta-shell { border-radius: 34px; padding: 58px 54px; background: linear-gradient(135deg, rgba(0,79,104,0.97) 0%, rgba(11,109,136,0.94) 100%); box-shadow: var(--shadow-strong); color: #fff; }
+.wolko-vnlp-final-cta-top { display: grid; grid-template-columns: 1fr auto; gap: 26px; align-items: end; margin-bottom: 22px; }
+.wolko-vnlp-final-cta-top h2 { margin: 0; font-size: clamp(30px,4vw,48px); line-height: 1.14; letter-spacing: -0.03em; font-weight: 900; color: #fff; }
+.wolko-vnlp-final-cta-top p { margin: 0; max-width: 520px; color: rgba(255,255,255,0.86); font-size: 17px; line-height: 1.82; }
+.wolko-vnlp-final-note { margin-top: 16px; font-size: 14px; color: rgba(255,255,255,0.74); }
+.wolko-vnlp-final-note a { color: rgba(255,255,255,0.74); text-decoration: underline; }
 
-  /* CTA */
-  .cta-section { background:linear-gradient(135deg, var(--c-deep) 0%, var(--c-mid) 100%); padding:88px 24px; text-align:center; }
-  .cta-section h2 { font-size:clamp(26px,3.5vw,40px); font-weight:800; color:#fff; margin-bottom:14px; letter-spacing:-0.03em; }
-  .cta-section p { font-size:16px; color:rgba(255,255,255,0.78); max-width:560px; margin:0 auto 40px; line-height:1.85; }
-  .cta-contact { font-size:14px; color:rgba(255,255,255,0.65); margin-top:28px; line-height:1.9; }
-  .cta-contact a { color:rgba(255,255,255,0.9); font-weight:800; text-decoration:none; }
-  .btn-white {
-    display:inline-flex; align-items:center; gap:8px; padding:16px 30px; border-radius:999px;
-    background:#fff; color:var(--c-deep); font-size:15px; font-weight:800;
-    text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.18); transition:transform .18s, box-shadow .18s;
-  }
-  .btn-white:hover { transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,0.22); }
-
-  @media (max-width:640px) {
-    .schedule-card { grid-template-columns:1fr; }
-    .step { gap:16px; padding:22px 24px; }
-  }
+/* RESPONSIVE */
+@media (max-width: 1180px) {
+  .wolko-vnlp-hero-stats, .wolko-vnlp-top-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .wolko-vnlp-intro-grid, .wolko-vnlp-letter-grid, .wolko-vnlp-final-cta-top { grid-template-columns: 1fr; }
+  .wolko-vnlp-card-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .wolko-vnlp-gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 260px 260px 260px; }
+  .wolko-vnlp-gallery-item.large { grid-column: 1 / span 2; grid-row: auto; }
+  .wolko-vnlp-process-steps { grid-template-columns: 1fr; }
+}
+@media (max-width: 767px) {
+  .wolko-vnlp { --side: 18px; --section: 74px; }
+  .wolko-vnlp-hero-shell { min-height: 680px; }
+  .wolko-vnlp-hero-content { padding: 34px 0; }
+  .wolko-vnlp-hero-title { font-size: 42px; line-height: 1.04; }
+  .wolko-vnlp-btn-row, .wolko-vnlp-contact-bar, .wolko-vnlp-contact-items { flex-direction: column; align-items: stretch; }
+  .wolko-vnlp-btn { width: 100%; }
+  .wolko-vnlp-hero-stats, .wolko-vnlp-top-stats, .wolko-vnlp-card-grid, .wolko-vnlp-gallery-grid { grid-template-columns: 1fr; }
+  .wolko-vnlp-gallery-grid { grid-template-rows: 240px 220px 220px 220px 220px; }
+  .wolko-vnlp-gallery-item.large { grid-column: auto; }
+  .wolko-vnlp-media { min-height: 380px; }
+  .wolko-vnlp-letter-card, .wolko-vnlp-process-card, .wolko-vnlp-contact-bar, .wolko-vnlp-final-cta-shell { padding: 24px 20px; border-radius: 22px; }
+}
 </style>
 
-<!-- DEADLINE BANNER -->
-<div class="deadline-bar">
-  <span class="wl-ko">⚠️ 신청 마감</span><span class="wl-en">⚠️ Application Deadline</span>
-  <span>·</span>
-  <span class="wl-ko">4월 24일까지 신청해 주세요</span><span class="wl-en">Applications due by April 24</span>
+<div class="wolko-vnlp" id="wl-root">
+
+  <!-- HERO -->
+  <section class="wolko-vnlp-hero">
+    <div class="wolko-vnlp-hero-shell">
+      <div class="wolko-vnlp-inner">
+        <div class="wolko-vnlp-hero-content">
+          <div class="wolko-vnlp-hero-badge">Word of Life Korea · Vietnam Missions Trip</div>
+
+          <h1 class="wolko-vnlp-hero-title">
+            <span class="wl-ko">베트남 복음 사역에<br>함께하세요</span>
+            <span class="wl-en">Join Us for the<br>Vietnam Gospel Mission</span>
+          </h1>
+
+          <p class="wolko-vnlp-hero-text">
+            <span class="wl-ko">이번 여름, 베트남 현지 청소년들과 함께하는 복음 중심 캠프를 통해 다음 세대에 예수 그리스도의 소망을 전하는 여정에 동참해 주세요.</span>
+            <span class="wl-en">This summer, join a Gospel-centered camp alongside local Vietnamese youth — and be part of bringing the hope of Jesus Christ to the next generation.</span>
+          </p>
+
+          <div class="wolko-vnlp-btn-row">
+            <a href="#vnlp-letter" class="wolko-vnlp-btn primary">
+              <span class="wl-ko">참여 안내 보기</span>
+              <span class="wl-en">See How to Join</span>
+            </a>
+            <a href="#vnlp-final" class="wolko-vnlp-btn ghost">
+              <span class="wl-ko">신청 바로가기</span>
+              <span class="wl-en">Apply Now</span>
+            </a>
+          </div>
+
+          <div class="wolko-vnlp-hero-stats">
+            <div class="wolko-vnlp-stat">
+              <p class="vn-stat-num wl-ko">6월 5–13일</p>
+              <p class="vn-stat-num wl-en">June 5–13</p>
+              <p class="vn-stat-lbl wl-ko">2026 베트남 단기선교 일정</p>
+              <p class="vn-stat-lbl wl-en">2026 Vietnam Mission Trip</p>
+            </div>
+            <div class="wolko-vnlp-stat">
+              <p class="vn-stat-num wl-ko">100–120명</p>
+              <p class="vn-stat-num wl-en">100–120</p>
+              <p class="vn-stat-lbl wl-ko">현지 청소년들과 함께하는 캠프</p>
+              <p class="vn-stat-lbl wl-en">Local youth in the camp</p>
+            </div>
+            <div class="wolko-vnlp-stat">
+              <p class="vn-stat-num wl-ko">20–30명</p>
+              <p class="vn-stat-num wl-en">20–30</p>
+              <p class="vn-stat-lbl wl-ko">함께 섬길 카운슬러 모집</p>
+              <p class="vn-stat-lbl wl-en">Counselors being recruited</p>
+            </div>
+            <div class="wolko-vnlp-stat">
+              <p class="vn-stat-num">$850</p>
+              <p class="vn-stat-lbl wl-ko">1인 참가비</p>
+              <p class="vn-stat-lbl wl-en">Per-person participation fee</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTRO -->
+  <section class="wolko-vnlp-section">
+    <div class="wolko-vnlp-inner">
+      <div class="wolko-vnlp-intro-grid">
+        <div class="wolko-vnlp-media">
+          <img src="https://wolko.synology.me/Web_Contents/Photos/Vietnam_Camp_2025/Main.JPG" alt="베트남 캠프 사역">
+          <div class="wolko-vnlp-media-note">
+            <span class="wl-ko">복음 중심 · 관계 중심 · 현장 중심 — 이번 선교는 프로그램보다 사람을 세우는 사역입니다.</span>
+            <span class="wl-en">Gospel-centered · Relationship-centered · Field-centered — this mission is about building people, not programs.</span>
+          </div>
+        </div>
+
+        <div class="wolko-vnlp-copy">
+          <div class="wolko-vnlp-kicker">
+            <span class="wl-ko">사역 개요</span>
+            <span class="wl-en">Mission Overview</span>
+          </div>
+          <h2>
+            <span class="wl-ko">단기선교 그 이상,<br>다음 세대를 세우는 복음의 동역</span>
+            <span class="wl-en">More Than a Short-Term Trip —<br>Gospel Partnership for the Next Generation</span>
+          </h2>
+          <p>
+            <span class="wl-ko">이번 베트남 선교는 여름 기간 중 진행되는 <strong>8일 일정의 단기선교 사역</strong>입니다. 핵심 사역은 <strong>전도를 주제로 한 7박 8일의 청소년 캠프</strong>이며, 약 100~120명의 학생들과 실제로 만나 복음을 나누게 됩니다.</span>
+            <span class="wl-en">This Vietnam mission is an <strong>8-day short-term ministry trip</strong>. At its heart is a <strong>7-night youth camp centered on evangelism</strong>, where you'll meet and share the Gospel with approximately 100–120 students.</span>
+          </p>
+          <p>
+            <span class="wl-ko">소그룹 모임과 관계 중심의 돌봄, 간증과 말씀 나눔을 통해 학생들이 복음을 더 분명히 듣고, 자신의 믿음을 담대히 나눌 수 있도록 돕는 여정입니다.</span>
+            <span class="wl-en">Through small group time, relational care, testimonies, and God's Word, you'll help students hear the Gospel more clearly — and find the courage to share their faith with others.</span>
+          </p>
+
+          <div class="wolko-vnlp-points">
+            <div class="wolko-vnlp-point">
+              <div class="wolko-vnlp-point-no">01</div>
+              <div>
+                <p class="vn-pt-ttl wl-ko">복음에 마음이 있는 사람</p>
+                <p class="vn-pt-ttl wl-en">A Heart for the Gospel</p>
+                <p class="vn-pt-dsc wl-ko">예수 그리스도의 소망을 다음 세대에게 전하고 싶은 마음이 가장 중요합니다.</p>
+                <p class="vn-pt-dsc wl-en">A genuine desire to share the hope of Jesus Christ with the next generation is what matters most.</p>
+              </div>
+            </div>
+            <div class="wolko-vnlp-point">
+              <div class="wolko-vnlp-point-no">02</div>
+              <div>
+                <p class="vn-pt-ttl wl-ko">청소년과 함께 걸을 수 있는 사람</p>
+                <p class="vn-pt-ttl wl-en">Someone Who Can Walk with Youth</p>
+                <p class="vn-pt-dsc wl-ko">학생 한 명 한 명과 관계를 맺고, 진심으로 듣고, 함께 기도하는 사역입니다.</p>
+                <p class="vn-pt-dsc wl-en">This ministry is about building real relationships with individual students — listening sincerely and praying together.</p>
+              </div>
+            </div>
+            <div class="wolko-vnlp-point">
+              <div class="wolko-vnlp-point-no">03</div>
+              <div>
+                <p class="vn-pt-ttl wl-ko">팀으로 섬길 준비가 된 사람</p>
+                <p class="vn-pt-ttl wl-en">Ready to Serve as a Team</p>
+                <p class="vn-pt-dsc wl-ko">영어로 기본적인 소통이 가능하며, 함께 준비하고 순종하는 자세를 소중히 여깁니다.</p>
+                <p class="vn-pt-dsc wl-en">Basic English communication ability is needed, along with a posture of preparation, unity, and willing obedience.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALUE -->
+  <section class="wolko-vnlp-section wolko-vnlp-value">
+    <div class="wolko-vnlp-inner">
+      <div class="wolko-vnlp-kicker">
+        <span class="wl-ko">이 선교가 특별한 이유</span>
+        <span class="wl-en">Why Join</span>
+      </div>
+      <h2 class="wolko-vnlp-title" style="font-size:clamp(28px,4vw,48px);margin-bottom:12px;">
+        <span class="wl-ko">이 선교가 특별한 이유</span>
+        <span class="wl-en">What Makes This Mission Different</span>
+      </h2>
+      <p class="wolko-vnlp-subtitle">
+        <span class="wl-ko">단순히 참석하는 일정이 아니라, 복음을 전하고 관계를 세우며 현지 공동체를 격려하는 실제적인 사역입니다. 캠프 이후에는 짧은 쉼과 문화 체험, 지역사회를 돕는 봉사 활동도 함께하게 됩니다.</span>
+        <span class="wl-en">This isn't just an itinerary to attend — it's real ministry: sharing the Gospel, building relationships, and encouraging the local community. After camp, there's also time for rest, cultural experience, and community service.</span>
+      </p>
+
+      <div class="wolko-vnlp-card-grid">
+        <div class="wolko-vnlp-card">
+          <div class="wolko-vnlp-card-no">01</div>
+          <h3 class="vn-cd-ttl wl-ko">청소년 100~120명과 직접 만나는 사역</h3>
+          <h3 class="vn-cd-ttl wl-en">Face-to-Face Ministry with 100–120 Youth</h3>
+          <p class="vn-cd-dsc wl-ko">복음이 필요한 현지 다음 세대를 실제로 만나고, 소그룹과 캠프 프로그램을 통해 깊이 연결되는 기회를 갖습니다.</p>
+          <p class="vn-cd-dsc wl-en">You'll actually meet and connect with local youth who need the Gospel — going deep through small groups and camp programming.</p>
+        </div>
+        <div class="wolko-vnlp-card">
+          <div class="wolko-vnlp-card-no">02</div>
+          <h3 class="vn-cd-ttl wl-ko">말씀과 관계가 함께 흐르는 현장</h3>
+          <h3 class="vn-cd-ttl wl-en">Where the Word and Relationships Flow Together</h3>
+          <p class="vn-cd-dsc wl-ko">단순한 진행 요원이 아니라, 학생들을 사랑으로 돌보고 믿음을 격려하는 카운슬러로 참여하게 됩니다.</p>
+          <p class="vn-cd-dsc wl-en">You won't just be helping things run — you'll serve as a counselor who genuinely cares for students and encourages their faith.</p>
+        </div>
+        <div class="wolko-vnlp-card">
+          <div class="wolko-vnlp-card-no">03</div>
+          <h3 class="vn-cd-ttl wl-ko">사역 이후까지 이어지는 배움과 섬김</h3>
+          <h3 class="vn-cd-ttl wl-en">Learning and Service That Extends Beyond Camp</h3>
+          <p class="vn-cd-dsc wl-ko">현지 문화 이해와 지역사회 봉사를 통해 선교를 더 넓고 깊게 경험할 수 있도록 구성된 일정입니다.</p>
+          <p class="vn-cd-dsc wl-en">The schedule is designed to broaden and deepen your experience of mission through cultural immersion and community service.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="wolko-vnlp-section">
+    <div class="wolko-vnlp-inner">
+      <div class="wolko-vnlp-kicker">
+        <span class="wl-ko">현장 사진</span>
+        <span class="wl-en">On the Field</span>
+      </div>
+      <h2 class="wolko-vnlp-title" style="font-size:clamp(28px,4vw,48px);margin-bottom:12px;">
+        <span class="wl-ko">현장의 분위기를 미리 만나보세요</span>
+        <span class="wl-en">A Preview of What Awaits</span>
+      </h2>
+      <p class="wolko-vnlp-subtitle">
+        <span class="wl-ko">예배와 찬양, 팀 활동, 간증, 소그룹 나눔, 그리고 학생들과의 진솔한 교제를 통해 복음이 삶으로 이어지는 순간들을 함께 경험하게 됩니다.</span>
+        <span class="wl-en">Worship, team activities, testimonies, small group sharing, and genuine friendship with students — moments where the Gospel becomes real life.</span>
+      </p>
+
+      <div class="wolko-vnlp-gallery-grid">
+        <div class="wolko-vnlp-gallery-item large">
+          <img src="https://wolko.synology.me/Web_Contents/Photos/Vietnam_Camp_2025/1.JPG" alt="현장 메인 이미지">
+          <div class="wolko-vnlp-gallery-caption">
+            <span class="wl-ko">간증과 말씀 나눔</span>
+            <span class="wl-en">Testimonies &amp; God's Word</span>
+          </div>
+        </div>
+        <div class="wolko-vnlp-gallery-item">
+          <img src="https://wolko.synology.me/Web_Contents/Photos/Vietnam_Camp_2025/2.png" alt="소그룹 교제">
+          <div class="wolko-vnlp-gallery-caption">
+            <span class="wl-ko">소그룹 나눔</span>
+            <span class="wl-en">Small Group Time</span>
+          </div>
+        </div>
+        <div class="wolko-vnlp-gallery-item">
+          <img src="https://wolko.synology.me/Web_Contents/Photos/Vietnam_Camp_2025/3.png" alt="팀 활동">
+          <div class="wolko-vnlp-gallery-caption">
+            <span class="wl-ko">팀 활동</span>
+            <span class="wl-en">Team Activities</span>
+          </div>
+        </div>
+        <div class="wolko-vnlp-gallery-item">
+          <img src="https://wolko.synology.me/Web_Contents/Photos/Vietnam_Camp_2025/4.png" alt="청소년 프로그램">
+          <div class="wolko-vnlp-gallery-caption">
+            <span class="wl-ko">공동체 프로그램</span>
+            <span class="wl-en">Community Programs</span>
+          </div>
+        </div>
+        <div class="wolko-vnlp-gallery-item">
+          <img src="https://wolko.synology.me/Web_Contents/Photos/Vietnam_Camp_2025/5.png" alt="예배와 찬양">
+          <div class="wolko-vnlp-gallery-caption">
+            <span class="wl-ko">예배와 찬양</span>
+            <span class="wl-en">Worship &amp; Praise</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LETTER -->
+  <section id="vnlp-letter" class="wolko-vnlp-section wolko-vnlp-letter">
+    <div class="wolko-vnlp-inner">
+
+      <div class="wolko-vnlp-deadline">
+        <span class="wl-ko">신청 마감 · 4월 24일</span>
+        <span class="wl-en">Application Deadline · April 24</span>
+      </div>
+      <div class="wolko-vnlp-kicker" style="background:rgba(255,255,255,0.10);color:#fff;border:1px solid rgba(255,255,255,0.14);">Invitation</div>
+
+      <h2 class="wolko-vnlp-letter-title">
+        <span class="wl-ko">올여름,<br>베트남 선교팀에<br>함께하시겠습니까?</span>
+        <span class="wl-en">This Summer,<br>Will You Join the<br>Vietnam Mission Team?</span>
+      </h2>
+
+      <p class="wolko-vnlp-letter-lead">
+        <span class="wl-ko">월드 오브 라이프 코리아는 이번 여름 베트남 단기선교에 함께할 분들을 기도하는 마음으로 초대합니다. 선교, 전도, 청소년 사역에 하나님이 마음을 주셨다면, 이번 여정은 누군가의 삶에 복음의 소망을 전하는 귀한 시작이 될 수 있습니다.</span>
+        <span class="wl-en">Word of Life Korea prayerfully invites you to join this summer's Vietnam short-term mission trip. If God has given you a heart for missions, evangelism, or youth ministry, this journey could be a meaningful beginning — a chance to bring the hope of the Gospel into someone's life.</span>
+      </p>
+
+      <div class="wolko-vnlp-top-stats">
+        <div class="wolko-vnlp-top-stat">
+          <p class="vn-ts-lbl wl-ko">일정</p>
+          <p class="vn-ts-lbl wl-en">Dates</p>
+          <p class="vn-ts-val wl-ko">6월 5일 – 6월 13일</p>
+          <p class="vn-ts-val wl-en">June 5 – June 13</p>
+          <p class="vn-ts-sub wl-ko">약 8~10일 일정</p>
+          <p class="vn-ts-sub wl-en">Approx. 8–10 days</p>
+        </div>
+        <div class="wolko-vnlp-top-stat">
+          <p class="vn-ts-lbl wl-ko">캠프</p>
+          <p class="vn-ts-lbl wl-en">Camp</p>
+          <p class="vn-ts-val wl-ko">7박 8일</p>
+          <p class="vn-ts-val wl-en">7 Nights / 8 Days</p>
+          <p class="vn-ts-sub wl-ko">전도를 주제로 한 청소년 캠프</p>
+          <p class="vn-ts-sub wl-en">Youth camp centered on evangelism</p>
+        </div>
+        <div class="wolko-vnlp-top-stat">
+          <p class="vn-ts-lbl wl-ko">모집</p>
+          <p class="vn-ts-lbl wl-en">Recruiting</p>
+          <p class="vn-ts-val">20–30</p>
+          <p class="vn-ts-sub wl-ko">현재 10명 참여 확정</p>
+          <p class="vn-ts-sub wl-en">10 spots already confirmed</p>
+        </div>
+        <div class="wolko-vnlp-top-stat">
+          <p class="vn-ts-lbl wl-ko">참가비</p>
+          <p class="vn-ts-lbl wl-en">Fee</p>
+          <p class="vn-ts-val">$850 / 1인</p>
+          <p class="vn-ts-sub wl-ko">영어 의사소통 가능</p>
+          <p class="vn-ts-sub wl-en">Basic English required</p>
+        </div>
+      </div>
+
+      <div class="wolko-vnlp-letter-grid">
+        <div class="wolko-vnlp-letter-card">
+          <h3>
+            <span class="wl-ko">Word of Life Korea 베트남 단기선교 초청</span>
+            <span class="wl-en">An Invitation to the WOLKO Vietnam Mission Trip</span>
+          </h3>
+
+          <div class="wolko-vnlp-quote">
+            <span class="wl-ko">이번 선교는 단순한 참여가 아니라, 복음을 사랑하고 다음 세대를 세우고 싶은 이들을 위한 초대입니다.</span>
+            <span class="wl-en">This mission is more than participation — it's an invitation for those who love the Gospel and want to invest in the next generation.</span>
+          </div>
+
+          <p>
+            <span class="wl-ko">올여름 진행되는 베트남 단기선교에 여러분을 정중히 초대합니다. 이번 일정은 전도를 주제로 한 <strong>7박 8일 일정의 청소년 캠프</strong>를 중심으로 진행되며, 약 <strong>100~120명의 학생들</strong>을 섬기게 됩니다.</span>
+            <span class="wl-en">We warmly invite you to join this summer's Vietnam mission trip, built around a <strong>7-night, 8-day youth camp centered on evangelism</strong>. You'll have the opportunity to serve approximately <strong>100–120 students</strong>.</span>
+          </p>
+          <p>
+            <span class="wl-ko">우리는 복음을 사랑하고 다음 세대를 향한 마음이 있는 <strong>20~30명의 카운슬러 팀</strong>을 세우고 있습니다. 캠프 기간 동안 팀원들은 소그룹을 인도하고, 학생들과 의미 있는 관계를 형성하며, 그들이 자신의 믿음을 담대하게 나눌 수 있도록 돕게 됩니다.</span>
+            <span class="wl-en">We are building a <strong>team of 20–30 counselors</strong> who love the Gospel and have a heart for the next generation. Team members will lead small groups, build meaningful relationships with students, and help them find the boldness to share their faith.</span>
+          </p>
+          <p>
+            <span class="wl-ko">캠프 이후에는 짧은 쉼과 문화 체험의 시간이 이어지며, 현지 공동체를 돕고 격려하는 실질적인 봉사 활동도 함께 진행될 예정입니다.</span>
+            <span class="wl-en">After camp, there will be time for rest and cultural experience, along with hands-on service activities that support and encourage the local community.</span>
+          </p>
+          <p>
+            <span class="wl-ko">하나님께서 선교와 전도, 혹은 청소년 사역에 대한 마음을 여러분 안에 두셨다면, 이번 팀에 함께하는 일을 진지하게 기도하며 고려해 주시기를 바랍니다. 현재는 준비 초기 단계에 있기 때문에 모든 세부 내용이 확정된 것은 아니지만, 관심이 있으신 분은 이후 절차를 안내받으실 수 있습니다.</span>
+            <span class="wl-en">If God has placed a desire for missions, evangelism, or youth ministry in your heart, we invite you to prayerfully consider joining the team. While not every detail is finalized yet, those who are interested can receive guidance on next steps.</span>
+          </p>
+          <p>
+            <span class="wl-ko">이번 선교는 분명한 역할과 책임이 있는 사역 중심의 일정이기 때문에 신청하신 모든 분이 자동으로 참여하는 방식은 아닙니다. 신청서를 작성해 주신 뒤 간단한 선발 과정을 통해 올해 캠프에 가장 적합한 팀을 기도하며 구성하고자 합니다. 이는 각 팀원이 충분히 준비되고, 팀 전체가 더 균형 있게 가장 효과적으로 섬기도록 하기 위함입니다.</span>
+            <span class="wl-en">Because this trip involves defined roles and responsibilities, not every applicant will automatically participate. After receiving your application, we will prayerfully select the team best suited for this year's camp — to ensure each member is well-prepared and the whole team serves in the most effective and balanced way.</span>
+          </p>
+
+          <div class="wolko-vnlp-tag-row">
+            <span class="wolko-vnlp-tag wl-ko">복음에 대한 사랑</span>
+            <span class="wolko-vnlp-tag wl-en">Love for the Gospel</span>
+            <span class="wolko-vnlp-tag wl-ko">청소년을 향한 마음</span>
+            <span class="wolko-vnlp-tag wl-en">Heart for Youth</span>
+            <span class="wolko-vnlp-tag wl-ko">전도의 열정</span>
+            <span class="wolko-vnlp-tag wl-en">Passion for Evangelism</span>
+            <span class="wolko-vnlp-tag wl-ko">영어 의사소통 가능</span>
+            <span class="wolko-vnlp-tag wl-en">Basic English Ability</span>
+            <span class="wolko-vnlp-tag wl-ko">팀 사역에 대한 준비</span>
+            <span class="wolko-vnlp-tag wl-en">Ready for Team Ministry</span>
+          </div>
+
+          <div class="wolko-vnlp-btn-row">
+            <a href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=Ym4t2bLAwUCz-bxtBmHl5W8aFWuBDClAmwCZg-ItLq9UOTNRN0VZWlcwRlBZN1RKODVHMjA1NjNaRi4u" target="_blank" class="wolko-vnlp-btn primary">
+              <span class="wl-ko">신청서 작성하기</span>
+              <span class="wl-en">Fill Out the Application</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="wolko-vnlp-info-stack">
+          <div class="wolko-vnlp-info-card">
+            <div class="wolko-vnlp-info-no">01</div>
+            <dl>
+              <dt class="wl-ko">선교 일정</dt>
+              <dt class="wl-en">Trip Dates</dt>
+              <dd class="wl-ko">2026년 6월 5일 ~ 6월 13일</dd>
+              <dd class="wl-en">June 5 – June 13, 2026</dd>
+            </dl>
+          </div>
+          <div class="wolko-vnlp-info-card">
+            <div class="wolko-vnlp-info-no">02</div>
+            <dl>
+              <dt class="wl-ko">캠프 개요</dt>
+              <dt class="wl-en">Camp Overview</dt>
+              <dd class="wl-ko">7박 8일 청소년 캠프 · 전도 중심</dd>
+              <dd class="wl-en">7-night youth camp · evangelism-centered</dd>
+            </dl>
+          </div>
+          <div class="wolko-vnlp-info-card">
+            <div class="wolko-vnlp-info-no">03</div>
+            <dl>
+              <dt class="wl-ko">필요 인원</dt>
+              <dt class="wl-en">Positions</dt>
+              <dd class="wl-ko">카운슬러 20~30명 모집 중 · 현재 10명 참여 확정</dd>
+              <dd class="wl-en">20–30 counselors needed · 10 spots already confirmed</dd>
+            </dl>
+          </div>
+          <div class="wolko-vnlp-info-card">
+            <div class="wolko-vnlp-info-no">04</div>
+            <dl>
+              <dt class="wl-ko">참여 요건</dt>
+              <dt class="wl-en">Requirements</dt>
+              <dd class="wl-ko">영어로 기본적인 의사소통이 가능한 분</dd>
+              <dd class="wl-en">Basic English communication ability required</dd>
+            </dl>
+          </div>
+          <div class="wolko-vnlp-info-card">
+            <div class="wolko-vnlp-info-no">05</div>
+            <dl>
+              <dt class="wl-ko">참가비</dt>
+              <dt class="wl-en">Participation Fee</dt>
+              <dd>$850 / 1인</dd>
+            </dl>
+          </div>
+          <div class="wolko-vnlp-info-card">
+            <div class="wolko-vnlp-info-no">06</div>
+            <dl>
+              <dt class="wl-ko">신청 마감</dt>
+              <dt class="wl-en">Application Deadline</dt>
+              <dd class="wl-ko">4월 24일까지</dd>
+              <dd class="wl-en">By April 24</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="wolko-vnlp-process-card">
+        <div class="wolko-vnlp-process-label">
+          <span class="wl-ko">참가 신청 절차</span>
+          <span class="wl-en">Next Steps</span>
+        </div>
+        <h3>
+          <span class="wl-ko">참가 신청 절차</span>
+          <span class="wl-en">How to Apply</span>
+        </h3>
+        <div class="wolko-vnlp-process-steps">
+          <div class="wolko-vnlp-process-step">
+            <div class="wolko-vnlp-process-num">1</div>
+            <p class="vn-ps-ttl wl-ko">신청서 작성</p>
+            <p class="vn-ps-ttl wl-en">Submit Your Application</p>
+            <p class="vn-ps-dsc wl-ko">신청 링크를 통해 지원서를 작성해 주세요. 먼저 신청 의사를 남겨 주시면 됩니다.</p>
+            <p class="vn-ps-dsc wl-en">Complete the application through the link. Start by expressing your interest — that's the first step.</p>
+          </div>
+          <div class="wolko-vnlp-process-step">
+            <div class="wolko-vnlp-process-num">2</div>
+            <p class="vn-ps-ttl wl-ko">검토 및 안내</p>
+            <p class="vn-ps-ttl wl-en">Review &amp; Follow-Up</p>
+            <p class="vn-ps-dsc wl-ko">사역의 역할과 팀 구성을 고려하여 내용을 검토한 뒤 이후 절차를 개별적으로 안내드립니다.</p>
+            <p class="vn-ps-dsc wl-en">We'll review your application with the ministry roles and team composition in mind, then reach out individually with next steps.</p>
+          </div>
+          <div class="wolko-vnlp-process-step">
+            <div class="wolko-vnlp-process-num">3</div>
+            <p class="vn-ps-ttl wl-ko">선발 후 준비</p>
+            <p class="vn-ps-ttl wl-en">Selection &amp; Preparation</p>
+            <p class="vn-ps-dsc wl-ko">선발된 팀원들은 함께 기도하고 훈련하며 올해 베트남 캠프 사역을 준비하게 됩니다.</p>
+            <p class="vn-ps-dsc wl-en">Selected team members will pray, train, and prepare together for this year's Vietnam camp ministry.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="wolko-vnlp-contact-bar">
+        <div>
+          <p class="vn-cl-ttl wl-ko">문의가 필요하신가요?</p>
+          <p class="vn-cl-ttl wl-en">Have Questions?</p>
+          <p class="vn-cl-sub wl-ko">신청 및 문의는 아래 연락처로 부탁드립니다.</p>
+          <p class="vn-cl-sub wl-en">For applications and inquiries, please use the contact information below.</p>
+        </div>
+        <div class="wolko-vnlp-contact-items">
+          <div class="wolko-vnlp-contact-item"><b>Contact</b> Molly Graham</div>
+          <div class="wolko-vnlp-contact-item"><b>Email</b> <a href="mailto:mggraham@wol.org">mggraham@wol.org</a></div>
+          <div class="wolko-vnlp-contact-item"><b>Kakao</b> +82 10-7587-9761</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section id="vnlp-final" class="wolko-vnlp-section">
+    <div class="wolko-vnlp-inner">
+      <div class="wolko-vnlp-final-cta-shell">
+        <div class="wolko-vnlp-final-cta-top">
+          <div>
+            <div class="wolko-vnlp-kicker" style="background:rgba(255,255,255,0.12);color:#fff;">Apply Now</div>
+            <h2>
+              <span class="wl-ko">지금,<br>복음의 여정에 응답하세요</span>
+              <span class="wl-en">Answer the Call —<br>Join the Gospel Journey</span>
+            </h2>
+          </div>
+          <p>
+            <span class="wl-ko">하나님께서 주신 마음이 있다면, 이번 여름 베트남 선교팀으로 함께하시길 초대합니다.</span>
+            <span class="wl-en">If God has placed this on your heart, we invite you to join the Vietnam mission team this summer.</span>
+          </p>
+        </div>
+
+        <div class="wolko-vnlp-btn-row">
+          <a href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=Ym4t2bLAwUCz-bxtBmHl5W8aFWuBDClAmwCZg-ItLq9UOTNRN0VZWlcwRlBZN1RKODVHMjA1NjNaRi4u" target="_blank" class="wolko-vnlp-btn white">
+            <span class="wl-ko">신청서 작성하기</span>
+            <span class="wl-en">Fill Out the Application</span>
+          </a>
+        </div>
+
+        <div class="wolko-vnlp-final-note">
+          <span class="wl-ko">문의: Molly Graham · <a href="mailto:mggraham@wol.org">mggraham@wol.org</a> · Kakao +82 10-7587-9761</span>
+          <span class="wl-en">Contact: Molly Graham · <a href="mailto:mggraham@wol.org">mggraham@wol.org</a> · Kakao +82 10-7587-9761</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </div>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-inner">
-    <div class="hero-eyebrow">
-      <span class="hero-eyebrow-dot"></span>
-      <span class="wl-ko">2026 베트남 단기선교</span>
-      <span class="wl-en">2026 Vietnam Short-Term Mission</span>
-    </div>
-    <h1>
-      <span class="wl-ko">베트남 복음 사역에<em>함께하세요</em></span>
-      <span class="wl-en">Join Us for the<em>Vietnam Gospel Mission</em></span>
-    </h1>
-    <p class="hero-sub">
-      <span class="wl-ko">이번 여름, 베트남 현지 청소년들과 함께하는 복음 중심 캠프를 통해 다음 세대에 예수 그리스도의 소망을 전하는 여정에 동참해 주세요.</span>
-      <span class="wl-en">This summer, join a Gospel-centered camp alongside local Vietnamese youth — and be part of bringing the hope of Jesus Christ to the next generation.</span>
-    </p>
-    <div class="hero-btns">
-      <a href="https://forms.gle" target="_blank" rel="noopener" class="btn-primary">
-        <span class="wl-ko">신청 바로가기 →</span>
-        <span class="wl-en">Apply Now →</span>
-      </a>
-      <a href="#overview" class="btn-outline">
-        <span class="wl-ko">참여 안내 보기</span>
-        <span class="wl-en">See How to Join</span>
-      </a>
-    </div>
-  </div>
-  <div class="hero-stats">
-    <div class="hero-stat">
-      <div class="hero-stat-icon">📅</div>
-      <div class="hero-stat-label"><span class="wl-ko">6월 5–13일<br>2026 선교 일정</span><span class="wl-en">June 5–13<br>2026 Mission Trip</span></div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-icon">👧</div>
-      <div class="hero-stat-label"><span class="wl-ko">100–120명<br>현지 청소년</span><span class="wl-en">100–120<br>Local Youth</span></div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-icon">🙌</div>
-      <div class="hero-stat-label"><span class="wl-ko">20–30명<br>카운슬러 모집</span><span class="wl-en">20–30<br>Counselors Needed</span></div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-icon">🌏</div>
-      <div class="hero-stat-label"><span class="wl-ko">7박 8일<br>청소년 캠프</span><span class="wl-en">7 Nights / 8 Days<br>Youth Camp</span></div>
-    </div>
-  </div>
-</section>
-
-<!-- OVERVIEW -->
-<section id="overview" class="section section--alt">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">사역 개요</span><span class="wl-en">Mission Overview</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">단기선교 그 이상, 다음 세대를 세우는 복음의 동역</span>
-      <span class="wl-en">More Than a Short-Term Trip — Gospel Partnership for the Next Generation</span>
-    </h2>
-    <div class="overview-card">
-      <p class="overview-tagline">
-        <span class="wl-ko">복음 중심 · 관계 중심 · 현장 중심 — 이번 선교는 프로그램보다 사람을 세우는 사역입니다.</span>
-        <span class="wl-en">Gospel-centered · Relationship-centered · Field-centered — this mission is about building people, not programs.</span>
-      </p>
-      <p class="overview-body">
-        <span class="wl-ko">이번 베트남 선교는 여름 기간 중 진행되는 8일 일정의 단기선교 사역입니다. 핵심 사역은 전도를 주제로 한 7박 8일의 청소년 캠프이며, 약 100~120명의 학생들과 실제로 만나 복음을 나누게 됩니다.</span>
-        <span class="wl-en">This Vietnam mission is an 8-day short-term ministry trip. At its heart is a 7-night youth camp centered on evangelism, where you'll meet and share the Gospel with approximately 100–120 students.</span>
-      </p>
-      <p class="overview-body">
-        <span class="wl-ko">소그룹 모임과 관계 중심의 돌봄, 간증과 말씀 나눔을 통해 학생들이 복음을 더 분명히 듣고, 자신의 믿음을 담대히 나눌 수 있도록 돕는 여정입니다.</span>
-        <span class="wl-en">Through small group time, relational care, testimonies, and God's Word, you'll help students hear the Gospel more clearly — and find the courage to share their faith with others.</span>
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- WHO WE'RE LOOKING FOR -->
-<section class="section">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">이런 분을 찾습니다</span><span class="wl-en">Who We're Looking For</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">복음에 마음이 있고, 청소년을 사랑하는 분</span>
-      <span class="wl-en">A Heart for the Gospel and a Love for Youth</span>
-    </h2>
-    <div class="candidates-grid">
-      <div class="candidate-card">
-        <div class="candidate-icon">❤️</div>
-        <div class="candidate-title"><span class="wl-ko">복음에 마음이 있는 사람</span><span class="wl-en">A Heart for the Gospel</span></div>
-        <div class="candidate-desc"><span class="wl-ko">예수 그리스도의 소망을 다음 세대에게 전하고 싶은 마음이 가장 중요합니다.</span><span class="wl-en">A genuine desire to share the hope of Jesus Christ with the next generation is what matters most.</span></div>
-      </div>
-      <div class="candidate-card">
-        <div class="candidate-icon">🤝</div>
-        <div class="candidate-title"><span class="wl-ko">청소년과 함께 걸을 수 있는 사람</span><span class="wl-en">Someone Who Can Walk with Youth</span></div>
-        <div class="candidate-desc"><span class="wl-ko">학생 한 명 한 명과 관계를 맺고, 진심으로 듣고, 함께 기도하는 사역입니다.</span><span class="wl-en">This ministry is about building real relationships with individual students — listening sincerely and praying together.</span></div>
-      </div>
-      <div class="candidate-card">
-        <div class="candidate-icon">👥</div>
-        <div class="candidate-title"><span class="wl-ko">팀으로 섬길 준비가 된 사람</span><span class="wl-en">Ready to Serve as a Team</span></div>
-        <div class="candidate-desc"><span class="wl-ko">영어로 기본적인 소통이 가능하며, 함께 준비하고 순종하는 자세를 소중히 여깁니다.</span><span class="wl-en">Basic English communication ability is needed, along with a posture of preparation, unity, and willing obedience.</span></div>
-      </div>
-    </div>
-    <div class="tags-wrap">
-      <span class="tag"><span class="wl-ko">복음에 대한 사랑</span><span class="wl-en">Love for the Gospel</span></span>
-      <span class="tag"><span class="wl-ko">청소년을 향한 마음</span><span class="wl-en">Heart for Youth</span></span>
-      <span class="tag"><span class="wl-ko">전도의 열정</span><span class="wl-en">Passion for Evangelism</span></span>
-      <span class="tag"><span class="wl-ko">영어 의사소통 가능</span><span class="wl-en">Basic English Ability</span></span>
-      <span class="tag"><span class="wl-ko">팀 사역에 대한 준비</span><span class="wl-en">Ready for Team Ministry</span></span>
-    </div>
-  </div>
-</section>
-
-<!-- WHY THIS MISSION -->
-<section class="section section--alt">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">이 선교가 특별한 이유</span><span class="wl-en">Why Join</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">단순한 일정이 아닌, 실제적인 사역입니다</span>
-      <span class="wl-en">Real Ministry, Not Just an Itinerary</span>
-    </h2>
-    <p class="sec-desc">
-      <span class="wl-ko">복음을 전하고 관계를 세우며 현지 공동체를 격려하는 실제적인 사역입니다. 캠프 이후에는 짧은 쉼과 문화 체험, 지역사회를 돕는 봉사 활동도 함께하게 됩니다.</span>
-      <span class="wl-en">This isn't just an itinerary to attend — it's real ministry: sharing the Gospel, building relationships, and encouraging the local community. After camp, there's also time for rest, cultural experience, and community service.</span>
-    </p>
-    <div class="distinctives-grid">
-      <div class="distinctive-card">
-        <div class="distinctive-icon">👧</div>
-        <div class="distinctive-title"><span class="wl-ko">청소년 100~120명과 직접 만나는 사역</span><span class="wl-en">Face-to-Face Ministry with 100–120 Youth</span></div>
-        <div class="distinctive-desc"><span class="wl-ko">복음이 필요한 현지 다음 세대를 실제로 만나고, 소그룹과 캠프 프로그램을 통해 깊이 연결되는 기회를 갖습니다.</span><span class="wl-en">You'll actually meet and connect with local youth who need the Gospel — going deep through small groups and camp programming.</span></div>
-      </div>
-      <div class="distinctive-card">
-        <div class="distinctive-icon">📖</div>
-        <div class="distinctive-title"><span class="wl-ko">말씀과 관계가 함께 흐르는 현장</span><span class="wl-en">Where the Word and Relationships Flow Together</span></div>
-        <div class="distinctive-desc"><span class="wl-ko">단순한 진행 요원이 아니라, 학생들을 사랑으로 돌보고 믿음을 격려하는 카운슬러로 참여하게 됩니다.</span><span class="wl-en">You won't just be helping things run — you'll serve as a counselor who genuinely cares for students and encourages their faith.</span></div>
-      </div>
-      <div class="distinctive-card">
-        <div class="distinctive-icon">🌍</div>
-        <div class="distinctive-title"><span class="wl-ko">사역 이후까지 이어지는 배움과 섬김</span><span class="wl-en">Learning and Service That Extends Beyond Camp</span></div>
-        <div class="distinctive-desc"><span class="wl-ko">현지 문화 이해와 지역사회 봉사를 통해 선교를 더 넓고 깊게 경험할 수 있도록 구성된 일정입니다.</span><span class="wl-en">The schedule is designed to broaden and deepen your experience of mission through cultural immersion and community service.</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SCHEDULE -->
-<section class="section">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">일정 및 세부 안내</span><span class="wl-en">Trip Details</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">2026 베트남 선교 일정</span>
-      <span class="wl-en">2026 Vietnam Mission Schedule</span>
-    </h2>
-    <div class="schedule-card">
-      <div class="schedule-item">
-        <div class="schedule-label"><span class="wl-ko">선교 일정</span><span class="wl-en">Trip Dates</span></div>
-        <div class="schedule-value"><span class="wl-ko">2026년 6월 5일 – 13일</span><span class="wl-en">June 5 – 13, 2026</span></div>
-        <div class="schedule-note"><span class="wl-ko">약 8~10일 일정</span><span class="wl-en">Approx. 8–10 days</span></div>
-      </div>
-      <div class="schedule-item">
-        <div class="schedule-label"><span class="wl-ko">캠프</span><span class="wl-en">Camp</span></div>
-        <div class="schedule-value"><span class="wl-ko">7박 8일</span><span class="wl-en">7 Nights / 8 Days</span></div>
-        <div class="schedule-note"><span class="wl-ko">전도를 주제로 한 청소년 캠프</span><span class="wl-en">Youth camp centered on evangelism</span></div>
-      </div>
-      <div class="schedule-item">
-        <div class="schedule-label"><span class="wl-ko">모집 인원</span><span class="wl-en">Positions</span></div>
-        <div class="schedule-value"><span class="wl-ko">20–30명</span><span class="wl-en">20–30 Counselors</span></div>
-        <div class="schedule-note"><span class="wl-ko">현재 10명 참여 확정</span><span class="wl-en">10 spots already confirmed</span></div>
-      </div>
-      <div class="schedule-item">
-        <div class="schedule-label"><span class="wl-ko">참여 요건</span><span class="wl-en">Requirements</span></div>
-        <div class="schedule-value"><span class="wl-ko">영어 기본 소통 가능</span><span class="wl-en">Basic English Required</span></div>
-        <div class="schedule-note"><span class="wl-ko">복음과 청소년을 향한 마음</span><span class="wl-en">Heart for the Gospel and youth</span></div>
-      </div>
-      <div class="schedule-item">
-        <div class="schedule-label"><span class="wl-ko">신청 마감</span><span class="wl-en">Application Deadline</span></div>
-        <div class="schedule-value" style="color:var(--c-red);"><span class="wl-ko">4월 24일</span><span class="wl-en">April 24</span></div>
-        <div class="schedule-note"><span class="wl-ko">마감 후 순차 검토 연락</span><span class="wl-en">We'll follow up individually after review</span></div>
-      </div>
-      <div class="schedule-item">
-        <div class="schedule-label"><span class="wl-ko">문의</span><span class="wl-en">Contact</span></div>
-        <div class="schedule-value">Molly Graham</div>
-        <div class="schedule-note"><a href="mailto:mollygraham2020@gmail.com" style="color:var(--c-deep); font-weight:700;">mollygraham2020@gmail.com</a></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- APPLICATION PROCESS -->
-<section class="section section--alt">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">참가 신청 절차</span><span class="wl-en">How to Apply</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">세 단계로 신청하세요</span>
-      <span class="wl-en">Three Simple Steps</span>
-    </h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <div class="step-title"><span class="wl-ko">신청서 작성</span><span class="wl-en">Submit Your Application</span></div>
-          <div class="step-desc"><span class="wl-ko">신청 링크를 통해 지원서를 작성해 주세요. 먼저 신청 의사를 남겨 주시면 됩니다.</span><span class="wl-en">Complete the application through the link. Start by expressing your interest — that's the first step.</span></div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <div class="step-title"><span class="wl-ko">검토 및 안내</span><span class="wl-en">Review & Follow-Up</span></div>
-          <div class="step-desc"><span class="wl-ko">사역의 역할과 팀 구성을 고려하여 내용을 검토한 뒤 이후 절차를 개별적으로 안내드립니다.</span><span class="wl-en">We'll review your application with the ministry roles and team composition in mind, then reach out individually with next steps.</span></div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <div class="step-title"><span class="wl-ko">선발 후 준비</span><span class="wl-en">Selection & Preparation</span></div>
-          <div class="step-desc"><span class="wl-ko">선발된 팀원들은 함께 기도하고 훈련하며 올해 베트남 캠프 사역을 준비하게 됩니다.</span><span class="wl-en">Selected team members will pray, train, and prepare together for this year's Vietnam camp ministry.</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <div class="page-wrap">
-    <h2>
-      <span class="wl-ko">지금, 복음의 여정에 응답하세요</span>
-      <span class="wl-en">Answer the Call — Join the Gospel Journey</span>
-    </h2>
-    <p>
-      <span class="wl-ko">하나님께서 주신 마음이 있다면, 이번 여름 베트남 선교팀으로 함께하시길 초대합니다.</span>
-      <span class="wl-en">If God has placed this on your heart, we invite you to join the Vietnam mission team this summer.</span>
-    </p>
-    <a href="https://forms.gle" target="_blank" rel="noopener" class="btn-white">
-      <span class="wl-ko">신청서 작성하기 →</span>
-      <span class="wl-en">Fill Out the Application →</span>
-    </a>
-    <p class="cta-contact">
-      <span class="wl-ko">문의:</span><span class="wl-en">Contact:</span> Molly Graham · <a href="mailto:mollygraham2020@gmail.com">mollygraham2020@gmail.com</a>
-    </p>
-  </div>
-</section>
+<script>
+  try {
+    if (localStorage.getItem('wolko-lang') === 'en') {
+      document.getElementById('wl-root').classList.add('lang-en');
+    }
+  } catch(e) {}
+</script>
 
 </BaseLayout>
