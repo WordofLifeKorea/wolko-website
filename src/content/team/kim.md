@@ -8,6 +8,16 @@ campus: pyeongtaek
 category: missionary
 order: 5
 photo_url: /images/uploads/kim.jpeg
+hero_tagline_ko: '"복음을 담은" '
+hero_tagline_en: '"Media & Education"'
+hero_tagline2_ko: '"미디어 & 교육 사역"'
+hero_tagline2_en: '"Filled with the Gospel"'
+hero_subtitle_ko: 김환규 선교사는 지역 교회와 기독 학교를 위한 복음 교재 번역 및 개발에 주력하고 있습니다. 씬띠아 선교사와
+  함께 캠프 사역, 청소년 상담, 영어 수업을 통해 한국의 다음 세대를 섬기고 있습니다.
+hero_subtitle_en: Hwan-Kyu focuses on translating and developing gospel
+  curriculum for local churches and Christian schools. Together with Cynthia,
+  they serve the next generation in Korea through camp ministry, youth
+  counseling, and English classes.
 verse_ref: "시편 96 : 2-3"
 verse_ko: |-
   "여호와께 노래하라, 그의 이름을 찬송하라: 날마다 그의 구원을 전파하라. 
@@ -41,4 +51,5 @@ bio_en: Hwan-Kyu was born and raised in South Korea. His mother had a personal
   She rejoices that God has directed both her life and her husband's to bring
   them back to South Korea, where they now serve the Lord together with their
   three children — sons Zayn and Noah, and their youngest daughter Noelle.
+photo_url_2: /images/uploads/cynthia.jpg
 ---
