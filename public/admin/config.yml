@@ -2,14 +2,14 @@ backend:
   name: github
   repo: WordofLifeKorea/wolko-website
   branch: main
-  base_url: https://wolko-cms-auth.wolkorea1.workers.dev
+  base_url: https://wolko-cms-auth.wolkousa1.workers.dev
 
 media_folder: public/images/uploads
 public_folder: /images/uploads
 
 collections:
 
-  # ── 팀원 (섬기는이) ──────────────────────────────────────
+  # ── 섬기는이 ──────────────────────────────────────────────
   - name: "team"
     label: "섬기는이 (Team)"
     label_singular: "팀원"
@@ -17,10 +17,12 @@ collections:
     create: true
     slug: "{{slug}}"
     fields:
-      - { label: "이름 (한국어)", name: "name_ko", widget: "string" }
-      - { label: "Name (English)", name: "name_en", widget: "string" }
-      - { label: "직책 (한국어)", name: "title_ko", widget: "string" }
-      - { label: "Title (English)", name: "title_en", widget: "string" }
+
+      # 기본 정보
+      - { label: "이름 (한국어)", name: "name_ko", widget: "string", hint: "부부 선교사는 '이름1 & 이름2' 형식으로 입력 (예: 몰스 제이콥 & 몰스 크리스탈)" }
+      - { label: "Name (English)", name: "name_en", widget: "string", hint: "Couple: 'Name1 & Name2' (e.g. Jacob Morse & Crystal Morse)" }
+      - { label: "직책 (한국어)", name: "title_ko", widget: "string", hint: "예: 청소년 및 캠프 사역 코디네이터" }
+      - { label: "Title (English)", name: "title_en", widget: "string", hint: "e.g. Youth & Camp Ministry Coordinator" }
       - label: "역할 배지"
         name: "role_badge"
         widget: "select"
@@ -42,36 +44,39 @@ collections:
         options:
           - { label: "선교사 (Missionary)", value: "missionary" }
           - { label: "단기 사역자 (Short-term Worker)", value: "stw" }
-      - { label: "순서 (숫자 낮을수록 먼저 표시)", name: "order", widget: "number", default: 99 }
-      - { label: "사진 — 목록/히어로용", name: "photo_url", widget: "image", required: false, hint: "섬기는이 목록 카드 + 상세 히어로에 쓰이는 사진" }
-      - { label: "사진 — 소개용 (스토리 섹션 1)", name: "photo_story", widget: "image", required: false, hint: "개인 소개 섹션에 쓰이는 사진 (목록 사진과 다르게 설정 가능)" }
-      - { label: "히어로 태그라인 1 (한국어)", name: "hero_tagline_ko", widget: "string", required: false, hint: "예: 복음을 담은 — 히어로 큰 제목 첫 줄 (없으면 이름으로 대체)" }
-      - { label: "Hero Tagline 1 (English)", name: "hero_tagline_en", widget: "string", required: false, hint: "e.g. Media & Education — hero headline line 1 (falls back to name)" }
-      - { label: "히어로 태그라인 2 — 이탤릭 (한국어)", name: "hero_tagline2_ko", widget: "string", required: false, hint: "예: 미디어 & 교육 사역 — 히어로 이탤릭 두 번째 줄" }
-      - { label: "Hero Tagline 2 — italic (English)", name: "hero_tagline2_en", widget: "string", required: false, hint: "e.g. Filled with the Gospel — hero italic subtitle line" }
-      - { label: "히어로 한 줄 소개 (한국어) — 세로줄 옆에 표시", name: "hero_subtitle_ko", widget: "string", required: false, hint: "예: 평택 월코센터 · 청소년 및 캠프 사역" }
-      - { label: "Hero Subtitle (English) — shown next to vertical line", name: "hero_subtitle_en", widget: "string", required: false, hint: "e.g. Pyeongtaek WOLKO Center · Youth & Camp Ministry" }
-      - label: "Life Verse — 성경 구절 참조"
-        name: "verse_ref"
-        widget: "string"
-        required: false
-        hint: "예: 마태복음 9:36-38 / Matthew 9:36-38"
-      - { label: "Life Verse 본문 (한국어)", name: "verse_ko", widget: "text", required: false, hint: "구절 전체 본문을 한국어로 입력하세요" }
-      - { label: "Life Verse Text (English)", name: "verse_en", widget: "text", required: false, hint: "Enter the full verse text in English" }
-      - { label: "소개 (한국어)", name: "bio_ko", widget: "text", required: false }
-      - { label: "Bio (English)", name: "bio_en", widget: "text", required: false }
-      - { label: "소개 2 — 한국어 (부부 선교사 두 번째 분)", name: "bio_ko_2", widget: "text", required: false }
-      - { label: "Bio 2 — English (2nd person, couple missionaries only)", name: "bio_en_2", widget: "text", required: false }
-      - { label: "사진 2 (두 번째 분 개인 사진)", name: "photo_url_2", widget: "image", required: false }
+      - { label: "표시 순서", name: "order", widget: "number", default: 99, hint: "숫자가 낮을수록 목록에서 먼저 표시됩니다" }
 
-  # ── 소식 / 선교보고 ──────────────────────────────────────
+      # ── 사진 ──
+      - { label: "📸 사진 ① 목록/히어로용", name: "photo_url", widget: "image", required: false, hint: "섬기는이 목록 카드와 상세 페이지 히어로에 사용됩니다" }
+      - { label: "📸 사진 ② 소개용 (스토리 섹션)", name: "photo_story", widget: "image", required: false, hint: "개인 소개 스토리 섹션에 사용. 비어있으면 ①번 사진으로 대체됩니다" }
+      - { label: "📸 사진 ③ 배우자 사진 (부부 선교사만)", name: "photo_url_2", widget: "image", required: false, hint: "부부 선교사의 두 번째 스토리 블록에 표시됩니다" }
+
+      # ── 히어로 문구 ──
+      - { label: "히어로 제목 1 (한국어)", name: "hero_tagline_ko", widget: "string", required: false, hint: "히어로 굵은 제목 첫 줄 (예: 복음을 담은). 비어있으면 이름이 표시됩니다" }
+      - { label: "Hero Title 1 (English)", name: "hero_tagline_en", widget: "string", required: false, hint: "Hero bold headline (e.g. Media & Education). Falls back to name if empty" }
+      - { label: "히어로 제목 2 — 이탤릭 (한국어)", name: "hero_tagline2_ko", widget: "string", required: false, hint: "히어로 이탤릭 두 번째 줄 (예: 미디어 & 교육 사역). 비어있으면 직책이 표시됩니다" }
+      - { label: "Hero Title 2 — italic (English)", name: "hero_tagline2_en", widget: "string", required: false, hint: "Italic subtitle (e.g. Filled with the Gospel). Falls back to title if empty" }
+      - { label: "히어로 설명 한 줄 (한국어)", name: "hero_subtitle_ko", widget: "string", required: false, hint: "세로줄 옆 짧은 설명 (예: 평택 월코센터 · 청소년 및 캠프 사역). 비어있으면 소개 일부가 표시됩니다" }
+      - { label: "Hero Description (English)", name: "hero_subtitle_en", widget: "string", required: false, hint: "Short line next to vertical bar (e.g. Pyeongtaek · Youth & Camp Ministry)" }
+
+      # ── Life Verse ──
+      - { label: "Life Verse 성경 참조", name: "verse_ref", widget: "string", required: false, hint: "예: 시편 96:2-3 / Psalm 96:2-3" }
+      - { label: "Life Verse 본문 (한국어)", name: "verse_ko", widget: "text", required: false, hint: "구절 전체 본문 입력. 비어있으면 마태복음 9:36-38이 기본으로 표시됩니다" }
+      - { label: "Life Verse Text (English)", name: "verse_en", widget: "text", required: false, hint: "Full verse text. Defaults to Matthew 9:36-38 if empty" }
+
+      # ── 소개 ──
+      - { label: "소개 (한국어)", name: "bio_ko", widget: "text", required: false, hint: "개인 소개 스토리. 부부 선교사는 첫 번째 분의 소개를 입력하세요" }
+      - { label: "Bio (English)", name: "bio_en", widget: "text", required: false }
+      - { label: "배우자 소개 (한국어) — 부부 선교사만", name: "bio_ko_2", widget: "text", required: false, hint: "부부 선교사의 경우 두 번째 분 소개를 여기에 입력하세요" }
+      - { label: "Spouse Bio (English) — couples only", name: "bio_en_2", widget: "text", required: false }
+
+  # ── 소식 ─────────────────────────────────────────────────
   - name: "news"
     label: "소식 (News)"
     label_singular: "소식"
     folder: "src/content/news"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
-    i18n: true
     fields:
       - { label: "제목 (한국어)", name: "title_ko", widget: "string" }
       - { label: "Title (English)", name: "title_en", widget: "string" }
@@ -89,7 +94,7 @@ collections:
       - { label: "내용 (한국어)", name: "body_ko", widget: "markdown" }
       - { label: "Content (English)", name: "body_en", widget: "markdown", required: false }
 
-  # ── 기도 제목 ──────────────────────────────────────────
+  # ── 기도 제목 ─────────────────────────────────────────────
   - name: "prayer"
     label: "기도 제목 (Prayer Requests)"
     label_singular: "기도 제목"
@@ -103,7 +108,7 @@ collections:
       - { label: "내용 (한국어)", name: "body_ko", widget: "markdown" }
       - { label: "Content (English)", name: "body_en", widget: "markdown", required: false }
 
-  # ── 선교보고 ──────────────────────────────────────────
+  # ── 선교보고 ──────────────────────────────────────────────
   - name: "mission_report"
     label: "선교보고 (Mission Reports)"
     label_singular: "선교보고"
@@ -116,12 +121,12 @@ collections:
       - { label: "제목 (한국어)", name: "title_ko", widget: "string" }
       - { label: "Title (English)", name: "title_en", widget: "string" }
       - { label: "날짜", name: "date", widget: "datetime" }
-      - { label: "PDF URL", name: "pdf_url", widget: "string", hint: "PDF 파일 URL (예: /images/uploads/report-2025-01.pdf 또는 외부 링크)" }
-      - { label: "썸네일 이미지 URL", name: "thumbnail_url", widget: "string", required: false, hint: "소식지 표지 이미지 URL" }
+      - { label: "PDF URL", name: "pdf_url", widget: "string", hint: "예: /images/uploads/report-2025-01.pdf 또는 외부 링크" }
+      - { label: "썸네일 이미지 URL", name: "thumbnail_url", widget: "string", required: false }
       - { label: "소개 (한국어)", name: "description_ko", widget: "text", required: false }
       - { label: "Description (English)", name: "description_en", widget: "text", required: false }
 
-  # ── 사이트 설정 ────────────────────────────────────────
+  # ── 사이트 설정 ───────────────────────────────────────────
   - name: "settings"
     label: "사이트 설정 (Settings)"
     files:
