@@ -3,557 +3,854 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="WOLBI 제주 — Word of Life Korea"
-  description="성경을 삶으로 살아내는 1년 — 제주 월비 성경대학 입학 안내, 커리큘럼, 선교 여행"
+  title="제주 월비 (WOLBI Jeju) — Word of Life Korea"
+  description="제주 월비 — 대학 수준의 성경 교육과 제자훈련, 그리고 세계를 경험하는 11개월"
   activeNav="ministry"
 >
 
+<!-- WOLBI Jeju 본문 | 한/영 이중언어 | 플로팅 바 분리 버전 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet">
+
 <style>
-  :root {
-    --c-deep: #004f68; --c-mid: #0a5b76; --c-light: #73d1f5;
-    --c-bg: #f4f8fb; --c-white: #ffffff;
-    --c-text: #152028; --c-muted: #5b6b78;
-    --c-line: rgba(0,79,104,0.12);
-    --r-xl: 28px; --r-lg: 20px; --r-md: 14px;
-  }
+/* ══ 언어 표시/숨김 ══ */
+.wl-ko { display: block; }
+.wl-en { display: none; }
+span.wl-ko { display: inline; }
+span.wl-en { display: none; }
+.lang-en .wl-ko { display: none !important; }
+.lang-en .wl-en { display: block !important; }
+.lang-en span.wl-en { display: inline !important; }
 
-  /* ── HERO ── */
-  .hero {
-    position:relative; overflow:hidden;
-    padding:160px 24px 100px; text-align:center;
-    background:
-      linear-gradient(180deg, rgba(5,24,36,0.40) 0%, rgba(5,24,36,0.60) 100%),
-      url("https://wolko.synology.me/Web_Contents/Photos/WOLBI_Jeju/WOLBI_Banner.jpg") center / cover no-repeat;
-    background-color:#083d51;
-  }
-  .hero::before {
-    content:""; position:absolute; inset:0;
-    background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
-    background-size:60px 60px; pointer-events:none;
-  }
-  .hero-inner { position:relative; z-index:2; max-width:880px; margin:0 auto; }
-  .hero-eyebrow {
-    display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border-radius:999px;
-    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.22);
-    font-size:11px; font-weight:800; letter-spacing:0.09em; color:rgba(255,255,255,0.9);
-    margin-bottom:22px; text-transform:uppercase;
-  }
-  .hero-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--c-light); }
-  .hero-inner h1 {
-    font-size:clamp(38px,6vw,64px); font-weight:800; line-height:1.12;
-    letter-spacing:-0.04em; color:#fff; margin-bottom:18px;
-    text-shadow:0 6px 24px rgba(0,0,0,0.26);
-  }
-  .hero-inner h1 em { font-style:normal; color:#9ae3ff; display:block; }
-  .hero-sub { font-size:17px; line-height:1.88; color:rgba(255,255,255,0.82); max-width:660px; margin:0 auto 32px; }
-  .hero-btns { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:30px; }
-  .btn-primary {
-    display:inline-flex; align-items:center; gap:8px; padding:15px 28px; border-radius:999px;
-    background:#fff; color:var(--c-deep); font-size:14px; font-weight:800;
-    text-decoration:none; box-shadow:0 10px 28px rgba(0,0,0,0.18); transition:transform .18s, box-shadow .18s;
-  }
-  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,0.22); }
-  .btn-outline {
-    display:inline-flex; align-items:center; gap:8px; padding:15px 28px; border-radius:999px;
-    background:transparent; border:2px solid rgba(255,255,255,0.5); color:#fff;
-    font-size:14px; font-weight:800; text-decoration:none; transition:background .18s, border-color .18s;
-  }
-  .btn-outline:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.8); }
+/* ══════════════════════════════════════════════
+   WOLBI JEJU — 본문 CSS (.wj-wrap 격리)
+══════════════════════════════════════════════ */
+.wj-wrap {
+  --c-deep:    #004f68;
+  --c-mid:     #007ea1;
+  --c-light:   #73d1f5;
+  --c-red:     #c42a36;
+  --c-red-dk:  #a82330;
+  --c-white:   #ffffff;
+  --c-off:     #f5fafd;
+  --c-pale:    #eef7fb;
+  --c-text:    #111820;
+  --c-sub:     #334a56;
+  --c-muted:   #6b8896;
+  --c-border:  rgba(0,79,104,0.12);
+  --f-serif:   'Playfair Display', 'Noto Serif KR', Georgia, serif;
+  --f-sans:    'Noto Sans KR', sans-serif;
+  --sp-xs:  8px; --sp-sm: 16px; --sp-md: 24px;
+  --sp-lg: 40px; --sp-xl: 64px; --sp-2xl: 96px; --sp-3xl: 140px;
+  --max-w: 1100px; --pad-h: 48px;
+  font-family: var(--f-sans) !important;
+  font-weight: 300;
+  color: var(--c-text);
+  background: var(--c-white);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+.wj-wrap *, .wj-wrap *::before, .wj-wrap *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.wj-wrap img { display: block; width: 100%; }
+.wj-wrap a { text-decoration: none; color: inherit; }
+.wj-wrap ul { list-style: none; }
 
-  .hero-stats {
-    position:relative; z-index:2; display:flex; justify-content:center;
-    margin:56px auto 0; max-width:800px;
-    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.16);
-    border-radius:18px; backdrop-filter:blur(8px); overflow:hidden;
-  }
-  .hero-stat { flex:1; padding:20px 14px; text-align:center; border-right:1px solid rgba(255,255,255,0.12); }
-  .hero-stat:last-child { border-right:none; }
-  .hero-stat-num { font-size:26px; font-weight:800; letter-spacing:-0.04em; color:#fff; display:block; line-height:1; margin-bottom:5px; }
-  .hero-stat-label { font-size:11px; font-weight:700; color:rgba(255,255,255,0.68); line-height:1.35; }
+/* 리빌 */
+.wj-wrap .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.wj-wrap .reveal.visible { opacity: 1; transform: none; }
+.wj-wrap .reveal-delay-1 { transition-delay: 0.10s; }
+.wj-wrap .reveal-delay-2 { transition-delay: 0.20s; }
+.wj-wrap .reveal-delay-3 { transition-delay: 0.30s; }
 
-  /* ── SECTIONS ── */
-  .section { padding:96px 24px; }
-  .section--alt { background:var(--c-bg); }
-  .page-wrap { max-width:1140px; margin:0 auto; }
+/* 공통 */
+.wj-wrap .section { padding: var(--sp-3xl) var(--pad-h); }
+.wj-wrap .container { max-width: var(--max-w); margin: 0 auto; }
+.wj-wrap .section-label {
+  display: inline-flex; align-items: center; gap: var(--sp-sm);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--c-mid); margin-bottom: var(--sp-sm);
+}
+.wj-wrap .section-label::before { content: ''; width: 14px; height: 2px; background: var(--c-red); flex-shrink: 0; }
+.wj-wrap .section-title { font-family: var(--f-serif); font-size: clamp(28px, 4vw, 52px); font-weight: 700; color: var(--c-deep); line-height: 1.15; letter-spacing: -0.02em; }
+.wj-wrap .section-desc { font-size: 16px; line-height: 1.9; color: var(--c-sub); max-width: 600px; }
+.wj-wrap .accent-line { width: 48px; height: 3px; background: linear-gradient(90deg, var(--c-red), var(--c-mid)); border-radius: 2px; margin: var(--sp-md) 0 var(--sp-lg); }
 
-  .sec-badge {
-    display:inline-block; padding:7px 14px; border-radius:999px;
-    background:rgba(0,79,104,0.08); color:var(--c-deep);
-    font-size:11px; font-weight:800; letter-spacing:0.06em;
-  }
-  .sec-title {
-    font-size:clamp(28px,4vw,44px); font-weight:800; line-height:1.2;
-    letter-spacing:-0.035em; color:var(--c-text); margin:14px 0 16px;
-  }
-  .sec-desc { font-size:16px; line-height:1.9; color:var(--c-muted); max-width:700px; }
+/* ── HERO ── */
+.wj-wrap .hero {
+  position: relative; height: 100vh; min-height: 620px;
+  background: var(--c-deep); display: flex; align-items: center; overflow: hidden;
+}
+.wj-wrap .hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(0,126,161,0.45) 0%, transparent 70%),
+              radial-gradient(ellipse 50% 80% at 10% 80%, rgba(115,209,245,0.10) 0%, transparent 60%);
+  pointer-events: none;
+}
+.wj-wrap .hero-circle { position: absolute; right: -120px; top: -120px; width: 560px; height: 560px; border-radius: 50%; border: 1px solid rgba(115,209,245,0.15); pointer-events: none; }
+.wj-wrap .hero-circle::after { content: ''; position: absolute; inset: 60px; border-radius: 50%; border: 1px solid rgba(115,209,245,0.08); }
+.wj-wrap .hero-cross { position: absolute; right: 7%; bottom: 12%; opacity: 0.04; font-size: 240px; color: var(--c-white); line-height: 1; user-select: none; pointer-events: none; }
+.wj-wrap .hero-inner { position: relative; z-index: 2; width: 100%; max-width: var(--max-w); margin: 0 auto; padding: 0 var(--pad-h); padding-bottom: 120px; }
+.wj-wrap .hero-badge {
+  display: inline-flex; align-items: center; gap: var(--sp-sm);
+  background: rgba(115,209,245,0.12); border: 1px solid rgba(115,209,245,0.28);
+  color: var(--c-light); font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
+  text-transform: uppercase; padding: 8px 18px; border-radius: 100px; margin-bottom: var(--sp-lg);
+}
+.wj-wrap .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--c-light); }
+.wj-wrap .hero-title { font-family: var(--f-serif); font-size: clamp(40px, 6.5vw, 80px); font-weight: 700; color: var(--c-white); line-height: 1.1; letter-spacing: -0.02em; margin-bottom: var(--sp-sm); }
+.wj-wrap .hero-title em { font-style: italic; color: var(--c-light); }
+.wj-wrap .hero-subtitle { font-size: clamp(14px, 1.8vw, 18px); color: rgba(255,255,255,0.65); font-weight: 300; letter-spacing: 0.03em; margin-bottom: var(--sp-xl); max-width: 600px; }
+.wj-wrap .hero-cta-group { display: flex; gap: var(--sp-sm); flex-wrap: wrap; }
+.wj-wrap .btn-primary { display: inline-flex; align-items: center; gap: var(--sp-sm); background: #c42a36; color: #fff; font-family: var(--f-sans); font-size: 14px; font-weight: 600; letter-spacing: 0.04em; padding: 15px 30px; border-radius: 4px; transition: background 0.25s, transform 0.2s; }
+.wj-wrap .btn-primary:hover { background: #a82330; transform: translateY(-2px); }
+.wj-wrap .btn-secondary { display: inline-flex; align-items: center; gap: var(--sp-sm); background: transparent; color: #fff; font-family: var(--f-sans); font-size: 14px; font-weight: 500; letter-spacing: 0.04em; padding: 15px 30px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,0.55); transition: border-color 0.25s, background 0.25s; }
+.wj-wrap .btn-secondary:hover { border-color: var(--c-light); background: rgba(115,209,245,0.08); }
+.wj-wrap .hero-stats { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,20,32,0.72); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid rgba(115,209,245,0.15); z-index: 3; }
+.wj-wrap .hero-stats-inner { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--pad-h); display: flex; align-items: stretch; }
+.wj-wrap .hero-stat { flex: 1; padding: var(--sp-md) 0; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid rgba(115,209,245,0.12); }
+.wj-wrap .hero-stat:first-child { padding-right: var(--sp-lg); }
+.wj-wrap .hero-stat:not(:first-child) { padding-left: var(--sp-lg); }
+.wj-wrap .hero-stat:last-child { border-right: none; }
+.wj-wrap .hero-stat-num { font-family: var(--f-serif); font-size: 26px; font-weight: 700; color: var(--c-light); line-height: 1; }
+.wj-wrap .hero-stat-label { font-size: 12px; color: rgba(255,255,255,0.52); font-weight: 300; }
+.wj-wrap .hero-scroll { position: absolute; bottom: 88px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: var(--sp-xs); color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; z-index: 2; }
+.wj-wrap .hero-scroll-line { width: 1px; height: 36px; background: linear-gradient(to bottom, rgba(255,255,255,0.35), transparent); animation: wj-pulse 2s ease-in-out infinite; }
+@keyframes wj-pulse { 0%,100%{opacity:.35} 50%{opacity:.85} }
 
-  .quote-bar {
-    background:linear-gradient(135deg, #083d51 0%, var(--c-deep) 100%);
-    padding:36px 24px; text-align:center;
-  }
-  .quote-text { font-size:18px; font-style:italic; color:rgba(255,255,255,0.92); max-width:680px; margin:0 auto 10px; line-height:1.7; }
-  .quote-attr { font-size:12px; font-weight:700; letter-spacing:0.06em; color:rgba(255,255,255,0.55); text-transform:uppercase; }
+/* ── INTRO ── */
+.wj-wrap .intro { background: var(--c-white); }
+.wj-wrap .intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3xl); align-items: center; max-width: var(--max-w); margin: 0 auto; }
+.wj-wrap .intro-img-wrap { position: relative; }
+.wj-wrap .intro-img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 8px; display: block; position: relative; z-index: 1; }
+.wj-wrap .intro-img-frame { position: absolute; top: -20px; right: -20px; bottom: 20px; left: 20px; border: 2px solid rgba(0,126,161,0.15); border-radius: 8px; pointer-events: none; }
+.wj-wrap .intro-quote { position: absolute; bottom: -24px; right: -24px; background: var(--c-deep); color: var(--c-white); padding: var(--sp-md) var(--sp-lg); border-radius: 6px; max-width: 240px; z-index: 2; box-shadow: 0 16px 48px rgba(0,30,45,0.25); }
+.wj-wrap .intro-quote-icon { font-family: var(--f-serif); font-size: 48px; line-height: 1; color: var(--c-light); opacity: 0.5; margin-bottom: var(--sp-xs); }
+.wj-wrap .intro-quote-text { font-size: 13px; font-style: italic; line-height: 1.65; color: rgba(255,255,255,0.82); }
+.wj-wrap .intro-quote-source { font-size: 11px; color: var(--c-light); margin-top: var(--sp-sm); font-weight: 500; letter-spacing: 0.06em; }
 
-  /* Features */
-  .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-top:48px; }
-  .feature-card {
-    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-xl);
-    padding:32px 28px; box-shadow:0 4px 20px rgba(0,79,104,0.07);
-    display:flex; flex-direction:column; gap:12px;
-    transition:transform .22s, box-shadow .22s;
-  }
-  .feature-card:hover { transform:translateY(-4px); box-shadow:0 12px 36px rgba(0,79,104,0.14); }
-  .feature-icon { font-size:26px; }
-  .feature-tag { font-size:11px; font-weight:800; letter-spacing:0.06em; color:var(--c-mid); text-transform:uppercase; }
-  .feature-title { font-size:18px; font-weight:800; color:var(--c-text); }
-  .feature-desc { font-size:14px; line-height:1.82; color:var(--c-muted); }
+/* ── HIGHLIGHTS ── */
+.wj-wrap .highlights { background: var(--c-deep); padding: var(--sp-3xl) var(--pad-h); position: relative; overflow: hidden; }
+.wj-wrap .highlights::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 100% at 90% 50%, rgba(0,126,161,0.35) 0%, transparent 60%); pointer-events: none; }
+.wj-wrap .highlights-inner { position: relative; z-index: 1; max-width: var(--max-w); margin: 0 auto; }
+.wj-wrap .highlights-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--sp-2xl); gap: var(--sp-md); }
+.wj-wrap .highlights-title { font-family: var(--f-serif); font-size: clamp(26px, 3.5vw, 44px); color: var(--c-white); line-height: 1.2; font-weight: 700; }
+.wj-wrap .highlights-sub { font-size: 14px; color: rgba(255,255,255,0.52); line-height: 1.75; max-width: 300px; text-align: right; }
+.wj-wrap .highlights-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(115,209,245,0.12); border-radius: 8px; overflow: hidden; }
+.wj-wrap .hi-card { background: rgba(0,10,20,0.35); padding: var(--sp-xl) var(--sp-lg); display: flex; flex-direction: column; gap: var(--sp-sm); transition: background 0.3s; }
+.wj-wrap .hi-card:hover { background: rgba(0,126,161,0.25); }
+.wj-wrap .hi-icon { width: 44px; height: 44px; border-radius: 8px; background: rgba(115,209,245,0.12); display: flex; align-items: center; justify-content: center; margin-bottom: var(--sp-xs); }
+.wj-wrap .hi-icon svg { width: 22px; height: 22px; stroke: var(--c-light); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.wj-wrap .hi-num { font-family: var(--f-serif); font-size: 34px; font-weight: 700; color: var(--c-light); line-height: 1; }
+.wj-wrap .hi-label { font-size: 14px; font-weight: 500; color: var(--c-white); }
+.wj-wrap .hi-desc { font-size: 13px; color: rgba(255,255,255,0.48); line-height: 1.7; font-weight: 300; }
 
-  /* Courses */
-  .courses-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:48px; }
-  .course-card {
-    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-lg);
-    padding:24px 26px; box-shadow:0 3px 14px rgba(0,79,104,0.06);
-    display:flex; flex-direction:column; gap:10px;
-    transition:transform .2s, box-shadow .2s;
-  }
-  .course-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,79,104,0.12); }
-  .course-tag {
-    display:inline-block; padding:4px 10px; border-radius:999px;
-    background:rgba(0,79,104,0.08); color:var(--c-deep); font-size:11px; font-weight:800;
-    width:fit-content;
-  }
-  .course-title { font-size:15px; font-weight:800; color:var(--c-text); }
-  .course-desc { font-size:13px; line-height:1.78; color:var(--c-muted); }
+/* ── ACADEMICS ── */
+.wj-wrap .academics { background: var(--c-off); }
+.wj-wrap .academics-layout { display: grid; grid-template-columns: 320px 1fr; gap: var(--sp-3xl); align-items: start; max-width: var(--max-w); margin: 0 auto; }
+.wj-wrap .academics-sticky { position: sticky; top: 100px; }
+.wj-wrap .academics-courses { display: flex; flex-direction: column; gap: 4px; }
+.wj-wrap .course-item { display: grid; grid-template-columns: 52px 1fr; background: var(--c-white); border-radius: 6px; overflow: hidden; border: 1px solid var(--c-border); transition: box-shadow 0.25s, transform 0.25s; }
+.wj-wrap .course-item:hover { transform: translateX(4px); box-shadow: 0 4px 24px rgba(0,79,104,0.10); }
+.wj-wrap .course-num { background: var(--c-deep); color: rgba(255,255,255,0.38); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; writing-mode: vertical-lr; letter-spacing: 0.1em; padding: var(--sp-sm) 0; }
+.wj-wrap .course-body { padding: var(--sp-md); }
+.wj-wrap .course-name { font-size: 15px; font-weight: 600; color: var(--c-deep); margin-bottom: var(--sp-xs); }
+.wj-wrap .course-desc { font-size: 13px; color: var(--c-muted); line-height: 1.65; }
+.wj-wrap .course-tag { display: inline-block; margin-top: var(--sp-sm); font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-mid); background: var(--c-pale); padding: 3px 10px; border-radius: 100px; }
 
-  /* Trips */
-  .trips-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; margin-top:48px; }
-  .trip-card {
-    border-radius:var(--r-xl); overflow:hidden;
-    box-shadow:0 6px 28px rgba(0,79,104,0.10);
-    transition:transform .22s, box-shadow .22s;
-  }
-  .trip-card:hover { transform:translateY(-4px); box-shadow:0 14px 40px rgba(0,79,104,0.16); }
-  .trip-head {
-    padding:28px 28px 22px;
-    background:linear-gradient(135deg, var(--c-deep) 0%, var(--c-mid) 100%);
-    position:relative; overflow:hidden;
-  }
-  .trip-head::after { content:""; position:absolute; right:-30px; bottom:-36px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.07); }
-  .trip-timing { font-size:11px; font-weight:800; letter-spacing:0.07em; color:rgba(255,255,255,0.6); text-transform:uppercase; margin-bottom:8px; }
-  .trip-title { font-size:22px; font-weight:800; color:#fff; position:relative; z-index:1; }
-  .trip-body { background:var(--c-white); padding:24px 28px; }
-  .trip-desc { font-size:14px; line-height:1.85; color:var(--c-muted); }
+/* ── TRIPS ── */
+.wj-wrap .trips { background: var(--c-white); }
+.wj-wrap .trips-header { text-align: center; margin-bottom: var(--sp-2xl); max-width: var(--max-w); margin-left: auto; margin-right: auto; }
+.wj-wrap .trips-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-md); max-width: var(--max-w); margin: 0 auto; }
+.wj-wrap .trip-card { border-radius: 10px; overflow: hidden; border: 1px solid var(--c-border); background: var(--c-white); transition: box-shadow 0.3s, transform 0.3s; }
+.wj-wrap .trip-card:hover { box-shadow: 0 16px 48px rgba(0,79,104,0.12); transform: translateY(-4px); }
+.wj-wrap .trip-img { aspect-ratio: 16/10; object-fit: cover; display: block; width: 100%; }
+.wj-wrap .trip-body { padding: var(--sp-lg) var(--sp-lg) var(--sp-xl); }
+.wj-wrap .trip-flag { font-size: 26px; margin-bottom: var(--sp-sm); }
+.wj-wrap .trip-title { font-family: var(--f-serif); font-size: 20px; font-weight: 700; color: var(--c-deep); margin-bottom: var(--sp-sm); }
+.wj-wrap .trip-desc { font-size: 14px; color: var(--c-sub); line-height: 1.8; }
+.wj-wrap .trip-when { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--sp-md); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-red); }
 
-  /* Testimonials */
-  .testimonials-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:48px; }
-  .testimonial-card {
-    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-xl);
-    padding:30px 28px; box-shadow:0 4px 18px rgba(0,79,104,0.06);
-    display:flex; flex-direction:column; gap:14px;
-    transition:transform .22s, box-shadow .22s;
-  }
-  .testimonial-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,79,104,0.12); }
-  .testimonial-quote { font-size:30px; color:var(--c-light); font-weight:900; line-height:1; }
-  .testimonial-text { font-size:14.5px; line-height:1.9; color:#3a4e58; font-style:italic; flex:1; }
-  .testimonial-origin { font-size:12px; font-weight:800; color:var(--c-deep); padding-top:10px; border-top:1px solid var(--c-line); }
+/* ── ADMISSION ── */
+.wj-wrap .admission { background: var(--c-pale); }
+.wj-wrap .admission-header { max-width: var(--max-w); margin: 0 auto var(--sp-2xl); }
+.wj-wrap .admission-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-md); max-width: var(--max-w); margin: 0 auto; }
+.wj-wrap .adm-card { background: var(--c-white); border-radius: 10px; padding: var(--sp-xl); border: 1px solid var(--c-border); position: relative; overflow: hidden; }
+.wj-wrap .adm-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--c-deep), var(--c-mid)); }
+.wj-wrap .adm-card-num { font-family: var(--f-serif); font-size: 56px; font-weight: 700; color: rgba(0,79,104,0.06); line-height: 1; position: absolute; top: var(--sp-sm); right: var(--sp-md); }
+.wj-wrap .adm-card-title { font-size: 17px; font-weight: 600; color: var(--c-deep); margin-bottom: var(--sp-md); padding-top: 4px; }
+.wj-wrap .adm-list { display: flex; flex-direction: column; gap: var(--sp-sm); }
+.wj-wrap .adm-list li { display: flex; gap: var(--sp-sm); font-size: 14px; color: var(--c-sub); line-height: 1.65; }
+.wj-wrap .adm-list li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--c-mid); flex-shrink: 0; margin-top: 7px; }
 
-  /* Admission */
-  .admit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-top:48px; }
-  .admit-card {
-    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-xl);
-    padding:28px 24px; box-shadow:0 3px 14px rgba(0,79,104,0.06);
-  }
-  .admit-card h4 { font-size:16px; font-weight:800; color:var(--c-deep); margin-bottom:16px; }
-  .admit-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
-  .admit-list li { font-size:13.5px; line-height:1.7; color:var(--c-muted); padding-left:16px; position:relative; }
-  .admit-list li::before { content:"·"; position:absolute; left:0; color:var(--c-mid); font-weight:800; }
+/* ── ACCREDITATION ── */
+.wj-wrap .accred { background: var(--c-deep); padding: var(--sp-2xl) var(--pad-h); }
+.wj-wrap .accred-inner { max-width: var(--max-w); margin: 0 auto; display: flex; align-items: center; gap: var(--sp-3xl); }
+.wj-wrap .accred-badge { flex-shrink: 0; width: 112px; height: 112px; border-radius: 50%; border: 2px solid rgba(115,209,245,0.3); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; text-align: center; padding: var(--sp-sm); }
+.wj-wrap .accred-badge-main { font-family: var(--f-serif); font-size: 20px; font-weight: 700; color: var(--c-light); line-height: 1; }
+.wj-wrap .accred-badge-sub { font-size: 9px; color: rgba(255,255,255,0.48); letter-spacing: 0.1em; font-weight: 500; }
+.wj-wrap .accred-title { font-family: var(--f-serif); font-size: 26px; font-weight: 700; color: var(--c-white); margin-bottom: var(--sp-sm); }
+.wj-wrap .accred-desc { font-size: 14px; color: rgba(255,255,255,0.58); line-height: 1.85; max-width: 680px; }
+.wj-wrap .accred-links { display: flex; gap: var(--sp-md); margin-top: var(--sp-md); flex-wrap: wrap; }
+.wj-wrap .accred-link { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #73d1f5; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s; }
+.wj-wrap .accred-link:hover { color: #fff; }
+.wj-wrap .accred-link::after { content: '→'; font-size: 14px; }
 
-  /* Accreditation */
-  .accred-card {
-    background:linear-gradient(135deg, var(--c-deep) 0%, var(--c-mid) 100%);
-    border-radius:var(--r-xl); padding:40px 44px; margin-top:48px;
-    display:flex; align-items:flex-start; gap:32px; flex-wrap:wrap;
-    box-shadow:0 8px 36px rgba(0,79,104,0.22);
-  }
-  .accred-badge {
-    flex-shrink:0; width:72px; height:72px; border-radius:50%; background:rgba(255,255,255,0.15);
-    border:2px solid rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center;
-    font-size:28px;
-  }
-  .accred-content { flex:1; min-width:200px; }
-  .accred-label { font-size:11px; font-weight:800; letter-spacing:0.08em; color:rgba(255,255,255,0.6); text-transform:uppercase; margin-bottom:8px; }
-  .accred-title { font-size:22px; font-weight:800; color:#fff; margin-bottom:12px; }
-  .accred-desc { font-size:14px; line-height:1.82; color:rgba(255,255,255,0.78); }
+/* ── TESTIMONIALS ── */
+.wj-wrap .testimonials { background: var(--c-pale); padding: var(--sp-3xl) var(--pad-h); }
+.wj-wrap .testimonials-inner { max-width: var(--max-w); margin: 0 auto; }
+.wj-wrap .testimonials-header { text-align: center; margin-bottom: var(--sp-2xl); }
+.wj-wrap .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-md); }
+.wj-wrap .testi-card { background: var(--c-white); border-radius: 10px; padding: var(--sp-xl) var(--sp-lg); border: 1px solid var(--c-border); position: relative; }
+.wj-wrap .testi-card::before { content: '"'; font-family: var(--f-serif); font-size: 64px; line-height: 1; color: var(--c-light); opacity: 0.5; position: absolute; top: var(--sp-sm); left: var(--sp-md); }
+.wj-wrap .testi-text { font-size: 14px; font-style: italic; color: var(--c-sub); line-height: 1.9; margin-bottom: var(--sp-md); padding-top: var(--sp-xl); }
+.wj-wrap .testi-author { display: flex; align-items: center; gap: var(--sp-sm); }
+.wj-wrap .testi-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--c-deep); display: flex; align-items: center; justify-content: center; font-family: var(--f-serif); font-weight: 700; font-size: 15px; color: var(--c-light); flex-shrink: 0; }
+.wj-wrap .testi-name { font-size: 13px; font-weight: 600; color: var(--c-deep); }
+.wj-wrap .testi-origin { font-size: 11px; color: var(--c-muted); margin-top: 2px; }
 
-  /* CTA section */
-  .cta-section { background:linear-gradient(135deg, #083d51 0%, var(--c-deep) 100%); padding:88px 24px; text-align:center; }
-  .cta-section h2 { font-size:clamp(28px,3.5vw,42px); font-weight:800; color:#fff; margin-bottom:14px; letter-spacing:-0.03em; }
-  .cta-section p { font-size:16px; color:rgba(255,255,255,0.78); max-width:580px; margin:0 auto 40px; line-height:1.85; }
-  .cta-cards { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-bottom:30px; }
-  .cta-card {
-    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.2);
-    border-radius:var(--r-lg); padding:24px 28px; text-align:left; min-width:200px;
-    text-decoration:none; transition:background .18s, transform .18s; display:block;
-  }
-  .cta-card:hover { background:rgba(255,255,255,0.18); transform:translateY(-2px); }
-  .cta-card-title { font-size:15px; font-weight:800; color:#fff; margin-bottom:6px; }
-  .cta-card-desc { font-size:12px; color:rgba(255,255,255,0.6); }
-  .cta-contact { font-size:13px; color:rgba(255,255,255,0.65); line-height:2; }
-  .cta-contact a { color:rgba(255,255,255,0.88); font-weight:700; text-decoration:none; }
-  .btn-white {
-    display:inline-flex; align-items:center; gap:8px; padding:16px 30px; border-radius:999px;
-    background:#fff; color:var(--c-deep); font-size:15px; font-weight:800;
-    text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.18); margin-top:28px;
-    transition:transform .18s, box-shadow .18s;
-  }
-  .btn-white:hover { transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,0.22); }
+/* ── CTA ── */
+.wj-wrap .cta-section { background: var(--c-white); padding: var(--sp-3xl) var(--pad-h); }
+.wj-wrap .cta-inner { max-width: var(--max-w); margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3xl); align-items: start; }
+.wj-wrap .cta-text .section-desc { margin-top: var(--sp-md); }
+.wj-wrap .cta-cards { display: flex; flex-direction: column; gap: var(--sp-sm); }
+.wj-wrap .cta-card { background: var(--c-off); border: 1px solid var(--c-border); border-radius: 8px; padding: var(--sp-md) var(--sp-lg); display: flex; align-items: center; gap: var(--sp-md); transition: background 0.25s, border-color 0.25s, transform 0.2s; cursor: pointer; }
+.wj-wrap .cta-card:hover { background: var(--c-pale); border-color: var(--c-mid); transform: translateX(4px); }
+.wj-wrap .cta-card-icon { width: 48px; height: 48px; border-radius: 8px; background: var(--c-deep); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.wj-wrap .cta-card-icon svg { width: 22px; height: 22px; stroke: var(--c-light); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.wj-wrap .cta-card-label { font-size: 14px; font-weight: 600; color: var(--c-deep); margin-bottom: 3px; }
+.wj-wrap .cta-card-sub { font-size: 12px; color: var(--c-muted); }
+.wj-wrap .cta-card-arrow { margin-left: auto; color: var(--c-muted); font-size: 18px; transition: color 0.2s, transform 0.2s; }
+.wj-wrap .cta-card:hover .cta-card-arrow { color: var(--c-mid); transform: translateX(4px); }
 
-  @media (max-width:768px) {
-    .admit-grid { grid-template-columns:1fr; }
-    .accred-card { padding:28px 24px; }
-  }
+/* ── CONTACT BAR ── */
+.wj-wrap .contact-bar { background: var(--c-deep); padding: var(--sp-lg) var(--pad-h); }
+.wj-wrap .contact-bar-inner { max-width: var(--max-w); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-md); flex-wrap: wrap; }
+.wj-wrap .contact-bar-label { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-light); margin-bottom: 6px; }
+.wj-wrap .contact-bar-info { font-size: 14px; color: rgba(255,255,255,0.7); font-weight: 300; }
+.wj-wrap .contact-bar-info strong { color: var(--c-white); font-weight: 500; }
+.wj-wrap .contact-bar-info a { color: var(--c-light); transition: color 0.2s; }
+.wj-wrap .contact-bar-info a:hover { color: var(--c-white); }
+.wj-wrap .contact-bar-divider { width: 1px; height: 40px; background: rgba(115,209,245,0.15); }
+.wj-wrap .btn-apply { display: inline-flex; align-items: center; gap: var(--sp-sm); background: var(--c-red); color: var(--c-white); font-size: 14px; font-weight: 600; letter-spacing: 0.05em; padding: 14px 28px; border-radius: 4px; white-space: nowrap; transition: background 0.25s, transform 0.2s; }
+.wj-wrap .btn-apply:hover { background: var(--c-red-dk); transform: translateY(-2px); }
+
+/* ── 반응형 ── */
+@media (max-width: 960px) {
+  .wj-wrap { --sp-3xl: 96px; --sp-2xl: 72px; --pad-h: 28px; }
+  .wj-wrap .hero { height: auto; min-height: 100svh; }
+  .wj-wrap .hero-inner { padding-top: 100px; padding-bottom: 180px; }
+  .wj-wrap .hero-stats-inner { flex-wrap: wrap; }
+  .wj-wrap .hero-stat { flex: 1 1 50%; border-right: none; border-bottom: 1px solid rgba(115,209,245,0.12); padding: var(--sp-sm) var(--sp-md) !important; flex-direction: row; align-items: center; gap: var(--sp-sm); }
+  .wj-wrap .hero-stat:nth-child(3), .wj-wrap .hero-stat:nth-child(4) { border-bottom: none; }
+  .wj-wrap .hero-scroll { display: none; }
+  .wj-wrap .intro-grid { grid-template-columns: 1fr; gap: var(--sp-2xl); }
+  .wj-wrap .intro-img-wrap { order: -1; max-width: 480px; }
+  .wj-wrap .intro-quote { right: -12px; bottom: -16px; }
+  .wj-wrap .highlights-grid { grid-template-columns: repeat(2, 1fr); }
+  .wj-wrap .highlights-top { flex-direction: column; align-items: flex-start; }
+  .wj-wrap .highlights-sub { text-align: left; max-width: 100%; }
+  .wj-wrap .academics-layout { grid-template-columns: 1fr; }
+  .wj-wrap .academics-sticky { position: static; }
+  .wj-wrap .trips-grid { grid-template-columns: repeat(2, 1fr); }
+  .wj-wrap .admission-grid { grid-template-columns: 1fr; }
+  .wj-wrap .accred-inner { gap: var(--sp-xl); }
+  .wj-wrap .testimonials-grid { grid-template-columns: 1fr; }
+  .wj-wrap .cta-inner { grid-template-columns: 1fr; gap: var(--sp-2xl); }
+  .wj-wrap .contact-bar-inner { flex-direction: column; align-items: flex-start; }
+  .wj-wrap .contact-bar-divider { display: none; }
+}
+
+@media (max-width: 600px) {
+  .wj-wrap { --sp-3xl: 72px; --sp-2xl: 56px; --sp-xl: 48px; --pad-h: 20px; }
+  .wj-wrap .hero-inner { padding-top: 80px; padding-bottom: 300px; }
+  .wj-wrap .hero-title { font-size: clamp(34px, 9vw, 52px); }
+  .wj-wrap .hero-subtitle { font-size: 14px; margin-bottom: var(--sp-lg); }
+  .wj-wrap .hero-cta-group { flex-direction: column; }
+  .wj-wrap .btn-primary, .wj-wrap .btn-secondary { justify-content: center; width: 100%; }
+  .wj-wrap .hero-stats-inner { flex-direction: column; }
+  .wj-wrap .hero-stat { flex: 1 1 100% !important; border-right: none !important; border-bottom: 1px solid rgba(115,209,245,0.12) !important; padding: var(--sp-sm) var(--sp-md) !important; flex-direction: row; align-items: center; gap: var(--sp-sm); }
+  .wj-wrap .hero-stat:last-child { border-bottom: none !important; }
+  .wj-wrap .highlights-grid { grid-template-columns: 1fr 1fr; }
+  .wj-wrap .hi-card { padding: var(--sp-md); }
+  .wj-wrap .trips-grid { grid-template-columns: 1fr; }
+  .wj-wrap .accred-inner { flex-direction: column; text-align: center; }
+  .wj-wrap .accred-links { justify-content: center; }
+  .wj-wrap .intro-quote { position: static; margin-top: var(--sp-md); max-width: 100%; }
+  .wj-wrap .intro-img-frame { display: none; }
+}
 </style>
+
+<div class="wj-wrap" id="wl-root">
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-circle"></div>
+  <div class="hero-cross">✝</div>
   <div class="hero-inner">
-    <div class="hero-eyebrow">
-      <span class="hero-eyebrow-dot"></span>
-      <span>WOLBI JEJU · Word of Life Bible Institute</span>
-    </div>
-    <h1>
-      <span class="wl-ko">성경을 삶으로 살아내는<em>1년</em></span>
-      <span class="wl-en">One Year of<em>Living the Word</em></span>
+    <div class="hero-badge">Word of Life Bible Institute · Jeju Campus</div>
+    <h1 class="hero-title">
+      <span class="wl-ko">성경을 삶으로<br><em>살아내는 1년</em></span>
+      <span class="wl-en">One Year of Living<br><em>the Word</em></span>
     </h1>
-    <p class="hero-sub">
+    <p class="hero-subtitle">
       <span class="wl-ko">제주 월비 — 대학 수준의 성경 교육과 제자훈련, 그리고 세계를 경험하는 11개월</span>
       <span class="wl-en">WOLBI Jeju — 11 months of college-level Bible education, discipleship training, and global experience</span>
     </p>
-    <div class="hero-btns">
-      <a href="https://wolbi.org" target="_blank" rel="noopener" class="btn-primary">
+    <div class="hero-cta-group">
+      <a href="https://www.wolbijeju.org/campus-days" class="btn-primary">
         <span class="wl-ko">캠퍼스데이 신청하기 →</span>
         <span class="wl-en">Apply for Campus Day →</span>
       </a>
-      <a href="#about" class="btn-outline">
+      <a href="https://www.wolbijeju.org/?lang=ko" class="btn-secondary">
         <span class="wl-ko">더 알아보기</span>
         <span class="wl-en">Learn More</span>
       </a>
     </div>
   </div>
   <div class="hero-stats">
-    <div class="hero-stat">
-      <span class="hero-stat-num">11</span>
-      <div class="hero-stat-label"><span class="wl-ko">개월 집중<br>성경 커리큘럼</span><span class="wl-en">Months Intensive<br>Bible Curriculum</span></div>
+    <div class="hero-stats-inner">
+      <div class="hero-stat">
+        <span class="hero-stat-num wl-ko">11개월</span>
+        <span class="hero-stat-num wl-en">11 Months</span>
+        <span class="hero-stat-label wl-ko">집중 성경 커리큘럼</span>
+        <span class="hero-stat-label wl-en">Intensive Bible Curriculum</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num wl-ko">5개 대륙</span>
+        <span class="hero-stat-num wl-en">5 Continents</span>
+        <span class="hero-stat-label wl-ko">세계 10개 캠퍼스 네트워크</span>
+        <span class="hero-stat-label wl-en">Global Network of 10 Campuses</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">TRACS</span>
+        <span class="hero-stat-label wl-ko">미국 공인 기독교 대학 인증</span>
+        <span class="hero-stat-label wl-en">U.S. Accredited Christian Institution</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num wl-ko">3개국</span>
+        <span class="hero-stat-num wl-en">3 Countries</span>
+        <span class="hero-stat-label wl-ko">선교 여행 (태국·베트남·이스라엘)</span>
+        <span class="hero-stat-label wl-en">Mission Trips (Thailand · Vietnam · Israel)</span>
+      </div>
     </div>
-    <div class="hero-stat">
-      <span class="hero-stat-num">5</span>
-      <div class="hero-stat-label"><span class="wl-ko">개 대륙<br>10개 캠퍼스 네트워크</span><span class="wl-en">Continents<br>10-Campus Network</span></div>
+  </div>
+  <div class="hero-scroll"><div class="hero-scroll-line"></div>scroll</div>
+</section>
+
+<!-- INTRO -->
+<section class="intro section">
+  <div class="intro-grid">
+    <div class="intro-img-wrap reveal">
+      <div class="intro-img-frame"></div>
+      <img class="intro-img" src="https://wolko.synology.me/Jeju_WOLBI/Drone/campus2.jpg" alt="제주 월비 캠퍼스 전경">
+      <div class="intro-quote">
+        <div class="intro-quote-icon">"</div>
+        <p class="intro-quote-text wl-ko">월비에서 보낸 1년은 제 생애 최고의 해였습니다.</p>
+        <p class="intro-quote-text wl-en">The year I spent at WOLBI was the best year of my life.</p>
+        <p class="intro-quote-source wl-ko">— 졸업생 간증</p>
+        <p class="intro-quote-source wl-en">— WOLBI Graduate</p>
+      </div>
     </div>
-    <div class="hero-stat">
-      <span class="hero-stat-num">66</span>
-      <div class="hero-stat-label"><span class="wl-ko">권 성경<br>전권 학습</span><span class="wl-en">Books<br>Full Bible Study</span></div>
-    </div>
-    <div class="hero-stat">
-      <span class="hero-stat-num">3</span>
-      <div class="hero-stat-label"><span class="wl-ko">개국<br>선교 여행</span><span class="wl-en">Countries<br>Mission Trips</span></div>
+    <div class="reveal reveal-delay-2">
+      <div class="section-label">
+        <span class="wl-ko">WOLBI JEJU 소개</span>
+        <span class="wl-en">ABOUT WOLBI JEJU</span>
+      </div>
+      <h2 class="section-title">
+        <span class="wl-ko">아름다운 제주에서<br>성경의 깊이를 만나다</span>
+        <span class="wl-en">Encounter the Depths<br>of Scripture on Jeju Island</span>
+      </h2>
+      <div class="accent-line"></div>
+      <p class="section-desc" style="margin-bottom:20px;">
+        <span class="wl-ko">제주 월비(WOLBI, Word of Life Bible Institute)는 대학교 과정에 준하는 체계적인 성경 교육과 제자훈련을 통해, 하나님의 말씀 위에 굳게 세워진 다음 세대를 준비시키는 사역입니다.</span>
+        <span class="wl-en">WOLBI Jeju (Word of Life Bible Institute) is a ministry that prepares the next generation to stand firmly on God's Word, through systematic Bible education and discipleship training at the college level.</span>
+      </p>
+      <p class="section-desc">
+        <span class="wl-ko">세계 5개 대륙 10개 캠퍼스 네트워크의 일부로서, 제주 캠퍼스는 한국·미국·캐나다·대만·일본 등 각국의 청년들이 11개월 동안 성경 66권과 조직신학 전 과정을 함께 배우고, 선교 여행과 사역 훈련을 통해 삶의 변화를 경험하는 곳입니다.</span>
+        <span class="wl-en">As part of a global network spanning 10 campuses across 5 continents, the Jeju campus brings together young people from Korea, the United States, Canada, Taiwan, Japan, and beyond — studying all 66 books of the Bible and the full scope of systematic theology over 11 months, while experiencing life transformation through mission trips and ministry training.</span>
+      </p>
     </div>
   </div>
 </section>
 
-<!-- QUOTE -->
-<div class="quote-bar">
-  <p class="quote-text">
-    <span class="wl-ko">"월비에서 보낸 1년은 제 생애 최고의 해였습니다."</span>
-    <span class="wl-en">"The year I spent at WOLBI was the best year of my life."</span>
-  </p>
-  <p class="quote-attr">
-    <span class="wl-ko">— 졸업생 간증</span>
-    <span class="wl-en">— WOLBI Graduate</span>
-  </p>
+<!-- HIGHLIGHTS -->
+<div class="highlights">
+  <div class="highlights-inner">
+    <div class="highlights-top reveal">
+      <h2 class="highlights-title">
+        <span class="wl-ko">제주 월비만의<br>특별한 경험</span>
+        <span class="wl-en">What Makes<br>WOLBI Jeju Unique</span>
+      </h2>
+      <p class="highlights-sub">
+        <span class="wl-ko">1년간 말씀을 배우고, 사역 안에서 성장하고,<br>다양한 문화를 경험해 보세요</span>
+        <span class="wl-en">Study the Word, grow through ministry,<br>and experience the world — all in one year</span>
+      </p>
+    </div>
+    <div class="highlights-grid">
+      <div class="hi-card reveal">
+        <div class="hi-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+        <div class="hi-num">66</div>
+        <div class="hi-label wl-ko">성경 전권 학습</div>
+        <div class="hi-label wl-en">All 66 Books</div>
+        <div class="hi-desc wl-ko">구약·신약 전 66권을 세계적 성경 학자들에게 직접 배우며, 연간 성경을 3독에 가깝게 읽어냅니다.</div>
+        <div class="hi-desc wl-en">Study all 66 books of the Old and New Testaments under world-class Bible scholars, reading through nearly the entire Bible three times over the course of the year.</div>
+      </div>
+      <div class="hi-card reveal reveal-delay-1">
+        <div class="hi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <div class="hi-num">3</div>
+        <div class="hi-label wl-ko">해외 선교 여행</div>
+        <div class="hi-label wl-en">Mission Trips</div>
+        <div class="hi-desc wl-ko">태국·베트남 선교 여행(12월), 이스라엘 성지 순례(3월)로 하나님의 말씀이 살아있는 현장을 직접 경험합니다.</div>
+        <div class="hi-desc wl-en">Mission trips to Thailand and Vietnam in December, and a Holy Land pilgrimage to Israel in March — experience the living Word in the places where it all happened.</div>
+      </div>
+      <div class="hi-card reveal reveal-delay-2">
+        <div class="hi-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="hi-num wl-ko">다문화</div>
+        <div class="hi-num wl-en">Global</div>
+        <div class="hi-label wl-ko">다국적 학생 공동체</div>
+        <div class="hi-label wl-en">Multicultural Community</div>
+        <div class="hi-desc wl-ko">북미 1/3, 한국 1/3, 아시아·기타 1/3로 구성된 다양한 문화권의 청년들이 함께 신앙 공동체를 이룹니다.</div>
+        <div class="hi-desc wl-en">Roughly one-third from North America, one-third from Korea, and one-third from Asia and beyond — a vibrant, faith-filled community from around the world.</div>
+      </div>
+      <div class="hi-card reveal reveal-delay-3">
+        <div class="hi-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div class="hi-num wl-ko">대학</div>
+        <div class="hi-num wl-en">Credit</div>
+        <div class="hi-label wl-ko">학점 인정 교육과정</div>
+        <div class="hi-label wl-en">College Credit Transfer</div>
+        <div class="hi-desc wl-ko">미국·캐나다 대부분의 기독교 대학에서 1년 학점으로 인정되며, 뉴욕 본교 2학년으로의 편입도 가능합니다.</div>
+        <div class="hi-desc wl-en">Credits are recognized at most Christian colleges in the U.S. and Canada, and transfer as a full first year. Students may also transfer directly into the second year at the New York home campus.</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- ABOUT -->
-<section id="about" class="section section--alt">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">WOLBI JEJU 소개</span><span class="wl-en">About WOLBI Jeju</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">아름다운 제주에서 성경의 깊이를 만나다</span>
-      <span class="wl-en">Encounter the Depths of Scripture on Jeju Island</span>
-    </h2>
-    <p class="sec-desc">
-      <span class="wl-ko">제주 월비(WOLBI, Word of Life Bible Institute)는 대학교 과정에 준하는 체계적인 성경 교육과 제자훈련을 통해, 하나님의 말씀 위에 굳게 세워진 다음 세대를 준비시키는 사역입니다.</span>
-      <span class="wl-en">WOLBI Jeju is a ministry that prepares the next generation to stand firmly on God's Word, through systematic Bible education and discipleship training at the college level.</span>
-    </p>
-    <p class="sec-desc" style="margin-top:16px;">
-      <span class="wl-ko">세계 5개 대륙 10개 캠퍼스 네트워크의 일부로서, 제주 캠퍼스는 한국·미국·캐나다·대만·일본 등 각국의 청년들이 11개월 동안 성경 66권과 조직신학 전 과정을 함께 배우고, 선교 여행과 사역 훈련을 통해 삶의 변화를 경험하는 곳입니다.</span>
-      <span class="wl-en">As part of a global network spanning 10 campuses across 5 continents, the Jeju campus brings together young people from Korea, the United States, Canada, Taiwan, Japan, and beyond — studying all 66 books of the Bible and the full scope of systematic theology over 11 months, while experiencing life transformation through mission trips and ministry training.</span>
-    </p>
-  </div>
-</section>
-
-<!-- UNIQUE FEATURES -->
-<section class="section">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">제주 월비만의 특별한 경험</span><span class="wl-en">What Makes WOLBI Jeju Unique</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">1년간 말씀을 배우고, 사역 안에서 성장하고, 다양한 문화를 경험해 보세요</span>
-      <span class="wl-en">Study the Word, grow through ministry, and experience the world — all in one year</span>
-    </h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">📖</div>
-        <div class="feature-tag"><span class="wl-ko">성경</span><span class="wl-en">Bible</span></div>
-        <div class="feature-title"><span class="wl-ko">성경 전권 학습</span><span class="wl-en">All 66 Books</span></div>
-        <div class="feature-desc"><span class="wl-ko">구약·신약 전 66권을 세계적 성경 학자들에게 직접 배우며, 연간 성경을 3독에 가깝게 읽어냅니다.</span><span class="wl-en">Study all 66 books under world-class Bible scholars, reading through nearly the entire Bible three times over the course of the year.</span></div>
+<!-- ACADEMICS -->
+<section class="academics section">
+  <div class="academics-layout">
+    <div class="academics-sticky reveal">
+      <div class="section-label">ACADEMICS</div>
+      <h2 class="section-title">
+        <span class="wl-ko">깊이 있는<br>성경 커리큘럼</span>
+        <span class="wl-en">In-Depth<br>Bible Curriculum</span>
+      </h2>
+      <div class="accent-line"></div>
+      <p class="section-desc">
+        <span class="wl-ko">2학기와 여름 사역 실습으로 구성된 집중 과정입니다. 구약·신약 전권, 조직신학 전 분야를 세계적 교수진과 함께 영어로 학습합니다.</span>
+        <span class="wl-en">An intensive program structured around two semesters and a summer ministry practicum. All courses — covering the full Old and New Testaments and every area of systematic theology — are taught in English by world-class faculty.</span>
+      </p>
+      <div style="margin-top:var(--sp-lg);padding:var(--sp-md);background:var(--c-pale);border-radius:8px;border:1px solid var(--c-border);">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--c-mid);margin-bottom:var(--sp-sm);">
+          <span class="wl-ko">입학 요건</span>
+          <span class="wl-en">Admission Requirements</span>
+        </div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:var(--sp-sm);">
+          <li style="font-size:13px;color:var(--c-sub);display:flex;gap:var(--sp-sm);">
+            <span style="color:var(--c-mid);font-weight:600;flex-shrink:0;">·</span>
+            <span class="wl-ko">고등학교 졸업자 이상 (3학년 졸업예정자 포함)</span>
+            <span class="wl-en">High school graduate or graduating senior</span>
+          </li>
+          <li style="font-size:13px;color:var(--c-sub);display:flex;gap:var(--sp-sm);">
+            <span style="color:var(--c-mid);font-weight:600;flex-shrink:0;">·</span>
+            <span class="wl-ko">TOEFL 통과 또는 SYME 수료 후 MPT 통과</span>
+            <span class="wl-en">TOEFL score, or completion of SYME with MPT passage</span>
+          </li>
+          <li style="font-size:13px;color:var(--c-sub);display:flex;gap:var(--sp-sm);">
+            <span style="color:var(--c-mid);font-weight:600;flex-shrink:0;">·</span>
+            <span class="wl-ko">Duolingo 90점 이상 (영어 비모국어 학생)</span>
+            <span class="wl-en">Duolingo score of 90 or higher (non-native English speakers)</span>
+          </li>
+        </ul>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">✈️</div>
-        <div class="feature-tag"><span class="wl-ko">선교</span><span class="wl-en">Mission</span></div>
-        <div class="feature-title"><span class="wl-ko">해외 선교 여행</span><span class="wl-en">Mission Trips</span></div>
-        <div class="feature-desc"><span class="wl-ko">태국·베트남 선교 여행(12월), 이스라엘 성지 순례(3월)로 하나님의 말씀이 살아있는 현장을 직접 경험합니다.</span><span class="wl-en">Mission trips to Thailand and Vietnam in December, and a Holy Land pilgrimage to Israel in March — experience the living Word in the places where it all happened.</span></div>
+    </div>
+    <div class="academics-courses">
+      <div class="course-item reveal">
+        <div class="course-num">01</div>
+        <div class="course-body">
+          <div class="course-name">
+            <span class="wl-ko">구약 개관 (Old Testament Survey)</span>
+            <span class="wl-en">Old Testament Survey</span>
+          </div>
+          <div class="course-desc">
+            <span class="wl-ko">창세기부터 말라기까지 전 39권의 배경, 주제, 핵심 교리를 개관합니다. 각 권의 정경적 기여와 주요 난해 구절을 포함합니다.</span>
+            <span class="wl-en">A survey of all 39 books from Genesis to Malachi, covering their historical backgrounds, central themes, and key doctrines — including each book's canonical contribution and major interpretive challenges.</span>
+          </div>
+          <span class="course-tag wl-ko">구약</span>
+          <span class="course-tag wl-en">Old Testament</span>
+        </div>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">🌏</div>
-        <div class="feature-tag"><span class="wl-ko">다문화</span><span class="wl-en">Global</span></div>
-        <div class="feature-title"><span class="wl-ko">다국적 학생 공동체</span><span class="wl-en">Multicultural Community</span></div>
-        <div class="feature-desc"><span class="wl-ko">북미 1/3, 한국 1/3, 아시아·기타 1/3로 구성된 다양한 문화권의 청년들이 함께 신앙 공동체를 이룹니다.</span><span class="wl-en">Roughly one-third from North America, one-third from Korea, and one-third from Asia and beyond — a vibrant, faith-filled community from around the world.</span></div>
+      <div class="course-item reveal reveal-delay-1">
+        <div class="course-num">02</div>
+        <div class="course-body">
+          <div class="course-name">
+            <span class="wl-ko">신약 개관 (New Testament Survey)</span>
+            <span class="wl-en">New Testament Survey</span>
+          </div>
+          <div class="course-desc">
+            <span class="wl-ko">마태복음부터 요한계시록까지 전 27권을 다루며, 각 서신의 배경·신학·적용을 중심으로 학습합니다.</span>
+            <span class="wl-en">A comprehensive study of all 27 books from Matthew to Revelation, with an emphasis on the background, theology, and practical application of each letter and narrative.</span>
+          </div>
+          <span class="course-tag wl-ko">신약</span>
+          <span class="course-tag wl-en">New Testament</span>
+        </div>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">🎓</div>
-        <div class="feature-tag"><span class="wl-ko">학점</span><span class="wl-en">Credit</span></div>
-        <div class="feature-title"><span class="wl-ko">학점 인정 교육과정</span><span class="wl-en">College Credit Transfer</span></div>
-        <div class="feature-desc"><span class="wl-ko">미국·캐나다 대부분의 기독교 대학에서 1년 학점으로 인정되며, 뉴욕 본교 2학년으로의 편입도 가능합니다.</span><span class="wl-en">Credits are recognized at most Christian colleges in the U.S. and Canada, and transfer as a full first year. Students may also transfer into the second year at the New York home campus.</span></div>
+      <div class="course-item reveal reveal-delay-2">
+        <div class="course-num">03</div>
+        <div class="course-body">
+          <div class="course-name">
+            <span class="wl-ko">조직신학 1 — 신론·성경론·인간론·기독론·죄론</span>
+            <span class="wl-en">Systematic Theology 1 — Theology Proper, Bibliology, Anthropology, Christology, Hamartiology</span>
+          </div>
+          <div class="course-desc">
+            <span class="wl-ko">하나님의 본성, 성경의 권위와 무오성, 인간의 창조와 타락, 그리스도의 인격과 사역을 체계적으로 학습합니다.</span>
+            <span class="wl-en">A systematic study of the nature of God, the authority and inerrancy of Scripture, the creation and fall of humanity, and the person and work of Jesus Christ.</span>
+          </div>
+          <span class="course-tag wl-ko">신학</span>
+          <span class="course-tag wl-en">Theology</span>
+        </div>
+      </div>
+      <div class="course-item reveal">
+        <div class="course-num">04</div>
+        <div class="course-body">
+          <div class="course-name">
+            <span class="wl-ko">조직신학 2 — 구원론·천사론·성령론·교회론·종말론</span>
+            <span class="wl-en">Systematic Theology 2 — Soteriology, Angelology, Pneumatology, Ecclesiology, Eschatology</span>
+          </div>
+          <div class="course-desc">
+            <span class="wl-ko">구원의 전 과정, 천사와 마귀, 성령의 사역, 교회의 설계, 말세 사건을 디스펜세이션 신학 관점으로 연구합니다.</span>
+            <span class="wl-en">An exploration of the full arc of salvation, angels and demonic beings, the ministry of the Holy Spirit, the design of the church, and end-times events — studied from a dispensational theological framework.</span>
+          </div>
+          <span class="course-tag wl-ko">신학</span>
+          <span class="course-tag wl-en">Theology</span>
+        </div>
+      </div>
+      <div class="course-item reveal reveal-delay-1">
+        <div class="course-num">05</div>
+        <div class="course-body">
+          <div class="course-name">
+            <span class="wl-ko">로마서 · 갈라디아서 · 에베소서</span>
+            <span class="wl-en">Romans · Galatians · Ephesians</span>
+          </div>
+          <div class="course-desc">
+            <span class="wl-ko">복음의 논리와 신학적 적용(로마서), 믿음으로 말미암은 의(갈라디아서), 교회와 그리스도인의 삶(에베소서)을 심층 연구합니다.</span>
+            <span class="wl-en">In-depth study of the logic and theological application of the Gospel (Romans), justification by faith alone (Galatians), and the church and the Christian life (Ephesians).</span>
+          </div>
+          <span class="course-tag wl-ko">서신서</span>
+          <span class="course-tag wl-en">Epistles</span>
+        </div>
+      </div>
+      <div class="course-item reveal reveal-delay-2">
+        <div class="course-num">06</div>
+        <div class="course-body">
+          <div class="course-name">
+            <span class="wl-ko">예언서 — 다니엘 · 요한계시록</span>
+            <span class="wl-en">Prophetic Books — Daniel &amp; Revelation</span>
+          </div>
+          <div class="course-desc">
+            <span class="wl-ko">다니엘서를 통해 디스펜세이션 신학의 기초를 세우고, 계시록의 기호와 상징들을 예언적 틀 안에서 해석합니다.</span>
+            <span class="wl-en">Building a dispensational theological foundation through Daniel, then interpreting the signs and symbols of Revelation within a coherent prophetic framework.</span>
+          </div>
+          <span class="course-tag wl-ko">예언서</span>
+          <span class="course-tag wl-en">Prophecy</span>
+        </div>
+      </div>
+      <div class="course-item reveal">
+        <div class="course-num">07</div>
+        <div class="course-body">
+          <div class="course-name">
+            <span class="wl-ko">사역 실습 (Ministry Training)</span>
+            <span class="wl-en">Ministry Training Practicum</span>
+          </div>
+          <div class="course-desc">
+            <span class="wl-ko">캠프 사역, 교회 및 학교 방문, 전도, 지역사회 섬김 등 실제 사역 현장에서 말씀을 삶으로 적용하는 훈련을 받습니다.</span>
+            <span class="wl-en">Hands-on training in real ministry contexts — including camp ministry, church and school outreach, evangelism, and community service — where students learn to apply the Word to everyday life.</span>
+          </div>
+          <span class="course-tag wl-ko">실습</span>
+          <span class="course-tag wl-en">Practicum</span>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CURRICULUM -->
-<section class="section section--alt">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">성경 커리큘럼</span><span class="wl-en">Bible Curriculum</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">깊이 있는 성경 커리큘럼</span>
-      <span class="wl-en">In-Depth Bible Curriculum</span>
+<!-- TRIPS -->
+<section class="trips section" style="background:var(--c-off);">
+  <div class="trips-header reveal">
+    <div class="section-label" style="justify-content:center;">STUDY TRIPS</div>
+    <h2 class="section-title" style="margin-top:12px;">
+      <span class="wl-ko">세계로 나가는<br>성경의 현장</span>
+      <span class="wl-en">Taking the Word<br>to the World</span>
     </h2>
-    <p class="sec-desc">
-      <span class="wl-ko">2학기와 여름 사역 실습으로 구성된 집중 과정입니다. 구약·신약 전권, 조직신학 전 분야를 세계적 교수진과 함께 영어로 학습합니다.</span>
-      <span class="wl-en">An intensive program structured around two semesters and a summer ministry practicum. All courses are taught in English by world-class faculty, covering the full Old and New Testaments and every area of systematic theology.</span>
-    </p>
-    <div class="courses-grid">
-      <div class="course-card">
-        <div class="course-tag"><span class="wl-ko">구약</span><span class="wl-en">Old Testament</span></div>
-        <div class="course-title"><span class="wl-ko">구약 개관</span><span class="wl-en">Old Testament Survey</span></div>
-        <div class="course-desc"><span class="wl-ko">창세기부터 말라기까지 전 39권의 배경, 주제, 핵심 교리를 개관합니다.</span><span class="wl-en">A survey of all 39 books from Genesis to Malachi, covering their historical backgrounds, central themes, and key doctrines.</span></div>
-      </div>
-      <div class="course-card">
-        <div class="course-tag"><span class="wl-ko">신약</span><span class="wl-en">New Testament</span></div>
-        <div class="course-title"><span class="wl-ko">신약 개관</span><span class="wl-en">New Testament Survey</span></div>
-        <div class="course-desc"><span class="wl-ko">마태복음부터 요한계시록까지 전 27권을 다루며, 각 서신의 배경·신학·적용을 중심으로 학습합니다.</span><span class="wl-en">A comprehensive study of all 27 books from Matthew to Revelation, with emphasis on background, theology, and practical application.</span></div>
-      </div>
-      <div class="course-card">
-        <div class="course-tag"><span class="wl-ko">신학</span><span class="wl-en">Theology</span></div>
-        <div class="course-title"><span class="wl-ko">조직신학 1</span><span class="wl-en">Systematic Theology 1</span></div>
-        <div class="course-desc"><span class="wl-ko">신론·성경론·인간론·기독론·죄론 — 하나님의 본성, 성경의 권위, 인간의 창조와 타락, 그리스도의 인격과 사역을 체계적으로 학습합니다.</span><span class="wl-en">Theology Proper, Bibliology, Anthropology, Christology, Hamartiology — a systematic study of the nature of God, Scripture, humanity, and Christ.</span></div>
-      </div>
-      <div class="course-card">
-        <div class="course-tag"><span class="wl-ko">신학</span><span class="wl-en">Theology</span></div>
-        <div class="course-title"><span class="wl-ko">조직신학 2</span><span class="wl-en">Systematic Theology 2</span></div>
-        <div class="course-desc"><span class="wl-ko">구원론·천사론·성령론·교회론·종말론 — 구원의 전 과정, 성령의 사역, 교회, 말세 사건을 연구합니다.</span><span class="wl-en">Soteriology, Angelology, Pneumatology, Ecclesiology, Eschatology — salvation, the Holy Spirit, the church, and end-times events.</span></div>
-      </div>
-      <div class="course-card">
-        <div class="course-tag"><span class="wl-ko">서신서</span><span class="wl-en">Epistles</span></div>
-        <div class="course-title"><span class="wl-ko">로마서 · 갈라디아서 · 에베소서</span><span class="wl-en">Romans · Galatians · Ephesians</span></div>
-        <div class="course-desc"><span class="wl-ko">복음의 논리와 신학적 적용, 믿음으로 말미암은 의, 교회와 그리스도인의 삶을 심층 연구합니다.</span><span class="wl-en">In-depth study of the Gospel's logic and application, justification by faith, and the life of the church.</span></div>
-      </div>
-      <div class="course-card">
-        <div class="course-tag"><span class="wl-ko">예언서</span><span class="wl-en">Prophecy</span></div>
-        <div class="course-title"><span class="wl-ko">다니엘 · 요한계시록</span><span class="wl-en">Daniel & Revelation</span></div>
-        <div class="course-desc"><span class="wl-ko">디스펜세이션 신학의 기초를 세우고, 계시록의 기호와 상징들을 예언적 틀 안에서 해석합니다.</span><span class="wl-en">Building a dispensational theological foundation through Daniel, then interpreting the signs and symbols of Revelation within a prophetic framework.</span></div>
-      </div>
-      <div class="course-card">
-        <div class="course-tag"><span class="wl-ko">실습</span><span class="wl-en">Practicum</span></div>
-        <div class="course-title"><span class="wl-ko">사역 실습</span><span class="wl-en">Ministry Training Practicum</span></div>
-        <div class="course-desc"><span class="wl-ko">캠프 사역, 교회 및 학교 방문, 전도, 지역사회 섬김 등 실제 사역 현장에서 말씀을 삶으로 적용하는 훈련을 받습니다.</span><span class="wl-en">Hands-on training in camp ministry, church and school outreach, evangelism, and community service — applying the Word to real life.</span></div>
+  </div>
+  <div class="trips-grid">
+    <div class="trip-card reveal">
+      <img class="trip-img" src="https://wolko.synology.me/Web_Contents/Photos/Countries/Israel.JPG" alt="이스라엘 성지 순례">
+      <div class="trip-body">
+        <div class="trip-flag"></div>
+        <h3 class="trip-title wl-ko">이스라엘 성지 순례</h3>
+        <h3 class="trip-title wl-en">Israel Holy Land Pilgrimage</h3>
+        <p class="trip-desc wl-ko">10일간 전문 가이드와 함께 50여 곳의 성경 속 현장을 직접 방문합니다. 예루살렘, 갈릴리, 사해 등 성경 이야기의 배경이 살아 숨쉬는 땅을 걷습니다.</p>
+        <p class="trip-desc wl-en">Over 10 days, students visit more than 50 biblical sites with expert guides — walking through Jerusalem, Galilee, the Dead Sea, and the living landscapes that breathe life into the pages of Scripture.</p>
+        <div class="trip-when">📅 <span class="wl-ko">매년 3월</span><span class="wl-en">Every March</span></div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- MISSION TRIPS -->
-<section class="section">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">선교 여행</span><span class="wl-en">Mission Trips</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">세계로 나가는 성경의 현장</span>
-      <span class="wl-en">Taking the Word to the World</span>
-    </h2>
-    <div class="trips-grid">
-      <div class="trip-card">
-        <div class="trip-head">
-          <div class="trip-timing"><span class="wl-ko">매년 3월</span><span class="wl-en">Every March</span></div>
-          <div class="trip-title">🕍 <span class="wl-ko">이스라엘 성지 순례</span><span class="wl-en">Israel Holy Land Pilgrimage</span></div>
-        </div>
-        <div class="trip-body">
-          <p class="trip-desc">
-            <span class="wl-ko">10일간 전문 가이드와 함께 50여 곳의 성경 속 현장을 직접 방문합니다. 예루살렘, 갈릴리, 사해 등 성경 이야기의 배경이 살아 숨쉬는 땅을 걷습니다.</span>
-            <span class="wl-en">Over 10 days, students visit more than 50 biblical sites with expert guides — walking through Jerusalem, Galilee, the Dead Sea, and the living landscapes that breathe life into the pages of Scripture.</span>
-          </p>
-        </div>
+    <div class="trip-card reveal reveal-delay-1">
+      <img class="trip-img" src="https://wolko.synology.me/Web_Contents/Photos/Countries/Thiland.png" alt="태국 선교 여행">
+      <div class="trip-body">
+        <div class="trip-flag"></div>
+        <h3 class="trip-title wl-ko">태국 선교 여행</h3>
+        <h3 class="trip-title wl-en">Thailand Mission Trip</h3>
+        <p class="trip-desc wl-ko">태국의 다양한 선교 단체들을 방문하며 세계 선교의 현장을 경험합니다. 직접 사역에 참여하며 선교적 삶의 의미를 깨닫는 시간입니다.</p>
+        <p class="trip-desc wl-en">Students visit a range of mission organizations across Thailand, stepping into the front lines of global missions. Through hands-on involvement in ministry, they discover the meaning of a life devoted to the Gospel.</p>
+        <div class="trip-when">📅 <span class="wl-ko">매년 12월</span><span class="wl-en">Every December</span></div>
       </div>
-      <div class="trip-card">
-        <div class="trip-head" style="background:linear-gradient(135deg,#0a5b76 0%,#0e7a9e 100%);">
-          <div class="trip-timing"><span class="wl-ko">매년 12월</span><span class="wl-en">Every December</span></div>
-          <div class="trip-title">🌴 <span class="wl-ko">태국 선교 여행</span><span class="wl-en">Thailand Mission Trip</span></div>
-        </div>
-        <div class="trip-body">
-          <p class="trip-desc">
-            <span class="wl-ko">태국의 다양한 선교 단체들을 방문하며 세계 선교의 현장을 경험합니다. 직접 사역에 참여하며 선교적 삶의 의미를 깨닫는 시간입니다.</span>
-            <span class="wl-en">Students visit a range of mission organizations across Thailand, stepping into the front lines of global missions. Through hands-on involvement, they discover the meaning of a life devoted to the Gospel.</span>
-          </p>
-        </div>
-      </div>
-      <div class="trip-card">
-        <div class="trip-head" style="background:linear-gradient(135deg,#083d51 0%,#004f68 100%);">
-          <div class="trip-timing"><span class="wl-ko">매년 12월</span><span class="wl-en">Every December</span></div>
-          <div class="trip-title">🌏 <span class="wl-ko">베트남 선교 여행</span><span class="wl-en">Vietnam Mission Trip</span></div>
-        </div>
-        <div class="trip-body">
-          <p class="trip-desc">
-            <span class="wl-ko">베트남 현지 사역 현장에 참여하며 복음 전파의 긴박함을 직접 느낍니다. 다음 세대를 위한 하나님의 계획에 동참하는 귀한 경험입니다.</span>
-            <span class="wl-en">Students join local ministry partners in Vietnam, feeling firsthand the urgency of Gospel proclamation — a powerful opportunity to take part in God's plan for the next generation.</span>
-          </p>
-        </div>
+    </div>
+    <div class="trip-card reveal reveal-delay-2">
+      <img class="trip-img" src="https://wolko.synology.me/Web_Contents/Photos/Countries/Vietnam.png" alt="베트남 선교 여행">
+      <div class="trip-body">
+        <div class="trip-flag"></div>
+        <h3 class="trip-title wl-ko">베트남 선교 여행</h3>
+        <h3 class="trip-title wl-en">Vietnam Mission Trip</h3>
+        <p class="trip-desc wl-ko">베트남 현지 사역 현장에 참여하며 복음 전파의 긴박함을 직접 느낍니다. 다음 세대를 위한 하나님의 계획에 동참하는 귀한 경험입니다.</p>
+        <p class="trip-desc wl-en">Students join local ministry partners in Vietnam, feeling firsthand the urgency of Gospel proclamation — a powerful opportunity to take part in God's plan for the next generation.</p>
+        <div class="trip-when">📅 <span class="wl-ko">매년 12월</span><span class="wl-en">Every December</span></div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ADMISSION -->
-<section class="section section--alt">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">지원 안내</span><span class="wl-en">How to Apply</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">하나님의 말씀 안에서 성장하고 싶은 청년이라면 누구든지 지원할 수 있습니다</span>
-      <span class="wl-en">Any young person with a genuine desire to grow in God's Word is welcome to apply</span>
+<section class="admission section">
+  <div class="admission-header reveal">
+    <div class="section-label">ADMISSION</div>
+    <h2 class="section-title">
+      <span class="wl-ko">지원 안내</span>
+      <span class="wl-en">How to Apply</span>
     </h2>
-    <div class="admit-grid">
-      <div class="admit-card">
-        <h4><span class="wl-ko">지원 자격</span><span class="wl-en">Eligibility</span></h4>
-        <ul class="admit-list">
-          <li><span class="wl-ko">고등학교 졸업자 또는 3학년 졸업 예정자</span><span class="wl-en">High school graduate or graduating senior</span></li>
-          <li><span class="wl-ko">영어 구사 능력 (TOEFL 또는 Duolingo 90점 이상)</span><span class="wl-en">English proficiency (TOEFL or Duolingo 90+)</span></li>
-          <li><span class="wl-ko">SYME 수료 후 MPT 통과자도 지원 가능</span><span class="wl-en">SYME graduates who have passed the MPT are also eligible</span></li>
-          <li><span class="wl-ko">성경과 기독교 신앙에 대한 진지한 열망이 있는 청년</span><span class="wl-en">A sincere desire to grow in the Christian faith</span></li>
-        </ul>
-      </div>
-      <div class="admit-card">
-        <h4><span class="wl-ko">프로그램 구성</span><span class="wl-en">Program Structure</span></h4>
-        <ul class="admit-list">
-          <li><span class="wl-ko">11개월 집중 과정 (1학기 + 2학기 + 여름 사역)</span><span class="wl-en">11-month intensive (Semester 1 + Semester 2 + Summer Ministry)</span></li>
-          <li><span class="wl-ko">영어로 진행되는 전 수업 (세계 각국 교수진)</span><span class="wl-en">All courses taught in English by international faculty</span></li>
-          <li><span class="wl-ko">해외 선교 여행 (태국·베트남 12월 / 이스라엘 3월)</span><span class="wl-en">Mission trips (Thailand & Vietnam Dec / Israel Mar)</span></li>
-          <li><span class="wl-ko">캠퍼스 내외 사역 실습 및 제자훈련</span><span class="wl-en">Ministry practicum and discipleship training on and off campus</span></li>
-        </ul>
-      </div>
-      <div class="admit-card">
-        <h4><span class="wl-ko">학점 인정</span><span class="wl-en">Academic Credit</span></h4>
-        <ul class="admit-list">
-          <li><span class="wl-ko">미국·캐나다 대부분의 기독교 대학에서 1년 학점 인정</span><span class="wl-en">Recognized as one full year of credit at most Christian colleges in the U.S. and Canada</span></li>
-          <li><span class="wl-ko">뉴욕 본교(Schroon Lake) 2학년으로 편입 가능</span><span class="wl-en">Eligible to transfer into the second year at the New York home campus</span></li>
-          <li><span class="wl-ko">TRACS 인증 기관으로 학문적 공신력 보장</span><span class="wl-en">TRACS accreditation ensures full academic credibility</span></li>
-        </ul>
-      </div>
+    <div class="accent-line"></div>
+    <p class="section-desc">
+      <span class="wl-ko">하나님의 말씀 안에서 성장하고 싶은 청년이라면 누구든지 지원할 수 있습니다.</span>
+      <span class="wl-en">Any young person with a genuine desire to grow in God's Word is welcome to apply.</span>
+    </p>
+  </div>
+  <div class="admission-grid">
+    <div class="adm-card reveal">
+      <div class="adm-card-num">01</div>
+      <h3 class="adm-card-title wl-ko">지원 자격</h3>
+      <h3 class="adm-card-title wl-en">Eligibility</h3>
+      <ul class="adm-list">
+        <li><span class="wl-ko">고등학교 졸업자 또는 3학년 졸업 예정자</span><span class="wl-en">High school graduate or graduating senior</span></li>
+        <li><span class="wl-ko">영어 구사 능력 (TOEFL 또는 Duolingo 90점 이상)</span><span class="wl-en">English proficiency (TOEFL or Duolingo 90+)</span></li>
+        <li><span class="wl-ko">SYME(영어 제자훈련학교) 수료 후 MPT 통과자도 지원 가능</span><span class="wl-en">SYME graduates who have passed the MPT are also eligible</span></li>
+        <li><span class="wl-ko">성경과 기독교 신앙에 대한 진지한 열망이 있는 청년</span><span class="wl-en">A young person with a sincere desire to grow in the Christian faith</span></li>
+      </ul>
     </div>
-
-    <!-- Accreditation -->
-    <div class="accred-card">
-      <div class="accred-badge">🏛️</div>
-      <div class="accred-content">
-        <div class="accred-label"><span class="wl-ko">공인 인증</span><span class="wl-en">Accredited</span></div>
-        <div class="accred-title"><span class="wl-ko">미국 공인 대학 기관 인증</span><span class="wl-en">U.S. Accredited Academic Institution</span></div>
-        <div class="accred-desc">
-          <span class="wl-ko">Word of Life Bible Institute는 미국 기독교 대학 인증기관인 TRACS(Transnational Association of Christian Colleges and Schools)로부터 Category I 기관으로 인증받았습니다. 이 인증은 미국 교육부(USDE)와 고등교육인증위원회(CHEA)가 인정하는 공식 인증으로, 이수 학점은 미국·캐나다의 대부분의 기독교 대학에서 인정됩니다.</span>
-          <span class="wl-en">Word of Life Bible Institute holds Category I accreditation from TRACS (Transnational Association of Christian Colleges and Schools) — a recognized accrediting body approved by the U.S. Department of Education (USDE) and the Council for Higher Education Accreditation (CHEA). Credits earned are accepted at most Christian colleges and universities in the U.S. and Canada.</span>
-        </div>
-      </div>
+    <div class="adm-card reveal reveal-delay-1">
+      <div class="adm-card-num">02</div>
+      <h3 class="adm-card-title wl-ko">프로그램 구성</h3>
+      <h3 class="adm-card-title wl-en">Program Structure</h3>
+      <ul class="adm-list">
+        <li><span class="wl-ko">11개월 집중 과정 (1학기 + 2학기 + 여름 사역)</span><span class="wl-en">11-month intensive program (Semester 1 + Semester 2 + Summer Ministry)</span></li>
+        <li><span class="wl-ko">영어로 진행되는 전 수업 (세계 각국 교수진)</span><span class="wl-en">All courses taught in English by international faculty</span></li>
+        <li><span class="wl-ko">해외 선교 여행 (태국·베트남 12월 / 이스라엘 3월)</span><span class="wl-en">Mission trips (Thailand &amp; Vietnam in December / Israel in March)</span></li>
+        <li><span class="wl-ko">캠퍼스 내외 사역 실습 및 제자훈련</span><span class="wl-en">Ministry practicum and discipleship training on and off campus</span></li>
+      </ul>
+    </div>
+    <div class="adm-card reveal">
+      <div class="adm-card-num">03</div>
+      <h3 class="adm-card-title wl-ko">학점 인정</h3>
+      <h3 class="adm-card-title wl-en">Academic Credit</h3>
+      <ul class="adm-list">
+        <li><span class="wl-ko">미국·캐나다 대부분의 기독교 대학에서 1년 학점 인정</span><span class="wl-en">Recognized as one full year of credit at most Christian colleges in the U.S. and Canada</span></li>
+        <li><span class="wl-ko">미국 뉴욕 본교(Schroon Lake) 2학년으로 편입 가능</span><span class="wl-en">Eligible to transfer directly into the second year at the New York home campus (Schroon Lake)</span></li>
+        <li><span class="wl-ko">TRACS 인증 기관으로 학문적 공신력 보장</span><span class="wl-en">TRACS accreditation ensures full academic credibility</span></li>
+        <li><span class="wl-ko">세계 여러 대학으로의 편입 가능</span><span class="wl-en">Transfer opportunities available at various universities worldwide</span></li>
+      </ul>
+    </div>
+    <div class="adm-card reveal reveal-delay-1">
+      <div class="adm-card-num">04</div>
+      <h3 class="adm-card-title wl-ko">문의 및 연락처</h3>
+      <h3 class="adm-card-title wl-en">Contact Information</h3>
+      <ul class="adm-list">
+        <li><span class="wl-ko">메인 오피스: 070-4190-6084</span><span class="wl-en">Main Office: 070-4190-6084</span></li>
+        <li><span class="wl-ko">입학관리처: 064-799-3707</span><span class="wl-en">Admissions Office: 064-799-3707</span></li>
+        <li>wolbijeju.contact@gmail.com</li>
+        <li><span class="wl-ko">주소: 제주시 애월읍 광상로 622</span><span class="wl-en">622 Gwangsang-ro, Aewol-eup, Jeju-si, Jeju-do</span></li>
+      </ul>
     </div>
   </div>
 </section>
+
+<!-- ACCREDITATION -->
+<div class="accred">
+  <div class="accred-inner reveal">
+    <div class="accred-badge">
+      <div class="accred-badge-main">TRACS</div>
+      <div class="accred-badge-sub wl-ko">공인 인증</div>
+      <div class="accred-badge-sub wl-en">Accredited</div>
+    </div>
+    <div>
+      <h3 class="accred-title wl-ko">미국 공인 대학 기관 인증</h3>
+      <h3 class="accred-title wl-en">U.S. Accredited Academic Institution</h3>
+      <p class="accred-desc wl-ko">Word of Life Bible Institute는 미국 기독교 대학 인증기관인 TRACS(Transnational Association of Christian Colleges and Schools)로부터 Category I 기관으로 인증받았습니다. 이 인증은 미국 교육부(USDE)와 고등교육인증위원회(CHEA)가 인정하는 공식 인증으로, 이수 학점은 미국·캐나다의 대부분의 기독교 대학에서 인정됩니다.</p>
+      <p class="accred-desc wl-en">Word of Life Bible Institute holds Category I accreditation from TRACS (Transnational Association of Christian Colleges and Schools) — a recognized accrediting body approved by the U.S. Department of Education (USDE) and the Council for Higher Education Accreditation (CHEA). Credits earned are accepted at most Christian colleges and universities in the U.S. and Canada.</p>
+      <div class="accred-links">
+        <a href="https://www.tracs.org" class="accred-link" target="_blank">TRACS Website</a>
+        <a href="https://www.wolbijeju.org/academics" class="accred-link" target="_blank">
+          <span class="wl-ko">학사 정보 보기</span>
+          <span class="wl-en">Academic Information</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- TESTIMONIALS -->
-<section class="section">
-  <div class="page-wrap">
-    <span class="sec-badge"><span class="wl-ko">졸업생들의 이야기</span><span class="wl-en">Stories from Our Graduates</span></span>
-    <h2 class="sec-title">
-      <span class="wl-ko">말씀이 삶을 바꿉니다</span>
-      <span class="wl-en">The Word Changes Lives</span>
-    </h2>
+<div class="testimonials">
+  <div class="testimonials-inner">
+    <div class="testimonials-header reveal">
+      <div class="section-label" style="justify-content:center;">TESTIMONIALS</div>
+      <h2 class="section-title" style="margin-top:12px;">
+        <span class="wl-ko">졸업생들의 이야기</span>
+        <span class="wl-en">Stories from Our Graduates</span>
+      </h2>
+    </div>
     <div class="testimonials-grid">
-      <div class="testimonial-card">
-        <div class="testimonial-quote">"</div>
-        <div class="testimonial-text">
-          <span class="wl-ko">제주 월비에서의 11개월은 단순히 성경을 배운 시간이 아니었습니다. 하나님의 말씀이 제 삶 전체를 바꾸는 것을 경험했습니다. 세계 각국에서 온 친구들과 함께 신앙을 나누며, 복음을 전하는 삶의 의미를 깊이 깨달았습니다.</span>
-          <span class="wl-en">My 11 months at WOLBI Jeju were far more than a season of Bible study. I experienced God's Word reshaping every part of my life. Sharing faith alongside friends from around the world, I came to understand — deeply — what it means to live for the Gospel.</span>
+      <div class="testi-card reveal">
+        <p class="testi-text wl-ko">제주 월비에서의 11개월은 단순히 성경을 배운 시간이 아니었습니다. 하나님의 말씀이 제 삶 전체를 바꾸는 것을 경험했습니다. 세계 각국에서 온 친구들과 함께 신앙을 나누며, 복음을 전하는 삶의 의미를 깊이 깨달았습니다.</p>
+        <p class="testi-text wl-en">My 11 months at WOLBI Jeju were far more than a season of Bible study. I experienced God's Word reshaping every part of my life. Sharing faith alongside friends from around the world, I came to understand — deeply — what it means to live for the Gospel.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">김</div>
+          <div>
+            <div class="testi-name">김○○</div>
+            <div class="testi-origin wl-ko">한국 출신 졸업생</div>
+            <div class="testi-origin wl-en">Graduate from Korea</div>
+          </div>
         </div>
-        <div class="testimonial-origin"><span class="wl-ko">한국 출신 졸업생</span><span class="wl-en">Graduate from Korea</span></div>
       </div>
-      <div class="testimonial-card">
-        <div class="testimonial-quote">"</div>
-        <div class="testimonial-text">
-          <span class="wl-ko">이스라엘 성지 순례는 제 신앙의 터닝포인트였습니다. 성경 속 이야기들의 현장을 발로 걷고, 전문 가이드의 설명을 들으며 말씀이 정말 살아있다는 것을 온몸으로 느꼈습니다.</span>
-          <span class="wl-en">The Israel pilgrimage was a turning point in my faith. Walking through the very places where biblical history unfolded, I felt in my whole being that the Word is truly alive. That experience still anchors my faith today.</span>
+      <div class="testi-card reveal reveal-delay-1">
+        <p class="testi-text wl-ko">이스라엘 성지 순례는 제 신앙의 터닝포인트였습니다. 성경 속 이야기들의 현장을 발로 걷고, 전문 가이드의 설명을 들으며 말씀이 정말 살아있다는 것을 온몸으로 느꼈습니다. 그 경험이 지금도 제 신앙의 뿌리가 됩니다.</p>
+        <p class="testi-text wl-en">The Israel pilgrimage was a turning point in my faith. Walking through the very places where biblical history unfolded — guided by experts who brought every site to life — I felt in my whole being that the Word is truly alive. That experience still anchors my faith today.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">L</div>
+          <div>
+            <div class="testi-name">Lisa M.</div>
+            <div class="testi-origin wl-ko">미국 출신 졸업생</div>
+            <div class="testi-origin wl-en">Graduate from the United States</div>
+          </div>
         </div>
-        <div class="testimonial-origin"><span class="wl-ko">미국 출신 졸업생</span><span class="wl-en">Graduate from the United States</span></div>
       </div>
-      <div class="testimonial-card">
-        <div class="testimonial-quote">"</div>
-        <div class="testimonial-text">
-          <span class="wl-ko">다국적 공동체 안에서 함께 예배드리고, 서로의 문화를 나누고, 함께 기도하는 경험은 정말 특별했습니다. 무엇보다 성경에 대한 깊은 이해가 제 삶을 이끌어갑니다.</span>
-          <span class="wl-en">Worshipping together, sharing cultures, and praying side by side in a multinational community was something truly special. Above all, it's the deep understanding of Scripture I gained that continues to guide my life.</span>
+      <div class="testi-card reveal reveal-delay-2">
+        <p class="testi-text wl-ko">다국적 공동체 안에서 함께 예배드리고, 서로의 문화를 나누고, 함께 기도하는 경험은 정말 특별했습니다. 영어로 진행되는 수업을 통해 언어 실력도 크게 성장했고, 무엇보다 성경에 대한 깊은 이해가 제 삶을 이끌어갑니다.</p>
+        <p class="testi-text wl-en">Worshipping together, sharing cultures, and praying side by side in a multinational community was something truly special. My English grew significantly through the courses, but above all, it's the deep understanding of Scripture I gained that continues to guide my life.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">陳</div>
+          <div>
+            <div class="testi-name">Chen Y.</div>
+            <div class="testi-origin wl-ko">대만 출신 졸업생</div>
+            <div class="testi-origin wl-en">Graduate from Taiwan</div>
+          </div>
         </div>
-        <div class="testimonial-origin"><span class="wl-ko">대만 출신 졸업생</span><span class="wl-en">Graduate from Taiwan</span></div>
       </div>
     </div>
   </div>
-</section>
+</div>
 
 <!-- CTA -->
 <section class="cta-section">
-  <div class="page-wrap">
-    <h2>
-      <span class="wl-ko">지금 시작하세요 — 당신의 삶을 변화시킬 1년</span>
-      <span class="wl-en">Take the Next Step — One Year That Will Change Your Life</span>
-    </h2>
-    <p>
-      <span class="wl-ko">제주 월비 캠퍼스데이에 참가해 직접 학교를 둘러보고, 스태프 및 학생들과 대화해보세요. 입학에 관한 모든 궁금증을 해소하실 수 있습니다.</span>
-      <span class="wl-en">Come to a WOLBI Jeju Campus Day and see the school for yourself. Talk with staff and current students, and get answers to every question you have about applying.</span>
-    </p>
-    <div class="cta-cards">
-      <a href="https://wolbi.org" target="_blank" rel="noopener" class="cta-card">
-        <div class="cta-card-title"><span class="wl-ko">캠퍼스데이 신청</span><span class="wl-en">Register for Campus Day</span></div>
-        <div class="cta-card-desc"><span class="wl-ko">직접 방문해 캠퍼스를 경험해보세요</span><span class="wl-en">Visit and experience campus life firsthand</span></div>
+  <div class="cta-inner">
+    <div class="cta-text reveal">
+      <div class="section-label">
+        <span class="wl-ko">지금 시작하세요</span>
+        <span class="wl-en">Take the Next Step</span>
+      </div>
+      <h2 class="section-title">
+        <span class="wl-ko">당신의 삶을<br>변화시킬 1년</span>
+        <span class="wl-en">One Year That Will<br>Change Your Life</span>
+      </h2>
+      <div class="accent-line"></div>
+      <p class="section-desc">
+        <span class="wl-ko">제주 월비 캠퍼스데이에 참가해 직접 학교를 둘러보고, 스태프 및 학생들과 대화해보세요. 입학에 관한 모든 궁금증을 해소하실 수 있습니다.</span>
+        <span class="wl-en">Come to a WOLBI Jeju Campus Day and see the school for yourself. Talk with staff and current students, and get answers to every question you have about applying.</span>
+      </p>
+    </div>
+    <div class="cta-cards reveal reveal-delay-2">
+      <a href="https://www.wolbijeju.org/campus-days" class="cta-card">
+        <div class="cta-card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div>
+          <div class="cta-card-label wl-ko">캠퍼스데이 신청</div>
+          <div class="cta-card-label wl-en">Register for Campus Day</div>
+          <div class="cta-card-sub wl-ko">직접 방문해 캠퍼스를 경험해보세요</div>
+          <div class="cta-card-sub wl-en">Visit and experience campus life firsthand</div>
+        </div>
+        <div class="cta-card-arrow">→</div>
       </a>
-      <a href="https://wolbi.org" target="_blank" rel="noopener" class="cta-card">
-        <div class="cta-card-title"><span class="wl-ko">제주 월비 공식 홈페이지</span><span class="wl-en">WOLBI Jeju Official Website</span></div>
-        <div class="cta-card-desc"><span class="wl-ko">프로그램 전체 정보를 확인하세요</span><span class="wl-en">Explore the full program information</span></div>
+      <a href="https://www.wolbijeju.org/?lang=ko" class="cta-card">
+        <div class="cta-card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div>
+          <div class="cta-card-label wl-ko">제주 월비 공식 홈페이지</div>
+          <div class="cta-card-label wl-en">WOLBI Jeju Official Website</div>
+          <div class="cta-card-sub wl-ko">프로그램 전체 정보를 확인하세요</div>
+          <div class="cta-card-sub wl-en">Explore the full program information</div>
+        </div>
+        <div class="cta-card-arrow">→</div>
       </a>
-      <a href="mailto:wolkorea1@gmail.com" class="cta-card">
-        <div class="cta-card-title"><span class="wl-ko">이메일 문의</span><span class="wl-en">Email Us</span></div>
-        <div class="cta-card-desc">wolkorea1@gmail.com</div>
+      <a href="mailto:wolbijeju.contact@gmail.com" class="cta-card">
+        <div class="cta-card-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div>
+          <div class="cta-card-label wl-ko">이메일 문의</div>
+          <div class="cta-card-label wl-en">Email Us</div>
+          <div class="cta-card-sub">wolbijeju.contact@gmail.com</div>
+        </div>
+        <div class="cta-card-arrow">→</div>
       </a>
     </div>
-    <p class="cta-contact">
-      <span class="wl-ko">월비 제주 캠퍼스</span><span class="wl-en">WOLBI Jeju Campus</span><br>
-      <span class="wl-ko">메인 오피스:</span><span class="wl-en">Main Office:</span> <a href="tel:070-4190-6084">070-4190-6084</a> &nbsp;·&nbsp;
-      <span class="wl-ko">입학관리처:</span><span class="wl-en">Admissions:</span> <a href="tel:064-799-3707">064-799-3707</a><br>
-      <span class="wl-ko">제주시 애월읍 광상로 622</span><span class="wl-en">622 Gwangsang-ro, Aewol-eup, Jeju-si, Jeju-do</span>
-    </p>
-    <a href="https://wolbi.org" target="_blank" rel="noopener" class="btn-white">
+  </div>
+</section>
+
+<!-- CONTACT BAR -->
+<div class="contact-bar">
+  <div class="contact-bar-inner">
+    <div>
+      <div class="contact-bar-label wl-ko">월비 제주 캠퍼스</div>
+      <div class="contact-bar-label wl-en">WOLBI Jeju Campus</div>
+      <div class="contact-bar-info wl-ko">
+        제주특별자치도 제주시 애월읍 광상로 622 &nbsp;|&nbsp;
+        <strong>메인 오피스</strong> <a href="tel:07041906084">070-4190-6084</a> &nbsp;|&nbsp;
+        <strong>입학관리처</strong> <a href="tel:06479937070">064-799-3707</a>
+      </div>
+      <div class="contact-bar-info wl-en">
+        622 Gwangsang-ro, Aewol-eup, Jeju-si, Jeju-do, Korea &nbsp;|&nbsp;
+        <strong>Main Office</strong> <a href="tel:07041906084">070-4190-6084</a> &nbsp;|&nbsp;
+        <strong>Admissions</strong> <a href="tel:06479937070">064-799-3707</a>
+      </div>
+    </div>
+    <div class="contact-bar-divider"></div>
+    <a href="https://www.wolbijeju.org/campus-days" class="btn-apply">
       <span class="wl-ko">캠퍼스데이 신청 →</span>
       <span class="wl-en">Apply for Campus Day →</span>
     </a>
   </div>
-</section>
+</div>
+
+</div><!-- /#wl-root -->
+
+<script>
+/* ── reveal 애니메이션 ── */
+var obs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.wj-wrap .reveal').forEach(function(el) { obs.observe(el); });
+
+/* ── 언어 초기화 (플로팅 바 wlToggle과 연동) ── */
+try {
+  if (localStorage.getItem('wolko-lang') === 'en') {
+    document.getElementById('wl-root').classList.add('lang-en');
+  }
+} catch(e) {}
+</script>
 
 </BaseLayout>
