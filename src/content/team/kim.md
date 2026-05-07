@@ -51,5 +51,28 @@ bio_en: Hwan-Kyu was born and raised in South Korea. His mother had a personal
   She rejoices that God has directed both her life and her husband's to bring
   them back to South Korea, where they now serve the Lord together with their
   three children — sons Zayn and Noah, and their youngest daughter Noelle.
+bio_ko_2: >-
+  씬띠아는 미국 펜실베이니아 북동부에서 자랐습니다. 아버지가 목사님이셨기에 늘 교회 활동의 중심에 있었고, 매주 일요일, 수요일, 금요일마다
+  교회에 나갔습니다. 그런 환경 속에서 자연스럽게 스스로를 꽤 착한 사람이라 여겼고, 선한 행실로 천국에 갈 자격이 충분하다고 믿었습니다.
+  하지만 솔직히 돌아보면, 좋은 일을 하는 동기의 밑바닥에는 남에게 인정받고 싶은 마음이 있었습니다.
+
+
+  여섯 살 때, 여름 성경학교에서 복음을 처음으로 온전히 듣고 이해하게 되었습니다. 자신이 지은 죄로 인해 하나님과 영원히 분리되는 지옥을 마땅히 받아야 한다는 것, 그러나 하나님께서 죄 없고 완전하신 독생자 예수님을 이 세상에 보내셔서 십자가 위에서 자신의 죄 값을 대신 치러 주셨다는 것을 깨달았습니다. 예수님은 십자가에서 돌아가셨지만 사흘 만에 부활하셨고, 그 부활을 통해 죄와 사망이 정복되었습니다. 씬띠아는 그 복음을 믿고 예수님께 구원을 간구하며 하나님의 가족이 되었습니다.
+
+
+  아홉 살 때, 아동전도협회 캠프에서 아시아 사역에 대해 이야기하는 선교사님의 간증을 들으며 아시아를 향한 소명이 마음에 자리 잡기 시작했습니다. 고등학생 시절 한국을 방문하고 한국의 Word of Life 성경대학에 참석하며 한국에서 주님을 섬기고 싶다는 확신이 더욱 깊어졌습니다. 하나님께서 씬띠아와 환규 두 사람의 삶을 인도하셔서 한국으로 다시 보내 주신 것을 기뻐하며, 현재 두 아들 Zayn, Noah와 막내딸 노엘과 함께 한국에서 주님을 섬기고 있습니다.
+bio_en_2: >-
+  Cynthia grew up in northeastern Pennsylvania. With a pastor for a father, she
+  was always at the center of church life — attending every Sunday, Wednesday,
+  and Friday. Growing up in that environment, she naturally assumed she was a
+  pretty good person, and believed her good deeds were enough to earn a place in
+  heaven. But if she was honest, the real motivation behind much of what she did
+  was a desire to be noticed and recognized.
+
+
+  At six years old, during Vacation Bible School, she heard and truly grasped the gospel for the first time. She understood that what she truly deserved — because of her sin — was eternal separation from God in hell. But she also understood that because God loved her so much, He sent His sinless, perfect Son Jesus to die on the cross in her place, taking the punishment she deserved. Three days later, Jesus rose from the dead, conquering sin and death. Through His resurrection, she could have life. She received Christ as her Savior and became part of God's family.
+
+
+  At nine, at a Child Evangelism Fellowship camp, she heard a missionary speak about ministry in Asia — and something stirred in her heart. That calling stayed with her through high school, growing stronger after she visited South Korea and attended the Word of Life Bible Institute there. She became convinced that Korea was where God wanted her. She rejoices that God has directed both her life and her husband's to bring them back to South Korea, where they now serve the Lord together with their three children — sons Zayn and Noah, and their youngest daughter Noelle.
 photo_url_2: /images/uploads/cynthia.jpg
 ---
