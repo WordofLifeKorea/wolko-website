@@ -22,9 +22,6 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;500;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap');
 
 .mp-wrap * { box-sizing: border-box; }
-.mp-wrap h1, .mp-wrap h2, .mp-wrap h3, .mp-wrap h4,
-.mp-wrap p, .mp-wrap ul, .mp-wrap ol, .mp-wrap li,
-.mp-wrap blockquote, .mp-wrap figure { margin: 0; padding: 0; }
 
 .mp-wrap {
   --c-deep:  #004f68;
@@ -133,7 +130,7 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
   display: inline-flex; align-items: center; gap: 10px;
   font-size: 10px; font-weight: 700; letter-spacing: 3.5px;
   text-transform: uppercase; color: var(--c-light);
-  margin-bottom: 28px; animation: mp-fade-up 1s 0.2s both;
+  margin: 0 0 32px; animation: mp-fade-up 1s 0.2s both;
 }
 .mp-hero-label::before {
   content: ''; display: block; width: 32px; height: 1.5px;
@@ -142,9 +139,9 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
 
 .mp-hero-title {
   font-family: 'Noto Sans KR', sans-serif;
-  font-size: clamp(20px, 2.6vw, 38px); font-weight: 800;
-  color: var(--c-white); line-height: 1.25;
-  margin-bottom: 16px; animation: mp-fade-up 1s 0.35s both;
+  font-size: clamp(18px, 2.2vw, 32px); font-weight: 800;
+  color: var(--c-white); line-height: 1.3;
+  margin: 0 0 20px; animation: mp-fade-up 1s 0.35s both;
   word-break: keep-all;
 }
 .mp-hero-title em { font-style: italic; color: var(--c-light); font-family: 'Cormorant Garamond', serif; font-size: 1.1em; }
@@ -152,19 +149,19 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
 .mp-hero-role {
   font-size: 12px; font-weight: 700;
   color: rgba(255,255,255,0.45); letter-spacing: 2px;
-  text-transform: uppercase; margin-bottom: 30px;
+  text-transform: uppercase; margin: 0 0 32px;
   animation: mp-fade-up 1s 0.45s both;
 }
 
 .mp-hero-desc {
   font-size: 14px; line-height: 1.88;
   color: rgba(255,255,255,0.72);
-  border-left: 2px solid var(--c-light); padding-left: 18px;
-  margin-bottom: 38px; animation: mp-fade-up 1s 0.55s both;
+  border-left: 2px solid var(--c-light); padding-left: 22px;
+  margin: 0 0 44px; animation: mp-fade-up 1s 0.55s both;
 }
 
 .mp-cta-row {
-  display: flex; gap: 12px; flex-wrap: wrap;
+  display: flex; gap: 16px; flex-wrap: wrap;
   animation: mp-fade-up 1s 0.65s both;
 }
 .mp-btn {
@@ -354,10 +351,15 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
       </p>
 
       <p class="mp-hero-desc">
-        {hasBio ? (
+        {d.hero_subtitle_ko || d.hero_subtitle_en ? (
           <>
-            <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0, 120) + '…' : d.title_ko}</span>
-            <span class="wl-en">{d.bio_en ? d.bio_en.substring(0, 130) + '…' : d.title_en}</span>
+            <span class="wl-ko">{d.hero_subtitle_ko || d.title_ko}</span>
+            <span class="wl-en">{d.hero_subtitle_en || d.title_en}</span>
+          </>
+        ) : hasBio ? (
+          <>
+            <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0, 100) + '…' : d.title_ko}</span>
+            <span class="wl-en">{d.bio_en ? d.bio_en.substring(0, 110) + '…' : d.title_en}</span>
           </>
         ) : (
           <>
@@ -383,12 +385,27 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
   <!-- Verse -->
   <section class="mp-verse mp-reveal">
     <p class="mp-verse-text">
-      <span class="wl-ko-block">"무리를 보시고 불쌍히 여기셨으니 이는 그들이 목자 없는 양과 같이 고생하며 기진함이라<br/>이에 제자들에게 이르시되 추수할 것은 많되 일꾼이 적으니<br/>그러므로 추수하는 주인에게 청하여 추수할 일꾼들을 보내 주소서 하라 하시니라"</span>
-      <span class="wl-en-block">"When He saw the crowds, He had compassion on them, because they were harassed and helpless, like sheep without a shepherd.<br/>Then He said to His disciples, 'The harvest is plentiful but the workers are few.<br/>Ask the Lord of the harvest, therefore, to send out workers into His harvest field.'"</span>
+      {(d.verse_ko || d.verse_en) ? (
+        <>
+          {d.verse_ko && <span class="wl-ko-block">"{d.verse_ko}"</span>}
+          {d.verse_en && <span class="wl-en-block">"{d.verse_en}"</span>}
+        </>
+      ) : (
+        <>
+          <span class="wl-ko-block">"무리를 보시고 불쌍히 여기셨으니 이는 그들이 목자 없는 양과 같이 고생하며 기진함이라<br/>이에 제자들에게 이르시되 추수할 것은 많되 일꾼이 적으니<br/>그러므로 추수하는 주인에게 청하여 추수할 일꾼들을 보내 주소서 하라 하시니라"</span>
+          <span class="wl-en-block">"When He saw the crowds, He had compassion on them, because they were harassed and helpless, like sheep without a shepherd.<br/>Then He said to His disciples, 'The harvest is plentiful but the workers are few.<br/>Ask the Lord of the harvest, therefore, to send out workers into His harvest field.'"</span>
+        </>
+      )}
     </p>
     <div class="mp-verse-ref">
-      <span class="wl-ko">마태복음 9:36–38</span>
-      <span class="wl-en">Matthew 9:36–38</span>
+      {d.verse_ref ? (
+        <span>{d.verse_ref}</span>
+      ) : (
+        <>
+          <span class="wl-ko">마태복음 9:36–38</span>
+          <span class="wl-en">Matthew 9:36–38</span>
+        </>
+      )}
     </div>
   </section>
 
@@ -404,8 +421,8 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
             <ellipse cx="40" cy="68" rx="26" ry="16" fill="#8fa8b8"/>
           </svg>
         </div>
-        {d.photo_url && (
-          <img src={d.photo_url} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
+        {(d.photo_story || d.photo_url) && (
+          <img src={d.photo_story || d.photo_url} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
         )}
         <span class="mp-story-photo-tag">{d.role_badge}</span>
       </div>
