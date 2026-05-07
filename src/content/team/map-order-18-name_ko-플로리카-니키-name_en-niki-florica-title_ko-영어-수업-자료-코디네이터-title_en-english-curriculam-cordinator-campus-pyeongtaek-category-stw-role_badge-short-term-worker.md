@@ -7,4 +7,5 @@ role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw
 order: 18
+photo_url: /images/uploads/niki.jpg
 ---
