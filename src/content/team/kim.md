@@ -1,13 +1,14 @@
 ---
 name_ko: 김환규 & 김씬띠아
-name_en: Hwangyu Kim & Cynthia Kim
+name_en: HwanKyu Kim & Cynthia Kim
 title_ko: 미디어 및 교육자료 개발 코디네이터
 title_en: Media & Resources Development Cordinator
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
-order: 5
+order: 2
 photo_url: /images/uploads/kim.jpeg
+photo_url_2: /images/uploads/cynthia.jpg
 hero_tagline_ko: '"복음을 담은" '
 hero_tagline_en: '"Media & Education"'
 hero_tagline2_ko: '"미디어 & 교육 사역"'
@@ -74,5 +75,4 @@ bio_en_2: >-
 
 
   At nine, at a Child Evangelism Fellowship camp, she heard a missionary speak about ministry in Asia — and something stirred in her heart. That calling stayed with her through high school, growing stronger after she visited South Korea and attended the Word of Life Bible Institute there. She became convinced that Korea was where God wanted her. She rejoices that God has directed both her life and her husband's to bring them back to South Korea, where they now serve the Lord together with their three children — sons Zayn and Noah, and their youngest daughter Noelle.
-photo_url_2: /images/uploads/cynthia.jpg
 ---
