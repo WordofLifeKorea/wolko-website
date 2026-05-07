@@ -41,4 +41,5 @@ bio_en: Hwan-Kyu was born and raised in South Korea. His mother had a personal
   She rejoices that God has directed both her life and her husband's to bring
   them back to South Korea, where they now serve the Lord together with their
   three children — sons Zayn and Noah, and their youngest daughter Noelle.
+photo_url_2: /images/uploads/cynthia.jpg
 ---
