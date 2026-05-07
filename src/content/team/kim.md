@@ -1,13 +1,22 @@
 ---
 name_ko: 김환규 & 김씬띠아
 name_en: Hwangyu Kim & Cynthia Kim
-title_ko: 선교사 · Missionaries
-title_en: Missionaries
+title_ko: 미디어 및 교육자료 개발 코디네이터
+title_en: Media & Resources Development Cordinator
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
 order: 5
 photo_url: /images/uploads/kim.jpeg
+verse_ref: "시편 96 : 2-3"
+verse_ko: |-
+  "여호와께 노래하라, 그의 이름을 찬송하라: 날마다 그의 구원을 전파하라. 
+  열방중에서 그의 영광을 선포하며 모든 민족 중에서 그의 기이한 행적을 알리라!"
+verse_en: |-
+  "Sing to the Lord, bless his name;
+  tell of his salvation from day to day. 
+  Declare his glory among the nations,
+  his marvelous works among all the peoples!"
 bio_ko: 환규는 대한민국에서 태어나고 자랐습니다. 어머니는 그리스도와 개인적인 관계를 맺고 계셨지만, 아버지는 불교적 영향 속에서
   성장하셨습니다. 온 가족이 매주 교회에 출석했지만, 구원에 대한 확신은 늘 흐릿했습니다. 21세에 군 복무를 시작했고, 제대 후 어머니의
   소개로 SYME에 참석하게 되었습니다. 그곳에서 한 선교사님을 통해 복음을 들었습니다. 예수 그리스도께서 죽으시고 부활하심으로 그분과 관계를
