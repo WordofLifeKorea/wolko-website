@@ -11,9 +11,26 @@ const team = defineCollection({
     campus: z.enum(['pyeongtaek', 'jeju']),
     category: z.enum(['missionary', 'stw']),
     order: z.number().default(99),
-    photo_url: z.string().optional(),
-    bio_ko: z.string().optional(),
-    bio_en: z.string().optional(),
+    // 사진
+    photo_url:    z.string().optional(),
+    photo_story:  z.string().optional(),
+    photo_url_2:  z.string().optional(),
+    // 히어로 문구
+    hero_tagline_ko:  z.string().optional(),
+    hero_tagline_en:  z.string().optional(),
+    hero_tagline2_ko: z.string().optional(),
+    hero_tagline2_en: z.string().optional(),
+    hero_subtitle_ko: z.string().optional(),
+    hero_subtitle_en: z.string().optional(),
+    // Life Verse
+    verse_ref: z.string().optional(),
+    verse_ko:  z.string().optional(),
+    verse_en:  z.string().optional(),
+    // 소개
+    bio_ko:   z.string().optional(),
+    bio_en:   z.string().optional(),
+    bio_ko_2: z.string().optional(),
+    bio_en_2: z.string().optional(),
   }),
 });
 
