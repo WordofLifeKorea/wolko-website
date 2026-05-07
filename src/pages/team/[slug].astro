@@ -11,126 +11,331 @@ const d = person.data;
 const campusKo = d.campus === 'pyeongtaek' ? '평택 월코센터' : '제주 월비캠퍼스';
 const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju WOLBI Campus';
 const hasBio = (d.bio_ko && d.bio_ko.trim()) || (d.bio_en && d.bio_en.trim());
-const isDir = d.role_badge.toLowerCase().includes('director');
+const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
 ---
 <BaseLayout title={`${d.name_ko} — WOLKO 월코`} description={`${d.name_en} | ${d.title_en} | Word of Life Korea`} activeNav="about">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600&family=Noto+Serif+KR:wght@600&display=swap');
-.mp{--d:#004f68;--m:#007ea1;--l:#73d1f5;--r:#c42a36;--k:#0d1b24;--s:#3d5a6a;--u:#7a9aaa;--w:#ffffff;--e:#dce8ee;font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;color:var(--k);background:var(--w);}
-.mp *{box-sizing:border-box;margin:0;padding:0;}
-.mp .wl-ko,.mp .wl-ko-b{display:inline;} .mp .wl-en,.mp .wl-en-b{display:none;}
-.lang-en .mp .wl-ko,.lang-en .mp .wl-ko-b{display:none!important;}
-.lang-en .mp .wl-en,.lang-en .mp .wl-en-b{display:inline!important;}
-.mp .wl-ko-b{display:block;} .mp .wl-en-b{display:none;}
-.lang-en .mp .wl-ko-b{display:none!important;} .lang-en .mp .wl-en-b{display:block!important;}
-/* back bar */
-.mp-bk{background:var(--w);border-bottom:1px solid var(--e);padding:0 5%;}
-.mp-bk a{display:inline-flex;align-items:center;gap:8px;padding:13px 0;font-size:13px;font-weight:600;color:var(--s);text-decoration:none;transition:color .2s;}
-.mp-bk a:hover{color:var(--d);}
-/* hero */
-.mp-hero{display:grid;grid-template-columns:1fr 1fr;min-height:86vh;overflow:hidden;}
-.mp-ph{position:relative;overflow:hidden;}
-.mp-ph img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;animation:zm 1.4s cubic-bezier(.22,1,.36,1) forwards;}
-@keyframes zm{from{transform:scale(1.10)}to{transform:scale(1.00)}}
-.mp-ph::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 60%,rgba(4,28,38,.18) 100%),linear-gradient(180deg,transparent 55%,rgba(4,28,38,.55) 100%);}
-.mp-nl{position:absolute;bottom:36px;left:36px;z-index:2;animation:fu 1s .4s both;}
-.mp-ne{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3.2vw,40px);font-weight:600;color:var(--w);line-height:1.15;}
-.mp-ns{font-size:12px;font-weight:700;color:var(--l);letter-spacing:2.5px;text-transform:uppercase;margin-top:5px;}
-.mp-ct{background:var(--d);display:flex;flex-direction:column;justify-content:center;padding:68px 52px;position:relative;overflow:hidden;}
-.mp-ct::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(115,209,245,.07) 0%,transparent 70%);top:-100px;right:-100px;pointer-events:none;}
-.mp-ct::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(196,42,54,.08) 0%,transparent 70%);bottom:-80px;left:-60px;pointer-events:none;}
-.mp-lbl{display:inline-flex;align-items:center;gap:10px;font-size:10px;font-weight:700;letter-spacing:3.5px;text-transform:uppercase;color:var(--l);margin-bottom:26px;animation:fu 1s .2s both;}
-.mp-lbl::before{content:'';display:block;width:32px;height:1.5px;background:var(--l);flex-shrink:0;}
-.mp-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,4vw,52px);font-weight:600;color:var(--w);line-height:1.15;margin-bottom:16px;animation:fu 1s .35s both;}
-.mp-h1 em{font-style:italic;color:var(--l);}
-.mp-role{font-size:12px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:30px;animation:fu 1s .45s both;}
-.mp-dsc{font-size:14px;line-height:1.88;color:rgba(255,255,255,.72);border-left:2px solid var(--l);padding-left:18px;margin-bottom:38px;animation:fu 1s .55s both;}
-.mp-cta{display:flex;gap:12px;flex-wrap:wrap;animation:fu 1s .65s both;}
-.mp-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:50px;font-size:13px;font-weight:700;text-decoration:none;transition:all .25s;}
-.mp-btn svg{width:14px;height:14px;flex-shrink:0;}
-.mp-r{background:var(--r);color:#fff!important;}
-.mp-r:hover{background:#a82230;color:#fff!important;transform:translateY(-2px);box-shadow:0 8px 24px rgba(196,42,54,.4);}
-.mp-g{background:rgba(255,255,255,.15);color:#fff!important;border:1.5px solid rgba(255,255,255,.5);}
-.mp-g:hover{background:rgba(255,255,255,.28);transform:translateY(-2px);}
-/* verse */
-.mp-vr{background:var(--k);padding:68px 40px;text-align:center;position:relative;overflow:hidden;}
-.mp-vr::before{content:'\201C';position:absolute;font-family:'Cormorant Garamond',serif;font-size:300px;color:rgba(115,209,245,.04);top:-60px;left:20px;line-height:1;pointer-events:none;}
-.mp-vt{font-family:'Noto Serif KR',serif;font-size:clamp(15px,2vw,21px);font-weight:600;color:var(--w);line-height:1.88;max-width:780px;margin:0 auto 18px;position:relative;}
-.mp-vrf{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--l);text-transform:uppercase;}
-/* story */
-.mp-st{padding:80px 40px;max-width:1080px;margin:0 auto;}
-.mp-sg{display:grid;grid-template-columns:1fr 1fr;gap:68px;align-items:start;}
-.mp-img{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:3/4;box-shadow:0 20px 60px rgba(0,79,104,.16);}
-.mp-img img{width:100%;height:100%;object-fit:cover;display:block;}
-.mp-img::before{content:'';position:absolute;width:80px;height:80px;background:var(--l);opacity:.3;border-radius:50%;top:-20px;right:-20px;z-index:1;}
-.mp-itag{position:absolute;bottom:18px;left:18px;background:var(--d);color:var(--w);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 13px;border-radius:30px;z-index:2;}
-.mp-tx{padding-top:10px;}
-.mp-slb{font-size:10px;font-weight:700;letter-spacing:3.5px;text-transform:uppercase;color:var(--m);margin-bottom:12px;}
-.mp-snm{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.8vw,36px);font-weight:600;color:var(--d);line-height:1.22;margin-bottom:22px;}
-.mp-sb{font-size:14.5px;line-height:1.9;color:var(--s);}
-.mp-sb+.mp-sb{margin-top:14px;}
-.mp-emp{background:rgba(0,79,104,.04);border:1px dashed rgba(0,79,104,.18);border-radius:14px;padding:26px 22px;font-size:14px;color:var(--u);font-style:italic;line-height:1.8;}
-.mp-pr{margin-top:32px;background:linear-gradient(135deg,rgba(0,79,104,.04),rgba(0,126,161,.07));border:1px solid rgba(0,79,104,.10);border-radius:14px;padding:22px 24px;}
-.mp-prl{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--m);margin-bottom:8px;}
-.mp-prt{font-size:14px;line-height:1.8;color:var(--s);}
-/* anim */
-@keyframes fu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
-.mp-rv{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s;}
-.mp-rv.in{opacity:1;transform:translateY(0);}
-/* responsive */
-@media(max-width:900px){
-  .mp-hero{grid-template-columns:1fr;min-height:auto;}
-  .mp-ph{height:60vw;min-height:280px;}
-  .mp-ct{padding:42px 26px;}
-  .mp-sg{grid-template-columns:1fr;gap:30px;}
-  .mp-st{padding:52px 22px;}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;500;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+
+.mp-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+
+.mp-wrap {
+  --c-deep:  #004f68;
+  --c-mid:   #007ea1;
+  --c-light: #73d1f5;
+  --c-red:   #c42a36;
+  --c-ink:   #0d1b24;
+  --c-sub:   #3d5a6a;
+  --c-muted: #7a9aaa;
+  --c-bg:    #f5f8fa;
+  --c-line:  #dce8ee;
+  --c-white: #ffffff;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  color: var(--c-ink);
+  background: var(--c-white);
 }
-@media(max-width:540px){
-  .mp-ct{padding:34px 18px;}
-  .mp-nl{bottom:18px;left:18px;}
-  .mp-vr{padding:50px 18px;}
+
+/* 한/영 토글 */
+.mp-wrap .wl-ko       { display: inline; }
+.mp-wrap .wl-en       { display: none; }
+.lang-en .mp-wrap .wl-ko { display: none !important; }
+.lang-en .mp-wrap .wl-en { display: inline !important; }
+.mp-wrap .wl-ko-block { display: block; }
+.mp-wrap .wl-en-block { display: none; }
+.lang-en .mp-wrap .wl-ko-block { display: none !important; }
+.lang-en .mp-wrap .wl-en-block { display: block !important; }
+
+/* BACK BAR */
+.mp-back { background: var(--c-white); border-bottom: 1px solid var(--c-line); padding: 0 5%; }
+.mp-back a {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 0; font-size: 13px; font-weight: 600;
+  color: var(--c-sub); text-decoration: none; transition: color 0.2s;
+}
+.mp-back a:hover { color: var(--c-deep); }
+
+/* HERO */
+.mp-hero {
+  position: relative;
+  min-height: 88vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+
+.mp-hero-photo {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--c-deep), var(--c-mid));
+}
+.mp-hero-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  display: block;
+  animation: mp-zoom-in 1.4s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes mp-zoom-in {
+  from { transform: scale(1.10); }
+  to   { transform: scale(1.00); }
+}
+.mp-hero-photo::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, transparent 60%, rgba(4,28,38,0.18) 100%),
+    linear-gradient(180deg, transparent 55%, rgba(4,28,38,0.55) 100%);
+}
+
+.mp-hero-name-layer {
+  position: absolute; bottom: 40px; left: 40px; z-index: 2;
+  animation: mp-fade-up 1s 0.4s both;
+}
+.mp-hero-name-en {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 3.2vw, 40px);
+  font-weight: 600; color: var(--c-white);
+  line-height: 1.1; letter-spacing: 0.5px;
+}
+.mp-hero-name-ko {
+  font-size: 12px; font-weight: 700;
+  color: var(--c-light); letter-spacing: 2.5px;
+  text-transform: uppercase; margin-top: 5px;
+}
+
+.mp-hero-content {
+  background: var(--c-deep);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 72px 56px;
+  position: relative; overflow: hidden;
+}
+.mp-hero-content::before {
+  content: '';
+  position: absolute; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(115,209,245,0.07) 0%, transparent 70%);
+  top: -100px; right: -100px; pointer-events: none;
+}
+.mp-hero-content::after {
+  content: '';
+  position: absolute; width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(196,42,54,0.08) 0%, transparent 70%);
+  bottom: -80px; left: -60px; pointer-events: none;
+}
+
+.mp-hero-label {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: 3.5px;
+  text-transform: uppercase; color: var(--c-light);
+  margin-bottom: 28px; animation: mp-fade-up 1s 0.2s both;
+}
+.mp-hero-label::before {
+  content: ''; display: block; width: 32px; height: 1.5px;
+  background: var(--c-light); flex-shrink: 0;
+}
+
+.mp-hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(30px, 4vw, 52px); font-weight: 600;
+  color: var(--c-white); line-height: 1.15;
+  margin-bottom: 16px; animation: mp-fade-up 1s 0.35s both;
+}
+.mp-hero-title em { font-style: italic; color: var(--c-light); }
+
+.mp-hero-role {
+  font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,0.45); letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 30px;
+  animation: mp-fade-up 1s 0.45s both;
+}
+
+.mp-hero-desc {
+  font-size: 14px; line-height: 1.88;
+  color: rgba(255,255,255,0.72);
+  border-left: 2px solid var(--c-light); padding-left: 18px;
+  margin-bottom: 38px; animation: mp-fade-up 1s 0.55s both;
+}
+
+.mp-cta-row {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  animation: mp-fade-up 1s 0.65s both;
+}
+.mp-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 22px; border-radius: 50px;
+  font-size: 13px; font-weight: 700;
+  text-decoration: none; transition: all 0.25s;
+}
+.mp-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.mp-btn-primary { background: var(--c-red); color: #fff !important; }
+.mp-btn-primary:hover { background: #a82230; color: #fff !important; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,42,54,0.4); }
+.mp-btn-secondary { background: rgba(255,255,255,0.15); color: #fff !important; border: 1.5px solid rgba(255,255,255,0.5); }
+.mp-btn-secondary:hover { background: rgba(255,255,255,0.28); color: #fff !important; transform: translateY(-2px); }
+
+/* VERSE */
+.mp-verse {
+  background: var(--c-ink); padding: 72px 40px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.mp-verse::before {
+  content: '\201C';
+  position: absolute; font-family: 'Cormorant Garamond', serif;
+  font-size: 320px; color: rgba(115,209,245,0.04);
+  top: -60px; left: 20px; line-height: 1; pointer-events: none;
+}
+.mp-verse-text {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(15px, 2vw, 21px); font-weight: 600;
+  color: var(--c-white); line-height: 1.88;
+  max-width: 780px; margin: 0 auto 20px; position: relative;
+}
+.mp-verse-ref {
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 2px; color: var(--c-light); text-transform: uppercase;
+}
+
+/* STORY */
+.mp-story {
+  padding: 88px 40px; max-width: 1080px; margin: 0 auto;
+}
+.mp-story-block {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 72px; align-items: start;
+}
+.mp-story-photo {
+  position: relative; border-radius: 20px; overflow: hidden;
+  aspect-ratio: 3 / 4;
+  box-shadow: 0 20px 60px rgba(0,79,104,0.16);
+  background: linear-gradient(135deg, var(--c-line), var(--c-bg));
+}
+.mp-story-photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.mp-story-photo::before {
+  content: '';
+  position: absolute; width: 80px; height: 80px;
+  background: var(--c-light); opacity: 0.3; border-radius: 50%;
+  top: -20px; right: -20px; z-index: 1;
+}
+.mp-story-photo-tag {
+  position: absolute; bottom: 20px; left: 20px;
+  background: var(--c-deep); color: var(--c-white);
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 6px 14px; border-radius: 30px; z-index: 2;
+}
+.mp-story-photo-placeholder {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.mp-story-photo-placeholder svg { width: 80px; height: 80px; opacity: 0.2; }
+
+.mp-story-text { padding-top: 12px; }
+.mp-story-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 3.5px;
+  text-transform: uppercase; color: var(--c-mid); margin-bottom: 14px;
+}
+.mp-story-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(26px, 3.5vw, 40px); font-weight: 600;
+  color: var(--c-deep); line-height: 1.2; margin-bottom: 24px;
+}
+.mp-story-body {
+  font-size: 14.5px; line-height: 1.9; color: var(--c-sub);
+}
+.mp-story-body + .mp-story-body { margin-top: 16px; }
+
+.mp-story-empty {
+  background: var(--c-bg); border: 1px dashed var(--c-line);
+  border-radius: 14px; padding: 28px 24px;
+  font-size: 14px; color: var(--c-muted); font-style: italic; line-height: 1.8;
+}
+
+/* PRAYER */
+.mp-prayer {
+  max-width: 1080px; margin: 0 auto; padding: 0 40px 80px;
+}
+.mp-prayer-inner {
+  background: linear-gradient(135deg, rgba(0,79,104,0.04), rgba(0,126,161,0.07));
+  border: 1px solid rgba(0,79,104,0.10); border-radius: 14px;
+  padding: 28px 32px;
+}
+.mp-prayer-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--c-mid); margin-bottom: 10px;
+}
+.mp-prayer-text { font-size: 14px; line-height: 1.8; color: var(--c-sub); }
+
+/* ANIMATION */
+@keyframes mp-fade-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.mp-reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s, transform 0.7s; }
+.mp-reveal.mp-in { opacity: 1; transform: translateY(0); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .mp-hero { grid-template-columns: 1fr; min-height: auto; }
+  .mp-hero-photo { height: 56vw; min-height: 280px; }
+  .mp-hero-content { padding: 48px 32px; }
+  .mp-story-block { grid-template-columns: 1fr; gap: 36px; }
+  .mp-story { padding: 56px 24px; }
+  .mp-prayer { padding: 0 24px 56px; }
+}
+@media (max-width: 560px) {
+  .mp-hero-content { padding: 40px 20px; }
+  .mp-hero-name-layer { bottom: 24px; left: 24px; }
+  .mp-verse { padding: 56px 24px; }
 }
 </style>
 
-<div class="mp">
+<div class="mp-wrap" id="wl-root">
 
-  <div class="mp-bk">
+  <!-- Back bar -->
+  <div class="mp-back">
     <a href="/people">
-      <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="wl-ko">섬기는이 전체 보기</span><span class="wl-en">Back to Our Team</span>
+      <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
+        <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="wl-ko">섬기는이 전체 보기</span>
+      <span class="wl-en">Back to Our Team</span>
     </a>
   </div>
 
+  <!-- Hero -->
   <section class="mp-hero">
-    <div class="mp-ph">
-      <img src={d.photo_url || '/images/placeholder.jpg'} alt={d.name_en} loading="eager"/>
-      <div class="mp-nl">
-        <div class="mp-ne">{d.name_en}</div>
-        <div class="mp-ns">
-          <span class="wl-ko">{d.name_ko} 선교사</span>
+    <div class="mp-hero-photo">
+      {d.photo_url && (
+        <img src={d.photo_url} alt="" loading="eager" onerror="this.style.display='none'"/>
+      )}
+      <div class="mp-hero-name-layer">
+        <div class="mp-hero-name-en">{d.name_en}</div>
+        <div class="mp-hero-name-ko">
+          <span class="wl-ko">{d.name_ko} · {d.role_badge}</span>
           <span class="wl-en">{d.role_badge}</span>
         </div>
       </div>
     </div>
 
-    <div class="mp-ct">
-      <div class="mp-lbl">
+    <div class="mp-hero-content">
+      <div class="mp-hero-label">
         <span class="wl-ko">{isDir ? '월드오브라이프 코리아 · 대표 선교사' : `월드오브라이프 코리아 · ${d.title_ko}`}</span>
         <span class="wl-en">{isDir ? 'Word of Life Korea · Field Director' : `Word of Life Korea · ${d.title_en}`}</span>
       </div>
-      <h1 class="mp-h1">
+
+      <h1 class="mp-hero-title">
         <span class="wl-ko">{d.name_ko}<br/><em>{d.title_ko}</em></span>
         <span class="wl-en">{d.name_en}<br/><em>{d.title_en}</em></span>
       </h1>
-      <p class="mp-role">
+
+      <p class="mp-hero-role">
         <span class="wl-ko">{campusKo}</span>
         <span class="wl-en">{campusEn}</span>
       </p>
-      <p class="mp-dsc">
+
+      <p class="mp-hero-desc">
         {hasBio ? (
           <>
-            <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0,110)+'…' : d.title_ko}</span>
-            <span class="wl-en">{d.bio_en ? d.bio_en.substring(0,120)+'…' : d.title_en}</span>
+            <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0, 120) + '…' : d.title_ko}</span>
+            <span class="wl-en">{d.bio_en ? d.bio_en.substring(0, 130) + '…' : d.title_en}</span>
           </>
         ) : (
           <>
@@ -139,12 +344,13 @@ const isDir = d.role_badge.toLowerCase().includes('director');
           </>
         )}
       </p>
-      <div class="mp-cta">
-        <a href="/give" class="mp-btn mp-r">
+
+      <div class="mp-cta-row">
+        <a href="/give" class="mp-btn mp-btn-primary">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <span class="wl-ko">후원하기</span><span class="wl-en">Support</span>
         </a>
-        <a href="/people" class="mp-btn mp-g">
+        <a href="/people" class="mp-btn mp-btn-secondary">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span class="wl-ko">전체 팀 보기</span><span class="wl-en">Our Team</span>
         </a>
@@ -152,62 +358,99 @@ const isDir = d.role_badge.toLowerCase().includes('director');
     </div>
   </section>
 
-  <section class="mp-vr mp-rv">
-    <p class="mp-vt">
-      <span class="wl-ko-b">"무리를 보시고 불쌍히 여기셨으니 이는 그들이 목자 없는 양과 같이 고생하며 기진함이라<br/>이에 제자들에게 이르시되 추수할 것은 많되 일꾼이 적으니<br/>그러므로 추수하는 주인에게 청하여 추수할 일꾼들을 보내 주소서 하라 하시니라"</span>
-      <span class="wl-en-b">"When He saw the crowds, He had compassion on them, because they were harassed and helpless, like sheep without a shepherd.<br/>Then He said to His disciples, 'The harvest is plentiful but the workers are few.<br/>Ask the Lord of the harvest, therefore, to send out workers into His harvest field.'"</span>
+  <!-- Verse -->
+  <section class="mp-verse mp-reveal">
+    <p class="mp-verse-text">
+      <span class="wl-ko-block">"무리를 보시고 불쌍히 여기셨으니 이는 그들이 목자 없는 양과 같이 고생하며 기진함이라<br/>이에 제자들에게 이르시되 추수할 것은 많되 일꾼이 적으니<br/>그러므로 추수하는 주인에게 청하여 추수할 일꾼들을 보내 주소서 하라 하시니라"</span>
+      <span class="wl-en-block">"When He saw the crowds, He had compassion on them, because they were harassed and helpless, like sheep without a shepherd.<br/>Then He said to His disciples, 'The harvest is plentiful but the workers are few.<br/>Ask the Lord of the harvest, therefore, to send out workers into His harvest field.'"</span>
     </p>
-    <div class="mp-vrf">
+    <div class="mp-verse-ref">
       <span class="wl-ko">마태복음 9:36–38</span>
       <span class="wl-en">Matthew 9:36–38</span>
     </div>
   </section>
 
-  <section class="mp-st">
-    <div class="mp-sg mp-rv">
-      <div class="mp-img">
-        <img src={d.photo_url || '/images/placeholder.jpg'} alt={d.name_ko} loading="lazy"/>
-        <span class="mp-itag">{d.role_badge}</span>
+  <!-- Story -->
+  <section class="mp-story">
+    <div class="mp-story-block mp-reveal">
+      <div class="mp-story-photo">
+        <div class="mp-story-photo-placeholder">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="30" r="16" fill="#8fa8b8"/>
+            <ellipse cx="40" cy="68" rx="26" ry="16" fill="#8fa8b8"/>
+          </svg>
+        </div>
+        {d.photo_url && (
+          <img src={d.photo_url} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;"/>
+        )}
+        <span class="mp-story-photo-tag">
+          <span class="wl-ko">{d.role_badge}</span>
+          <span class="wl-en">{d.role_badge}</span>
+        </span>
       </div>
-      <div class="mp-tx">
-        <div class="mp-slb">
+
+      <div class="mp-story-text">
+        <div class="mp-story-label">
           <span class="wl-ko">선교사 이야기</span>
           <span class="wl-en">Their Story</span>
         </div>
-        <h2 class="mp-snm">
-          <span class="wl-ko">{d.name_ko}<br/><span style="font-size:.68em;color:#007ea1;">{d.title_ko}</span></span>
-          <span class="wl-en">{d.name_en}<br/><span style="font-size:.68em;color:#007ea1;">{d.title_en}</span></span>
+        <h2 class="mp-story-name">
+          <span class="wl-ko">{d.name_ko}</span>
+          <span class="wl-en">{d.name_en}</span>
         </h2>
         {hasBio ? (
           <>
-            {d.bio_ko && <p class="mp-sb wl-ko-b">{d.bio_ko}</p>}
-            {d.bio_en && <p class="mp-sb wl-en-b">{d.bio_en}</p>}
+            {d.bio_ko && <p class="mp-story-body wl-ko-block">{d.bio_ko}</p>}
+            {d.bio_en && <p class="mp-story-body wl-en-block">{d.bio_en}</p>}
           </>
         ) : (
-          <div class="mp-emp">
+          <div class="mp-story-empty">
             <span class="wl-ko">소개 내용이 곧 업데이트됩니다. 이 사역자를 위해 기도해 주세요.</span>
             <span class="wl-en">Bio coming soon. Please keep this missionary in your prayers.</span>
           </div>
         )}
-        <div class="mp-pr">
-          <div class="mp-prl"><span class="wl-ko">중보기도</span><span class="wl-en">Prayer</span></div>
-          <p class="mp-prt">
-            <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
-            <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
-          </p>
-        </div>
       </div>
     </div>
   </section>
 
+  <!-- Prayer -->
+  <div class="mp-prayer">
+    <div class="mp-prayer-inner mp-reveal">
+      <div class="mp-prayer-label">
+        <span class="wl-ko">중보기도</span>
+        <span class="wl-en">Prayer</span>
+      </div>
+      <p class="mp-prayer-text">
+        <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
+        <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
+      </p>
+    </div>
+  </div>
+
 </div>
 
 <script>
-(function(){
-  var els=document.querySelectorAll('.mp-rv');
-  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}
-  var io=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.1});
-  els.forEach(function(e){io.observe(e);});
+(function() {
+  try {
+    if (localStorage.getItem('wolko-lang') === 'en') {
+      document.getElementById('wl-root').classList.add('lang-en');
+    }
+  } catch(e) {}
+
+  var els = document.querySelectorAll('.mp-reveal');
+  if (!('IntersectionObserver' in window)) {
+    els.forEach(function(el) { el.classList.add('mp-in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('mp-in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  els.forEach(function(el) { io.observe(el); });
 })();
 </script>
 
