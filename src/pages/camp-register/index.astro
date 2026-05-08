@@ -1,0 +1,1332 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const allSchedules = await getCollection('camp_schedules');
+const schedules = allSchedules
+  .filter(s => s.data.status !== 'closed')
+  .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
+
+const jejuCamps   = schedules.filter(s => s.data.camp_type === 'jeju');
+const inlandCamps = schedules.filter(s => s.data.camp_type !== 'jeju');
+
+const typeLabel: Record<string, { ko: string; en: string }> = {
+  english: { ko: '영어캠프', en: 'English Camp' },
+  jeju:    { ko: '제주캠프', en: 'Jeju Camp' },
+  union:   { ko: '연합캠프', en: 'Union Camp' },
+};
+const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
+  open:     { ko: '신청 중',   en: 'Open',               cls: 'status-open' },
+  closed:   { ko: '마감',      en: 'Closed',             cls: 'status-closed' },
+  upcoming: { ko: '준비 중',   en: 'Upcoming',           cls: 'status-upcoming' },
+  full:     { ko: '정원 마감', en: 'Full',               cls: 'status-full' },
+};
+---
+
+<BaseLayout
+  title="캠프 신청 — Word of Life Korea"
+  description="월코 캠프 신청 페이지 — 영어캠프, 연합캠프 신청 접수"
+  activeNav="connect"
+  whiteNav={true}
+>
+
+<style is:global>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap');
+
+/* ══ CAMP REGISTER PAGE ══ */
+.crp {
+  --c-deep:   #004f68;
+  --c-mid:    #007ea1;
+  --c-light:  #73d1f5;
+  --c-red:    #c42a36;
+  --c-red-dk: #a82330;
+  --c-white:  #ffffff;
+  --c-off:    #f5fafd;
+  --c-pale:   #eef7fb;
+  --c-text:   #111820;
+  --c-sub:    #334a56;
+  --c-muted:  #6b8896;
+  --c-border: rgba(0,79,104,0.12);
+  --f-serif:  'Playfair Display', 'Noto Serif KR', Georgia, serif;
+  --f-sans:   'Noto Sans KR', sans-serif;
+  font-family: var(--f-sans);
+  font-weight: 300;
+  color: var(--c-text);
+  background: var(--c-white);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  width: 100%;
+}
+.crp *, .crp *::before, .crp *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.crp a { text-decoration: none; color: inherit; }
+.crp ul { list-style: none; }
+
+/* ── REVEAL ── */
+.crp .reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s ease; }
+.crp .reveal.visible { opacity: 1; transform: none; }
+.crp .reveal-d1 { transition-delay: .10s; }
+.crp .reveal-d2 { transition-delay: .20s; }
+
+/* ── TYPOGRAPHY HELPERS ── */
+.crp .section-label {
+  display: inline-flex; align-items: center; gap: 14px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--c-mid); margin-bottom: 14px;
+}
+.crp .section-label::before { content: ''; width: 14px; height: 2px; background: var(--c-red); flex-shrink: 0; }
+.crp .section-title {
+  font-family: var(--f-serif); font-size: clamp(28px, 4vw, 46px);
+  font-weight: 700; color: var(--c-deep); line-height: 1.14;
+  letter-spacing: -0.025em; word-break: keep-all;
+}
+.crp .section-desc {
+  font-size: 15px; line-height: 1.9; color: var(--c-sub);
+  max-width: 580px; word-break: keep-all; margin-top: 16px;
+}
+
+/* ── PAGE HERO ── */
+.crp-hero {
+  background: var(--c-deep);
+  padding: 120px 48px 72px;
+  margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw;
+  position: relative; overflow: hidden;
+}
+.crp-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, #003347 0%, #005f80 60%, #004f68 100%);
+}
+.crp-hero::after {
+  content: '✝'; position: absolute; right: 8%; bottom: -20px;
+  font-size: clamp(120px, 18vw, 220px); color: rgba(115,209,245,0.05);
+  line-height: 1; pointer-events: none; user-select: none;
+}
+.crp-hero-inner {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+}
+.crp-hero-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--c-light); margin-bottom: 22px;
+}
+.crp-hero-badge::before { content:''; width:28px; height:1.5px; background: var(--c-light); flex-shrink:0; }
+.crp-hero-title {
+  font-family: var(--f-serif); font-size: clamp(32px, 5vw, 58px);
+  font-weight: 700; color: #fff; line-height: 1.12;
+  letter-spacing: -0.02em; margin-bottom: 20px; word-break: keep-all;
+}
+.crp-hero-title em { font-style: italic; color: var(--c-light); }
+.crp-hero-sub {
+  font-size: 15px; line-height: 1.85; color: rgba(255,255,255,0.7);
+  max-width: 540px; word-break: keep-all; margin-bottom: 32px;
+}
+.crp-hero-back {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.18); border-radius: 100px;
+  padding: 8px 18px; transition: all 0.22s;
+}
+.crp-hero-back:hover { color: #fff; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.06); }
+
+/* ── REGISTRATION SECTION ── */
+.crp-reg-section {
+  background: var(--c-off);
+  padding: 72px 48px 96px;
+  margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw;
+  border-top: 1px solid var(--c-border);
+}
+.crp-reg-header {
+  max-width: 1100px; margin: 0 auto 56px;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 32px;
+}
+.crp-reg-header-text {}
+.crp-reg-header-note {
+  font-size: 13px; line-height: 1.8; color: var(--c-muted);
+  text-align: right; max-width: 280px; word-break: keep-all;
+}
+
+/* ── REG GRID ── */
+.crp-reg-grid {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
+  align-items: stretch;
+}
+.crp-reg-card {
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: 16px;
+  padding: 32px 28px 36px;
+  display: flex; flex-direction: column; gap: 0;
+  position: relative; overflow: hidden;
+  transition: transform .28s, box-shadow .28s, border-color .28s;
+}
+.crp-reg-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 48px rgba(0,79,104,0.12);
+  border-color: rgba(0,79,104,0.20);
+}
+.crp-reg-card-top {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+}
+.crp-type-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--c-mid); background: rgba(0,126,161,0.08);
+  padding: 5px 12px; border-radius: 100px;
+}
+.crp-status-badge {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  padding: 5px 13px; border-radius: 100px;
+}
+.crp-status-open     { background: rgba(22,163,74,0.10);  color: #15803d; }
+.crp-status-upcoming { background: rgba(0,126,161,0.10);  color: var(--c-mid); }
+.crp-status-full     { background: rgba(234,88,12,0.10);  color: #c2410c; }
+.crp-status-closed   { background: rgba(100,116,139,0.10); color: #64748b; }
+
+.crp-reg-title {
+  font-family: var(--f-serif); font-size: 22px; font-weight: 700;
+  color: var(--c-deep); line-height: 1.2; letter-spacing: -0.015em;
+  margin-bottom: 20px;
+}
+.crp-reg-meta {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-bottom: 20px; flex: 1;
+}
+.crp-reg-meta-row {
+  display: grid; grid-template-columns: 72px 1fr; gap: 8px; align-items: baseline;
+}
+.crp-reg-meta-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--c-muted);
+}
+.crp-reg-meta-value {
+  font-size: 13px; color: var(--c-sub); line-height: 1.55; word-break: keep-all;
+}
+.crp-reg-notes {
+  font-size: 12.5px; line-height: 1.75; color: var(--c-muted);
+  padding-top: 14px; border-top: 1px solid var(--c-border);
+  margin-bottom: 18px; word-break: keep-all;
+}
+
+/* ── CAPACITY BAR ── */
+.crp-cap { margin-bottom: 16px; }
+.crp-cap-info {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 12px; color: var(--c-muted); margin-bottom: 8px;
+}
+.crp-cap-info strong { font-size: 14px; font-weight: 700; color: var(--c-deep); }
+.crp-cap-track {
+  height: 7px; background: rgba(0,79,104,0.08);
+  border-radius: 999px; overflow: hidden;
+}
+.crp-cap-fill {
+  height: 100%; border-radius: 999px; width: 0%;
+  background: linear-gradient(90deg, var(--c-mid), var(--c-light));
+  transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+}
+.crp-cap-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.crp-cap-fill.full { background: linear-gradient(90deg, var(--c-red), #e55); }
+
+/* ── REG BUTTONS ── */
+.crp-reg-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.04em; border-radius: 10px;
+  margin-top: auto; transition: background .22s, transform .18s, box-shadow .22s;
+  text-decoration: none; border: none; outline: none; cursor: pointer;
+  font-family: var(--f-sans);
+}
+.crp-reg-btn-primary {
+  background: var(--c-red); color: #fff;
+  box-shadow: 0 3px 10px rgba(196,42,54,0.20);
+}
+.crp-reg-btn-primary:hover:not(:disabled) {
+  background: var(--c-red-dk); transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(196,42,54,0.32);
+}
+.crp-reg-btn-outline {
+  background: transparent; color: var(--c-mid);
+  border: 1.5px solid var(--c-border);
+}
+.crp-reg-btn-outline:hover { border-color: var(--c-mid); background: rgba(0,126,161,0.05); }
+.crp-reg-btn-disabled {
+  background: rgba(100,116,139,0.08); color: #94a3b8;
+  cursor: default; pointer-events: none;
+}
+
+/* ── CAMP GROUP HEADER ── */
+.crp-group { max-width: 1100px; margin: 0 auto; }
+.crp-group + .crp-group { margin-top: 72px; }
+.crp-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; margin-bottom: 32px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--c-border);
+}
+.crp-group-tag {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--c-deep);
+}
+.crp-group-tag::before {
+  content: ''; width: 3px; height: 18px;
+  background: var(--c-red); border-radius: 2px; flex-shrink: 0;
+}
+.crp-group-cafe-link {
+  font-size: 12px; font-weight: 600; color: var(--c-mid);
+  letter-spacing: 0.04em; white-space: nowrap;
+  transition: color 0.2s;
+}
+.crp-group-cafe-link:hover { color: var(--c-deep); }
+
+/* ── EMPTY STATE ── */
+.crp-reg-empty {
+  max-width: 1100px; margin: 0 auto;
+  background: var(--c-white); border: 1px dashed var(--c-border);
+  border-radius: 16px; padding: 64px 32px; text-align: center;
+}
+.crp-reg-empty-icon { font-size: 36px; margin-bottom: 16px; opacity: 0.45; }
+.crp-reg-empty-title { font-family: var(--f-serif); font-size: 20px; color: var(--c-deep); margin-bottom: 10px; }
+.crp-reg-empty-desc { font-size: 14px; color: var(--c-muted); line-height: 1.75; }
+
+/* ── CONTACT FOOTER BAR ── */
+.crp-contact-bar {
+  background: var(--c-deep);
+  padding: 36px 48px;
+  margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw;
+}
+.crp-contact-bar-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 32px;
+  flex-wrap: wrap;
+}
+.crp-contact-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5); margin-bottom: 6px;
+}
+.crp-contact-info {
+  font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.7;
+}
+.crp-contact-info strong { color: #fff; }
+.crp-contact-divider { width: 1px; height: 44px; background: rgba(255,255,255,0.15); flex-shrink: 0; }
+.crp-btn-contact {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 32px; background: var(--c-red); color: #fff;
+  border-radius: 10px; font-size: 14px; font-weight: 700; font-family: var(--f-sans);
+  letter-spacing: 0.03em; white-space: nowrap;
+  transition: background 0.22s, transform 0.18s;
+}
+.crp-btn-contact:hover { background: var(--c-red-dk); transform: translateY(-2px); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 960px) {
+  .crp-reg-grid { grid-template-columns: 1fr 1fr; }
+  .crp-reg-header { flex-direction: column; align-items: flex-start; }
+  .crp-group-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .crp-reg-header-note { text-align: left; max-width: 100%; }
+}
+@media (max-width: 640px) {
+  .crp-hero { padding: 100px 24px 56px; }
+  .crp-reg-section { padding: 48px 20px 72px; }
+  .crp-reg-grid { grid-template-columns: 1fr; }
+  .crp-contact-bar { padding: 28px 24px; }
+  .crp-contact-divider { display: none; }
+}
+
+/* ══ REGISTRATION MODAL ══ */
+.crp-reg-modal {
+  position: fixed; inset: 0; z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.crp-reg-modal[hidden] { display: none; }
+
+.crp-modal-overlay {
+  position: absolute; inset: 0;
+  background: rgba(5,18,28,0.72);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+  animation: crpFadeIn 0.25s ease;
+}
+@keyframes crpFadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes crpSlideUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+
+.crp-modal-card {
+  position: relative; z-index: 1;
+  background: #fff; border-radius: 20px;
+  width: 100%; max-width: 680px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 32px 80px rgba(0,20,40,0.28);
+  animation: crpSlideUp 0.32s cubic-bezier(0.22,1,0.36,1);
+}
+.crp-modal-close {
+  position: absolute; top: 20px; right: 24px; z-index: 2;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,0.18);
+  font-size: 18px; line-height: 1; cursor: pointer;
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.crp-modal-close:hover { background: rgba(255,255,255,0.32); }
+
+/* Modal header */
+.crp-modal-head {
+  padding: 36px 44px 28px;
+  background: linear-gradient(135deg, var(--c-deep) 0%, #015a7a 100%);
+  border-radius: 20px 20px 0 0;
+  position: relative; overflow: hidden;
+}
+.crp-modal-head::after {
+  content: ''; position: absolute; top: -60px; right: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(115,209,245,0.08); pointer-events: none;
+}
+.crp-modal-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--c-light); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.crp-modal-badge::before { content:''; width:14px; height:1.5px; background:var(--c-light); flex-shrink:0; }
+.crp-modal-title {
+  font-family: var(--f-serif); font-size: clamp(20px,3vw,26px); font-weight:700;
+  color: #fff; line-height:1.2; margin-bottom: 20px; word-break: keep-all;
+}
+.crp-modal-cap-info {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 7px;
+}
+.crp-modal-cap-info strong { font-size: 15px; font-weight: 700; color: #fff; }
+.crp-modal-cap-track {
+  height: 8px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden;
+}
+.crp-modal-cap-fill {
+  height: 100%; border-radius: 999px; width: 0%;
+  background: linear-gradient(90deg, var(--c-light), #a8e8ff);
+  transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+}
+.crp-modal-cap-fill.warn { background: linear-gradient(90deg, #fbbf24, #fde68a); }
+.crp-modal-cap-fill.full { background: linear-gradient(90deg, #f87171, #fca5a5); }
+
+/* ── TYPE TABS ── */
+.crp-type-tabs {
+  display: flex; gap: 10px;
+  background: rgba(0,79,104,0.05);
+  padding: 10px 36px;
+  border-bottom: 1px solid rgba(0,79,104,0.10);
+}
+.crp-type-tab {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 5px;
+  padding: 16px 12px;
+  background: transparent; border: 1.5px solid transparent;
+  border-radius: 12px; cursor: pointer; font-family: var(--f-sans);
+  transition: all 0.22s ease;
+}
+.crp-type-tab:hover { background: rgba(255,255,255,0.6); border-color: rgba(0,79,104,0.12); }
+.crp-type-tab.active {
+  background: #fff;
+  border-color: rgba(0,79,104,0.16);
+  box-shadow: 0 2px 10px rgba(0,20,40,0.10);
+}
+.crp-type-tab svg { flex-shrink: 0; width: 22px; height: 22px; color: var(--c-muted); transition: color 0.2s; }
+.crp-type-tab.active svg { color: var(--c-deep); }
+.crp-tab-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--c-muted); letter-spacing: 0.01em; line-height: 1;
+  transition: color 0.2s;
+}
+.crp-type-tab.active .crp-tab-title { color: var(--c-deep); }
+.crp-tab-sub {
+  font-size: 11px; font-weight: 400;
+  color: rgba(107,136,150,0.8); line-height: 1; transition: color 0.2s;
+}
+.crp-type-tab.active .crp-tab-sub { color: var(--c-mid); }
+
+/* ── FORM STYLES ── */
+.crp-form-wrap { padding: 28px 44px 44px; }
+.crp-form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0;
+}
+.crp-field { display: flex; flex-direction: column; gap: 6px; }
+.crp-field--full { grid-column: 1 / -1; }
+.crp-field label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--c-mid);
+}
+.crp-field label .req { color: var(--c-red); margin-left: 2px; }
+.crp-field input, .crp-field select, .crp-field textarea {
+  border: 1.5px solid rgba(0,79,104,0.13); border-radius: 8px;
+  padding: 12px 14px; font-size: 14px; font-family: var(--f-sans);
+  color: var(--c-text); background: #f7fbfd;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  outline: none; width: 100%; resize: vertical;
+}
+.crp-field input::placeholder, .crp-field textarea::placeholder { color: #afc2cc; }
+.crp-field input:focus, .crp-field select:focus, .crp-field textarea:focus {
+  border-color: var(--c-mid); background: #fff;
+  box-shadow: 0 0 0 3px rgba(0,126,161,0.09);
+}
+.crp-field input.error, .crp-field select.error { border-color: var(--c-red); }
+
+/* Form section dividers */
+.crp-form-section {
+  margin-top: 22px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+}
+.crp-form-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--c-muted); white-space: nowrap; flex-shrink: 0;
+  padding-left: 8px; border-left: 2px solid var(--c-red); line-height: 1.2;
+}
+.crp-form-section-line {
+  flex: 1; border: none; border-top: 1px solid rgba(0,79,104,0.16);
+  margin: 0; padding: 0; height: 0; background: none; display: block;
+}
+.crp-form-section:first-child { margin-top: 8px; }
+
+/* Group notice */
+.crp-group-notice {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: rgba(0,79,104,0.05);
+  border: 1px solid rgba(0,79,104,0.13);
+  border-radius: 10px; padding: 16px 18px; margin-bottom: 20px;
+}
+.crp-group-notice-icon { font-size: 20px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+.crp-group-notice strong {
+  display: block; font-size: 13px; font-weight: 700;
+  color: var(--c-deep); margin-bottom: 6px;
+}
+.crp-group-notice p { font-size: 12.5px; color: var(--c-sub); line-height: 1.75; word-break: keep-all; margin: 0; }
+.crp-group-notice em { color: var(--c-mid); font-style: normal; font-weight: 600; }
+
+/* Consent */
+.crp-consent {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 16px; background: rgba(0,79,104,0.035);
+  border-radius: 8px; border: 1px solid rgba(0,79,104,0.09);
+  margin-top: 20px; margin-bottom: 16px; cursor: pointer;
+}
+.crp-consent input[type=checkbox] { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: var(--c-deep); }
+.crp-consent label { font-size: 12px; line-height: 1.65; color: var(--c-sub); cursor: pointer; }
+.crp-consent label strong { color: var(--c-deep); }
+
+/* Submit button */
+.crp-submit {
+  width: 100%; padding: 20px;
+  background: var(--c-red); color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 700; font-family: var(--f-sans);
+  letter-spacing: 0.03em; cursor: pointer;
+  transition: background 0.22s, transform 0.18s, box-shadow 0.22s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 14px rgba(196,42,54,0.22);
+}
+.crp-submit:hover:not(:disabled) { background: var(--c-red-dk); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(196,42,54,0.35); }
+.crp-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+.crp-submit .spinner {
+  display: none; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+  border-radius: 50%; animation: crpSpin 0.7s linear infinite;
+}
+.crp-submit.loading .spinner { display: block; }
+.crp-submit.loading .crp-submit-label { opacity: 0.7; }
+@keyframes crpSpin { to { transform: rotate(360deg); } }
+
+/* Error / success */
+.crp-error-msg {
+  margin-top: 12px; padding: 12px 16px;
+  background: rgba(196,42,54,0.07); border: 1px solid rgba(196,42,54,0.18);
+  border-radius: 8px; font-size: 13px; color: var(--c-red); text-align: center;
+}
+.crp-success-wrap { padding: 52px 44px; text-align: center; }
+.crp-success-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(22,163,74,0.1); border: 2px solid rgba(22,163,74,0.25);
+  color: #16a34a; font-size: 28px;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+}
+.crp-success-title { font-family: var(--f-serif); font-size: 24px; font-weight: 700; color: var(--c-deep); margin-bottom: 10px; }
+.crp-success-sub { font-size: 14px; line-height: 1.75; color: var(--c-muted); margin-bottom: 8px; word-break: keep-all; }
+.crp-success-count { font-size: 13px; color: var(--c-mid); font-weight: 600; margin-bottom: 20px; }
+.crp-success-contact {
+  margin: 0 0 24px; font-size: 12px; color: var(--c-muted);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.crp-success-contact strong { color: var(--c-sub); font-weight: 500; font-size: 13px; }
+.crp-success-close {
+  display: inline-flex; padding: 12px 32px; background: var(--c-deep); color: #fff;
+  border: none; border-radius: 8px; font-size: 14px; font-weight: 700; font-family: var(--f-sans);
+  cursor: pointer; transition: background 0.2s;
+}
+.crp-success-close:hover { background: #015a7a; }
+
+/* Mobile modal */
+@media (max-width: 600px) {
+  .crp-reg-modal { padding: 12px; }
+  .crp-modal-head { padding: 28px 24px 22px; }
+  .crp-type-tabs { padding: 10px 20px; gap: 8px; }
+  .crp-type-tab { padding: 12px 8px; }
+  .crp-tab-title { font-size: 12px; }
+  .crp-tab-sub { display: none; }
+  .crp-form-wrap { padding: 20px 24px 36px; }
+  .crp-form-grid { grid-template-columns: 1fr; }
+  .crp-success-wrap { padding: 40px 24px; }
+}
+</style>
+
+<div class="crp">
+
+  <!-- ── PAGE HERO ── -->
+  <div class="crp-hero">
+    <div class="crp-hero-inner">
+      <div class="crp-hero-badge">
+        <span class="wl-ko">WOLKO 캠프사역 · 캠프 신청</span>
+        <span class="wl-en">WOLKO Camp Ministry · Registration</span>
+      </div>
+      <h1 class="crp-hero-title">
+        <span class="wl-ko">지금 신청 가능한<br><em>캠프 일정</em></span>
+        <span class="wl-en">Currently Open<br><em>Camp Sessions</em></span>
+      </h1>
+      <p class="crp-hero-sub">
+        <span class="wl-ko">복음을 듣고 삶의 방향을 다시 세우는 월코 캠프에 신청해 주세요. 캠프 일정은 시즌에 따라 업데이트됩니다.</span>
+        <span class="wl-en">Register for a WOLKO Camp where you'll hear the Gospel and find new direction for your life. Camp schedules are updated each season.</span>
+      </p>
+      <a href="/camp" class="crp-hero-back">
+        <span class="wl-ko">← 캠프 소개 보기</span>
+        <span class="wl-en">← About Camp</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── REGISTRATION SECTION ── -->
+  <section class="crp-reg-section">
+    <div class="crp-reg-header reveal">
+      <div class="crp-reg-header-text">
+        <div class="section-label">
+          <span class="wl-ko">신청 접수</span>
+          <span class="wl-en">Registration</span>
+        </div>
+        <h2 class="section-title" style="margin-top:10px;">
+          <span class="wl-ko">캠프 신청서</span>
+          <span class="wl-en">Camp Registration</span>
+        </h2>
+        <p class="section-desc">
+          <span class="wl-ko">아래 캠프 카드에서 신청하실 캠프를 선택하신 후, '신청하기' 버튼을 눌러 신청서를 작성해 주세요.</span>
+          <span class="wl-en">Select the camp you'd like to register for, then click "Register Now" to fill out the application form.</span>
+        </p>
+      </div>
+      <p class="crp-reg-header-note">
+        <span class="wl-ko">네이버 카페에서도<br>최신 캠프 소식을 확인하세요.</span>
+        <span class="wl-en">Check our Naver Cafe<br>for the latest camp news.</span>
+      </p>
+    </div>
+
+    {schedules.length > 0 ? (
+      <>
+        {/* ── 월코 내륙 캠프 ── */}
+        {inlandCamps.length > 0 && (
+          <div class="crp-group reveal">
+            <div class="crp-group-header">
+              <div class="crp-group-tag">
+                <span class="wl-ko">월코센터 · 평택</span>
+                <span class="wl-en">WOLKO Center · Pyeongtaek</span>
+              </div>
+              <a href="https://cafe.naver.com/wolkojrcamp" target="_blank" rel="noopener" class="crp-group-cafe-link">
+                <span class="wl-ko">월코 캠프 네이버 카페 →</span>
+                <span class="wl-en">WOLKO Camp — Naver Cafe →</span>
+              </a>
+            </div>
+            <div class="crp-reg-grid">
+              {inlandCamps.map((s) => {
+                const d = s.data;
+                const type = typeLabel[d.camp_type] ?? { ko: d.camp_type, en: d.camp_type };
+                const st = statusLabel[d.status] ?? { ko: d.status, en: d.status, cls: '' };
+                const canRegister = d.status === 'open';
+                return (
+                  <div class="crp-reg-card">
+                    <div class="crp-reg-card-top">
+                      <span class="crp-type-badge">
+                        <span class="wl-ko">{type.ko}</span>
+                        <span class="wl-en">{type.en}</span>
+                      </span>
+                      <span class={`crp-status-badge crp-${st.cls}`}>
+                        <span class="wl-ko">{st.ko}</span>
+                        <span class="wl-en">{st.en}</span>
+                      </span>
+                    </div>
+                    <h3 class="crp-reg-title">
+                      <span class="wl-ko">{d.title_ko}</span>
+                      <span class="wl-en">{d.title_en}</span>
+                    </h3>
+                    <div class="crp-reg-meta">
+                      <div class="crp-reg-meta-row">
+                        <span class="crp-reg-meta-label"><span class="wl-ko">일정</span><span class="wl-en">Dates</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko">{d.date_ko}</span><span class="wl-en">{d.date_en}</span></span>
+                      </div>
+                      <div class="crp-reg-meta-row">
+                        <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko">{d.target_ko}</span><span class="wl-en">{d.target_en}</span></span>
+                      </div>
+                      {(d.deadline_ko || d.deadline_en) && (
+                        <div class="crp-reg-meta-row">
+                          <span class="crp-reg-meta-label"><span class="wl-ko">신청 시작</span><span class="wl-en">Opens</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko">{d.deadline_ko}</span><span class="wl-en">{d.deadline_en}</span></span>
+                        </div>
+                      )}
+                      {(d.price_ko || d.price_en) && (
+                        <div class="crp-reg-meta-row">
+                          <span class="crp-reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko">{d.price_ko}</span><span class="wl-en">{d.price_en}</span></span>
+                        </div>
+                      )}
+                    </div>
+                    {(d.notes_ko || d.notes_en) && (
+                      <p class="crp-reg-notes">
+                        <span class="wl-ko">{d.notes_ko}</span>
+                        <span class="wl-en">{d.notes_en}</span>
+                      </p>
+                    )}
+                    {canRegister && !d.use_external_form && (
+                      <div class="crp-cap" data-cap-id={s.slug}>
+                        <div class="crp-cap-info">
+                          <span class="wl-ko">신청 현황</span>
+                          <span class="wl-en">Spots Filled</span>
+                          <strong>
+                            <span class="crp-cap-count">—</span>
+                            {' / '}{d.capacity ?? 40}
+                            <span class="wl-ko">명</span>
+                          </strong>
+                        </div>
+                        <div class="crp-cap-track">
+                          <div class="crp-cap-fill"></div>
+                        </div>
+                      </div>
+                    )}
+                    {canRegister && d.use_external_form ? (
+                      <a href={d.registration_url} target="_blank" rel="noopener" class="crp-reg-btn crp-reg-btn-primary">
+                        <span class="wl-ko">네이버 카페에서 신청하기 →</span>
+                        <span class="wl-en">Register via Naver Cafe →</span>
+                      </a>
+                    ) : canRegister ? (
+                      <button
+                        class="crp-reg-btn crp-reg-btn-primary crp-open-btn"
+                        data-camp-id={s.slug}
+                        data-camp-name-ko={d.title_ko}
+                        data-camp-name-en={d.title_en}
+                        data-capacity={d.capacity ?? 40}
+                      >
+                        <span class="wl-ko">신청하기 →</span>
+                        <span class="wl-en">Register Now →</span>
+                      </button>
+                    ) : d.status === 'upcoming' && d.registration_url ? (
+                      <a href={d.registration_url} target="_blank" rel="noopener" class="crp-reg-btn crp-reg-btn-outline">
+                        <span class="wl-ko">카페에서 소식 받기 →</span>
+                        <span class="wl-en">Follow for Updates →</span>
+                      </a>
+                    ) : d.status === 'upcoming' ? (
+                      <span class="crp-reg-btn crp-reg-btn-disabled">
+                        <span class="wl-ko">신청 일정 공지 예정</span>
+                        <span class="wl-en">Registration Coming Soon</span>
+                      </span>
+                    ) : (
+                      <span class="crp-reg-btn crp-reg-btn-disabled">
+                        <span class="wl-ko">{d.status === 'full' ? '정원이 마감되었습니다' : '신청이 마감되었습니다'}</span>
+                        <span class="wl-en">{d.status === 'full' ? 'Camp is Full' : 'Registration Closed'}</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── 제주 캠프 ── */}
+        {jejuCamps.length > 0 && (
+          <div class="crp-group reveal">
+            <div class="crp-group-header">
+              <div class="crp-group-tag">
+                <span class="wl-ko">제주 월비캠퍼스</span>
+                <span class="wl-en">WOLBI Jeju Campus</span>
+              </div>
+              <a href="https://cafe.naver.com/wolcamp" target="_blank" rel="noopener" class="crp-group-cafe-link">
+                <span class="wl-ko">제주 캠프 네이버 카페 →</span>
+                <span class="wl-en">Jeju Camp — Naver Cafe →</span>
+              </a>
+            </div>
+            <div class="crp-reg-grid">
+              {jejuCamps.map((s) => {
+                const d = s.data;
+                const type = typeLabel[d.camp_type] ?? { ko: d.camp_type, en: d.camp_type };
+                const st = statusLabel[d.status] ?? { ko: d.status, en: d.status, cls: '' };
+                const canRegister = d.status === 'open' && d.registration_url;
+                return (
+                  <div class="crp-reg-card">
+                    <div class="crp-reg-card-top">
+                      <span class="crp-type-badge">
+                        <span class="wl-ko">{type.ko}</span>
+                        <span class="wl-en">{type.en}</span>
+                      </span>
+                      <span class={`crp-status-badge crp-${st.cls}`}>
+                        <span class="wl-ko">{st.ko}</span>
+                        <span class="wl-en">{st.en}</span>
+                      </span>
+                    </div>
+                    <h3 class="crp-reg-title">
+                      <span class="wl-ko">{d.title_ko}</span>
+                      <span class="wl-en">{d.title_en}</span>
+                    </h3>
+                    <div class="crp-reg-meta">
+                      <div class="crp-reg-meta-row">
+                        <span class="crp-reg-meta-label"><span class="wl-ko">일정</span><span class="wl-en">Dates</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko">{d.date_ko}</span><span class="wl-en">{d.date_en}</span></span>
+                      </div>
+                      <div class="crp-reg-meta-row">
+                        <span class="crp-reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
+                        <span class="crp-reg-meta-value"><span class="wl-ko">{d.target_ko}</span><span class="wl-en">{d.target_en}</span></span>
+                      </div>
+                      {(d.deadline_ko || d.deadline_en) && (
+                        <div class="crp-reg-meta-row">
+                          <span class="crp-reg-meta-label"><span class="wl-ko">마감일</span><span class="wl-en">Deadline</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko">{d.deadline_ko}</span><span class="wl-en">{d.deadline_en}</span></span>
+                        </div>
+                      )}
+                      {(d.price_ko || d.price_en) && (
+                        <div class="crp-reg-meta-row">
+                          <span class="crp-reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
+                          <span class="crp-reg-meta-value"><span class="wl-ko">{d.price_ko}</span><span class="wl-en">{d.price_en}</span></span>
+                        </div>
+                      )}
+                    </div>
+                    {(d.notes_ko || d.notes_en) && (
+                      <p class="crp-reg-notes">
+                        <span class="wl-ko">{d.notes_ko}</span>
+                        <span class="wl-en">{d.notes_en}</span>
+                      </p>
+                    )}
+                    {canRegister ? (
+                      <a href={d.registration_url} target="_blank" rel="noopener" class="crp-reg-btn crp-reg-btn-primary">
+                        <span class="wl-ko">네이버 카페에서 신청하기 →</span>
+                        <span class="wl-en">Register via Naver Cafe →</span>
+                      </a>
+                    ) : d.status === 'upcoming' ? (
+                      <span class="crp-reg-btn crp-reg-btn-disabled">
+                        <span class="wl-ko">신청 일정 공지 예정</span>
+                        <span class="wl-en">Registration Coming Soon</span>
+                      </span>
+                    ) : (
+                      <span class="crp-reg-btn crp-reg-btn-disabled">
+                        <span class="wl-ko">{d.status === 'full' ? '정원이 마감되었습니다' : '신청이 마감되었습니다'}</span>
+                        <span class="wl-en">{d.status === 'full' ? 'Camp is Full' : 'Registration Closed'}</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </>
+    ) : (
+      <div class="crp-reg-empty reveal">
+        <div class="crp-reg-empty-icon">✝</div>
+        <h3 class="crp-reg-empty-title">
+          <span class="wl-ko">현재 진행 중인 캠프 신청이 없습니다</span>
+          <span class="wl-en">No Camp Registrations Currently Open</span>
+        </h3>
+        <p class="crp-reg-empty-desc">
+          <span class="wl-ko">다음 캠프 일정은 추후 공지됩니다. 네이버 카페를 통해 최신 소식을 받아보세요.</span>
+          <span class="wl-en">The next camp schedule will be announced soon. Follow us on Naver Cafe for updates.</span>
+        </p>
+      </div>
+    )}
+  </section>
+
+  <!-- ── CONTACT FOOTER BAR ── -->
+  <div class="crp-contact-bar">
+    <div class="crp-contact-bar-inner">
+      <div>
+        <div class="crp-contact-label wl-ko">캠프 문의</div>
+        <div class="crp-contact-label wl-en">Camp Inquiry</div>
+        <div class="crp-contact-info wl-ko">한국생명의말씀협회 &nbsp;|&nbsp; <strong>TEL</strong> 031-611-9216 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</div>
+        <div class="crp-contact-info wl-en">Word of Life Korea &nbsp;|&nbsp; <strong>TEL</strong> 031-611-9216 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</div>
+      </div>
+      <div class="crp-contact-divider"></div>
+      <a href="/contact" class="crp-btn-contact">
+        <span class="wl-ko">캠프 참가 문의 →</span>
+        <span class="wl-en">Camp Inquiry →</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── 신청 모달 ── -->
+  <div id="crpModal" class="crp-reg-modal" hidden aria-modal="true" role="dialog">
+    <div class="crp-modal-overlay" id="crpOverlay"></div>
+    <div class="crp-modal-card">
+      <button class="crp-modal-close" id="crpCloseBtn" aria-label="닫기">✕</button>
+
+      <!-- 헤더 -->
+      <div class="crp-modal-head">
+        <div class="crp-modal-badge">
+          <span class="wl-ko">캠프 신청</span><span class="wl-en">Camp Registration</span>
+        </div>
+        <div class="crp-modal-title" id="crpModalTitle"></div>
+        <div class="crp-modal-cap-info">
+          <span class="wl-ko">현재 신청 현황</span><span class="wl-en">Current Registration</span>
+          <strong id="crpModalCapLabel">— / —</strong>
+        </div>
+        <div class="crp-modal-cap-track">
+          <div class="crp-modal-cap-fill" id="crpModalCapFill"></div>
+        </div>
+      </div>
+
+      <!-- 신청 유형 탭 -->
+      <div class="crp-type-tabs">
+        <button class="crp-type-tab active" id="crpTabIndividual" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <span class="crp-tab-title wl-ko">개인 신청</span>
+          <span class="crp-tab-title wl-en">Individual</span>
+          <span class="crp-tab-sub wl-ko">1인 기준 신청</span>
+          <span class="crp-tab-sub wl-en">Single registration</span>
+        </button>
+        <button class="crp-type-tab" id="crpTabGroup" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="9" cy="8" r="3.5"/><circle cx="16" cy="9" r="2.5"/>
+            <path d="M2 20c0-3.3 3-6 7-6s7 2.7 7 6"/><path d="M18 14c2.5.5 4 2 4 4"/>
+          </svg>
+          <span class="crp-tab-title wl-ko">2인 이상 신청</span>
+          <span class="crp-tab-title wl-en">Group (2+)</span>
+          <span class="crp-tab-sub wl-ko">가족 · 교회 단체</span>
+          <span class="crp-tab-sub wl-en">Family or church group</span>
+        </button>
+      </div>
+
+      <!-- 폼 -->
+      <div class="crp-form-wrap" id="crpFormWrap">
+        <form id="crpForm" novalidate>
+          <input type="hidden" id="crpCampId">
+          <input type="hidden" id="crpCampCap">
+          <input type="hidden" id="crpType" value="individual">
+
+          <!-- 개인 신청 섹션 -->
+          <div id="crpSectionIndividual">
+            <div class="crp-form-section">
+              <span class="crp-form-section-label"><span class="wl-ko">필수 정보</span><span class="wl-en">Required</span></span>
+              <hr class="crp-form-section-line">
+            </div>
+            <div class="crp-form-grid">
+              <div class="crp-field">
+                <label><span class="wl-ko">이름</span><span class="wl-en">Name</span> <span class="req">*</span></label>
+                <input id="crpName" name="name" placeholder="홍길동">
+              </div>
+              <div class="crp-field">
+                <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
+                <input id="crpPhone" name="phone" placeholder="010-0000-0000">
+              </div>
+              <div class="crp-field">
+                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
+                <input id="crpEmail" name="email" type="email" placeholder="email@example.com">
+              </div>
+              <div class="crp-field">
+                <label><span class="wl-ko">학년</span><span class="wl-en">Grade</span> <span class="req">*</span></label>
+                <select id="crpGrade" name="grade">
+                  <option value="">— 선택 / Select —</option>
+                  <optgroup label="초등 / Elementary">
+                    <option value="초4">초4 (4th Grade)</option>
+                    <option value="초5">초5 (5th Grade)</option>
+                    <option value="초6">초6 (6th Grade)</option>
+                  </optgroup>
+                  <optgroup label="중학 / Middle">
+                    <option value="중1">중1 (7th Grade)</option>
+                    <option value="중2">중2 (8th Grade)</option>
+                    <option value="중3">중3 (9th Grade)</option>
+                  </optgroup>
+                  <optgroup label="고등 / High">
+                    <option value="고1">고1 (10th Grade)</option>
+                    <option value="고2">고2 (11th Grade)</option>
+                    <option value="고3">고3 (12th Grade)</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+            <div class="crp-form-section">
+              <span class="crp-form-section-label"><span class="wl-ko">선택 정보</span><span class="wl-en">Optional</span></span>
+              <hr class="crp-form-section-line">
+            </div>
+            <div class="crp-form-grid">
+              <div class="crp-field">
+                <label><span class="wl-ko">소속 교회</span><span class="wl-en">Church</span></label>
+                <input id="crpChurch" name="church" placeholder="교회 이름">
+              </div>
+              <div class="crp-field">
+                <label><span class="wl-ko">학교</span><span class="wl-en">School</span></label>
+                <input id="crpSchool" name="school" placeholder="학교 이름">
+              </div>
+              <div class="crp-field crp-field--full">
+                <label><span class="wl-ko">비상연락처</span><span class="wl-en">Emergency Contact</span></label>
+                <input id="crpEmergency" name="emergency" placeholder="보호자 이름 및 연락처">
+              </div>
+              <div class="crp-field crp-field--full">
+                <label><span class="wl-ko">특이사항</span><span class="wl-en">Special Notes</span></label>
+                <textarea id="crpNotes" name="notes" rows="3" placeholder="알레르기, 건강 상태, 기타 전달사항"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- 단체 신청 섹션 -->
+          <div id="crpSectionGroup" hidden>
+            <div class="crp-group-notice">
+              <div class="crp-group-notice-icon">📋</div>
+              <div>
+                <strong class="wl-ko">단체 신청 안내</strong>
+                <strong class="wl-en">Group Registration Notice</strong>
+                <p class="wl-ko">단체 신청 접수 후, <em>wolkorea1@gmail.com</em>으로 개인별 신청서를 보내주시면 최종 확인 처리해 드립니다.</p>
+                <p class="wl-en">After submitting group registration, please send individual registration forms to <em>wolkorea1@gmail.com</em> for final confirmation.</p>
+              </div>
+            </div>
+            <div class="crp-form-section">
+              <span class="crp-form-section-label"><span class="wl-ko">담당자 정보</span><span class="wl-en">Contact Person</span></span>
+              <hr class="crp-form-section-line">
+            </div>
+            <div class="crp-form-grid">
+              <div class="crp-field">
+                <label><span class="wl-ko">담당자 이름</span><span class="wl-en">Contact Name</span> <span class="req">*</span></label>
+                <input id="crpGName" name="gName" placeholder="홍길동">
+              </div>
+              <div class="crp-field">
+                <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
+                <input id="crpGPhone" name="gPhone" placeholder="010-0000-0000">
+              </div>
+              <div class="crp-field">
+                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
+                <input id="crpGEmail" name="gEmail" type="email" placeholder="email@example.com">
+              </div>
+              <div class="crp-field">
+                <label><span class="wl-ko">신청 인원</span><span class="wl-en">Group Size</span> <span class="req">*</span></label>
+                <select id="crpGCount" name="gCount">
+                  <option value="">— 선택 / Select —</option>
+                  {Array.from({length: 49}, (_, i) => i + 2).map(n => (
+                    <option value={n}>{n}명 ({n} people)</option>
+                  ))}
+                </select>
+              </div>
+              <div class="crp-field crp-field--full">
+                <label><span class="wl-ko">소속 교회 / 단체</span><span class="wl-en">Church / Organization</span> <span class="req">*</span></label>
+                <input id="crpGOrg" name="gOrg" placeholder="교회 또는 단체 이름">
+                <p style="font-size:12px; color:#6b8896; margin-top:5px; line-height:1.6;">
+                  <span class="wl-ko">💡 개인 다자녀의 경우 소속 단체 없이 개인 이름으로 입력하셔도 됩니다.</span>
+                  <span class="wl-en">💡 For families with multiple children, you may enter your personal name without an organization.</span>
+                </p>
+              </div>
+              <div class="crp-field crp-field--full">
+                <label><span class="wl-ko">전달 사항</span><span class="wl-en">Notes</span></label>
+                <textarea id="crpGNotes" name="gNotes" rows="3" placeholder="캠프 관련 문의 또는 요청 사항"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- 개인정보 동의 -->
+          <label class="crp-consent">
+            <input type="checkbox" id="crpConsent">
+            <label for="crpConsent">
+              <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
+              <strong class="wl-en">I agree to the collection and use of personal information.</strong>
+              <br>
+              <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일 &nbsp;·&nbsp; 목적: 캠프 신청 접수 및 안내 &nbsp;·&nbsp; 보유기간: 캠프 종료 후 요청 시까지</span>
+              <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email &nbsp;·&nbsp; Purpose: registration processing &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
+            </label>
+          </label>
+
+          <button type="submit" class="crp-submit" id="crpSubmitBtn">
+            <div class="spinner"></div>
+            <span class="crp-submit-label">
+              <span class="wl-ko">신청 완료하기</span>
+              <span class="wl-en">Submit Registration</span>
+            </span>
+          </button>
+          <div class="crp-error-msg" id="crpErrorMsg" hidden></div>
+        </form>
+      </div>
+
+      <!-- 성공 화면 -->
+      <div class="crp-success-wrap" id="crpSuccessWrap" hidden>
+        <div class="crp-success-icon">✓</div>
+        <div class="crp-success-title">
+          <span class="wl-ko">신청이 완료되었습니다!</span>
+          <span class="wl-en">Registration Complete!</span>
+        </div>
+        <p class="crp-success-sub" id="crpSuccessMsg"></p>
+        <p class="crp-success-count" id="crpSuccessCount"></p>
+        <div class="crp-success-contact">
+          <span class="wl-ko">추가 문의</span><span class="wl-en">Questions</span>
+          <strong>031-611-9216 &nbsp;·&nbsp; wolkorea1@gmail.com</strong>
+        </div>
+        <button class="crp-success-close" id="crpSuccessClose">
+          <span class="wl-ko">닫기</span><span class="wl-en">Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.crp -->
+
+<script>
+/* ── Reveal 애니메이션 ── */
+var obs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.10, rootMargin: '0px 0px -30px 0px' });
+document.querySelectorAll('.crp .reveal').forEach(function(el) { obs.observe(el); });
+
+/* ── 언어 감지 헬퍼 ── */
+function crpIsEn() {
+  var el = document.getElementById('lang-root');
+  return !!(el && el.classList.contains('lang-en'));
+}
+
+/* ── 정원 바 업데이트 ── */
+function updateCrpCapBar(el, count, capacity) {
+  var fill = el.querySelector('.crp-cap-fill');
+  var countEl = el.querySelector('.crp-cap-count');
+  var pct = capacity > 0 ? Math.min((count / capacity) * 100, 100) : 0;
+  if (countEl) countEl.textContent = count;
+  if (fill) {
+    fill.style.width = pct + '%';
+    fill.className = 'crp-cap-fill' + (pct >= 100 ? ' full' : pct >= 75 ? ' warn' : '');
+  }
+}
+
+async function loadCrpCapacities() {
+  var cards = document.querySelectorAll('[data-cap-id]');
+  await Promise.all(Array.from(cards).map(async function(el) {
+    var campId = el.dataset.capId;
+    var btn = document.querySelector('.crp-open-btn[data-camp-id="' + campId + '"]');
+    var cap = btn ? parseInt(btn.dataset.capacity) || 40 : 40;
+    try {
+      var res = await fetch('/api/capacity/' + campId);
+      if (res.ok) {
+        var data = await res.json();
+        updateCrpCapBar(el, data.count, cap);
+        if (data.count >= cap && btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="wl-ko">정원 마감</span><span class="wl-en">Full</span>';
+          btn.style.background = 'rgba(100,116,139,0.15)';
+          btn.style.color = '#64748b';
+          btn.style.cursor = 'default';
+        }
+      }
+    } catch(e) { /* 조용히 처리 */ }
+  }));
+}
+loadCrpCapacities();
+
+/* ── 모달 DOM 참조 ── */
+var modal = document.getElementById('crpModal');
+var modalTitle = document.getElementById('crpModalTitle');
+var modalCapLabel = document.getElementById('crpModalCapLabel');
+var modalCapFill = document.getElementById('crpModalCapFill');
+var campIdInput = document.getElementById('crpCampId');
+var campCapInput = document.getElementById('crpCampCap');
+var regTypeInput = document.getElementById('crpType');
+var formWrap = document.getElementById('crpFormWrap');
+var successWrap = document.getElementById('crpSuccessWrap');
+var errorMsg = document.getElementById('crpErrorMsg');
+var submitBtn = document.getElementById('crpSubmitBtn');
+var sectionIndividual = document.getElementById('crpSectionIndividual');
+var sectionGroup = document.getElementById('crpSectionGroup');
+var tabIndividual = document.getElementById('crpTabIndividual');
+var tabGroup = document.getElementById('crpTabGroup');
+
+/* ── 모달 정원 바 ── */
+function updateCrpModalCap(count, capacity) {
+  var pct = capacity > 0 ? Math.min((count / capacity) * 100, 100) : 0;
+  modalCapLabel.textContent = count + ' / ' + capacity + (crpIsEn() ? ' spots' : '명');
+  modalCapFill.style.width = pct + '%';
+  modalCapFill.className = 'crp-modal-cap-fill' + (pct >= 100 ? ' full' : pct >= 75 ? ' warn' : '');
+}
+
+/* ── 탭 전환 ── */
+function crpSwitchTab(type) {
+  regTypeInput.value = type;
+  if (type === 'individual') {
+    tabIndividual.classList.add('active');
+    tabGroup.classList.remove('active');
+    sectionIndividual.hidden = false;
+    sectionGroup.hidden = true;
+  } else {
+    tabGroup.classList.add('active');
+    tabIndividual.classList.remove('active');
+    sectionGroup.hidden = false;
+    sectionIndividual.hidden = true;
+  }
+  errorMsg.hidden = true;
+}
+tabIndividual.addEventListener('click', function() { crpSwitchTab('individual'); });
+tabGroup.addEventListener('click', function() { crpSwitchTab('group'); });
+
+/* ── 모달 열기 ── */
+document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
+  btn.addEventListener('click', async function() {
+    var campId = this.dataset.campId;
+    var nameKo = this.dataset.campNameKo;
+    var nameEn = this.dataset.campNameEn;
+    var capacity = parseInt(this.dataset.capacity) || 40;
+
+    campIdInput.value = campId;
+    campCapInput.value = capacity;
+    modalTitle.textContent = crpIsEn() ? nameEn : nameKo;
+
+    document.getElementById('crpForm').reset();
+    crpSwitchTab('individual');
+    formWrap.hidden = false;
+    successWrap.hidden = true;
+    errorMsg.hidden = true;
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+    updateCrpModalCap('…', capacity);
+
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+
+    try {
+      var res = await fetch('/api/capacity/' + campId);
+      if (res.ok) {
+        var data = await res.json();
+        updateCrpModalCap(data.count, capacity);
+        if (data.count >= capacity) {
+          submitBtn.disabled = true;
+          submitBtn.querySelector('.crp-submit-label').innerHTML =
+            '<span>정원이 마감되었습니다 / Registration Full</span>';
+        }
+      }
+    } catch(e) { updateCrpModalCap(0, capacity); }
+  });
+});
+
+/* ── 모달 닫기 ── */
+function closeCrpModal() {
+  modal.hidden = true;
+  document.body.style.overflow = '';
+}
+document.getElementById('crpOverlay').addEventListener('click', closeCrpModal);
+document.getElementById('crpCloseBtn').addEventListener('click', closeCrpModal);
+document.getElementById('crpSuccessClose').addEventListener('click', closeCrpModal);
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeCrpModal(); });
+
+/* ── 폼 제출 ── */
+document.getElementById('crpForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  errorMsg.hidden = true;
+
+  var consent = document.getElementById('crpConsent').checked;
+  if (!consent) {
+    errorMsg.textContent = '개인정보 수집 및 이용에 동의해 주세요. / Please agree to the privacy policy.';
+    errorMsg.hidden = false;
+    return;
+  }
+
+  var currentType = regTypeInput.value;
+  var payload;
+
+  if (currentType === 'group') {
+    var gName  = document.getElementById('crpGName').value.trim();
+    var gPhone = document.getElementById('crpGPhone').value.trim();
+    var gEmail = document.getElementById('crpGEmail').value.trim();
+    var gCount = document.getElementById('crpGCount').value;
+    var gOrg   = document.getElementById('crpGOrg').value.trim();
+
+    if (!gName || !gPhone || !gEmail || !gCount || !gOrg) {
+      errorMsg.textContent = '담당자 이름, 연락처, 이메일, 인원, 소속은 필수 항목입니다. / Contact name, phone, email, group size, and organization are required.';
+      errorMsg.hidden = false;
+      return;
+    }
+    payload = {
+      registrationType: 'group',
+      campId: campIdInput.value,
+      capacity: parseInt(campCapInput.value) || 40,
+      name: gName, phone: gPhone, email: gEmail,
+      groupCount: parseInt(gCount),
+      church: gOrg,
+      notes: document.getElementById('crpGNotes').value.trim(),
+    };
+  } else {
+    var name  = document.getElementById('crpName').value.trim();
+    var phone = document.getElementById('crpPhone').value.trim();
+    var email = document.getElementById('crpEmail').value.trim();
+    var grade = document.getElementById('crpGrade').value;
+
+    if (!name || !phone || !email || !grade) {
+      errorMsg.textContent = '이름, 연락처, 이메일, 학년은 필수 항목입니다. / Name, phone, email, and grade are required.';
+      errorMsg.hidden = false;
+      return;
+    }
+    payload = {
+      registrationType: 'individual',
+      campId: campIdInput.value,
+      capacity: parseInt(campCapInput.value) || 40,
+      name, phone, email, grade,
+      church: document.getElementById('crpChurch').value.trim(),
+      school: document.getElementById('crpSchool').value.trim(),
+      emergency: document.getElementById('crpEmergency').value.trim(),
+      notes: document.getElementById('crpNotes').value.trim(),
+    };
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.classList.add('loading');
+
+  try {
+    var res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    var data = await res.json();
+
+    if (res.ok && data.success) {
+      formWrap.hidden = true;
+      successWrap.hidden = false;
+
+      var successMsg = document.getElementById('crpSuccessMsg');
+      var successCount = document.getElementById('crpSuccessCount');
+      var isEn = crpIsEn();
+
+      if (currentType === 'group') {
+        var gc = payload.groupCount;
+        successMsg.innerHTML = isEn
+          ? 'Your group registration for <strong>' + gc + ' participants</strong> has been received. Please send individual registration forms to <strong>wolkorea1@gmail.com</strong> for final confirmation.'
+          : '<strong>' + gc + '명</strong>의 단체 신청이 접수되었습니다.<br><strong>wolkorea1@gmail.com</strong>으로 개인별 신청서를 보내주시면 최종 확인 처리해 드립니다.';
+        successCount.textContent = isEn
+          ? data.count + ' / ' + data.capacity + ' spots filled'
+          : data.count + ' / ' + data.capacity + '명 신청 완료';
+      } else {
+        successMsg.innerHTML = isEn
+          ? "Your registration has been received. We'll be in touch with further details soon."
+          : '신청이 성공적으로 접수되었습니다. 캠프 일정 및 안내 사항은 입력하신 이메일로 발송됩니다.';
+        successCount.textContent = isEn
+          ? data.count + ' / ' + data.capacity + ' spots filled'
+          : data.count + ' / ' + data.capacity + '명 신청 완료';
+      }
+
+      var capBar = document.querySelector('[data-cap-id="' + payload.campId + '"]');
+      if (capBar) updateCrpCapBar(capBar, data.count, data.capacity);
+      updateCrpModalCap(data.count, data.capacity);
+
+    } else {
+      errorMsg.textContent = data.error || '오류가 발생했습니다. 다시 시도해주세요. / An error occurred. Please try again.';
+      errorMsg.hidden = false;
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+    }
+  } catch(err) {
+    errorMsg.textContent = '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요. / Network error. Please try again.';
+    errorMsg.hidden = false;
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+  }
+});
+</script>
+
+</BaseLayout>
