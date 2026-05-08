@@ -562,22 +562,6 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     </div>
   </section>
 
-  <!-- Spouse Toggle Bar (단독 선교사 + 배우자 있을 때만 표시 — 부부 페이지는 항상 노출) -->
-  {d.show_spouse && !name2Ko && d.spouse_ko && (
-    <div class="mp-story-toggle-bar">
-      <div class="mp-story-toggle-bar-title">
-        <span class="wl-ko">선교사 이야기</span>
-        <span class="wl-en">Missionary Stories</span>
-      </div>
-      <button class={`mp-spouse-toggle${name2Ko ? ' active' : ''}`} id="spouseToggle" type="button">
-        <span class="mp-spouse-toggle-track">
-          <span class="mp-spouse-toggle-thumb"></span>
-        </span>
-        <span class="mp-spouse-toggle-text wl-ko">배우자 함께 보기</span>
-        <span class="mp-spouse-toggle-text wl-en">Show Spouse</span>
-      </button>
-    </div>
-  )}
 
   <!-- Story -->
   <section class="mp-story">
@@ -620,9 +604,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       </div>
     </div>
 
-    <!-- 블록 2 (부부 선교사용) — 배우자 토글로 제어 -->
+    <!-- 블록 2 (부부 선교사용) — 항상 표시 -->
     {hasBio2 && d.show_spouse && (
-      <div class={`mp-spouse-content${name2Ko ? '' : ' mp-spouse-hidden'}`} id="spouseContent">
+      <div class="mp-spouse-content" id="spouseContent">
         <hr class="mp-story-divider"/>
         <div class="mp-story-block mp-story-block--reverse mp-reveal">
           <div class="mp-story-text">
@@ -655,9 +639,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 
   </section>
 
-  <!-- 배우자 소개 카드 (bio_ko_2 없을 때) — 배우자 토글로 제어 -->
+  <!-- 배우자 소개 카드 (bio_ko_2 없을 때) — 항상 표시 -->
   {d.show_spouse && d.spouse_ko && !hasBio2 && (
-    <div class={`mp-spouse-content${name2Ko ? '' : ' mp-spouse-hidden'}`} id="spouseContent">
+    <div class="mp-spouse-content" id="spouseContent">
       <div class="mp-spouse">
         <div class="mp-spouse-card mp-reveal">
           <div class="mp-spouse-photo-wrap">
