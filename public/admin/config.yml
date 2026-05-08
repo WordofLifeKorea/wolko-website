@@ -166,14 +166,21 @@ collections:
           - { label: "마감 (Closed)", value: "closed" }
           - { label: "준비 중 (Upcoming)", value: "upcoming" }
           - { label: "정원 마감 (Full)", value: "full" }
-      - { label: "신청 링크 URL", name: "registration_url", widget: "string", required: false, hint: "예: https://cafe.naver.com/wolkojrcamp" }
-      - { label: "신청 마감일 (한국어)", name: "deadline_ko", widget: "string", required: false, hint: "예: 2025년 7월 14일 또는 추후 공지" }
-      - { label: "Registration Deadline (English)", name: "deadline_en", widget: "string", required: false, hint: "e.g. July 14, 2025 or TBA" }
-      - { label: "참가비 (한국어)", name: "price_ko", widget: "string", required: false, hint: "예: 별도 문의 또는 300,000원" }
-      - { label: "Price (English)", name: "price_en", widget: "string", required: false, hint: "e.g. Contact for pricing" }
+      - { label: "신청 링크 URL", name: "registration_url", widget: "string", required: false, hint: "예: https://cafe.naver.com/wolcamp (제주) 또는 https://cafe.naver.com/wolkojrcamp (내륙)" }
+      - label: "외부 신청 폼 사용"
+        name: "use_external_form"
+        widget: "boolean"
+        default: false
+        hint: "체크 시 신청하기 버튼이 위의 URL로 외부 연결됩니다 (네이버 카페 등). 자체 신청 모달은 비활성화됩니다."
+      - { label: "신청 마감일 (한국어)", name: "deadline_ko", widget: "string", required: false, hint: "예: 2026년 5월 23일 오전 7시 (선착순)" }
+      - { label: "Registration Deadline (English)", name: "deadline_en", widget: "string", required: false, hint: "e.g. May 23, 2026, 7:00 AM (First-come, first-served)" }
+      - { label: "참가비 (한국어)", name: "price_ko", widget: "string", required: false, hint: "예: 90,000원" }
+      - { label: "Price (English)", name: "price_en", widget: "string", required: false, hint: "e.g. KRW 90,000" }
+      - { label: "문의 전화", name: "contact_phone", widget: "string", required: false, hint: "예: 064-799-6084 (제주) / 031-611-9216 (평택). 비어있으면 기본 번호가 표시됩니다." }
+      - { label: "문의 이메일", name: "contact_email", widget: "string", required: false, hint: "비어있으면 wolkorea1@gmail.com이 표시됩니다." }
       - { label: "안내 사항 (한국어)", name: "notes_ko", widget: "text", required: false }
       - { label: "Notes (English)", name: "notes_en", widget: "text", required: false }
-      - { label: "정원 (명)", name: "capacity", widget: "number", default: 40, hint: "최대 신청 가능 인원수 (예: 40)" }
+      - { label: "정원 (명)", name: "capacity", widget: "number", default: 60, hint: "최대 신청 가능 인원수. 외부 신청 폼 사용 시에는 표시되지 않습니다." }
       - { label: "표시 순서", name: "order", widget: "number", default: 99, hint: "숫자가 낮을수록 먼저 표시됩니다" }
 
   # ── 사이트 설정 ───────────────────────────────────────────
