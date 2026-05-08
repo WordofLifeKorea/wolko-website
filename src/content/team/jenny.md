@@ -1,12 +1,12 @@
 ---
 name_ko: 손진영
 name_en: Jinyoung Son
-title_ko: 간사 · Short-term Worker
-title_en: Staff · Short-term Worker
+title_ko: 회계 | 캠프 보조
+title_en: Account | Camp Derector  Assistant
 role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw
-order: 1
+order: 3
 photo_url: /images/uploads/7r505962.jpg
 bio_ko: 진영은 기독교 가정에서 태어나 부모님을 따라 교회를 다니며 성장했습니다. 대학생이 되어 채플 예배에서 감격하며 예배드리는 사람들의
   모습이 낯설게 느껴졌고, 그들을 이해하지 못했습니다. 친구들을 따라 기독교 동아리에 가입했지만 타이트한 일정이 부담스러워 그만두려고 고민하던
