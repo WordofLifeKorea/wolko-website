@@ -103,16 +103,30 @@ const {
   <!-- 모바일 메뉴 -->
   <div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-item"><a href="/">HOME</a></div>
+    <div class="mobile-menu-divider"></div>
+
     <div class="mobile-menu-item">
-      <a href="#"><span class="wl-ko">소개</span><span class="wl-en">About</span></a>
+      <button class="mobile-parent" onclick="toggleMobileSub(this)">
+        <span><span class="wl-ko">소개</span><span class="wl-en">About</span></span>
+        <span class="mobile-parent-chevron">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
       <ul class="mobile-sub">
         <li><a href="/about"><span class="wl-ko">월코소개</span><span class="wl-en">About WOLKO</span></a></li>
         <li><a href="/people"><span class="wl-ko">섬기는이</span><span class="wl-en">Our Team</span></a></li>
         <li><a href="/endorsements"><span class="wl-ko">추천사</span><span class="wl-en">Endorsements</span></a></li>
       </ul>
     </div>
+
+    <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <a href="#"><span class="wl-ko">사역</span><span class="wl-en">Ministry</span></a>
+      <button class="mobile-parent" onclick="toggleMobileSub(this)">
+        <span><span class="wl-ko">사역</span><span class="wl-en">Ministry</span></span>
+        <span class="mobile-parent-chevron">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
       <ul class="mobile-sub">
         <li><a href="/camp"><span class="wl-ko">캠프사역</span><span class="wl-en">Camp Ministry</span></a></li>
         <li><a href="/wolbi-jeju"><span class="wl-ko">제주월비</span><span class="wl-en">Jeju WOLBI</span></a></li>
@@ -121,17 +135,35 @@ const {
         <li><a href="/vietnam"><span class="wl-ko">베트남 선교</span><span class="wl-en">Vietnam Mission</span></a></li>
       </ul>
     </div>
+
+    <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <a href="#"><span class="wl-ko">소통</span><span class="wl-en">Connect</span></a>
+      <button class="mobile-parent" onclick="toggleMobileSub(this)">
+        <span><span class="wl-ko">소통</span><span class="wl-en">Connect</span></span>
+        <span class="mobile-parent-chevron">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
       <ul class="mobile-sub">
         <li><a href="/contact">Contact</a></li>
         <li><a href="/mission-report"><span class="wl-ko">선교보고</span><span class="wl-en">Mission Reports</span></a></li>
       </ul>
     </div>
+
+    <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <a href="#"><span class="wl-ko">후원</span><span class="wl-en">Give</span></a>
-      <ul class="mobile-sub"><li><a href="/give"><span class="wl-ko">월코후원</span><span class="wl-en">Support WOLKO</span></a></li></ul>
+      <button class="mobile-parent" onclick="toggleMobileSub(this)">
+        <span><span class="wl-ko">후원</span><span class="wl-en">Give</span></span>
+        <span class="mobile-parent-chevron">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <ul class="mobile-sub">
+        <li><a href="/give"><span class="wl-ko">월코후원</span><span class="wl-en">Support WOLKO</span></a></li>
+      </ul>
     </div>
+
+    <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
       <a href="/location"><span class="wl-ko">오시는길</span><span class="wl-en">Location</span></a>
     </div>
@@ -218,7 +250,35 @@ const {
 
     window.toggleLang = function() { applyLang(!isEn); };
     window.toggleMobile = function() {
-      document.getElementById('mobileMenu').classList.toggle('open');
+      const menu = document.getElementById('mobileMenu');
+      const isOpen = menu.classList.contains('open');
+      if (isOpen) {
+        menu.classList.remove('open');
+        setTimeout(function() { if (!menu.classList.contains('open')) menu.style.display = 'none'; }, 200);
+        document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) { el.classList.remove('is-open'); });
+      } else {
+        menu.style.display = 'block';
+        requestAnimationFrame(function() { requestAnimationFrame(function() { menu.classList.add('open'); }); });
+      }
+    };
+    // 메뉴 바깥 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('mobileMenu');
+      const hamburger = document.getElementById('hamburger');
+      if (menu.classList.contains('open') && !menu.contains(e.target) && !hamburger.contains(e.target)) {
+        menu.classList.remove('open');
+        setTimeout(function() { if (!menu.classList.contains('open')) menu.style.display = 'none'; }, 200);
+        document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) { el.classList.remove('is-open'); });
+      }
+    });
+    window.toggleMobileSub = function(btn) {
+      const item = btn.closest('.mobile-menu-item');
+      const isOpen = item.classList.contains('is-open');
+      // 다른 열린 항목 닫기
+      document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) {
+        el.classList.remove('is-open');
+      });
+      if (!isOpen) item.classList.add('is-open');
     };
 
     // 저장된 언어 설정 복원
