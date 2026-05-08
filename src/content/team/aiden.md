@@ -6,7 +6,7 @@ title_en: Staff · Short-term Worker
 role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw
-order: 2
+order: 3
 photo_url: /images/uploads/aiden.jpg
 photo_story: /images/uploads/aiden.jpg
 hero_tagline_ko: 문화로
