@@ -263,6 +263,64 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
 .mp-story-block--reverse .mp-story-text { order: 1; }
 .mp-story-block--reverse .mp-story-photo { order: 2; }
 
+/* SPOUSE SECTION */
+.mp-spouse {
+  max-width: 1080px; margin: 0 auto; padding: 0 40px 72px;
+}
+.mp-spouse-card {
+  display: flex; align-items: center; gap: 40px;
+  background: linear-gradient(135deg, var(--c-deep) 0%, #015a7a 100%);
+  border-radius: 24px; padding: 44px 52px;
+  position: relative; overflow: hidden;
+}
+.mp-spouse-card::before {
+  content: ''; position: absolute;
+  top: -60px; right: -60px; width: 240px; height: 240px;
+  border-radius: 50%; background: rgba(115,209,245,0.06); pointer-events: none;
+}
+.mp-spouse-card::after {
+  content: ''; position: absolute;
+  bottom: -40px; left: -40px; width: 180px; height: 180px;
+  border-radius: 50%; background: rgba(255,255,255,0.03); pointer-events: none;
+}
+.mp-spouse-photo-wrap {
+  flex-shrink: 0; width: 120px; height: 120px; border-radius: 50%;
+  overflow: hidden; position: relative; z-index: 1;
+  background: rgba(255,255,255,0.08);
+  border: 3px solid rgba(115,209,245,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.mp-spouse-photo-wrap img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;
+}
+.mp-spouse-avatar {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.mp-spouse-avatar svg { width: 52px; height: 52px; opacity: 0.35; }
+.mp-spouse-text { position: relative; z-index: 1; }
+.mp-spouse-eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--c-light); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.mp-spouse-eyebrow::before {
+  content: ''; display: block; width: 20px; height: 1.5px;
+  background: var(--c-light); flex-shrink: 0;
+}
+.mp-spouse-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(24px, 3vw, 36px); font-weight: 700;
+  color: #fff; line-height: 1.15; margin-bottom: 14px; letter-spacing: 0.3px;
+}
+.mp-spouse-desc {
+  font-size: 14px; line-height: 1.85; color: rgba(255,255,255,0.62);
+  max-width: 480px;
+}
+.mp-spouse-bio {
+  font-size: 14.5px; line-height: 1.9;
+  color: rgba(255,255,255,0.6); max-width: 520px;
+}
+
 /* PRAYER */
 .mp-prayer {
   max-width: 1080px; margin: 0 auto; padding: 0 40px 80px;
@@ -294,6 +352,10 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
   .mp-hero-content { padding: 48px 32px; }
   .mp-story-block { grid-template-columns: 1fr; gap: 36px; }
   .mp-story { padding: 56px 24px; }
+  .mp-spouse { padding: 0 24px 56px; }
+  .mp-spouse-card { flex-direction: column; padding: 36px 28px; gap: 24px; text-align: center; }
+  .mp-spouse-eyebrow { justify-content: center; }
+  .mp-spouse-desc, .mp-spouse-bio { max-width: 100%; }
   .mp-prayer { padding: 0 24px 56px; }
 }
 @media (max-width: 560px) {
@@ -453,19 +515,19 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
       </div>
     </div>
 
-    <!-- 블록 2 (부부 선교사용): 텍스트 왼쪽, 사진 오른쪽 -->
-    {hasBio2 && (
+    <!-- 블록 2 (부부 선교사용): 텍스트 왼쪽, 사진 오른쪽 — show_spouse 체크 시 표시 -->
+    {hasBio2 && d.show_spouse && (
       <>
         <hr class="mp-story-divider"/>
         <div class="mp-story-block mp-story-block--reverse mp-reveal">
           <div class="mp-story-text">
             <div class="mp-story-label">
-              <span class="wl-ko">그녀의 이야기</span>
-              <span class="wl-en">Her Story</span>
+              <span class="wl-ko">배우자 이야기 · {d.spouse_ko || name2Ko}</span>
+              <span class="wl-en">Spouse's Story · {d.spouse_en || name2En}</span>
             </div>
             <h2 class="mp-story-name">
-              <span class="wl-ko">{name2Ko}</span>
-              <span class="wl-en">{name2En}</span>
+              <span class="wl-ko">{d.spouse_ko || name2Ko}</span>
+              <span class="wl-en">{d.spouse_en || name2En}</span>
             </h2>
             {d.bio_ko_2 && <p class="mp-story-body wl-ko-block">{d.bio_ko_2}</p>}
             {d.bio_en_2 && <p class="mp-story-body wl-en-block">{d.bio_en_2}</p>}
@@ -488,6 +550,40 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
     )}
 
   </section>
+
+  <!-- 배우자 소개 섹션 — CMS에서 show_spouse 체크 시 표시 -->
+  {d.show_spouse && d.spouse_ko && !hasBio2 && (
+    <div class="mp-spouse">
+      <div class="mp-spouse-card mp-reveal">
+        <div class="mp-spouse-photo-wrap">
+          {d.photo_url_2 ? (
+            <img src={d.photo_url_2} alt={d.spouse_ko} loading="lazy" onerror="this.style.display='none'"/>
+          ) : (
+            <div class="mp-spouse-avatar">
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="30" r="16" fill="rgba(255,255,255,0.6)"/>
+                <ellipse cx="40" cy="68" rx="26" ry="16" fill="rgba(255,255,255,0.6)"/>
+              </svg>
+            </div>
+          )}
+        </div>
+        <div class="mp-spouse-text">
+          <div class="mp-spouse-eyebrow">
+            <span class="wl-ko">함께 사역하는 배우자</span>
+            <span class="wl-en">Serving Together</span>
+          </div>
+          <h2 class="mp-spouse-name">
+            <span class="wl-ko">{d.spouse_ko}</span>
+            <span class="wl-en">{d.spouse_en}</span>
+          </h2>
+          <p class="mp-spouse-desc">
+            <span class="wl-ko">{name1Ko} 선교사와 함께 복음전파와 제자훈련 사역에 헌신하고 있습니다. 두 사람의 이야기는 위 소개 글에 담겨 있습니다.</span>
+            <span class="wl-en">Serving alongside {name1En} in Gospel proclamation and discipleship ministry. Their story together is shared in the bio above.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  )}
 
   <!-- Prayer -->
   <div class="mp-prayer">

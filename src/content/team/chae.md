@@ -7,6 +7,9 @@ role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
 order: 3
+show_spouse: true
+spouse_ko: 김미영
+spouse_en: Miriam Kim
 photo_url: /images/uploads/채병국-선교사님.jpeg
 bio_ko: Peter는 3대째 신앙을 이어 온 장로교 가정에서 태어났습니다. 어린 시절부터 어머니와 함께 새벽기도를 드리는 복된 환경 속에서
   자랐지만, 청소년기에 수많은 고민과 질문이 밀려왔습니다. 더 나은 사람이 되려 애썼지만 마음의 공허함은 채워지지 않았고, 결국 극단적인

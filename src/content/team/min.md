@@ -7,6 +7,9 @@ role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
 order: 4
+show_spouse: true
+spouse_ko: 김유진
+spouse_en: Yu-Jin Kim
 photo_url: /images/uploads/민선교사님-가족사진.jpg
 bio_ko: Joe는 1976년 충청남도 당진에서 하나님을 경외하는 부모님의 슬하에 태어났습니다. 가정 형편은 넉넉하지 않았지만 그리스도
   안에서 온 가족이 진정한 행복을 누리며 살았습니다. 중학교 시절 교회 부흥회에서 요한복음 3장 16절을 마심으로 받아들이는 순간, 예수

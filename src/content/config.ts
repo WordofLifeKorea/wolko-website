@@ -26,6 +26,10 @@ const team = defineCollection({
     verse_ref: z.string().optional(),
     verse_ko:  z.string().optional(),
     verse_en:  z.string().optional(),
+    // 배우자
+    spouse_ko:    z.string().optional(),
+    spouse_en:    z.string().optional(),
+    show_spouse:  z.boolean().default(false).optional(),
     // 소개
     bio_ko:   z.string().optional(),
     bio_en:   z.string().optional(),

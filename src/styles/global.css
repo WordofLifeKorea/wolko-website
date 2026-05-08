@@ -142,30 +142,36 @@ span.wl-en   { display: none; }
 
 .lang-toggle {
   display: flex; align-items: center;
-  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35);
   border-radius: 999px; padding: 3px; cursor: pointer;
   position: relative; width: 160px; height: 36px;
   transition: background 0.3s, border-color 0.3s;
 }
 .nav.scrolled .lang-toggle,
-.nav.always-white .lang-toggle { background: rgba(0,79,104,0.05); border-color: rgba(0,79,104,0.12); }
+.nav.always-white .lang-toggle { background: rgba(0,79,104,0.07); border-color: rgba(0,79,104,0.18); }
 .lang-slider {
   position: absolute; left: 3px; width: 78px; height: 28px;
   background: #fff; border-radius: 999px;
   transition: left 0.25s cubic-bezier(0.4,0,0.2,1);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.15);
 }
 .nav.scrolled .lang-slider,
 .nav.always-white .lang-slider { background: var(--blue-dark); }
-.lang-side { display: flex; align-items: center; justify-content: center; gap: 5px; width: 80px; z-index: 2; }
+.lang-side { display: flex; align-items: center; justify-content: center; gap: 5px; width: 80px; z-index: 2; transition: opacity 0.2s; }
 .lang-side img { width: 16px; height: 11px; object-fit: cover; border-radius: 2px; }
 .lang-side span { font-size: 12px; font-weight: 600; white-space: nowrap; }
+/* Active side */
 .lang-side.is-active span { color: var(--blue-dark); font-weight: 700; }
 .nav.scrolled .lang-side.is-active span,
 .nav.always-white .lang-side.is-active span { color: #fff; }
-.lang-side.is-inactive span { color: rgba(255,255,255,0.7); }
+/* Inactive side — dark-hero pages */
+.lang-side.is-inactive { opacity: 0.72; }
+.lang-side.is-inactive span { color: rgba(255,255,255,0.95); }
+/* Inactive side — white/scrolled nav */
+.nav.scrolled .lang-side.is-inactive,
+.nav.always-white .lang-side.is-inactive { opacity: 0.65; }
 .nav.scrolled .lang-side.is-inactive span,
-.nav.always-white .lang-side.is-inactive span { color: var(--text-mid); }
+.nav.always-white .lang-side.is-inactive span { color: var(--text-dark); }
 
 .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; margin-left: 12px; }
 .nav-hamburger span { display: block; width: 22px; height: 2px; background: rgba(255,255,255,0.9); border-radius: 2px; transition: background 0.3s; }

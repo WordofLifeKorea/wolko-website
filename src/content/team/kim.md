@@ -7,6 +7,9 @@ role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
 order: 2
+show_spouse: true
+spouse_ko: 김씬띠아
+spouse_en: Cynthia Kim
 photo_url: /images/uploads/kim.jpeg
 photo_url_2: /images/uploads/cynthia.jpg
 hero_tagline_ko: '"복음을 담은" '
