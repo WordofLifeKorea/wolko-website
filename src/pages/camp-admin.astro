@@ -169,56 +169,63 @@
     .camp-tabs {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
       margin-bottom: 28px;
     }
 
     /* 전체 버튼 */
     .camp-tab-all {
-      padding: 8px 18px;
-      border-radius: 9px;
+      padding: 9px 18px;
+      border-radius: 10px;
       font-size: 13px; font-weight: 600; cursor: pointer;
-      border: none;
-      background: rgba(26,45,56,0.07);
+      border: 1.5px solid var(--border);
+      background: var(--card);
       color: var(--mid);
       font-family: var(--f-body);
-      transition: background 0.15s, color 0.15s;
+      transition: all 0.15s;
       white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
-    .camp-tab-all:hover { background: rgba(26,45,56,0.12); color: var(--text); }
-    .camp-tab-all.active { background: var(--text); color: #fff; }
+    .camp-tab-all:hover { border-color: var(--mid); color: var(--text); }
+    .camp-tab-all.active { background: var(--text); border-color: var(--text); color: #fff; box-shadow: 0 3px 10px rgba(26,45,56,0.2); }
 
-    /* 구분 dot */
+    /* 구분선 */
     .camp-tab-dot {
-      width: 4px; height: 4px;
-      border-radius: 50%;
+      width: 1px; height: 32px;
       background: var(--border);
       flex-shrink: 0;
     }
 
-    /* 그룹 세그먼트 컨테이너 */
+    /* 그룹 세그먼트 */
     .camp-tab-segment {
       display: flex;
       align-items: center;
-      gap: 3px;
-      padding: 4px;
+      gap: 4px;
+      padding: 5px 5px 5px 10px;
       border-radius: 12px;
+      border: 1.5px solid;
     }
-    .camp-tab-segment.wolko { background: rgba(0,79,104,0.07); }
-    .camp-tab-segment.jeju  { background: rgba(8,145,178,0.08); }
+    .camp-tab-segment.wolko {
+      background: #eef5f8;
+      border-color: rgba(0,79,104,0.15);
+    }
+    .camp-tab-segment.jeju {
+      background: #e8f6fa;
+      border-color: rgba(8,145,178,0.2);
+    }
 
-    /* 그룹 레이블 칩 */
+    /* 그룹 레이블 */
     .camp-tab-segment-label {
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 0.12em; text-transform: uppercase;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
       font-family: var(--f-sans);
-      padding: 4px 10px;
-      border-radius: 7px;
+      padding-right: 4px;
       user-select: none;
+      flex-shrink: 0;
     }
-    .camp-tab-segment.wolko .camp-tab-segment-label { color: rgba(0,79,104,0.55); }
-    .camp-tab-segment.jeju  .camp-tab-segment-label { color: rgba(8,145,178,0.6); }
+    .camp-tab-segment.wolko .camp-tab-segment-label { color: rgba(0,79,104,0.5); }
+    .camp-tab-segment.jeju  .camp-tab-segment-label { color: rgba(8,145,178,0.65); }
 
     /* 개별 탭 버튼 */
     .camp-tab {
@@ -231,11 +238,17 @@
       white-space: nowrap;
     }
     .camp-tab-segment.wolko .camp-tab { color: var(--blue); }
-    .camp-tab-segment.jeju  .camp-tab { color: #0891b2; }
-    .camp-tab-segment.wolko .camp-tab:hover { background: rgba(0,79,104,0.1); }
-    .camp-tab-segment.jeju  .camp-tab:hover  { background: rgba(8,145,178,0.12); }
-    .camp-tab-segment.wolko .camp-tab.active { background: var(--blue); color: #fff; }
-    .camp-tab-segment.jeju  .camp-tab.active  { background: #0891b2; color: #fff; }
+    .camp-tab-segment.jeju  .camp-tab { color: #0779a0; }
+    .camp-tab-segment.wolko .camp-tab:hover { background: rgba(0,79,104,0.12); }
+    .camp-tab-segment.jeju  .camp-tab:hover  { background: rgba(8,145,178,0.14); }
+    .camp-tab-segment.wolko .camp-tab.active {
+      background: var(--blue); color: #fff;
+      box-shadow: 0 2px 8px rgba(0,79,104,0.28);
+    }
+    .camp-tab-segment.jeju .camp-tab.active {
+      background: #0891b2; color: #fff;
+      box-shadow: 0 2px 8px rgba(8,145,178,0.28);
+    }
 
     /* ── DASHBOARD CARDS ── */
     .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
