@@ -13,9 +13,41 @@ const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju W
 const hasBio = (d.bio_ko && d.bio_ko.trim()) || (d.bio_en && d.bio_en.trim());
 const hasBio2 = (d.bio_ko_2 && d.bio_ko_2.trim()) || (d.bio_en_2 && d.bio_en_2.trim());
 const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
-// 부부 선교사 이름 분리 (예: "몰스 제이콥 & 몰스 크리스탈" → ["몰스 제이콥", "몰스 크리스탈"])
+// 부부 선교사 이름 분리
 const [name1Ko, name2Ko] = d.name_ko.includes(' & ') ? d.name_ko.split(' & ') : [d.name_ko, null];
 const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : [d.name_en, null];
+
+// ── 성경 참조 한→영 자동 변환 ──────────────────────────────────
+const BOOK_MAP: Record<string, string> = {
+  // 구약
+  '창세기':'Genesis','출애굽기':'Exodus','레위기':'Leviticus','민수기':'Numbers',
+  '신명기':'Deuteronomy','여호수아':'Joshua','사사기':'Judges','룻기':'Ruth',
+  '사무엘상':'1 Samuel','사무엘하':'2 Samuel','열왕기상':'1 Kings','열왕기하':'2 Kings',
+  '역대상':'1 Chronicles','역대하':'2 Chronicles','에스라':'Ezra','느헤미야':'Nehemiah',
+  '에스더':'Esther','욥기':'Job','시편':'Psalm','잠언':'Proverbs',
+  '전도서':'Ecclesiastes','아가':'Song of Solomon','이사야':'Isaiah','예레미야':'Jeremiah',
+  '예레미야애가':'Lamentations','에스겔':'Ezekiel','다니엘':'Daniel','호세아':'Hosea',
+  '요엘':'Joel','아모스':'Amos','오바댜':'Obadiah','요나':'Jonah','미가':'Micah',
+  '나훔':'Nahum','하박국':'Habakkuk','스바냐':'Zephaniah','학개':'Haggai',
+  '스가랴':'Zechariah','말라기':'Malachi',
+  // 신약
+  '마태복음':'Matthew','마가복음':'Mark','누가복음':'Luke','요한복음':'John',
+  '사도행전':'Acts','로마서':'Romans','고린도전서':'1 Corinthians','고린도후서':'2 Corinthians',
+  '갈라디아서':'Galatians','에베소서':'Ephesians','빌립보서':'Philippians','골로새서':'Colossians',
+  '데살로니가전서':'1 Thessalonians','데살로니가후서':'2 Thessalonians',
+  '디모데전서':'1 Timothy','디모데후서':'2 Timothy','디도서':'Titus','빌레몬서':'Philemon',
+  '히브리서':'Hebrews','야고보서':'James','베드로전서':'1 Peter','베드로후서':'2 Peter',
+  '요한일서':'1 John','요한이서':'2 John','요한삼서':'3 John','유다서':'Jude',
+  '요한계시록':'Revelation',
+};
+function koRefToEn(ref: string): string {
+  const s = ref.trim();
+  for (const [ko, en] of Object.entries(BOOK_MAP)) {
+    if (s.startsWith(ko)) return en + s.slice(ko.length);
+  }
+  return ref;
+}
+const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 ---
 <BaseLayout title={`${d.name_ko} — WOLKO 월코`} description={`${d.name_en} | ${d.title_en} | Word of Life Korea`} activeNav="about">
 <style>
@@ -464,7 +496,10 @@ const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : 
     </p>
     <div class="mp-verse-ref">
       {d.verse_ref ? (
-        <span>{d.verse_ref}</span>
+        <>
+          <span class="wl-ko">{d.verse_ref}</span>
+          <span class="wl-en">{verseRefEn || d.verse_ref}</span>
+        </>
       ) : (
         <>
           <span class="wl-ko">마태복음 9:36–38</span>
