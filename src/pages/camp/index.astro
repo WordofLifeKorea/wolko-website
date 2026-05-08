@@ -941,7 +941,8 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                 const d = s.data;
                 const type = typeLabel[d.camp_type] ?? { ko: d.camp_type, en: d.camp_type };
                 const st = statusLabel[d.status] ?? { ko: d.status, en: d.status, cls: '' };
-                const canRegister = d.status === 'open' && d.registration_url;
+                // 내륙 캠프는 자체 모달 사용 — registration_url 없어도 open이면 신청 가능
+                const canRegister = d.status === 'open';
                 return (
                   <div class="reg-card">
                     <div class="reg-card-top">
