@@ -662,4 +662,26 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
 </div><!-- /.wcp-wrap -->
 
+<script is:inline>
+  // Reveal on scroll
+  const revealEls = document.querySelectorAll('.wcp-wrap .reveal');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } }),
+      { threshold: 0.12 }
+    );
+    revealEls.forEach(el => observer.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('visible'));
+  }
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('.wcp-wrap a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  });
+</script>
+
 </BaseLayout>
