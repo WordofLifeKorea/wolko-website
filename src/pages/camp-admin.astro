@@ -169,78 +169,73 @@
     .camp-tabs {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
       margin-bottom: 28px;
     }
 
     /* 전체 버튼 */
     .camp-tab-all {
-      padding: 9px 20px;
-      border-radius: 100px;
+      padding: 8px 18px;
+      border-radius: 9px;
       font-size: 13px; font-weight: 600; cursor: pointer;
-      border: 1.5px solid var(--border);
-      background: var(--card); color: var(--mid);
-      font-family: var(--f-body); transition: all 0.18s;
+      border: none;
+      background: rgba(26,45,56,0.07);
+      color: var(--mid);
+      font-family: var(--f-body);
+      transition: background 0.15s, color 0.15s;
       white-space: nowrap;
     }
-    .camp-tab-all:hover { border-color: var(--mid); color: var(--text); }
-    .camp-tab-all.active { background: var(--text); border-color: var(--text); color: #fff; }
+    .camp-tab-all:hover { background: rgba(26,45,56,0.12); color: var(--text); }
+    .camp-tab-all.active { background: var(--text); color: #fff; }
 
-    /* 그룹 구분선 */
-    .camp-tab-divider {
-      width: 1px; height: 28px;
+    /* 구분 dot */
+    .camp-tab-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
       background: var(--border);
       flex-shrink: 0;
     }
 
-    /* 그룹 래퍼 */
-    .camp-tab-group {
+    /* 그룹 세그먼트 컨테이너 */
+    .camp-tab-segment {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      align-items: center;
+      gap: 3px;
+      padding: 4px;
+      border-radius: 12px;
     }
-    .camp-tab-group-label {
-      font-size: 10px; font-weight: 700;
+    .camp-tab-segment.wolko { background: rgba(0,79,104,0.07); }
+    .camp-tab-segment.jeju  { background: rgba(8,145,178,0.08); }
+
+    /* 그룹 레이블 칩 */
+    .camp-tab-segment-label {
+      font-size: 9px; font-weight: 700;
       letter-spacing: 0.12em; text-transform: uppercase;
       font-family: var(--f-sans);
-      padding: 0 4px;
+      padding: 4px 10px;
+      border-radius: 7px;
+      user-select: none;
     }
-    .camp-tab-group.wolko .camp-tab-group-label { color: var(--blue); }
-    .camp-tab-group.jeju  .camp-tab-group-label { color: #0891b2; }
-
-    .camp-tab-group-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .camp-tab-segment.wolko .camp-tab-segment-label { color: rgba(0,79,104,0.55); }
+    .camp-tab-segment.jeju  .camp-tab-segment-label { color: rgba(8,145,178,0.6); }
 
     /* 개별 탭 버튼 */
     .camp-tab {
-      padding: 8px 16px;
+      padding: 7px 14px;
       border-radius: 8px;
-      font-size: 12px; font-weight: 600; cursor: pointer;
-      font-family: var(--f-body); transition: all 0.18s;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: none; background: transparent;
+      font-family: var(--f-body);
+      transition: background 0.15s, color 0.15s;
       white-space: nowrap;
     }
-    /* 월코 그룹 탭 */
-    .camp-tab-group.wolko .camp-tab {
-      border: 1.5px solid rgba(0,79,104,0.2);
-      background: rgba(0,79,104,0.05); color: var(--blue);
-    }
-    .camp-tab-group.wolko .camp-tab:hover {
-      background: rgba(0,79,104,0.1); border-color: var(--blue);
-    }
-    .camp-tab-group.wolko .camp-tab.active {
-      background: var(--blue); border-color: var(--blue); color: #fff;
-    }
-    /* 제주 그룹 탭 */
-    .camp-tab-group.jeju .camp-tab {
-      border: 1.5px solid rgba(8,145,178,0.2);
-      background: rgba(8,145,178,0.05); color: #0891b2;
-    }
-    .camp-tab-group.jeju .camp-tab:hover {
-      background: rgba(8,145,178,0.12); border-color: #0891b2;
-    }
-    .camp-tab-group.jeju .camp-tab.active {
-      background: #0891b2; border-color: #0891b2; color: #fff;
-    }
+    .camp-tab-segment.wolko .camp-tab { color: var(--blue); }
+    .camp-tab-segment.jeju  .camp-tab { color: #0891b2; }
+    .camp-tab-segment.wolko .camp-tab:hover { background: rgba(0,79,104,0.1); }
+    .camp-tab-segment.jeju  .camp-tab:hover  { background: rgba(8,145,178,0.12); }
+    .camp-tab-segment.wolko .camp-tab.active { background: var(--blue); color: #fff; }
+    .camp-tab-segment.jeju  .camp-tab.active  { background: #0891b2; color: #fff; }
 
     /* ── DASHBOARD CARDS ── */
     .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
@@ -528,22 +523,19 @@
     allBtn.onclick = () => selectCamp('all');
     tabsEl.appendChild(allBtn);
 
-    // 그룹별 탭
-    CAMP_GROUPS.forEach((g, gi) => {
-      const divider = document.createElement('div');
-      divider.className = 'camp-tab-divider';
-      tabsEl.appendChild(divider);
+    // 그룹별 세그먼트
+    CAMP_GROUPS.forEach((g) => {
+      const dot = document.createElement('div');
+      dot.className = 'camp-tab-dot';
+      tabsEl.appendChild(dot);
 
-      const groupEl = document.createElement('div');
-      groupEl.className = `camp-tab-group ${g.group}`;
+      const seg = document.createElement('div');
+      seg.className = `camp-tab-segment ${g.group}`;
 
-      const label = document.createElement('div');
-      label.className = 'camp-tab-group-label';
-      label.textContent = g.label;
-      groupEl.appendChild(label);
-
-      const btnsEl = document.createElement('div');
-      btnsEl.className = 'camp-tab-group-btns';
+      const labelEl = document.createElement('span');
+      labelEl.className = 'camp-tab-segment-label';
+      labelEl.textContent = g.group === 'wolko' ? 'WOLKO' : 'JEJU';
+      seg.appendChild(labelEl);
 
       g.camps.forEach(c => {
         const btn = document.createElement('button');
@@ -551,11 +543,10 @@
         btn.textContent = c.title;
         btn.dataset.id = c.id;
         btn.onclick = () => selectCamp(c.id);
-        btnsEl.appendChild(btn);
+        seg.appendChild(btn);
       });
 
-      groupEl.appendChild(btnsEl);
-      tabsEl.appendChild(groupEl);
+      tabsEl.appendChild(seg);
     });
 
     function selectCamp(id) {
