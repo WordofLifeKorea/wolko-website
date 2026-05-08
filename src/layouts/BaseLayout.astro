@@ -180,13 +180,11 @@ const {
   </footer>
 
   <script define:vars={{ whiteNav, langRoot }}>
-    // 네비 스크롤 효과 (whiteNav 페이지는 스크롤 불필요)
-    if (!whiteNav) {
-      const nav = document.getElementById('mainNav');
-      window.addEventListener('scroll', () => {
-        nav.classList.toggle('scrolled', window.scrollY > 40);
-      });
-    }
+    // 네비 스크롤 효과 — whiteNav 페이지도 스크롤 시 상단 고정 애니메이션 적용
+    const nav = document.getElementById('mainNav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    });
 
     // 언어 토글
     const langRootEl = document.getElementById(langRoot);
