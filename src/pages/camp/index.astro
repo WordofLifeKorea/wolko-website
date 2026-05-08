@@ -361,12 +361,13 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   width: 100%; padding: 13px;
   font-size: 13px; font-weight: 700; letter-spacing: 0.04em; border-radius: 8px;
   margin-top: auto; transition: background .22s, transform .18s, box-shadow .22s;
-  text-decoration: none;
+  text-decoration: none; border: none; outline: none; cursor: pointer;
 }
 .wcp-wrap .reg-btn-primary {
   background: var(--c-red); color: #fff;
+  box-shadow: 0 3px 10px rgba(196,42,54,0.18);
 }
-.wcp-wrap .reg-btn-primary:hover { background: var(--c-red-dk); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,42,54,0.3); }
+.wcp-wrap .reg-btn-primary:hover { background: var(--c-red-dk); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,42,54,0.30); }
 .wcp-wrap .reg-btn-outline {
   background: transparent; color: var(--c-mid);
   border: 1.5px solid var(--c-border);
@@ -484,7 +485,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .reg-modal-card {
   position: relative; z-index: 1;
   background: #fff; border-radius: 20px;
-  width: 100%; max-width: 640px;
+  width: 100%; max-width: 660px;
   max-height: 90vh; overflow-y: auto;
   box-shadow: 0 32px 80px rgba(0,20,40,0.28);
   animation: regSlideUp 0.32s cubic-bezier(0.22,1,0.36,1);
@@ -536,35 +537,49 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .reg-modal-cap-fill.warn  { background: linear-gradient(90deg, #fbbf24, #fde68a); }
 .reg-modal-cap-fill.full  { background: linear-gradient(90deg, #f87171, #fca5a5); }
 
-.reg-form-wrap { padding: 28px 36px 36px; }
+.reg-form-wrap { padding: 24px 36px 36px; }
 .reg-form-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0;
 }
-.reg-field { display: flex; flex-direction: column; gap: 6px; }
+.reg-field { display: flex; flex-direction: column; gap: 5px; }
 .reg-field--full { grid-column: 1 / -1; }
 .reg-field label {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--c-mid);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--c-mid);
 }
 .reg-field label .req { color: var(--c-red); margin-left: 2px; }
 .reg-field input, .reg-field select, .reg-field textarea {
-  border: 1.5px solid rgba(0,79,104,0.15); border-radius: 8px;
-  padding: 11px 13px; font-size: 14px; font-family: var(--f-sans);
-  color: var(--c-text); background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  border: 1.5px solid rgba(0,79,104,0.13); border-radius: 8px;
+  padding: 10px 13px; font-size: 14px; font-family: var(--f-sans);
+  color: var(--c-text); background: #f7fbfd;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   outline: none; width: 100%; resize: vertical;
 }
-.reg-field input::placeholder, .reg-field textarea::placeholder { color: #b0c4cc; }
+.reg-field input::placeholder, .reg-field textarea::placeholder { color: #afc2cc; }
 .reg-field input:focus, .reg-field select:focus, .reg-field textarea:focus {
-  border-color: var(--c-mid);
-  box-shadow: 0 0 0 3px rgba(0,126,161,0.1);
+  border-color: var(--c-mid); background: #fff;
+  box-shadow: 0 0 0 3px rgba(0,126,161,0.09);
 }
 .reg-field input.error, .reg-field select.error { border-color: var(--c-red); }
+
+/* ── form section labels ── */
+.reg-form-section {
+  margin-top: 22px; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.reg-form-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--c-muted); white-space: nowrap; flex-shrink: 0;
+}
+.reg-form-section-line {
+  flex: 1; height: 1px; background: rgba(0,79,104,0.18);
+}
+.reg-form-section:first-child { margin-top: 6px; }
 .reg-consent {
   display: flex; align-items: flex-start; gap: 10px;
-  padding: 14px; background: rgba(0,79,104,0.04);
+  padding: 14px 16px; background: rgba(0,79,104,0.035);
   border-radius: 8px; border: 1px solid rgba(0,79,104,0.09);
-  margin-bottom: 20px;
+  margin-top: 20px; margin-bottom: 16px;
 }
 .reg-consent input[type=checkbox] { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: var(--c-deep); }
 .reg-consent label { font-size: 12px; line-height: 1.65; color: var(--c-sub); cursor: pointer; }
@@ -612,8 +627,9 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
 @media (max-width: 600px) {
   .reg-modal-head { padding: 28px 24px 22px; }
-  .reg-form-wrap { padding: 20px 24px 28px; }
+  .reg-form-wrap { padding: 16px 20px 28px; }
   .reg-form-grid { grid-template-columns: 1fr; }
+  .reg-type-tabs { padding: 0 20px; }
 }
 
 /* ── REGISTRATION TYPE TABS ── */
@@ -932,8 +948,8 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                 <span class="wl-en">WOLKO Center · Pyeongtaek</span>
               </div>
               <a href="https://cafe.naver.com/wolkojrcamp" target="_blank" rel="noopener" class="reg-group-cafe-link">
-                <span class="wl-ko">네이버 카페 바로가기 →</span>
-                <span class="wl-en">Naver Cafe →</span>
+                <span class="wl-ko">월코 캠프 네이버 카페 바로가기 →</span>
+                <span class="wl-en">WOLKO Camp — Naver Cafe →</span>
               </a>
             </div>
             <div class="reg-grid">
@@ -1057,8 +1073,8 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                 <span class="wl-en">WOLBI Jeju Campus</span>
               </div>
               <a href="https://cafe.naver.com/wolcamp" target="_blank" rel="noopener" class="reg-group-cafe-link">
-                <span class="wl-ko">네이버 카페 바로가기 →</span>
-                <span class="wl-en">Naver Cafe →</span>
+                <span class="wl-ko">제주 캠프 네이버 카페 바로가기 →</span>
+                <span class="wl-en">Jeju Camp — Naver Cafe →</span>
               </a>
             </div>
             <div class="reg-grid">
@@ -1345,23 +1361,29 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
           <!-- ── 개인 신청 섹션 ── -->
           <div id="sectionIndividual">
+
+            <!-- 필수 정보 -->
+            <div class="reg-form-section">
+              <span class="reg-form-section-label"><span class="wl-ko">필수 정보</span><span class="wl-en">Required</span></span>
+              <span class="reg-form-section-line"></span>
+            </div>
             <div class="reg-form-grid">
               <div class="reg-field">
-                <label>이름 / Name <span class="req">*</span></label>
-                <input id="rName" name="name" placeholder="홍길동 / Full Name">
+                <label><span class="wl-ko">이름</span><span class="wl-en">Name</span> <span class="req">*</span></label>
+                <input id="rName" name="name" placeholder="홍길동">
               </div>
               <div class="reg-field">
-                <label>연락처 / Phone <span class="req">*</span></label>
+                <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
                 <input id="rPhone" name="phone" placeholder="010-0000-0000">
               </div>
               <div class="reg-field">
-                <label>이메일 / Email <span class="req">*</span></label>
+                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
                 <input id="rEmail" name="email" type="email" placeholder="email@example.com">
               </div>
               <div class="reg-field">
-                <label>학년 / Grade <span class="req">*</span></label>
+                <label><span class="wl-ko">학년</span><span class="wl-en">Grade</span> <span class="req">*</span></label>
                 <select id="rGrade" name="grade">
-                  <option value="">선택 / Select</option>
+                  <option value="">— 선택 / Select —</option>
                   <optgroup label="초등 / Elementary">
                     <option value="초4">초4 (4th Grade)</option>
                     <option value="초5">초5 (5th Grade)</option>
@@ -1379,23 +1401,32 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                   </optgroup>
                 </select>
               </div>
+            </div>
+
+            <!-- 선택 정보 -->
+            <div class="reg-form-section">
+              <span class="reg-form-section-label"><span class="wl-ko">선택 정보</span><span class="wl-en">Optional</span></span>
+              <span class="reg-form-section-line"></span>
+            </div>
+            <div class="reg-form-grid">
               <div class="reg-field">
-                <label>소속 교회 / Church</label>
-                <input id="rChurch" name="church" placeholder="교회 이름 / Church name">
+                <label><span class="wl-ko">소속 교회</span><span class="wl-en">Church</span></label>
+                <input id="rChurch" name="church" placeholder="교회 이름">
               </div>
               <div class="reg-field">
-                <label>학교 / School</label>
-                <input id="rSchool" name="school" placeholder="학교 이름 / School name">
+                <label><span class="wl-ko">학교</span><span class="wl-en">School</span></label>
+                <input id="rSchool" name="school" placeholder="학교 이름">
               </div>
               <div class="reg-field reg-field--full">
-                <label>비상연락처 / Emergency Contact</label>
-                <input id="rEmergency" name="emergency" placeholder="보호자 이름 및 연락처 / Parent/Guardian name & phone">
+                <label><span class="wl-ko">비상연락처</span><span class="wl-en">Emergency Contact</span></label>
+                <input id="rEmergency" name="emergency" placeholder="보호자 이름 및 연락처">
               </div>
               <div class="reg-field reg-field--full">
-                <label>특이사항 / Special Notes</label>
-                <textarea id="rNotes" name="notes" rows="3" placeholder="알레르기, 건강 상태, 기타 전달사항 / Allergies, health conditions, etc."></textarea>
+                <label><span class="wl-ko">특이사항</span><span class="wl-en">Special Notes</span></label>
+                <textarea id="rNotes" name="notes" rows="3" placeholder="알레르기, 건강 상태, 기타 전달사항"></textarea>
               </div>
             </div>
+
           </div>
 
           <!-- ── 단체 신청 섹션 ── -->
@@ -1409,35 +1440,41 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                 <p class="wl-en">Enter the contact person's info and group size.<br>After submission, please <em>send individual details to our email</em> for final confirmation.</p>
               </div>
             </div>
+
+            <!-- 담당자 정보 -->
+            <div class="reg-form-section">
+              <span class="reg-form-section-label"><span class="wl-ko">담당자 정보</span><span class="wl-en">Contact Person</span></span>
+              <span class="reg-form-section-line"></span>
+            </div>
             <div class="reg-form-grid">
               <div class="reg-field">
-                <label>담당자 이름 / Contact Name <span class="req">*</span></label>
-                <input id="gName" name="gName" placeholder="홍길동 / Contact Person">
+                <label><span class="wl-ko">담당자 이름</span><span class="wl-en">Contact Name</span> <span class="req">*</span></label>
+                <input id="gName" name="gName" placeholder="홍길동">
               </div>
               <div class="reg-field">
-                <label>연락처 / Phone <span class="req">*</span></label>
+                <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
                 <input id="gPhone" name="gPhone" placeholder="010-0000-0000">
               </div>
               <div class="reg-field">
-                <label>이메일 / Email <span class="req">*</span></label>
+                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
                 <input id="gEmail" name="gEmail" type="email" placeholder="email@example.com">
               </div>
               <div class="reg-field">
-                <label>신청 인원 / Group Size <span class="req">*</span></label>
+                <label><span class="wl-ko">신청 인원</span><span class="wl-en">Group Size</span> <span class="req">*</span></label>
                 <select id="gCount" name="gCount">
-                  <option value="">선택 / Select</option>
+                  <option value="">— 선택 / Select —</option>
                   {Array.from({length: 49}, (_, i) => i + 2).map(n => (
-                    <option value={n}>{n}명 / {n} people</option>
+                    <option value={n}>{n}명 ({n} people)</option>
                   ))}
                 </select>
               </div>
               <div class="reg-field reg-field--full">
-                <label>소속 교회 / 단체 <span class="req">*</span></label>
-                <input id="gOrg" name="gOrg" placeholder="교회 또는 단체 이름 / Church or Organization">
+                <label><span class="wl-ko">소속 교회 / 단체</span><span class="wl-en">Church / Organization</span> <span class="req">*</span></label>
+                <input id="gOrg" name="gOrg" placeholder="교회 또는 단체 이름">
               </div>
               <div class="reg-field reg-field--full">
-                <label>전달 사항 / Notes</label>
-                <textarea id="gNotes" name="gNotes" rows="3" placeholder="캠프 관련 문의 또는 요청 사항 / Questions or special requests"></textarea>
+                <label><span class="wl-ko">전달 사항</span><span class="wl-en">Notes</span></label>
+                <textarea id="gNotes" name="gNotes" rows="3" placeholder="캠프 관련 문의 또는 요청 사항"></textarea>
               </div>
             </div>
             <div class="reg-email-target">
@@ -1451,9 +1488,11 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
           <label class="reg-consent">
             <input type="checkbox" id="rConsent">
             <span>
-              <strong>개인정보 수집 및 이용에 동의합니다.</strong><br>
-              수집 항목: 이름, 연락처, 이메일 · 목적: 캠프 신청 접수 및 안내 · 보유기간: 캠프 종료 후 1년<br>
-              <em style="color:#8fa8b8;font-size:11px;">I agree to the collection and use of personal information for camp registration.</em>
+              <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
+              <strong class="wl-en">I agree to the collection and use of personal information.</strong>
+              <br>
+              <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일 &nbsp;·&nbsp; 목적: 캠프 신청 접수 및 안내 &nbsp;·&nbsp; 보유기간: 캠프 종료 후 1년</span>
+              <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email &nbsp;·&nbsp; Purpose: registration processing &nbsp;·&nbsp; Retention: 1 year after camp ends</span>
             </span>
           </label>
 
