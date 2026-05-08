@@ -8,6 +8,8 @@ campus: jeju
 category: stw
 order: 3
 photo_url: /images/uploads/abby.jpg
+photo_story: /images/uploads/abby.jpg
+show_spouse: false
 bio_ko: Abby는 한국에서 태어나고 자란 선교사 자녀입니다. 부모님이 월드 오브 라이프에서 전임 사역자로 섬기셨기에, 어릴 때부터
   예수님의 이름을 자연스럽게 알며 성장했습니다. 어머니의 설명을 통해 여섯 살 무렵 예수님의 구원의 선물을 받아들였습니다. 그러나 구원의
   확신은 쉽게 찾아오지 않았습니다. 2009년 가족이 제주로 이사해 WOLBI 제주를 시작한 이후, 해마다 학생들과 캠퍼에 복음에 반응하는
