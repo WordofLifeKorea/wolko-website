@@ -317,19 +317,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 }
 .wh-vision-item.is-active .wh-vision-label { color: #004f68; }
 .wh-vision-chevron {
-  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; position: relative;
-  margin-left: auto; background: rgba(0,79,104,0.04);
-  transition: background 0.3s, transform 0.3s cubic-bezier(0.23,1,0.32,1);
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; position: relative;
+  margin-left: auto;
+  background: rgba(0,79,104,0.06);
+  border: 1.5px solid rgba(0,79,104,0.15);
+  transition: background 0.25s, border-color 0.25s, transform 0.35s cubic-bezier(0.23,1,0.32,1);
 }
-.wh-vision-item.is-active .wh-vision-chevron { background: rgba(0,79,104,0.08); transform: rotate(180deg); }
+.wh-vision-item.is-active .wh-vision-chevron {
+  background: #004f68;
+  border-color: #004f68;
+}
 .wh-vision-chevron::before, .wh-vision-chevron::after {
-  content: ""; position: absolute; top: 11px; width: 8px; height: 1.8px;
-  background: #8aa1ab; border-radius: 2px; transition: background 0.3s;
+  content: ""; position: absolute;
+  top: 50%; left: 50%;
+  background: #6b8fa0; border-radius: 2px;
+  transition: background 0.25s, transform 0.3s cubic-bezier(0.23,1,0.32,1), opacity 0.25s;
 }
-.wh-vision-chevron::before { left: 5px; transform: rotate(40deg); transform-origin: right center; }
-.wh-vision-chevron::after { right: 5px; transform: rotate(-40deg); transform-origin: left center; }
+.wh-vision-chevron::before { width: 12px; height: 2px; transform: translate(-50%, -50%); }
+.wh-vision-chevron::after  { width: 2px; height: 12px; transform: translate(-50%, -50%); }
 .wh-vision-item.is-active .wh-vision-chevron::before,
-.wh-vision-item.is-active .wh-vision-chevron::after { background: #004f68; }
+.wh-vision-item.is-active .wh-vision-chevron::after { background: #fff; }
+.wh-vision-item.is-active .wh-vision-chevron::after { transform: translate(-50%, -50%) scaleY(0); opacity: 0; }
 .wh-vision-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.23,1,0.32,1), opacity 0.3s; opacity: 0; }
 .wh-vision-body p {
   margin: 0; padding: 4px 20px 32px 84px;
