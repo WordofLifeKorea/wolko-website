@@ -3,7 +3,7 @@ name_ko: 몰스 제이콥 & 몰스 크리스탈
 name_en: Jacob & Crystal Morse
 title_ko: 월코 대표 · Field Director
 title_en: WOLKO Director · Field Director
-role_badge: Field Director
+role_badge: Missionary
 campus: pyeongtaek
 category: missionary
 order: 1
