@@ -167,11 +167,15 @@ collections:
           - { label: "준비 중 (Upcoming)", value: "upcoming" }
           - { label: "정원 마감 (Full)", value: "full" }
       - { label: "신청 링크 URL", name: "registration_url", widget: "string", required: false, hint: "예: https://cafe.naver.com/wolcamp (제주) 또는 https://cafe.naver.com/wolkojrcamp (내륙)" }
-      - label: "외부 신청 폼 사용"
+      - label: "신청 방식"
         name: "use_external_form"
-        widget: "boolean"
+        widget: "select"
+        required: false
         default: false
-        hint: "체크 시 신청하기 버튼이 위의 URL로 외부 연결됩니다 (네이버 카페 등). 자체 신청 모달은 비활성화됩니다."
+        options:
+          - { label: "자체 신청 모달 사용 (기본)", value: false }
+          - { label: "외부 링크 연결 (네이버 카페 등)", value: true }
+        hint: "'외부 링크 연결' 선택 시 신청하기 버튼이 위의 URL로 연결됩니다. 비워두면 자체 모달이 사용됩니다."
       - { label: "신청 마감일 (한국어)", name: "deadline_ko", widget: "string", required: false, hint: "예: 2026년 5월 23일 오전 7시 (선착순)" }
       - { label: "Registration Deadline (English)", name: "deadline_en", widget: "string", required: false, hint: "e.g. May 23, 2026, 7:00 AM (First-come, first-served)" }
       - { label: "참가비 (한국어)", name: "price_ko", widget: "string", required: false, hint: "예: 90,000원" }

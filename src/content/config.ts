@@ -75,7 +75,10 @@ const camp_schedule = defineCollection({
     target_en: z.string(),
     status: z.enum(['open', 'closed', 'upcoming', 'full']),
     registration_url: z.string().optional(),
-    use_external_form: z.boolean().optional().default(false),
+    use_external_form: z.preprocess(
+      (v) => v === true || v === 'true',
+      z.boolean()
+    ).optional().default(false),
     deadline_ko: z.string().optional(),
     deadline_en: z.string().optional(),
     price_ko: z.string().optional(),

@@ -3,7 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 const allSchedules = await getCollection('camp_schedules');
-const schedules = allSchedules.sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
+const schedules = allSchedules
+  .filter(s => s.data.status !== 'closed')
+  .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
+
+const jejuCamps  = schedules.filter(s => s.data.camp_type === 'jeju');
+const inlandCamps = schedules.filter(s => s.data.camp_type !== 'jeju');
 
 const typeLabel: Record<string, { ko: string; en: string }> = {
   english: { ko: '영어캠프', en: 'English Camp' },
@@ -411,9 +416,49 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .wcp-wrap .reg-cap-fill.warn  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .wcp-wrap .reg-cap-fill.full  { background: linear-gradient(90deg, var(--c-red), #e55); }
 
+/* ── CAMP GROUPS ── */
+.wcp-wrap .reg-group {
+  max-width: var(--max-w); margin: 0 auto;
+}
+.wcp-wrap .reg-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-md); margin-bottom: var(--sp-lg);
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--c-border);
+}
+.wcp-wrap .reg-group-tag {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--c-deep);
+}
+.wcp-wrap .reg-group-tag::before {
+  content: ''; width: 3px; height: 18px;
+  background: var(--c-red); border-radius: 2px; flex-shrink: 0;
+}
+.wcp-wrap .reg-group-cafe-link {
+  font-size: 12px; font-weight: 600; color: var(--c-mid);
+  letter-spacing: 0.04em; white-space: nowrap;
+  transition: color 0.2s, gap 0.2s;
+}
+.wcp-wrap .reg-group-cafe-link:hover { color: var(--c-deep); }
+
+.wcp-wrap .reg-group-divider {
+  max-width: var(--max-w); margin: var(--sp-2xl) auto;
+  border: none; border-top: 1.5px dashed rgba(0,79,104,0.15);
+  position: relative;
+}
+.wcp-wrap .reg-group-divider::after {
+  content: '✝';
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--c-off); color: rgba(0,79,104,0.20);
+  font-size: 14px; padding: 0 12px; line-height: 1;
+}
+
 @media (max-width: 960px) {
   .wcp-wrap .reg-grid { grid-template-columns: 1fr 1fr; }
   .wcp-wrap .reg-header { flex-direction: column; align-items: flex-start; }
+  .wcp-wrap .reg-group-header { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
 @media (max-width: 600px) {
   .wcp-wrap .reg-grid { grid-template-columns: 1fr; }
@@ -877,147 +922,217 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
     </div>
 
     {schedules.length > 0 ? (
-      <div class="reg-grid">
-        {schedules.map((s) => {
-          const d = s.data;
-          const type = typeLabel[d.camp_type] ?? { ko: d.camp_type, en: d.camp_type };
-          const st = statusLabel[d.status] ?? { ko: d.status, en: d.status, cls: '' };
-          const canRegister = d.status === 'open' && d.registration_url;
-          return (
-            <div class="reg-card reveal">
-              <div class="reg-card-top">
-                <span class="reg-type-badge">
-                  <span class="wl-ko">{type.ko}</span>
-                  <span class="wl-en">{type.en}</span>
-                </span>
-                <span class={`reg-status-badge ${st.cls}`}>
-                  <span class="wl-ko">{st.ko}</span>
-                  <span class="wl-en">{st.en}</span>
-                </span>
+      <>
+        {/* ── 제주 캠프 그룹 ── */}
+        {jejuCamps.length > 0 && (
+          <div class="reg-group reveal">
+            <div class="reg-group-header">
+              <div class="reg-group-tag">
+                <span class="wl-ko">📍 제주 월비캠퍼스</span>
+                <span class="wl-en">📍 WOLBI Jeju Campus</span>
               </div>
-
-              <h3 class="reg-title">
-                <span class="wl-ko">{d.title_ko}</span>
-                <span class="wl-en">{d.title_en}</span>
-              </h3>
-
-              <div class="reg-meta">
-                <div class="reg-meta-row">
-                  <span class="reg-meta-label"><span class="wl-ko">일정</span><span class="wl-en">Dates</span></span>
-                  <span class="reg-meta-value">
-                    <span class="wl-ko">{d.date_ko}</span>
-                    <span class="wl-en">{d.date_en}</span>
-                  </span>
-                </div>
-                <div class="reg-meta-row">
-                  <span class="reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
-                  <span class="reg-meta-value">
-                    <span class="wl-ko">{d.target_ko}</span>
-                    <span class="wl-en">{d.target_en}</span>
-                  </span>
-                </div>
-                {(d.deadline_ko || d.deadline_en) && (
-                  <div class="reg-meta-row">
-                    <span class="reg-meta-label"><span class="wl-ko">마감일</span><span class="wl-en">Deadline</span></span>
-                    <span class="reg-meta-value">
-                      <span class="wl-ko">{d.deadline_ko}</span>
-                      <span class="wl-en">{d.deadline_en}</span>
-                    </span>
-                  </div>
-                )}
-                {(d.price_ko || d.price_en) && (
-                  <div class="reg-meta-row">
-                    <span class="reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
-                    <span class="reg-meta-value">
-                      <span class="wl-ko">{d.price_ko}</span>
-                      <span class="wl-en">{d.price_en}</span>
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {(d.notes_ko || d.notes_en) && (
-                <p class="reg-notes">
-                  <span class="wl-ko">{d.notes_ko}</span>
-                  <span class="wl-en">{d.notes_en}</span>
-                </p>
-              )}
-
-              {/* 정원 현황 바 — 자체 신청(모달)인 경우만 표시 */}
-              {canRegister && !d.use_external_form && (
-                <div class="reg-cap" data-cap-id={s.slug}>
-                  <div class="reg-cap-info">
-                    <span class="wl-ko">신청 현황</span>
-                    <span class="wl-en">Spots Filled</span>
-                    <strong>
-                      <span class="reg-cap-count">—</span>
-                      {' / '}{d.capacity ?? 40}
-                      <span class="wl-ko">명</span>
-                    </strong>
-                  </div>
-                  <div class="reg-cap-track">
-                    <div class="reg-cap-fill"></div>
-                  </div>
-                </div>
-              )}
-
-              {/* 문의 연락처 — 캠프별 개별 번호가 있는 경우 */}
-              {(d.contact_phone || d.contact_email) && (
-                <div class="reg-contact-row">
-                  <span class="reg-meta-label">
-                    <span class="wl-ko">문의</span>
-                    <span class="wl-en">Inquiry</span>
-                  </span>
-                  <span class="reg-contact-info">
-                    {d.contact_phone && <span>{d.contact_phone}</span>}
-                    {d.contact_phone && d.contact_email && <span class="reg-contact-sep">·</span>}
-                    {d.contact_email && <span>{d.contact_email}</span>}
-                  </span>
-                </div>
-              )}
-
-              {canRegister && d.use_external_form ? (
-                /* 외부 신청 (네이버 카페 등) */
-                <a
-                  href={d.registration_url}
-                  target="_blank" rel="noopener"
-                  class="reg-btn reg-btn-primary"
-                >
-                  <span class="wl-ko">네이버 카페에서 신청하기 →</span>
-                  <span class="wl-en">Register via Naver Cafe →</span>
-                </a>
-              ) : canRegister ? (
-                /* 자체 신청 모달 */
-                <button
-                  class="reg-btn reg-btn-primary reg-open-btn"
-                  data-camp-id={s.slug}
-                  data-camp-name-ko={d.title_ko}
-                  data-camp-name-en={d.title_en}
-                  data-capacity={d.capacity ?? 40}
-                >
-                  <span class="wl-ko">신청하기 →</span>
-                  <span class="wl-en">Register Now →</span>
-                </button>
-              ) : d.status === 'upcoming' && d.registration_url ? (
-                <a href={d.registration_url} target="_blank" rel="noopener" class="reg-btn reg-btn-outline">
-                  <span class="wl-ko">카페에서 소식 받기 →</span>
-                  <span class="wl-en">Follow for Updates →</span>
-                </a>
-              ) : d.status === 'upcoming' ? (
-                <span class="reg-btn reg-btn-disabled">
-                  <span class="wl-ko">신청 일정 공지 예정</span>
-                  <span class="wl-en">Registration Coming Soon</span>
-                </span>
-              ) : (
-                <span class="reg-btn reg-btn-disabled">
-                  <span class="wl-ko">{d.status === 'full' ? '정원이 마감되었습니다' : '신청이 마감되었습니다'}</span>
-                  <span class="wl-en">{d.status === 'full' ? 'Camp is Full' : 'Registration Closed'}</span>
-                </span>
-              )}
+              <a href="https://cafe.naver.com/wolcamp" target="_blank" rel="noopener" class="reg-group-cafe-link">
+                <span class="wl-ko">네이버 카페 바로가기 →</span>
+                <span class="wl-en">Naver Cafe →</span>
+              </a>
             </div>
-          );
-        })}
-      </div>
+            <div class="reg-grid">
+              {jejuCamps.map((s) => {
+                const d = s.data;
+                const type = typeLabel[d.camp_type] ?? { ko: d.camp_type, en: d.camp_type };
+                const st = statusLabel[d.status] ?? { ko: d.status, en: d.status, cls: '' };
+                const canRegister = d.status === 'open' && d.registration_url;
+                return (
+                  <div class="reg-card">
+                    <div class="reg-card-top">
+                      <span class="reg-type-badge">
+                        <span class="wl-ko">{type.ko}</span>
+                        <span class="wl-en">{type.en}</span>
+                      </span>
+                      <span class={`reg-status-badge ${st.cls}`}>
+                        <span class="wl-ko">{st.ko}</span>
+                        <span class="wl-en">{st.en}</span>
+                      </span>
+                    </div>
+                    <h3 class="reg-title">
+                      <span class="wl-ko">{d.title_ko}</span>
+                      <span class="wl-en">{d.title_en}</span>
+                    </h3>
+                    <div class="reg-meta">
+                      <div class="reg-meta-row">
+                        <span class="reg-meta-label"><span class="wl-ko">일정</span><span class="wl-en">Dates</span></span>
+                        <span class="reg-meta-value"><span class="wl-ko">{d.date_ko}</span><span class="wl-en">{d.date_en}</span></span>
+                      </div>
+                      <div class="reg-meta-row">
+                        <span class="reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
+                        <span class="reg-meta-value"><span class="wl-ko">{d.target_ko}</span><span class="wl-en">{d.target_en}</span></span>
+                      </div>
+                      {(d.deadline_ko || d.deadline_en) && (
+                        <div class="reg-meta-row">
+                          <span class="reg-meta-label"><span class="wl-ko">신청 시작</span><span class="wl-en">Opens</span></span>
+                          <span class="reg-meta-value"><span class="wl-ko">{d.deadline_ko}</span><span class="wl-en">{d.deadline_en}</span></span>
+                        </div>
+                      )}
+                      {(d.price_ko || d.price_en) && (
+                        <div class="reg-meta-row">
+                          <span class="reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
+                          <span class="reg-meta-value"><span class="wl-ko">{d.price_ko}</span><span class="wl-en">{d.price_en}</span></span>
+                        </div>
+                      )}
+                    </div>
+                    {(d.notes_ko || d.notes_en) && (
+                      <p class="reg-notes">
+                        <span class="wl-ko">{d.notes_ko}</span>
+                        <span class="wl-en">{d.notes_en}</span>
+                      </p>
+                    )}
+                    {canRegister && d.use_external_form ? (
+                      <a href={d.registration_url} target="_blank" rel="noopener" class="reg-btn reg-btn-primary">
+                        <span class="wl-ko">네이버 카페에서 신청하기 →</span>
+                        <span class="wl-en">Register via Naver Cafe →</span>
+                      </a>
+                    ) : d.status === 'upcoming' ? (
+                      <span class="reg-btn reg-btn-disabled">
+                        <span class="wl-ko">신청 일정 공지 예정</span>
+                        <span class="wl-en">Registration Coming Soon</span>
+                      </span>
+                    ) : (
+                      <span class="reg-btn reg-btn-disabled">
+                        <span class="wl-ko">{d.status === 'full' ? '정원이 마감되었습니다' : '신청이 마감되었습니다'}</span>
+                        <span class="wl-en">{d.status === 'full' ? 'Camp is Full' : 'Registration Closed'}</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── 구분선 ── */}
+        {jejuCamps.length > 0 && inlandCamps.length > 0 && (
+          <div class="reg-group-divider"></div>
+        )}
+
+        {/* ── 월코 내륙 캠프 그룹 ── */}
+        {inlandCamps.length > 0 && (
+          <div class="reg-group reveal">
+            <div class="reg-group-header">
+              <div class="reg-group-tag">
+                <span class="wl-ko">📍 월코센터 (평택)</span>
+                <span class="wl-en">📍 WOLKO Center (Pyeongtaek)</span>
+              </div>
+              <a href="https://cafe.naver.com/wolkojrcamp" target="_blank" rel="noopener" class="reg-group-cafe-link">
+                <span class="wl-ko">네이버 카페 바로가기 →</span>
+                <span class="wl-en">Naver Cafe →</span>
+              </a>
+            </div>
+            <div class="reg-grid">
+              {inlandCamps.map((s) => {
+                const d = s.data;
+                const type = typeLabel[d.camp_type] ?? { ko: d.camp_type, en: d.camp_type };
+                const st = statusLabel[d.status] ?? { ko: d.status, en: d.status, cls: '' };
+                const canRegister = d.status === 'open' && d.registration_url;
+                return (
+                  <div class="reg-card">
+                    <div class="reg-card-top">
+                      <span class="reg-type-badge">
+                        <span class="wl-ko">{type.ko}</span>
+                        <span class="wl-en">{type.en}</span>
+                      </span>
+                      <span class={`reg-status-badge ${st.cls}`}>
+                        <span class="wl-ko">{st.ko}</span>
+                        <span class="wl-en">{st.en}</span>
+                      </span>
+                    </div>
+                    <h3 class="reg-title">
+                      <span class="wl-ko">{d.title_ko}</span>
+                      <span class="wl-en">{d.title_en}</span>
+                    </h3>
+                    <div class="reg-meta">
+                      <div class="reg-meta-row">
+                        <span class="reg-meta-label"><span class="wl-ko">일정</span><span class="wl-en">Dates</span></span>
+                        <span class="reg-meta-value"><span class="wl-ko">{d.date_ko}</span><span class="wl-en">{d.date_en}</span></span>
+                      </div>
+                      <div class="reg-meta-row">
+                        <span class="reg-meta-label"><span class="wl-ko">대상</span><span class="wl-en">For</span></span>
+                        <span class="reg-meta-value"><span class="wl-ko">{d.target_ko}</span><span class="wl-en">{d.target_en}</span></span>
+                      </div>
+                      {(d.deadline_ko || d.deadline_en) && (
+                        <div class="reg-meta-row">
+                          <span class="reg-meta-label"><span class="wl-ko">마감일</span><span class="wl-en">Deadline</span></span>
+                          <span class="reg-meta-value"><span class="wl-ko">{d.deadline_ko}</span><span class="wl-en">{d.deadline_en}</span></span>
+                        </div>
+                      )}
+                      {(d.price_ko || d.price_en) && (
+                        <div class="reg-meta-row">
+                          <span class="reg-meta-label"><span class="wl-ko">참가비</span><span class="wl-en">Fee</span></span>
+                          <span class="reg-meta-value"><span class="wl-ko">{d.price_ko}</span><span class="wl-en">{d.price_en}</span></span>
+                        </div>
+                      )}
+                    </div>
+                    {(d.notes_ko || d.notes_en) && (
+                      <p class="reg-notes">
+                        <span class="wl-ko">{d.notes_ko}</span>
+                        <span class="wl-en">{d.notes_en}</span>
+                      </p>
+                    )}
+                    {/* 자체 신청 — 정원 현황 바 */}
+                    {canRegister && !d.use_external_form && (
+                      <div class="reg-cap" data-cap-id={s.slug}>
+                        <div class="reg-cap-info">
+                          <span class="wl-ko">신청 현황</span>
+                          <span class="wl-en">Spots Filled</span>
+                          <strong>
+                            <span class="reg-cap-count">—</span>
+                            {' / '}{d.capacity ?? 40}
+                            <span class="wl-ko">명</span>
+                          </strong>
+                        </div>
+                        <div class="reg-cap-track">
+                          <div class="reg-cap-fill"></div>
+                        </div>
+                      </div>
+                    )}
+                    {canRegister && d.use_external_form ? (
+                      <a href={d.registration_url} target="_blank" rel="noopener" class="reg-btn reg-btn-primary">
+                        <span class="wl-ko">네이버 카페에서 신청하기 →</span>
+                        <span class="wl-en">Register via Naver Cafe →</span>
+                      </a>
+                    ) : canRegister ? (
+                      <button
+                        class="reg-btn reg-btn-primary reg-open-btn"
+                        data-camp-id={s.slug}
+                        data-camp-name-ko={d.title_ko}
+                        data-camp-name-en={d.title_en}
+                        data-capacity={d.capacity ?? 40}
+                      >
+                        <span class="wl-ko">신청하기 →</span>
+                        <span class="wl-en">Register Now →</span>
+                      </button>
+                    ) : d.status === 'upcoming' && d.registration_url ? (
+                      <a href={d.registration_url} target="_blank" rel="noopener" class="reg-btn reg-btn-outline">
+                        <span class="wl-ko">카페에서 소식 받기 →</span>
+                        <span class="wl-en">Follow for Updates →</span>
+                      </a>
+                    ) : d.status === 'upcoming' ? (
+                      <span class="reg-btn reg-btn-disabled">
+                        <span class="wl-ko">신청 일정 공지 예정</span>
+                        <span class="wl-en">Registration Coming Soon</span>
+                      </span>
+                    ) : (
+                      <span class="reg-btn reg-btn-disabled">
+                        <span class="wl-ko">{d.status === 'full' ? '정원이 마감되었습니다' : '신청이 마감되었습니다'}</span>
+                        <span class="wl-en">{d.status === 'full' ? 'Camp is Full' : 'Registration Closed'}</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </>
     ) : (
       <div class="reg-empty reveal">
         <div class="reg-empty-icon">✝</div>
