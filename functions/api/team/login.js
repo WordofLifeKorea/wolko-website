@@ -2,12 +2,10 @@
  * POST /api/team/login
  * Body: { slug, password }
  *
- * Checks KV key `team:{slug}:password` against provided password.
- * Returns a signed JWT-style token valid for 8 hours.
- * Token embeds the slug so update/upload endpoints can verify identity.
+ * Checks provided password against TEAM_PASSWORD env var (single shared password).
+ * Returns a signed token valid for 8 hours with the slug embedded.
  *
- * KV namespace: CAMP_KV (same binding as camp admin)
- * Sign secret:  ADMIN_PASSWORD env var
+ * Sign secret: ADMIN_PASSWORD env var
  */
 
 const CORS = {
@@ -30,9 +28,9 @@ async function generateToken(slug, secret) {
 export async function onRequestPost(context) {
   const { env, request } = context;
 
-  if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
+  if (!env.ADMIN_PASSWORD || !env.TEAM_PASSWORD) {
     return Response.json(
-      { error: '서버 설정 오류 — ADMIN_PASSWORD 또는 CAMP_KV가 없습니다.' },
+      { error: '서버 설정 오류 — ADMIN_PASSWORD 또는 TEAM_PASSWORD가 없습니다.' },
       { status: 500, headers: CORS }
     );
   }
@@ -48,8 +46,7 @@ export async function onRequestPost(context) {
     return Response.json({ error: 'slug와 password가 필요합니다.' }, { status: 400, headers: CORS });
   }
 
-  const stored = await env.CAMP_KV.get(`team:${slug}:password`);
-  if (!stored || stored !== password) {
+  if (password !== env.TEAM_PASSWORD) {
     return Response.json({ error: '비밀번호가 올바르지 않습니다.' }, { status: 401, headers: CORS });
   }
 
