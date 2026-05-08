@@ -78,7 +78,7 @@ const latestReport = reports[0] ?? null;
     border:2px dashed var(--c-line); border-radius:var(--r-xl);
     background:var(--c-bg);
   }
-  .no-pdf-icon { font-size:48px; margin-bottom:16px; }
+  .no-pdf-icon { margin-bottom:16px; display:flex; justify-content:center; opacity:0.6; }
   .no-pdf h3 { font-size:22px; font-weight:800; color:var(--c-text); margin-bottom:10px; }
   .no-pdf p { font-size:15px; color:var(--c-muted); max-width:420px; margin:0 auto; line-height:1.8; }
 
@@ -109,33 +109,40 @@ const latestReport = reports[0] ?? null;
   /* Controls bar */
   .fb-controls {
     display:flex; align-items:center; justify-content:space-between;
-    padding:12px 20px; background:rgba(255,255,255,0.06);
-    border-bottom:1px solid rgba(255,255,255,0.08); gap:12px; flex-wrap:wrap;
+    padding:10px 16px; background:rgba(255,255,255,0.06);
+    border-bottom:1px solid rgba(255,255,255,0.08); gap:10px; flex-wrap:wrap;
   }
-  .fb-nav { display:flex; align-items:center; gap:8px; }
+  .fb-nav { display:flex; align-items:center; gap:6px; }
   .fb-btn {
-    width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,0.2);
-    background:rgba(255,255,255,0.08); color:#fff; cursor:pointer; display:flex;
-    align-items:center; justify-content:center; font-size:16px;
+    width:34px; height:34px; border-radius:8px; border:1px solid rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.07); color:#fff; cursor:pointer; display:flex;
+    align-items:center; justify-content:center;
     transition:background .18s; user-select:none;
   }
-  .fb-btn:hover { background:rgba(255,255,255,0.18); }
-  .fb-btn:disabled { opacity:0.3; cursor:default; }
-  .fb-page-info { font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); min-width:80px; text-align:center; }
-  .fb-zoom-btns { display:flex; gap:6px; }
+  .fb-btn svg { display:block; }
+  .fb-btn:hover { background:rgba(255,255,255,0.16); }
+  .fb-btn:disabled { opacity:0.28; cursor:default; }
+  .fb-page-info {
+    font-size:12px; font-weight:700; color:rgba(255,255,255,0.55);
+    min-width:72px; text-align:center; padding:0 4px;
+  }
+  .fb-right { display:flex; align-items:center; gap:6px; }
+  .fb-zoom-btns { display:flex; gap:4px; }
   .fb-zoom-btn {
-    padding:6px 14px; border-radius:999px; border:1px solid rgba(255,255,255,0.2);
-    background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.8); cursor:pointer;
-    font-size:12px; font-weight:700; transition:background .18s;
+    width:34px; height:34px; border-radius:8px; border:1px solid rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.8); cursor:pointer;
+    font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center;
+    transition:background .18s;
   }
-  .fb-zoom-btn:hover { background:rgba(255,255,255,0.18); }
+  .fb-zoom-btn:hover { background:rgba(255,255,255,0.16); }
   .fb-fullscreen-btn {
-    padding:6px 14px; border-radius:999px; border:1px solid rgba(255,255,255,0.2);
-    background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.8); cursor:pointer;
-    font-size:12px; font-weight:700; transition:background .18s;
-    white-space:nowrap;
+    width:34px; height:34px; border-radius:8px; border:1px solid rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.8); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .18s;
   }
-  .fb-fullscreen-btn:hover { background:rgba(255,255,255,0.18); }
+  .fb-fullscreen-btn:hover { background:rgba(255,255,255,0.16); }
+  .fb-fullscreen-btn svg, .fb-zoom-btn svg { display:block; }
 
   /* Spread viewport */
   #spread-viewport {
@@ -235,24 +242,41 @@ const latestReport = reports[0] ?? null;
             </div>
           </div>
           <a href={latestReport.data.pdf_url} target="_blank" rel="noopener" class="download-btn">
-            ⬇ <span class="wl-ko">PDF 다운로드</span><span class="wl-en">Download PDF</span>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v7M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="wl-ko">PDF 다운로드</span><span class="wl-en">Download PDF</span>
           </a>
         </div>
 
         <div id="flipbook-container">
           <div class="fb-controls">
             <div class="fb-nav">
-              <button class="fb-btn" id="fb-first" title="처음 페이지">⏮</button>
-              <button class="fb-btn" id="fb-prev" title="이전 페이지">◀</button>
+              <button class="fb-btn" id="fb-first" title="처음 페이지">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 2v10M5 7l5-4v8L5 7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="fb-btn" id="fb-prev" title="이전 페이지">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L4 7l5-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
               <span class="fb-page-info" id="fb-page-info">1 / —</span>
-              <button class="fb-btn" id="fb-next" title="다음 페이지">▶</button>
-              <button class="fb-btn" id="fb-last" title="마지막 페이지">⏭</button>
+              <button class="fb-btn" id="fb-next" title="다음 페이지">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l5 4-5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="fb-btn" id="fb-last" title="마지막 페이지">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 2v10M9 7L4 3v8l5-4z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
             </div>
-            <div class="fb-zoom-btns">
-              <button class="fb-zoom-btn" id="fb-zoom-out">－ <span class="wl-ko">축소</span><span class="wl-en">Out</span></button>
-              <button class="fb-zoom-btn" id="fb-zoom-in">＋ <span class="wl-ko">확대</span><span class="wl-en">In</span></button>
+            <div class="fb-right">
+              <div class="fb-zoom-btns">
+                <button class="fb-zoom-btn" id="fb-zoom-out" title="축소">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+                <button class="fb-zoom-btn" id="fb-zoom-in" title="확대">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <button class="fb-fullscreen-btn" id="fb-fullscreen" title="전체화면">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5V2h3M9 2h3v3M12 9v3H9M5 12H2V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
             </div>
-            <button class="fb-fullscreen-btn" id="fb-fullscreen">⛶ <span class="wl-ko">전체화면</span><span class="wl-en">Fullscreen</span></button>
           </div>
           <div id="spread-viewport">
             <div id="fb-loading" class="fb-loading-indicator">
@@ -268,7 +292,9 @@ const latestReport = reports[0] ?? null;
       </>
     ) : (
       <div class="no-pdf">
-        <div class="no-pdf-icon">📄</div>
+        <div class="no-pdf-icon">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="10" y="6" width="28" height="36" rx="4" stroke="#004f68" stroke-width="2"/><path d="M18 18h12M18 24h12M18 30h8" stroke="#004f68" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
         <h3><span class="wl-ko">선교보고 소식지 준비 중</span><span class="wl-en">Mission Report Coming Soon</span></h3>
         <p><span class="wl-ko">월코 선교보고 소식지가 곧 업로드됩니다. 기도와 관심으로 함께해 주셔서 감사합니다.</span><span class="wl-en">The WOLKO mission report newsletter will be uploaded soon. Thank you for your prayers and support.</span></p>
       </div>
@@ -293,7 +319,9 @@ const latestReport = reports[0] ?? null;
             data-title-en={r.data.title_en}
             data-date={r.data.date}
           >
-            <div class="ac-icon">📋</div>
+            <div class="ac-icon">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="5" y="4" width="18" height="22" rx="3" stroke="#004f68" stroke-width="1.6"/><path d="M10 11h8M10 15h8M10 19h5" stroke="#004f68" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
             <div class="ac-title">
               <span class="wl-ko">{r.data.title_ko}</span>
               <span class="wl-en">{r.data.title_en}</span>

@@ -3,6 +3,9 @@ name_ko: 앤더슨 제이슨 & 앤더슨 찬주
 name_en: Jason & Chanju Anderson
 title_ko: 선교사 · Missionaries
 title_en: Missionaries
+show_spouse: true
+spouse_ko: 앤더슨 찬주
+spouse_en: Chanju Anderson
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary

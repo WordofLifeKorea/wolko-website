@@ -353,6 +353,53 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   color: rgba(255,255,255,0.6); max-width: 520px;
 }
 
+/* SPOUSE TOGGLE BAR */
+.mp-story-toggle-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1080px; margin: 0 auto 48px; padding: 0 40px;
+}
+.mp-story-toggle-bar-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--c-muted);
+}
+.mp-spouse-toggle {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: none; border: none; cursor: pointer;
+  padding: 8px 16px 8px 8px;
+  border-radius: 999px; border: 1.5px solid var(--c-line);
+  background: var(--c-white);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+.mp-spouse-toggle:hover { border-color: var(--c-mid); }
+.mp-spouse-toggle.active { border-color: var(--c-deep); box-shadow: 0 2px 10px rgba(0,79,104,0.10); }
+.mp-spouse-toggle-track {
+  width: 36px; height: 20px; border-radius: 999px;
+  background: var(--c-line); position: relative;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.mp-spouse-toggle.active .mp-spouse-toggle-track { background: var(--c-deep); }
+.mp-spouse-toggle-thumb {
+  position: absolute; top: 3px; left: 3px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: transform 0.2s;
+}
+.mp-spouse-toggle.active .mp-spouse-toggle-thumb { transform: translateX(16px); }
+.mp-spouse-toggle-text {
+  font-size: 12px; font-weight: 700; color: var(--c-sub); white-space: nowrap;
+}
+.mp-spouse-toggle.active .mp-spouse-toggle-text { color: var(--c-deep); }
+
+/* SPOUSE CONTENT WRAPPER */
+.mp-spouse-content {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.mp-spouse-content.mp-spouse-hidden {
+  display: none;
+}
+
 /* PRAYER */
 .mp-prayer {
   max-width: 1080px; margin: 0 auto; padding: 0 40px 80px;
@@ -509,6 +556,23 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     </div>
   </section>
 
+  <!-- Spouse Toggle Bar -->
+  {d.show_spouse && (name2Ko || d.spouse_ko) && (
+    <div class="mp-story-toggle-bar">
+      <div class="mp-story-toggle-bar-title">
+        <span class="wl-ko">선교사 이야기</span>
+        <span class="wl-en">Missionary Stories</span>
+      </div>
+      <button class={`mp-spouse-toggle${name2Ko ? ' active' : ''}`} id="spouseToggle" type="button">
+        <span class="mp-spouse-toggle-track">
+          <span class="mp-spouse-toggle-thumb"></span>
+        </span>
+        <span class="mp-spouse-toggle-text wl-ko">배우자 함께 보기</span>
+        <span class="mp-spouse-toggle-text wl-en">Show Spouse</span>
+      </button>
+    </div>
+  )}
+
   <!-- Story -->
   <section class="mp-story">
 
@@ -550,9 +614,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       </div>
     </div>
 
-    <!-- 블록 2 (부부 선교사용): 텍스트 왼쪽, 사진 오른쪽 — show_spouse 체크 시 표시 -->
+    <!-- 블록 2 (부부 선교사용) — 배우자 토글로 제어 -->
     {hasBio2 && d.show_spouse && (
-      <>
+      <div class={`mp-spouse-content${name2Ko ? '' : ' mp-spouse-hidden'}`} id="spouseContent">
         <hr class="mp-story-divider"/>
         <div class="mp-story-block mp-story-block--reverse mp-reveal">
           <div class="mp-story-text">
@@ -567,7 +631,6 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
             {d.bio_ko_2 && <p class="mp-story-body wl-ko-block">{d.bio_ko_2}</p>}
             {d.bio_en_2 && <p class="mp-story-body wl-en-block">{d.bio_en_2}</p>}
           </div>
-
           <div class="mp-story-photo">
             <div class="mp-story-photo-placeholder">
               <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -581,40 +644,42 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
             <span class="mp-story-photo-tag">{d.role_badge}</span>
           </div>
         </div>
-      </>
+      </div>
     )}
 
   </section>
 
-  <!-- 배우자 소개 섹션 — CMS에서 show_spouse 체크 시 표시 -->
+  <!-- 배우자 소개 카드 (bio_ko_2 없을 때) — 배우자 토글로 제어 -->
   {d.show_spouse && d.spouse_ko && !hasBio2 && (
-    <div class="mp-spouse">
-      <div class="mp-spouse-card mp-reveal">
-        <div class="mp-spouse-photo-wrap">
-          {d.photo_url_2 ? (
-            <img src={d.photo_url_2} alt={d.spouse_ko} loading="lazy" onerror="this.style.display='none'"/>
-          ) : (
-            <div class="mp-spouse-avatar">
-              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="40" cy="30" r="16" fill="rgba(255,255,255,0.6)"/>
-                <ellipse cx="40" cy="68" rx="26" ry="16" fill="rgba(255,255,255,0.6)"/>
-              </svg>
-            </div>
-          )}
-        </div>
-        <div class="mp-spouse-text">
-          <div class="mp-spouse-eyebrow">
-            <span class="wl-ko">함께 사역하는 배우자</span>
-            <span class="wl-en">Serving Together</span>
+    <div class={`mp-spouse-content${name2Ko ? '' : ' mp-spouse-hidden'}`} id="spouseContent">
+      <div class="mp-spouse">
+        <div class="mp-spouse-card mp-reveal">
+          <div class="mp-spouse-photo-wrap">
+            {d.photo_url_2 ? (
+              <img src={d.photo_url_2} alt={d.spouse_ko} loading="lazy" onerror="this.style.display='none'"/>
+            ) : (
+              <div class="mp-spouse-avatar">
+                <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="40" cy="30" r="16" fill="rgba(255,255,255,0.6)"/>
+                  <ellipse cx="40" cy="68" rx="26" ry="16" fill="rgba(255,255,255,0.6)"/>
+                </svg>
+              </div>
+            )}
           </div>
-          <h2 class="mp-spouse-name">
-            <span class="wl-ko">{d.spouse_ko}</span>
-            <span class="wl-en">{d.spouse_en}</span>
-          </h2>
-          <p class="mp-spouse-desc">
-            <span class="wl-ko">{name1Ko} 선교사와 함께 복음전파와 제자훈련 사역에 헌신하고 있습니다. 두 사람의 이야기는 위 소개 글에 담겨 있습니다.</span>
-            <span class="wl-en">Serving alongside {name1En} in Gospel proclamation and discipleship ministry. Their story together is shared in the bio above.</span>
-          </p>
+          <div class="mp-spouse-text">
+            <div class="mp-spouse-eyebrow">
+              <span class="wl-ko">함께 사역하는 배우자</span>
+              <span class="wl-en">Serving Together</span>
+            </div>
+            <h2 class="mp-spouse-name">
+              <span class="wl-ko">{d.spouse_ko}</span>
+              <span class="wl-en">{d.spouse_en}</span>
+            </h2>
+            <p class="mp-spouse-desc">
+              <span class="wl-ko">{name1Ko} 선교사와 함께 복음전파와 제자훈련 사역에 헌신하고 있습니다.</span>
+              <span class="wl-en">Serving alongside {name1En} in Gospel proclamation and discipleship ministry.</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -636,9 +701,19 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 
 </div>
 
-<script>
+<script is:inline>
 (function() {
+  // Spouse toggle
+  var toggleBtn = document.getElementById('spouseToggle');
+  var spouseContent = document.getElementById('spouseContent');
+  if (toggleBtn && spouseContent) {
+    toggleBtn.addEventListener('click', function() {
+      var isActive = toggleBtn.classList.toggle('active');
+      spouseContent.classList.toggle('mp-spouse-hidden', !isActive);
+    });
+  }
 
+  // Scroll reveal
   var els = document.querySelectorAll('.mp-reveal');
   if (!('IntersectionObserver' in window)) {
     els.forEach(function(el) { el.classList.add('mp-in'); });

@@ -100,6 +100,9 @@ const {
     </div>
   </nav>
 
+  <!-- 모바일 메뉴 딤 배경 -->
+  <div class="mobile-menu-backdrop" id="menuBackdrop" onclick="toggleMobile()"></div>
+
   <!-- 모바일 메뉴 -->
   <div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-item"><a href="/">HOME</a></div>
@@ -249,28 +252,36 @@ const {
     }
 
     window.toggleLang = function() { applyLang(!isEn); };
+    function closeMobileMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const backdrop = document.getElementById('menuBackdrop');
+      menu.classList.remove('open');
+      backdrop.classList.remove('open');
+      setTimeout(function() {
+        if (!menu.classList.contains('open')) {
+          menu.style.display = 'none';
+          backdrop.style.display = 'none';
+        }
+      }, 200);
+      document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) { el.classList.remove('is-open'); });
+    }
+
     window.toggleMobile = function() {
       const menu = document.getElementById('mobileMenu');
-      const isOpen = menu.classList.contains('open');
-      if (isOpen) {
-        menu.classList.remove('open');
-        setTimeout(function() { if (!menu.classList.contains('open')) menu.style.display = 'none'; }, 200);
-        document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) { el.classList.remove('is-open'); });
+      const backdrop = document.getElementById('menuBackdrop');
+      if (menu.classList.contains('open')) {
+        closeMobileMenu();
       } else {
         menu.style.display = 'block';
-        requestAnimationFrame(function() { requestAnimationFrame(function() { menu.classList.add('open'); }); });
+        backdrop.style.display = 'block';
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            menu.classList.add('open');
+            backdrop.classList.add('open');
+          });
+        });
       }
     };
-    // 메뉴 바깥 클릭 시 닫기
-    document.addEventListener('click', function(e) {
-      const menu = document.getElementById('mobileMenu');
-      const hamburger = document.getElementById('hamburger');
-      if (menu.classList.contains('open') && !menu.contains(e.target) && !hamburger.contains(e.target)) {
-        menu.classList.remove('open');
-        setTimeout(function() { if (!menu.classList.contains('open')) menu.style.display = 'none'; }, 200);
-        document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) { el.classList.remove('is-open'); });
-      }
-    });
     window.toggleMobileSub = function(btn) {
       const item = btn.closest('.mobile-menu-item');
       const isOpen = item.classList.contains('is-open');

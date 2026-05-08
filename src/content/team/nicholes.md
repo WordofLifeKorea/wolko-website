@@ -4,6 +4,9 @@ name_en: "Steve & Randa Nicholes"
 title_ko: "제주월비 대표"
 title_en: "Ministry Director & Executive Dean"
 role_badge: "Jeju Director"
+show_spouse: true
+spouse_ko: 란다 니콜스
+spouse_en: Randa Nicholes
 campus: jeju
 category: missionary
 order: 1

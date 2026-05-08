@@ -4,6 +4,9 @@ name_en: Jacob & Crystal Morse
 title_ko: 월코 대표 · Field Director
 title_en: WOLKO Director · Field Director
 role_badge: Field Director
+show_spouse: true
+spouse_ko: 몰스 크리스탈
+spouse_en: Crystal Morse
 campus: pyeongtaek
 category: missionary
 order: 1

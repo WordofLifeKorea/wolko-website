@@ -4,6 +4,9 @@ name_en: "Jeremy & Elsbeth Rodgers"
 title_ko: "선교사"
 title_en: "Missionaries"
 role_badge: "Missionaries"
+show_spouse: true
+spouse_ko: 엘스벳 라저스
+spouse_en: Elsbeth Rodgers
 campus: jeju
 category: missionary
 order: 4
