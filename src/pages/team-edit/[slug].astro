@@ -7,10 +7,12 @@ import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
   const members = await getCollection('team');
-  return members.map(m => ({
-    params: { slug: m.slug },
-    props: { member: m },
-  }));
+  return members
+    .filter(m => !m.slug.startsWith('map-order'))
+    .map(m => ({
+      params: { slug: m.slug },
+      props: { member: m },
+    }));
 }
 
 const { member } = Astro.props;
