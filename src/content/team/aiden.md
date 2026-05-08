@@ -1,6 +1,6 @@
 ---
 name_ko: 박예능
-name_en: Yeneung Park
+name_en: Aiden Park
 title_ko: 간사 · Short-term Worker
 title_en: Staff · Short-term Worker
 role_badge: Short-term Worker
