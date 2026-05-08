@@ -1,0 +1,792 @@
+---
+// /team-edit/[slug] — Password-protected profile self-edit page
+// Each team member logs in with their slug + KV-stored password
+// Edits are committed directly to GitHub via Cloudflare Worker Functions
+
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const members = await getCollection('team');
+  return members.map(m => ({
+    params: { slug: m.slug },
+    props: { member: m },
+  }));
+}
+
+const { member } = Astro.props;
+const { slug } = Astro.params;
+const d = member.data;
+
+// Build a safe JSON string for inline script
+const initialData = JSON.stringify({
+  slug,
+  bio_ko:           d.bio_ko || '',
+  bio_en:           d.bio_en || '',
+  bio_ko_2:         d.bio_ko_2 || '',
+  bio_en_2:         d.bio_en_2 || '',
+  verse_ref:        d.verse_ref || '',
+  verse_ko:         d.verse_ko || '',
+  verse_en:         d.verse_en || '',
+  hero_subtitle_ko: d.hero_subtitle_ko || '',
+  hero_subtitle_en: d.hero_subtitle_en || '',
+  photo_url:        d.photo_url || '',
+  photo_story:      d.photo_story || '',
+  photo_url_2:      d.photo_url_2 || '',
+});
+
+const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
+---
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>프로필 편집 — {d.name_ko}</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #004f68;
+      --blue-lt: #0077a3;
+      --accent:  #c42a36;
+      --bg:      #f0f4f7;
+      --card:    #ffffff;
+      --border:  #d8e4ea;
+      --text:    #1a2d38;
+      --mid:     #5a7585;
+      --light:   #8fa8b5;
+      --green:   #1da462;
+      --f-sans:  'Montserrat', sans-serif;
+      --f-body:  'Noto Sans KR', sans-serif;
+      --radius:  14px;
+    }
+
+    body {
+      font-family: var(--f-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN SCREEN ─────────────────────────────────────────── */
+    .login-screen {
+      position: fixed; inset: 0;
+      background: linear-gradient(145deg, #002f40, #004f68);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.4s ease;
+    }
+    .login-screen.hidden { opacity: 0; pointer-events: none; }
+
+    .login-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 44px 40px 36px;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-logo {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 24px;
+    }
+    .login-logo img { height: 36px; }
+    .login-logo-name {
+      font-family: var(--f-sans);
+      font-size: 14px; font-weight: 700;
+      color: var(--blue); letter-spacing: 0.04em;
+    }
+    .login-title {
+      font-size: 13px; color: var(--mid);
+      margin-bottom: 8px;
+    }
+    .login-name {
+      font-size: 18px; font-weight: 600; color: var(--text);
+      margin-bottom: 24px;
+    }
+    .login-input-wrap { position: relative; margin-bottom: 12px; }
+    .login-input {
+      width: 100%;
+      padding: 14px 46px 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: var(--f-body);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fafbfc;
+    }
+    .login-input:focus { border-color: var(--blue); background: #fff; }
+    .login-input.error { border-color: var(--accent); }
+    .login-eye {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--light); padding: 4px; transition: color 0.2s;
+    }
+    .login-eye:hover { color: var(--blue); }
+    .login-error {
+      font-size: 13px; color: var(--accent);
+      min-height: 20px; margin-bottom: 10px;
+    }
+    .login-btn {
+      width: 100%; padding: 15px;
+      background: var(--blue);
+      color: #fff; font-family: var(--f-sans);
+      font-size: 14px; font-weight: 700;
+      border: none; border-radius: 10px;
+      cursor: pointer; transition: background 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .login-btn:hover { background: var(--blue-lt); }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── MAIN LAYOUT ──────────────────────────────────────────── */
+    .page-header {
+      background: var(--blue);
+      padding: 20px 32px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .page-header-logo img { height: 30px; }
+    .page-header-info { flex: 1; }
+    .page-header-title {
+      font-family: var(--f-sans);
+      font-size: 13px; font-weight: 700;
+      color: rgba(255,255,255,0.6); letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .page-header-name {
+      font-size: 18px; font-weight: 600; color: #fff;
+      margin-top: 2px;
+    }
+    .page-header-actions {
+      display: flex; gap: 10px;
+    }
+    .btn-logout {
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      font-family: var(--f-sans);
+      font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.22); }
+
+    .page-main {
+      max-width: 800px; margin: 0 auto;
+      padding: 36px 24px 80px;
+    }
+
+    /* ── SECTION CARDS ────────────────────────────────────────── */
+    .edit-section {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,60,90,0.07);
+    }
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 22px;
+      padding-bottom: 14px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .section-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: rgba(0,79,104,0.08);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .section-title {
+      font-family: var(--f-sans);
+      font-size: 13px; font-weight: 700;
+      color: var(--blue); letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .section-sub {
+      font-size: 12px; color: var(--light);
+      margin-top: 1px;
+    }
+
+    /* ── FIELDS ───────────────────────────────────────────────── */
+    .field-group { margin-bottom: 18px; }
+    .field-group:last-child { margin-bottom: 0; }
+
+    .field-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 600; color: var(--mid);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    .field-lang {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 4px;
+    }
+    .field-lang.ko { background: #e8f3f8; color: var(--blue); }
+    .field-lang.en { background: #fef3e2; color: #c47a00; }
+
+    .field-input, .field-textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 12px 14px;
+      font-family: var(--f-body);
+      font-size: 14px; color: var(--text);
+      background: #fafbfc;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      resize: vertical;
+    }
+    .field-input:focus, .field-textarea:focus {
+      border-color: var(--blue);
+      background: #fff;
+    }
+    .field-textarea { min-height: 120px; line-height: 1.7; }
+    .field-textarea.tall { min-height: 180px; }
+
+    .field-pair {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    @media (max-width: 600px) {
+      .field-pair { grid-template-columns: 1fr; }
+    }
+
+    /* ── PHOTO SECTION ────────────────────────────────────────── */
+    .photo-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    @media (max-width: 600px) {
+      .photo-grid { grid-template-columns: 1fr; }
+    }
+
+    .photo-item {}
+    .photo-preview {
+      width: 100%; aspect-ratio: 3/4;
+      border-radius: 10px;
+      border: 2px dashed var(--border);
+      overflow: hidden; position: relative;
+      background: #f4f7f9;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .photo-preview:hover { border-color: var(--blue-lt); }
+    .photo-preview img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block;
+    }
+    .photo-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .photo-preview:hover .photo-overlay { opacity: 1; }
+    .photo-overlay span {
+      font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.04em;
+    }
+    .photo-overlay svg { color: #fff; }
+
+    .photo-empty {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+      color: var(--light);
+      font-size: 12px; font-weight: 500;
+    }
+    .photo-empty svg { opacity: 0.5; }
+
+    .photo-label {
+      font-size: 11px; font-weight: 600;
+      color: var(--mid); letter-spacing: 0.04em;
+      text-align: center;
+      margin-top: 8px; text-transform: uppercase;
+    }
+    .photo-upload-status {
+      font-size: 11px; color: var(--green);
+      text-align: center; min-height: 16px;
+      margin-top: 4px;
+    }
+
+    /* ── SAVE BAR ─────────────────────────────────────────────── */
+    .save-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff;
+      border-top: 1.5px solid var(--border);
+      padding: 16px 24px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: 0 -4px 20px rgba(0,60,90,0.08);
+      z-index: 100;
+    }
+    .save-status {
+      flex: 1; font-size: 13px; color: var(--mid);
+    }
+    .save-status.success { color: var(--green); font-weight: 600; }
+    .save-status.error   { color: var(--accent); font-weight: 600; }
+
+    .btn-save {
+      padding: 13px 32px;
+      background: var(--blue);
+      color: #fff; border: none;
+      border-radius: 10px;
+      font-family: var(--f-sans);
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .btn-save:hover { background: var(--blue-lt); }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-preview {
+      padding: 13px 20px;
+      background: transparent;
+      color: var(--blue);
+      border: 1.5px solid var(--blue);
+      border-radius: 10px;
+      font-family: var(--f-sans);
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-preview:hover { background: var(--blue); color: #fff; }
+
+    /* ── NOTICE BOX ───────────────────────────────────────────── */
+    .notice {
+      background: rgba(0,79,104,0.06);
+      border: 1px solid rgba(0,79,104,0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 12px; color: var(--mid);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .notice strong { color: var(--blue); }
+  </style>
+</head>
+<body>
+
+  <!-- ── LOGIN SCREEN ─────────────────────────────────────────── -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <span class="login-logo-name">WOLKO</span>
+      </div>
+      <p class="login-title">프로필 편집 로그인</p>
+      <p class="login-name">{d.name_ko}</p>
+      <div class="login-input-wrap">
+        <input
+          type="password"
+          class="login-input"
+          id="loginPw"
+          placeholder="비밀번호 입력"
+          autocomplete="current-password"
+        >
+        <button class="login-eye" id="loginEye" type="button" aria-label="비밀번호 보기">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <p class="login-error" id="loginError"></p>
+      <button class="login-btn" id="loginBtn">로그인</button>
+    </div>
+  </div>
+
+  <!-- ── PAGE HEADER ──────────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="page-header-logo">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+    </div>
+    <div class="page-header-info">
+      <div class="page-header-title">프로필 편집</div>
+      <div class="page-header-name">{d.name_ko} <span style="font-weight:400;font-size:14px;opacity:0.7;">/ {d.name_en}</span></div>
+    </div>
+    <div class="page-header-actions">
+      <a class="btn-preview" href={`/team/${slug}`} target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        내 페이지 보기
+      </a>
+      <button class="btn-logout" id="logoutBtn">로그아웃</button>
+    </div>
+  </header>
+
+  <!-- ── MAIN CONTENT ─────────────────────────────────────────── -->
+  <main class="page-main">
+
+    <div class="notice">
+      <strong>안내:</strong> 수정 후 <strong>저장</strong>을 누르면 GitHub에 바로 반영됩니다. 홈페이지 빌드는 약 1~2분 소요될 수 있습니다.
+      사진 업로드는 각 사진 칸을 클릭하세요 (jpg, png, webp / 최대 5MB).
+    </div>
+
+    <!-- ① 사진 섹션 -->
+    <div class="edit-section">
+      <div class="section-header">
+        <div class="section-icon">📷</div>
+        <div>
+          <div class="section-title">사진</div>
+          <div class="section-sub">클릭하여 교체 — 업로드 즉시 저장됩니다</div>
+        </div>
+      </div>
+
+      <div class="photo-grid">
+        <!-- 대표 사진 -->
+        <div class="photo-item">
+          <div class="photo-preview" id="preview-photo_url" onclick="triggerUpload('photo_url')">
+            {d.photo_url
+              ? <img id="img-photo_url" src={d.photo_url} alt="대표 사진">
+              : <div class="photo-empty" id="empty-photo_url">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span>사진 없음</span>
+                </div>
+            }
+            {d.photo_url && <img id="img-photo_url" src={d.photo_url} alt="대표 사진" style="display:none" data-has-photo="true">}
+            <div class="photo-overlay">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>사진 교체</span>
+            </div>
+          </div>
+          <div class="photo-label">대표 사진</div>
+          <div class="photo-upload-status" id="status-photo_url"></div>
+        </div>
+
+        <!-- 스토리 사진 -->
+        <div class="photo-item">
+          <div class="photo-preview" id="preview-photo_story" onclick="triggerUpload('photo_story')">
+            {d.photo_story
+              ? <img id="img-photo_story" src={d.photo_story} alt="스토리 사진">
+              : <div class="photo-empty" id="empty-photo_story">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span>사진 없음</span>
+                </div>
+            }
+            <div class="photo-overlay">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>사진 교체</span>
+            </div>
+          </div>
+          <div class="photo-label">스토리 사진 (본인)</div>
+          <div class="photo-upload-status" id="status-photo_story"></div>
+        </div>
+
+        <!-- 배우자 사진 -->
+        <div class="photo-item" {!hasSpouse ? 'style="opacity:0.4;pointer-events:none"' : ''}>
+          <div class="photo-preview" id="preview-photo_url_2" onclick="triggerUpload('photo_url_2')">
+            {d.photo_url_2
+              ? <img id="img-photo_url_2" src={d.photo_url_2} alt="배우자 사진">
+              : <div class="photo-empty" id="empty-photo_url_2">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span>사진 없음</span>
+                </div>
+            }
+            <div class="photo-overlay">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>사진 교체</span>
+            </div>
+          </div>
+          <div class="photo-label">배우자 사진{!hasSpouse ? ' (해당 없음)' : ''}</div>
+          <div class="photo-upload-status" id="status-photo_url_2"></div>
+        </div>
+      </div>
+
+      <!-- Hidden file input -->
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" style="display:none">
+    </div>
+
+    <!-- ② 헤로 소개 -->
+    <div class="edit-section">
+      <div class="section-header">
+        <div class="section-icon">✍️</div>
+        <div>
+          <div class="section-title">한 줄 소개</div>
+          <div class="section-sub">히어로 섹션 하단에 표시되는 짧은 소개문</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label"><span class="field-lang ko">KO</span> 한국어</label>
+        <textarea class="field-textarea" id="f-hero_subtitle_ko" rows="3">{d.hero_subtitle_ko || ''}</textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label"><span class="field-lang en">EN</span> English</label>
+        <textarea class="field-textarea" id="f-hero_subtitle_en" rows="3">{d.hero_subtitle_en || ''}</textarea>
+      </div>
+    </div>
+
+    <!-- ③ Life Verse -->
+    <div class="edit-section">
+      <div class="section-header">
+        <div class="section-icon">📖</div>
+        <div>
+          <div class="section-title">Life Verse</div>
+          <div class="section-sub">인생 말씀 구절</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">구절 참조 (예: 시편 96:2-3)</label>
+        <input type="text" class="field-input" id="f-verse_ref" value={d.verse_ref || ''}>
+      </div>
+      <div class="field-group">
+        <label class="field-label"><span class="field-lang ko">KO</span> 한국어 말씀</label>
+        <textarea class="field-textarea" id="f-verse_ko" rows="4">{d.verse_ko || ''}</textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label"><span class="field-lang en">EN</span> English Verse</label>
+        <textarea class="field-textarea" id="f-verse_en" rows="4">{d.verse_en || ''}</textarea>
+      </div>
+    </div>
+
+    <!-- ④ 소개 (본인) -->
+    <div class="edit-section">
+      <div class="section-header">
+        <div class="section-icon">👤</div>
+        <div>
+          <div class="section-title">나의 이야기</div>
+          <div class="section-sub">본인 간증 / 사역 소개</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label"><span class="field-lang ko">KO</span> 한국어</label>
+        <textarea class="field-textarea tall" id="f-bio_ko">{d.bio_ko || ''}</textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label"><span class="field-lang en">EN</span> English</label>
+        <textarea class="field-textarea tall" id="f-bio_en">{d.bio_en || ''}</textarea>
+      </div>
+    </div>
+
+    <!-- ⑤ 배우자 소개 (있을 때만) -->
+    {hasSpouse && (
+      <div class="edit-section">
+        <div class="section-header">
+          <div class="section-icon">👥</div>
+          <div>
+            <div class="section-title">배우자 이야기</div>
+            <div class="section-sub">{d.spouse_ko} / {d.spouse_en}</div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label"><span class="field-lang ko">KO</span> 한국어</label>
+          <textarea class="field-textarea tall" id="f-bio_ko_2">{d.bio_ko_2 || ''}</textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label"><span class="field-lang en">EN</span> English</label>
+          <textarea class="field-textarea tall" id="f-bio_en_2">{d.bio_en_2 || ''}</textarea>
+        </div>
+      </div>
+    )}
+
+  </main>
+
+  <!-- ── SAVE BAR ──────────────────────────────────────────────── -->
+  <div class="save-bar">
+    <div class="save-status" id="saveStatus"></div>
+    <button class="btn-save" id="saveBtn">변경사항 저장</button>
+  </div>
+
+  <script is:inline define:vars={{ initialData, slug }}>
+    // ── State ──────────────────────────────────────────────────
+    const TOKEN_KEY = `wolko_team_token_${slug}`;
+    let authToken = sessionStorage.getItem(TOKEN_KEY) || '';
+    let activeUploadField = null;
+
+    // ── Login ──────────────────────────────────────────────────
+    const loginScreen = document.getElementById('loginScreen');
+    const loginPw     = document.getElementById('loginPw');
+    const loginBtn    = document.getElementById('loginBtn');
+    const loginError  = document.getElementById('loginError');
+    const loginEye    = document.getElementById('loginEye');
+
+    function showEditPage() {
+      loginScreen.classList.add('hidden');
+    }
+
+    // Check if already logged in
+    if (authToken) {
+      // Quick verify by attempting a harmless call (just show the page)
+      showEditPage();
+    }
+
+    loginEye.addEventListener('click', () => {
+      const isHidden = loginPw.type === 'password';
+      loginPw.type = isHidden ? 'text' : 'password';
+    });
+
+    loginPw.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    loginBtn.addEventListener('click', doLogin);
+
+    async function doLogin() {
+      const pw = loginPw.value.trim();
+      if (!pw) return;
+      loginBtn.disabled = true;
+      loginBtn.textContent = '확인 중...';
+      loginError.textContent = '';
+      loginPw.classList.remove('error');
+
+      try {
+        const res = await fetch('/api/team/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug, password: pw }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '로그인 실패');
+        authToken = data.token;
+        sessionStorage.setItem(TOKEN_KEY, authToken);
+        showEditPage();
+      } catch (e) {
+        loginPw.classList.add('error');
+        loginError.textContent = e.message;
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = '로그인';
+      }
+    }
+
+    // ── Logout ─────────────────────────────────────────────────
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      sessionStorage.removeItem(TOKEN_KEY);
+      authToken = '';
+      loginScreen.classList.remove('hidden');
+      loginPw.value = '';
+    });
+
+    // ── Photo upload ───────────────────────────────────────────
+    const fileInput = document.getElementById('fileInput');
+
+    window.triggerUpload = function(field) {
+      activeUploadField = field;
+      fileInput.value = '';
+      fileInput.click();
+    };
+
+    fileInput.addEventListener('change', async () => {
+      const file = fileInput.files[0];
+      if (!file || !activeUploadField) return;
+
+      if (file.size > 5 * 1024 * 1024) {
+        setPhotoStatus(activeUploadField, '❌ 파일 크기는 5MB 이하여야 합니다.', true);
+        return;
+      }
+
+      setPhotoStatus(activeUploadField, '업로드 중...');
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('field', activeUploadField);
+
+      try {
+        const res = await fetch('/api/team/upload', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${authToken}` },
+          body: fd,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '업로드 실패');
+
+        // Update preview
+        const previewEl = document.getElementById(`preview-${activeUploadField}`);
+        const emptyEl   = document.getElementById(`empty-${activeUploadField}`);
+        let imgEl = document.getElementById(`img-${activeUploadField}`);
+
+        if (!imgEl) {
+          imgEl = document.createElement('img');
+          imgEl.id = `img-${activeUploadField}`;
+          imgEl.alt = '사진';
+          previewEl.insertBefore(imgEl, previewEl.firstChild);
+        }
+        imgEl.src = data.url + '?t=' + Date.now();
+        imgEl.style.display = '';
+        if (emptyEl) emptyEl.style.display = 'none';
+
+        setPhotoStatus(activeUploadField, '✅ 업로드 완료 — 빌드 후 반영됩니다.');
+      } catch (e) {
+        setPhotoStatus(activeUploadField, '❌ ' + e.message, true);
+      }
+    });
+
+    function setPhotoStatus(field, msg, isErr = false) {
+      const el = document.getElementById(`status-${field}`);
+      if (!el) return;
+      el.textContent = msg;
+      el.style.color = isErr ? '#c42a36' : '#1da462';
+    }
+
+    // ── Save profile fields ────────────────────────────────────
+    const saveBtn    = document.getElementById('saveBtn');
+    const saveStatus = document.getElementById('saveStatus');
+
+    function getFieldVal(id) {
+      const el = document.getElementById(id);
+      return el ? el.value : undefined;
+    }
+
+    saveBtn.addEventListener('click', async () => {
+      saveBtn.disabled = true;
+      saveBtn.textContent = '저장 중...';
+      saveStatus.textContent = '';
+      saveStatus.className = 'save-status';
+
+      const fields = {};
+      const fids = [
+        'hero_subtitle_ko', 'hero_subtitle_en',
+        'verse_ref', 'verse_ko', 'verse_en',
+        'bio_ko', 'bio_en', 'bio_ko_2', 'bio_en_2',
+      ];
+      for (const fid of fids) {
+        const v = getFieldVal(`f-${fid}`);
+        if (v !== undefined) fields[fid] = v;
+      }
+
+      try {
+        const res = await fetch('/api/team/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ fields }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '저장 실패');
+
+        saveStatus.textContent = '✅ 저장 완료 — 홈페이지 빌드 후 (약 1~2분) 반영됩니다.';
+        saveStatus.className = 'save-status success';
+      } catch (e) {
+        saveStatus.textContent = '❌ ' + e.message;
+        saveStatus.className = 'save-status error';
+        if (e.message.includes('인증')) {
+          // Token may have expired — prompt re-login
+          sessionStorage.removeItem(TOKEN_KEY);
+          authToken = '';
+          loginScreen.classList.remove('hidden');
+        }
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '변경사항 저장';
+      }
+    });
+  </script>
+
+</body>
+</html>

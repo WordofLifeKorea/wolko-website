@@ -1,6 +1,12 @@
 ---
 // Admin page — password protected via /api/admin/login
 // No BaseLayout; standalone page
+import { getCollection } from 'astro:content';
+const teamMembers = (await getCollection('team'))
+  .filter(m => !m.slug.startsWith('map-order'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map(m => ({ slug: m.slug, name_ko: m.data.name_ko, name_en: m.data.name_en, category: m.data.category }));
+const teamMembersJson = JSON.stringify(teamMembers);
 ---
 <!DOCTYPE html>
 <html lang="ko">
@@ -295,6 +301,82 @@
       .login-card { padding: 36px 24px 28px; margin: 16px; }
       th, td { padding: 10px 10px; }
     }
+
+    /* ── TEAM PASSWORD SECTION ── */
+    .team-section {
+      margin-top: 48px;
+    }
+    .team-section-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px;
+    }
+    .team-section-title {
+      font-family: var(--f-sans); font-size: 13px; font-weight: 700;
+      color: var(--blue); letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .team-section-sub {
+      font-size: 12px; color: var(--light);
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .team-member-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .team-member-card:hover { border-color: rgba(0,79,104,0.25); box-shadow: 0 2px 12px rgba(0,79,104,0.07); }
+    .team-member-name {
+      font-weight: 600; font-size: 14px; color: var(--text);
+      margin-bottom: 2px;
+    }
+    .team-member-slug {
+      font-size: 11px; color: var(--light); font-family: var(--f-sans);
+      letter-spacing: 0.04em; margin-bottom: 14px;
+    }
+    .team-pw-row {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .team-pw-input {
+      flex: 1;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px; font-family: var(--f-body);
+      color: var(--text); background: #fafbfc;
+      outline: none; transition: border-color 0.2s;
+    }
+    .team-pw-input:focus { border-color: var(--blue); background: #fff; }
+    .team-pw-input.has-pw { border-color: var(--green); }
+    .btn-set-pw {
+      padding: 9px 14px;
+      background: var(--blue);
+      color: #fff; border: none;
+      border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      font-family: var(--f-sans);
+      cursor: pointer; white-space: nowrap;
+      transition: background 0.2s;
+      letter-spacing: 0.03em;
+    }
+    .btn-set-pw:hover { background: var(--blue-lt); }
+    .btn-set-pw:disabled { opacity: 0.5; cursor: not-allowed; }
+    .team-pw-status {
+      font-size: 11px; margin-top: 6px; min-height: 16px;
+    }
+    .team-pw-status.ok { color: var(--green); font-weight: 600; }
+    .team-pw-status.err { color: var(--red); }
+    .team-pw-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; color: var(--blue-lt);
+      text-decoration: none; margin-top: 6px;
+      font-family: var(--f-sans); letter-spacing: 0.03em;
+    }
+    .team-pw-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -404,10 +486,29 @@
         </table>
       </div>
     </div>
+
+    <!-- ── TEAM PASSWORD MANAGEMENT ── -->
+    <div class="team-section" id="teamSection">
+      <div class="team-section-header">
+        <div>
+          <div class="team-section-title">👤 팀원 프로필 편집 비밀번호 관리</div>
+          <div class="team-section-sub">각 선교사의 /team-edit/{slug} 페이지 로그인 비밀번호를 설정합니다</div>
+        </div>
+      </div>
+      <div class="team-grid" id="teamGrid">
+        <!-- JS로 생성 -->
+      </div>
+    </div>
+
   </div>
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
+
+  <!-- Team member data for JS (injected at build time) -->
+  <script is:inline define:vars={{ teamMembersJson }}>
+    window.__TEAM_MEMBERS__ = JSON.parse(teamMembersJson);
+  </script>
 
   <script is:inline>
     const CAMP_GROUPS = [
@@ -735,6 +836,105 @@
       document.getElementById('loginScreen').classList.add('hidden');
       setTimeout(() => { document.getElementById('loginScreen').style.display = 'none'; }, 0);
       loadRegs();
+      buildTeamGrid();
+    }
+
+    // ── Team password management ──────────────────────────────────
+    // TEAM_MEMBERS injected via hidden script tag below
+    function buildTeamGrid() {
+      const members = window.__TEAM_MEMBERS__ || [];
+      const grid = document.getElementById('teamGrid');
+      if (!grid || members.length === 0) return;
+
+      grid.innerHTML = members.map(m => `
+        <div class="team-member-card">
+          <div class="team-member-name">${m.name_ko}</div>
+          <div class="team-member-slug">/team-edit/${m.slug}</div>
+          <div class="team-pw-row">
+            <input
+              type="text"
+              class="team-pw-input"
+              id="pw-${m.slug}"
+              placeholder="새 비밀번호 입력"
+              autocomplete="off"
+            >
+            <button class="btn-set-pw" onclick="setTeamPw('${m.slug}')">저장</button>
+          </div>
+          <div class="team-pw-status" id="pw-status-${m.slug}"></div>
+          <a class="team-pw-link" href="/team-edit/${m.slug}" target="_blank">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+              <polyline points="15 3 21 3 21 9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            편집 페이지 열기
+          </a>
+        </div>
+      `).join('');
+
+      // Load existing passwords to show status
+      members.forEach(m => loadTeamPwStatus(m.slug));
+    }
+
+    async function loadTeamPwStatus(slug) {
+      // Try to check if password is set (via admin API)
+      try {
+        const res = await fetch(`/api/admin/team-pw?slug=${slug}`, {
+          headers: authHeaders()
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const inp = document.getElementById(`pw-${slug}`);
+          if (inp && data.hasPassword) {
+            inp.placeholder = '비밀번호 설정됨 (변경하려면 입력)';
+            inp.classList.add('has-pw');
+          }
+        }
+      } catch {}
+    }
+
+    async function setTeamPw(slug) {
+      const inp = document.getElementById(`pw-${slug}`);
+      const statusEl = document.getElementById(`pw-status-${slug}`);
+      const btn = inp.closest('.team-member-card').querySelector('.btn-set-pw');
+      const pw = inp.value.trim();
+
+      if (!pw) {
+        statusEl.textContent = '비밀번호를 입력하세요.';
+        statusEl.className = 'team-pw-status err';
+        return;
+      }
+      if (pw.length < 4) {
+        statusEl.textContent = '비밀번호는 4자 이상이어야 합니다.';
+        statusEl.className = 'team-pw-status err';
+        return;
+      }
+
+      btn.disabled = true;
+      statusEl.textContent = '저장 중...';
+      statusEl.className = 'team-pw-status';
+
+      try {
+        const res = await fetch('/api/admin/team-pw', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ slug, password: pw }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '저장 실패');
+
+        inp.value = '';
+        inp.placeholder = '비밀번호 설정됨 (변경하려면 입력)';
+        inp.classList.add('has-pw');
+        statusEl.textContent = '✅ 저장 완료';
+        statusEl.className = 'team-pw-status ok';
+        showToast(`${slug} 비밀번호 저장 완료`, 'success');
+      } catch (e) {
+        statusEl.textContent = '❌ ' + e.message;
+        statusEl.className = 'team-pw-status err';
+      } finally {
+        btn.disabled = false;
+      }
     }
   </script>
 </body>
