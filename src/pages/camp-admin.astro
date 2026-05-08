@@ -244,12 +244,12 @@
     .camp-select-menu.open {
       opacity: 1; transform: translateY(0) scale(1); pointer-events: all;
     }
-    .camp-select-menu-inner { padding: 8px; }
+    .camp-select-menu-inner { padding: 12px; }
 
     /* 전체 옵션 */
     .camp-select-option-all {
       display: flex; align-items: center; gap: 12px;
-      padding: 12px 14px;
+      padding: 14px 16px;
       border-radius: 10px;
       cursor: pointer;
       transition: background 0.12s;
@@ -267,7 +267,7 @@
     /* 그룹 구분선 */
     .camp-select-group-sep {
       display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px 6px;
+      padding: 14px 16px 8px;
       margin-top: 2px;
     }
     .camp-select-group-line { flex: 1; height: 1px; background: var(--border); }
@@ -283,7 +283,7 @@
     /* 개별 옵션 */
     .camp-select-option {
       display: flex; align-items: center; gap: 12px;
-      padding: 11px 14px;
+      padding: 13px 16px;
       border-radius: 10px;
       cursor: pointer;
       transition: background 0.12s;
@@ -501,23 +501,24 @@
     const CAMP_GROUPS = [
       {
         group: 'wolko',
-        label: '🏕 월코 캠프',
+        label: 'WOLKO 캠프',
         camps: [
           { id: '2026-inland-english-junior', title: '주니어 영어캠프', capacity: 40 },
           { id: '2026-inland-union',          title: '교회 연합캠프',   capacity: 60 },
         ],
       },
-      {
-        group: 'jeju',
-        label: '🏝 제주 캠프',
-        camps: [
-          { id: '2026-jeju-english',    title: '제주 영어캠프', capacity: 60 },
-          { id: '2026-jeju-momentum-1', title: '모멘텀 1차',    capacity: 60 },
-          { id: '2026-jeju-momentum-2', title: '모멘텀 2차',    capacity: 60 },
-        ],
-      },
+      // 제주 캠프는 카페에서 별도 신청 — 추후 필요 시 아래 주석 해제
+      // {
+      //   group: 'jeju',
+      //   label: 'JEJU 캠프',
+      //   camps: [
+      //     { id: '2026-jeju-english',    title: '제주 영어캠프', capacity: 60 },
+      //     { id: '2026-jeju-momentum-1', title: '모멘텀 1차',    capacity: 60 },
+      //     { id: '2026-jeju-momentum-2', title: '모멘텀 2차',    capacity: 60 },
+      //   ],
+      // },
     ];
-    const CAMPS_ALL = [{ id: 'all', title: '전체 캠프', capacity: 280 }]
+    const CAMPS_ALL = [{ id: 'all', title: '전체 캠프', capacity: 100 }]
       .concat(CAMP_GROUPS.flatMap(g => g.camps));
     const CAMP_LABELS = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.title]));
     const CAMP_CAP    = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.capacity]));
@@ -606,7 +607,7 @@
       allOpt.innerHTML = `
         <span class="camp-select-option-all-dot"></span>
         <span class="camp-select-option-all-text">전체 캠프</span>
-        <span style="font-size:11px;color:var(--light);font-family:var(--f-sans);margin-left:auto;margin-right:8px">5개 캠프</span>
+        <span style="font-size:11px;color:var(--light);font-family:var(--f-sans);margin-left:auto;margin-right:8px">2개 캠프</span>
         ${CHECK_SVG}
       `;
       allOpt.onclick = () => selectCamp('all');
@@ -667,7 +668,7 @@
       // 버튼 업데이트
       document.getElementById('campSelectLabel').textContent = camp?.title || '전체 캠프';
       document.getElementById('campDot').style.background = GROUP_COLOR[groupKey];
-      const sub = id === 'all' ? '전체 5개 캠프' : `정원 ${camp?.capacity || 0}명`;
+      const sub = id === 'all' ? '전체 2개 캠프' : `정원 ${camp?.capacity || 0}명`;
       document.getElementById('campSelectSub').textContent = sub;
 
       // 체크 상태
