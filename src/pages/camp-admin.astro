@@ -165,90 +165,78 @@
     /* ── LAYOUT ── */
     .adm-wrap { max-width: 1280px; margin: 0 auto; padding: 32px 24px 80px; }
 
-    /* ── CAMP TABS ── */
-    .camp-tabs {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+    /* ── CAMP DROPDOWN ── */
+    .camp-select-wrap {
+      position: relative;
+      display: inline-block;
       margin-bottom: 28px;
     }
-
-    /* 전체 버튼 */
-    .camp-tab-all {
-      padding: 9px 18px;
-      border-radius: 10px;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      border: 1.5px solid var(--border);
-      background: var(--card);
-      color: var(--mid);
-      font-family: var(--f-body);
-      transition: all 0.15s;
-      white-space: nowrap;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-    .camp-tab-all:hover { border-color: var(--mid); color: var(--text); }
-    .camp-tab-all.active { background: var(--text); border-color: var(--text); color: #fff; box-shadow: 0 3px 10px rgba(26,45,56,0.2); }
-
-    /* 구분선 */
-    .camp-tab-dot {
-      width: 1px; height: 32px;
-      background: var(--border);
-      flex-shrink: 0;
-    }
-
-    /* 그룹 세그먼트 */
-    .camp-tab-segment {
-      display: flex;
+    .camp-select-btn {
+      display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 5px 5px 5px 10px;
-      border-radius: 12px;
-      border: 1.5px solid;
-    }
-    .camp-tab-segment.wolko {
-      background: #eef5f8;
-      border-color: rgba(0,79,104,0.15);
-    }
-    .camp-tab-segment.jeju {
-      background: #e8f6fa;
-      border-color: rgba(8,145,178,0.2);
-    }
-
-    /* 그룹 레이블 */
-    .camp-tab-segment-label {
-      font-size: 10px; font-weight: 700;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      font-family: var(--f-sans);
-      padding-right: 4px;
-      user-select: none;
-      flex-shrink: 0;
-    }
-    .camp-tab-segment.wolko .camp-tab-segment-label { color: rgba(0,79,104,0.5); }
-    .camp-tab-segment.jeju  .camp-tab-segment-label { color: rgba(8,145,178,0.65); }
-
-    /* 개별 탭 버튼 */
-    .camp-tab {
-      padding: 7px 14px;
-      border-radius: 8px;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      border: none; background: transparent;
+      gap: 10px;
+      padding: 10px 14px 10px 16px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
       font-family: var(--f-body);
-      transition: background 0.15s, color 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      min-width: 220px;
+      user-select: none;
+    }
+    .camp-select-btn:hover { border-color: var(--blue-lt); box-shadow: 0 2px 8px rgba(0,79,104,0.1); }
+    .camp-select-btn.open  { border-color: var(--blue); box-shadow: 0 2px 10px rgba(0,79,104,0.15); }
+    .camp-select-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .camp-select-label { flex: 1; text-align: left; }
+    .camp-select-chevron { color: var(--light); transition: transform 0.2s; flex-shrink: 0; }
+    .camp-select-btn.open .camp-select-chevron { transform: rotate(180deg); }
+
+    .camp-select-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 100%;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0,79,104,0.14);
+      z-index: 300;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      padding: 6px;
+    }
+    .camp-select-menu.open {
+      opacity: 1; transform: translateY(0) scale(1); pointer-events: all;
+    }
+    .camp-select-group-label {
+      padding: 8px 10px 4px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      font-family: var(--f-sans); color: var(--light);
+    }
+    .camp-select-option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      border-radius: 7px;
+      transition: background 0.12s;
+      font-family: var(--f-body);
       white-space: nowrap;
     }
-    .camp-tab-segment.wolko .camp-tab { color: var(--blue); }
-    .camp-tab-segment.jeju  .camp-tab { color: #0779a0; }
-    .camp-tab-segment.wolko .camp-tab:hover { background: rgba(0,79,104,0.12); }
-    .camp-tab-segment.jeju  .camp-tab:hover  { background: rgba(8,145,178,0.14); }
-    .camp-tab-segment.wolko .camp-tab.active {
-      background: var(--blue); color: #fff;
-      box-shadow: 0 2px 8px rgba(0,79,104,0.28);
-    }
-    .camp-tab-segment.jeju .camp-tab.active {
-      background: #0891b2; color: #fff;
-      box-shadow: 0 2px 8px rgba(8,145,178,0.28);
-    }
+    .camp-select-option:hover { background: var(--bg); }
+    .camp-select-option.active { background: #eef4f7; font-weight: 600; color: var(--blue); }
+    .camp-select-divider { height: 1px; background: var(--border); margin: 4px 0; }
 
     /* ── DASHBOARD CARDS ── */
     .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
@@ -358,9 +346,16 @@
   </header>
 
   <div class="adm-wrap">
-    <!-- CAMP TABS -->
-    <div class="camp-tabs" id="campTabs">
-      <!-- JS로 렌더링 -->
+    <!-- CAMP DROPDOWN -->
+    <div class="camp-select-wrap" id="campSelectWrap">
+      <div class="camp-select-btn" id="campSelectBtn" onclick="toggleCampMenu()">
+        <span class="camp-select-dot" id="campDot" style="background:var(--mid)"></span>
+        <span class="camp-select-label" id="campSelectLabel">전체 캠프</span>
+        <svg class="camp-select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="camp-select-menu" id="campSelectMenu"></div>
     </div>
 
     <!-- DASHBOARD CARDS -->
@@ -525,52 +520,80 @@
       return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` };
     }
 
-    // ── Init tabs ──
-    const tabsEl = document.getElementById('campTabs');
+    // ── Camp dropdown ──
+    const GROUP_COLOR = { all: 'var(--mid)', wolko: 'var(--blue)', jeju: '#0891b2' };
 
-    // 전체 버튼
-    const allBtn = document.createElement('button');
-    allBtn.className = 'camp-tab-all active';
-    allBtn.textContent = '전체 캠프';
-    allBtn.dataset.id = 'all';
-    allBtn.onclick = () => selectCamp('all');
-    tabsEl.appendChild(allBtn);
+    function buildCampMenu() {
+      const menu = document.getElementById('campSelectMenu');
+      menu.innerHTML = '';
 
-    // 그룹별 세그먼트
-    CAMP_GROUPS.forEach((g) => {
-      const dot = document.createElement('div');
-      dot.className = 'camp-tab-dot';
-      tabsEl.appendChild(dot);
+      // 전체
+      const allOpt = document.createElement('div');
+      allOpt.className = 'camp-select-option active';
+      allOpt.dataset.id = 'all';
+      allOpt.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:var(--mid);display:inline-block;flex-shrink:0"></span> 전체 캠프`;
+      allOpt.onclick = () => selectCamp('all');
+      menu.appendChild(allOpt);
 
-      const seg = document.createElement('div');
-      seg.className = `camp-tab-segment ${g.group}`;
+      CAMP_GROUPS.forEach((g, i) => {
+        const divider = document.createElement('div');
+        divider.className = 'camp-select-divider';
+        menu.appendChild(divider);
 
-      const labelEl = document.createElement('span');
-      labelEl.className = 'camp-tab-segment-label';
-      labelEl.textContent = g.group === 'wolko' ? 'WOLKO' : 'JEJU';
-      seg.appendChild(labelEl);
+        const groupLabel = document.createElement('div');
+        groupLabel.className = 'camp-select-group-label';
+        groupLabel.textContent = g.group === 'wolko' ? 'WOLKO 캠프' : 'JEJU 캠프';
+        menu.appendChild(groupLabel);
 
-      g.camps.forEach(c => {
-        const btn = document.createElement('button');
-        btn.className = 'camp-tab';
-        btn.textContent = c.title;
-        btn.dataset.id = c.id;
-        btn.onclick = () => selectCamp(c.id);
-        seg.appendChild(btn);
+        g.camps.forEach(c => {
+          const opt = document.createElement('div');
+          opt.className = 'camp-select-option';
+          opt.dataset.id = c.id;
+          const color = GROUP_COLOR[g.group];
+          opt.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span> ${c.title}`;
+          opt.onclick = () => selectCamp(c.id);
+          menu.appendChild(opt);
+        });
       });
+    }
 
-      tabsEl.appendChild(seg);
+    function toggleCampMenu() {
+      const btn = document.getElementById('campSelectBtn');
+      const menu = document.getElementById('campSelectMenu');
+      const isOpen = menu.classList.contains('open');
+      btn.classList.toggle('open', !isOpen);
+      menu.classList.toggle('open', !isOpen);
+    }
+
+    // 외부 클릭 시 닫기
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('campSelectWrap').contains(e.target)) {
+        document.getElementById('campSelectBtn').classList.remove('open');
+        document.getElementById('campSelectMenu').classList.remove('open');
+      }
     });
 
     function selectCamp(id) {
       activeCamp = id;
-      // 전체 버튼
-      document.querySelector('.camp-tab-all').classList.toggle('active', id === 'all');
-      // 그룹 탭 버튼
-      document.querySelectorAll('.camp-tab').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+
+      // 버튼 레이블 + 색상 업데이트
+      const camp = CAMPS_ALL.find(c => c.id === id);
+      const groupKey = id === 'all' ? 'all' : (CAMP_GROUPS.find(g => g.camps.some(c => c.id === id))?.group || 'all');
+      document.getElementById('campSelectLabel').textContent = camp?.title || '전체 캠프';
+      document.getElementById('campDot').style.background = GROUP_COLOR[groupKey] || 'var(--mid)';
+
+      // 메뉴 active 상태
+      document.querySelectorAll('.camp-select-option').forEach(o => o.classList.toggle('active', o.dataset.id === id));
+
+      // 메뉴 닫기
+      document.getElementById('campSelectBtn').classList.remove('open');
+      document.getElementById('campSelectMenu').classList.remove('open');
+
       renderTable();
       renderDash();
     }
+
+    buildCampMenu();
 
     // ── Fetch ──
     async function loadRegs() {
