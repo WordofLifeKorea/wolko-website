@@ -3,6 +3,7 @@ name_ko: "소이 에스텔"
 name_en: "Estelle Soy"
 title_ko: "단기 사역자"
 title_en: "Short-term Worker"
+gender: female
 role_badge: "Short-term Worker"
 campus: pyeongtaek
 category: stw

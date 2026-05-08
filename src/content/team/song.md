@@ -3,6 +3,7 @@ name_ko: 송승현
 name_en: Seunghyun Song
 title_ko: 선교사 · Missionary
 title_en: Missionary
+gender: male
 role_badge: Missionary
 campus: pyeongtaek
 category: missionary

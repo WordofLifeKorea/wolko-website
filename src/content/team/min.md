@@ -3,6 +3,7 @@ name_ko: 민경찬 & 김유진
 name_en: Gyeongchan Min & Yujin Kim
 title_ko: 선교사 · Missionaries
 title_en: Missionaries
+gender: male
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary

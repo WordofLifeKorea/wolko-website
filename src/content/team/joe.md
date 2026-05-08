@@ -3,6 +3,7 @@ name_ko: "챕먼 조"
 name_en: "Joe Chapman"
 title_ko: "선교사"
 title_en: "Missionary"
+gender: male
 role_badge: "Missionary"
 campus: jeju
 category: missionary

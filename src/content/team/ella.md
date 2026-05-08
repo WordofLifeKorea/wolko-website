@@ -3,6 +3,7 @@ name_ko: "임현지"
 name_en: "Hyunji Im"
 title_ko: "간사 · Short-term Worker"
 title_en: "Staff · Short-term Worker"
+gender: female
 role_badge: "Short-term Worker"
 campus: pyeongtaek
 category: stw

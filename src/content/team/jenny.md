@@ -3,6 +3,7 @@ name_ko: 손진영
 name_en: Jinyoung Son
 title_ko: 회계 | 캠프 보조
 title_en: Account | Camp Derector  Assistant
+gender: female
 role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw

@@ -6,6 +6,7 @@ title_en: Missionaries
 show_spouse: true
 spouse_ko: 앤더슨 찬주
 spouse_en: Chanju Anderson
+gender: male
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary

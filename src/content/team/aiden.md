@@ -3,6 +3,7 @@ name_ko: 박예능
 name_en: Aiden Park
 title_ko: 간사 · Short-term Worker
 title_en: Staff · Short-term Worker
+gender: male
 role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw

@@ -3,6 +3,7 @@ name_ko: "그램 몰리"
 name_en: "Molly Graham"
 title_ko: "단기 사역자"
 title_en: "Short-term Worker"
+gender: female
 role_badge: "Short-term Worker"
 campus: pyeongtaek
 category: stw

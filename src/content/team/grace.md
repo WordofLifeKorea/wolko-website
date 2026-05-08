@@ -3,6 +3,7 @@ name_ko: "웹스터 그레이스"
 name_en: "Grace Webster"
 title_ko: "단기 사역자"
 title_en: "Short-term Worker"
+gender: female
 role_badge: "Short-term Worker"
 campus: jeju
 category: stw

@@ -3,6 +3,7 @@ name_ko: "제레미 & 엘스벳 라저스"
 name_en: "Jeremy & Elsbeth Rodgers"
 title_ko: "선교사"
 title_en: "Missionaries"
+gender: male
 role_badge: "Missionaries"
 show_spouse: true
 spouse_ko: 엘스벳 라저스

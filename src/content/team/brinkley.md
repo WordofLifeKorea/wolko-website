@@ -3,6 +3,7 @@ name_ko: "모슬리 브링클리"
 name_en: "Brinkley Moseley"
 title_ko: "단기 사역자"
 title_en: "Short-term Worker"
+gender: female
 role_badge: "Short-term Worker"
 campus: jeju
 category: stw

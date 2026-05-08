@@ -3,6 +3,7 @@ name_ko: "백남규 & 조안나"
 name_en: "Namkyu Baek & Joanna"
 title_ko: "선교사"
 title_en: "Missionaries"
+gender: male
 role_badge: "Missionaries"
 campus: jeju
 category: missionary

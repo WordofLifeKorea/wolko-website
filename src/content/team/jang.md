@@ -3,6 +3,7 @@ name_ko: "장성남 & 김미정"
 name_en: "Seongnam Jang & Mijeong Kim"
 title_ko: "선교사"
 title_en: "Missionaries"
+gender: male
 role_badge: "Missionaries"
 campus: jeju
 category: missionary

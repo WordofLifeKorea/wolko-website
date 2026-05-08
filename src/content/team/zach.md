@@ -3,6 +3,7 @@ name_ko: 프래지어 잭
 name_en: Zach Frazier
 title_ko: 단기 사역자
 title_en: Short-term Worker
+gender: male
 role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw

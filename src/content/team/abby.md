@@ -3,6 +3,7 @@ name_ko: 애비 니콜스
 name_en: Abby Nicholes
 title_ko: 단기 사역자
 title_en: Short-term Worker
+gender: female
 role_badge: Short-term Worker
 campus: jeju
 category: stw

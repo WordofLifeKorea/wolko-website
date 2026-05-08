@@ -3,6 +3,7 @@ name_ko: 채병국 & 김미영
 name_en: Byungkook Chae & Miyoung Kim
 title_ko: 선교사 · Missionaries
 title_en: Missionaries
+gender: male
 role_badge: Missionaries
 show_spouse: true
 spouse_ko: 김미영
