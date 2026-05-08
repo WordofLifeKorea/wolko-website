@@ -295,6 +295,12 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 .mp-story-block--reverse .mp-story-text { order: 1; }
 .mp-story-block--reverse .mp-story-photo { order: 2; }
 
+/* 모바일: reverse 블록에서 사진을 텍스트 위로 */
+@media (max-width: 900px) {
+  .mp-story-block--reverse .mp-story-text { order: 2; }
+  .mp-story-block--reverse .mp-story-photo { order: 1; }
+}
+
 /* SPOUSE SECTION */
 .mp-spouse {
   max-width: 1080px; margin: 0 auto; padding: 0 40px 72px;
@@ -556,8 +562,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     </div>
   </section>
 
-  <!-- Spouse Toggle Bar -->
-  {d.show_spouse && (name2Ko || d.spouse_ko) && (
+  <!-- Spouse Toggle Bar (단독 선교사 + 배우자 있을 때만 표시 — 부부 페이지는 항상 노출) -->
+  {d.show_spouse && !name2Ko && d.spouse_ko && (
     <div class="mp-story-toggle-bar">
       <div class="mp-story-toggle-bar-title">
         <span class="wl-ko">선교사 이야기</span>
