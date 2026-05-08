@@ -1,0 +1,591 @@
+---
+// Admin page — protected by Cloudflare Access
+// No BaseLayout; standalone page
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 — WOLKO 캠프 신청 현황</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #004f68;
+      --blue-lt: #0077a3;
+      --accent:  #c42a36;
+      --bg:      #f4f6f8;
+      --card:    #ffffff;
+      --border:  #e4eaee;
+      --text:    #1a2d38;
+      --mid:     #5a7585;
+      --light:   #8fa8b5;
+      --green:   #1da462;
+      --orange:  #e07b00;
+      --red:     #c42a36;
+      --f-sans:  'Montserrat', sans-serif;
+      --f-body:  'Noto Sans KR', sans-serif;
+    }
+
+    body { font-family: var(--f-body); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── HEADER ── */
+    .adm-header {
+      background: var(--blue);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,79,104,0.25);
+    }
+    .adm-header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .adm-header-logo img { height: 30px; }
+    .adm-header-logo span {
+      font-family: var(--f-sans);
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.04em;
+    }
+    .adm-header-badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.8);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-family: var(--f-sans);
+    }
+
+    /* ── LAYOUT ── */
+    .adm-wrap { max-width: 1280px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* ── CAMP TABS ── */
+    .camp-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .camp-tab {
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      color: var(--mid);
+      font-family: var(--f-body);
+      transition: all 0.18s;
+    }
+    .camp-tab:hover { border-color: var(--blue-lt); color: var(--blue); }
+    .camp-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+    /* ── DASHBOARD CARDS ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .dash-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px 22px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,79,104,0.05);
+    }
+    .dash-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--light);
+      font-family: var(--f-sans);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .dash-value {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: var(--f-sans);
+      color: var(--blue);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .dash-value.green { color: var(--green); }
+    .dash-value.orange { color: var(--orange); }
+    .dash-value.red { color: var(--red); }
+    .dash-sub { font-size: 12px; color: var(--light); }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap { margin-bottom: 28px; }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .progress-title { font-size: 13px; font-weight: 600; color: var(--mid); }
+    .progress-pct { font-size: 13px; font-weight: 700; color: var(--blue); font-family: var(--f-sans); }
+    .progress-bar-bg {
+      height: 10px;
+      background: var(--border);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--blue-lt));
+      border-radius: 100px;
+      transition: width 0.5s ease;
+      min-width: 0;
+    }
+    .progress-bar-fill.warn { background: linear-gradient(90deg, var(--orange), #f59f2a); }
+    .progress-bar-fill.full { background: linear-gradient(90deg, var(--red), #e85565); }
+
+    /* ── TABLE SECTION ── */
+    .table-section { background: var(--card); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,79,104,0.05); overflow: hidden; }
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .table-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .table-count { font-size: 13px; color: var(--light); margin-left: 8px; }
+    .btn-csv {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--f-body);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-csv:hover { background: var(--blue-lt); transform: translateY(-1px); }
+
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #f8fafc; }
+    th {
+      padding: 11px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--light);
+      text-transform: uppercase;
+      font-family: var(--f-sans);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid #f0f4f7;
+      color: var(--text);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--f-sans);
+    }
+    .badge-individual { background: #e8f4fb; color: #0077a3; }
+    .badge-group { background: #fef3e2; color: #c47a00; }
+
+    .btn-del {
+      background: none;
+      border: 1px solid #ffd5d8;
+      color: var(--red);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      font-family: var(--f-body);
+    }
+    .btn-del:hover { background: #fff0f1; border-color: var(--red); }
+
+    /* ── EMPTY / LOADING STATE ── */
+    .state-box {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--light);
+    }
+    .state-box svg { margin-bottom: 16px; opacity: 0.4; }
+    .state-box p { font-size: 14px; }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--text);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 999;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: var(--green); }
+    .toast.error { background: var(--red); }
+
+    @media (max-width: 640px) {
+      .adm-wrap { padding: 20px 14px 60px; }
+      .adm-header { padding: 0 16px; }
+      th, td { padding: 10px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="adm-header">
+    <a class="adm-header-logo" href="/">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <span>WOLKO 관리자</span>
+    </a>
+    <span class="adm-header-badge">CAMP ADMIN</span>
+  </header>
+
+  <div class="adm-wrap">
+
+    <!-- CAMP TABS -->
+    <div class="camp-tabs" id="campTabs"></div>
+
+    <!-- DASHBOARD CARDS -->
+    <div class="dash-grid" id="dashGrid">
+      <div class="dash-card">
+        <div class="dash-label">총 신청</div>
+        <div class="dash-value" id="dTotal">—</div>
+        <div class="dash-sub" id="dTotalSub">불러오는 중…</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-label">잔여 정원</div>
+        <div class="dash-value green" id="dRemain">—</div>
+        <div class="dash-sub" id="dRemainSub">정원 기준</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-label">마감률</div>
+        <div class="dash-value" id="dPct">—</div>
+        <div class="dash-sub" id="dPctSub">신청 / 정원</div>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap">
+      <div class="progress-header">
+        <span class="progress-title" id="progressLabel">전체 정원 현황</span>
+        <span class="progress-pct" id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-section">
+      <div class="table-toolbar">
+        <div>
+          <span class="table-title">신청 목록</span>
+          <span class="table-count" id="tableCount"></span>
+        </div>
+        <button class="btn-csv" id="btnCsv" onclick="downloadCsv()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          CSV 다운로드
+        </button>
+      </div>
+      <div class="table-scroll">
+        <table id="regTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>캠프</th>
+              <th>유형</th>
+              <th>이름</th>
+              <th>연락처</th>
+              <th>이메일</th>
+              <th>학년 / 인원</th>
+              <th>교회</th>
+              <th>학교</th>
+              <th>비상연락처</th>
+              <th>메모</th>
+              <th>신청일시</th>
+              <th>삭제</th>
+            </tr>
+          </thead>
+          <tbody id="regBody">
+            <tr>
+              <td colspan="13">
+                <div class="state-box">
+                  <div class="spinner"></div>
+                  <p>신청 목록을 불러오는 중입니다…</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const CAMPS = [
+      { id: 'all',                         title: '전체 캠프',          capacity: 280 },
+      { id: '2026-inland-english-junior',  title: '주니어 영어캠프',    capacity: 40  },
+      { id: '2026-inland-union',           title: '교회 연합캠프',      capacity: 60  },
+      { id: '2026-jeju-english',           title: '제주 영어캠프',      capacity: 60  },
+      { id: '2026-jeju-momentum-1',        title: '모멘텀 1차',         capacity: 60  },
+      { id: '2026-jeju-momentum-2',        title: '모멘텀 2차',         capacity: 60  },
+    ];
+
+    const CAMP_LABELS = Object.fromEntries(CAMPS.map(c => [c.id, c.title]));
+    const CAMP_CAP    = Object.fromEntries(CAMPS.map(c => [c.id, c.capacity]));
+
+    let allRegs = [];
+    let activeCamp = 'all';
+
+    // ── Init tabs ──
+    const tabsEl = document.getElementById('campTabs');
+    CAMPS.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'camp-tab' + (c.id === 'all' ? ' active' : '');
+      btn.textContent = c.title;
+      btn.dataset.id = c.id;
+      btn.onclick = () => selectCamp(c.id);
+      tabsEl.appendChild(btn);
+    });
+
+    function selectCamp(id) {
+      activeCamp = id;
+      document.querySelectorAll('.camp-tab').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+      renderTable();
+      renderDash();
+    }
+
+    // ── Fetch registrations ──
+    async function loadRegs() {
+      try {
+        const res = await fetch('/api/admin/registrations');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        allRegs = data.registrations || [];
+        renderTable();
+        renderDash();
+      } catch (e) {
+        showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
+        document.getElementById('regBody').innerHTML = `
+          <tr><td colspan="13">
+            <div class="state-box">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/>
+                <path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <p>데이터를 불러오는 데 실패했습니다.<br>Cloudflare KV 바인딩을 확인해주세요.</p>
+            </div>
+          </td></tr>`;
+      }
+    }
+
+    function filteredRegs() {
+      if (activeCamp === 'all') return allRegs;
+      return allRegs.filter(r => r.campId === activeCamp);
+    }
+
+    // ── Dashboard ──
+    function renderDash() {
+      const regs = filteredRegs();
+      const cap = CAMP_CAP[activeCamp] || 280;
+      const total = regs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      const remain = Math.max(0, cap - total);
+      const pct = cap > 0 ? Math.round((total / cap) * 100) : 0;
+
+      document.getElementById('dTotal').textContent = total;
+      document.getElementById('dTotalSub').textContent = `명 신청 완료`;
+      document.getElementById('dRemain').textContent = remain;
+      document.getElementById('dRemainSub').textContent = `정원 ${cap}명 기준`;
+      document.getElementById('dPct').textContent = pct + '%';
+      document.getElementById('dPct').className = 'dash-value' + (pct >= 100 ? ' red' : pct >= 80 ? ' orange' : '');
+      document.getElementById('dPctSub').textContent = `${total} / ${cap}`;
+
+      const campName = CAMP_LABELS[activeCamp] || '전체';
+      document.getElementById('progressLabel').textContent = campName + ' 정원 현황';
+      document.getElementById('progressPct').textContent = pct + '%';
+      const fill = document.getElementById('progressFill');
+      fill.style.width = Math.min(pct, 100) + '%';
+      fill.className = 'progress-bar-fill' + (pct >= 100 ? ' full' : pct >= 80 ? ' warn' : '');
+    }
+
+    // ── Table ──
+    function renderTable() {
+      const regs = filteredRegs();
+      const tbody = document.getElementById('regBody');
+      document.getElementById('tableCount').textContent = `(${regs.length}건)`;
+
+      if (regs.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="13">
+            <div class="state-box">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
+                <path d="M14 14h12M14 20h8M14 26h6" stroke="#8fa8b5" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <p>신청 내역이 없습니다.</p>
+            </div>
+          </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = regs.map((r, i) => {
+        const date = new Date(r.registeredAt);
+        const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+        const campLabel = CAMP_LABELS[r.campId] || r.campId;
+        const typeBadge = r.registrationType === 'group'
+          ? `<span class="badge badge-group">단체</span>`
+          : `<span class="badge badge-individual">개인</span>`;
+        const gradeOrCount = r.registrationType === 'group'
+          ? `${r.groupCount}명`
+          : (r.grade || '—');
+
+        return `<tr>
+          <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
+          <td style="font-size:12px;color:var(--mid)">${campLabel}</td>
+          <td>${typeBadge}</td>
+          <td style="font-weight:600">${esc(r.name)}</td>
+          <td>${esc(r.phone)}</td>
+          <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
+          <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
+          <td>${esc(r.church || '—')}</td>
+          <td>${esc(r.school || '—')}</td>
+          <td style="font-size:12px">${esc(r.emergency || '—')}</td>
+          <td style="font-size:12px;color:var(--mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes || '')}">${esc(r.notes || '—')}</td>
+          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
+          <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function esc(str) {
+      return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Delete ──
+    async function deleteReg(regId, campId) {
+      if (!confirm(`정말 삭제하시겠습니까?\nregId: ${regId}`)) return;
+      try {
+        const res = await fetch(`/api/admin/registrations?regId=${regId}&campId=${campId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '삭제 실패');
+        allRegs = allRegs.filter(r => r.regId !== regId);
+        renderTable();
+        renderDash();
+        showToast('신청이 삭제되었습니다.', 'success');
+      } catch (e) {
+        showToast('삭제 오류: ' + e.message, 'error');
+      }
+    }
+
+    // ── CSV ──
+    function downloadCsv() {
+      const regs = filteredRegs();
+      if (regs.length === 0) { showToast('다운로드할 데이터가 없습니다.', 'error'); return; }
+
+      const headers = ['번호','캠프','유형','이름','연락처','이메일','학년/인원','교회','학교','비상연락처','메모','신청일시','RegID'];
+      const rows = regs.map((r, i) => {
+        const date = new Date(r.registeredAt).toLocaleString('ko-KR');
+        const gradeOrCount = r.registrationType === 'group' ? `단체 ${r.groupCount}명` : (r.grade || '');
+        return [
+          i + 1,
+          CAMP_LABELS[r.campId] || r.campId,
+          r.registrationType === 'group' ? '단체' : '개인',
+          r.name, r.phone, r.email,
+          gradeOrCount,
+          r.church || '', r.school || '', r.emergency || '',
+          r.notes || '', date, r.regId,
+        ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      });
+
+      const bom = '﻿';
+      const csv = bom + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const campName = CAMP_LABELS[activeCamp] || '전체';
+      const today = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `WOLKO_신청목록_${campName}_${today}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('CSV 다운로드 완료!', 'success');
+    }
+
+    // ── Toast ──
+    let toastTimer;
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show' + (type ? ' ' + type : '');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.className = 'toast'; }, 3000);
+    }
+
+    // ── Load on mount ──
+    loadRegs();
+  </script>
+</body>
+</html>
