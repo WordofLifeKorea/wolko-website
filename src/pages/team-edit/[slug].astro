@@ -461,7 +461,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
                   <span>사진 없음</span>
                 </div>
             }
-            {d.photo_url && <img id="img-photo_url" src={d.photo_url} alt="대표 사진" style="display:none" data-has-photo="true">}
             <div class="photo-overlay">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <span>사진 교체</span>
@@ -491,7 +490,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         </div>
 
         <!-- 배우자 사진 -->
-        <div class="photo-item" {!hasSpouse ? 'style="opacity:0.4;pointer-events:none"' : ''}>
+        <div class="photo-item" style={!hasSpouse ? 'opacity:0.4;pointer-events:none' : ''}>
           <div class="photo-preview" id="preview-photo_url_2" onclick="triggerUpload('photo_url_2')">
             {d.photo_url_2
               ? <img id="img-photo_url_2" src={d.photo_url_2} alt="배우자 사진">
