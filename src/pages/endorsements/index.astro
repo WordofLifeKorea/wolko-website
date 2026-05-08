@@ -1,344 +1,416 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-
-const endorsements = [
-  {
-    name_ko: "조지 H. 크뤼거",
-    name_en: "George H. Krueger",
-    title_ko: "Word of Life Fellowship 총재",
-    title_en: "President, Word of Life Fellowship",
-    org: "Word of Life Fellowship International",
-    quote_ko: "월코는 한국의 다음 세대를 향한 하나님의 마음을 품고 사역합니다. 복음과 제자훈련에 대한 이들의 헌신은 전 세계 Word of Life 사역의 정신을 고스란히 담고 있습니다. 이 귀한 사역을 기쁨으로 추천합니다.",
-    quote_en: "Word of Life Korea carries the heart of God for the next generation of Korea. Their commitment to the Gospel and discipleship reflects the spirit of the Word of Life movement worldwide. I wholeheartedly commend this ministry.",
-    photo: "",
-  },
-  {
-    name_ko: "조 조단",
-    name_en: "Joe Jordan",
-    title_ko: "Word of Life Fellowship 창립 사역자",
-    title_en: "Founding Director, Word of Life Fellowship",
-    org: "Word of Life Fellowship",
-    quote_ko: "처음 Word of Life를 시작했을 때, 우리의 꿈은 전 세계 청소년들이 복음을 듣고 제자로 세워지는 것이었습니다. 한국에서 그 꿈이 이루어지고 있는 것을 볼 때 하나님께 감사를 드립니다.",
-    quote_en: "When we first began Word of Life, our dream was to see youth around the world hear the Gospel and be discipled. Seeing that vision come alive in Korea fills my heart with gratitude to God.",
-    photo: "",
-  },
-  {
-    name_ko: "추천 목사님",
-    name_en: "Endorsing Pastor",
-    title_ko: "담임목사",
-    title_en: "Senior Pastor",
-    org: "한국 협력 교회 / Korean Partner Church",
-    quote_ko: "월코 선교사들의 삶 자체가 복음의 증거입니다. 청소년들과 함께하며 복음을 전하고 삶으로 제자훈련을 하는 이들의 모습을 보며 교회로서 든든한 파트너를 얻었음을 확신합니다.",
-    quote_en: "The lives of WOLKO missionaries are themselves a testimony of the Gospel. Seeing them walk alongside youth, sharing the Good News and modeling discipleship, I am confident we have a trustworthy ministry partner.",
-    photo: "",
-  },
-  {
-    name_ko: "협력 단체 대표",
-    name_en: "Partner Ministry Leader",
-    title_ko: "대표",
-    title_en: "Director",
-    org: "한국 협력 사역 단체 / Korean Partner Ministry",
-    quote_ko: "제주월비(WOLBI)는 단순한 성경학교가 아닙니다. 학생들의 삶을 근본에서부터 변화시키는 11개월의 여정입니다. 이 훈련을 통해 일어난 변화들을 직접 목격했기에 주저 없이 추천합니다.",
-    quote_en: "WOLBI Jeju is not simply a Bible school — it is an 11-month journey that transforms students from the inside out. Having witnessed the life change this program produces, I recommend it without hesitation.",
-    photo: "",
-  },
-];
 ---
 
-<BaseLayout
-  title="추천사 — Word of Life Korea"
-  description="Word of Life Korea의 사역을 추천하는 목사님들과 사역 지도자들의 소중한 말씀입니다."
-  activeNav="about"
->
+<BaseLayout title="추천사 — WOLKO 월코" activeNav="about" whiteNav={true}>
+<style is:global>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap');
 
-<style>
-  :root {
-    --d:#004f68; --m:#007ea1; --l:#73d1f5;
-    --r:#c42a36; --k:#0d1b24; --s:#3d5a6a;
-    --bg:#f4f8fb; --line:rgba(0,79,104,0.1);
-  }
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600&display=swap');
+/* ── 스코프 ── */
+.wr-wrap {
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  color: #17303c;
+  background: #fff;
+  width: 100%;
+  padding-top: 92px; /* 고정 nav 높이 확보 */
+}
 
-  /* HERO */
-  .en-hero {
-    background: linear-gradient(140deg, #070f16 0%, #004f68 55%, #00788f 100%);
-    padding:150px 24px 110px; text-align:center;
-    position:relative; overflow:hidden;
-  }
-  .en-hero::before {
-    content:""; position:absolute; inset:0;
-    background-image: radial-gradient(ellipse at 60% 40%, rgba(115,209,245,0.08) 0%, transparent 55%),
-                      radial-gradient(ellipse at 20% 80%, rgba(115,209,245,0.04) 0%, transparent 45%);
-    pointer-events:none;
-  }
-  .en-hero::after {
-    content:""; position:absolute; inset:0;
-    background-image: linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),
-                      linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
-    background-size:60px 60px; pointer-events:none;
-  }
-  .en-hero-in { position:relative; z-index:2; max-width:720px; margin:0 auto; }
-  .en-eyebrow {
-    display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
-    border-radius:999px; background:rgba(115,209,245,0.15);
-    border:1px solid rgba(115,209,245,0.3);
-    font-size:11px; font-weight:800; letter-spacing:0.1em; color:var(--l);
-    text-transform:uppercase; margin-bottom:20px;
-  }
-  .en-hero h1 {
-    font-family:'Cormorant Garamond', Georgia, serif;
-    font-size:clamp(40px,6vw,68px); font-weight:600; line-height:1.1;
-    color:#fff; margin-bottom:18px; letter-spacing:-0.02em;
-  }
-  .en-hero h1 em { font-style:italic; color:var(--l); }
-  .en-hero-sub {
-    font-size:17px; line-height:1.85; color:rgba(255,255,255,0.78); max-width:580px; margin:0 auto;
-  }
+/* ── 언어 레이어 (wr-root 스코프) ── */
+.wr-wrap.lang-en .wl-ko         { display: none          !important; }
+.wr-wrap.lang-en .wl-en         { display: block         !important; }
+.wr-wrap.lang-en span.wl-ko     { display: none          !important; }
+.wr-wrap.lang-en span.wl-en     { display: inline        !important; }
 
-  /* INTRO VERSE */
-  .en-verse-bar {
-    background:#0d1b24; padding:48px 24px; text-align:center;
-  }
-  .en-verse-text {
-    font-family:'Cormorant Garamond', Georgia, serif;
-    font-size:clamp(18px,2.5vw,26px); font-style:italic;
-    color:rgba(255,255,255,0.88); line-height:1.6;
-    max-width:720px; margin:0 auto 12px;
-  }
-  .en-verse-ref {
-    font-size:13px; font-weight:700; color:var(--l);
-    letter-spacing:0.06em;
-  }
+/* 모바일 */
+@media (max-width: 768px) {
+  .wr-wrap { padding-top: 72px; }
+}
 
-  /* SECTION */
-  .en-section { padding:80px 24px 90px; background:var(--bg); }
-  .en-section-inner { max-width:1040px; margin:0 auto; }
-  .en-sec-tag {
-    text-align:center; font-size:11px; font-weight:800; letter-spacing:0.1em;
-    color:var(--m); text-transform:uppercase; margin-bottom:8px;
-  }
-  .en-sec-title {
-    text-align:center;
-    font-size:clamp(24px,3.5vw,34px); font-weight:800;
-    color:var(--k); margin-bottom:56px; letter-spacing:-0.02em;
-  }
+/* ── HERO ── */
+.wr-hero {
+  padding: 80px 40px 88px;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+}
+.wr-hero::before {
+  content: '';
+  position: absolute;
+  top: 32px; right: -60px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(115,209,245,0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+.wr-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: -80px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,79,104,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.wr-kicker {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #007ea1;
+  background: #e8f6fb;
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 24px;
+}
+.wr-hero-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #152028;
+  margin-bottom: 20px;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+.wr-hero-title em { font-style: italic; color: #004f68; }
+.wr-hero-sub {
+  font-size: 17px;
+  line-height: 1.9;
+  color: #5c6b73;
+  max-width: 560px;
+  margin: 0 auto;
+  position: relative;
+}
+.wr-hero-deco {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 36px;
+}
+.wr-hero-deco-line {
+  width: 48px; height: 1px;
+  background: linear-gradient(90deg, transparent, #73d1f5);
+}
+.wr-hero-deco-line:last-child {
+  background: linear-gradient(90deg, #73d1f5, transparent);
+}
+.wr-hero-deco-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #004f68;
+  box-shadow: 0 0 0 3px rgba(0,79,104,0.12);
+}
+@media (max-width: 768px) {
+  .wr-hero { padding: 48px 20px 56px; }
+  .wr-hero::before, .wr-hero::after { display: none; }
+  .wr-hero-sub { font-size: 15px; }
+}
 
-  /* ENDORSEMENT CARDS */
-  .en-grid {
-    display:grid; grid-template-columns:1fr 1fr; gap:28px;
-  }
-  .en-card {
-    background:#fff; border-radius:20px; padding:36px;
-    box-shadow:0 4px 24px rgba(0,79,104,0.08); border:1px solid var(--line);
-    position:relative; overflow:hidden;
-    transition:transform .22s, box-shadow .22s;
-    opacity:0; transform:translateY(28px);
-    transition:opacity .55s ease, transform .55s ease, box-shadow .22s;
-  }
-  .en-card.in { opacity:1; transform:translateY(0); }
-  .en-card:hover { box-shadow:0 12px 40px rgba(0,79,104,0.13); }
-  .en-card::before {
-    content:"\201C"; position:absolute; top:-8px; left:24px;
-    font-family:'Cormorant Garamond', Georgia, serif;
-    font-size:120px; font-style:italic; line-height:1;
-    color:rgba(0,79,104,0.07); pointer-events:none;
-  }
-  .en-quote {
-    font-size:15px; line-height:1.85; color:#2c3e4a;
-    font-style:italic; margin-bottom:28px; position:relative; z-index:1;
-    padding-top:16px;
-  }
-  .en-author { display:flex; align-items:center; gap:16px; }
-  .en-avatar {
-    width:52px; height:52px; border-radius:50%; flex-shrink:0;
-    background:linear-gradient(135deg, var(--d), var(--m));
-    display:flex; align-items:center; justify-content:center;
-    font-size:20px; font-weight:800; color:#fff;
-    letter-spacing:-0.02em;
-  }
-  .en-author-name {
-    font-size:15px; font-weight:800; color:var(--k); margin-bottom:3px;
-  }
-  .en-author-title { font-size:12px; color:var(--s); line-height:1.5; }
-  .en-author-org {
-    display:inline-block; margin-top:6px; padding:3px 10px;
-    border-radius:999px; background:rgba(0,79,104,0.07);
-    font-size:11px; font-weight:700; color:var(--m);
-  }
+/* ── DIVIDER ── */
+.wr-divider {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px;
+  border: none;
+  border-top: 1px solid #e2ecf0;
+  position: relative;
+}
+.wr-divider::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: -1px;
+  transform: translateX(-50%);
+  width: 60px; height: 2px;
+  background: linear-gradient(90deg, #73d1f5, #004f68);
+  border-radius: 2px;
+}
 
-  /* FEATURED large quote */
-  .en-featured {
-    background:linear-gradient(135deg, var(--k) 0%, #1a3343 100%);
-    border-radius:24px; padding:56px 52px; margin-bottom:32px;
-    position:relative; overflow:hidden;
-    opacity:0; transform:translateY(24px);
-    transition:opacity .6s ease, transform .6s ease;
-  }
-  .en-featured.in { opacity:1; transform:translateY(0); }
-  .en-featured::before {
-    content:"\201C"; position:absolute; top:-16px; left:32px;
-    font-family:'Cormorant Garamond', Georgia, serif;
-    font-size:200px; font-style:italic; line-height:1;
-    color:rgba(115,209,245,0.08); pointer-events:none;
-  }
-  .en-featured-quote {
-    font-family:'Cormorant Garamond', Georgia, serif;
-    font-size:clamp(20px,2.8vw,28px); font-style:italic;
-    color:rgba(255,255,255,0.92); line-height:1.65;
-    margin-bottom:32px; position:relative; z-index:1;
-  }
-  .en-featured-author { display:flex; align-items:center; gap:18px; }
-  .en-featured-avatar {
-    width:60px; height:60px; border-radius:50%; flex-shrink:0;
-    background:linear-gradient(135deg, var(--m), var(--l));
-    display:flex; align-items:center; justify-content:center;
-    font-size:22px; font-weight:800; color:var(--k);
-  }
-  .en-featured-name { font-size:16px; font-weight:800; color:#fff; margin-bottom:4px; }
-  .en-featured-title { font-size:13px; color:rgba(255,255,255,0.65); }
-  .en-featured-org {
-    display:inline-block; margin-top:6px; padding:4px 12px;
-    border-radius:999px; background:rgba(115,209,245,0.15);
-    border:1px solid rgba(115,209,245,0.25);
-    font-size:11px; font-weight:700; color:var(--l); letter-spacing:0.04em;
-  }
+/* ── 카드 그리드 ── */
+.wr-grid-section {
+  padding: 72px 40px 96px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.wr-section-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #007ea1;
+  margin-bottom: 40px;
+  padding-left: 4px;
+}
+.wr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
 
-  /* CTA */
-  .en-cta {
-    margin-top:64px; background:rgba(0,79,104,0.05);
-    border-radius:20px; padding:40px; text-align:center;
-    border:1px solid var(--line);
-  }
-  .en-cta h3 { font-size:20px; font-weight:800; color:var(--d); margin-bottom:10px; }
-  .en-cta p { font-size:14px; color:var(--s); line-height:1.75; margin-bottom:20px; }
-  .en-cta-btn {
-    display:inline-flex; align-items:center; gap:8px;
-    padding:13px 28px; border-radius:999px;
-    background:var(--d); color:#fff; font-size:14px; font-weight:800;
-    text-decoration:none; transition:background .2s, transform .2s;
-  }
-  .en-cta-btn:hover { background:var(--m); transform:translateY(-2px); }
+/* ── 추천사 카드 ── */
+.wr-card {
+  background: linear-gradient(160deg, #ffffff 60%, #f3f9fc 100%);
+  border: 1px solid #dde8ed;
+  border-radius: 20px;
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow .3s, transform .3s, border-color .3s, background .3s;
+  opacity: 0;
+  transform: translateY(24px);
+}
+.wr-card.wr-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.55s ease, transform 0.55s ease, box-shadow .3s, border-color .3s, background .3s;
+}
+.wr-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 28px; bottom: 28px;
+  width: 3px;
+  background: linear-gradient(180deg, #73d1f5 0%, #004f68 100%);
+  border-radius: 0 2px 2px 0;
+}
+.wr-card::after {
+  content: '';
+  position: absolute;
+  right: -40px; bottom: -40px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,79,104,0.05) 0%, transparent 70%);
+  pointer-events: none;
+  transition: transform .3s;
+}
+.wr-card:hover {
+  box-shadow: 0 12px 40px rgba(0,79,104,.11), 0 2px 8px rgba(0,79,104,.06);
+  transform: translateY(-3px);
+  border-color: rgba(0,79,104,0.22);
+  background: linear-gradient(160deg, #eef6fb 0%, #e4f1f8 100%);
+}
+.wr-card:hover::before {
+  width: 4px;
+  background: linear-gradient(180deg, #004f68 0%, #73d1f5 100%);
+}
+.wr-card:hover::after { transform: scale(1.3); }
 
-  /* RESP */
-  @media(max-width:760px) {
-    .en-grid { grid-template-columns:1fr; }
-    .en-featured { padding:36px 28px; }
-    .en-featured::before { font-size:140px; }
-  }
-  @media(max-width:540px) {
-    .en-card { padding:26px 22px; }
-    .en-featured { padding:28px 20px; }
-  }
+.wr-card-wide { grid-column: span 2; }
+.wr-card-wide .wr-quote-text { font-size: 16px; }
+
+.wr-quote-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, #004f68, #0a5b76);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,79,104,0.18);
+}
+.wr-quote-icon svg { display: block; }
+
+.wr-quote-text {
+  font-size: 15px;
+  line-height: 1.95;
+  color: #3a4f58;
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+
+.wr-person {
+  display: flex; align-items: center; gap: 14px;
+  padding-top: 20px;
+  border-top: 1px solid #e2ecf0;
+}
+.wr-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #e8f0f3;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  border: 2px solid rgba(0,79,104,0.10);
+}
+.wr-person-name {
+  font-size: 15px; font-weight: 800;
+  color: #152028; line-height: 1.3; margin-bottom: 3px;
+}
+.wr-person-title {
+  font-size: 12px; font-weight: 600;
+  color: #7a9aaa; line-height: 1.4;
+}
+
+/* ── 모바일 ── */
+@media (max-width: 768px) {
+  .wr-divider { padding: 0 20px; }
+  .wr-grid-section { padding: 48px 20px 72px; }
+  .wr-grid { grid-template-columns: 1fr; gap: 16px; }
+  .wr-card-wide { grid-column: span 1; }
+  .wr-card { padding: 24px; }
+}
 </style>
 
-<!-- HERO -->
-<section class="en-hero">
-  <div class="en-hero-in">
-    <div class="en-eyebrow">✍️ <span class="wl-ko">추천사</span><span class="wl-en">Endorsements</span></div>
-    <h1>
-      <span class="wl-ko-b">함께 증언하는<br><em>신뢰의 목소리들</em></span>
-      <span class="wl-en-b">Voices of trust<br>speaking <em>together</em></span>
+<div class="wr-wrap" id="wr-root">
+
+  <!-- HERO -->
+  <section class="wr-hero">
+    <div class="wr-kicker" id="wr-kicker" data-ko="추천사" data-en="Testimonials">추천사</div>
+
+    <h1 class="wr-hero-title">
+      <span class="wl-ko">목회자들이 <em>직접 경험하고</em><br>전하는 이야기</span>
+      <span class="wl-en">Words From<br><em>Ministry Leaders</em></span>
     </h1>
-    <p class="en-hero-sub">
-      <span class="wl-ko-b">월코의 사역을 함께 걸어온 지도자들의 진심 어린 추천을 나눕니다.</span>
-      <span class="wl-en-b">Those who have walked alongside WOLKO share their heartfelt commendations of this ministry.</span>
-    </p>
-  </div>
-</section>
 
-<!-- VERSE BAR -->
-<div class="en-verse-bar">
-  <p class="en-verse-text">
-    <span class="wl-ko-b">"그러므로 너희는 가서 모든 족속으로 제자를 삼아 아버지와 아들과 성령의 이름으로 세례를 베풀고"</span>
-    <span class="wl-en-b">"Go therefore and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit."</span>
-  </p>
-  <p class="en-verse-ref">마태복음 / Matthew 28:19</p>
-</div>
+    <p class="wr-hero-sub wl-ko">월코의 사역을 신뢰하며 함께 걸어온 목회자들의 진솔한 이야기를 들어보세요.</p>
+    <p class="wr-hero-sub wl-en">Hear from pastors and ministry leaders who have walked alongside WOLKO and trusted our mission.</p>
+    <div class="wr-hero-deco">
+      <div class="wr-hero-deco-line"></div>
+      <div class="wr-hero-deco-dot"></div>
+      <div class="wr-hero-deco-line"></div>
+    </div>
+  </section>
 
-<!-- ENDORSEMENTS SECTION -->
-<section class="en-section" id="lang-root">
-  <div class="en-section-inner">
-    <p class="en-sec-tag"><span class="wl-ko">추천의 말씀</span><span class="wl-en">Words of Endorsement</span></p>
-    <h2 class="en-sec-title">
-      <span class="wl-ko-b">지도자들의 추천</span>
-      <span class="wl-en-b">Commendations from Ministry Leaders</span>
-    </h2>
+  <hr class="wr-divider">
 
-    <!-- Featured (first endorsement) -->
-    <div class="en-featured en-rv">
-      <p class="en-featured-quote">
-        <span class="wl-ko-b">"{endorsements[0].quote_ko}"</span>
-        <span class="wl-en-b">"{endorsements[0].quote_en}"</span>
-      </p>
-      <div class="en-featured-author">
-        <div class="en-featured-avatar">
-          {endorsements[0].name_en.split(' ').map(w => w[0]).join('').slice(0,2)}
+  <!-- 카드 그리드 -->
+  <section class="wr-grid-section">
+
+    <div class="wr-section-label">
+      <span class="wl-ko">목회자 추천사</span>
+      <span class="wl-en">Pastor Endorsements</span>
+    </div>
+
+    <div class="wr-grid">
+
+      <!-- 카드 1 — 이동원 목사 (와이드) -->
+      <div class="wr-card wr-card-wide">
+        <div class="wr-quote-icon">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+            <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
+          </svg>
         </div>
-        <div>
-          <div class="en-featured-name">
-            <span class="wl-ko">{endorsements[0].name_ko}</span>
-            <span class="wl-en">{endorsements[0].name_en}</span>
+        <p class="wr-quote-text wl-ko">SYME는 기독교 청년들에게 영어와 제자 훈련 그리고 청소년 사역을 동시에 배우도록 준비된 프로그램입니다. SYME는 국제 사회가 요구하는 영어와 우리 주님께서 원하시는 제자 훈련을 동시에 제공하는 훌륭한 프로그램으로서, 말씀으로 양육받고 영어 실력을 향상시키고자 하는 청년들에게 적극 추천합니다.</p>
+        <p class="wr-quote-text wl-en">SYME is a program designed to help Christian young adults learn English, discipleship, and youth ministry all at once. It is an excellent program that simultaneously provides the English skills international society demands and the discipleship training our Lord desires. I strongly recommend it to young people who wish to be nourished by the Word and grow in their English ability.</p>
+        <div class="wr-person">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/be2ccd28ab12b.png" alt="이동원 목사">
+          <div class="wr-person-info">
+            <div class="wr-person-name wl-ko">이동원 목사</div>
+            <div class="wr-person-name wl-en">Rev. Dong-won Lee</div>
+            <div class="wr-person-title wl-ko">지구촌교회 원로목사</div>
+            <div class="wr-person-title wl-en">Senior Pastor Emeritus, Jiguchon Church</div>
           </div>
-          <div class="en-featured-title">
-            <span class="wl-ko">{endorsements[0].title_ko}</span>
-            <span class="wl-en">{endorsements[0].title_en}</span>
-          </div>
-          <span class="en-featured-org">{endorsements[0].org}</span>
         </div>
       </div>
-    </div>
 
-    <!-- Grid -->
-    <div class="en-grid">
-      {endorsements.slice(1).map((e, i) => (
-        <div class="en-card en-rv" style={`transition-delay:${i * 0.1}s`}>
-          <p class="en-quote">
-            <span class="wl-ko">"{e.quote_ko}"</span>
-            <span class="wl-en">"{e.quote_en}"</span>
-          </p>
-          <div class="en-author">
-            <div class="en-avatar">
-              {e.name_en.split(' ').map((w: string) => w[0]).join('').slice(0,2)}
-            </div>
-            <div>
-              <div class="en-author-name">
-                <span class="wl-ko">{e.name_ko}</span>
-                <span class="wl-en">{e.name_en}</span>
-              </div>
-              <div class="en-author-title">
-                <span class="wl-ko">{e.title_ko}</span>
-                <span class="wl-en">{e.title_en}</span>
-              </div>
-              <span class="en-author-org">{e.org}</span>
-            </div>
+      <!-- 카드 2 — 배국순 목사 -->
+      <div class="wr-card">
+        <div class="wr-quote-icon">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+            <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
+          </svg>
+        </div>
+        <p class="wr-quote-text wl-ko">한국생명의 말씀협회는 지난 30년간 한국의 다음 세대를 위해 힘써온 선교 단체입니다. 이 단체를 통하여 다음 세대의 학생들이 캠프와 영어, 하나님의 말씀으로 그리스도를 만나고 삶의 목적이 바뀌는 은혜를 경험했습니다. 저의 두 아들과 조카도 이곳을 통해 훈련받으며 훌륭하게 자라나 지금은 세계 곳곳에서 하나님의 사람으로 주님의 몸 된 교회를 열심히 섬기고 있습니다.</p>
+        <p class="wr-quote-text wl-en">Word of Life Korea is a mission organization that has devoted itself to the next generation in Korea for over 30 years. Through this ministry, young students have encountered Christ through camps, English, and God's Word — and experienced the grace of having their life's purpose transformed. My two sons and nephew were trained here and grew into outstanding men of God, now serving the church faithfully around the world.</p>
+        <div class="wr-person">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/df1a60a5f0a4e.png" alt="배국순 목사">
+          <div class="wr-person-info">
+            <div class="wr-person-name wl-ko">배국순 목사</div>
+            <div class="wr-person-name wl-en">Rev. Guk-soon Bae</div>
+            <div class="wr-person-title wl-ko">송탄중앙침례교회</div>
+            <div class="wr-person-title wl-en">Songtan Central Baptist Church</div>
           </div>
         </div>
-      ))}
-    </div>
+      </div>
 
-    <!-- CTA -->
-    <div class="en-cta">
-      <h3>
-        <span class="wl-ko">사역에 대해 더 알고 싶으신가요?</span>
-        <span class="wl-en">Want to learn more about the ministry?</span>
-      </h3>
-      <p>
-        <span class="wl-ko-b">월코의 사역 현황과 파트너십에 관심이 있으신 분들은 언제든지 연락해 주세요.</span>
-        <span class="wl-en-b">Whether you're considering partnership or simply want to know more, we'd love to connect with you.</span>
-      </p>
-      <a class="en-cta-btn" href="/contact">
-        📨 <span class="wl-ko">문의하기</span><span class="wl-en">Contact Us</span>
-      </a>
-    </div>
+      <!-- 카드 3 — 이명규 목사 -->
+      <div class="wr-card">
+        <div class="wr-quote-icon">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+            <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
+          </svg>
+        </div>
+        <p class="wr-quote-text wl-ko">만약 청년의 시기로 돌아갈 수 있다면, 꼭 한 번 훈련받고 싶은 곳이 있다면 바로 SYME입니다. 분명한 구원의 확신, 성경적인 비전과 가치관, 좋은 멘토를 만날 수 있는 곳이기 때문입니다. 그리고 무엇보다 영어를 함께 배울 수 있다는 것이 또 하나의 큰 장점입니다. SYME는 인생의 중요한 시기에 접어든 믿음의 청년들에게 권하고 싶은 곳입니다.</p>
+        <p class="wr-quote-text wl-en">If I could return to my youth, there is one place I would want to be trained — SYME. It is a place where you can gain a sure assurance of salvation, establish a biblical vision and set of values, and find excellent mentors. And beyond all that, being able to grow in English is a tremendous added benefit. SYME is a place I wholeheartedly recommend to young believers entering a critical season of life.</p>
+        <div class="wr-person">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/e8a27fcca7902.png" alt="이명규 목사">
+          <div class="wr-person-info">
+            <div class="wr-person-name wl-ko">이명규 목사</div>
+            <div class="wr-person-name wl-en">Rev. Myung-gyu Lee</div>
+            <div class="wr-person-title wl-ko">서서울성서침례교회 담임</div>
+            <div class="wr-person-title wl-en">Senior Pastor, West Seoul Bible Baptist Church</div>
+          </div>
+        </div>
+      </div>
 
-  </div>
-</section>
+      <!-- 카드 4 — 서종식 목사 -->
+      <div class="wr-card">
+        <div class="wr-quote-icon">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+            <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
+          </svg>
+        </div>
+        <p class="wr-quote-text wl-ko">지인의 소개로 두 자녀를 보내 훈련받게 했고, 다섯 명의 청소년들을 소개하여 보냈습니다. SYME는 청소년기의 기독교적 세계관 확립과 인생의 소명을 발견하게 하는 탁월한 훈련의 장입니다. 자비량 선교사님들과 교사들을 통해 사랑과 헌신, 섬김을 배우고, 공동체 생활을 통해 '함께'와 '스스로'를 세워가는 법을 배웁니다. 무엇보다 모든 훈련이 영어로 진행되어 자연스럽게 생활 속에서 체득하게 됩니다.</p>
+        <p class="wr-quote-text wl-en">Through a personal referral, I sent two of my own children and five other teenagers to be trained here. SYME is an outstanding training ground where young people develop a biblical Christian worldview and discover their God-given calling. Through self-supported missionaries and teachers, they learn love, devotion, and service — and through community life, they grow in both collaboration and personal responsibility. Best of all, training entirely in English means they absorb the language naturally through daily life.</p>
+        <div class="wr-person">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/4986c4ec20ce3.png" alt="서종식 목사">
+          <div class="wr-person-info">
+            <div class="wr-person-name wl-ko">서종식 목사</div>
+            <div class="wr-person-name wl-en">Rev. Jong-sik Seo</div>
+            <div class="wr-person-title wl-ko">대한예수교장로회 살렘교회 담임</div>
+            <div class="wr-person-title wl-en">Senior Pastor, Salem Presbyterian Church</div>
+          </div>
+        </div>
+      </div>
 
-<script>
-const obs = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
-}, { threshold: 0.12 });
-document.querySelectorAll('.en-rv').forEach(el => obs.observe(el));
+      <!-- 카드 5 — 김정서 목사 -->
+      <div class="wr-card">
+        <div class="wr-quote-icon">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+            <path d="M0 14V8.4C0 6.13333 0.6 4.06667 1.8 2.2C3 0.333333 4.73333 0 7 0L7.8 1.4C6.33333 1.8 5.13333 2.53333 4.2 3.6C3.26667 4.66667 2.8 5.86667 2.8 7.2H5.6V14H0ZM10.4 14V8.4C10.4 6.13333 11 4.06667 12.2 2.2C13.4 0.333333 15.1333 0 17.4 0L18 1.4C16.5333 1.8 15.3333 2.53333 14.4 3.6C13.4667 4.66667 13 5.86667 13 7.2H16V14H10.4Z" fill="white" fill-opacity="0.9"/>
+          </svg>
+        </div>
+        <p class="wr-quote-text wl-ko">SYME는 영어로 주님의 제자훈련을 받으면서 신앙과 영어 소통이 놀랄 만큼 변화되는 장소입니다. 여기서 훈련받은 저희 교회 출신 청년들이 글로벌 인재로 여러 방면에서 뛰어나게 활동하고 있습니다.</p>
+        <p class="wr-quote-text wl-en">SYME is a place where, through discipleship training conducted entirely in English, one's faith and English communication are transformed in remarkable ways. Young adults from our church who trained here are now thriving as global leaders across a wide range of fields.</p>
+        <div class="wr-person">
+          <img class="wr-avatar" src="https://cdn.imweb.me/thumbnail/20250318/736b10f7525f3.png" alt="김정서 목사">
+          <div class="wr-person-info">
+            <div class="wr-person-name wl-ko">김정서 원로목사</div>
+            <div class="wr-person-name wl-en">Rev. Jeong-seo Kim</div>
+            <div class="wr-person-title wl-ko">제주영락교회</div>
+            <div class="wr-person-title wl-en">Jeju Youngnak Church</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.wr-grid -->
+  </section>
+
+</div><!-- /.wr-wrap -->
+
+<script is:inline>
+(function () {
+
+  // 카드 스크롤 reveal
+  var cards = document.querySelectorAll('.wr-card');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          var el = entry.target;
+          var delay = (parseInt(el.dataset.wrDelay) || 0) * 100;
+          setTimeout(function() { el.classList.add('wr-visible'); }, delay);
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.08 });
+    cards.forEach(function(card, i) {
+      card.dataset.wrDelay = i;
+      io.observe(card);
+    });
+  } else {
+    cards.forEach(function(c) { c.classList.add('wr-visible'); });
+  }
+
+})();
 </script>
-
 </BaseLayout>
