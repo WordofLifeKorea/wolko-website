@@ -63,4 +63,26 @@ const mission_report = defineCollection({
   }),
 });
 
-export const collections = { team, news, mission_report };
+const camp_schedule = defineCollection({
+  type: 'data',
+  schema: z.object({
+    title_ko: z.string(),
+    title_en: z.string(),
+    camp_type: z.enum(['english', 'jeju', 'union']),
+    date_ko: z.string(),
+    date_en: z.string(),
+    target_ko: z.string(),
+    target_en: z.string(),
+    status: z.enum(['open', 'closed', 'upcoming', 'full']),
+    registration_url: z.string().optional(),
+    deadline_ko: z.string().optional(),
+    deadline_en: z.string().optional(),
+    price_ko: z.string().optional(),
+    price_en: z.string().optional(),
+    notes_ko: z.string().optional(),
+    notes_en: z.string().optional(),
+    order: z.number().default(99),
+  }),
+});
+
+export const collections = { team, news, mission_report, camp_schedule };
