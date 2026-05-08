@@ -85,4 +85,4 @@ const camp_schedule = defineCollection({
   }),
 });
 
-export const collections = { team, news, mission_report, camp_schedule };
+export const collections = { team, news, mission_report, camp_schedules: camp_schedule };

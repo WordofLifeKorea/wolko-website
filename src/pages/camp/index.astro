@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const allSchedules = await getCollection('camp_schedule');
+const allSchedules = await getCollection('camp_schedules');
 const schedules = allSchedules.sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
 
 const typeLabel: Record<string, { ko: string; en: string }> = {
