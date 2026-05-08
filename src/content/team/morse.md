@@ -8,6 +8,8 @@ campus: pyeongtaek
 category: missionary
 order: 1
 photo_url: /images/uploads/morse.jpg
+photo_story: /images/uploads/jacob.jpg
+photo_url_2: /images/uploads/crystal.jpg
 spouse_ko: 몰스 크리스탈
 spouse_en: Crystal Morse
 show_spouse: true
