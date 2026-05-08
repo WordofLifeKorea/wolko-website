@@ -205,7 +205,9 @@ const {
       document.querySelector('.footer').classList.toggle('lang-en', en);
 
       if (en) {
-        slider.style.left = 'calc(100% - 81px)';
+        const toggle = document.getElementById('langToggle');
+        const sliderW = slider.offsetWidth || (window.innerWidth <= 900 ? 32 : 78);
+        slider.style.left = (toggle.offsetWidth - sliderW - 3) + 'px';
         koSide.className = 'lang-side is-inactive';
         enSide.className = 'lang-side is-active';
       } else {
