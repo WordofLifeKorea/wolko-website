@@ -923,21 +923,21 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
     {schedules.length > 0 ? (
       <>
-        {/* ── 제주 캠프 그룹 ── */}
-        {jejuCamps.length > 0 && (
+        {/* ── 월코 내륙 캠프 그룹 ── */}
+        {inlandCamps.length > 0 && (
           <div class="reg-group reveal">
             <div class="reg-group-header">
               <div class="reg-group-tag">
-                <span class="wl-ko">📍 제주 월비캠퍼스</span>
-                <span class="wl-en">📍 WOLBI Jeju Campus</span>
+                <span class="wl-ko">월코센터 · 평택</span>
+                <span class="wl-en">WOLKO Center · Pyeongtaek</span>
               </div>
-              <a href="https://cafe.naver.com/wolcamp" target="_blank" rel="noopener" class="reg-group-cafe-link">
+              <a href="https://cafe.naver.com/wolkojrcamp" target="_blank" rel="noopener" class="reg-group-cafe-link">
                 <span class="wl-ko">네이버 카페 바로가기 →</span>
                 <span class="wl-en">Naver Cafe →</span>
               </a>
             </div>
             <div class="reg-grid">
-              {jejuCamps.map((s) => {
+              {inlandCamps.map((s) => {
                 const d = s.data;
                 const type = typeLabel[d.camp_type] ?? { ko: d.camp_type, en: d.camp_type };
                 const st = statusLabel[d.status] ?? { ko: d.status, en: d.status, cls: '' };
@@ -986,10 +986,43 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                         <span class="wl-en">{d.notes_en}</span>
                       </p>
                     )}
+                    {/* 내륙: 자체 모달 or 외부 링크 */}
+                    {canRegister && !d.use_external_form && (
+                      <div class="reg-cap" data-cap-id={s.slug}>
+                        <div class="reg-cap-info">
+                          <span class="wl-ko">신청 현황</span>
+                          <span class="wl-en">Spots Filled</span>
+                          <strong>
+                            <span class="reg-cap-count">—</span>
+                            {' / '}{d.capacity ?? 40}
+                            <span class="wl-ko">명</span>
+                          </strong>
+                        </div>
+                        <div class="reg-cap-track">
+                          <div class="reg-cap-fill"></div>
+                        </div>
+                      </div>
+                    )}
                     {canRegister && d.use_external_form ? (
                       <a href={d.registration_url} target="_blank" rel="noopener" class="reg-btn reg-btn-primary">
                         <span class="wl-ko">네이버 카페에서 신청하기 →</span>
                         <span class="wl-en">Register via Naver Cafe →</span>
+                      </a>
+                    ) : canRegister ? (
+                      <button
+                        class="reg-btn reg-btn-primary reg-open-btn"
+                        data-camp-id={s.slug}
+                        data-camp-name-ko={d.title_ko}
+                        data-camp-name-en={d.title_en}
+                        data-capacity={d.capacity ?? 40}
+                      >
+                        <span class="wl-ko">신청하기 →</span>
+                        <span class="wl-en">Register Now →</span>
+                      </button>
+                    ) : d.status === 'upcoming' && d.registration_url ? (
+                      <a href={d.registration_url} target="_blank" rel="noopener" class="reg-btn reg-btn-outline">
+                        <span class="wl-ko">카페에서 소식 받기 →</span>
+                        <span class="wl-en">Follow for Updates →</span>
                       </a>
                     ) : d.status === 'upcoming' ? (
                       <span class="reg-btn reg-btn-disabled">
@@ -1010,25 +1043,25 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
         )}
 
         {/* ── 구분선 ── */}
-        {jejuCamps.length > 0 && inlandCamps.length > 0 && (
+        {inlandCamps.length > 0 && jejuCamps.length > 0 && (
           <div class="reg-group-divider"></div>
         )}
 
-        {/* ── 월코 내륙 캠프 그룹 ── */}
-        {inlandCamps.length > 0 && (
+        {/* ── 제주 캠프 그룹 ── */}
+        {jejuCamps.length > 0 && (
           <div class="reg-group reveal">
             <div class="reg-group-header">
               <div class="reg-group-tag">
-                <span class="wl-ko">📍 월코센터 (평택)</span>
-                <span class="wl-en">📍 WOLKO Center (Pyeongtaek)</span>
+                <span class="wl-ko">제주 월비캠퍼스</span>
+                <span class="wl-en">WOLBI Jeju Campus</span>
               </div>
-              <a href="https://cafe.naver.com/wolkojrcamp" target="_blank" rel="noopener" class="reg-group-cafe-link">
+              <a href="https://cafe.naver.com/wolcamp" target="_blank" rel="noopener" class="reg-group-cafe-link">
                 <span class="wl-ko">네이버 카페 바로가기 →</span>
                 <span class="wl-en">Naver Cafe →</span>
               </a>
             </div>
             <div class="reg-grid">
-              {inlandCamps.map((s) => {
+              {jejuCamps.map((s) => {
                 const d = s.data;
                 const type = typeLabel[d.camp_type] ?? { ko: d.camp_type, en: d.camp_type };
                 const st = statusLabel[d.status] ?? { ko: d.status, en: d.status, cls: '' };
@@ -1077,43 +1110,11 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                         <span class="wl-en">{d.notes_en}</span>
                       </p>
                     )}
-                    {/* 자체 신청 — 정원 현황 바 */}
-                    {canRegister && !d.use_external_form && (
-                      <div class="reg-cap" data-cap-id={s.slug}>
-                        <div class="reg-cap-info">
-                          <span class="wl-ko">신청 현황</span>
-                          <span class="wl-en">Spots Filled</span>
-                          <strong>
-                            <span class="reg-cap-count">—</span>
-                            {' / '}{d.capacity ?? 40}
-                            <span class="wl-ko">명</span>
-                          </strong>
-                        </div>
-                        <div class="reg-cap-track">
-                          <div class="reg-cap-fill"></div>
-                        </div>
-                      </div>
-                    )}
-                    {canRegister && d.use_external_form ? (
+                    {/* 제주: 외부 신청 전용 */}
+                    {canRegister ? (
                       <a href={d.registration_url} target="_blank" rel="noopener" class="reg-btn reg-btn-primary">
                         <span class="wl-ko">네이버 카페에서 신청하기 →</span>
                         <span class="wl-en">Register via Naver Cafe →</span>
-                      </a>
-                    ) : canRegister ? (
-                      <button
-                        class="reg-btn reg-btn-primary reg-open-btn"
-                        data-camp-id={s.slug}
-                        data-camp-name-ko={d.title_ko}
-                        data-camp-name-en={d.title_en}
-                        data-capacity={d.capacity ?? 40}
-                      >
-                        <span class="wl-ko">신청하기 →</span>
-                        <span class="wl-en">Register Now →</span>
-                      </button>
-                    ) : d.status === 'upcoming' && d.registration_url ? (
-                      <a href={d.registration_url} target="_blank" rel="noopener" class="reg-btn reg-btn-outline">
-                        <span class="wl-ko">카페에서 소식 받기 →</span>
-                        <span class="wl-en">Follow for Updates →</span>
                       </a>
                     ) : d.status === 'upcoming' ? (
                       <span class="reg-btn reg-btn-disabled">
