@@ -6,7 +6,7 @@ title_en: Short-term Worker
 role_badge: Short-term Worker
 campus: jeju
 category: stw
-order: 7
+order: 3
 photo_url: /images/uploads/abby.jpg
 bio_ko: Abby는 한국에서 태어나고 자란 선교사 자녀입니다. 부모님이 월드 오브 라이프에서 전임 사역자로 섬기셨기에, 어릴 때부터
   예수님의 이름을 자연스럽게 알며 성장했습니다. 어머니의 설명을 통해 여섯 살 무렵 예수님의 구원의 선물을 받아들였습니다. 그러나 구원의
