@@ -81,6 +81,7 @@ const camp_schedule = defineCollection({
     price_en: z.string().optional(),
     notes_ko: z.string().optional(),
     notes_en: z.string().optional(),
+    capacity: z.number().default(40),
     order: z.number().default(99),
   }),
 });
