@@ -38,8 +38,6 @@ const team = defineCollection({
     // 기도제목
     prayer_ko: z.string().optional(),
     prayer_en: z.string().optional(),
-    // 후원
-    support_url: z.string().optional(),
   }),
 });
 

@@ -10,21 +10,23 @@ bio_en: Joe was born in 1976 in Dangjin, South Chungcheong Province, to
 gender: male
 name_ko: 민경찬 & 김유진
 name_en: Gyeongchan Min & Yujin Kim
-title_ko: 선교사 · Missionaries
-title_en: Missionaries
+title_ko: 코어트레이닝 코디네이터
+title_en: Core Training Cordinator
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
-order: 3
-photo_url: /images/uploads/민선교사님-가족사진.jpg
+order: -20
+photo_url: /images/uploads/민선교사님-가족사진.jpg
 photo_story: /images/uploads/min.jpg
 photo_url_2: /images/uploads/김유진-선교사님.png
 hero_tagline_ko: 청소년을
 hero_tagline_en: Reaching Youth
 hero_tagline2_ko: 만나는 캠프 사역
 hero_tagline2_en: Through Camp Ministry
-hero_subtitle_ko: 교회 협력 코디네이터
-hero_subtitle_en: Church Partnership Cordinator
+hero_subtitle_ko: 민경찬 선교사는 교회 특별히 청소년부와 협력하여 복음배가 운동과 제자훈련이 지속적으로 이루어 질 수 있도록 노력하고 있습니다.
+hero_subtitle_en: Missionary Kyungchan Min is committed to partnering with
+  churches — especially youth ministries — to see the Gospel Multiplication
+  Movement and discipleship training continue to grow and take root.
 verse_ref: 요한일서 1:2
 spouse_ko: 김유진
 spouse_en: Yu-Jin Kim
