@@ -1,14 +1,15 @@
 ---
-name_ko: "정 조안나"
-name_en: "Joanna Jung"
-title_ko: "단기 사역자"
-title_en: "Short-term Worker"
+bio_en: ""
 gender: female
-role_badge: "Short-term Worker"
+name_ko: 정지온
+name_en: Joanna Jung
+title_ko: 단기 사역자
+title_en: Short-term Worker
+role_badge: Short-term Worker
 campus: jeju
 category: stw
-order: 6
-photo_url: "https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Joanna Jung.png"
+order: 3
+photo_url: /images/uploads/joanna-jung.png
 hero_tagline_ko: '"말씀 안에서"'
 hero_tagline_en: '"A Life Bearing Fruit"'
 hero_tagline2_ko: '"열매 맺는 삶"'
@@ -20,6 +21,6 @@ verse_ko: |-
 verse_en: |-
   "So that you may live a life worthy of the Lord and please him in every way:
   bearing fruit in every good work, growing in the knowledge of God."
+show_spouse: false
 bio_ko: ""
-bio_en: ""
 ---
