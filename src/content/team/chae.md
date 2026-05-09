@@ -1,4 +1,12 @@
 ---
+name_ko: 채병국 & 김미영
+name_en: Byungkook Chae & Miyoung Kim
+title_ko: Ministry Advancement 디렉터 | 월코
+title_en: Ministry Advancement Director | WOLKO
+role_badge: Missionaries
+campus: pyeongtaek
+category: missionary
+order: 2
 bio_en: Peter was born into a third-generation Presbyterian family. From
   childhood he was shaped by the blessing of attending early morning prayers
   with his mother, yet as a teenager he was overwhelmed by doubts and unanswered
@@ -9,15 +17,9 @@ bio_en: Peter was born into a third-generation Presbyterian family. From
   understood that he deserved death because of his sin, and by faith he received
   Christ as his Savior. That day became the happiest of his life — the day he
   finally discovered his purpose.
+prayer_en: Please pray that the Gospel Multiplication Movement would expand as
+  we partner with more churches across Korea.
 gender: male
-name_ko: 채병국 & 김미영
-name_en: Byungkook Chae & Miyoung Kim
-title_ko: Ministry Advancement 디렉터 | 월코
-title_en: Ministry Advancement Director | WOLKO
-role_badge: Missionaries
-campus: pyeongtaek
-category: missionary
-order: 2
 photo_url: /images/uploads/채병국-선교사님.jpeg
 photo_story: /images/uploads/7r505996-수정.jpg
 photo_url_2: /images/uploads/miran.png
@@ -52,4 +54,5 @@ bio_en_2: Miriam was born into a non-Christian home. In middle school she began
   Ground (KCCG) in Bulgwang-dong, Seoul. Their shared vision is to see many
   young Koreans hear the gospel through the lives and testimonies of their
   Christian peers.
+prayer_ko: 더 많은 교회와 협력하여 복음배가운동이 확장될 수 있도록 기도해주세요.
 ---
