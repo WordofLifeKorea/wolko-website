@@ -99,103 +99,94 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 }
 .mp-back a:hover { color: var(--c-deep); }
 
-/* HERO */
+/* HERO — full bleed */
 .mp-hero {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  align-items: flex-end;
+  min-height: 92vh;
   overflow: hidden;
+  background: var(--c-ink);
 }
-
-.mp-hero-photo {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--c-deep), var(--c-mid));
-  min-height: 80vh;
+.mp-hero-bg {
+  position: absolute; inset: 0; z-index: 0;
 }
-.mp-hero-photo img {
+.mp-hero-bg img {
   width: 100%; height: 100%;
   object-fit: cover; object-position: center top;
   display: block;
   animation: mp-zoom-in 1.4s cubic-bezier(0.22,1,0.36,1) forwards;
 }
 @keyframes mp-zoom-in {
-  from { transform: scale(1.10); }
+  from { transform: scale(1.08); }
   to   { transform: scale(1.00); }
 }
-.mp-hero-photo::after {
+.mp-hero-bg::after {
   content: '';
   position: absolute; inset: 0;
   background:
-    linear-gradient(90deg, transparent 60%, rgba(4,28,38,0.18) 100%),
-    linear-gradient(180deg, transparent 55%, rgba(4,28,38,0.55) 100%);
+    linear-gradient(108deg, rgba(4,18,28,0.95) 0%, rgba(4,18,28,0.80) 38%, rgba(4,18,28,0.28) 68%, transparent 100%),
+    linear-gradient(0deg, rgba(4,18,28,0.72) 0%, rgba(4,18,28,0.10) 48%, transparent 100%);
 }
-
-.mp-hero-name-layer {
-  position: absolute; bottom: 40px; left: 40px; z-index: 2;
-  animation: mp-fade-up 1s 0.4s both;
-}
-.mp-hero-name-main {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(26px, 3.6vw, 48px);
-  font-weight: 700; color: var(--c-white);
-  line-height: 1.1; letter-spacing: 0.5px;
-}
-.mp-hero-name-sub {
-  font-size: 11px; font-weight: 700;
-  color: var(--c-light); letter-spacing: 2.5px;
-  text-transform: uppercase; margin-top: 8px;
-}
-
 .mp-hero-content {
-  background: var(--c-deep);
-  display: flex; flex-direction: column; justify-content: center;
-  padding: 72px 56px;
-  min-height: 80vh;
-  position: relative; overflow: hidden;
-}
-.mp-hero-content::before {
-  content: '';
-  position: absolute; width: 500px; height: 500px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(115,209,245,0.07) 0%, transparent 70%);
-  top: -100px; right: -100px; pointer-events: none;
-}
-.mp-hero-content::after {
-  content: '';
-  position: absolute; width: 300px; height: 300px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(196,42,54,0.08) 0%, transparent 70%);
-  bottom: -80px; left: -60px; pointer-events: none;
+  position: relative; z-index: 2;
+  padding: 0 8% 96px;
+  width: 100%;
+  max-width: 660px;
+  display: flex; flex-direction: column;
 }
 
 .mp-hero-label {
   display: inline-flex; align-items: center; gap: 10px;
   font-size: 10px; font-weight: 700; letter-spacing: 3.5px;
   text-transform: uppercase; color: var(--c-light);
-  margin: 0 0 32px; animation: mp-fade-up 1s 0.2s both;
+  margin: 0 0 16px; animation: mp-fade-up 1s 0.2s both;
 }
 .mp-hero-label::before {
   content: ''; display: block; width: 32px; height: 1.5px;
   background: var(--c-light); flex-shrink: 0;
 }
 
+/* 이름 표시 (작은 크기로) */
+.mp-hero-person-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(17px, 1.7vw, 24px);
+  font-weight: 500; color: rgba(255,255,255,0.45);
+  letter-spacing: 2.5px; text-transform: uppercase;
+  margin: 0 0 20px; animation: mp-fade-up 1s 0.28s both;
+}
+
 .mp-hero-title {
   font-family: 'Noto Sans KR', sans-serif;
-  font-size: clamp(32px, 4.2vw, 64px); font-weight: 800;
-  color: var(--c-white); line-height: 1.18;
-  margin: 0 0 16px; animation: mp-fade-up 1s 0.35s both;
+  font-size: clamp(42px, 5.4vw, 74px); font-weight: 800;
+  color: var(--c-white); line-height: 1.1;
+  margin: 0 0 6px; animation: mp-fade-up 1s 0.35s both;
   word-break: keep-all;
 }
-.mp-hero-title em {
-  font-style: italic; color: var(--c-light);
+/* 두 번째 줄 공통 */
+.mp-hero-title-em {
+  display: block;
+  color: var(--c-light);
+  line-height: 1.15;
+  margin-top: 2px;
+}
+/* 한국어: Noto Serif KR */
+.mp-hero-title-em.ko {
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 600; font-style: normal;
+  font-size: clamp(40px, 5.2vw, 70px);
+}
+/* 영어: Cormorant Garamond 이탤릭 */
+.mp-hero-title-em.en {
   font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(28px, 3.8vw, 58px);
-  font-weight: 400; line-height: 1.25;
+  font-weight: 400; font-style: italic;
+  font-size: clamp(46px, 6vw, 82px);
 }
 
 .mp-hero-role {
-  font-size: 12px; font-weight: 700;
-  color: rgba(255,255,255,0.45); letter-spacing: 2px;
-  text-transform: uppercase; margin: 0 0 32px;
+  font-size: 11px; font-weight: 700;
+  color: rgba(255,255,255,0.35); letter-spacing: 2.5px;
+  text-transform: uppercase; margin: 20px 0 28px;
   animation: mp-fade-up 1s 0.45s both;
 }
 
@@ -448,10 +439,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
-  .mp-hero { grid-template-columns: 1fr; }
-  .mp-hero-photo { height: 60vw; min-height: 300px; }
-  .mp-hero-content { min-height: auto; }
-  .mp-hero-content { padding: 48px 32px; }
+  .mp-hero { min-height: 78vh; }
+  .mp-hero-content { padding: 0 6% 64px; max-width: 100%; }
   .mp-story-block { grid-template-columns: 1fr; gap: 36px; }
   .mp-story { padding: 56px 24px; }
   .mp-spouse { padding: 0 24px 56px; }
@@ -461,8 +450,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   .mp-prayer { padding: 0 24px 56px; }
 }
 @media (max-width: 560px) {
-  .mp-hero-content { padding: 40px 20px; }
-  .mp-hero-name-layer { bottom: 24px; left: 24px; }
+  .mp-hero { min-height: 84vh; }
+  .mp-hero-content { padding: 0 20px 56px; }
   .mp-verse { padding: 56px 24px; }
 }
 
@@ -607,108 +596,87 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 .tn-stw-icon { transition: transform 0.25s; color: #a0b8c4; }
 .tn-stw-toggle.is-open .tn-stw-icon { transform: rotate(180deg); }
 
-/* ── MOBILE: 스티키 아바타 스트립 ──────────────── */
-.tn-mobile-strip { display: none; }
+/* ── MOBILE: 플로팅 버튼 + 바텀시트 ──────────────── */
+.tn-fab { display: none; }
+.tn-sheet-backdrop { display: none; }
+.tn-sheet { display: none; }
 
 @media (max-width: 768px) {
-  .tn-mobile-strip {
+  .tn-sheet-backdrop {
     display: block;
-    position: sticky;
-    top: 76px; /* fixed nav (14px offset + 62px height) */
-    z-index: 150;
-    background: rgba(255,255,255,0.97);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid #dce8ee;
-    box-shadow: 0 2px 12px rgba(0,40,60,0.08);
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 301;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
   }
-  .tn-strip-scroll {
+  .tn-sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+  .tn-sheet {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    max-height: 72vh;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    z-index: 302;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 -8px 40px rgba(0,30,50,0.18);
+  }
+  .tn-sheet.is-open { transform: translateY(0); }
+
+  .tn-fab {
     display: flex;
     align-items: center;
-    overflow-x: auto;
-    gap: 0;
-    padding: 8px 12px 10px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    justify-content: center;
+    position: fixed;
+    bottom: 24px; right: 20px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #0d1e28;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    z-index: 300;
+    box-shadow: 0 4px 20px rgba(0,30,50,0.35);
+    transition: transform 0.2s, background 0.2s;
   }
-  .tn-strip-scroll::-webkit-scrollbar { display: none; }
+  .tn-fab:hover { transform: scale(1.08); }
+  .tn-fab.is-open { background: #007ea1; }
 
-  .tn-strip-sep {
-    font-size: 8px;
+  .tn-sheet-handle {
+    width: 40px; height: 4px;
+    background: #dce8ee;
+    border-radius: 2px;
+    margin: 12px auto 0;
+    flex-shrink: 0;
+  }
+  .tn-sheet-header {
+    padding: 12px 20px 10px;
+    border-bottom: 1px solid #dce8ee;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: .1em;
     text-transform: uppercase;
-    color: #b8cdd8;
-    padding: 0 6px 0 4px;
+    color: #5b8fa8;
     flex-shrink: 0;
-    writing-mode: horizontal-tb;
-    white-space: nowrap;
-    align-self: center;
   }
-  .tn-strip-sep:first-child { padding-left: 0; }
-
-  .tn-strip-divider {
-    width: 1px; height: 32px;
-    background: #dce8ee;
-    flex-shrink: 0;
-    margin: 0 6px;
+  .tn-sheet-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 0 32px;
+    -webkit-overflow-scrolling: touch;
   }
-
-  .tn-strip-item {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    text-decoration: none;
-    padding: 2px 5px 0;
-    border-radius: 10px;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-  .tn-strip-item:hover { background: rgba(0,126,161,0.07); }
-
-  .tn-strip-avatar-wrap {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    border: 2px solid #dce8ee;
-    overflow: hidden;
-    background: #c5dce8;
-    flex-shrink: 0;
-    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-  }
-  .tn-strip-item.is-active .tn-strip-avatar-wrap {
-    border-color: #007ea1;
-    border-width: 2.5px;
-    transform: scale(1.1);
-    box-shadow: 0 2px 10px rgba(0,126,161,0.28);
-  }
-  .tn-strip-avatar {
-    width: 100%; height: 100%;
-    object-fit: cover; object-position: center top;
-    display: block;
-  }
-  .tn-strip-placeholder {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 700; color: #fff;
-    background: linear-gradient(135deg, #a0b8c4, #7a9aaa);
-  }
-
-  .tn-strip-name {
-    font-size: 9px;
-    font-weight: 600;
-    color: #7a9aaa;
-    max-width: 46px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-align: center;
-    line-height: 1;
-  }
-  .tn-strip-item.is-active .tn-strip-name {
-    color: #007ea1;
-    font-weight: 700;
-  }
+  /* 시트 내 아이템은 조금 더 넓게 */
+  .tn-sheet .tn-item { padding: 9px 20px; }
+  .tn-sheet .tn-campus-label { padding: 10px 20px 4px; }
+  .tn-sheet .tn-stw-toggle { padding: 10px 20px 6px; }
+  .tn-sheet .tn-avatar { width: 38px; height: 38px; }
+  .tn-sheet .tn-avatar-placeholder { width: 38px; height: 38px; font-size: 14px; }
 }
 </style>
 
@@ -725,136 +693,41 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     </a>
   </div>
 
-  <!-- ── Mobile: 스티키 아바타 스트립 ──────────────── -->
-  <div class="tn-mobile-strip" id="tnMobileStrip">
-    <div class="tn-strip-scroll" id="tnStripScroll">
-      {(() => {
-        let lastC = '';
-        const allStrip = [...sidebarTeam, ...sidebarSTW];
-        const hasStwInTeam = sidebarSTW.length > 0;
-        const missionaryElems = sidebarTeam.map(p => {
-          const show = p.data.campus !== lastC;
-          if (show) lastC = p.data.campus;
-          const campusKoShort = p.data.campus === 'pyeongtaek' ? '평택' : '제주';
-          const campusEnShort = p.data.campus === 'pyeongtaek' ? 'PTK' : 'JEJU';
-          const isActive = p.slug === person.slug;
-          const firstName = (p.data.name_ko || p.data.name_en || '?').split(' & ')[0];
-          const initial = firstName[0];
-          return (
-            <>
-              {show && (
-                <span class="tn-strip-sep">
-                  <span class="wl-ko">{campusKoShort}</span>
-                  <span class="wl-en">{campusEnShort}</span>
-                </span>
-              )}
-              <a href={`/team/${p.slug}`} class={`tn-strip-item${isActive ? ' is-active' : ''}`}>
-                <div class="tn-strip-avatar-wrap">
-                  {p.data.photo_url
-                    ? <img class="tn-strip-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-                    : null}
-                  <div class="tn-strip-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</div>
-                </div>
-                <span class="tn-strip-name">
-                  <span class="wl-ko">{firstName.split(' ')[0]}</span>
-                  <span class="wl-en">{p.data.name_en.split(' & ')[0].split(' ')[0]}</span>
-                </span>
-              </a>
-            </>
-          );
-        });
-        if (!hasStwInTeam) return missionaryElems;
-        const stwElems = (() => {
-          let lastSC = '';
-          return sidebarSTW.map(p => {
-            const show = p.data.campus !== lastSC;
-            if (show) lastSC = p.data.campus;
-            const campusKoShort = p.data.campus === 'pyeongtaek' ? '평택' : '제주';
-            const campusEnShort = p.data.campus === 'pyeongtaek' ? 'PTK' : 'JEJU';
-            const isActive = p.slug === person.slug;
-            const firstName = (p.data.name_ko || p.data.name_en || '?').split(' & ')[0];
-            const initial = firstName[0];
-            return (
-              <>
-                {show && (
-                  <span class="tn-strip-sep" style="color:#c5d8e0;">
-                    <span class="wl-ko">{campusKoShort}</span>
-                    <span class="wl-en">{campusEnShort}</span>
-                  </span>
-                )}
-                <a href={`/team/${p.slug}`} class={`tn-strip-item${isActive ? ' is-active' : ''}`} style="opacity:0.8;">
-                  <div class="tn-strip-avatar-wrap" style="width:34px;height:34px;">
-                    {p.data.photo_url
-                      ? <img class="tn-strip-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-                      : null}
-                    <div class="tn-strip-placeholder" style={`font-size:12px;${p.data.photo_url ? 'display:none' : ''}`}>{initial}</div>
-                  </div>
-                  <span class="tn-strip-name" style="font-size:8px;">
-                    <span class="wl-ko">{firstName.split(' ')[0]}</span>
-                    <span class="wl-en">{p.data.name_en.split(' & ')[0].split(' ')[0]}</span>
-                  </span>
-                </a>
-              </>
-            );
-          });
-        })();
-        return [...missionaryElems, <div class="tn-strip-divider"/>, ...stwElems];
-      })()}
-    </div>
-  </div>
-  
-  <script>
-    (function() {
-      var scroll = document.getElementById('tnStripScroll');
-      if (!scroll) return;
-      var active = scroll.querySelector('.tn-strip-item.is-active');
-      if (active) {
-        // 현재 아이템을 가운데로 스크롤
-        setTimeout(function() {
-          var stripW = scroll.offsetWidth;
-          var itemLeft = active.offsetLeft;
-          var itemW = active.offsetWidth;
-          scroll.scrollLeft = itemLeft - (stripW / 2) + (itemW / 2);
-        }, 0);
-      }
-    })();
-  </script>
-
-  <!-- Hero -->
+  <!-- Hero — full bleed -->
   <section class="mp-hero">
-    <div class="mp-hero-photo">
-      {d.photo_url && (
-        <img src={d.photo_url} alt="" loading="eager" onerror="this.style.display='none'"/>
-      )}
-      <div class="mp-hero-name-layer">
-        <div class="mp-hero-name-main">
-          <span class="wl-ko">{d.name_ko}</span>
-          <span class="wl-en">{d.name_en}</span>
-        </div>
-        <div class="mp-hero-name-sub">{d.role_badge}</div>
-      </div>
+    <!-- 배경 사진 -->
+    <div class="mp-hero-bg">
+      {d.photo_url
+        ? <img src={d.photo_url} alt="" loading="eager" onerror="this.style.display='none'"/>
+        : null}
     </div>
 
+    <!-- 텍스트 레이어 -->
     <div class="mp-hero-content">
       <div class="mp-hero-label">
         <span class="wl-ko">{isDir ? '월드오브라이프 코리아 · 대표 선교사' : `월드오브라이프 코리아 · ${d.title_ko}`}</span>
         <span class="wl-en">{isDir ? 'Word of Life Korea · Field Director' : `Word of Life Korea · ${d.title_en}`}</span>
       </div>
 
+      <p class="mp-hero-person-name">
+        <span class="wl-ko">{d.name_ko}</span>
+        <span class="wl-en">{d.name_en}</span>
+      </p>
+
       <h1 class="mp-hero-title">
         <span class="wl-ko">
-          {d.hero_tagline_ko || d.name_ko}<br/>
-          <em>{d.hero_tagline2_ko || d.title_ko}</em>
+          {d.hero_tagline_ko || d.name_ko}
+          <span class="mp-hero-title-em ko">{d.hero_tagline2_ko || d.title_ko}</span>
         </span>
         <span class="wl-en">
-          {d.hero_tagline_en || d.name_en}<br/>
-          <em>{d.hero_tagline2_en || d.title_en}</em>
+          {d.hero_tagline_en || d.name_en}
+          <em class="mp-hero-title-em en">{d.hero_tagline2_en || d.title_en}</em>
         </span>
       </h1>
 
       <p class="mp-hero-role">
-        <span class="wl-ko">{d.title_ko}</span>
-        <span class="wl-en">{d.title_en}</span>
+        <span class="wl-ko">{campusKo}</span>
+        <span class="wl-en">{campusEn}</span>
       </p>
 
       <p class="mp-hero-desc">
@@ -1228,5 +1101,131 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   })();
 </script>
 
+<!-- ── Mobile: FAB + Bottom Sheet ──────────────────── -->
+<button class="tn-fab" id="tnFab" aria-label="팀원 목록">
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+    <circle cx="8" cy="7" r="3" stroke="white" stroke-width="1.8"/>
+    <circle cx="15" cy="7" r="2.5" stroke="white" stroke-width="1.6" opacity=".7"/>
+    <path d="M2 18c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M15 13c2.21 0 4 1.79 4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+  </svg>
+</button>
+<div class="tn-sheet-backdrop" id="tnBackdrop"></div>
+<div class="tn-sheet" id="tnSheet">
+  <div class="tn-sheet-handle"></div>
+  <div class="tn-sheet-header">
+    <span class="wl-ko">섬기는이</span>
+    <span class="wl-en">Our Team</span>
+  </div>
+  <div class="tn-sheet-scroll">
+    {(() => {
+      let lastC = '';
+      return sidebarTeam.map(p => {
+        const cl = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
+        const cle = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
+        const show = p.data.campus !== lastC;
+        if (show) lastC = p.data.campus;
+        const active = p.slug === person.slug;
+        const init = (p.data.name_ko || p.data.name_en || '?')[0];
+        return (
+          <>
+            {show && <div class="tn-campus-label"><span class="wl-ko">{cl}</span><span class="wl-en">{cle}</span></div>}
+            <a href={`/team/${p.slug}`} class={`tn-item${active ? ' is-active' : ''}`}>
+              {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+              <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{init}</span>
+              <div>
+                <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
+                <div class="tn-role">{p.data.role_badge}</div>
+              </div>
+            </a>
+          </>
+        );
+      });
+    })()}
+    {sidebarSTW.length > 0 && (
+      <div class="tn-stw-wrap">
+        <button class="tn-stw-toggle" id="tnStwToggle2">
+          <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
+            <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
+            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;">
+              <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </button>
+        <div class="tn-stw-list" id="tnStwList2" style="display:none;">
+          {(() => {
+            let lc = '';
+            return sidebarSTW.map(p => {
+              const sc = p.data.campus !== lc;
+              if (sc) lc = p.data.campus;
+              const cl = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
+              const cle = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
+              const active = p.slug === person.slug;
+              const init = (p.data.name_ko || p.data.name_en || '?')[0];
+              return (
+                <>
+                  {sc && <div class="tn-campus-label" style="color:#c5d8e0;"><span class="wl-ko">{cl}</span><span class="wl-en">{cle}</span></div>}
+                  <a href={`/team/${p.slug}`} class={`tn-item${active ? ' is-active' : ''}`}>
+                    {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+                    <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{init}</span>
+                    <div>
+                      <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
+                      <div class="tn-role">{p.data.role_badge}</div>
+                    </div>
+                  </a>
+                </>
+              );
+            });
+          })()}
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
+<script>
+  (function() {
+    var fab = document.getElementById('tnFab');
+    var backdrop = document.getElementById('tnBackdrop');
+    var sheet = document.getElementById('tnSheet');
+    if (!fab || !sheet) return;
+
+    function openSheet() {
+      sheet.classList.add('is-open');
+      backdrop.classList.add('is-open');
+      fab.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      // 현재 항목 스크롤
+      var active = sheet.querySelector('.tn-item.is-active');
+      if (active) setTimeout(function() { active.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 350);
+    }
+    function closeSheet() {
+      sheet.classList.remove('is-open');
+      backdrop.classList.remove('is-open');
+      fab.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    fab.addEventListener('click', function() {
+      sheet.classList.contains('is-open') ? closeSheet() : openSheet();
+    });
+    backdrop.addEventListener('click', closeSheet);
+
+    // 인턴 토글 (바텀시트용)
+    var st2 = document.getElementById('tnStwToggle2');
+    var sl2 = document.getElementById('tnStwList2');
+    if (st2 && sl2) {
+      var open2 = localStorage.getItem('tn_stw_open') === '1';
+      if (sl2.querySelector('.tn-item.is-active')) open2 = true;
+      if (open2) { sl2.style.display = ''; st2.classList.add('is-open'); }
+      st2.addEventListener('click', function() {
+        open2 = !open2;
+        sl2.style.display = open2 ? '' : 'none';
+        st2.classList.toggle('is-open', open2);
+        localStorage.setItem('tn_stw_open', open2 ? '1' : '0');
+      });
+    }
+  })();
+</script>
 
 </BaseLayout>
