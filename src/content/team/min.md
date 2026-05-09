@@ -15,7 +15,7 @@ title_en: Core Training Cordinator
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
-order: -20
+order: 2
 photo_url: /images/uploads/민선교사님-가족사진.jpg
 photo_story: /images/uploads/min.jpg
 photo_url_2: /images/uploads/김유진-선교사님.png
