@@ -32,7 +32,7 @@ hero_subtitle_en: Steve and Rhonda teach and train students in God's Word at
   servants.
 verse_ref: "고린도전서 16 : 15"
 spouse_ko: 란다 니콜스
-spouse_en: Randa Nicholes
+spouse_en: Rhonda Nicholes
 show_spouse: true
 bio_ko: Steve는 월드 오브 라이프 사역자 가정에서 태어났습니다. 네 살 때 어머니의 인도로 예수님을 처음 받아들였지만, 어린 시절
   대부분을 자신의 신앙을 의심하며 보냈습니다. 5학년 때 가까운 친구 Lewis의 갑작스러운 죽음이 그를 크게 흔들었습니다. 자신의 신앙이
