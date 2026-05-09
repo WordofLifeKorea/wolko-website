@@ -17,7 +17,7 @@ role_badge: Missionaries
 campus: jeju
 category: missionary
 order: 2
-photo_url: https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Beak.png
+photo_url: /images/uploads/beak.png
 photo_story: /images/uploads/david.jpg
 photo_url_2: /images/uploads/anna.jpg
 hero_tagline_ko: 다음 세대를
