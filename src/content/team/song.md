@@ -53,4 +53,5 @@ bio_en_2: >-
 
 
   In 2001 she joined WOLKO to receive discipleship training, and the following year enrolled at Word of Life Bible Institute in New York. Today she serves the Lord alongside her husband Samuel and their two daughters.
+support_url: https://online.mrm.or.kr/njFqay7
 ---
