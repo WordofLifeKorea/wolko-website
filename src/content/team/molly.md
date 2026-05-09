@@ -17,7 +17,7 @@ role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw
 order: 3
-photo_url: https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Molly.png
+photo_url: /images/uploads/molly.jpg
 hero_tagline_ko: 아시아를 향한
 hero_tagline_en: Carrying God's Heart
 hero_tagline2_ko: 하나님의 마음을 품다
