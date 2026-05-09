@@ -16,7 +16,7 @@ title_en: Ministry Director & Executive Dean
 role_badge: Jeju Director
 campus: jeju
 category: missionary
-order: 0
+order: 1
 photo_url: /images/uploads/스티브-란다.png
 photo_story: /images/uploads/steve.jpg
 photo_url_2: /images/uploads/rhonda.jpg
