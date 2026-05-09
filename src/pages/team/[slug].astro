@@ -252,6 +252,10 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 72px; align-items: start;
 }
+.mp-story-block--no-photo {
+  grid-template-columns: 1fr;
+  max-width: 680px;
+}
 .mp-story-photo {
   position: relative; border-radius: 20px; overflow: hidden;
   aspect-ratio: 3 / 4;
@@ -806,19 +810,19 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   <section class="mp-story">
 
     <!-- 블록 1: 사진 왼쪽, 텍스트 오른쪽 -->
-    <div class="mp-story-block mp-reveal">
-      <div class="mp-story-photo">
-        <div class="mp-story-photo-placeholder">
-          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="40" cy="30" r="16" fill="#8fa8b8"/>
-            <ellipse cx="40" cy="68" rx="26" ry="16" fill="#8fa8b8"/>
-          </svg>
-        </div>
-        {(d.photo_story || d.photo_url) && (
+    <div class={`mp-story-block mp-reveal${!(d.photo_story || d.photo_url) ? ' mp-story-block--no-photo' : ''}`}>
+      {(d.photo_story || d.photo_url) && (
+        <div class="mp-story-photo">
+          <div class="mp-story-photo-placeholder">
+            <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="40" cy="30" r="16" fill="#8fa8b8"/>
+              <ellipse cx="40" cy="68" rx="26" ry="16" fill="#8fa8b8"/>
+            </svg>
+          </div>
           <img src={d.photo_story || d.photo_url} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
-        )}
-        <span class="mp-story-photo-tag">{d.role_badge}</span>
-      </div>
+          <span class="mp-story-photo-tag">{d.role_badge}</span>
+        </div>
+      )}
 
       <div class="mp-story-text">
         <div class="mp-story-label">
@@ -860,18 +864,18 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
             {d.bio_ko_2 && <p class="mp-story-body wl-ko-block">{d.bio_ko_2}</p>}
             {d.bio_en_2 && <p class="mp-story-body wl-en-block">{d.bio_en_2}</p>}
           </div>
-          <div class="mp-story-photo">
-            <div class="mp-story-photo-placeholder">
-              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="40" cy="30" r="16" fill="#8fa8b8"/>
-                <ellipse cx="40" cy="68" rx="26" ry="16" fill="#8fa8b8"/>
-              </svg>
-            </div>
-            {d.photo_url_2 && (
+          {d.photo_url_2 && (
+            <div class="mp-story-photo">
+              <div class="mp-story-photo-placeholder">
+                <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="40" cy="30" r="16" fill="#8fa8b8"/>
+                  <ellipse cx="40" cy="68" rx="26" ry="16" fill="#8fa8b8"/>
+                </svg>
+              </div>
               <img src={d.photo_url_2} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
-            )}
-            <span class="mp-story-photo-tag">{d.role_badge}</span>
-          </div>
+              <span class="mp-story-photo-tag">{d.role_badge}</span>
+            </div>
+          )}
         </div>
       </div>
     )}
