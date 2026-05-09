@@ -1,9 +1,25 @@
 ---
+bio_en: Hwan-Kyu was born and raised in South Korea. His mother had a personal
+  relationship with Christ, but his father grew up with a Buddhist influence.
+  The whole family attended church every Sunday, yet assurance of salvation was
+  never clear to him. At 21, he began his mandatory military service. After
+  finishing his service, his mother encouraged him to attend SYME. It was there
+  that a missionary shared the gospel with him. For the first time, he clearly
+  understood that Christ had died and risen to make a way for him to have a
+  personal relationship with God — and that salvation is a free gift, not
+  something earned. Cynthia grew up in northeastern Pennsylvania. With a pastor
+  for a father, she was always at the center of church life. At six years old,
+  during Vacation Bible School, she heard and truly grasped the gospel for the
+  first time. At nine, at a Child Evangelism Fellowship camp, she heard a
+  missionary speak about ministry in Asia — and something stirred in her heart.
+  She rejoices that God has directed both her life and her husband's to bring
+  them back to South Korea, where they now serve the Lord together with their
+  three children — sons Zayn and Noah, and their youngest daughter Noelle.
+gender: male
 name_ko: 김환규 & 김씬띠아
 name_en: HwanKyu Kim & Cynthia Kim
 title_ko: 미디어 및 교육자료 개발 코디네이터
 title_en: Media & Resources Development Cordinator
-gender: male
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
@@ -41,22 +57,6 @@ bio_ko: 환규는 대한민국에서 태어나고 자랐습니다. 어머니는 
   처음으로 온전히 듣고 이해하게 되었습니다. 아홉 살 때, 아동전도협회 캠프에서 아시아 사역에 대해 이야기하는 선교사님의 간증을 들으며
   아시아를 향한 소명이 마음에 자리 잡기 시작했습니다. 지금 환규는 한국에서 주님을 섬기며, 씬띠아와 두 아들 Zayn, Noah와 막내딸
   노엘과 함께 한국에서 주님을 섬기고 있습니다.
-bio_en: Hwan-Kyu was born and raised in South Korea. His mother had a personal
-  relationship with Christ, but his father grew up with a Buddhist influence.
-  The whole family attended church every Sunday, yet assurance of salvation was
-  never clear to him. At 21, he began his mandatory military service. After
-  finishing his service, his mother encouraged him to attend SYME. It was there
-  that a missionary shared the gospel with him. For the first time, he clearly
-  understood that Christ had died and risen to make a way for him to have a
-  personal relationship with God — and that salvation is a free gift, not
-  something earned. Cynthia grew up in northeastern Pennsylvania. With a pastor
-  for a father, she was always at the center of church life. At six years old,
-  during Vacation Bible School, she heard and truly grasped the gospel for the
-  first time. At nine, at a Child Evangelism Fellowship camp, she heard a
-  missionary speak about ministry in Asia — and something stirred in her heart.
-  She rejoices that God has directed both her life and her husband's to bring
-  them back to South Korea, where they now serve the Lord together with their
-  three children — sons Zayn and Noah, and their youngest daughter Noelle.
 bio_ko_2: >-
   씬띠아는 미국 펜실베이니아 북동부에서 자랐습니다. 아버지가 목사님이셨기에 늘 교회 활동의 중심에 있었고, 매주 일요일, 수요일, 금요일마다
   교회에 나갔습니다. 그런 환경 속에서 자연스럽게 스스로를 꽤 착한 사람이라 여겼고, 선한 행실로 천국에 갈 자격이 충분하다고 믿었습니다.
@@ -80,4 +80,5 @@ bio_en_2: >-
 
 
   At nine, at a Child Evangelism Fellowship camp, she heard a missionary speak about ministry in Asia — and something stirred in her heart. That calling stayed with her through high school, growing stronger after she visited South Korea and attended the Word of Life Bible Institute there. She became convinced that Korea was where God wanted her. She rejoices that God has directed both her life and her husband's to bring them back to South Korea, where they now serve the Lord together with their three children — sons Zayn and Noah, and their youngest daughter Noelle.
+support_url: https://online.mrm.or.kr/UqHsD2X
 ---
