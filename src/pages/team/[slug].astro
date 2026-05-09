@@ -860,7 +860,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 <aside class="tn-sidebar" id="tnSidebar">
   <button class="tn-toggle" id="tnToggle" aria-label="팀원 목록 열기/닫기">
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M5 2L10 7l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </button>
   <div class="tn-header">
@@ -910,14 +910,25 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   (function() {
     var sidebar = document.getElementById('tnSidebar');
     var toggle = document.getElementById('tnToggle');
+    var wrap = document.querySelector('.mp-wrap');
     if (!sidebar || !toggle) return;
+
+    var SIDEBAR_W = window.innerWidth <= 1100 ? '176px' : '200px';
+
+    function applyState(isCollapsed) {
+      sidebar.classList.toggle('is-collapsed', isCollapsed);
+      if (wrap) wrap.style.paddingRight = isCollapsed ? '12px' : SIDEBAR_W;
+    }
+
     var collapsed = localStorage.getItem('tn_collapsed') === '1';
-    if (collapsed) sidebar.classList.add('is-collapsed');
+    applyState(collapsed);
+
     toggle.addEventListener('click', function() {
       collapsed = !collapsed;
-      sidebar.classList.toggle('is-collapsed', collapsed);
+      applyState(collapsed);
       localStorage.setItem('tn_collapsed', collapsed ? '1' : '0');
     });
+
     // 현재 항목 스크롤 위치로 이동
     var active = sidebar.querySelector('.tn-item.is-active');
     if (active) active.scrollIntoView({ block: 'center', behavior: 'instant' });
