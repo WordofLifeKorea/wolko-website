@@ -38,6 +38,8 @@ const team = defineCollection({
     // 기도제목
     prayer_ko: z.string().optional(),
     prayer_en: z.string().optional(),
+    // 성별 (His/Her Story 라벨)
+    gender: z.enum(['male', 'female']).default('male').optional(),
     // 후원
     support_url: z.string().optional(),
   }),
