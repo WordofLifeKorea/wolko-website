@@ -1,9 +1,23 @@
 ---
+bio_en: >-
+  Aiden grew up in a Christian home, hearing the gospel from an early age — yet
+  he knew it in his head without truly believing it in his heart. As an
+  elementary school student, he invited his older brother, who was struggling
+  through family difficulties, to a church retreat. While praying for his
+  brother and hearing the Word again, he realized that the gospel was not merely
+  knowledge to be understood but truth to be personally received. That day he
+  received Jesus Christ as his Savior.
+
+
+  When he decided to pursue seminary, his parents strongly opposed the idea. After months of prayer, God gave him a clear answer through Jeremiah chapter 1 during a family devotional, and he stepped forward on that path with courage. Through SYME and WOLBI he learned what it means to walk with God in daily life, and his sense of calling to ministry grew clearer and deeper.
+
+
+  Watching an English-language performance, he was moved by how the message reached his heart even without understanding every word — and he saw that drama and musicals could be powerful vehicles for the gospel. That conviction deepened as he produced and served in performances himself, and today he dreams of carrying the gospel through the arts even into regions where traditional missionary work is difficult. He was recently encouraged to hear that the brother he invited to that retreat is now serving as a youth pastor — a reminder that investing in one person is never a small thing.
+gender: male
 name_ko: 박예능
 name_en: Aiden Park
-title_ko: 간사 · Short-term Worker
-title_en: Staff · Short-term Worker
-gender: male
+title_ko: 복음 전도팀 · 프로그램 진행 사역
+title_en: Evangelism Team · Program Facilitation
 role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw
@@ -32,18 +46,5 @@ bio_ko: >-
 
 
   영어 공연을 보며 언어를 몰라도 내용이 마음에 전달되는 경험을 통해 연극과 뮤지컬이 복음의 강력한 도구가 될 수 있음을 깨달았습니다. 직접 공연을 제작하고 섬기는 가운데 그 확신이 깊어졌고, 지금은 전통적인 선교가 어려운 지역에도 문화를 통해 복음을 전하는 사역을 꿈꾸고 있습니다. 그리고 그 수련회에 초대했던 형이 지금 중고등부 목사로 사역하고 있다는 소식을 들으며, 한 사람에게 투자하는 것이 결코 작지 않음을 다시 확신하고 있습니다.
-bio_en: >-
-  Aiden grew up in a Christian home, hearing the gospel from an early age — yet
-  he knew it in his head without truly believing it in his heart. As an
-  elementary school student, he invited his older brother, who was struggling
-  through family difficulties, to a church retreat. While praying for his
-  brother and hearing the Word again, he realized that the gospel was not merely
-  knowledge to be understood but truth to be personally received. That day he
-  received Jesus Christ as his Savior.
-
-
-  When he decided to pursue seminary, his parents strongly opposed the idea. After months of prayer, God gave him a clear answer through Jeremiah chapter 1 during a family devotional, and he stepped forward on that path with courage. Through SYME and WOLBI he learned what it means to walk with God in daily life, and his sense of calling to ministry grew clearer and deeper.
-
-
-  Watching an English-language performance, he was moved by how the message reached his heart even without understanding every word — and he saw that drama and musicals could be powerful vehicles for the gospel. That conviction deepened as he produced and served in performances himself, and today he dreams of carrying the gospel through the arts even into regions where traditional missionary work is difficult. He was recently encouraged to hear that the brother he invited to that retreat is now serving as a youth pastor — a reminder that investing in one person is never a small thing.
+support_url: https://online.mrm.or.kr/Ij7TElD
 ---
