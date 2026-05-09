@@ -17,10 +17,13 @@ const sidebarTeam = allTeam
     return (a.data.order ?? 99) - (b.data.order ?? 99);
   });
 
-// 사이드바용: 인턴 (STW), order 순
+// 사이드바용: 인턴 (STW), 평택 → 제주, order 순
 const sidebarSTW = allTeam
   .filter(p => p.data.category === 'stw')
-  .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
+  .sort((a, b) => {
+    if (a.data.campus !== b.data.campus) return a.data.campus === 'pyeongtaek' ? -1 : 1;
+    return (a.data.order ?? 99) - (b.data.order ?? 99);
+  });
 const d = person.data;
 const campusKo = d.campus === 'pyeongtaek' ? '평택 월코센터' : '제주 월비캠퍼스';
 const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju WOLBI Campus';
@@ -937,26 +940,41 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           </span>
         </button>
         <div class="tn-stw-list" id="tnStwList" style="display:none;">
-          {sidebarSTW.map(p => {
-            const isActive = p.slug === person.slug;
-            const initial = (p.data.name_ko || p.data.name_en || '?')[0];
-            return (
-              <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
-                {p.data.photo_url
-                  ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-                  : null
-                }
-                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
-                <div>
-                  <div class="tn-name">
-                    <span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span>
-                    <span class="wl-en">{p.data.name_en.split(' & ')[0]}</span>
-                  </div>
-                  <div class="tn-role">{p.data.role_badge}</div>
-                </div>
-              </a>
-            );
-          })}
+          {(() => {
+            let lastSTWCampus = '';
+            return sidebarSTW.map(p => {
+              const showCampus = p.data.campus !== lastSTWCampus;
+              if (showCampus) lastSTWCampus = p.data.campus;
+              const campusLabel = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
+              const campusLabelEn = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
+              const isActive = p.slug === person.slug;
+              const initial = (p.data.name_ko || p.data.name_en || '?')[0];
+              return (
+                <>
+                  {showCampus && (
+                    <div class="tn-campus-label" style="color:#c5d8e0;">
+                      <span class="wl-ko">{campusLabel}</span>
+                      <span class="wl-en">{campusLabelEn}</span>
+                    </div>
+                  )}
+                  <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
+                    {p.data.photo_url
+                      ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                      : null
+                    }
+                    <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
+                    <div>
+                      <div class="tn-name">
+                        <span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span>
+                        <span class="wl-en">{p.data.name_en.split(' & ')[0]}</span>
+                      </div>
+                      <div class="tn-role">{p.data.role_badge}</div>
+                    </div>
+                  </a>
+                </>
+              );
+            });
+          })()}
         </div>
       </div>
     )}
