@@ -30,6 +30,7 @@ hero_subtitle_ko: 임현지 간사는 캠프 코디네이터로서 전반적인 
 hero_subtitle_en: Ella serves as Camp Coordinator, overseeing the overall camp
   schedule and program management, while dedicating herself to presenting the
   gospel in a way that connects with young people who are lost and searching.
+verse_ref: "고린도후서 12 : 9 – 10"
 show_spouse: false
 bio_ko: 어렸을 때부터 교회를 다니며 자란 현지는 하나님을 믿었고 예수님이 누구신지도 알았지만, 구원받으려면 선한 일을 반드시 해야 한다고
   생각했습니다. 고등학교 때 아버지의 복음 전도 훈련을 통해 구원은 선행이 아니라 오직 예수님을 믿는 믿음으로 주시는 하나님의 선물임을
