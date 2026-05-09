@@ -441,7 +441,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
 
     <div class="notice">
       <strong>안내:</strong> 수정 후 <strong>저장</strong>을 누르면 GitHub에 바로 반영됩니다. 홈페이지 빌드는 약 1~2분 소요될 수 있습니다.
-      사진 업로드는 각 사진 칸을 클릭하세요 (jpg, png, webp / 최대 5MB).
+      사진 업로드는 각 사진 칸을 클릭하세요 (jpg, png, webp / 최대 30MB).
     </div>
 
     <!-- ① 사진 섹션 -->
@@ -706,8 +706,8 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       const file = fileInput.files[0];
       if (!file || !activeUploadField) return;
 
-      if (file.size > 5 * 1024 * 1024) {
-        setPhotoStatus(activeUploadField, '❌ 파일 크기는 5MB 이하여야 합니다.', true);
+      if (file.size > 30 * 1024 * 1024) {
+        setPhotoStatus(activeUploadField, '❌ 파일 크기는 30MB 이하여야 합니다.', true);
         return;
       }
 
