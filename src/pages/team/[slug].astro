@@ -922,8 +922,17 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         <span class="wl-en">Prayer</span>
       </div>
       <p class="mp-prayer-text">
-        <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
-        <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
+        {d.prayer_ko || d.prayer_en ? (
+          <>
+            <span class="wl-ko">{d.prayer_ko || d.prayer_en}</span>
+            <span class="wl-en">{d.prayer_en || d.prayer_ko}</span>
+          </>
+        ) : (
+          <>
+            <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
+            <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
+          </>
+        )}
       </p>
     </div>
   </div>
