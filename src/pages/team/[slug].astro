@@ -99,19 +99,19 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 }
 .mp-back a:hover { color: var(--c-deep); }
 
-/* HERO — full bleed */
+/* HERO — 2-column */
 .mp-hero {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  min-height: 92vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   overflow: hidden;
-  background: var(--c-ink);
 }
-.mp-hero-bg {
-  position: absolute; inset: 0; z-index: 0;
+.mp-hero-photo {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--c-deep), var(--c-mid));
+  min-height: 80vh;
 }
-.mp-hero-bg img {
+.mp-hero-photo img {
   width: 100%; height: 100%;
   object-fit: cover; object-position: center top;
   display: block;
@@ -121,80 +121,87 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   from { transform: scale(1.08); }
   to   { transform: scale(1.00); }
 }
-.mp-hero-bg::after {
+.mp-hero-photo::after {
   content: '';
   position: absolute; inset: 0;
-  background:
-    linear-gradient(108deg, rgba(4,18,28,0.95) 0%, rgba(4,18,28,0.80) 38%, rgba(4,18,28,0.28) 68%, transparent 100%),
-    linear-gradient(0deg, rgba(4,18,28,0.72) 0%, rgba(4,18,28,0.10) 48%, transparent 100%);
+  background: linear-gradient(180deg, transparent 50%, rgba(4,20,32,0.65) 100%);
+}
+.mp-hero-name-layer {
+  position: absolute; bottom: 36px; left: 36px; z-index: 2;
+  animation: mp-fade-up 1s 0.5s both;
+}
+.mp-hero-name-main {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 2.8vw, 38px);
+  font-weight: 600; color: rgba(255,255,255,0.88);
+  line-height: 1.15; letter-spacing: 0.3px;
+}
+.mp-hero-name-sub {
+  font-size: 10px; font-weight: 700;
+  color: var(--c-light); letter-spacing: 2.5px;
+  text-transform: uppercase; margin-top: 6px;
 }
 .mp-hero-content {
-  position: relative; z-index: 2;
-  padding: 0 8% 96px;
-  width: 100%;
-  max-width: 660px;
-  display: flex; flex-direction: column;
+  background: var(--c-deep);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 64px 52px;
+  min-height: 80vh;
+  position: relative; overflow: hidden;
+}
+.mp-hero-content::before {
+  content: '';
+  position: absolute; width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(115,209,245,0.055) 0%, transparent 70%);
+  top: -80px; right: -80px; pointer-events: none;
 }
 
 .mp-hero-label {
   display: inline-flex; align-items: center; gap: 10px;
-  font-size: 10px; font-weight: 700; letter-spacing: 3.5px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 3px;
   text-transform: uppercase; color: var(--c-light);
-  margin: 0 0 16px; animation: mp-fade-up 1s 0.2s both;
+  margin: 0 0 36px; animation: mp-fade-up 1s 0.2s both;
+  opacity: 0.85;
 }
 .mp-hero-label::before {
-  content: ''; display: block; width: 32px; height: 1.5px;
+  content: ''; display: block; width: 28px; height: 1px;
   background: var(--c-light); flex-shrink: 0;
 }
 
-/* 이름 표시 (작은 크기로) */
-.mp-hero-person-name {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(17px, 1.7vw, 24px);
-  font-weight: 500; color: rgba(255,255,255,0.45);
-  letter-spacing: 2.5px; text-transform: uppercase;
-  margin: 0 0 20px; animation: mp-fade-up 1s 0.28s both;
-}
-
+/* 메인 타이틀 */
 .mp-hero-title {
   font-family: 'Noto Sans KR', sans-serif;
-  font-size: clamp(42px, 5.4vw, 74px); font-weight: 800;
-  color: var(--c-white); line-height: 1.1;
-  margin: 0 0 6px; animation: mp-fade-up 1s 0.35s both;
-  word-break: keep-all;
+  font-size: clamp(36px, 3.8vw, 58px); font-weight: 800;
+  color: var(--c-white); line-height: 1.12;
+  margin: 0; animation: mp-fade-up 1s 0.3s both;
+  word-break: keep-all; letter-spacing: -0.5px;
 }
-/* 두 번째 줄 공통 */
+/* 두 번째 줄 */
 .mp-hero-title-em {
   display: block;
   color: var(--c-light);
-  line-height: 1.15;
-  margin-top: 2px;
+  line-height: 1.2;
+  margin-top: 4px;
 }
-/* 한국어: Noto Serif KR */
 .mp-hero-title-em.ko {
   font-family: 'Noto Serif KR', serif;
-  font-weight: 600; font-style: normal;
-  font-size: clamp(40px, 5.2vw, 70px);
+  font-weight: 500; font-style: normal;
+  font-size: clamp(34px, 3.6vw, 55px);
 }
-/* 영어: Cormorant Garamond 이탤릭 */
 .mp-hero-title-em.en {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 400; font-style: italic;
-  font-size: clamp(46px, 6vw, 82px);
+  font-size: clamp(40px, 4.2vw, 64px);
 }
 
 .mp-hero-role {
-  font-size: 11px; font-weight: 700;
-  color: rgba(255,255,255,0.35); letter-spacing: 2.5px;
-  text-transform: uppercase; margin: 20px 0 28px;
-  animation: mp-fade-up 1s 0.45s both;
+  display: none; /* 제거 — 눈잡물 */
 }
 
 .mp-hero-desc {
-  font-size: 14px; line-height: 1.88;
-  color: rgba(255,255,255,0.72);
-  border-left: 2px solid var(--c-light); padding-left: 22px;
-  margin: 0 0 44px; animation: mp-fade-up 1s 0.55s both;
+  font-size: 13.5px; line-height: 1.85;
+  color: rgba(255,255,255,0.62);
+  margin: 32px 0 40px; animation: mp-fade-up 1s 0.45s both;
+  max-width: 380px;
 }
 
 .mp-cta-row {
@@ -439,8 +446,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
-  .mp-hero { min-height: 78vh; }
-  .mp-hero-content { padding: 0 6% 64px; max-width: 100%; }
+  .mp-hero { grid-template-columns: 1fr; }
+  .mp-hero-photo { height: 56vw; min-height: 260px; }
+  .mp-hero-content { min-height: auto; padding: 44px 32px; }
   .mp-story-block { grid-template-columns: 1fr; gap: 36px; }
   .mp-story { padding: 56px 24px; }
   .mp-spouse { padding: 0 24px 56px; }
@@ -450,8 +458,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   .mp-prayer { padding: 0 24px 56px; }
 }
 @media (max-width: 560px) {
-  .mp-hero { min-height: 84vh; }
-  .mp-hero-content { padding: 0 20px 56px; }
+  .mp-hero-content { padding: 36px 22px; }
+  .mp-hero-name-layer { bottom: 20px; left: 20px; }
   .mp-verse { padding: 56px 24px; }
 }
 
@@ -693,26 +701,28 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     </a>
   </div>
 
-  <!-- Hero — full bleed -->
+  <!-- Hero — 2-column -->
   <section class="mp-hero">
-    <!-- 배경 사진 -->
-    <div class="mp-hero-bg">
-      {d.photo_url
-        ? <img src={d.photo_url} alt="" loading="eager" onerror="this.style.display='none'"/>
-        : null}
+    <!-- 사진 패널 -->
+    <div class="mp-hero-photo">
+      {d.photo_url && (
+        <img src={d.photo_url} alt="" loading="eager" onerror="this.style.display='none'"/>
+      )}
+      <div class="mp-hero-name-layer">
+        <div class="mp-hero-name-main">
+          <span class="wl-ko">{d.name_ko}</span>
+          <span class="wl-en">{d.name_en}</span>
+        </div>
+        <div class="mp-hero-name-sub">{d.role_badge}</div>
+      </div>
     </div>
 
-    <!-- 텍스트 레이어 -->
+    <!-- 콘텐츠 패널 -->
     <div class="mp-hero-content">
       <div class="mp-hero-label">
         <span class="wl-ko">{isDir ? '월드오브라이프 코리아 · 대표 선교사' : `월드오브라이프 코리아 · ${d.title_ko}`}</span>
         <span class="wl-en">{isDir ? 'Word of Life Korea · Field Director' : `Word of Life Korea · ${d.title_en}`}</span>
       </div>
-
-      <p class="mp-hero-person-name">
-        <span class="wl-ko">{d.name_ko}</span>
-        <span class="wl-en">{d.name_en}</span>
-      </p>
 
       <h1 class="mp-hero-title">
         <span class="wl-ko">
@@ -725,11 +735,6 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         </span>
       </h1>
 
-      <p class="mp-hero-role">
-        <span class="wl-ko">{campusKo}</span>
-        <span class="wl-en">{campusEn}</span>
-      </p>
-
       <p class="mp-hero-desc">
         {d.hero_subtitle_ko || d.hero_subtitle_en ? (
           <>
@@ -738,13 +743,13 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           </>
         ) : hasBio ? (
           <>
-            <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0, 100) + '…' : d.title_ko}</span>
-            <span class="wl-en">{d.bio_en ? d.bio_en.substring(0, 110) + '…' : d.title_en}</span>
+            <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0, 90) + '…' : ''}</span>
+            <span class="wl-en">{d.bio_en ? d.bio_en.substring(0, 100) + '…' : ''}</span>
           </>
         ) : (
           <>
-            <span class="wl-ko">{d.title_ko} — 복음으로 한국의 다음 세대를 섬깁니다.</span>
-            <span class="wl-en">{d.title_en} — Serving Korea's next generation through the Gospel.</span>
+            <span class="wl-ko">복음으로 한국의 다음 세대를 섬깁니다.</span>
+            <span class="wl-en">Serving Korea's next generation through the Gospel.</span>
           </>
         )}
       </p>
