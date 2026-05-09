@@ -1,4 +1,5 @@
 ---
+
 bio_en: |-
   Hi, my name is HwanKyu Kim. I was born and raised in South Korea. My mother had a personal relationship with Christ, but my father grew up with a Buddhist influence. My whole family attended church every Sunday — the only reason my father came was that it had been a condition my mother's parents set before accepting their marriage. For me, church was simply a place I had to go on Sundays whether I wanted to or not.
   
@@ -18,7 +19,7 @@ role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
 order: 2
-photo_url: /images/uploads/kim.jpeg
+photo_url: /images/uploads/kim-photo_url-1778333249004.jpg
 photo_story: /images/uploads/hwankyu.jpeg
 photo_url_2: /images/uploads/cynthia.jpg
 hero_tagline_ko: '"복음을 담은" '
@@ -78,4 +79,5 @@ bio_en_2: |-
 
   At nine, at a Child Evangelism Fellowship camp, she heard a missionary speak about ministry in Asia — and something stirred in her heart. That calling stayed with her through high school, growing stronger after she visited South Korea and attended the Word of Life Bible Institute there. She became convinced that Korea was where God wanted her. She rejoices that God has directed both her life and her husband's to bring them back to South Korea, where they now serve the Lord together with their three children — sons Zayn and Noah, and their youngest daughter Noelle.
 support_url: https://online.mrm.or.kr/UqHsD2X
+
 ---
