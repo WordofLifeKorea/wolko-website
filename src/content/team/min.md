@@ -41,4 +41,5 @@ bio_en_2: Yu-Jin grew up in a Christian home and, during her middle school
   years, recognized her need for Christ and received the gospel. The Lord
   brought her and Joe together in marriage in 2007, and in 2009 their son Asol
   was born.
+support_url: https://online.mrm.or.kr/HRcruRJ
 ---
