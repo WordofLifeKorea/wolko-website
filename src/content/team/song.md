@@ -29,7 +29,7 @@ hero_subtitle_en: Samuel serves as Co-Leader of WOLKO, proclaiming the gospel at
 verse_ref: 사도행전 20:24
 spouse_ko: 신진아
 spouse_en: Jina Sin
-show_spouse: true
+show_spouse: false
 bio_ko: >-
   Samuel은 조상 숭배를 이어 온 불교 가정에서 태어났습니다. 중학교 시절에는 반항적인 삶을 살며 좋지 않은 무리와 어울렸고, 20대
   초반에는 2년간 한국 군대에서 복무하였습니다.
