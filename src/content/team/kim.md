@@ -19,7 +19,7 @@ role_badge: Missionaries
 campus: pyeongtaek
 category: missionary
 order: 2
-photo_url: /images/uploads/kim-photo_url-1778333249004.jpg
+photo_url: /images/uploads/kim-photo_url-1778336116601.png
 photo_story: /images/uploads/hwankyu.jpeg
 photo_url_2: /images/uploads/cynthia.jpg
 hero_tagline_ko: '"복음을 담은" '
@@ -77,5 +77,6 @@ bio_en_2: |-
 support_url: https://online.mrm.or.kr/UqHsD2X
 prayer_ko:
 prayer_en: 
+
 
 ---
