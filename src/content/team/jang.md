@@ -18,7 +18,7 @@ title_en: Missionaries
 role_badge: Missionaries
 campus: jeju
 category: missionary
-order: -19
+order: 2
 photo_url: /images/uploads/jack.jpg
 photo_story: /images/uploads/jack.jpg
 hero_tagline_ko: 복음이 바꾼
