@@ -286,6 +286,28 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 .mp-story-photo-placeholder svg { width: 80px; height: 80px; opacity: 0.2; }
 
 .mp-story-text { padding-top: 12px; }
+
+/* 바이오 클램프 */
+.mp-bio-wrap { position: relative; }
+.mp-bio-wrap.is-clamped { overflow: hidden; }
+.mp-bio-wrap.is-clamped::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, var(--c-white));
+  pointer-events: none;
+}
+.mp-bio-more {
+  display: none;
+  margin-top: 14px;
+  background: none; border: none; padding: 0;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+  color: var(--c-mid); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.mp-bio-more:hover { color: var(--c-deep); }
+.mp-bio-more.visible { display: inline-block; }
 .mp-story-label {
   font-size: 10px; font-weight: 700; letter-spacing: 3.5px;
   text-transform: uppercase; color: var(--c-mid); margin-bottom: 14px;
@@ -842,10 +864,14 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           <span class="wl-en">{name1En}</span>
         </h2>
         {hasBio ? (
-          <>
+          <div class="mp-bio-wrap" data-bio-block>
             {d.bio_ko && <p class="mp-story-body wl-ko-block">{d.bio_ko}</p>}
             {d.bio_en && <p class="mp-story-body wl-en-block">{d.bio_en}</p>}
-          </>
+            <button class="mp-bio-more" data-bio-btn>
+              <span class="wl-ko">더 보기 ↓</span>
+              <span class="wl-en">Read more ↓</span>
+            </button>
+          </div>
         ) : (
           <div class="mp-story-empty">
             <span class="wl-ko">소개 내용이 곧 업데이트됩니다. 이 사역자를 위해 기도해 주세요.</span>
@@ -869,8 +895,14 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
               <span class="wl-ko">{d.spouse_ko || name2Ko}</span>
               <span class="wl-en">{d.spouse_en || name2En}</span>
             </h2>
-            {d.bio_ko_2 && <p class="mp-story-body wl-ko-block">{d.bio_ko_2}</p>}
-            {d.bio_en_2 && <p class="mp-story-body wl-en-block">{d.bio_en_2}</p>}
+            <div class="mp-bio-wrap" data-bio-block>
+              {d.bio_ko_2 && <p class="mp-story-body wl-ko-block">{d.bio_ko_2}</p>}
+              {d.bio_en_2 && <p class="mp-story-body wl-en-block">{d.bio_en_2}</p>}
+              <button class="mp-bio-more" data-bio-btn>
+                <span class="wl-ko">더 보기 ↓</span>
+                <span class="wl-en">Read more ↓</span>
+              </button>
+            </div>
           </div>
           {d.photo_url_2 && (
             <div class="mp-story-photo">
@@ -961,6 +993,53 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       var isActive = toggleBtn.classList.toggle('active');
       spouseContent.classList.toggle('mp-spouse-hidden', !isActive);
     });
+  }
+
+  // ── Bio clamp: 사진 높이 초과 시 "더 보기" 버튼 표시 ──
+  function initBioClamp() {
+    document.querySelectorAll('[data-bio-block]').forEach(function(wrap) {
+      var btn = wrap.querySelector('[data-bio-btn]');
+      if (!btn) return;
+
+      // 같은 .mp-story-block 안의 사진 요소 높이 기준
+      var storyBlock = wrap.closest('.mp-story-block');
+      var photo = storyBlock ? storyBlock.querySelector('.mp-story-photo') : null;
+      var photoH = photo ? photo.offsetHeight : 520;
+      var threshold = Math.max(photoH, 420); // 최소 420px
+
+      // 버튼 제외한 텍스트 높이 측정
+      var textH = 0;
+      wrap.querySelectorAll('.mp-story-body').forEach(function(p) {
+        textH += p.offsetHeight + parseInt(getComputedStyle(p).marginTop || 0);
+      });
+
+      if (textH <= threshold) return; // 넘치지 않으면 아무것도 안 함
+
+      // 클램프 적용
+      wrap.style.maxHeight = threshold + 'px';
+      wrap.classList.add('is-clamped');
+      btn.classList.add('visible');
+
+      var expanded = false;
+      btn.addEventListener('click', function() {
+        expanded = !expanded;
+        if (expanded) {
+          wrap.style.maxHeight = wrap.scrollHeight + 60 + 'px';
+          wrap.classList.remove('is-clamped');
+          btn.innerHTML = '<span class="wl-ko">접기 ↑</span><span class="wl-en">Show less ↑</span>';
+        } else {
+          wrap.style.maxHeight = threshold + 'px';
+          wrap.classList.add('is-clamped');
+          btn.innerHTML = '<span class="wl-ko">더 보기 ↓</span><span class="wl-en">Read more ↓</span>';
+        }
+      });
+    });
+  }
+  // 폰트/이미지 로드 후 측정
+  if (document.readyState === 'complete') {
+    initBioClamp();
+  } else {
+    window.addEventListener('load', initBioClamp);
   }
 
   // Scroll reveal
