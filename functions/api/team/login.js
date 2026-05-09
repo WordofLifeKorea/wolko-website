@@ -2,9 +2,11 @@
  * POST /api/team/login
  * Body: { slug, password }
  *
- * Checks provided password against TEAM_PASSWORD env var (single shared password).
- * Returns a signed token valid for 8 hours with the slug embedded.
+ * Password check priority:
+ *   1. Per-user password stored in CAMP_KV under key "team:{slug}:password"
+ *   2. Fall back to shared TEAM_PASSWORD env var
  *
+ * Returns a signed token valid for 8 hours with the slug embedded.
  * Sign secret: ADMIN_PASSWORD env var
  */
 
@@ -28,9 +30,9 @@ async function generateToken(slug, secret) {
 export async function onRequestPost(context) {
   const { env, request } = context;
 
-  if (!env.ADMIN_PASSWORD || !env.TEAM_PASSWORD) {
+  if (!env.ADMIN_PASSWORD) {
     return Response.json(
-      { error: '서버 설정 오류 — ADMIN_PASSWORD 또는 TEAM_PASSWORD가 없습니다.' },
+      { error: '서버 설정 오류 — ADMIN_PASSWORD가 없습니다.' },
       { status: 500, headers: CORS }
     );
   }
@@ -46,7 +48,27 @@ export async function onRequestPost(context) {
     return Response.json({ error: 'slug와 password가 필요합니다.' }, { status: 400, headers: CORS });
   }
 
-  if (password !== env.TEAM_PASSWORD) {
+  // 1) KV에서 개인 비밀번호 확인
+  let correctPassword = null;
+  if (env.CAMP_KV) {
+    try {
+      correctPassword = await env.CAMP_KV.get(`team:${slug}:password`);
+    } catch {}
+  }
+
+  // 2) KV에 없으면 공용 TEAM_PASSWORD로 fallback
+  if (!correctPassword) {
+    correctPassword = env.TEAM_PASSWORD || null;
+  }
+
+  if (!correctPassword) {
+    return Response.json(
+      { error: '서버 설정 오류 — 비밀번호가 설정되지 않았습니다.' },
+      { status: 500, headers: CORS }
+    );
+  }
+
+  if (password !== correctPassword) {
     return Response.json({ error: '비밀번호가 올바르지 않습니다.' }, { status: 401, headers: CORS });
   }
 
