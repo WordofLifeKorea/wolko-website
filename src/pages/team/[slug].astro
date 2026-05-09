@@ -248,36 +248,30 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 .mp-story {
   padding: 88px 40px; max-width: 1080px; margin: 0 auto;
 }
-/* float 기반 스토리 블록 — 텍스트가 사진 옆+아래로 자연스럽게 흐름 */
 .mp-story-block {
-  max-width: 1000px;
-}
-.mp-story-block::after {
-  content: ''; display: table; clear: both;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 72px; align-items: start;
 }
 .mp-story-block--no-photo {
+  grid-template-columns: 1fr;
   max-width: 680px;
   margin-left: auto;
   margin-right: auto;
 }
 .mp-story-photo {
-  float: left;
-  width: 42%;
-  margin-right: 56px;
-  margin-bottom: 24px;
   position: relative; border-radius: 20px; overflow: hidden;
+  aspect-ratio: 3 / 4;
   box-shadow: 0 20px 60px rgba(0,79,104,0.16);
   background: linear-gradient(135deg, var(--c-line), var(--c-bg));
 }
-/* aspect-ratio 대신 padding-top으로 비율 유지 (float 호환) */
+.mp-story-photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
 .mp-story-photo::before {
   content: '';
-  display: block;
-  padding-top: 133%; /* 3:4 비율 */
-}
-.mp-story-photo img {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%; object-fit: cover;
+  position: absolute; width: 80px; height: 80px;
+  background: var(--c-light); opacity: 0.3; border-radius: 50%;
+  top: -20px; right: -20px; z-index: 1;
 }
 .mp-story-photo-tag {
   position: absolute; bottom: 20px; left: 20px;
@@ -287,18 +281,41 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 }
 .mp-story-photo-placeholder {
   position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
 }
 .mp-story-photo-placeholder svg { width: 80px; height: 80px; opacity: 0.2; }
 
-/* 두 번째 블록: 사진 오른쪽 float */
-.mp-story-block--reverse .mp-story-photo {
-  float: right;
-  margin-right: 0;
-  margin-left: 56px;
-}
+/* 두 번째 스토리 블록: 텍스트 왼쪽, 사진 오른쪽 */
+.mp-story-block--reverse .mp-story-text { order: 1; }
+.mp-story-block--reverse .mp-story-photo { order: 2; }
 
-.mp-story-text { padding-top: 12px; overflow: hidden; }
+.mp-story-text { padding-top: 12px; }
+
+/* 더 보기 / 접기 */
+.mp-bio-wrap {
+  position: relative;
+  transition: max-height 0.4s ease;
+  overflow: hidden;
+}
+.mp-bio-wrap.is-clamped::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 96px;
+  background: linear-gradient(to bottom, transparent, #ffffff);
+  pointer-events: none;
+}
+.mp-bio-toggle {
+  display: none;
+  margin-top: 16px;
+  background: none; border: 1.5px solid var(--c-mid);
+  padding: 7px 18px; border-radius: 20px;
+  font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px;
+  color: var(--c-mid); cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.mp-bio-toggle:hover { background: var(--c-mid); color: #fff; }
+.mp-bio-toggle.visible { display: inline-block; }
+
 .mp-story-label {
   font-size: 10px; font-weight: 700; letter-spacing: 3.5px;
   text-transform: uppercase; color: var(--c-mid); margin-bottom: 14px;
@@ -324,16 +341,10 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   margin: 56px 0;
 }
 
-/* 모바일: float 해제, 세로 스택 */
+/* 모바일: reverse 블록에서 사진을 텍스트 위로 */
 @media (max-width: 900px) {
-  .mp-story-photo {
-    float: none !important;
-    width: 100% !important;
-    margin-right: 0 !important;
-    margin-left: 0 !important;
-    margin-bottom: 32px;
-  }
-  .mp-story-text { overflow: visible; }
+  .mp-story-block--reverse .mp-story-text { order: 2; }
+  .mp-story-block--reverse .mp-story-photo { order: 1; }
 }
 
 /* SPOUSE SECTION */
@@ -472,7 +483,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   .mp-hero-title { font-size: clamp(28px, 6.5vw, 42px); }
   .mp-hero-title-em.ko,
   .mp-hero-title-em.en { font-size: clamp(26px, 6vw, 40px); }
-  .mp-story-block { max-width: 100%; }
+  .mp-story-block { grid-template-columns: 1fr; gap: 36px; }
   .mp-story { padding: 56px 24px; }
   .mp-spouse { padding: 0 24px 56px; }
   .mp-spouse-card { flex-direction: column; padding: 36px 28px; gap: 24px; text-align: center; }
@@ -855,8 +866,14 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         </h2>
         {hasBio ? (
           <>
-            {d.bio_ko && <p class="mp-story-body wl-ko-block">{d.bio_ko}</p>}
-            {d.bio_en && <p class="mp-story-body wl-en-block">{d.bio_en}</p>}
+            <div class="mp-bio-wrap" data-bio-wrap>
+              {d.bio_ko && <p class="mp-story-body wl-ko-block">{d.bio_ko}</p>}
+              {d.bio_en && <p class="mp-story-body wl-en-block">{d.bio_en}</p>}
+            </div>
+            <button class="mp-bio-toggle" data-bio-toggle>
+              <span class="wl-ko">더 보기 ↓</span>
+              <span class="wl-en">Read more ↓</span>
+            </button>
           </>
         ) : (
           <div class="mp-story-empty">
@@ -881,8 +898,14 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
               <span class="wl-ko">{d.spouse_ko || name2Ko}</span>
               <span class="wl-en">{d.spouse_en || name2En}</span>
             </h2>
-            {d.bio_ko_2 && <p class="mp-story-body wl-ko-block">{d.bio_ko_2}</p>}
-            {d.bio_en_2 && <p class="mp-story-body wl-en-block">{d.bio_en_2}</p>}
+            <div class="mp-bio-wrap" data-bio-wrap>
+              {d.bio_ko_2 && <p class="mp-story-body wl-ko-block">{d.bio_ko_2}</p>}
+              {d.bio_en_2 && <p class="mp-story-body wl-en-block">{d.bio_en_2}</p>}
+            </div>
+            <button class="mp-bio-toggle" data-bio-toggle>
+              <span class="wl-ko">더 보기 ↓</span>
+              <span class="wl-en">Read more ↓</span>
+            </button>
           </div>
           {d.photo_url_2 && (
             <div class="mp-story-photo">
@@ -974,6 +997,47 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       spouseContent.classList.toggle('mp-spouse-hidden', !isActive);
     });
   }
+
+  // ── 더 보기 / 접기 ──────────────────────────────────────────
+  function initBioToggle() {
+    document.querySelectorAll('[data-bio-wrap]').forEach(function(wrap) {
+      var btn = wrap.nextElementSibling;
+      if (!btn || !btn.hasAttribute('data-bio-toggle')) return;
+
+      // 같은 스토리 블록 안의 사진 높이를 기준으로 삼음
+      var block = wrap.closest('.mp-story-block');
+      var photo = block && block.querySelector('.mp-story-photo');
+      var limit = photo ? photo.offsetHeight : 480;
+      limit = Math.max(limit, 380); // 최소 380px
+
+      // 실제 콘텐츠 높이가 기준보다 짧으면 버튼 숨김
+      if (wrap.scrollHeight <= limit + 20) return;
+
+      // 클램프 적용
+      wrap.style.maxHeight = limit + 'px';
+      wrap.classList.add('is-clamped');
+      btn.classList.add('visible');
+
+      var open = false;
+      btn.addEventListener('click', function() {
+        open = !open;
+        if (open) {
+          wrap.style.maxHeight = wrap.scrollHeight + 'px';
+          wrap.classList.remove('is-clamped');
+          btn.querySelector('.wl-ko').textContent = '접기 ↑';
+          btn.querySelector('.wl-en').textContent = 'Show less ↑';
+        } else {
+          wrap.style.maxHeight = limit + 'px';
+          wrap.classList.add('is-clamped');
+          btn.querySelector('.wl-ko').textContent = '더 보기 ↓';
+          btn.querySelector('.wl-en').textContent = 'Read more ↓';
+          // 접힐 때 스토리 섹션 상단으로 부드럽게 스크롤
+          block && block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  }
+  window.addEventListener('load', initBioToggle);
 
   // Scroll reveal
   var els = document.querySelectorAll('.mp-reveal');
