@@ -8,7 +8,7 @@ role_badge: "Short-term Worker"
 campus: jeju
 category: stw
 order: 4
-photo_url: "https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/Kazuto Tanaka.png"
+photo_url: /images/uploads/kazuto.jpg
 hero_tagline_ko: '"변하지 않는 것에서"'
 hero_tagline_en: '"Finding Value in"'
 hero_tagline2_ko: '"찾은 가치"'
