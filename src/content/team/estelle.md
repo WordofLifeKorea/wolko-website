@@ -13,7 +13,7 @@ role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw
 order: 3
-photo_url: https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Estelle.jpg
+photo_url: /images/uploads/estelle.jpg
 hero_tagline_ko: 주님의 인도하심을
 hero_tagline_en: Following the Lord's Leading
 hero_tagline2_ko: 따라 한국으로
