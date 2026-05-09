@@ -1,12 +1,12 @@
 ---
-bio_en: Joe was born in 1976 in Dangjin, South Chungcheong Province, to
-  God-fearing parents. Though the family's means were modest, they lived in
-  genuine joy and contentment in Christ. During a revival meeting at his church
-  in middle school, the words of John 3:16 reached his heart, and Jesus Christ
-  became his personal Savior for the first time. In 2004 he began youth ministry
-  at a Baptist church, then completed a WOLKO internship in 2007-2008 before
-  studying the Bible at Word of Life Bible Institute in Florida. By God's grace
-  he was commissioned as a WOLKO missionary and now leads the camping ministry.
+bio_en: |-
+  My name is Joe. I was born in 1976 on the west coast of South Korea, in the city of Dangjin. I grew up under godly parents — though my father was a farmer and our means were modest, our family lived in genuine happiness and contentment in Christ.
+  
+  From an early age my dream was to become a pastor. I eagerly attended church and received various recognitions there. On the outside it appeared that I was a devoted Christian, and I thought I believed in God — yet there was truly no place for Jesus in my life. My life was really no different from that of students who never attended church.
+  
+  It was in middle school, during a revival conference at church, that the message of John 3:16 reached my heart, and Christ became my personal Savior for the very first time. For the first time I experienced the love of God that I had never been able to feel before. As I confessed my sin to God, Jesus — who had previously been only knowledge in my mind — became my Savior and my God.
+  
+  In 2004 I began serving as a youth pastor at a Baptist church. From 2007 to 2008 I worked as an intern with Word of Life Korea. From 2008 to 2009 my wife and I attended the Word of Life Bible Institute in Hudson, Florida, and it was there that I devoted my life to serving God as a Word of Life Korea missionary. By God's grace I was commissioned as a WOLKO missionary, and I now lead the camping ministry.
 gender: male
 name_ko: 민경찬 & 김유진
 name_en: Gyeongchan Min & Yujin Kim
@@ -31,15 +31,21 @@ verse_ref: 요한일서 1:2
 spouse_ko: 김유진
 spouse_en: Yu-Jin Kim
 show_spouse: true
-bio_ko: Joe는 1976년 충청남도 당진에서 하나님을 경외하는 부모님의 슬하에 태어났습니다. 가정 형편은 넉넉하지 않았지만 그리스도
-  안에서 온 가족이 진정한 행복을 누리며 살았습니다. 중학교 시절 교회 부흥회에서 요한복음 3장 16절을 마음으로 받아들이는 순간, 예수
-  그리스도께서 비로소 그의 개인적인 구주가 되셨습니다. 2004년 침례교회에서 청소년 사역을 시작하였고, 2007~2008년 월코 인턴을 거쳐
-  플로리다 월비에서 성경을 공부하였습니다. 이후 하나님의 은혜로 월코 선교사로 파송 받아 현재 캠핑 사역을 이끌고 있습니다.
-bio_ko_2: 김유진 선교사는 기독교 가정에서 태어나 자랐으며, 중학생 시절 그리스도의 필요를 깨닫고 복음을 받아들였습니다. 주님께서는
-  2007년 두 사람을 부부로 맺어 주셨고, 2009년에는 아들 아솔이가 태어났습니다.
-bio_en_2: Yu-Jin grew up in a Christian home and, during her middle school
-  years, recognized her need for Christ and received the gospel. The Lord
-  brought her and Joe together in marriage in 2007, and in 2009 their son Asol
-  was born.
+bio_ko: |-
+  저는 민경찬입니다. 1976년 충청남도 당진 서해안에서 태어났습니다. 하나님을 경외하는 부모님의 슬하에서 자랐으며, 아버지가 농부이셔서 가정 형편은 넉넉하지 않았지만 온 가족이 그리스도 안에서 참된 행복과 자족함을 누리며 살았습니다.
+  
+  어린 시절부터 꿈은 목사였습니다. 열심히 교회에 다니고 여러 상을 받으며 겉으로는 신실한 기독교인처럼 보였고, 스스로도 하나님을 믿는다고 생각했습니다. 그러나 사실 제 삶에는 예수님이 자리할 공간이 없었습니다. 교회에 다니지 않는 또래들과 다를 바 없는 삶을 살았습니다.
+  
+  중학교 시절 교회 부흥회에서 요한복음 3장 16절의 말씀이 마음에 울려 왔고, 그때 처음으로 예수 그리스도께서 제 개인의 구주가 되셨습니다. 그전에는 느끼지 못했던 하나님의 사랑을 처음으로 경험하였습니다. 하나님께 제 죄를 고백하는 순간, 그때까지 머릿속 지식에 불과했던 예수님이 나의 진정한 구주, 나의 하나님이 되셨습니다.
+  
+  2004년 침례교회에서 청소년 담당으로 사역을 시작하였고, 2007~2008년에는 월코에서 인턴으로 섬겼습니다. 2008~2009년에는 아내와 함께 플로리다 허드슨의 월비에서 공부하며 월코 선교사로서 하나님을 섬기기로 삶을 드렸습니다. 하나님의 은혜로 월코 선교사로 파송 받아 현재 캠핑 사역을 이끌고 있습니다.
+bio_ko_2: |-
+  아내 유진은 기독교 가정에서 태어나고 자랐으며, 중학교 시절 그리스도의 필요를 깨닫고 복음을 받아들였습니다.
+  
+  주님께서는 2007년 두 사람을 부부로 맺어 주셨고, 2009년에는 아들 아솔이가 태어났습니다. 2008~2009년에 함께 플로리다 허드슨의 월비에서 공부하였으며, 이후 줄곧 월코 선교사로 주님을 섬기고 있습니다.
+bio_en_2: |-
+  My wife Yu-Jin was born and raised in a Christian family. During her middle school years she came to understand her need for Christ and received the gospel.
+  
+  The Lord brought us together in marriage in 2007, and our son Asol was born in 2009. From 2008 to 2009 we attended the Word of Life Bible Institute in Hudson, Florida together, and we have been serving the Lord as WOLKO missionaries ever since.
 support_url: https://online.mrm.or.kr/HRcruRJ
 ---

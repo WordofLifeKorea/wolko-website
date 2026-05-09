@@ -1,13 +1,8 @@
 ---
-bio_en: Jacob first understood the gospel around Christmastime as a child.
-  Through his pastor's preaching, he came to believe that God sent His only Son
-  to pay the penalty for humanity's sin, and he placed his trust in Jesus alone
-  as his Savior. At the age of eight, he moved to Virginia and began attending a
-  church deeply connected to the Word of Life ministry. After attending Word of
-  Life camp in New York, he committed to studying at the Bible Institute. There,
-  God placed a burden for missions in Asia on his heart. After completing two
-  years of missionary training and earning a degree in Religion from Liberty
-  University, he was led into ministry in Korea.
+bio_en: |-
+  My name is Jacob, and I trusted Jesus as my Savior at an early age. It was around Christmastime when my pastor explained why people give gifts on Christmas — that God sent His Son to pay the penalty for my sins so that I might receive the free gift of eternal life. I believe that was the first time I truly understood the gospel and placed my trust in Jesus alone to save me.
+  
+  When I was eight years old I moved from Massachusetts to Virginia, where I attended a church deeply involved in Word of Life Student Ministries. God used that church to have a huge impact on my life, especially in my spiritual growth. After attending Word of Life camps in New York, I decided to attend the Word of Life Bible Institute. It was there that God truly changed my heart and gave me a burden for the people of Asia. After graduating from the Bible Institute, I completed a two-year missionary training program with Word of Life. During that time I also earned a Bachelor of Science in Religion through Liberty University's distance learning program. My wife and I simply desire to be used by God to impact the lives of young people in South Korea and all over the world.
 gender: male
 name_ko: 몰스 제이콥 & 몰스 크리스탈
 name_en: Jacob & Crystal Morse
@@ -35,23 +30,17 @@ verse_ref: 마태복음 9:36-38
 spouse_ko: 몰스 크리스탈
 spouse_en: Crystal Morse
 show_spouse: true
-bio_ko: Jacob은 어린 시절, 크리스마스 즈음에 처음으로 복음을 깨달았습니다. 담임 목사님의 설교를 통해 하나님께서 인류의 죄의 형벌을
-  대신 지불하시기 위해 독생자를 이 땅에 보내셨음을 마음으로 받아들이며, 오직 예수님만을 자신의 구주로 신뢰하게 되었습니다. 여덟 살 때
-  버지니아로 이사하며 월코 사역이 활발한 교회에 출석하게 되었고, 뉴욕 월코 캠프 참석을 계기로 월비에 진학하기로 결단하였습니다. 그곳에서
-  하나님께서는 그의 마음에 아시아를 향한 선교의 부담을 심어 주셨고, 이후 2년간의 선교사 훈련과 리버티 대학교 종교학 학위를 마치며 한국
-  사역을 위해 부름 받게 되었습니다.
-bio_ko_2: Crystal은 기독교 가정에서 태어나 복음의 환경 안에서 자랐습니다. 네 살 때 아버지의 설교를 통해 마음에 질문이
-  생겨났고, 예배 후 어머니께 복음에 대해 묻는 과정에서 예수 그리스도를 개인의 구주로 영접하게 되었습니다. 열세 살에 자신의 삶을 그리스도를
-  위해 살아야 한다는 분명한 확신을 가지고 전적으로 헌신하였습니다. 월비에서 2년간 수학한 후 데이비스 칼리지에서 기독교 사역 전공 학사
-  학위를 취득하였으며, 현재 Jacob과 다섯 딸—키에라, 알레야, 제이다, 엘라, 카리사—과 함께 한국 사역에 기쁘게 동참하고 있습니다.
-bio_en_2: Crystal was raised in a Christian home and grew up surrounded by the
-  gospel. At the age of four, questions began to form in her heart while
-  listening to her father preach. After the service, she asked her mother about
-  the gospel and personally received Jesus Christ as her Savior. At thirteen,
-  she became fully convinced that her life should be lived for Christ and
-  dedicated herself to Him completely. After two years at the Bible Institute,
-  she earned a bachelor's degree in Christian Ministries from Davis College.
-  Today, she joyfully serves in Korea alongside Jacob and their five daughters —
-  Kiera, Aleya, Jada, Ella, and Karisa.
+bio_ko: |-
+  저는 Jacob입니다. 어린 시절, 크리스마스 즈음에 예수님을 구주로 영접하게 되었습니다. 담임 목사님께서 사람들이 크리스마스에 선물을 주고받는 이유를 설명하시며, 하나님께서 제 죄의 형벌을 대신 치러 주시기 위해 독생자를 이 땅에 보내셨고 그로 인해 영생의 선물을 받을 수 있다는 복음을 전해 주셨습니다. 그때가 처음으로 복음을 온전히 이해하고 오직 예수님만을 제 구주로 신뢰하게 된 순간이었습니다.
+  
+  여덟 살 때 매사추세츠에서 버지니아로 이사하며, 생명의 말씀협회 청소년 사역과 깊이 연계된 교회에 출석하게 되었습니다. 하나님께서는 그 교회를 통해 제 삶, 특히 영적 성장에 큰 영향을 허락해 주셨습니다. 뉴욕 생명의 말씀협회 캠프에 참가한 후 월비에 진학하기로 결단하였고, 그곳에서 하나님께서 제 마음을 새롭게 빚어 아시아를 향한 선교의 부담을 심어 주셨습니다. 월비를 졸업한 후 생명의 말씀협회 선교사 훈련 과정 2년을 이수하였으며, 그 기간에 리버티 대학교 통신 과정을 통해 종교학 학사 학위를 취득하였습니다. 아내와 저는 오직 하나님께 쓰임 받아 대한민국과 온 세계의 청소년들의 삶에 영향을 미치는 것, 그것만을 소망합니다.
+bio_ko_2: |-
+  저는 Crystal입니다. 기독교 가정에서 태어났으며, 네 살 때 아버지께서 지옥에 관한 설교를 하시던 중 예수님을 개인의 구주로 영접하게 되었습니다. 설교가 끝난 후 어머니께 복음에 대해 여러 가지를 여쭈었고, 그날 예수 그리스도와의 인격적인 관계가 시작되었습니다.
+  
+  열세 살 때, 제 삶을 그리스도를 위해 살아야 한다는 분명한 확신을 갖고 그분의 사역에 헌신하기로 결단하였습니다. 월비에서 2년간 공부한 후 데이비스 칼리지에서 기독교 사역 전공 학사 학위를 취득하였습니다. 지금은 다섯 딸 — 키에라, 알레야, 제이다, 엘라, 카리사 — 과 함께 대한민국 사역의 일원이 된 것이 너무나 기쁩니다. 하나님께서는 이곳에서 놀라운 일을 행하고 계시며, 그 자리에 함께할 수 있다는 것 자체가 큰 복입니다.
+bio_en_2: |-
+  My name is Crystal, and I was born into a Christian home. I received Jesus as my personal Savior at the age of four, when my dad preached a sermon on hell. After his message, I asked my mom some questions about the gospel, and that day I began my personal relationship with Jesus Christ.
+  
+  When I was thirteen years old, I realized the need to live my life for Christ and dedicated my life to His service. I attended Word of Life Bible Institute for two years and then graduated from Davis College with a Bachelor's in Christian Ministries. We have five daughters — Kiera, Aleya, Jaida, Ella, and Carissa. We are all very excited to be a part of the ministry in South Korea. God is doing great things, and it is a blessing simply to be a part of it.
 support_url: https://online.mrm.or.kr/XXLJGid
 ---
