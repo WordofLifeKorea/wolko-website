@@ -4,11 +4,18 @@ import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
   const team = await getCollection('team');
-  return team
-    .filter(p => !p.slug.startsWith('map-order'))
-    .map(p => ({ params: { slug: p.slug }, props: { person: p } }));
+  const filtered = team.filter(p => !p.slug.startsWith('map-order'));
+  return filtered.map(p => ({ params: { slug: p.slug }, props: { person: p, allTeam: filtered } }));
 }
-const { person } = Astro.props;
+const { person, allTeam } = Astro.props;
+
+// 사이드바용: 선교사만, 캠퍼스·order 순 정렬
+const sidebarTeam = allTeam
+  .filter(p => p.data.category === 'missionary')
+  .sort((a, b) => {
+    if (a.data.campus !== b.data.campus) return a.data.campus === 'jeju' ? -1 : 1;
+    return (a.data.order ?? 99) - (b.data.order ?? 99);
+  });
 const d = person.data;
 const campusKo = d.campus === 'pyeongtaek' ? '평택 월코센터' : '제주 월비캠퍼스';
 const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju WOLBI Campus';
@@ -450,6 +457,132 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   .mp-hero-name-layer { bottom: 24px; left: 24px; }
   .mp-verse { padding: 56px 24px; }
 }
+
+/* ── TEAM NAVIGATOR SIDEBAR ─────────────────────────── */
+.tn-sidebar {
+  position: fixed;
+  right: 0; top: 0; bottom: 0;
+  width: 200px;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(12px);
+  border-left: 1px solid #dce8ee;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,40,60,0.08);
+  transform: translateX(0);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.tn-sidebar.is-collapsed { transform: translateX(188px); }
+
+.tn-toggle {
+  position: absolute;
+  left: -36px; top: 50%;
+  transform: translateY(-50%);
+  width: 36px; height: 72px;
+  background: rgba(255,255,255,0.97);
+  border: 1px solid #dce8ee;
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: -3px 0 12px rgba(0,40,60,0.08);
+  color: #3d5a6a;
+  transition: color 0.2s, background 0.2s;
+}
+.tn-toggle:hover { background: #f0f8fc; color: #004f68; }
+.tn-toggle svg { transition: transform 0.3s; }
+.tn-sidebar.is-collapsed .tn-toggle svg { transform: rotate(180deg); }
+
+.tn-header {
+  padding: 16px 14px 10px;
+  border-bottom: 1px solid #dce8ee;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #5b8fa8;
+  flex-shrink: 0;
+}
+.tn-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0 24px;
+  scrollbar-width: thin;
+  scrollbar-color: #c5dce8 transparent;
+}
+.tn-campus-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #a0b8c4;
+  padding: 10px 14px 4px;
+}
+.tn-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 14px;
+  text-decoration: none;
+  color: #3d5a6a;
+  border-radius: 0;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+}
+.tn-item:hover { background: #f0f8fc; color: #004f68; }
+.tn-item.is-active {
+  background: #e8f5fb;
+  border-left-color: #007ea1;
+  color: #004f68;
+}
+.tn-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  object-fit: cover; object-position: top;
+  background: #c5dce8;
+  flex-shrink: 0;
+  border: 2px solid #dce8ee;
+}
+.tn-item.is-active .tn-avatar { border-color: #007ea1; }
+.tn-avatar-placeholder {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c5dce8, #a0b8c4);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  border: 2px solid #dce8ee;
+}
+.tn-name {
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+.tn-role {
+  font-size: 10px;
+  color: #7a9aaa;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+@media (max-width: 1100px) {
+  .tn-sidebar { width: 176px; }
+  .tn-sidebar.is-collapsed { transform: translateX(164px); }
+}
+@media (max-width: 768px) {
+  .tn-sidebar { display: none; }
+}
+/* main content에 우측 여백 추가 (사이드바 공간 확보) */
+@media (min-width: 769px) {
+  .mp-wrap { padding-right: 200px; }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .mp-wrap { padding-right: 176px; }
+}
 </style>
 
 <div class="mp-wrap">
@@ -721,6 +854,74 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   }, { threshold: 0.1 });
   els.forEach(function(el) { io.observe(el); });
 })();
+</script>
+
+<!-- ── Team Navigator Sidebar ─────────────────────── -->
+<aside class="tn-sidebar" id="tnSidebar">
+  <button class="tn-toggle" id="tnToggle" aria-label="팀원 목록 열기/닫기">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <div class="tn-header">
+    <span class="wl-ko">섬기는이</span>
+    <span class="wl-en">Our Team</span>
+  </div>
+  <div class="tn-scroll">
+    {(() => {
+      let lastCampus = '';
+      return sidebarTeam.map(p => {
+        const campusLabel = p.data.campus === 'jeju' ? '제주 월비' : '평택 월코';
+        const campusLabelEn = p.data.campus === 'jeju' ? 'WOLBI Jeju' : 'WOLKO Pyeongtaek';
+        const showLabel = p.data.campus !== lastCampus;
+        if (showLabel) lastCampus = p.data.campus;
+        const isActive = p.slug === person.slug;
+        const initial = (p.data.name_ko || p.data.name_en || '?')[0];
+        return (
+          <>
+            {showLabel && (
+              <div class="tn-campus-label">
+                <span class="wl-ko">{campusLabel}</span>
+                <span class="wl-en">{campusLabelEn}</span>
+              </div>
+            )}
+            <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
+              {p.data.photo_url
+                ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                : null
+              }
+              <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
+              <div>
+                <div class="tn-name">
+                  <span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span>
+                  <span class="wl-en">{p.data.name_en.split(' & ')[0]}</span>
+                </div>
+                <div class="tn-role">{p.data.role_badge}</div>
+              </div>
+            </a>
+          </>
+        );
+      });
+    })()}
+  </div>
+</aside>
+
+<script>
+  (function() {
+    var sidebar = document.getElementById('tnSidebar');
+    var toggle = document.getElementById('tnToggle');
+    if (!sidebar || !toggle) return;
+    var collapsed = localStorage.getItem('tn_collapsed') === '1';
+    if (collapsed) sidebar.classList.add('is-collapsed');
+    toggle.addEventListener('click', function() {
+      collapsed = !collapsed;
+      sidebar.classList.toggle('is-collapsed', collapsed);
+      localStorage.setItem('tn_collapsed', collapsed ? '1' : '0');
+    });
+    // 현재 항목 스크롤 위치로 이동
+    var active = sidebar.querySelector('.tn-item.is-active');
+    if (active) active.scrollIntoView({ block: 'center', behavior: 'instant' });
+  })();
 </script>
 
 </BaseLayout>
