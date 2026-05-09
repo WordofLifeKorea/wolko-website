@@ -40,6 +40,8 @@ const team = defineCollection({
     prayer_en: z.string().optional(),
     // 성별 (His/Her Story 라벨)
     gender: z.enum(['male', 'female']).default('male').optional(),
+    // 사역보고 (URL 또는 업로드 PDF 경로)
+    report_url: z.string().optional(),
     // 후원
     support_url: z.string().optional(),
   }),

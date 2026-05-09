@@ -798,10 +798,12 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <span class="wl-ko">후원하기</span><span class="wl-en">Support</span>
         </a>
-        <a href="/news" class="mp-btn mp-btn-secondary">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          <span class="wl-ko">최근 사역보고</span><span class="wl-en">Ministry Report</span>
-        </a>
+        {d.report_url && (
+          <button class="mp-btn mp-btn-secondary" id="openReportBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span class="wl-ko">최근 사역보고</span><span class="wl-en">Ministry Report</span>
+          </button>
+        )}
       </div>
     </div>
   </section>
@@ -1341,5 +1343,148 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     }
   })();
 </script>
+
+{d.report_url && (
+  <>
+    <!-- Flipbook PDF 모달 -->
+    <div id="reportModal" style="display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.82); backdrop-filter:blur(6px); align-items:center; justify-content:center; flex-direction:column;">
+
+      <!-- 헤더 -->
+      <div style="width:100%; max-width:820px; display:flex; align-items:center; justify-content:space-between; padding:0 16px 12px; color:#fff;">
+        <span style="font-size:13px; font-weight:600; letter-spacing:1px; opacity:0.7;">
+          <span class="wl-ko">사역보고</span><span class="wl-en">Ministry Report</span>
+        </span>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <!-- 다운로드 -->
+          <a href={d.report_url} download target="_blank" rel="noopener"
+             style="color:#fff; opacity:0.7; display:flex; align-items:center; gap:5px; font-size:12px; text-decoration:none; transition:opacity 0.2s;"
+             onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="wl-ko">다운로드</span><span class="wl-en">Download</span>
+          </a>
+          <!-- 닫기 -->
+          <button id="closeReportBtn" style="background:none; border:none; color:#fff; opacity:0.7; cursor:pointer; padding:4px; line-height:1;"
+                  onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 캔버스 -->
+      <div style="position:relative; width:100%; max-width:820px; padding:0 16px;">
+        <canvas id="reportCanvas" style="width:100%; border-radius:12px; box-shadow:0 24px 80px rgba(0,0,0,0.5); display:block; background:#fff;"></canvas>
+
+        <!-- 이전 -->
+        <button id="reportPrev"
+          style="position:absolute; left:0; top:50%; transform:translateY(-50%);
+                 background:rgba(255,255,255,0.12); border:none; border-radius:50%;
+                 width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+                 cursor:pointer; color:#fff; transition:background 0.2s;"
+          onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <!-- 다음 -->
+        <button id="reportNext"
+          style="position:absolute; right:0; top:50%; transform:translateY(-50%);
+                 background:rgba(255,255,255,0.12); border:none; border-radius:50%;
+                 width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+                 cursor:pointer; color:#fff; transition:background 0.2s;"
+          onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- 페이지 카운터 -->
+      <div id="reportCounter" style="color:#fff; opacity:0.6; font-size:12px; margin-top:12px; letter-spacing:1px;"></div>
+    </div>
+
+    <script define:vars={{ reportUrl: d.report_url }}>
+    (function() {
+      var modal   = document.getElementById('reportModal');
+      var openBtn = document.getElementById('openReportBtn');
+      var closeBtn= document.getElementById('closeReportBtn');
+      var canvas  = document.getElementById('reportCanvas');
+      var ctx     = canvas ? canvas.getContext('2d') : null;
+      var prevBtn = document.getElementById('reportPrev');
+      var nextBtn = document.getElementById('reportNext');
+      var counter = document.getElementById('reportCounter');
+      if (!modal || !openBtn) return;
+
+      var pdfDoc = null, curPage = 1, totalPages = 0, rendering = false;
+
+      function renderPage(num) {
+        if (!pdfDoc || rendering) return;
+        rendering = true;
+        pdfDoc.getPage(num).then(function(page) {
+          var vp = page.getViewport({ scale: 1 });
+          var scale = Math.min((canvas.parentElement.clientWidth - 32) / vp.width, 1.6);
+          var viewport = page.getViewport({ scale: scale });
+          canvas.width  = viewport.width;
+          canvas.height = viewport.height;
+          page.render({ canvasContext: ctx, viewport: viewport }).promise.then(function() {
+            rendering = false;
+            counter.textContent = num + ' / ' + totalPages;
+            prevBtn.style.opacity = num <= 1 ? '0.3' : '1';
+            nextBtn.style.opacity = num >= totalPages ? '0.3' : '1';
+          });
+        });
+      }
+
+      function loadPDF() {
+        if (pdfDoc) { curPage = 1; renderPage(1); return; }
+        // PDF.js CDN
+        var script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = function() {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          window.pdfjsLib.getDocument(reportUrl).promise.then(function(doc) {
+            pdfDoc = doc;
+            totalPages = doc.numPages;
+            curPage = 1;
+            renderPage(1);
+          });
+        };
+        document.head.appendChild(script);
+      }
+
+      // 열기
+      openBtn.addEventListener('click', function() {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        loadPDF();
+      });
+      // 닫기
+      function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+
+      // 페이지 이동
+      prevBtn.addEventListener('click', function() { if (curPage > 1) renderPage(--curPage); });
+      nextBtn.addEventListener('click', function() { if (curPage < totalPages) renderPage(++curPage); });
+
+      // 키보드
+      document.addEventListener('keydown', function(e) {
+        if (modal.style.display === 'none') return;
+        if (e.key === 'Escape') closeModal();
+        if (e.key === 'ArrowRight' && curPage < totalPages) renderPage(++curPage);
+        if (e.key === 'ArrowLeft'  && curPage > 1)          renderPage(--curPage);
+      });
+
+      // 터치 스와이프
+      var touchX = 0;
+      canvas.addEventListener('touchstart', function(e) { touchX = e.touches[0].clientX; }, { passive: true });
+      canvas.addEventListener('touchend',   function(e) {
+        var dx = e.changedTouches[0].clientX - touchX;
+        if (dx < -40 && curPage < totalPages) renderPage(++curPage);
+        if (dx >  40 && curPage > 1)          renderPage(--curPage);
+      }, { passive: true });
+    })();
+    </script>
+  </>
+)}
 
 </BaseLayout>
