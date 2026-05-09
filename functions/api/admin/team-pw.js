@@ -50,10 +50,6 @@ export async function onRequestGet(context) {
   const slug = url.searchParams.get('slug');
   if (!slug) return Response.json({ error: 'slug가 필요합니다.' }, { status: 400, headers: CORS });
 
-  if (!env.CAMP_KV) {
-    return Response.json({ error: 'CAMP_KV 바인딩이 없습니다.' }, { status: 500, headers: CORS });
-  }
-
   const existing = await env.CAMP_KV.get(`team:${slug}:password`);
   return Response.json({ slug, hasPassword: !!existing }, { headers: CORS });
 }
