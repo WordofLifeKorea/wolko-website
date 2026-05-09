@@ -18,8 +18,7 @@ role_badge: Short-term Worker
 campus: jeju
 category: stw
 order: 3
-photo_url: https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Grace
-  Webster.png
+photo_url: /images/uploads/grace-webster.png
 hero_tagline_ko: '"말씀을 담아"'
 hero_tagline_en: '"Carrying the Word"'
 hero_tagline2_ko: '"세상에 전하다"'
