@@ -608,10 +608,38 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 .tn-stw-toggle.is-open .tn-stw-icon { transform: rotate(180deg); }
 
 /* ── MOBILE: 플로팅 버튼 + 바텀시트 ──────────────── */
-.tn-fab {
-  display: none;
-}
+.tn-fab { display: none; }
+.tn-sheet-backdrop { display: none; }
+.tn-sheet { display: none; }
+
 @media (max-width: 768px) {
+  .tn-sheet-backdrop {
+    display: block;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 301;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .tn-sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+  .tn-sheet {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    max-height: 72vh;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    z-index: 302;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 -8px 40px rgba(0,30,50,0.18);
+  }
+  .tn-sheet.is-open { transform: translateY(0); }
+
   .tn-fab {
     display: flex;
     align-items: center;
@@ -630,32 +658,6 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   }
   .tn-fab:hover { transform: scale(1.08); }
   .tn-fab.is-open { background: #007ea1; }
-
-  /* 배경 오버레이 */
-  .tn-sheet-backdrop {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 301;
-    backdrop-filter: blur(2px);
-  }
-  .tn-sheet-backdrop.is-open { display: block; }
-
-  /* 바텀시트 */
-  .tn-sheet {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    max-height: 72vh;
-    background: #fff;
-    border-radius: 20px 20px 0 0;
-    z-index: 302;
-    display: flex;
-    flex-direction: column;
-    transform: translateY(100%);
-    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 -8px 40px rgba(0,30,50,0.18);
-  }
-  .tn-sheet.is-open { transform: translateY(0); }
 
   .tn-sheet-handle {
     width: 40px; height: 4px;
