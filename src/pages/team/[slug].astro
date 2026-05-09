@@ -621,6 +621,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
   .tn-sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
 
@@ -1222,6 +1224,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       sheet.classList.contains('is-open') ? closeSheet() : openSheet();
     });
     backdrop.addEventListener('click', closeSheet);
+    backdrop.addEventListener('touchend', function(e) { e.preventDefault(); closeSheet(); });
     var closeBtn = document.getElementById('tnSheetClose');
     if (closeBtn) closeBtn.addEventListener('click', closeSheet);
 
