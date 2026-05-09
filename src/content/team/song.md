@@ -9,6 +9,7 @@ campus: pyeongtaek
 category: missionary
 order: 2
 photo_url: /images/uploads/7r505851.jpg_compressed.jpeg
+support_url: https://online.mrm.or.kr/njFqay7
 bio_ko: 군 복무 중 한 장교가 그에게 복음을 전해 주었고, 절에 갔을 때 부처가 한낱 우상에 불과하다는 것을 깨닫게 되었습니다. 일주일
   뒤 교회 예배에서 다시 복음을 들으며 바로 그날 예수님을 구주로 영접하였습니다. 이후 한국에서 제자훈련을 받고 미국으로 건너가 4년간 성경을
   공부한 후, 하나님께서는 그를 월코로 이끄셨습니다. 2001년 제자훈련을 받고자 월코에 합류하였으며, 이듬해 뉴욕 월비에 입학하였습니다.
