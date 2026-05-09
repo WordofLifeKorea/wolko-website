@@ -9,13 +9,18 @@ export async function getStaticPaths() {
 }
 const { person, allTeam } = Astro.props;
 
-// 사이드바용: 선교사만, 캠퍼스·order 순 정렬
+// 사이드바용: 선교사 (평택 → 제주), order 순
 const sidebarTeam = allTeam
   .filter(p => p.data.category === 'missionary')
   .sort((a, b) => {
-    if (a.data.campus !== b.data.campus) return a.data.campus === 'jeju' ? -1 : 1;
+    if (a.data.campus !== b.data.campus) return a.data.campus === 'pyeongtaek' ? -1 : 1;
     return (a.data.order ?? 99) - (b.data.order ?? 99);
   });
+
+// 사이드바용: 인턴 (STW), order 순
+const sidebarSTW = allTeam
+  .filter(p => p.data.category === 'stw')
+  .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
 const d = person.data;
 const campusKo = d.campus === 'pyeongtaek' ? '평택 월코센터' : '제주 월비캠퍼스';
 const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju WOLBI Campus';
@@ -583,6 +588,21 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 @media (min-width: 769px) and (max-width: 1100px) {
   .mp-wrap { padding-right: 176px; }
 }
+
+/* 인턴 섹션 */
+.tn-stw-wrap { border-top: 1px solid #dce8ee; margin-top: 8px; padding-top: 4px; }
+.tn-stw-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 14px 6px;
+  text-align: left;
+  transition: background 0.15s;
+}
+.tn-stw-toggle:hover { background: #f0f8fc; }
+.tn-stw-icon { transition: transform 0.25s; color: #a0b8c4; }
+.tn-stw-toggle.is-open .tn-stw-icon { transform: rotate(180deg); }
 </style>
 
 <div class="mp-wrap">
@@ -871,8 +891,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     {(() => {
       let lastCampus = '';
       return sidebarTeam.map(p => {
-        const campusLabel = p.data.campus === 'jeju' ? '제주 월비' : '평택 월코';
-        const campusLabelEn = p.data.campus === 'jeju' ? 'WOLBI Jeju' : 'WOLKO Pyeongtaek';
+        const campusLabel = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
+        const campusLabelEn = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
         const showLabel = p.data.campus !== lastCampus;
         if (showLabel) lastCampus = p.data.campus;
         const isActive = p.slug === person.slug;
@@ -903,6 +923,43 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         );
       });
     })()}
+
+    <!-- 인턴 섹션 (접기/펼치기) -->
+    {sidebarSTW.length > 0 && (
+      <div class="tn-stw-wrap">
+        <button class="tn-stw-toggle" id="tnStwToggle">
+          <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
+            <span class="wl-ko">인턴</span>
+            <span class="wl-en">Interns</span>
+            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;">
+              <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </button>
+        <div class="tn-stw-list" id="tnStwList" style="display:none;">
+          {sidebarSTW.map(p => {
+            const isActive = p.slug === person.slug;
+            const initial = (p.data.name_ko || p.data.name_en || '?')[0];
+            return (
+              <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
+                {p.data.photo_url
+                  ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                  : null
+                }
+                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
+                <div>
+                  <div class="tn-name">
+                    <span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span>
+                    <span class="wl-en">{p.data.name_en.split(' & ')[0]}</span>
+                  </div>
+                  <div class="tn-role">{p.data.role_badge}</div>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    )}
   </div>
 </aside>
 
@@ -928,6 +985,22 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       applyState(collapsed);
       localStorage.setItem('tn_collapsed', collapsed ? '1' : '0');
     });
+
+    // 인턴 섹션 토글
+    var stwToggle = document.getElementById('tnStwToggle');
+    var stwList = document.getElementById('tnStwList');
+    if (stwToggle && stwList) {
+      var stwOpen = localStorage.getItem('tn_stw_open') === '1';
+      // 현재 인턴 페이지 보고 있으면 자동 열기
+      if (stwList.querySelector('.tn-item.is-active')) stwOpen = true;
+      if (stwOpen) { stwList.style.display = ''; stwToggle.classList.add('is-open'); }
+      stwToggle.addEventListener('click', function() {
+        stwOpen = !stwOpen;
+        stwList.style.display = stwOpen ? '' : 'none';
+        stwToggle.classList.toggle('is-open', stwOpen);
+        localStorage.setItem('tn_stw_open', stwOpen ? '1' : '0');
+      });
+    }
 
     // 현재 항목 스크롤 위치로 이동
     var active = sidebar.querySelector('.tn-item.is-active');
