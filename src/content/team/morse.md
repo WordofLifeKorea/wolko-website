@@ -16,9 +16,8 @@ title_en: WOLKO Director · Field Director
 role_badge: Missionary
 campus: pyeongtaek
 category: missionary
-order: 1
+order: 0
 photo_url: /images/uploads/morse.jpg
-support_url: https://online.mrm.or.kr/XXLJGid
 photo_story: /images/uploads/jacob.jpg
 photo_url_2: /images/uploads/crystal.jpg
 hero_tagline_ko: 다음 세대를
@@ -54,4 +53,5 @@ bio_en_2: Crystal was raised in a Christian home and grew up surrounded by the
   she earned a bachelor's degree in Christian Ministries from Davis College.
   Today, she joyfully serves in Korea alongside Jacob and their five daughters —
   Kiera, Aleya, Jada, Ella, and Karisa.
+support_url: https://online.mrm.or.kr/XXLJGid
 ---
