@@ -22,7 +22,7 @@ role_badge: Missionaries
 campus: jeju
 category: missionary
 order: 2
-photo_url: https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Rodgers.jpg
+photo_url: /images/uploads/rodgers.jpg
 photo_story: /images/uploads/jeremy.jpg
 photo_url_2: /images/uploads/elsbeth.jpg
 hero_tagline_ko: 복음의 소망을 나누는
