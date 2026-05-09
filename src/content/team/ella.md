@@ -20,7 +20,7 @@ role_badge: Short-term Worker
 campus: pyeongtaek
 category: stw
 order: 3
-photo_url: https://wolko.synology.me/Web_Contents/Photos/선교사님 사진들/2024 Sep/Ella.jpg
+photo_url: /images/uploads/ella.jpg
 hero_tagline_ko: 청소년에게
 hero_tagline_en: Bringing the Gospel
 hero_tagline2_ko: 복음을 전하다
