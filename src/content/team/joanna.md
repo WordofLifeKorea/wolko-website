@@ -23,4 +23,5 @@ verse_en: |-
   bearing fruit in every good work, growing in the knowledge of God."
 show_spouse: false
 bio_ko: ""
+support_url: https://online.mrm.or.kr/fYyb7wn
 ---
