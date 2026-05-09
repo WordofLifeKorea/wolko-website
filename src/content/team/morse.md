@@ -18,6 +18,7 @@ campus: pyeongtaek
 category: missionary
 order: 1
 photo_url: /images/uploads/morse.jpg
+support_url: https://online.mrm.or.kr/XXLJGid
 photo_story: /images/uploads/jacob.jpg
 photo_url_2: /images/uploads/crystal.jpg
 hero_tagline_ko: 다음 세대를
@@ -27,7 +28,7 @@ hero_tagline2_en: the Next Generation
 hero_subtitle_ko: Jacob과 Crystal은 월코의 대표 선교사로서 한국의 모든 청소년이 예수님과 함께 다음 걸음을 내딛도록
   돕는 사역에 헌신하고 있습니다. 평택과 제주를 기반으로 청소년 캠프, 훈련 사역, 지역 교회 지원을 통해 이 세대에게 복음을 전하고
   있습니다.
-hero_subtitle_en: acob and Crystal serve as lead missionaries of Word of Life
+hero_subtitle_en: Jacob and Crystal serve as lead missionaries of Word of Life
   Korea, helping young people across Korea take their next step with Jesus.
   Based in Pyeongtaek and Jeju, they share the gospel through youth camps,
   training ministries, and partnership with local churches.

@@ -170,27 +170,27 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 /* 메인 타이틀 */
 .mp-hero-title {
   font-family: 'Noto Sans KR', sans-serif;
-  font-size: clamp(36px, 3.8vw, 58px); font-weight: 800;
-  color: var(--c-white); line-height: 1.12;
+  font-size: clamp(46px, 4.8vw, 70px); font-weight: 800;
+  color: var(--c-white); line-height: 1.18;
   margin: 0; animation: mp-fade-up 1s 0.3s both;
   word-break: keep-all; letter-spacing: -0.5px;
 }
 /* 두 번째 줄 */
 .mp-hero-title-em {
   display: block;
-  color: var(--c-white);
-  line-height: 1.2;
-  margin-top: 4px;
+  color: var(--c-light);
+  line-height: 1.25;
+  margin-top: 8px;
 }
 .mp-hero-title-em.ko {
-  font-family: 'Noto Serif KR', serif;
-  font-weight: 500; font-style: italic;
-  font-size: clamp(34px, 3.6vw, 55px);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 800; font-style: italic;
+  font-size: clamp(46px, 4.8vw, 70px);
 }
 .mp-hero-title-em.en {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 400; font-style: italic;
-  font-size: clamp(40px, 4.2vw, 64px);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 800; font-style: italic;
+  font-size: clamp(46px, 4.8vw, 70px);
 }
 
 .mp-hero-role {
@@ -198,10 +198,12 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 }
 
 .mp-hero-desc {
-  font-size: 13.5px; line-height: 1.85;
-  color: rgba(255,255,255,0.62);
+  font-size: 14px; line-height: 1.85;
+  color: rgba(255,255,255,0.72);
   margin: 32px 0 40px; animation: mp-fade-up 1s 0.45s both;
-  max-width: 380px;
+  max-width: 400px;
+  border-left: 2px solid rgba(115,209,245,0.45);
+  padding-left: 20px;
 }
 
 .mp-cta-row {
@@ -736,12 +738,26 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       </h1>
 
       <p class="mp-hero-desc">
-        <span class="wl-ko">{d.title_ko}</span>
-        <span class="wl-en">{d.title_en}</span>
+        {d.hero_subtitle_ko || d.hero_subtitle_en ? (
+          <>
+            <span class="wl-ko">{d.hero_subtitle_ko || ''}</span>
+            <span class="wl-en">{d.hero_subtitle_en || ''}</span>
+          </>
+        ) : hasBio ? (
+          <>
+            <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0, 120) + '…' : ''}</span>
+            <span class="wl-en">{d.bio_en ? d.bio_en.substring(0, 140) + '…' : ''}</span>
+          </>
+        ) : (
+          <>
+            <span class="wl-ko">복음으로 한국의 다음 세대를 섬깁니다.</span>
+            <span class="wl-en">Serving Korea's next generation through the Gospel.</span>
+          </>
+        )}
       </p>
 
       <div class="mp-cta-row">
-        <a href="/give" class="mp-btn mp-btn-primary">
+        <a href={d.support_url || '/give'} class="mp-btn mp-btn-primary" target={d.support_url ? '_blank' : '_self'} rel="noopener noreferrer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <span class="wl-ko">후원하기</span><span class="wl-en">Support</span>
         </a>
