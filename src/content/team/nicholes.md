@@ -10,7 +10,7 @@ bio_en: Steve was born into a Word of Life ministry family. At four years old,
   thirty years of faithful commitment.
 gender: male
 name_ko: 스티브 니콜스 & 란다 니콜스
-name_en: Steve Nicholes & Randa Nicholes
+name_en: Steve Nicholes & Rhonda Nicholes
 title_ko: 제주월비 대표
 title_en: Ministry Director & Executive Dean
 role_badge: Jeju Director
