@@ -55,4 +55,5 @@ bio_en_2: Miriam was born into a non-Christian home. In middle school she began
   young Koreans hear the gospel through the lives and testimonies of their
   Christian peers.
 prayer_ko: 더 많은 교회와 협력하여 복음배가운동이 확장될 수 있도록 기도해주세요.
+support_url: https://online.mrm.or.kr/HxSMjVD
 ---
