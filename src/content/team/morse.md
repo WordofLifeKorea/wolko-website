@@ -16,7 +16,7 @@ title_en: WOLKO Director · Field Director
 role_badge: Field Director
 campus: pyeongtaek
 category: missionary
-order: 0
+order: 1
 photo_url: /images/uploads/morse.jpg
 photo_story: /images/uploads/jacob.jpg
 photo_url_2: /images/uploads/crystal.jpg
