@@ -1,6 +1,11 @@
 ---
 
-bio_en: "Aiden was born and raised in South Korea as a fifth-generation Christian. His family's faith traces back to the earliest missionaries who brought the gospel to Korea before the peninsula was divided — and because of their legacy, he grew up immersed in the gospel and the church. Yet from a young age he understood the gospel in his head without truly believing it in his heart. In fifth grade, he went to a church retreat with a close friend who was not yet a believer. As he listened carefully to the gospel message with the intention of sharing it later, he realized that he too was a sinner in need of that same grace. That day, he received Jesus as his personal Savior."
+bio_en: |-
+  I was born and raised in South Korea as a fifth-generation Christian. My family's faith traces back to the very first missionaries who brought the gospel to Korea before the nation was divided. During my grandparents' childhood, my great-grandfather studied theology in what is now North Korea. When the Communist regime began to persecute Christians, my grandparents fled south to preserve their faith. Because of this legacy, I grew up surrounded by the gospel and the church.
+  
+  From a young age, I understood the gospel in my head, but not in my heart. In fifth grade, I attended a church retreat with a close friend who wasn't a believer. During the retreat, I listened carefully to the gospel message so that I could share it with my friend. As I focused on the message, I came to recognize that I was also a sinner in need of that same love, and that the love of Jesus was meant for me as well. In that moment, I accepted Jesus as my personal Savior and stepped forward in faith.
+  
+  After that experience, I began to ask deeper questions about life — why I was born, where I would go after death, and what purpose God had for me. As I looked around, I noticed how many of my friends had never heard about Jesus. I was especially burdened when I heard my grandparents' stories about those in North Korea who still have no opportunity to hear the gospel because of government restrictions. I realized that something I had freely received was something many people might never encounter in their lifetime. That realization sparked my heart for evangelism and missions.
 gender: male
 name_ko: 박예능
 name_en: Aiden Park
@@ -24,10 +29,19 @@ hero_subtitle_en: Aiden serves on WOLKO's evangelism team, participating in most
   across language barriers.
 verse_ref: 예레미야 1:5-9
 show_spouse: false
-bio_ko: 박예능 간사는 한국에서 5대째 기독교 신앙을 이어온 가정에서 태어나고 자랐습니다. 그의 가문은 한반도가 분단되기 전 처음으로 복음을 전한 선교사들의 시대까지 거슬러 올라가며, 그 유산 덕분에 그는 복음과 교회 안에서 자랐습니다. 그러나 어릴 때부터 복음을 머리로는 알았어도 마음으로는 믿지 않았습니다. 초등학교 5학년 때, 믿지 않는 친한 친구와 함께 교회 수련회에 참석했습니다. 나중에 친구에게 복음을 전하려고 메시지에 집중해서 듣는 중에, 자신 역시 그 은혜가 필요한 죄인임을 깨달았습니다. 그날 예수 그리스도를 구주로 영접하였습니다.
+bio_ko: |-
+  저는 한국에서 5대째 기독교 신앙을 이어온 가정에서 태어나고 자랐습니다. 저희 가문의 신앙은 한반도가 분단되기 전 처음으로 복음을 전한 선교사들의 시대까지 거슬러 올라갑니다. 저의 조부모님이 어렸을 때, 증조부님이 현재 북한 지역에서 신학을 공부하셨습니다. 공산주의 정권이 기독교인들을 박해하기 시작하자, 조부모님은 신앙을 지키기 위해 남쪽으로 피난하셨습니다. 이러한 유산 덕분에 저는 복음과 교회 안에서 자랐습니다.
+  
+  어릴 때부터 복음을 머리로는 알았지만, 마음으로는 믿지 않았습니다. 초등학교 5학년 때, 믿지 않는 친한 친구와 함께 교회 수련회에 참석했습니다. 수련회에서 나중에 친구에게 복음을 전하려는 마음으로 복음 메시지를 주의 깊게 들었습니다. 메시지에 집중하면서, 저 역시 그 동일한 사랑이 필요한 죄인임을, 그리고 예수님의 사랑이 저를 위한 것이기도 함을 깨달았습니다. 그 순간, 저는 예수님을 개인 구주로 영접하고 믿음으로 나아갔습니다.
+  
+  그 경험 이후 삶에 대한 더 깊은 질문들을 하기 시작했습니다. 왜 태어났는지, 죽고 나면 어디로 가는지, 하나님이 나를 위해 가지신 목적이 무엇인지. 주위를 둘러보니 예수님에 대해 들어본 적 없는 친구들이 얼마나 많은지 알게 되었습니다. 특히 정부의 제한으로 여전히 복음을 들을 기회조차 없는 북한 주민들에 대한 조부모님의 이야기를 들었을 때 더욱 마음이 무거워졌습니다. 제가 거저 받은 것을 많은 사람들이 평생 접하지 못할 수도 있다는 것을 깨달았습니다. 그 깨달음이 복음 전도와 선교를 향한 마음에 불을 붙였습니다.
 support_url: https://online.mrm.or.kr/Ij7TElD
-bio_en_2: "As he grew, he became burdened for friends who had never heard of Jesus — and even more so for those in North Korea, where government restrictions make hearing the gospel nearly impossible. He began to dream of crossing those barriers through the arts. Watching an English-language performance he could barely understand, he was moved by how clearly the message still reached his heart — and he saw that drama and musicals could be powerful vehicles for the gospel even across language. When he sensed God's call to ministry training, his parents were initially opposed. But on the final morning of college application season, a family devotional in Jeremiah 1 gave him a clear and unmistakable answer. He stepped forward in obedience, and through SYME and Word of Life Bible Institute, his walk with God and his sense of calling grew clearer and deeper. Today he serves on WOLKO's evangelism team, dreaming of carrying the gospel through the arts into places where few have yet to hear."
-bio_ko_2: 성장하면서 예수님을 한 번도 들어본 적 없는 친구들에 대한 부담이 생겼고, 정부의 제한으로 복음을 들을 기회조차 없는 북한 사람들을 향해 더욱 마음이 쓰였습니다. 그 장벽을 문화예술로 넘어설 수 있다는 꿈이 싹텄습니다. 영어 공연을 보며 말을 거의 알아듣지 못해도 메시지가 마음에 분명히 전달되는 경험을 했고, 연극과 뮤지컬이 언어를 넘어 복음을 전하는 강력한 도구가 될 수 있음을 확신하게 되었습니다. 사역의 부르심을 느꼈을 때 부모님은 처음에 반대하셨지만, 대학 원서 마감 마지막 날 아침 가정예배에서 예레미야 1장 말씀을 통해 분명한 응답을 받고 담대히 그 길을 선택했습니다. SYME와 월비를 통해 하나님과 동행하는 삶을 배우며 부르심이 더욱 선명해졌고, 지금은 월코 복음 전도팀의 일원으로 문화예술을 통해 아직 복음을 듣지 못한 이들에게 닿기를 꿈꾸며 사역하고 있습니다.
-
+bio_en_2: |-
+  As someone who loved theater and musicals, I was amazed at how powerfully stories could communicate across languages. Even when I didn't understand the words, I could still grasp the message. I began to dream of using creative arts as a tool to share the gospel effectively.
+  
+  Later, when I prayed about attending seminary, my parents were concerned because of my past immaturity. But on the morning of the last day for college applications, during our family QT, God confirmed His calling through Jeremiah 1:5–9. That passage reminded me that God equips those He calls. With that assurance, I stepped forward in obedience and began my journey in ministry training.
+bio_ko_2: |-
+  연극과 뮤지컬을 사랑하는 사람으로서, 이야기가 언어를 넘어 얼마나 강력하게 전달될 수 있는지에 감탄했습니다. 말을 이해하지 못할 때에도 여전히 메시지를 파악할 수 있었습니다. 문화예술을 복음을 효과적으로 전하는 도구로 사용하는 꿈을 꾸기 시작했습니다.
+  
+  나중에 신학교 진학을 위해 기도할 때, 부모님은 저의 과거 미성숙함 때문에 걱정하셨습니다. 하지만 대학 원서 마지막 날 아침, 가정 큐티 시간에 하나님은 예레미야 1장 5-9절 말씀을 통해 소명을 확인해 주셨습니다. 그 말씀은 하나님이 부르시는 자를 또한 준비시키신다는 것을 상기시켜 주었습니다. 그 확신을 가지고 순종하며 나아가 사역 훈련의 여정을 시작했습니다.
 ---
-

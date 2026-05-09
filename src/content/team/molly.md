@@ -1,6 +1,11 @@
 ---
 
-bio_en: "Molly was born into a Christian home that understood the importance of making God known and the meaning of service, and she came to believe in Jesus at the age of four. But growing up in faith did not mean life was easy. As a teenager she struggled deeply with depression and anxiety, seeking help in the wrong places that only left her feeling worse. Yet God never stopped pursuing her. Through the people He had placed around her, she was encouraged to seek Him in all things — and that is exactly what she did. At seventeen, at a youth camp, she felt a clear call to missions. A mission trip to Taiwan later confirmed it, placing God's heart and burden for Asia firmly within her. She is now following that call, serving the Lord in Korea."
+bio_en: |-
+  I was born into a Christian family that knew the importance of displaying God and what it meant to be a servant. I was saved at the age of four years old. However, growing up as a Christian does not always mean that life is easy.
+  
+  As a teenager I struggled with depression and anxiety. I was not seeking God as I should've been. I was seeking help and peace in the wrong places that ultimately left me feeling worse. However, God kept pursuing me. Thankfully God placed some wonderful people in my life that encouraged me to seek God in everything and that is what I did.
+  
+  I felt the call to mission when I was 17 years old at youth camp. This was confirmed when I went on a missions trip to Taiwan and God just gave me a heart and a burden for people living in Asia.
 gender: female
 name_ko: 그램 몰리
 name_en: Molly Graham
@@ -22,8 +27,13 @@ hero_subtitle_en: Molly serves in Korea as a CCI intern, partnering with local
   confirmed her calling to Asia, and she is now living that calling out.
 verse_ref: "빌립보서 2 : 3 – 4"
 show_spouse: false
-bio_ko: Molly는 하나님을 드러내는 것의 중요성과 섬김의 의미를 아는 기독교 가정에서 태어나 네 살 때 예수님을 믿게 되었습니다. 하지만 신앙 안에서 자란다는 것이 곧 쉬운 삶을 의미하지는 않았습니다. 십 대 시절 심한 우울증과 불안감으로 고통받으며 잘못된 곳에서 도움을 찾으려 했고, 그것은 오히려 더 깊은 절망으로 이어졌습니다. 그러나 하나님은 끝까지 그녀를 포기하지 않으셨습니다. 주위에 두신 사람들의 격려를 통해 그녀는 모든 일 가운데 하나님을 찾기로 결단했습니다. 열일곱 살 청소년 수련회에서 선교의 소명을 느꼈고, 이후 대만 선교 여행을 통해 아시아를 향한 하나님의 마음과 부담이 그녀 안에 분명히 자리 잡았습니다. 그 소명을 따라 지금은 한국에서 주님을 섬기고 있습니다.
+bio_ko: |-
+  저는 하나님을 드러내는 것의 중요성과 섬김이 무엇인지 아는 기독교 가정에서 태어났습니다. 네 살 때 구원을 받았습니다. 하지만 기독교인으로 자란다는 것이 항상 삶이 쉽다는 것을 의미하지는 않습니다.
+  
+  십 대 때 우울증과 불안으로 힘들었습니다. 제가 마땅히 해야 할 만큼 하나님을 찾지 않았습니다. 잘못된 곳에서 도움과 평안을 찾으려 했고, 그것은 결국 저를 더 나쁜 상태로 만들었습니다. 하지만 하나님은 계속해서 저를 찾아오셨습니다. 감사하게도 하나님은 내 삶에 모든 것 가운데 하나님을 찾도록 격려해준 놀라운 사람들을 두셨고, 저는 바로 그렇게 했습니다.
+  
+  열일곱 살 청소년 수련회에서 선교의 소명을 느꼈습니다. 이것은 제가 대만으로 선교 여행을 갔을 때 확인되었고, 하나님은 아시아에 살고 있는 사람들을 향한 마음과 부담을 저에게 주셨습니다.
 support_url: https://online.mrm.or.kr/tSNpg5Q
 
----
 
+---
