@@ -52,4 +52,5 @@ bio_en_2: Chan-Joo grew up in a Christian family but went through confusing
   depth of the gospel and received Jesus as her Savior. Together they minister
   with the hope that young Koreans will truly understand Christianity and share
   the gospel.
+support_url: https://online.mrm.or.kr/1CiXq2b
 ---
