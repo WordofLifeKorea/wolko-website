@@ -88,6 +88,9 @@ const jejuStw = allTeam
     .wp-card-arrow { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--wp-blue-mid); margin-top: 10px; letter-spacing: 0.5px; }
     .wp-card-arrow::after { content: '→'; transition: transform 0.2s; }
     .wp-card:hover .wp-card-arrow::after { transform: translateX(3px); }
+    /* 사진 없는 카드 */
+    .wp-card--no-photo .wp-card-info { padding: 24px 20px 22px; }
+    .wp-card--no-photo .wp-card-name { font-size: 16px; margin-bottom: 7px; }
 
     @media (max-width: 860px) {
       .wp-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
@@ -156,13 +159,15 @@ const jejuStw = allTeam
               </div>
               <div class="wp-grid">
                 {pyMissionary.map((person) => (
-                  <a href={`/team/${person.slug}`} class="wp-card">
-                    <div class="wp-card-photo-wrap">
-                      <img src={person.data.photo_url || '/images/placeholder.jpg'} alt={person.data.name_ko} loading="lazy" />
-                      <span class={`wp-card-role-badge${person.data.role_badge.includes('Director') ? ' wp-badge-director' : ''}`}>
-                        {person.data.role_badge}
-                      </span>
-                    </div>
+                  <a href={`/team/${person.slug}`} class={`wp-card${!person.data.photo_url ? ' wp-card--no-photo' : ''}`}>
+                    {person.data.photo_url && (
+                      <div class="wp-card-photo-wrap">
+                        <img src={person.data.photo_url} alt={person.data.name_ko} loading="lazy" />
+                        <span class={`wp-card-role-badge${person.data.role_badge.includes('Director') ? ' wp-badge-director' : ''}`}>
+                          {person.data.role_badge}
+                        </span>
+                      </div>
+                    )}
                     <div class="wp-card-info">
                       <div class="wp-card-name">
                         <span class="wl-ko">{person.data.name_ko}</span>
@@ -192,11 +197,13 @@ const jejuStw = allTeam
               </div>
               <div class="wp-grid">
                 {pyStw.map((person) => (
-                  <a href={`/team/${person.slug}`} class="wp-card">
-                    <div class="wp-card-photo-wrap">
-                      <img src={person.data.photo_url || '/images/placeholder.jpg'} alt={person.data.name_ko} loading="lazy" />
-                      <span class="wp-card-role-badge">{person.data.role_badge}</span>
-                    </div>
+                  <a href={`/team/${person.slug}`} class={`wp-card${!person.data.photo_url ? ' wp-card--no-photo' : ''}`}>
+                    {person.data.photo_url && (
+                      <div class="wp-card-photo-wrap">
+                        <img src={person.data.photo_url} alt={person.data.name_ko} loading="lazy" />
+                        <span class="wp-card-role-badge">{person.data.role_badge}</span>
+                      </div>
+                    )}
                     <div class="wp-card-info">
                       <div class="wp-card-name">
                         <span class="wl-ko">{person.data.name_ko}</span>
@@ -254,13 +261,15 @@ const jejuStw = allTeam
               </div>
               <div class="wp-grid">
                 {jejuMissionary.map((person) => (
-                  <a href={`/team/${person.slug}`} class="wp-card">
-                    <div class="wp-card-photo-wrap">
-                      <img src={person.data.photo_url || '/images/placeholder.jpg'} alt={person.data.name_ko} loading="lazy" />
-                      <span class={`wp-card-role-badge${person.data.role_badge.includes('Director') ? ' wp-badge-director' : ''}`}>
-                        {person.data.role_badge}
-                      </span>
-                    </div>
+                  <a href={`/team/${person.slug}`} class={`wp-card${!person.data.photo_url ? ' wp-card--no-photo' : ''}`}>
+                    {person.data.photo_url && (
+                      <div class="wp-card-photo-wrap">
+                        <img src={person.data.photo_url} alt={person.data.name_ko} loading="lazy" />
+                        <span class={`wp-card-role-badge${person.data.role_badge.includes('Director') ? ' wp-badge-director' : ''}`}>
+                          {person.data.role_badge}
+                        </span>
+                      </div>
+                    )}
                     <div class="wp-card-info">
                       <div class="wp-card-name">
                         <span class="wl-ko">{person.data.name_ko}</span>
@@ -290,11 +299,13 @@ const jejuStw = allTeam
               </div>
               <div class="wp-grid">
                 {jejuStw.map((person) => (
-                  <a href={`/team/${person.slug}`} class="wp-card">
-                    <div class="wp-card-photo-wrap">
-                      <img src={person.data.photo_url || '/images/placeholder.jpg'} alt={person.data.name_ko} loading="lazy" />
-                      <span class="wp-card-role-badge">{person.data.role_badge}</span>
-                    </div>
+                  <a href={`/team/${person.slug}`} class={`wp-card${!person.data.photo_url ? ' wp-card--no-photo' : ''}`}>
+                    {person.data.photo_url && (
+                      <div class="wp-card-photo-wrap">
+                        <img src={person.data.photo_url} alt={person.data.name_ko} loading="lazy" />
+                        <span class="wp-card-role-badge">{person.data.role_badge}</span>
+                      </div>
+                    )}
                     <div class="wp-card-info">
                       <div class="wp-card-name">
                         <span class="wl-ko">{person.data.name_ko}</span>
