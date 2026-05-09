@@ -392,17 +392,17 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
         <span class="login-logo-name">WOLKO</span>
       </div>
-      <p class="login-title">프로필 편집 로그인</p>
+      <p class="login-title">Profile Login</p>
       <p class="login-name">{d.name_ko}</p>
       <div class="login-input-wrap">
         <input
           type="password"
           class="login-input"
           id="loginPw"
-          placeholder="비밀번호 입력"
+          placeholder="Enter password"
           autocomplete="current-password"
         >
-        <button class="login-eye" id="loginEye" type="button" aria-label="비밀번호 보기">
+        <button class="login-eye" id="loginEye" type="button" aria-label="Show password">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
             <circle cx="12" cy="12" r="3"/>
@@ -410,7 +410,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         </button>
       </div>
       <p class="login-error" id="loginError"></p>
-      <button class="login-btn" id="loginBtn">로그인</button>
+      <button class="login-btn" id="loginBtn">Sign In</button>
     </div>
   </div>
 
@@ -420,7 +420,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
     </div>
     <div class="page-header-info">
-      <div class="page-header-title">프로필 편집</div>
+      <div class="page-header-title">Edit Profile</div>
       <div class="page-header-name">{d.name_ko} <span style="font-weight:400;font-size:14px;opacity:0.7;">/ {d.name_en}</span></div>
     </div>
     <div class="page-header-actions">
@@ -430,9 +430,9 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
           <polyline points="15 3 21 3 21 9"/>
           <line x1="10" y1="14" x2="21" y2="3"/>
         </svg>
-        내 페이지 보기
+        View My Page
       </a>
-      <button class="btn-logout" id="logoutBtn">로그아웃</button>
+      <button class="btn-logout" id="logoutBtn">Sign Out</button>
     </div>
   </header>
 
@@ -440,75 +440,75 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
   <main class="page-main">
 
     <div class="notice">
-      <strong>안내:</strong> 수정 후 <strong>저장</strong>을 누르면 GitHub에 바로 반영됩니다. 홈페이지 빌드는 약 1~2분 소요될 수 있습니다.
-      사진 업로드는 각 사진 칸을 클릭하세요 (jpg, png, webp / 최대 30MB).
+      <strong>Note:</strong> Click <strong>Save</strong> to push changes directly to GitHub. The site will rebuild in about 1–2 minutes.
+      Click a photo slot to upload a new photo (jpg, png, webp / max 30MB).
     </div>
 
-    <!-- ① 사진 섹션 -->
+    <!-- ① Photo Section -->
     <div class="edit-section">
       <div class="section-header">
         <div class="section-icon">📷</div>
         <div>
-          <div class="section-title">사진</div>
-          <div class="section-sub">클릭하여 교체 — 업로드 즉시 저장됩니다</div>
+          <div class="section-title">Photos</div>
+          <div class="section-sub">Click to replace — saved immediately on upload</div>
         </div>
       </div>
 
       <div class="photo-grid">
-        <!-- 대표 사진 -->
+        <!-- Profile Photo -->
         <div class="photo-item">
           <div class="photo-preview" id="preview-photo_url" onclick="triggerUpload('photo_url')">
             {d.photo_url
-              ? <img id="img-photo_url" src={d.photo_url} alt="대표 사진">
+              ? <img id="img-photo_url" src={d.photo_url} alt="Profile photo">
               : <div class="photo-empty" id="empty-photo_url">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                  <span>사진 없음</span>
+                  <span>No photo</span>
                 </div>
             }
             <div class="photo-overlay">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>사진 교체</span>
+              <span>Change Photo</span>
             </div>
           </div>
-          <div class="photo-label">대표 사진</div>
+          <div class="photo-label">Profile Photo</div>
           <div class="photo-upload-status" id="status-photo_url"></div>
         </div>
 
-        <!-- 스토리 사진 -->
+        <!-- Story Photo -->
         <div class="photo-item">
           <div class="photo-preview" id="preview-photo_story" onclick="triggerUpload('photo_story')">
             {d.photo_story
-              ? <img id="img-photo_story" src={d.photo_story} alt="스토리 사진">
+              ? <img id="img-photo_story" src={d.photo_story} alt="Story photo">
               : <div class="photo-empty" id="empty-photo_story">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                  <span>사진 없음</span>
+                  <span>No photo</span>
                 </div>
             }
             <div class="photo-overlay">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>사진 교체</span>
+              <span>Change Photo</span>
             </div>
           </div>
-          <div class="photo-label">스토리 사진 (본인)</div>
+          <div class="photo-label">Story Photo (Self)</div>
           <div class="photo-upload-status" id="status-photo_story"></div>
         </div>
 
-        <!-- 배우자 사진 -->
+        <!-- Spouse Photo -->
         <div class="photo-item" style={!hasSpouse ? 'opacity:0.4;pointer-events:none' : ''}>
           <div class="photo-preview" id="preview-photo_url_2" onclick="triggerUpload('photo_url_2')">
             {d.photo_url_2
-              ? <img id="img-photo_url_2" src={d.photo_url_2} alt="배우자 사진">
+              ? <img id="img-photo_url_2" src={d.photo_url_2} alt="Spouse photo">
               : <div class="photo-empty" id="empty-photo_url_2">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                  <span>사진 없음</span>
+                  <span>No photo</span>
                 </div>
             }
             <div class="photo-overlay">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>사진 교체</span>
+              <span>Change Photo</span>
             </div>
           </div>
-          <div class="photo-label">배우자 사진{!hasSpouse ? ' (해당 없음)' : ''}</div>
+          <div class="photo-label">Spouse Photo{!hasSpouse ? ' (N/A)' : ''}</div>
           <div class="photo-upload-status" id="status-photo_url_2"></div>
         </div>
       </div>
@@ -517,17 +517,17 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" style="display:none">
     </div>
 
-    <!-- ② 헤로 소개 -->
+    <!-- ② Hero Bio -->
     <div class="edit-section">
       <div class="section-header">
         <div class="section-icon">✍️</div>
         <div>
-          <div class="section-title">한 줄 소개</div>
-          <div class="section-sub">히어로 섹션 하단에 표시되는 짧은 소개문</div>
+          <div class="section-title">Short Bio</div>
+          <div class="section-sub">Short description shown in the hero section</div>
         </div>
       </div>
       <div class="field-group">
-        <label class="field-label"><span class="field-lang ko">KO</span> 한국어</label>
+        <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
         <textarea class="field-textarea" id="f-hero_subtitle_ko" rows="3">{d.hero_subtitle_ko || ''}</textarea>
       </div>
       <div class="field-group">
@@ -542,15 +542,15 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         <div class="section-icon">📖</div>
         <div>
           <div class="section-title">Life Verse</div>
-          <div class="section-sub">인생 말씀 구절</div>
+          <div class="section-sub">Life Verse</div>
         </div>
       </div>
       <div class="field-group">
-        <label class="field-label">구절 참조 (예: 시편 96:2-3)</label>
+        <label class="field-label">Verse reference (e.g. Psalm 96:2–3)</label>
         <input type="text" class="field-input" id="f-verse_ref" value={d.verse_ref || ''}>
       </div>
       <div class="field-group">
-        <label class="field-label"><span class="field-lang ko">KO</span> 한국어 말씀</label>
+        <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
         <textarea class="field-textarea" id="f-verse_ko" rows="4">{d.verse_ko || ''}</textarea>
       </div>
       <div class="field-group">
@@ -559,17 +559,17 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
     </div>
 
-    <!-- ④ 소개 (본인) -->
+    <!-- ④ My Story -->
     <div class="edit-section">
       <div class="section-header">
         <div class="section-icon">👤</div>
         <div>
-          <div class="section-title">나의 이야기</div>
-          <div class="section-sub">본인 간증 / 사역 소개</div>
+          <div class="section-title">My Story</div>
+          <div class="section-sub">Personal testimony / ministry introduction</div>
         </div>
       </div>
       <div class="field-group">
-        <label class="field-label"><span class="field-lang ko">KO</span> 한국어</label>
+        <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
         <textarea class="field-textarea tall" id="f-bio_ko">{d.bio_ko || ''}</textarea>
       </div>
       <div class="field-group">
@@ -578,18 +578,18 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
     </div>
 
-    <!-- ⑤ 배우자 소개 (있을 때만) -->
+    <!-- ⑤ Spouse Story (if applicable) -->
     {hasSpouse && (
       <div class="edit-section">
         <div class="section-header">
           <div class="section-icon">👥</div>
           <div>
-            <div class="section-title">배우자 이야기</div>
+            <div class="section-title">Spouse's Story</div>
             <div class="section-sub">{d.spouse_ko} / {d.spouse_en}</div>
           </div>
         </div>
         <div class="field-group">
-          <label class="field-label"><span class="field-lang ko">KO</span> 한국어</label>
+          <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
           <textarea class="field-textarea tall" id="f-bio_ko_2">{d.bio_ko_2 || ''}</textarea>
         </div>
         <div class="field-group">
@@ -599,17 +599,17 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
     )}
 
-    <!-- ⑥ 기도제목 -->
+    <!-- ⑥ Prayer Requests -->
     <div class="edit-section">
       <div class="section-header">
         <div class="section-icon">🙏</div>
         <div>
-          <div class="section-title">기도제목</div>
-          <div class="section-sub">후원자들과 함께 나눌 기도 요청</div>
+          <div class="section-title">Prayer Requests</div>
+          <div class="section-sub">Prayer requests to share with supporters</div>
         </div>
       </div>
       <div class="field-group">
-        <label class="field-label"><span class="field-lang ko">KO</span> 한국어</label>
+        <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
         <textarea class="field-textarea" id="f-prayer_ko" rows="5" placeholder="예: 평택 캠퍼스 청소년 여름 캠프를 위해 기도해 주세요...">{d.prayer_ko || ''}</textarea>
       </div>
       <div class="field-group">
@@ -623,7 +623,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
   <!-- ── SAVE BAR ──────────────────────────────────────────────── -->
   <div class="save-bar">
     <div class="save-status" id="saveStatus"></div>
-    <button class="btn-save" id="saveBtn">변경사항 저장</button>
+    <button class="btn-save" id="saveBtn">Save Changes</button>
   </div>
 
   <script is:inline define:vars={{ initialData, slug }}>
@@ -661,7 +661,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       const pw = loginPw.value.trim();
       if (!pw) return;
       loginBtn.disabled = true;
-      loginBtn.textContent = '확인 중...';
+      loginBtn.textContent = 'Verifying...';
       loginError.textContent = '';
       loginPw.classList.remove('error');
 
@@ -672,7 +672,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
           body: JSON.stringify({ slug, password: pw }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '로그인 실패');
+        if (!res.ok) throw new Error(data.error || 'Login failed');
         authToken = data.token;
         sessionStorage.setItem(TOKEN_KEY, authToken);
         showEditPage();
@@ -681,7 +681,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         loginError.textContent = e.message;
       } finally {
         loginBtn.disabled = false;
-        loginBtn.textContent = '로그인';
+        loginBtn.textContent = 'Sign In';
       }
     }
 
@@ -707,11 +707,11 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       if (!file || !activeUploadField) return;
 
       if (file.size > 30 * 1024 * 1024) {
-        setPhotoStatus(activeUploadField, '❌ 파일 크기는 30MB 이하여야 합니다.', true);
+        setPhotoStatus(activeUploadField, '❌ File size must be under 30MB.', true);
         return;
       }
 
-      setPhotoStatus(activeUploadField, '업로드 중...');
+      setPhotoStatus(activeUploadField, 'Uploading...');
 
       const fd = new FormData();
       fd.append('file', file);
@@ -724,7 +724,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
           body: fd,
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '업로드 실패');
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
 
         // Update preview
         const previewEl = document.getElementById(`preview-${activeUploadField}`);
@@ -734,14 +734,14 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         if (!imgEl) {
           imgEl = document.createElement('img');
           imgEl.id = `img-${activeUploadField}`;
-          imgEl.alt = '사진';
+          imgEl.alt = 'Photo';
           previewEl.insertBefore(imgEl, previewEl.firstChild);
         }
         imgEl.src = data.url + '?t=' + Date.now();
         imgEl.style.display = '';
         if (emptyEl) emptyEl.style.display = 'none';
 
-        setPhotoStatus(activeUploadField, '✅ 업로드 완료 — 빌드 후 반영됩니다.');
+        setPhotoStatus(activeUploadField, '✅ Uploaded — will appear after site rebuild.');
       } catch (e) {
         setPhotoStatus(activeUploadField, '❌ ' + e.message, true);
       }
@@ -765,7 +765,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
 
     saveBtn.addEventListener('click', async () => {
       saveBtn.disabled = true;
-      saveBtn.textContent = '저장 중...';
+      saveBtn.textContent = 'Saving...';
       saveStatus.textContent = '';
       saveStatus.className = 'save-status';
 
@@ -791,14 +791,14 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
           body: JSON.stringify({ fields }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '저장 실패');
+        if (!res.ok) throw new Error(data.error || 'Save failed');
 
-        saveStatus.textContent = '✅ 저장 완료 — 홈페이지 빌드 후 (약 1~2분) 반영됩니다.';
+        saveStatus.textContent = '✅ Saved — changes will appear after rebuild (about 1–2 min).';
         saveStatus.className = 'save-status success';
       } catch (e) {
         saveStatus.textContent = '❌ ' + e.message;
         saveStatus.className = 'save-status error';
-        if (e.message.includes('인증')) {
+        if (e.message.includes('인증') || e.message.includes('auth')) {
           // Token may have expired — prompt re-login
           sessionStorage.removeItem(TOKEN_KEY);
           authToken = '';
@@ -806,7 +806,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         }
       } finally {
         saveBtn.disabled = false;
-        saveBtn.textContent = '변경사항 저장';
+        saveBtn.textContent = 'Save Changes';
       }
     });
   </script>
