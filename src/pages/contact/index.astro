@@ -56,170 +56,234 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   /* ── SECTION ── */
   .ct-section { padding:80px 24px; background:var(--bg); }
   .ct-section-inner { max-width:1060px; margin:0 auto; }
-  .ct-section-title {
-    font-size:clamp(22px, 3vw, 30px); font-weight:800;
-    color:var(--d); margin-bottom:40px; letter-spacing:-0.02em;
+
+  /* ── SECTION HEADER ── */
+  .ct-sh {
+    display:flex; align-items:baseline; gap:12px;
+    margin-bottom:28px;
   }
-  .ct-section-title span { display:block; font-size:13px; font-weight:600; letter-spacing:0.06em; color:var(--m); text-transform:uppercase; margin-bottom:6px; }
+  .ct-sh-label {
+    font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--m);
+  }
+  .ct-sh-title {
+    font-size:clamp(20px, 2.5vw, 26px); font-weight:800;
+    color:var(--k); letter-spacing:-0.02em;
+  }
+
+  /* ── QUICK CONTACT — horizontal strip ── */
+  .ct-strip {
+    display:grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap:0;
+    background:#fff;
+    border-radius:20px;
+    border:1px solid var(--line);
+    box-shadow:0 4px 28px rgba(0,79,104,0.07);
+    overflow:hidden;
+    margin-bottom:56px;
+  }
+  .ct-strip-item {
+    display:flex; flex-direction:column; align-items:flex-start;
+    padding:28px 24px 26px;
+    text-decoration:none;
+    border-right:1px solid var(--line);
+    position:relative; overflow:hidden;
+    transition:background .18s;
+    gap:14px;
+  }
+  .ct-strip-item:last-child { border-right:none; }
+  .ct-strip-item::after {
+    content:""; position:absolute; bottom:0; left:0;
+    width:100%; height:3px;
+    background:var(--d); transform:scaleX(0); transform-origin:left;
+    transition:transform .22s ease;
+  }
+  .ct-strip-item:hover { background:#f5fafd; }
+  .ct-strip-item:hover::after { transform:scaleX(1); }
+
+  .ct-strip-icon {
+    width:42px; height:42px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .ct-strip-icon svg { width:20px; height:20px; }
+  .ct-strip-icon.phone { background:rgba(0,79,104,0.08); color:var(--d); }
+  .ct-strip-icon.email { background:rgba(196,42,54,0.08); color:var(--r); }
+  .ct-strip-icon.yt    { background:rgba(220,38,38,0.08); color:#dc2626; }
+
+  .ct-strip-body { flex:1; min-width:0; }
+  .ct-strip-label {
+    font-size:10px; font-weight:800; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--s); margin-bottom:4px;
+  }
+  .ct-strip-val {
+    font-size:14px; font-weight:700; color:var(--k);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    line-height:1.4;
+  }
+  .ct-strip-sub {
+    font-size:11px; color:var(--s); margin-top:2px; line-height:1.4;
+  }
 
   /* ── OFFICE CARDS ── */
   .ct-offices {
     display:grid; grid-template-columns:1fr 1fr;
-    gap:24px; margin-bottom:64px;
+    gap:20px; margin-bottom:56px;
   }
   .ct-office {
-    background:#fff; border-radius:20px; overflow:hidden;
-    box-shadow:0 4px 24px rgba(0,79,104,0.08);
+    background:#fff; border-radius:20px;
     border:1px solid var(--line);
-    transition:transform .2s, box-shadow .2s;
+    box-shadow:0 4px 20px rgba(0,79,104,0.06);
+    overflow:hidden;
+    transition:box-shadow .2s, transform .2s;
   }
-  .ct-office:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,79,104,0.13); }
-  .ct-office-top {
-    padding:32px 32px 24px;
-    background:linear-gradient(135deg, var(--d) 0%, #006080 100%);
-    position:relative; overflow:hidden;
+  .ct-office:hover { transform:translateY(-3px); box-shadow:0 12px 36px rgba(0,79,104,0.12); }
+
+  /* accent strip at top */
+  .ct-office-accent {
+    height:5px;
+    background:linear-gradient(90deg, var(--d) 0%, var(--m) 100%);
   }
-  .ct-office-top::after {
-    content:""; position:absolute; right:-20px; top:-20px;
-    width:120px; height:120px; border-radius:50%;
-    background:rgba(255,255,255,0.04);
+
+  .ct-office-head {
+    padding:28px 32px 22px;
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:flex-start; gap:16px;
   }
-  .ct-office-badge {
-    display:inline-block; padding:4px 12px; border-radius:999px;
-    background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25);
-    font-size:10px; font-weight:800; letter-spacing:0.1em; color:var(--l);
-    text-transform:uppercase; margin-bottom:12px;
+  .ct-office-badge-icon {
+    width:48px; height:48px; border-radius:14px; flex-shrink:0;
+    background:linear-gradient(135deg, var(--d) 0%, var(--m) 100%);
+    display:flex; align-items:center; justify-content:center;
   }
-  .ct-office-top h2 { font-size:22px; font-weight:800; color:#fff; margin:0; line-height:1.2; }
-  .ct-office-top p { font-size:13px; color:rgba(255,255,255,0.7); margin:6px 0 0; }
-  .ct-office-body { padding:28px 32px; }
+  .ct-office-badge-icon svg { width:22px; height:22px; stroke:#fff; fill:none; }
+  .ct-office-head-text {}
+  .ct-office-tag {
+    font-size:10px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--m); margin-bottom:4px;
+  }
+  .ct-office-head h2 { font-size:19px; font-weight:800; color:var(--k); margin:0 0 2px; }
+  .ct-office-head p { font-size:12px; color:var(--s); margin:0; line-height:1.5; }
+
+  .ct-office-body { padding:8px 32px 24px; }
   .ct-info-row {
-    display:flex; align-items:flex-start; gap:14px;
-    padding:14px 0; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:14px;
+    padding:13px 0; border-bottom:1px solid var(--line);
   }
   .ct-info-row:last-child { border-bottom:none; padding-bottom:0; }
   .ct-info-icon {
-    width:36px; height:36px; border-radius:10px;
-    background:rgba(0,79,104,0.07); display:flex; align-items:center; justify-content:center;
-    flex-shrink:0; margin-top:2px; color:var(--m);
+    width:32px; height:32px; border-radius:8px;
+    background:rgba(0,79,104,0.06); display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; color:var(--m);
   }
-  .ct-info-icon svg { width:17px; height:17px; }
-  .ct-info-label { font-size:11px; font-weight:700; color:var(--m); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:3px; }
-  .ct-info-val { font-size:15px; font-weight:600; color:var(--k); line-height:1.6; }
+  .ct-info-icon svg { width:15px; height:15px; }
+  .ct-info-label { font-size:10px; font-weight:700; color:var(--s); letter-spacing:0.07em; text-transform:uppercase; margin-bottom:2px; }
+  .ct-info-val { font-size:14px; font-weight:600; color:var(--k); line-height:1.55; }
   .ct-info-val a { color:var(--d); text-decoration:none; }
   .ct-info-val a:hover { text-decoration:underline; }
-
-  /* ── CONTACT METHODS ── */
-  .ct-methods {
-    display:grid; grid-template-columns:repeat(5,1fr);
-    gap:16px; margin-bottom:64px;
-  }
-  .ct-method {
-    background:#fff; border-radius:16px; padding:28px 20px;
-    text-align:center; border:1px solid var(--line);
-    box-shadow:0 2px 12px rgba(0,79,104,0.05);
-    text-decoration:none; transition:transform .2s, box-shadow .2s;
-    display:flex; flex-direction:column; align-items:center; gap:12px;
-  }
-  .ct-method:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(0,79,104,0.12); }
-  .ct-method-icon {
-    width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center;
-  }
-  .ct-method-icon svg { width:24px; height:24px; }
-  .ct-method-icon.phone { background:rgba(0,79,104,0.08); color:var(--d); }
-  .ct-method-icon.email { background:rgba(196,42,54,0.08); color:var(--r); }
-  .ct-method-icon.youtube { background:rgba(255,0,0,0.08); color:#e00; }
-  .ct-method-name { font-size:13px; font-weight:800; color:var(--k); }
-  .ct-method-desc { font-size:12px; color:var(--s); line-height:1.5; }
 
   /* ── FORM ── */
   .ct-form-wrap {
     background:#fff; border-radius:20px; padding:48px;
-    box-shadow:0 4px 24px rgba(0,79,104,0.08);
+    box-shadow:0 4px 24px rgba(0,79,104,0.07);
     border:1px solid var(--line);
   }
+
+  /* Inquiry dropdown */
+  .ct-dropdown-wrap {
+    margin-bottom:28px;
+  }
+  .ct-dropdown-label {
+    font-size:11px; font-weight:800; color:var(--d);
+    letter-spacing:0.07em; text-transform:uppercase; margin-bottom:10px;
+    display:block;
+  }
+  .ct-select-wrap {
+    position:relative;
+  }
+  .ct-select-wrap select {
+    width:100%; padding:14px 44px 14px 16px;
+    border:1.5px solid rgba(0,79,104,0.18);
+    border-radius:12px; font-size:15px; color:var(--k);
+    background:#fafcfe; transition:border-color .2s, box-shadow .2s;
+    font-family:inherit; outline:none;
+    appearance:none; -webkit-appearance:none; cursor:pointer;
+    font-weight:600;
+  }
+  .ct-select-wrap select:focus {
+    border-color:var(--m); box-shadow:0 0 0 3px rgba(0,126,161,0.1);
+    background:#fff;
+  }
+  .ct-select-chevron {
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    pointer-events:none; color:var(--s);
+  }
+  .ct-select-chevron svg { width:18px; height:18px; display:block; }
+
+  /* Form grid */
   .ct-form-grid {
     display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;
   }
   .ct-field { display:flex; flex-direction:column; gap:8px; }
   .ct-field.full { grid-column:1/-1; }
   .ct-field label {
-    font-size:12px; font-weight:700; color:var(--d); letter-spacing:0.05em; text-transform:uppercase;
+    font-size:11px; font-weight:800; color:var(--d); letter-spacing:0.06em; text-transform:uppercase;
   }
-  .ct-field input, .ct-field select, .ct-field textarea {
+  .ct-field input, .ct-field textarea {
     width:100%; padding:13px 16px; border:1.5px solid rgba(0,79,104,0.18);
     border-radius:10px; font-size:15px; color:var(--k);
     background:#fafcfe; transition:border-color .2s, box-shadow .2s;
     font-family:inherit; outline:none; box-sizing:border-box;
   }
-  .ct-field input:focus, .ct-field select:focus, .ct-field textarea:focus {
+  .ct-field input:focus, .ct-field textarea:focus {
     border-color:var(--m); box-shadow:0 0 0 3px rgba(0,126,161,0.1);
     background:#fff;
   }
   .ct-field textarea { resize:vertical; min-height:130px; }
+
+  .ct-form-footer {
+    display:flex; align-items:flex-start; gap:20px; flex-wrap:wrap;
+  }
   .ct-form-btn {
     display:inline-flex; align-items:center; gap:10px;
-    padding:15px 36px; border-radius:999px;
+    padding:14px 36px; border-radius:999px;
     background:var(--d); color:#fff; border:none; cursor:pointer;
     font-size:15px; font-weight:800; letter-spacing:0.02em;
     transition:background .2s, transform .2s;
-    font-family:inherit;
+    font-family:inherit; flex-shrink:0;
   }
   .ct-form-btn:hover { background:var(--m); transform:translateY(-2px); }
   .ct-form-note {
-    font-size:13px; color:var(--s); margin-top:14px;
-    padding:14px 16px; background:rgba(0,79,104,0.04);
-    border-radius:10px; border-left:3px solid var(--m); line-height:1.7;
-  }
-
-  /* ── INQUIRY TYPE CARDS ── */
-  .ct-type-label {
-    font-size:12px; font-weight:700; color:var(--d);
-    letter-spacing:0.05em; text-transform:uppercase;
-    margin-bottom:14px;
-  }
-  .ct-type-grid {
-    display:grid; grid-template-columns:repeat(4,1fr);
-    gap:10px; margin-bottom:28px;
-  }
-  .ct-type-card {
-    display:flex; flex-direction:column; align-items:center; gap:7px;
-    padding:16px 10px; border-radius:14px; cursor:pointer;
-    border:1.5px solid rgba(0,79,104,0.14);
-    background:#fafcfe; transition:all .18s; user-select:none;
-  }
-  .ct-type-card:hover { border-color:var(--m); background:#f0f8fc; }
-  .ct-type-card.selected {
-    border-color:var(--d); background:rgba(0,79,104,0.07);
-    box-shadow:0 2px 10px rgba(0,79,104,0.12);
-  }
-  .ct-type-icon { width:26px; height:26px; color:var(--s); flex-shrink:0; transition:color .18s; }
-  .ct-type-card.selected .ct-type-icon { color:var(--d); }
-  .ct-type-card:hover .ct-type-icon { color:var(--m); }
-  .ct-type-name-ko { font-size:11px; font-weight:800; color:var(--k); text-align:center; line-height:1.3; }
-  .ct-type-name-en { font-size:10px; font-weight:600; color:var(--s); text-align:center; }
-  .ct-type-divider {
-    border:none; border-top:1px solid rgba(0,79,104,0.12);
-    margin:0 0 28px;
-  }
-  @media(max-width:640px) {
-    .ct-type-grid { grid-template-columns:repeat(4,1fr); gap:8px; }
-    .ct-type-name-en { display:none; }
+    font-size:13px; color:var(--s); line-height:1.7;
+    padding:12px 16px; background:rgba(0,79,104,0.04);
+    border-radius:10px; border-left:3px solid var(--m);
+    flex:1; min-width:220px;
   }
 
   /* ── RESPONSIVE ── */
   @media(max-width:1000px) {
-    .ct-methods { grid-template-columns:repeat(3,1fr); }
+    .ct-strip { grid-template-columns:repeat(3,1fr); }
+    .ct-strip-item:nth-child(3) { border-right:none; }
+    .ct-strip-item:nth-child(4) { border-top:1px solid var(--line); }
+    .ct-strip-item:nth-child(5) { border-top:1px solid var(--line); border-right:none; }
   }
-  @media(max-width:900px) {
+  @media(max-width:860px) {
     .ct-offices { grid-template-columns:1fr; }
+  }
+  @media(max-width:700px) {
+    .ct-strip { grid-template-columns:1fr 1fr; border-radius:16px; }
+    .ct-strip-item { border-right:1px solid var(--line) !important; border-top:1px solid var(--line); }
+    .ct-strip-item:nth-child(1),
+    .ct-strip-item:nth-child(2) { border-top:none; }
+    .ct-strip-item:nth-child(2),
+    .ct-strip-item:nth-child(4) { border-right:none !important; }
+    .ct-strip-item:nth-child(5) { grid-column:1/-1; border-right:none !important; }
   }
   @media(max-width:640px) {
     .ct-form-wrap { padding:28px 20px; }
     .ct-form-grid { grid-template-columns:1fr; }
-    .ct-methods { grid-template-columns:repeat(2,1fr); }
-    .ct-office-body { padding:20px; }
-    .ct-office-top { padding:24px 20px 18px; }
+    .ct-office-body { padding:8px 20px 20px; }
+    .ct-office-head { padding:22px 20px 18px; }
   }
 </style>
 
@@ -244,75 +308,103 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <section class="ct-section">
   <div class="ct-section-inner">
 
-    <!-- CONTACT METHODS -->
-    <p class="ct-section-title">
-      <span class="wl-ko">빠른 연락처</span>
-      <span class="wl-en">Quick Contact</span>
-    </p>
-    <div class="ct-methods">
-      <a class="ct-method" href="tel:070-4190-6084">
-        <div class="ct-method-icon phone">
+    <!-- QUICK CONTACT STRIP -->
+    <div class="ct-sh" style="margin-bottom:20px;">
+      <span class="ct-sh-label"><span class="wl-ko">빠른 연락처</span><span class="wl-en">Quick Contact</span></span>
+    </div>
+    <div class="ct-strip">
+
+      <a class="ct-strip-item" href="tel:070-4190-6084">
+        <div class="ct-strip-icon phone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.42 2 2 0 0 1 3.89 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
           </svg>
         </div>
-        <div class="ct-method-name"><span class="wl-ko">평택 본부</span><span class="wl-en">Pyeongtaek HQ</span></div>
-        <div class="ct-method-desc">070-4190-6084</div>
+        <div class="ct-strip-body">
+          <div class="ct-strip-label"><span class="wl-ko">평택 본부</span><span class="wl-en">Pyeongtaek HQ</span></div>
+          <div class="ct-strip-val">070-4190-6084</div>
+          <div class="ct-strip-sub"><span class="wl-ko">월–금 09:00–18:00</span><span class="wl-en">Mon–Fri 9–6 PM</span></div>
+        </div>
       </a>
-      <a class="ct-method" href="tel:064-799-3707">
-        <div class="ct-method-icon phone">
+
+      <a class="ct-strip-item" href="tel:064-799-3707">
+        <div class="ct-strip-icon phone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.42 2 2 0 0 1 3.89 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
           </svg>
         </div>
-        <div class="ct-method-name"><span class="wl-ko">제주 월비</span><span class="wl-en">Jeju WOLBI</span></div>
-        <div class="ct-method-desc">064-799-3707</div>
+        <div class="ct-strip-body">
+          <div class="ct-strip-label"><span class="wl-ko">제주 월비</span><span class="wl-en">Jeju WOLBI</span></div>
+          <div class="ct-strip-val">064-799-3707</div>
+          <div class="ct-strip-sub"><span class="wl-ko">월–금 09:00–18:00</span><span class="wl-en">Mon–Fri 9–6 PM</span></div>
+        </div>
       </a>
-      <a class="ct-method" href="mailto:wolkorea@gmail.com">
-        <div class="ct-method-icon email">
+
+      <a class="ct-strip-item" href="mailto:wolkorea@gmail.com">
+        <div class="ct-strip-icon email">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
             <polyline points="22,6 12,13 2,6"/>
           </svg>
         </div>
-        <div class="ct-method-name">Email</div>
-        <div class="ct-method-desc">wolkorea@gmail.com</div>
+        <div class="ct-strip-body">
+          <div class="ct-strip-label">Email</div>
+          <div class="ct-strip-val">wolkorea@gmail.com</div>
+          <div class="ct-strip-sub"><span class="wl-ko">1–2 영업일 내 답변</span><span class="wl-en">Reply within 1–2 days</span></div>
+        </div>
       </a>
-      <a class="ct-method" href="https://www.youtube.com/@wolkorea" target="_blank" rel="noopener">
-        <div class="ct-method-icon youtube">
+
+      <a class="ct-strip-item" href="https://www.youtube.com/@wolkorea" target="_blank" rel="noopener">
+        <div class="ct-strip-icon yt">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
           </svg>
         </div>
-        <div class="ct-method-name"><span class="wl-ko">월코 유튜브</span><span class="wl-en">WOLKO YouTube</span></div>
-        <div class="ct-method-desc"><span class="wl-ko">사역 영상</span><span class="wl-en">Ministry Videos</span></div>
+        <div class="ct-strip-body">
+          <div class="ct-strip-label">YouTube</div>
+          <div class="ct-strip-val">WOLKO Korea</div>
+          <div class="ct-strip-sub"><span class="wl-ko">사역 영상</span><span class="wl-en">Ministry Videos</span></div>
+        </div>
       </a>
-      <a class="ct-method" href="https://www.youtube.com/@wordoflifebibleinstituteje1608" target="_blank" rel="noopener">
-        <div class="ct-method-icon youtube">
+
+      <a class="ct-strip-item" href="https://www.youtube.com/@wordoflifebibleinstituteje1608" target="_blank" rel="noopener">
+        <div class="ct-strip-icon yt">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
           </svg>
         </div>
-        <div class="ct-method-name"><span class="wl-ko">제주월비 유튜브</span><span class="wl-en">WOLBI Jeju YouTube</span></div>
-        <div class="ct-method-desc"><span class="wl-ko">제주 사역 영상</span><span class="wl-en">Jeju Ministry Videos</span></div>
+        <div class="ct-strip-body">
+          <div class="ct-strip-label">YouTube</div>
+          <div class="ct-strip-val">WOLBI Jeju</div>
+          <div class="ct-strip-sub"><span class="wl-ko">제주 사역 영상</span><span class="wl-en">Jeju Campus Videos</span></div>
+        </div>
       </a>
+
     </div>
 
     <!-- OFFICE CARDS -->
-    <p class="ct-section-title">
-      <span class="wl-ko">사무소 안내</span>
-      <span class="wl-en">Our Offices</span>
-    </p>
+    <div class="ct-sh">
+      <span class="ct-sh-label"><span class="wl-ko">사무소 안내</span><span class="wl-en">Our Offices</span></span>
+    </div>
     <div class="ct-offices">
 
       <!-- Pyeongtaek -->
       <div class="ct-office">
-        <div class="ct-office-top">
-          <div class="ct-office-badge">HQ · Pyeongtaek</div>
-          <h2><span class="wl-ko">평택 본부</span><span class="wl-en">Pyeongtaek Headquarters</span></h2>
-          <p><span class="wl-ko">한국생명의말씀협회 본부 사무소</span><span class="wl-en">Main administrative office of Word of Life Korea</span></p>
+        <div class="ct-office-accent"></div>
+        <div class="ct-office-head">
+          <div class="ct-office-badge-icon">
+            <svg viewBox="0 0 24 24" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          <div class="ct-office-head-text">
+            <div class="ct-office-tag">HQ · Pyeongtaek</div>
+            <h2><span class="wl-ko">평택 본부</span><span class="wl-en">Pyeongtaek Headquarters</span></h2>
+            <p><span class="wl-ko">한국생명의말씀협회 본부 사무소</span><span class="wl-en">Main administrative office of Word of Life Korea</span></p>
+          </div>
         </div>
         <div class="ct-office-body">
           <div class="ct-info-row">
@@ -324,8 +416,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <div>
               <div class="ct-info-label"><span class="wl-ko">주소</span><span class="wl-en">Address</span></div>
               <div class="ct-info-val">
-                <span class="wl-ko">경기도 평택시<br><small style="color:var(--s); font-weight:500; font-size:12px;">(정확한 주소는 문의 시 안내해 드립니다)</small></span>
-                <span class="wl-en">Pyeongtaek, Gyeonggi-do<br><small style="color:var(--s); font-weight:500; font-size:12px;">(Full address provided upon inquiry)</small></span>
+                <span class="wl-ko">경기도 평택시 <span style="font-size:12px;font-weight:500;color:var(--s);">(문의 시 상세 주소 안내)</span></span>
+                <span class="wl-en">Pyeongtaek, Gyeonggi-do <span style="font-size:12px;font-weight:500;color:var(--s);">(full address on inquiry)</span></span>
               </div>
             </div>
           </div>
@@ -370,10 +462,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <!-- Jeju -->
       <div class="ct-office">
-        <div class="ct-office-top">
-          <div class="ct-office-badge">Jeju · WOLBI</div>
-          <h2><span class="wl-ko">제주 월비</span><span class="wl-en">Jeju WOLBI</span></h2>
-          <p><span class="wl-ko">제주월비 및 제주 사역 담당 사무소</span><span class="wl-en">WOLBI Jeju & Jeju campus ministry office</span></p>
+        <div class="ct-office-accent"></div>
+        <div class="ct-office-head">
+          <div class="ct-office-badge-icon">
+            <svg viewBox="0 0 24 24" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+          </div>
+          <div class="ct-office-head-text">
+            <div class="ct-office-tag">Jeju · WOLBI</div>
+            <h2><span class="wl-ko">제주 월비</span><span class="wl-en">Jeju WOLBI</span></h2>
+            <p><span class="wl-ko">제주월비 및 제주 사역 담당 사무소</span><span class="wl-en">WOLBI Jeju &amp; Jeju campus ministry office</span></p>
+          </div>
         </div>
         <div class="ct-office-body">
           <div class="ct-info-row">
@@ -432,105 +533,38 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
     <!-- CONTACT FORM -->
-    <p class="ct-section-title">
-      <span class="wl-ko">문의 보내기</span>
-      <span class="wl-en">Send a Message</span>
-    </p>
+    <div class="ct-sh">
+      <span class="ct-sh-label"><span class="wl-ko">문의 보내기</span><span class="wl-en">Send a Message</span></span>
+    </div>
     <div class="ct-form-wrap">
       <form name="contact" method="POST" data-netlify="true" action="/contact/success"
             onsubmit="handleSubmit(event)">
         <input type="hidden" name="form-name" value="contact" />
         <input type="hidden" name="type" id="ct-type-val" value="general" />
 
-        <!-- 문의 유형 선택 -->
-        <p class="ct-type-label">
-          <span class="wl-ko">문의 유형 선택</span><span class="wl-en">Inquiry Type</span>
-        </p>
-        <div class="ct-type-grid" id="ctTypeGrid">
-
-          <div class="ct-type-card selected" data-value="general" onclick="selectType(this)">
-            <!-- message-square -->
-            <svg class="ct-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span class="ct-type-name-ko">일반 문의</span>
-            <span class="ct-type-name-en">General</span>
+        <!-- 문의 유형 드롭다운 -->
+        <div class="ct-dropdown-wrap">
+          <label class="ct-dropdown-label" for="ct-type-select">
+            <span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span>
+          </label>
+          <div class="ct-select-wrap">
+            <select id="ct-type-select" name="type-display" onchange="syncType(this.value)">
+              <option value="general">💬 일반 문의 / General Inquiry</option>
+              <option value="ministry">🤝 사역 협력 / Ministry Partnership</option>
+              <option value="wolbi">🎓 제주월비 입학 / WOLBI Admission</option>
+              <option value="camp">⛺ 캠프 신청 / Camp Registration</option>
+              <option value="mission">🌏 선교팀 / Mission Team</option>
+              <option value="give">❤️ 후원 / Giving</option>
+              <option value="prayer">📖 기도 제목 / Prayer Request</option>
+              <option value="other">✏️ 기타 / Other</option>
+            </select>
+            <div class="ct-select-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
           </div>
-
-          <div class="ct-type-card" data-value="ministry" onclick="selectType(this)">
-            <!-- users -->
-            <svg class="ct-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-            <span class="ct-type-name-ko">사역 협력</span>
-            <span class="ct-type-name-en">Partnership</span>
-          </div>
-
-          <div class="ct-type-card" data-value="wolbi" onclick="selectType(this)">
-            <!-- graduation-cap -->
-            <svg class="ct-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-            </svg>
-            <span class="ct-type-name-ko">제주월비 입학</span>
-            <span class="ct-type-name-en">WOLBI</span>
-          </div>
-
-          <div class="ct-type-card" data-value="camp" onclick="selectType(this)">
-            <!-- tent / triangle -->
-            <svg class="ct-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3L2 21h20L12 3z"/>
-              <path d="M10 21v-5a2 2 0 0 1 4 0v5"/>
-            </svg>
-            <span class="ct-type-name-ko">캠프 신청</span>
-            <span class="ct-type-name-en">Camp</span>
-          </div>
-
-          <div class="ct-type-card" data-value="mission" onclick="selectType(this)">
-            <!-- globe -->
-            <svg class="ct-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-            <span class="ct-type-name-ko">선교팀</span>
-            <span class="ct-type-name-en">Mission</span>
-          </div>
-
-          <div class="ct-type-card" data-value="give" onclick="selectType(this)">
-            <!-- heart -->
-            <svg class="ct-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-            <span class="ct-type-name-ko">후원</span>
-            <span class="ct-type-name-en">Giving</span>
-          </div>
-
-          <div class="ct-type-card" data-value="prayer" onclick="selectType(this)">
-            <!-- book-open -->
-            <svg class="ct-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-            <span class="ct-type-name-ko">기도 제목</span>
-            <span class="ct-type-name-en">Prayer</span>
-          </div>
-
-          <div class="ct-type-card" data-value="other" onclick="selectType(this)">
-            <!-- edit -->
-            <svg class="ct-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-            <span class="ct-type-name-ko">기타</span>
-            <span class="ct-type-name-en">Other</span>
-          </div>
-
         </div>
-        <hr class="ct-type-divider" />
 
         <!-- 기본 정보 -->
         <div class="ct-form-grid">
@@ -563,13 +597,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               placeholder="문의 내용을 자유롭게 작성해 주세요. / Please write your message freely."></textarea>
           </div>
         </div>
-        <button type="submit" class="ct-form-btn">
-          <span class="wl-ko">문의 보내기</span><span class="wl-en">Send Message</span>
-        </button>
-        <p class="ct-form-note">
-          <span class="wl-ko">📌 보내주신 문의는 영업일 기준 1–2일 내로 답변 드리겠습니다. 긴급한 사항은 전화로 연락해 주세요.</span>
-          <span class="wl-en">📌 We typically respond within 1–2 business days. For urgent matters, please call us directly.</span>
-        </p>
+
+        <div class="ct-form-footer">
+          <button type="submit" class="ct-form-btn">
+            <span class="wl-ko">문의 보내기</span><span class="wl-en">Send Message</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+          <p class="ct-form-note">
+            <span class="wl-ko">📌 보내주신 문의는 영업일 기준 1–2일 내로 답변 드리겠습니다. 긴급한 사항은 전화로 연락해 주세요.</span>
+            <span class="wl-en">📌 We typically respond within 1–2 business days. For urgent matters, please call us directly.</span>
+          </p>
+        </div>
+
       </form>
     </div>
 
@@ -579,10 +620,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </div><!-- end lang-root -->
 
 <script is:inline>
-function selectType(card) {
-  document.querySelectorAll('.ct-type-card').forEach(c => c.classList.remove('selected'));
-  card.classList.add('selected');
-  document.getElementById('ct-type-val').value = card.dataset.value;
+function syncType(val) {
+  document.getElementById('ct-type-val').value = val;
 }
 
 function handleSubmit(e) {
@@ -595,7 +634,7 @@ function handleSubmit(e) {
     body: new URLSearchParams(data).toString(),
   })
   .then(() => {
-    form.innerHTML = '<div style="text-align:center;padding:48px 0;"><div style="font-size:48px;margin-bottom:16px;">✅</div><p style="font-size:18px;font-weight:800;color:#004f68;" class="wl-ko">문의가 접수되었습니다.<br>곧 연락 드리겠습니다.</p><p style="font-size:18px;font-weight:800;color:#004f68;" class="wl-en">Your message has been received.<br>We\'ll be in touch soon.</p></div>';
+    form.innerHTML = '<div style="text-align:center;padding:56px 0;"><div style="font-size:52px;margin-bottom:16px;">✅</div><p style="font-size:18px;font-weight:800;color:#004f68;" class="wl-ko">문의가 접수되었습니다.<br>곧 연락 드리겠습니다.</p><p style="font-size:18px;font-weight:800;color:#004f68;" class="wl-en">Your message has been received.<br>We\'ll be in touch soon.</p></div>';
   })
   .catch(() => {
     alert('전송 중 오류가 발생했습니다. 이메일로 직접 연락해 주세요.\nAn error occurred. Please contact us via email.');
