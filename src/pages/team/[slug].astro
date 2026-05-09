@@ -178,13 +178,13 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 /* 두 번째 줄 */
 .mp-hero-title-em {
   display: block;
-  color: var(--c-light);
+  color: var(--c-white);
   line-height: 1.2;
   margin-top: 4px;
 }
 .mp-hero-title-em.ko {
   font-family: 'Noto Serif KR', serif;
-  font-weight: 500; font-style: normal;
+  font-weight: 500; font-style: italic;
   font-size: clamp(34px, 3.6vw, 55px);
 }
 .mp-hero-title-em.en {
@@ -736,22 +736,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       </h1>
 
       <p class="mp-hero-desc">
-        {d.hero_subtitle_ko || d.hero_subtitle_en ? (
-          <>
-            <span class="wl-ko">{d.hero_subtitle_ko || d.title_ko}</span>
-            <span class="wl-en">{d.hero_subtitle_en || d.title_en}</span>
-          </>
-        ) : hasBio ? (
-          <>
-            <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0, 90) + '…' : ''}</span>
-            <span class="wl-en">{d.bio_en ? d.bio_en.substring(0, 100) + '…' : ''}</span>
-          </>
-        ) : (
-          <>
-            <span class="wl-ko">복음으로 한국의 다음 세대를 섬깁니다.</span>
-            <span class="wl-en">Serving Korea's next generation through the Gospel.</span>
-          </>
-        )}
+        <span class="wl-ko">{d.title_ko}</span>
+        <span class="wl-en">{d.title_en}</span>
       </p>
 
       <div class="mp-cta-row">
