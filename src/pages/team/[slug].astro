@@ -607,87 +607,108 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 .tn-stw-icon { transition: transform 0.25s; color: #a0b8c4; }
 .tn-stw-toggle.is-open .tn-stw-icon { transform: rotate(180deg); }
 
-/* ── MOBILE: 플로팅 버튼 + 바텀시트 ──────────────── */
-.tn-fab { display: none; }
-.tn-sheet-backdrop { display: none; }
-.tn-sheet { display: none; }
+/* ── MOBILE: 스티키 아바타 스트립 ──────────────── */
+.tn-mobile-strip { display: none; }
 
 @media (max-width: 768px) {
-  .tn-sheet-backdrop {
+  .tn-mobile-strip {
     display: block;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 301;
-    backdrop-filter: blur(2px);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
+    position: sticky;
+    top: 76px; /* fixed nav (14px offset + 62px height) */
+    z-index: 150;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid #dce8ee;
+    box-shadow: 0 2px 12px rgba(0,40,60,0.08);
   }
-  .tn-sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
-
-  .tn-sheet {
-    display: flex;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    max-height: 72vh;
-    background: #fff;
-    border-radius: 20px 20px 0 0;
-    z-index: 302;
-    flex-direction: column;
-    transform: translateY(100%);
-    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 -8px 40px rgba(0,30,50,0.18);
-  }
-  .tn-sheet.is-open { transform: translateY(0); }
-
-  .tn-fab {
+  .tn-strip-scroll {
     display: flex;
     align-items: center;
-    justify-content: center;
-    position: fixed;
-    bottom: 24px; right: 20px;
-    width: 52px; height: 52px;
-    border-radius: 50%;
-    background: #0d1e28;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    z-index: 300;
-    box-shadow: 0 4px 20px rgba(0,30,50,0.35);
-    transition: transform 0.2s, background 0.2s;
+    overflow-x: auto;
+    gap: 0;
+    padding: 8px 12px 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  .tn-fab:hover { transform: scale(1.08); }
-  .tn-fab.is-open { background: #007ea1; }
+  .tn-strip-scroll::-webkit-scrollbar { display: none; }
 
-  .tn-sheet-handle {
-    width: 40px; height: 4px;
-    background: #dce8ee;
-    border-radius: 2px;
-    margin: 12px auto 0;
-    flex-shrink: 0;
-  }
-  .tn-sheet-header {
-    padding: 12px 20px 10px;
-    border-bottom: 1px solid #dce8ee;
-    font-size: 11px;
+  .tn-strip-sep {
+    font-size: 8px;
     font-weight: 700;
     letter-spacing: .1em;
     text-transform: uppercase;
-    color: #5b8fa8;
+    color: #b8cdd8;
+    padding: 0 6px 0 4px;
     flex-shrink: 0;
+    writing-mode: horizontal-tb;
+    white-space: nowrap;
+    align-self: center;
   }
-  .tn-sheet-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 6px 0 32px;
-    -webkit-overflow-scrolling: touch;
+  .tn-strip-sep:first-child { padding-left: 0; }
+
+  .tn-strip-divider {
+    width: 1px; height: 32px;
+    background: #dce8ee;
+    flex-shrink: 0;
+    margin: 0 6px;
   }
-  /* 시트 내 아이템은 조금 더 넓게 */
-  .tn-sheet .tn-item { padding: 9px 20px; }
-  .tn-sheet .tn-campus-label { padding: 10px 20px 4px; }
-  .tn-sheet .tn-stw-toggle { padding: 10px 20px 6px; }
-  .tn-sheet .tn-avatar { width: 38px; height: 38px; }
-  .tn-sheet .tn-avatar-placeholder { width: 38px; height: 38px; font-size: 14px; }
+
+  .tn-strip-item {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    padding: 2px 5px 0;
+    border-radius: 10px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .tn-strip-item:hover { background: rgba(0,126,161,0.07); }
+
+  .tn-strip-avatar-wrap {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 2px solid #dce8ee;
+    overflow: hidden;
+    background: #c5dce8;
+    flex-shrink: 0;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .tn-strip-item.is-active .tn-strip-avatar-wrap {
+    border-color: #007ea1;
+    border-width: 2.5px;
+    transform: scale(1.1);
+    box-shadow: 0 2px 10px rgba(0,126,161,0.28);
+  }
+  .tn-strip-avatar {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center top;
+    display: block;
+  }
+  .tn-strip-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, #a0b8c4, #7a9aaa);
+  }
+
+  .tn-strip-name {
+    font-size: 9px;
+    font-weight: 600;
+    color: #7a9aaa;
+    max-width: 46px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1;
+  }
+  .tn-strip-item.is-active .tn-strip-name {
+    color: #007ea1;
+    font-weight: 700;
+  }
 }
 </style>
 
@@ -703,6 +724,101 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       <span class="wl-en">Back to Our Team</span>
     </a>
   </div>
+
+  <!-- ── Mobile: 스티키 아바타 스트립 ──────────────── -->
+  <div class="tn-mobile-strip" id="tnMobileStrip">
+    <div class="tn-strip-scroll" id="tnStripScroll">
+      {(() => {
+        let lastC = '';
+        const allStrip = [...sidebarTeam, ...sidebarSTW];
+        const hasStwInTeam = sidebarSTW.length > 0;
+        const missionaryElems = sidebarTeam.map(p => {
+          const show = p.data.campus !== lastC;
+          if (show) lastC = p.data.campus;
+          const campusKoShort = p.data.campus === 'pyeongtaek' ? '평택' : '제주';
+          const campusEnShort = p.data.campus === 'pyeongtaek' ? 'PTK' : 'JEJU';
+          const isActive = p.slug === person.slug;
+          const firstName = (p.data.name_ko || p.data.name_en || '?').split(' & ')[0];
+          const initial = firstName[0];
+          return (
+            <>
+              {show && (
+                <span class="tn-strip-sep">
+                  <span class="wl-ko">{campusKoShort}</span>
+                  <span class="wl-en">{campusEnShort}</span>
+                </span>
+              )}
+              <a href={`/team/${p.slug}`} class={`tn-strip-item${isActive ? ' is-active' : ''}`}>
+                <div class="tn-strip-avatar-wrap">
+                  {p.data.photo_url
+                    ? <img class="tn-strip-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                    : null}
+                  <div class="tn-strip-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</div>
+                </div>
+                <span class="tn-strip-name">
+                  <span class="wl-ko">{firstName.split(' ')[0]}</span>
+                  <span class="wl-en">{p.data.name_en.split(' & ')[0].split(' ')[0]}</span>
+                </span>
+              </a>
+            </>
+          );
+        });
+        if (!hasStwInTeam) return missionaryElems;
+        const stwElems = (() => {
+          let lastSC = '';
+          return sidebarSTW.map(p => {
+            const show = p.data.campus !== lastSC;
+            if (show) lastSC = p.data.campus;
+            const campusKoShort = p.data.campus === 'pyeongtaek' ? '평택' : '제주';
+            const campusEnShort = p.data.campus === 'pyeongtaek' ? 'PTK' : 'JEJU';
+            const isActive = p.slug === person.slug;
+            const firstName = (p.data.name_ko || p.data.name_en || '?').split(' & ')[0];
+            const initial = firstName[0];
+            return (
+              <>
+                {show && (
+                  <span class="tn-strip-sep" style="color:#c5d8e0;">
+                    <span class="wl-ko">{campusKoShort}</span>
+                    <span class="wl-en">{campusEnShort}</span>
+                  </span>
+                )}
+                <a href={`/team/${p.slug}`} class={`tn-strip-item${isActive ? ' is-active' : ''}`} style="opacity:0.8;">
+                  <div class="tn-strip-avatar-wrap" style="width:34px;height:34px;">
+                    {p.data.photo_url
+                      ? <img class="tn-strip-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                      : null}
+                    <div class="tn-strip-placeholder" style={`font-size:12px;${p.data.photo_url ? 'display:none' : ''}`}>{initial}</div>
+                  </div>
+                  <span class="tn-strip-name" style="font-size:8px;">
+                    <span class="wl-ko">{firstName.split(' ')[0]}</span>
+                    <span class="wl-en">{p.data.name_en.split(' & ')[0].split(' ')[0]}</span>
+                  </span>
+                </a>
+              </>
+            );
+          });
+        })();
+        return [...missionaryElems, <div class="tn-strip-divider"/>, ...stwElems];
+      })()}
+    </div>
+  </div>
+  
+  <script>
+    (function() {
+      var scroll = document.getElementById('tnStripScroll');
+      if (!scroll) return;
+      var active = scroll.querySelector('.tn-strip-item.is-active');
+      if (active) {
+        // 현재 아이템을 가운데로 스크롤
+        setTimeout(function() {
+          var stripW = scroll.offsetWidth;
+          var itemLeft = active.offsetLeft;
+          var itemW = active.offsetWidth;
+          scroll.scrollLeft = itemLeft - (stripW / 2) + (itemW / 2);
+        }, 0);
+      }
+    })();
+  </script>
 
   <!-- Hero -->
   <section class="mp-hero">
@@ -1112,131 +1228,5 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   })();
 </script>
 
-<!-- ── Mobile: FAB + Bottom Sheet ──────────────────── -->
-<button class="tn-fab" id="tnFab" aria-label="팀원 목록">
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-    <circle cx="8" cy="7" r="3" stroke="white" stroke-width="1.8"/>
-    <circle cx="15" cy="7" r="2.5" stroke="white" stroke-width="1.6" opacity=".7"/>
-    <path d="M2 18c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-    <path d="M15 13c2.21 0 4 1.79 4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
-  </svg>
-</button>
-<div class="tn-sheet-backdrop" id="tnBackdrop"></div>
-<div class="tn-sheet" id="tnSheet">
-  <div class="tn-sheet-handle"></div>
-  <div class="tn-sheet-header">
-    <span class="wl-ko">섬기는이</span>
-    <span class="wl-en">Our Team</span>
-  </div>
-  <div class="tn-sheet-scroll">
-    {(() => {
-      let lastC = '';
-      return sidebarTeam.map(p => {
-        const cl = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
-        const cle = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
-        const show = p.data.campus !== lastC;
-        if (show) lastC = p.data.campus;
-        const active = p.slug === person.slug;
-        const init = (p.data.name_ko || p.data.name_en || '?')[0];
-        return (
-          <>
-            {show && <div class="tn-campus-label"><span class="wl-ko">{cl}</span><span class="wl-en">{cle}</span></div>}
-            <a href={`/team/${p.slug}`} class={`tn-item${active ? ' is-active' : ''}`}>
-              {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-              <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{init}</span>
-              <div>
-                <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
-                <div class="tn-role">{p.data.role_badge}</div>
-              </div>
-            </a>
-          </>
-        );
-      });
-    })()}
-    {sidebarSTW.length > 0 && (
-      <div class="tn-stw-wrap">
-        <button class="tn-stw-toggle" id="tnStwToggle2">
-          <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
-            <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
-            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;">
-              <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </button>
-        <div class="tn-stw-list" id="tnStwList2" style="display:none;">
-          {(() => {
-            let lc = '';
-            return sidebarSTW.map(p => {
-              const sc = p.data.campus !== lc;
-              if (sc) lc = p.data.campus;
-              const cl = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
-              const cle = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
-              const active = p.slug === person.slug;
-              const init = (p.data.name_ko || p.data.name_en || '?')[0];
-              return (
-                <>
-                  {sc && <div class="tn-campus-label" style="color:#c5d8e0;"><span class="wl-ko">{cl}</span><span class="wl-en">{cle}</span></div>}
-                  <a href={`/team/${p.slug}`} class={`tn-item${active ? ' is-active' : ''}`}>
-                    {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-                    <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{init}</span>
-                    <div>
-                      <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
-                      <div class="tn-role">{p.data.role_badge}</div>
-                    </div>
-                  </a>
-                </>
-              );
-            });
-          })()}
-        </div>
-      </div>
-    )}
-  </div>
-</div>
-
-<script>
-  (function() {
-    var fab = document.getElementById('tnFab');
-    var backdrop = document.getElementById('tnBackdrop');
-    var sheet = document.getElementById('tnSheet');
-    if (!fab || !sheet) return;
-
-    function openSheet() {
-      sheet.classList.add('is-open');
-      backdrop.classList.add('is-open');
-      fab.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
-      // 현재 항목 스크롤
-      var active = sheet.querySelector('.tn-item.is-active');
-      if (active) setTimeout(function() { active.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 350);
-    }
-    function closeSheet() {
-      sheet.classList.remove('is-open');
-      backdrop.classList.remove('is-open');
-      fab.classList.remove('is-open');
-      document.body.style.overflow = '';
-    }
-
-    fab.addEventListener('click', function() {
-      sheet.classList.contains('is-open') ? closeSheet() : openSheet();
-    });
-    backdrop.addEventListener('click', closeSheet);
-
-    // 인턴 토글 (바텀시트용)
-    var st2 = document.getElementById('tnStwToggle2');
-    var sl2 = document.getElementById('tnStwList2');
-    if (st2 && sl2) {
-      var open2 = localStorage.getItem('tn_stw_open') === '1';
-      if (sl2.querySelector('.tn-item.is-active')) open2 = true;
-      if (open2) { sl2.style.display = ''; st2.classList.add('is-open'); }
-      st2.addEventListener('click', function() {
-        open2 = !open2;
-        sl2.style.display = open2 ? '' : 'none';
-        st2.classList.toggle('is-open', open2);
-        localStorage.setItem('tn_stw_open', open2 ? '1' : '0');
-      });
-    }
-  })();
-</script>
 
 </BaseLayout>
