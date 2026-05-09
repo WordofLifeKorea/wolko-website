@@ -1072,10 +1072,13 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     if (!sidebar || !toggle) return;
 
     var SIDEBAR_W = window.innerWidth <= 1100 ? '176px' : '200px';
+    var isMobile = window.innerWidth <= 768;
 
     function applyState(isCollapsed) {
       sidebar.classList.toggle('is-collapsed', isCollapsed);
-      if (wrap) wrap.style.paddingRight = isCollapsed ? '12px' : SIDEBAR_W;
+      if (wrap && !isMobile) {
+        wrap.style.paddingRight = isCollapsed ? '12px' : SIDEBAR_W;
+      }
     }
 
     var collapsed = localStorage.getItem('tn_collapsed') === '1';
