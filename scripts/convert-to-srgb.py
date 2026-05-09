@@ -24,8 +24,10 @@ def convert_image(path):
         if icc_data:
             src_profile = ImageCms.getOpenProfile(io.BytesIO(icc_data))
             src_name = ImageCms.getProfileDescription(src_profile).strip()
-            # 이미 sRGB면 스킵
-            if 'sRGB' in src_name or 'srgb' in src_name.lower():
+            # 이미 순수 sRGB면 스킵 (DCI-P3 D65 with sRGB Transfer 같은 케이스는 변환 필요)
+            is_pure_srgb = (src_name.lower() in ('srgb', 'srgb iec61966-2.1', 'srgb built-in')
+                            or src_name == 'sRGB IEC61966-2.1')
+            if is_pure_srgb:
                 print(f'  ⏭  {filename} — 이미 sRGB, 건너뜀')
                 return
 
