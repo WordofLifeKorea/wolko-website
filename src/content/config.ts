@@ -35,6 +35,9 @@ const team = defineCollection({
     bio_en:   z.string().optional(),
     bio_ko_2: z.string().optional(),
     bio_en_2: z.string().optional(),
+    // 기도제목
+    prayer_ko: z.string().optional(),
+    prayer_en: z.string().optional(),
   }),
 });
 

@@ -34,6 +34,8 @@ const initialData = JSON.stringify({
   photo_url:        d.photo_url || '',
   photo_story:      d.photo_story || '',
   photo_url_2:      d.photo_url_2 || '',
+  prayer_ko:        d.prayer_ko || '',
+  prayer_en:        d.prayer_en || '',
 });
 
 const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
@@ -597,6 +599,25 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
     )}
 
+    <!-- ⑥ 기도제목 -->
+    <div class="edit-section">
+      <div class="section-header">
+        <div class="section-icon">🙏</div>
+        <div>
+          <div class="section-title">기도제목</div>
+          <div class="section-sub">후원자들과 함께 나눌 기도 요청</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label"><span class="field-lang ko">KO</span> 한국어</label>
+        <textarea class="field-textarea" id="f-prayer_ko" rows="5" placeholder="예: 평택 캠퍼스 청소년 여름 캠프를 위해 기도해 주세요...">{d.prayer_ko || ''}</textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label"><span class="field-lang en">EN</span> English</label>
+        <textarea class="field-textarea" id="f-prayer_en" rows="5" placeholder="e.g. Please pray for the summer youth camp at Pyeongtaek...">{d.prayer_en || ''}</textarea>
+      </div>
+    </div>
+
   </main>
 
   <!-- ── SAVE BAR ──────────────────────────────────────────────── -->
@@ -753,6 +774,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         'hero_subtitle_ko', 'hero_subtitle_en',
         'verse_ref', 'verse_ko', 'verse_en',
         'bio_ko', 'bio_en', 'bio_ko_2', 'bio_en_2',
+        'prayer_ko', 'prayer_en',
       ];
       for (const fid of fids) {
         const v = getFieldVal(`f-${fid}`);
