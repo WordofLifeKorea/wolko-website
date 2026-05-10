@@ -8,11 +8,28 @@ try {
   reports = (await getCollection('mission_report')).sort(
     (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
   );
-} catch (e) {
-  // collection may not have entries yet
-}
+} catch (e) {}
 
 const latestReport = reports[0] ?? null;
+
+// Group reports by year → quarter
+const byYear: Record<string, Record<string, any>> = {};
+for (const r of reports) {
+  const d = new Date(r.data.date);
+  const year = d.getFullYear().toString();
+  const month = d.getMonth(); // 0-indexed
+  const quarter = month < 3 ? 'Q1' : month < 6 ? 'Q2' : month < 9 ? 'Q3' : 'Q4';
+  if (!byYear[year]) byYear[year] = {};
+  byYear[year][quarter] = r;
+}
+const years = Object.keys(byYear).sort((a, b) => parseInt(b) - parseInt(a));
+
+const QUARTERS: { key: string; ko: string; en: string }[] = [
+  { key: 'Q1', ko: '1분기', en: '1st Quarter' },
+  { key: 'Q2', ko: '2분기', en: '2nd Quarter' },
+  { key: 'Q3', ko: '3분기', en: '3rd Quarter' },
+  { key: 'Q4', ko: '4분기', en: '4th Quarter' },
+];
 ---
 
 <BaseLayout
@@ -55,18 +72,6 @@ const latestReport = reports[0] ?? null;
   }
   .hero-inner h1 em { font-style:normal; color:#9ae3ff; }
   .hero-sub { font-size:16px; line-height:1.88; color:rgba(255,255,255,0.8); max-width:580px; margin:0 auto; }
-
-  /* Archive row */
-  .archive-bar { background:var(--c-bg); border-bottom:1px solid var(--c-line); padding:18px 24px; }
-  .archive-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-  .archive-label { font-size:12px; font-weight:800; color:var(--c-deep); text-transform:uppercase; letter-spacing:0.06em; margin-right:4px; }
-  .archive-btn {
-    padding:8px 16px; border-radius:999px; border:1px solid var(--c-line); background:var(--c-white);
-    font-size:12.5px; font-weight:700; color:var(--c-muted); cursor:pointer;
-    transition:background .18s, border-color .18s, color .18s;
-    white-space:nowrap;
-  }
-  .archive-btn:hover, .archive-btn.active { background:var(--c-deep); border-color:var(--c-deep); color:#fff; }
 
   /* FLIPBOOK AREA */
   .flipbook-section { padding:48px 24px 80px; background:var(--c-white); }
@@ -153,7 +158,7 @@ const latestReport = reports[0] ?? null;
     background: #f5f2ee;
   }
 
-  /* Side arrow buttons */
+  /* Side arrow buttons — shown on both desktop and mobile */
   .fb-arrow-btn {
     position: absolute;
     top: 50%; transform: translateY(-50%);
@@ -176,7 +181,11 @@ const latestReport = reports[0] ?? null;
   .fb-arrow-btn:disabled { opacity: 0.12; cursor: default; }
   #fb-arrow-prev { left: 10px; }
   #fb-arrow-next { right: 10px; }
-  @media (max-width: 768px) { .fb-arrow-btn { display: none; } }
+  @media (max-width: 768px) {
+    .fb-arrow-btn { width: 28px; height: 50px; border-radius: 6px; opacity: 0.55; }
+    #fb-arrow-prev { left: 6px; }
+    #fb-arrow-next { right: 6px; }
+  }
 
   .fb-loading-indicator {
     position:absolute; inset:0; display:flex; flex-direction:column;
@@ -194,65 +203,138 @@ const latestReport = reports[0] ?? null;
     width:100%; height:100%;
     transition: opacity 0.18s ease;
   }
-  /* spread-fade-out는 JS로 동적 추가 → :global */
   :global(#flip-book.spread-fade-out) { opacity: 0; }
 
-  /* JS로 동적 생성한 요소 → Astro 스코프 적용 안 됨 → :global() 필수 */
+  /* JS-created elements → must use :global() */
   :global(.spread-img) {
-    display: block;
-    width: auto;
-    height: auto;
+    display: block; width: auto; height: auto;
     max-height: var(--page-maxh, 40vh);
-    user-select: none;
-    -webkit-user-drag: none;
-    flex-shrink: 1;
-    transition: max-height 0.2s ease;
+    user-select: none; -webkit-user-drag: none;
+    flex-shrink: 1; transition: max-height 0.2s ease;
   }
   :global(.spread-img-left) {
     max-width: 50%;
     box-shadow: -3px 0 16px rgba(0,0,0,0.14), inset -6px 0 14px rgba(0,0,0,0.05);
     border-radius: 2px 0 0 2px;
-    border: 1px solid rgba(0,0,0,0.07);
-    border-right: none;
+    border: 1px solid rgba(0,0,0,0.07); border-right: none;
   }
   :global(.spread-img-right) {
     max-width: 50%;
     box-shadow: 3px 0 16px rgba(0,0,0,0.14), inset 6px 0 14px rgba(0,0,0,0.05);
     border-radius: 0 2px 2px 0;
-    border: 1px solid rgba(0,0,0,0.07);
-    border-left: none;
+    border: 1px solid rgba(0,0,0,0.07); border-left: none;
   }
   :global(.spread-img-cover) {
     max-width: 48%;
     box-shadow: 0 6px 32px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10);
-    border-radius: 2px;
-    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 2px; border: 1px solid rgba(0,0,0,0.07);
   }
 
-  /* Archive list */
-  .archive-section { padding:56px 24px 80px; background:var(--c-bg); }
-  .archive-grid { max-width:1100px; margin:0 auto; }
-  .archive-grid-title { font-size:18px; font-weight:800; color:var(--c-text); margin-bottom:24px; }
-  .archive-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
-  .archive-card {
-    background:var(--c-white); border:1px solid var(--c-line); border-radius:var(--r-lg);
-    padding:22px 20px; cursor:pointer; transition:transform .2s, box-shadow .2s, border-color .2s;
-    display:flex; flex-direction:column; gap:8px;
+  /* Dot navigation bar */
+  .fb-dots-bar {
+    display: flex; align-items: center; justify-content: center;
+    padding: 10px 20px; gap: 6px; min-height: 38px; flex-wrap: wrap;
+    background: rgba(0,0,0,0.025); border-top: 1px solid rgba(0,0,0,0.06);
   }
-  .archive-card:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(0,79,104,0.12); border-color:rgba(0,79,104,0.22); }
-  .archive-card.current { border-color:var(--c-deep); background:rgba(0,79,104,0.04); }
-  .ac-icon { font-size:28px; }
-  .ac-title { font-size:14px; font-weight:800; color:var(--c-text); line-height:1.3; }
-  .ac-date { font-size:12px; color:var(--c-muted); }
-  .ac-badge {
-    display:inline-block; padding:3px 10px; border-radius:999px;
-    background:rgba(0,79,104,0.08); color:var(--c-deep); font-size:11px; font-weight:800;
-    width:fit-content;
+  :global(.fb-dot) {
+    width: 8px; height: 8px; border-radius: 50%; border: none;
+    background: rgba(0,0,0,0.15); cursor: pointer; padding: 0; flex-shrink: 0;
+    transition: background 0.18s, width 0.22s;
+  }
+  :global(.fb-dot.active) {
+    background: var(--c-deep); width: 22px; border-radius: 999px;
+  }
+  :global(.fb-dot:hover:not(.active)) { background: rgba(0,79,104,0.38); }
+  :global(.fb-dots-text) {
+    font-size: 12px; font-weight: 700; color: var(--c-muted); letter-spacing: 0.04em;
   }
 
-  @media (max-width:768px) {
-    .fb-controls { padding:10px 14px; }
-    .fb-fullscreen-btn, .fb-zoom-btns { display:none; }
+  /* ── Archive: Year/Quarter Grid ── */
+  .archive-section { padding: 56px 24px 80px; background: var(--c-bg); }
+  .archive-inner { max-width: 1100px; margin: 0 auto; }
+  .archive-section-title {
+    font-size: 18px; font-weight: 800; color: var(--c-text); margin-bottom: 24px;
+  }
+
+  /* Year tabs */
+  .year-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+  .year-tab {
+    padding: 9px 22px; border-radius: 999px;
+    border: 1.5px solid var(--c-line); background: var(--c-white);
+    font-size: 14px; font-weight: 700; color: var(--c-muted);
+    cursor: pointer; transition: all 0.18s;
+  }
+  .year-tab:hover, .year-tab.active {
+    background: var(--c-deep); border-color: var(--c-deep); color: #fff;
+  }
+
+  /* Year grid panel */
+  .year-grid { display: none; }
+  .year-grid.active { display: block; }
+
+  /* Quarter card grid */
+  .quarter-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  @media (max-width: 700px) { .quarter-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* Individual quarter card */
+  .quarter-card {
+    background: var(--c-white); border: 1.5px solid var(--c-line);
+    border-radius: var(--r-lg); padding: 24px 16px 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    text-align: center; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+  .quarter-card.has-pdf { cursor: pointer; }
+  .quarter-card.has-pdf:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 32px rgba(0,79,104,0.13);
+    border-color: rgba(0,79,104,0.28);
+  }
+  .quarter-card.no-pdf-slot { opacity: 0.5; cursor: default; }
+  .quarter-card.current {
+    border-color: var(--c-deep); background: rgba(0,79,104,0.04);
+  }
+
+  /* Mini book illustration */
+  .qc-book { position: relative; width: 64px; height: 84px; display: flex; }
+  .qc-book-spine {
+    width: 13px; height: 84px; flex-shrink: 0;
+    background: linear-gradient(180deg, #004f68 0%, #0a5b76 100%);
+    border-radius: 3px 0 0 3px;
+    box-shadow: inset -2px 0 4px rgba(0,0,0,0.15);
+  }
+  .qc-book-cover {
+    flex: 1; height: 84px;
+    background: linear-gradient(135deg, #e8f4f8 0%, #cce5f0 100%);
+    border: 1px solid rgba(0,79,104,0.18); border-left: none;
+    border-radius: 0 4px 4px 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; box-shadow: 2px 2px 10px rgba(0,0,0,0.11);
+  }
+  .qc-q-label { font-size: 14px; font-weight: 900; color: var(--c-deep); }
+  .qc-y-label { font-size: 10px; font-weight: 700; color: var(--c-muted); }
+  .no-pdf-slot .qc-book-spine {
+    background: linear-gradient(180deg, #b0b8be 0%, #8a9299 100%);
+  }
+  .no-pdf-slot .qc-book-cover {
+    background: linear-gradient(135deg, #eff0f1 0%, #e2e4e6 100%);
+    border-color: rgba(0,0,0,0.10);
+  }
+  .no-pdf-slot .qc-q-label { color: #8a9299; }
+
+  .qc-label { font-size: 13px; font-weight: 700; color: var(--c-text); line-height: 1.3; }
+  .qc-date { font-size: 11px; color: var(--c-muted); }
+  .qc-empty-label { font-size: 11px; color: var(--c-muted); }
+  .qc-current-badge {
+    display: inline-block; padding: 2px 9px; border-radius: 999px;
+    background: rgba(0,79,104,0.10); color: var(--c-deep);
+    font-size: 10px; font-weight: 800;
+  }
+
+  @media (max-width: 768px) {
+    .fb-controls { padding: 10px 14px; }
+    .fb-fullscreen-btn, .fb-zoom-btns { display: none; }
   }
 </style>
 
@@ -282,15 +364,15 @@ const latestReport = reports[0] ?? null;
       <>
         <div class="report-meta">
           <div>
-            <div class="report-title">
+            <div class="report-title" id="report-title">
               <span class="wl-ko">{latestReport.data.title_ko}</span>
               <span class="wl-en">{latestReport.data.title_en}</span>
             </div>
-            <div class="report-date">
+            <div class="report-date" id="report-date">
               {new Date(latestReport.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}
             </div>
           </div>
-          <a href={latestReport.data.pdf_url} target="_blank" rel="noopener" class="download-btn">
+          <a href={latestReport.data.pdf_url} target="_blank" rel="noopener" class="download-btn" id="report-download">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v7M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span class="wl-ko">PDF 다운로드</span><span class="wl-en">Download PDF</span>
           </a>
@@ -299,17 +381,17 @@ const latestReport = reports[0] ?? null;
         <div id="flipbook-container" data-pdf={latestReport.data.pdf_url}>
           <div class="fb-controls">
             <div class="fb-nav">
-              <button class="fb-btn" id="fb-first" title="처음 페이지">
+              <button class="fb-btn" id="fb-first" title="처음 페이지" disabled>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 2v10M5 7l5-4v8L5 7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
-              <button class="fb-btn" id="fb-prev" title="이전 페이지">
+              <button class="fb-btn" id="fb-prev" title="이전 페이지" disabled>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L4 7l5-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
               <span class="fb-page-info" id="fb-page-info">1 / —</span>
-              <button class="fb-btn" id="fb-next" title="다음 페이지">
+              <button class="fb-btn" id="fb-next" title="다음 페이지" disabled>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l5 4-5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
-              <button class="fb-btn" id="fb-last" title="마지막 페이지">
+              <button class="fb-btn" id="fb-last" title="마지막 페이지" disabled>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 2v10M9 7L4 3v8l5-4z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
@@ -329,10 +411,10 @@ const latestReport = reports[0] ?? null;
           </div>
           <div id="spread-viewport">
             <button class="fb-arrow-btn" id="fb-arrow-prev" title="이전 페이지" disabled>
-              <svg width="12" height="20" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M8 2L2 9l6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <button class="fb-arrow-btn" id="fb-arrow-next" title="다음 페이지" disabled>
-              <svg width="12" height="20" viewBox="0 0 12 20" fill="none"><path d="M2 2l8 8-8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M2 2l6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div id="fb-loading" class="fb-loading-indicator">
               <div class="fb-spinner"></div>
@@ -343,6 +425,8 @@ const latestReport = reports[0] ?? null;
             </div>
             <div id="flip-book"></div>
           </div>
+          <!-- Dot / page navigation bar -->
+          <div class="fb-dots-bar" id="fb-dots"></div>
         </div>
       </>
     ) : (
@@ -357,35 +441,78 @@ const latestReport = reports[0] ?? null;
   </div>
 </section>
 
-{/* Archive */}
-{reports.length > 1 && (
+{/* Archive — Year / Quarter Grid */}
+{reports.length > 0 && (
   <section class="archive-section">
-    <div class="archive-grid">
-      <div class="archive-grid-title">
-        <span class="wl-ko">지난 선교보고 보기</span>
-        <span class="wl-en">Previous Reports</span>
+    <div class="archive-inner">
+      <div class="archive-section-title">
+        <span class="wl-ko">연도별 선교보고 소식지</span>
+        <span class="wl-en">Mission Reports by Year</span>
       </div>
-      <div class="archive-list" id="archive-list">
-        {reports.map((r, i) => (
-          <div
-            class={`archive-card${i === 0 ? ' current' : ''}`}
-            data-pdf={r.data.pdf_url}
-            data-title-ko={r.data.title_ko}
-            data-title-en={r.data.title_en}
-            data-date={r.data.date}
-          >
-            <div class="ac-icon">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="5" y="4" width="18" height="22" rx="3" stroke="#004f68" stroke-width="1.6"/><path d="M10 11h8M10 15h8M10 19h5" stroke="#004f68" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </div>
-            <div class="ac-title">
-              <span class="wl-ko">{r.data.title_ko}</span>
-              <span class="wl-en">{r.data.title_en}</span>
-            </div>
-            <div class="ac-date">{new Date(r.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}</div>
-            {i === 0 && <span class="ac-badge"><span class="wl-ko">최신</span><span class="wl-en">Latest</span></span>}
-          </div>
+
+      {/* Year tabs */}
+      <div class="year-tabs" id="year-tabs">
+        {years.map((yr, i) => (
+          <button class={`year-tab${i === 0 ? ' active' : ''}`} data-year={yr}>
+            <span class="wl-ko">{yr}년</span>
+            <span class="wl-en">{yr}</span>
+          </button>
         ))}
       </div>
+
+      {/* Per-year quarter grids */}
+      {years.map((yr, yi) => (
+        <div class={`year-grid${yi === 0 ? ' active' : ''}`} data-year-grid={yr}>
+          <div class="quarter-grid">
+            {QUARTERS.map((q) => {
+              const r = byYear[yr]?.[q.key] ?? null;
+              const isCurrent = r && r === latestReport;
+              return (
+                <div
+                  class={[
+                    'quarter-card',
+                    r ? 'has-pdf' : 'no-pdf-slot',
+                    isCurrent ? 'current' : ''
+                  ].filter(Boolean).join(' ')}
+                  data-pdf={r?.data.pdf_url ?? ''}
+                  data-title-ko={r?.data.title_ko ?? ''}
+                  data-title-en={r?.data.title_en ?? ''}
+                  data-date={r?.data.date ?? ''}
+                >
+                  <div class="qc-book">
+                    <div class="qc-book-spine"></div>
+                    <div class="qc-book-cover">
+                      <span class="qc-q-label">{q.key}</span>
+                      <span class="qc-y-label">{yr}</span>
+                    </div>
+                  </div>
+                  <div class="qc-label">
+                    <span class="wl-ko">{q.ko}</span>
+                    <span class="wl-en">{q.en}</span>
+                  </div>
+                  {r && (
+                    <div class="qc-date">
+                      {new Date(r.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}
+                    </div>
+                  )}
+                  {!r && (
+                    <div class="qc-empty-label">
+                      <span class="wl-ko">준비 중</span>
+                      <span class="wl-en">Coming Soon</span>
+                    </div>
+                  )}
+                  {isCurrent && (
+                    <span class="qc-current-badge">
+                      <span class="wl-ko">현재 보는 중</span>
+                      <span class="wl-en">Viewing</span>
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   </section>
 )}
@@ -400,12 +527,13 @@ const latestReport = reports[0] ?? null;
   var DB_NAME      = 'wolko-pdf-v4';
   var STORE_NAME   = 'pages';
   var isMobile     = window.innerWidth < 768;
-  var SCALE        = isMobile ? 2.0 : 3.0;  /* 렌더 품질: 고정, 변경 불가 */
-  var displayVh    = 80;                     /* 데스크탑 표시 높이 (vh), CSS만 변경 */
+  var SCALE        = isMobile ? 2.0 : 3.0;
+  var displayVh    = 80;
 
   var loadingEl  = document.getElementById('fb-loading');
   var flipBookEl = document.getElementById('flip-book');
   var pageInfo   = document.getElementById('fb-page-info');
+  var dotsBar    = document.getElementById('fb-dots');
 
   /* ── Mobile state ── */
   var mobilePages = [];
@@ -481,7 +609,46 @@ const latestReport = reports[0] ?? null;
     });
   }
 
-  /* ── Mobile: simple single-page viewer ── */
+  /* ── Dots navigation ── */
+  function buildDots(count, onDotClick) {
+    if (!dotsBar) return;
+    dotsBar.innerHTML = '';
+    if (count <= 1) return;
+
+    if (count > 12) {
+      /* Too many items — show a text counter */
+      var span = document.createElement('span');
+      span.className = 'fb-dots-text';
+      span.id = 'fb-dots-text-el';
+      dotsBar.appendChild(span);
+      return;
+    }
+
+    for (var i = 0; i < count; i++) {
+      var btn = document.createElement('button');
+      btn.className = 'fb-dot';
+      btn.setAttribute('aria-label', (i + 1) + '번째');
+      (function (idx) {
+        btn.addEventListener('click', function () { onDotClick(idx); });
+      })(i);
+      dotsBar.appendChild(btn);
+    }
+  }
+
+  function updateDots(activeIdx, total) {
+    if (!dotsBar) return;
+    var textEl = document.getElementById('fb-dots-text-el');
+    if (textEl) {
+      textEl.textContent = (activeIdx + 1) + ' / ' + total;
+      return;
+    }
+    var dots = dotsBar.querySelectorAll('.fb-dot');
+    dots.forEach(function (dot, i) {
+      dot.classList.toggle('active', i === activeIdx);
+    });
+  }
+
+  /* ── Mobile: single-page viewer ── */
   function buildMobileViewer(pages) {
     mobilePages = pages;
     mobilePage  = 0;
@@ -490,11 +657,12 @@ const latestReport = reports[0] ?? null;
 
     var img = document.createElement('img');
     img.id = 'mob-page-img';
-    img.style.cssText = 'max-width:100%;height:auto;display:block;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.45);user-select:none;-webkit-user-drag:none;';
+    img.style.cssText = 'max-width:calc(100% - 56px);height:auto;display:block;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.45);user-select:none;-webkit-user-drag:none;';
     img.draggable = false;
     img.src = pages[0].url;
     flipBookEl.appendChild(img);
 
+    buildDots(pages.length, goMobilePage);
     updateMobileNav();
     loadingEl.style.display = 'none';
     flipBookEl.style.display = 'flex';
@@ -503,10 +671,15 @@ const latestReport = reports[0] ?? null;
   function updateMobileNav() {
     var tot = mobilePages.length;
     pageInfo.textContent = (mobilePage + 1) + ' / ' + tot;
-    document.getElementById('fb-prev').disabled  = mobilePage === 0;
-    document.getElementById('fb-first').disabled = mobilePage === 0;
-    document.getElementById('fb-next').disabled  = mobilePage >= tot - 1;
-    document.getElementById('fb-last').disabled  = mobilePage >= tot - 1;
+    var atFirst = mobilePage === 0;
+    var atLast  = mobilePage >= tot - 1;
+    document.getElementById('fb-prev').disabled  = atFirst;
+    document.getElementById('fb-first').disabled = atFirst;
+    document.getElementById('fb-next').disabled  = atLast;
+    document.getElementById('fb-last').disabled  = atLast;
+    document.getElementById('fb-arrow-prev').disabled = atFirst;
+    document.getElementById('fb-arrow-next').disabled = atLast;
+    updateDots(mobilePage, tot);
   }
 
   function goMobilePage(i) {
@@ -517,11 +690,7 @@ const latestReport = reports[0] ?? null;
     updateMobileNav();
   }
 
-  /* ──────────────────────────────────────────
-     DESKTOP: two-page spread <img> viewer
-     Spread 0 = cover (single, centred)
-     Spread k = pages [2k-1, 2k]
-  ────────────────────────────────────────── */
+  /* ── Desktop: two-page spread viewer ── */
   function buildDesktopViewer(pages) {
     allPages     = pages;
     spreadIdx    = 0;
@@ -534,10 +703,10 @@ const latestReport = reports[0] ?? null;
     li.id = 'desk-left'; li.className = 'spread-img'; li.draggable = false;
     var ri = document.createElement('img');
     ri.id = 'desk-right'; ri.className = 'spread-img'; ri.draggable = false;
-
     flipBookEl.appendChild(li);
     flipBookEl.appendChild(ri);
 
+    buildDots(totalSpreads, goDesktopSpread);
     applySpreadImages();
     loadingEl.style.display = 'none';
     flipBookEl.style.display = 'flex';
@@ -580,6 +749,7 @@ const latestReport = reports[0] ?? null;
     document.getElementById('fb-last').disabled  = atLast;
     document.getElementById('fb-arrow-prev').disabled = atFirst;
     document.getElementById('fb-arrow-next').disabled = atLast;
+    updateDots(spreadIdx, totalSpreads);
   }
 
   function goDesktopSpread(idx) {
@@ -642,11 +812,10 @@ const latestReport = reports[0] ?? null;
     });
   }
 
-  /* ── Bootstrap (PDF.js only — StPageFlip removed) ── */
+  /* ── Bootstrap ── */
   loadScript(PDFJS_SRC).then(function () {
     pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
-    var url = container.dataset.pdf
-      || ((document.querySelector('.archive-card[data-pdf]') || {}).dataset || {}).pdf;
+    var url = container.dataset.pdf;
     if (url) loadPdf(url);
   }).catch(function (err) {
     showError('뷰어를 불러오지 못했습니다.<br>' + (err || ''));
@@ -665,7 +834,7 @@ const latestReport = reports[0] ?? null;
     else if (container.requestFullscreen) container.requestFullscreen();
   });
 
-  /* Zoom = CSS display size only, SCALE(품질)은 고정 — 재렌더링 없음 */
+  /* Zoom = CSS display size only, SCALE(품질)은 고정 */
   function applyDisplayZoom() {
     container.style.setProperty('--page-maxh', displayVh + 'vh');
     document.getElementById('fb-zoom-in').disabled  = displayVh >= 82;
@@ -674,12 +843,10 @@ const latestReport = reports[0] ?? null;
   if (!isMobile) applyDisplayZoom();
 
   document.getElementById('fb-zoom-in').addEventListener('click', function () {
-    displayVh = Math.min(displayVh + 10, 82);
-    applyDisplayZoom();
+    displayVh = Math.min(displayVh + 10, 82); applyDisplayZoom();
   });
   document.getElementById('fb-zoom-out').addEventListener('click', function () {
-    displayVh = Math.max(displayVh - 10, 30);
-    applyDisplayZoom();
+    displayVh = Math.max(displayVh - 10, 30); applyDisplayZoom();
   });
 
   document.addEventListener('keydown', function (e) {
@@ -687,18 +854,54 @@ const latestReport = reports[0] ?? null;
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigatePrev();
   });
 
-  /* ── Archive cards ── */
-  document.querySelectorAll('.archive-card[data-pdf]').forEach(function (card) {
+  /* ── Year tab switching ── */
+  document.querySelectorAll('.year-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var yr = tab.dataset.year;
+      document.querySelectorAll('.year-tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.year-grid').forEach(function (g) { g.classList.remove('active'); });
+      tab.classList.add('active');
+      var grid = document.querySelector('[data-year-grid="' + yr + '"]');
+      if (grid) grid.classList.add('active');
+    });
+  });
+
+  /* ── Quarter card click → load PDF ── */
+  document.querySelectorAll('.quarter-card.has-pdf').forEach(function (card) {
     card.addEventListener('click', function () {
-      document.querySelectorAll('.archive-card').forEach(function (c) { c.classList.remove('current'); });
-      card.classList.add('current');
       var url = card.dataset.pdf;
-      if (url) {
-        container.dataset.pdf = url;
-        loadPdf(url).then(function () {
-          container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
+      if (!url) return;
+
+      /* Mark current */
+      document.querySelectorAll('.quarter-card').forEach(function (c) { c.classList.remove('current'); });
+      card.classList.add('current');
+
+      /* Update report meta */
+      var titleKo = card.dataset.titleKo || '';
+      var titleEn = card.dataset.titleEn || '';
+      var dateStr = card.dataset.date || '';
+
+      var titleEl = document.getElementById('report-title');
+      if (titleEl) {
+        var koEl = titleEl.querySelector('.wl-ko');
+        var enEl = titleEl.querySelector('.wl-en');
+        if (koEl) koEl.textContent = titleKo;
+        if (enEl) enEl.textContent = titleEn;
       }
+      var dateEl = document.getElementById('report-date');
+      if (dateEl && dateStr) {
+        try {
+          dateEl.textContent = new Date(dateStr).toLocaleDateString('ko-KR', { year:'numeric', month:'long' });
+        } catch(e) {}
+      }
+      var dlBtn = document.getElementById('report-download');
+      if (dlBtn) dlBtn.href = url;
+
+      /* Load PDF */
+      container.dataset.pdf = url;
+      loadPdf(url).then(function () {
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     });
   });
 
@@ -789,7 +992,6 @@ const latestReport = reports[0] ?? null;
         ltx = tx; lty = ty;
         if (czoom < 1.05) resetTransform();
 
-        /* Swipe page navigation (mobile, not zoomed, not after pinch) */
         if (isMobile && !wasPinching && czoom <= 1.05 && e.changedTouches.length === 1) {
           var deltaX = e.changedTouches[0].clientX - swipeStartX;
           if (Math.abs(deltaX) > 50) {
@@ -799,8 +1001,6 @@ const latestReport = reports[0] ?? null;
           }
         }
       }
-
-      /* Double-tap to reset zoom */
       if (e.changedTouches.length === 1) {
         var now = Date.now();
         if (now - lastTap < 300) resetTransform();
