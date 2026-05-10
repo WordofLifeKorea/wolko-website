@@ -174,11 +174,12 @@ const latestReport = reports[0] ?? null;
   .spread-img {
     display: block;
     height: auto;
-    max-height: 74vh;
+    max-height: var(--page-maxh, 56vh);
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
     flex-shrink: 0;
+    transition: max-height 0.2s ease;
   }
   .spread-img-left {
     width: 50%;
@@ -366,7 +367,8 @@ const latestReport = reports[0] ?? null;
   var DB_NAME      = 'wolko-pdf-v4';
   var STORE_NAME   = 'pages';
   var isMobile     = window.innerWidth < 640;
-  var SCALE        = isMobile ? 2.0 : 2.5;
+  var SCALE        = isMobile ? 2.0 : 3.0;  /* 렌더 품질: 고정, 변경 불가 */
+  var displayVh    = 54;                     /* 데스크탑 표시 높이 (vh), CSS만 변경 */
 
   var loadingEl  = document.getElementById('fb-loading');
   var flipBookEl = document.getElementById('flip-book');
@@ -624,13 +626,21 @@ const latestReport = reports[0] ?? null;
     else if (container.requestFullscreen) container.requestFullscreen();
   });
 
+  /* Zoom = CSS display size only, SCALE(품질)은 고정 — 재렌더링 없음 */
+  function applyDisplayZoom() {
+    container.style.setProperty('--page-maxh', displayVh + 'vh');
+    document.getElementById('fb-zoom-in').disabled  = displayVh >= 82;
+    document.getElementById('fb-zoom-out').disabled = displayVh <= 30;
+  }
+  if (!isMobile) applyDisplayZoom();
+
   document.getElementById('fb-zoom-in').addEventListener('click', function () {
-    SCALE = Math.min(SCALE + 0.5, 6.0);
-    var url = container.dataset.pdf; if (url) loadPdf(url);
+    displayVh = Math.min(displayVh + 10, 82);
+    applyDisplayZoom();
   });
   document.getElementById('fb-zoom-out').addEventListener('click', function () {
-    SCALE = Math.max(SCALE - 0.5, 1.0);
-    var url = container.dataset.pdf; if (url) loadPdf(url);
+    displayVh = Math.max(displayVh - 10, 30);
+    applyDisplayZoom();
   });
 
   document.addEventListener('keydown', function (e) {
