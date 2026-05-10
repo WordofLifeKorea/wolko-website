@@ -157,7 +157,12 @@ collections:
       - { label: "제목 (한국어)", name: "title_ko", widget: "string" }
       - { label: "Title (English)", name: "title_en", widget: "string" }
       - { label: "날짜", name: "date", widget: "datetime" }
-      - { label: "PDF URL", name: "pdf_url", widget: "string", hint: "예: /images/uploads/report-2025-01.pdf 또는 외부 링크" }
+      - label: "PDF 파일"
+        name: "pdf_url"
+        widget: "file"
+        media_folder: "public/images/uploads/reports"
+        public_folder: "/images/uploads/reports"
+        hint: "PDF 파일을 업로드하세요. 업로드하면 URL이 자동으로 입력됩니다."
       - { label: "썸네일 이미지 URL", name: "thumbnail_url", widget: "string", required: false }
       - { label: "소개 (한국어)", name: "description_ko", widget: "text", required: false }
       - { label: "Description (English)", name: "description_en", widget: "text", required: false }
