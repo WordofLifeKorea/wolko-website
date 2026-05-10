@@ -405,7 +405,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
       </a>
 
-      <a class="ct-strip-item" href="mailto:wolkorea@gmail.com">
+      <a class="ct-strip-item" href="mailto:wolkorea1@gmail.com">
         <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
         <div class="ct-strip-icon email">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
@@ -415,7 +415,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
         <div class="ct-strip-body">
           <div class="ct-strip-label">Email</div>
-          <div class="ct-strip-val">wolkorea@gmail.com</div>
+          <div class="ct-strip-val">wolkorea1@gmail.com</div>
           <div class="ct-strip-sub"><span class="wl-ko">1–2 영업일 내 답변</span><span class="wl-en">Reply within 1–2 days</span></div>
         </div>
       </a>
@@ -508,7 +508,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </div>
             <div>
               <div class="ct-info-label">Email</div>
-              <div class="ct-info-val"><a href="mailto:wolkorea@gmail.com">wolkorea@gmail.com</a></div>
+              <div class="ct-info-val"><a href="mailto:wolkorea1@gmail.com">wolkorea1@gmail.com</a></div>
             </div>
           </div>
           <div class="ct-info-row">
@@ -578,7 +578,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </div>
             <div>
               <div class="ct-info-label">Email</div>
-              <div class="ct-info-val"><a href="mailto:wolkorea@gmail.com">wolkorea@gmail.com</a></div>
+              <div class="ct-info-val"><a href="mailto:wolkorea1@gmail.com">wolkorea1@gmail.com</a></div>
             </div>
           </div>
           <div class="ct-info-row">
@@ -605,9 +605,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <span class="ct-sh-label"><span class="wl-ko">문의 보내기</span><span class="wl-en">Send a Message</span></span>
     </div>
     <div class="ct-form-wrap">
-      <form name="contact" method="POST" data-netlify="true" action="/contact/success"
-            onsubmit="handleSubmit(event)">
-        <input type="hidden" name="form-name" value="contact" />
+      <form onsubmit="handleSubmit(event)">
         <input type="hidden" name="type" id="ct-type-val" value="general" />
 
         <!-- 문의 유형 드롭다운 -->
@@ -703,21 +701,50 @@ function syncType(val) {
   document.getElementById('ct-type-val').value = val;
 }
 
-function handleSubmit(e) {
+async function handleSubmit(e) {
   e.preventDefault();
   const form = e.target;
-  const data = new FormData(form);
-  fetch('/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(data).toString(),
-  })
-  .then(() => {
-    form.innerHTML = '<div style="text-align:center;padding:56px 0;"><div style="font-size:52px;margin-bottom:16px;">✅</div><p style="font-size:18px;font-weight:800;color:#004f68;" class="wl-ko">문의가 접수되었습니다.<br>곧 연락 드리겠습니다.</p><p style="font-size:18px;font-weight:800;color:#004f68;" class="wl-en">Your message has been received.<br>We\'ll be in touch soon.</p></div>';
-  })
-  .catch(() => {
-    alert('전송 중 오류가 발생했습니다. 이메일로 직접 연락해 주세요.\nAn error occurred. Please contact us via email.');
-  });
+  const btn  = form.querySelector('.ct-form-btn');
+
+  // 버튼 로딩 상태
+  const btnOriginal = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span style="opacity:.7">전송 중...</span>';
+
+  const name    = form.querySelector('#ct-name').value.trim();
+  const email   = form.querySelector('#ct-email').value.trim();
+  const phone   = form.querySelector('#ct-phone').value.trim();
+  const type    = document.getElementById('ct-type-val').value;
+  const message = form.querySelector('#ct-msg').value.trim();
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, type, message }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || '전송 실패');
+    }
+
+    // 성공 메시지
+    form.innerHTML = `
+      <div style="text-align:center;padding:56px 0;">
+        <div style="font-size:52px;margin-bottom:16px;">✅</div>
+        <p style="font-size:18px;font-weight:700;color:#004f68;line-height:1.6;" class="wl-ko">
+          문의가 접수되었습니다.<br>영업일 기준 1–2일 내로 연락 드리겠습니다.
+        </p>
+        <p style="font-size:18px;font-weight:700;color:#004f68;line-height:1.6;" class="wl-en">
+          Your message has been received.<br>We'll be in touch within 1–2 business days.
+        </p>
+      </div>`;
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = btnOriginal;
+    alert('전송 중 오류가 발생했습니다. 이메일로 직접 연락해 주세요 — wolkorea1@gmail.com\n\nAn error occurred. Please email us at wolkorea1@gmail.com');
+  }
 }
 </script>
 
