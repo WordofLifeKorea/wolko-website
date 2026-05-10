@@ -144,32 +144,16 @@ const latestReport = reports[0] ?? null;
   .fb-fullscreen-btn:hover { background:rgba(255,255,255,0.16); }
   .fb-fullscreen-btn svg, .fb-zoom-btn svg { display:block; }
 
-  /* Spread viewport */
+  /* Flipbook viewport */
   #spread-viewport {
     flex:1; display:flex; align-items:center; justify-content:center;
-    padding:24px; min-height:480px; position:relative; overflow:hidden;
+    padding:24px 16px; min-height:520px; position:relative; overflow:hidden;
   }
 
-  /* Two-page spread */
-  #spread {
-    display:flex; gap:2px; align-items:center; justify-content:center;
-    transform-origin:center center; transition:transform .2s ease;
-  }
-  .fb-page-slot {
-    position:relative; overflow:hidden; background:#2a2a3e;
-    box-shadow:0 4px 24px rgba(0,0,0,0.5);
-    flex-shrink:0;
-  }
-  .fb-page-slot canvas { display:block; }
-  .fb-page-slot.loading::after {
-    content:""; position:absolute; inset:0;
-    background:rgba(30,30,50,0.7);
-    display:flex; align-items:center; justify-content:center;
-  }
   .fb-loading-indicator {
     position:absolute; inset:0; display:flex; flex-direction:column;
     align-items:center; justify-content:center; gap:14px; color:rgba(255,255,255,0.5);
-    font-size:13px; font-weight:600;
+    font-size:13px; font-weight:600; text-align:center;
   }
   .fb-spinner {
     width:36px; height:36px; border:3px solid rgba(255,255,255,0.15);
@@ -177,8 +161,13 @@ const latestReport = reports[0] ?? null;
   }
   @keyframes spin { to { transform:rotate(360deg); } }
 
-  /* Page flip animation */
-  .fb-page-slot { transition:opacity .2s ease; }
+  /* StPageFlip container */
+  #flip-book {
+    width:100%; height:100%;
+  }
+  /* Shadow fix for dark bg */
+  .stf__parent { background:transparent !important; }
+  .stf__block { box-shadow: -4px 0 20px rgba(0,0,0,0.5), 4px 0 20px rgba(0,0,0,0.5); }
 
   /* Archive list */
   .archive-section { padding:56px 24px 80px; background:var(--c-bg); }
@@ -281,12 +270,12 @@ const latestReport = reports[0] ?? null;
           <div id="spread-viewport">
             <div id="fb-loading" class="fb-loading-indicator">
               <div class="fb-spinner"></div>
-              <span class="wl-ko">PDF를 불러오는 중입니다...</span><span class="wl-en">Loading PDF...</span>
+              <span id="fb-loading-text">
+                <span class="wl-ko">PDF를 불러오는 중입니다...</span>
+                <span class="wl-en">Loading PDF...</span>
+              </span>
             </div>
-            <div id="spread" style="display:none;">
-              <div class="fb-page-slot" id="page-left"><canvas id="canvas-left"></canvas></div>
-              <div class="fb-page-slot" id="page-right"><canvas id="canvas-right"></canvas></div>
-            </div>
+            <div id="flip-book"></div>
           </div>
         </div>
       </>
@@ -340,162 +329,200 @@ const latestReport = reports[0] ?? null;
   var container = document.getElementById('flipbook-container');
   if (!container) return;
 
-  // Inject PDF.js UMD script tag, then init
-  var s = document.createElement('script');
-  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-  s.onload = function () {
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    initFlipper();
-  };
-  s.onerror = function () {
-    var el = document.getElementById('fb-loading');
-    if (el) el.innerHTML = '<span style="color:#f87171;">PDF 뷰어를 불러오지 못했습니다.</span>';
-  };
-  document.head.appendChild(s);
+  var PDFJS_SRC    = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  var PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  var PAGEFLIP_SRC = 'https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js';
 
-  function initFlipper() {
-    var pdfDoc = null;
-    var currentSpread = 1;
-    var scale = 1.4;
-    var isSinglePage = window.innerWidth < 640;
+  var loadingEl  = document.getElementById('fb-loading');
+  var loadingTxt = document.getElementById('fb-loading-text');
+  var flipBookEl = document.getElementById('flip-book');
+  var pageInfo   = document.getElementById('fb-page-info');
+  var pageFlip   = null;
 
-    var loadingEl  = document.getElementById('fb-loading');
-    var spreadEl   = document.getElementById('spread');
-    var canvasLeft = document.getElementById('canvas-left');
-    var canvasRight= document.getElementById('canvas-right');
-    var pageRight  = document.getElementById('page-right');
-    var pageInfo   = document.getElementById('fb-page-info');
-
-    function getEffectiveScale() {
-      var vw = (document.getElementById('spread-viewport') || {}).clientWidth || 800;
-      return Math.min(scale, vw / 900);
-    }
-
-    function renderPage(canvas, pageNum) {
-      if (!pdfDoc || pageNum < 1 || pageNum > pdfDoc.numPages) {
-        canvas.width = 0; canvas.height = 0;
-        canvas.closest('.fb-page-slot').style.display = 'none';
-        return Promise.resolve();
-      }
-      canvas.closest('.fb-page-slot').style.display = 'block';
-      return pdfDoc.getPage(pageNum).then(function (page) {
-        var eff = getEffectiveScale();
-        var vp  = page.getViewport({ scale: eff });
-        canvas.width  = vp.width;
-        canvas.height = vp.height;
-        var slot = canvas.closest('.fb-page-slot');
-        slot.style.width  = vp.width  + 'px';
-        slot.style.height = vp.height + 'px';
-        return page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
-      });
-    }
-
-    function renderSpread(leftPage) {
-      if (!pdfDoc) return Promise.resolve();
-      spreadEl.style.opacity = '0.4';
-      var p = renderPage(canvasLeft, leftPage);
-      if (!isSinglePage) {
-        p = p.then(function () { return renderPage(canvasRight, leftPage + 1); });
-      } else {
-        canvasRight.width = 0; canvasRight.height = 0;
-        pageRight.style.display = 'none';
-      }
-      return p.then(function () {
-        spreadEl.style.opacity = '1';
-        var total    = pdfDoc.numPages;
-        var rightNum = isSinglePage ? leftPage : leftPage + 1;
-        pageInfo.textContent = leftPage + (rightNum <= total ? '–' + Math.min(rightNum, total) : '') + ' / ' + total;
-        document.getElementById('fb-prev').disabled  = leftPage <= 1;
-        document.getElementById('fb-first').disabled = leftPage <= 1;
-        document.getElementById('fb-next').disabled  = (isSinglePage ? leftPage : leftPage + 1) >= total;
-        document.getElementById('fb-last').disabled  = (isSinglePage ? leftPage : leftPage + 1) >= total;
-      });
-    }
-
-    function loadPdf(url) {
-      loadingEl.style.display = 'flex';
-      spreadEl.style.display  = 'none';
-      return pdfjsLib.getDocument(url).promise.then(function (doc) {
-        pdfDoc = doc;
-        currentSpread = 1;
-        loadingEl.style.display = 'none';
-        spreadEl.style.display  = 'flex';
-        return renderSpread(currentSpread);
-      }).catch(function (err) {
-        console.error('PDF load error:', err);
-        loadingEl.innerHTML = '<span style="color:#f87171;">PDF를 불러오지 못했습니다.<br><small>' + (err && err.message ? err.message : '') + '</small></span>';
-      });
-    }
-
-    // Load initial PDF
-    var initialUrl = container.dataset.pdf
-      || (document.querySelector('.archive-card[data-pdf]') || {}).dataset && document.querySelector('.archive-card[data-pdf]').dataset.pdf;
-    if (initialUrl) loadPdf(initialUrl);
-
-    // Navigation
-    document.getElementById('fb-prev').addEventListener('click', function () {
-      var step = isSinglePage ? 1 : 2;
-      if (currentSpread > 1) { currentSpread = Math.max(1, currentSpread - step); renderSpread(currentSpread); }
-    });
-    document.getElementById('fb-next').addEventListener('click', function () {
-      var step = isSinglePage ? 1 : 2;
-      if (!pdfDoc) return;
-      var max = isSinglePage ? pdfDoc.numPages : pdfDoc.numPages - 1;
-      if (currentSpread < max) { currentSpread = Math.min(max, currentSpread + step); renderSpread(currentSpread); }
-    });
-    document.getElementById('fb-first').addEventListener('click', function () {
-      currentSpread = 1; renderSpread(currentSpread);
-    });
-    document.getElementById('fb-last').addEventListener('click', function () {
-      if (!pdfDoc) return;
-      currentSpread = isSinglePage ? pdfDoc.numPages : (pdfDoc.numPages % 2 === 0 ? pdfDoc.numPages - 1 : pdfDoc.numPages);
-      renderSpread(currentSpread);
-    });
-
-    // Zoom
-    document.getElementById('fb-zoom-in').addEventListener('click', function () {
-      scale = Math.min(scale + 0.2, 3.0); renderSpread(currentSpread);
-    });
-    document.getElementById('fb-zoom-out').addEventListener('click', function () {
-      scale = Math.max(scale - 0.2, 0.5); renderSpread(currentSpread);
-    });
-
-    // Fullscreen
-    document.getElementById('fb-fullscreen').addEventListener('click', function () {
-      if (document.fullscreenElement) { document.exitFullscreen(); }
-      else { container.requestFullscreen && container.requestFullscreen(); }
-    });
-
-    // Keyboard
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') document.getElementById('fb-next').click();
-      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') document.getElementById('fb-prev').click();
-    });
-
-    // Archive cards
-    document.querySelectorAll('.archive-card[data-pdf]').forEach(function (card) {
-      card.addEventListener('click', function () {
-        document.querySelectorAll('.archive-card').forEach(function (c) { c.classList.remove('current'); });
-        card.classList.add('current');
-        if (card.dataset.pdf) {
-          loadPdf(card.dataset.pdf).then(function () {
-            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          });
-        }
-      });
-    });
-
-    // Resize
-    var resizeTimer;
-    window.addEventListener('resize', function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function () {
-        isSinglePage = window.innerWidth < 640;
-        renderSpread(currentSpread);
-      }, 250);
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
     });
   }
+
+  function setLoading(text) {
+    loadingEl.style.display = 'flex';
+    flipBookEl.style.display = 'none';
+    if (loadingTxt) loadingTxt.textContent = text;
+  }
+
+  function showError(msg) {
+    loadingEl.innerHTML = '<span style="color:#f87171;text-align:center;padding:0 20px;">' + msg + '</span>';
+  }
+
+  // Render one PDF page to a data URL
+  function renderPageToUrl(pdfDoc, pageNum, scale) {
+    return pdfDoc.getPage(pageNum).then(function (page) {
+      var vp     = page.getViewport({ scale: scale });
+      var canvas = document.createElement('canvas');
+      canvas.width  = vp.width;
+      canvas.height = vp.height;
+      return page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise
+        .then(function () { return canvas.toDataURL('image/jpeg', 0.88); });
+    });
+  }
+
+  // Build flipbook from array of image data URLs
+  function buildFlipbook(urls, pageWidth, pageHeight) {
+    // Destroy previous instance if any
+    if (pageFlip) { try { pageFlip.destroy(); } catch(e) {} }
+
+    flipBookEl.innerHTML = '';
+    flipBookEl.style.display = 'block';
+    loadingEl.style.display  = 'none';
+
+    var isMobile = window.innerWidth < 640;
+    pageFlip = new St.PageFlip(flipBookEl, {
+      width:        pageWidth,
+      height:       pageHeight,
+      size:         'stretch',
+      minWidth:     isMobile ? 160 : 320,
+      maxWidth:     900,
+      minHeight:    isMobile ? 200 : 400,
+      maxHeight:    1300,
+      showCover:    true,
+      usePortrait:  isMobile,
+      drawShadow:   true,
+      flippingTime: 700,
+      mobileScrollSupport: false,
+      startZIndex:  1,
+    });
+
+    pageFlip.loadFromImages(urls);
+
+    pageFlip.on('flip', function (e) {
+      var cur   = e.data;
+      var total = pageFlip.getPageCount();
+      pageInfo.textContent = (cur + 1) + ' / ' + total;
+      document.getElementById('fb-prev').disabled  = cur === 0;
+      document.getElementById('fb-first').disabled = cur === 0;
+      document.getElementById('fb-next').disabled  = cur >= total - 1;
+      document.getElementById('fb-last').disabled  = cur >= total - 1;
+    });
+
+    pageFlip.on('changeState', function () {
+      var cur   = pageFlip.getCurrentPageIndex();
+      var total = pageFlip.getPageCount();
+      pageInfo.textContent = (cur + 1) + ' / ' + total;
+      document.getElementById('fb-prev').disabled  = cur === 0;
+      document.getElementById('fb-first').disabled = cur === 0;
+      document.getElementById('fb-next').disabled  = cur >= total - 1;
+      document.getElementById('fb-last').disabled  = cur >= total - 1;
+    });
+
+    // Initial state
+    pageInfo.textContent = '1 / ' + urls.length;
+    document.getElementById('fb-prev').disabled  = true;
+    document.getElementById('fb-first').disabled = true;
+    document.getElementById('fb-next').disabled  = urls.length <= 1;
+    document.getElementById('fb-last').disabled  = urls.length <= 1;
+  }
+
+  // Main load + render function
+  function loadPdf(url) {
+    setLoading('PDF를 불러오는 중... / Loading PDF...');
+    return pdfjsLib.getDocument(url).promise.then(function (pdfDoc) {
+      var n     = pdfDoc.numPages;
+      var scale = window.innerWidth < 640 ? 1.0 : 1.5;
+      var urls  = [];
+      var pw, ph;
+
+      // Render pages sequentially to avoid memory spikes
+      function next(i) {
+        if (i > n) return Promise.resolve();
+        setLoading('페이지 렌더링 중 ' + i + ' / ' + n + '...');
+        return renderPageToUrl(pdfDoc, i, scale).then(function (dataUrl) {
+          if (i === 1) {
+            // grab page dimensions from first page
+            return pdfDoc.getPage(1).then(function (p) {
+              var vp = p.getViewport({ scale: scale });
+              pw = vp.width; ph = vp.height;
+              urls.push(dataUrl);
+              return next(i + 1);
+            });
+          }
+          urls.push(dataUrl);
+          return next(i + 1);
+        });
+      }
+
+      return next(1).then(function () { buildFlipbook(urls, pw, ph); });
+    }).catch(function (err) {
+      console.error(err);
+      showError('PDF를 불러오지 못했습니다.<br>' + (err.message || ''));
+    });
+  }
+
+  // Init: load libraries, then load PDF
+  loadScript(PDFJS_SRC).then(function () {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+    return loadScript(PAGEFLIP_SRC);
+  }).then(function () {
+    var initialUrl = container.dataset.pdf
+      || (document.querySelector('.archive-card[data-pdf]') || {dataset:{}}).dataset.pdf;
+    if (initialUrl) return loadPdf(initialUrl);
+  }).catch(function (err) {
+    showError('뷰어 라이브러리 로드 실패<br>' + (err || ''));
+  });
+
+  // Navigation buttons
+  document.getElementById('fb-prev').addEventListener('click', function () {
+    if (pageFlip) pageFlip.flipPrev();
+  });
+  document.getElementById('fb-next').addEventListener('click', function () {
+    if (pageFlip) pageFlip.flipNext();
+  });
+  document.getElementById('fb-first').addEventListener('click', function () {
+    if (pageFlip) pageFlip.flip(0);
+  });
+  document.getElementById('fb-last').addEventListener('click', function () {
+    if (pageFlip) pageFlip.flip(pageFlip.getPageCount() - 1);
+  });
+
+  // Zoom (scale re-render)
+  var curScale = window.innerWidth < 640 ? 1.0 : 1.5;
+  document.getElementById('fb-zoom-in').addEventListener('click', function () {
+    curScale = Math.min(curScale + 0.3, 2.5);
+    var url = container.dataset.pdf; if (url) loadPdf(url);
+  });
+  document.getElementById('fb-zoom-out').addEventListener('click', function () {
+    curScale = Math.max(curScale - 0.3, 0.6);
+    var url = container.dataset.pdf; if (url) loadPdf(url);
+  });
+
+  // Fullscreen
+  document.getElementById('fb-fullscreen').addEventListener('click', function () {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (container.requestFullscreen) container.requestFullscreen();
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') document.getElementById('fb-next').click();
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') document.getElementById('fb-prev').click();
+  });
+
+  // Archive cards
+  document.querySelectorAll('.archive-card[data-pdf]').forEach(function (card) {
+    card.addEventListener('click', function () {
+      document.querySelectorAll('.archive-card').forEach(function (c) { c.classList.remove('current'); });
+      card.classList.add('current');
+      var url = card.dataset.pdf;
+      if (url) {
+        container.dataset.pdf = url;
+        loadPdf(url).then(function () {
+          container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+    });
+  });
 })();
 </script>
 
