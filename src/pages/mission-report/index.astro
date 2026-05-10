@@ -1016,7 +1016,16 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         lastZoom = czoom;
         ltx = tx; lty = ty;
         /* 핀치 종료 시각 기록 */
-        if (wasPinching) pinchEndedAt = Date.now();
+        if (wasPinching) {
+          pinchEndedAt = Date.now();
+          /* 핀치 → 1핑거 전환 시 panStart 초기화.
+             남은 손가락 위치를 기준으로 잡지 않으면
+             이전 panStart 기준으로 계산돼 위치가 점프함. */
+          if (e.touches.length === 1 && czoom > 1.05) {
+            panStart.x = e.touches[0].clientX - tx;
+            panStart.y = e.touches[0].clientY - ty;
+          }
+        }
         if (czoom < 1.05) resetTransform();
 
         /* 스와이프 페이지 넘기기 제거 — 핀치줌 동작과 충돌하여 제거 */
