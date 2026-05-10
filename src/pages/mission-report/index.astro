@@ -148,6 +148,7 @@ const latestReport = reports[0] ?? null;
   #spread-viewport {
     flex:1; display:flex; align-items:center; justify-content:center;
     padding:24px 16px; min-height:520px; position:relative; overflow:hidden;
+    touch-action: none; /* let JS handle all touch */
   }
 
   .fb-loading-indicator {
@@ -547,6 +548,104 @@ const latestReport = reports[0] ?? null;
       }
     });
   });
+
+  /* ── Pinch zoom + pan on spread viewport ── */
+  (function () {
+    var vp        = document.getElementById('spread-viewport');
+    var inner     = document.getElementById('flip-book');
+    var czoom     = 1;      // current zoom
+    var lastZoom  = 1;
+    var tx = 0, ty = 0;     // translate
+    var ltx = 0, lty = 0;  // last translate
+    var startDist = 0;
+    var midX = 0, midY = 0;
+    var panStart = { x: 0, y: 0 };
+    var isPinching = false;
+
+    function dist(t) {
+      var dx = t[0].clientX - t[1].clientX;
+      var dy = t[0].clientY - t[1].clientY;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+    function mid(t) {
+      return { x: (t[0].clientX + t[1].clientX) / 2,
+               y: (t[0].clientY + t[1].clientY) / 2 };
+    }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    function applyTransform() {
+      inner.style.transformOrigin = '0 0';
+      inner.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + czoom + ')';
+    }
+    function resetTransform() {
+      czoom = 1; lastZoom = 1; tx = 0; ty = 0; ltx = 0; lty = 0;
+      inner.style.transform = '';
+      inner.style.transformOrigin = '';
+    }
+
+    vp.addEventListener('touchstart', function (e) {
+      if (e.touches.length === 2) {
+        isPinching = true;
+        e.preventDefault();
+        startDist = dist(e.touches);
+        var m = mid(e.touches);
+        var r = vp.getBoundingClientRect();
+        midX = m.x - r.left;
+        midY = m.y - r.top;
+      } else if (e.touches.length === 1 && czoom > 1.05) {
+        // single finger pan when zoomed
+        panStart.x = e.touches[0].clientX - ltx;
+        panStart.y = e.touches[0].clientY - lty;
+      }
+    }, { passive: false });
+
+    vp.addEventListener('touchmove', function (e) {
+      if (e.touches.length === 2 && isPinching) {
+        e.preventDefault();
+        var d = dist(e.touches);
+        var newZoom = clamp(lastZoom * (d / startDist), 1, 5);
+        // adjust translate so zoom is centered on pinch midpoint
+        tx = midX - (midX - ltx) * (newZoom / lastZoom);
+        ty = midY - (midY - lty) * (newZoom / lastZoom);
+        // clamp pan so we don't go out of bounds
+        var maxTx = vp.clientWidth  * (newZoom - 1);
+        var maxTy = vp.clientHeight * (newZoom - 1);
+        tx = clamp(tx, -maxTx, 0);
+        ty = clamp(ty, -maxTy, 0);
+        czoom = newZoom;
+        applyTransform();
+      } else if (e.touches.length === 1 && czoom > 1.05 && !isPinching) {
+        e.preventDefault();
+        var newTx = e.touches[0].clientX - panStart.x;
+        var newTy = e.touches[0].clientY - panStart.y;
+        var maxTx = vp.clientWidth  * (czoom - 1);
+        var maxTy = vp.clientHeight * (czoom - 1);
+        tx = clamp(newTx, -maxTx, 0);
+        ty = clamp(newTy, -maxTy, 0);
+        applyTransform();
+      }
+    }, { passive: false });
+
+    vp.addEventListener('touchend', function (e) {
+      if (e.touches.length < 2) {
+        isPinching = false;
+        lastZoom = czoom;
+        ltx = tx; lty = ty;
+        // snap back if zoomed out below threshold
+        if (czoom < 1.05) resetTransform();
+      }
+    });
+
+    // Double-tap to reset
+    var lastTap = 0;
+    vp.addEventListener('touchend', function (e) {
+      if (e.changedTouches.length === 1) {
+        var now = Date.now();
+        if (now - lastTap < 300) { resetTransform(); }
+        lastTap = now;
+      }
+    });
+  })();
 })();
 </script>
 
