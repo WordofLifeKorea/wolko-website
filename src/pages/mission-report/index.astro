@@ -365,7 +365,7 @@ const latestReport = reports[0] ?? null;
       canvas.width  = vp.width;
       canvas.height = vp.height;
       return page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise
-        .then(function () { return canvas.toDataURL('image/jpeg', 0.88); });
+        .then(function () { return canvas.toDataURL('image/jpeg', 0.96); });
     });
   }
 
@@ -430,7 +430,8 @@ const latestReport = reports[0] ?? null;
     setLoading('PDF를 불러오는 중... / Loading PDF...');
     return pdfjsLib.getDocument(url).promise.then(function (pdfDoc) {
       var n     = pdfDoc.numPages;
-      var scale = window.innerWidth < 640 ? 1.0 : 1.5;
+      var dpr   = Math.min(window.devicePixelRatio || 1, 2);
+      var scale = window.innerWidth < 640 ? 1.5 * dpr : 2.5 * dpr;
       var urls  = [];
       var pw, ph;
 
@@ -487,7 +488,7 @@ const latestReport = reports[0] ?? null;
   });
 
   // Zoom (scale re-render)
-  var curScale = window.innerWidth < 640 ? 1.0 : 1.5;
+  var curScale = window.innerWidth < 640 ? 1.5 : 2.5;
   document.getElementById('fb-zoom-in').addEventListener('click', function () {
     curScale = Math.min(curScale + 0.3, 2.5);
     var url = container.dataset.pdf; if (url) loadPdf(url);
