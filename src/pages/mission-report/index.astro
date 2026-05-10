@@ -335,12 +335,17 @@ const latestReport = reports[0] ?? null;
   var PAGEFLIP_SRC = 'https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js';
   var DB_NAME      = 'wolko-pdf-v4';
   var STORE_NAME   = 'pages';
-  var SCALE        = window.innerWidth < 640 ? 2.5 : 4.0;
+  var isMobile     = window.innerWidth < 640;
+  var SCALE        = isMobile ? 2.5 : 4.0;
 
   var loadingEl  = document.getElementById('fb-loading');
   var flipBookEl = document.getElementById('flip-book');
   var pageInfo   = document.getElementById('fb-page-info');
   var pageFlip   = null;
+
+  /* ── Mobile viewer state ── */
+  var mobilePages = [];
+  var mobilePage  = 0;
 
   /* ── Helpers ── */
   function loadScript(src) {
@@ -400,29 +405,65 @@ const latestReport = reports[0] ?? null;
       return page.render({
         canvasContext: ctx,
         viewport: vp,
-        intent: 'print',          // print intent = maximum sharpness
+        intent: 'print',
       }).promise.then(function () {
         return { url: c.toDataURL('image/png'), w: vp.width, h: vp.height };
       });
     });
   }
 
-  /* ── Build flipbook ── */
-  function buildFlipbook(pages) {
+  /* ── Mobile: simple single-page viewer ── */
+  function buildMobileViewer(pages) {
+    mobilePages = pages;
+    mobilePage  = 0;
+    flipBookEl.innerHTML = '';
+    flipBookEl.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;';
+
+    var img = document.createElement('img');
+    img.id = 'mob-page-img';
+    img.style.cssText = 'max-width:100%;height:auto;display:block;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.45);user-select:none;-webkit-user-drag:none;';
+    img.draggable = false;
+    img.src = pages[0].url;
+    flipBookEl.appendChild(img);
+
+    updateMobileNav();
+    loadingEl.style.display = 'none';
+    flipBookEl.style.display = 'flex';
+  }
+
+  function updateMobileNav() {
+    var tot = mobilePages.length;
+    pageInfo.textContent = (mobilePage + 1) + ' / ' + tot;
+    document.getElementById('fb-prev').disabled  = mobilePage === 0;
+    document.getElementById('fb-first').disabled = mobilePage === 0;
+    document.getElementById('fb-next').disabled  = mobilePage >= tot - 1;
+    document.getElementById('fb-last').disabled  = mobilePage >= tot - 1;
+  }
+
+  function goMobilePage(i) {
+    if (i < 0 || i >= mobilePages.length) return;
+    mobilePage = i;
+    var img = document.getElementById('mob-page-img');
+    if (img) img.src = mobilePages[i].url;
+    updateMobileNav();
+  }
+
+  /* ── Desktop: flipbook with animation ── */
+  function buildDesktopFlipbook(pages) {
     if (pageFlip) { try { pageFlip.destroy(); } catch(e) {} pageFlip = null; }
     flipBookEl.innerHTML = '';
+    flipBookEl.style.cssText = 'width:100%;height:100%;';
 
-    var isMobile = window.innerWidth < 640;
     var pw = pages[0].w, ph = pages[0].h;
     var urls = pages.map(function (p) { return p.url; });
 
     pageFlip = new St.PageFlip(flipBookEl, {
       width: pw, height: ph,
       size: 'stretch',
-      minWidth: isMobile ? 160 : 320, maxWidth: 900,
-      minHeight: isMobile ? 200 : 400, maxHeight: 1400,
+      minWidth: 320, maxWidth: 900,
+      minHeight: 400, maxHeight: 1400,
       showCover: true,
-      usePortrait: isMobile,
+      usePortrait: false,
       drawShadow: true,
       flippingTime: 650,
       mobileScrollSupport: false,
@@ -452,6 +493,30 @@ const latestReport = reports[0] ?? null;
     flipBookEl.style.display = 'block';
   }
 
+  /* ── Unified build ── */
+  function buildViewer(pages) {
+    if (isMobile) buildMobileViewer(pages);
+    else buildDesktopFlipbook(pages);
+  }
+
+  /* ── Unified navigation ── */
+  function navigatePrev()  {
+    if (isMobile) goMobilePage(mobilePage - 1);
+    else if (pageFlip) pageFlip.flipPrev();
+  }
+  function navigateNext()  {
+    if (isMobile) goMobilePage(mobilePage + 1);
+    else if (pageFlip) pageFlip.flipNext();
+  }
+  function navigateFirst() {
+    if (isMobile) goMobilePage(0);
+    else if (pageFlip) pageFlip.flip(0);
+  }
+  function navigateLast()  {
+    if (isMobile) goMobilePage(mobilePages.length - 1);
+    else if (pageFlip) pageFlip.flip(pageFlip.getPageCount() - 1);
+  }
+
   /* ── Main load (cache-first) ── */
   var db = null;
   function loadPdf(pdfUrl) {
@@ -459,16 +524,13 @@ const latestReport = reports[0] ?? null;
     var cacheKey = pdfUrl + '@' + SCALE.toFixed(1);
 
     return (db ? Promise.resolve(db) : openDB().then(function (d) { db = d; return d; }))
-      .catch(function () { return null; }) // IndexedDB unavailable → proceed without cache
+      .catch(function () { return null; })
       .then(function (database) {
         if (!database) return renderAndBuild(pdfUrl, null, cacheKey);
         return getCache(database, cacheKey).then(function (hit) {
           if (hit && hit.data && hit.data.length) {
-            // ✅ Cache hit — instant display
-            buildFlipbook(hit.data);
-            return;
+            buildViewer(hit.data); return;
           }
-          // Cache miss — render then cache
           return renderAndBuild(pdfUrl, database, cacheKey);
         });
       }).catch(function (err) {
@@ -481,7 +543,6 @@ const latestReport = reports[0] ?? null;
     return pdfjsLib.getDocument(pdfUrl).promise.then(function (pdfDoc) {
       var n = pdfDoc.numPages;
       var pages = [];
-      // Sequential render to avoid memory spikes
       function next(i) {
         if (i > n) return Promise.resolve();
         return renderPage(pdfDoc, i).then(function (p) {
@@ -491,15 +552,15 @@ const latestReport = reports[0] ?? null;
       }
       return next(1).then(function () {
         if (database) setCache(database, cacheKey, pages);
-        buildFlipbook(pages);
+        buildViewer(pages);
       });
     });
   }
 
-  /* ── Bootstrap ── */
+  /* ── Bootstrap (StPageFlip only on desktop) ── */
   loadScript(PDFJS_SRC).then(function () {
     pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
-    return loadScript(PAGEFLIP_SRC);
+    if (!isMobile) return loadScript(PAGEFLIP_SRC);
   }).then(function () {
     var url = container.dataset.pdf
       || ((document.querySelector('.archive-card[data-pdf]') || {}).dataset || {}).pdf;
@@ -508,18 +569,17 @@ const latestReport = reports[0] ?? null;
     showError('뷰어를 불러오지 못했습니다.<br>' + (err || ''));
   });
 
-  /* ── Navigation ── */
-  document.getElementById('fb-prev').addEventListener('click',  function () { if (pageFlip) pageFlip.flipPrev(); });
-  document.getElementById('fb-next').addEventListener('click',  function () { if (pageFlip) pageFlip.flipNext(); });
-  document.getElementById('fb-first').addEventListener('click', function () { if (pageFlip) pageFlip.flip(0); });
-  document.getElementById('fb-last').addEventListener('click',  function () { if (pageFlip) pageFlip.flip(pageFlip.getPageCount() - 1); });
+  /* ── Navigation buttons ── */
+  document.getElementById('fb-prev').addEventListener('click',  navigatePrev);
+  document.getElementById('fb-next').addEventListener('click',  navigateNext);
+  document.getElementById('fb-first').addEventListener('click', navigateFirst);
+  document.getElementById('fb-last').addEventListener('click',  navigateLast);
 
   document.getElementById('fb-fullscreen').addEventListener('click', function () {
     if (document.fullscreenElement) document.exitFullscreen();
     else if (container.requestFullscreen) container.requestFullscreen();
   });
 
-  /* Zoom — invalidates cache for that scale */
   document.getElementById('fb-zoom-in').addEventListener('click', function () {
     SCALE = Math.min(SCALE + 0.5, 4.0);
     var url = container.dataset.pdf; if (url) loadPdf(url);
@@ -530,8 +590,8 @@ const latestReport = reports[0] ?? null;
   });
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') document.getElementById('fb-next').click();
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') document.getElementById('fb-prev').click();
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigateNext();
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigatePrev();
   });
 
   /* ── Archive cards ── */
@@ -549,17 +609,18 @@ const latestReport = reports[0] ?? null;
     });
   });
 
-  /* ── Pinch zoom + pan on spread viewport ── */
+  /* ── Pinch zoom + pan + swipe navigation ── */
   (function () {
     var vp        = document.getElementById('spread-viewport');
     var inner     = document.getElementById('flip-book');
-    var czoom     = 1;      // current zoom
+    var czoom     = 1;
     var lastZoom  = 1;
-    var tx = 0, ty = 0;     // translate
-    var ltx = 0, lty = 0;  // last translate
+    var tx = 0, ty = 0;
+    var ltx = 0, lty = 0;
     var startDist = 0;
     var midX = 0, midY = 0;
-    var panStart = { x: 0, y: 0 };
+    var panStart   = { x: 0, y: 0 };
+    var swipeStartX = 0;
     var isPinching = false;
 
     function dist(t) {
@@ -592,10 +653,12 @@ const latestReport = reports[0] ?? null;
         var r = vp.getBoundingClientRect();
         midX = m.x - r.left;
         midY = m.y - r.top;
-      } else if (e.touches.length === 1 && czoom > 1.05) {
-        // single finger pan when zoomed
-        panStart.x = e.touches[0].clientX - ltx;
-        panStart.y = e.touches[0].clientY - lty;
+      } else if (e.touches.length === 1) {
+        swipeStartX = e.touches[0].clientX;
+        if (czoom > 1.05) {
+          panStart.x = e.touches[0].clientX - ltx;
+          panStart.y = e.touches[0].clientY - lty;
+        }
       }
     }, { passive: false });
 
@@ -604,10 +667,8 @@ const latestReport = reports[0] ?? null;
         e.preventDefault();
         var d = dist(e.touches);
         var newZoom = clamp(lastZoom * (d / startDist), 1, 5);
-        // adjust translate so zoom is centered on pinch midpoint
         tx = midX - (midX - ltx) * (newZoom / lastZoom);
         ty = midY - (midY - lty) * (newZoom / lastZoom);
-        // clamp pan so we don't go out of bounds
         var maxTx = vp.clientWidth  * (newZoom - 1);
         var maxTy = vp.clientHeight * (newZoom - 1);
         tx = clamp(tx, -maxTx, 0);
@@ -618,30 +679,38 @@ const latestReport = reports[0] ?? null;
         e.preventDefault();
         var newTx = e.touches[0].clientX - panStart.x;
         var newTy = e.touches[0].clientY - panStart.y;
-        var maxTx = vp.clientWidth  * (czoom - 1);
-        var maxTy = vp.clientHeight * (czoom - 1);
-        tx = clamp(newTx, -maxTx, 0);
-        ty = clamp(newTy, -maxTy, 0);
+        var maxTx2 = vp.clientWidth  * (czoom - 1);
+        var maxTy2 = vp.clientHeight * (czoom - 1);
+        tx = clamp(newTx, -maxTx2, 0);
+        ty = clamp(newTy, -maxTy2, 0);
         applyTransform();
       }
     }, { passive: false });
 
+    var lastTap = 0;
     vp.addEventListener('touchend', function (e) {
       if (e.touches.length < 2) {
+        var wasPinching = isPinching;
         isPinching = false;
         lastZoom = czoom;
         ltx = tx; lty = ty;
-        // snap back if zoomed out below threshold
         if (czoom < 1.05) resetTransform();
-      }
-    });
 
-    // Double-tap to reset
-    var lastTap = 0;
-    vp.addEventListener('touchend', function (e) {
+        /* Swipe page navigation (mobile, not zoomed, not after pinch) */
+        if (isMobile && !wasPinching && czoom <= 1.05 && e.changedTouches.length === 1) {
+          var deltaX = e.changedTouches[0].clientX - swipeStartX;
+          if (Math.abs(deltaX) > 50) {
+            if (deltaX < 0) navigateNext();
+            else navigatePrev();
+            return;
+          }
+        }
+      }
+
+      /* Double-tap to reset zoom */
       if (e.changedTouches.length === 1) {
         var now = Date.now();
-        if (now - lastTap < 300) { resetTransform(); }
+        if (now - lastTap < 300) resetTransform();
         lastTap = now;
       }
     });
