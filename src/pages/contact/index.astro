@@ -259,17 +259,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   /* panel */
   .ct-dd-panel {
+    display:none;
     position:absolute; top:calc(100% + 6px); left:0; right:0;
     background:#fff;
     border:1.5px solid rgba(0,79,104,0.15);
     border-radius:14px;
     box-shadow:0 8px 32px rgba(0,79,104,0.12);
     z-index:100; overflow:hidden;
-    opacity:0; transform:translateY(-6px); pointer-events:none;
-    transition:opacity .18s ease, transform .18s ease;
   }
   .ct-dd-panel.open {
-    opacity:1; transform:translateY(0); pointer-events:auto;
+    display:block;
   }
 
   /* option */
@@ -743,9 +742,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   var selected = document.getElementById(‘ctDdSelected’);
   if (!trigger || !panel || !selected) return;
 
-  function ddOpen()  { trigger.setAttribute(‘aria-expanded’,’true’);  panel.classList.add(‘open’); }
-  function ddClose() { trigger.setAttribute(‘aria-expanded’,’false’); panel.classList.remove(‘open’); }
-  function ddToggle() { trigger.getAttribute(‘aria-expanded’) === ‘true’ ? ddClose() : ddOpen(); }
+  function ddOpen()  { trigger.setAttribute(‘aria-expanded’,’true’);  panel.classList.add(‘open’); panel.style.display=’block’; }
+  function ddClose() { trigger.setAttribute(‘aria-expanded’,’false’); panel.classList.remove(‘open’); panel.style.display=’none’; }
+  function ddToggle() { panel.style.display === ‘block’ ? ddClose() : ddOpen(); }
 
   trigger.addEventListener(‘click’, ddToggle);
 
