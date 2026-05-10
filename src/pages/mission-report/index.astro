@@ -102,7 +102,7 @@ const latestReport = reports[0] ?? null;
     position:relative; width:100%; background:#f5f2ee;
     border-radius:var(--r-xl); overflow:hidden;
     box-shadow:0 8px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
-    min-height:500px;
+    min-height:360px;
     display:flex; flex-direction:column;
     border:1px solid rgba(0,0,0,0.07);
   }
@@ -148,7 +148,7 @@ const latestReport = reports[0] ?? null;
   /* Flipbook viewport */
   #spread-viewport {
     flex:1; display:flex; align-items:center; justify-content:center;
-    padding:28px 20px; min-height:500px; position:relative; overflow:hidden;
+    padding:20px 16px; min-height:320px; position:relative; overflow:hidden;
     touch-action: none;
     background: #f5f2ee;
   }
@@ -171,32 +171,33 @@ const latestReport = reports[0] ?? null;
   }
   #flip-book.spread-fade-out { opacity: 0; }
 
+  /* Spread images — width:auto + max-width/max-height 로 비율 유지하며 양방향 제약 */
   .spread-img {
     display: block;
+    width: auto;
     height: auto;
-    max-height: var(--page-maxh, 56vh);
-    object-fit: contain;
+    max-height: var(--page-maxh, 40vh);
     user-select: none;
     -webkit-user-drag: none;
-    flex-shrink: 0;
+    flex-shrink: 1;
     transition: max-height 0.2s ease;
   }
   .spread-img-left {
-    width: 50%;
-    box-shadow: -3px 0 16px rgba(0,0,0,0.14), inset -8px 0 18px rgba(0,0,0,0.06);
+    max-width: 50%;
+    box-shadow: -3px 0 16px rgba(0,0,0,0.14), inset -6px 0 14px rgba(0,0,0,0.05);
     border-radius: 2px 0 0 2px;
     border: 1px solid rgba(0,0,0,0.07);
     border-right: none;
   }
   .spread-img-right {
-    width: 50%;
-    box-shadow: 3px 0 16px rgba(0,0,0,0.14), inset 8px 0 18px rgba(0,0,0,0.06);
+    max-width: 50%;
+    box-shadow: 3px 0 16px rgba(0,0,0,0.14), inset 6px 0 14px rgba(0,0,0,0.05);
     border-radius: 0 2px 2px 0;
     border: 1px solid rgba(0,0,0,0.07);
     border-left: none;
   }
   .spread-img-cover {
-    max-width: 52%;
+    max-width: 48%;
     box-shadow: 0 6px 32px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10);
     border-radius: 2px;
     border: 1px solid rgba(0,0,0,0.07);
@@ -223,7 +224,7 @@ const latestReport = reports[0] ?? null;
     width:fit-content;
   }
 
-  @media (max-width:640px) {
+  @media (max-width:768px) {
     .fb-controls { padding:10px 14px; }
     .fb-fullscreen-btn, .fb-zoom-btns { display:none; }
   }
@@ -366,9 +367,9 @@ const latestReport = reports[0] ?? null;
   var PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   var DB_NAME      = 'wolko-pdf-v4';
   var STORE_NAME   = 'pages';
-  var isMobile     = window.innerWidth < 640;
+  var isMobile     = window.innerWidth < 768;
   var SCALE        = isMobile ? 2.0 : 3.0;  /* 렌더 품질: 고정, 변경 불가 */
-  var displayVh    = 54;                     /* 데스크탑 표시 높이 (vh), CSS만 변경 */
+  var displayVh    = 40;                     /* 데스크탑 표시 높이 (vh), CSS만 변경 */
 
   var loadingEl  = document.getElementById('fb-loading');
   var flipBookEl = document.getElementById('flip-book');
