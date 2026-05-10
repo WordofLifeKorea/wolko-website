@@ -40,11 +40,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     display:inline-flex; align-items:center; gap:8px;
     padding:6px 16px; border-radius:999px;
     background:rgba(115,209,245,0.15); border:1px solid rgba(115,209,245,0.3);
-    font-size:11px; font-weight:800; letter-spacing:0.1em; color:var(--l);
+    font-size:11px; font-weight:700; letter-spacing:0.1em; color:var(--l);
     text-transform:uppercase; margin-bottom:20px;
   }
   .ct-hero h1 {
-    font-size: clamp(34px, 5vw, 54px); font-weight:800; line-height:1.15;
+    font-size: clamp(34px, 5vw, 54px); font-weight:700; line-height:1.15;
     color:#fff; margin-bottom:16px; letter-spacing:-0.03em;
   }
   .ct-hero h1 em { font-style:normal; color:var(--l); }
@@ -63,68 +63,105 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     margin-bottom:28px;
   }
   .ct-sh-label {
-    font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase;
+    font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
     color:var(--m);
   }
   .ct-sh-title {
-    font-size:clamp(20px, 2.5vw, 26px); font-weight:800;
+    font-size:clamp(20px, 2.5vw, 26px); font-weight:700;
     color:var(--k); letter-spacing:-0.02em;
   }
 
-  /* ── QUICK CONTACT — horizontal strip ── */
+  /* ── QUICK CONTACT — floating cards ── */
   .ct-strip {
     display:grid;
     grid-template-columns: repeat(5, 1fr);
-    gap:0;
-    background:#fff;
-    border-radius:20px;
-    border:1px solid var(--line);
-    box-shadow:0 4px 28px rgba(0,79,104,0.07);
-    overflow:hidden;
+    gap:14px;
     margin-bottom:56px;
   }
   .ct-strip-item {
-    display:flex; flex-direction:column; align-items:flex-start;
-    padding:28px 24px 26px;
+    display:flex; flex-direction:column;
+    padding:26px 22px 24px;
+    background:#fff;
+    border-radius:20px;
+    border:1px solid var(--line);
+    box-shadow:0 2px 16px rgba(0,79,104,0.06);
     text-decoration:none;
-    border-right:1px solid var(--line);
     position:relative; overflow:hidden;
-    transition:background .18s;
-    gap:14px;
+    transition:transform .22s cubic-bezier(.34,1.3,.64,1), box-shadow .22s ease;
+    gap:18px;
   }
-  .ct-strip-item:last-child { border-right:none; }
+  /* gradient shine overlay on hover */
+  .ct-strip-item::before {
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(135deg, rgba(0,126,161,0.05) 0%, transparent 70%);
+    opacity:0; transition:opacity .22s;
+    pointer-events:none; border-radius:inherit;
+  }
+  /* bottom accent line */
   .ct-strip-item::after {
-    content:""; position:absolute; bottom:0; left:0;
-    width:100%; height:3px;
-    background:var(--d); transform:scaleX(0); transform-origin:left;
-    transition:transform .22s ease;
+    content:""; position:absolute; bottom:0; left:16px; right:16px;
+    height:2px; border-radius:2px 2px 0 0;
+    background:linear-gradient(90deg, var(--d), var(--m));
+    transform:scaleX(0); transform-origin:left;
+    transition:transform .25s cubic-bezier(.34,1.2,.64,1);
   }
-  .ct-strip-item:hover { background:#f5fafd; }
-  .ct-strip-item:hover::after { transform:scaleX(1); }
+  .ct-strip-item:hover {
+    transform:translateY(-6px);
+    box-shadow:0 16px 40px rgba(0,79,104,0.13);
+  }
+  .ct-strip-item:hover::before { opacity:1; }
+  .ct-strip-item:hover::after  { transform:scaleX(1); }
 
+  /* icon */
   .ct-strip-icon {
-    width:42px; height:42px; border-radius:12px;
+    width:48px; height:48px; border-radius:14px;
     display:flex; align-items:center; justify-content:center;
     flex-shrink:0;
+    transition:transform .22s cubic-bezier(.34,1.3,.64,1);
   }
-  .ct-strip-icon svg { width:20px; height:20px; }
-  .ct-strip-icon.phone { background:rgba(0,79,104,0.08); color:var(--d); }
-  .ct-strip-icon.email { background:rgba(196,42,54,0.08); color:var(--r); }
-  .ct-strip-icon.yt    { background:rgba(220,38,38,0.08); color:#dc2626; }
+  .ct-strip-item:hover .ct-strip-icon { transform:scale(1.1); }
+  .ct-strip-icon svg { width:22px; height:22px; }
+  .ct-strip-icon.phone {
+    background:linear-gradient(135deg,#e8f4f9 0%,#c8e8f5 100%);
+    color:var(--d);
+    box-shadow:0 2px 8px rgba(0,79,104,0.12);
+  }
+  .ct-strip-icon.email {
+    background:linear-gradient(135deg,#fdf0f1 0%,#fadde0 100%);
+    color:var(--r);
+    box-shadow:0 2px 8px rgba(196,42,54,0.12);
+  }
+  .ct-strip-icon.yt {
+    background:linear-gradient(135deg,#fff0f0 0%,#ffdada 100%);
+    color:#dc2626;
+    box-shadow:0 2px 8px rgba(220,38,38,0.12);
+  }
 
   .ct-strip-body { flex:1; min-width:0; }
   .ct-strip-label {
-    font-size:10px; font-weight:800; letter-spacing:0.09em; text-transform:uppercase;
-    color:var(--s); margin-bottom:4px;
+    font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--s); margin-bottom:5px;
   }
   .ct-strip-val {
-    font-size:14px; font-weight:700; color:var(--k);
+    font-size:14px; font-weight:600; color:var(--k);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    line-height:1.4;
+    line-height:1.35;
   }
   .ct-strip-sub {
-    font-size:11px; color:var(--s); margin-top:2px; line-height:1.4;
+    font-size:11px; font-weight:400; color:var(--s); margin-top:4px; line-height:1.4;
   }
+
+  /* external link arrow badge */
+  .ct-strip-arrow {
+    position:absolute; top:18px; right:18px;
+    width:24px; height:24px; border-radius:50%;
+    background:rgba(0,79,104,0.06);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transform:translate(4px,-4px);
+    transition:opacity .2s, transform .2s;
+  }
+  .ct-strip-arrow svg { width:12px; height:12px; stroke:var(--m); }
+  .ct-strip-item:hover .ct-strip-arrow { opacity:1; transform:translate(0,0); }
 
   /* ── OFFICE CARDS ── */
   .ct-offices {
@@ -159,11 +196,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .ct-office-badge-icon svg { width:22px; height:22px; stroke:#fff; fill:none; }
   .ct-office-head-text {}
   .ct-office-tag {
-    font-size:10px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
+    font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
     color:var(--m); margin-bottom:4px;
   }
-  .ct-office-head h2 { font-size:19px; font-weight:800; color:var(--k); margin:0 0 2px; }
-  .ct-office-head p { font-size:12px; color:var(--s); margin:0; line-height:1.5; }
+  .ct-office-head h2 { font-size:18px; font-weight:700; color:var(--k); margin:0 0 3px; letter-spacing:-0.01em; }
+  .ct-office-head p { font-size:13px; font-weight:400; color:var(--s); margin:0; line-height:1.6; }
 
   .ct-office-body { padding:8px 32px 24px; }
   .ct-info-row {
@@ -177,8 +214,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     flex-shrink:0; color:var(--m);
   }
   .ct-info-icon svg { width:15px; height:15px; }
-  .ct-info-label { font-size:10px; font-weight:700; color:var(--s); letter-spacing:0.07em; text-transform:uppercase; margin-bottom:2px; }
-  .ct-info-val { font-size:14px; font-weight:600; color:var(--k); line-height:1.55; }
+  .ct-info-label { font-size:10px; font-weight:700; color:var(--s); letter-spacing:0.10em; text-transform:uppercase; margin-bottom:2px; }
+  .ct-info-val { font-size:14px; font-weight:500; color:var(--k); line-height:1.6; }
   .ct-info-val a { color:var(--d); text-decoration:none; }
   .ct-info-val a:hover { text-decoration:underline; }
 
@@ -194,21 +231,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     margin-bottom:28px;
   }
   .ct-dropdown-label {
-    font-size:11px; font-weight:800; color:var(--d);
-    letter-spacing:0.07em; text-transform:uppercase; margin-bottom:10px;
+    font-size:11px; font-weight:700; color:var(--d);
+    letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;
     display:block;
   }
   .ct-select-wrap {
     position:relative;
   }
   .ct-select-wrap select {
-    width:100%; padding:14px 44px 14px 16px;
+    width:100%; padding:13px 44px 13px 16px;
     border:1.5px solid rgba(0,79,104,0.18);
     border-radius:12px; font-size:15px; color:var(--k);
     background:#fafcfe; transition:border-color .2s, box-shadow .2s;
     font-family:inherit; outline:none;
     appearance:none; -webkit-appearance:none; cursor:pointer;
-    font-weight:600;
+    font-weight:400;
   }
   .ct-select-wrap select:focus {
     border-color:var(--m); box-shadow:0 0 0 3px rgba(0,126,161,0.1);
@@ -227,7 +264,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .ct-field { display:flex; flex-direction:column; gap:8px; }
   .ct-field.full { grid-column:1/-1; }
   .ct-field label {
-    font-size:11px; font-weight:800; color:var(--d); letter-spacing:0.06em; text-transform:uppercase;
+    font-size:11px; font-weight:700; color:var(--d); letter-spacing:0.08em; text-transform:uppercase;
   }
   .ct-field input, .ct-field textarea {
     width:100%; padding:13px 16px; border:1.5px solid rgba(0,79,104,0.18);
@@ -248,7 +285,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     display:inline-flex; align-items:center; gap:10px;
     padding:14px 36px; border-radius:999px;
     background:var(--d); color:#fff; border:none; cursor:pointer;
-    font-size:15px; font-weight:800; letter-spacing:0.02em;
+    font-size:15px; font-weight:700; letter-spacing:0.02em;
     transition:background .2s, transform .2s;
     font-family:inherit; flex-shrink:0;
   }
@@ -260,24 +297,50 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     flex:1; min-width:220px;
   }
 
+  /* privacy consent */
+  .ct-privacy {
+    margin-top:16px;
+    display:flex; align-items:center; gap:7px;
+    font-size:12px; color:var(--s); line-height:1.6;
+  }
+  .ct-privacy-icon {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:16px; height:16px; border-radius:50%;
+    border:1.5px solid var(--s); flex-shrink:0;
+    font-size:10px; font-weight:700; color:var(--s);
+    cursor:default; position:relative;
+  }
+  .ct-privacy-tooltip {
+    position:absolute; bottom:calc(100% + 8px); left:50%;
+    transform:translateX(-50%);
+    background:var(--k); color:#fff;
+    font-size:11.5px; font-weight:400; line-height:1.6;
+    padding:8px 12px; border-radius:8px;
+    white-space:nowrap; pointer-events:none;
+    opacity:0; transition:opacity .18s;
+    box-shadow:0 4px 16px rgba(0,0,0,0.18);
+    z-index:10;
+  }
+  .ct-privacy-tooltip::after {
+    content:""; position:absolute; top:100%; left:50%;
+    transform:translateX(-50%);
+    border:5px solid transparent;
+    border-top-color:var(--k);
+  }
+  .ct-privacy-icon:hover .ct-privacy-tooltip { opacity:1; }
+
   /* ── RESPONSIVE ── */
   @media(max-width:1000px) {
     .ct-strip { grid-template-columns:repeat(3,1fr); }
-    .ct-strip-item:nth-child(3) { border-right:none; }
-    .ct-strip-item:nth-child(4) { border-top:1px solid var(--line); }
-    .ct-strip-item:nth-child(5) { border-top:1px solid var(--line); border-right:none; }
+    .ct-strip-item:nth-child(4),
+    .ct-strip-item:nth-child(5) { grid-column:auto; }
   }
   @media(max-width:860px) {
     .ct-offices { grid-template-columns:1fr; }
   }
   @media(max-width:700px) {
-    .ct-strip { grid-template-columns:1fr 1fr; border-radius:16px; }
-    .ct-strip-item { border-right:1px solid var(--line) !important; border-top:1px solid var(--line); }
-    .ct-strip-item:nth-child(1),
-    .ct-strip-item:nth-child(2) { border-top:none; }
-    .ct-strip-item:nth-child(2),
-    .ct-strip-item:nth-child(4) { border-right:none !important; }
-    .ct-strip-item:nth-child(5) { grid-column:1/-1; border-right:none !important; }
+    .ct-strip { grid-template-columns:1fr 1fr; gap:10px; }
+    .ct-strip-item:nth-child(5) { grid-column:1/-1; }
   }
   @media(max-width:640px) {
     .ct-form-wrap { padding:28px 20px; }
@@ -315,6 +378,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <div class="ct-strip">
 
       <a class="ct-strip-item" href="tel:070-4190-6084">
+        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
         <div class="ct-strip-icon phone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.42 2 2 0 0 1 3.89 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
@@ -328,6 +392,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </a>
 
       <a class="ct-strip-item" href="tel:064-799-3707">
+        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
         <div class="ct-strip-icon phone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.42 2 2 0 0 1 3.89 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
@@ -341,6 +406,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </a>
 
       <a class="ct-strip-item" href="mailto:wolkorea@gmail.com">
+        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
         <div class="ct-strip-icon email">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -355,6 +421,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </a>
 
       <a class="ct-strip-item" href="https://www.youtube.com/@wolkorea" target="_blank" rel="noopener">
+        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
         <div class="ct-strip-icon yt">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
@@ -369,6 +436,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </a>
 
       <a class="ct-strip-item" href="https://www.youtube.com/@wordoflifebibleinstituteje1608" target="_blank" rel="noopener">
+        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
         <div class="ct-strip-icon yt">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
@@ -610,6 +678,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <span class="wl-en">📌 We typically respond within 1–2 business days. For urgent matters, please call us directly.</span>
           </p>
         </div>
+
+        <p class="ct-privacy">
+          <span class="ct-privacy-icon">?
+            <span class="ct-privacy-tooltip">
+              <span class="wl-ko">개인정보는 수집 후 본인의 삭제 요청 시까지 보관됩니다.</span>
+              <span class="wl-en">Your information is retained until you request its deletion.</span>
+            </span>
+          </span>
+          <span class="wl-ko">문의를 보내주시면 문의 처리를 위한 개인정보 수집·이용에 동의하신 것으로 간주됩니다.</span>
+          <span class="wl-en">By sending this message, you agree to the collection and use of your personal information for the purpose of responding to your inquiry.</span>
+        </p>
 
       </form>
     </div>
