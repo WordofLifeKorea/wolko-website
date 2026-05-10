@@ -918,8 +918,9 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     var anchorElX = 0, anchorElY = 0;   /* 앵커 포인트: 요소 자연좌표계 */
     var gStartZoom = 1;                  /* 제스처 시작 시 zoom 값 */
     var gStartTx = 0, gStartTy = 0;     /* 제스처 시작 시 translate 값 */
-    var panStart   = { x: 0, y: 0 };
-    var isPinching = false;
+    var panStart    = { x: 0, y: 0 };
+    var swipeStartX = 0;
+    var isPinching  = false;
 
     function dist(t) {
       var dx = t[0].clientX - t[1].clientX;
@@ -965,6 +966,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         anchorElY = (m.y - ir.top)  / gStartZoom;
 
       } else if (e.touches.length === 1) {
+        swipeStartX = e.touches[0].clientX;
         if (czoom > 1.05) {
           panStart.x = e.touches[0].clientX - tx;
           panStart.y = e.touches[0].clientY - ty;
@@ -1028,7 +1030,15 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         }
         if (czoom < 1.05) resetTransform();
 
-        /* 스와이프 페이지 넘기기 제거 — 핀치줌 동작과 충돌하여 제거 */
+        /* 스와이프 페이지 넘기기 — 줌 상태가 아닐 때만 작동 */
+        if (isMobile && !wasPinching && czoom <= 1.05 && e.changedTouches.length === 1) {
+          var deltaX = e.changedTouches[0].clientX - swipeStartX;
+          if (Math.abs(deltaX) > 50) {
+            if (deltaX < 0) navigateNext();
+            else navigatePrev();
+            return;
+          }
+        }
       }
 
       /* Double-tap to reset zoom
