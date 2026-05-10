@@ -169,10 +169,11 @@ const latestReport = reports[0] ?? null;
     width:100%; height:100%;
     transition: opacity 0.18s ease;
   }
-  #flip-book.spread-fade-out { opacity: 0; }
+  /* spread-fade-out는 JS로 동적 추가 → :global */
+  :global(#flip-book.spread-fade-out) { opacity: 0; }
 
-  /* Spread images — width:auto + max-width/max-height 로 비율 유지하며 양방향 제약 */
-  .spread-img {
+  /* JS로 동적 생성한 요소 → Astro 스코프 적용 안 됨 → :global() 필수 */
+  :global(.spread-img) {
     display: block;
     width: auto;
     height: auto;
@@ -182,21 +183,21 @@ const latestReport = reports[0] ?? null;
     flex-shrink: 1;
     transition: max-height 0.2s ease;
   }
-  .spread-img-left {
+  :global(.spread-img-left) {
     max-width: 50%;
     box-shadow: -3px 0 16px rgba(0,0,0,0.14), inset -6px 0 14px rgba(0,0,0,0.05);
     border-radius: 2px 0 0 2px;
     border: 1px solid rgba(0,0,0,0.07);
     border-right: none;
   }
-  .spread-img-right {
+  :global(.spread-img-right) {
     max-width: 50%;
     box-shadow: 3px 0 16px rgba(0,0,0,0.14), inset 6px 0 14px rgba(0,0,0,0.05);
     border-radius: 0 2px 2px 0;
     border: 1px solid rgba(0,0,0,0.07);
     border-left: none;
   }
-  .spread-img-cover {
+  :global(.spread-img-cover) {
     max-width: 48%;
     box-shadow: 0 6px 32px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10);
     border-radius: 2px;
@@ -369,7 +370,7 @@ const latestReport = reports[0] ?? null;
   var STORE_NAME   = 'pages';
   var isMobile     = window.innerWidth < 768;
   var SCALE        = isMobile ? 2.0 : 3.0;  /* 렌더 품질: 고정, 변경 불가 */
-  var displayVh    = 40;                     /* 데스크탑 표시 높이 (vh), CSS만 변경 */
+  var displayVh    = 80;                     /* 데스크탑 표시 높이 (vh), CSS만 변경 */
 
   var loadingEl  = document.getElementById('fb-loading');
   var flipBookEl = document.getElementById('flip-book');
