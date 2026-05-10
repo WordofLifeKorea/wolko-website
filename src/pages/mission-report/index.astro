@@ -332,6 +332,23 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     font-size: 10px; font-weight: 800;
   }
 
+  /* Thumbnail image in quarter card */
+  .qc-thumb {
+    width: 64px; height: 84px; object-fit: cover;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.18);
+    display: block; flex-shrink: 0;
+  }
+  .qc-thumb-wrap {
+    position: relative; width: 64px; height: 84px; display: flex;
+  }
+  .qc-thumb-spine {
+    width: 13px; height: 84px; flex-shrink: 0;
+    background: linear-gradient(180deg, #004f68 0%, #0a5b76 100%);
+    border-radius: 3px 0 0 3px;
+    box-shadow: inset -2px 0 4px rgba(0,0,0,0.15);
+  }
+
   @media (max-width: 768px) {
     .fb-controls { padding: 10px 14px; }
     .fb-fullscreen-btn, .fb-zoom-btns { display: none; }
@@ -395,13 +412,20 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
                   data-title-en={r?.data.title_en ?? ''}
                   data-date={r?.data.date ?? ''}
                 >
-                  <div class="qc-book">
-                    <div class="qc-book-spine"></div>
-                    <div class="qc-book-cover">
-                      <span class="qc-q-label">{q.key}</span>
-                      <span class="qc-y-label">{yr}</span>
+                  {r?.data.thumbnail_url ? (
+                    <div class="qc-thumb-wrap">
+                      <div class="qc-thumb-spine"></div>
+                      <img class="qc-thumb" src={r.data.thumbnail_url} alt={r.data.title_ko} loading="lazy" />
                     </div>
-                  </div>
+                  ) : (
+                    <div class="qc-book">
+                      <div class="qc-book-spine"></div>
+                      <div class="qc-book-cover">
+                        <span class="qc-q-label">{q.key}</span>
+                        <span class="qc-y-label">{yr}</span>
+                      </div>
+                    </div>
+                  )}
                   <div class="qc-label">
                     <span class="wl-ko">{q.ko}</span>
                     <span class="wl-en">{q.en}</span>
@@ -413,8 +437,8 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
                   )}
                   {!r && (
                     <div class="qc-empty-label">
-                      <span class="wl-ko">준비 중</span>
-                      <span class="wl-en">Coming Soon</span>
+                      <span class="wl-ko">해당 소식지는 발행되지 않았습니다</span>
+                      <span class="wl-en">This issue was not published</span>
                     </div>
                   )}
                   {isCurrent && (
