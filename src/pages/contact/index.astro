@@ -738,83 +738,87 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <script is:inline>
 /* ── Custom dropdown ── */
 (function() {
-  const trigger = document.getElementById('ctDdTrigger');
-  const panel   = document.getElementById('ctDdPanel');
-  const selected = document.getElementById('ctDdSelected');
+  var trigger = document.getElementById(‘ctDdTrigger’);
+  var panel   = document.getElementById(‘ctDdPanel’);
+  var selected = document.getElementById(‘ctDdSelected’);
+  if (!trigger || !panel || !selected) return;
 
-  function open()  { trigger.setAttribute('aria-expanded','true');  panel.classList.add('open'); }
-  function close() { trigger.setAttribute('aria-expanded','false'); panel.classList.remove('open'); }
-  function toggle(){ trigger.getAttribute('aria-expanded')==='true' ? close() : open(); }
+  function ddOpen()  { trigger.setAttribute(‘aria-expanded’,’true’);  panel.classList.add(‘open’); }
+  function ddClose() { trigger.setAttribute(‘aria-expanded’,’false’); panel.classList.remove(‘open’); }
+  function ddToggle() { trigger.getAttribute(‘aria-expanded’) === ‘true’ ? ddClose() : ddOpen(); }
 
-  trigger.addEventListener('click', toggle);
+  trigger.addEventListener(‘click’, ddToggle);
 
-  panel.querySelectorAll('.ct-dd-option').forEach(function(opt) {
-    opt.addEventListener('click', function() {
-      const val = this.dataset.value;
-      document.getElementById('ct-type-val').value = val;
-      // update trigger label
+  panel.querySelectorAll(‘.ct-dd-option’).forEach(function(opt) {
+    opt.addEventListener(‘click’, function() {
+      var val = this.dataset.value;
+      document.getElementById(‘ct-type-val’).value = val;
       selected.innerHTML = this.innerHTML;
-      // mark selected
-      panel.querySelectorAll('.ct-dd-option').forEach(function(o){ o.classList.remove('selected'); });
-      this.classList.add('selected');
-      close();
+      panel.querySelectorAll(‘.ct-dd-option’).forEach(function(o) { o.classList.remove(‘selected’); });
+      this.classList.add(‘selected’);
+      ddClose();
     });
   });
 
-  // close on outside click
-  document.addEventListener('click', function(e) {
-    if (!document.getElementById('ctDropWrap').contains(e.target)) close();
+  document.addEventListener(‘click’, function(e) {
+    var wrap = document.getElementById(‘ctDropWrap’);
+    if (wrap && !wrap.contains(e.target)) ddClose();
   });
 
-  // keyboard: Escape closes
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') close();
+  document.addEventListener(‘keydown’, function(e) {
+    if (e.key === ‘Escape’) ddClose();
   });
 })();
 
 async function handleSubmit(e) {
   e.preventDefault();
-  const form = e.target;
-  const btn  = form.querySelector('.ct-form-btn');
-
-  // 버튼 로딩 상태
-  const btnOriginal = btn.innerHTML;
+  var form = e.target;
+  var btn  = form.querySelector(‘.ct-form-btn’);
+  var btnOriginal = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<span style="opacity:.7">전송 중...</span>';
+  btn.innerHTML = ‘<span style="opacity:.7">전송 중...</span>’;
 
-  const name    = form.querySelector('#ct-name').value.trim();
-  const email   = form.querySelector('#ct-email').value.trim();
-  const phone   = form.querySelector('#ct-phone').value.trim();
-  const type    = document.getElementById('ct-type-val').value;
-  const message = form.querySelector('#ct-msg').value.trim();
+  var name    = form.querySelector(‘#ct-name’).value.trim();
+  var email   = form.querySelector(‘#ct-email’).value.trim();
+  var phone   = (form.querySelector(‘#ct-phone’).value || ‘’).trim();
+  var type    = document.getElementById(‘ct-type-val’).value;
+  var message = form.querySelector(‘#ct-msg’).value.trim();
 
   try {
-    const res = await fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone, type, message }),
+    var res = await fetch(‘/api/contact’, {
+      method: ‘POST’,
+      headers: { ‘Content-Type’: ‘application/json’ },
+      body: JSON.stringify({ name: name, email: email, phone: phone, type: type, message: message }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || '전송 실패');
+      var errData = await res.json().catch(function() { return {}; });
+      throw new Error(errData.error || ‘전송 실패’);
     }
 
-    // 성공 메시지
-    form.innerHTML = `
-      <div style="text-align:center;padding:56px 0;">
-        <div style="font-size:52px;margin-bottom:16px;">✅</div>
-        <p style="font-size:18px;font-weight:700;color:#004f68;line-height:1.6;" class="wl-ko">
-          문의가 접수되었습니다.<br>영업일 기준 1–2일 내로 연락 드리겠습니다.
-        </p>
-        <p style="font-size:18px;font-weight:700;color:#004f68;line-height:1.6;" class="wl-en">
-          Your message has been received.<br>We'll be in touch within 1–2 business days.
-        </p>
-      </div>`;
+    var d = document.createElement(‘div’);
+    d.style.cssText = ‘text-align:center;padding:56px 0;’;
+    var koP = document.createElement(‘p’);
+    koP.className = ‘wl-ko’;
+    koP.style.cssText = ‘font-size:18px;font-weight:700;color:#004f68;line-height:1.6;’;
+    koP.innerHTML = ‘문의가 접수되었습니다.<br>영업일 기준 1–2일 내로 연락 드리겠습니다.’;
+    var enP = document.createElement(‘p’);
+    enP.className = ‘wl-en’;
+    enP.style.cssText = ‘font-size:18px;font-weight:700;color:#004f68;line-height:1.6;’;
+    enP.innerHTML = "Your message has been received.<br>We’ll be in touch within 1–2 business days.";
+    var icon = document.createElement(‘div’);
+    icon.style.cssText = ‘font-size:52px;margin-bottom:16px;’;
+    icon.textContent = ‘✅’;
+    d.appendChild(icon);
+    d.appendChild(koP);
+    d.appendChild(enP);
+    form.innerHTML = ‘’;
+    form.appendChild(d);
+
   } catch (err) {
     btn.disabled = false;
     btn.innerHTML = btnOriginal;
-    alert('전송 중 오류가 발생했습니다. 이메일로 직접 연락해 주세요 — wolkorea1@gmail.com\n\nAn error occurred. Please email us at wolkorea1@gmail.com');
+    alert(‘전송 중 오류가 발생했습니다. 이메일로 직접 연락해 주세요 — wolkorea1@gmail.com\n\nAn error occurred. Please email us at wolkorea1@gmail.com’);
   }
 }
 </script>
