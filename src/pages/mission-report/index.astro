@@ -51,9 +51,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   .hero {
     position:relative; overflow:hidden;
     padding:100px 24px 64px; text-align:center;
-    background:
-      linear-gradient(135deg, rgba(8,61,81,0.82) 0%, rgba(0,79,104,0.75) 60%, rgba(10,91,118,0.70) 100%),
-      url('/images/reports/hero-bg.jpg') center/cover no-repeat;
+    background:linear-gradient(135deg, #083d51 0%, var(--c-deep) 60%, var(--c-mid) 100%);
   }
   .hero::before {
     content:""; position:absolute; inset:0;
@@ -276,46 +274,60 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 
   /* Quarter card grid */
   .quarter-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 20px;
   }
-  @media (max-width: 700px) { .quarter-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 700px) { .quarter-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 14px; } }
 
-  /* Individual quarter card */
+  /* Individual quarter card — borderless bookshelf style */
   .quarter-card {
-    background: var(--c-white); border: 1.5px solid var(--c-line);
-    border-radius: var(--r-lg); padding: 24px 16px 20px;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-    text-align: center; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    background: transparent; border: none; padding: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    text-align: center;
   }
   .quarter-card.has-pdf { cursor: pointer; }
-  .quarter-card.has-pdf:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 32px rgba(0,79,104,0.13);
-    border-color: rgba(0,79,104,0.28);
+  .quarter-card.has-pdf:hover .qc-book,
+  .quarter-card.has-pdf:hover .qc-thumb-wrap {
+    transform: translateY(-7px) rotate(-1deg);
+    box-shadow: 10px 20px 40px rgba(0,79,104,0.22);
   }
-  .quarter-card.no-pdf-slot { opacity: 0.5; cursor: default; }
-  .quarter-card.current {
-    border-color: var(--c-deep); background: rgba(0,79,104,0.04);
+  .quarter-card.no-pdf-slot { opacity: 0.38; cursor: default; }
+  .quarter-card.current .qc-book,
+  .quarter-card.current .qc-thumb-wrap {
+    box-shadow: 5px 8px 20px rgba(0,79,104,0.22);
   }
+  .quarter-card.current .qc-book::after,
+  .quarter-card.current .qc-thumb-wrap::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(0,79,104,0.18);
+    border-radius: 0 6px 6px 0;
+    pointer-events: none;
+  }
+  .qc-book { position: relative; }
+  .qc-thumb-wrap { position: relative; }
 
-  /* Mini book illustration */
-  .qc-book { position: relative; width: 64px; height: 84px; display: flex; }
+  /* Book illustration */
+  .qc-book {
+    width: 108px; height: 148px; display: flex;
+    transition: transform 0.25s cubic-bezier(.22,.68,0,1.2), box-shadow 0.25s;
+    box-shadow: 5px 8px 20px rgba(0,0,0,0.14);
+    border-radius: 0 6px 6px 0;
+  }
   .qc-book-spine {
-    width: 13px; height: 84px; flex-shrink: 0;
+    width: 20px; flex-shrink: 0;
     background: linear-gradient(180deg, #004f68 0%, #0a5b76 100%);
-    border-radius: 3px 0 0 3px;
-    box-shadow: inset -2px 0 4px rgba(0,0,0,0.15);
+    border-radius: 4px 0 0 4px;
+    box-shadow: inset -3px 0 6px rgba(0,0,0,0.22);
   }
   .qc-book-cover {
-    flex: 1; height: 84px;
+    flex: 1;
     background: linear-gradient(135deg, #e8f4f8 0%, #cce5f0 100%);
     border: 1px solid rgba(0,79,104,0.18); border-left: none;
-    border-radius: 0 4px 4px 0;
+    border-radius: 0 6px 6px 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 3px; box-shadow: 2px 2px 10px rgba(0,0,0,0.11);
+    gap: 5px;
   }
-  .qc-q-label { font-size: 14px; font-weight: 900; color: var(--c-deep); }
-  .qc-y-label { font-size: 10px; font-weight: 700; color: var(--c-muted); }
+  .qc-q-label { font-size: 22px; font-weight: 900; color: var(--c-deep); }
+  .qc-y-label { font-size: 12px; font-weight: 700; color: var(--c-muted); }
   .no-pdf-slot .qc-book-spine {
     background: linear-gradient(180deg, #b0b8be 0%, #8a9299 100%);
   }
@@ -325,30 +337,32 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   }
   .no-pdf-slot .qc-q-label { color: #8a9299; }
 
-  .qc-label { font-size: 13px; font-weight: 700; color: var(--c-text); line-height: 1.3; }
+  /* Thumbnail image */
+  .qc-thumb-wrap {
+    width: 108px; height: 148px; display: flex;
+    transition: transform 0.25s cubic-bezier(.22,.68,0,1.2), box-shadow 0.25s;
+    box-shadow: 5px 8px 20px rgba(0,0,0,0.17);
+    border-radius: 0 6px 6px 0;
+  }
+  .qc-thumb-spine {
+    width: 20px; flex-shrink: 0;
+    background: linear-gradient(180deg, #004f68 0%, #0a5b76 100%);
+    border-radius: 4px 0 0 4px;
+    box-shadow: inset -3px 0 6px rgba(0,0,0,0.22);
+  }
+  .qc-thumb {
+    flex: 1; height: 148px; object-fit: cover;
+    border-radius: 0 6px 6px 0;
+    display: block;
+  }
+
+  .qc-label { font-size: 13px; font-weight: 700; color: var(--c-text); line-height: 1.4; }
   .qc-date { font-size: 11px; color: var(--c-muted); }
-  .qc-empty-label { font-size: 11px; color: var(--c-muted); }
+  .qc-empty-label { font-size: 10px; color: var(--c-muted); line-height: 1.5; max-width: 100px; }
   .qc-current-badge {
     display: inline-block; padding: 2px 9px; border-radius: 999px;
     background: rgba(0,79,104,0.10); color: var(--c-deep);
     font-size: 10px; font-weight: 800;
-  }
-
-  /* Thumbnail image in quarter card */
-  .qc-thumb {
-    width: 64px; height: 84px; object-fit: cover;
-    border-radius: 0 4px 4px 0;
-    box-shadow: 2px 2px 10px rgba(0,0,0,0.18);
-    display: block; flex-shrink: 0;
-  }
-  .qc-thumb-wrap {
-    position: relative; width: 64px; height: 84px; display: flex;
-  }
-  .qc-thumb-spine {
-    width: 13px; height: 84px; flex-shrink: 0;
-    background: linear-gradient(180deg, #004f68 0%, #0a5b76 100%);
-    border-radius: 3px 0 0 3px;
-    box-shadow: inset -2px 0 4px rgba(0,0,0,0.15);
   }
 
   @media (max-width: 768px) {
