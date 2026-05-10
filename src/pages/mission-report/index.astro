@@ -357,6 +357,82 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   </div>
 </section>
 
+{/* Archive — Year / Quarter Grid */}
+{reports.length > 0 && (
+  <section class="archive-section">
+    <div class="archive-inner">
+      <div class="archive-section-title">
+        <span class="wl-ko">연도별 선교보고 소식지</span>
+        <span class="wl-en">Mission Reports by Year</span>
+      </div>
+
+      {/* Year tabs */}
+      <div class="year-tabs" id="year-tabs">
+        {years.map((yr, i) => (
+          <button class={`year-tab${i === 0 ? ' active' : ''}`} data-year={yr}>
+            <span class="wl-ko">{yr}년</span>
+            <span class="wl-en">{yr}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Per-year quarter grids */}
+      {years.map((yr, yi) => (
+        <div class={`year-grid${yi === 0 ? ' active' : ''}`} data-year-grid={yr}>
+          <div class="quarter-grid">
+            {QUARTERS.map((q) => {
+              const r = byYear[yr]?.[q.key] ?? null;
+              const isCurrent = r && r === latestReport;
+              return (
+                <div
+                  class={[
+                    'quarter-card',
+                    r ? 'has-pdf' : 'no-pdf-slot',
+                    isCurrent ? 'current' : ''
+                  ].filter(Boolean).join(' ')}
+                  data-pdf={r?.data.pdf_url ?? ''}
+                  data-title-ko={r?.data.title_ko ?? ''}
+                  data-title-en={r?.data.title_en ?? ''}
+                  data-date={r?.data.date ?? ''}
+                >
+                  <div class="qc-book">
+                    <div class="qc-book-spine"></div>
+                    <div class="qc-book-cover">
+                      <span class="qc-q-label">{q.key}</span>
+                      <span class="qc-y-label">{yr}</span>
+                    </div>
+                  </div>
+                  <div class="qc-label">
+                    <span class="wl-ko">{q.ko}</span>
+                    <span class="wl-en">{q.en}</span>
+                  </div>
+                  {r && (
+                    <div class="qc-date">
+                      {new Date(r.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}
+                    </div>
+                  )}
+                  {!r && (
+                    <div class="qc-empty-label">
+                      <span class="wl-ko">준비 중</span>
+                      <span class="wl-en">Coming Soon</span>
+                    </div>
+                  )}
+                  {isCurrent && (
+                    <span class="qc-current-badge">
+                      <span class="wl-ko">현재 보는 중</span>
+                      <span class="wl-en">Viewing</span>
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
 <!-- FLIPBOOK -->
 <section class="flipbook-section">
   <div class="flipbook-wrap">
@@ -440,82 +516,6 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     )}
   </div>
 </section>
-
-{/* Archive — Year / Quarter Grid */}
-{reports.length > 0 && (
-  <section class="archive-section">
-    <div class="archive-inner">
-      <div class="archive-section-title">
-        <span class="wl-ko">연도별 선교보고 소식지</span>
-        <span class="wl-en">Mission Reports by Year</span>
-      </div>
-
-      {/* Year tabs */}
-      <div class="year-tabs" id="year-tabs">
-        {years.map((yr, i) => (
-          <button class={`year-tab${i === 0 ? ' active' : ''}`} data-year={yr}>
-            <span class="wl-ko">{yr}년</span>
-            <span class="wl-en">{yr}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Per-year quarter grids */}
-      {years.map((yr, yi) => (
-        <div class={`year-grid${yi === 0 ? ' active' : ''}`} data-year-grid={yr}>
-          <div class="quarter-grid">
-            {QUARTERS.map((q) => {
-              const r = byYear[yr]?.[q.key] ?? null;
-              const isCurrent = r && r === latestReport;
-              return (
-                <div
-                  class={[
-                    'quarter-card',
-                    r ? 'has-pdf' : 'no-pdf-slot',
-                    isCurrent ? 'current' : ''
-                  ].filter(Boolean).join(' ')}
-                  data-pdf={r?.data.pdf_url ?? ''}
-                  data-title-ko={r?.data.title_ko ?? ''}
-                  data-title-en={r?.data.title_en ?? ''}
-                  data-date={r?.data.date ?? ''}
-                >
-                  <div class="qc-book">
-                    <div class="qc-book-spine"></div>
-                    <div class="qc-book-cover">
-                      <span class="qc-q-label">{q.key}</span>
-                      <span class="qc-y-label">{yr}</span>
-                    </div>
-                  </div>
-                  <div class="qc-label">
-                    <span class="wl-ko">{q.ko}</span>
-                    <span class="wl-en">{q.en}</span>
-                  </div>
-                  {r && (
-                    <div class="qc-date">
-                      {new Date(r.data.date).toLocaleDateString('ko-KR', { year:'numeric', month:'long' })}
-                    </div>
-                  )}
-                  {!r && (
-                    <div class="qc-empty-label">
-                      <span class="wl-ko">준비 중</span>
-                      <span class="wl-en">Coming Soon</span>
-                    </div>
-                  )}
-                  {isCurrent && (
-                    <span class="qc-current-badge">
-                      <span class="wl-ko">현재 보는 중</span>
-                      <span class="wl-en">Viewing</span>
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
-)}
 
 <script is:inline>
 (function () {
@@ -984,14 +984,19 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     }, { passive: false });
 
     var lastTap = 0;
+    var pinchEndedAt = 0;
+
     vp.addEventListener('touchend', function (e) {
       if (e.touches.length < 2) {
         var wasPinching = isPinching;
         isPinching = false;
         lastZoom = czoom;
         ltx = tx; lty = ty;
+        /* 핀치 종료 시각 기록 */
+        if (wasPinching) pinchEndedAt = Date.now();
         if (czoom < 1.05) resetTransform();
 
+        /* Swipe navigation */
         if (isMobile && !wasPinching && czoom <= 1.05 && e.changedTouches.length === 1) {
           var deltaX = e.changedTouches[0].clientX - swipeStartX;
           if (Math.abs(deltaX) > 50) {
@@ -1001,10 +1006,17 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
           }
         }
       }
-      if (e.changedTouches.length === 1) {
-        var now = Date.now();
-        if (now - lastTap < 300) resetTransform();
-        lastTap = now;
+
+      /* Double-tap to reset zoom
+         핀치 종료 후 500ms 안에는 더블탭 감지 건너뜀.
+         핀치 끝날 때 두 손가락이 연달아 떼어지면서 더블탭으로 오인해
+         resetTransform()이 즉시 호출되는 버그를 방지함. */
+      if (e.changedTouches.length === 1 && e.touches.length === 0) {
+        if (Date.now() - pinchEndedAt > 500) {
+          var now = Date.now();
+          if (now - lastTap < 300) resetTransform();
+          lastTap = now;
+        }
       }
     });
   })();
