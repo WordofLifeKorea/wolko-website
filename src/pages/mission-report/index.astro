@@ -153,6 +153,31 @@ const latestReport = reports[0] ?? null;
     background: #f5f2ee;
   }
 
+  /* Side arrow buttons */
+  .fb-arrow-btn {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    width: 36px; height: 64px;
+    background: rgba(255,255,255,0.82);
+    border: 1px solid rgba(0,0,0,0.09);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 20;
+    color: var(--c-text);
+    opacity: 0.45;
+    transition: opacity 0.18s, background 0.18s, transform 0.18s;
+    backdrop-filter: blur(4px);
+  }
+  .fb-arrow-btn:hover:not(:disabled) {
+    opacity: 1; background: #fff;
+    transform: translateY(-50%) scale(1.07);
+  }
+  .fb-arrow-btn:disabled { opacity: 0.12; cursor: default; }
+  #fb-arrow-prev { left: 10px; }
+  #fb-arrow-next { right: 10px; }
+  @media (max-width: 768px) { .fb-arrow-btn { display: none; } }
+
   .fb-loading-indicator {
     position:absolute; inset:0; display:flex; flex-direction:column;
     align-items:center; justify-content:center; gap:14px; color:var(--c-muted);
@@ -303,6 +328,12 @@ const latestReport = reports[0] ?? null;
             </div>
           </div>
           <div id="spread-viewport">
+            <button class="fb-arrow-btn" id="fb-arrow-prev" title="이전 페이지" disabled>
+              <svg width="12" height="20" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="fb-arrow-btn" id="fb-arrow-next" title="다음 페이지" disabled>
+              <svg width="12" height="20" viewBox="0 0 12 20" fill="none"><path d="M2 2l8 8-8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
             <div id="fb-loading" class="fb-loading-indicator">
               <div class="fb-spinner"></div>
               <span id="fb-loading-text">
@@ -541,10 +572,14 @@ const latestReport = reports[0] ?? null;
     var fp = spreadIdx === 0 ? 1 : spreadIdx * 2;
     var lp = spreadIdx === 0 ? 1 : Math.min(spreadIdx * 2 + 1, allPages.length);
     pageInfo.textContent = fp + (lp > fp ? '–' + lp : '') + ' / ' + allPages.length;
-    document.getElementById('fb-prev').disabled  = spreadIdx === 0;
-    document.getElementById('fb-first').disabled = spreadIdx === 0;
-    document.getElementById('fb-next').disabled  = spreadIdx >= totalSpreads - 1;
-    document.getElementById('fb-last').disabled  = spreadIdx >= totalSpreads - 1;
+    var atFirst = spreadIdx === 0;
+    var atLast  = spreadIdx >= totalSpreads - 1;
+    document.getElementById('fb-prev').disabled  = atFirst;
+    document.getElementById('fb-first').disabled = atFirst;
+    document.getElementById('fb-next').disabled  = atLast;
+    document.getElementById('fb-last').disabled  = atLast;
+    document.getElementById('fb-arrow-prev').disabled = atFirst;
+    document.getElementById('fb-arrow-next').disabled = atLast;
   }
 
   function goDesktopSpread(idx) {
@@ -618,10 +653,12 @@ const latestReport = reports[0] ?? null;
   });
 
   /* ── Navigation buttons ── */
-  document.getElementById('fb-prev').addEventListener('click',  navigatePrev);
-  document.getElementById('fb-next').addEventListener('click',  navigateNext);
-  document.getElementById('fb-first').addEventListener('click', navigateFirst);
-  document.getElementById('fb-last').addEventListener('click',  navigateLast);
+  document.getElementById('fb-prev').addEventListener('click',       navigatePrev);
+  document.getElementById('fb-next').addEventListener('click',       navigateNext);
+  document.getElementById('fb-first').addEventListener('click',      navigateFirst);
+  document.getElementById('fb-last').addEventListener('click',       navigateLast);
+  document.getElementById('fb-arrow-prev').addEventListener('click', navigatePrev);
+  document.getElementById('fb-arrow-next').addEventListener('click', navigateNext);
 
   document.getElementById('fb-fullscreen').addEventListener('click', function () {
     if (document.fullscreenElement) document.exitFullscreen();
