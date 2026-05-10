@@ -226,70 +226,31 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     border:1px solid var(--line);
   }
 
-  /* ── CUSTOM DROPDOWN ── */
-  .ct-dropdown-wrap { margin-bottom:28px; position:relative; }
+  /* ── INQUIRY DROPDOWN ── */
+  .ct-dropdown-wrap { margin-bottom:28px; }
   .ct-dropdown-label {
     font-size:11px; font-weight:700; color:var(--d);
     letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;
     display:block;
   }
-
-  /* trigger button */
-  .ct-dd-trigger {
+  .ct-select-wrap { position:relative; }
+  .ct-select-wrap select {
     width:100%; padding:13px 44px 13px 16px;
     border:1.5px solid rgba(0,79,104,0.18);
     border-radius:12px; font-size:15px; color:var(--k);
-    background:#fafcfe; cursor:pointer; text-align:left;
-    font-family:inherit; font-weight:400; outline:none;
-    display:flex; align-items:center; justify-content:space-between;
-    transition:border-color .2s, box-shadow .2s, background .2s;
-    position:relative;
+    background:#fafcfe; font-family:inherit; font-weight:400;
+    outline:none; cursor:pointer;
+    appearance:none; -webkit-appearance:none;
+    transition:border-color .2s, box-shadow .2s;
   }
-  .ct-dd-trigger:hover,
-  .ct-dd-trigger[aria-expanded="true"] {
-    border-color:var(--m); box-shadow:0 0 0 3px rgba(0,126,161,0.1);
-    background:#fff;
+  .ct-select-wrap select:focus {
+    border-color:var(--m); box-shadow:0 0 0 3px rgba(0,126,161,0.1); background:#fff;
   }
-  .ct-dd-chevron {
-    flex-shrink:0; color:var(--s);
-    transition:transform .22s ease;
+  .ct-select-chevron {
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    pointer-events:none; color:var(--s);
   }
-  .ct-dd-trigger[aria-expanded="true"] .ct-dd-chevron { transform:rotate(180deg); }
-  .ct-dd-chevron svg { width:18px; height:18px; display:block; }
-
-  /* panel */
-  .ct-dd-panel {
-    display:none;
-    position:absolute; top:calc(100% + 6px); left:0; right:0;
-    background:#fff;
-    border:1.5px solid rgba(0,79,104,0.15);
-    border-radius:14px;
-    box-shadow:0 8px 32px rgba(0,79,104,0.12);
-    z-index:100; overflow:hidden;
-  }
-  .ct-dd-panel.open {
-    display:block;
-  }
-
-  /* option */
-  .ct-dd-option {
-    padding:12px 16px;
-    font-size:14px; font-weight:400; color:var(--k);
-    cursor:pointer; transition:background .14s;
-    border-bottom:1px solid rgba(0,79,104,0.07);
-  }
-  .ct-dd-option:last-child { border-bottom:none; }
-  .ct-dd-option:hover { background:rgba(0,126,161,0.05); }
-  .ct-dd-option.selected {
-    background:rgba(0,79,104,0.06);
-    color:var(--d); font-weight:600;
-  }
-
-  /* divider */
-  .ct-dd-divider {
-    height:1px; background:rgba(0,79,104,0.1);
-    margin:0;
-  }
+  .ct-select-chevron svg { width:18px; height:18px; display:block; }
 
   /* Form grid */
   .ct-form-grid {
@@ -642,31 +603,33 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <form onsubmit="handleSubmit(event)">
         <input type="hidden" name="type" id="ct-type-val" value="general" />
 
-        <!-- 문의 유형 커스텀 드롭다운 -->
-        <div class="ct-dropdown-wrap" id="ctDropWrap">
-          <label class="ct-dropdown-label">
+        <!-- 문의 유형 드롭다운 -->
+        <div class="ct-dropdown-wrap">
+          <label class="ct-dropdown-label" for="ct-type-select">
             <span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span>
           </label>
-          <button type="button" class="ct-dd-trigger" id="ctDdTrigger" aria-expanded="false" aria-haspopup="listbox">
-            <span id="ctDdSelected"><span class="wl-ko">일반 문의</span><span class="wl-en">General Inquiry</span></span>
-            <span class="ct-dd-chevron">
+          <div class="ct-select-wrap">
+            <select id="ct-type-select" onchange="document.getElementById('ct-type-val').value=this.value">
+              <optgroup label="─────────────────────────">
+                <option value="general">일반 문의 / General Inquiry</option>
+                <option value="ministry">사역 협력 / Ministry Partnership</option>
+                <option value="mission">선교팀 / Mission Team</option>
+              </optgroup>
+              <optgroup label="─────────────────────────">
+                <option value="wolbi">제주월비 입학 / WOLBI Admission</option>
+                <option value="camp">캠프 신청 / Camp Registration</option>
+              </optgroup>
+              <optgroup label="─────────────────────────">
+                <option value="give">후원 / Giving</option>
+                <option value="prayer">기도 제목 / Prayer Request</option>
+                <option value="other">기타 / Other</option>
+              </optgroup>
+            </select>
+            <div class="ct-select-chevron">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
-            </span>
-          </button>
-          <div class="ct-dd-panel" id="ctDdPanel" role="listbox">
-            <div class="ct-dd-option selected" data-value="general" role="option"><span class="wl-ko">일반 문의</span><span class="wl-en">General Inquiry</span></div>
-            <div class="ct-dd-option" data-value="ministry" role="option"><span class="wl-ko">사역 협력</span><span class="wl-en">Ministry Partnership</span></div>
-            <div class="ct-dd-option" data-value="mission" role="option"><span class="wl-ko">선교팀</span><span class="wl-en">Mission Team</span></div>
-            <div class="ct-dd-divider"></div>
-            <div class="ct-dd-option" data-value="wolbi" role="option"><span class="wl-ko">제주월비 입학</span><span class="wl-en">WOLBI Admission</span></div>
-            <div class="ct-dd-option" data-value="camp" role="option"><span class="wl-ko">캠프 신청</span><span class="wl-en">Camp Registration</span></div>
-            <div class="ct-dd-divider"></div>
-            <div class="ct-dd-option" data-value="give" role="option"><span class="wl-ko">후원</span><span class="wl-en">Giving</span></div>
-            <div class="ct-dd-option" data-value="prayer" role="option"><span class="wl-ko">기도 제목</span><span class="wl-en">Prayer Request</span></div>
-            <div class="ct-dd-divider"></div>
-            <div class="ct-dd-option" data-value="other" role="option"><span class="wl-ko">기타</span><span class="wl-en">Other</span></div>
+            </div>
           </div>
         </div>
 
@@ -735,40 +698,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </div><!-- end lang-root -->
 
 <script is:inline>
-/* ── Custom dropdown ── */
-(function() {
-  var trigger = document.getElementById(‘ctDdTrigger’);
-  var panel   = document.getElementById(‘ctDdPanel’);
-  var selected = document.getElementById(‘ctDdSelected’);
-  if (!trigger || !panel || !selected) return;
-
-  function ddOpen()  { trigger.setAttribute(‘aria-expanded’,’true’);  panel.classList.add(‘open’); panel.style.display=’block’; }
-  function ddClose() { trigger.setAttribute(‘aria-expanded’,’false’); panel.classList.remove(‘open’); panel.style.display=’none’; }
-  function ddToggle() { panel.style.display === ‘block’ ? ddClose() : ddOpen(); }
-
-  trigger.addEventListener(‘click’, ddToggle);
-
-  panel.querySelectorAll(‘.ct-dd-option’).forEach(function(opt) {
-    opt.addEventListener(‘click’, function() {
-      var val = this.dataset.value;
-      document.getElementById(‘ct-type-val’).value = val;
-      selected.innerHTML = this.innerHTML;
-      panel.querySelectorAll(‘.ct-dd-option’).forEach(function(o) { o.classList.remove(‘selected’); });
-      this.classList.add(‘selected’);
-      ddClose();
-    });
-  });
-
-  document.addEventListener(‘click’, function(e) {
-    var wrap = document.getElementById(‘ctDropWrap’);
-    if (wrap && !wrap.contains(e.target)) ddClose();
-  });
-
-  document.addEventListener(‘keydown’, function(e) {
-    if (e.key === ‘Escape’) ddClose();
-  });
-})();
-
 async function handleSubmit(e) {
   e.preventDefault();
   var form = e.target;
