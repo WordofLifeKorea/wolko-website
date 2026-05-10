@@ -291,19 +291,18 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     box-shadow: 10px 20px 40px rgba(0,79,104,0.22);
   }
   .quarter-card.no-pdf-slot { opacity: 0.38; cursor: default; }
-  .quarter-card.current .qc-book,
-  .quarter-card.current .qc-thumb-wrap {
-    box-shadow: 5px 8px 20px rgba(0,79,104,0.22);
-  }
-  .quarter-card.current .qc-book::after,
-  .quarter-card.current .qc-thumb-wrap::after {
-    content: ''; position: absolute; inset: 0;
-    background: rgba(0,79,104,0.18);
-    border-radius: 0 6px 6px 0;
-    pointer-events: none;
-  }
   .qc-book { position: relative; }
   .qc-thumb-wrap { position: relative; }
+
+  /* Non-current PDFs: grayscale */
+  .quarter-card.has-pdf:not(.current) .qc-book,
+  .quarter-card.has-pdf:not(.current) .qc-thumb-wrap {
+    filter: grayscale(1); opacity: 0.55;
+  }
+  .quarter-card.has-pdf:not(.current):hover .qc-book,
+  .quarter-card.has-pdf:not(.current):hover .qc-thumb-wrap {
+    filter: grayscale(0); opacity: 1;
+  }
 
   /* Book illustration */
   .qc-book {
@@ -458,7 +457,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
                     </div>
                   )}
                   {isCurrent && (
-                    <span class="qc-current-badge">
+                    <span class="qc-current-badge" style="display:none">
                       <span class="wl-ko">현재 보는 중</span>
                       <span class="wl-en">Viewing</span>
                     </span>
