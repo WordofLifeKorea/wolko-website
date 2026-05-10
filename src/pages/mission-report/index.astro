@@ -332,9 +332,9 @@ const latestReport = reports[0] ?? null;
   var PDFJS_SRC    = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
   var PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   var PAGEFLIP_SRC = 'https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js';
-  var DB_NAME      = 'wolko-pdf-v3';
+  var DB_NAME      = 'wolko-pdf-v4';
   var STORE_NAME   = 'pages';
-  var SCALE        = window.innerWidth < 640 ? 2.0 : 3.0;
+  var SCALE        = window.innerWidth < 640 ? 2.5 : 4.0;
 
   var loadingEl  = document.getElementById('fb-loading');
   var flipBookEl = document.getElementById('flip-book');
@@ -391,10 +391,18 @@ const latestReport = reports[0] ?? null;
       var vp = page.getViewport({ scale: SCALE });
       var c  = document.createElement('canvas');
       c.width = vp.width; c.height = vp.height;
-      return page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise
-        .then(function () {
-          return { url: c.toDataURL('image/png'), w: vp.width, h: vp.height };
-        });
+      var ctx = c.getContext('2d', { alpha: false });
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, c.width, c.height);
+      return page.render({
+        canvasContext: ctx,
+        viewport: vp,
+        intent: 'print',          // print intent = maximum sharpness
+      }).promise.then(function () {
+        return { url: c.toDataURL('image/png'), w: vp.width, h: vp.height };
+      });
     });
   }
 
