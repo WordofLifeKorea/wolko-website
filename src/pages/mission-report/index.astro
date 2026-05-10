@@ -949,10 +949,12 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         startDist = dist(e.touches);
         var m = mid(e.touches);
 
-        /* 제스처 시작 상태 스냅샷 */
-        gStartZoom = lastZoom;
-        gStartTx   = ltx;
-        gStartTy   = lty;
+        /* 제스처 시작 상태 스냅샷
+           lastZoom/ltx 대신 czoom/tx를 직접 사용:
+           빠른 연속 핀치 시 touchend가 아직 안 불려 lastZoom이 낡은 값일 수 있음 */
+        gStartZoom = czoom;
+        gStartTx   = tx;
+        gStartTy   = ty;
 
         /* 앵커 포인트를 요소의 자연좌표계로 변환.
            getBoundingClientRect()는 transform 적용 후 실제 화면 위치를 반환하므로
@@ -964,8 +966,8 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 
       } else if (e.touches.length === 1) {
         if (czoom > 1.05) {
-          panStart.x = e.touches[0].clientX - ltx;
-          panStart.y = e.touches[0].clientY - lty;
+          panStart.x = e.touches[0].clientX - tx;
+          panStart.y = e.touches[0].clientY - ty;
         }
       }
     }, { passive: false });
