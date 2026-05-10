@@ -986,15 +986,11 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         tx = gStartTx - anchorElX * (newZoom - gStartZoom);
         ty = gStartTy - anchorElY * (newZoom - gStartZoom);
 
-        /* 패닝 범위 제한 (내용이 뷰포트 밖으로 너무 나가지 않도록) */
-        var ir  = inner.getBoundingClientRect();
-        var vpr = vp.getBoundingClientRect();
-        var natLeft = ir.left - vpr.left - ltx;   /* 요소 자연 x 오프셋 */
-        var natTop  = ir.top  - vpr.top  - lty;
-        var maxTx = Math.max(0, -(natLeft * 2 + inner.offsetWidth  * newZoom - vp.clientWidth)  / 2);
-        var maxTy = Math.max(0, -(natTop  * 2 + inner.offsetHeight * newZoom - vp.clientHeight) / 2);
-        tx = clamp(tx, -maxTx * 2, maxTx * 2);
-        ty = clamp(ty, -maxTy * 2, maxTy * 2);
+        /* 패닝 범위 제한: 콘텐츠가 완전히 화면 밖으로 나가지 않도록 넉넉한 범위 설정 */
+        var clampX = vp.clientWidth  * newZoom;
+        var clampY = vp.clientHeight * newZoom;
+        tx = clamp(tx, -clampX, clampX);
+        ty = clamp(ty, -clampY, clampY);
 
         czoom = newZoom;
         applyTransform();
@@ -1002,10 +998,10 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         e.preventDefault();
         var newTx = e.touches[0].clientX - panStart.x;
         var newTy = e.touches[0].clientY - panStart.y;
-        var maxTx2 = vp.clientWidth  * (czoom - 1);
-        var maxTy2 = vp.clientHeight * (czoom - 1);
-        tx = clamp(newTx, -maxTx2, 0);
-        ty = clamp(newTy, -maxTy2, 0);
+        var maxPanX = vp.clientWidth  * czoom;
+        var maxPanY = vp.clientHeight * czoom;
+        tx = clamp(newTx, -maxPanX, maxPanX);
+        ty = clamp(newTy, -maxPanY, maxPanY);
         applyTransform();
       }
     }, { passive: false });
