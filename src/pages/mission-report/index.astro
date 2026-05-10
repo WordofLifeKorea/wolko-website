@@ -247,7 +247,7 @@ const latestReport = reports[0] ?? null;
           </a>
         </div>
 
-        <div id="flipbook-container">
+        <div id="flipbook-container" data-pdf={latestReport.data.pdf_url}>
           <div class="fb-controls">
             <div class="fb-nav">
               <button class="fb-btn" id="fb-first" title="처음 페이지">
@@ -415,10 +415,12 @@ const latestReport = reports[0] ?? null;
     }
   }
 
-  // Load initial PDF
-  const firstCard = document.querySelector('.archive-card[data-pdf]') || document.querySelector('[data-pdf]');
-  if (firstCard) {
-    await loadPdf(firstCard.dataset.pdf);
+  // Load initial PDF — flipbook-container always has data-pdf if a report exists
+  const container = document.getElementById('flipbook-container');
+  const initialUrl = container?.dataset.pdf
+    || document.querySelector('.archive-card[data-pdf]')?.dataset.pdf;
+  if (initialUrl) {
+    await loadPdf(initialUrl);
   }
 
   // Navigation
