@@ -447,6 +447,103 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     </div>
 
+    <!-- CONTACT FORM -->
+    <div class="ct-sh">
+      <span class="ct-sh-label"><span class="wl-ko">문의 보내기</span><span class="wl-en">Send a Message</span></span>
+    </div>
+    <div class="ct-form-wrap">
+      <form onsubmit="handleSubmit(event)">
+        <input type="hidden" name="type" id="ct-type-val" value="general" />
+
+        <!-- 문의 유형 드롭다운 -->
+        <div class="ct-dropdown-wrap">
+          <label class="ct-dropdown-label" for="ct-type-select">
+            <span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span>
+          </label>
+          <div class="ct-select-wrap">
+            <select id="ct-type-select" onchange="document.getElementById('ct-type-val').value=this.value">
+              <optgroup label="─────────────────────────">
+                <option value="general">일반 문의 / General Inquiry</option>
+                <option value="ministry">사역 협력 / Ministry Partnership</option>
+                <option value="mission">선교팀 / Mission Team</option>
+              </optgroup>
+              <optgroup label="─────────────────────────">
+                <option value="wolbi">제주월비 입학 / WOLBI Admission</option>
+                <option value="camp">캠프 신청 / Camp Registration</option>
+              </optgroup>
+              <optgroup label="─────────────────────────">
+                <option value="give">후원 / Giving</option>
+                <option value="prayer">기도 제목 / Prayer Request</option>
+                <option value="other">기타 / Other</option>
+              </optgroup>
+            </select>
+            <div class="ct-select-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- 기본 정보 -->
+        <div class="ct-form-grid">
+          <div class="ct-field">
+            <label for="ct-name">
+              <span class="wl-ko">이름 *</span><span class="wl-en">Name *</span>
+            </label>
+            <input type="text" id="ct-name" name="name" required
+              placeholder="홍길동 / John Smith" />
+          </div>
+          <div class="ct-field">
+            <label for="ct-email">
+              <span class="wl-ko">이메일 *</span><span class="wl-en">Email *</span>
+            </label>
+            <input type="email" id="ct-email" name="email" required
+              placeholder="example@email.com" />
+          </div>
+          <div class="ct-field">
+            <label for="ct-phone">
+              <span class="wl-ko">연락처</span><span class="wl-en">Phone</span>
+            </label>
+            <input type="tel" id="ct-phone" name="phone"
+              placeholder="010-0000-0000" />
+          </div>
+          <div class="ct-field full">
+            <label for="ct-msg">
+              <span class="wl-ko">내용 *</span><span class="wl-en">Message *</span>
+            </label>
+            <textarea id="ct-msg" name="message" required
+              placeholder="문의 내용을 자유롭게 작성해 주세요. / Please write your message freely."></textarea>
+          </div>
+        </div>
+
+        <div class="ct-form-footer">
+          <button type="submit" class="ct-form-btn">
+            <span class="wl-ko">문의 보내기</span><span class="wl-en">Send Message</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+          <p class="ct-form-note">
+            <span class="wl-ko">📌 보내주신 문의는 영업일 기준 1–2일 내로 답변 드리겠습니다. 긴급한 사항은 전화로 연락해 주세요.</span>
+            <span class="wl-en">📌 We typically respond within 1–2 business days. For urgent matters, please call us directly.</span>
+          </p>
+        </div>
+
+        <p class="ct-privacy">
+          <span class="ct-privacy-icon">?
+            <span class="ct-privacy-tooltip">
+              <span class="wl-ko">개인정보는 수집 후 본인의 삭제 요청 시까지 보관됩니다.</span>
+              <span class="wl-en">Your information is retained until you request its deletion.</span>
+            </span>
+          </span>
+          <span class="wl-ko">문의를 보내주시면 문의 처리를 위한 개인정보 수집·이용에 동의하신 것으로 간주됩니다.</span>
+          <span class="wl-en">By sending this message, you agree to the collection and use of your personal information for the purpose of responding to your inquiry.</span>
+        </p>
+
+      </form>
+    </div>
+
     <!-- OFFICE CARDS -->
     <div class="ct-sh">
       <span class="ct-sh-label"><span class="wl-ko">사무소 안내</span><span class="wl-en">Our Offices</span></span>
@@ -593,103 +690,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
       </div>
 
-    </div>
-
-    <!-- CONTACT FORM -->
-    <div class="ct-sh">
-      <span class="ct-sh-label"><span class="wl-ko">문의 보내기</span><span class="wl-en">Send a Message</span></span>
-    </div>
-    <div class="ct-form-wrap">
-      <form onsubmit="handleSubmit(event)">
-        <input type="hidden" name="type" id="ct-type-val" value="general" />
-
-        <!-- 문의 유형 드롭다운 -->
-        <div class="ct-dropdown-wrap">
-          <label class="ct-dropdown-label" for="ct-type-select">
-            <span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span>
-          </label>
-          <div class="ct-select-wrap">
-            <select id="ct-type-select" onchange="document.getElementById('ct-type-val').value=this.value">
-              <optgroup label="─────────────────────────">
-                <option value="general">일반 문의 / General Inquiry</option>
-                <option value="ministry">사역 협력 / Ministry Partnership</option>
-                <option value="mission">선교팀 / Mission Team</option>
-              </optgroup>
-              <optgroup label="─────────────────────────">
-                <option value="wolbi">제주월비 입학 / WOLBI Admission</option>
-                <option value="camp">캠프 신청 / Camp Registration</option>
-              </optgroup>
-              <optgroup label="─────────────────────────">
-                <option value="give">후원 / Giving</option>
-                <option value="prayer">기도 제목 / Prayer Request</option>
-                <option value="other">기타 / Other</option>
-              </optgroup>
-            </select>
-            <div class="ct-select-chevron">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- 기본 정보 -->
-        <div class="ct-form-grid">
-          <div class="ct-field">
-            <label for="ct-name">
-              <span class="wl-ko">이름 *</span><span class="wl-en">Name *</span>
-            </label>
-            <input type="text" id="ct-name" name="name" required
-              placeholder="홍길동 / John Smith" />
-          </div>
-          <div class="ct-field">
-            <label for="ct-email">
-              <span class="wl-ko">이메일 *</span><span class="wl-en">Email *</span>
-            </label>
-            <input type="email" id="ct-email" name="email" required
-              placeholder="example@email.com" />
-          </div>
-          <div class="ct-field">
-            <label for="ct-phone">
-              <span class="wl-ko">연락처</span><span class="wl-en">Phone</span>
-            </label>
-            <input type="tel" id="ct-phone" name="phone"
-              placeholder="010-0000-0000" />
-          </div>
-          <div class="ct-field full">
-            <label for="ct-msg">
-              <span class="wl-ko">내용 *</span><span class="wl-en">Message *</span>
-            </label>
-            <textarea id="ct-msg" name="message" required
-              placeholder="문의 내용을 자유롭게 작성해 주세요. / Please write your message freely."></textarea>
-          </div>
-        </div>
-
-        <div class="ct-form-footer">
-          <button type="submit" class="ct-form-btn">
-            <span class="wl-ko">문의 보내기</span><span class="wl-en">Send Message</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          </button>
-          <p class="ct-form-note">
-            <span class="wl-ko">📌 보내주신 문의는 영업일 기준 1–2일 내로 답변 드리겠습니다. 긴급한 사항은 전화로 연락해 주세요.</span>
-            <span class="wl-en">📌 We typically respond within 1–2 business days. For urgent matters, please call us directly.</span>
-          </p>
-        </div>
-
-        <p class="ct-privacy">
-          <span class="ct-privacy-icon">?
-            <span class="ct-privacy-tooltip">
-              <span class="wl-ko">개인정보는 수집 후 본인의 삭제 요청 시까지 보관됩니다.</span>
-              <span class="wl-en">Your information is retained until you request its deletion.</span>
-            </span>
-          </span>
-          <span class="wl-ko">문의를 보내주시면 문의 처리를 위한 개인정보 수집·이용에 동의하신 것으로 간주됩니다.</span>
-          <span class="wl-en">By sending this message, you agree to the collection and use of your personal information for the purpose of responding to your inquiry.</span>
-        </p>
-
-      </form>
     </div>
 
   </div>
