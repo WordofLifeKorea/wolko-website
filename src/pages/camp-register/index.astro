@@ -227,6 +227,12 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-cap-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .crp-cap-fill.full { background: linear-gradient(90deg, var(--c-red), #e55); }
 
+/* 준비중 / 비활성 상태 — 회색 */
+.crp-cap--gray .crp-cap-info { opacity: 0.68; }
+.crp-cap--gray .crp-cap-info strong { font-size: 13px; color: var(--c-muted); }
+.crp-cap--gray .crp-cap-track { background: rgba(0,79,104,0.06); }
+.crp-cap--gray .crp-cap-fill { display: none; }
+
 /* ── REG BUTTONS ── */
 .crp-reg-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -685,22 +691,28 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                         <span class="wl-en">{d.notes_en}</span>
                       </p>
                     )}
-                    {canRegister && !d.use_external_form && (
-                      <div class="crp-cap" data-cap-id={s.slug}>
-                        <div class="crp-cap-info">
-                          <span class="wl-ko">신청 현황</span>
-                          <span class="wl-en">Spots Filled</span>
-                          <strong>
-                            <span class="crp-cap-count">—</span>
-                            {' / '}{d.capacity ?? 40}
-                            <span class="wl-ko">명</span>
-                          </strong>
+                    {(() => {
+                      const isLive = d.status === 'open' && !d.use_external_form;
+                      return (
+                        <div class={`crp-cap${isLive ? '' : ' crp-cap--gray'}`} data-cap-id={isLive ? s.slug : undefined}>
+                          <div class="crp-cap-info">
+                            <span>
+                              <span class="wl-ko">{isLive ? '신청 현황' : '전체 정원'}</span>
+                              <span class="wl-en">{isLive ? 'Spots Filled' : 'Total Capacity'}</span>
+                            </span>
+                            <strong>
+                              {isLive
+                                ? <><span class="crp-cap-count">—</span>{` / ${d.capacity ?? 40}`}<span class="wl-ko">명</span></>
+                                : <>{d.capacity ?? 40}<span class="wl-ko">명</span></>
+                              }
+                            </strong>
+                          </div>
+                          <div class="crp-cap-track">
+                            <div class="crp-cap-fill"></div>
+                          </div>
                         </div>
-                        <div class="crp-cap-track">
-                          <div class="crp-cap-fill"></div>
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                     {canRegister && d.use_external_form ? (
                       <a href={d.registration_url} target="_blank" rel="noopener" class="crp-reg-btn crp-reg-btn-primary">
                         <span class="wl-ko">네이버 카페에서 신청하기 →</span>
@@ -803,6 +815,19 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                         <span class="wl-en">{d.notes_en}</span>
                       </p>
                     )}
+                    {/* 정원 바 — 제주 캠프는 외부 신청이므로 항상 회색으로 표시 */}
+                    <div class="crp-cap crp-cap--gray">
+                      <div class="crp-cap-info">
+                        <span>
+                          <span class="wl-ko">전체 정원</span>
+                          <span class="wl-en">Total Capacity</span>
+                        </span>
+                        <strong>{d.capacity ?? 40}<span class="wl-ko">명</span></strong>
+                      </div>
+                      <div class="crp-cap-track">
+                        <div class="crp-cap-fill"></div>
+                      </div>
+                    </div>
                     {canRegister ? (
                       <a href={d.registration_url} target="_blank" rel="noopener" class="crp-reg-btn crp-reg-btn-primary">
                         <span class="wl-ko">네이버 카페에서 신청하기 →</span>
