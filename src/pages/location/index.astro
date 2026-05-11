@@ -70,82 +70,62 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .lo-panel.active { display:block; }
   .lo-panel-inner { max-width:1040px; margin:0 auto; }
 
-  /* MAP */
-  .lo-map-wrap {
-    border-radius:20px; overflow:hidden;
-    box-shadow:0 4px 24px rgba(0,79,104,0.10);
+  /* LOCATION CARD (info + map unified) */
+  .lo-card {
+    background:#fff;
+    border-radius:24px;
     border:1px solid var(--line);
-    height:420px; position:relative;
-    margin-bottom:40px; background:#dde8f0;
+    box-shadow:0 6px 32px rgba(0,79,104,0.09);
+    overflow:hidden;
+    display:grid;
+    grid-template-columns:300px 1fr;
   }
-  .lo-map-wrap iframe {
-    width:100%; height:100%; border:none; display:block;
-  }
-  .lo-map-placeholder {
-    position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:12px;
-    background:linear-gradient(135deg, #d8eaf3, #eef4f8);
-  }
-  .lo-map-placeholder-icon { font-size:52px; }
-  .lo-map-placeholder-text { font-size:15px; font-weight:700; color:var(--d); }
-  .lo-map-placeholder-sub { font-size:13px; color:var(--s); }
-  .lo-map-btn {
-    display:inline-flex; align-items:center; gap:8px;
-    padding:12px 24px; border-radius:999px; background:var(--d); color:#fff;
-    font-size:14px; font-weight:800; text-decoration:none;
-    transition:background .2s; margin-top:4px;
-  }
-  .lo-map-btn:hover { background:var(--m); }
 
-  /* INFO GRID */
-  .lo-info-grid {
-    display:flex; justify-content:center; margin-bottom:40px;
+  /* 왼쪽 정보 패널 */
+  .lo-card-info {
+    padding:36px 32px;
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    border-right:1px solid var(--line);
   }
-  .lo-info-card {
-    background:#fff; border-radius:16px; padding:32px 40px;
-    box-shadow:0 2px 14px rgba(0,79,104,0.06); border:1px solid var(--line);
-    width:100%; max-width:520px;
+  .lo-card-label {
+    font-size:10px; font-weight:800; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--m); margin-bottom:20px;
   }
-  .lo-info-card-title {
-    font-size:13px; font-weight:800; color:var(--m); letter-spacing:0.07em;
-    text-transform:uppercase; margin-bottom:16px;
-    display:flex; align-items:center; justify-content:center; gap:8px;
+  .lo-info-row {
+    padding:13px 0; border-bottom:1px solid var(--line);
+    display:flex; flex-direction:column; gap:3px;
   }
-  .lo-info-row { padding:12px 0; border-bottom:1px solid var(--line); display:flex; flex-direction:column; align-items:center; text-align:center; }
   .lo-info-row:last-child { border-bottom:none; padding-bottom:0; }
-  .lo-info-dt { font-size:11px; font-weight:700; color:var(--s); margin-bottom:4px; letter-spacing:0.04em; }
-  .lo-info-dd { font-size:14px; font-weight:600; color:var(--k); line-height:1.6; }
+  .lo-info-dt { font-size:10px; font-weight:700; color:var(--s); letter-spacing:0.05em; text-transform:uppercase; }
+  .lo-info-dd { font-size:14px; font-weight:600; color:var(--k); line-height:1.65; }
   .lo-info-dd a { color:var(--d); text-decoration:none; }
   .lo-info-dd a:hover { text-decoration:underline; }
 
-  /* DIRECTIONS */
-  .lo-dir {
-    background:#fff; border-radius:16px; padding:32px;
-    box-shadow:0 2px 14px rgba(0,79,104,0.06); border:1px solid var(--line);
+  /* 네이버맵 버튼 */
+  .lo-map-btn {
+    display:inline-flex; align-items:center; gap:7px; margin-top:24px;
+    padding:10px 18px; border-radius:999px;
+    background:var(--d); color:#fff;
+    font-size:12px; font-weight:800; text-decoration:none;
+    transition:background .2s; align-self:flex-start;
   }
-  .lo-dir-title {
-    font-size:15px; font-weight:800; color:var(--d); margin-bottom:20px;
-    padding-bottom:12px; border-bottom:2px solid var(--line);
-    display:flex; align-items:center; gap:8px;
+  .lo-map-btn:hover { background:var(--m); }
+
+  /* 오른쪽 지도 */
+  .lo-card-map {
+    position:relative; min-height:360px;
   }
-  .lo-dir-list { display:flex; flex-direction:column; gap:0; }
-  .lo-dir-item {
-    display:flex; align-items:flex-start; gap:14px;
-    padding:14px 0; border-bottom:1px solid var(--line);
+  .lo-card-map iframe {
+    position:absolute; inset:0; width:100%; height:100%; border:none; display:block;
   }
-  .lo-dir-item:last-child { border-bottom:none; padding-bottom:0; }
-  .lo-dir-icon {
-    width:34px; height:34px; border-radius:10px; flex-shrink:0;
-    background:rgba(0,79,104,0.07); display:flex; align-items:center; justify-content:center;
-    font-size:16px; margin-top:2px;
-  }
-  .lo-dir-label { font-size:12px; font-weight:700; color:var(--m); margin-bottom:4px; }
-  .lo-dir-desc { font-size:14px; color:var(--k); line-height:1.65; }
 
   /* RESPONSIVE */
-  @media(max-width:760px) {
-    .lo-info-grid { grid-template-columns:1fr; }
-    .lo-map-wrap { height:280px; }
+  @media(max-width:800px) {
+    .lo-card { grid-template-columns:1fr; grid-template-rows:auto 280px; }
+    .lo-card-info { border-right:none; border-bottom:1px solid var(--line); }
+    .lo-card-map { min-height:280px; }
     .lo-tab { padding:14px 20px; font-size:13px; }
     .lo-panel { padding:40px 16px 60px; }
   }
@@ -177,16 +157,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <!-- PYEONGTAEK PANEL -->
 <div class="lo-panel active" id="panel-pyeongtaek">
   <div class="lo-panel-inner">
+    <div class="lo-card">
 
-    <!-- Info grid -->
-    <div class="lo-info-grid">
-      <div class="lo-info-card">
-        <div class="lo-info-card-title"><span class="wl-ko">주소 및 연락처</span><span class="wl-en">Address & Contact</span></div>
+      <!-- 왼쪽: 정보 -->
+      <div class="lo-card-info">
+        <div class="lo-card-label"><span class="wl-ko">주소 및 연락처</span><span class="wl-en">Address & Contact</span></div>
         <div class="lo-info-row">
           <div class="lo-info-dt"><span class="wl-ko">주소</span><span class="wl-en">Address</span></div>
           <div class="lo-info-dd">
             <span class="wl-ko">경기도 평택시 경기대로 1407, 2층</span>
-            <span class="wl-en">1407 Gyeonggi-daero, 2F, Pyeongtaek, Gyeonggi-do</span>
+            <span class="wl-en">1407 Gyeonggi-daero, 2F<br>Pyeongtaek, Gyeonggi-do</span>
           </div>
         </div>
         <div class="lo-info-row">
@@ -204,41 +184,40 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <span class="wl-en">Tue–Fri 9 AM–5 PM<br>Closed weekends & holidays</span>
           </div>
         </div>
+        <a class="lo-map-btn"
+           href="https://map.naver.com/p/search/경기도+평택시+경기대로+1407"
+           target="_blank" rel="noopener">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="wl-ko">네이버맵으로 보기</span><span class="wl-en">Open in Naver Map</span>
+        </a>
       </div>
-    </div>
 
-    <!-- Map -->
-    <div class="lo-map-wrap">
-      <iframe
-        src="https://maps.google.com/maps?q=경기도+평택시+경기대로+1407&hl=ko&z=17&output=embed"
-        width="100%" height="100%" style="border:0;" allowfullscreen loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade">
-      </iframe>
-    </div>
-    <div style="text-align:right; margin-top:12px;">
-      <a class="lo-map-btn"
-         href="https://map.naver.com/p/search/경기도+평택시+경기대로+1407"
-         target="_blank" rel="noopener" style="font-size:12px; padding:8px 18px;">
-        <span class="wl-ko">네이버맵으로 보기</span><span class="wl-en">Open in Naver Map</span>
-      </a>
-    </div>
+      <!-- 오른쪽: 지도 -->
+      <div class="lo-card-map">
+        <iframe
+          src="https://maps.google.com/maps?q=경기도+평택시+경기대로+1407&hl=ko&z=17&output=embed"
+          allowfullscreen loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
 
+    </div>
   </div>
 </div>
 
 <!-- JEJU PANEL -->
 <div class="lo-panel" id="panel-jeju">
   <div class="lo-panel-inner">
+    <div class="lo-card">
 
-    <!-- Info grid -->
-    <div class="lo-info-grid">
-      <div class="lo-info-card">
-        <div class="lo-info-card-title"><span class="wl-ko">주소 및 연락처</span><span class="wl-en">Address & Contact</span></div>
+      <!-- 왼쪽: 정보 -->
+      <div class="lo-card-info">
+        <div class="lo-card-label"><span class="wl-ko">주소 및 연락처</span><span class="wl-en">Address & Contact</span></div>
         <div class="lo-info-row">
           <div class="lo-info-dt"><span class="wl-ko">주소</span><span class="wl-en">Address</span></div>
           <div class="lo-info-dd">
-            <span class="wl-ko">제주특별자치도 제주시<br>애월읍 광상로 622</span>
-            <span class="wl-en">622 Gwangsang-ro, Aewol-eup<br>Jeju-si, Jeju Special Self-Governing Province</span>
+            <span class="wl-ko">제주시 애월읍 광상로 622</span>
+            <span class="wl-en">622 Gwangsang-ro, Aewol-eup<br>Jeju-si, Jeju</span>
           </div>
         </div>
         <div class="lo-info-row">
@@ -256,25 +235,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <span class="wl-en">Tue–Fri 9 AM–5 PM<br>Closed weekends & holidays</span>
           </div>
         </div>
+        <a class="lo-map-btn"
+           href="https://map.naver.com/p/search/제주시+애월읍+광상로+622"
+           target="_blank" rel="noopener">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="wl-ko">네이버맵으로 보기</span><span class="wl-en">Open in Naver Map</span>
+        </a>
       </div>
-    </div>
 
-    <!-- Map -->
-    <div class="lo-map-wrap">
-      <iframe
-        src="https://maps.google.com/maps?q=제주특별자치도+제주시+애월읍+광상로+622&hl=ko&z=16&output=embed"
-        width="100%" height="100%" style="border:0;" allowfullscreen loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade">
-      </iframe>
-    </div>
-    <div style="text-align:right; margin-top:12px;">
-      <a class="lo-map-btn"
-         href="https://map.naver.com/p/search/제주시+애월읍+광상로+622"
-         target="_blank" rel="noopener" style="font-size:12px; padding:8px 18px;">
-        <span class="wl-ko">네이버맵으로 보기</span><span class="wl-en">Open in Naver Map</span>
-      </a>
-    </div>
+      <!-- 오른쪽: 지도 -->
+      <div class="lo-card-map">
+        <iframe
+          src="https://maps.google.com/maps?q=제주특별자치도+제주시+애월읍+광상로+622&hl=ko&z=16&output=embed"
+          allowfullscreen loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
 
+    </div>
   </div>
 </div>
 
