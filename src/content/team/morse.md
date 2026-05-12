@@ -1,4 +1,5 @@
 ---
+
 bio_en: |-
   My name is Jacob, and I trusted Jesus as my Savior at an early age. It was around Christmastime when my pastor explained why people give gifts on Christmas — that God sent His Son to pay the penalty for my sins so that I might receive the free gift of eternal life. I believe that was the first time I truly understood the gospel and placed my trust in Jesus alone to save me.
   
@@ -19,14 +20,9 @@ hero_tagline_ko: 다음 세대를
 hero_tagline_en: A Calling for
 hero_tagline2_ko: 향한 부르심
 hero_tagline2_en: the Next Generation
-hero_subtitle_ko: Jacob과 Crystal은 월코의 대표 선교사로서 한국의 모든 청소년이 예수님과 함께 다음 걸음을 내딛도록
-  돕는 사역에 헌신하고 있습니다. 평택과 제주를 기반으로 청소년 캠프, 훈련 사역, 지역 교회 지원을 통해 이 세대에게 복음을 전하고
-  있습니다.
-hero_subtitle_en: Jacob and Crystal serve as lead missionaries of Word of Life
-  Korea, helping young people across Korea take their next step with Jesus.
-  Based in Pyeongtaek and Jeju, they share the gospel through youth camps,
-  training ministries, and partnership with local churches.
-verse_ref: 마태복음 9:36-38
+hero_subtitle_ko: Jacob과 Crystal은 월코의 대표 선교사로서 한국의 모든 청소년이 예수님과 함께 다음 걸음을 내딛도록 돕는 사역에 헌신하고 있습니다. 평택과 제주를 기반으로 청소년 캠프, 훈련 사역, 지역 교회 지원을 통해 이 세대에게 복음을 전하고 있습니다.
+hero_subtitle_en: Jacob and Crystal serve as lead missionaries of Word of Life Korea, helping young people across Korea take their next step with Jesus. Based in Pyeongtaek and Jeju, they share the gospel through youth camps, training ministries, and partnership with local churches.
+verse_ref: "마태복음 9:36-38"
 spouse_ko: 몰스 크리스탈
 spouse_en: Crystal Morse
 show_spouse: true
@@ -43,4 +39,6 @@ bio_en_2: |-
   
   When I was thirteen years old, I realized the need to live my life for Christ and dedicated my life to His service. I attended Word of Life Bible Institute for two years and then graduated from Davis College with a Bachelor's in Christian Ministries. We have five daughters — Kiera, Aleya, Jaida, Ella, and Carissa. We are all very excited to be a part of the ministry in South Korea. God is doing great things, and it is a blessing simply to be a part of it.
 support_url: https://online.mrm.or.kr/XXLJGid
+report_url: "https://us4.campaign-archive.com/home/?u=201383574defb2126c6ad675c&id=94c47d766a"
+
 ---
