@@ -22,6 +22,12 @@ const d = member.data;
 // Build a safe JSON string for inline script
 const initialData = JSON.stringify({
   slug,
+  hero_tagline_ko:  d.hero_tagline_ko || '',
+  hero_tagline_en:  d.hero_tagline_en || '',
+  hero_tagline2_ko: d.hero_tagline2_ko || '',
+  hero_tagline2_en: d.hero_tagline2_en || '',
+  hero_subtitle_ko: d.hero_subtitle_ko || '',
+  hero_subtitle_en: d.hero_subtitle_en || '',
   bio_ko:           d.bio_ko || '',
   bio_en:           d.bio_en || '',
   bio_ko_2:         d.bio_ko_2 || '',
@@ -29,8 +35,6 @@ const initialData = JSON.stringify({
   verse_ref:        d.verse_ref || '',
   verse_ko:         d.verse_ko || '',
   verse_en:         d.verse_en || '',
-  hero_subtitle_ko: d.hero_subtitle_ko || '',
-  hero_subtitle_en: d.hero_subtitle_en || '',
   photo_url:        d.photo_url || '',
   photo_story:      d.photo_story || '',
   photo_url_2:      d.photo_url_2 || '',
@@ -557,15 +561,51 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" style="display:none">
     </div>
 
-    <!-- ② Hero Bio -->
+    <!-- ② Hero Titles -->
     <div class="edit-section">
       <div class="section-header">
-        <div class="section-icon">✍️</div>
+        <div class="section-icon">🎯</div>
         <div>
-          <div class="section-title">Short Bio</div>
-          <div class="section-sub">Short description shown in the hero section</div>
+          <div class="section-title">Hero Titles</div>
+          <div class="section-sub">Large tagline text shown on the profile hero image</div>
         </div>
       </div>
+
+      <!-- Preview hint -->
+      <div style="background:rgba(0,79,104,0.05);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:var(--mid);line-height:1.7;">
+        <strong style="color:var(--blue);">흰색 타이틀</strong> — 히어로 이미지 위 큰 흰색 텍스트 (1줄)<br>
+        <strong style="color:var(--blue-lt);">하늘색 타이틀</strong> — 흰색 아래 두 번째 줄 텍스트<br>
+        <strong style="color:var(--mid);">Short Bio</strong> — 타이틀 아래 작은 설명 문구
+      </div>
+
+      <!-- White tagline (line 1) -->
+      <p style="font-size:11px;font-weight:700;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">⬜ 흰색 타이틀 (1줄)</p>
+      <div class="field-pair" style="margin-bottom:18px;">
+        <div>
+          <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
+          <input type="text" class="field-input" id="f-hero_tagline_ko" value={d.hero_tagline_ko || ''} placeholder="예: 확신으로">
+        </div>
+        <div>
+          <label class="field-label"><span class="field-lang en">EN</span> English</label>
+          <input type="text" class="field-input" id="f-hero_tagline_en" value={d.hero_tagline_en || ''} placeholder="e.g. Proclaiming the Gospel">
+        </div>
+      </div>
+
+      <!-- Blue tagline (line 2) -->
+      <p style="font-size:11px;font-weight:700;color:var(--blue-lt);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">🔵 하늘색 타이틀 (2줄)</p>
+      <div class="field-pair" style="margin-bottom:18px;">
+        <div>
+          <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
+          <input type="text" class="field-input" id="f-hero_tagline2_ko" value={d.hero_tagline2_ko || ''} placeholder="예: 복음을 전하다">
+        </div>
+        <div>
+          <label class="field-label"><span class="field-lang en">EN</span> English</label>
+          <input type="text" class="field-input" id="f-hero_tagline2_en" value={d.hero_tagline2_en || ''} placeholder="e.g. with Conviction">
+        </div>
+      </div>
+
+      <!-- Short Bio subtitle -->
+      <p style="font-size:11px;font-weight:700;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">📝 Short Bio (타이틀 아래 설명)</p>
       <div class="field-group">
         <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
         <textarea class="field-textarea" id="f-hero_subtitle_ko" rows="3">{d.hero_subtitle_ko || ''}</textarea>
@@ -930,6 +970,8 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
 
       const fields = {};
       const fids = [
+        'hero_tagline_ko', 'hero_tagline_en',
+        'hero_tagline2_ko', 'hero_tagline2_en',
         'hero_subtitle_ko', 'hero_subtitle_en',
         'verse_ref', 'verse_ko', 'verse_en',
         'bio_ko', 'bio_en', 'bio_ko_2', 'bio_en_2',

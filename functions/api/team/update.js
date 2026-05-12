@@ -204,6 +204,8 @@ export async function onRequestPost(context) {
     'bio_ko', 'bio_en', 'bio_ko_2', 'bio_en_2',
     'verse_ref', 'verse_ko', 'verse_en',
     'photo_url', 'photo_story', 'photo_url_2',
+    'hero_tagline_ko', 'hero_tagline_en',
+    'hero_tagline2_ko', 'hero_tagline2_en',
     'hero_subtitle_ko', 'hero_subtitle_en',
     'prayer_ko', 'prayer_en',
     'report_url',
