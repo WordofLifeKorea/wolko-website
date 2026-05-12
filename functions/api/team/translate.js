@@ -95,7 +95,7 @@ export async function onRequestPost(context) {
 - 진실하고 자연스러운 어체 유지 (너무 딱딱하거나 기계적이지 않게)
 - 기독교/선교 관련 용어는 정확하게 번역 (예: 복음→Gospel, 선교사→missionary, 제자훈련→discipleship)
 - 단락 구분(\n\n)은 그대로 유지
-- 성경 구절은 개역개정(KO) ↔ ESV(EN) 표준 번역 스타일 참고
+- 성경 구절은 개역개정4판(KO) ↔ ESV(EN) 표준 번역 스타일 참고
 - 번역문만 출력 — 설명, 주석, 따옴표 추가 없이`;
 
   try {
@@ -115,10 +115,10 @@ export async function onRequestPost(context) {
     // ── verse_lookup: reference → 개역개정 + ESV 본문 동시 반환 ──────────
     if (ctx === 'verse_lookup') {
       const lookupPrompt = `성경 구절 참조(예: "요한복음 3:16", "John 3:16", "시편 23:1-3")가 주어지면
-개역개정판 한국어 본문과 ESV 영어 본문을 정확히 제공합니다.
+개역개정4판 한국어 본문과 ESV 영어 본문을 정확히 제공합니다.
 
 반드시 아래 JSON 형식만 출력하세요 (다른 텍스트 없이):
-{"ko":"개역개정 본문","en":"ESV 본문"}
+{"ko":"개역개정4판 본문","en":"ESV 본문"}
 
 규칙:
 - 여러 절이면 모두 포함
