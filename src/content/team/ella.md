@@ -11,7 +11,7 @@ name_ko: 임현지
 name_en: Hyunji Im
 title_ko: 캠프 코디네이터
 title_en: Camp Coordinator
-role_badge: Short-term Worker
+role_badge: Staff
 campus: pyeongtaek
 category: stw
 order: 3

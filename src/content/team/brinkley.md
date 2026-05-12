@@ -14,7 +14,7 @@ name_ko: 모슬리 브링클리
 name_en: Brinkley Moseley
 title_ko: 마케팅 코디네이터 · WOLBI 제주
 title_en: Marketing Coordinator · WOLBI Jeju
-role_badge: Short-term Worker
+role_badge: Staff
 campus: jeju
 category: stw
 order: 3

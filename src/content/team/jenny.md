@@ -4,7 +4,7 @@ name_en: Jinyoung Son
 title_ko: 회계 | 캠프 보조
 title_en: Account | Camp Derector  Assistant
 gender: female
-role_badge: Short-term Worker
+role_badge: Staff
 campus: pyeongtaek
 category: stw
 order: 3

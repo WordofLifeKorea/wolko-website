@@ -5,7 +5,7 @@ name_ko: 정지온
 name_en: Joanna Jung
 title_ko: 단기 사역자
 title_en: Short-term Worker
-role_badge: Short-term Worker
+role_badge: Staff
 campus: jeju
 category: stw
 order: 3

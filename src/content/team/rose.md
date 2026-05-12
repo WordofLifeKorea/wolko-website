@@ -5,7 +5,7 @@ name_ko: 이예영
 name_en: Yeyoung Lee
 title_ko: 단기 사역자
 title_en: Bookkeeper · Korean Admissions Counselor
-role_badge: Short-term Worker
+role_badge: Staff
 campus: jeju
 category: stw
 order: 3

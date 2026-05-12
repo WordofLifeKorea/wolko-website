@@ -11,7 +11,7 @@ name_ko: 박예능
 name_en: Aiden Park
 title_ko: 복음 전도팀 · 프로그램 진행 사역
 title_en: Evangelism Team · Program Facilitation
-role_badge: Short-term Worker
+role_badge: Staff
 campus: pyeongtaek
 category: stw
 order: 3

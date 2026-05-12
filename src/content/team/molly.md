@@ -11,7 +11,7 @@ name_ko: 그램 몰리
 name_en: Molly Graham
 title_ko: Cross Cultural Internship · 지역 교회 & 청소년 캠프 사역
 title_en: Cross Cultural Internship · Local Church & Youth Camp Ministry
-role_badge: Short-term Worker
+role_badge: Intern
 campus: pyeongtaek
 category: stw
 order: 3

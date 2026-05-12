@@ -3,7 +3,7 @@ name_ko: 플로리카 니키
 name_en: Niki Florica
 title_ko: 영어 수업 자료 코디네이터
 title_en: English Curriculum Coordinator
-role_badge: Short-term Worker
+role_badge: Staff
 campus: pyeongtaek
 category: stw
 order: 18

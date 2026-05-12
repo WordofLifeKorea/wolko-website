@@ -4,7 +4,7 @@ name_en: "Kazuto Tanaka"
 title_ko: "단기 사역자"
 title_en: "Short-term Worker"
 gender: male
-role_badge: "Short-term Worker"
+role_badge: Staff
 campus: jeju
 category: stw
 order: 4

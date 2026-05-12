@@ -17,7 +17,7 @@ name_ko: 자바리스
 name_en: Javaris Richardson
 title_ko: 국제 입학 코디네이터 · WOLBI 제주
 title_en: International Admissions Coordinator · WOLBI Jeju
-role_badge: Short-term Worker
+role_badge: Staff
 campus: jeju
 category: stw
 order: 3

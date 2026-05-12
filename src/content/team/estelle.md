@@ -6,7 +6,7 @@ name_ko: 수이 에스텔
 name_en: Estelle Sooy
 title_ko: Cross Cultural Internship · 청소년 사역
 title_en: Cross Cultural Internship · Youth Ministry
-role_badge: Short-term Worker
+role_badge: Intern
 campus: pyeongtaek
 category: stw
 order: 3

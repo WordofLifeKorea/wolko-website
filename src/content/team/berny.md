@@ -3,7 +3,7 @@ name_ko: 버니 카브레라
 name_en: Berny Cabrera
 title_ko: 카운슬러 & 찬양 인도자 · WOLBI 제주
 title_en: Counselor & Worship Leader · WOLBI Jeju
-role_badge: Short-term Worker
+role_badge: Staff
 campus: jeju
 category: stw
 order: 3
