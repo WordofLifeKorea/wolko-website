@@ -19,6 +19,7 @@ campus: jeju
 category: stw
 order: 3
 photo_url: /images/uploads/grace-webster.png
+photo_position: "center 10%"
 hero_tagline_ko: '"말씀을 담아"'
 hero_tagline_en: '"Carrying the Word"'
 hero_tagline2_ko: '"세상에 전하다"'

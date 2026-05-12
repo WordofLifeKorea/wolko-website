@@ -22,6 +22,7 @@ campus: jeju
 category: stw
 order: 3
 photo_url: /images/uploads/java.jpg
+photo_position: "center 20%"
 hero_tagline_ko: 제자들을
 hero_tagline_en: Sending Disciples
 hero_tagline2_ko: 세상으로 보내다

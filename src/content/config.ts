@@ -12,9 +12,10 @@ const team = defineCollection({
     category: z.enum(['missionary', 'stw']),
     order: z.number().default(99),
     // 사진
-    photo_url:    z.string().optional(),
-    photo_story:  z.string().optional(),
-    photo_url_2:  z.string().optional(),
+    photo_url:      z.string().optional(),
+    photo_position: z.string().optional(),
+    photo_story:    z.string().optional(),
+    photo_url_2:    z.string().optional(),
     // 히어로 문구
     hero_tagline_ko:  z.string().optional(),
     hero_tagline_en:  z.string().optional(),

@@ -9,6 +9,7 @@ category: stw
 order: 3
 gender: female
 photo_url: /images/uploads/berny.jpg
+photo_position: "center 20%"
 hero_tagline_ko: 사랑으로
 hero_tagline_en: With Love
 hero_tagline2_ko: 학생들을 세우다

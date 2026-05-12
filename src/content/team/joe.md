@@ -20,6 +20,7 @@ campus: jeju
 category: missionary
 order: 2
 photo_url: /images/uploads/joe.jpg
+photo_position: "center -10%"
 hero_tagline_ko: 한 끼의 섬김으로 전하는
 hero_tagline_en: Serving the Gospel
 hero_tagline2_ko: 복음의 따뜻함

@@ -16,6 +16,7 @@ campus: pyeongtaek
 category: stw
 order: 3
 photo_url: /images/uploads/ella.jpg
+photo_position: "center 20%"
 hero_tagline_ko: 청소년에게
 hero_tagline_en: Bringing the Gospel
 hero_tagline2_ko: 복음을 전하다

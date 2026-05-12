@@ -18,7 +18,7 @@ role_badge: Staff
 campus: jeju
 category: stw
 order: 3
-photo_url: /images/uploads/brink2.jpg
+photo_url: /images/uploads/brink3.jpg
 hero_tagline_ko: 부르심에 응답하여
 hero_tagline_en: Answering the Call
 hero_tagline2_ko: 더 멀리 나아가다

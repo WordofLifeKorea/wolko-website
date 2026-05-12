@@ -16,6 +16,7 @@ campus: pyeongtaek
 category: missionary
 order: 2
 photo_url: /images/uploads/7r505851.jpg_compressed.jpeg
+photo_position: "center 20%"
 hero_tagline_ko: 복음으로
 hero_tagline_en: A Life Built
 hero_tagline2_ko: 세워가는 삶
