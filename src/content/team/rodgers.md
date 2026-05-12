@@ -64,6 +64,7 @@ bio_en_2: |-
   My desire is to create a home that is both a haven of rest and peace and is also a brilliant testimony of the gospel that transforms lives (Proverbs 14:1, 24:3-4)!
 verse_ref_ko: 다니엘 12:2-3
 support_url: https://online.mrm.or.kr/MuulmsY
+support_url_en: https://missions.wol.org/missionaries/152238
 verse_ref_en: Daniel 12:2-3
 
 ---

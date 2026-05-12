@@ -38,4 +38,5 @@ bio_ko: 저는 자라면서 기독교 가정에서 태어났고, 주일마다 �
   SYME Japan에서 주방 사역으로 섬길 기회를 얻게 되었고, 한국 WOLBI 제주 팀에 합류하게 되었습니다. 이제 저는 가서 제자를
   삼고, 또 그 제자들이 다른 제자들을 세워 가도록 하라는 하나님의 부르심을 따라 걷고 있습니다.
 support_url: https://online.mrm.or.kr/n70HmJG
+support_url_en: https://missions.wol.org/missionaries/205882
 ---

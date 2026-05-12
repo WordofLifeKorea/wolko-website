@@ -34,5 +34,6 @@ bio_ko: |-
 support_url: https://online.mrm.or.kr/tSNpg5Q
 verse_ko: 아무 일에든지 다툼이나 허영으로 하지 말고 오직 겸손한 마음으로 각각 자기보다 남을 낫게 여기고 각각 자기 일을 돌볼뿐더러 또한 각각 다른 사람들의 일을 돌보아 자기의 유익을 구하지 말고 남의 유익을 구하라
 verse_en: Do nothing out of selfish ambition or vain conceit. Rather, in humility value others above yourselves, not looking to your own interests but each of you to the interests of the others.
+support_url_en: https://missions.wol.org/missionaries/853772
 
 ---

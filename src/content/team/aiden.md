@@ -32,6 +32,7 @@ bio_ko: |-
   
   그 경험 이후 삶에 대한 더 깊은 질문들을 하기 시작했습니다. 왜 태어났는지, 죽고 나면 어디로 가는지, 하나님이 나를 위해 가지신 목적이 무엇인지. 주위를 둘러보니 예수님에 대해 들어본 적 없는 친구들이 얼마나 많은지 알게 되었습니다. 특히 정부의 제한으로 여전히 복음을 들을 기회조차 없는 북한 주민들에 대한 조부모님의 이야기를 들었을 때 더욱 마음이 무거워졌습니다. 제가 거저 받은 것을 많은 사람들이 평생 접하지 못할 수도 있다는 것을 깨달았습니다. 그 깨달음이 복음 전도와 선교를 향한 마음에 불을 붙였습니다.
 support_url: https://online.mrm.or.kr/Ij7TElD
+support_url_en: https://missions.wol.org/missionaries/884214
 bio_en_2: |-
   As someone who loved theater and musicals, I was amazed at how powerfully stories could communicate across languages. Even when I didn't understand the words, I could still grasp the message. I began to dream of using creative arts as a tool to share the gospel effectively.
   

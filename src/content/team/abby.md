@@ -34,5 +34,5 @@ bio_ko: |-
 support_url: https://online.mrm.or.kr/CqhPqml
 verse_ko: 또한 너는 청년의 정욕을 피하고 주를 깨끗한 마음으로 부르는 자들과 함께 의와 믿음과 사랑과 화평을 따르라
 verse_en: Flee the evil desires of youth and pursue righteousness, faith, love and peace, along with those who call on the Lord out of a pure heart.
-
+support_url_en: https://missions.wol.org/missionaries/163998
 ---

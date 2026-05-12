@@ -52,5 +52,5 @@ bio_en_2: |-
 support_url: https://online.mrm.or.kr/njFqay7
 verse_ko: 내가 달려갈 길과 주 예수께 받은 사명 곧 하나님의 은혜의 복음을 증언하는 일을 마치려 함에는 나의 생명조차 조금도 귀한 것으로 여기지 아니하노라
 verse_en: However, I consider my life worth nothing to me; my only aim is to finish the race and complete the task the Lord Jesus has given me—the task of testifying to the good news of God’s grace.
-
+support_url_en: https://missions.wol.org/missionaries/82516/
 ---

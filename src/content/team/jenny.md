@@ -27,4 +27,5 @@ bio_en: Jenny grew up in a Christian home, attending church alongside her
   the gospel in her heart that very moment and confessed Jesus as her Savior.
   This connection with WOLKO has continued, and she now works alongside young
   people in ministry settings.
+support_url_en: https://give.wol.org/giveto(1H616S)
 ---

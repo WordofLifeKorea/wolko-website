@@ -30,6 +30,7 @@ bio_ko_2: 김미정 선교사의 이야기는 준비 중입니다.
 bio_en_2: "Mi-Jung's story is coming soon."
 verse_ref_ko: 누가복음 19:10
 support_url: https://online.mrm.or.kr/Osc18qF
+support_url_en: https://missions.wol.org/missionaries/11327
 verse_ref_en: Luke 19:10
 
 ---

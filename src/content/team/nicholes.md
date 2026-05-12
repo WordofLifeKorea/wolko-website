@@ -52,4 +52,5 @@ bio_en_2: Rhonda grew up in a WOL ministry family in Virginia. She made a
   served the Lord in Asia for over thirty years, alongside their four children —
   Ben, Anna, Daniel, and Abby.
 support_url: https://online.mrm.or.kr/Zb6gHXv
+support_url_en: https://missions.wol.org/missionaries/155822
 ---

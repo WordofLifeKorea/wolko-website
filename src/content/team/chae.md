@@ -49,5 +49,5 @@ prayer_ko: 더 많은 교회와 협력하여 복음배가운동이 확장될 수
 support_url: https://online.mrm.or.kr/HxSMjVD
 verse_ko: 만일 우리가 우리 죄를 자백하면 그는 미쁘시고 의로우사 우리 죄를 사하시며 우리를 모든 불의에서 깨끗하게 하실 것이요
 verse_en: If we confess our sins, he is faithful and just and will forgive us our sins and purify us from all unrighteousness.
-
+support_url_en: https://missions.wol.org/missionaries/114383/
 ---

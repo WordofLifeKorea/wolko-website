@@ -31,5 +31,5 @@ bio_ko: |-
 support_url: https://online.mrm.or.kr/UkXgDiD
 verse_ko: 나는 선한 싸움을 싸우고 나의 달려갈 길을 마치고 믿음을 지켰으니 이제 후로는 나를 위하여 의의 면류관이 예비되었으므로 주 곧 의로우신 재판장이 그 날에 내게 주실 것이며 내게만 아니라 주의 나타나심을 사모하는 모든 자에게도니라
 verse_en: I have fought the good fight, I have finished the race, I have kept the faith. Now there is in store for me the crown of righteousness, which the Lord, the righteous Judge, will award to me on that day—and not only to me, but also to all who have longed for his appearing.
-
+support_url_en: https://missions.wol.org/missionaries/943540
 ---

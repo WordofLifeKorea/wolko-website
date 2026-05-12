@@ -54,4 +54,5 @@ bio_ko: >-
 
   아버지는 Grace의 신앙 여정에서 중요한 동반자가 되어 주셨습니다. "주님이 어디로 인도하시든 따르는 것이 맞고, 주님이 네 인생으로 하실 일을 방해해서는 안 된다"는 아버지의 말씀은 한국행을 결심할 때도 흔들리지 않는 확신이 되었습니다. 삶을 주님께 맡겨드릴 때 하나님이 얼마나 놀랍게 일하시는지를 경험하며, Grace는 오늘도 마음을 다해 주께 하듯 섬기고 있습니다.
 support_url: https://online.mrm.or.kr/hwKVZ27
+support_url_en: https://missions.wol.org/missionaries/947023
 ---

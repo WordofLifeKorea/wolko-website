@@ -45,6 +45,7 @@ const team = defineCollection({
     report_url: z.string().optional(),
     // 후원
     support_url: z.string().optional(),
+    support_url_en: z.string().optional(),
   }),
 });
 

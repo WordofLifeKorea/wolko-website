@@ -24,4 +24,5 @@ verse_en: |-
 show_spouse: false
 bio_ko: ""
 support_url: https://online.mrm.or.kr/fYyb7wn
+support_url_en: https://missions.wol.org/missionaries/930394
 ---

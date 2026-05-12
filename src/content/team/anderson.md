@@ -69,5 +69,5 @@ bio_en_2: |-
 support_url: https://online.mrm.or.kr/1CiXq2b
 verse_ko: 그러나 내게는 우리 주 예수 그리스도의 십자가 외에 결코 자랑할 것이 없으니 그리스도로 말미암아 세상이 나를 대하여 십자가에 못 박히고 내가 또한 세상을 대하여 그러하니라
 verse_en: May I never boast except in the cross of our Lord Jesus Christ, through which the world has been crucified to me, and I to the world.
-
+support_url_en: https://missions.wol.org/missionaries/799061/
 ---

@@ -32,6 +32,7 @@ bio_ko: |-
   
   월코(Word of Life Korea)의 SYME(영어 청소년 사역 학교)에 참여하면서 변화가 시작되었습니다. 그곳에서 하나님의 말씀을 깊이 공부하며 죄의 심각성과 복음의 아름다움을 이해하기 시작했습니다. 하나님의 은혜에 대한 지식이 자라면서, 그 은혜를 다른 사람들과 나누고 싶은 열망도 커져갔습니다.
 support_url: https://online.mrm.or.kr/As5Nocc
+support_url_en: https://missions.wol.org/missionaries/950678
 bio_en_2: |-
   This desire developed into a sense of calling to ministry. I started asking, "How can I share the gospel through my life?" As I studied at the Word of Life Bible Institute in Jeju and New York, my awareness of my sin deepened, but so did my experience of God's love and mercy.
   

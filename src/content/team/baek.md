@@ -30,5 +30,5 @@ bio_en_2: "Anna was born into a pastor's family, and from an early age God felt 
 support_url: https://online.mrm.or.kr/d3SwoiY
 verse_ko: 생각하건대 현재의 고난은 장차 우리에게 나타날 영광과 비교할 수 없도다
 verse_en: I consider that our present sufferings are not worth comparing with the glory that will be revealed in us.
-
+support_url_en: https://missions.wol.org/missionaries/216294
 ---
