@@ -169,7 +169,9 @@ Examples:
         const nivData = await nivResponse.json();
         en = (nivData.data?.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
       } else {
-        console.error('NIV API error:', nivResponse.status, await nivResponse.text());
+        const errText = await nivResponse.text();
+        console.error('NIV API error:', nivResponse.status, errText);
+        en = `[DEBUG ${nivResponse.status}: ${errText.slice(0, 200)}]`;
       }
 
       const koData = await koResponse.json();
