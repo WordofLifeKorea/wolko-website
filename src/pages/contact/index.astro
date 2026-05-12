@@ -72,97 +72,93 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     color:var(--k); letter-spacing:-0.02em;
   }
 
-  /* ── QUICK CONTACT — floating cards ── */
-  .ct-strip {
-    display:grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap:14px;
-    margin-bottom:56px;
-  }
-  .ct-strip-item {
-    display:flex; flex-direction:column;
-    padding:26px 22px 24px;
+  /* ── QUICK CONTACT — location split ── */
+  .ct-qc {
     background:#fff;
-    border-radius:20px;
     border:1px solid var(--line);
-    box-shadow:0 2px 16px rgba(0,79,104,0.06);
-    text-decoration:none;
-    position:relative; overflow:hidden;
-    transition:transform .22s cubic-bezier(.34,1.3,.64,1), box-shadow .22s ease;
-    gap:18px;
+    border-radius:16px;
+    overflow:hidden;
+    margin-bottom:56px;
+    box-shadow:0 2px 12px rgba(0,79,104,0.06);
   }
-  /* gradient shine overlay on hover */
-  .ct-strip-item::before {
-    content:""; position:absolute; inset:0;
-    background:linear-gradient(135deg, rgba(0,126,161,0.05) 0%, transparent 70%);
-    opacity:0; transition:opacity .22s;
-    pointer-events:none; border-radius:inherit;
-  }
-  /* bottom accent line */
-  .ct-strip-item::after {
-    content:""; position:absolute; bottom:0; left:16px; right:16px;
-    height:2px; border-radius:2px 2px 0 0;
-    background:linear-gradient(90deg, var(--d), var(--m));
-    transform:scaleX(0); transform-origin:left;
-    transition:transform .25s cubic-bezier(.34,1.2,.64,1);
-  }
-  .ct-strip-item:hover {
-    transform:translateY(-6px);
-    box-shadow:0 16px 40px rgba(0,79,104,0.13);
-  }
-  .ct-strip-item:hover::before { opacity:1; }
-  .ct-strip-item:hover::after  { transform:scaleX(1); }
 
-  /* icon */
-  .ct-strip-icon {
-    width:48px; height:48px; border-radius:14px;
+  /* Kakao full-width CTA */
+  .ct-qc-kakao {
+    display:flex; align-items:center; gap:14px;
+    padding:16px 28px;
+    background:#FFFDE7;
+    border-bottom:1px solid rgba(253,216,53,0.6);
+    text-decoration:none;
+    transition:background .15s;
+  }
+  .ct-qc-kakao:hover { background:#FFF9C4; }
+  .ct-qc-kakao-icon {
+    width:36px; height:36px; border-radius:10px;
+    background:#FEE500; color:#391b1b;
     display:flex; align-items:center; justify-content:center;
     flex-shrink:0;
-    transition:transform .22s cubic-bezier(.34,1.3,.64,1);
   }
-  .ct-strip-item:hover .ct-strip-icon { transform:scale(1.1); }
-  .ct-strip-icon svg { width:22px; height:22px; }
-  .ct-strip-icon.phone {
-    background:linear-gradient(135deg,#e8f4f9 0%,#c8e8f5 100%);
-    color:var(--d);
-    box-shadow:0 2px 8px rgba(0,79,104,0.12);
-  }
-  .ct-strip-icon.email {
-    background:linear-gradient(135deg,#fdf0f1 0%,#fadde0 100%);
-    color:var(--r);
-    box-shadow:0 2px 8px rgba(196,42,54,0.12);
-  }
-  .ct-strip-icon.yt {
-    background:linear-gradient(135deg,#fff0f0 0%,#ffdada 100%);
-    color:#dc2626;
-    box-shadow:0 2px 8px rgba(220,38,38,0.12);
+  .ct-qc-kakao-icon svg { width:18px; height:18px; }
+  .ct-qc-kakao-text { flex:1; }
+  .ct-qc-kakao-title { font-size:13px; font-weight:700; color:#3d2b00; line-height:1.3; }
+  .ct-qc-kakao-sub   { font-size:11.5px; color:#7a6530; margin-top:1px; }
+  .ct-qc-kakao-badge {
+    font-size:11px; font-weight:700; letter-spacing:0.06em;
+    background:#FDD835; color:#3d2b00;
+    padding:4px 12px; border-radius:999px; flex-shrink:0;
   }
 
-  .ct-strip-body { flex:1; min-width:0; }
-  .ct-strip-label {
-    font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
-    color:var(--s); margin-bottom:5px;
+  /* Two location columns */
+  .ct-qc-cols {
+    display:grid; grid-template-columns:1fr 1fr;
   }
-  .ct-strip-val {
-    font-size:14px; font-weight:600; color:var(--k);
+  .ct-qc-col {
+    border-right:1px solid var(--line);
+  }
+  .ct-qc-col:last-child { border-right:none; }
+
+  .ct-qc-col-head {
+    padding:11px 28px;
+    font-size:10px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase;
+    color:var(--m);
+    background:rgba(0,79,104,0.025);
+    border-bottom:1px solid var(--line);
+  }
+
+  /* Each contact row */
+  .ct-qc-row {
+    display:flex; align-items:center; gap:12px;
+    padding:13px 28px;
+    border-bottom:1px solid var(--line);
+    text-decoration:none;
+    transition:background .14s;
+  }
+  .ct-qc-row:last-child { border-bottom:none; }
+  .ct-qc-row:hover { background:rgba(0,79,104,0.03); }
+  .ct-qc-row:hover .ct-qc-val { color:var(--m); }
+
+  .ct-qc-icon {
+    width:32px; height:32px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .ct-qc-icon svg { width:15px; height:15px; }
+  .ct-qc-icon.phone { background:linear-gradient(135deg,#e8f4f9,#c8e8f5); color:var(--d); }
+  .ct-qc-icon.email { background:linear-gradient(135deg,#fdf0f1,#fadde0); color:var(--r); }
+  .ct-qc-icon.yt    { background:linear-gradient(135deg,#fff0f0,#ffdada); color:#dc2626; }
+
+  .ct-qc-meta { flex:1; min-width:0; }
+  .ct-qc-lbl {
+    font-size:10px; font-weight:700; color:var(--s);
+    letter-spacing:0.10em; text-transform:uppercase; margin-bottom:1px;
+  }
+  .ct-qc-val {
+    font-size:13.5px; font-weight:600; color:var(--k);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    line-height:1.35;
+    transition:color .14s;
   }
-  .ct-strip-sub {
-    font-size:11px; font-weight:400; color:var(--s); margin-top:4px; line-height:1.4;
+  .ct-qc-hint {
+    font-size:11px; color:var(--s); flex-shrink:0; padding-left:6px;
   }
-
-  /* external link arrow badge */
-  .ct-strip-arrow {
-    position:absolute; top:18px; right:18px;
-    width:24px; height:24px; border-radius:50%;
-    background:rgba(0,79,104,0.06);
-    display:flex; align-items:center; justify-content:center;
-    opacity:0; transform:translate(4px,-4px);
-    transition:opacity .2s, transform .2s;
-  }
-  .ct-strip-arrow svg { width:12px; height:12px; stroke:var(--m); }
-  .ct-strip-item:hover .ct-strip-arrow { opacity:1; transform:translate(0,0); }
 
   /* ── OFFICE CARDS ── */
   .ct-offices {
@@ -326,19 +322,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .ct-privacy-icon:hover .ct-privacy-tooltip { opacity:1; }
 
   /* ── RESPONSIVE ── */
-  @media(max-width:1000px) {
-    .ct-strip { grid-template-columns:repeat(3,1fr); }
-    .ct-strip-item:nth-child(4),
-    .ct-strip-item:nth-child(5) { grid-column:auto; }
-  }
   @media(max-width:860px) {
     .ct-offices { grid-template-columns:1fr; }
   }
-  @media(max-width:700px) {
-    .ct-strip { grid-template-columns:1fr 1fr; gap:10px; }
-    .ct-strip-item:nth-child(5) { grid-column:1/-1; }
-  }
   @media(max-width:640px) {
+    .ct-qc-cols { grid-template-columns:1fr; }
+    .ct-qc-col { border-right:none; border-bottom:1px solid var(--line); }
+    .ct-qc-col:last-child { border-bottom:none; }
+    .ct-qc-row { padding:13px 20px; }
+    .ct-qc-col-head { padding:10px 20px; }
+    .ct-qc-kakao { padding:14px 20px; }
+    .ct-qc-kakao-badge { display:none; }
     .ct-form-wrap { padding:28px 20px; }
     .ct-form-grid { grid-template-columns:1fr; }
     .ct-office-body { padding:8px 20px 20px; }
@@ -367,114 +361,96 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <section class="ct-section">
   <div class="ct-section-inner">
 
-    <!-- QUICK CONTACT STRIP -->
+    <!-- QUICK CONTACT -->
     <div class="ct-sh" style="margin-top:0; margin-bottom:20px;">
       <span class="ct-sh-label"><span class="wl-ko">빠른 연락처</span><span class="wl-en">Quick Contact</span></span>
     </div>
-    <div class="ct-strip">
+    <div class="ct-qc">
 
-      <a class="ct-strip-item" href="http://pf.kakao.com/_Rxidxkxj" target="_blank" rel="noopener">
-        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
-        <div class="ct-strip-icon" style="background:#FEE500; color:#391b1b;">
-          <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 3C6.477 3 2 6.582 2 11c0 2.82 1.7 5.3 4.27 6.84-.19.7-.69 2.54-.79 2.93-.12.48.18.47.38.34.16-.1 2.54-1.72 3.57-2.42.51.07 1.04.11 1.57.11 5.523 0 10-3.582 10-8S17.523 3 12 3z"/>
-          </svg>
+      <!-- KakaoTalk — full-width CTA -->
+      <a class="ct-qc-kakao" href="http://pf.kakao.com/_Rxidxkxj" target="_blank" rel="noopener">
+        <div class="ct-qc-kakao-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.582 2 11c0 2.82 1.7 5.3 4.27 6.84-.19.7-.69 2.54-.79 2.93-.12.48.18.47.38.34.16-.1 2.54-1.72 3.57-2.42.51.07 1.04.11 1.57.11 5.523 0 10-3.582 10-8S17.523 3 12 3z"/></svg>
         </div>
-        <div class="ct-strip-body">
-          <div class="ct-strip-label">KakaoTalk</div>
-          <div class="ct-strip-val"><span class="wl-ko">카카오 채널</span><span class="wl-en">Kakao Channel</span></div>
-          <div class="ct-strip-sub"><span class="wl-ko">채팅으로 빠르게 문의</span><span class="wl-en">Chat with us instantly</span></div>
+        <div class="ct-qc-kakao-text">
+          <div class="ct-qc-kakao-title">KakaoTalk <span class="wl-ko">카카오 채널</span><span class="wl-en">Kakao Channel</span></div>
+          <div class="ct-qc-kakao-sub"><span class="wl-ko">채팅으로 가장 빠르게 문의하세요</span><span class="wl-en">The fastest way to reach us</span></div>
         </div>
+        <div class="ct-qc-kakao-badge"><span class="wl-ko">채팅 시작</span><span class="wl-en">Chat Now</span></div>
       </a>
 
-      <a class="ct-strip-item" href="tel:070-4190-6084">
-        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
-        <div class="ct-strip-icon phone">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.42 2 2 0 0 1 3.89 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-          </svg>
-        </div>
-        <div class="ct-strip-body">
-          <div class="ct-strip-label"><span class="wl-ko">평택 본부</span><span class="wl-en">Pyeongtaek HQ</span></div>
-          <div class="ct-strip-val">070-4190-6084</div>
-          <div class="ct-strip-sub"><span class="wl-ko">화–금 09:00–17:00</span><span class="wl-en">Tue–Fri 9–5 PM</span></div>
-        </div>
-      </a>
+      <!-- Location columns -->
+      <div class="ct-qc-cols">
 
-      <a class="ct-strip-item" href="tel:064-799-3707">
-        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
-        <div class="ct-strip-icon phone">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.42 2 2 0 0 1 3.89 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-          </svg>
+        <!-- 평택 본부 -->
+        <div class="ct-qc-col">
+          <div class="ct-qc-col-head"><span class="wl-ko">평택 본부</span><span class="wl-en">Pyeongtaek HQ</span></div>
+          <a class="ct-qc-row" href="tel:070-4190-6084">
+            <div class="ct-qc-icon phone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.42 2 2 0 0 1 3.89 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div class="ct-qc-meta">
+              <div class="ct-qc-lbl"><span class="wl-ko">전화</span><span class="wl-en">Phone</span></div>
+              <div class="ct-qc-val">070-4190-6084</div>
+            </div>
+            <div class="ct-qc-hint"><span class="wl-ko">화–금 09–17</span><span class="wl-en">Tue–Fri 9–5</span></div>
+          </a>
+          <a class="ct-qc-row" href="mailto:wolkorea1@gmail.com">
+            <div class="ct-qc-icon email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div class="ct-qc-meta">
+              <div class="ct-qc-lbl">Email</div>
+              <div class="ct-qc-val">wolkorea1@gmail.com</div>
+            </div>
+          </a>
+          <a class="ct-qc-row" href="https://www.youtube.com/@wolkorea" target="_blank" rel="noopener">
+            <div class="ct-qc-icon yt">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <div class="ct-qc-meta">
+              <div class="ct-qc-lbl">YouTube</div>
+              <div class="ct-qc-val">WOLKO Korea</div>
+            </div>
+            <div class="ct-qc-hint"><span class="wl-ko">사역 영상</span><span class="wl-en">Ministry Videos</span></div>
+          </a>
         </div>
-        <div class="ct-strip-body">
-          <div class="ct-strip-label"><span class="wl-ko">제주 월비</span><span class="wl-en">Jeju WOLBI</span></div>
-          <div class="ct-strip-val">064-799-3707</div>
-          <div class="ct-strip-sub"><span class="wl-ko">화–금 09:00–17:00</span><span class="wl-en">Tue–Fri 9–5 PM</span></div>
-        </div>
-      </a>
 
-      <a class="ct-strip-item" href="mailto:wolkorea1@gmail.com">
-        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
-        <div class="ct-strip-icon email">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
-          </svg>
+        <!-- 제주 월비 -->
+        <div class="ct-qc-col">
+          <div class="ct-qc-col-head"><span class="wl-ko">제주 월비</span><span class="wl-en">Jeju WOLBI</span></div>
+          <a class="ct-qc-row" href="tel:064-799-3707">
+            <div class="ct-qc-icon phone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.42 2 2 0 0 1 3.89 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div class="ct-qc-meta">
+              <div class="ct-qc-lbl"><span class="wl-ko">전화</span><span class="wl-en">Phone</span></div>
+              <div class="ct-qc-val">064-799-3707</div>
+            </div>
+            <div class="ct-qc-hint"><span class="wl-ko">화–금 09–17</span><span class="wl-en">Tue–Fri 9–5</span></div>
+          </a>
+          <a class="ct-qc-row" href="mailto:wolbijeju.contact@gmail.com">
+            <div class="ct-qc-icon email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div class="ct-qc-meta">
+              <div class="ct-qc-lbl">Email</div>
+              <div class="ct-qc-val">wolbijeju.contact@gmail.com</div>
+            </div>
+          </a>
+          <a class="ct-qc-row" href="https://www.youtube.com/@wordoflifebibleinstituteje1608" target="_blank" rel="noopener">
+            <div class="ct-qc-icon yt">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <div class="ct-qc-meta">
+              <div class="ct-qc-lbl">YouTube</div>
+              <div class="ct-qc-val">WOLBI Jeju</div>
+            </div>
+            <div class="ct-qc-hint"><span class="wl-ko">제주 사역 영상</span><span class="wl-en">Jeju Campus</span></div>
+          </a>
         </div>
-        <div class="ct-strip-body">
-          <div class="ct-strip-label"><span class="wl-ko">이메일 · 평택 본부</span><span class="wl-en">Email · HQ</span></div>
-          <div class="ct-strip-val">wolkorea1@gmail.com</div>
-          <div class="ct-strip-sub"><span class="wl-ko">1–2 영업일 내 답변</span><span class="wl-en">Reply within 1–2 days</span></div>
-        </div>
-      </a>
 
-      <a class="ct-strip-item" href="mailto:wolbijeju.contact@gmail.com">
-        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
-        <div class="ct-strip-icon email">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
-          </svg>
-        </div>
-        <div class="ct-strip-body">
-          <div class="ct-strip-label"><span class="wl-ko">이메일 · 제주 월비</span><span class="wl-en">Email · Jeju WOLBI</span></div>
-          <div class="ct-strip-val">wolbijeju.contact@gmail.com</div>
-          <div class="ct-strip-sub"><span class="wl-ko">1–2 영업일 내 답변</span><span class="wl-en">Reply within 1–2 days</span></div>
-        </div>
-      </a>
-
-      <a class="ct-strip-item" href="https://www.youtube.com/@wolkorea" target="_blank" rel="noopener">
-        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
-        <div class="ct-strip-icon yt">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
-          </svg>
-        </div>
-        <div class="ct-strip-body">
-          <div class="ct-strip-label">YouTube</div>
-          <div class="ct-strip-val">WOLKO Korea</div>
-          <div class="ct-strip-sub"><span class="wl-ko">사역 영상</span><span class="wl-en">Ministry Videos</span></div>
-        </div>
-      </a>
-
-      <a class="ct-strip-item" href="https://www.youtube.com/@wordoflifebibleinstituteje1608" target="_blank" rel="noopener">
-        <div class="ct-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
-        <div class="ct-strip-icon yt">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
-          </svg>
-        </div>
-        <div class="ct-strip-body">
-          <div class="ct-strip-label">YouTube</div>
-          <div class="ct-strip-val">WOLBI Jeju</div>
-          <div class="ct-strip-sub"><span class="wl-ko">제주 사역 영상</span><span class="wl-en">Jeju Campus Videos</span></div>
-        </div>
-      </a>
-
+      </div>
     </div>
 
     <!-- CONTACT FORM -->
