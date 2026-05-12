@@ -75,6 +75,6 @@ bio_en_2: |-
   
   At nine, at a Child Evangelism Fellowship camp, she heard a missionary speak about ministry in Asia — and something stirred in her heart. That calling stayed with her through high school, growing stronger after she visited South Korea and attended the Word of Life Bible Institute there. She became convinced that Korea was where God wanted her. She rejoices that God has directed both her life and her husband's to bring them back to South Korea, where they now serve the Lord together with their three children — sons Zayn and Noah, and their youngest daughter Noelle.
 support_url: https://online.mrm.or.kr/UqHsD2X
-prayer_ko: 미국 비자 발급이 원활히 이루어 질 수 있도록 기도 부탁드립니다.
+prayer_ko: 미국 비자 발급이 원활하게 진행되도록 기도 부탁드립니다.
 prayer_en: 
 ---
