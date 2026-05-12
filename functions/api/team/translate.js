@@ -79,7 +79,7 @@ export async function onRequestPost(context) {
   if (!text || !text.trim()) {
     return Response.json({ error: '번역할 텍스트가 없습니다.' }, { status: 400, headers: CORS });
   }
-  if (from !== 'ko' && from !== 'en') {
+  if (ctx !== 'verse_lookup' && from !== 'ko' && from !== 'en') {
     return Response.json({ error: 'from 값은 "ko" 또는 "en"이어야 합니다.' }, { status: 400, headers: CORS });
   }
 
@@ -98,14 +98,10 @@ export async function onRequestPost(context) {
 - 성경 구절은 개역개정(KO) ↔ ESV(EN) 표준 번역 스타일 참고
 - 번역문만 출력 — 설명, 주석, 따옴표 추가 없이`;
 
-  const keyVal = env.ANTHROPIC_API_KEY || '';
-  console.log('KEY debug — length:', keyVal.length, '| prefix:', keyVal.slice(0,10), '| suffix:', keyVal.slice(-4));
-
   try {
     const gatewayUrl = env.AI_GATEWAY_URL
       ? `${env.AI_GATEWAY_URL}/anthropic/v1/messages`
       : 'https://api.anthropic.com/v1/messages';
-    console.log('Fetching URL:', gatewayUrl);
 
     const headers = {
       'x-api-key': env.ANTHROPIC_API_KEY,
@@ -114,6 +110,48 @@ export async function onRequestPost(context) {
     };
     if (env.CF_AIG_TOKEN) {
       headers['cf-aig-authorization'] = `Bearer ${env.CF_AIG_TOKEN}`;
+    }
+
+    // ── verse_lookup: reference → 개역개정 + ESV 본문 동시 반환 ──────────
+    if (ctx === 'verse_lookup') {
+      const lookupPrompt = `성경 구절 참조(예: "요한복음 3:16", "John 3:16", "시편 23:1-3")가 주어지면
+개역개정판 한국어 본문과 ESV 영어 본문을 정확히 제공합니다.
+
+반드시 아래 JSON 형식만 출력하세요 (다른 텍스트 없이):
+{"ko":"개역개정 본문","en":"ESV 본문"}
+
+규칙:
+- 여러 절이면 모두 포함
+- 절 번호는 본문 앞에 붙이지 않음
+- 설명이나 부연 없이 성경 본문만 출력
+- 여러 줄이 필요하면 \\n 사용`;
+
+      const lookupRes = await fetch(gatewayUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          system: lookupPrompt,
+          messages: [{ role: 'user', content: text.trim() }],
+        }),
+      });
+
+      if (!lookupRes.ok) {
+        const errText = await lookupRes.text();
+        return Response.json({ error: `${lookupRes.status}: ${errText}` }, { status: 500, headers: CORS });
+      }
+
+      const lookupData = await lookupRes.json();
+      const rawText = lookupData.content?.[0]?.text?.trim();
+
+      try {
+        const parsed = JSON.parse(rawText);
+        if (!parsed.ko || !parsed.en) throw new Error('빈 응답');
+        return Response.json({ ko: parsed.ko, en: parsed.en }, { headers: CORS });
+      } catch {
+        return Response.json({ error: '성경 구절을 찾지 못했습니다. 구절 참조를 확인해 주세요.' }, { status: 500, headers: CORS });
+      }
     }
 
     const res = await fetch(gatewayUrl, {

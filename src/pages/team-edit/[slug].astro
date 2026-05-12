@@ -672,7 +672,13 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
 
       <div class="field-group">
         <label class="field-label">Verse reference (e.g. Psalm 96:2–3)</label>
-        <input type="text" class="field-input" id="f-verse_ref" value={d.verse_ref || ''}>
+        <input type="text" class="field-input" id="f-verse_ref" value={d.verse_ref || ''} placeholder="예: 시편 96:2-3 / Psalm 96:2-3">
+      </div>
+      <div class="translate-row">
+        <button class="btn-translate" id="btn-verse-lookup" onclick="lookupVerse()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          한글·영문 본문 불러오기
+        </button>
       </div>
       <div class="field-group">
         <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
@@ -946,6 +952,37 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       } finally {
         btn.disabled = false;
         btn.innerHTML = origText;
+      }
+    };
+
+    // ── Verse lookup ───────────────────────────────────────────
+    window.lookupVerse = async function() {
+      const ref = document.getElementById('f-verse_ref').value.trim();
+      if (!ref) { alert('구절 참조를 먼저 입력해 주세요.\n예: 시편 96:2-3 / John 3:16'); return; }
+
+      const btn = document.getElementById('btn-verse-lookup');
+      const origHTML = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> 불러오는 중…';
+
+      try {
+        const res = await fetch('/api/team/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+          body: JSON.stringify({ text: ref, from: 'ref', context: 'verse_lookup' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '불러오기 실패');
+
+        const koEl = document.getElementById('f-verse_ko');
+        const enEl = document.getElementById('f-verse_en');
+        if (data.ko) { koEl.value = data.ko; koEl.style.borderColor = 'var(--green)'; setTimeout(() => { koEl.style.borderColor = ''; }, 2500); }
+        if (data.en) { enEl.value = data.en; enEl.style.borderColor = 'var(--green)'; setTimeout(() => { enEl.style.borderColor = ''; }, 2500); }
+      } catch (e) {
+        alert('오류: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHTML;
       }
     };
 
