@@ -1,4 +1,5 @@
 ---
+
 bio_en: |-
   My name is Joe. I was born in 1976 on the west coast of South Korea, in the city of Dangjin. I grew up under godly parents — though my father was a farmer and our means were modest, our family lived in genuine happiness and contentment in Christ.
   
@@ -24,10 +25,8 @@ hero_tagline_en: Reaching Youth
 hero_tagline2_ko: 만나는 캠프 사역
 hero_tagline2_en: Through Camp Ministry
 hero_subtitle_ko: 민경찬 선교사는 교회 특별히 청소년부와 협력하여 복음배가 운동과 제자훈련이 지속적으로 이루어 질 수 있도록 노력하고 있습니다.
-hero_subtitle_en: Missionary Kyungchan Min is committed to partnering with
-  churches — especially youth ministries — to see the Gospel Multiplication
-  Movement and discipleship training continue to grow and take root.
-verse_ref: 요한일서 1:2
+hero_subtitle_en: Missionary Kyungchan Min is committed to partnering with churches — especially youth ministries — to see the Gospel Multiplication Movement and discipleship training continue to grow and take root.
+verse_ref: "요한일서 1:2"
 spouse_ko: 김유진
 spouse_en: Yu-Jin Kim
 show_spouse: true
@@ -48,4 +47,7 @@ bio_en_2: |-
   
   The Lord brought us together in marriage in 2007, and our son Asol was born in 2009. From 2008 to 2009 we attended the Word of Life Bible Institute in Hudson, Florida together, and we have been serving the Lord as WOLKO missionaries ever since.
 support_url: https://online.mrm.or.kr/HRcruRJ
+verse_ko: 이 생명이 나타내신 바 된지라 이 영원한 생명을 우리가 보았고 증언하여 너희에게 전하노니 이는 아버지와 함께 계시다가 우리에게 나타내신 바 된 이시니라
+verse_en: The life appeared; we have seen it and testify to it, and we proclaim to you the eternal life, which was with the Father and has appeared to us.
+
 ---
