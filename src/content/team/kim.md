@@ -22,10 +22,10 @@ order: 2
 photo_url: /images/uploads/kim-photo_url-1778337099072.jpg
 photo_story: /images/uploads/hwankyu.jpeg
 photo_url_2: /images/uploads/cynthia.jpg
-hero_tagline_ko: '"복음을 담은" '
-hero_tagline_en: '"Media & Education"'
-hero_tagline2_ko: '"미디어 & 교육 사역"'
-hero_tagline2_en: '"Filled with the Gospel"'
+hero_tagline_ko: "\"복음을 담은\" "
+hero_tagline_en: "\"Media & Resources\""
+hero_tagline2_ko: "\"미디어 & 교육자료\""
+hero_tagline2_en: "\"Filled with the Gospel\""
 hero_subtitle_ko: 김환규 선교사는 지역 교회와 기독 학교를 위한 복음 교재 번역 및 개발에 주력하고 있습니다. 씬띠아 선교사와 함께 캠프 사역, 청소년 상담, 영어 수업을 통해 한국의 다음 세대를 섬기고 있습니다.
 hero_subtitle_en: Hwan-Kyu focuses on translating and developing gospel curriculum for local churches and Christian schools. Together with Cynthia, they serve the next generation in Korea through camp ministry, youth counseling, and English classes.
 verse_ref: "시편 96 : 2-3"
@@ -78,5 +78,4 @@ support_url: https://online.mrm.or.kr/UqHsD2X
 prayer_ko: 미국 비자 발급이 원활하게 진행되도록 기도 부탁드립니다.
 prayer_en: "\"Please pray that the U.S. visa application process goes smoothly.\""
 report_url: "https://us6.campaign-archive.com/?u=3e8c5b6ead0327ca6e63027e1&id=f24f95eb46"
-
 ---
