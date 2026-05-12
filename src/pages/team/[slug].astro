@@ -25,6 +25,17 @@ const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
 const [name1Ko, name2Ko] = d.name_ko.includes(' & ') ? d.name_ko.split(' & ') : [d.name_ko, null];
 const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : [d.name_en, null];
 
+// ── Role badge 한/영 매핑 ────────────────────────────────────────
+const ROLE_MAP: Record<string, string> = {
+  'Missionary':        '선교사',
+  'Field Director':    '대표 선교사',
+  'Director':          '대표 선교사',
+  'Short-term Worker': '단기 사역자',
+  'Intern':            '인턴',
+  'Staff':             '스탭',
+};
+const roleBadgeKo = d.role_badge ? (ROLE_MAP[d.role_badge] || d.role_badge) : '';
+
 // ── 성경 참조 한→영 자동 변환 ──────────────────────────────────
 const BOOK_MAP: Record<string, string> = {
   // 구약
@@ -785,7 +796,10 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           <span class="wl-ko">{d.name_ko}</span>
           <span class="wl-en">{d.name_en}</span>
         </div>
-        <div class="mp-hero-name-sub">{d.role_badge}</div>
+        <div class="mp-hero-name-sub">
+          <span class="wl-ko">{roleBadgeKo}</span>
+          <span class="wl-en">{d.role_badge}</span>
+        </div>
       </div>
     </div>
 
@@ -893,7 +907,10 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
             </svg>
           </div>
           <img src={d.photo_story || d.photo_url} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
-          <span class="mp-story-photo-tag">{d.role_badge}</span>
+          <span class="mp-story-photo-tag">
+            <span class="wl-ko">{roleBadgeKo}</span>
+            <span class="wl-en">{d.role_badge}</span>
+          </span>
         </div>
       )}
 
@@ -958,7 +975,10 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
                 </svg>
               </div>
               <img src={d.photo_url_2} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
-              <span class="mp-story-photo-tag">{d.role_badge}</span>
+              <span class="mp-story-photo-tag">
+            <span class="wl-ko">{roleBadgeKo}</span>
+            <span class="wl-en">{d.role_badge}</span>
+          </span>
             </div>
           )}
         </div>
@@ -1127,7 +1147,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
           <div>
             <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
-            <div class="tn-role">{p.data.role_badge}</div>
+            <div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div>
           </div>
         </a>
       );
@@ -1154,7 +1174,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
                 <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
                 <div>
                   <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
-                  <div class="tn-role">{p.data.role_badge}</div>
+                  <div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div>
                 </div>
               </a>
             );
@@ -1178,7 +1198,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
           <div>
             <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
-            <div class="tn-role">{p.data.role_badge}</div>
+            <div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div>
           </div>
         </a>
       );
@@ -1205,7 +1225,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
                 <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
                 <div>
                   <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
-                  <div class="tn-role">{p.data.role_badge}</div>
+                  <div class="tn-role"><span class="wl-ko">{ROLE_MAP[p.data.role_badge] || p.data.role_badge}</span><span class="wl-en">{p.data.role_badge}</span></div>
                 </div>
               </a>
             );
