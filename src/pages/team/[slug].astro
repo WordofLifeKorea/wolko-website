@@ -9,21 +9,12 @@ export async function getStaticPaths() {
 }
 const { person, allTeam } = Astro.props;
 
-// 사이드바용: 선교사 (평택 → 제주), order 순
-const sidebarTeam = allTeam
-  .filter(p => p.data.category === 'missionary')
-  .sort((a, b) => {
-    if (a.data.campus !== b.data.campus) return a.data.campus === 'pyeongtaek' ? -1 : 1;
-    return (a.data.order ?? 99) - (b.data.order ?? 99);
-  });
-
-// 사이드바용: 인턴 (STW), 평택 → 제주, order 순
-const sidebarSTW = allTeam
-  .filter(p => p.data.category === 'stw')
-  .sort((a, b) => {
-    if (a.data.campus !== b.data.campus) return a.data.campus === 'pyeongtaek' ? -1 : 1;
-    return (a.data.order ?? 99) - (b.data.order ?? 99);
-  });
+// 사이드바: 월코 선교사 → 월코 인턴 → 제주 선교사 → 제주 인턴
+const byOrd = (a: any, b: any) => (a.data.order ?? 99) - (b.data.order ?? 99);
+const wolkoMission = allTeam.filter(p => p.data.category === 'missionary' && p.data.campus === 'pyeongtaek').sort(byOrd);
+const wolkoSTW     = allTeam.filter(p => p.data.category === 'stw'        && p.data.campus === 'pyeongtaek').sort(byOrd);
+const jejuMission  = allTeam.filter(p => p.data.category === 'missionary' && p.data.campus !== 'pyeongtaek').sort(byOrd);
+const jejuSTW      = allTeam.filter(p => p.data.category === 'stw'        && p.data.campus !== 'pyeongtaek').sort(byOrd);
 const d = person.data;
 const campusKo = d.campus === 'pyeongtaek' ? '평택 월코센터' : '제주 월비캠퍼스';
 const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju WOLBI Campus';
@@ -1120,90 +1111,105 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     <span class="wl-en">Our Team</span>
   </div>
   <div class="tn-scroll">
-    {(() => {
-      let lastCampus = '';
-      return sidebarTeam.map(p => {
-        const campusLabel = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
-        const campusLabelEn = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
-        const showLabel = p.data.campus !== lastCampus;
-        if (showLabel) lastCampus = p.data.campus;
-        const isActive = p.slug === person.slug;
-        const initial = (p.data.name_ko || p.data.name_en || '?')[0];
-        return (
-          <>
-            {showLabel && (
-              <div class="tn-campus-label">
-                <span class="wl-ko">{campusLabel}</span>
-                <span class="wl-en">{campusLabelEn}</span>
-              </div>
-            )}
-            <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
-              {p.data.photo_url
-                ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-                : null
-              }
-              <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
-              <div>
-                <div class="tn-name">
-                  <span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span>
-                  <span class="wl-en">{p.data.name_en.split(' & ')[0]}</span>
-                </div>
-                <div class="tn-role">{p.data.role_badge}</div>
-              </div>
-            </a>
-          </>
-        );
-      });
-    })()}
 
-    <!-- 인턴 섹션 (접기/펼치기) -->
-    {sidebarSTW.length > 0 && (
+    <!-- ① 월코(평택) 선교사 -->
+    {wolkoMission.length > 0 && (
+      <div class="tn-campus-label">
+        <span class="wl-ko">평택 월코</span><span class="wl-en">WOLKO Pyeongtaek</span>
+      </div>
+    )}
+    {wolkoMission.map(p => {
+      const isActive = p.slug === person.slug;
+      const initial = (p.data.name_ko || p.data.name_en || '?')[0];
+      return (
+        <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
+          {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+          <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
+          <div>
+            <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
+            <div class="tn-role">{p.data.role_badge}</div>
+          </div>
+        </a>
+      );
+    })}
+
+    <!-- ② 월코(평택) 인턴 -->
+    {wolkoSTW.length > 0 && (
       <div class="tn-stw-wrap">
-        <button class="tn-stw-toggle" id="tnStwToggle">
+        <button class="tn-stw-toggle" id="tnStwToggleA">
           <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
-            <span class="wl-ko">인턴</span>
-            <span class="wl-en">Interns</span>
+            <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
             <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;">
               <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
         </button>
-        <div class="tn-stw-list" id="tnStwList" style="display:none;">
-          {(() => {
-            let lastSTWCampus = '';
-            return sidebarSTW.map(p => {
-              const showCampus = p.data.campus !== lastSTWCampus;
-              if (showCampus) lastSTWCampus = p.data.campus;
-              const campusLabel = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
-              const campusLabelEn = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
-              const isActive = p.slug === person.slug;
-              const initial = (p.data.name_ko || p.data.name_en || '?')[0];
-              return (
-                <>
-                  {showCampus && (
-                    <div class="tn-campus-label" style="color:#c5d8e0;">
-                      <span class="wl-ko">{campusLabel}</span>
-                      <span class="wl-en">{campusLabelEn}</span>
-                    </div>
-                  )}
-                  <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
-                    {p.data.photo_url
-                      ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-                      : null
-                    }
-                    <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
-                    <div>
-                      <div class="tn-name">
-                        <span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span>
-                        <span class="wl-en">{p.data.name_en.split(' & ')[0]}</span>
-                      </div>
-                      <div class="tn-role">{p.data.role_badge}</div>
-                    </div>
-                  </a>
-                </>
-              );
-            });
-          })()}
+        <div class="tn-stw-list" id="tnStwListA" style="display:none;">
+          {wolkoSTW.map(p => {
+            const isActive = p.slug === person.slug;
+            const initial = (p.data.name_ko || p.data.name_en || '?')[0];
+            return (
+              <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
+                {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
+                <div>
+                  <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
+                  <div class="tn-role">{p.data.role_badge}</div>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    )}
+
+    <!-- ③ 제주 선교사 -->
+    {(jejuMission.length > 0 || jejuSTW.length > 0) && (
+      <div class="tn-campus-label" style="margin-top:6px;">
+        <span class="wl-ko">제주 월비</span><span class="wl-en">WOLBI Jeju</span>
+      </div>
+    )}
+    {jejuMission.map(p => {
+      const isActive = p.slug === person.slug;
+      const initial = (p.data.name_ko || p.data.name_en || '?')[0];
+      return (
+        <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
+          {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+          <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
+          <div>
+            <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
+            <div class="tn-role">{p.data.role_badge}</div>
+          </div>
+        </a>
+      );
+    })}
+
+    <!-- ④ 제주 인턴 -->
+    {jejuSTW.length > 0 && (
+      <div class="tn-stw-wrap">
+        <button class="tn-stw-toggle" id="tnStwToggleB">
+          <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
+            <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
+            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;">
+              <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </button>
+        <div class="tn-stw-list" id="tnStwListB" style="display:none;">
+          {jejuSTW.map(p => {
+            const isActive = p.slug === person.slug;
+            const initial = (p.data.name_ko || p.data.name_en || '?')[0];
+            return (
+              <a href={`/team/${p.slug}`} class={`tn-item${isActive ? ' is-active' : ''}`}>
+                {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{initial}</span>
+                <div>
+                  <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
+                  <div class="tn-role">{p.data.role_badge}</div>
+                </div>
+              </a>
+            );
+          })}
         </div>
       </div>
     )}
@@ -1236,22 +1242,24 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       localStorage.setItem('tn_collapsed', collapsed ? '1' : '0');
     });
 
-    // 인턴 섹션 토글
-    var stwToggle = document.getElementById('tnStwToggle');
-    var stwList = document.getElementById('tnStwList');
-    if (stwToggle && stwList) {
-      var _storedStw = localStorage.getItem('tn_stw_open');
-      var stwOpen = _storedStw === null ? true : _storedStw !== '0'; // 기본값: 펼침
-      // 현재 인턴 페이지 보고 있으면 자동 열기
-      if (stwList.querySelector('.tn-item.is-active')) stwOpen = true;
-      if (stwOpen) { stwList.style.display = ''; stwToggle.classList.add('is-open'); }
-      stwToggle.addEventListener('click', function() {
-        stwOpen = !stwOpen;
-        stwList.style.display = stwOpen ? '' : 'none';
-        stwToggle.classList.toggle('is-open', stwOpen);
-        localStorage.setItem('tn_stw_open', stwOpen ? '1' : '0');
+    // 인턴 섹션 토글 헬퍼 (A=평택, B=제주)
+    function initStwToggle(toggleId, listId, storageKey) {
+      var t = document.getElementById(toggleId);
+      var l = document.getElementById(listId);
+      if (!t || !l) return;
+      var stored = localStorage.getItem(storageKey);
+      var open = stored === null ? true : stored !== '0'; // 기본: 펼침
+      if (l.querySelector('.tn-item.is-active')) open = true;
+      if (open) { l.style.display = ''; t.classList.add('is-open'); }
+      t.addEventListener('click', function() {
+        open = !open;
+        l.style.display = open ? '' : 'none';
+        t.classList.toggle('is-open', open);
+        localStorage.setItem(storageKey, open ? '1' : '0');
       });
     }
+    initStwToggle('tnStwToggleA', 'tnStwListA', 'tn_stw_open_pt');
+    initStwToggle('tnStwToggleB', 'tnStwListB', 'tn_stw_open_jj');
 
     // 현재 항목 스크롤 위치로 이동
     var active = sidebar.querySelector('.tn-item.is-active');
@@ -1281,65 +1289,77 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     </button>
   </div>
   <div class="tn-sheet-scroll">
-    {(() => {
-      let lastC = '';
-      return sidebarTeam.map(p => {
-        const cl = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
-        const cle = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
-        const show = p.data.campus !== lastC;
-        if (show) lastC = p.data.campus;
-        const active = p.slug === person.slug;
-        const init = (p.data.name_ko || p.data.name_en || '?')[0];
-        return (
-          <>
-            {show && <div class="tn-campus-label"><span class="wl-ko">{cl}</span><span class="wl-en">{cle}</span></div>}
-            <a href={`/team/${p.slug}`} class={`tn-item${active ? ' is-active' : ''}`}>
-              {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-              <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{init}</span>
-              <div>
-                <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
-                <div class="tn-role">{p.data.role_badge}</div>
-              </div>
-            </a>
-          </>
-        );
-      });
-    })()}
-    {sidebarSTW.length > 0 && (
+    <!-- ① 월코 선교사 -->
+    {wolkoMission.length > 0 && <div class="tn-campus-label"><span class="wl-ko">평택 월코</span><span class="wl-en">WOLKO Pyeongtaek</span></div>}
+    {wolkoMission.map(p => {
+      const act = p.slug === person.slug;
+      const ini = (p.data.name_ko || p.data.name_en || '?')[0];
+      return (
+        <a href={`/team/${p.slug}`} class={`tn-item${act ? ' is-active' : ''}`}>
+          {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+          <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{ini}</span>
+          <div><div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div><div class="tn-role">{p.data.role_badge}</div></div>
+        </a>
+      );
+    })}
+    <!-- ② 월코 인턴 -->
+    {wolkoSTW.length > 0 && (
       <div class="tn-stw-wrap">
-        <button class="tn-stw-toggle" id="tnStwToggle2">
+        <button class="tn-stw-toggle" id="tnStwToggleA2">
           <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
             <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
-            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;">
-              <path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;"><path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
         </button>
-        <div class="tn-stw-list" id="tnStwList2" style="display:none;">
-          {(() => {
-            let lc = '';
-            return sidebarSTW.map(p => {
-              const sc = p.data.campus !== lc;
-              if (sc) lc = p.data.campus;
-              const cl = p.data.campus === 'pyeongtaek' ? '평택 월코' : '제주 월비';
-              const cle = p.data.campus === 'pyeongtaek' ? 'WOLKO Pyeongtaek' : 'WOLBI Jeju';
-              const active = p.slug === person.slug;
-              const init = (p.data.name_ko || p.data.name_en || '?')[0];
-              return (
-                <>
-                  {sc && <div class="tn-campus-label" style="color:#c5d8e0;"><span class="wl-ko">{cl}</span><span class="wl-en">{cle}</span></div>}
-                  <a href={`/team/${p.slug}`} class={`tn-item${active ? ' is-active' : ''}`}>
-                    {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
-                    <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{init}</span>
-                    <div>
-                      <div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div>
-                      <div class="tn-role">{p.data.role_badge}</div>
-                    </div>
-                  </a>
-                </>
-              );
-            });
-          })()}
+        <div class="tn-stw-list" id="tnStwListA2" style="display:none;">
+          {wolkoSTW.map(p => {
+            const act = p.slug === person.slug;
+            const ini = (p.data.name_ko || p.data.name_en || '?')[0];
+            return (
+              <a href={`/team/${p.slug}`} class={`tn-item${act ? ' is-active' : ''}`}>
+                {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{ini}</span>
+                <div><div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div><div class="tn-role">{p.data.role_badge}</div></div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    )}
+    <!-- ③ 제주 선교사 -->
+    {(jejuMission.length > 0 || jejuSTW.length > 0) && <div class="tn-campus-label" style="margin-top:6px;"><span class="wl-ko">제주 월비</span><span class="wl-en">WOLBI Jeju</span></div>}
+    {jejuMission.map(p => {
+      const act = p.slug === person.slug;
+      const ini = (p.data.name_ko || p.data.name_en || '?')[0];
+      return (
+        <a href={`/team/${p.slug}`} class={`tn-item${act ? ' is-active' : ''}`}>
+          {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+          <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{ini}</span>
+          <div><div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div><div class="tn-role">{p.data.role_badge}</div></div>
+        </a>
+      );
+    })}
+    <!-- ④ 제주 인턴 -->
+    {jejuSTW.length > 0 && (
+      <div class="tn-stw-wrap">
+        <button class="tn-stw-toggle" id="tnStwToggleB2">
+          <span class="tn-campus-label" style="padding:0;margin:0;display:flex;align-items:center;gap:6px;width:100%;">
+            <span class="wl-ko">인턴</span><span class="wl-en">Interns</span>
+            <svg class="tn-stw-icon" width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-left:auto;flex-shrink:0;"><path d="M2 4l3.5 3.5L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </button>
+        <div class="tn-stw-list" id="tnStwListB2" style="display:none;">
+          {jejuSTW.map(p => {
+            const act = p.slug === person.slug;
+            const ini = (p.data.name_ko || p.data.name_en || '?')[0];
+            return (
+              <a href={`/team/${p.slug}`} class={`tn-item${act ? ' is-active' : ''}`}>
+                {p.data.photo_url ? <img class="tn-avatar" src={p.data.photo_url} alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/> : null}
+                <span class="tn-avatar-placeholder" style={p.data.photo_url ? 'display:none' : ''}>{ini}</span>
+                <div><div class="tn-name"><span class="wl-ko">{p.data.name_ko.split(' & ')[0]}</span><span class="wl-en">{p.data.name_en.split(' & ')[0]}</span></div><div class="tn-role">{p.data.role_badge}</div></div>
+              </a>
+            );
+          })}
         </div>
       </div>
     )}
@@ -1377,21 +1397,24 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     var closeBtn = document.getElementById('tnSheetClose');
     if (closeBtn) closeBtn.addEventListener('click', closeSheet);
 
-    // 인턴 토글 (바텀시트용)
-    var st2 = document.getElementById('tnStwToggle2');
-    var sl2 = document.getElementById('tnStwList2');
-    if (st2 && sl2) {
-      var _stored2 = localStorage.getItem('tn_stw_open');
-      var open2 = _stored2 === null ? true : _stored2 !== '0'; // 기본값: 펼침
-      if (sl2.querySelector('.tn-item.is-active')) open2 = true;
-      if (open2) { sl2.style.display = ''; st2.classList.add('is-open'); }
-      st2.addEventListener('click', function() {
-        open2 = !open2;
-        sl2.style.display = open2 ? '' : 'none';
-        st2.classList.toggle('is-open', open2);
-        localStorage.setItem('tn_stw_open', open2 ? '1' : '0');
+    // 인턴 토글 (바텀시트용) — A=평택, B=제주
+    function initSheetStw(toggleId, listId, storageKey) {
+      var t = document.getElementById(toggleId);
+      var l = document.getElementById(listId);
+      if (!t || !l) return;
+      var stored = localStorage.getItem(storageKey);
+      var open = stored === null ? true : stored !== '0';
+      if (l.querySelector('.tn-item.is-active')) open = true;
+      if (open) { l.style.display = ''; t.classList.add('is-open'); }
+      t.addEventListener('click', function() {
+        open = !open;
+        l.style.display = open ? '' : 'none';
+        t.classList.toggle('is-open', open);
+        localStorage.setItem(storageKey, open ? '1' : '0');
       });
     }
+    initSheetStw('tnStwToggleA2', 'tnStwListA2', 'tn_stw_open_pt');
+    initSheetStw('tnStwToggleB2', 'tnStwListB2', 'tn_stw_open_jj');
   })();
 </script>
 
