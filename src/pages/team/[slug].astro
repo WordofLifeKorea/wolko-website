@@ -546,7 +546,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 .tn-sidebar {
   position: fixed;
   right: 0; top: 0; bottom: 0;
-  width: 200px;
+  width: 224px;
   background: rgba(255,255,255,0.97);
   backdrop-filter: blur(12px);
   border-left: 1px solid #dce8ee;
@@ -557,7 +557,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   transform: translateX(0);
   transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
 }
-.tn-sidebar.is-collapsed { transform: translateX(188px); }
+.tn-sidebar.is-collapsed { transform: translateX(212px); }
 
 .tn-toggle {
   position: absolute;
@@ -621,7 +621,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   color: #004f68;
 }
 .tn-avatar {
-  width: 34px; height: 34px;
+  width: 42px; height: 42px;
   border-radius: 50%;
   object-fit: cover; object-position: top;
   background: #c5dce8;
@@ -630,42 +630,42 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 }
 .tn-item.is-active .tn-avatar { border-color: #007ea1; }
 .tn-avatar-placeholder {
-  width: 34px; height: 34px;
+  width: 42px; height: 42px;
   border-radius: 50%;
   background: linear-gradient(135deg, #c5dce8, #a0b8c4);
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: white;
   border: 2px solid #dce8ee;
 }
 .tn-name {
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.3;
   word-break: keep-all;
 }
 .tn-role {
-  font-size: 10px;
+  font-size: 11px;
   color: #7a9aaa;
   line-height: 1.2;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 @media (max-width: 1100px) {
-  .tn-sidebar { width: 176px; }
-  .tn-sidebar.is-collapsed { transform: translateX(164px); }
+  .tn-sidebar { width: 200px; }
+  .tn-sidebar.is-collapsed { transform: translateX(188px); }
 }
 @media (max-width: 768px) {
   .tn-sidebar { display: none; }
 }
 /* main content에 우측 여백 추가 (사이드바 공간 확보) */
 @media (min-width: 769px) {
-  .mp-wrap { padding-right: 200px; }
+  .mp-wrap { padding-right: 224px; }
 }
 @media (min-width: 769px) and (max-width: 1100px) {
-  .mp-wrap { padding-right: 176px; }
+  .mp-wrap { padding-right: 200px; }
 }
 
 /* 인턴 섹션 */
@@ -764,8 +764,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   .tn-sheet .tn-item { padding: 9px 20px; }
   .tn-sheet .tn-campus-label { padding: 10px 20px 4px; }
   .tn-sheet .tn-stw-toggle { padding: 10px 20px 6px; }
-  .tn-sheet .tn-avatar { width: 38px; height: 38px; }
-  .tn-sheet .tn-avatar-placeholder { width: 38px; height: 38px; font-size: 14px; }
+  .tn-sheet .tn-avatar { width: 44px; height: 44px; }
+  .tn-sheet .tn-avatar-placeholder { width: 44px; height: 44px; font-size: 16px; }
 }
 </style>
 
@@ -1217,7 +1217,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     var wrap = document.querySelector('.mp-wrap');
     if (!sidebar || !toggle) return;
 
-    var SIDEBAR_W = window.innerWidth <= 1100 ? '176px' : '200px';
+    var SIDEBAR_W = window.innerWidth <= 1100 ? '200px' : '224px';
     var isMobile = window.innerWidth <= 768;
 
     function applyState(isCollapsed) {
@@ -1240,7 +1240,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     var stwToggle = document.getElementById('tnStwToggle');
     var stwList = document.getElementById('tnStwList');
     if (stwToggle && stwList) {
-      var stwOpen = localStorage.getItem('tn_stw_open') === '1';
+      var _storedStw = localStorage.getItem('tn_stw_open');
+      var stwOpen = _storedStw === null ? true : _storedStw !== '0'; // 기본값: 펼침
       // 현재 인턴 페이지 보고 있으면 자동 열기
       if (stwList.querySelector('.tn-item.is-active')) stwOpen = true;
       if (stwOpen) { stwList.style.display = ''; stwToggle.classList.add('is-open'); }
@@ -1380,7 +1381,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     var st2 = document.getElementById('tnStwToggle2');
     var sl2 = document.getElementById('tnStwList2');
     if (st2 && sl2) {
-      var open2 = localStorage.getItem('tn_stw_open') === '1';
+      var _stored2 = localStorage.getItem('tn_stw_open');
+      var open2 = _stored2 === null ? true : _stored2 !== '0'; // 기본값: 펼침
       if (sl2.querySelector('.tn-item.is-active')) open2 = true;
       if (open2) { sl2.style.display = ''; st2.classList.add('is-open'); }
       st2.addEventListener('click', function() {
