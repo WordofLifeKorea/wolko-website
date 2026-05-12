@@ -1,4 +1,5 @@
 ---
+
 bio_en: |-
   When I was just seven years old, the terrifying reality of hell gripped my heart. Wanting to know how I could escape such a place, I asked my father how I could be sure I would not go to hell. He sat me down in the living room of our home and carefully walked me through the gospel, emphasizing my need for Jesus Christ alone. At the end, I prayed with my father and went on with life.
   
@@ -29,12 +30,8 @@ hero_tagline_ko: 복음이 전해지는
 hero_tagline_en: The Gospel Proclaimed
 hero_tagline2_ko: 캠프 & 아웃리치
 hero_tagline2_en: Through Camp & Outreach
-hero_subtitle_ko: 제이슨과 찬주 선교사는 월코 본토 캠프 및 아웃리치 팀 코디네이터로 섬기며, 청소년들에게 복음이 분명히 전해지고
-  지역 교회와 연결되어 지속적인 영향이 이어지도록 팀을 이끌고 있습니다.
-hero_subtitle_en: Jason and Chan-Joo serve as WOLKO's mainland camp and outreach
-  team coordinators, leading their team to ensure the gospel is clearly
-  proclaimed to youth and that lasting impact is sustained through connection
-  with local churches.
+hero_subtitle_ko: 제이슨과 찬주 선교사는 월코 본토 캠프 및 아웃리치 팀 코디네이터로 섬기며, 청소년들에게 복음이 분명히 전해지고 지역 교회와 연결되어 지속적인 영향이 이어지도록 팀을 이끌고 있습니다.
+hero_subtitle_en: "Jason and Chan-Joo serve as WOLKO's mainland camp and outreach team coordinators, leading their team to ensure the gospel is clearly proclaimed to youth and that lasting impact is sustained through connection with local churches."
 verse_ref: "갈라디아서 6 : 14"
 spouse_ko: 앤더슨 찬주
 spouse_en: Chanju Anderson
@@ -70,4 +67,7 @@ bio_en_2: |-
   
   There are many churches in South Korea, but very few young people inside them. My heart is to share the gospel with those who grew up in church or call themselves Christians, but have never truly understood it — so that they will then share it with those around them. I pray that God will use our international family and our children as a tool for His ministry. My testimony will never stop until I meet Him again, for He is still working in my life every single day.
 support_url: https://online.mrm.or.kr/1CiXq2b
+verse_ko: 그러나 내게는 우리 주 예수 그리스도의 십자가 외에 결코 자랑할 것이 없으니 그리스도로 말미암아 세상이 나를 대하여 십자가에 못 박히고 내가 또한 세상을 대하여 그러하니라
+verse_en: May I never boast except in the cross of our Lord Jesus Christ, through which the world has been crucified to me, and I to the world.
+
 ---
