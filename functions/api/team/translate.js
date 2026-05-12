@@ -124,7 +124,8 @@ export async function onRequestPost(context) {
 
     if (!res.ok) {
       const errText = await res.text();
-      throw new Error(`Anthropic API error: ${res.status} ${errText}`);
+      console.error('Anthropic error response:', res.status, JSON.stringify(Object.fromEntries(res.headers)), errText);
+      return Response.json({ error: `${res.status}: ${errText}` }, { status: 500, headers: CORS });
     }
 
     const data = await res.json();
