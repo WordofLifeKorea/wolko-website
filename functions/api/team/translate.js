@@ -62,9 +62,6 @@ export async function onRequestPost(context) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
   }
 
-  // DEBUG — 확인 후 삭제
-  return Response.json({ translated: `KEY=${env.ANTHROPIC_API_KEY ? env.ANTHROPIC_API_KEY.slice(0, 12) : 'NOT SET'}` }, { headers: CORS });
-
   if (!env.ANTHROPIC_API_KEY) {
     return Response.json(
       { error: 'ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다.' },
