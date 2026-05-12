@@ -18,7 +18,7 @@ campus: jeju
 category: missionary
 order: 2
 photo_url: /images/uploads/beak.png
-photo_position: "center 10%"
+photo_position: "center 20%"
 photo_story: /images/uploads/david.jpg
 photo_url_2: /images/uploads/anna.jpg
 hero_tagline_ko: 다음 세대를

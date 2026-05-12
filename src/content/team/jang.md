@@ -20,7 +20,7 @@ campus: jeju
 category: missionary
 order: 2
 photo_url: /images/uploads/jack.jpg
-photo_position: "center 20%"
+photo_position: "center 40%"
 photo_story: /images/uploads/jack.jpg
 hero_tagline_ko: 복음이 바꾼
 hero_tagline_en: One Life

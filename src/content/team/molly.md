@@ -16,6 +16,7 @@ campus: pyeongtaek
 category: stw
 order: 3
 photo_url: /images/uploads/molly.jpg
+photo_position: "center 10%"
 hero_tagline_ko: 아시아를 향한
 hero_tagline_en: Carrying God's Heart
 hero_tagline2_ko: 하나님의 마음을 품다
