@@ -841,10 +841,17 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           <span class="wl-ko">후원하기</span><span class="wl-en">Support</span>
         </a>
         {d.report_url && (
-          <button class="mp-btn mp-btn-secondary" id="openReportBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            <span class="wl-ko">최근 사역보고</span><span class="wl-en">Ministry Report</span>
-          </button>
+          d.report_url.endsWith('.pdf') ? (
+            <button class="mp-btn mp-btn-secondary" id="openReportBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span class="wl-ko">최근 사역보고</span><span class="wl-en">Ministry Report</span>
+            </button>
+          ) : (
+            <a href={d.report_url} target="_blank" rel="noopener noreferrer" class="mp-btn mp-btn-secondary" id="openReportBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <span class="wl-ko">최근 뉴스레터</span><span class="wl-en">Newsletter</span>
+            </a>
+          )
         )}
       </div>
     </div>
@@ -1001,39 +1008,6 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
             </p>
           </div>
         </div>
-      </div>
-    </div>
-  )}
-
-  <!-- Newsletter / Ministry Report -->
-  {d.report_url && (
-    <div class="mp-report mp-reveal" style="margin-bottom: 28px;">
-      <div class="mp-report-inner">
-        <div class="mp-report-text">
-          <div class="mp-report-label">
-            <span class="wl-ko">최근 사역보고</span>
-            <span class="wl-en">Latest Ministry Update</span>
-          </div>
-          <div class="mp-report-desc">
-            <span class="wl-ko">{d.name_ko}의 최근 소식과 기도제목을 뉴스레터로 확인해 보세요.</span>
-            <span class="wl-en">Read {d.name_en}'s latest newsletter for ministry updates and prayer requests.</span>
-          </div>
-        </div>
-        <a href={d.report_url} target="_blank" rel="noopener" class="mp-report-btn">
-          {d.report_url.endsWith('.pdf') ? (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-          ) : (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
-            </svg>
-          )}
-          <span class="wl-ko">뉴스레터 보기</span>
-          <span class="wl-en">View Newsletter</span>
-        </a>
       </div>
     </div>
   )}
@@ -1483,7 +1457,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
       var prevBtn = document.getElementById('reportPrev');
       var nextBtn = document.getElementById('reportNext');
       var counter = document.getElementById('reportCounter');
-      if (!modal || !openBtn) return;
+      // External links (Mailchimp etc.) are rendered as <a> tags — no modal needed
+      if (!modal || !openBtn || !reportUrl.endsWith('.pdf')) return;
 
       var pdfDoc = null, curPage = 1, totalPages = 0, rendering = false;
 
