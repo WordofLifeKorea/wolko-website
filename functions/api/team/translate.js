@@ -112,56 +112,74 @@ export async function onRequestPost(context) {
       headers['cf-aig-authorization'] = `Bearer ${env.CF_AIG_TOKEN}`;
     }
 
-    // ── verse_lookup: reference → 개역개정 + ESV 본문 동시 반환 ──────────
+    // ── verse_lookup: reference → 개역개정4판(Sonnet) + NIV(api.bible) 병렬 반환 ──
     if (ctx === 'verse_lookup') {
-      const lookupPrompt = `성경 구절 참조(예: "요한복음 3:16", "John 3:16", "시편 23:1-3")가 주어지면
-개역개정4판 한국어 본문과 ESV 영어 본문을 정확히 제공합니다.
+      const BIBLE_API_KEY = env.BIBLE_API_KEY;
+      const NIV_BIBLE_ID  = env.NIV_BIBLE_ID;
 
-반드시 아래 JSON 형식만 출력하세요 (다른 텍스트 없이):
-{"ko":"개역개정4판 본문","en":"ESV 본문"}
+      if (!BIBLE_API_KEY || !NIV_BIBLE_ID) {
+        return Response.json({ error: 'BIBLE_API_KEY 또는 NIV_BIBLE_ID 환경변수가 설정되지 않았습니다.' }, { status: 500, headers: CORS });
+      }
 
-규칙:
-- 여러 절이면 모두 포함
-- 절 번호는 본문 앞에 붙이지 않음
-- 설명이나 부연 없이 성경 본문만 출력
-- 여러 줄이 필요하면 \\n 사용`;
-
-      const lookupRes = await fetch(gatewayUrl, {
+      // Step 1: verse_ref → USFM passage ID (Haiku로 빠르게 변환)
+      const usfmRes = await fetch(gatewayUrl, {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1024,
-          system: lookupPrompt,
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 50,
+          system: `Convert a Bible verse reference to a USFM passage ID. Output only the ID, nothing else.
+Examples:
+"John 3:16" → JHN.3.16
+"Psalm 96:2-3" → PSA.96.2-PSA.96.3
+"시편 96:2-3" → PSA.96.2-PSA.96.3
+"요한복음 3:16" → JHN.3.16
+"Romans 8:28" → ROM.8.28
+"창세기 1:1" → GEN.1.1`,
           messages: [{ role: 'user', content: text.trim() }],
         }),
       });
+      const usfmData = await usfmRes.json();
+      const passageId = usfmData.content?.[0]?.text?.trim();
 
-      if (!lookupRes.ok) {
-        const errText = await lookupRes.text();
-        return Response.json({ error: `${lookupRes.status}: ${errText}` }, { status: 500, headers: CORS });
+      if (!passageId) {
+        return Response.json({ error: '구절 참조를 인식하지 못했습니다.' }, { status: 400, headers: CORS });
       }
 
-      const lookupData = await lookupRes.json();
-      const rawText = lookupData.content?.[0]?.text?.trim();
+      // Step 2: NIV(api.bible) + 개역개정4판(Sonnet) 병렬 호출
+      const [nivResponse, koResponse] = await Promise.all([
+        fetch(
+          `https://api.scripture.api.bible/v1/bibles/${NIV_BIBLE_ID}/passages/${encodeURIComponent(passageId)}?content-type=text&include-verse-numbers=false&include-titles=false`,
+          { headers: { 'api-key': BIBLE_API_KEY } }
+        ),
+        fetch(gatewayUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 512,
+            system: `개역개정4판 한국어 성경 본문을 정확히 출력합니다. 절 번호 없이 본문만 출력하세요. 설명이나 부연 없이.`,
+            messages: [{ role: 'user', content: `개역개정4판 ${text.trim()}` }],
+          }),
+        }),
+      ]);
 
-      try {
-        // 코드블록(```json ... ```)으로 감싸져 있어도 추출
-        let jsonStr = rawText;
-        const blockMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
-        if (blockMatch) {
-          jsonStr = blockMatch[1].trim();
-        } else {
-          const objMatch = rawText.match(/\{[\s\S]*\}/);
-          if (objMatch) jsonStr = objMatch[0];
-        }
-        const parsed = JSON.parse(jsonStr);
-        if (!parsed.ko || !parsed.en) throw new Error('빈 응답');
-        return Response.json({ ko: parsed.ko, en: parsed.en }, { headers: CORS });
-      } catch {
-        console.error('verse_lookup parse error, raw:', rawText);
+      let en = '';
+      if (nivResponse.ok) {
+        const nivData = await nivResponse.json();
+        en = (nivData.data?.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+      } else {
+        console.error('NIV API error:', nivResponse.status, await nivResponse.text());
+      }
+
+      const koData = await koResponse.json();
+      const ko = koData.content?.[0]?.text?.trim() || '';
+
+      if (!ko && !en) {
         return Response.json({ error: '성경 구절을 찾지 못했습니다. 구절 참조를 확인해 주세요.' }, { status: 500, headers: CORS });
       }
+
+      return Response.json({ ko, en }, { headers: CORS });
     }
 
     const res = await fetch(gatewayUrl, {
