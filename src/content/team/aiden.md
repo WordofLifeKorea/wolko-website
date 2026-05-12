@@ -21,13 +21,9 @@ hero_tagline_ko: 문화로
 hero_tagline_en: Proclaiming the Gospel
 hero_tagline2_ko: 복음을 전하다
 hero_tagline2_en: Through the Arts
-hero_subtitle_ko: 박예능 간사는 복음 전도팀원으로 월코 사역 대부분에 참여하며 프로그램 진행을 돕고 있습니다. 연극과 뮤지컬을
-  통해 언어를 넘어 복음을 전하는 문화사역의 비전을 품고 있습니다.
-hero_subtitle_en: Aiden serves on WOLKO's evangelism team, participating in most
-  ministry activities and assisting with program facilitation. He carries a
-  vision for arts ministry — using drama and musicals to proclaim the gospel
-  across language barriers.
-verse_ref: 예레미야 1:5-9
+hero_subtitle_ko: 박예능 간사는 복음 전도팀원으로 월코 사역 대부분에 참여하며 프로그램 진행을 돕고 있습니다. 연극과 뮤지컬을 통해 언어를 넘어 복음을 전하는 문화사역의 비전을 품고 있습니다.
+hero_subtitle_en: "Aiden serves on WOLKO's evangelism team, participating in most ministry activities and assisting with program facilitation. He carries a vision for arts ministry — using drama and musicals to proclaim the gospel across language barriers."
+verse_ref: "예레미야 1:5-9"
 show_spouse: false
 bio_ko: |-
   저는 한국에서 5대째 기독교 신앙을 이어온 가정에서 태어나고 자랐습니다. 저희 가문의 신앙은 한반도가 분단되기 전 처음으로 복음을 전한 선교사들의 시대까지 거슬러 올라갑니다. 저의 조부모님이 어렸을 때, 증조부님이 현재 북한 지역에서 신학을 공부하셨습니다. 공산주의 정권이 기독교인들을 박해하기 시작하자, 조부모님은 신앙을 지키기 위해 남쪽으로 피난하셨습니다. 이러한 유산 덕분에 저는 복음과 교회 안에서 자랐습니다.
@@ -44,4 +40,7 @@ bio_ko_2: |-
   연극과 뮤지컬을 사랑하는 사람으로서, 이야기가 언어를 넘어 얼마나 강력하게 전달될 수 있는지에 감탄했습니다. 말을 이해하지 못할 때에도 여전히 메시지를 파악할 수 있었습니다. 문화예술을 복음을 효과적으로 전하는 도구로 사용하는 꿈을 꾸기 시작했습니다.
   
   나중에 신학교 진학을 위해 기도할 때, 부모님은 저의 과거 미성숙함 때문에 걱정하셨습니다. 하지만 대학 원서 마지막 날 아침, 가정 큐티 시간에 하나님은 예레미야 1장 5-9절 말씀을 통해 소명을 확인해 주셨습니다. 그 말씀은 하나님이 부르시는 자를 또한 준비시키신다는 것을 상기시켜 주었습니다. 그 확신을 가지고 순종하며 나아가 사역 훈련의 여정을 시작했습니다.
+verse_ko: 내가 너를 모태에 짓기 전에 너를 알았고 네가 배에서 나오기 전에 너를 성별하였고 너를 여러 나라의 선지자로 세웠노라 하시기로 내가 이르되 슬프도소이다 주 여호와여 보소서 나는 아이라 말할 줄을 알지 못하나이다 하니 여호와께서 내게 이르시되 너는 아이라 하지 말고 내가 너를 누구에게 보내든지 너는 가며 내가 네게 무엇을 명령하든지 너는 말할지니라 너는 그들 때문에 두려워하지 말라 내가 너와 함께 하여 너를 구원하리라 나 여호와의 말이니라 하시고 여호와께서 그의 손을 내밀어 내 입에 대시며 여호와께서 내게 이르시되 보라 내가 내 말을 네 입에 두었노라
+verse_en: “Before I formed you in the womb I knew you, before you were born I set you apart; I appointed you as a prophet to the nations.” “Alas, Sovereign Lord,” I said, “I do not know how to speak; I am too young.” But the Lord said to me, “Do not say, ‘I am too young.’ You must go to everyone I send you to and say whatever I command you. Do not be afraid of them, for I am with you and will rescue you,” declares the Lord. Then the Lord reached out his hand and touched my mouth and said to me, “I have put my words in your mouth.
+
 ---
