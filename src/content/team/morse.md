@@ -40,6 +40,4 @@ bio_en_2: |-
   When I was thirteen years old, I realized the need to live my life for Christ and dedicated my life to His service. I attended Word of Life Bible Institute for two years and then graduated from Davis College with a Bachelor's in Christian Ministries. We have five daughters — Kiera, Aleya, Jaida, Ella, and Carissa. We are all very excited to be a part of the ministry in South Korea. God is doing great things, and it is a blessing simply to be a part of it.
 support_url: https://online.mrm.or.kr/XXLJGid
 report_url: "https://us4.campaign-archive.com/home/?u=201383574defb2126c6ad675c&id=94c47d766a"
-
-
 ---
