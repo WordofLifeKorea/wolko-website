@@ -155,7 +155,8 @@ export async function onRequestPost(context) {
     const file = formData.get('file');
     const field = formData.get('field'); // photo_url | photo_story | photo_url_2
 
-    const ALLOWED_FIELDS = ['photo_url', 'photo_story', 'photo_url_2'];
+    const PHOTO_FIELDS = ['photo_url', 'photo_story', 'photo_url_2'];
+    const ALLOWED_FIELDS = [...PHOTO_FIELDS, 'report_url'];
     if (!file || !ALLOWED_FIELDS.includes(field)) {
       return new Response(JSON.stringify({ error: 'file과 유효한 field가 필요합니다.' }), {
         status: 400, headers: { ...CORS, 'Content-Type': 'application/json' }
@@ -164,18 +165,33 @@ export async function onRequestPost(context) {
 
     // Validate file type
     const mimeType = file.type || '';
-    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(mimeType)) {
+    const isPhoto = PHOTO_FIELDS.includes(field);
+    const isPdf = field === 'report_url';
+
+    if (isPhoto && !['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(mimeType)) {
       return new Response(JSON.stringify({ error: '이미지 파일만 업로드 가능합니다 (jpg, png, webp).' }), {
         status: 400, headers: { ...CORS, 'Content-Type': 'application/json' }
       });
     }
+    if (isPdf && mimeType !== 'application/pdf') {
+      return new Response(JSON.stringify({ error: 'PDF 파일만 업로드 가능합니다.' }), {
+        status: 400, headers: { ...CORS, 'Content-Type': 'application/json' }
+      });
+    }
 
-    // Build filename: {slug}-{field}-{timestamp}.ext
-    const ext = mimeType.split('/')[1].replace('jpeg', 'jpg');
+    // Build filename and path
     const timestamp = Date.now();
-    const filename = `${slug}-${field}-${timestamp}.${ext}`;
-    const uploadPath = `public/images/uploads/${filename}`;
-    const publicUrl = `/images/uploads/${filename}`;
+    let uploadPath, publicUrl;
+    if (isPdf) {
+      const filename = `${slug}-newsletter-${timestamp}.pdf`;
+      uploadPath = `public/reports/${filename}`;
+      publicUrl = `/reports/${filename}`;
+    } else {
+      const ext = mimeType.split('/')[1].replace('jpeg', 'jpg');
+      const filename = `${slug}-${field}-${timestamp}.${ext}`;
+      uploadPath = `public/images/uploads/${filename}`;
+      publicUrl = `/images/uploads/${filename}`;
+    }
 
     // Get existing SHA if file exists (unlikely for new upload)
     const existingSha = await ghGetSha(uploadPath, env);

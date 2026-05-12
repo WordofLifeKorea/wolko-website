@@ -206,6 +206,7 @@ export async function onRequestPost(context) {
     'photo_url', 'photo_story', 'photo_url_2',
     'hero_subtitle_ko', 'hero_subtitle_en',
     'prayer_ko', 'prayer_en',
+    'report_url',
   ];
   const safeFields = Object.fromEntries(
     Object.entries(fields || {}).filter(([k]) => ALLOWED.includes(k))

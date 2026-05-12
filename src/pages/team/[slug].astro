@@ -452,6 +452,48 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   display: none;
 }
 
+/* NEWSLETTER / REPORT */
+.mp-report {
+  max-width: 1080px; margin: 0 auto; padding: 0 40px 0;
+}
+.mp-report-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(0,79,104,0.05), rgba(0,126,161,0.09));
+  border: 1px solid rgba(0,79,104,0.12); border-radius: 14px;
+  padding: 22px 28px;
+  flex-wrap: wrap;
+}
+.mp-report-text {}
+.mp-report-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--c-mid); margin-bottom: 4px;
+}
+.mp-report-desc {
+  font-size: 14px; color: var(--c-sub); line-height: 1.5;
+}
+.mp-report-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px;
+  background: var(--c-deep);
+  color: #fff;
+  border-radius: 10px;
+  font-family: var(--f-heading); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.15s;
+}
+.mp-report-btn:hover { background: #00627f; transform: translateY(-1px); }
+.mp-report-btn svg { flex-shrink: 0; }
+@media (max-width: 768px) {
+  .mp-report { padding: 0 24px 0; }
+  .mp-report-inner { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 560px) {
+  .mp-report-inner { padding: 18px 20px; }
+}
+
 /* PRAYER */
 .mp-prayer {
   max-width: 1080px; margin: 0 auto; padding: 0 40px 80px;
@@ -959,6 +1001,39 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
             </p>
           </div>
         </div>
+      </div>
+    </div>
+  )}
+
+  <!-- Newsletter / Ministry Report -->
+  {d.report_url && (
+    <div class="mp-report mp-reveal" style="margin-bottom: 28px;">
+      <div class="mp-report-inner">
+        <div class="mp-report-text">
+          <div class="mp-report-label">
+            <span class="wl-ko">최근 사역보고</span>
+            <span class="wl-en">Latest Ministry Update</span>
+          </div>
+          <div class="mp-report-desc">
+            <span class="wl-ko">{d.name_ko}의 최근 소식과 기도제목을 뉴스레터로 확인해 보세요.</span>
+            <span class="wl-en">Read {d.name_en}'s latest newsletter for ministry updates and prayer requests.</span>
+          </div>
+        </div>
+        <a href={d.report_url} target="_blank" rel="noopener" class="mp-report-btn">
+          {d.report_url.endsWith('.pdf') ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          )}
+          <span class="wl-ko">뉴스레터 보기</span>
+          <span class="wl-en">View Newsletter</span>
+        </a>
       </div>
     </div>
   )}

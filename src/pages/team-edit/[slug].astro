@@ -36,6 +36,7 @@ const initialData = JSON.stringify({
   photo_url_2:      d.photo_url_2 || '',
   prayer_ko:        d.prayer_ko || '',
   prayer_en:        d.prayer_en || '',
+  report_url:       d.report_url || '',
 });
 
 const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
@@ -370,6 +371,45 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     }
     .btn-preview:hover { background: var(--blue); color: #fff; }
 
+    /* ── REPORT / NEWSLETTER ─────────────────────────────────── */
+    .report-current {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(0,79,104,0.06);
+      border: 1px solid rgba(0,79,104,0.14);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+      font-size: 12px;
+    }
+    .report-current-label { color: var(--mid); font-weight: 600; white-space: nowrap; }
+    .report-current-url {
+      color: var(--blue-lt); text-decoration: none;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      flex: 1;
+    }
+    .report-current-url:hover { text-decoration: underline; }
+
+    .pdf-upload-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 18px;
+      background: rgba(0,79,104,0.08);
+      color: var(--blue);
+      border: 1.5px solid rgba(0,79,104,0.2);
+      border-radius: 8px;
+      font-family: var(--f-sans);
+      font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .pdf-upload-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .pdf-upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .pdf-upload-status {
+      font-size: 12px; font-weight: 600;
+      color: var(--green);
+    }
+    .pdf-upload-status.error { color: var(--accent); }
+
     /* ── NOTICE BOX ───────────────────────────────────────────── */
     .notice {
       background: rgba(0,79,104,0.06);
@@ -618,6 +658,64 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
     </div>
 
+    <!-- ⑦ Newsletter / Ministry Report -->
+    <div class="edit-section">
+      <div class="section-header">
+        <div class="section-icon">📰</div>
+        <div>
+          <div class="section-title">Newsletter / Ministry Report</div>
+          <div class="section-sub">Upload a PDF or paste a Mailchimp/newsletter link</div>
+        </div>
+      </div>
+
+      <!-- Current value display -->
+      {d.report_url && (
+        <div class="report-current" id="report-current-wrap">
+          <span class="report-current-label">현재 링크:</span>
+          <a id="report-current-link" href={d.report_url} target="_blank" rel="noopener" class="report-current-url">{d.report_url}</a>
+        </div>
+      )}
+      {!d.report_url && (
+        <div class="report-current" id="report-current-wrap" style="display:none">
+          <span class="report-current-label">현재 링크:</span>
+          <a id="report-current-link" href="#" target="_blank" rel="noopener" class="report-current-url"></a>
+        </div>
+      )}
+
+      <!-- URL input -->
+      <div class="field-group">
+        <label class="field-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:0.6"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+          Mailchimp or external newsletter URL
+        </label>
+        <input
+          type="url"
+          class="field-input"
+          id="f-report_url"
+          value={d.report_url || ''}
+          placeholder="https://mailchimp.com/... 또는 https://..."
+        >
+        <p style="font-size:11px;color:var(--light);margin-top:6px;">외부 링크 입력 시 아래 PDF 업로드는 무시됩니다. Save를 눌러야 반영됩니다.</p>
+      </div>
+
+      <!-- PDF upload -->
+      <div class="field-group" style="margin-top:4px">
+        <label class="field-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:0.6"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Or upload PDF newsletter
+        </label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="pdf-upload-btn" id="pdfUploadBtn" onclick="triggerPdfUpload()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            PDF 업로드
+          </button>
+          <span class="pdf-upload-status" id="pdf-upload-status"></span>
+        </div>
+        <input type="file" id="pdfFileInput" accept="application/pdf" style="display:none">
+        <p style="font-size:11px;color:var(--light);margin-top:6px;">업로드 시 자동으로 URL이 설정됩니다. Save 없이도 즉시 반영됩니다.</p>
+      </div>
+    </div>
+
   </main>
 
   <!-- ── SAVE BAR ──────────────────────────────────────────────── -->
@@ -754,6 +852,67 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       el.style.color = isErr ? '#c42a36' : '#1da462';
     }
 
+    // ── PDF upload (newsletter/report) ─────────────────────────
+    const pdfFileInput = document.getElementById('pdfFileInput');
+
+    window.triggerPdfUpload = function() {
+      pdfFileInput.value = '';
+      pdfFileInput.click();
+    };
+
+    pdfFileInput.addEventListener('change', async () => {
+      const file = pdfFileInput.files[0];
+      if (!file) return;
+
+      if (file.size > 50 * 1024 * 1024) {
+        setPdfStatus('❌ 파일 크기는 50MB 이하여야 합니다.', true);
+        return;
+      }
+
+      const btn = document.getElementById('pdfUploadBtn');
+      btn.disabled = true;
+      setPdfStatus('업로드 중...');
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('field', 'report_url');
+
+      try {
+        const res = await fetch('/api/team/upload', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${authToken}` },
+          body: fd,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+        // Update the URL input field and current link display
+        const urlInput = document.getElementById('f-report_url');
+        if (urlInput) urlInput.value = data.url;
+
+        const wrap = document.getElementById('report-current-wrap');
+        const link = document.getElementById('report-current-link');
+        if (wrap && link) {
+          link.href = data.url;
+          link.textContent = data.url;
+          wrap.style.display = 'flex';
+        }
+
+        setPdfStatus('✅ 업로드 완료 — 사이트 재빌드 후 반영됩니다.');
+      } catch (e) {
+        setPdfStatus('❌ ' + e.message, true);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    function setPdfStatus(msg, isErr = false) {
+      const el = document.getElementById('pdf-upload-status');
+      if (!el) return;
+      el.textContent = msg;
+      el.className = 'pdf-upload-status' + (isErr ? ' error' : '');
+    }
+
     // ── Save profile fields ────────────────────────────────────
     const saveBtn    = document.getElementById('saveBtn');
     const saveStatus = document.getElementById('saveStatus');
@@ -775,6 +934,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         'verse_ref', 'verse_ko', 'verse_en',
         'bio_ko', 'bio_en', 'bio_ko_2', 'bio_en_2',
         'prayer_ko', 'prayer_en',
+        'report_url',
       ];
       for (const fid of fids) {
         const v = getFieldVal(`f-${fid}`);
