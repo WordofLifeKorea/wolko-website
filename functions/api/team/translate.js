@@ -146,10 +146,20 @@ export async function onRequestPost(context) {
       const rawText = lookupData.content?.[0]?.text?.trim();
 
       try {
-        const parsed = JSON.parse(rawText);
+        // 코드블록(```json ... ```)으로 감싸져 있어도 추출
+        let jsonStr = rawText;
+        const blockMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (blockMatch) {
+          jsonStr = blockMatch[1].trim();
+        } else {
+          const objMatch = rawText.match(/\{[\s\S]*\}/);
+          if (objMatch) jsonStr = objMatch[0];
+        }
+        const parsed = JSON.parse(jsonStr);
         if (!parsed.ko || !parsed.en) throw new Error('빈 응답');
         return Response.json({ ko: parsed.ko, en: parsed.en }, { headers: CORS });
       } catch {
+        console.error('verse_lookup parse error, raw:', rawText);
         return Response.json({ error: '성경 구절을 찾지 못했습니다. 구절 참조를 확인해 주세요.' }, { status: 500, headers: CORS });
       }
     }
