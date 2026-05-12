@@ -98,6 +98,9 @@ export async function onRequestPost(context) {
 - 성경 구절은 개역개정(KO) ↔ ESV(EN) 표준 번역 스타일 참고
 - 번역문만 출력 — 설명, 주석, 따옴표 추가 없이`;
 
+  const keyVal = env.ANTHROPIC_API_KEY || '';
+  console.log('KEY debug — length:', keyVal.length, '| prefix:', keyVal.slice(0,10), '| suffix:', keyVal.slice(-4));
+
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
