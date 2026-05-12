@@ -109,16 +109,22 @@ function updateFrontmatter(raw, fields) {
     const strVal = String(value);
 
     // Check if key currently exists in frontmatter
-    const keyRegex = new RegExp(
-      `^(${key}:)([ \\t]+[^\\n]*|\\n(?:[ \\t]+[^\\n]*\\n)*)`,
-      'm'
-    );
+    // Use word-boundary style: key must be followed immediately by ':'
+    const keyExistsRegex = new RegExp(`^${key}:`, 'm');
+    const keyExists = keyExistsRegex.test(fm);
+
+    // If the value is empty and the key doesn't already exist, skip it.
+    // This prevents creating YAML null entries (key: ) that fail Zod validation.
+    if (strVal === '' && !keyExists) continue;
 
     // Determine how to encode the value
     const needsMultiline = strVal.includes('\n');
     let encoded;
 
-    if (needsMultiline) {
+    if (strVal === '') {
+      // Explicitly encode as empty string to avoid YAML null
+      encoded = `${key}: ""`;
+    } else if (needsMultiline) {
       // Use |- block scalar (strip trailing newlines)
       const indented = strVal.split('\n').map(l => '  ' + l).join('\n');
       encoded = `${key}: |-\n${indented}`;
@@ -130,7 +136,7 @@ function updateFrontmatter(raw, fields) {
       encoded = `${key}: ${strVal}`;
     }
 
-    if (keyRegex.test(fm)) {
+    if (keyExists) {
       // Replace existing key — need to handle multi-line block scalars carefully
       fm = replaceYamlField(fm, key, encoded);
     } else {
