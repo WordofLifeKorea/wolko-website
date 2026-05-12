@@ -107,13 +107,18 @@ export async function onRequestPost(context) {
       : 'https://api.anthropic.com/v1/messages';
     console.log('Fetching URL:', gatewayUrl);
 
+    const headers = {
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    };
+    if (env.CF_AIG_TOKEN) {
+      headers['cf-aig-authorization'] = `Bearer ${env.CF_AIG_TOKEN}`;
+    }
+
     const res = await fetch(gatewayUrl, {
       method: 'POST',
-      headers: {
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
