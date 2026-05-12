@@ -149,7 +149,7 @@ Examples:
       // Step 2: NIV(api.bible) + 개역개정4판(Sonnet) 병렬 호출
       const [nivResponse, koResponse] = await Promise.all([
         fetch(
-          `https://api.scripture.api.bible/v1/bibles/${NIV_BIBLE_ID}/passages/${encodeURIComponent(passageId)}?content-type=text&include-verse-numbers=false&include-titles=false`,
+          `https://api.bible/v1/bibles/${NIV_BIBLE_ID}/passages/${encodeURIComponent(passageId)}?content-type=text&include-verse-numbers=false&include-titles=false`,
           { headers: { 'api-key': BIBLE_API_KEY } }
         ),
         fetch(gatewayUrl, {
