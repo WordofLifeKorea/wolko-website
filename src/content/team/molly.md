@@ -18,14 +18,11 @@ order: 3
 photo_url: /images/uploads/molly.jpg
 photo_position: "center 10%"
 hero_tagline_ko: 아시아를 향한
-hero_tagline_en: Carrying God's Heart
+hero_tagline_en: "Carrying God's Heart"
 hero_tagline2_ko: 하나님의 마음을 품다
 hero_tagline2_en: for Asia
-hero_subtitle_ko: Molly는 CCI 인턴으로 한국에서 지역 교회와 함께 사역하며 청소년 캠프 사역을 돕고 있습니다. 대만 선교
-  여행을 통해 아시아를 향한 부르심을 확신하게 된 그녀는 지금 그 부르심을 따라 살아가고 있습니다.
-hero_subtitle_en: Molly serves in Korea as a CCI intern, partnering with local
-  churches and supporting youth camp ministry. A mission trip to Taiwan
-  confirmed her calling to Asia, and she is now living that calling out.
+hero_subtitle_ko: Molly는 CCI 인턴으로 한국에서 지역 교회와 함께 사역하며 청소년 캠프 사역을 돕고 있습니다. 대만 선교 여행을 통해 아시아를 향한 부르심을 확신하게 된 그녀는 지금 그 부르심을 따라 살아가고 있습니다.
+hero_subtitle_en: Molly serves in Korea as a CCI intern, partnering with local churches and supporting youth camp ministry. A mission trip to Taiwan confirmed her calling to Asia, and she is now living that calling out.
 verse_ref: "빌립보서 2 : 3 – 4"
 show_spouse: false
 bio_ko: |-
@@ -35,6 +32,7 @@ bio_ko: |-
   
   열일곱 살 청소년 수련회에서 선교의 소명을 느꼈습니다. 이것은 제가 대만으로 선교 여행을 갔을 때 확인되었고, 하나님은 아시아에 살고 있는 사람들을 향한 마음과 부담을 저에게 주셨습니다.
 support_url: https://online.mrm.or.kr/tSNpg5Q
-
+verse_ko: 아무 일에든지 다툼이나 허영으로 하지 말고 오직 겸손한 마음으로 각각 자기보다 남을 낫게 여기고 각각 자기 일을 돌볼뿐더러 또한 각각 다른 사람들의 일을 돌보아 자기의 유익을 구하지 말고 남의 유익을 구하라
+verse_en: Do nothing out of selfish ambition or vain conceit. Rather, in humility value others above yourselves, not looking to your own interests but each of you to the interests of the others.
 
 ---
