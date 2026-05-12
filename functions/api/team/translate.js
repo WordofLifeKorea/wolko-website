@@ -147,22 +147,11 @@ Examples:
       }
 
       // Step 2: NIV(api.bible) + 개역개정4판(Sonnet) 병렬 호출
-      const [nivResponse, koResponse] = await Promise.all([
-        fetch(
-          `https://rest.api.bible/v1/bibles/${NIV_BIBLE_ID}/passages/${encodeURIComponent(passageId)}?content-type=text&include-verse-numbers=false&include-titles=false`,
-          { headers: { 'api-key': BIBLE_API_KEY } }
-        ),
-        fetch(gatewayUrl, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 512,
-            system: `개역개정4판 한국어 성경 본문을 정확히 출력합니다. 절 번호 없이 본문만 출력하세요. 설명이나 부연 없이.`,
-            messages: [{ role: 'user', content: `개역개정4판 ${text.trim()}` }],
-          }),
-        }),
-      ]);
+      // NIV 먼저 가져오고, 그 본문을 참고해서 개역개정4판 생성
+      const nivResponse = await fetch(
+        `https://rest.api.bible/v1/bibles/${NIV_BIBLE_ID}/passages/${encodeURIComponent(passageId)}?content-type=text&include-verse-numbers=false&include-titles=false`,
+        { headers: { 'api-key': BIBLE_API_KEY } }
+      );
 
       let en = '';
       if (nivResponse.ok) {
@@ -171,6 +160,21 @@ Examples:
       } else {
         console.error('NIV API error:', nivResponse.status, await nivResponse.text());
       }
+
+      const koPrompt = en
+        ? `다음 NIV 영어 본문에 해당하는 개역개정4판 한국어 본문을 정확히 출력해주세요. 절 번호 없이 본문만, 설명 없이.\n\n${en}`
+        : `개역개정4판 ${text.trim()} 본문을 절 번호 없이 출력해주세요.`;
+
+      const koResponse = await fetch(gatewayUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 512,
+          system: '개역개정4판 한국어 성경 본문을 정확히 출력합니다. 절 번호 없이 본문만 출력하세요. 설명이나 부연 없이.',
+          messages: [{ role: 'user', content: koPrompt }],
+        }),
+      });
 
       const koData = await koResponse.json();
       const ko = koData.content?.[0]?.text?.trim() || '';
