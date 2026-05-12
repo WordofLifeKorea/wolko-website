@@ -63,7 +63,7 @@ export async function onRequestPost(context) {
   }
 
   // DEBUG — 확인 후 삭제
-  return Response.json({ debug_key_prefix: env.ANTHROPIC_API_KEY ? env.ANTHROPIC_API_KEY.slice(0, 12) : 'NOT SET' }, { headers: CORS });
+  return Response.json({ translated: `KEY=${env.ANTHROPIC_API_KEY ? env.ANTHROPIC_API_KEY.slice(0, 12) : 'NOT SET'}` }, { headers: CORS });
 
   if (!env.ANTHROPIC_API_KEY) {
     return Response.json(
