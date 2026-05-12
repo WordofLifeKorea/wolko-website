@@ -40,4 +40,7 @@ bio_en_2: |-
   When I was thirteen years old, I realized the need to live my life for Christ and dedicated my life to His service. I attended Word of Life Bible Institute for two years and then graduated from Davis College with a Bachelor's in Christian Ministries. We have five daughters — Kiera, Aleya, Jaida, Ella, and Carissa. We are all very excited to be a part of the ministry in South Korea. God is doing great things, and it is a blessing simply to be a part of it.
 support_url: https://online.mrm.or.kr/XXLJGid
 report_url: "https://us4.campaign-archive.com/home/?u=201383574defb2126c6ad675c&id=94c47d766a"
+verse_ko: 무리를 보시고 불쌍히 여기시니 이는 그들이 목자 없는 양과 같이 고생하며 기진함이라 이에 제자들에게 이르시되 추수할 것은 많되 일꾼이 적으니 그러므로 추수하는 주인에게 청하여 추수할 일꾼들을 보내 주소서 하라 하시니라
+verse_en: When he saw the crowds, he had compassion on them, because they were harassed and helpless, like sheep without a shepherd. Then he said to his disciples, “The harvest is plentiful but the workers are few. Ask the Lord of the harvest, therefore, to send out workers into his harvest field.”
+
 ---
