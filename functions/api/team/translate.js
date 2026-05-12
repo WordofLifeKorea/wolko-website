@@ -156,7 +156,7 @@ Examples:
           method: 'POST',
           headers,
           body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
+            model: 'claude-haiku-4-5-20251001',
             max_tokens: 512,
             system: `개역개정4판 한국어 성경 본문을 정확히 출력합니다. 절 번호 없이 본문만 출력하세요. 설명이나 부연 없이.`,
             messages: [{ role: 'user', content: `개역개정4판 ${text.trim()}` }],
