@@ -102,7 +102,12 @@ export async function onRequestPost(context) {
   console.log('KEY debug — length:', keyVal.length, '| prefix:', keyVal.slice(0,10), '| suffix:', keyVal.slice(-4));
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const gatewayUrl = env.AI_GATEWAY_URL
+      ? `${env.AI_GATEWAY_URL}/anthropic/v1/messages`
+      : 'https://api.anthropic.com/v1/messages';
+    console.log('Fetching URL:', gatewayUrl);
+
+    const res = await fetch(gatewayUrl, {
       method: 'POST',
       headers: {
         'x-api-key': env.ANTHROPIC_API_KEY,
