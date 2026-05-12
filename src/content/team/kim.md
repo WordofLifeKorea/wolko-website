@@ -29,14 +29,8 @@ hero_tagline2_en: "\"Filled with the Gospel\""
 hero_subtitle_ko: 김환규 선교사는 지역 교회와 기독 학교를 위한 복음 교재 번역 및 개발에 주력하고 있습니다. 씬띠아 선교사와 함께 캠프 사역, 청소년 상담, 영어 수업을 통해 한국의 다음 세대를 섬기고 있습니다.
 hero_subtitle_en: Hwan-Kyu focuses on translating and developing gospel curriculum for local churches and Christian schools. Together with Cynthia, they serve the next generation in Korea through camp ministry, youth counseling, and English classes.
 verse_ref: "시편 96 : 2-3"
-verse_ko: |-
-  "여호와께 노래하라, 그의 이름을 찬송하라: 날마다 그의 구원을 전파하라. 
-  열방중에서 그의 영광을 선포하며 모든 민족 중에서 그의 기이한 행적을 알리라!"
-verse_en: |-
-  "Sing to the Lord, bless his name;
-  tell of his salvation from day to day. 
-  Declare his glory among the nations,
-  his marvelous works among all the peoples!"
+verse_ko: ""
+verse_en: ""
 spouse_ko: 김 씬띠아
 spouse_en: Cynthia Kim
 show_spouse: true
