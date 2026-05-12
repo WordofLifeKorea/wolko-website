@@ -1,4 +1,5 @@
 ---
+
 name_ko: 채병국 & 김미영
 name_en: Byungkook Chae & Miyoung Kim
 title_ko: Ministry Advancement 디렉터 | 월코
@@ -11,23 +12,18 @@ bio_en: |-
   My name is Peter. I was born into a third-generation Presbyterian family. During my childhood I was blessed to attend early morning prayer meetings with my mother. She always urged me to become a kinder, better person for the glory of God. I tried to live by those words, but as I entered my teenage years, troubles and questions began to arise. No matter how hard I tried, my mind remained empty and I could not find the purpose of life. To avoid disappointing my parents I lived a double life — until one day, exhausted by the effort of trying to be perfect, I attempted to take my own life. That attempt failed, and I carried a heavy heart through each day that followed.
   
   In the first year of high school I attended a summer retreat, desperate to find God's will and hoping it would be a turning point. God answered that longing. Through the speaker's message I understood, for the first time, that I deserved to die for my sins and that I needed Jesus Christ. He spoke from 1 John 1:9 — "If we confess our sins, he is faithful and just to forgive us our sins and to cleanse us from all unrighteousness." I confessed my sins and received Christ as my Savior by faith. That was the happiest day of my life — the day I finally discovered my purpose. After I was saved and committed my life to God, He faithfully led me to answer the call to missions.
-prayer_en: Please pray that the Gospel Multiplication Movement would expand as
-  we partner with more churches across Korea.
+prayer_en: Please pray that the Gospel Multiplication Movement would expand as we partner with more churches across Korea.
 gender: male
 photo_url: /images/uploads/채병국-선교사님.jpeg
 photo_story: /images/uploads/7r505996-수정.jpg
 photo_url_2: /images/uploads/miran.png
 hero_tagline_ko: 교회와 함께
-hero_tagline_en: "Ministry Built "
+hero_tagline_en: Ministry Built 
 hero_tagline2_ko: 세워가는 사역
 hero_tagline2_en: with the Church
-hero_subtitle_ko: 채병국 선교사는 월코의 Ministry Advancement 디렉터로 목회자들과 교회들을 연결하고, 건강한
-  네트워크를 형성하며, 교회들과 협력하여 훈련·행사·캠프를 기획하고 지속적인 동역 관계를 세워 가는 사역을 감당하고 있습니다.
-hero_subtitle_en: Peter serves as WOLKO's Ministry Advancement Director,
-  connecting pastors and churches, building healthy networks, and partnering
-  with local congregations to plan training events and camps that foster lasting
-  ministry relationships.
-verse_ref: 요한일서 1:9
+hero_subtitle_ko: 채병국 선교사는 월코의 Ministry Advancement 디렉터로 목회자들과 교회들을 연결하고, 건강한 네트워크를 형성하며, 교회들과 협력하여 훈련·행사·캠프를 기획하고 지속적인 동역 관계를 세워 가는 사역을 감당하고 있습니다.
+hero_subtitle_en: "Peter serves as WOLKO's Ministry Advancement Director, connecting pastors and churches, building healthy networks, and partnering with local congregations to plan training events and camps that foster lasting ministry relationships."
+verse_ref: "요한일서 1:9"
 spouse_ko: 김미영
 spouse_en: Miriam Kim
 show_spouse: true
@@ -51,4 +47,7 @@ bio_en_2: |-
   After graduating from high school, I served at the KCCG, helping with youth ministry, and came to recognize that this was the vision God had given me. I met my husband, who shared that same vision, and together we committed to building the kingdom of God. We then joined Word of Life Korea, which reaches teenagers with the gospel through camps, and have continued serving the Lord together to this day. Our deepest longing is to see many young people in South Korea hear the gospel through the lives and testimonies of their Christian friends.
 prayer_ko: 더 많은 교회와 협력하여 복음배가운동이 확장될 수 있도록 기도해주세요.
 support_url: https://online.mrm.or.kr/HxSMjVD
+verse_ko: 만일 우리가 우리 죄를 자백하면 그는 미쁘시고 의로우사 우리 죄를 사하시며 우리를 모든 불의에서 깨끗하게 하실 것이요
+verse_en: If we confess our sins, he is faithful and just and will forgive us our sins and purify us from all unrighteousness.
+
 ---
