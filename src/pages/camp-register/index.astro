@@ -544,46 +544,29 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-consent label strong { color: var(--c-deep); }
 
 /* 환불 기준 tooltip */
-.crp-refund-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: rgba(0,79,104,0.12); border: none; cursor: pointer;
-  font-size: 10px; font-weight: 700; color: var(--c-deep);
-  flex-shrink: 0; margin-left: 6px; vertical-align: middle;
-  font-family: var(--f-sans); line-height: 1; padding: 0;
-  transition: background 0.15s;
+/* 환불 규정 박스 */
+.crp-refund-box {
+  margin-top: 20px; margin-bottom: 0;
+  background: rgba(0,79,104,0.035);
+  border: 1px solid rgba(0,79,104,0.1);
+  border-radius: 10px; padding: 16px 18px;
 }
-.crp-refund-btn:hover { background: rgba(0,79,104,0.22); }
-.crp-refund-wrap {
-  position: relative; display: inline-block; vertical-align: middle;
+.crp-refund-box-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--c-mid); margin-bottom: 12px;
 }
-.crp-refund-tip {
-  display: none;
-  position: absolute; bottom: calc(100% + 8px); left: 50%;
-  transform: translateX(-50%);
-  width: 300px; background: #1a2e38; color: #e8f4f8;
-  border-radius: 10px; padding: 14px 16px;
-  font-size: 11.5px; line-height: 1.75; font-family: var(--f-sans);
-  font-weight: 400; text-align: left; word-break: keep-all;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.22);
-  z-index: 9999; pointer-events: none;
+.crp-refund-section { margin-bottom: 12px; }
+.crp-refund-section:last-child { margin-bottom: 0; }
+.crp-refund-section-head {
+  font-size: 12px; font-weight: 700; color: var(--c-deep); margin-bottom: 5px;
 }
-.crp-refund-tip::after {
-  content: ''; position: absolute; top: 100%; left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent; border-top-color: #1a2e38;
+.crp-refund-row {
+  display: flex; gap: 8px;
+  font-size: 11.5px; line-height: 1.65; color: var(--c-sub);
+  word-break: keep-all;
 }
-.crp-refund-tip-title {
-  font-size: 11px; font-weight: 700; color: #73d1f5;
-  letter-spacing: 0.04em; margin-bottom: 4px; text-transform: uppercase;
-}
-.crp-refund-tip-section { margin-bottom: 10px; }
-.crp-refund-tip-section:last-child { margin-bottom: 0; }
-.crp-refund-tip-head { font-weight: 700; color: #fff; margin-bottom: 4px; }
-.crp-refund-tip-row { display: flex; gap: 6px; color: rgba(232,244,248,0.82); }
-.crp-refund-tip-row::before { content: '·'; flex-shrink: 0; }
-.crp-refund-wrap:hover .crp-refund-tip,
-.crp-refund-btn:focus + .crp-refund-tip { display: block; }
+.crp-refund-row::before { content: '·'; flex-shrink: 0; color: var(--c-muted); }
+.crp-refund-row + .crp-refund-row { margin-top: 3px; }
 
 /* Submit button */
 .crp-submit {
@@ -1268,42 +1251,50 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
           <label class="crp-consent crp-consent--deposit">
             <input type="checkbox" id="crpDepositConsent">
             <label for="crpDepositConsent">
-              <span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px;">
-                <strong class="wl-ko">예약금 입금 확인 후 캠프 등록이 최종 확정됨을 이해합니다.</strong>
-                <strong class="wl-en">I understand that registration is only finalized after the deposit payment is verified.</strong>
-                <span class="crp-refund-wrap" onclick="event.preventDefault();event.stopPropagation()">
-                  <button type="button" class="crp-refund-btn" tabindex="0">?</button>
-                  <div class="crp-refund-tip">
-                    <div class="crp-refund-tip-section">
-                      <div class="crp-refund-tip-title wl-ko">캠프비 환불 기준</div>
-                      <div class="crp-refund-tip-title wl-en">Refund Policy</div>
-                      <div class="crp-refund-tip-head wl-ko">예약금</div>
-                      <div class="crp-refund-tip-head wl-en">Deposit</div>
-                      <div class="crp-refund-tip-row wl-ko">예약 3일 경과 후 취소 시 위약금으로 처리되며 반환되지 않습니다.</div>
-                      <div class="crp-refund-tip-row wl-en">Non-refundable if cancelled after 3 days from reservation.</div>
-                      <div class="crp-refund-tip-row wl-ko">단, 천재지변·주최 측 사정·예약자의 불가피한 사정으로 인한 취소 시 전액 환불됩니다.</div>
-                      <div class="crp-refund-tip-row wl-en">Full refund for cancellations due to force majeure, organizer circumstances, or unavoidable personal reasons.</div>
-                    </div>
-                    <div class="crp-refund-tip-section">
-                      <div class="crp-refund-tip-head wl-ko">참가비</div>
-                      <div class="crp-refund-tip-head wl-en">Camp Fee</div>
-                      <div class="crp-refund-tip-row wl-ko">30일 이전: 전액 환불</div>
-                      <div class="crp-refund-tip-row wl-en">30+ days before: Full refund</div>
-                      <div class="crp-refund-tip-row wl-ko">15일 ~ 29일 이전: 90% 환불</div>
-                      <div class="crp-refund-tip-row wl-en">15–29 days before: 90% refund</div>
-                      <div class="crp-refund-tip-row wl-ko">7일 ~ 14일 이전: 50% 환불</div>
-                      <div class="crp-refund-tip-row wl-en">7–14 days before: 50% refund</div>
-                      <div class="crp-refund-tip-row wl-ko">2일 ~ 7일 이전: 30% 환불</div>
-                      <div class="crp-refund-tip-row wl-en">2–7 days before: 30% refund</div>
-                      <div class="crp-refund-tip-row wl-ko">당일 이후: 환불 불가</div>
-                      <div class="crp-refund-tip-row wl-en">Day of or after: No refund</div>
-                    </div>
-                  </div>
-                </span>
-              </span>
+              <strong class="wl-ko">예약금 입금 확인 후 캠프 등록이 최종 확정됨을 이해합니다.</strong>
+              <strong class="wl-en">I understand that registration is only finalized after the deposit payment is verified.</strong>
               <br>
               <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">신청 후 안내된 계좌로 예약금을 입금하시면 담당자 확인 후 최종 확정됩니다.</span>
               <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">After submitting, please transfer the deposit to the provided account. Your registration will be confirmed upon payment verification.</span>
+            </label>
+          </label>
+
+          <!-- 환불 규정 -->
+          <div class="crp-refund-box">
+            <div class="crp-refund-box-title wl-ko">환불 규정</div>
+            <div class="crp-refund-box-title wl-en">Refund Policy</div>
+
+            <div class="crp-refund-section">
+              <div class="crp-refund-section-head wl-ko">예약금</div>
+              <div class="crp-refund-section-head wl-en">Deposit</div>
+              <div class="crp-refund-row wl-ko">예약 3일 경과 후 취소 시 위약금으로 처리되며 반환되지 않습니다.</div>
+              <div class="crp-refund-row wl-en">Non-refundable if cancelled more than 3 days after reservation.</div>
+              <div class="crp-refund-row wl-ko">단, 천재지변·주최 측 사정·예약자의 불가피한 사정으로 인한 취소 시 전액 환불됩니다.</div>
+              <div class="crp-refund-row wl-en">Full refund for cancellations due to force majeure, organizer circumstances, or unavoidable personal reasons.</div>
+            </div>
+
+            <div class="crp-refund-section">
+              <div class="crp-refund-section-head wl-ko">캠프 참가비</div>
+              <div class="crp-refund-section-head wl-en">Camp Fee</div>
+              <div class="crp-refund-row wl-ko">캠프 시작 30일 이전: 전액 환불</div>
+              <div class="crp-refund-row wl-en">30+ days before start: Full refund</div>
+              <div class="crp-refund-row wl-ko">캠프 시작 15일 ~ 29일 이전: 참가비의 90% 환불</div>
+              <div class="crp-refund-row wl-en">15–29 days before: 90% refund</div>
+              <div class="crp-refund-row wl-ko">캠프 시작 7일 ~ 14일 이전: 참가비의 50% 환불</div>
+              <div class="crp-refund-row wl-en">7–14 days before: 50% refund</div>
+              <div class="crp-refund-row wl-ko">캠프 시작 2일 ~ 7일 이전: 참가비의 30% 환불</div>
+              <div class="crp-refund-row wl-en">2–7 days before: 30% refund</div>
+              <div class="crp-refund-row wl-ko">캠프 시작 당일 이후: 환불 불가</div>
+              <div class="crp-refund-row wl-en">Day of start or after: No refund</div>
+            </div>
+          </div>
+
+          <!-- 환불 규정 동의 -->
+          <label class="crp-consent">
+            <input type="checkbox" id="crpRefundConsent">
+            <label for="crpRefundConsent">
+              <strong class="wl-ko">위의 환불 규정을 읽어보았으며 이에 동의합니다.</strong>
+              <strong class="wl-en">I have read and agree to the refund policy above.</strong>
             </label>
           </label>
 
@@ -1597,6 +1588,12 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
   var depositConsent = document.getElementById('crpDepositConsent').checked;
   if (!depositConsent) {
     errorMsg.textContent = '예약금 입금 확인 후 최종 확정됨에 동의해 주세요. / Please confirm that you understand the deposit requirement.';
+    errorMsg.hidden = false;
+    return;
+  }
+  var refundConsent = document.getElementById('crpRefundConsent').checked;
+  if (!refundConsent) {
+    errorMsg.textContent = '환불 규정을 읽어보았으며 이에 동의해 주세요. / Please read and agree to the refund policy.';
     errorMsg.hidden = false;
     return;
   }
