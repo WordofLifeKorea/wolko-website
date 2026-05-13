@@ -102,17 +102,38 @@ export async function onRequestDelete(context) {
       return Response.json({ error: '해당 신청을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
     }
 
-    const spotsToFree = reg.registrationType === 'group' ? (reg.groupCount || 1) : 1;
-    const countKey = `camp:${campId}:count`;
     const dupeKey = `camp:${campId}:email:${reg.email}`;
-    const currentCount = parseInt(await env.CAMP_KV.get(countKey) || '0');
-    const newCount = Math.max(0, currentCount - spotsToFree);
 
-    await Promise.all([
+    // confirmed: false 이면 카운트에 반영 안 된 것 — 감소 불필요
+    // confirmed: true 또는 undefined(구 데이터)이면 카운트에서 제거
+    const wasConfirmed = reg.confirmed !== false; // undefined = 구 데이터 = 확정된 것으로 처리
+    const countKey  = `camp:${campId}:count`;
+    const countKeyM = `camp:${campId}:count:male`;
+    const countKeyF = `camp:${campId}:count:female`;
+
+    const ops = [
       env.CAMP_KV.delete(regKey),
       env.CAMP_KV.delete(dupeKey),
-      env.CAMP_KV.put(countKey, String(newCount)),
-    ]);
+    ];
+
+    if (wasConfirmed) {
+      const spotsToFree = reg.registrationType === 'group' ? (reg.groupCount || 1) : 1;
+      const spotsM = reg.registrationType === 'group' ? (reg.maleCount || 0) : (reg.gender === 'male' ? 1 : 0);
+      const spotsF = reg.registrationType === 'group' ? (reg.femaleCount || 0) : (reg.gender === 'female' ? 1 : 0);
+      const [cur, curM, curF] = await Promise.all([
+        env.CAMP_KV.get(countKey).then(v => parseInt(v || '0')),
+        env.CAMP_KV.get(countKeyM).then(v => parseInt(v || '0')),
+        env.CAMP_KV.get(countKeyF).then(v => parseInt(v || '0')),
+      ]);
+      ops.push(env.CAMP_KV.put(countKey, String(Math.max(0, cur - spotsToFree))));
+      if (spotsM > 0) ops.push(env.CAMP_KV.put(countKeyM, String(Math.max(0, curM - spotsM))));
+      if (spotsF > 0) ops.push(env.CAMP_KV.put(countKeyF, String(Math.max(0, curF - spotsF))));
+    }
+
+    await Promise.all(ops);
+    const newCount = wasConfirmed
+      ? parseInt(await env.CAMP_KV.get(countKey) || '0')
+      : parseInt(await env.CAMP_KV.get(countKey) || '0');
 
     return Response.json({ success: true, newCount }, { headers: CORS });
   } catch (e) {
@@ -121,11 +142,78 @@ export async function onRequestDelete(context) {
   }
 }
 
+/**
+ * PATCH /api/admin/registrations
+ * Body: { regId, campId }
+ * 신청을 확정 처리하고 KV 카운트를 증가시킵니다.
+ */
+export async function onRequestPatch(context) {
+  const { env, request } = context;
+
+  if (!await verifyToken(request, env)) {
+    return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
+  }
+
+  try {
+    const { regId, campId } = await request.json();
+    if (!regId || !campId) {
+      return Response.json({ error: 'regId와 campId가 필요합니다.' }, { status: 400, headers: CORS });
+    }
+
+    const regKey = `camp:${campId}:reg:${regId}`;
+    const reg = await env.CAMP_KV.get(regKey, 'json');
+    if (!reg) {
+      return Response.json({ error: '해당 신청을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
+    }
+    if (reg.confirmed === true) {
+      return Response.json({ error: '이미 확정된 신청입니다.' }, { status: 409, headers: CORS });
+    }
+
+    const spotsNeeded = reg.registrationType === 'group' ? (reg.groupCount || 1) : 1;
+    const spotsM = reg.registrationType === 'group' ? (reg.maleCount || 0) : (reg.gender === 'male' ? 1 : 0);
+    const spotsF = reg.registrationType === 'group' ? (reg.femaleCount || 0) : (reg.gender === 'female' ? 1 : 0);
+
+    const countKey  = `camp:${campId}:count`;
+    const countKeyM = `camp:${campId}:count:male`;
+    const countKeyF = `camp:${campId}:count:female`;
+
+    const [cur, curM, curF] = await Promise.all([
+      env.CAMP_KV.get(countKey).then(v => parseInt(v || '0')),
+      env.CAMP_KV.get(countKeyM).then(v => parseInt(v || '0')),
+      env.CAMP_KV.get(countKeyF).then(v => parseInt(v || '0')),
+    ]);
+
+    const newCount = cur + spotsNeeded;
+    const newM = curM + spotsM;
+    const newF = curF + spotsF;
+
+    const updatedReg = { ...reg, confirmed: true, confirmedAt: new Date().toISOString() };
+
+    const ops = [
+      env.CAMP_KV.put(regKey, JSON.stringify(updatedReg)),
+      env.CAMP_KV.put(countKey, String(newCount)),
+    ];
+    if (spotsM > 0) ops.push(env.CAMP_KV.put(countKeyM, String(newM)));
+    if (spotsF > 0) ops.push(env.CAMP_KV.put(countKeyF, String(newF)));
+
+    await Promise.all(ops);
+
+    return Response.json({
+      success: true,
+      count: newCount, countMale: newM, countFemale: newF,
+      reg: updatedReg,
+    }, { headers: CORS });
+  } catch (e) {
+    console.error('admin confirm error:', e);
+    return Response.json({ error: '서버 오류가 발생했습니다.' }, { status: 500, headers: CORS });
+  }
+}
+
 export async function onRequestOptions() {
   return new Response(null, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, DELETE, PATCH, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });

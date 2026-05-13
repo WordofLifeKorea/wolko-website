@@ -72,14 +72,14 @@ const teamMembersJson = JSON.stringify(teamMembers);
         <div class="dash-sub" id="dTotalSub">불러오는 중…</div>
       </div>
       <div class="dash-card">
-        <div class="dash-label" style="color:#3b82f6">남학생</div>
-        <div class="dash-value" id="dMale" style="color:#3b82f6">—</div>
-        <div class="dash-sub" id="dMaleSub">명</div>
+        <div class="dash-label" style="color:#16a34a">확정</div>
+        <div class="dash-value" id="dConfirmed" style="color:#16a34a">—</div>
+        <div class="dash-sub" id="dConfirmedSub">입금 확인 완료</div>
       </div>
       <div class="dash-card">
-        <div class="dash-label" style="color:#ec4899">여학생</div>
-        <div class="dash-value" id="dFemale" style="color:#ec4899">—</div>
-        <div class="dash-sub" id="dFemaleSub">명</div>
+        <div class="dash-label" style="color:#d97706">미확정</div>
+        <div class="dash-value" id="dPending" style="color:#d97706">—</div>
+        <div class="dash-sub" id="dPendingSub">입금 대기 중</div>
       </div>
       <div class="dash-card">
         <div class="dash-label">잔여 정원</div>
@@ -89,8 +89,20 @@ const teamMembersJson = JSON.stringify(teamMembers);
       <div class="dash-card">
         <div class="dash-label">마감률</div>
         <div class="dash-value" id="dPct">—</div>
-        <div class="dash-sub" id="dPctSub">신청 / 정원</div>
+        <div class="dash-sub" id="dPctSub">확정 / 정원</div>
       </div>
+    </div>
+    <!-- 성별 카드 (확정 기준) -->
+    <div class="dash-grid" style="margin-top:-8px;">
+      <div class="dash-card" style="padding:12px 20px;">
+        <div class="dash-label" style="color:#3b82f6;font-size:11px;">확정 남학생</div>
+        <div class="dash-value" id="dMale" style="color:#3b82f6;font-size:22px;">—</div>
+      </div>
+      <div class="dash-card" style="padding:12px 20px;">
+        <div class="dash-label" style="color:#ec4899;font-size:11px;">확정 여학생</div>
+        <div class="dash-value" id="dFemale" style="color:#ec4899;font-size:22px;">—</div>
+      </div>
+      <div style="grid-column:span 3"></div>
     </div>
 
     <!-- PROGRESS -->
@@ -127,13 +139,13 @@ const teamMembersJson = JSON.stringify(teamMembers);
         <table>
           <thead>
             <tr>
-              <th>#</th><th>캠프</th><th>유형</th><th>이름</th><th>연락처</th>
+              <th>#</th><th>상태</th><th>캠프</th><th>유형</th><th>이름</th><th>연락처</th>
               <th>이메일</th><th>학년 / 인원</th><th>성별</th><th>교회</th><th>학교</th>
               <th>비상연락처</th><th>메모</th><th>신청일시</th><th>삭제</th>
             </tr>
           </thead>
           <tbody id="regBody">
-            <tr><td colspan="14">
+            <tr><td colspan="15">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p>로그인 후 자동으로 불러옵니다.</p>
@@ -348,7 +360,7 @@ const teamMembersJson = JSON.stringify(teamMembers);
       } catch (e) {
         showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
         document.getElementById('regBody').innerHTML = `
-          <tr><td colspan="14">
+          <tr><td colspan="15">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/>
@@ -369,28 +381,39 @@ const teamMembersJson = JSON.stringify(teamMembers);
     function renderDash() {
       const regs = filteredRegs();
       const cap = CAMP_CAP[activeCamp] || 280;
-      const total = regs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
-      const remain = Math.max(0, cap - total);
-      const pct = cap > 0 ? Math.round((total / cap) * 100) : 0;
 
-      // Gender totals
-      const maleTotal = regs.reduce((s, r) =>
+      // 확정/미확정 분리 (confirmed === undefined = 구 데이터 = 확정된 것으로 취급)
+      const confirmedRegs = regs.filter(r => r.confirmed !== false);
+      const pendingRegs   = regs.filter(r => r.confirmed === false);
+
+      const total     = regs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      const confirmed = confirmedRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      const pending   = pendingRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      const remain    = Math.max(0, cap - confirmed);
+      const pct       = cap > 0 ? Math.round((confirmed / cap) * 100) : 0;
+
+      // 성별 (확정 기준)
+      const maleTotal = confirmedRegs.reduce((s, r) =>
         r.registrationType === 'group' ? s + (r.maleCount || 0) : s + (r.gender === 'male' ? 1 : 0), 0);
-      const femaleTotal = regs.reduce((s, r) =>
+      const femaleTotal = confirmedRegs.reduce((s, r) =>
         r.registrationType === 'group' ? s + (r.femaleCount || 0) : s + (r.gender === 'female' ? 1 : 0), 0);
 
       document.getElementById('dTotal').textContent = total;
-      document.getElementById('dTotalSub').textContent = '명 신청 완료';
+      document.getElementById('dTotalSub').textContent = `명 (확정 ${confirmed} / 미확정 ${pending})`;
+      document.getElementById('dConfirmed').textContent = confirmed;
+      document.getElementById('dConfirmedSub').textContent = '명 확정 완료';
+      document.getElementById('dPending').textContent = pending;
+      document.getElementById('dPendingSub').textContent = pending > 0 ? '명 입금 대기' : '없음';
       document.getElementById('dMale').textContent = maleTotal;
       document.getElementById('dFemale').textContent = femaleTotal;
       document.getElementById('dRemain').textContent = remain;
       document.getElementById('dRemainSub').textContent = `정원 ${cap}명 기준`;
       document.getElementById('dPct').textContent = pct + '%';
       document.getElementById('dPct').className = 'dash-value' + (pct >= 100 ? ' red' : pct >= 80 ? ' orange' : '');
-      document.getElementById('dPctSub').textContent = `${total} / ${cap}`;
+      document.getElementById('dPctSub').textContent = `${confirmed} / ${cap}`;
 
       const campName = CAMP_LABELS[activeCamp] || '전체';
-      document.getElementById('progressLabel').textContent = campName + ' 정원 현황';
+      document.getElementById('progressLabel').textContent = campName + ' 정원 현황 (확정 기준)';
       document.getElementById('progressPct').textContent = pct + '%';
 
       const fillM = document.getElementById('progressFillM');
@@ -398,8 +421,8 @@ const teamMembersJson = JSON.stringify(teamMembers);
       if (maleTotal > 0 || femaleTotal > 0) {
         fillM.style.width = Math.min((maleTotal / cap) * 100, 100) + '%';
         fillF.style.width = Math.min((femaleTotal / cap) * 100, 100) + '%';
-      } else if (total > 0) {
-        fillM.style.width = Math.min((total / cap) * 100, 100) + '%';
+      } else if (confirmed > 0) {
+        fillM.style.width = Math.min((confirmed / cap) * 100, 100) + '%';
         fillF.style.width = '0%';
       } else {
         fillM.style.width = '0%';
@@ -418,7 +441,7 @@ const teamMembersJson = JSON.stringify(teamMembers);
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="14">
+          <tr><td colspan="15">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -453,8 +476,18 @@ const teamMembersJson = JSON.stringify(teamMembers);
             : `<span style="color:var(--light)">—</span>`;
         }
 
-        return `<tr>
+        // 상태 셀: 확정=초록, 미확정=주황 (undefined = 구 데이터 = 확정 취급)
+        const isConfirmed = r.confirmed !== false;
+        const statusCell = isConfirmed
+          ? `<span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,0.12);color:#16a34a;font-size:11px;font-weight:700;">확정</span>`
+          : `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;">
+               <span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">미확정</span>
+               <button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">확정</button>
+             </span>`;
+
+        return `<tr${isConfirmed ? '' : ' style="background:rgba(217,119,6,0.04);"'}>
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
+          <td>${statusCell}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(campLabel)}</td>
           <td>${typeBadge}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
@@ -494,15 +527,39 @@ const teamMembersJson = JSON.stringify(teamMembers);
       }
     }
 
+    // ── Confirm ──
+    async function confirmReg(regId, campId) {
+      if (!confirm(`신청을 확정하시겠습니까?\n입금이 확인된 경우에만 확정해주세요.`)) return;
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'PATCH',
+          headers: authHeaders(),
+          body: JSON.stringify({ regId, campId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '확정 실패');
+        // 로컬 데이터 업데이트
+        const reg = allRegs.find(r => r.regId === regId);
+        if (reg) { reg.confirmed = true; reg.confirmedAt = data.reg?.confirmedAt || new Date().toISOString(); }
+        renderTable();
+        renderDash();
+        updateCardStats();
+        showToast('신청이 확정되었습니다.', 'success');
+      } catch (e) {
+        showToast('확정 오류: ' + e.message, 'error');
+      }
+    }
+
     // ── CSV ──
     function downloadCsv() {
       const regs = filteredRegs();
       if (regs.length === 0) { showToast('다운로드할 데이터가 없습니다.', 'error'); return; }
 
-      const headers = ['번호','캠프','유형','이름','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
+      const headers = ['번호','상태','캠프','유형','이름','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
       const rows = regs.map((r, i) => {
         const date = new Date(r.registeredAt).toLocaleString('ko-KR');
         const gradeOrCount = r.registrationType === 'group' ? `단체 ${r.groupCount}명` : (r.grade || '');
+        const statusVal = r.confirmed !== false ? '확정' : '미확정';
         let genderVal;
         if (r.registrationType === 'group') {
           const m = r.maleCount || 0, f = r.femaleCount || 0;
@@ -511,7 +568,7 @@ const teamMembersJson = JSON.stringify(teamMembers);
           genderVal = r.gender === 'male' ? '남' : r.gender === 'female' ? '여' : '';
         }
         return [
-          i + 1, CAMP_LABELS[r.campId] || r.campId,
+          i + 1, statusVal, CAMP_LABELS[r.campId] || r.campId,
           r.registrationType === 'group' ? '단체' : '개인',
           r.name, r.phone, r.email, gradeOrCount, genderVal,
           r.church || '', r.school || '', r.emergency || '',

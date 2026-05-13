@@ -1,16 +1,9 @@
 /**
  * POST /api/register
- * Camp registration handler — stores in Cloudflare KV
- * KV binding: CAMP_KV  (set in Cloudflare Pages → Settings → Functions → KV bindings)
+ * Camp registration handler — stores in Cloudflare KV (as PENDING)
  *
- * Supports two registration types:
- *   registrationType: 'individual'  — single camper, reserves 1 spot
- *   registrationType: 'group'       — contact person + maleCount/femaleCount, reserves N spots
- *
- * Gender tracking:
- *   individual: gender ('male' | 'female') required
- *   group: maleCount + femaleCount required
- *   capacityMale / capacityFemale: per-gender caps (optional; if set, enforced)
+ * Registration is saved with confirmed: false.
+ * Admin must confirm after verifying payment → then KV count increments.
  */
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -24,16 +17,14 @@ export async function onRequestPost(context) {
     const data = await request.json();
     const {
       registrationType = 'individual',
-      campId, capacity,
+      campId,
       name, phone, email,
       // individual fields
       grade, church, school, emergency,
-      gender,                  // 'male' | 'female'
+      gender,
       // group fields
       maleCount, femaleCount,
-      groupCount,              // legacy or pre-calculated total
-      // per-gender caps (sent from client based on camp config)
-      capacityMale, capacityFemale,
+      groupCount,
       // shared
       notes,
     } = data;
@@ -44,9 +35,6 @@ export async function onRequestPost(context) {
     }
 
     const emailNorm = email.trim().toLowerCase();
-    const maxCap = parseInt(capacity) || 40;
-    const capM = capacityMale ? parseInt(capacityMale) : null;
-    const capF = capacityFemale ? parseInt(capacityFemale) : null;
 
     // ── 신청 유형별 추가 검사 ──
     if (registrationType === 'individual') {
@@ -73,58 +61,13 @@ export async function onRequestPost(context) {
       spotsF = gender === 'female' ? 1 : 0;
     }
 
-    // ── 현재 신청 수 확인 ──
-    const countKey    = `camp:${campId}:count`;
-    const countKeyM   = `camp:${campId}:count:male`;
-    const countKeyF   = `camp:${campId}:count:female`;
-
-    const [currentCount, currentM, currentF] = await Promise.all([
-      env.CAMP_KV.get(countKey).then(v => parseInt(v || '0')),
-      env.CAMP_KV.get(countKeyM).then(v => parseInt(v || '0')),
-      env.CAMP_KV.get(countKeyF).then(v => parseInt(v || '0')),
-    ]);
-
-    // ── 전체 정원 초과 확인 ──
-    if (currentCount + spotsNeeded > maxCap) {
-      const remaining = maxCap - currentCount;
-      if (remaining <= 0) {
-        return Response.json({ error: '정원이 마감되었습니다.' }, { status: 409, headers: CORS });
-      }
-      return Response.json(
-        { error: `남은 정원(${remaining}명)보다 신청 인원이 많습니다.` },
-        { status: 409, headers: CORS }
-      );
-    }
-
-    // ── 성별 정원 초과 확인 (캠프별 성별 cap 설정 시) ──
-    if (capM !== null && spotsM > 0 && currentM + spotsM > capM) {
-      const remaining = capM - currentM;
-      if (remaining <= 0) {
-        return Response.json({ error: '남학생 정원이 마감되었습니다.' }, { status: 409, headers: CORS });
-      }
-      return Response.json(
-        { error: `남학생 남은 정원(${remaining}명)보다 신청 인원이 많습니다.` },
-        { status: 409, headers: CORS }
-      );
-    }
-    if (capF !== null && spotsF > 0 && currentF + spotsF > capF) {
-      const remaining = capF - currentF;
-      if (remaining <= 0) {
-        return Response.json({ error: '여학생 정원이 마감되었습니다.' }, { status: 409, headers: CORS });
-      }
-      return Response.json(
-        { error: `여학생 남은 정원(${remaining}명)보다 신청 인원이 많습니다.` },
-        { status: 409, headers: CORS }
-      );
-    }
-
     // ── 중복 신청 확인 (이메일 기준) ──
     const dupeKey = `camp:${campId}:email:${emailNorm}`;
     if (await env.CAMP_KV.get(dupeKey)) {
       return Response.json({ error: '이미 신청된 이메일 주소입니다.' }, { status: 409, headers: CORS });
     }
 
-    // ── 신청 데이터 저장 ──
+    // ── 신청 데이터 저장 (미확정 상태) ──
     const regId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const reg = registrationType === 'group'
@@ -136,6 +79,8 @@ export async function onRequestPost(context) {
           church: church?.trim() || '',
           notes: notes?.trim() || '',
           registeredAt: new Date().toISOString(),
+          confirmed: false,
+          confirmedAt: null,
         }
       : {
           regId, campId,
@@ -147,24 +92,19 @@ export async function onRequestPost(context) {
           emergency: emergency?.trim() || '',
           notes: notes?.trim() || '',
           registeredAt: new Date().toISOString(),
+          confirmed: false,
+          confirmedAt: null,
         };
 
-    const newCount = currentCount + spotsNeeded;
-    const newM = currentM + spotsM;
-    const newF = currentF + spotsF;
-
+    // 카운트는 관리자 확정 시에만 증가 — 여기서는 reg 데이터와 중복 방지 키만 저장
     await Promise.all([
       env.CAMP_KV.put(`camp:${campId}:reg:${regId}`, JSON.stringify(reg)),
       env.CAMP_KV.put(dupeKey, regId),
-      env.CAMP_KV.put(countKey, String(newCount)),
-      spotsM > 0 ? env.CAMP_KV.put(countKeyM, String(newM)) : Promise.resolve(),
-      spotsF > 0 ? env.CAMP_KV.put(countKeyF, String(newF)) : Promise.resolve(),
     ]);
 
     return Response.json({
       success: true,
-      count: newCount, countMale: newM, countFemale: newF,
-      capacity: maxCap,
+      pending: true,
     }, { headers: CORS });
 
   } catch (e) {
