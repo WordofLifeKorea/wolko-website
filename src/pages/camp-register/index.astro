@@ -239,14 +239,6 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-cap-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .crp-cap-fill.full { background: linear-gradient(90deg, var(--c-red), #e55); }
 
-/* 성별 게이지 하단 레이블 */
-.crp-cap-gender-row {
-  display: flex; justify-content: space-between;
-  margin-top: 6px; font-size: 11px; font-weight: 700;
-}
-.crp-cap-gender-m { color: #3b82f6; }
-.crp-cap-gender-f { color: #ec4899; }
-
 /* 준비중 / 비활성 상태 — 회색 */
 .crp-cap--gray .crp-cap-info { opacity: 0.68; }
 .crp-cap--gray .crp-cap-info strong { font-size: 13px; color: var(--c-muted); }
@@ -254,7 +246,6 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-cap--gray .crp-cap-fill-m,
 .crp-cap--gray .crp-cap-fill-f,
 .crp-cap--gray .crp-cap-fill { display: none; }
-.crp-cap--gray .crp-cap-gender-row { display: none; }
 
 /* ── REG BUTTONS ── */
 .crp-reg-btn {
@@ -438,13 +429,6 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
 }
 .crp-modal-cap-track { display: flex; }
-/* 모달 성별 레이블 */
-.crp-modal-cap-gender {
-  display: flex; justify-content: space-between;
-  margin-top: 5px; font-size: 11px; font-weight: 700;
-}
-.crp-modal-cap-gender-m { color: #93c5fd; }
-.crp-modal-cap-gender-f { color: #f9a8d4; }
 
 /* ── TYPE TABS ── */
 .crp-type-tabs {
@@ -782,20 +766,6 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                             <div class="crp-cap-fill-m"></div>
                             <div class="crp-cap-fill-f"></div>
                           </div>
-                          {isLive && (
-                            <div class="crp-cap-gender-row" hidden>
-                              {hasSplit
-                                ? <>
-                                    <span class="crp-cap-gender-m">♂ <span class="crp-cap-m-count">0</span>/{d.capacity_male}</span>
-                                    <span class="crp-cap-gender-f">♀ <span class="crp-cap-f-count">0</span>/{d.capacity_female}</span>
-                                  </>
-                                : <>
-                                    <span class="crp-cap-gender-m">♂ <span class="crp-cap-m-count">0</span></span>
-                                    <span class="crp-cap-gender-f">♀ <span class="crp-cap-f-count">0</span></span>
-                                  </>
-                              }
-                            </div>
-                          )}
                         </div>
                       );
                     })()}
@@ -991,10 +961,6 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
         <div class="crp-modal-cap-track">
           <div class="crp-modal-cap-fill-m" id="crpModalCapFillM"></div>
           <div class="crp-modal-cap-fill-f" id="crpModalCapFillF"></div>
-        </div>
-        <div class="crp-modal-cap-gender" id="crpModalCapGender" hidden>
-          <span class="crp-modal-cap-gender-m">♂ <span id="crpModalCapM">0</span></span>
-          <span class="crp-modal-cap-gender-f">♀ <span id="crpModalCapF">0</span></span>
         </div>
       </div>
 
@@ -1241,12 +1207,9 @@ function updateCrpCapBar(el, data, totalCap) {
   var countM = data.countMale   || 0;
   var countF = data.countFemale || 0;
 
-  var countEl  = el.querySelector('.crp-cap-count');
-  var fillM    = el.querySelector('.crp-cap-fill-m');
-  var fillF    = el.querySelector('.crp-cap-fill-f');
-  var gRow     = el.querySelector('.crp-cap-gender-row');
-  var gMEl     = el.querySelector('.crp-cap-m-count');
-  var gFEl     = el.querySelector('.crp-cap-f-count');
+  var countEl = el.querySelector('.crp-cap-count');
+  var fillM   = el.querySelector('.crp-cap-fill-m');
+  var fillF   = el.querySelector('.crp-cap-fill-f');
 
   if (countEl) countEl.textContent = count;
 
@@ -1254,12 +1217,6 @@ function updateCrpCapBar(el, data, totalCap) {
   var pctF = totalCap > 0 ? Math.min((countF / totalCap) * 100, 100) : 0;
   if (fillM) fillM.style.width = pctM + '%';
   if (fillF) fillF.style.width = pctF + '%';
-
-  if (gRow && (countM > 0 || countF > 0)) {
-    gRow.hidden = false;
-    if (gMEl) gMEl.textContent = countM;
-    if (gFEl) gFEl.textContent = countF;
-  }
 }
 
 async function loadCrpCapacities() {
@@ -1292,9 +1249,6 @@ var modalTitle = document.getElementById('crpModalTitle');
 var modalCapLabel = document.getElementById('crpModalCapLabel');
 var modalCapFillM = document.getElementById('crpModalCapFillM');
 var modalCapFillF = document.getElementById('crpModalCapFillF');
-var modalCapGender = document.getElementById('crpModalCapGender');
-var modalCapMEl = document.getElementById('crpModalCapM');
-var modalCapFEl = document.getElementById('crpModalCapF');
 var campIdInput = document.getElementById('crpCampId');
 var campCapInput = document.getElementById('crpCampCap');
 var campCapMaleInput, campCapFemaleInput; // set dynamically on open
@@ -1324,20 +1278,6 @@ function updateCrpModalCap(data, capacity) {
   modalCapLabel.textContent = count + ' / ' + capacity + (crpIsEn() ? ' spots' : '명');
   if (modalCapFillM) modalCapFillM.style.width = pctM + '%';
   if (modalCapFillF) modalCapFillF.style.width = pctF + '%';
-
-  if (modalCapGender && (countM > 0 || countF > 0)) {
-    modalCapGender.hidden = false;
-    if (modalCapMEl) {
-      modalCapMEl.textContent = currentCapMale
-        ? countM + '/' + currentCapMale
-        : countM;
-    }
-    if (modalCapFEl) {
-      modalCapFEl.textContent = currentCapFemale
-        ? countF + '/' + currentCapFemale
-        : countF;
-    }
-  }
 }
 
 /* ── 탭 전환 ── */
@@ -1397,9 +1337,6 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     campIdInput.value = campId;
     campCapInput.value = capacity;
     modalTitle.textContent = crpIsEn() ? nameEn : nameKo;
-
-    // 모달 성별 게이지 레이블 (cap 있는 경우 /N 표시)
-    if (modalCapGender) modalCapGender.hidden = true;
 
     document.getElementById('crpForm').reset();
     // 성별 버튼 초기화
