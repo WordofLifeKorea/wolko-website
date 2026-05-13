@@ -1216,10 +1216,20 @@ function updateCrpCapBar(el, data, totalCap) {
 
   if (countEl) countEl.textContent = count;
 
-  var pctM = totalCap > 0 ? Math.min((countM / totalCap) * 100, 100) : 0;
-  var pctF = totalCap > 0 ? Math.min((countF / totalCap) * 100, 100) : 0;
-  if (fillM) fillM.style.width = pctM + '%';
-  if (fillF) fillF.style.width = pctF + '%';
+  if (totalCap <= 0) return;
+
+  if (countM > 0 || countF > 0) {
+    // 성별 데이터 있으면 파란/핑크 분할
+    var pctM = Math.min((countM / totalCap) * 100, 100);
+    var pctF = Math.min((countF / totalCap) * 100, 100);
+    if (fillM) fillM.style.width = pctM + '%';
+    if (fillF) fillF.style.width = pctF + '%';
+  } else if (count > 0) {
+    // 성별 데이터 없으면 전체 count를 파란 바로 표시
+    var pct = Math.min((count / totalCap) * 100, 100);
+    if (fillM) fillM.style.width = pct + '%';
+    if (fillF) fillF.style.width = '0%';
+  }
 }
 
 async function loadCrpCapacities() {
@@ -1275,12 +1285,17 @@ function updateCrpModalCap(data, capacity) {
   var countM = (typeof data === 'object') ? (data.countMale  || 0) : 0;
   var countF = (typeof data === 'object') ? (data.countFemale || 0) : 0;
 
-  var pctM = capacity > 0 ? Math.min((countM / capacity) * 100, 100) : 0;
-  var pctF = capacity > 0 ? Math.min((countF / capacity) * 100, 100) : 0;
-
   modalCapLabel.textContent = count + ' / ' + capacity + (crpIsEn() ? ' spots' : '명');
-  if (modalCapFillM) modalCapFillM.style.width = pctM + '%';
-  if (modalCapFillF) modalCapFillF.style.width = pctF + '%';
+
+  if (capacity <= 0) return;
+
+  if (countM > 0 || countF > 0) {
+    if (modalCapFillM) modalCapFillM.style.width = Math.min((countM / capacity) * 100, 100) + '%';
+    if (modalCapFillF) modalCapFillF.style.width = Math.min((countF / capacity) * 100, 100) + '%';
+  } else if (count > 0) {
+    if (modalCapFillM) modalCapFillM.style.width = Math.min((count / capacity) * 100, 100) + '%';
+    if (modalCapFillF) modalCapFillF.style.width = '0%';
+  }
 }
 
 /* ── 탭 전환 ── */
