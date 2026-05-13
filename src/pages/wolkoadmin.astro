@@ -72,6 +72,16 @@ const teamMembersJson = JSON.stringify(teamMembers);
         <div class="dash-sub" id="dTotalSub">불러오는 중…</div>
       </div>
       <div class="dash-card">
+        <div class="dash-label" style="color:#3b82f6">남학생</div>
+        <div class="dash-value" id="dMale" style="color:#3b82f6">—</div>
+        <div class="dash-sub" id="dMaleSub">명</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-label" style="color:#ec4899">여학생</div>
+        <div class="dash-value" id="dFemale" style="color:#ec4899">—</div>
+        <div class="dash-sub" id="dFemaleSub">명</div>
+      </div>
+      <div class="dash-card">
         <div class="dash-label">잔여 정원</div>
         <div class="dash-value green" id="dRemain">—</div>
         <div class="dash-sub" id="dRemainSub">정원 기준</div>
@@ -89,8 +99,13 @@ const teamMembersJson = JSON.stringify(teamMembers);
         <span class="progress-title" id="progressLabel">전체 정원 현황</span>
         <span class="progress-pct" id="progressPct">0%</span>
       </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+      <div class="progress-bar-bg" style="display:flex;overflow:hidden;border-radius:999px;">
+        <div class="progress-bar-fill" id="progressFillM" style="width:0%;background:#3b82f6;border-radius:0;transition:width 0.6s ease;flex-shrink:0;height:100%"></div>
+        <div class="progress-bar-fill" id="progressFillF" style="width:0%;background:#ec4899;border-radius:0;transition:width 0.6s ease;flex-shrink:0;height:100%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;font-weight:600;">
+        <span id="progressGenderM" style="color:#3b82f6"></span>
+        <span id="progressGenderF" style="color:#ec4899"></span>
       </div>
     </div>
 
@@ -113,12 +128,12 @@ const teamMembersJson = JSON.stringify(teamMembers);
           <thead>
             <tr>
               <th>#</th><th>캠프</th><th>유형</th><th>이름</th><th>연락처</th>
-              <th>이메일</th><th>학년 / 인원</th><th>교회</th><th>학교</th>
+              <th>이메일</th><th>학년 / 인원</th><th>성별</th><th>교회</th><th>학교</th>
               <th>비상연락처</th><th>메모</th><th>신청일시</th><th>삭제</th>
             </tr>
           </thead>
           <tbody id="regBody">
-            <tr><td colspan="13">
+            <tr><td colspan="14">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p>로그인 후 자동으로 불러옵니다.</p>
@@ -333,7 +348,7 @@ const teamMembersJson = JSON.stringify(teamMembers);
       } catch (e) {
         showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
         document.getElementById('regBody').innerHTML = `
-          <tr><td colspan="13">
+          <tr><td colspan="14">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/>
@@ -358,8 +373,16 @@ const teamMembersJson = JSON.stringify(teamMembers);
       const remain = Math.max(0, cap - total);
       const pct = cap > 0 ? Math.round((total / cap) * 100) : 0;
 
+      // Gender totals
+      const maleTotal = regs.reduce((s, r) =>
+        r.registrationType === 'group' ? s + (r.maleCount || 0) : s + (r.gender === 'male' ? 1 : 0), 0);
+      const femaleTotal = regs.reduce((s, r) =>
+        r.registrationType === 'group' ? s + (r.femaleCount || 0) : s + (r.gender === 'female' ? 1 : 0), 0);
+
       document.getElementById('dTotal').textContent = total;
       document.getElementById('dTotalSub').textContent = '명 신청 완료';
+      document.getElementById('dMale').textContent = maleTotal;
+      document.getElementById('dFemale').textContent = femaleTotal;
       document.getElementById('dRemain').textContent = remain;
       document.getElementById('dRemainSub').textContent = `정원 ${cap}명 기준`;
       document.getElementById('dPct').textContent = pct + '%';
@@ -369,9 +392,22 @@ const teamMembersJson = JSON.stringify(teamMembers);
       const campName = CAMP_LABELS[activeCamp] || '전체';
       document.getElementById('progressLabel').textContent = campName + ' 정원 현황';
       document.getElementById('progressPct').textContent = pct + '%';
-      const fill = document.getElementById('progressFill');
-      fill.style.width = Math.min(pct, 100) + '%';
-      fill.className = 'progress-bar-fill' + (pct >= 100 ? ' full' : pct >= 80 ? ' warn' : '');
+
+      const fillM = document.getElementById('progressFillM');
+      const fillF = document.getElementById('progressFillF');
+      if (maleTotal > 0 || femaleTotal > 0) {
+        fillM.style.width = Math.min((maleTotal / cap) * 100, 100) + '%';
+        fillF.style.width = Math.min((femaleTotal / cap) * 100, 100) + '%';
+      } else if (total > 0) {
+        fillM.style.width = Math.min((total / cap) * 100, 100) + '%';
+        fillF.style.width = '0%';
+      } else {
+        fillM.style.width = '0%';
+        fillF.style.width = '0%';
+      }
+
+      document.getElementById('progressGenderM').textContent = maleTotal > 0 ? `남 ${maleTotal}명` : '';
+      document.getElementById('progressGenderF').textContent = femaleTotal > 0 ? `여 ${femaleTotal}명` : '';
     }
 
     // ── Table ──
@@ -382,7 +418,7 @@ const teamMembersJson = JSON.stringify(teamMembers);
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="13">
+          <tr><td colspan="14">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -403,6 +439,20 @@ const teamMembersJson = JSON.stringify(teamMembers);
           : `<span class="badge badge-individual">개인</span>`;
         const gradeOrCount = r.registrationType === 'group' ? `${r.groupCount}명` : (r.grade || '—');
 
+        let genderCell;
+        if (r.registrationType === 'group') {
+          const m = r.maleCount || 0, f = r.femaleCount || 0;
+          genderCell = (m > 0 || f > 0)
+            ? `<span style="font-size:12px;white-space:nowrap"><span style="color:#3b82f6;font-weight:600">남 ${m}</span> · <span style="color:#ec4899;font-weight:600">여 ${f}</span></span>`
+            : `<span style="color:var(--light)">—</span>`;
+        } else {
+          genderCell = r.gender === 'male'
+            ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">남</span>`
+            : r.gender === 'female'
+            ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">여</span>`
+            : `<span style="color:var(--light)">—</span>`;
+        }
+
         return `<tr>
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(campLabel)}</td>
@@ -411,6 +461,7 @@ const teamMembersJson = JSON.stringify(teamMembers);
           <td>${esc(r.phone)}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
           <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
+          <td>${genderCell}</td>
           <td>${esc(r.church || '—')}</td>
           <td>${esc(r.school || '—')}</td>
           <td style="font-size:12px">${esc(r.emergency || '—')}</td>
@@ -448,14 +499,21 @@ const teamMembersJson = JSON.stringify(teamMembers);
       const regs = filteredRegs();
       if (regs.length === 0) { showToast('다운로드할 데이터가 없습니다.', 'error'); return; }
 
-      const headers = ['번호','캠프','유형','이름','연락처','이메일','학년/인원','교회','학교','비상연락처','메모','신청일시','RegID'];
+      const headers = ['번호','캠프','유형','이름','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
       const rows = regs.map((r, i) => {
         const date = new Date(r.registeredAt).toLocaleString('ko-KR');
         const gradeOrCount = r.registrationType === 'group' ? `단체 ${r.groupCount}명` : (r.grade || '');
+        let genderVal;
+        if (r.registrationType === 'group') {
+          const m = r.maleCount || 0, f = r.femaleCount || 0;
+          genderVal = (m > 0 || f > 0) ? `남 ${m} 여 ${f}` : '';
+        } else {
+          genderVal = r.gender === 'male' ? '남' : r.gender === 'female' ? '여' : '';
+        }
         return [
           i + 1, CAMP_LABELS[r.campId] || r.campId,
           r.registrationType === 'group' ? '단체' : '개인',
-          r.name, r.phone, r.email, gradeOrCount,
+          r.name, r.phone, r.email, gradeOrCount, genderVal,
           r.church || '', r.school || '', r.emergency || '',
           r.notes || '', date, r.regId,
         ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
