@@ -1378,12 +1378,23 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 <div class="crp-refund-modal-overlay" id="crpRefundModalOverlay" hidden>
   <div class="crp-refund-modal" role="dialog" aria-modal="true">
     <div class="crp-refund-modal-head">
-      <div class="crp-refund-modal-title">
-        <span class="wl-ko">환불 규정</span>
-        <span class="wl-en">Refund Policy</span>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+        <div>
+          <div class="crp-refund-modal-title">
+            <span class="wl-ko">환불 규정</span>
+            <span class="wl-en">Refund Policy</span>
+          </div>
+          <div class="crp-refund-modal-hint wl-ko">끝까지 읽어보신 후 동의 버튼을 눌러주세요.</div>
+          <div class="crp-refund-modal-hint wl-en">Please read to the bottom, then click Agree.</div>
+        </div>
+        <button type="button" id="crpRefundCloseBtn" aria-label="닫기" style="
+          flex-shrink:0; width:32px; height:32px; border-radius:50%;
+          border:none; background:rgba(0,0,0,0.08); cursor:pointer;
+          display:flex; align-items:center; justify-content:center;
+          font-size:18px; color:#334a56; line-height:1;
+          transition:background 0.15s;
+        ">×</button>
       </div>
-      <div class="crp-refund-modal-hint wl-ko">끝까지 읽어보신 후 동의 버튼을 눌러주세요.</div>
-      <div class="crp-refund-modal-hint wl-en">Please read to the bottom, then click Agree.</div>
     </div>
     <div class="crp-refund-modal-body" id="crpRefundModalBody">
       <div class="crp-refund-section">
@@ -1681,7 +1692,8 @@ refundAgreeBtn.addEventListener('click', function() {
   closeRefundModal();
 });
 
-// 오버레이 바깥 클릭 시 닫기 (동의 없이)
+// X 버튼 및 오버레이 바깥 클릭 시 닫기
+document.getElementById('crpRefundCloseBtn').addEventListener('click', closeRefundModal);
 refundOverlay.addEventListener('click', function(e) {
   if (e.target === refundOverlay) closeRefundModal();
 });
