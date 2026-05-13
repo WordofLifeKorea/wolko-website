@@ -99,6 +99,8 @@ const camp_schedule = defineCollection({
     notes_ko: z.string().optional(),
     notes_en: z.string().optional(),
     capacity: z.number().default(40),
+    capacity_male: z.number().optional(),
+    capacity_female: z.number().optional(),
     order: z.number().default(99),
   }),
 });

@@ -218,7 +218,19 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-cap-track {
   height: 7px; background: rgba(0,79,104,0.08);
   border-radius: 999px; overflow: hidden;
+  display: flex;
 }
+.crp-cap-fill-m {
+  height: 100%; width: 0%; flex-shrink: 0;
+  background: #3b82f6;
+  transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+}
+.crp-cap-fill-f {
+  height: 100%; width: 0%; flex-shrink: 0;
+  background: #ec4899;
+  transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+}
+/* 이전 단일 fill — 회색바용으로만 사용 */
 .crp-cap-fill {
   height: 100%; border-radius: 999px; width: 0%;
   background: linear-gradient(90deg, var(--c-mid), var(--c-light));
@@ -227,11 +239,22 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-cap-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .crp-cap-fill.full { background: linear-gradient(90deg, var(--c-red), #e55); }
 
+/* 성별 게이지 하단 레이블 */
+.crp-cap-gender-row {
+  display: flex; justify-content: space-between;
+  margin-top: 6px; font-size: 11px; font-weight: 700;
+}
+.crp-cap-gender-m { color: #3b82f6; }
+.crp-cap-gender-f { color: #ec4899; }
+
 /* 준비중 / 비활성 상태 — 회색 */
 .crp-cap--gray .crp-cap-info { opacity: 0.68; }
 .crp-cap--gray .crp-cap-info strong { font-size: 13px; color: var(--c-muted); }
 .crp-cap--gray .crp-cap-track { background: rgba(0,79,104,0.06); }
+.crp-cap--gray .crp-cap-fill-m,
+.crp-cap--gray .crp-cap-fill-f,
 .crp-cap--gray .crp-cap-fill { display: none; }
+.crp-cap--gray .crp-cap-gender-row { display: none; }
 
 /* ── REG BUTTONS ── */
 .crp-reg-btn {
@@ -404,13 +427,24 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-modal-cap-track {
   height: 8px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden;
 }
-.crp-modal-cap-fill {
-  height: 100%; border-radius: 999px; width: 0%;
-  background: linear-gradient(90deg, var(--c-light), #a8e8ff);
+.crp-modal-cap-fill-m {
+  height: 100%; width: 0%; flex-shrink: 0;
+  background: #60a5fa;
   transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
 }
-.crp-modal-cap-fill.warn { background: linear-gradient(90deg, #fbbf24, #fde68a); }
-.crp-modal-cap-fill.full { background: linear-gradient(90deg, #f87171, #fca5a5); }
+.crp-modal-cap-fill-f {
+  height: 100%; width: 0%; flex-shrink: 0;
+  background: #f472b6;
+  transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+}
+.crp-modal-cap-track { display: flex; }
+/* 모달 성별 레이블 */
+.crp-modal-cap-gender {
+  display: flex; justify-content: space-between;
+  margin-top: 5px; font-size: 11px; font-weight: 700;
+}
+.crp-modal-cap-gender-m { color: #93c5fd; }
+.crp-modal-cap-gender-f { color: #f9a8d4; }
 
 /* ── TYPE TABS ── */
 .crp-type-tabs {
@@ -565,6 +599,39 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 }
 .crp-success-close:hover { background: #015a7a; }
 
+/* ── 성별 선택 버튼 ── */
+.crp-gender-wrap { display: flex; gap: 10px; }
+.crp-gender-btn {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border: 1.5px solid rgba(0,79,104,0.13);
+  border-radius: 8px; cursor: pointer; background: #f7fbfd;
+  transition: border-color 0.2s, background 0.2s; user-select: none;
+  font-family: var(--f-sans);
+}
+.crp-gender-btn input[type=radio] { display: none; }
+.crp-gender-icon { font-size: 20px; line-height: 1; }
+.crp-gender-label { font-size: 14px; font-weight: 600; color: var(--c-sub); }
+.crp-gender-btn-m.selected { border-color: #3b82f6 !important; background: rgba(59,130,246,0.07) !important; }
+.crp-gender-btn-m.selected .crp-gender-label { color: #2563eb; }
+.crp-gender-btn-f.selected { border-color: #ec4899 !important; background: rgba(236,72,153,0.07) !important; }
+.crp-gender-btn-f.selected .crp-gender-label { color: #db2777; }
+
+/* ── 단체 신청 총 인원 요약 ── */
+.crp-group-total-row {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+  padding: 8px 12px; border-radius: 8px;
+  background: rgba(0,79,104,0.04); border: 1px solid rgba(0,79,104,0.09);
+  font-size: 13px; color: var(--c-sub);
+}
+.crp-group-total-num { font-size: 20px; font-weight: 700; color: var(--c-deep); }
+.crp-group-total-m { color: #3b82f6; font-weight: 600; }
+.crp-group-total-f { color: #ec4899; font-weight: 600; }
+
+/* ── group count select 레이블 색상 ── */
+.crp-field-male label { color: #3b82f6 !important; }
+.crp-field-female label { color: #ec4899 !important; }
+
 /* Mobile modal */
 @media (max-width: 600px) {
   .crp-reg-modal { padding: 12px; }
@@ -693,8 +760,12 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                     )}
                     {(() => {
                       const isLive = d.status === 'open' && !d.use_external_form;
+                      const hasSplit = !!(d.capacity_male && d.capacity_female);
                       return (
-                        <div class={`crp-cap${isLive ? '' : ' crp-cap--gray'}`} data-cap-id={isLive ? s.slug : undefined}>
+                        <div class={`crp-cap${isLive ? '' : ' crp-cap--gray'}`}
+                          data-cap-id={isLive ? s.slug : undefined}
+                          data-capacity-male={d.capacity_male ?? ''}
+                          data-capacity-female={d.capacity_female ?? ''}>
                           <div class="crp-cap-info">
                             <span>
                               <span class="wl-ko">{isLive ? '신청 현황' : '전체 정원'}</span>
@@ -708,8 +779,23 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                             </strong>
                           </div>
                           <div class="crp-cap-track">
-                            <div class="crp-cap-fill"></div>
+                            <div class="crp-cap-fill-m"></div>
+                            <div class="crp-cap-fill-f"></div>
                           </div>
+                          {isLive && (
+                            <div class="crp-cap-gender-row" hidden>
+                              {hasSplit
+                                ? <>
+                                    <span class="crp-cap-gender-m">♂ <span class="crp-cap-m-count">0</span>/{d.capacity_male}</span>
+                                    <span class="crp-cap-gender-f">♀ <span class="crp-cap-f-count">0</span>/{d.capacity_female}</span>
+                                  </>
+                                : <>
+                                    <span class="crp-cap-gender-m">♂ <span class="crp-cap-m-count">0</span></span>
+                                    <span class="crp-cap-gender-f">♀ <span class="crp-cap-f-count">0</span></span>
+                                  </>
+                              }
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
@@ -725,6 +811,9 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                         data-camp-name-ko={d.title_ko}
                         data-camp-name-en={d.title_en}
                         data-capacity={d.capacity ?? 40}
+                        data-capacity-male={d.capacity_male ?? ''}
+                        data-capacity-female={d.capacity_female ?? ''}
+                        data-camp-type={d.camp_type}
                       >
                         <span class="wl-ko">신청하기 →</span>
                         <span class="wl-en">Register Now →</span>
@@ -900,7 +989,12 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
           <strong id="crpModalCapLabel">— / —</strong>
         </div>
         <div class="crp-modal-cap-track">
-          <div class="crp-modal-cap-fill" id="crpModalCapFill"></div>
+          <div class="crp-modal-cap-fill-m" id="crpModalCapFillM"></div>
+          <div class="crp-modal-cap-fill-f" id="crpModalCapFillF"></div>
+        </div>
+        <div class="crp-modal-cap-gender" id="crpModalCapGender" hidden>
+          <span class="crp-modal-cap-gender-m">♂ <span id="crpModalCapM">0</span></span>
+          <span class="crp-modal-cap-gender-f">♀ <span id="crpModalCapF">0</span></span>
         </div>
       </div>
 
@@ -948,6 +1042,21 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
               <div class="crp-field">
                 <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
                 <input id="crpPhone" name="phone" placeholder="010-0000-0000">
+              </div>
+              <div class="crp-field crp-field--full">
+                <label><span class="wl-ko">성별</span><span class="wl-en">Gender</span> <span class="req">*</span></label>
+                <div class="crp-gender-wrap">
+                  <label class="crp-gender-btn crp-gender-btn-m" id="crpGenderBtnM">
+                    <input type="radio" name="gender" id="crpGenderMale" value="male">
+                    <span class="crp-gender-icon">♂</span>
+                    <span class="crp-gender-label"><span class="wl-ko">남학생</span><span class="wl-en">Male</span></span>
+                  </label>
+                  <label class="crp-gender-btn crp-gender-btn-f" id="crpGenderBtnF">
+                    <input type="radio" name="gender" id="crpGenderFemale" value="female">
+                    <span class="crp-gender-icon">♀</span>
+                    <span class="crp-gender-label"><span class="wl-ko">여학생</span><span class="wl-en">Female</span></span>
+                  </label>
+                </div>
               </div>
               <div class="crp-field">
                 <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
@@ -1027,14 +1136,29 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                 <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
                 <input id="crpGEmail" name="gEmail" type="email" placeholder="email@example.com">
               </div>
-              <div class="crp-field">
-                <label><span class="wl-ko">신청 인원</span><span class="wl-en">Group Size</span> <span class="req">*</span></label>
-                <select id="crpGCount" name="gCount">
-                  <option value="">— 선택 / Select —</option>
-                  {Array.from({length: 49}, (_, i) => i + 2).map(n => (
-                    <option value={n}>{n}명 ({n} people)</option>
+              <div class="crp-field crp-field-male">
+                <label>♂ <span class="wl-ko">남학생 수</span><span class="wl-en">Male</span> <span class="req">*</span></label>
+                <select id="crpGMaleCount" name="gMaleCount">
+                  {Array.from({length: 31}, (_, i) => i).map(n => (
+                    <option value={n}>{n}<span class="wl-ko">명</span></option>
                   ))}
                 </select>
+              </div>
+              <div class="crp-field crp-field-female">
+                <label>♀ <span class="wl-ko">여학생 수</span><span class="wl-en">Female</span> <span class="req">*</span></label>
+                <select id="crpGFemaleCount" name="gFemaleCount">
+                  {Array.from({length: 31}, (_, i) => i).map(n => (
+                    <option value={n}>{n}<span class="wl-ko">명</span></option>
+                  ))}
+                </select>
+              </div>
+              <div class="crp-group-total-row">
+                <span class="crp-group-total-m">♂ <span id="crpGTotalM">0</span></span>
+                <span style="color:var(--c-muted)">+</span>
+                <span class="crp-group-total-f">♀ <span id="crpGTotalF">0</span></span>
+                <span style="color:var(--c-muted)">=</span>
+                <span class="wl-ko">총 <span class="crp-group-total-num" id="crpGTotal">0</span>명</span>
+                <span class="wl-en">Total: <span class="crp-group-total-num" id="crpGTotalEn">0</span></span>
               </div>
               <div class="crp-field crp-field--full">
                 <label><span class="wl-ko">소속 교회 / 단체</span><span class="wl-en">Church / Organization</span> <span class="req">*</span></label>
@@ -1111,15 +1235,30 @@ function crpIsEn() {
   return !!(el && el.classList.contains('lang-en'));
 }
 
-/* ── 정원 바 업데이트 ── */
-function updateCrpCapBar(el, count, capacity) {
-  var fill = el.querySelector('.crp-cap-fill');
-  var countEl = el.querySelector('.crp-cap-count');
-  var pct = capacity > 0 ? Math.min((count / capacity) * 100, 100) : 0;
+/* ── 정원 바 업데이트 (성별 split) ── */
+function updateCrpCapBar(el, data, totalCap) {
+  var count  = data.count  || 0;
+  var countM = data.countMale   || 0;
+  var countF = data.countFemale || 0;
+
+  var countEl  = el.querySelector('.crp-cap-count');
+  var fillM    = el.querySelector('.crp-cap-fill-m');
+  var fillF    = el.querySelector('.crp-cap-fill-f');
+  var gRow     = el.querySelector('.crp-cap-gender-row');
+  var gMEl     = el.querySelector('.crp-cap-m-count');
+  var gFEl     = el.querySelector('.crp-cap-f-count');
+
   if (countEl) countEl.textContent = count;
-  if (fill) {
-    fill.style.width = pct + '%';
-    fill.className = 'crp-cap-fill' + (pct >= 100 ? ' full' : pct >= 75 ? ' warn' : '');
+
+  var pctM = totalCap > 0 ? Math.min((countM / totalCap) * 100, 100) : 0;
+  var pctF = totalCap > 0 ? Math.min((countF / totalCap) * 100, 100) : 0;
+  if (fillM) fillM.style.width = pctM + '%';
+  if (fillF) fillF.style.width = pctF + '%';
+
+  if (gRow && (countM > 0 || countF > 0)) {
+    gRow.hidden = false;
+    if (gMEl) gMEl.textContent = countM;
+    if (gFEl) gFEl.textContent = countF;
   }
 }
 
@@ -1133,7 +1272,7 @@ async function loadCrpCapacities() {
       var res = await fetch('/api/capacity/' + campId);
       if (res.ok) {
         var data = await res.json();
-        updateCrpCapBar(el, data.count, cap);
+        updateCrpCapBar(el, data, cap);
         if (data.count >= cap && btn) {
           btn.disabled = true;
           btn.innerHTML = '<span class="wl-ko">정원 마감</span><span class="wl-en">Full</span>';
@@ -1151,9 +1290,14 @@ loadCrpCapacities();
 var modal = document.getElementById('crpModal');
 var modalTitle = document.getElementById('crpModalTitle');
 var modalCapLabel = document.getElementById('crpModalCapLabel');
-var modalCapFill = document.getElementById('crpModalCapFill');
+var modalCapFillM = document.getElementById('crpModalCapFillM');
+var modalCapFillF = document.getElementById('crpModalCapFillF');
+var modalCapGender = document.getElementById('crpModalCapGender');
+var modalCapMEl = document.getElementById('crpModalCapM');
+var modalCapFEl = document.getElementById('crpModalCapF');
 var campIdInput = document.getElementById('crpCampId');
 var campCapInput = document.getElementById('crpCampCap');
+var campCapMaleInput, campCapFemaleInput; // set dynamically on open
 var regTypeInput = document.getElementById('crpType');
 var formWrap = document.getElementById('crpFormWrap');
 var successWrap = document.getElementById('crpSuccessWrap');
@@ -1164,12 +1308,36 @@ var sectionGroup = document.getElementById('crpSectionGroup');
 var tabIndividual = document.getElementById('crpTabIndividual');
 var tabGroup = document.getElementById('crpTabGroup');
 
-/* ── 모달 정원 바 ── */
-function updateCrpModalCap(count, capacity) {
-  var pct = capacity > 0 ? Math.min((count / capacity) * 100, 100) : 0;
+// 현재 모달의 성별 cap 값 (런타임)
+var currentCapMale = 0;
+var currentCapFemale = 0;
+
+/* ── 모달 정원 바 (성별 split) ── */
+function updateCrpModalCap(data, capacity) {
+  var count  = (typeof data === 'object') ? (data.count || 0) : parseInt(data) || 0;
+  var countM = (typeof data === 'object') ? (data.countMale  || 0) : 0;
+  var countF = (typeof data === 'object') ? (data.countFemale || 0) : 0;
+
+  var pctM = capacity > 0 ? Math.min((countM / capacity) * 100, 100) : 0;
+  var pctF = capacity > 0 ? Math.min((countF / capacity) * 100, 100) : 0;
+
   modalCapLabel.textContent = count + ' / ' + capacity + (crpIsEn() ? ' spots' : '명');
-  modalCapFill.style.width = pct + '%';
-  modalCapFill.className = 'crp-modal-cap-fill' + (pct >= 100 ? ' full' : pct >= 75 ? ' warn' : '');
+  if (modalCapFillM) modalCapFillM.style.width = pctM + '%';
+  if (modalCapFillF) modalCapFillF.style.width = pctF + '%';
+
+  if (modalCapGender && (countM > 0 || countF > 0)) {
+    modalCapGender.hidden = false;
+    if (modalCapMEl) {
+      modalCapMEl.textContent = currentCapMale
+        ? countM + '/' + currentCapMale
+        : countM;
+    }
+    if (modalCapFEl) {
+      modalCapFEl.textContent = currentCapFemale
+        ? countF + '/' + currentCapFemale
+        : countF;
+    }
+  }
 }
 
 /* ── 탭 전환 ── */
@@ -1191,26 +1359,62 @@ function crpSwitchTab(type) {
 tabIndividual.addEventListener('click', function() { crpSwitchTab('individual'); });
 tabGroup.addEventListener('click', function() { crpSwitchTab('group'); });
 
+/* ── 성별 라디오 버튼 시각 피드백 ── */
+document.querySelectorAll('input[name="gender"]').forEach(function(radio) {
+  radio.addEventListener('change', function() {
+    document.getElementById('crpGenderBtnM').classList.toggle('selected', this.value === 'male' && this.checked);
+    document.getElementById('crpGenderBtnF').classList.toggle('selected', this.value === 'female' && this.checked);
+  });
+});
+
+/* ── 단체 남/여 인원 live 합계 ── */
+function updateGroupTotal() {
+  var m = parseInt(document.getElementById('crpGMaleCount').value) || 0;
+  var f = parseInt(document.getElementById('crpGFemaleCount').value) || 0;
+  var t = m + f;
+  var el1 = document.getElementById('crpGTotal');
+  var el2 = document.getElementById('crpGTotalEn');
+  var elM = document.getElementById('crpGTotalM');
+  var elF = document.getElementById('crpGTotalF');
+  if (el1) el1.textContent = t;
+  if (el2) el2.textContent = t;
+  if (elM) elM.textContent = m;
+  if (elF) elF.textContent = f;
+}
+document.getElementById('crpGMaleCount').addEventListener('change', updateGroupTotal);
+document.getElementById('crpGFemaleCount').addEventListener('change', updateGroupTotal);
+
 /* ── 모달 열기 ── */
 document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
   btn.addEventListener('click', async function() {
-    var campId = this.dataset.campId;
-    var nameKo = this.dataset.campNameKo;
-    var nameEn = this.dataset.campNameEn;
+    var campId   = this.dataset.campId;
+    var nameKo   = this.dataset.campNameKo;
+    var nameEn   = this.dataset.campNameEn;
     var capacity = parseInt(this.dataset.capacity) || 40;
+    currentCapMale   = parseInt(this.dataset.capacityMale)   || 0;
+    currentCapFemale = parseInt(this.dataset.capacityFemale) || 0;
 
     campIdInput.value = campId;
     campCapInput.value = capacity;
     modalTitle.textContent = crpIsEn() ? nameEn : nameKo;
 
+    // 모달 성별 게이지 레이블 (cap 있는 경우 /N 표시)
+    if (modalCapGender) modalCapGender.hidden = true;
+
     document.getElementById('crpForm').reset();
+    // 성별 버튼 초기화
+    document.getElementById('crpGenderBtnM').classList.remove('selected');
+    document.getElementById('crpGenderBtnF').classList.remove('selected');
+    // 단체 총인원 초기화
+    updateGroupTotal();
+
     crpSwitchTab('individual');
     formWrap.hidden = false;
     successWrap.hidden = true;
     errorMsg.hidden = true;
     submitBtn.disabled = false;
     submitBtn.classList.remove('loading');
-    updateCrpModalCap('…', capacity);
+    updateCrpModalCap({ count: '…', countMale: 0, countFemale: 0 }, capacity);
 
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -1219,14 +1423,14 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
       var res = await fetch('/api/capacity/' + campId);
       if (res.ok) {
         var data = await res.json();
-        updateCrpModalCap(data.count, capacity);
+        updateCrpModalCap(data, capacity);
         if (data.count >= capacity) {
           submitBtn.disabled = true;
           submitBtn.querySelector('.crp-submit-label').innerHTML =
             '<span>정원이 마감되었습니다 / Registration Full</span>';
         }
       }
-    } catch(e) { updateCrpModalCap(0, capacity); }
+    } catch(e) { updateCrpModalCap({ count: 0, countMale: 0, countFemale: 0 }, capacity); }
   });
 });
 
@@ -1256,14 +1460,21 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
   var payload;
 
   if (currentType === 'group') {
-    var gName  = document.getElementById('crpGName').value.trim();
-    var gPhone = document.getElementById('crpGPhone').value.trim();
-    var gEmail = document.getElementById('crpGEmail').value.trim();
-    var gCount = document.getElementById('crpGCount').value;
-    var gOrg   = document.getElementById('crpGOrg').value.trim();
+    var gName      = document.getElementById('crpGName').value.trim();
+    var gPhone     = document.getElementById('crpGPhone').value.trim();
+    var gEmail     = document.getElementById('crpGEmail').value.trim();
+    var gMaleCount = parseInt(document.getElementById('crpGMaleCount').value) || 0;
+    var gFemCount  = parseInt(document.getElementById('crpGFemaleCount').value) || 0;
+    var gOrg       = document.getElementById('crpGOrg').value.trim();
+    var gTotal     = gMaleCount + gFemCount;
 
-    if (!gName || !gPhone || !gEmail || !gCount || !gOrg) {
-      errorMsg.textContent = '담당자 이름, 연락처, 이메일, 인원, 소속은 필수 항목입니다. / Contact name, phone, email, group size, and organization are required.';
+    if (!gName || !gPhone || !gEmail || !gOrg) {
+      errorMsg.textContent = '담당자 이름, 연락처, 이메일, 소속은 필수 항목입니다. / Contact name, phone, email, and organization are required.';
+      errorMsg.hidden = false;
+      return;
+    }
+    if (gTotal < 2) {
+      errorMsg.textContent = '남학생 또는 여학생 합산 2명 이상 입력해주세요. / Please enter at least 2 participants total.';
       errorMsg.hidden = false;
       return;
     }
@@ -1271,19 +1482,28 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       registrationType: 'group',
       campId: campIdInput.value,
       capacity: parseInt(campCapInput.value) || 40,
+      capacityMale: currentCapMale || undefined,
+      capacityFemale: currentCapFemale || undefined,
       name: gName, phone: gPhone, email: gEmail,
-      groupCount: parseInt(gCount),
+      maleCount: gMaleCount, femaleCount: gFemCount,
+      groupCount: gTotal,
       church: gOrg,
       notes: document.getElementById('crpGNotes').value.trim(),
     };
   } else {
-    var name  = document.getElementById('crpName').value.trim();
-    var phone = document.getElementById('crpPhone').value.trim();
-    var email = document.getElementById('crpEmail').value.trim();
-    var grade = document.getElementById('crpGrade').value;
+    var name   = document.getElementById('crpName').value.trim();
+    var phone  = document.getElementById('crpPhone').value.trim();
+    var email  = document.getElementById('crpEmail').value.trim();
+    var grade  = document.getElementById('crpGrade').value;
+    var gender = document.querySelector('input[name="gender"]:checked')?.value;
 
     if (!name || !phone || !email || !grade) {
       errorMsg.textContent = '이름, 연락처, 이메일, 학년은 필수 항목입니다. / Name, phone, email, and grade are required.';
+      errorMsg.hidden = false;
+      return;
+    }
+    if (!gender) {
+      errorMsg.textContent = '성별을 선택해주세요. / Please select gender.';
       errorMsg.hidden = false;
       return;
     }
@@ -1291,7 +1511,9 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       registrationType: 'individual',
       campId: campIdInput.value,
       capacity: parseInt(campCapInput.value) || 40,
-      name, phone, email, grade,
+      capacityMale: currentCapMale || undefined,
+      capacityFemale: currentCapFemale || undefined,
+      name, phone, email, grade, gender,
       church: document.getElementById('crpChurch').value.trim(),
       school: document.getElementById('crpSchool').value.trim(),
       emergency: document.getElementById('crpEmergency').value.trim(),
@@ -1319,25 +1541,28 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       var isEn = crpIsEn();
 
       if (currentType === 'group') {
-        var gc = payload.groupCount;
+        var gm = payload.maleCount, gf = payload.femaleCount, gc = payload.groupCount;
         successMsg.innerHTML = isEn
-          ? 'Your group registration for <strong>' + gc + ' participants</strong> has been received. Please send individual registration forms to <strong>wolkorea1@gmail.com</strong> for final confirmation.'
-          : '<strong>' + gc + '명</strong>의 단체 신청이 접수되었습니다.<br><strong>wolkorea1@gmail.com</strong>으로 개인별 신청서를 보내주시면 최종 확인 처리해 드립니다.';
+          ? 'Your group registration for <strong>' + gc + ' participants</strong> (♂ ' + gm + ' / ♀ ' + gf + ') has been received. Please send individual registration forms to <strong>wolkorea1@gmail.com</strong> for final confirmation.'
+          : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br><strong>wolkorea1@gmail.com</strong>으로 개인별 신청서를 보내주시면 최종 확인 처리해 드립니다.';
         successCount.textContent = isEn
           ? data.count + ' / ' + data.capacity + ' spots filled'
           : data.count + ' / ' + data.capacity + '명 신청 완료';
       } else {
+        var genderLabel = payload.gender === 'male'
+          ? (isEn ? '♂ Male' : '♂ 남학생')
+          : (isEn ? '♀ Female' : '♀ 여학생');
         successMsg.innerHTML = isEn
-          ? "Your registration has been received. We'll be in touch with further details soon."
-          : '신청이 성공적으로 접수되었습니다. 캠프 일정 및 안내 사항은 입력하신 이메일로 발송됩니다.';
+          ? 'Your registration (' + genderLabel + ') has been received. We\'ll be in touch with further details soon.'
+          : genderLabel + ' 신청이 접수되었습니다. 캠프 일정 및 안내 사항은 입력하신 이메일로 발송됩니다.';
         successCount.textContent = isEn
           ? data.count + ' / ' + data.capacity + ' spots filled'
           : data.count + ' / ' + data.capacity + '명 신청 완료';
       }
 
       var capBar = document.querySelector('[data-cap-id="' + payload.campId + '"]');
-      if (capBar) updateCrpCapBar(capBar, data.count, data.capacity);
-      updateCrpModalCap(data.count, data.capacity);
+      if (capBar) updateCrpCapBar(capBar, data, data.capacity);
+      updateCrpModalCap(data, data.capacity);
 
     } else {
       errorMsg.textContent = data.error || '오류가 발생했습니다. 다시 시도해주세요. / An error occurred. Please try again.';
