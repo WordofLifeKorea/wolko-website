@@ -239,6 +239,15 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-cap-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .crp-cap-fill.full { background: linear-gradient(90deg, var(--c-red), #e55); }
 
+/* ── 성별 분리 카운트 표시 ── */
+.crp-cap-gender-split {
+  display: flex; justify-content: space-between;
+  margin-top: 9px; font-size: 12px; font-weight: 500;
+}
+.crp-cap-gender-m { color: #3b82f6; }
+.crp-cap-gender-f { color: #ec4899; }
+.crp-cap-gender-split strong { font-weight: 700; }
+
 /* 준비중 / 비활성 상태 — 회색 */
 .crp-cap--gray .crp-cap-info { opacity: 0.68; }
 .crp-cap--gray .crp-cap-info strong { font-size: 13px; color: var(--c-muted); }
@@ -767,6 +776,12 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                             <div class="crp-cap-fill-m"></div>
                             <div class="crp-cap-fill-f"></div>
                           </div>
+                          {hasSplit && isLive && (
+                            <div class="crp-cap-gender-split">
+                              <span class="crp-cap-gender-m">남학생 <strong class="crp-cap-count-m">—</strong> / {d.capacity_male}</span>
+                              <span class="crp-cap-gender-f">여학생 <strong class="crp-cap-count-f">—</strong> / {d.capacity_female}</span>
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
@@ -1206,15 +1221,19 @@ function crpIsEn() {
 
 /* ── 정원 바 업데이트 (성별 split) ── */
 function updateCrpCapBar(el, data, totalCap) {
-  var count  = data.count  || 0;
-  var countM = data.countMale   || 0;
-  var countF = data.countFemale || 0;
+  var count  = typeof data.count  === 'number' ? data.count  : 0;
+  var countM = typeof data.countMale   === 'number' ? data.countMale   : 0;
+  var countF = typeof data.countFemale === 'number' ? data.countFemale : 0;
 
-  var countEl = el.querySelector('.crp-cap-count');
-  var fillM   = el.querySelector('.crp-cap-fill-m');
-  var fillF   = el.querySelector('.crp-cap-fill-f');
+  var countEl  = el.querySelector('.crp-cap-count');
+  var countMEl = el.querySelector('.crp-cap-count-m');
+  var countFEl = el.querySelector('.crp-cap-count-f');
+  var fillM    = el.querySelector('.crp-cap-fill-m');
+  var fillF    = el.querySelector('.crp-cap-fill-f');
 
-  if (countEl) countEl.textContent = count;
+  if (countEl)  countEl.textContent  = count;
+  if (countMEl) countMEl.textContent = countM;
+  if (countFEl) countFEl.textContent = countF;
 
   if (totalCap <= 0) return;
 
@@ -1240,18 +1259,16 @@ async function loadCrpCapacities() {
     var cap = btn ? parseInt(btn.dataset.capacity) || 40 : 40;
     try {
       var res = await fetch('/api/capacity/' + campId);
-      if (res.ok) {
-        var data = await res.json();
-        updateCrpCapBar(el, data, cap);
-        if (data.count >= cap && btn) {
-          btn.disabled = true;
-          btn.innerHTML = '<span class="wl-ko">정원 마감</span><span class="wl-en">Full</span>';
-          btn.style.background = 'rgba(100,116,139,0.15)';
-          btn.style.color = '#64748b';
-          btn.style.cursor = 'default';
-        }
+      var data = res.ok ? await res.json() : { count: 0, countMale: 0, countFemale: 0 };
+      updateCrpCapBar(el, data, cap);
+      if (data.count >= cap && btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="wl-ko">정원 마감</span><span class="wl-en">Full</span>';
+        btn.style.background = 'rgba(100,116,139,0.15)';
+        btn.style.color = '#64748b';
+        btn.style.cursor = 'default';
       }
-    } catch(e) { /* 조용히 처리 */ }
+    } catch(e) { updateCrpCapBar(el, { count: 0, countMale: 0, countFemale: 0 }, cap); }
   }));
 }
 loadCrpCapacities();
