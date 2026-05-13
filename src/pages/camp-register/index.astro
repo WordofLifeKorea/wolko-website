@@ -593,6 +593,55 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 }
 .crp-success-close:hover { background: #015a7a; }
 
+/* ── 예약금 입금 안내 블록 ── */
+.crp-success-bank {
+  margin: 16px 0 20px;
+  background: #f0f9ff;
+  border: 1.5px solid rgba(0,126,161,0.22);
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: left;
+}
+.crp-success-bank-title {
+  font-size: 13px; font-weight: 700; color: var(--c-deep);
+  margin-bottom: 10px; letter-spacing: -0.01em;
+}
+.crp-success-bank-amount {
+  font-size: 13px; color: var(--c-sub);
+  margin-bottom: 12px;
+}
+.crp-success-bank-amount strong {
+  font-size: 20px; font-weight: 800; color: var(--c-red);
+}
+.crp-success-bank-info {
+  background: #fff;
+  border: 1px solid rgba(0,79,104,0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.crp-success-bank-row {
+  display: flex; gap: 10px; align-items: baseline;
+  font-size: 13.5px;
+}
+.crp-bank-label {
+  width: 60px; flex-shrink: 0;
+  font-size: 11.5px; color: var(--c-muted); font-weight: 500;
+}
+.crp-bank-val {
+  color: var(--c-text); font-weight: 600;
+}
+.crp-bank-acct {
+  font-family: 'Courier New', monospace; font-size: 14px; letter-spacing: 0.04em;
+  color: var(--c-deep); font-weight: 700;
+}
+.crp-success-bank-note {
+  font-size: 12px; line-height: 1.7; color: var(--c-muted);
+  word-break: keep-all;
+}
+.crp-success-bank-note strong { color: var(--c-sub); }
+
 /* ── 성별 선택 버튼 ── */
 .crp-gender-wrap { display: flex; gap: 10px; }
 .crp-gender-btn {
@@ -800,6 +849,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                         data-capacity-male={d.capacity_male ?? ''}
                         data-capacity-female={d.capacity_female ?? ''}
                         data-camp-type={d.camp_type}
+                        data-deposit={(d as any).deposit_amount ?? (d.camp_type === 'english' ? 50000 : 10000)}
                       >
                         <span class="wl-ko">신청하기 →</span>
                         <span class="wl-en">Register Now →</span>
@@ -1012,6 +1062,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
         <form id="crpForm" novalidate>
           <input type="hidden" id="crpCampId">
           <input type="hidden" id="crpCampCap">
+          <input type="hidden" id="crpCampDeposit" value="0">
           <input type="hidden" id="crpType" value="individual">
 
           <!-- 개인 신청 섹션 -->
@@ -1171,6 +1222,18 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
             </label>
           </label>
 
+          <!-- 예약금 확인 동의 -->
+          <label class="crp-consent crp-consent--deposit">
+            <input type="checkbox" id="crpDepositConsent">
+            <label for="crpDepositConsent">
+              <strong class="wl-ko">예약금 입금 확인 후 캠프 등록이 최종 확정됨을 이해합니다.</strong>
+              <strong class="wl-en">I understand that registration is only finalized after the deposit payment is verified.</strong>
+              <br>
+              <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">신청 후 안내된 계좌로 예약금을 입금하시면 담당자 확인 후 최종 확정됩니다.</span>
+              <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">After submitting, please transfer the deposit to the provided account. Your registration will be confirmed upon payment verification.</span>
+            </label>
+          </label>
+
           <button type="submit" class="crp-submit" id="crpSubmitBtn">
             <div class="spinner"></div>
             <span class="crp-submit-label">
@@ -1190,6 +1253,35 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
           <span class="wl-en">Registration Complete!</span>
         </div>
         <p class="crp-success-sub" id="crpSuccessMsg"></p>
+
+        <!-- 예약금 입금 안내 -->
+        <div class="crp-success-bank" id="crpSuccessBank">
+          <div class="crp-success-bank-title">
+            <span class="wl-ko">📌 예약금 입금 안내</span>
+            <span class="wl-en">📌 Deposit Payment Info</span>
+          </div>
+          <div class="crp-success-bank-amount">
+            <span class="wl-ko">예약금</span><span class="wl-en">Deposit</span>
+            &nbsp;<strong id="crpDepositAmount">—</strong>
+          </div>
+          <div class="crp-success-bank-info">
+            <div class="crp-success-bank-row">
+              <span class="crp-bank-label wl-ko">은행</span><span class="crp-bank-label wl-en">Bank</span>
+              <span class="crp-bank-val">농협</span>
+            </div>
+            <div class="crp-success-bank-row">
+              <span class="crp-bank-label wl-ko">계좌번호</span><span class="crp-bank-label wl-en">Account</span>
+              <span class="crp-bank-val crp-bank-acct">301-0343-5409-21</span>
+            </div>
+            <div class="crp-success-bank-row">
+              <span class="crp-bank-label wl-ko">예금주</span><span class="crp-bank-label wl-en">Holder</span>
+              <span class="crp-bank-val">(사)한국생명의말씀협회</span>
+            </div>
+          </div>
+          <p class="crp-success-bank-note wl-ko">입금자명을 <strong>신청자 이름</strong>으로 해주세요.<br>입금 확인 후 담당자가 최종 확정 처리합니다.</p>
+          <p class="crp-success-bank-note wl-en">Please use the <strong>registrant's name</strong> as the transfer memo.<br>Registration will be finalized after payment is verified.</p>
+        </div>
+
         <p class="crp-success-count" id="crpSuccessCount"></p>
         <div class="crp-success-contact">
           <span class="wl-ko">추가 문의</span><span class="wl-en">Questions</span>
@@ -1281,6 +1373,7 @@ var modalCapFillM = document.getElementById('crpModalCapFillM');
 var modalCapFillF = document.getElementById('crpModalCapFillF');
 var campIdInput = document.getElementById('crpCampId');
 var campCapInput = document.getElementById('crpCampCap');
+var campDepositInput = document.getElementById('crpCampDeposit');
 var campCapMaleInput, campCapFemaleInput; // set dynamically on open
 var regTypeInput = document.getElementById('crpType');
 var formWrap = document.getElementById('crpFormWrap');
@@ -1371,6 +1464,7 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
 
     campIdInput.value = campId;
     campCapInput.value = capacity;
+    campDepositInput.value = this.dataset.deposit || '0';
     modalTitle.textContent = crpIsEn() ? nameEn : nameKo;
 
     document.getElementById('crpForm').reset();
@@ -1424,6 +1518,12 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
   var consent = document.getElementById('crpConsent').checked;
   if (!consent) {
     errorMsg.textContent = '개인정보 수집 및 이용에 동의해 주세요. / Please agree to the privacy policy.';
+    errorMsg.hidden = false;
+    return;
+  }
+  var depositConsent = document.getElementById('crpDepositConsent').checked;
+  if (!depositConsent) {
+    errorMsg.textContent = '예약금 입금 확인 후 최종 확정됨에 동의해 주세요. / Please confirm that you understand the deposit requirement.';
     errorMsg.hidden = false;
     return;
   }
@@ -1512,11 +1612,20 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       var successCount = document.getElementById('crpSuccessCount');
       var isEn = crpIsEn();
 
+      // 예약금 금액 표시
+      var depositAmt = parseInt(campDepositInput.value) || 0;
+      var depositEl = document.getElementById('crpDepositAmount');
+      if (depositEl) {
+        depositEl.textContent = depositAmt > 0
+          ? depositAmt.toLocaleString('ko-KR') + '원'
+          : '—';
+      }
+
       if (currentType === 'group') {
         var gm = payload.maleCount, gf = payload.femaleCount, gc = payload.groupCount;
         successMsg.innerHTML = isEn
-          ? 'Your group registration for <strong>' + gc + ' participants</strong> (♂ ' + gm + ' / ♀ ' + gf + ') has been received.<br>Please transfer the deposit and send individual registration forms to <strong>wolkorea1@gmail.com</strong>. Registration will be finalized after payment is confirmed.'
-          : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br><strong>wolkorea1@gmail.com</strong>으로 개인별 신청서를 보내주시고, 예약금 입금 후 담당자 확인 시 최종 확정됩니다.';
+          ? 'Your group registration for <strong>' + gc + ' participants</strong> (♂ ' + gm + ' / ♀ ' + gf + ') has been received.<br>Please transfer the deposit below and send individual registration forms to <strong>wolkorea1@gmail.com</strong>.'
+          : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br><strong>wolkorea1@gmail.com</strong>으로 개인별 신청서를 보내주세요.';
         successCount.textContent = isEn
           ? 'Pending deposit confirmation'
           : '예약금 입금 후 관리자 확정 시 등록 완료';
@@ -1525,8 +1634,8 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
           ? (isEn ? '♂ Male' : '♂ 남학생')
           : (isEn ? '♀ Female' : '♀ 여학생');
         successMsg.innerHTML = isEn
-          ? 'Your registration (' + genderLabel + ') has been received.<br>Please transfer the deposit to complete your registration. Your spot will be confirmed after payment is verified.'
-          : genderLabel + ' 신청이 접수되었습니다.<br>예약금 입금 후 담당자 확인 시 최종 확정됩니다.<br>입금 계좌 및 안내 사항은 입력하신 이메일로 발송됩니다.';
+          ? 'Your registration (' + genderLabel + ') has been received.<br>Please transfer the deposit below to complete your registration.'
+          : genderLabel + ' 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.';
         successCount.textContent = isEn
           ? 'Pending deposit confirmation'
           : '예약금 입금 후 관리자 확정 시 등록 완료';
