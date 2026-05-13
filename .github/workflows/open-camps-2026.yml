@@ -1,0 +1,44 @@
+name: Open 2026 Camp Registrations
+
+on:
+  schedule:
+    # 2026-05-20 10:59 KST = 01:59 UTC
+    - cron: '59 1 20 5 *'
+  workflow_dispatch: # 수동 실행도 가능
+
+jobs:
+  open-camps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set camp status to open
+        run: |
+          # 영어 주니어 캠프
+          node -e "
+            const fs = require('fs');
+            const path = 'src/content/camp_schedules/2026-inland-english-junior.json';
+            const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+            data.status = 'open';
+            fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+            console.log('✅ English junior camp → open');
+          "
+          # 연합캠프
+          node -e "
+            const fs = require('fs');
+            const path = 'src/content/camp_schedules/2026-inland-union.json';
+            const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+            data.status = 'open';
+            fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+            console.log('✅ Union camp → open');
+          "
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/content/camp_schedules/2026-inland-english-junior.json
+          git add src/content/camp_schedules/2026-inland-union.json
+          git diff --staged --quiet && echo "No changes" || git commit -m "chore: open 2026 camp registrations [automated]"
+          git push

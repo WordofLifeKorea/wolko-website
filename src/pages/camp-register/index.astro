@@ -283,6 +283,40 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   cursor: default; pointer-events: none;
 }
 
+/* ── COUNTDOWN ── */
+.crp-countdown {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 14px 16px;
+  background: rgba(0,79,104,0.05);
+  border: 1px solid rgba(0,79,104,0.12);
+  border-radius: 10px;
+  text-align: center;
+}
+.crp-countdown-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--c-mid);
+}
+.crp-countdown-timer {
+  display: flex; gap: 4px; align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+.crp-cd-unit {
+  display: flex; flex-direction: column; align-items: center; min-width: 38px;
+  background: var(--c-deep); border-radius: 6px; padding: 6px 4px 4px;
+}
+.crp-cd-num {
+  font-size: 20px; font-weight: 800; color: #fff; line-height: 1;
+  font-family: 'Courier New', monospace;
+}
+.crp-cd-label {
+  font-size: 9px; color: rgba(255,255,255,0.6); font-weight: 600;
+  letter-spacing: 0.06em; margin-top: 3px;
+}
+.crp-cd-sep {
+  font-size: 18px; font-weight: 700; color: var(--c-muted); margin: 0 1px;
+  padding-bottom: 10px;
+}
+
 /* ── CAMP GROUP HEADER ── */
 .crp-group { max-width: 1100px; margin: 0 auto; }
 .crp-group + .crp-group { margin-top: 72px; }
@@ -921,6 +955,37 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                         <span class="wl-ko">카페에서 소식 받기 →</span>
                         <span class="wl-en">Follow for Updates →</span>
                       </a>
+                    ) : d.status === 'upcoming' && (d as any).open_date ? (
+                      <div class="crp-countdown" data-open-date={(d as any).open_date}>
+                        <div class="crp-countdown-label">
+                          <span class="wl-ko">신청 오픈까지</span>
+                          <span class="wl-en">Opens in</span>
+                        </div>
+                        <div class="crp-countdown-timer">
+                          <div class="crp-cd-unit"><span class="crp-cd-num crp-cd-days">--</span><span class="crp-cd-label wl-ko">일</span><span class="crp-cd-label wl-en">d</span></div>
+                          <span class="crp-cd-sep">:</span>
+                          <div class="crp-cd-unit"><span class="crp-cd-num crp-cd-hours">--</span><span class="crp-cd-label wl-ko">시간</span><span class="crp-cd-label wl-en">h</span></div>
+                          <span class="crp-cd-sep">:</span>
+                          <div class="crp-cd-unit"><span class="crp-cd-num crp-cd-mins">--</span><span class="crp-cd-label wl-ko">분</span><span class="crp-cd-label wl-en">m</span></div>
+                          <span class="crp-cd-sep">:</span>
+                          <div class="crp-cd-unit"><span class="crp-cd-num crp-cd-secs">--</span><span class="crp-cd-label wl-ko">초</span><span class="crp-cd-label wl-en">s</span></div>
+                        </div>
+                        <button
+                          hidden
+                          class="crp-reg-btn crp-reg-btn-primary crp-open-btn"
+                          data-camp-id={s.id}
+                          data-camp-name-ko={d.title_ko}
+                          data-camp-name-en={d.title_en}
+                          data-capacity={d.capacity ?? 40}
+                          data-capacity-male={d.capacity_male ?? ''}
+                          data-capacity-female={d.capacity_female ?? ''}
+                          data-camp-type={d.camp_type}
+                          data-deposit={(d as any).deposit_amount ?? (d.camp_type === 'english' ? 40000 : 10000)}
+                        >
+                          <span class="wl-ko">신청하기 →</span>
+                          <span class="wl-en">Register Now →</span>
+                        </button>
+                      </div>
                     ) : d.status === 'upcoming' ? (
                       <span class="crp-reg-btn crp-reg-btn-disabled">
                         <span class="wl-ko">오픈 예정</span>
@@ -1020,6 +1085,29 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                         <span class="wl-ko">네이버 카페에서 신청하기 →</span>
                         <span class="wl-en">Register via Naver Cafe →</span>
                       </a>
+                    ) : d.status === 'upcoming' && (d as any).open_date ? (
+                      <div class="crp-countdown" data-open-date={(d as any).open_date}>
+                        <div class="crp-countdown-label">
+                          <span class="wl-ko">신청 오픈까지</span>
+                          <span class="wl-en">Opens in</span>
+                        </div>
+                        <div class="crp-countdown-timer">
+                          <div class="crp-cd-unit"><span class="crp-cd-num crp-cd-days">--</span><span class="crp-cd-label wl-ko">일</span><span class="crp-cd-label wl-en">d</span></div>
+                          <span class="crp-cd-sep">:</span>
+                          <div class="crp-cd-unit"><span class="crp-cd-num crp-cd-hours">--</span><span class="crp-cd-label wl-ko">시간</span><span class="crp-cd-label wl-en">h</span></div>
+                          <span class="crp-cd-sep">:</span>
+                          <div class="crp-cd-unit"><span class="crp-cd-num crp-cd-mins">--</span><span class="crp-cd-label wl-ko">분</span><span class="crp-cd-label wl-en">m</span></div>
+                          <span class="crp-cd-sep">:</span>
+                          <div class="crp-cd-unit"><span class="crp-cd-num crp-cd-secs">--</span><span class="crp-cd-label wl-ko">초</span><span class="crp-cd-label wl-en">s</span></div>
+                        </div>
+                        {d.registration_url && (
+                          <a hidden href={d.registration_url} target="_blank" rel="noopener"
+                            class="crp-reg-btn crp-reg-btn-primary crp-countdown-reveal-btn">
+                            <span class="wl-ko">네이버 카페에서 신청하기 →</span>
+                            <span class="wl-en">Register via Naver Cafe →</span>
+                          </a>
+                        )}
+                      </div>
                     ) : d.status === 'upcoming' ? (
                       <span class="crp-reg-btn crp-reg-btn-disabled">
                         <span class="wl-ko">오픈 예정</span>
@@ -1828,6 +1916,59 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     submitBtn.disabled = false;
     submitBtn.classList.remove('loading');
   }
+});
+
+/* ── 카운트다운 타이머 ── */
+function pad(n) { return String(n).padStart(2, '0'); }
+
+document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd) {
+  var openDate = new Date(cd.dataset.openDate).getTime();
+  var daysEl  = cd.querySelector('.crp-cd-days');
+  var hoursEl = cd.querySelector('.crp-cd-hours');
+  var minsEl  = cd.querySelector('.crp-cd-mins');
+  var secsEl  = cd.querySelector('.crp-cd-secs');
+  var timerEl = cd.querySelector('.crp-countdown-timer');
+  var labelEl = cd.querySelector('.crp-countdown-label');
+
+  function reveal() {
+    // 카운트다운 숨기고 신청 버튼 표시
+    if (timerEl) timerEl.hidden = true;
+    if (labelEl) labelEl.hidden = true;
+    var revealBtn = cd.querySelector('[hidden].crp-open-btn, [hidden].crp-countdown-reveal-btn');
+    if (revealBtn) revealBtn.hidden = false;
+    // 상태 배지도 "신청 중"으로
+    var card = cd.closest('.crp-reg-card');
+    if (card) {
+      var badge = card.querySelector('.crp-status-badge');
+      if (badge) {
+        badge.className = 'crp-status-badge crp-status-open';
+        badge.innerHTML = '<span class="wl-ko">신청 중</span><span class="wl-en">Open</span>';
+      }
+    }
+  }
+
+  function tick() {
+    var diff = openDate - Date.now();
+    if (diff <= 0) { reveal(); return; }
+    var d = Math.floor(diff / 86400000);
+    var h = Math.floor((diff % 86400000) / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    if (daysEl)  daysEl.textContent  = pad(d);
+    if (hoursEl) hoursEl.textContent = pad(h);
+    if (minsEl)  minsEl.textContent  = pad(m);
+    if (secsEl)  secsEl.textContent  = pad(s);
+  }
+
+  tick(); // 즉시 첫 렌더
+  var interval = setInterval(function() {
+    if (openDate - Date.now() <= 0) {
+      clearInterval(interval);
+      reveal();
+    } else {
+      tick();
+    }
+  }, 1000);
 });
 </script>
 
