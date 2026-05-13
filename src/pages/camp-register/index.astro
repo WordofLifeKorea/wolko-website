@@ -1073,7 +1073,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
             </div>
             <div class="crp-form-grid">
               <div class="crp-field">
-                <label><span class="wl-ko">이름</span><span class="wl-en">Name</span> <span class="req">*</span></label>
+                <label><span class="wl-ko">캠퍼 이름</span><span class="wl-en">Camper Name</span> <span class="req">*</span></label>
                 <input id="crpName" name="name" placeholder="홍길동">
               </div>
               <div class="crp-field">
@@ -1633,9 +1633,10 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
         var genderLabel = payload.gender === 'male'
           ? (isEn ? '♂ Male' : '♂ 남학생')
           : (isEn ? '♀ Female' : '♀ 여학생');
+        var camperName = payload.name || '';
         successMsg.innerHTML = isEn
-          ? 'Your registration (' + genderLabel + ') has been received.<br>Please transfer the deposit below to complete your registration.'
-          : genderLabel + ' 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.';
+          ? '<strong>' + camperName + '</strong> (' + genderLabel + ') registration has been received.<br>Please transfer the deposit below to complete your registration.'
+          : '캠퍼 <strong>' + camperName + '</strong> (' + genderLabel + ') 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.';
         successCount.textContent = isEn
           ? 'Pending deposit confirmation'
           : '예약금 입금 후 관리자 확정 시 등록 완료';
