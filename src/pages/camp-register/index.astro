@@ -548,9 +548,11 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-refund-modal-overlay {
   position: fixed; inset: 0; z-index: 10000;
   background: rgba(0,0,0,0.55); backdrop-filter: blur(3px);
-  display: flex; align-items: center; justify-content: center;
+  align-items: center; justify-content: center;
   padding: 24px;
 }
+.crp-refund-modal-overlay[hidden] { display: none; }
+.crp-refund-modal-overlay:not([hidden]) { display: flex; }
 .crp-refund-modal {
   background: #fff; border-radius: 16px;
   width: 100%; max-width: 480px;
@@ -591,23 +593,16 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   padding: 16px 24px; border-top: 1px solid rgba(0,79,104,0.1);
   flex-shrink: 0; display: flex; gap: 10px; align-items: center;
 }
-.crp-refund-scroll-hint {
-  font-size: 12px; color: var(--c-muted); flex: 1; line-height: 1.4;
-  transition: opacity 0.3s;
-}
 .crp-refund-agree-btn {
   padding: 10px 22px; border-radius: 8px; border: none;
   font-size: 14px; font-weight: 700; font-family: var(--f-sans);
   cursor: pointer; transition: background 0.2s, opacity 0.2s;
   white-space: nowrap;
 }
-.crp-refund-agree-btn:disabled {
-  background: #d1e4ec; color: #8aa8b6; cursor: not-allowed;
-}
-.crp-refund-agree-btn:not(:disabled) {
+.crp-refund-agree-btn {
   background: var(--c-deep); color: #fff;
 }
-.crp-refund-agree-btn:not(:disabled):hover { background: #015a7a; }
+.crp-refund-agree-btn:hover { background: #015a7a; }
 
 /* Submit button */
 .crp-submit {
@@ -1421,11 +1416,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
       </div>
     </div>
     <div class="crp-refund-modal-foot">
-      <span class="crp-refund-scroll-hint" id="crpRefundScrollHint">
-        <span class="wl-ko">아래로 스크롤하면 동의 버튼이 활성화됩니다.</span>
-        <span class="wl-en">Scroll to the bottom to enable the Agree button.</span>
-      </span>
-      <button type="button" class="crp-refund-agree-btn" id="crpRefundAgreeBtn" disabled>
+      <button type="button" class="crp-refund-agree-btn" id="crpRefundAgreeBtn">
         <span class="wl-ko">동의합니다</span>
         <span class="wl-en">Agree</span>
       </button>
@@ -1648,51 +1639,29 @@ document.getElementById('crpSuccessClose').addEventListener('click', closeCrpMod
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeCrpModal(); });
 
 /* ── 환불 규정 모달 ── */
-var refundOverlay   = document.getElementById('crpRefundModalOverlay');
-var refundBody      = document.getElementById('crpRefundModalBody');
-var refundAgreeBtn  = document.getElementById('crpRefundAgreeBtn');
-var refundScrollHint = document.getElementById('crpRefundScrollHint');
-var refundCheckbox  = document.getElementById('crpRefundConsent');
+var refundOverlay  = document.getElementById('crpRefundModalOverlay');
+var refundAgreeBtn = document.getElementById('crpRefundAgreeBtn');
+var refundCheckbox = document.getElementById('crpRefundConsent');
 
-// 체크박스 / 라벨 클릭 → 모달 열기 (체크는 직접 못 하게)
+// 체크박스 / 라벨 클릭 → 모달 열기
 document.getElementById('crpRefundConsentLabel').addEventListener('click', function(e) {
   e.preventDefault();
   if (refundCheckbox.checked) {
-    // 이미 동의된 상태면 체크 해제
     refundCheckbox.checked = false;
     return;
   }
-  openRefundModal();
-});
-
-function openRefundModal() {
-  refundBody.scrollTop = 0;
-  refundAgreeBtn.disabled = true;
-  refundScrollHint.style.opacity = '1';
   refundOverlay.hidden = false;
-  checkRefundScroll(); // 내용이 짧아 스크롤 불필요한 경우 즉시 활성화
-}
+});
 
 function closeRefundModal() {
   refundOverlay.hidden = true;
 }
-
-function checkRefundScroll() {
-  var atBottom = refundBody.scrollTop + refundBody.clientHeight >= refundBody.scrollHeight - 8;
-  if (atBottom) {
-    refundAgreeBtn.disabled = false;
-    refundScrollHint.style.opacity = '0';
-  }
-}
-
-refundBody.addEventListener('scroll', checkRefundScroll);
 
 refundAgreeBtn.addEventListener('click', function() {
   refundCheckbox.checked = true;
   closeRefundModal();
 });
 
-// X 버튼 및 오버레이 바깥 클릭 시 닫기
 document.getElementById('crpRefundCloseBtn').addEventListener('click', closeRefundModal);
 refundOverlay.addEventListener('click', function(e) {
   if (e.target === refundOverlay) closeRefundModal();
