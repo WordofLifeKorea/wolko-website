@@ -170,7 +170,7 @@ async function syncToSheet(env, reg) {
   await appendRow({
     serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
     sheetId: env.GOOGLE_SHEET_ID,
-    range: 'Sheet1!A:R',
+    range: '시트1!A:R',
     row: regToSheetRow(reg),
   });
 }
