@@ -10,7 +10,7 @@ role_badge: Missionaries
 campus: jeju
 category: missionary
 order: 2
-photo_url: /images/uploads/jack.jpg
+photo_url: /images/uploads/jang-photo_url-1778757657776.jpg
 photo_position: "center 40%"
 photo_story: /images/uploads/jack.jpg
 hero_tagline_ko: 복음이 바꾼
@@ -32,5 +32,6 @@ verse_ref_ko: 누가복음 19:10
 support_url: https://online.mrm.or.kr/Osc18qF
 support_url_en: https://missions.wol.org/missionaries/11327
 verse_ref_en: Luke 19:10
+
 
 ---
