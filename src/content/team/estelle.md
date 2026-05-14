@@ -27,8 +27,16 @@ bio_ko_2: 2023년 5월/6월부터 실제로 삶을 살아가는 것이 얼마나
 verse_ko: 내가 산 자들의 땅에서 여호와의 선하심을 보게 될 줄 확실히 믿었도다 너는 여호와를 바라라 강하고 담대하며 여호와를 바라라
 verse_en: "I remain confident of this: I will see the goodness of the Lord in the land of the living. Wait for the Lord; be strong and take heart and wait for the Lord."
 prayer_en: |-
+  Praise for all the opportunities the Lord is preparing for us! (Eph. 2:10) 
+  
   Please be praying for our summer camps and mission trips in July and August 2026. 
   
   Pray for the for the youth who will be attending these camps: that their hearts will be encouraged and that they will take their next step with Jesus!
+  
+  Please also be praying for me to have opportunities to speak and learn Korean well. :)
+prayer_ko: |-
+  2026년 7월과 8월의 여름 캠프와 선교 여행을 위해 기도해 주세요.
+  
+  이 캠프에 참석할 청년들을 위해 기도해 주세요. 그들의 마음이 격려를 받고 예수님과 함께 다음 단계로 나아가기를 원합니다!
 
 ---
