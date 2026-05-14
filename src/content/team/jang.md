@@ -33,4 +33,6 @@ support_url: https://online.mrm.or.kr/Osc18qF
 support_url_en: https://missions.wol.org/missionaries/11327
 verse_ref_en: Luke 19:10
 photo_url_2: /images/uploads/jang-photo_url_2-1778758562327.jpg
+report_url: /reports/jang-newsletter-1778759558440.pdf
+
 ---
