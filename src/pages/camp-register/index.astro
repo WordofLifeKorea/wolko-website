@@ -1874,7 +1874,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       if (currentType === 'group') {
         var gm = payload.maleCount, gf = payload.femaleCount, gc = payload.groupCount;
         successMsg.innerHTML = isEn
-          ? 'Your group registration for <strong>' + gc + ' participants</strong> (♂ ' + gm + ' / ♀ ' + gf + ') has been received.<br>Please transfer the deposit below and send individual registration forms to <strong>wolkorea1@gmail.com</strong>.'
+          ? 'Your group registration for <strong>' + gc + ' participants</strong> (Male ' + gm + ' / Female ' + gf + ') has been received.<br>Please transfer the deposit below and send individual registration forms to <strong>wolkorea1@gmail.com</strong>.'
           : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br><strong>wolkorea1@gmail.com</strong>으로 개인별 신청서를 보내주세요.';
         successCount.textContent = isEn
           ? 'Pending deposit confirmation'
@@ -1886,8 +1886,8 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
         if (bankNoteEn) bankNoteEn.innerHTML = 'Please use the <strong>contact person\'s name (' + payload.name + ')</strong> as the transfer memo.<br>Registration will be finalized after payment is verified.';
       } else {
         var genderLabel = payload.gender === 'male'
-          ? (isEn ? '♂ Male' : '♂ 남학생')
-          : (isEn ? '♀ Female' : '♀ 여학생');
+          ? (isEn ? 'Male' : '남학생')
+          : (isEn ? 'Female' : '여학생');
         var camperName = payload.name || '';
         successMsg.innerHTML = isEn
           ? '<strong>' + camperName + '</strong> (' + genderLabel + ') registration has been received.<br>Please transfer the deposit below to complete your registration.'
