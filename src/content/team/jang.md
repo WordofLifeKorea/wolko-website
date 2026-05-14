@@ -32,6 +32,5 @@ verse_ref_ko: 누가복음 19:10
 support_url: https://online.mrm.or.kr/Osc18qF
 support_url_en: https://missions.wol.org/missionaries/11327
 verse_ref_en: Luke 19:10
-photo_url_2: /images/uploads/jang-photo_url_2-1778758464334.jpg
-
+photo_url_2: /images/uploads/jang-photo_url_2-1778758544566.jpg
 ---
