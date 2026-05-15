@@ -31,7 +31,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 >
 
 <style is:global>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,700;0,800;1,700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap');
 
 /* ══ CAMP REGISTER PAGE ══ */
 .crp {
@@ -95,11 +95,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   content: ''; position: absolute; inset: 0;
   background: linear-gradient(135deg, #003347 0%, #005f80 60%, #004f68 100%);
 }
-.crp-hero::after {
-  content: '✝'; position: absolute; right: 8%; bottom: -20px;
-  font-size: clamp(120px, 18vw, 220px); color: rgba(115,209,245,0.05);
-  line-height: 1; pointer-events: none; user-select: none;
-}
+.crp-hero::after { display: none; }
 .crp-hero-inner {
   position: relative; z-index: 1;
   max-width: 1100px; margin: 0 auto;
@@ -111,9 +107,10 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 }
 .crp-hero-badge::before { content:''; width:28px; height:1.5px; background: var(--c-light); flex-shrink:0; }
 .crp-hero-title {
-  font-family: var(--f-serif); font-size: clamp(32px, 5vw, 58px);
-  font-weight: 700; color: #fff; line-height: 1.12;
-  letter-spacing: -0.02em; margin-bottom: 20px; word-break: keep-all;
+  font-family: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
+  font-size: clamp(36px, 5.8vw, 68px);
+  font-weight: 800; color: #fff; line-height: 1.22;
+  letter-spacing: -0.025em; margin-bottom: 20px; word-break: keep-all;
 }
 .crp-hero-title em { font-style: italic; color: var(--c-light); }
 .crp-hero-sub {
