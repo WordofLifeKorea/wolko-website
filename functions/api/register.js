@@ -15,6 +15,8 @@ const CORS = {
 
 // ── 이메일 HTML 빌더 ──────────────────────────────────────────────────────────
 
+const WAITLIST_SIZE = 10;
+
 function buildRegistrationEmailHtml(reg) {
   const isGroup = reg.registrationType === 'group';
 
@@ -104,6 +106,7 @@ function buildRegistrationEmailHtml(reg) {
       </table>
     </div>
     <div style="padding:20px 36px;background:#f4f8fb;border-top:1px solid rgba(0,79,104,0.08);font-size:12px;color:#5a6f79;line-height:1.6;">
+      ${reg.isWaitlist ? `<div style="margin-bottom:8px;padding:6px 12px;background:rgba(217,119,6,0.10);border-radius:8px;color:#b45309;font-weight:700;">⚠ 예비 신청 — ${reg.waitlistNumber}순위</div>` : ''}
       신청 시각: ${kstTime} (KST) &nbsp;·&nbsp; 신청 ID: ${reg.regId}<br>
       입금 확인 후 <a href="https://wolko.org/wolkoadmin" style="color:#007ea1;">관리자 패널</a>에서 확정해주세요.
     </div>
@@ -119,9 +122,10 @@ async function sendRegistrationEmail(env, reg) {
 
   const isGroup = reg.registrationType === 'group';
   const genderLabel = reg.gender === 'male' ? '남' : '여';
+  const waitlistTag = reg.isWaitlist ? `[예비${reg.waitlistNumber}순위] ` : '';
   const subject = isGroup
-    ? `[캠프 신청] 단체 — ${reg.name} (${reg.groupCount}명) · ${reg.campId}`
-    : `[캠프 신청] 개인 — ${reg.name} (${reg.grade} / ${genderLabel}) · ${reg.campId}`;
+    ? `${waitlistTag}[캠프 신청] 단체 — ${reg.name} (${reg.groupCount}명) · ${reg.campId}`
+    : `${waitlistTag}[캠프 신청] 개인 — ${reg.name} (${reg.grade} / ${genderLabel}) · ${reg.campId}`;
 
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -160,7 +164,7 @@ function regToSheetRow(reg) {
     isGroup ? reg.groupCount  : 1,                                             // N 총인원
     reg.emergency || '',                                                        // O 비상연락처 (개인)
     reg.notes || '',                                                            // P 메모
-    '대기중',                                                                   // Q 확정여부
+    reg.isWaitlist ? `예비-${reg.waitlistNumber}순위` : '대기중',              // Q 확정여부
     '',                                                                         // R 확정일시
   ];
 }
@@ -227,6 +231,22 @@ export async function onRequestPost(context) {
       return Response.json({ error: '이미 신청된 이메일 주소입니다.' }, { status: 409, headers: CORS });
     }
 
+    // 정원 및 예비 인원 체크
+    const campCapacity = Math.max(parseInt(data.capacity) || 40, 1);
+    const subKey  = `camp:${campId}:submissions`;
+    const subKeyM = `camp:${campId}:submissions:male`;
+    const subKeyF = `camp:${campId}:submissions:female`;
+    const currentSubs = parseInt(await env.CAMP_KV.get(subKey) || '0');
+
+    if (currentSubs + spotsNeeded > campCapacity + WAITLIST_SIZE) {
+      return Response.json({
+        error: '신청이 마감되었습니다. 정원과 예비 인원이 모두 찼습니다.',
+      }, { status: 409, headers: CORS });
+    }
+
+    const isWaitlist = currentSubs >= campCapacity;
+    const waitlistNumber = isWaitlist ? (currentSubs - campCapacity + 1) : null;
+
     const regId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const reg = registrationType === 'group'
@@ -240,6 +260,7 @@ export async function onRequestPost(context) {
           registeredAt: new Date().toISOString(),
           confirmed: false,
           confirmedAt: null,
+          isWaitlist, waitlistNumber,
         }
       : {
           regId, campId,
@@ -253,11 +274,20 @@ export async function onRequestPost(context) {
           registeredAt: new Date().toISOString(),
           confirmed: false,
           confirmedAt: null,
+          isWaitlist, waitlistNumber,
         };
 
+    // submissions 카운터 증가 (신청 접수 즉시)
+    const [curSubsM, curSubsF] = await Promise.all([
+      env.CAMP_KV.get(subKeyM).then(v => parseInt(v || '0')),
+      env.CAMP_KV.get(subKeyF).then(v => parseInt(v || '0')),
+    ]);
     await Promise.all([
       env.CAMP_KV.put(`camp:${campId}:reg:${regId}`, JSON.stringify(reg)),
       env.CAMP_KV.put(dupeKey, regId),
+      env.CAMP_KV.put(subKey, String(currentSubs + spotsNeeded)),
+      spotsM > 0 ? env.CAMP_KV.put(subKeyM, String(curSubsM + spotsM)) : Promise.resolve(),
+      spotsF > 0 ? env.CAMP_KV.put(subKeyF, String(curSubsF + spotsF)) : Promise.resolve(),
     ]);
 
     // KV 저장 완료 후 이메일·시트는 백그라운드에서 실행 (응답 속도에 영향 없음)
@@ -268,7 +298,7 @@ export async function onRequestPost(context) {
       ])
     );
 
-    return Response.json({ success: true, pending: true }, { headers: CORS });
+    return Response.json({ success: true, pending: true, isWaitlist, waitlistNumber }, { headers: CORS });
 
   } catch (e) {
     console.error('register error:', e);

@@ -81,6 +81,11 @@
         <div class="dash-sub" id="dRemainSub">정원 기준</div>
       </div>
       <div class="dash-card">
+        <div class="dash-label" style="color:#b45309">예비 신청</div>
+        <div class="dash-value" id="dWaitlist" style="color:#d97706">—</div>
+        <div class="dash-sub" id="dWaitlistSub">예비 대기 인원</div>
+      </div>
+      <div class="dash-card">
         <div class="dash-label">마감률</div>
         <div class="dash-value" id="dPct">—</div>
         <div class="dash-sub" id="dPctSub">확정 / 정원</div>
@@ -171,7 +176,7 @@
         label: 'WOLKO 캠프',
         camps: [
           { id: '2026-inland-english-junior', title: '주니어 영어캠프', capacity: 40 },
-          { id: '2026-inland-union',          title: '교회 Unity 캠프', capacity: 60 },
+          { id: '2026-inland-union',          title: '교회 Unity 캠프', capacity: 40 },
         ],
       },
       // 제주 캠프는 카페에서 별도 신청 — 추후 필요 시 아래 주석 해제
@@ -373,12 +378,17 @@
       const femaleTotal = confirmedRegs.reduce((s, r) =>
         r.registrationType === 'group' ? s + (r.femaleCount || 0) : s + (r.gender === 'female' ? 1 : 0), 0);
 
+      const waitlistRegs = regs.filter(r => r.isWaitlist === true);
+      const waitlistCount = waitlistRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+
       document.getElementById('dTotal').textContent = total;
       document.getElementById('dTotalSub').textContent = `명 (확정 ${confirmed} / 미확정 ${pending})`;
       document.getElementById('dConfirmed').textContent = confirmed;
       document.getElementById('dConfirmedSub').textContent = '명 확정 완료';
       document.getElementById('dPending').textContent = pending;
       document.getElementById('dPendingSub').textContent = pending > 0 ? '명 입금 대기' : '없음';
+      document.getElementById('dWaitlist').textContent = waitlistCount;
+      document.getElementById('dWaitlistSub').textContent = waitlistCount > 0 ? `명 (예비 대기 중)` : '없음';
       document.getElementById('dMale').textContent = maleTotal;
       document.getElementById('dFemale').textContent = femaleTotal;
       document.getElementById('dRemain').textContent = remain;
@@ -451,12 +461,15 @@
             : `<span style="color:var(--light)">—</span>`;
         }
 
-        // 상태 셀: 확정=초록, 미확정=주황 (undefined = 구 데이터 = 확정 취급)
+        // 상태 셀: 확정=초록, 미확정=주황, 예비=amber 배지 추가
         const isConfirmed = r.confirmed !== false;
+        const waitlistBadge = r.isWaitlist
+          ? `<span style="display:inline-block;padding:2px 7px;border-radius:100px;background:rgba(217,119,6,0.15);color:#b45309;font-size:10px;font-weight:700;margin-left:3px;">예비${r.waitlistNumber ? ' ' + r.waitlistNumber : ''}</span>`
+          : '';
         const statusCell = isConfirmed
-          ? `<span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,0.12);color:#16a34a;font-size:11px;font-weight:700;">확정</span>`
+          ? `<span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,0.12);color:#16a34a;font-size:11px;font-weight:700;">확정</span>${waitlistBadge}</span>`
           : `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
-               <span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">미확정</span>
+               <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">미확정</span>${waitlistBadge}</span>
                <button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">확정</button>
              </span>`;
 

@@ -1188,6 +1188,14 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
         </div>
       </div>
 
+      <!-- 예비 신청 안내 배너 -->
+      <div id="crpWaitlistNotice" hidden style="margin:0 0 16px;padding:12px 16px;background:rgba(217,119,6,0.10);border:1px solid rgba(217,119,6,0.25);border-radius:12px;font-size:13px;line-height:1.7;color:#92400e;">
+        <strong class="wl-ko">⚠ 정원이 마감되어 예비 신청으로 접수됩니다.</strong>
+        <strong class="wl-en">⚠ Camp is full — this will be a waitlist registration.</strong>
+        <span class="wl-ko" style="display:block;margin-top:2px;">현재 예비 <strong class="crp-waitlist-num"></strong>번으로 접수될 예정입니다. 자리가 생기면 담당자가 개별 연락드립니다.</span>
+        <span class="wl-en" style="display:block;margin-top:2px;">You will be placed as waitlist #<strong class="crp-waitlist-num"></strong>. We will contact you if a spot opens up.</span>
+      </div>
+
       <!-- 신청 유형 탭 -->
       <div class="crp-type-tabs">
         <button class="crp-type-tab active" id="crpTabIndividual" type="button">
@@ -1555,6 +1563,8 @@ function updateCrpCapBar(el, data, totalCap) {
   }
 }
 
+var WAITLIST_SIZE = 10;
+
 async function loadCrpCapacities() {
   var cards = document.querySelectorAll('[data-cap-id]');
   await Promise.all(Array.from(cards).map(async function(el) {
@@ -1563,14 +1573,22 @@ async function loadCrpCapacities() {
     var cap = btn ? parseInt(btn.dataset.capacity) || 40 : 40;
     try {
       var res = await fetch('/api/capacity/' + campId);
-      var data = res.ok ? await res.json() : { count: 0, countMale: 0, countFemale: 0 };
-      updateCrpCapBar(el, data, cap);
-      if (data.count >= cap && btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<span class="wl-ko">정원 마감</span><span class="wl-en">Full</span>';
-        btn.style.background = 'rgba(100,116,139,0.15)';
-        btn.style.color = '#64748b';
-        btn.style.cursor = 'default';
+      var data = res.ok ? await res.json() : { submissions: 0, subsMale: 0, subsFemale: 0 };
+      var subs = data.submissions ?? data.count ?? 0;
+      var subsData = { count: subs, countMale: data.subsMale ?? data.countMale ?? 0, countFemale: data.subsFemale ?? data.countFemale ?? 0 };
+      updateCrpCapBar(el, subsData, cap);
+      if (btn) {
+        if (subs >= cap + WAITLIST_SIZE) {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="wl-ko">마감</span><span class="wl-en">Closed</span>';
+          btn.style.background = 'rgba(100,116,139,0.15)';
+          btn.style.color = '#64748b';
+          btn.style.cursor = 'default';
+        } else if (subs >= cap) {
+          btn.innerHTML = '<span class="wl-ko">예비 신청하기 →</span><span class="wl-en">Join Waitlist →</span>';
+          btn.style.background = 'linear-gradient(135deg,#d97706 0%,#b45309 100%)';
+          btn.dataset.isWaitlist = 'true';
+        }
       }
     } catch(e) { updateCrpCapBar(el, { count: 0, countMale: 0, countFemale: 0 }, cap); }
   }));
@@ -1701,11 +1719,22 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
       var res = await fetch('/api/capacity/' + campId);
       if (res.ok) {
         var data = await res.json();
-        updateCrpModalCap(data, capacity);
-        if (data.count >= capacity) {
+        var subs = data.submissions ?? data.count ?? 0;
+        updateCrpModalCap({ count: subs, countMale: data.subsMale ?? data.countMale ?? 0, countFemale: data.subsFemale ?? data.countFemale ?? 0 }, capacity);
+        var waitlistNotice = document.getElementById('crpWaitlistNotice');
+        if (subs >= capacity + WAITLIST_SIZE) {
           submitBtn.disabled = true;
+          submitBtn.querySelector('.crp-submit-label').innerHTML = '<span>신청이 마감되었습니다 / Closed</span>';
+          if (waitlistNotice) waitlistNotice.hidden = true;
+        } else if (subs >= capacity) {
+          if (waitlistNotice) {
+            waitlistNotice.querySelector('.crp-waitlist-num').textContent = subs - capacity + 1;
+            waitlistNotice.hidden = false;
+          }
           submitBtn.querySelector('.crp-submit-label').innerHTML =
-            '<span>정원이 마감되었습니다 / Registration Full</span>';
+            '<span class="wl-ko">예비 신청하기 →</span><span class="wl-en">Join Waitlist →</span>';
+        } else {
+          if (waitlistNotice) waitlistNotice.hidden = true;
         }
       }
     } catch(e) { updateCrpModalCap({ count: 0, countMale: 0, countFemale: 0 }, capacity); }
@@ -1858,6 +1887,8 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       var successMsg = document.getElementById('crpSuccessMsg');
       var successCount = document.getElementById('crpSuccessCount');
       var isEn = crpIsEn();
+      var isWaitlistRes = !!data.isWaitlist;
+      var waitlistNum = data.waitlistNumber || '';
 
       // 예약금 금액 표시
       var depositAmt = parseInt(campDepositInput.value) || 0;
@@ -1870,12 +1901,15 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
 
       if (currentType === 'group') {
         var gm = payload.maleCount, gf = payload.femaleCount, gc = payload.groupCount;
+        var groupWaitMsg = isWaitlistRes
+          ? (isEn ? ' <strong style="color:#d97706">[Waitlist #' + waitlistNum + ']</strong>' : ' <strong style="color:#d97706">[예비 ' + waitlistNum + '순위]</strong>')
+          : '';
         successMsg.innerHTML = isEn
-          ? 'Your group registration for <strong>' + gc + ' participants</strong> (Male ' + gm + ' / Female ' + gf + ') has been received.<br>Please transfer the deposit below and send individual registration forms to <strong>wolkorea1@gmail.com</strong>.'
-          : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br><strong>wolkorea1@gmail.com</strong>으로 개인별 신청서를 보내주세요.';
+          ? 'Your group registration for <strong>' + gc + ' participants</strong> (Male ' + gm + ' / Female ' + gf + ') has been received.' + groupWaitMsg + '<br>Please transfer the deposit below and send individual registration forms to <strong>wolkorea1@gmail.com</strong>.'
+          : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.' + groupWaitMsg + '<br><strong>wolkorea1@gmail.com</strong>으로 개인별 신청서를 보내주세요.';
         successCount.textContent = isEn
-          ? 'Pending deposit confirmation'
-          : '예약금 입금 후 관리자 확정 시 등록 완료';
+          ? (isWaitlistRes ? 'Waitlist registration received — we will contact you if a spot opens' : 'Pending deposit confirmation')
+          : (isWaitlistRes ? '예비 신청 접수 완료 — 자리가 생기면 담당자가 연락드립니다' : '예약금 입금 후 관리자 확정 시 등록 완료');
         // 단체: 입금자명을 담당자 성함으로 안내
         var bankNoteKo = document.getElementById('crpBankNoteKo');
         var bankNoteEn = document.getElementById('crpBankNoteEn');
@@ -1886,12 +1920,15 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
           ? (isEn ? 'Male' : '남학생')
           : (isEn ? 'Female' : '여학생');
         var camperName = payload.name || '';
+        var indvWaitMsg = isWaitlistRes
+          ? (isEn ? ' <strong style="color:#d97706">[Waitlist #' + waitlistNum + ']</strong>' : ' <strong style="color:#d97706">[예비 ' + waitlistNum + '순위]</strong>')
+          : '';
         successMsg.innerHTML = isEn
-          ? '<strong>' + camperName + '</strong> (' + genderLabel + ') registration has been received.<br>Please transfer the deposit below to complete your registration.'
-          : '캠퍼 <strong>' + camperName + '</strong> (' + genderLabel + ') 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.';
+          ? '<strong>' + camperName + '</strong> (' + genderLabel + ') registration has been received.' + indvWaitMsg + '<br>Please transfer the deposit below to complete your registration.'
+          : '캠퍼 <strong>' + camperName + '</strong> (' + genderLabel + ') 신청이 접수되었습니다.' + indvWaitMsg + '<br>아래 계좌로 예약금을 입금해 주세요.';
         successCount.textContent = isEn
-          ? 'Pending deposit confirmation'
-          : '예약금 입금 후 관리자 확정 시 등록 완료';
+          ? (isWaitlistRes ? 'Waitlist registration received — we will contact you if a spot opens' : 'Pending deposit confirmation')
+          : (isWaitlistRes ? '예비 신청 접수 완료 — 자리가 생기면 담당자가 연락드립니다' : '예약금 입금 후 관리자 확정 시 등록 완료');
         // 개인: 입금자명을 캠퍼 이름으로 안내 (기본값 복원)
         var bankNoteKo2 = document.getElementById('crpBankNoteKo');
         var bankNoteEn2 = document.getElementById('crpBankNoteEn');

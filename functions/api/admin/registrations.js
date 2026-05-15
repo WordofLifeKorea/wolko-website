@@ -110,16 +110,30 @@ export async function onRequestDelete(context) {
     const countKey  = `camp:${campId}:count`;
     const countKeyM = `camp:${campId}:count:male`;
     const countKeyF = `camp:${campId}:count:female`;
+    const subKey    = `camp:${campId}:submissions`;
+    const subKeyM   = `camp:${campId}:submissions:male`;
+    const subKeyF   = `camp:${campId}:submissions:female`;
+
+    const spotsToFree = reg.registrationType === 'group' ? (reg.groupCount || 1) : 1;
+    const spotsM = reg.registrationType === 'group' ? (reg.maleCount || 0) : (reg.gender === 'male' ? 1 : 0);
+    const spotsF = reg.registrationType === 'group' ? (reg.femaleCount || 0) : (reg.gender === 'female' ? 1 : 0);
 
     const ops = [
       env.CAMP_KV.delete(regKey),
       env.CAMP_KV.delete(dupeKey),
     ];
 
+    // submissions 카운터는 확정 여부와 무관하게 항상 감소
+    const [curSubs, curSubsM, curSubsF] = await Promise.all([
+      env.CAMP_KV.get(subKey).then(v => parseInt(v || '0')),
+      env.CAMP_KV.get(subKeyM).then(v => parseInt(v || '0')),
+      env.CAMP_KV.get(subKeyF).then(v => parseInt(v || '0')),
+    ]);
+    ops.push(env.CAMP_KV.put(subKey, String(Math.max(0, curSubs - spotsToFree))));
+    if (spotsM > 0) ops.push(env.CAMP_KV.put(subKeyM, String(Math.max(0, curSubsM - spotsM))));
+    if (spotsF > 0) ops.push(env.CAMP_KV.put(subKeyF, String(Math.max(0, curSubsF - spotsF))));
+
     if (wasConfirmed) {
-      const spotsToFree = reg.registrationType === 'group' ? (reg.groupCount || 1) : 1;
-      const spotsM = reg.registrationType === 'group' ? (reg.maleCount || 0) : (reg.gender === 'male' ? 1 : 0);
-      const spotsF = reg.registrationType === 'group' ? (reg.femaleCount || 0) : (reg.gender === 'female' ? 1 : 0);
       const [cur, curM, curF] = await Promise.all([
         env.CAMP_KV.get(countKey).then(v => parseInt(v || '0')),
         env.CAMP_KV.get(countKeyM).then(v => parseInt(v || '0')),
