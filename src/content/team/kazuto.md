@@ -9,6 +9,7 @@ campus: jeju
 category: stw
 order: 4
 photo_url: /images/uploads/kazuto.jpg
+photo_position: "center 38%"
 hero_tagline_ko: '"변하지 않는 것에서"'
 hero_tagline_en: '"Finding Value in"'
 hero_tagline2_ko: '"찾은 가치"'

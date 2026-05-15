@@ -1,5 +1,5 @@
 ---
-name_ko: 버니 카브레라
+name_ko: 카브레라 버니
 name_en: Berny Cabrera
 title_ko: 카운슬러 & 찬양 인도자 · WOLBI 제주
 title_en: Counselor & Worship Leader · WOLBI Jeju
@@ -9,7 +9,7 @@ category: stw
 order: 3
 gender: female
 photo_url: /images/uploads/berny.jpg
-photo_position: "center 20%"
+photo_position: "center 42%"
 hero_tagline_ko: 사랑으로
 hero_tagline_en: With Love
 hero_tagline2_ko: 학생들을 세우다

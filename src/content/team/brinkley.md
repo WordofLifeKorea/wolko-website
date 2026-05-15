@@ -14,6 +14,7 @@ campus: jeju
 category: stw
 order: 3
 photo_url: /images/uploads/brink3.jpg
+photo_position: "center 38%"
 hero_tagline_ko: 부르심에 응답하여
 hero_tagline_en: Answering the Call
 hero_tagline2_ko: 더 멀리 나아가다
