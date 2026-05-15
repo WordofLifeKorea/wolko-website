@@ -1474,26 +1474,26 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         </div>
 
         <!-- 캔버스: 외부 컨테이너(폭 제한+가운데) + 내부 래퍼(버튼 기준점) -->
-        <div id="reportCanvasOuter" style="width:92vw; max-width:960px; display:flex; justify-content:center; padding:0 28px;">
+        <div id="reportCanvasOuter" style="width:92vw; max-width:960px; display:flex; justify-content:center; padding:0 32px;">
           <div id="reportCanvasInner" style="position:relative;">
             <canvas id="reportCanvas" style="display:block; border-radius:12px; box-shadow:0 24px 80px rgba(0,0,0,0.5); background:#fff;"></canvas>
 
             <!-- 이전 -->
             <button id="reportPrev"
-              style="position:absolute; left:-22px; top:50%; transform:translateY(-50%);
-                     background:rgba(255,255,255,0.12); border:none; border-radius:50%;
-                     width:44px; height:44px; display:flex; align-items:center; justify-content:center;
-                     cursor:pointer; color:#fff; transition:background 0.2s;"
-              onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+              style="position:absolute; left:-26px; top:50%; transform:translateY(-50%);
+                     background:rgba(255,255,255,0.18); border:1.5px solid rgba(255,255,255,0.35); border-radius:50%;
+                     width:48px; height:48px; display:flex; align-items:center; justify-content:center;
+                     cursor:pointer; color:#fff; transition:background 0.2s, border-color 0.2s; backdrop-filter:blur(4px);"
+              onmouseover="this.style.background='rgba(255,255,255,0.32)';this.style.borderColor='rgba(255,255,255,0.6)'" onmouseout="this.style.background='rgba(255,255,255,0.18)';this.style.borderColor='rgba(255,255,255,0.35)'">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <!-- 다음 -->
             <button id="reportNext"
-              style="position:absolute; right:-22px; top:50%; transform:translateY(-50%);
-                     background:rgba(255,255,255,0.12); border:none; border-radius:50%;
-                     width:44px; height:44px; display:flex; align-items:center; justify-content:center;
-                     cursor:pointer; color:#fff; transition:background 0.2s;"
-              onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+              style="position:absolute; right:-26px; top:50%; transform:translateY(-50%);
+                     background:rgba(255,255,255,0.18); border:1.5px solid rgba(255,255,255,0.35); border-radius:50%;
+                     width:48px; height:48px; display:flex; align-items:center; justify-content:center;
+                     cursor:pointer; color:#fff; transition:background 0.2s, border-color 0.2s; backdrop-filter:blur(4px);"
+              onmouseover="this.style.background='rgba(255,255,255,0.32)';this.style.borderColor='rgba(255,255,255,0.6)'" onmouseout="this.style.background='rgba(255,255,255,0.18)';this.style.borderColor='rgba(255,255,255,0.35)'">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
@@ -1529,7 +1529,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
           var vp = page.getViewport({ scale: 1 });
           var dpr = window.devicePixelRatio || 1;
           // 가용 폭: 외부 컨테이너 - 좌우 패딩(28*2)
-          var availW = canvasOuter.clientWidth - 56;
+          var availW = canvasOuter.clientWidth - 64;
           // 가용 높이: 뷰포트의 82% (헤더+카운터 공간 제외)
           var availH = window.innerHeight * 0.82;
           var scale = Math.min(availW / vp.width, availH / vp.height);
