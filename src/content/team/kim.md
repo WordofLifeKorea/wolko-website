@@ -71,8 +71,8 @@ bio_en_2: |-
 support_url: https://online.mrm.or.kr/UqHsD2X
 support_url_en: https://missions.wol.org/missionaries/753593/
 prayer_ko: |-
-  "미국 비자 신청 과정이 순조롭게 진행되기를 기도해 주세요."
-  
+  "미국 비자 신청 절차가 순조롭게 진행되도록 기도해 주세요."
+  "우리 아이들이 예수 그리스도를 구주로 알고 믿도록 돕고 인도할 지혜를 구합니다."
 prayer_en: |-
   "Please pray that the U.S. visa application process goes smoothly."
   "We need wisdom to help and guide our kids to know Jesus Christ as their savior.
