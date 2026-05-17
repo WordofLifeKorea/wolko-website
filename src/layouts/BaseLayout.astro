@@ -25,6 +25,17 @@ const {
   <title>{title}</title>
   <meta name="description" content={description}>
   <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <!-- canonical -->
+  <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).toString()}>
+  <!-- Open Graph -->
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site).toString()}>
+  <meta property="og:image" content={new URL('/images/WOLKO Circle.png', Astro.site).toString()}>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="WOLKO 월코">
+  <!-- 개별 페이지 head 확장용 슬롯 -->
+  <slot name="head" />
 </head>
 <body>
 
