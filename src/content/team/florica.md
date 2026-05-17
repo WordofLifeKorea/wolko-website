@@ -24,11 +24,11 @@ bio_ko: |-
 bio_en: |-
   I grew up in a Christian home and never doubted that Jesus was the one way to salvation. But even after I committed my life to Him as a teenager, I always battled the fear that God was waiting for me to make a mistake that would disqualify me from His grace. Over time, that fear of falling short crept into my life in other ways, leaving me sick, lonely, passionless, and purposeless, even as a believer. But as always, God had another plan. He surrounded me with a vibrant Christian community that made me realize how purpose-filled and joyful life with Christ should be, and He used those new circumstances to change the way I understood the Gospel. Suddenly, I saw that it wasn't about my own perfection, but Christ's, and that the Gospel truly is Good News!
   
+  
   Eventually, God gave me the courage to head overseas and serve at WOLKO's Jr. SYME program as a short-term volunteer, where He revealed the true meaning of Paul's words: "for when I am weak, then I am strong" (2 Cor. 12:10). I realized I would gladly spend my life serving in weakness if God could use me to do more of His heart-changing work in other young people like me. In short, God had awakened something new in me—not the fear I'd known before, but a desire to help lead South Korea's next generation into the full joy, zeal, and purpose of the Gospel.
   
   
 prayer_en: Please pray for wisdom and inspiration as we look for creative ways to reach Korean students where they are. 
 hero_subtitle_ko: 니키는 월코의 캠프 및 아웃리치 팀의 인턴으로 사역하며, 영어 기반 캠프 사역과 지역사회 아웃리치를 통해 한국 청소년들에게 복음을 전하고, 그들을 준비시키며, 동원하기를 원하고 있습니다.
 prayer_ko: 한국 학생들이 있는 곳에서 그들에게 다가갈 수 있는 창의적인 방법들을 찾아가면서 지혜와 영감을 주시도록 기도해 주세요.
-
 ---
