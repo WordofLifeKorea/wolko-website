@@ -13,7 +13,7 @@ photo_position: "center 20%"
 gender: female
 support_url_en: https://missions.wol.org/missionaries/989052
 hero_tagline_ko: Niki Florica
-hero_subtitle_en: "Niki serves as an intern on Word of Life Korea's camp and outreach team, seeking to inspire, equip, and mobilize South Korean youth with the gospel. She "
+hero_subtitle_en: "Niki serves as an intern on Word of Life Korea's camp and outreach team, seeking to inspire, equip, and mobilize South Korean youth with the gospel through English-based camp ministries and community outreach. "
 verse_ref: "2 Corinthians 12:10"
 verse_ko: 그러므로 내가 그리스도를 위하여 약한 것들과 능욕과 궁핍과 박해와 곤고를 기뻐하노니 이는 내가 약한 그 때에 강함이라
 verse_en: That is why, for Christ’s sake, I delight in weaknesses, in insults, in hardships, in persecutions, in difficulties. For when I am weak, then I am strong.
@@ -28,4 +28,7 @@ bio_en: |-
   
   
 prayer_en: Please pray for wisdom and inspiration as we look for creative ways to reach Korean students where they are. 
+hero_subtitle_ko: 니키는 월코의 캠프 및 아웃리치 팀의 인턴으로 사역하며, 영어 기반 캠프 사역과 지역사회 아웃리치를 통해 한국 청소년들에게 복음을 전하고, 그들을 준비시키며, 동원하기를 원하고 있습니다.
+prayer_ko: 한국 학생들이 있는 곳에서 그들에게 다가갈 수 있는 창의적인 방법들을 찾아가면서 지혜와 영감을 주시도록 기도해 주세요.
+
 ---
