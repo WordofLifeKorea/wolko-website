@@ -373,6 +373,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-contact-info {
   font-size: 14px; color: rgba(255,255,255,0.88) !important; line-height: 1.7;
 }
+.crp-contact-info-line { display: block; }
 .crp-contact-info strong { color: #fff !important; }
 .crp-contact-divider { width: 1px; height: 44px; background: rgba(255,255,255,0.15); flex-shrink: 0; }
 .crp-btn-contact {
@@ -644,11 +645,12 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
 /* Bulk registration note */
 .crp-bulk-note {
+  grid-column: 1 / -1;
   background: rgba(0,126,161,0.06);
   border: 1px solid rgba(0,126,161,0.18);
   border-radius: 10px;
   padding: 13px 16px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
   font-size: 12.5px;
   line-height: 1.7;
   color: var(--c-muted);
@@ -1171,8 +1173,14 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
       <div>
         <div class="crp-contact-label wl-ko">캠프 문의</div>
         <div class="crp-contact-label wl-en">Camp Inquiry</div>
-        <div class="crp-contact-info wl-ko">한국생명의말씀협회 &nbsp;|&nbsp; <strong>TEL</strong> 031-611-9216 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</div>
-        <div class="crp-contact-info wl-en">Word of Life Korea &nbsp;|&nbsp; <strong>TEL</strong> 031-611-9216 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</div>
+        <div class="crp-contact-info wl-ko">
+          <span class="crp-contact-info-line">월코 캠프 문의 &nbsp;|&nbsp; <strong>TEL</strong> 070-4190-6084 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</span>
+          <span class="crp-contact-info-line">제주 캠프 문의 &nbsp;|&nbsp; <strong>TEL</strong> 064-799-3707 &nbsp;|&nbsp; <strong>EMAIL</strong> wolbijeju.contact@gmail.com</span>
+        </div>
+        <div class="crp-contact-info wl-en">
+          <span class="crp-contact-info-line">WOLKO Camp Inquiry &nbsp;|&nbsp; <strong>TEL</strong> 070-4190-6084 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</span>
+          <span class="crp-contact-info-line">Jeju Camp Inquiry &nbsp;|&nbsp; <strong>TEL</strong> 064-799-3707 &nbsp;|&nbsp; <strong>EMAIL</strong> wolbijeju.contact@gmail.com</span>
+        </div>
       </div>
       <div class="crp-contact-divider"></div>
       <a href="/contact" class="crp-btn-contact">
@@ -1387,6 +1395,10 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                 <label><span class="wl-ko">전달 사항</span><span class="wl-en">Notes</span></label>
                 <textarea id="crpGNotes" name="gNotes" rows="4" placeholder="캠프에 참여하고자 하는 학생의 이름과 나이를 꼭 적어주세요. 캠프 문의사항, 알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요."></textarea>
               </div>
+              <div class="crp-bulk-note">
+                <span class="wl-ko">💡 신청 인원이 많을 경우 <strong>wolkorea1@gmail.com</strong>으로 참가 인원 전체의 이름, 학년 또는 나이를 작성하여 전송해주시면 큰 도움이 됩니다.</span>
+                <span class="wl-en">💡 If you are registering many participants, it is a great help to email the full list of names and grades or ages to <strong>wolkorea1@gmail.com</strong>.</span>
+              </div>
             </div>
           </div>
 
@@ -1425,11 +1437,6 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
               <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Click to read the full refund policy.</span>
             </label>
           </label>
-
-          <div class="crp-bulk-note">
-            <span class="wl-ko">💡 신청 인원이 많을 경우 <strong>wolkorea1@gmail.com</strong>으로 참가 인원 전체의 이름, 학년 또는 나이를 작성하여 전송해주시면 큰 도움이 됩니다.</span>
-            <span class="wl-en">💡 If you are registering many participants, it is a great help to email the full list of names and grades or ages to <strong>wolkorea1@gmail.com</strong>.</span>
-          </div>
 
           <button type="submit" class="crp-submit" id="crpSubmitBtn">
             <div class="spinner"></div>
