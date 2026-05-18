@@ -102,6 +102,7 @@ const camp_schedule = defineCollection({
     capacity_male: z.number().optional(),
     capacity_female: z.number().optional(),
     order: z.number().default(99),
+    open_date: z.string().optional(),
   }),
 });
 
