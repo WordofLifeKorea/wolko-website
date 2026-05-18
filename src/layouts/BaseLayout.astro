@@ -108,22 +108,22 @@ const {
           <span>English</span>
         </div>
       </div>
-      <button class="nav-hamburger" id="hamburger" type="button" onclick="toggleMobile()" aria-label="메뉴 열기" aria-controls="mobileMenu" aria-expanded="false">
+      <div class="nav-hamburger" id="hamburger" onclick="toggleMobile()">
         <span></span><span></span><span></span>
-      </button>
+      </div>
     </div>
   </nav>
 
   <!-- 모바일 메뉴 딤 배경 -->
-  <div class="mobile-menu-backdrop" id="menuBackdrop" onclick="toggleMobile()" aria-hidden="true"></div>
+  <div class="mobile-menu-backdrop" id="menuBackdrop" onclick="toggleMobile()"></div>
 
   <!-- 모바일 메뉴 -->
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-item"><a href="/">HOME</a></div>
     <div class="mobile-menu-divider"></div>
 
     <div class="mobile-menu-item">
-      <button class="mobile-parent" type="button" onclick="toggleMobileSub(this)" aria-expanded="false">
+      <button class="mobile-parent" onclick="toggleMobileSub(this)">
         <span><span class="wl-ko">소개</span><span class="wl-en">About</span></span>
         <span class="mobile-parent-chevron">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -138,7 +138,7 @@ const {
 
     <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <button class="mobile-parent" type="button" onclick="toggleMobileSub(this)" aria-expanded="false">
+      <button class="mobile-parent" onclick="toggleMobileSub(this)">
         <span><span class="wl-ko">사역</span><span class="wl-en">Ministry</span></span>
         <span class="mobile-parent-chevron">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -155,7 +155,7 @@ const {
 
     <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <button class="mobile-parent" type="button" onclick="toggleMobileSub(this)" aria-expanded="false">
+      <button class="mobile-parent" onclick="toggleMobileSub(this)">
         <span><span class="wl-ko">소통</span><span class="wl-en">Connect</span></span>
         <span class="mobile-parent-chevron">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -170,7 +170,7 @@ const {
 
     <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <button class="mobile-parent" type="button" onclick="toggleMobileSub(this)" aria-expanded="false">
+      <button class="mobile-parent" onclick="toggleMobileSub(this)">
         <span><span class="wl-ko">후원</span><span class="wl-en">Give</span></span>
         <span class="mobile-parent-chevron">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -265,7 +265,7 @@ const {
 
       if (en) {
         const toggle = document.getElementById('langToggle');
-        const sliderW = slider.offsetWidth || (window.innerWidth <= 900 ? 32 : 82);
+        const sliderW = slider.offsetWidth || (window.innerWidth <= 900 ? 32 : 78);
         slider.style.left = (toggle.offsetWidth - sliderW - 3) + 'px';
         koSide.className = 'lang-side is-inactive';
         enSide.className = 'lang-side is-active';
@@ -281,16 +281,8 @@ const {
     function closeMobileMenu() {
       const menu = document.getElementById('mobileMenu');
       const backdrop = document.getElementById('menuBackdrop');
-      const hamburger = document.getElementById('hamburger');
       menu.classList.remove('open');
       backdrop.classList.remove('open');
-      menu.setAttribute('aria-hidden', 'true');
-      backdrop.setAttribute('aria-hidden', 'true');
-      if (hamburger) {
-        hamburger.classList.remove('is-open');
-        hamburger.setAttribute('aria-expanded', 'false');
-        hamburger.setAttribute('aria-label', '메뉴 열기');
-      }
       setTimeout(function() {
         if (!menu.classList.contains('open')) {
           menu.style.display = 'none';
@@ -298,25 +290,16 @@ const {
         }
       }, 200);
       document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) { el.classList.remove('is-open'); });
-      document.querySelectorAll('.mobile-parent').forEach(function(btn) { btn.setAttribute('aria-expanded', 'false'); });
     }
 
     window.toggleMobile = function() {
       const menu = document.getElementById('mobileMenu');
       const backdrop = document.getElementById('menuBackdrop');
-      const hamburger = document.getElementById('hamburger');
       if (menu.classList.contains('open')) {
         closeMobileMenu();
       } else {
         menu.style.display = 'block';
         backdrop.style.display = 'block';
-        menu.setAttribute('aria-hidden', 'false');
-        backdrop.setAttribute('aria-hidden', 'false');
-        if (hamburger) {
-          hamburger.classList.add('is-open');
-          hamburger.setAttribute('aria-expanded', 'true');
-          hamburger.setAttribute('aria-label', '메뉴 닫기');
-        }
         requestAnimationFrame(function() {
           requestAnimationFrame(function() {
             menu.classList.add('open');
@@ -331,10 +314,7 @@ const {
       // 다른 열린 항목 닫기
       document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) {
         el.classList.remove('is-open');
-        const parentBtn = el.querySelector('.mobile-parent');
-        if (parentBtn) parentBtn.setAttribute('aria-expanded', 'false');
       });
-      btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
       if (!isOpen) item.classList.add('is-open');
     };
 
