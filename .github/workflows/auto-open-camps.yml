@@ -1,0 +1,28 @@
+name: 캠프 신청 자동 오픈
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # 5분마다 실행 (GitHub Actions 최소 단위)
+  workflow_dispatch:          # 수동 실행 버튼
+
+jobs:
+  auto-open:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 오픈 날짜 확인 및 status 업데이트
+        run: node scripts/auto-open-camps.mjs
+
+      - name: 변경사항 커밋 & 푸시
+        run: |
+          git config user.name "wolko-bot"
+          git config user.email "wolkorea1@gmail.com"
+          git add src/content/camp_schedules/
+          git diff --cached --quiet && echo "변경 없음" || (git commit -m "자동: 캠프 신청 오픈 상태 업데이트" && git push)
