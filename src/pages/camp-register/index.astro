@@ -406,10 +406,14 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-staff-card-body { flex: 1; min-width: 0; }
 .crp-staff-card-tag {
   font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-  color: #0d9488; margin-bottom: 3px;
+  color: #0d9488; margin-bottom: 4px;
 }
-.crp-staff-card-title { font-size: 14px; font-weight: 700; color: #0f2922; line-height: 1.3; word-break: keep-all; }
-.crp-staff-card-sub { font-size: 12px; color: #5a7a74; margin-top: 2px; }
+.crp-staff-card-camp {
+  font-size: 15px; font-weight: 800; color: #0d2b26; line-height: 1.25;
+  word-break: keep-all; margin-bottom: 4px;
+}
+.crp-staff-card-sub { font-size: 12px; color: #5a7a74; margin-top: 0; display: flex; align-items: center; gap: 8px; }
+.crp-staff-card-sub-label { font-size: 11px; color: #7a9e98; }
 .crp-staff-status-open {
   display: inline-block; padding: 2px 9px; border-radius: 999px;
   background: rgba(22,163,74,0.12); color: #15803d; font-size: 11px; font-weight: 700;
@@ -727,6 +731,11 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 }
 .crp-submit:hover:not(:disabled) { background: var(--c-red-dk); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(196,42,54,0.35); }
 .crp-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+.crp-submit--teal {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  box-shadow: 0 4px 14px rgba(13,148,136,0.26);
+}
+.crp-submit--teal:hover:not(:disabled) { background: linear-gradient(135deg, #0d6b63 0%, #0b857a 100%); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(13,148,136,0.36); }
 .crp-submit .spinner {
   display: none; width: 16px; height: 16px;
   border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
@@ -1091,13 +1100,17 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                     </div>
                     <div class="crp-staff-card-body">
                       <div class="crp-staff-card-tag">STAFF · VOLUNTEER</div>
-                      <div class="crp-staff-card-title">
-                        <span class="wl-ko">스태프 · 봉사자 지원</span>
-                        <span class="wl-en">Staff / Volunteer Application</span>
+                      <div class="crp-staff-card-camp">
+                        <span class="wl-ko">{d.title_ko}</span>
+                        <span class="wl-en">{d.title_en}</span>
                       </div>
                       <div class="crp-staff-card-sub">
                         <span class="crp-staff-status crp-staff-status-open">
                           <span class="wl-ko">지원 가능</span><span class="wl-en">Open</span>
+                        </span>
+                        <span class="crp-staff-card-sub-label">
+                          <span class="wl-ko">스태프 · 봉사자 지원</span>
+                          <span class="wl-en">Staff / Volunteer</span>
                         </span>
                       </div>
                     </div>
@@ -1671,13 +1684,20 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
     <!-- 폼 -->
     <div class="crp-form-wrap" id="staffFormWrap">
-      <form id="staffForm" novalidate style="padding:28px 36px 32px;">
+      <form id="staffForm" novalidate>
         <input type="hidden" id="staffCampId">
+
+        <div class="crp-form-section" style="margin-top:0;">
+          <span class="crp-form-section-label">
+            <span class="wl-ko">지원자 정보</span><span class="wl-en">Applicant Info</span>
+          </span>
+          <hr class="crp-form-section-line">
+        </div>
 
         <div class="crp-form-grid">
           <div class="crp-field">
             <label><span class="wl-ko">이름</span><span class="wl-en">Name</span> <span class="req">*</span></label>
-            <input id="staffName" name="name" placeholder="홍길동">
+            <input id="staffName" name="name" placeholder="홍길동 / Full name">
           </div>
           <div class="crp-field">
             <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
@@ -1689,56 +1709,71 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
           </div>
           <div class="crp-field crp-field--full">
             <label><span class="wl-ko">교회</span><span class="wl-en">Church</span></label>
-            <input id="staffChurch" name="church" placeholder="소속 교회명">
+            <input id="staffChurch" name="church" placeholder="소속 교회명 / Your church">
           </div>
+        </div>
+
+        <div class="crp-form-section">
+          <span class="crp-form-section-label">
+            <span class="wl-ko">섬김 분야</span><span class="wl-en">Area of Service</span>
+          </span>
+          <hr class="crp-form-section-line">
+        </div>
+
+        <div class="crp-form-grid">
           <div class="crp-field crp-field--full">
             <label>
               <span class="wl-ko">섬기고 싶은 분야</span>
-              <span class="wl-en">Area of Service</span>
+              <span class="wl-en">Where would you like to serve?</span>
               <span class="req">*</span>
             </label>
             <textarea id="staffServiceArea" name="serviceArea" rows="3"
-              placeholder="예) 상담자, IT, 프로덕션, 프로그램팀, 영어 & 성경 수업"
-              style="resize:vertical;min-height:72px;"></textarea>
+              placeholder="예) 상담자, IT, 프로덕션, 프로그램팀, 영어 & 성경 수업"></textarea>
           </div>
           <div class="crp-field crp-field--full">
-            <label><span class="wl-ko">메모 (선택)</span><span class="wl-en">Notes (optional)</span></label>
-            <textarea id="staffNotes" name="notes" rows="2" style="resize:vertical;min-height:54px;"></textarea>
+            <label><span class="wl-ko">메모 (선택)</span><span class="wl-en">Additional Notes (optional)</span></label>
+            <textarea id="staffNotes" name="notes" rows="2"></textarea>
           </div>
         </div>
 
         <!-- 개인정보 동의 -->
-        <div style="margin-top:16px;padding:14px 16px;background:#f0fdfa;border:1px solid rgba(13,148,136,0.18);border-radius:10px;">
-          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-            <input type="checkbox" id="staffPrivacyConsent" style="margin-top:2px;flex-shrink:0;accent-color:#0d9488;">
-            <span style="font-size:13px;line-height:1.7;color:#2d4a44;">
-              <span class="wl-ko"><strong>개인정보 수집 및 이용에 동의합니다.</strong><br>수집 항목: 이름, 연락처, 이메일, 교회, 섬기고 싶은 분야 / 목적: 캠프 스태프 운영 관리 / 보유 기간: 해당 캠프 종료 후 1년</span>
-              <span class="wl-en"><strong>I consent to the collection and use of personal information.</strong><br>Items: name, phone, email, church, service area / Purpose: camp staff management / Retention: 1 year after camp ends</span>
-            </span>
+        <label class="crp-consent" style="accent-color:#0d9488;margin-top:20px;">
+          <input type="checkbox" id="staffPrivacyConsent" style="accent-color:#0d9488;">
+          <label for="staffPrivacyConsent">
+            <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
+            <strong class="wl-en">I consent to the collection and use of personal information.</strong>
+            <br>
+            <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일, 교회, 섬기고 싶은 분야 &nbsp;·&nbsp; 목적: 캠프 스태프 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 1년</span>
+            <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email, church, service area &nbsp;·&nbsp; Purpose: staff management &nbsp;·&nbsp; Retention: 1 year after camp ends</span>
           </label>
-        </div>
+        </label>
 
-        <p id="staffErrorMsg" class="crp-error-msg" hidden></p>
+        <div id="staffErrorMsg" class="crp-error-msg" hidden></div>
 
-        <button type="submit" class="crp-submit-btn" id="staffSubmitBtn" style="margin-top:20px;background:linear-gradient(135deg,#0f766e,#0d9488);box-shadow:0 4px 16px rgba(13,148,136,0.28);">
-          <span class="crp-submit-label wl-ko">스태프 지원하기 →</span>
-          <span class="crp-submit-label wl-en">Submit Application →</span>
+        <button type="submit" class="crp-submit crp-submit--teal" id="staffSubmitBtn" style="margin-top:20px;">
+          <div class="spinner"></div>
+          <span class="crp-submit-label">
+            <span class="wl-ko">스태프 지원하기</span>
+            <span class="wl-en">Submit Application</span>
+          </span>
         </button>
       </form>
     </div>
 
     <!-- 성공 화면 -->
-    <div id="staffSuccessWrap" hidden style="padding:40px 36px 44px;text-align:center;">
-      <div style="width:56px;height:56px;border-radius:50%;background:rgba(13,148,136,0.12);color:#0d9488;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <div id="staffSuccessWrap" hidden style="padding:44px 44px 52px;text-align:center;">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(13,148,136,0.12);color:#0d9488;display:flex;align-items:center;justify-content:center;margin:0 auto 22px;">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       </div>
-      <h3 style="font-size:20px;font-weight:800;color:#0f2922;margin-bottom:10px;">
+      <h3 style="font-size:22px;font-weight:800;color:#0f2922;margin-bottom:10px;">
         <span class="wl-ko">지원이 접수되었습니다!</span>
         <span class="wl-en">Application Received!</span>
       </h3>
-      <p id="staffSuccessMsg" style="font-size:14px;line-height:1.8;color:#5a7a74;margin-bottom:24px;"></p>
-      <button id="staffSuccessClose" class="crp-submit-btn" style="max-width:240px;margin:0 auto;background:linear-gradient(135deg,#0f766e,#0d9488);">
-        <span class="wl-ko">닫기</span><span class="wl-en">Close</span>
+      <p id="staffSuccessMsg" style="font-size:14px;line-height:1.85;color:#5a7a74;margin-bottom:28px;"></p>
+      <button id="staffSuccessClose" class="crp-submit crp-submit--teal" style="max-width:260px;margin:0 auto;">
+        <span class="crp-submit-label">
+          <span class="wl-ko">확인</span><span class="wl-en">Close</span>
+        </span>
       </button>
     </div>
   </div>
