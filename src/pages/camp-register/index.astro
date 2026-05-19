@@ -13,7 +13,7 @@ const inlandCamps = schedules.filter(s => s.data.camp_type !== 'jeju');
 const typeLabel: Record<string, { ko: string; en: string }> = {
   english: { ko: '영어캠프', en: 'English Camp' },
   jeju:    { ko: '제주캠프', en: 'Jeju Camp' },
-  union:   { ko: 'Unity 캠프', en: 'Unity Camp' },
+  union:   { ko: '연합캠프', en: 'Union Camp' },
 };
 const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   open:     { ko: '신청 중',   en: 'Open',               cls: 'status-open' },
@@ -25,13 +25,16 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
 <BaseLayout
   title="캠프 신청 — Word of Life Korea"
-  description="월코 캠프 신청 페이지 — 영어캠프, Unity 캠프 신청 접수"
+  description="월코 캠프 신청 페이지 — 영어캠프, 연합캠프 신청 접수"
   activeNav="connect"
   whiteNav={false}
 >
 
 <style is:global>
 @import url('https://cdn.jsdelivr.net/npm/pretendard@latest/dist/web/variable/pretendardvariable-dynamic-subset.css');
+
+/* 100vw 전폭 섹션으로 인한 모바일 가로 스크롤 방지 */
+html, body { overflow-x: hidden; max-width: 100%; }
 
 /* ══ CAMP REGISTER PAGE ══ */
 .crp {
@@ -53,7 +56,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   font-weight: 400;
   color: var(--c-text);
   background: var(--c-white);
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   width: 100%;
 }
@@ -145,9 +148,9 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
 /* ── REG GRID ── */
 .crp-reg-grid {
-  max-width: 1100px; margin: 0 auto;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
-  align-items: stretch;
+  width: min(100%, 1100px); margin: 0 auto;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px;
+  align-items: stretch; justify-content: center;
 }
 .crp-reg-card {
   background: var(--c-white);
@@ -157,7 +160,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   display: flex; flex-direction: column; gap: 0;
   position: relative; overflow: hidden;
   transition: transform .28s, box-shadow .28s, border-color .28s;
-  flex: 1;
+  flex: 1; min-width: 0;
 }
 .crp-reg-card:hover {
   transform: translateY(-5px);
@@ -321,6 +324,28 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   word-break: keep-all; text-align: center;
 }
 
+/* English copy runs longer, so keep the cards compact and let text wrap cleanly. */
+#lang-root.lang-en .crp-reg-grid {
+  width: min(100%, 1100px);
+}
+#lang-root.lang-en .crp-reg-card {
+  padding: 30px 26px 34px;
+}
+#lang-root.lang-en .crp-reg-title {
+  font-size: clamp(21px, 1.7vw, 25px);
+  line-height: 1.18;
+}
+#lang-root.lang-en .crp-reg-meta-row {
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 8px;
+}
+#lang-root.lang-en .crp-reg-meta-value,
+#lang-root.lang-en .crp-reg-notes,
+#lang-root.lang-en .crp-countdown-notice {
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
 /* ── CAMP GROUP HEADER ── */
 .crp-group { max-width: 1100px; margin: 0 auto; }
 .crp-group + .crp-group { margin-top: 72px; }
@@ -387,7 +412,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-btn-contact:hover { background: #a82330 !important; color: #fff !important; transform: translateY(-2px); }
 
 /* ── STAFF CARD ── */
-.crp-camp-pair { display: flex; flex-direction: column; gap: 10px; }
+.crp-camp-pair { display: flex; flex-direction: column; gap: 10px; min-width: 0; width: 100%; }
 .crp-staff-card {
   background: linear-gradient(135deg, #f0fdfa 0%, #f7fffe 100%);
   border: 1.5px dashed rgba(13,148,136,0.35);
@@ -449,7 +474,10 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 960px) {
-  .crp-reg-grid { grid-template-columns: 1fr 1fr; }
+  .crp-reg-grid,
+  .crp-reg-grid--inland,
+  #lang-root.lang-en .crp-reg-grid,
+  #lang-root.lang-en .crp-reg-grid--inland { grid-template-columns: 1fr 1fr; }
   .crp-reg-header { flex-direction: column; align-items: flex-start; }
   .crp-group-header { flex-direction: column; align-items: flex-start; gap: 6px; }
   .crp-reg-header-note { text-align: left; max-width: 100%; }
@@ -457,7 +485,10 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 @media (max-width: 640px) {
   .crp-hero { padding: 100px 24px 56px; }
   .crp-reg-section { padding: 48px 20px 72px; }
-  .crp-reg-grid { grid-template-columns: 1fr; }
+  .crp-reg-grid,
+  .crp-reg-grid--inland,
+  #lang-root.lang-en .crp-reg-grid,
+  #lang-root.lang-en .crp-reg-grid--inland { grid-template-columns: 1fr; }
   .crp-contact-bar { padding: 28px 24px; }
   .crp-contact-divider { display: none; }
 }
@@ -489,14 +520,16 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   animation: crpSlideUp 0.32s cubic-bezier(0.22,1,0.36,1);
 }
 .crp-modal-close {
-  position: absolute; top: 16px; right: 16px; z-index: 10;
+  position: sticky; top: 16px; z-index: 30;
+  margin: 16px 16px -48px auto;
   width: 32px; height: 32px; border-radius: 50%;
-  border: none; background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.62); background: rgba(0,79,104,0.92);
   cursor: pointer;
   color: #fff; display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s;
+  box-shadow: 0 8px 22px rgba(0,20,40,0.22);
+  transition: background 0.2s, transform 0.18s;
 }
-.crp-modal-close:hover { background: rgba(255,255,255,0.32); }
+.crp-modal-close:hover { background: #015a7a; transform: scale(1.04); }
 .crp-modal-close svg { width: 16px; height: 16px; flex-shrink: 0; }
 
 /* Modal header */
@@ -962,7 +995,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                 <span class="wl-en">WOLKO Camp — Naver Cafe →</span>
               </a>
             </div>
-            <div class="crp-reg-grid">
+            <div class="crp-reg-grid crp-reg-grid--inland">
               {inlandCamps.map((s) => {
                 const d = s.data;
                 const type = typeLabel[d.camp_type] ?? { ko: d.camp_type, en: d.camp_type };
