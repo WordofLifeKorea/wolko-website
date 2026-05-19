@@ -133,14 +133,14 @@
       </div>
     </div>
 
-    <!-- TABLE -->
+    <!-- 캠프 신청 TABLE -->
     <div class="table-section">
       <div class="table-toolbar">
         <div>
-          <span class="table-title">신청 목록</span>
-          <span class="table-count" id="tableCount"></span>
+          <span class="table-title">캠프 신청 목록</span>
+          <span class="table-count" id="campTableCount"></span>
         </div>
-        <button class="btn-csv" onclick="downloadCsv()">
+        <button class="btn-csv" onclick="downloadCsv('camp')">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -156,8 +156,42 @@
               <th>비상연락처</th><th>메모</th><th>신청일시</th><th>삭제</th>
             </tr>
           </thead>
-          <tbody id="regBody">
+          <tbody id="campRegBody">
             <tr><td colspan="15">
+              <div class="state-box">
+                <div class="spinner"></div>
+                <p>로그인 후 자동으로 불러옵니다.</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 스태프 지원 TABLE -->
+    <div class="table-section" style="margin-top:20px;">
+      <div class="table-toolbar">
+        <div>
+          <span class="table-title" style="color:#0d9488;">스태프 · 봉사자 지원 목록</span>
+          <span class="table-count" id="staffTableCount"></span>
+        </div>
+        <button class="btn-csv" onclick="downloadCsv('staff')" style="background:rgba(13,148,136,0.08);color:#0d9488;border-color:rgba(13,148,136,0.2);">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          CSV 다운로드
+        </button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>캠프</th><th>이름</th><th>연락처</th><th>이메일</th>
+              <th>교회</th><th>섬기고 싶은 분야</th><th>신청일시</th><th>삭제</th>
+            </tr>
+          </thead>
+          <tbody id="staffRegBody">
+            <tr><td colspan="9">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p>로그인 후 자동으로 불러옵니다.</p>
@@ -189,7 +223,7 @@
         label: 'WOLKO 캠프',
         camps: [
           { id: '2026-inland-english-junior', title: '주니어 영어캠프', capacity: 40 },
-          { id: '2026-inland-union',          title: '교회 Unity 캠프', capacity: 40 },
+          { id: '2026-inland-union',          title: '교회 연합캠프', capacity: 40 },
         ],
       },
       // 제주 캠프는 카페에서 별도 신청 — 추후 필요 시 아래 주석 해제
@@ -352,16 +386,9 @@
         renderDash();
       } catch (e) {
         showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
-        document.getElementById('regBody').innerHTML = `
-          <tr><td colspan="15">
-            <div class="state-box">
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                <circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/>
-                <path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              <p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p>
-            </div>
-          </td></tr>`;
+        const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p></div>`;
+        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="15">${errHtml}</td></tr>`;
+        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="9">${errHtml}</td></tr>`;
       }
     }
 
@@ -439,11 +466,16 @@
       document.getElementById('progressGenderF').textContent = femaleTotal > 0 ? `여 ${femaleTotal}명` : '';
     }
 
-    // ── Table ──
+    // ── Tables ──
     function renderTable() {
-      const regs = filteredRegs();
-      const tbody = document.getElementById('regBody');
-      document.getElementById('tableCount').textContent = `(${regs.length}건)`;
+      renderCampTable();
+      renderStaffTable();
+    }
+
+    function renderCampTable() {
+      const regs = filteredRegs().filter(r => r.registrationType !== 'staff');
+      const tbody = document.getElementById('campRegBody');
+      document.getElementById('campTableCount').textContent = `(${regs.length}건)`;
 
       if (regs.length === 0) {
         tbody.innerHTML = `
@@ -453,7 +485,7 @@
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
                 <path d="M14 14h12M14 20h8M14 26h6" stroke="#8fa8b5" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
-              <p>신청 내역이 없습니다.</p>
+              <p>캠프 신청 내역이 없습니다.</p>
             </div>
           </td></tr>`;
         return;
@@ -516,6 +548,44 @@
       }).join('');
     }
 
+    function renderStaffTable() {
+      const regs = filteredRegs().filter(r => r.registrationType === 'staff');
+      const tbody = document.getElementById('staffRegBody');
+      document.getElementById('staffTableCount').textContent = `(${regs.length}건)`;
+
+      if (regs.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="9">
+            <div class="state-box">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
+                <path d="M14 14h12M14 20h8M14 26h6" stroke="#8fa8b5" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <p>스태프 지원 내역이 없습니다.</p>
+            </div>
+          </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = regs.map((r, i) => {
+        const date = new Date(r.registeredAt);
+        const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+        const campLabel = CAMP_LABELS[r.campId] || r.campId;
+        const serviceArea = r.serviceArea || r.notes || '—';
+        return `<tr>
+          <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
+          <td style="font-size:12px;color:var(--mid)">${esc(campLabel)}</td>
+          <td style="font-weight:600">${esc(r.name)}</td>
+          <td>${esc(r.phone)}</td>
+          <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
+          <td>${esc(r.church || '—')}</td>
+          <td style="font-size:12px;color:var(--mid);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(serviceArea)}">${esc(serviceArea)}</td>
+          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
+          <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
+        </tr>`;
+      }).join('');
+    }
+
     function esc(str) {
       return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
@@ -562,41 +632,61 @@
     }
 
     // ── CSV ──
-    function downloadCsv() {
-      const regs = filteredRegs();
-      if (regs.length === 0) { showToast('다운로드할 데이터가 없습니다.', 'error'); return; }
-
-      const headers = ['번호','상태','캠프','유형','이름','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
-      const rows = regs.map((r, i) => {
-        const date = new Date(r.registeredAt).toLocaleString('ko-KR');
-        const gradeOrCount = r.registrationType === 'group' ? `단체 ${r.groupCount}명` : (r.grade || '');
-        const statusVal = r.confirmed !== false ? '확정' : '미확정';
-        let genderVal;
-        if (r.registrationType === 'group') {
-          const m = r.maleCount || 0, f = r.femaleCount || 0;
-          genderVal = (m > 0 || f > 0) ? `남 ${m} 여 ${f}` : '';
-        } else {
-          genderVal = r.gender === 'male' ? '남' : r.gender === 'female' ? '여' : '';
-        }
-        return [
-          i + 1, statusVal, CAMP_LABELS[r.campId] || r.campId,
-          r.registrationType === 'group' ? '단체' : '개인',
-          r.name, r.phone, r.email, gradeOrCount, genderVal,
-          r.church || '', r.school || '', r.emergency || '',
-          r.notes || '', date, r.regId,
-        ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
-      });
-
-      const bom = '﻿';
-      const csv = bom + [headers.join(','), ...rows].join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+    function downloadCsv(type = 'camp') {
       const campName = CAMP_LABELS[activeCamp] || '전체';
       const today = new Date().toISOString().slice(0, 10);
-      a.href = url; a.download = `WOLKO_신청목록_${campName}_${today}.csv`;
-      a.click(); URL.revokeObjectURL(url);
-      showToast('CSV 다운로드 완료!', 'success');
+      const bom = '﻿';
+
+      if (type === 'staff') {
+        const regs = filteredRegs().filter(r => r.registrationType === 'staff');
+        if (regs.length === 0) { showToast('다운로드할 스태프 데이터가 없습니다.', 'error'); return; }
+        const headers = ['번호','캠프','이름','연락처','이메일','교회','섬기고 싶은 분야','신청일시','RegID'];
+        const rows = regs.map((r, i) => {
+          const date = new Date(r.registeredAt).toLocaleString('ko-KR');
+          return [
+            i + 1, CAMP_LABELS[r.campId] || r.campId,
+            r.name, r.phone, r.email, r.church || '',
+            r.serviceArea || r.notes || '', date, r.regId,
+          ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+        });
+        const csv = bom + [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `WOLKO_스태프지원_${campName}_${today}.csv`;
+        a.click(); URL.revokeObjectURL(url);
+        showToast('스태프 CSV 다운로드 완료!', 'success');
+      } else {
+        const regs = filteredRegs().filter(r => r.registrationType !== 'staff');
+        if (regs.length === 0) { showToast('다운로드할 신청 데이터가 없습니다.', 'error'); return; }
+        const headers = ['번호','상태','캠프','유형','이름','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
+        const rows = regs.map((r, i) => {
+          const date = new Date(r.registeredAt).toLocaleString('ko-KR');
+          const gradeOrCount = r.registrationType === 'group' ? `단체 ${r.groupCount}명` : (r.grade || '');
+          const statusVal = r.confirmed !== false ? '확정' : '미확정';
+          let genderVal;
+          if (r.registrationType === 'group') {
+            const m = r.maleCount || 0, f = r.femaleCount || 0;
+            genderVal = (m > 0 || f > 0) ? `남 ${m} 여 ${f}` : '';
+          } else {
+            genderVal = r.gender === 'male' ? '남' : r.gender === 'female' ? '여' : '';
+          }
+          return [
+            i + 1, statusVal, CAMP_LABELS[r.campId] || r.campId,
+            r.registrationType === 'group' ? '단체' : '개인',
+            r.name, r.phone, r.email, gradeOrCount, genderVal,
+            r.church || '', r.school || '', r.emergency || '',
+            r.notes || '', date, r.regId,
+          ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+        });
+        const csv = bom + [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `WOLKO_신청목록_${campName}_${today}.csv`;
+        a.click(); URL.revokeObjectURL(url);
+        showToast('CSV 다운로드 완료!', 'success');
+      }
     }
 
     // ── Toast ──
