@@ -51,5 +51,4 @@ verse_ko: 이 생명이 나타내신 바 된지라 이 영원한 생명을 우�
 verse_en: The life appeared; we have seen it and testify to it, and we proclaim to you the eternal life, which was with the Father and has appeared to us.
 support_url_en: https://missions.wol.org/missionaries/198496/
 report_url: /reports/min-newsletter-1779177134012.pdf
-
 ---
