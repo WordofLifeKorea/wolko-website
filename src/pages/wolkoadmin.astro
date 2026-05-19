@@ -261,13 +261,26 @@
     const CAMP_LABELS = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.title]));
     const CAMP_CAP    = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.capacity]));
     const CAMP_ROW_STYLES = {
-      '2026-inland-english-junior': { bg: '#eef8ff', border: '#74b8dc' },
-      '2026-inland-union': { bg: '#fff6df', border: '#e8bc59' },
-      '2026-jeju-english': { bg: '#eefbf3', border: '#72c99b' },
-      '2026-jeju-momentum-1': { bg: '#f6f1ff', border: '#aa8be8' },
-      '2026-jeju-momentum-2': { bg: '#fff0f5', border: '#e48fb0' },
-      '2026-test-camp': { bg: '#f2f6f8', border: '#9ab3c0' },
+      '2026-inland-english-junior': { bg: '#e6f5ff', border: '#3797c7' },
+      '2026-inland-union': { bg: '#fff1c9', border: '#d49a18' },
+      '2026-jeju-english': { bg: '#e2f8ea', border: '#35a96a' },
+      '2026-jeju-momentum-1': { bg: '#f0e8ff', border: '#8364d8' },
+      '2026-jeju-momentum-2': { bg: '#ffe6ef', border: '#d86491' },
+      '2026-test-camp': { bg: '#edf4f7', border: '#7899a9' },
     };
+    const CAMP_ROW_FALLBACK = { bg: '#eef4f7', border: '#7f9bab' };
+
+    function getCampRowStyle(reg) {
+      if (CAMP_ROW_STYLES[reg.campId]) return CAMP_ROW_STYLES[reg.campId];
+
+      const label = String(CAMP_LABELS[reg.campId] || reg.campName || reg.campTitle || reg.campId || '').toLowerCase();
+      if (label.includes('junior') || label.includes('주니어')) return CAMP_ROW_STYLES['2026-inland-english-junior'];
+      if (label.includes('union') || label.includes('unity') || label.includes('연합')) return CAMP_ROW_STYLES['2026-inland-union'];
+      if (label.includes('momentum') || label.includes('모멘텀 1') || label.includes('1차')) return CAMP_ROW_STYLES['2026-jeju-momentum-1'];
+      if (label.includes('모멘텀 2') || label.includes('2차')) return CAMP_ROW_STYLES['2026-jeju-momentum-2'];
+      if (label.includes('jeju') || label.includes('제주')) return CAMP_ROW_STYLES['2026-jeju-english'];
+      return CAMP_ROW_FALLBACK;
+    }
 
     let allRegs = [];
     let activeCamp = 'all';
@@ -601,14 +614,14 @@
                <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">미확정</span>${waitlistBadge}</span>
                <button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">확정</button>
              </span>`;
-        const campStyle = CAMP_ROW_STYLES[r.campId] || { bg: '#f8fafc', border: '#c9d6de' };
+        const campStyle = getCampRowStyle(r);
         const rowClass = `camp-tint${isConfirmed ? '' : ' is-pending'}`;
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
 
         return `<tr class="${rowClass}" style="${rowStyle}">
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
           <td>${statusCell}</td>
-          <td style="font-size:12px;color:var(--mid)">${esc(campLabel)}</td>
+          <td class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
           <td>${typeBadge}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
           <td>${esc(r.phone)}</td>
@@ -649,11 +662,11 @@
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const campLabel = CAMP_LABELS[r.campId] || r.campId;
         const serviceArea = r.serviceArea || r.notes || '—';
-        const campStyle = CAMP_ROW_STYLES[r.campId] || { bg: '#f8fafc', border: '#c9d6de' };
+        const campStyle = getCampRowStyle(r);
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
         return `<tr class="camp-tint" style="${rowStyle}">
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
-          <td style="font-size:12px;color:var(--mid)">${esc(campLabel)}</td>
+          <td class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
           <td>${esc(r.phone)}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
