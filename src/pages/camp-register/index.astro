@@ -392,40 +392,41 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   background: linear-gradient(135deg, #f0fdfa 0%, #f7fffe 100%);
   border: 1.5px dashed rgba(13,148,136,0.35);
   border-radius: 14px;
-  padding: 18px 22px;
-  display: flex; align-items: center; gap: 16px;
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
   transition: border-color .22s, box-shadow .22s;
 }
 .crp-staff-card:hover { border-color: rgba(13,148,136,0.55); box-shadow: 0 6px 24px rgba(13,148,136,0.10); }
 .crp-staff-card-icon {
-  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
   background: rgba(13,148,136,0.12); color: #0d9488;
   display: flex; align-items: center; justify-content: center;
 }
-.crp-staff-card-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.crp-staff-card-body { flex: 1; min-width: 0; }
+.crp-staff-card-icon svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.crp-staff-card-body { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; }
+.crp-staff-card-info { flex: 1; min-width: 0; }
 .crp-staff-card-tag {
-  font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-  color: #0d9488; margin-bottom: 4px;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #0d9488; margin-bottom: 2px;
 }
 .crp-staff-card-camp {
-  font-size: 15px; font-weight: 800; color: #0d2b26; line-height: 1.25;
-  word-break: keep-all; margin-bottom: 4px;
+  font-size: 13px; font-weight: 700; color: #0d2b26; line-height: 1.3;
+  word-break: keep-all; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.crp-staff-card-sub { font-size: 12px; color: #5a7a74; margin-top: 0; display: flex; align-items: center; gap: 8px; }
-.crp-staff-card-sub-label { font-size: 11px; color: #7a9e98; }
 .crp-staff-status-open {
-  display: inline-block; padding: 2px 9px; border-radius: 999px;
-  background: rgba(22,163,74,0.12); color: #15803d; font-size: 11px; font-weight: 700;
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  background: rgba(22,163,74,0.12); color: #15803d; font-size: 10px; font-weight: 700;
+  white-space: nowrap; flex-shrink: 0; margin-top: 4px;
 }
 .crp-staff-status-closed {
-  display: inline-block; padding: 2px 9px; border-radius: 999px;
-  background: rgba(100,116,139,0.12); color: #64748b; font-size: 11px; font-weight: 700;
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  background: rgba(100,116,139,0.12); color: #64748b; font-size: 10px; font-weight: 700;
+  white-space: nowrap; flex-shrink: 0; margin-top: 4px;
 }
 .crp-staff-open-btn {
-  flex-shrink: 0; padding: 9px 18px;
+  flex-shrink: 0; padding: 9px 20px;
   background: #0d9488; color: #fff; border: none; border-radius: 10px;
-  font-size: 12px; font-weight: 700; font-family: var(--f-sans); cursor: pointer;
+  font-size: 13px; font-weight: 700; font-family: var(--f-sans); cursor: pointer;
   white-space: nowrap; transition: background .2s, transform .18s;
 }
 .crp-staff-open-btn:hover { background: #0f766e; transform: translateY(-1px); }
@@ -522,6 +523,36 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .crp-modal-cap-info {
   display: flex; justify-content: space-between; align-items: baseline;
   font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 7px;
+}
+
+#staffModal .crp-staff-modal-head {
+  background: linear-gradient(135deg, #0b5f59 0%, #0f766e 58%, #0d9488 100%);
+}
+#staffModal .crp-staff-modal-badge {
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+}
+#staffModal .crp-staff-modal-badge::before { background: #ffffff; }
+#staffModal .crp-modal-title { color: #ffffff; }
+#staffModal .crp-staff-modal-desc {
+  position: relative;
+  z-index: 1;
+  font-size: 13px;
+  color: #ecfdf5;
+  line-height: 1.6;
+  margin-top: 4px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.16);
+}
+#staffModal .crp-modal-close {
+  background: rgba(7, 89, 81, 0.92);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.62);
+  box-shadow: 0 8px 22px rgba(4, 47, 46, 0.24);
+}
+#staffModal .crp-modal-close:hover {
+  background: #064e49;
+  transform: scale(1.04);
 }
 .crp-modal-cap-info strong { font-size: 15px; font-weight: 700; color: #fff; }
 .crp-modal-cap-track {
@@ -1099,18 +1130,14 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     </div>
                     <div class="crp-staff-card-body">
-                      <div class="crp-staff-card-tag">STAFF · VOLUNTEER</div>
-                      <div class="crp-staff-card-camp">
-                        <span class="wl-ko">{d.title_ko}</span>
-                        <span class="wl-en">{d.title_en}</span>
-                      </div>
-                      <div class="crp-staff-card-sub">
+                      <div class="crp-staff-card-info">
+                        <div class="crp-staff-card-tag">STAFF · VOLUNTEER</div>
+                        <div class="crp-staff-card-camp">
+                          <span class="wl-ko">{d.title_ko}</span>
+                          <span class="wl-en">{d.title_en}</span>
+                        </div>
                         <span class="crp-staff-status crp-staff-status-open">
                           <span class="wl-ko">지원 가능</span><span class="wl-en">Open</span>
-                        </span>
-                        <span class="crp-staff-card-sub-label">
-                          <span class="wl-ko">스태프 · 봉사자 지원</span>
-                          <span class="wl-en">Staff / Volunteer</span>
                         </span>
                       </div>
                     </div>
@@ -1676,7 +1703,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
         <span class="wl-ko">스태프 · 봉사자 지원</span><span class="wl-en">Staff / Volunteer Application</span>
       </div>
       <div class="crp-modal-title" id="staffModalTitle"></div>
-      <div style="font-size:13px;color:rgba(167,243,208,0.85);line-height:1.6;margin-top:4px;">
+      <div class="crp-staff-modal-desc">
         <span class="wl-ko">섬기고 싶은 분야를 자유롭게 적어주세요. 담당자가 개별 연락드립니다.</span>
         <span class="wl-en">Let us know how you'd like to serve. Our team will contact you individually.</span>
       </div>
@@ -1743,8 +1770,8 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
             <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
             <strong class="wl-en">I consent to the collection and use of personal information.</strong>
             <br>
-            <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일, 교회, 섬기고 싶은 분야 &nbsp;·&nbsp; 목적: 캠프 스태프 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 1년</span>
-            <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email, church, service area &nbsp;·&nbsp; Purpose: staff management &nbsp;·&nbsp; Retention: 1 year after camp ends</span>
+            <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일, 교회, 섬기고 싶은 분야 &nbsp;·&nbsp; 목적: 캠프 스태프 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
+            <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email, church, service area &nbsp;·&nbsp; Purpose: staff management &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
           </label>
         </label>
 
