@@ -58,50 +58,63 @@
     <!-- CAMP CARDS -->
     <div class="camp-cards" id="campCards"></div>
 
-    <!-- DASHBOARD CARDS -->
-    <div class="dash-grid">
-      <div class="dash-card">
-        <div class="dash-label">총 신청</div>
-        <div class="dash-value" id="dTotal">—</div>
-        <div class="dash-sub" id="dTotalSub">불러오는 중…</div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-label" style="color:#16a34a">확정</div>
-        <div class="dash-value" id="dConfirmed" style="color:#16a34a">—</div>
-        <div class="dash-sub" id="dConfirmedSub">입금 확인 완료</div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-label" style="color:#d97706">미확정</div>
-        <div class="dash-value" id="dPending" style="color:#d97706">—</div>
-        <div class="dash-sub" id="dPendingSub">입금 대기 중</div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-label">잔여 정원</div>
-        <div class="dash-value green" id="dRemain">—</div>
-        <div class="dash-sub" id="dRemainSub">정원 기준</div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-label" style="color:#b45309">예비 신청</div>
-        <div class="dash-value" id="dWaitlist" style="color:#d97706">—</div>
-        <div class="dash-sub" id="dWaitlistSub">예비 대기 인원</div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-label">마감률</div>
-        <div class="dash-value" id="dPct">—</div>
-        <div class="dash-sub" id="dPctSub">확정 / 정원</div>
-      </div>
-    </div>
-    <!-- 성별 카드 (확정 기준) -->
-    <div class="dash-grid" style="margin-top:-8px;">
-      <div class="dash-card" style="padding:12px 20px;">
-        <div class="dash-label" style="color:#3b82f6;font-size:11px;">확정 남학생</div>
-        <div class="dash-value" id="dMale" style="color:#3b82f6;font-size:22px;">—</div>
-      </div>
-      <div class="dash-card" style="padding:12px 20px;">
-        <div class="dash-label" style="color:#ec4899;font-size:11px;">확정 여학생</div>
-        <div class="dash-value" id="dFemale" style="color:#ec4899;font-size:22px;">—</div>
-      </div>
-      <div style="grid-column:span 3"></div>
+    <!-- STATS TABLE -->
+    <div class="stats-wrap">
+      <table class="stats-tbl">
+        <thead>
+          <tr>
+            <th>총 신청</th>
+            <th class="c-green">확정</th>
+            <th class="c-orange">미확정</th>
+            <th>잔여 정원</th>
+            <th class="c-amber">예비 신청</th>
+            <th class="c-teal">스태프 지원</th>
+            <th>마감률</th>
+            <th class="c-blue">남학생 (확정)</th>
+            <th class="c-pink">여학생 (확정)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong class="sv" id="dTotal">—</strong>
+              <small id="dTotalSub">불러오는 중…</small>
+            </td>
+            <td>
+              <strong class="sv c-green" id="dConfirmed">—</strong>
+              <small id="dConfirmedSub">명 확정 완료</small>
+            </td>
+            <td>
+              <strong class="sv c-orange" id="dPending">—</strong>
+              <small id="dPendingSub">입금 대기 중</small>
+            </td>
+            <td>
+              <strong class="sv c-green" id="dRemain">—</strong>
+              <small id="dRemainSub">정원 기준</small>
+            </td>
+            <td>
+              <strong class="sv c-amber" id="dWaitlist">—</strong>
+              <small id="dWaitlistSub">예비 대기 인원</small>
+            </td>
+            <td>
+              <strong class="sv c-teal" id="dStaff">—</strong>
+              <small id="dStaffSub">지원 현황</small>
+            </td>
+            <td>
+              <strong class="sv" id="dPct">—</strong>
+              <small id="dPctSub">확정 / 정원</small>
+            </td>
+            <td>
+              <strong class="sv c-blue" id="dMale">—</strong>
+              <small>확정 기준</small>
+            </td>
+            <td>
+              <strong class="sv c-pink" id="dFemale">—</strong>
+              <small>확정 기준</small>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- PROGRESS -->
@@ -384,20 +397,25 @@
       const waitlistRegs = campRegs.filter(r => r.isWaitlist === true);
       const waitlistCount = waitlistRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
 
+      const staffRegs = regs.filter(r => r.registrationType === 'staff');
+      const staffCount = staffRegs.length;
+
       document.getElementById('dTotal').textContent = total;
       document.getElementById('dTotalSub').textContent = `명 (확정 ${confirmed} / 미확정 ${pending})`;
       document.getElementById('dConfirmed').textContent = confirmed;
-      document.getElementById('dConfirmedSub').textContent = '명 확정 완료';
+      document.getElementById('dConfirmedSub').textContent = confirmed > 0 ? `명 확정 완료` : '없음';
       document.getElementById('dPending').textContent = pending;
-      document.getElementById('dPendingSub').textContent = pending > 0 ? '명 입금 대기' : '없음';
+      document.getElementById('dPendingSub').textContent = pending > 0 ? `명 입금 대기` : '없음';
       document.getElementById('dWaitlist').textContent = waitlistCount;
-      document.getElementById('dWaitlistSub').textContent = waitlistCount > 0 ? `명 (예비 대기 중)` : '없음';
+      document.getElementById('dWaitlistSub').textContent = waitlistCount > 0 ? `명 예비 대기` : '없음';
+      document.getElementById('dStaff').textContent = staffCount;
+      document.getElementById('dStaffSub').textContent = staffCount > 0 ? `명 지원` : '없음';
       document.getElementById('dMale').textContent = maleTotal;
       document.getElementById('dFemale').textContent = femaleTotal;
       document.getElementById('dRemain').textContent = remain;
       document.getElementById('dRemainSub').textContent = `정원 ${cap}명 기준`;
       document.getElementById('dPct').textContent = pct + '%';
-      document.getElementById('dPct').className = 'dash-value' + (pct >= 100 ? ' red' : pct >= 80 ? ' orange' : '');
+      document.getElementById('dPct').className = 'sv' + (pct >= 100 ? ' c-red' : pct >= 80 ? ' c-orange' : '');
       document.getElementById('dPctSub').textContent = `${confirmed} / ${cap}`;
 
       const campName = CAMP_LABELS[activeCamp] || '전체';

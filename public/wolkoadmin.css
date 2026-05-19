@@ -214,15 +214,47 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
 }
 .camp-card-sep { width: 1px; height: 28px; background: var(--border); }
 
-/* ── DASHBOARD CARDS ── */
-.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
-.dash-card { background: var(--card); border-radius: 12px; padding: 20px 22px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,79,104,0.05); }
-.dash-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: var(--light); font-family: var(--f-sans); margin-bottom: 8px; text-transform: uppercase; }
-.dash-value { font-size: 32px; font-weight: 700; font-family: var(--f-sans); color: var(--blue); line-height: 1; margin-bottom: 6px; }
-.dash-value.green { color: var(--green); }
-.dash-value.orange { color: var(--orange); }
-.dash-value.red { color: var(--red); }
-.dash-sub { font-size: 12px; color: var(--light); }
+/* ── STATS TABLE ── */
+.stats-wrap {
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 28px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,79,104,0.05);
+}
+.stats-tbl { width: 100%; border-collapse: collapse; }
+.stats-tbl thead tr { border-bottom: 1px solid var(--border); }
+.stats-tbl thead th {
+  padding: 11px 20px 9px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  font-family: var(--f-sans); color: var(--light);
+  text-align: left; white-space: nowrap;
+}
+.stats-tbl thead th.c-green  { color: var(--green); }
+.stats-tbl thead th.c-orange { color: var(--orange); }
+.stats-tbl thead th.c-amber  { color: #b45309; }
+.stats-tbl thead th.c-teal   { color: #0d9488; }
+.stats-tbl thead th.c-blue   { color: #3b82f6; }
+.stats-tbl thead th.c-pink   { color: #db2777; }
+.stats-tbl tbody td {
+  padding: 14px 20px 16px;
+  vertical-align: top;
+  border-right: 1px solid var(--border);
+}
+.stats-tbl tbody td:last-child { border-right: none; }
+.sv {
+  display: block; font-size: 26px; font-weight: 700;
+  font-family: var(--f-sans); color: var(--blue); line-height: 1; margin-bottom: 4px;
+}
+.sv.c-green  { color: var(--green); }
+.sv.c-orange { color: var(--orange); }
+.sv.c-amber  { color: #d97706; }
+.sv.c-teal   { color: #0d9488; }
+.sv.c-blue   { color: #3b82f6; }
+.sv.c-pink   { color: #db2777; }
+.sv.c-red    { color: var(--red); }
+.stats-tbl small { font-size: 11px; color: var(--light); display: block; line-height: 1.4; margin-top: 3px; }
 
 /* ── PROGRESS BAR ── */
 .progress-wrap { margin-bottom: 28px; }
