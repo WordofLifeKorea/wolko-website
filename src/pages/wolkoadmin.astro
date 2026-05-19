@@ -348,7 +348,8 @@
 
     function updateCardStats() {
       CAMPS_ALL.forEach(c => {
-        const regs = c.id === 'all' ? allRegs : allRegs.filter(r => r.campId === c.id);
+        const regs = (c.id === 'all' ? allRegs : allRegs.filter(r => r.campId === c.id))
+          .filter(r => r.registrationType !== 'staff');
         const total = regs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
         const remain = Math.max(0, c.capacity - total);
         const regEl = document.getElementById(`card-${c.id}-reg`);
