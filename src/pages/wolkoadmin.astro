@@ -362,11 +362,14 @@
       const regs = filteredRegs();
       const cap = CAMP_CAP[activeCamp] || 280;
 
-      // 확정/미확정 분리 (confirmed === undefined = 구 데이터 = 확정된 것으로 취급)
-      const confirmedRegs = regs.filter(r => r.confirmed !== false);
-      const pendingRegs   = regs.filter(r => r.confirmed === false);
+      // 스태프 신청은 정원 집계에서 제외
+      const campRegs = regs.filter(r => r.registrationType !== 'staff');
 
-      const total     = regs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      // 확정/미확정 분리 (confirmed === undefined = 구 데이터 = 확정된 것으로 취급)
+      const confirmedRegs = campRegs.filter(r => r.confirmed !== false);
+      const pendingRegs   = campRegs.filter(r => r.confirmed === false);
+
+      const total     = campRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
       const confirmed = confirmedRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
       const pending   = pendingRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
       const remain    = Math.max(0, cap - confirmed);
@@ -378,7 +381,7 @@
       const femaleTotal = confirmedRegs.reduce((s, r) =>
         r.registrationType === 'group' ? s + (r.femaleCount || 0) : s + (r.gender === 'female' ? 1 : 0), 0);
 
-      const waitlistRegs = regs.filter(r => r.isWaitlist === true);
+      const waitlistRegs = campRegs.filter(r => r.isWaitlist === true);
       const waitlistCount = waitlistRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
 
       document.getElementById('dTotal').textContent = total;
@@ -442,7 +445,9 @@
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const campLabel = CAMP_LABELS[r.campId] || r.campId;
-        const typeBadge = r.registrationType === 'group'
+        const typeBadge = r.registrationType === 'staff'
+          ? `<span class="badge" style="background:rgba(13,148,136,0.12);color:#0d9488;">스태프</span>`
+          : r.registrationType === 'group'
           ? `<span class="badge badge-group">단체</span>`
           : `<span class="badge badge-individual">개인</span>`;
         const gradeOrCount = r.registrationType === 'group' ? `${r.groupCount}명` : (r.grade || '—');

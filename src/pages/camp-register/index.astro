@@ -385,6 +385,62 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 }
 .crp-btn-contact:hover { background: #a82330 !important; color: #fff !important; transform: translateY(-2px); }
 
+/* ── STAFF CARD ── */
+.crp-camp-pair { display: flex; flex-direction: column; gap: 10px; }
+.crp-staff-card {
+  background: linear-gradient(135deg, #f0fdfa 0%, #f7fffe 100%);
+  border: 1.5px dashed rgba(13,148,136,0.35);
+  border-radius: 14px;
+  padding: 18px 22px;
+  display: flex; align-items: center; gap: 16px;
+  transition: border-color .22s, box-shadow .22s;
+}
+.crp-staff-card:hover { border-color: rgba(13,148,136,0.55); box-shadow: 0 6px 24px rgba(13,148,136,0.10); }
+.crp-staff-card-icon {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  background: rgba(13,148,136,0.12); color: #0d9488;
+  display: flex; align-items: center; justify-content: center;
+}
+.crp-staff-card-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.crp-staff-card-body { flex: 1; min-width: 0; }
+.crp-staff-card-tag {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #0d9488; margin-bottom: 3px;
+}
+.crp-staff-card-title { font-size: 14px; font-weight: 700; color: #0f2922; line-height: 1.3; word-break: keep-all; }
+.crp-staff-card-sub { font-size: 12px; color: #5a7a74; margin-top: 2px; }
+.crp-staff-status-open {
+  display: inline-block; padding: 2px 9px; border-radius: 999px;
+  background: rgba(22,163,74,0.12); color: #15803d; font-size: 11px; font-weight: 700;
+}
+.crp-staff-status-closed {
+  display: inline-block; padding: 2px 9px; border-radius: 999px;
+  background: rgba(100,116,139,0.12); color: #64748b; font-size: 11px; font-weight: 700;
+}
+.crp-staff-open-btn {
+  flex-shrink: 0; padding: 9px 18px;
+  background: #0d9488; color: #fff; border: none; border-radius: 10px;
+  font-size: 12px; font-weight: 700; font-family: var(--f-sans); cursor: pointer;
+  white-space: nowrap; transition: background .2s, transform .18s;
+}
+.crp-staff-open-btn:hover { background: #0f766e; transform: translateY(-1px); }
+.crp-staff-open-btn:disabled { background: rgba(100,116,139,0.18); color: #64748b; cursor: default; transform: none; }
+
+/* Staff Modal */
+.crp-staff-modal-head {
+  padding: 32px 40px 24px;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  border-radius: 20px 20px 0 0;
+  position: relative; overflow: hidden;
+}
+.crp-staff-modal-head::after {
+  content:''; position:absolute; top:-50px; right:-50px;
+  width:180px; height:180px; border-radius:50%;
+  background:rgba(167,243,208,0.10); pointer-events:none;
+}
+.crp-staff-modal-head .crp-modal-badge { color: rgba(167,243,208,0.9); }
+.crp-staff-modal-head .crp-modal-badge::before { background: rgba(167,243,208,0.9); }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 960px) {
   .crp-reg-grid { grid-template-columns: 1fr 1fr; }
@@ -872,6 +928,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                 const st = statusLabel[d.status] ?? { ko: d.status, en: d.status, cls: '' };
                 const canRegister = d.status === 'open';
                 return (
+                  <div class="crp-camp-pair">
                   <div class="crp-reg-card">
                     <div class="crp-reg-card-top">
                       <span class="crp-type-badge">
@@ -1020,6 +1077,40 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
                       </span>
                     )}
                   </div>
+                  {/* ── 스태프 카드 ── */}
+                  <div
+                    class="crp-staff-card"
+                    data-camp-id={s.id}
+                    data-camp-name-ko={d.title_ko}
+                    data-camp-name-en={d.title_en}
+                    data-start-date={(d as any).start_date ?? ''}
+                  >
+                    <div class="crp-staff-card-icon">
+                      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div class="crp-staff-card-body">
+                      <div class="crp-staff-card-tag">STAFF · VOLUNTEER</div>
+                      <div class="crp-staff-card-title">
+                        <span class="wl-ko">스태프 · 봉사자 지원</span>
+                        <span class="wl-en">Staff / Volunteer Application</span>
+                      </div>
+                      <div class="crp-staff-card-sub">
+                        <span class="crp-staff-status crp-staff-status-open">
+                          <span class="wl-ko">지원 가능</span><span class="wl-en">Open</span>
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      class="crp-staff-open-btn"
+                      data-camp-id={s.id}
+                      data-camp-name-ko={d.title_ko}
+                      data-camp-name-en={d.title_en}
+                    >
+                      <span class="wl-ko">지원하기 →</span>
+                      <span class="wl-en">Apply →</span>
+                    </button>
+                  </div>
+                  </div>{/* end crp-camp-pair */}
                 );
               })}
             </div>
@@ -1555,6 +1646,103 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   </div>
 </div>
 
+<!-- ── 스태프 신청 모달 ── -->
+<div id="staffModal" class="crp-reg-modal" hidden aria-modal="true" role="dialog">
+  <div class="crp-modal-overlay" id="staffOverlay"></div>
+  <div class="crp-modal-card" style="max-width:580px;">
+    <button class="crp-modal-close" id="staffCloseBtn" aria-label="닫기">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <!-- 헤더 -->
+    <div class="crp-modal-head crp-staff-modal-head">
+      <div class="crp-modal-badge">
+        <span class="wl-ko">스태프 · 봉사자 지원</span><span class="wl-en">Staff / Volunteer Application</span>
+      </div>
+      <div class="crp-modal-title" id="staffModalTitle"></div>
+      <div style="font-size:13px;color:rgba(167,243,208,0.85);line-height:1.6;margin-top:4px;">
+        <span class="wl-ko">섬기고 싶은 분야를 자유롭게 적어주세요. 담당자가 개별 연락드립니다.</span>
+        <span class="wl-en">Let us know how you'd like to serve. Our team will contact you individually.</span>
+      </div>
+    </div>
+
+    <!-- 폼 -->
+    <div class="crp-form-wrap" id="staffFormWrap">
+      <form id="staffForm" novalidate style="padding:28px 36px 32px;">
+        <input type="hidden" id="staffCampId">
+
+        <div class="crp-form-grid">
+          <div class="crp-field">
+            <label><span class="wl-ko">이름</span><span class="wl-en">Name</span> <span class="req">*</span></label>
+            <input id="staffName" name="name" placeholder="홍길동">
+          </div>
+          <div class="crp-field">
+            <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
+            <input id="staffPhone" name="phone" placeholder="010-0000-0000">
+          </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
+            <input id="staffEmail" name="email" type="email" placeholder="example@email.com">
+          </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">교회</span><span class="wl-en">Church</span></label>
+            <input id="staffChurch" name="church" placeholder="소속 교회명">
+          </div>
+          <div class="crp-field crp-field--full">
+            <label>
+              <span class="wl-ko">섬기고 싶은 분야</span>
+              <span class="wl-en">Area of Service</span>
+              <span class="req">*</span>
+            </label>
+            <textarea id="staffServiceArea" name="serviceArea" rows="3"
+              placeholder="예) 상담자, IT, 프로덕션, 프로그램팀, 영어 & 성경 수업"
+              style="resize:vertical;min-height:72px;"></textarea>
+          </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">메모 (선택)</span><span class="wl-en">Notes (optional)</span></label>
+            <textarea id="staffNotes" name="notes" rows="2" style="resize:vertical;min-height:54px;"></textarea>
+          </div>
+        </div>
+
+        <!-- 개인정보 동의 -->
+        <div style="margin-top:16px;padding:14px 16px;background:#f0fdfa;border:1px solid rgba(13,148,136,0.18);border-radius:10px;">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="staffPrivacyConsent" style="margin-top:2px;flex-shrink:0;accent-color:#0d9488;">
+            <span style="font-size:13px;line-height:1.7;color:#2d4a44;">
+              <span class="wl-ko"><strong>개인정보 수집 및 이용에 동의합니다.</strong><br>수집 항목: 이름, 연락처, 이메일, 교회, 섬기고 싶은 분야 / 목적: 캠프 스태프 운영 관리 / 보유 기간: 해당 캠프 종료 후 1년</span>
+              <span class="wl-en"><strong>I consent to the collection and use of personal information.</strong><br>Items: name, phone, email, church, service area / Purpose: camp staff management / Retention: 1 year after camp ends</span>
+            </span>
+          </label>
+        </div>
+
+        <p id="staffErrorMsg" class="crp-error-msg" hidden></p>
+
+        <button type="submit" class="crp-submit-btn" id="staffSubmitBtn" style="margin-top:20px;background:linear-gradient(135deg,#0f766e,#0d9488);box-shadow:0 4px 16px rgba(13,148,136,0.28);">
+          <span class="crp-submit-label wl-ko">스태프 지원하기 →</span>
+          <span class="crp-submit-label wl-en">Submit Application →</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- 성공 화면 -->
+    <div id="staffSuccessWrap" hidden style="padding:40px 36px 44px;text-align:center;">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(13,148,136,0.12);color:#0d9488;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h3 style="font-size:20px;font-weight:800;color:#0f2922;margin-bottom:10px;">
+        <span class="wl-ko">지원이 접수되었습니다!</span>
+        <span class="wl-en">Application Received!</span>
+      </h3>
+      <p id="staffSuccessMsg" style="font-size:14px;line-height:1.8;color:#5a7a74;margin-bottom:24px;"></p>
+      <button id="staffSuccessClose" class="crp-submit-btn" style="max-width:240px;margin:0 auto;background:linear-gradient(135deg,#0f766e,#0d9488);">
+        <span class="wl-ko">닫기</span><span class="wl-en">Close</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ── Reveal 애니메이션 ── */
 var obs = new IntersectionObserver(function(entries) {
@@ -2043,6 +2231,124 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     }
   }, 1000);
 });
+
+/* ══ STAFF MODAL ══ */
+(function() {
+  var staffModal      = document.getElementById('staffModal');
+  var staffModalTitle = document.getElementById('staffModalTitle');
+  var staffFormWrap   = document.getElementById('staffFormWrap');
+  var staffSuccessWrap= document.getElementById('staffSuccessWrap');
+  var staffErrorMsg   = document.getElementById('staffErrorMsg');
+  var staffSubmitBtn  = document.getElementById('staffSubmitBtn');
+  var staffCampIdInput= document.getElementById('staffCampId');
+
+  // 스태프 카드 start_date 체크 → 버튼/상태 업데이트
+  document.querySelectorAll('.crp-staff-card').forEach(function(card) {
+    var startDate = card.dataset.startDate;
+    var btn  = card.querySelector('.crp-staff-open-btn');
+    var stat = card.querySelector('.crp-staff-status');
+    if (startDate && new Date() >= new Date(startDate)) {
+      if (btn)  { btn.disabled = true; }
+      if (stat) {
+        stat.className = 'crp-staff-status crp-staff-status-closed';
+        stat.innerHTML = '<span class="wl-ko">마감</span><span class="wl-en">Closed</span>';
+      }
+    }
+  });
+
+  // 모달 열기
+  document.querySelectorAll('.crp-staff-open-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (btn.disabled) return;
+      staffCampIdInput.value = btn.dataset.campId || '';
+      staffModalTitle.textContent = crpIsEn()
+        ? (btn.dataset.campNameEn || '')
+        : (btn.dataset.campNameKo || '');
+      document.getElementById('staffForm').reset();
+      staffFormWrap.hidden  = false;
+      staffSuccessWrap.hidden = true;
+      staffErrorMsg.hidden  = true;
+      staffSubmitBtn.disabled = false;
+      staffSubmitBtn.classList.remove('loading');
+      staffModal.hidden = false;
+      document.body.style.overflow = 'hidden';
+    });
+  });
+
+  // 모달 닫기
+  function closeStaffModal() {
+    staffModal.hidden = true;
+    document.body.style.overflow = '';
+  }
+  document.getElementById('staffOverlay').addEventListener('click', closeStaffModal);
+  document.getElementById('staffCloseBtn').addEventListener('click', closeStaffModal);
+  document.getElementById('staffSuccessClose').addEventListener('click', closeStaffModal);
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !staffModal.hidden) closeStaffModal();
+  });
+
+  // 폼 제출
+  document.getElementById('staffForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    staffErrorMsg.hidden = true;
+
+    var name        = document.getElementById('staffName').value.trim();
+    var phone       = document.getElementById('staffPhone').value.trim();
+    var email       = document.getElementById('staffEmail').value.trim();
+    var church      = document.getElementById('staffChurch').value.trim();
+    var serviceArea = document.getElementById('staffServiceArea').value.trim();
+    var notes       = document.getElementById('staffNotes').value.trim();
+    var privacy     = document.getElementById('staffPrivacyConsent').checked;
+    var campId      = staffCampIdInput.value;
+
+    if (!name || !phone || !email) {
+      staffErrorMsg.textContent = '이름, 연락처, 이메일은 필수 항목입니다. / Name, phone, and email are required.';
+      staffErrorMsg.hidden = false;
+      return;
+    }
+    if (!serviceArea) {
+      staffErrorMsg.textContent = '섬기고 싶은 분야를 입력해주세요. / Please enter your area of service.';
+      staffErrorMsg.hidden = false;
+      return;
+    }
+    if (!privacy) {
+      staffErrorMsg.textContent = '개인정보 수집 및 이용에 동의해주세요. / Please consent to the privacy policy.';
+      staffErrorMsg.hidden = false;
+      return;
+    }
+
+    staffSubmitBtn.disabled = true;
+    staffSubmitBtn.classList.add('loading');
+
+    try {
+      var res = await fetch('/api/staff-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campId, name, phone, email, church, serviceArea, notes }),
+      });
+      var data = await res.json();
+
+      if (res.ok && data.success) {
+        staffFormWrap.hidden   = true;
+        staffSuccessWrap.hidden = false;
+        var isEn = crpIsEn();
+        document.getElementById('staffSuccessMsg').innerHTML = isEn
+          ? '<strong>' + name + '</strong>, your staff application has been received.<br>Our team will contact you individually regarding your service area.'
+          : '<strong>' + name + '</strong>님의 스태프 지원이 접수되었습니다.<br>섬기실 분야에 대해 담당자가 개별적으로 연락드릴 예정입니다.';
+      } else {
+        staffErrorMsg.textContent = data.error || '오류가 발생했습니다. 다시 시도해주세요.';
+        staffErrorMsg.hidden = false;
+        staffSubmitBtn.disabled = false;
+        staffSubmitBtn.classList.remove('loading');
+      }
+    } catch(err) {
+      staffErrorMsg.textContent = '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+      staffErrorMsg.hidden = false;
+      staffSubmitBtn.disabled = false;
+      staffSubmitBtn.classList.remove('loading');
+    }
+  });
+})();
 </script>
 
 </BaseLayout>
