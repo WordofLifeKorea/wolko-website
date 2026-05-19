@@ -151,9 +151,21 @@
         <table>
           <thead>
             <tr>
-              <th>#</th><th>상태</th><th>캠프</th><th>유형</th><th>이름</th><th>연락처</th>
-              <th>이메일</th><th>학년 / 인원</th><th>성별</th><th>교회</th><th>학교</th>
-              <th>비상연락처</th><th>메모</th><th>신청일시</th><th>삭제</th>
+              <th>#</th>
+              <th><button class="sort-btn" type="button" data-sort="status">상태</button></th>
+              <th><button class="sort-btn" type="button" data-sort="camp">캠프</button></th>
+              <th><button class="sort-btn" type="button" data-sort="type">유형</button></th>
+              <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
+              <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
+              <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
+              <th><button class="sort-btn" type="button" data-sort="grade">학년 / 인원</button></th>
+              <th><button class="sort-btn" type="button" data-sort="gender">성별</button></th>
+              <th><button class="sort-btn" type="button" data-sort="church">교회</button></th>
+              <th><button class="sort-btn" type="button" data-sort="school">학교</button></th>
+              <th><button class="sort-btn" type="button" data-sort="emergency">비상연락처</button></th>
+              <th><button class="sort-btn" type="button" data-sort="notes">메모</button></th>
+              <th><button class="sort-btn" type="button" data-sort="registeredAt">신청일시</button></th>
+              <th>삭제</th>
             </tr>
           </thead>
           <tbody id="campRegBody">
@@ -186,8 +198,15 @@
         <table>
           <thead>
             <tr>
-              <th>#</th><th>캠프</th><th>이름</th><th>연락처</th><th>이메일</th>
-              <th>교회</th><th>섬기고 싶은 분야</th><th>신청일시</th><th>삭제</th>
+              <th>#</th>
+              <th><button class="sort-btn" type="button" data-sort="camp">캠프</button></th>
+              <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
+              <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
+              <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
+              <th><button class="sort-btn" type="button" data-sort="church">교회</button></th>
+              <th><button class="sort-btn" type="button" data-sort="serviceArea">섬기고 싶은 분야</button></th>
+              <th><button class="sort-btn" type="button" data-sort="registeredAt">신청일시</button></th>
+              <th>삭제</th>
             </tr>
           </thead>
           <tbody id="staffRegBody">
@@ -241,9 +260,18 @@
       .concat(CAMP_GROUPS.flatMap(g => g.camps));
     const CAMP_LABELS = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.title]));
     const CAMP_CAP    = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.capacity]));
+    const CAMP_ROW_STYLES = {
+      '2026-inland-english-junior': { bg: '#eef8ff', border: '#74b8dc' },
+      '2026-inland-union': { bg: '#fff6df', border: '#e8bc59' },
+      '2026-jeju-english': { bg: '#eefbf3', border: '#72c99b' },
+      '2026-jeju-momentum-1': { bg: '#f6f1ff', border: '#aa8be8' },
+      '2026-jeju-momentum-2': { bg: '#fff0f5', border: '#e48fb0' },
+      '2026-test-camp': { bg: '#f2f6f8', border: '#9ab3c0' },
+    };
 
     let allRegs = [];
     let activeCamp = 'all';
+    let sortState = { key: 'registeredAt', direction: 'desc' };
     let authToken = sessionStorage.getItem('wolko-admin-token') || '';
 
     // ── Login ──
@@ -398,6 +426,50 @@
       return allRegs.filter(r => r.campId === activeCamp);
     }
 
+    function sortValue(reg, key) {
+      if (key === 'camp') return CAMP_LABELS[reg.campId] || reg.campId || '';
+      if (key === 'type') return reg.registrationType === 'group' ? '단체' : '개인';
+      if (key === 'status') return reg.confirmed === false ? '미확정' : '확정';
+      if (key === 'grade') return reg.registrationType === 'group' ? (reg.groupCount || 0) : (reg.grade || '');
+      if (key === 'gender') {
+        if (reg.registrationType === 'group') return `${reg.maleCount || 0}-${reg.femaleCount || 0}`;
+        return reg.gender || '';
+      }
+      if (key === 'registeredAt') return new Date(reg.registeredAt || 0).getTime();
+      return String(reg[key] || '').trim();
+    }
+
+    function sortedRegs(regs) {
+      const { key, direction } = sortState;
+      const dir = direction === 'asc' ? 1 : -1;
+      return [...regs].sort((a, b) => {
+        const av = sortValue(a, key);
+        const bv = sortValue(b, key);
+        if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+        return String(av).localeCompare(String(bv), ['ko', 'en'], { numeric: true, sensitivity: 'base' }) * dir;
+      });
+    }
+
+    function updateSortButtons() {
+      document.querySelectorAll('.sort-btn').forEach(btn => {
+        const active = btn.dataset.sort === sortState.key;
+        btn.classList.toggle('active', active);
+        btn.dataset.direction = active ? sortState.direction : '';
+        btn.setAttribute('aria-sort', active ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none');
+      });
+    }
+
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.sort;
+        sortState = {
+          key,
+          direction: sortState.key === key && sortState.direction === 'asc' ? 'desc' : 'asc',
+        };
+        renderTable();
+      });
+    });
+
     // ── Dashboard ──
     function renderDash() {
       const regs = filteredRegs();
@@ -469,12 +541,13 @@
 
     // ── Tables ──
     function renderTable() {
+      updateSortButtons();
       renderCampTable();
       renderStaffTable();
     }
 
     function renderCampTable() {
-      const regs = filteredRegs().filter(r => r.registrationType !== 'staff');
+      const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
       const tbody = document.getElementById('campRegBody');
       document.getElementById('campTableCount').textContent = `(${regs.length}건)`;
 
@@ -528,8 +601,11 @@
                <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">미확정</span>${waitlistBadge}</span>
                <button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">확정</button>
              </span>`;
+        const campStyle = CAMP_ROW_STYLES[r.campId] || { bg: '#f8fafc', border: '#c9d6de' };
+        const rowClass = `camp-tint${isConfirmed ? '' : ' is-pending'}`;
+        const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
 
-        return `<tr${isConfirmed ? '' : ' style="background:rgba(217,119,6,0.04);"'}>
+        return `<tr class="${rowClass}" style="${rowStyle}">
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
           <td>${statusCell}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(campLabel)}</td>
@@ -550,7 +626,7 @@
     }
 
     function renderStaffTable() {
-      const regs = filteredRegs().filter(r => r.registrationType === 'staff');
+      const regs = sortedRegs(filteredRegs().filter(r => r.registrationType === 'staff'));
       const tbody = document.getElementById('staffRegBody');
       document.getElementById('staffTableCount').textContent = `(${regs.length}건)`;
 
@@ -573,7 +649,9 @@
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const campLabel = CAMP_LABELS[r.campId] || r.campId;
         const serviceArea = r.serviceArea || r.notes || '—';
-        return `<tr>
+        const campStyle = CAMP_ROW_STYLES[r.campId] || { bg: '#f8fafc', border: '#c9d6de' };
+        const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
+        return `<tr class="camp-tint" style="${rowStyle}">
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(campLabel)}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
@@ -639,7 +717,7 @@
       const bom = '﻿';
 
       if (type === 'staff') {
-        const regs = filteredRegs().filter(r => r.registrationType === 'staff');
+        const regs = sortedRegs(filteredRegs().filter(r => r.registrationType === 'staff'));
         if (regs.length === 0) { showToast('다운로드할 스태프 데이터가 없습니다.', 'error'); return; }
         const headers = ['번호','캠프','이름','연락처','이메일','교회','섬기고 싶은 분야','신청일시','RegID'];
         const rows = regs.map((r, i) => {
@@ -658,7 +736,7 @@
         a.click(); URL.revokeObjectURL(url);
         showToast('스태프 CSV 다운로드 완료!', 'success');
       } else {
-        const regs = filteredRegs().filter(r => r.registrationType !== 'staff');
+        const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
         if (regs.length === 0) { showToast('다운로드할 신청 데이터가 없습니다.', 'error'); return; }
         const headers = ['번호','상태','캠프','유형','이름','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
         const rows = regs.map((r, i) => {

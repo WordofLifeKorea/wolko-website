@@ -289,6 +289,48 @@ tr:hover td { background: #f8fafc; }
 table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 table th:nth-child(15), table td:nth-child(15) { min-width: 60px; text-align: center; }
 
+.sort-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  padding: 0;
+  text-transform: inherit;
+  white-space: nowrap;
+}
+.sort-btn::after {
+  content: "↕";
+  color: #b8c8d1;
+  font-size: 10px;
+  line-height: 1;
+}
+.sort-btn:hover, .sort-btn.active { color: var(--blue); }
+.sort-btn.active::after { content: "↑"; color: var(--blue); }
+.sort-btn.active[data-direction="desc"]::after { content: "↓"; }
+
+tbody tr.camp-tint td {
+  background: var(--camp-row-bg);
+  border-bottom-color: rgba(0,79,104,0.08);
+}
+tbody tr.camp-tint td:first-child {
+  box-shadow: inset 4px 0 0 var(--camp-row-border);
+}
+tbody tr.camp-tint.is-pending td {
+  background: linear-gradient(90deg, rgba(217,119,6,0.075), rgba(217,119,6,0.075)), var(--camp-row-bg);
+}
+tbody tr.camp-tint:hover td {
+  background: linear-gradient(90deg, rgba(255,255,255,0.42), rgba(255,255,255,0.42)), var(--camp-row-bg);
+}
+tbody tr.camp-tint.is-pending:hover td {
+  background: linear-gradient(90deg, rgba(217,119,6,0.095), rgba(217,119,6,0.095)), linear-gradient(90deg, rgba(255,255,255,0.36), rgba(255,255,255,0.36)), var(--camp-row-bg);
+}
+
 .badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; font-family: var(--f-sans); white-space: nowrap; }
 .badge-individual { background: #e8f4fb; color: #0077a3; }
 .badge-group { background: #fef3e2; color: #c47a00; }
