@@ -1665,6 +1665,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
           <div class="crp-success-bank-amount">
             <span class="wl-ko">예약금</span><span class="wl-en">Deposit</span>
             &nbsp;<strong id="crpDepositAmount">—</strong>
+            <span id="crpDepositBreakdown" style="font-size:12px;color:var(--c-muted);font-weight:400;margin-left:6px;"></span>
           </div>
           <div class="crp-success-bank-info">
             <div class="crp-success-bank-row">
@@ -2251,13 +2252,21 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       var isWaitlistRes = !!data.isWaitlist;
       var waitlistNum = data.waitlistNumber || '';
 
-      // 예약금 금액 표시
+      // 예약금 금액 표시 (단체는 인원 × 1인 예약금)
       var depositAmt = parseInt(campDepositInput.value) || 0;
+      var groupCnt = currentType === 'group' ? (payload.groupCount || 1) : 1;
+      var totalDeposit = depositAmt * groupCnt;
       var depositEl = document.getElementById('crpDepositAmount');
+      var breakdownEl = document.getElementById('crpDepositBreakdown');
       if (depositEl) {
-        depositEl.textContent = depositAmt > 0
-          ? depositAmt.toLocaleString('ko-KR') + '원'
+        depositEl.textContent = totalDeposit > 0
+          ? totalDeposit.toLocaleString('ko-KR') + '원'
           : '—';
+      }
+      if (breakdownEl) {
+        breakdownEl.textContent = (currentType === 'group' && groupCnt > 1 && depositAmt > 0)
+          ? '(' + depositAmt.toLocaleString('ko-KR') + '원 × ' + groupCnt + '명)'
+          : '';
       }
 
       if (currentType === 'group') {
