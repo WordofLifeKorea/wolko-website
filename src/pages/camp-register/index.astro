@@ -2301,6 +2301,30 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
         badge.className = 'crp-status-badge crp-status-open';
         badge.innerHTML = '<span class="wl-ko">신청 중</span><span class="wl-en">Open</span>';
       }
+      // 정원 바 활성화: upcoming → open 전환 시 실시간 신청 현황 표시
+      var capDiv = card.querySelector('.crp-cap');
+      if (capDiv && revealBtn && revealBtn.dataset.campId) {
+        var cid = revealBtn.dataset.campId;
+        var cap = parseInt(revealBtn.dataset.capacity) || 40;
+        capDiv.setAttribute('data-cap-id', cid);
+        capDiv.classList.remove('crp-cap--gray');
+        var capInfo = capDiv.querySelector('.crp-cap-info');
+        if (capInfo) {
+          var capSpan = capInfo.querySelector('span');
+          if (capSpan) capSpan.innerHTML = '<span class="wl-ko">신청 현황</span><span class="wl-en">Spots Filled</span>';
+          var capStrong = capInfo.querySelector('strong');
+          if (capStrong) capStrong.innerHTML = '<span class="crp-cap-count">—</span> / ' + cap + '<span class="wl-ko">명</span>';
+        }
+        fetch('/api/capacity/' + cid).then(function(r) { return r.ok ? r.json() : null; }).then(function(data) {
+          if (!data) return;
+          var subs = data.submissions != null ? data.submissions : (data.count || 0);
+          updateCrpCapBar(capDiv, {
+            count: subs,
+            countMale: data.subsMale != null ? data.subsMale : (data.countMale || 0),
+            countFemale: data.subsFemale != null ? data.subsFemale : (data.countFemale || 0)
+          }, cap);
+        }).catch(function() {});
+      }
     }
   }
 
