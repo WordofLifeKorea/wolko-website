@@ -1,4 +1,5 @@
 ---
+
 name_ko: 카브레라 버니
 name_en: Berny Cabrera
 title_ko: 카운슬러 & 찬양 인도자 · WOLBI 제주
@@ -8,7 +9,7 @@ campus: jeju
 category: stw
 order: 3
 gender: female
-photo_url: /images/uploads/berny.jpg
+photo_url: /images/uploads/berny-photo_url-1779239309510.jpg
 photo_position: "center 42%"
 hero_tagline_ko: 사랑으로
 hero_tagline_en: With Love
@@ -31,4 +32,5 @@ bio_en: |-
   In 2012, her father was diagnosed with a stage four brain tumor, and Berny found herself drifting from God in the midst of confusion and depression. But in 2013, Proverbs 3:5–6 spoke to her heart once again, and she realized she had not been trusting God in every area of her life. At a Word of Life camp bonfire service that year, she made a fresh commitment to surrender her life to the Lord and dedicate herself to full-time ministry. Having served Asian students at the New York Bible Institute, she now joyfully pours into the lives of students at WOLBI Jeju.
 support_url: https://online.mrm.or.kr/B9eBIA2
 support_url_en: https://missions.wol.org/missionaries/628545
+
 ---
