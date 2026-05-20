@@ -34,4 +34,5 @@ support_url_en: https://missions.wol.org/missionaries/628545
 photo_story: /images/uploads/berny-photo_story-1779239411685.jpg
 
 
+
 ---
