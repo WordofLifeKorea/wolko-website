@@ -2,9 +2,11 @@
  * GET  /api/admin/registrations        — list all registrations
  * GET  /api/admin/registrations?campId — filter by camp
  * DELETE /api/admin/registrations?regId=&campId= — delete one registration
+ * PATCH /api/admin/registrations       — confirm registration + send alimtalk
  *
  * Requires: Authorization: Bearer <token>  (issued by /api/admin/login)
  */
+import { sendAlimtalk } from '../../lib/solapi.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -169,7 +171,7 @@ export async function onRequestPatch(context) {
   }
 
   try {
-    const { regId, campId } = await request.json();
+    const { regId, campId, campTitleKo, campDateKo } = await request.json();
     if (!regId || !campId) {
       return Response.json({ error: 'regId와 campId가 필요합니다.' }, { status: 400, headers: CORS });
     }
@@ -211,6 +213,31 @@ export async function onRequestPatch(context) {
     if (spotsF > 0) ops.push(env.CAMP_KV.put(countKeyF, String(newF)));
 
     await Promise.all(ops);
+
+    // 알림톡 발송 (백그라운드 — 응답 속도에 영향 없음)
+    const campName = campTitleKo || campId;
+    const campDate = campDateKo || '';
+
+    const alimtalkPromise = (async () => {
+      if (reg.registrationType === 'group') {
+        const inWon = `남학생 ${reg.maleCount}명 · 여학생 ${reg.femaleCount}명 (총 ${reg.groupCount}명)`;
+        await sendAlimtalk(env, reg.phone, env.KAKAO_TEMPLATE_GROUP, {
+          '#{담당자}': reg.name,
+          '#{캠프명}':  campName,
+          '#{일정}':    campDate,
+          '#{인원}':    inWon,
+          '#{교회명}':  reg.church || '—',
+        });
+      } else {
+        await sendAlimtalk(env, reg.phone, env.KAKAO_TEMPLATE_INDIVIDUAL, {
+          '#{이름}':   reg.name,
+          '#{캠프명}': campName,
+          '#{일정}':   campDate,
+        });
+      }
+    })().catch(e => console.error('alimtalk send failed:', e));
+
+    context.waitUntil(alimtalkPromise);
 
     return Response.json({
       success: true,

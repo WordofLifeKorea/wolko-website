@@ -4,6 +4,7 @@
  * Stored in KV with registrationType: 'staff', no capacity limit.
  */
 import { appendRow } from '../lib/googleSheets.js';
+import { sendAlimtalk } from '../lib/solapi.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -129,7 +130,7 @@ export async function onRequestPost(context) {
 
   try {
     const data = await request.json();
-    const { campId, name, phone, email, church, serviceArea, notes } = data;
+    const { campId, name, phone, email, church, serviceArea, notes, campTitleKo } = data;
 
     if (!campId || !name?.trim() || !phone?.trim() || !email?.trim()) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
@@ -168,6 +169,10 @@ export async function onRequestPost(context) {
       Promise.allSettled([
         sendStaffEmail(env, reg).catch(e => console.error('staff email failed:', e)),
         syncStaffToSheet(env, reg).catch(e => console.error('staff sheets sync failed:', e)),
+        sendAlimtalk(env, reg.phone, env.KAKAO_TEMPLATE_STAFF, {
+          '#{이름}':   reg.name,
+          '#{캠프명}': campTitleKo || reg.campId,
+        }).catch(e => console.error('staff alimtalk failed:', e)),
       ])
     );
 

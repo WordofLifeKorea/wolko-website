@@ -241,8 +241,8 @@
         group: 'wolko',
         label: 'WOLKO 캠프',
         camps: [
-          { id: '2026-inland-english-junior', title: '주니어 영어캠프', capacity: 40 },
-          { id: '2026-inland-union',          title: '교회 연합캠프', capacity: 40 },
+          { id: '2026-inland-english-junior', title: '2026 주니어 영어캠프', dateKo: '7월 27일 – 8월 1일', capacity: 40 },
+          { id: '2026-inland-union',          title: '2026 교회 연합캠프',   dateKo: '8월 6일 – 8일',    capacity: 40 },
         ],
       },
       // 제주 캠프는 카페에서 별도 신청 — 추후 필요 시 아래 주석 해제
@@ -260,6 +260,7 @@
       .concat(CAMP_GROUPS.flatMap(g => g.camps));
     const CAMP_LABELS = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.title]));
     const CAMP_CAP    = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.capacity]));
+    const CAMP_DATES  = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.dateKo || '']));
     const CAMP_ROW_STYLES = {
       '2026-inland-english-junior': { bg: '#e6f5ff', border: '#3797c7' },
       '2026-inland-union': { bg: '#fff1c9', border: '#d49a18' },
@@ -707,7 +708,7 @@
         const res = await fetch('/api/admin/registrations', {
           method: 'PATCH',
           headers: authHeaders(),
-          body: JSON.stringify({ regId, campId }),
+          body: JSON.stringify({ regId, campId, campTitleKo: CAMP_LABELS[campId] || campId, campDateKo: CAMP_DATES[campId] || '' }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || '확정 실패');

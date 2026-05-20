@@ -1372,11 +1372,11 @@ html, body { overflow-x: hidden; max-width: 100%; }
         <div class="crp-contact-label wl-ko">캠프 문의</div>
         <div class="crp-contact-label wl-en">Camp Inquiry</div>
         <div class="crp-contact-info wl-ko">
-          <span class="crp-contact-info-line">월코 캠프 문의 &nbsp;|&nbsp; <strong>TEL</strong> 070-4190-6084 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</span>
+          <span class="crp-contact-info-line">월코 캠프 문의 &nbsp;|&nbsp; <strong>TEL</strong> 031-611-9216 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</span>
           <span class="crp-contact-info-line">제주 캠프 문의 &nbsp;|&nbsp; <strong>TEL</strong> 064-799-3707 &nbsp;|&nbsp; <strong>EMAIL</strong> wolbijeju.contact@gmail.com</span>
         </div>
         <div class="crp-contact-info wl-en">
-          <span class="crp-contact-info-line">WOLKO Camp Inquiry &nbsp;|&nbsp; <strong>TEL</strong> 070-4190-6084 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</span>
+          <span class="crp-contact-info-line">WOLKO Camp Inquiry &nbsp;|&nbsp; <strong>TEL</strong> 031-611-9216 &nbsp;|&nbsp; <strong>EMAIL</strong> wolkorea1@gmail.com</span>
           <span class="crp-contact-info-line">Jeju Camp Inquiry &nbsp;|&nbsp; <strong>TEL</strong> 064-799-3707 &nbsp;|&nbsp; <strong>EMAIL</strong> wolbijeju.contact@gmail.com</span>
         </div>
       </div>
@@ -1780,6 +1780,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
     <div class="crp-form-wrap" id="staffFormWrap">
       <form id="staffForm" novalidate>
         <input type="hidden" id="staffCampId">
+        <input type="hidden" id="staffCampNameKo">
 
         <div class="crp-form-section" style="margin-top:0;">
           <span class="crp-form-section-label">
@@ -2428,6 +2429,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     btn.addEventListener('click', function() {
       if (btn.disabled) return;
       staffCampIdInput.value = btn.dataset.campId || '';
+      document.getElementById('staffCampNameKo').value = btn.dataset.campNameKo || '';
       staffModalTitle.textContent = crpIsEn()
         ? (btn.dataset.campNameEn || '')
         : (btn.dataset.campNameKo || '');
@@ -2491,7 +2493,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       var res = await fetch('/api/staff-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campId, name, phone, email, church, serviceArea, notes }),
+        body: JSON.stringify({ campId, name, phone, email, church, serviceArea, notes, campTitleKo: document.getElementById('staffCampNameKo').value }),
       });
       var data = await res.json();
 
