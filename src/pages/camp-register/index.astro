@@ -240,14 +240,20 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-cap-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .crp-cap-fill.full { background: linear-gradient(90deg, var(--c-red), #e55); }
 
-/* ── 성별 분리 카운트 표시 ── */
-.crp-cap-gender-split {
-  display: flex; justify-content: space-between;
-  margin-top: 9px; font-size: 12px; font-weight: 500;
+/* ── 성별 분리 이중 바 (hasSplit 캠프) ── */
+.crp-cap-split { display: flex; flex-direction: column; gap: 8px; padding: 2px 0; }
+.crp-cap-bar-row { display: flex; align-items: center; gap: 10px; }
+.crp-cap-bar-label {
+  font-size: 12px; font-weight: 600; flex-shrink: 0; width: 44px;
 }
-.crp-cap-gender-m { color: #3b82f6; }
-.crp-cap-gender-f { color: #ec4899; }
-.crp-cap-gender-split strong { font-weight: 700; }
+.crp-cap-bar-label--m { color: #3b82f6; }
+.crp-cap-bar-label--f { color: #ec4899; }
+.crp-cap-bar-row .crp-cap-track { flex: 1; height: 6px; }
+.crp-cap-bar-count {
+  font-size: 12px; font-weight: 700; flex-shrink: 0; min-width: 48px; text-align: right;
+}
+.crp-cap-bar-count--m { color: #3b82f6; }
+.crp-cap-bar-count--f { color: #ec4899; }
 
 /* 준비중 / 비활성 상태 — 회색 */
 .crp-cap--gray .crp-cap-info { opacity: 0.68; }
@@ -256,6 +262,8 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-cap--gray .crp-cap-fill-m,
 .crp-cap--gray .crp-cap-fill-f,
 .crp-cap--gray .crp-cap-fill { display: none; }
+.crp-cap--gray .crp-cap-bar-label,
+.crp-cap--gray .crp-cap-bar-count { opacity: 0.5; }
 
 /* ── REG BUTTONS ── */
 [hidden] { display: none !important; }
@@ -1049,11 +1057,42 @@ html, body { overflow-x: hidden; max-width: 100%; }
                     {(() => {
                       const isLive = d.status === 'open' && !d.use_external_form;
                       const hasSplit = !!(d.capacity_male && d.capacity_female);
-                      return (
-                        <div class={`crp-cap${isLive ? '' : ' crp-cap--gray'}`}
-                          data-cap-id={isLive ? s.id : undefined}
-                          data-capacity-male={d.capacity_male ?? ''}
-                          data-capacity-female={d.capacity_female ?? ''}>
+                      const capCls = `crp-cap${isLive ? '' : ' crp-cap--gray'}`;
+                      const capAttrs = {
+                        'data-cap-id': isLive ? s.id : undefined,
+                        'data-capacity': d.capacity ?? 40,
+                        'data-capacity-male': d.capacity_male ?? '',
+                        'data-capacity-female': d.capacity_female ?? '',
+                      };
+                      return hasSplit ? (
+                        <div class={capCls} {...capAttrs}>
+                          <div class="crp-cap-split">
+                            <div class="crp-cap-bar-row">
+                              <span class="crp-cap-bar-label crp-cap-bar-label--m">
+                                <span class="wl-ko">남학생</span><span class="wl-en">Male</span>
+                              </span>
+                              <div class="crp-cap-track">
+                                <div class="crp-cap-fill-m"></div>
+                              </div>
+                              <strong class="crp-cap-bar-count crp-cap-bar-count--m">
+                                <span class="crp-cap-count-m">—</span>{` / ${d.capacity_male}`}
+                              </strong>
+                            </div>
+                            <div class="crp-cap-bar-row">
+                              <span class="crp-cap-bar-label crp-cap-bar-label--f">
+                                <span class="wl-ko">여학생</span><span class="wl-en">Female</span>
+                              </span>
+                              <div class="crp-cap-track">
+                                <div class="crp-cap-fill-f"></div>
+                              </div>
+                              <strong class="crp-cap-bar-count crp-cap-bar-count--f">
+                                <span class="crp-cap-count-f">—</span>{` / ${d.capacity_female}`}
+                              </strong>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div class={capCls} {...capAttrs}>
                           <div class="crp-cap-info">
                             <span>
                               <span class="wl-ko">{isLive ? '신청 현황' : '전체 정원'}</span>
@@ -1070,12 +1109,6 @@ html, body { overflow-x: hidden; max-width: 100%; }
                             <div class="crp-cap-fill-m"></div>
                             <div class="crp-cap-fill-f"></div>
                           </div>
-                          {hasSplit && isLive && (
-                            <div class="crp-cap-gender-split">
-                              <span class="crp-cap-gender-m">남학생 <strong class="crp-cap-count-m">—</strong> / {d.capacity_male}</span>
-                              <span class="crp-cap-gender-f">여학생 <strong class="crp-cap-count-f">—</strong> / {d.capacity_female}</span>
-                            </div>
-                          )}
                         </div>
                       );
                     })()}
@@ -1860,6 +1893,10 @@ function updateCrpCapBar(el, data, totalCap) {
   var countM = typeof data.countMale   === 'number' ? data.countMale   : 0;
   var countF = typeof data.countFemale === 'number' ? data.countFemale : 0;
 
+  // 성별 분리 정원 (hasSplit 캠프)
+  var capM = parseInt(el.dataset.capacityMale)   || 0;
+  var capF = parseInt(el.dataset.capacityFemale) || 0;
+
   var countEl  = el.querySelector('.crp-cap-count');
   var countMEl = el.querySelector('.crp-cap-count-m');
   var countFEl = el.querySelector('.crp-cap-count-f');
@@ -1870,19 +1907,20 @@ function updateCrpCapBar(el, data, totalCap) {
   if (countMEl) countMEl.textContent = countM;
   if (countFEl) countFEl.textContent = countF;
 
-  if (totalCap <= 0) return;
-
-  if (countM > 0 || countF > 0) {
-    // 성별 데이터 있으면 파란/핑크 분할
-    var pctM = Math.min((countM / totalCap) * 100, 100);
-    var pctF = Math.min((countF / totalCap) * 100, 100);
-    if (fillM) fillM.style.width = pctM + '%';
-    if (fillF) fillF.style.width = pctF + '%';
-  } else if (count > 0) {
-    // 성별 데이터 없으면 전체 count를 파란 바로 표시
-    var pct = Math.min((count / totalCap) * 100, 100);
-    if (fillM) fillM.style.width = pct + '%';
-    if (fillF) fillF.style.width = '0%';
+  if (capM > 0 && capF > 0) {
+    // 성별 정원 분리 캠프: 각각의 정원 기준으로 바 계산
+    if (fillM) fillM.style.width = Math.min((countM / capM) * 100, 100) + '%';
+    if (fillF) fillF.style.width = Math.min((countF / capF) * 100, 100) + '%';
+  } else if (totalCap > 0) {
+    if (countM > 0 || countF > 0) {
+      // 성별 데이터 있지만 정원 미분리: 전체 정원 기준 스택
+      if (fillM) fillM.style.width = Math.min((countM / totalCap) * 100, 100) + '%';
+      if (fillF) fillF.style.width = Math.min((countF / totalCap) * 100, 100) + '%';
+    } else if (count > 0) {
+      // 성별 데이터 없음: 전체 파란 바
+      if (fillM) fillM.style.width = Math.min((count / totalCap) * 100, 100) + '%';
+      if (fillF) fillF.style.width = '0%';
+    }
   }
 }
 
