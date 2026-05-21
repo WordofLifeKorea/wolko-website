@@ -515,6 +515,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   text-transform: uppercase; color: var(--c-mid); margin-bottom: 10px;
 }
 .mp-prayer-text { font-size: 14px; line-height: 1.8; color: var(--c-sub); }
+.mp-prayer-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.mp-prayer-list li { display: flex; gap: 8px; font-size: 14px; line-height: 1.8; color: var(--c-sub); }
+.mp-prayer-list li::before { content: '–'; color: var(--c-mid); flex-shrink: 0; margin-top: 0; }
 
 /* ANIMATION */
 @keyframes mp-fade-up {
@@ -1039,19 +1042,31 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         <span class="wl-ko">중보기도</span>
         <span class="wl-en">Prayer</span>
       </div>
-      <p class="mp-prayer-text">
-        {d.prayer_ko || d.prayer_en ? (
-          <>
-            <span class="wl-ko">{d.prayer_ko || d.prayer_en}</span>
-            <span class="wl-en">{d.prayer_en || d.prayer_ko}</span>
-          </>
-        ) : (
-          <>
-            <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
-            <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
-          </>
-        )}
-      </p>
+      {d.prayer_ko || d.prayer_en ? (
+        (() => {
+          const parseBullets = (text: string) =>
+            text.split(/\n|(?<!\w)\s*-\s+/).map(s => s.replace(/^-\s*/, '').trim()).filter(Boolean);
+          const koItems = parseBullets(d.prayer_ko || d.prayer_en || '');
+          const enItems = parseBullets(d.prayer_en || d.prayer_ko || '');
+          const isList = koItems.length > 1 || enItems.length > 1;
+          return isList ? (
+            <>
+              <ul class="mp-prayer-list wl-ko">{koItems.map(item => <li>{item}</li>)}</ul>
+              <ul class="mp-prayer-list wl-en">{enItems.map(item => <li>{item}</li>)}</ul>
+            </>
+          ) : (
+            <p class="mp-prayer-text">
+              <span class="wl-ko">{d.prayer_ko || d.prayer_en}</span>
+              <span class="wl-en">{d.prayer_en || d.prayer_ko}</span>
+            </p>
+          );
+        })()
+      ) : (
+        <p class="mp-prayer-text">
+          <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
+          <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
+        </p>
+      )}
     </div>
   </div>
 
