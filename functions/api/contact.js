@@ -4,7 +4,10 @@
  *
  * Sends an email to wolkorea@gmail.com via Resend API.
  * Requires env var: RESEND_API_KEY
+ * Optional Kakao receipt notice: SOLAPI_API_KEY, SOLAPI_API_SECRET, KAKAO_PF_ID,
+ * KAKAO_TEMPLATE_CONTACT
  */
+import { sendAlimtalk } from '../lib/solapi.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -123,6 +126,15 @@ export async function onRequestPost(context) {
     const err = await resendRes.text();
     console.error('Resend error:', err);
     return Response.json({ error: '이메일 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 502, headers: CORS });
+  }
+
+  if (phone && env.KAKAO_TEMPLATE_CONTACT) {
+    context.waitUntil(
+      sendAlimtalk(env, phone, env.KAKAO_TEMPLATE_CONTACT, {
+        '#{이름}': name.trim(),
+        '#{문의유형}': typeLabel,
+      }).catch(e => console.error('contact alimtalk failed:', e))
+    );
   }
 
   return Response.json({ ok: true }, { headers: CORS });

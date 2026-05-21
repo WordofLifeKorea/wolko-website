@@ -125,7 +125,7 @@ function updateFrontmatterField(raw, key, value) {
   if (parts.length < 3) return raw;
   let fm = parts[1];
   const body = parts.slice(2).join('---\n');
-  const encoded = `${key}: ${value}`;
+  const encoded = `${key}: ${JSON.stringify(String(value))}`;
   if (new RegExp(`^${key}:`, 'm').test(fm)) {
     fm = replaceYamlField(fm, key, encoded);
   } else {

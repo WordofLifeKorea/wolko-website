@@ -117,24 +117,7 @@ function updateFrontmatter(raw, fields) {
     // This prevents creating YAML null entries (key: ) that fail Zod validation.
     if (strVal === '' && !keyExists) continue;
 
-    // Determine how to encode the value
-    const needsMultiline = strVal.includes('\n');
-    let encoded;
-
-    if (strVal === '') {
-      // Explicitly encode as empty string to avoid YAML null
-      encoded = `${key}: ""`;
-    } else if (needsMultiline) {
-      // Use |- block scalar (strip trailing newlines)
-      const indented = strVal.split('\n').map(l => '  ' + l).join('\n');
-      encoded = `${key}: |-\n${indented}`;
-    } else if (strVal.includes(':') || strVal.includes('"') || strVal.includes("'") || strVal.startsWith(' ')) {
-      // Needs quoting — use double quotes, escape internal quotes
-      const escaped = strVal.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-      encoded = `${key}: "${escaped}"`;
-    } else {
-      encoded = `${key}: ${strVal}`;
-    }
+    const encoded = encodeYamlStringField(key, strVal);
 
     if (keyExists) {
       // Replace existing key — need to handle multi-line block scalars carefully
@@ -146,6 +129,23 @@ function updateFrontmatter(raw, fields) {
   }
 
   return `---\n${fm}\n---\n${body}`;
+}
+
+function encodeYamlStringField(key, value) {
+  const normalized = String(value).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  if (normalized.includes('\n')) {
+    const indented = normalized
+      .replace(/\n+$/g, '')
+      .split('\n')
+      .map(line => (line ? `  ${line}` : ''))
+      .join('\n');
+    return `${key}: |-\n${indented}`;
+  }
+
+  // Always JSON-quote single-line strings so YAML will not coerce values like
+  // "2026-05-20", "true", "no", "null", or strings containing # / :.
+  return `${key}: ${JSON.stringify(normalized)}`;
 }
 
 /**

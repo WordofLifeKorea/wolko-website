@@ -55,41 +55,41 @@ const {
         <a href="/about" class={`nav-link has-dropdown${activeNav === 'about' ? ' active' : ''}`}>
           <span class="wl-ko">소개</span><span class="wl-en">About</span>
         </a>
-        <ul class="nav-dropdown"><div class="nav-dropdown-inner">
+        <ul class="nav-dropdown">
           <li><a href="/about"><span class="wl-ko">월코소개</span><span class="wl-en">About WOLKO</span></a></li>
           <li><a href="/people"><span class="wl-ko">섬기는이</span><span class="wl-en">Our Team</span></a></li>
           <li><a href="/endorsements"><span class="wl-ko">추천사</span><span class="wl-en">Endorsements</span></a></li>
-        </div></ul>
+        </ul>
       </li>
       <li class="nav-item">
         <a href="/camp" class={`nav-link has-dropdown${activeNav === 'ministry' ? ' active' : ''}`}>
           <span class="wl-ko">사역</span><span class="wl-en">Ministry</span>
         </a>
-        <ul class="nav-dropdown"><div class="nav-dropdown-inner">
+        <ul class="nav-dropdown">
           <li><a href="/camp"><span class="wl-ko">캠프사역</span><span class="wl-en">Camp Ministry</span></a></li>
           <li><a href="/wolbi-jeju"><span class="wl-ko">제주월비</span><span class="wl-en">Jeju WOLBI</span></a></li>
           <li><a href="/youth"><span class="wl-ko">청소년 사역</span><span class="wl-en">Youth Ministry</span></a></li>
           <li><a href="/jr-syme">Jr. SYME</a></li>
           <li><a href="/vietnam"><span class="wl-ko">베트남 선교</span><span class="wl-en">Vietnam Mission</span></a></li>
-        </div></ul>
+        </ul>
       </li>
       <li class="nav-item">
         <a href="/mission-report" class={`nav-link has-dropdown${activeNav === 'connect' ? ' active' : ''}`}>
           <span class="wl-ko">소통</span><span class="wl-en">Connect</span>
         </a>
-        <ul class="nav-dropdown"><div class="nav-dropdown-inner">
+        <ul class="nav-dropdown">
           <li><a href="/contact">Contact</a></li>
           <li><a href="/mission-report"><span class="wl-ko">선교보고</span><span class="wl-en">Mission Reports</span></a></li>
           <li><a href="/camp-register"><span class="wl-ko">캠프 신청</span><span class="wl-en">Camp Register</span></a></li>
-        </div></ul>
+        </ul>
       </li>
       <li class="nav-item">
         <a href="/give" class={`nav-link has-dropdown${activeNav === 'give' ? ' active' : ''}`}>
           <span class="wl-ko">후원</span><span class="wl-en">Give</span>
         </a>
-        <ul class="nav-dropdown"><div class="nav-dropdown-inner">
+        <ul class="nav-dropdown">
           <li><a href="/give"><span class="wl-ko">월코후원</span><span class="wl-en">Support WOLKO</span></a></li>
-        </div></ul>
+        </ul>
       </li>
       <li class="nav-item">
         <a href="/location" class={`nav-link${activeNav === 'location' ? ' active' : ''}`}>
@@ -98,7 +98,7 @@ const {
       </li>
     </ul>
     <div class="nav-right">
-      <div class="lang-toggle" id="langToggle" onclick="toggleLang()">
+      <div class="lang-toggle" id="langToggle">
         <div class="lang-slider" id="langSlider"></div>
         <div class="lang-side is-active" id="langKo">
           <img src="https://flagcdn.com/w40/kr.png" alt="KR">
@@ -249,7 +249,10 @@ const {
     });
 
     // 언어 토글
-    const langRootEl = document.getElementById(langRoot);
+    const langRootTargets = [
+      document.getElementById(langRoot),
+      ...document.querySelectorAll('#wl-root')
+    ].filter(Boolean);
     const slider = document.getElementById('langSlider');
     const koSide = document.getElementById('langKo');
     const enSide = document.getElementById('langEn');
@@ -258,7 +261,9 @@ const {
     function applyLang(en) {
       isEn = en;
       // 페이지 콘텐츠 루트에 lang-en 클래스 적용
-      if (langRootEl) langRootEl.classList.toggle('lang-en', en);
+      langRootTargets.forEach(function(el) { el.classList.toggle('lang-en', en); });
+      document.documentElement.classList.toggle('lang-en', en);
+      document.body.classList.toggle('lang-en', en);
       // 네비, 모바일메뉴, 푸터 모두 적용
       document.getElementById('mainNav').classList.toggle('lang-en', en);
       document.getElementById('mobileMenu').classList.toggle('lang-en', en);
@@ -276,9 +281,21 @@ const {
         enSide.className = 'lang-side is-inactive';
       }
       try { localStorage.setItem('wolko-lang', en ? 'en' : 'ko'); } catch(e) {}
+      restoreHashScroll();
+      setTimeout(restoreHashScroll, 160);
     }
 
     window.toggleLang = function() { applyLang(!isEn); };
+    document.getElementById('langToggle')?.addEventListener('click', window.toggleLang);
+
+    function restoreHashScroll() {
+      if (!window.location.hash) return;
+      const target = document.getElementById(window.location.hash.slice(1));
+      if (!target) return;
+      requestAnimationFrame(function() {
+        target.scrollIntoView({ block: 'start' });
+      });
+    }
     function closeMobileMenu() {
       const menu = document.getElementById('mobileMenu');
       const backdrop = document.getElementById('menuBackdrop');
@@ -319,10 +336,51 @@ const {
       if (!isOpen) item.classList.add('is-open');
     };
 
+    document.querySelectorAll('.nav-item').forEach(function(item) {
+      const trigger = item.querySelector('.nav-link.has-dropdown');
+      const dropdown = item.querySelector('.nav-dropdown');
+      if (!trigger || !dropdown) return;
+
+      function closeOtherDropdowns() {
+        document.querySelectorAll('.nav-item.is-open').forEach(function(el) {
+          if (el !== item) el.classList.remove('is-open');
+        });
+      }
+
+      item.addEventListener('mouseenter', function() {
+        closeOtherDropdowns();
+        item.classList.add('is-open');
+      });
+      item.addEventListener('mouseleave', function() {
+        item.classList.remove('is-open');
+      });
+      item.addEventListener('focusin', function() {
+        closeOtherDropdowns();
+        item.classList.add('is-open');
+      });
+      item.addEventListener('focusout', function(e) {
+        if (!item.contains(e.relatedTarget)) item.classList.remove('is-open');
+      });
+      trigger.addEventListener('click', function(e) {
+        if (window.matchMedia('(hover: none)').matches && !item.classList.contains('is-open')) {
+          e.preventDefault();
+          closeOtherDropdowns();
+          item.classList.add('is-open');
+        }
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-item')) {
+        document.querySelectorAll('.nav-item.is-open').forEach(function(el) { el.classList.remove('is-open'); });
+      }
+    });
+
     // 저장된 언어 설정 복원
     try {
       if (localStorage.getItem('wolko-lang') === 'en') applyLang(true);
     } catch(e) {}
+    window.addEventListener('load', restoreHashScroll);
+    setTimeout(restoreHashScroll, 350);
   </script>
 </body>
 </html>
