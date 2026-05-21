@@ -25,7 +25,7 @@ support_url_en: https://missions.wol.org/missionaries/930394
 hero_subtitle_ko: |-
   캠프 A/S(After-Service) 코디네이터로서, 캠프에 참여한 청소년들이 캠프 이후에도 하나님의 사랑과 말씀 안에 거하며 주님과 동행하는 삶을 살아갈 수 있도록 도우며 학생, 학부모 상담을 담당하고 있습니다.
   또한 월비 제주에서 말씀을 공부하는 학생들을 섬기며, 이들과 함께 예수님을 닮아가기를 기도하는 마음으로 동행하고 있습니다.
-hero_subtitle_en: Serves as a Camp A/S (After-Service) Coordinator, supporting students and parents through counseling while helping teenagers continue to abide in God’s love and Word and walk with the Lord even after camp. Serving the students studying at WOLBI Jeju, walking alongside them with prayer and a desire to grow together in becoming more like Jesus Christ.
+hero_subtitle_en: Serves as a Camp A/S (After-Service) Coordinator, supporting campers and parents through counseling while helping teenagers continue to abide in God’s love and Word and walk with the Lord even after camp. Serving the students studying at WOLBI Jeju, walking alongside them with prayer and a desire to grow together in becoming more like Jesus Christ.
 prayer_ko: |-
   - 다가오는 여름 캠프에 하나님께서 보내주실 캠퍼들을 위해
   - 준비하는 기간 동안 하나님의 사랑과 말씀 안에서 기쁨을 누리며 겸손하게 하나님께서 맡기신 일들을 잘 감당 할 수 있도록 기도 부탁드립니다.
