@@ -70,4 +70,9 @@ prayer_en: |-
   - Pray for the Camp & Outreach team to be gospel-centred
   - Pray for a camp property to use for reaching young people for Christ, for the glory of God
 report_url: "https://mailchi.mp/399dc26f3266/jeju-wolbi-jason-and-chanjoo-17600925"
+prayer_ko: |-
+  - 한국 교회가 다음 세대를 그리스도께 인도하려는 마음의 짐을 가지도록 기도해 주세요
+  - 캠프 및 아웃리치 팀이 복음 중심으로 사역하도록 기도해 주세요
+  - 하나님의 영광을 위해 젊은이들을 그리스도께 인도할 캠프 부지를 주시도록 기도해 주세요
+
 ---
