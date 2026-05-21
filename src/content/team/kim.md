@@ -76,5 +76,5 @@ prayer_ko: |-
 prayer_en: |-
   "Please pray that the U.S. visa application process goes smoothly."
   "We need wisdom to help and guide our kids to know Jesus Christ as their savior.
-report_url: "https://us6.campaign-archive.com/home/?u=3e8c5b6ead0327ca6e63027e1&id=94a43edcd2"
+report_url: /reports/kim-newsletter-1779334980581.pdf
 ---
