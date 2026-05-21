@@ -25,4 +25,6 @@ support_url: https://online.mrm.or.kr/8iTCvX3
 verse_ko: 하나님이 우리를 세우심은 노하심에 이르게 하심이 아니요 오직 우리 주 예수 그리스도로 말미암아 구원을 받게 하심이라 예수께서 우리를 위하여 죽으사 우리로 하여금 깨어 있든지 자든지 자기와 함께 살게 하려 하셨느니라 그러므로 피차 권면하고 서로 덕을 세우기를 너희가 하는 것 같이 하라
 verse_en: For God did not appoint us to suffer wrath but to receive salvation through our Lord Jesus Christ. He died for us so that, whether we are awake or asleep, we may live together with him. Therefore encourage one another and build each other up, just as in fact you are doing.
 support_url_en: https://missions.wol.org/missionaries/852529
+report_url: "https://mailchi.mp/63c9ff484315/a-cup-of-java-fillingup-pt1"
+
 ---
