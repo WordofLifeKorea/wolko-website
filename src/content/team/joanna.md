@@ -33,4 +33,6 @@ prayer_en: |-
   - For the campers whom God will send to the upcoming summer camp
   
   - Please pray that during the preparation period, our team may rejoice in God's love and Word, remain humble, and faithfully fulfill the responsibilities God has entrusted to us.
+photo_story: /images/uploads/joanna-photo_story-1779343356274.png
+
 ---
