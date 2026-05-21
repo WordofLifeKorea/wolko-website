@@ -29,8 +29,8 @@ hero_subtitle_en: Serves as a Camp A/S (After-Service) Coordinator, supporting s
 prayer_ko: |-
   - 다가오는 여름 캠프에 하나님께서 보내주실 캠퍼들을 위해
   - 준비하는 기간 동안 하나님의 사랑과 말씀 안에서 기쁨을 누리며 겸손하게 하나님께서 맡기신 일들을 잘 감당 할 수 있도록 기도 부탁드립니다.
+  
 prayer_en: |-
   - For the campers whom God will send to the upcoming summer camp
   - During the preparation period, please pray that we may rejoice in God's love and Word, remain humble, and faithfully fulfill the work that God has entrusted to us.
-
 ---
