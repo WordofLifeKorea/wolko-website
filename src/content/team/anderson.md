@@ -2,18 +2,13 @@
 
 bio_en: |-
   When I was just seven years old, the terrifying reality of hell gripped my heart. Wanting to know how I could escape such a place, I asked my father how I could be sure I would not go to hell. He sat me down in the living room of our home and carefully walked me through the gospel, emphasizing my need for Jesus Christ alone. At the end, I prayed with my father and went on with life.
-  
-  As I grew older, however, instead of drawing closer to God, I drifted further away. I chose to go my own way, indulging in sin and chasing pleasure. Before long my life became a complete mess. I hid my sinful lifestyle from my family and from everyone at church, living a double life.
-  
-  It took a near-death experience — a thirty-foot fall down a mountainside — to wake me up and cause me to start seeking God again. Not long after, I attended a young adults' retreat at a church and ended up staying at their youth camp for the rest of the summer. It was there that I fell in love with the Word of God and began to realize just how little I truly knew about Him.
-  
-  That growing passion led me to attend the Word of Life Bible Institute in Schroon Lake, New York, to study God's Word more deeply. During my time there I came to understand the true reality of the gospel — that no matter how far I had wandered, God had extended His hand of mercy to me through the life, death, burial, and resurrection of Jesus Christ.
-  
-  In my first month at Bible school, as I memorized Scripture and read the Bible daily, God began to teach me more and more about His gospel. One day I went down to the edge of the lake to be alone with God. There I examined my heart, repented of my sin, and put my faith fully in Jesus Christ. From that moment on, my life was transformed by His grace, and I gained complete assurance of my salvation.
-  
-  I continued at Bible school for two years. During that time I attended a missions conference and heard about the great need for missionaries and pastors around the world. My heart grew increasingly burdened for the lost. I did not yet know where I would go or what I would do, but I was willing to go wherever God would send me.
-  
-  Shortly after that conference I was given the opportunity to serve with Word of Life Korea. A year later I married my wife, Chan-Joo — a Korean woman who had also attended the Word of Life Bible Institute and was serving as a missionary in South Korea. Today I live in Korea full-time, serving to tell others — especially young people — about the same gospel that brought me from death to life.
+  As I grew older, however, instead of growing closer to God, I drifted further away from Him. I chose to go my own way, indulging in sin and chasing pleasure. Before long, my life became a complete mess. I hid my sinful lifestyle from my family and from everyone at church, living a double life. (James 4:13-17)
+  It took a near-death experience, a 30-foot fall down a mountainside, to wake me up and cause me to start seeking God again. Not long after, I attended a young adults’ retreat at a church and ended up staying at their youth camp for the rest of the summer. It was there that I fell in love with the Word of God and began to realize just how little I truly knew about Him. (Matt 7:21-23)
+  That growing passion led me to attend Word of Life Bible Institute in Schroon Lake, New York, to study God’s Word more deeply. During my time there, I came to understand the true reality of the gospel. No matter how far I had wandered, God extended His hand of mercy to me through the life, death, burial, and resurrection of Jesus Christ.
+  In my first month at Bible school, as I memorized Scripture for class and read the Bible daily, God began to teach me more and more about His gospel. One day during that first month, I went down to the edge of the lake to be alone with God. There, I examined my heart, repented of my sin, and put my faith fully in Jesus Christ. From that moment on, my life was transformed by His grace, and I gained complete assurance of my salvation. (Luke 5:32, Romans 10:9)
+  I continued studying at Bible school for two years. During that time, after attending a missions’ conference and hearing about the great need for missionaries and pastors around the world, my heart grew increasingly burdened for the lost. I did not yet know where I would go or what I would do, but I was willing to go wherever God would send me. (Matt 9:36-38)
+  Shortly after that conference, I was given the opportunity to serve with Word of Life Korea. A year later, I married my wife, Chanjoo, a Korean woman who had also attended Word of Life Bible Institute and was serving as a missionary in South Korea.
+  Today, I live in Korea full-time, serving to tell others, especially young people, about the same gospel that brought me from death to life.
 gender: male
 name_ko: 앤더슨 제이슨 & 앤더슨 찬주
 name_en: Jason & Chanju Anderson
@@ -27,11 +22,11 @@ photo_url: /images/uploads/anderson.jpg
 photo_story: /images/uploads/jason.jpg
 photo_url_2: /images/uploads/chanjoo.jpg
 hero_tagline_ko: 복음이 전해지는
-hero_tagline_en: The Gospel Proclaimed
+hero_tagline_en: Evangelism
 hero_tagline2_ko: 캠프 & 아웃리치
-hero_tagline2_en: Through Camp & Outreach
+hero_tagline2_en: Camp & Outreach Coordinator
 hero_subtitle_ko: 제이슨과 찬주 선교사는 월코 본토 캠프 및 아웃리치 팀 코디네이터로 섬기며, 청소년들에게 복음이 분명히 전해지고 지역 교회와 연결되어 지속적인 영향이 이어지도록 팀을 이끌고 있습니다.
-hero_subtitle_en: "Jason and Chan-Joo serve as WOLKO's mainland camp and outreach team coordinators, leading their team to ensure the gospel is clearly proclaimed to youth and that lasting impact is sustained through connection with local churches."
+hero_subtitle_en: "Jason and Chanjoo serve as WOLKO's mainland camp and outreach team coordinators, who focus on making sure that the gospel is clearly proclaimed to youth and that lasting impact is sustained through connection with local churches."
 verse_ref: "갈라디아서 6 : 14"
 spouse_ko: 앤더슨 찬주
 spouse_en: Chanju Anderson
@@ -68,6 +63,12 @@ bio_en_2: |-
   There are many churches in South Korea, but very few young people inside them. My heart is to share the gospel with those who grew up in church or call themselves Christians, but have never truly understood it — so that they will then share it with those around them. I pray that God will use our international family and our children as a tool for His ministry. My testimony will never stop until I meet Him again, for He is still working in my life every single day.
 support_url: https://online.mrm.or.kr/1CiXq2b
 verse_ko: 그러나 내게는 우리 주 예수 그리스도의 십자가 외에 결코 자랑할 것이 없으니 그리스도로 말미암아 세상이 나를 대하여 십자가에 못 박히고 내가 또한 세상을 대하여 그러하니라
-verse_en: May I never boast except in the cross of our Lord Jesus Christ, through which the world has been crucified to me, and I to the world.
+verse_en: "May I never boast except in the cross of our Lord Jesus Christ, through which the world has been crucified to me, and I to the world. (Galatians 6:14)"
 support_url_en: https://missions.wol.org/missionaries/799061/
+prayer_en: |-
+  - Pray for the Church in Korea to have a burden to reach the next generation for Christ
+  - Pray for the Camp & Outreach team to be gospel-centred
+  - Pray for a camp property to use for reaching young people for Christ, for the glory of God
+report_url: "https://mailchi.mp/399dc26f3266/jeju-wolbi-jason-and-chanjoo-17600925"
+
 ---
