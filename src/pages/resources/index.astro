@@ -4,7 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 <BaseLayout
   title="자료실 | WOLKO"
-  description="WOLKO 자료실 — QT북/교재, 커리큘럼, 사역 양식을 제공합니다."
+  description="WOLKO 자료실 — 수업 자료, 매일묵상집, 그 외 자료들을 제공합니다."
   activeNav="resources"
 >
   <section class="resources-hero">
@@ -14,57 +14,39 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <span class="wl-en">Resources</span>
       </h1>
       <p class="hero-sub">
-        <span class="wl-ko">WOLKO에서 제공하는 교재, 커리큘럼, 사역 양식을 다운로드 하세요.</span>
-        <span class="wl-en">Download QT books, curriculum materials, and ministry forms from WOLKO.</span>
+        <span class="wl-ko">WOLKO에서 제공하는 자료들을 아래 카테고리에서 확인하세요.</span>
+        <span class="wl-en">Browse WOLKO materials by category below.</span>
       </p>
     </div>
   </section>
 
-  <div class="resources-container">
-
-    <!-- QT북 / 교재 -->
-    <section id="qt" class="resources-section">
-      <h2 class="section-title">
-        <span class="section-icon">📖</span>
-        <span class="wl-ko">QT북 / 교재</span>
-        <span class="wl-en">QT Books / Materials</span>
-      </h2>
-      <div class="empty-state">
-        <p class="wl-ko">준비 중입니다. 곧 자료가 업로드될 예정입니다.</p>
-        <p class="wl-en">Coming soon. Materials will be uploaded shortly.</p>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- 커리큘럼 -->
-    <section id="curriculum" class="resources-section">
-      <h2 class="section-title">
-        <span class="section-icon">📋</span>
-        <span class="wl-ko">커리큘럼</span>
-        <span class="wl-en">Curriculum</span>
-      </h2>
-      <div class="empty-state">
-        <p class="wl-ko">준비 중입니다. 곧 자료가 업로드될 예정입니다.</p>
-        <p class="wl-en">Coming soon. Materials will be uploaded shortly.</p>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- 사역 양식 -->
-    <section id="forms" class="resources-section">
-      <h2 class="section-title">
-        <span class="section-icon">📄</span>
-        <span class="wl-ko">사역 양식</span>
-        <span class="wl-en">Ministry Forms</span>
-      </h2>
-      <div class="empty-state">
-        <p class="wl-ko">준비 중입니다. 곧 자료가 업로드될 예정입니다.</p>
-        <p class="wl-en">Coming soon. Materials will be uploaded shortly.</p>
-      </div>
-    </section>
-
+  <div class="resources-grid-wrap">
+    <div class="resources-grid">
+      <a href="/resources/class-notes" class="res-card">
+        <div class="res-icon">📚</div>
+        <div class="res-label">
+          <span class="wl-ko">수업 자료</span>
+          <span class="wl-en">Class Notes</span>
+        </div>
+        <div class="res-arrow">→</div>
+      </a>
+      <a href="/resources/qt-book" class="res-card">
+        <div class="res-icon">📖</div>
+        <div class="res-label">
+          <span class="wl-ko">매일묵상집</span>
+          <span class="wl-en">Q.T Book</span>
+        </div>
+        <div class="res-arrow">→</div>
+      </a>
+      <a href="/resources/etc" class="res-card">
+        <div class="res-icon">📄</div>
+        <div class="res-label">
+          <span class="wl-ko">그 외 자료들</span>
+          <span class="wl-en">Etc.</span>
+        </div>
+        <div class="res-arrow">→</div>
+      </a>
+    </div>
   </div>
 </BaseLayout>
 
@@ -92,54 +74,50 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     margin: 0;
   }
 
-  .resources-container {
+  .resources-grid-wrap {
     max-width: 860px;
     margin: 0 auto;
-    padding: 48px 24px 80px;
+    padding: 56px 24px 80px;
   }
-
-  .resources-section {
-    padding: 8px 0 32px;
-    scroll-margin-top: 80px;
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
   }
-
-  .section-title {
+  .res-card {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #004f68;
-    margin: 0 0 24px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #e0eef3;
-  }
-  .section-icon {
-    font-size: 1.3rem;
-  }
-
-  .empty-state {
+    gap: 14px;
+    padding: 40px 24px 32px;
     background: #f7fbfd;
-    border: 1px dashed #b0d4e0;
-    border-radius: 10px;
-    padding: 36px 24px;
+    border: 1.5px solid #d0e8f0;
+    border-radius: 14px;
+    text-decoration: none;
+    color: #004f68;
+    transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
+  }
+  .res-card:hover {
+    box-shadow: 0 8px 28px rgba(0,79,104,0.13);
+    border-color: #007a9a;
+    transform: translateY(-3px);
+  }
+  .res-icon {
+    font-size: 2.4rem;
+  }
+  .res-label {
+    font-size: 1.15rem;
+    font-weight: 700;
     text-align: center;
-    color: #6b8fa0;
   }
-  .empty-state p {
-    margin: 0;
-    font-size: 0.97rem;
-  }
-
-  .section-divider {
-    height: 1px;
-    background: #e8f2f7;
-    margin: 8px 0 40px;
+  .res-arrow {
+    font-size: 1.1rem;
+    opacity: 0.5;
   }
 
   @media (max-width: 600px) {
     .resources-hero h1 { font-size: 1.8rem; }
     .resources-hero { padding: 48px 16px 36px; }
-    .resources-container { padding: 32px 16px 60px; }
+    .resources-grid-wrap { padding: 36px 16px 60px; }
   }
 </style>

@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="수업 자료 | WOLKO 자료실"
+  description="WOLKO 수업 자료 (Class Notes) 다운로드 페이지입니다."
+  activeNav="resources"
+>
+  <section class="res-hero">
+    <div class="res-hero-inner">
+      <a href="/resources" class="breadcrumb">
+        <span class="wl-ko">← 자료실</span>
+        <span class="wl-en">← Resources</span>
+      </a>
+      <h1>
+        <span class="res-emoji">📚</span>
+        <span class="wl-ko">수업 자료</span>
+        <span class="wl-en">Class Notes</span>
+      </h1>
+    </div>
+  </section>
+
+  <div class="res-container">
+    <div class="empty-state">
+      <p class="wl-ko">준비 중입니다. 곧 자료가 업로드될 예정입니다.</p>
+      <p class="wl-en">Coming soon. Materials will be uploaded shortly.</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .res-hero {
+    background: linear-gradient(135deg, #004f68 0%, #007a9a 100%);
+    color: #fff;
+    padding: 48px 24px 40px;
+  }
+  .res-hero-inner {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .breadcrumb {
+    display: inline-block;
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+    transition: color 0.15s;
+  }
+  .breadcrumb:hover { color: #fff; }
+  .res-hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .res-emoji { font-size: 1.8rem; }
+
+  .res-container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+  .empty-state {
+    background: #f7fbfd;
+    border: 1px dashed #b0d4e0;
+    border-radius: 10px;
+    padding: 48px 24px;
+    text-align: center;
+    color: #6b8fa0;
+  }
+  .empty-state p {
+    margin: 0;
+    font-size: 0.97rem;
+  }
+
+  @media (max-width: 600px) {
+    .res-hero { padding: 36px 16px 30px; }
+    .res-hero h1 { font-size: 1.6rem; }
+    .res-container { padding: 32px 16px 60px; }
+  }
+</style>
