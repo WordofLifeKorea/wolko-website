@@ -776,8 +776,20 @@ html, body { overflow-x: hidden; max-width: 100%; }
 }
 .crp-refund-agree-btn:hover { background: #015a7a; }
 
-/* ── 환불 모달: 영문 모드에서 flex 레이아웃 유지 ── */
+/* ── 환불 모달: wl-ko/wl-en 언어 분리
+     .crp-refund-row { display:flex }가 글로벌 .wl-en { display:none }을 이기므로
+     ID 선택자로 specificity를 높여서 강제 처리 ── */
+#lang-root .crp-refund-row.wl-en,
+#lang-root .crp-refund-section-head.wl-en,
+#lang-root .crp-refund-modal-hint.wl-en { display: none !important; }
+
+#lang-root.lang-en .crp-refund-row.wl-ko,
+#lang-root.lang-en .crp-refund-section-head.wl-ko,
+#lang-root.lang-en .crp-refund-modal-hint.wl-ko { display: none !important; }
+
 #lang-root.lang-en .crp-refund-row.wl-en { display: flex !important; }
+#lang-root.lang-en .crp-refund-section-head.wl-en,
+#lang-root.lang-en .crp-refund-modal-hint.wl-en { display: block !important; }
 
 /* Bulk registration note */
 .crp-bulk-note {
