@@ -15,8 +15,8 @@ hero_tagline_ko: "\"변하지 않는 것에서\""
 hero_tagline_en: "\"Finding Value in\""
 hero_tagline2_ko: "\"찾은 가치\""
 hero_tagline2_en: "\"What Never Changes\""
-hero_subtitle_ko: "카즈토는 하우스키핑 코디네이터로서 월비 제주의 사역이 온전하게 진행 될 수 있도록  환경과 시설을 담당하여 관리합니다. 또한 캠프와 모멘텀 이벤트의 프로그램을 서포트하며 월비 제주 학생들이 세워질 수 있도록 돕고 있습니다. 한국과 일본을 잇는 다리 역할 또한 담당하며 다음 세대 청소년과 청년들이 하나님 안에서 진정한 영원한 가치를 깨달을 수 있길 기도하며 함께 섬기고 있습니다."
-hero_subtitle_en: "Kazuto serves as a Housekeeping Coordinator at WOLBI Jeju, managing the facilities and environment to ensure that the ministry runs smoothly. He also supports the programs for camps and momentum events, helping students at WOLBI Jeju to build up as the leaders. As a bridge person between Korea and Japan, praying and working alongside the next generation of youth and young adults so they may discover true, eternal value in God."
+hero_subtitle_ko: "카즈토는 하우스키핑 코디네이터로서 월비 제주의 사역이 온전하게 진행 될 수 있도록  환경을 담당하여 관리합니다. 또한 캠프와 모멘텀 이벤트의 프로그램을 서포트하며 월비 제주 학생들이 세워질 수 있도록 돕고 있습니다. 한국과 일본을 잇는 다리 역할로서 다음 세대 청소년과 청년들이 하나님 안에서 진정한 영원한 가치를 깨달을 수 있길 기도하며 함께 섬기고 있습니다."
+hero_subtitle_en: "Kazuto serves as a Housekeeping Coordinator at WOLBI Jeju, managing the operational environment to ensure that ministry activities run smoothly. He also supports the programs of camps and Momentum events, helping students at WOLBI Jeju to build them up as the leaders. Serving as a bridge between Korea and Japan, he prays and works alongside the next generation of youth and young adults, hoping they will discover true and eternal values in God."
 verse_ref: "요한복음 3 : 16"
 verse_ko: |-
   "하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니
