@@ -27,5 +27,6 @@ verse_en: |-
 bio_ko: "카즈토는 늘 변하는 이 세상 속에서 자신의 가치를 찾으려 했습니다. 하지만 그 어디에도 흔들리지 않는 답은 없었습니다. 그러던 중 그는 한 가지 진리와 마주했습니다. 예수님은 자신의 죄를 위해 십자가에서 죽으셨고, 구원의 길을 여셨다는 것. 그 사실은 세상의 어떤 것과도 달리 결코 변하지 않는다는 것을. 카즈토는 예수님을 구주로 믿기로 했고, 그 믿음 안에서 비로소 변하지 않는 가치를 발견했습니다."
 bio_en: "Kazuto had been searching for his value in a world that is always changing — and finding that nothing lasted. Then he came face to face with a truth that was different from anything else — Jesus had died on the cross for his sins, opening the way to salvation. Unlike everything else in this world, that would never change. Kazuto believed in Jesus as his Savior, and in that faith he finally found a value that would never be taken away."
 support_url_en: https://give.wol.org/giveto(1H616S)
+report_url: "https://canva.link/n0exjnhrgjscm1y"
 
 ---
