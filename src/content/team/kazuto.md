@@ -28,5 +28,4 @@ bio_ko: "카즈토는 늘 변하는 이 세상 속에서 자신의 가치를 찾
 bio_en: "Kazuto had been searching for his value in a world that is always changing — and finding that nothing lasted. Then he came face to face with a truth that was different from anything else — Jesus had died on the cross for his sins, opening the way to salvation. Unlike everything else in this world, that would never change. Kazuto believed in Jesus as his Savior, and in that faith he finally found a value that would never be taken away."
 support_url_en: https://give.wol.org/giveto(1H616S)
 report_url: "https://canva.link/n0exjnhrgjscm1y"
-
 ---
