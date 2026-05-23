@@ -113,7 +113,7 @@ async function syncStaffToSheet(env, reg) {
       reg.church || '',       // H 교회
       '',                     // I 학교
       '',                     // J 학년
-      '',                     // K 성별
+      reg.gender || '',       // K 성별
       0,                      // L 남성수
       0,                      // M 여성수
       1,                      // N 총인원
@@ -130,7 +130,7 @@ export async function onRequestPost(context) {
 
   try {
     const data = await request.json();
-    const { campId, name, phone, email, church, serviceArea, notes, campTitleKo } = data;
+    const { campId, name, phone, email, gender, church, serviceArea, notes, campTitleKo } = data;
 
     if (!campId || !name?.trim() || !phone?.trim() || !email?.trim()) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
@@ -152,6 +152,7 @@ export async function onRequestPost(context) {
       name: name.trim(),
       phone: phone.trim(),
       email: emailNorm,
+      gender: gender || '',
       church: church?.trim() || '',
       serviceArea: serviceArea?.trim() || '',
       notes: notes?.trim() || '',

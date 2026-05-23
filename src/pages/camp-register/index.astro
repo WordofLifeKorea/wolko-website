@@ -1817,6 +1817,14 @@ html, body { overflow-x: hidden; max-width: 100%; }
             <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
             <input id="staffEmail" name="email" type="email" placeholder="example@email.com">
           </div>
+          <div class="crp-field">
+            <label><span class="wl-ko">성별</span><span class="wl-en">Gender</span> <span class="req">*</span></label>
+            <select id="staffGender" name="gender">
+              <option value="" disabled selected><span class="wl-ko">선택</span><span class="wl-en">Select</span></option>
+              <option value="male"><span class="wl-ko">남</span><span class="wl-en">Male</span></option>
+              <option value="female"><span class="wl-ko">여</span><span class="wl-en">Female</span></option>
+            </select>
+          </div>
           <div class="crp-field crp-field--full">
             <label><span class="wl-ko">교회</span><span class="wl-en">Church</span></label>
             <input id="staffChurch" name="church" data-ph-ko="소속 교회명" data-ph-en="Your church" placeholder="소속 교회명">
@@ -2474,6 +2482,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     var name        = document.getElementById('staffName').value.trim();
     var phone       = document.getElementById('staffPhone').value.trim();
     var email       = document.getElementById('staffEmail').value.trim();
+    var gender      = document.getElementById('staffGender').value;
     var church      = document.getElementById('staffChurch').value.trim();
     var serviceArea = document.getElementById('staffServiceArea').value.trim();
     var notes       = document.getElementById('staffNotes').value.trim();
@@ -2482,6 +2491,11 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
 
     if (!name || !phone || !email) {
       staffErrorMsg.textContent = '이름, 연락처, 이메일은 필수 항목입니다. / Name, phone, and email are required.';
+      staffErrorMsg.hidden = false;
+      return;
+    }
+    if (!gender) {
+      staffErrorMsg.textContent = '성별을 선택해주세요. / Please select your gender.';
       staffErrorMsg.hidden = false;
       return;
     }
@@ -2503,7 +2517,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       var res = await fetch('/api/staff-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campId, name, phone, email, church, serviceArea, notes, campTitleKo: document.getElementById('staffCampNameKo').value }),
+        body: JSON.stringify({ campId, name, phone, email, gender, church, serviceArea, notes, campTitleKo: document.getElementById('staffCampNameKo').value }),
       });
       var data = await res.json();
 
