@@ -34,6 +34,5 @@ prayer_en: |-
 
   - Please pray that during the preparation period, our team may rejoice in God's love and Word, remain humble, and faithfully fulfill the responsibilities God has entrusted to us.
 photo_story: /images/uploads/joanna-photo_story-1779344839367.png
-report_url: "https://canva.link/aa0z2u22er636dj"
-
+report_url: "https://canva.link/o9eh9r4rcbxoe0k"
 ---
