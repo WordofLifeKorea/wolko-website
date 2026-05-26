@@ -1,4 +1,5 @@
 ---
+
 name_ko: 벤 & 제인 코흘러
 name_en: Ben & Jane Koehler
 title_ko: 시설 관리 및 사역 지원 · 제주 월비
@@ -7,7 +8,7 @@ role_badge: Missionaries
 campus: jeju
 category: missionary
 order: 10
-photo_url: /images/uploads/ben.jpg
+photo_url: "/images/uploads/ben-jane-photo_url-1779775546015.jpg"
 photo_story: ""
 hero_tagline_ko: 말씀을
 hero_tagline_en: A Space for
@@ -64,4 +65,5 @@ bio_en_2: "God saved me out of the Kingdom of darkness into the Kingdom because
   continue serving others and making disciples."
 gender: male
 support_url_en: https://missions.wol.org/missionaries/Ben-and-Jane-Koehler-937384/
+
 ---
