@@ -8,7 +8,7 @@ role_badge: Missionaries
 campus: jeju
 category: missionary
 order: 10
-photo_url: "/images/uploads/ben-jane-photo_url-1779775546015.jpg"
+photo_url: "/images/uploads/ben-jane-photo_url-1779775574634.jpg"
 photo_story: ""
 hero_tagline_ko: 말씀을
 hero_tagline_en: A Space for
@@ -65,5 +65,6 @@ bio_en_2: "God saved me out of the Kingdom of darkness into the Kingdom because
   continue serving others and making disciples."
 gender: male
 support_url_en: https://missions.wol.org/missionaries/Ben-and-Jane-Koehler-937384/
+
 
 ---
