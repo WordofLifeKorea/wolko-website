@@ -10,7 +10,7 @@ role_badge: Staff
 campus: jeju
 category: stw
 order: 3
-photo_url: /images/uploads/joanna-jung.png
+photo_url: "/images/uploads/joanna-photo_url-1779861158408.png"
 hero_tagline_ko: "\"날마다 숨 쉬는 순간마다\""
 hero_tagline_en: "\"With Every Breath We Take\""
 hero_tagline2_ko: "\"하나님의 사랑 안에 거하는 삶\""
@@ -35,4 +35,5 @@ prayer_en: |-
   - Please pray that during the preparation period, our team may rejoice in God's love and Word, remain humble, and faithfully fulfill the responsibilities God has entrusted to us.
 photo_story: /images/uploads/joanna-photo_story-1779344839367.png
 report_url: "https://canva.link/o9eh9r4rcbxoe0k"
+
 ---
