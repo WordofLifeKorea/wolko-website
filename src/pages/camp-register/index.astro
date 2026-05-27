@@ -715,8 +715,24 @@ html, body { overflow-x: hidden; max-width: 100%; }
   margin-top: 20px; margin-bottom: 16px; cursor: pointer;
 }
 .crp-consent input[type=checkbox] { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: var(--c-deep); }
-.crp-consent label { font-size: 12px; line-height: 1.65; color: var(--c-sub); cursor: pointer; }
-.crp-consent label strong { color: var(--c-deep); }
+.crp-consent label,
+.crp-consent-text { font-size: 12px; line-height: 1.65; color: var(--c-sub); cursor: pointer; }
+.crp-consent label strong,
+.crp-consent-text strong { color: var(--c-deep); }
+
+@media (max-width: 640px) {
+  .crp-reg-modal { padding: 12px; align-items: flex-start; }
+  .crp-modal-card {
+    max-height: calc(100vh - 24px);
+    border-radius: 16px;
+  }
+  .crp-modal-head,
+  .crp-staff-modal-head { padding: 28px 24px 22px; border-radius: 16px 16px 0 0; }
+  .crp-form-wrap { padding: 22px 20px 28px; }
+  .crp-form-grid { grid-template-columns: 1fr; }
+  .crp-modal-close { top: 12px; margin: 12px 12px -44px auto; }
+  .crp-consent { padding: 13px 14px; }
+}
 
 /* 환불 기준 tooltip */
 /* 환불 규정 모달 */
@@ -1820,10 +1836,10 @@ html, body { overflow-x: hidden; max-width: 100%; }
           </div>
           <div class="crp-field">
             <label><span class="wl-ko">성별</span><span class="wl-en">Gender</span> <span class="req">*</span></label>
-            <select id="staffGender" name="gender">
-              <option value="" disabled selected><span class="wl-ko">선택</span><span class="wl-en">Select</span></option>
-              <option value="male"><span class="wl-ko">남</span><span class="wl-en">Male</span></option>
-              <option value="female"><span class="wl-ko">여</span><span class="wl-en">Female</span></option>
+            <select id="staffGender" name="gender" data-opt-ko="선택" data-opt-en="Select">
+              <option value="" disabled selected>선택</option>
+              <option value="male" data-ko="남" data-en="Male">남</option>
+              <option value="female" data-ko="여" data-en="Female">여</option>
             </select>
           </div>
           <div class="crp-field crp-field--full">
@@ -1858,16 +1874,16 @@ html, body { overflow-x: hidden; max-width: 100%; }
         </div>
 
         <!-- 개인정보 동의 -->
-        <label class="crp-consent" style="accent-color:#0d9488;margin-top:20px;">
+        <div class="crp-consent" style="accent-color:#0d9488;margin-top:20px;">
           <input type="checkbox" id="staffPrivacyConsent" style="accent-color:#0d9488;">
-          <label for="staffPrivacyConsent">
+          <label class="crp-consent-text" for="staffPrivacyConsent">
             <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
             <strong class="wl-en">I consent to the collection and use of personal information.</strong>
             <br>
             <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일, 교회, 섬기고 싶은 분야 &nbsp;·&nbsp; 목적: 캠프 스태프 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
             <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email, church, service area &nbsp;·&nbsp; Purpose: staff management &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
           </label>
-        </label>
+        </div>
 
         <div id="staffErrorMsg" class="crp-error-msg" hidden></div>
 
@@ -2557,6 +2573,11 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       if (el.options[0]) {
         el.options[0].textContent = en ? el.dataset.optEn : el.dataset.optKo;
       }
+      Array.prototype.forEach.call(el.options, function(option) {
+        if (option.dataset.ko && option.dataset.en) {
+          option.textContent = en ? option.dataset.en : option.dataset.ko;
+        }
+      });
     });
   }
   syncLang();
