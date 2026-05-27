@@ -512,8 +512,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
 
 .crp-modal-overlay {
   position: absolute; inset: 0;
-  background: rgba(5,18,28,0.72);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  background: rgba(5,18,28,0.74);
   cursor: pointer;
   animation: crpFadeIn 0.25s ease;
 }
@@ -525,17 +524,19 @@ html, body { overflow-x: hidden; max-width: 100%; }
   background: #fff; border-radius: 20px;
   width: 100%; max-width: 680px;
   max-height: 90vh; overflow-y: auto;
-  box-shadow: 0 32px 80px rgba(0,20,40,0.28);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  contain: layout paint;
+  box-shadow: 0 24px 56px rgba(0,20,40,0.24);
   animation: crpSlideUp 0.32s cubic-bezier(0.22,1,0.36,1);
 }
 .crp-modal-close {
-  position: sticky; top: 16px; z-index: 30;
-  margin: 16px 16px -48px auto;
+  position: absolute; top: 16px; right: 16px; z-index: 30;
   width: 32px; height: 32px; border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.62); background: rgba(0,79,104,0.92);
   cursor: pointer;
   color: #fff; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 8px 22px rgba(0,20,40,0.22);
+  box-shadow: 0 6px 16px rgba(0,20,40,0.20);
   transition: background 0.2s, transform 0.18s;
 }
 .crp-modal-close:hover { background: #015a7a; transform: scale(1.04); }
@@ -730,7 +731,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
   .crp-staff-modal-head { padding: 28px 24px 22px; border-radius: 16px 16px 0 0; }
   .crp-form-wrap { padding: 22px 20px 28px; }
   .crp-form-grid { grid-template-columns: 1fr; }
-  .crp-modal-close { top: 12px; margin: 12px 12px -44px auto; }
+  .crp-modal-close { top: 12px; right: 12px; }
   .crp-consent { padding: 13px 14px; }
 }
 
@@ -738,7 +739,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
 /* 환불 규정 모달 */
 .crp-refund-modal-overlay {
   position: fixed; inset: 0; z-index: 10000;
-  background: rgba(0,0,0,0.55); backdrop-filter: blur(3px);
+  background: rgba(0,0,0,0.58);
   align-items: center; justify-content: center;
   padding: 24px;
 }
@@ -749,7 +750,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
   width: 100%; max-width: 480px;
   display: flex; flex-direction: column;
   max-height: 80vh; overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.22);
 }
 .crp-refund-modal-head {
   padding: 22px 24px 16px;
@@ -1998,7 +1999,14 @@ async function loadCrpCapacities() {
     } catch(e) { updateCrpCapBar(el, { count: 0, countMale: 0, countFemale: 0 }, cap); }
   }));
 }
-loadCrpCapacities();
+function scheduleCrpCapacityLoad() {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(loadCrpCapacities, { timeout: 1500 });
+  } else {
+    window.setTimeout(loadCrpCapacities, 250);
+  }
+}
+scheduleCrpCapacityLoad();
 
 /* ── 모달 DOM 참조 ── */
 var modal = document.getElementById('crpModal');
