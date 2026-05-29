@@ -1,0 +1,809 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="CRS for WOLKO" whiteNav={true}>
+  <div id="crs-root"></div>
+</BaseLayout>
+
+<style is:global>
+  /* ── 전체 레이아웃 ── */
+  #crs-root { min-height: 100vh; background: #f4f6f9; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; }
+
+  /* ── 로그인 화면 ── */
+  .login-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
+  .login-card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.10); padding:2.5rem 2rem; width:100%; max-width:400px; }
+  .login-logo { text-align:center; margin-bottom:1.5rem; }
+  .login-logo h1 { font-size:1.5rem; font-weight:800; color:#004f68; margin:0.5rem 0 0.2rem; }
+  .login-logo p { font-size:.85rem; color:#888; margin:0; }
+  .login-card label { display:block; font-size:.85rem; font-weight:600; color:#444; margin-bottom:.3rem; }
+  .login-card input { width:100%; box-sizing:border-box; padding:.7rem 1rem; border:1.5px solid #ddd; border-radius:8px; font-size:.95rem; margin-bottom:1rem; outline:none; transition:border .2s; }
+  .login-card input:focus { border-color:#004f68; }
+  .btn-primary { width:100%; padding:.8rem; background:#004f68; color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer; transition:background .2s; }
+  .btn-primary:hover { background:#003a50; }
+  .login-err { color:#e53935; font-size:.85rem; margin-bottom:.8rem; text-align:center; display:none; }
+
+  /* ── 앱 헤더 ── */
+  .app-header { background:#004f68; color:#fff; padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+  .app-header h1 { margin:0; font-size:1.1rem; font-weight:800; letter-spacing:.5px; }
+  .app-header .user-info { display:flex; align-items:center; gap:.8rem; font-size:.85rem; }
+  .btn-logout { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; padding:.35rem .9rem; border-radius:20px; font-size:.8rem; cursor:pointer; transition:background .2s; }
+  .btn-logout:hover { background:rgba(255,255,255,.25); }
+
+  /* ── 메인 콘텐츠 ── */
+  .app-body { max-width:900px; margin:0 auto; padding:1.5rem 1rem 4rem; }
+
+  /* ── 상단 컨트롤 ── */
+  .top-bar { display:flex; gap:.8rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+  .search-input { flex:1; min-width:200px; padding:.7rem 1rem; border:1.5px solid #ddd; border-radius:8px; font-size:.9rem; outline:none; background:#fff; }
+  .search-input:focus { border-color:#004f68; }
+  .btn-add { background:#004f68; color:#fff; border:none; border-radius:8px; padding:.7rem 1.2rem; font-size:.9rem; font-weight:700; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:.4rem; }
+  .btn-add:hover { background:#003a50; }
+
+  /* ── 교회 카드 리스트 ── */
+  .church-list { display:grid; gap:.9rem; }
+  .church-card { background:#fff; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,.07), 0 4px 14px rgba(0,0,0,.05); cursor:pointer; transition:box-shadow .2s, transform .18s; overflow:hidden; border:1px solid #e5edf1; }
+  .church-card:hover { box-shadow:0 4px 20px rgba(0,79,104,.13), 0 1px 4px rgba(0,0,0,.06); transform:translateY(-2px); }
+  .church-card-header { background:#f4f9fb; border-bottom:1px solid #e5edf1; padding:.95rem 1.3rem .85rem; display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; }
+  .church-card-body { padding:.85rem 1.3rem 1rem; }
+  .church-name { font-size:1rem; font-weight:700; color:#0d2b38; margin:0 0 .2rem; line-height:1.3; }
+  .pastor-name { font-size:.82rem; color:#6a8fa0; margin:0; }
+  .step-badge { background:#004f68; color:#fff; font-size:.72rem; font-weight:700; padding:.28rem .75rem; border-radius:20px; white-space:nowrap; flex-shrink:1; letter-spacing:.2px; max-width:58%; overflow:hidden; text-overflow:ellipsis; }
+  .step-badge.complete { background:#1a8c68; }
+  .step-bar-wrap { margin-bottom:.75rem; }
+  .step-bar-bg { background:#ddeaf0; border-radius:99px; height:8px; overflow:hidden; }
+  .step-bar-fill { background:linear-gradient(90deg,#004f68,#1a9dbf); height:100%; border-radius:99px; transition:width .4s; }
+  .step-bar-label { font-size:.73rem; color:#8aacba; margin-top:.35rem; font-weight:500; }
+  .card-meta { display:flex; flex-direction:column; gap:.55rem; }
+  .card-meta-divider { height:1px; background:#edf2f5; margin-top:.65rem; margin-bottom:.75rem; }
+  .card-meta span { font-size:.78rem; color:#4a6070; display:flex; align-items:center; gap:.3rem; }
+  .meta-label { font-style:normal; font-size:.66rem; font-weight:700; background:#e5f0f5; color:#004f68; padding:.1rem .4rem; border-radius:3px; letter-spacing:.4px; white-space:nowrap; text-transform:uppercase; }
+  /* ── 카드 다음 단계 힌트 ── */
+  .next-step-row { display:flex; align-items:baseline; gap:.5rem; margin-top:.5rem; }
+  .next-step-label { font-size:.66rem; font-weight:700; color:#004f68; background:#e5f0f5; padding:.1rem .4rem; border-radius:3px; letter-spacing:.4px; white-space:nowrap; text-transform:uppercase; flex-shrink:0; }
+  .next-step-text { font-size:.78rem; color:#4a6070; line-height:1.3; }
+
+  /* ── 빈 상태 ── */
+  .empty-state { text-align:center; padding:4rem 2rem; color:#aaa; }
+  .empty-state svg { margin-bottom:1rem; opacity:.4; }
+  .empty-state p { font-size:1rem; margin:.3rem 0; }
+
+  /* ── 모달 공통 ── */
+  .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); backdrop-filter:blur(3px); z-index:200; align-items:center; justify-content:center; padding:1rem; }
+  .modal-backdrop.open { display:flex; }
+  .modal { background:#fff; border-radius:16px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.18); }
+  .modal-header { padding:1.3rem 1.5rem 1rem; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:#fff; z-index:1; border-radius:16px 16px 0 0; }
+  .modal-header h2 { margin:0; font-size:1.1rem; font-weight:800; color:#004f68; }
+  .btn-close { background:none; border:none; font-size:1.4rem; cursor:pointer; color:#aaa; line-height:1; padding:.2rem; }
+  .btn-close:hover { color:#444; }
+  .modal-body { padding:1.2rem 1.5rem 1.5rem; }
+  .form-group { margin-bottom:1.1rem; }
+  .form-group label { display:block; font-size:.85rem; font-weight:600; color:#444; margin-bottom:.35rem; }
+  .form-group input, .form-group textarea, .form-group select { width:100%; box-sizing:border-box; padding:.7rem 1rem; border:1.5px solid #ddd; border-radius:8px; font-size:.9rem; outline:none; transition:border .2s; font-family:inherit; }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color:#004f68; }
+  .form-group textarea { resize:vertical; min-height:80px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+  .modal-footer { display:flex; gap:.8rem; justify-content:flex-end; margin-top:1.3rem; }
+  .btn-cancel { background:#f0f0f0; color:#555; border:none; border-radius:8px; padding:.7rem 1.2rem; font-size:.9rem; cursor:pointer; font-weight:600; }
+  .btn-cancel:hover { background:#e0e0e0; }
+  .btn-save { background:#004f68; color:#fff; border:none; border-radius:8px; padding:.7rem 1.4rem; font-size:.9rem; font-weight:700; cursor:pointer; }
+  .btn-save:hover { background:#003a50; }
+
+  /* ── 교회 상세 모달 ── */
+  .detail-info { background:#f8fbfc; border-radius:10px; padding:1.1rem 1.3rem; margin-bottom:1.3rem; }
+  .detail-info-row { display:flex; gap:.6rem; font-size:.9rem; color:#555; margin-bottom:.7rem; flex-wrap:wrap; line-height:1.45; }
+  .detail-info-row:last-child { margin-bottom:0; }
+  .detail-info-row strong { color:#1a1a1a; min-width:76px; flex-shrink:0; }
+  .last-visit-row { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; font-size:.9rem; color:#555; margin-bottom:.7rem; }
+  .last-visit-row strong { color:#1a1a1a; min-width:76px; flex-shrink:0; }
+  .last-visit-input { padding:.28rem .55rem; border:1.5px solid #ddd; border-radius:6px; font-size:.83rem; outline:none; transition:border .2s; font-family:inherit; }
+  .last-visit-input:focus { border-color:#004f68; }
+  .btn-save-small { background:#004f68; color:#fff; border:none; border-radius:6px; padding:.28rem .65rem; font-size:.75rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .btn-save-small:hover { background:#003a50; }
+  /* ── 저장 확인 알림 ── */
+  .save-alert-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:500; display:flex; align-items:center; justify-content:center; }
+  .save-alert { background:#fff; border-radius:14px; padding:1.6rem 2rem 1.3rem; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,.18); min-width:200px; }
+  .save-alert p { margin:0 0 1.1rem; font-size:.95rem; color:#1a1a1a; font-weight:600; }
+  .save-alert .btn-primary { width:100%; padding:.65rem; font-size:.9rem; }
+  .steps-header { display:flex; justify-content:space-between; align-items:center; margin:1.2rem 0 .8rem; border-bottom:2px solid #e8f4f8; padding-bottom:.5rem; }
+  .steps-title { font-size:.95rem; font-weight:700; color:#004f68; margin:0; }
+  .steps-toggle { background:none; border:1px solid #c8dfe8; color:#004f68; font-size:.75rem; font-weight:600; padding:.22rem .65rem; border-radius:6px; cursor:pointer; }
+  .steps-toggle:hover { background:#e8f4f8; }
+  .steps-list.collapsed { display:none; }
+  .step-item { display:flex; align-items:flex-start; gap:.9rem; padding:.8rem .2rem; border-bottom:1px solid #f0f0f0; cursor:pointer; transition:background .15s; border-radius:8px; }
+  .step-item:last-child { border-bottom:none; }
+  .step-item:hover { background:#f8fbfc; }
+  .step-check { width:22px; height:22px; border-radius:6px; border:2px solid #ccc; background:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; margin-top:1px; }
+  .step-check.checked { background:#004f68; border-color:#004f68; }
+  .step-check svg { display:none; }
+  .step-check.checked svg { display:block; }
+  .step-text { flex:1; }
+  .step-num { font-size:.75rem; font-weight:700; color:#aaa; display:block; margin-bottom:.15rem; }
+  .step-desc { font-size:.9rem; color:#333; line-height:1.4; }
+  .step-item.done .step-num, .step-item.done .step-desc { color:#004f68; }
+  .detail-actions { display:flex; gap:.7rem; margin-top:1.3rem; }
+  .btn-edit { flex:1; background:#f0f0f0; color:#333; border:none; border-radius:8px; padding:.7rem; font-size:.9rem; font-weight:600; cursor:pointer; }
+  .btn-edit:hover { background:#e0e0e0; }
+  .btn-delete { background:#fff0f0; color:#e53935; border:1.5px solid #ffcdd2; border-radius:8px; padding:.7rem 1rem; font-size:.9rem; font-weight:600; cursor:pointer; }
+  .btn-delete:hover { background:#ffebee; }
+
+  /* ── 스켈레톤/로딩 ── */
+  .loading-wrap { display:flex; align-items:center; justify-content:center; padding:4rem; }
+  .spinner { width:36px; height:36px; border:4px solid #e8f4f8; border-top-color:#004f68; border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ── 반응형 ── */
+  @media(max-width:600px) {
+    .form-row { grid-template-columns:1fr; }
+    .app-header h1 { font-size:.95rem; }
+    .app-body { padding:1rem .8rem 3rem; }
+    .modal-body { padding:1rem 1rem 1.2rem; }
+  }
+</style>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import {
+    getDatabase, ref, push, get, set, update, remove, child
+  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBodoqlBo8MjVN2UN4_kI--Sr35kOQnPY8",
+    authDomain: "wolko-crs.firebaseapp.com",
+    databaseURL: "https://wolko-crs-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "wolko-crs",
+    storageBucket: "wolko-crs.firebasestorage.app",
+    messagingSenderId: "391180747277",
+    appId: "1:391180747277:web:031d2d76b082ea8d438b44"
+  };
+
+  const STEPS = [
+    "Meet pastor & give presentation",
+    "WOLKO Day (Training for gospel conversation)",
+    "Youth participate in camp or event",
+    "Core Training",
+    "Training church youth for gospel training",
+    "Church uses G.O.S.P.E.L curriculum",
+    "Church uses Q.T. curriculum",
+    "WOLKO Missionary speaks at church service",
+    "Church supports WOLKO",
+    "Pastor introduces WOLKO to other churches"
+  ];
+
+  const STEPS_KO = [
+    "목사님 방문 및 사역 소개",
+    "WOLKO Day (복음 대화 훈련)",
+    "청소년 캠프 또는 이벤트 참여",
+    "리더 훈련 (Core Training)",
+    "교회 청소년 복음 훈련",
+    "교회의 G.O.S.P.E.L 커리큘럼 사용",
+    "교회의 Q.T. 커리큘럼 사용",
+    "WOLKO 선교사 교회 예배 설교",
+    "교회의 WOLKO 후원",
+    "목사님의 타 교회 WOLKO 소개"
+  ];
+
+  // ── 지역 데이터 ──
+  const REGIONS = {
+    '서울특별시': ['강남구','강동구','강북구','강서구','관악구','광진구','구로구','금천구','노원구','도봉구','동대문구','동작구','마포구','서대문구','서초구','성동구','성북구','송파구','양천구','영등포구','용산구','은평구','종로구','중구','중랑구'],
+    '부산광역시': ['강서구','금정구','기장군','남구','동구','동래구','부산진구','북구','사상구','사하구','서구','수영구','연제구','영도구','중구','해운대구'],
+    '대구광역시': ['군위군','남구','달서구','달성군','동구','북구','서구','수성구','중구'],
+    '인천광역시': ['강화군','계양구','남동구','동구','미추홀구','부평구','서구','연수구','옹진군','중구'],
+    '광주광역시': ['광산구','남구','동구','북구','서구'],
+    '대전광역시': ['대덕구','동구','서구','유성구','중구'],
+    '울산광역시': ['남구','동구','북구','울주군','중구'],
+    '세종특별자치시': ['세종시'],
+    '경기도': ['가평군','고양시','과천시','광명시','광주시','구리시','군포시','김포시','남양주시','동두천시','부천시','성남시','수원시','시흥시','안산시','안성시','안양시','양주시','양평군','여주시','연천군','오산시','용인시','의왕시','의정부시','이천시','파주시','평택시','포천시','하남시','화성시'],
+    '강원특별자치도': ['강릉시','고성군','동해시','삼척시','속초시','양구군','양양군','영월군','원주시','인제군','정선군','철원군','춘천시','태백시','평창군','홍천군','화천군','횡성군'],
+    '충청북도': ['괴산군','단양군','보은군','영동군','옥천군','음성군','제천시','증평군','진천군','청주시','충주시'],
+    '충청남도': ['계룡시','공주시','금산군','논산시','당진시','보령시','부여군','서산시','서천군','아산시','예산군','천안시','청양군','태안군','홍성군'],
+    '전북특별자치도': ['고창군','군산시','김제시','남원시','무주군','부안군','순창군','완주군','익산시','임실군','장수군','전주시','정읍시','진안군'],
+    '전라남도': ['강진군','고흥군','곡성군','광양시','구례군','나주시','담양군','mokpo시','무안군','보성군','순천시','신안군','여수시','영광군','영암군','완도군','장성군','장흥군','진도군','함평군','해남군','화순군'],
+    '경상북도': ['경산시','경주시','고령군','구미시','군위군','김천시','문경시','봉화군','상주시','성주군','안동시','영덕군','영양군','영주시','영천시','예천군','울릉군','울진군','의성군','청도군','청송군','칠곡군','포항시'],
+    '경상남도': ['거제시','거창군','고성군','김해시','남해군','밀양시','사천시','산청군','양산시','의령군','진주시','창녕군','창원시','통영시','하동군','함안군','함양군','합천군'],
+    '제주특별자치도': ['서귀포시','제주시'],
+  };
+
+  // ── 번역 ──
+  const LANG = {
+    ko: {
+      subtitle: 'Church Relationship System',
+      email: '이메일', password: '비밀번호', login: '로그인', logging_in: '로그인 중...',
+      login_error: '이메일 또는 비밀번호가 올바르지 않습니다.',
+      logout: '로그아웃',
+      search_ph: '교회 이름 또는 목사님 성함으로 검색...',
+      add_church: '＋ 교회 추가',
+      no_churches: '등록된 교회가 없습니다',
+      no_churches_sub: '교회 추가 버튼으로 첫 교회를 등록해보세요!',
+      pastor_prefix: '담임:', not_entered: '미입력', complete: '완료', progress: '% 진행',
+      add_title: '교회 추가', edit_title: '교회 정보 수정',
+      church_name_label: '교회 이름 *', church_name_ph: '예: 평택중앙교회',
+      pastor_label: '담임목사 성함 *', pastor_ph: '예: 홍길동 목사',
+      pastor_phone: '목사님 연락처', pastor_phone_ph: '예: 010-1234-5678',
+      visit_date: '방문 날짜', location: '시 / 도', region_ph: '-- 시/도 선택 --',
+      district: '시 / 군 / 구', district_ph: '-- 시/도를 먼저 선택하세요 --', district_ph_select: '-- 시/군/구 선택 --',
+      purpose: '방문 목적', purpose_ph: '-- 방문 목적 선택 --',
+      notes: '메모', notes_ph: '교회에 대한 추가 메모...',
+      cancel: '취소', save: '저장', saving: '저장 중...',
+      detail_pastor: '담임목사', detail_location: '지역', detail_date: '방문일',
+      detail_purpose: '방문목적', detail_notes: '메모', detail_progress: '진행단계',
+      done_of: (d,t) => `${d} / ${t} 완료`,
+      steps_title: '관계 발전 단계',
+      btn_edit: '정보 수정', btn_delete: '삭제',
+      name_required: '교회 이름을 입력해주세요.',
+      save_error: '저장 중 오류가 발생했습니다: ',
+      step_error: '저장 중 오류: ', delete_error: '삭제 중 오류: ',
+      delete_confirm: n => `"${n}"를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`,
+      saved_msg: '저장되었습니다.', ok: '확인',
+      last_visit: '마지막 방문', steps_collapse: '접기', steps_expand: '펼치기',
+      next_step_label: '다음스텝', card_progress: (d, tot) => `${d}/${tot}`,
+      detail_last_visit: '마지막 방문', last_visit_save: '저장', last_visit_visitor_ph: '방문자 이름',
+    },
+    en: {
+      subtitle: 'Church Relationship System',
+      email: 'Email', password: 'Password', login: 'Login', logging_in: 'Logging in...',
+      login_error: 'Invalid email or password.',
+      logout: 'Logout',
+      search_ph: 'Search by church name or pastor...',
+      add_church: '＋ Add Church',
+      no_churches: 'No churches registered',
+      no_churches_sub: 'Click "Add Church" to register your first church!',
+      pastor_prefix: 'Pastor:', not_entered: 'N/A', complete: 'Complete', progress: '% done',
+      add_title: 'Add Church', edit_title: 'Edit Church',
+      church_name_label: 'Church Name *', church_name_ph: 'e.g. Pyeongtaek Central Church',
+      pastor_label: 'Senior Pastor *', pastor_ph: 'e.g. Pastor John Kim',
+      pastor_phone: 'Pastor\'s Phone', pastor_phone_ph: 'e.g. 010-1234-5678',
+      visit_date: 'Visit Date', location: 'Province / City', region_ph: '-- Select Province --',
+      district: 'City / District', district_ph: '-- Select province first --', district_ph_select: '-- Select district --',
+      purpose: 'Visit Purpose', purpose_ph: '-- Select Visit Purpose --',
+      notes: 'Notes', notes_ph: 'Additional notes about this church...',
+      cancel: 'Cancel', save: 'Save', saving: 'Saving...',
+      detail_pastor: 'Senior Pastor', detail_location: 'Location', detail_date: 'Visit Date',
+      detail_purpose: 'Purpose', detail_notes: 'Notes', detail_progress: 'Progress',
+      done_of: (d,t) => `${d} / ${t} completed`,
+      steps_title: 'Relationship Steps',
+      btn_edit: 'Edit Info', btn_delete: 'Delete',
+      name_required: 'Please enter a church name.',
+      save_error: 'Error saving: ',
+      step_error: 'Save error: ', delete_error: 'Delete error: ',
+      delete_confirm: n => `Delete "${n}"?\nThis action cannot be undone.`,
+      saved_msg: 'Saved successfully.', ok: 'OK',
+      last_visit: 'Last Visit', steps_collapse: 'Collapse', steps_expand: 'Expand',
+      next_step_label: 'Next Step', card_progress: (d, tot) => `${d}/${tot}`,
+      detail_last_visit: 'Last Visit', last_visit_save: 'Save', last_visit_visitor_ph: 'Visitor name',
+    }
+  };
+
+  function getLang() { return document.body.classList.contains('lang-en') ? 'en' : 'ko'; }
+  function t(key, ...args) {
+    const val = LANG[getLang()][key];
+    return typeof val === 'function' ? val(...args) : (val ?? key);
+  }
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  const root = document.getElementById('crs-root');
+  let currentUser = null;
+  let churches = [];
+  let editingChurch = null;
+  let viewingChurch = null;
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── 로그인 화면 ──
+  function renderLogin() {
+    root.innerHTML = `
+      <div class="login-wrap">
+        <div class="login-card">
+          <div class="login-logo">
+            <img src="/images/WOLKO Circle.png" alt="WOLKO" style="width:64px;height:64px;object-fit:contain;">
+            <h1>CRS for WOLKO</h1>
+            <p>${t('subtitle')}</p>
+          </div>
+          <div class="login-err" id="loginErr">${t('login_error')}</div>
+          <label>${t('email')}</label>
+          <input type="email" id="loginEmail" placeholder="missionary@wolko.or.kr" autocomplete="email">
+          <label>${t('password')}</label>
+          <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password">
+          <button class="btn-primary" id="loginBtn">${t('login')}</button>
+        </div>
+      </div>`;
+
+    const emailEl = document.getElementById('loginEmail');
+    const pwEl    = document.getElementById('loginPw');
+    const btnEl   = document.getElementById('loginBtn');
+    const errEl   = document.getElementById('loginErr');
+
+    async function doLogin() {
+      const email = emailEl.value.trim();
+      const pw = pwEl.value;
+      if (!email || !pw) return;
+      btnEl.disabled = true;
+      btnEl.textContent = t('logging_in');
+      try {
+        await signInWithEmailAndPassword(auth, email, pw);
+      } catch(e) {
+        errEl.style.display = 'block';
+        btnEl.disabled = false;
+        btnEl.textContent = t('login');
+      }
+    }
+    btnEl.addEventListener('click', doLogin);
+    pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  }
+
+  // ── 메인 앱 화면 ──
+  function renderApp() {
+    const isKo = getLang() === 'ko';
+    const purposeOptions = STEPS.map((s, i) => {
+      const label = isKo ? `${i+1}단계: ${STEPS_KO[i]}` : `Step ${i+1}: ${s}`;
+      return `<option value="Step ${i+1}: ${s}">${esc(label)}</option>`;
+    }).join('');
+
+    root.innerHTML = `
+      <div class="app-header">
+        <h1>CRS for WOLKO</h1>
+        <div class="user-info">
+          <span>${esc(currentUser.email)}</span>
+          <button class="btn-logout" id="logoutBtn">${t('logout')}</button>
+        </div>
+      </div>
+      <div class="app-body">
+        <div class="top-bar">
+          <input class="search-input" id="searchInput" placeholder="${t('search_ph')}">
+          <button class="btn-add" id="addChurchBtn">${t('add_church')}</button>
+        </div>
+        <div class="church-list" id="churchList">
+          <div class="loading-wrap"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- 추가/수정 모달 -->
+      <div class="modal-backdrop" id="editModal">
+        <div class="modal">
+          <div class="modal-header">
+            <h2 id="editModalTitle">${t('add_title')}</h2>
+            <button class="btn-close" id="editModalClose">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>${t('church_name_label')}</label>
+              <input type="text" id="fChurchName" placeholder="${t('church_name_ph')}">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>${t('pastor_label')}</label>
+                <input type="text" id="fPastorName" placeholder="${t('pastor_ph')}">
+              </div>
+              <div class="form-group">
+                <label>${t('pastor_phone')}</label>
+                <input type="tel" id="fPastorPhone" placeholder="${t('pastor_phone_ph')}">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>${t('visit_date')}</label>
+                <input type="date" id="fVisitDate">
+              </div>
+              <div class="form-group"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>${t('location')}</label>
+                <select id="fRegion">
+                  <option value="">${t('region_ph')}</option>
+                  ${Object.keys(REGIONS).map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>${t('district')}</label>
+                <select id="fDistrict" disabled>
+                  <option value="">${t('district_ph')}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>${t('purpose')}</label>
+              <select id="fPurpose">
+                <option value="">${t('purpose_ph')}</option>
+                ${purposeOptions}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>${t('notes')}</label>
+              <textarea id="fNotes" placeholder="${t('notes_ph')}"></textarea>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-cancel" id="editCancelBtn">${t('cancel')}</button>
+              <button class="btn-save" id="editSaveBtn">${t('save')}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 상세 모달 -->
+      <div class="modal-backdrop" id="detailModal">
+        <div class="modal">
+          <div class="modal-header">
+            <h2 id="detailTitle"></h2>
+            <button class="btn-close" id="detailModalClose">×</button>
+          </div>
+          <div class="modal-body" id="detailBody"></div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+    document.getElementById('addChurchBtn').addEventListener('click', () => openEditModal(null));
+    document.getElementById('editModalClose').addEventListener('click', closeEditModal);
+    document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
+    document.getElementById('editSaveBtn').addEventListener('click', saveChurch);
+    document.getElementById('detailModalClose').addEventListener('click', closeDetailModal);
+    document.getElementById('searchInput').addEventListener('input', renderChurchList);
+
+    // 시/도 → 시/군/구 연동
+    document.getElementById('fRegion').addEventListener('change', function() {
+      const districtEl = document.getElementById('fDistrict');
+      const region = this.value;
+      if (region && REGIONS[region]) {
+        districtEl.innerHTML = `<option value="">${t('district_ph_select')}</option>` +
+          REGIONS[region].map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+        districtEl.disabled = false;
+      } else {
+        districtEl.innerHTML = `<option value="">${t('district_ph')}</option>`;
+        districtEl.disabled = true;
+      }
+    });
+
+    loadChurches();
+  }
+
+  // ── 교회 목록 로드 ──
+  async function loadChurches() {
+    try {
+      const snap = await get(ref(db, 'churches'));
+      if (snap.exists()) {
+        const data = snap.val();
+        churches = Object.entries(data)
+          .map(([id, val]) => ({ id, ...val }))
+          .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      } else {
+        churches = [];
+      }
+    } catch(e) {
+      churches = [];
+    }
+    renderChurchList();
+  }
+
+  // ── 교회 목록 렌더 ──
+  function renderChurchList() {
+    const listEl = document.getElementById('churchList');
+    if (!listEl) return;
+    const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+    const filtered = churches.filter(c =>
+      (c.churchName || '').toLowerCase().includes(q) ||
+      (c.pastorName || '').toLowerCase().includes(q) ||
+      (c.location || '').toLowerCase().includes(q)
+    );
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          <p style="font-weight:700;font-size:1.05rem;color:#666">${t('no_churches')}</p>
+          <p style="font-size:.85rem">${t('no_churches_sub')}</p>
+        </div>`;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map(c => {
+      const steps = c.steps || {};
+      const done = STEPS.filter((_,i) => steps[i+1]).length;
+      const pct = Math.round(done / STEPS.length * 100);
+      const isComplete = done === STEPS.length;
+      const nextStepIdx = STEPS.findIndex((_, i) => !steps[i+1]);
+      const nextStepRaw = !isComplete ? (getLang()==='ko' ? STEPS_KO[nextStepIdx] : STEPS[nextStepIdx]) : '';
+      const nextStepDesc = !isComplete ? esc(nextStepRaw) : null;
+      let badgeText;
+      if (isComplete) {
+        badgeText = t('complete');
+      } else if (done === 0) {
+        badgeText = getLang() === 'ko' ? '시작 전' : 'Not Started';
+      } else {
+        const curDesc = getLang() === 'ko' ? STEPS_KO[done - 1] : STEPS[done - 1];
+        badgeText = `Step ${done} · ${curDesc}`;
+      }
+
+      const lastVisitParts = [c.lastVisitDate, c.lastVisitVisitor].filter(Boolean);
+      const metaItems = [
+        c.location ? `<span><em class="meta-label">${getLang()==='ko'?'지역':'Loc'}</em>${esc(c.location)}</span>` : '',
+        lastVisitParts.length ? `<span><em class="meta-label">${t('last_visit')}</em>${esc(lastVisitParts.join(' · '))}</span>` : '',
+      ].filter(Boolean).join('');
+
+      return `
+        <div class="church-card" data-id="${esc(c.id)}">
+          <div class="church-card-header">
+            <div>
+              <p class="church-name">${esc(c.churchName)}</p>
+              <p class="pastor-name">${t('pastor_prefix')} ${esc(c.pastorName || t('not_entered'))}</p>
+            </div>
+            <span class="step-badge${isComplete?' complete':''}">${esc(badgeText)}</span>
+          </div>
+          <div class="church-card-body">
+            <div class="step-bar-wrap">
+              <div class="step-bar-bg"><div class="step-bar-fill" style="width:${pct}%"></div></div>
+              <div class="step-bar-label">${pct}${t('progress')}</div>
+            </div>
+            ${nextStepDesc ? `<div class="next-step-row"><span class="next-step-label">${t('next_step_label')}</span><span class="next-step-text">${nextStepDesc}</span></div>` : ''}
+            ${metaItems ? `<div class="card-meta-divider"></div><div class="card-meta">${metaItems}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    document.querySelectorAll('.church-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const ch = churches.find(c => c.id === card.dataset.id);
+        if (ch) openDetailModal(ch);
+      });
+    });
+  }
+
+  // ── 교회 추가/수정 모달 ──
+  function openEditModal(church) {
+    editingChurch = church;
+    document.getElementById('editModalTitle').textContent = church ? t('edit_title') : t('add_title');
+    document.getElementById('fChurchName').value = church?.churchName || '';
+    document.getElementById('fPastorName').value = church?.pastorName || '';
+    document.getElementById('fPastorPhone').value = church?.pastorPhone || '';
+    document.getElementById('fVisitDate').value = church?.visitDate || '';
+    document.getElementById('fPurpose').value = church?.purpose || '';
+    document.getElementById('fNotes').value = church?.notes || '';
+
+    // location 복원: "경기도 평택시" → region=경기도, district=평택시
+    const regionEl   = document.getElementById('fRegion');
+    const districtEl = document.getElementById('fDistrict');
+    const savedRegion   = church?.region || '';
+    const savedDistrict = church?.district || '';
+    regionEl.value = savedRegion;
+    if (savedRegion && REGIONS[savedRegion]) {
+      districtEl.innerHTML = `<option value="">${t('district_ph_select')}</option>` +
+        REGIONS[savedRegion].map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+      districtEl.disabled = false;
+      districtEl.value = savedDistrict;
+    } else {
+      districtEl.innerHTML = `<option value="">${t('district_ph')}</option>`;
+      districtEl.disabled = true;
+    }
+
+    document.getElementById('editModal').classList.add('open');
+    setTimeout(() => document.getElementById('fChurchName').focus(), 100);
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').classList.remove('open');
+    editingChurch = null;
+  }
+
+  async function saveChurch() {
+    const churchName = document.getElementById('fChurchName').value.trim();
+    const pastorName = document.getElementById('fPastorName').value.trim();
+    if (!churchName) { alert(t('name_required')); return; }
+
+    const saveBtn = document.getElementById('editSaveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = t('saving');
+
+    const now = Date.now();
+    const region   = document.getElementById('fRegion').value;
+    const district = document.getElementById('fDistrict').value;
+    const data = {
+      churchName, pastorName,
+      pastorPhone: document.getElementById('fPastorPhone').value.trim(),
+      visitDate: document.getElementById('fVisitDate').value,
+      region, district,
+      location: [region, district].filter(Boolean).join(' '),
+      purpose: document.getElementById('fPurpose').value,
+      notes: document.getElementById('fNotes').value.trim(),
+      updatedAt: now, updatedBy: currentUser.uid,
+    };
+
+    try {
+      if (editingChurch) {
+        await update(ref(db, `churches/${editingChurch.id}`), data);
+      } else {
+        data.steps = {};
+        data.createdAt = now;
+        data.createdBy = currentUser.uid;
+        await push(ref(db, 'churches'), data);
+      }
+      closeEditModal();
+      await loadChurches();
+    } catch(e) {
+      alert(t('save_error') + e.message);
+    }
+    saveBtn.disabled = false;
+    saveBtn.textContent = t('save');
+  }
+
+  // ── 교회 상세 모달 ──
+  function openDetailModal(church) {
+    viewingChurch = church;
+    document.getElementById('detailTitle').textContent = church.churchName;
+    renderDetailBody(church);
+    document.getElementById('detailModal').classList.add('open');
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('open');
+    viewingChurch = null;
+  }
+
+  function renderDetailBody(church) {
+    const steps = church.steps || {};
+    const done = STEPS.filter((_,i) => steps[i+1]).length;
+    const stepsArr = getLang() === 'ko' ? STEPS_KO : STEPS;
+
+    const stepsHtml = stepsArr.map((desc, i) => {
+      const num = i + 1;
+      const checked = !!steps[num];
+      return `
+        <div class="step-item${checked ? ' done' : ''}" data-step="${num}">
+          <div class="step-check${checked ? ' checked' : ''}">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M2 6.5l3.5 3.5 5.5-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="step-text">
+            <span class="step-num">Step ${num}</span>
+            <span class="step-desc">${esc(desc)}</span>
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('detailBody').innerHTML = `
+      <div class="detail-info">
+        <div class="detail-info-row"><strong>${t('detail_pastor')}</strong> ${esc(church.pastorName || t('not_entered'))}${church.pastorPhone ? ` &nbsp;${esc(church.pastorPhone)}` : ''}</div>
+        ${church.location ? `<div class="detail-info-row"><strong>${t('detail_location')}</strong> ${esc(church.location)}</div>` : ''}
+        ${church.visitDate ? `<div class="detail-info-row"><strong>${t('detail_date')}</strong> ${esc(church.visitDate)}</div>` : ''}
+        ${church.purpose ? `<div class="detail-info-row"><strong>${t('detail_purpose')}</strong> ${esc(church.purpose)}</div>` : ''}
+        ${church.notes ? `<div class="detail-info-row"><strong>${t('detail_notes')}</strong> ${esc(church.notes)}</div>` : ''}
+        <div class="last-visit-row">
+          <strong>${t('detail_last_visit')}</strong>
+          <input type="date" class="last-visit-input" id="lastVisitInput" value="${esc(church.lastVisitDate || '')}">
+          <input type="text" class="last-visit-input" id="lastVisitVisitor" placeholder="${t('last_visit_visitor_ph')}" value="${esc(church.lastVisitVisitor || '')}" style="min-width:90px;flex:1">
+          <button class="btn-save-small" id="saveLastVisitBtn">${t('last_visit_save')}</button>
+        </div>
+        <div class="detail-info-row" style="margin-top:.5rem">
+          <strong>${t('detail_progress')}</strong>
+          <span style="color:#004f68;font-weight:700">${t('done_of', done, STEPS.length)}</span>
+        </div>
+      </div>
+      <div class="steps-header">
+        <span class="steps-title">${t('steps_title')}</span>
+        <button class="steps-toggle" id="stepsToggle">${t('steps_collapse')}</button>
+      </div>
+      <div class="steps-list" id="stepsList">${stepsHtml}</div>
+      <div class="detail-actions">
+        <button class="btn-edit" id="detailEditBtn">${t('btn_edit')}</button>
+        <button class="btn-delete" id="detailDeleteBtn">${t('btn_delete')}</button>
+      </div>`;
+
+    document.querySelectorAll('.step-item').forEach(item => {
+      item.addEventListener('click', () => toggleStep(church, parseInt(item.dataset.step)));
+    });
+    document.getElementById('detailEditBtn').addEventListener('click', () => {
+      closeDetailModal(); openEditModal(church);
+    });
+    document.getElementById('detailDeleteBtn').addEventListener('click', () => deleteChurch(church));
+    document.getElementById('saveLastVisitBtn').addEventListener('click', () => {
+      saveLastVisit(
+        church,
+        document.getElementById('lastVisitInput').value,
+        document.getElementById('lastVisitVisitor').value.trim()
+      );
+    });
+    document.getElementById('stepsToggle').addEventListener('click', function() {
+      const list = document.getElementById('stepsList');
+      const collapsed = list.classList.toggle('collapsed');
+      this.textContent = collapsed ? t('steps_expand') : t('steps_collapse');
+    });
+  }
+
+  // ── 단계 토글 ──
+  async function toggleStep(church, stepNum) {
+    const steps = { ...(church.steps || {}) };
+    steps[stepNum] = !steps[stepNum];
+    try {
+      await update(ref(db, `churches/${church.id}`), { steps, updatedAt: Date.now() });
+      church.steps = steps;
+      const idx = churches.findIndex(c => c.id === church.id);
+      if (idx !== -1) churches[idx].steps = steps;
+      renderDetailBody(church);
+      renderChurchList();
+    } catch(e) {
+      alert(t('step_error') + e.message);
+    }
+  }
+
+  // ── 저장 확인 알림 ──
+  function showSaveAlert() {
+    const el = document.createElement('div');
+    el.className = 'save-alert-backdrop';
+    el.innerHTML = `
+      <div class="save-alert">
+        <p>${t('saved_msg')}</p>
+        <button class="btn-primary save-alert-ok">${t('ok')}</button>
+      </div>`;
+    document.body.appendChild(el);
+    el.querySelector('.save-alert-ok').addEventListener('click', () => el.remove());
+  }
+
+  // ── 마지막 방문 날짜 저장 ──
+  async function saveLastVisit(church, date, visitor) {
+    try {
+      await update(ref(db, `churches/${church.id}`), { lastVisitDate: date, lastVisitVisitor: visitor, updatedAt: Date.now() });
+      church.lastVisitDate = date;
+      church.lastVisitVisitor = visitor;
+      const idx = churches.findIndex(c => c.id === church.id);
+      if (idx !== -1) { churches[idx].lastVisitDate = date; churches[idx].lastVisitVisitor = visitor; }
+      renderChurchList();
+      showSaveAlert();
+    } catch(e) {
+      alert(t('step_error') + e.message);
+    }
+  }
+
+  // ── 교회 삭제 ──
+  async function deleteChurch(church) {
+    if (!confirm(t('delete_confirm', church.churchName))) return;
+    try {
+      await remove(ref(db, `churches/${church.id}`));
+      churches = churches.filter(c => c.id !== church.id);
+      closeDetailModal();
+      renderChurchList();
+    } catch(e) {
+      alert(t('delete_error') + e.message);
+    }
+  }
+
+  // ── 모달 외부 클릭 닫기 ──
+  ['editModal', 'detailModal'].forEach(id => {
+    document.addEventListener('click', e => {
+      const modal = document.getElementById(id);
+      if (modal && e.target === modal) modal.classList.remove('open');
+    });
+  });
+
+  // ── 인증 상태 감지 ──
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    if (user) {
+      renderApp();
+    } else {
+      renderLogin();
+    }
+  });
+
+  // ── 언어 변경 감지 → 화면 재렌더 ──
+  new MutationObserver(() => {
+    if (currentUser) {
+      const detailOpen = document.getElementById('detailModal')?.classList.contains('open');
+      const editOpen   = document.getElementById('editModal')?.classList.contains('open');
+      const searchVal  = document.getElementById('searchInput')?.value || '';
+      renderApp();
+      document.getElementById('searchInput').value = searchVal;
+      renderChurchList();
+      if (editOpen) openEditModal(editingChurch);
+      if (detailOpen && viewingChurch) openDetailModal(viewingChurch);
+    } else {
+      renderLogin();
+    }
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+</script>
