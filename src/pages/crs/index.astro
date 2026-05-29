@@ -94,28 +94,28 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .btn-save { background:linear-gradient(135deg,#004f68,#007ea1); color:#fff; border:none; border-radius:10px; padding:.7rem 1.5rem; font-size:.88rem; font-weight:700; cursor:pointer; transition:opacity .18s, transform .15s; box-shadow:0 2px 8px rgba(0,79,104,.25); }
   .btn-save:hover { opacity:.9; transform:translateY(-1px); }
 
-  /* ── 상세 모달 레이아웃 ── */
-  .detail-modal { display:flex; flex-direction:column; overflow:hidden; max-height:90vh; }
-  .detail-hero { background:linear-gradient(140deg,#003d54 0%,#005f7a 55%,#007ea1 100%); padding:1.6rem 1.6rem 1.3rem; position:relative; flex-shrink:0; }
-  .detail-hero-close { position:absolute; top:.9rem; right:.9rem; background:rgba(255,255,255,.18); border:none; color:#fff; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:background .18s; }
-  .detail-hero-close:hover { background:rgba(255,255,255,.32); }
-  .detail-hero-name { color:#fff; font-size:1.25rem; font-weight:800; margin:0 2.5rem .3rem 0; letter-spacing:-.025em; line-height:1.25; }
-  .detail-hero-sub { color:rgba(255,255,255,.7); font-size:.8rem; margin:0 0 1.1rem; line-height:1.5; }
-  .detail-hero-prog-bg { background:rgba(255,255,255,.2); border-radius:99px; height:6px; overflow:hidden; margin-bottom:.45rem; }
-  .detail-hero-prog-fill { background:#fff; height:100%; border-radius:99px; transition:width .5s ease; }
-  .detail-hero-prog-row { display:flex; justify-content:space-between; align-items:center; }
-  .detail-hero-prog-lbl { color:rgba(255,255,255,.7); font-size:.73rem; font-weight:600; }
-  .detail-hero-prog-pct { color:#fff; font-size:.85rem; font-weight:800; }
-  .detail-hero-note { color:rgba(255,255,255,.8); font-size:.79rem; margin-top:.9rem; line-height:1.55; background:rgba(0,0,0,.15); padding:.55rem .85rem; border-radius:8px; }
-  /* ── 탭 ── */
-  .detail-tabs { display:flex; background:#fff; border-bottom:1px solid #edf2f5; flex-shrink:0; }
-  .detail-tab { flex:1; padding:.85rem .5rem; background:none; border:none; border-bottom:2.5px solid transparent; margin-bottom:-1px; font-size:.84rem; font-weight:600; color:#8aacba; cursor:pointer; transition:color .18s, border-color .18s; }
-  .detail-tab.active { color:#004f68; border-bottom-color:#004f68; }
-  .detail-tab-body { flex:1; overflow-y:auto; min-height:0; scrollbar-width:thin; scrollbar-color:#c8dfe8 transparent; }
-  .detail-tab-panel { padding:1.2rem 1.5rem; display:none; }
-  .detail-tab-panel.active { display:block; }
-  /* ── 스텝 ── */
-  .step-item { display:flex; align-items:flex-start; gap:.9rem; padding:.75rem .3rem; border-bottom:1px solid #f0f5f7; cursor:pointer; transition:background .15s; border-radius:10px; margin:0 -.3rem; }
+  /* ── 교회 상세 모달 ── */
+  .detail-info { background:linear-gradient(135deg,#f0f7fa,#f8fbfc); border-radius:12px; padding:1.1rem 1.3rem; margin-bottom:1.2rem; border:1px solid #e2edf2; }
+  .detail-info-row { display:flex; gap:.6rem; font-size:.88rem; color:#4a6070; margin-bottom:.65rem; flex-wrap:wrap; line-height:1.5; }
+  .detail-info-row:last-child { margin-bottom:0; }
+  .detail-info-row strong { color:#0d2b38; min-width:76px; flex-shrink:0; font-weight:700; }
+  .last-visit-row { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; font-size:.88rem; color:#4a6070; margin-bottom:.65rem; }
+  .last-visit-row strong { color:#0d2b38; min-width:76px; flex-shrink:0; }
+  .last-visit-input { padding:.3rem .6rem; border:1.5px solid #e2eaee; border-radius:7px; font-size:.83rem; outline:none; transition:border .2s; font-family:inherit; background:#f8fbfd; }
+  .last-visit-input:focus { border-color:#004f68; }
+  .btn-save-small { background:#004f68; color:#fff; border:none; border-radius:7px; padding:.3rem .7rem; font-size:.75rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:opacity .18s; }
+  .btn-save-small:hover { opacity:.85; }
+  /* ── 저장 확인 알림 ── */
+  .save-alert-backdrop { position:fixed; inset:0; background:rgba(0,15,30,.45); z-index:1200; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+  .save-alert { background:#fff; border-radius:16px; padding:1.7rem 2rem 1.4rem; text-align:center; box-shadow:0 16px 48px rgba(0,0,0,.18); min-width:220px; animation:modalIn .2s ease; }
+  .save-alert p { margin:0 0 1.1rem; font-size:.95rem; color:#0d2b38; font-weight:700; }
+  .save-alert .btn-primary { width:100%; padding:.68rem; font-size:.9rem; border-radius:10px; }
+  .steps-header { display:flex; justify-content:space-between; align-items:center; margin:1.3rem 0 .75rem; border-bottom:2px solid #e8f4f8; padding-bottom:.55rem; }
+  .steps-title { font-size:.9rem; font-weight:800; color:#0d2b38; margin:0; letter-spacing:-.01em; }
+  .steps-toggle { background:#f0f7fa; border:none; color:#004f68; font-size:.74rem; font-weight:700; padding:.28rem .75rem; border-radius:20px; cursor:pointer; transition:background .18s; }
+  .steps-toggle:hover { background:#ddeaf0; }
+  .steps-list.collapsed { display:none; }
+  .step-item { display:flex; align-items:flex-start; gap:.9rem; padding:.75rem .4rem; border-bottom:1px solid #f0f5f7; cursor:pointer; transition:background .15s; border-radius:10px; margin:0 -.4rem; }
   .step-item:last-child { border-bottom:none; }
   .step-item:hover { background:#f4f9fb; }
   .step-check { width:22px; height:22px; border-radius:7px; border:2px solid #d0dde4; background:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; margin-top:1px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
@@ -123,24 +123,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .step-check svg { display:none; }
   .step-check.checked svg { display:block; }
   .step-text { flex:1; }
-  .step-num { font-size:.71rem; font-weight:700; color:#b0c4ce; display:block; margin-bottom:.12rem; letter-spacing:.04em; }
-  .step-desc { font-size:.87rem; color:#4a6070; line-height:1.4; }
+  .step-num { font-size:.72rem; font-weight:700; color:#b0c4ce; display:block; margin-bottom:.12rem; letter-spacing:.04em; }
+  .step-desc { font-size:.88rem; color:#4a6070; line-height:1.4; }
   .step-item.done .step-num { color:#5aabcc; }
   .step-item.done .step-desc { color:#0d2b38; font-weight:600; }
-  /* ── 하단 액션 ── */
-  .detail-footer { display:flex; gap:.7rem; padding:.9rem 1.5rem; border-top:1px solid #edf2f5; background:#fff; flex-shrink:0; border-radius:0 0 20px 20px; }
-  .btn-edit { flex:1; background:#f0f5f7; color:#334a56; border:none; border-radius:10px; padding:.72rem; font-size:.88rem; font-weight:700; cursor:pointer; transition:background .18s; }
+  .detail-actions { display:flex; gap:.7rem; margin-top:1.4rem; padding-top:1.1rem; border-top:1px solid #edf2f5; }
+  .btn-edit { flex:1; background:#f0f5f7; color:#334a56; border:none; border-radius:10px; padding:.75rem; font-size:.88rem; font-weight:700; cursor:pointer; transition:background .18s; }
   .btn-edit:hover { background:#e0eaee; }
-  .btn-delete { background:#fff5f5; color:#d32f2f; border:1.5px solid #ffd0d0; border-radius:10px; padding:.72rem 1.1rem; font-size:.88rem; font-weight:700; cursor:pointer; transition:background .18s; }
+  .btn-delete { background:#fff5f5; color:#d32f2f; border:1.5px solid #ffd0d0; border-radius:10px; padding:.75rem 1.1rem; font-size:.88rem; font-weight:700; cursor:pointer; transition:background .18s; }
   .btn-delete:hover { background:#ffebeb; }
-  /* ── 저장 확인 알림 ── */
-  .save-alert-backdrop { position:fixed; inset:0; background:rgba(0,15,30,.45); z-index:1200; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
-  .save-alert { background:#fff; border-radius:16px; padding:1.7rem 2rem 1.4rem; text-align:center; box-shadow:0 16px 48px rgba(0,0,0,.18); min-width:220px; animation:modalIn .2s ease; }
-  .save-alert p { margin:0 0 1.1rem; font-size:.95rem; color:#0d2b38; font-weight:700; }
-  .save-alert .btn-primary { width:100%; padding:.68rem; font-size:.9rem; border-radius:10px; }
-  .steps-toggle { background:#f0f7fa; border:none; color:#004f68; font-size:.74rem; font-weight:700; padding:.28rem .75rem; border-radius:20px; cursor:pointer; transition:background .18s; }
-  .steps-toggle:hover { background:#ddeaf0; }
-  .steps-list.collapsed { display:none; }
 
   /* ── 회원가입 토글 ── */
   .signup-toggle { text-align:center; margin-top:1rem; font-size:.83rem; color:#888; }
@@ -627,8 +618,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <!-- 상세 모달 -->
       <div class="modal-backdrop" id="detailModal">
-        <div class="modal detail-modal">
-          <div id="detailBody"></div>
+        <div class="modal">
+          <div class="modal-header">
+            <h2 id="detailTitle"></h2>
+            <button class="btn-close" id="detailModalClose">×</button>
+          </div>
+          <div class="modal-body" id="detailBody"></div>
         </div>
       </div>
     `;
@@ -644,6 +639,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     document.getElementById('editModalClose').addEventListener('click', closeEditModal);
     document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
     document.getElementById('editSaveBtn').addEventListener('click', saveChurch);
+    document.getElementById('detailModalClose').addEventListener('click', closeDetailModal);
     document.getElementById('searchInput').addEventListener('input', renderChurchList);
 
     // 시/도 → 시/군/구 연동
@@ -835,6 +831,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // ── 교회 상세 모달 ──
   function openDetailModal(church) {
     viewingChurch = church;
+    document.getElementById('detailTitle').textContent = church.churchName;
     renderDetailBody(church);
     document.getElementById('detailModal').classList.add('open');
   }
@@ -847,9 +844,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function renderDetailBody(church) {
     const steps = church.steps || {};
     const done = STEPS.filter((_,i) => steps[i+1]).length;
-    const pct  = Math.round(done / STEPS.length * 100);
-    const isKo = getLang() === 'ko';
-    const stepsArr = isKo ? STEPS_KO : STEPS;
+    const stepsArr = getLang() === 'ko' ? STEPS_KO : STEPS;
 
     const stepsHtml = stepsArr.map((desc, i) => {
       const num = i + 1;
@@ -871,6 +866,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const visitsArr = church.visits
       ? Object.entries(church.visits).map(([k,v]) => ({key:k,...v})).sort((a,b)=>(b.recordedAt||0)-(a.recordedAt||0))
       : [];
+    // 레거시 데이터(visitDate/purpose/notes)가 있고 visits가 없으면 표시
     const legacyVisit = !visitsArr.length && (church.visitDate || church.purpose || church.notes) ? {
       date: church.visitDate || '', purpose: church.purpose || '', notes: church.notes || '',
       visitor: church.lastVisitVisitor || '', legacy: true
@@ -878,97 +874,79 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const allVisits = legacyVisit ? [legacyVisit] : visitsArr;
 
     const purposeOpts = STEPS.map((s,i) => {
-      const label = isKo ? `${i+1}단계: ${STEPS_KO[i]}` : `Step ${i+1}: ${s}`;
+      const label = getLang()==='ko' ? `${i+1}단계: ${STEPS_KO[i]}` : `Step ${i+1}: ${s}`;
       return `<option value="Step ${i+1}: ${s}">${esc(label)}</option>`;
     }).join('');
 
-    const visitHistoryHtml = allVisits.length ? allVisits.map((v) => `
+    const visitHistoryHtml = allVisits.length ? allVisits.map((v,i) => `
       <div style="padding:.85rem 1rem;margin-bottom:.6rem;background:#f4f8fb;border-radius:10px;border-left:3px solid #004f68;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
-          <span style="font-size:.85rem;font-weight:700;color:#004f68">${esc(v.date || (isKo?'날짜 미입력':'No date'))}</span>
+          <span style="font-size:.85rem;font-weight:700;color:#004f68">${esc(v.date || (getLang()==='ko'?'날짜 미입력':'No date'))}</span>
           ${v.visitor ? `<span style="font-size:.78rem;font-weight:600;color:#334a56;background:#ddeaf0;padding:.15rem .55rem;border-radius:20px">${esc(v.visitor)}</span>` : ''}
         </div>
         ${v.purpose ? `<div style="font-size:.82rem;color:#1a3a4a;font-weight:600;margin-bottom:.35rem">${esc(v.purpose)}</div>` : ''}
         ${v.notes ? `<div style="font-size:.82rem;color:#334a56;line-height:1.6;white-space:pre-wrap">${esc(v.notes)}</div>` : ''}
-        ${v.legacy ? `<div style="font-size:.7rem;color:#8aacba;margin-top:.35rem">${isKo?'이전 기록':'Legacy record'}</div>` : ''}
+        ${v.legacy ? `<div style="font-size:.7rem;color:#8aacba;margin-top:.35rem">${getLang()==='ko'?'이전 기록':'Legacy record'}</div>` : ''}
       </div>`).join('')
-    : `<p style="font-size:.84rem;color:#aaa;text-align:center;padding:1.5rem 0">${t('no_visits')}</p>`;
-
-    const metaParts = [
-      church.pastorName ? `${isKo?'담임':'Pastor'}: ${church.pastorName}` : null,
-      church.pastorPhone || null,
-      church.location || null,
-    ].filter(Boolean).join(' · ');
+    : `<p style="font-size:.84rem;color:#aaa;text-align:center;padding:1rem 0">${t('no_visits')}</p>`;
 
     document.getElementById('detailBody').innerHTML = `
-      <!-- 히어로 헤더 -->
-      <div class="detail-hero">
-        <button class="detail-hero-close" id="detailModalClose">×</button>
-        <h2 class="detail-hero-name">${esc(church.churchName)}</h2>
-        ${metaParts ? `<p class="detail-hero-sub">${esc(metaParts)}</p>` : ''}
-        <div class="detail-hero-prog-bg"><div class="detail-hero-prog-fill" style="width:${pct}%"></div></div>
-        <div class="detail-hero-prog-row">
-          <span class="detail-hero-prog-lbl">${isKo ? `${done} / ${STEPS.length} 단계 완료` : `${done} / ${STEPS.length} steps done`}</span>
-          <span class="detail-hero-prog-pct">${pct}%</span>
+      <div class="detail-info">
+        <div class="detail-info-row"><strong>${t('detail_pastor')}</strong> ${esc(church.pastorName || t('not_entered'))}${church.pastorPhone ? ` &nbsp;${esc(church.pastorPhone)}` : ''}</div>
+        ${church.location ? `<div class="detail-info-row"><strong>${t('detail_location')}</strong> ${esc(church.location)}</div>` : ''}
+        ${church.notes ? `<div class="detail-info-row"><strong>${t('detail_notes')}</strong> ${esc(church.notes)}</div>` : ''}
+        <div class="detail-info-row" style="margin-top:.3rem">
+          <strong>${t('detail_progress')}</strong>
+          <span style="color:#004f68;font-weight:700">${t('done_of', done, STEPS.length)}</span>
         </div>
-        ${church.notes ? `<p class="detail-hero-note">${esc(church.notes)}</p>` : ''}
       </div>
-
-      <!-- 탭 바 -->
-      <div class="detail-tabs">
-        <button class="detail-tab active" data-tab="steps">${isKo ? '관계 단계' : 'Steps'}</button>
-        <button class="detail-tab" data-tab="visits">${isKo ? `방문 기록 (${allVisits.length})` : `Visits (${allVisits.length})`}</button>
+      <div class="steps-header">
+        <span class="steps-title">${t('steps_title')}</span>
+        <button class="steps-toggle" id="stepsToggle">${t('steps_collapse')}</button>
       </div>
+      <div class="steps-list" id="stepsList">${stepsHtml}</div>
 
-      <!-- 탭 콘텐츠 -->
-      <div class="detail-tab-body">
-        <div class="detail-tab-panel active" id="panel-steps">
-          <div class="steps-list" id="stepsList">${stepsHtml}</div>
-        </div>
-        <div class="detail-tab-panel" id="panel-visits">
-          <div style="text-align:right;margin-bottom:.8rem">
-            <button class="steps-toggle" id="addVisitToggle">${t('add_visit')}</button>
+      <!-- 방문 기록 섹션 -->
+      <div class="steps-header" style="margin-top:1.4rem">
+        <span class="steps-title">${t('visit_history')} <span style="font-size:.78rem;font-weight:500;color:#8aacba">(${allVisits.length})</span></span>
+        <button class="steps-toggle" id="addVisitToggle">${t('add_visit')}</button>
+      </div>
+      <!-- 방문 추가 폼 (기본 숨김) -->
+      <div id="addVisitForm" style="display:none;background:#f8fbfc;border-radius:10px;padding:1rem 1.1rem;margin-bottom:.9rem;border:1px solid #e5edf1">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.7rem">
+          <div>
+            <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${getLang()==='ko'?'방문일':'Date'}</label>
+            <input type="date" id="visitFormDate" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit">
           </div>
-          <div id="addVisitForm" style="display:none;background:#f8fbfc;border-radius:10px;padding:1rem 1.1rem;margin-bottom:.9rem;border:1px solid #e5edf1">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.7rem">
-              <div>
-                <label style="font-size:.78rem;font-weight:700;color:#4a6070;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.35rem">${isKo?'방문일':'Date'}</label>
-                <input type="date" id="visitFormDate" style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1.5px solid #e2eaee;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit;background:#f8fbfd">
-              </div>
-              <div>
-                <label style="font-size:.78rem;font-weight:700;color:#4a6070;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.35rem">${t('visit_visitor')}</label>
-                <input type="text" id="visitFormVisitor" placeholder="${isKo?'방문자 이름':'Name'}" style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1.5px solid #e2eaee;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit;background:#f8fbfd">
-              </div>
-            </div>
-            <div style="margin-bottom:.7rem">
-              <label style="font-size:.78rem;font-weight:700;color:#4a6070;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.35rem">${isKo?'방문 목적':'Purpose'}</label>
-              <select id="visitFormPurpose" style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1.5px solid #e2eaee;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit;background:#f8fbfd">
-                <option value="">${isKo?'-- 선택 (선택사항) --':'-- Select (optional) --'}</option>
-                ${purposeOpts}
-              </select>
-            </div>
-            <div style="margin-bottom:.9rem">
-              <label style="font-size:.78rem;font-weight:700;color:#4a6070;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.35rem">${isKo?'메모':'Notes'}</label>
-              <textarea id="visitFormNotes" placeholder="${isKo?'방문 내용 및 특이사항...':'Visit notes...'}" rows="3" style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1.5px solid #e2eaee;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit;resize:vertical;background:#f8fbfd"></textarea>
-            </div>
-            <div style="display:flex;gap:.6rem;justify-content:flex-end">
-              <button id="visitFormCancel" class="btn-cancel">${t('cancel')}</button>
-              <button id="visitFormSave" class="btn-save">${t('save_visit')}</button>
-            </div>
+          <div>
+            <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${t('visit_visitor')}</label>
+            <input type="text" id="visitFormVisitor" placeholder="${getLang()==='ko'?'방문자 이름':'Visitor name'}" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit">
           </div>
-          <div id="visitHistoryList">${visitHistoryHtml}</div>
+        </div>
+        <div style="margin-bottom:.7rem">
+          <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${getLang()==='ko'?'방문 목적':'Purpose'}</label>
+          <select id="visitFormPurpose" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit">
+            <option value="">${getLang()==='ko'?'-- 선택 (선택사항) --':'-- Select (optional) --'}</option>
+            ${purposeOpts}
+          </select>
+        </div>
+        <div style="margin-bottom:.9rem">
+          <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${getLang()==='ko'?'메모':'Notes'}</label>
+          <textarea id="visitFormNotes" placeholder="${getLang()==='ko'?'방문 내용 및 특이사항...':'Visit notes...'}" rows="3" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit;resize:vertical"></textarea>
+        </div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end">
+          <button id="visitFormCancel" style="background:#f0f0f0;color:#555;border:none;border-radius:8px;padding:.5rem 1rem;font-size:.85rem;cursor:pointer;font-weight:600">${t('cancel')}</button>
+          <button id="visitFormSave" style="background:#004f68;color:#fff;border:none;border-radius:8px;padding:.5rem 1.2rem;font-size:.85rem;cursor:pointer;font-weight:700">${t('save_visit')}</button>
         </div>
       </div>
+      <!-- 방문 이력 목록 -->
+      <div id="visitHistoryList" style="margin-bottom:.5rem">${visitHistoryHtml}</div>
 
-      <!-- 스티키 하단 액션 -->
-      <div class="detail-footer">
+      <div class="detail-actions">
         <button class="btn-edit" id="detailEditBtn">${t('btn_edit')}</button>
         <button class="btn-delete" id="detailDeleteBtn">${t('btn_delete')}</button>
       </div>`;
 
-    // 닫기 버튼 (히어로 내부)
-    document.getElementById('detailModalClose').addEventListener('click', closeDetailModal);
-    // 스텝 토글
     document.querySelectorAll('.step-item').forEach(item => {
       item.addEventListener('click', () => toggleStep(church, parseInt(item.dataset.step)));
     });
@@ -976,14 +954,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       closeDetailModal(); openEditModal(church);
     });
     document.getElementById('detailDeleteBtn').addEventListener('click', () => deleteChurch(church));
-    // 탭 전환
-    document.querySelectorAll('.detail-tab').forEach(tab => {
-      tab.addEventListener('click', function() {
-        document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.detail-tab-panel').forEach(p => p.classList.remove('active'));
-        this.classList.add('active');
-        document.getElementById('panel-' + this.dataset.tab).classList.add('active');
-      });
+    document.getElementById('stepsToggle').addEventListener('click', function() {
+      const list = document.getElementById('stepsList');
+      const collapsed = list.classList.toggle('collapsed');
+      this.textContent = collapsed ? t('steps_expand') : t('steps_collapse');
     });
     // 방문 추가 폼 토글
     document.getElementById('addVisitToggle').addEventListener('click', function() {
