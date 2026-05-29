@@ -268,6 +268,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       last_visit: '마지막 방문', steps_collapse: '접기', steps_expand: '펼치기',
       next_step_label: '다음스텝', card_progress: (d, tot) => `${d}/${tot}`,
       detail_last_visit: '마지막 방문', last_visit_save: '저장', last_visit_visitor_ph: '방문자 이름',
+      visit_history: '방문 기록', add_visit: '＋ 방문 추가', save_visit: '저장',
+      visit_visitor: '방문자', no_visits: '아직 방문 기록이 없습니다.',
       no_account: '계정이 없으신가요?', signup: '회원가입', have_account: '이미 계정이 있으신가요?',
       name_label: '이름 *', name_ph: '예: 홍길동', password_confirm: '비밀번호 확인',
       signup_btn: '회원가입', signing_up: '처리 중...',
@@ -311,6 +313,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       last_visit: 'Last Visit', steps_collapse: 'Collapse', steps_expand: 'Expand',
       next_step_label: 'Next Step', card_progress: (d, tot) => `${d}/${tot}`,
       detail_last_visit: 'Last Visit', last_visit_save: 'Save', last_visit_visitor_ph: 'Visitor name',
+      visit_history: 'Visit History', add_visit: '＋ Add Visit', save_visit: 'Save',
+      visit_visitor: 'Visitor', no_visits: 'No visit records yet.',
       no_account: "Don't have an account?", signup: 'Sign Up', have_account: 'Already have an account?',
       name_label: 'Name *', name_ph: 'e.g. John Kim', password_confirm: 'Confirm Password',
       signup_btn: 'Sign Up', signing_up: 'Processing...',
@@ -511,13 +515,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>${t('visit_date')}</label>
-                <input type="date" id="fVisitDate">
-              </div>
-              <div class="form-group"></div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
                 <label>${t('location')}</label>
                 <select id="fRegion">
                   <option value="">${t('region_ph')}</option>
@@ -530,13 +527,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                   <option value="">${t('district_ph')}</option>
                 </select>
               </div>
-            </div>
-            <div class="form-group">
-              <label>${t('purpose')}</label>
-              <select id="fPurpose">
-                <option value="">${t('purpose_ph')}</option>
-                ${purposeOptions}
-              </select>
             </div>
             <div class="form-group">
               <label>${t('notes')}</label>
@@ -663,10 +653,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         badgeText = `Step ${done} · ${curDesc}`;
       }
 
-      const lastVisitParts = [c.lastVisitDate, c.lastVisitVisitor].filter(Boolean);
+      const visitsArr = c.visits ? Object.values(c.visits).sort((a,b) => (b.recordedAt||0) - (a.recordedAt||0)) : [];
+      const latestVisit = visitsArr[0];
+      const lastVisitDisplay = latestVisit
+        ? [latestVisit.date, latestVisit.visitor].filter(Boolean).join(' · ')
+        : [c.lastVisitDate, c.lastVisitVisitor].filter(Boolean).join(' · ');
       const metaItems = [
         c.location ? `<span><em class="meta-label">${getLang()==='ko'?'지역':'Loc'}</em>${esc(c.location)}</span>` : '',
-        lastVisitParts.length ? `<span><em class="meta-label">${t('last_visit')}</em>${esc(lastVisitParts.join(' · '))}</span>` : '',
+        lastVisitDisplay ? `<span><em class="meta-label">${t('last_visit')}</em>${esc(lastVisitDisplay)}</span>` : '',
+        visitsArr.length ? `<span><em class="meta-label">${getLang()==='ko'?'방문':'Visits'}</em>${visitsArr.length}회</span>` : '',
       ].filter(Boolean).join('');
 
       return `
@@ -704,8 +699,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     document.getElementById('fChurchName').value = church?.churchName || '';
     document.getElementById('fPastorName').value = church?.pastorName || '';
     document.getElementById('fPastorPhone').value = church?.pastorPhone || '';
-    document.getElementById('fVisitDate').value = church?.visitDate || '';
-    document.getElementById('fPurpose').value = church?.purpose || '';
     document.getElementById('fNotes').value = church?.notes || '';
 
     // location 복원: "경기도 평택시" → region=경기도, district=평택시
@@ -748,10 +741,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const data = {
       churchName, pastorName,
       pastorPhone: document.getElementById('fPastorPhone').value.trim(),
-      visitDate: document.getElementById('fVisitDate').value,
       region, district,
       location: [region, district].filter(Boolean).join(' '),
-      purpose: document.getElementById('fPurpose').value,
       notes: document.getElementById('fNotes').value.trim(),
       updatedAt: now, updatedBy: currentUser.uid,
     };
@@ -809,20 +800,39 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>`;
     }).join('');
 
+    const visitsArr = church.visits
+      ? Object.entries(church.visits).map(([k,v]) => ({key:k,...v})).sort((a,b)=>(b.recordedAt||0)-(a.recordedAt||0))
+      : [];
+    // 레거시 데이터(visitDate/purpose/notes)가 있고 visits가 없으면 표시
+    const legacyVisit = !visitsArr.length && (church.visitDate || church.purpose || church.notes) ? {
+      date: church.visitDate || '', purpose: church.purpose || '', notes: church.notes || '',
+      visitor: church.lastVisitVisitor || '', legacy: true
+    } : null;
+    const allVisits = legacyVisit ? [legacyVisit] : visitsArr;
+
+    const purposeOpts = STEPS.map((s,i) => {
+      const label = getLang()==='ko' ? `${i+1}단계: ${STEPS_KO[i]}` : `Step ${i+1}: ${s}`;
+      return `<option value="Step ${i+1}: ${s}">${esc(label)}</option>`;
+    }).join('');
+
+    const visitHistoryHtml = allVisits.length ? allVisits.map((v,i) => `
+      <div style="padding:.75rem .3rem;border-bottom:${i<allVisits.length-1?'1px solid #f0f0f0':'none'}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">
+          <span style="font-size:.82rem;font-weight:700;color:#004f68">${esc(v.date || (getLang()==='ko'?'날짜 미입력':'No date'))}</span>
+          <span style="font-size:.74rem;color:#8aacba">${esc(v.visitor || '')}</span>
+        </div>
+        ${v.purpose ? `<div style="font-size:.79rem;color:#4a6070;margin-bottom:.2rem">${esc(v.purpose)}</div>` : ''}
+        ${v.notes ? `<div style="font-size:.77rem;color:#8aacba;line-height:1.5;white-space:pre-wrap">${esc(v.notes)}</div>` : ''}
+        ${v.legacy ? `<div style="font-size:.7rem;color:#bbb;margin-top:.2rem">${getLang()==='ko'?'이전 기록':'Legacy record'}</div>` : ''}
+      </div>`).join('')
+    : `<p style="font-size:.83rem;color:#aaa;text-align:center;padding:1rem 0">${t('no_visits')}</p>`;
+
     document.getElementById('detailBody').innerHTML = `
       <div class="detail-info">
         <div class="detail-info-row"><strong>${t('detail_pastor')}</strong> ${esc(church.pastorName || t('not_entered'))}${church.pastorPhone ? ` &nbsp;${esc(church.pastorPhone)}` : ''}</div>
         ${church.location ? `<div class="detail-info-row"><strong>${t('detail_location')}</strong> ${esc(church.location)}</div>` : ''}
-        ${church.visitDate ? `<div class="detail-info-row"><strong>${t('detail_date')}</strong> ${esc(church.visitDate)}</div>` : ''}
-        ${church.purpose ? `<div class="detail-info-row"><strong>${t('detail_purpose')}</strong> ${esc(church.purpose)}</div>` : ''}
         ${church.notes ? `<div class="detail-info-row"><strong>${t('detail_notes')}</strong> ${esc(church.notes)}</div>` : ''}
-        <div class="last-visit-row">
-          <strong>${t('detail_last_visit')}</strong>
-          <input type="date" class="last-visit-input" id="lastVisitInput" value="${esc(church.lastVisitDate || '')}">
-          <input type="text" class="last-visit-input" id="lastVisitVisitor" placeholder="${t('last_visit_visitor_ph')}" value="${esc(church.lastVisitVisitor || '')}" style="min-width:90px;flex:1">
-          <button class="btn-save-small" id="saveLastVisitBtn">${t('last_visit_save')}</button>
-        </div>
-        <div class="detail-info-row" style="margin-top:.5rem">
+        <div class="detail-info-row" style="margin-top:.3rem">
           <strong>${t('detail_progress')}</strong>
           <span style="color:#004f68;font-weight:700">${t('done_of', done, STEPS.length)}</span>
         </div>
@@ -832,6 +842,43 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <button class="steps-toggle" id="stepsToggle">${t('steps_collapse')}</button>
       </div>
       <div class="steps-list" id="stepsList">${stepsHtml}</div>
+
+      <!-- 방문 기록 섹션 -->
+      <div class="steps-header" style="margin-top:1.4rem">
+        <span class="steps-title">${t('visit_history')} <span style="font-size:.78rem;font-weight:500;color:#8aacba">(${allVisits.length})</span></span>
+        <button class="steps-toggle" id="addVisitToggle">${t('add_visit')}</button>
+      </div>
+      <!-- 방문 추가 폼 (기본 숨김) -->
+      <div id="addVisitForm" style="display:none;background:#f8fbfc;border-radius:10px;padding:1rem 1.1rem;margin-bottom:.9rem;border:1px solid #e5edf1">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.7rem">
+          <div>
+            <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${getLang()==='ko'?'방문일':'Date'}</label>
+            <input type="date" id="visitFormDate" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit">
+          </div>
+          <div>
+            <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${t('visit_visitor')}</label>
+            <input type="text" id="visitFormVisitor" placeholder="${getLang()==='ko'?'방문자 이름':'Visitor name'}" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit">
+          </div>
+        </div>
+        <div style="margin-bottom:.7rem">
+          <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${getLang()==='ko'?'방문 목적':'Purpose'}</label>
+          <select id="visitFormPurpose" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit">
+            <option value="">${getLang()==='ko'?'-- 선택 (선택사항) --':'-- Select (optional) --'}</option>
+            ${purposeOpts}
+          </select>
+        </div>
+        <div style="margin-bottom:.9rem">
+          <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${getLang()==='ko'?'메모':'Notes'}</label>
+          <textarea id="visitFormNotes" placeholder="${getLang()==='ko'?'방문 내용 및 특이사항...':'Visit notes...'}" rows="3" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit;resize:vertical"></textarea>
+        </div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end">
+          <button id="visitFormCancel" style="background:#f0f0f0;color:#555;border:none;border-radius:8px;padding:.5rem 1rem;font-size:.85rem;cursor:pointer;font-weight:600">${t('cancel')}</button>
+          <button id="visitFormSave" style="background:#004f68;color:#fff;border:none;border-radius:8px;padding:.5rem 1.2rem;font-size:.85rem;cursor:pointer;font-weight:700">${t('save_visit')}</button>
+        </div>
+      </div>
+      <!-- 방문 이력 목록 -->
+      <div id="visitHistoryList" style="margin-bottom:.5rem">${visitHistoryHtml}</div>
+
       <div class="detail-actions">
         <button class="btn-edit" id="detailEditBtn">${t('btn_edit')}</button>
         <button class="btn-delete" id="detailDeleteBtn">${t('btn_delete')}</button>
@@ -844,17 +891,33 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       closeDetailModal(); openEditModal(church);
     });
     document.getElementById('detailDeleteBtn').addEventListener('click', () => deleteChurch(church));
-    document.getElementById('saveLastVisitBtn').addEventListener('click', () => {
-      saveLastVisit(
-        church,
-        document.getElementById('lastVisitInput').value,
-        document.getElementById('lastVisitVisitor').value.trim()
-      );
-    });
     document.getElementById('stepsToggle').addEventListener('click', function() {
       const list = document.getElementById('stepsList');
       const collapsed = list.classList.toggle('collapsed');
       this.textContent = collapsed ? t('steps_expand') : t('steps_collapse');
+    });
+    // 방문 추가 폼 토글
+    document.getElementById('addVisitToggle').addEventListener('click', function() {
+      const form = document.getElementById('addVisitForm');
+      const isOpen = form.style.display !== 'none';
+      form.style.display = isOpen ? 'none' : 'block';
+      this.textContent = isOpen ? t('add_visit') : t('cancel');
+      if (!isOpen) document.getElementById('visitFormDate').focus();
+    });
+    document.getElementById('visitFormCancel').addEventListener('click', () => {
+      document.getElementById('addVisitForm').style.display = 'none';
+      document.getElementById('addVisitToggle').textContent = t('add_visit');
+    });
+    document.getElementById('visitFormSave').addEventListener('click', () => {
+      const date    = document.getElementById('visitFormDate').value;
+      const visitor = document.getElementById('visitFormVisitor').value.trim();
+      const purpose = document.getElementById('visitFormPurpose').value;
+      const notes   = document.getElementById('visitFormNotes').value.trim();
+      if (!date && !visitor && !purpose && !notes) {
+        alert(getLang()==='ko' ? '최소 한 가지 이상 입력해주세요.' : 'Please fill in at least one field.');
+        return;
+      }
+      addVisit(church, { date, visitor, purpose, notes });
     });
   }
 
@@ -920,6 +983,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       await update(ref(db, `users/${uid}`), { status: 'rejected', rejectedAt: Date.now() });
       openAdminModal();
     } catch(e) { alert('오류: ' + e.message); }
+  }
+
+  // ── 방문 기록 추가 ──
+  async function addVisit(church, visitData) {
+    try {
+      const visitRef = push(ref(db, `churches/${church.id}/visits`));
+      const entry = { ...visitData, recordedAt: Date.now(), recordedBy: currentUser.uid };
+      await set(visitRef, entry);
+      if (!church.visits) church.visits = {};
+      church.visits[visitRef.key] = entry;
+      const idx = churches.findIndex(c => c.id === church.id);
+      if (idx !== -1) churches[idx].visits = church.visits;
+      renderDetailBody(church);
+      renderChurchList();
+      showSaveAlert();
+    } catch(e) {
+      alert(t('step_error') + e.message);
+    }
   }
 
   // ── 저장 확인 알림 ──
