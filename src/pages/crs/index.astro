@@ -69,6 +69,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   /* ── 모달 공통 ── */
   @keyframes modalIn { from { opacity:0; transform:translateY(18px) scale(.98); } to { opacity:1; transform:none; } }
+  @keyframes drawerIn { from { transform:translateX(100%); } to { transform:translateX(0); } }
+  /* ── 상세 드로어 ── */
+  .modal-backdrop#detailModal { justify-content:flex-end; align-items:stretch; padding:0; background:rgba(0,10,20,.38); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+  .detail-drawer-modal { border-radius:20px 0 0 20px; max-width:480px; width:480px; max-height:100vh; height:100%; display:flex; flex-direction:column; animation:drawerIn .28s cubic-bezier(.4,0,.2,1); overflow:hidden; }
+  .detail-drawer-header { background:linear-gradient(135deg,#003a50 0%,#005f7a 50%,#0078a0 100%); border-bottom:none; border-radius:20px 0 0 0; padding:1.3rem 1.4rem 1.1rem; }
+  .detail-drawer-header h2 { color:#fff; font-size:1.1rem; }
+  .detail-drawer-close { background:rgba(255,255,255,.18) !important; color:#fff !important; border-radius:50%; }
+  .detail-drawer-close:hover { background:rgba(255,255,255,.32) !important; }
+  .detail-drawer-progress { height:4px; background:rgba(255,255,255,.15); flex-shrink:0; }
+  .detail-drawer-progress-fill { height:100%; background:linear-gradient(90deg,rgba(255,255,255,.5),#fff); transition:width .5s ease; }
+  .detail-drawer-modal .modal-body { flex:1; overflow-y:auto; min-height:0; padding:1.3rem 1.4rem 1rem; }
+  .detail-drawer-modal .detail-actions { position:sticky; bottom:0; background:#fff; padding:1rem 0 .3rem; border-top:1px solid #edf2f5; margin-top:1.2rem; }
+  @media(max-width:600px) { .detail-drawer-modal { width:100%; border-radius:0; } }
   .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,15,30,.55); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); z-index:1100; align-items:center; justify-content:center; padding:1rem; }
   .modal-backdrop.open { display:flex; }
   .modal { background:#fff; border-radius:20px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,30,60,.22), 0 4px 16px rgba(0,0,0,.08); scrollbar-width:thin; scrollbar-color:#c8dfe8 transparent; animation:modalIn .22s cubic-bezier(.4,0,.2,1); }
@@ -616,13 +629,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <!-- 상세 모달 -->
+      <!-- 상세 드로어 -->
       <div class="modal-backdrop" id="detailModal">
-        <div class="modal">
-          <div class="modal-header">
-            <h2 id="detailTitle"></h2>
-            <button class="btn-close" id="detailModalClose">×</button>
+        <div class="modal detail-drawer-modal">
+          <div class="modal-header detail-drawer-header">
+            <div style="flex:1;min-width:0">
+              <h2 id="detailTitle" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></h2>
+              <p id="detailSubtitle" style="margin:.18rem 0 0;font-size:.76rem;color:rgba(255,255,255,.68);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></p>
+            </div>
+            <button class="btn-close detail-drawer-close" id="detailModalClose">×</button>
           </div>
+          <div class="detail-drawer-progress"><div id="detailProgressFill" class="detail-drawer-progress-fill"></div></div>
           <div class="modal-body" id="detailBody"></div>
         </div>
       </div>
@@ -831,7 +848,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // ── 교회 상세 모달 ──
   function openDetailModal(church) {
     viewingChurch = church;
+    const done = STEPS.filter((_,i) => (church.steps||{})[i+1]).length;
+    const pct  = Math.round(done / STEPS.length * 100);
+    const isKo = getLang() === 'ko';
     document.getElementById('detailTitle').textContent = church.churchName;
+    document.getElementById('detailSubtitle').textContent = [
+      church.pastorName ? (isKo ? '담임: ' : 'Pastor: ') + church.pastorName : null,
+      church.location || null,
+    ].filter(Boolean).join(' · ');
+    document.getElementById('detailProgressFill').style.width = pct + '%';
     renderDetailBody(church);
     document.getElementById('detailModal').classList.add('open');
   }
