@@ -1093,7 +1093,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // ── 교회 삭제 ──
   async function deleteChurch(church) {
-    if (!confirm(t('delete_confirm', church.churchName))) return;
+    const pw = prompt(
+      getLang() === 'ko'
+        ? `"${church.churchName}" 을(를) 삭제하려면 관리자 비밀번호를 입력하세요.`
+        : `Enter admin password to delete "${church.churchName}".`
+    );
+    if (pw === null) return; // 취소
+    if (pw !== '0316') {
+      alert(getLang() === 'ko' ? '비밀번호가 올바르지 않습니다.' : 'Incorrect password.');
+      return;
+    }
     try {
       await remove(ref(db, `churches/${church.id}`));
       churches = churches.filter(c => c.id !== church.id);
