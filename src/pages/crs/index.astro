@@ -48,6 +48,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .pastor-name { font-size:.82rem; color:#6a8fa0; margin:0; }
   .step-badge { background:#004f68; color:#fff; font-size:.72rem; font-weight:700; padding:.28rem .75rem; border-radius:20px; white-space:nowrap; flex-shrink:1; letter-spacing:.2px; max-width:58%; overflow:hidden; text-overflow:ellipsis; }
   .step-badge.complete { background:#1a8c68; }
+  @media(max-width:480px) { .badge-desc { display:none; } }
   .step-bar-wrap { margin-bottom:.75rem; }
   .step-bar-bg { background:#ddeaf0; border-radius:99px; height:8px; overflow:hidden; }
   .step-bar-fill { background:linear-gradient(90deg,#004f68,#1a9dbf); height:100%; border-radius:99px; transition:width .4s; }
@@ -702,14 +703,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const nextStepIdx = STEPS.findIndex((_, i) => !steps[i+1]);
       const nextStepRaw = !isComplete ? (getLang()==='ko' ? STEPS_KO[nextStepIdx] : STEPS[nextStepIdx]) : '';
       const nextStepDesc = !isComplete ? esc(nextStepRaw) : null;
-      let badgeText;
+      let badgeHtml;
       if (isComplete) {
-        badgeText = t('complete');
+        badgeHtml = esc(t('complete'));
       } else if (done === 0) {
-        badgeText = getLang() === 'ko' ? '시작 전' : 'Not Started';
+        badgeHtml = esc(getLang() === 'ko' ? '시작 전' : 'Not Started');
       } else {
         const curDesc = getLang() === 'ko' ? STEPS_KO[done - 1] : STEPS[done - 1];
-        badgeText = `Step ${done} · ${curDesc}`;
+        badgeHtml = `Step ${done}<span class="badge-desc"> · ${esc(curDesc)}</span>`;
       }
 
       const visitsArr = c.visits ? Object.values(c.visits).sort((a,b) => (b.recordedAt||0) - (a.recordedAt||0)) : [];
@@ -730,7 +731,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <p class="church-name">${esc(c.churchName)}</p>
               <p class="pastor-name">${t('pastor_prefix')} ${esc(c.pastorName || t('not_entered'))}</p>
             </div>
-            <span class="step-badge${isComplete?' complete':''}">${esc(badgeText)}</span>
+            <span class="step-badge${isComplete?' complete':''}">${badgeHtml}</span>
           </div>
           <div class="church-card-body">
             <div class="step-bar-wrap">
