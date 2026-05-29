@@ -30,7 +30,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .btn-logout:hover { background:rgba(255,255,255,.25); }
 
   /* ── 메인 콘텐츠 ── */
-  .app-body { max-width:900px; margin:0 auto; padding:1.5rem 1rem 4rem; }
+  .app-body { max-width:900px; margin:0 auto; padding:1.5rem 1rem 5rem; }
+  .btn-logout-bottom { display:block; margin:2.5rem auto 0; background:none; border:1px solid #d0dde3; color:#8aacba; border-radius:8px; padding:.55rem 1.5rem; font-size:.83rem; cursor:pointer; transition:all .2s; }
+  .btn-logout-bottom:hover { background:#f4f9fb; color:#004f68; border-color:#004f68; }
 
   /* ── 상단 컨트롤 ── */
   .top-bar { display:flex; gap:.8rem; margin-bottom:1.5rem; flex-wrap:wrap; }
@@ -126,6 +128,31 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .btn-delete { background:#fff0f0; color:#e53935; border:1.5px solid #ffcdd2; border-radius:8px; padding:.7rem 1rem; font-size:.9rem; font-weight:600; cursor:pointer; }
   .btn-delete:hover { background:#ffebee; }
 
+  /* ── 회원가입 토글 ── */
+  .signup-toggle { text-align:center; margin-top:1rem; font-size:.83rem; color:#888; }
+  .signup-toggle a { color:#004f68; font-weight:600; cursor:pointer; }
+  .signup-toggle a:hover { text-decoration:underline; }
+  /* ── 승인 대기 화면 ── */
+  .pending-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
+  .pending-card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.10); padding:2.5rem 2rem; width:100%; max-width:400px; text-align:center; }
+  .pending-icon { width:56px; height:56px; background:#e8f4f8; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; }
+  .pending-card h2 { font-size:1.2rem; font-weight:800; color:#004f68; margin:0 0 .7rem; }
+  .pending-card p { font-size:.88rem; color:#666; margin:0 0 1.5rem; line-height:1.7; white-space:pre-line; }
+  /* ── 관리자 패널 ── */
+  .admin-btn { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; padding:.35rem .9rem; border-radius:20px; font-size:.8rem; cursor:pointer; transition:background .2s; }
+  .admin-btn:hover { background:rgba(255,255,255,.25); }
+  .user-row { display:flex; align-items:center; gap:.8rem; padding:.9rem 0; border-bottom:1px solid #f0f0f0; }
+  .user-row:last-child { border-bottom:none; }
+  .user-info-block { flex:1; min-width:0; }
+  .user-name-text { font-size:.9rem; font-weight:600; color:#1a1a1a; }
+  .user-email-text { font-size:.76rem; color:#888; margin-top:.1rem; }
+  .user-date-text { font-size:.72rem; color:#bbb; margin-top:.1rem; }
+  .btn-approve { background:#004f68; color:#fff; border:none; border-radius:6px; padding:.32rem .75rem; font-size:.78rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .btn-approve:hover { background:#003a50; }
+  .btn-reject-user { background:#fff0f0; color:#e53935; border:1.5px solid #ffcdd2; border-radius:6px; padding:.3rem .6rem; font-size:.78rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .btn-reject-user:hover { background:#ffebee; }
+  .no-pending { text-align:center; color:#aaa; padding:2rem 0; font-size:.9rem; }
+  .admin-section-title { font-size:.82rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.5px; margin-bottom:.5rem; padding-bottom:.4rem; border-bottom:1px solid #eee; }
   /* ── 스켈레톤/로딩 ── */
   .loading-wrap { display:flex; align-items:center; justify-content:center; padding:4rem; }
   .spinner { width:36px; height:36px; border:4px solid #e8f4f8; border-top-color:#004f68; border-radius:50%; animation:spin .8s linear infinite; }
@@ -143,7 +170,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import {
-    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged
   } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import {
     getDatabase, ref, push, get, set, update, remove, child
@@ -240,6 +267,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       last_visit: '마지막 방문', steps_collapse: '접기', steps_expand: '펼치기',
       next_step_label: '다음스텝', card_progress: (d, tot) => `${d}/${tot}`,
       detail_last_visit: '마지막 방문', last_visit_save: '저장', last_visit_visitor_ph: '방문자 이름',
+      no_account: '계정이 없으신가요?', signup: '회원가입', have_account: '이미 계정이 있으신가요?',
+      name_label: '이름 *', name_ph: '예: 홍길동', password_confirm: '비밀번호 확인',
+      signup_btn: '회원가입', signing_up: '처리 중...',
+      signup_error: '오류가 발생했습니다. 이미 사용 중인 이메일일 수 있습니다.',
+      pw_short: '비밀번호는 6자 이상이어야 합니다.', pw_mismatch: '비밀번호가 일치하지 않습니다.',
+      email_required: '이메일을 입력해주세요.', name_required_signup: '이름을 입력해주세요.',
+      pending_title: '승인 대기 중',
+      pending_msg: '가입 신청이 완료되었습니다.\n관리자 승인 후 사용 가능합니다.',
+      admin_title: '회원 관리', admin_btn: '관리자', approve: '승인', reject: '거절',
+      no_pending: '대기 중인 회원이 없습니다.',
     },
     en: {
       subtitle: 'Church Relationship System',
@@ -273,6 +310,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       last_visit: 'Last Visit', steps_collapse: 'Collapse', steps_expand: 'Expand',
       next_step_label: 'Next Step', card_progress: (d, tot) => `${d}/${tot}`,
       detail_last_visit: 'Last Visit', last_visit_save: 'Save', last_visit_visitor_ph: 'Visitor name',
+      no_account: "Don't have an account?", signup: 'Sign Up', have_account: 'Already have an account?',
+      name_label: 'Name *', name_ph: 'e.g. John Kim', password_confirm: 'Confirm Password',
+      signup_btn: 'Sign Up', signing_up: 'Processing...',
+      signup_error: 'Sign up failed. Email may already be in use.',
+      pw_short: 'Password must be at least 6 characters.', pw_mismatch: 'Passwords do not match.',
+      email_required: 'Please enter your email.', name_required_signup: 'Please enter your name.',
+      pending_title: 'Awaiting Approval',
+      pending_msg: 'Registration complete.\nYou can access the system after admin approval.',
+      admin_title: 'Member Management', admin_btn: 'Admin', approve: 'Approve', reject: 'Reject',
+      no_pending: 'No pending members.',
     }
   };
 
@@ -288,6 +335,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   const root = document.getElementById('crs-root');
   let currentUser = null;
+  let currentUserData = null;
   let churches = [];
   let editingChurch = null;
   let viewingChurch = null;
@@ -312,6 +360,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <label>${t('password')}</label>
           <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password">
           <button class="btn-primary" id="loginBtn">${t('login')}</button>
+          <div class="signup-toggle">${t('no_account')} <a id="goSignup">${t('signup')}</a></div>
         </div>
       </div>`;
 
@@ -336,6 +385,78 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
     btnEl.addEventListener('click', doLogin);
     pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('goSignup').addEventListener('click', renderSignup);
+  }
+
+  // ── 회원가입 화면 ──
+  function renderSignup() {
+    root.innerHTML = `
+      <div class="login-wrap">
+        <div class="login-card">
+          <div class="login-logo">
+            <img src="/images/WOLKO Circle.png" alt="WOLKO" style="width:64px;height:64px;object-fit:contain;">
+            <h1>CRS for WOLKO</h1>
+            <p>${t('subtitle')}</p>
+          </div>
+          <div class="login-err" id="signupErr"></div>
+          <label>${t('name_label')}</label>
+          <input type="text" id="signupName" placeholder="${t('name_ph')}" autocomplete="name">
+          <label>${t('email')}</label>
+          <input type="email" id="signupEmail" placeholder="missionary@wolko.or.kr" autocomplete="email">
+          <label>${t('password')}</label>
+          <input type="password" id="signupPw" placeholder="••••••••" autocomplete="new-password">
+          <label>${t('password_confirm')}</label>
+          <input type="password" id="signupPw2" placeholder="••••••••" autocomplete="new-password">
+          <button class="btn-primary" id="signupBtn">${t('signup_btn')}</button>
+          <div class="signup-toggle">${t('have_account')} <a id="goLogin">${t('login')}</a></div>
+        </div>
+      </div>`;
+
+    const errEl  = document.getElementById('signupErr');
+    const btnEl  = document.getElementById('signupBtn');
+
+    async function doSignup() {
+      const name  = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const pw    = document.getElementById('signupPw').value;
+      const pw2   = document.getElementById('signupPw2').value;
+      errEl.style.display = 'none';
+      if (!name)       { errEl.style.display='block'; errEl.textContent=t('name_required_signup'); return; }
+      if (!email)      { errEl.style.display='block'; errEl.textContent=t('email_required'); return; }
+      if (pw.length<6) { errEl.style.display='block'; errEl.textContent=t('pw_short'); return; }
+      if (pw !== pw2)  { errEl.style.display='block'; errEl.textContent=t('pw_mismatch'); return; }
+      btnEl.disabled = true; btnEl.textContent = t('signing_up');
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, pw);
+        await set(ref(db, `users/${cred.user.uid}`), {
+          name, email, status: 'pending', role: 'member', createdAt: Date.now()
+        });
+      } catch(e) {
+        errEl.style.display = 'block'; errEl.textContent = t('signup_error');
+        btnEl.disabled = false; btnEl.textContent = t('signup_btn');
+      }
+    }
+    btnEl.addEventListener('click', doSignup);
+    document.getElementById('signupPw2').addEventListener('keydown', e => { if(e.key==='Enter') doSignup(); });
+    document.getElementById('goLogin').addEventListener('click', renderLogin);
+  }
+
+  // ── 승인 대기 화면 ──
+  function renderPending() {
+    root.innerHTML = `
+      <div class="pending-wrap">
+        <div class="pending-card">
+          <div class="pending-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#004f68" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <h2>${t('pending_title')}</h2>
+          <p>${t('pending_msg')}</p>
+          <button class="btn-primary" id="pendingLogout">${t('logout')}</button>
+        </div>
+      </div>`;
+    document.getElementById('pendingLogout').addEventListener('click', () => signOut(auth));
   }
 
   // ── 메인 앱 화면 ──
@@ -350,7 +471,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="app-header">
         <h1>CRS for WOLKO</h1>
         <div class="user-info">
-          <span>${esc(currentUser.email)}</span>
+          <span>${esc(currentUserData?.name || currentUser.email)}</span>
+          ${currentUserData?.role === 'admin' ? `<button class="admin-btn" id="adminBtn">${t('admin_btn')}</button>` : ''}
           <button class="btn-logout" id="logoutBtn">${t('logout')}</button>
         </div>
       </div>
@@ -362,6 +484,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="church-list" id="churchList">
           <div class="loading-wrap"><div class="spinner"></div></div>
         </div>
+        <button class="btn-logout-bottom" id="logoutBtnBottom">${t('logout')}</button>
       </div>
 
       <!-- 추가/수정 모달 -->
@@ -427,6 +550,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
       </div>
 
+      <!-- 관리자 모달 -->
+      <div class="modal-backdrop" id="adminModal">
+        <div class="modal">
+          <div class="modal-header">
+            <h2>${t('admin_title')}</h2>
+            <button class="btn-close" id="adminModalClose">×</button>
+          </div>
+          <div class="modal-body" id="adminBody">
+            <div class="loading-wrap"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+
       <!-- 상세 모달 -->
       <div class="modal-backdrop" id="detailModal">
         <div class="modal">
@@ -440,7 +576,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     `;
 
     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+    document.getElementById('logoutBtnBottom').addEventListener('click', () => signOut(auth));
     document.getElementById('addChurchBtn').addEventListener('click', () => openEditModal(null));
+    if (currentUserData?.role === 'admin') {
+      document.getElementById('adminBtn').addEventListener('click', openAdminModal);
+    }
+    document.getElementById('adminModalClose').addEventListener('click', () => {
+      document.getElementById('adminModal').classList.remove('open');
+    });
     document.getElementById('editModalClose').addEventListener('click', closeEditModal);
     document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
     document.getElementById('editSaveBtn').addEventListener('click', saveChurch);
@@ -732,6 +875,54 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
   }
 
+  // ── 관리자: 회원 승인 ──
+  async function openAdminModal() {
+    document.getElementById('adminModal').classList.add('open');
+    const bodyEl = document.getElementById('adminBody');
+    bodyEl.innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>';
+    try {
+      const snap = await get(ref(db, 'users'));
+      if (!snap.exists()) { bodyEl.innerHTML = `<p class="no-pending">${t('no_pending')}</p>`; return; }
+      const all = Object.entries(snap.val()).map(([uid, v]) => ({ uid, ...v }));
+      const pending = all.filter(u => u.status === 'pending');
+      if (pending.length === 0) { bodyEl.innerHTML = `<p class="no-pending">${t('no_pending')}</p>`; return; }
+      bodyEl.innerHTML = `
+        <div class="admin-section-title">${getLang()==='ko'?'대기 중인 회원':'Pending Members'} (${pending.length})</div>
+        ${pending.map(u => `
+          <div class="user-row" data-uid="${esc(u.uid)}">
+            <div class="user-info-block">
+              <div class="user-name-text">${esc(u.name || '-')}</div>
+              <div class="user-email-text">${esc(u.email || '-')}</div>
+              <div class="user-date-text">${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : ''}</div>
+            </div>
+            <button class="btn-approve" data-uid="${esc(u.uid)}">${t('approve')}</button>
+            <button class="btn-reject-user" data-uid="${esc(u.uid)}">${t('reject')}</button>
+          </div>`).join('')}`;
+      bodyEl.querySelectorAll('.btn-approve').forEach(btn => {
+        btn.addEventListener('click', () => approveUser(btn.dataset.uid));
+      });
+      bodyEl.querySelectorAll('.btn-reject-user').forEach(btn => {
+        btn.addEventListener('click', () => rejectUser(btn.dataset.uid));
+      });
+    } catch(e) {
+      bodyEl.innerHTML = `<p class="no-pending" style="color:#e53935">오류: ${esc(e.message)}</p>`;
+    }
+  }
+
+  async function approveUser(uid) {
+    try {
+      await update(ref(db, `users/${uid}`), { status: 'approved', approvedAt: Date.now(), approvedBy: currentUser.uid });
+      openAdminModal();
+    } catch(e) { alert('오류: ' + e.message); }
+  }
+
+  async function rejectUser(uid) {
+    try {
+      await update(ref(db, `users/${uid}`), { status: 'rejected', rejectedAt: Date.now() });
+      openAdminModal();
+    } catch(e) { alert('오류: ' + e.message); }
+  }
+
   // ── 저장 확인 알림 ──
   function showSaveAlert() {
     const el = document.createElement('div');
@@ -774,7 +965,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   // ── 모달 외부 클릭 닫기 ──
-  ['editModal', 'detailModal'].forEach(id => {
+  ['editModal', 'detailModal', 'adminModal'].forEach(id => {
     document.addEventListener('click', e => {
       const modal = document.getElementById(id);
       if (modal && e.target === modal) modal.classList.remove('open');
@@ -782,11 +973,28 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   });
 
   // ── 인증 상태 감지 ──
-  onAuthStateChanged(auth, user => {
+  onAuthStateChanged(auth, async user => {
     currentUser = user;
     if (user) {
-      renderApp();
+      try {
+        const snap = await get(ref(db, `users/${user.uid}`));
+        if (snap.exists()) {
+          currentUserData = snap.val();
+          if (currentUserData.status === 'approved') { renderApp(); }
+          else { renderPending(); }
+        } else {
+          // 기존 사용자(이 기능 도입 전) → 자동 승인
+          const autoData = { name: user.email.split('@')[0], email: user.email, status: 'approved', role: 'member', createdAt: Date.now() };
+          await set(ref(db, `users/${user.uid}`), autoData);
+          currentUserData = autoData;
+          renderApp();
+        }
+      } catch(e) {
+        currentUserData = { status: 'pending', role: 'member' };
+        renderPending();
+      }
     } else {
+      currentUserData = null;
       renderLogin();
     }
   });
@@ -794,14 +1002,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // ── 언어 변경 감지 → 화면 재렌더 ──
   new MutationObserver(() => {
     if (currentUser) {
-      const detailOpen = document.getElementById('detailModal')?.classList.contains('open');
-      const editOpen   = document.getElementById('editModal')?.classList.contains('open');
-      const searchVal  = document.getElementById('searchInput')?.value || '';
-      renderApp();
-      document.getElementById('searchInput').value = searchVal;
-      renderChurchList();
-      if (editOpen) openEditModal(editingChurch);
-      if (detailOpen && viewingChurch) openDetailModal(viewingChurch);
+      if (currentUserData?.status === 'approved') {
+        const detailOpen = document.getElementById('detailModal')?.classList.contains('open');
+        const editOpen   = document.getElementById('editModal')?.classList.contains('open');
+        const searchVal  = document.getElementById('searchInput')?.value || '';
+        renderApp();
+        document.getElementById('searchInput').value = searchVal;
+        renderChurchList();
+        if (editOpen) openEditModal(editingChurch);
+        if (detailOpen && viewingChurch) openDetailModal(viewingChurch);
+      } else {
+        renderPending();
+      }
     } else {
       renderLogin();
     }
