@@ -69,7 +69,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   /* ── 모달 공통 ── */
   .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); backdrop-filter:blur(3px); z-index:1100; align-items:center; justify-content:center; padding:1rem; }
   .modal-backdrop.open { display:flex; }
-  .modal { background:#fff; border-radius:16px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.18); }
+  .modal { background:#fff; border-radius:16px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.18); scrollbar-width:thin; scrollbar-color:#c8dfe8 transparent; }
+  .modal::-webkit-scrollbar { width:5px; }
+  .modal::-webkit-scrollbar-track { background:transparent; }
+  .modal::-webkit-scrollbar-thumb { background:#c8dfe8; border-radius:99px; }
+  .modal::-webkit-scrollbar-thumb:hover { background:#8aacba; }
   .modal-header { padding:1.3rem 1.5rem 1rem; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:#fff; z-index:1; border-radius:16px 16px 0 0; }
   .modal-header h2 { margin:0; font-size:1.1rem; font-weight:800; color:#004f68; }
   .btn-close { background:none; border:none; font-size:1.4rem; cursor:pointer; color:#aaa; line-height:1; padding:.2rem; }
