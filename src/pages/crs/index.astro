@@ -345,6 +345,65 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let editingChurch = null;
   let viewingChurch = null;
 
+  // ── 자동 로그아웃 (20분 비활동) ──
+  const IDLE_MS = 20 * 60 * 1000;
+  const WARN_MS = 60 * 1000;
+  let idleTimer = null;
+  let warnTimer = null;
+  let lastAct = Date.now();
+  let idleTracking = false;
+  const ACT_EVENTS = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+
+  function resetIdle() {
+    lastAct = Date.now();
+    clearTimeout(idleTimer);
+    clearTimeout(warnTimer);
+    document.getElementById('crs-idle-warn')?.remove();
+    warnTimer = setTimeout(showIdleWarn, IDLE_MS - WARN_MS);
+    idleTimer = setTimeout(doAutoLogout, IDLE_MS);
+  }
+
+  function showIdleWarn() {
+    if (document.getElementById('crs-idle-warn')) return;
+    const el = document.createElement('div');
+    el.id = 'crs-idle-warn';
+    el.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#1a2e3b;color:#fff;padding:.85rem 1.6rem;border-radius:12px;font-size:.87rem;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,.35);white-space:nowrap;cursor:pointer;user-select:none;';
+    el.textContent = getLang() === 'ko'
+      ? '⏱ 1분 후 자동 로그아웃됩니다. 클릭하면 연장됩니다.'
+      : '⏱ Auto-logout in 1 minute. Click to stay logged in.';
+    el.addEventListener('click', resetIdle);
+    document.body.appendChild(el);
+  }
+
+  async function doAutoLogout() {
+    document.getElementById('crs-idle-warn')?.remove();
+    await signOut(auth);
+  }
+
+  function onVisibilityChange() {
+    if (!document.hidden && currentUser && Date.now() - lastAct >= IDLE_MS) {
+      doAutoLogout();
+    }
+  }
+
+  function startIdleTracking() {
+    if (idleTracking) return;
+    idleTracking = true;
+    ACT_EVENTS.forEach(e => document.addEventListener(e, resetIdle, { passive: true }));
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    resetIdle();
+  }
+
+  function stopIdleTracking() {
+    if (!idleTracking) return;
+    idleTracking = false;
+    ACT_EVENTS.forEach(e => document.removeEventListener(e, resetIdle));
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    clearTimeout(idleTimer);
+    clearTimeout(warnTimer);
+    document.getElementById('crs-idle-warn')?.remove();
+  }
+
   function esc(str) {
     return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
@@ -1060,7 +1119,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         const snap = await get(ref(db, `users/${user.uid}`));
         if (snap.exists()) {
           currentUserData = snap.val();
-          if (currentUserData.status === 'approved') { renderApp(); }
+          if (currentUserData.status === 'approved') { renderApp(); startIdleTracking(); }
           else { renderPending(); }
         } else {
           // 기존 사용자(이 기능 도입 전) → 자동 승인
@@ -1068,12 +1127,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           await set(ref(db, `users/${user.uid}`), autoData);
           currentUserData = autoData;
           renderApp();
+          startIdleTracking();
         }
       } catch(e) {
         currentUserData = { status: 'pending', role: 'member' };
         renderPending();
       }
     } else {
+      stopIdleTracking();
       currentUserData = null;
       renderLogin();
     }
