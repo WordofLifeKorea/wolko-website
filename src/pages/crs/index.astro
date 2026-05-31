@@ -1215,10 +1215,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   });
 
   // ── 언어 변경 감지 → 화면 재렌더 ──
+  let observedLang = getLang();
   new MutationObserver(() => {
+    const nextLang = getLang();
+    if (nextLang === observedLang) return;
+    observedLang = nextLang;
+
     if (currentUser) {
       if (currentUserData?.status === 'approved') {
-        const detailOpen = document.getElementById('detailModal')?.classList.contains('open');
+        const detailOpen = document.getElementById('appBody')?.classList.contains('split');
         const editOpen   = document.getElementById('editModal')?.classList.contains('open');
         const searchVal  = document.getElementById('searchInput')?.value || '';
         renderApp();
