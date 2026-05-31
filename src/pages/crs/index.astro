@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="CRS for WOLKO" whiteNav={true}>
+<BaseLayout title="CRS for WOLKO" whiteNav={true} languageOnlyNav={true}>
   <div id="crs-root"></div>
 </BaseLayout>
 
@@ -91,7 +91,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .detail-panel-body { flex:1; overflow-y:auto; min-height:0; padding:1.4rem 1.6rem 1rem; scrollbar-width:thin; scrollbar-color:#c8dfe8 transparent; overscroll-behavior:contain; }
   .detail-panel-body::-webkit-scrollbar { width:4px; }
   .detail-panel-body::-webkit-scrollbar-thumb { background:#c8dfe8; border-radius:99px; }
-  .detail-panel-body .detail-actions { position:sticky; bottom:0; background:#fff; padding:.9rem 0 .3rem; border-top:1px solid #edf2f5; margin-top:1.2rem; }
+  .detail-panel-body .detail-actions { background:#fff; padding:.9rem 0 .3rem; border-top:1px solid #edf2f5; margin-top:1.2rem; }
   /* 카드 선택 강조 */
   .church-card.selected { border-left:3px solid #004f68; border-color:#004f68; background:#f4f9fc; }
   .church-card.selected .church-card-header { background:#e8f2f7; }
@@ -224,7 +224,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     --crs-cyan:#2d9fba;
     --crs-green:#27795f;
     --crs-red:#b64045;
-    padding-top:90px;
+    padding-top:58px;
     background:#edf2f3;
     color:var(--crs-ink);
   }
@@ -232,7 +232,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     min-height:64px;
     box-sizing:border-box;
     padding:.8rem max(1.15rem,calc((100vw - 1440px) / 2 + 1.3rem));
-    top:90px;
+    top:0;
     background:var(--crs-brand-dark);
     border-bottom:1px solid rgba(255,255,255,.1);
     box-shadow:0 8px 24px rgba(17,52,64,.16);
@@ -252,7 +252,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     background:rgba(255,255,255,.09); font-weight:750;
   }
   .admin-btn:hover, .btn-logout:hover { background:rgba(255,255,255,.17); }
-  .app-body { max-width:1440px; height:calc(100vh - 76px - 4rem); background:#edf2f3; }
+  .app-body { max-width:1440px; height:calc(100vh - 58px - 4rem); background:#edf2f3; }
   .list-panel { background:#edf2f3; }
   .list-panel-inner { max-width:620px; padding:0 1.25rem 4rem; }
   .top-bar {
@@ -434,9 +434,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .steps-list { grid-template-columns:1fr; }
   }
   @media(max-width:768px) {
-    #crs-root { padding-top:90px; }
+    #crs-root { padding-top:58px; }
     .app-header {
-      top:90px;
+      position:relative;
+      top:auto;
       min-height:58px;
       padding:.62rem .72rem;
       gap:.55rem;
@@ -449,7 +450,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .app-header .user-info > span { display:none; }
     .admin-btn, .btn-logout { padding:.38rem .52rem; font-size:.72rem; }
     .app-body { height:auto; }
-    .app-body.split .detail-panel { top:148px; }
+    .app-body.split .detail-panel { top:58px; }
     .detail-panel-body { padding:1rem .9rem .8rem; }
     .detail-panel-progress-meta { padding:.52rem 1rem; }
     .detail-info { grid-template-columns:1fr; }

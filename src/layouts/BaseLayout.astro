@@ -6,6 +6,7 @@ export interface Props {
   activeNav?: string;   // 'home' | 'about' | 'ministry' | 'connect' | 'give' | 'location'
   whiteNav?: boolean;   // 흰 배경 네비 (히어로 이미지 없는 페이지용)
   langRoot?: string;    // 언어 토글 루트 id (없으면 기본 body)
+  languageOnlyNav?: boolean; // 업무 페이지용: 상단 메뉴 없이 언어 토글만 표시
 }
 
 const {
@@ -14,6 +15,7 @@ const {
   activeNav = '',
   whiteNav = false,
   langRoot = 'lang-root',
+  languageOnlyNav = false,
 } = Astro.props;
 ---
 
@@ -43,7 +45,7 @@ const {
 <body>
 
   <!-- NAV -->
-  <nav class={`nav${whiteNav ? ' always-white' : ''}`} id="mainNav">
+  <nav class={`nav${whiteNav ? ' always-white' : ''}${languageOnlyNav ? ' language-only' : ''}`} id="mainNav">
     <a href="/" class="nav-logo">
       <img src="/images/WOLKO_logo_transparent.png" alt="WOLKO 월코">
     </a>
