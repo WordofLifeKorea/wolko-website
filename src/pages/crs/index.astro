@@ -8,7 +8,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <style is:global>
   /* ── 전체 레이아웃 ── */
   #crs-root { min-height: 100vh; background: #f4f6f9; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; padding-top: 76px; }
-  body.crs-split-open { overflow: hidden; }
+  /* body overflow:hidden은 iOS Safari에서 fixed 네비 오작동 유발 → 제거
+     스크롤 격리는 overscroll-behavior:contain으로 처리 */
 
   /* ── 로그인 화면 ── */
   .login-wrap { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 76px); padding:2rem; }
@@ -102,10 +103,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .app-body.split .card-meta-divider { margin:.4rem 0 .5rem; }
   .app-body.split .church-card { border-radius:10px; }
   /* 모바일 */
+  @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
   @media(max-width:768px) {
-    .app-body { height:auto; }
+    .app-body { height:auto; min-height:calc(100vh - 76px); }
     .app-body.split .list-panel { display:none; }
-    .app-body.split .detail-panel { position:fixed; inset:0; top:76px; z-index:800; flex:unset; opacity:1; width:100%; }
+    .app-body.split .detail-panel {
+      position:fixed; left:0; right:0; bottom:0;
+      top:calc(76px + 3.25rem); /* nav + app-header */
+      z-index:900; width:100%; max-width:none;
+      flex:unset; opacity:1; overflow-y:auto;
+      transition:none;
+      animation:slideUp .28s cubic-bezier(.4,0,.2,1);
+    }
   }
   .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,15,30,.55); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); z-index:1100; align-items:center; justify-content:center; padding:1rem; }
   .modal-backdrop.open { display:flex; }
@@ -1192,14 +1201,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     document.getElementById('detailProgressFill').style.width = pct + '%';
     renderDetailBody(church);
     document.getElementById('appBody').classList.add('split');
-    document.body.classList.add('crs-split-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     document.querySelector(`.church-card[data-id="${esc(church.id)}"]`)?.classList.add('selected');
   }
 
   function closeDetailModal() {
     document.getElementById('appBody').classList.remove('split');
-    document.body.classList.remove('crs-split-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     viewingChurch = null;
   }
