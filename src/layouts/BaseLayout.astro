@@ -287,6 +287,16 @@ const {
     const enSide = document.getElementById('langEn');
     let isEn = false;
 
+    function syncLangSliderPosition() {
+      if (!isEn) {
+        slider.style.left = '3px';
+        return;
+      }
+      const toggle = document.getElementById('langToggle');
+      const sliderW = slider.offsetWidth || (window.innerWidth <= 1500 ? 32 : 78);
+      slider.style.left = (toggle.offsetWidth - sliderW - 3) + 'px';
+    }
+
     function applyLang(en) {
       isEn = en;
       // 페이지 콘텐츠 루트에 lang-en 클래스 적용
@@ -299,16 +309,13 @@ const {
       document.querySelector('.footer').classList.toggle('lang-en', en);
 
       if (en) {
-        const toggle = document.getElementById('langToggle');
-        const sliderW = slider.offsetWidth || (window.innerWidth <= 900 ? 32 : 78);
-        slider.style.left = (toggle.offsetWidth - sliderW - 3) + 'px';
         koSide.className = 'lang-side is-inactive';
         enSide.className = 'lang-side is-active';
       } else {
-        slider.style.left = '3px';
         koSide.className = 'lang-side is-active';
         enSide.className = 'lang-side is-inactive';
       }
+      syncLangSliderPosition();
       try { localStorage.setItem('wolko-lang', en ? 'en' : 'ko'); } catch(e) {}
       restoreHashScroll();
       setTimeout(restoreHashScroll, 160);
@@ -316,6 +323,7 @@ const {
 
     window.toggleLang = function() { applyLang(!isEn); };
     document.getElementById('langToggle')?.addEventListener('click', window.toggleLang);
+    window.addEventListener('resize', syncLangSliderPosition);
 
     function restoreHashScroll() {
       if (!window.location.hash) return;

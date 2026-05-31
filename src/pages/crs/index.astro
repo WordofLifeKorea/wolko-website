@@ -209,6 +209,255 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .list-panel-inner { padding:0 .8rem 3rem; max-width:100%; }
     .modal-body { padding:1rem 1rem 1.2rem; }
   }
+
+  /* ── CRS professional UI concept ── */
+  #crs-root {
+    --crs-ink:#173440;
+    --crs-muted:#637983;
+    --crs-faint:#8ba0a9;
+    --crs-line:#dce6e9;
+    --crs-soft:#f3f7f8;
+    --crs-panel:#ffffff;
+    --crs-brand:#00566c;
+    --crs-brand-dark:#103c4c;
+    --crs-brand-light:#deeff3;
+    --crs-cyan:#2d9fba;
+    --crs-green:#27795f;
+    --crs-red:#b64045;
+    padding-top:90px;
+    background:#edf2f3;
+    color:var(--crs-ink);
+  }
+  .app-header {
+    min-height:64px;
+    box-sizing:border-box;
+    padding:.8rem max(1.15rem,calc((100vw - 1440px) / 2 + 1.3rem));
+    top:90px;
+    background:var(--crs-brand-dark);
+    border-bottom:1px solid rgba(255,255,255,.1);
+    box-shadow:0 8px 24px rgba(17,52,64,.16);
+  }
+  .app-brand { display:flex; align-items:center; gap:.75rem; min-width:0; }
+  .app-brand-mark {
+    display:grid; place-items:center; width:35px; height:35px; flex:0 0 auto;
+    border:1px solid rgba(255,255,255,.24); border-radius:10px;
+    background:rgba(255,255,255,.1); color:#fff; font-size:.8rem; font-weight:900;
+  }
+  .app-header h1 { font-size:1rem; letter-spacing:0; line-height:1.1; }
+  .app-kicker { display:block; margin-top:.2rem; color:rgba(255,255,255,.58); font-size:.66rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; }
+  .app-header .user-info { gap:.55rem; color:rgba(255,255,255,.78); font-weight:600; }
+  .app-header .user-info > span { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .admin-btn, .btn-logout {
+    padding:.42rem .72rem; border-color:rgba(255,255,255,.2); border-radius:8px;
+    background:rgba(255,255,255,.09); font-weight:750;
+  }
+  .admin-btn:hover, .btn-logout:hover { background:rgba(255,255,255,.17); }
+  .app-body { max-width:1440px; height:calc(100vh - 76px - 4rem); background:#edf2f3; }
+  .list-panel { background:#edf2f3; }
+  .list-panel-inner { max-width:620px; padding:0 1.25rem 4rem; }
+  .top-bar {
+    max-width:620px; padding:1.2rem 1.25rem .9rem; gap:.65rem;
+    background:rgba(237,242,243,.96); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  }
+  .search-input {
+    min-height:43px; padding:.68rem .9rem; border:1px solid #cedcdf; border-radius:8px;
+    background:#fff; color:var(--crs-ink); box-shadow:0 1px 2px rgba(20,52,64,.04);
+  }
+  .search-input::placeholder { color:#91a3aa; }
+  .search-input:focus { border-color:var(--crs-cyan); box-shadow:0 0 0 3px rgba(45,159,186,.12); }
+  .btn-add {
+    min-height:43px; padding:.68rem 1rem; border-radius:8px; background:var(--crs-brand);
+    box-shadow:0 4px 10px rgba(0,86,108,.16);
+  }
+  .btn-add:hover { background:#00475a; }
+  .church-list { gap:.72rem; }
+  .church-card {
+    position:relative; border:1px solid var(--crs-line); border-radius:10px; background:#fff;
+    box-shadow:0 2px 8px rgba(19,52,64,.055); transition:border-color .18s, box-shadow .18s, transform .18s;
+  }
+  .church-card::before {
+    content:''; position:absolute; inset:0 auto 0 0; width:3px;
+    background:transparent; transition:background .18s;
+  }
+  .church-card:hover { border-color:#b8ced5; box-shadow:0 8px 20px rgba(19,52,64,.1); transform:translateY(-1px); }
+  .church-card:hover::before { background:var(--crs-cyan); }
+  .church-card-header { padding:.9rem 1.05rem .74rem; background:#fff; border-bottom:1px solid #edf2f3; }
+  .church-card-body { padding:.8rem 1.05rem .92rem; }
+  .church-name { color:var(--crs-ink); font-size:.97rem; font-weight:820; }
+  .pastor-name { color:#748990; font-size:.78rem; }
+  .step-badge {
+    max-width:54%; padding:.26rem .57rem; border:1px solid #c9e0e6; border-radius:6px;
+    background:#e8f4f6; color:#006079; font-size:.68rem; font-weight:800;
+  }
+  .step-badge.complete { border-color:#c9e5da; background:#e7f5ef; color:var(--crs-green); }
+  .step-bar-wrap { margin-bottom:.62rem; }
+  .step-bar-bg { height:6px; background:#e4edef; }
+  .step-bar-fill { background:var(--crs-cyan); }
+  .step-bar-label { margin-top:.3rem; color:#799099; font-size:.7rem; font-weight:650; }
+  .next-step-row { align-items:center; gap:.42rem; }
+  .next-step-label, .meta-label {
+    padding:.12rem .34rem; border-radius:4px; background:#edf5f6; color:#397182;
+    font-size:.62rem; letter-spacing:.02em;
+  }
+  .next-step-text, .card-meta span { color:#5b7079; font-size:.75rem; }
+  .church-card.selected {
+    border-color:var(--crs-cyan); border-left:1px solid var(--crs-cyan); background:#fff;
+    box-shadow:0 0 0 2px rgba(45,159,186,.12),0 8px 20px rgba(19,52,64,.08);
+  }
+  .church-card.selected::before { background:var(--crs-cyan); }
+  .church-card.selected .church-card-header { background:#f4fafb; }
+  .app-body.split .list-panel { flex:0 0 400px; }
+  .app-body.split .church-card { border-radius:8px; }
+  .detail-panel { background:#f7f9f9; }
+  .app-body.split .detail-panel { border-left:1px solid #ccdadd; box-shadow:-12px 0 32px rgba(20,52,64,.06); }
+  .detail-panel-head {
+    padding:1.15rem 1.45rem .95rem;
+    border-bottom:1px solid #dce7ea;
+    background:#fff;
+  }
+  .detail-panel-avatar {
+    width:42px; height:42px; border:1px solid #c7e0e6; border-radius:9px;
+    background:#e5f3f5; color:var(--crs-brand); font-size:1.05rem;
+  }
+  .detail-panel-title { color:var(--crs-ink); font-size:1.08rem; letter-spacing:0; }
+  .detail-panel-sub { margin-top:.2rem; color:#70858d; font-size:.75rem; }
+  .detail-panel-close {
+    width:31px; height:31px; border:1px solid #d8e4e7; border-radius:8px;
+    background:#f2f6f7; color:#607780;
+  }
+  .detail-panel-close:hover { background:#e6eff1; color:var(--crs-brand); }
+  .detail-panel-progress-meta {
+    display:flex; justify-content:space-between; gap:1rem; padding:.58rem 1.45rem;
+    border-bottom:1px solid #dce9ec;
+    background:#e9f4f5; color:#4d707b; font-size:.72rem; font-weight:700;
+  }
+  .detail-panel-progress-meta strong { color:var(--crs-brand); font-size:.76rem; }
+  .detail-panel-prog { height:4px; background:#d5e5e8; }
+  .detail-panel-prog-fill { background:var(--crs-cyan); }
+  .detail-panel-body { padding:1.3rem 1.5rem 1rem; background:#f7f9f9; }
+  .detail-panel-body .detail-actions {
+    margin:1.25rem -.1rem 0; padding:.9rem .1rem .15rem; background:#f7f9f9;
+  }
+  .detail-info {
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0;
+    margin-bottom:1rem; padding:0; border:1px solid var(--crs-line); border-radius:10px;
+    background:#fff; overflow:hidden;
+  }
+  .detail-info-row {
+    display:block; min-height:61px; box-sizing:border-box; margin:0; padding:.73rem .86rem;
+    border-bottom:1px solid #edf2f3; color:#526972; font-size:.82rem; line-height:1.5;
+  }
+  .detail-info-row:nth-child(odd) { border-right:1px solid #edf2f3; }
+  .detail-info-row strong {
+    display:block; min-width:0; margin-bottom:.16rem; color:#83969e; font-size:.65rem;
+    font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+  }
+  .steps-header { margin:1.18rem 0 .52rem; padding-bottom:.5rem; border-bottom:1px solid #dce7ea; }
+  .steps-title { color:var(--crs-ink); font-size:.84rem; }
+  .steps-toggle {
+    padding:.3rem .58rem; border:1px solid #d5e4e7; border-radius:6px;
+    background:#edf5f6; color:#336d7d; font-size:.7rem;
+  }
+  .steps-toggle:hover { background:#e2f0f2; }
+  .steps-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.46rem; }
+  .step-item {
+    min-height:58px; box-sizing:border-box; gap:.68rem; margin:0; padding:.63rem .68rem;
+    border:1px solid #e1e9eb; border-radius:8px; background:#fff;
+  }
+  .step-item:last-child { border-bottom:1px solid #e1e9eb; }
+  .step-item:hover { border-color:#bdd4da; background:#f8fcfc; }
+  .step-check { width:19px; height:19px; border-radius:5px; }
+  .step-desc { color:#5c7078; font-size:.81rem; line-height:1.35; }
+  .step-num { color:#9cafb5; font-size:.65rem; }
+  .visit-card {
+    margin-bottom:.55rem; padding:.78rem .86rem; border:1px solid #e0e9eb; border-left:3px solid var(--crs-cyan);
+    border-radius:8px; background:#fff;
+  }
+  .visit-section {
+    margin-top:1rem; padding:1rem; border:1px solid #dce7e9; border-radius:10px;
+    background:#fff; box-shadow:0 3px 12px rgba(20,52,64,.045);
+  }
+  .visit-section-head { display:flex; align-items:center; justify-content:space-between; gap:.8rem; margin-bottom:.8rem; }
+  .visit-section-title { display:flex; align-items:center; gap:.45rem; color:var(--crs-ink); font-size:.88rem; font-weight:850; }
+  .visit-count {
+    min-width:1.35rem; padding:.12rem .38rem; border-radius:999px; background:#e8f4f6;
+    color:var(--crs-brand); font-size:.68rem; font-weight:850; text-align:center;
+  }
+  .btn-add-visit {
+    display:inline-flex; align-items:center; justify-content:center; gap:.24rem; padding:.48rem .68rem;
+    border:1px solid var(--crs-brand); border-radius:7px; background:var(--crs-brand); color:#fff;
+    font-size:.75rem; font-weight:800; cursor:pointer; transition:background .18s, border-color .18s, box-shadow .18s;
+  }
+  .btn-add-visit:hover { border-color:#004658; background:#004658; box-shadow:0 4px 10px rgba(0,86,108,.16); }
+  .visit-card-head { display:flex; justify-content:space-between; align-items:center; gap:.6rem; margin-bottom:.34rem; }
+  .visit-card-date { color:var(--crs-brand); font-size:.81rem; font-weight:800; }
+  .visit-card-person {
+    padding:.14rem .45rem; border-radius:999px; background:#edf5f6; color:#4a707c;
+    font-size:.7rem; font-weight:750;
+  }
+  .visit-card-purpose { margin-bottom:.25rem; color:#294c59; font-size:.78rem; font-weight:750; }
+  .visit-card-notes { color:#5b7078; font-size:.78rem; line-height:1.55; white-space:pre-wrap; }
+  .visit-card-legacy { margin-top:.28rem; color:#95a7ad; font-size:.66rem; }
+  .visit-empty { padding:1rem 0; color:#91a3aa; font-size:.8rem; text-align:center; }
+  .visit-form {
+    display:none; margin-bottom:.85rem; padding:.9rem; border:1px solid #cfe2e6; border-radius:8px;
+    background:#f7fbfb; box-shadow:0 4px 12px rgba(20,52,64,.05);
+  }
+  .visit-form-head { margin-bottom:.75rem; padding-bottom:.62rem; border-bottom:1px solid #deeaec; }
+  .visit-form-title { margin:0 0 .18rem; color:var(--crs-ink); font-size:.82rem; font-weight:850; }
+  .visit-form-help { margin:0; color:#71868e; font-size:.72rem; line-height:1.5; }
+  .visit-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; margin-bottom:.65rem; }
+  .visit-field { margin-bottom:.65rem; }
+  .visit-label { display:block; margin-bottom:.28rem; color:#5a7078; font-size:.73rem; font-weight:750; }
+  .visit-input {
+    width:100%; box-sizing:border-box; padding:.56rem .68rem; border:1px solid #d5e1e4; border-radius:6px;
+    background:#fbfcfc; color:var(--crs-ink); font:inherit; font-size:.8rem; outline:none;
+  }
+  .visit-input:focus { border-color:var(--crs-cyan); box-shadow:0 0 0 3px rgba(45,159,186,.11); }
+  textarea.visit-input { resize:vertical; }
+  .visit-form-actions { display:flex; justify-content:flex-end; gap:.5rem; }
+  .btn-visit-cancel, .btn-visit-save { border:none; border-radius:6px; padding:.5rem .85rem; font-size:.78rem; font-weight:750; cursor:pointer; }
+  .btn-visit-cancel { background:#edf2f3; color:#587079; }
+  .btn-visit-save { background:var(--crs-brand); color:#fff; }
+  .relationship-section { margin-top:1.25rem; }
+  .btn-edit, .btn-delete, .btn-cancel, .btn-save { border-radius:7px; }
+  .modal-backdrop { background:rgba(15,39,48,.54); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+  .modal { border:1px solid rgba(255,255,255,.74); border-radius:14px; box-shadow:0 24px 70px rgba(10,38,50,.26); }
+  .modal-header { padding:1.18rem 1.35rem .92rem; border-radius:14px 14px 0 0; background:#fbfcfc; }
+  .modal-header::before { height:3px; border-radius:14px 14px 0 0; background:var(--crs-cyan); }
+  .modal-header h2 { font-size:1.02rem; letter-spacing:0; }
+  .btn-close { border-radius:7px; }
+  .form-group label { color:#627780; letter-spacing:.03em; }
+  .form-group input, .form-group textarea, .form-group select { border-color:#d7e2e5; border-radius:7px; background:#fbfcfc; }
+  @media(max-width:980px) {
+    .app-body.split .list-panel { flex:0 0 340px; }
+    .steps-list { grid-template-columns:1fr; }
+  }
+  @media(max-width:768px) {
+    #crs-root { padding-top:90px; }
+    .app-header {
+      top:90px;
+      min-height:58px;
+      padding:.62rem .72rem;
+      gap:.55rem;
+    }
+    .app-brand { gap:.52rem; min-width:0; }
+    .app-brand-mark { width:32px; height:32px; }
+    .app-header h1 { overflow:hidden; font-size:.91rem; text-overflow:ellipsis; white-space:nowrap; }
+    .app-kicker { display:none; }
+    .app-header .user-info { flex-shrink:0; gap:.34rem; }
+    .app-header .user-info > span { display:none; }
+    .admin-btn, .btn-logout { padding:.38rem .52rem; font-size:.72rem; }
+    .app-body { height:auto; }
+    .app-body.split .detail-panel { top:148px; }
+    .detail-panel-body { padding:1rem .9rem .8rem; }
+    .detail-panel-progress-meta { padding:.52rem 1rem; }
+    .detail-info { grid-template-columns:1fr; }
+    .detail-info-row:nth-child(odd) { border-right:none; }
+    .visit-form-grid { grid-template-columns:1fr; }
+    .visit-section { padding:.82rem; }
+    .visit-section-head { align-items:flex-start; }
+  }
 </style>
 
 <script type="module">
@@ -576,7 +825,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     root.innerHTML = `
       <div class="app-header">
-        <h1>CRS for WOLKO</h1>
+        <div class="app-brand">
+          <div class="app-brand-mark">W</div>
+          <div>
+            <h1>CRS for WOLKO</h1>
+            <span class="app-kicker">Church Relationship System</span>
+          </div>
+        </div>
         <div class="user-info">
           <span>${esc(currentUserData?.name || currentUser.email)}</span>
           ${currentUserData?.role === 'admin' ? `<button class="admin-btn" id="adminBtn">${t('admin_btn')}</button>` : ''}
@@ -605,6 +860,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <p id="detailSubtitle" class="detail-panel-sub"></p>
             </div>
             <button class="detail-panel-close" id="detailPanelClose">×</button>
+          </div>
+          <div class="detail-panel-progress-meta">
+            <span id="detailProgressText"></span>
+            <strong id="detailProgressPct"></strong>
           </div>
           <div class="detail-panel-prog"><div id="detailProgressFill" class="detail-panel-prog-fill"></div></div>
           <div class="detail-panel-body" id="detailBody"></div>
@@ -887,6 +1146,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       church.pastorName ? (isKo ? '담임: ' : 'Pastor: ') + church.pastorName : null,
       church.location || null,
     ].filter(Boolean).join(' · ');
+    document.getElementById('detailProgressText').textContent = isKo
+      ? `${done} / ${STEPS.length} 단계 완료`
+      : `${done} / ${STEPS.length} steps completed`;
+    document.getElementById('detailProgressPct').textContent = pct + '%';
     document.getElementById('detailProgressFill').style.width = pct + '%';
     renderDetailBody(church);
     document.getElementById('appBody').classList.add('split');
@@ -940,16 +1203,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }).join('');
 
     const visitHistoryHtml = allVisits.length ? allVisits.map((v,i) => `
-      <div style="padding:.85rem 1rem;margin-bottom:.6rem;background:#f4f8fb;border-radius:10px;border-left:3px solid #004f68;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
-          <span style="font-size:.85rem;font-weight:700;color:#004f68">${esc(v.date || (getLang()==='ko'?'날짜 미입력':'No date'))}</span>
-          ${v.visitor ? `<span style="font-size:.78rem;font-weight:600;color:#334a56;background:#ddeaf0;padding:.15rem .55rem;border-radius:20px">${esc(v.visitor)}</span>` : ''}
+      <div class="visit-card">
+        <div class="visit-card-head">
+          <span class="visit-card-date">${esc(v.date || (getLang()==='ko'?'날짜 미입력':'No date'))}</span>
+          ${v.visitor ? `<span class="visit-card-person">${esc(v.visitor)}</span>` : ''}
         </div>
-        ${v.purpose ? `<div style="font-size:.82rem;color:#1a3a4a;font-weight:600;margin-bottom:.35rem">${esc(v.purpose)}</div>` : ''}
-        ${v.notes ? `<div style="font-size:.82rem;color:#334a56;line-height:1.6;white-space:pre-wrap">${esc(v.notes)}</div>` : ''}
-        ${v.legacy ? `<div style="font-size:.7rem;color:#8aacba;margin-top:.35rem">${getLang()==='ko'?'이전 기록':'Legacy record'}</div>` : ''}
+        ${v.purpose ? `<div class="visit-card-purpose">${esc(v.purpose)}</div>` : ''}
+        ${v.notes ? `<div class="visit-card-notes">${esc(v.notes)}</div>` : ''}
+        ${v.legacy ? `<div class="visit-card-legacy">${getLang()==='ko'?'이전 기록':'Legacy record'}</div>` : ''}
       </div>`).join('')
-    : `<p style="font-size:.84rem;color:#aaa;text-align:center;padding:1rem 0">${t('no_visits')}</p>`;
+    : `<p class="visit-empty">${t('no_visits')}</p>`;
 
     document.getElementById('detailBody').innerHTML = `
       <div class="detail-info">
@@ -961,47 +1224,55 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <span style="color:#004f68;font-weight:700">${t('done_of', done, STEPS.length)}</span>
         </div>
       </div>
-      <div class="steps-header">
-        <span class="steps-title">${t('steps_title')}</span>
-        <button class="steps-toggle" id="stepsToggle">${t('steps_collapse')}</button>
-      </div>
-      <div class="steps-list" id="stepsList">${stepsHtml}</div>
-
       <!-- 방문 기록 섹션 -->
-      <div class="steps-header" style="margin-top:1.4rem">
-        <span class="steps-title">${t('visit_history')} <span style="font-size:.78rem;font-weight:500;color:#8aacba">(${allVisits.length})</span></span>
-        <button class="steps-toggle" id="addVisitToggle">${t('add_visit')}</button>
-      </div>
-      <!-- 방문 추가 폼 (기본 숨김) -->
-      <div id="addVisitForm" style="display:none;background:#f8fbfc;border-radius:10px;padding:1rem 1.1rem;margin-bottom:.9rem;border:1px solid #e5edf1">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.7rem">
-          <div>
-            <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${getLang()==='ko'?'방문일':'Date'}</label>
-            <input type="date" id="visitFormDate" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit">
+      <section class="visit-section">
+        <div class="visit-section-head">
+          <span class="visit-section-title">${t('visit_history')} <span class="visit-count">${allVisits.length}</span></span>
+          <button class="btn-add-visit" id="addVisitToggle">${t('add_visit')}</button>
+        </div>
+        <!-- 방문 추가 폼 (기본 숨김) -->
+        <div id="addVisitForm" class="visit-form" style="display:none">
+          <div class="visit-form-head">
+            <p class="visit-form-title">${getLang()==='ko'?'새 방문 기록':'New visit record'}</p>
+            <p class="visit-form-help">${getLang()==='ko'?'방문일과 담당자를 먼저 입력하고, 필요한 내용을 간단히 남겨주세요.':'Start with the date and visitor, then add a short note if needed.'}</p>
           </div>
-          <div>
-            <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${t('visit_visitor')}</label>
-            <input type="text" id="visitFormVisitor" placeholder="${getLang()==='ko'?'방문자 이름':'Visitor name'}" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit">
+          <div class="visit-form-grid">
+            <div>
+              <label class="visit-label">${getLang()==='ko'?'방문일':'Date'}</label>
+              <input type="date" id="visitFormDate" class="visit-input">
+            </div>
+            <div>
+              <label class="visit-label">${t('visit_visitor')}</label>
+              <input type="text" id="visitFormVisitor" placeholder="${getLang()==='ko'?'방문자 이름':'Visitor name'}" class="visit-input">
+            </div>
+          </div>
+          <div class="visit-field">
+            <label class="visit-label">${getLang()==='ko'?'방문 목적':'Purpose'}</label>
+            <select id="visitFormPurpose" class="visit-input">
+              <option value="">${getLang()==='ko'?'-- 선택 (선택사항) --':'-- Select (optional) --'}</option>
+              ${purposeOpts}
+            </select>
+          </div>
+          <div class="visit-field">
+            <label class="visit-label">${getLang()==='ko'?'메모':'Notes'}</label>
+            <textarea id="visitFormNotes" placeholder="${getLang()==='ko'?'논의 내용, 후속 연락, 다음 방문 계획 등을 남겨주세요.':'Add discussion notes, follow-up items, or next visit plans.'}" rows="3" class="visit-input"></textarea>
+          </div>
+          <div class="visit-form-actions">
+            <button id="visitFormCancel" class="btn-visit-cancel">${t('cancel')}</button>
+            <button id="visitFormSave" class="btn-visit-save">${t('save_visit')}</button>
           </div>
         </div>
-        <div style="margin-bottom:.7rem">
-          <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${getLang()==='ko'?'방문 목적':'Purpose'}</label>
-          <select id="visitFormPurpose" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit">
-            <option value="">${getLang()==='ko'?'-- 선택 (선택사항) --':'-- Select (optional) --'}</option>
-            ${purposeOpts}
-          </select>
+        <!-- 방문 이력 목록 -->
+        <div id="visitHistoryList">${visitHistoryHtml}</div>
+      </section>
+
+      <section class="relationship-section">
+        <div class="steps-header">
+          <span class="steps-title">${t('steps_title')}</span>
+          <button class="steps-toggle" id="stepsToggle">${t('steps_collapse')}</button>
         </div>
-        <div style="margin-bottom:.9rem">
-          <label style="font-size:.8rem;font-weight:600;color:#444;display:block;margin-bottom:.3rem">${getLang()==='ko'?'메모':'Notes'}</label>
-          <textarea id="visitFormNotes" placeholder="${getLang()==='ko'?'방문 내용 및 특이사항...':'Visit notes...'}" rows="3" style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit;resize:vertical"></textarea>
-        </div>
-        <div style="display:flex;gap:.6rem;justify-content:flex-end">
-          <button id="visitFormCancel" style="background:#f0f0f0;color:#555;border:none;border-radius:8px;padding:.5rem 1rem;font-size:.85rem;cursor:pointer;font-weight:600">${t('cancel')}</button>
-          <button id="visitFormSave" style="background:#004f68;color:#fff;border:none;border-radius:8px;padding:.5rem 1.2rem;font-size:.85rem;cursor:pointer;font-weight:700">${t('save_visit')}</button>
-        </div>
-      </div>
-      <!-- 방문 이력 목록 -->
-      <div id="visitHistoryList" style="margin-bottom:.5rem">${visitHistoryHtml}</div>
+        <div class="steps-list" id="stepsList">${stepsHtml}</div>
+      </section>
 
       <div class="detail-actions">
         <button class="btn-edit" id="detailEditBtn">${t('btn_edit')}</button>
@@ -1026,7 +1297,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const isOpen = form.style.display !== 'none';
       form.style.display = isOpen ? 'none' : 'block';
       this.textContent = isOpen ? t('add_visit') : t('cancel');
-      if (!isOpen) document.getElementById('visitFormDate').focus();
+      if (!isOpen) {
+        const dateInput = document.getElementById('visitFormDate');
+        const now = new Date();
+        if (!dateInput.value) {
+          dateInput.value = [
+            now.getFullYear(),
+            String(now.getMonth() + 1).padStart(2, '0'),
+            String(now.getDate()).padStart(2, '0'),
+          ].join('-');
+        }
+        dateInput.focus();
+      }
     });
     document.getElementById('visitFormCancel').addEventListener('click', () => {
       document.getElementById('addVisitForm').style.display = 'none';
