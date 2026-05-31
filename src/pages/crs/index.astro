@@ -247,12 +247,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .app-kicker { display:block; margin-top:.2rem; color:rgba(255,255,255,.58); font-size:.66rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; }
   .app-header .user-info { gap:.55rem; color:rgba(255,255,255,.78); font-weight:600; }
   .app-header .user-info > span { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  body.crs-app-active .nav.language-only { display:none; }
+  body.crs-app-active #crs-root { padding-top:0; }
+  .crs-lang-toggle {
+    display:flex; align-items:center; gap:2px; height:32px; padding:3px;
+    border:1px solid rgba(255,255,255,.2); border-radius:999px;
+    background:rgba(255,255,255,.1); color:rgba(255,255,255,.68);
+    cursor:pointer; font-size:.68rem; font-weight:800; line-height:1;
+  }
+  .crs-lang-toggle span {
+    display:grid; place-items:center; min-width:25px; height:24px; padding:0 5px;
+    border-radius:999px;
+  }
+  .crs-lang-toggle span.active { background:#fff; color:var(--crs-brand); }
   .admin-btn, .btn-logout {
     padding:.42rem .72rem; border-color:rgba(255,255,255,.2); border-radius:8px;
     background:rgba(255,255,255,.09); font-weight:750;
   }
   .admin-btn:hover, .btn-logout:hover { background:rgba(255,255,255,.17); }
-  .app-body { max-width:1440px; height:calc(100vh - 58px - 4rem); background:#edf2f3; }
+  .app-body { max-width:1440px; height:calc(100vh - 4rem); background:#edf2f3; }
   .list-panel { background:#edf2f3; }
   .list-panel-inner { max-width:620px; padding:0 1.25rem 4rem; }
   .top-bar {
@@ -443,14 +456,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       gap:.55rem;
     }
     .app-brand { gap:.52rem; min-width:0; }
-    .app-brand-mark { width:32px; height:32px; }
-    .app-header h1 { overflow:hidden; font-size:.91rem; text-overflow:ellipsis; white-space:nowrap; }
+    .app-brand-mark { display:none; }
+    .app-header h1 { overflow:hidden; font-size:.86rem; text-overflow:ellipsis; white-space:nowrap; }
     .app-kicker { display:none; }
     .app-header .user-info { flex-shrink:0; gap:.34rem; }
     .app-header .user-info > span { display:none; }
+    .crs-lang-toggle { height:30px; padding:2px; }
+    .crs-lang-toggle span { min-width:21px; height:24px; padding:0 3px; }
     .admin-btn, .btn-logout { padding:.38rem .52rem; font-size:.72rem; }
     .app-body { height:auto; }
-    .app-body.split .detail-panel { top:58px; }
+    .app-body.split .detail-panel { top:0; }
     .detail-panel-body { padding:1rem .9rem .8rem; }
     .detail-panel-progress-meta { padding:.52rem 1rem; }
     .detail-info { grid-template-columns:1fr; }
@@ -701,8 +716,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  function setCrsAppActive(active) {
+    document.body.classList.toggle('crs-app-active', active);
+  }
+
+  function crsLangToggleMarkup() {
+    const isKo = getLang() === 'ko';
+    return `
+      <button class="crs-lang-toggle" id="crsLangToggle" type="button" aria-label="${isKo ? 'Switch to English' : '한국어로 전환'}">
+        <span class="${isKo ? 'active' : ''}">한</span>
+        <span class="${isKo ? '' : 'active'}">EN</span>
+      </button>`;
+  }
+
+  function bindCrsLangToggle() {
+    document.getElementById('crsLangToggle')?.addEventListener('click', () => window.toggleLang?.());
+  }
+
   // ── 로그인 화면 ──
   function renderLogin() {
+    setCrsAppActive(false);
     root.innerHTML = `
       <div class="login-wrap">
         <div class="login-card">
@@ -747,6 +780,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // ── 회원가입 화면 ──
   function renderSignup() {
+    setCrsAppActive(false);
     root.innerHTML = `
       <div class="login-wrap">
         <div class="login-card">
@@ -800,6 +834,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // ── 승인 대기 화면 ──
   function renderPending() {
+    setCrsAppActive(false);
     root.innerHTML = `
       <div class="pending-wrap">
         <div class="pending-card">
@@ -818,6 +853,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // ── 메인 앱 화면 ──
   function renderApp() {
+    setCrsAppActive(true);
     const isKo = getLang() === 'ko';
     const purposeOptions = STEPS.map((s, i) => {
       const label = isKo ? `${i+1}단계: ${STEPS_KO[i]}` : `Step ${i+1}: ${s}`;
@@ -834,6 +870,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
         </div>
         <div class="user-info">
+          ${crsLangToggleMarkup()}
           <span>${esc(currentUserData?.name || currentUser.email)}</span>
           ${currentUserData?.role === 'admin' ? `<button class="admin-btn" id="adminBtn">${t('admin_btn')}</button>` : ''}
           <button class="btn-logout" id="logoutBtn">${t('logout')}</button>
@@ -935,6 +972,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     `;
 
+    bindCrsLangToggle();
     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
     document.getElementById('addChurchBtn').addEventListener('click', () => openEditModal(null));
     if (currentUserData?.role === 'admin') {
