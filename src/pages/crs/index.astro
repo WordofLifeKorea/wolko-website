@@ -8,6 +8,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <style is:global>
   /* ── 전체 레이아웃 ── */
   #crs-root { min-height: 100vh; background: #f4f6f9; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; padding-top: 76px; }
+  body.crs-split-open, body.crs-split-open #crs-root { overflow: hidden; }
 
   /* ── 로그인 화면 ── */
   .login-wrap { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 76px); padding:2rem; }
@@ -889,12 +890,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     document.getElementById('detailProgressFill').style.width = pct + '%';
     renderDetailBody(church);
     document.getElementById('appBody').classList.add('split');
+    document.body.classList.add('crs-split-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     document.querySelector(`.church-card[data-id="${esc(church.id)}"]`)?.classList.add('selected');
   }
 
   function closeDetailModal() {
     document.getElementById('appBody').classList.remove('split');
+    document.body.classList.remove('crs-split-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     viewingChurch = null;
   }
