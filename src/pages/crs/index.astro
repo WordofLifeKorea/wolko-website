@@ -103,17 +103,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .app-body.split .card-meta-divider { margin:.4rem 0 .5rem; }
   .app-body.split .church-card { border-radius:10px; }
   /* 모바일 */
-  @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+  @keyframes detailPageIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
   @media(max-width:768px) {
     .app-body { height:auto; min-height:calc(100vh - 76px); }
     .app-body.split .list-panel { display:none; }
     .app-body.split .detail-panel {
-      position:fixed; left:0; right:0; bottom:0;
-      top:calc(76px + 3.25rem); /* nav + app-header */
-      z-index:900; width:100%; max-width:none;
-      flex:unset; opacity:1; overflow-y:auto;
+      position:fixed; inset:0;
+      z-index:1200; width:100%; max-width:none; height:100dvh;
+      flex:unset; opacity:1; overflow:hidden;
       transition:none;
-      animation:slideUp .28s cubic-bezier(.4,0,.2,1);
+      animation:detailPageIn .2s ease-out;
     }
   }
   .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,15,30,.55); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); z-index:1100; align-items:center; justify-content:center; padding:1rem; }
@@ -349,6 +348,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     width:31px; height:31px; border:1px solid #d8e4e7; border-radius:8px;
     background:#f2f6f7; color:#607780;
   }
+  .detail-panel-close-mobile { display:none; }
+  .detail-lang-toggle { display:none; }
   .detail-panel-close:hover { background:#e6eff1; color:var(--crs-brand); }
   .detail-panel-progress-meta {
     display:flex; justify-content:space-between; gap:1rem; padding:.58rem 1.45rem;
@@ -459,6 +460,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
   @media(max-width:768px) {
     #crs-root { padding-top:58px; }
+    body.crs-detail-open { overflow:hidden; }
+    body.crs-detail-open .app-header { visibility:hidden; }
     .app-header {
       position:relative;
       top:auto;
@@ -476,7 +479,29 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .crs-lang-toggle span { min-width:21px; height:24px; padding:0 3px; }
     .admin-btn, .btn-logout { padding:.38rem .52rem; font-size:.72rem; }
     .app-body { height:auto; }
-    .app-body.split .detail-panel { top:58px; }
+    .app-body.split .detail-panel { top:0; border-left:none; box-shadow:none; }
+    .detail-panel-head { gap:.62rem; padding:.72rem .82rem; }
+    .detail-panel-avatar { display:none; }
+    .detail-panel-close {
+      order:-1; width:auto; height:32px; margin-left:0; padding:0 .58rem;
+      border-color:#cfe0e4; border-radius:7px; background:#eef5f6;
+      color:var(--crs-brand); font-size:.75rem; font-weight:800;
+    }
+    .detail-panel-close-desktop { display:none; }
+    .detail-panel-close-mobile { display:inline-flex; align-items:center; gap:.2rem; }
+    .detail-lang-toggle {
+      display:flex; flex:0 0 auto; height:34px; padding:3px; gap:3px;
+      border:1px solid #b9d6dc; background:#f0f7f8; color:#58727b;
+      box-shadow:0 2px 7px rgba(17,76,91,.12);
+    }
+    .detail-lang-toggle span {
+      min-width:25px; height:26px; padding:0 5px;
+      border:1px solid transparent; color:#58727b;
+    }
+    .detail-lang-toggle span.active {
+      border-color:var(--crs-brand); background:var(--crs-brand); color:#fff;
+      box-shadow:0 1px 3px rgba(0,86,108,.22);
+    }
     .detail-panel-body { padding:1rem .9rem .8rem; }
     .detail-panel-progress-meta { padding:.52rem 1rem; }
     .detail-info { grid-template-columns:1fr; }
@@ -730,19 +755,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function setCrsAppActive(active) {
     document.body.classList.add('crs-auth-ready');
     document.body.classList.toggle('crs-app-active', active);
+    if (!active) document.body.classList.remove('crs-detail-open');
   }
 
-  function crsLangToggleMarkup() {
+  function crsLangToggleMarkup(id = 'crsLangToggle', extraClass = '') {
     const isKo = getLang() === 'ko';
     return `
-      <button class="crs-lang-toggle" id="crsLangToggle" type="button" aria-label="${isKo ? 'Switch to English' : '한국어로 전환'}">
+      <button class="crs-lang-toggle${extraClass ? ` ${extraClass}` : ''}" id="${id}" type="button" aria-label="${isKo ? 'Switch to English' : '한국어로 전환'}">
         <span class="${isKo ? 'active' : ''}">한</span>
         <span class="${isKo ? '' : 'active'}">EN</span>
       </button>`;
   }
 
   function bindCrsLangToggle() {
-    document.getElementById('crsLangToggle')?.addEventListener('click', () => window.toggleLang?.());
+    document.querySelectorAll('.crs-lang-toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => window.toggleLang?.());
+    });
   }
 
   // ── 로그인 화면 ──
@@ -909,7 +937,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <h2 id="detailTitle" class="detail-panel-title"></h2>
               <p id="detailSubtitle" class="detail-panel-sub"></p>
             </div>
-            <button class="detail-panel-close" id="detailPanelClose">×</button>
+            <button class="detail-panel-close" id="detailPanelClose" type="button" aria-label="${isKo ? '목록으로 돌아가기' : 'Back to list'}">
+              <span class="detail-panel-close-desktop" aria-hidden="true">×</span>
+              <span class="detail-panel-close-mobile" aria-hidden="true">← ${isKo ? '목록' : 'List'}</span>
+            </button>
+            ${crsLangToggleMarkup('detailLangToggle', 'detail-lang-toggle')}
           </div>
           <div class="detail-panel-progress-meta">
             <span id="detailProgressText"></span>
@@ -1204,12 +1236,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     document.getElementById('detailProgressFill').style.width = pct + '%';
     renderDetailBody(church);
     document.getElementById('appBody').classList.add('split');
+    document.body.classList.add('crs-detail-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     document.querySelector(`.church-card[data-id="${esc(church.id)}"]`)?.classList.add('selected');
   }
 
   function closeDetailModal() {
     document.getElementById('appBody').classList.remove('split');
+    document.body.classList.remove('crs-detail-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     viewingChurch = null;
   }
