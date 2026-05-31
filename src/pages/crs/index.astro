@@ -256,6 +256,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .app-kicker { display:block; margin-top:.2rem; color:rgba(255,255,255,.58); font-size:.66rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; }
   .app-header .user-info { gap:.55rem; color:rgba(255,255,255,.78); font-weight:600; }
   .app-header .user-info > span { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .nav.language-only { visibility:hidden; }
+  body.crs-auth-ready .nav.language-only { visibility:visible; }
   body.crs-app-active .nav.language-only { display:none; }
   body.crs-app-active #crs-root { padding-top:0; }
   .crs-lang-toggle {
@@ -474,7 +476,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .crs-lang-toggle span { min-width:21px; height:24px; padding:0 3px; }
     .admin-btn, .btn-logout { padding:.38rem .52rem; font-size:.72rem; }
     .app-body { height:auto; }
-    .app-body.split .detail-panel { top:0; }
+    .app-body.split .detail-panel { top:58px; }
     .detail-panel-body { padding:1rem .9rem .8rem; }
     .detail-panel-progress-meta { padding:.52rem 1rem; }
     .detail-info { grid-template-columns:1fr; }
@@ -726,6 +728,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   function setCrsAppActive(active) {
+    document.body.classList.add('crs-auth-ready');
     document.body.classList.toggle('crs-app-active', active);
   }
 
