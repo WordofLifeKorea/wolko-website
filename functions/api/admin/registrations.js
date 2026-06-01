@@ -250,11 +250,51 @@ export async function onRequestPatch(context) {
   }
 }
 
+/**
+ * PUT /api/admin/registrations
+ * Body: { regId, campId, field, value }
+ * 개별 필드 업데이트 (gender 등)
+ */
+export async function onRequestPut(context) {
+  const { env, request } = context;
+
+  if (!await verifyToken(request, env)) {
+    return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
+  }
+
+  try {
+    const { regId, campId, field, value } = await request.json();
+    if (!regId || !campId || !field) {
+      return Response.json({ error: 'regId, campId, field가 필요합니다.' }, { status: 400, headers: CORS });
+    }
+
+    // 허용된 필드만 업데이트
+    const ALLOWED_FIELDS = ['gender', 'notes', 'serviceArea'];
+    if (!ALLOWED_FIELDS.includes(field)) {
+      return Response.json({ error: '업데이트할 수 없는 필드입니다.' }, { status: 400, headers: CORS });
+    }
+
+    const regKey = `camp:${campId}:reg:${regId}`;
+    const reg = await env.CAMP_KV.get(regKey, 'json');
+    if (!reg) {
+      return Response.json({ error: '해당 신청을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
+    }
+
+    const updatedReg = { ...reg, [field]: value };
+    await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));
+
+    return Response.json({ success: true, reg: updatedReg }, { headers: CORS });
+  } catch (e) {
+    console.error('admin update field error:', e);
+    return Response.json({ error: '서버 오류가 발생했습니다.' }, { status: 500, headers: CORS });
+  }
+}
+
 export async function onRequestOptions() {
   return new Response(null, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, DELETE, PATCH, PUT, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });

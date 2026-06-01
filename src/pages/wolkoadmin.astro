@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=2">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=3">
 </head>
 <body>
 
@@ -677,7 +677,12 @@
           <td style="font-weight:600">${esc(r.name)}</td>
           <td>${esc(r.phone)}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
-          <td>${r.gender === 'male' ? '남' : r.gender === 'female' ? '여' : '—'}</td>
+          <td>
+            <span class="gender-toggle">
+              <button class="g-btn${r.gender === 'male' ? ' active male' : ''}" onclick="setGender('${r.regId}','${r.campId}','male')">남</button>
+              <button class="g-btn${r.gender === 'female' ? ' active female' : ''}" onclick="setGender('${r.regId}','${r.campId}','female')">여</button>
+            </span>
+          </td>
           <td>${esc(r.church || '—')}</td>
           <td style="font-size:12px;color:var(--mid);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(serviceArea)}">${esc(serviceArea)}</td>
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
@@ -688,6 +693,26 @@
 
     function esc(str) {
       return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Gender Update ──
+    async function setGender(regId, campId, gender) {
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ regId, campId, field: 'gender', value: gender }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '업데이트 실패');
+        const reg = allRegs.find(r => r.regId === regId);
+        if (reg) reg.gender = gender;
+        renderTable();
+        renderDash();
+        showToast('성별이 업데이트되었습니다.', 'success');
+      } catch (e) {
+        showToast('업데이트 오류: ' + e.message, 'error');
+      }
     }
 
     // ── Delete ──
