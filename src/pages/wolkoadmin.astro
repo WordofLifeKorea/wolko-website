@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=4">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=5">
 </head>
 <body>
 
@@ -192,7 +192,7 @@
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            수정 모드
+            <span>수정 모드</span>
           </button>
           <button class="btn-csv" onclick="downloadCsv('staff')" style="background:rgba(13,148,136,0.08);color:#0d9488;border-color:rgba(13,148,136,0.2);">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -677,28 +677,36 @@
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const campLabel = CAMP_LABELS[r.campId] || r.campId;
-        const serviceArea = r.serviceArea || r.notes || '—';
+        const serviceAreaVal = r.serviceArea || r.notes || '';
         const campStyle = getCampRowStyle(r);
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
+
+        // 성별 — 항상 읽기 전용
+        const genderBadge = r.gender === 'male'
+          ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">남</span>`
+          : r.gender === 'female'
+          ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">여</span>`
+          : `<span style="color:var(--light)">—</span>`;
+
+        // 전화번호 — 수정 모드일 때 input
+        const phoneCell = staffEditMode
+          ? `<input class="edit-input" type="tel" value="${esc(r.phone)}" data-regid="${r.regId}" data-campid="${r.campId}" data-field="phone" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
+          : esc(r.phone);
+
+        // 섬기고 싶은 분야 — 수정 모드일 때 input
+        const serviceAreaCell = staffEditMode
+          ? `<input class="edit-input edit-input-wide" type="text" value="${esc(serviceAreaVal)}" data-regid="${r.regId}" data-campid="${r.campId}" data-field="serviceArea" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()" placeholder="입력해주세요">`
+          : `<span style="font-size:12px;color:var(--mid);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;" title="${esc(serviceAreaVal)}">${esc(serviceAreaVal || '—')}</span>`;
+
         return `<tr class="camp-tint" style="${rowStyle}">
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
           <td class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
-          <td>${esc(r.phone)}</td>
+          <td style="white-space:nowrap">${phoneCell}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
-          <td>${staffEditMode
-            ? `<span class="gender-toggle">
-                <button class="g-btn${r.gender === 'male' ? ' active male' : ''}" onclick="setGender('${r.regId}','${r.campId}','male')">남</button>
-                <button class="g-btn${r.gender === 'female' ? ' active female' : ''}" onclick="setGender('${r.regId}','${r.campId}','female')">여</button>
-              </span>`
-            : r.gender === 'male'
-              ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">남</span>`
-              : r.gender === 'female'
-              ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">여</span>`
-              : `<span style="color:var(--light)">—</span>`
-          }</td>
+          <td>${genderBadge}</td>
           <td>${esc(r.church || '—')}</td>
-          <td style="font-size:12px;color:var(--mid);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(serviceArea)}">${esc(serviceArea)}</td>
+          <td>${serviceAreaCell}</td>
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
           <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
         </tr>`;
@@ -714,27 +722,42 @@
       staffEditMode = !staffEditMode;
       const btn = document.getElementById('btnEditMode');
       btn.classList.toggle('active', staffEditMode);
-      btn.querySelector('span') && (btn.querySelector('span').textContent = staffEditMode ? '수정 중' : '수정 모드');
+      btn.querySelector('span').textContent = staffEditMode ? '수정 중' : '수정 모드';
       renderStaffTable();
     }
 
-    // ── Gender Update ──
-    async function setGender(regId, campId, gender) {
+    // ── Field Update (전화번호, 섬기고 싶은 분야 등) ──
+    async function updateField(inputEl) {
+      const regId  = inputEl.dataset.regid;
+      const campId = inputEl.dataset.campid;
+      const field  = inputEl.dataset.field;
+      const value  = inputEl.value.trim();
+
+      const reg = allRegs.find(r => r.regId === regId);
+      if (!reg) return;
+
+      // 값 변경 없으면 스킵
+      const original = String(reg[field] || '').trim();
+      if (value === original) return;
+
+      inputEl.classList.add('saving');
       try {
         const res = await fetch('/api/admin/registrations', {
           method: 'PUT',
           headers: authHeaders(),
-          body: JSON.stringify({ regId, campId, field: 'gender', value: gender }),
+          body: JSON.stringify({ regId, campId, field, value }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || '업데이트 실패');
-        const reg = allRegs.find(r => r.regId === regId);
-        if (reg) reg.gender = gender;
-        renderTable();
-        renderDash();
-        showToast('성별이 업데이트되었습니다.', 'success');
+        reg[field] = value;
+        inputEl.classList.remove('saving');
+        inputEl.classList.add('saved');
+        setTimeout(() => inputEl.classList.remove('saved'), 1500);
+        showToast('저장되었습니다.', 'success');
       } catch (e) {
-        showToast('업데이트 오류: ' + e.message, 'error');
+        inputEl.value = original; // 실패 시 원복
+        inputEl.classList.remove('saving');
+        showToast('저장 오류: ' + e.message, 'error');
       }
     }
 

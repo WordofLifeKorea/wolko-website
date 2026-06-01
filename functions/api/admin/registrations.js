@@ -269,7 +269,7 @@ export async function onRequestPut(context) {
     }
 
     // 허용된 필드만 업데이트
-    const ALLOWED_FIELDS = ['gender', 'notes', 'serviceArea'];
+    const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea'];
     if (!ALLOWED_FIELDS.includes(field)) {
       return Response.json({ error: '업데이트할 수 없는 필드입니다.' }, { status: 400, headers: CORS });
     }
