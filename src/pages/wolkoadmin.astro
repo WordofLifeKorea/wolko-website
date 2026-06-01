@@ -12,7 +12,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=5">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=6">
+  <link rel="manifest" href="/admin-manifest.json">
+  <meta name="theme-color" content="#004f68">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WOLKO 관리자">
+  <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
 </head>
 <body>
 
@@ -50,6 +57,10 @@
     <div class="adm-header-right">
       <a href="/admin" target="_blank" class="adm-header-badge" style="text-decoration:none;cursor:pointer;" title="콘텐츠 편집 CMS">✏️ 콘텐츠 CMS</a>
       <span class="adm-header-badge">CAMP ADMIN</span>
+      <button class="btn-install-adm" id="adminInstallBtn" onclick="triggerAdminInstall()" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11.5h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        앱 설치
+      </button>
       <button class="btn-logout" onclick="doLogout()">로그아웃</button>
     </div>
   </header>
@@ -893,6 +904,71 @@
       setTimeout(() => { document.getElementById('loginScreen').style.display = 'none'; }, 0);
       loadRegs();
     }
+
+    // ── PWA 설치 ──
+    let deferredAdminPrompt = null;
+    const isAdminStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+
+    if (!isAdminStandalone) {
+      document.getElementById('adminInstallBtn').style.display = '';
+
+      window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredAdminPrompt = e;
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      deferredAdminPrompt = null;
+      document.getElementById('adminInstallBtn').style.display = 'none';
+    });
+
+    function triggerAdminInstall() {
+      if (deferredAdminPrompt) {
+        deferredAdminPrompt.prompt();
+        deferredAdminPrompt.userChoice.then(({ outcome }) => {
+          if (outcome === 'accepted') {
+            deferredAdminPrompt = null;
+            document.getElementById('adminInstallBtn').style.display = 'none';
+          }
+        });
+      } else {
+        document.getElementById('adminInstallGuide').style.display = 'flex';
+      }
+    }
+
+    function closeAdminGuide() {
+      document.getElementById('adminInstallGuide').style.display = 'none';
+    }
+
+    // ── 서비스워커 등록 ──
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/admin-sw.js', { scope: '/wolkoadmin' })
+          .catch(e => console.warn('Admin SW registration failed:', e));
+      });
+    }
   </script>
+
+  <!-- 앱 설치 안내 모달 -->
+  <div id="adminInstallGuide" style="display:none;position:fixed;inset:0;background:rgba(0,15,30,.55);backdrop-filter:blur(7px);z-index:9999;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeAdminGuide()">
+    <div style="background:#fff;border-radius:20px;max-width:320px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+      <div style="display:flex;justify-content:flex-end;padding:.8rem 1rem .2rem;">
+        <button onclick="closeAdminGuide()" style="background:none;border:none;font-size:1.4rem;color:#aaa;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div style="padding:.4rem 1.5rem 1.8rem;text-align:center;">
+        <div style="font-size:2.2rem;margin-bottom:.8rem;">📲</div>
+        <h3 style="margin:0 0 .5rem;font-size:1.05rem;color:#004f68;">앱으로 설치하기</h3>
+        <p style="font-size:.83rem;color:#5a6f79;margin:0 0 1.2rem;line-height:1.6;">Chrome 브라우저 메뉴에서 설치할 수 있어요.</p>
+        <ol style="text-align:left;font-size:.86rem;line-height:2.1;color:#2d4a56;padding-left:1.2rem;margin:0 0 1.4rem;">
+          <li>오른쪽 상단 <strong>⋮ 메뉴</strong> 탭</li>
+          <li><strong>"홈 화면에 추가"</strong> 선택</li>
+          <li><strong>"추가"</strong> 탭</li>
+        </ol>
+        <button onclick="closeAdminGuide()" style="width:100%;padding:.75rem;background:#004f68;color:#fff;border:none;border-radius:10px;font-size:.93rem;font-weight:700;cursor:pointer;">확인</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
