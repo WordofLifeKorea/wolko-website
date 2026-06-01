@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=3">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=4">
 </head>
 <body>
 
@@ -187,12 +187,20 @@
           <span class="table-title" style="color:#0d9488;">스태프 · 봉사자 지원 목록</span>
           <span class="table-count" id="staffTableCount"></span>
         </div>
-        <button class="btn-csv" onclick="downloadCsv('staff')" style="background:rgba(13,148,136,0.08);color:#0d9488;border-color:rgba(13,148,136,0.2);">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          CSV 다운로드
-        </button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-edit-mode" id="btnEditMode" onclick="toggleEditMode()">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            수정 모드
+          </button>
+          <button class="btn-csv" onclick="downloadCsv('staff')" style="background:rgba(13,148,136,0.08);color:#0d9488;border-color:rgba(13,148,136,0.2);">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            CSV 다운로드
+          </button>
+        </div>
       </div>
       <div class="table-scroll">
         <table>
@@ -293,6 +301,7 @@
     let activeCamp = 'all';
     let sortState = { key: 'registeredAt', direction: 'desc' };
     let authToken = sessionStorage.getItem('wolko-admin-token') || '';
+    let staffEditMode = false;
 
     // ── Login ──
     function togglePw() {
@@ -677,12 +686,17 @@
           <td style="font-weight:600">${esc(r.name)}</td>
           <td>${esc(r.phone)}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
-          <td>
-            <span class="gender-toggle">
-              <button class="g-btn${r.gender === 'male' ? ' active male' : ''}" onclick="setGender('${r.regId}','${r.campId}','male')">남</button>
-              <button class="g-btn${r.gender === 'female' ? ' active female' : ''}" onclick="setGender('${r.regId}','${r.campId}','female')">여</button>
-            </span>
-          </td>
+          <td>${staffEditMode
+            ? `<span class="gender-toggle">
+                <button class="g-btn${r.gender === 'male' ? ' active male' : ''}" onclick="setGender('${r.regId}','${r.campId}','male')">남</button>
+                <button class="g-btn${r.gender === 'female' ? ' active female' : ''}" onclick="setGender('${r.regId}','${r.campId}','female')">여</button>
+              </span>`
+            : r.gender === 'male'
+              ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">남</span>`
+              : r.gender === 'female'
+              ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">여</span>`
+              : `<span style="color:var(--light)">—</span>`
+          }</td>
           <td>${esc(r.church || '—')}</td>
           <td style="font-size:12px;color:var(--mid);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(serviceArea)}">${esc(serviceArea)}</td>
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
@@ -693,6 +707,15 @@
 
     function esc(str) {
       return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Edit Mode Toggle ──
+    function toggleEditMode() {
+      staffEditMode = !staffEditMode;
+      const btn = document.getElementById('btnEditMode');
+      btn.classList.toggle('active', staffEditMode);
+      btn.querySelector('span') && (btn.querySelector('span').textContent = staffEditMode ? '수정 중' : '수정 모드');
+      renderStaffTable();
     }
 
     // ── Gender Update ──
