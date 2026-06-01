@@ -474,21 +474,30 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     body.crs-detail-open { overflow:hidden; }
     body.crs-detail-open .app-header { visibility:hidden; }
     .app-header {
-      position:relative;
-      top:auto;
-      min-height:58px;
-      padding:.62rem .72rem;
-      gap:.55rem;
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      position:relative; top:auto;
+      min-height:auto;
+      padding:.68rem .78rem .62rem;
+      gap:.58rem;
     }
     .app-brand { gap:.52rem; min-width:0; }
     .app-brand-mark { display:none; }
-    .app-header h1 { overflow:hidden; font-size:.86rem; text-overflow:ellipsis; white-space:nowrap; }
+    .app-header h1 { overflow:hidden; font-size:.93rem; text-overflow:ellipsis; white-space:nowrap; }
     .app-kicker { display:none; }
-    .app-header .user-info { flex-shrink:0; gap:.34rem; }
+    .app-header .user-info {
+      width:100%; box-sizing:border-box; flex-shrink:0; justify-content:flex-end;
+      gap:.34rem; padding-top:.52rem; border-top:1px solid rgba(255,255,255,.13);
+    }
     .app-header .user-info > span { display:none; }
     .crs-lang-toggle { height:30px; padding:2px; }
     .crs-lang-toggle span { min-width:21px; height:24px; padding:0 3px; }
-    .admin-btn, .btn-logout { padding:.38rem .52rem; font-size:.72rem; }
+    .btn-install, .admin-btn, .btn-logout {
+      min-height:30px; padding:.36rem .5rem; border-radius:7px;
+      font-size:.7rem; line-height:1; white-space:nowrap;
+    }
+    .btn-install { gap:.22rem; }
+    .btn-install svg { width:12px; height:12px; }
     .app-body { height:auto; }
     .app-body.split .detail-panel { top:0; border-left:none; box-shadow:none; }
     .detail-panel-head { gap:.62rem; padding:.72rem .82rem; }
@@ -1036,15 +1045,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <button class="btn-close" id="installGuideClose">×</button>
           </div>
           <div style="padding:.5rem 1.5rem 1.8rem;">
-            <div style="font-size:2.2rem;margin-bottom:.8rem;">📲</div>
+            <div style="font-size:2.2rem;margin-bottom:.8rem;">${isIOS ? '🍎' : '📲'}</div>
             <h3 style="margin:0 0 .5rem;font-size:1.1rem;color:#004f68;">${isKo ? '앱으로 설치하기' : 'Install as App'}</h3>
             <p style="font-size:.85rem;color:#5a6f79;margin:0 0 1.2rem;line-height:1.6;">
-              ${isKo ? 'Chrome 브라우저 메뉴에서 설치할 수 있어요.' : 'You can install from the Chrome browser menu.'}
+              ${isIOS
+                ? (isKo ? 'Safari 브라우저에서 설치할 수 있어요.' : 'You can install from Safari.')
+                : (isKo ? 'Chrome 브라우저 메뉴에서 설치할 수 있어요.' : 'You can install from the Chrome browser menu.')}
             </p>
             <ol style="text-align:left;font-size:.88rem;line-height:2;color:#2d4a56;padding-left:1.2rem;margin:0 0 1.4rem;">
+              ${isIOS ? `
+              <li>${isKo ? '하단 가운데 <strong>공유 버튼 (□↑)</strong> 탭' : 'Tap <strong>Share button (□↑)</strong> at the bottom'}</li>
+              <li>${isKo ? '<strong>"홈 화면에 추가"</strong> 선택' : 'Select <strong>"Add to Home Screen"</strong>'}</li>
+              <li>${isKo ? '<strong>"추가"</strong> 탭' : 'Tap <strong>"Add"</strong>'}</li>
+              ` : `
               <li>${isKo ? '오른쪽 상단 <strong>⋮ 메뉴</strong> 탭' : 'Tap <strong>⋮ menu</strong> (top right)'}</li>
               <li>${isKo ? '<strong>"홈 화면에 추가"</strong> 선택' : 'Select <strong>"Add to Home Screen"</strong>'}</li>
               <li>${isKo ? '<strong>"추가"</strong> 탭' : 'Tap <strong>"Add"</strong>'}</li>
+              `}
             </ol>
             <button id="installGuideClose2" style="width:100%;padding:.75rem;background:#004f68;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;">
               ${isKo ? '확인' : 'OK'}
@@ -1656,6 +1673,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // 이미 설치된 경우(standalone 모드) 버튼 표시 안 함
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
+  // 플랫폼 감지
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   if (!isStandalone) {
     window.addEventListener('beforeinstallprompt', e => {

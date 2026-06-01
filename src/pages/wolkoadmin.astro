@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=6">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=7">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -909,6 +909,17 @@
     let deferredAdminPrompt = null;
     const isAdminStandalone = window.matchMedia('(display-mode: standalone)').matches
       || window.navigator.standalone === true;
+    const isAdminIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    // iOS일 경우 안내 모달 내용 교체
+    if (isAdminIOS) {
+      document.getElementById('admGuideEmoji').textContent = '🍎';
+      document.getElementById('admGuideDesc').textContent = 'Safari 브라우저에서 설치할 수 있어요.';
+      document.getElementById('admGuideSteps').innerHTML =
+        '<li>하단 가운데 <strong>공유 버튼 (□↑)</strong> 탭</li>' +
+        '<li><strong>"홈 화면에 추가"</strong> 선택</li>' +
+        '<li><strong>"추가"</strong> 탭</li>';
+    }
 
     if (!isAdminStandalone) {
       document.getElementById('adminInstallBtn').style.display = '';
@@ -958,10 +969,10 @@
         <button onclick="closeAdminGuide()" style="background:none;border:none;font-size:1.4rem;color:#aaa;cursor:pointer;line-height:1;">×</button>
       </div>
       <div style="padding:.4rem 1.5rem 1.8rem;text-align:center;">
-        <div style="font-size:2.2rem;margin-bottom:.8rem;">📲</div>
+        <div id="admGuideEmoji" style="font-size:2.2rem;margin-bottom:.8rem;">📲</div>
         <h3 style="margin:0 0 .5rem;font-size:1.05rem;color:#004f68;">앱으로 설치하기</h3>
-        <p style="font-size:.83rem;color:#5a6f79;margin:0 0 1.2rem;line-height:1.6;">Chrome 브라우저 메뉴에서 설치할 수 있어요.</p>
-        <ol style="text-align:left;font-size:.86rem;line-height:2.1;color:#2d4a56;padding-left:1.2rem;margin:0 0 1.4rem;">
+        <p id="admGuideDesc" style="font-size:.83rem;color:#5a6f79;margin:0 0 1.2rem;line-height:1.6;">Chrome 브라우저 메뉴에서 설치할 수 있어요.</p>
+        <ol id="admGuideSteps" style="text-align:left;font-size:.86rem;line-height:2.1;color:#2d4a56;padding-left:1.2rem;margin:0 0 1.4rem;">
           <li>오른쪽 상단 <strong>⋮ 메뉴</strong> 탭</li>
           <li><strong>"홈 화면에 추가"</strong> 선택</li>
           <li><strong>"추가"</strong> 탭</li>
