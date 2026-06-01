@@ -2,6 +2,15 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="CRS for WOLKO" whiteNav={true} languageOnlyNav={true}>
+  <Fragment slot="head">
+    <link rel="manifest" href="/crs-manifest.json">
+    <meta name="theme-color" content="#004f68">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WOLKO CRS">
+    <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
+  </Fragment>
   <div id="crs-root"></div>
 </BaseLayout>
 
@@ -30,6 +39,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .app-header .user-info { display:flex; align-items:center; gap:.8rem; font-size:.85rem; }
   .btn-logout { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; padding:.35rem .9rem; border-radius:20px; font-size:.8rem; cursor:pointer; transition:background .2s; }
   .btn-logout:hover { background:rgba(255,255,255,.25); }
+  .btn-install { background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.4); color:#fff; padding:.35rem .9rem; border-radius:20px; font-size:.8rem; cursor:pointer; transition:background .2s; display:inline-flex; align-items:center; gap:.3rem; font-weight:600; }
+  .btn-install:hover { background:rgba(255,255,255,.28); }
 
   /* ── 상단 컨트롤 ── */
   .top-bar { display:flex; gap:.8rem; flex-wrap:wrap; position:sticky; top:0; z-index:10; background:#f4f6f9; padding:1.2rem 0 .9rem; margin-bottom:0; max-width:560px; width:100%; margin-left:auto; margin-right:auto; box-sizing:border-box; padding-left:1.2rem; padding-right:1.2rem; }
@@ -912,6 +923,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="user-info">
           ${crsLangToggleMarkup()}
           <span>${esc(currentUserData?.name || currentUser.email)}</span>
+          <button class="btn-install" id="installBtn" style="${deferredInstallPrompt ? '' : 'display:none'}" onclick="triggerInstall()">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11.5h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            ${isKo ? '앱 설치' : 'Install'}
+          </button>
           ${currentUserData?.role === 'admin' ? `<button class="admin-btn" id="adminBtn">${t('admin_btn')}</button>` : ''}
           <button class="btn-logout" id="logoutBtn">${t('logout')}</button>
         </div>
@@ -1603,4 +1618,46 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       renderLogin();
     }
   }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+  // ── PWA 설치 프롬프트 ──
+  let deferredInstallPrompt = null;
+
+  // 이미 설치된 경우(standalone 모드) 버튼 표시 안 함
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+
+  if (!isStandalone) {
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      // 앱 헤더가 이미 렌더링된 경우 버튼 즉시 표시
+      const btn = document.getElementById('installBtn');
+      if (btn) btn.style.display = '';
+    });
+  }
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'none';
+  });
+
+  async function triggerInstall() {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      deferredInstallPrompt = null;
+      const btn = document.getElementById('installBtn');
+      if (btn) btn.style.display = 'none';
+    }
+  }
+
+  // ── 서비스워커 등록 ──
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/crs-sw.js', { scope: '/crs' })
+        .catch(e => console.warn('CRS SW registration failed:', e));
+    });
+  }
 </script>
