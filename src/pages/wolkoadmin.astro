@@ -726,12 +726,28 @@
       renderStaffTable();
     }
 
+    // ── 전화번호 포맷 (숫자만 추출 후 010-XXXX-XXXX 형식) ──
+    function formatPhone(raw) {
+      const d = raw.replace(/\D/g, '');
+      if (d.length === 11) return `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}`;
+      if (d.length === 10) return d.startsWith('02')
+        ? `${d.slice(0,2)}-${d.slice(2,6)}-${d.slice(6)}`
+        : `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`;
+      return raw; // 자릿수 불일치 시 원문 유지
+    }
+
     // ── Field Update (전화번호, 섬기고 싶은 분야 등) ──
     async function updateField(inputEl) {
       const regId  = inputEl.dataset.regid;
       const campId = inputEl.dataset.campid;
       const field  = inputEl.dataset.field;
-      const value  = inputEl.value.trim();
+      let value = inputEl.value.trim();
+
+      // 전화번호 자동 포맷 후 input 값도 즉시 반영
+      if (field === 'phone' && value) {
+        value = formatPhone(value);
+        inputEl.value = value;
+      }
 
       const reg = allRegs.find(r => r.regId === regId);
       if (!reg) return;
