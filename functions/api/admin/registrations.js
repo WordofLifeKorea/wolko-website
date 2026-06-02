@@ -333,7 +333,7 @@ export async function onRequestPut(context) {
   }
 
   try {
-    const { regId, campId, field, value } = await request.json();
+    const { regId, campId, field, value, participantIndex } = await request.json();
     if (!regId || !campId || !field) {
       return Response.json({ error: 'regId, campId, field가 필요합니다.' }, { status: 400, headers: CORS });
     }
@@ -359,7 +359,25 @@ export async function onRequestPut(context) {
       }
     }
 
-    const updatedReg = { ...reg, [field]: value };
+    let updatedReg;
+    if (participantIndex !== undefined) {
+      if (reg.registrationType !== 'group' || !Array.isArray(reg.participants)) {
+        return Response.json({ error: '학생 명단이 없는 단체 신청입니다.' }, { status: 400, headers: CORS });
+      }
+      const index = Number(participantIndex);
+      if (!Number.isInteger(index) || index < 0 || index >= reg.participants.length) {
+        return Response.json({ error: '학생 정보가 올바르지 않습니다.' }, { status: 400, headers: CORS });
+      }
+      if (!['counselorRegId', 'saved', 'dedicated'].includes(field)) {
+        return Response.json({ error: '학생 정보에서 업데이트할 수 없는 필드입니다.' }, { status: 400, headers: CORS });
+      }
+      const participants = reg.participants.map((participant, participantPosition) =>
+        participantPosition === index ? { ...participant, [field]: value } : participant
+      );
+      updatedReg = { ...reg, participants };
+    } else {
+      updatedReg = { ...reg, [field]: value };
+    }
     await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));
     return Response.json({ success: true, reg: updatedReg }, { headers: CORS });
   } catch (e) {

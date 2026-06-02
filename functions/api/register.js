@@ -17,6 +17,10 @@ const CORS = {
 
 const WAITLIST_SIZE = 10;
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function buildRegistrationEmailHtml(reg) {
   const isGroup = reg.registrationType === 'group';
 
@@ -43,10 +47,19 @@ function buildRegistrationEmailHtml(reg) {
       <td style="padding:8px 0;font-size:14px;">${reg.emergency || '—'}</td>
     </tr>` : '';
 
+  const participantList = isGroup && reg.participants?.length
+    ? `<ol style="margin:6px 0 0;padding-left:20px;">${reg.participants.map(participant => `
+        <li style="padding:3px 0;">${escapeHtml(participant.name)} <span style="color:#5a6f79;">(${participant.gender === 'male' ? '남' : '여'})</span></li>`).join('')}
+      </ol>`
+    : '—';
   const groupRows = isGroup ? `
     <tr>
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">인원 (남/여)</td>
       <td style="padding:8px 0;font-size:14px;font-weight:600;">${reg.groupCount}명 (남 ${reg.maleCount} / 여 ${reg.femaleCount})</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;vertical-align:top;">참가 학생</td>
+      <td style="padding:8px 0;font-size:14px;">${participantList}</td>
     </tr>` : '';
 
   const kstTime = new Date(reg.registeredAt).toLocaleString('ko-KR', {
@@ -147,6 +160,10 @@ async function sendRegistrationEmail(env, reg) {
 
 function regToSheetRow(reg) {
   const isGroup = reg.registrationType === 'group';
+  const participantSummary = isGroup && reg.participants?.length
+    ? reg.participants.map((participant, index) => `${index + 1}. ${participant.name} (${participant.gender === 'male' ? '남' : '여'})`).join('\n')
+    : '';
+  const notes = [participantSummary, reg.notes || ''].filter(Boolean).join('\n\n');
   return [
     reg.registeredAt,                                                           // A 신청일시
     reg.regId,                                                                  // B 신청ID
@@ -163,7 +180,7 @@ function regToSheetRow(reg) {
     isGroup ? reg.femaleCount : (reg.gender === 'female' ? 1 : 0),            // M 여성수
     isGroup ? reg.groupCount  : 1,                                             // N 총인원
     reg.emergency || '',                                                        // O 비상연락처 (개인)
-    reg.notes || '',                                                            // P 메모
+    notes,                                                                      // P 메모
     reg.isWaitlist ? `예비-${reg.waitlistNumber}순위` : '대기중',              // Q 확정여부
     '',                                                                         // R 확정일시
   ];
@@ -193,7 +210,7 @@ export async function onRequestPost(context) {
       grade, church, school, emergency,
       gender,
       maleCount, femaleCount,
-      groupCount,
+      groupCount, participants,
       notes,
     } = data;
 
@@ -213,10 +230,21 @@ export async function onRequestPost(context) {
     }
 
     let spotsNeeded, spotsM, spotsF;
+    let normalizedParticipants = [];
     if (registrationType === 'group') {
-      spotsM = Math.max(0, parseInt(maleCount) || 0);
-      spotsF = Math.max(0, parseInt(femaleCount) || 0);
-      spotsNeeded = spotsM + spotsF;
+      if (!Array.isArray(participants)) {
+        return Response.json({ error: '참가 학생 명단을 입력해주세요.' }, { status: 400, headers: CORS });
+      }
+      normalizedParticipants = participants.map(participant => ({
+        name: String(participant?.name || '').trim(),
+        gender: participant?.gender,
+      }));
+      if (normalizedParticipants.some(participant => !participant.name || !['male', 'female'].includes(participant.gender))) {
+        return Response.json({ error: '모든 참가 학생의 이름과 성별을 입력해주세요.' }, { status: 400, headers: CORS });
+      }
+      spotsNeeded = normalizedParticipants.length;
+      spotsM = normalizedParticipants.filter(participant => participant.gender === 'male').length;
+      spotsF = normalizedParticipants.filter(participant => participant.gender === 'female').length;
       if (spotsNeeded < 2) {
         return Response.json({ error: '단체 신청은 2명 이상이어야 합니다.' }, { status: 400, headers: CORS });
       }
@@ -238,6 +266,13 @@ export async function onRequestPost(context) {
     const subKeyF = `camp:${campId}:submissions:female`;
     const currentSubs = parseInt(await env.CAMP_KV.get(subKey) || '0');
 
+    if (registrationType === 'group' && currentSubs + spotsNeeded > campCapacity) {
+      const remaining = Math.max(0, campCapacity - currentSubs);
+      return Response.json({
+        error: `현재 잔여 정원은 ${remaining}명입니다. 참여 인원을 줄여주세요.`,
+      }, { status: 409, headers: CORS });
+    }
+
     if (currentSubs + spotsNeeded > campCapacity + WAITLIST_SIZE) {
       return Response.json({
         error: '신청이 마감되었습니다. 정원과 예비 인원이 모두 찼습니다.',
@@ -255,6 +290,7 @@ export async function onRequestPost(context) {
           registrationType: 'group',
           name: name.trim(), phone: phone.trim(), email: emailNorm,
           maleCount: spotsM, femaleCount: spotsF, groupCount: spotsNeeded,
+          participants: normalizedParticipants,
           church: church?.trim() || '',
           notes: notes?.trim() || '',
           registeredAt: new Date().toISOString(),
