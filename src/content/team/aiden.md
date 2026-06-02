@@ -50,5 +50,6 @@ prayer_en: |-
   Please pray for me as I prepare to continue my theological studies—for tuition, physical strength, and wisdom.
 
   Please pray that I would have boldness when I go out to share the Gospel with others.
+report_url: "https://mailchi.mp/473bc5629666/ministry-update-from-aiden-park"
 
 ---
