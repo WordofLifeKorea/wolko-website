@@ -2125,6 +2125,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     if (!Object.keys(churchColorMap).length && churches.length) buildColorMap();
     crsMarkers.forEach(m => m.setMap(null));
     crsMarkers = [];
+    const markerPositions = [];
 
     const pinnable = churches.filter(c => getSavedChurchCoords(c));
     const emptyEl = document.getElementById('mapEmpty');
@@ -2141,11 +2142,28 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         title: c.churchName,
         icon: getChurchMarkerIcon(markerColor, cm?.rank),
       });
+      markerPositions.push(marker.getPosition());
       naver.maps.Event.addListener(marker, 'click', () => {
         openDetailModal(c);
       });
       crsMarkers.push(marker);
     });
+
+    fitCrsMarkerBounds(markerPositions);
+  }
+
+  function fitCrsMarkerBounds(markerPositions) {
+    if (!crsMap || !markerPositions.length) return;
+    if (markerPositions.length === 1) {
+      crsMap.setCenter(markerPositions[0]);
+      crsMap.setZoom(13);
+      return;
+    }
+
+    const margin = window.innerWidth <= 768
+      ? { top: 56, right: 36, bottom: 30, left: 36, maxZoom: 13 }
+      : { top: 54, right: 54, bottom: 54, left: 54, maxZoom: 13 };
+    crsMap.fitBounds(markerPositions, margin);
   }
 
   function switchCrsTab(tab) {
