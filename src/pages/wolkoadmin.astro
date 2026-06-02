@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=13">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=14">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -151,12 +151,20 @@
           <span class="table-title">캠프 신청 목록</span>
           <span class="table-count" id="campTableCount"></span>
         </div>
-        <button class="btn-csv" onclick="downloadCsv('camp')">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          CSV 다운로드
-        </button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-edit-mode" id="btnCamperEditMode" onclick="toggleCamperEditMode()">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>수정 모드</span>
+          </button>
+          <button class="btn-csv" onclick="downloadCsv('camp')">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            CSV 다운로드
+          </button>
+        </div>
       </div>
       <div class="table-scroll">
         <table>
@@ -202,7 +210,7 @@
           <span class="table-count" id="staffTableCount"></span>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
-          <button class="btn-edit-mode" id="btnEditMode" onclick="toggleEditMode()">
+          <button class="btn-edit-mode" id="btnStaffEditMode" onclick="toggleEditMode()">
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -353,6 +361,7 @@
     let sortState = { key: 'registeredAt', direction: 'desc' };
     let authToken = sessionStorage.getItem('wolko-admin-token') || '';
     let staffEditMode = false;
+    let camperEditMode = false;
     const expandedGroupParticipants = new Set();
 
     // ── Login ──
@@ -812,27 +821,41 @@
               <td colspan="17">
                 <button class="group-participant-toggle${isExpanded ? ' expanded' : ''}" type="button" data-regid="${esc(r.regId)}" aria-expanded="${isExpanded}" onclick="toggleGroupParticipants(this.dataset.regid)">
                   <span class="group-participant-toggle-icon">⌄</span>
-                  <span>학생 명단 ${completedParticipants} / ${groupParticipants.length}명 입력</span>
+                  <span>학생 명단 ${completedParticipants} / ${groupParticipants.length}명${camperEditMode ? ' 입력' : ''}</span>
                 </button>
               </td>
             </tr>`;
             if (!isExpanded) return toggleRow;
             return toggleRow + groupParticipants.map((participant, participantIndex) => {
               const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
-              const participantName = `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="학생 이름" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`;
-              const participantCounselor = `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorRegId" onchange="updateField(this)">
+              const participantName = camperEditMode
+                ? `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="학생 이름" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
+                : `<span class="${participant.name ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(participant.name || '미입력')}</span>`;
+              const participantCounselor = camperEditMode
+                ? `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorRegId" onchange="updateField(this)">
                   <option value="">미배정</option>
                   ${counselorStaff
                     .map(staff => `<option value="${esc(staff.regId)}"${staff.regId === participant.counselorRegId ? ' selected' : ''}>${esc(staff.name)}</option>`)
                     .join('')}
-                </select>`;
-              const participantSalvation = `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="saved" onchange="updateField(this)"${participant.saved ? ' checked' : ''}><span>구원</span></label>`;
-              const participantDedication = `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="dedicated" onchange="updateField(this)"${participant.dedicated ? ' checked' : ''}><span>헌신</span></label>`;
-              const participantGender = `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
+                </select>`
+                : `<span class="${participant.counselorRegId ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(counselorStaff.find(staff => staff.regId === participant.counselorRegId)?.name || '미배정')}</span>`;
+              const participantSalvation = camperEditMode
+                ? `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="saved" onchange="updateField(this)"${participant.saved ? ' checked' : ''}><span>구원</span></label>`
+                : (participant.saved ? '<span class="group-participant-state saved">구원</span>' : '<span class="camper-na">—</span>');
+              const participantDedication = camperEditMode
+                ? `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="dedicated" onchange="updateField(this)"${participant.dedicated ? ' checked' : ''}><span>헌신</span></label>`
+                : (participant.dedicated ? '<span class="group-participant-state dedicated">헌신</span>' : '<span class="camper-na">—</span>');
+              const participantGender = camperEditMode
+                ? `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
                   <option value="">성별</option>
                   <option value="male"${participant.gender === 'male' ? ' selected' : ''}>남</option>
                   <option value="female"${participant.gender === 'female' ? ' selected' : ''}>여</option>
-                </select>`;
+                </select>`
+                : participant.gender === 'male'
+                ? '<span class="group-participant-gender male">남</span>'
+                : participant.gender === 'female'
+                ? '<span class="group-participant-gender female">여</span>'
+                : '<span class="group-participant-empty">미입력</span>';
               return `<tr class="group-participant-row${participantClass}">
                 <td></td>
                 <td colspan="3"><span class="group-participant-label">학생 ${participantIndex + 1}</span></td>
@@ -976,10 +999,18 @@
     // ── Edit Mode Toggle ──
     function toggleEditMode() {
       staffEditMode = !staffEditMode;
-      const btn = document.getElementById('btnEditMode');
+      const btn = document.getElementById('btnStaffEditMode');
       btn.classList.toggle('active', staffEditMode);
       btn.querySelector('span').textContent = staffEditMode ? '수정 중' : '수정 모드';
       renderStaffTable();
+    }
+
+    function toggleCamperEditMode() {
+      camperEditMode = !camperEditMode;
+      const btn = document.getElementById('btnCamperEditMode');
+      btn.classList.toggle('active', camperEditMode);
+      btn.querySelector('span').textContent = camperEditMode ? '수정 중' : '수정 모드';
+      renderCampTable();
     }
 
     // ── 전화번호 포맷 (숫자만 추출 후 010-XXXX-XXXX 형식) ──
