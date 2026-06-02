@@ -379,6 +379,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .detail-panel-prog { height:4px; background:#d5e5e8; }
   .detail-panel-prog-fill { background:var(--crs-cyan); }
   .detail-panel-body { padding:1.3rem 1.5rem 1rem; background:#f7f9f9; }
+  .detail-map-preview {
+    position:relative; height:188px; margin-bottom:1rem; overflow:hidden;
+    border:1px solid var(--crs-line); border-radius:10px; background:#e8edf0;
+  }
+  .detail-map-preview > div { position:absolute; inset:0; width:100%; height:100%; }
   .detail-panel-body .detail-actions {
     margin:1.25rem -.1rem 0; padding:.9rem .1rem .15rem; background:#f7f9f9;
   }
@@ -531,6 +536,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       box-shadow:0 1px 3px rgba(0,86,108,.22);
     }
     .detail-panel-body { padding:1rem .9rem .8rem; }
+    .detail-map-preview { height:176px; margin-bottom:.82rem; }
     .detail-panel-progress-meta { padding:.52rem 1rem; }
     .detail-info { grid-template-columns:1fr; }
     .detail-info-row:nth-child(odd) { border-right:none; }
@@ -1580,6 +1586,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.body.classList.remove('crs-detail-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     viewingChurch = null;
+    resetDetailMap();
     if (crsMap) setTimeout(() => naver.maps.Event.trigger(crsMap, 'resize'), 50);
   }
 
@@ -1632,7 +1639,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       </div>`).join('')
     : `<p class="visit-empty">${t('no_visits')}</p>`;
 
+    const detailCoords = getSavedChurchCoords(church);
     document.getElementById('detailBody').innerHTML = `
+      ${detailCoords ? '<div class="detail-map-preview"><div id="detail-map"></div></div>' : ''}
       <div class="detail-info">
         <div class="detail-info-row"><strong>${t('detail_pastor')}</strong> ${esc(church.pastorName || t('not_entered'))}${church.pastorPhone ? ` &nbsp;${esc(church.pastorPhone)}` : ''}</div>
         ${church.location ? `<div class="detail-info-row"><strong>${t('detail_location')}</strong> ${esc(church.location)}</div>` : ''}
@@ -1697,6 +1706,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         <button class="btn-delete" id="detailDeleteBtn">${t('btn_delete')}</button>
       </div>`;
 
+    ensureDetailMap(church);
     document.querySelectorAll('.step-item').forEach(item => {
       item.addEventListener('click', () => toggleStep(church, parseInt(item.dataset.step)));
     });
@@ -2048,6 +2058,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let crsMarkers = [];
   let crsMapElement = null;
   let crsMapInitTimer = null;
+  let detailMap = null;
+  let detailMapMarker = null;
+  let detailMapInitTimer = null;
 
   const DISTRICT_COORDS = {
     '서울특별시':[37.5665,126.9780],'부산광역시':[35.1796,129.0756],'대구광역시':[35.8714,128.6014],
@@ -2190,6 +2203,46 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       </div>`,
       anchor: new naver.maps.Point(16, 42),
     };
+  }
+
+  function ensureDetailMap(church) {
+    resetDetailMap();
+    const coords = getSavedChurchCoords(church);
+    if (!coords) return;
+    detailMapInitTimer = setTimeout(() => {
+      detailMapInitTimer = null;
+      const mapEl = document.getElementById('detail-map');
+      if (!mapEl || typeof naver === 'undefined') return;
+      const position = new naver.maps.LatLng(coords[0], coords[1]);
+      const cm = churchColorMap[church.id];
+      detailMap = new naver.maps.Map(mapEl, {
+        center: position,
+        zoom: 13,
+        zoomControl: true,
+        zoomControlOptions: {
+          position: naver.maps.Position.TOP_RIGHT,
+          style: naver.maps.ZoomControlStyle.SMALL,
+        },
+      });
+      detailMapMarker = new naver.maps.Marker({
+        position,
+        map: detailMap,
+        icon: getChurchMarkerIcon(cm?.marker || '#004f68', cm?.rank),
+      });
+    }, 80);
+  }
+
+  function resetDetailMap() {
+    clearTimeout(detailMapInitTimer);
+    detailMapInitTimer = null;
+    if (detailMapMarker) {
+      detailMapMarker.setMap(null);
+      detailMapMarker = null;
+    }
+    if (detailMap) {
+      try { detailMap.destroy(); } catch(e) {}
+      detailMap = null;
+    }
   }
 
   function initCrsMap() {
