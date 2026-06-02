@@ -150,24 +150,23 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
 /* ── LAYOUT ── */
 .adm-wrap { max-width: 1280px; margin: 0 auto; padding: 40px 32px 100px; }
 
-/* ── SEASON TABS ── */
-.season-tabs {
-  display: flex; gap: 6px; flex-wrap: wrap;
-  margin-bottom: 16px;
+/* ── SEASON CARD ── */
+.camp-season-card { min-width: 150px; }
+.season-card-nav {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 18px;
 }
-.season-tab {
-  padding: 6px 16px; border-radius: 999px;
-  border: 1.5px solid var(--border);
-  background: #fff; color: var(--mid);
-  font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s;
-  font-family: var(--f-body);
+.season-card-title { margin-bottom: 0 !important; flex: 1; }
+.season-nav-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; width: 22px; height: 22px;
+  cursor: pointer; color: var(--mid);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; flex-shrink: 0;
+  transition: all 0.15s; line-height: 1;
 }
-.season-tab:hover { border-color: var(--blue); color: var(--blue); }
-.season-tab.active {
-  background: var(--blue); border-color: var(--blue);
-  color: #fff;
-}
+.season-nav-btn:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+.season-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 
 /* ── CAMP CARDS ── */
 .camp-cards-label {
@@ -680,4 +679,11 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .camp-card-title { font-size: 14px; margin-bottom: 12px; }
   .camp-card-stat-val { font-size: 18px; }
   .camp-card-stats { gap: 14px; }
+
+  /* 통계 테이블 모바일 스크롤 */
+  .stats-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .stats-tbl { min-width: 580px; }
+  .stats-tbl thead th { padding: 9px 12px; font-size: 9px; }
+  .stats-tbl tbody td { padding: 10px 12px; }
+  .sv { font-size: 18px; }
 }

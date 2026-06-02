@@ -66,8 +66,6 @@
   </header>
 
   <div class="adm-wrap">
-    <!-- SEASON TABS -->
-    <div class="season-tabs" id="seasonTabs"></div>
     <!-- CAMP CARDS -->
     <div class="camp-cards" id="campCards"></div>
 
@@ -428,56 +426,82 @@
       return card;
     }
 
-    function buildSeasonTabs() {
-      const wrap = document.getElementById('seasonTabs');
-      if (!wrap) return;
-      // 시즌이 1개뿐이면 탭 숨김
-      if (SEASONS.length <= 1) { wrap.style.display = 'none'; return; }
-      wrap.innerHTML = '';
-      // 전체 탭
-      const allTab = document.createElement('button');
-      allTab.className = 'season-tab' + (activeSeason === 'all' ? ' active' : '');
-      allTab.textContent = '전체';
-      allTab.onclick = () => selectSeason('all');
-      wrap.appendChild(allTab);
-      // 시즌별 탭
-      SEASONS.forEach(s => {
-        const tab = document.createElement('button');
-        tab.className = 'season-tab' + (activeSeason === s.id ? ' active' : '');
-        tab.textContent = s.label;
-        tab.onclick = () => selectSeason(s.id);
-        wrap.appendChild(tab);
-      });
-    }
-
     function selectSeason(id) {
       activeSeason = id;
       activeCamp = 'all';
-      document.querySelectorAll('.season-tab').forEach(t =>
-        t.classList.toggle('active', t.textContent === (id === 'all' ? '전체' : (SEASONS.find(s => s.id === id)?.label || id)))
-      );
       buildCampCards();
       renderTable();
       renderDash();
     }
 
+    function navigateSeason(dir) {
+      const idx = SEASONS.findIndex(s => s.id === activeSeason);
+      const next = idx + dir;
+      if (next >= 0 && next < SEASONS.length) selectSeason(SEASONS[next].id);
+    }
+
+    function makeSeasonCard() {
+      const card = document.createElement('div');
+      card.className = 'camp-card camp-season-card active';
+      card.dataset.id = 'all';
+      const season = SEASONS.find(s => s.id === activeSeason);
+      const label = season ? season.label : '전체';
+      const idx = SEASONS.findIndex(s => s.id === activeSeason);
+      const hasPrev = idx > 0;
+      const hasNext = idx < SEASONS.length - 1;
+      const navHtml = SEASONS.length > 1 ? `
+        <div class="season-card-nav">
+          <button class="season-nav-btn" onclick="event.stopPropagation();navigateSeason(-1)" ${hasPrev ? '' : 'disabled'}>◀</button>
+          <span class="camp-card-title season-card-title">${label}</span>
+          <button class="season-nav-btn" onclick="event.stopPropagation();navigateSeason(1)" ${hasNext ? '' : 'disabled'}>▶</button>
+        </div>` : `<div class="camp-card-title">${label}</div>`;
+      card.innerHTML = `
+        <div class="camp-card-top">
+          <span class="camp-card-kicker">시즌</span>
+          <span class="camp-card-badge">선택됨</span>
+        </div>
+        ${navHtml}
+        <div class="camp-card-stats">
+          <div class="camp-card-stat">
+            <div class="camp-card-stat-val" id="card-all-reg">—</div>
+            <div class="camp-card-stat-lbl">신청</div>
+          </div>
+          <div class="camp-card-sep"></div>
+          <div class="camp-card-stat">
+            <div class="camp-card-stat-val green" id="card-all-cap">—</div>
+            <div class="camp-card-stat-lbl">잔여</div>
+          </div>
+        </div>`;
+      card.onclick = () => selectCamp('all');
+      return card;
+    }
+
     function buildCampCards() {
       const wrap = document.getElementById('campCards');
       wrap.innerHTML = '';
-      // 현재 시즌의 캠프만 표시
-      const currentSeasonCamps = activeSeason === 'all'
-        ? CAMP_GROUPS.flatMap(g => g.camps)
-        : (SEASONS.find(s => s.id === activeSeason)?.groups.flatMap(g => g.camps) || []);
-      wrap.appendChild(makeCard('all', '전체', '전체 캠프', 9999));
+      wrap.appendChild(makeSeasonCard());
+      const currentSeasonCamps = SEASONS.find(s => s.id === activeSeason)?.groups.flatMap(g => g.camps) || [];
       currentSeasonCamps.forEach(c => {
         wrap.appendChild(makeCard(c.id, `WOLKO · 정원 ${c.capacity}명`, c.title, c.capacity));
       });
     }
 
     function updateCardStats() {
-      CAMPS_ALL.forEach(c => {
-        const regs = (c.id === 'all' ? allRegs : allRegs.filter(r => r.campId === c.id))
-          .filter(r => r.registrationType !== 'staff');
+      // 시즌 카드 (all): 현재 시즌 전체 통계
+      const ids = seasonCampIds(activeSeason);
+      const seasonCamps = CAMP_GROUPS.flatMap(g => g.camps).filter(c => ids.has(c.id));
+      const seasonCap = seasonCamps.reduce((s, c) => s + c.capacity, 0);
+      const seasonRegs = allRegs.filter(r => ids.has(r.campId) && r.registrationType !== 'staff');
+      const seasonTotal = seasonRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      const seasonRemain = Math.max(0, seasonCap - seasonTotal);
+      const allRegEl = document.getElementById('card-all-reg');
+      const allCapEl = document.getElementById('card-all-cap');
+      if (allRegEl) allRegEl.textContent = seasonTotal;
+      if (allCapEl) allCapEl.textContent = seasonRemain;
+
+      // 개별 캠프 카드
+      CAMP_GROUPS.flatMap(g => g.camps).forEach(c => {
+        const regs = allRegs.filter(r => r.campId === c.id && r.registrationType !== 'staff');
         const total = regs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
         const remain = Math.max(0, c.capacity - total);
         const regEl = document.getElementById(`card-${c.id}-reg`);
@@ -496,7 +520,6 @@
       renderDash();
     }
 
-    buildSeasonTabs();
     buildCampCards();
 
     // ── Fetch ──
