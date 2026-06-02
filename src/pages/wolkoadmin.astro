@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=9">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=10">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -276,6 +276,12 @@
             label: 'WOLKO 캠프',
             camps: [
               { id: '2026-inland-english-junior', title: '2026 여름 주니어 영어 캠프', dateKo: '7월 27일 – 8월 1일', capacity: 40 },
+            ],
+          },
+          {
+            group: 'union',
+            label: '연합캠프',
+            camps: [
               { id: '2026-inland-union',          title: '2026 교회 연합캠프',          dateKo: '8월 6일 – 8일',    capacity: 40 },
             ],
           },
@@ -329,6 +335,17 @@
     }
 
     const STAFF_TEAMS = ['프로그램', '수업', '상담자', '테크', '찬양팀'];
+    const STAFF_TEAM_CLASSES = {
+      '프로그램': 'team-program',
+      '수업': 'team-class',
+      '상담자': 'team-counselor',
+      '테크': 'team-tech',
+      '찬양팀': 'team-worship',
+    };
+
+    function getStaffTeamClass(team) {
+      return STAFF_TEAM_CLASSES[team] || 'team-other';
+    }
 
     let allRegs = [];
     let activeCamp = 'all';
@@ -482,10 +499,10 @@
       const wrap = document.getElementById('campCards');
       wrap.innerHTML = '';
       wrap.appendChild(makeSeasonCard());
-      const currentSeasonCamps = SEASONS.find(s => s.id === activeSeason)?.groups.flatMap(g => g.camps) || [];
-      currentSeasonCamps.forEach(c => {
-        wrap.appendChild(makeCard(c.id, `WOLKO · 정원 ${c.capacity}명`, c.title, c.capacity));
-      });
+      const currentSeasonGroups = SEASONS.find(s => s.id === activeSeason)?.groups || [];
+      currentSeasonGroups.forEach(group => group.camps.forEach(c => {
+        wrap.appendChild(makeCard(c.id, `${group.label} · 정원 ${c.capacity}명`, c.title, c.capacity));
+      }));
     }
 
     function updateCardStats() {
@@ -543,7 +560,7 @@
         showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p></div>`;
         document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="18">${errHtml}</td></tr>`;
-        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="9">${errHtml}</td></tr>`;
+        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="10">${errHtml}</td></tr>`;
       }
     }
 
@@ -709,7 +726,8 @@
         return;
       }
 
-      tbody.innerHTML = regs.map((r, i) => {
+      let rowIndex = 0;
+      const renderStaffRow = r => {
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const campLabel = CAMP_LABELS[r.campId] || r.campId;
@@ -868,20 +886,21 @@
           ? `<input class="edit-input" type="tel" value="${esc(r.phone)}" data-regid="${r.regId}" data-campid="${r.campId}" data-field="phone" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
           : esc(r.phone);
 
-        // 섬기고 싶은 팀 — 수정 모드일 때 멀티셀렉트
+        // 섬기고 싶은 팀 — 수정 모드일 때 체크형 칩
         const currentTeams = serviceAreaVal.split(',').map(s => s.trim()).filter(Boolean);
         const serviceAreaCell = staffEditMode
-          ? `<select class="team-select" multiple size="${STAFF_TEAMS.length}"
-               data-regid="${r.regId}" data-campid="${r.campId}" data-field="serviceArea"
-               onchange="updateTeamField(this)">
-               ${STAFF_TEAMS.map(t => `<option value="${t}"${currentTeams.includes(t) ? ' selected' : ''}>${t}</option>`).join('')}
-             </select>`
+          ? `<div class="team-picker" data-regid="${r.regId}" data-campid="${r.campId}" data-field="serviceArea">
+               ${STAFF_TEAMS.map(t => `<label class="team-choice ${getStaffTeamClass(t)}">
+                 <input type="checkbox" value="${esc(t)}"${currentTeams.includes(t) ? ' checked' : ''} onchange="updateTeamField(this.closest('.team-picker'))">
+                 <span>${esc(t)}</span>
+               </label>`).join('')}
+             </div>`
           : (currentTeams.length
-              ? currentTeams.map(t => `<span class="team-badge">${esc(t)}</span>`).join('')
+              ? currentTeams.map(t => `<span class="team-badge ${getStaffTeamClass(t)}">${esc(t)}</span>`).join('')
               : `<span style="color:var(--light)">—</span>`);
 
         return `<tr class="camp-tint" style="${rowStyle}">
-          <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
+          <td style="color:var(--light);font-family:var(--f-sans)">${++rowIndex}</td>
           <td class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
           <td style="white-space:nowrap">${phoneCell}</td>
@@ -892,6 +911,22 @@
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
           <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
         </tr>`;
+      };
+
+      const season = SEASONS.find(s => s.id === activeSeason);
+      const orderedCampIds = activeCamp === 'all'
+        ? (season?.groups.flatMap(group => group.camps.map(camp => camp.id)) || [])
+        : [activeCamp];
+      const extraCampIds = [...new Set(regs.map(r => r.campId))].filter(campId => !orderedCampIds.includes(campId));
+
+      tbody.innerHTML = [...orderedCampIds, ...extraCampIds].map(campId => {
+        const campRegs = regs.filter(r => r.campId === campId);
+        const campStyle = getCampRowStyle({ campId });
+        return `<tr class="staff-camp-divider" style="--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};">
+          <td colspan="10"><strong>${esc(CAMP_LABELS[campId] || campId)}</strong><span>${campRegs.length}명</span></td>
+        </tr>${campRegs.length
+          ? campRegs.map(renderStaffRow).join('')
+          : `<tr class="staff-camp-empty"><td colspan="10">등록된 스태프가 없습니다.</td></tr>`}`;
       }).join('');
     }
 
@@ -918,15 +953,16 @@
       return raw; // 자릿수 불일치 시 원문 유지
     }
 
-    // ── 팀 멀티셀렉트 업데이트 ──
-    async function updateTeamField(selectEl) {
-      const regId  = selectEl.dataset.regid;
-      const campId = selectEl.dataset.campid;
-      const field  = selectEl.dataset.field;
-      const value  = Array.from(selectEl.selectedOptions).map(o => o.value).join(', ');
+    // ── 팀 선택 업데이트 ──
+    async function updateTeamField(pickerEl) {
+      const regId  = pickerEl.dataset.regid;
+      const campId = pickerEl.dataset.campid;
+      const field  = pickerEl.dataset.field;
+      const inputs = Array.from(pickerEl.querySelectorAll('input[type="checkbox"]'));
+      const value  = inputs.filter(input => input.checked).map(input => input.value).join(', ');
       const reg    = allRegs.find(r => r.regId === regId);
       if (!reg) return;
-      selectEl.disabled = true;
+      inputs.forEach(input => { input.disabled = true; });
       try {
         const res = await fetch('/api/admin/registrations', {
           method: 'PUT',
@@ -940,7 +976,7 @@
       } catch(e) {
         showToast('저장 오류: ' + e.message, 'error');
       }
-      selectEl.disabled = false;
+      renderStaffTable();
     }
 
     // ── Field Update (전화번호, 섬기고 싶은 분야 등) ──
