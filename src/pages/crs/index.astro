@@ -1970,6 +1970,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   function updateCrsMarkers() {
     if (!crsMap) return;
+    if (!Object.keys(churchColorMap).length && churches.length) buildColorMap();
     crsMarkers.forEach(m => m.setMap(null));
     crsMarkers = [];
 
@@ -1987,8 +1988,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         map: crsMap,
         title: c.churchName,
         icon: {
-          content: `<div style="background:${markerColor};color:#fff;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;font-family:'Apple SD Gothic Neo',sans-serif;display:flex;align-items:center;gap:5px;">
-            <span style="background:rgba(255,255,255,.9);color:${markerColor};border-radius:50%;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;">${cm?.rank ?? ''}</span>
+          content: `<div style="background:${markerColor};color:#fff;border-radius:20px;padding:5px 11px 5px 7px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.28);cursor:pointer;font-family:'Apple SD Gothic Neo',sans-serif;display:inline-flex;align-items:center;gap:5px;transform:translateX(-50%);">
+            <span style="background:rgba(255,255,255,.9);color:${markerColor};border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">${cm?.rank ?? ''}</span>
             ${esc(c.churchName)}
           </div>`,
           anchor: new naver.maps.Point(0, 14),
