@@ -11,7 +11,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WOLKO CRS">
     <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
-    <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
+    <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}&submodules=geocoder`}></script>
   </Fragment>
   <div id="crs-root"></div>
 </BaseLayout>
@@ -541,6 +541,19 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   #crs-map { position:absolute; inset:0; width:100%; height:100%; }
   .app-body.split .map-panel { display:none; }
   .map-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#aab8c0; font-size:.85rem; gap:.5rem; pointer-events:none; }
+  /* 지도 검색창 */
+  .map-search-box { position:absolute; top:12px; left:12px; z-index:10; width:280px; }
+  .map-search-input { width:100%; box-sizing:border-box; padding:.6rem 2.5rem .6rem .9rem; border:none; border-radius:10px; font-size:.85rem; font-family:inherit; background:#fff; box-shadow:0 2px 12px rgba(0,0,0,.18); outline:none; transition:box-shadow .2s; }
+  .map-search-input:focus { box-shadow:0 2px 16px rgba(0,79,104,.25); }
+  .map-search-btn { position:absolute; right:.5rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#004f68; padding:.2rem; display:flex; align-items:center; }
+  .map-search-results { display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,.15); overflow:hidden; max-height:220px; overflow-y:auto; }
+  .map-search-results.open { display:block; }
+  .map-search-item { padding:.65rem .9rem; font-size:.83rem; cursor:pointer; border-bottom:1px solid #f0f4f6; color:#1a2e3b; line-height:1.4; transition:background .15s; }
+  .map-search-item:last-child { border-bottom:none; }
+  .map-search-item:hover { background:#f0f8fb; }
+  .map-search-item small { color:#8aacba; display:block; font-size:.75rem; margin-top:.1rem; }
+  .map-search-item.no-result { color:#aab8c0; cursor:default; }
+  .map-search-item.no-result:hover { background:none; }
   @media(max-width:768px) {
     .view-tabs { display:flex; }
     .map-panel { display:none; height:calc(100dvh - 76px - 52px - 44px); }
@@ -977,6 +990,15 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         <!-- 가운데: 지도 패널 -->
         <div class="map-panel" id="mapPanel">
           <div id="crs-map"></div>
+          <div class="map-search-box" id="mapSearchBox">
+            <input class="map-search-input" id="mapSearchInput" type="text"
+              placeholder="${isKo ? '주소 또는 장소 검색...' : 'Search address or place...'}"
+              autocomplete="off">
+            <button class="map-search-btn" id="mapSearchBtn" type="button">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2"/><path d="M14 14l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="map-search-results" id="mapSearchResults"></div>
+          </div>
           <div class="map-empty" id="mapEmpty">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
             <span>${isKo ? '교회를 추가하면 지도에 표시됩니다' : 'Churches will appear on the map'}</span>
@@ -1875,6 +1897,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       },
     });
     updateCrsMarkers();
+    initMapSearch();
   }
 
   function updateCrsMarkers() {
@@ -1930,6 +1953,102 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       tabs[0]?.classList.add('active');
       tabs[1]?.classList.remove('active');
     }
+  }
+
+  // ── 지도 주소 검색 ──
+  function initMapSearch() {
+    const input   = document.getElementById('mapSearchInput');
+    const btn     = document.getElementById('mapSearchBtn');
+    const results = document.getElementById('mapSearchResults');
+    if (!input) return;
+
+    function doSearch() {
+      const q = input.value.trim();
+      if (!q) return;
+      results.innerHTML = `<div class="map-search-item no-result">검색 중...</div>`;
+      results.classList.add('open');
+
+      // 1) 등록된 교회 중 검색
+      const matchedChurches = churches.filter(c =>
+        (c.churchName || '').includes(q) || (c.location || '').includes(q) || (c.pastorName || '').includes(q)
+      );
+
+      if (typeof naver !== 'undefined' && naver.maps.Service) {
+        naver.maps.Service.geocode({ query: q }, (status, res) => {
+          const items = [];
+
+          // 교회 결과
+          matchedChurches.slice(0, 3).forEach(c => {
+            items.push({ label: c.churchName, sub: c.location || '', isChurch: true, church: c });
+          });
+
+          // 지오코딩 결과
+          if (status === naver.maps.Service.Status.OK && res.v2?.addresses?.length) {
+            res.v2.addresses.slice(0, 4).forEach(addr => {
+              items.push({ label: addr.roadAddress || addr.jibunAddress, sub: addr.englishAddress || '', lat: parseFloat(addr.y), lng: parseFloat(addr.x) });
+            });
+          }
+
+          if (!items.length) {
+            results.innerHTML = `<div class="map-search-item no-result">검색 결과가 없습니다</div>`;
+            return;
+          }
+
+          results.innerHTML = items.map((item, i) => `
+            <div class="map-search-item" data-idx="${i}">
+              ${item.isChurch ? '<svg width="10" height="10" viewBox="0 0 10 10" style="margin-right:4px;color:#004f68"><path d="M5 1L1 4v5h3V7h2v2h3V4z" fill="currentColor"/></svg>' : ''}
+              ${esc(item.label)}
+              ${item.sub ? `<small>${esc(item.sub)}</small>` : ''}
+            </div>`).join('');
+
+          results.querySelectorAll('.map-search-item').forEach((el, i) => {
+            el.addEventListener('click', () => {
+              const item = items[i];
+              results.classList.remove('open');
+              input.value = '';
+              if (item.isChurch) {
+                const coords = getChurchCoords(item.church.region, item.church.district);
+                if (coords && crsMap) {
+                  crsMap.setCenter(new naver.maps.LatLng(coords[0], coords[1]));
+                  crsMap.setZoom(12);
+                }
+                if (window.innerWidth <= 768) switchCrsTab('list');
+                openDetailModal(item.church);
+              } else if (item.lat && crsMap) {
+                crsMap.setCenter(new naver.maps.LatLng(item.lat, item.lng));
+                crsMap.setZoom(14);
+              }
+            });
+          });
+        });
+      } else {
+        // naver.maps.Service 없을 때 → 교회만 검색
+        if (!matchedChurches.length) {
+          results.innerHTML = `<div class="map-search-item no-result">검색 결과가 없습니다</div>`;
+          return;
+        }
+        results.innerHTML = matchedChurches.slice(0, 5).map((c, i) => `
+          <div class="map-search-item" data-idx="${i}">
+            ${esc(c.churchName)}<small>${esc(c.location || '')}</small>
+          </div>`).join('');
+        results.querySelectorAll('.map-search-item').forEach((el, i) => {
+          el.addEventListener('click', () => {
+            results.classList.remove('open');
+            input.value = '';
+            const coords = getChurchCoords(matchedChurches[i].region, matchedChurches[i].district);
+            if (coords && crsMap) { crsMap.setCenter(new naver.maps.LatLng(coords[0], coords[1])); crsMap.setZoom(12); }
+            if (window.innerWidth <= 768) switchCrsTab('list');
+            openDetailModal(matchedChurches[i]);
+          });
+        });
+      }
+    }
+
+    btn.addEventListener('click', doSearch);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#mapSearchBox')) results.classList.remove('open');
+    });
   }
 
   // ── 서비스워커 등록 ──
