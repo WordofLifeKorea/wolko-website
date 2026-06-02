@@ -451,9 +451,9 @@
       const hasNext = idx < SEASONS.length - 1;
       const navHtml = SEASONS.length > 1 ? `
         <div class="season-card-nav">
-          <button class="season-nav-btn" onclick="event.stopPropagation();navigateSeason(-1)" ${hasPrev ? '' : 'disabled'}>◀</button>
-          <span class="camp-card-title season-card-title">${label}</span>
-          <button class="season-nav-btn" onclick="event.stopPropagation();navigateSeason(1)" ${hasNext ? '' : 'disabled'}>▶</button>
+          <select class="season-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();selectSeason(this.value)">
+            ${SEASONS.map(s => `<option value="${s.id}"${s.id === activeSeason ? ' selected' : ''}>${s.label}</option>`).join('')}
+          </select>
         </div>` : `<div class="camp-card-title">${label}</div>`;
       card.innerHTML = `
         <div class="camp-card-top">
@@ -610,7 +610,12 @@
     // ── Dashboard ──
     function renderDash() {
       const regs = filteredRegs();
-      const cap = CAMP_CAP[activeCamp] || 280;
+      // activeCamp === 'all' 이면 현재 시즌 전체 캠프 정원 합산
+      const cap = activeCamp === 'all'
+        ? CAMP_GROUPS.flatMap(g => g.camps)
+            .filter(c => seasonCampIds(activeSeason).has(c.id))
+            .reduce((s, c) => s + c.capacity, 0) || 80
+        : (CAMP_CAP[activeCamp] || 40);
 
       // 스태프 신청은 정원 집계에서 제외
       const campRegs = regs.filter(r => r.registrationType !== 'staff');
