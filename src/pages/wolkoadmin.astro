@@ -328,6 +328,8 @@
       return CAMP_ROW_FALLBACK;
     }
 
+    const STAFF_TEAMS = ['프로그램', '수업', '상담자', '테크', '찬양팀'];
+
     let allRegs = [];
     let activeCamp = 'all';
     let activeSeason = SEASONS[SEASONS.length - 1].id; // 최신 시즌 기본 선택
@@ -866,10 +868,17 @@
           ? `<input class="edit-input" type="tel" value="${esc(r.phone)}" data-regid="${r.regId}" data-campid="${r.campId}" data-field="phone" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
           : esc(r.phone);
 
-        // 섬기고 싶은 분야 — 수정 모드일 때 input
+        // 섬기고 싶은 팀 — 수정 모드일 때 멀티셀렉트
+        const currentTeams = serviceAreaVal.split(',').map(s => s.trim()).filter(Boolean);
         const serviceAreaCell = staffEditMode
-          ? `<input class="edit-input edit-input-wide" type="text" value="${esc(serviceAreaVal)}" data-regid="${r.regId}" data-campid="${r.campId}" data-field="serviceArea" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()" placeholder="입력해주세요">`
-          : `<span style="font-size:12px;color:var(--mid);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;" title="${esc(serviceAreaVal)}">${esc(serviceAreaVal || '—')}</span>`;
+          ? `<select class="team-select" multiple size="${STAFF_TEAMS.length}"
+               data-regid="${r.regId}" data-campid="${r.campId}" data-field="serviceArea"
+               onchange="updateTeamField(this)">
+               ${STAFF_TEAMS.map(t => `<option value="${t}"${currentTeams.includes(t) ? ' selected' : ''}>${t}</option>`).join('')}
+             </select>`
+          : (currentTeams.length
+              ? currentTeams.map(t => `<span class="team-badge">${esc(t)}</span>`).join('')
+              : `<span style="color:var(--light)">—</span>`);
 
         return `<tr class="camp-tint" style="${rowStyle}">
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
@@ -907,6 +916,31 @@
         ? `${d.slice(0,2)}-${d.slice(2,6)}-${d.slice(6)}`
         : `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`;
       return raw; // 자릿수 불일치 시 원문 유지
+    }
+
+    // ── 팀 멀티셀렉트 업데이트 ──
+    async function updateTeamField(selectEl) {
+      const regId  = selectEl.dataset.regid;
+      const campId = selectEl.dataset.campid;
+      const field  = selectEl.dataset.field;
+      const value  = Array.from(selectEl.selectedOptions).map(o => o.value).join(', ');
+      const reg    = allRegs.find(r => r.regId === regId);
+      if (!reg) return;
+      selectEl.disabled = true;
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ regId, campId, field, value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '저장 실패');
+        reg[field] = value;
+        showToast('팀 정보가 저장되었습니다.', 'success');
+      } catch(e) {
+        showToast('저장 오류: ' + e.message, 'error');
+      }
+      selectEl.disabled = false;
     }
 
     // ── Field Update (전화번호, 섬기고 싶은 분야 등) ──
