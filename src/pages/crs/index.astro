@@ -313,10 +313,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
   .church-card::before {
     content:''; position:absolute; inset:0 auto 0 0; width:3px;
-    background:transparent; transition:background .18s;
+    background:var(--card-accent, transparent); transition:background .18s;
   }
   .church-card:hover { border-color:#b8ced5; box-shadow:0 8px 20px rgba(19,52,64,.1); transform:translateY(-1px); }
-  .church-card:hover::before { background:var(--crs-cyan); }
+  .church-card:hover::before { background:var(--card-accent, var(--crs-cyan)); }
+  .rank-badge { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; border-radius:50%; font-size:.68rem; font-weight:900; flex-shrink:0; margin-top:2px; padding:0 3px; }
   .church-card-header { padding:.9rem 1.05rem .74rem; background:#fff; border-bottom:1px solid #edf2f3; }
   .church-card-body { padding:.8rem 1.05rem .92rem; }
   .church-name { color:var(--crs-ink); font-size:.97rem; font-weight:820; }
@@ -746,6 +747,32 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let churches = [];
   let editingChurch = null;
   let viewingChurch = null;
+  let churchColorMap = {};
+
+  const PASTEL_COLORS = [
+    { bg:'#FFF0F0', accent:'#F09090', marker:'#D95555' },
+    { bg:'#FFF5EC', accent:'#F0B870', marker:'#D98030' },
+    { bg:'#FFFCEC', accent:'#E8D060', marker:'#C4A800' },
+    { bg:'#F0FFF3', accent:'#70CC80', marker:'#2EA845' },
+    { bg:'#EEF5FF', accent:'#7AABF0', marker:'#2E72D9' },
+    { bg:'#F5F0FF', accent:'#A888F0', marker:'#6A3ED0' },
+    { bg:'#FFF0F8', accent:'#F090C0', marker:'#D93880' },
+    { bg:'#EDFFF8', accent:'#60CCA8', marker:'#1A9A78' },
+    { bg:'#F2FFF0', accent:'#80CC60', marker:'#3A9820' },
+    { bg:'#FFF8F0', accent:'#F0B050', marker:'#C87C10' },
+  ];
+
+  function buildColorMap() {
+    const sorted = [...churches].sort((a, b) => {
+      const dA = STEPS.filter((_, i) => (a.steps || {})[i+1]).length;
+      const dB = STEPS.filter((_, i) => (b.steps || {})[i+1]).length;
+      return dB - dA;
+    });
+    churchColorMap = {};
+    sorted.forEach((c, i) => {
+      churchColorMap[c.id] = { rank: i + 1, ...PASTEL_COLORS[i % PASTEL_COLORS.length] };
+    });
+  }
 
   // ── 자동 로그아웃 (20분 비활동) ──
   const IDLE_MS = 20 * 60 * 1000;
@@ -1194,6 +1221,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     } catch(e) {
       churches = [];
     }
+    buildColorMap();
     renderChurchList();
     updateCrsMarkers();
   }
@@ -1203,11 +1231,17 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const listEl = document.getElementById('churchList');
     if (!listEl) return;
     const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
-    const filtered = churches.filter(c =>
-      (c.churchName || '').toLowerCase().includes(q) ||
-      (c.pastorName || '').toLowerCase().includes(q) ||
-      (c.location || '').toLowerCase().includes(q)
-    );
+    const filtered = churches
+      .filter(c =>
+        (c.churchName || '').toLowerCase().includes(q) ||
+        (c.pastorName || '').toLowerCase().includes(q) ||
+        (c.location || '').toLowerCase().includes(q)
+      )
+      .sort((a, b) => {
+        const dA = STEPS.filter((_, i) => (a.steps || {})[i+1]).length;
+        const dB = STEPS.filter((_, i) => (b.steps || {})[i+1]).length;
+        return dB - dA;
+      });
 
     if (filtered.length === 0) {
       listEl.innerHTML = `
@@ -1220,6 +1254,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     }
 
     listEl.innerHTML = filtered.map(c => {
+      const cm = churchColorMap[c.id] || { rank: '-', bg: '#fff', accent: '#aac', marker: '#668' };
       const steps = c.steps || {};
       const done = STEPS.filter((_,i) => steps[i+1]).length;
       const pct = Math.round(done / STEPS.length * 100);
@@ -1248,11 +1283,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       ].filter(Boolean).join('');
 
       return `
-        <div class="church-card" data-id="${esc(c.id)}">
+        <div class="church-card" data-id="${esc(c.id)}" style="--card-accent:${cm.accent};background:${cm.bg};">
           <div class="church-card-header">
-            <div>
-              <p class="church-name">${esc(c.churchName)}</p>
-              <p class="pastor-name">${t('pastor_prefix')} ${esc(c.pastorName || t('not_entered'))}</p>
+            <div style="display:flex;align-items:flex-start;gap:.55rem;min-width:0;flex:1">
+              <span class="rank-badge" style="background:${cm.accent};color:#fff;">${cm.rank}</span>
+              <div style="min-width:0">
+                <p class="church-name">${esc(c.churchName)}</p>
+                <p class="pastor-name">${t('pastor_prefix')} ${esc(c.pastorName || t('not_entered'))}</p>
+              </div>
             </div>
             <span class="step-badge${isComplete?' complete':''}">${badgeHtml}</span>
           </div>
@@ -1942,16 +1980,15 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     pinnable.forEach(c => {
       const coords = (c.lat && c.lng) ? [c.lat, c.lng] : getChurchCoords(c.region, c.district);
       if (!coords) return;
-      const done = STEPS.filter((_, i) => (c.steps || {})[i+1]).length;
-      const isComplete = done === STEPS.length;
-      const color = isComplete ? '#1a8c68' : '#004f68';
+      const cm = churchColorMap[c.id];
+      const markerColor = cm?.marker || '#004f68';
       const marker = new naver.maps.Marker({
         position: new naver.maps.LatLng(coords[0], coords[1]),
         map: crsMap,
         title: c.churchName,
         icon: {
-          content: `<div style="background:${color};color:#fff;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;font-family:'Apple SD Gothic Neo',sans-serif;display:flex;align-items:center;gap:5px;">
-            <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="rgba(255,255,255,.8)"/></svg>
+          content: `<div style="background:${markerColor};color:#fff;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;font-family:'Apple SD Gothic Neo',sans-serif;display:flex;align-items:center;gap:5px;">
+            <span style="background:rgba(255,255,255,.9);color:${markerColor};border-radius:50%;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;">${cm?.rank ?? ''}</span>
             ${esc(c.churchName)}
           </div>`,
           anchor: new naver.maps.Point(0, 14),
