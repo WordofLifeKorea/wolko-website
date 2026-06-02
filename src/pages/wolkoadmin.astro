@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=14">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=15">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -178,6 +178,7 @@
               <th>담당 카운슬러</th>
               <th>구원</th>
               <th>헌신</th>
+              <th>상담자 메모</th>
               <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
               <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
               <th><button class="sort-btn" type="button" data-sort="grade">학년 / 인원</button></th>
@@ -191,7 +192,7 @@
             </tr>
           </thead>
           <tbody id="campRegBody">
-            <tr><td colspan="18">
+            <tr><td colspan="19">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p>로그인 후 자동으로 불러옵니다.</p>
@@ -569,7 +570,7 @@
       } catch (e) {
         showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p></div>`;
-        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="18">${errHtml}</td></tr>`;
+        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="19">${errHtml}</td></tr>`;
         document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="10">${errHtml}</td></tr>`;
       }
     }
@@ -724,7 +725,7 @@
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="18">
+          <tr><td colspan="19">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -804,6 +805,11 @@
         const dedicationCell = r.registrationType === 'group'
           ? '<span class="camper-na">—</span>'
           : `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="dedicated" onchange="updateField(this)"${r.dedicated ? ' checked' : ''}><span>헌신</span></label>`;
+        const counselorMemoCell = r.registrationType === 'group'
+          ? '<span class="camper-na">—</span>'
+          : camperEditMode
+          ? `<textarea class="counselor-memo-input" placeholder="기도제목 · 참고사항" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorMemo" onblur="updateField(this)">${esc(r.counselorMemo || '')}</textarea>`
+          : `<span class="${r.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(r.counselorMemo || '')}">${esc(r.counselorMemo || '—')}</span>`;
         const groupParticipants = r.registrationType === 'group'
           ? Array.from(
               { length: Math.max(Number(r.groupCount) || 0, Array.isArray(r.participants) ? r.participants.length : 0) },
@@ -818,7 +824,7 @@
             ).length;
             const toggleRow = `<tr class="group-participant-toggle-row">
               <td></td>
-              <td colspan="17">
+              <td colspan="18">
                 <button class="group-participant-toggle${isExpanded ? ' expanded' : ''}" type="button" data-regid="${esc(r.regId)}" aria-expanded="${isExpanded}" onclick="toggleGroupParticipants(this.dataset.regid)">
                   <span class="group-participant-toggle-icon">⌄</span>
                   <span>학생 명단 ${completedParticipants} / ${groupParticipants.length}명${camperEditMode ? ' 입력' : ''}</span>
@@ -845,6 +851,9 @@
               const participantDedication = camperEditMode
                 ? `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="dedicated" onchange="updateField(this)"${participant.dedicated ? ' checked' : ''}><span>헌신</span></label>`
                 : (participant.dedicated ? '<span class="group-participant-state dedicated">헌신</span>' : '<span class="camper-na">—</span>');
+              const participantMemo = camperEditMode
+                ? `<textarea class="counselor-memo-input" placeholder="기도제목 · 참고사항" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorMemo" onblur="updateField(this)">${esc(participant.counselorMemo || '')}</textarea>`
+                : `<span class="${participant.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(participant.counselorMemo || '')}">${esc(participant.counselorMemo || '—')}</span>`;
               const participantGender = camperEditMode
                 ? `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
                   <option value="">성별</option>
@@ -863,6 +872,7 @@
                 <td>${participantCounselor}</td>
                 <td>${participantSalvation}</td>
                 <td>${participantDedication}</td>
+                <td>${participantMemo}</td>
                 <td colspan="3"></td>
                 <td>${participantGender}</td>
                 <td colspan="6"></td>
@@ -870,7 +880,7 @@
             }).join('');
           })()
           : r.registrationType === 'group'
-          ? `<tr class="group-participant-row legacy"><td></td><td colspan="17">참여 인원 수를 확인해주세요.</td></tr>`
+          ? `<tr class="group-participant-row legacy"><td></td><td colspan="18">참여 인원 수를 확인해주세요.</td></tr>`
           : '';
 
         return `<tr class="${rowClass}" style="${rowStyle}">
@@ -882,6 +892,7 @@
           <td>${counselorCell}</td>
           <td>${salvationCell}</td>
           <td>${dedicationCell}</td>
+          <td>${counselorMemoCell}</td>
           <td>${esc(r.phone)}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
           <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
@@ -1213,7 +1224,7 @@
       } else {
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
         if (regs.length === 0) { showToast('다운로드할 신청 데이터가 없습니다.', 'error'); return; }
-        const headers = ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
+        const headers = ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const gradeOrCount = r.registrationType === 'group' ? `단체 ${r.groupCount}명` : (r.grade || '');
@@ -1230,13 +1241,13 @@
           const participantList = Array.isArray(r.participants)
             ? r.participants.map((participant, index) => {
                 const participantCounselor = allRegs.find(staff => staff.regId === participant.counselorRegId && staff.campId === r.campId);
-                return `${index + 1}. ${participant.name || '미입력'} (${participant.gender === 'male' ? '남' : participant.gender === 'female' ? '여' : '성별 미입력'}${participantCounselor ? ` / ${participantCounselor.name}` : ''}${participant.saved ? ' / 구원' : ''}${participant.dedicated ? ' / 헌신' : ''})`;
+                return `${index + 1}. ${participant.name || '미입력'} (${participant.gender === 'male' ? '남' : participant.gender === 'female' ? '여' : '성별 미입력'}${participantCounselor ? ` / ${participantCounselor.name}` : ''}${participant.saved ? ' / 구원' : ''}${participant.dedicated ? ' / 헌신' : ''}${participant.counselorMemo ? ` / 상담자 메모: ${participant.counselorMemo}` : ''})`;
               }).join('\n')
             : '';
           return [
             i + 1, statusVal, CAMP_LABELS[r.campId] || r.campId,
             r.registrationType === 'group' ? '단체' : '개인',
-            r.name, participantList, counselor?.name || '', r.saved ? 'O' : '', r.dedicated ? 'O' : '',
+            r.name, participantList, counselor?.name || '', r.saved ? 'O' : '', r.dedicated ? 'O' : '', r.counselorMemo || '',
             r.phone, r.email, gradeOrCount, genderVal,
             r.church || '', r.school || '', r.emergency || '',
             r.notes || '', date, r.regId,
