@@ -575,9 +575,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .addr-status.warning { color:#b06b16; }
   @media(max-width:768px) {
     .view-tabs { display:none; }
-    .app-body:not(.split) { flex-direction:column; }
+    .app-body:not(.split) { min-height:0; flex-direction:column; }
     .app-body:not(.split) .map-panel { order:-1; }
-    .app-body:not(.split) .list-panel { order:0; }
+    .app-body:not(.split) .list-panel { order:0; flex:none; overflow-y:visible; }
+    .app-body:not(.split) .list-panel-inner { flex:none; padding-bottom:calc(4rem + env(safe-area-inset-bottom)); }
     .map-panel { display:block; flex:0 0 260px; height:260px; }
     .map-search-box { left:10px; right:10px; width:auto; }
   }
@@ -873,6 +874,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   // ── 로그인 화면 ──
   function renderLogin() {
+    resetCrsMap();
     setCrsAppActive(false);
     root.innerHTML = `
       <div class="login-wrap">
@@ -918,6 +920,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   // ── 회원가입 화면 ──
   function renderSignup() {
+    resetCrsMap();
     setCrsAppActive(false);
     root.innerHTML = `
       <div class="login-wrap">
@@ -972,6 +975,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   // ── 승인 대기 화면 ──
   function renderPending() {
+    resetCrsMap();
     setCrsAppActive(false);
     root.innerHTML = `
       <div class="pending-wrap">
@@ -991,6 +995,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   // ── 메인 앱 화면 ──
   function renderApp() {
+    resetCrsMap();
     setCrsAppActive(true);
     const isKo = getLang() === 'ko';
     const purposeOptions = STEPS.map((s, i) => {
@@ -2118,6 +2123,15 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
     updateCrsMarkers();
     initMapSearch();
+  }
+
+  function resetCrsMap() {
+    crsMarkers.forEach(marker => marker.setMap(null));
+    crsMarkers = [];
+    if (crsMap) {
+      crsMap.destroy();
+      crsMap = null;
+    }
   }
 
   function updateCrsMarkers() {
