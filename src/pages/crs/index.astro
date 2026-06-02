@@ -1952,6 +1952,29 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     return null;
   }
 
+  function getSavedChurchCoords(church) {
+    if (church.lat == null || church.lng == null || church.lat === '' || church.lng === '') {
+      return getChurchCoords(church.region, church.district);
+    }
+    const lat = Number(church.lat);
+    const lng = Number(church.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) return [lat, lng];
+    return getChurchCoords(church.region, church.district);
+  }
+
+  function getChurchMarkerIcon(markerColor, rank) {
+    return {
+      content: `<div style="width:32px;height:42px;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,.28));">
+        <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M16 1C7.7 1 1 7.5 1 15.6 1 26.7 16 41 16 41s15-14.3 15-25.4C31 7.5 24.3 1 16 1Z" fill="${markerColor}" stroke="#fff" stroke-width="2"/>
+          <circle cx="16" cy="15.5" r="8" fill="rgba(255,255,255,.94)"/>
+          <text x="16" y="19" fill="${markerColor}" font-family="Arial, sans-serif" font-size="10" font-weight="800" text-anchor="middle">${rank ?? ''}</text>
+        </svg>
+      </div>`,
+      anchor: new naver.maps.Point(16, 42),
+    };
+  }
+
   function initCrsMap() {
     const mapEl = document.getElementById('crs-map');
     if (!mapEl || crsMap || typeof naver === 'undefined') return;
@@ -1974,12 +1997,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     crsMarkers.forEach(m => m.setMap(null));
     crsMarkers = [];
 
-    const pinnable = churches.filter(c => (c.lat && c.lng) || c.region);
+    const pinnable = churches.filter(c => getSavedChurchCoords(c));
     const emptyEl = document.getElementById('mapEmpty');
     if (emptyEl) emptyEl.style.display = pinnable.length ? 'none' : 'flex';
 
     pinnable.forEach(c => {
-      const coords = (c.lat && c.lng) ? [c.lat, c.lng] : getChurchCoords(c.region, c.district);
+      const coords = getSavedChurchCoords(c);
       if (!coords) return;
       const cm = churchColorMap[c.id];
       const markerColor = cm?.marker || '#004f68';
@@ -1987,13 +2010,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         position: new naver.maps.LatLng(coords[0], coords[1]),
         map: crsMap,
         title: c.churchName,
-        icon: {
-          content: `<div style="background:${markerColor};color:#fff;border-radius:20px;padding:5px 11px 5px 7px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.28);cursor:pointer;font-family:'Apple SD Gothic Neo',sans-serif;display:inline-flex;align-items:center;gap:5px;transform:translateX(-50%);">
-            <span style="background:rgba(255,255,255,.9);color:${markerColor};border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">${cm?.rank ?? ''}</span>
-            ${esc(c.churchName)}
-          </div>`,
-          anchor: new naver.maps.Point(0, 14),
-        },
+        icon: getChurchMarkerIcon(markerColor, cm?.rank),
       });
       naver.maps.Event.addListener(marker, 'click', () => {
         openDetailModal(c);
@@ -2079,7 +2096,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           results.classList.remove('open');
           input.value = '';
           if (item.isChurch) {
-            const coords = getChurchCoords(item.church.region, item.church.district);
+            const coords = getSavedChurchCoords(item.church);
             if (coords && crsMap) { crsMap.setCenter(new naver.maps.LatLng(coords[0], coords[1])); crsMap.setZoom(12); }
             if (window.innerWidth <= 768) switchCrsTab('list');
             openDetailModal(item.church);
