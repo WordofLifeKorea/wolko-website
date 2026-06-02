@@ -339,7 +339,9 @@ export async function onRequestPut(context) {
     }
 
     const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea', 'counselorRegId', 'saved', 'dedicated'];
-    if (!ALLOWED_FIELDS.includes(field)) {
+    const PARTICIPANT_FIELDS = ['name', 'gender', 'counselorRegId', 'saved', 'dedicated'];
+    const allowedFields = participantIndex === undefined ? ALLOWED_FIELDS : PARTICIPANT_FIELDS;
+    if (!allowedFields.includes(field)) {
       return Response.json({ error: '업데이트할 수 없는 필드입니다.' }, { status: 400, headers: CORS });
     }
 
@@ -354,27 +356,58 @@ export async function onRequestPut(context) {
     }
     if (field === 'counselorRegId' && value) {
       const counselor = await env.CAMP_KV.get(`camp:${campId}:reg:${value}`, 'json');
-      if (!counselor || counselor.registrationType !== 'staff') {
-        return Response.json({ error: '같은 캠프의 스태프만 카운슬러로 지정할 수 있습니다.' }, { status: 400, headers: CORS });
+      const counselorTeams = String(counselor?.serviceArea || counselor?.notes || '').split(',').map(team => team.trim());
+      if (!counselor || counselor.registrationType !== 'staff' || !counselorTeams.includes('상담자')) {
+        return Response.json({ error: '같은 캠프의 상담자 팀 스태프만 카운슬러로 지정할 수 있습니다.' }, { status: 400, headers: CORS });
       }
     }
 
     let updatedReg;
     if (participantIndex !== undefined) {
-      if (reg.registrationType !== 'group' || !Array.isArray(reg.participants)) {
-        return Response.json({ error: '학생 명단이 없는 단체 신청입니다.' }, { status: 400, headers: CORS });
+      if (reg.registrationType !== 'group') {
+        return Response.json({ error: '단체 신청의 학생 정보만 수정할 수 있습니다.' }, { status: 400, headers: CORS });
       }
       const index = Number(participantIndex);
-      if (!Number.isInteger(index) || index < 0 || index >= reg.participants.length) {
+      const groupCount = Math.max(parseInt(reg.groupCount) || 0, Array.isArray(reg.participants) ? reg.participants.length : 0);
+      if (!Number.isInteger(index) || index < 0 || index >= groupCount) {
         return Response.json({ error: '학생 정보가 올바르지 않습니다.' }, { status: 400, headers: CORS });
       }
-      if (!['counselorRegId', 'saved', 'dedicated'].includes(field)) {
-        return Response.json({ error: '학생 정보에서 업데이트할 수 없는 필드입니다.' }, { status: 400, headers: CORS });
+      if (field === 'gender' && value && !['male', 'female'].includes(value)) {
+        return Response.json({ error: '학생 성별 값이 올바르지 않습니다.' }, { status: 400, headers: CORS });
       }
-      const participants = reg.participants.map((participant, participantPosition) =>
-        participantPosition === index ? { ...participant, [field]: value } : participant
+      const participants = Array.from({ length: groupCount }, (_, participantPosition) =>
+        participantPosition === index
+          ? { ...(reg.participants?.[participantPosition] || {}), [field]: typeof value === 'string' ? value.trim() : value }
+          : { ...(reg.participants?.[participantPosition] || {}) }
       );
-      updatedReg = { ...reg, participants };
+      const allGendersEntered = participants.every(participant => ['male', 'female'].includes(participant.gender));
+      const nextMaleCount = allGendersEntered ? participants.filter(participant => participant.gender === 'male').length : (reg.maleCount || 0);
+      const nextFemaleCount = allGendersEntered ? participants.filter(participant => participant.gender === 'female').length : (reg.femaleCount || 0);
+      updatedReg = { ...reg, participants, maleCount: nextMaleCount, femaleCount: nextFemaleCount };
+
+      if (allGendersEntered && (nextMaleCount !== (reg.maleCount || 0) || nextFemaleCount !== (reg.femaleCount || 0))) {
+        const countKeyM = `camp:${campId}:count:male`;
+        const countKeyF = `camp:${campId}:count:female`;
+        const subKeyM = `camp:${campId}:submissions:male`;
+        const subKeyF = `camp:${campId}:submissions:female`;
+        const [curCountM, curCountF, curSubsM, curSubsF] = await Promise.all([
+          env.CAMP_KV.get(countKeyM).then(v => parseInt(v || '0')),
+          env.CAMP_KV.get(countKeyF).then(v => parseInt(v || '0')),
+          env.CAMP_KV.get(subKeyM).then(v => parseInt(v || '0')),
+          env.CAMP_KV.get(subKeyF).then(v => parseInt(v || '0')),
+        ]);
+        const maleDelta = nextMaleCount - (reg.maleCount || 0);
+        const femaleDelta = nextFemaleCount - (reg.femaleCount || 0);
+        const ops = [
+          env.CAMP_KV.put(subKeyM, String(Math.max(0, curSubsM + maleDelta))),
+          env.CAMP_KV.put(subKeyF, String(Math.max(0, curSubsF + femaleDelta))),
+        ];
+        if (isKvCounted(reg)) {
+          ops.push(env.CAMP_KV.put(countKeyM, String(Math.max(0, curCountM + maleDelta))));
+          ops.push(env.CAMP_KV.put(countKeyF, String(Math.max(0, curCountF + femaleDelta))));
+        }
+        await Promise.all(ops);
+      }
     } else {
       updatedReg = { ...reg, [field]: value };
     }

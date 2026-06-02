@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=11">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=12">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -778,7 +778,7 @@
           .filter(staff => staff.registrationType === 'staff'
             && staff.campId === r.campId
             && String(staff.serviceArea || staff.notes || '').split(',').map(team => team.trim()).includes('상담자'))
-          .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ko'))
+          .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ko'));
         const staffOptions = counselorStaff
           .map(staff => `<option value="${esc(staff.regId)}"${staff.regId === r.counselorRegId ? ' selected' : ''}>${esc(staff.name)}</option>`)
           .join('');
@@ -794,9 +794,16 @@
         const dedicationCell = r.registrationType === 'group'
           ? '<span class="camper-na">—</span>'
           : `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="dedicated" onchange="updateField(this)"${r.dedicated ? ' checked' : ''}><span>헌신</span></label>`;
-        const participantRows = r.registrationType === 'group' && Array.isArray(r.participants) && r.participants.length
-          ? r.participants.map((participant, participantIndex) => {
+        const groupParticipants = r.registrationType === 'group'
+          ? Array.from(
+              { length: Math.max(Number(r.groupCount) || 0, Array.isArray(r.participants) ? r.participants.length : 0) },
+              (_, participantIndex) => r.participants?.[participantIndex] || {}
+            )
+          : [];
+        const participantRows = groupParticipants.length
+          ? groupParticipants.map((participant, participantIndex) => {
               const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
+              const participantName = `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="학생 이름" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`;
               const participantCounselor = `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorRegId" onchange="updateField(this)">
                   <option value="">미배정</option>
                   ${counselorStaff
@@ -805,13 +812,15 @@
                 </select>`;
               const participantSalvation = `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="saved" onchange="updateField(this)"${participant.saved ? ' checked' : ''}><span>구원</span></label>`;
               const participantDedication = `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="dedicated" onchange="updateField(this)"${participant.dedicated ? ' checked' : ''}><span>헌신</span></label>`;
-              const participantGender = participant.gender === 'male'
-                ? '<span class="group-participant-gender male">남</span>'
-                : '<span class="group-participant-gender female">여</span>';
+              const participantGender = `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
+                  <option value="">성별</option>
+                  <option value="male"${participant.gender === 'male' ? ' selected' : ''}>남</option>
+                  <option value="female"${participant.gender === 'female' ? ' selected' : ''}>여</option>
+                </select>`;
               return `<tr class="group-participant-row${participantClass}">
                 <td></td>
                 <td colspan="3"><span class="group-participant-label">학생 ${participantIndex + 1}</span></td>
-                <td class="group-participant-name">${esc(participant.name)}</td>
+                <td class="group-participant-name">${participantName}</td>
                 <td>${participantCounselor}</td>
                 <td>${participantSalvation}</td>
                 <td>${participantDedication}</td>
@@ -821,7 +830,7 @@
               </tr>`;
             }).join('')
           : r.registrationType === 'group'
-          ? `<tr class="group-participant-row legacy"><td></td><td colspan="17">기존 단체 신청 데이터입니다. 학생별 명단은 등록되어 있지 않습니다.</td></tr>`
+          ? `<tr class="group-participant-row legacy"><td></td><td colspan="17">참여 인원 수를 확인해주세요.</td></tr>`
           : '';
 
         return `<tr class="${rowClass}" style="${rowStyle}">
@@ -1021,7 +1030,7 @@
 
       const reg = allRegs.find(r => r.regId === regId);
       if (!reg) return;
-      const record = participantIndex === undefined ? reg : reg.participants?.[Number(participantIndex)];
+      const record = participantIndex === undefined ? reg : (reg.participants?.[Number(participantIndex)] || {});
       if (!record) return;
 
       // 값 변경 없으면 스킵
@@ -1037,11 +1046,19 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || '업데이트 실패');
-        record[field] = value;
+        if (participantIndex === undefined) {
+          record[field] = value;
+        } else {
+          Object.assign(reg, data.reg);
+        }
         inputEl.classList.remove('saving');
         inputEl.classList.add('saved');
         setTimeout(() => inputEl.classList.remove('saved'), 1500);
-        if (inputEl.type === 'checkbox') renderCampTable();
+        if (participantIndex !== undefined || inputEl.type === 'checkbox') {
+          updateCardStats();
+          renderCampTable();
+          renderDash();
+        }
         showToast('저장되었습니다.', 'success');
       } catch (e) {
         if (inputEl.type === 'checkbox') inputEl.checked = original;
@@ -1159,7 +1176,7 @@
           const participantList = Array.isArray(r.participants)
             ? r.participants.map((participant, index) => {
                 const participantCounselor = allRegs.find(staff => staff.regId === participant.counselorRegId && staff.campId === r.campId);
-                return `${index + 1}. ${participant.name} (${participant.gender === 'male' ? '남' : '여'}${participantCounselor ? ` / ${participantCounselor.name}` : ''}${participant.saved ? ' / 구원' : ''}${participant.dedicated ? ' / 헌신' : ''})`;
+                return `${index + 1}. ${participant.name || '미입력'} (${participant.gender === 'male' ? '남' : participant.gender === 'female' ? '여' : '성별 미입력'}${participantCounselor ? ` / ${participantCounselor.name}` : ''}${participant.saved ? ' / 구원' : ''}${participant.dedicated ? ' / 헌신' : ''})`;
               }).join('\n')
             : '';
           return [
