@@ -549,7 +549,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .view-tabs { display:none; background:#fff; border-bottom:2px solid #e5edf1; flex-shrink:0; }
   .view-tab { flex:1; padding:.72rem; border:none; background:transparent; font-size:.88rem; font-weight:700; color:#8aacba; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; transition:color .15s, border-color .15s; font-family:inherit; }
   .view-tab.active { color:#004f68; border-bottom-color:#004f68; }
-  .map-panel { flex:1; min-width:0; position:relative; overflow:hidden; background:#e8edf0; }
+  .map-panel { flex:1; min-width:0; position:relative; overflow:hidden; box-sizing:border-box; padding:14px 16px 16px 14px; background:#e4ecee; }
+  .map-panel-shell { display:flex; flex-direction:column; height:100%; overflow:hidden; border:1px solid #cbdcdf; border-radius:11px; background:#fff; box-shadow:0 8px 24px rgba(20,52,64,.09); }
+  .map-panel-head { display:flex; align-items:center; gap:.68rem; flex:0 0 auto; min-height:52px; box-sizing:border-box; padding:.65rem .9rem; border-bottom:1px solid #dbe7e9; background:#fbfcfc; }
+  .map-panel-head-icon { display:flex; align-items:center; justify-content:center; width:30px; height:30px; flex:0 0 auto; border-radius:8px; background:#e4f3f5; color:#087a91; }
+  .map-panel-head-copy { min-width:0; }
+  .map-panel-head-title { display:block; color:#173742; font-size:.84rem; font-weight:850; line-height:1.2; }
+  .map-panel-head-sub { display:block; margin-top:.16rem; color:#81959d; font-size:.7rem; line-height:1.2; }
+  .map-panel-canvas { position:relative; flex:1; min-height:0; overflow:hidden; background:#e8edf0; }
   #crs-map { position:absolute; inset:0; width:100%; height:100%; }
   .app-body.split .map-panel { display:none; }
   .map-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#aab8c0; font-size:.85rem; gap:.5rem; pointer-events:none; }
@@ -589,7 +596,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     .app-body:not(.split) .map-panel { order:-1; }
     .app-body:not(.split) .list-panel { order:0; flex:none; overflow-y:visible; }
     .app-body:not(.split) .list-panel-inner { flex:none; padding-bottom:calc(1rem + env(safe-area-inset-bottom)); }
-    .map-panel { display:block; flex:0 0 260px; height:260px; }
+    .map-panel { display:block; flex:0 0 260px; height:260px; padding:0; }
+    .map-panel-shell { border:none; border-radius:0; box-shadow:none; }
+    .map-panel-head { display:none; }
     .map-search-box { left:10px; right:10px; width:auto; }
   }
 </style>
@@ -1054,19 +1063,32 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         </div>
         <!-- 가운데: 지도 패널 -->
         <div class="map-panel" id="mapPanel">
-          <div id="crs-map"></div>
-          <div class="map-search-box" id="mapSearchBox">
-            <input class="map-search-input" id="mapSearchInput" type="text"
-              placeholder="${isKo ? '주소 또는 장소 검색...' : 'Search address or place...'}"
-              autocomplete="off">
-            <button class="map-search-btn" id="mapSearchBtn" type="button">
-              <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2"/><path d="M14 14l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            </button>
-            <div class="map-search-results" id="mapSearchResults"></div>
-          </div>
-          <div class="map-empty" id="mapEmpty">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>${isKo ? '교회를 추가하면 지도에 표시됩니다' : 'Churches will appear on the map'}</span>
+          <div class="map-panel-shell">
+            <div class="map-panel-head">
+              <span class="map-panel-head-icon" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-6-4.4-6-10a6 6 0 1 1 12 0c0 5.6-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>
+              </span>
+              <span class="map-panel-head-copy">
+                <strong class="map-panel-head-title">${isKo ? '교회 위치 지도' : 'Church location map'}</strong>
+                <span class="map-panel-head-sub">${isKo ? '등록된 교회를 한눈에 확인하세요' : 'View registered churches at a glance'}</span>
+              </span>
+            </div>
+            <div class="map-panel-canvas">
+              <div id="crs-map"></div>
+              <div class="map-search-box" id="mapSearchBox">
+                <input class="map-search-input" id="mapSearchInput" type="text"
+                  placeholder="${isKo ? '주소 또는 장소 검색...' : 'Search address or place...'}"
+                  autocomplete="off">
+                <button class="map-search-btn" id="mapSearchBtn" type="button">
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2"/><path d="M14 14l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+                <div class="map-search-results" id="mapSearchResults"></div>
+              </div>
+              <div class="map-empty" id="mapEmpty">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>${isKo ? '교회를 추가하면 지도에 표시됩니다' : 'Churches will appear on the map'}</span>
+              </div>
+            </div>
           </div>
         </div>
         <!-- 오른쪽: 상세 패널 -->
