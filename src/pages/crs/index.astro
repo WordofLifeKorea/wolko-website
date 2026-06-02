@@ -1533,7 +1533,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   // ── 교회 상세 모달 ──
-  function openDetailModal(church) {
+  function openDetailModal(church, { updateHistory = true } = {}) {
     viewingChurch = church;
     const done = STEPS.filter((_,i) => (church.steps||{})[i+1]).length;
     const pct  = Math.round(done / STEPS.length * 100);
@@ -1558,10 +1558,19 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.body.classList.add('crs-detail-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     document.querySelector(`.church-card[data-id="${esc(church.id)}"]`)?.classList.add('selected');
+    if (updateHistory) {
+      const state = { ...(history.state || {}), crsDetail: true, crsChurchId: church.id };
+      if (history.state?.crsDetail) history.replaceState(state, '', location.href);
+      else history.pushState(state, '', location.href);
+    }
   }
 
-  function closeDetailModal() {
-    document.getElementById('appBody').classList.remove('split');
+  function closeDetailModal({ useHistory = true } = {}) {
+    if (useHistory && history.state?.crsDetail) {
+      history.back();
+      return;
+    }
+    document.getElementById('appBody')?.classList.remove('split');
     document.body.classList.remove('crs-detail-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     viewingChurch = null;
@@ -1915,7 +1924,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         document.getElementById('searchInput').value = searchVal;
         renderChurchList();
         if (editOpen) openEditModal(editingChurch);
-        if (detailOpen && viewingChurch) openDetailModal(viewingChurch);
+        if (detailOpen && viewingChurch) openDetailModal(viewingChurch, { updateHistory: false });
       } else {
         renderPending();
       }
@@ -1923,6 +1932,17 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       renderLogin();
     }
   }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+  window.addEventListener('popstate', event => {
+    if (event.state?.crsDetail) {
+      const church = churches.find(c => c.id === event.state.crsChurchId);
+      if (church) {
+        openDetailModal(church, { updateHistory: false });
+        return;
+      }
+    }
+    closeDetailModal({ useHistory: false });
+  });
 
   // ── PWA 설치 프롬프트 ──
   let deferredInstallPrompt = null;
