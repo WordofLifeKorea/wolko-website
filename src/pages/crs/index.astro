@@ -11,7 +11,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WOLKO CRS">
     <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
-    <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}&submodules=geocoder`}></script>
+    <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
   </Fragment>
   <div id="crs-root"></div>
 </BaseLayout>
@@ -1962,86 +1962,67 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const results = document.getElementById('mapSearchResults');
     if (!input) return;
 
-    function doSearch() {
+    async function doSearch() {
       const q = input.value.trim();
       if (!q) return;
       results.innerHTML = `<div class="map-search-item no-result">검색 중...</div>`;
       results.classList.add('open');
 
-      // 1) 등록된 교회 중 검색
+      // 등록된 교회 중 매칭
       const matchedChurches = churches.filter(c =>
         (c.churchName || '').includes(q) || (c.location || '').includes(q) || (c.pastorName || '').includes(q)
       );
 
-      if (typeof naver !== 'undefined' && naver.maps.Service) {
-        naver.maps.Service.geocode({ query: q }, (status, res) => {
-          const items = [];
-
-          // 교회 결과
-          matchedChurches.slice(0, 3).forEach(c => {
-            items.push({ label: c.churchName, sub: c.location || '', isChurch: true, church: c });
-          });
-
-          // 지오코딩 결과
-          if (status === naver.maps.Service.Status.OK && res.v2?.addresses?.length) {
-            res.v2.addresses.slice(0, 4).forEach(addr => {
-              items.push({ label: addr.roadAddress || addr.jibunAddress, sub: addr.englishAddress || '', lat: parseFloat(addr.y), lng: parseFloat(addr.x) });
-            });
-          }
-
-          if (!items.length) {
-            results.innerHTML = `<div class="map-search-item no-result">검색 결과가 없습니다</div>`;
-            return;
-          }
-
-          results.innerHTML = items.map((item, i) => `
-            <div class="map-search-item" data-idx="${i}">
-              ${item.isChurch ? '<svg width="10" height="10" viewBox="0 0 10 10" style="margin-right:4px;color:#004f68"><path d="M5 1L1 4v5h3V7h2v2h3V4z" fill="currentColor"/></svg>' : ''}
-              ${esc(item.label)}
-              ${item.sub ? `<small>${esc(item.sub)}</small>` : ''}
-            </div>`).join('');
-
-          results.querySelectorAll('.map-search-item').forEach((el, i) => {
-            el.addEventListener('click', () => {
-              const item = items[i];
-              results.classList.remove('open');
-              input.value = '';
-              if (item.isChurch) {
-                const coords = getChurchCoords(item.church.region, item.church.district);
-                if (coords && crsMap) {
-                  crsMap.setCenter(new naver.maps.LatLng(coords[0], coords[1]));
-                  crsMap.setZoom(12);
-                }
-                if (window.innerWidth <= 768) switchCrsTab('list');
-                openDetailModal(item.church);
-              } else if (item.lat && crsMap) {
-                crsMap.setCenter(new naver.maps.LatLng(item.lat, item.lng));
-                crsMap.setZoom(14);
-              }
-            });
-          });
-        });
-      } else {
-        // naver.maps.Service 없을 때 → 교회만 검색
-        if (!matchedChurches.length) {
-          results.innerHTML = `<div class="map-search-item no-result">검색 결과가 없습니다</div>`;
-          return;
+      // 프록시를 통한 지오코딩
+      let geoAddresses = [];
+      try {
+        const res = await fetch(`/api/geocode?query=${encodeURIComponent(q)}`);
+        if (res.ok) {
+          const data = await res.json();
+          geoAddresses = data.addresses || [];
         }
-        results.innerHTML = matchedChurches.slice(0, 5).map((c, i) => `
-          <div class="map-search-item" data-idx="${i}">
-            ${esc(c.churchName)}<small>${esc(c.location || '')}</small>
-          </div>`).join('');
-        results.querySelectorAll('.map-search-item').forEach((el, i) => {
-          el.addEventListener('click', () => {
-            results.classList.remove('open');
-            input.value = '';
-            const coords = getChurchCoords(matchedChurches[i].region, matchedChurches[i].district);
+      } catch (e) { /* 지오코딩 실패 시 교회 결과만 표시 */ }
+
+      const items = [];
+      matchedChurches.slice(0, 3).forEach(c => {
+        items.push({ label: c.churchName, sub: c.location || '', isChurch: true, church: c });
+      });
+      geoAddresses.slice(0, 4).forEach(addr => {
+        items.push({
+          label: addr.roadAddress || addr.jibunAddress,
+          sub: addr.jibunAddress !== addr.roadAddress ? addr.jibunAddress : '',
+          lat: parseFloat(addr.y), lng: parseFloat(addr.x),
+        });
+      });
+
+      if (!items.length) {
+        results.innerHTML = `<div class="map-search-item no-result">검색 결과가 없습니다</div>`;
+        return;
+      }
+
+      results.innerHTML = items.map((item, i) => `
+        <div class="map-search-item" data-idx="${i}">
+          ${item.isChurch ? '<svg width="10" height="10" viewBox="0 0 10 10" style="margin-right:4px;color:#004f68"><path d="M5 1L1 4v5h3V7h2v2h3V4z" fill="currentColor"/></svg>' : ''}
+          ${esc(item.label)}
+          ${item.sub ? `<small>${esc(item.sub)}</small>` : ''}
+        </div>`).join('');
+
+      results.querySelectorAll('.map-search-item').forEach((el, i) => {
+        el.addEventListener('click', () => {
+          const item = items[i];
+          results.classList.remove('open');
+          input.value = '';
+          if (item.isChurch) {
+            const coords = getChurchCoords(item.church.region, item.church.district);
             if (coords && crsMap) { crsMap.setCenter(new naver.maps.LatLng(coords[0], coords[1])); crsMap.setZoom(12); }
             if (window.innerWidth <= 768) switchCrsTab('list');
-            openDetailModal(matchedChurches[i]);
-          });
+            openDetailModal(item.church);
+          } else if (item.lat && crsMap) {
+            crsMap.setCenter(new naver.maps.LatLng(item.lat, item.lng));
+            crsMap.setZoom(14);
+          }
         });
-      }
+      });
     }
 
     btn.addEventListener('click', doSearch);
