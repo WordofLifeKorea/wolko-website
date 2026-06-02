@@ -1057,14 +1057,24 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
                 <input type="tel" id="fPastorPhone" placeholder="${t('pastor_phone_ph')}">
               </div>
             </div>
-            <div class="form-group">
-              <label>${isKo ? '도로명 주소' : 'Address'}</label>
-              <div class="addr-wrap">
-                <input type="text" id="fAddress" placeholder="${isKo ? '예: 경기도 평택시 세교로 48' : 'e.g. 48 Segyo-ro, Pyeongtaek-si'}" autocomplete="off">
-                <div class="addr-suggestions" id="addrSuggestions"></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>${t('location')}</label>
+                <select id="fRegion">
+                  <option value="">${t('region_ph')}</option>
+                  ${Object.keys(REGIONS).map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('')}
+                </select>
               </div>
-              <input type="hidden" id="fLat">
-              <input type="hidden" id="fLng">
+              <div class="form-group">
+                <label>${t('district')}</label>
+                <select id="fDistrict" disabled>
+                  <option value="">${t('district_ph')}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>${isKo ? '세부 주소' : 'Detail Address'}</label>
+              <input type="text" id="fDetailAddress" placeholder="${isKo ? '예: 세교로 48 (선택사항)' : 'e.g. 48 Segyo-ro (optional)'}">
             </div>
             <div class="form-group">
               <label>${t('notes')}</label>
@@ -1147,39 +1157,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('detailPanelClose').addEventListener('click', closeDetailModal);
     document.getElementById('searchInput').addEventListener('input', renderChurchList);
 
-    // 주소 자동완성
-    let addrDebounce = null;
-    document.getElementById('fAddress').addEventListener('input', function() {
-      clearTimeout(addrDebounce);
-      document.getElementById('fLat').value = '';
-      document.getElementById('fLng').value = '';
-      const q = this.value.trim();
-      const sugg = document.getElementById('addrSuggestions');
-      if (!q || q.length < 2) { sugg.classList.remove('open'); return; }
-      addrDebounce = setTimeout(async () => {
-        try {
-          const res = await fetch(`/api/geocode?query=${encodeURIComponent(q)}`);
-          if (!res.ok) return;
-          const data = await res.json();
-          const addrs = (data.addresses || []).slice(0, 5);
-          if (!addrs.length) { sugg.classList.remove('open'); return; }
-          sugg.innerHTML = addrs.map((a, i) =>
-            `<div class="addr-suggestion-item" data-idx="${i}" data-lat="${esc(a.y)}" data-lng="${esc(a.x)}">${esc(a.roadAddress || a.jibunAddress)}</div>`
-          ).join('');
-          sugg.classList.add('open');
-          sugg.querySelectorAll('.addr-suggestion-item').forEach(el => {
-            el.addEventListener('click', () => {
-              document.getElementById('fAddress').value = el.textContent.trim();
-              document.getElementById('fLat').value = el.dataset.lat;
-              document.getElementById('fLng').value = el.dataset.lng;
-              sugg.classList.remove('open');
-            });
-          });
-        } catch(e) {}
-      }, 350);
-    });
-    document.addEventListener('click', e => {
-      if (!e.target.closest('.addr-wrap')) document.getElementById('addrSuggestions')?.classList.remove('open');
+    // 시/도 → 시/군/구 연동
+    document.getElementById('fRegion').addEventListener('change', function() {
+      const districtEl = document.getElementById('fDistrict');
+      const region = this.value;
+      if (region && REGIONS[region]) {
+        districtEl.innerHTML = `<option value="">${t('district_ph_select')}</option>` +
+          REGIONS[region].map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+        districtEl.disabled = false;
+      } else {
+        districtEl.innerHTML = `<option value="">${t('district_ph')}</option>`;
+        districtEl.disabled = true;
+      }
     });
 
     document.querySelectorAll('.view-tab').forEach(btn => {
@@ -1294,10 +1283,22 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('fPastorName').value = church?.pastorName || '';
     document.getElementById('fPastorPhone').value = church?.pastorPhone || '';
     document.getElementById('fNotes').value = church?.notes || '';
-    document.getElementById('fAddress').value = church?.address || church?.location || '';
-    document.getElementById('fLat').value = church?.lat || '';
-    document.getElementById('fLng').value = church?.lng || '';
-    document.getElementById('addrSuggestions').classList.remove('open');
+    document.getElementById('fDetailAddress').value = church?.detailAddress || '';
+
+    const regionEl   = document.getElementById('fRegion');
+    const districtEl = document.getElementById('fDistrict');
+    const savedRegion   = church?.region || '';
+    const savedDistrict = church?.district || '';
+    regionEl.value = savedRegion;
+    if (savedRegion && REGIONS[savedRegion]) {
+      districtEl.innerHTML = `<option value="">${t('district_ph_select')}</option>` +
+        REGIONS[savedRegion].map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+      districtEl.disabled = false;
+      districtEl.value = savedDistrict;
+    } else {
+      districtEl.innerHTML = `<option value="">${t('district_ph')}</option>`;
+      districtEl.disabled = true;
+    }
 
     document.getElementById('editModal').classList.add('open');
     setTimeout(() => document.getElementById('fChurchName').focus(), 100);
@@ -1318,26 +1319,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     saveBtn.textContent = t('saving');
 
     const now = Date.now();
-    const address = document.getElementById('fAddress').value.trim();
-    let lat = parseFloat(document.getElementById('fLat').value) || null;
-    let lng = parseFloat(document.getElementById('fLng').value) || null;
-    if (address && (!lat || !lng)) {
-      try {
-        const geoRes = await fetch(`/api/geocode?query=${encodeURIComponent(address)}`);
-        if (geoRes.ok) {
-          const geoData = await geoRes.json();
-          if (geoData.addresses?.length) {
-            lat = parseFloat(geoData.addresses[0].y);
-            lng = parseFloat(geoData.addresses[0].x);
-          }
-        }
-      } catch(e) {}
-    }
+    const region        = document.getElementById('fRegion').value;
+    const district      = document.getElementById('fDistrict').value;
+    const detailAddress = document.getElementById('fDetailAddress').value.trim();
     const data = {
       churchName, pastorName,
       pastorPhone: document.getElementById('fPastorPhone').value.trim(),
-      address, lat, lng,
-      location: address,
+      region, district, detailAddress,
+      location: [region, district, detailAddress].filter(Boolean).join(' '),
       notes: document.getElementById('fNotes').value.trim(),
       updatedAt: now, updatedBy: currentUser.uid,
     };
@@ -1929,12 +1918,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     crsMarkers.forEach(m => m.setMap(null));
     crsMarkers = [];
 
-    const pinnable = churches.filter(c => (c.lat && c.lng) || c.region);
+    const pinnable = churches.filter(c => c.region);
     const emptyEl = document.getElementById('mapEmpty');
     if (emptyEl) emptyEl.style.display = pinnable.length ? 'none' : 'flex';
 
     pinnable.forEach(c => {
-      const coords = (c.lat && c.lng) ? [c.lat, c.lng] : getChurchCoords(c.region, c.district);
+      const coords = getChurchCoords(c.region, c.district);
       if (!coords) return;
       const done = STEPS.filter((_, i) => (c.steps || {})[i+1]).length;
       const isComplete = done === STEPS.length;
