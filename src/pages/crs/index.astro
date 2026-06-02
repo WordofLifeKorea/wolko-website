@@ -1241,7 +1241,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
 
     loadChurches();
-    setTimeout(() => initCrsMap(), 150);
+    ensureCrsMap();
   }
 
   // ── 교회 목록 로드 ──
@@ -1261,7 +1261,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     }
     buildColorMap();
     renderChurchList();
-    updateCrsMarkers();
+    ensureCrsMap();
   }
 
   // ── 교회 목록 렌더 ──
@@ -1965,6 +1965,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   // ── 네이버 지도 ──
   let crsMap = null;
   let crsMarkers = [];
+  let crsMapElement = null;
+  let crsMapInitTimer = null;
 
   const DISTRICT_COORDS = {
     '서울특별시':[37.5665,126.9780],'부산광역시':[35.1796,129.0756],'대구광역시':[35.8714,128.6014],
@@ -2111,7 +2113,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   function initCrsMap() {
     const mapEl = document.getElementById('crs-map');
-    if (!mapEl || crsMap || typeof naver === 'undefined') return;
+    if (!mapEl || typeof naver === 'undefined') return;
+    if (crsMap && crsMapElement === mapEl && document.contains(mapEl)) {
+      crsMap.autoResize();
+      updateCrsMarkers();
+      return;
+    }
+    resetCrsMap();
     crsMap = new naver.maps.Map(mapEl, {
       center: new naver.maps.LatLng(36.5, 127.8),
       zoom: 7,
@@ -2121,17 +2129,29 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         style: naver.maps.ZoomControlStyle.SMALL,
       },
     });
+    crsMapElement = mapEl;
     updateCrsMarkers();
     initMapSearch();
   }
 
+  function ensureCrsMap() {
+    clearTimeout(crsMapInitTimer);
+    crsMapInitTimer = setTimeout(() => {
+      crsMapInitTimer = null;
+      initCrsMap();
+    }, 80);
+  }
+
   function resetCrsMap() {
+    clearTimeout(crsMapInitTimer);
+    crsMapInitTimer = null;
     crsMarkers.forEach(marker => marker.setMap(null));
     crsMarkers = [];
     if (crsMap) {
-      crsMap.destroy();
+      try { crsMap.destroy(); } catch(e) {}
       crsMap = null;
     }
+    crsMapElement = null;
   }
 
   function updateCrsMarkers() {
