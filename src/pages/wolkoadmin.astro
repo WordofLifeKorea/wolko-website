@@ -66,6 +66,8 @@
   </header>
 
   <div class="adm-wrap">
+    <!-- SEASON TABS -->
+    <div class="season-tabs" id="seasonTabs"></div>
     <!-- CAMP CARDS -->
     <div class="camp-cards" id="campCards"></div>
 
@@ -261,27 +263,44 @@
   <div class="toast" id="toast"></div>
 
   <script is:inline>
-    const CAMP_GROUPS = [
+    // ── 시즌 데이터 ──────────────────────────────────────────────────────────────
+    // 새 시즌 추가 시 SEASONS 배열에 항목 추가 (최신 시즌이 마지막에 위치)
+    const SEASONS = [
       {
-        group: 'wolko',
-        label: 'WOLKO 캠프',
-        camps: [
-          { id: '2026-inland-english-junior', title: '2026 여름 주니어 영어 캠프', dateKo: '7월 27일 – 8월 1일', capacity: 40 },
-          { id: '2026-inland-union',          title: '2026 교회 연합캠프',   dateKo: '8월 6일 – 8일',    capacity: 40 },
+        id: '2026-summer',
+        label: '2026 여름',
+        groups: [
+          {
+            group: 'wolko',
+            label: 'WOLKO 캠프',
+            camps: [
+              { id: '2026-inland-english-junior', title: '2026 여름 주니어 영어 캠프', dateKo: '7월 27일 – 8월 1일', capacity: 40 },
+              { id: '2026-inland-union',          title: '2026 교회 연합캠프',          dateKo: '8월 6일 – 8일',    capacity: 40 },
+            ],
+          },
         ],
       },
-      // 제주 캠프는 카페에서 별도 신청 — 추후 필요 시 아래 주석 해제
+      // 다음 시즌 추가 예시:
       // {
-      //   group: 'jeju',
-      //   label: 'JEJU 캠프',
-      //   camps: [
-      //     { id: '2026-jeju-english',    title: '제주 영어캠프', capacity: 60 },
-      //     { id: '2026-jeju-momentum-1', title: '모멘텀 1차',    capacity: 60 },
-      //     { id: '2026-jeju-momentum-2', title: '모멘텀 2차',    capacity: 60 },
+      //   id: '2027-winter',
+      //   label: '2027 겨울',
+      //   groups: [
+      //     {
+      //       group: 'wolko',
+      //       label: 'WOLKO 캠프',
+      //       camps: [
+      //         { id: '2027-winter-camp-1', title: '2027 겨울 캠프', dateKo: '1월 10일 – 15일', capacity: 40 },
+      //       ],
+      //     },
       //   ],
       // },
     ];
-    const CAMPS_ALL = [{ id: 'all', title: '전체 캠프', capacity: 80 }]
+
+    // 하위 호환: CAMP_GROUPS는 전체 시즌 통합 목록
+    const CAMP_GROUPS = SEASONS.flatMap(s =>
+      s.groups.map(g => ({ ...g, seasonId: s.id }))
+    );
+    const CAMPS_ALL = [{ id: 'all', title: '전체 캠프', capacity: 9999 }]
       .concat(CAMP_GROUPS.flatMap(g => g.camps));
     const CAMP_LABELS = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.title]));
     const CAMP_CAP    = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.capacity]));
@@ -310,6 +329,7 @@
 
     let allRegs = [];
     let activeCamp = 'all';
+    let activeSeason = SEASONS[SEASONS.length - 1].id; // 최신 시즌 기본 선택
     let sortState = { key: 'registeredAt', direction: 'desc' };
     let authToken = sessionStorage.getItem('wolko-admin-token') || '';
     let staffEditMode = false;
@@ -405,11 +425,48 @@
       return card;
     }
 
+    function buildSeasonTabs() {
+      const wrap = document.getElementById('seasonTabs');
+      if (!wrap) return;
+      // 시즌이 1개뿐이면 탭 숨김
+      if (SEASONS.length <= 1) { wrap.style.display = 'none'; return; }
+      wrap.innerHTML = '';
+      // 전체 탭
+      const allTab = document.createElement('button');
+      allTab.className = 'season-tab' + (activeSeason === 'all' ? ' active' : '');
+      allTab.textContent = '전체';
+      allTab.onclick = () => selectSeason('all');
+      wrap.appendChild(allTab);
+      // 시즌별 탭
+      SEASONS.forEach(s => {
+        const tab = document.createElement('button');
+        tab.className = 'season-tab' + (activeSeason === s.id ? ' active' : '');
+        tab.textContent = s.label;
+        tab.onclick = () => selectSeason(s.id);
+        wrap.appendChild(tab);
+      });
+    }
+
+    function selectSeason(id) {
+      activeSeason = id;
+      activeCamp = 'all';
+      document.querySelectorAll('.season-tab').forEach(t =>
+        t.classList.toggle('active', t.textContent === (id === 'all' ? '전체' : (SEASONS.find(s => s.id === id)?.label || id)))
+      );
+      buildCampCards();
+      renderTable();
+      renderDash();
+    }
+
     function buildCampCards() {
       const wrap = document.getElementById('campCards');
       wrap.innerHTML = '';
-      wrap.appendChild(makeCard('all', '전체', '전체 캠프', 100));
-      CAMP_GROUPS.flatMap(g => g.camps).forEach(c => {
+      // 현재 시즌의 캠프만 표시
+      const currentSeasonCamps = activeSeason === 'all'
+        ? CAMP_GROUPS.flatMap(g => g.camps)
+        : (SEASONS.find(s => s.id === activeSeason)?.groups.flatMap(g => g.camps) || []);
+      wrap.appendChild(makeCard('all', '전체', '전체 캠프', 9999));
+      currentSeasonCamps.forEach(c => {
         wrap.appendChild(makeCard(c.id, `WOLKO · 정원 ${c.capacity}명`, c.title, c.capacity));
       });
     }
@@ -436,6 +493,7 @@
       renderDash();
     }
 
+    buildSeasonTabs();
     buildCampCards();
 
     // ── Fetch ──
@@ -461,9 +519,22 @@
       }
     }
 
+    function seasonCampIds(seasonId) {
+      const season = SEASONS.find(s => s.id === seasonId);
+      if (!season) return new Set();
+      return new Set(season.groups.flatMap(g => g.camps.map(c => c.id)));
+    }
+
     function filteredRegs() {
-      if (activeCamp === 'all') return allRegs;
-      return allRegs.filter(r => r.campId === activeCamp);
+      let regs = allRegs;
+      // 시즌 필터
+      if (activeSeason !== 'all') {
+        const ids = seasonCampIds(activeSeason);
+        regs = regs.filter(r => ids.has(r.campId));
+      }
+      // 캠프 필터
+      if (activeCamp !== 'all') regs = regs.filter(r => r.campId === activeCamp);
+      return regs;
     }
 
     function sortValue(reg, key) {
