@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=7">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=8">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -169,6 +169,9 @@
               <th><button class="sort-btn" type="button" data-sort="camp">캠프</button></th>
               <th><button class="sort-btn" type="button" data-sort="type">유형</button></th>
               <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
+              <th>담당 카운슬러</th>
+              <th>구원</th>
+              <th>헌신</th>
               <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
               <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
               <th><button class="sort-btn" type="button" data-sort="grade">학년 / 인원</button></th>
@@ -182,7 +185,7 @@
             </tr>
           </thead>
           <tbody id="campRegBody">
-            <tr><td colspan="15">
+            <tr><td colspan="18">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p>로그인 후 자동으로 불러옵니다.</p>
@@ -514,7 +517,7 @@
       } catch (e) {
         showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p></div>`;
-        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="15">${errHtml}</td></tr>`;
+        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="18">${errHtml}</td></tr>`;
         document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="9">${errHtml}</td></tr>`;
       }
     }
@@ -664,7 +667,7 @@
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="15">
+          <tr><td colspan="18">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -721,8 +724,26 @@
           </span>`;
         }
         const campStyle = getCampRowStyle(r);
-        const rowClass = `camp-tint${regStatus === 'confirmed' ? '' : ' is-pending'}`;
+        const spiritualClass = r.dedicated ? ' is-dedicated' : r.saved ? ' is-saved' : '';
+        const rowClass = `camp-tint${regStatus === 'confirmed' ? '' : ' is-pending'}${spiritualClass}`;
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
+        const staffOptions = allRegs
+          .filter(staff => staff.registrationType === 'staff' && staff.campId === r.campId)
+          .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ko'))
+          .map(staff => `<option value="${esc(staff.regId)}"${staff.regId === r.counselorRegId ? ' selected' : ''}>${esc(staff.name)}</option>`)
+          .join('');
+        const counselorCell = r.registrationType === 'group'
+          ? '<span class="camper-na">—</span>'
+          : `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorRegId" onchange="updateField(this)">
+              <option value="">미배정</option>
+              ${staffOptions}
+            </select>`;
+        const salvationCell = r.registrationType === 'group'
+          ? '<span class="camper-na">—</span>'
+          : `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="saved" onchange="updateField(this)"${r.saved ? ' checked' : ''}><span>구원</span></label>`;
+        const dedicationCell = r.registrationType === 'group'
+          ? '<span class="camper-na">—</span>'
+          : `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="dedicated" onchange="updateField(this)"${r.dedicated ? ' checked' : ''}><span>헌신</span></label>`;
 
         return `<tr class="${rowClass}" style="${rowStyle}">
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
@@ -730,6 +751,9 @@
           <td class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
           <td>${typeBadge}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
+          <td>${counselorCell}</td>
+          <td>${salvationCell}</td>
+          <td>${dedicationCell}</td>
           <td>${esc(r.phone)}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
           <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
@@ -739,7 +763,7 @@
           <td style="font-size:12px">${esc(r.emergency || '—')}</td>
           <td style="font-size:12px;color:var(--mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes || '')}">${esc(r.notes || '—')}</td>
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
-          <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
+          <td class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
         </tr>`;
       }).join('');
     }
@@ -831,7 +855,7 @@
       const regId  = inputEl.dataset.regid;
       const campId = inputEl.dataset.campid;
       const field  = inputEl.dataset.field;
-      let value = inputEl.value.trim();
+      let value = inputEl.type === 'checkbox' ? inputEl.checked : inputEl.value.trim();
 
       // 전화번호 자동 포맷 후 input 값도 즉시 반영
       if (field === 'phone' && value) {
@@ -843,7 +867,7 @@
       if (!reg) return;
 
       // 값 변경 없으면 스킵
-      const original = String(reg[field] || '').trim();
+      const original = inputEl.type === 'checkbox' ? !!reg[field] : String(reg[field] || '').trim();
       if (value === original) return;
 
       inputEl.classList.add('saving');
@@ -859,9 +883,11 @@
         inputEl.classList.remove('saving');
         inputEl.classList.add('saved');
         setTimeout(() => inputEl.classList.remove('saved'), 1500);
+        if (inputEl.type === 'checkbox') renderCampTable();
         showToast('저장되었습니다.', 'success');
       } catch (e) {
-        inputEl.value = original; // 실패 시 원복
+        if (inputEl.type === 'checkbox') inputEl.checked = original;
+        else inputEl.value = original; // 실패 시 원복
         inputEl.classList.remove('saving');
         showToast('저장 오류: ' + e.message, 'error');
       }
@@ -958,7 +984,7 @@
       } else {
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
         if (regs.length === 0) { showToast('다운로드할 신청 데이터가 없습니다.', 'error'); return; }
-        const headers = ['번호','상태','캠프','유형','이름','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
+        const headers = ['번호','상태','캠프','유형','이름','담당 카운슬러','구원','헌신','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const gradeOrCount = r.registrationType === 'group' ? `단체 ${r.groupCount}명` : (r.grade || '');
@@ -971,10 +997,12 @@
           } else {
             genderVal = r.gender === 'male' ? '남' : r.gender === 'female' ? '여' : '';
           }
+          const counselor = allRegs.find(staff => staff.regId === r.counselorRegId && staff.campId === r.campId);
           return [
             i + 1, statusVal, CAMP_LABELS[r.campId] || r.campId,
             r.registrationType === 'group' ? '단체' : '개인',
-            r.name, r.phone, r.email, gradeOrCount, genderVal,
+            r.name, counselor?.name || '', r.saved ? 'O' : '', r.dedicated ? 'O' : '',
+            r.phone, r.email, gradeOrCount, genderVal,
             r.church || '', r.school || '', r.emergency || '',
             r.notes || '', date, r.regId,
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');

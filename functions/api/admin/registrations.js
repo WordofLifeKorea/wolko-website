@@ -338,7 +338,7 @@ export async function onRequestPut(context) {
       return Response.json({ error: 'regId, campId, field가 필요합니다.' }, { status: 400, headers: CORS });
     }
 
-    const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea'];
+    const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea', 'counselorRegId', 'saved', 'dedicated'];
     if (!ALLOWED_FIELDS.includes(field)) {
       return Response.json({ error: '업데이트할 수 없는 필드입니다.' }, { status: 400, headers: CORS });
     }
@@ -347,6 +347,16 @@ export async function onRequestPut(context) {
     const reg = await env.CAMP_KV.get(regKey, 'json');
     if (!reg) {
       return Response.json({ error: '해당 신청을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
+    }
+
+    if ((field === 'saved' || field === 'dedicated') && typeof value !== 'boolean') {
+      return Response.json({ error: '영적 상태 값이 올바르지 않습니다.' }, { status: 400, headers: CORS });
+    }
+    if (field === 'counselorRegId' && value) {
+      const counselor = await env.CAMP_KV.get(`camp:${campId}:reg:${value}`, 'json');
+      if (!counselor || counselor.registrationType !== 'staff') {
+        return Response.json({ error: '같은 캠프의 스태프만 카운슬러로 지정할 수 있습니다.' }, { status: 400, headers: CORS });
+      }
     }
 
     const updatedReg = { ...reg, [field]: value };
