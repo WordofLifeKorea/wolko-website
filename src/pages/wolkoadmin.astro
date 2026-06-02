@@ -726,8 +726,7 @@
         return;
       }
 
-      let rowIndex = 0;
-      const renderStaffRow = r => {
+      tbody.innerHTML = regs.map((r, i) => {
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const campLabel = CAMP_LABELS[r.campId] || r.campId;
@@ -866,7 +865,8 @@
         return;
       }
 
-      tbody.innerHTML = regs.map((r, i) => {
+      let rowIndex = 0;
+      const renderStaffRow = r => {
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const campLabel = CAMP_LABELS[r.campId] || r.campId;
