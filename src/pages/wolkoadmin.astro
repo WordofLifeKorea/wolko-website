@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=10">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=11">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -774,9 +774,12 @@
         const spiritualClass = r.dedicated ? ' is-dedicated' : r.saved ? ' is-saved' : '';
         const rowClass = `camp-tint${regStatus === 'confirmed' ? '' : ' is-pending'}${spiritualClass}`;
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
-        const staffOptions = allRegs
-          .filter(staff => staff.registrationType === 'staff' && staff.campId === r.campId)
+        const counselorStaff = allRegs
+          .filter(staff => staff.registrationType === 'staff'
+            && staff.campId === r.campId
+            && String(staff.serviceArea || staff.notes || '').split(',').map(team => team.trim()).includes('상담자'))
           .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ko'))
+        const staffOptions = counselorStaff
           .map(staff => `<option value="${esc(staff.regId)}"${staff.regId === r.counselorRegId ? ' selected' : ''}>${esc(staff.name)}</option>`)
           .join('');
         const counselorCell = r.registrationType === 'group'
@@ -796,9 +799,7 @@
               const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
               const participantCounselor = `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorRegId" onchange="updateField(this)">
                   <option value="">미배정</option>
-                  ${allRegs
-                    .filter(staff => staff.registrationType === 'staff' && staff.campId === r.campId)
-                    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ko'))
+                  ${counselorStaff
                     .map(staff => `<option value="${esc(staff.regId)}"${staff.regId === participant.counselorRegId ? ' selected' : ''}>${esc(staff.name)}</option>`)
                     .join('')}
                 </select>`;
@@ -888,12 +889,18 @@
 
         // 섬기고 싶은 팀 — 수정 모드일 때 체크형 칩
         const currentTeams = serviceAreaVal.split(',').map(s => s.trim()).filter(Boolean);
+        const customTeams = currentTeams.filter(t => !STAFF_TEAMS.includes(t));
         const serviceAreaCell = staffEditMode
           ? `<div class="team-picker" data-regid="${r.regId}" data-campid="${r.campId}" data-field="serviceArea">
                ${STAFF_TEAMS.map(t => `<label class="team-choice ${getStaffTeamClass(t)}">
-                 <input type="checkbox" value="${esc(t)}"${currentTeams.includes(t) ? ' checked' : ''} onchange="updateTeamField(this.closest('.team-picker'))">
+                 <input class="team-fixed-input" type="checkbox" value="${esc(t)}"${currentTeams.includes(t) ? ' checked' : ''} onchange="updateTeamField(this.closest('.team-picker'))">
                  <span>${esc(t)}</span>
                </label>`).join('')}
+               <label class="team-choice team-other">
+                 <input class="team-other-toggle" type="checkbox"${customTeams.length ? ' checked' : ''} onchange="toggleCustomTeamInput(this)">
+                 <span>기타</span>
+               </label>
+               <input class="team-custom-input" type="text" value="${esc(customTeams.join(', '))}" placeholder="직접 입력"${customTeams.length ? '' : ' hidden'} onblur="updateTeamField(this.closest('.team-picker'))" onkeydown="if(event.key==='Enter')this.blur()">
              </div>`
           : (currentTeams.length
               ? currentTeams.map(t => `<span class="team-badge ${getStaffTeamClass(t)}">${esc(t)}</span>`).join('')
@@ -959,10 +966,17 @@
       const campId = pickerEl.dataset.campid;
       const field  = pickerEl.dataset.field;
       const inputs = Array.from(pickerEl.querySelectorAll('input[type="checkbox"]'));
-      const value  = inputs.filter(input => input.checked).map(input => input.value).join(', ');
+      const fixedTeams = inputs.filter(input => input.matches('.team-fixed-input:checked')).map(input => input.value);
+      const customToggle = pickerEl.querySelector('.team-other-toggle');
+      const customInput = pickerEl.querySelector('.team-custom-input');
+      const customTeams = customToggle?.checked
+        ? customInput.value.split(',').map(team => team.trim()).filter(Boolean)
+        : [];
+      const value  = [...new Set([...fixedTeams, ...customTeams])].join(', ');
       const reg    = allRegs.find(r => r.regId === regId);
       if (!reg) return;
       inputs.forEach(input => { input.disabled = true; });
+      customInput.disabled = true;
       try {
         const res = await fetch('/api/admin/registrations', {
           method: 'PUT',
@@ -977,6 +991,18 @@
         showToast('저장 오류: ' + e.message, 'error');
       }
       renderStaffTable();
+    }
+
+    function toggleCustomTeamInput(toggleEl) {
+      const pickerEl = toggleEl.closest('.team-picker');
+      const customInput = pickerEl.querySelector('.team-custom-input');
+      customInput.hidden = !toggleEl.checked;
+      if (toggleEl.checked) {
+        customInput.focus();
+      } else {
+        customInput.value = '';
+        updateTeamField(pickerEl);
+      }
     }
 
     // ── Field Update (전화번호, 섬기고 싶은 분야 등) ──
