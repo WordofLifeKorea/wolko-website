@@ -170,6 +170,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .save-alert { background:#fff; border-radius:16px; padding:1.7rem 2rem 1.4rem; text-align:center; box-shadow:0 16px 48px rgba(0,0,0,.18); min-width:220px; animation:modalIn .2s ease; }
   .save-alert p { margin:0 0 1.1rem; font-size:.95rem; color:#0d2b38; font-weight:700; }
   .save-alert .btn-primary { width:100%; padding:.68rem; font-size:.9rem; border-radius:10px; }
+  .exit-confirm-actions { display:flex; gap:.55rem; }
+  .exit-confirm-actions button { flex:1; padding:.68rem; border:none; border-radius:10px; font-size:.9rem; font-weight:700; cursor:pointer; }
+  .exit-confirm-actions .btn-cancel { background:#edf3f5; color:#4a6070; }
+  .exit-confirm-actions .btn-primary { background:#004f68; color:#fff; }
   .steps-header { display:flex; justify-content:space-between; align-items:center; margin:1.3rem 0 .75rem; border-bottom:2px solid #e8f4f8; padding-bottom:.55rem; }
   .steps-title { font-size:.9rem; font-weight:800; color:#0d2b38; margin:0; letter-spacing:-.01em; }
   .steps-toggle { background:#f0f7fa; border:none; color:#004f68; font-size:.74rem; font-weight:700; padding:.28rem .75rem; border-radius:20px; cursor:pointer; transition:background .18s; }
@@ -696,6 +700,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       pending_msg: '가입 신청이 완료되었습니다.\n관리자 승인 후 사용 가능합니다.',
       admin_title: '회원 관리', admin_btn: '관리자', approve: '승인', reject: '거절',
       no_pending: '대기 중인 회원이 없습니다.',
+      exit_msg: '앱을 종료하시겠습니까?', exit_confirm: '종료',
     },
     en: {
       subtitle: 'Church Relationship System',
@@ -741,6 +746,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       pending_msg: 'Registration complete.\nYou can access the system after admin approval.',
       admin_title: 'Member Management', admin_btn: 'Admin', approve: 'Approve', reject: 'Reject',
       no_pending: 'No pending members.',
+      exit_msg: 'Exit the app?', exit_confirm: 'Exit',
     }
   };
 
@@ -1934,12 +1940,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
   window.addEventListener('popstate', event => {
+    if (allowAppExit) return;
     if (event.state?.crsDetail) {
       const church = churches.find(c => c.id === event.state.crsChurchId);
       if (church) {
         openDetailModal(church, { updateHistory: false });
         return;
       }
+    }
+    if (isStandalone && !event.state?.crsExitGuard) {
+      history.pushState({ ...(event.state || {}), crsExitGuard: true }, '', location.href);
+      showExitConfirm();
+      return;
     }
     closeDetailModal({ useHistory: false });
   });
@@ -1952,6 +1964,55 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     || window.navigator.standalone === true;
   // 플랫폼 감지
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  let allowAppExit = false;
+
+  function ensureStandaloneExitGuard() {
+    if (!isStandalone || history.state?.crsExitGuard || history.state?.crsDetail) return;
+    history.pushState({ ...(history.state || {}), crsExitGuard: true }, '', location.href);
+  }
+
+  function ensureExitConfirm() {
+    let modal = document.getElementById('exitConfirm');
+    if (!modal) {
+      document.body.insertAdjacentHTML('beforeend', `
+        <div class="save-alert-backdrop" id="exitConfirm">
+          <div class="save-alert" role="dialog" aria-modal="true">
+            <p id="exitConfirmMessage"></p>
+            <div class="exit-confirm-actions">
+              <button class="btn-cancel" id="exitConfirmCancel" type="button"></button>
+              <button class="btn-primary" id="exitConfirmOk" type="button"></button>
+            </div>
+          </div>
+        </div>
+      `);
+      modal = document.getElementById('exitConfirm');
+      document.getElementById('exitConfirmCancel').addEventListener('click', hideExitConfirm);
+      document.getElementById('exitConfirmOk').addEventListener('click', confirmAppExit);
+      modal.addEventListener('click', event => {
+        if (event.target === modal) hideExitConfirm();
+      });
+    }
+    document.getElementById('exitConfirmMessage').textContent = t('exit_msg');
+    document.getElementById('exitConfirmCancel').textContent = t('cancel');
+    document.getElementById('exitConfirmOk').textContent = t('exit_confirm');
+    return modal;
+  }
+
+  function showExitConfirm() {
+    ensureExitConfirm().style.display = 'flex';
+  }
+
+  function hideExitConfirm() {
+    document.getElementById('exitConfirm')?.style.setProperty('display', 'none');
+  }
+
+  function confirmAppExit() {
+    hideExitConfirm();
+    allowAppExit = true;
+    history.go(-2);
+  }
+
+  ensureStandaloneExitGuard();
 
   if (!isStandalone) {
     window.addEventListener('beforeinstallprompt', e => {
