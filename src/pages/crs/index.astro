@@ -1322,11 +1322,28 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const region        = document.getElementById('fRegion').value;
     const district      = document.getElementById('fDistrict').value;
     const detailAddress = document.getElementById('fDetailAddress').value.trim();
+    const fullAddress   = [region, district, detailAddress].filter(Boolean).join(' ');
+
+    let lat = null, lng = null;
+    if (fullAddress) {
+      try {
+        const geoRes = await fetch(`/api/geocode?query=${encodeURIComponent(fullAddress)}`);
+        if (geoRes.ok) {
+          const geoData = await geoRes.json();
+          if (geoData.addresses?.length) {
+            lat = parseFloat(geoData.addresses[0].y);
+            lng = parseFloat(geoData.addresses[0].x);
+          }
+        }
+      } catch(e) {}
+    }
+
     const data = {
       churchName, pastorName,
       pastorPhone: document.getElementById('fPastorPhone').value.trim(),
       region, district, detailAddress,
-      location: [region, district, detailAddress].filter(Boolean).join(' '),
+      lat: lat || null, lng: lng || null,
+      location: fullAddress,
       notes: document.getElementById('fNotes').value.trim(),
       updatedAt: now, updatedBy: currentUser.uid,
     };
@@ -1918,12 +1935,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     crsMarkers.forEach(m => m.setMap(null));
     crsMarkers = [];
 
-    const pinnable = churches.filter(c => c.region);
+    const pinnable = churches.filter(c => (c.lat && c.lng) || c.region);
     const emptyEl = document.getElementById('mapEmpty');
     if (emptyEl) emptyEl.style.display = pinnable.length ? 'none' : 'flex';
 
     pinnable.forEach(c => {
-      const coords = getChurchCoords(c.region, c.district);
+      const coords = (c.lat && c.lng) ? [c.lat, c.lng] : getChurchCoords(c.region, c.district);
       if (!coords) return;
       const done = STEPS.filter((_, i) => (c.steps || {})[i+1]).length;
       const isComplete = done === STEPS.length;
