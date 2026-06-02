@@ -378,7 +378,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     margin:1.25rem -.1rem 0; padding:.9rem .1rem .15rem; background:#f7f9f9;
   }
   .detail-info {
-    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0;
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:max-content; align-self:start; gap:0;
     margin-bottom:1rem; padding:0; border:1px solid var(--crs-line); border-radius:10px;
     background:#fff; overflow:hidden;
   }
@@ -1543,8 +1543,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       : `${done} / ${STEPS.length} steps completed`;
     document.getElementById('detailProgressPct').textContent = pct + '%';
     document.getElementById('detailProgressFill').style.width = pct + '%';
+    const appBody = document.getElementById('appBody');
+    appBody.classList.add('split');
+    // Render after the detail panel has a real width. Safari can retain an
+    // oversized grid row calculation when content is rendered at max-width: 0.
+    void appBody.offsetWidth;
     renderDetailBody(church);
-    document.getElementById('appBody').classList.add('split');
     document.body.classList.add('crs-detail-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     document.querySelector(`.church-card[data-id="${esc(church.id)}"]`)?.classList.add('selected');
