@@ -554,11 +554,19 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .map-search-item small { color:#8aacba; display:block; font-size:.75rem; margin-top:.1rem; }
   .map-search-item.no-result { color:#aab8c0; cursor:default; }
   .map-search-item.no-result:hover { background:none; }
+  /* 주소 자동완성 */
+  .addr-wrap { position:relative; }
+  .addr-suggestions { display:none; position:absolute; top:calc(100% + 2px); left:0; right:0; background:#fff; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.12); overflow:hidden; max-height:200px; overflow-y:auto; z-index:200; }
+  .addr-suggestions.open { display:block; }
+  .addr-suggestion-item { padding:.58rem .9rem; font-size:.83rem; cursor:pointer; border-bottom:1px solid #f0f4f6; color:#1a2e3b; line-height:1.4; }
+  .addr-suggestion-item:last-child { border-bottom:none; }
+  .addr-suggestion-item:hover { background:#f0f8fb; }
+  .addr-suggestion-item.no-result { color:#aab8c0; cursor:default; }
+  .addr-suggestion-item.no-result:hover { background:none; }
   @media(max-width:768px) {
-    .view-tabs { display:flex; }
-    .map-panel { display:none; height:calc(100dvh - 76px - 52px - 44px); }
-    .map-panel.tab-active { display:block; }
-    .list-panel.tab-hidden { display:none; }
+    .view-tabs { display:none; }
+    .app-body:not(.split) { flex-direction:column; }
+    .map-panel { display:block; flex:0 0 260px; height:260px; }
   }
 </style>
 
@@ -1049,20 +1057,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
                 <input type="tel" id="fPastorPhone" placeholder="${t('pastor_phone_ph')}">
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>${t('location')}</label>
-                <select id="fRegion">
-                  <option value="">${t('region_ph')}</option>
-                  ${Object.keys(REGIONS).map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('')}
-                </select>
+            <div class="form-group">
+              <label>${isKo ? '도로명 주소' : 'Address'}</label>
+              <div class="addr-wrap">
+                <input type="text" id="fAddress" placeholder="${isKo ? '예: 경기도 평택시 세교로 48' : 'e.g. 48 Segyo-ro, Pyeongtaek-si'}" autocomplete="off">
+                <div class="addr-suggestions" id="addrSuggestions"></div>
               </div>
-              <div class="form-group">
-                <label>${t('district')}</label>
-                <select id="fDistrict" disabled>
-                  <option value="">${t('district_ph')}</option>
-                </select>
-              </div>
+              <input type="hidden" id="fLat">
+              <input type="hidden" id="fLng">
             </div>
             <div class="form-group">
               <label>${t('notes')}</label>
@@ -1145,18 +1147,39 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('detailPanelClose').addEventListener('click', closeDetailModal);
     document.getElementById('searchInput').addEventListener('input', renderChurchList);
 
-    // 시/도 → 시/군/구 연동
-    document.getElementById('fRegion').addEventListener('change', function() {
-      const districtEl = document.getElementById('fDistrict');
-      const region = this.value;
-      if (region && REGIONS[region]) {
-        districtEl.innerHTML = `<option value="">${t('district_ph_select')}</option>` +
-          REGIONS[region].map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
-        districtEl.disabled = false;
-      } else {
-        districtEl.innerHTML = `<option value="">${t('district_ph')}</option>`;
-        districtEl.disabled = true;
-      }
+    // 주소 자동완성
+    let addrDebounce = null;
+    document.getElementById('fAddress').addEventListener('input', function() {
+      clearTimeout(addrDebounce);
+      document.getElementById('fLat').value = '';
+      document.getElementById('fLng').value = '';
+      const q = this.value.trim();
+      const sugg = document.getElementById('addrSuggestions');
+      if (!q || q.length < 2) { sugg.classList.remove('open'); return; }
+      addrDebounce = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/geocode?query=${encodeURIComponent(q)}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          const addrs = (data.addresses || []).slice(0, 5);
+          if (!addrs.length) { sugg.classList.remove('open'); return; }
+          sugg.innerHTML = addrs.map((a, i) =>
+            `<div class="addr-suggestion-item" data-idx="${i}" data-lat="${esc(a.y)}" data-lng="${esc(a.x)}">${esc(a.roadAddress || a.jibunAddress)}</div>`
+          ).join('');
+          sugg.classList.add('open');
+          sugg.querySelectorAll('.addr-suggestion-item').forEach(el => {
+            el.addEventListener('click', () => {
+              document.getElementById('fAddress').value = el.textContent.trim();
+              document.getElementById('fLat').value = el.dataset.lat;
+              document.getElementById('fLng').value = el.dataset.lng;
+              sugg.classList.remove('open');
+            });
+          });
+        } catch(e) {}
+      }, 350);
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.addr-wrap')) document.getElementById('addrSuggestions')?.classList.remove('open');
     });
 
     document.querySelectorAll('.view-tab').forEach(btn => {
@@ -1164,7 +1187,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
 
     loadChurches();
-    if (window.innerWidth > 768) setTimeout(() => initCrsMap(), 150);
+    setTimeout(() => initCrsMap(), 150);
   }
 
   // ── 교회 목록 로드 ──
@@ -1221,8 +1244,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       } else if (done === 0) {
         badgeHtml = esc(getLang() === 'ko' ? '시작 전' : 'Not Started');
       } else {
-        const curDesc = getLang() === 'ko' ? STEPS_KO[done - 1] : STEPS[done - 1];
-        badgeHtml = `Step ${done}<span class="badge-desc"> · ${esc(curDesc)}</span>`;
+        badgeHtml = `Step ${done}`;
       }
 
       const visitsArr = c.visits ? Object.values(c.visits).sort((a,b) => (b.recordedAt||0) - (a.recordedAt||0)) : [];
@@ -1272,22 +1294,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('fPastorName').value = church?.pastorName || '';
     document.getElementById('fPastorPhone').value = church?.pastorPhone || '';
     document.getElementById('fNotes').value = church?.notes || '';
-
-    // location 복원: "경기도 평택시" → region=경기도, district=평택시
-    const regionEl   = document.getElementById('fRegion');
-    const districtEl = document.getElementById('fDistrict');
-    const savedRegion   = church?.region || '';
-    const savedDistrict = church?.district || '';
-    regionEl.value = savedRegion;
-    if (savedRegion && REGIONS[savedRegion]) {
-      districtEl.innerHTML = `<option value="">${t('district_ph_select')}</option>` +
-        REGIONS[savedRegion].map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
-      districtEl.disabled = false;
-      districtEl.value = savedDistrict;
-    } else {
-      districtEl.innerHTML = `<option value="">${t('district_ph')}</option>`;
-      districtEl.disabled = true;
-    }
+    document.getElementById('fAddress').value = church?.address || church?.location || '';
+    document.getElementById('fLat').value = church?.lat || '';
+    document.getElementById('fLng').value = church?.lng || '';
+    document.getElementById('addrSuggestions').classList.remove('open');
 
     document.getElementById('editModal').classList.add('open');
     setTimeout(() => document.getElementById('fChurchName').focus(), 100);
@@ -1308,13 +1318,26 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     saveBtn.textContent = t('saving');
 
     const now = Date.now();
-    const region   = document.getElementById('fRegion').value;
-    const district = document.getElementById('fDistrict').value;
+    const address = document.getElementById('fAddress').value.trim();
+    let lat = parseFloat(document.getElementById('fLat').value) || null;
+    let lng = parseFloat(document.getElementById('fLng').value) || null;
+    if (address && (!lat || !lng)) {
+      try {
+        const geoRes = await fetch(`/api/geocode?query=${encodeURIComponent(address)}`);
+        if (geoRes.ok) {
+          const geoData = await geoRes.json();
+          if (geoData.addresses?.length) {
+            lat = parseFloat(geoData.addresses[0].y);
+            lng = parseFloat(geoData.addresses[0].x);
+          }
+        }
+      } catch(e) {}
+    }
     const data = {
       churchName, pastorName,
       pastorPhone: document.getElementById('fPastorPhone').value.trim(),
-      region, district,
-      location: [region, district].filter(Boolean).join(' '),
+      address, lat, lng,
+      location: address,
       notes: document.getElementById('fNotes').value.trim(),
       updatedAt: now, updatedBy: currentUser.uid,
     };
@@ -1366,6 +1389,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.body.classList.remove('crs-detail-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
     viewingChurch = null;
+    if (crsMap) setTimeout(() => naver.maps.Event.trigger(crsMap, 'resize'), 50);
   }
 
   function renderDetailBody(church) {
@@ -1905,12 +1929,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     crsMarkers.forEach(m => m.setMap(null));
     crsMarkers = [];
 
-    const pinnable = churches.filter(c => c.region);
+    const pinnable = churches.filter(c => (c.lat && c.lng) || c.region);
     const emptyEl = document.getElementById('mapEmpty');
     if (emptyEl) emptyEl.style.display = pinnable.length ? 'none' : 'flex';
 
     pinnable.forEach(c => {
-      const coords = getChurchCoords(c.region, c.district);
+      const coords = (c.lat && c.lng) ? [c.lat, c.lng] : getChurchCoords(c.region, c.district);
       if (!coords) return;
       const done = STEPS.filter((_, i) => (c.steps || {})[i+1]).length;
       const isComplete = done === STEPS.length;
@@ -1928,8 +1952,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         },
       });
       naver.maps.Event.addListener(marker, 'click', () => {
-        // 모바일: 지도 탭 → 목록 탭으로 전환 후 상세 열기
-        if (window.innerWidth <= 768) switchCrsTab('list');
         openDetailModal(c);
       });
       crsMarkers.push(marker);
