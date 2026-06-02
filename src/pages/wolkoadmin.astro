@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=12">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=13">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -353,6 +353,7 @@
     let sortState = { key: 'registeredAt', direction: 'desc' };
     let authToken = sessionStorage.getItem('wolko-admin-token') || '';
     let staffEditMode = false;
+    const expandedGroupParticipants = new Set();
 
     // ── Login ──
     function togglePw() {
@@ -801,7 +802,22 @@
             )
           : [];
         const participantRows = groupParticipants.length
-          ? groupParticipants.map((participant, participantIndex) => {
+          ? (() => {
+            const isExpanded = expandedGroupParticipants.has(r.regId);
+            const completedParticipants = groupParticipants.filter(participant =>
+              participant.name && ['male', 'female'].includes(participant.gender)
+            ).length;
+            const toggleRow = `<tr class="group-participant-toggle-row">
+              <td></td>
+              <td colspan="17">
+                <button class="group-participant-toggle${isExpanded ? ' expanded' : ''}" type="button" data-regid="${esc(r.regId)}" aria-expanded="${isExpanded}" onclick="toggleGroupParticipants(this.dataset.regid)">
+                  <span class="group-participant-toggle-icon">⌄</span>
+                  <span>학생 명단 ${completedParticipants} / ${groupParticipants.length}명 입력</span>
+                </button>
+              </td>
+            </tr>`;
+            if (!isExpanded) return toggleRow;
+            return toggleRow + groupParticipants.map((participant, participantIndex) => {
               const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
               const participantName = `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="학생 이름" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`;
               const participantCounselor = `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorRegId" onchange="updateField(this)">
@@ -828,7 +844,8 @@
                 <td>${participantGender}</td>
                 <td colspan="6"></td>
               </tr>`;
-            }).join('')
+            }).join('');
+          })()
           : r.registrationType === 'group'
           ? `<tr class="group-participant-row legacy"><td></td><td colspan="17">참여 인원 수를 확인해주세요.</td></tr>`
           : '';
@@ -948,6 +965,12 @@
 
     function esc(str) {
       return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function toggleGroupParticipants(regId) {
+      if (expandedGroupParticipants.has(regId)) expandedGroupParticipants.delete(regId);
+      else expandedGroupParticipants.add(regId);
+      renderCampTable();
     }
 
     // ── Edit Mode Toggle ──
