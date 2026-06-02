@@ -469,7 +469,7 @@
     function sortValue(reg, key) {
       if (key === 'camp') return CAMP_LABELS[reg.campId] || reg.campId || '';
       if (key === 'type') return reg.registrationType === 'group' ? '단체' : '개인';
-      if (key === 'status') return reg.confirmed === false ? '미확정' : '확정';
+      if (key === 'status') { const s = reg.status || (reg.confirmed !== false ? 'confirmed' : 'pending'); return s === 'confirmed' ? '최종확정' : s === 'deposit' ? '예약금확인' : '대기중'; }
       if (key === 'grade') return reg.registrationType === 'group' ? (reg.groupCount || 0) : (reg.grade || '');
       if (key === 'gender') {
         if (reg.registrationType === 'group') return `${reg.maleCount || 0}-${reg.femaleCount || 0}`;
@@ -518,9 +518,9 @@
       // 스태프 신청은 정원 집계에서 제외
       const campRegs = regs.filter(r => r.registrationType !== 'staff');
 
-      // 확정/미확정 분리 (confirmed === undefined = 구 데이터 = 확정된 것으로 취급)
-      const confirmedRegs = campRegs.filter(r => r.confirmed !== false);
-      const pendingRegs   = campRegs.filter(r => r.confirmed === false);
+      // 확정/미확정 분리 — deposit 또는 confirmed = KV 카운트 반영된 것
+      const confirmedRegs = campRegs.filter(r => r.status === 'deposit' || r.status === 'confirmed' || (r.status === undefined && r.confirmed !== false));
+      const pendingRegs   = campRegs.filter(r => !(r.status === 'deposit' || r.status === 'confirmed' || (r.status === undefined && r.confirmed !== false)));
 
       const total     = campRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
       const confirmed = confirmedRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
@@ -630,19 +630,27 @@
             : `<span style="color:var(--light)">—</span>`;
         }
 
-        // 상태 셀: 확정=초록, 미확정=주황, 예비=amber 배지 추가
-        const isConfirmed = r.confirmed !== false;
+        // 상태 셀: 3단계 (대기중 → 예약금수납 → 최종확정)
+        const regStatus = r.status || (r.confirmed !== false ? 'confirmed' : 'pending');
         const waitlistBadge = r.isWaitlist
           ? `<span style="display:inline-block;padding:2px 7px;border-radius:100px;background:rgba(217,119,6,0.15);color:#b45309;font-size:10px;font-weight:700;margin-left:3px;">예비${r.waitlistNumber ? ' ' + r.waitlistNumber : ''}</span>`
           : '';
-        const statusCell = isConfirmed
-          ? `<span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,0.12);color:#16a34a;font-size:11px;font-weight:700;">확정</span>${waitlistBadge}</span>`
-          : `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
-               <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">미확정</span>${waitlistBadge}</span>
-               <button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">확정</button>
-             </span>`;
+        let statusCell;
+        if (regStatus === 'confirmed') {
+          statusCell = `<span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,0.12);color:#16a34a;font-size:11px;font-weight:700;">최종확정</span>${waitlistBadge}</span>`;
+        } else if (regStatus === 'deposit') {
+          statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
+            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">예약금확인</span>${waitlistBadge}</span>
+            <button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">최종확정</button>
+          </span>`;
+        } else {
+          statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
+            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">대기중</span>${waitlistBadge}</span>
+            <button class="btn-confirm btn-deposit" onclick="depositReg('${r.regId}','${r.campId}')">예약금수납</button>
+          </span>`;
+        }
         const campStyle = getCampRowStyle(r);
-        const rowClass = `camp-tint${isConfirmed ? '' : ' is-pending'}`;
+        const rowClass = `camp-tint${regStatus === 'confirmed' ? '' : ' is-pending'}`;
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
 
         return `<tr class="${rowClass}" style="${rowStyle}">
@@ -806,24 +814,45 @@
       }
     }
 
-    // ── Confirm ──
-    async function confirmReg(regId, campId) {
-      if (!confirm(`신청을 확정하시겠습니까?\n입금이 확인된 경우에만 확정해주세요.`)) return;
+    // ── 예약금 수납 ──
+    async function depositReg(regId, campId) {
+      if (!confirm(`예약금 수납을 확인하시겠습니까?\n예약금 입금이 확인된 경우에만 진행해주세요.`)) return;
       try {
         const res = await fetch('/api/admin/registrations', {
           method: 'PATCH',
           headers: authHeaders(),
-          body: JSON.stringify({ regId, campId, campTitleKo: CAMP_LABELS[campId] || campId, campDateKo: CAMP_DATES[campId] || '' }),
+          body: JSON.stringify({ regId, campId, action: 'deposit', campTitleKo: CAMP_LABELS[campId] || campId, campDateKo: CAMP_DATES[campId] || '' }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '확정 실패');
-        // 로컬 데이터 업데이트
+        if (!res.ok) throw new Error(data.error || '처리 실패');
         const reg = allRegs.find(r => r.regId === regId);
-        if (reg) { reg.confirmed = true; reg.confirmedAt = data.reg?.confirmedAt || new Date().toISOString(); }
+        if (reg) { reg.status = 'deposit'; reg.depositConfirmedAt = data.reg?.depositConfirmedAt || new Date().toISOString(); }
         renderTable();
         renderDash();
         updateCardStats();
-        showToast('신청이 확정되었습니다.', 'success');
+        showToast('예약금 수납이 확인되었습니다. 알림톡을 발송했습니다.', 'success');
+      } catch (e) {
+        showToast('오류: ' + e.message, 'error');
+      }
+    }
+
+    // ── 최종 확정 ──
+    async function confirmReg(regId, campId) {
+      if (!confirm(`최종 확정하시겠습니까?\n잔금 입금이 모두 확인된 경우에만 진행해주세요.`)) return;
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'PATCH',
+          headers: authHeaders(),
+          body: JSON.stringify({ regId, campId, action: 'confirm', campTitleKo: CAMP_LABELS[campId] || campId, campDateKo: CAMP_DATES[campId] || '' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '확정 실패');
+        const reg = allRegs.find(r => r.regId === regId);
+        if (reg) { reg.status = 'confirmed'; reg.confirmed = true; reg.confirmedAt = data.reg?.confirmedAt || new Date().toISOString(); }
+        renderTable();
+        renderDash();
+        updateCardStats();
+        showToast('최종 확정되었습니다. 알림톡을 발송했습니다.', 'success');
       } catch (e) {
         showToast('확정 오류: ' + e.message, 'error');
       }
@@ -862,7 +891,8 @@
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const gradeOrCount = r.registrationType === 'group' ? `단체 ${r.groupCount}명` : (r.grade || '');
-          const statusVal = r.confirmed !== false ? '확정' : '미확정';
+          const _s = r.status || (r.confirmed !== false ? 'confirmed' : 'pending');
+          const statusVal = _s === 'confirmed' ? '최종확정' : _s === 'deposit' ? '예약금확인' : '대기중';
           let genderVal;
           if (r.registrationType === 'group') {
             const m = r.maleCount || 0, f = r.femaleCount || 0;
