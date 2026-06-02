@@ -466,6 +466,22 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-staff-open-btn:hover { background: #0f766e; transform: translateY(-1px); }
 .crp-staff-open-btn:disabled { background: rgba(100,116,139,0.18); color: #64748b; cursor: default; transform: none; }
 
+/* Team Chips */
+.staff-team-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.staff-team-chip { display:inline-flex; }
+.staff-team-chip input[type="checkbox"] { position:absolute; opacity:0; width:0; height:0; }
+.staff-team-chip-label {
+  display:inline-block; padding:7px 18px;
+  border:1.5px solid rgba(0,79,104,0.2); border-radius:999px;
+  font-size:13px; font-weight:600; cursor:pointer; user-select:none;
+  transition:all 0.15s; background:#fff; color:var(--c-muted);
+  line-height:1.4;
+}
+.staff-team-chip-label:hover { border-color:#0d9488; color:#0d9488; }
+.staff-team-chip input:checked ~ .staff-team-chip-label {
+  background:#0d9488; border-color:#0d9488; color:#fff;
+}
+
 /* Staff Modal */
 .crp-staff-modal-head {
   padding: 32px 40px 24px;
@@ -946,21 +962,22 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-gender-btn-f.selected { border-color: #ec4899 !important; background: rgba(236,72,153,0.07) !important; }
 .crp-gender-btn-f.selected .crp-gender-label { color: #db2777; }
 
-/* ── 단체 신청 총 인원 요약 ── */
-.crp-group-total-row {
-  grid-column: 1 / -1;
-  display: flex; align-items: center; justify-content: flex-end; gap: 10px;
-  padding: 8px 12px; border-radius: 8px;
-  background: rgba(0,79,104,0.04); border: 1px solid rgba(0,79,104,0.09);
-  font-size: 13px; color: var(--c-sub);
+/* ── 단체 신청 학생 명단 ── */
+.crp-group-participants {
+  grid-column: 1 / -1; display: grid; gap: 8px;
+  padding: 12px; border: 1px solid rgba(0,79,104,0.10); border-radius: 10px;
+  background: rgba(0,79,104,0.035);
 }
-.crp-group-total-num { font-size: 20px; font-weight: 700; color: var(--c-deep); }
-.crp-group-total-m { color: #3b82f6; font-weight: 600; }
-.crp-group-total-f { color: #ec4899; font-weight: 600; }
-
-/* ── group count select 레이블 색상 ── */
-.crp-field-male label { color: #3b82f6 !important; }
-.crp-field-female label { color: #ec4899 !important; }
+.crp-group-participants:empty { display: none; }
+.crp-group-participant {
+  display: grid; grid-template-columns: 34px minmax(0,1fr) 120px; gap: 8px; align-items: center;
+}
+.crp-group-participant-num { color: var(--c-muted); font-size: 12px; font-weight: 700; text-align: center; }
+.crp-group-participant input, .crp-group-participant select {
+  width: 100%; box-sizing: border-box; padding: 10px 11px;
+  border: 1.5px solid rgba(0,79,104,0.13); border-radius: 8px;
+  background: #fff; color: var(--c-deep); font: inherit; font-size: 13px;
+}
 
 /* Mobile modal */
 @media (max-width: 600px) {
@@ -972,6 +989,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
   .crp-tab-sub { display: none; }
   .crp-form-wrap { padding: 20px 24px 36px; }
   .crp-form-grid { grid-template-columns: 1fr; }
+  .crp-group-participant { grid-template-columns: 28px minmax(0,1fr) 96px; gap: 6px; }
   .crp-success-wrap { padding: 40px 24px; }
 }
 </style>
@@ -1588,29 +1606,18 @@ html, body { overflow-x: hidden; max-width: 100%; }
                 <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
                 <input id="crpGPhone" name="gPhone" placeholder="010-0000-0000">
               </div>
-              <div class="crp-field crp-field-male">
-                <label><span class="wl-ko">남학생 수</span><span class="wl-en">Male</span> <span class="req">*</span></label>
-                <select id="crpGMaleCount" name="gMaleCount">
-                  {Array.from({length: 31}, (_, i) => i).map(n => (
+              <div class="crp-field crp-field--full">
+                <label><span class="wl-ko">총 참여 인원</span><span class="wl-en">Total Participants</span> <span class="req">*</span></label>
+                <select id="crpGCount" name="gCount">
+                  <option value="">— 선택 —</option>
+                  {Array.from({length: 59}, (_, i) => i + 2).map(n => (
                     <option value={n}>{n}</option>
                   ))}
                 </select>
               </div>
-              <div class="crp-field crp-field-female">
-                <label><span class="wl-ko">여학생 수</span><span class="wl-en">Female</span> <span class="req">*</span></label>
-                <select id="crpGFemaleCount" name="gFemaleCount">
-                  {Array.from({length: 31}, (_, i) => i).map(n => (
-                    <option value={n}>{n}</option>
-                  ))}
-                </select>
-              </div>
-              <div class="crp-group-total-row">
-                <span class="crp-group-total-m"><span class="wl-ko">남</span><span class="wl-en">M</span> <span id="crpGTotalM">0</span></span>
-                <span style="color:var(--c-muted)">+</span>
-                <span class="crp-group-total-f"><span class="wl-ko">여</span><span class="wl-en">F</span> <span id="crpGTotalF">0</span></span>
-                <span style="color:var(--c-muted)">=</span>
-                <span class="wl-ko">총 <span class="crp-group-total-num" id="crpGTotal">0</span>명</span>
-                <span class="wl-en">Total: <span class="crp-group-total-num" id="crpGTotalEn">0</span></span>
+              <div class="crp-field crp-field--full">
+                <label><span class="wl-ko">참가 학생 명단</span><span class="wl-en">Participant List</span> <span class="req">*</span></label>
+                <div class="crp-group-participants" id="crpGParticipants"></div>
               </div>
               <div class="crp-field crp-field--full">
                 <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
@@ -1626,11 +1633,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
               </div>
               <div class="crp-field crp-field--full">
                 <label><span class="wl-ko">전달 사항</span><span class="wl-en">Notes</span></label>
-                <textarea id="crpGNotes" name="gNotes" rows="4" data-ph-ko="참가 학생 이름과 나이를 꼭 적어주세요. 알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요." data-ph-en="Please include each student's name and age. Allergies, health conditions, medications, or anything WOLKO should know." placeholder="참가 학생 이름과 나이를 꼭 적어주세요. 알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요."></textarea>
-              </div>
-              <div class="crp-bulk-note">
-                <span class="wl-ko">💡 신청 인원이 많을 경우 <strong>wolkorea1@gmail.com</strong>으로 참가 인원 전체의 이름, 학년 또는 나이를 작성하여 전송해주시면 큰 도움이 됩니다.</span>
-                <span class="wl-en">💡 If you are registering many participants, it is a great help to email the full list of names and grades or ages to <strong>wolkorea1@gmail.com</strong>.</span>
+                <textarea id="crpGNotes" name="gNotes" rows="4" data-ph-ko="알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요." data-ph-en="Allergies, health conditions, medications, or anything WOLKO should know." placeholder="알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요."></textarea>
               </div>
             </div>
           </div>
@@ -1861,14 +1864,36 @@ html, body { overflow-x: hidden; max-width: 100%; }
         <div class="crp-form-grid">
           <div class="crp-field crp-field--full">
             <label>
-              <span class="wl-ko">섬기고 싶은 분야</span>
-              <span class="wl-en">Where would you like to serve?</span>
+              <span class="wl-ko">섬기고 싶은 팀</span>
+              <span class="wl-en">Team Preference</span>
               <span class="req">*</span>
+              <span style="font-size:11px;color:var(--c-muted);font-weight:400;margin-left:4px;">
+                <span class="wl-ko">(복수 선택 가능)</span>
+                <span class="wl-en">(multiple selections allowed)</span>
+              </span>
             </label>
-            <textarea id="staffServiceArea" name="serviceArea" rows="3"
-              data-ph-ko="예) 상담자, IT, 프로덕션, 프로그램팀, 영어 & 성경 수업"
-              data-ph-en="e.g. Counselor, IT, Production, Program team, English & Bible class"
-              placeholder="예) 상담자, IT, 프로덕션, 프로그램팀, 영어 & 성경 수업"></textarea>
+            <div class="staff-team-chips" id="staffTeamChips">
+              <label class="staff-team-chip">
+                <input type="checkbox" name="staffTeam" value="프로그램">
+                <span class="staff-team-chip-label"><span class="wl-ko">프로그램</span><span class="wl-en">Program</span></span>
+              </label>
+              <label class="staff-team-chip">
+                <input type="checkbox" name="staffTeam" value="수업">
+                <span class="staff-team-chip-label"><span class="wl-ko">수업</span><span class="wl-en">Class</span></span>
+              </label>
+              <label class="staff-team-chip">
+                <input type="checkbox" name="staffTeam" value="상담자">
+                <span class="staff-team-chip-label"><span class="wl-ko">상담자</span><span class="wl-en">Counselor</span></span>
+              </label>
+              <label class="staff-team-chip">
+                <input type="checkbox" name="staffTeam" value="테크">
+                <span class="staff-team-chip-label"><span class="wl-ko">테크</span><span class="wl-en">Tech</span></span>
+              </label>
+              <label class="staff-team-chip">
+                <input type="checkbox" name="staffTeam" value="찬양팀">
+                <span class="staff-team-chip-label"><span class="wl-ko">찬양팀</span><span class="wl-en">Worship Team</span></span>
+              </label>
+            </div>
           </div>
           <div class="crp-field crp-field--full">
             <label><span class="wl-ko">메모 (선택)</span><span class="wl-en">Additional Notes (optional)</span></label>
@@ -2033,6 +2058,7 @@ var tabGroup = document.getElementById('crpTabGroup');
 // 현재 모달의 성별 cap 값 (런타임)
 var currentCapMale = 0;
 var currentCapFemale = 0;
+var currentRegisteredCount = null;
 
 /* ── 모달 정원 바 (성별 split) ── */
 function updateCrpModalCap(data, capacity) {
@@ -2080,22 +2106,33 @@ document.querySelectorAll('input[name="gender"]').forEach(function(radio) {
   });
 });
 
-/* ── 단체 남/여 인원 live 합계 ── */
-function updateGroupTotal() {
-  var m = parseInt(document.getElementById('crpGMaleCount').value) || 0;
-  var f = parseInt(document.getElementById('crpGFemaleCount').value) || 0;
-  var t = m + f;
-  var el1 = document.getElementById('crpGTotal');
-  var el2 = document.getElementById('crpGTotalEn');
-  var elM = document.getElementById('crpGTotalM');
-  var elF = document.getElementById('crpGTotalF');
-  if (el1) el1.textContent = t;
-  if (el2) el2.textContent = t;
-  if (elM) elM.textContent = m;
-  if (elF) elF.textContent = f;
+/* ── 단체 참가 학생 입력칸 ── */
+function renderGroupParticipants() {
+  var count = parseInt(document.getElementById('crpGCount').value) || 0;
+  var wrap = document.getElementById('crpGParticipants');
+  var previous = Array.from(wrap.querySelectorAll('.crp-group-participant')).map(function(row) {
+    return {
+      name: row.querySelector('.crp-g-participant-name')?.value || '',
+      gender: row.querySelector('.crp-g-participant-gender')?.value || '',
+    };
+  });
+  wrap.innerHTML = Array.from({ length: count }, function(_, index) {
+    var participant = previous[index] || {};
+    return '<div class="crp-group-participant">' +
+      '<span class="crp-group-participant-num">' + (index + 1) + '</span>' +
+      '<input class="crp-g-participant-name" type="text" value="' + crpEscAttr(participant.name) + '" placeholder="' + (crpIsEn() ? 'Participant name' : '학생 이름') + '">' +
+      '<select class="crp-g-participant-gender">' +
+        '<option value="">성별</option>' +
+        '<option value="male"' + (participant.gender === 'male' ? ' selected' : '') + '>남</option>' +
+        '<option value="female"' + (participant.gender === 'female' ? ' selected' : '') + '>여</option>' +
+      '</select>' +
+    '</div>';
+  }).join('');
 }
-document.getElementById('crpGMaleCount').addEventListener('change', updateGroupTotal);
-document.getElementById('crpGFemaleCount').addEventListener('change', updateGroupTotal);
+function crpEscAttr(value) {
+  return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+document.getElementById('crpGCount').addEventListener('change', renderGroupParticipants);
 
 /* ── 모달 열기 ── */
 document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
@@ -2106,6 +2143,7 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     var capacity = parseInt(this.dataset.capacity) || 40;
     currentCapMale   = parseInt(this.dataset.capacityMale)   || 0;
     currentCapFemale = parseInt(this.dataset.capacityFemale) || 0;
+    currentRegisteredCount = null;
 
     campIdInput.value = campId;
     campCapInput.value = capacity;
@@ -2116,8 +2154,8 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     // 성별 버튼 초기화
     document.getElementById('crpGenderBtnM').classList.remove('selected');
     document.getElementById('crpGenderBtnF').classList.remove('selected');
-    // 단체 총인원 초기화
-    updateGroupTotal();
+    // 단체 학생 명단 초기화
+    renderGroupParticipants();
 
     crpSwitchTab('individual');
     formWrap.hidden = false;
@@ -2135,6 +2173,7 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
       if (res.ok) {
         var data = await res.json();
         var subs = data.count ?? 0;
+        currentRegisteredCount = data.submissions ?? subs;
         updateCrpModalCap({ count: subs, countMale: data.countMale ?? 0, countFemale: data.countFemale ?? 0 }, capacity);
         var waitlistNotice = document.getElementById('crpWaitlistNotice');
         if (subs >= capacity + WAITLIST_SIZE) {
@@ -2226,10 +2265,16 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var gName      = document.getElementById('crpGName').value.trim();
     var gPhone     = document.getElementById('crpGPhone').value.trim();
     var gEmail     = document.getElementById('crpGEmail').value.trim();
-    var gMaleCount = parseInt(document.getElementById('crpGMaleCount').value) || 0;
-    var gFemCount  = parseInt(document.getElementById('crpGFemaleCount').value) || 0;
+    var gTotal     = parseInt(document.getElementById('crpGCount').value) || 0;
     var gOrg       = document.getElementById('crpGOrg').value.trim();
-    var gTotal     = gMaleCount + gFemCount;
+    var participants = Array.from(document.querySelectorAll('.crp-group-participant')).map(function(row) {
+      return {
+        name: row.querySelector('.crp-g-participant-name').value.trim(),
+        gender: row.querySelector('.crp-g-participant-gender').value,
+      };
+    });
+    var gMaleCount = participants.filter(function(p) { return p.gender === 'male'; }).length;
+    var gFemCount  = participants.filter(function(p) { return p.gender === 'female'; }).length;
 
     if (!gName || !gPhone || !gEmail || !gOrg) {
       errorMsg.textContent = '담당자 이름, 연락처, 이메일, 소속은 필수 항목입니다. / Contact name, phone, email, and organization are required.';
@@ -2237,7 +2282,18 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       return;
     }
     if (gTotal < 2) {
-      errorMsg.textContent = '남학생 또는 여학생 합산 2명 이상 입력해주세요. / Please enter at least 2 participants total.';
+      errorMsg.textContent = '참여 인원을 2명 이상 선택해주세요. / Please select at least 2 participants.';
+      errorMsg.hidden = false;
+      return;
+    }
+    var gRemaining = Math.max(0, (parseInt(campCapInput.value) || 40) - (currentRegisteredCount || 0));
+    if (currentRegisteredCount !== null && gTotal > gRemaining) {
+      errorMsg.textContent = '현재 잔여 정원은 ' + gRemaining + '명입니다. 참여 인원을 줄여주세요. / Only ' + gRemaining + ' spots remain. Please reduce the number of participants.';
+      errorMsg.hidden = false;
+      return;
+    }
+    if (participants.length !== gTotal || participants.some(function(p) { return !p.name || !p.gender; })) {
+      errorMsg.textContent = '모든 참가 학생의 이름과 성별을 입력해주세요. / Please enter every participant name and gender.';
       errorMsg.hidden = false;
       return;
     }
@@ -2250,6 +2306,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       name: gName, phone: gPhone, email: gEmail,
       maleCount: gMaleCount, femaleCount: gFemCount,
       groupCount: gTotal,
+      participants: participants,
       church: gOrg,
       notes: document.getElementById('crpGNotes').value.trim(),
     };
@@ -2325,8 +2382,8 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       if (currentType === 'group') {
         var gm = payload.maleCount, gf = payload.femaleCount, gc = payload.groupCount;
         successMsg.innerHTML = isEn
-          ? 'Your group registration for <strong>' + gc + ' participants</strong> (Male ' + gm + ' / Female ' + gf + ') has been received.<br>Please transfer the deposit below and send individual registration forms to <strong>wolkorea1@gmail.com</strong>.'
-          : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br><strong>wolkorea1@gmail.com</strong>으로 개인별 신청서를 보내주세요.';
+          ? 'Your group registration for <strong>' + gc + ' participants</strong> (Male ' + gm + ' / Female ' + gf + ') has been received.<br>Please transfer the deposit below.'
+          : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.';
         successCount.innerHTML = isEn
           ? 'Registration is finalized only after your deposit is received.<br><span style="font-size:0.88em;color:#64748b;line-height:1.6;">Please complete full payment within one week of the deposit. Unpaid registrations may be cancelled.</span>'
           : '신청 완료 후 예약금을 납부하셔야 최종 등록이 완료됩니다.<br><span style="font-size:0.88em;color:#64748b;line-height:1.6;">예약금 납부 후 1주일 이내로 캠프비를 완납해 주셔야 하며, 기간 내 미납 시 신청이 취소될 수 있습니다.</span>';
@@ -2511,7 +2568,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     var email       = document.getElementById('staffEmail').value.trim();
     var gender      = document.getElementById('staffGender').value;
     var church      = document.getElementById('staffChurch').value.trim();
-    var serviceArea = document.getElementById('staffServiceArea').value.trim();
+    var serviceArea = Array.from(document.querySelectorAll('input[name="staffTeam"]:checked')).map(function(el){ return el.value; }).join(', ');
     var notes       = document.getElementById('staffNotes').value.trim();
     var privacy     = document.getElementById('staffPrivacyConsent').checked;
     var campId      = staffCampIdInput.value;
@@ -2527,7 +2584,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       return;
     }
     if (!serviceArea) {
-      staffErrorMsg.textContent = '섬기고 싶은 분야를 입력해주세요. / Please enter your area of service.';
+      staffErrorMsg.textContent = '섬기고 싶은 팀을 하나 이상 선택해주세요. / Please select at least one team.';
       staffErrorMsg.hidden = false;
       return;
     }
