@@ -4,23 +4,33 @@ const CORS = {
 };
 
 async function naverGeocode(query, clientId, clientSecret) {
-  const res = await fetch(
-    `https://naveropenapi.apigw.naver.com/map-geocode/v2/geocode?query=${encodeURIComponent(query)}`,
-    {
+  const endpoints = [
+    'https://maps.apigw.ntruss.com/map-geocode/v2/geocode',
+    'https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode',
+  ];
+  let lastError;
+
+  for (const endpoint of endpoints) {
+    const res = await fetch(`${endpoint}?query=${encodeURIComponent(query)}`, {
       headers: {
         'X-NCP-APIGW-API-KEY-ID': clientId,
         'X-NCP-APIGW-API-KEY': clientSecret,
+        'Accept': 'application/json',
       },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return (data.addresses || []).map(addr => ({
+        roadAddress: addr.roadAddress,
+        jibunAddress: addr.jibunAddress,
+        y: addr.y,
+        x: addr.x,
+      }));
     }
-  );
-  if (!res.ok) throw new Error(`Naver ${res.status}`);
-  const data = await res.json();
-  return (data.addresses || []).map(addr => ({
-    roadAddress: addr.roadAddress,
-    jibunAddress: addr.jibunAddress,
-    y: addr.y,
-    x: addr.x,
-  }));
+    lastError = new Error(`Naver ${res.status}`);
+  }
+
+  throw lastError || new Error('Naver geocoding failed');
 }
 
 async function nominatimGeocode(query) {
@@ -49,16 +59,18 @@ export async function onRequestGet(context) {
 
   try {
     let addresses = [];
+    let source = 'osm';
     if (env.NAVER_CLIENT_ID && env.NAVER_CLIENT_SECRET) {
       try {
         addresses = await naverGeocode(query, env.NAVER_CLIENT_ID, env.NAVER_CLIENT_SECRET);
+        source = 'naver';
       } catch (e) {
         addresses = await nominatimGeocode(query);
       }
     } else {
       addresses = await nominatimGeocode(query);
     }
-    return Response.json({ addresses }, { headers: CORS });
+    return Response.json({ addresses, source }, { headers: CORS });
   } catch (e) {
     return Response.json({ addresses: [] }, { headers: CORS });
   }

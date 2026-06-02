@@ -557,13 +557,21 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .map-search-item.no-result:hover { background:none; }
   /* 주소 자동완성 */
   .addr-wrap { position:relative; }
+  .addr-input-row { display:flex; gap:.5rem; }
+  .addr-input-row input { min-width:0; flex:1; }
+  .btn-addr-search { flex-shrink:0; border:1px solid #004f68; border-radius:9px; padding:0 .85rem; background:#004f68; color:#fff; font-family:inherit; font-size:.78rem; font-weight:750; cursor:pointer; }
+  .btn-addr-search:hover { background:#003f54; }
   .addr-suggestions { display:none; position:absolute; top:calc(100% + 2px); left:0; right:0; background:#fff; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.12); overflow:hidden; max-height:200px; overflow-y:auto; z-index:200; }
   .addr-suggestions.open { display:block; }
   .addr-suggestion-item { padding:.58rem .9rem; font-size:.83rem; cursor:pointer; border-bottom:1px solid #f0f4f6; color:#1a2e3b; line-height:1.4; }
   .addr-suggestion-item:last-child { border-bottom:none; }
   .addr-suggestion-item:hover { background:#f0f8fb; }
+  .addr-suggestion-item small { display:block; margin-top:.12rem; color:#8aacba; font-size:.72rem; }
   .addr-suggestion-item.no-result { color:#aab8c0; cursor:default; }
   .addr-suggestion-item.no-result:hover { background:none; }
+  .addr-status { margin:.42rem 0 0; color:#78909a; font-size:.74rem; line-height:1.5; }
+  .addr-status.selected { color:#167254; font-weight:700; }
+  .addr-status.warning { color:#b06b16; }
   @media(max-width:768px) {
     .view-tabs { display:none; }
     .app-body:not(.split) { flex-direction:column; }
@@ -748,6 +756,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let editingChurch = null;
   let viewingChurch = null;
   let churchColorMap = {};
+  let selectedChurchAddress = null;
 
   const PASTEL_COLORS = [
     { bg:'#FFF0F0', accent:'#F09090', marker:'#D95555' },
@@ -1101,7 +1110,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
             </div>
             <div class="form-group">
               <label>${isKo ? '세부 주소' : 'Detail Address'}</label>
-              <input type="text" id="fDetailAddress" placeholder="${isKo ? '예: 세교로 48 (선택사항)' : 'e.g. 48 Segyo-ro (optional)'}">
+              <div class="addr-wrap" id="fAddressWrap">
+                <div class="addr-input-row">
+                  <input type="text" id="fDetailAddress" placeholder="${isKo ? '예: 세교로 48' : 'e.g. 48 Segyo-ro'}" autocomplete="off">
+                  <button class="btn-addr-search" id="fAddressSearchBtn" type="button">${isKo ? '주소 검색' : 'Search'}</button>
+                </div>
+                <div class="addr-suggestions" id="fAddressSuggestions"></div>
+              </div>
+              <p class="addr-status" id="fAddressStatus"></p>
             </div>
             <div class="form-group">
               <label>${t('notes')}</label>
@@ -1181,6 +1197,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('editModalClose').addEventListener('click', closeEditModal);
     document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
     document.getElementById('editSaveBtn').addEventListener('click', saveChurch);
+    document.getElementById('fAddressSearchBtn').addEventListener('click', searchChurchAddress);
+    document.getElementById('fDetailAddress').addEventListener('input', clearSelectedChurchAddress);
+    document.getElementById('fDetailAddress').addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        searchChurchAddress();
+      }
+    });
     document.getElementById('detailPanelClose').addEventListener('click', closeDetailModal);
     document.getElementById('searchInput').addEventListener('input', renderChurchList);
 
@@ -1196,6 +1220,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         districtEl.innerHTML = `<option value="">${t('district_ph')}</option>`;
         districtEl.disabled = true;
       }
+      clearSelectedChurchAddress();
+    });
+    document.getElementById('fDistrict').addEventListener('change', clearSelectedChurchAddress);
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#fAddressWrap')) closeAddressSuggestions();
     });
 
     document.querySelectorAll('.view-tab').forEach(btn => {
@@ -1338,13 +1367,109 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       districtEl.disabled = true;
     }
 
+    const savedCoords = church ? getExplicitChurchCoords(church) : null;
+    selectedChurchAddress = savedCoords ? {
+      lat: savedCoords[0],
+      lng: savedCoords[1],
+      label: church.location || [savedRegion, savedDistrict, church.detailAddress].filter(Boolean).join(' '),
+      source: 'saved',
+    } : null;
+    updateAddressStatus();
+    closeAddressSuggestions();
     document.getElementById('editModal').classList.add('open');
     setTimeout(() => document.getElementById('fChurchName').focus(), 100);
   }
 
   function closeEditModal() {
     document.getElementById('editModal').classList.remove('open');
+    closeAddressSuggestions();
+    selectedChurchAddress = null;
     editingChurch = null;
+  }
+
+  function closeAddressSuggestions() {
+    document.getElementById('fAddressSuggestions')?.classList.remove('open');
+  }
+
+  function clearSelectedChurchAddress() {
+    selectedChurchAddress = null;
+    updateAddressStatus();
+    closeAddressSuggestions();
+  }
+
+  function updateAddressStatus(message = '', type = '') {
+    const statusEl = document.getElementById('fAddressStatus');
+    if (!statusEl) return;
+    const isKo = getLang() === 'ko';
+    if (selectedChurchAddress) {
+      const isFallback = selectedChurchAddress.source === 'osm';
+      const label = isFallback
+        ? (isKo ? '선택된 주소 (보조 검색 결과 - 위치 확인 필요)' : 'Selected address (fallback result - verify location)')
+        : (isKo ? '선택된 주소' : 'Selected address');
+      statusEl.textContent = `${label}: ${selectedChurchAddress.label}`;
+      statusEl.className = `addr-status ${isFallback ? 'warning' : 'selected'}`;
+      return;
+    }
+    statusEl.textContent = message || (isKo
+      ? '핀 위치를 정확하게 지정하려면 주소 검색 후 결과를 선택해 주세요.'
+      : 'Search and select an address to place the pin accurately.');
+    statusEl.className = `addr-status${type ? ` ${type}` : ''}`;
+  }
+
+  async function searchChurchAddress() {
+    const suggestionsEl = document.getElementById('fAddressSuggestions');
+    const region = document.getElementById('fRegion').value;
+    const district = document.getElementById('fDistrict').value;
+    const detailAddress = document.getElementById('fDetailAddress').value.trim();
+    const query = [region, district, detailAddress].filter(Boolean).join(' ');
+    const isKo = getLang() === 'ko';
+
+    if (!detailAddress) {
+      updateAddressStatus(isKo ? '도로명과 건물 번호를 입력해 주세요.' : 'Enter a street name and building number.', 'warning');
+      return;
+    }
+
+    suggestionsEl.innerHTML = `<div class="addr-suggestion-item no-result">${isKo ? '주소 검색 중...' : 'Searching...'}</div>`;
+    suggestionsEl.classList.add('open');
+
+    try {
+      const res = await fetch(`/api/geocode?query=${encodeURIComponent(query)}`);
+      const data = await res.json().catch(() => ({}));
+      const addresses = data.addresses || [];
+      if (!addresses.length) {
+        suggestionsEl.innerHTML = `<div class="addr-suggestion-item no-result">${isKo ? '검색 결과가 없습니다. 주소를 조금 더 구체적으로 입력해 주세요.' : 'No results. Enter a more specific address.'}</div>`;
+        return;
+      }
+
+      suggestionsEl.innerHTML = addresses.slice(0, 5).map((addr, i) => {
+        const label = addr.roadAddress || addr.jibunAddress;
+        const sub = addr.jibunAddress && addr.jibunAddress !== label ? addr.jibunAddress : '';
+        const sourceLabel = data.source === 'naver' ? 'NAVER' : (isKo ? '보조 검색' : 'Fallback search');
+        return `<div class="addr-suggestion-item" data-idx="${i}">
+          ${esc(label)}
+          <small>${sub ? `${esc(sub)} · ` : ''}${sourceLabel}</small>
+        </div>`;
+      }).join('');
+
+      suggestionsEl.querySelectorAll('.addr-suggestion-item[data-idx]').forEach(el => {
+        el.addEventListener('click', () => {
+          const addr = addresses[Number(el.dataset.idx)];
+          const lat = Number(addr.y);
+          const lng = Number(addr.x);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+          selectedChurchAddress = {
+            lat,
+            lng,
+            label: addr.roadAddress || addr.jibunAddress,
+            source: data.source || 'unknown',
+          };
+          updateAddressStatus();
+          closeAddressSuggestions();
+        });
+      });
+    } catch (e) {
+      suggestionsEl.innerHTML = `<div class="addr-suggestion-item no-result">${isKo ? '주소 검색에 실패했습니다. 잠시 후 다시 시도해 주세요.' : 'Address search failed. Please try again.'}</div>`;
+    }
   }
 
   async function saveChurch() {
@@ -1352,36 +1477,30 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const pastorName = document.getElementById('fPastorName').value.trim();
     if (!churchName) { alert(t('name_required')); return; }
 
-    const saveBtn = document.getElementById('editSaveBtn');
-    saveBtn.disabled = true;
-    saveBtn.textContent = t('saving');
-
     const now = Date.now();
     const region        = document.getElementById('fRegion').value;
     const district      = document.getElementById('fDistrict').value;
     const detailAddress = document.getElementById('fDetailAddress').value.trim();
     const fullAddress   = [region, district, detailAddress].filter(Boolean).join(' ');
 
-    let lat = null, lng = null;
-    if (fullAddress) {
-      try {
-        const geoRes = await fetch(`/api/geocode?query=${encodeURIComponent(fullAddress)}`);
-        if (geoRes.ok) {
-          const geoData = await geoRes.json();
-          if (geoData.addresses?.length) {
-            lat = parseFloat(geoData.addresses[0].y);
-            lng = parseFloat(geoData.addresses[0].x);
-          }
-        }
-      } catch(e) {}
+    if (detailAddress && !selectedChurchAddress) {
+      alert(getLang() === 'ko'
+        ? '주소 검색 버튼을 누른 뒤 정확한 주소를 선택해 주세요.'
+        : 'Search for the address and select the correct result.');
+      return;
     }
+
+    const saveBtn = document.getElementById('editSaveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = t('saving');
 
     const data = {
       churchName, pastorName,
       pastorPhone: document.getElementById('fPastorPhone').value.trim(),
       region, district, detailAddress,
-      lat: lat || null, lng: lng || null,
-      location: fullAddress,
+      lat: selectedChurchAddress?.lat ?? null,
+      lng: selectedChurchAddress?.lng ?? null,
+      location: selectedChurchAddress?.label || fullAddress,
       notes: document.getElementById('fNotes').value.trim(),
       updatedAt: now, updatedBy: currentUser.uid,
     };
@@ -1953,13 +2072,15 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   function getSavedChurchCoords(church) {
-    if (church.lat == null || church.lng == null || church.lat === '' || church.lng === '') {
-      return getChurchCoords(church.region, church.district);
-    }
+    return getExplicitChurchCoords(church) || getChurchCoords(church.region, church.district);
+  }
+
+  function getExplicitChurchCoords(church) {
+    if (church.lat == null || church.lng == null || church.lat === '' || church.lng === '') return null;
     const lat = Number(church.lat);
     const lng = Number(church.lng);
     if (Number.isFinite(lat) && Number.isFinite(lng)) return [lat, lng];
-    return getChurchCoords(church.region, church.district);
+    return null;
   }
 
   function getChurchMarkerIcon(markerColor, rank) {
