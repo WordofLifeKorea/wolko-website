@@ -350,8 +350,33 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   border-bottom-color: rgba(0,79,104,0.06);
 }
 .registration-summary-row td { transition: background 0.15s ease; }
+.registration-summary-open td { padding-top: 10px; padding-bottom: 10px; }
 .registration-status-cell { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .registration-status-content { min-width: 0; }
+.registration-expanded-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+.registration-expanded-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.registration-expanded-meta {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mid);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .row-toggle-btn {
   display: inline-flex;
   align-items: center;
@@ -454,6 +479,17 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.registration-detail-section + .registration-detail-section {
+  border-top: 1px solid rgba(0,79,104,0.10);
+}
+.registration-detail-section-title {
+  padding: 10px 14px 7px;
+  background: #fbfdfe;
+  color: #7890a0;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
 }
 .registration-detail-grid {
   display: grid;
@@ -1099,6 +1135,9 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .registration-detail-panel { border-radius: 10px; box-shadow: none; }
   .registration-detail-head { align-items:flex-start; flex-direction:column; gap:2px; padding:9px 10px; }
   .registration-detail-head span { white-space: normal; }
+  .registration-expanded-strip { gap: 8px; }
+  .registration-expanded-meta { display: none; }
+  .registration-detail-section-title { padding: 9px 10px 6px; }
   .registration-detail-grid { grid-template-columns: 1fr; padding: 0; }
   .registration-detail-item { grid-template-columns: 82px minmax(0, 1fr); padding: 9px 10px; }
   .registration-detail-item:nth-child(odd) { border-right: none; }

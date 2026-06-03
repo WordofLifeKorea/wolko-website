@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=22">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=23">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -830,19 +830,33 @@
                     <strong>상세 정보</strong>
                     <span>${esc(r.name)} · ${esc(campLabel)}</span>
                   </div>
-                  <div class="registration-detail-grid">
-                    <span class="registration-detail-item"><span class="registration-detail-label">캠프</span><span class="registration-detail-value">${esc(campLabel)}</span></span>
-                    <span class="registration-detail-item"><span class="registration-detail-label">영적 상태</span><span class="registration-detail-value">${spiritualStatusCell}</span></span>
-                    <span class="registration-detail-item"><span class="registration-detail-label">연락처</span><span class="registration-detail-value">${esc(r.phone || '—')}</span></span>
-                    <span class="registration-detail-item"><span class="registration-detail-label">이메일</span><span class="registration-detail-value">${esc(r.email || '—')}</span></span>
-                    <span class="registration-detail-item"><span class="registration-detail-label">교회</span><span class="registration-detail-value">${esc(r.church || '—')}</span></span>
-                    <span class="registration-detail-item"><span class="registration-detail-label">학교</span><span class="registration-detail-value">${esc(r.school || '—')}</span></span>
-                    <span class="registration-detail-item"><span class="registration-detail-label">비상연락처</span><span class="registration-detail-value">${esc(r.emergency || '—')}</span></span>
-                    <span class="registration-detail-item registration-detail-wide"><span class="registration-detail-label">신청일</span><span class="registration-detail-value">${dateStr}</span></span>
-                    <span class="registration-detail-item registration-detail-wide"><span class="registration-detail-label">상담자 메모</span><span class="registration-detail-value">${counselorMemoCell}</span></span>
-                    <span class="registration-detail-item registration-detail-wide"><span class="registration-detail-label">신청 메모</span><span class="registration-detail-value">${esc(r.notes || '—')}</span></span>
-                    <span class="registration-detail-actions"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></span>
+                  <div class="registration-detail-section">
+                    <div class="registration-detail-section-title">기본 정보</div>
+                    <div class="registration-detail-grid">
+                      <span class="registration-detail-item"><span class="registration-detail-label">상태</span><span class="registration-detail-value">${statusCell}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">유형</span><span class="registration-detail-value">${typeBadge}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">이름</span><span class="registration-detail-value">${esc(r.name)}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">캠프</span><span class="registration-detail-value">${esc(campLabel)}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">담당 카운슬러</span><span class="registration-detail-value">${counselorCell}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">학년 / 인원</span><span class="registration-detail-value">${esc(gradeOrCount)}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">성별</span><span class="registration-detail-value">${genderCell}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">영적 상태</span><span class="registration-detail-value">${spiritualStatusCell}</span></span>
+                    </div>
                   </div>
+                  <div class="registration-detail-section">
+                    <div class="registration-detail-section-title">상세 정보</div>
+                    <div class="registration-detail-grid">
+                      <span class="registration-detail-item"><span class="registration-detail-label">연락처</span><span class="registration-detail-value">${esc(r.phone || '—')}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">이메일</span><span class="registration-detail-value">${esc(r.email || '—')}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">교회</span><span class="registration-detail-value">${esc(r.church || '—')}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">학교</span><span class="registration-detail-value">${esc(r.school || '—')}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">비상연락처</span><span class="registration-detail-value">${esc(r.emergency || '—')}</span></span>
+                      <span class="registration-detail-item registration-detail-wide"><span class="registration-detail-label">신청일</span><span class="registration-detail-value">${dateStr}</span></span>
+                      <span class="registration-detail-item registration-detail-wide"><span class="registration-detail-label">상담자 메모</span><span class="registration-detail-value">${counselorMemoCell}</span></span>
+                      <span class="registration-detail-item registration-detail-wide"><span class="registration-detail-label">신청 메모</span><span class="registration-detail-value">${esc(r.notes || '—')}</span></span>
+                    </div>
+                  </div>
+                  <div class="registration-detail-actions"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></div>
                 </div>
               </td>
             </tr>`
@@ -920,14 +934,25 @@
           ? `<tr class="group-participant-row legacy"><td colspan="6">참여 인원 수를 확인해주세요.</td></tr>`
           : '';
 
-        return `<tr class="${rowClass} registration-summary-row${isDetailExpanded ? ' is-expanded' : ''}" style="${rowStyle}" onclick="toggleRegistrationDetail('camp','${esc(r.regId)}',event)">
-          <td><span class="registration-status-cell">${detailButton}<span class="registration-status-content">${statusCell}</span></span></td>
-          <td>${typeBadge}</td>
-          <td style="font-weight:600">${esc(r.name)}</td>
-          <td>${counselorCell}</td>
-          <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
-          <td>${genderCell}</td>
-        </tr>${campDetailRow}${participantRows}`;
+        const campSummaryRow = isDetailExpanded
+          ? `<tr class="${rowClass} registration-summary-row registration-summary-open is-expanded" style="${rowStyle}" onclick="toggleRegistrationDetail('camp','${esc(r.regId)}',event)">
+              <td colspan="6">
+                <span class="registration-expanded-strip">
+                  ${detailButton}
+                  <span class="registration-expanded-title">${esc(r.name)}</span>
+                  <span class="registration-expanded-meta">${esc(campLabel)}</span>
+                </span>
+              </td>
+            </tr>`
+          : `<tr class="${rowClass} registration-summary-row" style="${rowStyle}" onclick="toggleRegistrationDetail('camp','${esc(r.regId)}',event)">
+              <td><span class="registration-status-cell">${detailButton}<span class="registration-status-content">${statusCell}</span></span></td>
+              <td>${typeBadge}</td>
+              <td style="font-weight:600">${esc(r.name)}</td>
+              <td>${counselorCell}</td>
+              <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
+              <td>${genderCell}</td>
+            </tr>`;
+        return `${campSummaryRow}${campDetailRow}${participantRows}`;
       }).join('');
     }
 
@@ -1005,25 +1030,47 @@
                     <strong>상세 정보</strong>
                     <span>${esc(r.name)} · ${esc(campLabel)}</span>
                   </div>
-                  <div class="registration-detail-grid">
-                    <span class="registration-detail-item"><span class="registration-detail-label">캠프</span><span class="registration-detail-value">${esc(campLabel)}</span></span>
-                    <span class="registration-detail-item"><span class="registration-detail-label">연락처</span><span class="registration-detail-value">${phoneCell}</span></span>
-                    <span class="registration-detail-item"><span class="registration-detail-label">이메일</span><span class="registration-detail-value">${esc(r.email || '—')}</span></span>
-                    <span class="registration-detail-item"><span class="registration-detail-label">교회</span><span class="registration-detail-value">${esc(r.church || '—')}</span></span>
-                    <span class="registration-detail-item registration-detail-wide"><span class="registration-detail-label">신청일</span><span class="registration-detail-value">${dateStr}</span></span>
-                    <span class="registration-detail-actions"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></span>
+                  <div class="registration-detail-section">
+                    <div class="registration-detail-section-title">기본 정보</div>
+                    <div class="registration-detail-grid">
+                      <span class="registration-detail-item"><span class="registration-detail-label">이름</span><span class="registration-detail-value">${esc(r.name)}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">성별</span><span class="registration-detail-value">${genderBadge}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">캠프</span><span class="registration-detail-value">${esc(campLabel)}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">섬김 분야</span><span class="registration-detail-value">${serviceAreaCell}</span></span>
+                    </div>
                   </div>
+                  <div class="registration-detail-section">
+                    <div class="registration-detail-section-title">상세 정보</div>
+                    <div class="registration-detail-grid">
+                      <span class="registration-detail-item"><span class="registration-detail-label">연락처</span><span class="registration-detail-value">${phoneCell}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">이메일</span><span class="registration-detail-value">${esc(r.email || '—')}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">교회</span><span class="registration-detail-value">${esc(r.church || '—')}</span></span>
+                      <span class="registration-detail-item registration-detail-wide"><span class="registration-detail-label">신청일</span><span class="registration-detail-value">${dateStr}</span></span>
+                    </div>
+                  </div>
+                  <div class="registration-detail-actions"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></div>
                 </div>
               </td>
             </tr>`
           : '';
 
         rowIndex += 1;
-        return `<tr class="camp-tint registration-summary-row${isDetailExpanded ? ' is-expanded' : ''}" style="${rowStyle}" onclick="toggleRegistrationDetail('staff','${esc(r.regId)}',event)">
-          <td style="font-weight:600"><span class="registration-status-cell">${detailButton}<span>${esc(r.name)}</span></span></td>
-          <td>${genderBadge}</td>
-          <td>${serviceAreaCell}</td>
-        </tr>${staffDetailRow}`;
+        const staffSummaryRow = isDetailExpanded
+          ? `<tr class="camp-tint registration-summary-row registration-summary-open is-expanded" style="${rowStyle}" onclick="toggleRegistrationDetail('staff','${esc(r.regId)}',event)">
+              <td colspan="3">
+                <span class="registration-expanded-strip">
+                  ${detailButton}
+                  <span class="registration-expanded-title">${esc(r.name)}</span>
+                  <span class="registration-expanded-meta">${esc(campLabel)}</span>
+                </span>
+              </td>
+            </tr>`
+          : `<tr class="camp-tint registration-summary-row" style="${rowStyle}" onclick="toggleRegistrationDetail('staff','${esc(r.regId)}',event)">
+              <td style="font-weight:600"><span class="registration-status-cell">${detailButton}<span>${esc(r.name)}</span></span></td>
+              <td>${genderBadge}</td>
+              <td>${serviceAreaCell}</td>
+            </tr>`;
+        return `${staffSummaryRow}${staffDetailRow}`;
       };
 
       const season = SEASONS.find(s => s.id === activeSeason);
