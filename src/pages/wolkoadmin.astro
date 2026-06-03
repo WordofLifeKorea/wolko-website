@@ -774,7 +774,7 @@
         const counselorMemoCell = r.registrationType === 'group'
           ? '<span class="camper-na">—</span>'
           : camperEditMode
-          ? `<textarea class="counselor-memo-input" placeholder="특이사항 | 기도제목" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorMemo" onblur="updateField(this)">${esc(r.counselorMemo || '')}</textarea>`
+          ? `<input class="edit-input edit-input-wide" type="text" value="${esc(r.counselorMemo || '')}" placeholder="특이사항 | 기도제목" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorMemo" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
           : `<span class="${r.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(r.counselorMemo || '')}">${esc(r.counselorMemo || '—')}</span>`;
         const groupParticipants = r.registrationType === 'group'
           ? Array.from(
