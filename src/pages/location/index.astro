@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 ---
 
 <BaseLayout
@@ -7,6 +8,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   description="월코 평택 본부와 제주 월비 오시는 길 안내. Word of Life Korea location and directions."
   activeNav="location"
 >
+  <Fragment slot="head">
+    <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
+  </Fragment>
 
 <style>
   :root {
@@ -117,8 +121,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .lo-card-map {
     position:relative; min-height:360px;
   }
-  .lo-card-map iframe {
-    position:absolute; inset:0; width:100%; height:100%; border:none; display:block;
+  .lo-naver-map {
+    position:absolute; inset:0; width:100%; height:100%; display:block; background:#e8eef1;
   }
 
   /* RESPONSIVE */
@@ -194,11 +198,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <!-- 오른쪽: 지도 -->
       <div class="lo-card-map">
-        <iframe
-          src="https://maps.google.com/maps?q=경기도+평택시+경기대로+1407&hl=ko&z=17&output=embed"
-          allowfullscreen loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
+        <div id="naverMapPyeongtaek" class="lo-naver-map"
+             data-address="경기도 평택시 경기대로 1407"
+             data-label="WOLKO 평택 본부"></div>
       </div>
 
     </div>
@@ -245,11 +247,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <!-- 오른쪽: 지도 -->
       <div class="lo-card-map">
-        <iframe
-          src="https://maps.google.com/maps?q=제주특별자치도+제주시+애월읍+광상로+622&hl=ko&z=16&output=embed"
-          allowfullscreen loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
+        <div id="naverMapJeju" class="lo-naver-map"
+             data-address="제주특별자치도 제주시 애월읍 광상로 622"
+             data-label="제주 월비 WOLBI"></div>
       </div>
 
     </div>
@@ -259,12 +259,76 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </div><!-- end lang-root -->
 
 <script is:inline>
+var loMaps = {};
+
 function showPanel(id, btn) {
   document.querySelectorAll('.lo-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.lo-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
   btn.classList.add('active');
+  // 숨겨졌던 지도가 보이게 되면 크기 재계산
+  var map = loMaps[id];
+  if (map && window.naver) {
+    setTimeout(function() {
+      var c = map.getCenter();
+      naver.maps.Event.trigger(map, 'resize');
+      map.setCenter(c);
+    }, 60);
+  }
 }
+
+// 네이버 지도 초기화
+async function initLocationMap(key, elId) {
+  var el = document.getElementById(elId);
+  if (!el || typeof naver === 'undefined') return;
+  var address = el.dataset.address;
+  var label = el.dataset.label;
+
+  // 좌표 조회 (서버 프록시)
+  var lat = null, lng = null;
+  try {
+    var res = await fetch('/api/geocode?query=' + encodeURIComponent(address));
+    if (res.ok) {
+      var data = await res.json();
+      if (data.addresses && data.addresses.length) {
+        lat = parseFloat(data.addresses[0].y);
+        lng = parseFloat(data.addresses[0].x);
+      }
+    }
+  } catch (e) {}
+
+  if (lat == null || lng == null) {
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8aa;font-size:13px;">지도를 불러올 수 없습니다</div>';
+    return;
+  }
+
+  var pos = new naver.maps.LatLng(lat, lng);
+  var map = new naver.maps.Map(el, {
+    center: pos,
+    zoom: 16,
+    zoomControl: true,
+    zoomControlOptions: { position: naver.maps.Position.TOP_RIGHT },
+  });
+  new naver.maps.Marker({
+    position: pos,
+    map: map,
+    title: label,
+    icon: {
+      content: '<div style="background:#004f68;color:#fff;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3);transform:translateX(-50%);font-family:\'Noto Sans KR\',sans-serif;">' + label + '</div>',
+      anchor: new naver.maps.Point(0, 14),
+    },
+  });
+  loMaps[key] = map;
+}
+
+(function() {
+  function start() {
+    if (typeof naver === 'undefined' || !naver.maps) { setTimeout(start, 200); return; }
+    initLocationMap('pyeongtaek', 'naverMapPyeongtaek');
+    initLocationMap('jeju', 'naverMapJeju');
+  }
+  start();
+})();
 </script>
 
 </BaseLayout>
