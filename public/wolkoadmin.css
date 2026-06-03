@@ -247,13 +247,18 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
 }
 .camp-card-badge {
   margin-left: auto;
-  font-size: 11px; font-weight: 500;
+  font-size: 11px; font-weight: 700;
   padding: 2px 10px; border-radius: 100px;
-  background: rgba(0,79,104,0.09); color: var(--blue);
+  background: rgba(0,79,104,0.12); color: var(--blue);
   font-family: var(--f-sans);
   opacity: 0; transition: opacity 0.18s;
 }
 .camp-card.active .camp-card-badge { opacity: 1; }
+/* 캠프 카드 활성 뱃지는 캠프 고유 색상으로 */
+.camp-card:not(.camp-season-card).active .camp-card-badge {
+  background: var(--card-camp-border, var(--blue));
+  color: #fff;
+}
 
 .camp-card-title {
   font-size: 16px; font-weight: 600;
