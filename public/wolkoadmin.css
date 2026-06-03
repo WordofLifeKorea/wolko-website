@@ -305,19 +305,47 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .registration-summary-row { cursor: pointer; }
 .registration-summary-row.is-expanded td { border-bottom-color: rgba(0,79,104,0.06); }
 .registration-summary-row td { transition: background 0.15s ease; }
-.registration-status-cell { display: inline-flex; align-items: center; gap: 7px; }
-.row-expand-icon {
+.registration-status-cell { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.registration-status-content { min-width: 0; }
+.row-toggle-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  gap: 5px;
+  min-width: 54px;
+  height: 28px;
+  padding: 0 9px;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: rgba(0,79,104,0.08);
+  border: 1px solid rgba(0,79,104,0.16);
+  background: rgba(255,255,255,0.86);
   color: var(--blue);
-  font-size: 14px;
+  cursor: pointer;
+  font-family: var(--f-body);
+  font-size: 11px;
   font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(0,79,104,0.06);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.row-toggle-btn:hover {
+  border-color: rgba(0,79,104,0.34);
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,79,104,0.10);
+  transform: translateY(-1px);
+}
+.row-toggle-btn.is-open {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+.row-toggle-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  font-size: 14px;
   line-height: 1;
 }
 .registration-detail-row td {
@@ -329,9 +357,9 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .registration-detail-row td:first-child { box-shadow: inset 6px 0 0 var(--camp-row-border); }
 .registration-detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 8px 14px;
-  padding: 12px 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 22px;
+  padding: 14px 16px;
   border: 1px solid rgba(0,79,104,0.10);
   border-radius: 10px;
   background: rgba(255,255,255,0.76);
@@ -339,9 +367,9 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .registration-detail-item {
   min-width: 0;
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-columns: 96px minmax(0, 1fr);
   align-items: start;
-  gap: 8px;
+  gap: 10px;
   font-size: 12px;
   line-height: 1.5;
 }

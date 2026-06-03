@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=18">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=19">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -786,7 +786,10 @@
           : `<span class="${r.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(r.counselorMemo || '')}">${esc(r.counselorMemo || '—')}</span>`;
         const detailKey = `camp:${r.regId}`;
         const isDetailExpanded = expandedRegistrationRows.has(detailKey);
-        const detailIcon = `<span class="row-expand-icon" aria-hidden="true">${isDetailExpanded ? '⌃' : '⌄'}</span>`;
+        const detailButton = `<button class="row-toggle-btn${isDetailExpanded ? ' is-open' : ''}" type="button" aria-expanded="${isDetailExpanded}" aria-label="${isDetailExpanded ? '상세 접기' : '상세 보기'}" onclick="toggleRegistrationDetail('camp','${esc(r.regId)}')">
+          <span class="row-toggle-chevron" aria-hidden="true">${isDetailExpanded ? '⌃' : '⌄'}</span>
+          <span>${isDetailExpanded ? '접기' : '상세'}</span>
+        </button>`;
         const campDetailRow = isDetailExpanded
           ? `<tr class="registration-detail-row camp-detail-row" style="${rowStyle}">
               <td colspan="6">
@@ -881,7 +884,7 @@
           : '';
 
         return `<tr class="${rowClass} registration-summary-row${isDetailExpanded ? ' is-expanded' : ''}" style="${rowStyle}" onclick="toggleRegistrationDetail('camp','${esc(r.regId)}',event)">
-          <td><span class="registration-status-cell">${detailIcon}${statusCell}</span></td>
+          <td><span class="registration-status-cell">${detailButton}<span class="registration-status-content">${statusCell}</span></span></td>
           <td>${typeBadge}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
           <td>${counselorCell}</td>
@@ -951,7 +954,10 @@
               : `<span style="color:var(--light)">—</span>`);
         const detailKey = `staff:${r.regId}`;
         const isDetailExpanded = expandedRegistrationRows.has(detailKey);
-        const detailIcon = `<span class="row-expand-icon" aria-hidden="true">${isDetailExpanded ? '⌃' : '⌄'}</span>`;
+        const detailButton = `<button class="row-toggle-btn${isDetailExpanded ? ' is-open' : ''}" type="button" aria-expanded="${isDetailExpanded}" aria-label="${isDetailExpanded ? '상세 접기' : '상세 보기'}" onclick="toggleRegistrationDetail('staff','${esc(r.regId)}')">
+          <span class="row-toggle-chevron" aria-hidden="true">${isDetailExpanded ? '⌃' : '⌄'}</span>
+          <span>${isDetailExpanded ? '접기' : '상세'}</span>
+        </button>`;
         const staffDetailRow = isDetailExpanded
           ? `<tr class="registration-detail-row staff-detail-row" style="${rowStyle}">
               <td colspan="3">
@@ -969,7 +975,7 @@
 
         rowIndex += 1;
         return `<tr class="camp-tint registration-summary-row${isDetailExpanded ? ' is-expanded' : ''}" style="${rowStyle}" onclick="toggleRegistrationDetail('staff','${esc(r.regId)}',event)">
-          <td style="font-weight:600"><span class="registration-status-cell">${detailIcon}${esc(r.name)}</span></td>
+          <td style="font-weight:600"><span class="registration-status-cell">${detailButton}<span>${esc(r.name)}</span></span></td>
           <td>${genderBadge}</td>
           <td>${serviceAreaCell}</td>
         </tr>${staffDetailRow}`;
