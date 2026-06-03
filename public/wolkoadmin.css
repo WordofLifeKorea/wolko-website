@@ -381,35 +381,33 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 7px;
-  width: 96px;
-  min-width: 96px;
-  height: 32px;
-  padding: 0 11px 0 7px;
+  gap: 5px;
+  width: 64px;
+  min-width: 64px;
+  height: 28px;
+  padding: 0 8px;
   flex: 0 0 auto;
-  border-radius: 10px;
-  border: 1px solid rgba(0,79,104,0.20);
-  background: linear-gradient(180deg, #ffffff 0%, #eef6f8 100%);
-  color: var(--blue);
+  border-radius: 999px;
+  border: 1px solid #d9e5ea;
+  background: #fff;
+  color: #5f7886;
   cursor: pointer;
   font-family: var(--f-body);
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 3px 8px rgba(0,79,104,0.08);
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 .row-toggle-btn:hover {
-  border-color: rgba(0,79,104,0.42);
-  background: linear-gradient(180deg, #ffffff 0%, #e4f1f4 100%);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.95) inset, 0 5px 14px rgba(0,79,104,0.14);
-  transform: translateY(-1px);
+  border-color: #b9d0da;
+  background: #f6fafb;
+  color: var(--blue);
 }
 .row-toggle-btn.is-open {
-  border-color: var(--blue);
-  background: linear-gradient(180deg, #006b88 0%, #004f68 100%);
-  color: #fff;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 5px 14px rgba(0,79,104,0.18);
+  border-color: #b9d0da;
+  background: #edf5f7;
+  color: var(--blue);
 }
 .row-toggle-btn:focus-visible {
   outline: 3px solid rgba(47,177,197,0.24);
@@ -422,15 +420,15 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 12px;
+  height: 12px;
   flex: 0 0 auto;
-  border-radius: 7px;
-  background: rgba(0,79,104,0.10);
+  border-radius: 0;
+  background: transparent;
   color: currentColor;
 }
 .row-toggle-btn.is-open .row-toggle-mark {
-  background: rgba(255,255,255,0.18);
+  background: transparent;
 }
 .row-toggle-mark svg {
   transition: transform 0.16s ease;
@@ -439,7 +437,7 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   transform: rotate(180deg);
 }
 .row-toggle-text {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   text-align: left;
   white-space: nowrap;
 }
@@ -455,7 +453,7 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   border: 1px solid rgba(0,79,104,0.14);
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 8px 22px rgba(16,56,70,0.08);
+  box-shadow: 0 6px 16px rgba(16,56,70,0.06);
 }
 .registration-detail-head {
   display: flex;
@@ -483,10 +481,12 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .registration-detail-section + .registration-detail-section {
   border-top: 1px solid rgba(0,79,104,0.10);
 }
+.registration-detail-section {
+  padding: 15px 18px 16px;
+}
 .registration-detail-section-title {
-  padding: 10px 14px 7px;
-  background: #fbfdfe;
-  color: #7890a0;
+  margin-bottom: 8px;
+  color: var(--blue);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -494,38 +494,38 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .registration-detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0;
+  gap: 0 28px;
   padding: 0;
   background: #fff;
 }
 .registration-detail-item {
   min-width: 0;
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
+  grid-template-columns: 116px minmax(0, 1fr);
   align-items: start;
-  gap: 0;
-  min-height: 40px;
-  padding: 10px 14px;
+  gap: 12px;
+  min-height: 38px;
+  padding: 9px 0;
   border-bottom: 1px solid #edf3f5;
   font-size: 12px;
   line-height: 1.5;
 }
 .registration-detail-item:nth-child(odd) {
-  border-right: 1px solid #edf3f5;
+  border-right: none;
 }
 .registration-detail-wide {
   grid-column: 1 / -1;
   border-right: none !important;
 }
 .registration-detail-label {
-  padding-right: 12px;
   color: #7890a0;
   font-weight: 800;
   white-space: nowrap;
 }
 .registration-detail-value {
   min-width: 0;
-  color: var(--mid);
+  color: #233b47;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 .registration-detail-actions {
@@ -533,7 +533,7 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   align-items: center;
   justify-content: flex-end;
   grid-column: 1 / -1;
-  padding: 11px 14px;
+  padding: 12px 18px;
   background: #f8fbfc;
   border-top: 1px solid #edf3f5;
 }
@@ -1129,17 +1129,18 @@ tbody tr.camp-tint.is-dedicated:hover td {
   th, td { padding: 10px 10px; }
   .login-input-wrap { margin-bottom: 44px; }
   .password-input-tooltip { font-size: 10px; padding: 7px 9px; }
-  .row-toggle-btn { width: 84px; min-width: 84px; height: 30px; padding-right: 9px; }
-  .row-toggle-mark { width: 20px; height: 20px; }
+  .row-toggle-btn { width: 60px; min-width: 60px; height: 28px; padding: 0 8px; }
+  .row-toggle-mark { width: 12px; height: 12px; }
   .row-toggle-text { font-size: 10px; }
   .registration-detail-panel { border-radius: 10px; box-shadow: none; }
   .registration-detail-head { align-items:flex-start; flex-direction:column; gap:2px; padding:9px 10px; }
   .registration-detail-head span { white-space: normal; }
   .registration-expanded-strip { gap: 8px; }
   .registration-expanded-meta { display: none; }
-  .registration-detail-section-title { padding: 9px 10px 6px; }
+  .registration-detail-section { padding: 12px 10px 13px; }
+  .registration-detail-section-title { margin-bottom: 6px; }
   .registration-detail-grid { grid-template-columns: 1fr; padding: 0; }
-  .registration-detail-item { grid-template-columns: 82px minmax(0, 1fr); padding: 9px 10px; }
+  .registration-detail-item { grid-template-columns: 82px minmax(0, 1fr); gap: 10px; padding: 8px 0; }
   .registration-detail-item:nth-child(odd) { border-right: none; }
   .registration-detail-actions { justify-content: flex-start; }
   .group-participant-card {
