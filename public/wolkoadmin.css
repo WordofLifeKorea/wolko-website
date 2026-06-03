@@ -953,23 +953,33 @@ tbody tr.camp-tint.is-dedicated:hover td {
 }
 .edit-input-wide { width: 180px; }
 
+/* ── STAFF SECTION ── */
+.staff-section { border-color: rgba(13,148,136,0.2); }
+.staff-section .table-toolbar { border-bottom-color: rgba(13,148,136,0.12); }
+.staff-section thead tr { background: rgba(13,148,136,0.04); }
+.staff-section thead th { color: #0d9488; }
+.staff-section tbody tr:hover td { background: rgba(13,148,136,0.04); }
+
 /* ── STAFF CAMP GROUPS ── */
 .staff-camp-divider td {
-  padding: 10px 14px;
+  padding: 11px 14px 10px;
   background: var(--camp-row-bg);
   border-top: 2px solid var(--camp-row-border);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
   color: var(--camp-row-border);
   font-family: var(--f-sans);
 }
-.staff-camp-divider strong { font-size: 13px; }
+.staff-camp-divider strong { font-size: 13px; font-weight: 800; letter-spacing: 0.01em; }
 .staff-camp-divider span {
   display: inline-block;
   margin-left: 8px;
-  padding: 1px 7px;
-  border: 1px solid currentColor;
+  padding: 1px 8px;
+  background: currentColor;
   border-radius: 100px;
   font-size: 10px;
   font-weight: 700;
+  color: #fff;
+  opacity: 0.85;
 }
 .staff-camp-empty td {
   padding: 18px 14px;
@@ -1191,11 +1201,42 @@ tbody tr.camp-tint.is-dedicated:hover td {
 
 @media (max-width: 640px) {
   .adm-wrap { padding: 20px 14px 60px; }
-  .adm-header { padding: 0 14px; gap: 8px; }
-  .adm-header-logo span { font-size: 12px; }
-  .adm-header-badge { display: none; }
-  .btn-logout { font-size: 11px; padding: 5px 10px; }
-  .btn-install-adm { font-size: 11px; padding: 5px 8px; }
+  .adm-header {
+    height: auto;
+    min-height: 60px;
+    padding: 12px 14px 11px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 10px;
+  }
+  .adm-header-logo { gap: 8px; }
+  .adm-header-logo img { height: 28px; }
+  .adm-header-logo span {
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .adm-header-right {
+    width: 100%;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+  .adm-header-badge,
+  .btn-install-adm,
+  .btn-logout {
+    min-height: 30px;
+    padding: 5px 9px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .adm-header-badge:not(a) { display: none; }
+  .btn-install-adm { gap: 4px; }
+  .btn-install-adm svg { width: 12px; height: 12px; }
   .login-card { padding: 36px 24px 28px; margin: 16px; }
   th, td { padding: 10px 10px; }
   .login-input-wrap { margin-bottom: 44px; }
