@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=28">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=29">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -822,6 +822,72 @@
           </span>
           <span class="row-toggle-text">${isDetailExpanded ? '닫기' : '상세'}</span>
         </button>`;
+        // ── 단체 학생 명단 (상세 패널 안에 표시) ──
+        const groupParticipants = r.registrationType === 'group'
+          ? Array.from(
+              { length: Math.max(Number(r.groupCount) || 0, Array.isArray(r.participants) ? r.participants.length : 0) },
+              (_, participantIndex) => r.participants?.[participantIndex] || {}
+            )
+          : [];
+        const completedParticipants = groupParticipants.filter(p =>
+          p.name && ['male', 'female'].includes(p.gender)
+        ).length;
+
+        const participantSectionHtml = (() => {
+          if (!isDetailExpanded || r.registrationType !== 'group') return '';
+          if (!groupParticipants.length) return `
+              <div class="registration-detail-section registration-detail-participants">
+                <div class="registration-detail-section-title">학생 명단</div>
+                <p style="font-size:12px;color:var(--light);padding:6px 0;">참여 인원 수를 확인해주세요.</p>
+              </div>`;
+          const itemsHtml = groupParticipants.map((participant, participantIndex) => {
+            const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
+            const participantName = camperEditMode
+              ? `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="학생 이름" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
+              : `<span class="${participant.name ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(participant.name || '미입력')}</span>`;
+            const participantCounselor = camperEditMode
+              ? `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorRegId" onchange="updateField(this)">
+                  <option value="">미배정</option>
+                  ${counselorStaff.map(s => `<option value="${esc(s.regId)}"${s.regId === participant.counselorRegId ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}
+                </select>`
+              : `<span class="${participant.counselorRegId ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(counselorStaff.find(s => s.regId === participant.counselorRegId)?.name || '미배정')}</span>`;
+            const participantSalvation = camperEditMode
+              ? `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="saved" onchange="updateField(this)"${participant.saved ? ' checked' : ''}><span>구원</span></label>`
+              : (participant.saved ? '<span class="group-participant-state saved">구원</span>' : '<span class="camper-na">—</span>');
+            const participantDedication = camperEditMode
+              ? `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="dedicated" onchange="updateField(this)"${participant.dedicated ? ' checked' : ''}><span>헌신</span></label>`
+              : (participant.dedicated ? '<span class="group-participant-state dedicated">헌신</span>' : '<span class="camper-na">—</span>');
+            const participantSpiritual = `<span class="spiritual-inline">${participantSalvation}${participantDedication}</span>`;
+            const participantMemo = camperEditMode
+              ? `<textarea class="counselor-memo-input" placeholder="특이사항 | 기도제목" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorMemo" onblur="updateField(this)">${esc(participant.counselorMemo || '')}</textarea>`
+              : `<span class="${participant.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(participant.counselorMemo || '')}">${esc(participant.counselorMemo || '—')}</span>`;
+            const participantGender = camperEditMode
+              ? `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
+                  <option value="">성별</option>
+                  <option value="male"${participant.gender === 'male' ? ' selected' : ''}>남</option>
+                  <option value="female"${participant.gender === 'female' ? ' selected' : ''}>여</option>
+                </select>`
+              : participant.gender === 'male'
+              ? '<span class="group-participant-gender male">남</span>'
+              : participant.gender === 'female'
+              ? '<span class="group-participant-gender female">여</span>'
+              : '<span class="group-participant-empty">미입력</span>';
+            return `<div class="detail-participant-item${participantClass}">
+                  <span class="group-participant-label">학생 ${participantIndex + 1}</span>
+                  <span class="group-participant-field group-participant-name">${participantName}</span>
+                  <span class="group-participant-field">${participantGender}</span>
+                  <span class="group-participant-field">${participantCounselor}</span>
+                  <span class="group-participant-field group-participant-spiritual">${participantSpiritual}</span>
+                  <span class="group-participant-field group-participant-memo">${participantMemo}</span>
+                </div>`;
+          }).join('');
+          return `
+              <div class="registration-detail-section registration-detail-participants">
+                <div class="registration-detail-section-title">학생 명단 · ${completedParticipants} / ${groupParticipants.length}명 완료${camperEditMode ? ' (입력 모드)' : ''}</div>
+                <div class="detail-participant-list">${itemsHtml}</div>
+              </div>`;
+        })();
+
         const campDetailRow = isDetailExpanded
           ? `<tr class="registration-detail-row camp-detail-row" style="${rowStyle}">
               <td colspan="6">
@@ -856,82 +922,11 @@
                       <span class="registration-detail-item registration-detail-wide"><span class="registration-detail-label">신청 메모</span><span class="registration-detail-value">${esc(r.notes || '—')}</span></span>
                     </div>
                   </div>
+                  ${participantSectionHtml}
                   <div class="registration-detail-actions"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></div>
                 </div>
               </td>
             </tr>`
-          : '';
-        const groupParticipants = r.registrationType === 'group'
-          ? Array.from(
-              { length: Math.max(Number(r.groupCount) || 0, Array.isArray(r.participants) ? r.participants.length : 0) },
-              (_, participantIndex) => r.participants?.[participantIndex] || {}
-            )
-          : [];
-        const participantRows = isDetailExpanded && groupParticipants.length
-          ? (() => {
-            const isExpanded = expandedGroupParticipants.has(r.regId);
-            const completedParticipants = groupParticipants.filter(participant =>
-              participant.name && ['male', 'female'].includes(participant.gender)
-            ).length;
-            const toggleRow = `<tr class="group-participant-toggle-row">
-              <td colspan="6">
-                <button class="group-participant-toggle${isExpanded ? ' expanded' : ''}" type="button" data-regid="${esc(r.regId)}" aria-expanded="${isExpanded}" onclick="toggleGroupParticipants(this.dataset.regid)">
-                  <span class="group-participant-toggle-icon">⌄</span>
-                  <span>학생 명단 ${completedParticipants} / ${groupParticipants.length}명${camperEditMode ? ' 입력' : ''}</span>
-                </button>
-              </td>
-            </tr>`;
-            if (!isExpanded) return toggleRow;
-            return toggleRow + groupParticipants.map((participant, participantIndex) => {
-              const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
-              const participantName = camperEditMode
-                ? `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="학생 이름" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
-                : `<span class="${participant.name ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(participant.name || '미입력')}</span>`;
-              const participantCounselor = camperEditMode
-                ? `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorRegId" onchange="updateField(this)">
-                  <option value="">미배정</option>
-                  ${counselorStaff
-                    .map(staff => `<option value="${esc(staff.regId)}"${staff.regId === participant.counselorRegId ? ' selected' : ''}>${esc(staff.name)}</option>`)
-                    .join('')}
-                </select>`
-                : `<span class="${participant.counselorRegId ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(counselorStaff.find(staff => staff.regId === participant.counselorRegId)?.name || '미배정')}</span>`;
-              const participantSalvation = camperEditMode
-                ? `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="saved" onchange="updateField(this)"${participant.saved ? ' checked' : ''}><span>구원</span></label>`
-                : (participant.saved ? '<span class="group-participant-state saved">구원</span>' : '<span class="camper-na">—</span>');
-              const participantDedication = camperEditMode
-                ? `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="dedicated" onchange="updateField(this)"${participant.dedicated ? ' checked' : ''}><span>헌신</span></label>`
-                : (participant.dedicated ? '<span class="group-participant-state dedicated">헌신</span>' : '<span class="camper-na">—</span>');
-              const participantSpiritual = `<span class="spiritual-inline">${participantSalvation}${participantDedication}</span>`;
-              const participantMemo = camperEditMode
-                ? `<textarea class="counselor-memo-input" placeholder="특이사항 | 기도제목" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorMemo" onblur="updateField(this)">${esc(participant.counselorMemo || '')}</textarea>`
-                : `<span class="${participant.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(participant.counselorMemo || '')}">${esc(participant.counselorMemo || '—')}</span>`;
-              const participantGender = camperEditMode
-                ? `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
-                  <option value="">성별</option>
-                  <option value="male"${participant.gender === 'male' ? ' selected' : ''}>남</option>
-                  <option value="female"${participant.gender === 'female' ? ' selected' : ''}>여</option>
-                </select>`
-                : participant.gender === 'male'
-                ? '<span class="group-participant-gender male">남</span>'
-                : participant.gender === 'female'
-                ? '<span class="group-participant-gender female">여</span>'
-                : '<span class="group-participant-empty">미입력</span>';
-              return `<tr class="group-participant-row${participantClass}">
-                <td colspan="6">
-                  <div class="group-participant-card">
-                    <span class="group-participant-label">학생 ${participantIndex + 1}</span>
-                    <span class="group-participant-field group-participant-name">${participantName}</span>
-                    <span class="group-participant-field">${participantGender}</span>
-                    <span class="group-participant-field">${participantCounselor}</span>
-                    <span class="group-participant-field group-participant-spiritual">${participantSpiritual}</span>
-                    <span class="group-participant-field group-participant-memo">${participantMemo}</span>
-                  </div>
-                </td>
-              </tr>`;
-            }).join('');
-          })()
-          : isDetailExpanded && r.registrationType === 'group'
-          ? `<tr class="group-participant-row legacy"><td colspan="6">참여 인원 수를 확인해주세요.</td></tr>`
           : '';
 
         const campSummaryRow = isDetailExpanded
@@ -952,7 +947,7 @@
               <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
               <td>${genderCell}</td>
             </tr>`;
-        return `${campSummaryRow}${campDetailRow}${participantRows}`;
+        return `${campSummaryRow}${campDetailRow}`;
       }).join('');
     }
 
