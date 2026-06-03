@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=17">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=18">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -142,19 +142,7 @@
         </div>
       </div>
       <div class="table-scroll">
-        <table class="admin-table camp-admin-table">
-          <colgroup>
-            <col style="width:44px">
-            <col style="width:114px">
-            <col style="width:124px">
-            <col style="width:74px">
-            <col style="width:148px">
-            <col style="width:96px">
-            <col style="width:136px">
-            <col style="width:106px">
-            <col>
-            <col style="width:72px">
-          </colgroup>
+        <table class="camp-reg-table">
           <thead>
             <tr>
               <th>#</th>
@@ -162,15 +150,24 @@
               <th><button class="sort-btn" type="button" data-sort="camp">캠프</button></th>
               <th><button class="sort-btn" type="button" data-sort="type">유형</button></th>
               <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
-              <th>학년/성별</th>
               <th>담당 카운슬러</th>
-              <th>영적 상태</th>
+              <th>구원</th>
+              <th>헌신</th>
               <th>상담자 메모</th>
+              <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
+              <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
+              <th><button class="sort-btn" type="button" data-sort="grade">학년 / 인원</button></th>
+              <th><button class="sort-btn" type="button" data-sort="gender">성별</button></th>
+              <th><button class="sort-btn" type="button" data-sort="church">교회</button></th>
+              <th><button class="sort-btn" type="button" data-sort="school">학교</button></th>
+              <th><button class="sort-btn" type="button" data-sort="emergency">비상연락처</button></th>
+              <th><button class="sort-btn" type="button" data-sort="notes">메모</button></th>
+              <th><button class="sort-btn" type="button" data-sort="registeredAt">신청일시</button></th>
               <th>삭제</th>
             </tr>
           </thead>
           <tbody id="campRegBody">
-            <tr><td colspan="10">
+            <tr><td colspan="19">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p>로그인 후 자동으로 불러옵니다.</p>
@@ -204,29 +201,23 @@
         </div>
       </div>
       <div class="table-scroll">
-        <table class="admin-table staff-admin-table">
-          <colgroup>
-            <col style="width:44px">
-            <col style="width:136px">
-            <col style="width:142px">
-            <col style="width:126px">
-            <col style="width:74px">
-            <col>
-            <col style="width:72px">
-          </colgroup>
+        <table class="staff-reg-table">
           <thead>
             <tr>
               <th>#</th>
               <th><button class="sort-btn" type="button" data-sort="camp">캠프</button></th>
               <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
               <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
+              <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
               <th><button class="sort-btn" type="button" data-sort="gender">성별</button></th>
+              <th><button class="sort-btn" type="button" data-sort="church">교회</button></th>
               <th><button class="sort-btn" type="button" data-sort="serviceArea">섬기고 싶은 분야</button></th>
+              <th><button class="sort-btn" type="button" data-sort="registeredAt">신청일시</button></th>
               <th>삭제</th>
             </tr>
           </thead>
           <tbody id="staffRegBody">
-            <tr><td colspan="7">
+            <tr><td colspan="10">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p>로그인 후 자동으로 불러옵니다.</p>
@@ -554,8 +545,8 @@
       } catch (e) {
         showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p></div>`;
-        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="10">${errHtml}</td></tr>`;
-        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="7">${errHtml}</td></tr>`;
+        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="19">${errHtml}</td></tr>`;
+        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="10">${errHtml}</td></tr>`;
       }
     }
 
@@ -700,7 +691,7 @@
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="10">
+          <tr><td colspan="19">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -785,24 +776,6 @@
           : camperEditMode
           ? `<textarea class="counselor-memo-input" placeholder="특이사항 | 기도제목" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorMemo" onblur="updateField(this)">${esc(r.counselorMemo || '')}</textarea>`
           : `<span class="${r.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(r.counselorMemo || '')}">${esc(r.counselorMemo || '—')}</span>`;
-        const spiritualCell = r.registrationType === 'group'
-          ? '<span class="camper-na">—</span>'
-          : `<div class="spiritual-stack">${salvationCell}${dedicationCell}</div>`;
-        const gradeGenderCell = `<div class="cell-main">${esc(gradeOrCount)}</div><div class="cell-sub">${genderCell}</div>`;
-        const campDetailRow = `<tr class="camp-detail-row" style="${rowStyle}">
-          <td></td>
-          <td colspan="9">
-            <div class="row-detail-grid">
-              <span class="row-detail-item"><span class="row-detail-label">연락처</span><span class="row-detail-value">${esc(r.phone || '—')}</span></span>
-              <span class="row-detail-item"><span class="row-detail-label">이메일</span><span class="row-detail-value">${esc(r.email || '—')}</span></span>
-              <span class="row-detail-item"><span class="row-detail-label">교회</span><span class="row-detail-value">${esc(r.church || '—')}</span></span>
-              <span class="row-detail-item"><span class="row-detail-label">학교</span><span class="row-detail-value">${esc(r.school || '—')}</span></span>
-              <span class="row-detail-item"><span class="row-detail-label">비상연락처</span><span class="row-detail-value">${esc(r.emergency || '—')}</span></span>
-              <span class="row-detail-item"><span class="row-detail-label">신청일</span><span class="row-detail-value">${dateStr}</span></span>
-              <span class="row-detail-item row-detail-wide"><span class="row-detail-label">신청 메모</span><span class="row-detail-value">${esc(r.notes || '—')}</span></span>
-            </div>
-          </td>
-        </tr>`;
         const groupParticipants = r.registrationType === 'group'
           ? Array.from(
               { length: Math.max(Number(r.groupCount) || 0, Array.isArray(r.participants) ? r.participants.length : 0) },
@@ -817,7 +790,7 @@
             ).length;
             const toggleRow = `<tr class="group-participant-toggle-row">
               <td></td>
-              <td colspan="9">
+              <td colspan="18">
                 <button class="group-participant-toggle${isExpanded ? ' expanded' : ''}" type="button" data-regid="${esc(r.regId)}" aria-expanded="${isExpanded}" onclick="toggleGroupParticipants(this.dataset.regid)">
                   <span class="group-participant-toggle-icon">⌄</span>
                   <span>학생 명단 ${completedParticipants} / ${groupParticipants.length}명${camperEditMode ? ' 입력' : ''}</span>
@@ -862,16 +835,18 @@
                 <td></td>
                 <td colspan="3"><span class="group-participant-label">학생 ${participantIndex + 1}</span></td>
                 <td class="group-participant-name">${participantName}</td>
-                <td>${participantGender}</td>
                 <td>${participantCounselor}</td>
-                <td><div class="spiritual-stack">${participantSalvation}${participantDedication}</div></td>
+                <td>${participantSalvation}</td>
+                <td>${participantDedication}</td>
                 <td>${participantMemo}</td>
-                <td></td>
+                <td colspan="3"></td>
+                <td>${participantGender}</td>
+                <td colspan="6"></td>
               </tr>`;
             }).join('');
           })()
           : r.registrationType === 'group'
-          ? `<tr class="group-participant-row legacy"><td></td><td colspan="9">참여 인원 수를 확인해주세요.</td></tr>`
+          ? `<tr class="group-participant-row legacy"><td></td><td colspan="18">참여 인원 수를 확인해주세요.</td></tr>`
           : '';
 
         return `<tr class="${rowClass}" style="${rowStyle}">
@@ -880,12 +855,21 @@
           <td class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
           <td>${typeBadge}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
-          <td>${gradeGenderCell}</td>
           <td>${counselorCell}</td>
-          <td>${spiritualCell}</td>
+          <td>${salvationCell}</td>
+          <td>${dedicationCell}</td>
           <td>${counselorMemoCell}</td>
+          <td>${esc(r.phone)}</td>
+          <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
+          <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
+          <td>${genderCell}</td>
+          <td>${esc(r.church || '—')}</td>
+          <td>${esc(r.school || '—')}</td>
+          <td style="font-size:12px">${esc(r.emergency || '—')}</td>
+          <td style="font-size:12px;color:var(--mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes || '')}">${esc(r.notes || '—')}</td>
+          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
           <td class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
-        </tr>${campDetailRow}${participantRows}`;
+        </tr>${participantRows}`;
       }).join('');
     }
 
@@ -896,7 +880,7 @@
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="7">
+          <tr><td colspan="10">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -947,26 +931,19 @@
           : (currentTeams.length
               ? currentTeams.map(t => `<span class="team-badge ${getStaffTeamClass(t)}">${esc(t)}</span>`).join('')
               : `<span style="color:var(--light)">—</span>`);
-        const staffDetailRow = `<tr class="staff-detail-row" style="${rowStyle}">
-          <td></td>
-          <td colspan="6">
-            <div class="row-detail-grid">
-              <span class="row-detail-item"><span class="row-detail-label">이메일</span><span class="row-detail-value">${esc(r.email || '—')}</span></span>
-              <span class="row-detail-item"><span class="row-detail-label">교회</span><span class="row-detail-value">${esc(r.church || '—')}</span></span>
-              <span class="row-detail-item"><span class="row-detail-label">신청일</span><span class="row-detail-value">${dateStr}</span></span>
-            </div>
-          </td>
-        </tr>`;
 
         return `<tr class="camp-tint" style="${rowStyle}">
           <td style="color:var(--light);font-family:var(--f-sans)">${++rowIndex}</td>
           <td class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
           <td style="font-weight:600">${esc(r.name)}</td>
           <td style="white-space:nowrap">${phoneCell}</td>
+          <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
           <td>${genderBadge}</td>
+          <td>${esc(r.church || '—')}</td>
           <td>${serviceAreaCell}</td>
+          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
           <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
-        </tr>${staffDetailRow}`;
+        </tr>`;
       };
 
       const season = SEASONS.find(s => s.id === activeSeason);
@@ -979,10 +956,10 @@
         const campRegs = regs.filter(r => r.campId === campId);
         const campStyle = getCampRowStyle({ campId });
         return `<tr class="staff-camp-divider" style="--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};">
-          <td colspan="7"><strong>${esc(CAMP_LABELS[campId] || campId)}</strong><span>${campRegs.length}명</span></td>
+          <td colspan="10"><strong>${esc(CAMP_LABELS[campId] || campId)}</strong><span>${campRegs.length}명</span></td>
         </tr>${campRegs.length
           ? campRegs.map(renderStaffRow).join('')
-          : `<tr class="staff-camp-empty"><td colspan="7">등록된 스태프가 없습니다.</td></tr>`}`;
+          : `<tr class="staff-camp-empty"><td colspan="10">등록된 스태프가 없습니다.</td></tr>`}`;
       }).join('');
     }
 

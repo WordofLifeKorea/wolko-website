@@ -294,13 +294,6 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
 
 .table-scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.admin-table { table-layout: fixed; }
-.admin-table td { white-space: normal; }
-.admin-table .camp-name-cell,
-.admin-table .delete-col,
-.admin-table td:nth-child(1),
-.admin-table td:nth-child(2),
-.admin-table td:nth-child(4) { white-space: nowrap; }
 thead tr { background: #f8fafc; }
 th { padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--light); text-transform: uppercase; font-family: var(--f-sans); border-bottom: 1px solid var(--border); white-space: nowrap; }
 td { padding: 13px 14px; border-bottom: 1px solid #f0f4f7; color: var(--text); vertical-align: middle; white-space: nowrap; }
@@ -308,6 +301,39 @@ tr:last-child td { border-bottom: none; }
 tr:hover td { background: #f8fafc; }
 table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .delete-col { min-width: 60px; text-align: center; }
+
+@media (min-width: 900px) {
+  .camp-reg-table th:nth-child(11),
+  .camp-reg-table td:nth-child(11),
+  .camp-reg-table th:nth-child(15),
+  .camp-reg-table td:nth-child(15),
+  .camp-reg-table th:nth-child(16),
+  .camp-reg-table td:nth-child(16),
+  .camp-reg-table th:nth-child(17),
+  .camp-reg-table td:nth-child(17),
+  .camp-reg-table th:nth-child(18),
+  .camp-reg-table td:nth-child(18),
+  .staff-reg-table th:nth-child(5),
+  .staff-reg-table td:nth-child(5),
+  .staff-reg-table th:nth-child(7),
+  .staff-reg-table td:nth-child(7),
+  .staff-reg-table th:nth-child(9),
+  .staff-reg-table td:nth-child(9) {
+    display: none;
+  }
+
+  .camp-reg-table th,
+  .camp-reg-table td,
+  .staff-reg-table th,
+  .staff-reg-table td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .camp-reg-table .camper-select { min-width: 104px; }
+  .camp-reg-table .counselor-memo-input { width: 150px; }
+  .camp-reg-table .counselor-memo-readonly { max-width: 140px; }
+}
 
 .sort-btn {
   appearance: none;
@@ -395,64 +421,6 @@ tbody tr.camp-tint.is-saved:hover td {
 }
 tbody tr.camp-tint.is-dedicated:hover td {
   background: #dcf3e3;
-}
-
-.cell-main {
-  font-family: var(--f-sans);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.35;
-}
-.cell-sub {
-  display: block;
-  margin-top: 4px;
-  line-height: 1.2;
-}
-.spiritual-stack {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 9px;
-}
-.camp-detail-row td,
-.staff-detail-row td {
-  padding-top: 0;
-  padding-bottom: 10px;
-  background: color-mix(in srgb, var(--camp-row-bg) 72%, #fff);
-  border-bottom-color: rgba(0,79,104,0.10);
-}
-.camp-detail-row td:first-child,
-.staff-detail-row td:first-child {
-  box-shadow: inset 6px 0 0 var(--camp-row-border);
-}
-.row-detail-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  color: var(--mid);
-  font-size: 11px;
-  line-height: 1.45;
-}
-.row-detail-item {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  min-width: 0;
-  max-width: 100%;
-}
-.row-detail-wide {
-  flex-basis: 100%;
-}
-.row-detail-label {
-  flex: 0 0 auto;
-  color: #7890a0;
-  font-weight: 700;
-}
-.row-detail-value {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  color: var(--mid);
 }
 
 .camper-select {
@@ -574,8 +542,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .group-participant-state.dedicated { background: rgba(50,168,82,0.13); color: #258541; }
 .counselor-memo-input {
   display: block;
-  width: 100%;
-  max-width: 220px;
+  width: 180px;
   min-height: 48px;
   resize: vertical;
   padding: 6px 8px;
@@ -596,7 +563,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .counselor-memo-input.saved { border-color: rgba(22,163,74,0.55); background: rgba(22,163,74,0.05); }
 .counselor-memo-readonly {
   display: block;
-  max-width: 100%;
+  max-width: 180px;
   overflow: hidden;
   color: var(--mid);
   font-size: 12px;
@@ -755,8 +722,8 @@ tbody tr.camp-tint.is-dedicated:hover td {
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
-  min-width: 0;
-  max-width: 100%;
+  min-width: 250px;
+  max-width: 400px;
 }
 .team-choice { display: inline-flex; cursor: pointer; }
 .team-choice input {
