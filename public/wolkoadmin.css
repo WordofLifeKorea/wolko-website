@@ -303,7 +303,10 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .delete-col { min-width: 60px; text-align: center; }
 
 .registration-summary-row { cursor: pointer; }
-.registration-summary-row.is-expanded td { border-bottom-color: rgba(0,79,104,0.06); }
+.registration-summary-row.is-expanded td {
+  background: color-mix(in srgb, var(--camp-row-bg) 72%, #fff);
+  border-bottom-color: rgba(0,79,104,0.06);
+}
 .registration-summary-row td { transition: background 0.15s ease; }
 .registration-status-cell { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .registration-status-content { min-width: 0; }
@@ -311,70 +314,131 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  min-width: 54px;
-  height: 28px;
-  padding: 0 9px;
+  gap: 7px;
+  min-width: 86px;
+  height: 32px;
+  padding: 0 11px 0 7px;
   flex: 0 0 auto;
-  border-radius: 999px;
-  border: 1px solid rgba(0,79,104,0.16);
-  background: rgba(255,255,255,0.86);
+  border-radius: 10px;
+  border: 1px solid rgba(0,79,104,0.20);
+  background: linear-gradient(180deg, #ffffff 0%, #eef6f8 100%);
   color: var(--blue);
   cursor: pointer;
   font-family: var(--f-body);
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
-  box-shadow: 0 1px 4px rgba(0,79,104,0.06);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 3px 8px rgba(0,79,104,0.08);
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 .row-toggle-btn:hover {
-  border-color: rgba(0,79,104,0.34);
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0,79,104,0.10);
+  border-color: rgba(0,79,104,0.42);
+  background: linear-gradient(180deg, #ffffff 0%, #e4f1f4 100%);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.95) inset, 0 5px 14px rgba(0,79,104,0.14);
   transform: translateY(-1px);
 }
 .row-toggle-btn.is-open {
   border-color: var(--blue);
-  background: var(--blue);
+  background: linear-gradient(180deg, #006b88 0%, #004f68 100%);
   color: #fff;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 5px 14px rgba(0,79,104,0.18);
 }
-.row-toggle-chevron {
+.row-toggle-btn:focus-visible {
+  outline: 3px solid rgba(47,177,197,0.24);
+  outline-offset: 2px;
+}
+.row-toggle-btn:active {
+  transform: translateY(0);
+}
+.row-toggle-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 12px;
-  height: 12px;
-  font-size: 14px;
-  line-height: 1;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border-radius: 7px;
+  background: rgba(0,79,104,0.10);
+  color: currentColor;
+}
+.row-toggle-btn.is-open .row-toggle-mark {
+  background: rgba(255,255,255,0.18);
+}
+.row-toggle-mark svg {
+  transition: transform 0.16s ease;
+}
+.row-toggle-btn.is-open .row-toggle-mark svg {
+  transform: rotate(180deg);
+}
+.row-toggle-text {
+  white-space: nowrap;
 }
 .registration-detail-row td {
-  padding: 0 14px 14px;
+  padding: 0 14px 16px;
   background: color-mix(in srgb, var(--camp-row-bg) 58%, #fff);
   border-bottom-color: rgba(0,79,104,0.12);
   white-space: normal;
 }
 .registration-detail-row td:first-child { box-shadow: inset 6px 0 0 var(--camp-row-border); }
+.registration-detail-panel {
+  overflow: hidden;
+  border: 1px solid rgba(0,79,104,0.14);
+  border-left: 4px solid var(--camp-row-border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(16,56,70,0.08);
+}
+.registration-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 40px;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(0,79,104,0.10);
+  background: linear-gradient(180deg, #fbfdfe 0%, #f1f6f7 100%);
+}
+.registration-detail-head strong {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+}
+.registration-detail-head span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mid);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .registration-detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 22px;
-  padding: 14px 16px;
-  border: 1px solid rgba(0,79,104,0.10);
-  border-radius: 10px;
-  background: rgba(255,255,255,0.76);
+  gap: 0;
+  padding: 0;
+  background: #fff;
 }
 .registration-detail-item {
   min-width: 0;
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-columns: 112px minmax(0, 1fr);
   align-items: start;
-  gap: 10px;
+  gap: 0;
+  min-height: 40px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #edf3f5;
   font-size: 12px;
   line-height: 1.5;
 }
-.registration-detail-wide { grid-column: 1 / -1; }
+.registration-detail-item:nth-child(odd) {
+  border-right: 1px solid #edf3f5;
+}
+.registration-detail-wide {
+  grid-column: 1 / -1;
+  border-right: none !important;
+}
 .registration-detail-label {
+  padding-right: 12px;
   color: #7890a0;
   font-weight: 800;
   white-space: nowrap;
@@ -388,6 +452,10 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  grid-column: 1 / -1;
+  padding: 11px 14px;
+  background: #f8fbfc;
+  border-top: 1px solid #edf3f5;
 }
 .registration-detail-row .counselor-memo-input { width: min(320px, 100%); }
 .registration-detail-row .counselor-memo-readonly { max-width: 100%; white-space: normal; }
@@ -972,8 +1040,15 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .btn-install-adm { font-size: 11px; padding: 5px 8px; }
   .login-card { padding: 36px 24px 28px; margin: 16px; }
   th, td { padding: 10px 10px; }
-  .registration-detail-grid { grid-template-columns: 1fr; padding: 10px; }
-  .registration-detail-item { grid-template-columns: 82px minmax(0, 1fr); }
+  .row-toggle-btn { min-width: 72px; height: 30px; padding-right: 9px; }
+  .row-toggle-mark { width: 20px; height: 20px; }
+  .row-toggle-text { font-size: 10px; }
+  .registration-detail-panel { border-radius: 10px; box-shadow: none; }
+  .registration-detail-head { align-items:flex-start; flex-direction:column; gap:2px; padding:9px 10px; }
+  .registration-detail-head span { white-space: normal; }
+  .registration-detail-grid { grid-template-columns: 1fr; padding: 0; }
+  .registration-detail-item { grid-template-columns: 82px minmax(0, 1fr); padding: 9px 10px; }
+  .registration-detail-item:nth-child(odd) { border-right: none; }
   .registration-detail-actions { justify-content: flex-start; }
   .group-participant-card {
     grid-template-columns: 1fr;
