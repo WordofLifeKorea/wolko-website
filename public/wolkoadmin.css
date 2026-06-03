@@ -294,6 +294,13 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
 
 .table-scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.admin-table { table-layout: fixed; }
+.admin-table td { white-space: normal; }
+.admin-table .camp-name-cell,
+.admin-table .delete-col,
+.admin-table td:nth-child(1),
+.admin-table td:nth-child(2),
+.admin-table td:nth-child(4) { white-space: nowrap; }
 thead tr { background: #f8fafc; }
 th { padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--light); text-transform: uppercase; font-family: var(--f-sans); border-bottom: 1px solid var(--border); white-space: nowrap; }
 td { padding: 13px 14px; border-bottom: 1px solid #f0f4f7; color: var(--text); vertical-align: middle; white-space: nowrap; }
@@ -388,6 +395,64 @@ tbody tr.camp-tint.is-saved:hover td {
 }
 tbody tr.camp-tint.is-dedicated:hover td {
   background: #dcf3e3;
+}
+
+.cell-main {
+  font-family: var(--f-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+}
+.cell-sub {
+  display: block;
+  margin-top: 4px;
+  line-height: 1.2;
+}
+.spiritual-stack {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 9px;
+}
+.camp-detail-row td,
+.staff-detail-row td {
+  padding-top: 0;
+  padding-bottom: 10px;
+  background: color-mix(in srgb, var(--camp-row-bg) 72%, #fff);
+  border-bottom-color: rgba(0,79,104,0.10);
+}
+.camp-detail-row td:first-child,
+.staff-detail-row td:first-child {
+  box-shadow: inset 6px 0 0 var(--camp-row-border);
+}
+.row-detail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  color: var(--mid);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.row-detail-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+}
+.row-detail-wide {
+  flex-basis: 100%;
+}
+.row-detail-label {
+  flex: 0 0 auto;
+  color: #7890a0;
+  font-weight: 700;
+}
+.row-detail-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--mid);
 }
 
 .camper-select {
@@ -509,7 +574,8 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .group-participant-state.dedicated { background: rgba(50,168,82,0.13); color: #258541; }
 .counselor-memo-input {
   display: block;
-  width: 180px;
+  width: 100%;
+  max-width: 220px;
   min-height: 48px;
   resize: vertical;
   padding: 6px 8px;
@@ -530,7 +596,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .counselor-memo-input.saved { border-color: rgba(22,163,74,0.55); background: rgba(22,163,74,0.05); }
 .counselor-memo-readonly {
   display: block;
-  max-width: 180px;
+  max-width: 100%;
   overflow: hidden;
   color: var(--mid);
   font-size: 12px;
@@ -689,8 +755,8 @@ tbody tr.camp-tint.is-dedicated:hover td {
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
-  min-width: 250px;
-  max-width: 400px;
+  min-width: 0;
+  max-width: 100%;
 }
 .team-choice { display: inline-flex; cursor: pointer; }
 .team-choice input {
