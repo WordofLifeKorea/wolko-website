@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=25">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=24">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -151,10 +151,11 @@
               <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
               <th>담당 카운슬러</th>
               <th><button class="sort-btn" type="button" data-sort="grade">학년 / 인원</button></th>
+              <th><button class="sort-btn" type="button" data-sort="gender">성별</button></th>
             </tr>
           </thead>
           <tbody id="campRegBody">
-            <tr><td colspan="5">
+            <tr><td colspan="6">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p>로그인 후 자동으로 불러옵니다.</p>
@@ -579,7 +580,7 @@
       } catch (e) {
         showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p></div>`;
-        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="5">${errHtml}</td></tr>`;
+        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="6">${errHtml}</td></tr>`;
         document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="3">${errHtml}</td></tr>`;
       }
     }
@@ -725,7 +726,7 @@
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="5">
+          <tr><td colspan="6">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -747,14 +748,20 @@
           ? `<span class="badge badge-group">단체</span>`
           : `<span class="badge badge-individual">개인</span>`;
         const gradeOrCount = r.registrationType === 'group' ? `${r.groupCount}명` : (r.grade || '—');
-        const camperNameGenderClass = r.registrationType === 'group'
-          ? ''
-          : r.gender === 'male'
-          ? ' camper-name-male'
-          : r.gender === 'female'
-          ? ' camper-name-female'
-          : '';
-        const camperNameCell = `<span class="camper-name${camperNameGenderClass}">${esc(r.name)}</span>`;
+
+        let genderCell;
+        if (r.registrationType === 'group') {
+          const m = r.maleCount || 0, f = r.femaleCount || 0;
+          genderCell = (m > 0 || f > 0)
+            ? `<span style="font-size:12px;white-space:nowrap"><span style="color:#3b82f6;font-weight:600">남 ${m}</span> · <span style="color:#ec4899;font-weight:600">여 ${f}</span></span>`
+            : `<span style="color:var(--light)">—</span>`;
+        } else {
+          genderCell = r.gender === 'male'
+            ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">남</span>`
+            : r.gender === 'female'
+            ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">여</span>`
+            : `<span style="color:var(--light)">—</span>`;
+        }
 
         // 상태 셀: 3단계 (대기중 → 예약금수납 → 최종확정)
         const regStatus = r.status || (r.confirmed !== false ? 'confirmed' : 'pending');
@@ -817,7 +824,7 @@
         </button>`;
         const campDetailRow = isDetailExpanded
           ? `<tr class="registration-detail-row camp-detail-row" style="${rowStyle}">
-              <td colspan="5">
+              <td colspan="6">
                 <div class="registration-detail-panel">
                   <div class="registration-detail-head">
                     <strong>신청 상세</strong>
@@ -828,10 +835,11 @@
                     <div class="registration-detail-grid">
                       <span class="registration-detail-item"><span class="registration-detail-label">상태</span><span class="registration-detail-value">${statusCell}</span></span>
                       <span class="registration-detail-item"><span class="registration-detail-label">유형</span><span class="registration-detail-value">${typeBadge}</span></span>
-                      <span class="registration-detail-item"><span class="registration-detail-label">이름</span><span class="registration-detail-value">${camperNameCell}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">이름</span><span class="registration-detail-value">${esc(r.name)}</span></span>
                       <span class="registration-detail-item"><span class="registration-detail-label">캠프</span><span class="registration-detail-value">${esc(campLabel)}</span></span>
                       <span class="registration-detail-item"><span class="registration-detail-label">담당 카운슬러</span><span class="registration-detail-value">${counselorCell}</span></span>
                       <span class="registration-detail-item"><span class="registration-detail-label">학년 / 인원</span><span class="registration-detail-value">${esc(gradeOrCount)}</span></span>
+                      <span class="registration-detail-item"><span class="registration-detail-label">성별</span><span class="registration-detail-value">${genderCell}</span></span>
                       <span class="registration-detail-item"><span class="registration-detail-label">영적 상태</span><span class="registration-detail-value">${spiritualStatusCell}</span></span>
                     </div>
                   </div>
@@ -866,7 +874,7 @@
               participant.name && ['male', 'female'].includes(participant.gender)
             ).length;
             const toggleRow = `<tr class="group-participant-toggle-row">
-              <td colspan="5">
+              <td colspan="6">
                 <button class="group-participant-toggle${isExpanded ? ' expanded' : ''}" type="button" data-regid="${esc(r.regId)}" aria-expanded="${isExpanded}" onclick="toggleGroupParticipants(this.dataset.regid)">
                   <span class="group-participant-toggle-icon">⌄</span>
                   <span>학생 명단 ${completedParticipants} / ${groupParticipants.length}명${camperEditMode ? ' 입력' : ''}</span>
@@ -876,21 +884,9 @@
             if (!isExpanded) return toggleRow;
             return toggleRow + groupParticipants.map((participant, participantIndex) => {
               const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
-              const participantNameGenderClass = participant.gender === 'male'
-                ? ' camper-name-male'
-                : participant.gender === 'female'
-                ? ' camper-name-female'
-                : '';
-              const participantGenderSelect = camperEditMode
-                ? `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
-                  <option value="">성별</option>
-                  <option value="male"${participant.gender === 'male' ? ' selected' : ''}>남</option>
-                  <option value="female"${participant.gender === 'female' ? ' selected' : ''}>여</option>
-                </select>`
-                : '';
               const participantName = camperEditMode
-                ? `<span class="group-participant-name-edit"><input class="group-participant-input${participantNameGenderClass}" type="text" value="${esc(participant.name || '')}" placeholder="학생 이름" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">${participantGenderSelect}</span>`
-                : `<span class="${participant.name ? 'group-participant-readonly' : 'group-participant-empty'}${participantNameGenderClass}">${esc(participant.name || '미입력')}</span>`;
+                ? `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="학생 이름" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
+                : `<span class="${participant.name ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(participant.name || '미입력')}</span>`;
               const participantCounselor = camperEditMode
                 ? `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorRegId" onchange="updateField(this)">
                   <option value="">미배정</option>
@@ -909,11 +905,23 @@
               const participantMemo = camperEditMode
                 ? `<textarea class="counselor-memo-input" placeholder="특이사항 | 기도제목" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorMemo" onblur="updateField(this)">${esc(participant.counselorMemo || '')}</textarea>`
                 : `<span class="${participant.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(participant.counselorMemo || '')}">${esc(participant.counselorMemo || '—')}</span>`;
+              const participantGender = camperEditMode
+                ? `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
+                  <option value="">성별</option>
+                  <option value="male"${participant.gender === 'male' ? ' selected' : ''}>남</option>
+                  <option value="female"${participant.gender === 'female' ? ' selected' : ''}>여</option>
+                </select>`
+                : participant.gender === 'male'
+                ? '<span class="group-participant-gender male">남</span>'
+                : participant.gender === 'female'
+                ? '<span class="group-participant-gender female">여</span>'
+                : '<span class="group-participant-empty">미입력</span>';
               return `<tr class="group-participant-row${participantClass}">
-                <td colspan="5">
+                <td colspan="6">
                   <div class="group-participant-card">
                     <span class="group-participant-label">학생 ${participantIndex + 1}</span>
                     <span class="group-participant-field group-participant-name">${participantName}</span>
+                    <span class="group-participant-field">${participantGender}</span>
                     <span class="group-participant-field">${participantCounselor}</span>
                     <span class="group-participant-field group-participant-spiritual">${participantSpiritual}</span>
                     <span class="group-participant-field group-participant-memo">${participantMemo}</span>
@@ -923,15 +931,15 @@
             }).join('');
           })()
           : isDetailExpanded && r.registrationType === 'group'
-          ? `<tr class="group-participant-row legacy"><td colspan="5">참여 인원 수를 확인해주세요.</td></tr>`
+          ? `<tr class="group-participant-row legacy"><td colspan="6">참여 인원 수를 확인해주세요.</td></tr>`
           : '';
 
         const campSummaryRow = isDetailExpanded
           ? `<tr class="${rowClass} registration-summary-row registration-summary-open is-expanded" style="${rowStyle}" onclick="toggleRegistrationDetail('camp','${esc(r.regId)}',event)">
-              <td colspan="5">
+              <td colspan="6">
                 <span class="registration-expanded-strip">
                   ${detailButton}
-                  <span class="registration-expanded-title${camperNameGenderClass}">${esc(r.name)}</span>
+                  <span class="registration-expanded-title">${esc(r.name)}</span>
                   <span class="registration-expanded-meta">${esc(campLabel)}</span>
                 </span>
               </td>
@@ -939,9 +947,10 @@
           : `<tr class="${rowClass} registration-summary-row" style="${rowStyle}" onclick="toggleRegistrationDetail('camp','${esc(r.regId)}',event)">
               <td><span class="registration-status-cell">${detailButton}<span class="registration-status-content">${statusCell}</span></span></td>
               <td>${typeBadge}</td>
-              <td>${camperNameCell}</td>
+              <td style="font-weight:600">${esc(r.name)}</td>
               <td>${counselorCell}</td>
               <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
+              <td>${genderCell}</td>
             </tr>`;
         return `${campSummaryRow}${campDetailRow}${participantRows}`;
       }).join('');
