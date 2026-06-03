@@ -302,38 +302,67 @@ tr:hover td { background: #f8fafc; }
 table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .delete-col { min-width: 60px; text-align: center; }
 
-@media (min-width: 900px) {
-  .camp-reg-table th:nth-child(11),
-  .camp-reg-table td:nth-child(11),
-  .camp-reg-table th:nth-child(15),
-  .camp-reg-table td:nth-child(15),
-  .camp-reg-table th:nth-child(16),
-  .camp-reg-table td:nth-child(16),
-  .camp-reg-table th:nth-child(17),
-  .camp-reg-table td:nth-child(17),
-  .camp-reg-table th:nth-child(18),
-  .camp-reg-table td:nth-child(18),
-  .staff-reg-table th:nth-child(5),
-  .staff-reg-table td:nth-child(5),
-  .staff-reg-table th:nth-child(7),
-  .staff-reg-table td:nth-child(7),
-  .staff-reg-table th:nth-child(9),
-  .staff-reg-table td:nth-child(9) {
-    display: none;
-  }
-
-  .camp-reg-table th,
-  .camp-reg-table td,
-  .staff-reg-table th,
-  .staff-reg-table td {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-
-  .camp-reg-table .camper-select { min-width: 104px; }
-  .camp-reg-table .counselor-memo-input { width: 150px; }
-  .camp-reg-table .counselor-memo-readonly { max-width: 140px; }
+.registration-summary-row { cursor: pointer; }
+.registration-summary-row.is-expanded td { border-bottom-color: rgba(0,79,104,0.06); }
+.registration-summary-row td { transition: background 0.15s ease; }
+.registration-status-cell { display: inline-flex; align-items: center; gap: 7px; }
+.row-expand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgba(0,79,104,0.08);
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
 }
+.registration-detail-row td {
+  padding: 0 14px 14px;
+  background: color-mix(in srgb, var(--camp-row-bg) 58%, #fff);
+  border-bottom-color: rgba(0,79,104,0.12);
+  white-space: normal;
+}
+.registration-detail-row td:first-child { box-shadow: inset 6px 0 0 var(--camp-row-border); }
+.registration-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(0,79,104,0.10);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.76);
+}
+.registration-detail-item {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.registration-detail-wide { grid-column: 1 / -1; }
+.registration-detail-label {
+  color: #7890a0;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.registration-detail-value {
+  min-width: 0;
+  color: var(--mid);
+  overflow-wrap: anywhere;
+}
+.registration-detail-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.registration-detail-row .counselor-memo-input { width: min(320px, 100%); }
+.registration-detail-row .counselor-memo-readonly { max-width: 100%; white-space: normal; }
 
 .sort-btn {
   appearance: none;
@@ -500,6 +529,14 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .group-participant-row.is-dedicated td { background: #e9f8ee; }
 .group-participant-row.is-dedicated td:first-child { box-shadow: inset 6px 0 0 #32a852; }
 .group-participant-row.legacy td { color: var(--light); font-size: 12px; font-style: italic; }
+.group-participant-card {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) auto minmax(112px, 150px) auto auto minmax(160px, 1.5fr);
+  align-items: center;
+  gap: 8px 12px;
+}
+.group-participant-field { min-width: 0; }
+.group-participant-memo .counselor-memo-input { width: 100%; max-width: 260px; }
 .group-participant-label {
   display: inline-flex; padding: 3px 8px; border-radius: 999px;
   background: rgba(196,122,0,0.10); color: #a76700; font-size: 11px; font-weight: 700;
@@ -907,6 +944,14 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .btn-install-adm { font-size: 11px; padding: 5px 8px; }
   .login-card { padding: 36px 24px 28px; margin: 16px; }
   th, td { padding: 10px 10px; }
+  .registration-detail-grid { grid-template-columns: 1fr; padding: 10px; }
+  .registration-detail-item { grid-template-columns: 82px minmax(0, 1fr); }
+  .registration-detail-actions { justify-content: flex-start; }
+  .group-participant-card {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .group-participant-memo .counselor-memo-input { max-width: none; }
 
   /* 캠프 카드 */
   .camp-cards { flex-direction: column; gap: 10px; margin-bottom: 24px; }

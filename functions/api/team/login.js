@@ -12,6 +12,7 @@ const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
 };
+const PASSWORD_RE = /^[\x21-\x7E]+$/;
 
 async function generateToken(slug, secret) {
   const expires = Date.now() + 8 * 60 * 60 * 1000; // 8시간
@@ -44,6 +45,9 @@ export async function onRequestPost(context) {
 
   if (!slug || !password) {
     return Response.json({ error: 'slug와 password가 필요합니다.' }, { status: 400, headers: CORS });
+  }
+  if (typeof password !== 'string' || !PASSWORD_RE.test(password)) {
+    return Response.json({ error: '비밀번호는 영문, 숫자, 특수문자만 사용할 수 있습니다.' }, { status: 400, headers: CORS });
   }
 
   if (password !== env.TEAM_PASSWORD) {

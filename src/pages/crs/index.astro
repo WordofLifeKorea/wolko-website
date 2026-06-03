@@ -783,6 +783,32 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let viewingChurch = null;
   let churchColorMap = {};
   let selectedChurchAddress = null;
+  const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
+
+  function cleanPasswordValue(value) {
+    return String(value || '').replace(/[^\x21-\x7E]/g, '');
+  }
+
+  function enforceAsciiPasswordInput(input) {
+    input.addEventListener('beforeinput', e => {
+      if (e.data && !PASSWORD_ALLOWED_RE.test(e.data)) e.preventDefault();
+    });
+    input.addEventListener('paste', e => {
+      const text = e.clipboardData?.getData('text') || '';
+      const clean = cleanPasswordValue(text);
+      if (text !== clean) {
+        e.preventDefault();
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? start;
+        input.setRangeText(clean, start, end, 'end');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+    input.addEventListener('input', () => {
+      const clean = cleanPasswordValue(input.value);
+      if (input.value !== clean) input.value = clean;
+    });
+  }
 
   const PASTEL_COLORS = [
     { bg:'#FFF0F0', accent:'#F09090', marker:'#D95555' },
@@ -909,7 +935,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <label>${t('email')}</label>
           <input type="email" id="loginEmail" placeholder="missionary@wolko.or.kr" autocomplete="email">
           <label>${t('password')}</label>
-          <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password">
+          <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" inputmode="latin" pattern="[\x21-\x7E]*">
           <button class="btn-primary" id="loginBtn">${t('login')}</button>
           <div class="signup-toggle">${t('no_account')} <a id="goSignup">${t('signup')}</a></div>
         </div>
@@ -919,6 +945,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const pwEl    = document.getElementById('loginPw');
     const btnEl   = document.getElementById('loginBtn');
     const errEl   = document.getElementById('loginErr');
+    enforceAsciiPasswordInput(pwEl);
 
     async function doLogin() {
       const email = emailEl.value.trim();
@@ -957,9 +984,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <label>${t('email')}</label>
           <input type="email" id="signupEmail" placeholder="missionary@wolko.or.kr" autocomplete="email">
           <label>${t('password')}</label>
-          <input type="password" id="signupPw" placeholder="••••••••" autocomplete="new-password">
+          <input type="password" id="signupPw" placeholder="••••••••" autocomplete="new-password" inputmode="latin" pattern="[\x21-\x7E]*">
           <label>${t('password_confirm')}</label>
-          <input type="password" id="signupPw2" placeholder="••••••••" autocomplete="new-password">
+          <input type="password" id="signupPw2" placeholder="••••••••" autocomplete="new-password" inputmode="latin" pattern="[\x21-\x7E]*">
           <button class="btn-primary" id="signupBtn">${t('signup_btn')}</button>
           <div class="signup-toggle">${t('have_account')} <a id="goLogin">${t('login')}</a></div>
         </div>
@@ -967,12 +994,16 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
     const errEl  = document.getElementById('signupErr');
     const btnEl  = document.getElementById('signupBtn');
+    const signupPwEl = document.getElementById('signupPw');
+    const signupPw2El = document.getElementById('signupPw2');
+    enforceAsciiPasswordInput(signupPwEl);
+    enforceAsciiPasswordInput(signupPw2El);
 
     async function doSignup() {
       const name  = document.getElementById('signupName').value.trim();
       const email = document.getElementById('signupEmail').value.trim();
-      const pw    = document.getElementById('signupPw').value;
-      const pw2   = document.getElementById('signupPw2').value;
+      const pw    = signupPwEl.value;
+      const pw2   = signupPw2El.value;
       errEl.style.display = 'none';
       if (!name)       { errEl.style.display='block'; errEl.textContent=t('name_required_signup'); return; }
       if (!email)      { errEl.style.display='block'; errEl.textContent=t('email_required'); return; }
@@ -990,7 +1021,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       }
     }
     btnEl.addEventListener('click', doSignup);
-    document.getElementById('signupPw2').addEventListener('keydown', e => { if(e.key==='Enter') doSignup(); });
+    signupPw2El.addEventListener('keydown', e => { if(e.key==='Enter') doSignup(); });
     document.getElementById('goLogin').addEventListener('click', renderLogin);
   }
 

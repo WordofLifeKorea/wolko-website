@@ -470,6 +470,8 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
           id="loginPw"
           placeholder="Enter password"
           autocomplete="current-password"
+          inputmode="latin"
+          pattern="[\x21-\x7E]*"
         >
         <button class="login-eye" id="loginEye" type="button" aria-label="Show password">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -845,6 +847,34 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     const loginBtn    = document.getElementById('loginBtn');
     const loginError  = document.getElementById('loginError');
     const loginEye    = document.getElementById('loginEye');
+    const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
+
+    function cleanPasswordValue(value) {
+      return String(value || '').replace(/[^\x21-\x7E]/g, '');
+    }
+
+    function enforceAsciiPasswordInput(input) {
+      input.addEventListener('beforeinput', e => {
+        if (e.data && !PASSWORD_ALLOWED_RE.test(e.data)) e.preventDefault();
+      });
+      input.addEventListener('paste', e => {
+        const text = e.clipboardData?.getData('text') || '';
+        const clean = cleanPasswordValue(text);
+        if (text !== clean) {
+          e.preventDefault();
+          const start = input.selectionStart ?? input.value.length;
+          const end = input.selectionEnd ?? start;
+          input.setRangeText(clean, start, end, 'end');
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+      input.addEventListener('input', () => {
+        const clean = cleanPasswordValue(input.value);
+        if (input.value !== clean) input.value = clean;
+      });
+    }
+
+    enforceAsciiPasswordInput(loginPw);
 
     function showEditPage() {
       loginScreen.classList.add('hidden');
