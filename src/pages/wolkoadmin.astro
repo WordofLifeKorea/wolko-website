@@ -329,6 +329,8 @@
         installGuideIos:'Safari 브라우저에서 설치할 수 있어요.',
         installStepChrome1:'오른쪽 상단 ⋮ 메뉴 탭', installStepShare:'하단 가운데 공유 버튼 (□↑) 탭',
         installStepHome:'"홈 화면에 추가" 선택', installStepAdd:'"추가" 탭', confirmBtn:'확인',
+        season2026Summer:'2026 여름', campGroupWolko:'WOLKO 캠프', campGroupUnion:'연합캠프',
+        campAll:'전체 캠프', campJunior2026:'2026 여름 주니어 영어 캠프', campUnion2026:'2026 교회 연합캠프',
       },
       en: {
         pageTitle:'Admin — WOLKO Camp Registration',
@@ -404,6 +406,8 @@
         installGuideIos:'Install from Safari.',
         installStepChrome1:'Tap the ⋮ menu in the upper right', installStepShare:'Tap the share button (□↑)',
         installStepHome:'Choose "Add to Home Screen"', installStepAdd:'Tap "Add"', confirmBtn:'OK',
+        season2026Summer:'Summer 2026', campGroupWolko:'WOLKO Camps', campGroupUnion:'Union Camps',
+        campAll:'All Camps', campJunior2026:'2026 Summer Junior English Camp', campUnion2026:'2026 Church Union Camp',
       }
     };
     function t(key) { return ADMIN_T[adminLang]?.[key] ?? ADMIN_T.ko?.[key] ?? key; }
@@ -499,6 +503,28 @@
     const CAMP_LABELS = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.title]));
     const CAMP_CAP    = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.capacity]));
     const CAMP_DATES  = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.dateKo || '']));
+    const CAMP_TITLE_KEYS = {
+      all: 'campAll',
+      '2026-inland-english-junior': 'campJunior2026',
+      '2026-inland-union': 'campUnion2026',
+    };
+    const SEASON_LABEL_KEYS = {
+      '2026-summer': 'season2026Summer',
+    };
+    const CAMP_GROUP_LABEL_KEYS = {
+      wolko: 'campGroupWolko',
+      union: 'campGroupUnion',
+    };
+    function seasonDisplayName(season) {
+      if (!season) return t('allFilter');
+      return SEASON_LABEL_KEYS[season.id] ? t(SEASON_LABEL_KEYS[season.id]) : season.label;
+    }
+    function campGroupDisplayName(group) {
+      return CAMP_GROUP_LABEL_KEYS[group.group] ? t(CAMP_GROUP_LABEL_KEYS[group.group]) : group.label;
+    }
+    function campDisplayName(campId) {
+      return CAMP_TITLE_KEYS[campId] ? t(CAMP_TITLE_KEYS[campId]) : (CAMP_LABELS[campId] || campId || t('unset'));
+    }
     const CAMP_ROW_STYLES = {
       '2026-inland-english-junior': { bg: '#e6f5ff', border: '#3797c7' },
       '2026-inland-union': { bg: '#fff1c9', border: '#d49a18' },
@@ -853,14 +879,14 @@
       card.className = 'camp-card camp-season-card active';
       card.dataset.id = 'all';
       const season = SEASONS.find(s => s.id === activeSeason);
-      const label = season ? season.label : '전체';
+      const label = seasonDisplayName(season);
       const idx = SEASONS.findIndex(s => s.id === activeSeason);
       const hasPrev = idx > 0;
       const hasNext = idx < SEASONS.length - 1;
       const navHtml = SEASONS.length > 1 ? `
         <div class="season-card-nav">
           <select class="season-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();selectSeason(this.value)">
-            ${SEASONS.map(s => `<option value="${s.id}"${s.id === activeSeason ? ' selected' : ''}>${s.label}</option>`).join('')}
+            ${SEASONS.map(s => `<option value="${s.id}"${s.id === activeSeason ? ' selected' : ''}>${seasonDisplayName(s)}</option>`).join('')}
           </select>
         </div>` : `<div class="camp-card-title">${label}</div>`;
       card.innerHTML = `
@@ -890,7 +916,7 @@
       wrap.appendChild(makeSeasonCard());
       const currentSeasonGroups = SEASONS.find(s => s.id === activeSeason)?.groups || [];
       currentSeasonGroups.forEach(group => group.camps.forEach(c => {
-        wrap.appendChild(makeCard(c.id, `${group.label} · ${tt('capacityFn', c.capacity)}`, c.title, c.capacity));
+        wrap.appendChild(makeCard(c.id, `${campGroupDisplayName(group)} · ${tt('capacityFn', c.capacity)}`, campDisplayName(c.id), c.capacity));
       }));
     }
 
@@ -974,7 +1000,7 @@
     }
 
     function sortValue(reg, key) {
-      if (key === 'camp') return CAMP_LABELS[reg.campId] || reg.campId || '';
+      if (key === 'camp') return campDisplayName(reg.campId);
       if (key === 'type') return reg.registrationType === 'group' ? '단체' : '개인';
       if (key === 'staffTeam') {
         const teams = staffTeams(reg);
@@ -1070,7 +1096,7 @@
       document.getElementById('dRemain').textContent = remain;
       document.getElementById('dRemainSub').textContent = tt('capacityBasisFn', cap);
 
-      const campName = CAMP_LABELS[activeCamp] || t('allFilter');
+      const campName = activeCamp === 'all' ? t('campAll') : campDisplayName(activeCamp);
       document.getElementById('progressLabel').textContent = tt('capacityProgressFn', campName);
       document.getElementById('progressPct').textContent = pct + '%';
 
@@ -1121,7 +1147,7 @@
       tbody.innerHTML = regs.map((r, i) => {
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
-        const campLabel = CAMP_LABELS[r.campId] || r.campId;
+        const campLabel = campDisplayName(r.campId);
         const typeBadge = r.registrationType === 'staff'
           ? `<span class="badge" style="background:rgba(13,148,136,0.12);color:#0d9488;">${t('staffBadge')}</span>`
           : r.registrationType === 'group'
@@ -1357,7 +1383,7 @@
         const campRegs = regs.filter(r => r.campId === campId);
         const campStyle = getCampRowStyle({ campId });
         return `<tr class="staff-camp-divider" style="--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};">
-          <td colspan="9"><strong>${esc(CAMP_LABELS[campId] || campId)}</strong><span>${tt('personCountFn', campRegs.length)}</span></td>
+          <td colspan="9"><strong>${esc(campDisplayName(campId))}</strong><span>${tt('personCountFn', campRegs.length)}</span></td>
         </tr>${campRegs.length
           ? campRegs.map(renderStaffRow).join('')
           : `<tr class="staff-camp-empty"><td colspan="9">${t('campEmpty')}</td></tr>`}`;
@@ -1586,7 +1612,7 @@
       const selTeam  = activeTeamFilter === 'all' || getAllTeams().includes(activeTeamFilter) ? activeTeamFilter : 'all';
       activeTeamFilter = selTeam;
       const campStaff = allRegs.filter(r => r.registrationType === 'staff' && r.campId === activeCamp);
-      const campLabel = CAMP_LABELS[activeCamp] || activeCamp;
+      const campLabel = campDisplayName(activeCamp);
       const roster    = fullRosterForCamp(activeCamp);
       const persons   = getRosterPersons(activeCamp);
       const visP      = persons;
@@ -1696,7 +1722,7 @@
                   });
                 if (!staffRegs.length) return '';
                 return `<optgroup label="${t('staffApplicants')}">
-                  ${staffRegs.map(r => `<option value="r:${esc(r.regId)}">${esc(r.name || t('nameMissing'))} · ${esc(CAMP_LABELS[r.campId] || r.campId)}</option>`).join('')}
+                  ${staffRegs.map(r => `<option value="r:${esc(r.regId)}">${esc(r.name || t('nameMissing'))} · ${esc(campDisplayName(r.campId))}</option>`).join('')}
                 </optgroup>`;
               })()}
             </select>
@@ -2106,7 +2132,7 @@
 
     // ── CSV ──
     function downloadCsv(type = 'camp') {
-      const campName = CAMP_LABELS[activeCamp] || t('allFilter');
+      const campName = activeCamp === 'all' ? t('campAll') : campDisplayName(activeCamp);
       const today = new Date().toISOString().slice(0, 10);
       const bom = '﻿';
 
@@ -2120,7 +2146,7 @@
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const genderLabel = r.gender === 'male' ? t('male') : r.gender === 'female' ? t('female') : '';
           return [
-            i + 1, CAMP_LABELS[r.campId] || r.campId,
+            i + 1, campDisplayName(r.campId),
             r.name, r.phone, r.email, genderLabel, r.church || '',
             staffTeams(r).join(', ') || r.notes || '', date, r.regId,
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
@@ -2158,7 +2184,7 @@
               }).join('\n')
             : '';
           return [
-            i + 1, statusVal, CAMP_LABELS[r.campId] || r.campId,
+            i + 1, statusVal, campDisplayName(r.campId),
             r.registrationType === 'group' ? t('groupBadge') : t('individualBadge'),
             r.name, participantList, counselor?.name || '', r.saved ? 'O' : '', r.dedicated ? 'O' : '', r.counselorMemo || '',
             r.phone, r.email, gradeOrCount, genderVal,

@@ -1,5 +1,5 @@
 // WOLKO Admin Service Worker
-const CACHE_NAME = 'wolko-admin-v2';
+const CACHE_NAME = 'wolko-admin-v3';
 const PRECACHE = ['/wolkoadmin', '/admin-manifest.json', '/wolkoadmin.css?v=41'];
 
 self.addEventListener('install', e => {
