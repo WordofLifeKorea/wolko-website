@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=25">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=26">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1098,14 +1098,15 @@
     }
 
     function updateStaffOverflowPopovers() {
-      requestAnimationFrame(() => {
+      // Double rAF ensures the table has fully laid out before measuring
+      requestAnimationFrame(() => requestAnimationFrame(() => {
         document.querySelectorAll('.staff-memo-wrap').forEach(wrap => {
           const cell = wrap.querySelector('.staff-memo-cell');
           const hasOverflow = cell && cell.scrollWidth > cell.clientWidth + 1;
           wrap.classList.toggle('has-overflow', !!hasOverflow);
           wrap.tabIndex = hasOverflow ? 0 : -1;
         });
-      });
+      }));
     }
 
     function renderTeamStack(teams = []) {
@@ -1130,7 +1131,7 @@
       return `<details class="staff-team-editor">
         <summary>
           <span class="staff-team-editor-summary">${renderTeamStack(teams)}</span>
-          <span class="staff-team-caret">▾</span>
+          <svg class="staff-team-caret" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </summary>
         <div class="staff-team-menu" data-regid="${esc(reg.regId)}" data-campid="${esc(reg.campId)}">
           ${STAFF_TEAMS.map(team => `<label class="staff-team-option ${getStaffTeamClass(team)}">
