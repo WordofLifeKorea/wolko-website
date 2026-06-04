@@ -244,6 +244,10 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
   font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
   text-transform: uppercase; font-family: var(--f-sans);
   color: var(--light);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .camp-card-badge {
   display: none;
@@ -251,6 +255,10 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
   font-size: 11px; font-weight: 700;
   padding: 2px 9px; border-radius: 100px;
   font-family: var(--f-sans);
+  max-width: 78px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .camp-card.active .camp-card-badge {
   display: inline-block;
@@ -296,6 +304,8 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
   font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
   font-family: var(--f-sans); color: var(--light);
   text-align: left; white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .stats-tbl thead th.c-green  { color: var(--green); }
 .stats-tbl thead th.c-orange { color: var(--orange); }
@@ -335,6 +345,10 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
 /* ── TABLE SECTION ── */
 .table-section { background: var(--card); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,79,104,0.05); overflow: clip; }
 .table-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
+.table-toolbar > div:last-child {
+  min-width: 0;
+  flex-shrink: 0;
+}
 .table-title { font-size: 15px; font-weight: 600; color: var(--text); }
 .table-count { font-size: 13px; color: var(--light); margin-left: 8px; }
 .btn-csv {
@@ -342,6 +356,17 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
   background: var(--blue); color: #fff; border: none; border-radius: 8px;
   padding: 9px 18px; font-size: 13px; font-weight: 600;
   font-family: var(--f-body); cursor: pointer; transition: background 0.2s, transform 0.15s;
+  max-width: 180px;
+  white-space: nowrap;
+}
+.btn-csv span,
+.btn-edit-mode span,
+.btn-team-panel-edit,
+.btn-cm-add {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .btn-csv:hover { background: var(--blue-lt); transform: translateY(-1px); }
 
@@ -386,7 +411,7 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 }
 .staff-reg-table td:nth-child(6) { white-space: normal; }
 thead tr { background: #f8fafc; }
-th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--light); text-transform: uppercase; font-family: var(--f-sans); border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--light); text-transform: uppercase; font-family: var(--f-sans); border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 td { padding: 13px 16px; border-bottom: 1px solid #f0f4f7; color: var(--text); vertical-align: middle; white-space: nowrap; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: #f8fafc; }
@@ -854,6 +879,7 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  max-width: 100%;
   background: none;
   border: 0;
   color: inherit;
@@ -867,6 +893,11 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   text-transform: inherit;
   white-space: nowrap;
   transition: background 0.15s ease, color 0.15s ease;
+}
+.sort-btn span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .sort-btn::after {
   content: "";
@@ -1330,6 +1361,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
   transition: all 0.15s;
   font-family: var(--f-body);
   min-width: 72px;
+  max-width: 140px;
 }
 .stat-badge:hover {
   background: #e8f0f4;
@@ -1350,6 +1382,9 @@ tbody tr.camp-tint.is-dedicated:hover td {
   font-size: 10px;
   font-weight: 700;
   color: var(--mid);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .stat-badge.active .stat-label { color: #0d9488; }
@@ -1386,6 +1421,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .camp-team-filter button {
   height: 32px;
   padding: 0 13px;
+  max-width: 128px;
   background: #f3f7f8;
   border: 1px solid #d8e4e8;
   border-radius: 999px;
@@ -1394,6 +1430,9 @@ tbody tr.camp-tint.is-dedicated:hover td {
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .camp-team-filter button:hover,
 .camp-team-filter button.active {
