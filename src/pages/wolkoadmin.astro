@@ -1270,26 +1270,37 @@
       localStorage.setItem(`wolkoCustomMembers_${activeCamp}`, JSON.stringify(list));
     }
     // 등록 명단에서 선택 시 폼 자동 입력
-    function fillFromReg(regId) {
+    // val 형식: 'r:regId' (스태프 신청자) | 'm:이름' (월코 로스터)
+    function fillFromReg(val) {
       const nameEl  = document.getElementById('cmName');
       const titleEl = document.getElementById('cmTitle');
       const roleEl  = document.getElementById('cmRole');
-      if (!regId) {
+      const clearForm = () => {
         if (nameEl)  nameEl.value  = '';
         if (titleEl) titleEl.value = '';
         document.querySelectorAll('.cm-team-check').forEach(cb => cb.checked = false);
-        return;
+      };
+      if (!val) { clearForm(); return; }
+
+      if (val.startsWith('r:')) {
+        // 스태프 신청자
+        const reg = allRegs.find(r => r.regId === val.slice(2));
+        if (!reg) return;
+        if (nameEl)  nameEl.value  = reg.name  || '';
+        if (titleEl) titleEl.value = reg.church || '';
+        if (roleEl)  roleEl.value  = 'stw';
+        const autoTeams = staffTeams(reg);
+        document.querySelectorAll('.cm-team-check').forEach(cb => { cb.checked = autoTeams.includes(cb.value); });
+      } else if (val.startsWith('m:')) {
+        // 월코 로스터 멤버
+        const mName  = val.slice(2);
+        const member = WOLKO_CAMP_ROSTER.find(m => m.name === mName || m.spouseName === mName);
+        if (!member) return;
+        if (nameEl)  nameEl.value  = mName;
+        if (titleEl) titleEl.value = member.title || '';
+        if (roleEl)  roleEl.value  = member.role  || 'stw';
+        document.querySelectorAll('.cm-team-check').forEach(cb => { cb.checked = (member.teams || []).includes(cb.value); });
       }
-      const reg = allRegs.find(r => r.regId === regId);
-      if (!reg) return;
-      if (nameEl)  nameEl.value  = reg.name  || '';
-      if (titleEl) titleEl.value = reg.church || '';
-      if (roleEl)  roleEl.value  = 'stw';
-      // 스태프 신청인 경우 희망 팀 자동 체크
-      const autoTeams = reg.registrationType === 'staff' ? staffTeams(reg) : [];
-      document.querySelectorAll('.cm-team-check').forEach(cb => {
-        cb.checked = autoTeams.includes(cb.value);
-      });
       if (nameEl) nameEl.focus();
     }
 
@@ -1440,25 +1451,33 @@
         </div>
         <div class="custom-member-add-bar">
           <span class="custom-member-bar-label">${t('customMemberAdd')}</span>
-          ${allRegs.length ? `<div class="cm-reg-row">
+          <div class="cm-reg-row">
             <svg class="cm-reg-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11c0-2.2 1.8-4 4-4s4 1.8 4 4M7 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
             <select id="cmRegSelect" class="cm-select cm-reg-select" onchange="fillFromReg(this.value)">
-              <option value="">— 등록 명단에서 선택 —</option>
+              <option value="">— 명단에서 선택 —</option>
+              <optgroup label="월코 스태프">
+                ${WOLKO_CAMP_ROSTER.flatMap(m => {
+                  const opts = [`<option value="m:${esc(m.name)}">${esc(m.name)}${m.title ? ' · ' + esc(m.title) : ''}</option>`];
+                  if (m.spouseName) opts.push(`<option value="m:${esc(m.spouseName)}">${esc(m.spouseName)} · ${esc(m.title || '')}</option>`);
+                  return opts;
+                }).join('')}
+              </optgroup>
               ${(() => {
-                const sorted = [...allRegs].sort((a, b) => {
-                  if (a.campId === activeCamp && b.campId !== activeCamp) return -1;
-                  if (a.campId !== activeCamp && b.campId === activeCamp) return 1;
-                  return (a.name || '').localeCompare(b.name || '', 'ko');
-                });
-                return sorted.map(r => {
-                  const campName = CAMP_LABELS[r.campId] || r.campId;
-                  const typeTag  = r.registrationType === 'staff' ? '스태프' : '캠퍼';
-                  return `<option value="${esc(r.regId)}">${esc(r.name || '이름 없음')} · ${esc(campName)} (${typeTag})</option>`;
-                }).join('');
+                const staffRegs = [...allRegs]
+                  .filter(r => r.registrationType === 'staff')
+                  .sort((a, b) => {
+                    if (a.campId === activeCamp && b.campId !== activeCamp) return -1;
+                    if (a.campId !== activeCamp && b.campId === activeCamp) return 1;
+                    return (a.name || '').localeCompare(b.name || '', 'ko');
+                  });
+                if (!staffRegs.length) return '';
+                return `<optgroup label="스태프 신청자">
+                  ${staffRegs.map(r => `<option value="r:${esc(r.regId)}">${esc(r.name || '이름 없음')} · ${esc(CAMP_LABELS[r.campId] || r.campId)}</option>`).join('')}
+                </optgroup>`;
               })()}
             </select>
             <span class="cm-reg-or">또는 직접 입력</span>
-          </div>` : ''}
+          </div>
           <div class="custom-member-form">
             <input type="text" id="cmName" class="cm-input" placeholder="${t('cmNamePh')}">
             <input type="text" id="cmSpouse" class="cm-input" placeholder="${t('cmSpousePh')}">
