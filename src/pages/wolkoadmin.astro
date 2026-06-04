@@ -1086,7 +1086,7 @@
 
     function renderTeamBadge(team) {
       if (!team) return '';
-      return `<span class="person-team-badge ${getStaffTeamClass(team)}">${esc(team)}</span>`;
+      return `<span class="person-team-badge ${getStaffTeamClass(team)}"><span class="person-team-label">${esc(team)}</span></span>`;
     }
 
     function renderMemoCell(memo) {
@@ -1109,15 +1109,19 @@
     }
 
     function renderTeamStack(teams = []) {
-      const visibleTeams = teams.slice(0, 1);
-      const extraCount = Math.max(teams.length - visibleTeams.length, 0);
+      const primaryTeam = teams[0] || '';
       const hiddenTeams = teams.slice(1);
+      const extraCount = hiddenTeams.length;
+      if (!primaryTeam) {
+        return `<span class="person-team-stack"><span class="person-team-badge team-other"><span class="person-team-label">미정</span></span></span>`;
+      }
       return `<span class="person-team-stack">
-          ${visibleTeams.length ? visibleTeams.map(renderTeamBadge).join('') : '<span class="person-team-badge team-other">미정</span>'}
-          ${extraCount ? `<span class="person-team-more" tabindex="0" aria-label="${esc(hiddenTeams.join(', '))}">
-            +${extraCount}
+          <span class="person-team-badge ${getStaffTeamClass(primaryTeam)}${extraCount ? ' has-extra' : ''}"${extraCount ? ` tabindex="0" aria-label="${esc([primaryTeam, ...hiddenTeams].join(', '))}"` : ''}>
+            <span class="person-team-label">${esc(primaryTeam)}${extraCount ? ` <span class="person-team-count">+${extraCount}</span>` : ''}</span>
+            ${extraCount ? `
             <span class="person-team-popover">${hiddenTeams.map(renderTeamBadge).join('')}</span>
-          </span>` : ''}
+            ` : ''}
+          </span>
         </span>`;
     }
 

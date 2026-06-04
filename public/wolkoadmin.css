@@ -423,41 +423,45 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .person-team-stack {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
   position: relative;
   width: 108px;
   min-width: 108px;
 }
-.person-team-badge,
-.person-team-more {
+.person-team-badge {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 24px;
-  width: 74px;
+  width: 108px;
   padding: 0 8px;
   border: 1px solid transparent;
   border-radius: 999px;
+  box-sizing: border-box;
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
   overflow: hidden;
+  white-space: nowrap;
+}
+.person-team-badge.has-extra {
+  cursor: pointer;
+  overflow: visible;
+}
+.person-team-badge.has-extra:focus-visible {
+  outline: 2px solid rgba(13,148,136,0.6);
+  outline-offset: 2px;
+}
+.person-team-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.person-team-more {
-  position: relative;
-  width: 30px;
-  padding: 0;
-  background: #edf3f5;
-  border-color: #d3e0e5;
-  color: #607b87;
-  cursor: default;
-  overflow: visible;
-}
-.person-team-more:focus-visible {
-  outline: 2px solid rgba(13,148,136,0.6);
-  outline-offset: 2px;
+.person-team-count {
+  font-family: var(--f-sans);
+  font-weight: 900;
 }
 .person-team-popover,
 .staff-memo-popover {
@@ -479,8 +483,8 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   max-width: 260px;
   padding: 8px;
 }
-.person-team-more:hover .person-team-popover,
-.person-team-more:focus .person-team-popover,
+.person-team-badge.has-extra:hover .person-team-popover,
+.person-team-badge.has-extra:focus .person-team-popover,
 .staff-memo-wrap.has-overflow:hover .staff-memo-popover,
 .staff-memo-wrap.has-overflow:focus .staff-memo-popover {
   display: flex;
