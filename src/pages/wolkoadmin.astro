@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=23">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=24">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -208,7 +208,7 @@
               <th><button class="sort-btn" type="button" data-sort="gender">성별</button></th>
               <th><button class="sort-btn" type="button" data-sort="church">교회</button></th>
               <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
-              <th><button class="sort-btn" type="button" data-sort="serviceArea">섬기고 싶은 분야</button></th>
+              <th><button class="sort-btn" type="button" data-sort="notes">신청자 메모</button></th>
               <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
               <th><button class="sort-btn" type="button" data-sort="registeredAt">신청일시</button></th>
               <th>삭제</th>
@@ -898,7 +898,8 @@
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const campLabel = CAMP_LABELS[r.campId] || r.campId;
-        const serviceAreaVal = r.serviceArea || r.notes || '';
+        const serviceAreaVal = r.serviceArea || '';
+        const applicantMemo = r.notes || '';
         const campStyle = getCampRowStyle(r);
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
 
@@ -914,31 +915,18 @@
           ? `<input class="edit-input" type="tel" value="${esc(r.phone)}" data-regid="${r.regId}" data-campid="${r.campId}" data-field="phone" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
           : esc(r.phone);
 
-        // 섬기고 싶은 팀 — 수정 모드일 때 체크형 칩
+        // 섬김 분야는 이름 앞 뱃지로 요약하고, 본문 칸에는 신청자가 작성한 메모를 보여준다.
         const currentTeams = serviceAreaVal.split(',').map(s => s.trim()).filter(Boolean);
-        const customTeams = currentTeams.filter(t => !STAFF_TEAMS.includes(t));
-        const serviceAreaCell = staffEditMode
-          ? `<div class="team-picker" data-regid="${r.regId}" data-campid="${r.campId}" data-field="serviceArea">
-               ${STAFF_TEAMS.map(t => `<label class="team-choice ${getStaffTeamClass(t)}">
-                 <input class="team-fixed-input" type="checkbox" value="${esc(t)}"${currentTeams.includes(t) ? ' checked' : ''} onchange="updateTeamField(this.closest('.team-picker'))">
-                 <span>${esc(t)}</span>
-               </label>`).join('')}
-               <label class="team-choice team-other">
-                 <input class="team-other-toggle" type="checkbox"${customTeams.length ? ' checked' : ''} onchange="toggleCustomTeamInput(this)">
-                 <span>기타</span>
-               </label>
-               <input class="team-custom-input" type="text" value="${esc(customTeams.join(', '))}" placeholder="직접 입력"${customTeams.length ? '' : ' hidden'} onblur="updateTeamField(this.closest('.team-picker'))" onkeydown="if(event.key==='Enter')this.blur()">
-             </div>`
-          : (currentTeams.length
-              ? currentTeams.map(t => `<span class="team-badge ${getStaffTeamClass(t)}">${esc(t)}</span>`).join('')
-              : `<span style="color:var(--light)">—</span>`);
+        const memoCell = applicantMemo
+          ? `<span class="staff-memo-cell" title="${esc(applicantMemo)}">${esc(applicantMemo)}</span>`
+          : `<span style="color:var(--light)">—</span>`;
 
         return `<tr class="camp-tint" style="${rowStyle}">
-          <td>${renderPersonCell(r.name, r.gender)}</td>
+          <td>${renderPersonCell(r.name, currentTeams)}</td>
           <td>${genderBadge}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.church || '—')}</td>
           <td style="white-space:nowrap">${phoneCell}</td>
-          <td>${serviceAreaCell}</td>
+          <td>${memoCell}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
           <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
@@ -966,16 +954,19 @@
       return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    function nameInitial(name) {
-      const clean = String(name || '').trim();
-      if (!clean) return '?';
-      return clean.replace(/\s*\/.*$/, '').trim().charAt(0).toUpperCase();
+    function renderTeamBadge(team) {
+      if (!team) return '';
+      return `<span class="person-team-badge ${getStaffTeamClass(team)}">${esc(team)}</span>`;
     }
 
-    function renderPersonCell(name, gender) {
-      const genderClass = gender === 'male' ? ' male' : gender === 'female' ? ' female' : '';
+    function renderPersonCell(name, teams = []) {
+      const visibleTeams = teams.slice(0, 1);
+      const extraCount = Math.max(teams.length - visibleTeams.length, 0);
       return `<div class="person-cell">
-        <span class="person-avatar${genderClass}">${esc(nameInitial(name))}</span>
+        <span class="person-team-stack">
+          ${visibleTeams.length ? visibleTeams.map(renderTeamBadge).join('') : '<span class="person-team-badge team-other">미정</span>'}
+          ${extraCount ? `<span class="person-team-more">+${extraCount}</span>` : ''}
+        </span>
         <span class="person-main">
           <span class="person-name">${esc(name || '—')}</span>
         </span>
