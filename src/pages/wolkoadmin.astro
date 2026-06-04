@@ -291,7 +291,7 @@
         deleted:'신청이 삭제되었습니다.', deleteErr:'삭제 오류: ',
         csvDone:'CSV 다운로드 완료!', csvStaffDone:'스태프 CSV 다운로드 완료!',
         fieldSaved:'저장되었습니다.', fieldErr:'저장 오류: ',
-        unassignedTeam:'미지정', allAssigned:'모든 멤버가 팀에 배정되었습니다.',
+        unassignedTeam:'미등록 팀', allAssigned:'미등록 인원이 없습니다.',
         createTeam:'팀 만들기', newTeamPh:'새 팀 이름 입력', createBtn:'만들기',
         deleteTeam:'팀 삭제', customTeamsLabel:'사용자 정의 팀',
         noPending:'스태프 지원 내역이 없습니다.', noRegs:'신청 내역이 없습니다.',
@@ -368,7 +368,7 @@
         deleted:'Registration deleted.', deleteErr:'Delete error: ',
         csvDone:'CSV download complete!', csvStaffDone:'Staff CSV download complete!',
         fieldSaved:'Saved.', fieldErr:'Save error: ',
-        unassignedTeam:'Unassigned', allAssigned:'All members are assigned to a team.',
+        unassignedTeam:'Unregistered Team', allAssigned:'No unregistered people.',
         createTeam:'Create Team', newTeamPh:'New team name', createBtn:'Create',
         deleteTeam:'Delete Team', customTeamsLabel:'Custom Teams',
         noPending:'No staff applications.', noRegs:'No registrations.',
@@ -1510,12 +1510,13 @@
     function getRosterPersons(campId) {
       const result = [];
       for (const member of fullRosterForCamp(campId)) {
+        const defaultTeams = member.isCustom ? normalizeTeamList(member.teams) : [];
         result.push({
           displayName: member.name,
           genderTag: '',
           title: member.title, role: member.role,
-          defaultTeams: member.teams,
-          teams: getPersonTeams(member.name, member.teams),
+          defaultTeams,
+          teams: getPersonTeams(member.name, defaultTeams),
           isCustom: !!member.isCustom, memberId: member.id,
         });
         if (member.spouseName) {
@@ -1523,8 +1524,8 @@
             displayName: member.spouseName,
             genderTag: '',
             title: member.title, role: member.role,
-            defaultTeams: member.teams,
-            teams: getPersonTeams(member.spouseName, member.teams),
+            defaultTeams,
+            teams: getPersonTeams(member.spouseName, defaultTeams),
             isCustom: false,
           });
         }
