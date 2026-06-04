@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=37">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=38">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1269,6 +1269,30 @@
     function saveCustomMembers(list) {
       localStorage.setItem(`wolkoCustomMembers_${activeCamp}`, JSON.stringify(list));
     }
+    // 등록 명단에서 선택 시 폼 자동 입력
+    function fillFromReg(regId) {
+      const nameEl  = document.getElementById('cmName');
+      const titleEl = document.getElementById('cmTitle');
+      const roleEl  = document.getElementById('cmRole');
+      if (!regId) {
+        if (nameEl)  nameEl.value  = '';
+        if (titleEl) titleEl.value = '';
+        document.querySelectorAll('.cm-team-check').forEach(cb => cb.checked = false);
+        return;
+      }
+      const reg = allRegs.find(r => r.regId === regId);
+      if (!reg) return;
+      if (nameEl)  nameEl.value  = reg.name  || '';
+      if (titleEl) titleEl.value = reg.church || '';
+      if (roleEl)  roleEl.value  = 'stw';
+      // 스태프 신청인 경우 희망 팀 자동 체크
+      const autoTeams = reg.registrationType === 'staff' ? staffTeams(reg) : [];
+      document.querySelectorAll('.cm-team-check').forEach(cb => {
+        cb.checked = autoTeams.includes(cb.value);
+      });
+      if (nameEl) nameEl.focus();
+    }
+
     function addCustomMemberAction() {
       const name      = document.getElementById('cmName')?.value.trim();
       if (!name) { document.getElementById('cmName')?.focus(); return; }
@@ -1279,6 +1303,11 @@
       const list = getCustomMembers();
       list.push({ id: 'cm_' + Date.now(), name, spouseName, title, role, teams, isCustom: true });
       saveCustomMembers(list);
+      // 폼 초기화
+      const sel = document.getElementById('cmRegSelect');
+      if (sel) sel.value = '';
+      fillFromReg('');
+      document.getElementById('cmSpouse') && (document.getElementById('cmSpouse').value = '');
       renderCampTeamPanel();
     }
     function removeCustomMember(id) {
@@ -1411,6 +1440,25 @@
         </div>
         <div class="custom-member-add-bar">
           <span class="custom-member-bar-label">${t('customMemberAdd')}</span>
+          ${allRegs.length ? `<div class="cm-reg-row">
+            <svg class="cm-reg-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11c0-2.2 1.8-4 4-4s4 1.8 4 4M7 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <select id="cmRegSelect" class="cm-select cm-reg-select" onchange="fillFromReg(this.value)">
+              <option value="">— 등록 명단에서 선택 —</option>
+              ${(() => {
+                const sorted = [...allRegs].sort((a, b) => {
+                  if (a.campId === activeCamp && b.campId !== activeCamp) return -1;
+                  if (a.campId !== activeCamp && b.campId === activeCamp) return 1;
+                  return (a.name || '').localeCompare(b.name || '', 'ko');
+                });
+                return sorted.map(r => {
+                  const campName = CAMP_LABELS[r.campId] || r.campId;
+                  const typeTag  = r.registrationType === 'staff' ? '스태프' : '캠퍼';
+                  return `<option value="${esc(r.regId)}">${esc(r.name || '이름 없음')} · ${esc(campName)} (${typeTag})</option>`;
+                }).join('');
+              })()}
+            </select>
+            <span class="cm-reg-or">또는 직접 입력</span>
+          </div>` : ''}
           <div class="custom-member-form">
             <input type="text" id="cmName" class="cm-input" placeholder="${t('cmNamePh')}">
             <input type="text" id="cmSpouse" class="cm-input" placeholder="${t('cmSpousePh')}">
