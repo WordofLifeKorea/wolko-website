@@ -983,6 +983,7 @@
           ? campRegs.map(renderStaffRow).join('')
           : `<tr class="staff-camp-empty"><td colspan="9">등록된 스태프가 없습니다.</td></tr>`}`;
       }).join('');
+      updateStaffOverflowPopovers();
     }
 
     function esc(str) {
@@ -1087,10 +1088,21 @@
 
     function renderMemoCell(memo) {
       if (!memo) return `<span style="color:var(--light)">—</span>`;
-      return `<span class="staff-memo-wrap" tabindex="0" aria-label="${esc(memo)}">
+      return `<span class="staff-memo-wrap" tabindex="-1" aria-label="${esc(memo)}">
         <span class="staff-memo-cell">${esc(memo)}</span>
         <span class="staff-memo-popover">${esc(memo)}</span>
       </span>`;
+    }
+
+    function updateStaffOverflowPopovers() {
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.staff-memo-wrap').forEach(wrap => {
+          const cell = wrap.querySelector('.staff-memo-cell');
+          const hasOverflow = cell && cell.scrollWidth > cell.clientWidth + 1;
+          wrap.classList.toggle('has-overflow', !!hasOverflow);
+          wrap.tabIndex = hasOverflow ? 0 : -1;
+        });
+      });
     }
 
     function renderTeamStack(teams = []) {
