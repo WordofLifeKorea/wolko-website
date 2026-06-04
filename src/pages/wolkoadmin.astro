@@ -1459,25 +1459,21 @@
         </section>`;
       }
       const pList    = visP.filter(p => p.teams.includes(team));
-      const leaders  = pList.filter(p => personEffectiveRole(p, team) === 'leader');
-      const members  = pList.filter(p => personEffectiveRole(p, team) === 'member');
       const applicants = visApplicants.filter(p => p.teams.includes(team));
+      const allInTeam  = [...pList, ...applicants];
+      const leaders    = allInTeam.filter(p => personEffectiveRole(p, team) === 'leader');
+      const nonLeaders = allInTeam.filter(p => personEffectiveRole(p, team) !== 'leader');
       return `<section class="camp-team-card">
         <div class="camp-team-card-title">
           ${renderTeamBadge(team)}
-          <span>${leaders.length + members.length + applicants.length}</span>
+          <span>${allInTeam.length}</span>
         </div>
         <div class="camp-team-member-group">
           <div class="camp-team-group-label">${t('teamLeaderSection')}</div>
           ${leaders.length ? leaders.map(p => renderPersonRow(p, team)).join('') : `<div class="camp-team-empty">${t('noLeader')}</div>`}
         </div>
         <div class="camp-team-member-group">
-          <div class="camp-team-group-label">${t('memberSection')}</div>
-          ${members.length ? members.map(p => renderPersonRow(p, team)).join('') : `<div class="camp-team-empty">${t('noMember')}</div>`}
-        </div>
-        <div class="camp-team-member-group">
-          <div class="camp-team-group-label">${t('applicantSection')}</div>
-          ${applicants.length ? applicants.map(p => renderPersonRow(p, team)).join('') : `<div class="camp-team-empty">${t('noApplicant')}</div>`}
+          ${nonLeaders.length ? nonLeaders.map(p => renderPersonRow(p, team)).join('') : `<div class="camp-team-empty">${t('noMember')}</div>`}
         </div>
       </section>`;
     }
@@ -1491,7 +1487,7 @@
       const teamCbs = getAllTeams().map(tm => `
         <label class="member-team-option ${getStaffTeamClass(tm)}${person.teams.includes(tm) ? ' is-checked' : ''}">
           <input type="checkbox"${person.teams.includes(tm) ? ' checked' : ''}
-            onchange="togglePersonTeam('${esc(person.displayName)}','${esc(tm)}',this.checked,${JSON.stringify(person.defaultTeams)})">
+            onchange="togglePersonTeam('${esc(person.displayName)}','${esc(tm)}',this.checked,${esc(JSON.stringify(person.defaultTeams))})">
           <span>${esc(teamLabel(tm))}</span>
         </label>`).join('');
 
