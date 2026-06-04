@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=38">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=40">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -444,11 +444,11 @@
 
     // ── 사용자 정의 팀 ──
     function getCustomTeams() {
-      try { return JSON.parse(localStorage.getItem('wolkoCustomTeams') || '[]'); }
-      catch { return []; }
+      return teamOverviewConfig.customTeams || [];
     }
     function saveCustomTeamsStore(list) {
-      localStorage.setItem('wolkoCustomTeams', JSON.stringify(list));
+      teamOverviewConfig.customTeams = Array.isArray(list) ? list : [];
+      queueTeamOverviewSave();
     }
     function getAllTeams() { return [...STAFF_TEAMS, ...getCustomTeams()]; }
     function addCustomTeamAction() {
@@ -521,6 +521,132 @@
     let activeStatPanel = null; // 'leaders' | 'members' | 'staff' | null
     const expandedGroupParticipants = new Set();
     const UNASSIGNED = '__unassigned__';
+    let teamOverviewConfig = emptyTeamOverviewConfig();
+    let teamOverviewConfigCamp = null;
+    let teamOverviewLoadPromise = null;
+    let teamOverviewLoadingCamp = null;
+    let teamOverviewSaveTimer = null;
+
+    function emptyTeamOverviewConfig() {
+      return {
+        customTeams: [],
+        personRoles: {},
+        personTeams: {},
+        campExclude: [],
+        campRoles: {},
+        customMembers: [],
+      };
+    }
+
+    function normalizeTeamOverviewConfig(config) {
+      const source = config && typeof config === 'object' && !Array.isArray(config) ? config : {};
+      return {
+        customTeams: Array.isArray(source.customTeams) ? source.customTeams : [],
+        personRoles: source.personRoles && typeof source.personRoles === 'object' && !Array.isArray(source.personRoles) ? source.personRoles : {},
+        personTeams: source.personTeams && typeof source.personTeams === 'object' && !Array.isArray(source.personTeams) ? source.personTeams : {},
+        campExclude: Array.isArray(source.campExclude) ? source.campExclude : [],
+        campRoles: source.campRoles && typeof source.campRoles === 'object' && !Array.isArray(source.campRoles) ? source.campRoles : {},
+        customMembers: Array.isArray(source.customMembers) ? source.customMembers : [],
+      };
+    }
+
+    function hasTeamOverviewData(config) {
+      const c = normalizeTeamOverviewConfig(config);
+      return c.customTeams.length > 0
+        || Object.keys(c.personRoles).length > 0
+        || Object.keys(c.personTeams).length > 0
+        || c.campExclude.length > 0
+        || Object.keys(c.campRoles).length > 0
+        || c.customMembers.length > 0;
+    }
+
+    function readJsonStore(key, fallback) {
+      try {
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) : fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function getLocalTeamOverviewConfig(campId) {
+      return normalizeTeamOverviewConfig({
+        customTeams: readJsonStore('wolkoCustomTeams', []),
+        personRoles: readJsonStore(`wolkoTeamRoles_${campId}`, {}),
+        personTeams: readJsonStore(`wolkoTeamAssign_${campId}`, {}),
+        campExclude: readJsonStore(`wolkoCampExclude_${campId}`, []),
+        campRoles: readJsonStore(`wolkoCampRoles_${campId}`, {}),
+        customMembers: readJsonStore(`wolkoCustomMembers_${campId}`, []),
+      });
+    }
+
+    async function loadTeamOverviewConfig(campId) {
+      if (!TEAM_PANEL_CAMPS.has(campId)) {
+        teamOverviewConfig = emptyTeamOverviewConfig();
+        teamOverviewConfigCamp = null;
+        return;
+      }
+      if (teamOverviewConfigCamp === campId) return;
+      if (teamOverviewLoadPromise && teamOverviewLoadingCamp === campId) return teamOverviewLoadPromise;
+
+      teamOverviewLoadingCamp = campId;
+      teamOverviewLoadPromise = (async () => {
+        const localConfig = getLocalTeamOverviewConfig(campId);
+        try {
+          const res = await fetch(`/api/admin/team-overview?campId=${encodeURIComponent(campId)}`, {
+            headers: authHeaders(),
+          });
+          if (res.status === 401) {
+            sessionStorage.removeItem('wolko-admin-token');
+            location.reload();
+            return;
+          }
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const serverConfig = normalizeTeamOverviewConfig(data.config);
+          teamOverviewConfig = hasTeamOverviewData(serverConfig) ? serverConfig : localConfig;
+          teamOverviewConfigCamp = campId;
+          if (!hasTeamOverviewData(serverConfig) && hasTeamOverviewData(localConfig)) {
+            await saveTeamOverviewConfig(true);
+          }
+        } catch (e) {
+          teamOverviewConfig = localConfig;
+          teamOverviewConfigCamp = campId;
+          if (hasTeamOverviewData(localConfig)) {
+            showToast('팀 오버뷰 서버 동기화 실패: 로컬 설정을 임시로 사용합니다. ' + e.message, 'error');
+          }
+        } finally {
+          teamOverviewLoadPromise = null;
+          teamOverviewLoadingCamp = null;
+        }
+      })();
+      return teamOverviewLoadPromise;
+    }
+
+    function queueTeamOverviewSave() {
+      if (!TEAM_PANEL_CAMPS.has(activeCamp)) return;
+      clearTimeout(teamOverviewSaveTimer);
+      teamOverviewSaveTimer = setTimeout(() => {
+        saveTeamOverviewConfig().catch(e => {
+          showToast('팀 오버뷰 저장 실패: ' + e.message, 'error');
+        });
+      }, 250);
+    }
+
+    async function saveTeamOverviewConfig(silent = false) {
+      const campId = teamOverviewConfigCamp || activeCamp;
+      if (!TEAM_PANEL_CAMPS.has(campId)) return;
+      const config = normalizeTeamOverviewConfig(teamOverviewConfig);
+      const res = await fetch('/api/admin/team-overview', {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ campId, config }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      teamOverviewConfig = normalizeTeamOverviewConfig(data.config || config);
+      teamOverviewConfigCamp = campId;
+    }
 
     // ── Login ──
     function togglePw() {
@@ -620,6 +746,7 @@
     function selectSeason(id) {
       activeSeason = id;
       activeCamp = 'all';
+      loadTeamOverviewConfig(activeCamp);
       buildCampCards();
       renderTable();
       renderDash();
@@ -702,11 +829,12 @@
       });
     }
 
-    function selectCamp(id) {
+    async function selectCamp(id) {
       activeCamp = id;
       document.querySelectorAll('.camp-card').forEach(c =>
         c.classList.toggle('active', c.dataset.id === id)
       );
+      await loadTeamOverviewConfig(activeCamp);
       renderTable();
       renderDash();
     }
@@ -725,6 +853,7 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         allRegs = data.registrations || [];
+        await loadTeamOverviewConfig(activeCamp);
         updateCardStats();
         renderTable();
         renderDash();
@@ -1149,16 +1278,12 @@
 
     // ── 개인별 역할 저장 (displayName 기반) ──
     function getPersonRole(dn, team) {
-      try { return JSON.parse(localStorage.getItem(`wolkoTeamRoles_${activeCamp}`) || '{}')[`${dn}\x00${team}`] || null; }
-      catch { return null; }
+      return teamOverviewConfig.personRoles?.[`${dn}\x00${team}`] || null;
     }
     function setPersonRole(dn, team, role) {
-      try {
-        const k = `wolkoTeamRoles_${activeCamp}`;
-        const s = JSON.parse(localStorage.getItem(k) || '{}');
-        s[`${dn}\x00${team}`] = role;
-        localStorage.setItem(k, JSON.stringify(s));
-      } catch {}
+      teamOverviewConfig.personRoles = teamOverviewConfig.personRoles || {};
+      teamOverviewConfig.personRoles[`${dn}\x00${team}`] = role;
+      queueTeamOverviewSave();
     }
     function personDefaultRole(p) { return p.role === 'missionary' ? 'leader' : 'member'; }
     function personEffectiveRole(p, team) { return getPersonRole(p.displayName, team) || personDefaultRole(p); }
@@ -1170,17 +1295,13 @@
 
     // ── 개인별 팀 배정 저장 (displayName 기반) ──
     function getPersonTeams(dn, defaultTeams) {
-      try {
-        const s = JSON.parse(localStorage.getItem(`wolkoTeamAssign_${activeCamp}`) || '{}');
-        return s[dn] !== undefined ? s[dn] : defaultTeams;
-      } catch { return defaultTeams; }
+      const stored = teamOverviewConfig.personTeams?.[dn];
+      return stored !== undefined ? stored : defaultTeams;
     }
     function setPersonTeams(dn, teams) {
-      try {
-        const k = `wolkoTeamAssign_${activeCamp}`;
-        const s = JSON.parse(localStorage.getItem(k) || '{}');
-        s[dn] = teams; localStorage.setItem(k, JSON.stringify(s));
-      } catch {}
+      teamOverviewConfig.personTeams = teamOverviewConfig.personTeams || {};
+      teamOverviewConfig.personTeams[dn] = Array.isArray(teams) ? teams : [];
+      queueTeamOverviewSave();
     }
     function togglePersonTeam(dn, team, checked, defaultTeams) {
       const cur  = getPersonTeams(dn, defaultTeams);
@@ -1191,18 +1312,15 @@
 
     // ── 개인별 캠프 제외 저장 ──
     function isPersonExcluded(dn) {
-      try { return JSON.parse(localStorage.getItem(`wolkoCampExclude_${activeCamp}`) || '[]').includes(dn); }
-      catch { return false; }
+      return (teamOverviewConfig.campExclude || []).includes(dn);
     }
     function togglePersonExclusion(dn) {
-      try {
-        const k = `wolkoCampExclude_${activeCamp}`;
-        const list = JSON.parse(localStorage.getItem(k) || '[]');
-        const idx = list.indexOf(dn);
-        if (idx === -1) list.push(dn); else list.splice(idx, 1);
-        localStorage.setItem(k, JSON.stringify(list));
-        renderCampTeamPanel();
-      } catch {}
+      const list = [...(teamOverviewConfig.campExclude || [])];
+      const idx = list.indexOf(dn);
+      if (idx === -1) list.push(dn); else list.splice(idx, 1);
+      teamOverviewConfig.campExclude = list;
+      queueTeamOverviewSave();
+      renderCampTeamPanel();
     }
 
     // 로스터를 남편/아내 개별 person 배열로 펼치기
@@ -1242,17 +1360,13 @@
 
     // ── 캠프 디렉터 / 코디네이터 ──
     function getCampRoles() {
-      try { return JSON.parse(localStorage.getItem(`wolkoCampRoles_${activeCamp}`) || '{}'); }
-      catch { return {}; }
+      return teamOverviewConfig.campRoles || {};
     }
     function saveCampRole(roleKey, value) {
-      try {
-        const k = `wolkoCampRoles_${activeCamp}`;
-        const roles = getCampRoles();
-        roles[roleKey] = value;
-        localStorage.setItem(k, JSON.stringify(roles));
-        renderCampTeamPanel();
-      } catch {}
+      teamOverviewConfig.campRoles = teamOverviewConfig.campRoles || {};
+      teamOverviewConfig.campRoles[roleKey] = value;
+      queueTeamOverviewSave();
+      renderCampTeamPanel();
     }
 
     // 캠프별 멤버 필터 (제주 선교사는 제주 캠프에서만)
@@ -1263,11 +1377,11 @@
 
     // ── 미지정 (커스텀) 멤버 ──
     function getCustomMembers() {
-      try { return JSON.parse(localStorage.getItem(`wolkoCustomMembers_${activeCamp}`) || '[]'); }
-      catch { return []; }
+      return teamOverviewConfig.customMembers || [];
     }
     function saveCustomMembers(list) {
-      localStorage.setItem(`wolkoCustomMembers_${activeCamp}`, JSON.stringify(list));
+      teamOverviewConfig.customMembers = Array.isArray(list) ? list : [];
+      queueTeamOverviewSave();
     }
     // 선택된 데이터 임시 저장 (DOM 의존 없이 추가 가능하도록 fallback)
     let _cmPendingData = null;
@@ -1370,6 +1484,12 @@
       if (!TEAM_PANEL_CAMPS.has(activeCamp)) {
         panel.hidden = true; panel.innerHTML = ''; return;
       }
+      if (teamOverviewConfigCamp !== activeCamp) {
+        panel.hidden = false;
+        panel.innerHTML = `<div class="state-box"><div class="spinner"></div><p>Loading team settings...</p></div>`;
+        loadTeamOverviewConfig(activeCamp).then(() => renderCampTeamPanel());
+        return;
+      }
       const selTeam  = activeTeamFilter === 'all' || getAllTeams().includes(activeTeamFilter) ? activeTeamFilter : 'all';
       activeTeamFilter = selTeam;
       const campStaff = allRegs.filter(r => r.registrationType === 'staff' && r.campId === activeCamp);
@@ -1382,7 +1502,8 @@
       const applicantPersons = campStaff.map(reg => ({
         displayName: reg.name || '',
         genderTag: '',
-        title: [reg.church, reg.phone].filter(Boolean).join(' · '),
+        title: reg.church || '',
+        phone: reg.phone || '',
         role: 'stw',
         defaultTeams: staffTeams(reg),
         teams: getPersonTeams(reg.name || '', staffTeams(reg)),
@@ -1588,6 +1709,7 @@
             ${person.genderTag ? `<span class="couple-gender-tag">${person.genderTag}</span>` : ''}
             <strong>${esc(person.displayName)}</strong>
           </div>
+          ${person.phone ? `<span class="camp-team-member-phone">${esc(person.phone)}</span>` : ''}
         </div>
         ${controls}
       </div>`;
