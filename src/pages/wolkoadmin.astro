@@ -657,13 +657,74 @@
     function normalizeTeamOverviewConfig(config) {
       const source = config && typeof config === 'object' && !Array.isArray(config) ? config : {};
       return {
-        customTeams: Array.isArray(source.customTeams) ? source.customTeams : [],
-        personRoles: source.personRoles && typeof source.personRoles === 'object' && !Array.isArray(source.personRoles) ? source.personRoles : {},
-        personTeams: source.personTeams && typeof source.personTeams === 'object' && !Array.isArray(source.personTeams) ? source.personTeams : {},
+        customTeams: normalizeTeamList(source.customTeams),
+        personRoles: normalizePersonRoleMap(source.personRoles),
+        personTeams: normalizePersonTeamMap(source.personTeams),
         campExclude: Array.isArray(source.campExclude) ? source.campExclude : [],
         campRoles: source.campRoles && typeof source.campRoles === 'object' && !Array.isArray(source.campRoles) ? source.campRoles : {},
-        customMembers: Array.isArray(source.customMembers) ? source.customMembers : [],
+        customMembers: normalizeCustomMembers(source.customMembers),
       };
+    }
+
+    function normalizeTeamName(team) {
+      return normalizeStaffTeam(String(team || '').trim());
+    }
+
+    function normalizeTeamList(list) {
+      if (!Array.isArray(list)) return [];
+      return [...new Set(list.map(normalizeTeamName).filter(Boolean))];
+    }
+
+    function normalizePersonTeamMap(map) {
+      if (!map || typeof map !== 'object' || Array.isArray(map)) return {};
+      return Object.fromEntries(Object.entries(map).map(([name, teams]) => [name, normalizeTeamList(teams)]));
+    }
+
+    function normalizePersonRoleMap(map) {
+      if (!map || typeof map !== 'object' || Array.isArray(map)) return {};
+      const next = {};
+      Object.entries(map).forEach(([key, role]) => {
+        const sep = key.indexOf('\x00');
+        if (sep === -1) {
+          next[key] = role;
+          return;
+        }
+        const name = key.slice(0, sep);
+        const team = normalizeTeamName(key.slice(sep + 1));
+        if (name && team) next[`${name}\x00${team}`] = role;
+      });
+      return next;
+    }
+
+    function normalizeCustomMembers(list) {
+      if (!Array.isArray(list)) return [];
+      return list.map(member => {
+        if (!member || typeof member !== 'object') return member;
+        return { ...member, teams: normalizeTeamList(member.teams) };
+      }).filter(Boolean);
+    }
+
+    function mergeTeamOverviewConfig(serverConfig, localConfig) {
+      const server = normalizeTeamOverviewConfig(serverConfig);
+      const local = normalizeTeamOverviewConfig(localConfig);
+      const personTeams = { ...server.personTeams };
+      Object.entries(local.personTeams).forEach(([name, localTeams]) => {
+        if (!Array.isArray(personTeams[name]) || personTeams[name].length === 0) {
+          personTeams[name] = localTeams;
+        }
+      });
+      return normalizeTeamOverviewConfig({
+        customTeams: [...server.customTeams, ...local.customTeams],
+        personRoles: { ...local.personRoles, ...server.personRoles },
+        personTeams,
+        campExclude: [...server.campExclude, ...local.campExclude],
+        campRoles: { ...local.campRoles, ...server.campRoles },
+        customMembers: server.customMembers.length ? server.customMembers : local.customMembers,
+      });
+    }
+
+    function sameTeamOverviewConfig(a, b) {
+      return JSON.stringify(normalizeTeamOverviewConfig(a)) === JSON.stringify(normalizeTeamOverviewConfig(b));
     }
 
     function hasTeamOverviewData(config) {
@@ -720,9 +781,12 @@
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
           const serverConfig = normalizeTeamOverviewConfig(data.config);
-          teamOverviewConfig = hasTeamOverviewData(serverConfig) ? serverConfig : localConfig;
+          const mergedConfig = hasTeamOverviewData(localConfig)
+            ? mergeTeamOverviewConfig(serverConfig, localConfig)
+            : serverConfig;
+          teamOverviewConfig = hasTeamOverviewData(mergedConfig) ? mergedConfig : localConfig;
           teamOverviewConfigCamp = campId;
-          if (!hasTeamOverviewData(serverConfig) && hasTeamOverviewData(localConfig)) {
+          if (hasTeamOverviewData(teamOverviewConfig) && !sameTeamOverviewConfig(teamOverviewConfig, serverConfig)) {
             await saveTeamOverviewConfig(true);
           }
         } catch (e) {
