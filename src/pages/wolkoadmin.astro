@@ -953,10 +953,13 @@
 
         // 섬김 분야는 이름 앞 뱃지로 요약하고, 본문 칸에는 신청자가 작성한 메모를 보여준다.
         const currentTeams = staffTeams(r);
+        const teamCell = staffEditMode
+          ? renderTeamEditor(r, currentTeams)
+          : renderTeamStack(currentTeams);
         const memoCell = renderMemoCell(applicantMemo);
 
         return `<tr class="camp-tint" style="${rowStyle}">
-          <td>${renderTeamStack(currentTeams)}</td>
+          <td>${teamCell}</td>
           <td><span class="staff-name-cell">${esc(r.name || '—')}</span></td>
           <td>${genderBadge}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.church || '—')}</td>
@@ -1116,6 +1119,59 @@
             <span class="person-team-popover">${hiddenTeams.map(renderTeamBadge).join('')}</span>
           </span>` : ''}
         </span>`;
+    }
+
+    function renderTeamEditor(reg, teams = []) {
+      const selected = new Set(teams);
+      return `<details class="staff-team-editor">
+        <summary>
+          <span class="staff-team-editor-summary">${renderTeamStack(teams)}</span>
+          <span class="staff-team-caret">▾</span>
+        </summary>
+        <div class="staff-team-menu" data-regid="${esc(reg.regId)}" data-campid="${esc(reg.campId)}">
+          ${STAFF_TEAMS.map(team => `<label class="staff-team-option ${getStaffTeamClass(team)}">
+            <input type="checkbox" value="${esc(team)}"${selected.has(team) ? ' checked' : ''} onchange="updateStaffTeamSelection(this)">
+            <span>${esc(team)}</span>
+          </label>`).join('')}
+        </div>
+      </details>`;
+    }
+
+    async function updateStaffTeamSelection(inputEl) {
+      const editor = inputEl.closest('.staff-team-editor');
+      const menu = inputEl.closest('.staff-team-menu');
+      const regId = menu.dataset.regid;
+      const campId = menu.dataset.campid;
+      const reg = allRegs.find(r => r.regId === regId);
+      if (!reg) return;
+
+      const inputs = Array.from(menu.querySelectorAll('input[type="checkbox"]'));
+      const value = inputs.filter(input => input.checked).map(input => input.value).join(', ');
+      const previousValue = reg.serviceArea || '';
+      inputs.forEach(input => { input.disabled = true; });
+      editor.classList.add('saving');
+
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ regId, campId, field: 'serviceArea', value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '팀 저장 실패');
+        reg.serviceArea = value;
+        editor.querySelector('.staff-team-editor-summary').innerHTML = renderTeamStack(staffTeams(reg));
+        renderCampTeamPanel();
+        if (sortState.key === 'staffTeam') renderStaffTable();
+        showToast('팀 정보가 저장되었습니다.', 'success');
+      } catch (e) {
+        reg.serviceArea = previousValue;
+        showToast('팀 저장 오류: ' + e.message, 'error');
+        renderStaffTable();
+      } finally {
+        inputs.forEach(input => { input.disabled = false; });
+        editor.classList.remove('saving');
+      }
     }
 
     function toggleGroupParticipants(regId) {
