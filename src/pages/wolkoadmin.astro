@@ -1480,6 +1480,10 @@
       const isLeader  = team ? personEffectiveRole(person, team) === 'leader' : false;
       const defR      = personDefaultRole(person);
       const roleText   = isLeader ? t('teamLeaderRole') : (person.role === 'intern' ? t('internRole') : t('staffRole'));
+      // 원래 팀이 있었는데 모든 팀에서 제외된 경우 → 미지정 카드에서 회색 처리
+      const isFullyExcluded = !team
+        && person.defaultTeams && person.defaultTeams.length > 0
+        && person.teams.filter(tm => getAllTeams().includes(tm)).length === 0;
 
       const teamCbs = getAllTeams().map(tm => `
         <label class="member-team-option ${getStaffTeamClass(tm)}${person.teams.includes(tm) ? ' is-checked' : ''}">
@@ -1501,9 +1505,9 @@
           ${person.isCustom && teamPanelEditMode ? `<button class="btn-custom-member-delete" onclick="removeCustomMember('${esc(person.memberId)}')">×</button>` : ''}
         </div>` : '';
 
-      return `<div class="camp-team-member${isLeader ? ' is-leader' : ''}${person.isCustom ? ' is-custom-member' : ''}">
+      return `<div class="camp-team-member${isLeader ? ' is-leader' : ''}${isFullyExcluded ? ' is-fully-excluded' : ''}${person.isCustom ? ' is-custom-member' : ''}">
         <div class="camp-team-member-info">
-          <div class="couple-person-row">
+          <div class="couple-person-row${isFullyExcluded ? ' is-excluded' : ''}">
             ${person.genderTag ? `<span class="couple-gender-tag">${person.genderTag}</span>` : ''}
             <strong>${esc(person.displayName)}</strong>
           </div>
