@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=31">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=32">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -52,16 +52,19 @@
   <header class="adm-header">
     <a class="adm-header-logo" href="/">
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
-      <span>WOLKO 관리자</span>
+      <span data-t="adminTitle">WOLKO 관리자</span>
     </a>
     <div class="adm-header-right">
-      <a href="/admin" target="_blank" class="adm-header-badge" style="text-decoration:none;cursor:pointer;" title="콘텐츠 편집 CMS">✏️ 콘텐츠 CMS</a>
+      <a href="/admin" target="_blank" class="adm-header-badge" style="text-decoration:none;cursor:pointer;" title="콘텐츠 편집 CMS">✏️ <span data-t="contentCms">콘텐츠 CMS</span></a>
       <span class="adm-header-badge">CAMP ADMIN</span>
       <button class="btn-install-adm" id="adminInstallBtn" onclick="triggerAdminInstall()" style="display:none">
         <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11.5h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        앱 설치
+        <span data-t="installApp">앱 설치</span>
       </button>
-      <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+      <button class="btn-lang-toggle" onclick="toggleAdminLang()" title="Language">
+        <span id="langToggleLabel">EN</span>
+      </button>
+      <button class="btn-logout" onclick="doLogout()"><span data-t="logout">로그아웃</span></button>
     </div>
   </header>
 
@@ -74,29 +77,29 @@
       <table class="stats-tbl">
         <thead>
           <tr>
-            <th>총 신청</th>
-            <th>잔여 정원</th>
-            <th class="c-amber">예비 신청</th>
-            <th class="c-teal">스태프 지원</th>
+            <th data-t="statTotal">총 신청</th>
+            <th data-t="statRemain">잔여 정원</th>
+            <th class="c-amber" data-t="statWaitlist">예비 신청</th>
+            <th class="c-teal" data-t="statStaff">스태프 지원</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>
               <strong class="sv" id="dTotal">—</strong>
-              <small id="dTotalSub">불러오는 중…</small>
+              <small id="dTotalSub" data-t="statLoading">불러오는 중…</small>
             </td>
             <td>
               <strong class="sv c-green" id="dRemain">—</strong>
-              <small id="dRemainSub">정원 기준</small>
+              <small id="dRemainSub" data-t="statCapBasis">정원 기준</small>
             </td>
             <td>
               <strong class="sv c-amber" id="dWaitlist">—</strong>
-              <small id="dWaitlistSub">예비 대기 인원</small>
+              <small id="dWaitlistSub" data-t="statWaitlistCount">예비 대기 인원</small>
             </td>
             <td>
               <strong class="sv c-teal" id="dStaff">—</strong>
-              <small id="dStaffSub">지원 현황</small>
+              <small id="dStaffSub" data-t="statApplyStatus">지원 현황</small>
             </td>
           </tr>
         </tbody>
@@ -123,7 +126,7 @@
     <div class="table-section">
       <div class="table-toolbar">
         <div>
-          <span class="table-title">캠프 신청 목록</span>
+          <span class="table-title" data-t="campRegTitle">캠프 신청 목록</span>
           <span class="table-count" id="campTableCount"></span>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -131,13 +134,13 @@
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>수정 모드</span>
+            <span data-t="editMode">수정 모드</span>
           </button>
           <button class="btn-csv" onclick="downloadCsv('camp')">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            CSV 다운로드
+            <span data-t="csvDownload">CSV 다운로드</span>
           </button>
         </div>
       </div>
@@ -146,24 +149,24 @@
           <thead>
             <tr>
               <th>#</th>
-              <th><button class="sort-btn" type="button" data-sort="status">상태</button></th>
-              <th><button class="sort-btn" type="button" data-sort="camp">캠프</button></th>
-              <th><button class="sort-btn" type="button" data-sort="type">유형</button></th>
-              <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
-              <th>담당 카운슬러</th>
-              <th>구원</th>
-              <th>헌신</th>
-              <th>상담자 메모</th>
-              <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
-              <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
-              <th><button class="sort-btn" type="button" data-sort="grade">학년 / 인원</button></th>
-              <th><button class="sort-btn" type="button" data-sort="gender">성별</button></th>
-              <th><button class="sort-btn" type="button" data-sort="church">교회</button></th>
-              <th><button class="sort-btn" type="button" data-sort="school">학교</button></th>
-              <th><button class="sort-btn" type="button" data-sort="emergency">비상연락처</button></th>
-              <th><button class="sort-btn" type="button" data-sort="notes">메모</button></th>
-              <th><button class="sort-btn" type="button" data-sort="registeredAt">신청일시</button></th>
-              <th>삭제</th>
+              <th><button class="sort-btn" type="button" data-sort="status"><span data-t="thStatus">상태</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="camp"><span data-t="thCamp">캠프</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="type"><span data-t="thType">유형</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thName">이름</span></button></th>
+              <th><span data-t="thCounselor">담당 카운슬러</span></th>
+              <th><span data-t="thSalvation">구원</span></th>
+              <th><span data-t="thDedication">헌신</span></th>
+              <th><span data-t="thCounselorMemo">상담자 메모</span></th>
+              <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="email"><span data-t="thEmail">이메일</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="grade"><span data-t="thGrade">학년 / 인원</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="gender"><span data-t="thGender">성별</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="church"><span data-t="thChurch">교회</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="school"><span data-t="thSchool">학교</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="emergency"><span data-t="thEmergency">비상연락처</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="notes"><span data-t="thNotes">메모</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
+              <th><span data-t="thDelete">삭제</span></th>
             </tr>
           </thead>
           <tbody id="campRegBody">
@@ -184,7 +187,7 @@
     <div class="table-section staff-section" style="margin-top:28px;">
       <div class="table-toolbar">
         <div>
-          <span class="table-title" style="color:#0d9488;">스태프 · 봉사자 지원 목록</span>
+          <span class="table-title" style="color:#0d9488;" data-t="staffRegTitle">스태프 · 봉사자 지원 목록</span>
           <span class="table-count" id="staffTableCount"></span>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -192,13 +195,13 @@
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>수정 모드</span>
+            <span data-t="editMode">수정 모드</span>
           </button>
           <button class="btn-csv" onclick="downloadCsv('staff')" style="background:rgba(13,148,136,0.08);color:#0d9488;border-color:rgba(13,148,136,0.2);">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            CSV 다운로드
+            <span data-t="csvDownload">CSV 다운로드</span>
           </button>
         </div>
       </div>
@@ -206,15 +209,15 @@
         <table class="staff-reg-table">
           <thead>
             <tr>
-              <th><button class="sort-btn" type="button" data-sort="staffTeam">팀</button></th>
-              <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
-              <th><button class="sort-btn" type="button" data-sort="gender">성별</button></th>
-              <th><button class="sort-btn" type="button" data-sort="church">교회</button></th>
-              <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
-              <th><button class="sort-btn" type="button" data-sort="notes">신청자 메모</button></th>
-              <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
-              <th><button class="sort-btn" type="button" data-sort="registeredAt">신청일시</button></th>
-              <th>삭제</th>
+              <th><button class="sort-btn" type="button" data-sort="staffTeam"><span data-t="thTeam">팀</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thName">이름</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="gender"><span data-t="thGender">성별</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="church"><span data-t="thChurch">교회</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="notes"><span data-t="thApplicantMemo">신청자 메모</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="email"><span data-t="thEmail">이메일</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
+              <th><span data-t="thDelete">삭제</span></th>
             </tr>
           </thead>
           <tbody id="staffRegBody">
@@ -249,6 +252,109 @@
   <div class="toast" id="toast"></div>
 
   <script is:inline>
+    // ── Language System ──
+    let adminLang = localStorage.getItem('wolkoAdminLang') || 'ko';
+    const STAFF_TEAMS_EN = { '프로그램':'Program','티칭':'Teaching','상담자':'Counseling','테크':'Tech','찬양팀':'Worship' };
+    function teamLabel(tm) { return adminLang === 'en' ? (STAFF_TEAMS_EN[tm] || tm) : tm; }
+    const ADMIN_T = {
+      ko: {
+        adminTitle:'WOLKO 관리자', logout:'로그아웃', installApp:'앱 설치',
+        loginPw:'비밀번호를 입력하세요', loginVerifying:'확인 중…', loginBtn:'로그인',
+        loginRequired:'비밀번호를 입력해주세요.', loginWrong:'비밀번호가 올바르지 않습니다.',
+        campRegTitle:'캠프 신청 목록', editMode:'수정 모드', editing:'수정 중', csvDownload:'CSV 다운로드',
+        thStatus:'상태', thCamp:'캠프', thType:'유형', thName:'이름',
+        thCounselor:'담당 카운슬러', thSalvation:'구원', thDedication:'헌신',
+        thCounselorMemo:'상담자 메모', thPhone:'연락처', thEmail:'이메일',
+        thGrade:'학년 / 인원', thGender:'성별', thChurch:'교회', thSchool:'학교',
+        thEmergency:'비상연락처', thNotes:'메모', thDate:'신청일시', thDelete:'삭제',
+        staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
+        deleteConfirm:'정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
+        loginFirst:'로그인 후 자동으로 불러옵니다.', totalCapacity:'전체 정원 현황',
+        statTotal:'총 신청', statRemain:'잔여 정원', statWaitlist:'예비 신청', statStaff:'스태프 지원',
+        statCapBasis:'정원 기준', statWaitlistCount:'예비 대기 인원', statApplyStatus:'지원 현황',
+        teamPanelTitle:'팀 운영 현황',
+        leaderCountFn: n=>`팀 리더 ${n}명`, memberCountFn: n=>`멤버 ${n}명`, staffCountFn: n=>`지원 스태프 ${n}명`,
+        editBtn:'편집', doneBtn:'편집 완료', allFilter:'전체',
+        campDirector:'캠프 디렉터', coordinator:'코디네이터', unassigned:'— 미배정 —',
+        customMemberAdd:'미지정 인원 추가',
+        cmNamePh:'이름 *', cmSpousePh:'배우자 이름', cmTitlePh:'직책',
+        cmRoleLeader:'팀 리더', cmRoleIntern:'인턴', cmRoleStaff:'스태프', cmAddBtn:'추가',
+        husband:'남편', wife:'아내',
+        teamLeaderRole:'팀 리더', internRole:'인턴', staffRole:'월코 스태프',
+        teamAssign:'팀 배정', exclude:'제외', restore:'복귀',
+        noLeader:'배정된 리더가 없습니다.', noMember:'등록된 멤버가 없습니다.',
+        noApplicant:'이 팀을 선택한 지원자가 없습니다.',
+        teamLeaderSection:'팀 리더', memberSection:'멤버', applicantSection:'지원 스태프',
+        teamSaved:'팀 정보가 저장되었습니다.', teamSaveErr:'팀 저장 오류: ',
+        deleted:'신청이 삭제되었습니다.', deleteErr:'삭제 오류: ',
+        csvDone:'CSV 다운로드 완료!', csvStaffDone:'스태프 CSV 다운로드 완료!',
+        fieldSaved:'저장되었습니다.', fieldErr:'저장 오류: ',
+        noPending:'스태프 지원 내역이 없습니다.', noRegs:'신청 내역이 없습니다.',
+        campEmpty:'등록된 스태프가 없습니다.',
+        noChurch:'교회 미입력', notEntered:'미입력', unset:'—',
+        male:'남', female:'여',
+        cmsLink:'콘텐츠 편집 (CMS) — wolko.org/admin', sheetsLink:'신청 백업 시트 (Google Sheets)',
+      },
+      en: {
+        adminTitle:'WOLKO Admin', logout:'Log Out', installApp:'Install App',
+        loginPw:'Enter password', loginVerifying:'Verifying…', loginBtn:'Login',
+        loginRequired:'Please enter your password.', loginWrong:'Incorrect password.',
+        campRegTitle:'Camp Registrations', editMode:'Edit Mode', editing:'Editing', csvDownload:'Export CSV',
+        thStatus:'Status', thCamp:'Camp', thType:'Type', thName:'Name',
+        thCounselor:'Counselor', thSalvation:'Saved', thDedication:'Dedicated',
+        thCounselorMemo:'Counselor Note', thPhone:'Phone', thEmail:'Email',
+        thGrade:'Grade / Count', thGender:'Gender', thChurch:'Church', thSchool:'School',
+        thEmergency:'Emergency', thNotes:'Notes', thDate:'Registered', thDelete:'Delete',
+        staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
+        deleteConfirm:'Delete this registration?\nThis action cannot be undone.',
+        loginFirst:'Data will load after login.', totalCapacity:'Overall Capacity',
+        statTotal:'Total Reg.', statRemain:'Remaining', statWaitlist:'Waitlist', statStaff:'Staff Applied',
+        statCapBasis:'of capacity', statWaitlistCount:'on waitlist', statApplyStatus:'applications',
+        teamPanelTitle:'Team Overview',
+        leaderCountFn: n=>`${n} Leader${n!==1?'s':''}`,
+        memberCountFn: n=>`${n} Member${n!==1?'s':''}`,
+        staffCountFn: n=>`${n} Applied`,
+        editBtn:'Edit', doneBtn:'Done', allFilter:'All',
+        campDirector:'Camp Director', coordinator:'Coordinator', unassigned:'— Unassigned —',
+        customMemberAdd:'Add Custom Member',
+        cmNamePh:'Name *', cmSpousePh:'Spouse Name', cmTitlePh:'Title / Role',
+        cmRoleLeader:'Team Leader', cmRoleIntern:'Intern', cmRoleStaff:'Staff', cmAddBtn:'Add',
+        husband:'Husband', wife:'Wife',
+        teamLeaderRole:'Team Leader', internRole:'Intern', staffRole:'WOLKO Staff',
+        teamAssign:'Teams', exclude:'Exclude', restore:'Restore',
+        noLeader:'No leaders assigned.', noMember:'No members registered.',
+        noApplicant:'No applicants for this team.',
+        teamLeaderSection:'Team Leaders', memberSection:'Members', applicantSection:'Applied Staff',
+        teamSaved:'Team info saved.', teamSaveErr:'Team save error: ',
+        deleted:'Registration deleted.', deleteErr:'Delete error: ',
+        csvDone:'CSV download complete!', csvStaffDone:'Staff CSV download complete!',
+        fieldSaved:'Saved.', fieldErr:'Save error: ',
+        noPending:'No staff applications.', noRegs:'No registrations.',
+        campEmpty:'No staff registered.',
+        noChurch:'No church', notEntered:'N/A', unset:'—',
+        male:'M', female:'F',
+        cmsLink:'Content Editor (CMS) — wolko.org/admin', sheetsLink:'Registration Backup (Google Sheets)',
+      }
+    };
+    function t(key) { return ADMIN_T[adminLang]?.[key] ?? ADMIN_T.ko?.[key] ?? key; }
+    function applyLangToDOM() {
+      document.querySelectorAll('[data-t]').forEach(el => {
+        const v = t(el.dataset.t);
+        if (typeof v === 'string') el.textContent = v;
+      });
+      const pwInput = document.getElementById('pwInput');
+      if (pwInput) pwInput.placeholder = t('loginPw');
+      const langBtn = document.getElementById('langToggleLabel');
+      if (langBtn) langBtn.textContent = adminLang === 'ko' ? 'EN' : '한';
+    }
+    function toggleAdminLang() {
+      adminLang = adminLang === 'ko' ? 'en' : 'ko';
+      localStorage.setItem('wolkoAdminLang', adminLang);
+      applyLangToDOM();
+      renderStaffTable();
+      renderCampTeamPanel();
+    }
+
     // ── 시즌 데이터 ──────────────────────────────────────────────────────────────
     // 새 시즌 추가 시 SEASONS 배열에 항목 추가 (최신 시즌이 마지막에 위치)
     const SEASONS = [
@@ -399,7 +505,7 @@
       if (!pw) { errEl.textContent = '비밀번호를 입력해주세요.'; return; }
 
       btn.disabled = true;
-      btn.textContent = '확인 중…';
+      btn.textContent = t('loginVerifying');
       errEl.textContent = '';
       inputEl.classList.remove('error');
 
@@ -410,7 +516,7 @@
           body: JSON.stringify({ password: pw }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '로그인 실패');
+        if (!res.ok) throw new Error(data.error || t('loginWrong'));
 
         authToken = data.token;
         sessionStorage.setItem('wolko-admin-token', authToken);
@@ -418,13 +524,14 @@
         const screen = document.getElementById('loginScreen');
         screen.classList.add('hidden');
         setTimeout(() => screen.style.display = 'none', 400);
+        applyLangToDOM();
         loadRegs();
       } catch (e) {
         errEl.textContent = e.message;
         inputEl.classList.add('error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '로그인';
+        btn.textContent = t('loginBtn');
       }
     }
 
@@ -1135,14 +1242,15 @@
 
     function renderCampRolesBar(roster) {
       const roles = getCampRoles();
+      const slotLabels = [t('campDirector'), t('coordinator'), t('coordinator')];
       return `<div class="camp-roles-bar">
-        ${CAMP_ROLE_SLOTS.map(slot => {
+        ${CAMP_ROLE_SLOTS.map((slot, idx) => {
           const val   = roles[slot.key] || '';
           const found = val ? roster.find(m => m.name === val) : null;
           return `<div class="camp-role-slot${slot.cls ? ' ' + slot.cls : ''}">
-            <div class="camp-role-slot-label">${slot.label}</div>
+            <div class="camp-role-slot-label">${slotLabels[idx]}${idx > 0 ? ` ${idx}` : ''}</div>
             <select class="camp-role-select" onchange="saveCampRole('${slot.key}',this.value)">
-              <option value="">— 미배정 —</option>
+              <option value="">${t('unassigned')}</option>
               ${roster.map(m => `<option value="${esc(m.name)}"${val === m.name ? ' selected' : ''}>${esc(memberDisplayName(m))}</option>`).join('')}
             </select>
             ${found ? `<div class="camp-role-assigned-title">${esc(found.title)}</div>` : ''}
@@ -1178,48 +1286,48 @@
         <div class="camp-team-head">
           <div>
             <div class="camp-team-kicker">${esc(campLabel)}</div>
-            <h3>팀 운영 현황</h3>
+            <h3>${t('teamPanelTitle')}</h3>
           </div>
           <div style="display:flex;align-items:center;gap:12px">
             <div class="camp-team-stats">
-              <span>팀 리더 ${leaderCount}명</span>
-              <span>멤버 ${memberCount}명</span>
-              <span>지원 스태프 ${campStaff.length}명</span>
+              <span>${t('leaderCountFn')(leaderCount)}</span>
+              <span>${t('memberCountFn')(memberCount)}</span>
+              <span>${t('staffCountFn')(campStaff.length)}</span>
             </div>
             <button class="btn-team-panel-edit${teamPanelEditMode ? ' active' : ''}" onclick="toggleTeamPanelEditMode()">
               ${teamPanelEditMode
-                ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> 편집 완료`
-                : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7 2l3 3-5.5 5.5H1.5V8L7 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> 편집`}
+                ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> ${t('doneBtn')}`
+                : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7 2l3 3-5.5 5.5H1.5V8L7 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${t('editBtn')}`}
             </button>
           </div>
         </div>
         ${renderCampRolesBar(roster)}
         ${teamPanelEditMode ? `<div class="custom-member-add-bar">
-          <span class="custom-member-bar-label">미지정 인원 추가</span>
+          <span class="custom-member-bar-label">${t('customMemberAdd')}</span>
           <div class="custom-member-form">
-            <input type="text" id="cmName" class="cm-input" placeholder="이름 *">
-            <input type="text" id="cmSpouse" class="cm-input" placeholder="배우자 이름">
-            <input type="text" id="cmTitle" class="cm-input cm-input-wide" placeholder="직책">
+            <input type="text" id="cmName" class="cm-input" placeholder="${t('cmNamePh')}">
+            <input type="text" id="cmSpouse" class="cm-input" placeholder="${t('cmSpousePh')}">
+            <input type="text" id="cmTitle" class="cm-input cm-input-wide" placeholder="${t('cmTitlePh')}">
             <select id="cmRole" class="cm-select">
-              <option value="missionary">팀 리더</option>
-              <option value="intern">인턴</option>
-              <option value="stw" selected>스태프</option>
+              <option value="missionary">${t('cmRoleLeader')}</option>
+              <option value="intern">${t('cmRoleIntern')}</option>
+              <option value="stw" selected>${t('cmRoleStaff')}</option>
             </select>
             <div class="cm-team-chips">
-              ${STAFF_TEAMS.map(t => `<label class="cm-team-chip ${getStaffTeamClass(t)}"><input type="checkbox" class="cm-team-check" value="${esc(t)}">${esc(t)}</label>`).join('')}
+              ${STAFF_TEAMS.map(tm => `<label class="cm-team-chip ${getStaffTeamClass(tm)}"><input type="checkbox" class="cm-team-check" value="${esc(tm)}">${esc(teamLabel(tm))}</label>`).join('')}
             </div>
             <button class="btn-cm-add" onclick="addCustomMemberAction()">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              추가
+              ${t('cmAddBtn')}
             </button>
           </div>
         </div>` : ''}
         <div class="camp-team-filter">
-          <button type="button" class="${selectedTeam === 'all' ? 'active' : ''}" onclick="selectTeamPanelFilter('all')">전체</button>
-          ${STAFF_TEAMS.map(team => `<button type="button" class="${selectedTeam === team ? 'active' : ''}" onclick="selectTeamPanelFilter('${esc(team)}')">${esc(team)}</button>`).join('')}
+          <button type="button" class="${selectedTeam === 'all' ? 'active' : ''}" onclick="selectTeamPanelFilter('all')">${t('allFilter')}</button>
+          ${STAFF_TEAMS.map(tm => `<button type="button" class="${selectedTeam === tm ? 'active' : ''}" onclick="selectTeamPanelFilter('${esc(tm)}')">${esc(teamLabel(tm))}</button>`).join('')}
         </div>
         <div class="camp-team-grid">
-          ${teamsToShow.map(team => renderCampTeamCard(team, campStaff)).join('')}
+          ${teamsToShow.map(tm => renderCampTeamCard(tm, campStaff)).join('')}
         </div>`;
     }
 
@@ -1237,16 +1345,16 @@
           <span>${leaders.length + members.length + applicants.length}명</span>
         </div>
         <div class="camp-team-member-group">
-          <div class="camp-team-group-label">팀 리더</div>
-          ${leaders.length ? leaders.map(m => renderWolkoTeamMember(m, team)).join('') : '<div class="camp-team-empty">배정된 리더가 없습니다.</div>'}
+          <div class="camp-team-group-label">${t('teamLeaderSection')}</div>
+          ${leaders.length ? leaders.map(m => renderWolkoTeamMember(m, team)).join('') : `<div class="camp-team-empty">${t('noLeader')}</div>`}
         </div>
         <div class="camp-team-member-group">
-          <div class="camp-team-group-label">멤버</div>
-          ${members.length ? members.map(m => renderWolkoTeamMember(m, team)).join('') : '<div class="camp-team-empty">등록된 멤버가 없습니다.</div>'}
+          <div class="camp-team-group-label">${t('memberSection')}</div>
+          ${members.length ? members.map(m => renderWolkoTeamMember(m, team)).join('') : `<div class="camp-team-empty">${t('noMember')}</div>`}
         </div>
         <div class="camp-team-member-group">
-          <div class="camp-team-group-label">지원 스태프</div>
-          ${applicants.length ? applicants.map(renderApplicantTeamMember).join('') : '<div class="camp-team-empty">이 팀을 선택한 지원자가 없습니다.</div>'}
+          <div class="camp-team-group-label">${t('applicantSection')}</div>
+          ${applicants.length ? applicants.map(renderApplicantTeamMember).join('') : `<div class="camp-team-empty">${t('noApplicant')}</div>`}
         </div>
       </section>`;
     }
@@ -1254,7 +1362,7 @@
     function renderPersonExcludeBtn(key) {
       const excl = isPersonExcluded(key);
       return `<button class="btn-person-exclude${excl ? ' is-excluded' : ''}"
-        onclick="togglePersonExclusion('${esc(key)}')">${excl ? '복귀' : '제외'}</button>`;
+        onclick="togglePersonExclusion('${esc(key)}')">${excl ? t('restore') : t('exclude')}</button>`;
     }
 
     function renderWolkoTeamMember(member, team) {
@@ -1277,12 +1385,12 @@
 
       const namesHtml = member.spouseName ? `
         <div class="couple-person-row${primaryExcl ? ' is-excluded' : ''}">
-          <span class="couple-gender-tag">남편</span>
+          <span class="couple-gender-tag">${t('husband')}</span>
           <strong>${esc(member.name)}</strong>
           ${teamPanelEditMode ? renderPersonExcludeBtn(member.name) : ''}
         </div>
         <div class="couple-person-row${spouseExcl ? ' is-excluded' : ''}">
-          <span class="couple-gender-tag">아내</span>
+          <span class="couple-gender-tag">${t('wife')}</span>
           <strong>${esc(member.spouseName)}</strong>
           ${teamPanelEditMode ? renderPersonExcludeBtn(spouseKey(member)) : ''}
         </div>
@@ -1296,32 +1404,32 @@
       `;
 
       const customDeleteBtn = (member.isCustom && teamPanelEditMode)
-        ? `<button class="btn-custom-member-delete" onclick="removeCustomMember('${esc(member.id)}')" title="완전 삭제">×</button>`
+        ? `<button class="btn-custom-member-delete" onclick="removeCustomMember('${esc(member.id)}')" title="Remove">×</button>`
         : '';
-      return `<div class="camp-team-member ${isLeader ? 'is-leader' : ''}${isFullExcluded ? ' is-fully-excluded' : ''}${member.isCustom ? ' is-custom-member' : ''}">
-        <div class="camp-team-member-info">${namesHtml}</div>
-        <div class="camp-team-member-controls">
+      // 편집 모드일 때만 팀 배정 + 역할 토글 표시
+      const controls = teamPanelEditMode ? `
           <details class="member-team-picker">
-            <summary class="member-team-btn">팀 배정</summary>
+            <summary class="member-team-btn">${t('teamAssign')}</summary>
             <div class="member-team-options">${teamCheckboxes}</div>
           </details>
           <button class="team-role-toggle${isLeader ? ' is-leader' : ''}${isRoleChanged ? ' is-custom' : ''}"
             onclick="toggleWolkoMemberRole('${esc(member.name)}','${esc(team)}')"
-            title="클릭하여 역할 전환">${roleText}</button>
-          ${customDeleteBtn}
-        </div>
+            title="Toggle role">${roleText}</button>
+          ${customDeleteBtn}` : `
+          <span class="team-role-badge${isLeader ? ' is-leader' : ''}">${roleText}</span>`;
+      return `<div class="camp-team-member ${isLeader ? 'is-leader' : ''}${isFullExcluded ? ' is-fully-excluded' : ''}${member.isCustom ? ' is-custom-member' : ''}">
+        <div class="camp-team-member-info">${namesHtml}</div>
+        <div class="camp-team-member-controls">${controls}</div>
       </div>`;
     }
 
     function renderApplicantTeamMember(reg) {
-      const memo = reg.notes ? `<span class="camp-team-member-note">${esc(reg.notes)}</span>` : '';
       return `<div class="camp-team-member">
-        <div>
-          <strong>${esc(reg.name || '—')}</strong>
-          <span>${esc(reg.church || '교회 미입력')} · ${esc(reg.phone || '')}</span>
-          ${memo}
+        <div class="camp-team-member-info">
+          <div class="couple-person-row"><strong>${esc(reg.name || t('unset'))}</strong></div>
+          <span class="camp-team-member-title">${esc(reg.church || t('noChurch'))}${reg.phone ? ' · ' + esc(reg.phone) : ''}</span>
         </div>
-        <em>지원 스태프</em>
+        <span class="team-role-badge">${t('appliedStaff')}</span>
       </div>`;
     }
 
@@ -1332,7 +1440,7 @@
 
     function renderTeamBadge(team) {
       if (!team) return '';
-      return `<span class="person-team-badge ${getStaffTeamClass(team)}"><span class="person-team-label">${esc(team)}</span></span>`;
+      return `<span class="person-team-badge ${getStaffTeamClass(team)}"><span class="person-team-label">${esc(teamLabel(team))}</span></span>`;
     }
 
     function renderMemoCell(memo) {
@@ -1450,10 +1558,10 @@
         editor.querySelector('.staff-team-editor-summary').innerHTML = renderTeamStack(staffTeams(reg));
         renderCampTeamPanel();
         if (sortState.key === 'staffTeam') renderStaffTable();
-        showToast('팀 정보가 저장되었습니다.', 'success');
+        showToast(t('teamSaved'), 'success');
       } catch (e) {
         reg.serviceArea = previousValue;
-        showToast('팀 저장 오류: ' + e.message, 'error');
+        showToast(t('teamSaveErr') + e.message, 'error');
         renderStaffTable();
       } finally {
         allInputs.forEach(i => { i.disabled = false; });
@@ -1472,7 +1580,8 @@
       staffEditMode = !staffEditMode;
       const btn = document.getElementById('btnStaffEditMode');
       btn.classList.toggle('active', staffEditMode);
-      btn.querySelector('span').textContent = staffEditMode ? '수정 중' : '수정 모드';
+      btn.querySelector('[data-t]').dataset.t = staffEditMode ? 'editing' : 'editMode';
+      applyLangToDOM();
       renderStaffTable();
     }
 
@@ -1480,7 +1589,8 @@
       camperEditMode = !camperEditMode;
       const btn = document.getElementById('btnCamperEditMode');
       btn.classList.toggle('active', camperEditMode);
-      btn.querySelector('span').textContent = camperEditMode ? '수정 중' : '수정 모드';
+      btn.querySelector('[data-t]').dataset.t = camperEditMode ? 'editing' : 'editMode';
+      applyLangToDOM();
       renderCampTable();
     }
 
@@ -1539,18 +1649,18 @@
           renderCampTable();
           renderDash();
         }
-        showToast('저장되었습니다.', 'success');
+        showToast(t('fieldSaved'), 'success');
       } catch (e) {
         if (inputEl.type === 'checkbox') inputEl.checked = original;
-        else inputEl.value = original; // 실패 시 원복
+        else inputEl.value = original;
         inputEl.classList.remove('saving');
-        showToast('저장 오류: ' + e.message, 'error');
+        showToast(t('fieldErr') + e.message, 'error');
       }
     }
 
     // ── Delete ──
     async function deleteReg(regId, campId) {
-      if (!confirm(`정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+      if (!confirm(t('deleteConfirm'))) return;
       try {
         const res = await fetch(`/api/admin/registrations?regId=${regId}&campId=${campId}`, {
           method: 'DELETE', headers: authHeaders()
@@ -1560,9 +1670,9 @@
         allRegs = allRegs.filter(r => r.regId !== regId);
         renderTable();
         renderDash();
-        showToast('신청이 삭제되었습니다.', 'success');
+        showToast(t('deleted'), 'success');
       } catch (e) {
-        showToast('삭제 오류: ' + e.message, 'error');
+        showToast(t('deleteErr') + e.message, 'error');
       }
     }
 
