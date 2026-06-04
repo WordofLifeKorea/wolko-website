@@ -545,19 +545,16 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 }
 .staff-team-editor[open] .staff-team-caret { transform: rotate(180deg); }
 .staff-team-menu {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 6px);
-  z-index: 40;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 148px;
+  width: 148px;
+  margin-top: 7px;
   padding: 7px;
   background: #fff;
   border: 1px solid rgba(0,79,104,0.14);
   border-radius: 10px;
-  box-shadow: 0 8px 28px rgba(0,79,104,0.16);
+  box-shadow: 0 8px 20px rgba(0,79,104,0.10);
 }
 .staff-team-option {
   display: flex;
@@ -1186,10 +1183,13 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .edit-input-wide { width: 180px; }
 
 /* ── STAFF SECTION ── */
-.staff-section { border-color: rgba(13,148,136,0.2); }
-.staff-section,
+.staff-section {
+  border-color: rgba(13,148,136,0.2);
+  overflow: hidden;
+}
 .staff-section .table-scroll {
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 .staff-section .table-toolbar { border-bottom-color: rgba(13,148,136,0.12); }
 .staff-section thead tr { background: rgba(13,148,136,0.04); }
@@ -1377,6 +1377,56 @@ tbody tr.camp-tint.is-dedicated:hover td {
   background: #0d9488;
   color: #fff;
 }
+/* ── 팀 역할 토글 버튼 ── */
+.team-role-toggle {
+  flex: 0 0 auto;
+  padding: 3px 9px;
+  border: 1.5px solid #d0dde3;
+  border-radius: 999px;
+  background: #f4f7f9;
+  color: #607b87;
+  font-size: 10px;
+  font-weight: 800;
+  font-family: var(--f-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.team-role-toggle:hover { border-color: #8fa5b0; background: #eef4f7; color: #004f68; }
+.team-role-toggle.is-leader {
+  background: #0d9488;
+  border-color: #0d9488;
+  color: #fff;
+}
+.team-role-toggle.is-leader:hover { background: #0f766e; border-color: #0f766e; }
+.team-role-toggle.is-custom { box-shadow: 0 0 0 2px rgba(217,119,6,0.35); }
+
+/* ── 기타 팀 입력칸 ── */
+.staff-custom-team-wrap {
+  padding: 5px 2px 2px;
+  border-top: 1px solid #edf2f5;
+  margin-top: 2px;
+}
+.staff-custom-team-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 9px;
+  border: 1.5px solid rgba(217,119,6,0.35);
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-family: var(--f-body);
+  background: rgba(254,243,199,0.5);
+  color: var(--dark);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.staff-custom-team-input:focus {
+  border-color: rgba(217,119,6,0.65);
+  box-shadow: 0 0 0 3px rgba(217,119,6,0.10);
+  background: #fff;
+}
+.staff-team-custom-toggle { border-top: 1px solid #edf2f5; margin-top: 2px; padding-top: 2px; }
+
 .camp-team-member-note {
   max-width: 210px;
   overflow: hidden;
@@ -1602,7 +1652,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
     align-items: start;
   }
   .group-participant-memo .counselor-memo-input { max-width: none; }
-  .staff-section .table-scroll { overflow-x: auto; overflow-y: visible; }
+  .staff-section .table-scroll { overflow-x: auto; overflow-y: auto; }
 
   /* 캠프 카드 */
   .camp-cards { flex-direction: column; gap: 10px; margin-bottom: 24px; }

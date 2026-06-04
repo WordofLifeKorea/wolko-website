@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=27">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=28">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -346,7 +346,7 @@
       { name: '민경찬 & 김유진', title: '코어트레이닝 코디네이터', role: 'missionary', teams: ['프로그램'] },
       { name: '송승현', title: '월코 부대표 선교사', role: 'missionary', teams: ['프로그램', '상담자'] },
       { name: '김환규 & 김씬띠아', title: '교육자료 개발 코디네이터', role: 'missionary', teams: ['티칭', '테크'] },
-      { name: '백남규 & 조안나', title: '선교사 | 제주 월비', role: 'missionary', teams: ['상담자', '티칭'] },
+      { name: '백남규 & 조안나', title: '선교사 | 제주 월비', role: 'missionary', teams: ['상담자', '티칭'], jeju: true },
       { name: '몰스 제이콥 & 몰스 크리스탈', title: '월코 대표 · Field Director', role: 'missionary', teams: ['프로그램'] },
       { name: '니키 플로리카', title: '영어 수업 자료 코디네이터', role: 'intern', teams: ['티칭'] },
       { name: '잭 프래지어', title: 'Launch Internship · 제자훈련 & 영어 교육', role: 'intern', teams: ['티칭', '상담자'] },
@@ -993,6 +993,39 @@
       return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    // ── 팀 역할 로컬 저장 ──
+    function teamRoleKey(memberName, team) { return `${memberName}\x00${team}`; }
+    function getTeamRole(memberName, team) {
+      try {
+        const store = JSON.parse(localStorage.getItem(`wolkoTeamRoles_${activeCamp}`) || '{}');
+        return store[teamRoleKey(memberName, team)] || null;
+      } catch { return null; }
+    }
+    function setTeamRole(memberName, team, role) {
+      try {
+        const k = `wolkoTeamRoles_${activeCamp}`;
+        const store = JSON.parse(localStorage.getItem(k) || '{}');
+        store[teamRoleKey(memberName, team)] = role;
+        localStorage.setItem(k, JSON.stringify(store));
+      } catch {}
+    }
+    function defaultRole(member) { return member.role === 'missionary' ? 'leader' : 'member'; }
+    function effectiveRole(member, team) { return getTeamRole(member.name, team) || defaultRole(member); }
+
+    function toggleWolkoMemberRole(memberName, team) {
+      const member = WOLKO_CAMP_ROSTER.find(m => m.name === memberName);
+      if (!member) return;
+      const current = effectiveRole(member, team);
+      setTeamRole(memberName, team, current === 'leader' ? 'member' : 'leader');
+      renderCampTeamPanel();
+    }
+
+    // 캠프별 멤버 필터 (제주 멤버 제외 등)
+    function rosterForCamp(campId) {
+      const isInlandOnly = campId === '2026-inland-english-junior';
+      return WOLKO_CAMP_ROSTER.filter(m => !(isInlandOnly && m.jeju));
+    }
+
     function renderCampTeamPanel() {
       const panel = document.getElementById('campTeamPanel');
       if (!TEAM_PANEL_CAMPS.has(activeCamp)) {
@@ -1004,10 +1037,16 @@
       const selectedTeam = activeTeamFilter === 'all' || STAFF_TEAMS.includes(activeTeamFilter) ? activeTeamFilter : 'all';
       activeTeamFilter = selectedTeam;
       const teamsToShow = selectedTeam === 'all' ? STAFF_TEAMS : [selectedTeam];
-      const campStaff = allRegs.filter(r => r.registrationType === 'staff' && r.campId === activeCamp);
-      const campLabel = CAMP_LABELS[activeCamp] || activeCamp;
-      const leaderCount = WOLKO_CAMP_ROSTER.filter(member => member.role === 'missionary' && member.teams.some(team => teamsToShow.includes(team))).length;
-      const internCount = WOLKO_CAMP_ROSTER.filter(member => member.role !== 'missionary' && member.teams.some(team => teamsToShow.includes(team))).length;
+      const campStaff   = allRegs.filter(r => r.registrationType === 'staff' && r.campId === activeCamp);
+      const campLabel   = CAMP_LABELS[activeCamp] || activeCamp;
+      const roster      = rosterForCamp(activeCamp);
+
+      const leaderCount = roster.filter(m =>
+        m.teams.some(t => teamsToShow.includes(t) && effectiveRole(m, t) === 'leader')
+      ).length;
+      const memberCount = roster.filter(m =>
+        m.teams.some(t => teamsToShow.includes(t) && effectiveRole(m, t) === 'member')
+      ).length;
 
       panel.hidden = false;
       panel.innerHTML = `
@@ -1018,7 +1057,7 @@
           </div>
           <div class="camp-team-stats">
             <span>팀 리더 ${leaderCount}명</span>
-            <span>월코 인턴/스태프 ${internCount}명</span>
+            <span>멤버 ${memberCount}명</span>
             <span>지원 스태프 ${campStaff.length}명</span>
           </div>
         </div>
@@ -1032,22 +1071,22 @@
     }
 
     function renderCampTeamCard(team, campStaff) {
-      const wolkoMembers = WOLKO_CAMP_ROSTER.filter(member => member.teams.includes(team));
-      const leaders = wolkoMembers.filter(member => member.role === 'missionary');
-      const support = wolkoMembers.filter(member => member.role !== 'missionary');
+      const wolkoMembers = rosterForCamp(activeCamp).filter(m => m.teams.includes(team));
+      const leaders    = wolkoMembers.filter(m => effectiveRole(m, team) === 'leader');
+      const members    = wolkoMembers.filter(m => effectiveRole(m, team) === 'member');
       const applicants = campStaff.filter(reg => staffTeams(reg).includes(team));
       return `<section class="camp-team-card">
         <div class="camp-team-card-title">
           ${renderTeamBadge(team)}
-          <span>${leaders.length + support.length + applicants.length}명</span>
+          <span>${leaders.length + members.length + applicants.length}명</span>
         </div>
         <div class="camp-team-member-group">
           <div class="camp-team-group-label">팀 리더</div>
-          ${leaders.length ? leaders.map(renderWolkoTeamMember).join('') : '<div class="camp-team-empty">배정된 리더가 없습니다.</div>'}
+          ${leaders.length ? leaders.map(m => renderWolkoTeamMember(m, team)).join('') : '<div class="camp-team-empty">배정된 리더가 없습니다.</div>'}
         </div>
         <div class="camp-team-member-group">
-          <div class="camp-team-group-label">월코 선교사 · 인턴 · 단기 사역자</div>
-          ${support.length ? support.map(renderWolkoTeamMember).join('') : '<div class="camp-team-empty">등록된 월코 멤버가 없습니다.</div>'}
+          <div class="camp-team-group-label">멤버</div>
+          ${members.length ? members.map(m => renderWolkoTeamMember(m, team)).join('') : '<div class="camp-team-empty">등록된 멤버가 없습니다.</div>'}
         </div>
         <div class="camp-team-member-group">
           <div class="camp-team-group-label">지원 스태프</div>
@@ -1056,14 +1095,20 @@
       </section>`;
     }
 
-    function renderWolkoTeamMember(member) {
-      const roleLabel = member.role === 'missionary' ? '팀 리더 · 선교사' : member.role === 'intern' ? '인턴' : '월코 스태프';
-      return `<div class="camp-team-member ${member.role === 'missionary' ? 'is-leader' : ''}">
+    function renderWolkoTeamMember(member, team) {
+      const isLeader  = effectiveRole(member, team) === 'leader';
+      const isChanged = getTeamRole(member.name, team) !== null;
+      const roleText  = isLeader ? '팀 리더' : (member.role === 'intern' ? '인턴' : '월코 스태프');
+      return `<div class="camp-team-member ${isLeader ? 'is-leader' : ''}">
         <div>
           <strong>${esc(member.name)}</strong>
           <span>${esc(member.title)}</span>
         </div>
-        <em>${roleLabel}</em>
+        <button class="team-role-toggle${isLeader ? ' is-leader' : ''}${isChanged ? ' is-custom' : ''}"
+          onclick="toggleWolkoMemberRole('${esc(member.name)}','${esc(team)}')"
+          title="클릭하여 역할 전환">
+          ${roleText}
+        </button>
       </div>`;
     }
 
@@ -1127,7 +1172,11 @@
     }
 
     function renderTeamEditor(reg, teams = []) {
-      const selected = new Set(teams);
+      const standardTeams = teams.filter(t => STAFF_TEAMS.includes(t));
+      const customTeams   = teams.filter(t => !STAFF_TEAMS.includes(t));
+      const selected      = new Set(standardTeams);
+      const hasCustom     = customTeams.length > 0;
+      const customValue   = customTeams.join(', ');
       return `<details class="staff-team-editor">
         <summary>
           <span class="staff-team-editor-summary">${renderTeamStack(teams)}</span>
@@ -1135,25 +1184,57 @@
         </summary>
         <div class="staff-team-menu" data-regid="${esc(reg.regId)}" data-campid="${esc(reg.campId)}">
           ${STAFF_TEAMS.map(team => `<label class="staff-team-option ${getStaffTeamClass(team)}">
-            <input type="checkbox" value="${esc(team)}"${selected.has(team) ? ' checked' : ''} onchange="updateStaffTeamSelection(this)">
+            <input type="checkbox" value="${esc(team)}"${selected.has(team) ? ' checked' : ''} onchange="collectAndSaveTeams(this.closest('.staff-team-menu'))">
             <span>${esc(team)}</span>
           </label>`).join('')}
+          <label class="staff-team-option team-other staff-team-custom-toggle">
+            <input type="checkbox" class="custom-team-check"${hasCustom ? ' checked' : ''} onchange="toggleCustomTeamInput(this)">
+            <span>기타</span>
+          </label>
+          <div class="staff-custom-team-wrap"${hasCustom ? '' : ' style="display:none"'}>
+            <input type="text" class="staff-custom-team-input" placeholder="팀 이름 직접 입력..." value="${esc(customValue)}"
+              onblur="collectAndSaveTeams(this.closest('.staff-team-menu'))"
+              onkeydown="if(event.key==='Enter')this.blur()">
+          </div>
         </div>
       </details>`;
     }
 
-    async function updateStaffTeamSelection(inputEl) {
-      const editor = inputEl.closest('.staff-team-editor');
-      const menu = inputEl.closest('.staff-team-menu');
-      const regId = menu.dataset.regid;
+    function toggleCustomTeamInput(checkbox) {
+      const menu = checkbox.closest('.staff-team-menu');
+      const wrap = menu.querySelector('.staff-custom-team-wrap');
+      wrap.style.display = checkbox.checked ? '' : 'none';
+      if (checkbox.checked) {
+        wrap.querySelector('input').focus();
+      } else {
+        wrap.querySelector('input').value = '';
+        collectAndSaveTeams(menu);
+      }
+    }
+
+    async function collectAndSaveTeams(menu) {
+      const editor = menu.closest('.staff-team-editor');
+      const regId  = menu.dataset.regid;
       const campId = menu.dataset.campid;
-      const reg = allRegs.find(r => r.regId === regId);
+      const reg    = allRegs.find(r => r.regId === regId);
       if (!reg) return;
 
-      const inputs = Array.from(menu.querySelectorAll('input[type="checkbox"]'));
-      const value = inputs.filter(input => input.checked).map(input => input.value).join(', ');
+      // Standard team checkboxes (exclude custom-team-check)
+      const standardTeams = Array.from(menu.querySelectorAll('input[type="checkbox"]:not(.custom-team-check)'))
+        .filter(i => i.checked).map(i => i.value);
+
+      // Custom team text
+      const customCheck = menu.querySelector('.custom-team-check');
+      const customInput = menu.querySelector('.staff-custom-team-input');
+      const customTeams = (customCheck?.checked && customInput?.value.trim())
+        ? customInput.value.trim().split(',').map(t => t.trim()).filter(Boolean)
+        : [];
+
+      const value        = [...standardTeams, ...customTeams].join(', ');
       const previousValue = reg.serviceArea || '';
-      inputs.forEach(input => { input.disabled = true; });
+
+      const allInputs = Array.from(menu.querySelectorAll('input'));
+      allInputs.forEach(i => { i.disabled = true; });
       editor.classList.add('saving');
 
       try {
@@ -1174,7 +1255,7 @@
         showToast('팀 저장 오류: ' + e.message, 'error');
         renderStaffTable();
       } finally {
-        inputs.forEach(input => { input.disabled = false; });
+        allInputs.forEach(i => { i.disabled = false; });
         editor.classList.remove('saving');
       }
     }
