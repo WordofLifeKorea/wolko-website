@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=28">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=29">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -993,7 +993,7 @@
       return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // ── 팀 역할 로컬 저장 ──
+    // ── 팀 역할 로컬 저장 (leader / member) ──
     function teamRoleKey(memberName, team) { return `${memberName}\x00${team}`; }
     function getTeamRole(memberName, team) {
       try {
@@ -1020,10 +1020,76 @@
       renderCampTeamPanel();
     }
 
+    // ── 멤버 팀 배정 로컬 저장 ──
+    function getEffectiveTeams(member) {
+      try {
+        const store = JSON.parse(localStorage.getItem(`wolkoTeamAssign_${activeCamp}`) || '{}');
+        return store[member.name] || member.teams;
+      } catch { return member.teams; }
+    }
+    function setEffectiveTeams(memberName, teams) {
+      try {
+        const k = `wolkoTeamAssign_${activeCamp}`;
+        const store = JSON.parse(localStorage.getItem(k) || '{}');
+        store[memberName] = teams;
+        localStorage.setItem(k, JSON.stringify(store));
+      } catch {}
+    }
+    function updateMemberTeam(memberName, team, checked) {
+      const member = WOLKO_CAMP_ROSTER.find(m => m.name === memberName);
+      if (!member) return;
+      const cur  = getEffectiveTeams(member);
+      const next = checked ? (cur.includes(team) ? cur : [...cur, team]) : cur.filter(t => t !== team);
+      setEffectiveTeams(memberName, next);
+      renderCampTeamPanel();
+    }
+
+    // ── 캠프 디렉터 / 코디네이터 ──
+    function getCampRoles() {
+      try { return JSON.parse(localStorage.getItem(`wolkoCampRoles_${activeCamp}`) || '{}'); }
+      catch { return {}; }
+    }
+    function saveCampRole(roleKey, value) {
+      try {
+        const k = `wolkoCampRoles_${activeCamp}`;
+        const roles = getCampRoles();
+        roles[roleKey] = value;
+        localStorage.setItem(k, JSON.stringify(roles));
+        renderCampTeamPanel();
+      } catch {}
+    }
+
     // 캠프별 멤버 필터 (제주 멤버 제외 등)
     function rosterForCamp(campId) {
       const isInlandOnly = campId === '2026-inland-english-junior';
       return WOLKO_CAMP_ROSTER.filter(m => !(isInlandOnly && m.jeju));
+    }
+
+    const CAMP_ROLE_SLOTS = [
+      { key: 'director', label: '캠프 디렉터', cls: 'is-director' },
+      { key: 'coord1',   label: '코디네이터 1', cls: '' },
+      { key: 'coord2',   label: '코디네이터 2', cls: '' },
+    ];
+
+    function renderCampRolesBar(roster) {
+      const roles = getCampRoles();
+      const options = roster.map(m =>
+        `<option value="${esc(m.name)}"${roles[CAMP_ROLE_SLOTS[0]?.key] === m.name ? '' : ''}>${esc(m.name)} · ${esc(m.title)}</option>`
+      ).join('');
+      return `<div class="camp-roles-bar">
+        ${CAMP_ROLE_SLOTS.map(slot => {
+          const val = roles[slot.key] || '';
+          const found = val ? roster.find(m => m.name === val) : null;
+          return `<div class="camp-role-slot${slot.cls ? ' ' + slot.cls : ''}">
+            <div class="camp-role-slot-label">${slot.label}</div>
+            <select class="camp-role-select" onchange="saveCampRole('${slot.key}',this.value)">
+              <option value="">— 미배정 —</option>
+              ${roster.map(m => `<option value="${esc(m.name)}"${val === m.name ? ' selected' : ''}>${esc(m.name)}</option>`).join('')}
+            </select>
+            ${found ? `<div class="camp-role-assigned-title">${esc(found.title)}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>`;
     }
 
     function renderCampTeamPanel() {
@@ -1042,10 +1108,10 @@
       const roster      = rosterForCamp(activeCamp);
 
       const leaderCount = roster.filter(m =>
-        m.teams.some(t => teamsToShow.includes(t) && effectiveRole(m, t) === 'leader')
+        getEffectiveTeams(m).some(t => teamsToShow.includes(t) && effectiveRole(m, t) === 'leader')
       ).length;
       const memberCount = roster.filter(m =>
-        m.teams.some(t => teamsToShow.includes(t) && effectiveRole(m, t) === 'member')
+        getEffectiveTeams(m).some(t => teamsToShow.includes(t) && effectiveRole(m, t) === 'member')
       ).length;
 
       panel.hidden = false;
@@ -1061,6 +1127,7 @@
             <span>지원 스태프 ${campStaff.length}명</span>
           </div>
         </div>
+        ${renderCampRolesBar(roster)}
         <div class="camp-team-filter">
           <button type="button" class="${selectedTeam === 'all' ? 'active' : ''}" onclick="selectTeamPanelFilter('all')">전체</button>
           ${STAFF_TEAMS.map(team => `<button type="button" class="${selectedTeam === team ? 'active' : ''}" onclick="selectTeamPanelFilter('${esc(team)}')">${esc(team)}</button>`).join('')}
@@ -1071,7 +1138,7 @@
     }
 
     function renderCampTeamCard(team, campStaff) {
-      const wolkoMembers = rosterForCamp(activeCamp).filter(m => m.teams.includes(team));
+      const wolkoMembers = rosterForCamp(activeCamp).filter(m => getEffectiveTeams(m).includes(team));
       const leaders    = wolkoMembers.filter(m => effectiveRole(m, team) === 'leader');
       const members    = wolkoMembers.filter(m => effectiveRole(m, team) === 'member');
       const applicants = campStaff.filter(reg => staffTeams(reg).includes(team));
@@ -1096,19 +1163,30 @@
     }
 
     function renderWolkoTeamMember(member, team) {
-      const isLeader  = effectiveRole(member, team) === 'leader';
-      const isChanged = getTeamRole(member.name, team) !== null;
-      const roleText  = isLeader ? '팀 리더' : (member.role === 'intern' ? '인턴' : '월코 스태프');
+      const isLeader       = effectiveRole(member, team) === 'leader';
+      const isRoleChanged  = getTeamRole(member.name, team) !== null;
+      const roleText       = isLeader ? '팀 리더' : (member.role === 'intern' ? '인턴' : '월코 스태프');
+      const effectiveTeams = getEffectiveTeams(member);
+      const teamCheckboxes = STAFF_TEAMS.map(t => `
+        <label class="member-team-option ${getStaffTeamClass(t)}${effectiveTeams.includes(t) ? ' is-checked' : ''}">
+          <input type="checkbox"${effectiveTeams.includes(t) ? ' checked' : ''}
+            onchange="updateMemberTeam('${esc(member.name)}','${esc(t)}',this.checked)">
+          <span>${esc(t)}</span>
+        </label>`).join('');
       return `<div class="camp-team-member ${isLeader ? 'is-leader' : ''}">
-        <div>
+        <div class="camp-team-member-info">
           <strong>${esc(member.name)}</strong>
           <span>${esc(member.title)}</span>
         </div>
-        <button class="team-role-toggle${isLeader ? ' is-leader' : ''}${isChanged ? ' is-custom' : ''}"
-          onclick="toggleWolkoMemberRole('${esc(member.name)}','${esc(team)}')"
-          title="클릭하여 역할 전환">
-          ${roleText}
-        </button>
+        <div class="camp-team-member-controls">
+          <details class="member-team-picker">
+            <summary class="member-team-btn">팀 배정</summary>
+            <div class="member-team-options">${teamCheckboxes}</div>
+          </details>
+          <button class="team-role-toggle${isLeader ? ' is-leader' : ''}${isRoleChanged ? ' is-custom' : ''}"
+            onclick="toggleWolkoMemberRole('${esc(member.name)}','${esc(team)}')"
+            title="클릭하여 역할 전환">${roleText}</button>
+        </div>
       </div>`;
     }
 
