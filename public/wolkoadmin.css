@@ -365,18 +365,25 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .camp-reg-table th:nth-child(4), .camp-reg-table td:nth-child(4) { width: 19%; }
 .camp-reg-table th:nth-child(5), .camp-reg-table td:nth-child(5) { width: 13%; }
 .camp-reg-table th:nth-child(6), .camp-reg-table td:nth-child(6) { width: 11%; }
-/* 스태프 테이블 — 이름 줄이고 분야 넓게 */
-.staff-reg-table { min-width: 720px; }
-.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 32%; }
-.staff-reg-table th:nth-child(2), .staff-reg-table td:nth-child(2) { width: 12%; }
-.staff-reg-table th:nth-child(3), .staff-reg-table td:nth-child(3) { width: 56%; }
+/* 스태프 테이블 */
+.staff-reg-table { min-width: 1180px; }
+.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 18%; }
+.staff-reg-table th:nth-child(2), .staff-reg-table td:nth-child(2) { width: 7%; }
+.staff-reg-table th:nth-child(3), .staff-reg-table td:nth-child(3) { width: 16%; }
+.staff-reg-table th:nth-child(4), .staff-reg-table td:nth-child(4) { width: 13%; }
+.staff-reg-table th:nth-child(5), .staff-reg-table td:nth-child(5) { width: 20%; }
+.staff-reg-table th:nth-child(6), .staff-reg-table td:nth-child(6) { width: 17%; }
+.staff-reg-table th:nth-child(7), .staff-reg-table td:nth-child(7) { width: 12%; }
+.staff-reg-table th:nth-child(8), .staff-reg-table td:nth-child(8) { width: 7%; text-align: center; }
+.staff-reg-table th:first-child,
+.staff-reg-table td:first-child { padding-left: 24px; }
 .camp-reg-table td:nth-child(3),
 .camp-reg-table td:nth-child(5),
 .staff-reg-table td:nth-child(1) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.staff-reg-table td:nth-child(3) { white-space: normal; }
+.staff-reg-table td:nth-child(5) { white-space: normal; }
 thead tr { background: #f8fafc; }
 th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--light); text-transform: uppercase; font-family: var(--f-sans); border-bottom: 1px solid var(--border); white-space: nowrap; }
 td { padding: 13px 16px; border-bottom: 1px solid #f0f4f7; color: var(--text); vertical-align: middle; white-space: nowrap; }
@@ -411,6 +418,51 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 }
 .staff-reg-table .registration-status-cell {
   gap: 14px;
+}
+.person-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  max-width: 100%;
+}
+.person-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 10px;
+  background: #edf5f7;
+  color: var(--blue);
+  font-family: var(--f-sans);
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(0,79,104,0.08);
+}
+.person-avatar.male {
+  background: rgba(59,130,246,0.13);
+  color: #2563eb;
+}
+.person-avatar.female {
+  background: rgba(236,72,153,0.13);
+  color: #db2777;
+}
+.person-main {
+  display: block;
+  min-width: 0;
+}
+.person-name {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .registration-expanded-strip {
   display: inline-flex;
@@ -970,6 +1022,14 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .staff-section thead tr { background: rgba(13,148,136,0.04); }
 .staff-section thead th { color: #0d9488; }
 .staff-section tbody tr:hover td { background: rgba(13,148,136,0.04); }
+.staff-section table th:first-child,
+.staff-section table td:first-child {
+  padding-left: 40px;
+}
+.staff-section .staff-camp-divider td,
+.staff-section .staff-camp-empty td {
+  padding-left: 40px;
+}
 
 /* ── STAFF CAMP GROUPS ── */
 .staff-camp-divider td {

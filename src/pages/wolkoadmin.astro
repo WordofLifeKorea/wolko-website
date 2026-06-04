@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=22">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=23">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -201,7 +201,7 @@
         </div>
       </div>
       <div class="table-scroll">
-        <table>
+        <table class="staff-reg-table">
           <thead>
             <tr>
               <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
@@ -934,7 +934,7 @@
               : `<span style="color:var(--light)">—</span>`);
 
         return `<tr class="camp-tint" style="${rowStyle}">
-          <td style="font-weight:600">${esc(r.name)}</td>
+          <td>${renderPersonCell(r.name, r.gender)}</td>
           <td>${genderBadge}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.church || '—')}</td>
           <td style="white-space:nowrap">${phoneCell}</td>
@@ -964,6 +964,22 @@
 
     function esc(str) {
       return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function nameInitial(name) {
+      const clean = String(name || '').trim();
+      if (!clean) return '?';
+      return clean.replace(/\s*\/.*$/, '').trim().charAt(0).toUpperCase();
+    }
+
+    function renderPersonCell(name, gender) {
+      const genderClass = gender === 'male' ? ' male' : gender === 'female' ? ' female' : '';
+      return `<div class="person-cell">
+        <span class="person-avatar${genderClass}">${esc(nameInitial(name))}</span>
+        <span class="person-main">
+          <span class="person-name">${esc(name || '—')}</span>
+        </span>
+      </div>`;
     }
 
     function toggleGroupParticipants(regId) {
