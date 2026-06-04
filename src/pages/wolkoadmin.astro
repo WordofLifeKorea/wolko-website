@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=33">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=34">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1254,10 +1254,10 @@
       } catch {}
     }
 
-    // 캠프별 멤버 필터 (제주 멤버 제외 등)
+    // 캠프별 멤버 필터 (제주 선교사는 제주 캠프에서만)
     function rosterForCamp(campId) {
-      const isInlandOnly = campId === '2026-inland-english-junior';
-      return WOLKO_CAMP_ROSTER.filter(m => !(isInlandOnly && m.jeju));
+      const isJejuCamp = campId.includes('jeju');
+      return WOLKO_CAMP_ROSTER.filter(m => !(m.jeju && !isJejuCamp));
     }
 
     // ── 미지정 (커스텀) 멤버 ──
@@ -1319,7 +1319,7 @@
       if (!TEAM_PANEL_CAMPS.has(activeCamp)) {
         panel.hidden = true; panel.innerHTML = ''; return;
       }
-      const selTeam  = activeTeamFilter === 'all' || STAFF_TEAMS.includes(activeTeamFilter) ? activeTeamFilter : 'all';
+      const selTeam  = activeTeamFilter === 'all' || getAllTeams().includes(activeTeamFilter) ? activeTeamFilter : 'all';
       activeTeamFilter = selTeam;
       const campStaff = allRegs.filter(r => r.registrationType === 'staff' && r.campId === activeCamp);
       const campLabel = CAMP_LABELS[activeCamp] || activeCamp;
@@ -1327,8 +1327,22 @@
       const persons   = getRosterPersons(activeCamp);
       const visP      = teamPanelEditMode ? persons : persons.filter(p => !isPersonExcluded(p.displayName));
 
-      const leaderP = visP.filter(p => p.teams.some(tm => STAFF_TEAMS.includes(tm) && personEffectiveRole(p, tm) === 'leader'));
-      const memberP = visP.filter(p => p.teams.some(tm => STAFF_TEAMS.includes(tm) && personEffectiveRole(p, tm) === 'member'));
+      // 지원 스태프 신청자 → person 객체로 변환 (팀 배정·리더 등록 가능)
+      const applicantPersons = campStaff.map(reg => ({
+        displayName: reg.name || '',
+        genderTag: '',
+        title: [reg.church, reg.phone].filter(Boolean).join(' · '),
+        role: 'stw',
+        defaultTeams: staffTeams(reg),
+        teams: getPersonTeams(reg.name || '', staffTeams(reg)),
+        isCustom: false,
+      }));
+      const visApplicants = teamPanelEditMode
+        ? applicantPersons
+        : applicantPersons.filter(p => !isPersonExcluded(p.displayName));
+
+      const leaderP = visP.filter(p => p.teams.some(tm => getAllTeams().includes(tm) && personEffectiveRole(p, tm) === 'leader'));
+      const memberP = visP.filter(p => p.teams.some(tm => getAllTeams().includes(tm) && personEffectiveRole(p, tm) === 'member'));
 
       // stat panel HTML
       function statPanel() {
@@ -1336,8 +1350,8 @@
         let items, panelTitle;
         if (activeStatPanel === 'staff') {
           return `<div class="camp-stat-panel">
-            <div class="stat-panel-title">${t('applicantSection')} (${campStaff.length})</div>
-            <div class="stat-panel-list">${campStaff.length ? campStaff.map(renderApplicantTeamMember).join('') : `<div class="camp-team-empty">${t('noApplicant')}</div>`}</div>
+            <div class="stat-panel-title">${t('applicantSection')} (${visApplicants.length})</div>
+            <div class="stat-panel-list">${visApplicants.length ? visApplicants.map(p => renderPersonRow(p, null, true)).join('') : `<div class="camp-team-empty">${t('noApplicant')}</div>`}</div>
           </div>`;
         }
         items = activeStatPanel === 'leaders' ? leaderP : memberP;
@@ -1374,7 +1388,7 @@
             <span class="stat-label">${t('memberSection')}</span>
           </button>
           <button class="stat-badge${activeStatPanel === 'staff' ? ' active' : ''}" onclick="toggleStatPanel('staff')">
-            <span class="stat-num">${campStaff.length}</span>
+            <span class="stat-num">${visApplicants.length}</span>
             <span class="stat-label">${t('applicantSection')}</span>
           </button>
         </div>
@@ -1421,14 +1435,17 @@
           ${getAllTeams().map(tm => `<button type="button" class="${selTeam === tm ? 'active' : ''}" onclick="selectTeamPanelFilter('${esc(tm)}')">${esc(teamLabel(tm))}</button>`).join('')}
         </div>
         <div class="camp-team-grid">
-          ${gridTeams.map(tm => renderCampTeamCard(tm, campStaff, visP)).join('')}
+          ${gridTeams.map(tm => renderCampTeamCard(tm, visApplicants, visP)).join('')}
         </div>`;
     }
 
-    function renderCampTeamCard(team, campStaff, visP) {
-      // 미지정 카드: 아무 표준 팀에도 없는 멤버
+    function renderCampTeamCard(team, visApplicants, visP) {
+      // 미지정 카드: 아무 팀에도 없는 멤버 (커스텀팀 포함)
       if (team === UNASSIGNED) {
-        const uList = visP.filter(p => p.teams.filter(tm => STAFF_TEAMS.includes(tm)).length === 0);
+        const uList = [
+          ...visP.filter(p => p.teams.filter(tm => getAllTeams().includes(tm)).length === 0),
+          ...visApplicants.filter(p => p.teams.filter(tm => getAllTeams().includes(tm)).length === 0),
+        ];
         if (!uList.length && !teamPanelEditMode) return '';
         return `<section class="camp-team-card camp-team-unassigned">
           <div class="camp-team-card-title">
@@ -1443,7 +1460,7 @@
       const pList    = visP.filter(p => p.teams.includes(team));
       const leaders  = pList.filter(p => personEffectiveRole(p, team) === 'leader');
       const members  = pList.filter(p => personEffectiveRole(p, team) === 'member');
-      const applicants = campStaff.filter(reg => staffTeams(reg).includes(team));
+      const applicants = visApplicants.filter(p => p.teams.includes(team));
       return `<section class="camp-team-card">
         <div class="camp-team-card-title">
           ${renderTeamBadge(team)}
@@ -1459,7 +1476,7 @@
         </div>
         <div class="camp-team-member-group">
           <div class="camp-team-group-label">${t('applicantSection')}</div>
-          ${applicants.length ? applicants.map(renderApplicantTeamMember).join('') : `<div class="camp-team-empty">${t('noApplicant')}</div>`}
+          ${applicants.length ? applicants.map(p => renderPersonRow(p, team)).join('') : `<div class="camp-team-empty">${t('noApplicant')}</div>`}
         </div>
       </section>`;
     }

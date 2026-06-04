@@ -1311,10 +1311,77 @@ tbody tr.camp-tint.is-dedicated:hover td {
   font-size: 11px;
   font-weight: 800;
 }
+/* ── CAMP STAT BADGES ── */
+.camp-stat-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 4px;
+}
+.stat-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 20px;
+  background: #f3f7f8;
+  border: 1.5px solid #d8e4e8;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--f-body);
+  min-width: 72px;
+}
+.stat-badge:hover {
+  background: #e8f0f4;
+  border-color: #b8cdd6;
+}
+.stat-badge.active {
+  background: rgba(13,148,136,0.08);
+  border-color: rgba(13,148,136,0.35);
+}
+.stat-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+.stat-badge.active .stat-num { color: #0d9488; }
+.stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--mid);
+  white-space: nowrap;
+}
+.stat-badge.active .stat-label { color: #0d9488; }
+
+/* ── STAT EXPAND PANEL ── */
+.camp-stat-panel {
+  margin: 10px 0 14px;
+  padding: 14px 16px;
+  background: #f8fafb;
+  border: 1px solid rgba(0,79,104,0.10);
+  border-radius: 10px;
+}
+.stat-panel-title {
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stat-panel-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px;
+}
+
 .camp-team-filter {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
+  margin-top: 16px;
   margin-bottom: 16px;
 }
 .camp-team-filter button {
