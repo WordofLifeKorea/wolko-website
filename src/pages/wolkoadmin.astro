@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=29">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=30">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -342,12 +342,12 @@
 
     const TEAM_PANEL_CAMPS = new Set(['2026-inland-english-junior', '2026-inland-union']);
     const WOLKO_CAMP_ROSTER = [
-      { name: '앤더슨 제이슨 & 앤더슨 찬주', title: '캠프 & 아웃리치 팀 코디네이터', role: 'missionary', teams: ['프로그램', '상담자'] },
-      { name: '민경찬 & 김유진', title: '코어트레이닝 코디네이터', role: 'missionary', teams: ['프로그램'] },
+      { name: '앤더슨 제이슨', spouseName: '앤더슨 찬주', title: '캠프 & 아웃리치 팀 코디네이터', role: 'missionary', teams: ['프로그램', '상담자'] },
+      { name: '민경찬', spouseName: '김유진', title: '코어트레이닝 코디네이터', role: 'missionary', teams: ['프로그램'] },
       { name: '송승현', title: '월코 부대표 선교사', role: 'missionary', teams: ['프로그램', '상담자'] },
-      { name: '김환규 & 김씬띠아', title: '교육자료 개발 코디네이터', role: 'missionary', teams: ['티칭', '테크'] },
-      { name: '백남규 & 조안나', title: '선교사 | 제주 월비', role: 'missionary', teams: ['상담자', '티칭'], jeju: true },
-      { name: '몰스 제이콥 & 몰스 크리스탈', title: '월코 대표 · Field Director', role: 'missionary', teams: ['프로그램'] },
+      { name: '김환규', spouseName: '김씬띠아', title: '교육자료 개발 코디네이터', role: 'missionary', teams: ['티칭', '테크'] },
+      { name: '백남규', spouseName: '조안나', title: '선교사 | 제주 월비', role: 'missionary', teams: ['상담자', '티칭'], jeju: true },
+      { name: '몰스 제이콥', spouseName: '몰스 크리스탈', title: '월코 대표 · Field Director', role: 'missionary', teams: ['프로그램'] },
       { name: '니키 플로리카', title: '영어 수업 자료 코디네이터', role: 'intern', teams: ['티칭'] },
       { name: '잭 프래지어', title: 'Launch Internship · 제자훈련 & 영어 교육', role: 'intern', teams: ['티칭', '상담자'] },
       { name: '몰리 그램', title: 'Cross Cultural Internship · 지역 교회 & 캠프', role: 'intern', teams: ['상담자', '프로그램'] },
@@ -358,6 +358,10 @@
       { name: '웹스터 그레이스', title: '팟캐스트 미디어 사역', role: 'stw', teams: ['테크'] },
       { name: '손진영', title: '회계 | 캠프 보조', role: 'stw', teams: ['프로그램'] },
     ];
+    // 표시용 이름 (기혼자는 "남편 · 아내")
+    function memberDisplayName(m) {
+      return m.spouseName ? `${m.name} · ${m.spouseName}` : m.name;
+    }
 
     let allRegs = [];
     let activeCamp = 'all';
@@ -367,6 +371,7 @@
     let authToken = sessionStorage.getItem('wolko-admin-token') || '';
     let staffEditMode = false;
     let camperEditMode = false;
+    let teamPanelEditMode = false;
     const expandedGroupParticipants = new Set();
 
     // ── Login ──
@@ -1020,6 +1025,34 @@
       renderCampTeamPanel();
     }
 
+    // ── 캠프 참여 제외 (개인별) ──
+    function spouseKey(member) { return member.name + '\x01'; } // 배우자 전용 키
+    function isPersonExcluded(key) {
+      try {
+        const list = JSON.parse(localStorage.getItem(`wolkoCampExclude_${activeCamp}`) || '[]');
+        return list.includes(key);
+      } catch { return false; }
+    }
+    function togglePersonExclusion(key) {
+      try {
+        const k = `wolkoCampExclude_${activeCamp}`;
+        const list = JSON.parse(localStorage.getItem(k) || '[]');
+        const idx = list.indexOf(key);
+        if (idx === -1) list.push(key); else list.splice(idx, 1);
+        localStorage.setItem(k, JSON.stringify(list));
+        renderCampTeamPanel();
+      } catch {}
+    }
+    // 단독 → name 제외 여부 / 부부 → 둘 다 제외일 때 "완전 제외"
+    function isMemberFullyExcluded(member) {
+      if (!member.spouseName) return isPersonExcluded(member.name);
+      return isPersonExcluded(member.name) && isPersonExcluded(spouseKey(member));
+    }
+    function toggleTeamPanelEditMode() {
+      teamPanelEditMode = !teamPanelEditMode;
+      renderCampTeamPanel();
+    }
+
     // ── 멤버 팀 배정 로컬 저장 ──
     function getEffectiveTeams(member) {
       try {
@@ -1073,18 +1106,15 @@
 
     function renderCampRolesBar(roster) {
       const roles = getCampRoles();
-      const options = roster.map(m =>
-        `<option value="${esc(m.name)}"${roles[CAMP_ROLE_SLOTS[0]?.key] === m.name ? '' : ''}>${esc(m.name)} · ${esc(m.title)}</option>`
-      ).join('');
       return `<div class="camp-roles-bar">
         ${CAMP_ROLE_SLOTS.map(slot => {
-          const val = roles[slot.key] || '';
+          const val   = roles[slot.key] || '';
           const found = val ? roster.find(m => m.name === val) : null;
           return `<div class="camp-role-slot${slot.cls ? ' ' + slot.cls : ''}">
             <div class="camp-role-slot-label">${slot.label}</div>
             <select class="camp-role-select" onchange="saveCampRole('${slot.key}',this.value)">
               <option value="">— 미배정 —</option>
-              ${roster.map(m => `<option value="${esc(m.name)}"${val === m.name ? ' selected' : ''}>${esc(m.name)}</option>`).join('')}
+              ${roster.map(m => `<option value="${esc(m.name)}"${val === m.name ? ' selected' : ''}>${esc(memberDisplayName(m))}</option>`).join('')}
             </select>
             ${found ? `<div class="camp-role-assigned-title">${esc(found.title)}</div>` : ''}
           </div>`;
@@ -1121,10 +1151,17 @@
             <div class="camp-team-kicker">${esc(campLabel)}</div>
             <h3>팀 운영 현황</h3>
           </div>
-          <div class="camp-team-stats">
-            <span>팀 리더 ${leaderCount}명</span>
-            <span>멤버 ${memberCount}명</span>
-            <span>지원 스태프 ${campStaff.length}명</span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="camp-team-stats">
+              <span>팀 리더 ${leaderCount}명</span>
+              <span>멤버 ${memberCount}명</span>
+              <span>지원 스태프 ${campStaff.length}명</span>
+            </div>
+            <button class="btn-team-panel-edit${teamPanelEditMode ? ' active' : ''}" onclick="toggleTeamPanelEditMode()">
+              ${teamPanelEditMode
+                ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> 편집 완료`
+                : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7 2l3 3-5.5 5.5H1.5V8L7 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> 편집`}
+            </button>
           </div>
         </div>
         ${renderCampRolesBar(roster)}
@@ -1138,7 +1175,10 @@
     }
 
     function renderCampTeamCard(team, campStaff) {
-      const wolkoMembers = rosterForCamp(activeCamp).filter(m => getEffectiveTeams(m).includes(team));
+      const wolkoMembers = rosterForCamp(activeCamp).filter(m =>
+        getEffectiveTeams(m).includes(team) &&
+        (teamPanelEditMode || !isMemberFullyExcluded(m))
+      );
       const leaders    = wolkoMembers.filter(m => effectiveRole(m, team) === 'leader');
       const members    = wolkoMembers.filter(m => effectiveRole(m, team) === 'member');
       const applicants = campStaff.filter(reg => staffTeams(reg).includes(team));
@@ -1162,22 +1202,52 @@
       </section>`;
     }
 
+    function renderPersonExcludeBtn(key) {
+      const excl = isPersonExcluded(key);
+      return `<button class="btn-person-exclude${excl ? ' is-excluded' : ''}"
+        onclick="togglePersonExclusion('${esc(key)}')">${excl ? '복귀' : '제외'}</button>`;
+    }
+
     function renderWolkoTeamMember(member, team) {
       const isLeader       = effectiveRole(member, team) === 'leader';
       const isRoleChanged  = getTeamRole(member.name, team) !== null;
       const roleText       = isLeader ? '팀 리더' : (member.role === 'intern' ? '인턴' : '월코 스태프');
       const effectiveTeams = getEffectiveTeams(member);
+      const isFullExcluded = isMemberFullyExcluded(member);
+
       const teamCheckboxes = STAFF_TEAMS.map(t => `
         <label class="member-team-option ${getStaffTeamClass(t)}${effectiveTeams.includes(t) ? ' is-checked' : ''}">
           <input type="checkbox"${effectiveTeams.includes(t) ? ' checked' : ''}
             onchange="updateMemberTeam('${esc(member.name)}','${esc(t)}',this.checked)">
           <span>${esc(t)}</span>
         </label>`).join('');
-      return `<div class="camp-team-member ${isLeader ? 'is-leader' : ''}">
-        <div class="camp-team-member-info">
+
+      // 기혼자: 남편/아내 각각 이름 행
+      const primaryExcl = isPersonExcluded(member.name);
+      const spouseExcl  = member.spouseName ? isPersonExcluded(spouseKey(member)) : false;
+
+      const namesHtml = member.spouseName ? `
+        <div class="couple-person-row${primaryExcl ? ' is-excluded' : ''}">
+          <span class="couple-gender-tag">남편</span>
           <strong>${esc(member.name)}</strong>
-          <span>${esc(member.title)}</span>
+          ${teamPanelEditMode ? renderPersonExcludeBtn(member.name) : ''}
         </div>
+        <div class="couple-person-row${spouseExcl ? ' is-excluded' : ''}">
+          <span class="couple-gender-tag">아내</span>
+          <strong>${esc(member.spouseName)}</strong>
+          ${teamPanelEditMode ? renderPersonExcludeBtn(spouseKey(member)) : ''}
+        </div>
+        <span class="camp-team-member-title">${esc(member.title)}</span>
+      ` : `
+        <div class="couple-person-row${primaryExcl ? ' is-excluded' : ''}">
+          <strong>${esc(member.name)}</strong>
+          ${teamPanelEditMode ? renderPersonExcludeBtn(member.name) : ''}
+        </div>
+        <span class="camp-team-member-title">${esc(member.title)}</span>
+      `;
+
+      return `<div class="camp-team-member ${isLeader ? 'is-leader' : ''}${isFullExcluded ? ' is-fully-excluded' : ''}">
+        <div class="camp-team-member-info">${namesHtml}</div>
         <div class="camp-team-member-controls">
           <details class="member-team-picker">
             <summary class="member-team-btn">팀 배정</summary>

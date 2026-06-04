@@ -1496,6 +1496,51 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .member-team-option.is-checked.team-worship  { background: #ffe9f1; border-color: #f2c5d5; color: #a64f70; }
 .member-team-option input { width: 13px; height: 13px; margin: 0; accent-color: #0d9488; flex-shrink: 0; }
 
+/* ── 팀 패널 편집 모드 버튼 ── */
+.btn-team-panel-edit {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  border: 1.5px solid #dde5ea; background: #f4f6f9; color: #5a6f79;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  font-family: var(--f-body);
+}
+.btn-team-panel-edit:hover { border-color: #aab8c2; color: #004f68; background: #edf2f5; }
+.btn-team-panel-edit.active {
+  background: rgba(13,148,136,0.10); border-color: rgba(13,148,136,0.35); color: #0d9488;
+}
+
+/* ── 부부 이름 행 ── */
+.couple-person-row {
+  display: flex; align-items: center; gap: 5px;
+  margin-bottom: 2px; min-height: 20px;
+}
+.couple-person-row strong { font-size: 13px; font-weight: 800; color: var(--text); }
+.couple-person-row.is-excluded strong {
+  text-decoration: line-through; color: var(--light); opacity: 0.7;
+}
+.couple-gender-tag {
+  display: inline-block; padding: 1px 5px; border-radius: 4px;
+  font-size: 10px; font-weight: 700; background: #edf3f5; color: #607b87;
+  flex-shrink: 0;
+}
+.camp-team-member-title {
+  display: block; margin-top: 2px; color: var(--mid); font-size: 11px; line-height: 1.45;
+}
+/* 개인 제외 버튼 */
+.btn-person-exclude {
+  margin-left: auto; flex-shrink: 0;
+  padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700;
+  border: 1px solid rgba(196,42,54,0.25); background: rgba(196,42,54,0.05); color: #b91c1c;
+  cursor: pointer; transition: all 0.12s; font-family: var(--f-body);
+}
+.btn-person-exclude:hover { background: rgba(196,42,54,0.12); border-color: rgba(196,42,54,0.45); }
+.btn-person-exclude.is-excluded {
+  background: rgba(22,163,74,0.09); border-color: rgba(22,163,74,0.30); color: #15803d;
+}
+.btn-person-exclude.is-excluded:hover { background: rgba(22,163,74,0.18); }
+/* 완전 제외된 멤버 행 (편집 모드에서 흐릿하게) */
+.camp-team-member.is-fully-excluded { opacity: 0.45; }
+
 /* ── 팀 역할 토글 버튼 ── */
 .team-role-toggle {
   flex: 0 0 auto;
