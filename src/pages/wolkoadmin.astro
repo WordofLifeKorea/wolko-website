@@ -1269,56 +1269,66 @@
     function saveCustomMembers(list) {
       localStorage.setItem(`wolkoCustomMembers_${activeCamp}`, JSON.stringify(list));
     }
+    // 선택된 데이터 임시 저장 (DOM 의존 없이 추가 가능하도록 fallback)
+    let _cmPendingData = null;
+
     // 등록 명단에서 선택 시 폼 자동 입력
     // val 형식: 'r:regId' (스태프 신청자) | 'm:이름' (월코 로스터)
     function fillFromReg(val) {
+      _cmPendingData = null;
       const nameEl  = document.getElementById('cmName');
       const titleEl = document.getElementById('cmTitle');
       const roleEl  = document.getElementById('cmRole');
-      const clearForm = () => {
+
+      const applyData = (data) => {
+        _cmPendingData = data;
+        if (nameEl)  nameEl.value  = data.name;
+        if (titleEl) titleEl.value = data.title;
+        if (roleEl)  roleEl.value  = data.role;
+        document.querySelectorAll('.cm-team-check').forEach(cb => {
+          cb.checked = (data.teams || []).includes(cb.value);
+        });
+        if (nameEl) nameEl.focus();
+      };
+
+      if (!val) {
         if (nameEl)  nameEl.value  = '';
         if (titleEl) titleEl.value = '';
         document.querySelectorAll('.cm-team-check').forEach(cb => cb.checked = false);
-      };
-      if (!val) { clearForm(); return; }
-
+        return;
+      }
       if (val.startsWith('r:')) {
-        // 스태프 신청자
         const reg = allRegs.find(r => r.regId === val.slice(2));
         if (!reg) return;
-        if (nameEl)  nameEl.value  = reg.name  || '';
-        if (titleEl) titleEl.value = reg.church || '';
-        if (roleEl)  roleEl.value  = 'stw';
-        const autoTeams = staffTeams(reg);
-        document.querySelectorAll('.cm-team-check').forEach(cb => { cb.checked = autoTeams.includes(cb.value); });
+        applyData({ name: reg.name || '', title: reg.church || '', role: 'stw', teams: staffTeams(reg) });
       } else if (val.startsWith('m:')) {
-        // 월코 로스터 멤버
         const mName  = val.slice(2);
         const member = WOLKO_CAMP_ROSTER.find(m => m.name === mName || m.spouseName === mName);
         if (!member) return;
-        if (nameEl)  nameEl.value  = mName;
-        if (titleEl) titleEl.value = member.title || '';
-        if (roleEl)  roleEl.value  = member.role  || 'stw';
-        document.querySelectorAll('.cm-team-check').forEach(cb => { cb.checked = (member.teams || []).includes(cb.value); });
+        applyData({ name: mName, title: member.title || '', role: member.role || 'stw', teams: member.teams || [] });
       }
-      if (nameEl) nameEl.focus();
     }
 
     function addCustomMemberAction() {
-      const name      = document.getElementById('cmName')?.value.trim();
+      // DOM 값 우선, 없으면 _cmPendingData fallback
+      const name = document.getElementById('cmName')?.value.trim() || _cmPendingData?.name || '';
       if (!name) { document.getElementById('cmName')?.focus(); return; }
       const spouseName = document.getElementById('cmSpouse')?.value.trim() || '';
-      const title      = document.getElementById('cmTitle')?.value.trim() || '';
-      const role       = document.getElementById('cmRole')?.value || 'stw';
-      const teams      = Array.from(document.querySelectorAll('.cm-team-check:checked')).map(el => el.value);
+      const title  = document.getElementById('cmTitle')?.value.trim() || _cmPendingData?.title || '';
+      const role   = document.getElementById('cmRole')?.value || _cmPendingData?.role || 'stw';
+      const teamsFromDom = Array.from(document.querySelectorAll('.cm-team-check:checked')).map(el => el.value);
+      const teams  = teamsFromDom.length ? teamsFromDom : (_cmPendingData?.teams || []);
+
       const list = getCustomMembers();
       list.push({ id: 'cm_' + Date.now(), name, spouseName, title, role, teams, isCustom: true });
       saveCustomMembers(list);
-      // 폼 초기화
+
+      _cmPendingData = null;
       const sel = document.getElementById('cmRegSelect');
       if (sel) sel.value = '';
       fillFromReg('');
-      document.getElementById('cmSpouse') && (document.getElementById('cmSpouse').value = '');
+      const spouse = document.getElementById('cmSpouse');
+      if (spouse) spouse.value = '';
       renderCampTeamPanel();
     }
     function removeCustomMember(id) {
