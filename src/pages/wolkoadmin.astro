@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=34">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=35">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1480,8 +1480,8 @@
       const isLeader  = team ? personEffectiveRole(person, team) === 'leader' : false;
       const defR      = personDefaultRole(person);
       const roleText   = isLeader ? t('teamLeaderRole') : (person.role === 'intern' ? t('internRole') : t('staffRole'));
-      // 원래 팀이 있었는데 모든 팀에서 제외된 경우 → 미지정 카드에서 회색 처리
-      const isFullyExcluded = !team
+      // 원래 팀이 있었는데 모든 팀에서 제외된 경우 → 뷰 모드에서만 회색 처리 (편집 모드에선 해제)
+      const isFullyExcluded = !team && !teamPanelEditMode
         && person.defaultTeams && person.defaultTeams.length > 0
         && person.teams.filter(tm => getAllTeams().includes(tm)).length === 0;
 
