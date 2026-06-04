@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=30">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=31">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1098,6 +1098,35 @@
       return WOLKO_CAMP_ROSTER.filter(m => !(isInlandOnly && m.jeju));
     }
 
+    // ── 미지정 (커스텀) 멤버 ──
+    function getCustomMembers() {
+      try { return JSON.parse(localStorage.getItem(`wolkoCustomMembers_${activeCamp}`) || '[]'); }
+      catch { return []; }
+    }
+    function saveCustomMembers(list) {
+      localStorage.setItem(`wolkoCustomMembers_${activeCamp}`, JSON.stringify(list));
+    }
+    function addCustomMemberAction() {
+      const name      = document.getElementById('cmName')?.value.trim();
+      if (!name) { document.getElementById('cmName')?.focus(); return; }
+      const spouseName = document.getElementById('cmSpouse')?.value.trim() || '';
+      const title      = document.getElementById('cmTitle')?.value.trim() || '';
+      const role       = document.getElementById('cmRole')?.value || 'stw';
+      const teams      = Array.from(document.querySelectorAll('.cm-team-check:checked')).map(el => el.value);
+      const list = getCustomMembers();
+      list.push({ id: 'cm_' + Date.now(), name, spouseName, title, role, teams, isCustom: true });
+      saveCustomMembers(list);
+      renderCampTeamPanel();
+    }
+    function removeCustomMember(id) {
+      saveCustomMembers(getCustomMembers().filter(m => m.id !== id));
+      renderCampTeamPanel();
+    }
+    // 표준 + 커스텀 전체 로스터
+    function fullRosterForCamp(campId) {
+      return [...rosterForCamp(campId), ...getCustomMembers()];
+    }
+
     const CAMP_ROLE_SLOTS = [
       { key: 'director', label: '캠프 디렉터', cls: 'is-director' },
       { key: 'coord1',   label: '코디네이터 1', cls: '' },
@@ -1135,7 +1164,7 @@
       const teamsToShow = selectedTeam === 'all' ? STAFF_TEAMS : [selectedTeam];
       const campStaff   = allRegs.filter(r => r.registrationType === 'staff' && r.campId === activeCamp);
       const campLabel   = CAMP_LABELS[activeCamp] || activeCamp;
-      const roster      = rosterForCamp(activeCamp);
+      const roster      = fullRosterForCamp(activeCamp);
 
       const leaderCount = roster.filter(m =>
         getEffectiveTeams(m).some(t => teamsToShow.includes(t) && effectiveRole(m, t) === 'leader')
@@ -1165,6 +1194,26 @@
           </div>
         </div>
         ${renderCampRolesBar(roster)}
+        ${teamPanelEditMode ? `<div class="custom-member-add-bar">
+          <span class="custom-member-bar-label">미지정 인원 추가</span>
+          <div class="custom-member-form">
+            <input type="text" id="cmName" class="cm-input" placeholder="이름 *">
+            <input type="text" id="cmSpouse" class="cm-input" placeholder="배우자 이름">
+            <input type="text" id="cmTitle" class="cm-input cm-input-wide" placeholder="직책">
+            <select id="cmRole" class="cm-select">
+              <option value="missionary">팀 리더</option>
+              <option value="intern">인턴</option>
+              <option value="stw" selected>스태프</option>
+            </select>
+            <div class="cm-team-chips">
+              ${STAFF_TEAMS.map(t => `<label class="cm-team-chip ${getStaffTeamClass(t)}"><input type="checkbox" class="cm-team-check" value="${esc(t)}">${esc(t)}</label>`).join('')}
+            </div>
+            <button class="btn-cm-add" onclick="addCustomMemberAction()">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              추가
+            </button>
+          </div>
+        </div>` : ''}
         <div class="camp-team-filter">
           <button type="button" class="${selectedTeam === 'all' ? 'active' : ''}" onclick="selectTeamPanelFilter('all')">전체</button>
           ${STAFF_TEAMS.map(team => `<button type="button" class="${selectedTeam === team ? 'active' : ''}" onclick="selectTeamPanelFilter('${esc(team)}')">${esc(team)}</button>`).join('')}
@@ -1175,7 +1224,7 @@
     }
 
     function renderCampTeamCard(team, campStaff) {
-      const wolkoMembers = rosterForCamp(activeCamp).filter(m =>
+      const wolkoMembers = fullRosterForCamp(activeCamp).filter(m =>
         getEffectiveTeams(m).includes(team) &&
         (teamPanelEditMode || !isMemberFullyExcluded(m))
       );
@@ -1246,7 +1295,10 @@
         <span class="camp-team-member-title">${esc(member.title)}</span>
       `;
 
-      return `<div class="camp-team-member ${isLeader ? 'is-leader' : ''}${isFullExcluded ? ' is-fully-excluded' : ''}">
+      const customDeleteBtn = (member.isCustom && teamPanelEditMode)
+        ? `<button class="btn-custom-member-delete" onclick="removeCustomMember('${esc(member.id)}')" title="완전 삭제">×</button>`
+        : '';
+      return `<div class="camp-team-member ${isLeader ? 'is-leader' : ''}${isFullExcluded ? ' is-fully-excluded' : ''}${member.isCustom ? ' is-custom-member' : ''}">
         <div class="camp-team-member-info">${namesHtml}</div>
         <div class="camp-team-member-controls">
           <details class="member-team-picker">
@@ -1256,6 +1308,7 @@
           <button class="team-role-toggle${isLeader ? ' is-leader' : ''}${isRoleChanged ? ' is-custom' : ''}"
             onclick="toggleWolkoMemberRole('${esc(member.name)}','${esc(team)}')"
             title="클릭하여 역할 전환">${roleText}</button>
+          ${customDeleteBtn}
         </div>
       </div>`;
     }

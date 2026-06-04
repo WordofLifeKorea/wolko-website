@@ -1496,6 +1496,69 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .member-team-option.is-checked.team-worship  { background: #ffe9f1; border-color: #f2c5d5; color: #a64f70; }
 .member-team-option input { width: 13px; height: 13px; margin: 0; accent-color: #0d9488; flex-shrink: 0; }
 
+/* ── 미지정 인원 추가 폼 ── */
+.custom-member-add-bar {
+  padding: 12px 20px 14px;
+  background: rgba(254,243,199,0.55);
+  border-bottom: 1px solid rgba(217,119,6,0.15);
+}
+.custom-member-bar-label {
+  display: block; margin-bottom: 8px;
+  font-size: 10px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #b45309;
+}
+.custom-member-form {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+.cm-input {
+  padding: 5px 9px; border: 1.5px solid rgba(217,119,6,0.30);
+  border-radius: 7px; font-size: 12px; font-family: var(--f-body);
+  background: rgba(255,255,255,0.8); color: var(--dark); outline: none;
+  width: 100px; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.cm-input.cm-input-wide { width: 140px; }
+.cm-input:focus { border-color: rgba(217,119,6,0.65); box-shadow: 0 0 0 3px rgba(217,119,6,0.10); background:#fff; }
+.cm-select {
+  padding: 5px 9px; border: 1.5px solid rgba(217,119,6,0.30); border-radius: 7px;
+  font-size: 12px; font-family: var(--f-body); background: rgba(255,255,255,0.8);
+  color: var(--dark); outline: none; cursor: pointer;
+}
+.cm-team-chips { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.cm-team-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 9px; border: 1.5px solid #e3eaee; border-radius: 20px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  background: #f4f7f9; color: #8fa5b0; opacity: 0.6;
+  transition: opacity 0.12s;
+}
+.cm-team-chip:has(input:checked) { opacity: 1; }
+.cm-team-chip:has(input:checked).team-program  { background:#e5f3ff; border-color:#bfddf1; color:#2877a6; }
+.cm-team-chip:has(input:checked).team-class    { background:#fff3d7; border-color:#f3d89a; color:#9b690f; }
+.cm-team-chip:has(input:checked).team-counselor{ background:#e5f6eb; border-color:#bce3c9; color:#318152; }
+.cm-team-chip:has(input:checked).team-tech     { background:#f0eaff; border-color:#d7c8f3; color:#7053a0; }
+.cm-team-chip:has(input:checked).team-worship  { background:#ffe9f1; border-color:#f2c5d5; color:#a64f70; }
+.cm-team-chip input { display:none; }
+.btn-cm-add {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 13px; border-radius: 7px; font-size: 12px; font-weight: 700;
+  border: none; background: #b45309; color: #fff; cursor: pointer;
+  font-family: var(--f-body); transition: background 0.15s; white-space: nowrap;
+}
+.btn-cm-add:hover { background: #92400e; }
+
+/* 커스텀 멤버 삭제 버튼 */
+.btn-custom-member-delete {
+  width: 20px; height: 20px; padding: 0; border-radius: 4px;
+  border: 1px solid rgba(196,42,54,0.22); background: rgba(196,42,54,0.06);
+  color: #b91c1c; font-size: 13px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s; flex-shrink: 0;
+}
+.btn-custom-member-delete:hover { background: rgba(196,42,54,0.15); border-color: rgba(196,42,54,0.45); }
+/* 미지정 멤버 표시 (약한 주황 배경으로 구분) */
+.camp-team-member.is-custom-member { background: rgba(254,243,199,0.35); border-radius: 8px; }
+.camp-team-member.is-custom-member.is-leader { background: rgba(13,148,136,0.07); }
+
 /* ── 팀 패널 편집 모드 버튼 ── */
 .btn-team-panel-edit {
   display: inline-flex; align-items: center; gap: 5px;
