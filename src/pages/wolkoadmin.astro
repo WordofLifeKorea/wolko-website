@@ -1326,7 +1326,7 @@
       const campLabel = CAMP_LABELS[activeCamp] || activeCamp;
       const roster    = fullRosterForCamp(activeCamp);
       const persons   = getRosterPersons(activeCamp);
-      const visP      = teamPanelEditMode ? persons : persons.filter(p => !isPersonExcluded(p.displayName));
+      const visP      = persons;
 
       // 지원 스태프 신청자 → person 객체로 변환 (팀 배정·리더 등록 가능)
       const applicantPersons = campStaff.map(reg => ({
@@ -1338,9 +1338,7 @@
         teams: getPersonTeams(reg.name || '', staffTeams(reg)),
         isCustom: false,
       }));
-      const visApplicants = teamPanelEditMode
-        ? applicantPersons
-        : applicantPersons.filter(p => !isPersonExcluded(p.displayName));
+      const visApplicants = applicantPersons;
 
       const leaderP = visP.filter(p => p.teams.some(tm => getAllTeams().includes(tm) && personEffectiveRole(p, tm) === 'leader'));
       const memberP = visP.filter(p => p.teams.some(tm => getAllTeams().includes(tm) && personEffectiveRole(p, tm) === 'member'));
@@ -1481,7 +1479,6 @@
     function renderPersonRow(person, team, inPanel = false) {
       const isLeader  = team ? personEffectiveRole(person, team) === 'leader' : false;
       const defR      = personDefaultRole(person);
-      const isExcluded = isPersonExcluded(person.displayName);
       const roleText   = isLeader ? t('teamLeaderRole') : (person.role === 'intern' ? t('internRole') : t('staffRole'));
 
       const teamCbs = getAllTeams().map(tm => `
@@ -1499,14 +1496,14 @@
           </details>
           ${team ? `<button class="team-role-toggle${isLeader ? ' is-leader' : ''}"
             onclick="togglePersonRole('${esc(person.displayName)}','${esc(team)}','${defR}')">${roleText}</button>` : ''}
-          ${teamPanelEditMode ? `<button class="btn-person-exclude${isExcluded ? ' is-excluded' : ''}"
-            onclick="togglePersonExclusion('${esc(person.displayName)}')">${isExcluded ? t('restore') : t('exclude')}</button>` : ''}
+          ${team ? `<button class="btn-person-exclude"
+            onclick="togglePersonTeam('${esc(person.displayName)}','${esc(team)}',false,${esc(JSON.stringify(person.defaultTeams))})">${t('exclude')}</button>` : ''}
           ${person.isCustom && teamPanelEditMode ? `<button class="btn-custom-member-delete" onclick="removeCustomMember('${esc(person.memberId)}')">×</button>` : ''}
         </div>` : '';
 
-      return `<div class="camp-team-member${isLeader ? ' is-leader' : ''}${isExcluded ? ' is-fully-excluded' : ''}${person.isCustom ? ' is-custom-member' : ''}">
+      return `<div class="camp-team-member${isLeader ? ' is-leader' : ''}${person.isCustom ? ' is-custom-member' : ''}">
         <div class="camp-team-member-info">
-          <div class="couple-person-row${isExcluded ? ' is-excluded' : ''}">
+          <div class="couple-person-row">
             ${person.genderTag ? `<span class="couple-gender-tag">${person.genderTag}</span>` : ''}
             <strong>${esc(person.displayName)}</strong>
           </div>
