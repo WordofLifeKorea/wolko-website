@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=41">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=23">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -33,7 +33,7 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" data-t="loginTitle">관리자 로그인</p>
+      <p class="login-title">관리자 로그인</p>
       <div class="login-input-wrap">
         <input class="login-input" type="password" id="pwInput" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
         <button class="login-eye" id="eyeBtn" onclick="togglePw()" type="button" aria-label="비밀번호 표시">
@@ -52,19 +52,16 @@
   <header class="adm-header">
     <a class="adm-header-logo" href="/">
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
-      <span data-t="adminTitle">WOLKO 관리자</span>
+      <span>WOLKO 관리자</span>
     </a>
     <div class="adm-header-right">
-      <a href="/admin" target="_blank" class="adm-header-badge" style="text-decoration:none;cursor:pointer;" title="콘텐츠 편집 CMS">✏️ <span data-t="contentCms">콘텐츠 CMS</span></a>
+      <a href="/admin" target="_blank" class="adm-header-badge" style="text-decoration:none;cursor:pointer;" title="콘텐츠 편집 CMS">✏️ 콘텐츠 CMS</a>
       <span class="adm-header-badge">CAMP ADMIN</span>
       <button class="btn-install-adm" id="adminInstallBtn" onclick="triggerAdminInstall()" style="display:none">
         <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11.5h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span data-t="installApp">앱 설치</span>
+        앱 설치
       </button>
-      <button class="btn-lang-toggle" onclick="toggleAdminLang()" title="Language">
-        <span id="langToggleLabel">EN</span>
-      </button>
-      <button class="btn-logout" onclick="doLogout()"><span data-t="logout">로그아웃</span></button>
+      <button class="btn-logout" onclick="doLogout()">로그아웃</button>
     </div>
   </header>
 
@@ -77,29 +74,29 @@
       <table class="stats-tbl">
         <thead>
           <tr>
-            <th data-t="statTotal">총 신청</th>
-            <th data-t="statRemain">잔여 정원</th>
-            <th class="c-amber" data-t="statWaitlist">예비 신청</th>
-            <th class="c-teal" data-t="statStaff">스태프 지원</th>
+            <th>총 신청</th>
+            <th>잔여 정원</th>
+            <th class="c-amber">예비 신청</th>
+            <th class="c-teal">스태프 지원</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>
               <strong class="sv" id="dTotal">—</strong>
-              <small id="dTotalSub" data-t="statLoading">불러오는 중…</small>
+              <small id="dTotalSub">불러오는 중…</small>
             </td>
             <td>
               <strong class="sv c-green" id="dRemain">—</strong>
-              <small id="dRemainSub" data-t="statCapBasis">정원 기준</small>
+              <small id="dRemainSub">정원 기준</small>
             </td>
             <td>
               <strong class="sv c-amber" id="dWaitlist">—</strong>
-              <small id="dWaitlistSub" data-t="statWaitlistCount">예비 대기 인원</small>
+              <small id="dWaitlistSub">예비 대기 인원</small>
             </td>
             <td>
               <strong class="sv c-teal" id="dStaff">—</strong>
-              <small id="dStaffSub" data-t="statApplyStatus">지원 현황</small>
+              <small id="dStaffSub">지원 현황</small>
             </td>
           </tr>
         </tbody>
@@ -126,7 +123,7 @@
     <div class="table-section">
       <div class="table-toolbar">
         <div>
-          <span class="table-title" data-t="campRegTitle">캠프 신청 목록</span>
+          <span class="table-title">캠프 신청 목록</span>
           <span class="table-count" id="campTableCount"></span>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -134,13 +131,13 @@
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span data-t="editMode">수정 모드</span>
+            <span>수정 모드</span>
           </button>
           <button class="btn-csv" onclick="downloadCsv('camp')">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span data-t="csvDownload">CSV 다운로드</span>
+            CSV 다운로드
           </button>
         </div>
       </div>
@@ -149,31 +146,31 @@
           <thead>
             <tr>
               <th>#</th>
-              <th><button class="sort-btn" type="button" data-sort="status"><span data-t="thStatus">상태</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="camp"><span data-t="thCamp">캠프</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="type"><span data-t="thType">유형</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thName">이름</span></button></th>
-              <th><span data-t="thCounselor">담당 카운슬러</span></th>
-              <th><span data-t="thSalvation">구원</span></th>
-              <th><span data-t="thDedication">헌신</span></th>
-              <th><span data-t="thCounselorMemo">상담자 메모</span></th>
-              <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="email"><span data-t="thEmail">이메일</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="grade"><span data-t="thGrade">학년 / 인원</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="gender"><span data-t="thGender">성별</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="church"><span data-t="thChurch">교회</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="school"><span data-t="thSchool">학교</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="emergency"><span data-t="thEmergency">비상연락처</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="notes"><span data-t="thNotes">메모</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
-              <th><span data-t="thDelete">삭제</span></th>
+              <th><button class="sort-btn" type="button" data-sort="status">상태</button></th>
+              <th><button class="sort-btn" type="button" data-sort="camp">캠프</button></th>
+              <th><button class="sort-btn" type="button" data-sort="type">유형</button></th>
+              <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
+              <th>담당 카운슬러</th>
+              <th>구원</th>
+              <th>헌신</th>
+              <th>상담자 메모</th>
+              <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
+              <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
+              <th><button class="sort-btn" type="button" data-sort="grade">학년 / 인원</button></th>
+              <th><button class="sort-btn" type="button" data-sort="gender">성별</button></th>
+              <th><button class="sort-btn" type="button" data-sort="church">교회</button></th>
+              <th><button class="sort-btn" type="button" data-sort="school">학교</button></th>
+              <th><button class="sort-btn" type="button" data-sort="emergency">비상연락처</button></th>
+              <th><button class="sort-btn" type="button" data-sort="notes">메모</button></th>
+              <th><button class="sort-btn" type="button" data-sort="registeredAt">신청일시</button></th>
+              <th>삭제</th>
             </tr>
           </thead>
           <tbody id="campRegBody">
             <tr><td colspan="19">
               <div class="state-box">
                 <div class="spinner"></div>
-                <p data-t="loginFirst">로그인 후 자동으로 불러옵니다.</p>
+                <p>로그인 후 자동으로 불러옵니다.</p>
               </div>
             </td></tr>
           </tbody>
@@ -181,13 +178,11 @@
       </div>
     </div>
 
-    <div class="camp-team-panel" id="campTeamPanel" hidden></div>
-
     <!-- 스태프 지원 TABLE -->
     <div class="table-section staff-section" style="margin-top:28px;">
       <div class="table-toolbar">
         <div>
-          <span class="table-title" style="color:#0d9488;" data-t="staffRegTitle">스태프 · 봉사자 지원 목록</span>
+          <span class="table-title" style="color:#0d9488;">스태프 · 봉사자 지원 목록</span>
           <span class="table-count" id="staffTableCount"></span>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -195,36 +190,35 @@
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span data-t="editMode">수정 모드</span>
+            <span>수정 모드</span>
           </button>
           <button class="btn-csv" onclick="downloadCsv('staff')" style="background:rgba(13,148,136,0.08);color:#0d9488;border-color:rgba(13,148,136,0.2);">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span data-t="csvDownload">CSV 다운로드</span>
+            CSV 다운로드
           </button>
         </div>
       </div>
       <div class="table-scroll">
-        <table class="staff-reg-table">
+        <table>
           <thead>
             <tr>
-              <th><button class="sort-btn" type="button" data-sort="staffTeam"><span data-t="thTeam">팀</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thName">이름</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="gender"><span data-t="thGender">성별</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="church"><span data-t="thChurch">교회</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="notes"><span data-t="thApplicantMemo">신청자 메모</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="email"><span data-t="thEmail">이메일</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
-              <th><span data-t="thDelete">삭제</span></th>
+              <th><button class="sort-btn" type="button" data-sort="name">이름</button></th>
+              <th><button class="sort-btn" type="button" data-sort="gender">성별</button></th>
+              <th><button class="sort-btn" type="button" data-sort="church">교회</button></th>
+              <th><button class="sort-btn" type="button" data-sort="phone">연락처</button></th>
+              <th><button class="sort-btn" type="button" data-sort="serviceArea">섬기고 싶은 분야</button></th>
+              <th><button class="sort-btn" type="button" data-sort="email">이메일</button></th>
+              <th><button class="sort-btn" type="button" data-sort="registeredAt">신청일시</button></th>
+              <th>삭제</th>
             </tr>
           </thead>
           <tbody id="staffRegBody">
-            <tr><td colspan="9">
+            <tr><td colspan="8">
               <div class="state-box">
                 <div class="spinner"></div>
-                <p data-t="loginFirst">로그인 후 자동으로 불러옵니다.</p>
+                <p>로그인 후 자동으로 불러옵니다.</p>
               </div>
             </td></tr>
           </tbody>
@@ -252,209 +246,6 @@
   <div class="toast" id="toast"></div>
 
   <script is:inline>
-    // ── Language System ──
-    let adminLang = localStorage.getItem('wolkoAdminLang') || 'ko';
-    const STAFF_TEAMS_EN = { '프로그램':'Program','티칭':'Teaching','상담자':'Counseling','테크':'Tech','찬양팀':'Worship' };
-    function teamLabel(tm) { return adminLang === 'en' ? (STAFF_TEAMS_EN[tm] || tm) : tm; }
-    const ADMIN_T = {
-      ko: {
-        pageTitle:'관리자 — WOLKO 캠프 신청 현황',
-        adminTitle:'WOLKO 관리자', contentCms:'콘텐츠 CMS', logout:'로그아웃', installApp:'앱 설치',
-        loginTitle:'관리자 로그인', showPassword:'비밀번호 표시',
-        loginPw:'비밀번호를 입력하세요', loginVerifying:'확인 중…', loginBtn:'로그인',
-        loginRequired:'비밀번호를 입력해주세요.', loginWrong:'비밀번호가 올바르지 않습니다.',
-        campRegTitle:'캠프 신청 목록', editMode:'수정 모드', editing:'수정 중', csvDownload:'CSV 다운로드',
-        thStatus:'상태', thCamp:'캠프', thType:'유형', thName:'이름',
-        thCounselor:'담당 카운슬러', thSalvation:'구원', thDedication:'헌신',
-        thCounselorMemo:'상담자 메모', thPhone:'연락처', thEmail:'이메일',
-        thGrade:'학년 / 인원', thGender:'성별', thChurch:'교회', thSchool:'학교',
-        thEmergency:'비상연락처', thNotes:'메모', thDate:'신청일시', thDelete:'삭제',
-        staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
-        deleteConfirm:'정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
-        loginFirst:'로그인 후 자동으로 불러옵니다.', totalCapacity:'전체 정원 현황', statLoading:'불러오는 중…',
-        statTotal:'총 신청', statRemain:'잔여 정원', statWaitlist:'예비 신청', statStaff:'스태프 지원',
-        statCapBasis:'정원 기준', statWaitlistCount:'예비 대기 인원', statApplyStatus:'지원 현황',
-        teamPanelTitle:'팀 운영 현황',
-        leaderCountFn: n=>`팀 리더 ${n}명`, memberCountFn: n=>`멤버 ${n}명`, staffCountFn: n=>`지원 스태프 ${n}명`,
-        editBtn:'편집', doneBtn:'편집 완료', allFilter:'전체',
-        campDirector:'캠프 디렉터', coordinator:'코디네이터', unassigned:'— 미배정 —',
-        customMemberAdd:'미지정 인원 추가',
-        cmNamePh:'이름 *', cmSpousePh:'배우자 이름', cmTitlePh:'직책',
-        cmRoleLeader:'팀 리더', cmRoleIntern:'인턴', cmRoleStaff:'스태프', cmAddBtn:'추가',
-        husband:'남편', wife:'아내',
-        teamLeaderRole:'팀 리더', internRole:'인턴', staffRole:'월코 스태프',
-        teamAssign:'팀 배정', exclude:'제외', restore:'복귀',
-        noLeader:'배정된 리더가 없습니다.', noMember:'등록된 멤버가 없습니다.',
-        noApplicant:'이 팀을 선택한 지원자가 없습니다.',
-        teamLeaderSection:'팀 리더', memberSection:'멤버', applicantSection:'지원 스태프',
-        teamSaved:'팀 정보가 저장되었습니다.', teamSaveErr:'팀 저장 오류: ',
-        deleted:'신청이 삭제되었습니다.', deleteErr:'삭제 오류: ',
-        csvDone:'CSV 다운로드 완료!', csvStaffDone:'스태프 CSV 다운로드 완료!',
-        fieldSaved:'저장되었습니다.', fieldErr:'저장 오류: ',
-        unassignedTeam:'미등록 팀', allAssigned:'미등록 인원이 없습니다.',
-        createTeam:'팀 만들기', newTeamPh:'새 팀 이름 입력', createBtn:'만들기',
-        deleteTeam:'팀 삭제', customTeamsLabel:'사용자 정의 팀',
-        noPending:'스태프 지원 내역이 없습니다.', noRegs:'신청 내역이 없습니다.',
-        campEmpty:'등록된 스태프가 없습니다.',
-        noChurch:'교회 미입력', notEntered:'미입력', unset:'—',
-        male:'남', female:'여',
-        cmsLink:'콘텐츠 편집 (CMS) — wolko.org/admin', sheetsLink:'신청 백업 시트 (Google Sheets)',
-        selected:'선택됨', season:'시즌', applicationShort:'신청', remainingShort:'잔여',
-        capacityFn: n=>`정원 ${n}명`, tableCountFn: n=>`(${n}건)`, personCountFn: n=>`${n}명`,
-        dashboardTotalFn: (confirmed, pending)=>`명 · 확정 ${confirmed} · 미확정 ${pending}`,
-        waitlistCountFn: n=>`${n}명 예비 대기`, noData:'없음', staffCountFn2: n=>`${n}명 지원`,
-        capacityBasisFn: cap=>`정원 ${cap}명 기준`, capacityProgressFn: camp=>`${camp} 정원 현황 (확정 기준)`,
-        maleCountFn: n=>`남 ${n}명`, femaleCountFn: n=>`여 ${n}명`,
-        dataLoadFail:'데이터를 불러오지 못했습니다: ', dataLoadRetry:'데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.',
-        teamSettingsLoading:'팀 설정을 불러오는 중입니다...',
-        teamOverviewSyncErr:'팀 오버뷰 서버 동기화 실패: 로컬 설정을 임시로 사용합니다. ',
-        teamOverviewSaveErr:'팀 오버뷰 저장 실패: ',
-        noCampRegs:'캠프 신청 내역이 없습니다.', staffBadge:'스태프', groupBadge:'단체', individualBadge:'개인',
-        waitlistFn: n=>`예비${n ? ' ' + n : ''}`, confirmed:'최종확정', depositConfirmed:'예약금확인', pending:'대기중',
-        finalConfirmBtn:'최종확정', depositBtn:'예약금수납', unassignedShort:'미배정',
-        savedLabel:'구원', dedicatedLabel:'헌신', counselorMemoPh:'특이사항 | 기도제목',
-        studentListFn: (done, total, editing)=>`학생 명단 ${done} / ${total}명${editing ? ' 입력' : ''}`,
-        studentNamePh:'학생 이름', studentLabelFn: n=>`학생 ${n}`, genderSelect:'성별', genderMissing:'성별 미입력',
-        checkParticipants:'참여 인원 수를 확인해주세요.', nameMissing:'이름 없음',
-        chooseFromList:'— 명단에서 선택 —', wolkoStaff:'월코 스태프', staffApplicants:'스태프 신청자', orDirectInput:'또는 직접 입력',
-        customTeamOther:'기타', customTeamInputPh:'팀 이름 직접 입력...', teamSaveFail:'팀 저장 실패',
-        updateFail:'업데이트 실패', deleteFail:'삭제 실패', processFail:'처리 실패', confirmFail:'확정 실패',
-        depositConfirmMsg:'예약금 수납을 확인하시겠습니까?\n예약금 입금이 확인된 경우에만 진행해주세요.',
-        depositSuccess:'예약금 수납이 확인되었습니다. 알림톡을 발송했습니다.', errorPrefix:'오류: ',
-        finalConfirmMsg:'최종 확정하시겠습니까?\n잔금 입금이 모두 확인된 경우에만 진행해주세요.',
-        finalSuccess:'최종 확정되었습니다. 알림톡을 발송했습니다.', confirmErr:'확정 오류: ',
-        csvNoStaff:'다운로드할 스태프 데이터가 없습니다.', csvNoCamp:'다운로드할 신청 데이터가 없습니다.',
-        csvStaffFile:'스태프지원', csvCampFile:'신청목록',
-        installGuideTitle:'앱으로 설치하기', installGuideChrome:'Chrome 브라우저 메뉴에서 설치할 수 있어요.',
-        installGuideIos:'Safari 브라우저에서 설치할 수 있어요.',
-        installStepChrome1:'오른쪽 상단 ⋮ 메뉴 탭', installStepShare:'하단 가운데 공유 버튼 (□↑) 탭',
-        installStepHome:'"홈 화면에 추가" 선택', installStepAdd:'"추가" 탭', confirmBtn:'확인',
-        season2026Summer:'2026 여름', campGroupWolko:'WOLKO 캠프', campGroupUnion:'연합캠프',
-        campAll:'전체 캠프', campJunior2026:'2026 여름 주니어 영어 캠프', campUnion2026:'2026 교회 연합캠프',
-      },
-      en: {
-        pageTitle:'Admin — WOLKO Camp Registration',
-        adminTitle:'WOLKO Admin', contentCms:'Content CMS', logout:'Log Out', installApp:'Install App',
-        loginTitle:'Admin Login', showPassword:'Show password',
-        loginPw:'Enter password', loginVerifying:'Verifying…', loginBtn:'Login',
-        loginRequired:'Please enter your password.', loginWrong:'Incorrect password.',
-        campRegTitle:'Camp Registrations', editMode:'Edit Mode', editing:'Editing', csvDownload:'Export CSV',
-        thStatus:'Status', thCamp:'Camp', thType:'Type', thName:'Name',
-        thCounselor:'Counselor', thSalvation:'Saved', thDedication:'Dedicated',
-        thCounselorMemo:'Counselor Note', thPhone:'Phone', thEmail:'Email',
-        thGrade:'Grade / Count', thGender:'Gender', thChurch:'Church', thSchool:'School',
-        thEmergency:'Emergency', thNotes:'Notes', thDate:'Registered', thDelete:'Delete',
-        staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
-        deleteConfirm:'Delete this registration?\nThis action cannot be undone.',
-        loginFirst:'Data will load after login.', totalCapacity:'Overall Capacity', statLoading:'Loading…',
-        statTotal:'Total Reg.', statRemain:'Remaining', statWaitlist:'Waitlist', statStaff:'Staff Applied',
-        statCapBasis:'of capacity', statWaitlistCount:'on waitlist', statApplyStatus:'applications',
-        teamPanelTitle:'Team Overview',
-        leaderCountFn: n=>`${n} Leader${n!==1?'s':''}`,
-        memberCountFn: n=>`${n} Member${n!==1?'s':''}`,
-        staffCountFn: n=>`${n} Applied`,
-        editBtn:'Edit', doneBtn:'Done', allFilter:'All',
-        campDirector:'Camp Director', coordinator:'Coordinator', unassigned:'— Unassigned —',
-        customMemberAdd:'Add Custom Member',
-        cmNamePh:'Name *', cmSpousePh:'Spouse Name', cmTitlePh:'Title / Role',
-        cmRoleLeader:'Team Leader', cmRoleIntern:'Intern', cmRoleStaff:'Staff', cmAddBtn:'Add',
-        husband:'Husband', wife:'Wife',
-        teamLeaderRole:'Team Leader', internRole:'Intern', staffRole:'WOLKO Staff',
-        teamAssign:'Teams', exclude:'Exclude', restore:'Restore',
-        noLeader:'No leaders assigned.', noMember:'No members registered.',
-        noApplicant:'No applicants for this team.',
-        teamLeaderSection:'Team Leaders', memberSection:'Members', applicantSection:'Applied Staff',
-        teamSaved:'Team info saved.', teamSaveErr:'Team save error: ',
-        deleted:'Registration deleted.', deleteErr:'Delete error: ',
-        csvDone:'CSV download complete!', csvStaffDone:'Staff CSV download complete!',
-        fieldSaved:'Saved.', fieldErr:'Save error: ',
-        unassignedTeam:'Unregistered Team', allAssigned:'No unregistered people.',
-        createTeam:'Create Team', newTeamPh:'New team name', createBtn:'Create',
-        deleteTeam:'Delete Team', customTeamsLabel:'Custom Teams',
-        noPending:'No staff applications.', noRegs:'No registrations.',
-        campEmpty:'No staff registered.',
-        noChurch:'No church', notEntered:'N/A', unset:'—',
-        male:'M', female:'F',
-        cmsLink:'Content Editor (CMS) — wolko.org/admin', sheetsLink:'Registration Backup (Google Sheets)',
-        selected:'Selected', season:'Season', applicationShort:'Reg.', remainingShort:'Open',
-        capacityFn: n=>`Cap. ${n}`, tableCountFn: n=>`(${n})`, personCountFn: n=>`${n}`,
-        dashboardTotalFn: (confirmed, pending)=>`people · confirmed ${confirmed} · pending ${pending}`,
-        waitlistCountFn: n=>`${n} waitlisted`, noData:'None', staffCountFn2: n=>`${n} applied`,
-        capacityBasisFn: cap=>`capacity ${cap}`, capacityProgressFn: camp=>`${camp} capacity (confirmed)`,
-        maleCountFn: n=>`M ${n}`, femaleCountFn: n=>`F ${n}`,
-        dataLoadFail:'Could not load data: ', dataLoadRetry:'Could not load data.<br>Please try again shortly.',
-        teamSettingsLoading:'Loading team settings...',
-        teamOverviewSyncErr:'Team overview sync failed. Using local settings temporarily. ',
-        teamOverviewSaveErr:'Team overview save failed: ',
-        noCampRegs:'No camp registrations.', staffBadge:'Staff', groupBadge:'Group', individualBadge:'Individual',
-        waitlistFn: n=>`Waitlist${n ? ' ' + n : ''}`, confirmed:'Confirmed', depositConfirmed:'Deposit OK', pending:'Pending',
-        finalConfirmBtn:'Confirm', depositBtn:'Deposit',
-        unassignedShort:'Unassigned', savedLabel:'Saved', dedicatedLabel:'Dedicated', counselorMemoPh:'Notes | Prayer requests',
-        studentListFn: (done, total, editing)=>`Students ${done}/${total}${editing ? ' editing' : ''}`,
-        studentNamePh:'Student name', studentLabelFn: n=>`Student ${n}`, genderSelect:'Gender', genderMissing:'Gender missing',
-        checkParticipants:'Please check the participant count.', nameMissing:'No name',
-        chooseFromList:'— Select from list —', wolkoStaff:'WOLKO Staff', staffApplicants:'Staff Applicants', orDirectInput:'or enter manually',
-        customTeamOther:'Other', customTeamInputPh:'Enter team name...', teamSaveFail:'Failed to save team',
-        updateFail:'Update failed', deleteFail:'Delete failed', processFail:'Process failed', confirmFail:'Confirm failed',
-        depositConfirmMsg:'Confirm deposit received?\nProceed only after the deposit has been verified.',
-        depositSuccess:'Deposit confirmed. Kakao notification sent.', errorPrefix:'Error: ',
-        finalConfirmMsg:'Finalize this registration?\nProceed only after the remaining balance has been verified.',
-        finalSuccess:'Registration finalized. Kakao notification sent.', confirmErr:'Confirm error: ',
-        csvNoStaff:'No staff data to download.', csvNoCamp:'No camp registration data to download.',
-        csvStaffFile:'StaffApplications', csvCampFile:'CampRegistrations',
-        installGuideTitle:'Install as App', installGuideChrome:'Install from the Chrome browser menu.',
-        installGuideIos:'Install from Safari.',
-        installStepChrome1:'Tap the ⋮ menu in the upper right', installStepShare:'Tap the share button (□↑)',
-        installStepHome:'Choose "Add to Home Screen"', installStepAdd:'Tap "Add"', confirmBtn:'OK',
-        season2026Summer:'Summer 2026', campGroupWolko:'WOLKO Camps', campGroupUnion:'Union Camps',
-        campAll:'All Camps', campJunior2026:'2026 Summer Junior English Camp', campUnion2026:'2026 Church Union Camp',
-      }
-    };
-    function t(key) { return ADMIN_T[adminLang]?.[key] ?? ADMIN_T.ko?.[key] ?? key; }
-    function tt(key, ...args) {
-      const v = t(key);
-      return typeof v === 'function' ? v(...args) : v;
-    }
-    function applyLangToDOM() {
-      document.documentElement.lang = adminLang === 'en' ? 'en' : 'ko';
-      document.title = t('pageTitle');
-      document.querySelectorAll('[data-t]').forEach(el => {
-        const v = t(el.dataset.t);
-        if (typeof v === 'string') el.textContent = v;
-      });
-      const pwInput = document.getElementById('pwInput');
-      if (pwInput) pwInput.placeholder = t('loginPw');
-      const eyeBtn = document.getElementById('eyeBtn');
-      if (eyeBtn) eyeBtn.setAttribute('aria-label', t('showPassword'));
-      const langBtn = document.getElementById('langToggleLabel');
-      if (langBtn) langBtn.textContent = adminLang === 'ko' ? 'EN' : '한';
-      applyInstallGuideText();
-    }
-    function applyInstallGuideText() {
-      const titleEl = document.getElementById('admGuideTitle');
-      const descEl = document.getElementById('admGuideDesc');
-      const stepsEl = document.getElementById('admGuideSteps');
-      const okEl = document.getElementById('admGuideOk');
-      if (!descEl || !stepsEl) return;
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (titleEl) titleEl.textContent = t('installGuideTitle');
-      descEl.textContent = isIOS ? t('installGuideIos') : t('installGuideChrome');
-      stepsEl.innerHTML = isIOS
-        ? `<li>${t('installStepShare')}</li><li>${t('installStepHome')}</li><li>${t('installStepAdd')}</li>`
-        : `<li>${t('installStepChrome1')}</li><li>${t('installStepHome')}</li><li>${t('installStepAdd')}</li>`;
-      if (okEl) okEl.textContent = t('confirmBtn');
-    }
-    function toggleAdminLang() {
-      adminLang = adminLang === 'ko' ? 'en' : 'ko';
-      localStorage.setItem('wolkoAdminLang', adminLang);
-      applyLangToDOM();
-      buildCampCards();
-      updateCardStats();
-      renderTable();
-      renderDash();
-    }
-    applyLangToDOM();
-
     // ── 시즌 데이터 ──────────────────────────────────────────────────────────────
     // 새 시즌 추가 시 SEASONS 배열에 항목 추가 (최신 시즌이 마지막에 위치)
     const SEASONS = [
@@ -503,28 +294,6 @@
     const CAMP_LABELS = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.title]));
     const CAMP_CAP    = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.capacity]));
     const CAMP_DATES  = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.dateKo || '']));
-    const CAMP_TITLE_KEYS = {
-      all: 'campAll',
-      '2026-inland-english-junior': 'campJunior2026',
-      '2026-inland-union': 'campUnion2026',
-    };
-    const SEASON_LABEL_KEYS = {
-      '2026-summer': 'season2026Summer',
-    };
-    const CAMP_GROUP_LABEL_KEYS = {
-      wolko: 'campGroupWolko',
-      union: 'campGroupUnion',
-    };
-    function seasonDisplayName(season) {
-      if (!season) return t('allFilter');
-      return SEASON_LABEL_KEYS[season.id] ? t(SEASON_LABEL_KEYS[season.id]) : season.label;
-    }
-    function campGroupDisplayName(group) {
-      return CAMP_GROUP_LABEL_KEYS[group.group] ? t(CAMP_GROUP_LABEL_KEYS[group.group]) : group.label;
-    }
-    function campDisplayName(campId) {
-      return CAMP_TITLE_KEYS[campId] ? t(CAMP_TITLE_KEYS[campId]) : (CAMP_LABELS[campId] || campId || t('unset'));
-    }
     const CAMP_ROW_STYLES = {
       '2026-inland-english-junior': { bg: '#e6f5ff', border: '#3797c7' },
       '2026-inland-union': { bg: '#fff1c9', border: '#d49a18' },
@@ -547,286 +316,27 @@
       return CAMP_ROW_FALLBACK;
     }
 
-    const STAFF_TEAMS = ['프로그램', '티칭', '상담자', '테크', '찬양팀'];
+    const STAFF_TEAMS = ['프로그램', '수업', '상담자', '테크', '찬양팀'];
     const STAFF_TEAM_CLASSES = {
       '프로그램': 'team-program',
-      '티칭': 'team-class',
+      '수업': 'team-class',
       '상담자': 'team-counselor',
       '테크': 'team-tech',
       '찬양팀': 'team-worship',
     };
-    // 사용자 정의 팀 색상 순환 (최대 5가지)
-    const CUSTOM_TEAM_CLASSES = ['team-c1','team-c2','team-c3','team-c4','team-c5'];
-
-    // ── 사용자 정의 팀 ──
-    function getCustomTeams() {
-      return teamOverviewConfig.customTeams || [];
-    }
-    function saveCustomTeamsStore(list) {
-      teamOverviewConfig.customTeams = Array.isArray(list) ? list : [];
-      queueTeamOverviewSave();
-    }
-    function getAllTeams() { return [...STAFF_TEAMS, ...getCustomTeams()]; }
-    function addCustomTeamAction() {
-      const inp = document.getElementById('newTeamNameInput');
-      if (!inp) return;
-      const name = inp.value.trim();
-      if (!name) { inp.focus(); return; }
-      const list = getCustomTeams();
-      if (getAllTeams().includes(name)) { inp.select(); return; }
-      list.push(name);
-      saveCustomTeamsStore(list);
-      inp.value = '';
-      renderCampTeamPanel();
-      renderStaffTable(); // 스태프 테이블 팀 에디터 연동
-    }
-    function removeCustomTeamAction(name) {
-      saveCustomTeamsStore(getCustomTeams().filter(t_ => t_ !== name));
-      renderCampTeamPanel();
-      renderStaffTable();
-    }
-
-    function normalizeStaffTeam(team) {
-      return team === '수업' ? '티칭' : team;
-    }
 
     function getStaffTeamClass(team) {
-      if (STAFF_TEAM_CLASSES[team]) return STAFF_TEAM_CLASSES[team];
-      const ci = getCustomTeams().indexOf(team);
-      if (ci !== -1) return CUSTOM_TEAM_CLASSES[ci % CUSTOM_TEAM_CLASSES.length];
-      return 'team-other';
-    }
-
-    function staffTeams(reg) {
-      return String(reg.serviceArea || '').split(',').map(team => normalizeStaffTeam(team.trim())).filter(Boolean);
-    }
-
-    const TEAM_PANEL_CAMPS = new Set(['2026-inland-english-junior', '2026-inland-union']);
-    const WOLKO_CAMP_ROSTER = [
-      { name: '앤더슨 제이슨', spouseName: '앤더슨 찬주', title: '캠프 & 아웃리치 팀 코디네이터', role: 'missionary', teams: ['프로그램', '상담자'] },
-      { name: '민경찬', spouseName: '김유진', title: '코어트레이닝 코디네이터', role: 'missionary', teams: ['프로그램'] },
-      { name: '송승현', title: '월코 부대표 선교사', role: 'missionary', teams: ['프로그램', '상담자'] },
-      { name: '김환규', spouseName: '김씬띠아', title: '교육자료 개발 코디네이터', role: 'missionary', teams: ['티칭', '테크'] },
-      { name: '백남규', spouseName: '조안나', title: '선교사 | 제주 월비', role: 'missionary', teams: ['상담자', '티칭'], jeju: true },
-      { name: '몰스 제이콥', spouseName: '몰스 크리스탈', title: '월코 대표 · Field Director', role: 'missionary', teams: ['프로그램'] },
-      { name: '채병국', title: '선교사', role: 'missionary', teams: ['프로그램', '상담자'] },
-      { name: '니키 플로리카', title: '영어 수업 자료 코디네이터', role: 'intern', teams: ['티칭'] },
-      { name: '잭 프래지어', title: 'Launch Internship · 제자훈련 & 영어 교육', role: 'intern', teams: ['티칭', '상담자'] },
-      { name: '몰리 그램', title: 'Cross Cultural Internship · 지역 교회 & 캠프', role: 'intern', teams: ['상담자', '프로그램'] },
-      { name: '버니 카브레라', title: '카운슬러 & 찬양 인도자', role: 'intern', teams: ['찬양팀', '상담자'], jeju: true },
-      { name: '박예능', title: '복음 전도팀 · 프로그램 진행', role: 'stw', teams: ['프로그램', '찬양팀'] },
-      { name: '정지온', title: '캠프 A/S 코디네이터', role: 'stw', teams: ['상담자'], jeju: true },
-      { name: '브링클리 모슬리', title: '마케팅 코디네이터', role: 'stw', teams: ['테크'], jeju: true },
-      { name: '웹스터 그레이스', title: '팟캐스트 미디어 사역', role: 'stw', teams: ['테크'], jeju: true },
-      { name: '손진영', title: '회계 | 캠프 보조', role: 'stw', teams: ['프로그램'] },
-    ];
-    // 표시용 이름 (기혼자는 "남편 · 아내")
-    function memberDisplayName(m) {
-      return m.spouseName ? `${m.name} · ${m.spouseName}` : m.name;
+      return STAFF_TEAM_CLASSES[team] || 'team-other';
     }
 
     let allRegs = [];
     let activeCamp = 'all';
     let activeSeason = SEASONS[SEASONS.length - 1].id; // 최신 시즌 기본 선택
     let sortState = { key: 'registeredAt', direction: 'desc' };
-    let activeTeamFilter = 'all';
     let authToken = sessionStorage.getItem('wolko-admin-token') || '';
     let staffEditMode = false;
     let camperEditMode = false;
-    let teamPanelEditMode = false;
-    let activeStatPanel = null; // 'leaders' | 'members' | 'staff' | null
     const expandedGroupParticipants = new Set();
-    const UNASSIGNED = '__unassigned__';
-    let teamOverviewConfig = emptyTeamOverviewConfig();
-    let teamOverviewConfigCamp = null;
-    let teamOverviewLoadPromise = null;
-    let teamOverviewLoadingCamp = null;
-    let teamOverviewSaveTimer = null;
-
-    function emptyTeamOverviewConfig() {
-      return {
-        customTeams: [],
-        personRoles: {},
-        personTeams: {},
-        campExclude: [],
-        campRoles: {},
-        customMembers: [],
-      };
-    }
-
-    function normalizeTeamOverviewConfig(config) {
-      const source = config && typeof config === 'object' && !Array.isArray(config) ? config : {};
-      return {
-        customTeams: normalizeTeamList(source.customTeams),
-        personRoles: normalizePersonRoleMap(source.personRoles),
-        personTeams: normalizePersonTeamMap(source.personTeams),
-        campExclude: Array.isArray(source.campExclude) ? source.campExclude : [],
-        campRoles: source.campRoles && typeof source.campRoles === 'object' && !Array.isArray(source.campRoles) ? source.campRoles : {},
-        customMembers: normalizeCustomMembers(source.customMembers),
-      };
-    }
-
-    function normalizeTeamName(team) {
-      return normalizeStaffTeam(String(team || '').trim());
-    }
-
-    function normalizeTeamList(list) {
-      if (!Array.isArray(list)) return [];
-      return [...new Set(list.map(normalizeTeamName).filter(Boolean))];
-    }
-
-    function normalizePersonTeamMap(map) {
-      if (!map || typeof map !== 'object' || Array.isArray(map)) return {};
-      return Object.fromEntries(Object.entries(map).map(([name, teams]) => [name, normalizeTeamList(teams)]));
-    }
-
-    function normalizePersonRoleMap(map) {
-      if (!map || typeof map !== 'object' || Array.isArray(map)) return {};
-      const next = {};
-      Object.entries(map).forEach(([key, role]) => {
-        const sep = key.indexOf('\x00');
-        if (sep === -1) {
-          next[key] = role;
-          return;
-        }
-        const name = key.slice(0, sep);
-        const team = normalizeTeamName(key.slice(sep + 1));
-        if (name && team) next[`${name}\x00${team}`] = role;
-      });
-      return next;
-    }
-
-    function normalizeCustomMembers(list) {
-      if (!Array.isArray(list)) return [];
-      return list.map(member => {
-        if (!member || typeof member !== 'object') return member;
-        return { ...member, teams: normalizeTeamList(member.teams) };
-      }).filter(Boolean);
-    }
-
-    function mergeTeamOverviewConfig(serverConfig, localConfig) {
-      const server = normalizeTeamOverviewConfig(serverConfig);
-      const local = normalizeTeamOverviewConfig(localConfig);
-      const personTeams = { ...server.personTeams };
-      Object.entries(local.personTeams).forEach(([name, localTeams]) => {
-        if (!Array.isArray(personTeams[name]) || personTeams[name].length === 0) {
-          personTeams[name] = localTeams;
-        }
-      });
-      return normalizeTeamOverviewConfig({
-        customTeams: [...server.customTeams, ...local.customTeams],
-        personRoles: { ...local.personRoles, ...server.personRoles },
-        personTeams,
-        campExclude: [...server.campExclude, ...local.campExclude],
-        campRoles: { ...local.campRoles, ...server.campRoles },
-        customMembers: server.customMembers.length ? server.customMembers : local.customMembers,
-      });
-    }
-
-    function sameTeamOverviewConfig(a, b) {
-      return JSON.stringify(normalizeTeamOverviewConfig(a)) === JSON.stringify(normalizeTeamOverviewConfig(b));
-    }
-
-    function hasTeamOverviewData(config) {
-      const c = normalizeTeamOverviewConfig(config);
-      return c.customTeams.length > 0
-        || Object.keys(c.personRoles).length > 0
-        || Object.keys(c.personTeams).length > 0
-        || c.campExclude.length > 0
-        || Object.keys(c.campRoles).length > 0
-        || c.customMembers.length > 0;
-    }
-
-    function readJsonStore(key, fallback) {
-      try {
-        const value = localStorage.getItem(key);
-        return value ? JSON.parse(value) : fallback;
-      } catch {
-        return fallback;
-      }
-    }
-
-    function getLocalTeamOverviewConfig(campId) {
-      return normalizeTeamOverviewConfig({
-        customTeams: readJsonStore('wolkoCustomTeams', []),
-        personRoles: readJsonStore(`wolkoTeamRoles_${campId}`, {}),
-        personTeams: readJsonStore(`wolkoTeamAssign_${campId}`, {}),
-        campExclude: readJsonStore(`wolkoCampExclude_${campId}`, []),
-        campRoles: readJsonStore(`wolkoCampRoles_${campId}`, {}),
-        customMembers: readJsonStore(`wolkoCustomMembers_${campId}`, []),
-      });
-    }
-
-    async function loadTeamOverviewConfig(campId) {
-      if (!TEAM_PANEL_CAMPS.has(campId)) {
-        teamOverviewConfig = emptyTeamOverviewConfig();
-        teamOverviewConfigCamp = null;
-        return;
-      }
-      if (teamOverviewConfigCamp === campId) return;
-      if (teamOverviewLoadPromise && teamOverviewLoadingCamp === campId) return teamOverviewLoadPromise;
-
-      teamOverviewLoadingCamp = campId;
-      teamOverviewLoadPromise = (async () => {
-        const localConfig = getLocalTeamOverviewConfig(campId);
-        try {
-          const res = await fetch(`/api/admin/team-overview?campId=${encodeURIComponent(campId)}`, {
-            headers: authHeaders(),
-          });
-          if (res.status === 401) {
-            sessionStorage.removeItem('wolko-admin-token');
-            location.reload();
-            return;
-          }
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          const serverConfig = normalizeTeamOverviewConfig(data.config);
-          const mergedConfig = hasTeamOverviewData(localConfig)
-            ? mergeTeamOverviewConfig(serverConfig, localConfig)
-            : serverConfig;
-          teamOverviewConfig = hasTeamOverviewData(mergedConfig) ? mergedConfig : localConfig;
-          teamOverviewConfigCamp = campId;
-          if (hasTeamOverviewData(teamOverviewConfig) && !sameTeamOverviewConfig(teamOverviewConfig, serverConfig)) {
-            await saveTeamOverviewConfig(true);
-          }
-        } catch (e) {
-          teamOverviewConfig = localConfig;
-          teamOverviewConfigCamp = campId;
-          if (hasTeamOverviewData(localConfig)) {
-            showToast(t('teamOverviewSyncErr') + e.message, 'error');
-          }
-        } finally {
-          teamOverviewLoadPromise = null;
-          teamOverviewLoadingCamp = null;
-        }
-      })();
-      return teamOverviewLoadPromise;
-    }
-
-    function queueTeamOverviewSave() {
-      if (!TEAM_PANEL_CAMPS.has(activeCamp)) return;
-      clearTimeout(teamOverviewSaveTimer);
-      teamOverviewSaveTimer = setTimeout(() => {
-        saveTeamOverviewConfig().catch(e => {
-          showToast(t('teamOverviewSaveErr') + e.message, 'error');
-        });
-      }, 250);
-    }
-
-    async function saveTeamOverviewConfig(silent = false) {
-      const campId = teamOverviewConfigCamp || activeCamp;
-      if (!TEAM_PANEL_CAMPS.has(campId)) return;
-      const config = normalizeTeamOverviewConfig(teamOverviewConfig);
-      const res = await fetch('/api/admin/team-overview', {
-        method: 'PUT',
-        headers: authHeaders(),
-        body: JSON.stringify({ campId, config }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-      teamOverviewConfig = normalizeTeamOverviewConfig(data.config || config);
-      teamOverviewConfigCamp = campId;
-    }
 
     // ── Login ──
     function togglePw() {
@@ -850,10 +360,10 @@
       const btn = document.getElementById('loginBtn');
       const errEl = document.getElementById('loginError');
       const inputEl = document.getElementById('pwInput');
-      if (!pw) { errEl.textContent = t('loginRequired'); return; }
+      if (!pw) { errEl.textContent = '비밀번호를 입력해주세요.'; return; }
 
       btn.disabled = true;
-      btn.textContent = t('loginVerifying');
+      btn.textContent = '확인 중…';
       errEl.textContent = '';
       inputEl.classList.remove('error');
 
@@ -864,7 +374,7 @@
           body: JSON.stringify({ password: pw }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || t('loginWrong'));
+        if (!res.ok) throw new Error(data.error || '로그인 실패');
 
         authToken = data.token;
         sessionStorage.setItem('wolko-admin-token', authToken);
@@ -872,14 +382,13 @@
         const screen = document.getElementById('loginScreen');
         screen.classList.add('hidden');
         setTimeout(() => screen.style.display = 'none', 400);
-        applyLangToDOM();
         loadRegs();
       } catch (e) {
         errEl.textContent = e.message;
         inputEl.classList.add('error');
       } finally {
         btn.disabled = false;
-        btn.textContent = t('loginBtn');
+        btn.textContent = '로그인';
       }
     }
 
@@ -904,18 +413,18 @@
       card.innerHTML = `
         <div class="camp-card-top">
           <span class="camp-card-kicker">${kicker}</span>
-          <span class="camp-card-badge">${t('selected')}</span>
+          <span class="camp-card-badge">선택됨</span>
         </div>
         <div class="camp-card-title">${title}</div>
         <div class="camp-card-stats">
           <div class="camp-card-stat">
             <div class="camp-card-stat-val" id="card-${id}-reg">—</div>
-            <div class="camp-card-stat-lbl">${t('applicationShort')}</div>
+            <div class="camp-card-stat-lbl">신청</div>
           </div>
           <div class="camp-card-sep"></div>
           <div class="camp-card-stat">
             <div class="camp-card-stat-val green" id="card-${id}-cap">—</div>
-            <div class="camp-card-stat-lbl">${t('remainingShort')}</div>
+            <div class="camp-card-stat-lbl">잔여</div>
           </div>
         </div>
       `;
@@ -926,7 +435,6 @@
     function selectSeason(id) {
       activeSeason = id;
       activeCamp = 'all';
-      loadTeamOverviewConfig(activeCamp);
       buildCampCards();
       renderTable();
       renderDash();
@@ -943,31 +451,31 @@
       card.className = 'camp-card camp-season-card active';
       card.dataset.id = 'all';
       const season = SEASONS.find(s => s.id === activeSeason);
-      const label = seasonDisplayName(season);
+      const label = season ? season.label : '전체';
       const idx = SEASONS.findIndex(s => s.id === activeSeason);
       const hasPrev = idx > 0;
       const hasNext = idx < SEASONS.length - 1;
       const navHtml = SEASONS.length > 1 ? `
         <div class="season-card-nav">
           <select class="season-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();selectSeason(this.value)">
-            ${SEASONS.map(s => `<option value="${s.id}"${s.id === activeSeason ? ' selected' : ''}>${seasonDisplayName(s)}</option>`).join('')}
+            ${SEASONS.map(s => `<option value="${s.id}"${s.id === activeSeason ? ' selected' : ''}>${s.label}</option>`).join('')}
           </select>
         </div>` : `<div class="camp-card-title">${label}</div>`;
       card.innerHTML = `
         <div class="camp-card-top">
-          <span class="camp-card-kicker">${t('season')}</span>
-          <span class="camp-card-badge">${t('selected')}</span>
+          <span class="camp-card-kicker">시즌</span>
+          <span class="camp-card-badge">선택됨</span>
         </div>
         ${navHtml}
         <div class="camp-card-stats">
           <div class="camp-card-stat">
             <div class="camp-card-stat-val" id="card-all-reg">—</div>
-            <div class="camp-card-stat-lbl">${t('applicationShort')}</div>
+            <div class="camp-card-stat-lbl">신청</div>
           </div>
           <div class="camp-card-sep"></div>
           <div class="camp-card-stat">
             <div class="camp-card-stat-val green" id="card-all-cap">—</div>
-            <div class="camp-card-stat-lbl">${t('remainingShort')}</div>
+            <div class="camp-card-stat-lbl">잔여</div>
           </div>
         </div>`;
       card.onclick = () => selectCamp('all');
@@ -980,7 +488,7 @@
       wrap.appendChild(makeSeasonCard());
       const currentSeasonGroups = SEASONS.find(s => s.id === activeSeason)?.groups || [];
       currentSeasonGroups.forEach(group => group.camps.forEach(c => {
-        wrap.appendChild(makeCard(c.id, `${campGroupDisplayName(group)} · ${tt('capacityFn', c.capacity)}`, campDisplayName(c.id), c.capacity));
+        wrap.appendChild(makeCard(c.id, `${group.label} · 정원 ${c.capacity}명`, c.title, c.capacity));
       }));
     }
 
@@ -1009,12 +517,11 @@
       });
     }
 
-    async function selectCamp(id) {
+    function selectCamp(id) {
       activeCamp = id;
       document.querySelectorAll('.camp-card').forEach(c =>
         c.classList.toggle('active', c.dataset.id === id)
       );
-      await loadTeamOverviewConfig(activeCamp);
       renderTable();
       renderDash();
     }
@@ -1033,15 +540,14 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         allRegs = data.registrations || [];
-        await loadTeamOverviewConfig(activeCamp);
         updateCardStats();
         renderTable();
         renderDash();
       } catch (e) {
-        showToast(t('dataLoadFail') + e.message, 'error');
-        const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>${t('dataLoadRetry')}</p></div>`;
+        showToast('데이터를 불러오지 못했습니다: ' + e.message, 'error');
+        const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p></div>`;
         document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="19">${errHtml}</td></tr>`;
-        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="9">${errHtml}</td></tr>`;
+        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="8">${errHtml}</td></tr>`;
       }
     }
 
@@ -1064,18 +570,9 @@
     }
 
     function sortValue(reg, key) {
-      if (key === 'camp') return campDisplayName(reg.campId);
+      if (key === 'camp') return CAMP_LABELS[reg.campId] || reg.campId || '';
       if (key === 'type') return reg.registrationType === 'group' ? '단체' : '개인';
-      if (key === 'staffTeam') {
-        const teams = staffTeams(reg);
-        const primary = teams[0] || '';
-        const teamOrder = STAFF_TEAMS.includes(primary) ? STAFF_TEAMS.indexOf(primary) : STAFF_TEAMS.length;
-        return `${String(teamOrder).padStart(2, '0')}-${primary}-${reg.name || ''}`;
-      }
-      if (key === 'status') {
-        const s = reg.status || (reg.confirmed !== false ? 'confirmed' : 'pending');
-        return s === 'confirmed' ? '3-confirmed' : s === 'deposit' ? '2-deposit' : '1-pending';
-      }
+      if (key === 'status') { const s = reg.status || (reg.confirmed !== false ? 'confirmed' : 'pending'); return s === 'confirmed' ? '최종확정' : s === 'deposit' ? '예약금확인' : '대기중'; }
       if (key === 'grade') return reg.registrationType === 'group' ? (reg.groupCount || 0) : (reg.grade || '');
       if (key === 'gender') {
         if (reg.registrationType === 'group') return `${reg.maleCount || 0}-${reg.femaleCount || 0}`;
@@ -1152,16 +649,16 @@
       const staffCount = staffRegs.length;
 
       document.getElementById('dTotal').textContent = total;
-      document.getElementById('dTotalSub').textContent = tt('dashboardTotalFn', confirmed, pending);
+      document.getElementById('dTotalSub').textContent = `명 · 확정 ${confirmed} · 미확정 ${pending}`;
       document.getElementById('dWaitlist').textContent = waitlistCount;
-      document.getElementById('dWaitlistSub').textContent = waitlistCount > 0 ? tt('waitlistCountFn', waitlistCount) : t('noData');
+      document.getElementById('dWaitlistSub').textContent = waitlistCount > 0 ? `명 예비 대기` : '없음';
       document.getElementById('dStaff').textContent = staffCount;
-      document.getElementById('dStaffSub').textContent = staffCount > 0 ? tt('staffCountFn2', staffCount) : t('noData');
+      document.getElementById('dStaffSub').textContent = staffCount > 0 ? `명 지원` : '없음';
       document.getElementById('dRemain').textContent = remain;
-      document.getElementById('dRemainSub').textContent = tt('capacityBasisFn', cap);
+      document.getElementById('dRemainSub').textContent = `정원 ${cap}명 기준`;
 
-      const campName = activeCamp === 'all' ? t('campAll') : campDisplayName(activeCamp);
-      document.getElementById('progressLabel').textContent = tt('capacityProgressFn', campName);
+      const campName = CAMP_LABELS[activeCamp] || '전체';
+      document.getElementById('progressLabel').textContent = campName + ' 정원 현황 (확정 기준)';
       document.getElementById('progressPct').textContent = pct + '%';
 
       const fillM = document.getElementById('progressFillM');
@@ -1177,22 +674,21 @@
         fillF.style.width = '0%';
       }
 
-      document.getElementById('progressGenderM').textContent = maleTotal > 0 ? tt('maleCountFn', maleTotal) : '';
-      document.getElementById('progressGenderF').textContent = femaleTotal > 0 ? tt('femaleCountFn', femaleTotal) : '';
+      document.getElementById('progressGenderM').textContent = maleTotal > 0 ? `남 ${maleTotal}명` : '';
+      document.getElementById('progressGenderF').textContent = femaleTotal > 0 ? `여 ${femaleTotal}명` : '';
     }
 
     // ── Tables ──
     function renderTable() {
       updateSortButtons();
       renderCampTable();
-      renderCampTeamPanel();
       renderStaffTable();
     }
 
     function renderCampTable() {
       const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
       const tbody = document.getElementById('campRegBody');
-      document.getElementById('campTableCount').textContent = tt('tableCountFn', regs.length);
+      document.getElementById('campTableCount').textContent = `(${regs.length}건)`;
 
       if (regs.length === 0) {
         tbody.innerHTML = `
@@ -1202,7 +698,7 @@
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
                 <path d="M14 14h12M14 20h8M14 26h6" stroke="#8fa8b5" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
-              <p>${t('noCampRegs')}</p>
+              <p>캠프 신청 내역이 없습니다.</p>
             </div>
           </td></tr>`;
         return;
@@ -1211,45 +707,48 @@
       tbody.innerHTML = regs.map((r, i) => {
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
-        const campLabel = campDisplayName(r.campId);
+        const campLabel = CAMP_LABELS[r.campId] || r.campId;
         const typeBadge = r.registrationType === 'staff'
-          ? `<span class="badge" style="background:rgba(13,148,136,0.12);color:#0d9488;">${t('staffBadge')}</span>`
+          ? `<span class="badge" style="background:rgba(13,148,136,0.12);color:#0d9488;">스태프</span>`
           : r.registrationType === 'group'
-          ? `<span class="badge badge-group">${t('groupBadge')}</span>`
-          : `<span class="badge badge-individual">${t('individualBadge')}</span>`;
-        const gradeOrCount = r.registrationType === 'group' ? tt('personCountFn', r.groupCount) : (r.grade || '—');
+          ? `<span class="badge badge-group">단체</span>`
+          : `<span class="badge badge-individual">개인</span>`;
+        const gradeOrCount = r.registrationType === 'group' ? `${r.groupCount}명` : (r.grade || '—');
 
         let genderCell;
         if (r.registrationType === 'group') {
           const m = r.maleCount || 0, f = r.femaleCount || 0;
           genderCell = (m > 0 || f > 0)
-            ? `<span style="font-size:12px;white-space:nowrap"><span style="color:#3b82f6;font-weight:600">${t('male')} ${m}</span> · <span style="color:#ec4899;font-weight:600">${t('female')} ${f}</span></span>`
+            ? `<span style="font-size:12px;white-space:nowrap"><span style="color:#3b82f6;font-weight:600">남 ${m}</span> · <span style="color:#ec4899;font-weight:600">여 ${f}</span></span>`
             : `<span style="color:var(--light)">—</span>`;
         } else {
           genderCell = r.gender === 'male'
-            ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">${t('male')}</span>`
+            ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">남</span>`
             : r.gender === 'female'
-            ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">${t('female')}</span>`
+            ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">여</span>`
             : `<span style="color:var(--light)">—</span>`;
         }
 
         // 상태 셀: 3단계 (대기중 → 예약금수납 → 최종확정)
         const regStatus = r.status || (r.confirmed !== false ? 'confirmed' : 'pending');
         const waitlistBadge = r.isWaitlist
-          ? `<span style="display:inline-block;padding:2px 7px;border-radius:100px;background:rgba(217,119,6,0.15);color:#b45309;font-size:10px;font-weight:700;margin-left:3px;">${tt('waitlistFn', r.waitlistNumber)}</span>`
+          ? `<span style="display:inline-block;padding:2px 7px;border-radius:100px;background:rgba(217,119,6,0.15);color:#b45309;font-size:10px;font-weight:700;margin-left:3px;">예비${r.waitlistNumber ? ' ' + r.waitlistNumber : ''}</span>`
           : '';
         let statusCell;
         if (regStatus === 'confirmed') {
-          statusCell = `<span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,0.12);color:#16a34a;font-size:11px;font-weight:700;">${t('confirmed')}</span>${waitlistBadge}</span>`;
+          statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
+            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,0.12);color:#16a34a;font-size:11px;font-weight:700;">최종확정</span>${waitlistBadge}</span>
+            <button class="btn-revert" onclick="revertReg('${r.regId}','${r.campId}')">↩예약금</button>
+          </span>`;
         } else if (regStatus === 'deposit') {
           statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
-            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">${t('depositConfirmed')}</span>${waitlistBadge}</span>
-            <button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">${t('finalConfirmBtn')}</button>
+            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">예약금확인</span>${waitlistBadge}</span>
+            <button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">최종확정</button>
           </span>`;
         } else {
           statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
-            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">${t('pending')}</span>${waitlistBadge}</span>
-            <button class="btn-confirm btn-deposit" onclick="depositReg('${r.regId}','${r.campId}')">${t('depositBtn')}</button>
+            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">대기중</span>${waitlistBadge}</span>
+            <button class="btn-confirm btn-deposit" onclick="depositReg('${r.regId}','${r.campId}')">예약금수납</button>
           </span>`;
         }
         const campStyle = getCampRowStyle(r);
@@ -1267,19 +766,19 @@
         const counselorCell = r.registrationType === 'group'
           ? '<span class="camper-na">—</span>'
           : `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorRegId" onchange="updateField(this)">
-              <option value="">${t('unassignedShort')}</option>
+              <option value="">미배정</option>
               ${staffOptions}
             </select>`;
         const salvationCell = r.registrationType === 'group'
           ? '<span class="camper-na">—</span>'
-          : `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="saved" onchange="updateField(this)"${r.saved ? ' checked' : ''}><span>${t('savedLabel')}</span></label>`;
+          : `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="saved" onchange="updateField(this)"${r.saved ? ' checked' : ''}><span>구원</span></label>`;
         const dedicationCell = r.registrationType === 'group'
           ? '<span class="camper-na">—</span>'
-          : `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="dedicated" onchange="updateField(this)"${r.dedicated ? ' checked' : ''}><span>${t('dedicatedLabel')}</span></label>`;
+          : `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="dedicated" onchange="updateField(this)"${r.dedicated ? ' checked' : ''}><span>헌신</span></label>`;
         const counselorMemoCell = r.registrationType === 'group'
           ? '<span class="camper-na">—</span>'
           : camperEditMode
-          ? `<input class="edit-input edit-input-wide" type="text" value="${esc(r.counselorMemo || '')}" placeholder="${t('counselorMemoPh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorMemo" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
+          ? `<input class="edit-input edit-input-wide" type="text" value="${esc(r.counselorMemo || '')}" placeholder="특이사항 | 기도제목" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorMemo" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
           : `<span class="${r.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(r.counselorMemo || '')}">${esc(r.counselorMemo || '—')}</span>`;
         const groupParticipants = r.registrationType === 'group'
           ? Array.from(
@@ -1297,8 +796,8 @@
               <td></td>
               <td colspan="18">
                 <button class="group-participant-toggle${isExpanded ? ' expanded' : ''}" type="button" data-regid="${esc(r.regId)}" aria-expanded="${isExpanded}" onclick="toggleGroupParticipants(this.dataset.regid)">
-                  <svg class="group-participant-toggle-icon" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M2.5 4.5l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span>${tt('studentListFn', completedParticipants, groupParticipants.length, camperEditMode)}</span>
+                  <span class="group-participant-toggle-icon">⌄</span>
+                  <span>학생 명단 ${completedParticipants} / ${groupParticipants.length}명${camperEditMode ? ' 입력' : ''}</span>
                 </button>
               </td>
             </tr>`;
@@ -1306,39 +805,39 @@
             return toggleRow + groupParticipants.map((participant, participantIndex) => {
               const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
               const participantName = camperEditMode
-                ? `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="${t('studentNamePh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
-                : `<span class="${participant.name ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(participant.name || t('notEntered'))}</span>`;
+                ? `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="학생 이름" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
+                : `<span class="${participant.name ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(participant.name || '미입력')}</span>`;
               const participantCounselor = camperEditMode
                 ? `<select class="camper-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorRegId" onchange="updateField(this)">
-                  <option value="">${t('unassignedShort')}</option>
+                  <option value="">미배정</option>
                   ${counselorStaff
                     .map(staff => `<option value="${esc(staff.regId)}"${staff.regId === participant.counselorRegId ? ' selected' : ''}>${esc(staff.name)}</option>`)
                     .join('')}
                 </select>`
-                : `<span class="${participant.counselorRegId ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(counselorStaff.find(staff => staff.regId === participant.counselorRegId)?.name || t('unassignedShort'))}</span>`;
+                : `<span class="${participant.counselorRegId ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(counselorStaff.find(staff => staff.regId === participant.counselorRegId)?.name || '미배정')}</span>`;
               const participantSalvation = camperEditMode
-                ? `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="saved" onchange="updateField(this)"${participant.saved ? ' checked' : ''}><span>${t('savedLabel')}</span></label>`
-                : (participant.saved ? `<span class="group-participant-state saved">${t('savedLabel')}</span>` : '<span class="camper-na">—</span>');
+                ? `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="saved" onchange="updateField(this)"${participant.saved ? ' checked' : ''}><span>구원</span></label>`
+                : (participant.saved ? '<span class="group-participant-state saved">구원</span>' : '<span class="camper-na">—</span>');
               const participantDedication = camperEditMode
-                ? `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="dedicated" onchange="updateField(this)"${participant.dedicated ? ' checked' : ''}><span>${t('dedicatedLabel')}</span></label>`
-                : (participant.dedicated ? `<span class="group-participant-state dedicated">${t('dedicatedLabel')}</span>` : '<span class="camper-na">—</span>');
+                ? `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="dedicated" onchange="updateField(this)"${participant.dedicated ? ' checked' : ''}><span>헌신</span></label>`
+                : (participant.dedicated ? '<span class="group-participant-state dedicated">헌신</span>' : '<span class="camper-na">—</span>');
               const participantMemo = camperEditMode
-                ? `<textarea class="counselor-memo-input" placeholder="${t('counselorMemoPh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorMemo" onblur="updateField(this)">${esc(participant.counselorMemo || '')}</textarea>`
+                ? `<textarea class="counselor-memo-input" placeholder="특이사항 | 기도제목" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorMemo" onblur="updateField(this)">${esc(participant.counselorMemo || '')}</textarea>`
                 : `<span class="${participant.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(participant.counselorMemo || '')}">${esc(participant.counselorMemo || '—')}</span>`;
               const participantGender = camperEditMode
                 ? `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
-                  <option value="">${t('genderSelect')}</option>
-                  <option value="male"${participant.gender === 'male' ? ' selected' : ''}>${t('male')}</option>
-                  <option value="female"${participant.gender === 'female' ? ' selected' : ''}>${t('female')}</option>
+                  <option value="">성별</option>
+                  <option value="male"${participant.gender === 'male' ? ' selected' : ''}>남</option>
+                  <option value="female"${participant.gender === 'female' ? ' selected' : ''}>여</option>
                 </select>`
                 : participant.gender === 'male'
-                ? `<span class="group-participant-gender male">${t('male')}</span>`
+                ? '<span class="group-participant-gender male">남</span>'
                 : participant.gender === 'female'
-                ? `<span class="group-participant-gender female">${t('female')}</span>`
-                : `<span class="group-participant-empty">${t('notEntered')}</span>`;
+                ? '<span class="group-participant-gender female">여</span>'
+                : '<span class="group-participant-empty">미입력</span>';
               return `<tr class="group-participant-row${participantClass}">
                 <td></td>
-                <td colspan="3"><span class="group-participant-label">${tt('studentLabelFn', participantIndex + 1)}</span></td>
+                <td colspan="3"><span class="group-participant-label">학생 ${participantIndex + 1}</span></td>
                 <td class="group-participant-name">${participantName}</td>
                 <td>${participantCounselor}</td>
                 <td>${participantSalvation}</td>
@@ -1351,7 +850,7 @@
             }).join('');
           })()
           : r.registrationType === 'group'
-          ? `<tr class="group-participant-row legacy"><td></td><td colspan="18">${t('checkParticipants')}</td></tr>`
+          ? `<tr class="group-participant-row legacy"><td></td><td colspan="18">참여 인원 수를 확인해주세요.</td></tr>`
           : '';
 
         return `<tr class="${rowClass}" style="${rowStyle}">
@@ -1373,7 +872,7 @@
           <td style="font-size:12px">${esc(r.emergency || '—')}</td>
           <td style="font-size:12px;color:var(--mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes || '')}">${esc(r.notes || '—')}</td>
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
-          <td class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></td>
+          <td class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
         </tr>${participantRows}`;
       }).join('');
     }
@@ -1381,17 +880,17 @@
     function renderStaffTable() {
       const regs = sortedRegs(filteredRegs().filter(r => r.registrationType === 'staff'));
       const tbody = document.getElementById('staffRegBody');
-      document.getElementById('staffTableCount').textContent = tt('tableCountFn', regs.length);
+      document.getElementById('staffTableCount').textContent = `(${regs.length}건)`;
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="9">
+          <tr><td colspan="8">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
                 <path d="M14 14h12M14 20h8M14 26h6" stroke="#8fa8b5" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
-              <p>${t('noPending')}</p>
+              <p>스태프 지원 내역이 없습니다.</p>
             </div>
           </td></tr>`;
         return;
@@ -1401,15 +900,16 @@
       const renderStaffRow = r => {
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
-        const applicantMemo = r.notes || '';
+        const campLabel = CAMP_LABELS[r.campId] || r.campId;
+        const serviceAreaVal = r.serviceArea || r.notes || '';
         const campStyle = getCampRowStyle(r);
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
 
         // 성별 — 항상 읽기 전용
         const genderBadge = r.gender === 'male'
-          ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">${t('male')}</span>`
+          ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">남</span>`
           : r.gender === 'female'
-          ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">${t('female')}</span>`
+          ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">여</span>`
           : `<span style="color:var(--light)">—</span>`;
 
         // 전화번호 — 수정 모드일 때 input
@@ -1417,23 +917,34 @@
           ? `<input class="edit-input" type="tel" value="${esc(r.phone)}" data-regid="${r.regId}" data-campid="${r.campId}" data-field="phone" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
           : esc(r.phone);
 
-        // 섬김 분야는 이름 앞 뱃지로 요약하고, 본문 칸에는 신청자가 작성한 메모를 보여준다.
-        const currentTeams = staffTeams(r);
-        const teamCell = staffEditMode
-          ? renderTeamEditor(r, currentTeams)
-          : renderTeamStack(currentTeams);
-        const memoCell = renderMemoCell(applicantMemo);
+        // 섬기고 싶은 팀 — 수정 모드일 때 체크형 칩
+        const currentTeams = serviceAreaVal.split(',').map(s => s.trim()).filter(Boolean);
+        const customTeams = currentTeams.filter(t => !STAFF_TEAMS.includes(t));
+        const serviceAreaCell = staffEditMode
+          ? `<div class="team-picker" data-regid="${r.regId}" data-campid="${r.campId}" data-field="serviceArea">
+               ${STAFF_TEAMS.map(t => `<label class="team-choice ${getStaffTeamClass(t)}">
+                 <input class="team-fixed-input" type="checkbox" value="${esc(t)}"${currentTeams.includes(t) ? ' checked' : ''} onchange="updateTeamField(this.closest('.team-picker'))">
+                 <span>${esc(t)}</span>
+               </label>`).join('')}
+               <label class="team-choice team-other">
+                 <input class="team-other-toggle" type="checkbox"${customTeams.length ? ' checked' : ''} onchange="toggleCustomTeamInput(this)">
+                 <span>기타</span>
+               </label>
+               <input class="team-custom-input" type="text" value="${esc(customTeams.join(', '))}" placeholder="직접 입력"${customTeams.length ? '' : ' hidden'} onblur="updateTeamField(this.closest('.team-picker'))" onkeydown="if(event.key==='Enter')this.blur()">
+             </div>`
+          : (currentTeams.length
+              ? currentTeams.map(t => `<span class="team-badge ${getStaffTeamClass(t)}">${esc(t)}</span>`).join('')
+              : `<span style="color:var(--light)">—</span>`);
 
         return `<tr class="camp-tint" style="${rowStyle}">
-          <td>${teamCell}</td>
-          <td><span class="staff-name-cell">${esc(r.name || t('unset'))}</span></td>
+          <td style="font-weight:600">${esc(r.name)}</td>
           <td>${genderBadge}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.church || '—')}</td>
           <td style="white-space:nowrap">${phoneCell}</td>
-          <td>${memoCell}</td>
+          <td>${serviceAreaCell}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
-          <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></td>
+          <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">삭제</button></td>
         </tr>`;
       };
 
@@ -1447,601 +958,15 @@
         const campRegs = regs.filter(r => r.campId === campId);
         const campStyle = getCampRowStyle({ campId });
         return `<tr class="staff-camp-divider" style="--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};">
-          <td colspan="9"><strong>${esc(campDisplayName(campId))}</strong><span>${tt('personCountFn', campRegs.length)}</span></td>
+          <td colspan="8"><strong>${esc(CAMP_LABELS[campId] || campId)}</strong><span>${campRegs.length}명</span></td>
         </tr>${campRegs.length
           ? campRegs.map(renderStaffRow).join('')
-          : `<tr class="staff-camp-empty"><td colspan="9">${t('campEmpty')}</td></tr>`}`;
+          : `<tr class="staff-camp-empty"><td colspan="8">등록된 스태프가 없습니다.</td></tr>`}`;
       }).join('');
-      updateStaffOverflowPopovers();
     }
 
     function esc(str) {
       return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // ── 개인별 역할 저장 (displayName 기반) ──
-    function getPersonRole(dn, team) {
-      return teamOverviewConfig.personRoles?.[`${dn}\x00${team}`] || null;
-    }
-    function setPersonRole(dn, team, role) {
-      teamOverviewConfig.personRoles = teamOverviewConfig.personRoles || {};
-      teamOverviewConfig.personRoles[`${dn}\x00${team}`] = role;
-      queueTeamOverviewSave();
-    }
-    function personDefaultRole(p) { return p.role === 'missionary' ? 'leader' : 'member'; }
-    function personEffectiveRole(p, team) { return getPersonRole(p.displayName, team) || personDefaultRole(p); }
-    function togglePersonRole(dn, team, defR) {
-      const cur = getPersonRole(dn, team) || defR;
-      setPersonRole(dn, team, cur === 'leader' ? 'member' : 'leader');
-      renderCampTeamPanel();
-    }
-
-    // ── 개인별 팀 배정 저장 (displayName 기반) ──
-    function getPersonTeams(dn, defaultTeams) {
-      const stored = teamOverviewConfig.personTeams?.[dn];
-      return stored !== undefined ? stored : defaultTeams;
-    }
-    function setPersonTeams(dn, teams) {
-      teamOverviewConfig.personTeams = teamOverviewConfig.personTeams || {};
-      teamOverviewConfig.personTeams[dn] = Array.isArray(teams) ? teams : [];
-      queueTeamOverviewSave();
-    }
-    function togglePersonTeam(dn, team, checked, defaultTeams) {
-      const cur  = getPersonTeams(dn, defaultTeams);
-      const next = checked ? (cur.includes(team) ? cur : [...cur, team]) : cur.filter(t_ => t_ !== team);
-      setPersonTeams(dn, next);
-      renderCampTeamPanel();
-    }
-
-    // ── 개인별 캠프 제외 저장 ──
-    function isPersonExcluded(dn) {
-      return (teamOverviewConfig.campExclude || []).includes(dn);
-    }
-    function togglePersonExclusion(dn) {
-      const list = [...(teamOverviewConfig.campExclude || [])];
-      const idx = list.indexOf(dn);
-      if (idx === -1) list.push(dn); else list.splice(idx, 1);
-      teamOverviewConfig.campExclude = list;
-      queueTeamOverviewSave();
-      renderCampTeamPanel();
-    }
-
-    // 로스터를 남편/아내 개별 person 배열로 펼치기
-    function getRosterPersons(campId) {
-      const result = [];
-      for (const member of fullRosterForCamp(campId)) {
-        const defaultTeams = member.isCustom ? normalizeTeamList(member.teams) : [];
-        result.push({
-          displayName: member.name,
-          genderTag: '',
-          title: member.title, role: member.role,
-          defaultTeams,
-          teams: getPersonTeams(member.name, defaultTeams),
-          isCustom: !!member.isCustom, memberId: member.id,
-        });
-        if (member.spouseName) {
-          result.push({
-            displayName: member.spouseName,
-            genderTag: '',
-            title: member.title, role: member.role,
-            defaultTeams,
-            teams: getPersonTeams(member.spouseName, defaultTeams),
-            isCustom: false,
-          });
-        }
-      }
-      return result;
-    }
-
-    function toggleTeamPanelEditMode() {
-      teamPanelEditMode = !teamPanelEditMode;
-      renderCampTeamPanel();
-    }
-    function toggleStatPanel(type) {
-      activeStatPanel = activeStatPanel === type ? null : type;
-      renderCampTeamPanel();
-    }
-
-    // ── 캠프 디렉터 / 코디네이터 ──
-    function getCampRoles() {
-      return teamOverviewConfig.campRoles || {};
-    }
-    function saveCampRole(roleKey, value) {
-      teamOverviewConfig.campRoles = teamOverviewConfig.campRoles || {};
-      teamOverviewConfig.campRoles[roleKey] = value;
-      queueTeamOverviewSave();
-      renderCampTeamPanel();
-    }
-
-    // 캠프별 멤버 필터 (제주 선교사는 제주 캠프에서만)
-    function rosterForCamp(campId) {
-      const isJejuCamp = campId.includes('jeju');
-      return WOLKO_CAMP_ROSTER.filter(m => !(m.jeju && !isJejuCamp));
-    }
-
-    // ── 미지정 (커스텀) 멤버 ──
-    function getCustomMembers() {
-      return teamOverviewConfig.customMembers || [];
-    }
-    function saveCustomMembers(list) {
-      teamOverviewConfig.customMembers = Array.isArray(list) ? list : [];
-      queueTeamOverviewSave();
-    }
-    // 선택된 데이터 임시 저장 (DOM 의존 없이 추가 가능하도록 fallback)
-    let _cmPendingData = null;
-
-    // 등록 명단에서 선택 시 폼 자동 입력
-    // val 형식: 'r:regId' (스태프 신청자) | 'm:이름' (월코 로스터)
-    function fillFromReg(val) {
-      _cmPendingData = null;
-      const nameEl  = document.getElementById('cmName');
-      const titleEl = document.getElementById('cmTitle');
-      const roleEl  = document.getElementById('cmRole');
-
-      const applyData = (data) => {
-        _cmPendingData = data;
-        if (nameEl)  nameEl.value  = data.name;
-        if (titleEl) titleEl.value = data.title;
-        if (roleEl)  roleEl.value  = data.role;
-        document.querySelectorAll('.cm-team-check').forEach(cb => {
-          cb.checked = (data.teams || []).includes(cb.value);
-        });
-        if (nameEl) nameEl.focus();
-      };
-
-      if (!val) {
-        if (nameEl)  nameEl.value  = '';
-        if (titleEl) titleEl.value = '';
-        document.querySelectorAll('.cm-team-check').forEach(cb => cb.checked = false);
-        return;
-      }
-      if (val.startsWith('r:')) {
-        const reg = allRegs.find(r => r.regId === val.slice(2));
-        if (!reg) return;
-        applyData({ name: reg.name || '', title: reg.church || '', role: 'stw', teams: staffTeams(reg) });
-      } else if (val.startsWith('m:')) {
-        const mName  = val.slice(2);
-        const member = WOLKO_CAMP_ROSTER.find(m => m.name === mName || m.spouseName === mName);
-        if (!member) return;
-        applyData({ name: mName, title: member.title || '', role: member.role || 'stw', teams: member.teams || [] });
-      }
-    }
-
-    function addCustomMemberAction() {
-      // DOM 값 우선, 없으면 _cmPendingData fallback
-      const name = document.getElementById('cmName')?.value.trim() || _cmPendingData?.name || '';
-      if (!name) { document.getElementById('cmName')?.focus(); return; }
-      const spouseName = document.getElementById('cmSpouse')?.value.trim() || '';
-      const title  = document.getElementById('cmTitle')?.value.trim() || _cmPendingData?.title || '';
-      const role   = document.getElementById('cmRole')?.value || _cmPendingData?.role || 'stw';
-      const teamsFromDom = Array.from(document.querySelectorAll('.cm-team-check:checked')).map(el => el.value);
-      const teams  = teamsFromDom.length ? teamsFromDom : (_cmPendingData?.teams || []);
-
-      const list = getCustomMembers();
-      list.push({ id: 'cm_' + Date.now(), name, spouseName, title, role, teams, isCustom: true });
-      saveCustomMembers(list);
-
-      _cmPendingData = null;
-      const sel = document.getElementById('cmRegSelect');
-      if (sel) sel.value = '';
-      fillFromReg('');
-      const spouse = document.getElementById('cmSpouse');
-      if (spouse) spouse.value = '';
-      renderCampTeamPanel();
-    }
-    function removeCustomMember(id) {
-      saveCustomMembers(getCustomMembers().filter(m => m.id !== id));
-      renderCampTeamPanel();
-    }
-    // 표준 + 커스텀 전체 로스터
-    function fullRosterForCamp(campId) {
-      return [...rosterForCamp(campId), ...getCustomMembers()];
-    }
-
-    const CAMP_ROLE_SLOTS = [
-      { key: 'director', label: '캠프 디렉터', cls: 'is-director' },
-      { key: 'coord1',   label: '코디네이터 1', cls: '' },
-      { key: 'coord2',   label: '코디네이터 2', cls: '' },
-    ];
-
-    function renderCampRolesBar(roster) {
-      const roles = getCampRoles();
-      const slotLabels = [t('campDirector'), t('coordinator'), t('coordinator')];
-      return `<div class="camp-roles-bar">
-        ${CAMP_ROLE_SLOTS.map((slot, idx) => {
-          const val   = roles[slot.key] || '';
-          const found = val ? roster.find(m => m.name === val) : null;
-          return `<div class="camp-role-slot${slot.cls ? ' ' + slot.cls : ''}">
-            <div class="camp-role-slot-label">${slotLabels[idx]}${idx > 0 ? ` ${idx}` : ''}</div>
-            <select class="camp-role-select" onchange="saveCampRole('${slot.key}',this.value)">
-              <option value="">${t('unassigned')}</option>
-              ${roster.map(m => `<option value="${esc(m.name)}"${val === m.name ? ' selected' : ''}>${esc(memberDisplayName(m))}</option>`).join('')}
-            </select>
-            ${found ? `<div class="camp-role-assigned-title">${esc(found.title)}</div>` : ''}
-          </div>`;
-        }).join('')}
-      </div>`;
-    }
-
-    function renderCampTeamPanel() {
-      const panel = document.getElementById('campTeamPanel');
-      if (!TEAM_PANEL_CAMPS.has(activeCamp)) {
-        panel.hidden = true; panel.innerHTML = ''; return;
-      }
-      if (teamOverviewConfigCamp !== activeCamp) {
-        panel.hidden = false;
-        panel.innerHTML = `<div class="state-box"><div class="spinner"></div><p>${t('teamSettingsLoading')}</p></div>`;
-        loadTeamOverviewConfig(activeCamp).then(() => renderCampTeamPanel());
-        return;
-      }
-      const selTeam  = activeTeamFilter === 'all' || getAllTeams().includes(activeTeamFilter) ? activeTeamFilter : 'all';
-      activeTeamFilter = selTeam;
-      const campStaff = allRegs.filter(r => r.registrationType === 'staff' && r.campId === activeCamp);
-      const campLabel = campDisplayName(activeCamp);
-      const roster    = fullRosterForCamp(activeCamp);
-      const persons   = getRosterPersons(activeCamp);
-      const visP      = persons;
-
-      // 지원 스태프 신청자 → person 객체로 변환 (팀 배정·리더 등록 가능)
-      const applicantPersons = campStaff.map(reg => ({
-        displayName: reg.name || '',
-        genderTag: '',
-        title: reg.church || '',
-        phone: reg.phone || '',
-        role: 'stw',
-        defaultTeams: staffTeams(reg),
-        teams: getPersonTeams(reg.name || '', staffTeams(reg)),
-        isCustom: false,
-      }));
-      const visApplicants = applicantPersons;
-
-      const leaderP = visP.filter(p => p.teams.some(tm => getAllTeams().includes(tm) && personEffectiveRole(p, tm) === 'leader'));
-      const memberP = visP.filter(p => p.teams.some(tm => getAllTeams().includes(tm) && personEffectiveRole(p, tm) === 'member'));
-
-      // stat panel HTML
-      function statPanel() {
-        if (!activeStatPanel) return '';
-        let items, panelTitle;
-        if (activeStatPanel === 'staff') {
-          return `<div class="camp-stat-panel">
-            <div class="stat-panel-title">${t('applicantSection')} (${visApplicants.length})</div>
-            <div class="stat-panel-list">${visApplicants.length ? visApplicants.map(p => renderPersonRow(p, null, true)).join('') : `<div class="camp-team-empty">${t('noApplicant')}</div>`}</div>
-          </div>`;
-        }
-        items = activeStatPanel === 'leaders' ? leaderP : memberP;
-        panelTitle = activeStatPanel === 'leaders' ? t('teamLeaderSection') : t('memberSection');
-        return `<div class="camp-stat-panel">
-          <div class="stat-panel-title">${panelTitle} (${items.length})</div>
-          <div class="stat-panel-list">${items.length ? items.map(p => renderPersonRow(p, null, true)).join('') : `<div class="camp-team-empty">${t('noMember')}</div>`}</div>
-        </div>`;
-      }
-
-      const gridTeams = selTeam === 'all' ? [...getAllTeams(), UNASSIGNED] : [selTeam];
-
-      panel.hidden = false;
-      panel.innerHTML = `
-        <div class="camp-team-head">
-          <div>
-            <div class="camp-team-kicker">${esc(campLabel)}</div>
-            <h3>${t('teamPanelTitle')}</h3>
-          </div>
-          <button class="btn-team-panel-edit${teamPanelEditMode ? ' active' : ''}" onclick="toggleTeamPanelEditMode()">
-            ${teamPanelEditMode
-              ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> ${t('doneBtn')}`
-              : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7 2l3 3-5.5 5.5H1.5V8L7 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${t('editBtn')}`}
-          </button>
-        </div>
-        ${renderCampRolesBar(roster)}
-        <div class="camp-stat-badges">
-          <button class="stat-badge${activeStatPanel === 'leaders' ? ' active' : ''}" onclick="toggleStatPanel('leaders')">
-            <span class="stat-num">${leaderP.length}</span>
-            <span class="stat-label">${t('teamLeaderSection')}</span>
-          </button>
-          <button class="stat-badge${activeStatPanel === 'members' ? ' active' : ''}" onclick="toggleStatPanel('members')">
-            <span class="stat-num">${memberP.length}</span>
-            <span class="stat-label">${t('memberSection')}</span>
-          </button>
-          <button class="stat-badge${activeStatPanel === 'staff' ? ' active' : ''}" onclick="toggleStatPanel('staff')">
-            <span class="stat-num">${visApplicants.length}</span>
-            <span class="stat-label">${t('applicantSection')}</span>
-          </button>
-        </div>
-        ${statPanel()}
-        ${teamPanelEditMode ? `<div class="custom-member-add-bar team-create-bar">
-          <span class="custom-member-bar-label">${t('createTeam')}</span>
-          <div class="team-create-form">
-            <input type="text" id="newTeamNameInput" class="cm-input cm-input-wide" placeholder="${t('newTeamPh')}"
-              onkeydown="if(event.key==='Enter')addCustomTeamAction()">
-            <button class="btn-cm-add" onclick="addCustomTeamAction()">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              ${t('createBtn')}
-            </button>
-          </div>
-          ${getCustomTeams().length ? `<div class="custom-teams-list">
-            ${getCustomTeams().map((tm, i) => `<span class="custom-team-pill ${CUSTOM_TEAM_CLASSES[i % CUSTOM_TEAM_CLASSES.length]}">
-              ${esc(tm)}
-              <button class="custom-team-del" onclick="removeCustomTeamAction('${esc(tm)}')" title="${t('deleteTeam')}">×</button>
-            </span>`).join('')}
-          </div>` : ''}
-        </div>
-        <div class="custom-member-add-bar">
-          <span class="custom-member-bar-label">${t('customMemberAdd')}</span>
-          <div class="cm-reg-row">
-            <svg class="cm-reg-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11c0-2.2 1.8-4 4-4s4 1.8 4 4M7 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-            <select id="cmRegSelect" class="cm-select cm-reg-select" onchange="fillFromReg(this.value)">
-              <option value="">${t('chooseFromList')}</option>
-              <optgroup label="${t('wolkoStaff')}">
-                ${WOLKO_CAMP_ROSTER.flatMap(m => {
-                  const opts = [`<option value="m:${esc(m.name)}">${esc(m.name)}${m.title ? ' · ' + esc(m.title) : ''}</option>`];
-                  if (m.spouseName) opts.push(`<option value="m:${esc(m.spouseName)}">${esc(m.spouseName)} · ${esc(m.title || '')}</option>`);
-                  return opts;
-                }).join('')}
-              </optgroup>
-              ${(() => {
-                const staffRegs = [...allRegs]
-                  .filter(r => r.registrationType === 'staff')
-                  .sort((a, b) => {
-                    if (a.campId === activeCamp && b.campId !== activeCamp) return -1;
-                    if (a.campId !== activeCamp && b.campId === activeCamp) return 1;
-                    return (a.name || '').localeCompare(b.name || '', 'ko');
-                  });
-                if (!staffRegs.length) return '';
-                return `<optgroup label="${t('staffApplicants')}">
-                  ${staffRegs.map(r => `<option value="r:${esc(r.regId)}">${esc(r.name || t('nameMissing'))} · ${esc(campDisplayName(r.campId))}</option>`).join('')}
-                </optgroup>`;
-              })()}
-            </select>
-            <span class="cm-reg-or">${t('orDirectInput')}</span>
-          </div>
-          <div class="custom-member-form">
-            <input type="text" id="cmName" class="cm-input" placeholder="${t('cmNamePh')}">
-            <input type="text" id="cmSpouse" class="cm-input" placeholder="${t('cmSpousePh')}">
-            <input type="text" id="cmTitle" class="cm-input cm-input-wide" placeholder="${t('cmTitlePh')}">
-            <select id="cmRole" class="cm-select">
-              <option value="missionary">${t('cmRoleLeader')}</option>
-              <option value="intern">${t('cmRoleIntern')}</option>
-              <option value="stw" selected>${t('cmRoleStaff')}</option>
-            </select>
-            <div class="cm-team-chips">
-              ${getAllTeams().map(tm => `<label class="cm-team-chip ${getStaffTeamClass(tm)}"><input type="checkbox" class="cm-team-check" value="${esc(tm)}">${esc(teamLabel(tm))}</label>`).join('')}
-            </div>
-            <button class="btn-cm-add" onclick="addCustomMemberAction()">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              ${t('cmAddBtn')}
-            </button>
-          </div>
-        </div>` : ''}
-        <div class="camp-team-filter">
-          <button type="button" class="${selTeam === 'all' ? 'active' : ''}" onclick="selectTeamPanelFilter('all')">${t('allFilter')}</button>
-          ${getAllTeams().map(tm => `<button type="button" class="${selTeam === tm ? 'active' : ''}" onclick="selectTeamPanelFilter('${esc(tm)}')">${esc(teamLabel(tm))}</button>`).join('')}
-        </div>
-        <div class="camp-team-grid">
-          ${gridTeams.map(tm => renderCampTeamCard(tm, visApplicants, visP)).join('')}
-        </div>`;
-    }
-
-    function renderCampTeamCard(team, visApplicants, visP) {
-      // 미지정 카드: 아무 팀에도 없는 멤버 (커스텀팀 포함)
-      if (team === UNASSIGNED) {
-        const uList = [
-          ...visP.filter(p => p.teams.filter(tm => getAllTeams().includes(tm)).length === 0),
-          ...visApplicants.filter(p => p.teams.filter(tm => getAllTeams().includes(tm)).length === 0),
-        ];
-        if (!uList.length && !teamPanelEditMode) return '';
-        return `<section class="camp-team-card camp-team-unassigned">
-          <div class="camp-team-card-title">
-            <span class="person-team-badge team-other"><span class="person-team-label">${t('unassignedTeam')}</span></span>
-            <span>${uList.length}</span>
-          </div>
-          <div class="camp-team-member-group">
-            ${uList.length ? uList.map(p => renderPersonRow(p, null)).join('') : `<div class="camp-team-empty">${t('allAssigned')}</div>`}
-          </div>
-        </section>`;
-      }
-      const pList    = visP.filter(p => p.teams.includes(team));
-      const applicants = visApplicants.filter(p => p.teams.includes(team));
-      const allInTeam  = [...pList, ...applicants];
-      const leaders    = allInTeam.filter(p => personEffectiveRole(p, team) === 'leader');
-      const nonLeaders = allInTeam.filter(p => personEffectiveRole(p, team) !== 'leader');
-      return `<section class="camp-team-card">
-        <div class="camp-team-card-title">
-          ${renderTeamBadge(team)}
-          <span>${allInTeam.length}</span>
-        </div>
-        <div class="camp-team-member-group">
-          <div class="camp-team-group-label">${t('teamLeaderSection')}</div>
-          ${leaders.length ? leaders.map(p => renderPersonRow(p, team)).join('') : `<div class="camp-team-empty">${t('noLeader')}</div>`}
-        </div>
-        <div class="camp-team-member-group">
-          ${nonLeaders.length ? nonLeaders.map(p => renderPersonRow(p, team)).join('') : `<div class="camp-team-empty">${t('noMember')}</div>`}
-        </div>
-      </section>`;
-    }
-
-    function renderPersonRow(person, team, inPanel = false) {
-      const isLeader  = team ? personEffectiveRole(person, team) === 'leader' : false;
-      const defR      = personDefaultRole(person);
-      const roleText   = isLeader ? t('teamLeaderRole') : (person.role === 'intern' ? t('internRole') : t('staffRole'));
-      // 원래 팀이 있었는데 모든 팀에서 제외된 경우 → 뷰 모드에서만 회색 처리 (편집 모드에선 해제)
-      const isFullyExcluded = !team && !teamPanelEditMode
-        && person.defaultTeams && person.defaultTeams.length > 0
-        && person.teams.filter(tm => getAllTeams().includes(tm)).length === 0;
-
-      const teamCbs = getAllTeams().map(tm => `
-        <label class="member-team-option ${getStaffTeamClass(tm)}${person.teams.includes(tm) ? ' is-checked' : ''}">
-          <input type="checkbox"${person.teams.includes(tm) ? ' checked' : ''}
-            onchange="togglePersonTeam('${esc(person.displayName)}','${esc(tm)}',this.checked,${esc(JSON.stringify(person.defaultTeams))})">
-          <span>${esc(teamLabel(tm))}</span>
-        </label>`).join('');
-
-      const showControls = teamPanelEditMode;
-      const controls = showControls ? `<div class="camp-team-member-controls">
-          <details class="member-team-picker">
-            <summary class="member-team-btn">${t('teamAssign')}</summary>
-            <div class="member-team-options">${teamCbs}</div>
-          </details>
-          ${team ? `<button class="team-role-toggle${isLeader ? ' is-leader' : ''}"
-            onclick="togglePersonRole('${esc(person.displayName)}','${esc(team)}','${defR}')">${roleText}</button>` : ''}
-          ${team ? `<button class="btn-person-exclude"
-            onclick="togglePersonTeam('${esc(person.displayName)}','${esc(team)}',false,${esc(JSON.stringify(person.defaultTeams))})">${t('exclude')}</button>` : ''}
-          ${person.isCustom && teamPanelEditMode ? `<button class="btn-custom-member-delete" onclick="removeCustomMember('${esc(person.memberId)}')">×</button>` : ''}
-        </div>` : '';
-
-      return `<div class="camp-team-member${isLeader ? ' is-leader' : ''}${isFullyExcluded ? ' is-fully-excluded' : ''}${person.isCustom ? ' is-custom-member' : ''}">
-        <div class="camp-team-member-info">
-          <div class="couple-person-row${isFullyExcluded ? ' is-excluded' : ''}">
-            ${person.genderTag ? `<span class="couple-gender-tag">${person.genderTag}</span>` : ''}
-            <strong>${esc(person.displayName)}</strong>
-          </div>
-          ${person.phone ? `<span class="camp-team-member-phone">${esc(person.phone)}</span>` : ''}
-        </div>
-        ${controls}
-      </div>`;
-    }
-
-    function renderApplicantTeamMember(reg) {
-      return `<div class="camp-team-member">
-        <div class="camp-team-member-info">
-          <div class="couple-person-row"><strong>${esc(reg.name || t('unset'))}</strong></div>
-          <span class="camp-team-member-title">${esc(reg.church || t('noChurch'))}${reg.phone ? ' · ' + esc(reg.phone) : ''}</span>
-        </div>
-      </div>`;
-    }
-
-    function selectTeamPanelFilter(team) {
-      activeTeamFilter = team;
-      renderCampTeamPanel();
-    }
-
-    function renderTeamBadge(team) {
-      if (!team) return '';
-      return `<span class="person-team-badge ${getStaffTeamClass(team)}"><span class="person-team-label">${esc(teamLabel(team))}</span></span>`;
-    }
-
-    function renderMemoCell(memo) {
-      if (!memo) return `<span style="color:var(--light)">—</span>`;
-      return `<span class="staff-memo-wrap" tabindex="-1" aria-label="${esc(memo)}">
-        <span class="staff-memo-cell">${esc(memo)}</span>
-        <span class="staff-memo-popover">${esc(memo)}</span>
-      </span>`;
-    }
-
-    function updateStaffOverflowPopovers() {
-      // Double rAF ensures the table has fully laid out before measuring
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        document.querySelectorAll('.staff-memo-wrap').forEach(wrap => {
-          const cell = wrap.querySelector('.staff-memo-cell');
-          const hasOverflow = cell && cell.scrollWidth > cell.clientWidth + 1;
-          wrap.classList.toggle('has-overflow', !!hasOverflow);
-          wrap.tabIndex = hasOverflow ? 0 : -1;
-        });
-      }));
-    }
-
-    function renderTeamStack(teams = []) {
-      const primaryTeam = teams[0] || '';
-      const hiddenTeams = teams.slice(1);
-      const extraCount = hiddenTeams.length;
-      if (!primaryTeam) {
-        return `<span class="person-team-stack"><span class="person-team-badge team-other"><span class="person-team-label">${t('unassignedTeam')}</span></span></span>`;
-      }
-      return `<span class="person-team-stack">
-          <span class="person-team-badge ${getStaffTeamClass(primaryTeam)}${extraCount ? ' has-extra' : ''}"${extraCount ? ` tabindex="0" aria-label="${esc([primaryTeam, ...hiddenTeams].join(', '))}"` : ''}>
-            <span class="person-team-label">${esc(primaryTeam)}${extraCount ? ` <span class="person-team-count">+${extraCount}</span>` : ''}</span>
-            ${extraCount ? `
-            <span class="person-team-popover">${hiddenTeams.map(renderTeamBadge).join('')}</span>
-            ` : ''}
-          </span>
-        </span>`;
-    }
-
-    function renderTeamEditor(reg, teams = []) {
-      const standardTeams = teams.filter(t => STAFF_TEAMS.includes(t));
-      const customTeams   = teams.filter(t => !STAFF_TEAMS.includes(t));
-      const selected      = new Set(standardTeams);
-      const hasCustom     = customTeams.length > 0;
-      const customValue   = customTeams.join(', ');
-      return `<details class="staff-team-editor">
-        <summary>
-          <span class="staff-team-editor-summary">${renderTeamStack(teams)}</span>
-          <svg class="staff-team-caret" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </summary>
-        <div class="staff-team-menu" data-regid="${esc(reg.regId)}" data-campid="${esc(reg.campId)}">
-          ${getAllTeams().map(team => `<label class="staff-team-option ${getStaffTeamClass(team)}">
-            <input type="checkbox" value="${esc(team)}"${selected.has(team) ? ' checked' : ''} onchange="collectAndSaveTeams(this.closest('.staff-team-menu'))">
-            <span>${esc(teamLabel(team))}</span>
-          </label>`).join('')}
-          <label class="staff-team-option team-other staff-team-custom-toggle">
-            <input type="checkbox" class="custom-team-check"${hasCustom ? ' checked' : ''} onchange="toggleCustomTeamInput(this)">
-            <span>${t('customTeamOther')}</span>
-          </label>
-          <div class="staff-custom-team-wrap"${hasCustom ? '' : ' style="display:none"'}>
-            <input type="text" class="staff-custom-team-input" placeholder="${t('customTeamInputPh')}" value="${esc(customValue)}"
-              onblur="collectAndSaveTeams(this.closest('.staff-team-menu'))"
-              onkeydown="if(event.key==='Enter')this.blur()">
-          </div>
-        </div>
-      </details>`;
-    }
-
-    function toggleCustomTeamInput(checkbox) {
-      const menu = checkbox.closest('.staff-team-menu');
-      const wrap = menu.querySelector('.staff-custom-team-wrap');
-      wrap.style.display = checkbox.checked ? '' : 'none';
-      if (checkbox.checked) {
-        wrap.querySelector('input').focus();
-      } else {
-        wrap.querySelector('input').value = '';
-        collectAndSaveTeams(menu);
-      }
-    }
-
-    async function collectAndSaveTeams(menu) {
-      const editor = menu.closest('.staff-team-editor');
-      const regId  = menu.dataset.regid;
-      const campId = menu.dataset.campid;
-      const reg    = allRegs.find(r => r.regId === regId);
-      if (!reg) return;
-
-      // Standard team checkboxes (exclude custom-team-check)
-      const standardTeams = Array.from(menu.querySelectorAll('input[type="checkbox"]:not(.custom-team-check)'))
-        .filter(i => i.checked).map(i => i.value);
-
-      // Custom team text
-      const customCheck = menu.querySelector('.custom-team-check');
-      const customInput = menu.querySelector('.staff-custom-team-input');
-      const customTeams = (customCheck?.checked && customInput?.value.trim())
-        ? customInput.value.trim().split(',').map(t => t.trim()).filter(Boolean)
-        : [];
-
-      const value        = [...standardTeams, ...customTeams].join(', ');
-      const previousValue = reg.serviceArea || '';
-
-      const allInputs = Array.from(menu.querySelectorAll('input'));
-      allInputs.forEach(i => { i.disabled = true; });
-      editor.classList.add('saving');
-
-      try {
-        const res = await fetch('/api/admin/registrations', {
-          method: 'PUT',
-          headers: authHeaders(),
-          body: JSON.stringify({ regId, campId, field: 'serviceArea', value }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || t('teamSaveFail'));
-        reg.serviceArea = value;
-        editor.querySelector('.staff-team-editor-summary').innerHTML = renderTeamStack(staffTeams(reg));
-        renderCampTeamPanel();
-        if (sortState.key === 'staffTeam') renderStaffTable();
-        showToast(t('teamSaved'), 'success');
-      } catch (e) {
-        reg.serviceArea = previousValue;
-        showToast(t('teamSaveErr') + e.message, 'error');
-        renderStaffTable();
-      } finally {
-        allInputs.forEach(i => { i.disabled = false; });
-        editor.classList.remove('saving');
-      }
     }
 
     function toggleGroupParticipants(regId) {
@@ -2055,8 +980,7 @@
       staffEditMode = !staffEditMode;
       const btn = document.getElementById('btnStaffEditMode');
       btn.classList.toggle('active', staffEditMode);
-      btn.querySelector('[data-t]').dataset.t = staffEditMode ? 'editing' : 'editMode';
-      applyLangToDOM();
+      btn.querySelector('span').textContent = staffEditMode ? '수정 중' : '수정 모드';
       renderStaffTable();
     }
 
@@ -2064,8 +988,7 @@
       camperEditMode = !camperEditMode;
       const btn = document.getElementById('btnCamperEditMode');
       btn.classList.toggle('active', camperEditMode);
-      btn.querySelector('[data-t]').dataset.t = camperEditMode ? 'editing' : 'editMode';
-      applyLangToDOM();
+      btn.querySelector('span').textContent = camperEditMode ? '수정 중' : '수정 모드';
       renderCampTable();
     }
 
@@ -2077,6 +1000,51 @@
         ? `${d.slice(0,2)}-${d.slice(2,6)}-${d.slice(6)}`
         : `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`;
       return raw; // 자릿수 불일치 시 원문 유지
+    }
+
+    // ── 팀 선택 업데이트 ──
+    async function updateTeamField(pickerEl) {
+      const regId  = pickerEl.dataset.regid;
+      const campId = pickerEl.dataset.campid;
+      const field  = pickerEl.dataset.field;
+      const inputs = Array.from(pickerEl.querySelectorAll('input[type="checkbox"]'));
+      const fixedTeams = inputs.filter(input => input.matches('.team-fixed-input:checked')).map(input => input.value);
+      const customToggle = pickerEl.querySelector('.team-other-toggle');
+      const customInput = pickerEl.querySelector('.team-custom-input');
+      const customTeams = customToggle?.checked
+        ? customInput.value.split(',').map(team => team.trim()).filter(Boolean)
+        : [];
+      const value  = [...new Set([...fixedTeams, ...customTeams])].join(', ');
+      const reg    = allRegs.find(r => r.regId === regId);
+      if (!reg) return;
+      inputs.forEach(input => { input.disabled = true; });
+      customInput.disabled = true;
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ regId, campId, field, value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '저장 실패');
+        reg[field] = value;
+        showToast('팀 정보가 저장되었습니다.', 'success');
+      } catch(e) {
+        showToast('저장 오류: ' + e.message, 'error');
+      }
+      renderStaffTable();
+    }
+
+    function toggleCustomTeamInput(toggleEl) {
+      const pickerEl = toggleEl.closest('.team-picker');
+      const customInput = pickerEl.querySelector('.team-custom-input');
+      customInput.hidden = !toggleEl.checked;
+      if (toggleEl.checked) {
+        customInput.focus();
+      } else {
+        customInput.value = '';
+        updateTeamField(pickerEl);
+      }
     }
 
     // ── Field Update (전화번호, 섬기고 싶은 분야 등) ──
@@ -2110,7 +1078,7 @@
           body: JSON.stringify({ regId, campId, field, value, ...(participantIndex === undefined ? {} : { participantIndex: Number(participantIndex) }) }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || t('updateFail'));
+        if (!res.ok) throw new Error(data.error || '업데이트 실패');
         if (participantIndex === undefined) {
           record[field] = value;
         } else {
@@ -2124,36 +1092,36 @@
           renderCampTable();
           renderDash();
         }
-        showToast(t('fieldSaved'), 'success');
+        showToast('저장되었습니다.', 'success');
       } catch (e) {
         if (inputEl.type === 'checkbox') inputEl.checked = original;
-        else inputEl.value = original;
+        else inputEl.value = original; // 실패 시 원복
         inputEl.classList.remove('saving');
-        showToast(t('fieldErr') + e.message, 'error');
+        showToast('저장 오류: ' + e.message, 'error');
       }
     }
 
     // ── Delete ──
     async function deleteReg(regId, campId) {
-      if (!confirm(t('deleteConfirm'))) return;
+      if (!confirm(`정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
       try {
         const res = await fetch(`/api/admin/registrations?regId=${regId}&campId=${campId}`, {
           method: 'DELETE', headers: authHeaders()
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || t('deleteFail'));
+        if (!res.ok) throw new Error(data.error || '삭제 실패');
         allRegs = allRegs.filter(r => r.regId !== regId);
         renderTable();
         renderDash();
-        showToast(t('deleted'), 'success');
+        showToast('신청이 삭제되었습니다.', 'success');
       } catch (e) {
-        showToast(t('deleteErr') + e.message, 'error');
+        showToast('삭제 오류: ' + e.message, 'error');
       }
     }
 
     // ── 예약금 수납 ──
     async function depositReg(regId, campId) {
-      if (!confirm(t('depositConfirmMsg'))) return;
+      if (!confirm(`예약금 수납을 확인하시겠습니까?\n예약금 입금이 확인된 경우에만 진행해주세요.`)) return;
       try {
         const res = await fetch('/api/admin/registrations', {
           method: 'PATCH',
@@ -2161,21 +1129,43 @@
           body: JSON.stringify({ regId, campId, action: 'deposit', campTitleKo: CAMP_LABELS[campId] || campId, campDateKo: CAMP_DATES[campId] || '' }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || t('processFail'));
+        if (!res.ok) throw new Error(data.error || '처리 실패');
         const reg = allRegs.find(r => r.regId === regId);
         if (reg) { reg.status = 'deposit'; reg.depositConfirmedAt = data.reg?.depositConfirmedAt || new Date().toISOString(); }
         renderTable();
         renderDash();
         updateCardStats();
-        showToast(t('depositSuccess'), 'success');
+        showToast('예약금 수납이 확인되었습니다. 알림톡을 발송했습니다.', 'success');
       } catch (e) {
-        showToast(t('errorPrefix') + e.message, 'error');
+        showToast('오류: ' + e.message, 'error');
+      }
+    }
+
+    // ── 확정 → 예약금 되돌리기 ──
+    async function revertReg(regId, campId) {
+      if (!confirm(`최종확정을 취소하고 예약금확인 상태로 되돌리시겠습니까?\n잔금 입금 전인 경우에만 사용해주세요.`)) return;
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'PATCH',
+          headers: authHeaders(),
+          body: JSON.stringify({ regId, campId, action: 'revert' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '처리 실패');
+        const reg = allRegs.find(r => r.regId === regId);
+        if (reg) { reg.status = 'deposit'; reg.confirmed = false; delete reg.confirmedAt; }
+        renderTable();
+        renderDash();
+        updateCardStats();
+        showToast('예약금확인 상태로 되돌렸습니다.', 'success');
+      } catch (e) {
+        showToast('오류: ' + e.message, 'error');
       }
     }
 
     // ── 최종 확정 ──
     async function confirmReg(regId, campId) {
-      if (!confirm(t('finalConfirmMsg'))) return;
+      if (!confirm(`최종 확정하시겠습니까?\n잔금 입금이 모두 확인된 경우에만 진행해주세요.`)) return;
       try {
         const res = await fetch('/api/admin/registrations', {
           method: 'PATCH',
@@ -2183,74 +1173,70 @@
           body: JSON.stringify({ regId, campId, action: 'confirm', campTitleKo: CAMP_LABELS[campId] || campId, campDateKo: CAMP_DATES[campId] || '' }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || t('confirmFail'));
+        if (!res.ok) throw new Error(data.error || '확정 실패');
         const reg = allRegs.find(r => r.regId === regId);
         if (reg) { reg.status = 'confirmed'; reg.confirmed = true; reg.confirmedAt = data.reg?.confirmedAt || new Date().toISOString(); }
         renderTable();
         renderDash();
         updateCardStats();
-        showToast(t('finalSuccess'), 'success');
+        showToast('최종 확정되었습니다. 알림톡을 발송했습니다.', 'success');
       } catch (e) {
-        showToast(t('confirmErr') + e.message, 'error');
+        showToast('확정 오류: ' + e.message, 'error');
       }
     }
 
     // ── CSV ──
     function downloadCsv(type = 'camp') {
-      const campName = activeCamp === 'all' ? t('campAll') : campDisplayName(activeCamp);
+      const campName = CAMP_LABELS[activeCamp] || '전체';
       const today = new Date().toISOString().slice(0, 10);
       const bom = '﻿';
 
       if (type === 'staff') {
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType === 'staff'));
-        if (regs.length === 0) { showToast(t('csvNoStaff'), 'error'); return; }
-        const headers = adminLang === 'en'
-          ? ['No','Camp','Name','Phone','Email','Gender','Church','Teams','Registered','RegID']
-          : ['번호','캠프','이름','연락처','이메일','성별','교회','섬기고 싶은 분야','신청일시','RegID'];
+        if (regs.length === 0) { showToast('다운로드할 스태프 데이터가 없습니다.', 'error'); return; }
+        const headers = ['번호','캠프','이름','연락처','이메일','성별','교회','섬기고 싶은 분야','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
-          const genderLabel = r.gender === 'male' ? t('male') : r.gender === 'female' ? t('female') : '';
+          const genderLabel = r.gender === 'male' ? '남' : r.gender === 'female' ? '여' : '';
           return [
-            i + 1, campDisplayName(r.campId),
+            i + 1, CAMP_LABELS[r.campId] || r.campId,
             r.name, r.phone, r.email, genderLabel, r.church || '',
-            staffTeams(r).join(', ') || r.notes || '', date, r.regId,
+            r.serviceArea || r.notes || '', date, r.regId,
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
         });
         const csv = bom + [headers.join(','), ...rows].join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = `WOLKO_${t('csvStaffFile')}_${campName}_${today}.csv`;
+        a.href = url; a.download = `WOLKO_스태프지원_${campName}_${today}.csv`;
         a.click(); URL.revokeObjectURL(url);
-        showToast(t('csvStaffDone'), 'success');
+        showToast('스태프 CSV 다운로드 완료!', 'success');
       } else {
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
-        if (regs.length === 0) { showToast(t('csvNoCamp'), 'error'); return; }
-        const headers = adminLang === 'en'
-          ? ['No','Status','Camp','Type','Name','Students','Counselor','Saved','Dedicated','Counselor Note','Phone','Email','Grade/Count','Gender','Church','School','Emergency','Notes','Registered','RegID']
-          : ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
+        if (regs.length === 0) { showToast('다운로드할 신청 데이터가 없습니다.', 'error'); return; }
+        const headers = ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
-          const gradeOrCount = r.registrationType === 'group' ? `${t('groupBadge')} ${tt('personCountFn', r.groupCount)}` : (r.grade || '');
+          const gradeOrCount = r.registrationType === 'group' ? `단체 ${r.groupCount}명` : (r.grade || '');
           const _s = r.status || (r.confirmed !== false ? 'confirmed' : 'pending');
-          const statusVal = _s === 'confirmed' ? t('confirmed') : _s === 'deposit' ? t('depositConfirmed') : t('pending');
+          const statusVal = _s === 'confirmed' ? '최종확정' : _s === 'deposit' ? '예약금확인' : '대기중';
           let genderVal;
           if (r.registrationType === 'group') {
             const m = r.maleCount || 0, f = r.femaleCount || 0;
-            genderVal = (m > 0 || f > 0) ? `${t('male')} ${m} ${t('female')} ${f}` : '';
+            genderVal = (m > 0 || f > 0) ? `남 ${m} 여 ${f}` : '';
           } else {
-            genderVal = r.gender === 'male' ? t('male') : r.gender === 'female' ? t('female') : '';
+            genderVal = r.gender === 'male' ? '남' : r.gender === 'female' ? '여' : '';
           }
           const counselor = allRegs.find(staff => staff.regId === r.counselorRegId && staff.campId === r.campId);
           const participantList = Array.isArray(r.participants)
             ? r.participants.map((participant, index) => {
                 const participantCounselor = allRegs.find(staff => staff.regId === participant.counselorRegId && staff.campId === r.campId);
-                return `${index + 1}. ${participant.name || t('notEntered')} (${participant.gender === 'male' ? t('male') : participant.gender === 'female' ? t('female') : t('genderMissing')}${participantCounselor ? ` / ${participantCounselor.name}` : ''}${participant.saved ? ' / ' + t('savedLabel') : ''}${participant.dedicated ? ' / ' + t('dedicatedLabel') : ''}${participant.counselorMemo ? ` / ${t('thCounselorMemo')}: ${participant.counselorMemo}` : ''})`;
+                return `${index + 1}. ${participant.name || '미입력'} (${participant.gender === 'male' ? '남' : participant.gender === 'female' ? '여' : '성별 미입력'}${participantCounselor ? ` / ${participantCounselor.name}` : ''}${participant.saved ? ' / 구원' : ''}${participant.dedicated ? ' / 헌신' : ''}${participant.counselorMemo ? ` / 상담자 메모: ${participant.counselorMemo}` : ''})`;
               }).join('\n')
             : '';
           return [
-            i + 1, statusVal, campDisplayName(r.campId),
-            r.registrationType === 'group' ? t('groupBadge') : t('individualBadge'),
+            i + 1, statusVal, CAMP_LABELS[r.campId] || r.campId,
+            r.registrationType === 'group' ? '단체' : '개인',
             r.name, participantList, counselor?.name || '', r.saved ? 'O' : '', r.dedicated ? 'O' : '', r.counselorMemo || '',
             r.phone, r.email, gradeOrCount, genderVal,
             r.church || '', r.school || '', r.emergency || '',
@@ -2261,9 +1247,9 @@
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = `WOLKO_${t('csvCampFile')}_${campName}_${today}.csv`;
+        a.href = url; a.download = `WOLKO_신청목록_${campName}_${today}.csv`;
         a.click(); URL.revokeObjectURL(url);
-        showToast(t('csvDone'), 'success');
+        showToast('CSV 다운로드 완료!', 'success');
       }
     }
 
@@ -2293,8 +1279,12 @@
     // iOS일 경우 안내 모달 내용 교체
     if (isAdminIOS) {
       document.getElementById('admGuideEmoji').textContent = '🍎';
+      document.getElementById('admGuideDesc').textContent = 'Safari 브라우저에서 설치할 수 있어요.';
+      document.getElementById('admGuideSteps').innerHTML =
+        '<li>하단 가운데 <strong>공유 버튼 (□↑)</strong> 탭</li>' +
+        '<li><strong>"홈 화면에 추가"</strong> 선택</li>' +
+        '<li><strong>"추가"</strong> 탭</li>';
     }
-    applyInstallGuideText();
 
     if (!isAdminStandalone) {
       document.getElementById('adminInstallBtn').style.display = '';
@@ -2345,14 +1335,14 @@
       </div>
       <div style="padding:.4rem 1.5rem 1.8rem;text-align:center;">
         <div id="admGuideEmoji" style="font-size:2.2rem;margin-bottom:.8rem;">📲</div>
-        <h3 id="admGuideTitle" style="margin:0 0 .5rem;font-size:1.05rem;color:#004f68;">앱으로 설치하기</h3>
+        <h3 style="margin:0 0 .5rem;font-size:1.05rem;color:#004f68;">앱으로 설치하기</h3>
         <p id="admGuideDesc" style="font-size:.83rem;color:#5a6f79;margin:0 0 1.2rem;line-height:1.6;">Chrome 브라우저 메뉴에서 설치할 수 있어요.</p>
         <ol id="admGuideSteps" style="text-align:left;font-size:.86rem;line-height:2.1;color:#2d4a56;padding-left:1.2rem;margin:0 0 1.4rem;">
           <li>오른쪽 상단 <strong>⋮ 메뉴</strong> 탭</li>
           <li><strong>"홈 화면에 추가"</strong> 선택</li>
           <li><strong>"추가"</strong> 탭</li>
         </ol>
-        <button id="admGuideOk" onclick="closeAdminGuide()" style="width:100%;padding:.75rem;background:#004f68;color:#fff;border:none;border-radius:10px;font-size:.93rem;font-weight:700;cursor:pointer;">확인</button>
+        <button onclick="closeAdminGuide()" style="width:100%;padding:.75rem;background:#004f68;color:#fff;border:none;border-radius:10px;font-size:.93rem;font-weight:700;cursor:pointer;">확인</button>
       </div>
     </div>
   </div>

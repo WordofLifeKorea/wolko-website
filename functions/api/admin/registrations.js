@@ -313,6 +313,31 @@ export async function onRequestPatch(context) {
       }, { headers: CORS });
     }
 
+    // ── 확정 → 예약금 되돌리기 ──────────────────────────────────────────────────
+    if (action === 'revert') {
+      if (reg.status !== 'confirmed') {
+        return Response.json({ error: '최종확정 상태가 아닙니다.' }, { status: 409, headers: CORS });
+      }
+
+      // 카운트는 유지 (deposit→confirmed 시 증가한 카운트는 그대로)
+      const updatedReg = {
+        ...reg,
+        status: 'deposit',
+        confirmed: false,
+        revertedAt: new Date().toISOString(),
+      };
+      delete updatedReg.confirmedAt;
+
+      await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));
+
+      const newCount = parseInt(await env.CAMP_KV.get(`camp:${campId}:count`) || '0');
+      return Response.json({
+        success: true,
+        count: newCount,
+        reg: updatedReg,
+      }, { headers: CORS });
+    }
+
     return Response.json({ error: `알 수 없는 action: ${action}` }, { status: 400, headers: CORS });
 
   } catch (e) {
