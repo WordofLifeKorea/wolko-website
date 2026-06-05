@@ -315,7 +315,8 @@ export async function onRequestPatch(context) {
 
     // ── 확정 → 예약금 되돌리기 ──────────────────────────────────────────────────
     if (action === 'revert') {
-      if (reg.status !== 'confirmed') {
+      const isConfirmed = reg.status === 'confirmed' || (reg.status === undefined && reg.confirmed === true);
+      if (!isConfirmed) {
         return Response.json({ error: '최종확정 상태가 아닙니다.' }, { status: 409, headers: CORS });
       }
 
