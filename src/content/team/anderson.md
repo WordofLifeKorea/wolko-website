@@ -10,7 +10,7 @@ bio_en: |-
   Shortly after that conference, I was given the opportunity to serve with Word of Life Korea. A year later, I married my wife, Chanjoo, a Korean woman who had also attended Word of Life Bible Institute and was serving as a missionary in South Korea.
   Today, I live in Korea full-time, serving to tell others, especially young people, about the same gospel that brought me from death to life.
 gender: male
-name_ko: 앤더슨 제이슨 & 앤더슨 찬주
+name_ko: 제이슨 & 찬주 앤더슨
 name_en: Jason & Chanju Anderson
 title_ko: 캠프 & 아웃리치 팀 코디네이터
 title_en: Camp & Outreach Team Coordinator

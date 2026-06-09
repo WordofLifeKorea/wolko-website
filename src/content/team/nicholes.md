@@ -9,8 +9,8 @@ bio_en: Steve was born into a Word of Life ministry family. At four years old,
   now serves as Executive Dean of WOLBI Jeju, bearing the fruit of more than
   thirty years of faithful commitment.
 gender: male
-name_ko: 스티브 니콜스 & 란다 니콜스
-name_en: Steve Nicholes & Rhonda Nicholes
+name_ko: 스티브 & 란다 니콜스
+name_en: Steve & Rhonda Nicholes
 title_ko: 제주월비 대표
 title_en: Ministry Director & Executive Dean
 role_badge: Jeju Director

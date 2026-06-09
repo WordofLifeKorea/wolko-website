@@ -5,7 +5,7 @@ bio_en: |-
   
   When I was eight years old I moved from Massachusetts to Virginia, where I attended a church deeply involved in Word of Life Student Ministries. God used that church to have a huge impact on my life, especially in my spiritual growth. After attending Word of Life camps in New York, I decided to attend the Word of Life Bible Institute. It was there that God truly changed my heart and gave me a burden for the people of Asia. After graduating from the Bible Institute, I completed a two-year missionary training program with Word of Life. During that time I also earned a Bachelor of Science in Religion through Liberty University's distance learning program. My wife and I simply desire to be used by God to impact the lives of young people in South Korea and all over the world.
 gender: male
-name_ko: 몰스 제이콥 & 몰스 크리스탈
+name_ko: 제이콥 & 크리스탈 몰스
 name_en: Jacob & Crystal Morse
 title_ko: 월코 대표 · Field Director
 title_en: WOLKO Director · Field Director
