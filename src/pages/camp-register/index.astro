@@ -702,6 +702,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
   outline: none; width: 100%; resize: vertical;
 }
 .crp-field input::placeholder, .crp-field textarea::placeholder { color: #afc2cc; }
+#crpGrade { min-height: 46px; box-sizing: border-box; }
 .crp-field input:focus, .crp-field select:focus, .crp-field textarea:focus {
   border-color: var(--c-mid); background: #fff;
   box-shadow: 0 0 0 3px rgba(0,126,161,0.09);
@@ -1978,21 +1979,16 @@ function updateCrpCapBar(el, data, totalCap) {
   if (countEl)  countEl.textContent  = count;
   if (countMEl) countMEl.textContent = countM;
   if (countFEl) countFEl.textContent = countF;
+  if (fillM) fillM.style.width = '0%';
+  if (fillF) fillF.style.width = '0%';
 
   if (capM > 0 && capF > 0) {
     // 성별 정원 분리 캠프: 각각의 정원 기준으로 바 계산
     if (fillM) fillM.style.width = Math.min((countM / capM) * 100, 100) + '%';
     if (fillF) fillF.style.width = Math.min((countF / capF) * 100, 100) + '%';
   } else if (totalCap > 0) {
-    if (countM > 0 || countF > 0) {
-      // 성별 데이터 있지만 정원 미분리: 전체 정원 기준 스택
-      if (fillM) fillM.style.width = Math.min((countM / totalCap) * 100, 100) + '%';
-      if (fillF) fillF.style.width = Math.min((countF / totalCap) * 100, 100) + '%';
-    } else if (count > 0) {
-      // 성별 데이터 없음: 전체 파란 바
-      if (fillM) fillM.style.width = Math.min((count / totalCap) * 100, 100) + '%';
-      if (fillF) fillF.style.width = '0%';
-    }
+    // 성별 정원 미분리 캠프: 전체 신청 현황을 단일 바로 표시
+    if (fillM) fillM.style.width = Math.min((count / totalCap) * 100, 100) + '%';
   }
 }
 
@@ -2059,6 +2055,7 @@ var tabGroup = document.getElementById('crpTabGroup');
 var currentCapMale = 0;
 var currentCapFemale = 0;
 var currentRegisteredCount = null;
+var modalCapacityRequestId = 0;
 
 /* ── 모달 정원 바 (성별 split) ── */
 function updateCrpModalCap(data, capacity) {
@@ -2067,15 +2064,16 @@ function updateCrpModalCap(data, capacity) {
   var countF = (typeof data === 'object') ? (data.countFemale || 0) : 0;
 
   modalCapLabel.textContent = count + ' / ' + capacity + (crpIsEn() ? ' spots' : '명');
+  if (modalCapFillM) modalCapFillM.style.width = '0%';
+  if (modalCapFillF) modalCapFillF.style.width = '0%';
 
   if (capacity <= 0) return;
 
-  if (countM > 0 || countF > 0) {
+  if (currentCapMale > 0 && currentCapFemale > 0) {
     if (modalCapFillM) modalCapFillM.style.width = Math.min((countM / capacity) * 100, 100) + '%';
     if (modalCapFillF) modalCapFillF.style.width = Math.min((countF / capacity) * 100, 100) + '%';
-  } else if (count > 0) {
+  } else {
     if (modalCapFillM) modalCapFillM.style.width = Math.min((count / capacity) * 100, 100) + '%';
-    if (modalCapFillF) modalCapFillF.style.width = '0%';
   }
 }
 
@@ -2141,6 +2139,7 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     var nameKo   = this.dataset.campNameKo;
     var nameEn   = this.dataset.campNameEn;
     var capacity = parseInt(this.dataset.capacity) || 40;
+    var requestId = ++modalCapacityRequestId;
     currentCapMale   = parseInt(this.dataset.capacityMale)   || 0;
     currentCapFemale = parseInt(this.dataset.capacityFemale) || 0;
     currentRegisteredCount = null;
@@ -2163,6 +2162,10 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     errorMsg.hidden = true;
     submitBtn.disabled = false;
     submitBtn.classList.remove('loading');
+    submitBtn.querySelector('.crp-submit-label').innerHTML =
+      '<span class="wl-ko">신청 완료하기</span><span class="wl-en">Submit Registration</span>';
+    var waitlistNotice = document.getElementById('crpWaitlistNotice');
+    if (waitlistNotice) waitlistNotice.hidden = true;
     updateCrpModalCap({ count: '…', countMale: 0, countFemale: 0 }, capacity);
 
     modal.hidden = false;
@@ -2172,10 +2175,10 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
       var res = await fetch('/api/capacity/' + campId);
       if (res.ok) {
         var data = await res.json();
+        if (requestId !== modalCapacityRequestId || modal.hidden) return;
         var subs = data.count ?? 0;
         currentRegisteredCount = data.submissions ?? subs;
         updateCrpModalCap({ count: subs, countMale: data.countMale ?? 0, countFemale: data.countFemale ?? 0 }, capacity);
-        var waitlistNotice = document.getElementById('crpWaitlistNotice');
         if (subs >= capacity + WAITLIST_SIZE) {
           submitBtn.disabled = true;
           submitBtn.querySelector('.crp-submit-label').innerHTML = '<span>신청이 마감되었습니다 / Closed</span>';
@@ -2191,12 +2194,17 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
           if (waitlistNotice) waitlistNotice.hidden = true;
         }
       }
-    } catch(e) { updateCrpModalCap({ count: 0, countMale: 0, countFemale: 0 }, capacity); }
+    } catch(e) {
+      if (requestId === modalCapacityRequestId && !modal.hidden) {
+        updateCrpModalCap({ count: 0, countMale: 0, countFemale: 0 }, capacity);
+      }
+    }
   });
 });
 
 /* ── 모달 닫기 ── */
 function closeCrpModal() {
+  modalCapacityRequestId++;
   modal.hidden = true;
   document.body.style.overflow = '';
 }

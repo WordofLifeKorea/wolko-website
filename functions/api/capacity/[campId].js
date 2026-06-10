@@ -1,7 +1,7 @@
 /**
  * GET /api/capacity/:campId
- * Returns current registration count for a camp session.
- * Also returns gender-split counts (countMale, countFemale).
+ * Returns final-confirmed participant counts for a camp session.
+ * Also returns all submitted participant counts for capacity/waitlist checks.
  */
 export async function onRequestGet(context) {
   const { params, env } = context;

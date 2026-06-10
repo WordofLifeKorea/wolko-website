@@ -1073,7 +1073,7 @@
         return `${String(teamOrder).padStart(2, '0')}-${primary}-${reg.name || ''}`;
       }
       if (key === 'status') {
-        const s = reg.status || (reg.confirmed !== false ? 'confirmed' : 'pending');
+        const s = reg.status || (reg.confirmed === true ? 'confirmed' : 'pending');
         return s === 'confirmed' ? '3-confirmed' : s === 'deposit' ? '2-deposit' : '1-pending';
       }
       if (key === 'grade') return reg.registrationType === 'group' ? (reg.groupCount || 0) : (reg.grade || '');
@@ -1129,9 +1129,9 @@
       // 스태프 신청은 정원 집계에서 제외
       const campRegs = regs.filter(r => r.registrationType !== 'staff');
 
-      // 확정/미확정 분리 — deposit 또는 confirmed = KV 카운트 반영된 것
-      const confirmedRegs = campRegs.filter(r => r.status === 'deposit' || r.status === 'confirmed' || (r.status === undefined && r.confirmed !== false));
-      const pendingRegs   = campRegs.filter(r => !(r.status === 'deposit' || r.status === 'confirmed' || (r.status === undefined && r.confirmed !== false)));
+      // 잔금까지 확인된 최종확정 신청만 캠프 참여 인원으로 집계
+      const confirmedRegs = campRegs.filter(r => r.status === 'confirmed' || (r.status === undefined && r.confirmed === true));
+      const pendingRegs   = campRegs.filter(r => !(r.status === 'confirmed' || (r.status === undefined && r.confirmed === true)));
 
       const total     = campRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
       const confirmed = confirmedRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
@@ -1234,7 +1234,7 @@
         }
 
         // 상태 셀: 3단계 (대기중 → 예약금수납 → 최종확정)
-        const regStatus = r.status || (r.confirmed !== false ? 'confirmed' : 'pending');
+        const regStatus = r.status || (r.confirmed === true ? 'confirmed' : 'pending');
         const waitlistBadge = r.isWaitlist
           ? `<span style="display:inline-block;padding:2px 7px;border-radius:100px;background:rgba(217,119,6,0.15);color:#b45309;font-size:10px;font-weight:700;margin-left:3px;">${tt('waitlistFn', r.waitlistNumber)}</span>`
           : '';
@@ -2260,7 +2260,7 @@
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const gradeOrCount = r.registrationType === 'group' ? `${t('groupBadge')} ${tt('personCountFn', r.groupCount)}` : (r.grade || '');
-          const _s = r.status || (r.confirmed !== false ? 'confirmed' : 'pending');
+          const _s = r.status || (r.confirmed === true ? 'confirmed' : 'pending');
           const statusVal = _s === 'confirmed' ? t('confirmed') : _s === 'deposit' ? t('depositConfirmed') : t('pending');
           let genderVal;
           if (r.registrationType === 'group') {
