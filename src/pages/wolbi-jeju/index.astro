@@ -79,12 +79,13 @@ span.wl-en { display: none; }
 /* ── HERO ── */
 .wj-wrap .hero {
   position: relative; height: 100vh; min-height: 620px;
-  background: var(--c-deep); display: flex; align-items: center; overflow: hidden;
+  background: var(--c-deep) url('/images/wolbi-jeju/hero-campus-spring-2026.jpeg') center 45% / cover no-repeat;
+  display: flex; align-items: center; overflow: hidden;
 }
 .wj-wrap .hero::before {
   content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(0,126,161,0.45) 0%, transparent 70%),
-              radial-gradient(ellipse 50% 80% at 10% 80%, rgba(115,209,245,0.10) 0%, transparent 60%);
+  background: linear-gradient(90deg, rgba(0,25,39,0.92) 0%, rgba(0,35,52,0.76) 38%, rgba(0,35,52,0.28) 68%, rgba(0,20,32,0.16) 100%),
+              linear-gradient(180deg, rgba(0,20,32,0.28) 0%, rgba(0,20,32,0.05) 52%, rgba(0,20,32,0.42) 100%);
   pointer-events: none;
 }
 .wj-wrap .hero-circle { position: absolute; right: -120px; top: -120px; width: 560px; height: 560px; border-radius: 50%; border: 1px solid rgba(115,209,245,0.15); pointer-events: none; }
@@ -238,7 +239,8 @@ span.wl-en { display: none; }
 /* ── 반응형 ── */
 @media (max-width: 960px) {
   .wj-wrap { --sp-3xl: 96px; --sp-2xl: 72px; --pad-h: 28px; }
-  .wj-wrap .hero { height: auto; min-height: 100svh; }
+  .wj-wrap .hero { height: auto; min-height: 100svh; background-position: 58% center; }
+  .wj-wrap .hero::before { background: linear-gradient(90deg, rgba(0,25,39,0.92) 0%, rgba(0,35,52,0.70) 60%, rgba(0,20,32,0.30) 100%), linear-gradient(180deg, rgba(0,20,32,0.24), rgba(0,20,32,0.42)); }
   .wj-wrap .hero-inner { padding-top: 100px; padding-bottom: 180px; }
   .wj-wrap .hero-stats-inner { flex-wrap: wrap; }
   .wj-wrap .hero-stat { flex: 1 1 50%; border-right: none; border-bottom: 1px solid rgba(115,209,245,0.12); padding: var(--sp-sm) var(--sp-md) !important; flex-direction: row; align-items: center; gap: var(--sp-sm); }
@@ -263,6 +265,8 @@ span.wl-en { display: none; }
 
 @media (max-width: 600px) {
   .wj-wrap { --sp-3xl: 72px; --sp-2xl: 56px; --sp-xl: 48px; --pad-h: 20px; }
+  .wj-wrap .hero { background-position: 52% center; }
+  .wj-wrap .hero::before { background: linear-gradient(180deg, rgba(0,25,39,0.86) 0%, rgba(0,30,46,0.62) 48%, rgba(0,20,32,0.68) 100%); }
   .wj-wrap .hero-inner { padding-top: 80px; padding-bottom: 300px; }
   .wj-wrap .hero-title { font-size: clamp(28px, 8vw, 40px); }
   .wj-wrap .hero-subtitle { font-size: 14px; margin-bottom: var(--sp-lg); }
