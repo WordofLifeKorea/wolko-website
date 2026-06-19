@@ -212,16 +212,19 @@
               <th><button class="sort-btn" type="button" data-sort="staffTeam"><span data-t="thTeam">팀</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thName">이름</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="gender"><span data-t="thGender">성별</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="birthDate"><span data-t="thBirthDate">생년월일</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="church"><span data-t="thChurch">교회</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="previousCamp"><span data-t="thPreviousCamp">캠프 경험</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="notes"><span data-t="thApplicantMemo">신청자 메모</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="testimony"><span data-t="thTestimony">자기소개·간증</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="email"><span data-t="thEmail">이메일</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
               <th><span data-t="thDelete">삭제</span></th>
             </tr>
           </thead>
           <tbody id="staffRegBody">
-            <tr><td colspan="9">
+            <tr><td colspan="12">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p data-t="loginFirst">로그인 후 자동으로 불러옵니다.</p>
@@ -270,6 +273,7 @@
         thGrade:'학년 / 인원', thGender:'성별', thChurch:'교회', thSchool:'학교',
         thEmergency:'비상연락처', thNotes:'메모', thDate:'신청일시', thDelete:'삭제',
         staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
+        thBirthDate:'생년월일', thPreviousCamp:'캠프 경험', thTestimony:'자기소개·간증',
         deleteConfirm:'정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
         loginFirst:'로그인 후 자동으로 불러옵니다.', totalCapacity:'전체 정원 현황', statLoading:'불러오는 중…',
         statTotal:'총 신청', statRemain:'잔여 정원', statWaitlist:'예비 신청', statStaff:'스태프 지원',
@@ -345,6 +349,7 @@
         thGrade:'Grade / Count', thGender:'Gender', thChurch:'Church', thSchool:'School',
         thEmergency:'Emergency', thNotes:'Notes', thDate:'Registered', thDelete:'Delete',
         staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
+        thBirthDate:'Birth Date', thPreviousCamp:'Camp Exp.', thTestimony:'Intro/Testimony',
         deleteConfirm:'Delete this registration?\nThis action cannot be undone.',
         loginFirst:'Data will load after login.', totalCapacity:'Overall Capacity', statLoading:'Loading…',
         statTotal:'Total Reg.', statRemain:'Remaining', statWaitlist:'Waitlist', statStaff:'Staff Applied',
@@ -1041,7 +1046,7 @@
         showToast(t('dataLoadFail') + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>${t('dataLoadRetry')}</p></div>`;
         document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="19">${errHtml}</td></tr>`;
-        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="9">${errHtml}</td></tr>`;
+        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="12">${errHtml}</td></tr>`;
       }
     }
 
@@ -1391,7 +1396,7 @@
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="9">
+          <tr><td colspan="12">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -1408,6 +1413,7 @@
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const applicantMemo = r.notes || '';
+        const testimonyCell = renderMemoCell(r.testimony || '');
         const campStyle = getCampRowStyle(r);
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
 
@@ -1434,9 +1440,12 @@
           <td>${teamCell}</td>
           <td><span class="staff-name-cell">${esc(r.name || t('unset'))}</span></td>
           <td>${genderBadge}</td>
+          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${esc(r.birthDate || '—')}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.church || '—')}</td>
+          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${esc(previousCampLabel(r.previousCamp))}</td>
           <td style="white-space:nowrap">${phoneCell}</td>
           <td>${memoCell}</td>
+          <td>${testimonyCell}</td>
           <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
           <td><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></td>
@@ -1453,10 +1462,10 @@
         const campRegs = regs.filter(r => r.campId === campId);
         const campStyle = getCampRowStyle({ campId });
         return `<tr class="staff-camp-divider" style="--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};">
-          <td colspan="9"><strong>${esc(campDisplayName(campId))}</strong><span>${tt('personCountFn', campRegs.length)}</span></td>
+          <td colspan="12"><strong>${esc(campDisplayName(campId))}</strong><span>${tt('personCountFn', campRegs.length)}</span></td>
         </tr>${campRegs.length
           ? campRegs.map(renderStaffRow).join('')
-          : `<tr class="staff-camp-empty"><td colspan="9">${t('campEmpty')}</td></tr>`}`;
+          : `<tr class="staff-camp-empty"><td colspan="12">${t('campEmpty')}</td></tr>`}`;
       }).join('');
       updateStaffOverflowPopovers();
     }
@@ -1932,6 +1941,12 @@
       </span>`;
     }
 
+    function previousCampLabel(value) {
+      if (value === 'yes') return adminLang === 'en' ? 'Yes' : '예';
+      if (value === 'no') return adminLang === 'en' ? 'No' : '아니오';
+      return '—';
+    }
+
     function updateStaffOverflowPopovers() {
       // Double rAF ensures the table has fully laid out before measuring
       requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -2233,15 +2248,15 @@
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType === 'staff'));
         if (regs.length === 0) { showToast(t('csvNoStaff'), 'error'); return; }
         const headers = adminLang === 'en'
-          ? ['No','Camp','Name','Phone','Email','Gender','Church','Teams','Registered','RegID']
-          : ['번호','캠프','이름','연락처','이메일','성별','교회','섬기고 싶은 분야','신청일시','RegID'];
+          ? ['No','Camp','Name','Phone','Email','Gender','Birth Date','Church','Previous Camp','Teams','Applicant Note','Introduction/Testimony','Registered','RegID']
+          : ['번호','캠프','이름','연락처','이메일','성별','생년월일','교회','이전 캠프 참여','섬기고 싶은 분야','신청자 메모','자기소개 및 간증','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const genderLabel = r.gender === 'male' ? t('male') : r.gender === 'female' ? t('female') : '';
           return [
             i + 1, campDisplayName(r.campId),
-            r.name, r.phone, r.email, genderLabel, r.church || '',
-            staffTeams(r).join(', ') || r.notes || '', date, r.regId,
+            r.name, r.phone, r.email, genderLabel, r.birthDate || '', r.church || '',
+            previousCampLabel(r.previousCamp), staffTeams(r).join(', '), r.notes || '', r.testimony || '', date, r.regId,
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
         });
         const csv = bom + [headers.join(','), ...rows].join('\n');

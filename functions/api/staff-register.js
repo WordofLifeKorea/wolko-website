@@ -11,6 +11,10 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
 };
 
+function escHtml(value) {
+  return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function buildStaffEmailHtml(reg) {
   const kstTime = new Date(reg.registeredAt).toLocaleString('ko-KR', {
     timeZone: 'Asia/Seoul',
@@ -47,8 +51,16 @@ function buildStaffEmailHtml(reg) {
           <td style="padding:8px 0;font-size:14px;">${reg.phone}</td>
         </tr>
         <tr>
+          <td style="padding:8px 0;color:#5a6f79;font-size:13px;">생년월일</td>
+          <td style="padding:8px 0;font-size:14px;">${reg.birthDate || '—'}</td>
+        </tr>
+        <tr>
           <td style="padding:8px 0;color:#5a6f79;font-size:13px;">교회</td>
           <td style="padding:8px 0;font-size:14px;">${reg.church || '—'}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;color:#5a6f79;font-size:13px;">이전 캠프 참여</td>
+          <td style="padding:8px 0;font-size:14px;">${reg.previousCamp === 'yes' ? '예' : reg.previousCamp === 'no' ? '아니오' : '—'}</td>
         </tr>
         <tr><td colspan="2"><div style="border-top:1px solid rgba(0,79,104,0.1);margin:4px 0;"></div></td></tr>
         ${reg.serviceArea ? `
@@ -57,14 +69,21 @@ function buildStaffEmailHtml(reg) {
           <td style="padding:0;"></td>
         </tr>
         <tr>
-          <td colspan="2" style="padding:8px 16px;background:#f0fdfa;border-radius:10px;font-size:15px;line-height:1.75;color:#0d1b24;white-space:pre-wrap;">${reg.serviceArea.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</td>
+          <td colspan="2" style="padding:8px 16px;background:#f0fdfa;border-radius:10px;font-size:15px;line-height:1.75;color:#0d1b24;white-space:pre-wrap;">${escHtml(reg.serviceArea)}</td>
+        </tr>` : ''}
+        ${reg.testimony ? `
+        <tr>
+          <td colspan="2" style="padding:8px 0 4px;color:#5a6f79;font-size:13px;">자기소개 및 간증</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:8px 16px;background:#f4f8fb;border-radius:10px;font-size:15px;line-height:1.75;color:#0d1b24;white-space:pre-wrap;">${escHtml(reg.testimony)}</td>
         </tr>` : ''}
         ${reg.notes ? `
         <tr>
           <td colspan="2" style="padding:8px 0 4px;color:#5a6f79;font-size:13px;">메모</td>
         </tr>
         <tr>
-          <td colspan="2" style="padding:8px 16px;background:#f4f8fb;border-radius:10px;font-size:15px;line-height:1.75;color:#0d1b24;white-space:pre-wrap;">${reg.notes.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</td>
+          <td colspan="2" style="padding:8px 16px;background:#f4f8fb;border-radius:10px;font-size:15px;line-height:1.75;color:#0d1b24;white-space:pre-wrap;">${escHtml(reg.notes)}</td>
         </tr>` : ''}
       </table>
     </div>
@@ -101,7 +120,7 @@ async function syncStaffToSheet(env, reg) {
   await appendRow({
     serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
     sheetId: env.GOOGLE_SHEET_ID,
-    range: '시트1!A:R',
+    range: '시트1!A:U',
     row: [
       reg.registeredAt,       // A 신청일시
       reg.regId,              // B 신청ID
@@ -121,6 +140,9 @@ async function syncStaffToSheet(env, reg) {
       reg.serviceArea || '',  // P 섬기고 싶은 분야 (메모 컬럼 활용)
       '대기중',               // Q 확정여부
       '',                     // R 확정일시
+      reg.birthDate || '',     // S 생년월일
+      reg.previousCamp || '',  // T 이전 캠프 참여 경험
+      reg.testimony || '',     // U 자기소개 및 간증
     ],
   });
 }
@@ -130,10 +152,16 @@ export async function onRequestPost(context) {
 
   try {
     const data = await request.json();
-    const { campId, name, phone, email, gender, church, serviceArea, notes, campTitleKo } = data;
+    const { campId, name, phone, email, gender, birthDate, church, previousCamp, serviceArea, notes, testimony, campTitleKo } = data;
 
-    if (!campId || !name?.trim() || !phone?.trim() || !email?.trim()) {
+    if (!campId || !name?.trim() || !phone?.trim() || !email?.trim() || !birthDate || !previousCamp || !testimony?.trim()) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(birthDate))) {
+      return Response.json({ error: '생년월일 형식이 올바르지 않습니다.' }, { status: 400, headers: CORS });
+    }
+    if (!['yes', 'no'].includes(previousCamp)) {
+      return Response.json({ error: '이전 캠프 참여 경험을 선택해주세요.' }, { status: 400, headers: CORS });
     }
 
     const emailNorm = email.trim().toLowerCase();
@@ -153,9 +181,12 @@ export async function onRequestPost(context) {
       phone: phone.trim(),
       email: emailNorm,
       gender: gender || '',
+      birthDate,
       church: church?.trim() || '',
+      previousCamp,
       serviceArea: serviceArea?.trim() || '',
       notes: notes?.trim() || '',
+      testimony: testimony.trim(),
       registeredAt: new Date().toISOString(),
       confirmed: false,
       confirmedAt: null,

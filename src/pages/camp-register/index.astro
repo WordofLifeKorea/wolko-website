@@ -1849,9 +1849,31 @@ html, body { overflow-x: hidden; max-width: 100%; }
               <option value="female" data-ko="여" data-en="Female">여</option>
             </select>
           </div>
+          <div class="crp-field">
+            <label><span class="wl-ko">생년월일</span><span class="wl-en">Date of Birth</span> <span class="req">*</span></label>
+            <div style="display:grid;grid-template-columns:1.2fr 0.9fr 0.9fr;gap:8px;">
+              <select id="staffBirthYear" name="birthYear" data-opt-ko="년도" data-opt-en="Year">
+                <option value="" disabled selected>년도</option>
+              </select>
+              <select id="staffBirthMonth" name="birthMonth" data-opt-ko="월" data-opt-en="Month">
+                <option value="" disabled selected>월</option>
+              </select>
+              <select id="staffBirthDay" name="birthDay" data-opt-ko="일" data-opt-en="Day">
+                <option value="" disabled selected>일</option>
+              </select>
+            </div>
+          </div>
           <div class="crp-field crp-field--full">
             <label><span class="wl-ko">교회</span><span class="wl-en">Church</span></label>
             <input id="staffChurch" name="church" data-ph-ko="소속 교회명" data-ph-en="Your church" placeholder="소속 교회명">
+          </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">이전 캠프 참여 경험</span><span class="wl-en">Previous Camp Experience</span> <span class="req">*</span></label>
+            <select id="staffPreviousCamp" name="previousCamp" data-opt-ko="선택" data-opt-en="Select">
+              <option value="" disabled selected>선택</option>
+              <option value="yes" data-ko="예" data-en="Yes">예</option>
+              <option value="no" data-ko="아니오" data-en="No">아니오</option>
+            </select>
           </div>
         </div>
 
@@ -1900,6 +1922,17 @@ html, body { overflow-x: hidden; max-width: 100%; }
             <label><span class="wl-ko">메모 (선택)</span><span class="wl-en">Additional Notes (optional)</span></label>
             <textarea id="staffNotes" name="notes" rows="2"></textarea>
           </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">간단한 자기소개 및 짧은 간증</span><span class="wl-en">Brief Introduction &amp; Testimony</span> <span class="req">*</span></label>
+            <textarea
+              id="staffTestimony"
+              name="testimony"
+              rows="5"
+              data-ph-ko="간단한 자기소개와 언제, 어떻게 예수님을 인격적으로 만나게 되었는지 짧게 적어주세요."
+              data-ph-en="Briefly introduce yourself and share when and how you personally came to know Jesus."
+              placeholder="간단한 자기소개와 언제, 어떻게 예수님을 인격적으로 만나게 되었는지 짧게 적어주세요."
+            ></textarea>
+          </div>
         </div>
 
         <!-- 개인정보 동의 -->
@@ -1909,8 +1942,8 @@ html, body { overflow-x: hidden; max-width: 100%; }
             <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
             <strong class="wl-en">I consent to the collection and use of personal information.</strong>
             <br>
-            <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일, 교회, 섬기고 싶은 분야 &nbsp;·&nbsp; 목적: 캠프 스태프 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
-            <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email, church, service area &nbsp;·&nbsp; Purpose: staff management &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
+            <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일, 생년월일, 교회, 섬기고 싶은 분야, 이전 캠프 경험, 자기소개 및 간증 &nbsp;·&nbsp; 목적: 캠프 스태프 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
+            <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email, date of birth, church, service area, previous camp experience, introduction and testimony &nbsp;·&nbsp; Purpose: staff management &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
           </label>
         </div>
 
@@ -2520,6 +2553,29 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
   var staffSubmitBtn  = document.getElementById('staffSubmitBtn');
   var staffCampIdInput= document.getElementById('staffCampId');
 
+  function populateStaffBirthSelects() {
+    var yearEl = document.getElementById('staffBirthYear');
+    var monthEl = document.getElementById('staffBirthMonth');
+    var dayEl = document.getElementById('staffBirthDay');
+    if (!yearEl || yearEl.dataset.ready) return;
+
+    var currentYear = new Date().getFullYear();
+    for (var year = currentYear; year >= 1940; year--) {
+      yearEl.insertAdjacentHTML('beforeend', '<option value="' + year + '">' + year + '</option>');
+    }
+    for (var month = 1; month <= 12; month++) {
+      var mm = String(month).padStart(2, '0');
+      monthEl.insertAdjacentHTML('beforeend', '<option value="' + mm + '">' + mm + '</option>');
+    }
+    for (var day = 1; day <= 31; day++) {
+      var dd = String(day).padStart(2, '0');
+      dayEl.insertAdjacentHTML('beforeend', '<option value="' + dd + '">' + dd + '</option>');
+    }
+    yearEl.dataset.ready = 'true';
+  }
+
+  populateStaffBirthSelects();
+
   // 스태프 카드 start_date 체크 → 버튼/상태 업데이트
   document.querySelectorAll('.crp-staff-card').forEach(function(card) {
     var startDate = card.dataset.startDate;
@@ -2575,9 +2631,15 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     var phone       = document.getElementById('staffPhone').value.trim();
     var email       = document.getElementById('staffEmail').value.trim();
     var gender      = document.getElementById('staffGender').value;
+    var birthYear   = document.getElementById('staffBirthYear').value;
+    var birthMonth  = document.getElementById('staffBirthMonth').value;
+    var birthDay    = document.getElementById('staffBirthDay').value;
+    var birthDate   = birthYear && birthMonth && birthDay ? birthYear + '-' + birthMonth + '-' + birthDay : '';
     var church      = document.getElementById('staffChurch').value.trim();
+    var previousCamp = document.getElementById('staffPreviousCamp').value;
     var serviceArea = Array.from(document.querySelectorAll('input[name="staffTeam"]:checked')).map(function(el){ return el.value; }).join(', ');
     var notes       = document.getElementById('staffNotes').value.trim();
+    var testimony   = document.getElementById('staffTestimony').value.trim();
     var privacy     = document.getElementById('staffPrivacyConsent').checked;
     var campId      = staffCampIdInput.value;
 
@@ -2591,8 +2653,23 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       staffErrorMsg.hidden = false;
       return;
     }
+    if (!birthDate) {
+      staffErrorMsg.textContent = '생년월일을 선택해주세요. / Please select your date of birth.';
+      staffErrorMsg.hidden = false;
+      return;
+    }
+    if (!previousCamp) {
+      staffErrorMsg.textContent = '이전 캠프 참여 경험을 선택해주세요. / Please select whether you have previous camp experience.';
+      staffErrorMsg.hidden = false;
+      return;
+    }
     if (!serviceArea) {
       staffErrorMsg.textContent = '섬기고 싶은 팀을 하나 이상 선택해주세요. / Please select at least one team.';
+      staffErrorMsg.hidden = false;
+      return;
+    }
+    if (!testimony) {
+      staffErrorMsg.textContent = '간단한 자기소개 및 간증을 입력해주세요. / Please enter a brief introduction and testimony.';
       staffErrorMsg.hidden = false;
       return;
     }
@@ -2609,7 +2686,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       var res = await fetch('/api/staff-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campId, name, phone, email, gender, church, serviceArea, notes, campTitleKo: document.getElementById('staffCampNameKo').value }),
+        body: JSON.stringify({ campId, name, phone, email, gender, birthDate, church, previousCamp, serviceArea, notes, testimony, campTitleKo: document.getElementById('staffCampNameKo').value }),
       });
       var data = await res.json();
 
