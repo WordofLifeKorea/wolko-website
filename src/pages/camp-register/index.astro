@@ -681,6 +681,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
   color: rgba(107,136,150,0.8); line-height: 1; transition: color 0.2s;
 }
 .crp-type-tab.active .crp-tab-sub { color: var(--c-mid); }
+.crp-modal--union-camp .crp-type-tabs { display: none; }
 
 /* ── FORM STYLES ── */
 .crp-form-wrap { padding: 28px 44px 44px; }
@@ -1619,7 +1620,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
                   ))}
                 </select>
               </div>
-              <div class="crp-field crp-field--full">
+              <div class="crp-field crp-field--full" id="crpGroupParticipantsField">
                 <label><span class="wl-ko">참가 학생 명단</span><span class="wl-en">Participant List</span> <span class="req">*</span></label>
                 <div class="crp-group-participants" id="crpGParticipants"></div>
               </div>
@@ -1635,9 +1636,17 @@ html, body { overflow-x: hidden; max-width: 100%; }
                   <span class="wl-en">💡 For families with multiple children, you may enter your personal name without an organization.</span>
                 </p>
               </div>
+              <div class="crp-field crp-field--full crp-union-only" id="crpGRefundField" hidden>
+                <label><span class="wl-ko">환불 계좌</span><span class="wl-en">Refund Account</span></label>
+                <input id="crpGRefundAccount" name="gRefundAccount" data-ph-ko="예: 농협123-4567-8910-11" data-ph-en="Example: NongHyup 123-4567-8910-11" placeholder="예: 농협123-4567-8910-11">
+              </div>
+              <div class="crp-field crp-field--full crp-union-only" id="crpGReferralField" hidden>
+                <label><span class="wl-ko">연합 캠프를 알게 된 경로</span><span class="wl-en">How did you hear about this camp?</span></label>
+                <input id="crpGReferralSource" name="gReferralSource" data-ph-ko="예: 교회 안내, 지인 소개, SNS, 월코 홈페이지" data-ph-en="Example: church announcement, friend, social media, WOLKO website" placeholder="예: 교회 안내, 지인 소개, SNS, 월코 홈페이지">
+              </div>
               <div class="crp-field crp-field--full">
                 <label><span class="wl-ko">전달 사항</span><span class="wl-en">Notes</span></label>
-                <textarea id="crpGNotes" name="gNotes" rows="4" data-ph-ko="알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요." data-ph-en="Allergies, health conditions, medications, or anything WOLKO should know." placeholder="알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요."></textarea>
+                <textarea id="crpGNotes" name="gNotes" rows="4" data-ph-ko="월코에서 꼭 알아야 할 사항들을 적어주세요." data-ph-en="Please write anything WOLKO should know." placeholder="월코에서 꼭 알아야 할 사항들을 적어주세요."></textarea>
               </div>
             </div>
           </div>
@@ -2086,6 +2095,25 @@ var sectionIndividual = document.getElementById('crpSectionIndividual');
 var sectionGroup = document.getElementById('crpSectionGroup');
 var tabIndividual = document.getElementById('crpTabIndividual');
 var tabGroup = document.getElementById('crpTabGroup');
+var groupParticipantsField = document.getElementById('crpGroupParticipantsField');
+var groupRefundField = document.getElementById('crpGRefundField');
+var groupReferralField = document.getElementById('crpGReferralField');
+
+function crpIsUnionCampId(campId) {
+  return campId === '2026-inland-union';
+}
+
+function crpIsUnionCampMode() {
+  return crpIsUnionCampId(campIdInput.value);
+}
+
+function setCrpUnionCampMode(enabled) {
+  modal.classList.toggle('crp-modal--union-camp', enabled);
+  if (groupParticipantsField) groupParticipantsField.hidden = enabled;
+  if (groupRefundField) groupRefundField.hidden = !enabled;
+  if (groupReferralField) groupReferralField.hidden = !enabled;
+  if (enabled) document.getElementById('crpGParticipants').innerHTML = '';
+}
 
 // 현재 모달의 성별 cap 값 (런타임)
 var currentCapMale = 0;
@@ -2144,6 +2172,10 @@ document.querySelectorAll('input[name="gender"]').forEach(function(radio) {
 function renderGroupParticipants() {
   var count = parseInt(document.getElementById('crpGCount').value) || 0;
   var wrap = document.getElementById('crpGParticipants');
+  if (crpIsUnionCampMode()) {
+    wrap.innerHTML = '';
+    return;
+  }
   var previous = Array.from(wrap.querySelectorAll('.crp-group-participant')).map(function(row) {
     return {
       name: row.querySelector('.crp-g-participant-name')?.value || '',
@@ -2186,13 +2218,15 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     modalTitle.textContent = crpIsEn() ? nameEn : nameKo;
 
     document.getElementById('crpForm').reset();
+    var isUnionCamp = crpIsUnionCampId(campId);
+    setCrpUnionCampMode(isUnionCamp);
     // 성별 버튼 초기화
     document.getElementById('crpGenderBtnM').classList.remove('selected');
     document.getElementById('crpGenderBtnF').classList.remove('selected');
     // 단체 학생 명단 초기화
     renderGroupParticipants();
 
-    crpSwitchTab('individual');
+    crpSwitchTab(isUnionCamp ? 'group' : 'individual');
     formWrap.hidden = false;
     successWrap.hidden = true;
     errorMsg.hidden = true;
@@ -2311,14 +2345,15 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var gEmail     = document.getElementById('crpGEmail').value.trim();
     var gTotal     = parseInt(document.getElementById('crpGCount').value) || 0;
     var gOrg       = document.getElementById('crpGOrg').value.trim();
-    var participants = Array.from(document.querySelectorAll('.crp-group-participant')).map(function(row) {
+    var isUnionCamp = crpIsUnionCampMode();
+    var participants = isUnionCamp ? [] : Array.from(document.querySelectorAll('.crp-group-participant')).map(function(row) {
       return {
         name: row.querySelector('.crp-g-participant-name').value.trim(),
         gender: row.querySelector('.crp-g-participant-gender').value,
       };
     });
-    var gMaleCount = participants.filter(function(p) { return p.gender === 'male'; }).length;
-    var gFemCount  = participants.filter(function(p) { return p.gender === 'female'; }).length;
+    var gMaleCount = isUnionCamp ? 0 : participants.filter(function(p) { return p.gender === 'male'; }).length;
+    var gFemCount  = isUnionCamp ? 0 : participants.filter(function(p) { return p.gender === 'female'; }).length;
 
     if (!gName || !gPhone || !gEmail || !gOrg) {
       errorMsg.textContent = '담당자 이름, 연락처, 이메일, 소속은 필수 항목입니다. / Contact name, phone, email, and organization are required.';
@@ -2336,7 +2371,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       errorMsg.hidden = false;
       return;
     }
-    if (participants.length !== gTotal || participants.some(function(p) { return !p.name || !p.gender; })) {
+    if (!isUnionCamp && (participants.length !== gTotal || participants.some(function(p) { return !p.name || !p.gender; }))) {
       errorMsg.textContent = '모든 참가 학생의 이름과 성별을 입력해주세요. / Please enter every participant name and gender.';
       errorMsg.hidden = false;
       return;
@@ -2351,6 +2386,9 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       maleCount: gMaleCount, femaleCount: gFemCount,
       groupCount: gTotal,
       participants: participants,
+      participantDetailsDeferred: isUnionCamp,
+      refundAccount: isUnionCamp ? document.getElementById('crpGRefundAccount').value.trim() : '',
+      referralSource: isUnionCamp ? document.getElementById('crpGReferralSource').value.trim() : '',
       church: gOrg,
       notes: document.getElementById('crpGNotes').value.trim(),
     };
@@ -2425,9 +2463,13 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
 
       if (currentType === 'group') {
         var gm = payload.maleCount, gf = payload.femaleCount, gc = payload.groupCount;
-        successMsg.innerHTML = isEn
-          ? 'Your group registration for <strong>' + gc + ' participants</strong> (Male ' + gm + ' / Female ' + gf + ') has been received.<br>Please transfer the deposit below.'
-          : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.';
+        successMsg.innerHTML = payload.participantDetailsDeferred
+          ? (isEn
+              ? 'Your union camp registration for <strong>' + gc + ' participants</strong> has been received.<br>Please transfer the deposit below.'
+              : '<strong>총 ' + gc + '명</strong>의 연합캠프 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.')
+          : (isEn
+              ? 'Your group registration for <strong>' + gc + ' participants</strong> (Male ' + gm + ' / Female ' + gf + ') has been received.<br>Please transfer the deposit below.'
+              : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.');
         successCount.innerHTML = isEn
           ? 'Registration is finalized only after your deposit is received.<br><span style="font-size:0.88em;color:#64748b;line-height:1.6;">Please complete full payment within one week of the deposit. Unpaid registrations may be cancelled.</span>'
           : '신청 완료 후 예약금을 납부하셔야 최종 등록이 완료됩니다.<br><span style="font-size:0.88em;color:#64748b;line-height:1.6;">예약금 납부 후 1주일 이내로 캠프비를 완납해 주셔야 하며, 기간 내 미납 시 신청이 취소될 수 있습니다.</span>';

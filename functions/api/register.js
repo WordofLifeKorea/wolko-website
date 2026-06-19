@@ -23,6 +23,7 @@ function escapeHtml(value) {
 
 function buildRegistrationEmailHtml(reg) {
   const isGroup = reg.registrationType === 'group';
+  const hasDeferredParticipants = isGroup && reg.participantDetailsDeferred;
 
   const typeLabel = isGroup ? '단체 신청' : '개인 신청';
   const typeBadgeColor = isGroup ? '#007ea1' : '#004f68';
@@ -51,16 +52,32 @@ function buildRegistrationEmailHtml(reg) {
     ? `<ol style="margin:6px 0 0;padding-left:20px;">${reg.participants.map(participant => `
         <li style="padding:3px 0;">${escapeHtml(participant.name)} <span style="color:#5a6f79;">(${participant.gender === 'male' ? '남' : '여'})</span></li>`).join('')}
       </ol>`
-    : '—';
+    : (hasDeferredParticipants ? '추후 제출 예정' : '—');
+  const groupCountText = hasDeferredParticipants
+    ? `${reg.groupCount}명 (참가 학생 명단 추후 제출)`
+    : `${reg.groupCount}명 (남 ${reg.maleCount} / 여 ${reg.femaleCount})`;
+  const groupCountLabel = hasDeferredParticipants ? '인원' : '인원 (남/여)';
+  const unionExtraRows = isGroup && (reg.refundAccount || reg.referralSource) ? `
+    ${reg.refundAccount ? `
+    <tr>
+      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">환불 계좌</td>
+      <td style="padding:8px 0;font-size:14px;">${escapeHtml(reg.refundAccount)}</td>
+    </tr>` : ''}
+    ${reg.referralSource ? `
+    <tr>
+      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">알게 된 경로</td>
+      <td style="padding:8px 0;font-size:14px;">${escapeHtml(reg.referralSource)}</td>
+    </tr>` : ''}` : '';
   const groupRows = isGroup ? `
     <tr>
-      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">인원 (남/여)</td>
-      <td style="padding:8px 0;font-size:14px;font-weight:600;">${reg.groupCount}명 (남 ${reg.maleCount} / 여 ${reg.femaleCount})</td>
+      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">${groupCountLabel}</td>
+      <td style="padding:8px 0;font-size:14px;font-weight:600;">${groupCountText}</td>
     </tr>
     <tr>
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;vertical-align:top;">참가 학생</td>
       <td style="padding:8px 0;font-size:14px;">${participantList}</td>
-    </tr>` : '';
+    </tr>
+    ${unionExtraRows}` : '';
 
   const kstTime = new Date(reg.registeredAt).toLocaleString('ko-KR', {
     timeZone: 'Asia/Seoul',
@@ -163,7 +180,13 @@ function regToSheetRow(reg) {
   const participantSummary = isGroup && reg.participants?.length
     ? reg.participants.map((participant, index) => `${index + 1}. ${participant.name} (${participant.gender === 'male' ? '남' : '여'})`).join('\n')
     : '';
-  const notes = [participantSummary, reg.notes || ''].filter(Boolean).join('\n\n');
+  const notes = [
+    reg.participantDetailsDeferred ? '참가 학생 명단: 추후 제출 예정' : '',
+    reg.refundAccount ? `환불 계좌: ${reg.refundAccount}` : '',
+    reg.referralSource ? `알게 된 경로: ${reg.referralSource}` : '',
+    participantSummary,
+    reg.notes || '',
+  ].filter(Boolean).join('\n\n');
   return [
     reg.registeredAt,                                                           // A 신청일시
     reg.regId,                                                                  // B 신청ID
@@ -211,6 +234,8 @@ export async function onRequestPost(context) {
       gender,
       maleCount, femaleCount,
       groupCount, participants,
+      participantDetailsDeferred,
+      refundAccount, referralSource,
       notes,
     } = data;
 
@@ -231,22 +256,38 @@ export async function onRequestPost(context) {
 
     let spotsNeeded, spotsM, spotsF;
     let normalizedParticipants = [];
+    let deferParticipantDetails = false;
     if (registrationType === 'group') {
-      if (!Array.isArray(participants)) {
-        return Response.json({ error: '참가 학생 명단을 입력해주세요.' }, { status: 400, headers: CORS });
-      }
-      normalizedParticipants = participants.map(participant => ({
-        name: String(participant?.name || '').trim(),
-        gender: participant?.gender,
-      }));
-      if (normalizedParticipants.some(participant => !participant.name || !['male', 'female'].includes(participant.gender))) {
-        return Response.json({ error: '모든 참가 학생의 이름과 성별을 입력해주세요.' }, { status: 400, headers: CORS });
-      }
-      spotsNeeded = normalizedParticipants.length;
-      spotsM = normalizedParticipants.filter(participant => participant.gender === 'male').length;
-      spotsF = normalizedParticipants.filter(participant => participant.gender === 'female').length;
-      if (spotsNeeded < 2) {
-        return Response.json({ error: '단체 신청은 2명 이상이어야 합니다.' }, { status: 400, headers: CORS });
+      const canDeferParticipantDetails = campId === '2026-inland-union';
+      const requestedGroupCount = parseInt(groupCount, 10) || 0;
+      const shouldDeferParticipantDetails =
+        canDeferParticipantDetails && (!Array.isArray(participants) || participants.length === 0 || participantDetailsDeferred);
+
+      if (shouldDeferParticipantDetails) {
+        deferParticipantDetails = true;
+        if (requestedGroupCount < 2) {
+          return Response.json({ error: '단체 신청은 2명 이상이어야 합니다.' }, { status: 400, headers: CORS });
+        }
+        spotsNeeded = requestedGroupCount;
+        spotsM = Math.max(parseInt(maleCount, 10) || 0, 0);
+        spotsF = Math.max(parseInt(femaleCount, 10) || 0, 0);
+      } else {
+        if (!Array.isArray(participants)) {
+          return Response.json({ error: '참가 학생 명단을 입력해주세요.' }, { status: 400, headers: CORS });
+        }
+        normalizedParticipants = participants.map(participant => ({
+          name: String(participant?.name || '').trim(),
+          gender: participant?.gender,
+        }));
+        if (normalizedParticipants.some(participant => !participant.name || !['male', 'female'].includes(participant.gender))) {
+          return Response.json({ error: '모든 참가 학생의 이름과 성별을 입력해주세요.' }, { status: 400, headers: CORS });
+        }
+        spotsNeeded = normalizedParticipants.length;
+        spotsM = normalizedParticipants.filter(participant => participant.gender === 'male').length;
+        spotsF = normalizedParticipants.filter(participant => participant.gender === 'female').length;
+        if (spotsNeeded < 2) {
+          return Response.json({ error: '단체 신청은 2명 이상이어야 합니다.' }, { status: 400, headers: CORS });
+        }
       }
     } else {
       spotsNeeded = 1;
@@ -291,6 +332,9 @@ export async function onRequestPost(context) {
           name: name.trim(), phone: phone.trim(), email: emailNorm,
           maleCount: spotsM, femaleCount: spotsF, groupCount: spotsNeeded,
           participants: normalizedParticipants,
+          participantDetailsDeferred: deferParticipantDetails,
+          refundAccount: refundAccount?.trim() || '',
+          referralSource: referralSource?.trim() || '',
           church: church?.trim() || '',
           notes: notes?.trim() || '',
           registeredAt: new Date().toISOString(),
