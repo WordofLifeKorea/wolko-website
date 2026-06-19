@@ -701,8 +701,11 @@ html, body { overflow-x: hidden; max-width: 100%; }
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   outline: none; width: 100%; resize: vertical;
 }
+.crp-field input, .crp-field select {
+  height: 46px; min-height: 46px; box-sizing: border-box; line-height: 1.2;
+}
 .crp-field input::placeholder, .crp-field textarea::placeholder { color: #afc2cc; }
-#crpGrade { min-height: 46px; box-sizing: border-box; }
+.staff-birth-grid { display: grid; grid-template-columns: 1.2fr 0.9fr 0.9fr; gap: 8px; }
 .crp-field input:focus, .crp-field select:focus, .crp-field textarea:focus {
   border-color: var(--c-mid); background: #fff;
   box-shadow: 0 0 0 3px rgba(0,126,161,0.09);
@@ -1851,7 +1854,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
           </div>
           <div class="crp-field">
             <label><span class="wl-ko">생년월일</span><span class="wl-en">Date of Birth</span> <span class="req">*</span></label>
-            <div style="display:grid;grid-template-columns:1.2fr 0.9fr 0.9fr;gap:8px;">
+            <div class="staff-birth-grid">
               <select id="staffBirthYear" name="birthYear" data-opt-ko="년도" data-opt-en="Year">
                 <option value="" disabled selected>년도</option>
               </select>
@@ -1919,10 +1922,6 @@ html, body { overflow-x: hidden; max-width: 100%; }
             </div>
           </div>
           <div class="crp-field crp-field--full">
-            <label><span class="wl-ko">메모 (선택)</span><span class="wl-en">Additional Notes (optional)</span></label>
-            <textarea id="staffNotes" name="notes" rows="2"></textarea>
-          </div>
-          <div class="crp-field crp-field--full">
             <label><span class="wl-ko">간단한 자기소개 및 짧은 간증</span><span class="wl-en">Brief Introduction &amp; Testimony</span> <span class="req">*</span></label>
             <textarea
               id="staffTestimony"
@@ -1932,6 +1931,10 @@ html, body { overflow-x: hidden; max-width: 100%; }
               data-ph-en="Briefly introduce yourself and share when and how you personally came to know Jesus."
               placeholder="간단한 자기소개와 언제, 어떻게 예수님을 인격적으로 만나게 되었는지 짧게 적어주세요."
             ></textarea>
+          </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">메모 (선택)</span><span class="wl-en">Additional Notes (optional)</span></label>
+            <textarea id="staffNotes" name="notes" rows="2"></textarea>
           </div>
         </div>
 
