@@ -416,22 +416,22 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .staff-reg-table th:nth-child(2),
 .staff-reg-table td:nth-child(2) {
   position: sticky;
-  background: inherit;
+  background-clip: padding-box;
 }
 .staff-reg-table th:nth-child(1),
 .staff-reg-table td:nth-child(1) {
   left: 0;
-  z-index: 8;
+  z-index: 20;
 }
 .staff-reg-table th:nth-child(2),
 .staff-reg-table td:nth-child(2) {
   left: 150px;
-  z-index: 8;
-  box-shadow: 10px 0 14px -14px rgba(0,79,104,0.42);
+  z-index: 21;
+  box-shadow: 12px 0 18px -15px rgba(0,79,104,0.55);
 }
 .staff-reg-table thead th:nth-child(1),
 .staff-reg-table thead th:nth-child(2) {
-  z-index: 12;
+  z-index: 30;
   background: #f1faf9;
 }
 .staff-reg-table tbody tr:not(.camp-tint) td:nth-child(1),
@@ -967,6 +967,10 @@ tbody tr.camp-tint td {
   background: var(--camp-row-bg);
   border-bottom-color: rgba(0,79,104,0.12);
 }
+tbody tr.camp-tint td:nth-child(1),
+tbody tr.camp-tint td:nth-child(2) {
+  background: var(--camp-row-bg);
+}
 tbody tr.camp-tint td:first-child {
   box-shadow: inset 6px 0 0 var(--camp-row-border);
 }
@@ -978,6 +982,10 @@ tbody tr.camp-tint.is-pending td {
   background: linear-gradient(90deg, rgba(217,119,6,0.10), rgba(217,119,6,0.10)), var(--camp-row-bg);
 }
 tbody tr.camp-tint:hover td {
+  background: linear-gradient(90deg, rgba(255,255,255,0.24), rgba(255,255,255,0.24)), var(--camp-row-bg);
+}
+tbody tr.camp-tint:hover td:nth-child(1),
+tbody tr.camp-tint:hover td:nth-child(2) {
   background: linear-gradient(90deg, rgba(255,255,255,0.24), rgba(255,255,255,0.24)), var(--camp-row-bg);
 }
 tbody tr.camp-tint.is-pending:hover td {
