@@ -427,7 +427,7 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .staff-reg-table td:nth-child(2) {
   left: 150px;
   z-index: 21;
-  box-shadow: 12px 0 18px -15px rgba(0,79,104,0.55);
+  border-right: 1px solid rgba(0,79,104,0.16);
 }
 .staff-reg-table thead th:nth-child(1),
 .staff-reg-table thead th:nth-child(2) {
@@ -982,14 +982,14 @@ tbody tr.camp-tint.is-pending td {
   background: linear-gradient(90deg, rgba(217,119,6,0.10), rgba(217,119,6,0.10)), var(--camp-row-bg);
 }
 tbody tr.camp-tint:hover td {
-  background: linear-gradient(90deg, rgba(255,255,255,0.24), rgba(255,255,255,0.24)), var(--camp-row-bg);
+  background: color-mix(in srgb, var(--camp-row-bg) 78%, #fff);
 }
 tbody tr.camp-tint:hover td:nth-child(1),
 tbody tr.camp-tint:hover td:nth-child(2) {
-  background: linear-gradient(90deg, rgba(255,255,255,0.24), rgba(255,255,255,0.24)), var(--camp-row-bg);
+  background: color-mix(in srgb, var(--camp-row-bg) 78%, #fff);
 }
 tbody tr.camp-tint.is-pending:hover td {
-  background: linear-gradient(90deg, rgba(217,119,6,0.12), rgba(217,119,6,0.12)), linear-gradient(90deg, rgba(255,255,255,0.22), rgba(255,255,255,0.22)), var(--camp-row-bg);
+  background: color-mix(in srgb, var(--camp-row-bg) 70%, #fef3c7);
 }
 tbody tr.camp-tint.is-saved td {
   background: #e6f6ff;
@@ -1324,11 +1324,13 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .staff-section .table-scroll {
   overflow-x: auto;
   overflow-y: auto;
+  contain: paint;
+  transform: translateZ(0);
 }
 .staff-section .table-toolbar { border-bottom-color: rgba(13,148,136,0.12); }
 .staff-section thead tr { background: rgba(13,148,136,0.04); }
 .staff-section thead th { color: #0d9488; }
-.staff-section tbody tr:hover td { background: rgba(13,148,136,0.04); }
+.staff-section tbody tr:hover td { background: #f3fbfa; }
 .staff-section table th:first-child,
 .staff-section table td:first-child { padding-left: 28px; }
 .staff-section .staff-camp-divider td,
@@ -1338,12 +1340,16 @@ tbody tr.camp-tint.is-dedicated:hover td {
 
 /* ── STAFF CAMP GROUPS ── */
 .staff-camp-divider td {
+  position: sticky;
+  left: 0;
+  z-index: 25;
   padding: 11px 14px 10px;
   background: var(--camp-row-bg);
   border-top: 2px solid var(--camp-row-border);
   border-bottom: 1px solid rgba(0,0,0,0.06);
   color: var(--camp-row-border);
   font-family: var(--f-sans);
+  background-clip: padding-box;
 }
 .staff-camp-divider strong { font-size: 13px; font-weight: 800; letter-spacing: 0.01em; }
 .staff-camp-divider span {
