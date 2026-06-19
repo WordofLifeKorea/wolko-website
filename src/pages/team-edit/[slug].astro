@@ -122,7 +122,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     .login-input-wrap { position: relative; margin-bottom: 12px; }
     .login-input {
       width: 100%;
-      padding: 14px 46px 14px 16px;
+      padding: 14px 72px 14px 16px;
       border: 1.5px solid var(--border);
       border-radius: 10px;
       font-size: 15px;
@@ -135,9 +135,11 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     .login-input:focus { border-color: var(--blue); background: #fff; }
     .login-input.error { border-color: var(--accent); }
     .login-eye {
-      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
       background: none; border: none; cursor: pointer;
-      color: var(--light); padding: 4px; transition: color 0.2s;
+      color: var(--mid); padding: 5px 7px; transition: color 0.2s;
+      font-family: var(--f-sans); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.04em;
     }
     .login-eye:hover { color: var(--blue); }
     .login-error {
@@ -208,12 +210,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       margin-bottom: 22px;
       padding-bottom: 14px;
       border-bottom: 1.5px solid var(--border);
-    }
-    .section-icon {
-      width: 34px; height: 34px; border-radius: 8px;
-      background: rgba(0,79,104,0.08);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
     }
     .section-title {
       font-family: var(--f-sans);
@@ -307,8 +303,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       color: rgba(255,255,255,0.9);
       letter-spacing: 0.04em;
     }
-    .photo-overlay svg { color: #fff; }
-
     .photo-empty {
       width: 100%; height: 100%;
       display: flex; flex-direction: column;
@@ -317,8 +311,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       color: var(--light);
       font-size: 12px; font-weight: 500;
     }
-    .photo-empty svg { opacity: 0.5; }
-
     .photo-label {
       font-size: 11px; font-weight: 600;
       color: var(--mid); letter-spacing: 0.04em;
@@ -436,9 +428,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     }
     .btn-translate:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
     .btn-translate:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn-translate svg { flex-shrink: 0; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
     /* ── NOTICE BOX ───────────────────────────────────────────── */
     .notice {
       background: rgba(0,79,104,0.06);
@@ -473,12 +462,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
           inputmode="latin"
           pattern="[\x21-\x7E]*"
         >
-        <button class="login-eye" id="loginEye" type="button" aria-label="Show password">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-        </button>
+        <button class="login-eye" id="loginEye" type="button" aria-label="Show password">Show</button>
       </div>
       <p class="login-error" id="loginError"></p>
       <button class="login-btn" id="loginBtn">Sign In</button>
@@ -496,11 +480,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     </div>
     <div class="page-header-actions">
       <a class="btn-preview" href={`/team/${slug}`} target="_blank">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-          <polyline points="15 3 21 3 21 9"/>
-          <line x1="10" y1="14" x2="21" y2="3"/>
-        </svg>
         View My Page
       </a>
       <button class="btn-logout" id="logoutBtn">Sign Out</button>
@@ -518,7 +497,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     <!-- ① Photo Section -->
     <div class="edit-section">
       <div class="section-header">
-        <div class="section-icon">📷</div>
         <div>
           <div class="section-title">Photos</div>
           <div class="section-sub">Click to replace — saved immediately on upload</div>
@@ -532,12 +510,10 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
             {d.photo_url
               ? <img id="img-photo_url" src={d.photo_url} alt="Profile photo">
               : <div class="photo-empty" id="empty-photo_url">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                   <span>No photo</span>
                 </div>
             }
             <div class="photo-overlay">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <span>Change Photo</span>
             </div>
           </div>
@@ -551,12 +527,10 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
             {d.photo_story
               ? <img id="img-photo_story" src={d.photo_story} alt="Story photo">
               : <div class="photo-empty" id="empty-photo_story">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                   <span>No photo</span>
                 </div>
             }
             <div class="photo-overlay">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <span>Change Photo</span>
             </div>
           </div>
@@ -570,12 +544,10 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
             {d.photo_url_2
               ? <img id="img-photo_url_2" src={d.photo_url_2} alt="Spouse photo">
               : <div class="photo-empty" id="empty-photo_url_2">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                   <span>No photo</span>
                 </div>
             }
             <div class="photo-overlay">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <span>Change Photo</span>
             </div>
           </div>
@@ -591,7 +563,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     <!-- ② Hero Titles -->
     <div class="edit-section">
       <div class="section-header">
-        <div class="section-icon">🎯</div>
         <div>
           <div class="section-title">Hero Titles</div>
           <div class="section-sub">Large tagline text shown on the profile hero image</div>
@@ -606,14 +577,13 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
 
       <!-- White tagline (line 1) -->
-      <p style="font-size:11px;font-weight:700;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">⬜ 흰색 타이틀 (1줄)</p>
+      <p style="font-size:11px;font-weight:700;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">흰색 타이틀 (1줄)</p>
       <div class="field-group">
         <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
         <input type="text" class="field-input" id="f-hero_tagline_ko" value={d.hero_tagline_ko || ''} placeholder="예: 확신으로">
       </div>
       <div class="translate-row">
         <button class="btn-translate" onclick="autoTranslate('f-hero_tagline_ko','f-hero_tagline_en','tagline')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           Translate
 </button>
       </div>
@@ -623,14 +593,13 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
 
       <!-- Blue tagline (line 2) -->
-      <p style="font-size:11px;font-weight:700;color:var(--blue-lt);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">🔵 하늘색 타이틀 (2줄)</p>
+      <p style="font-size:11px;font-weight:700;color:var(--blue-lt);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">하늘색 타이틀 (2줄)</p>
       <div class="field-group">
         <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
         <input type="text" class="field-input" id="f-hero_tagline2_ko" value={d.hero_tagline2_ko || ''} placeholder="예: 복음을 전하다">
       </div>
       <div class="translate-row">
         <button class="btn-translate" onclick="autoTranslate('f-hero_tagline2_ko','f-hero_tagline2_en','tagline')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           Translate
 </button>
       </div>
@@ -640,14 +609,13 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
 
       <!-- Short Bio subtitle -->
-      <p style="font-size:11px;font-weight:700;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">📝 Short Bio (타이틀 아래 설명)</p>
+      <p style="font-size:11px;font-weight:700;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Short Bio (타이틀 아래 설명)</p>
       <div class="field-group">
         <label class="field-label"><span class="field-lang ko">KO</span> Korean</label>
         <textarea class="field-textarea" id="f-hero_subtitle_ko" rows="3">{d.hero_subtitle_ko || ''}</textarea>
       </div>
       <div class="translate-row">
         <button class="btn-translate" onclick="autoTranslate('f-hero_subtitle_ko','f-hero_subtitle_en','subtitle')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           Translate
 </button>
       </div>
@@ -660,7 +628,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     <!-- ③ Life Verse -->
     <div class="edit-section">
       <div class="section-header">
-        <div class="section-icon">📖</div>
         <div>
           <div class="section-title">Life Verse</div>
           <div class="section-sub">Life Verse</div>
@@ -678,7 +645,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
       <div class="translate-row">
         <button class="btn-translate" id="btn-verse-lookup" onclick="lookupVerse()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
           Load Korean &amp; English Bible Text
         </button>
       </div>
@@ -695,7 +661,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     <!-- ④ My Story -->
     <div class="edit-section">
       <div class="section-header">
-        <div class="section-icon">👤</div>
         <div>
           <div class="section-title">My Story</div>
           <div class="section-sub">Personal testimony / ministry introduction</div>
@@ -707,7 +672,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
       <div class="translate-row">
         <button class="btn-translate" onclick="autoTranslate('f-bio_ko','f-bio_en','bio')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           Translate
 </button>
       </div>
@@ -721,7 +685,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     {hasSpouse && (
       <div class="edit-section">
         <div class="section-header">
-          <div class="section-icon">👥</div>
           <div>
             <div class="section-title">Spouse's Story</div>
             <div class="section-sub">{d.spouse_ko} / {d.spouse_en}</div>
@@ -733,7 +696,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         </div>
         <div class="translate-row">
           <button class="btn-translate" onclick="autoTranslate('f-bio_ko_2','f-bio_en_2','bio')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             Translate
   </button>
         </div>
@@ -747,7 +709,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     <!-- ⑥ Prayer Requests -->
     <div class="edit-section">
       <div class="section-header">
-        <div class="section-icon">🙏</div>
         <div>
           <div class="section-title">Prayer Requests</div>
           <div class="section-sub">Prayer requests to share with supporters</div>
@@ -759,7 +720,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       </div>
       <div class="translate-row">
         <button class="btn-translate" onclick="autoTranslate('f-prayer_ko','f-prayer_en','prayer')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           Translate
 </button>
       </div>
@@ -772,7 +732,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     <!-- ⑦ Newsletter / Ministry Report -->
     <div class="edit-section">
       <div class="section-header">
-        <div class="section-icon">📰</div>
         <div>
           <div class="section-title">Newsletter / Ministry Report</div>
           <div class="section-sub">Upload a PDF or paste a Mailchimp/newsletter link</div>
@@ -796,7 +755,6 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       <!-- URL input -->
       <div class="field-group">
         <label class="field-label">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:0.6"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
           Mailchimp or external newsletter URL
         </label>
         <input
@@ -812,12 +770,10 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       <!-- PDF upload -->
       <div class="field-group" style="margin-top:4px">
         <label class="field-label">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:0.6"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Or upload PDF newsletter
         </label>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <button type="button" class="pdf-upload-btn" id="pdfUploadBtn" onclick="triggerPdfUpload()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             PDF 업로드
           </button>
           <span class="pdf-upload-status" id="pdf-upload-status"></span>
@@ -889,6 +845,8 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     loginEye.addEventListener('click', () => {
       const isHidden = loginPw.type === 'password';
       loginPw.type = isHidden ? 'text' : 'password';
+      loginEye.textContent = isHidden ? 'Hide' : 'Show';
+      loginEye.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
     });
 
     loginPw.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
@@ -954,7 +912,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       const btn = event.currentTarget;
       const origText = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> 번역 중…';
+      btn.textContent = '번역 중...';
 
       try {
         const res = await fetch('/api/team/translate', {
@@ -987,7 +945,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       const btn = document.getElementById('btn-verse-lookup');
       const origHTML = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> 불러오는 중…';
+      btn.textContent = '불러오는 중...';
 
       try {
         const res = await fetch('/api/team/translate', {
@@ -1032,7 +990,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       if (!file || !activeUploadField) return;
 
       if (file.size > 30 * 1024 * 1024) {
-        setPhotoStatus(activeUploadField, '❌ File size must be under 30MB.', true);
+        setPhotoStatus(activeUploadField, 'File size must be under 30MB.', true);
         return;
       }
 
@@ -1066,9 +1024,9 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         imgEl.style.display = '';
         if (emptyEl) emptyEl.style.display = 'none';
 
-        setPhotoStatus(activeUploadField, '✅ Uploaded — will appear after site rebuild.');
+        setPhotoStatus(activeUploadField, 'Uploaded — will appear after site rebuild.');
       } catch (e) {
-        setPhotoStatus(activeUploadField, '❌ ' + e.message, true);
+        setPhotoStatus(activeUploadField, e.message, true);
       }
     });
 
@@ -1092,7 +1050,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       if (!file) return;
 
       if (file.size > 50 * 1024 * 1024) {
-        setPdfStatus('❌ 파일 크기는 50MB 이하여야 합니다.', true);
+        setPdfStatus('파일 크기는 50MB 이하여야 합니다.', true);
         return;
       }
 
@@ -1125,9 +1083,9 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
           wrap.style.display = 'flex';
         }
 
-        setPdfStatus('✅ 업로드 완료 — 사이트 재빌드 후 반영됩니다.');
+        setPdfStatus('업로드 완료 — 사이트 재빌드 후 반영됩니다.');
       } catch (e) {
-        setPdfStatus('❌ ' + e.message, true);
+        setPdfStatus(e.message, true);
       } finally {
         btn.disabled = false;
       }
@@ -1182,10 +1140,10 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Save failed');
 
-        saveStatus.textContent = '✅ Saved — changes will appear after rebuild (about 1–2 min).';
+        saveStatus.textContent = 'Saved — changes will appear after rebuild (about 1–2 min).';
         saveStatus.className = 'save-status success';
       } catch (e) {
-        saveStatus.textContent = '❌ ' + e.message;
+        saveStatus.textContent = e.message;
         saveStatus.className = 'save-status error';
         if (e.message.includes('인증') || e.message.includes('auth')) {
           // Token may have expired — prompt re-login
