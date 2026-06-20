@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=46">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=47">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1462,7 +1462,8 @@
         const campRegs = regs.filter(r => r.campId === campId);
         const campStyle = getCampRowStyle({ campId });
         return `<tr class="staff-camp-divider" style="--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};">
-          <td colspan="12"><strong>${esc(campDisplayName(campId))}</strong><span>${tt('personCountFn', campRegs.length)}</span></td>
+          <td class="staff-camp-title-cell" colspan="2"><strong>${esc(campDisplayName(campId))}</strong><span>${tt('personCountFn', campRegs.length)}</span></td>
+          <td class="staff-camp-fill-cell" colspan="10" aria-hidden="true"></td>
         </tr>${campRegs.length
           ? campRegs.map(renderStaffRow).join('')
           : `<tr class="staff-camp-empty"><td colspan="12">${t('campEmpty')}</td></tr>`}`;

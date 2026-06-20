@@ -1333,16 +1333,13 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .staff-section tbody tr:hover td { background: #f3fbfa; }
 .staff-section table th:first-child,
 .staff-section table td:first-child { padding-left: 28px; }
-.staff-section .staff-camp-divider td,
+.staff-section .staff-camp-divider td:first-child,
 .staff-section .staff-camp-empty td {
   padding-left: 40px;
 }
 
 /* ── STAFF CAMP GROUPS ── */
 .staff-camp-divider td {
-  position: sticky;
-  left: 0;
-  z-index: 25;
   padding: 11px 14px 10px;
   background: var(--camp-row-bg);
   border-top: 2px solid var(--camp-row-border);
@@ -1350,6 +1347,22 @@ tbody tr.camp-tint.is-dedicated:hover td {
   color: var(--camp-row-border);
   font-family: var(--f-sans);
   background-clip: padding-box;
+}
+.staff-camp-divider .staff-camp-title-cell {
+  position: sticky;
+  left: 0;
+  z-index: 25;
+  width: 270px;
+  min-width: 270px;
+  border-right: 1px solid rgba(0,79,104,0.12);
+}
+.staff-camp-divider .staff-camp-fill-cell {
+  position: static;
+  left: auto;
+  z-index: auto;
+  width: auto;
+  padding-left: 0;
+  border-right: none;
 }
 .staff-camp-divider strong { font-size: 13px; font-weight: 800; letter-spacing: 0.01em; }
 .staff-camp-divider span {
