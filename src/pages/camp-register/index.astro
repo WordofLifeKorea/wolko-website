@@ -2636,10 +2636,10 @@ function scholarshipDiscountSummaryHtml(counts, english) {
     return '<span class="crp-discount-line"><span>' + crpEscHtml(displayLabel) + '</span><strong>-' + crpFormatWon(amount, english) + '</strong></span>';
   }).join('');
   var totalLabel = english ? 'Total discount' : '할인 총 합계';
-  return '<span class="crp-discount-breakdown">' +
-    itemRows +
-    '<span class="crp-discount-line crp-discount-total"><span>' + totalLabel + '</span><strong>-' + crpFormatWon(total, english) + '</strong></span>' +
-  '</span>';
+  var totalRow = parts.length > 1
+    ? '<span class="crp-discount-line crp-discount-total"><span>' + totalLabel + '</span><strong>-' + crpFormatWon(total, english) + '</strong></span>'
+    : '';
+  return '<span class="crp-discount-breakdown">' + itemRows + totalRow + '</span>';
 }
 
 function crpPaymentNoticeHtml(balanceLabel, english) {
