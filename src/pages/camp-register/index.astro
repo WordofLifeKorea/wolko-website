@@ -995,8 +995,11 @@ html, body { overflow-x: hidden; max-width: 100%; }
   cursor: pointer;
 }
 .crp-scholarship-option--count {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(220px, 1fr);
+  gap: 18px;
   align-items: center;
-  justify-content: space-between;
+  min-height: 92px;
 }
 .crp-scholarship-option--count > span {
   min-width: 0;
@@ -1006,9 +1009,10 @@ html, body { overflow-x: hidden; max-width: 100%; }
   accent-color: #0d9488;
 }
 .crp-scholarship-count {
-  width: 96px;
-  min-width: 96px;
-  padding: 9px 10px;
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 10px 14px;
   border: 1.5px solid rgba(0,79,104,0.13);
   border-radius: 8px;
   background: #fff;
@@ -1034,7 +1038,8 @@ html, body { overflow-x: hidden; max-width: 100%; }
 @media (max-width: 640px) {
   .crp-scholarship-option--count {
     align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
   .crp-scholarship-count {
     width: 100%;
@@ -1625,18 +1630,13 @@ html, body { overflow-x: hidden; max-width: 100%; }
                 <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
                 <input id="crpPhone" name="phone" placeholder="010-0000-0000">
               </div>
-              <div class="crp-field crp-field--full">
+              <div class="crp-field">
                 <label><span class="wl-ko">성별</span><span class="wl-en">Gender</span> <span class="req">*</span></label>
-                <div class="crp-gender-wrap">
-                  <label class="crp-gender-btn crp-gender-btn-m" id="crpGenderBtnM">
-                    <input type="radio" name="gender" id="crpGenderMale" value="male">
-                    <span class="crp-gender-label"><span class="wl-ko">남학생</span><span class="wl-en">Male</span></span>
-                  </label>
-                  <label class="crp-gender-btn crp-gender-btn-f" id="crpGenderBtnF">
-                    <input type="radio" name="gender" id="crpGenderFemale" value="female">
-                    <span class="crp-gender-label"><span class="wl-ko">여학생</span><span class="wl-en">Female</span></span>
-                  </label>
-                </div>
+                <select id="crpGender" name="gender" data-opt-ko="— 선택 —" data-opt-en="— Select —">
+                  <option value="">— 선택 —</option>
+                  <option value="male" data-ko="남학생" data-en="Male">남학생</option>
+                  <option value="female" data-ko="여학생" data-en="Female">여학생</option>
+                </select>
               </div>
               <div class="crp-field">
                 <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
@@ -2468,14 +2468,6 @@ function crpSwitchTab(type) {
 tabIndividual.addEventListener('click', function() { crpSwitchTab('individual'); });
 tabGroup.addEventListener('click', function() { crpSwitchTab('group'); });
 
-/* ── 성별 라디오 버튼 시각 피드백 ── */
-document.querySelectorAll('input[name="gender"]').forEach(function(radio) {
-  radio.addEventListener('change', function() {
-    document.getElementById('crpGenderBtnM').classList.toggle('selected', this.value === 'male' && this.checked);
-    document.getElementById('crpGenderBtnF').classList.toggle('selected', this.value === 'female' && this.checked);
-  });
-});
-
 /* ── 단체 참가 학생 입력칸 ── */
 function renderGroupParticipants() {
   var count = parseInt(document.getElementById('crpGCount').value) || 0;
@@ -2537,9 +2529,6 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     var isUnionCamp = crpIsUnionCampId(campId);
     setCrpUnionCampMode(isUnionCamp);
     updateScholarshipSummary();
-    // 성별 버튼 초기화
-    document.getElementById('crpGenderBtnM').classList.remove('selected');
-    document.getElementById('crpGenderBtnF').classList.remove('selected');
     // 단체 학생 명단 초기화
     renderGroupParticipants();
 
@@ -2724,7 +2713,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var phone  = document.getElementById('crpPhone').value.trim();
     var email  = document.getElementById('crpEmail').value.trim();
     var grade  = document.getElementById('crpGrade').value;
-    var gender = document.querySelector('input[name="gender"]:checked')?.value;
+    var gender = document.getElementById('crpGender').value;
 
     if (!name || !phone || !email || !grade) {
       crpShowError(errorMsg, '이름, 연락처, 이메일, 학년은 필수 항목입니다.', 'Name, phone, email, and grade are required.');
