@@ -1947,7 +1947,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                   <small class="wl-en">KRW 50,000 discount</small>
                 </span>
               </label>
-              <label class="crp-scholarship-option">
+              <label class="crp-scholarship-option" data-discount-option="excellent_camper">
                 <input type="checkbox" name="scholarshipDiscount" value="excellent_camper">
                 <span>
                   <strong class="wl-ko">지난 캠프 우수 캠퍼 선정자</strong>
@@ -1976,7 +1976,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 </span>
                 <select class="crp-scholarship-count" name="scholarshipDiscountCount" data-discount="sibling"></select>
               </label>
-              <label class="crp-scholarship-option crp-scholarship-option--count">
+              <label class="crp-scholarship-option crp-scholarship-option--count" data-discount-option="excellent_camper">
                 <span>
                   <strong class="wl-ko">지난 캠프 우수 캠퍼 선정자</strong>
                   <strong class="wl-en">Selected as an outstanding camper at a previous camp</strong>
@@ -2566,6 +2566,17 @@ function setCrpUnionCampMode(enabled) {
   if (groupParticipantsField) groupParticipantsField.hidden = enabled;
   if (groupReferralField) groupReferralField.hidden = !enabled;
   if (enabled) document.getElementById('crpGParticipants').innerHTML = '';
+  document.querySelectorAll('[data-discount-option="excellent_camper"]').forEach(function(option) {
+    option.hidden = enabled;
+  });
+  if (enabled) {
+    document.querySelectorAll('[name="scholarshipDiscount"][value="excellent_camper"]').forEach(function(input) {
+      input.checked = false;
+    });
+    document.querySelectorAll('select[name="scholarshipDiscountCount"][data-discount="excellent_camper"]').forEach(function(select) {
+      select.value = '0';
+    });
+  }
 }
 
 function crpFormatWon(amount, english) {
@@ -2597,6 +2608,7 @@ function getScholarshipCounts() {
   if (regTypeInput.value === 'group') {
     return Array.from(document.querySelectorAll('select[name="scholarshipDiscountCount"]')).reduce(function(acc, select) {
       var key = select.dataset.discount;
+      if (crpIsUnionCampMode() && key === 'excellent_camper') return acc;
       var count = Math.max(0, parseInt(select.value, 10) || 0);
       if (key && SCHOLARSHIP_DISCOUNTS[key] && count > 0) acc[key] = count;
       return acc;
