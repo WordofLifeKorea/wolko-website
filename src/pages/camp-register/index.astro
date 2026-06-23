@@ -334,23 +334,30 @@ html, body { overflow-x: hidden; max-width: 100%; }
 }
 
 /* English copy runs longer, so keep the cards compact and let text wrap cleanly. */
-#lang-root.lang-en .crp-reg-grid {
+#lang-root.lang-en .crp-reg-grid,
+body.lang-en .crp-reg-grid {
   width: min(100%, 1100px);
 }
-#lang-root.lang-en .crp-reg-card {
+#lang-root.lang-en .crp-reg-card,
+body.lang-en .crp-reg-card {
   padding: 30px 26px 34px;
 }
-#lang-root.lang-en .crp-reg-title {
+#lang-root.lang-en .crp-reg-title,
+body.lang-en .crp-reg-title {
   font-size: clamp(21px, 1.7vw, 25px);
   line-height: 1.18;
 }
-#lang-root.lang-en .crp-reg-meta-row {
+#lang-root.lang-en .crp-reg-meta-row,
+body.lang-en .crp-reg-meta-row {
   grid-template-columns: 64px minmax(0, 1fr);
   gap: 8px;
 }
 #lang-root.lang-en .crp-reg-meta-value,
 #lang-root.lang-en .crp-reg-notes,
-#lang-root.lang-en .crp-countdown-notice {
+#lang-root.lang-en .crp-countdown-notice,
+body.lang-en .crp-reg-meta-value,
+body.lang-en .crp-reg-notes,
+body.lang-en .crp-countdown-notice {
   word-break: normal;
   overflow-wrap: anywhere;
 }
@@ -502,7 +509,9 @@ html, body { overflow-x: hidden; max-width: 100%; }
   .crp-reg-grid,
   .crp-reg-grid--inland,
   #lang-root.lang-en .crp-reg-grid,
-  #lang-root.lang-en .crp-reg-grid--inland { grid-template-columns: 1fr 1fr; }
+  #lang-root.lang-en .crp-reg-grid--inland,
+  body.lang-en .crp-reg-grid,
+  body.lang-en .crp-reg-grid--inland { grid-template-columns: 1fr 1fr; }
   .crp-reg-header { flex-direction: column; align-items: flex-start; }
   .crp-group-header { flex-direction: column; align-items: flex-start; gap: 6px; }
   .crp-reg-header-note { text-align: left; max-width: 100%; }
@@ -513,7 +522,9 @@ html, body { overflow-x: hidden; max-width: 100%; }
   .crp-reg-grid,
   .crp-reg-grid--inland,
   #lang-root.lang-en .crp-reg-grid,
-  #lang-root.lang-en .crp-reg-grid--inland { grid-template-columns: 1fr; }
+  #lang-root.lang-en .crp-reg-grid--inland,
+  body.lang-en .crp-reg-grid,
+  body.lang-en .crp-reg-grid--inland { grid-template-columns: 1fr; }
   .crp-contact-bar { padding: 28px 24px; }
   .crp-contact-divider { display: none; }
 }
@@ -825,15 +836,24 @@ html, body { overflow-x: hidden; max-width: 100%; }
      ID 선택자로 specificity를 높여서 강제 처리 ── */
 #lang-root .crp-refund-row.wl-en,
 #lang-root .crp-refund-section-head.wl-en,
-#lang-root .crp-refund-modal-hint.wl-en { display: none !important; }
+#lang-root .crp-refund-modal-hint.wl-en,
+body .crp-refund-row.wl-en,
+body .crp-refund-section-head.wl-en,
+body .crp-refund-modal-hint.wl-en { display: none !important; }
 
 #lang-root.lang-en .crp-refund-row.wl-ko,
 #lang-root.lang-en .crp-refund-section-head.wl-ko,
-#lang-root.lang-en .crp-refund-modal-hint.wl-ko { display: none !important; }
+#lang-root.lang-en .crp-refund-modal-hint.wl-ko,
+body.lang-en .crp-refund-row.wl-ko,
+body.lang-en .crp-refund-section-head.wl-ko,
+body.lang-en .crp-refund-modal-hint.wl-ko { display: none !important; }
 
-#lang-root.lang-en .crp-refund-row.wl-en { display: flex !important; }
+#lang-root.lang-en .crp-refund-row.wl-en,
+body.lang-en .crp-refund-row.wl-en { display: flex !important; }
 #lang-root.lang-en .crp-refund-section-head.wl-en,
-#lang-root.lang-en .crp-refund-modal-hint.wl-en { display: block !important; }
+#lang-root.lang-en .crp-refund-modal-hint.wl-en,
+body.lang-en .crp-refund-section-head.wl-en,
+body.lang-en .crp-refund-modal-hint.wl-en { display: block !important; }
 
 /* Bulk registration note */
 .crp-bulk-note {
@@ -1031,9 +1051,13 @@ html, body { overflow-x: hidden; max-width: 100%; }
 
 /* Modal language lock: later component display rules must not leak both languages. */
 #lang-root .crp-modal-card .wl-en { display: none !important; }
-#lang-root.lang-en .crp-modal-card .wl-ko { display: none !important; }
+body .crp-modal-card .wl-en { display: none !important; }
+#lang-root.lang-en .crp-modal-card .wl-ko,
+body.lang-en .crp-modal-card .wl-ko { display: none !important; }
 #lang-root.lang-en .crp-modal-card .wl-en { display: block !important; }
-#lang-root.lang-en .crp-modal-card span.wl-en { display: inline !important; }
+#lang-root.lang-en .crp-modal-card span.wl-en,
+body.lang-en .crp-modal-card span.wl-en { display: inline !important; }
+body.lang-en .crp-modal-card .wl-en { display: block !important; }
 
 @media (max-width: 640px) {
   .crp-scholarship-option--count {
@@ -1088,7 +1112,8 @@ html, body { overflow-x: hidden; max-width: 100%; }
   .crp-type-tab { padding: 12px 8px; }
   .crp-tab-title { font-size: 12px; }
   .crp-tab-sub { display: none !important; }
-  #lang-root .crp-modal-card .crp-tab-sub { display: none !important; }
+  #lang-root .crp-modal-card .crp-tab-sub,
+  body .crp-modal-card .crp-tab-sub { display: none !important; }
   .crp-form-wrap { padding: 20px 24px calc(44px + env(safe-area-inset-bottom)); }
   .crp-form-grid { grid-template-columns: 1fr; }
   .crp-group-participant { grid-template-columns: 28px minmax(0,1fr) 96px; gap: 6px; }
@@ -2206,7 +2231,11 @@ document.querySelectorAll('.crp .reveal').forEach(function(el) { obs.observe(el)
 /* ── 언어 감지 헬퍼 ── */
 function crpIsEn() {
   var el = document.getElementById('lang-root');
-  return !!(el && el.classList.contains('lang-en'));
+  return !!(
+    (el && el.classList.contains('lang-en')) ||
+    document.body.classList.contains('lang-en') ||
+    document.documentElement.classList.contains('lang-en')
+  );
 }
 function crpText(ko, en) {
   return crpIsEn() ? en : ko;
@@ -3125,7 +3154,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     updateScholarshipSummary();
   }
   syncLang();
-  var langRoot = document.getElementById('lang-root');
+  var langRoot = document.getElementById('lang-root') || document.body || document.documentElement;
   if (langRoot) {
     new MutationObserver(syncLang).observe(langRoot, { attributes: true, attributeFilter: ['class'] });
   }
