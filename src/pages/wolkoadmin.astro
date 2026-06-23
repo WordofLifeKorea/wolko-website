@@ -1955,10 +1955,15 @@
     function scholarshipSummary(reg) {
       if (!reg) return '';
       const discountText = reg.scholarshipDiscountText || '';
+      const detailText = reg.scholarshipDiscountDetailText || '';
       const discountAmount = parseInt(reg.scholarshipDiscountAmount, 10) || 0;
       const baseFee = parseInt(reg.campFeeBase, 10) || (499000 * (reg.registrationType === 'group' ? (parseInt(reg.groupCount, 10) || 1) : 1));
       const finalFee = parseInt(reg.campFeeFinal, 10) || Math.max(0, baseFee - discountAmount);
-      return `장학금/할인: ${discountText || '해당 없음'} / 총 납입금: ${formatAdminWon(finalFee)}`;
+      return [
+        `장학금/할인: ${discountText || '해당 없음'}`,
+        detailText ? `할인 상세: ${detailText}` : '',
+        `총 납입금: ${formatAdminWon(finalFee)}`,
+      ].filter(Boolean).join('\n');
     }
 
     function campApplicantMemo(reg) {
@@ -2294,8 +2299,8 @@
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
         if (regs.length === 0) { showToast(t('csvNoCamp'), 'error'); return; }
         const headers = adminLang === 'en'
-          ? ['No','Status','Camp','Type','Name','Students','Counselor','Saved','Dedicated','Counselor Note','Phone','Email','Grade/Count','Gender','Church','School','Emergency','Refund Bank','Refund Account','Refund Holder','Discounts','Final Payment','Notes','Registered','RegID']
-          : ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','환불 은행','환불 계좌','예금주','장학금/할인','총 납입금','메모','신청일시','RegID'];
+          ? ['No','Status','Camp','Type','Name','Students','Counselor','Saved','Dedicated','Counselor Note','Phone','Email','Grade/Count','Gender','Church','School','Emergency','Refund Bank','Refund Account','Refund Holder','Discounts','Discount Details','Final Payment','Notes','Registered','RegID']
+          : ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','환불 은행','환불 계좌','예금주','장학금/할인','할인 상세','총 납입금','메모','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const gradeOrCount = r.registrationType === 'group' ? `${t('groupBadge')} ${tt('personCountFn', r.groupCount)}` : (r.grade || '');
@@ -2322,7 +2327,7 @@
             r.phone, r.email, gradeOrCount, genderVal,
             r.church || '', r.school || '', r.emergency || '',
             r.refundBank || '', r.refundAccount || '', r.refundHolder || '',
-            r.scholarshipDiscountText || '', r.campFeeFinal ? formatAdminWon(r.campFeeFinal) : '',
+            r.scholarshipDiscountText || '', r.scholarshipDiscountDetailText || '', r.campFeeFinal ? formatAdminWon(r.campFeeFinal) : '',
             r.notes || '', date, r.regId,
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
         });
