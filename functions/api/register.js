@@ -31,19 +31,44 @@ function formatWon(amount) {
   return `${Math.max(0, parseInt(amount, 10) || 0).toLocaleString('ko-KR')}원`;
 }
 
-function normalizeScholarshipDiscounts(values) {
-  if (!Array.isArray(values)) return [];
-  return [...new Set(values.map(value => String(value || '').trim()).filter(value => SCHOLARSHIP_DISCOUNTS[value]))];
+function normalizeScholarshipDiscounts(values, maxCount = 1) {
+  const limit = Math.max(1, parseInt(maxCount, 10) || 1);
+  if (Array.isArray(values)) {
+    return values.reduce((acc, value) => {
+      const key = String(value || '').trim();
+      if (SCHOLARSHIP_DISCOUNTS[key]) acc[key] = 1;
+      return acc;
+    }, {});
+  }
+  if (!values || typeof values !== 'object') return {};
+  return Object.entries(values).reduce((acc, [key, rawCount]) => {
+    if (!SCHOLARSHIP_DISCOUNTS[key]) return acc;
+    const count = Math.min(Math.max(parseInt(rawCount, 10) || 0, 0), limit);
+    if (count > 0) acc[key] = count;
+    return acc;
+  }, {});
 }
 
 function scholarshipDiscountAmount(values) {
-  return normalizeScholarshipDiscounts(values).reduce((sum, value) => sum + SCHOLARSHIP_DISCOUNTS[value].amount, 0);
+  const normalized = values && typeof values === 'object' && !Array.isArray(values)
+    ? values
+    : normalizeScholarshipDiscounts(values);
+  return Object.entries(normalized).reduce((sum, [key, count]) => {
+    return sum + ((SCHOLARSHIP_DISCOUNTS[key]?.amount || 0) * (parseInt(count, 10) || 0));
+  }, 0);
 }
 
 function scholarshipDiscountText(values) {
-  const normalized = normalizeScholarshipDiscounts(values);
-  if (!normalized.length) return '';
-  return normalized.map(value => `${SCHOLARSHIP_DISCOUNTS[value].label} (${formatWon(SCHOLARSHIP_DISCOUNTS[value].amount)})`).join(', ');
+  const normalized = values && typeof values === 'object' && !Array.isArray(values)
+    ? values
+    : normalizeScholarshipDiscounts(values);
+  const entries = Object.entries(normalized).filter(([key, count]) => SCHOLARSHIP_DISCOUNTS[key] && (parseInt(count, 10) || 0) > 0);
+  if (!entries.length) return '';
+  return entries.map(([key, count]) => {
+    const num = parseInt(count, 10) || 0;
+    const item = SCHOLARSHIP_DISCOUNTS[key];
+    return `${item.label} ${num}명 (${formatWon(item.amount * num)})`;
+  }).join(', ');
 }
 
 function buildRegistrationEmailHtml(reg) {
@@ -103,7 +128,7 @@ function buildRegistrationEmailHtml(reg) {
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">환불 계좌</td>
       <td style="padding:8px 0;font-size:14px;">${escapeHtml(reg.refundBank || '—')} · ${escapeHtml(reg.refundAccount || '—')} · 예금주 ${escapeHtml(reg.refundHolder || '—')}</td>
     </tr>`;
-  const scholarshipRows = !isGroup ? `
+  const scholarshipRows = `
     <tr>
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">장학금/할인</td>
       <td style="padding:8px 0;font-size:14px;">${reg.scholarshipDiscountText ? escapeHtml(reg.scholarshipDiscountText) : '해당 없음'}</td>
@@ -111,7 +136,7 @@ function buildRegistrationEmailHtml(reg) {
     <tr>
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">총 납입금</td>
       <td style="padding:8px 0;font-size:14px;font-weight:700;">${formatWon(reg.campFeeFinal ?? CAMP_BASE_FEE)} <span style="font-size:12px;color:#5a6f79;font-weight:500;">(기본 ${formatWon(reg.campFeeBase ?? CAMP_BASE_FEE)} · 할인 ${formatWon(reg.scholarshipDiscountAmount || 0)})</span></td>
-    </tr>` : '';
+    </tr>`;
 
   const kstTime = new Date(reg.registeredAt).toLocaleString('ko-KR', {
     timeZone: 'Asia/Seoul',
@@ -220,7 +245,7 @@ function regToSheetRow(reg) {
     reg.participantDetailsDeferred ? '참가 학생 명단: 추후 제출 예정' : '',
     reg.refundAccount ? `환불 계좌: ${reg.refundBank || ''} ${reg.refundAccount} (예금주: ${reg.refundHolder || ''})`.trim() : '',
     reg.scholarshipDiscountText ? `장학금/할인: ${reg.scholarshipDiscountText}` : '',
-    !isGroup ? `총 납입금: ${formatWon(reg.campFeeFinal ?? CAMP_BASE_FEE)} (기본 ${formatWon(reg.campFeeBase ?? CAMP_BASE_FEE)} / 할인 ${formatWon(reg.scholarshipDiscountAmount || 0)})` : '',
+    `총 납입금: ${formatWon(reg.campFeeFinal ?? CAMP_BASE_FEE)} (기본 ${formatWon(reg.campFeeBase ?? CAMP_BASE_FEE)} / 할인 ${formatWon(reg.scholarshipDiscountAmount || 0)})`,
     reg.referralSource ? `알게 된 경로: ${reg.referralSource}` : '',
     participantSummary,
     reg.notes || '',
@@ -370,11 +395,14 @@ export async function onRequestPost(context) {
     const waitlistNumber = isWaitlist ? (currentSubs - campCapacity + 1) : null;
 
     const regId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const normalizedScholarshipDiscounts = registrationType === 'individual'
-      ? normalizeScholarshipDiscounts(scholarshipDiscounts)
-      : [];
+    const normalizedScholarshipDiscounts = normalizeScholarshipDiscounts(
+      scholarshipDiscounts,
+      registrationType === 'group' ? spotsNeeded : 1
+    );
     const normalizedScholarshipDiscountAmount = scholarshipDiscountAmount(normalizedScholarshipDiscounts);
     const scholarshipText = scholarshipDiscountText(normalizedScholarshipDiscounts);
+    const campFeeBase = CAMP_BASE_FEE * spotsNeeded;
+    const campFeeFinal = Math.max(0, campFeeBase - normalizedScholarshipDiscountAmount);
 
     const reg = registrationType === 'group'
       ? {
@@ -388,6 +416,11 @@ export async function onRequestPost(context) {
           refundAccount: refundAccountNorm,
           refundHolder: refundHolderNorm,
           referralSource: referralSource?.trim() || '',
+          scholarshipDiscounts: normalizedScholarshipDiscounts,
+          scholarshipDiscountText: scholarshipText,
+          scholarshipDiscountAmount: normalizedScholarshipDiscountAmount,
+          campFeeBase,
+          campFeeFinal,
           church: church?.trim() || '',
           notes: notes?.trim() || '',
           registeredAt: new Date().toISOString(),
@@ -409,8 +442,8 @@ export async function onRequestPost(context) {
           scholarshipDiscounts: normalizedScholarshipDiscounts,
           scholarshipDiscountText: scholarshipText,
           scholarshipDiscountAmount: normalizedScholarshipDiscountAmount,
-          campFeeBase: CAMP_BASE_FEE,
-          campFeeFinal: Math.max(0, CAMP_BASE_FEE - normalizedScholarshipDiscountAmount),
+          campFeeBase,
+          campFeeFinal,
           notes: notes?.trim() || '',
           registeredAt: new Date().toISOString(),
           confirmed: false,

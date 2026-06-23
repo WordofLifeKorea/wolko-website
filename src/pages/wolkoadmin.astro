@@ -1953,10 +1953,11 @@
     }
 
     function scholarshipSummary(reg) {
-      if (!reg || reg.registrationType === 'group') return '';
+      if (!reg) return '';
       const discountText = reg.scholarshipDiscountText || '';
       const discountAmount = parseInt(reg.scholarshipDiscountAmount, 10) || 0;
-      const finalFee = parseInt(reg.campFeeFinal, 10) || (499000 - discountAmount);
+      const baseFee = parseInt(reg.campFeeBase, 10) || (499000 * (reg.registrationType === 'group' ? (parseInt(reg.groupCount, 10) || 1) : 1));
+      const finalFee = parseInt(reg.campFeeFinal, 10) || Math.max(0, baseFee - discountAmount);
       return `장학금/할인: ${discountText || '해당 없음'} / 총 납입금: ${formatAdminWon(finalFee)}`;
     }
 
