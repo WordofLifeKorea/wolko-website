@@ -1024,6 +1024,13 @@ html, body { overflow-x: hidden; max-width: 100%; }
   display: block; margin-top: 2px;
   font-size: 11.5px; color: var(--c-muted); line-height: 1.6;
 }
+
+/* Modal language lock: later component display rules must not leak both languages. */
+#lang-root .crp-modal-card .wl-en { display: none !important; }
+#lang-root.lang-en .crp-modal-card .wl-ko { display: none !important; }
+#lang-root.lang-en .crp-modal-card .wl-en { display: block !important; }
+#lang-root.lang-en .crp-modal-card span.wl-en { display: inline !important; }
+
 @media (max-width: 640px) {
   .crp-scholarship-option--count {
     align-items: stretch;
@@ -1075,7 +1082,8 @@ html, body { overflow-x: hidden; max-width: 100%; }
   .crp-type-tabs { padding: 10px 20px; gap: 8px; }
   .crp-type-tab { padding: 12px 8px; }
   .crp-tab-title { font-size: 12px; }
-  .crp-tab-sub { display: none; }
+  .crp-tab-sub { display: none !important; }
+  #lang-root .crp-modal-card .crp-tab-sub { display: none !important; }
   .crp-form-wrap { padding: 20px 24px calc(44px + env(safe-area-inset-bottom)); }
   .crp-form-grid { grid-template-columns: 1fr; }
   .crp-group-participant { grid-template-columns: 28px minmax(0,1fr) 96px; gap: 6px; }
@@ -1559,7 +1567,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
           <span class="crp-modal-bank-label wl-en">Deposit &amp; Camp Fee Account</span>
           <span class="crp-modal-bank-acct"><span class="wl-ko">농협</span><span class="wl-en">NH</span> 301-0343-5409-21</span>
           <span class="crp-modal-bank-holder wl-ko">예금주: (사)한국생명의말씀협회</span>
-          <span class="crp-modal-bank-holder wl-en">Holder: (사)한국생명의말씀협회</span>
+          <span class="crp-modal-bank-holder wl-en">Holder: Korea Word of Life Association</span>
         </div>
       </div>
 
@@ -1638,20 +1646,20 @@ html, body { overflow-x: hidden; max-width: 100%; }
                 <label><span class="wl-ko">학년</span><span class="wl-en">Grade</span> <span class="req">*</span></label>
                 <select id="crpGrade" name="grade" data-opt-ko="— 선택 —" data-opt-en="— Select —">
                   <option value="">— 선택 —</option>
-                  <optgroup label="초등 / Elementary">
-                    <option value="초4">초4 (4th Grade)</option>
-                    <option value="초5">초5 (5th Grade)</option>
-                    <option value="초6">초6 (6th Grade)</option>
+                  <optgroup label="초등" data-ko="초등" data-en="Elementary">
+                    <option value="초4" data-ko="초4" data-en="4th Grade">초4</option>
+                    <option value="초5" data-ko="초5" data-en="5th Grade">초5</option>
+                    <option value="초6" data-ko="초6" data-en="6th Grade">초6</option>
                   </optgroup>
-                  <optgroup label="중학 / Middle">
-                    <option value="중1">중1 (7th Grade)</option>
-                    <option value="중2">중2 (8th Grade)</option>
-                    <option value="중3">중3 (9th Grade)</option>
+                  <optgroup label="중학" data-ko="중학" data-en="Middle School">
+                    <option value="중1" data-ko="중1" data-en="7th Grade">중1</option>
+                    <option value="중2" data-ko="중2" data-en="8th Grade">중2</option>
+                    <option value="중3" data-ko="중3" data-en="9th Grade">중3</option>
                   </optgroup>
-                  <optgroup label="고등 / High">
-                    <option value="고1">고1 (10th Grade)</option>
-                    <option value="고2">고2 (11th Grade)</option>
-                    <option value="고3">고3 (12th Grade)</option>
+                  <optgroup label="고등" data-ko="고등" data-en="High School">
+                    <option value="고1" data-ko="고1" data-en="10th Grade">고1</option>
+                    <option value="고2" data-ko="고2" data-en="11th Grade">고2</option>
+                    <option value="고3" data-ko="고3" data-en="12th Grade">고3</option>
                   </optgroup>
                 </select>
               </div>
@@ -1697,7 +1705,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
               </div>
               <div class="crp-field crp-field--full">
                 <label><span class="wl-ko">총 참여 인원</span><span class="wl-en">Total Participants</span> <span class="req">*</span></label>
-                <select id="crpGCount" name="gCount">
+                <select id="crpGCount" name="gCount" data-opt-ko="— 선택 —" data-opt-en="— Select —">
                   <option value="">— 선택 —</option>
                   {Array.from({length: 59}, (_, i) => i + 2).map(n => (
                     <option value={n}>{n}</option>
@@ -1925,7 +1933,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
             </div>
             <div class="crp-success-bank-row">
               <span class="crp-bank-label wl-ko">예금주</span><span class="crp-bank-label wl-en">Holder</span>
-              <span class="crp-bank-val">(사)한국생명의말씀협회</span>
+              <span class="crp-bank-val"><span class="wl-ko">(사)한국생명의말씀협회</span><span class="wl-en">Korea Word of Life Association</span></span>
             </div>
           </div>
           <p class="crp-success-bank-note wl-ko" id="crpBankNoteKo">입금자명을 <strong>신청자 이름</strong>으로 해주세요.<br>입금 확인 후 담당자가 최종 확정 처리합니다.</p>
@@ -2200,6 +2208,16 @@ function crpIsEn() {
   var el = document.getElementById('lang-root');
   return !!(el && el.classList.contains('lang-en'));
 }
+function crpText(ko, en) {
+  return crpIsEn() ? en : ko;
+}
+function crpShowError(el, ko, en) {
+  if (!el) return;
+  el.dataset.errKo = ko;
+  el.dataset.errEn = en;
+  el.textContent = crpText(ko, en);
+  el.hidden = false;
+}
 
 /* ── 정원 바 업데이트 (성별 split) ── */
 function updateCrpCapBar(el, data, totalCap) {
@@ -2401,14 +2419,21 @@ var currentCapMale = 0;
 var currentCapFemale = 0;
 var currentRegisteredCount = null;
 var modalCapacityRequestId = 0;
+var currentModalCapData = null;
+var currentModalCapacity = 0;
 
 /* ── 모달 정원 바 (성별 split) ── */
 function updateCrpModalCap(data, capacity) {
-  var count  = (typeof data === 'object') ? (data.count || 0) : parseInt(data) || 0;
-  var countM = (typeof data === 'object') ? (data.countMale  || 0) : 0;
-  var countF = (typeof data === 'object') ? (data.countFemale || 0) : 0;
+  currentModalCapData = data;
+  currentModalCapacity = capacity;
+  var rawCount = (typeof data === 'object') ? (data.count ?? 0) : data;
+  var count  = parseInt(rawCount, 10);
+  var countDisplay = rawCount === '…' ? '…' : (Number.isFinite(count) ? count : 0);
+  if (!Number.isFinite(count)) count = 0;
+  var countM = (typeof data === 'object') ? (parseInt(data.countMale, 10) || 0) : 0;
+  var countF = (typeof data === 'object') ? (parseInt(data.countFemale, 10) || 0) : 0;
 
-  modalCapLabel.textContent = count + ' / ' + capacity + (crpIsEn() ? ' spots' : '명');
+  modalCapLabel.textContent = countDisplay + ' / ' + capacity + (crpIsEn() ? ' spots' : '명');
   if (modalCapFillM) modalCapFillM.style.width = '0%';
   if (modalCapFillF) modalCapFillF.style.width = '0%';
 
@@ -2465,15 +2490,19 @@ function renderGroupParticipants() {
       gender: row.querySelector('.crp-g-participant-gender')?.value || '',
     };
   });
+  var namePlaceholder = crpText('학생 이름', 'Participant name');
+  var genderPlaceholder = crpText('성별', 'Gender');
+  var maleLabel = crpText('남', 'Male');
+  var femaleLabel = crpText('여', 'Female');
   wrap.innerHTML = Array.from({ length: count }, function(_, index) {
     var participant = previous[index] || {};
     return '<div class="crp-group-participant">' +
       '<span class="crp-group-participant-num">' + (index + 1) + '</span>' +
-      '<input class="crp-g-participant-name" type="text" value="' + crpEscAttr(participant.name) + '" placeholder="' + (crpIsEn() ? 'Participant name' : '학생 이름') + '">' +
+      '<input class="crp-g-participant-name" type="text" value="' + crpEscAttr(participant.name) + '" placeholder="' + crpEscAttr(namePlaceholder) + '">' +
       '<select class="crp-g-participant-gender">' +
-        '<option value="">성별</option>' +
-        '<option value="male"' + (participant.gender === 'male' ? ' selected' : '') + '>남</option>' +
-        '<option value="female"' + (participant.gender === 'female' ? ' selected' : '') + '>여</option>' +
+        '<option value="">' + genderPlaceholder + '</option>' +
+        '<option value="male"' + (participant.gender === 'male' ? ' selected' : '') + '>' + maleLabel + '</option>' +
+        '<option value="female"' + (participant.gender === 'female' ? ' selected' : '') + '>' + femaleLabel + '</option>' +
       '</select>' +
     '</div>';
   }).join('');
@@ -2539,7 +2568,8 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
         updateCrpModalCap({ count: subs, countMale: data.countMale ?? 0, countFemale: data.countFemale ?? 0 }, capacity);
         if (subs >= capacity + WAITLIST_SIZE) {
           submitBtn.disabled = true;
-          submitBtn.querySelector('.crp-submit-label').innerHTML = '<span>신청이 마감되었습니다 / Closed</span>';
+          submitBtn.querySelector('.crp-submit-label').innerHTML =
+            '<span class="wl-ko">신청이 마감되었습니다</span><span class="wl-en">Registration Closed</span>';
           if (waitlistNotice) waitlistNotice.hidden = true;
         } else if (subs >= capacity) {
           if (waitlistNotice) {
@@ -2607,20 +2637,17 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
 
   var consent = document.getElementById('crpConsent').checked;
   if (!consent) {
-    errorMsg.textContent = '개인정보 수집 및 이용에 동의해 주세요. / Please agree to the privacy policy.';
-    errorMsg.hidden = false;
+    crpShowError(errorMsg, '개인정보 수집 및 이용에 동의해 주세요.', 'Please agree to the privacy policy.');
     return;
   }
   var depositConsent = document.getElementById('crpDepositConsent').checked;
   if (!depositConsent) {
-    errorMsg.textContent = '예약금과 캠프 참가비 입금 확인 후 최종 확정됨에 동의해 주세요. / Please confirm that you understand the deposit and camp fee requirements.';
-    errorMsg.hidden = false;
+    crpShowError(errorMsg, '예약금과 캠프 참가비 입금 확인 후 최종 확정됨에 동의해 주세요.', 'Please confirm that you understand the deposit and camp fee requirements.');
     return;
   }
   var refundConsent = document.getElementById('crpRefundConsent').checked;
   if (!refundConsent) {
-    errorMsg.textContent = '환불 규정을 읽어보았으며 이에 동의해 주세요. / Please read and agree to the refund policy.';
-    errorMsg.hidden = false;
+    crpShowError(errorMsg, '환불 규정을 읽어보았으며 이에 동의해 주세요.', 'Please read and agree to the refund policy.');
     return;
   }
 
@@ -2628,8 +2655,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
   var refundAccount = document.getElementById('crpRefundAccount').value.trim();
   var refundHolder = document.getElementById('crpRefundHolder').value.trim();
   if (!refundBank || !refundAccount || !refundHolder) {
-    errorMsg.textContent = '환불을 위한 은행명, 계좌번호, 예금주를 모두 입력해주세요. / Please enter bank name, refund account number, and account holder.';
-    errorMsg.hidden = false;
+    crpShowError(errorMsg, '환불을 위한 은행명, 계좌번호, 예금주를 모두 입력해 주세요.', 'Please enter the bank name, refund account number, and account holder.');
     return;
   }
 
@@ -2653,24 +2679,20 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var gFemCount  = isUnionCamp ? 0 : participants.filter(function(p) { return p.gender === 'female'; }).length;
 
     if (!gName || !gPhone || !gEmail || !gOrg) {
-      errorMsg.textContent = '담당자 이름, 연락처, 이메일, 소속은 필수 항목입니다. / Contact name, phone, email, and organization are required.';
-      errorMsg.hidden = false;
+      crpShowError(errorMsg, '담당자 이름, 연락처, 이메일, 소속은 필수 항목입니다.', 'Contact name, phone, email, and organization are required.');
       return;
     }
     if (gTotal < 2) {
-      errorMsg.textContent = '참여 인원을 2명 이상 선택해주세요. / Please select at least 2 participants.';
-      errorMsg.hidden = false;
+      crpShowError(errorMsg, '참여 인원을 2명 이상 선택해 주세요.', 'Please select at least 2 participants.');
       return;
     }
     var gRemaining = Math.max(0, (parseInt(campCapInput.value) || 40) - (currentRegisteredCount || 0));
     if (currentRegisteredCount !== null && gTotal > gRemaining) {
-      errorMsg.textContent = '현재 잔여 정원은 ' + gRemaining + '명입니다. 참여 인원을 줄여주세요. / Only ' + gRemaining + ' spots remain. Please reduce the number of participants.';
-      errorMsg.hidden = false;
+      crpShowError(errorMsg, '현재 잔여 정원은 ' + gRemaining + '명입니다. 참여 인원을 줄여 주세요.', 'Only ' + gRemaining + ' spots remain. Please reduce the number of participants.');
       return;
     }
     if (!isUnionCamp && (participants.length !== gTotal || participants.some(function(p) { return !p.name || !p.gender; }))) {
-      errorMsg.textContent = '모든 참가 학생의 이름과 성별을 입력해주세요. / Please enter every participant name and gender.';
-      errorMsg.hidden = false;
+      crpShowError(errorMsg, '모든 참가 학생의 이름과 성별을 입력해 주세요.', 'Please enter every participant name and gender.');
       return;
     }
     var groupScholarshipCounts = getScholarshipCounts();
@@ -2705,13 +2727,11 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var gender = document.querySelector('input[name="gender"]:checked')?.value;
 
     if (!name || !phone || !email || !grade) {
-      errorMsg.textContent = '이름, 연락처, 이메일, 학년은 필수 항목입니다. / Name, phone, email, and grade are required.';
-      errorMsg.hidden = false;
+      crpShowError(errorMsg, '이름, 연락처, 이메일, 학년은 필수 항목입니다.', 'Name, phone, email, and grade are required.');
       return;
     }
     if (!gender) {
-      errorMsg.textContent = '성별을 선택해주세요. / Please select gender.';
-      errorMsg.hidden = false;
+      crpShowError(errorMsg, '성별을 선택해 주세요.', 'Please select gender.');
       return;
     }
     var scholarshipDiscounts = getScholarshipCounts();
@@ -2823,14 +2843,12 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       // pending 상태이므로 카드 카운터는 업데이트하지 않음 (확정 후 반영)
 
     } else {
-      errorMsg.textContent = data.error || '오류가 발생했습니다. 다시 시도해주세요. / An error occurred. Please try again.';
-      errorMsg.hidden = false;
+      crpShowError(errorMsg, data.error || '오류가 발생했습니다. 다시 시도해 주세요.', 'An error occurred. Please try again.');
       submitBtn.disabled = false;
       submitBtn.classList.remove('loading');
     }
   } catch(err) {
-    errorMsg.textContent = '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요. / Network error. Please try again.';
-    errorMsg.hidden = false;
+    crpShowError(errorMsg, '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', 'Network error. Please try again.');
     submitBtn.disabled = false;
     submitBtn.classList.remove('loading');
   }
@@ -3013,38 +3031,31 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     var campId      = staffCampIdInput.value;
 
     if (!name || !phone || !email) {
-      staffErrorMsg.textContent = '이름, 연락처, 이메일은 필수 항목입니다. / Name, phone, and email are required.';
-      staffErrorMsg.hidden = false;
+      crpShowError(staffErrorMsg, '이름, 연락처, 이메일은 필수 항목입니다.', 'Name, phone, and email are required.');
       return;
     }
     if (!gender) {
-      staffErrorMsg.textContent = '성별을 선택해주세요. / Please select your gender.';
-      staffErrorMsg.hidden = false;
+      crpShowError(staffErrorMsg, '성별을 선택해 주세요.', 'Please select your gender.');
       return;
     }
     if (!birthDate) {
-      staffErrorMsg.textContent = '생년월일을 선택해주세요. / Please select your date of birth.';
-      staffErrorMsg.hidden = false;
+      crpShowError(staffErrorMsg, '생년월일을 선택해 주세요.', 'Please select your date of birth.');
       return;
     }
     if (!previousCamp) {
-      staffErrorMsg.textContent = '이전 캠프 참여 경험을 선택해주세요. / Please select whether you have previous camp experience.';
-      staffErrorMsg.hidden = false;
+      crpShowError(staffErrorMsg, '이전 캠프 참여 경험을 선택해 주세요.', 'Please select whether you have previous camp experience.');
       return;
     }
     if (!serviceArea) {
-      staffErrorMsg.textContent = '섬기고 싶은 팀을 하나 이상 선택해주세요. / Please select at least one team.';
-      staffErrorMsg.hidden = false;
+      crpShowError(staffErrorMsg, '섬기고 싶은 팀을 하나 이상 선택해 주세요.', 'Please select at least one team.');
       return;
     }
     if (!testimony) {
-      staffErrorMsg.textContent = '간단한 자기소개 및 간증을 입력해주세요. / Please enter a brief introduction and testimony.';
-      staffErrorMsg.hidden = false;
+      crpShowError(staffErrorMsg, '간단한 자기소개 및 간증을 입력해 주세요.', 'Please enter a brief introduction and testimony.');
       return;
     }
     if (!privacy) {
-      staffErrorMsg.textContent = '개인정보 수집 및 이용에 동의해주세요. / Please consent to the privacy policy.';
-      staffErrorMsg.hidden = false;
+      crpShowError(staffErrorMsg, '개인정보 수집 및 이용에 동의해 주세요.', 'Please consent to the privacy policy.');
       return;
     }
 
@@ -3067,14 +3078,12 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
           ? '<strong>' + name + '</strong>, your staff application has been received.<br>Our team will contact you individually regarding your service area.'
           : '<strong>' + name + '</strong>님의 스태프 지원이 접수되었습니다.<br>섬기실 분야에 대해 담당자가 개별적으로 연락드릴 예정입니다.';
       } else {
-        staffErrorMsg.textContent = data.error || '오류가 발생했습니다. 다시 시도해주세요.';
-        staffErrorMsg.hidden = false;
+        crpShowError(staffErrorMsg, data.error || '오류가 발생했습니다. 다시 시도해 주세요.', 'An error occurred. Please try again.');
         staffSubmitBtn.disabled = false;
         staffSubmitBtn.classList.remove('loading');
       }
     } catch(err) {
-      staffErrorMsg.textContent = '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      staffErrorMsg.hidden = false;
+      crpShowError(staffErrorMsg, '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', 'Network error. Please try again.');
       staffSubmitBtn.disabled = false;
       staffSubmitBtn.classList.remove('loading');
     }
@@ -3094,11 +3103,35 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       if (el.options[0]) {
         el.options[0].textContent = en ? el.dataset.optEn : el.dataset.optKo;
       }
+      Array.prototype.forEach.call(el.querySelectorAll('optgroup'), function(group) {
+        if (group.dataset.ko && group.dataset.en) {
+          group.label = en ? group.dataset.en : group.dataset.ko;
+        }
+      });
       Array.prototype.forEach.call(el.options, function(option) {
         if (option.dataset.ko && option.dataset.en) {
           option.textContent = en ? option.dataset.en : option.dataset.ko;
         }
       });
+    });
+    var participantWrap = document.getElementById('crpGParticipants');
+    if (participantWrap && participantWrap.children.length) renderGroupParticipants();
+    if (modal && !modal.hidden) {
+      var campBtn = document.querySelector('.crp-open-btn[data-camp-id="' + campIdInput.value + '"]');
+      if (campBtn) modalTitle.textContent = en ? (campBtn.dataset.campNameEn || '') : (campBtn.dataset.campNameKo || '');
+      if (currentModalCapData) updateCrpModalCap(currentModalCapData, currentModalCapacity);
+    }
+    var staffModalEl = document.getElementById('staffModal');
+    if (staffModalEl && !staffModalEl.hidden) {
+      var staffCampId = document.getElementById('staffCampId')?.value || '';
+      var staffBtn = document.querySelector('.crp-staff-open-btn[data-camp-id="' + staffCampId + '"]');
+      var staffTitle = document.getElementById('staffModalTitle');
+      if (staffBtn && staffTitle) staffTitle.textContent = en ? (staffBtn.dataset.campNameEn || '') : (staffBtn.dataset.campNameKo || '');
+    }
+    [errorMsg, document.getElementById('staffErrorMsg')].forEach(function(el) {
+      if (el && !el.hidden && el.dataset.errKo && el.dataset.errEn) {
+        el.textContent = en ? el.dataset.errEn : el.dataset.errKo;
+      }
     });
     updateScholarshipSummary();
   }
