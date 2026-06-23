@@ -2053,6 +2053,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <span class="wl-ko">총 캠프 참여비</span><span class="wl-en">Total camp fee</span>
                 <strong id="crpFinalFeePreview">499,000원</strong>
               </div>
+              <div class="crp-fee-row crp-fee-row--balance">
+                <span class="wl-ko">예약금 납부 후 잔여 캠프 참여비</span><span class="wl-en">Remaining camp fee after deposit</span>
+                <strong id="crpBalanceFeePreview">459,000원</strong>
+              </div>
             </div>
           </div>
 
@@ -2590,7 +2594,7 @@ function renderScholarshipYearOptions() {
   var current = select.value;
   var en = crpIsEn();
   var startYear = 2026;
-  var endYear = 2010;
+  var endYear = 2000;
   var options = ['<option value="">' + (en ? 'Select year' : '연도 선택') + '</option>'];
   for (var year = startYear; year >= endYear; year--) {
     options.push('<option value="' + year + '"' + (String(year) === current ? ' selected' : '') + '>' + year + '</option>');
@@ -2788,11 +2792,13 @@ function updateScholarshipSummary() {
   var discountEl = document.getElementById('crpDiscountPreview');
   var discountRowEl = document.getElementById('crpDiscountPreviewRow');
   var finalEl = document.getElementById('crpFinalFeePreview');
+  var balanceEl = document.getElementById('crpBalanceFeePreview');
   if (baseEl) baseEl.textContent = crpFormatWon(deposit, isEn);
   if (discountLabelEl) discountLabelEl.innerHTML = scholarshipDiscountSummaryHtml(scholarshipCounts, isEn);
   if (discountEl) discountEl.textContent = discount > 0 ? '-' + crpFormatWon(discount, isEn) : crpFormatWon(0, isEn);
   if (discountRowEl) discountRowEl.hidden = discount <= 0;
   if (finalEl) finalEl.textContent = crpFormatWon(finalFee, isEn);
+  if (balanceEl) balanceEl.textContent = crpFormatWon(Math.max(0, finalFee - deposit), isEn);
   updateScholarshipDetails();
 }
 
