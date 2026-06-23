@@ -1364,6 +1364,7 @@
           : r.registrationType === 'group'
           ? `<tr class="group-participant-row legacy"><td></td><td colspan="18">${t('checkParticipants')}</td></tr>`
           : '';
+        const applicantMemo = campApplicantMemo(r);
 
         return `<tr class="${rowClass}" style="${rowStyle}">
           <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
@@ -1382,7 +1383,7 @@
           <td>${esc(r.church || '—')}</td>
           <td>${esc(r.school || '—')}</td>
           <td style="font-size:12px">${esc(r.emergency || '—')}</td>
-          <td style="font-size:12px;color:var(--mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes || '')}">${esc(r.notes || '—')}</td>
+          <td style="font-size:12px;color:var(--mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(applicantMemo)}">${esc(applicantMemo || '—')}</td>
           <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
           <td class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></td>
         </tr>${participantRows}`;
@@ -1942,6 +1943,27 @@
       </span>`;
     }
 
+    function formatAdminWon(value) {
+      return `${Math.max(0, parseInt(value, 10) || 0).toLocaleString('ko-KR')}원`;
+    }
+
+    function refundAccountSummary(reg) {
+      if (!reg?.refundAccount) return '';
+      return `환불 계좌: ${reg.refundBank || ''} ${reg.refundAccount} (예금주: ${reg.refundHolder || ''})`.trim();
+    }
+
+    function scholarshipSummary(reg) {
+      if (!reg || reg.registrationType === 'group') return '';
+      const discountText = reg.scholarshipDiscountText || '';
+      const discountAmount = parseInt(reg.scholarshipDiscountAmount, 10) || 0;
+      const finalFee = parseInt(reg.campFeeFinal, 10) || (499000 - discountAmount);
+      return `장학금/할인: ${discountText || '해당 없음'} / 총 납입금: ${formatAdminWon(finalFee)}`;
+    }
+
+    function campApplicantMemo(reg) {
+      return [reg.notes || '', refundAccountSummary(reg), scholarshipSummary(reg)].filter(Boolean).join('\n\n');
+    }
+
     function previousCampLabel(value) {
       if (value === 'yes') return adminLang === 'en' ? 'Yes' : '예';
       if (value === 'no') return adminLang === 'en' ? 'No' : '아니오';
@@ -2271,8 +2293,8 @@
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
         if (regs.length === 0) { showToast(t('csvNoCamp'), 'error'); return; }
         const headers = adminLang === 'en'
-          ? ['No','Status','Camp','Type','Name','Students','Counselor','Saved','Dedicated','Counselor Note','Phone','Email','Grade/Count','Gender','Church','School','Emergency','Notes','Registered','RegID']
-          : ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','메모','신청일시','RegID'];
+          ? ['No','Status','Camp','Type','Name','Students','Counselor','Saved','Dedicated','Counselor Note','Phone','Email','Grade/Count','Gender','Church','School','Emergency','Refund Bank','Refund Account','Refund Holder','Discounts','Final Payment','Notes','Registered','RegID']
+          : ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','환불 은행','환불 계좌','예금주','장학금/할인','총 납입금','메모','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const gradeOrCount = r.registrationType === 'group' ? `${t('groupBadge')} ${tt('personCountFn', r.groupCount)}` : (r.grade || '');
@@ -2298,6 +2320,8 @@
             r.name, participantList, counselor?.name || '', r.saved ? 'O' : '', r.dedicated ? 'O' : '', r.counselorMemo || '',
             r.phone, r.email, gradeOrCount, genderVal,
             r.church || '', r.school || '', r.emergency || '',
+            r.refundBank || '', r.refundAccount || '', r.refundHolder || '',
+            r.scholarshipDiscountText || '', r.campFeeFinal ? formatAdminWon(r.campFeeFinal) : '',
             r.notes || '', date, r.regId,
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
         });

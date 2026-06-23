@@ -16,9 +16,34 @@ const CORS = {
 // ── 이메일 HTML 빌더 ──────────────────────────────────────────────────────────
 
 const WAITLIST_SIZE = 10;
+const CAMP_BASE_FEE = 499000;
+const SCHOLARSHIP_DISCOUNTS = {
+  wolbi_syme: { amount: 50000, label: 'WOLBI/SYME 참여자 소개·추천·자녀' },
+  sibling: { amount: 50000, label: '형제·자매 동반 참여' },
+  excellent_camper: { amount: 150000, label: '지난 캠프 우수 캠퍼' },
+};
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function formatWon(amount) {
+  return `${Math.max(0, parseInt(amount, 10) || 0).toLocaleString('ko-KR')}원`;
+}
+
+function normalizeScholarshipDiscounts(values) {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values.map(value => String(value || '').trim()).filter(value => SCHOLARSHIP_DISCOUNTS[value]))];
+}
+
+function scholarshipDiscountAmount(values) {
+  return normalizeScholarshipDiscounts(values).reduce((sum, value) => sum + SCHOLARSHIP_DISCOUNTS[value].amount, 0);
+}
+
+function scholarshipDiscountText(values) {
+  const normalized = normalizeScholarshipDiscounts(values);
+  if (!normalized.length) return '';
+  return normalized.map(value => `${SCHOLARSHIP_DISCOUNTS[value].label} (${formatWon(SCHOLARSHIP_DISCOUNTS[value].amount)})`).join(', ');
 }
 
 function buildRegistrationEmailHtml(reg) {
@@ -57,12 +82,7 @@ function buildRegistrationEmailHtml(reg) {
     ? `${reg.groupCount}명 (참가 학생 명단 추후 제출)`
     : `${reg.groupCount}명 (남 ${reg.maleCount} / 여 ${reg.femaleCount})`;
   const groupCountLabel = hasDeferredParticipants ? '인원' : '인원 (남/여)';
-  const unionExtraRows = isGroup && (reg.refundAccount || reg.referralSource) ? `
-    ${reg.refundAccount ? `
-    <tr>
-      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">환불 계좌</td>
-      <td style="padding:8px 0;font-size:14px;">${escapeHtml(reg.refundAccount)}</td>
-    </tr>` : ''}
+  const unionExtraRows = isGroup && reg.referralSource ? `
     ${reg.referralSource ? `
     <tr>
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">알게 된 경로</td>
@@ -78,6 +98,20 @@ function buildRegistrationEmailHtml(reg) {
       <td style="padding:8px 0;font-size:14px;">${participantList}</td>
     </tr>
     ${unionExtraRows}` : '';
+  const refundRows = `
+    <tr>
+      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">환불 계좌</td>
+      <td style="padding:8px 0;font-size:14px;">${escapeHtml(reg.refundBank || '—')} · ${escapeHtml(reg.refundAccount || '—')} · 예금주 ${escapeHtml(reg.refundHolder || '—')}</td>
+    </tr>`;
+  const scholarshipRows = !isGroup ? `
+    <tr>
+      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">장학금/할인</td>
+      <td style="padding:8px 0;font-size:14px;">${reg.scholarshipDiscountText ? escapeHtml(reg.scholarshipDiscountText) : '해당 없음'}</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">총 납입금</td>
+      <td style="padding:8px 0;font-size:14px;font-weight:700;">${formatWon(reg.campFeeFinal ?? CAMP_BASE_FEE)} <span style="font-size:12px;color:#5a6f79;font-weight:500;">(기본 ${formatWon(reg.campFeeBase ?? CAMP_BASE_FEE)} · 할인 ${formatWon(reg.scholarshipDiscountAmount || 0)})</span></td>
+    </tr>` : '';
 
   const kstTime = new Date(reg.registeredAt).toLocaleString('ko-KR', {
     timeZone: 'Asia/Seoul',
@@ -125,6 +159,8 @@ function buildRegistrationEmailHtml(reg) {
         </tr>
         ${individualRows}
         ${groupRows}
+        ${refundRows}
+        ${scholarshipRows}
         <tr><td colspan="2"><div style="border-top:1px solid rgba(0,79,104,0.1);margin:4px 0;"></div></td></tr>
         ${reg.notes ? `
         <tr>
@@ -182,7 +218,9 @@ function regToSheetRow(reg) {
     : '';
   const notes = [
     reg.participantDetailsDeferred ? '참가 학생 명단: 추후 제출 예정' : '',
-    reg.refundAccount ? `환불 계좌: ${reg.refundAccount}` : '',
+    reg.refundAccount ? `환불 계좌: ${reg.refundBank || ''} ${reg.refundAccount} (예금주: ${reg.refundHolder || ''})`.trim() : '',
+    reg.scholarshipDiscountText ? `장학금/할인: ${reg.scholarshipDiscountText}` : '',
+    !isGroup ? `총 납입금: ${formatWon(reg.campFeeFinal ?? CAMP_BASE_FEE)} (기본 ${formatWon(reg.campFeeBase ?? CAMP_BASE_FEE)} / 할인 ${formatWon(reg.scholarshipDiscountAmount || 0)})` : '',
     reg.referralSource ? `알게 된 경로: ${reg.referralSource}` : '',
     participantSummary,
     reg.notes || '',
@@ -235,12 +273,20 @@ export async function onRequestPost(context) {
       maleCount, femaleCount,
       groupCount, participants,
       participantDetailsDeferred,
-      refundAccount, referralSource,
+      refundBank, refundAccount, refundHolder,
+      referralSource,
+      scholarshipDiscounts,
       notes,
     } = data;
 
     if (!campId || !name?.trim() || !phone?.trim() || !email?.trim()) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
+    }
+    const refundBankNorm = String(refundBank ?? '').trim();
+    const refundAccountNorm = String(refundAccount ?? '').trim();
+    const refundHolderNorm = String(refundHolder ?? '').trim();
+    if (!refundBankNorm || !refundAccountNorm || !refundHolderNorm) {
+      return Response.json({ error: '환불을 위한 은행명, 계좌번호, 예금주를 모두 입력해주세요.' }, { status: 400, headers: CORS });
     }
 
     const emailNorm = email.trim().toLowerCase();
@@ -324,6 +370,11 @@ export async function onRequestPost(context) {
     const waitlistNumber = isWaitlist ? (currentSubs - campCapacity + 1) : null;
 
     const regId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const normalizedScholarshipDiscounts = registrationType === 'individual'
+      ? normalizeScholarshipDiscounts(scholarshipDiscounts)
+      : [];
+    const normalizedScholarshipDiscountAmount = scholarshipDiscountAmount(normalizedScholarshipDiscounts);
+    const scholarshipText = scholarshipDiscountText(normalizedScholarshipDiscounts);
 
     const reg = registrationType === 'group'
       ? {
@@ -333,7 +384,9 @@ export async function onRequestPost(context) {
           maleCount: spotsM, femaleCount: spotsF, groupCount: spotsNeeded,
           participants: normalizedParticipants,
           participantDetailsDeferred: deferParticipantDetails,
-          refundAccount: refundAccount?.trim() || '',
+          refundBank: refundBankNorm,
+          refundAccount: refundAccountNorm,
+          refundHolder: refundHolderNorm,
           referralSource: referralSource?.trim() || '',
           church: church?.trim() || '',
           notes: notes?.trim() || '',
@@ -350,6 +403,14 @@ export async function onRequestPost(context) {
           church: church?.trim() || '',
           school: school?.trim() || '',
           emergency: emergency?.trim() || '',
+          refundBank: refundBankNorm,
+          refundAccount: refundAccountNorm,
+          refundHolder: refundHolderNorm,
+          scholarshipDiscounts: normalizedScholarshipDiscounts,
+          scholarshipDiscountText: scholarshipText,
+          scholarshipDiscountAmount: normalizedScholarshipDiscountAmount,
+          campFeeBase: CAMP_BASE_FEE,
+          campFeeFinal: Math.max(0, CAMP_BASE_FEE - normalizedScholarshipDiscountAmount),
           notes: notes?.trim() || '',
           registeredAt: new Date().toISOString(),
           confirmed: false,

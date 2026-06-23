@@ -544,12 +544,12 @@ html, body { overflow-x: hidden; max-width: 100%; }
   max-height: 90vh; overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  contain: layout paint;
   box-shadow: 0 24px 56px rgba(0,20,40,0.24);
   animation: crpSlideUp 0.32s cubic-bezier(0.22,1,0.36,1);
 }
 .crp-modal-close {
-  position: absolute; top: 16px; right: 16px; z-index: 30;
+  position: sticky; top: 16px; z-index: 40;
+  margin: 16px 16px -48px auto;
   width: 32px; height: 32px; border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.62); background: rgba(0,79,104,0.92);
   cursor: pointer;
@@ -745,14 +745,17 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-consent-text strong { color: var(--c-deep); }
 
 @media (max-width: 640px) {
-  .crp-reg-modal { padding: 12px; align-items: flex-start; }
+  .crp-reg-modal {
+    padding: 12px 12px max(12px, env(safe-area-inset-bottom));
+    align-items: flex-start;
+  }
   .crp-modal-card {
-    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
     border-radius: 16px;
   }
   .crp-modal-head,
   .crp-staff-modal-head { padding: 28px 24px 22px; border-radius: 16px 16px 0 0; }
-  .crp-form-wrap { padding: 22px 20px 28px; }
+  .crp-form-wrap { padding: 22px 20px calc(36px + env(safe-area-inset-bottom)); }
   .crp-form-grid { grid-template-columns: 1fr; }
   .crp-modal-close { top: 12px; right: 12px; }
   .crp-consent { padding: 13px 14px; }
@@ -873,6 +876,15 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-submit.loading .crp-submit-label { opacity: 0.7; }
 @keyframes crpSpin { to { transform: rotate(360deg); } }
 
+@media (max-width: 640px) {
+  .crp-submit {
+    position: sticky;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 25;
+    box-shadow: 0 10px 30px rgba(196,42,54,0.34);
+  }
+}
+
 /* Error / success */
 .crp-error-msg {
   margin-top: 12px; padding: 12px 16px;
@@ -950,6 +962,50 @@ html, body { overflow-x: hidden; max-width: 100%; }
 }
 .crp-success-bank-note strong { color: var(--c-sub); }
 
+.crp-fee-summary,
+.crp-success-fee-summary {
+  background: #fff;
+  border: 1px solid rgba(0,79,104,0.10);
+  border-radius: 10px;
+  padding: 13px 15px;
+  margin: 12px 0;
+}
+.crp-fee-row {
+  display: flex; justify-content: space-between; gap: 14px;
+  font-size: 13px; color: var(--c-sub); line-height: 1.5;
+}
+.crp-fee-row + .crp-fee-row { margin-top: 6px; }
+.crp-fee-row strong { color: var(--c-deep); }
+.crp-fee-row--discount strong { color: #0d9488; }
+.crp-fee-row--total {
+  margin-top: 9px; padding-top: 9px;
+  border-top: 1px solid rgba(0,79,104,0.10);
+  font-weight: 800; color: var(--c-deep);
+}
+.crp-fee-row--total strong { color: var(--c-red); font-size: 16px; }
+.crp-scholarship-options {
+  display: grid; gap: 9px;
+}
+.crp-scholarship-option {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 12px 14px;
+  border: 1.5px solid rgba(0,79,104,0.12);
+  border-radius: 10px;
+  background: #f7fbfd;
+  cursor: pointer;
+}
+.crp-scholarship-option input {
+  width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px;
+  accent-color: #0d9488;
+}
+.crp-scholarship-option strong {
+  display: block; font-size: 13px; color: var(--c-deep); line-height: 1.5;
+}
+.crp-scholarship-option small {
+  display: block; margin-top: 2px;
+  font-size: 11.5px; color: var(--c-muted); line-height: 1.6;
+}
+
 /* ── 성별 선택 버튼 ── */
 .crp-gender-wrap { display: flex; gap: 10px; }
 .crp-gender-btn {
@@ -986,13 +1042,13 @@ html, body { overflow-x: hidden; max-width: 100%; }
 
 /* Mobile modal */
 @media (max-width: 600px) {
-  .crp-reg-modal { padding: 12px; }
+  .crp-reg-modal { padding: 12px 12px max(12px, env(safe-area-inset-bottom)); }
   .crp-modal-head { padding: 28px 24px 22px; }
   .crp-type-tabs { padding: 10px 20px; gap: 8px; }
   .crp-type-tab { padding: 12px 8px; }
   .crp-tab-title { font-size: 12px; }
   .crp-tab-sub { display: none; }
-  .crp-form-wrap { padding: 20px 24px 36px; }
+  .crp-form-wrap { padding: 20px 24px calc(44px + env(safe-area-inset-bottom)); }
   .crp-form-grid { grid-template-columns: 1fr; }
   .crp-group-participant { grid-template-columns: 28px minmax(0,1fr) 96px; gap: 6px; }
   .crp-success-wrap { padding: 40px 24px; }
@@ -1594,6 +1650,56 @@ html, body { overflow-x: hidden; max-width: 100%; }
                 <textarea id="crpNotes" name="notes" rows="4" data-ph-ko="캠프 문의사항, 알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요." data-ph-en="Questions, allergies, health conditions, medications, or anything WOLKO should know." placeholder="캠프 문의사항, 알레르기, 건강 상태, 복용약 등 월코에서 꼭 알아야 할 점들을 적어주세요."></textarea>
               </div>
             </div>
+            <div class="crp-form-section">
+              <span class="crp-form-section-label"><span class="wl-ko">장학금 / 할인</span><span class="wl-en">Scholarship / Discounts</span></span>
+              <hr class="crp-form-section-line">
+            </div>
+            <div class="crp-field crp-field--full">
+              <label><span class="wl-ko">해당되는 할인 항목 선택</span><span class="wl-en">Select applicable discounts</span></label>
+              <div class="crp-scholarship-options">
+                <label class="crp-scholarship-option">
+                  <input type="checkbox" name="scholarshipDiscount" value="wolbi_syme">
+                  <span>
+                    <strong class="wl-ko">WOLBI 또는 SYME 프로그램 참여자 소개·추천·자녀</strong>
+                    <strong class="wl-en">Referred by, introduced by, or child of a WOLBI/SYME participant</strong>
+                    <small class="wl-ko">50,000원 할인</small>
+                    <small class="wl-en">KRW 50,000 discount</small>
+                  </span>
+                </label>
+                <label class="crp-scholarship-option">
+                  <input type="checkbox" name="scholarshipDiscount" value="sibling">
+                  <span>
+                    <strong class="wl-ko">형제·자매가 월코 캠프 또는 제주 캠프에 함께 참여</strong>
+                    <strong class="wl-en">Sibling attending a WOLKO or Jeju camp together</strong>
+                    <small class="wl-ko">50,000원 할인</small>
+                    <small class="wl-en">KRW 50,000 discount</small>
+                  </span>
+                </label>
+                <label class="crp-scholarship-option">
+                  <input type="checkbox" name="scholarshipDiscount" value="excellent_camper">
+                  <span>
+                    <strong class="wl-ko">지난 캠프 우수 캠퍼 선정자</strong>
+                    <strong class="wl-en">Selected as an outstanding camper at a previous camp</strong>
+                    <small class="wl-ko">150,000원 할인</small>
+                    <small class="wl-en">KRW 150,000 discount</small>
+                  </span>
+                </label>
+              </div>
+              <div class="crp-fee-summary" id="crpFeeSummary">
+                <div class="crp-fee-row">
+                  <span class="wl-ko">캠프 등록비</span><span class="wl-en">Camp fee</span>
+                  <strong id="crpBaseFeePreview">499,000원</strong>
+                </div>
+                <div class="crp-fee-row crp-fee-row--discount">
+                  <span class="wl-ko">선택 할인 합계</span><span class="wl-en">Selected discount</span>
+                  <strong id="crpDiscountPreview">0원</strong>
+                </div>
+                <div class="crp-fee-row crp-fee-row--total">
+                  <span class="wl-ko">총 납입금</span><span class="wl-en">Total payment</span>
+                  <strong id="crpFinalFeePreview">499,000원</strong>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 단체 신청 섹션 -->
@@ -1636,10 +1742,6 @@ html, body { overflow-x: hidden; max-width: 100%; }
                   <span class="wl-en">💡 For families with multiple children, you may enter your personal name without an organization.</span>
                 </p>
               </div>
-              <div class="crp-field crp-field--full crp-union-only" id="crpGRefundField" hidden>
-                <label><span class="wl-ko">환불 계좌</span><span class="wl-en">Refund Account</span></label>
-                <input id="crpGRefundAccount" name="gRefundAccount" data-ph-ko="예: 농협123-4567-8910-11" data-ph-en="Example: NongHyup 123-4567-8910-11" placeholder="예: 농협123-4567-8910-11">
-              </div>
               <div class="crp-field crp-field--full crp-union-only" id="crpGReferralField" hidden>
                 <label><span class="wl-ko">연합 캠프를 알게 된 경로</span><span class="wl-en">How did you hear about this camp?</span></label>
                 <input id="crpGReferralSource" name="gReferralSource" data-ph-ko="예: 교회 안내, 지인 소개, SNS, 월코 홈페이지" data-ph-en="Example: church announcement, friend, social media, WOLKO website" placeholder="예: 교회 안내, 지인 소개, SNS, 월코 홈페이지">
@@ -1651,6 +1753,25 @@ html, body { overflow-x: hidden; max-width: 100%; }
             </div>
           </div>
 
+          <div class="crp-form-section">
+            <span class="crp-form-section-label"><span class="wl-ko">환불 계좌 정보</span><span class="wl-en">Refund Account</span></span>
+            <hr class="crp-form-section-line">
+          </div>
+          <div class="crp-form-grid">
+            <div class="crp-field">
+              <label><span class="wl-ko">은행명</span><span class="wl-en">Bank Name</span> <span class="req">*</span></label>
+              <input id="crpRefundBank" name="refundBank" data-ph-ko="예: 농협" data-ph-en="Example: NH Bank" placeholder="예: 농협">
+            </div>
+            <div class="crp-field">
+              <label><span class="wl-ko">예금주</span><span class="wl-en">Account Holder</span> <span class="req">*</span></label>
+              <input id="crpRefundHolder" name="refundHolder" data-ph-ko="예: 홍길동" data-ph-en="Example: Hong Gil Dong" placeholder="예: 홍길동">
+            </div>
+            <div class="crp-field crp-field--full">
+              <label><span class="wl-ko">환불 계좌번호</span><span class="wl-en">Refund Account Number</span> <span class="req">*</span></label>
+              <input id="crpRefundAccount" name="refundAccount" data-ph-ko="숫자와 하이픈을 포함해 정확히 입력해주세요." data-ph-en="Enter the account number accurately, including hyphens if needed." placeholder="숫자와 하이픈을 포함해 정확히 입력해주세요.">
+            </div>
+          </div>
+
           <!-- 개인정보 동의 -->
           <label class="crp-consent">
             <input type="checkbox" id="crpConsent">
@@ -1658,8 +1779,8 @@ html, body { overflow-x: hidden; max-width: 100%; }
               <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
               <strong class="wl-en">I agree to the collection and use of personal information.</strong>
               <br>
-              <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일 &nbsp;·&nbsp; 목적: 캠프 신청 접수 및 안내 &nbsp;·&nbsp; 보유기간: 캠프 종료 후 요청 시까지</span>
-              <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email &nbsp;·&nbsp; Purpose: registration processing &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
+              <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일, 환불 계좌 정보, 할인 해당 여부 &nbsp;·&nbsp; 목적: 캠프 신청 접수, 안내 및 환불 처리 &nbsp;·&nbsp; 보유기간: 캠프 종료 후 요청 시까지</span>
+              <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email, refund account information, discount eligibility &nbsp;·&nbsp; Purpose: registration processing, communication, and refunds &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
             </label>
           </label>
 
@@ -1717,6 +1838,20 @@ html, body { overflow-x: hidden; max-width: 100%; }
             <span class="wl-ko">예약금</span><span class="wl-en">Deposit</span>
             &nbsp;<strong id="crpDepositAmount">—</strong>
             <span id="crpDepositBreakdown" style="font-size:12px;color:var(--c-muted);font-weight:400;margin-left:6px;"></span>
+          </div>
+          <div class="crp-success-fee-summary" id="crpSuccessFeeSummary" hidden>
+            <div class="crp-fee-row">
+              <span class="wl-ko">캠프 등록비</span><span class="wl-en">Camp fee</span>
+              <strong id="crpSuccessBaseFee">499,000원</strong>
+            </div>
+            <div class="crp-fee-row crp-fee-row--discount">
+              <span class="wl-ko">장학금/할인 적용액</span><span class="wl-en">Scholarship/discount</span>
+              <strong id="crpSuccessDiscount">0원</strong>
+            </div>
+            <div class="crp-fee-row crp-fee-row--total">
+              <span class="wl-ko">총 납입금</span><span class="wl-en">Total payment</span>
+              <strong id="crpSuccessFinalFee">499,000원</strong>
+            </div>
           </div>
           <div class="crp-success-bank-info">
             <div class="crp-success-bank-row">
@@ -2096,8 +2231,13 @@ var sectionGroup = document.getElementById('crpSectionGroup');
 var tabIndividual = document.getElementById('crpTabIndividual');
 var tabGroup = document.getElementById('crpTabGroup');
 var groupParticipantsField = document.getElementById('crpGroupParticipantsField');
-var groupRefundField = document.getElementById('crpGRefundField');
 var groupReferralField = document.getElementById('crpGReferralField');
+var CAMP_BASE_FEE = 499000;
+var SCHOLARSHIP_DISCOUNTS = {
+  wolbi_syme: { amount: 50000 },
+  sibling: { amount: 50000 },
+  excellent_camper: { amount: 150000 },
+};
 
 function crpIsUnionCampId(campId) {
   return campId === '2026-inland-union';
@@ -2110,10 +2250,43 @@ function crpIsUnionCampMode() {
 function setCrpUnionCampMode(enabled) {
   modal.classList.toggle('crp-modal--union-camp', enabled);
   if (groupParticipantsField) groupParticipantsField.hidden = enabled;
-  if (groupRefundField) groupRefundField.hidden = !enabled;
   if (groupReferralField) groupReferralField.hidden = !enabled;
   if (enabled) document.getElementById('crpGParticipants').innerHTML = '';
 }
+
+function crpFormatWon(amount, english) {
+  var safeAmount = Math.max(0, parseInt(amount, 10) || 0);
+  return english ? 'KRW ' + safeAmount.toLocaleString('en-US') : safeAmount.toLocaleString('ko-KR') + '원';
+}
+
+function getSelectedScholarshipDiscounts() {
+  return Array.from(document.querySelectorAll('input[name="scholarshipDiscount"]:checked'))
+    .map(function(input) { return input.value; })
+    .filter(function(value) { return SCHOLARSHIP_DISCOUNTS[value]; });
+}
+
+function scholarshipDiscountAmount(discounts) {
+  return (discounts || []).reduce(function(sum, key) {
+    return sum + (SCHOLARSHIP_DISCOUNTS[key]?.amount || 0);
+  }, 0);
+}
+
+function updateScholarshipSummary() {
+  var selected = getSelectedScholarshipDiscounts();
+  var discount = scholarshipDiscountAmount(selected);
+  var finalFee = Math.max(0, CAMP_BASE_FEE - discount);
+  var isEn = crpIsEn();
+  var baseEl = document.getElementById('crpBaseFeePreview');
+  var discountEl = document.getElementById('crpDiscountPreview');
+  var finalEl = document.getElementById('crpFinalFeePreview');
+  if (baseEl) baseEl.textContent = crpFormatWon(CAMP_BASE_FEE, isEn);
+  if (discountEl) discountEl.textContent = discount > 0 ? '-' + crpFormatWon(discount, isEn) : crpFormatWon(0, isEn);
+  if (finalEl) finalEl.textContent = crpFormatWon(finalFee, isEn);
+}
+
+document.querySelectorAll('input[name="scholarshipDiscount"]').forEach(function(input) {
+  input.addEventListener('change', updateScholarshipSummary);
+});
 
 // 현재 모달의 성별 cap 값 (런타임)
 var currentCapMale = 0;
@@ -2220,6 +2393,7 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     document.getElementById('crpForm').reset();
     var isUnionCamp = crpIsUnionCampId(campId);
     setCrpUnionCampMode(isUnionCamp);
+    updateScholarshipSummary();
     // 성별 버튼 초기화
     document.getElementById('crpGenderBtnM').classList.remove('selected');
     document.getElementById('crpGenderBtnF').classList.remove('selected');
@@ -2336,6 +2510,15 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     return;
   }
 
+  var refundBank = document.getElementById('crpRefundBank').value.trim();
+  var refundAccount = document.getElementById('crpRefundAccount').value.trim();
+  var refundHolder = document.getElementById('crpRefundHolder').value.trim();
+  if (!refundBank || !refundAccount || !refundHolder) {
+    errorMsg.textContent = '환불을 위한 은행명, 계좌번호, 예금주를 모두 입력해주세요. / Please enter bank name, refund account number, and account holder.';
+    errorMsg.hidden = false;
+    return;
+  }
+
   var currentType = regTypeInput.value;
   var payload;
 
@@ -2387,7 +2570,9 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       groupCount: gTotal,
       participants: participants,
       participantDetailsDeferred: isUnionCamp,
-      refundAccount: isUnionCamp ? document.getElementById('crpGRefundAccount').value.trim() : '',
+      refundBank: refundBank,
+      refundAccount: refundAccount,
+      refundHolder: refundHolder,
       referralSource: isUnionCamp ? document.getElementById('crpGReferralSource').value.trim() : '',
       church: gOrg,
       notes: document.getElementById('crpGNotes').value.trim(),
@@ -2409,6 +2594,8 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       errorMsg.hidden = false;
       return;
     }
+    var scholarshipDiscounts = getSelectedScholarshipDiscounts();
+    var scholarshipDiscountTotal = scholarshipDiscountAmount(scholarshipDiscounts);
     payload = {
       registrationType: 'individual',
       campId: campIdInput.value,
@@ -2419,6 +2606,13 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       church: document.getElementById('crpChurch').value.trim(),
       school: document.getElementById('crpSchool').value.trim(),
       emergency: document.getElementById('crpEmergency').value.trim(),
+      refundBank: refundBank,
+      refundAccount: refundAccount,
+      refundHolder: refundHolder,
+      scholarshipDiscounts: scholarshipDiscounts,
+      scholarshipDiscountTotal: scholarshipDiscountTotal,
+      campFeeBase: CAMP_BASE_FEE,
+      campFeeFinal: Math.max(0, CAMP_BASE_FEE - scholarshipDiscountTotal),
       notes: document.getElementById('crpNotes').value.trim(),
     };
   }
@@ -2459,6 +2653,20 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
               ? '(KRW ' + depositAmt.toLocaleString('en-US') + ' × ' + groupCnt + ' ppl)'
               : '(' + depositAmt.toLocaleString('ko-KR') + '원 × ' + groupCnt + '명)')
           : '';
+      }
+      var feeSummaryEl = document.getElementById('crpSuccessFeeSummary');
+      if (feeSummaryEl) {
+        if (currentType === 'group') {
+          feeSummaryEl.hidden = true;
+        } else {
+          var baseFee = payload.campFeeBase || CAMP_BASE_FEE;
+          var discountTotal = payload.scholarshipDiscountTotal || 0;
+          var finalFee = payload.campFeeFinal ?? Math.max(0, baseFee - discountTotal);
+          document.getElementById('crpSuccessBaseFee').textContent = crpFormatWon(baseFee, isEn);
+          document.getElementById('crpSuccessDiscount').textContent = discountTotal > 0 ? '-' + crpFormatWon(discountTotal, isEn) : crpFormatWon(0, isEn);
+          document.getElementById('crpSuccessFinalFee').textContent = crpFormatWon(finalFee, isEn);
+          feeSummaryEl.hidden = false;
+        }
       }
 
       if (currentType === 'group') {
@@ -2776,6 +2984,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
         }
       });
     });
+    updateScholarshipSummary();
   }
   syncLang();
   var langRoot = document.getElementById('lang-root');
