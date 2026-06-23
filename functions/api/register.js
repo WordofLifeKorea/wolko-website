@@ -18,7 +18,7 @@ const CORS = {
 const WAITLIST_SIZE = 10;
 const CAMP_BASE_FEE = 499000;
 const SCHOLARSHIP_DISCOUNTS = {
-  wolbi_syme: { amount: 50000, label: 'WOLBI/SYME 참여자 소개·추천·자녀' },
+  wolbi_syme: { amount: 50000, label: '월비 또는 에쌈 졸업자 및 프로그램 참여자' },
   sibling: { amount: 50000, label: '형제·자매 동반 참여' },
   excellent_camper: { amount: 150000, label: '지난 캠프 우수 캠퍼' },
 };
@@ -84,7 +84,7 @@ function normalizeScholarshipDiscountDetails(details, discounts) {
     const year = String(wolbiSource.year ?? '').trim();
     const participantName = String(wolbiSource.participantName ?? '').trim();
     if (!year || !participantName) {
-      return { error: 'WOLBI 또는 SYME 프로그램 참여 연도와 참여자 이름을 입력해주세요.' };
+      return { error: '월비 또는 에쌈 참여 연도와 참여자 이름을 입력해주세요.' };
     }
     normalized.wolbi_syme = { year, participantName };
   }
@@ -105,7 +105,7 @@ function normalizeScholarshipDiscountDetails(details, discounts) {
 function scholarshipDiscountDetailText(details) {
   const parts = [];
   if (details?.wolbi_syme) {
-    parts.push(`WOLBI/SYME 참여자: ${details.wolbi_syme.participantName} (${details.wolbi_syme.year})`);
+    parts.push(`월비/에쌈 졸업자 및 참여자: ${details.wolbi_syme.participantName} (${details.wolbi_syme.year})`);
   }
   if (details?.sibling) {
     parts.push(`형제·자매: ${details.sibling.camperName} / ${SIBLING_CAMP_LABELS[details.sibling.camp] || details.sibling.camp}`);

@@ -1063,7 +1063,43 @@ body.lang-en .crp-refund-modal-hint.wl-en { display: block !important; }
   text-align: right;
   white-space: nowrap;
 }
-.crp-fee-row--discount strong { color: #0d9488; }
+#crpDiscountPreviewLabel,
+#crpSuccessDiscountLabel {
+  display: block;
+  white-space: normal;
+}
+.crp-fee-row--discount {
+  display: block;
+}
+.crp-fee-row--discount > strong {
+  display: none;
+}
+.crp-discount-breakdown {
+  display: grid;
+  gap: 4px;
+}
+.crp-discount-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 12px;
+  align-items: baseline;
+}
+.crp-discount-line span {
+  min-width: 0;
+  word-break: keep-all;
+}
+.crp-discount-line strong {
+  color: #0d9488;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.crp-discount-total {
+  margin-top: 3px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(0,79,104,0.16);
+  font-weight: 800;
+  color: var(--c-deep);
+}
 .crp-fee-row--total {
   margin-top: 9px; padding-top: 9px;
   border-top: 1px solid rgba(0,79,104,0.10);
@@ -1896,8 +1932,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <label class="crp-scholarship-option">
                 <input type="checkbox" name="scholarshipDiscount" value="wolbi_syme">
                 <span>
-                  <strong class="wl-ko">WOLBI 또는 SYME 프로그램 참여자 소개·추천·자녀</strong>
-                  <strong class="wl-en">Referred by, introduced by, or child of a WOLBI/SYME participant</strong>
+                  <strong class="wl-ko">월비 또는 에쌈 졸업자 및 프로그램 참여자</strong>
+                  <strong class="wl-en">WOLBI or SYME graduates and program participants</strong>
                   <small class="wl-ko">50,000원 할인</small>
                   <small class="wl-en">KRW 50,000 discount</small>
                 </span>
@@ -1924,8 +1960,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             <div class="crp-scholarship-options" id="crpScholarshipGroup" hidden>
               <label class="crp-scholarship-option crp-scholarship-option--count">
                 <span>
-                  <strong class="wl-ko">WOLBI 또는 SYME 프로그램 참여자 소개·추천·자녀</strong>
-                  <strong class="wl-en">Referred by, introduced by, or child of a WOLBI/SYME participant</strong>
+                  <strong class="wl-ko">월비 또는 에쌈 졸업자 및 프로그램 참여자</strong>
+                  <strong class="wl-en">WOLBI or SYME graduates and program participants</strong>
                   <small class="wl-ko">1인당 50,000원 할인</small>
                   <small class="wl-en">KRW 50,000 discount per person</small>
                 </span>
@@ -1953,8 +1989,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             <div class="crp-scholarship-details" id="crpScholarshipDetails" hidden>
               <div class="crp-scholarship-detail" id="crpWolbiSymeDetail" hidden>
                 <strong class="crp-scholarship-detail-title">
-                  <span class="wl-ko">WOLBI 또는 SYME 프로그램 참여자 정보</span>
-                  <span class="wl-en">WOLBI/SYME participant information</span>
+                  <span class="wl-ko">월비 또는 에쌈 졸업자 및 프로그램 참여자 정보</span>
+                  <span class="wl-en">WOLBI/SYME graduate or participant information</span>
                 </strong>
                 <div class="crp-scholarship-detail-grid">
                   <div class="crp-field">
@@ -1983,14 +2019,6 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <div class="crp-scholarship-detail-grid">
                   <div class="crp-field">
                     <label>
-                      <span class="wl-ko">함께 참여하는 캠퍼 이름</span>
-                      <span class="wl-en">Sibling Camper Name</span>
-                      <span class="req">*</span>
-                    </label>
-                    <input id="crpSiblingCamperName" name="siblingCamperName" data-ph-ko="예: 홍길동" data-ph-en="Example: John Kim" placeholder="예: 홍길동">
-                  </div>
-                  <div class="crp-field">
-                    <label>
                       <span class="wl-ko">참여 캠프</span>
                       <span class="wl-en">Camp Attending</span>
                       <span class="req">*</span>
@@ -2000,6 +2028,14 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       <option value="wolko" data-ko="월코 캠프" data-en="WOLKO Camp">월코 캠프</option>
                       <option value="jeju" data-ko="제주 캠프" data-en="Jeju Camp">제주 캠프</option>
                     </select>
+                  </div>
+                  <div class="crp-field">
+                    <label>
+                      <span class="wl-ko">함께 참여하는 캠퍼 이름</span>
+                      <span class="wl-en">Sibling Camper Name</span>
+                      <span class="req">*</span>
+                    </label>
+                    <input id="crpSiblingCamperName" name="siblingCamperName" data-ph-ko="예: 홍길동" data-ph-en="Example: John Kim" placeholder="예: 홍길동">
                   </div>
                 </div>
               </div>
@@ -2502,8 +2538,8 @@ var CAMP_BASE_FEE = 499000;
 var SCHOLARSHIP_DISCOUNTS = {
   wolbi_syme: {
     amount: 50000,
-    ko: 'WOLBI 또는 SYME 프로그램 참여자 소개·추천·자녀',
-    en: 'WOLBI/SYME participant referral, introduction, or child',
+    ko: '월비 또는 에쌈 졸업자 및 프로그램 참여자',
+    en: 'WOLBI or SYME graduates and program participants',
   },
   sibling: {
     amount: 50000,
@@ -2582,19 +2618,28 @@ function scholarshipDiscountActive(counts, key) {
   return (parseInt((counts || {})[key], 10) || 0) > 0;
 }
 
-function scholarshipDiscountLabel(counts, english) {
-  var fallback = english ? '*Scholarship, if selected' : '*장학금 선택 시 적용액';
+function scholarshipDiscountSummaryHtml(counts, english) {
   var parts = Object.keys(counts || {}).filter(function(key) {
     return SCHOLARSHIP_DISCOUNTS[key] && (parseInt(counts[key], 10) || 0) > 0;
   });
-  if (!parts.length) return fallback;
-  return parts.map(function(key) {
+  if (!parts.length) return english ? '*Scholarship, if selected' : '*장학금 선택 시 적용액';
+
+  var total = scholarshipDiscountAmount(counts);
+  var itemRows = parts.map(function(key) {
     var count = parseInt(counts[key], 10) || 0;
-    var label = SCHOLARSHIP_DISCOUNTS[key][english ? 'en' : 'ko'];
-    return count > 1
+    var item = SCHOLARSHIP_DISCOUNTS[key];
+    var label = item[english ? 'en' : 'ko'];
+    var displayLabel = count > 1
       ? label + (english ? ' × ' + count : ' × ' + count + '명')
       : label;
-  }).join(english ? ', ' : ', ');
+    var amount = item.amount * count;
+    return '<span class="crp-discount-line"><span>' + crpEscHtml(displayLabel) + '</span><strong>-' + crpFormatWon(amount, english) + '</strong></span>';
+  }).join('');
+  var totalLabel = english ? 'Total discount' : '할인 총 합계';
+  return '<span class="crp-discount-breakdown">' +
+    itemRows +
+    '<span class="crp-discount-line crp-discount-total"><span>' + totalLabel + '</span><strong>-' + crpFormatWon(total, english) + '</strong></span>' +
+  '</span>';
 }
 
 function crpPaymentNoticeHtml(balanceLabel, english) {
@@ -2689,25 +2734,25 @@ function validateScholarshipDiscountDetails(counts) {
   var details = getScholarshipDiscountDetails();
   if (scholarshipDiscountActive(counts, 'wolbi_syme')) {
     if (!details.wolbi_syme.year) {
-      crpShowError(errorMsg, 'WOLBI 또는 SYME 프로그램 참여 연도를 선택해 주세요.', 'Please select the WOLBI/SYME participation year.');
+      crpShowError(errorMsg, '월비 또는 에쌈 참여 연도를 선택해 주세요.', 'Please select the WOLBI/SYME participation year.');
       crpFocusScholarshipField('crpWolbiSymeYear');
       return null;
     }
     if (!details.wolbi_syme.participantName) {
-      crpShowError(errorMsg, 'WOLBI 또는 SYME 프로그램 참여자 이름을 입력해 주세요.', 'Please enter the WOLBI/SYME participant name.');
+      crpShowError(errorMsg, '월비 또는 에쌈 졸업자 및 프로그램 참여자 이름을 입력해 주세요.', 'Please enter the WOLBI/SYME graduate or participant name.');
       crpFocusScholarshipField('crpWolbiSymeName');
       return null;
     }
   }
   if (scholarshipDiscountActive(counts, 'sibling')) {
-    if (!details.sibling.camperName) {
-      crpShowError(errorMsg, '함께 참여하는 형제·자매 캠퍼 이름을 입력해 주세요.', 'Please enter the sibling camper name.');
-      crpFocusScholarshipField('crpSiblingCamperName');
-      return null;
-    }
     if (!details.sibling.camp) {
       crpShowError(errorMsg, '형제·자매가 참여하는 캠프를 선택해 주세요.', 'Please select which camp the sibling is attending.');
       crpFocusScholarshipField('crpSiblingCamp');
+      return null;
+    }
+    if (!details.sibling.camperName) {
+      crpShowError(errorMsg, '함께 참여하는 형제·자매 캠퍼 이름을 입력해 주세요.', 'Please enter the sibling camper name.');
+      crpFocusScholarshipField('crpSiblingCamperName');
       return null;
     }
   }
@@ -2732,7 +2777,7 @@ function updateScholarshipSummary() {
   var discountRowEl = document.getElementById('crpDiscountPreviewRow');
   var finalEl = document.getElementById('crpFinalFeePreview');
   if (baseEl) baseEl.textContent = crpFormatWon(deposit, isEn);
-  if (discountLabelEl) discountLabelEl.textContent = scholarshipDiscountLabel(scholarshipCounts, isEn);
+  if (discountLabelEl) discountLabelEl.innerHTML = scholarshipDiscountSummaryHtml(scholarshipCounts, isEn);
   if (discountEl) discountEl.textContent = discount > 0 ? '-' + crpFormatWon(discount, isEn) : crpFormatWon(0, isEn);
   if (discountRowEl) discountRowEl.hidden = discount <= 0;
   if (finalEl) finalEl.textContent = crpFormatWon(finalFee, isEn);
@@ -2833,6 +2878,9 @@ function renderGroupParticipants() {
 }
 function crpEscAttr(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function crpEscHtml(value) {
+  return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 document.getElementById('crpGCount').addEventListener('change', function() {
   renderGroupParticipants();
@@ -3131,7 +3179,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
         paymentBalance = Math.max(0, finalFee - totalDeposit);
         paymentBalanceLabel = crpFormatWon(paymentBalance, isEn);
         document.getElementById('crpSuccessBaseFee').textContent = crpFormatWon(totalDeposit, isEn);
-        document.getElementById('crpSuccessDiscountLabel').textContent = scholarshipDiscountLabel(payload.scholarshipDiscounts || {}, isEn);
+        document.getElementById('crpSuccessDiscountLabel').innerHTML = scholarshipDiscountSummaryHtml(payload.scholarshipDiscounts || {}, isEn);
         document.getElementById('crpSuccessDiscount').textContent = discountTotal > 0 ? '-' + crpFormatWon(discountTotal, isEn) : crpFormatWon(0, isEn);
         document.getElementById('crpSuccessDiscountRow').hidden = discountTotal <= 0;
         document.getElementById('crpSuccessFinalFee').textContent = crpFormatWon(finalFee, isEn);
@@ -3510,7 +3558,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     document.getElementById('crpDepositAmount').textContent = crpFormatWon(deposit, isEn);
     document.getElementById('crpDepositBreakdown').textContent = '';
     document.getElementById('crpSuccessBaseFee').textContent = crpFormatWon(deposit, isEn);
-    document.getElementById('crpSuccessDiscountLabel').textContent = scholarshipDiscountLabel({ wolbi_syme: 1 }, isEn);
+    document.getElementById('crpSuccessDiscountLabel').innerHTML = scholarshipDiscountSummaryHtml({ wolbi_syme: 1 }, isEn);
     document.getElementById('crpSuccessDiscount').textContent = '-' + crpFormatWon(discount, isEn);
     document.getElementById('crpSuccessDiscountRow').hidden = discount <= 0;
     document.getElementById('crpSuccessFinalFee').textContent = crpFormatWon(finalFee, isEn);
