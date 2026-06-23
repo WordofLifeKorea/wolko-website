@@ -920,7 +920,63 @@ body.lang-en .crp-refund-modal-hint.wl-en { display: block !important; }
 }
 .crp-success-title { font-family: var(--f-serif); font-size: 24px; font-weight: 700; color: var(--c-deep); margin-bottom: 10px; }
 .crp-success-sub { font-size: 14px; line-height: 1.75; color: var(--c-muted); margin-bottom: 8px; word-break: keep-all; }
-.crp-success-count { font-size: 13px; color: var(--c-mid); font-weight: 600; margin-bottom: 20px; }
+.crp-success-count {
+  margin: 0 0 20px;
+  padding: 16px 18px;
+  border: 1px solid rgba(0,79,104,0.10);
+  border-radius: 12px;
+  background: #f8fbfd;
+  text-align: left;
+  color: var(--c-sub);
+}
+.crp-success-count:empty { display: none; }
+.crp-success-notice-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--c-deep);
+}
+.crp-success-notice-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+.crp-success-notice-list > span {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.65;
+  color: #64748b;
+  word-break: keep-all;
+}
+.crp-success-notice-list > span::before {
+  content: attr(data-num);
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(0,126,161,0.10);
+  color: var(--c-mid);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  margin-top: 1px;
+}
+.crp-success-notice-list > span > em {
+  min-width: 0;
+  font-style: normal;
+}
+.crp-success-notice-list strong {
+  color: var(--c-deep);
+  font-weight: 800;
+  white-space: nowrap;
+}
 .crp-success-contact {
   margin: 0 0 24px; font-size: 12px; color: var(--c-muted);
   display: flex; flex-direction: column; gap: 4px;
@@ -991,11 +1047,22 @@ body.lang-en .crp-refund-modal-hint.wl-en { display: block !important; }
   margin: 12px 0;
 }
 .crp-fee-row {
-  display: flex; justify-content: space-between; gap: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: baseline;
+  gap: 14px;
   font-size: 13px; color: var(--c-sub); line-height: 1.5;
 }
 .crp-fee-row + .crp-fee-row { margin-top: 6px; }
-.crp-fee-row strong { color: var(--c-deep); }
+.crp-fee-row > span {
+  min-width: 0;
+  word-break: keep-all;
+}
+.crp-fee-row strong {
+  color: var(--c-deep);
+  text-align: right;
+  white-space: nowrap;
+}
 .crp-fee-row--discount strong { color: #0d9488; }
 .crp-fee-row--total {
   margin-top: 9px; padding-top: 9px;
@@ -1855,8 +1922,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <span class="wl-ko">예약금</span><span class="wl-en">Deposit</span>
                 <strong id="crpBaseFeePreview">499,000원</strong>
               </div>
-              <div class="crp-fee-row crp-fee-row--discount">
-                <span class="wl-ko">*장학금 선택 시 적용액</span><span class="wl-en">*Scholarship, if selected</span>
+              <div class="crp-fee-row crp-fee-row--discount" id="crpDiscountPreviewRow" hidden>
+                <span id="crpDiscountPreviewLabel">*장학금 선택 시 적용액</span>
                 <strong id="crpDiscountPreview">0원</strong>
               </div>
               <div class="crp-fee-row crp-fee-row--total">
@@ -1938,8 +2005,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <span class="wl-ko">예약금</span><span class="wl-en">Deposit</span>
               <strong id="crpSuccessBaseFee">499,000원</strong>
             </div>
-            <div class="crp-fee-row crp-fee-row--discount">
-              <span class="wl-ko">*장학금 선택 시 적용액</span><span class="wl-en">*Scholarship, if selected</span>
+            <div class="crp-fee-row crp-fee-row--discount" id="crpSuccessDiscountRow" hidden>
+              <span id="crpSuccessDiscountLabel">*장학금 선택 시 적용액</span>
               <strong id="crpSuccessDiscount">0원</strong>
             </div>
             <div class="crp-fee-row crp-fee-row--total">
@@ -2346,9 +2413,21 @@ var groupParticipantsField = document.getElementById('crpGroupParticipantsField'
 var groupReferralField = document.getElementById('crpGReferralField');
 var CAMP_BASE_FEE = 499000;
 var SCHOLARSHIP_DISCOUNTS = {
-  wolbi_syme: { amount: 50000 },
-  sibling: { amount: 50000 },
-  excellent_camper: { amount: 150000 },
+  wolbi_syme: {
+    amount: 50000,
+    ko: 'WOLBI 또는 SYME 프로그램 참여자 소개·추천·자녀',
+    en: 'WOLBI/SYME participant referral, introduction, or child',
+  },
+  sibling: {
+    amount: 50000,
+    ko: '형제·자매 동반 참여',
+    en: 'Sibling attending together',
+  },
+  excellent_camper: {
+    amount: 150000,
+    ko: '지난 캠프 우수 캠퍼 선정자',
+    en: 'Previous outstanding camper',
+  },
 };
 
 function crpIsUnionCampId(campId) {
@@ -2398,6 +2477,38 @@ function scholarshipDiscountAmount(counts) {
   }, 0);
 }
 
+function scholarshipDiscountLabel(counts, english) {
+  var fallback = english ? '*Scholarship, if selected' : '*장학금 선택 시 적용액';
+  var parts = Object.keys(counts || {}).filter(function(key) {
+    return SCHOLARSHIP_DISCOUNTS[key] && (parseInt(counts[key], 10) || 0) > 0;
+  });
+  if (!parts.length) return fallback;
+  return parts.map(function(key) {
+    var count = parseInt(counts[key], 10) || 0;
+    var label = SCHOLARSHIP_DISCOUNTS[key][english ? 'en' : 'ko'];
+    return count > 1
+      ? label + (english ? ' × ' + count : ' × ' + count + '명')
+      : label;
+  }).join(english ? ', ' : ', ');
+}
+
+function crpPaymentNoticeHtml(balanceLabel, english) {
+  if (english) {
+    return '<strong class="crp-success-notice-title">Registration &amp; Payment Notice</strong>' +
+      '<span class="crp-success-notice-list">' +
+        '<span data-num="1"><em>If registrations exceed camp capacity, participation priority is determined by the order in which deposits are verified.</em></span>' +
+        '<span data-num="2"><em>If you pay the full camp fee instead of a deposit, your camp participation will be confirmed immediately.</em></span>' +
+        '<span data-num="3"><em>Please pay the remaining balance of <strong>' + balanceLabel + '</strong> within 7 days after the deposit is paid or by the day before camp begins. Registrations may be cancelled if the balance is not paid by the deadline.</em></span>' +
+      '</span>';
+  }
+  return '<strong class="crp-success-notice-title">등록 및 납부 안내</strong>' +
+    '<span class="crp-success-notice-list">' +
+      '<span data-num="1"><em>캠프 정원이 초과될 경우, 예약금 입금이 확인된 순서에 따라 참여 우선순위가 정해집니다.</em></span>' +
+      '<span data-num="2"><em>예약금 없이 캠프 참여비 전액을 바로 납부하시면 캠프 참여가 즉시 확정 등록됩니다.</em></span>' +
+      '<span data-num="3"><em>예약금 납부 후 남은 금액 <strong>' + balanceLabel + '</strong>은 예약금 납부일로부터 7일 이내 또는 캠프 시작 전날까지 납부해 주세요. 기한 내 잔여 캠프 참여비가 납부되지 않을 경우 신청이 취소될 수 있습니다.</em></span>' +
+    '</span>';
+}
+
 function scholarshipParticipantCount() {
   return regTypeInput.value === 'group'
     ? (parseInt(document.getElementById('crpGCount').value, 10) || 0)
@@ -2430,14 +2541,19 @@ function updateScholarshipSummary() {
   var participantCount = scholarshipParticipantCount();
   var baseFee = CAMP_BASE_FEE * participantCount;
   var deposit = (parseInt(campDepositInput.value, 10) || 0) * participantCount;
-  var discount = scholarshipDiscountAmount(getScholarshipCounts());
+  var scholarshipCounts = getScholarshipCounts();
+  var discount = scholarshipDiscountAmount(scholarshipCounts);
   var finalFee = Math.max(0, baseFee - discount);
   var isEn = crpIsEn();
   var baseEl = document.getElementById('crpBaseFeePreview');
+  var discountLabelEl = document.getElementById('crpDiscountPreviewLabel');
   var discountEl = document.getElementById('crpDiscountPreview');
+  var discountRowEl = document.getElementById('crpDiscountPreviewRow');
   var finalEl = document.getElementById('crpFinalFeePreview');
   if (baseEl) baseEl.textContent = crpFormatWon(deposit, isEn);
+  if (discountLabelEl) discountLabelEl.textContent = scholarshipDiscountLabel(scholarshipCounts, isEn);
   if (discountEl) discountEl.textContent = discount > 0 ? '-' + crpFormatWon(discount, isEn) : crpFormatWon(0, isEn);
+  if (discountRowEl) discountRowEl.hidden = discount <= 0;
   if (finalEl) finalEl.textContent = crpFormatWon(finalFee, isEn);
 }
 
@@ -2827,14 +2943,16 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
         paymentBalance = Math.max(0, finalFee - totalDeposit);
         paymentBalanceLabel = crpFormatWon(paymentBalance, isEn);
         document.getElementById('crpSuccessBaseFee').textContent = crpFormatWon(totalDeposit, isEn);
+        document.getElementById('crpSuccessDiscountLabel').textContent = scholarshipDiscountLabel(payload.scholarshipDiscounts || {}, isEn);
         document.getElementById('crpSuccessDiscount').textContent = discountTotal > 0 ? '-' + crpFormatWon(discountTotal, isEn) : crpFormatWon(0, isEn);
+        document.getElementById('crpSuccessDiscountRow').hidden = discountTotal <= 0;
         document.getElementById('crpSuccessFinalFee').textContent = crpFormatWon(finalFee, isEn);
         document.getElementById('crpSuccessBalanceFee').textContent = paymentBalanceLabel;
         feeSummaryEl.hidden = false;
       }
 
-      var paymentNoticeKo = '신청 완료 후 예약금을 납부해 주시면, 캠프 정원이 초과될 경우 예약금 입금이 확인된 순서에 따라 캠프 참여 우선순위가 정해집니다.<br><span style="font-size:0.88em;color:#64748b;line-height:1.7;">예약금 없이 캠프 참여비 전액을 바로 납부해 주시면 캠프 참여가 즉시 확정 등록됩니다.</span><br><span style="font-size:0.88em;color:#64748b;line-height:1.7;">예약금 납부 후 남은 금액 <strong>' + paymentBalanceLabel + '</strong>은 예약금 납부일로부터 7일 이내 또는 캠프 시작 전날까지 납부해 주세요. 기한 내 잔여 캠프 참여비가 납부되지 않을 경우 캠프 신청이 취소될 수 있습니다.</span>';
-      var paymentNoticeEn = 'After your deposit is received, if registrations exceed camp capacity, participation priority will be determined by the order in which deposits are verified.<br><span style="font-size:0.88em;color:#64748b;line-height:1.7;">If you pay the full camp fee without first paying a deposit, your camp participation will be confirmed immediately.</span><br><span style="font-size:0.88em;color:#64748b;line-height:1.7;">Please pay the remaining balance of <strong>' + paymentBalanceLabel + '</strong> within 7 days after the deposit is paid or by the day before camp begins. Registrations may be cancelled if the remaining balance is not paid by the deadline.</span>';
+      var paymentNoticeKo = crpPaymentNoticeHtml(paymentBalanceLabel, false);
+      var paymentNoticeEn = crpPaymentNoticeHtml(paymentBalanceLabel, true);
 
       if (currentType === 'group') {
         var gm = payload.maleCount, gf = payload.femaleCount, gc = payload.groupCount;
@@ -3203,13 +3321,13 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     document.getElementById('crpDepositAmount').textContent = crpFormatWon(deposit, isEn);
     document.getElementById('crpDepositBreakdown').textContent = '';
     document.getElementById('crpSuccessBaseFee').textContent = crpFormatWon(deposit, isEn);
+    document.getElementById('crpSuccessDiscountLabel').textContent = scholarshipDiscountLabel({ wolbi_syme: 1 }, isEn);
     document.getElementById('crpSuccessDiscount').textContent = '-' + crpFormatWon(discount, isEn);
+    document.getElementById('crpSuccessDiscountRow').hidden = discount <= 0;
     document.getElementById('crpSuccessFinalFee').textContent = crpFormatWon(finalFee, isEn);
     document.getElementById('crpSuccessBalanceFee').textContent = balanceLabel;
     document.getElementById('crpSuccessFeeSummary').hidden = false;
-    document.getElementById('crpSuccessCount').innerHTML = isEn
-      ? 'After your deposit is received, if registrations exceed camp capacity, participation priority will be determined by the order in which deposits are verified.<br><span style="font-size:0.88em;color:#64748b;line-height:1.7;">If you pay the full camp fee without first paying a deposit, your camp participation will be confirmed immediately.</span><br><span style="font-size:0.88em;color:#64748b;line-height:1.7;">Please pay the remaining balance of <strong>' + balanceLabel + '</strong> within 7 days after the deposit is paid or by the day before camp begins. Registrations may be cancelled if the remaining balance is not paid by the deadline.</span>'
-      : '신청 완료 후 예약금을 납부해 주시면, 캠프 정원이 초과될 경우 예약금 입금이 확인된 순서에 따라 캠프 참여 우선순위가 정해집니다.<br><span style="font-size:0.88em;color:#64748b;line-height:1.7;">예약금 없이 캠프 참여비 전액을 바로 납부해 주시면 캠프 참여가 즉시 확정 등록됩니다.</span><br><span style="font-size:0.88em;color:#64748b;line-height:1.7;">예약금 납부 후 남은 금액 <strong>' + balanceLabel + '</strong>은 예약금 납부일로부터 7일 이내 또는 캠프 시작 전날까지 납부해 주세요. 기한 내 잔여 캠프 참여비가 납부되지 않을 경우 캠프 신청이 취소될 수 있습니다.</span>';
+    document.getElementById('crpSuccessCount').innerHTML = crpPaymentNoticeHtml(balanceLabel, isEn);
     document.getElementById('crpBankNoteKo').innerHTML = '입금자명을 <strong>캠퍼 이름 (미리보기 캠퍼)</strong>으로 해주세요.<br>입금 확인 후 담당자가 최종 확정 처리합니다.';
     document.getElementById('crpBankNoteEn').innerHTML = "Please use the <strong>camper's name (Preview Camper)</strong> as the transfer memo.<br>Registration will be finalized after payment is verified.";
   }, 120);
