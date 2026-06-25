@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=47">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=48">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -145,32 +145,19 @@
         </div>
       </div>
       <div class="table-scroll">
-        <table>
+        <table class="camp-reg-table">
           <thead>
             <tr>
-              <th>#</th>
+              <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thApplicant">신청자</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="status"><span data-t="thStatus">상태</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="camp"><span data-t="thCamp">캠프</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="type"><span data-t="thType">유형</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thName">이름</span></button></th>
-              <th><span data-t="thCounselor">담당 카운슬러</span></th>
-              <th><span data-t="thSalvation">구원</span></th>
-              <th><span data-t="thDedication">헌신</span></th>
-              <th><span data-t="thCounselorMemo">상담자 메모</span></th>
               <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="email"><span data-t="thEmail">이메일</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="grade"><span data-t="thGrade">학년 / 인원</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="gender"><span data-t="thGender">성별</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="church"><span data-t="thChurch">교회</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="school"><span data-t="thSchool">학교</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="emergency"><span data-t="thEmergency">비상연락처</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="notes"><span data-t="thNotes">메모</span></button></th>
+              <th><span data-t="thCounseling">상담</span></th>
               <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
-              <th><span data-t="thDelete">삭제</span></th>
             </tr>
           </thead>
           <tbody id="campRegBody">
-            <tr><td colspan="19">
+            <tr><td colspan="6">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p data-t="loginFirst">로그인 후 자동으로 불러옵니다.</p>
@@ -267,6 +254,7 @@
         loginPw:'비밀번호를 입력하세요', loginVerifying:'확인 중…', loginBtn:'로그인',
         loginRequired:'비밀번호를 입력해주세요.', loginWrong:'비밀번호가 올바르지 않습니다.',
         campRegTitle:'캠프 신청 목록', editMode:'수정 모드', editing:'수정 중', csvDownload:'CSV 다운로드',
+        thApplicant:'신청자', thCounseling:'상담',
         thStatus:'상태', thCamp:'캠프', thType:'유형', thName:'이름',
         thCounselor:'담당 카운슬러', thSalvation:'구원', thDedication:'헌신',
         thCounselorMemo:'상담자 메모', thPhone:'연락처', thEmail:'이메일',
@@ -317,6 +305,9 @@
         waitlistFn: n=>`예비${n ? ' ' + n : ''}`, confirmed:'최종확정', depositConfirmed:'예약금확인', pending:'대기중',
         finalConfirmBtn:'최종확정', depositBtn:'예약금수납', unassignedShort:'미배정',
         savedLabel:'구원', dedicatedLabel:'헌신', counselorMemoPh:'특이사항 | 기도제목',
+        detailOpen:'상세', detailClose:'닫기', detailApplicationInfo:'신청 정보', detailCounseling:'상담 관리',
+        detailStudentList:'학생 명단', summaryGroupManaged:'단체 명단에서 관리', summaryNoCounseling:'상담 정보 없음',
+        summaryMemoExists:'메모 있음',
         studentListFn: (done, total, editing)=>`학생 명단 ${done} / ${total}명${editing ? ' 입력' : ''}`,
         studentNamePh:'학생 이름', studentLabelFn: n=>`학생 ${n}`, genderSelect:'성별', genderMissing:'성별 미입력',
         checkParticipants:'참여 인원 수를 확인해주세요.', nameMissing:'이름 없음',
@@ -343,6 +334,7 @@
         loginPw:'Enter password', loginVerifying:'Verifying…', loginBtn:'Login',
         loginRequired:'Please enter your password.', loginWrong:'Incorrect password.',
         campRegTitle:'Camp Registrations', editMode:'Edit Mode', editing:'Editing', csvDownload:'Export CSV',
+        thApplicant:'Applicant', thCounseling:'Counseling',
         thStatus:'Status', thCamp:'Camp', thType:'Type', thName:'Name',
         thCounselor:'Counselor', thSalvation:'Saved', thDedication:'Dedicated',
         thCounselorMemo:'Counselor Note', thPhone:'Phone', thEmail:'Email',
@@ -395,6 +387,9 @@
         waitlistFn: n=>`Waitlist${n ? ' ' + n : ''}`, confirmed:'Confirmed', depositConfirmed:'Deposit OK', pending:'Pending',
         finalConfirmBtn:'Confirm', depositBtn:'Deposit',
         unassignedShort:'Unassigned', savedLabel:'Saved', dedicatedLabel:'Dedicated', counselorMemoPh:'Notes | Prayer requests',
+        detailOpen:'Details', detailClose:'Close', detailApplicationInfo:'Application Info', detailCounseling:'Counseling',
+        detailStudentList:'Student List', summaryGroupManaged:'Managed in group list', summaryNoCounseling:'No counseling info',
+        summaryMemoExists:'Memo added',
         studentListFn: (done, total, editing)=>`Students ${done}/${total}${editing ? ' editing' : ''}`,
         studentNamePh:'Student name', studentLabelFn: n=>`Student ${n}`, genderSelect:'Gender', genderMissing:'Gender missing',
         checkParticipants:'Please check the participant count.', nameMissing:'No name',
@@ -640,6 +635,7 @@
     let camperEditMode = false;
     let teamPanelEditMode = false;
     let activeStatPanel = null; // 'leaders' | 'members' | 'staff' | null
+    const expandedRegistrationDetails = new Set();
     const expandedGroupParticipants = new Set();
     const UNASSIGNED = '__unassigned__';
     let teamOverviewConfig = emptyTeamOverviewConfig();
@@ -1045,7 +1041,7 @@
       } catch (e) {
         showToast(t('dataLoadFail') + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>${t('dataLoadRetry')}</p></div>`;
-        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="19">${errHtml}</td></tr>`;
+        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="6">${errHtml}</td></tr>`;
         document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="12">${errHtml}</td></tr>`;
       }
     }
@@ -1201,7 +1197,7 @@
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="19">
+          <tr><td colspan="6">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -1298,23 +1294,31 @@
               (_, participantIndex) => r.participants?.[participantIndex] || {}
             )
           : [];
-        const participantRows = groupParticipants.length
-          ? (() => {
-            const isExpanded = expandedGroupParticipants.has(r.regId);
-            const completedParticipants = groupParticipants.filter(participant =>
-              participant.name && ['male', 'female'].includes(participant.gender)
-            ).length;
-            const toggleRow = `<tr class="group-participant-toggle-row">
-              <td></td>
-              <td colspan="18">
-                <button class="group-participant-toggle${isExpanded ? ' expanded' : ''}" type="button" data-regid="${esc(r.regId)}" aria-expanded="${isExpanded}" onclick="toggleGroupParticipants(this.dataset.regid)">
-                  <svg class="group-participant-toggle-icon" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M2.5 4.5l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span>${tt('studentListFn', completedParticipants, groupParticipants.length, camperEditMode)}</span>
-                </button>
-              </td>
-            </tr>`;
-            if (!isExpanded) return toggleRow;
-            return toggleRow + groupParticipants.map((participant, participantIndex) => {
+        const applicantMemo = campApplicantMemo(r);
+        const completedParticipants = groupParticipants.filter(participant =>
+          participant.name && ['male', 'female'].includes(participant.gender)
+        ).length;
+        const isExpanded = expandedRegistrationDetails.has(r.regId);
+        const toggleSvg = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        const typeText = r.registrationType === 'group' ? `${t('groupBadge')} · ${esc(gradeOrCount)}` : `${t('individualBadge')} · ${esc(gradeOrCount)} · ${genderCell}`;
+        const contactCell = `<div class="summary-stack"><strong>${esc(r.phone || '—')}</strong><span>${esc(r.email || '—')}</span></div>`;
+        const counselorName = r.registrationType === 'group'
+          ? tt('studentListFn', completedParticipants, groupParticipants.length, false)
+          : esc(counselorStaff.find(staff => staff.regId === r.counselorRegId)?.name || '미배정');
+        const spiritualSummary = r.registrationType === 'group'
+          ? (groupParticipants.length ? t('summaryGroupManaged') : t('groupBadge'))
+          : `${r.saved ? t('savedLabel') : ''}${r.saved && r.dedicated ? ' · ' : ''}${r.dedicated ? t('dedicatedLabel') : ''}` || t('summaryNoCounseling');
+        const counselingSummary = `<div class="summary-stack"><strong>${counselorName}</strong><span>${esc(spiritualSummary)}${r.counselorMemo ? ' · ' + t('summaryMemoExists') : ''}</span></div>`;
+        const manageCell = `<div class="summary-actions"><span>${dateStr}</span><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></div>`;
+        const detailItem = (label, value, wide = false) => `<div class="registration-detail-item${wide ? ' registration-detail-wide' : ''}">
+          <span class="registration-detail-label">${label}</span>
+          <span class="registration-detail-value">${value}</span>
+        </div>`;
+        const participantDetailSection = groupParticipants.length
+          ? `<div class="registration-detail-section registration-detail-participants">
+              <div class="registration-detail-section-title">${t('detailStudentList')}</div>
+              <div class="detail-participant-list">
+                ${groupParticipants.map((participant, participantIndex) => {
               const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
               const participantName = camperEditMode
                 ? `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="${t('studentNamePh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
@@ -1347,46 +1351,76 @@
                 : participant.gender === 'female'
                 ? `<span class="group-participant-gender female">${t('female')}</span>`
                 : `<span class="group-participant-empty">${t('notEntered')}</span>`;
-              return `<tr class="group-participant-row${participantClass}">
-                <td></td>
-                <td colspan="3"><span class="group-participant-label">${tt('studentLabelFn', participantIndex + 1)}</span></td>
-                <td class="group-participant-name">${participantName}</td>
-                <td>${participantCounselor}</td>
-                <td>${participantSalvation}</td>
-                <td>${participantDedication}</td>
-                <td>${participantMemo}</td>
-                <td colspan="3"></td>
-                <td>${participantGender}</td>
-                <td colspan="6"></td>
-              </tr>`;
-            }).join('');
-          })()
+              return `<div class="detail-participant-item${participantClass}">
+                <span class="group-participant-label">${tt('studentLabelFn', participantIndex + 1)}</span>
+                <span class="group-participant-name">${participantName}</span>
+                <span>${participantGender}</span>
+                <span>${participantCounselor}</span>
+                <span class="spiritual-inline">${participantSalvation}${participantDedication}</span>
+                <span>${participantMemo}</span>
+              </div>`;
+            }).join('')}
+              </div>
+            </div>`
           : r.registrationType === 'group'
-          ? `<tr class="group-participant-row legacy"><td></td><td colspan="18">${t('checkParticipants')}</td></tr>`
+          ? `<div class="registration-detail-section registration-detail-participants"><div class="registration-detail-section-title">${t('detailStudentList')}</div><div class="group-participant-empty">${t('checkParticipants')}</div></div>`
           : '';
-        const applicantMemo = campApplicantMemo(r);
+        const detailRow = isExpanded
+          ? `<tr class="registration-detail-row" style="${rowStyle}">
+              <td colspan="6">
+                <div class="registration-detail-panel">
+                  <div class="registration-detail-head">
+                    <strong>${esc(r.name)}</strong>
+                    <span>${esc(campLabel)} · ${dateStr}</span>
+                  </div>
+                  <div class="registration-detail-section">
+                    <div class="registration-detail-section-title">${t('detailApplicationInfo')}</div>
+                    <div class="registration-detail-grid">
+                      ${detailItem(t('thType'), typeBadge)}
+                      ${detailItem(t('thGrade'), esc(gradeOrCount))}
+                      ${detailItem(t('thGender'), genderCell)}
+                      ${detailItem(t('thChurch'), esc(r.church || '—'))}
+                      ${detailItem(t('thSchool'), esc(r.school || '—'))}
+                      ${detailItem(t('thEmergency'), esc(r.emergency || '—'))}
+                      ${detailItem(t('thPhone'), esc(r.phone || '—'))}
+                      ${detailItem(t('thEmail'), esc(r.email || '—'))}
+                      ${detailItem(t('thNotes'), esc(applicantMemo || '—'), true)}
+                    </div>
+                  </div>
+                  <div class="registration-detail-section">
+                    <div class="registration-detail-section-title">${t('detailCounseling')}</div>
+                    <div class="registration-detail-grid">
+                      ${detailItem(t('thCounselor'), counselorCell)}
+                      ${detailItem(t('thSalvation'), salvationCell)}
+                      ${detailItem(t('thDedication'), dedicationCell)}
+                      ${detailItem(t('thCounselorMemo'), counselorMemoCell, true)}
+                    </div>
+                  </div>
+                  ${participantDetailSection}
+                </div>
+              </td>
+            </tr>`
+          : '';
 
-        return `<tr class="${rowClass}" style="${rowStyle}">
-          <td style="color:var(--light);font-family:var(--f-sans)">${i + 1}</td>
+        return `<tr class="registration-summary-row ${rowClass}${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}">
+          <td>
+            <div class="registration-status-cell">
+              <button class="row-toggle-btn${isExpanded ? ' is-open' : ''}" type="button" aria-expanded="${isExpanded}" onclick="toggleRegistrationDetail('${r.regId}')">
+                <span class="row-toggle-mark">${toggleSvg}</span>
+                <span class="row-toggle-text">${isExpanded ? t('detailClose') : t('detailOpen')}</span>
+              </button>
+              <div class="registration-status-content">
+                <div class="registration-person-name">${esc(r.name)}</div>
+                <div class="registration-expanded-meta">${typeText}</div>
+              </div>
+            </div>
+          </td>
           <td>${statusCell}</td>
           <td class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
-          <td>${typeBadge}</td>
-          <td style="font-weight:600">${esc(r.name)}</td>
-          <td>${counselorCell}</td>
-          <td>${salvationCell}</td>
-          <td>${dedicationCell}</td>
-          <td>${counselorMemoCell}</td>
-          <td>${esc(r.phone)}</td>
-          <td style="font-size:12px;color:var(--mid)">${esc(r.email)}</td>
-          <td style="font-family:var(--f-sans);font-size:12px">${esc(gradeOrCount)}</td>
-          <td>${genderCell}</td>
-          <td>${esc(r.church || '—')}</td>
-          <td>${esc(r.school || '—')}</td>
-          <td style="font-size:12px">${esc(r.emergency || '—')}</td>
-          <td style="font-size:12px;color:var(--mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(applicantMemo)}">${esc(applicantMemo || '—')}</td>
-          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
-          <td class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></td>
-        </tr>${participantRows}`;
+          <td>${contactCell}</td>
+          <td>${counselingSummary}</td>
+          <td>${manageCell}</td>
+        </tr>${detailRow}`;
       }).join('');
     }
 
@@ -2097,6 +2131,12 @@
     function toggleGroupParticipants(regId) {
       if (expandedGroupParticipants.has(regId)) expandedGroupParticipants.delete(regId);
       else expandedGroupParticipants.add(regId);
+      renderCampTable();
+    }
+
+    function toggleRegistrationDetail(regId) {
+      if (expandedRegistrationDetails.has(regId)) expandedRegistrationDetails.delete(regId);
+      else expandedRegistrationDetails.add(regId);
       renderCampTable();
     }
 

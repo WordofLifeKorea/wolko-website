@@ -190,7 +190,11 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
 .btn-logout:hover { background: rgba(255,255,255,0.22); color: #fff; }
 
 /* ── LAYOUT ── */
-.adm-wrap { max-width: 1280px; margin: 0 auto; padding: 40px 32px 100px; }
+.adm-wrap {
+  max-width: min(1540px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 40px clamp(14px, 2vw, 32px) 100px;
+}
 
 /* ── SEASON CARD ── */
 .camp-season-card { min-width: 150px; }
@@ -372,45 +376,52 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
 
 .table-scroll {
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  scrollbar-color: rgba(0,79,104,0.38) rgba(0,79,104,0.08);
+  scrollbar-width: thin;
 }
-.table-scroll::-webkit-scrollbar { height: 3px; }
-.table-scroll::-webkit-scrollbar-track { background: transparent; }
-.table-scroll::-webkit-scrollbar-thumb { background: rgba(0,79,104,0.18); border-radius: 100px; }
+.table-scroll::-webkit-scrollbar { height: 10px; }
+.table-scroll::-webkit-scrollbar-track { background: rgba(0,79,104,0.06); border-radius: 100px; }
+.table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0,79,104,0.34);
+  border: 2px solid rgba(0,79,104,0.06);
+  border-radius: 100px;
+}
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .camp-reg-table,
 .staff-reg-table {
   table-layout: fixed;
 }
-/* 캠프 신청 테이블 — 상태(버튼 포함) 넉넉히, 학년/인원 슬림하게 */
-.camp-reg-table { min-width: 920px; }
-.camp-reg-table th:nth-child(1), .camp-reg-table td:nth-child(1) { width: 30%; }
-.camp-reg-table th:nth-child(2), .camp-reg-table td:nth-child(2) { width:  8%; }
-.camp-reg-table th:nth-child(3), .camp-reg-table td:nth-child(3) { width: 19%; }
-.camp-reg-table th:nth-child(4), .camp-reg-table td:nth-child(4) { width: 19%; }
+/* 캠프 신청 테이블 — 19열 정보를 요약 6열 + 펼침 상세로 압축 */
+.camp-reg-table { min-width: 980px; }
+.camp-reg-table th:nth-child(1), .camp-reg-table td:nth-child(1) { width: 23%; }
+.camp-reg-table th:nth-child(2), .camp-reg-table td:nth-child(2) { width: 17%; }
+.camp-reg-table th:nth-child(3), .camp-reg-table td:nth-child(3) { width: 17%; }
+.camp-reg-table th:nth-child(4), .camp-reg-table td:nth-child(4) { width: 16%; }
 .camp-reg-table th:nth-child(5), .camp-reg-table td:nth-child(5) { width: 13%; }
-.camp-reg-table th:nth-child(6), .camp-reg-table td:nth-child(6) { width: 11%; }
-/* 스태프 테이블 */
-.staff-reg-table { min-width: 1880px; }
+.camp-reg-table th:nth-child(6), .camp-reg-table td:nth-child(6) { width: 14%; }
+/* 스태프 테이블 — 12열은 유지하되 첫 두 컬럼 sticky로 긴 가로 이동을 완화 */
+.staff-reg-table { min-width: 1600px; }
 .staff-reg-table th,
 .staff-reg-table td {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 150px; }
-.staff-reg-table th:nth-child(2), .staff-reg-table td:nth-child(2) { width: 120px; }
-.staff-reg-table th:nth-child(3), .staff-reg-table td:nth-child(3) { width: 82px; text-align: center; }
-.staff-reg-table th:nth-child(4), .staff-reg-table td:nth-child(4) { width: 112px; }
-.staff-reg-table th:nth-child(5), .staff-reg-table td:nth-child(5) { width: 170px; }
-.staff-reg-table th:nth-child(6), .staff-reg-table td:nth-child(6) { width: 112px; text-align: center; }
-.staff-reg-table th:nth-child(7), .staff-reg-table td:nth-child(7) { width: 140px; }
-.staff-reg-table th:nth-child(8), .staff-reg-table td:nth-child(8) { width: 180px; }
-.staff-reg-table th:nth-child(9), .staff-reg-table td:nth-child(9) { width: 220px; }
-.staff-reg-table th:nth-child(10), .staff-reg-table td:nth-child(10) { width: 230px; }
-.staff-reg-table th:nth-child(11), .staff-reg-table td:nth-child(11) { width: 150px; }
-.staff-reg-table th:nth-child(12), .staff-reg-table td:nth-child(12) { width: 82px; text-align: center; padding-right: 22px; }
+.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 132px; }
+.staff-reg-table th:nth-child(2), .staff-reg-table td:nth-child(2) { width: 112px; }
+.staff-reg-table th:nth-child(3), .staff-reg-table td:nth-child(3) { width: 74px; text-align: center; }
+.staff-reg-table th:nth-child(4), .staff-reg-table td:nth-child(4) { width: 100px; }
+.staff-reg-table th:nth-child(5), .staff-reg-table td:nth-child(5) { width: 140px; }
+.staff-reg-table th:nth-child(6), .staff-reg-table td:nth-child(6) { width: 100px; text-align: center; }
+.staff-reg-table th:nth-child(7), .staff-reg-table td:nth-child(7) { width: 128px; }
+.staff-reg-table th:nth-child(8), .staff-reg-table td:nth-child(8) { width: 160px; }
+.staff-reg-table th:nth-child(9), .staff-reg-table td:nth-child(9) { width: 190px; }
+.staff-reg-table th:nth-child(10), .staff-reg-table td:nth-child(10) { width: 210px; }
+.staff-reg-table th:nth-child(11), .staff-reg-table td:nth-child(11) { width: 132px; }
+.staff-reg-table th:nth-child(12), .staff-reg-table td:nth-child(12) { width: 70px; text-align: center; padding-right: 18px; }
 .staff-reg-table th:first-child,
-.staff-reg-table td:first-child { padding-left: 28px; padding-right: 14px; }
+.staff-reg-table td:first-child { padding-left: 22px; padding-right: 12px; }
 .staff-reg-table th:nth-child(1),
 .staff-reg-table td:nth-child(1),
 .staff-reg-table th:nth-child(2),
@@ -425,7 +436,7 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 }
 .staff-reg-table th:nth-child(2),
 .staff-reg-table td:nth-child(2) {
-  left: 150px;
+  left: 132px;
   z-index: 21;
   border-right: 1px solid rgba(0,79,104,0.16);
 }
@@ -743,6 +754,42 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   font-size: 12px;
   font-weight: 700;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.summary-stack {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.summary-stack strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.summary-stack span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mid);
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.summary-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+}
+.summary-actions span {
+  color: var(--mid);
+  font-size: 11px;
+  font-weight: 700;
   white-space: nowrap;
 }
 .row-toggle-btn {
