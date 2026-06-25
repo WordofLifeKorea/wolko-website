@@ -1980,8 +1980,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <label class="crp-scholarship-option">
                 <input type="checkbox" name="scholarshipDiscount" value="sibling">
                 <span>
-                  <strong class="wl-ko">형제·자매가 월코 캠프 또는 제주 캠프에 함께 참여</strong>
-                  <strong class="wl-en">Sibling attending a WOLKO or Jeju camp together</strong>
+                  <strong class="wl-ko">형제·자매 또는 친구가 월코 캠프 또는 제주 캠프에 함께 참여</strong>
+                  <strong class="wl-en">Sibling or friend attending a WOLKO or Jeju camp together</strong>
                   <small class="wl-ko">50,000원 할인</small>
                   <small class="wl-en">KRW 50,000 discount</small>
                 </span>
@@ -2008,8 +2008,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               </label>
               <label class="crp-scholarship-option crp-scholarship-option--count">
                 <span>
-                  <strong class="wl-ko">형제·자매가 월코 캠프 또는 제주 캠프에 함께 참여</strong>
-                  <strong class="wl-en">Sibling attending a WOLKO or Jeju camp together</strong>
+                  <strong class="wl-ko">형제·자매 또는 친구가 월코 캠프 또는 제주 캠프에 함께 참여</strong>
+                  <strong class="wl-en">Sibling or friend attending a WOLKO or Jeju camp together</strong>
                   <small class="wl-ko">1인당 50,000원 할인</small>
                   <small class="wl-en">KRW 50,000 discount per person</small>
                 </span>
@@ -2052,8 +2052,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               </div>
               <div class="crp-scholarship-detail" id="crpSiblingDetail" hidden>
                 <strong class="crp-scholarship-detail-title">
-                  <span class="wl-ko">함께 참여하는 형제·자매 정보</span>
-                  <span class="wl-en">Sibling attending together</span>
+                  <span class="wl-ko">함께 참여하는 형제·자매 또는 친구 정보</span>
+                  <span class="wl-en">Sibling or friend attending together</span>
                 </strong>
                 <div class="crp-scholarship-detail-grid">
                   <div class="crp-field">
@@ -2071,7 +2071,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                   <div class="crp-field">
                     <label>
                       <span class="wl-ko">함께 참여하는 캠퍼 이름</span>
-                      <span class="wl-en">Sibling Camper Name</span>
+                      <span class="wl-en">Sibling or Friend Camper Name</span>
                       <span class="req">*</span>
                     </label>
                     <input id="crpSiblingCamperName" name="siblingCamperName" data-ph-ko="예: 홍길동" data-ph-en="Example: John Kim" placeholder="예: 홍길동">
@@ -2586,8 +2586,8 @@ var SCHOLARSHIP_DISCOUNTS = {
   },
   sibling: {
     amount: 50000,
-    ko: '형제·자매 동반 참여',
-    en: 'Sibling attending together',
+    ko: '형제·자매 또는 친구 동반 참여',
+    en: 'Sibling or friend attending together',
   },
   excellent_camper: {
     amount: 150000,
@@ -2801,12 +2801,12 @@ function validateScholarshipDiscountDetails(counts) {
   }
   if (scholarshipDiscountActive(counts, 'sibling')) {
     if (!details.sibling.camp) {
-      crpShowError(errorMsg, '형제·자매가 참여하는 캠프를 선택해 주세요.', 'Please select which camp the sibling is attending.');
+      crpShowError(errorMsg, '형제·자매 또는 친구가 참여하는 캠프를 선택해 주세요.', 'Please select which camp the sibling or friend is attending.');
       crpFocusScholarshipField('crpSiblingCamp');
       return null;
     }
     if (!details.sibling.camperName) {
-      crpShowError(errorMsg, '함께 참여하는 형제·자매 캠퍼 이름을 입력해 주세요.', 'Please enter the sibling camper name.');
+      crpShowError(errorMsg, '함께 참여하는 형제·자매 또는 친구 캠퍼 이름을 입력해 주세요.', 'Please enter the sibling or friend camper name.');
       crpFocusScholarshipField('crpSiblingCamperName');
       return null;
     }
