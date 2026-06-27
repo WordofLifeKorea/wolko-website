@@ -2509,3 +2509,322 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .row-toggle-btn { width: 56px; min-width: 56px; padding: 0 7px; font-size: 10px; }
   .registration-status-cell { gap: 8px; }
 }
+
+@media (max-width: 760px) {
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .adm-wrap {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px 10px 56px;
+  }
+
+  .table-section,
+  .staff-section {
+    width: 100%;
+    overflow: visible;
+    border-radius: 14px;
+  }
+
+  .table-toolbar {
+    align-items: stretch;
+    padding: 14px;
+  }
+
+  .table-toolbar > div:first-child,
+  .table-toolbar > div:last-child {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .table-toolbar > div:last-child {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px !important;
+    flex-shrink: 1;
+  }
+
+  .table-title {
+    display: inline-block;
+    max-width: 100%;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .btn-edit-mode,
+  .btn-csv {
+    justify-content: center;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: 38px;
+    padding: 9px 8px;
+  }
+
+  .table-scroll,
+  .staff-section .table-scroll {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .camp-reg-table,
+  .staff-reg-table {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: auto;
+  }
+
+  .camp-reg-table thead,
+  .staff-reg-table thead {
+    display: none;
+  }
+
+  .camp-reg-table tbody,
+  .staff-reg-table tbody {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    background: #f6fafb;
+  }
+
+  .camp-reg-table tr,
+  .staff-reg-table tr,
+  .camp-reg-table td,
+  .staff-reg-table td {
+    position: static !important;
+    left: auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .camp-reg-table .registration-summary-row.camp-tint,
+  .staff-reg-table tbody tr.camp-tint {
+    display: flex;
+    flex-direction: column;
+    margin: 0 0 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0,79,104,0.13);
+    border-left: 6px solid var(--camp-row-border);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--camp-row-bg) 42%, #fff);
+    box-shadow: 0 8px 18px rgba(16,56,70,0.07);
+  }
+
+  .camp-reg-table .registration-summary-row.camp-tint:hover td,
+  .camp-reg-table .registration-summary-row.camp-tint.is-expanded td,
+  .staff-reg-table tbody tr.camp-tint:hover td {
+    background: transparent !important;
+  }
+
+  .camp-reg-table .registration-summary-row.camp-tint td,
+  .staff-reg-table tbody tr.camp-tint td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border-bottom: 1px solid rgba(0,79,104,0.08);
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--text);
+    font-size: 12px !important;
+    line-height: 1.45;
+    text-align: right;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .camp-reg-table .registration-summary-row.camp-tint td::before,
+  .staff-reg-table tbody tr.camp-tint td::before {
+    content: attr(data-label);
+    flex: 0 0 86px;
+    color: #7890a0;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+    text-align: left;
+  }
+
+  .camp-reg-table .registration-summary-row.camp-tint td:last-child,
+  .staff-reg-table tbody tr.camp-tint td:last-child {
+    border-bottom: 0;
+  }
+
+  .camp-reg-table .registration-summary-row.camp-tint td:first-child,
+  .staff-reg-table tbody tr.camp-tint td:nth-child(2) {
+    display: block;
+    padding: 13px 12px 6px;
+    border-bottom: 0;
+    text-align: left;
+  }
+
+  .camp-reg-table .registration-summary-row.camp-tint td:first-child::before,
+  .staff-reg-table tbody tr.camp-tint td:nth-child(2)::before {
+    display: none;
+  }
+
+  .camp-reg-table .registration-summary-row.camp-tint td:first-child,
+  .staff-reg-table tbody tr.camp-tint td:nth-child(2) {
+    order: -3;
+  }
+
+  .staff-reg-table tbody tr.camp-tint td:nth-child(1) {
+    order: -2;
+  }
+
+  .camp-reg-table .registration-person-name,
+  .staff-reg-table .staff-name-cell {
+    display: block;
+    overflow: visible;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1.3;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .camp-reg-table .registration-expanded-meta {
+    display: block;
+    margin-top: 4px;
+  }
+
+  .camp-reg-table .camp-name-cell,
+  .staff-reg-table .staff-row-camp {
+    color: var(--camp-row-border);
+    font-weight: 800;
+  }
+
+  .camp-reg-table .summary-stack,
+  .camp-reg-table .summary-actions,
+  .staff-reg-table .staff-memo-wrap,
+  .staff-reg-table .staff-memo-cell,
+  .staff-reg-table .staff-memo-popover {
+    min-width: 0;
+    max-width: 100%;
+    text-align: right;
+    white-space: normal;
+  }
+
+  .staff-reg-table .staff-memo-popover {
+    display: none !important;
+  }
+
+  .camp-reg-table .summary-stack strong,
+  .camp-reg-table .summary-stack span,
+  .staff-reg-table td > span,
+  .staff-reg-table td > div {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .camp-reg-table td:nth-child(2) > span,
+  .camp-reg-table .summary-actions {
+    flex-wrap: wrap !important;
+    justify-content: flex-end;
+  }
+
+  .camp-reg-table .registration-detail-row {
+    display: block;
+    margin: -6px 0 12px;
+  }
+
+  .camp-reg-table .registration-detail-row td {
+    display: block;
+    padding: 0 10px 12px;
+    background: #f6fafb !important;
+    border: 0;
+    box-shadow: none !important;
+  }
+
+  .registration-detail-panel {
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 5px 14px rgba(16,56,70,0.06);
+  }
+
+  .registration-detail-grid,
+  .detail-participant-item {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .registration-detail-item {
+    grid-template-columns: 94px minmax(0, 1fr);
+  }
+
+  .staff-camp-divider {
+    display: block;
+    margin: 14px 0 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--camp-row-bg);
+  }
+
+  .staff-camp-divider td {
+    display: block;
+    padding: 12px;
+    border: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .staff-camp-divider .staff-camp-title-cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .staff-camp-divider .staff-camp-fill-cell {
+    display: none;
+  }
+
+  .staff-camp-empty td,
+  .camp-reg-table .state-box,
+  .staff-reg-table .state-box {
+    white-space: normal;
+  }
+
+  .person-team-stack,
+  .person-team-badge {
+    max-width: 100%;
+  }
+
+  .staff-team-editor {
+    width: min(220px, 100%);
+  }
+
+  .staff-team-menu {
+    left: auto;
+    right: 0;
+    width: min(260px, calc(100vw - 42px));
+  }
+
+  .camper-select,
+  .edit-input,
+  .edit-input-wide,
+  .counselor-memo-input,
+  .group-participant-input,
+  .group-participant-select {
+    width: min(210px, 100%) !important;
+    max-width: 100%;
+  }
+
+  .btn-del,
+  .btn-confirm,
+  .btn-revert {
+    min-height: 30px;
+  }
+}

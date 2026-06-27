@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=54">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=55">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1495,18 +1495,18 @@
         const memoCell = renderMemoCell(applicantMemo);
 
         return `<tr class="camp-tint" style="${rowStyle}">
-          <td><span class="staff-row-camp">${esc(campDisplayName(r.campId))}</span>${teamCell}</td>
-          <td><span class="staff-name-cell">${esc(r.name || t('unset'))}</span></td>
-          <td>${genderBadge}</td>
-          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${esc(r.birthDate || '—')}</td>
-          <td style="font-size:12px;color:var(--mid)">${esc(r.church || '—')}</td>
-          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${esc(previousCampLabel(r.previousCamp))}</td>
-          <td style="white-space:nowrap">${phoneCell}</td>
-          <td>${memoCell}</td>
-          <td>${testimonyCell}</td>
-          <td style="font-size:12px;color:var(--mid)" title="${esc(r.email || '')}">${esc(r.email)}</td>
-          <td style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
-          <td class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></td>
+          <td data-label="${t('thTeam')}"><span class="staff-row-camp">${esc(campDisplayName(r.campId))}</span>${teamCell}</td>
+          <td data-label="${t('thName')}"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span></td>
+          <td data-label="${t('thGender')}">${genderBadge}</td>
+          <td data-label="${t('thBirthDate')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${esc(r.birthDate || '—')}</td>
+          <td data-label="${t('thChurch')}" style="font-size:12px;color:var(--mid)">${esc(r.church || '—')}</td>
+          <td data-label="${t('thPreviousCamp')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${esc(previousCampLabel(r.previousCamp))}</td>
+          <td data-label="${t('thPhone')}" style="white-space:nowrap">${phoneCell}</td>
+          <td data-label="${t('thApplicantMemo')}">${memoCell}</td>
+          <td data-label="${t('thTestimony')}">${testimonyCell}</td>
+          <td data-label="${t('thEmail')}" style="font-size:12px;color:var(--mid)" title="${esc(r.email || '')}">${esc(r.email)}</td>
+          <td data-label="${t('thDate')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
+          <td data-label="${t('thDelete')}" class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></td>
         </tr>`;
       };
 
