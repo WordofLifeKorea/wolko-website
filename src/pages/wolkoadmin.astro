@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=59">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=60">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1333,6 +1333,23 @@
             ${detailItem(t('thFinalPayment'), formatAdminWon(finalFee))}
           </div>
         </div>`;
+        const counselingDetailSection = `<div class="registration-detail-section registration-counseling-section">
+          <div class="registration-detail-section-title">${t('detailCounseling')}</div>
+          <div class="counseling-detail-grid">
+            <div class="counseling-detail-card counseling-detail-card-primary">
+              <span class="counseling-detail-label">${t('thCounselor')}</span>
+              <div class="counseling-detail-value">${counselorCell}</div>
+            </div>
+            <div class="counseling-detail-card">
+              <span class="counseling-detail-label">${t('detailCounseling')}</span>
+              <div class="counseling-detail-value counseling-check-row">${salvationCell}${dedicationCell}</div>
+            </div>
+            <div class="counseling-detail-card counseling-detail-card-wide">
+              <span class="counseling-detail-label">${t('thCounselorMemo')}</span>
+              <div class="counseling-detail-value counseling-memo-value">${counselorMemoCell}</div>
+            </div>
+          </div>
+        </div>`;
         const participantDetailSection = groupParticipants.length
           ? `<div class="registration-detail-section registration-detail-participants">
               <div class="registration-detail-section-title">${t('detailStudentList')}</div>
@@ -1408,15 +1425,7 @@
                   </div>
                   ${refundDetailSection}
                   ${scholarshipDetailSection}
-                  <div class="registration-detail-section">
-                    <div class="registration-detail-section-title">${t('detailCounseling')}</div>
-                    <div class="registration-detail-grid">
-                      ${detailItem(t('thCounselor'), counselorCell)}
-                      ${detailItem(t('thSalvation'), salvationCell)}
-                      ${detailItem(t('thDedication'), dedicationCell)}
-                      ${detailItem(t('thCounselorMemo'), counselorMemoCell, true)}
-                    </div>
-                  </div>
+                  ${counselingDetailSection}
                   ${participantDetailSection}
                 </div>
               </td>

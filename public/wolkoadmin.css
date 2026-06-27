@@ -1022,6 +1022,76 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 }
 .registration-detail-row .counselor-memo-input { width: min(320px, 100%); }
 .registration-detail-row .counselor-memo-readonly { max-width: 100%; white-space: normal; }
+.registration-counseling-section {
+  background: linear-gradient(180deg, rgba(244,250,251,0.9) 0%, #fff 100%);
+}
+.counseling-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.95fr) minmax(220px, 1fr);
+  gap: 12px;
+}
+.counseling-detail-card {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(0,79,104,0.12);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(16,56,70,0.04);
+}
+.counseling-detail-card-primary {
+  border-color: rgba(0,119,163,0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f4fbfe 100%);
+}
+.counseling-detail-card-wide {
+  grid-column: 1 / -1;
+}
+.counseling-detail-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #7890a0;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+.counseling-detail-value {
+  min-width: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+.counseling-detail-value .camper-select {
+  width: min(240px, 100%);
+  min-height: 36px;
+  background: #fff;
+  font-weight: 700;
+}
+.counseling-check-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-height: 36px;
+}
+.counseling-check-row .spiritual-check {
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 1px solid rgba(0,79,104,0.10);
+  border-radius: 999px;
+  background: #f8fbfc;
+}
+.counseling-memo-value .edit-input,
+.counseling-memo-value .edit-input-wide {
+  width: min(520px, 100%);
+}
+.counseling-memo-value .counselor-memo-readonly,
+.counseling-memo-value .group-participant-empty {
+  display: block;
+  max-width: none;
+  min-height: 22px;
+  color: var(--mid);
+  font-size: 13px;
+  white-space: normal;
+}
 
 .sort-btn {
   appearance: none;
@@ -2711,6 +2781,21 @@ tbody tr.camp-tint.is-dedicated:hover td {
     min-width: 0;
     white-space: normal;
     overflow-wrap: anywhere;
+  }
+
+  .counseling-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .counseling-detail-card {
+    padding: 12px;
+  }
+
+  .counseling-detail-value .camper-select,
+  .counseling-memo-value .edit-input,
+  .counseling-memo-value .edit-input-wide {
+    width: 100%;
   }
 
   .camp-reg-table td:nth-child(2) > span,
