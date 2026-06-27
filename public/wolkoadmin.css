@@ -393,22 +393,29 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .staff-reg-table {
   table-layout: fixed;
 }
-/* 캠프 신청 테이블 — 19열 정보를 요약 6열 + 펼침 상세로 압축 */
-.camp-reg-table { min-width: 980px; }
-.camp-reg-table th:nth-child(1), .camp-reg-table td:nth-child(1) { width: 23%; }
-.camp-reg-table th:nth-child(2), .camp-reg-table td:nth-child(2) { width: 17%; }
-.camp-reg-table th:nth-child(3), .camp-reg-table td:nth-child(3) { width: 17%; }
+/* 캠프 신청 테이블 — 화면 폭 안에서 먼저 버티고, 상세는 펼침 패널로 확인 */
+.camp-reg-table { min-width: 0; }
+.camp-reg-table th,
+.camp-reg-table td { padding-left: 12px; padding-right: 12px; }
+.camp-reg-table td {
+  min-width: 0;
+  overflow: hidden;
+  white-space: normal;
+}
+.camp-reg-table th:nth-child(1), .camp-reg-table td:nth-child(1) { width: 25%; }
+.camp-reg-table th:nth-child(2), .camp-reg-table td:nth-child(2) { width: 18%; }
+.camp-reg-table th:nth-child(3), .camp-reg-table td:nth-child(3) { width: 18%; }
 .camp-reg-table th:nth-child(4), .camp-reg-table td:nth-child(4) { width: 16%; }
 .camp-reg-table th:nth-child(5), .camp-reg-table td:nth-child(5) { width: 13%; }
-.camp-reg-table th:nth-child(6), .camp-reg-table td:nth-child(6) { width: 14%; }
+.camp-reg-table th:nth-child(6), .camp-reg-table td:nth-child(6) { width: 10%; }
 /* 스태프 테이블 — 12열은 유지하되 첫 두 컬럼 sticky로 긴 가로 이동을 완화 */
-.staff-reg-table { min-width: 1600px; }
+.staff-reg-table { min-width: 1620px; }
 .staff-reg-table th,
 .staff-reg-table td {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 132px; }
+.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 150px; }
 .staff-reg-table th:nth-child(2), .staff-reg-table td:nth-child(2) { width: 112px; }
 .staff-reg-table th:nth-child(3), .staff-reg-table td:nth-child(3) { width: 74px; text-align: center; }
 .staff-reg-table th:nth-child(4), .staff-reg-table td:nth-child(4) { width: 100px; }
@@ -436,7 +443,7 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 }
 .staff-reg-table th:nth-child(2),
 .staff-reg-table td:nth-child(2) {
-  left: 132px;
+  left: 150px;
   z-index: 21;
   border-right: 1px solid rgba(0,79,104,0.16);
 }
@@ -451,6 +458,7 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 }
 .camp-reg-table td:nth-child(3),
 .camp-reg-table td:nth-child(5),
+.camp-reg-table td:nth-child(6),
 .staff-reg-table td:nth-child(2) {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -476,6 +484,18 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   gap: 12px;
   min-width: 0;
   max-width: 100%;
+}
+.camp-reg-table .registration-status-cell {
+  display: flex;
+}
+.camp-reg-table td:nth-child(2) > span {
+  flex-wrap: wrap !important;
+  white-space: normal !important;
+}
+.camp-reg-table td:nth-child(2) .btn-confirm,
+.camp-reg-table td:nth-child(2) .btn-revert {
+  padding-left: 8px;
+  padding-right: 8px;
 }
 .registration-status-content { min-width: 0; }
 .registration-person-name {
@@ -780,17 +800,19 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   white-space: nowrap;
 }
 .summary-actions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
   width: 100%;
 }
 .summary-actions span {
   color: var(--mid);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  white-space: nowrap;
+  line-height: 1.25;
+  white-space: normal;
 }
 .row-toggle-btn {
   display: inline-flex;
@@ -1399,8 +1421,8 @@ tbody tr.camp-tint.is-dedicated:hover td {
   position: sticky;
   left: 0;
   z-index: 25;
-  width: 270px;
-  min-width: 270px;
+  width: 262px;
+  min-width: 262px;
   border-right: 1px solid rgba(0,79,104,0.12);
 }
 .staff-camp-divider .staff-camp-fill-cell {
@@ -1423,6 +1445,23 @@ tbody tr.camp-tint.is-dedicated:hover td {
   color: #fff;
   min-width: 34px;
   text-align: center;
+}
+.staff-section tbody tr.staff-camp-divider:hover td,
+.staff-section .staff-camp-divider .staff-camp-title-cell,
+.staff-section .staff-camp-divider .staff-camp-fill-cell {
+  background: var(--camp-row-bg);
+  color: var(--camp-row-border);
+}
+.staff-row-camp {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--camp-row-border);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .staff-camp-empty td {
   padding: 18px 14px;
