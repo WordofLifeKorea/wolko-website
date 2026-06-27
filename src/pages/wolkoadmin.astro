@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=60">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=61">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -302,6 +302,10 @@
         detailScholarshipInfo:'장학금 / 할인', detailCounseling:'상담 관리',
         thRefundBank:'환불 은행', thRefundAccount:'환불 계좌', thRefundHolder:'예금주',
         thDiscount:'장학금/할인', thDiscountDetail:'할인 상세', thDiscountAmount:'할인액', thFinalPayment:'총 납입금',
+        scholarshipWolbiSyme:'월비 또는 에쌈 졸업자 및 프로그램 참여자',
+        scholarshipSibling:'형제·자매 또는 친구 동반 참여',
+        scholarshipExcellentCamper:'지난 캠프 우수 캠퍼',
+        scholarshipUnit:'적용 인원', scholarshipNoDiscount:'선택된 장학금/할인이 없습니다.',
         detailStudentList:'학생 명단', summaryGroupManaged:'단체 명단에서 관리', summaryNoCounseling:'상담 정보 없음',
         summaryMemoExists:'메모 있음',
         studentListFn: (done, total, editing)=>`학생 명단 ${done} / ${total}명${editing ? ' 입력' : ''}`,
@@ -387,6 +391,10 @@
         detailScholarshipInfo:'Scholarship / Discount', detailCounseling:'Counseling',
         thRefundBank:'Refund Bank', thRefundAccount:'Refund Account', thRefundHolder:'Account Holder',
         thDiscount:'Scholarship/Discount', thDiscountDetail:'Discount Details', thDiscountAmount:'Discount Amount', thFinalPayment:'Final Payment',
+        scholarshipWolbiSyme:'WOLBI or SYME alumni/program participant',
+        scholarshipSibling:'Sibling, friend, or family attending together',
+        scholarshipExcellentCamper:'Previous Best Camper',
+        scholarshipUnit:'Applied count', scholarshipNoDiscount:'No scholarship/discount selected.',
         detailStudentList:'Student List', summaryGroupManaged:'Managed in group list', summaryNoCounseling:'No counseling info',
         summaryMemoExists:'Memo added',
         studentListFn: (done, total, editing)=>`Students ${done}/${total}${editing ? ' editing' : ''}`,
@@ -599,6 +607,14 @@
     function staffTeams(reg) {
       return String(reg.serviceArea || '').split(',').map(team => normalizeStaffTeam(team.trim())).filter(Boolean);
     }
+
+    const CAMP_BASE_FEE = 499000;
+    const SCHOLARSHIP_DISCOUNTS = {
+      wolbi_syme: { amount: 50000, labelKey: 'scholarshipWolbiSyme' },
+      sibling: { amount: 50000, labelKey: 'scholarshipSibling' },
+      excellent_camper: { amount: 150000, labelKey: 'scholarshipExcellentCamper' },
+    };
+    const SCHOLARSHIP_KEYS = Object.keys(SCHOLARSHIP_DISCOUNTS);
 
     const TEAM_PANEL_CAMPS = new Set(['2026-inland-english-junior', '2026-inland-union']);
     const WOLKO_CAMP_ROSTER = [
@@ -1296,7 +1312,7 @@
           : [];
         const applicantMemo = campApplicantMemo(r);
         const discountAmount = parseInt(r.scholarshipDiscountAmount, 10) || 0;
-        const baseFee = parseInt(r.campFeeBase, 10) || (499000 * (r.registrationType === 'group' ? (parseInt(r.groupCount, 10) || 1) : 1));
+        const baseFee = parseInt(r.campFeeBase, 10) || (CAMP_BASE_FEE * (r.registrationType === 'group' ? (parseInt(r.groupCount, 10) || 1) : 1));
         const finalFee = parseInt(r.campFeeFinal, 10) || Math.max(0, baseFee - discountAmount);
         const completedParticipants = groupParticipants.filter(participant =>
           participant.name && ['male', 'female'].includes(participant.gender)
@@ -1324,15 +1340,7 @@
             ${detailItem(t('thRefundHolder'), esc(r.refundHolder || '—'))}
           </div>
         </div>`;
-        const scholarshipDetailSection = `<div class="registration-detail-section">
-          <div class="registration-detail-section-title">${t('detailScholarshipInfo')}</div>
-          <div class="registration-detail-grid">
-            ${detailItem(t('thDiscount'), esc(r.scholarshipDiscountText || t('noData')), true)}
-            ${r.scholarshipDiscountDetailText ? detailItem(t('thDiscountDetail'), esc(r.scholarshipDiscountDetailText), true) : ''}
-            ${detailItem(t('thDiscountAmount'), formatAdminWon(discountAmount))}
-            ${detailItem(t('thFinalPayment'), formatAdminWon(finalFee))}
-          </div>
-        </div>`;
+        const scholarshipDetailSection = renderScholarshipEditor(r, detailItem, baseFee, discountAmount, finalFee);
         const counselingDetailSection = `<div class="registration-detail-section registration-counseling-section">
           <div class="registration-detail-section-title">${t('detailCounseling')}</div>
           <div class="counseling-detail-grid">
@@ -2019,6 +2027,89 @@
       return `${Math.max(0, parseInt(value, 10) || 0).toLocaleString('ko-KR')}원`;
     }
 
+    function registrationScholarshipLimit(reg) {
+      if (reg?.registrationType === 'group') {
+        return Math.max(1, parseInt(reg.groupCount, 10) || (Array.isArray(reg.participants) ? reg.participants.length : 1) || 1);
+      }
+      return 1;
+    }
+
+    function normalizeScholarshipDiscountsAdmin(values, maxCount = 1) {
+      const limit = Math.max(1, parseInt(maxCount, 10) || 1);
+      if (!values || typeof values !== 'object' || Array.isArray(values)) return {};
+      return Object.entries(values).reduce((acc, [key, rawCount]) => {
+        if (!SCHOLARSHIP_DISCOUNTS[key]) return acc;
+        const count = Math.min(Math.max(parseInt(rawCount, 10) || 0, 0), limit);
+        if (count > 0) acc[key] = count;
+        return acc;
+      }, {});
+    }
+
+    function scholarshipDiscountAmountAdmin(counts) {
+      return Object.entries(counts || {}).reduce((sum, [key, count]) => {
+        return sum + ((SCHOLARSHIP_DISCOUNTS[key]?.amount || 0) * (parseInt(count, 10) || 0));
+      }, 0);
+    }
+
+    function scholarshipDiscountTextAdmin(counts) {
+      const entries = Object.entries(counts || {}).filter(([key, count]) => SCHOLARSHIP_DISCOUNTS[key] && (parseInt(count, 10) || 0) > 0);
+      if (!entries.length) return '';
+      return entries.map(([key, count]) => {
+        const item = SCHOLARSHIP_DISCOUNTS[key];
+        const num = parseInt(count, 10) || 0;
+        return `${t(item.labelKey)} ${tt('personCountFn', num)} (${formatAdminWon(item.amount * num)})`;
+      }).join(', ');
+    }
+
+    function renderScholarshipEditor(reg, detailItem, baseFee, discountAmount, finalFee) {
+      const limit = registrationScholarshipLimit(reg);
+      const counts = normalizeScholarshipDiscountsAdmin(reg.scholarshipDiscounts, limit);
+      const discountText = scholarshipDiscountTextAdmin(counts) || reg.scholarshipDiscountText || t('scholarshipNoDiscount');
+
+      if (!camperEditMode) {
+        return `<div class="registration-detail-section">
+          <div class="registration-detail-section-title">${t('detailScholarshipInfo')}</div>
+          <div class="registration-detail-grid">
+            ${detailItem(t('thDiscount'), esc(reg.scholarshipDiscountText || t('noData')), true)}
+            ${reg.scholarshipDiscountDetailText ? detailItem(t('thDiscountDetail'), esc(reg.scholarshipDiscountDetailText), true) : ''}
+            ${detailItem(t('thDiscountAmount'), formatAdminWon(discountAmount))}
+            ${detailItem(t('thFinalPayment'), formatAdminWon(finalFee))}
+          </div>
+        </div>`;
+      }
+
+      const controls = SCHOLARSHIP_KEYS.map(key => {
+        const item = SCHOLARSHIP_DISCOUNTS[key];
+        const value = counts[key] || 0;
+        const amountLabel = formatAdminWon(item.amount);
+        const control = limit <= 1
+          ? `<input class="scholarship-edit-input" type="checkbox" data-regid="${esc(reg.regId)}" data-campid="${esc(reg.campId)}" data-discount-key="${key}" onchange="updateScholarshipDiscount(this)"${value > 0 ? ' checked' : ''}>`
+          : `<select class="scholarship-edit-count scholarship-edit-input" data-regid="${esc(reg.regId)}" data-campid="${esc(reg.campId)}" data-discount-key="${key}" onchange="updateScholarshipDiscount(this)">
+              ${Array.from({ length: limit + 1 }, (_, count) => `<option value="${count}"${count === value ? ' selected' : ''}>${tt('personCountFn', count)}</option>`).join('')}
+            </select>`;
+        return `<label class="scholarship-edit-option">
+          <span class="scholarship-edit-control">${control}</span>
+          <span class="scholarship-edit-copy">
+            <strong>${t(item.labelKey)}</strong>
+            <small>${limit <= 1 ? amountLabel : `${t('scholarshipUnit')} · ${amountLabel}`}</small>
+          </span>
+        </label>`;
+      }).join('');
+
+      return `<div class="registration-detail-section scholarship-edit-section">
+        <div class="registration-detail-section-title">${t('detailScholarshipInfo')}</div>
+        <div class="scholarship-edit-panel" data-regid="${esc(reg.regId)}" data-campid="${esc(reg.campId)}">
+          <div class="scholarship-edit-options">${controls}</div>
+          <div class="scholarship-edit-summary">
+            <div><span>${t('thDiscount')}</span><strong>${esc(discountText)}</strong></div>
+            ${reg.scholarshipDiscountDetailText ? `<div><span>${t('thDiscountDetail')}</span><strong>${esc(reg.scholarshipDiscountDetailText)}</strong></div>` : ''}
+            <div><span>${t('thDiscountAmount')}</span><strong>${formatAdminWon(discountAmount)}</strong></div>
+            <div><span>${t('thFinalPayment')}</span><strong>${formatAdminWon(finalFee)}</strong></div>
+          </div>
+        </div>
+      </div>`;
+    }
+
     function campApplicantMemo(reg) {
       return reg?.notes || '';
     }
@@ -2273,6 +2364,49 @@
         else inputEl.value = original;
         inputEl.classList.remove('saving');
         showToast(t('fieldErr') + e.message, 'error');
+      }
+    }
+
+    async function updateScholarshipDiscount(inputEl) {
+      const regId = inputEl.dataset.regid;
+      const campId = inputEl.dataset.campid;
+      const reg = allRegs.find(r => r.regId === regId && r.campId === campId);
+      if (!reg) return;
+
+      const panel = inputEl.closest('.scholarship-edit-panel');
+      const controls = panel ? Array.from(panel.querySelectorAll('.scholarship-edit-input')) : [inputEl];
+      const limit = registrationScholarshipLimit(reg);
+      const value = controls.reduce((acc, control) => {
+        const key = control.dataset.discountKey;
+        if (!SCHOLARSHIP_DISCOUNTS[key]) return acc;
+        const count = control.type === 'checkbox'
+          ? (control.checked ? 1 : 0)
+          : Math.min(Math.max(parseInt(control.value, 10) || 0, 0), limit);
+        if (count > 0) acc[key] = count;
+        return acc;
+      }, {});
+
+      const original = JSON.stringify(normalizeScholarshipDiscountsAdmin(reg.scholarshipDiscounts, limit));
+      if (JSON.stringify(value) === original) return;
+
+      controls.forEach(control => control.classList.add('saving'));
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ regId, campId, field: 'scholarshipDiscounts', value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('updateFail'));
+        Object.assign(reg, data.reg);
+        renderCampTable();
+        renderDash();
+        showToast(t('fieldSaved'), 'success');
+      } catch (e) {
+        showToast(t('fieldErr') + e.message, 'error');
+        renderCampTable();
+      } finally {
+        controls.forEach(control => control.classList.remove('saving'));
       }
     }
 

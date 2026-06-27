@@ -18,6 +18,17 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
 };
 
+const CAMP_BASE_FEE = 499000;
+const SCHOLARSHIP_DISCOUNTS = {
+  wolbi_syme: { amount: 50000, label: '월비 또는 에쌈 졸업자 및 프로그램 참여자' },
+  sibling: { amount: 50000, label: '형제·자매 또는 친구 동반 참여' },
+  excellent_camper: { amount: 150000, label: '지난 캠프 우수 캠퍼' },
+};
+const SIBLING_CAMP_LABELS = {
+  wolko: '월코 캠프',
+  jeju: '제주 캠프',
+};
+
 async function verifyToken(request, env) {
   if (!env.ADMIN_PASSWORD) return false;
   const auth = request.headers.get('Authorization') || '';
@@ -65,6 +76,70 @@ function registrationSpots(reg) {
     male: reg.gender === 'male' ? 1 : 0,
     female: reg.gender === 'female' ? 1 : 0,
   };
+}
+
+function formatWon(amount) {
+  return `${Math.max(0, parseInt(amount, 10) || 0).toLocaleString('ko-KR')}원`;
+}
+
+function normalizeScholarshipDiscounts(values, maxCount = 1) {
+  const limit = Math.max(1, parseInt(maxCount, 10) || 1);
+  if (!values || typeof values !== 'object' || Array.isArray(values)) return {};
+  return Object.entries(values).reduce((acc, [key, rawCount]) => {
+    if (!SCHOLARSHIP_DISCOUNTS[key]) return acc;
+    const count = Math.min(Math.max(parseInt(rawCount, 10) || 0, 0), limit);
+    if (count > 0) acc[key] = count;
+    return acc;
+  }, {});
+}
+
+function scholarshipDiscountAmount(values) {
+  return Object.entries(values || {}).reduce((sum, [key, count]) => {
+    return sum + ((SCHOLARSHIP_DISCOUNTS[key]?.amount || 0) * (parseInt(count, 10) || 0));
+  }, 0);
+}
+
+function scholarshipDiscountText(values) {
+  const entries = Object.entries(values || {}).filter(([key, count]) => SCHOLARSHIP_DISCOUNTS[key] && (parseInt(count, 10) || 0) > 0);
+  if (!entries.length) return '';
+  return entries.map(([key, count]) => {
+    const num = parseInt(count, 10) || 0;
+    const item = SCHOLARSHIP_DISCOUNTS[key];
+    return `${item.label} ${num}명 (${formatWon(item.amount * num)})`;
+  }).join(', ');
+}
+
+function normalizeScholarshipDiscountDetailsForAdmin(details, discounts) {
+  const source = details && typeof details === 'object' && !Array.isArray(details) ? details : {};
+  const normalized = {};
+
+  if ((parseInt(discounts?.wolbi_syme, 10) || 0) > 0 && source.wolbi_syme && typeof source.wolbi_syme === 'object') {
+    const year = String(source.wolbi_syme.year ?? '').trim();
+    const participantName = String(source.wolbi_syme.participantName ?? '').trim();
+    if (year || participantName) normalized.wolbi_syme = { year, participantName };
+  }
+
+  if ((parseInt(discounts?.sibling, 10) || 0) > 0 && source.sibling && typeof source.sibling === 'object') {
+    const camperName = String(source.sibling.camperName ?? '').trim();
+    const camp = String(source.sibling.camp ?? '').trim();
+    if (camperName || camp) normalized.sibling = { camperName, camp };
+  }
+
+  return normalized;
+}
+
+function scholarshipDiscountDetailText(details) {
+  const parts = [];
+  if (details?.wolbi_syme) {
+    const info = [details.wolbi_syme.participantName, details.wolbi_syme.year].filter(Boolean).join(' · ');
+    if (info) parts.push(`월비/에쌈 졸업자 및 참여자: ${info}`);
+  }
+  if (details?.sibling) {
+    const campLabel = SIBLING_CAMP_LABELS[details.sibling.camp] || details.sibling.camp;
+    const info = [details.sibling.camperName, campLabel].filter(Boolean).join(' / ');
+    if (info) parts.push(`형제·자매 또는 친구: ${info}`);
+  }
+  return parts.join(', ');
 }
 
 async function listCampRegistrations(env, campId) {
@@ -395,7 +470,7 @@ export async function onRequestPut(context) {
       return Response.json({ error: 'regId, campId, field가 필요합니다.' }, { status: 400, headers: CORS });
     }
 
-    const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea', 'counselorRegId', 'counselorMemo', 'saved', 'dedicated'];
+    const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea', 'counselorRegId', 'counselorMemo', 'saved', 'dedicated', 'scholarshipDiscounts'];
     const PARTICIPANT_FIELDS = ['name', 'gender', 'counselorRegId', 'counselorMemo', 'saved', 'dedicated'];
     const allowedFields = participantIndex === undefined ? ALLOWED_FIELDS : PARTICIPANT_FIELDS;
     if (!allowedFields.includes(field)) {
@@ -420,7 +495,29 @@ export async function onRequestPut(context) {
     }
 
     let updatedReg;
-    if (participantIndex !== undefined) {
+    if (participantIndex === undefined && field === 'scholarshipDiscounts') {
+      if (reg.registrationType === 'staff') {
+        return Response.json({ error: '스태프 신청에는 장학금을 적용할 수 없습니다.' }, { status: 400, headers: CORS });
+      }
+      const spots = Math.max(1, registrationSpots(reg).total || 1);
+      const normalizedScholarshipDiscounts = normalizeScholarshipDiscounts(value, spots);
+      const normalizedScholarshipDiscountAmount = scholarshipDiscountAmount(normalizedScholarshipDiscounts);
+      const normalizedScholarshipDiscountDetails = normalizeScholarshipDiscountDetailsForAdmin(
+        reg.scholarshipDiscountDetails,
+        normalizedScholarshipDiscounts
+      );
+      const campFeeBase = parseInt(reg.campFeeBase, 10) || (CAMP_BASE_FEE * spots);
+      updatedReg = {
+        ...reg,
+        scholarshipDiscounts: normalizedScholarshipDiscounts,
+        scholarshipDiscountDetails: normalizedScholarshipDiscountDetails,
+        scholarshipDiscountText: scholarshipDiscountText(normalizedScholarshipDiscounts),
+        scholarshipDiscountDetailText: scholarshipDiscountDetailText(normalizedScholarshipDiscountDetails),
+        scholarshipDiscountAmount: normalizedScholarshipDiscountAmount,
+        campFeeBase,
+        campFeeFinal: Math.max(0, campFeeBase - normalizedScholarshipDiscountAmount),
+      };
+    } else if (participantIndex !== undefined) {
       if (reg.registrationType !== 'group') {
         return Response.json({ error: '단체 신청의 학생 정보만 수정할 수 있습니다.' }, { status: 400, headers: CORS });
       }
