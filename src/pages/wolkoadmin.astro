@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=62">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=63">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1478,7 +1478,7 @@
         const date = new Date(r.registeredAt);
         const dateStr = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         const applicantMemo = r.notes || '';
-        const testimonyCell = renderMemoCell(r.testimony || '');
+        const testimonyCell = renderMemoFull(r.testimony || '');
         const campStyle = getCampRowStyle(r);
         const rowStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
 
@@ -1499,7 +1499,7 @@
         const teamCell = staffEditMode
           ? renderTeamEditor(r, currentTeams)
           : renderTeamStack(currentTeams);
-        const memoCell = renderMemoCell(applicantMemo);
+        const memoCell = renderMemoFull(applicantMemo);
         const isExpanded = expandedStaffDetails.has(r.regId);
         const staffCampLabel = campDisplayName(r.campId);
         const staffDetailItem = (label, value, wide = false) => `<div class="registration-detail-item${wide ? ' registration-detail-wide' : ''}">
@@ -2018,6 +2018,11 @@
         <span class="staff-memo-cell">${esc(memo)}</span>
         <span class="staff-memo-popover">${esc(memo)}</span>
       </span>`;
+    }
+
+    function renderMemoFull(memo) {
+      if (!memo) return `<span style="color:var(--light)">—</span>`;
+      return `<span class="memo-fulltext">${esc(memo)}</span>`;
     }
 
     function formatAdminWon(value) {
