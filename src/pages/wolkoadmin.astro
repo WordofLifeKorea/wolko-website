@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=63">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=64">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1536,7 +1536,6 @@
         return `<tr class="staff-summary-row camp-tint${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}" tabindex="0" aria-expanded="${isExpanded}" onclick="toggleStaffDetailFromRow(event,'${r.regId}')" onkeydown="handleStaffDetailKey(event,'${r.regId}')">
           <td data-label="${t('thName')}">
             <span class="staff-name-line"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span>${genderBadge}</span>
-            <div class="staff-camp-sub">${esc(staffCampLabel)}</div>
           </td>
           <td data-label="${t('thTeam')}">${teamCell}</td>
           <td data-label="${t('thPhone')}" style="white-space:nowrap">${phoneCell}</td>
@@ -1545,7 +1544,30 @@
         </tr>${staffDetailRow}`;
       };
 
-      tbody.innerHTML = regs.map(renderStaffRow).join('');
+      // 캠프별 그룹화
+      const byCamp = new Map();
+      regs.forEach(r => {
+        if (!byCamp.has(r.campId)) byCamp.set(r.campId, []);
+        byCamp.get(r.campId).push(r);
+      });
+
+      const groupsHtml = [];
+      byCamp.forEach((groupRegs, campId) => {
+        const campStyle = getCampRowStyle({ campId });
+        const headerStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
+        const campLabel = campDisplayName(campId);
+        groupsHtml.push(`<tr class="staff-camp-section-row" style="${headerStyle}">
+          <td colspan="5">
+            <div class="staff-camp-section-head">
+              <span class="staff-camp-section-title">${esc(campLabel)}</span>
+              <span class="staff-camp-section-count">${tt('staffCountFn', groupRegs.length)}</span>
+            </div>
+          </td>
+        </tr>`);
+        groupsHtml.push(groupRegs.map(renderStaffRow).join(''));
+      });
+
+      tbody.innerHTML = groupsHtml.join('');
       updateStaffOverflowPopovers();
     }
 
