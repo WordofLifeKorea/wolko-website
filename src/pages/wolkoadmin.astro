@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=57">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=58">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1041,7 +1041,7 @@
         showToast(t('dataLoadFail') + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>${t('dataLoadRetry')}</p></div>`;
         document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="6">${errHtml}</td></tr>`;
-        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="12">${errHtml}</td></tr>`;
+        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="4">${errHtml}</td></tr>`;
       }
     }
 
@@ -1470,10 +1470,10 @@
 
         // 성별 — 항상 읽기 전용
         const genderBadge = r.gender === 'male'
-          ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">${t('male')}</span>`
+          ? `<span class="gender-badge" style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">${t('male')}</span>`
           : r.gender === 'female'
-          ? `<span style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">${t('female')}</span>`
-          : `<span style="color:var(--light)">—</span>`;
+          ? `<span class="gender-badge" style="display:inline-block;padding:2px 10px;border-radius:100px;background:rgba(236,72,153,0.12);color:#db2777;font-size:11px;font-weight:700;">${t('female')}</span>`
+          : `<span class="gender-badge" style="color:var(--light)">—</span>`;
 
         // 전화번호 — 수정 모드일 때 input
         const phoneCell = staffEditMode
@@ -1523,7 +1523,7 @@
 
         return `<tr class="staff-summary-row camp-tint${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}" tabindex="0" aria-expanded="${isExpanded}" onclick="toggleStaffDetailFromRow(event,'${r.regId}')" onkeydown="handleStaffDetailKey(event,'${r.regId}')">
           <td data-label="${t('thTeam')}">${teamCell}</td>
-          <td data-label="${t('thName')}"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span></td>
+          <td data-label="${t('thName')}"><span class="staff-name-line"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span>${genderBadge}</span></td>
           <td data-label="${t('thPhone')}" style="white-space:nowrap">${phoneCell}</td>
           <td data-label="${t('thDate')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
         </tr>${staffDetailRow}`;

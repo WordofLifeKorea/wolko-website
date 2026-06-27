@@ -396,8 +396,6 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 /* 캠프 신청 테이블 — 화면 폭 안에서 먼저 버티고, 상세는 펼침 패널로 확인 */
 .camp-reg-table {
   min-width: 0;
-  max-width: 1120px;
-  margin: 0 auto;
 }
 .camp-reg-table th,
 .camp-reg-table td { padding-left: 12px; padding-right: 12px; }
@@ -419,18 +417,16 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 /* 스태프 테이블 — PC도 요약 리스트 + 상세 펼침으로 정리 */
 .staff-reg-table {
   min-width: 0;
-  max-width: 980px;
-  margin: 0 auto;
 }
 .staff-reg-table th,
 .staff-reg-table td {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 30%; }
-.staff-reg-table th:nth-child(2), .staff-reg-table td:nth-child(2) { width: 24%; }
-.staff-reg-table th:nth-child(3), .staff-reg-table td:nth-child(3) { width: 22%; }
-.staff-reg-table th:nth-child(4), .staff-reg-table td:nth-child(4) { width: 24%; }
+.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 24%; }
+.staff-reg-table th:nth-child(2), .staff-reg-table td:nth-child(2) { width: 30%; }
+.staff-reg-table th:nth-child(3), .staff-reg-table td:nth-child(3) { width: 23%; }
+.staff-reg-table th:nth-child(4), .staff-reg-table td:nth-child(4) { width: 23%; }
 .staff-reg-table th:first-child,
 .staff-reg-table td:first-child { padding-left: 28px; }
 .staff-reg-table td {
@@ -753,6 +749,20 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.staff-name-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+  vertical-align: middle;
+}
+.staff-name-line .staff-name-cell {
+  flex: 0 1 auto;
+}
+.staff-name-line .gender-badge {
+  flex: 0 0 auto;
 }
 .staff-memo-wrap {
   position: relative;
@@ -2638,13 +2648,20 @@ tbody tr.camp-tint.is-dedicated:hover td {
     white-space: normal;
   }
 
+  .staff-reg-table .staff-name-line {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
   .camp-reg-table .registration-expanded-meta {
     display: block;
     margin-top: 4px;
   }
 
   .camp-reg-table .registration-status-content::after,
-  .staff-reg-table .staff-name-cell::after {
+  .staff-reg-table .staff-name-line::after {
     content: "";
     display: inline-block;
     width: 7px;
@@ -2657,7 +2674,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
   }
 
   .camp-reg-table .registration-summary-row.is-expanded .registration-status-content::after,
-  .staff-reg-table .staff-summary-row.is-expanded .staff-name-cell::after {
+  .staff-reg-table .staff-summary-row.is-expanded .staff-name-line::after {
     transform: translateY(2px) rotate(225deg);
   }
 
