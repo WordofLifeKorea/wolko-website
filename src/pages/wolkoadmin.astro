@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=61">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=62">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1501,6 +1501,7 @@
           : renderTeamStack(currentTeams);
         const memoCell = renderMemoCell(applicantMemo);
         const isExpanded = expandedStaffDetails.has(r.regId);
+        const staffCampLabel = campDisplayName(r.campId);
         const staffDetailItem = (label, value, wide = false) => `<div class="registration-detail-item${wide ? ' registration-detail-wide' : ''}">
           <span class="registration-detail-label">${label}</span>
           <span class="registration-detail-value">${value}</span>
@@ -1512,6 +1513,7 @@
                   <div class="registration-detail-section">
                     <div class="registration-detail-section-title">${t('detailApplicationInfo')}</div>
                     <div class="registration-detail-grid">
+                      ${staffDetailItem(t('thCamp'), esc(staffCampLabel))}
                       ${staffDetailItem(t('thTeam'), teamCell)}
                       ${staffDetailItem(t('thGender'), genderBadge)}
                       ${staffDetailItem(t('thBirthDate'), esc(r.birthDate || '—'))}
@@ -1532,7 +1534,10 @@
           : '';
 
         return `<tr class="staff-summary-row camp-tint${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}" tabindex="0" aria-expanded="${isExpanded}" onclick="toggleStaffDetailFromRow(event,'${r.regId}')" onkeydown="handleStaffDetailKey(event,'${r.regId}')">
-          <td data-label="${t('thName')}"><span class="staff-name-line"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span>${genderBadge}</span></td>
+          <td data-label="${t('thName')}">
+            <span class="staff-name-line"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span>${genderBadge}</span>
+            <div class="staff-camp-sub">${esc(staffCampLabel)}</div>
+          </td>
           <td data-label="${t('thTeam')}">${teamCell}</td>
           <td data-label="${t('thPhone')}" style="white-space:nowrap">${phoneCell}</td>
           <td data-label="${t('thEmail')}" style="font-size:12px;color:var(--mid)" title="${esc(r.email || '')}">${esc(r.email || '—')}</td>
