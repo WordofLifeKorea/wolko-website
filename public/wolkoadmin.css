@@ -402,8 +402,8 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
   overflow: hidden;
   white-space: normal;
 }
-.camp-reg-table th:nth-child(1), .camp-reg-table td:nth-child(1) { width: 25%; }
-.camp-reg-table th:nth-child(2), .camp-reg-table td:nth-child(2) { width: 18%; }
+.camp-reg-table th:nth-child(1), .camp-reg-table td:nth-child(1) { width: 23%; }
+.camp-reg-table th:nth-child(2), .camp-reg-table td:nth-child(2) { width: 19%; }
 .camp-reg-table th:nth-child(3), .camp-reg-table td:nth-child(3) { width: 18%; }
 .camp-reg-table th:nth-child(4), .camp-reg-table td:nth-child(4) { width: 16%; }
 .camp-reg-table th:nth-child(5), .camp-reg-table td:nth-child(5) { width: 13%; }
@@ -471,12 +471,21 @@ tr:hover td { background: #f8fafc; }
 table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 .delete-col { min-width: 60px; text-align: center; padding-right: 22px; }
 
-.registration-summary-row { cursor: pointer; }
+.registration-summary-row {
+  cursor: pointer;
+  outline: none;
+}
 .registration-summary-row.is-expanded td {
   background: color-mix(in srgb, var(--camp-row-bg) 72%, #fff);
   border-bottom-color: rgba(0,79,104,0.06);
 }
-.registration-summary-row td { transition: background 0.15s ease; }
+.registration-summary-row td { transition: background 0.15s ease, box-shadow 0.15s ease; }
+.registration-summary-row:focus-visible td {
+  background: color-mix(in srgb, var(--camp-row-bg) 76%, #fff);
+}
+.registration-summary-row:focus-visible td:first-child {
+  box-shadow: inset 6px 0 0 var(--camp-row-border), inset 0 0 0 2px rgba(0,79,104,0.16);
+}
 .registration-summary-open td { padding-top: 10px; padding-bottom: 10px; }
 .registration-status-cell {
   display: inline-flex;
@@ -487,6 +496,29 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 }
 .camp-reg-table .registration-status-cell {
   display: flex;
+}
+.camp-reg-table .registration-status-content {
+  position: relative;
+  width: 100%;
+  padding-right: 18px;
+}
+.camp-reg-table .registration-status-content::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 1.8px solid currentColor;
+  border-bottom: 1.8px solid currentColor;
+  color: var(--camp-row-border);
+  opacity: 0.55;
+  transform: translateY(-60%) rotate(45deg);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.registration-summary-row.is-expanded .registration-status-content::after {
+  opacity: 0.85;
+  transform: translateY(-30%) rotate(225deg);
 }
 .camp-reg-table td:nth-child(2) > span {
   flex-wrap: wrap !important;

@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=49">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=50">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1299,7 +1299,6 @@
           participant.name && ['male', 'female'].includes(participant.gender)
         ).length;
         const isExpanded = expandedRegistrationDetails.has(r.regId);
-        const toggleSvg = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         const typeText = r.registrationType === 'group' ? `${t('groupBadge')} · ${esc(gradeOrCount)}` : `${t('individualBadge')} · ${esc(gradeOrCount)} · ${genderCell}`;
         const contactCell = `<div class="summary-stack"><strong>${esc(r.phone || '—')}</strong><span>${esc(r.email || '—')}</span></div>`;
         const counselorName = r.registrationType === 'group'
@@ -1402,13 +1401,9 @@
             </tr>`
           : '';
 
-        return `<tr class="registration-summary-row ${rowClass}${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}">
+        return `<tr class="registration-summary-row ${rowClass}${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}" tabindex="0" aria-expanded="${isExpanded}" onclick="toggleRegistrationDetailFromRow(event,'${r.regId}')" onkeydown="handleRegistrationDetailKey(event,'${r.regId}')">
           <td>
             <div class="registration-status-cell">
-              <button class="row-toggle-btn${isExpanded ? ' is-open' : ''}" type="button" aria-expanded="${isExpanded}" onclick="toggleRegistrationDetail('${r.regId}')">
-                <span class="row-toggle-mark">${toggleSvg}</span>
-                <span class="row-toggle-text">${isExpanded ? t('detailClose') : t('detailOpen')}</span>
-              </button>
               <div class="registration-status-content">
                 <div class="registration-person-name">${esc(r.name)}</div>
                 <div class="registration-expanded-meta">${typeText}</div>
@@ -2132,6 +2127,20 @@
       if (expandedGroupParticipants.has(regId)) expandedGroupParticipants.delete(regId);
       else expandedGroupParticipants.add(regId);
       renderCampTable();
+    }
+
+    function toggleRegistrationDetailFromRow(event, regId) {
+      const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+      if (target?.closest('button,a,input,select,textarea,label')) return;
+      toggleRegistrationDetail(regId);
+    }
+
+    function handleRegistrationDetailKey(event, regId) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+      if (target?.closest('button,a,input,select,textarea,label')) return;
+      event.preventDefault();
+      toggleRegistrationDetail(regId);
     }
 
     function toggleRegistrationDetail(regId) {
