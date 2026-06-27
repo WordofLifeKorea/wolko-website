@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=52">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=53">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1402,7 +1402,7 @@
           : '';
 
         return `<tr class="registration-summary-row ${rowClass}${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}" tabindex="0" aria-expanded="${isExpanded}" onclick="toggleRegistrationDetailFromRow(event,'${r.regId}')" onkeydown="handleRegistrationDetailKey(event,'${r.regId}')">
-          <td>
+          <td data-label="${t('thApplicant')}">
             <div class="registration-status-cell">
               <div class="registration-status-content">
                 <div class="registration-person-name">${esc(r.name)}</div>
@@ -1410,11 +1410,11 @@
               </div>
             </div>
           </td>
-          <td>${statusCell}</td>
-          <td class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
-          <td>${contactCell}</td>
-          <td>${counselingSummary}</td>
-          <td>${manageCell}</td>
+          <td data-label="${t('thStatus')}">${statusCell}</td>
+          <td data-label="${t('thCamp')}" class="camp-name-cell" style="font-size:12px">${esc(campLabel)}</td>
+          <td data-label="${t('thPhone')}">${contactCell}</td>
+          <td data-label="${t('thCounseling')}">${counselingSummary}</td>
+          <td data-label="${t('thDate')}">${manageCell}</td>
         </tr>${detailRow}`;
       }).join('');
     }

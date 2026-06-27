@@ -2298,6 +2298,198 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .group-participant-memo .counselor-memo-input { max-width: none; }
   .staff-section .table-scroll { overflow-x: auto; overflow-y: auto; }
 
+  /* 캠프 신청 목록은 모바일에서 가로 테이블 대신 카드형으로 읽히게 전환 */
+  .table-section:not(.staff-section) {
+    border-radius: 14px;
+    overflow: visible;
+  }
+  .table-section:not(.staff-section) .table-toolbar {
+    align-items: stretch;
+    padding: 14px;
+  }
+  .table-section:not(.staff-section) .table-toolbar > div:first-child,
+  .table-section:not(.staff-section) .table-toolbar > div:last-child {
+    width: 100%;
+  }
+  .table-section:not(.staff-section) .table-toolbar > div:last-child {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+  }
+  .table-section:not(.staff-section) .btn-edit-mode,
+  .table-section:not(.staff-section) .btn-csv {
+    justify-content: center;
+    width: 100%;
+    max-width: none;
+    min-height: 38px;
+    padding: 9px 10px;
+  }
+  .camp-reg-table {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .camp-reg-table thead {
+    display: none;
+  }
+  .camp-reg-table,
+  .camp-reg-table tbody {
+    display: block;
+    width: 100%;
+  }
+  .camp-reg-table tbody {
+    padding: 12px;
+    background: #f6fafb;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    margin: 0 0 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0,79,104,0.13);
+    border-left: 6px solid var(--camp-row-border);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--camp-row-bg) 44%, #fff);
+    box-shadow: 0 8px 18px rgba(16,56,70,0.07);
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint:hover td,
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint.is-expanded td,
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint.is-pending:hover td,
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint.is-saved:hover td,
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint.is-dedicated:hover td {
+    background: transparent;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    min-width: 0;
+    padding: 9px 12px;
+    border-bottom: 1px solid rgba(0,79,104,0.08);
+    background: transparent !important;
+    color: var(--text);
+    white-space: normal !important;
+    box-shadow: none !important;
+    text-align: right;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:last-child {
+    border-bottom: 0;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td::before {
+    content: attr(data-label);
+    flex: 0 0 88px;
+    color: #7890a0;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.55;
+    text-align: left;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(1) {
+    order: -3;
+    display: block;
+    padding: 13px 12px 6px;
+    border-bottom: 0;
+    text-align: left;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(1)::before {
+    display: none;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(1) .registration-status-cell {
+    width: 100%;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(1) .registration-person-name {
+    font-size: 18px;
+    white-space: normal;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(3) {
+    order: -2;
+    justify-content: flex-start;
+    padding-top: 0;
+    padding-bottom: 10px;
+    color: var(--camp-row-border);
+    font-size: 12px !important;
+    font-weight: 800;
+    text-align: left;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(3)::before {
+    display: none;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(2) {
+    order: -1;
+    align-items: center;
+    background: rgba(255,255,255,0.62) !important;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(6) {
+    background: rgba(255,255,255,0.62) !important;
+  }
+  .camp-reg-table .registration-status-cell,
+  .camp-reg-table .summary-stack,
+  .camp-reg-table .summary-actions,
+  .camp-reg-table .spiritual-inline,
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td > span {
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(2) > span {
+    flex-wrap: wrap !important;
+    justify-content: flex-end;
+  }
+  .camp-reg-table .summary-stack {
+    text-align: right;
+  }
+  .camp-reg-table .summary-stack strong,
+  .camp-reg-table .summary-stack span {
+    white-space: normal;
+  }
+  .camp-reg-table .summary-actions {
+    gap: 8px;
+    text-align: right;
+  }
+  .camp-reg-table .camper-select,
+  .camp-reg-table .edit-input,
+  .camp-reg-table .edit-input-wide,
+  .camp-reg-table .counselor-memo-input {
+    width: min(190px, 100%);
+    max-width: 100%;
+  }
+  .camp-reg-table .counselor-memo-readonly {
+    max-width: 100%;
+    white-space: normal;
+    text-align: right;
+  }
+  .camp-reg-table .delete-col {
+    min-width: 0;
+    padding-right: 12px;
+  }
+  .camp-reg-table .btn-del,
+  .camp-reg-table .btn-confirm,
+  .camp-reg-table .btn-revert {
+    min-height: 30px;
+  }
+  .camp-reg-table .registration-detail-row {
+    display: block;
+    margin: -8px 0 12px;
+  }
+  .camp-reg-table .registration-detail-row td {
+    display: block;
+    padding: 0 12px 12px;
+    background: #f6fafb !important;
+    box-shadow: none !important;
+    white-space: normal;
+  }
+  .camp-reg-table .registration-detail-panel {
+    border-radius: 12px;
+  }
+  .detail-participant-item {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 0;
+  }
+
   /* 캠프 카드 */
   .camp-cards { flex-direction: column; gap: 10px; margin-bottom: 24px; }
   .camp-card { min-width: 0; padding: 16px 18px; }
