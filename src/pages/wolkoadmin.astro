@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=58">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=59">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -196,14 +196,15 @@
         <table class="staff-reg-table">
           <thead>
             <tr>
-              <th><button class="sort-btn" type="button" data-sort="staffTeam"><span data-t="thTeam">팀</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thName">이름</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="staffTeam"><span data-t="thTeam">팀</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
+              <th><button class="sort-btn" type="button" data-sort="email"><span data-t="thEmail">이메일</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
             </tr>
           </thead>
           <tbody id="staffRegBody">
-            <tr><td colspan="4">
+            <tr><td colspan="5">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p data-t="loginFirst">로그인 후 자동으로 불러옵니다.</p>
@@ -1041,7 +1042,7 @@
         showToast(t('dataLoadFail') + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>${t('dataLoadRetry')}</p></div>`;
         document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="6">${errHtml}</td></tr>`;
-        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="4">${errHtml}</td></tr>`;
+        document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="5">${errHtml}</td></tr>`;
       }
     }
 
@@ -1447,7 +1448,7 @@
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="4">
+          <tr><td colspan="5">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -1493,7 +1494,7 @@
         </div>`;
         const staffDetailRow = isExpanded
           ? `<tr class="staff-detail-row" style="${rowStyle}">
-              <td colspan="4">
+              <td colspan="5">
                 <div class="registration-detail-panel">
                   <div class="registration-detail-head">
                     <strong>${esc(r.name || t('unset'))}</strong>
@@ -1522,9 +1523,10 @@
           : '';
 
         return `<tr class="staff-summary-row camp-tint${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}" tabindex="0" aria-expanded="${isExpanded}" onclick="toggleStaffDetailFromRow(event,'${r.regId}')" onkeydown="handleStaffDetailKey(event,'${r.regId}')">
-          <td data-label="${t('thTeam')}">${teamCell}</td>
           <td data-label="${t('thName')}"><span class="staff-name-line"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span>${genderBadge}</span></td>
+          <td data-label="${t('thTeam')}">${teamCell}</td>
           <td data-label="${t('thPhone')}" style="white-space:nowrap">${phoneCell}</td>
+          <td data-label="${t('thEmail')}" style="font-size:12px;color:var(--mid)" title="${esc(r.email || '')}">${esc(r.email || '—')}</td>
           <td data-label="${t('thDate')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
         </tr>${staffDetailRow}`;
       };
