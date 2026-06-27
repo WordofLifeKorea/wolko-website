@@ -2606,7 +2606,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
   }
 
   .camp-reg-table .registration-summary-row.camp-tint,
-  .staff-reg-table tbody tr.camp-tint {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint {
     display: flex;
     flex-direction: column;
     margin: 0 0 12px;
@@ -2620,12 +2620,13 @@ tbody tr.camp-tint.is-dedicated:hover td {
 
   .camp-reg-table .registration-summary-row.camp-tint:hover td,
   .camp-reg-table .registration-summary-row.camp-tint.is-expanded td,
-  .staff-reg-table tbody tr.camp-tint:hover td {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint:hover td,
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint.is-expanded td {
     background: transparent !important;
   }
 
   .camp-reg-table .registration-summary-row.camp-tint td,
-  .staff-reg-table tbody tr.camp-tint td {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -2645,7 +2646,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
   }
 
   .camp-reg-table .registration-summary-row.camp-tint td::before,
-  .staff-reg-table tbody tr.camp-tint td::before {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td::before {
     content: attr(data-label);
     flex: 0 0 86px;
     color: #7890a0;
@@ -2656,12 +2657,12 @@ tbody tr.camp-tint.is-dedicated:hover td {
   }
 
   .camp-reg-table .registration-summary-row.camp-tint td:last-child,
-  .staff-reg-table tbody tr.camp-tint td:last-child {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:last-child {
     border-bottom: 0;
   }
 
   .camp-reg-table .registration-summary-row.camp-tint td:first-child,
-  .staff-reg-table tbody tr.camp-tint td:nth-child(2) {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(2) {
     display: block;
     padding: 13px 12px 6px;
     border-bottom: 0;
@@ -2669,17 +2670,32 @@ tbody tr.camp-tint.is-dedicated:hover td {
   }
 
   .camp-reg-table .registration-summary-row.camp-tint td:first-child::before,
-  .staff-reg-table tbody tr.camp-tint td:nth-child(2)::before {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(2)::before {
     display: none;
   }
 
   .camp-reg-table .registration-summary-row.camp-tint td:first-child,
-  .staff-reg-table tbody tr.camp-tint td:nth-child(2) {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(2) {
     order: -3;
   }
 
-  .staff-reg-table tbody tr.camp-tint td:nth-child(1) {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(1) {
     order: -2;
+  }
+
+  .camp-reg-table .registration-summary-row.camp-tint td:nth-child(4),
+  .camp-reg-table .registration-summary-row.camp-tint td:nth-child(5),
+  .camp-reg-table .registration-summary-row.camp-tint td:nth-child(6),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(3),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(4),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(5),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(6),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(8),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(9),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(10),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(11),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(12) {
+    display: none !important;
   }
 
   .camp-reg-table .registration-person-name,
@@ -2697,6 +2713,24 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .camp-reg-table .registration-expanded-meta {
     display: block;
     margin-top: 4px;
+  }
+
+  .camp-reg-table .registration-status-content::after,
+  .staff-reg-table .staff-name-cell::after {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-left: 8px;
+    border-right: 1.8px solid var(--camp-row-border);
+    border-bottom: 1.8px solid var(--camp-row-border);
+    opacity: 0.7;
+    transform: translateY(-2px) rotate(45deg);
+  }
+
+  .camp-reg-table .registration-summary-row.is-expanded .registration-status-content::after,
+  .staff-reg-table .staff-summary-row.is-expanded .staff-name-cell::after {
+    transform: translateY(2px) rotate(225deg);
   }
 
   .camp-reg-table .camp-name-cell,
@@ -2735,12 +2769,14 @@ tbody tr.camp-tint.is-dedicated:hover td {
     justify-content: flex-end;
   }
 
-  .camp-reg-table .registration-detail-row {
+  .camp-reg-table .registration-detail-row,
+  .staff-reg-table .staff-detail-row {
     display: block;
     margin: -6px 0 12px;
   }
 
-  .camp-reg-table .registration-detail-row td {
+  .camp-reg-table .registration-detail-row td,
+  .staff-reg-table .staff-detail-row td {
     display: block;
     padding: 0 10px 12px;
     background: #f6fafb !important;

@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=55">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=56">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -642,6 +642,7 @@
     let teamPanelEditMode = false;
     let activeStatPanel = null; // 'leaders' | 'members' | 'staff' | null
     const expandedRegistrationDetails = new Set();
+    const expandedStaffDetails = new Set();
     const expandedGroupParticipants = new Set();
     const UNASSIGNED = '__unassigned__';
     let teamOverviewConfig = emptyTeamOverviewConfig();
@@ -1493,9 +1494,43 @@
           ? renderTeamEditor(r, currentTeams)
           : renderTeamStack(currentTeams);
         const memoCell = renderMemoCell(applicantMemo);
+        const isExpanded = expandedStaffDetails.has(r.regId);
+        const staffDetailItem = (label, value, wide = false) => `<div class="registration-detail-item${wide ? ' registration-detail-wide' : ''}">
+          <span class="registration-detail-label">${label}</span>
+          <span class="registration-detail-value">${value}</span>
+        </div>`;
+        const staffDetailRow = isExpanded
+          ? `<tr class="staff-detail-row" style="${rowStyle}">
+              <td colspan="12">
+                <div class="registration-detail-panel">
+                  <div class="registration-detail-head">
+                    <strong>${esc(r.name || t('unset'))}</strong>
+                    <span>${esc(campDisplayName(r.campId))} · ${dateStr}</span>
+                  </div>
+                  <div class="registration-detail-section">
+                    <div class="registration-detail-section-title">${t('detailApplicationInfo')}</div>
+                    <div class="registration-detail-grid">
+                      ${staffDetailItem(t('thTeam'), teamCell)}
+                      ${staffDetailItem(t('thGender'), genderBadge)}
+                      ${staffDetailItem(t('thBirthDate'), esc(r.birthDate || '—'))}
+                      ${staffDetailItem(t('thChurch'), esc(r.church || '—'))}
+                      ${staffDetailItem(t('thPreviousCamp'), esc(previousCampLabel(r.previousCamp)))}
+                      ${staffDetailItem(t('thPhone'), phoneCell)}
+                      ${staffDetailItem(t('thEmail'), esc(r.email || '—'), true)}
+                      ${staffDetailItem(t('thApplicantMemo'), memoCell, true)}
+                      ${staffDetailItem(t('thTestimony'), testimonyCell, true)}
+                    </div>
+                  </div>
+                  <div class="registration-detail-actions">
+                    <button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button>
+                  </div>
+                </div>
+              </td>
+            </tr>`
+          : '';
 
-        return `<tr class="camp-tint" style="${rowStyle}">
-          <td data-label="${t('thTeam')}"><span class="staff-row-camp">${esc(campDisplayName(r.campId))}</span>${teamCell}</td>
+        return `<tr class="staff-summary-row camp-tint${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}" tabindex="0" aria-expanded="${isExpanded}" onclick="toggleStaffDetailFromRow(event,'${r.regId}')" onkeydown="handleStaffDetailKey(event,'${r.regId}')">
+          <td data-label="${t('thTeam')}">${teamCell}</td>
           <td data-label="${t('thName')}"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span></td>
           <td data-label="${t('thGender')}">${genderBadge}</td>
           <td data-label="${t('thBirthDate')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${esc(r.birthDate || '—')}</td>
@@ -1507,7 +1542,7 @@
           <td data-label="${t('thEmail')}" style="font-size:12px;color:var(--mid)" title="${esc(r.email || '')}">${esc(r.email)}</td>
           <td data-label="${t('thDate')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
           <td data-label="${t('thDelete')}" class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></td>
-        </tr>`;
+        </tr>${staffDetailRow}`;
       };
 
       const season = SEASONS.find(s => s.id === activeSeason);
@@ -2156,6 +2191,26 @@
       if (expandedRegistrationDetails.has(regId)) expandedRegistrationDetails.delete(regId);
       else expandedRegistrationDetails.add(regId);
       renderCampTable();
+    }
+
+    function toggleStaffDetailFromRow(event, regId) {
+      const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+      if (target?.closest('button,a,input,select,textarea,label,summary')) return;
+      toggleStaffDetail(regId);
+    }
+
+    function handleStaffDetailKey(event, regId) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+      if (target?.closest('button,a,input,select,textarea,label,summary')) return;
+      event.preventDefault();
+      toggleStaffDetail(regId);
+    }
+
+    function toggleStaffDetail(regId) {
+      if (expandedStaffDetails.has(regId)) expandedStaffDetails.delete(regId);
+      else expandedStaffDetails.add(regId);
+      renderStaffTable();
     }
 
     // ── Edit Mode Toggle ──
