@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=56">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=57">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -198,20 +198,12 @@
             <tr>
               <th><button class="sort-btn" type="button" data-sort="staffTeam"><span data-t="thTeam">팀</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thName">이름</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="gender"><span data-t="thGender">성별</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="birthDate"><span data-t="thBirthDate">생년월일</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="church"><span data-t="thChurch">교회</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="previousCamp"><span data-t="thPreviousCamp">캠프 경험</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="notes"><span data-t="thApplicantMemo">신청자 메모</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="testimony"><span data-t="thTestimony">자기소개·간증</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="email"><span data-t="thEmail">이메일</span></button></th>
               <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
-              <th><span data-t="thDelete">삭제</span></th>
             </tr>
           </thead>
           <tbody id="staffRegBody">
-            <tr><td colspan="12">
+            <tr><td colspan="4">
               <div class="state-box">
                 <div class="spinner"></div>
                 <p data-t="loginFirst">로그인 후 자동으로 불러옵니다.</p>
@@ -1455,7 +1447,7 @@
 
       if (regs.length === 0) {
         tbody.innerHTML = `
-          <tr><td colspan="12">
+          <tr><td colspan="4">
             <div class="state-box">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
@@ -1501,7 +1493,7 @@
         </div>`;
         const staffDetailRow = isExpanded
           ? `<tr class="staff-detail-row" style="${rowStyle}">
-              <td colspan="12">
+              <td colspan="4">
                 <div class="registration-detail-panel">
                   <div class="registration-detail-head">
                     <strong>${esc(r.name || t('unset'))}</strong>
@@ -1532,35 +1524,12 @@
         return `<tr class="staff-summary-row camp-tint${isExpanded ? ' is-expanded' : ''}" style="${rowStyle}" tabindex="0" aria-expanded="${isExpanded}" onclick="toggleStaffDetailFromRow(event,'${r.regId}')" onkeydown="handleStaffDetailKey(event,'${r.regId}')">
           <td data-label="${t('thTeam')}">${teamCell}</td>
           <td data-label="${t('thName')}"><span class="staff-name-cell">${esc(r.name || t('unset'))}</span></td>
-          <td data-label="${t('thGender')}">${genderBadge}</td>
-          <td data-label="${t('thBirthDate')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${esc(r.birthDate || '—')}</td>
-          <td data-label="${t('thChurch')}" style="font-size:12px;color:var(--mid)">${esc(r.church || '—')}</td>
-          <td data-label="${t('thPreviousCamp')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${esc(previousCampLabel(r.previousCamp))}</td>
           <td data-label="${t('thPhone')}" style="white-space:nowrap">${phoneCell}</td>
-          <td data-label="${t('thApplicantMemo')}">${memoCell}</td>
-          <td data-label="${t('thTestimony')}">${testimonyCell}</td>
-          <td data-label="${t('thEmail')}" style="font-size:12px;color:var(--mid)" title="${esc(r.email || '')}">${esc(r.email)}</td>
           <td data-label="${t('thDate')}" style="font-size:12px;color:var(--mid);white-space:nowrap">${dateStr}</td>
-          <td data-label="${t('thDelete')}" class="delete-col"><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></td>
         </tr>${staffDetailRow}`;
       };
 
-      const season = SEASONS.find(s => s.id === activeSeason);
-      const orderedCampIds = activeCamp === 'all'
-        ? (season?.groups.flatMap(group => group.camps.map(camp => camp.id)) || [])
-        : [activeCamp];
-      const extraCampIds = [...new Set(regs.map(r => r.campId))].filter(campId => !orderedCampIds.includes(campId));
-
-      tbody.innerHTML = [...orderedCampIds, ...extraCampIds].map(campId => {
-        const campRegs = regs.filter(r => r.campId === campId);
-        const campStyle = getCampRowStyle({ campId });
-        return `<tr class="staff-camp-divider" style="--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};">
-          <td class="staff-camp-title-cell" colspan="2"><strong>${esc(campDisplayName(campId))}</strong><span>${tt('personCountFn', campRegs.length)}</span></td>
-          <td class="staff-camp-fill-cell" colspan="10" aria-hidden="true"></td>
-        </tr>${campRegs.length
-          ? campRegs.map(renderStaffRow).join('')
-          : `<tr class="staff-camp-empty"><td colspan="12">${t('campEmpty')}</td></tr>`}`;
-      }).join('');
+      tbody.innerHTML = regs.map(renderStaffRow).join('');
       updateStaffOverflowPopovers();
     }
 

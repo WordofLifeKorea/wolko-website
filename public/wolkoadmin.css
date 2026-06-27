@@ -394,7 +394,11 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
   table-layout: fixed;
 }
 /* 캠프 신청 테이블 — 화면 폭 안에서 먼저 버티고, 상세는 펼침 패널로 확인 */
-.camp-reg-table { min-width: 0; }
+.camp-reg-table {
+  min-width: 0;
+  max-width: 1120px;
+  margin: 0 auto;
+}
 .camp-reg-table th,
 .camp-reg-table td { padding-left: 12px; padding-right: 12px; }
 .camp-reg-table th:first-child,
@@ -412,58 +416,33 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .camp-reg-table th:nth-child(4), .camp-reg-table td:nth-child(4) { width: 16%; }
 .camp-reg-table th:nth-child(5), .camp-reg-table td:nth-child(5) { width: 13%; }
 .camp-reg-table th:nth-child(6), .camp-reg-table td:nth-child(6) { width: 10%; }
-/* 스태프 테이블 — 12열은 유지하되 첫 두 컬럼 sticky로 긴 가로 이동을 완화 */
-.staff-reg-table { min-width: 1620px; }
+/* 스태프 테이블 — PC도 요약 리스트 + 상세 펼침으로 정리 */
+.staff-reg-table {
+  min-width: 0;
+  max-width: 980px;
+  margin: 0 auto;
+}
 .staff-reg-table th,
 .staff-reg-table td {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 150px; }
-.staff-reg-table th:nth-child(2), .staff-reg-table td:nth-child(2) { width: 112px; }
-.staff-reg-table th:nth-child(3), .staff-reg-table td:nth-child(3) { width: 74px; text-align: center; }
-.staff-reg-table th:nth-child(4), .staff-reg-table td:nth-child(4) { width: 100px; }
-.staff-reg-table th:nth-child(5), .staff-reg-table td:nth-child(5) { width: 140px; }
-.staff-reg-table th:nth-child(6), .staff-reg-table td:nth-child(6) { width: 100px; text-align: center; }
-.staff-reg-table th:nth-child(7), .staff-reg-table td:nth-child(7) { width: 128px; }
-.staff-reg-table th:nth-child(8), .staff-reg-table td:nth-child(8) { width: 160px; }
-.staff-reg-table th:nth-child(9), .staff-reg-table td:nth-child(9) { width: 190px; }
-.staff-reg-table th:nth-child(10), .staff-reg-table td:nth-child(10) { width: 210px; }
-.staff-reg-table th:nth-child(11), .staff-reg-table td:nth-child(11) { width: 132px; }
-.staff-reg-table th:nth-child(12), .staff-reg-table td:nth-child(12) { width: 70px; text-align: center; padding-right: 18px; }
+.staff-reg-table th:nth-child(1), .staff-reg-table td:nth-child(1) { width: 30%; }
+.staff-reg-table th:nth-child(2), .staff-reg-table td:nth-child(2) { width: 24%; }
+.staff-reg-table th:nth-child(3), .staff-reg-table td:nth-child(3) { width: 22%; }
+.staff-reg-table th:nth-child(4), .staff-reg-table td:nth-child(4) { width: 24%; }
 .staff-reg-table th:first-child,
-.staff-reg-table td:first-child { padding-left: 22px; padding-right: 12px; }
-.staff-reg-table th:nth-child(1),
-.staff-reg-table td:nth-child(1),
-.staff-reg-table th:nth-child(2),
-.staff-reg-table td:nth-child(2) {
-  position: sticky;
-  background-clip: padding-box;
-}
-.staff-reg-table th:nth-child(1),
-.staff-reg-table td:nth-child(1) {
-  left: 0;
-  z-index: 20;
-}
-.staff-reg-table th:nth-child(2),
-.staff-reg-table td:nth-child(2) {
-  left: 150px;
-  z-index: 21;
-  border-right: 1px solid rgba(0,79,104,0.16);
-}
-.staff-reg-table thead th:nth-child(1),
-.staff-reg-table thead th:nth-child(2) {
-  z-index: 30;
-  background: #f1faf9;
-}
-.staff-reg-table tbody tr:not(.camp-tint) td:nth-child(1),
-.staff-reg-table tbody tr:not(.camp-tint) td:nth-child(2) {
-  background: #fff;
+.staff-reg-table td:first-child { padding-left: 28px; }
+.staff-reg-table td {
+  min-width: 0;
+  white-space: normal;
 }
 .camp-reg-table td:nth-child(3),
 .camp-reg-table td:nth-child(5),
 .camp-reg-table td:nth-child(6),
-.staff-reg-table td:nth-child(2) {
+.staff-reg-table td:nth-child(2),
+.staff-reg-table td:nth-child(3),
+.staff-reg-table td:nth-child(4) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -479,9 +458,28 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
   cursor: pointer;
   outline: none;
 }
+.staff-summary-row {
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.registration-summary-row:hover td,
+.staff-summary-row:hover td {
+  background: color-mix(in srgb, var(--camp-row-bg) 62%, #fff);
+}
+.staff-summary-row:focus-visible td {
+  background: color-mix(in srgb, var(--camp-row-bg) 76%, #fff);
+}
+.staff-summary-row:focus-visible td:first-child {
+  box-shadow: inset 6px 0 0 var(--camp-row-border), inset 0 0 0 2px rgba(13,148,136,0.16);
+}
 .registration-summary-row.is-expanded td {
   background: color-mix(in srgb, var(--camp-row-bg) 72%, #fff);
   border-bottom-color: rgba(0,79,104,0.06);
+}
+.staff-summary-row.is-expanded td {
+  background: color-mix(in srgb, var(--camp-row-bg) 72%, #fff);
+  border-bottom-color: rgba(13,148,136,0.08);
 }
 .registration-summary-row td { transition: background 0.15s ease, box-shadow 0.15s ease; }
 .registration-summary-row:focus-visible td {
@@ -1439,76 +1437,14 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .staff-section thead tr { background: rgba(13,148,136,0.04); }
 .staff-section thead th { color: #0d9488; }
 .staff-section tbody tr:hover td { background: #f3fbfa; }
+.staff-section tbody tr.staff-summary-row:hover td {
+  background: color-mix(in srgb, var(--camp-row-bg) 62%, #fff);
+}
+.staff-section tbody tr.staff-summary-row.is-expanded td {
+  background: color-mix(in srgb, var(--camp-row-bg) 72%, #fff);
+}
 .staff-section table th:first-child,
 .staff-section table td:first-child { padding-left: 28px; }
-.staff-section .staff-camp-divider td:first-child,
-.staff-section .staff-camp-empty td {
-  padding-left: 40px;
-}
-
-/* ── STAFF CAMP GROUPS ── */
-.staff-camp-divider td {
-  padding: 11px 14px 10px;
-  background: var(--camp-row-bg);
-  border-top: 2px solid var(--camp-row-border);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  color: var(--camp-row-border);
-  font-family: var(--f-sans);
-  background-clip: padding-box;
-}
-.staff-camp-divider .staff-camp-title-cell {
-  position: sticky;
-  left: 0;
-  z-index: 25;
-  width: 262px;
-  min-width: 262px;
-  border-right: 1px solid rgba(0,79,104,0.12);
-}
-.staff-camp-divider .staff-camp-fill-cell {
-  position: static;
-  left: auto;
-  z-index: auto;
-  width: auto;
-  padding-left: 0;
-  border-right: none;
-}
-.staff-camp-divider strong { font-size: 13px; font-weight: 800; letter-spacing: 0.01em; }
-.staff-camp-divider span {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 1px 8px;
-  background: var(--camp-row-border);
-  border-radius: 100px;
-  font-size: 10px;
-  font-weight: 700;
-  color: #fff;
-  min-width: 34px;
-  text-align: center;
-}
-.staff-section tbody tr.staff-camp-divider:hover td,
-.staff-section .staff-camp-divider .staff-camp-title-cell,
-.staff-section .staff-camp-divider .staff-camp-fill-cell {
-  background: var(--camp-row-bg);
-  color: var(--camp-row-border);
-}
-.staff-row-camp {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--camp-row-border);
-  font-size: 10px;
-  font-weight: 900;
-  line-height: 1.25;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.staff-camp-empty td {
-  padding: 18px 14px;
-  background: #fbfcfd;
-  color: var(--light);
-  font-size: 12px;
-  text-align: center;
-}
 
 /* ── CAMP TEAM PANEL ── */
 .camp-team-panel {
@@ -2686,15 +2622,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .camp-reg-table .registration-summary-row.camp-tint td:nth-child(4),
   .camp-reg-table .registration-summary-row.camp-tint td:nth-child(5),
   .camp-reg-table .registration-summary-row.camp-tint td:nth-child(6),
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(3),
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(4),
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(5),
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(6),
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(8),
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(9),
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(10),
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(11),
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(12) {
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(4) {
     display: none !important;
   }
 
@@ -2733,8 +2661,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
     transform: translateY(2px) rotate(225deg);
   }
 
-  .camp-reg-table .camp-name-cell,
-  .staff-reg-table .staff-row-camp {
+  .camp-reg-table .camp-name-cell {
     color: var(--camp-row-border);
     font-weight: 800;
   }
@@ -2800,34 +2727,6 @@ tbody tr.camp-tint.is-dedicated:hover td {
     grid-template-columns: 94px minmax(0, 1fr);
   }
 
-  .staff-camp-divider {
-    display: block;
-    margin: 14px 0 8px;
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--camp-row-bg);
-  }
-
-  .staff-camp-divider td {
-    display: block;
-    padding: 12px;
-    border: 0;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .staff-camp-divider .staff-camp-title-cell {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  .staff-camp-divider .staff-camp-fill-cell {
-    display: none;
-  }
-
-  .staff-camp-empty td,
   .camp-reg-table .state-box,
   .staff-reg-table .state-box {
     white-space: normal;
