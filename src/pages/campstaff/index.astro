@@ -406,12 +406,24 @@
     }
     .tab.active { background:#fff; color:var(--blue); box-shadow:0 3px 10px rgba(16,42,56,.08); }
     .login-form { display:grid; gap:10px; text-align:left; }
-    .login-form input {
+    .login-form input,
+    .login-form select {
       width:100%; border:1.5px solid var(--border); border-radius:11px; padding:13px 15px;
-      background:#fafbfc; color:var(--text); font-size:15px; outline:none;
+      background:#fafbfc; color:var(--text); font:500 15px/1.3 var(--body); outline:none;
       transition:border-color .2s,background .2s,box-shadow .2s;
+      appearance:none; -webkit-appearance:none;
     }
-    .login-form input:focus { border-color:var(--blue); background:#fff; box-shadow:0 0 0 3px rgba(0,79,104,.10); }
+    .login-form select {
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%235a7585' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat:no-repeat; background-position:right 16px center; padding-right:38px;
+    }
+    .login-form input:focus,
+    .login-form select:focus { border-color:var(--blue); background:#fff; box-shadow:0 0 0 3px rgba(0,79,104,.10); }
+    .login-roster-hint {
+      margin-top:-4px; padding:0 4px;
+      color:var(--mid); font-size:11.5px; font-weight:600; line-height:1.5;
+    }
+    .login-roster-hint.is-error { color:var(--red); }
     .login-error { min-height:18px; color:var(--red); font-size:12px; font-weight:800; }
     .login-btn {
       width:100%; border:0; border-radius:11px; padding:14px; background:var(--blue); color:#fff;
@@ -532,7 +544,11 @@
         <button class="tab" data-mode="adminLogin" type="button">관리자</button>
       </div>
       <div class="login-form">
-        <input id="authName" placeholder="이름 (가입 시)" autocomplete="name" hidden>
+        <select id="authCampSelect" hidden></select>
+        <select id="authName" hidden>
+          <option value="">담당 캠프를 먼저 선택해주세요</option>
+        </select>
+        <div class="login-roster-hint" id="rosterHint" hidden></div>
         <input id="authEmail" type="email" placeholder="email@example.com" autocomplete="email">
         <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
         <div class="login-error" id="loginError"></div>
@@ -735,6 +751,11 @@
       $('signupBtn').addEventListener('click', () => {
         setAuthMode(authMode === 'signup' ? 'login' : 'signup');
       });
+      $('authCampSelect').addEventListener('change', loadCounselorRoster);
+      $('authName').addEventListener('change', () => {
+        const opt = $('authName').selectedOptions[0];
+        $('authEmail').value = opt?.value || '';
+      });
       document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
       if (token) unlock();
     }
@@ -747,24 +768,78 @@
       $('signupBtn').classList.toggle('is-signup-active', mode === 'signup');
       $('signupBtn').textContent = mode === 'signup' ? '로그인으로 돌아가기' : '카운슬러 Sign-up';
       $('signupBtn').style.display = mode === 'adminLogin' ? 'none' : '';
-      $('authEmail').hidden = mode === 'adminLogin';
-      $('authName').hidden = mode !== 'signup';
+      $('authEmail').hidden = mode === 'adminLogin' || mode === 'signup';
+      // signup 모드: 캠프/이름 셀렉트 노출 + 명단 로드
+      const showSignupFields = mode === 'signup';
+      $('authCampSelect').hidden = !showSignupFields;
+      $('authName').hidden = !showSignupFields;
+      $('rosterHint').hidden = !showSignupFields;
+      if (showSignupFields) {
+        populateAuthCampSelect();
+        loadCounselorRoster();
+      }
       $('authPassword').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
       $('authBtn').textContent = mode === 'signup' ? '가입하기' : mode === 'adminLogin' ? '관리자 로그인' : '로그인';
       $('loginError').textContent = '';
+    }
+
+    function populateAuthCampSelect() {
+      const sel = $('authCampSelect');
+      if (sel.options.length === CAMPS.length) return;
+      sel.innerHTML = CAMPS.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+    }
+
+    async function loadCounselorRoster() {
+      const campId = $('authCampSelect').value || CAMPS[0].id;
+      const sel = $('authName');
+      const hint = $('rosterHint');
+      sel.innerHTML = '<option value="">불러오는 중…</option>';
+      sel.disabled = true;
+      hint.classList.remove('is-error');
+      hint.textContent = '본인 이름을 선택하면 등록된 이메일로 자동 채워집니다.';
+      try {
+        const res = await fetch(`/api/camp-progress/counselor-roster?campId=${encodeURIComponent(campId)}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '명단 불러오기 실패');
+        const list = data.counselors || [];
+        if (!list.length) {
+          sel.innerHTML = '<option value="">상담자 신청자가 없습니다</option>';
+          hint.classList.add('is-error');
+          hint.textContent = '이 캠프에 상담자 팀으로 신청한 분이 아직 없습니다.';
+          sel.disabled = true;
+          $('authEmail').value = '';
+          return;
+        }
+        sel.innerHTML = '<option value="">— 본인 이름을 선택해주세요 —</option>'
+          + list.map((c, i) => `<option value="${esc(c.email)}" data-name="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+        sel.disabled = false;
+      } catch (e) {
+        sel.innerHTML = '<option value="">불러오기 실패</option>';
+        hint.classList.add('is-error');
+        hint.textContent = e.message;
+      }
     }
 
     async function submitAuth() {
       $('loginError').textContent = '';
       $('authBtn').disabled = true;
       try {
+        // signup: 이름 select의 selected option에서 이메일+이름 추출
+        let email = $('authEmail').value.trim();
+        let name = '';
+        if (authMode === 'signup') {
+          const opt = $('authName').selectedOptions[0];
+          email = opt?.value || '';
+          name = opt?.dataset?.name || '';
+          if (!email) throw new Error('본인 이름을 선택해주세요.');
+        }
         const res = await fetch('/api/camp-progress/auth', {
           method:'POST',
           headers:{ 'Content-Type':'application/json' },
           body:JSON.stringify({
             mode:authMode,
-            email:$('authEmail').value.trim(),
-            name:$('authName').value.trim(),
+            email,
+            name,
             password:$('authPassword').value,
           }),
         });
