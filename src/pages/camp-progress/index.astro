@@ -104,16 +104,54 @@
     .save-row { display:flex; justify-content:flex-end; gap:10px; }
     .primary { border:0; border-radius:999px; padding:12px 18px; background:var(--blue); color:#fff; font-weight:900; }
     .secondary { border:1px solid #d5e3e8; border-radius:999px; padding:11px 16px; background:#fff; color:var(--blue); font-weight:900; }
-    .login-screen { position:fixed; inset:0; z-index:80; display:grid; place-items:center; padding:20px; background:linear-gradient(135deg,#004f68,#0d9488); }
-    .login-card { width:min(460px,100%); border-radius:26px; background:#fff; padding:26px; box-shadow:0 24px 70px rgba(0,0,0,.24); }
-    .login-card h2 { margin:0; color:var(--blue); font:900 28px/1.1 var(--sans); }
-    .login-card p { margin:8px 0 18px; color:var(--mid); font-size:13px; line-height:1.6; }
-    .tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:16px; padding:5px; border-radius:999px; background:#eef6f8; }
-    .tab { border:0; border-radius:999px; padding:9px 8px; background:transparent; color:#6c8290; font-size:12px; font-weight:900; }
+    .login-screen {
+      position:fixed; inset:0; z-index:80; display:flex; align-items:center; justify-content:center; padding:20px;
+      background:linear-gradient(145deg,#003d52,#00627f);
+    }
+    .login-card {
+      width:100%; max-width:390px; border-radius:20px; background:#fff; padding:44px 38px 38px;
+      box-shadow:0 24px 64px rgba(0,0,0,.25); text-align:center;
+    }
+    .login-logo {
+      display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px;
+    }
+    .login-logo img { height:36px; }
+    .login-logo-text { text-align:left; }
+    .login-logo-name {
+      display:block; color:var(--blue); font:700 15px/1 var(--sans); letter-spacing:.04em;
+    }
+    .login-logo-sub {
+      display:block; margin-top:3px; color:#8fa8b5; font:700 10px/1 var(--sans); letter-spacing:.06em;
+    }
+    .login-title {
+      margin:0 0 8px; color:var(--mid); font-size:15px; font-weight:700; letter-spacing:.02em;
+    }
+    .login-description {
+      margin:0 0 18px; color:#8fa8b5; font-size:12px; font-weight:600; line-height:1.55;
+    }
+    .tabs {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:14px; padding:4px;
+      border:1px solid #e4eaee; border-radius:12px; background:#f4f6f8;
+    }
+    .tab {
+      border:0; border-radius:9px; padding:8px 6px; background:transparent; color:#6f8794;
+      font-size:11px; font-weight:900; transition:background .15s,color .15s,box-shadow .15s;
+    }
     .tab.active { background:#fff; color:var(--blue); box-shadow:0 3px 10px rgba(16,42,56,.08); }
-    .login-form { display:grid; gap:10px; }
-    .login-form input { width:100%; border:1px solid #d9e7ec; border-radius:14px; padding:13px; }
+    .login-form { display:grid; gap:10px; text-align:left; }
+    .login-form input {
+      width:100%; border:1.5px solid #e4eaee; border-radius:10px; padding:13px 15px;
+      background:#fafbfc; color:var(--text); font-size:15px; outline:none; transition:border-color .2s,background .2s;
+    }
+    .login-form input:focus { border-color:var(--blue); background:#fff; }
     .login-error { min-height:18px; color:var(--red); font-size:12px; font-weight:800; }
+    .login-btn {
+      width:100%; border:0; border-radius:10px; padding:14px; background:var(--blue); color:#fff;
+      font-size:15px; font-weight:700; letter-spacing:.02em; transition:background .2s,transform .15s;
+    }
+    .login-btn:hover { background:var(--blue2); }
+    .login-btn:active { transform:scale(.98); }
+    .login-btn:disabled { opacity:.6; cursor:not-allowed; }
     .admin-panel { display:none; margin-top:16px; border-top:1px solid #e8f1f4; padding-top:16px; }
     body.is-admin .admin-panel { display:block; }
     .account-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; }
@@ -134,15 +172,23 @@
       .board,.team-grid,.field-grid { grid-template-columns:1fr; }
       .hero { padding:18px; border-radius:18px; }
       .modal-head,.modal-body { padding-left:16px; padding-right:16px; }
-      .tabs { grid-template-columns:1fr; border-radius:18px; }
+      .login-card { padding:36px 24px 28px; }
+      .tabs { grid-template-columns:1fr; border-radius:14px; }
     }
   </style>
 </head>
 <body>
   <div class="login-screen" id="loginScreen">
     <div class="login-card">
-      <h2>Camp Progress</h2>
-      <p>카운슬러는 본인 이메일로 가입/로그인하고, 담당 캠퍼의 상담 정보를 기록할 수 있습니다.</p>
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title">캠프 진행 페이지</p>
+      <p class="login-description">담당 캠퍼 상담 기록과 팀 현황을 관리합니다.</p>
       <div class="tabs">
         <button class="tab active" data-mode="login" type="button">로그인</button>
         <button class="tab" data-mode="signup" type="button">카운슬러 가입</button>
@@ -153,7 +199,7 @@
         <input id="authEmail" type="email" placeholder="email@example.com" autocomplete="email">
         <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
         <div class="login-error" id="loginError"></div>
-        <button class="primary" id="authBtn" type="button">로그인</button>
+        <button class="login-btn" id="authBtn" type="button">로그인</button>
       </div>
     </div>
   </div>
