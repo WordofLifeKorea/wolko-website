@@ -524,10 +524,20 @@
       { name:'웹스터 그레이스', role:'stw', teams:['테크'], jeju:true },
       { name:'손진영', role:'stw', teams:['프로그램'] },
     ];
-    const memberDisplayName = m => m.spouseName ? `${m.name} · ${m.spouseName}` : m.name;
+    const memberDisplayName = m => m.name;
     function rosterForCamp(campId) {
       const isJeju = String(campId || '').includes('jeju');
-      return WOLKO_CAMP_ROSTER.filter(m => isJeju ? true : !m.jeju);
+      // 부부 선교사는 남편/아내를 각각 별도 항목으로 분리
+      const expanded = [];
+      for (const m of WOLKO_CAMP_ROSTER) {
+        if (isJeju || !m.jeju) {
+          expanded.push({ name:m.name, role:m.role, teams:m.teams, jeju:m.jeju });
+          if (m.spouseName) {
+            expanded.push({ name:m.spouseName, role:m.role, teams:m.teams, jeju:m.jeju });
+          }
+        }
+      }
+      return expanded;
     }
     const TOKEN_KEY = 'wolko-camp-progress-token';
     const ROLE_KEY = 'wolko-camp-progress-role';
@@ -887,7 +897,7 @@
           const isLeader = personEffectiveRole(m, team) === 'leader';
           const jejuBadge = m.jeju ? '<span class="m-badge m-badge-jeju">제주</span>' : (isJejuCamp && !m.jeju ? '<span class="m-badge m-badge-pyeongtaek">평택</span>' : '');
           const toggle = isAdmin
-            ? `<button type="button" class="m-toggle ${isLeader ? 'is-leader' : ''}" onclick="togglePersonRole('${esc(dn).replace(/'/g, "\\'")}','${esc(team).replace(/'/g, "\\'")}')" title="${isLeader ? '리더 해제' : '리더로 지정'}">${isLeader ? '리더' : '+리더'}</button>`
+            ? `<button type="button" class="m-toggle ${isLeader ? 'is-leader' : ''}" data-name="${esc(dn)}" data-team="${esc(team)}" title="${isLeader ? '리더 해제' : '리더로 지정'}">${isLeader ? '리더' : '+리더'}</button>`
             : '';
           return `<li class="${isLeader ? 'is-leader' : ''}">
             <span class="m-name">${esc(dn)}</span>
@@ -902,6 +912,9 @@
           ${!leaders.length && !nonLeaders.length ? '<ul class="team-list"><li class="is-empty">미배정</li></ul>' : ''}
         </div>`;
       }).join('');
+      document.querySelectorAll('.m-toggle').forEach(btn => btn.addEventListener('click', () => {
+        togglePersonRole(btn.dataset.name, btn.dataset.team);
+      }));
     }
 
     async function loadAccounts() {
