@@ -756,6 +756,15 @@
         const opt = $('authName').selectedOptions[0];
         $('authEmail').value = opt?.value || '';
       });
+      // Enter 키로 로그인/가입 제출
+      ['authEmail', 'authPassword', 'authName'].forEach(id => {
+        $(id).addEventListener('keydown', e => {
+          if (e.key === 'Enter' && !$('authBtn').disabled) {
+            e.preventDefault();
+            submitAuth();
+          }
+        });
+      });
       document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
       if (token) unlock();
     }
