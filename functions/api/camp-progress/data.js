@@ -14,6 +14,17 @@ function isCounselorStaff(reg) {
   return reg?.registrationType === 'staff' && teams.includes('상담자');
 }
 
+function normalizeStaffTeam(team) {
+  return team === '수업' ? '티칭' : team;
+}
+
+function staffTeams(reg) {
+  return String(reg?.serviceArea || reg?.notes || '')
+    .split(',')
+    .map(team => normalizeStaffTeam(team.trim()))
+    .filter(Boolean);
+}
+
 function safeTeamColor(value) {
   return ['red', 'blue', 'yellow', 'green'].includes(value) ? value : '';
 }
@@ -179,6 +190,15 @@ export async function onRequestGet(context) {
       .filter(reg => reg.registrationType !== 'staff')
       .flatMap(reg => reg.registrationType === 'group' ? campersFromGroup(reg) : [camperFromRegistration(reg)]);
     const teamOverview = normalizeTeamOverview(await env.CAMP_KV.get(`admin:team-overview:${campId}`, 'json'));
+    const campStaff = registrations
+      .filter(reg => reg.registrationType === 'staff')
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ko'))
+      .map(reg => ({
+        regId: reg.regId,
+        name: reg.name || '이름 없음',
+        email: normalizeEmail(reg.email),
+        teams: staffTeams(reg),
+      }));
 
     return Response.json({
       session,
@@ -186,6 +206,7 @@ export async function onRequestGet(context) {
       counselors,
       counselorRegIds,
       campers,
+      campStaff,
       canEditAll: session.role === 'admin',
       teamOverview,
     }, { headers: CORS });

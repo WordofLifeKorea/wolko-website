@@ -904,8 +904,13 @@
     function allTeamMembers() {
       const config = state.teamOverview || {};
       const roster = rosterForCamp(currentCampId());
+      const rosterNames = new Set(roster.map(m => m.name));
       const customMembers = Array.isArray(config.customMembers) ? config.customMembers.map(m => ({ name:m.name || '', teams:m.teams || [], role:m.role || 'stw' })) : [];
-      const staffMembers = state.counselors.map(counselor => ({ name:counselor.name, teams:['상담자'], role:'staff' }));
+      // 캠프 신청 스태프 전체 (로스터에 이미 있는 이름은 제외)
+      const campStaff = Array.isArray(state.campStaff) ? state.campStaff : [];
+      const staffMembers = campStaff
+        .filter(s => s.name && !rosterNames.has(s.name))
+        .map(s => ({ name:s.name, teams:s.teams.length ? s.teams : ['상담자'], role:'staff' }));
       return [...roster, ...customMembers, ...staffMembers].filter(m => memberDisplayName(m));
     }
 
