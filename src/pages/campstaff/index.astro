@@ -310,8 +310,9 @@
     }
 
     /* ── MODAL ── */
-    .modal-backdrop { position:fixed; inset:0; z-index:50; display:none; place-items:center; padding:18px; background:rgba(4,19,28,.58); backdrop-filter:blur(2px); }
+    .modal-backdrop { position:fixed; inset:0; z-index:200; display:none; place-items:center; padding:18px; background:rgba(4,19,28,.58); backdrop-filter:blur(2px); }
     .modal-backdrop.open { display:grid; }
+    body.is-modal-open { overflow:hidden; }
     .modal { width:min(720px,100%); max-height:calc(100vh - 36px); overflow:auto; border-radius:18px; background:#fff; box-shadow:0 28px 72px rgba(0,0,0,.30); }
     .modal-head { display:flex; justify-content:space-between; gap:12px; padding:20px 24px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,#fbfdfe,#fff); }
     .modal-title { min-width:0; }
@@ -885,10 +886,12 @@
       ['modalCounselor','modalSaved','modalDedicated','modalTestimony','modalMemo','modalSave'].forEach(id => $(id).disabled = !editable);
       $('modalSave').textContent = editable ? '저장' : '읽기 전용';
       $('camperModal').classList.add('open');
+      document.body.classList.add('is-modal-open');
     }
 
     function closeModal() {
       $('camperModal').classList.remove('open');
+      document.body.classList.remove('is-modal-open');
       selectedCamper = null;
     }
 
