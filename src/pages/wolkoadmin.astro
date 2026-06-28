@@ -1315,7 +1315,9 @@
         const baseFee = parseInt(r.campFeeBase, 10) || (CAMP_BASE_FEE * (r.registrationType === 'group' ? (parseInt(r.groupCount, 10) || 1) : 1));
         const finalFee = parseInt(r.campFeeFinal, 10) || Math.max(0, baseFee - discountAmount);
         const completedParticipants = groupParticipants.filter(participant =>
-          participant.name && ['male', 'female'].includes(participant.gender)
+          participant.name
+          && ['male', 'female'].includes(participant.gender)
+          && participant.counselorRegId
         ).length;
         const isExpanded = expandedRegistrationDetails.has(r.regId);
         const typeText = r.registrationType === 'group' ? `${t('groupBadge')} · ${esc(gradeOrCount)}` : `${t('individualBadge')} · ${esc(gradeOrCount)} · ${genderCell}`;
