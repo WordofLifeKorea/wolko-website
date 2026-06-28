@@ -233,6 +233,40 @@
     .m-toggle:hover { border-color:var(--blue); color:var(--blue); background:#f7fbfd; }
     .m-toggle.is-leader { background:var(--green); color:#fff; border-color:var(--green); }
     .m-toggle.is-leader:hover { background:#0e8a3f; border-color:#0e8a3f; color:#fff; }
+    .m-remove {
+      flex:0 0 auto; width:18px; height:18px; padding:0; border:1px solid var(--border); border-radius:50%;
+      background:#fff; color:var(--light); font:800 10px/1 var(--sans); cursor:pointer;
+      transition:background .15s,color .15s,border-color .15s;
+    }
+    .m-remove:hover { background:#fde8e9; color:var(--red); border-color:#f5c5c8; }
+
+    /* 팀 추가 메뉴 */
+    .team-add-wrap { position:relative; margin-top:10px; }
+    .team-add-btn {
+      width:100%; padding:8px 10px; border:1px dashed var(--border); border-radius:8px;
+      background:transparent; color:var(--mid); font:800 11px/1 var(--sans); cursor:pointer;
+      transition:border-color .15s,color .15s,background .15s;
+    }
+    .team-add-btn:hover { border-color:var(--blue); border-style:solid; color:var(--blue); background:#f7fbfd; }
+    .team-add-menu {
+      position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:20;
+      display:none; flex-direction:column; gap:2px; padding:6px;
+      max-height:280px; overflow-y:auto;
+      border-radius:10px; background:#fff; border:1px solid var(--border);
+      box-shadow:0 14px 32px rgba(0,79,104,.18);
+    }
+    .team-add-wrap.is-open .team-add-menu { display:flex; }
+    .team-add-opt {
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:7px 10px; border:0; border-radius:6px; background:transparent;
+      color:var(--text); font:600 12px/1.3 var(--body); text-align:left; cursor:pointer;
+      transition:background .12s;
+    }
+    .team-add-opt:hover { background:#f4f9fb; }
+    .team-add-opt .m-name { font-weight:800; }
+    .team-add-opt .m-role {
+      flex:0 0 auto; color:var(--light); font:700 10px/1 var(--sans); letter-spacing:.04em;
+    }
 
     /* ── MODAL ── */
     .modal-backdrop { position:fixed; inset:0; z-index:50; display:none; place-items:center; padding:18px; background:rgba(4,19,28,.58); backdrop-filter:blur(2px); }
@@ -875,6 +909,70 @@
       return [...roster, ...customMembers, ...staffMembers].filter(m => memberDisplayName(m));
     }
 
+    function getEffectiveTeams(member) {
+      const config = state.teamOverview || {};
+      const dn = memberDisplayName(member);
+      const override = config.personTeams?.[dn];
+      return Array.isArray(override) ? override : (member.teams || []);
+    }
+
+    async function saveTeamOverview(config) {
+      try {
+        const res = await fetch('/api/camp-progress/team-overview', {
+          method:'PUT',
+          headers:authHeaders(),
+          body:JSON.stringify({ campId:currentCampId(), config }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '저장 실패');
+      } catch (error) {
+        alert('팀 설정 저장 실패: ' + error.message);
+      }
+    }
+
+    async function addPersonToTeam(name, team) {
+      if (role !== 'admin') return;
+      const config = ensureTeamOverview();
+      const member = allTeamMembers().find(m => memberDisplayName(m) === name);
+      if (!member) return;
+      const current = getEffectiveTeams(member);
+      if (current.includes(team)) return;
+      config.personTeams = config.personTeams || {};
+      config.personTeams[name] = [...current, team];
+      renderTeams();
+      await saveTeamOverview(config);
+    }
+
+    async function removePersonFromTeam(name, team) {
+      if (role !== 'admin') return;
+      const config = ensureTeamOverview();
+      const member = allTeamMembers().find(m => memberDisplayName(m) === name);
+      if (!member) return;
+      const current = getEffectiveTeams(member);
+      const next = current.filter(t => t !== team);
+      config.personTeams = config.personTeams || {};
+      config.personTeams[name] = next;
+      // 리더로 지정되어 있었으면 그 키도 정리
+      if (config.personRoles) {
+        delete config.personRoles[personRoleKey(name, team)];
+      }
+      renderTeams();
+      await saveTeamOverview(config);
+    }
+
+    function toggleAddMenu(btn) {
+      const wrap = btn.closest('.team-add-wrap');
+      const isOpen = wrap.classList.contains('is-open');
+      document.querySelectorAll('.team-add-wrap.is-open').forEach(el => el.classList.remove('is-open'));
+      if (!isOpen) {
+        wrap.classList.add('is-open');
+        setTimeout(() => document.addEventListener('click', closeAllAddMenus, { once: true }), 0);
+      }
+    }
+    function closeAllAddMenus() {
+      document.querySelectorAll('.team-add-wrap.is-open').forEach(el => el.classList.remove('is-open'));
+    }
+
     function renderTeams() {
       const config = state.teamOverview || {};
       const customTeams = Array.isArray(config.customTeams) ? config.customTeams : [];
@@ -882,13 +980,12 @@
       const isJejuCamp = String(currentCampId()).includes('jeju');
       const isAdmin = role === 'admin';
       const allMembers = allTeamMembers();
+      const roleLabel = m => m.role === 'missionary' ? '선교사' : m.role === 'intern' ? '인턴' : m.role === 'staff' ? '스태프' : 'STW';
       $('teamSummary').textContent = `${teams.length}개 팀${isJejuCamp ? ' · 제주' : ' · 평택'}`;
       $('teamGrid').innerHTML = teams.map(team => {
         const members = allMembers.filter(member => {
           const dn = memberDisplayName(member);
-          const override = config.personTeams?.[dn];
-          const memberTeams = Array.isArray(override) ? override : member.teams;
-          return memberTeams.includes(team) && !(config.campExclude || []).includes(dn);
+          return getEffectiveTeams(member).includes(team) && !(config.campExclude || []).includes(dn);
         });
         const leaders = members.filter(m => personEffectiveRole(m, team) === 'leader');
         const nonLeaders = members.filter(m => personEffectiveRole(m, team) !== 'leader');
@@ -896,24 +993,55 @@
           const dn = memberDisplayName(m);
           const isLeader = personEffectiveRole(m, team) === 'leader';
           const jejuBadge = m.jeju ? '<span class="m-badge m-badge-jeju">제주</span>' : (isJejuCamp && !m.jeju ? '<span class="m-badge m-badge-pyeongtaek">평택</span>' : '');
-          const toggle = isAdmin
-            ? `<button type="button" class="m-toggle ${isLeader ? 'is-leader' : ''}" data-name="${esc(dn)}" data-team="${esc(team)}" title="${isLeader ? '리더 해제' : '리더로 지정'}">${isLeader ? '리더' : '+리더'}</button>`
+          const adminControls = isAdmin
+            ? `<button type="button" class="m-toggle ${isLeader ? 'is-leader' : ''}" data-name="${esc(dn)}" data-team="${esc(team)}" title="${isLeader ? '리더 해제' : '리더로 지정'}">${isLeader ? '리더' : '+리더'}</button>
+               <button type="button" class="m-remove" data-name="${esc(dn)}" data-team="${esc(team)}" title="이 팀에서 제거">✕</button>`
             : '';
           return `<li class="${isLeader ? 'is-leader' : ''}">
             <span class="m-name">${esc(dn)}</span>
             ${jejuBadge}
-            ${toggle}
+            ${adminControls}
           </li>`;
         };
+        // 이 팀에 아직 속하지 않은 멤버 (관리자용 추가 메뉴)
+        const candidates = isAdmin
+          ? allMembers.filter(m => !getEffectiveTeams(m).includes(team) && !(config.campExclude || []).includes(memberDisplayName(m)))
+          : [];
+        const addMenu = isAdmin && candidates.length
+          ? `<div class="team-add-wrap">
+              <button type="button" class="team-add-btn" data-team="${esc(team)}">+ 멤버 추가</button>
+              <div class="team-add-menu">
+                ${candidates.map(m => `<button type="button" class="team-add-opt" data-name="${esc(memberDisplayName(m))}" data-team="${esc(team)}">
+                  <span class="m-name">${esc(memberDisplayName(m))}</span>
+                  <span class="m-role">${roleLabel(m)}${m.jeju ? ' · 제주' : ''}</span>
+                </button>`).join('')}
+              </div>
+            </div>`
+          : '';
         return `<div class="team-box">
           <strong>${esc(team)}</strong>
           ${leaders.length ? `<div class="team-sublabel">리더</div><ul class="team-list">${leaders.map(renderItem).join('')}</ul>` : ''}
           ${nonLeaders.length ? `<div class="team-sublabel">멤버</div><ul class="team-list">${nonLeaders.map(renderItem).join('')}</ul>` : ''}
           ${!leaders.length && !nonLeaders.length ? '<ul class="team-list"><li class="is-empty">미배정</li></ul>' : ''}
+          ${addMenu}
         </div>`;
       }).join('');
       document.querySelectorAll('.m-toggle').forEach(btn => btn.addEventListener('click', () => {
         togglePersonRole(btn.dataset.name, btn.dataset.team);
+      }));
+      document.querySelectorAll('.m-remove').forEach(btn => btn.addEventListener('click', () => {
+        if (confirm(`${btn.dataset.name}님을 ${btn.dataset.team} 팀에서 제거할까요?`)) {
+          removePersonFromTeam(btn.dataset.name, btn.dataset.team);
+        }
+      }));
+      document.querySelectorAll('.team-add-btn').forEach(btn => btn.addEventListener('click', e => {
+        e.stopPropagation();
+        toggleAddMenu(btn);
+      }));
+      document.querySelectorAll('.team-add-opt').forEach(opt => opt.addEventListener('click', e => {
+        e.stopPropagation();
+        closeAllAddMenus();
+        addPersonToTeam(opt.dataset.name, opt.dataset.team);
       }));
     }
 
