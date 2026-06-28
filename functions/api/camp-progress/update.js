@@ -4,7 +4,7 @@ const CORS = {
 };
 
 const TEAM_COLORS = new Set(['', 'red', 'blue', 'yellow', 'green']);
-const ALLOWED_FIELDS = new Set(['saved', 'dedicated', 'testimony', 'counselorMemo', 'teamColor']);
+const ALLOWED_FIELDS = new Set(['saved', 'dedicated', 'testimony', 'counselorMemo', 'teamColor', 'counselorRegId']);
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -70,6 +70,11 @@ function normalizeValue(field, value) {
     const color = String(value || '').trim();
     if (!TEAM_COLORS.has(color)) throw new Error('팀 색상 값이 올바르지 않습니다.');
     return color;
+  }
+  if (field === 'counselorRegId') {
+    const v = String(value || '').trim();
+    if (v && !/^[a-zA-Z0-9_-]+$/.test(v)) throw new Error('카운슬러 ID 형식이 올바르지 않습니다.');
+    return v;
   }
   return String(value || '').trim().slice(0, 4000);
 }

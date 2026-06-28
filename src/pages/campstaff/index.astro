@@ -560,14 +560,8 @@
       <div class="modal-body">
         <div class="field-grid">
           <div class="field">
-            <label>팀 색상</label>
-            <select id="modalTeamColor">
-              <option value="">미지정</option>
-              <option value="red">레드팀</option>
-              <option value="blue">블루팀</option>
-              <option value="yellow">옐로우팀</option>
-              <option value="green">그린팀</option>
-            </select>
+            <label>담당 카운슬러</label>
+            <select id="modalCounselor"></select>
           </div>
           <div class="field">
             <label>영적 현황</label>
@@ -878,12 +872,17 @@
       const editable = canEditCamper(selectedCamper);
       $('modalName').textContent = selectedCamper.name;
       $('modalMeta').textContent = [selectedCamper.grade, selectedCamper.church, selectedCamper.phone].filter(Boolean).join(' · ');
-      $('modalTeamColor').value = selectedCamper.teamColor || '';
+      // 카운슬러 셀렉트 옵션 채우기
+      const counselorOptions = ['<option value="">미배정</option>']
+        .concat(state.counselors.map(c => `<option value="${esc(c.regId)}">${esc(c.name)}</option>`))
+        .join('');
+      $('modalCounselor').innerHTML = counselorOptions;
+      $('modalCounselor').value = selectedCamper.counselorRegId || '';
       $('modalSaved').checked = !!selectedCamper.saved;
       $('modalDedicated').checked = !!selectedCamper.dedicated;
       $('modalTestimony').value = selectedCamper.testimony || '';
       $('modalMemo').value = selectedCamper.counselorMemo || '';
-      ['modalTeamColor','modalSaved','modalDedicated','modalTestimony','modalMemo','modalSave'].forEach(id => $(id).disabled = !editable);
+      ['modalCounselor','modalSaved','modalDedicated','modalTestimony','modalMemo','modalSave'].forEach(id => $(id).disabled = !editable);
       $('modalSave').textContent = editable ? '저장' : '읽기 전용';
       $('camperModal').classList.add('open');
     }
@@ -914,7 +913,7 @@
       $('modalSave').disabled = true;
       $('modalSave').textContent = '저장 중...';
       try {
-        await saveField('teamColor', $('modalTeamColor').value);
+        await saveField('counselorRegId', $('modalCounselor').value);
         await saveField('saved', $('modalSaved').checked);
         await saveField('dedicated', $('modalDedicated').checked);
         await saveField('testimony', $('modalTestimony').value);
