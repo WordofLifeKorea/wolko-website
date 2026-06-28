@@ -366,7 +366,7 @@
 
     /* ── LOGIN ── */
     .login-screen {
-      position:fixed; inset:0; z-index:80; display:flex; align-items:center; justify-content:center; padding:20px;
+      position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; padding:20px;
       background:linear-gradient(145deg,#003d52,#00627f);
     }
     .login-card {
@@ -443,8 +443,25 @@
       .team-grid { grid-template-columns:repeat(2,minmax(140px,1fr)); }
     }
     @media (max-width:640px) {
-      .topbar { height:auto; min-height:60px; align-items:flex-start; flex-direction:column; padding:14px 18px; gap:12px; }
-      .toolbar { justify-content:flex-start; width:100%; }
+      .topbar {
+        height:52px; min-height:52px; flex-direction:row; flex-wrap:nowrap;
+        align-items:center; justify-content:space-between; gap:8px;
+        padding:0 12px;
+      }
+      .brand { gap:8px; flex-shrink:0; min-width:0; }
+      .brand img { height:24px; }
+      .brand h1 { font-size:12px; letter-spacing:.04em; white-space:nowrap; }
+      .brand p { display:none; }
+      .toolbar { justify-content:flex-end; flex-wrap:nowrap; gap:6px; min-width:0; }
+      .toolbar select {
+        min-height:30px; padding:4px 26px 4px 10px; font-size:10.5px;
+        max-width:140px; text-overflow:ellipsis;
+      }
+      .toolbar button {
+        min-height:30px; padding:4px 10px; font-size:10.5px; letter-spacing:.04em;
+        white-space:nowrap;
+      }
+      #refreshBtn { padding:4px 8px; }
       .page { max-width:100%; padding:20px 12px 72px; }
       .board,.team-grid,.field-grid { grid-template-columns:1fr; }
       .hero { padding:20px; border-radius:14px; }
