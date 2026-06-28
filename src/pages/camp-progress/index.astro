@@ -156,12 +156,33 @@
     .team-box strong::before {
       content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--blue);
     }
-    .team-box ul { list-style:none; margin:12px 0 0; padding:0; display:grid; gap:5px; }
-    .team-box li {
-      padding:7px 10px; border-radius:8px; background:#fff; border:1px solid var(--line);
-      color:#334b58; font-size:12px; font-weight:700; line-height:1.4;
+    .team-box .team-sublabel {
+      margin-top:12px; color:var(--mid); font:800 10px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase;
     }
-    .team-box li.is-empty { background:transparent; border:1px dashed var(--border); color:var(--light); text-align:center; font-weight:600; }
+    .team-box .team-sublabel:first-of-type { margin-top:10px; }
+    .team-box ul.team-list { list-style:none; margin:7px 0 0; padding:0; display:grid; gap:4px; }
+    .team-box li {
+      display:flex; align-items:center; gap:6px;
+      padding:7px 10px; border-radius:8px; background:#fff; border:1px solid var(--line);
+      color:#334b58; font-size:12px; font-weight:700; line-height:1.35;
+    }
+    .team-box li.is-leader { background:#f4faf7; border-color:#cce4d6; }
+    .team-box li.is-empty { background:transparent; border:1px dashed var(--border); color:var(--light); text-align:center; font-weight:600; justify-content:center; }
+    .team-box li .m-name { flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+    .m-badge {
+      flex:0 0 auto; display:inline-flex; align-items:center; padding:2px 7px; border-radius:100px;
+      font:800 9.5px/1 var(--sans); letter-spacing:.04em;
+    }
+    .m-badge-jeju { background:#fff1e6; color:#c46a2a; border:1px solid #ffd9b8; }
+    .m-badge-pyeongtaek { background:#e7f0f5; color:var(--blue); border:1px solid #c9dde6; }
+    .m-toggle {
+      flex:0 0 auto; border:1px solid var(--border); border-radius:100px; padding:3px 8px;
+      background:#fff; color:var(--mid); font:800 9.5px/1 var(--sans); letter-spacing:.04em;
+      cursor:pointer; transition:background .15s,color .15s,border-color .15s;
+    }
+    .m-toggle:hover { border-color:var(--blue); color:var(--blue); background:#f7fbfd; }
+    .m-toggle.is-leader { background:var(--green); color:#fff; border-color:var(--green); }
+    .m-toggle.is-leader:hover { background:#0e8a3f; border-color:#0e8a3f; color:#fff; }
 
     /* ── MODAL ── */
     .modal-backdrop { position:fixed; inset:0; z-index:50; display:none; place-items:center; padding:18px; background:rgba(4,19,28,.58); backdrop-filter:blur(2px); }
@@ -433,21 +454,31 @@
       { id:'2026-test-camp', title:'테스트 캠프' },
     ];
     const BASE_TEAMS = ['프로그램','티칭','상담자','테크','찬양팀'];
-    const BASE_MEMBERS = [
-      { name:'앤더슨 제이슨 · 앤더슨 찬주', teams:['프로그램','상담자'] },
-      { name:'민경찬 · 김유진', teams:['프로그램'] },
-      { name:'송승현', teams:['프로그램','상담자'] },
-      { name:'김환규 · 김씬띠아', teams:['티칭','테크'] },
-      { name:'백남규 · 조안나', teams:['상담자','티칭'] },
-      { name:'채병국', teams:['프로그램','상담자'] },
-      { name:'잭 프래지어', teams:['티칭','상담자'] },
-      { name:'몰리 그램', teams:['상담자','프로그램'] },
-      { name:'버니 카브레라', teams:['찬양팀','상담자'] },
-      { name:'정지온', teams:['상담자'] },
-      { name:'브링클리 모슬리', teams:['테크'] },
-      { name:'웹스터 그레이스', teams:['테크'] },
-      { name:'손진영', teams:['프로그램'] },
+    // role: 'missionary' (선교사 — 기본 리더), 'intern', 'stw'
+    // jeju: true → 제주 월비 멤버 (제주 캠프에서만 표시)
+    const WOLKO_CAMP_ROSTER = [
+      { name:'앤더슨 제이슨', spouseName:'앤더슨 찬주', role:'missionary', teams:['프로그램','상담자'] },
+      { name:'민경찬', spouseName:'김유진', role:'missionary', teams:['프로그램'] },
+      { name:'송승현', role:'missionary', teams:['프로그램','상담자'] },
+      { name:'김환규', spouseName:'김씬띠아', role:'missionary', teams:['티칭','테크'] },
+      { name:'백남규', spouseName:'조안나', role:'missionary', teams:['상담자','티칭'], jeju:true },
+      { name:'몰스 제이콥', spouseName:'몰스 크리스탈', role:'missionary', teams:['프로그램'] },
+      { name:'채병국', role:'missionary', teams:['프로그램','상담자'] },
+      { name:'니키 플로리카', role:'intern', teams:['티칭'] },
+      { name:'잭 프래지어', role:'intern', teams:['티칭','상담자'] },
+      { name:'몰리 그램', role:'intern', teams:['상담자','프로그램'] },
+      { name:'버니 카브레라', role:'intern', teams:['찬양팀','상담자'], jeju:true },
+      { name:'박예능', role:'stw', teams:['프로그램','찬양팀'] },
+      { name:'정지온', role:'stw', teams:['상담자'], jeju:true },
+      { name:'브링클리 모슬리', role:'stw', teams:['테크'], jeju:true },
+      { name:'웹스터 그레이스', role:'stw', teams:['테크'], jeju:true },
+      { name:'손진영', role:'stw', teams:['프로그램'] },
     ];
+    const memberDisplayName = m => m.spouseName ? `${m.name} · ${m.spouseName}` : m.name;
+    function rosterForCamp(campId) {
+      const isJeju = String(campId || '').includes('jeju');
+      return WOLKO_CAMP_ROSTER.filter(m => isJeju ? true : !m.jeju);
+    }
     const TOKEN_KEY = 'wolko-camp-progress-token';
     const ROLE_KEY = 'wolko-camp-progress-role';
     let authMode = 'login';
@@ -663,23 +694,91 @@
       }
     }
 
+    function personRoleKey(name, team) { return `${name}\x00${team}`; }
+    function getPersonRole(name, team) {
+      return state.teamOverview?.personRoles?.[personRoleKey(name, team)] || null;
+    }
+    function personDefaultRole(m) { return m.role === 'missionary' ? 'leader' : 'member'; }
+    function personEffectiveRole(m, team) {
+      return getPersonRole(memberDisplayName(m), team) || personDefaultRole(m);
+    }
+
+    async function togglePersonRole(name, team) {
+      if (role !== 'admin') return;
+      const config = ensureTeamOverview();
+      config.personRoles = config.personRoles || {};
+      const key = personRoleKey(name, team);
+      const cur = config.personRoles[key];
+      if (cur === 'leader') {
+        delete config.personRoles[key];
+        // 기본이 'member'면 그냥 삭제로 끝
+        const member = allTeamMembers().find(m => memberDisplayName(m) === name);
+        if (member && personDefaultRole(member) === 'leader') {
+          config.personRoles[key] = 'member';
+        }
+      } else {
+        config.personRoles[key] = 'leader';
+      }
+      renderTeams();
+      try {
+        await fetch('/api/camp-progress/team-overview', {
+          method:'PUT',
+          headers:authHeaders(),
+          body:JSON.stringify({ campId:currentCampId(), config }),
+        });
+      } catch (error) {
+        alert('리더 변경 저장 실패: ' + error.message);
+      }
+    }
+
+    function ensureTeamOverview() {
+      if (!state.teamOverview) state.teamOverview = { customTeams:[], personRoles:{}, personTeams:{}, campExclude:[], campRoles:{}, customMembers:[] };
+      return state.teamOverview;
+    }
+
+    function allTeamMembers() {
+      const config = state.teamOverview || {};
+      const roster = rosterForCamp(currentCampId());
+      const customMembers = Array.isArray(config.customMembers) ? config.customMembers.map(m => ({ name:m.name || '', teams:m.teams || [], role:m.role || 'stw' })) : [];
+      const staffMembers = state.counselors.map(counselor => ({ name:counselor.name, teams:['상담자'], role:'staff' }));
+      return [...roster, ...customMembers, ...staffMembers].filter(m => memberDisplayName(m));
+    }
+
     function renderTeams() {
       const config = state.teamOverview || {};
       const customTeams = Array.isArray(config.customTeams) ? config.customTeams : [];
       const teams = [...BASE_TEAMS, ...customTeams];
-      const staffMembers = state.counselors.map(counselor => ({ name:counselor.name, teams:['상담자'] }));
-      const customMembers = Array.isArray(config.customMembers) ? config.customMembers.map(member => ({ name:member.name || '', teams:member.teams || [] })) : [];
-      const allMembers = [...BASE_MEMBERS, ...staffMembers, ...customMembers].filter(member => member.name);
-      $('teamSummary').textContent = `${teams.length}개 팀`;
+      const isJejuCamp = String(currentCampId()).includes('jeju');
+      const isAdmin = role === 'admin';
+      const allMembers = allTeamMembers();
+      $('teamSummary').textContent = `${teams.length}개 팀${isJejuCamp ? ' · 제주' : ' · 평택'}`;
       $('teamGrid').innerHTML = teams.map(team => {
         const members = allMembers.filter(member => {
-          const override = config.personTeams?.[member.name];
+          const dn = memberDisplayName(member);
+          const override = config.personTeams?.[dn];
           const memberTeams = Array.isArray(override) ? override : member.teams;
-          return memberTeams.includes(team) && !(config.campExclude || []).includes(member.name);
+          return memberTeams.includes(team) && !(config.campExclude || []).includes(dn);
         });
+        const leaders = members.filter(m => personEffectiveRole(m, team) === 'leader');
+        const nonLeaders = members.filter(m => personEffectiveRole(m, team) !== 'leader');
+        const renderItem = (m) => {
+          const dn = memberDisplayName(m);
+          const isLeader = personEffectiveRole(m, team) === 'leader';
+          const jejuBadge = m.jeju ? '<span class="m-badge m-badge-jeju">제주</span>' : (isJejuCamp && !m.jeju ? '<span class="m-badge m-badge-pyeongtaek">평택</span>' : '');
+          const toggle = isAdmin
+            ? `<button type="button" class="m-toggle ${isLeader ? 'is-leader' : ''}" onclick="togglePersonRole('${esc(dn).replace(/'/g, "\\'")}','${esc(team).replace(/'/g, "\\'")}')" title="${isLeader ? '리더 해제' : '리더로 지정'}">${isLeader ? '리더' : '+리더'}</button>`
+            : '';
+          return `<li class="${isLeader ? 'is-leader' : ''}">
+            <span class="m-name">${esc(dn)}</span>
+            ${jejuBadge}
+            ${toggle}
+          </li>`;
+        };
         return `<div class="team-box">
           <strong>${esc(team)}</strong>
-          <ul>${members.length ? members.map(member => `<li>${esc(member.name)}</li>`).join('') : '<li class="is-empty">미배정</li>'}</ul>
+          ${leaders.length ? `<div class="team-sublabel">리더</div><ul class="team-list">${leaders.map(renderItem).join('')}</ul>` : ''}
+          ${nonLeaders.length ? `<div class="team-sublabel">멤버</div><ul class="team-list">${nonLeaders.map(renderItem).join('')}</ul>` : ''}
+          ${!leaders.length && !nonLeaders.length ? '<ul class="team-list"><li class="is-empty">미배정</li></ul>' : ''}
         </div>`;
       }).join('');
     }
