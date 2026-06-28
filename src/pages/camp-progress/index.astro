@@ -1,0 +1,580 @@
+---
+---
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WOLKO 캠프 진행</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue:#004f68;
+      --blue2:#0077a3;
+      --mint:#0d9488;
+      --bg:#f2f7f8;
+      --text:#102a38;
+      --mid:#617888;
+      --line:#dce8ed;
+      --red:#dc2626;
+      --green:#16a34a;
+      --shadow:0 14px 34px rgba(16,42,56,.10);
+      --sans:'Montserrat','Noto Sans KR',system-ui,sans-serif;
+      --body:'Noto Sans KR',system-ui,sans-serif;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:var(--body); }
+    button,input,select,textarea { font:inherit; }
+    button { cursor:pointer; }
+    .topbar {
+      position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:16px clamp(18px,4vw,44px); background:rgba(0,79,104,.96); color:#fff; box-shadow:0 8px 22px rgba(0,0,0,.16);
+    }
+    .brand { display:flex; align-items:center; gap:12px; min-width:0; }
+    .brand-mark { display:grid; place-items:center; width:38px; height:38px; border-radius:13px; background:rgba(255,255,255,.12); font-family:var(--sans); font-weight:900; }
+    .brand h1 { margin:0; font:800 18px/1 var(--sans); letter-spacing:.02em; }
+    .brand p { margin:4px 0 0; color:rgba(255,255,255,.72); font-size:12px; }
+    .toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .toolbar select,.toolbar button,.toolbar a {
+      min-height:38px; border:1px solid rgba(255,255,255,.2); border-radius:999px; padding:0 14px;
+      background:rgba(255,255,255,.12); color:#fff; font-weight:800; text-decoration:none;
+    }
+    .toolbar select option { color:var(--text); }
+    .page { width:min(1520px,100%); margin:0 auto; padding:24px clamp(16px,3vw,34px) 56px; }
+    .hero {
+      display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; align-items:end; margin-bottom:18px;
+      padding:24px; border:1px solid var(--line); border-radius:24px; background:#fff; box-shadow:var(--shadow);
+    }
+    .hero h2 { margin:0; color:var(--blue); font:900 clamp(24px,4vw,38px)/1.15 var(--sans); }
+    .hero p { margin:9px 0 0; color:var(--mid); font-size:14px; line-height:1.65; }
+    .stats { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .stat { min-width:112px; padding:12px 14px; border-radius:18px; background:#f4fafb; border:1px solid #e1eef2; text-align:right; }
+    .stat strong { display:block; color:var(--blue); font:900 22px/1 var(--sans); }
+    .stat span { display:block; margin-top:5px; color:var(--mid); font-size:11px; font-weight:800; }
+    .board { display:grid; grid-template-columns:repeat(4,minmax(260px,1fr)); gap:14px; align-items:start; }
+    .counselor-card { overflow:hidden; border:1px solid var(--line); border-radius:22px; background:#fff; box-shadow:0 8px 22px rgba(16,42,56,.07); }
+    .counselor-head { padding:16px; border-bottom:1px solid #e8f1f4; background:linear-gradient(180deg,#fff,#f6fbfc); }
+    .counselor-head strong { display:block; font-size:17px; font-weight:900; color:var(--text); }
+    .counselor-head span { display:block; margin-top:4px; color:var(--mid); font-size:12px; font-weight:700; }
+    .camper-list { display:grid; gap:8px; padding:12px; min-height:90px; }
+    .camper-btn {
+      width:100%; display:grid; grid-template-columns:8px minmax(0,1fr) auto; gap:10px; align-items:center;
+      border:1px solid #e2edf1; border-radius:15px; padding:10px; background:#fbfdfe; color:inherit; text-align:left;
+    }
+    .camper-btn:hover { border-color:#bdd9e4; background:#f3fbfe; transform:translateY(-1px); }
+    .team-dot { width:8px; align-self:stretch; min-height:34px; border-radius:999px; background:#cbd5df; }
+    .team-red { background:#ef4444; }
+    .team-blue { background:#3b82f6; }
+    .team-yellow { background:#f4b400; }
+    .team-green { background:#22c55e; }
+    .camper-main strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; font-weight:900; }
+    .camper-main span { display:block; margin-top:3px; color:var(--mid); font-size:11px; font-weight:700; }
+    .chips { display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; }
+    .chip { padding:2px 7px; border-radius:999px; font-size:10px; font-weight:900; white-space:nowrap; }
+    .chip-saved { background:#e0f3ff; color:#1685bd; }
+    .chip-dedicated { background:#e4f7ea; color:#258541; }
+    .empty { padding:18px; color:#8aa0ac; font-size:13px; font-weight:700; text-align:center; }
+    .section { margin-top:22px; border:1px solid var(--line); border-radius:24px; background:#fff; box-shadow:var(--shadow); overflow:hidden; }
+    .section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px; border-bottom:1px solid #e8f1f4; }
+    .section-head h3 { margin:0; color:var(--blue); font-size:19px; font-weight:900; }
+    .team-grid { display:grid; grid-template-columns:repeat(5,minmax(180px,1fr)); gap:12px; padding:16px; }
+    .team-box { border:1px solid #e2edf1; border-radius:18px; background:#fbfdfe; padding:14px; }
+    .team-box strong { display:block; color:var(--blue); font-size:14px; font-weight:900; }
+    .team-box ul { list-style:none; margin:12px 0 0; padding:0; display:grid; gap:7px; }
+    .team-box li { padding:7px 9px; border-radius:12px; background:#f2f8fa; color:#334b58; font-size:12px; font-weight:800; }
+    .modal-backdrop { position:fixed; inset:0; z-index:50; display:none; place-items:center; padding:18px; background:rgba(4,19,28,.56); }
+    .modal-backdrop.open { display:grid; }
+    .modal { width:min(720px,100%); max-height:calc(100vh - 36px); overflow:auto; border-radius:24px; background:#fff; box-shadow:0 24px 70px rgba(0,0,0,.26); }
+    .modal-head { display:flex; justify-content:space-between; gap:12px; padding:20px 22px; border-bottom:1px solid #e5eef2; }
+    .modal-title strong { display:block; color:var(--blue); font-size:22px; font-weight:900; }
+    .modal-title span { display:block; margin-top:5px; color:var(--mid); font-size:13px; font-weight:700; }
+    .icon-btn { width:38px; height:38px; border:0; border-radius:999px; background:#eef6f8; color:var(--blue); font-weight:900; }
+    .modal-body { padding:20px 22px 22px; display:grid; gap:16px; }
+    .field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .field { display:grid; gap:7px; }
+    .field label { color:#6f8794; font-size:12px; font-weight:900; }
+    .field input,.field select,.field textarea {
+      width:100%; border:1px solid #d9e7ec; border-radius:13px; background:#fbfdfe; padding:11px 12px; color:var(--text); outline:none;
+    }
+    .field textarea { min-height:120px; resize:vertical; line-height:1.65; }
+    .checks { display:flex; gap:10px; flex-wrap:wrap; }
+    .check-pill { display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid #d9e7ec; border-radius:999px; background:#fbfdfe; font-weight:900; }
+    .save-row { display:flex; justify-content:flex-end; gap:10px; }
+    .primary { border:0; border-radius:999px; padding:12px 18px; background:var(--blue); color:#fff; font-weight:900; }
+    .secondary { border:1px solid #d5e3e8; border-radius:999px; padding:11px 16px; background:#fff; color:var(--blue); font-weight:900; }
+    .login-screen { position:fixed; inset:0; z-index:80; display:grid; place-items:center; padding:20px; background:linear-gradient(135deg,#004f68,#0d9488); }
+    .login-card { width:min(460px,100%); border-radius:26px; background:#fff; padding:26px; box-shadow:0 24px 70px rgba(0,0,0,.24); }
+    .login-card h2 { margin:0; color:var(--blue); font:900 28px/1.1 var(--sans); }
+    .login-card p { margin:8px 0 18px; color:var(--mid); font-size:13px; line-height:1.6; }
+    .tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:16px; padding:5px; border-radius:999px; background:#eef6f8; }
+    .tab { border:0; border-radius:999px; padding:9px 8px; background:transparent; color:#6c8290; font-size:12px; font-weight:900; }
+    .tab.active { background:#fff; color:var(--blue); box-shadow:0 3px 10px rgba(16,42,56,.08); }
+    .login-form { display:grid; gap:10px; }
+    .login-form input { width:100%; border:1px solid #d9e7ec; border-radius:14px; padding:13px; }
+    .login-error { min-height:18px; color:var(--red); font-size:12px; font-weight:800; }
+    .admin-panel { display:none; margin-top:16px; border-top:1px solid #e8f1f4; padding-top:16px; }
+    body.is-admin .admin-panel { display:block; }
+    .account-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; }
+    .account-card { border:1px solid #e2edf1; border-radius:16px; padding:12px; background:#fbfdfe; }
+    .account-card strong { display:block; font-size:13px; }
+    .account-card span { display:block; color:var(--mid); font-size:11px; margin-top:3px; }
+    .account-actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+    .account-actions button { border:1px solid #d5e3e8; border-radius:999px; background:#fff; color:var(--blue); padding:7px 10px; font-size:11px; font-weight:900; }
+    @media (max-width:1100px) {
+      .board { grid-template-columns:repeat(2,minmax(240px,1fr)); }
+      .team-grid { grid-template-columns:repeat(2,minmax(180px,1fr)); }
+      .hero { grid-template-columns:1fr; }
+      .stats { justify-content:flex-start; }
+    }
+    @media (max-width:640px) {
+      .topbar { align-items:flex-start; flex-direction:column; }
+      .toolbar { justify-content:flex-start; }
+      .board,.team-grid,.field-grid { grid-template-columns:1fr; }
+      .hero { padding:18px; border-radius:18px; }
+      .modal-head,.modal-body { padding-left:16px; padding-right:16px; }
+      .tabs { grid-template-columns:1fr; border-radius:18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <h2>Camp Progress</h2>
+      <p>카운슬러는 본인 이메일로 가입/로그인하고, 담당 캠퍼의 상담 정보를 기록할 수 있습니다.</p>
+      <div class="tabs">
+        <button class="tab active" data-mode="login" type="button">로그인</button>
+        <button class="tab" data-mode="signup" type="button">카운슬러 가입</button>
+        <button class="tab" data-mode="adminLogin" type="button">관리자</button>
+      </div>
+      <div class="login-form">
+        <input id="authName" placeholder="이름 (가입 시)" autocomplete="name" hidden>
+        <input id="authEmail" type="email" placeholder="email@example.com" autocomplete="email">
+        <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+        <div class="login-error" id="loginError"></div>
+        <button class="primary" id="authBtn" type="button">로그인</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">W</div>
+      <div>
+        <h1>WOLKO Camp Progress</h1>
+        <p id="sessionText">카운슬러 진행 관리</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <select id="campSelect" aria-label="캠프 선택"></select>
+      <button id="refreshBtn" type="button">새로고침</button>
+      <button id="logoutBtn" type="button">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <h2 id="campTitle">캠프 진행 페이지</h2>
+        <p>담당 카운슬러별 캠퍼를 확인하고, 각 캠퍼의 팀 색상·구원·헌신·Testimony·상담 내역을 기록합니다.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><strong id="statCampers">0</strong><span>캠퍼</span></div>
+        <div class="stat"><strong id="statSaved">0</strong><span>구원</span></div>
+        <div class="stat"><strong id="statDedicated">0</strong><span>헌신</span></div>
+      </div>
+    </section>
+
+    <section class="board" id="counselorBoard"></section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>팀 운영 현황</h3>
+        <span id="teamSummary" style="color:var(--mid);font-size:12px;font-weight:800;"></span>
+      </div>
+      <div class="team-grid" id="teamGrid"></div>
+    </section>
+
+    <section class="section admin-panel">
+      <div class="section-head">
+        <h3>카운슬러 접속 권한 관리</h3>
+        <button class="secondary" id="loadAccountsBtn" type="button">계정 새로고침</button>
+      </div>
+      <div style="padding:16px;display:grid;gap:12px;">
+        <div class="field-grid">
+          <div class="field"><label>이메일</label><input id="accountEmail" placeholder="counselor@example.com"></div>
+          <div class="field"><label>이름</label><input id="accountName" placeholder="카운슬러 이름"></div>
+          <div class="field"><label>새 비밀번호</label><input id="accountPassword" type="password" placeholder="6자 이상"></div>
+          <div class="field" style="align-self:end;"><button class="primary" id="accountSaveBtn" type="button">계정 생성/비밀번호 재설정</button></div>
+        </div>
+        <div class="account-grid" id="accountGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="camperModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">
+          <strong id="modalName">캠퍼</strong>
+          <span id="modalMeta"></span>
+        </div>
+        <button class="icon-btn" id="modalClose" type="button">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-grid">
+          <div class="field">
+            <label>팀 색상</label>
+            <select id="modalTeamColor">
+              <option value="">미지정</option>
+              <option value="red">레드팀</option>
+              <option value="blue">블루팀</option>
+              <option value="yellow">옐로우팀</option>
+              <option value="green">그린팀</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>영적 현황</label>
+            <div class="checks">
+              <label class="check-pill"><input id="modalSaved" type="checkbox"> 구원</label>
+              <label class="check-pill"><input id="modalDedicated" type="checkbox"> 헌신</label>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Testimony</label>
+          <textarea id="modalTestimony" placeholder="캠퍼의 간증, 복음 반응, 나눔 내용을 기록하세요."></textarea>
+        </div>
+        <div class="field">
+          <label>상담 내역</label>
+          <textarea id="modalMemo" placeholder="상담 내용, 기도제목, 후속 케어가 필요한 내용을 기록하세요."></textarea>
+        </div>
+        <div class="save-row">
+          <button class="secondary" id="modalCancel" type="button">닫기</button>
+          <button class="primary" id="modalSave" type="button">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CAMPS = [
+      { id:'2026-inland-english-junior', title:'2026 여름 주니어 영어 캠프' },
+      { id:'2026-inland-union', title:'2026 교회 연합캠프' },
+      { id:'2026-jeju-english', title:'2026 제주 영어 캠프' },
+      { id:'2026-jeju-momentum-1', title:'2026 제주 모멘텀 1차' },
+      { id:'2026-jeju-momentum-2', title:'2026 제주 모멘텀 2차' },
+      { id:'2026-test-camp', title:'테스트 캠프' },
+    ];
+    const BASE_TEAMS = ['프로그램','티칭','상담자','테크','찬양팀'];
+    const BASE_MEMBERS = [
+      { name:'앤더슨 제이슨 · 앤더슨 찬주', teams:['프로그램','상담자'] },
+      { name:'민경찬 · 김유진', teams:['프로그램'] },
+      { name:'송승현', teams:['프로그램','상담자'] },
+      { name:'김환규 · 김씬띠아', teams:['티칭','테크'] },
+      { name:'백남규 · 조안나', teams:['상담자','티칭'] },
+      { name:'채병국', teams:['프로그램','상담자'] },
+      { name:'잭 프래지어', teams:['티칭','상담자'] },
+      { name:'몰리 그램', teams:['상담자','프로그램'] },
+      { name:'버니 카브레라', teams:['찬양팀','상담자'] },
+      { name:'정지온', teams:['상담자'] },
+      { name:'브링클리 모슬리', teams:['테크'] },
+      { name:'웹스터 그레이스', teams:['테크'] },
+      { name:'손진영', teams:['프로그램'] },
+    ];
+    const TOKEN_KEY = 'wolko-camp-progress-token';
+    const ROLE_KEY = 'wolko-camp-progress-role';
+    let authMode = 'login';
+    let token = sessionStorage.getItem(TOKEN_KEY) || '';
+    let role = sessionStorage.getItem(ROLE_KEY) || '';
+    let state = { counselors:[], campers:[], counselorRegIds:[], teamOverview:null, canEditAll:false };
+    let selectedCamper = null;
+
+    const $ = id => document.getElementById(id);
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const authHeaders = () => ({ 'Content-Type':'application/json', Authorization:`Bearer ${token}` });
+
+    function currentCampId() { return $('campSelect').value || CAMPS[0].id; }
+    function currentCampTitle() { return CAMPS.find(camp => camp.id === currentCampId())?.title || currentCampId(); }
+
+    function setup() {
+      $('campSelect').innerHTML = CAMPS.map(camp => `<option value="${camp.id}">${camp.title}</option>`).join('');
+      $('campSelect').addEventListener('change', loadData);
+      $('refreshBtn').addEventListener('click', loadData);
+      $('logoutBtn').addEventListener('click', logout);
+      $('modalClose').addEventListener('click', closeModal);
+      $('modalCancel').addEventListener('click', closeModal);
+      $('modalSave').addEventListener('click', saveCamper);
+      $('authBtn').addEventListener('click', submitAuth);
+      $('loadAccountsBtn').addEventListener('click', loadAccounts);
+      $('accountSaveBtn').addEventListener('click', upsertAccount);
+      document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => setAuthMode(btn.dataset.mode)));
+      document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
+      if (token) unlock();
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      document.querySelectorAll('.tab').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+      $('authEmail').hidden = mode === 'adminLogin';
+      $('authName').hidden = mode !== 'signup';
+      $('authPassword').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
+      $('authBtn').textContent = mode === 'signup' ? '가입하기' : mode === 'adminLogin' ? '관리자 로그인' : '로그인';
+      $('loginError').textContent = '';
+    }
+
+    async function submitAuth() {
+      $('loginError').textContent = '';
+      $('authBtn').disabled = true;
+      try {
+        const res = await fetch('/api/camp-progress/auth', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body:JSON.stringify({
+            mode:authMode,
+            email:$('authEmail').value.trim(),
+            name:$('authName').value.trim(),
+            password:$('authPassword').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '로그인 실패');
+        token = data.token;
+        role = data.role;
+        sessionStorage.setItem(TOKEN_KEY, token);
+        sessionStorage.setItem(ROLE_KEY, role);
+        unlock();
+      } catch (error) {
+        $('loginError').textContent = error.message;
+      } finally {
+        $('authBtn').disabled = false;
+      }
+    }
+
+    function unlock() {
+      $('loginScreen').style.display = 'none';
+      document.body.classList.toggle('is-admin', role === 'admin');
+      $('sessionText').textContent = role === 'admin' ? '관리자 모드' : '카운슬러 모드';
+      loadData();
+      if (role === 'admin') loadAccounts();
+    }
+
+    function logout() {
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(ROLE_KEY);
+      token = '';
+      role = '';
+      document.body.classList.remove('is-admin');
+      $('loginScreen').style.display = 'grid';
+    }
+
+    async function loadData() {
+      if (!token) return;
+      $('campTitle').textContent = currentCampTitle();
+      try {
+        const res = await fetch(`/api/camp-progress/data?campId=${encodeURIComponent(currentCampId())}`, { headers:authHeaders() });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '데이터 로드 실패');
+        state = data;
+        renderBoard();
+        renderTeams();
+      } catch (error) {
+        alert(error.message);
+        if (/로그인|authorization|401/i.test(error.message)) logout();
+      }
+    }
+
+    function canEditCamper(camper) {
+      return state.canEditAll || state.counselorRegIds.includes(camper.counselorRegId);
+    }
+
+    function renderBoard() {
+      const saved = state.campers.filter(camper => camper.saved).length;
+      const dedicated = state.campers.filter(camper => camper.dedicated).length;
+      $('statCampers').textContent = state.campers.length;
+      $('statSaved').textContent = saved;
+      $('statDedicated').textContent = dedicated;
+      const groups = [
+        ...state.counselors.map(counselor => ({
+          id:counselor.regId,
+          name:counselor.name,
+          email:counselor.email,
+          campers:state.campers.filter(camper => camper.counselorRegId === counselor.regId),
+        })),
+        {
+          id:'',
+          name:'미배정',
+          email:'담당 카운슬러가 지정되지 않은 캠퍼',
+          campers:state.campers.filter(camper => !camper.counselorRegId),
+        },
+      ];
+      $('counselorBoard').innerHTML = groups.map(group => `
+        <article class="counselor-card">
+          <div class="counselor-head">
+            <strong>${esc(group.name)}</strong>
+            <span>${esc(group.email || '')} · ${group.campers.length}명</span>
+          </div>
+          <div class="camper-list">
+            ${group.campers.length ? group.campers.map(renderCamperButton).join('') : '<div class="empty">등록된 캠퍼가 없습니다.</div>'}
+          </div>
+        </article>
+      `).join('');
+      document.querySelectorAll('.camper-btn').forEach(btn => btn.addEventListener('click', () => openCamper(btn.dataset.camperId)));
+    }
+
+    function renderCamperButton(camper) {
+      const locked = canEditCamper(camper) ? '' : ' · 읽기 전용';
+      return `<button class="camper-btn" type="button" data-camper-id="${esc(camper.camperId)}">
+        <span class="team-dot ${camper.teamColor ? 'team-' + camper.teamColor : ''}"></span>
+        <span class="camper-main">
+          <strong>${esc(camper.name)}</strong>
+          <span>${esc([camper.grade, camper.church].filter(Boolean).join(' · ') || '정보 없음')}${locked}</span>
+        </span>
+        <span class="chips">
+          ${camper.saved ? '<span class="chip chip-saved">구원</span>' : ''}
+          ${camper.dedicated ? '<span class="chip chip-dedicated">헌신</span>' : ''}
+        </span>
+      </button>`;
+    }
+
+    function openCamper(camperId) {
+      selectedCamper = state.campers.find(camper => camper.camperId === camperId);
+      if (!selectedCamper) return;
+      const editable = canEditCamper(selectedCamper);
+      $('modalName').textContent = selectedCamper.name;
+      $('modalMeta').textContent = [selectedCamper.grade, selectedCamper.church, selectedCamper.phone].filter(Boolean).join(' · ');
+      $('modalTeamColor').value = selectedCamper.teamColor || '';
+      $('modalSaved').checked = !!selectedCamper.saved;
+      $('modalDedicated').checked = !!selectedCamper.dedicated;
+      $('modalTestimony').value = selectedCamper.testimony || '';
+      $('modalMemo').value = selectedCamper.counselorMemo || '';
+      ['modalTeamColor','modalSaved','modalDedicated','modalTestimony','modalMemo','modalSave'].forEach(id => $(id).disabled = !editable);
+      $('modalSave').textContent = editable ? '저장' : '읽기 전용';
+      $('camperModal').classList.add('open');
+    }
+
+    function closeModal() {
+      $('camperModal').classList.remove('open');
+      selectedCamper = null;
+    }
+
+    async function saveField(field, value) {
+      const res = await fetch('/api/camp-progress/update', {
+        method:'PUT',
+        headers:authHeaders(),
+        body:JSON.stringify({
+          campId:selectedCamper.campId,
+          regId:selectedCamper.regId,
+          participantIndex:selectedCamper.participantIndex,
+          field,
+          value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '저장 실패');
+    }
+
+    async function saveCamper() {
+      if (!selectedCamper || !canEditCamper(selectedCamper)) return;
+      $('modalSave').disabled = true;
+      $('modalSave').textContent = '저장 중...';
+      try {
+        await saveField('teamColor', $('modalTeamColor').value);
+        await saveField('saved', $('modalSaved').checked);
+        await saveField('dedicated', $('modalDedicated').checked);
+        await saveField('testimony', $('modalTestimony').value);
+        await saveField('counselorMemo', $('modalMemo').value);
+        closeModal();
+        await loadData();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        $('modalSave').disabled = false;
+        $('modalSave').textContent = '저장';
+      }
+    }
+
+    function renderTeams() {
+      const config = state.teamOverview || {};
+      const customTeams = Array.isArray(config.customTeams) ? config.customTeams : [];
+      const teams = [...BASE_TEAMS, ...customTeams];
+      const staffMembers = state.counselors.map(counselor => ({ name:counselor.name, teams:['상담자'] }));
+      const customMembers = Array.isArray(config.customMembers) ? config.customMembers.map(member => ({ name:member.name || '', teams:member.teams || [] })) : [];
+      const allMembers = [...BASE_MEMBERS, ...staffMembers, ...customMembers].filter(member => member.name);
+      $('teamSummary').textContent = `${teams.length}개 팀`;
+      $('teamGrid').innerHTML = teams.map(team => {
+        const members = allMembers.filter(member => {
+          const override = config.personTeams?.[member.name];
+          const memberTeams = Array.isArray(override) ? override : member.teams;
+          return memberTeams.includes(team) && !(config.campExclude || []).includes(member.name);
+        });
+        return `<div class="team-box">
+          <strong>${esc(team)}</strong>
+          <ul>${members.length ? members.map(member => `<li>${esc(member.name)}</li>`).join('') : '<li style="color:#8aa0ac;">미배정</li>'}</ul>
+        </div>`;
+      }).join('');
+    }
+
+    async function loadAccounts() {
+      if (role !== 'admin') return;
+      try {
+        const res = await fetch('/api/camp-progress/accounts', { headers:authHeaders() });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '계정 로드 실패');
+        const accounts = data.accounts || [];
+        const accountByEmail = new Map(accounts.map(account => [account.email, account]));
+        const staff = data.counselorStaff || [];
+        const emails = [...new Set([...staff.map(item => item.email), ...accounts.map(item => item.email)])].filter(Boolean);
+        $('accountGrid').innerHTML = emails.map(email => {
+          const account = accountByEmail.get(email);
+          const staffInfo = staff.find(item => item.email === email);
+          return `<div class="account-card">
+            <strong>${esc(staffInfo?.name || account?.name || email)}</strong>
+            <span>${esc(email)} · ${account ? (account.disabled ? '비활성' : '활성') : '계정 없음'}</span>
+            <div class="account-actions">
+              <button type="button" data-email="${esc(email)}" data-action="select">입력칸에 불러오기</button>
+              ${account ? `<button type="button" data-email="${esc(email)}" data-action="${account.disabled ? 'enable' : 'disable'}">${account.disabled ? '활성화' : '비활성화'}</button>
+              <button type="button" data-email="${esc(email)}" data-action="delete">삭제</button>` : ''}
+            </div>
+          </div>`;
+        }).join('');
+        document.querySelectorAll('.account-actions button').forEach(btn => btn.addEventListener('click', () => accountAction(btn.dataset.action, btn.dataset.email)));
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function upsertAccount() {
+      const email = $('accountEmail').value.trim();
+      const name = $('accountName').value.trim();
+      const password = $('accountPassword').value;
+      await accountAction('upsert', email, { name, password });
+      $('accountPassword').value = '';
+      await loadAccounts();
+    }
+
+    async function accountAction(action, email, extra = {}) {
+      if (!email) return alert('이메일을 입력해주세요.');
+      if (action === 'select') {
+        $('accountEmail').value = email;
+        const name = document.querySelector(`[data-email="${CSS.escape(email)}"]`)?.closest('.account-card')?.querySelector('strong')?.textContent || '';
+        $('accountName').value = name;
+        $('accountPassword').focus();
+        return;
+      }
+      if ((action === 'delete' || action === 'disable') && !confirm(`${email} 계정을 ${action === 'delete' ? '삭제' : '비활성화'}할까요?`)) return;
+      const res = await fetch('/api/camp-progress/accounts', {
+        method:'POST',
+        headers:authHeaders(),
+        body:JSON.stringify({ action, email, ...extra }),
+      });
+      const data = await res.json();
+      if (!res.ok) return alert(data.error || '계정 저장 실패');
+      await loadAccounts();
+    }
+
+    setup();
+  </script>
+</body>
+</html>
