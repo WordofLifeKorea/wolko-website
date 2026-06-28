@@ -170,6 +170,7 @@ export async function onRequestGet(context) {
         name: reg.name || '이름 없음',
         email: normalizeEmail(reg.email),
         phone: reg.phone || '',
+        teamColor: safeTeamColor(reg.teamColor),
       }));
     const counselorRegIds = counselors
       .filter(counselor => counselor.email && counselor.email === session.email)

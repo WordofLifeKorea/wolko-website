@@ -132,6 +132,15 @@ export async function onRequestPut(context) {
           : { ...(reg.participants?.[index] || {}) }
       );
       updatedReg = { ...reg, participants };
+    } else if (reg.registrationType === 'staff') {
+      // 카운슬러(스태프) 자신의 teamColor 수정은 본인 또는 admin만
+      if (field !== 'teamColor') {
+        return Response.json({ error: '스태프 레코드에는 팀 색상만 수정할 수 있습니다.' }, { status: 400, headers: CORS });
+      }
+      if (session.role !== 'admin' && normalizeEmail(reg.email) !== session.email) {
+        return Response.json({ error: '본인의 팀 색상만 수정할 수 있습니다.' }, { status: 403, headers: CORS });
+      }
+      updatedReg = { ...reg, teamColor: nextValue };
     } else {
       if (session.role !== 'admin' && !allowedCounselors.includes(reg.counselorRegId || '')) {
         return Response.json({ error: '담당 캠퍼만 수정할 수 있습니다.' }, { status: 403, headers: CORS });

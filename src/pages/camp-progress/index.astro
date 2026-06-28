@@ -114,6 +114,56 @@
     }
     .counselor-card.is-unassigned .counselor-count { background:#f4f6f8; color:var(--mid); }
 
+    /* 카운슬러 팀 색상 — 카드 상단에 강조 띠 */
+    .counselor-card.has-team-red .counselor-head { box-shadow:inset 0 4px 0 var(--team-red); }
+    .counselor-card.has-team-blue .counselor-head { box-shadow:inset 0 4px 0 var(--team-blue); }
+    .counselor-card.has-team-yellow .counselor-head { box-shadow:inset 0 4px 0 var(--team-yellow); }
+    .counselor-card.has-team-green .counselor-head { box-shadow:inset 0 4px 0 var(--team-green); }
+    .counselor-card.has-team-red .counselor-head,
+    .counselor-card.has-team-blue .counselor-head,
+    .counselor-card.has-team-yellow .counselor-head,
+    .counselor-card.has-team-green .counselor-head { padding-top:18px; }
+
+    /* 컬러 스와치 + 팝업 메뉴 */
+    .cl-color-wrap { position:relative; flex-shrink:0; }
+    .cl-color-btn {
+      width:20px; height:20px; border-radius:50%; border:2px solid #fff;
+      box-shadow:0 0 0 1.5px var(--border); background:#dde4e9; cursor:pointer; padding:0;
+      transition:transform .15s,box-shadow .15s;
+    }
+    .cl-color-btn.is-empty { background:transparent; box-shadow:0 0 0 1.5px var(--border); }
+    .cl-color-btn.is-empty::before {
+      content:""; display:block; width:14px; height:1.5px; background:var(--light); margin:7px auto 0; transform:rotate(-45deg);
+    }
+    .cl-color-btn.team-red { background:var(--team-red); }
+    .cl-color-btn.team-blue { background:var(--team-blue); }
+    .cl-color-btn.team-yellow { background:var(--team-yellow); }
+    .cl-color-btn.team-green { background:var(--team-green); }
+    .cl-color-btn:hover:not(:disabled) { transform:scale(1.1); box-shadow:0 0 0 1.5px var(--blue); }
+    .cl-color-btn:disabled { cursor:default; opacity:.7; }
+
+    .cl-color-menu {
+      position:absolute; right:0; top:calc(100% + 8px); z-index:10;
+      display:none; gap:6px; padding:8px; border-radius:12px; background:#fff;
+      border:1px solid var(--border); box-shadow:0 12px 28px rgba(0,79,104,.15);
+    }
+    .cl-color-wrap.is-open .cl-color-menu { display:flex; }
+    .cl-color-opt {
+      width:24px; height:24px; border-radius:50%; border:2px solid #fff;
+      box-shadow:0 0 0 1.5px var(--border); background:#dde4e9; cursor:pointer; padding:0;
+      transition:transform .15s,box-shadow .15s;
+    }
+    .cl-color-opt.is-empty { background:#fff; }
+    .cl-color-opt.is-empty::before {
+      content:""; display:block; width:16px; height:1.5px; background:var(--light); margin:9px auto 0; transform:rotate(-45deg);
+    }
+    .cl-color-opt.team-red { background:var(--team-red); }
+    .cl-color-opt.team-blue { background:var(--team-blue); }
+    .cl-color-opt.team-yellow { background:var(--team-yellow); }
+    .cl-color-opt.team-green { background:var(--team-green); }
+    .cl-color-opt:hover { transform:scale(1.12); }
+    .cl-color-opt.is-selected { box-shadow:0 0 0 2px var(--blue); }
+
     .camper-list { display:grid; gap:0; padding:0; min-height:90px; background:#fff; }
     .camper-btn {
       width:100%; display:grid; grid-template-columns:5px minmax(0,1fr) auto; gap:14px; align-items:center;
@@ -605,27 +655,42 @@
           campers:state.campers.filter(camper => !camper.counselorRegId),
         },
       ];
-      $('counselorBoard').innerHTML = groups.map(group => `
-        <article class="counselor-card${group.id ? '' : ' is-unassigned'}">
+      $('counselorBoard').innerHTML = groups.map(group => {
+        const counselor = state.counselors.find(c => c.regId === group.id);
+        const teamColor = counselor?.teamColor || '';
+        const canEditColor = state.canEditAll || (group.id && state.counselorRegIds.includes(group.id));
+        const colorSwatch = group.id ? renderColorSwatch(group.id, teamColor, canEditColor) : '';
+        return `<article class="counselor-card${group.id ? '' : ' is-unassigned'}${teamColor ? ' has-team-' + teamColor : ''}">
           <div class="counselor-head">
             <div class="counselor-head-info">
               <strong>${esc(group.name)}</strong>
               <span>${esc(group.email || '담당 카운슬러 미지정')}</span>
             </div>
+            ${colorSwatch}
             <span class="counselor-count">${group.campers.length}명</span>
           </div>
           <div class="camper-list">
-            ${group.campers.length ? group.campers.map(renderCamperButton).join('') : '<div class="empty">등록된 캠퍼가<br>없습니다</div>'}
+            ${group.campers.length ? group.campers.map(c => renderCamperButton(c, teamColor)).join('') : '<div class="empty">등록된 캠퍼가<br>없습니다</div>'}
           </div>
-        </article>
-      `).join('');
+        </article>`;
+      }).join('');
       document.querySelectorAll('.camper-btn').forEach(btn => btn.addEventListener('click', () => openCamper(btn.dataset.camperId)));
+      document.querySelectorAll('.cl-color-btn').forEach(btn => btn.addEventListener('click', e => {
+        e.stopPropagation();
+        toggleColorPicker(btn);
+      }));
+      document.querySelectorAll('.cl-color-opt').forEach(opt => opt.addEventListener('click', e => {
+        e.stopPropagation();
+        setCounselorColor(opt.dataset.regid, opt.dataset.color);
+      }));
+      document.addEventListener('click', closeAllColorPickers, { once: true });
     }
 
-    function renderCamperButton(camper) {
+    function renderCamperButton(camper, counselorColor = '') {
       const locked = canEditCamper(camper) ? '' : ' · 읽기 전용';
+      const effectiveColor = camper.teamColor || counselorColor;
       return `<button class="camper-btn" type="button" data-camper-id="${esc(camper.camperId)}">
-        <span class="team-dot ${camper.teamColor ? 'team-' + camper.teamColor : ''}"></span>
+        <span class="team-dot ${effectiveColor ? 'team-' + effectiveColor : ''}"></span>
         <span class="camper-main">
           <strong>${esc(camper.name)}</strong>
           <span>${esc([camper.grade, camper.church].filter(Boolean).join(' · ') || '정보 없음')}${locked}</span>
@@ -635,6 +700,62 @@
           ${camper.dedicated ? '<span class="chip chip-dedicated">헌신</span>' : ''}
         </span>
       </button>`;
+    }
+
+    function renderColorSwatch(regId, color, editable) {
+      const colors = [
+        { value:'', label:'미지정' },
+        { value:'red', label:'레드' },
+        { value:'blue', label:'블루' },
+        { value:'yellow', label:'옐로우' },
+        { value:'green', label:'그린' },
+      ];
+      return `<span class="cl-color-wrap">
+        <button type="button" class="cl-color-btn ${color ? 'team-' + color : 'is-empty'}" data-regid="${esc(regId)}" ${editable ? '' : 'disabled'} title="팀 색상 ${color || '미지정'}"></button>
+        ${editable ? `<span class="cl-color-menu">
+          ${colors.map(c => `<button type="button" class="cl-color-opt ${c.value ? 'team-' + c.value : 'is-empty'}${c.value === color ? ' is-selected' : ''}" data-regid="${esc(regId)}" data-color="${c.value}" title="${c.label}"></button>`).join('')}
+        </span>` : ''}
+      </span>`;
+    }
+
+    function toggleColorPicker(btn) {
+      const wrap = btn.closest('.cl-color-wrap');
+      const isOpen = wrap.classList.contains('is-open');
+      closeAllColorPickers();
+      if (!isOpen) {
+        wrap.classList.add('is-open');
+        setTimeout(() => document.addEventListener('click', closeAllColorPickers, { once: true }), 0);
+      }
+    }
+    function closeAllColorPickers() {
+      document.querySelectorAll('.cl-color-wrap.is-open').forEach(el => el.classList.remove('is-open'));
+    }
+
+    async function setCounselorColor(regId, color) {
+      closeAllColorPickers();
+      const counselor = state.counselors.find(c => c.regId === regId);
+      if (!counselor) return;
+      const prevColor = counselor.teamColor;
+      counselor.teamColor = color;
+      renderBoard();
+      try {
+        const res = await fetch('/api/camp-progress/update', {
+          method:'PUT',
+          headers:authHeaders(),
+          body:JSON.stringify({
+            campId:counselor.campId,
+            regId,
+            field:'teamColor',
+            value:color,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || '저장 실패');
+      } catch (error) {
+        counselor.teamColor = prevColor;
+        renderBoard();
+        alert('팀 색상 저장 실패: ' + error.message);
+      }
     }
 
     function openCamper(camperId) {
