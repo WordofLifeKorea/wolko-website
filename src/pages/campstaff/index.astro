@@ -218,8 +218,16 @@
     .team-red { background:var(--team-red); } .team-blue { background:var(--team-blue); }
     .team-yellow { background:var(--team-yellow); } .team-green { background:var(--team-green); }
     .camper-main { min-width:0; }
-    .camper-main strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:800 13.5px/1.3 var(--body); color:var(--text); letter-spacing:-.005em; }
-    .camper-main span { display:block; margin-top:3px; color:var(--light); font-size:11px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .camper-name-line { display:flex; align-items:center; gap:6px; min-width:0; }
+    .camper-main strong { flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:800 13.5px/1.3 var(--body); color:var(--text); letter-spacing:-.005em; }
+    .camper-main > span:not(.camper-name-line) { display:block; margin-top:3px; color:var(--light); font-size:11px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .gender-badge {
+      flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;
+      padding:1px 7px; border-radius:100px;
+      font:800 10px/1.5 var(--sans); letter-spacing:.04em;
+    }
+    .gender-badge.gender-male { background:rgba(59,130,246,.12); color:#2563eb; }
+    .gender-badge.gender-female { background:rgba(236,72,153,.12); color:#db2777; }
     .chips { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; flex-shrink:0; }
     .chip { padding:3px 8px; border-radius:999px; font:800 10px/1 var(--sans); letter-spacing:.02em; white-space:nowrap; }
     .chip-saved { background:#e0f3ff; color:#1685bd; }
@@ -815,10 +823,15 @@
     function renderCamperButton(camper, counselorColor = '') {
       const locked = canEditCamper(camper) ? '' : ' · 읽기 전용';
       const effectiveColor = camper.teamColor || counselorColor;
+      const genderBadge = camper.gender === 'male'
+        ? '<span class="gender-badge gender-male">남</span>'
+        : camper.gender === 'female'
+        ? '<span class="gender-badge gender-female">여</span>'
+        : '';
       return `<button class="camper-btn" type="button" data-camper-id="${esc(camper.camperId)}">
         <span class="team-dot ${effectiveColor ? 'team-' + effectiveColor : ''}"></span>
         <span class="camper-main">
-          <strong>${esc(camper.name)}</strong>
+          <span class="camper-name-line"><strong>${esc(camper.name)}</strong>${genderBadge}</span>
           <span>${esc([camper.grade, camper.church].filter(Boolean).join(' · ') || '정보 없음')}${locked}</span>
         </span>
         <span class="chips">
