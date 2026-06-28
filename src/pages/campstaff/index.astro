@@ -6,9 +6,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WOLKO 캠프 진행</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/campstaff-manifest.json">
+  <meta name="theme-color" content="#004f68">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WOLKO STAFF">
+  <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <style is:global>
     :root {
       --blue:#004f68;
@@ -534,10 +542,28 @@
     </div>
     <div class="toolbar">
       <select id="campSelect" aria-label="캠프 선택"></select>
+      <button id="installBtn" type="button" style="display:none">
+        <svg width="11" height="11" viewBox="0 0 14 14" fill="none" style="margin-right:4px;vertical-align:-1px"><path d="M7 1v8M4 6l3 3 3-3M2 11.5h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        앱 설치
+      </button>
       <button id="refreshBtn" type="button">새로고침</button>
       <button id="logoutBtn" type="button">로그아웃</button>
     </div>
   </header>
+
+  <div id="installGuide" style="display:none;position:fixed;inset:0;background:rgba(0,15,30,.55);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeInstallGuide()">
+    <div style="background:#fff;border-radius:20px;max-width:340px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+      <div style="display:flex;justify-content:flex-end;padding:.8rem 1rem .2rem;">
+        <button onclick="closeInstallGuide()" style="background:none;border:none;font-size:1.4rem;color:#aaa;cursor:pointer;line-height:1;" aria-label="닫기">×</button>
+      </div>
+      <div style="padding:0 1.6rem 1.6rem;text-align:center;">
+        <div id="guideEmoji" style="font-size:2.2rem;margin-bottom:.8rem;">📲</div>
+        <h3 style="margin:0 0 .6rem;font-size:1.05rem;font-weight:800;color:#1a2d38;">앱처럼 사용하세요</h3>
+        <p id="guideText" style="margin:0 0 1.2rem;font-size:.88rem;line-height:1.6;color:#5a7585;">홈 화면에 추가하면 빠르게 실행할 수 있어요.</p>
+        <button onclick="closeInstallGuide()" style="width:100%;padding:.75rem;background:#004f68;color:#fff;border:none;border-radius:10px;font-size:.93rem;font-weight:700;cursor:pointer;">확인</button>
+      </div>
+    </div>
+  </div>
 
   <main class="page">
     <section class="hero">
@@ -1230,6 +1256,60 @@
     }
 
     setup();
+
+    // ── PWA 설치 ──
+    let deferredInstallPrompt = null;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    if (isIOS) {
+      $('guideEmoji').textContent = '🍎';
+      $('guideText').innerHTML = 'Safari 하단의 <strong>공유 버튼</strong>을 눌러<br>"<strong>홈 화면에 추가</strong>"를 선택하세요.';
+    }
+
+    if (!isStandalone) {
+      $('installBtn').style.display = '';
+      if (!isIOS) {
+        window.addEventListener('beforeinstallprompt', e => {
+          e.preventDefault();
+          deferredInstallPrompt = e;
+        });
+      }
+    }
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      $('installBtn').style.display = 'none';
+    });
+
+    function triggerInstall() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(({ outcome }) => {
+          if (outcome === 'accepted') {
+            deferredInstallPrompt = null;
+            $('installBtn').style.display = 'none';
+          }
+        });
+      } else {
+        $('installGuide').style.display = 'flex';
+      }
+    }
+    function closeInstallGuide() {
+      $('installGuide').style.display = 'none';
+    }
+    window.triggerInstall = triggerInstall;
+    window.closeInstallGuide = closeInstallGuide;
+    $('installBtn').addEventListener('click', triggerInstall);
+
+    // ── 서비스워커 등록 ──
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/campstaff-sw.js', { scope: '/campstaff' })
+          .catch(e => console.warn('Campstaff SW registration failed:', e));
+      });
+    }
   </script>
 </body>
 </html>
