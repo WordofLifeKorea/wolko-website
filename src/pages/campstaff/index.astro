@@ -121,9 +121,19 @@
       border-bottom:1px solid var(--line); border-right:1px solid var(--line);
     }
     .unassigned-list .camper-btn:hover { background:#fff7ed; padding-left:22px; }
-    .unassigned-list .camper-btn .team-dot {
-      background:transparent;
-      background-image:repeating-linear-gradient(180deg, var(--orange) 0 6px, transparent 6px 11px);
+    .unassigned-list .camper-btn .team-dot { display:none; }
+    .unassigned-list .camper-btn {
+      grid-template-columns:minmax(0,1fr) auto auto;
+      gap:10px;
+      background:#fffaf2;
+    }
+    .unassigned-list .camper-btn::after {
+      content:"미지정";
+      display:inline-flex; align-items:center;
+      padding:3px 9px; border-radius:100px;
+      background:#fff; border:1px solid #fcd9aa;
+      color:#b45309; font:800 10px/1 var(--sans); letter-spacing:.04em;
+      white-space:nowrap;
     }
     @media (max-width:640px) {
       .unassigned-list { grid-template-columns:1fr; }
@@ -322,13 +332,29 @@
     }
     .field input:focus,.field select:focus,.field textarea:focus { border-color:var(--blue); background:#fff; box-shadow:0 0 0 3px rgba(0,79,104,.10); }
     .field textarea { min-height:120px; resize:vertical; line-height:1.65; font-family:var(--body); }
-    .checks { display:flex; gap:8px; flex-wrap:wrap; }
+    .checks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
     .check-pill {
-      display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border:1.5px solid var(--border); border-radius:999px;
-      background:#fbfcfd; font:800 12px/1 var(--body); cursor:pointer; transition:border-color .15s,background .15s;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      padding:14px 16px; border:1.5px solid var(--border); border-radius:12px;
+      background:#fafbfc; color:var(--mid); cursor:pointer;
+      font:800 13px/1 var(--body); letter-spacing:-.005em; white-space:nowrap;
+      transition:border-color .15s,background .15s,color .15s;
     }
-    .check-pill:has(input:checked) { border-color:var(--blue); background:var(--blue-soft); color:var(--blue); }
-    .check-pill input { accent-color:var(--blue); }
+    .check-pill input { position:absolute; opacity:0; pointer-events:none; }
+    .check-pill .check-box {
+      width:18px; height:18px; border-radius:6px; border:1.5px solid var(--border);
+      background:#fff; display:inline-flex; align-items:center; justify-content:center;
+      transition:border-color .15s,background .15s;
+    }
+    .check-pill .check-box svg { width:11px; height:11px; opacity:0; transition:opacity .15s; }
+    .check-pill:has(input:checked) {
+      border-color:var(--green); background:#f0faf4; color:#0d6b32;
+    }
+    .check-pill:has(input:checked) .check-box {
+      background:var(--green); border-color:var(--green);
+    }
+    .check-pill:has(input:checked) .check-box svg { opacity:1; }
+    .check-pill:hover { border-color:#b3c5ce; background:#fff; }
     .save-row { display:flex; justify-content:flex-end; gap:10px; margin-top:4px; }
     .primary { border:0; border-radius:10px; padding:11px 22px; background:var(--blue); color:#fff; font:800 13px/1 var(--body); transition:background .15s,transform .1s; }
     .primary:hover { background:var(--blue-lt); }
@@ -546,8 +572,8 @@
           <div class="field">
             <label>영적 현황</label>
             <div class="checks">
-              <label class="check-pill"><input id="modalSaved" type="checkbox"> 구원</label>
-              <label class="check-pill"><input id="modalDedicated" type="checkbox"> 헌신</label>
+              <label class="check-pill"><input id="modalSaved" type="checkbox"><span class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9 10,3"/></svg></span>구원</label>
+              <label class="check-pill"><input id="modalDedicated" type="checkbox"><span class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9 10,3"/></svg></span>헌신</label>
             </div>
           </div>
         </div>
