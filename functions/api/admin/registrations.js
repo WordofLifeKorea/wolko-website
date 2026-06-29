@@ -20,7 +20,7 @@ const CORS = {
 
 const CAMP_BASE_FEE = 499000;
 const SCHOLARSHIP_DISCOUNTS = {
-  wolbi_syme: { amount: 50000, label: '월비 또는 에쌈 졸업자 및 프로그램 참여자' },
+  wolbi_syme: { amount: 50000, label: '월비 또는 SYME 졸업자 및 프로그램 참여자의 자녀 또는 추천·소개' },
   sibling: { amount: 50000, label: '형제·자매 또는 친구 동반 참여' },
   excellent_camper: { amount: 150000, label: '지난 캠프 우수 캠퍼' },
 };
@@ -132,7 +132,7 @@ function scholarshipDiscountDetailText(details) {
   const parts = [];
   if (details?.wolbi_syme) {
     const info = [details.wolbi_syme.participantName, details.wolbi_syme.year].filter(Boolean).join(' · ');
-    if (info) parts.push(`월비/에쌈 졸업자 및 참여자: ${info}`);
+    if (info) parts.push(`월비/SYME 졸업자 및 참여자: ${info}`);
   }
   if (details?.sibling) {
     const campLabel = SIBLING_CAMP_LABELS[details.sibling.camp] || details.sibling.camp;
