@@ -43,7 +43,7 @@ Input: ${JSON.stringify(texts)}`;
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2048,
+        max_tokens: 4096,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -55,12 +55,28 @@ Input: ${JSON.stringify(texts)}`;
     }
 
     const data = await res.json();
-    const raw = data.content?.[0]?.text?.trim() || '[]';
-    const translations = JSON.parse(raw);
+    let raw = data.content?.[0]?.text?.trim() || '[]';
 
-    if (!Array.isArray(translations) || translations.length !== texts.length) {
-      throw new Error('Unexpected translation response shape');
+    // Strip markdown code fences if Claude wraps the JSON
+    const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (fenced) raw = fenced[1].trim();
+
+    let translations;
+    try {
+      translations = JSON.parse(raw);
+    } catch (parseErr) {
+      console.error('JSON parse failed. Raw response:', raw);
+      throw new Error(`JSON parse error: ${parseErr.message}`);
     }
+
+    if (!Array.isArray(translations)) {
+      console.error('Response is not an array:', translations);
+      throw new Error('Response is not an array');
+    }
+
+    // Pad or trim to match input length
+    while (translations.length < texts.length) translations.push(texts[translations.length]);
+    translations = translations.slice(0, texts.length);
 
     return Response.json({ translations }, { headers: CORS });
   } catch (err) {

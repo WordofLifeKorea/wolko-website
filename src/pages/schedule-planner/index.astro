@@ -1357,20 +1357,32 @@ const pageTitle = 'WOLKO Schedule Planner';
           if (needsTranslation(ev[f])) targets.push({ ei, f, text: ev[f] });
         });
       });
-      if (!targets.length) return;
+      if (!targets.length) {
+        console.log('[Translate] 번역할 영어 텍스트 없음');
+        return;
+      }
+      console.log(`[Translate] ${targets.length}개 항목 번역 요청`);
       try {
         const res = await fetch('/api/schedule-planner/translate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ texts: targets.map(t => t.text) }),
         });
-        if (!res.ok) return;
-        const { translations } = await res.json();
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => '');
+          console.error('[Translate] API 오류', res.status, errBody);
+          alert(`번역 실패 (${res.status})\n${errBody.slice(0, 200)}`);
+          return;
+        }
+        const { translations, error } = await res.json();
+        if (error) { console.error('[Translate] 서버 오류:', error); alert(`번역 오류: ${error}`); return; }
+        console.log('[Translate] 완료:', translations);
         translations.forEach((translated, i) => {
           if (translated) imported.events[targets[i].ei][targets[i].f] = translated;
         });
       } catch (err) {
-        console.warn('Translation failed:', err);
+        console.error('[Translate] 네트워크 오류:', err);
+        alert(`번역 오류: ${err.message}`);
       }
     }
 
@@ -1997,16 +2009,26 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.importHistoryDeleteBtn.style.display = 'none';
     }
 
-    function applyHistoryEntry(id) {
+    async function applyHistoryEntry(id) {
       const entry = loadImportHistory().find(e => e.id === id);
       resetHistorySelection();
       if (!entry) return;
       if ((plan.events.length || plan.people.length) && !confirm(tr('importHistoryConfirm'))) return;
       const s = entry.snapshot;
-      plan.events = s.events || [];
-      plan.people = s.people || [];
-      if (s.vans?.length) plan.vans = s.vans;
-      plan.transportPlans = s.transportPlans || [];
+      const imported = {
+        events: (s.events || []).map(e => ({ ...e })),
+        people: s.people || [],
+        vans: s.vans || [],
+        transportPlans: s.transportPlans || [],
+      };
+      if (currentLang === 'ko') {
+        setState(tr('translating'));
+        await translateImported(imported);
+      }
+      plan.events = imported.events;
+      plan.people = imported.people;
+      if (imported.vans.length) plan.vans = imported.vans;
+      plan.transportPlans = imported.transportPlans;
       currentView = plan.events.length ? 'day' : (plan.people.length ? 'people' : 'vans');
       markDirty();
     }
