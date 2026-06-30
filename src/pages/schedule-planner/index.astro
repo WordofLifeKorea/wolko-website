@@ -1378,7 +1378,13 @@ const pageTitle = 'WOLKO Schedule Planner';
         if (error) { console.error('[Translate] 서버 오류:', error); alert(`번역 오류: ${error}`); return; }
         console.log('[Translate] 완료:', translations);
         translations.forEach((translated, i) => {
-          if (translated) imported.events[targets[i].ei][targets[i].f] = translated;
+          if (translated) {
+            const { ei, f } = targets[i];
+            const ev = imported.events[ei];
+            if (!ev._en) ev._en = {};
+            ev._en[f] = ev[f];   // 원본 영어 보관
+            ev[f] = translated;  // 한국어를 메인 필드에 저장
+          }
         });
       } catch (err) {
         console.error('[Translate] 네트워크 오류:', err);
@@ -1465,13 +1471,23 @@ const pageTitle = 'WOLKO Schedule Planner';
       render();
     }
 
+    function evText(ev, field) {
+      if (currentLang === 'en' && ev._en?.[field]) return ev._en[field];
+      return ev[field] || '';
+    }
+
     function eventMeta(event) {
       const bits = [];
-      if (event.staff) bits.push(`${tr('staff')}: ${event.staff}`);
+      const staff = evText(event, 'staff');
+      const from = evText(event, 'from');
+      const to = evText(event, 'to');
+      const passengers = evText(event, 'passengers');
+      const notes = evText(event, 'notes');
+      if (staff) bits.push(`${tr('staff')}: ${staff}`);
       if (event.vanId) bits.push(`${tr('vehicle')}: ${vanName(event.vanId)}`);
-      if (event.from || event.to) bits.push(`${event.from || tr('fromUnknown')} → ${event.to || tr('toUnknown')}`);
-      if (event.passengers) bits.push(`${tr('people')}: ${event.passengers}`);
-      if (event.notes) bits.push(event.notes);
+      if (from || to) bits.push(`${from || tr('fromUnknown')} → ${to || tr('toUnknown')}`);
+      if (passengers) bits.push(`${tr('people')}: ${passengers}`);
+      if (notes) bits.push(notes);
       return bits.map(escapeHtml).join(' · ');
     }
 
@@ -1480,7 +1496,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         <article class="schedule-card ${escapeHtml(event.type)}">
           <div class="time">${escapeHtml(eventTime(event))}</div>
           <div>
-            <div class="item-title">${escapeHtml(event.title)} <span class="meta">· ${escapeHtml(typeLabel(event.type))}</span></div>
+            <div class="item-title">${escapeHtml(evText(event, 'title'))} <span class="meta">· ${escapeHtml(typeLabel(event.type))}</span></div>
             <div class="meta">${eventMeta(event) || tr('noDetails')}</div>
           </div>
           <div class="mini-actions">
@@ -1519,7 +1535,7 @@ const pageTitle = 'WOLKO Schedule Planner';
                   <div class="tl-time">${escapeHtml(eventTime(event))}</div>
                   <div class="tl-card ${escapeHtml(event.type || '')}" data-edit="${escapeHtml(event.id)}">
                     <div>
-                      <div class="tl-card-title">${escapeHtml(event.title)}<span class="tl-type-badge">${escapeHtml(typeLabel(event.type))}</span></div>
+                      <div class="tl-card-title">${escapeHtml(evText(event, 'title'))}<span class="tl-type-badge">${escapeHtml(typeLabel(event.type))}</span></div>
                       ${eventMeta(event) ? `<div class="tl-card-meta">${eventMeta(event)}</div>` : ''}
                     </div>
                     <button type="button" class="tl-edit-btn" data-edit="${escapeHtml(event.id)}">${escapeHtml(tr('edit'))}</button>
@@ -1575,8 +1591,8 @@ const pageTitle = 'WOLKO Schedule Planner';
                   ${items.length ? items.map(event => `
                     <div class="week-item ${escapeHtml(event.type || '')}" data-edit="${escapeHtml(event.id)}">
                       <div class="week-item-time">${escapeHtml(eventTime(event))}</div>
-                      <div class="week-item-title">${escapeHtml(event.title)}</div>
-                      ${event.staff || event.vanId ? `<div class="week-item-tag">${escapeHtml(event.staff || vanName(event.vanId))}</div>` : ''}
+                      <div class="week-item-title">${escapeHtml(evText(event, 'title'))}</div>
+                      ${event.staff || event.vanId ? `<div class="week-item-tag">${escapeHtml(evText(event, 'staff') || vanName(event.vanId))}</div>` : ''}
                     </div>
                   `).join('') : `<div class="week-empty">${escapeHtml(tr('noWeekEvents'))}</div>`}
                 </div>
@@ -1678,11 +1694,11 @@ const pageTitle = 'WOLKO Schedule Planner';
         <tr>
           <td>${escapeHtml(event.date)}</td>
           <td>${escapeHtml(eventTime(event))}</td>
-          <td><strong>${escapeHtml(event.title)}</strong><div class="meta">${escapeHtml(typeLabel(event.type))}</div></td>
-          <td>${escapeHtml(event.staff)}</td>
+          <td><strong>${escapeHtml(evText(event, 'title'))}</strong><div class="meta">${escapeHtml(typeLabel(event.type))}</div></td>
+          <td>${escapeHtml(evText(event, 'staff'))}</td>
           <td>${escapeHtml(vanName(event.vanId))}</td>
-          <td>${escapeHtml(event.from)} → ${escapeHtml(event.to)}</td>
-          <td>${escapeHtml(event.passengers)}</td>
+          <td>${escapeHtml(evText(event, 'from'))} → ${escapeHtml(evText(event, 'to'))}</td>
+          <td>${escapeHtml(evText(event, 'passengers'))}</td>
           <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">${escapeHtml(tr('edit'))}</button></td>
         </tr>
       `).join('');
@@ -1866,18 +1882,18 @@ const pageTitle = 'WOLKO Schedule Planner';
       const event = plan.events.find(item => item.id === id);
       if (!event) return;
       editingId = event.id;
-      els.eventTitle.value = event.title || '';
+      els.eventTitle.value = evText(event, 'title');
       els.eventType.value = event.type || 'program';
       els.eventDate.value = event.date || els.selectedDate.value;
       els.eventTimeText.value = eventTime(event);
       els.eventStart.value = event.start || '09:00';
       els.eventEnd.value = event.end || '10:00';
-      els.eventStaff.value = event.staff || '';
+      els.eventStaff.value = evText(event, 'staff');
       els.eventVan.dataset.value = event.vanId || '';
-      els.eventFrom.value = event.from || '';
-      els.eventTo.value = event.to || '';
-      els.eventPassengers.value = event.passengers || '';
-      els.eventNotes.value = event.notes || '';
+      els.eventFrom.value = evText(event, 'from');
+      els.eventTo.value = evText(event, 'to');
+      els.eventPassengers.value = evText(event, 'passengers');
+      els.eventNotes.value = evText(event, 'notes');
       els.addEventBtn.textContent = tr('updateSchedule');
       els.deleteEventBtn.hidden = false;
       renderVansSelect();
@@ -1952,8 +1968,8 @@ const pageTitle = 'WOLKO Schedule Planner';
     function exportCsv() {
       const headers = ['date','time','type','schedule','staff','van','from','to','passengers','details'];
       const rows = sortedEvents().map(event => [
-        event.date, eventTime(event), typeLabel(event.type), event.title, event.staff,
-        vanName(event.vanId), event.from, event.to, event.passengers, event.notes,
+        event.date, eventTime(event), typeLabel(event.type), evText(event, 'title'), evText(event, 'staff'),
+        vanName(event.vanId), evText(event, 'from'), evText(event, 'to'), evText(event, 'passengers'), evText(event, 'notes'),
       ]);
       const csv = [headers, ...rows].map(row => row.map(value => `"${String(value || '').replace(/"/g, '""')}"`).join(',')).join('\n');
       const blob = new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8' });
