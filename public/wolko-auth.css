@@ -1,0 +1,282 @@
+/* Shared WOLKO login surface */
+.login-screen,
+.login-wrap {
+  --auth-blue: var(--blue, #004f68);
+  --auth-blue-lt: var(--blue-lt, #0077a3);
+  --auth-text: var(--text, #1a2d38);
+  --auth-muted: var(--mid, var(--muted, #5a7585));
+  --auth-light: var(--light, #8fa8b5);
+  --auth-border: var(--border, #e4eaee);
+  --auth-red: var(--red, #c42a36);
+  --auth-body: var(--body, var(--f-body, 'Noto Sans KR', sans-serif));
+  --auth-sans: var(--sans, var(--f-sans, 'Montserrat', sans-serif));
+}
+
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.14), transparent 30%),
+    linear-gradient(145deg, #003d52, #00627f);
+}
+
+.login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 76px);
+  padding: 32px 18px;
+}
+
+.login-screen .login-card,
+.login-wrap .login-card {
+  width: min(420px, 100%);
+  max-width: 420px;
+  border: 1px solid rgba(255,255,255,.42);
+  border-radius: 24px;
+  background: #fff;
+  padding: 42px 36px 34px;
+  text-align: center;
+  box-shadow: 0 26px 72px rgba(0, 30, 44, .26);
+}
+
+.login-screen .login-logo,
+.login-wrap .login-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 0 24px;
+  text-align: left;
+}
+
+.login-screen .login-logo img,
+.login-wrap .login-logo img {
+  width: 42px !important;
+  height: 42px !important;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.login-screen .login-logo-text,
+.login-wrap .login-logo-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.login-screen .login-logo-name,
+.login-wrap .login-logo-name,
+.login-wrap .login-logo h1 {
+  display: block;
+  margin: 0;
+  color: var(--auth-blue);
+  font: 800 16px/1.05 var(--auth-sans);
+  letter-spacing: .055em;
+}
+
+.login-screen .login-logo-sub,
+.login-wrap .login-logo-sub,
+.login-wrap .login-logo p {
+  display: block;
+  margin: 0;
+  color: var(--auth-light);
+  font: 700 10.5px/1.15 var(--auth-sans);
+  letter-spacing: .075em;
+}
+
+.login-screen .login-title,
+.login-wrap .login-title {
+  margin: 0 0 8px;
+  color: var(--auth-text);
+  font: 800 18px/1.3 var(--auth-body);
+  letter-spacing: -.01em;
+  text-transform: none;
+}
+
+.login-screen .login-description,
+.login-wrap .login-description {
+  margin: 0 0 22px;
+  color: var(--auth-light);
+  font: 600 12.5px/1.6 var(--auth-body);
+}
+
+.login-screen .login-input-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.login-screen .login-input-wrap:has(.password-input-tooltip) {
+  margin-bottom: 42px;
+}
+
+.login-screen .login-input,
+.login-screen .login-form input,
+.login-screen .login-form select,
+.login-wrap .login-card input {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--auth-border);
+  border-radius: 12px;
+  background: #fafcfd;
+  color: var(--auth-text);
+  padding: 0 15px;
+  font: 600 14px/1.3 var(--auth-body);
+  outline: none;
+  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.login-screen .login-input {
+  padding-right: 46px;
+}
+
+.login-screen .login-form select {
+  padding-right: 38px;
+}
+
+.login-wrap .login-card label {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--auth-muted);
+  text-align: left;
+  font: 800 12px/1.2 var(--auth-body);
+}
+
+.login-wrap .login-card input {
+  margin: 0 0 12px;
+}
+
+.login-screen .login-input:focus,
+.login-screen .login-form input:focus,
+.login-screen .login-form select:focus,
+.login-wrap .login-card input:focus {
+  border-color: var(--auth-blue);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0,79,104,.10);
+}
+
+.login-screen .login-error,
+.login-wrap .login-err {
+  min-height: 20px;
+  margin: 10px 0 14px;
+  color: var(--auth-red);
+  text-align: left;
+  font: 800 12px/1.4 var(--auth-body);
+}
+
+.login-wrap .login-err {
+  text-align: center;
+}
+
+.login-screen .login-btn,
+.login-screen .login-signup,
+.login-wrap .btn-primary {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 12px;
+  font: 800 14px/1 var(--auth-body);
+  letter-spacing: .02em;
+}
+
+.login-screen .login-btn,
+.login-wrap .btn-primary {
+  border: 0;
+  background: var(--auth-blue);
+  color: #fff;
+  transition: background .18s ease, transform .12s ease, opacity .18s ease;
+}
+
+.login-screen .login-btn:hover,
+.login-wrap .btn-primary:hover {
+  background: var(--auth-blue-lt);
+}
+
+.login-screen .login-btn:active,
+.login-wrap .btn-primary:active {
+  transform: translateY(1px);
+}
+
+.login-screen .login-btn:disabled,
+.login-wrap .btn-primary:disabled {
+  opacity: .62;
+  cursor: not-allowed;
+}
+
+.login-screen .login-signup {
+  margin-top: 10px;
+  border: 1.5px dashed var(--auth-border);
+  background: #fff;
+  color: var(--auth-muted);
+}
+
+.login-screen .login-signup:hover {
+  border-color: var(--auth-blue);
+  background: #f7fbfd;
+  color: var(--auth-blue);
+}
+
+.login-screen .tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0 0 16px;
+  padding: 5px;
+  border: 1px solid var(--auth-border);
+  border-radius: 14px;
+  background: #f3f7f9;
+}
+
+.login-screen .tabs .tab {
+  min-height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--auth-muted);
+  font: 800 11px/1 var(--auth-sans);
+  letter-spacing: .045em;
+}
+
+.login-screen .tabs .tab.active {
+  background: #fff;
+  color: var(--auth-blue);
+  box-shadow: 0 5px 14px rgba(16,42,56,.08);
+}
+
+.login-screen .login-roster-hint {
+  color: var(--auth-muted);
+  font: 700 11.5px/1.5 var(--auth-body);
+}
+
+.login-wrap .signup-toggle {
+  margin-top: 16px;
+  color: var(--auth-light);
+  text-align: center;
+  font: 700 12.5px/1.5 var(--auth-body);
+}
+
+.login-wrap .signup-toggle a {
+  color: var(--auth-blue);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .login-screen,
+  .login-wrap {
+    padding: 18px;
+  }
+
+  .login-screen .login-card,
+  .login-wrap .login-card {
+    border-radius: 20px;
+    padding: 34px 24px 28px;
+  }
+
+  .login-screen .login-title,
+  .login-wrap .login-title {
+    font-size: 17px;
+  }
+}
