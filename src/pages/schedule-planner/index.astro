@@ -179,7 +179,10 @@ const pageTitle = 'WOLKO Schedule Planner';
     .schedule-card.meal { border-left-color:var(--green); }
     .schedule-card.prep { border-left-color:#6366f1; }
     .schedule-card.free { border-left-color:#94a3b8; }
-    .time { color:var(--blue); font:700 13px/1.35 var(--sans); }
+    .time { color:var(--blue); font:700 13px/1.35 var(--sans); display:flex; align-items:center; gap:5px; }
+    .ampm-badge { font:600 9px/1 var(--sans); padding:2px 4px; border-radius:3px; letter-spacing:.04em; }
+    .ampm-badge.am { background:#e0f4ff; color:#0077a8; }
+    .ampm-badge.pm { background:#fff3e0; color:#c86800; }
     .item-title { font-size:14px; font-weight:700; color:var(--text); letter-spacing:-.01em; }
     .meta { margin-top:5px; color:var(--muted); font-size:12px; font-weight:400; line-height:1.55; }
     .mini-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
@@ -214,7 +217,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     .week-item.meal { border-left-color:var(--green); }
     .week-item.prep { border-left-color:#6366f1; }
     .week-item.free { border-left-color:#94a3b8; }
-    .week-item-time { color:var(--muted); font:500 10px/1 var(--sans); letter-spacing:.02em; margin-bottom:5px; }
+    .week-item-time { color:var(--muted); font:500 10px/1 var(--sans); letter-spacing:.02em; margin-bottom:5px; display:flex; align-items:center; gap:4px; }
     .week-item-title { color:var(--text); font-size:12.5px; font-weight:700; line-height:1.38; word-break:keep-all; }
     .week-item-tag { display:inline-block; margin-top:5px; border-radius:4px; background:rgba(0,79,104,.07); color:var(--muted); padding:2px 6px; font-size:10px; font-weight:400; letter-spacing:.03em; }
     .week-empty {
@@ -892,6 +895,25 @@ const pageTitle = 'WOLKO Schedule Planner';
       };
     }
 
+    // 캠프 일정 오전/오후 자동 판단: 1~5시 → 오후(+12), 나머지 그대로
+    function autoAdjustHour(hhmm) {
+      if (!hhmm) return hhmm;
+      const [hStr, mStr] = String(hhmm).split(':');
+      const h = parseInt(hStr, 10);
+      if (isNaN(h)) return hhmm;
+      return `${String(h >= 1 && h <= 5 ? h + 12 : h).padStart(2, '0')}:${mStr || '00'}`;
+    }
+
+    function amPmBadge(event) {
+      const s = autoAdjustHour(event.start || normalizeClock(String(event.timeText || '').split(/[-~–]/)[0].trim()));
+      if (!s) return '';
+      const h = parseInt(s.split(':')[0], 10);
+      if (isNaN(h)) return '';
+      return h < 12
+        ? '<span class="ampm-badge am">AM</span>'
+        : '<span class="ampm-badge pm">PM</span>';
+    }
+
     function cellText(value) {
       return String(value ?? '').trim();
     }
@@ -1086,8 +1108,8 @@ const pageTitle = 'WOLKO Schedule Planner';
           type: inferType(title, details),
           date,
           timeText,
-          start: parsed.start,
-          end: parsed.end,
+          start: autoAdjustHour(parsed.start),
+          end: autoAdjustHour(parsed.end),
           staff: '',
           vanId: '',
           from: '',
@@ -1185,7 +1207,8 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function timeSortValue(event) {
-      const value = event.start || normalizeClock(event.timeText);
+      const raw = event.start || normalizeClock(event.timeText);
+      const value = autoAdjustHour(raw);
       const parts = String(value || '').split(':').map(Number);
       if (parts.length < 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) return '99:99';
       return `${String(parts[0]).padStart(2, '0')}:${String(parts[1]).padStart(2, '0')}`;
@@ -1223,7 +1246,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     function eventCard(event) {
       return `
         <article class="schedule-card ${escapeHtml(event.type)}">
-          <div class="time">${escapeHtml(eventTime(event))}</div>
+          <div class="time">${escapeHtml(eventTime(event))}${amPmBadge(event)}</div>
           <div>
             <div class="item-title">${escapeHtml(event.title)} <span class="meta">· ${escapeHtml(typeLabel(event.type))}</span></div>
             <div class="meta">${eventMeta(event) || tr('noDetails')}</div>
@@ -1296,7 +1319,7 @@ const pageTitle = 'WOLKO Schedule Planner';
                 <div class="week-items">
                   ${items.length ? items.map(event => `
                     <div class="week-item ${escapeHtml(event.type || '')}" data-edit="${escapeHtml(event.id)}">
-                      <div class="week-item-time">${escapeHtml(eventTime(event))}</div>
+                      <div class="week-item-time">${escapeHtml(eventTime(event))}${amPmBadge(event)}</div>
                       <div class="week-item-title">${escapeHtml(event.title)}</div>
                       ${event.staff || event.vanId ? `<div class="week-item-tag">${escapeHtml(event.staff || vanName(event.vanId))}</div>` : ''}
                     </div>
