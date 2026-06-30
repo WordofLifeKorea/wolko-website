@@ -113,9 +113,13 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
     .date-picker input[type="hidden"] { display:none; }
     .calendar-popover {
-      position:absolute; top:calc(100% + 10px); right:0; z-index:160; width:360px; max-width:calc(100vw - 36px);
+      position:absolute; top:calc(100% + 9px); left:0; right:auto; z-index:160; width:100%; min-width:360px; max-width:calc(100vw - 36px);
       border:1px solid #d8e5ea; border-radius:20px; background:#fff; color:var(--text);
       box-shadow:0 24px 70px rgba(0,30,44,.28); padding:14px;
+    }
+    .calendar-popover::before {
+      content:""; position:absolute; top:-7px; left:28px; width:14px; height:14px;
+      border-left:1px solid #d8e5ea; border-top:1px solid #d8e5ea; background:#fff; transform:rotate(45deg);
     }
     .calendar-popover[hidden] { display:none; }
     .calendar-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
@@ -347,7 +351,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       }
       .toolbar .date-picker-main { grid-template-columns:34px minmax(0,1fr); }
       .date-picker-value { grid-column:1 / -1; justify-content:center; min-height:36px; }
-      .calendar-popover { left:0; right:auto; width:min(360px,calc(100vw - 36px)); }
+      .calendar-popover { left:50%; right:auto; width:100%; min-width:0; max-width:100%; transform:translateX(-50%); }
+      .calendar-popover::before { left:24px; }
       .date-summary { font-size:15px; }
       .page { max-width:100%; padding:20px 12px 70px; }
       .hero { border-radius:18px; padding:18px; }
