@@ -724,6 +724,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     const TOKEN_KEY          = 'wolko_schedule_planner_token';
     const LANG_KEY           = 'wolko_schedule_planner_lang';
     const IMPORT_HISTORY_KEY = 'wolko_schedule_import_history';
+    const ANTHROPIC_KEY_LS   = 'wolko_anthropic_api_key';
     const MAX_IMPORT_HISTORY = 15;
     const COPY = {
       ko: {
@@ -1357,33 +1358,69 @@ const pageTitle = 'WOLKO Schedule Planner';
           if (needsTranslation(ev[f])) targets.push({ ei, f, text: ev[f] });
         });
       });
-      if (!targets.length) {
-        console.log('[Translate] 번역할 영어 텍스트 없음');
-        return;
-      }
+      if (!targets.length) { console.log('[Translate] 번역할 영어 텍스트 없음'); return; }
       console.log(`[Translate] ${targets.length}개 항목 번역 요청`);
+
+      let apiKey = localStorage.getItem(ANTHROPIC_KEY_LS);
+      if (!apiKey) {
+        apiKey = prompt('Anthropic API 키를 입력하세요.\n(브라우저에 저장되며 다음부터는 묻지 않습니다)');
+        if (!apiKey) { alert('번역을 건너뜁니다. (API 키 없음)'); return; }
+        localStorage.setItem(ANTHROPIC_KEY_LS, apiKey.trim());
+      }
+
+      const translationPrompt = `You are translating English camp schedule text to Korean.
+Rules:
+- Translate each item to natural Korean.
+- Keep proper nouns (names of people, places like "WOLKO Center", "Songtan") as-is.
+- Keep time expressions as-is.
+- Return ONLY a valid JSON array of translated strings, same length and order as input.
+- No explanation, no markdown, no extra text.
+
+Input: ${JSON.stringify(targets.map(t => t.text))}`;
+
       try {
-        const res = await fetch('/api/schedule-planner/translate', {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ texts: targets.map(t => t.text) }),
+          headers: {
+            'x-api-key': apiKey.trim(),
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 4096,
+            messages: [{ role: 'user', content: translationPrompt }],
+          }),
         });
         if (!res.ok) {
           const errBody = await res.text().catch(() => '');
           console.error('[Translate] API 오류', res.status, errBody);
-          alert(`번역 실패 (${res.status})\n${errBody.slice(0, 200)}`);
+          if (res.status === 401) {
+            localStorage.removeItem(ANTHROPIC_KEY_LS);
+            alert(`API 키가 올바르지 않습니다. 다음 번역 시 다시 입력하세요.\n${errBody.slice(0, 100)}`);
+          } else {
+            alert(`번역 실패 (${res.status})\n${errBody.slice(0, 200)}`);
+          }
           return;
         }
-        const { translations, error } = await res.json();
-        if (error) { console.error('[Translate] 서버 오류:', error); alert(`번역 오류: ${error}`); return; }
+        const data = await res.json();
+        let raw = data.content?.[0]?.text?.trim() || '[]';
+        const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (fenced) raw = fenced[1].trim();
+        let translations;
+        try { translations = JSON.parse(raw); } catch { alert('번역 결과 파싱 오류'); return; }
+        if (!Array.isArray(translations)) { alert('번역 결과 형식 오류'); return; }
+        while (translations.length < targets.length) translations.push(targets[translations.length].text);
+        translations = translations.slice(0, targets.length);
         console.log('[Translate] 완료:', translations);
         translations.forEach((translated, i) => {
           if (translated) {
             const { ei, f } = targets[i];
             const ev = imported.events[ei];
             if (!ev._en) ev._en = {};
-            ev._en[f] = ev[f];   // 원본 영어 보관
-            ev[f] = translated;  // 한국어를 메인 필드에 저장
+            ev._en[f] = ev[f];
+            ev[f] = translated;
           }
         });
       } catch (err) {
