@@ -78,7 +78,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     .brand img { height:30px; flex:0 0 auto; }
     .brand h1 { margin:0; color:rgba(255,255,255,.92); font:700 14px/1 var(--sans); letter-spacing:.04em; }
     .brand p { margin:3px 0 0; color:rgba(255,255,255,.62); font:700 10px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
-    .toolbar { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+    .toolbar { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; min-width:0; }
     .toolbar button,.toolbar input {
       min-height:34px; border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:6px 12px;
       background:rgba(255,255,255,.15); color:#fff; font-size:12px; font-weight:600;
@@ -244,7 +244,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       border:1px solid #dbe7ec; border-radius:var(--radius-md); background:#fff; padding:12px; box-shadow:var(--shadow-soft);
     }
     .empty { padding:28px; border:1px dashed #ccdce3; border-radius:var(--radius-md); color:var(--light); text-align:center; font-weight:400; background:#fbfdfe; }
-    .save-state { color:rgba(255,255,255,.7); font-size:11px; font-weight:400; }
+    .save-state { color:rgba(255,255,255,.7); font-size:11px; font-weight:400; max-width:420px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:1; min-width:0; }
     .print-summary { display:none; }
     @media (max-width:1100px) {
       .layout { grid-template-columns:1fr; }
@@ -953,16 +953,22 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     function parseWorksheet(xml, shared) {
       const doc = new DOMParser().parseFromString(xml, 'application/xml');
-      return Array.from(doc.getElementsByTagName('row')).map(row => {
+      const rowMap = {};
+      Array.from(doc.getElementsByTagName('row')).forEach(xmlRow => {
+        // r 속성은 1-based 실제 행 번호 → 0-based 인덱스로 변환
+        const rowIdx = parseInt(xmlRow.getAttribute('r') || '1', 10) - 1;
         const values = [];
-        Array.from(row.getElementsByTagName('c')).forEach(cell => {
+        Array.from(xmlRow.getElementsByTagName('c')).forEach(cell => {
           const index = columnIndex(cell.getAttribute('r'));
           const type = cell.getAttribute('t');
           const v = cell.getElementsByTagName('v')[0]?.textContent || '';
           values[index] = type === 's' ? (shared[parseInt(v, 10)] || '') : (type === 'inlineStr' ? cell.textContent || '' : v);
         });
-        return values;
+        rowMap[rowIdx] = values;
       });
+      if (!Object.keys(rowMap).length) return [];
+      const maxIdx = Math.max(...Object.keys(rowMap).map(Number));
+      return Array.from({ length: maxIdx + 1 }, (_, i) => rowMap[i] || []);
     }
 
     async function readWorkbook(buffer) {
@@ -1604,9 +1610,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         plan.transportPlans = [...(plan.transportPlans || []), ...imported.transportPlans];
         currentView = imported.events.length ? 'day' : (imported.people.length ? 'people' : 'vans');
         markDirty();
-        const summary = tr('importDone', { events: imported.events.length, people: imported.people.length, plans: imported.transportPlans.length });
-        const logDetail = (imported.sheetLog || []).join(' | ');
-        setState(`${summary}${logDetail ? ' — ' + logDetail : ''}`);
+        setState(tr('importDone', { events: imported.events.length, people: imported.people.length, plans: imported.transportPlans.length }));
       } catch (error) {
         setState(error.message || tr('importFailed'));
       } finally {
