@@ -74,6 +74,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       background:rgba(255,255,255,.15); color:#fff; font-size:12px; font-weight:800;
     }
     .toolbar input { width:160px; color:#fff; color-scheme:dark; }
+    .toolbar input[type="file"] { display:none; }
     .page { max-width:min(1540px,calc(100vw - 32px)); margin:0 auto; padding:34px 18px 90px; }
     .hero {
       display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; align-items:end; margin-bottom:18px;
@@ -271,6 +272,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       <input id="selectedDate" type="date">
       <span class="save-state" id="saveState">로그인 필요</span>
       <button type="button" id="saveBtn">저장</button>
+      <button type="button" id="importBtn">엑셀 가져오기</button>
+      <input id="excelInput" type="file" accept=".xlsx">
       <button type="button" id="exportBtn">CSV</button>
       <button type="button" id="logoutBtn">로그아웃</button>
     </div>
@@ -468,6 +471,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       selectedDate: document.getElementById('selectedDate'),
       saveState: document.getElementById('saveState'),
       saveBtn: document.getElementById('saveBtn'),
+      importBtn: document.getElementById('importBtn'),
+      excelInput: document.getElementById('excelInput'),
       exportBtn: document.getElementById('exportBtn'),
       logoutBtn: document.getElementById('logoutBtn'),
       planTitle: document.getElementById('planTitle'),
@@ -566,6 +571,263 @@ const pageTitle = 'WOLKO Schedule Planner';
         start: matches[0] ? `${String(parseInt(matches[0][1], 10)).padStart(2, '0')}:${matches[0][2] || '00'}` : '',
         end: matches[1] ? `${String(parseInt(matches[1][1], 10)).padStart(2, '0')}:${matches[1][2] || '00'}` : '',
       };
+    }
+
+    function cellText(value) {
+      return String(value ?? '').trim();
+    }
+
+    function formatExcelTime(value) {
+      const raw = cellText(value);
+      const n = Number(raw);
+      if (Number.isFinite(n) && n >= 0 && n < 1) {
+        const total = Math.round(n * 24 * 60);
+        return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+      }
+      return raw.replace(/^(\d{1,2}:\d{2}):00$/, '$1');
+    }
+
+    function parseSheetDate(sheetName) {
+      const months = {
+        jan: 1, january: 1, feb: 2, february: 2, mar: 3, march: 3, apr: 4, april: 4,
+        may: 5, jun: 6, june: 6, jul: 7, july: 7, aug: 8, august: 8, sep: 9, sept: 9,
+        september: 9, oct: 10, october: 10, nov: 11, november: 11, dec: 12, december: 12,
+      };
+      const match = String(sheetName || '').match(/\b([A-Za-z]+)\s+(\d{1,2})/);
+      const year = parseInt((els.selectedDate.value || todayIso()).slice(0, 4), 10);
+      if (!match) return els.selectedDate.value || todayIso();
+      const month = months[match[1].toLowerCase()];
+      const day = parseInt(match[2], 10);
+      if (!month || !day) return els.selectedDate.value || todayIso();
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    function inferType(title, details) {
+      const value = `${title} ${details}`.toLowerCase();
+      if (/depart|arrive|airport|van|transport|station|subway|train|vehicle|dorm/.test(value)) return 'transport';
+      if (/breakfast|brunch|lunch|dinner|bbq|meal/.test(value)) return 'meal';
+      if (/meeting|debrief|announcement/.test(value)) return 'meeting';
+      if (/prep|training|practice|orientation/.test(value)) return 'prep';
+      return 'program';
+    }
+
+    function readUint16(view, offset) {
+      return view.getUint16(offset, true);
+    }
+
+    function readUint32(view, offset) {
+      return view.getUint32(offset, true);
+    }
+
+    async function inflateZipEntry(bytes, method) {
+      if (method === 0) return bytes;
+      if (method !== 8 || !window.DecompressionStream) {
+        throw new Error('이 브라우저에서는 xlsx 압축 해제를 지원하지 않습니다. 최신 Chrome 또는 Safari에서 다시 시도해주세요.');
+      }
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+      return new Uint8Array(await new Response(stream).arrayBuffer());
+    }
+
+    async function unzipXlsx(buffer) {
+      const bytes = new Uint8Array(buffer);
+      const view = new DataView(buffer);
+      let eocd = -1;
+      for (let i = bytes.length - 22; i >= 0; i -= 1) {
+        if (readUint32(view, i) === 0x06054b50) {
+          eocd = i;
+          break;
+        }
+      }
+      if (eocd < 0) throw new Error('올바른 xlsx 파일이 아닙니다.');
+      const entries = readUint16(view, eocd + 10);
+      let cursor = readUint32(view, eocd + 16);
+      const decoder = new TextDecoder();
+      const files = {};
+      for (let i = 0; i < entries; i += 1) {
+        if (readUint32(view, cursor) !== 0x02014b50) break;
+        const method = readUint16(view, cursor + 10);
+        const compressedSize = readUint32(view, cursor + 20);
+        const nameLen = readUint16(view, cursor + 28);
+        const extraLen = readUint16(view, cursor + 30);
+        const commentLen = readUint16(view, cursor + 32);
+        const localOffset = readUint32(view, cursor + 42);
+        const name = decoder.decode(bytes.slice(cursor + 46, cursor + 46 + nameLen));
+        const localNameLen = readUint16(view, localOffset + 26);
+        const localExtraLen = readUint16(view, localOffset + 28);
+        const dataStart = localOffset + 30 + localNameLen + localExtraLen;
+        const compressed = bytes.slice(dataStart, dataStart + compressedSize);
+        files[name] = decoder.decode(await inflateZipEntry(compressed, method));
+        cursor += 46 + nameLen + extraLen + commentLen;
+      }
+      return files;
+    }
+
+    function relMap(xml) {
+      const doc = new DOMParser().parseFromString(xml || '', 'application/xml');
+      const map = {};
+      Array.from(doc.getElementsByTagName('Relationship')).forEach(rel => {
+        map[rel.getAttribute('Id')] = rel.getAttribute('Target');
+      });
+      return map;
+    }
+
+    function sharedStrings(xml) {
+      if (!xml) return [];
+      const doc = new DOMParser().parseFromString(xml, 'application/xml');
+      return Array.from(doc.getElementsByTagName('si')).map(si => si.textContent || '');
+    }
+
+    function columnIndex(ref) {
+      const letters = String(ref || '').match(/[A-Z]+/)?.[0] || 'A';
+      return [...letters].reduce((sum, ch) => sum * 26 + ch.charCodeAt(0) - 64, 0) - 1;
+    }
+
+    function parseWorksheet(xml, shared) {
+      const doc = new DOMParser().parseFromString(xml, 'application/xml');
+      return Array.from(doc.getElementsByTagName('row')).map(row => {
+        const values = [];
+        Array.from(row.getElementsByTagName('c')).forEach(cell => {
+          const index = columnIndex(cell.getAttribute('r'));
+          const type = cell.getAttribute('t');
+          const v = cell.getElementsByTagName('v')[0]?.textContent || '';
+          values[index] = type === 's' ? (shared[parseInt(v, 10)] || '') : (type === 'inlineStr' ? cell.textContent || '' : v);
+        });
+        return values;
+      });
+    }
+
+    async function readWorkbook(buffer) {
+      const files = await unzipXlsx(buffer);
+      const workbookXml = files['xl/workbook.xml'];
+      if (!workbookXml) throw new Error('엑셀 통합 문서를 읽지 못했습니다.');
+      const workbookDoc = new DOMParser().parseFromString(workbookXml, 'application/xml');
+      const rels = relMap(files['xl/_rels/workbook.xml.rels']);
+      const shared = sharedStrings(files['xl/sharedStrings.xml']);
+      return Array.from(workbookDoc.getElementsByTagName('sheet')).map(sheet => {
+        const name = sheet.getAttribute('name') || 'Sheet';
+        const relId = sheet.getAttribute('r:id') || sheet.getAttribute('id');
+        const target = rels[relId] || '';
+        const path = target.startsWith('xl/') ? target : `xl/${target.replace(/^\/?xl\//, '')}`;
+        return { name, rows: parseWorksheet(files[path] || '', shared) };
+      });
+    }
+
+    function importPeopleSheet(rows) {
+      const people = [];
+      rows.slice(2).forEach(row => {
+        const sfName = cellText(row[1]);
+        if (sfName && sfName.toLowerCase() !== 'first') {
+          people.push({
+            id: crypto.randomUUID(),
+            group: 'sf',
+            no: parseInt(cellText(row[0]), 10) || people.filter(person => person.group === 'sf').length + 1,
+            name: sfName,
+            gender: cellText(row[2]),
+            age: cellText(row[3]),
+            shirt: cellText(row[4]),
+            birthday: cellText(row[5]),
+            note: cellText(row[6]),
+          });
+        }
+        const wolkoName = cellText(row[9]);
+        if (wolkoName && !/k\(t-size\)/i.test(wolkoName)) {
+          people.push({
+            id: crypto.randomUUID(),
+            group: 'wolko',
+            no: parseInt(cellText(row[8]), 10) || people.filter(person => person.group === 'wolko').length + 1,
+            name: wolkoName,
+            gender: cellText(row[10]),
+            age: '',
+            shirt: '',
+            birthday: '',
+            note: cellText(row[11]),
+          });
+        }
+      });
+      return people.filter(person => person.name);
+    }
+
+    function importScheduleSheet(sheetName, rows) {
+      const date = parseSheetDate(sheetName);
+      return rows.slice(3).map(row => {
+        const timeText = formatExcelTime(row[1]);
+        const title = cellText(row[2]);
+        const details = cellText(row[3]);
+        if (!timeText || !title || /^time/i.test(timeText)) return null;
+        const parsed = clockRange(timeText);
+        return {
+          id: crypto.randomUUID(),
+          title,
+          type: inferType(title, details),
+          date,
+          timeText,
+          start: parsed.start,
+          end: parsed.end,
+          staff: '',
+          vanId: '',
+          from: '',
+          to: '',
+          passengers: '',
+          notes: details,
+        };
+      }).filter(Boolean);
+    }
+
+    function importTransportSheet(sheetName, rows) {
+      const title = cellText(rows[1]?.[1]) || sheetName;
+      const names = rows[2] || [];
+      const drivers = rows[3] || [];
+      const importedVans = [];
+      for (let col = 1; col < Math.min(names.length, 12); col += 1) {
+        const name = cellText(names[col]);
+        if (!name || /student fusion|wol staff/i.test(name)) continue;
+        importedVans.push({
+          id: `import-van-${crypto.randomUUID()}`,
+          name,
+          seats: 0,
+          driver: cellText(drivers[col]).replace(/^D\s*-\s*/i, ''),
+          memo: '',
+          col,
+        });
+      }
+      const vans = importedVans.map(({ col, ...van }) => van);
+      const assignments = {};
+      importedVans.forEach(van => {
+        assignments[van.id] = {
+          driver: van.driver,
+          passengers: rows.slice(4).map(row => cellText(row[van.col])).filter(Boolean).join('\n'),
+          notes: '',
+        };
+      });
+      return {
+        vans,
+        transportPlan: {
+          id: crypto.randomUUID(),
+          title,
+          date: els.selectedDate.value || todayIso(),
+          description: cellText(rows[2]?.[8]),
+          assignments,
+        },
+      };
+    }
+
+    async function importExcelFile(file) {
+      const sheets = await readWorkbook(await file.arrayBuffer());
+      const imported = { events: [], people: [], vans: [], transportPlans: [] };
+      sheets.forEach(sheet => {
+        if (/people list/i.test(sheet.name)) {
+          imported.people.push(...importPeopleSheet(sheet.rows));
+        } else if (/schedule/i.test(sheet.name)) {
+          imported.events.push(...importScheduleSheet(sheet.name, sheet.rows));
+        } else {
+          const transport = importTransportSheet(sheet.name, sheet.rows);
+          if (transport.vans.length) {
+            imported.vans.push(...transport.vans);
+            imported.transportPlans.push(transport.transportPlan);
+          }
+        }
+      });
+      return imported;
     }
 
     function timeSortValue(event) {
@@ -937,6 +1199,28 @@ const pageTitle = 'WOLKO Schedule Planner';
     els.loginBtn.addEventListener('click', login);
     els.passwordInput.addEventListener('keydown', event => { if (event.key === 'Enter') login(); });
     els.saveBtn.addEventListener('click', savePlan);
+    els.importBtn.addEventListener('click', () => els.excelInput.click());
+    els.excelInput.addEventListener('change', async () => {
+      const file = els.excelInput.files?.[0];
+      if (!file) return;
+      setState('엑셀 가져오는 중...');
+      els.importBtn.disabled = true;
+      try {
+        const imported = await importExcelFile(file);
+        plan.events = [...(plan.events || []), ...imported.events];
+        plan.people = [...(plan.people || []), ...imported.people];
+        if (imported.vans.length) plan.vans = imported.vans;
+        plan.transportPlans = [...(plan.transportPlans || []), ...imported.transportPlans];
+        currentView = imported.events.length ? 'day' : (imported.people.length ? 'people' : 'vans');
+        markDirty();
+        setState(`엑셀 가져오기 완료 · 일정 ${imported.events.length}개 · 명단 ${imported.people.length}명 · 차량표 ${imported.transportPlans.length}개`);
+      } catch (error) {
+        setState(error.message || '엑셀을 가져오지 못했습니다.');
+      } finally {
+        els.importBtn.disabled = false;
+        els.excelInput.value = '';
+      }
+    });
     els.exportBtn.addEventListener('click', exportCsv);
     els.logoutBtn.addEventListener('click', () => {
       localStorage.removeItem(TOKEN_KEY);
