@@ -225,6 +225,29 @@ const pageTitle = 'WOLKO Schedule Planner';
     .meta { margin-top:5px; color:var(--muted); font-size:12px; font-weight:400; line-height:1.55; }
     .mini-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
     .mini-actions button { min-height:30px; border:1px solid #d8e5ea; border-radius:999px; background:#fff; color:var(--blue); padding:6px 10px; font-size:11px; font-weight:600; }
+    /* ── Timeline (Day view) ─────────────────────────── */
+    .tl { background:#fff; border:1px solid #dbe7ec; border-radius:var(--radius-lg); padding:4px 20px 20px; box-shadow:var(--shadow-soft); }
+    .tl-period { font:700 10px/1 var(--sans); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); padding:18px 0 10px; border-top:1px solid #edf2f5; }
+    .tl-period:first-child { border-top:none; padding-top:14px; }
+    .tl-row { display:grid; grid-template-columns:52px 1fr; gap:14px; align-items:center; padding:3px 0; }
+    .tl-time { font:700 12px/1.4 var(--sans); color:var(--blue); text-align:right; letter-spacing:-.01em; white-space:nowrap; }
+    .tl-card { display:grid; grid-template-columns:24px 1fr auto; gap:10px; align-items:center; border-radius:12px; padding:11px 14px; cursor:pointer; transition:box-shadow .15s,transform .12s; background:#e9f8fb; }
+    .tl-card:hover { transform:translateY(-1px); box-shadow:0 4px 18px rgba(0,0,0,.08); }
+    .tl-card.meal { background:#f0fdf4; }
+    .tl-card.transport { background:#fff7ed; }
+    .tl-card.meeting { background:#f0fdfa; }
+    .tl-card.prep { background:#f5f3ff; }
+    .tl-card.free { background:#f8fafc; }
+    .tl-emoji { font-size:17px; line-height:1; text-align:center; }
+    .tl-card-title { font:700 13.5px/1.3 var(--sans); color:var(--text); letter-spacing:-.01em; }
+    .tl-type-badge { display:inline-block; margin-left:7px; vertical-align:middle; font:600 10px/1 var(--sans); letter-spacing:.04em; border-radius:4px; padding:2px 6px; background:#b8eaf0; color:#004f68; }
+    .tl-card.meal .tl-type-badge { background:#dcfce7; color:#166534; }
+    .tl-card.transport .tl-type-badge { background:#ffedd5; color:#9a3412; }
+    .tl-card.meeting .tl-type-badge { background:#ccfbf1; color:#0f766e; }
+    .tl-card.prep .tl-type-badge { background:#ede9fe; color:#4338ca; }
+    .tl-card.free .tl-type-badge { background:#f1f5f9; color:#64748b; }
+    .tl-card-meta { margin-top:3px; font:400 11.5px/1.45 var(--sans); color:var(--muted); }
+    .tl-edit-btn { flex-shrink:0; min-height:28px; border:1px solid rgba(0,0,0,.1); border-radius:999px; background:rgba(255,255,255,.7); color:var(--muted); padding:5px 10px; font-size:11px; font-weight:600; white-space:nowrap; }
     .week-grid { display:grid; grid-template-columns:repeat(7,minmax(200px,1fr)); gap:14px; overflow:auto; padding-bottom:6px; }
     .week-day {
       min-height:360px; border:1px solid #dbe7ec; border-radius:var(--radius-lg); background:#fff;
@@ -250,11 +273,11 @@ const pageTitle = 'WOLKO Schedule Planner';
       transition:transform .12s ease,box-shadow .12s ease,background .12s ease;
     }
     .week-item:hover { transform:translateX(3px); background:#fff; box-shadow:0 2px 10px rgba(0,79,104,.1); }
-    .week-item.transport { border-left-color:var(--orange); }
-    .week-item.meeting { border-left-color:var(--teal); }
-    .week-item.meal { border-left-color:var(--green); }
-    .week-item.prep { border-left-color:#6366f1; }
-    .week-item.free { border-left-color:#94a3b8; }
+    .week-item.transport { border-left-color:#f97316; background:#fff7ed; }
+    .week-item.meeting { border-left-color:#14b8a6; background:#f0fdfa; }
+    .week-item.meal { border-left-color:#22c55e; background:#f0fdf4; }
+    .week-item.prep { border-left-color:#6366f1; background:#f5f3ff; }
+    .week-item.free { border-left-color:#94a3b8; background:#f8fafc; }
     .week-item-time { color:var(--muted); font:500 10px/1 var(--sans); letter-spacing:.02em; margin-bottom:5px; }
     .week-item-title { color:var(--text); font-size:12.5px; font-weight:700; line-height:1.38; word-break:keep-all; }
     .week-item-tag { display:inline-block; margin-top:5px; border-radius:4px; background:rgba(0,79,104,.07); color:var(--muted); padding:2px 6px; font-size:10px; font-weight:400; letter-spacing:.03em; }
@@ -389,6 +412,17 @@ const pageTitle = 'WOLKO Schedule Planner';
       .time { font-size:9px; color:#004f68; }
       .item-title { font-size:10px; }
       .meta { font-size:8.5px; line-height:1.35; margin-top:1mm; }
+      .tl { border:0; border-radius:0; box-shadow:none; padding:0; display:flex; flex-direction:column; gap:0; }
+      .tl-period { padding:2mm 0 1mm; border-top:1px solid #e2e8f0; font-size:7px; color:#64748b; }
+      .tl-period:first-child { border-top:0; padding-top:0; }
+      .tl-row { grid-template-columns:14mm 1fr; gap:2mm; padding:1px 0; }
+      .tl-time { font-size:8px; }
+      .tl-card { display:grid; grid-template-columns:10px 1fr; gap:2mm; border-radius:3px; padding:1.5mm 2mm; break-inside:avoid; }
+      .tl-emoji { font-size:8px; }
+      .tl-card-title { font-size:8.5px; }
+      .tl-type-badge { font-size:7px; padding:1px 3px; margin-left:4px; }
+      .tl-card-meta { font-size:7.5px; margin-top:0.5mm; }
+      .tl-edit-btn { display:none; }
       .week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1.8mm; overflow:visible; }
       .week-day { min-height:0; border:1px solid #cbd5e1; border-radius:4px; break-inside:avoid; page-break-inside:avoid; display:block; }
       .week-day-head { padding:1.6mm; color:#004f68; }
@@ -1284,6 +1318,19 @@ const pageTitle = 'WOLKO Schedule Planner';
       return imported;
     }
 
+    function typeEmoji(type) {
+      return { meal:'🍽', transport:'🚐', meeting:'📝', prep:'📋', free:'☀️' }[type] || '📌';
+    }
+
+    function periodOf(event) {
+      const t = timeSortValue(event);
+      if (t === '99:99') return 'none';
+      const h = parseInt(t.split(':')[0], 10);
+      if (h < 12) return 'am';
+      if (h < 18) return 'pm';
+      return 'evening';
+    }
+
     function timeSortValue(event) {
       const raw = event.start || normalizeClock(event.timeText);
       const value = autoAdjustHour(raw);
@@ -1342,32 +1389,52 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     function renderDay() {
       const dayEvents = sortedEvents(plan.events.filter(event => event.date === els.selectedDate.value));
-      document.getElementById('view-day').innerHTML = dayEvents.length
-        ? `
-          <div class="tab-section">
-            <div class="tab-head">
-              <div>
-                <div class="tab-title">${escapeHtml(tr('dayTitle', dayName(els.selectedDate.value)))}</div>
-                <div class="tab-subtitle">${escapeHtml(els.selectedDate.value)}</div>
-              </div>
-              <span class="tab-count">${dayEvents.length}</span>
+      if (!dayEvents.length) {
+        document.getElementById('view-day').innerHTML = `<div class="empty">${escapeHtml(tr('noDayEvents'))}</div>`;
+        return;
+      }
+      const ko = currentLang === 'ko';
+      const periods = [
+        { key:'am',      label: ko ? '오전' : 'Morning' },
+        { key:'pm',      label: ko ? '오후' : 'Afternoon' },
+        { key:'evening', label: ko ? '저녁' : 'Evening' },
+        { key:'none',    label: ko ? '시간 미정' : 'Unscheduled' },
+      ];
+      const grouped = {};
+      dayEvents.forEach(e => {
+        const p = periodOf(e);
+        if (!grouped[p]) grouped[p] = [];
+        grouped[p].push(e);
+      });
+      document.getElementById('view-day').innerHTML = `
+        <div class="tab-section">
+          <div class="tab-head">
+            <div>
+              <div class="tab-title">${escapeHtml(tr('dayTitle', dayName(els.selectedDate.value)))}</div>
+              <div class="tab-subtitle">${escapeHtml(els.selectedDate.value)}</div>
             </div>
-            <div class="table-card"><div class="scroll-x"><table class="workbook-table">
-              <thead><tr><th style="width:120px;">${escapeHtml(tr('time'))}</th><th style="width:28%;">${escapeHtml(tr('schedule'))}</th><th>${escapeHtml(tr('details'))}</th><th style="width:72px;"></th></tr></thead>
-              <tbody>
-                ${dayEvents.map(event => `
-                  <tr>
-                    <td><strong>${escapeHtml(eventTime(event))}</strong></td>
-                    <td>${escapeHtml(event.title)}<div class="meta">${escapeHtml(typeLabel(event.type))}</div></td>
-                    <td>${eventMeta(event) || escapeHtml(event.notes || '')}</td>
-                    <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">${escapeHtml(tr('edit'))}</button></td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table></div></div>
+            <span class="tab-count">${dayEvents.length}</span>
           </div>
-        `
-        : `<div class="empty">${escapeHtml(tr('noDayEvents'))}</div>`;
+          <div class="tl">
+            ${periods.filter(p => (grouped[p.key] || []).length).map(p => `
+              <div class="tl-period">${escapeHtml(p.label)}</div>
+              ${grouped[p.key].map(event => `
+                <div class="tl-row">
+                  <div class="tl-time">${escapeHtml(eventTime(event))}</div>
+                  <div class="tl-card ${escapeHtml(event.type || '')}" data-edit="${escapeHtml(event.id)}">
+                    <div class="tl-emoji">${typeEmoji(event.type)}</div>
+                    <div>
+                      <div class="tl-card-title">${escapeHtml(event.title)}<span class="tl-type-badge">${escapeHtml(typeLabel(event.type))}</span></div>
+                      ${eventMeta(event) ? `<div class="tl-card-meta">${eventMeta(event)}</div>` : ''}
+                    </div>
+                    <button type="button" class="tl-edit-btn" data-edit="${escapeHtml(event.id)}">${escapeHtml(tr('edit'))}</button>
+                  </div>
+                </div>
+              `).join('')}
+            `).join('')}
+          </div>
+        </div>
+      `;
     }
 
     function dowShort(iso) {
@@ -1398,7 +1465,7 @@ const pageTitle = 'WOLKO Schedule Planner';
                   ${items.length ? items.map(event => `
                     <div class="week-item ${escapeHtml(event.type || '')}" data-edit="${escapeHtml(event.id)}">
                       <div class="week-item-time">${escapeHtml(eventTime(event))}</div>
-                      <div class="week-item-title">${escapeHtml(event.title)}</div>
+                      <div class="week-item-title">${typeEmoji(event.type)} ${escapeHtml(event.title)}</div>
                       ${event.staff || event.vanId ? `<div class="week-item-tag">${escapeHtml(event.staff || vanName(event.vanId))}</div>` : ''}
                     </div>
                   `).join('') : `<div class="week-empty">${escapeHtml(tr('noWeekEvents'))}</div>`}
