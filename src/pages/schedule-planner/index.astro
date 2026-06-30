@@ -730,6 +730,18 @@ const pageTitle = 'WOLKO Schedule Planner';
     </section>
   </main>
 
+  <div class="sp-dialog-backdrop" id="translateDialog" style="display:none">
+    <div class="sp-dialog" role="dialog" aria-modal="true">
+      <div class="sp-dialog-title">번역</div>
+      <div class="sp-dialog-msg">영어로 작성된 내용을 한국어로 번역하시겠습니까?<br><span style="font-size:12px;color:var(--muted)">Anthropic API 사용 · 처음 실행 시 API 키 입력 필요</span></div>
+      <div class="sp-dialog-btns">
+        <button class="sp-btn-cancel" id="translateDialogCancel">취소</button>
+        <button class="sp-btn-no" id="translateDialogNo">번역 안 함</button>
+        <button class="sp-btn-yes" id="translateDialogYes">번역</button>
+      </div>
+    </div>
+  </div>
+
   <button class="sidebar-reopen-tab" id="sidebarReopenTab" type="button">입력창 열기</button>
 
   <script>
@@ -1392,23 +1404,18 @@ const pageTitle = 'WOLKO Schedule Planner';
     // 'yes' | 'no' | 'cancel' 을 resolve 하는 3분기 다이얼로그
     function askTranslate() {
       return new Promise(resolve => {
-        const backdrop = document.createElement('div');
-        backdrop.className = 'sp-dialog-backdrop';
-        backdrop.innerHTML = `
-          <div class="sp-dialog" role="dialog" aria-modal="true">
-            <div class="sp-dialog-title">번역</div>
-            <div class="sp-dialog-msg">영어로 작성된 내용을 한국어로 번역하시겠습니까?<br><span style="font-size:12px;color:var(--muted)">Anthropic API 사용 · 처음 실행 시 API 키 입력 필요</span></div>
-            <div class="sp-dialog-btns">
-              <button class="sp-btn-cancel" data-v="cancel">취소</button>
-              <button class="sp-btn-no" data-v="no">번역 안 함</button>
-              <button class="sp-btn-yes" data-v="yes">번역</button>
-            </div>
-          </div>`;
-        document.body.appendChild(backdrop);
-        backdrop.addEventListener('click', e => {
-          const v = e.target.closest('[data-v]')?.dataset.v;
-          if (v) { document.body.removeChild(backdrop); resolve(v); }
-        });
+        const dlg = document.getElementById('translateDialog');
+        const yes = document.getElementById('translateDialogYes');
+        const no = document.getElementById('translateDialogNo');
+        const cancel = document.getElementById('translateDialogCancel');
+        dlg.style.display = 'flex';
+        const done = v => { dlg.style.display = 'none'; resolve(v); };
+        const yH = () => done('yes');
+        const nH = () => done('no');
+        const cH = () => done('cancel');
+        yes.addEventListener('click', yH, { once: true });
+        no.addEventListener('click', nH, { once: true });
+        cancel.addEventListener('click', cH, { once: true });
       });
     }
 
