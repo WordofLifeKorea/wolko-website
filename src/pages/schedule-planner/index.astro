@@ -303,6 +303,9 @@ const pageTitle = 'WOLKO Schedule Planner';
     .tab-title { color:var(--blue); font:700 16px/1.2 var(--sans); letter-spacing:-.01em; }
     .tab-subtitle { margin-top:5px; color:var(--muted); font-size:12px; font-weight:400; line-height:1.45; }
     .tab-count { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:6px 11px; font-size:11px; font-weight:500; }
+    .day-nav-wrap { display:flex; align-items:center; gap:10px; }
+    .day-nav-btn { width:32px; height:32px; border:1px solid #dbe7ec; border-radius:8px; background:#fff; color:var(--blue); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s,border-color .15s; flex-shrink:0; }
+    .day-nav-btn:hover { background:#e9f8fb; border-color:var(--blue); }
     .table-card { border:1px solid #dbe7ec; border-radius:var(--radius-lg); background:#fff; overflow:hidden; box-shadow:var(--shadow-soft); }
     .list-table,.workbook-table { width:100%; border-collapse:separate; border-spacing:0; min-width:760px; background:#fff; }
     .list-table th,.list-table td,.workbook-table th,.workbook-table td {
@@ -1387,11 +1390,8 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function renderDay() {
-      const dayEvents = sortedEvents(plan.events.filter(event => event.date === els.selectedDate.value));
-      if (!dayEvents.length) {
-        document.getElementById('view-day').innerHTML = `<div class="empty">${escapeHtml(tr('noDayEvents'))}</div>`;
-        return;
-      }
+      const date = els.selectedDate.value;
+      const dayEvents = sortedEvents(plan.events.filter(event => event.date === date));
       const ko = currentLang === 'ko';
       const periods = [
         { key:'am',      label: ko ? '오전' : 'Morning' },
@@ -1405,16 +1405,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         if (!grouped[p]) grouped[p] = [];
         grouped[p].push(e);
       });
-      document.getElementById('view-day').innerHTML = `
-        <div class="tab-section">
-          <div class="tab-head">
-            <div>
-              <div class="tab-title">${escapeHtml(tr('dayTitle', dayName(els.selectedDate.value)))}</div>
-              <div class="tab-subtitle">${escapeHtml(els.selectedDate.value)}</div>
-            </div>
-            <span class="tab-count">${dayEvents.length}</span>
-          </div>
-          <div class="tl">
+      const body = dayEvents.length
+        ? `<div class="tl">
             ${periods.filter(p => (grouped[p.key] || []).length).map(p => `
               <div class="tl-period">${escapeHtml(p.label)}</div>
               ${grouped[p.key].map(event => `
@@ -1430,7 +1422,22 @@ const pageTitle = 'WOLKO Schedule Planner';
                 </div>
               `).join('')}
             `).join('')}
+          </div>`
+        : `<div class="empty">${escapeHtml(tr('noDayEvents'))}</div>`;
+      document.getElementById('view-day').innerHTML = `
+        <div class="tab-section">
+          <div class="tab-head">
+            <div class="day-nav-wrap">
+              <button type="button" class="day-nav-btn" data-day-nav="-1">&#8249;</button>
+              <div>
+                <div class="tab-title">${escapeHtml(tr('dayTitle', dayName(date)))}</div>
+                <div class="tab-subtitle">${escapeHtml(date)}</div>
+              </div>
+              <button type="button" class="day-nav-btn" data-day-nav="1">&#8250;</button>
+            </div>
+            <span class="tab-count">${dayEvents.length}</span>
           </div>
+          ${body}
         </div>
       `;
     }
@@ -2003,6 +2010,11 @@ const pageTitle = 'WOLKO Schedule Planner';
       markDirty();
     });
     document.addEventListener('click', event => {
+      const dayNav = event.target.closest('[data-day-nav]')?.dataset.dayNav;
+      if (dayNav) {
+        selectScheduleDate(addDays(els.selectedDate.value || todayIso(), parseInt(dayNav, 10)));
+        return;
+      }
       const editId = event.target.closest('[data-edit]')?.dataset.edit;
       if (editId) editEvent(editId);
       const tab = event.target.closest('.tab');
