@@ -484,6 +484,11 @@ const pageTitle = 'WOLKO Schedule Planner';
     .sp-btn-no:hover { background:#e2eaf0; }
     .sp-btn-cancel { background:transparent; color:var(--muted); border-color:#dbe7ec; }
     .sp-btn-cancel:hover { background:#f8fafc; }
+    .sp-sheet-picker { max-width:480px; }
+    .sp-sheet-list { margin:0 0 20px; max-height:50vh; overflow-y:auto; }
+    .sp-sheet-row { display:grid; grid-template-columns:1fr auto; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #f1f5f9; }
+    .sp-sheet-name { font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .sp-sheet-cat { border:1px solid #dbe7ec; border-radius:8px; padding:5px 8px; font-size:12px; background:#f8fafc; cursor:pointer; color:var(--text); }
   </style>
 </head>
 <body>
@@ -729,6 +734,18 @@ const pageTitle = 'WOLKO Schedule Planner';
       </section>
     </section>
   </main>
+
+  <div class="sp-dialog-backdrop" id="sheetPickerDialog" style="display:none">
+    <div class="sp-dialog sp-sheet-picker" role="dialog" aria-modal="true">
+      <div class="sp-dialog-title">시트 설정</div>
+      <div class="sp-dialog-msg" style="margin-bottom:12px">각 시트를 어떻게 처리할지 선택하세요</div>
+      <div class="sp-sheet-list" id="sheetPickerList"></div>
+      <div class="sp-dialog-btns">
+        <button class="sp-btn-cancel" id="sheetPickerCancel">취소</button>
+        <button class="sp-btn-yes" id="sheetPickerOk">확인</button>
+      </div>
+    </div>
+  </div>
 
   <div class="sp-dialog-backdrop" id="translateDialog" style="display:none">
     <div class="sp-dialog" role="dialog" aria-modal="true">
@@ -1259,7 +1276,8 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function importScheduleSheet(sheetName, rows) {
-      const date = parseSheetDate(sheetName);
+      const year = parseInt((els.selectedDate.value || todayIso()).slice(0, 4), 10);
+      let currentDate = parseSheetDate(sheetName);
 
       // 시간값 판별: Excel 소수(0~1) 또는 HH:MM 패턴
       const looksLikeTime = v => {
@@ -1267,6 +1285,19 @@ const pageTitle = 'WOLKO Schedule Planner';
         const n = Number(v);
         if (Number.isFinite(n) && n > 0 && n < 1) return true;
         return /^\d{1,2}:\d{2}/.test(String(v));
+      };
+
+      // 행에서 날짜 감지 (시간 열이 비어있고 날짜 패턴이 있는 행 = 날짜 헤더)
+      const parseDateFromRow = (row, tCol) => {
+        if (looksLikeTime(row[tCol])) return null; // 시간값 있으면 이벤트 행
+        const texts = (row || []).filter(v => v !== undefined && v !== null && v !== '').map(v => cellText(v));
+        if (!texts.length || texts.length > 5) return null;
+        const combined = texts.join(' ');
+        let m = combined.match(/(\d{1,2})\s*월\s*(\d{1,2})/);
+        if (m) { const mo=+m[1],d=+m[2]; if(mo>=1&&mo<=12&&d>=1&&d<=31) return `${year}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+        m = combined.match(/\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2})\b/i);
+        if (m) { const mos={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12}; const mo=mos[m[1].toLowerCase().slice(0,3)]; if(mo) return `${year}-${String(mo).padStart(2,'0')}-${String(+m[2]).padStart(2,'0')}`; }
+        return null;
       };
 
       // 데이터 시작 행과 시간 열을 자동 탐지
@@ -1279,24 +1310,29 @@ const pageTitle = 'WOLKO Schedule Planner';
         }
         if (timeCol >= 0) break;
       }
-      if (timeCol < 0) { timeCol = 1; dataStart = 3; } // 탐지 실패 시 기본값
+      if (timeCol < 0) { timeCol = 1; dataStart = 3; }
 
       const titleCol = timeCol + 1;
       const detailsCol = timeCol + 2;
 
-      console.log(`[Import] "${sheetName}" → date:${date} timeCol:${timeCol} dataStart:${dataStart}`);
+      console.log(`[Import] "${sheetName}" → date:${currentDate} timeCol:${timeCol} dataStart:${dataStart}`);
 
-      return rows.slice(dataStart).map(row => {
+      const events = [];
+      rows.slice(dataStart).forEach(row => {
+        // 날짜 헤더 행 감지
+        const dateFromRow = parseDateFromRow(row, timeCol);
+        if (dateFromRow) { currentDate = dateFromRow; console.log(`[Import] 날짜 변경 → ${currentDate}`); return; }
+
         const timeText = formatExcelTime(row[timeCol]);
         const title = cellText(row[titleCol]);
         const details = cellText(row[detailsCol]);
-        if (!timeText || !title || /^(time|시간)/i.test(timeText) || /^(time|시간|일정|schedule)/i.test(title)) return null;
+        if (!timeText || !title || /^(time|시간)/i.test(timeText) || /^(time|시간|일정|schedule)/i.test(title)) return;
         const parsed = clockRange(timeText);
-        return {
+        events.push({
           id: crypto.randomUUID(),
           title,
           type: inferType(title, details),
-          date,
+          date: currentDate,
           timeText,
           start: autoAdjustHour(parsed.start),
           end: autoAdjustHour(parsed.end),
@@ -1306,8 +1342,9 @@ const pageTitle = 'WOLKO Schedule Planner';
           to: '',
           passengers: '',
           notes: details,
-        };
-      }).filter(Boolean);
+        });
+      });
+      return events;
     }
 
     function importTransportSheet(sheetName, rows) {
@@ -1399,6 +1436,38 @@ const pageTitle = 'WOLKO Schedule Planner';
             return `<option value="${escapeHtml(e.id)}">${escapeHtml(e.name)} · ${dateStr}</option>`;
           }).join('');
       sel.style.display = '';
+    }
+
+    // 시트별 카테고리 선택 다이얼로그
+    function askSheetCategories(sheets) {
+      return new Promise(resolve => {
+        const dlg = document.getElementById('sheetPickerDialog');
+        const list = document.getElementById('sheetPickerList');
+        const ok = document.getElementById('sheetPickerOk');
+        const cancel = document.getElementById('sheetPickerCancel');
+        list.innerHTML = sheets.map((s, i) => {
+          const auto = isPeopleSheetName(s.name) ? 'people' : isScheduleSheetName(s.name) ? 'schedule' : 'ignore';
+          return `<div class="sp-sheet-row">
+            <span class="sp-sheet-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
+            <select class="sp-sheet-cat" data-idx="${i}">
+              <option value="schedule" ${auto==='schedule'?'selected':''}>📅 일정</option>
+              <option value="people" ${auto==='people'?'selected':''}>👥 인원</option>
+              <option value="transport">🚐 차량</option>
+              <option value="ignore" ${auto==='ignore'?'selected':''}>❌ 무시</option>
+            </select>
+          </div>`;
+        }).join('');
+        dlg.style.display = 'flex';
+        const done = (cancelled) => {
+          dlg.style.display = 'none';
+          if (cancelled) { resolve(null); return; }
+          const result = {};
+          list.querySelectorAll('[data-idx]').forEach(sel => { result[+sel.dataset.idx] = sel.value; });
+          resolve(result);
+        };
+        ok.addEventListener('click', () => done(false), { once: true });
+        cancel.addEventListener('click', () => done(true), { once: true });
+      });
     }
 
     // 'yes' | 'no' | 'cancel' 을 resolve 하는 3분기 다이얼로그
@@ -1506,42 +1575,36 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
 
     async function importExcelFile(file) {
       const sheets = await readWorkbook(await file.arrayBuffer());
+
+      // 시트별 카테고리 선택
+      const categories = await askSheetCategories(sheets);
+      if (!categories) throw new Error('취소됨');
+
       const imported = { events: [], people: [], vans: [], transportPlans: [], sheetLog: [] };
       console.group('[Schedule Planner] Excel Import');
-      sheets.forEach(sheet => {
-        console.log(`Sheet: "${sheet.name}" (${sheet.rows.length} rows)`);
-        if (isPeopleSheetName(sheet.name)) {
+      sheets.forEach((sheet, i) => {
+        const cat = categories[i];
+        console.log(`Sheet: "${sheet.name}" → ${cat}`);
+        if (cat === 'people') {
           const before = imported.people.length;
           imported.people.push(...importPeopleSheet(sheet.rows));
-          const added = imported.people.length - before;
-          imported.sheetLog.push(`인원: "${sheet.name}" → ${added}명`);
-          console.log(`  → 인원 명단 (${added}명)`);
-        } else if (isScheduleSheetName(sheet.name)) {
+          imported.sheetLog.push(`인원: "${sheet.name}" → ${imported.people.length - before}명`);
+        } else if (cat === 'schedule') {
           const before = imported.events.length;
           imported.events.push(...importScheduleSheet(sheet.name, sheet.rows));
-          const added = imported.events.length - before;
-          imported.sheetLog.push(`일정: "${sheet.name}" → ${added}개`);
-          console.log(`  → 스케줄 (${added}개)`);
-        } else {
+          imported.sheetLog.push(`일정: "${sheet.name}" → ${imported.events.length - before}개`);
+        } else if (cat === 'transport') {
           const transport = importTransportSheet(sheet.name, sheet.rows);
-          console.log(`  → 차량 후보: 밴 ${transport.vans.length}대, 탑승자:`, transport.vans.map(v => v.name));
           if (transport.vans.length) {
             imported.vans.push(...transport.vans);
             imported.transportPlans.push(transport.transportPlan);
             imported.sheetLog.push(`차량: "${sheet.name}" → 밴 ${transport.vans.length}대`);
-          } else {
-            imported.sheetLog.push(`무시됨: "${sheet.name}" (밴 없음 / 미인식)`);
-            console.warn(`  → 미인식 (건너뜀)`);
           }
+        } else {
+          imported.sheetLog.push(`무시됨: "${sheet.name}"`);
         }
       });
       console.groupEnd();
-      // 진단용: 시트 현황 표시 (파싱 디버그)
-      const sheetSummary = sheets.map(s => {
-        const tag = isPeopleSheetName(s.name) ? '👥인원' : isScheduleSheetName(s.name) ? '📅일정' : '🚐차량?';
-        return `${tag} "${s.name}"`;
-      }).join('\n');
-      alert(`[시트 인식 결과]\n${sheetSummary}\n\n날짜별 이벤트:\n${[...new Set(imported.events.map(e=>e.date))].sort().map(d=>`${d}: ${imported.events.filter(e=>e.date===d).length}개`).join('\n') || '없음'}`);
       return imported;
     }
 
