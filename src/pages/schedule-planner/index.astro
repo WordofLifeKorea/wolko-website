@@ -131,11 +131,30 @@ const pageTitle = 'WOLKO Schedule Planner';
     .meta { margin-top:4px; color:var(--muted); font-size:12px; font-weight:700; line-height:1.55; }
     .mini-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
     .mini-actions button { border:1px solid #d8e5ea; border-radius:999px; background:#fff; color:var(--blue); padding:6px 9px; font-size:11px; font-weight:900; }
-    .week-grid { display:grid; grid-template-columns:repeat(7,minmax(142px,1fr)); gap:8px; overflow:auto; }
-    .week-day { min-height:260px; border:1px solid var(--border); border-radius:12px; background:#fbfcfd; overflow:hidden; }
-    .week-day-head { padding:10px 11px; border-bottom:1px solid var(--border); background:#fff; color:var(--blue); font-size:12px; font-weight:900; }
-    .week-items { display:grid; gap:7px; padding:9px; }
-    .week-item { border-radius:10px; background:#eef8fb; padding:9px; color:var(--text); font-size:12px; font-weight:800; line-height:1.45; }
+    .week-grid { display:grid; grid-template-columns:repeat(7,minmax(150px,1fr)); gap:10px; overflow:auto; padding-bottom:2px; }
+    .week-day {
+      min-height:260px; border:1px solid #dbe7ec; border-radius:16px; background:linear-gradient(180deg,#fff,#f8fbfc);
+      overflow:hidden; box-shadow:0 8px 20px rgba(0,79,104,.05);
+    }
+    .week-day-head {
+      display:flex; align-items:flex-start; justify-content:space-between; gap:8px; padding:12px 13px;
+      border-bottom:1px solid var(--border); background:#fff; color:var(--blue);
+    }
+    .week-date { font:900 13px/1.25 var(--sans); }
+    .week-count { flex:0 0 auto; border-radius:999px; background:#e9f8fb; color:var(--blue); padding:4px 8px; font-size:10px; font-weight:900; }
+    .week-items { display:grid; gap:8px; padding:10px; }
+    .week-item {
+      display:grid; grid-template-columns:44px minmax(0,1fr); gap:8px; align-items:start;
+      border:1px solid #dbe8ee; border-radius:12px; background:#fff; padding:9px; color:var(--text);
+      box-shadow:0 2px 8px rgba(0,79,104,.04);
+    }
+    .week-item-time { color:var(--blue); font:900 11px/1.25 var(--sans); }
+    .week-item-title { overflow:hidden; color:var(--text); font-size:12px; font-weight:900; line-height:1.35; }
+    .week-item-meta { margin-top:3px; color:var(--muted); font-size:10.5px; font-weight:800; }
+    .week-empty {
+      display:flex; align-items:center; justify-content:center; min-height:94px; border:1px dashed #cfdde4; border-radius:12px;
+      background:#fff; color:var(--light); font-size:12px; font-weight:900;
+    }
     .van-grid { display:grid; gap:10px; }
     .van-row { border:1px solid var(--border); border-radius:13px; background:#fbfcfd; overflow:hidden; }
     .van-row-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; background:#fff; border-bottom:1px solid var(--border); }
@@ -172,10 +191,21 @@ const pageTitle = 'WOLKO Schedule Planner';
       .topbar { height:auto; min-height:60px; align-items:flex-start; flex-direction:column; padding:14px 18px; }
       .toolbar { justify-content:flex-start; }
       .page { max-width:100%; padding:22px 12px 70px; }
+      .hero { border-radius:18px; padding:18px; }
+      .panel { border-radius:18px; }
+      .view { padding:14px; }
       .schedule-card { grid-template-columns:1fr; }
       .mini-actions { justify-content:flex-start; }
       .field.two,.van-edit-row { grid-template-columns:1fr; }
-      .week-grid { grid-template-columns:1fr; }
+      .week-grid { grid-template-columns:1fr; gap:12px; overflow:visible; }
+      .week-day { min-height:0; border-radius:18px; }
+      .week-day-head { padding:14px 16px; }
+      .week-date { font-size:16px; }
+      .week-items { padding:12px; }
+      .week-item { grid-template-columns:58px minmax(0,1fr); padding:12px; }
+      .week-item-time { font-size:12px; }
+      .week-item-title { font-size:14px; }
+      .week-empty { min-height:58px; }
     }
     @media print {
       @page { size:A4 landscape; margin:9mm; }
@@ -1061,14 +1091,20 @@ const pageTitle = 'WOLKO Schedule Planner';
             const items = sortedEvents(plan.events.filter(event => event.date === day));
             return `
               <div class="week-day">
-                <div class="week-day-head">${escapeHtml(dayName(day))}</div>
+                <div class="week-day-head">
+                  <span class="week-date">${escapeHtml(dayName(day))}</span>
+                  <span class="week-count">${items.length}</span>
+                </div>
                 <div class="week-items">
                   ${items.length ? items.map(event => `
                     <div class="week-item" data-edit="${escapeHtml(event.id)}">
-                      ${escapeHtml(eventTime(event))} ${escapeHtml(event.title)}
-                      ${event.vanId ? `<br>${escapeHtml(vanName(event.vanId))}` : ''}
+                      <div class="week-item-time">${escapeHtml(eventTime(event))}</div>
+                      <div>
+                        <div class="week-item-title">${escapeHtml(event.title)}</div>
+                        ${event.vanId ? `<div class="week-item-meta">${escapeHtml(vanName(event.vanId))}</div>` : ''}
+                      </div>
                     </div>
-                  `).join('') : `<div class="meta">${escapeHtml(tr('noWeekEvents'))}</div>`}
+                  `).join('') : `<div class="week-empty">${escapeHtml(tr('noWeekEvents'))}</div>`}
                 </div>
               </div>
             `;
