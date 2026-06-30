@@ -1062,18 +1062,25 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function parseSheetDate(sheetName) {
-      const months = {
-        jan: 1, january: 1, feb: 2, february: 2, mar: 3, march: 3, apr: 4, april: 4,
-        may: 5, jun: 6, june: 6, jul: 7, july: 7, aug: 8, august: 8, sep: 9, sept: 9,
-        september: 9, oct: 10, october: 10, nov: 11, november: 11, dec: 12, december: 12,
-      };
-      const match = String(sheetName || '').match(/\b([A-Za-z]+)\s+(\d{1,2})/);
       const year = parseInt((els.selectedDate.value || todayIso()).slice(0, 4), 10);
-      if (!match) return els.selectedDate.value || todayIso();
-      const month = months[match[1].toLowerCase()];
-      const day = parseInt(match[2], 10);
-      if (!month || !day) return els.selectedDate.value || todayIso();
-      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const name = String(sheetName || '');
+      const ymd = (m, d) => m >= 1 && m <= 12 && d >= 1 && d <= 31
+        ? `${year}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}` : null;
+      // "7월 28일" or "7월28일"
+      let r = name.match(/(\d{1,2})\s*월\s*(\d{1,2})/);
+      if (r) return ymd(+r[1], +r[2]) || els.selectedDate.value || todayIso();
+      // "7/28" or "07.28" or "7-28"
+      r = name.match(/(\d{1,2})[/.\-](\d{1,2})/);
+      if (r) return ymd(+r[1], +r[2]) || els.selectedDate.value || todayIso();
+      // "Jul 28" or "July 28"
+      const months = {
+        jan:1,january:1,feb:2,february:2,mar:3,march:3,apr:4,april:4,
+        may:5,jun:6,june:6,jul:7,july:7,aug:8,august:8,sep:9,sept:9,
+        september:9,oct:10,october:10,nov:11,november:11,dec:12,december:12,
+      };
+      r = name.match(/\b([A-Za-z]+)\s+(\d{1,2})/);
+      if (r) { const m = months[r[1].toLowerCase()]; if (m) return ymd(m, +r[2]) || els.selectedDate.value || todayIso(); }
+      return els.selectedDate.value || todayIso();
     }
 
     function inferType(title, details) {
@@ -1229,11 +1236,37 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     function importScheduleSheet(sheetName, rows) {
       const date = parseSheetDate(sheetName);
-      return rows.slice(3).map(row => {
-        const timeText = formatExcelTime(row[1]);
-        const title = cellText(row[2]);
-        const details = cellText(row[3]);
-        if (!timeText || !title || /^time/i.test(timeText)) return null;
+
+      // 시간값 판별: Excel 소수(0~1) 또는 HH:MM 패턴
+      const looksLikeTime = v => {
+        if (v === undefined || v === null || v === '') return false;
+        const n = Number(v);
+        if (Number.isFinite(n) && n > 0 && n < 1) return true;
+        return /^\d{1,2}:\d{2}/.test(String(v));
+      };
+
+      // 데이터 시작 행과 시간 열을 자동 탐지
+      let dataStart = 0;
+      let timeCol = -1;
+      for (let ri = 0; ri < Math.min(rows.length, 15); ri++) {
+        const row = rows[ri] || [];
+        for (let ci = 0; ci < Math.min(row.length, 5); ci++) {
+          if (looksLikeTime(row[ci])) { timeCol = ci; dataStart = ri; break; }
+        }
+        if (timeCol >= 0) break;
+      }
+      if (timeCol < 0) { timeCol = 1; dataStart = 3; } // 탐지 실패 시 기본값
+
+      const titleCol = timeCol + 1;
+      const detailsCol = timeCol + 2;
+
+      console.log(`[Import] "${sheetName}" → date:${date} timeCol:${timeCol} dataStart:${dataStart}`);
+
+      return rows.slice(dataStart).map(row => {
+        const timeText = formatExcelTime(row[timeCol]);
+        const title = cellText(row[titleCol]);
+        const details = cellText(row[detailsCol]);
+        if (!timeText || !title || /^(time|시간)/i.test(timeText) || /^(time|시간|일정|schedule)/i.test(title)) return null;
         const parsed = clockRange(timeText);
         return {
           id: crypto.randomUUID(),
@@ -2074,7 +2107,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
         vans: s.vans || [],
         transportPlans: s.transportPlans || [],
       };
-      if (currentLang === 'ko') {
+      if (currentLang === 'ko' && confirm('영어로 작성된 내용을 한국어로 번역하시겠습니까?')) {
         setState(tr('translating'));
         await translateImported(imported);
       }
@@ -2112,7 +2145,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       els.importBtn.disabled = true;
       try {
         const imported = await importExcelFile(file);
-        if (currentLang === 'ko') {
+        if (currentLang === 'ko' && confirm('영어로 작성된 내용을 한국어로 번역하시겠습니까?\n(Anthropic API 사용 · 처음 실행 시 API 키 입력 필요)')) {
           setState(tr('translating'));
           await translateImported(imported);
         }
