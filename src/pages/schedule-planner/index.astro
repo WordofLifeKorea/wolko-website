@@ -1,0 +1,780 @@
+---
+const pageTitle = 'WOLKO Schedule Planner';
+---
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>{pageTitle}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue:#004f68;
+      --blue-lt:#0077a3;
+      --teal:#009b94;
+      --bg:#f4f6f8;
+      --card:#fff;
+      --border:#e4eaee;
+      --text:#1a2d38;
+      --muted:#6c8290;
+      --light:#8fa8b5;
+      --red:#c42a36;
+      --green:#239c5d;
+      --orange:#d9870d;
+      --shadow:0 2px 12px rgba(0,79,104,.05);
+      --sans:'Montserrat',sans-serif;
+      --body:'Noto Sans KR',sans-serif;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); font-family:var(--body); }
+    button,input,select,textarea { font:inherit; }
+    button { cursor:pointer; }
+    .login-screen {
+      position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;
+      background:linear-gradient(145deg,#003d52,#00627f);
+    }
+    .login-screen.hidden { opacity:0; pointer-events:none; transition:.3s ease; }
+    .login-card {
+      width:min(420px,100%); border-radius:24px; background:#fff; padding:42px 36px 34px; text-align:center;
+      box-shadow:0 24px 70px rgba(0,0,0,.24);
+    }
+    .login-logo { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:22px; }
+    .login-logo img { height:38px; }
+    .login-logo-name { color:var(--blue); font:800 19px/1 var(--sans); letter-spacing:.02em; }
+    .login-title { margin:0 0 26px; color:var(--muted); font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .login-input { width:100%; height:52px; border:1.5px solid #d7e2e7; border-radius:14px; padding:0 16px; outline:none; }
+    .login-input:focus { border-color:var(--blue); }
+    .login-error { min-height:20px; margin:10px 0 14px; color:var(--red); font-size:12px; font-weight:800; }
+    .login-btn,.primary {
+      border:0; border-radius:10px; background:var(--blue); color:#fff; padding:11px 18px; font-weight:800;
+      transition:background .2s,transform .2s;
+    }
+    .login-btn { width:100%; height:48px; }
+    .login-btn:hover,.primary:hover { background:var(--blue-lt); }
+    .secondary,.ghost {
+      border:1px solid #d7e4e9; border-radius:10px; background:#fff; color:var(--blue); padding:10px 14px; font-weight:800;
+    }
+    .ghost { background:#f8fbfc; color:var(--muted); }
+    .danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
+    .topbar {
+      position:sticky; top:0; z-index:50; height:60px; display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:0 32px; background:var(--blue); color:#fff; box-shadow:0 2px 12px rgba(0,79,104,.25);
+    }
+    .brand { display:flex; align-items:center; gap:10px; min-width:0; }
+    .brand img { height:30px; flex:0 0 auto; }
+    .brand h1 { margin:0; color:rgba(255,255,255,.92); font:700 14px/1 var(--sans); letter-spacing:.04em; }
+    .brand p { margin:3px 0 0; color:rgba(255,255,255,.62); font:700 10px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
+    .toolbar { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+    .toolbar button,.toolbar input {
+      min-height:30px; border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:5px 12px;
+      background:rgba(255,255,255,.15); color:#fff; font-size:12px; font-weight:800;
+    }
+    .toolbar input { width:160px; color:#fff; color-scheme:dark; }
+    .page { max-width:min(1540px,calc(100vw - 32px)); margin:0 auto; padding:34px 18px 90px; }
+    .hero {
+      display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; align-items:end; margin-bottom:18px;
+      padding:22px; border:1px solid var(--border); border-radius:16px; background:var(--card); box-shadow:var(--shadow);
+    }
+    .hero h2 { margin:0; color:var(--text); font:800 clamp(21px,3vw,30px)/1.2 var(--sans); }
+    .hero p { margin:8px 0 0; color:var(--muted); font-size:13px; line-height:1.65; }
+    .stats { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .stat { min-width:104px; border:1px solid var(--border); border-radius:12px; background:#f8fafb; padding:12px 14px; text-align:right; }
+    .stat strong { display:block; color:var(--blue); font:800 23px/1 var(--sans); }
+    .stat span { display:block; margin-top:5px; color:var(--light); font:800 10px/1 var(--sans); letter-spacing:.08em; }
+    .layout { display:grid; grid-template-columns:380px minmax(0,1fr); gap:18px; align-items:start; }
+    .panel {
+      border:1px solid var(--border); border-radius:16px; background:var(--card); box-shadow:var(--shadow); overflow:hidden;
+    }
+    .panel-head {
+      display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px; border-bottom:1px solid var(--border); background:#fff;
+    }
+    .panel-head h3 { margin:0; color:var(--text); font-size:15px; font-weight:900; }
+    .panel-body { padding:18px 20px; }
+    .form-grid { display:grid; gap:12px; }
+    .field { display:grid; gap:7px; }
+    .field.two { grid-template-columns:1fr 1fr; gap:10px; }
+    .field label { color:var(--light); font-size:11px; font-weight:900; letter-spacing:.04em; }
+    input,select,textarea {
+      width:100%; border:1.5px solid #d9e5ea; border-radius:10px; background:#fafcfd; color:var(--text);
+      padding:10px 11px; outline:none;
+    }
+    textarea { min-height:82px; resize:vertical; line-height:1.6; }
+    input:focus,select:focus,textarea:focus { border-color:var(--blue); background:#fff; }
+    .form-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin-top:4px; }
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; padding:14px 16px 0; }
+    .tab {
+      border:1px solid #d7e4e9; border-radius:999px; background:#fff; color:var(--muted); padding:9px 14px;
+      font-size:12px; font-weight:900;
+    }
+    .tab.active { border-color:#b8dfe6; background:#e9f8fb; color:var(--blue); }
+    .view { display:none; padding:16px; }
+    .view.active { display:block; }
+    .day-list { display:grid; gap:9px; }
+    .schedule-card {
+      display:grid; grid-template-columns:86px minmax(0,1fr) auto; gap:12px; align-items:center;
+      border:1px solid #dfe9ee; border-left:6px solid var(--blue); border-radius:12px; background:#fff; padding:13px 14px;
+    }
+    .schedule-card.transport { border-left-color:var(--orange); }
+    .schedule-card.meeting { border-left-color:var(--teal); }
+    .schedule-card.meal { border-left-color:var(--green); }
+    .schedule-card.prep { border-left-color:#6366f1; }
+    .schedule-card.free { border-left-color:#94a3b8; }
+    .time { color:var(--blue); font:900 13px/1.35 var(--sans); }
+    .item-title { font-weight:900; color:var(--text); }
+    .meta { margin-top:4px; color:var(--muted); font-size:12px; font-weight:700; line-height:1.55; }
+    .mini-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+    .mini-actions button { border:1px solid #d8e5ea; border-radius:999px; background:#fff; color:var(--blue); padding:6px 9px; font-size:11px; font-weight:900; }
+    .week-grid { display:grid; grid-template-columns:repeat(7,minmax(142px,1fr)); gap:8px; overflow:auto; }
+    .week-day { min-height:260px; border:1px solid var(--border); border-radius:12px; background:#fbfcfd; overflow:hidden; }
+    .week-day-head { padding:10px 11px; border-bottom:1px solid var(--border); background:#fff; color:var(--blue); font-size:12px; font-weight:900; }
+    .week-items { display:grid; gap:7px; padding:9px; }
+    .week-item { border-radius:10px; background:#eef8fb; padding:9px; color:var(--text); font-size:12px; font-weight:800; line-height:1.45; }
+    .van-grid { display:grid; gap:10px; }
+    .van-row { border:1px solid var(--border); border-radius:13px; background:#fbfcfd; overflow:hidden; }
+    .van-row-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; background:#fff; border-bottom:1px solid var(--border); }
+    .van-row-head strong { color:var(--blue); font-weight:900; }
+    .van-trips { display:grid; gap:8px; padding:12px 14px; }
+    .van-trip { border-radius:10px; background:#fff4df; padding:10px 11px; font-size:12px; font-weight:800; line-height:1.55; }
+    .list-table { width:100%; border-collapse:collapse; min-width:920px; }
+    .list-table th,.list-table td { border-bottom:1px solid var(--border); padding:11px 10px; text-align:left; vertical-align:top; font-size:12px; }
+    .list-table th { color:var(--blue); background:#f8fbfc; font-weight:900; }
+    .scroll-x { overflow:auto; border:1px solid var(--border); border-radius:12px; }
+    .van-editor { display:grid; gap:10px; margin-top:14px; }
+    .van-edit-row { display:grid; grid-template-columns:minmax(0,1.2fr) 70px minmax(0,1fr) auto; gap:8px; align-items:center; }
+    .empty { padding:26px; border:1px dashed #ccdce3; border-radius:12px; color:var(--light); text-align:center; font-weight:800; }
+    .save-state { color:rgba(255,255,255,.7); font-size:11px; font-weight:800; }
+    @media (max-width:1100px) {
+      .layout { grid-template-columns:1fr; }
+      .hero { grid-template-columns:1fr; }
+      .stats { justify-content:flex-start; }
+    }
+    @media (max-width:720px) {
+      .topbar { height:auto; min-height:60px; align-items:flex-start; flex-direction:column; padding:14px 18px; }
+      .toolbar { justify-content:flex-start; }
+      .page { max-width:100%; padding:22px 12px 70px; }
+      .schedule-card { grid-template-columns:1fr; }
+      .mini-actions { justify-content:flex-start; }
+      .field.two,.van-edit-row { grid-template-columns:1fr; }
+      .week-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <span class="login-logo-name">WOLKO</span>
+      </div>
+      <p class="login-title">Schedule Planner Login</p>
+      <input class="login-input" id="passwordInput" type="password" placeholder="관리자 비밀번호" autocomplete="current-password">
+      <p class="login-error" id="loginError"></p>
+      <button class="login-btn" id="loginBtn" type="button">Sign In</button>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <div>
+        <h1>WOLKO 스케줄 플래너</h1>
+        <p>Staff & Vans Operations</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input id="selectedDate" type="date">
+      <span class="save-state" id="saveState">로그인 필요</span>
+      <button type="button" id="saveBtn">저장</button>
+      <button type="button" id="exportBtn">CSV</button>
+      <button type="button" id="logoutBtn">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <h2 id="planTitleView">WOLKO Staff Schedule</h2>
+        <p>스태프 일정과 여러 밴 운행 계획을 한 곳에서 정리합니다. 일간/주간 시간표를 보며 담당자, 차량, 출발지와 도착지를 함께 관리할 수 있습니다.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><strong id="statToday">0</strong><span>TODAY</span></div>
+        <div class="stat"><strong id="statWeek">0</strong><span>THIS WEEK</span></div>
+        <div class="stat"><strong id="statVans">0</strong><span>VANS</span></div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <aside class="panel">
+        <div class="panel-head">
+          <h3>일정 입력</h3>
+          <button class="ghost" id="resetEventBtn" type="button">새 일정</button>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="field">
+              <label for="planTitle">플랜 이름</label>
+              <input id="planTitle" placeholder="예: 2026 여름 캠프 운영 일정">
+            </div>
+            <div class="field">
+              <label for="eventTitle">일정 제목</label>
+              <input id="eventTitle" placeholder="예: 공항 픽업, 저녁집회, 스태프 미팅">
+            </div>
+            <div class="field two">
+              <div class="field">
+                <label for="eventDate">날짜</label>
+                <input id="eventDate" type="date">
+              </div>
+              <div class="field">
+                <label for="eventType">분류</label>
+                <select id="eventType">
+                  <option value="program">프로그램</option>
+                  <option value="transport">밴 운행</option>
+                  <option value="meeting">미팅</option>
+                  <option value="meal">식사</option>
+                  <option value="prep">준비</option>
+                  <option value="free">기타</option>
+                </select>
+              </div>
+            </div>
+            <div class="field two">
+              <div class="field">
+                <label for="eventStart">시작</label>
+                <input id="eventStart" type="time">
+              </div>
+              <div class="field">
+                <label for="eventEnd">종료</label>
+                <input id="eventEnd" type="time">
+              </div>
+            </div>
+            <div class="field">
+              <label for="eventStaff">담당 스태프</label>
+              <input id="eventStaff" placeholder="예: 김환규, 이서준">
+            </div>
+            <div class="field">
+              <label for="eventVan">차량</label>
+              <select id="eventVan"></select>
+            </div>
+            <div class="field two">
+              <div class="field">
+                <label for="eventFrom">출발</label>
+                <input id="eventFrom" placeholder="예: 월코센터">
+              </div>
+              <div class="field">
+                <label for="eventTo">도착</label>
+                <input id="eventTo" placeholder="예: 평택역">
+              </div>
+            </div>
+            <div class="field">
+              <label for="eventPassengers">탑승자 / 관련 인원</label>
+              <input id="eventPassengers" placeholder="예: 캠퍼 7명, 스태프 1명">
+            </div>
+            <div class="field">
+              <label for="eventNotes">메모</label>
+              <textarea id="eventNotes" placeholder="준비물, 확인사항, 연락처 등을 적어주세요."></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="secondary danger" id="deleteEventBtn" type="button" hidden>삭제</button>
+              <button class="primary" id="addEventBtn" type="button">일정 추가</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h3>일정 보기</h3>
+          <div class="form-actions">
+            <button class="secondary" id="todayBtn" type="button">오늘</button>
+            <button class="secondary" id="printBtn" type="button">프린트</button>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab active" data-view="day" type="button">일간 시간표</button>
+          <button class="tab" data-view="week" type="button">주간 시간표</button>
+          <button class="tab" data-view="vans" type="button">밴 운행</button>
+          <button class="tab" data-view="list" type="button">전체 목록</button>
+          <button class="tab" data-view="fleet" type="button">차량 관리</button>
+        </div>
+        <div class="view active" id="view-day"></div>
+        <div class="view" id="view-week"></div>
+        <div class="view" id="view-vans"></div>
+        <div class="view" id="view-list"></div>
+        <div class="view" id="view-fleet"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const TOKEN_KEY = 'wolko_schedule_planner_token';
+    const typeLabels = {
+      program: '프로그램',
+      transport: '밴 운행',
+      meeting: '미팅',
+      meal: '식사',
+      prep: '준비',
+      free: '기타',
+    };
+    const els = {
+      loginScreen: document.getElementById('loginScreen'),
+      passwordInput: document.getElementById('passwordInput'),
+      loginBtn: document.getElementById('loginBtn'),
+      loginError: document.getElementById('loginError'),
+      selectedDate: document.getElementById('selectedDate'),
+      saveState: document.getElementById('saveState'),
+      saveBtn: document.getElementById('saveBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      planTitle: document.getElementById('planTitle'),
+      planTitleView: document.getElementById('planTitleView'),
+      eventTitle: document.getElementById('eventTitle'),
+      eventDate: document.getElementById('eventDate'),
+      eventType: document.getElementById('eventType'),
+      eventStart: document.getElementById('eventStart'),
+      eventEnd: document.getElementById('eventEnd'),
+      eventStaff: document.getElementById('eventStaff'),
+      eventVan: document.getElementById('eventVan'),
+      eventFrom: document.getElementById('eventFrom'),
+      eventTo: document.getElementById('eventTo'),
+      eventPassengers: document.getElementById('eventPassengers'),
+      eventNotes: document.getElementById('eventNotes'),
+      addEventBtn: document.getElementById('addEventBtn'),
+      deleteEventBtn: document.getElementById('deleteEventBtn'),
+      resetEventBtn: document.getElementById('resetEventBtn'),
+      todayBtn: document.getElementById('todayBtn'),
+      printBtn: document.getElementById('printBtn'),
+      statToday: document.getElementById('statToday'),
+      statWeek: document.getElementById('statWeek'),
+      statVans: document.getElementById('statVans'),
+    };
+    let token = localStorage.getItem(TOKEN_KEY) || '';
+    let editingId = '';
+    let currentView = 'day';
+    let plan = {
+      title: 'WOLKO Staff Schedule',
+      vans: [
+        { id: 'van-1', name: 'Van 1', seats: 0, driver: '', memo: '' },
+        { id: 'van-2', name: 'Van 2', seats: 0, driver: '', memo: '' },
+      ],
+      events: [],
+      updatedAt: '',
+    };
+
+    function todayIso() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function addDays(iso, count) {
+      const date = new Date(`${iso}T00:00:00`);
+      date.setDate(date.getDate() + count);
+      return date.toISOString().slice(0, 10);
+    }
+
+    function weekStart(iso) {
+      const date = new Date(`${iso}T00:00:00`);
+      const day = date.getDay();
+      date.setDate(date.getDate() - day);
+      return date.toISOString().slice(0, 10);
+    }
+
+    function dayName(iso) {
+      return new Intl.DateTimeFormat('ko-KR', { month: 'numeric', day: 'numeric', weekday: 'short' }).format(new Date(`${iso}T00:00:00`));
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+    }
+
+    function vanName(vanId) {
+      if (!vanId) return '';
+      return plan.vans.find(van => van.id === vanId)?.name || vanId;
+    }
+
+    function sortedEvents(events = plan.events) {
+      return [...events].sort((a, b) => `${a.date} ${a.start}`.localeCompare(`${b.date} ${b.start}`));
+    }
+
+    function weekEvents() {
+      const start = weekStart(els.selectedDate.value);
+      const end = addDays(start, 6);
+      return plan.events.filter(event => event.date >= start && event.date <= end);
+    }
+
+    function setState(text) {
+      els.saveState.textContent = text;
+    }
+
+    function markDirty() {
+      setState('저장 필요');
+      render();
+    }
+
+    function eventMeta(event) {
+      const bits = [];
+      if (event.staff) bits.push(`담당: ${event.staff}`);
+      if (event.vanId) bits.push(`차량: ${vanName(event.vanId)}`);
+      if (event.from || event.to) bits.push(`${event.from || '출발지 미정'} → ${event.to || '도착지 미정'}`);
+      if (event.passengers) bits.push(`인원: ${event.passengers}`);
+      if (event.notes) bits.push(event.notes);
+      return bits.map(escapeHtml).join(' · ');
+    }
+
+    function eventCard(event) {
+      return `
+        <article class="schedule-card ${escapeHtml(event.type)}">
+          <div class="time">${escapeHtml(event.start)}<br>${escapeHtml(event.end)}</div>
+          <div>
+            <div class="item-title">${escapeHtml(event.title)} <span class="meta">· ${escapeHtml(typeLabels[event.type] || event.type)}</span></div>
+            <div class="meta">${eventMeta(event) || '세부 정보 없음'}</div>
+          </div>
+          <div class="mini-actions">
+            <button type="button" data-edit="${escapeHtml(event.id)}">수정</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderVansSelect() {
+      els.eventVan.innerHTML = `<option value="">차량 없음</option>${plan.vans.map(van => `<option value="${escapeHtml(van.id)}">${escapeHtml(van.name)}</option>`).join('')}`;
+    }
+
+    function renderDay() {
+      const dayEvents = sortedEvents(plan.events.filter(event => event.date === els.selectedDate.value));
+      document.getElementById('view-day').innerHTML = dayEvents.length
+        ? `<div class="day-list">${dayEvents.map(eventCard).join('')}</div>`
+        : `<div class="empty">선택한 날짜에 등록된 일정이 없습니다.</div>`;
+    }
+
+    function renderWeek() {
+      const start = weekStart(els.selectedDate.value);
+      const days = Array.from({ length: 7 }, (_, index) => addDays(start, index));
+      document.getElementById('view-week').innerHTML = `
+        <div class="week-grid">
+          ${days.map(day => {
+            const items = sortedEvents(plan.events.filter(event => event.date === day));
+            return `
+              <div class="week-day">
+                <div class="week-day-head">${escapeHtml(dayName(day))}</div>
+                <div class="week-items">
+                  ${items.length ? items.map(event => `
+                    <div class="week-item" data-edit="${escapeHtml(event.id)}">
+                      ${escapeHtml(event.start)} ${escapeHtml(event.title)}
+                      ${event.vanId ? `<br>${escapeHtml(vanName(event.vanId))}` : ''}
+                    </div>
+                  `).join('') : '<div class="meta">일정 없음</div>'}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderVans() {
+      const events = sortedEvents(weekEvents().filter(event => event.type === 'transport' || event.vanId));
+      document.getElementById('view-vans').innerHTML = `
+        <div class="van-grid">
+          ${plan.vans.map(van => {
+            const trips = events.filter(event => event.vanId === van.id);
+            return `
+              <div class="van-row">
+                <div class="van-row-head">
+                  <strong>${escapeHtml(van.name)}</strong>
+                  <span class="meta">${van.seats ? `${van.seats} seats` : '좌석 미입력'}${van.driver ? ` · ${escapeHtml(van.driver)}` : ''}</span>
+                </div>
+                <div class="van-trips">
+                  ${trips.length ? trips.map(event => `
+                    <div class="van-trip" data-edit="${escapeHtml(event.id)}">
+                      ${escapeHtml(dayName(event.date))} ${escapeHtml(event.start)}-${escapeHtml(event.end)}
+                      <br>${escapeHtml(event.from || '출발지 미정')} → ${escapeHtml(event.to || '도착지 미정')}
+                      <br>${escapeHtml(event.title)}${event.passengers ? ` · ${escapeHtml(event.passengers)}` : ''}
+                    </div>
+                  `).join('') : '<div class="meta">이번 주 운행 계획 없음</div>'}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderList() {
+      const rows = sortedEvents().map(event => `
+        <tr>
+          <td>${escapeHtml(event.date)}</td>
+          <td>${escapeHtml(event.start)}-${escapeHtml(event.end)}</td>
+          <td><strong>${escapeHtml(event.title)}</strong><div class="meta">${escapeHtml(typeLabels[event.type] || event.type)}</div></td>
+          <td>${escapeHtml(event.staff)}</td>
+          <td>${escapeHtml(vanName(event.vanId))}</td>
+          <td>${escapeHtml(event.from)} → ${escapeHtml(event.to)}</td>
+          <td>${escapeHtml(event.passengers)}</td>
+          <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">수정</button></td>
+        </tr>
+      `).join('');
+      document.getElementById('view-list').innerHTML = rows
+        ? `<div class="scroll-x"><table class="list-table"><thead><tr><th>날짜</th><th>시간</th><th>일정</th><th>담당</th><th>차량</th><th>이동</th><th>인원</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+        : `<div class="empty">아직 등록된 일정이 없습니다.</div>`;
+    }
+
+    function renderFleet() {
+      document.getElementById('view-fleet').innerHTML = `
+        <div class="van-editor">
+          ${plan.vans.map(van => `
+            <div class="van-edit-row">
+              <input value="${escapeHtml(van.name)}" data-van-field="name" data-van-id="${escapeHtml(van.id)}" placeholder="차량 이름">
+              <input value="${escapeHtml(van.seats)}" data-van-field="seats" data-van-id="${escapeHtml(van.id)}" type="number" min="0" placeholder="좌석">
+              <input value="${escapeHtml(van.driver)}" data-van-field="driver" data-van-id="${escapeHtml(van.id)}" placeholder="기본 운전자">
+              <button class="secondary danger" type="button" data-remove-van="${escapeHtml(van.id)}">삭제</button>
+            </div>
+          `).join('')}
+          <button class="secondary" type="button" id="addVanBtn">차량 추가</button>
+        </div>
+      `;
+    }
+
+    function renderStats() {
+      els.statToday.textContent = plan.events.filter(event => event.date === els.selectedDate.value).length;
+      els.statWeek.textContent = weekEvents().length;
+      els.statVans.textContent = plan.vans.length;
+      els.planTitleView.textContent = plan.title || 'WOLKO Staff Schedule';
+    }
+
+    function render() {
+      renderVansSelect();
+      renderStats();
+      renderDay();
+      renderWeek();
+      renderVans();
+      renderList();
+      renderFleet();
+      document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === `view-${currentView}`));
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === currentView));
+      if (els.eventVan.dataset.value !== undefined) {
+        els.eventVan.value = els.eventVan.dataset.value;
+        delete els.eventVan.dataset.value;
+      }
+    }
+
+    function readForm() {
+      return {
+        id: editingId || crypto.randomUUID(),
+        title: els.eventTitle.value.trim(),
+        type: els.eventType.value,
+        date: els.eventDate.value,
+        start: els.eventStart.value,
+        end: els.eventEnd.value,
+        staff: els.eventStaff.value.trim(),
+        vanId: els.eventVan.value,
+        from: els.eventFrom.value.trim(),
+        to: els.eventTo.value.trim(),
+        passengers: els.eventPassengers.value.trim(),
+        notes: els.eventNotes.value.trim(),
+      };
+    }
+
+    function clearForm() {
+      editingId = '';
+      els.eventTitle.value = '';
+      els.eventType.value = 'program';
+      els.eventDate.value = els.selectedDate.value;
+      els.eventStart.value = '09:00';
+      els.eventEnd.value = '10:00';
+      els.eventStaff.value = '';
+      els.eventVan.value = '';
+      els.eventFrom.value = '';
+      els.eventTo.value = '';
+      els.eventPassengers.value = '';
+      els.eventNotes.value = '';
+      els.addEventBtn.textContent = '일정 추가';
+      els.deleteEventBtn.hidden = true;
+    }
+
+    function editEvent(id) {
+      const event = plan.events.find(item => item.id === id);
+      if (!event) return;
+      editingId = event.id;
+      els.eventTitle.value = event.title || '';
+      els.eventType.value = event.type || 'program';
+      els.eventDate.value = event.date || els.selectedDate.value;
+      els.eventStart.value = event.start || '09:00';
+      els.eventEnd.value = event.end || '10:00';
+      els.eventStaff.value = event.staff || '';
+      els.eventVan.dataset.value = event.vanId || '';
+      els.eventFrom.value = event.from || '';
+      els.eventTo.value = event.to || '';
+      els.eventPassengers.value = event.passengers || '';
+      els.eventNotes.value = event.notes || '';
+      els.addEventBtn.textContent = '일정 수정';
+      els.deleteEventBtn.hidden = false;
+      renderVansSelect();
+    }
+
+    async function login() {
+      els.loginBtn.disabled = true;
+      els.loginError.textContent = '';
+      try {
+        const res = await fetch('/api/schedule-planner/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: els.passwordInput.value.trim() }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || '로그인하지 못했습니다.');
+        token = data.token;
+        localStorage.setItem(TOKEN_KEY, token);
+        els.loginScreen.classList.add('hidden');
+        await loadPlan();
+      } catch (error) {
+        els.loginError.textContent = error.message;
+      } finally {
+        els.loginBtn.disabled = false;
+      }
+    }
+
+    async function loadPlan() {
+      setState('불러오는 중...');
+      const res = await fetch('/api/schedule-planner/data', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        localStorage.removeItem(TOKEN_KEY);
+        token = '';
+        els.loginScreen.classList.remove('hidden');
+        setState('로그인 필요');
+        throw new Error(data.error || '데이터를 불러오지 못했습니다.');
+      }
+      plan = data.plan || plan;
+      els.planTitle.value = plan.title || '';
+      setState(plan.updatedAt ? `저장됨 ${new Date(plan.updatedAt).toLocaleString('ko-KR')}` : '저장됨');
+      render();
+    }
+
+    async function savePlan() {
+      plan.title = els.planTitle.value.trim() || 'WOLKO Staff Schedule';
+      setState('저장 중...');
+      els.saveBtn.disabled = true;
+      try {
+        const res = await fetch('/api/schedule-planner/data', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ plan }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || '저장하지 못했습니다.');
+        plan = data.plan;
+        els.planTitle.value = plan.title || '';
+        setState(`저장됨 ${new Date(plan.updatedAt).toLocaleString('ko-KR')}`);
+        render();
+      } catch (error) {
+        setState(error.message);
+      } finally {
+        els.saveBtn.disabled = false;
+      }
+    }
+
+    function exportCsv() {
+      const headers = ['date','start','end','type','title','staff','van','from','to','passengers','notes'];
+      const rows = sortedEvents().map(event => [
+        event.date, event.start, event.end, typeLabels[event.type] || event.type, event.title, event.staff,
+        vanName(event.vanId), event.from, event.to, event.passengers, event.notes,
+      ]);
+      const csv = [headers, ...rows].map(row => row.map(value => `"${String(value || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `wolko-schedule-${els.selectedDate.value || todayIso()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    els.loginBtn.addEventListener('click', login);
+    els.passwordInput.addEventListener('keydown', event => { if (event.key === 'Enter') login(); });
+    els.saveBtn.addEventListener('click', savePlan);
+    els.exportBtn.addEventListener('click', exportCsv);
+    els.logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem(TOKEN_KEY);
+      token = '';
+      els.loginScreen.classList.remove('hidden');
+      setState('로그인 필요');
+    });
+    els.selectedDate.addEventListener('change', () => {
+      els.eventDate.value = els.selectedDate.value;
+      render();
+    });
+    els.todayBtn.addEventListener('click', () => {
+      els.selectedDate.value = todayIso();
+      els.eventDate.value = els.selectedDate.value;
+      render();
+    });
+    els.printBtn.addEventListener('click', () => window.print());
+    els.resetEventBtn.addEventListener('click', clearForm);
+    els.planTitle.addEventListener('input', () => {
+      plan.title = els.planTitle.value.trim() || 'WOLKO Staff Schedule';
+      markDirty();
+    });
+    els.addEventBtn.addEventListener('click', () => {
+      const event = readForm();
+      if (!event.title || !event.date || !event.start || !event.end) {
+        setState('제목, 날짜, 시간을 입력해주세요.');
+        return;
+      }
+      const index = plan.events.findIndex(item => item.id === event.id);
+      if (index >= 0) plan.events[index] = event;
+      else plan.events.push(event);
+      clearForm();
+      markDirty();
+    });
+    els.deleteEventBtn.addEventListener('click', () => {
+      if (!editingId) return;
+      plan.events = plan.events.filter(event => event.id !== editingId);
+      clearForm();
+      markDirty();
+    });
+    document.addEventListener('click', event => {
+      const editId = event.target.closest('[data-edit]')?.dataset.edit;
+      if (editId) editEvent(editId);
+      const tab = event.target.closest('.tab');
+      if (tab?.dataset.view) {
+        currentView = tab.dataset.view;
+        render();
+      }
+      const removeVan = event.target.closest('[data-remove-van]')?.dataset.removeVan;
+      if (removeVan) {
+        plan.vans = plan.vans.filter(van => van.id !== removeVan);
+        plan.events = plan.events.map(item => item.vanId === removeVan ? { ...item, vanId: '' } : item);
+        markDirty();
+      }
+      if (event.target.id === 'addVanBtn') {
+        plan.vans.push({ id: crypto.randomUUID(), name: `Van ${plan.vans.length + 1}`, seats: 0, driver: '', memo: '' });
+        markDirty();
+      }
+    });
+    document.addEventListener('input', event => {
+      const field = event.target.dataset.vanField;
+      const vanId = event.target.dataset.vanId;
+      if (!field || !vanId) return;
+      const van = plan.vans.find(item => item.id === vanId);
+      if (!van) return;
+      van[field] = field === 'seats' ? Math.max(0, parseInt(event.target.value, 10) || 0) : event.target.value.trim();
+      setState('저장 필요');
+      renderVansSelect();
+      renderStats();
+    });
+
+    els.selectedDate.value = todayIso();
+    clearForm();
+    render();
+    if (token) {
+      els.loginScreen.classList.add('hidden');
+      loadPlan().catch(error => {
+        els.loginError.textContent = error.message;
+      });
+    }
+  </script>
+</body>
+</html>
