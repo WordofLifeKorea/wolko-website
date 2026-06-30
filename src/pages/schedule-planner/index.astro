@@ -1340,6 +1340,14 @@ const pageTitle = 'WOLKO Schedule Planner';
       return [...events].sort((a, b) => `${a.date} ${timeSortValue(a)}`.localeCompare(`${b.date} ${timeSortValue(b)}`));
     }
 
+    function nearestDayWithEvents(fromIso, dir) {
+      const dates = [...new Set(plan.events.map(e => e.date))].sort();
+      if (!dates.length) return fromIso;
+      return dir > 0
+        ? (dates.find(d => d > fromIso) || fromIso)
+        : ([...dates].reverse().find(d => d < fromIso) || fromIso);
+    }
+
     function weekEvents() {
       const start = weekStart(els.selectedDate.value);
       const end = addDays(start, 6);
@@ -2005,7 +2013,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     document.addEventListener('click', event => {
       const dayNav = event.target.closest('[data-day-nav]')?.dataset.dayNav;
       if (dayNav) {
-        selectScheduleDate(addDays(els.selectedDate.value || todayIso(), parseInt(dayNav, 10)));
+        selectScheduleDate(nearestDayWithEvents(els.selectedDate.value || todayIso(), parseInt(dayNav, 10)));
         return;
       }
       const editId = event.target.closest('[data-edit]')?.dataset.edit;
