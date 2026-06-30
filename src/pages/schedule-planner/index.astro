@@ -98,7 +98,15 @@ const pageTitle = 'WOLKO Schedule Planner';
     .stat { min-width:112px; border:1px solid var(--border); border-radius:var(--radius-md); background:#f8fafb; padding:13px 15px; text-align:right; }
     .stat strong { display:block; color:var(--blue); font:900 24px/1 var(--sans); letter-spacing:-.02em; }
     .stat span { display:block; margin-top:6px; color:var(--light); font:900 10px/1 var(--sans); letter-spacing:.08em; }
-    .layout { display:grid; grid-template-columns:372px minmax(0,1fr); gap:20px; align-items:start; }
+    .layout { display:grid; grid-template-columns:372px minmax(0,1fr); gap:20px; align-items:start; transition:grid-template-columns .25s ease; }
+    .layout.sidebar-collapsed { grid-template-columns:0 1fr; gap:0; }
+    .layout.sidebar-collapsed aside { display:none; }
+    .sidebar-toggle {
+      min-height:34px; min-width:34px; border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:6px 10px;
+      background:rgba(255,255,255,.15); color:#fff; font-size:13px; font-weight:900; cursor:pointer;
+      display:flex; align-items:center; gap:6px;
+    }
+    .sidebar-toggle:hover { background:rgba(255,255,255,.28); }
     .panel {
       border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--card); box-shadow:var(--shadow-card); overflow:hidden;
     }
@@ -144,7 +152,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     .meta { margin-top:5px; color:var(--muted); font-size:12px; font-weight:700; line-height:1.55; }
     .mini-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
     .mini-actions button { min-height:30px; border:1px solid #d8e5ea; border-radius:999px; background:#fff; color:var(--blue); padding:6px 10px; font-size:11px; font-weight:900; }
-    .week-grid { display:grid; grid-template-columns:repeat(7,minmax(154px,1fr)); gap:12px; overflow:auto; padding-bottom:2px; }
+    .week-grid { display:grid; grid-template-columns:repeat(7,minmax(180px,1fr)); gap:12px; overflow:auto; padding-bottom:2px; }
     .week-day {
       min-height:268px; border:1px solid #dbe7ec; border-radius:var(--radius-lg); background:linear-gradient(180deg,#fff,#f8fbfc);
       overflow:hidden; box-shadow:var(--shadow-soft);
@@ -162,7 +170,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       box-shadow:var(--shadow-soft);
     }
     .week-item-time { color:var(--blue); font:900 11px/1.25 var(--sans); }
-    .week-item-title { overflow:hidden; color:var(--text); font-size:12px; font-weight:900; line-height:1.35; }
+    .week-item-title { color:var(--text); font-size:12px; font-weight:900; line-height:1.35; word-break:keep-all; }
     .week-item-meta { margin-top:3px; color:var(--muted); font-size:10.5px; font-weight:800; }
     .week-empty {
       display:flex; align-items:center; justify-content:center; min-height:94px; border:1px dashed #cfdde4; border-radius:12px;
@@ -353,6 +361,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       </div>
     </div>
     <div class="toolbar">
+      <button class="sidebar-toggle" type="button" id="sidebarToggleBtn" title="입력창 열기/닫기">☰ 입력창</button>
       <input id="selectedDate" type="date">
       <span class="save-state" id="saveState">로그인 필요</span>
       <button class="lang-toggle" type="button" id="langKoBtn">KO</button>
@@ -712,6 +721,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       statToday: document.getElementById('statToday'),
       statWeek: document.getElementById('statWeek'),
       statVans: document.getElementById('statVans'),
+      sidebarToggleBtn: document.getElementById('sidebarToggleBtn'),
+      layout: document.querySelector('.layout'),
     };
     let token = localStorage.getItem(TOKEN_KEY) || '';
     let editingId = '';
@@ -1483,6 +1494,19 @@ const pageTitle = 'WOLKO Schedule Planner';
       a.click();
       URL.revokeObjectURL(url);
     }
+
+    const SIDEBAR_KEY = 'wolko_schedule_planner_sidebar';
+    let sidebarOpen = localStorage.getItem(SIDEBAR_KEY) !== 'closed';
+    function applySidebar() {
+      els.layout.classList.toggle('sidebar-collapsed', !sidebarOpen);
+      els.sidebarToggleBtn.textContent = sidebarOpen ? '✕ 입력창' : '☰ 입력창';
+    }
+    els.sidebarToggleBtn.addEventListener('click', () => {
+      sidebarOpen = !sidebarOpen;
+      localStorage.setItem(SIDEBAR_KEY, sidebarOpen ? 'open' : 'closed');
+      applySidebar();
+    });
+    applySidebar();
 
     els.loginBtn.addEventListener('click', login);
     els.passwordInput.addEventListener('keydown', event => { if (event.key === 'Enter') login(); });
