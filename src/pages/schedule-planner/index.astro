@@ -142,6 +142,18 @@ const pageTitle = 'WOLKO Schedule Planner';
     .list-table { width:100%; border-collapse:collapse; min-width:920px; }
     .list-table th,.list-table td { border-bottom:1px solid var(--border); padding:11px 10px; text-align:left; vertical-align:top; font-size:12px; }
     .list-table th { color:var(--blue); background:#f8fbfc; font-weight:900; }
+    .workbook-table { width:100%; border-collapse:collapse; min-width:760px; background:#fff; }
+    .workbook-table th,.workbook-table td { border:1px solid #d9e5ea; padding:10px 11px; text-align:left; vertical-align:top; font-size:12px; line-height:1.55; }
+    .workbook-table th { background:#eaf6f9; color:var(--blue); font-weight:900; }
+    .workbook-title { border:1px solid #d9e5ea; border-bottom:0; border-radius:12px 12px 0 0; background:#dff0f5; color:var(--blue); padding:12px 14px; font-weight:900; text-align:center; }
+    .matrix { display:grid; gap:12px; }
+    .matrix-card { border:1px solid var(--border); border-radius:14px; background:#fff; overflow:hidden; }
+    .matrix-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 15px; background:#dff0f5; color:var(--blue); font-weight:900; }
+    .matrix-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:0; border-top:1px solid var(--border); }
+    .matrix-van { min-height:160px; border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:12px; }
+    .matrix-van strong { display:block; color:var(--blue); margin-bottom:8px; }
+    .matrix-van textarea { min-height:104px; margin-top:8px; }
+    .section-divider { height:1px; background:var(--border); margin:18px 0; }
     .scroll-x { overflow:auto; border:1px solid var(--border); border-radius:12px; }
     .van-editor { display:grid; gap:10px; margin-top:14px; }
     .van-edit-row { display:grid; grid-template-columns:minmax(0,1.2fr) 70px minmax(0,1fr) auto; gap:8px; align-items:center; }
@@ -211,8 +223,20 @@ const pageTitle = 'WOLKO Schedule Planner';
       .list-table th,
       .list-table td { padding:1.7mm 1.4mm; font-size:7.8px; line-height:1.25; word-break:break-word; }
       .list-table th { background:#eef8fb; color:#004f68; }
+      .workbook-title { padding:1.8mm; font-size:10px; }
+      .workbook-table { min-width:0; table-layout:fixed; }
+      .workbook-table th,.workbook-table td { padding:1.8mm 1.5mm; font-size:8px; line-height:1.28; word-break:break-word; }
       .list-table th:nth-child(8),
-      .list-table td:nth-child(8) { display:none; }
+      .list-table td:nth-child(8),
+      .workbook-table th:last-child,
+      .workbook-table td:last-child { display:none; }
+      .matrix-grid { grid-template-columns:repeat(4,1fr); }
+      .matrix-card { break-inside:avoid; page-break-inside:avoid; }
+      .matrix-head { padding:1.8mm; font-size:9px; }
+      .matrix-van { min-height:0; padding:1.8mm; font-size:8px; }
+      .matrix-van textarea,
+      .matrix-van input,
+      .matrix-head button { display:none; }
       #view-fleet .van-editor { display:grid; grid-template-columns:repeat(2,1fr); gap:2mm; }
       #view-fleet .van-edit-row { display:block; border:1px solid #cbd5e1; border-radius:5px; padding:2mm; }
       #view-fleet input,
@@ -269,7 +293,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     <section class="layout">
       <aside class="panel">
         <div class="panel-head">
-          <h3>일정 입력</h3>
+          <h3>운영표 입력</h3>
           <button class="ghost" id="resetEventBtn" type="button">새 일정</button>
         </div>
         <div class="panel-body">
@@ -279,8 +303,8 @@ const pageTitle = 'WOLKO Schedule Planner';
               <input id="planTitle" placeholder="예: 2026 여름 캠프 운영 일정">
             </div>
             <div class="field">
-              <label for="eventTitle">일정 제목</label>
-              <input id="eventTitle" placeholder="예: 공항 픽업, 저녁집회, 스태프 미팅">
+              <label for="eventTitle">Schedule 스케쥴</label>
+              <input id="eventTitle" placeholder="예: Meet the SF Team, OAE Training">
             </div>
             <div class="field two">
               <div class="field">
@@ -288,26 +312,30 @@ const pageTitle = 'WOLKO Schedule Planner';
                 <input id="eventDate" type="date">
               </div>
               <div class="field">
-                <label for="eventType">분류</label>
-                <select id="eventType">
-                  <option value="program">프로그램</option>
-                  <option value="transport">밴 운행</option>
-                  <option value="meeting">미팅</option>
-                  <option value="meal">식사</option>
-                  <option value="prep">준비</option>
-                  <option value="free">기타</option>
-                </select>
+                <label for="eventTimeText">Time 시간</label>
+                <input id="eventTimeText" placeholder="예: 3:20-4:15">
               </div>
             </div>
             <div class="field two">
               <div class="field">
-                <label for="eventStart">시작</label>
+                <label for="eventStart">시작 정렬용</label>
                 <input id="eventStart" type="time">
               </div>
               <div class="field">
-                <label for="eventEnd">종료</label>
+                <label for="eventEnd">종료 정렬용</label>
                 <input id="eventEnd" type="time">
               </div>
+            </div>
+            <div class="field">
+              <label for="eventType">분류</label>
+              <select id="eventType">
+                <option value="program">프로그램</option>
+                <option value="transport">밴 운행</option>
+                <option value="meeting">미팅</option>
+                <option value="meal">식사</option>
+                <option value="prep">준비</option>
+                <option value="free">기타</option>
+              </select>
             </div>
             <div class="field">
               <label for="eventStaff">담당 스태프</label>
@@ -332,12 +360,65 @@ const pageTitle = 'WOLKO Schedule Planner';
               <input id="eventPassengers" placeholder="예: 캠퍼 7명, 스태프 1명">
             </div>
             <div class="field">
-              <label for="eventNotes">메모</label>
-              <textarea id="eventNotes" placeholder="준비물, 확인사항, 연락처 등을 적어주세요."></textarea>
+              <label for="eventNotes">Details 참고사항</label>
+              <textarea id="eventNotes" placeholder="담당자, 준비물, 세부 안내, 운전자 채팅 공유 내용 등을 적어주세요."></textarea>
             </div>
             <div class="form-actions">
               <button class="secondary danger" id="deleteEventBtn" type="button" hidden>삭제</button>
               <button class="primary" id="addEventBtn" type="button">일정 추가</button>
+            </div>
+            <div class="section-divider"></div>
+            <div class="field two">
+              <div class="field">
+                <label for="personGroup">People list 구분</label>
+                <select id="personGroup">
+                  <option value="sf">Student Fusion</option>
+                  <option value="wolko">WOLKO Staff</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="personName">이름</label>
+                <input id="personName" placeholder="예: Jacob">
+              </div>
+            </div>
+            <div class="field two">
+              <div class="field">
+                <label for="personGender">성별</label>
+                <input id="personGender" placeholder="예: M 남자">
+              </div>
+              <div class="field">
+                <label for="personAge">K-age</label>
+                <input id="personAge" placeholder="예: 20">
+              </div>
+            </div>
+            <div class="field two">
+              <div class="field">
+                <label for="personShirt">K(T-size)</label>
+                <input id="personShirt" placeholder="예: XL">
+              </div>
+              <div class="field">
+                <label for="personBirthday">B-day</label>
+                <input id="personBirthday" placeholder="예: 2007.08.24">
+              </div>
+            </div>
+            <div class="field">
+              <label for="personNote">Note / Allergy</label>
+              <input id="personNote" placeholder="예: wheat allergy, trip leader">
+            </div>
+            <div class="form-actions">
+              <button class="secondary" id="addPersonBtn" type="button">명단 추가</button>
+            </div>
+            <div class="section-divider"></div>
+            <div class="field">
+              <label for="transportTitle">차량 배정표 제목</label>
+              <input id="transportTitle" placeholder="예: Songtan station to each dormitory">
+            </div>
+            <div class="field">
+              <label for="transportDescription">차량 배정 메모</label>
+              <input id="transportDescription" placeholder="예: Student Fusion people / WOL Staff">
+            </div>
+            <div class="form-actions">
+              <button class="secondary" id="addTransportBtn" type="button">차량 배정표 추가</button>
             </div>
           </div>
         </div>
@@ -352,15 +433,17 @@ const pageTitle = 'WOLKO Schedule Planner';
           </div>
         </div>
         <div class="tabs">
-          <button class="tab active" data-view="day" type="button">일간 시간표</button>
-          <button class="tab" data-view="week" type="button">주간 시간표</button>
-          <button class="tab" data-view="vans" type="button">밴 운행</button>
-          <button class="tab" data-view="list" type="button">전체 목록</button>
-          <button class="tab" data-view="fleet" type="button">차량 관리</button>
+          <button class="tab active" data-view="day" type="button">Daily Schedule</button>
+          <button class="tab" data-view="week" type="button">Week Summary</button>
+          <button class="tab" data-view="vans" type="button">Vehicle Plan</button>
+          <button class="tab" data-view="people" type="button">People List</button>
+          <button class="tab" data-view="list" type="button">All Schedule</button>
+          <button class="tab" data-view="fleet" type="button">Vans</button>
         </div>
         <div class="view active" id="view-day"></div>
         <div class="view" id="view-week"></div>
         <div class="view" id="view-vans"></div>
+        <div class="view" id="view-people"></div>
         <div class="view" id="view-list"></div>
         <div class="view" id="view-fleet"></div>
       </section>
@@ -392,6 +475,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       printSummary: document.getElementById('printSummary'),
       eventTitle: document.getElementById('eventTitle'),
       eventDate: document.getElementById('eventDate'),
+      eventTimeText: document.getElementById('eventTimeText'),
       eventType: document.getElementById('eventType'),
       eventStart: document.getElementById('eventStart'),
       eventEnd: document.getElementById('eventEnd'),
@@ -404,6 +488,17 @@ const pageTitle = 'WOLKO Schedule Planner';
       addEventBtn: document.getElementById('addEventBtn'),
       deleteEventBtn: document.getElementById('deleteEventBtn'),
       resetEventBtn: document.getElementById('resetEventBtn'),
+      personGroup: document.getElementById('personGroup'),
+      personName: document.getElementById('personName'),
+      personGender: document.getElementById('personGender'),
+      personAge: document.getElementById('personAge'),
+      personShirt: document.getElementById('personShirt'),
+      personBirthday: document.getElementById('personBirthday'),
+      personNote: document.getElementById('personNote'),
+      addPersonBtn: document.getElementById('addPersonBtn'),
+      transportTitle: document.getElementById('transportTitle'),
+      transportDescription: document.getElementById('transportDescription'),
+      addTransportBtn: document.getElementById('addTransportBtn'),
       todayBtn: document.getElementById('todayBtn'),
       printBtn: document.getElementById('printBtn'),
       statToday: document.getElementById('statToday'),
@@ -420,6 +515,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         { id: 'van-2', name: 'Van 2', seats: 0, driver: '', memo: '' },
       ],
       events: [],
+      people: [],
+      transportPlans: [],
       updatedAt: '',
     };
 
@@ -453,8 +550,33 @@ const pageTitle = 'WOLKO Schedule Planner';
       return plan.vans.find(van => van.id === vanId)?.name || vanId;
     }
 
+    function eventTime(event) {
+      return event.timeText || (event.start && event.end ? `${event.start}-${event.end}` : event.start || '');
+    }
+
+    function normalizeClock(value) {
+      const match = String(value || '').match(/(\d{1,2})(?::(\d{2}))?/);
+      if (!match) return '';
+      return `${String(parseInt(match[1], 10)).padStart(2, '0')}:${match[2] || '00'}`;
+    }
+
+    function clockRange(value) {
+      const matches = [...String(value || '').matchAll(/(\d{1,2})(?::(\d{2}))?/g)];
+      return {
+        start: matches[0] ? `${String(parseInt(matches[0][1], 10)).padStart(2, '0')}:${matches[0][2] || '00'}` : '',
+        end: matches[1] ? `${String(parseInt(matches[1][1], 10)).padStart(2, '0')}:${matches[1][2] || '00'}` : '',
+      };
+    }
+
+    function timeSortValue(event) {
+      const value = event.start || normalizeClock(event.timeText);
+      const parts = String(value || '').split(':').map(Number);
+      if (parts.length < 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) return '99:99';
+      return `${String(parts[0]).padStart(2, '0')}:${String(parts[1]).padStart(2, '0')}`;
+    }
+
     function sortedEvents(events = plan.events) {
-      return [...events].sort((a, b) => `${a.date} ${a.start}`.localeCompare(`${b.date} ${b.start}`));
+      return [...events].sort((a, b) => `${a.date} ${timeSortValue(a)}`.localeCompare(`${b.date} ${timeSortValue(b)}`));
     }
 
     function weekEvents() {
@@ -485,7 +607,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     function eventCard(event) {
       return `
         <article class="schedule-card ${escapeHtml(event.type)}">
-          <div class="time">${escapeHtml(event.start)}<br>${escapeHtml(event.end)}</div>
+          <div class="time">${escapeHtml(eventTime(event))}</div>
           <div>
             <div class="item-title">${escapeHtml(event.title)} <span class="meta">· ${escapeHtml(typeLabels[event.type] || event.type)}</span></div>
             <div class="meta">${eventMeta(event) || '세부 정보 없음'}</div>
@@ -504,7 +626,22 @@ const pageTitle = 'WOLKO Schedule Planner';
     function renderDay() {
       const dayEvents = sortedEvents(plan.events.filter(event => event.date === els.selectedDate.value));
       document.getElementById('view-day').innerHTML = dayEvents.length
-        ? `<div class="day-list">${dayEvents.map(eventCard).join('')}</div>`
+        ? `
+          <div class="workbook-title">${escapeHtml(dayName(els.selectedDate.value))} Schedule</div>
+          <div class="scroll-x"><table class="workbook-table">
+            <thead><tr><th style="width:120px;">Time 시간</th><th style="width:28%;">Schedule 스케쥴</th><th>Details 참고사항</th><th style="width:72px;"></th></tr></thead>
+            <tbody>
+              ${dayEvents.map(event => `
+                <tr>
+                  <td><strong>${escapeHtml(eventTime(event))}</strong></td>
+                  <td>${escapeHtml(event.title)}<div class="meta">${escapeHtml(typeLabels[event.type] || event.type)}</div></td>
+                  <td>${eventMeta(event) || escapeHtml(event.notes || '')}</td>
+                  <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">수정</button></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table></div>
+        `
         : `<div class="empty">선택한 날짜에 등록된 일정이 없습니다.</div>`;
     }
 
@@ -521,7 +658,7 @@ const pageTitle = 'WOLKO Schedule Planner';
                 <div class="week-items">
                   ${items.length ? items.map(event => `
                     <div class="week-item" data-edit="${escapeHtml(event.id)}">
-                      ${escapeHtml(event.start)} ${escapeHtml(event.title)}
+                      ${escapeHtml(eventTime(event))} ${escapeHtml(event.title)}
                       ${event.vanId ? `<br>${escapeHtml(vanName(event.vanId))}` : ''}
                     </div>
                   `).join('') : '<div class="meta">일정 없음</div>'}
@@ -534,30 +671,64 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function renderVans() {
-      const events = sortedEvents(weekEvents().filter(event => event.type === 'transport' || event.vanId));
+      const plans = plan.transportPlans || [];
       document.getElementById('view-vans').innerHTML = `
-        <div class="van-grid">
-          ${plan.vans.map(van => {
-            const trips = events.filter(event => event.vanId === van.id);
-            return `
-              <div class="van-row">
-                <div class="van-row-head">
-                  <strong>${escapeHtml(van.name)}</strong>
-                  <span class="meta">${van.seats ? `${van.seats} seats` : '좌석 미입력'}${van.driver ? ` · ${escapeHtml(van.driver)}` : ''}</span>
-                </div>
-                <div class="van-trips">
-                  ${trips.length ? trips.map(event => `
-                    <div class="van-trip" data-edit="${escapeHtml(event.id)}">
-                      ${escapeHtml(dayName(event.date))} ${escapeHtml(event.start)}-${escapeHtml(event.end)}
-                      <br>${escapeHtml(event.from || '출발지 미정')} → ${escapeHtml(event.to || '도착지 미정')}
-                      <br>${escapeHtml(event.title)}${event.passengers ? ` · ${escapeHtml(event.passengers)}` : ''}
-                    </div>
-                  `).join('') : '<div class="meta">이번 주 운행 계획 없음</div>'}
-                </div>
+        <div class="matrix">
+          ${plans.length ? plans.map(transport => `
+            <div class="matrix-card">
+              <div class="matrix-head">
+                <span>${escapeHtml(transport.title)}${transport.date ? ` · ${escapeHtml(transport.date)}` : ''}</span>
+                <button type="button" class="secondary danger" data-remove-transport="${escapeHtml(transport.id)}">삭제</button>
               </div>
-            `;
-          }).join('')}
+              ${transport.description ? `<div class="meta" style="padding:10px 14px;">${escapeHtml(transport.description)}</div>` : ''}
+              <div class="matrix-grid">
+                ${plan.vans.map(van => {
+                  const row = transport.assignments?.[van.id] || {};
+                  return `
+                    <div class="matrix-van">
+                      <strong>${escapeHtml(van.name)}</strong>
+                      <label class="meta">Driver</label>
+                      <input value="${escapeHtml(row.driver || van.driver || '')}" data-transport-id="${escapeHtml(transport.id)}" data-van-id="${escapeHtml(van.id)}" data-assign-field="driver" placeholder="D - Driver">
+                      <label class="meta">Passengers / Assignment</label>
+                      <div class="meta">${escapeHtml(row.passengers || '탑승자 미입력').replace(/\n/g, '<br>')}</div>
+                      <textarea data-transport-id="${escapeHtml(transport.id)}" data-van-id="${escapeHtml(van.id)}" data-assign-field="passengers" placeholder="탑승자 이름을 줄바꿈으로 입력">${escapeHtml(row.passengers || '')}</textarea>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `).join('') : '<div class="empty">차량 배정표를 추가하면 밴별 배정표가 여기에 표시됩니다.</div>'}
         </div>
+      `;
+    }
+
+    function renderPeople() {
+      const sf = (plan.people || []).filter(person => person.group === 'sf');
+      const wolko = (plan.people || []).filter(person => person.group === 'wolko');
+      const rows = people => people.map((person, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td><strong>${escapeHtml(person.name)}</strong></td>
+          <td>${escapeHtml(person.gender)}</td>
+          <td>${escapeHtml(person.age)}</td>
+          <td>${escapeHtml(person.shirt)}</td>
+          <td>${escapeHtml(person.birthday)}</td>
+          <td>${escapeHtml(person.note)}</td>
+          <td><button type="button" class="secondary danger" data-remove-person="${escapeHtml(person.id)}">삭제</button></td>
+        </tr>
+      `).join('');
+      document.getElementById('view-people').innerHTML = `
+        <div class="workbook-title">S.F Name list (Total: ${sf.length})</div>
+        <div class="scroll-x"><table class="workbook-table">
+          <thead><tr><th>No</th><th>First</th><th>Gender</th><th>K-age</th><th>K(T-size)</th><th>B-day</th><th>Note / Allergy</th><th></th></tr></thead>
+          <tbody>${rows(sf) || '<tr><td colspan="8">등록된 Student Fusion 인원이 없습니다.</td></tr>'}</tbody>
+        </table></div>
+        <div style="height:16px;"></div>
+        <div class="workbook-title">WOLKO STAFF (Total: ${wolko.length})</div>
+        <div class="scroll-x"><table class="workbook-table">
+          <thead><tr><th>No</th><th>Name</th><th>Gender</th><th>Age</th><th>T-size</th><th>B-day</th><th>Note</th><th></th></tr></thead>
+          <tbody>${rows(wolko) || '<tr><td colspan="8">등록된 WOLKO Staff가 없습니다.</td></tr>'}</tbody>
+        </table></div>
       `;
     }
 
@@ -565,7 +736,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       const rows = sortedEvents().map(event => `
         <tr>
           <td>${escapeHtml(event.date)}</td>
-          <td>${escapeHtml(event.start)}-${escapeHtml(event.end)}</td>
+          <td>${escapeHtml(eventTime(event))}</td>
           <td><strong>${escapeHtml(event.title)}</strong><div class="meta">${escapeHtml(typeLabels[event.type] || event.type)}</div></td>
           <td>${escapeHtml(event.staff)}</td>
           <td>${escapeHtml(vanName(event.vanId))}</td>
@@ -598,7 +769,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     function renderStats() {
       const todayCount = plan.events.filter(event => event.date === els.selectedDate.value).length;
       const weekCount = weekEvents().length;
-      const viewLabels = { day: '일간 시간표', week: '주간 시간표', vans: '밴 운행 계획', list: '전체 일정 목록', fleet: '차량 목록' };
+      const viewLabels = { day: '일간 시간표', week: '주간 요약', vans: '차량 배정표', people: '인원 명단', list: '전체 운영표', fleet: '차량 목록' };
       els.statToday.textContent = todayCount;
       els.statWeek.textContent = weekCount;
       els.statVans.textContent = plan.vans.length;
@@ -612,6 +783,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       renderDay();
       renderWeek();
       renderVans();
+      renderPeople();
       renderList();
       renderFleet();
       document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === `view-${currentView}`));
@@ -623,13 +795,15 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function readForm() {
+      const parsed = clockRange(els.eventTimeText.value);
       return {
         id: editingId || crypto.randomUUID(),
         title: els.eventTitle.value.trim(),
         type: els.eventType.value,
         date: els.eventDate.value,
-        start: els.eventStart.value,
-        end: els.eventEnd.value,
+        timeText: els.eventTimeText.value.trim(),
+        start: parsed.start || els.eventStart.value,
+        end: parsed.end || els.eventEnd.value,
         staff: els.eventStaff.value.trim(),
         vanId: els.eventVan.value,
         from: els.eventFrom.value.trim(),
@@ -644,6 +818,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.eventTitle.value = '';
       els.eventType.value = 'program';
       els.eventDate.value = els.selectedDate.value;
+      els.eventTimeText.value = '09:00';
       els.eventStart.value = '09:00';
       els.eventEnd.value = '10:00';
       els.eventStaff.value = '';
@@ -663,6 +838,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.eventTitle.value = event.title || '';
       els.eventType.value = event.type || 'program';
       els.eventDate.value = event.date || els.selectedDate.value;
+      els.eventTimeText.value = eventTime(event);
       els.eventStart.value = event.start || '09:00';
       els.eventEnd.value = event.end || '10:00';
       els.eventStaff.value = event.staff || '';
@@ -712,6 +888,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         throw new Error(data.error || '데이터를 불러오지 못했습니다.');
       }
       plan = data.plan || plan;
+      plan.people = Array.isArray(plan.people) ? plan.people : [];
+      plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
       els.planTitle.value = plan.title || '';
       setState(plan.updatedAt ? `저장됨 ${new Date(plan.updatedAt).toLocaleString('ko-KR')}` : '저장됨');
       render();
@@ -741,9 +919,9 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function exportCsv() {
-      const headers = ['date','start','end','type','title','staff','van','from','to','passengers','notes'];
+      const headers = ['date','time','type','schedule','staff','van','from','to','passengers','details'];
       const rows = sortedEvents().map(event => [
-        event.date, event.start, event.end, typeLabels[event.type] || event.type, event.title, event.staff,
+        event.date, eventTime(event), typeLabels[event.type] || event.type, event.title, event.staff,
         vanName(event.vanId), event.from, event.to, event.passengers, event.notes,
       ]);
       const csv = [headers, ...rows].map(row => row.map(value => `"${String(value || '').replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -783,7 +961,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     });
     els.addEventBtn.addEventListener('click', () => {
       const event = readForm();
-      if (!event.title || !event.date || !event.start || !event.end) {
+      if (!event.title || !event.date || !event.timeText) {
         setState('제목, 날짜, 시간을 입력해주세요.');
         return;
       }
@@ -797,6 +975,57 @@ const pageTitle = 'WOLKO Schedule Planner';
       if (!editingId) return;
       plan.events = plan.events.filter(event => event.id !== editingId);
       clearForm();
+      markDirty();
+    });
+    els.addPersonBtn.addEventListener('click', () => {
+      const name = els.personName.value.trim();
+      if (!name) {
+        setState('명단에 추가할 이름을 입력해주세요.');
+        return;
+      }
+      plan.people = Array.isArray(plan.people) ? plan.people : [];
+      const sameGroup = plan.people.filter(person => person.group === els.personGroup.value);
+      plan.people.push({
+        id: crypto.randomUUID(),
+        group: els.personGroup.value,
+        no: sameGroup.length + 1,
+        name,
+        gender: els.personGender.value.trim(),
+        age: els.personAge.value.trim(),
+        shirt: els.personShirt.value.trim(),
+        birthday: els.personBirthday.value.trim(),
+        note: els.personNote.value.trim(),
+      });
+      els.personName.value = '';
+      els.personGender.value = '';
+      els.personAge.value = '';
+      els.personShirt.value = '';
+      els.personBirthday.value = '';
+      els.personNote.value = '';
+      currentView = 'people';
+      markDirty();
+    });
+    els.addTransportBtn.addEventListener('click', () => {
+      const title = els.transportTitle.value.trim();
+      if (!title) {
+        setState('차량 배정표 제목을 입력해주세요.');
+        return;
+      }
+      plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
+      const assignments = {};
+      plan.vans.forEach(van => {
+        assignments[van.id] = { driver: van.driver || '', passengers: '', notes: '' };
+      });
+      plan.transportPlans.push({
+        id: crypto.randomUUID(),
+        title,
+        date: els.selectedDate.value,
+        description: els.transportDescription.value.trim(),
+        assignments,
+      });
+      els.transportTitle.value = '';
+      els.transportDescription.value = '';
+      currentView = 'vans';
       markDirty();
     });
     document.addEventListener('click', event => {
@@ -817,8 +1046,29 @@ const pageTitle = 'WOLKO Schedule Planner';
         plan.vans.push({ id: crypto.randomUUID(), name: `Van ${plan.vans.length + 1}`, seats: 0, driver: '', memo: '' });
         markDirty();
       }
+      const removePerson = event.target.closest('[data-remove-person]')?.dataset.removePerson;
+      if (removePerson) {
+        plan.people = (plan.people || []).filter(person => person.id !== removePerson);
+        markDirty();
+      }
+      const removeTransport = event.target.closest('[data-remove-transport]')?.dataset.removeTransport;
+      if (removeTransport) {
+        plan.transportPlans = (plan.transportPlans || []).filter(item => item.id !== removeTransport);
+        markDirty();
+      }
     });
     document.addEventListener('input', event => {
+      const assignField = event.target.dataset.assignField;
+      if (assignField) {
+        const transport = (plan.transportPlans || []).find(item => item.id === event.target.dataset.transportId);
+        if (!transport) return;
+        const vanId = event.target.dataset.vanId;
+        transport.assignments = transport.assignments || {};
+        transport.assignments[vanId] = transport.assignments[vanId] || { driver: '', passengers: '', notes: '' };
+        transport.assignments[vanId][assignField] = event.target.value;
+        setState('저장 필요');
+        return;
+      }
       const field = event.target.dataset.vanField;
       const vanId = event.target.dataset.vanId;
       if (!field || !vanId) return;

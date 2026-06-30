@@ -49,6 +49,10 @@ function isTime(value) {
   return /^\d{2}:\d{2}$/.test(String(value || ''));
 }
 
+function timeText(value, fallback = '') {
+  return text(value || fallback, 40);
+}
+
 function cleanVan(van, index) {
   const name = text(van?.name, 80) || `Van ${index + 1}`;
   return {
@@ -64,20 +68,56 @@ function cleanEvent(event) {
   const date = text(event?.date, 10);
   const start = text(event?.start, 5);
   const end = text(event?.end, 5);
-  if (!isDate(date) || !isTime(start) || !isTime(end)) return null;
+  const displayTime = timeText(event?.timeText, start && end ? `${start}-${end}` : start);
+  if (!isDate(date) || !displayTime) return null;
   return {
     id: text(event?.id, 80) || crypto.randomUUID(),
     title: text(event?.title, 120) || '제목 없음',
     type: TYPE_SET.has(event?.type) ? event.type : 'program',
     date,
-    start,
-    end,
+    timeText: displayTime,
+    start: isTime(start) ? start : '',
+    end: isTime(end) ? end : '',
     staff: text(event?.staff, 120),
     vanId: text(event?.vanId, 80),
     from: text(event?.from, 120),
     to: text(event?.to, 120),
     passengers: text(event?.passengers, 160),
     notes: text(event?.notes, 700),
+  };
+}
+
+function cleanPerson(person, index) {
+  return {
+    id: text(person?.id, 80) || crypto.randomUUID(),
+    group: ['sf', 'wolko'].includes(person?.group) ? person.group : 'sf',
+    no: Math.max(0, Math.min(parseInt(person?.no, 10) || index + 1, 999)),
+    name: text(person?.name, 120),
+    gender: text(person?.gender, 40),
+    age: text(person?.age, 20),
+    shirt: text(person?.shirt, 20),
+    birthday: text(person?.birthday, 40),
+    note: text(person?.note, 500),
+  };
+}
+
+function cleanTransportPlan(plan, index, vans) {
+  const assignments = {};
+  const source = plan?.assignments && typeof plan.assignments === 'object' && !Array.isArray(plan.assignments) ? plan.assignments : {};
+  vans.forEach(van => {
+    const row = source[van.id] && typeof source[van.id] === 'object' && !Array.isArray(source[van.id]) ? source[van.id] : {};
+    assignments[van.id] = {
+      driver: text(row.driver || van.driver, 80),
+      passengers: text(row.passengers, 1200),
+      notes: text(row.notes, 500),
+    };
+  });
+  return {
+    id: text(plan?.id, 80) || crypto.randomUUID(),
+    title: text(plan?.title, 120) || `Vehicle Plan ${index + 1}`,
+    date: isDate(plan?.date) ? text(plan.date, 10) : '',
+    description: text(plan?.description, 300),
+    assignments,
   };
 }
 
@@ -89,6 +129,8 @@ function emptyPlan() {
       { id: 'van-2', name: 'Van 2', seats: 0, driver: '', memo: '' },
     ],
     events: [],
+    people: [],
+    transportPlans: [],
     updatedAt: '',
   };
 }
@@ -99,10 +141,18 @@ function cleanPlan(input, touch = true) {
   const events = Array.isArray(source.events)
     ? source.events.slice(0, 1500).map(cleanEvent).filter(Boolean)
     : [];
+  const people = Array.isArray(source.people)
+    ? source.people.slice(0, 1000).map(cleanPerson).filter(person => person.name)
+    : [];
+  const transportPlans = Array.isArray(source.transportPlans)
+    ? source.transportPlans.slice(0, 100).map((plan, index) => cleanTransportPlan(plan, index, vans))
+    : [];
   return {
     title: text(source.title, 120) || 'WOLKO Staff Schedule',
     vans,
     events,
+    people,
+    transportPlans,
     updatedAt: touch ? new Date().toISOString() : text(source.updatedAt, 40),
   };
 }
