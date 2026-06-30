@@ -467,7 +467,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       #view-fleet .van-edit-row { display:block; border:1px solid #cbd5e1; border-radius:5px; padding:2mm; }
       #view-fleet input,
       #view-fleet button { display:none; }
-      #view-fleet .van-edit-row::before { content:'Vehicle'; display:block; color:#004f68; font-weight:900; }
+      #view-fleet .van-edit-row::before { content:'차량'; display:block; color:#004f68; font-weight:900; }
     }
   </style>
 </head>
@@ -543,9 +543,9 @@ const pageTitle = 'WOLKO Schedule Planner';
         <div class="print-summary" id="printSummary">WOLKO Schedule Planner</div>
       </div>
       <div class="stats">
-        <div class="stat"><strong id="statToday">0</strong><span>TODAY</span></div>
-        <div class="stat"><strong id="statWeek">0</strong><span>THIS WEEK</span></div>
-        <div class="stat"><strong id="statVans">0</strong><span>VANS</span></div>
+        <div class="stat"><strong id="statToday">0</strong><span data-ko="오늘 일정" data-en="TODAY">오늘 일정</span></div>
+        <div class="stat"><strong id="statWeek">0</strong><span data-ko="이번 주" data-en="THIS WEEK">이번 주</span></div>
+        <div class="stat"><strong id="statVans">0</strong><span data-ko="차량" data-en="VANS">차량</span></div>
       </div>
     </section>
 
@@ -727,6 +727,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         saveFailed: '저장하지 못했습니다.',
         loadFailed: '데이터를 불러오지 못했습니다.',
         importLoading: '엑셀 가져오는 중...',
+        translating: '한국어로 번역 중...',
         importDone: ({ events, people, plans }) => `엑셀 가져오기 완료 · 일정 ${events}개 · 명단 ${people}명 · 차량표 ${plans}개`,
         importFailed: '엑셀을 가져오지 못했습니다.',
         titleRequired: '제목, 날짜, 시간을 입력해주세요.',
@@ -783,6 +784,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         saveFailed: 'Could not save.',
         loadFailed: 'Could not load data.',
         importLoading: 'Importing Excel...',
+        translating: 'Translating to Korean...',
         importDone: ({ events, people, plans }) => `Import complete · ${events} schedules · ${people} people · ${plans} vehicle plans`,
         importFailed: 'Could not import Excel.',
         titleRequired: 'Please enter a title, date, and time.',
@@ -1283,6 +1285,37 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     function isPeopleSheetName(name) {
       return /people|person|list|명단|인원/i.test(name);
+    }
+
+    function needsTranslation(text) {
+      if (!text || typeof text !== 'string' || !text.trim()) return false;
+      if (/[가-힯ᄀ-ᇿ㄰-㆏]/.test(text)) return false;
+      return /[a-zA-Z]{2,}/.test(text);
+    }
+
+    async function translateImported(imported) {
+      const fields = ['title', 'notes', 'from', 'to', 'staff', 'passengers'];
+      const targets = [];
+      imported.events.forEach((ev, ei) => {
+        fields.forEach(f => {
+          if (needsTranslation(ev[f])) targets.push({ ei, f, text: ev[f] });
+        });
+      });
+      if (!targets.length) return;
+      try {
+        const res = await fetch('/api/schedule-planner/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texts: targets.map(t => t.text) }),
+        });
+        if (!res.ok) return;
+        const { translations } = await res.json();
+        translations.forEach((translated, i) => {
+          if (translated) imported.events[targets[i].ei][targets[i].f] = translated;
+        });
+      } catch (err) {
+        console.warn('Translation failed:', err);
+      }
     }
 
     async function importExcelFile(file) {
@@ -1909,6 +1942,10 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.importBtn.disabled = true;
       try {
         const imported = await importExcelFile(file);
+        if (currentLang === 'ko') {
+          setState(tr('translating'));
+          await translateImported(imported);
+        }
         plan.events = [...(plan.events || []), ...imported.events];
         plan.people = [...(plan.people || []), ...imported.people];
         if (imported.vans.length) plan.vans = imported.vans;
@@ -2031,7 +2068,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         markDirty();
       }
       if (event.target.id === 'addVanBtn') {
-        plan.vans.push({ id: crypto.randomUUID(), name: `Van ${plan.vans.length + 1}`, seats: 0, driver: '', memo: '' });
+        plan.vans.push({ id: crypto.randomUUID(), name: `${tr('vehicle')} ${plan.vans.length + 1}`, seats: 0, driver: '', memo: '' });
         markDirty();
       }
       const removePerson = event.target.closest('[data-remove-person]')?.dataset.removePerson;
