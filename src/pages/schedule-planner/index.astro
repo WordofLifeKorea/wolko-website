@@ -161,24 +161,45 @@ const pageTitle = 'WOLKO Schedule Planner';
     .van-row-head strong { color:var(--blue); font-weight:900; }
     .van-trips { display:grid; gap:8px; padding:12px 14px; }
     .van-trip { border-radius:10px; background:#fff4df; padding:10px 11px; font-size:12px; font-weight:800; line-height:1.55; }
-    .list-table { width:100%; border-collapse:collapse; min-width:920px; }
-    .list-table th,.list-table td { border-bottom:1px solid var(--border); padding:11px 10px; text-align:left; vertical-align:top; font-size:12px; }
-    .list-table th { color:var(--blue); background:#f8fbfc; font-weight:900; }
-    .workbook-table { width:100%; border-collapse:collapse; min-width:760px; background:#fff; }
-    .workbook-table th,.workbook-table td { border:1px solid #d9e5ea; padding:10px 11px; text-align:left; vertical-align:top; font-size:12px; line-height:1.55; }
-    .workbook-table th { background:#eaf6f9; color:var(--blue); font-weight:900; }
-    .workbook-title { border:1px solid #d9e5ea; border-bottom:0; border-radius:12px 12px 0 0; background:#dff0f5; color:var(--blue); padding:12px 14px; font-weight:900; text-align:center; }
-    .matrix { display:grid; gap:12px; }
-    .matrix-card { border:1px solid var(--border); border-radius:14px; background:#fff; overflow:hidden; }
-    .matrix-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 15px; background:#dff0f5; color:var(--blue); font-weight:900; }
-    .matrix-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:0; border-top:1px solid var(--border); }
-    .matrix-van { min-height:160px; border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:12px; }
-    .matrix-van strong { display:block; color:var(--blue); margin-bottom:8px; }
+    .tab-section { display:grid; gap:12px; }
+    .tab-head {
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      border:1px solid #dbe7ec; border-radius:16px; background:linear-gradient(135deg,#fff,#f4fbfd); padding:14px 16px;
+      box-shadow:0 8px 20px rgba(0,79,104,.05);
+    }
+    .tab-title { color:var(--blue); font:900 16px/1.2 var(--sans); }
+    .tab-subtitle { margin-top:4px; color:var(--muted); font-size:12px; font-weight:800; }
+    .tab-count { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:6px 10px; font-size:11px; font-weight:900; }
+    .table-card { border:1px solid #dbe7ec; border-radius:16px; background:#fff; overflow:hidden; box-shadow:0 8px 20px rgba(0,79,104,.05); }
+    .list-table,.workbook-table { width:100%; border-collapse:separate; border-spacing:0; min-width:760px; background:#fff; }
+    .list-table th,.list-table td,.workbook-table th,.workbook-table td {
+      border-bottom:1px solid #edf3f6; padding:12px 13px; text-align:left; vertical-align:top; font-size:12px; line-height:1.55;
+    }
+    .list-table th,.workbook-table th {
+      position:sticky; top:0; z-index:1; color:var(--blue); background:#f4fbfd; font-weight:900; letter-spacing:.02em;
+    }
+    .list-table tbody tr:hover,.workbook-table tbody tr:hover { background:#fbfdfe; }
+    .workbook-title {
+      border-bottom:1px solid #edf3f6; background:#fbfdfe; color:var(--blue); padding:12px 14px;
+      font-size:13px; font-weight:900;
+    }
+    .matrix { display:grid; gap:14px; }
+    .matrix-card { border:1px solid #dbe7ec; border-radius:18px; background:#fff; overflow:hidden; box-shadow:0 8px 20px rgba(0,79,104,.05); }
+    .matrix-head {
+      display:flex; align-items:center; justify-content:space-between; gap:10px; padding:15px 16px;
+      background:linear-gradient(135deg,#eaf8fb,#fff); color:var(--blue); font-weight:900;
+    }
+    .matrix-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; padding:14px; border-top:1px solid var(--border); background:#fbfdfe; }
+    .matrix-van { min-height:180px; border:1px solid #dbe7ec; border-radius:14px; background:#fff; padding:13px; box-shadow:0 2px 8px rgba(0,79,104,.04); }
+    .matrix-van strong { display:block; color:var(--blue); margin-bottom:10px; font-size:14px; }
     .matrix-van textarea { min-height:104px; margin-top:8px; }
     .section-divider { height:1px; background:var(--border); margin:18px 0; }
-    .scroll-x { overflow:auto; border:1px solid var(--border); border-radius:12px; }
-    .van-editor { display:grid; gap:10px; margin-top:14px; }
-    .van-edit-row { display:grid; grid-template-columns:minmax(0,1.2fr) 70px minmax(0,1fr) auto; gap:8px; align-items:center; }
+    .scroll-x { overflow:auto; border:0; border-radius:0; }
+    .van-editor { display:grid; gap:12px; }
+    .van-edit-row {
+      display:grid; grid-template-columns:minmax(0,1.2fr) 80px minmax(0,1fr) auto; gap:10px; align-items:center;
+      border:1px solid #dbe7ec; border-radius:14px; background:#fff; padding:12px; box-shadow:0 4px 14px rgba(0,79,104,.04);
+    }
     .empty { padding:26px; border:1px dashed #ccdce3; border-radius:12px; color:var(--light); text-align:center; font-weight:800; }
     .save-state { color:rgba(255,255,255,.7); font-size:11px; font-weight:800; }
     .print-summary { display:none; }
@@ -194,6 +215,11 @@ const pageTitle = 'WOLKO Schedule Planner';
       .hero { border-radius:18px; padding:18px; }
       .panel { border-radius:18px; }
       .view { padding:14px; }
+      .tab-head { border-radius:14px; padding:13px; }
+      .tab-title { font-size:15px; }
+      .table-card { border-radius:14px; }
+      .matrix-grid { grid-template-columns:1fr; padding:12px; }
+      .matrix-head { align-items:flex-start; flex-direction:column; }
       .schedule-card { grid-template-columns:1fr; }
       .mini-actions { justify-content:flex-start; }
       .field.two,.van-edit-row { grid-template-columns:1fr; }
@@ -1064,20 +1090,28 @@ const pageTitle = 'WOLKO Schedule Planner';
       const dayEvents = sortedEvents(plan.events.filter(event => event.date === els.selectedDate.value));
       document.getElementById('view-day').innerHTML = dayEvents.length
         ? `
-          <div class="workbook-title">${escapeHtml(tr('dayTitle', dayName(els.selectedDate.value)))}</div>
-          <div class="scroll-x"><table class="workbook-table">
-            <thead><tr><th style="width:120px;">${escapeHtml(tr('time'))}</th><th style="width:28%;">${escapeHtml(tr('schedule'))}</th><th>${escapeHtml(tr('details'))}</th><th style="width:72px;"></th></tr></thead>
-            <tbody>
-              ${dayEvents.map(event => `
-                <tr>
-                  <td><strong>${escapeHtml(eventTime(event))}</strong></td>
-                  <td>${escapeHtml(event.title)}<div class="meta">${escapeHtml(typeLabel(event.type))}</div></td>
-                  <td>${eventMeta(event) || escapeHtml(event.notes || '')}</td>
-                  <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">${escapeHtml(tr('edit'))}</button></td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table></div>
+          <div class="tab-section">
+            <div class="tab-head">
+              <div>
+                <div class="tab-title">${escapeHtml(tr('dayTitle', dayName(els.selectedDate.value)))}</div>
+                <div class="tab-subtitle">${escapeHtml(els.selectedDate.value)}</div>
+              </div>
+              <span class="tab-count">${dayEvents.length}</span>
+            </div>
+            <div class="table-card"><div class="scroll-x"><table class="workbook-table">
+              <thead><tr><th style="width:120px;">${escapeHtml(tr('time'))}</th><th style="width:28%;">${escapeHtml(tr('schedule'))}</th><th>${escapeHtml(tr('details'))}</th><th style="width:72px;"></th></tr></thead>
+              <tbody>
+                ${dayEvents.map(event => `
+                  <tr>
+                    <td><strong>${escapeHtml(eventTime(event))}</strong></td>
+                    <td>${escapeHtml(event.title)}<div class="meta">${escapeHtml(typeLabel(event.type))}</div></td>
+                    <td>${eventMeta(event) || escapeHtml(event.notes || '')}</td>
+                    <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">${escapeHtml(tr('edit'))}</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table></div></div>
+          </div>
         `
         : `<div class="empty">${escapeHtml(tr('noDayEvents'))}</div>`;
     }
@@ -1116,7 +1150,15 @@ const pageTitle = 'WOLKO Schedule Planner';
     function renderVans() {
       const plans = plan.transportPlans || [];
       document.getElementById('view-vans').innerHTML = `
-        <div class="matrix">
+        <div class="tab-section">
+          <div class="tab-head">
+            <div>
+              <div class="tab-title">${escapeHtml(COPY[currentLang].printView.vans)}</div>
+              <div class="tab-subtitle">${escapeHtml(`${plan.vans.length} ${COPY[currentLang].printView.fleet}`)}</div>
+            </div>
+            <span class="tab-count">${plans.length}</span>
+          </div>
+          <div class="matrix">
           ${plans.length ? plans.map(transport => `
             <div class="matrix-card">
               <div class="matrix-head">
@@ -1141,6 +1183,7 @@ const pageTitle = 'WOLKO Schedule Planner';
               </div>
             </div>
           `).join('') : `<div class="empty">${escapeHtml(tr('noVehiclePlans'))}</div>`}
+          </div>
         </div>
       `;
     }
@@ -1161,17 +1204,29 @@ const pageTitle = 'WOLKO Schedule Planner';
         </tr>
       `).join('');
       document.getElementById('view-people').innerHTML = `
-        <div class="workbook-title">${escapeHtml(tr('sfList', sf.length))}</div>
-        <div class="scroll-x"><table class="workbook-table">
-          <thead><tr>${COPY[currentLang].peopleHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>
-          <tbody>${rows(sf) || `<tr><td colspan="8">${escapeHtml(tr('noSf'))}</td></tr>`}</tbody>
-        </table></div>
-        <div style="height:16px;"></div>
-        <div class="workbook-title">${escapeHtml(tr('wolkoList', wolko.length))}</div>
-        <div class="scroll-x"><table class="workbook-table">
-          <thead><tr>${COPY[currentLang].wolkoHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>
-          <tbody>${rows(wolko) || `<tr><td colspan="8">${escapeHtml(tr('noWolko'))}</td></tr>`}</tbody>
-        </table></div>
+        <div class="tab-section">
+          <div class="tab-head">
+            <div>
+              <div class="tab-title">${escapeHtml(COPY[currentLang].printView.people)}</div>
+              <div class="tab-subtitle">${escapeHtml(tr('sfList', sf.length))} · ${escapeHtml(tr('wolkoList', wolko.length))}</div>
+            </div>
+            <span class="tab-count">${sf.length + wolko.length}</span>
+          </div>
+          <div class="table-card">
+            <div class="workbook-title">${escapeHtml(tr('sfList', sf.length))}</div>
+            <div class="scroll-x"><table class="workbook-table">
+              <thead><tr>${COPY[currentLang].peopleHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>
+              <tbody>${rows(sf) || `<tr><td colspan="8">${escapeHtml(tr('noSf'))}</td></tr>`}</tbody>
+            </table></div>
+          </div>
+          <div class="table-card">
+            <div class="workbook-title">${escapeHtml(tr('wolkoList', wolko.length))}</div>
+            <div class="scroll-x"><table class="workbook-table">
+              <thead><tr>${COPY[currentLang].wolkoHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>
+              <tbody>${rows(wolko) || `<tr><td colspan="8">${escapeHtml(tr('noWolko'))}</td></tr>`}</tbody>
+            </table></div>
+          </div>
+        </div>
       `;
     }
 
@@ -1189,22 +1244,42 @@ const pageTitle = 'WOLKO Schedule Planner';
         </tr>
       `).join('');
       document.getElementById('view-list').innerHTML = rows
-        ? `<div class="scroll-x"><table class="list-table"><thead><tr>${COPY[currentLang].listHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`
+        ? `
+          <div class="tab-section">
+            <div class="tab-head">
+              <div>
+                <div class="tab-title">${escapeHtml(COPY[currentLang].printView.list)}</div>
+                <div class="tab-subtitle">${escapeHtml(plan.title || 'WOLKO Staff Schedule')}</div>
+              </div>
+              <span class="tab-count">${plan.events.length}</span>
+            </div>
+            <div class="table-card"><div class="scroll-x"><table class="list-table"><thead><tr>${COPY[currentLang].listHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>
+          </div>
+        `
         : `<div class="empty">${escapeHtml(tr('noSchedules'))}</div>`;
     }
 
     function renderFleet() {
       document.getElementById('view-fleet').innerHTML = `
-        <div class="van-editor">
-          ${plan.vans.map(van => `
-            <div class="van-edit-row">
-              <input value="${escapeHtml(van.name)}" data-van-field="name" data-van-id="${escapeHtml(van.id)}" placeholder="${escapeHtml(tr('vanNamePh'))}">
-              <input value="${escapeHtml(van.seats)}" data-van-field="seats" data-van-id="${escapeHtml(van.id)}" type="number" min="0" placeholder="${escapeHtml(tr('seatsPh'))}">
-              <input value="${escapeHtml(van.driver)}" data-van-field="driver" data-van-id="${escapeHtml(van.id)}" placeholder="${escapeHtml(tr('driverPh'))}">
-              <button class="secondary danger" type="button" data-remove-van="${escapeHtml(van.id)}">${escapeHtml(tr('delete'))}</button>
+        <div class="tab-section">
+          <div class="tab-head">
+            <div>
+              <div class="tab-title">${escapeHtml(COPY[currentLang].printView.fleet)}</div>
+              <div class="tab-subtitle">${escapeHtml(tr('driverPh'))}</div>
             </div>
-          `).join('')}
-          <button class="secondary" type="button" id="addVanBtn">${escapeHtml(tr('addVan'))}</button>
+            <span class="tab-count">${plan.vans.length}</span>
+          </div>
+          <div class="van-editor">
+            ${plan.vans.map(van => `
+              <div class="van-edit-row">
+                <input value="${escapeHtml(van.name)}" data-van-field="name" data-van-id="${escapeHtml(van.id)}" placeholder="${escapeHtml(tr('vanNamePh'))}">
+                <input value="${escapeHtml(van.seats)}" data-van-field="seats" data-van-id="${escapeHtml(van.id)}" type="number" min="0" placeholder="${escapeHtml(tr('seatsPh'))}">
+                <input value="${escapeHtml(van.driver)}" data-van-field="driver" data-van-id="${escapeHtml(van.id)}" placeholder="${escapeHtml(tr('driverPh'))}">
+                <button class="secondary danger" type="button" data-remove-van="${escapeHtml(van.id)}">${escapeHtml(tr('delete'))}</button>
+              </div>
+            `).join('')}
+            <button class="secondary" type="button" id="addVanBtn">${escapeHtml(tr('addVan'))}</button>
+          </div>
         </div>
       `;
     }
