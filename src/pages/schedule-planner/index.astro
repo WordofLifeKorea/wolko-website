@@ -98,15 +98,24 @@ const pageTitle = 'WOLKO Schedule Planner';
     .stat { min-width:112px; border:1px solid var(--border); border-radius:var(--radius-md); background:#f8fafb; padding:13px 15px; text-align:right; }
     .stat strong { display:block; color:var(--blue); font:900 24px/1 var(--sans); letter-spacing:-.02em; }
     .stat span { display:block; margin-top:6px; color:var(--light); font:900 10px/1 var(--sans); letter-spacing:.08em; }
-    .layout { display:grid; grid-template-columns:372px minmax(0,1fr); gap:20px; align-items:start; transition:grid-template-columns .25s ease; }
-    .layout.sidebar-collapsed { grid-template-columns:0 1fr; gap:0; }
-    .layout.sidebar-collapsed aside { display:none; }
-    .sidebar-toggle {
-      min-height:34px; min-width:34px; border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:6px 10px;
-      background:rgba(255,255,255,.15); color:#fff; font-size:13px; font-weight:900; cursor:pointer;
-      display:flex; align-items:center; gap:6px;
+    .layout { display:grid; grid-template-columns:372px minmax(0,1fr); gap:20px; align-items:start; }
+    .layout.sidebar-collapsed { grid-template-columns:0 minmax(0,1fr); gap:0; }
+    .layout aside { overflow:hidden; transition:opacity .22s ease; }
+    .layout.sidebar-collapsed aside { opacity:0; pointer-events:none; }
+    .panel-collapse-btn {
+      flex-shrink:0; width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+      border:1px solid var(--border); border-radius:8px; background:#f4f6f8; color:var(--muted);
+      font-size:13px; cursor:pointer; transition:background .15s,color .15s;
     }
-    .sidebar-toggle:hover { background:rgba(255,255,255,.28); }
+    .panel-collapse-btn:hover { background:var(--blue); color:#fff; border-color:var(--blue); }
+    .sidebar-reopen-tab {
+      position:fixed; left:0; top:50%; transform:translateY(-50%);
+      z-index:90; display:none; writing-mode:vertical-rl; align-items:center; justify-content:center;
+      background:var(--blue); color:#fff; border:none; border-radius:0 8px 8px 0;
+      padding:16px 8px; font:900 11px/1 var(--body); letter-spacing:.06em; cursor:pointer;
+      box-shadow:3px 0 14px rgba(0,79,104,.22);
+    }
+    body.sidebar-collapsed .sidebar-reopen-tab { display:flex; }
     .panel {
       border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--card); box-shadow:var(--shadow-card); overflow:hidden;
     }
@@ -361,7 +370,6 @@ const pageTitle = 'WOLKO Schedule Planner';
       </div>
     </div>
     <div class="toolbar">
-      <button class="sidebar-toggle" type="button" id="sidebarToggleBtn" title="입력창 열기/닫기">☰ 입력창</button>
       <input id="selectedDate" type="date">
       <span class="save-state" id="saveState">로그인 필요</span>
       <button class="lang-toggle" type="button" id="langKoBtn">KO</button>
@@ -392,7 +400,10 @@ const pageTitle = 'WOLKO Schedule Planner';
       <aside class="panel">
         <div class="panel-head">
           <h3 data-ko="운영표 입력" data-en="Operations Entry">운영표 입력</h3>
-          <button class="ghost" id="resetEventBtn" type="button" data-ko="새 일정" data-en="New Item">새 일정</button>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="ghost" id="resetEventBtn" type="button" data-ko="새 일정" data-en="New Item">새 일정</button>
+            <button class="panel-collapse-btn" type="button" id="sidebarCollapseBtn" title="입력창 닫기">◀</button>
+          </div>
         </div>
         <div class="panel-body">
           <div class="form-grid">
@@ -547,6 +558,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       </section>
     </section>
   </main>
+
+  <button class="sidebar-reopen-tab" id="sidebarReopenTab" type="button">입력창 열기</button>
 
   <script>
     const TOKEN_KEY = 'wolko_schedule_planner_token';
@@ -721,7 +734,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       statToday: document.getElementById('statToday'),
       statWeek: document.getElementById('statWeek'),
       statVans: document.getElementById('statVans'),
-      sidebarToggleBtn: document.getElementById('sidebarToggleBtn'),
+      sidebarCollapseBtn: document.getElementById('sidebarCollapseBtn'),
+      sidebarReopenTab: document.getElementById('sidebarReopenTab'),
       layout: document.querySelector('.layout'),
     };
     let token = localStorage.getItem(TOKEN_KEY) || '';
@@ -1499,11 +1513,16 @@ const pageTitle = 'WOLKO Schedule Planner';
     let sidebarOpen = localStorage.getItem(SIDEBAR_KEY) !== 'closed';
     function applySidebar() {
       els.layout.classList.toggle('sidebar-collapsed', !sidebarOpen);
-      els.sidebarToggleBtn.textContent = sidebarOpen ? '✕ 입력창' : '☰ 입력창';
+      document.body.classList.toggle('sidebar-collapsed', !sidebarOpen);
     }
-    els.sidebarToggleBtn.addEventListener('click', () => {
-      sidebarOpen = !sidebarOpen;
-      localStorage.setItem(SIDEBAR_KEY, sidebarOpen ? 'open' : 'closed');
+    els.sidebarCollapseBtn.addEventListener('click', () => {
+      sidebarOpen = false;
+      localStorage.setItem(SIDEBAR_KEY, 'closed');
+      applySidebar();
+    });
+    els.sidebarReopenTab.addEventListener('click', () => {
+      sidebarOpen = true;
+      localStorage.setItem(SIDEBAR_KEY, 'open');
       applySidebar();
     });
     applySidebar();
