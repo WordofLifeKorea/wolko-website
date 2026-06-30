@@ -526,7 +526,7 @@ const pageTitle = 'WOLKO Schedule Planner';
           <div class="calendar-grid" id="calendarGrid"></div>
         </div>
       </div>
-      <button class="lang-toggle" type="button" id="langToggleBtn">KO</button>
+      <button class="lang-toggle" type="button" id="langToggleBtn">EN</button>
       <button type="button" id="saveBtn" data-ko="저장" data-en="Save">저장</button>
       <button type="button" id="importBtn" data-ko="엑셀 가져오기" data-en="Import XLSX">엑셀 가져오기</button>
       <input id="excelInput" type="file" accept=".xlsx">
@@ -927,7 +927,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       document.querySelectorAll('option[data-ko][data-en]').forEach(option => {
         option.textContent = option.dataset[currentLang];
       });
-      els.langToggleBtn.textContent = currentLang.toUpperCase();
+      els.langToggleBtn.textContent = currentLang === 'ko' ? 'EN' : 'KR';
+      els.langToggleBtn.setAttribute('aria-label', currentLang === 'ko' ? 'Switch to English' : '한국어로 전환');
       els.addEventBtn.textContent = editingId ? tr('updateSchedule') : tr('addSchedule');
       if (!token) setState(tr('loginNeeded'));
     }
