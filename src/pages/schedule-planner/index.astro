@@ -1075,27 +1075,56 @@ const pageTitle = 'WOLKO Schedule Planner';
           title,
           date: els.selectedDate.value || todayIso(),
           description: cellText(rows[2]?.[8]),
+          vanIds: vans.map(v => v.id),
           assignments,
         },
       };
     }
 
+    function isScheduleSheetName(name) {
+      if (/schedule|일정|운영표/i.test(name)) return true;
+      // "Jul 4", "July 4", "07/04", "7.4" 형태의 날짜 시트명
+      if (/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*\d{1,2}\b/i.test(name)) return true;
+      if (/\b\d{1,2}[./]\d{1,2}\b/.test(name)) return true;
+      return false;
+    }
+
+    function isPeopleSheetName(name) {
+      return /people|person|list|명단|인원/i.test(name);
+    }
+
     async function importExcelFile(file) {
       const sheets = await readWorkbook(await file.arrayBuffer());
-      const imported = { events: [], people: [], vans: [], transportPlans: [] };
+      const imported = { events: [], people: [], vans: [], transportPlans: [], sheetLog: [] };
+      console.group('[Schedule Planner] Excel Import');
       sheets.forEach(sheet => {
-        if (/people list/i.test(sheet.name)) {
+        console.log(`Sheet: "${sheet.name}" (${sheet.rows.length} rows)`);
+        if (isPeopleSheetName(sheet.name)) {
+          const before = imported.people.length;
           imported.people.push(...importPeopleSheet(sheet.rows));
-        } else if (/schedule/i.test(sheet.name)) {
+          const added = imported.people.length - before;
+          imported.sheetLog.push(`인원: "${sheet.name}" → ${added}명`);
+          console.log(`  → 인원 명단 (${added}명)`);
+        } else if (isScheduleSheetName(sheet.name)) {
+          const before = imported.events.length;
           imported.events.push(...importScheduleSheet(sheet.name, sheet.rows));
+          const added = imported.events.length - before;
+          imported.sheetLog.push(`일정: "${sheet.name}" → ${added}개`);
+          console.log(`  → 스케줄 (${added}개)`);
         } else {
           const transport = importTransportSheet(sheet.name, sheet.rows);
+          console.log(`  → 차량 후보: 밴 ${transport.vans.length}대, 탑승자:`, transport.vans.map(v => v.name));
           if (transport.vans.length) {
             imported.vans.push(...transport.vans);
             imported.transportPlans.push(transport.transportPlan);
+            imported.sheetLog.push(`차량: "${sheet.name}" → 밴 ${transport.vans.length}대`);
+          } else {
+            imported.sheetLog.push(`무시됨: "${sheet.name}" (밴 없음 / 미인식)`);
+            console.warn(`  → 미인식 (건너뜀)`);
           }
         }
       });
+      console.groupEnd();
       return imported;
     }
 
@@ -1244,7 +1273,10 @@ const pageTitle = 'WOLKO Schedule Planner';
               </div>
               ${transport.description ? `<div class="meta" style="padding:10px 14px;">${escapeHtml(transport.description)}</div>` : ''}
               <div class="matrix-grid">
-                ${plan.vans.map(van => {
+                ${(transport.vanIds
+                    ? transport.vanIds.map(id => plan.vans.find(v => v.id === id)).filter(Boolean)
+                    : plan.vans
+                  ).map(van => {
                   const row = transport.assignments?.[van.id] || {};
                   return `
                     <div class="matrix-van">
@@ -1572,7 +1604,9 @@ const pageTitle = 'WOLKO Schedule Planner';
         plan.transportPlans = [...(plan.transportPlans || []), ...imported.transportPlans];
         currentView = imported.events.length ? 'day' : (imported.people.length ? 'people' : 'vans');
         markDirty();
-        setState(tr('importDone', { events: imported.events.length, people: imported.people.length, plans: imported.transportPlans.length }));
+        const summary = tr('importDone', { events: imported.events.length, people: imported.people.length, plans: imported.transportPlans.length });
+        const logDetail = (imported.sheetLog || []).join(' | ');
+        setState(`${summary}${logDetail ? ' — ' + logDetail : ''}`);
       } catch (error) {
         setState(error.message || tr('importFailed'));
       } finally {
