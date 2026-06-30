@@ -1536,6 +1536,12 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
         }
       });
       console.groupEnd();
+      // 진단용: 시트 현황 표시 (파싱 디버그)
+      const sheetSummary = sheets.map(s => {
+        const tag = isPeopleSheetName(s.name) ? '👥인원' : isScheduleSheetName(s.name) ? '📅일정' : '🚐차량?';
+        return `${tag} "${s.name}"`;
+      }).join('\n');
+      alert(`[시트 인식 결과]\n${sheetSummary}\n\n날짜별 이벤트:\n${[...new Set(imported.events.map(e=>e.date))].sort().map(d=>`${d}: ${imported.events.filter(e=>e.date===d).length}개`).join('\n') || '없음'}`);
       return imported;
     }
 
