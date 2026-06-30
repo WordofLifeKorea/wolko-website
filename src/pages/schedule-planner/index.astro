@@ -75,6 +75,8 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
     .toolbar input { width:160px; color:#fff; color-scheme:dark; }
     .toolbar input[type="file"] { display:none; }
+    .lang-toggle { min-width:42px; text-align:center; }
+    .lang-toggle.active { background:#fff; color:var(--blue); }
     .page { max-width:min(1540px,calc(100vw - 32px)); margin:0 auto; padding:34px 18px 90px; }
     .hero {
       display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; align-items:end; margin-bottom:18px;
@@ -242,7 +244,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       #view-fleet .van-edit-row { display:block; border:1px solid #cbd5e1; border-radius:5px; padding:2mm; }
       #view-fleet input,
       #view-fleet button { display:none; }
-      #view-fleet .van-edit-row::before { content:'차량 정보'; display:block; color:#004f68; font-weight:900; }
+      #view-fleet .van-edit-row::before { content:'Vehicle'; display:block; color:#004f68; font-weight:900; }
     }
   </style>
 </head>
@@ -253,10 +255,10 @@ const pageTitle = 'WOLKO Schedule Planner';
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
         <span class="login-logo-name">WOLKO</span>
       </div>
-      <p class="login-title">Schedule Planner Login</p>
-      <input class="login-input" id="passwordInput" type="password" placeholder="관리자 비밀번호" autocomplete="current-password">
+      <p class="login-title" data-ko="스케줄 플래너 로그인" data-en="Schedule Planner Login">스케줄 플래너 로그인</p>
+      <input class="login-input" id="passwordInput" type="password" data-ph-ko="관리자 비밀번호" data-ph-en="Admin password" placeholder="관리자 비밀번호" autocomplete="current-password">
       <p class="login-error" id="loginError"></p>
-      <button class="login-btn" id="loginBtn" type="button">Sign In</button>
+      <button class="login-btn" id="loginBtn" type="button" data-ko="로그인" data-en="Sign In">로그인</button>
     </div>
   </div>
 
@@ -264,18 +266,20 @@ const pageTitle = 'WOLKO Schedule Planner';
     <div class="brand">
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
       <div>
-        <h1>WOLKO 스케줄 플래너</h1>
-        <p>Staff & Vans Operations</p>
+        <h1 data-ko="WOLKO 스케줄 플래너" data-en="WOLKO Schedule Planner">WOLKO 스케줄 플래너</h1>
+        <p data-ko="스태프 & 차량 운영" data-en="Staff & Vans Operations">스태프 & 차량 운영</p>
       </div>
     </div>
     <div class="toolbar">
       <input id="selectedDate" type="date">
       <span class="save-state" id="saveState">로그인 필요</span>
-      <button type="button" id="saveBtn">저장</button>
-      <button type="button" id="importBtn">엑셀 가져오기</button>
+      <button class="lang-toggle" type="button" id="langKoBtn">KO</button>
+      <button class="lang-toggle" type="button" id="langEnBtn">EN</button>
+      <button type="button" id="saveBtn" data-ko="저장" data-en="Save">저장</button>
+      <button type="button" id="importBtn" data-ko="엑셀 가져오기" data-en="Import XLSX">엑셀 가져오기</button>
       <input id="excelInput" type="file" accept=".xlsx">
       <button type="button" id="exportBtn">CSV</button>
-      <button type="button" id="logoutBtn">로그아웃</button>
+      <button type="button" id="logoutBtn" data-ko="로그아웃" data-en="Log Out">로그아웃</button>
     </div>
   </header>
 
@@ -283,7 +287,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     <section class="hero">
       <div>
         <h2 id="planTitleView">WOLKO Staff Schedule</h2>
-        <p>스태프 일정과 여러 밴 운행 계획을 한 곳에서 정리합니다. 일간/주간 시간표를 보며 담당자, 차량, 출발지와 도착지를 함께 관리할 수 있습니다.</p>
+        <p data-ko="스태프 일정과 여러 밴 운행 계획을 한 곳에서 정리합니다. 일간/주간 시간표를 보며 담당자, 차량, 출발지와 도착지를 함께 관리할 수 있습니다." data-en="Organize staff schedules and multiple van plans in one place. Manage daily and weekly schedules with staff, vehicles, departure points, and destinations.">스태프 일정과 여러 밴 운행 계획을 한 곳에서 정리합니다. 일간/주간 시간표를 보며 담당자, 차량, 출발지와 도착지를 함께 관리할 수 있습니다.</p>
         <div class="print-summary" id="printSummary">WOLKO Schedule Planner</div>
       </div>
       <div class="stats">
@@ -296,132 +300,132 @@ const pageTitle = 'WOLKO Schedule Planner';
     <section class="layout">
       <aside class="panel">
         <div class="panel-head">
-          <h3>운영표 입력</h3>
-          <button class="ghost" id="resetEventBtn" type="button">새 일정</button>
+          <h3 data-ko="운영표 입력" data-en="Operations Entry">운영표 입력</h3>
+          <button class="ghost" id="resetEventBtn" type="button" data-ko="새 일정" data-en="New Item">새 일정</button>
         </div>
         <div class="panel-body">
           <div class="form-grid">
             <div class="field">
-              <label for="planTitle">플랜 이름</label>
-              <input id="planTitle" placeholder="예: 2026 여름 캠프 운영 일정">
+              <label for="planTitle" data-ko="플랜 이름" data-en="Plan Name">플랜 이름</label>
+              <input id="planTitle" data-ph-ko="예: 2026 여름 캠프 운영 일정" data-ph-en="Example: 2026 Summer Camp Operations" placeholder="예: 2026 여름 캠프 운영 일정">
             </div>
             <div class="field">
-              <label for="eventTitle">Schedule 스케쥴</label>
-              <input id="eventTitle" placeholder="예: Meet the SF Team, OAE Training">
+              <label for="eventTitle" data-ko="스케줄" data-en="Schedule">스케줄</label>
+              <input id="eventTitle" data-ph-ko="예: 공항 픽업, OAE 훈련" data-ph-en="Example: Meet the SF Team, OAE Training" placeholder="예: 공항 픽업, OAE 훈련">
             </div>
             <div class="field two">
               <div class="field">
-                <label for="eventDate">날짜</label>
+                <label for="eventDate" data-ko="날짜" data-en="Date">날짜</label>
                 <input id="eventDate" type="date">
               </div>
               <div class="field">
-                <label for="eventTimeText">Time 시간</label>
-                <input id="eventTimeText" placeholder="예: 3:20-4:15">
+                <label for="eventTimeText" data-ko="시간" data-en="Time">시간</label>
+                <input id="eventTimeText" data-ph-ko="예: 3:20-4:15" data-ph-en="Example: 3:20-4:15" placeholder="예: 3:20-4:15">
               </div>
             </div>
             <div class="field two">
               <div class="field">
-                <label for="eventStart">시작 정렬용</label>
+                <label for="eventStart" data-ko="시작 정렬용" data-en="Start Sort Time">시작 정렬용</label>
                 <input id="eventStart" type="time">
               </div>
               <div class="field">
-                <label for="eventEnd">종료 정렬용</label>
+                <label for="eventEnd" data-ko="종료 정렬용" data-en="End Sort Time">종료 정렬용</label>
                 <input id="eventEnd" type="time">
               </div>
             </div>
             <div class="field">
-              <label for="eventType">분류</label>
+              <label for="eventType" data-ko="분류" data-en="Category">분류</label>
               <select id="eventType">
-                <option value="program">프로그램</option>
-                <option value="transport">밴 운행</option>
-                <option value="meeting">미팅</option>
-                <option value="meal">식사</option>
-                <option value="prep">준비</option>
-                <option value="free">기타</option>
+                <option value="program" data-ko="프로그램" data-en="Program">프로그램</option>
+                <option value="transport" data-ko="밴 운행" data-en="Van Run">밴 운행</option>
+                <option value="meeting" data-ko="미팅" data-en="Meeting">미팅</option>
+                <option value="meal" data-ko="식사" data-en="Meal">식사</option>
+                <option value="prep" data-ko="준비" data-en="Prep">준비</option>
+                <option value="free" data-ko="기타" data-en="Other">기타</option>
               </select>
             </div>
             <div class="field">
-              <label for="eventStaff">담당 스태프</label>
-              <input id="eventStaff" placeholder="예: 김환규, 이서준">
+              <label for="eventStaff" data-ko="담당 스태프" data-en="Staff in Charge">담당 스태프</label>
+              <input id="eventStaff" data-ph-ko="예: 김환규, 이서준" data-ph-en="Example: Jacob, Samuel" placeholder="예: 김환규, 이서준">
             </div>
             <div class="field">
-              <label for="eventVan">차량</label>
+              <label for="eventVan" data-ko="차량" data-en="Vehicle">차량</label>
               <select id="eventVan"></select>
             </div>
             <div class="field two">
               <div class="field">
-                <label for="eventFrom">출발</label>
-                <input id="eventFrom" placeholder="예: 월코센터">
+                <label for="eventFrom" data-ko="출발" data-en="From">출발</label>
+                <input id="eventFrom" data-ph-ko="예: 월코센터" data-ph-en="Example: WOLKO Center" placeholder="예: 월코센터">
               </div>
               <div class="field">
-                <label for="eventTo">도착</label>
-                <input id="eventTo" placeholder="예: 평택역">
+                <label for="eventTo" data-ko="도착" data-en="To">도착</label>
+                <input id="eventTo" data-ph-ko="예: 평택역" data-ph-en="Example: Pyeongtaek Station" placeholder="예: 평택역">
               </div>
             </div>
             <div class="field">
-              <label for="eventPassengers">탑승자 / 관련 인원</label>
-              <input id="eventPassengers" placeholder="예: 캠퍼 7명, 스태프 1명">
+              <label for="eventPassengers" data-ko="탑승자 / 관련 인원" data-en="Passengers / People">탑승자 / 관련 인원</label>
+              <input id="eventPassengers" data-ph-ko="예: 캠퍼 7명, 스태프 1명" data-ph-en="Example: 7 campers, 1 staff" placeholder="예: 캠퍼 7명, 스태프 1명">
             </div>
             <div class="field">
-              <label for="eventNotes">Details 참고사항</label>
-              <textarea id="eventNotes" placeholder="담당자, 준비물, 세부 안내, 운전자 채팅 공유 내용 등을 적어주세요."></textarea>
+              <label for="eventNotes" data-ko="참고사항" data-en="Details">참고사항</label>
+              <textarea id="eventNotes" data-ph-ko="담당자, 준비물, 세부 안내, 운전자 채팅 공유 내용 등을 적어주세요." data-ph-en="Add staff notes, supplies, details, driver chat reminders, etc." placeholder="담당자, 준비물, 세부 안내, 운전자 채팅 공유 내용 등을 적어주세요."></textarea>
             </div>
             <div class="form-actions">
-              <button class="secondary danger" id="deleteEventBtn" type="button" hidden>삭제</button>
-              <button class="primary" id="addEventBtn" type="button">일정 추가</button>
+              <button class="secondary danger" id="deleteEventBtn" type="button" hidden data-ko="삭제" data-en="Delete">삭제</button>
+              <button class="primary" id="addEventBtn" type="button" data-ko="일정 추가" data-en="Add Schedule">일정 추가</button>
             </div>
             <div class="section-divider"></div>
             <div class="field two">
               <div class="field">
-                <label for="personGroup">People list 구분</label>
+                <label for="personGroup" data-ko="명단 구분" data-en="People List Type">명단 구분</label>
                 <select id="personGroup">
                   <option value="sf">Student Fusion</option>
                   <option value="wolko">WOLKO Staff</option>
                 </select>
               </div>
               <div class="field">
-                <label for="personName">이름</label>
-                <input id="personName" placeholder="예: Jacob">
+                <label for="personName" data-ko="이름" data-en="Name">이름</label>
+                <input id="personName" data-ph-ko="예: Jacob" data-ph-en="Example: Jacob" placeholder="예: Jacob">
               </div>
             </div>
             <div class="field two">
               <div class="field">
-                <label for="personGender">성별</label>
-                <input id="personGender" placeholder="예: M 남자">
+                <label for="personGender" data-ko="성별" data-en="Gender">성별</label>
+                <input id="personGender" data-ph-ko="예: M 남자" data-ph-en="Example: M" placeholder="예: M 남자">
               </div>
               <div class="field">
-                <label for="personAge">K-age</label>
-                <input id="personAge" placeholder="예: 20">
+                <label for="personAge" data-ko="한국 나이" data-en="K-age">한국 나이</label>
+                <input id="personAge" data-ph-ko="예: 20" data-ph-en="Example: 20" placeholder="예: 20">
               </div>
             </div>
             <div class="field two">
               <div class="field">
-                <label for="personShirt">K(T-size)</label>
-                <input id="personShirt" placeholder="예: XL">
+                <label for="personShirt" data-ko="티셔츠 사이즈" data-en="T-shirt Size">티셔츠 사이즈</label>
+                <input id="personShirt" data-ph-ko="예: XL" data-ph-en="Example: XL" placeholder="예: XL">
               </div>
               <div class="field">
-                <label for="personBirthday">B-day</label>
-                <input id="personBirthday" placeholder="예: 2007.08.24">
+                <label for="personBirthday" data-ko="생년월일" data-en="Birthday">생년월일</label>
+                <input id="personBirthday" data-ph-ko="예: 2007.08.24" data-ph-en="Example: 2007.08.24" placeholder="예: 2007.08.24">
               </div>
             </div>
             <div class="field">
-              <label for="personNote">Note / Allergy</label>
-              <input id="personNote" placeholder="예: wheat allergy, trip leader">
+              <label for="personNote" data-ko="메모 / 알러지" data-en="Note / Allergy">메모 / 알러지</label>
+              <input id="personNote" data-ph-ko="예: 밀가루 알러지, 팀 리더" data-ph-en="Example: wheat allergy, trip leader" placeholder="예: 밀가루 알러지, 팀 리더">
             </div>
             <div class="form-actions">
-              <button class="secondary" id="addPersonBtn" type="button">명단 추가</button>
+              <button class="secondary" id="addPersonBtn" type="button" data-ko="명단 추가" data-en="Add Person">명단 추가</button>
             </div>
             <div class="section-divider"></div>
             <div class="field">
-              <label for="transportTitle">차량 배정표 제목</label>
-              <input id="transportTitle" placeholder="예: Songtan station to each dormitory">
+              <label for="transportTitle" data-ko="차량 배정표 제목" data-en="Vehicle Plan Title">차량 배정표 제목</label>
+              <input id="transportTitle" data-ph-ko="예: 송탄역에서 각 기숙사로 이동" data-ph-en="Example: Songtan station to each dormitory" placeholder="예: 송탄역에서 각 기숙사로 이동">
             </div>
             <div class="field">
-              <label for="transportDescription">차량 배정 메모</label>
-              <input id="transportDescription" placeholder="예: Student Fusion people / WOL Staff">
+              <label for="transportDescription" data-ko="차량 배정 메모" data-en="Vehicle Plan Memo">차량 배정 메모</label>
+              <input id="transportDescription" data-ph-ko="예: SF 팀 / 월코 스태프" data-ph-en="Example: Student Fusion people / WOL Staff" placeholder="예: SF 팀 / 월코 스태프">
             </div>
             <div class="form-actions">
-              <button class="secondary" id="addTransportBtn" type="button">차량 배정표 추가</button>
+              <button class="secondary" id="addTransportBtn" type="button" data-ko="차량 배정표 추가" data-en="Add Vehicle Plan">차량 배정표 추가</button>
             </div>
           </div>
         </div>
@@ -429,19 +433,19 @@ const pageTitle = 'WOLKO Schedule Planner';
 
       <section class="panel">
         <div class="panel-head">
-          <h3>일정 보기</h3>
+          <h3 data-ko="일정 보기" data-en="Schedule View">일정 보기</h3>
           <div class="form-actions">
-            <button class="secondary" id="todayBtn" type="button">오늘</button>
-            <button class="secondary" id="printBtn" type="button">프린트</button>
+            <button class="secondary" id="todayBtn" type="button" data-ko="오늘" data-en="Today">오늘</button>
+            <button class="secondary" id="printBtn" type="button" data-ko="프린트" data-en="Print">프린트</button>
           </div>
         </div>
         <div class="tabs">
-          <button class="tab active" data-view="day" type="button">Daily Schedule</button>
-          <button class="tab" data-view="week" type="button">Week Summary</button>
-          <button class="tab" data-view="vans" type="button">Vehicle Plan</button>
-          <button class="tab" data-view="people" type="button">People List</button>
-          <button class="tab" data-view="list" type="button">All Schedule</button>
-          <button class="tab" data-view="fleet" type="button">Vans</button>
+          <button class="tab active" data-view="day" type="button" data-ko="일간 운영표" data-en="Daily Schedule">일간 운영표</button>
+          <button class="tab" data-view="week" type="button" data-ko="주간 요약" data-en="Week Summary">주간 요약</button>
+          <button class="tab" data-view="vans" type="button" data-ko="차량 배정표" data-en="Vehicle Plan">차량 배정표</button>
+          <button class="tab" data-view="people" type="button" data-ko="인원 명단" data-en="People List">인원 명단</button>
+          <button class="tab" data-view="list" type="button" data-ko="전체 운영표" data-en="All Schedule">전체 운영표</button>
+          <button class="tab" data-view="fleet" type="button" data-ko="차량 목록" data-en="Vans">차량 목록</button>
         </div>
         <div class="view active" id="view-day"></div>
         <div class="view" id="view-week"></div>
@@ -455,14 +459,129 @@ const pageTitle = 'WOLKO Schedule Planner';
 
   <script>
     const TOKEN_KEY = 'wolko_schedule_planner_token';
-    const typeLabels = {
-      program: '프로그램',
-      transport: '밴 운행',
-      meeting: '미팅',
-      meal: '식사',
-      prep: '준비',
-      free: '기타',
+    const LANG_KEY = 'wolko_schedule_planner_lang';
+    const COPY = {
+      ko: {
+        loginNeeded: '로그인 필요',
+        saveNeeded: '저장 필요',
+        loading: '불러오는 중...',
+        saved: '저장됨',
+        saving: '저장 중...',
+        saveFailed: '저장하지 못했습니다.',
+        loadFailed: '데이터를 불러오지 못했습니다.',
+        importLoading: '엑셀 가져오는 중...',
+        importDone: ({ events, people, plans }) => `엑셀 가져오기 완료 · 일정 ${events}개 · 명단 ${people}명 · 차량표 ${plans}개`,
+        importFailed: '엑셀을 가져오지 못했습니다.',
+        titleRequired: '제목, 날짜, 시간을 입력해주세요.',
+        personRequired: '명단에 추가할 이름을 입력해주세요.',
+        transportRequired: '차량 배정표 제목을 입력해주세요.',
+        loginFailed: '로그인하지 못했습니다.',
+        zipUnsupported: '이 브라우저에서는 xlsx 압축 해제를 지원하지 않습니다. 최신 Chrome 또는 Safari에서 다시 시도해주세요.',
+        invalidXlsx: '올바른 xlsx 파일이 아닙니다.',
+        workbookReadFailed: '엑셀 통합 문서를 읽지 못했습니다.',
+        noVehicle: '차량 없음',
+        noDetails: '세부 정보 없음',
+        staff: '담당',
+        vehicle: '차량',
+        fromUnknown: '출발지 미정',
+        toUnknown: '도착지 미정',
+        people: '인원',
+        dayTitle: date => `${date} 운영표`,
+        time: '시간',
+        schedule: '스케줄',
+        details: '참고사항',
+        edit: '수정',
+        addSchedule: '일정 추가',
+        updateSchedule: '일정 수정',
+        delete: '삭제',
+        noDayEvents: '선택한 날짜에 등록된 일정이 없습니다.',
+        noWeekEvents: '일정 없음',
+        noVehiclePlans: '차량 배정표를 추가하면 밴별 배정표가 여기에 표시됩니다.',
+        driver: '운전자',
+        assignment: '탑승자 / 배정',
+        noPassengers: '탑승자 미입력',
+        passengerPh: '탑승자 이름을 줄바꿈으로 입력',
+        sfList: n => `SF 명단 (총 ${n}명)`,
+        wolkoList: n => `WOLKO 스태프 (총 ${n}명)`,
+        noSf: '등록된 SF 인원이 없습니다.',
+        noWolko: '등록된 WOLKO 스태프가 없습니다.',
+        noSchedules: '아직 등록된 일정이 없습니다.',
+        addVan: '차량 추가',
+        vanNamePh: '차량 이름',
+        seatsPh: '좌석',
+        driverPh: '기본 운전자',
+        printView: { day: '일간 운영표', week: '주간 요약', vans: '차량 배정표', people: '인원 명단', list: '전체 운영표', fleet: '차량 목록' },
+        printSummary: ({ view, date, today, week, vans }) => `${view} · 기준일 ${date} · 일간 ${today}개 · 주간 ${week}개 · 차량 ${vans}대`,
+        listHeaders: ['날짜','시간','일정','담당','차량','이동','인원',''],
+        peopleHeaders: ['번호','이름','성별','한국 나이','티셔츠','생일','메모 / 알러지',''],
+        wolkoHeaders: ['번호','이름','성별','나이','티셔츠','생일','메모',''],
+        typeLabels: { program: '프로그램', transport: '밴 운행', meeting: '미팅', meal: '식사', prep: '준비', free: '기타' },
+      },
+      en: {
+        loginNeeded: 'Login required',
+        saveNeeded: 'Unsaved changes',
+        loading: 'Loading...',
+        saved: 'Saved',
+        saving: 'Saving...',
+        saveFailed: 'Could not save.',
+        loadFailed: 'Could not load data.',
+        importLoading: 'Importing Excel...',
+        importDone: ({ events, people, plans }) => `Import complete · ${events} schedules · ${people} people · ${plans} vehicle plans`,
+        importFailed: 'Could not import Excel.',
+        titleRequired: 'Please enter a title, date, and time.',
+        personRequired: 'Please enter a name to add.',
+        transportRequired: 'Please enter a vehicle plan title.',
+        loginFailed: 'Could not sign in.',
+        zipUnsupported: 'This browser cannot decompress xlsx files. Please try again in the latest Chrome or Safari.',
+        invalidXlsx: 'This is not a valid xlsx file.',
+        workbookReadFailed: 'Could not read the Excel workbook.',
+        noVehicle: 'No vehicle',
+        noDetails: 'No details',
+        staff: 'Staff',
+        vehicle: 'Vehicle',
+        fromUnknown: 'From TBD',
+        toUnknown: 'To TBD',
+        people: 'People',
+        dayTitle: date => `${date} Schedule`,
+        time: 'Time',
+        schedule: 'Schedule',
+        details: 'Details',
+        edit: 'Edit',
+        addSchedule: 'Add Schedule',
+        updateSchedule: 'Update Schedule',
+        delete: 'Delete',
+        noDayEvents: 'No schedules for the selected date.',
+        noWeekEvents: 'No schedule',
+        noVehiclePlans: 'Add a vehicle plan to show assignments by van.',
+        driver: 'Driver',
+        assignment: 'Passengers / Assignment',
+        noPassengers: 'No passengers entered',
+        passengerPh: 'Enter passenger names, one per line',
+        sfList: n => `S.F Name List (Total: ${n})`,
+        wolkoList: n => `WOLKO Staff (Total: ${n})`,
+        noSf: 'No Student Fusion people added.',
+        noWolko: 'No WOLKO staff added.',
+        noSchedules: 'No schedules added yet.',
+        addVan: 'Add Vehicle',
+        vanNamePh: 'Vehicle name',
+        seatsPh: 'Seats',
+        driverPh: 'Default driver',
+        printView: { day: 'Daily Schedule', week: 'Week Summary', vans: 'Vehicle Plan', people: 'People List', list: 'All Schedule', fleet: 'Vans' },
+        printSummary: ({ view, date, today, week, vans }) => `${view} · Date ${date} · Day ${today} · Week ${week} · Vans ${vans}`,
+        listHeaders: ['Date','Time','Schedule','Staff','Vehicle','Route','People',''],
+        peopleHeaders: ['No','Name','Gender','K-age','T-size','B-day','Note / Allergy',''],
+        wolkoHeaders: ['No','Name','Gender','Age','T-size','B-day','Note',''],
+        typeLabels: { program: 'Program', transport: 'Van Run', meeting: 'Meeting', meal: 'Meal', prep: 'Prep', free: 'Other' },
+      },
     };
+    let currentLang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'ko';
+    function tr(key, arg) {
+      const value = COPY[currentLang][key] ?? COPY.ko[key] ?? key;
+      return typeof value === 'function' ? value(arg) : value;
+    }
+    function typeLabel(type) {
+      return COPY[currentLang].typeLabels[type] || COPY.ko.typeLabels[type] || type;
+    }
     const els = {
       loginScreen: document.getElementById('loginScreen'),
       passwordInput: document.getElementById('passwordInput'),
@@ -470,6 +589,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       loginError: document.getElementById('loginError'),
       selectedDate: document.getElementById('selectedDate'),
       saveState: document.getElementById('saveState'),
+      langKoBtn: document.getElementById('langKoBtn'),
+      langEnBtn: document.getElementById('langEnBtn'),
       saveBtn: document.getElementById('saveBtn'),
       importBtn: document.getElementById('importBtn'),
       excelInput: document.getElementById('excelInput'),
@@ -525,6 +646,30 @@ const pageTitle = 'WOLKO Schedule Planner';
       updatedAt: '',
     };
 
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.querySelectorAll('[data-ko][data-en]').forEach(el => {
+        el.textContent = el.dataset[currentLang];
+      });
+      document.querySelectorAll('[data-ph-ko][data-ph-en]').forEach(el => {
+        el.placeholder = el.dataset[`ph${currentLang === 'ko' ? 'Ko' : 'En'}`] || '';
+      });
+      document.querySelectorAll('option[data-ko][data-en]').forEach(option => {
+        option.textContent = option.dataset[currentLang];
+      });
+      els.langKoBtn.classList.toggle('active', currentLang === 'ko');
+      els.langEnBtn.classList.toggle('active', currentLang === 'en');
+      els.addEventBtn.textContent = editingId ? tr('updateSchedule') : tr('addSchedule');
+      if (!token) setState(tr('loginNeeded'));
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang === 'en' ? 'en' : 'ko';
+      localStorage.setItem(LANG_KEY, currentLang);
+      applyLanguage();
+      render();
+    }
+
     function todayIso() {
       return new Date().toISOString().slice(0, 10);
     }
@@ -543,7 +688,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function dayName(iso) {
-      return new Intl.DateTimeFormat('ko-KR', { month: 'numeric', day: 'numeric', weekday: 'short' }).format(new Date(`${iso}T00:00:00`));
+      return new Intl.DateTimeFormat(currentLang === 'ko' ? 'ko-KR' : 'en-US', { month: 'numeric', day: 'numeric', weekday: 'short' }).format(new Date(`${iso}T00:00:00`));
     }
 
     function escapeHtml(value) {
@@ -622,7 +767,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     async function inflateZipEntry(bytes, method) {
       if (method === 0) return bytes;
       if (method !== 8 || !window.DecompressionStream) {
-        throw new Error('이 브라우저에서는 xlsx 압축 해제를 지원하지 않습니다. 최신 Chrome 또는 Safari에서 다시 시도해주세요.');
+        throw new Error(tr('zipUnsupported'));
       }
       const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
       return new Uint8Array(await new Response(stream).arrayBuffer());
@@ -638,7 +783,7 @@ const pageTitle = 'WOLKO Schedule Planner';
           break;
         }
       }
-      if (eocd < 0) throw new Error('올바른 xlsx 파일이 아닙니다.');
+      if (eocd < 0) throw new Error(tr('invalidXlsx'));
       const entries = readUint16(view, eocd + 10);
       let cursor = readUint32(view, eocd + 16);
       const decoder = new TextDecoder();
@@ -699,7 +844,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     async function readWorkbook(buffer) {
       const files = await unzipXlsx(buffer);
       const workbookXml = files['xl/workbook.xml'];
-      if (!workbookXml) throw new Error('엑셀 통합 문서를 읽지 못했습니다.');
+      if (!workbookXml) throw new Error(tr('workbookReadFailed'));
       const workbookDoc = new DOMParser().parseFromString(workbookXml, 'application/xml');
       const rels = relMap(files['xl/_rels/workbook.xml.rels']);
       const shared = sharedStrings(files['xl/sharedStrings.xml']);
@@ -852,16 +997,16 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function markDirty() {
-      setState('저장 필요');
+      setState(tr('saveNeeded'));
       render();
     }
 
     function eventMeta(event) {
       const bits = [];
-      if (event.staff) bits.push(`담당: ${event.staff}`);
-      if (event.vanId) bits.push(`차량: ${vanName(event.vanId)}`);
-      if (event.from || event.to) bits.push(`${event.from || '출발지 미정'} → ${event.to || '도착지 미정'}`);
-      if (event.passengers) bits.push(`인원: ${event.passengers}`);
+      if (event.staff) bits.push(`${tr('staff')}: ${event.staff}`);
+      if (event.vanId) bits.push(`${tr('vehicle')}: ${vanName(event.vanId)}`);
+      if (event.from || event.to) bits.push(`${event.from || tr('fromUnknown')} → ${event.to || tr('toUnknown')}`);
+      if (event.passengers) bits.push(`${tr('people')}: ${event.passengers}`);
       if (event.notes) bits.push(event.notes);
       return bits.map(escapeHtml).join(' · ');
     }
@@ -871,40 +1016,40 @@ const pageTitle = 'WOLKO Schedule Planner';
         <article class="schedule-card ${escapeHtml(event.type)}">
           <div class="time">${escapeHtml(eventTime(event))}</div>
           <div>
-            <div class="item-title">${escapeHtml(event.title)} <span class="meta">· ${escapeHtml(typeLabels[event.type] || event.type)}</span></div>
-            <div class="meta">${eventMeta(event) || '세부 정보 없음'}</div>
+            <div class="item-title">${escapeHtml(event.title)} <span class="meta">· ${escapeHtml(typeLabel(event.type))}</span></div>
+            <div class="meta">${eventMeta(event) || tr('noDetails')}</div>
           </div>
           <div class="mini-actions">
-            <button type="button" data-edit="${escapeHtml(event.id)}">수정</button>
+            <button type="button" data-edit="${escapeHtml(event.id)}">${escapeHtml(tr('edit'))}</button>
           </div>
         </article>
       `;
     }
 
     function renderVansSelect() {
-      els.eventVan.innerHTML = `<option value="">차량 없음</option>${plan.vans.map(van => `<option value="${escapeHtml(van.id)}">${escapeHtml(van.name)}</option>`).join('')}`;
+      els.eventVan.innerHTML = `<option value="">${escapeHtml(tr('noVehicle'))}</option>${plan.vans.map(van => `<option value="${escapeHtml(van.id)}">${escapeHtml(van.name)}</option>`).join('')}`;
     }
 
     function renderDay() {
       const dayEvents = sortedEvents(plan.events.filter(event => event.date === els.selectedDate.value));
       document.getElementById('view-day').innerHTML = dayEvents.length
         ? `
-          <div class="workbook-title">${escapeHtml(dayName(els.selectedDate.value))} Schedule</div>
+          <div class="workbook-title">${escapeHtml(tr('dayTitle', dayName(els.selectedDate.value)))}</div>
           <div class="scroll-x"><table class="workbook-table">
-            <thead><tr><th style="width:120px;">Time 시간</th><th style="width:28%;">Schedule 스케쥴</th><th>Details 참고사항</th><th style="width:72px;"></th></tr></thead>
+            <thead><tr><th style="width:120px;">${escapeHtml(tr('time'))}</th><th style="width:28%;">${escapeHtml(tr('schedule'))}</th><th>${escapeHtml(tr('details'))}</th><th style="width:72px;"></th></tr></thead>
             <tbody>
               ${dayEvents.map(event => `
                 <tr>
                   <td><strong>${escapeHtml(eventTime(event))}</strong></td>
-                  <td>${escapeHtml(event.title)}<div class="meta">${escapeHtml(typeLabels[event.type] || event.type)}</div></td>
+                  <td>${escapeHtml(event.title)}<div class="meta">${escapeHtml(typeLabel(event.type))}</div></td>
                   <td>${eventMeta(event) || escapeHtml(event.notes || '')}</td>
-                  <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">수정</button></td>
+                  <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">${escapeHtml(tr('edit'))}</button></td>
                 </tr>
               `).join('')}
             </tbody>
           </table></div>
         `
-        : `<div class="empty">선택한 날짜에 등록된 일정이 없습니다.</div>`;
+        : `<div class="empty">${escapeHtml(tr('noDayEvents'))}</div>`;
     }
 
     function renderWeek() {
@@ -923,7 +1068,7 @@ const pageTitle = 'WOLKO Schedule Planner';
                       ${escapeHtml(eventTime(event))} ${escapeHtml(event.title)}
                       ${event.vanId ? `<br>${escapeHtml(vanName(event.vanId))}` : ''}
                     </div>
-                  `).join('') : '<div class="meta">일정 없음</div>'}
+                  `).join('') : `<div class="meta">${escapeHtml(tr('noWeekEvents'))}</div>`}
                 </div>
               </div>
             `;
@@ -940,7 +1085,7 @@ const pageTitle = 'WOLKO Schedule Planner';
             <div class="matrix-card">
               <div class="matrix-head">
                 <span>${escapeHtml(transport.title)}${transport.date ? ` · ${escapeHtml(transport.date)}` : ''}</span>
-                <button type="button" class="secondary danger" data-remove-transport="${escapeHtml(transport.id)}">삭제</button>
+                <button type="button" class="secondary danger" data-remove-transport="${escapeHtml(transport.id)}">${escapeHtml(tr('delete'))}</button>
               </div>
               ${transport.description ? `<div class="meta" style="padding:10px 14px;">${escapeHtml(transport.description)}</div>` : ''}
               <div class="matrix-grid">
@@ -949,17 +1094,17 @@ const pageTitle = 'WOLKO Schedule Planner';
                   return `
                     <div class="matrix-van">
                       <strong>${escapeHtml(van.name)}</strong>
-                      <label class="meta">Driver</label>
-                      <input value="${escapeHtml(row.driver || van.driver || '')}" data-transport-id="${escapeHtml(transport.id)}" data-van-id="${escapeHtml(van.id)}" data-assign-field="driver" placeholder="D - Driver">
-                      <label class="meta">Passengers / Assignment</label>
-                      <div class="meta">${escapeHtml(row.passengers || '탑승자 미입력').replace(/\n/g, '<br>')}</div>
-                      <textarea data-transport-id="${escapeHtml(transport.id)}" data-van-id="${escapeHtml(van.id)}" data-assign-field="passengers" placeholder="탑승자 이름을 줄바꿈으로 입력">${escapeHtml(row.passengers || '')}</textarea>
+                      <label class="meta">${escapeHtml(tr('driver'))}</label>
+                      <input value="${escapeHtml(row.driver || van.driver || '')}" data-transport-id="${escapeHtml(transport.id)}" data-van-id="${escapeHtml(van.id)}" data-assign-field="driver" placeholder="${escapeHtml(tr('driver'))}">
+                      <label class="meta">${escapeHtml(tr('assignment'))}</label>
+                      <div class="meta">${escapeHtml(row.passengers || tr('noPassengers')).replace(/\n/g, '<br>')}</div>
+                      <textarea data-transport-id="${escapeHtml(transport.id)}" data-van-id="${escapeHtml(van.id)}" data-assign-field="passengers" placeholder="${escapeHtml(tr('passengerPh'))}">${escapeHtml(row.passengers || '')}</textarea>
                     </div>
                   `;
                 }).join('')}
               </div>
             </div>
-          `).join('') : '<div class="empty">차량 배정표를 추가하면 밴별 배정표가 여기에 표시됩니다.</div>'}
+          `).join('') : `<div class="empty">${escapeHtml(tr('noVehiclePlans'))}</div>`}
         </div>
       `;
     }
@@ -976,20 +1121,20 @@ const pageTitle = 'WOLKO Schedule Planner';
           <td>${escapeHtml(person.shirt)}</td>
           <td>${escapeHtml(person.birthday)}</td>
           <td>${escapeHtml(person.note)}</td>
-          <td><button type="button" class="secondary danger" data-remove-person="${escapeHtml(person.id)}">삭제</button></td>
+          <td><button type="button" class="secondary danger" data-remove-person="${escapeHtml(person.id)}">${escapeHtml(tr('delete'))}</button></td>
         </tr>
       `).join('');
       document.getElementById('view-people').innerHTML = `
-        <div class="workbook-title">S.F Name list (Total: ${sf.length})</div>
+        <div class="workbook-title">${escapeHtml(tr('sfList', sf.length))}</div>
         <div class="scroll-x"><table class="workbook-table">
-          <thead><tr><th>No</th><th>First</th><th>Gender</th><th>K-age</th><th>K(T-size)</th><th>B-day</th><th>Note / Allergy</th><th></th></tr></thead>
-          <tbody>${rows(sf) || '<tr><td colspan="8">등록된 Student Fusion 인원이 없습니다.</td></tr>'}</tbody>
+          <thead><tr>${COPY[currentLang].peopleHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>
+          <tbody>${rows(sf) || `<tr><td colspan="8">${escapeHtml(tr('noSf'))}</td></tr>`}</tbody>
         </table></div>
         <div style="height:16px;"></div>
-        <div class="workbook-title">WOLKO STAFF (Total: ${wolko.length})</div>
+        <div class="workbook-title">${escapeHtml(tr('wolkoList', wolko.length))}</div>
         <div class="scroll-x"><table class="workbook-table">
-          <thead><tr><th>No</th><th>Name</th><th>Gender</th><th>Age</th><th>T-size</th><th>B-day</th><th>Note</th><th></th></tr></thead>
-          <tbody>${rows(wolko) || '<tr><td colspan="8">등록된 WOLKO Staff가 없습니다.</td></tr>'}</tbody>
+          <thead><tr>${COPY[currentLang].wolkoHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>
+          <tbody>${rows(wolko) || `<tr><td colspan="8">${escapeHtml(tr('noWolko'))}</td></tr>`}</tbody>
         </table></div>
       `;
     }
@@ -999,17 +1144,17 @@ const pageTitle = 'WOLKO Schedule Planner';
         <tr>
           <td>${escapeHtml(event.date)}</td>
           <td>${escapeHtml(eventTime(event))}</td>
-          <td><strong>${escapeHtml(event.title)}</strong><div class="meta">${escapeHtml(typeLabels[event.type] || event.type)}</div></td>
+          <td><strong>${escapeHtml(event.title)}</strong><div class="meta">${escapeHtml(typeLabel(event.type))}</div></td>
           <td>${escapeHtml(event.staff)}</td>
           <td>${escapeHtml(vanName(event.vanId))}</td>
           <td>${escapeHtml(event.from)} → ${escapeHtml(event.to)}</td>
           <td>${escapeHtml(event.passengers)}</td>
-          <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">수정</button></td>
+          <td><button type="button" class="secondary" data-edit="${escapeHtml(event.id)}">${escapeHtml(tr('edit'))}</button></td>
         </tr>
       `).join('');
       document.getElementById('view-list').innerHTML = rows
-        ? `<div class="scroll-x"><table class="list-table"><thead><tr><th>날짜</th><th>시간</th><th>일정</th><th>담당</th><th>차량</th><th>이동</th><th>인원</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
-        : `<div class="empty">아직 등록된 일정이 없습니다.</div>`;
+        ? `<div class="scroll-x"><table class="list-table"><thead><tr>${COPY[currentLang].listHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`
+        : `<div class="empty">${escapeHtml(tr('noSchedules'))}</div>`;
     }
 
     function renderFleet() {
@@ -1017,13 +1162,13 @@ const pageTitle = 'WOLKO Schedule Planner';
         <div class="van-editor">
           ${plan.vans.map(van => `
             <div class="van-edit-row">
-              <input value="${escapeHtml(van.name)}" data-van-field="name" data-van-id="${escapeHtml(van.id)}" placeholder="차량 이름">
-              <input value="${escapeHtml(van.seats)}" data-van-field="seats" data-van-id="${escapeHtml(van.id)}" type="number" min="0" placeholder="좌석">
-              <input value="${escapeHtml(van.driver)}" data-van-field="driver" data-van-id="${escapeHtml(van.id)}" placeholder="기본 운전자">
-              <button class="secondary danger" type="button" data-remove-van="${escapeHtml(van.id)}">삭제</button>
+              <input value="${escapeHtml(van.name)}" data-van-field="name" data-van-id="${escapeHtml(van.id)}" placeholder="${escapeHtml(tr('vanNamePh'))}">
+              <input value="${escapeHtml(van.seats)}" data-van-field="seats" data-van-id="${escapeHtml(van.id)}" type="number" min="0" placeholder="${escapeHtml(tr('seatsPh'))}">
+              <input value="${escapeHtml(van.driver)}" data-van-field="driver" data-van-id="${escapeHtml(van.id)}" placeholder="${escapeHtml(tr('driverPh'))}">
+              <button class="secondary danger" type="button" data-remove-van="${escapeHtml(van.id)}">${escapeHtml(tr('delete'))}</button>
             </div>
           `).join('')}
-          <button class="secondary" type="button" id="addVanBtn">차량 추가</button>
+          <button class="secondary" type="button" id="addVanBtn">${escapeHtml(tr('addVan'))}</button>
         </div>
       `;
     }
@@ -1031,12 +1176,18 @@ const pageTitle = 'WOLKO Schedule Planner';
     function renderStats() {
       const todayCount = plan.events.filter(event => event.date === els.selectedDate.value).length;
       const weekCount = weekEvents().length;
-      const viewLabels = { day: '일간 시간표', week: '주간 요약', vans: '차량 배정표', people: '인원 명단', list: '전체 운영표', fleet: '차량 목록' };
+      const viewLabels = COPY[currentLang].printView;
       els.statToday.textContent = todayCount;
       els.statWeek.textContent = weekCount;
       els.statVans.textContent = plan.vans.length;
       els.planTitleView.textContent = plan.title || 'WOLKO Staff Schedule';
-      els.printSummary.textContent = `${viewLabels[currentView] || '스케줄'} · 기준일 ${els.selectedDate.value} · 일간 ${todayCount}개 · 주간 ${weekCount}개 · 차량 ${plan.vans.length}대`;
+      els.printSummary.textContent = tr('printSummary', {
+        view: viewLabels[currentView] || viewLabels.day,
+        date: els.selectedDate.value,
+        today: todayCount,
+        week: weekCount,
+        vans: plan.vans.length,
+      });
     }
 
     function render() {
@@ -1089,7 +1240,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.eventTo.value = '';
       els.eventPassengers.value = '';
       els.eventNotes.value = '';
-      els.addEventBtn.textContent = '일정 추가';
+      els.addEventBtn.textContent = tr('addSchedule');
       els.deleteEventBtn.hidden = true;
     }
 
@@ -1109,7 +1260,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.eventTo.value = event.to || '';
       els.eventPassengers.value = event.passengers || '';
       els.eventNotes.value = event.notes || '';
-      els.addEventBtn.textContent = '일정 수정';
+      els.addEventBtn.textContent = tr('updateSchedule');
       els.deleteEventBtn.hidden = false;
       renderVansSelect();
     }
@@ -1124,7 +1275,7 @@ const pageTitle = 'WOLKO Schedule Planner';
           body: JSON.stringify({ password: els.passwordInput.value.trim() }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || '로그인하지 못했습니다.');
+        if (!res.ok) throw new Error(data.error || tr('loginFailed'));
         token = data.token;
         localStorage.setItem(TOKEN_KEY, token);
         els.loginScreen.classList.add('hidden');
@@ -1137,7 +1288,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     async function loadPlan() {
-      setState('불러오는 중...');
+      setState(tr('loading'));
       const res = await fetch('/api/schedule-planner/data', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -1146,20 +1297,20 @@ const pageTitle = 'WOLKO Schedule Planner';
         localStorage.removeItem(TOKEN_KEY);
         token = '';
         els.loginScreen.classList.remove('hidden');
-        setState('로그인 필요');
-        throw new Error(data.error || '데이터를 불러오지 못했습니다.');
+        setState(tr('loginNeeded'));
+        throw new Error(data.error || tr('loadFailed'));
       }
       plan = data.plan || plan;
       plan.people = Array.isArray(plan.people) ? plan.people : [];
       plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
       els.planTitle.value = plan.title || '';
-      setState(plan.updatedAt ? `저장됨 ${new Date(plan.updatedAt).toLocaleString('ko-KR')}` : '저장됨');
+      setState(plan.updatedAt ? `${tr('saved')} ${new Date(plan.updatedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US')}` : tr('saved'));
       render();
     }
 
     async function savePlan() {
       plan.title = els.planTitle.value.trim() || 'WOLKO Staff Schedule';
-      setState('저장 중...');
+      setState(tr('saving'));
       els.saveBtn.disabled = true;
       try {
         const res = await fetch('/api/schedule-planner/data', {
@@ -1168,10 +1319,10 @@ const pageTitle = 'WOLKO Schedule Planner';
           body: JSON.stringify({ plan }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || '저장하지 못했습니다.');
+        if (!res.ok) throw new Error(data.error || tr('saveFailed'));
         plan = data.plan;
         els.planTitle.value = plan.title || '';
-        setState(`저장됨 ${new Date(plan.updatedAt).toLocaleString('ko-KR')}`);
+        setState(`${tr('saved')} ${new Date(plan.updatedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US')}`);
         render();
       } catch (error) {
         setState(error.message);
@@ -1183,7 +1334,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     function exportCsv() {
       const headers = ['date','time','type','schedule','staff','van','from','to','passengers','details'];
       const rows = sortedEvents().map(event => [
-        event.date, eventTime(event), typeLabels[event.type] || event.type, event.title, event.staff,
+        event.date, eventTime(event), typeLabel(event.type), event.title, event.staff,
         vanName(event.vanId), event.from, event.to, event.passengers, event.notes,
       ]);
       const csv = [headers, ...rows].map(row => row.map(value => `"${String(value || '').replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -1198,12 +1349,14 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     els.loginBtn.addEventListener('click', login);
     els.passwordInput.addEventListener('keydown', event => { if (event.key === 'Enter') login(); });
+    els.langKoBtn.addEventListener('click', () => setLanguage('ko'));
+    els.langEnBtn.addEventListener('click', () => setLanguage('en'));
     els.saveBtn.addEventListener('click', savePlan);
     els.importBtn.addEventListener('click', () => els.excelInput.click());
     els.excelInput.addEventListener('change', async () => {
       const file = els.excelInput.files?.[0];
       if (!file) return;
-      setState('엑셀 가져오는 중...');
+      setState(tr('importLoading'));
       els.importBtn.disabled = true;
       try {
         const imported = await importExcelFile(file);
@@ -1213,9 +1366,9 @@ const pageTitle = 'WOLKO Schedule Planner';
         plan.transportPlans = [...(plan.transportPlans || []), ...imported.transportPlans];
         currentView = imported.events.length ? 'day' : (imported.people.length ? 'people' : 'vans');
         markDirty();
-        setState(`엑셀 가져오기 완료 · 일정 ${imported.events.length}개 · 명단 ${imported.people.length}명 · 차량표 ${imported.transportPlans.length}개`);
+        setState(tr('importDone', { events: imported.events.length, people: imported.people.length, plans: imported.transportPlans.length }));
       } catch (error) {
-        setState(error.message || '엑셀을 가져오지 못했습니다.');
+        setState(error.message || tr('importFailed'));
       } finally {
         els.importBtn.disabled = false;
         els.excelInput.value = '';
@@ -1226,7 +1379,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       localStorage.removeItem(TOKEN_KEY);
       token = '';
       els.loginScreen.classList.remove('hidden');
-      setState('로그인 필요');
+      setState(tr('loginNeeded'));
     });
     els.selectedDate.addEventListener('change', () => {
       els.eventDate.value = els.selectedDate.value;
@@ -1246,7 +1399,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     els.addEventBtn.addEventListener('click', () => {
       const event = readForm();
       if (!event.title || !event.date || !event.timeText) {
-        setState('제목, 날짜, 시간을 입력해주세요.');
+        setState(tr('titleRequired'));
         return;
       }
       const index = plan.events.findIndex(item => item.id === event.id);
@@ -1264,7 +1417,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     els.addPersonBtn.addEventListener('click', () => {
       const name = els.personName.value.trim();
       if (!name) {
-        setState('명단에 추가할 이름을 입력해주세요.');
+        setState(tr('personRequired'));
         return;
       }
       plan.people = Array.isArray(plan.people) ? plan.people : [];
@@ -1292,7 +1445,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     els.addTransportBtn.addEventListener('click', () => {
       const title = els.transportTitle.value.trim();
       if (!title) {
-        setState('차량 배정표 제목을 입력해주세요.');
+        setState(tr('transportRequired'));
         return;
       }
       plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
@@ -1350,7 +1503,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         transport.assignments = transport.assignments || {};
         transport.assignments[vanId] = transport.assignments[vanId] || { driver: '', passengers: '', notes: '' };
         transport.assignments[vanId][assignField] = event.target.value;
-        setState('저장 필요');
+        setState(tr('saveNeeded'));
         return;
       }
       const field = event.target.dataset.vanField;
@@ -1359,13 +1512,14 @@ const pageTitle = 'WOLKO Schedule Planner';
       const van = plan.vans.find(item => item.id === vanId);
       if (!van) return;
       van[field] = field === 'seats' ? Math.max(0, parseInt(event.target.value, 10) || 0) : event.target.value.trim();
-      setState('저장 필요');
+      setState(tr('saveNeeded'));
       renderVansSelect();
       renderStats();
     });
 
     els.selectedDate.value = todayIso();
     clearForm();
+    applyLanguage();
     render();
     if (token) {
       els.loginScreen.classList.add('hidden');
