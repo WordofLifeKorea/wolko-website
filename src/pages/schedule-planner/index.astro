@@ -206,6 +206,15 @@ const pageTitle = 'WOLKO Schedule Planner';
     textarea { min-height:92px; resize:vertical; line-height:1.65; }
     input:focus,select:focus,textarea:focus { border-color:var(--blue); background:#fff; box-shadow:0 0 0 3px rgba(0,79,104,.09); }
     .form-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin-top:4px; }
+    .schedule-tools { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+    .schedule-tools select {
+      width:auto; min-width:150px; min-height:40px; border:1.5px solid #d9e5ea; border-radius:999px;
+      background:#fff; color:var(--blue); padding:8px 34px 8px 13px; font-size:12px; font-weight:800;
+    }
+    .source-badge {
+      display:inline-flex; align-items:center; margin-right:7px; border-radius:999px; background:#e9f8fb; color:var(--blue);
+      padding:2px 8px; font-size:10px; font-weight:900; letter-spacing:.02em; vertical-align:middle;
+    }
     .tabs { display:flex; gap:8px; flex-wrap:wrap; padding:14px 16px; border-bottom:1px solid var(--border); background:#fbfdfe; }
     .tab {
       display:inline-flex; align-items:center; justify-content:center;
@@ -368,6 +377,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       .stat { flex:1 1 30%; min-width:0; text-align:left; }
       .panel { border-radius:18px; }
       .panel-head { padding:16px; }
+      .schedule-tools { width:100%; justify-content:flex-start; }
+      .schedule-tools select { flex:1 1 160px; min-width:0; }
       .view { padding:14px; }
       .tabs { padding:12px; }
       .tab { flex:1 1 calc(50% - 8px); justify-content:center; }
@@ -712,7 +723,9 @@ const pageTitle = 'WOLKO Schedule Planner';
       <section class="panel">
         <div class="panel-head">
           <h3 data-ko="일정 보기" data-en="Schedule View">일정 보기</h3>
-          <div class="form-actions">
+          <div class="schedule-tools">
+            <select id="groupFilterSelect" aria-label="Schedule group filter"></select>
+            <select id="dateJumpSelect" aria-label="Schedule date shortcut"></select>
             <button class="secondary" id="todayBtn" type="button" data-ko="오늘" data-en="Today">오늘</button>
             <button class="secondary" id="printBtn" type="button" data-ko="프린트" data-en="Print">프린트</button>
           </div>
@@ -811,6 +824,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         assignment: '탑승자 / 배정',
         noPassengers: '탑승자 미입력',
         passengerPh: '탑승자 이름을 줄바꿈으로 입력',
+        groupFilterAll: '전체 단체/시트',
+        dateJumpLabel: '날짜 바로가기',
         sfList: n => `SF 명단 (총 ${n}명)`,
         wolkoList: n => `WOLKO 스태프 (총 ${n}명)`,
         noSf: '등록된 SF 인원이 없습니다.',
@@ -870,6 +885,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         assignment: 'Passengers / Assignment',
         noPassengers: 'No passengers entered',
         passengerPh: 'Enter passenger names, one per line',
+        groupFilterAll: 'All Groups / Sheets',
+        dateJumpLabel: 'Jump to Date',
         sfList: n => `S.F Name List (Total: ${n})`,
         wolkoList: n => `WOLKO Staff (Total: ${n})`,
         noSf: 'No Student Fusion people added.',
@@ -950,6 +967,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       transportTitle: document.getElementById('transportTitle'),
       transportDescription: document.getElementById('transportDescription'),
       addTransportBtn: document.getElementById('addTransportBtn'),
+      groupFilterSelect: document.getElementById('groupFilterSelect'),
+      dateJumpSelect: document.getElementById('dateJumpSelect'),
       todayBtn: document.getElementById('todayBtn'),
       printBtn: document.getElementById('printBtn'),
       statToday: document.getElementById('statToday'),
@@ -963,6 +982,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     let editingId = '';
     let currentView = 'day';
     let calendarMonth = '';
+    let currentGroupFilter = 'all';
     let plan = {
       title: 'WOLKO Staff Schedule',
       vans: [
@@ -1086,6 +1106,54 @@ const pageTitle = 'WOLKO Schedule Planner';
       const h = parseInt(hStr, 10);
       if (isNaN(h)) return hhmm;
       return `${String(h >= 1 && h <= 5 ? h + 12 : h).padStart(2, '0')}:${mStr || '00'}`;
+    }
+
+    function slugKey(value) {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/&/g, 'and')
+        .replace(/[^a-z0-9가-힯]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'unknown';
+    }
+
+    function isMostlyDateSheetName(name) {
+      const value = String(name || '').trim();
+      return /^(sun|mon|tue|wed|thu|fri|sat)(day)?$/i.test(value)
+        || /^[월화수목금토일](요일)?$/.test(value)
+        || /\b\d{1,2}[./\-]\d{1,2}\b/.test(value)
+        || /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*\d{1,2}\b/i.test(value)
+        || /\d{1,2}\s*월\s*\d{1,2}/.test(value);
+    }
+
+    function sourceGroupFromText(...parts) {
+      const raw = parts.map(part => String(part || '')).join(' ');
+      const value = raw.toLowerCase().replace(/[_-]+/g, ' ');
+      const compact = value.replace(/\s+/g, '');
+      const exact = (key, label) => ({ key, label });
+      if (/\bsf\s*#?\s*1\b/i.test(raw) || /student\s*fusion\s*(team\s*)?1/i.test(raw) || compact.includes('sf1')) {
+        return exact('student-fusion-team-1', 'Student Fusion Team 1');
+      }
+      if (/\bsf\s*#?\s*2\b/i.test(raw) || /student\s*fusion\s*(team\s*)?2/i.test(raw) || compact.includes('sf2')) {
+        return exact('student-fusion-team-2', 'Student Fusion Team 2');
+      }
+      if (/wolko\s*camp|english\s*wolko|월코\s*캠프/i.test(raw)) {
+        return exact('english-wolko-camp', 'English WOLKO Camp');
+      }
+      if (/student\s*fusion|\bsf\b/i.test(raw)) {
+        return exact('student-fusion', 'Student Fusion');
+      }
+      if (/wolko|월코/i.test(raw)) {
+        return exact('wolko', 'WOLKO');
+      }
+      return null;
+    }
+
+    function sourceGroupForSheet(sheetName) {
+      const matched = sourceGroupFromText(sheetName);
+      if (matched) return matched;
+      if (isMostlyDateSheetName(sheetName)) return { key: '', label: '' };
+      const label = cellText(sheetName);
+      return label ? { key: `sheet-${slugKey(label)}`, label } : { key: '', label: '' };
     }
 
     function cellText(value) {
@@ -1278,6 +1346,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     function importScheduleSheet(sheetName, rows) {
       const year = parseInt((els.selectedDate.value || todayIso()).slice(0, 4), 10);
       let currentDate = parseSheetDate(sheetName);
+      const sheetGroup = sourceGroupForSheet(sheetName);
 
       // 시간값 판별: Excel 소수(0~1) 또는 HH:MM 패턴
       const looksLikeTime = v => {
@@ -1328,6 +1397,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         const details = cellText(row[detailsCol]);
         if (!timeText || !title || /^(time|시간)/i.test(timeText) || /^(time|시간|일정|schedule)/i.test(title)) return;
         const parsed = clockRange(timeText);
+        const rowGroup = sourceGroupFromText(sheetName, title, details, row.join(' ')) || sheetGroup;
         events.push({
           id: crypto.randomUUID(),
           title,
@@ -1342,6 +1412,9 @@ const pageTitle = 'WOLKO Schedule Planner';
           to: '',
           passengers: '',
           notes: details,
+          sourceSheet: sheetName,
+          sourceGroupKey: rowGroup.key,
+          sourceGroupLabel: rowGroup.label,
         });
       });
       return events;
@@ -1349,6 +1422,7 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     function importTransportSheet(sheetName, rows) {
       const title = cellText(rows[1]?.[1]) || sheetName;
+      const sheetGroup = sourceGroupForSheet(sheetName);
       const names = rows[2] || [];
       const drivers = rows[3] || [];
       const importedVans = [];
@@ -1382,6 +1456,9 @@ const pageTitle = 'WOLKO Schedule Planner';
           description: cellText(rows[2]?.[8]),
           vanIds: vans.map(v => v.id),
           assignments,
+          sourceSheet: sheetName,
+          sourceGroupKey: sheetGroup.key,
+          sourceGroupLabel: sheetGroup.label,
         },
       };
     }
@@ -1629,6 +1706,36 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       return [...events].sort((a, b) => `${a.date} ${timeSortValue(a)}`.localeCompare(`${b.date} ${timeSortValue(b)}`));
     }
 
+    function sourceLabel(item) {
+      return item?.sourceGroupLabel || item?.sourceSheet || '';
+    }
+
+    function sourceKey(item) {
+      return item?.sourceGroupKey || (sourceLabel(item) ? `sheet-${slugKey(sourceLabel(item))}` : '');
+    }
+
+    function groupOptions() {
+      const map = new Map();
+      [...(plan.events || []), ...(plan.transportPlans || [])].forEach(item => {
+        const label = sourceLabel(item);
+        const key = sourceKey(item);
+        if (label && key) map.set(key, label);
+      });
+      return [...map.entries()].map(([key, label]) => ({ key, label })).sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    function matchesGroupFilter(item) {
+      return currentGroupFilter === 'all' || sourceKey(item) === currentGroupFilter;
+    }
+
+    function filteredEvents(events = plan.events) {
+      return (events || []).filter(matchesGroupFilter);
+    }
+
+    function filteredTransportPlans() {
+      return (plan.transportPlans || []).filter(matchesGroupFilter);
+    }
+
     function nearestDayWithEvents(fromIso, dir) {
       const dates = [...new Set(plan.events.map(e => e.date))].sort();
       if (!dates.length) return fromIso;
@@ -1640,7 +1747,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     function weekEvents() {
       const start = weekStart(els.selectedDate.value);
       const end = addDays(start, 6);
-      return plan.events.filter(event => event.date >= start && event.date <= end);
+      return filteredEvents().filter(event => event.date >= start && event.date <= end);
     }
 
     function setState(text) {
@@ -1659,11 +1766,13 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
 
     function eventMeta(event) {
       const bits = [];
+      const source = sourceLabel(event);
       const staff = evText(event, 'staff');
       const from = evText(event, 'from');
       const to = evText(event, 'to');
       const passengers = evText(event, 'passengers');
       const notes = evText(event, 'notes');
+      if (source) bits.push(source);
       if (staff) bits.push(`${tr('staff')}: ${staff}`);
       if (event.vanId) bits.push(`${tr('vehicle')}: ${vanName(event.vanId)}`);
       if (from || to) bits.push(`${from || tr('fromUnknown')} → ${to || tr('toUnknown')}`);
@@ -1691,9 +1800,19 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       els.eventVan.innerHTML = `<option value="">${escapeHtml(tr('noVehicle'))}</option>${plan.vans.map(van => `<option value="${escapeHtml(van.id)}">${escapeHtml(van.name)}</option>`).join('')}`;
     }
 
+    function renderFilterControls() {
+      const groups = groupOptions();
+      if (currentGroupFilter !== 'all' && !groups.some(group => group.key === currentGroupFilter)) currentGroupFilter = 'all';
+      els.groupFilterSelect.innerHTML = `<option value="all">${escapeHtml(tr('groupFilterAll'))}</option>`
+        + groups.map(group => `<option value="${escapeHtml(group.key)}" ${group.key === currentGroupFilter ? 'selected' : ''}>${escapeHtml(group.label)}</option>`).join('');
+      const dates = [...new Set(filteredEvents().map(event => event.date).filter(Boolean))].sort();
+      els.dateJumpSelect.innerHTML = `<option value="">${escapeHtml(tr('dateJumpLabel'))}</option>`
+        + dates.map(date => `<option value="${escapeHtml(date)}" ${date === els.selectedDate.value ? 'selected' : ''}>${escapeHtml(`${dayName(date)} · ${date}`)}</option>`).join('');
+    }
+
     function renderDay() {
       const date = els.selectedDate.value;
-      const dayEvents = sortedEvents(plan.events.filter(event => event.date === date));
+      const dayEvents = sortedEvents(filteredEvents().filter(event => event.date === date));
       const ko = currentLang === 'ko';
       const periods = [
         { key:'am',      label: ko ? '오전' : 'Morning' },
@@ -1757,7 +1876,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       document.getElementById('view-week').innerHTML = `
         <div class="week-grid">
           ${days.map(day => {
-            const items = sortedEvents(plan.events.filter(event => event.date === day));
+            const items = sortedEvents(filteredEvents().filter(event => event.date === day));
             const isToday = day === today;
             return `
               <div class="week-day${isToday ? ' is-today' : ''}">
@@ -1785,7 +1904,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     }
 
     function renderVans() {
-      const plans = plan.transportPlans || [];
+      const plans = filteredTransportPlans();
       document.getElementById('view-vans').innerHTML = `
         <div class="tab-section">
           <div class="tab-head">
@@ -1871,11 +1990,12 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     }
 
     function renderList() {
-      const rows = sortedEvents().map(event => `
+      const events = sortedEvents(filteredEvents());
+      const rows = events.map(event => `
         <tr>
           <td>${escapeHtml(event.date)}</td>
           <td>${escapeHtml(eventTime(event))}</td>
-          <td><strong>${escapeHtml(evText(event, 'title'))}</strong><div class="meta">${escapeHtml(typeLabel(event.type))}</div></td>
+          <td><strong>${sourceLabel(event) ? `<span class="source-badge">${escapeHtml(sourceLabel(event))}</span>` : ''}${escapeHtml(evText(event, 'title'))}</strong><div class="meta">${escapeHtml(typeLabel(event.type))}</div></td>
           <td>${escapeHtml(evText(event, 'staff'))}</td>
           <td>${escapeHtml(vanName(event.vanId))}</td>
           <td>${escapeHtml(evText(event, 'from'))} → ${escapeHtml(evText(event, 'to'))}</td>
@@ -1891,7 +2011,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
                 <div class="tab-title">${escapeHtml(COPY[currentLang].printView.list)}</div>
                 <div class="tab-subtitle">${escapeHtml(plan.title || 'WOLKO Staff Schedule')}</div>
               </div>
-              <span class="tab-count">${plan.events.length}</span>
+              <span class="tab-count">${events.length}</span>
             </div>
             <div class="table-card"><div class="scroll-x"><table class="list-table"><thead><tr>${COPY[currentLang].listHeaders.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>
           </div>
@@ -1955,7 +2075,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       const monthIso = calendarMonth || firstOfMonth(selectedIso);
       const monthDate = parseIsoDate(monthIso);
       const firstVisible = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1 - monthDate.getDay());
-      const eventCounts = (plan.events || []).reduce((counts, event) => {
+      const eventCounts = filteredEvents().reduce((counts, event) => {
         if (event.date) counts[event.date] = (counts[event.date] || 0) + 1;
         return counts;
       }, {});
@@ -1988,7 +2108,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     }
 
     function renderStats() {
-      const todayCount = plan.events.filter(event => event.date === els.selectedDate.value).length;
+      const todayCount = filteredEvents().filter(event => event.date === els.selectedDate.value).length;
       const weekCount = weekEvents().length;
       const viewLabels = COPY[currentLang].printView;
       renderCalendar();
@@ -2007,6 +2127,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
 
     function render() {
       renderVansSelect();
+      renderFilterControls();
       renderStats();
       renderDay();
       renderWeek();
@@ -2024,6 +2145,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
 
     function readForm() {
       const parsed = clockRange(els.eventTimeText.value);
+      const existing = editingId ? plan.events.find(item => item.id === editingId) : null;
       return {
         id: editingId || crypto.randomUUID(),
         title: els.eventTitle.value.trim(),
@@ -2038,6 +2160,9 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
         to: els.eventTo.value.trim(),
         passengers: els.eventPassengers.value.trim(),
         notes: els.eventNotes.value.trim(),
+        sourceSheet: existing?.sourceSheet || '',
+        sourceGroupKey: existing?.sourceGroupKey || '',
+        sourceGroupLabel: existing?.sourceGroupLabel || '',
       };
     }
 
@@ -2200,6 +2325,13 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     els.langToggleBtn.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
     els.saveBtn.addEventListener('click', savePlan);
     els.importBtn.addEventListener('click', () => els.excelInput.click());
+    els.groupFilterSelect.addEventListener('change', () => {
+      currentGroupFilter = els.groupFilterSelect.value || 'all';
+      render();
+    });
+    els.dateJumpSelect.addEventListener('change', () => {
+      if (els.dateJumpSelect.value) selectScheduleDate(els.dateJumpSelect.value, { close: false });
+    });
     function resetHistorySelection() {
       els.importHistorySelect.value = '';
       els.importHistoryLoadBtn.style.display = 'none';
