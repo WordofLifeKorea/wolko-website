@@ -79,12 +79,13 @@ const pageTitle = 'WOLKO Schedule Planner';
     .brand h1 { margin:0; color:rgba(255,255,255,.92); font:700 14px/1 var(--sans); letter-spacing:.04em; }
     .brand p { margin:3px 0 0; color:rgba(255,255,255,.62); font:500 10px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
     .toolbar { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; min-width:0; }
-    .toolbar button,.toolbar input {
+    .toolbar button,.toolbar input,.toolbar select {
       min-height:34px; border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:6px 12px;
       background:rgba(255,255,255,.15); color:#fff; font-size:12px; font-weight:600;
     }
     .toolbar input { width:160px; color:#fff; color-scheme:dark; }
     .toolbar input[type="file"] { display:none; }
+    .toolbar select { color-scheme:dark; cursor:pointer; max-width:200px; }
     .date-picker {
       position:relative; flex:0 0 420px; max-width:100%; min-height:58px; padding:7px 9px 7px 12px;
       border:1px solid rgba(255,255,255,.48); border-radius:18px; background:#fff; color:var(--text);
@@ -529,6 +530,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       <button class="lang-toggle" type="button" id="langToggleBtn">EN</button>
       <button type="button" id="saveBtn" data-ko="저장" data-en="Save">저장</button>
       <button type="button" id="importBtn" data-ko="엑셀 가져오기" data-en="Import XLSX">엑셀 가져오기</button>
+      <select id="importHistorySelect" style="display:none"></select>
       <input id="excelInput" type="file" accept=".xlsx">
       <button type="button" id="logoutBtn" data-ko="로그아웃" data-en="Log Out">로그아웃</button>
       <span class="save-state" id="saveState" style="display:none">로그인 필요</span>
@@ -715,8 +717,10 @@ const pageTitle = 'WOLKO Schedule Planner';
   <button class="sidebar-reopen-tab" id="sidebarReopenTab" type="button">입력창 열기</button>
 
   <script>
-    const TOKEN_KEY = 'wolko_schedule_planner_token';
-    const LANG_KEY = 'wolko_schedule_planner_lang';
+    const TOKEN_KEY          = 'wolko_schedule_planner_token';
+    const LANG_KEY           = 'wolko_schedule_planner_lang';
+    const IMPORT_HISTORY_KEY = 'wolko_schedule_import_history';
+    const MAX_IMPORT_HISTORY = 15;
     const COPY = {
       ko: {
         loginNeeded: '로그인 필요',
@@ -728,6 +732,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         loadFailed: '데이터를 불러오지 못했습니다.',
         importLoading: '엑셀 가져오는 중...',
         translating: '한국어로 번역 중...',
+        importHistoryLabel: '이전 가져오기',
+        importHistoryConfirm: '현재 일정이 교체됩니다. 계속하시겠습니까?',
         importDone: ({ events, people, plans }) => `엑셀 가져오기 완료 · 일정 ${events}개 · 명단 ${people}명 · 차량표 ${plans}개`,
         importFailed: '엑셀을 가져오지 못했습니다.',
         titleRequired: '제목, 날짜, 시간을 입력해주세요.',
@@ -785,6 +791,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         loadFailed: 'Could not load data.',
         importLoading: 'Importing Excel...',
         translating: 'Translating to Korean...',
+        importHistoryLabel: 'Recent imports',
+        importHistoryConfirm: 'This will replace the current schedule. Continue?',
         importDone: ({ events, people, plans }) => `Import complete · ${events} schedules · ${people} people · ${plans} vehicle plans`,
         importFailed: 'Could not import Excel.',
         titleRequired: 'Please enter a title, date, and time.',
@@ -862,6 +870,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       langToggleBtn: document.getElementById('langToggleBtn'),
       saveBtn: document.getElementById('saveBtn'),
       importBtn: document.getElementById('importBtn'),
+      importHistorySelect: document.getElementById('importHistorySelect'),
       excelInput: document.getElementById('excelInput'),
       logoutBtn: document.getElementById('logoutBtn'),
       planTitle: document.getElementById('planTitle'),
@@ -932,6 +941,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.langToggleBtn.textContent = currentLang === 'ko' ? 'EN' : 'KR';
       els.langToggleBtn.setAttribute('aria-label', currentLang === 'ko' ? 'Switch to English' : '한국어로 전환');
       els.addEventBtn.textContent = editingId ? tr('updateSchedule') : tr('addSchedule');
+      renderImportHistorySelect();
       if (!token) setState(tr('loginNeeded'));
     }
 
@@ -1285,6 +1295,46 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     function isPeopleSheetName(name) {
       return /people|person|list|명단|인원/i.test(name);
+    }
+
+    function loadImportHistory() {
+      try { return JSON.parse(localStorage.getItem(IMPORT_HISTORY_KEY) || '[]'); }
+      catch { return []; }
+    }
+
+    function saveImportToHistory(filename, imported) {
+      const history = loadImportHistory();
+      const entry = {
+        id: crypto.randomUUID(),
+        name: filename.replace(/\.xlsx?$/i, ''),
+        date: new Date().toISOString(),
+        snapshot: {
+          events: imported.events,
+          people: imported.people,
+          vans: imported.vans,
+          transportPlans: imported.transportPlans,
+        },
+      };
+      history.unshift(entry);
+      if (history.length > MAX_IMPORT_HISTORY) history.splice(MAX_IMPORT_HISTORY);
+      try { localStorage.setItem(IMPORT_HISTORY_KEY, JSON.stringify(history)); } catch (e) {
+        console.warn('Import history save failed (storage full?):', e);
+      }
+    }
+
+    function renderImportHistorySelect() {
+      const history = loadImportHistory();
+      const sel = els.importHistorySelect;
+      if (!history.length) { sel.style.display = 'none'; return; }
+      const locale = currentLang === 'ko' ? 'ko-KR' : 'en-US';
+      sel.innerHTML = `<option value="">${escapeHtml(tr('importHistoryLabel'))}</option>`
+        + history.map(e => {
+            const d = new Date(e.date);
+            const dateStr = d.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
+              + ' ' + d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+            return `<option value="${escapeHtml(e.id)}">${escapeHtml(e.name)} · ${dateStr}</option>`;
+          }).join('');
+      sel.style.display = '';
     }
 
     function needsTranslation(text) {
@@ -1935,6 +1985,21 @@ const pageTitle = 'WOLKO Schedule Planner';
     els.langToggleBtn.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
     els.saveBtn.addEventListener('click', savePlan);
     els.importBtn.addEventListener('click', () => els.excelInput.click());
+    els.importHistorySelect.addEventListener('change', () => {
+      const id = els.importHistorySelect.value;
+      if (!id) return;
+      const entry = loadImportHistory().find(e => e.id === id);
+      els.importHistorySelect.value = '';
+      if (!entry) return;
+      if ((plan.events.length || plan.people.length) && !confirm(tr('importHistoryConfirm'))) return;
+      const s = entry.snapshot;
+      plan.events = s.events || [];
+      plan.people = s.people || [];
+      if (s.vans?.length) plan.vans = s.vans;
+      plan.transportPlans = s.transportPlans || [];
+      currentView = plan.events.length ? 'day' : (plan.people.length ? 'people' : 'vans');
+      markDirty();
+    });
     els.excelInput.addEventListener('change', async () => {
       const file = els.excelInput.files?.[0];
       if (!file) return;
@@ -1946,6 +2011,8 @@ const pageTitle = 'WOLKO Schedule Planner';
           setState(tr('translating'));
           await translateImported(imported);
         }
+        saveImportToHistory(file.name, imported);
+        renderImportHistorySelect();
         plan.events = [...(plan.events || []), ...imported.events];
         plan.people = [...(plan.people || []), ...imported.people];
         if (imported.vans.length) plan.vans = imported.vans;
