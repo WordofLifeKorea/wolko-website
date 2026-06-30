@@ -2118,10 +2118,10 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
         }
         saveImportToHistory(file.name, imported);
         renderImportHistorySelect();
-        plan.events = [...(plan.events || []), ...imported.events];
-        plan.people = [...(plan.people || []), ...imported.people];
+        plan.events = imported.events;
+        plan.people = imported.people;
         if (imported.vans.length) plan.vans = imported.vans;
-        plan.transportPlans = [...(plan.transportPlans || []), ...imported.transportPlans];
+        plan.transportPlans = imported.transportPlans;
         currentView = imported.events.length ? 'day' : (imported.people.length ? 'people' : 'vans');
         markDirty();
         setState(tr('importDone', { events: imported.events.length, people: imported.people.length, plans: imported.transportPlans.length }));
