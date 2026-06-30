@@ -51,7 +51,7 @@ Input: ${JSON.stringify(texts)}`;
     if (!res.ok) {
       const err = await res.text();
       console.error('Anthropic API error:', res.status, err);
-      return Response.json({ error: 'Translation API error' }, { status: 502, headers: CORS });
+      return Response.json({ error: `Anthropic ${res.status}: ${err.slice(0, 200)}` }, { status: 500, headers: CORS });
     }
 
     const data = await res.json();
