@@ -147,6 +147,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     .van-edit-row { display:grid; grid-template-columns:minmax(0,1.2fr) 70px minmax(0,1fr) auto; gap:8px; align-items:center; }
     .empty { padding:26px; border:1px dashed #ccdce3; border-radius:12px; color:var(--light); text-align:center; font-weight:800; }
     .save-state { color:rgba(255,255,255,.7); font-size:11px; font-weight:800; }
+    .print-summary { display:none; }
     @media (max-width:1100px) {
       .layout { grid-template-columns:1fr; }
       .hero { grid-template-columns:1fr; }
@@ -160,6 +161,63 @@ const pageTitle = 'WOLKO Schedule Planner';
       .mini-actions { justify-content:flex-start; }
       .field.two,.van-edit-row { grid-template-columns:1fr; }
       .week-grid { grid-template-columns:1fr; }
+    }
+    @media print {
+      @page { size:A4 landscape; margin:9mm; }
+      * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      body { background:#fff; color:#111827; font-size:9.5px; }
+      .login-screen,
+      .topbar,
+      .layout > aside,
+      .tabs,
+      .panel-head .form-actions,
+      .mini-actions,
+      .save-state { display:none !important; }
+      .page { max-width:none; width:100%; padding:0; }
+      .hero {
+        display:block; margin:0 0 6mm; padding:0 0 4mm; border:0; border-bottom:2px solid #004f68;
+        border-radius:0; box-shadow:none;
+      }
+      .hero h2 { font-size:18px; line-height:1.15; }
+      .hero p { display:none; }
+      .stats { display:none; }
+      .print-summary { display:block; margin-top:2mm; color:#334155; font-size:9px; font-weight:700; }
+      .layout { display:block; }
+      .panel { border:0; border-radius:0; box-shadow:none; overflow:visible; }
+      .panel > .panel-head { display:block; padding:0 0 3mm; border:0; }
+      .panel > .panel-head h3 { font-size:12px; color:#004f68; }
+      .view { display:none !important; padding:0; }
+      .view.active { display:block !important; }
+      .day-list { gap:2mm; }
+      .schedule-card {
+        break-inside:avoid; page-break-inside:avoid; grid-template-columns:18mm minmax(0,1fr); gap:3mm;
+        border:1px solid #cbd5e1; border-left:4px solid #004f68; border-radius:5px; padding:2.2mm 2.6mm;
+      }
+      .time { font-size:9px; color:#004f68; }
+      .item-title { font-size:10px; }
+      .meta { font-size:8.5px; line-height:1.35; margin-top:1mm; }
+      .week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1.8mm; overflow:visible; }
+      .week-day { min-height:0; border:1px solid #cbd5e1; border-radius:4px; break-inside:avoid; page-break-inside:avoid; }
+      .week-day-head { padding:1.6mm; font-size:8.5px; color:#004f68; }
+      .week-items { gap:1.2mm; padding:1.5mm; }
+      .week-item { border:1px solid #dbe6ec; border-radius:3px; background:#eef8fb; padding:1.4mm; font-size:7.8px; line-height:1.25; }
+      .van-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2mm; }
+      .van-row { border:1px solid #cbd5e1; border-radius:5px; break-inside:avoid; page-break-inside:avoid; }
+      .van-row-head { padding:2mm; }
+      .van-trips { gap:1.5mm; padding:2mm; }
+      .van-trip { border:1px solid #ead7ad; border-radius:4px; background:#fff7df; padding:1.8mm; font-size:8px; line-height:1.35; }
+      .scroll-x { overflow:visible; border:0; }
+      .list-table { min-width:0; width:100%; table-layout:fixed; }
+      .list-table th,
+      .list-table td { padding:1.7mm 1.4mm; font-size:7.8px; line-height:1.25; word-break:break-word; }
+      .list-table th { background:#eef8fb; color:#004f68; }
+      .list-table th:nth-child(8),
+      .list-table td:nth-child(8) { display:none; }
+      #view-fleet .van-editor { display:grid; grid-template-columns:repeat(2,1fr); gap:2mm; }
+      #view-fleet .van-edit-row { display:block; border:1px solid #cbd5e1; border-radius:5px; padding:2mm; }
+      #view-fleet input,
+      #view-fleet button { display:none; }
+      #view-fleet .van-edit-row::before { content:'차량 정보'; display:block; color:#004f68; font-weight:900; }
     }
   </style>
 </head>
@@ -199,6 +257,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       <div>
         <h2 id="planTitleView">WOLKO Staff Schedule</h2>
         <p>스태프 일정과 여러 밴 운행 계획을 한 곳에서 정리합니다. 일간/주간 시간표를 보며 담당자, 차량, 출발지와 도착지를 함께 관리할 수 있습니다.</p>
+        <div class="print-summary" id="printSummary">WOLKO Schedule Planner</div>
       </div>
       <div class="stats">
         <div class="stat"><strong id="statToday">0</strong><span>TODAY</span></div>
@@ -330,6 +389,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       logoutBtn: document.getElementById('logoutBtn'),
       planTitle: document.getElementById('planTitle'),
       planTitleView: document.getElementById('planTitleView'),
+      printSummary: document.getElementById('printSummary'),
       eventTitle: document.getElementById('eventTitle'),
       eventDate: document.getElementById('eventDate'),
       eventType: document.getElementById('eventType'),
@@ -536,10 +596,14 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
 
     function renderStats() {
-      els.statToday.textContent = plan.events.filter(event => event.date === els.selectedDate.value).length;
-      els.statWeek.textContent = weekEvents().length;
+      const todayCount = plan.events.filter(event => event.date === els.selectedDate.value).length;
+      const weekCount = weekEvents().length;
+      const viewLabels = { day: '일간 시간표', week: '주간 시간표', vans: '밴 운행 계획', list: '전체 일정 목록', fleet: '차량 목록' };
+      els.statToday.textContent = todayCount;
+      els.statWeek.textContent = weekCount;
       els.statVans.textContent = plan.vans.length;
       els.planTitleView.textContent = plan.title || 'WOLKO Staff Schedule';
+      els.printSummary.textContent = `${viewLabels[currentView] || '스케줄'} · 기준일 ${els.selectedDate.value} · 일간 ${todayCount}개 · 주간 ${weekCount}개 · 차량 ${plan.vans.length}대`;
     }
 
     function render() {
