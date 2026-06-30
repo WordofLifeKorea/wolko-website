@@ -86,9 +86,13 @@ const pageTitle = 'WOLKO Schedule Planner';
     .toolbar input { width:160px; color:#fff; color-scheme:dark; }
     .toolbar input[type="file"] { display:none; }
     .date-picker {
-      flex:0 0 392px; max-width:100%; min-height:54px; display:grid; grid-template-columns:34px minmax(104px,1fr) 168px;
-      align-items:center; gap:10px; padding:7px 9px 7px 12px; border:1px solid rgba(255,255,255,.48);
-      border-radius:18px; background:#fff; color:var(--text); box-shadow:0 10px 26px rgba(0,30,44,.18);
+      position:relative; flex:0 0 420px; max-width:100%; min-height:58px; padding:7px 9px 7px 12px;
+      border:1px solid rgba(255,255,255,.48); border-radius:18px; background:#fff; color:var(--text);
+      box-shadow:0 10px 26px rgba(0,30,44,.18);
+    }
+    .toolbar .date-picker-main {
+      width:100%; min-height:44px; display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:10px;
+      border:0; border-radius:14px; background:transparent; color:var(--text); padding:0; text-align:left;
     }
     .date-picker-icon {
       width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:12px;
@@ -103,11 +107,48 @@ const pageTitle = 'WOLKO Schedule Planner';
       overflow:hidden; color:var(--blue); font:900 14px/1.2 var(--body); letter-spacing:-.01em;
       white-space:nowrap; text-overflow:ellipsis;
     }
-    .toolbar .date-picker input {
-      width:100%; min-height:40px; border:1.5px solid #d9e5ea; border-radius:12px; background:#f8fbfc; color:var(--text);
-      padding:0 12px; font-size:14px; font-weight:800; color-scheme:light;
+    .date-picker-value {
+      display:inline-flex; align-items:center; min-height:34px; border:1px solid #d9e5ea; border-radius:999px;
+      background:#f8fbfc; color:var(--muted); padding:0 11px; font:800 12px/1 var(--sans); white-space:nowrap;
     }
-    .toolbar .date-picker input:focus { border-color:var(--blue); background:#fff; box-shadow:0 0 0 3px rgba(0,79,104,.10); }
+    .date-picker input[type="hidden"] { display:none; }
+    .calendar-popover {
+      position:absolute; top:calc(100% + 10px); right:0; z-index:160; width:360px; max-width:calc(100vw - 36px);
+      border:1px solid #d8e5ea; border-radius:20px; background:#fff; color:var(--text);
+      box-shadow:0 24px 70px rgba(0,30,44,.28); padding:14px;
+    }
+    .calendar-popover[hidden] { display:none; }
+    .calendar-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .calendar-title { color:var(--text); font:900 18px/1.1 var(--body); letter-spacing:-.03em; }
+    .calendar-controls { display:flex; align-items:center; gap:6px; }
+    .toolbar .calendar-nav,
+    .toolbar .calendar-today {
+      min-height:34px; border:1px solid #d8e5ea; border-radius:11px; background:#f8fbfc; color:var(--blue);
+      padding:0 10px; font:900 12px/1 var(--body);
+    }
+    .toolbar .calendar-nav { width:34px; padding:0; }
+    .toolbar .calendar-nav:hover,
+    .toolbar .calendar-today:hover { border-color:#b8d6df; background:#eef8fb; }
+    .calendar-weekdays,
+    .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+    .calendar-weekdays { margin-bottom:7px; }
+    .calendar-weekday {
+      display:flex; align-items:center; justify-content:center; height:24px; color:var(--light);
+      font:900 11px/1 var(--sans); letter-spacing:.04em;
+    }
+    .toolbar .calendar-day {
+      position:relative; min-height:42px; border:1px solid transparent; border-radius:13px; background:#fff; color:var(--text);
+      padding:0; font:800 14px/1 var(--body); transition:background .15s,border-color .15s,color .15s,transform .15s;
+    }
+    .toolbar .calendar-day:hover { border-color:#b8d6df; background:#f3fbfd; color:var(--blue); transform:translateY(-1px); }
+    .calendar-day.is-outside { color:#b7c4cb; }
+    .calendar-day.is-today { border-color:#c9e8ef; background:#f3fbfd; color:var(--blue); }
+    .calendar-day.is-selected { border-color:var(--blue); background:var(--blue); color:#fff; box-shadow:0 8px 18px rgba(0,79,104,.22); }
+    .calendar-day-count {
+      position:absolute; right:5px; bottom:5px; min-width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center;
+      border-radius:999px; background:#e3a60f; color:#fff; font:900 9px/1 var(--sans); padding:0 4px;
+    }
+    .calendar-day.is-selected .calendar-day-count { background:#fff; color:var(--blue); }
     .lang-toggle { min-width:42px; text-align:center; }
     .lang-toggle.active { background:#fff; color:var(--blue); }
     .page { max-width:min(1480px,calc(100vw - 32px)); margin:0 auto; padding:var(--space-page) 18px 90px; }
@@ -280,9 +321,11 @@ const pageTitle = 'WOLKO Schedule Planner';
       .toolbar { justify-content:flex-start; }
       .toolbar button,.toolbar input { min-height:32px; font-size:11.5px; }
       .date-picker {
-        width:100%; flex:1 1 100%; grid-template-columns:34px minmax(0,1fr); gap:10px; padding:10px;
+        width:100%; flex:1 1 100%; padding:10px;
       }
-      .toolbar .date-picker input { grid-column:1 / -1; min-height:42px; font-size:15px; }
+      .toolbar .date-picker-main { grid-template-columns:34px minmax(0,1fr); }
+      .date-picker-value { grid-column:1 / -1; justify-content:center; min-height:36px; }
+      .calendar-popover { left:0; right:auto; width:min(360px,calc(100vw - 36px)); }
       .date-summary { font-size:15px; }
       .page { max-width:100%; padding:20px 12px 70px; }
       .hero { border-radius:18px; padding:18px; }
@@ -415,19 +458,34 @@ const pageTitle = 'WOLKO Schedule Planner';
       </div>
     </div>
     <div class="toolbar">
-      <label class="date-picker" for="selectedDate">
-        <span class="date-picker-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <rect x="4" y="5.5" width="16" height="14" rx="2.5" stroke="currentColor" stroke-width="2"/>
-            <path d="M8 3.5v4M16 3.5v4M4.5 10h15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </span>
-        <span class="date-picker-copy">
-          <span class="date-picker-label" data-ko="기준 날짜" data-en="Schedule Date">기준 날짜</span>
-          <span class="date-summary" id="dateSummary">-</span>
-        </span>
-        <input id="selectedDate" type="date" aria-label="Schedule date">
-      </label>
+      <div class="date-picker" id="datePicker">
+        <button class="date-picker-main" id="calendarToggle" type="button" aria-haspopup="dialog" aria-expanded="false">
+          <span class="date-picker-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="5.5" width="16" height="14" rx="2.5" stroke="currentColor" stroke-width="2"/>
+              <path d="M8 3.5v4M16 3.5v4M4.5 10h15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="date-picker-copy">
+            <span class="date-picker-label" data-ko="기준 날짜" data-en="Schedule Date">기준 날짜</span>
+            <span class="date-summary" id="dateSummary">-</span>
+          </span>
+          <span class="date-picker-value" id="dateValue">-</span>
+        </button>
+        <input id="selectedDate" type="hidden">
+        <div class="calendar-popover" id="calendarPopover" role="dialog" aria-label="Schedule calendar" hidden>
+          <div class="calendar-head">
+            <strong class="calendar-title" id="calendarTitle">-</strong>
+            <div class="calendar-controls">
+              <button class="calendar-nav" id="calendarPrev" type="button" aria-label="Previous month">‹</button>
+              <button class="calendar-today" id="calendarToday" type="button" data-ko="오늘" data-en="Today">오늘</button>
+              <button class="calendar-nav" id="calendarNext" type="button" aria-label="Next month">›</button>
+            </div>
+          </div>
+          <div class="calendar-weekdays" id="calendarWeekdays"></div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+      </div>
       <span class="save-state" id="saveState">로그인 필요</span>
       <button class="lang-toggle" type="button" id="langKoBtn">KO</button>
       <button class="lang-toggle" type="button" id="langEnBtn">EN</button>
@@ -748,8 +806,18 @@ const pageTitle = 'WOLKO Schedule Planner';
       passwordInput: document.getElementById('passwordInput'),
       loginBtn: document.getElementById('loginBtn'),
       loginError: document.getElementById('loginError'),
+      datePicker: document.getElementById('datePicker'),
+      calendarToggle: document.getElementById('calendarToggle'),
+      calendarPopover: document.getElementById('calendarPopover'),
+      calendarTitle: document.getElementById('calendarTitle'),
+      calendarWeekdays: document.getElementById('calendarWeekdays'),
+      calendarGrid: document.getElementById('calendarGrid'),
+      calendarPrev: document.getElementById('calendarPrev'),
+      calendarNext: document.getElementById('calendarNext'),
+      calendarToday: document.getElementById('calendarToday'),
       selectedDate: document.getElementById('selectedDate'),
       dateSummary: document.getElementById('dateSummary'),
+      dateValue: document.getElementById('dateValue'),
       saveState: document.getElementById('saveState'),
       langKoBtn: document.getElementById('langKoBtn'),
       langEnBtn: document.getElementById('langEnBtn'),
@@ -799,6 +867,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     let token = localStorage.getItem(TOKEN_KEY) || '';
     let editingId = '';
     let currentView = 'day';
+    let calendarMonth = '';
     let plan = {
       title: 'WOLKO Staff Schedule',
       vans: [
@@ -863,6 +932,26 @@ const pageTitle = 'WOLKO Schedule Planner';
         month: 'short',
         day: 'numeric',
       }).format(date);
+    }
+
+    function parseIsoDate(iso) {
+      const [year, month, day] = String(iso || todayIso()).split('-').map(Number);
+      return new Date(year, (month || 1) - 1, day || 1);
+    }
+
+    function isoFromDate(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function firstOfMonth(iso) {
+      const date = parseIsoDate(iso);
+      return isoFromDate(new Date(date.getFullYear(), date.getMonth(), 1));
+    }
+
+    function shiftCalendarMonth(delta) {
+      const date = parseIsoDate(calendarMonth || firstOfMonth(els.selectedDate.value || todayIso()));
+      calendarMonth = isoFromDate(new Date(date.getFullYear(), date.getMonth() + delta, 1));
+      renderCalendar();
     }
 
     function escapeHtml(value) {
@@ -1461,11 +1550,74 @@ const pageTitle = 'WOLKO Schedule Planner';
       `;
     }
 
+    function closeCalendar() {
+      els.calendarPopover.hidden = true;
+      els.calendarToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleCalendar() {
+      const isOpen = !els.calendarPopover.hidden;
+      if (isOpen) {
+        closeCalendar();
+        return;
+      }
+      calendarMonth = firstOfMonth(els.selectedDate.value || todayIso());
+      renderCalendar();
+      els.calendarPopover.hidden = false;
+      els.calendarToggle.setAttribute('aria-expanded', 'true');
+    }
+
+    function selectScheduleDate(iso, options = {}) {
+      els.selectedDate.value = iso || todayIso();
+      els.eventDate.value = els.selectedDate.value;
+      calendarMonth = firstOfMonth(els.selectedDate.value);
+      if (options.close !== false) closeCalendar();
+      render();
+    }
+
+    function renderCalendar() {
+      const selectedIso = els.selectedDate.value || todayIso();
+      const today = todayIso();
+      const monthIso = calendarMonth || firstOfMonth(selectedIso);
+      const monthDate = parseIsoDate(monthIso);
+      const firstVisible = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1 - monthDate.getDay());
+      const eventCounts = (plan.events || []).reduce((counts, event) => {
+        if (event.date) counts[event.date] = (counts[event.date] || 0) + 1;
+        return counts;
+      }, {});
+      const locale = currentLang === 'ko' ? 'ko-KR' : 'en-US';
+      els.calendarTitle.textContent = new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'long' }).format(monthDate);
+      els.calendarWeekdays.innerHTML = (currentLang === 'ko'
+        ? ['일', '월', '화', '수', '목', '금', '토']
+        : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      ).map(day => `<span class="calendar-weekday">${escapeHtml(day)}</span>`).join('');
+      els.calendarGrid.innerHTML = Array.from({ length: 42 }, (_, index) => {
+        const date = new Date(firstVisible.getFullYear(), firstVisible.getMonth(), firstVisible.getDate() + index);
+        const iso = isoFromDate(date);
+        const count = eventCounts[iso] || 0;
+        const classes = [
+          'calendar-day',
+          date.getMonth() !== monthDate.getMonth() ? 'is-outside' : '',
+          iso === selectedIso ? 'is-selected' : '',
+          iso === today ? 'is-today' : '',
+        ].filter(Boolean).join(' ');
+        const aria = `${new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', weekday: 'long' }).format(date)}${count ? `, ${count}` : ''}`;
+        return `
+          <button class="${classes}" type="button" data-calendar-date="${escapeHtml(iso)}" aria-label="${escapeHtml(aria)}">
+            <span>${date.getDate()}</span>
+            ${count ? `<span class="calendar-day-count">${count}</span>` : ''}
+          </button>
+        `;
+      }).join('');
+      els.dateSummary.textContent = dateSummary(selectedIso);
+      els.dateValue.textContent = selectedIso;
+    }
+
     function renderStats() {
       const todayCount = plan.events.filter(event => event.date === els.selectedDate.value).length;
       const weekCount = weekEvents().length;
       const viewLabels = COPY[currentLang].printView;
-      els.dateSummary.textContent = dateSummary(els.selectedDate.value);
+      renderCalendar();
       els.statToday.textContent = todayCount;
       els.statWeek.textContent = weekCount;
       els.statVans.textContent = plan.vans.length;
@@ -1656,6 +1808,21 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     els.loginBtn.addEventListener('click', login);
     els.passwordInput.addEventListener('keydown', event => { if (event.key === 'Enter') login(); });
+    els.calendarToggle.addEventListener('click', toggleCalendar);
+    els.calendarPrev.addEventListener('click', () => shiftCalendarMonth(-1));
+    els.calendarNext.addEventListener('click', () => shiftCalendarMonth(1));
+    els.calendarToday.addEventListener('click', () => selectScheduleDate(todayIso()));
+    els.calendarGrid.addEventListener('click', event => {
+      const button = event.target.closest('[data-calendar-date]');
+      if (!button) return;
+      selectScheduleDate(button.dataset.calendarDate);
+    });
+    document.addEventListener('click', event => {
+      if (!els.datePicker.contains(event.target)) closeCalendar();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeCalendar();
+    });
     els.langKoBtn.addEventListener('click', () => setLanguage('ko'));
     els.langEnBtn.addEventListener('click', () => setLanguage('en'));
     els.saveBtn.addEventListener('click', savePlan);
@@ -1693,9 +1860,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       render();
     });
     els.todayBtn.addEventListener('click', () => {
-      els.selectedDate.value = todayIso();
-      els.eventDate.value = els.selectedDate.value;
-      render();
+      selectScheduleDate(todayIso(), { close: false });
     });
     els.printBtn.addEventListener('click', () => window.print());
     els.resetEventBtn.addEventListener('click', clearForm);
