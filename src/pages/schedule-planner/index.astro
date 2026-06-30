@@ -526,14 +526,12 @@ const pageTitle = 'WOLKO Schedule Planner';
           <div class="calendar-grid" id="calendarGrid"></div>
         </div>
       </div>
-      <span class="save-state" id="saveState">로그인 필요</span>
-      <button class="lang-toggle" type="button" id="langKoBtn">KO</button>
-      <button class="lang-toggle" type="button" id="langEnBtn">EN</button>
+      <button class="lang-toggle" type="button" id="langToggleBtn">KO</button>
       <button type="button" id="saveBtn" data-ko="저장" data-en="Save">저장</button>
       <button type="button" id="importBtn" data-ko="엑셀 가져오기" data-en="Import XLSX">엑셀 가져오기</button>
       <input id="excelInput" type="file" accept=".xlsx">
-      <button type="button" id="exportBtn">CSV</button>
       <button type="button" id="logoutBtn" data-ko="로그아웃" data-en="Log Out">로그아웃</button>
+      <span class="save-state" id="saveState" style="display:none">로그인 필요</span>
     </div>
   </header>
 
@@ -859,12 +857,10 @@ const pageTitle = 'WOLKO Schedule Planner';
       dateSummary: document.getElementById('dateSummary'),
       dateValue: document.getElementById('dateValue'),
       saveState: document.getElementById('saveState'),
-      langKoBtn: document.getElementById('langKoBtn'),
-      langEnBtn: document.getElementById('langEnBtn'),
+      langToggleBtn: document.getElementById('langToggleBtn'),
       saveBtn: document.getElementById('saveBtn'),
       importBtn: document.getElementById('importBtn'),
       excelInput: document.getElementById('excelInput'),
-      exportBtn: document.getElementById('exportBtn'),
       logoutBtn: document.getElementById('logoutBtn'),
       planTitle: document.getElementById('planTitle'),
       planTitleView: document.getElementById('planTitleView'),
@@ -931,8 +927,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       document.querySelectorAll('option[data-ko][data-en]').forEach(option => {
         option.textContent = option.dataset[currentLang];
       });
-      els.langKoBtn.classList.toggle('active', currentLang === 'ko');
-      els.langEnBtn.classList.toggle('active', currentLang === 'en');
+      els.langToggleBtn.textContent = currentLang.toUpperCase();
       els.addEventBtn.textContent = editingId ? tr('updateSchedule') : tr('addSchedule');
       if (!token) setState(tr('loginNeeded'));
     }
@@ -1895,8 +1890,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape') closeCalendar();
     });
-    els.langKoBtn.addEventListener('click', () => setLanguage('ko'));
-    els.langEnBtn.addEventListener('click', () => setLanguage('en'));
+    els.langToggleBtn.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
     els.saveBtn.addEventListener('click', savePlan);
     els.importBtn.addEventListener('click', () => els.excelInput.click());
     els.excelInput.addEventListener('change', async () => {
@@ -1920,7 +1914,6 @@ const pageTitle = 'WOLKO Schedule Planner';
         els.excelInput.value = '';
       }
     });
-    els.exportBtn.addEventListener('click', exportCsv);
     els.logoutBtn.addEventListener('click', () => {
       localStorage.removeItem(TOKEN_KEY);
       token = '';
