@@ -481,7 +481,7 @@
             group: 'union',
             label: '연합캠프',
             camps: [
-              { id: '2026-inland-union',          title: '2026 교회 연합캠프',          dateKo: '8월 6일 – 8일',    capacity: 40 },
+              { id: '2026-inland-union',          title: '2026 교회 연합캠프',          dateKo: '8월 6일 – 8일',    capacity: 40, status: 'closed' },
             ],
           },
         ],
@@ -506,6 +506,18 @@
     const CAMP_GROUPS = SEASONS.flatMap(s =>
       s.groups.map(g => ({ ...g, seasonId: s.id }))
     );
+    const isAdminVisibleCamp = camp => camp?.status !== 'closed';
+    function visibleSeasonGroups(seasonId) {
+      const season = SEASONS.find(s => s.id === seasonId);
+      if (!season) return [];
+      return season.groups
+        .map(group => ({ ...group, camps: group.camps.filter(isAdminVisibleCamp) }))
+        .filter(group => group.camps.length > 0);
+    }
+    const ADMIN_CAMP_GROUPS = CAMP_GROUPS
+      .map(group => ({ ...group, camps: group.camps.filter(isAdminVisibleCamp) }))
+      .filter(group => group.camps.length > 0);
+    const ADMIN_CAMP_IDS = new Set(ADMIN_CAMP_GROUPS.flatMap(g => g.camps.map(c => c.id)));
     const CAMPS_ALL = [{ id: 'all', title: '전체 캠프', capacity: 9999 }]
       .concat(CAMP_GROUPS.flatMap(g => g.camps));
     const CAMP_LABELS = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.title]));
@@ -617,7 +629,7 @@
     };
     const SCHOLARSHIP_KEYS = Object.keys(SCHOLARSHIP_DISCOUNTS);
 
-    const TEAM_PANEL_CAMPS = new Set(['2026-inland-english-junior', '2026-inland-union']);
+    const TEAM_PANEL_CAMPS = new Set(['2026-inland-english-junior', '2026-inland-union'].filter(id => ADMIN_CAMP_IDS.has(id)));
     const WOLKO_CAMP_ROSTER = [
       { name: '앤더슨 제이슨', spouseName: '앤더슨 찬주', title: '캠프 & 아웃리치 팀 코디네이터', role: 'missionary', teams: ['프로그램', '상담자'] },
       { name: '민경찬', spouseName: '김유진', title: '코어트레이닝 코디네이터', role: 'missionary', teams: ['프로그램'] },
@@ -996,7 +1008,7 @@
       const wrap = document.getElementById('campCards');
       wrap.innerHTML = '';
       wrap.appendChild(makeSeasonCard());
-      const currentSeasonGroups = SEASONS.find(s => s.id === activeSeason)?.groups || [];
+      const currentSeasonGroups = visibleSeasonGroups(activeSeason);
       currentSeasonGroups.forEach(group => group.camps.forEach(c => {
         wrap.appendChild(makeCard(c.id, `${campGroupDisplayName(group)} · ${tt('capacityFn', c.capacity)}`, campDisplayName(c.id), c.capacity));
       }));
@@ -1005,7 +1017,7 @@
     function updateCardStats() {
       // 시즌 카드 (all): 현재 시즌 전체 통계
       const ids = seasonCampIds(activeSeason);
-      const seasonCamps = CAMP_GROUPS.flatMap(g => g.camps).filter(c => ids.has(c.id));
+      const seasonCamps = ADMIN_CAMP_GROUPS.flatMap(g => g.camps).filter(c => ids.has(c.id));
       const seasonCap = seasonCamps.reduce((s, c) => s + c.capacity, 0);
       const seasonRegs = allRegs.filter(r => ids.has(r.campId) && r.registrationType !== 'staff');
       const seasonTotal = seasonRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
@@ -1016,7 +1028,7 @@
       if (allCapEl) allCapEl.textContent = seasonRemain;
 
       // 개별 캠프 카드
-      CAMP_GROUPS.flatMap(g => g.camps).forEach(c => {
+      ADMIN_CAMP_GROUPS.flatMap(g => g.camps).forEach(c => {
         const regs = allRegs.filter(r => r.campId === c.id && r.registrationType !== 'staff');
         const total = regs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
         const remain = Math.max(0, c.capacity - total);
@@ -1028,6 +1040,7 @@
     }
 
     async function selectCamp(id) {
+      if (id !== 'all' && !ADMIN_CAMP_IDS.has(id)) id = 'all';
       activeCamp = id;
       document.querySelectorAll('.camp-card').forEach(c =>
         c.classList.toggle('active', c.dataset.id === id)
@@ -1064,13 +1077,11 @@
     }
 
     function seasonCampIds(seasonId) {
-      const season = SEASONS.find(s => s.id === seasonId);
-      if (!season) return new Set();
-      return new Set(season.groups.flatMap(g => g.camps.map(c => c.id)));
+      return new Set(visibleSeasonGroups(seasonId).flatMap(g => g.camps.map(c => c.id)));
     }
 
     function filteredRegs() {
-      let regs = allRegs;
+      let regs = allRegs.filter(r => ADMIN_CAMP_IDS.has(r.campId));
       // 시즌 필터
       if (activeSeason !== 'all') {
         const ids = seasonCampIds(activeSeason);
@@ -1139,7 +1150,7 @@
       const regs = filteredRegs();
       // activeCamp === 'all' 이면 현재 시즌 전체 캠프 정원 합산
       const cap = activeCamp === 'all'
-        ? CAMP_GROUPS.flatMap(g => g.camps)
+        ? ADMIN_CAMP_GROUPS.flatMap(g => g.camps)
             .filter(c => seasonCampIds(activeSeason).has(c.id))
             .reduce((s, c) => s + c.capacity, 0) || 80
         : (CAMP_CAP[activeCamp] || 40);
