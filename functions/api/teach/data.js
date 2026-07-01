@@ -4,7 +4,6 @@ const CORS = {
 };
 
 const DATA_KEY = 'teach:data:v1';
-const TEAM_SF = 'Student Fusion Team Projects';
 const MAX_ITEMS = 2000;
 
 function toHex(bytes) {
@@ -77,7 +76,7 @@ async function cleanItem(input, existing) {
   if (!team || !session || !title || !isValidUrl(url)) return null;
   const now = new Date().toISOString();
   let thumbnailUrl = existing?.thumbnailUrl || '';
-  if (team === TEAM_SF && url !== existing?.url) {
+  if (url !== existing?.url) {
     thumbnailUrl = await fetchCanvaThumbnail(url);
   }
   return {
