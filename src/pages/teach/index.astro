@@ -116,12 +116,10 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     .present-card-add { align-items:center; justify-content:center; color:var(--muted); border-style:dashed; font-weight:700; cursor:pointer; box-shadow:none; }
     .present-card-add:hover { color:var(--blue); border-color:var(--blue); background:#f4fbfd; }
     .empty { padding:24px; border:1px dashed #ccdce3; border-radius:var(--radius-md); color:var(--light); text-align:center; font-weight:400; background:#fff; grid-column:1/-1; }
-    .history-section { margin-top:10px; }
-    .history-toggle { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--border); border-radius:var(--radius-md); background:#fff; padding:13px 16px; color:var(--blue); font:700 13px/1 var(--sans); box-shadow:var(--shadow-soft); }
-    .history-toggle::after { content:'▾'; transition:transform .15s; }
-    .history-toggle.open::after { transform:rotate(180deg); }
-    .history-body { margin-top:14px; }
-    .history-body[hidden] { display:none; }
+    .session-select-wrap { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+    .session-select-wrap[hidden] { display:none; }
+    .session-select-wrap label { color:var(--muted); font:700 12px/1 var(--sans); letter-spacing:.02em; }
+    .session-select-wrap select { min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0 12px; background:#fff; color:var(--text); font:600 13px/1 var(--body); box-shadow:var(--shadow-soft); cursor:pointer; }
     .field { display:grid; gap:6px; margin-bottom:14px; }
     .field label { color:var(--muted); font-size:11.5px; font-weight:700; letter-spacing:.02em; }
     .field input,.field select { min-height:42px; border:1px solid #d7e2e7; border-radius:10px; padding:0 12px; outline:none; background:#fff; color:var(--text); }
@@ -183,12 +181,12 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
 
     <p class="load-error-banner" id="loadErrorBanner" hidden></p>
 
-    <section id="subjectGroups"></section>
+    <div class="session-select-wrap" id="sessionSelectWrap" hidden>
+      <label for="sessionSelect" data-ko="세션" data-en="Session">세션</label>
+      <select id="sessionSelect"></select>
+    </div>
 
-    <section class="history-section" id="historySection" hidden>
-      <button class="history-toggle" id="historyToggle" type="button" data-ko="지난 캠프 (히스토리)" data-en="Past Camps (History)">지난 캠프 (히스토리)</button>
-      <div class="history-body" id="historyBody" hidden></div>
-    </section>
+    <section id="subjectGroups"></section>
   </main>
 
   <div class="tch-dialog-backdrop" id="itemDialogBackdrop" hidden>
@@ -286,9 +284,8 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       editModeBtn: document.getElementById('editModeBtn'),
       exitEditBtn: document.getElementById('exitEditBtn'),
       subjectGroups: document.getElementById('subjectGroups'),
-      historySection: document.getElementById('historySection'),
-      historyToggle: document.getElementById('historyToggle'),
-      historyBody: document.getElementById('historyBody'),
+      sessionSelectWrap: document.getElementById('sessionSelectWrap'),
+      sessionSelect: document.getElementById('sessionSelect'),
       loadErrorBanner: document.getElementById('loadErrorBanner'),
       itemDialogBackdrop: document.getElementById('itemDialogBackdrop'),
       itemDialogTitle: document.getElementById('itemDialogTitle'),
@@ -305,6 +302,7 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     };
 
     let items = [];
+    let selectedSession = '';
     let editMode = false;
     let token = localStorage.getItem(TOKEN_KEY) || '';
     let editingItemId = '';
@@ -350,14 +348,15 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       return sessions;
     }
 
+    function sortedSessionNames(sessions) {
+      return Object.keys(sessions)
+        .map(name => ({ name, time: Math.max(...sessions[name].map(i => new Date(i.createdAt).getTime() || 0)) }))
+        .sort((a, b) => b.time - a.time)
+        .map(s => s.name);
+    }
+
     function latestSessionName(sessions) {
-      let latest = '';
-      let latestTime = -Infinity;
-      Object.entries(sessions).forEach(([name, sessionItems]) => {
-        const maxTime = Math.max(...sessionItems.map(i => new Date(i.createdAt).getTime() || 0));
-        if (maxTime > latestTime) { latestTime = maxTime; latest = name; }
-      });
-      return latest;
+      return sortedSessionNames(sessions)[0] || '';
     }
 
     function presentCardHtml(item) {
@@ -431,36 +430,22 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       return groups;
     }
 
-    function renderCategoryGroups() {
+    function renderSessionSelect() {
       const sessions = groupBySession(items);
-      const latest = latestSessionName(sessions);
-      const latestItems = sessions[latest] || [];
-      const byTeam = groupByTeam(latestItems);
+      const names = sortedSessionNames(sessions);
+      if (!names.includes(selectedSession)) selectedSession = names[0] || '';
+      els.sessionSelectWrap.hidden = names.length === 0;
+      els.sessionSelect.innerHTML = names.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+      els.sessionSelect.value = selectedSession;
+    }
+
+    function renderCategoryGroups() {
+      const sessionItems = items.filter(i => i.session === selectedSession);
+      const byTeam = groupByTeam(sessionItems);
       els.subjectGroups.innerHTML = TEAMS_ORDER.map(team => {
         return team === TEAM_WOLKO
           ? wolkoTeamHtml(byTeam[team] || [], { pinPeople: true })
           : flatTeamHtml(team, byTeam[team] || []);
-      }).join('');
-    }
-
-    function renderHistory() {
-      const sessions = groupBySession(items);
-      const latest = latestSessionName(sessions);
-      const pastNames = Object.keys(sessions).filter(name => name !== latest);
-      els.historySection.hidden = pastNames.length === 0;
-      els.historyBody.innerHTML = pastNames.map(sessionName => {
-        const byTeam = groupByTeam(sessions[sessionName]);
-        const teamNames = Object.keys(byTeam).sort((a, b) => a.localeCompare(b, 'ko'));
-        return `
-          <div class="subject-group">
-            <div class="tab-head">
-              <div class="tab-title">${escapeHtml(sessionName)}</div>
-            </div>
-            ${teamNames.map(team => team === TEAM_WOLKO
-              ? wolkoTeamHtml(byTeam[team], { pinPeople: false })
-              : flatTeamHtml(team, byTeam[team])
-            ).join('')}
-          </div>`;
       }).join('');
     }
 
@@ -471,14 +456,13 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     }
 
     function render() {
+      renderSessionSelect();
       renderCategoryGroups();
-      renderHistory();
       renderPersonDatalist();
     }
 
     function currentLatestSessionLabel() {
-      const sessions = groupBySession(items);
-      return latestSessionName(sessions) || '';
+      return selectedSession || '';
     }
 
     document.querySelector('main.page').addEventListener('click', event => {
@@ -495,9 +479,10 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       if (card) window.open(card.dataset.openUrl, '_blank', 'noopener');
     });
 
-    els.historyToggle.addEventListener('click', () => {
-      els.historyBody.hidden = !els.historyBody.hidden;
-      els.historyToggle.classList.toggle('open', !els.historyBody.hidden);
+    els.sessionSelect.addEventListener('change', () => {
+      selectedSession = els.sessionSelect.value;
+      renderCategoryGroups();
+      renderPersonDatalist();
     });
 
     function enterEditMode() {
