@@ -195,9 +195,16 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     <div class="tch-dialog">
       <div class="tch-dialog-title" id="itemDialogTitle" data-ko="발표 추가" data-en="Add Presentation">발표 추가</div>
       <div class="field">
-        <label data-ko="이름 / 카테고리" data-en="Name / Category">이름 / 카테고리</label>
-        <input id="itemCategory" type="text" list="categoryDatalist" data-ph-ko="예: 김선생님" data-ph-en="e.g. Teacher Kim" placeholder="예: 김선생님">
-        <datalist id="categoryDatalist"></datalist>
+        <label data-ko="팀" data-en="Team">팀</label>
+        <select id="itemTeam">
+          <option value="WOLKO">WOLKO</option>
+          <option value="Student Fusion Team Projects">Student Fusion Team Projects</option>
+        </select>
+      </div>
+      <div class="field" id="personFieldWrap">
+        <label data-ko="이름" data-en="Name">이름</label>
+        <input id="itemPerson" type="text" list="personDatalist" data-ph-ko="예: Zach" data-ph-en="e.g. Zach" placeholder="예: Zach">
+        <datalist id="personDatalist"></datalist>
       </div>
       <div class="field">
         <label data-ko="세션 (예: 2026 여름캠프)" data-en="Session (e.g. Summer 2026)">세션 (예: 2026 여름캠프)</label>
@@ -223,7 +230,10 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
   <script>
     const TOKEN_KEY = 'wolko_teach_token';
     const LANG_KEY = 'wolko_teach_lang';
-    const TEAM_PROJECTS_CATEGORY = 'Student Fusion Team Projects';
+    const TEAM_WOLKO = 'WOLKO';
+    const TEAM_SF = 'Student Fusion Team Projects';
+    const TEAMS_ORDER = [TEAM_WOLKO, TEAM_SF];
+    const WOLKO_PINNED_PEOPLE = ['Zach', 'Niki', 'Molly', 'Debbie', 'Shannon'];
 
     const COPY = {
       ko: {
@@ -236,7 +246,8 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         saveFailed: '저장하지 못했습니다.',
         deleteFailed: '삭제하지 못했습니다.',
         loadFailed: '목록을 불러오지 못했습니다.',
-        validationError: '이름/카테고리, 세션, 제목, URL을 모두 입력해주세요.',
+        validationError: '팀, 세션, 제목, URL을 모두 입력해주세요.',
+        validationErrorPerson: 'WOLKO 팀은 이름을 입력해주세요.',
         addTitle: '발표 추가',
         editTitle: '발표 수정',
       },
@@ -250,7 +261,8 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         saveFailed: 'Could not save.',
         deleteFailed: 'Could not delete.',
         loadFailed: 'Could not load the list.',
-        validationError: 'Please fill in name/category, session, title, and URL.',
+        validationError: 'Please fill in team, session, title, and URL.',
+        validationErrorPerson: 'Please enter a name for the WOLKO team.',
         addTitle: 'Add Presentation',
         editTitle: 'Edit Presentation',
       },
@@ -280,8 +292,10 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       loadErrorBanner: document.getElementById('loadErrorBanner'),
       itemDialogBackdrop: document.getElementById('itemDialogBackdrop'),
       itemDialogTitle: document.getElementById('itemDialogTitle'),
-      itemCategory: document.getElementById('itemCategory'),
-      categoryDatalist: document.getElementById('categoryDatalist'),
+      itemTeam: document.getElementById('itemTeam'),
+      personFieldWrap: document.getElementById('personFieldWrap'),
+      itemPerson: document.getElementById('itemPerson'),
+      personDatalist: document.getElementById('personDatalist'),
       itemSession: document.getElementById('itemSession'),
       itemTitle: document.getElementById('itemTitle'),
       itemUrl: document.getElementById('itemUrl'),
@@ -360,41 +374,73 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         </div>`;
     }
 
-    function categoryGroupHtml(category, categoryItems) {
+    function personGroupHtml(team, person, personItems) {
       return `
-        <div class="subject-group">
-          <div class="tab-head">
-            <div class="tab-title">${escapeHtml(category)}</div>
-            <div class="tab-count">${categoryItems.length}</div>
-          </div>
-          <div class="subject-grid">
-            ${categoryItems.length ? categoryItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
-            ${editMode ? `<button class="present-card present-card-add" data-add-category="${escapeHtml(category)}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
-          </div>
+        <div class="tab-head" style="border-radius:0;border-top:0;">
+          <div class="tab-title" style="font-size:13px;">${escapeHtml(person)}</div>
+          <div class="tab-count">${personItems.length}</div>
+        </div>
+        <div class="subject-grid">
+          ${personItems.length ? personItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
+          ${editMode ? `<button class="present-card present-card-add" data-add-team="${escapeHtml(team)}" data-add-person="${escapeHtml(person)}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
         </div>`;
     }
 
-    function groupByCategory(list) {
+    function groupByPerson(list) {
       const groups = {};
       list.forEach(item => {
-        (groups[item.category] || (groups[item.category] = [])).push(item);
+        const p = item.person || '';
+        (groups[p] || (groups[p] = [])).push(item);
       });
       return groups;
     }
 
-    function orderedCategoryNames(groups) {
-      const names = Object.keys(groups).filter(name => name !== TEAM_PROJECTS_CATEGORY).sort((a, b) => a.localeCompare(b, 'ko'));
-      names.push(TEAM_PROJECTS_CATEGORY);
-      return names;
+    function wolkoTeamHtml(teamItems, { pinPeople }) {
+      const byPerson = groupByPerson(teamItems);
+      const extra = Object.keys(byPerson).filter(p => p && !WOLKO_PINNED_PEOPLE.includes(p)).sort((a, b) => a.localeCompare(b, 'ko'));
+      const names = pinPeople ? [...WOLKO_PINNED_PEOPLE, ...extra] : Object.keys(byPerson).filter(Boolean).sort((a, b) => a.localeCompare(b, 'ko'));
+      return `
+        <div class="subject-group">
+          <div class="tab-head">
+            <div class="tab-title">${escapeHtml(TEAM_WOLKO)}</div>
+            <div class="tab-count">${teamItems.length}</div>
+          </div>
+          ${names.map(name => personGroupHtml(TEAM_WOLKO, name, byPerson[name] || [])).join('')}
+        </div>`;
+    }
+
+    function flatTeamHtml(team, teamItems) {
+      return `
+        <div class="subject-group">
+          <div class="tab-head">
+            <div class="tab-title">${escapeHtml(team)}</div>
+            <div class="tab-count">${teamItems.length}</div>
+          </div>
+          <div class="subject-grid">
+            ${teamItems.length ? teamItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
+            ${editMode ? `<button class="present-card present-card-add" data-add-team="${escapeHtml(team)}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
+          </div>
+        </div>`;
+    }
+
+    function groupByTeam(list) {
+      const groups = {};
+      list.forEach(item => {
+        (groups[item.team] || (groups[item.team] = [])).push(item);
+      });
+      return groups;
     }
 
     function renderCategoryGroups() {
       const sessions = groupBySession(items);
       const latest = latestSessionName(sessions);
       const latestItems = sessions[latest] || [];
-      const byCategory = groupByCategory(latestItems);
-      if (!(TEAM_PROJECTS_CATEGORY in byCategory)) byCategory[TEAM_PROJECTS_CATEGORY] = [];
-      els.subjectGroups.innerHTML = orderedCategoryNames(byCategory).map(name => categoryGroupHtml(name, byCategory[name])).join('');
+      const byTeam = groupByTeam(latestItems);
+      els.subjectGroups.innerHTML = TEAMS_ORDER.map(team => {
+        return team === TEAM_WOLKO
+          ? wolkoTeamHtml(byTeam[team] || [], { pinPeople: true })
+          : flatTeamHtml(team, byTeam[team] || []);
+      }).join('');
     }
 
     function renderHistory() {
@@ -403,32 +449,31 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       const pastNames = Object.keys(sessions).filter(name => name !== latest);
       els.historySection.hidden = pastNames.length === 0;
       els.historyBody.innerHTML = pastNames.map(sessionName => {
-        const byCategory = groupByCategory(sessions[sessionName]);
-        const categoryNames = Object.keys(byCategory).sort((a, b) => a.localeCompare(b, 'ko'));
+        const byTeam = groupByTeam(sessions[sessionName]);
+        const teamNames = Object.keys(byTeam).sort((a, b) => a.localeCompare(b, 'ko'));
         return `
           <div class="subject-group">
             <div class="tab-head">
               <div class="tab-title">${escapeHtml(sessionName)}</div>
             </div>
-            ${categoryNames.map(name => `
-              <div class="tab-head" style="border-radius:0;border-top:0;">
-                <div class="tab-title" style="font-size:13px;">${escapeHtml(name)}</div>
-              </div>
-              <div class="subject-grid">${byCategory[name].map(presentCardHtml).join('')}</div>
-            `).join('')}
+            ${teamNames.map(team => team === TEAM_WOLKO
+              ? wolkoTeamHtml(byTeam[team], { pinPeople: false })
+              : flatTeamHtml(team, byTeam[team])
+            ).join('')}
           </div>`;
       }).join('');
     }
 
-    function renderCategoryDatalist() {
-      const names = Object.keys(groupByCategory(items)).filter(name => name !== TEAM_PROJECTS_CATEGORY).sort((a, b) => a.localeCompare(b, 'ko'));
-      els.categoryDatalist.innerHTML = [TEAM_PROJECTS_CATEGORY, ...names].map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
+    function renderPersonDatalist() {
+      const existing = new Set(items.filter(i => i.team === TEAM_WOLKO && i.person).map(i => i.person));
+      const names = [...new Set([...WOLKO_PINNED_PEOPLE, ...existing])];
+      els.personDatalist.innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
     }
 
     function render() {
       renderCategoryGroups();
       renderHistory();
-      renderCategoryDatalist();
+      renderPersonDatalist();
     }
 
     function currentLatestSessionLabel() {
@@ -444,8 +489,8 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         if (delBtn) { confirmDeleteItem(delBtn.dataset.deleteItem); return; }
         return;
       }
-      const addBtn = event.target.closest('[data-add-category]');
-      if (addBtn) { openItemDialog('', { category: addBtn.dataset.addCategory }); return; }
+      const addBtn = event.target.closest('[data-add-team]');
+      if (addBtn) { openItemDialog('', { team: addBtn.dataset.addTeam, person: addBtn.dataset.addPerson || '' }); return; }
       const card = event.target.closest('[data-open-url]');
       if (card) window.open(card.dataset.openUrl, '_blank', 'noopener');
     });
@@ -504,12 +549,19 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       if (event.key === 'Enter') login();
     });
 
+    function updatePersonFieldVisibility() {
+      els.personFieldWrap.hidden = els.itemTeam.value !== TEAM_WOLKO;
+    }
+    els.itemTeam.addEventListener('change', updatePersonFieldVisibility);
+
     function openItemDialog(itemId, defaults) {
       defaults = defaults || {};
       editingItemId = itemId || '';
       const item = itemId ? items.find(i => i.id === itemId) : null;
       els.itemDialogTitle.textContent = itemId ? tr('editTitle') : tr('addTitle');
-      els.itemCategory.value = (item && item.category) || defaults.category || '';
+      els.itemTeam.value = (item && item.team) || defaults.team || TEAM_WOLKO;
+      updatePersonFieldVisibility();
+      els.itemPerson.value = (item && item.person) || defaults.person || '';
       els.itemSession.value = (item && item.session) || currentLatestSessionLabel();
       els.itemTitle.value = (item && item.title) || '';
       els.itemUrl.value = (item && item.url) || '';
@@ -521,13 +573,18 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     async function saveItemFromDialog() {
       const payload = {
         id: editingItemId || undefined,
-        category: els.itemCategory.value.trim(),
+        team: els.itemTeam.value,
+        person: els.itemTeam.value === TEAM_WOLKO ? els.itemPerson.value.trim() : '',
         session: els.itemSession.value.trim(),
         title: els.itemTitle.value.trim(),
         url: els.itemUrl.value.trim(),
       };
-      if (!payload.category || !payload.session || !payload.title || !payload.url) {
+      if (!payload.team || !payload.session || !payload.title || !payload.url) {
         els.itemDialogError.textContent = tr('validationError');
+        return;
+      }
+      if (payload.team === TEAM_WOLKO && !payload.person) {
+        els.itemDialogError.textContent = tr('validationErrorPerson');
         return;
       }
       els.itemDialogSaveBtn.disabled = true;

@@ -4,7 +4,7 @@ const CORS = {
 };
 
 const DATA_KEY = 'teach:data:v1';
-const TEAM_PROJECTS_CATEGORY = 'Student Fusion Team Projects';
+const TEAM_SF = 'Student Fusion Team Projects';
 const MAX_ITEMS = 2000;
 
 function toHex(bytes) {
@@ -69,19 +69,21 @@ async function fetchCanvaThumbnail(url) {
 }
 
 async function cleanItem(input, existing) {
-  const category = text(input?.category, 80) || existing?.category || '';
+  const team = text(input?.team, 60) || existing?.team || '';
+  const person = input?.person !== undefined ? text(input.person, 80) : (existing?.person || '');
   const session = text(input?.session, 80) || existing?.session || '';
   const title = text(input?.title, 160) || existing?.title || '';
   const url = text(input?.url, 500) || existing?.url || '';
-  if (!category || !session || !title || !isValidUrl(url)) return null;
+  if (!team || !session || !title || !isValidUrl(url)) return null;
   const now = new Date().toISOString();
   let thumbnailUrl = existing?.thumbnailUrl || '';
-  if (category === TEAM_PROJECTS_CATEGORY && url !== existing?.url) {
+  if (team === TEAM_SF && url !== existing?.url) {
     thumbnailUrl = await fetchCanvaThumbnail(url);
   }
   return {
     id: existing?.id || text(input?.id, 80) || crypto.randomUUID(),
-    category,
+    team,
+    person,
     session,
     title,
     url,
