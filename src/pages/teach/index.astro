@@ -102,8 +102,13 @@ const pageTitle = 'WOLKO Class Resources';
     .tab-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border:1px solid #dbe7ec; border-radius:var(--radius-lg) var(--radius-lg) 0 0; background:linear-gradient(135deg,#fff,#f4fbfd); padding:15px 17px; box-shadow:var(--shadow-soft); }
     .tab-title { color:var(--blue); font:700 16px/1.2 var(--sans); letter-spacing:-.01em; }
     .tab-count { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:6px 11px; font-size:11px; font-weight:500; }
-    .subject-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding:14px; border:1px solid #dbe7ec; border-top:0; border-radius:0 0 var(--radius-lg) var(--radius-lg); background:#fbfdfe; }
+    .subject-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding:14px; border:1px solid #dbe7ec; border-top:0; border-radius:0 0 var(--radius-md) var(--radius-md); background:#fbfdfe; }
     @media (max-width:520px) { .subject-grid { grid-template-columns:1fr; } }
+    .person-columns { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; padding:14px; }
+    @media (max-width:640px) { .person-columns { grid-template-columns:1fr; } }
+    .person-block { border:1px solid #dbe7ec; border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--shadow-soft); }
+    .person-block .tab-head { border-radius:var(--radius-md) var(--radius-md) 0 0; }
+    .person-block .subject-grid { grid-template-columns:1fr; border-radius:0 0 var(--radius-md) var(--radius-md); }
     .present-card { position:relative; display:flex; flex-direction:column; gap:8px; border:1px solid #dbe7ec; border-radius:var(--radius-md); background:#fff; padding:15px 16px; cursor:pointer; box-shadow:var(--shadow-soft); transition:transform .12s,box-shadow .12s; overflow:hidden; }
     .present-card:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,79,104,.12); }
     .present-card-thumb { margin:-15px -16px 0; aspect-ratio:16/9; background:#f1f5f9; }
@@ -386,13 +391,15 @@ const pageTitle = 'WOLKO Class Resources';
 
     function personGroupHtml(team, person, personItems) {
       return `
-        <div class="tab-head" style="border-radius:0;border-top:0;">
-          <div class="tab-title" style="font-size:13px;">${escapeHtml(person)}</div>
-          <div class="tab-count">${personItems.length}</div>
-        </div>
-        <div class="subject-grid">
-          ${personItems.length ? personItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
-          ${editMode ? `<button class="present-card present-card-add" data-add-team="${escapeHtml(team)}" data-add-person="${escapeHtml(person)}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
+        <div class="person-block">
+          <div class="tab-head">
+            <div class="tab-title" style="font-size:13px;">${escapeHtml(person)}</div>
+            <div class="tab-count">${personItems.length}</div>
+          </div>
+          <div class="subject-grid">
+            ${personItems.length ? personItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
+            ${editMode ? `<button class="present-card present-card-add" data-add-team="${escapeHtml(team)}" data-add-person="${escapeHtml(person)}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
+          </div>
         </div>`;
     }
 
@@ -415,7 +422,9 @@ const pageTitle = 'WOLKO Class Resources';
             <div class="tab-title">${escapeHtml(TEAM_WOLKO)}</div>
             <div class="tab-count">${teamItems.length}</div>
           </div>
-          ${names.map(name => personGroupHtml(TEAM_WOLKO, name, byPerson[name] || [])).join('')}
+          <div class="person-columns">
+            ${names.map(name => personGroupHtml(TEAM_WOLKO, name, byPerson[name] || [])).join('')}
+          </div>
         </div>`;
     }
 
