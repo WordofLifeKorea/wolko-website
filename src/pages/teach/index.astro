@@ -1,0 +1,597 @@
+---
+const pageTitle = 'WOLKO Class Presentation Launcher';
+---
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>{pageTitle}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/wolko-auth.css?v=1">
+  <style is:global>
+    :root {
+      --blue:#004f68;
+      --blue-lt:#0077a3;
+      --teal:#009b94;
+      --bg:#f4f6f8;
+      --card:#fff;
+      --border:#e4eaee;
+      --text:#1a2d38;
+      --muted:#6c8290;
+      --light:#8fa8b5;
+      --red:#c42a36;
+      --green:#239c5d;
+      --orange:#d9870d;
+      --shadow:0 2px 12px rgba(0,79,104,.05);
+      --shadow-card:0 10px 28px rgba(0,79,104,.07);
+      --shadow-soft:0 4px 14px rgba(0,79,104,.045);
+      --radius-lg:20px;
+      --radius-md:14px;
+      --radius-sm:12px;
+      --space-page:28px;
+      --space-card:20px;
+      --sans:'Montserrat',sans-serif;
+      --body:'Noto Sans KR',sans-serif;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); font-family:var(--body); line-height:1.5; }
+    button,input,select,textarea { font:500 13px/1.35 var(--body); }
+    button { cursor:pointer; }
+    .login-screen {
+      position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;
+      background:linear-gradient(145deg,#003d52,#00627f);
+    }
+    .login-screen[hidden] { display:none; }
+    .login-card {
+      width:min(420px,100%); border-radius:24px; background:#fff; padding:42px 36px 34px; text-align:center;
+      box-shadow:0 24px 70px rgba(0,0,0,.24);
+    }
+    .login-logo { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:22px; }
+    .login-logo img { height:38px; }
+    .login-logo-name { color:var(--blue); font:800 19px/1 var(--sans); letter-spacing:.02em; }
+    .login-title { margin:0 0 26px; color:var(--muted); font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; }
+    .login-input { width:100%; height:52px; border:1.5px solid #d7e2e7; border-radius:14px; padding:0 16px; outline:none; }
+    .login-input:focus { border-color:var(--blue); }
+    .login-error { min-height:20px; margin:10px 0 14px; color:var(--red); font-size:12px; font-weight:500; }
+    .login-btn,.primary {
+      min-height:40px; border:0; border-radius:var(--radius-sm); background:var(--blue); color:#fff; padding:10px 18px;
+      font-weight:700; letter-spacing:.01em; transition:background .18s ease,transform .12s ease,box-shadow .18s ease;
+    }
+    .login-btn { width:100%; height:48px; }
+    .login-btn:hover,.primary:hover { background:var(--blue-lt); }
+    .secondary,.ghost {
+      min-height:40px; border:1px solid #d7e4e9; border-radius:var(--radius-sm); background:#fff; color:var(--blue);
+      padding:9px 14px; font-weight:600; letter-spacing:.01em; transition:border-color .18s ease,background .18s ease,color .18s ease;
+    }
+    .ghost { background:#f8fbfc; color:var(--muted); }
+    .secondary:hover,.ghost:hover { border-color:#b8d6df; background:#f7fbfd; color:var(--blue); }
+    .danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
+    .topbar {
+      position:sticky; top:0; z-index:50; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:18px;
+      padding:10px 32px; background:var(--blue); color:#fff; box-shadow:0 2px 12px rgba(0,79,104,.25); flex-wrap:wrap;
+    }
+    .brand { display:flex; align-items:center; gap:10px; min-width:0; }
+    .brand img { height:30px; flex:0 0 auto; }
+    .brand h1 { margin:0; color:rgba(255,255,255,.92); font:700 14px/1 var(--sans); letter-spacing:.04em; }
+    .brand p { margin:3px 0 0; color:rgba(255,255,255,.62); font:500 10px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
+    .toolbar { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; min-width:0; }
+    .toolbar button { min-height:34px; border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:6px 14px; background:rgba(255,255,255,.15); color:#fff; font-size:12px; font-weight:600; }
+    .lang-toggle { min-width:42px; text-align:center; }
+    .page { max-width:min(1100px,calc(100vw - 32px)); margin:0 auto; padding:var(--space-page) 18px 90px; }
+    .hero {
+      margin-bottom:20px; padding:24px; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--card); box-shadow:var(--shadow-card);
+    }
+    .hero h2 { margin:0; color:var(--text); font:900 clamp(20px,3vw,26px)/1.18 var(--sans); letter-spacing:-.02em; }
+    .hero p { margin:9px 0 0; max-width:780px; color:var(--muted); font-size:13.5px; line-height:1.7; font-weight:400; }
+    .camp-toggle { display:flex; gap:0; border:1px solid var(--border); border-radius:999px; padding:4px; background:#fff; width:fit-content; margin:0 0 22px; box-shadow:var(--shadow-soft); }
+    .camp-toggle-btn { flex:0 0 auto; border-radius:999px; padding:10px 22px; border:0; background:transparent; color:var(--muted); font:700 13px/1 var(--sans); transition:background .15s,color .15s; }
+    .camp-toggle-btn.active { background:var(--blue); color:#fff; }
+    .subject-group { margin-bottom:18px; }
+    .tab-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border:1px solid #dbe7ec; border-radius:var(--radius-lg) var(--radius-lg) 0 0; background:linear-gradient(135deg,#fff,#f4fbfd); padding:15px 17px; box-shadow:var(--shadow-soft); }
+    .tab-title { color:var(--blue); font:700 16px/1.2 var(--sans); letter-spacing:-.01em; }
+    .tab-count { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:6px 11px; font-size:11px; font-weight:500; }
+    .subject-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; padding:16px; border:1px solid #dbe7ec; border-top:0; border-radius:0 0 var(--radius-lg) var(--radius-lg); background:#fbfdfe; }
+    .present-card { position:relative; display:flex; flex-direction:column; gap:8px; border:1px solid #dbe7ec; border-radius:var(--radius-md); background:#fff; padding:15px 16px; cursor:pointer; box-shadow:var(--shadow-soft); transition:transform .12s,box-shadow .12s; }
+    .present-card:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,79,104,.12); }
+    .present-card-title { color:var(--text); font-weight:700; font-size:13.5px; line-height:1.4; word-break:keep-all; }
+    .present-card-meta { color:var(--muted); font-size:11px; font-weight:500; }
+    .present-card-actions { display:flex; gap:6px; margin-top:4px; }
+    .present-card-actions button { flex:1; min-height:30px; border-radius:8px; padding:0 8px; font-size:11px; font-weight:600; border:1px solid #dbe7ec; background:#f8fafc; color:var(--text); }
+    .present-card-actions button.danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
+    .present-card-add { align-items:center; justify-content:center; color:var(--muted); border-style:dashed; font-weight:700; cursor:pointer; box-shadow:none; }
+    .present-card-add:hover { color:var(--blue); border-color:var(--blue); background:#f4fbfd; }
+    .empty { padding:24px; border:1px dashed #ccdce3; border-radius:var(--radius-md); color:var(--light); text-align:center; font-weight:400; background:#fff; grid-column:1/-1; }
+    .history-section { margin-top:10px; }
+    .history-toggle { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--border); border-radius:var(--radius-md); background:#fff; padding:13px 16px; color:var(--blue); font:700 13px/1 var(--sans); box-shadow:var(--shadow-soft); }
+    .history-toggle::after { content:'▾'; transition:transform .15s; }
+    .history-toggle.open::after { transform:rotate(180deg); }
+    .history-body { margin-top:14px; }
+    .history-body[hidden] { display:none; }
+    .field { display:grid; gap:6px; margin-bottom:14px; }
+    .field label { color:var(--muted); font-size:11.5px; font-weight:700; letter-spacing:.02em; }
+    .field input,.field select { min-height:42px; border:1px solid #d7e2e7; border-radius:10px; padding:0 12px; outline:none; background:#fff; color:var(--text); }
+    .field input:focus,.field select:focus { border-color:var(--blue); }
+    .tch-dialog-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .tch-dialog-backdrop[hidden] { display:none; }
+    .tch-dialog { background:#fff; border-radius:16px; padding:26px 26px 20px; max-width:400px; width:100%; box-shadow:0 8px 40px rgba(0,0,0,.18); max-height:90vh; overflow-y:auto; }
+    .tch-dialog-title { font:700 16px/1.3 var(--sans); color:var(--blue); margin-bottom:16px; }
+    .tch-dialog-error { min-height:18px; color:var(--red); font-size:12px; font-weight:500; margin-bottom:8px; }
+    .tch-dialog-btns { display:flex; gap:8px; justify-content:flex-end; margin-top:6px; }
+    .tch-dialog-btns button { border-radius:100px; padding:9px 20px; font:600 13px/1 var(--sans); cursor:pointer; border:1px solid transparent; }
+    .upload-placeholder-btn { width:100%; margin-bottom:14px; }
+    .upload-placeholder-btn[disabled] { opacity:.55; cursor:not-allowed; }
+    .load-error-banner { margin-bottom:16px; padding:12px 16px; border:1px solid #f1c9cf; border-radius:var(--radius-md); background:#fff8f9; color:var(--red); font-size:12.5px; }
+    .load-error-banner[hidden] { display:none; }
+  </style>
+</head>
+<body>
+  <div class="login-screen" id="loginScreen" hidden>
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+        </div>
+      </div>
+      <p class="login-title" data-ko="편집 모드 로그인" data-en="Edit Mode Login">편집 모드 로그인</p>
+      <input class="login-input" id="passwordInput" type="password" data-ph-ko="공유 비밀번호" data-ph-en="Shared password" placeholder="공유 비밀번호" autocomplete="current-password">
+      <p class="login-error" id="loginError"></p>
+      <button class="login-btn" id="loginBtn" type="button" data-ko="확인" data-en="Confirm">확인</button>
+      <button class="ghost" id="loginCancelBtn" type="button" style="width:100%;margin-top:10px;" data-ko="취소" data-en="Cancel">취소</button>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <div>
+        <h1 data-ko="수업 발표 런처" data-en="Class Presentation Launcher">수업 발표 런처</h1>
+        <p data-ko="캠프 · 수업 프레젠테이션" data-en="Camp Class Presentations">캠프 · 수업 프레젠테이션</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="lang-toggle" type="button" id="langToggleBtn">EN</button>
+      <button class="secondary" id="editModeBtn" type="button" data-ko="편집 모드" data-en="Edit Mode">편집 모드</button>
+      <button class="ghost" id="exitEditBtn" type="button" hidden data-ko="편집 종료" data-en="Exit Edit">편집 종료</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <h2 data-ko="수업 발표 런처" data-en="Class Presentation Launcher">수업 발표 런처</h2>
+      <p data-ko="캠프와 주제를 선택하고 카드를 클릭하면 Canva 프레젠테이션이 새 탭에서 열립니다." data-en="Pick a camp and subject, then click a card to open its Canva presentation in a new tab.">캠프와 주제를 선택하고 카드를 클릭하면 Canva 프레젠테이션이 새 탭에서 열립니다.</p>
+    </section>
+
+    <div class="camp-toggle" id="campToggle" role="tablist">
+      <button class="camp-toggle-btn active" data-camp="wolko" type="button" data-ko="월코캠프" data-en="WOLKO Camp">월코캠프</button>
+      <button class="camp-toggle-btn" data-camp="church" type="button" data-ko="교회캠프" data-en="Church Camp">교회캠프</button>
+    </div>
+
+    <p class="load-error-banner" id="loadErrorBanner" hidden></p>
+
+    <section id="subjectGroups"></section>
+
+    <section class="history-section" id="historySection" hidden>
+      <button class="history-toggle" id="historyToggle" type="button" data-ko="지난 캠프 (히스토리)" data-en="Past Camps (History)">지난 캠프 (히스토리)</button>
+      <div class="history-body" id="historyBody" hidden></div>
+    </section>
+  </main>
+
+  <div class="tch-dialog-backdrop" id="itemDialogBackdrop" hidden>
+    <div class="tch-dialog">
+      <div class="tch-dialog-title" id="itemDialogTitle" data-ko="발표 추가" data-en="Add Presentation">발표 추가</div>
+      <div class="field">
+        <label data-ko="캠프" data-en="Camp">캠프</label>
+        <select id="itemCamp">
+          <option value="wolko" data-ko="월코캠프" data-en="WOLKO Camp">월코캠프</option>
+          <option value="church" data-ko="교회캠프" data-en="Church Camp">교회캠프</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-ko="과목" data-en="Subject">과목</label>
+        <select id="itemSubject">
+          <option value="english">English</option>
+          <option value="bible">Bible</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-ko="세션 (예: 2026 여름캠프)" data-en="Session (e.g. Summer 2026)">세션 (예: 2026 여름캠프)</label>
+        <input id="itemSession" type="text">
+      </div>
+      <div class="field">
+        <label data-ko="제목" data-en="Title">제목</label>
+        <input id="itemTitle" type="text">
+      </div>
+      <div class="field">
+        <label data-ko="Canva URL" data-en="Canva URL">Canva URL</label>
+        <input id="itemUrl" type="url" placeholder="https://www.canva.com/design/...">
+      </div>
+      <button class="ghost upload-placeholder-btn" type="button" disabled title="업로드 기능은 준비 중입니다." data-ko="업로드 (준비중)" data-en="Upload (Coming Soon)">업로드 (준비중)</button>
+      <p class="tch-dialog-error" id="itemDialogError"></p>
+      <div class="tch-dialog-btns">
+        <button class="secondary" id="itemDialogCancelBtn" type="button" data-ko="취소" data-en="Cancel">취소</button>
+        <button class="primary" id="itemDialogSaveBtn" type="button" data-ko="저장" data-en="Save">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TOKEN_KEY = 'wolko_teach_token';
+    const LANG_KEY = 'wolko_teach_lang';
+    const CAMP_KEY = 'wolko_teach_camp';
+
+    const COPY = {
+      ko: {
+        noItems: '등록된 발표가 없습니다.',
+        addItem: '추가',
+        edit: '수정',
+        delete: '삭제',
+        deleteConfirm: '이 발표를 삭제하시겠습니까?',
+        loginFailed: '로그인하지 못했습니다.',
+        saveFailed: '저장하지 못했습니다.',
+        deleteFailed: '삭제하지 못했습니다.',
+        loadFailed: '목록을 불러오지 못했습니다.',
+        validationError: '세션, 제목, URL을 모두 입력해주세요.',
+        addTitle: '발표 추가',
+        editTitle: '발표 수정',
+        subjectEnglish: 'English',
+        subjectBible: 'Bible',
+      },
+      en: {
+        noItems: 'No presentations yet.',
+        addItem: 'Add',
+        edit: 'Edit',
+        delete: 'Delete',
+        deleteConfirm: 'Delete this presentation?',
+        loginFailed: 'Login failed.',
+        saveFailed: 'Could not save.',
+        deleteFailed: 'Could not delete.',
+        loadFailed: 'Could not load the list.',
+        validationError: 'Please fill in session, title, and URL.',
+        addTitle: 'Add Presentation',
+        editTitle: 'Edit Presentation',
+        subjectEnglish: 'English',
+        subjectBible: 'Bible',
+      },
+    };
+
+    let currentLang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'ko';
+    function tr(key) {
+      return COPY[currentLang][key] ?? COPY.ko[key] ?? key;
+    }
+    function subjectLabel(subject) {
+      return subject === 'bible' ? tr('subjectBible') : tr('subjectEnglish');
+    }
+    function campLabel(camp) {
+      return camp === 'church' ? (currentLang === 'ko' ? '교회캠프' : 'Church Camp') : (currentLang === 'ko' ? '월코캠프' : 'WOLKO Camp');
+    }
+
+    const els = {
+      loginScreen: document.getElementById('loginScreen'),
+      passwordInput: document.getElementById('passwordInput'),
+      loginBtn: document.getElementById('loginBtn'),
+      loginCancelBtn: document.getElementById('loginCancelBtn'),
+      loginError: document.getElementById('loginError'),
+      langToggleBtn: document.getElementById('langToggleBtn'),
+      editModeBtn: document.getElementById('editModeBtn'),
+      exitEditBtn: document.getElementById('exitEditBtn'),
+      campToggle: document.getElementById('campToggle'),
+      subjectGroups: document.getElementById('subjectGroups'),
+      historySection: document.getElementById('historySection'),
+      historyToggle: document.getElementById('historyToggle'),
+      historyBody: document.getElementById('historyBody'),
+      loadErrorBanner: document.getElementById('loadErrorBanner'),
+      itemDialogBackdrop: document.getElementById('itemDialogBackdrop'),
+      itemDialogTitle: document.getElementById('itemDialogTitle'),
+      itemCamp: document.getElementById('itemCamp'),
+      itemSubject: document.getElementById('itemSubject'),
+      itemSession: document.getElementById('itemSession'),
+      itemTitle: document.getElementById('itemTitle'),
+      itemUrl: document.getElementById('itemUrl'),
+      itemDialogError: document.getElementById('itemDialogError'),
+      itemDialogCancelBtn: document.getElementById('itemDialogCancelBtn'),
+      itemDialogSaveBtn: document.getElementById('itemDialogSaveBtn'),
+    };
+
+    let items = [];
+    let currentCamp = localStorage.getItem(CAMP_KEY) === 'church' ? 'church' : 'wolko';
+    let editMode = false;
+    let token = localStorage.getItem(TOKEN_KEY) || '';
+    let editingItemId = '';
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.querySelectorAll('[data-ko][data-en]').forEach(el => {
+        el.textContent = el.dataset[currentLang];
+      });
+      document.querySelectorAll('[data-ph-ko][data-ph-en]').forEach(el => {
+        el.placeholder = el.dataset[`ph${currentLang === 'ko' ? 'Ko' : 'En'}`] || '';
+      });
+      document.querySelectorAll('option[data-ko][data-en]').forEach(option => {
+        option.textContent = option.dataset[currentLang];
+      });
+      els.langToggleBtn.textContent = currentLang === 'ko' ? 'EN' : 'KR';
+      els.langToggleBtn.setAttribute('aria-label', currentLang === 'ko' ? 'Switch to English' : '한국어로 전환');
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang === 'en' ? 'en' : 'ko';
+      localStorage.setItem(LANG_KEY, currentLang);
+      applyLanguage();
+      render();
+    }
+
+    function groupBySession(campItems) {
+      const sessions = {};
+      campItems.forEach(item => {
+        (sessions[item.session] || (sessions[item.session] = [])).push(item);
+      });
+      return sessions;
+    }
+
+    function latestSessionName(sessions) {
+      let latest = '';
+      let latestTime = -Infinity;
+      Object.entries(sessions).forEach(([name, sessionItems]) => {
+        const maxTime = Math.max(...sessionItems.map(i => new Date(i.createdAt).getTime() || 0));
+        if (maxTime > latestTime) { latestTime = maxTime; latest = name; }
+      });
+      return latest;
+    }
+
+    function presentCardHtml(item) {
+      return `
+        <div class="present-card" data-open-url="${escapeHtml(item.url)}" data-item-id="${escapeHtml(item.id)}">
+          <div class="present-card-title">${escapeHtml(item.title)}</div>
+          <div class="present-card-meta">${escapeHtml(item.session)}</div>
+          ${editMode ? `
+            <div class="present-card-actions" data-stop>
+              <button type="button" data-edit-item="${escapeHtml(item.id)}">${escapeHtml(tr('edit'))}</button>
+              <button type="button" class="danger" data-delete-item="${escapeHtml(item.id)}">${escapeHtml(tr('delete'))}</button>
+            </div>` : ''}
+        </div>`;
+    }
+
+    function subjectGroupHtml(subject, subjectItems) {
+      return `
+        <div class="subject-group">
+          <div class="tab-head">
+            <div class="tab-title">${escapeHtml(subjectLabel(subject))}</div>
+            <div class="tab-count">${subjectItems.length}</div>
+          </div>
+          <div class="subject-grid">
+            ${subjectItems.length ? subjectItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
+            ${editMode ? `<button class="present-card present-card-add" data-add-subject="${subject}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
+          </div>
+        </div>`;
+    }
+
+    function renderCampToggle() {
+      els.campToggle.querySelectorAll('.camp-toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.camp === currentCamp);
+      });
+    }
+
+    function renderSubjectGroups() {
+      const campItems = items.filter(i => i.camp === currentCamp);
+      const sessions = groupBySession(campItems);
+      const latest = latestSessionName(sessions);
+      const latestItems = sessions[latest] || [];
+      const bySubject = { english: [], bible: [] };
+      latestItems.forEach(i => { (bySubject[i.subject] || (bySubject[i.subject] = [])).push(i); });
+      els.subjectGroups.innerHTML = ['english', 'bible'].map(subj => subjectGroupHtml(subj, bySubject[subj] || [])).join('');
+    }
+
+    function renderHistory() {
+      const campItems = items.filter(i => i.camp === currentCamp);
+      const sessions = groupBySession(campItems);
+      const latest = latestSessionName(sessions);
+      const pastNames = Object.keys(sessions).filter(name => name !== latest);
+      els.historySection.hidden = pastNames.length === 0;
+      els.historyBody.innerHTML = pastNames.map(name => `
+        <div class="subject-group">
+          <div class="tab-head">
+            <div class="tab-title">${escapeHtml(name)}</div>
+          </div>
+          <div class="subject-grid">${sessions[name].map(presentCardHtml).join('')}</div>
+        </div>`).join('');
+    }
+
+    function render() {
+      renderCampToggle();
+      renderSubjectGroups();
+      renderHistory();
+    }
+
+    function currentLatestSessionLabel() {
+      const campItems = items.filter(i => i.camp === currentCamp);
+      const sessions = groupBySession(campItems);
+      return latestSessionName(sessions) || '';
+    }
+
+    document.querySelector('main.page').addEventListener('click', event => {
+      if (event.target.closest('[data-stop]')) {
+        const editBtn = event.target.closest('[data-edit-item]');
+        if (editBtn) { openItemDialog(editBtn.dataset.editItem); return; }
+        const delBtn = event.target.closest('[data-delete-item]');
+        if (delBtn) { confirmDeleteItem(delBtn.dataset.deleteItem); return; }
+        return;
+      }
+      const addBtn = event.target.closest('[data-add-subject]');
+      if (addBtn) { openItemDialog('', { camp: currentCamp, subject: addBtn.dataset.addSubject }); return; }
+      const card = event.target.closest('[data-open-url]');
+      if (card) window.open(card.dataset.openUrl, '_blank', 'noopener');
+    });
+
+    els.campToggle.addEventListener('click', event => {
+      const btn = event.target.closest('.camp-toggle-btn');
+      if (!btn) return;
+      currentCamp = btn.dataset.camp;
+      localStorage.setItem(CAMP_KEY, currentCamp);
+      render();
+    });
+
+    els.historyToggle.addEventListener('click', () => {
+      els.historyBody.hidden = !els.historyBody.hidden;
+      els.historyToggle.classList.toggle('open', !els.historyBody.hidden);
+    });
+
+    function enterEditMode() {
+      editMode = true;
+      els.editModeBtn.hidden = true;
+      els.exitEditBtn.hidden = false;
+      render();
+    }
+
+    function exitEditMode() {
+      editMode = false;
+      els.editModeBtn.hidden = false;
+      els.exitEditBtn.hidden = true;
+      render();
+    }
+
+    els.editModeBtn.addEventListener('click', () => {
+      if (token) { enterEditMode(); return; }
+      els.loginError.textContent = '';
+      els.passwordInput.value = '';
+      els.loginScreen.hidden = false;
+    });
+    els.exitEditBtn.addEventListener('click', exitEditMode);
+    els.loginCancelBtn.addEventListener('click', () => { els.loginScreen.hidden = true; });
+
+    async function login() {
+      els.loginBtn.disabled = true;
+      els.loginError.textContent = '';
+      try {
+        const res = await fetch('/api/teach/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: els.passwordInput.value.trim() }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || tr('loginFailed'));
+        token = data.token;
+        localStorage.setItem(TOKEN_KEY, token);
+        els.loginScreen.hidden = true;
+        enterEditMode();
+      } catch (error) {
+        els.loginError.textContent = error.message;
+      } finally {
+        els.loginBtn.disabled = false;
+      }
+    }
+    els.loginBtn.addEventListener('click', login);
+    els.passwordInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') login();
+    });
+
+    function openItemDialog(itemId, defaults) {
+      defaults = defaults || {};
+      editingItemId = itemId || '';
+      const item = itemId ? items.find(i => i.id === itemId) : null;
+      els.itemDialogTitle.textContent = itemId ? tr('editTitle') : tr('addTitle');
+      els.itemCamp.value = (item && item.camp) || defaults.camp || currentCamp;
+      els.itemSubject.value = (item && item.subject) || defaults.subject || 'english';
+      els.itemSession.value = (item && item.session) || currentLatestSessionLabel();
+      els.itemTitle.value = (item && item.title) || '';
+      els.itemUrl.value = (item && item.url) || '';
+      els.itemDialogError.textContent = '';
+      els.itemDialogBackdrop.hidden = false;
+    }
+    els.itemDialogCancelBtn.addEventListener('click', () => { els.itemDialogBackdrop.hidden = true; });
+
+    async function saveItemFromDialog() {
+      const payload = {
+        id: editingItemId || undefined,
+        camp: els.itemCamp.value,
+        subject: els.itemSubject.value,
+        session: els.itemSession.value.trim(),
+        title: els.itemTitle.value.trim(),
+        url: els.itemUrl.value.trim(),
+      };
+      if (!payload.session || !payload.title || !payload.url) {
+        els.itemDialogError.textContent = tr('validationError');
+        return;
+      }
+      els.itemDialogSaveBtn.disabled = true;
+      try {
+        const res = await fetch('/api/teach/data', {
+          method: editingItemId ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ item: payload }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          token = '';
+          exitEditMode();
+          els.itemDialogBackdrop.hidden = true;
+          els.loginError.textContent = tr('loginFailed');
+          els.loginScreen.hidden = false;
+          return;
+        }
+        if (!res.ok) throw new Error(data.error || tr('saveFailed'));
+        items = data.items;
+        els.itemDialogBackdrop.hidden = true;
+        render();
+      } catch (error) {
+        els.itemDialogError.textContent = error.message;
+      } finally {
+        els.itemDialogSaveBtn.disabled = false;
+      }
+    }
+    els.itemDialogSaveBtn.addEventListener('click', saveItemFromDialog);
+
+    async function confirmDeleteItem(itemId) {
+      if (!confirm(tr('deleteConfirm'))) return;
+      try {
+        const res = await fetch(`/api/teach/data?id=${encodeURIComponent(itemId)}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          token = '';
+          exitEditMode();
+          els.loginError.textContent = tr('loginFailed');
+          els.loginScreen.hidden = false;
+          return;
+        }
+        if (!res.ok) throw new Error(data.error || tr('deleteFailed'));
+        items = data.items;
+        render();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    els.langToggleBtn.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
+
+    async function loadItems() {
+      const res = await fetch('/api/teach/data');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || tr('loadFailed'));
+      items = Array.isArray(data.items) ? data.items : [];
+      render();
+      els.loadErrorBanner.hidden = true;
+    }
+
+    applyLanguage();
+    render();
+    loadItems().catch(error => {
+      els.loadErrorBanner.textContent = error.message || tr('loadFailed');
+      els.loadErrorBanner.hidden = false;
+    });
+    if (token) enterEditMode();
+  </script>
+</body>
+</html>
