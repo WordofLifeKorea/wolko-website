@@ -50,19 +50,41 @@ function isValidUrl(value) {
   }
 }
 
+function extractMetaImage(html) {
+  const tags = html.match(/<meta\b[^>]*>/gi) || [];
+  const wanted = ['og:image', 'og:image:secure_url', 'twitter:image'];
+  for (const name of wanted) {
+    for (const tag of tags) {
+      const isMatch = new RegExp(`(?:property|name)\\s*=\\s*["']${name}["']`, 'i').test(tag);
+      if (!isMatch) continue;
+      const contentMatch = tag.match(/content\s*=\s*["']([^"']+)["']/i);
+      if (contentMatch) return contentMatch[1];
+    }
+  }
+  return '';
+}
+
 async function fetchCanvaThumbnail(url) {
   try {
     const host = new URL(url).hostname;
     if (!/(^|\.)canva\.com$/.test(host)) return '';
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WolkoTeachBot/1.0)' },
-      signal: AbortSignal.timeout(5000),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+      signal: AbortSignal.timeout(6000),
     });
-    if (!res.ok) return '';
+    if (!res.ok) {
+      console.error('fetchCanvaThumbnail: non-ok response', res.status);
+      return '';
+    }
     const html = await res.text();
-    const match = html.match(/<meta property="og:image" content="([^"]+)"/);
-    return match ? match[1] : '';
-  } catch {
+    const image = extractMetaImage(html);
+    if (!image) console.error('fetchCanvaThumbnail: no og:image found for', url);
+    return image;
+  } catch (error) {
+    console.error('fetchCanvaThumbnail error:', error);
     return '';
   }
 }
@@ -76,7 +98,7 @@ async function cleanItem(input, existing) {
   if (!team || !session || !title || !isValidUrl(url)) return null;
   const now = new Date().toISOString();
   let thumbnailUrl = existing?.thumbnailUrl || '';
-  if (url !== existing?.url) {
+  if (!thumbnailUrl || url !== existing?.url) {
     thumbnailUrl = await fetchCanvaThumbnail(url);
   }
   return {
