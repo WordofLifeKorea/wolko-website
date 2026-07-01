@@ -4,8 +4,7 @@ const CORS = {
 };
 
 const DATA_KEY = 'teach:data:v1';
-const CAMP_SET = new Set(['wolko', 'church']);
-const SUBJECT_SET = new Set(['english', 'bible']);
+const TEAM_PROJECTS_CATEGORY = 'Student Fusion Team Projects';
 const MAX_ITEMS = 2000;
 
 function toHex(bytes) {
@@ -52,21 +51,41 @@ function isValidUrl(value) {
   }
 }
 
-function cleanItem(input, existing) {
-  const camp = CAMP_SET.has(input?.camp) ? input.camp : existing?.camp;
-  const subject = SUBJECT_SET.has(input?.subject) ? input.subject : existing?.subject;
+async function fetchCanvaThumbnail(url) {
+  try {
+    const host = new URL(url).hostname;
+    if (!/(^|\.)canva\.com$/.test(host)) return '';
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WolkoTeachBot/1.0)' },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return '';
+    const html = await res.text();
+    const match = html.match(/<meta property="og:image" content="([^"]+)"/);
+    return match ? match[1] : '';
+  } catch {
+    return '';
+  }
+}
+
+async function cleanItem(input, existing) {
+  const category = text(input?.category, 80) || existing?.category || '';
   const session = text(input?.session, 80) || existing?.session || '';
   const title = text(input?.title, 160) || existing?.title || '';
   const url = text(input?.url, 500) || existing?.url || '';
-  if (!camp || !subject || !session || !title || !isValidUrl(url)) return null;
+  if (!category || !session || !title || !isValidUrl(url)) return null;
   const now = new Date().toISOString();
+  let thumbnailUrl = existing?.thumbnailUrl || '';
+  if (category === TEAM_PROJECTS_CATEGORY && url !== existing?.url) {
+    thumbnailUrl = await fetchCanvaThumbnail(url);
+  }
   return {
     id: existing?.id || text(input?.id, 80) || crypto.randomUUID(),
-    camp,
-    subject,
+    category,
     session,
     title,
     url,
+    thumbnailUrl: text(thumbnailUrl, 500),
     createdAt: existing?.createdAt || now,
     updatedAt: now,
   };
@@ -106,7 +125,7 @@ export async function onRequestPost(context) {
   }
   try {
     const body = await request.json();
-    const cleaned = cleanItem(body.item, null);
+    const cleaned = await cleanItem(body.item, null);
     if (!cleaned) {
       return Response.json({ error: '입력값을 확인해주세요.' }, { status: 400, headers: CORS });
     }
@@ -136,7 +155,7 @@ export async function onRequestPut(context) {
     if (idx === -1) {
       return Response.json({ error: '항목을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
     }
-    const cleaned = cleanItem(body.item, data.items[idx]);
+    const cleaned = await cleanItem(body.item, data.items[idx]);
     if (!cleaned) {
       return Response.json({ error: '입력값을 확인해주세요.' }, { status: 400, headers: CORS });
     }

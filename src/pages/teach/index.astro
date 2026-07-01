@@ -80,23 +80,34 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     .brand p { margin:3px 0 0; color:rgba(255,255,255,.62); font:500 10px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
     .toolbar { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; min-width:0; }
     .toolbar button { min-height:34px; border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:6px 14px; background:rgba(255,255,255,.15); color:#fff; font-size:12px; font-weight:600; }
-    .lang-toggle { min-width:42px; text-align:center; }
+    .lang-toggle {
+      display:flex; align-items:center; position:relative; width:150px; height:34px;
+      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); border-radius:999px; padding:3px; cursor:pointer;
+    }
+    .lang-slider {
+      position:absolute; left:3px; width:72px; height:26px; background:#fff; border-radius:999px;
+      transition:left .25s cubic-bezier(.4,0,.2,1); box-shadow:0 1px 8px rgba(0,0,0,.18);
+    }
+    .lang-side { display:flex; align-items:center; justify-content:center; gap:5px; width:72px; z-index:2; transition:opacity .2s; }
+    .lang-side img { width:16px; height:11px; object-fit:cover; border-radius:2px; }
+    .lang-side span { font:600 11px/1 var(--sans); color:#fff; }
+    .lang-side.is-active span { color:var(--blue); font-weight:700; }
+    .lang-side.is-inactive { opacity:.75; }
     .page { max-width:min(1100px,calc(100vw - 32px)); margin:0 auto; padding:var(--space-page) 18px 90px; }
     .hero {
       margin-bottom:20px; padding:24px; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--card); box-shadow:var(--shadow-card);
     }
     .hero h2 { margin:0; color:var(--text); font:900 clamp(20px,3vw,26px)/1.18 var(--sans); letter-spacing:-.02em; }
     .hero p { margin:9px 0 0; max-width:780px; color:var(--muted); font-size:13.5px; line-height:1.7; font-weight:400; }
-    .camp-toggle { display:flex; gap:0; border:1px solid var(--border); border-radius:999px; padding:4px; background:#fff; width:fit-content; margin:0 0 22px; box-shadow:var(--shadow-soft); }
-    .camp-toggle-btn { flex:0 0 auto; border-radius:999px; padding:10px 22px; border:0; background:transparent; color:var(--muted); font:700 13px/1 var(--sans); transition:background .15s,color .15s; }
-    .camp-toggle-btn.active { background:var(--blue); color:#fff; }
     .subject-group { margin-bottom:18px; }
     .tab-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border:1px solid #dbe7ec; border-radius:var(--radius-lg) var(--radius-lg) 0 0; background:linear-gradient(135deg,#fff,#f4fbfd); padding:15px 17px; box-shadow:var(--shadow-soft); }
     .tab-title { color:var(--blue); font:700 16px/1.2 var(--sans); letter-spacing:-.01em; }
     .tab-count { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:6px 11px; font-size:11px; font-weight:500; }
     .subject-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; padding:16px; border:1px solid #dbe7ec; border-top:0; border-radius:0 0 var(--radius-lg) var(--radius-lg); background:#fbfdfe; }
-    .present-card { position:relative; display:flex; flex-direction:column; gap:8px; border:1px solid #dbe7ec; border-radius:var(--radius-md); background:#fff; padding:15px 16px; cursor:pointer; box-shadow:var(--shadow-soft); transition:transform .12s,box-shadow .12s; }
+    .present-card { position:relative; display:flex; flex-direction:column; gap:8px; border:1px solid #dbe7ec; border-radius:var(--radius-md); background:#fff; padding:15px 16px; cursor:pointer; box-shadow:var(--shadow-soft); transition:transform .12s,box-shadow .12s; overflow:hidden; }
     .present-card:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,79,104,.12); }
+    .present-card-thumb { margin:-15px -16px 0; aspect-ratio:16/9; background:#f1f5f9; }
+    .present-card-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
     .present-card-title { color:var(--text); font-weight:700; font-size:13.5px; line-height:1.4; word-break:keep-all; }
     .present-card-meta { color:var(--muted); font-size:11px; font-weight:500; }
     .present-card-actions { display:flex; gap:6px; margin-top:4px; }
@@ -150,11 +161,15 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
       <div>
         <h1 data-ko="수업 발표 런처" data-en="Class Presentation Launcher">수업 발표 런처</h1>
-        <p data-ko="캠프 · 수업 프레젠테이션" data-en="Camp Class Presentations">캠프 · 수업 프레젠테이션</p>
+        <p data-ko="수업 프레젠테이션" data-en="Class Presentations">수업 프레젠테이션</p>
       </div>
     </div>
     <div class="toolbar">
-      <button class="lang-toggle" type="button" id="langToggleBtn">EN</button>
+      <div class="lang-toggle" id="langToggle">
+        <div class="lang-slider" id="langSlider"></div>
+        <div class="lang-side is-active" id="langKo"><img src="https://flagcdn.com/w40/kr.png" alt="KR"><span>한국어</span></div>
+        <div class="lang-side is-inactive" id="langEn"><img src="https://flagcdn.com/w40/us.png" alt="US"><span>English</span></div>
+      </div>
       <button class="secondary" id="editModeBtn" type="button" data-ko="편집 모드" data-en="Edit Mode">편집 모드</button>
       <button class="ghost" id="exitEditBtn" type="button" hidden data-ko="편집 종료" data-en="Exit Edit">편집 종료</button>
     </div>
@@ -163,13 +178,8 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
   <main class="page">
     <section class="hero">
       <h2 data-ko="수업 발표 런처" data-en="Class Presentation Launcher">수업 발표 런처</h2>
-      <p data-ko="캠프와 주제를 선택하고 카드를 클릭하면 Canva 프레젠테이션이 새 탭에서 열립니다." data-en="Pick a camp and subject, then click a card to open its Canva presentation in a new tab.">캠프와 주제를 선택하고 카드를 클릭하면 Canva 프레젠테이션이 새 탭에서 열립니다.</p>
+      <p data-ko="이름을 찾아 카드를 클릭하면 Canva 프레젠테이션이 새 탭에서 열립니다." data-en="Find a name and click a card to open its Canva presentation in a new tab.">이름을 찾아 카드를 클릭하면 Canva 프레젠테이션이 새 탭에서 열립니다.</p>
     </section>
-
-    <div class="camp-toggle" id="campToggle" role="tablist">
-      <button class="camp-toggle-btn active" data-camp="wolko" type="button" data-ko="월코캠프" data-en="WOLKO Camp">월코캠프</button>
-      <button class="camp-toggle-btn" data-camp="church" type="button" data-ko="교회캠프" data-en="Church Camp">교회캠프</button>
-    </div>
 
     <p class="load-error-banner" id="loadErrorBanner" hidden></p>
 
@@ -185,18 +195,9 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     <div class="tch-dialog">
       <div class="tch-dialog-title" id="itemDialogTitle" data-ko="발표 추가" data-en="Add Presentation">발표 추가</div>
       <div class="field">
-        <label data-ko="캠프" data-en="Camp">캠프</label>
-        <select id="itemCamp">
-          <option value="wolko" data-ko="월코캠프" data-en="WOLKO Camp">월코캠프</option>
-          <option value="church" data-ko="교회캠프" data-en="Church Camp">교회캠프</option>
-        </select>
-      </div>
-      <div class="field">
-        <label data-ko="과목" data-en="Subject">과목</label>
-        <select id="itemSubject">
-          <option value="english">English</option>
-          <option value="bible">Bible</option>
-        </select>
+        <label data-ko="이름 / 카테고리" data-en="Name / Category">이름 / 카테고리</label>
+        <input id="itemCategory" type="text" list="categoryDatalist" data-ph-ko="예: 김선생님" data-ph-en="e.g. Teacher Kim" placeholder="예: 김선생님">
+        <datalist id="categoryDatalist"></datalist>
       </div>
       <div class="field">
         <label data-ko="세션 (예: 2026 여름캠프)" data-en="Session (e.g. Summer 2026)">세션 (예: 2026 여름캠프)</label>
@@ -222,7 +223,7 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
   <script>
     const TOKEN_KEY = 'wolko_teach_token';
     const LANG_KEY = 'wolko_teach_lang';
-    const CAMP_KEY = 'wolko_teach_camp';
+    const TEAM_PROJECTS_CATEGORY = 'Student Fusion Team Projects';
 
     const COPY = {
       ko: {
@@ -235,11 +236,9 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         saveFailed: '저장하지 못했습니다.',
         deleteFailed: '삭제하지 못했습니다.',
         loadFailed: '목록을 불러오지 못했습니다.',
-        validationError: '세션, 제목, URL을 모두 입력해주세요.',
+        validationError: '이름/카테고리, 세션, 제목, URL을 모두 입력해주세요.',
         addTitle: '발표 추가',
         editTitle: '발표 수정',
-        subjectEnglish: 'English',
-        subjectBible: 'Bible',
       },
       en: {
         noItems: 'No presentations yet.',
@@ -251,23 +250,15 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         saveFailed: 'Could not save.',
         deleteFailed: 'Could not delete.',
         loadFailed: 'Could not load the list.',
-        validationError: 'Please fill in session, title, and URL.',
+        validationError: 'Please fill in name/category, session, title, and URL.',
         addTitle: 'Add Presentation',
         editTitle: 'Edit Presentation',
-        subjectEnglish: 'English',
-        subjectBible: 'Bible',
       },
     };
 
     let currentLang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'ko';
     function tr(key) {
       return COPY[currentLang][key] ?? COPY.ko[key] ?? key;
-    }
-    function subjectLabel(subject) {
-      return subject === 'bible' ? tr('subjectBible') : tr('subjectEnglish');
-    }
-    function campLabel(camp) {
-      return camp === 'church' ? (currentLang === 'ko' ? '교회캠프' : 'Church Camp') : (currentLang === 'ko' ? '월코캠프' : 'WOLKO Camp');
     }
 
     const els = {
@@ -276,10 +267,12 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       loginBtn: document.getElementById('loginBtn'),
       loginCancelBtn: document.getElementById('loginCancelBtn'),
       loginError: document.getElementById('loginError'),
-      langToggleBtn: document.getElementById('langToggleBtn'),
+      langToggle: document.getElementById('langToggle'),
+      langSlider: document.getElementById('langSlider'),
+      langKo: document.getElementById('langKo'),
+      langEn: document.getElementById('langEn'),
       editModeBtn: document.getElementById('editModeBtn'),
       exitEditBtn: document.getElementById('exitEditBtn'),
-      campToggle: document.getElementById('campToggle'),
       subjectGroups: document.getElementById('subjectGroups'),
       historySection: document.getElementById('historySection'),
       historyToggle: document.getElementById('historyToggle'),
@@ -287,8 +280,8 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       loadErrorBanner: document.getElementById('loadErrorBanner'),
       itemDialogBackdrop: document.getElementById('itemDialogBackdrop'),
       itemDialogTitle: document.getElementById('itemDialogTitle'),
-      itemCamp: document.getElementById('itemCamp'),
-      itemSubject: document.getElementById('itemSubject'),
+      itemCategory: document.getElementById('itemCategory'),
+      categoryDatalist: document.getElementById('categoryDatalist'),
       itemSession: document.getElementById('itemSession'),
       itemTitle: document.getElementById('itemTitle'),
       itemUrl: document.getElementById('itemUrl'),
@@ -298,7 +291,6 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     };
 
     let items = [];
-    let currentCamp = localStorage.getItem(CAMP_KEY) === 'church' ? 'church' : 'wolko';
     let editMode = false;
     let token = localStorage.getItem(TOKEN_KEY) || '';
     let editingItemId = '';
@@ -318,8 +310,15 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       document.querySelectorAll('option[data-ko][data-en]').forEach(option => {
         option.textContent = option.dataset[currentLang];
       });
-      els.langToggleBtn.textContent = currentLang === 'ko' ? 'EN' : 'KR';
-      els.langToggleBtn.setAttribute('aria-label', currentLang === 'ko' ? 'Switch to English' : '한국어로 전환');
+      updateLangToggleUI();
+    }
+
+    function updateLangToggleUI() {
+      const isEn = currentLang === 'en';
+      els.langKo.className = isEn ? 'lang-side is-inactive' : 'lang-side is-active';
+      els.langEn.className = isEn ? 'lang-side is-active' : 'lang-side is-inactive';
+      const sliderW = els.langSlider.offsetWidth || 72;
+      els.langSlider.style.left = isEn ? `${els.langToggle.offsetWidth - sliderW - 3}px` : '3px';
     }
 
     function setLanguage(lang) {
@@ -329,9 +328,9 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       render();
     }
 
-    function groupBySession(campItems) {
+    function groupBySession(list) {
       const sessions = {};
-      campItems.forEach(item => {
+      list.forEach(item => {
         (sessions[item.session] || (sessions[item.session] = [])).push(item);
       });
       return sessions;
@@ -350,6 +349,7 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     function presentCardHtml(item) {
       return `
         <div class="present-card" data-open-url="${escapeHtml(item.url)}" data-item-id="${escapeHtml(item.id)}">
+          ${item.thumbnailUrl ? `<div class="present-card-thumb"><img src="${escapeHtml(item.thumbnailUrl)}" alt="" loading="lazy"></div>` : ''}
           <div class="present-card-title">${escapeHtml(item.title)}</div>
           <div class="present-card-meta">${escapeHtml(item.session)}</div>
           ${editMode ? `
@@ -360,60 +360,79 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         </div>`;
     }
 
-    function subjectGroupHtml(subject, subjectItems) {
+    function categoryGroupHtml(category, categoryItems) {
       return `
         <div class="subject-group">
           <div class="tab-head">
-            <div class="tab-title">${escapeHtml(subjectLabel(subject))}</div>
-            <div class="tab-count">${subjectItems.length}</div>
+            <div class="tab-title">${escapeHtml(category)}</div>
+            <div class="tab-count">${categoryItems.length}</div>
           </div>
           <div class="subject-grid">
-            ${subjectItems.length ? subjectItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
-            ${editMode ? `<button class="present-card present-card-add" data-add-subject="${subject}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
+            ${categoryItems.length ? categoryItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
+            ${editMode ? `<button class="present-card present-card-add" data-add-category="${escapeHtml(category)}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
           </div>
         </div>`;
     }
 
-    function renderCampToggle() {
-      els.campToggle.querySelectorAll('.camp-toggle-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.camp === currentCamp);
+    function groupByCategory(list) {
+      const groups = {};
+      list.forEach(item => {
+        (groups[item.category] || (groups[item.category] = [])).push(item);
       });
+      return groups;
     }
 
-    function renderSubjectGroups() {
-      const campItems = items.filter(i => i.camp === currentCamp);
-      const sessions = groupBySession(campItems);
+    function orderedCategoryNames(groups) {
+      const names = Object.keys(groups).filter(name => name !== TEAM_PROJECTS_CATEGORY).sort((a, b) => a.localeCompare(b, 'ko'));
+      names.push(TEAM_PROJECTS_CATEGORY);
+      return names;
+    }
+
+    function renderCategoryGroups() {
+      const sessions = groupBySession(items);
       const latest = latestSessionName(sessions);
       const latestItems = sessions[latest] || [];
-      const bySubject = { english: [], bible: [] };
-      latestItems.forEach(i => { (bySubject[i.subject] || (bySubject[i.subject] = [])).push(i); });
-      els.subjectGroups.innerHTML = ['english', 'bible'].map(subj => subjectGroupHtml(subj, bySubject[subj] || [])).join('');
+      const byCategory = groupByCategory(latestItems);
+      if (!(TEAM_PROJECTS_CATEGORY in byCategory)) byCategory[TEAM_PROJECTS_CATEGORY] = [];
+      els.subjectGroups.innerHTML = orderedCategoryNames(byCategory).map(name => categoryGroupHtml(name, byCategory[name])).join('');
     }
 
     function renderHistory() {
-      const campItems = items.filter(i => i.camp === currentCamp);
-      const sessions = groupBySession(campItems);
+      const sessions = groupBySession(items);
       const latest = latestSessionName(sessions);
       const pastNames = Object.keys(sessions).filter(name => name !== latest);
       els.historySection.hidden = pastNames.length === 0;
-      els.historyBody.innerHTML = pastNames.map(name => `
-        <div class="subject-group">
-          <div class="tab-head">
-            <div class="tab-title">${escapeHtml(name)}</div>
-          </div>
-          <div class="subject-grid">${sessions[name].map(presentCardHtml).join('')}</div>
-        </div>`).join('');
+      els.historyBody.innerHTML = pastNames.map(sessionName => {
+        const byCategory = groupByCategory(sessions[sessionName]);
+        const categoryNames = Object.keys(byCategory).sort((a, b) => a.localeCompare(b, 'ko'));
+        return `
+          <div class="subject-group">
+            <div class="tab-head">
+              <div class="tab-title">${escapeHtml(sessionName)}</div>
+            </div>
+            ${categoryNames.map(name => `
+              <div class="tab-head" style="border-radius:0;border-top:0;">
+                <div class="tab-title" style="font-size:13px;">${escapeHtml(name)}</div>
+              </div>
+              <div class="subject-grid">${byCategory[name].map(presentCardHtml).join('')}</div>
+            `).join('')}
+          </div>`;
+      }).join('');
+    }
+
+    function renderCategoryDatalist() {
+      const names = Object.keys(groupByCategory(items)).filter(name => name !== TEAM_PROJECTS_CATEGORY).sort((a, b) => a.localeCompare(b, 'ko'));
+      els.categoryDatalist.innerHTML = [TEAM_PROJECTS_CATEGORY, ...names].map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
     }
 
     function render() {
-      renderCampToggle();
-      renderSubjectGroups();
+      renderCategoryGroups();
       renderHistory();
+      renderCategoryDatalist();
     }
 
     function currentLatestSessionLabel() {
-      const campItems = items.filter(i => i.camp === currentCamp);
-      const sessions = groupBySession(campItems);
+      const sessions = groupBySession(items);
       return latestSessionName(sessions) || '';
     }
 
@@ -425,18 +444,10 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         if (delBtn) { confirmDeleteItem(delBtn.dataset.deleteItem); return; }
         return;
       }
-      const addBtn = event.target.closest('[data-add-subject]');
-      if (addBtn) { openItemDialog('', { camp: currentCamp, subject: addBtn.dataset.addSubject }); return; }
+      const addBtn = event.target.closest('[data-add-category]');
+      if (addBtn) { openItemDialog('', { category: addBtn.dataset.addCategory }); return; }
       const card = event.target.closest('[data-open-url]');
       if (card) window.open(card.dataset.openUrl, '_blank', 'noopener');
-    });
-
-    els.campToggle.addEventListener('click', event => {
-      const btn = event.target.closest('.camp-toggle-btn');
-      if (!btn) return;
-      currentCamp = btn.dataset.camp;
-      localStorage.setItem(CAMP_KEY, currentCamp);
-      render();
     });
 
     els.historyToggle.addEventListener('click', () => {
@@ -498,8 +509,7 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       editingItemId = itemId || '';
       const item = itemId ? items.find(i => i.id === itemId) : null;
       els.itemDialogTitle.textContent = itemId ? tr('editTitle') : tr('addTitle');
-      els.itemCamp.value = (item && item.camp) || defaults.camp || currentCamp;
-      els.itemSubject.value = (item && item.subject) || defaults.subject || 'english';
+      els.itemCategory.value = (item && item.category) || defaults.category || '';
       els.itemSession.value = (item && item.session) || currentLatestSessionLabel();
       els.itemTitle.value = (item && item.title) || '';
       els.itemUrl.value = (item && item.url) || '';
@@ -511,13 +521,12 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
     async function saveItemFromDialog() {
       const payload = {
         id: editingItemId || undefined,
-        camp: els.itemCamp.value,
-        subject: els.itemSubject.value,
+        category: els.itemCategory.value.trim(),
         session: els.itemSession.value.trim(),
         title: els.itemTitle.value.trim(),
         url: els.itemUrl.value.trim(),
       };
-      if (!payload.session || !payload.title || !payload.url) {
+      if (!payload.category || !payload.session || !payload.title || !payload.url) {
         els.itemDialogError.textContent = tr('validationError');
         return;
       }
@@ -574,7 +583,7 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       }
     }
 
-    els.langToggleBtn.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
+    els.langToggle.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
 
     async function loadItems() {
       const res = await fetch('/api/teach/data');
