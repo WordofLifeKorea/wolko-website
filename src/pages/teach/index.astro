@@ -214,10 +214,11 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         <input id="itemTitle" type="text">
       </div>
       <div class="field">
-        <label data-ko="Canva URL" data-en="Canva URL">Canva URL</label>
+        <label data-ko="링크 / 파일" data-en="Link / File">링크 / 파일</label>
         <input id="itemUrl" type="url" placeholder="https://www.canva.com/design/...">
       </div>
-      <button class="ghost upload-placeholder-btn" type="button" disabled title="업로드 기능은 준비 중입니다." data-ko="업로드 (준비중)" data-en="Upload (Coming Soon)">업로드 (준비중)</button>
+      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="파일 업로드 (PDF·PPTX)" data-en="Upload File (PDF/PPTX)">파일 업로드 (PDF·PPTX)</button>
+      <input id="uploadFileInput" type="file" accept=".pdf,.pptx" hidden>
       <p class="tch-dialog-error" id="itemDialogError"></p>
       <div class="tch-dialog-btns">
         <button class="secondary" id="itemDialogCancelBtn" type="button" data-ko="취소" data-en="Cancel">취소</button>
@@ -249,6 +250,10 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         validationErrorPerson: 'WOLKO 팀은 이름을 입력해주세요.',
         addTitle: '발표 추가',
         editTitle: '발표 수정',
+        uploading: '업로드 중...',
+        uploadFailed: '업로드하지 못했습니다.',
+        uploadTooBig: '파일이 너무 큽니다. (최대 20MB)',
+        uploadBadType: 'PDF 또는 PPTX 파일만 업로드할 수 있습니다.',
       },
       en: {
         noItems: 'No presentations yet.',
@@ -262,6 +267,10 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
         loadFailed: 'Could not load the list.',
         validationError: 'Please fill in team, session, title, and URL.',
         validationErrorPerson: 'Please enter a name for the WOLKO team.',
+        uploading: 'Uploading...',
+        uploadFailed: 'Upload failed.',
+        uploadTooBig: 'File is too large. (max 20MB)',
+        uploadBadType: 'Only PDF or PPTX files can be uploaded.',
         addTitle: 'Add Presentation',
         editTitle: 'Edit Presentation',
       },
@@ -300,6 +309,8 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       itemDialogError: document.getElementById('itemDialogError'),
       itemDialogCancelBtn: document.getElementById('itemDialogCancelBtn'),
       itemDialogSaveBtn: document.getElementById('itemDialogSaveBtn'),
+      uploadFileBtn: document.getElementById('uploadFileBtn'),
+      uploadFileInput: document.getElementById('uploadFileInput'),
     };
 
     let items = [];
@@ -601,6 +612,46 @@ const pageTitle = 'WOLKO Class Presentation Launcher';
       }
     }
     els.itemDialogSaveBtn.addEventListener('click', saveItemFromDialog);
+
+    els.uploadFileBtn.addEventListener('click', () => els.uploadFileInput.click());
+    els.uploadFileInput.addEventListener('change', async () => {
+      const file = els.uploadFileInput.files?.[0];
+      if (!file) return;
+      const MAX_SIZE = 20 * 1024 * 1024;
+      if (!/\.(pdf|pptx)$/i.test(file.name)) {
+        els.itemDialogError.textContent = tr('uploadBadType');
+        els.uploadFileInput.value = '';
+        return;
+      }
+      if (file.size > MAX_SIZE) {
+        els.itemDialogError.textContent = tr('uploadTooBig');
+        els.uploadFileInput.value = '';
+        return;
+      }
+      els.itemDialogError.textContent = '';
+      const originalLabel = els.uploadFileBtn.textContent;
+      els.uploadFileBtn.disabled = true;
+      els.uploadFileBtn.textContent = tr('uploading');
+      try {
+        const form = new FormData();
+        form.append('file', file);
+        const res = await fetch('/api/teach/upload', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || tr('uploadFailed'));
+        els.itemUrl.value = data.url;
+        if (!els.itemTitle.value.trim()) els.itemTitle.value = file.name.replace(/\.(pdf|pptx)$/i, '');
+      } catch (error) {
+        els.itemDialogError.textContent = error.message;
+      } finally {
+        els.uploadFileBtn.disabled = false;
+        els.uploadFileBtn.textContent = originalLabel;
+        els.uploadFileInput.value = '';
+      }
+    });
 
     async function confirmDeleteItem(itemId) {
       if (!confirm(tr('deleteConfirm'))) return;
