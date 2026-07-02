@@ -94,12 +94,14 @@ async function cleanItem(input, existing) {
   const tab = TAB_SET.has(input?.tab) ? input.tab : (existing?.tab || '');
   const team = text(input?.team, 60) || existing?.team || '';
   const person = input?.person !== undefined ? text(input.person, 80) : (existing?.person || '');
-  const session = text(input?.session, 80) || existing?.session || '';
+  const campIds = Array.isArray(input?.campIds)
+    ? input.campIds.map(id => text(id, 80)).filter(Boolean)
+    : (existing?.campIds || []);
   const title = text(input?.title, 160) || existing?.title || '';
   const url = text(input?.url, 500) || existing?.url || '';
   const bgmUrl = input?.bgmUrl !== undefined ? text(input.bgmUrl, 500) : (existing?.bgmUrl || '');
   if (!tab) return { error: '탭 값이 올바르지 않습니다.' };
-  if (!session) return { error: '세션을 입력해주세요.' };
+  if (!campIds.length) return { error: '캠프를 하나 이상 선택해주세요.' };
   if (!title) return { error: '제목을 입력해주세요.' };
   if (!url) return { error: '링크 또는 파일을 입력해주세요.' };
   if (!isValidUrl(url)) return { error: `링크 형식이 올바르지 않습니다: ${url.slice(0, 80)}` };
@@ -116,7 +118,7 @@ async function cleanItem(input, existing) {
       tab,
       team: tab === 'teacher' ? team : '',
       person: tab === 'teacher' ? person : '',
-      session,
+      campIds,
       title,
       url,
       bgmUrl,
