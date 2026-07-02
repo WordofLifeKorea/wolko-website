@@ -226,6 +226,28 @@ const pageTitle = 'WOLKO Camp Resources';
     .install-guide-steps { margin:0 0 20px; padding-left:20px; color:var(--text); font-size:13px; line-height:1.8; }
     .install-guide-actions { display:flex; justify-content:flex-end; }
     .install-guide-actions .primary { min-width:96px; }
+    .schedule-panel {
+      border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff;
+      box-shadow:var(--shadow-card); overflow:hidden;
+    }
+    .schedule-panel-head {
+      display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+      padding:18px 20px; border-bottom:1px solid var(--border);
+      background:linear-gradient(135deg,#fff,#f4fbfd);
+    }
+    .schedule-panel-title { margin:0; color:var(--blue); font:800 18px/1.25 var(--sans); }
+    .schedule-panel-desc { margin:5px 0 0; color:var(--muted); font-size:12.5px; line-height:1.55; }
+    .schedule-panel-link {
+      display:inline-flex; align-items:center; justify-content:center; min-height:38px; padding:0 14px;
+      border:1px solid #cfe0e7; border-radius:999px; background:#fff; color:var(--blue);
+      font:800 12px/1 var(--sans); text-decoration:none; white-space:nowrap; box-shadow:var(--shadow-soft);
+    }
+    .schedule-panel-link:hover { background:#f4fbfd; border-color:var(--blue); }
+    .schedule-frame { width:100%; height:min(980px, calc(100vh - 170px)); min-height:680px; border:0; display:block; background:#f8fafc; }
+    @media (max-width:720px) {
+      .schedule-panel-head { padding:15px; }
+      .schedule-frame { height:820px; min-height:620px; }
+    }
   </style>
 </head>
 <body>
@@ -276,6 +298,7 @@ const pageTitle = 'WOLKO Camp Resources';
       <button class="main-tab-btn" data-tab="counselor" type="button" data-ko="상담자" data-en="Counselors">상담자</button>
       <button class="main-tab-btn" data-tab="preacher" type="button" data-ko="설교자" data-en="Preachers">설교자</button>
       <button class="main-tab-btn" data-tab="general" type="button">General Files</button>
+      <button class="main-tab-btn" data-tab="schedule" type="button" data-ko="스케줄" data-en="Schedule">스케줄</button>
     </div>
 
     <p class="load-error-banner" id="loadErrorBanner" hidden></p>
@@ -394,6 +417,7 @@ const pageTitle = 'WOLKO Camp Resources';
       { key: 'counselor', ko: '상담자', en: 'Counselors' },
       { key: 'preacher', ko: '설교자', en: 'Preachers' },
       { key: 'general', ko: 'General Files', en: 'General Files' },
+      { key: 'schedule', ko: '스케줄', en: 'Schedule' },
     ];
     const TAB_KEYS = TABS.map(t => t.key);
     const DEFAULT_TAB = 'teacher';
@@ -438,6 +462,9 @@ const pageTitle = 'WOLKO Camp Resources';
         defaultCampSaveFailed: '기본 캠프를 저장하지 못했습니다.',
         editModeEnter: '편집 모드',
         editModeExit: '편집 중 · 나가기',
+        scheduleTitle: '스케줄 플래너',
+        scheduleDesc: '스태프 일정과 차량 운영 계획을 이 탭에서 바로 관리합니다.',
+        openSchedule: '새 탭에서 열기',
       },
       en: {
         noItems: 'No resources yet.',
@@ -478,6 +505,9 @@ const pageTitle = 'WOLKO Camp Resources';
         defaultCampSaveFailed: 'Could not save the default camp.',
         editModeEnter: 'Edit Mode',
         editModeExit: 'Editing · Exit',
+        scheduleTitle: 'Schedule Planner',
+        scheduleDesc: 'Manage staff schedules and van operations directly from this tab.',
+        openSchedule: 'Open in New Tab',
       },
     };
 
@@ -845,6 +875,11 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     function renderCampFilter() {
+      if (currentTab === 'schedule') {
+        els.campFilterWrap.hidden = true;
+        updateEditModeUI();
+        return;
+      }
       const years = sortedYears();
       els.campFilterWrap.hidden = years.length === 0;
       if (!years.length) return;
@@ -871,6 +906,20 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     function renderCategoryGroups() {
+      if (currentTab === 'schedule') {
+        els.subjectGroups.innerHTML = `
+          <section class="schedule-panel">
+            <div class="schedule-panel-head">
+              <div>
+                <h3 class="schedule-panel-title">${escapeHtml(tr('scheduleTitle'))}</h3>
+                <p class="schedule-panel-desc">${escapeHtml(tr('scheduleDesc'))}</p>
+              </div>
+              <a class="schedule-panel-link" href="/schedule-planner/" target="_blank" rel="noopener">${escapeHtml(tr('openSchedule'))}</a>
+            </div>
+            <iframe class="schedule-frame" src="/schedule-planner/" title="${escapeHtml(tr('scheduleTitle'))}"></iframe>
+          </section>`;
+        return;
+      }
       if (currentTab === 'general') {
         const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && itemTab(i) === 'general');
         els.subjectGroups.innerHTML = flatListHtml(tabLabel('general'), campItems, { tab: 'general' });
@@ -1003,6 +1052,7 @@ const pageTitle = 'WOLKO Camp Resources';
       currentTab = btn.dataset.tab;
       localStorage.setItem(TAB_KEY, currentTab);
       renderMainTabs();
+      renderCampFilter();
       renderCategoryGroups();
       renderPersonDatalist();
     });
