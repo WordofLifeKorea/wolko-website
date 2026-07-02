@@ -4,10 +4,20 @@ const CORS = {
 };
 
 const MAX_SIZE = 20 * 1024 * 1024; // 20MB
-const ALLOWED_EXT = /\.(pdf|pptx)$/i;
+const ALLOWED_EXT = {
+  presentation: /\.(pdf|pptx)$/i,
+  bgm: /\.(mp3|wav|m4a)$/i,
+};
 const CONTENT_TYPES = {
   pdf: 'application/pdf',
   pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  mp3: 'audio/mpeg',
+  wav: 'audio/wav',
+  m4a: 'audio/mp4',
+};
+const ERROR_MESSAGES = {
+  presentation: 'PDF 또는 PPTX 파일만 업로드할 수 있습니다.',
+  bgm: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.',
 };
 
 async function verifyToken(request, env) {
@@ -37,8 +47,8 @@ async function verifyToken(request, env) {
   }
 }
 
-function extOf(filename) {
-  const match = String(filename || '').match(ALLOWED_EXT);
+function extOf(filename, kind) {
+  const match = String(filename || '').match(ALLOWED_EXT[kind]);
   return match ? match[1].toLowerCase() : '';
 }
 
@@ -54,12 +64,13 @@ export async function onRequestPost(context) {
   try {
     const form = await request.formData();
     const file = form.get('file');
+    const kind = ALLOWED_EXT[form.get('kind')] ? form.get('kind') : 'presentation';
     if (!file || typeof file === 'string') {
       return Response.json({ error: '파일을 선택해주세요.' }, { status: 400, headers: CORS });
     }
-    const ext = extOf(file.name);
+    const ext = extOf(file.name, kind);
     if (!ext) {
-      return Response.json({ error: 'PDF 또는 PPTX 파일만 업로드할 수 있습니다.' }, { status: 400, headers: CORS });
+      return Response.json({ error: ERROR_MESSAGES[kind] }, { status: 400, headers: CORS });
     }
     if (file.size > MAX_SIZE) {
       return Response.json({ error: '파일이 너무 큽니다. (최대 20MB)' }, { status: 400, headers: CORS });

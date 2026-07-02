@@ -1,5 +1,5 @@
 ---
-const pageTitle = 'WOLKO Class Resources';
+const pageTitle = 'WOLKO Camp Resources';
 ---
 <!doctype html>
 <html lang="ko">
@@ -98,6 +98,9 @@ const pageTitle = 'WOLKO Class Resources';
     }
     .hero h2 { margin:0; color:var(--text); font:900 clamp(20px,3vw,26px)/1.18 var(--sans); letter-spacing:-.02em; }
     .hero p { margin:9px 0 0; max-width:780px; color:var(--muted); font-size:13.5px; line-height:1.7; font-weight:400; }
+    .main-tabs { display:flex; gap:0; border:1px solid var(--border); border-radius:999px; padding:4px; background:#fff; width:fit-content; max-width:100%; overflow-x:auto; margin-bottom:18px; box-shadow:var(--shadow-soft); }
+    .main-tab-btn { flex:0 0 auto; border-radius:999px; padding:9px 18px; border:0; background:transparent; color:var(--muted); font:700 12.5px/1 var(--sans); white-space:nowrap; transition:background .15s,color .15s; }
+    .main-tab-btn.active { background:var(--blue); color:#fff; }
     .subject-group { margin-bottom:18px; }
     .tab-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border:1px solid #dbe7ec; border-radius:var(--radius-lg) var(--radius-lg) 0 0; background:linear-gradient(135deg,#fff,#f4fbfd); padding:15px 17px; box-shadow:var(--shadow-soft); }
     .tab-title { color:var(--blue); font:700 16px/1.2 var(--sans); letter-spacing:-.01em; }
@@ -115,6 +118,8 @@ const pageTitle = 'WOLKO Class Resources';
     .present-card-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
     .present-card-title { color:var(--text); font-weight:700; font-size:13.5px; line-height:1.4; word-break:keep-all; }
     .present-card-meta { color:var(--muted); font-size:11px; font-weight:500; }
+    .bgm-chip { align-self:flex-start; display:inline-flex; align-items:center; gap:4px; border-radius:999px; background:#f0fdfa; color:#0f766e; padding:4px 10px; font-size:11px; font-weight:600; text-decoration:none; }
+    .bgm-chip:hover { background:#ccfbf1; }
     .present-card-actions { display:flex; gap:6px; margin-top:4px; }
     .present-card-actions button { flex:1; min-height:30px; border-radius:8px; padding:0 8px; font-size:11px; font-weight:600; border:1px solid #dbe7ec; background:#f8fafc; color:var(--text); }
     .present-card-actions button.danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
@@ -129,6 +134,7 @@ const pageTitle = 'WOLKO Class Resources';
     .field label { color:var(--muted); font-size:11.5px; font-weight:700; letter-spacing:.02em; }
     .field input,.field select { min-height:42px; border:1px solid #d7e2e7; border-radius:10px; padding:0 12px; outline:none; background:#fff; color:var(--text); }
     .field input:focus,.field select:focus { border-color:var(--blue); }
+    .field-divider { height:1px; background:var(--border); margin:16px 0; }
     .tch-dialog-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; }
     .tch-dialog-backdrop[hidden] { display:none; }
     .tch-dialog { background:#fff; border-radius:16px; padding:26px 26px 20px; max-width:400px; width:100%; box-shadow:0 8px 40px rgba(0,0,0,.18); max-height:90vh; overflow-y:auto; }
@@ -163,8 +169,8 @@ const pageTitle = 'WOLKO Class Resources';
     <div class="brand">
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
       <div>
-        <h1 data-ko="수업 자료실" data-en="Class Resources">수업 자료실</h1>
-        <p data-ko="수업 프레젠테이션" data-en="Class Presentations">수업 프레젠테이션</p>
+        <h1 data-ko="캠프 자료실" data-en="Camp Resources">캠프 자료실</h1>
+        <p data-ko="캠프 자료 모음" data-en="Camp Resource Hub">캠프 자료 모음</p>
       </div>
     </div>
     <div class="toolbar">
@@ -180,9 +186,16 @@ const pageTitle = 'WOLKO Class Resources';
 
   <main class="page">
     <section class="hero">
-      <h2 data-ko="수업 자료실" data-en="Class Resources">수업 자료실</h2>
-      <p data-ko="이름을 찾아 카드를 클릭하면 Canva 프레젠테이션이 새 탭에서 열립니다." data-en="Find a name and click a card to open its Canva presentation in a new tab.">이름을 찾아 카드를 클릭하면 Canva 프레젠테이션이 새 탭에서 열립니다.</p>
+      <h2 data-ko="캠프 자료실" data-en="Camp Resources">캠프 자료실</h2>
+      <p data-ko="탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다." data-en="Choose a tab and click a card to open its resource in a new tab.">탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다.</p>
     </section>
+
+    <div class="main-tabs" id="mainTabs" role="tablist">
+      <button class="main-tab-btn" data-tab="teacher" type="button" data-ko="수업자료" data-en="Class Materials">수업자료</button>
+      <button class="main-tab-btn" data-tab="program" type="button" data-ko="프로그램팀" data-en="Program Team">프로그램팀</button>
+      <button class="main-tab-btn" data-tab="counselor" type="button" data-ko="상담자" data-en="Counselors">상담자</button>
+      <button class="main-tab-btn" data-tab="preacher" type="button" data-ko="설교자" data-en="Preachers">설교자</button>
+    </div>
 
     <p class="load-error-banner" id="loadErrorBanner" hidden></p>
 
@@ -196,8 +209,8 @@ const pageTitle = 'WOLKO Class Resources';
 
   <div class="tch-dialog-backdrop" id="itemDialogBackdrop" hidden>
     <div class="tch-dialog">
-      <div class="tch-dialog-title" id="itemDialogTitle" data-ko="발표 추가" data-en="Add Presentation">발표 추가</div>
-      <div class="field">
+      <div class="tch-dialog-title" id="itemDialogTitle" data-ko="자료 추가" data-en="Add Resource">자료 추가</div>
+      <div class="field" id="teamFieldWrap">
         <label data-ko="팀" data-en="Team">팀</label>
         <select id="itemTeam">
           <option value="WOLKO">WOLKO</option>
@@ -223,6 +236,13 @@ const pageTitle = 'WOLKO Class Resources';
       </div>
       <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="파일 업로드 (PDF·PPTX)" data-en="Upload File (PDF/PPTX)">파일 업로드 (PDF·PPTX)</button>
       <input id="uploadFileInput" type="file" accept=".pdf,.pptx" hidden>
+      <div class="field" id="bgmFieldWrap">
+        <div class="field-divider"></div>
+        <label data-ko="BGM 링크 / 파일 (선택)" data-en="BGM Link / File (optional)">BGM 링크 / 파일 (선택)</label>
+        <input id="itemBgmUrl" type="url" placeholder="https://...">
+        <button class="ghost upload-placeholder-btn" type="button" id="uploadBgmBtn" data-ko="BGM 업로드 (MP3·WAV·M4A)" data-en="Upload BGM (MP3/WAV/M4A)">BGM 업로드 (MP3·WAV·M4A)</button>
+        <input id="uploadBgmInput" type="file" accept=".mp3,.wav,.m4a" hidden>
+      </div>
       <p class="tch-dialog-error" id="itemDialogError"></p>
       <div class="tch-dialog-btns">
         <button class="secondary" id="itemDialogCancelBtn" type="button" data-ko="취소" data-en="Cancel">취소</button>
@@ -232,57 +252,73 @@ const pageTitle = 'WOLKO Class Resources';
   </div>
 
   <script>
-    const TOKEN_KEY = 'wolko_teach_token';
-    const LANG_KEY = 'wolko_teach_lang';
+    const TOKEN_KEY = 'wolko_camp_resources_token';
+    const LANG_KEY = 'wolko_camp_resources_lang';
+    const TAB_KEY = 'wolko_camp_resources_tab';
     const TEAM_WOLKO = 'WOLKO';
     const TEAM_SF = 'Student Fusion Team Projects';
     const TEAMS_ORDER = [TEAM_SF, TEAM_WOLKO];
     const WOLKO_PINNED_PEOPLE = ['Zach', 'Niki', 'Molly', 'Debbie', 'Shannon'];
+    const TABS = [
+      { key: 'teacher', ko: '수업자료', en: 'Class Materials' },
+      { key: 'program', ko: '프로그램팀', en: 'Program Team' },
+      { key: 'counselor', ko: '상담자', en: 'Counselors' },
+      { key: 'preacher', ko: '설교자', en: 'Preachers' },
+    ];
+    const DEFAULT_TAB = 'teacher';
 
     const COPY = {
       ko: {
-        noItems: '등록된 발표가 없습니다.',
+        noItems: '등록된 자료가 없습니다.',
         addItem: '추가',
         edit: '수정',
         delete: '삭제',
-        deleteConfirm: '이 발표를 삭제하시겠습니까?',
+        deleteConfirm: '이 자료를 삭제하시겠습니까?',
         loginFailed: '로그인하지 못했습니다.',
         saveFailed: '저장하지 못했습니다.',
         deleteFailed: '삭제하지 못했습니다.',
         loadFailed: '목록을 불러오지 못했습니다.',
-        validationError: '팀, 세션, 제목, URL을 모두 입력해주세요.',
+        validationError: '세션, 제목, URL을 모두 입력해주세요.',
+        validationErrorTeam: '팀을 선택해주세요.',
         validationErrorPerson: 'WOLKO 팀은 이름을 입력해주세요.',
-        addTitle: '발표 추가',
-        editTitle: '발표 수정',
+        addTitle: '자료 추가',
+        editTitle: '자료 수정',
         uploading: '업로드 중...',
         uploadFailed: '업로드하지 못했습니다.',
         uploadTooBig: '파일이 너무 큽니다. (최대 20MB)',
         uploadBadType: 'PDF 또는 PPTX 파일만 업로드할 수 있습니다.',
+        uploadBadTypeBgm: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.',
       },
       en: {
-        noItems: 'No presentations yet.',
+        noItems: 'No resources yet.',
         addItem: 'Add',
         edit: 'Edit',
         delete: 'Delete',
-        deleteConfirm: 'Delete this presentation?',
+        deleteConfirm: 'Delete this resource?',
         loginFailed: 'Login failed.',
         saveFailed: 'Could not save.',
         deleteFailed: 'Could not delete.',
         loadFailed: 'Could not load the list.',
-        validationError: 'Please fill in team, session, title, and URL.',
+        validationError: 'Please fill in session, title, and URL.',
+        validationErrorTeam: 'Please choose a team.',
         validationErrorPerson: 'Please enter a name for the WOLKO team.',
+        addTitle: 'Add Resource',
+        editTitle: 'Edit Resource',
         uploading: 'Uploading...',
         uploadFailed: 'Upload failed.',
         uploadTooBig: 'File is too large. (max 20MB)',
         uploadBadType: 'Only PDF or PPTX files can be uploaded.',
-        addTitle: 'Add Presentation',
-        editTitle: 'Edit Presentation',
+        uploadBadTypeBgm: 'Only MP3, WAV, or M4A files can be uploaded.',
       },
     };
 
     let currentLang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'ko';
     function tr(key) {
       return COPY[currentLang][key] ?? COPY.ko[key] ?? key;
+    }
+    function tabLabel(key) {
+      const t = TABS.find(t => t.key === key);
+      return t ? (currentLang === 'en' ? t.en : t.ko) : key;
     }
 
     const els = {
@@ -297,12 +333,14 @@ const pageTitle = 'WOLKO Class Resources';
       langEn: document.getElementById('langEn'),
       editModeBtn: document.getElementById('editModeBtn'),
       exitEditBtn: document.getElementById('exitEditBtn'),
+      mainTabs: document.getElementById('mainTabs'),
       subjectGroups: document.getElementById('subjectGroups'),
       sessionSelectWrap: document.getElementById('sessionSelectWrap'),
       sessionSelect: document.getElementById('sessionSelect'),
       loadErrorBanner: document.getElementById('loadErrorBanner'),
       itemDialogBackdrop: document.getElementById('itemDialogBackdrop'),
       itemDialogTitle: document.getElementById('itemDialogTitle'),
+      teamFieldWrap: document.getElementById('teamFieldWrap'),
       itemTeam: document.getElementById('itemTeam'),
       personFieldWrap: document.getElementById('personFieldWrap'),
       itemPerson: document.getElementById('itemPerson'),
@@ -315,10 +353,16 @@ const pageTitle = 'WOLKO Class Resources';
       itemDialogSaveBtn: document.getElementById('itemDialogSaveBtn'),
       uploadFileBtn: document.getElementById('uploadFileBtn'),
       uploadFileInput: document.getElementById('uploadFileInput'),
+      bgmFieldWrap: document.getElementById('bgmFieldWrap'),
+      itemBgmUrl: document.getElementById('itemBgmUrl'),
+      uploadBgmBtn: document.getElementById('uploadBgmBtn'),
+      uploadBgmInput: document.getElementById('uploadBgmInput'),
     };
 
     let items = [];
     let selectedSession = '';
+    let currentTab = TABS.some(t => t.key === localStorage.getItem(TAB_KEY)) ? localStorage.getItem(TAB_KEY) : DEFAULT_TAB;
+    let dialogTab = DEFAULT_TAB;
     let editMode = false;
     let token = localStorage.getItem(TOKEN_KEY) || '';
     let editingItemId = '';
@@ -381,6 +425,7 @@ const pageTitle = 'WOLKO Class Resources';
           ${item.thumbnailUrl ? `<div class="present-card-thumb"><img src="${escapeHtml(item.thumbnailUrl)}" alt="" loading="lazy"></div>` : ''}
           <div class="present-card-title">${escapeHtml(item.title)}</div>
           <div class="present-card-meta">${escapeHtml(item.session)}</div>
+          ${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}
           ${editMode ? `
             <div class="present-card-actions" data-stop>
               <button type="button" data-edit-item="${escapeHtml(item.id)}">${escapeHtml(tr('edit'))}</button>
@@ -389,7 +434,15 @@ const pageTitle = 'WOLKO Class Resources';
         </div>`;
     }
 
-    function personGroupHtml(team, person, personItems) {
+    function addButtonHtml(defaults) {
+      const attrs = Object.entries(defaults)
+        .filter(([, v]) => v)
+        .map(([k, v]) => `data-add-${k}="${escapeHtml(v)}"`)
+        .join(' ');
+      return `<button class="present-card present-card-add" ${attrs} type="button">+ ${escapeHtml(tr('addItem'))}</button>`;
+    }
+
+    function personGroupHtml(person, personItems) {
       return `
         <div class="person-block">
           <div class="tab-head">
@@ -398,7 +451,7 @@ const pageTitle = 'WOLKO Class Resources';
           </div>
           <div class="subject-grid">
             ${personItems.length ? personItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
-            ${editMode ? `<button class="present-card present-card-add" data-add-team="${escapeHtml(team)}" data-add-person="${escapeHtml(person)}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
+            ${editMode ? addButtonHtml({ tab: 'teacher', team: TEAM_WOLKO, person }) : ''}
           </div>
         </div>`;
     }
@@ -423,21 +476,21 @@ const pageTitle = 'WOLKO Class Resources';
             <div class="tab-count">${teamItems.length}</div>
           </div>
           <div class="person-columns">
-            ${names.map(name => personGroupHtml(TEAM_WOLKO, name, byPerson[name] || [])).join('')}
+            ${names.map(name => personGroupHtml(name, byPerson[name] || [])).join('')}
           </div>
         </div>`;
     }
 
-    function flatTeamHtml(team, teamItems) {
+    function flatListHtml(headerLabel, listItems, addDefaults) {
       return `
         <div class="subject-group">
           <div class="tab-head">
-            <div class="tab-title">${escapeHtml(team)}</div>
-            <div class="tab-count">${teamItems.length}</div>
+            <div class="tab-title">${escapeHtml(headerLabel)}</div>
+            <div class="tab-count">${listItems.length}</div>
           </div>
           <div class="subject-grid">
-            ${teamItems.length ? teamItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
-            ${editMode ? `<button class="present-card present-card-add" data-add-team="${escapeHtml(team)}" type="button">+ ${escapeHtml(tr('addItem'))}</button>` : ''}
+            ${listItems.length ? listItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
+            ${editMode ? addButtonHtml(addDefaults) : ''}
           </div>
         </div>`;
     }
@@ -450,6 +503,12 @@ const pageTitle = 'WOLKO Class Resources';
       return groups;
     }
 
+    function renderMainTabs() {
+      els.mainTabs.querySelectorAll('.main-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === currentTab);
+      });
+    }
+
     function renderSessionSelect() {
       const sessions = groupBySession(items);
       const names = sortedSessionNames(sessions);
@@ -460,13 +519,17 @@ const pageTitle = 'WOLKO Class Resources';
     }
 
     function renderCategoryGroups() {
-      const sessionItems = items.filter(i => i.session === selectedSession);
-      const byTeam = groupByTeam(sessionItems);
-      els.subjectGroups.innerHTML = TEAMS_ORDER.map(team => {
-        return team === TEAM_WOLKO
-          ? wolkoTeamHtml(byTeam[team] || [], { pinPeople: true })
-          : flatTeamHtml(team, byTeam[team] || []);
-      }).join('');
+      const sessionItems = items.filter(i => i.session === selectedSession && i.tab === currentTab);
+      if (currentTab === 'teacher') {
+        const byTeam = groupByTeam(sessionItems);
+        els.subjectGroups.innerHTML = TEAMS_ORDER.map(team => {
+          return team === TEAM_WOLKO
+            ? wolkoTeamHtml(byTeam[team] || [], { pinPeople: true })
+            : flatListHtml(team, byTeam[team] || [], { tab: 'teacher', team });
+        }).join('');
+      } else {
+        els.subjectGroups.innerHTML = flatListHtml(tabLabel(currentTab), sessionItems, { tab: currentTab });
+      }
     }
 
     function renderPersonDatalist() {
@@ -476,6 +539,7 @@ const pageTitle = 'WOLKO Class Resources';
     }
 
     function render() {
+      renderMainTabs();
       renderSessionSelect();
       renderCategoryGroups();
       renderPersonDatalist();
@@ -493,10 +557,27 @@ const pageTitle = 'WOLKO Class Resources';
         if (delBtn) { confirmDeleteItem(delBtn.dataset.deleteItem); return; }
         return;
       }
-      const addBtn = event.target.closest('[data-add-team]');
-      if (addBtn) { openItemDialog('', { team: addBtn.dataset.addTeam, person: addBtn.dataset.addPerson || '' }); return; }
+      const addBtn = event.target.closest('[data-add-tab]');
+      if (addBtn) {
+        openItemDialog('', {
+          tab: addBtn.dataset.addTab,
+          team: addBtn.dataset.addTeam || '',
+          person: addBtn.dataset.addPerson || '',
+        });
+        return;
+      }
       const card = event.target.closest('[data-open-url]');
       if (card) window.open(card.dataset.openUrl, '_blank', 'noopener');
+    });
+
+    els.mainTabs.addEventListener('click', event => {
+      const btn = event.target.closest('.main-tab-btn');
+      if (!btn) return;
+      currentTab = btn.dataset.tab;
+      localStorage.setItem(TAB_KEY, currentTab);
+      renderMainTabs();
+      renderCategoryGroups();
+      renderPersonDatalist();
     });
 
     els.sessionSelect.addEventListener('change', () => {
@@ -555,40 +636,56 @@ const pageTitle = 'WOLKO Class Resources';
     });
 
     function updatePersonFieldVisibility() {
-      els.personFieldWrap.hidden = els.itemTeam.value !== TEAM_WOLKO;
+      els.personFieldWrap.hidden = dialogTab !== 'teacher' || els.itemTeam.value !== TEAM_WOLKO;
     }
     els.itemTeam.addEventListener('change', updatePersonFieldVisibility);
+
+    function updateDialogFieldsForTab() {
+      els.teamFieldWrap.hidden = dialogTab !== 'teacher';
+      updatePersonFieldVisibility();
+      els.bgmFieldWrap.hidden = !(dialogTab === 'program' || dialogTab === 'counselor');
+    }
 
     function openItemDialog(itemId, defaults) {
       defaults = defaults || {};
       editingItemId = itemId || '';
       const item = itemId ? items.find(i => i.id === itemId) : null;
+      dialogTab = (item && item.tab) || defaults.tab || currentTab;
       els.itemDialogTitle.textContent = itemId ? tr('editTitle') : tr('addTitle');
       els.itemTeam.value = (item && item.team) || defaults.team || TEAM_WOLKO;
-      updatePersonFieldVisibility();
+      updateDialogFieldsForTab();
       els.itemPerson.value = (item && item.person) || defaults.person || '';
       els.itemSession.value = (item && item.session) || currentLatestSessionLabel();
       els.itemTitle.value = (item && item.title) || '';
       els.itemUrl.value = (item && item.url) || '';
+      els.itemBgmUrl.value = (item && item.bgmUrl) || '';
       els.itemDialogError.textContent = '';
       els.itemDialogBackdrop.hidden = false;
     }
     els.itemDialogCancelBtn.addEventListener('click', () => { els.itemDialogBackdrop.hidden = true; });
 
     async function saveItemFromDialog() {
+      const isTeacher = dialogTab === 'teacher';
+      const hasBgm = dialogTab === 'program' || dialogTab === 'counselor';
       const payload = {
         id: editingItemId || undefined,
-        team: els.itemTeam.value,
-        person: els.itemTeam.value === TEAM_WOLKO ? els.itemPerson.value.trim() : '',
+        tab: dialogTab,
+        team: isTeacher ? els.itemTeam.value : '',
+        person: (isTeacher && els.itemTeam.value === TEAM_WOLKO) ? els.itemPerson.value.trim() : '',
         session: els.itemSession.value.trim(),
         title: els.itemTitle.value.trim(),
         url: els.itemUrl.value.trim(),
+        bgmUrl: hasBgm ? els.itemBgmUrl.value.trim() : '',
       };
-      if (!payload.team || !payload.session || !payload.title || !payload.url) {
+      if (!payload.session || !payload.title || !payload.url) {
         els.itemDialogError.textContent = tr('validationError');
         return;
       }
-      if (payload.team === TEAM_WOLKO && !payload.person) {
+      if (isTeacher && !payload.team) {
+        els.itemDialogError.textContent = tr('validationErrorTeam');
+        return;
+      }
+      if (isTeacher && payload.team === TEAM_WOLKO && !payload.person) {
         els.itemDialogError.textContent = tr('validationErrorPerson');
         return;
       }
@@ -621,28 +718,24 @@ const pageTitle = 'WOLKO Class Resources';
     }
     els.itemDialogSaveBtn.addEventListener('click', saveItemFromDialog);
 
-    els.uploadFileBtn.addEventListener('click', () => els.uploadFileInput.click());
-    els.uploadFileInput.addEventListener('change', async () => {
-      const file = els.uploadFileInput.files?.[0];
-      if (!file) return;
+    async function uploadFile(file, kind, extRegex, targetInput, btnEl) {
       const MAX_SIZE = 20 * 1024 * 1024;
-      if (!/\.(pdf|pptx)$/i.test(file.name)) {
-        els.itemDialogError.textContent = tr('uploadBadType');
-        els.uploadFileInput.value = '';
+      if (!extRegex.test(file.name)) {
+        els.itemDialogError.textContent = tr(kind === 'bgm' ? 'uploadBadTypeBgm' : 'uploadBadType');
         return;
       }
       if (file.size > MAX_SIZE) {
         els.itemDialogError.textContent = tr('uploadTooBig');
-        els.uploadFileInput.value = '';
         return;
       }
       els.itemDialogError.textContent = '';
-      const originalLabel = els.uploadFileBtn.textContent;
-      els.uploadFileBtn.disabled = true;
-      els.uploadFileBtn.textContent = tr('uploading');
+      const originalLabel = btnEl.textContent;
+      btnEl.disabled = true;
+      btnEl.textContent = tr('uploading');
       try {
         const form = new FormData();
         form.append('file', file);
+        form.append('kind', kind);
         const res = await fetch('/api/teach/upload', {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
@@ -650,15 +743,32 @@ const pageTitle = 'WOLKO Class Resources';
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || tr('uploadFailed'));
-        els.itemUrl.value = data.url;
-        if (!els.itemTitle.value.trim()) els.itemTitle.value = file.name.replace(/\.(pdf|pptx)$/i, '');
+        targetInput.value = data.url;
+        if (kind === 'presentation' && !els.itemTitle.value.trim()) {
+          els.itemTitle.value = file.name.replace(/\.(pdf|pptx)$/i, '');
+        }
       } catch (error) {
         els.itemDialogError.textContent = error.message;
       } finally {
-        els.uploadFileBtn.disabled = false;
-        els.uploadFileBtn.textContent = originalLabel;
-        els.uploadFileInput.value = '';
+        btnEl.disabled = false;
+        btnEl.textContent = originalLabel;
       }
+    }
+
+    els.uploadFileBtn.addEventListener('click', () => els.uploadFileInput.click());
+    els.uploadFileInput.addEventListener('change', async () => {
+      const file = els.uploadFileInput.files?.[0];
+      els.uploadFileInput.value = '';
+      if (!file) return;
+      await uploadFile(file, 'presentation', /\.(pdf|pptx)$/i, els.itemUrl, els.uploadFileBtn);
+    });
+
+    els.uploadBgmBtn.addEventListener('click', () => els.uploadBgmInput.click());
+    els.uploadBgmInput.addEventListener('change', async () => {
+      const file = els.uploadBgmInput.files?.[0];
+      els.uploadBgmInput.value = '';
+      if (!file) return;
+      await uploadFile(file, 'bgm', /\.(mp3|wav|m4a)$/i, els.itemBgmUrl, els.uploadBgmBtn);
     });
 
     async function confirmDeleteItem(itemId) {

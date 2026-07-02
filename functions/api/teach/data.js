@@ -5,6 +5,7 @@ const CORS = {
 
 const DATA_KEY = 'teach:data:v1';
 const MAX_ITEMS = 2000;
+const TAB_SET = new Set(['teacher', 'program', 'counselor', 'preacher']);
 
 function toHex(bytes) {
   return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
@@ -90,12 +91,16 @@ async function fetchCanvaThumbnail(url) {
 }
 
 async function cleanItem(input, existing) {
+  const tab = TAB_SET.has(input?.tab) ? input.tab : (existing?.tab || '');
   const team = text(input?.team, 60) || existing?.team || '';
   const person = input?.person !== undefined ? text(input.person, 80) : (existing?.person || '');
   const session = text(input?.session, 80) || existing?.session || '';
   const title = text(input?.title, 160) || existing?.title || '';
   const url = text(input?.url, 500) || existing?.url || '';
-  if (!team || !session || !title || !isValidUrl(url)) return null;
+  const bgmUrl = input?.bgmUrl !== undefined ? text(input.bgmUrl, 500) : (existing?.bgmUrl || '');
+  if (!tab || !session || !title || !isValidUrl(url)) return null;
+  if (tab === 'teacher' && !team) return null;
+  if (bgmUrl && !isValidUrl(bgmUrl)) return null;
   const now = new Date().toISOString();
   let thumbnailUrl = existing?.thumbnailUrl || '';
   if (!thumbnailUrl || url !== existing?.url) {
@@ -103,11 +108,13 @@ async function cleanItem(input, existing) {
   }
   return {
     id: existing?.id || text(input?.id, 80) || crypto.randomUUID(),
-    team,
-    person,
+    tab,
+    team: tab === 'teacher' ? team : '',
+    person: tab === 'teacher' ? person : '',
     session,
     title,
     url,
+    bgmUrl,
     thumbnailUrl: text(thumbnailUrl, 500),
     createdAt: existing?.createdAt || now,
     updatedAt: now,
