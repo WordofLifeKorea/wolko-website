@@ -98,26 +98,32 @@ async function cleanItem(input, existing) {
   const title = text(input?.title, 160) || existing?.title || '';
   const url = text(input?.url, 500) || existing?.url || '';
   const bgmUrl = input?.bgmUrl !== undefined ? text(input.bgmUrl, 500) : (existing?.bgmUrl || '');
-  if (!tab || !session || !title || !isValidUrl(url)) return null;
-  if (tab === 'teacher' && !team) return null;
-  if (bgmUrl && !isValidUrl(bgmUrl)) return null;
+  if (!tab) return { error: '탭 값이 올바르지 않습니다.' };
+  if (!session) return { error: '세션을 입력해주세요.' };
+  if (!title) return { error: '제목을 입력해주세요.' };
+  if (!url) return { error: '링크 또는 파일을 입력해주세요.' };
+  if (!isValidUrl(url)) return { error: `링크 형식이 올바르지 않습니다: ${url.slice(0, 80)}` };
+  if (tab === 'teacher' && !team) return { error: '팀을 선택해주세요.' };
+  if (bgmUrl && !isValidUrl(bgmUrl)) return { error: `BGM 링크 형식이 올바르지 않습니다: ${bgmUrl.slice(0, 80)}` };
   const now = new Date().toISOString();
   let thumbnailUrl = existing?.thumbnailUrl || '';
   if (!thumbnailUrl || url !== existing?.url) {
     thumbnailUrl = await fetchCanvaThumbnail(url);
   }
   return {
-    id: existing?.id || text(input?.id, 80) || crypto.randomUUID(),
-    tab,
-    team: tab === 'teacher' ? team : '',
-    person: tab === 'teacher' ? person : '',
-    session,
-    title,
-    url,
-    bgmUrl,
-    thumbnailUrl: text(thumbnailUrl, 500),
-    createdAt: existing?.createdAt || now,
-    updatedAt: now,
+    item: {
+      id: existing?.id || text(input?.id, 80) || crypto.randomUUID(),
+      tab,
+      team: tab === 'teacher' ? team : '',
+      person: tab === 'teacher' ? person : '',
+      session,
+      title,
+      url,
+      bgmUrl,
+      thumbnailUrl: text(thumbnailUrl, 500),
+      createdAt: existing?.createdAt || now,
+      updatedAt: now,
+    },
   };
 }
 
@@ -164,12 +170,12 @@ export async function onRequestPost(context) {
   }
   try {
     const body = await request.json();
-    const cleaned = await cleanItem(body.item, null);
-    if (!cleaned) {
-      return Response.json({ error: '입력값을 확인해주세요.' }, { status: 400, headers: CORS });
+    const result = await cleanItem(body.item, null);
+    if (!result.item) {
+      return Response.json({ error: result.error || '입력값을 확인해주세요.' }, { status: 400, headers: CORS });
     }
     const data = await readData(env);
-    data.items.push(cleaned);
+    data.items.push(result.item);
     const saved = await writeData(env, data.items);
     return Response.json({ items: saved.items }, { headers: CORS });
   } catch (error) {
@@ -194,11 +200,11 @@ export async function onRequestPut(context) {
     if (idx === -1) {
       return Response.json({ error: '항목을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
     }
-    const cleaned = await cleanItem(body.item, data.items[idx]);
-    if (!cleaned) {
-      return Response.json({ error: '입력값을 확인해주세요.' }, { status: 400, headers: CORS });
+    const result = await cleanItem(body.item, data.items[idx]);
+    if (!result.item) {
+      return Response.json({ error: result.error || '입력값을 확인해주세요.' }, { status: 400, headers: CORS });
     }
-    data.items[idx] = cleaned;
+    data.items[idx] = result.item;
     const saved = await writeData(env, data.items);
     return Response.json({ items: saved.items }, { headers: CORS });
   } catch (error) {
