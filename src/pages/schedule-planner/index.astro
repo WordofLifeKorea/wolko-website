@@ -336,6 +336,28 @@ const pageTitle = 'WOLKO Schedule Planner';
     .pdf-date-btn span { display:block; margin-top:3px; color:var(--light); font-size:10px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .pdf-empty-actions { display:flex; justify-content:center; margin-top:12px; }
     .pdf-frame { width:100%; height:min(78vh,900px); border:0; display:block; background:#f8fafc; }
+    .pdf-detect-backdrop {
+      position:fixed; inset:0; z-index:1100; display:flex; align-items:center; justify-content:center; padding:18px;
+      background:rgba(0,35,48,.52); backdrop-filter:blur(5px);
+    }
+    .pdf-detect-backdrop[hidden] { display:none; }
+    .pdf-detect-modal {
+      width:min(720px,100%); max-height:min(84vh,760px); display:grid; grid-template-rows:auto minmax(0,1fr) auto;
+      border-radius:24px; background:#fff; box-shadow:0 24px 70px rgba(0,0,0,.28); overflow:hidden;
+    }
+    .pdf-detect-head { padding:20px 22px 14px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,#f4fbfd,#fff); }
+    .pdf-detect-title { color:var(--blue); font:900 18px/1.2 var(--sans); letter-spacing:-.01em; }
+    .pdf-detect-copy { margin-top:7px; color:var(--muted); font-size:13px; line-height:1.55; }
+    .pdf-detect-body { overflow:auto; padding:16px 22px; display:grid; gap:10px; }
+    .pdf-detect-row {
+      display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center;
+      border:1px solid #dbe7ec; border-radius:14px; background:#fbfdfe; padding:12px 14px;
+    }
+    .pdf-detect-row strong { color:var(--text); font-size:14px; }
+    .pdf-detect-row span { display:block; margin-top:3px; color:var(--muted); font-size:12px; }
+    .pdf-detect-warn { margin-top:4px; color:var(--orange); font-size:12px; font-weight:700; }
+    .pdf-detect-page { color:var(--blue); font:800 12px/1 var(--sans); white-space:nowrap; }
+    .pdf-detect-actions { display:flex; justify-content:flex-end; gap:10px; padding:14px 22px 18px; border-top:1px solid var(--border); }
     .van-grid { display:grid; gap:12px; }
     .van-row { border:1px solid var(--border); border-radius:var(--radius-md); background:#fbfcfd; overflow:hidden; box-shadow:var(--shadow-soft); }
     .van-row-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 15px; background:#fff; border-bottom:1px solid var(--border); }
@@ -788,6 +810,20 @@ const pageTitle = 'WOLKO Schedule Planner';
     </section>
   </main>
 
+  <div class="pdf-detect-backdrop" id="pdfDetectDialog" hidden>
+    <div class="pdf-detect-modal" role="dialog" aria-modal="true" aria-labelledby="pdfDetectTitle">
+      <div class="pdf-detect-head">
+        <div class="pdf-detect-title" id="pdfDetectTitle">PDF 날짜 자동 배치</div>
+        <div class="pdf-detect-copy" id="pdfDetectCopy">감지된 날짜를 확인한 뒤 적용해주세요.</div>
+      </div>
+      <div class="pdf-detect-body" id="pdfDetectList"></div>
+      <div class="pdf-detect-actions">
+        <button class="secondary" type="button" id="pdfDetectCancel">취소</button>
+        <button class="primary" type="button" id="pdfDetectApply">적용하기</button>
+      </div>
+    </div>
+  </div>
+
   <button class="sidebar-reopen-tab" id="sidebarReopenTab" type="button">입력창 열기</button>
 
   <script>
@@ -806,9 +842,18 @@ const pageTitle = 'WOLKO Schedule Planner';
         saving: '저장 중...',
         saveFailed: '저장하지 못했습니다.',
         loadFailed: '데이터를 불러오지 못했습니다.',
-        importLoading: 'PDF 업로드 중...',
-        importDone: ({ filename, date }) => `${date} PDF 업로드 완료 · ${filename}`,
+        importLoading: 'PDF 분석 및 업로드 중...',
+        importDone: ({ filename, count }) => `PDF 자동 배치 완료 · ${filename} · ${count}개 날짜`,
         importFailed: '파일을 가져오지 못했습니다.',
+        pdfDetectTitle: 'PDF 날짜 자동 배치',
+        pdfDetectCopy: ({ count, filename }) => `${filename}에서 ${count}개의 날짜를 감지했습니다. 날짜와 요일을 확인한 뒤 적용해주세요.`,
+        pdfDetectNone: filename => `${filename}에서 날짜를 찾지 못했습니다. 선택된 날짜에 업로드할까요?`,
+        pdfDetectFallback: date => `선택 날짜 ${date}에 PDF를 배치합니다.`,
+        pdfDetectApply: '적용하기',
+        pdfDetectCancel: '취소',
+        pdfDetectPage: page => `${page}페이지`,
+        pdfDetectWeekdayMismatch: ({ expected, found }) => `PDF 요일(${found})과 실제 요일(${expected})이 다릅니다.`,
+        pdfAnalyzeFailed: 'PDF 날짜를 자동으로 읽지 못했습니다. 선택 날짜에 업로드합니다.',
         titleRequired: '제목, 날짜, 시간을 입력해주세요.',
         personRequired: '명단에 추가할 이름을 입력해주세요.',
         transportRequired: '차량 배정표 제목을 입력해주세요.',
@@ -882,9 +927,18 @@ const pageTitle = 'WOLKO Schedule Planner';
         saving: 'Saving...',
         saveFailed: 'Could not save.',
         loadFailed: 'Could not load data.',
-        importLoading: 'Uploading PDF...',
-        importDone: ({ filename, date }) => `${date} PDF uploaded · ${filename}`,
+        importLoading: 'Reading and uploading PDF...',
+        importDone: ({ filename, count }) => `PDF placed automatically · ${filename} · ${count} date(s)`,
         importFailed: 'Could not import the file.',
+        pdfDetectTitle: 'Auto-place PDF by Date',
+        pdfDetectCopy: ({ count, filename }) => `Detected ${count} date(s) in ${filename}. Please review the dates and weekdays before applying.`,
+        pdfDetectNone: filename => `No dates were found in ${filename}. Upload it to the selected date?`,
+        pdfDetectFallback: date => `The PDF will be placed on the selected date: ${date}.`,
+        pdfDetectApply: 'Apply',
+        pdfDetectCancel: 'Cancel',
+        pdfDetectPage: page => `Page ${page}`,
+        pdfDetectWeekdayMismatch: ({ expected, found }) => `PDF weekday (${found}) does not match the calendar weekday (${expected}).`,
+        pdfAnalyzeFailed: 'Could not auto-read PDF dates. It will be uploaded to the selected date.',
         titleRequired: 'Please enter a title, date, and time.',
         personRequired: 'Please enter a name to add.',
         transportRequired: 'Please enter a vehicle plan title.',
@@ -978,6 +1032,12 @@ const pageTitle = 'WOLKO Schedule Planner';
       saveBtn: document.getElementById('saveBtn'),
       importBtn: document.getElementById('importBtn'),
       pdfInput: document.getElementById('pdfInput'),
+      pdfDetectDialog: document.getElementById('pdfDetectDialog'),
+      pdfDetectTitle: document.getElementById('pdfDetectTitle'),
+      pdfDetectCopy: document.getElementById('pdfDetectCopy'),
+      pdfDetectList: document.getElementById('pdfDetectList'),
+      pdfDetectCancel: document.getElementById('pdfDetectCancel'),
+      pdfDetectApply: document.getElementById('pdfDetectApply'),
       logoutBtn: document.getElementById('logoutBtn'),
       planTitle: document.getElementById('planTitle'),
       planTitleView: document.getElementById('planTitleView'),
@@ -1190,6 +1250,168 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     function pdfForDate(date = els.selectedDate.value) {
       return normalizeSchedulePdfs().find(pdf => pdf.date === date) || null;
+    }
+
+    async function loadPdfJs() {
+      if (window.pdfjsLib) return window.pdfjsLib;
+      const pdfjs = await import(/* @vite-ignore */ 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
+      pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+      window.pdfjsLib = pdfjs;
+      return pdfjs;
+    }
+
+    function weekdayIndexFromToken(value) {
+      const key = String(value || '').trim().toLowerCase().replace(/[().,\s]/g, '');
+      const map = {
+        sun:0, sunday:0, 일:0, 일요일:0,
+        mon:1, monday:1, 월:1, 월요일:1,
+        tue:2, tues:2, tuesday:2, 화:2, 화요일:2,
+        wed:3, weds:3, wednesday:3, 수:3, 수요일:3,
+        thu:4, thur:4, thurs:4, thursday:4, 목:4, 목요일:4,
+        fri:5, friday:5, 금:5, 금요일:5,
+        sat:6, saturday:6, 토:6, 토요일:6,
+      };
+      return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : null;
+    }
+
+    function weekdayTokenFromLine(line) {
+      const text = String(line || '');
+      const parenthesized = text.match(/\((월|화|수|목|금|토|일|mon(?:day)?|tue(?:s|sday)?|wed(?:s|nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?)\)/i);
+      if (parenthesized) return parenthesized[1];
+      const explicit = text.match(/\b(mon(?:day)?|tue(?:s|sday)?|wed(?:s|nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?)\b|([월화수목금토일]요일)/i);
+      return explicit?.[1] || explicit?.[2] || '';
+    }
+
+    function isoForParts(year, month, day) {
+      const y = parseInt(year, 10);
+      const m = parseInt(month, 10);
+      const d = parseInt(day, 10);
+      if (!y || m < 1 || m > 12 || d < 1 || d > 31) return '';
+      const date = new Date(y, m - 1, d);
+      if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return '';
+      return isoFromDate(date);
+    }
+
+    function weekdayIndexForIso(iso) {
+      return parseIsoDate(iso).getDay();
+    }
+
+    function detectDateInLine(line, fallbackYear) {
+      const text = String(line || '').replace(/\s+/g, ' ').trim();
+      const weekdayToken = weekdayTokenFromLine(text);
+      const foundWeekday = weekdayIndexFromToken(weekdayToken);
+      const selectedYear = parseInt(fallbackYear || (els.selectedDate.value || todayIso()).slice(0, 4), 10);
+      const monthNames = {
+        jan:1, january:1, feb:2, february:2, mar:3, march:3, apr:4, april:4,
+        may:5, jun:6, june:6, jul:7, july:7, aug:8, august:8, sep:9, sept:9,
+        september:9, oct:10, october:10, nov:11, november:11, dec:12, december:12,
+      };
+      const patterns = [
+        { re: /\b(20\d{2})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})\s*일?\b/, map: m => [m[1], m[2], m[3]] },
+        { re: /(\d{1,2})\s*월\s*(\d{1,2})\s*일?/, map: m => [selectedYear, m[1], m[2]] },
+        { re: /(?:^|[^\d])(\d{1,2})\s*[.\/-]\s*(\d{1,2})(?:\s*[.])?(?=$|[^\d])/, map: m => [selectedYear, m[1], m[2]] },
+        {
+          re: /\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?\s+(\d{1,2})(?:,\s*(20\d{2}))?\b/i,
+          map: m => [m[3] || selectedYear, monthNames[m[1].toLowerCase().replace('.', '')], m[2]],
+        },
+      ];
+      for (const pattern of patterns) {
+        const match = text.match(pattern.re);
+        if (!match) continue;
+        const [year, month, day] = pattern.map(match);
+        const iso = isoForParts(year, month, day);
+        if (!iso) continue;
+        const expectedWeekday = weekdayIndexForIso(iso);
+        return {
+          date: iso,
+          foundWeekday,
+          expectedWeekday,
+          hasWeekday: foundWeekday !== null,
+          mismatch: foundWeekday !== null && foundWeekday !== expectedWeekday,
+          source: text,
+        };
+      }
+      return null;
+    }
+
+    async function analyzeSchedulePdf(file) {
+      const pdfjs = await loadPdfJs();
+      const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+      const fallbackYear = (els.selectedDate.value || todayIso()).slice(0, 4);
+      const detected = [];
+      const seen = new Set();
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent();
+        const lines = [];
+        let lastY = null;
+        let line = [];
+        content.items.forEach(item => {
+          const y = Math.round(item.transform?.[5] || 0);
+          if (lastY !== null && Math.abs(y - lastY) > 5 && line.length) {
+            lines.push(line.join(' '));
+            line = [];
+          }
+          line.push(item.str);
+          lastY = y;
+        });
+        if (line.length) lines.push(line.join(' '));
+        const match = lines.map(value => detectDateInLine(value, fallbackYear)).find(Boolean);
+        if (match && !seen.has(match.date)) {
+          seen.add(match.date);
+          detected.push({ ...match, page: pageNumber });
+        }
+      }
+      return detected.sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    function weekdayShortByIndex(index) {
+      const base = '2026-07-05';
+      return dowShort(addDays(base, index));
+    }
+
+    function reviewPdfDetections(file, detections, fallbackReason = '') {
+      return new Promise(resolve => {
+        const fallbackDate = pendingPdfDate || els.selectedDate.value || todayIso();
+        const items = detections.length ? detections : [{
+          date: fallbackDate,
+          page: 1,
+          source: tr('pdfDetectFallback', dayName(fallbackDate)),
+          fallback: true,
+        }];
+        els.pdfDetectTitle.textContent = tr('pdfDetectTitle');
+        els.pdfDetectCopy.textContent = detections.length
+          ? tr('pdfDetectCopy', { count: detections.length, filename: file.name })
+          : (fallbackReason || tr('pdfDetectNone', file.name));
+        els.pdfDetectApply.textContent = tr('pdfDetectApply');
+        els.pdfDetectCancel.textContent = tr('pdfDetectCancel');
+        els.pdfDetectList.innerHTML = items.map(item => {
+          const expected = item.expectedWeekday !== undefined ? weekdayShortByIndex(item.expectedWeekday) : dowShort(item.date);
+          const found = item.hasWeekday ? weekdayShortByIndex(item.foundWeekday) : '';
+          const warning = item.mismatch ? tr('pdfDetectWeekdayMismatch', { expected, found }) : '';
+          return `
+            <div class="pdf-detect-row">
+              <div>
+                <strong>${escapeHtml(`${dayName(item.date)} · ${item.date}`)}</strong>
+                <span>${escapeHtml(item.source || '')}</span>
+                ${warning ? `<div class="pdf-detect-warn">${escapeHtml(warning)}</div>` : ''}
+              </div>
+              <div class="pdf-detect-page">${escapeHtml(tr('pdfDetectPage', item.page))}</div>
+            </div>
+          `;
+        }).join('');
+        els.pdfDetectDialog.hidden = false;
+        const cleanup = result => {
+          els.pdfDetectDialog.hidden = true;
+          els.pdfDetectApply.removeEventListener('click', onApply);
+          els.pdfDetectCancel.removeEventListener('click', onCancel);
+          resolve(result);
+        };
+        const onApply = () => cleanup(items);
+        const onCancel = () => cleanup(null);
+        els.pdfDetectApply.addEventListener('click', onApply);
+        els.pdfDetectCancel.addEventListener('click', onCancel);
+      });
     }
 
     async function uploadSchedulePdf(file) {
@@ -2147,16 +2369,36 @@ const pageTitle = 'WOLKO Schedule Planner';
       setState(tr('importLoading'));
       els.importBtn.disabled = true;
       try {
+        let detections = [];
+        let fallbackReason = '';
+        try {
+          detections = await analyzeSchedulePdf(file);
+        } catch (error) {
+          console.warn('PDF auto date detection failed:', error);
+          fallbackReason = tr('pdfAnalyzeFailed');
+        }
+        const placements = await reviewPdfDetections(file, detections, fallbackReason);
+        if (!placements) {
+          setState(token ? tr('editMode') : tr('viewMode'));
+          return;
+        }
         const pdf = await uploadSchedulePdf(file);
-        const date = pendingPdfDate || els.selectedDate.value || todayIso();
-        setSchedulePdfForDate(date, pdf);
-        els.selectedDate.value = date;
-        els.eventDate.value = date;
-        calendarMonth = firstOfMonth(date);
+        placements.forEach(item => {
+          const pageSuffix = item.page ? `#page=${item.page}` : '';
+          setSchedulePdfForDate(item.date, {
+            ...pdf,
+            url: `${pdf.url}${pageSuffix}`,
+            filename: item.page ? `${pdf.filename || file.name} · ${tr('pdfDetectPage', item.page)}` : (pdf.filename || file.name),
+          });
+        });
+        const firstDate = placements[0]?.date || pendingPdfDate || els.selectedDate.value || todayIso();
+        els.selectedDate.value = firstDate;
+        els.eventDate.value = firstDate;
+        calendarMonth = firstOfMonth(firstDate);
         currentView = 'pdf';
         markDirty();
         await savePlan();
-        setState(tr('importDone', { filename: pdf.filename || file.name, date: dayName(date) }));
+        setState(tr('importDone', { filename: pdf.filename || file.name, count: placements.length }));
       } catch (error) {
         setState(error.message || tr('importFailed'));
       } finally {
