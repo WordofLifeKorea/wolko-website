@@ -1984,10 +1984,53 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       return bits.length ? bits.join(' · ') : `${filename} ${index + 1}`;
     }
 
+    function importDailyHtmlTables(doc, filename) {
+      const dayTables = [...doc.querySelectorAll('table.day-table')];
+      if (!dayTables.length) return null;
+      const imported = { events: [], people: [], vans: [], transportPlans: [], sheetLog: [] };
+      const documentGroup = sourceGroupFromText(doc.title, filename) || sourceGroupForSheet(filename);
+      dayTables.forEach((table, index) => {
+        const sheetName = htmlTableName(table, index, filename);
+        const date = parseSheetDate(sheetName);
+        const sheetGroup = sourceGroupFromText(sheetName, doc.title, filename) || documentGroup;
+        const rows = rowsFromHtmlTable(table).slice(1);
+        const before = imported.events.length;
+        rows.forEach(row => {
+          const timeText = formatExcelTime(row[0]);
+          const title = cellText(row[1]);
+          const details = cellText(row[2]);
+          if (!timeText || !title || /^(time|시간)$/i.test(timeText)) return;
+          const parsed = clockRange(timeText);
+          imported.events.push({
+            id: crypto.randomUUID(),
+            title,
+            type: inferType(title, details),
+            date,
+            timeText,
+            start: autoAdjustHour(parsed.start),
+            end: autoAdjustHour(parsed.end),
+            staff: '',
+            vanId: '',
+            from: '',
+            to: '',
+            passengers: '',
+            notes: details,
+            sourceSheet: sheetName,
+            sourceGroupKey: sheetGroup.key,
+            sourceGroupLabel: sheetGroup.label,
+          });
+        });
+        imported.sheetLog.push(`일정: "${sheetName}" → ${imported.events.length - before}개`);
+      });
+      return imported;
+    }
+
     async function importHtmlFile(file) {
       const html = await file.text().catch(() => '');
       if (!html) throw new Error(tr('htmlReadFailed'));
       const doc = new DOMParser().parseFromString(html, 'text/html');
+      const dailyImported = importDailyHtmlTables(doc, file.name);
+      if (dailyImported) return dailyImported;
       const tables = [...doc.querySelectorAll('table')].map((table, index) => ({
         name: htmlTableName(table, index, file.name),
         rows: rowsFromHtmlTable(table),
@@ -2088,6 +2131,18 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
 
     function matchesGroupFilter(item) {
       return currentGroupFilter === 'all' || sourceKey(item) === currentGroupFilter;
+    }
+
+    function firstImportedDate(imported) {
+      return [...new Set((imported.events || []).map(event => event.date).filter(Boolean))].sort()[0] || '';
+    }
+
+    function jumpToImportedDate(imported) {
+      const firstDate = firstImportedDate(imported);
+      if (!firstDate) return;
+      els.selectedDate.value = firstDate;
+      els.eventDate.value = firstDate;
+      calendarMonth = firstOfMonth(firstDate);
     }
 
     function filteredEvents(events = plan.events) {
@@ -2898,6 +2953,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       plan.people = imported.people;
       if (imported.vans.length) plan.vans = imported.vans;
       plan.transportPlans = imported.transportPlans;
+      jumpToImportedDate(imported);
       currentView = plan.events.length ? 'day' : (plan.people.length ? 'people' : 'vans');
       markDirty();
     }
@@ -2946,6 +3002,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
         plan.people = imported.people;
         if (imported.vans.length) plan.vans = imported.vans;
         plan.transportPlans = imported.transportPlans;
+        jumpToImportedDate(imported);
         currentView = imported.events.length ? 'day' : (imported.people.length ? 'people' : 'vans');
         markDirty();
         setState(tr('importDone', { events: imported.events.length, people: imported.people.length, plans: imported.transportPlans.length }));
