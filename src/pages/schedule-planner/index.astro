@@ -323,6 +323,18 @@ const pageTitle = 'WOLKO Schedule Planner';
     }
     .pdf-viewer-title { color:var(--blue); font:800 14px/1.3 var(--sans); }
     .pdf-viewer-meta { color:var(--muted); font-size:12px; margin-top:3px; }
+    .pdf-date-list {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; padding:12px 14px;
+      border-bottom:1px solid var(--border); background:#fbfdfe;
+    }
+    .pdf-date-btn {
+      border:1px solid #dbe7ec; border-radius:12px; background:#fff; color:var(--muted); padding:9px 10px;
+      font:700 12px/1.25 var(--sans); cursor:pointer; text-align:left; transition:.15s ease;
+    }
+    .pdf-date-btn:hover { border-color:#9ccbd8; color:var(--blue); transform:translateY(-1px); }
+    .pdf-date-btn.active { border-color:var(--teal); background:#e9fbf8; color:var(--blue); box-shadow:0 6px 16px rgba(0,154,138,.12); }
+    .pdf-date-btn span { display:block; margin-top:3px; color:var(--light); font-size:10px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .pdf-empty-actions { display:flex; justify-content:center; margin-top:12px; }
     .pdf-frame { width:100%; height:min(78vh,900px); border:0; display:block; background:#f8fafc; }
     .van-grid { display:grid; gap:12px; }
     .van-row { border:1px solid var(--border); border-radius:var(--radius-md); background:#fbfcfd; overflow:hidden; box-shadow:var(--shadow-soft); }
@@ -582,7 +594,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       </div>
       <button class="lang-toggle" type="button" id="langToggleBtn">EN</button>
       <button type="button" id="saveBtn" data-ko="저장" data-en="Save">저장</button>
-      <button type="button" id="importBtn" data-ko="PDF 업로드" data-en="Upload PDF">PDF 업로드</button>
+      <button type="button" id="importBtn" data-ko="선택 날짜 PDF 업로드" data-en="Upload Date PDF">선택 날짜 PDF 업로드</button>
       <input id="pdfInput" type="file" accept="application/pdf,.pdf">
       <button type="button" id="logoutBtn" data-ko="로그아웃" data-en="Log Out">로그아웃</button>
       <span class="save-state" id="saveState" style="display:none">로그인 필요</span>
@@ -795,7 +807,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         saveFailed: '저장하지 못했습니다.',
         loadFailed: '데이터를 불러오지 못했습니다.',
         importLoading: 'PDF 업로드 중...',
-        importDone: ({ filename }) => `PDF 업로드 완료 · ${filename}`,
+        importDone: ({ filename, date }) => `${date} PDF 업로드 완료 · ${filename}`,
         importFailed: '파일을 가져오지 못했습니다.',
         titleRequired: '제목, 날짜, 시간을 입력해주세요.',
         personRequired: '명단에 추가할 이름을 입력해주세요.',
@@ -803,7 +815,13 @@ const pageTitle = 'WOLKO Schedule Planner';
         loginFailed: '로그인하지 못했습니다.',
         passwordLanguageWarning: '비밀번호는 영어 입력 상태에서 입력해주세요.',
         unsupportedImportFile: 'PDF 파일을 선택해주세요.',
-        noSchedulePdf: '업로드된 PDF 운영표가 없습니다.',
+        noSchedulePdf: date => `${date}에 업로드된 PDF 운영표가 없습니다.`,
+        uploadPdfForDate: date => `${date} PDF 업로드`,
+        replacePdf: 'PDF 교체',
+        deletePdf: 'PDF 삭제',
+        deletePdfConfirm: date => `${date} PDF 운영표를 삭제할까요?\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
+        deletePdfDone: date => `${date} PDF 운영표를 삭제했습니다.`,
+        pdfForDate: date => `${date} PDF 운영표`,
         pdfOpen: '새 탭에서 열기',
         noVehicle: '차량 없음',
         noDetails: '세부 정보 없음',
@@ -820,8 +838,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         addSchedule: '일정 추가',
         updateSchedule: '일정 수정',
         delete: '삭제',
-        deleteDayConfirm: ({ date, count, filter }) => `${date}${filter ? ` · ${filter}` : ''} 일정 ${count}개를 삭제할까요?\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
-        deleteAllConfirm: ({ events, people, vans, plans, pdf }) => `전체 데이터를 삭제할까요?\n일정 ${events}개, 명단 ${people}명, 차량 ${vans}대, 차량 배정표 ${plans}개${pdf ? ', PDF 운영표 1개' : ''}가 삭제됩니다.\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
+        deleteDayConfirm: ({ date, count, filter }) => `${date}${filter ? ` · ${filter}` : ''} 데이터 ${count}개를 삭제할까요?\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
+        deleteAllConfirm: ({ events, people, vans, plans, pdf }) => `전체 데이터를 삭제할까요?\n일정 ${events}개, 명단 ${people}명, 차량 ${vans}대, 차량 배정표 ${plans}개${pdf ? `, PDF 운영표 ${pdf}개` : ''}가 삭제됩니다.\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
         deleteNone: '삭제할 데이터가 없습니다.',
         deleteDayDone: count => `선택한 날짜의 일정 ${count}개를 삭제했습니다.`,
         deleteAllDone: '전체 데이터를 삭제했습니다.',
@@ -865,7 +883,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         saveFailed: 'Could not save.',
         loadFailed: 'Could not load data.',
         importLoading: 'Uploading PDF...',
-        importDone: ({ filename }) => `PDF uploaded · ${filename}`,
+        importDone: ({ filename, date }) => `${date} PDF uploaded · ${filename}`,
         importFailed: 'Could not import the file.',
         titleRequired: 'Please enter a title, date, and time.',
         personRequired: 'Please enter a name to add.',
@@ -873,7 +891,13 @@ const pageTitle = 'WOLKO Schedule Planner';
         loginFailed: 'Could not sign in.',
         passwordLanguageWarning: 'Please switch to English input before entering the password.',
         unsupportedImportFile: 'Please choose a PDF file.',
-        noSchedulePdf: 'No PDF schedule has been uploaded.',
+        noSchedulePdf: date => `No PDF schedule has been uploaded for ${date}.`,
+        uploadPdfForDate: date => `Upload PDF for ${date}`,
+        replacePdf: 'Replace PDF',
+        deletePdf: 'Delete PDF',
+        deletePdfConfirm: date => `Delete the PDF schedule for ${date}?\nYou can restore this with "Restore Last Delete".`,
+        deletePdfDone: date => `Deleted the PDF schedule for ${date}.`,
+        pdfForDate: date => `${date} PDF Schedule`,
         pdfOpen: 'Open in New Tab',
         noVehicle: 'No vehicle',
         noDetails: 'No details',
@@ -890,8 +914,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         addSchedule: 'Add Schedule',
         updateSchedule: 'Update Schedule',
         delete: 'Delete',
-        deleteDayConfirm: ({ date, count, filter }) => `Delete ${count} schedule item(s) for ${date}${filter ? ` · ${filter}` : ''}?\nYou can restore this with "Restore Last Delete".`,
-        deleteAllConfirm: ({ events, people, vans, plans, pdf }) => `Delete all planner data?\nThis removes ${events} schedule item(s), ${people} people, ${vans} vehicle(s), ${plans} vehicle plan(s)${pdf ? ', and 1 PDF schedule' : ''}.\nYou can restore this with "Restore Last Delete".`,
+        deleteDayConfirm: ({ date, count, filter }) => `Delete ${count} data item(s) for ${date}${filter ? ` · ${filter}` : ''}?\nYou can restore this with "Restore Last Delete".`,
+        deleteAllConfirm: ({ events, people, vans, plans, pdf }) => `Delete all planner data?\nThis removes ${events} schedule item(s), ${people} people, ${vans} vehicle(s), ${plans} vehicle plan(s)${pdf ? `, and ${pdf} PDF schedule(s)` : ''}.\nYou can restore this with "Restore Last Delete".`,
         deleteNone: 'There is no data to delete.',
         deleteDayDone: count => `Deleted ${count} schedule item(s) for the selected date.`,
         deleteAllDone: 'Deleted all planner data.',
@@ -1004,6 +1028,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     let calendarMonth = '';
     let currentGroupFilter = 'all';
     let pendingEditorAction = null;
+    let pendingPdfDate = '';
     const DELETE_BACKUP_KEY = 'wolko_schedule_planner_delete_backup_v1';
     let plan = {
       title: 'WOLKO Staff Schedule',
@@ -1015,6 +1040,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       people: [],
       transportPlans: [],
       schedulePdf: null,
+      schedulePdfs: [],
       updatedAt: '',
     };
 
@@ -1145,6 +1171,27 @@ const pageTitle = 'WOLKO Schedule Planner';
         .replace(/^-+|-+$/g, '') || 'unknown';
     }
 
+    function normalizeSchedulePdfs(target = plan) {
+      const list = Array.isArray(target.schedulePdfs) ? target.schedulePdfs : [];
+      const legacy = target.schedulePdf?.url ? [target.schedulePdf] : [];
+      const seen = new Set();
+      target.schedulePdfs = [...legacy, ...list]
+        .map(pdf => ({
+          date: /^\d{4}-\d{2}-\d{2}$/.test(pdf?.date || '') ? pdf.date : (els.selectedDate?.value || todayIso()),
+          url: pdf?.url || '',
+          filename: pdf?.filename || 'schedule.pdf',
+          uploadedAt: pdf?.uploadedAt || '',
+        }))
+        .filter(pdf => pdf.date && pdf.url && !seen.has(`${pdf.date}:${pdf.url}`) && seen.add(`${pdf.date}:${pdf.url}`))
+        .sort((a, b) => a.date.localeCompare(b.date) || a.filename.localeCompare(b.filename));
+      target.schedulePdf = null;
+      return target.schedulePdfs;
+    }
+
+    function pdfForDate(date = els.selectedDate.value) {
+      return normalizeSchedulePdfs().find(pdf => pdf.date === date) || null;
+    }
+
     async function uploadSchedulePdf(file) {
       if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') {
         throw new Error(tr('unsupportedImportFile'));
@@ -1167,6 +1214,33 @@ const pageTitle = 'WOLKO Schedule Planner';
         throw new Error(data.error || tr('importFailed'));
       }
       return data.pdf;
+    }
+
+    function setSchedulePdfForDate(date, pdf) {
+      const targetDate = /^\d{4}-\d{2}-\d{2}$/.test(date || '') ? date : (els.selectedDate.value || todayIso());
+      plan.schedulePdfs = normalizeSchedulePdfs().filter(item => item.date !== targetDate);
+      plan.schedulePdfs.push({ ...pdf, date: targetDate });
+      plan.schedulePdfs.sort((a, b) => a.date.localeCompare(b.date) || a.filename.localeCompare(b.filename));
+      plan.schedulePdf = null;
+    }
+
+    function deleteSchedulePdfForDate(date) {
+      const targetDate = /^\d{4}-\d{2}-\d{2}$/.test(date || '') ? date : (els.selectedDate.value || todayIso());
+      if (!pdfForDate(targetDate)) {
+        setState(tr('deleteNone'));
+        return;
+      }
+      if (!confirm(tr('deletePdfConfirm', dayName(targetDate)))) return;
+      saveDeleteBackup(`pdf:${targetDate}`);
+      plan.schedulePdfs = normalizeSchedulePdfs().filter(pdf => pdf.date !== targetDate);
+      markDirty();
+      setState(tr('deletePdfDone', dayName(targetDate)));
+    }
+
+    function startPdfUpload(date = els.selectedDate.value || todayIso()) {
+      pendingPdfDate = /^\d{4}-\d{2}-\d{2}$/.test(date || '') ? date : (els.selectedDate.value || todayIso());
+      if (!requireEditor(() => startPdfUpload(pendingPdfDate))) return;
+      els.pdfInput.click();
     }
 
     function periodOf(event) {
@@ -1250,7 +1324,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         events: Array.isArray(plan.events) ? plan.events : [],
         people: Array.isArray(plan.people) ? plan.people : [],
         transportPlans: Array.isArray(plan.transportPlans) ? plan.transportPlans : [],
-        schedulePdf: plan.schedulePdf || null,
+        schedulePdf: null,
+        schedulePdfs: normalizeSchedulePdfs().map(pdf => ({ ...pdf })),
         updatedAt: plan.updatedAt || '',
       }));
     }
@@ -1276,12 +1351,14 @@ const pageTitle = 'WOLKO Schedule Planner';
       const date = els.selectedDate.value || todayIso();
       const beforeEvents = plan.events.length;
       const beforePlans = (plan.transportPlans || []).length;
+      const beforePdfs = normalizeSchedulePdfs().length;
       const filterLabel = currentGroupFilter === 'all'
         ? ''
         : groupOptions().find(group => group.key === currentGroupFilter)?.label || '';
       const shouldDeleteItem = item => item.date === date && matchesGroupFilter(item);
       const count = plan.events.filter(shouldDeleteItem).length
-        + (plan.transportPlans || []).filter(shouldDeleteItem).length;
+        + (plan.transportPlans || []).filter(shouldDeleteItem).length
+        + (currentGroupFilter === 'all' ? normalizeSchedulePdfs().filter(pdf => pdf.date === date).length : 0);
       if (!count) {
         setState(tr('deleteNone'));
         return;
@@ -1290,9 +1367,10 @@ const pageTitle = 'WOLKO Schedule Planner';
       saveDeleteBackup(`day:${date}`);
       plan.events = plan.events.filter(item => !shouldDeleteItem(item));
       plan.transportPlans = (plan.transportPlans || []).filter(item => !shouldDeleteItem(item));
+      if (currentGroupFilter === 'all') plan.schedulePdfs = normalizeSchedulePdfs().filter(pdf => pdf.date !== date);
       if (editingId && !plan.events.some(item => item.id === editingId)) clearForm();
       markDirty();
-      setState(tr('deleteDayDone', (beforeEvents - plan.events.length) + (beforePlans - plan.transportPlans.length)));
+      setState(tr('deleteDayDone', (beforeEvents - plan.events.length) + (beforePlans - plan.transportPlans.length) + (beforePdfs - normalizeSchedulePdfs().length)));
     }
 
     function deleteAllData() {
@@ -1301,7 +1379,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         people: (plan.people || []).length,
         vans: (plan.vans || []).length,
         plans: (plan.transportPlans || []).length,
-        pdf: plan.schedulePdf ? 1 : 0,
+        pdf: normalizeSchedulePdfs().length,
       };
       if (!totals.events && !totals.people && !totals.vans && !totals.plans && !totals.pdf) {
         setState(tr('deleteNone'));
@@ -1314,6 +1392,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       plan.vans = [];
       plan.transportPlans = [];
       plan.schedulePdf = null;
+      plan.schedulePdfs = [];
       currentGroupFilter = 'all';
       clearForm();
       markDirty();
@@ -1333,7 +1412,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       plan.vans = Array.isArray(plan.vans) ? plan.vans : [];
       plan.events = Array.isArray(plan.events) ? plan.events : [];
       plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
-      plan.schedulePdf = plan.schedulePdf || null;
+      normalizeSchedulePdfs();
       els.planTitle.value = plan.title || '';
       currentGroupFilter = 'all';
       clearForm();
@@ -1449,9 +1528,41 @@ const pageTitle = 'WOLKO Schedule Planner';
     function dowShort(iso) {
       return new Intl.DateTimeFormat(currentLang === 'ko' ? 'ko-KR' : 'en-US', { weekday: 'short' }).format(new Date(`${iso}T00:00:00`));
     }
+    function pdfDates() {
+      const fromPdfs = normalizeSchedulePdfs().map(pdf => pdf.date);
+      const fromEvents = [...(plan.events || []), ...(plan.transportPlans || [])].map(item => item.date);
+      const dates = [...new Set([els.selectedDate.value || todayIso(), ...fromPdfs, ...fromEvents].filter(Boolean))].sort();
+      return dates;
+    }
+
     function renderPdf() {
-      const pdf = plan.schedulePdf;
-      document.getElementById('view-pdf').innerHTML = pdf?.url
+      const date = els.selectedDate.value || todayIso();
+      const pdf = pdfForDate(date);
+      const dates = pdfDates();
+      const dateList = dates.length
+        ? `<div class="pdf-date-list">
+            ${dates.map(itemDate => {
+              const itemPdf = pdfForDate(itemDate);
+              return `
+                <button class="pdf-date-btn${itemDate === date ? ' active' : ''}" type="button" data-pdf-date="${escapeHtml(itemDate)}">
+                  ${escapeHtml(dayName(itemDate))}
+                  <span>${itemPdf ? escapeHtml(itemPdf.filename || 'schedule.pdf') : escapeHtml(currentLang === 'ko' ? 'PDF 없음' : 'No PDF')}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>`
+        : '';
+      document.getElementById('view-pdf').innerHTML = `
+        <div class="tab-section">
+          <div class="tab-head">
+            <div>
+              <div class="tab-title">${escapeHtml(tr('pdfForDate', dayName(date)))}</div>
+              <div class="tab-subtitle">${escapeHtml(date)}</div>
+            </div>
+            <button class="secondary" type="button" data-upload-pdf-date="${escapeHtml(date)}">${escapeHtml(pdf ? tr('replacePdf') : tr('uploadPdfForDate', dayName(date)))}</button>
+          </div>
+          ${dateList}
+          ${pdf?.url
         ? `
           <div class="pdf-viewer-card">
             <div class="pdf-viewer-head">
@@ -1459,12 +1570,22 @@ const pageTitle = 'WOLKO Schedule Planner';
                 <div class="pdf-viewer-title">${escapeHtml(pdf.filename || 'schedule.pdf')}</div>
                 <div class="pdf-viewer-meta">${escapeHtml(pdf.uploadedAt ? new Date(pdf.uploadedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US') : '')}</div>
               </div>
-              <a class="secondary" href="${escapeHtml(pdf.url)}" target="_blank" rel="noopener">${escapeHtml(tr('pdfOpen'))}</a>
+              <div class="mini-actions">
+                <a class="secondary" href="${escapeHtml(pdf.url)}" target="_blank" rel="noopener">${escapeHtml(tr('pdfOpen'))}</a>
+                <button class="secondary danger" type="button" data-delete-pdf-date="${escapeHtml(date)}">${escapeHtml(tr('deletePdf'))}</button>
+              </div>
             </div>
             <iframe class="pdf-frame" src="${escapeHtml(pdf.url)}" title="${escapeHtml(pdf.filename || 'PDF Schedule')}"></iframe>
           </div>
         `
-        : `<div class="empty">${escapeHtml(tr('noSchedulePdf'))}</div>`;
+        : `<div class="empty">
+            ${escapeHtml(tr('noSchedulePdf', dayName(date)))}
+            <div class="pdf-empty-actions">
+              <button class="secondary" type="button" data-upload-pdf-date="${escapeHtml(date)}">${escapeHtml(tr('uploadPdfForDate', dayName(date)))}</button>
+            </div>
+          </div>`}
+        </div>
+      `;
     }
     function dayMonthStr(iso) {
       return new Intl.DateTimeFormat(currentLang === 'ko' ? 'ko-KR' : 'en-US', { month: 'numeric', day: 'numeric' }).format(new Date(`${iso}T00:00:00`));
@@ -1908,7 +2029,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       plan = data.plan || plan;
       plan.people = Array.isArray(plan.people) ? plan.people : [];
       plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
-      plan.schedulePdf = plan.schedulePdf || null;
+      normalizeSchedulePdfs();
       els.planTitle.value = plan.title || '';
       setState(plan.updatedAt ? `${tr('saved')} ${new Date(plan.updatedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US')}` : (token ? tr('editMode') : tr('viewMode')));
       render();
@@ -1936,6 +2057,7 @@ const pageTitle = 'WOLKO Schedule Planner';
           throw new Error(data.error || tr('saveFailed'));
         }
         plan = data.plan;
+        normalizeSchedulePdfs();
         els.planTitle.value = plan.title || '';
         setState(`${tr('saved')} ${new Date(plan.updatedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US')}`);
         render();
@@ -2006,8 +2128,7 @@ const pageTitle = 'WOLKO Schedule Planner';
     els.langToggleBtn.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
     els.saveBtn.addEventListener('click', savePlan);
     els.importBtn.addEventListener('click', () => {
-      if (!requireEditor(() => els.pdfInput.click())) return;
-      els.pdfInput.click();
+      startPdfUpload(els.selectedDate.value || todayIso());
     });
     els.groupFilterSelect.addEventListener('change', () => {
       currentGroupFilter = els.groupFilterSelect.value || 'all';
@@ -2027,15 +2148,20 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.importBtn.disabled = true;
       try {
         const pdf = await uploadSchedulePdf(file);
-        plan.schedulePdf = pdf;
+        const date = pendingPdfDate || els.selectedDate.value || todayIso();
+        setSchedulePdfForDate(date, pdf);
+        els.selectedDate.value = date;
+        els.eventDate.value = date;
+        calendarMonth = firstOfMonth(date);
         currentView = 'pdf';
         markDirty();
         await savePlan();
-        setState(tr('importDone', { filename: pdf.filename || file.name }));
+        setState(tr('importDone', { filename: pdf.filename || file.name, date: dayName(date) }));
       } catch (error) {
         setState(error.message || tr('importFailed'));
       } finally {
         els.importBtn.disabled = false;
+        pendingPdfDate = '';
         els.pdfInput.value = '';
       }
     });
@@ -2051,6 +2177,25 @@ const pageTitle = 'WOLKO Schedule Planner';
     els.selectedDate.addEventListener('change', () => {
       els.eventDate.value = els.selectedDate.value;
       render();
+    });
+    document.getElementById('view-pdf').addEventListener('click', event => {
+      const dateButton = event.target.closest('[data-pdf-date]');
+      if (dateButton) {
+        selectScheduleDate(dateButton.dataset.pdfDate, { close: false });
+        currentView = 'pdf';
+        render();
+        return;
+      }
+      const uploadButton = event.target.closest('[data-upload-pdf-date]');
+      if (uploadButton) {
+        startPdfUpload(uploadButton.dataset.uploadPdfDate);
+        return;
+      }
+      const deleteButton = event.target.closest('[data-delete-pdf-date]');
+      if (deleteButton) {
+        if (!requireEditor(() => deleteSchedulePdfForDate(deleteButton.dataset.deletePdfDate))) return;
+        deleteSchedulePdfForDate(deleteButton.dataset.deletePdfDate);
+      }
     });
     els.todayBtn.addEventListener('click', () => {
       selectScheduleDate(todayIso(), { close: false });

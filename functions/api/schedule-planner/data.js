@@ -126,10 +126,22 @@ function cleanSchedulePdf(pdf) {
   const url = text(pdf.url, 500);
   if (!url || !/^\/api\/schedule-planner\/file\/|^https?:\/\//.test(url)) return null;
   return {
+    date: isDate(pdf.date) ? text(pdf.date, 10) : '',
     url,
     filename: text(pdf.filename, 160) || 'schedule.pdf',
     uploadedAt: text(pdf.uploadedAt, 40),
   };
+}
+
+function cleanSchedulePdfs(source) {
+  const list = Array.isArray(source.schedulePdfs)
+    ? source.schedulePdfs.slice(0, 120).map(cleanSchedulePdf).filter(Boolean)
+    : [];
+  const legacy = cleanSchedulePdf(source.schedulePdf);
+  if (legacy && !list.some(pdf => pdf.url === legacy.url)) list.unshift(legacy);
+  return list
+    .filter(pdf => pdf.date)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.filename.localeCompare(b.filename));
 }
 
 function emptyPlan() {
@@ -143,6 +155,7 @@ function emptyPlan() {
     people: [],
     transportPlans: [],
     schedulePdf: null,
+    schedulePdfs: [],
     updatedAt: '',
   };
 }
@@ -166,6 +179,7 @@ function cleanPlan(input, touch = true) {
     people,
     transportPlans,
     schedulePdf: cleanSchedulePdf(source.schedulePdf),
+    schedulePdfs: cleanSchedulePdfs(source),
     updatedAt: touch ? new Date().toISOString() : text(source.updatedAt, 40),
   };
 }
