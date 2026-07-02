@@ -215,8 +215,18 @@ const pageTitle = 'WOLKO Schedule Planner';
     .schedule-tools button {
       min-height:40px; border-radius:999px; padding:8px 14px; font-size:12px; font-weight:800;
     }
-    .schedule-tools .restore-btn { border-color:#b8dfe6; background:#e9f8fb; color:var(--blue); }
-    .schedule-tools button:disabled { opacity:.45; cursor:not-allowed; }
+    .schedule-tools button:disabled,.schedule-danger-tools button:disabled { opacity:.45; cursor:not-allowed; }
+    .schedule-danger-tools {
+      display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap;
+      padding:10px 16px; border-bottom:1px solid var(--border); background:#fff;
+    }
+    .schedule-danger-label {
+      margin-right:auto; color:var(--light); font:800 10px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase;
+    }
+    .schedule-danger-tools button {
+      min-height:34px; border-radius:999px; padding:7px 12px; font-size:11.5px; font-weight:800;
+    }
+    .schedule-danger-tools .restore-btn { border-color:#b8dfe6; background:#e9f8fb; color:var(--blue); }
     .source-badge {
       display:inline-flex; align-items:center; margin-right:7px; border-radius:999px; background:#e9f8fb; color:var(--blue);
       padding:2px 8px; font-size:10px; font-weight:900; letter-spacing:.02em; vertical-align:middle;
@@ -385,6 +395,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       .panel-head { padding:16px; }
       .schedule-tools { width:100%; justify-content:flex-start; }
       .schedule-tools select { flex:1 1 160px; min-width:0; }
+      .schedule-danger-tools { justify-content:flex-start; padding:10px 12px; }
+      .schedule-danger-label { flex:1 1 100%; margin-right:0; }
       .view { padding:14px; }
       .tabs { padding:12px; }
       .tab { flex:1 1 calc(50% - 8px); justify-content:center; }
@@ -730,9 +742,6 @@ const pageTitle = 'WOLKO Schedule Planner';
             <select id="groupFilterSelect" aria-label="Schedule group filter"></select>
             <select id="dateJumpSelect" aria-label="Schedule date shortcut"></select>
             <button class="secondary" id="todayBtn" type="button" data-ko="오늘" data-en="Today">오늘</button>
-            <button class="secondary danger" id="deleteDayBtn" type="button" data-ko="선택일 삭제" data-en="Delete Day">선택일 삭제</button>
-            <button class="secondary danger" id="deleteAllBtn" type="button" data-ko="전체 삭제" data-en="Delete All">전체 삭제</button>
-            <button class="secondary restore-btn" id="restoreDeleteBtn" type="button" data-ko="마지막 삭제 복구" data-en="Restore Last Delete">마지막 삭제 복구</button>
             <button class="secondary" id="printBtn" type="button" data-ko="프린트" data-en="Print">프린트</button>
           </div>
         </div>
@@ -743,6 +752,12 @@ const pageTitle = 'WOLKO Schedule Planner';
           <button class="tab" data-view="people" type="button" data-ko="인원 명단" data-en="People List">인원 명단</button>
           <button class="tab" data-view="list" type="button" data-ko="전체 운영표" data-en="All Schedule">전체 운영표</button>
           <button class="tab" data-view="fleet" type="button" data-ko="차량 목록" data-en="Vans">차량 목록</button>
+        </div>
+        <div class="schedule-danger-tools">
+          <span class="schedule-danger-label" data-ko="관리 작업" data-en="Admin Actions">관리 작업</span>
+          <button class="secondary danger" id="deleteDayBtn" type="button" data-ko="선택일 삭제" data-en="Delete Day">선택일 삭제</button>
+          <button class="secondary danger" id="deleteAllBtn" type="button" data-ko="전체 삭제" data-en="Delete All">전체 삭제</button>
+          <button class="secondary restore-btn" id="restoreDeleteBtn" type="button" data-ko="마지막 삭제 복구" data-en="Restore Last Delete">마지막 삭제 복구</button>
         </div>
         <div class="view active" id="view-day"></div>
         <div class="view" id="view-week"></div>
