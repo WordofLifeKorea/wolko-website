@@ -65,10 +65,28 @@ function extractMetaImage(html) {
   return '';
 }
 
-async function fetchCanvaThumbnail(url) {
+function directFileExt(url) {
   try {
-    const host = new URL(url).hostname;
-    if (!/(^|\.)canva\.com$/.test(host)) return '';
+    const path = new URL(url).pathname.toLowerCase();
+    const match = path.match(/\.([a-z0-9]+)$/);
+    return match ? match[1] : '';
+  } catch {
+    return '';
+  }
+}
+
+function isDirectImageUrl(url) {
+  return /^(png|jpe?g|webp|gif|heic|heif)$/i.test(directFileExt(url));
+}
+
+function isDirectResourceUrl(url) {
+  return /^(pdf|pptx|png|jpe?g|webp|gif|heic|heif|mp3|wav|m4a)$/i.test(directFileExt(url));
+}
+
+async function fetchLinkThumbnail(url) {
+  if (isDirectImageUrl(url)) return url;
+  if (isDirectResourceUrl(url)) return '';
+  try {
     const res = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -77,15 +95,17 @@ async function fetchCanvaThumbnail(url) {
       signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) {
-      console.error('fetchCanvaThumbnail: non-ok response', res.status);
+      console.error('fetchLinkThumbnail: non-ok response', res.status);
       return '';
     }
+    const type = res.headers.get('content-type') || '';
+    if (type && !type.includes('text/html')) return '';
     const html = await res.text();
     const image = extractMetaImage(html);
-    if (!image) console.error('fetchCanvaThumbnail: no og:image found for', url);
+    if (!image) console.error('fetchLinkThumbnail: no og:image found for', url);
     return image;
   } catch (error) {
-    console.error('fetchCanvaThumbnail error:', error);
+    console.error('fetchLinkThumbnail error:', error);
     return '';
   }
 }
@@ -110,7 +130,7 @@ async function cleanItem(input, existing) {
   const now = new Date().toISOString();
   let thumbnailUrl = existing?.thumbnailUrl || '';
   if (!thumbnailUrl || url !== existing?.url) {
-    thumbnailUrl = await fetchCanvaThumbnail(url);
+    thumbnailUrl = await fetchLinkThumbnail(url);
   }
   return {
     item: {

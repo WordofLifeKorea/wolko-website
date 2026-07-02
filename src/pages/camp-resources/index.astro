@@ -141,11 +141,18 @@ const pageTitle = 'WOLKO Camp Resources';
     .person-block .tab-head { border-radius:var(--radius-md) var(--radius-md) 0 0; }
     .person-block .subject-grid { grid-template-columns:1fr; border-radius:0 0 var(--radius-md) var(--radius-md); }
     @media (min-width:641px) { .person-block:last-child:nth-child(odd) .subject-grid { grid-template-columns:repeat(2,1fr); } }
-    .present-card { position:relative; display:flex; flex-direction:column; gap:8px; border:1px solid #dbe7ec; border-radius:var(--radius-md); background:#fff; padding:15px 16px; cursor:pointer; box-shadow:var(--shadow-soft); transition:transform .12s,box-shadow .12s; overflow:hidden; }
+    .present-card { position:relative; display:flex; align-items:center; gap:13px; min-height:92px; border:1px solid #dbe7ec; border-radius:var(--radius-md); background:#fff; padding:13px 16px; cursor:pointer; box-shadow:var(--shadow-soft); transition:transform .12s,box-shadow .12s; overflow:hidden; }
     .present-card.is-editable { padding-right:48px; }
     .present-card:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,79,104,.12); }
-    .present-card-thumb { margin:-15px -16px 0; aspect-ratio:16/9; background:#f1f5f9; }
+    .present-card-thumb { flex:0 0 76px; width:76px; height:58px; border:1px solid #d9e8ee; border-radius:13px; background:#f1f6f9; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,.6); }
     .present-card-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .present-card-thumb.is-file { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:linear-gradient(135deg,#f8fbfc,#eaf5f8); color:var(--blue); }
+    .present-card-thumb.is-pdf { color:#c72c3b; background:linear-gradient(135deg,#fff8f9,#fdecee); }
+    .present-card-thumb.is-pptx { color:#d97706; background:linear-gradient(135deg,#fffaf0,#fef3c7); }
+    .present-card-thumb.is-link { color:#0f766e; background:linear-gradient(135deg,#f0fdfa,#dff8f4); }
+    .present-card-thumb-label { font:800 13px/1 var(--sans); letter-spacing:.04em; }
+    .present-card-thumb-sub { color:var(--muted); font-size:9.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .present-card-body { min-width:0; flex:1; display:flex; flex-direction:column; gap:6px; }
     .present-card.dragging { opacity:.4; }
     .present-card-title { color:var(--text); font-weight:700; font-size:13.5px; line-height:1.4; word-break:keep-all; }
     .drag-handle {
@@ -625,6 +632,49 @@ const pageTitle = 'WOLKO Camp Resources';
       return (campIds || []).map(id => campById(id)?.name).filter(Boolean).join(', ');
     }
 
+    function resourceExt(url) {
+      try {
+        const path = new URL(url).pathname.toLowerCase();
+        const match = path.match(/\.([a-z0-9]+)$/);
+        return match ? match[1] : '';
+      } catch {
+        const clean = String(url || '').split(/[?#]/)[0].toLowerCase();
+        const match = clean.match(/\.([a-z0-9]+)$/);
+        return match ? match[1] : '';
+      }
+    }
+
+    function resourceHost(url) {
+      try {
+        return new URL(url).hostname.replace(/^www\./, '');
+      } catch {
+        return '';
+      }
+    }
+
+    function previewMeta(item) {
+      const ext = resourceExt(item.url);
+      if (item.thumbnailUrl) return { image: item.thumbnailUrl };
+      if (/^(png|jpe?g|webp|gif|heic|heif)$/i.test(ext)) return { image: item.url };
+      if (ext === 'pdf') return { label: 'PDF', sub: 'File', className: 'is-pdf' };
+      if (ext === 'pptx') return { label: 'PPT', sub: 'Slides', className: 'is-pptx' };
+      const host = resourceHost(item.url);
+      if (/canva\.com$/i.test(host)) return { label: 'CV', sub: 'Canva', className: 'is-link' };
+      return { label: 'URL', sub: host || 'Link', className: 'is-link' };
+    }
+
+    function cardPreviewHtml(item) {
+      const preview = previewMeta(item);
+      if (preview.image) {
+        return `<div class="present-card-thumb"><img src="${escapeHtml(preview.image)}" alt="" loading="lazy"></div>`;
+      }
+      return `
+        <div class="present-card-thumb is-file ${escapeHtml(preview.className || '')}">
+          <span class="present-card-thumb-label">${escapeHtml(preview.label)}</span>
+          <span class="present-card-thumb-sub">${escapeHtml(preview.sub)}</span>
+        </div>`;
+    }
+
     function itemTab(item) {
       if (item?.team || item?.person) return 'teacher';
       return TAB_KEYS.includes(item?.tab) ? item.tab : 'general';
@@ -655,7 +705,7 @@ const pageTitle = 'WOLKO Camp Resources';
     function presentCardHtml(item) {
       return `
         <div class="present-card${editMode ? ' is-editable' : ''}" data-open-url="${escapeHtml(item.url)}" data-item-id="${escapeHtml(item.id)}">
-          ${item.thumbnailUrl ? `<div class="present-card-thumb"><img src="${escapeHtml(item.thumbnailUrl)}" alt="" loading="lazy"></div>` : ''}
+          ${cardPreviewHtml(item)}
           ${editMode ? `<button class="drag-handle" type="button" draggable="true" data-stop title="${escapeHtml(tr('dragHint'))}" aria-label="${escapeHtml(tr('dragHint'))}">
             <svg viewBox="0 0 16 24" aria-hidden="true">
               <circle cx="5" cy="5" r="1.8" fill="currentColor"></circle>
@@ -666,14 +716,16 @@ const pageTitle = 'WOLKO Camp Resources';
               <circle cx="11" cy="19" r="1.8" fill="currentColor"></circle>
             </svg>
           </button>` : ''}
-          <div class="present-card-title">${escapeHtml(item.title)}</div>
-          <div class="present-card-meta">${escapeHtml(campNamesFor(item.campIds))}</div>
-          ${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}
-          ${editMode ? `
-            <div class="present-card-actions" data-stop>
-              <button type="button" data-edit-item="${escapeHtml(item.id)}">${escapeHtml(tr('edit'))}</button>
-              <button type="button" class="danger" data-delete-item="${escapeHtml(item.id)}">${escapeHtml(tr('delete'))}</button>
-            </div>` : ''}
+          <div class="present-card-body">
+            <div class="present-card-title">${escapeHtml(item.title)}</div>
+            <div class="present-card-meta">${escapeHtml(campNamesFor(item.campIds))}</div>
+            ${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}
+            ${editMode ? `
+              <div class="present-card-actions" data-stop>
+                <button type="button" data-edit-item="${escapeHtml(item.id)}">${escapeHtml(tr('edit'))}</button>
+                <button type="button" class="danger" data-delete-item="${escapeHtml(item.id)}">${escapeHtml(tr('delete'))}</button>
+              </div>` : ''}
+          </div>
         </div>`;
     }
 
