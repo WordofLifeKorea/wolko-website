@@ -1245,14 +1245,27 @@ const pageTitle = 'WOLKO Camp Resources';
       }
     });
 
+    async function bootstrapData() {
+      try {
+        await loadCamps();
+        render();
+      } catch (error) {
+        loadErrorIsStandard = false;
+        els.loadErrorBanner.textContent = error.message || tr('campLoadFailed');
+        els.loadErrorBanner.hidden = false;
+      }
+      try {
+        await loadItems();
+      } catch (error) {
+        loadErrorIsStandard = !!error.isStandard;
+        els.loadErrorBanner.textContent = error.message || tr('loadFailed');
+        els.loadErrorBanner.hidden = false;
+      }
+    }
+
     applyLanguage();
     render();
-    loadCamps().then(render).catch(() => {});
-    loadItems().catch(error => {
-      loadErrorIsStandard = !!error.isStandard;
-      els.loadErrorBanner.textContent = error.message || tr('loadFailed');
-      els.loadErrorBanner.hidden = false;
-    });
+    bootstrapData();
     if (token) enterEditMode();
     if (!isStandalone) {
       els.installBtn.hidden = false;
