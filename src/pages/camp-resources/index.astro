@@ -134,7 +134,12 @@ const pageTitle = 'WOLKO Camp Resources';
     .present-card:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,79,104,.12); }
     .present-card-thumb { margin:-15px -16px 0; aspect-ratio:16/9; background:#f1f5f9; }
     .present-card-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .present-card.dragging { opacity:.4; }
+    .present-card-toprow { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
     .present-card-title { color:var(--text); font-weight:700; font-size:13.5px; line-height:1.4; word-break:keep-all; }
+    .drag-handle { flex:0 0 auto; cursor:grab; color:var(--light); font-size:14px; line-height:1; letter-spacing:-1px; padding:2px 3px; border-radius:4px; }
+    .drag-handle:hover { color:var(--muted); background:#f1f5f9; }
+    .drag-handle:active { cursor:grabbing; }
     .present-card-meta { color:var(--muted); font-size:11px; font-weight:500; }
     .bgm-chip { align-self:flex-start; display:inline-flex; align-items:center; gap:4px; border-radius:999px; background:#f0fdfa; color:#0f766e; padding:4px 10px; font-size:11px; font-weight:600; text-decoration:none; }
     .bgm-chip:hover { background:#ccfbf1; }
@@ -335,6 +340,8 @@ const pageTitle = 'WOLKO Camp Resources';
         uploadTooBig: '파일이 너무 큽니다. (최대 20MB)',
         uploadBadType: 'PDF 또는 PPTX 파일만 업로드할 수 있습니다.',
         uploadBadTypeBgm: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.',
+        dragHint: '끌어서 순서 변경',
+        reorderFailed: '순서를 저장하지 못했습니다.',
       },
       en: {
         noItems: 'No resources yet.',
@@ -356,6 +363,8 @@ const pageTitle = 'WOLKO Camp Resources';
         uploadTooBig: 'File is too large. (max 20MB)',
         uploadBadType: 'Only PDF or PPTX files can be uploaded.',
         uploadBadTypeBgm: 'Only MP3, WAV, or M4A files can be uploaded.',
+        dragHint: 'Drag to reorder',
+        reorderFailed: 'Could not save the new order.',
       },
     };
 
@@ -511,7 +520,10 @@ const pageTitle = 'WOLKO Camp Resources';
       return `
         <div class="present-card" data-open-url="${escapeHtml(item.url)}" data-item-id="${escapeHtml(item.id)}">
           ${item.thumbnailUrl ? `<div class="present-card-thumb"><img src="${escapeHtml(item.thumbnailUrl)}" alt="" loading="lazy"></div>` : ''}
-          <div class="present-card-title">${escapeHtml(item.title)}</div>
+          <div class="present-card-toprow">
+            <div class="present-card-title">${escapeHtml(item.title)}</div>
+            ${editMode ? `<span class="drag-handle" draggable="true" data-stop title="${escapeHtml(tr('dragHint'))}">⋮⋮</span>` : ''}
+          </div>
           <div class="present-card-meta">${escapeHtml(item.session)}</div>
           ${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}
           ${editMode ? `
@@ -677,6 +689,80 @@ const pageTitle = 'WOLKO Camp Resources';
       }
       const card = event.target.closest('[data-open-url]');
       if (card) window.open(card.dataset.openUrl, '_blank', 'noopener');
+    });
+
+    let draggedCard = null;
+    const mainPage = document.querySelector('main.page');
+
+    mainPage.addEventListener('dragstart', event => {
+      const handle = event.target.closest('.drag-handle');
+      if (!handle) return;
+      const card = handle.closest('.present-card');
+      if (!card) return;
+      draggedCard = card;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', card.dataset.itemId);
+      try { event.dataTransfer.setDragImage(card, 20, 20); } catch {}
+      requestAnimationFrame(() => card.classList.add('dragging'));
+    });
+
+    mainPage.addEventListener('dragend', () => {
+      if (draggedCard) draggedCard.classList.remove('dragging');
+      draggedCard = null;
+    });
+
+    function dragAfterElement(container, y) {
+      const cards = [...container.querySelectorAll('.present-card:not(.dragging)')];
+      return cards.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) return { offset, element: child };
+        return closest;
+      }, { offset: -Infinity, element: null }).element;
+    }
+
+    mainPage.addEventListener('dragover', event => {
+      if (!draggedCard) return;
+      const grid = event.target.closest('.subject-grid');
+      if (!grid || !grid.contains(draggedCard)) return;
+      event.preventDefault();
+      const afterEl = dragAfterElement(grid, event.clientY);
+      if (afterEl == null) grid.appendChild(draggedCard);
+      else grid.insertBefore(draggedCard, afterEl);
+    });
+
+    async function saveReorder(ids) {
+      try {
+        const res = await fetch('/api/teach/data', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ ids }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          token = '';
+          exitEditMode();
+          els.loginError.textContent = tr('loginFailed');
+          els.loginScreen.hidden = false;
+          return;
+        }
+        if (!res.ok) throw new Error(data.error || tr('reorderFailed'));
+        items = data.items;
+        render();
+      } catch (error) {
+        alert(error.message);
+        render();
+      }
+    }
+
+    mainPage.addEventListener('drop', event => {
+      if (!draggedCard) return;
+      const grid = event.target.closest('.subject-grid');
+      if (!grid || !grid.contains(draggedCard)) return;
+      event.preventDefault();
+      const ids = [...grid.querySelectorAll('.present-card[data-item-id]')].map(c => c.dataset.itemId);
+      saveReorder(ids);
     });
 
     els.mainTabs.addEventListener('click', event => {

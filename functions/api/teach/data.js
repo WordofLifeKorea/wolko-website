@@ -213,6 +213,43 @@ export async function onRequestPut(context) {
   }
 }
 
+export async function onRequestPatch(context) {
+  const { env, request } = context;
+  if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
+    return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
+  }
+  if (!(await verifyToken(request, env))) {
+    return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
+  }
+  try {
+    const body = await request.json();
+    const orderedIds = Array.isArray(body.ids) ? body.ids.map(id => text(id, 80)).filter(Boolean) : [];
+    if (!orderedIds.length) {
+      return Response.json({ error: '순서 정보가 없습니다.' }, { status: 400, headers: CORS });
+    }
+    const data = await readData(env);
+    const byId = new Map(data.items.map(item => [item.id, item]));
+    const orderedSet = new Set(orderedIds);
+    const result = [];
+    let inserted = false;
+    data.items.forEach(item => {
+      if (orderedSet.has(item.id)) {
+        if (!inserted) {
+          orderedIds.forEach(id => { if (byId.has(id)) result.push(byId.get(id)); });
+          inserted = true;
+        }
+      } else {
+        result.push(item);
+      }
+    });
+    const saved = await writeData(env, result);
+    return Response.json({ items: saved.items }, { headers: CORS });
+  } catch (error) {
+    console.error('teach reorder error:', error);
+    return Response.json({ error: '순서를 저장하지 못했습니다.' }, { status: 500, headers: CORS });
+  }
+}
+
 export async function onRequestDelete(context) {
   const { env, request } = context;
   if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
@@ -236,7 +273,7 @@ export async function onRequestOptions() {
   return new Response(null, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
