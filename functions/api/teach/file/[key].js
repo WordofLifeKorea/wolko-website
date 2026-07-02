@@ -1,10 +1,15 @@
+function getTeachFilesBucket(env) {
+  return env.TEACH_FILES || env.CAMP_RESOURCES_FILES || env.CAMP_FILES || env.R2_BUCKET || env.BUCKET;
+}
+
 export async function onRequestGet(context) {
   const { env, params } = context;
-  if (!env.TEACH_FILES) {
+  const bucket = getTeachFilesBucket(env);
+  if (!bucket) {
     return new Response('Not configured', { status: 500 });
   }
   const key = String(params.key || '');
-  const obj = await env.TEACH_FILES.get(key);
+  const obj = await bucket.get(key);
   if (!obj) {
     return new Response('Not found', { status: 404 });
   }

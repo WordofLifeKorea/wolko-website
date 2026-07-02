@@ -5,20 +5,31 @@ const CORS = {
 
 const MAX_SIZE = 20 * 1024 * 1024; // 20MB
 const ALLOWED_EXT = {
-  presentation: /\.(pdf|pptx)$/i,
+  presentation: /\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i,
   bgm: /\.(mp3|wav|m4a)$/i,
 };
 const CONTENT_TYPES = {
   pdf: 'application/pdf',
   pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+  gif: 'image/gif',
+  heic: 'image/heic',
+  heif: 'image/heif',
   mp3: 'audio/mpeg',
   wav: 'audio/wav',
   m4a: 'audio/mp4',
 };
 const ERROR_MESSAGES = {
-  presentation: 'PDF 또는 PPTX 파일만 업로드할 수 있습니다.',
+  presentation: 'PDF, PPTX 또는 이미지 파일만 업로드할 수 있습니다.',
   bgm: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.',
 };
+
+function getTeachFilesBucket(env) {
+  return env.TEACH_FILES || env.CAMP_RESOURCES_FILES || env.CAMP_FILES || env.R2_BUCKET || env.BUCKET;
+}
 
 async function verifyToken(request, env) {
   const auth = request.headers.get('Authorization') || '';
@@ -54,7 +65,8 @@ function extOf(filename, kind) {
 
 export async function onRequestPost(context) {
   const { env, request } = context;
-  if (!env.ADMIN_PASSWORD || !env.TEACH_FILES) {
+  const bucket = getTeachFilesBucket(env);
+  if (!env.ADMIN_PASSWORD || !bucket) {
     return Response.json({ error: '서버 설정이 필요합니다. (R2 버킷 미연결)' }, { status: 500, headers: CORS });
   }
   if (!(await verifyToken(request, env))) {
@@ -77,7 +89,7 @@ export async function onRequestPost(context) {
     }
 
     const key = `${crypto.randomUUID()}.${ext}`;
-    await env.TEACH_FILES.put(key, file.stream(), {
+    await bucket.put(key, file.stream(), {
       httpMetadata: {
         contentType: file.type || CONTENT_TYPES[ext],
         contentDisposition: `inline; filename="${encodeURIComponent(file.name)}"`,

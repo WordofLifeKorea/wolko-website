@@ -315,8 +315,8 @@ const pageTitle = 'WOLKO Camp Resources';
         <label data-ko="링크 / 파일" data-en="Link / File">링크 / 파일</label>
         <input id="itemUrl" type="url" placeholder="https://www.canva.com/design/...">
       </div>
-      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="파일 업로드 (PDF·PPTX)" data-en="Upload File (PDF/PPTX)">파일 업로드 (PDF·PPTX)</button>
-      <input id="uploadFileInput" type="file" accept=".pdf,.pptx" hidden>
+      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="파일 업로드 (PDF·PPTX·이미지)" data-en="Upload File (PDF/PPTX/Image)">파일 업로드 (PDF·PPTX·이미지)</button>
+      <input id="uploadFileInput" type="file" accept=".pdf,.pptx,.png,.jpg,.jpeg,.webp,.gif,.heic,.heif" hidden>
       <div class="field" id="bgmFieldWrap">
         <div class="field-divider"></div>
         <label data-ko="BGM 링크 / 파일 (선택)" data-en="BGM Link / File (optional)">BGM 링크 / 파일 (선택)</label>
@@ -410,7 +410,7 @@ const pageTitle = 'WOLKO Camp Resources';
         uploading: '업로드 중...',
         uploadFailed: '업로드하지 못했습니다.',
         uploadTooBig: '파일이 너무 큽니다. (최대 20MB)',
-        uploadBadType: 'PDF 또는 PPTX 파일만 업로드할 수 있습니다.',
+        uploadBadType: 'PDF, PPTX 또는 이미지 파일만 업로드할 수 있습니다.',
         uploadBadTypeBgm: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.',
         dragHint: '끌어서 순서 변경',
         reorderFailed: '순서를 저장하지 못했습니다.',
@@ -449,7 +449,7 @@ const pageTitle = 'WOLKO Camp Resources';
         uploading: 'Uploading...',
         uploadFailed: 'Upload failed.',
         uploadTooBig: 'File is too large. (max 20MB)',
-        uploadBadType: 'Only PDF or PPTX files can be uploaded.',
+        uploadBadType: 'Only PDF, PPTX, or image files can be uploaded.',
         uploadBadTypeBgm: 'Only MP3, WAV, or M4A files can be uploaded.',
         dragHint: 'Drag to reorder',
         reorderFailed: 'Could not save the new order.',
@@ -1172,7 +1172,7 @@ const pageTitle = 'WOLKO Camp Resources';
         if (!res.ok) throw new Error(data.error || tr('uploadFailed'));
         targetInput.value = data.url;
         if (kind === 'presentation' && !els.itemTitle.value.trim()) {
-          els.itemTitle.value = file.name.replace(/\.(pdf|pptx)$/i, '');
+          els.itemTitle.value = file.name.replace(/\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i, '');
         }
       } catch (error) {
         els.itemDialogError.textContent = error.message;
@@ -1187,7 +1187,7 @@ const pageTitle = 'WOLKO Camp Resources';
       const file = els.uploadFileInput.files?.[0];
       els.uploadFileInput.value = '';
       if (!file) return;
-      await uploadFile(file, 'presentation', /\.(pdf|pptx)$/i, els.itemUrl, els.uploadFileBtn);
+      await uploadFile(file, 'presentation', /\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i, els.itemUrl, els.uploadFileBtn);
     });
 
     els.uploadBgmBtn.addEventListener('click', () => els.uploadBgmInput.click());
