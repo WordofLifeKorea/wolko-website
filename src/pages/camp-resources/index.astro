@@ -393,10 +393,18 @@ const pageTitle = 'WOLKO Camp Resources';
       els.langSlider.style.left = isEn ? `${els.langToggle.offsetWidth - sliderW - 2}px` : '2px';
     }
 
+    let loadErrorIsStandard = false;
+
     function setLanguage(lang) {
       currentLang = lang === 'en' ? 'en' : 'ko';
       localStorage.setItem(LANG_KEY, currentLang);
       applyLanguage();
+      if (loadErrorIsStandard && !els.loadErrorBanner.hidden) {
+        els.loadErrorBanner.textContent = tr('loadFailed');
+      }
+      if (editingItemId !== '' || !els.itemDialogBackdrop.hidden) {
+        els.itemDialogTitle.textContent = editingItemId ? tr('editTitle') : tr('addTitle');
+      }
       render();
     }
 
@@ -800,7 +808,11 @@ const pageTitle = 'WOLKO Camp Resources';
     async function loadItems() {
       const res = await fetch('/api/teach/data');
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || tr('loadFailed'));
+      if (!res.ok) {
+        const err = new Error(data.error || tr('loadFailed'));
+        err.isStandard = !data.error;
+        throw err;
+      }
       items = Array.isArray(data.items) ? data.items : [];
       render();
       els.loadErrorBanner.hidden = true;
@@ -809,6 +821,7 @@ const pageTitle = 'WOLKO Camp Resources';
     applyLanguage();
     render();
     loadItems().catch(error => {
+      loadErrorIsStandard = !!error.isStandard;
       els.loadErrorBanner.textContent = error.message || tr('loadFailed');
       els.loadErrorBanner.hidden = false;
     });
