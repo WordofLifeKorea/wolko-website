@@ -91,7 +91,7 @@ export async function onRequestPost(context) {
       return Response.json({ error: '파일이 너무 큽니다. (최대 20MB)' }, { status: 400, headers: CORS });
     }
 
-    const key = `${store.type === 'kv' ? 'teach-file:' : ''}${crypto.randomUUID()}.${ext}`;
+    const key = `${store.type === 'kv' ? 'teach-file-' : ''}${crypto.randomUUID()}.${ext}`;
     const contentType = file.type || CONTENT_TYPES[ext] || 'application/octet-stream';
     const contentDisposition = `inline; filename*=UTF-8''${encodeURIComponent(file.name)}`;
     if (store.type === 'r2') {

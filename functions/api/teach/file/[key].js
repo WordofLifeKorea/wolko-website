@@ -5,16 +5,25 @@ function getTeachFileStore(env) {
   return null;
 }
 
+function decodeKey(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export async function onRequestGet(context) {
   const { env, params } = context;
   const store = getTeachFileStore(env);
   if (!store) {
     return new Response('Not configured', { status: 500 });
   }
-  const key = String(params.key || '');
+  const rawKey = String(params.key || '');
+  const key = decodeKey(rawKey);
   const headers = new Headers();
   if (store.type === 'r2') {
-    const obj = await store.storage.get(key);
+    const obj = await store.storage.get(key) || (key === rawKey ? null : await store.storage.get(rawKey));
     if (!obj) {
       return new Response('Not found', { status: 404 });
     }
@@ -24,7 +33,10 @@ export async function onRequestGet(context) {
     return new Response(obj.body, { headers });
   }
 
-  const { value, metadata } = await store.storage.getWithMetadata(key, { type: 'stream' });
+  let { value, metadata } = await store.storage.getWithMetadata(key, { type: 'stream' });
+  if (!value && key !== rawKey) {
+    ({ value, metadata } = await store.storage.getWithMetadata(rawKey, { type: 'stream' }));
+  }
   if (!value) {
     return new Response('Not found', { status: 404 });
   }
