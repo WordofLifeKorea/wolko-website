@@ -5,7 +5,7 @@ const CORS = {
 
 const DATA_KEY = 'teach:data:v1';
 const MAX_ITEMS = 2000;
-const TAB_SET = new Set(['teacher', 'program', 'counselor', 'preacher']);
+const TAB_SET = new Set(['teacher', 'program', 'counselor', 'preacher', 'general']);
 
 function toHex(bytes) {
   return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
