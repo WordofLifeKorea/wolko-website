@@ -115,10 +115,15 @@ const pageTitle = 'WOLKO Camp Resources';
     .tab-head.theme-sf { border-color:#dccdf7; background:linear-gradient(135deg,#fff,#f5eefd); }
     .tab-head.theme-sf .tab-title { color:#6d28d9; }
     .tab-head.theme-sf .tab-count { background:#ede4fc; color:#6d28d9; }
+    .tab-head.theme-lesson { border-color:#bfe8cf; background:linear-gradient(135deg,#fff,#eafdf1); }
+    .tab-head.theme-lesson .tab-title { color:#15803d; }
+    .tab-head.theme-lesson .tab-count { background:#dcfce7; color:#15803d; }
     .subject-group.theme-wolko,
-    .subject-group.theme-sf { border-radius:calc(var(--radius-lg) + 4px); padding:5px; margin-bottom:22px; }
+    .subject-group.theme-sf,
+    .subject-group.theme-lesson { border-radius:calc(var(--radius-lg) + 4px); padding:5px; margin-bottom:22px; }
     .subject-group.theme-wolko { background:linear-gradient(135deg,#dbeafe,#eaf3fd); box-shadow:0 0 0 1px #9ec8f2; }
     .subject-group.theme-sf { background:linear-gradient(135deg,#ede4fc,#f5eefd); box-shadow:0 0 0 1px #c3a8ee; }
+    .subject-group.theme-lesson { background:linear-gradient(135deg,#dcfce7,#eafdf1); box-shadow:0 0 0 1px #86d9a5; }
     .tab-title { color:var(--blue); font:700 16px/1.2 var(--sans); letter-spacing:-.01em; }
     .tab-count { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:6px 11px; font-size:11px; font-weight:500; }
     .subject-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; padding:14px; border:1px solid #dbe7ec; border-top:0; border-radius:0 0 var(--radius-md) var(--radius-md); background:#fbfdfe; }
@@ -149,10 +154,25 @@ const pageTitle = 'WOLKO Camp Resources';
     .present-card-add { align-items:center; justify-content:center; color:var(--muted); border-style:dashed; font-weight:700; cursor:pointer; box-shadow:none; }
     .present-card-add:hover { color:var(--blue); border-color:var(--blue); background:#f4fbfd; }
     .empty { padding:24px; border:1px dashed #ccdce3; border-radius:var(--radius-md); color:var(--light); text-align:center; font-weight:400; background:#fff; grid-column:1/-1; }
-    .session-select-wrap { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
-    .session-select-wrap[hidden] { display:none; }
-    .session-select-wrap label { color:var(--muted); font:700 12px/1 var(--sans); letter-spacing:.02em; }
-    .session-select-wrap select { min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0 12px; background:#fff; color:var(--text); font:600 13px/1 var(--body); box-shadow:var(--shadow-soft); cursor:pointer; }
+    .camp-filter-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+    .camp-filter-wrap[hidden] { display:none; }
+    .camp-filter-wrap select { min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0 12px; background:#fff; color:var(--text); font:600 13px/1 var(--body); box-shadow:var(--shadow-soft); cursor:pointer; }
+    .season-toggle { display:flex; gap:0; border:1px solid var(--border); border-radius:999px; padding:3px; background:#fff; box-shadow:var(--shadow-soft); }
+    .season-toggle-btn { border:0; border-radius:999px; padding:7px 14px; background:transparent; color:var(--muted); font:700 12px/1 var(--sans); cursor:pointer; }
+    .season-toggle-btn.active { background:var(--blue); color:#fff; }
+    .season-toggle-btn[disabled] { opacity:.35; cursor:not-allowed; }
+    .camp-manage-btn { margin-left:auto; }
+    .camp-checkbox-list { display:grid; gap:10px; max-height:260px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; background:#fbfdfe; }
+    .camp-checkbox-group-label { color:var(--muted); font:700 11px/1 var(--sans); letter-spacing:.02em; margin:6px 0 2px; }
+    .camp-checkbox-group-label:first-child { margin-top:0; }
+    .camp-checkbox-row { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text); }
+    .camp-checkbox-row input { width:16px; height:16px; }
+    .camp-manage-list { display:grid; gap:8px; max-height:260px; overflow-y:auto; margin-bottom:16px; }
+    .camp-manage-row { display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:9px 12px; background:#fbfdfe; }
+    .camp-manage-row-label { font-size:12.5px; color:var(--text); }
+    .camp-manage-row button { border:0; background:transparent; color:var(--red); font-size:11px; font-weight:700; cursor:pointer; padding:4px 6px; }
+    .camp-manage-add-row { display:grid; grid-template-columns:80px auto 1fr auto; gap:8px; align-items:center; }
+    .camp-manage-add-row input { min-height:38px; border:1px solid #d7e2e7; border-radius:8px; padding:0 10px; }
     .field { display:grid; gap:6px; margin-bottom:14px; }
     .field label { color:var(--muted); font-size:11.5px; font-weight:700; letter-spacing:.02em; }
     .field input,.field select { min-height:42px; border:1px solid #d7e2e7; border-radius:10px; padding:0 12px; outline:none; background:#fff; color:var(--text); }
@@ -238,9 +258,14 @@ const pageTitle = 'WOLKO Camp Resources';
 
     <p class="load-error-banner" id="loadErrorBanner" hidden></p>
 
-    <div class="session-select-wrap" id="sessionSelectWrap" hidden>
-      <label for="sessionSelect" data-ko="세션" data-en="Session">세션</label>
-      <select id="sessionSelect"></select>
+    <div class="camp-filter-wrap" id="campFilterWrap" hidden>
+      <select id="yearSelect"></select>
+      <div class="season-toggle" id="seasonToggle">
+        <button class="season-toggle-btn" data-season="summer" type="button" data-ko="여름" data-en="Summer">여름</button>
+        <button class="season-toggle-btn" data-season="winter" type="button" data-ko="겨울" data-en="Winter">겨울</button>
+      </div>
+      <select id="campSelect"></select>
+      <button class="ghost camp-manage-btn" id="campManageBtn" type="button" hidden data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</button>
     </div>
 
     <section id="subjectGroups"></section>
@@ -254,6 +279,7 @@ const pageTitle = 'WOLKO Camp Resources';
         <select id="itemTeam">
           <option value="WOLKO">WOLKO</option>
           <option value="Student Fusion Team Projects">Student Fusion Team Projects</option>
+          <option value="레슨플랜">레슨플랜</option>
         </select>
       </div>
       <div class="field" id="personFieldWrap">
@@ -262,8 +288,8 @@ const pageTitle = 'WOLKO Camp Resources';
         <datalist id="personDatalist"></datalist>
       </div>
       <div class="field">
-        <label data-ko="세션 (예: 2026 여름캠프)" data-en="Session (e.g. Summer 2026)">세션 (예: 2026 여름캠프)</label>
-        <input id="itemSession" type="text">
+        <label data-ko="캠프 (다중 선택 가능)" data-en="Camps (select any that apply)">캠프 (다중 선택 가능)</label>
+        <div class="camp-checkbox-list" id="campCheckboxList"></div>
       </div>
       <div class="field">
         <label data-ko="제목" data-en="Title">제목</label>
@@ -290,6 +316,26 @@ const pageTitle = 'WOLKO Camp Resources';
     </div>
   </div>
 
+  <div class="tch-dialog-backdrop" id="campManageBackdrop" hidden>
+    <div class="tch-dialog">
+      <div class="tch-dialog-title" data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</div>
+      <div class="camp-manage-list" id="campManageList"></div>
+      <div class="camp-manage-add-row">
+        <input id="newCampYear" type="text" inputmode="numeric" data-ph-ko="연도" data-ph-en="Year" placeholder="연도">
+        <div class="season-toggle" id="newCampSeasonToggle">
+          <button class="season-toggle-btn active" data-season="summer" type="button" data-ko="여름" data-en="Summer">여름</button>
+          <button class="season-toggle-btn" data-season="winter" type="button" data-ko="겨울" data-en="Winter">겨울</button>
+        </div>
+        <input id="newCampName" type="text" data-ph-ko="캠프 이름" data-ph-en="Camp name" placeholder="캠프 이름">
+        <button class="primary" id="addCampBtn" type="button" data-ko="추가" data-en="Add">추가</button>
+      </div>
+      <p class="tch-dialog-error" id="campManageError"></p>
+      <div class="tch-dialog-btns">
+        <button class="secondary" id="campManageCloseBtn" type="button" data-ko="닫기" data-en="Close">닫기</button>
+      </div>
+    </div>
+  </div>
+
   <div class="install-guide" id="installGuide" hidden>
     <div class="install-guide-card">
       <h2 class="install-guide-title" id="installGuideTitle">앱으로 설치하기</h2>
@@ -307,7 +353,8 @@ const pageTitle = 'WOLKO Camp Resources';
     const TAB_KEY = 'wolko_camp_resources_tab';
     const TEAM_WOLKO = 'WOLKO';
     const TEAM_SF = 'Student Fusion Team Projects';
-    const TEAMS_ORDER = [TEAM_SF, TEAM_WOLKO];
+    const TEAM_LESSON_PLAN = '레슨플랜';
+    const TEAMS_ORDER = [TEAM_SF, TEAM_WOLKO, TEAM_LESSON_PLAN];
     const WOLKO_PINNED_PEOPLE = ['Zach', 'Niki', 'Molly', 'Debbie', 'Shannon'];
     const TABS = [
       { key: 'teacher', ko: '수업자료', en: 'Class Materials' },
@@ -330,7 +377,7 @@ const pageTitle = 'WOLKO Camp Resources';
         saveFailed: '저장하지 못했습니다.',
         deleteFailed: '삭제하지 못했습니다.',
         loadFailed: '목록을 불러오지 못했습니다.',
-        validationError: '세션, 제목, URL을 모두 입력해주세요.',
+        validationError: '캠프를 하나 이상 선택하고, 제목과 URL을 입력해주세요.',
         validationErrorTeam: '팀을 선택해주세요.',
         validationErrorPerson: 'WOLKO 팀은 이름을 입력해주세요.',
         addTitle: '자료 추가',
@@ -342,6 +389,14 @@ const pageTitle = 'WOLKO Camp Resources';
         uploadBadTypeBgm: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.',
         dragHint: '끌어서 순서 변경',
         reorderFailed: '순서를 저장하지 못했습니다.',
+        summer: '여름',
+        winter: '겨울',
+        noCamps: '등록된 캠프가 없습니다. 먼저 캠프를 추가해주세요.',
+        campLoadFailed: '캠프 목록을 불러오지 못했습니다.',
+        campSaveFailed: '캠프를 저장하지 못했습니다.',
+        campDeleteFailed: '캠프를 삭제하지 못했습니다.',
+        campFieldsRequired: '연도, 계절, 이름을 모두 입력해주세요.',
+        campDeleteConfirm: '이 캠프를 삭제하시겠습니까? (연결된 자료는 삭제되지 않습니다)',
       },
       en: {
         noItems: 'No resources yet.',
@@ -353,7 +408,7 @@ const pageTitle = 'WOLKO Camp Resources';
         saveFailed: 'Could not save.',
         deleteFailed: 'Could not delete.',
         loadFailed: 'Could not load the list.',
-        validationError: 'Please fill in session, title, and URL.',
+        validationError: 'Please select at least one camp and fill in title and URL.',
         validationErrorTeam: 'Please choose a team.',
         validationErrorPerson: 'Please enter a name for the WOLKO team.',
         addTitle: 'Add Resource',
@@ -365,6 +420,14 @@ const pageTitle = 'WOLKO Camp Resources';
         uploadBadTypeBgm: 'Only MP3, WAV, or M4A files can be uploaded.',
         dragHint: 'Drag to reorder',
         reorderFailed: 'Could not save the new order.',
+        summer: 'Summer',
+        winter: 'Winter',
+        noCamps: 'No camps registered yet. Add a camp first.',
+        campLoadFailed: 'Could not load the camp list.',
+        campSaveFailed: 'Could not save the camp.',
+        campDeleteFailed: 'Could not delete the camp.',
+        campFieldsRequired: 'Please fill in year, season, and name.',
+        campDeleteConfirm: 'Delete this camp? (Linked resources will not be deleted)',
       },
     };
 
@@ -397,8 +460,19 @@ const pageTitle = 'WOLKO Camp Resources';
       exitEditBtn: document.getElementById('exitEditBtn'),
       mainTabs: document.getElementById('mainTabs'),
       subjectGroups: document.getElementById('subjectGroups'),
-      sessionSelectWrap: document.getElementById('sessionSelectWrap'),
-      sessionSelect: document.getElementById('sessionSelect'),
+      campFilterWrap: document.getElementById('campFilterWrap'),
+      yearSelect: document.getElementById('yearSelect'),
+      seasonToggle: document.getElementById('seasonToggle'),
+      campSelect: document.getElementById('campSelect'),
+      campManageBtn: document.getElementById('campManageBtn'),
+      campManageBackdrop: document.getElementById('campManageBackdrop'),
+      campManageList: document.getElementById('campManageList'),
+      newCampYear: document.getElementById('newCampYear'),
+      newCampSeasonToggle: document.getElementById('newCampSeasonToggle'),
+      newCampName: document.getElementById('newCampName'),
+      addCampBtn: document.getElementById('addCampBtn'),
+      campManageError: document.getElementById('campManageError'),
+      campManageCloseBtn: document.getElementById('campManageCloseBtn'),
       loadErrorBanner: document.getElementById('loadErrorBanner'),
       itemDialogBackdrop: document.getElementById('itemDialogBackdrop'),
       itemDialogTitle: document.getElementById('itemDialogTitle'),
@@ -407,7 +481,7 @@ const pageTitle = 'WOLKO Camp Resources';
       personFieldWrap: document.getElementById('personFieldWrap'),
       itemPerson: document.getElementById('itemPerson'),
       personDatalist: document.getElementById('personDatalist'),
-      itemSession: document.getElementById('itemSession'),
+      campCheckboxList: document.getElementById('campCheckboxList'),
       itemTitle: document.getElementById('itemTitle'),
       itemUrl: document.getElementById('itemUrl'),
       itemDialogError: document.getElementById('itemDialogError'),
@@ -422,7 +496,10 @@ const pageTitle = 'WOLKO Camp Resources';
     };
 
     let items = [];
-    let selectedSession = '';
+    let camps = [];
+    let selectedYear = '';
+    let selectedSeason = '';
+    let selectedCampId = '';
     let currentTab = TABS.some(t => t.key === localStorage.getItem(TAB_KEY)) ? localStorage.getItem(TAB_KEY) : DEFAULT_TAB;
     let dialogTab = DEFAULT_TAB;
     let editMode = false;
@@ -497,23 +574,25 @@ const pageTitle = 'WOLKO Camp Resources';
       render();
     }
 
-    function groupBySession(list) {
-      const sessions = {};
-      list.forEach(item => {
-        (sessions[item.session] || (sessions[item.session] = [])).push(item);
-      });
-      return sessions;
+    function campById(id) {
+      return camps.find(c => c.id === id) || null;
     }
 
-    function sortedSessionNames(sessions) {
-      return Object.keys(sessions)
-        .map(name => ({ name, time: Math.max(...sessions[name].map(i => new Date(i.createdAt).getTime() || 0)) }))
-        .sort((a, b) => b.time - a.time)
-        .map(s => s.name);
+    function campNamesFor(campIds) {
+      return (campIds || []).map(id => campById(id)?.name).filter(Boolean).join(', ');
     }
 
-    function latestSessionName(sessions) {
-      return sortedSessionNames(sessions)[0] || '';
+    function sortedYears() {
+      return [...new Set(camps.map(c => c.year))].sort((a, b) => String(b).localeCompare(String(a), 'ko', { numeric: true }));
+    }
+
+    function seasonsForYear(year) {
+      const set = new Set(camps.filter(c => c.year === year).map(c => c.season));
+      return ['summer', 'winter'].filter(s => set.has(s));
+    }
+
+    function campsForYearSeason(year, season) {
+      return camps.filter(c => c.year === year && c.season === season).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
     }
 
     function presentCardHtml(item) {
@@ -524,7 +603,7 @@ const pageTitle = 'WOLKO Camp Resources';
             <div class="present-card-title">${escapeHtml(item.title)}</div>
             ${editMode ? `<span class="drag-handle" draggable="true" data-stop title="${escapeHtml(tr('dragHint'))}">⋮⋮</span>` : ''}
           </div>
-          <div class="present-card-meta">${escapeHtml(item.session)}</div>
+          <div class="present-card-meta">${escapeHtml(campNamesFor(item.campIds))}</div>
           ${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}
           ${editMode ? `
             <div class="present-card-actions" data-stop>
@@ -609,47 +688,44 @@ const pageTitle = 'WOLKO Camp Resources';
       });
     }
 
-    function sessionYear(name) {
-      const m = String(name).match(/\b(20\d{2})\b/);
-      return m ? m[1] : (currentLang === 'en' ? 'Other' : '기타');
-    }
+    function renderCampFilter() {
+      const years = sortedYears();
+      els.campFilterWrap.hidden = years.length === 0;
+      if (!years.length) return;
+      if (!years.includes(selectedYear)) selectedYear = years[0];
+      els.yearSelect.innerHTML = years.map(y => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`).join('');
+      els.yearSelect.value = selectedYear;
 
-    function renderSessionSelect() {
-      const sessions = groupBySession(items);
-      const names = sortedSessionNames(sessions);
-      if (!names.includes(selectedSession)) selectedSession = names[0] || '';
-      els.sessionSelectWrap.hidden = names.length === 0;
-      const byYear = {};
-      const yearOrder = [];
-      names.forEach(name => {
-        const y = sessionYear(name);
-        if (!byYear[y]) { byYear[y] = []; yearOrder.push(y); }
-        byYear[y].push(name);
+      const seasons = seasonsForYear(selectedYear);
+      if (!seasons.includes(selectedSeason)) selectedSeason = seasons[0] || 'summer';
+      els.seasonToggle.querySelectorAll('.season-toggle-btn').forEach(btn => {
+        const s = btn.dataset.season;
+        btn.classList.toggle('active', s === selectedSeason);
+        btn.disabled = !seasons.includes(s);
       });
-      els.sessionSelect.innerHTML = yearOrder.map(year => `
-        <optgroup label="${escapeHtml(year)}">
-          ${byYear[year].map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('')}
-        </optgroup>
-      `).join('');
-      els.sessionSelect.value = selectedSession;
+
+      const campsHere = campsForYearSeason(selectedYear, selectedSeason);
+      if (!campsHere.some(c => c.id === selectedCampId)) selectedCampId = campsHere[0]?.id || '';
+      els.campSelect.innerHTML = campsHere.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
+      els.campSelect.value = selectedCampId;
     }
 
     function renderCategoryGroups() {
       if (currentTab === 'general') {
-        const sessionItems = items.filter(i => i.session === selectedSession && (i.tab === 'general' || !TAB_KEYS.includes(i.tab)));
-        els.subjectGroups.innerHTML = flatListHtml(tabLabel('general'), sessionItems, { tab: 'general' });
+        const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && (i.tab === 'general' || !TAB_KEYS.includes(i.tab)));
+        els.subjectGroups.innerHTML = flatListHtml(tabLabel('general'), campItems, { tab: 'general' });
         return;
       }
-      const sessionItems = items.filter(i => i.session === selectedSession && i.tab === currentTab);
+      const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && i.tab === currentTab);
       if (currentTab === 'teacher') {
-        const byTeam = groupByTeam(sessionItems);
+        const byTeam = groupByTeam(campItems);
         els.subjectGroups.innerHTML = TEAMS_ORDER.map(team => {
-          return team === TEAM_WOLKO
-            ? wolkoTeamHtml(byTeam[team] || [], { pinPeople: true })
-            : flatListHtml(team, byTeam[team] || [], { tab: 'teacher', team }, 'theme-sf');
+          if (team === TEAM_WOLKO) return wolkoTeamHtml(byTeam[team] || [], { pinPeople: true });
+          const theme = team === TEAM_SF ? 'theme-sf' : 'theme-lesson';
+          return flatListHtml(team, byTeam[team] || [], { tab: 'teacher', team }, theme);
         }).join('');
       } else {
-        els.subjectGroups.innerHTML = flatListHtml(tabLabel(currentTab), sessionItems, { tab: currentTab });
+        els.subjectGroups.innerHTML = flatListHtml(tabLabel(currentTab), campItems, { tab: currentTab });
       }
     }
 
@@ -661,13 +737,9 @@ const pageTitle = 'WOLKO Camp Resources';
 
     function render() {
       renderMainTabs();
-      renderSessionSelect();
+      renderCampFilter();
       renderCategoryGroups();
       renderPersonDatalist();
-    }
-
-    function currentLatestSessionLabel() {
-      return selectedSession || '';
     }
 
     document.querySelector('main.page').addEventListener('click', event => {
@@ -775,8 +847,27 @@ const pageTitle = 'WOLKO Camp Resources';
       renderPersonDatalist();
     });
 
-    els.sessionSelect.addEventListener('change', () => {
-      selectedSession = els.sessionSelect.value;
+    els.yearSelect.addEventListener('change', () => {
+      selectedYear = els.yearSelect.value;
+      selectedSeason = '';
+      selectedCampId = '';
+      renderCampFilter();
+      renderCategoryGroups();
+      renderPersonDatalist();
+    });
+
+    els.seasonToggle.addEventListener('click', event => {
+      const btn = event.target.closest('.season-toggle-btn');
+      if (!btn || btn.disabled) return;
+      selectedSeason = btn.dataset.season;
+      selectedCampId = '';
+      renderCampFilter();
+      renderCategoryGroups();
+      renderPersonDatalist();
+    });
+
+    els.campSelect.addEventListener('change', () => {
+      selectedCampId = els.campSelect.value;
       renderCategoryGroups();
       renderPersonDatalist();
     });
@@ -785,6 +876,7 @@ const pageTitle = 'WOLKO Camp Resources';
       editMode = true;
       els.editModeBtn.hidden = true;
       els.exitEditBtn.hidden = false;
+      els.campManageBtn.hidden = false;
       render();
     }
 
@@ -794,6 +886,7 @@ const pageTitle = 'WOLKO Camp Resources';
       localStorage.removeItem(TOKEN_KEY);
       els.editModeBtn.hidden = false;
       els.exitEditBtn.hidden = true;
+      els.campManageBtn.hidden = true;
       render();
     }
 
@@ -843,6 +936,28 @@ const pageTitle = 'WOLKO Camp Resources';
       els.bgmFieldWrap.hidden = !(dialogTab === 'program' || dialogTab === 'counselor');
     }
 
+    function renderCampCheckboxes(checkedIds) {
+      const checked = new Set(checkedIds || []);
+      const years = sortedYears();
+      els.campCheckboxList.innerHTML = years.map(year => {
+        const seasons = seasonsForYear(year);
+        return seasons.map(season => {
+          const campsHere = campsForYearSeason(year, season);
+          if (!campsHere.length) return '';
+          const seasonLabel = season === 'summer' ? tr('summer') : tr('winter');
+          return `
+            <div class="camp-checkbox-group-label">${escapeHtml(year)} ${escapeHtml(seasonLabel)}</div>
+            ${campsHere.map(c => `
+              <label class="camp-checkbox-row">
+                <input type="checkbox" value="${escapeHtml(c.id)}" ${checked.has(c.id) ? 'checked' : ''}>
+                <span>${escapeHtml(c.name)}</span>
+              </label>
+            `).join('')}
+          `;
+        }).join('');
+      }).join('') || `<div class="empty" style="grid-column:auto;">${escapeHtml(tr('noCamps'))}</div>`;
+    }
+
     function openItemDialog(itemId, defaults) {
       defaults = defaults || {};
       editingItemId = itemId || '';
@@ -852,7 +967,7 @@ const pageTitle = 'WOLKO Camp Resources';
       els.itemTeam.value = (item && item.team) || defaults.team || TEAM_WOLKO;
       updateDialogFieldsForTab();
       els.itemPerson.value = (item && item.person) || defaults.person || '';
-      els.itemSession.value = (item && item.session) || currentLatestSessionLabel();
+      renderCampCheckboxes((item && item.campIds) || (selectedCampId ? [selectedCampId] : []));
       els.itemTitle.value = (item && item.title) || '';
       els.itemUrl.value = (item && item.url) || '';
       els.itemBgmUrl.value = (item && item.bgmUrl) || '';
@@ -864,17 +979,18 @@ const pageTitle = 'WOLKO Camp Resources';
     async function saveItemFromDialog() {
       const isTeacher = dialogTab === 'teacher';
       const hasBgm = dialogTab === 'program' || dialogTab === 'counselor';
+      const campIds = [...els.campCheckboxList.querySelectorAll('input[type="checkbox"]:checked')].map(el => el.value);
       const payload = {
         id: editingItemId || undefined,
         tab: dialogTab,
         team: isTeacher ? els.itemTeam.value : '',
         person: (isTeacher && els.itemTeam.value === TEAM_WOLKO) ? els.itemPerson.value.trim() : '',
-        session: els.itemSession.value.trim(),
+        campIds,
         title: els.itemTitle.value.trim(),
         url: els.itemUrl.value.trim(),
         bgmUrl: hasBgm ? els.itemBgmUrl.value.trim() : '',
       };
-      if (!payload.session || !payload.title || !payload.url) {
+      if (!payload.campIds.length || !payload.title || !payload.url) {
         els.itemDialogError.textContent = tr('validationError');
         return;
       }
@@ -1021,6 +1137,13 @@ const pageTitle = 'WOLKO Camp Resources';
       els.installBtn.hidden = true;
     });
 
+    async function loadCamps() {
+      const res = await fetch('/api/teach/camps');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || tr('campLoadFailed'));
+      camps = Array.isArray(data.camps) ? data.camps : [];
+    }
+
     async function loadItems() {
       const res = await fetch('/api/teach/data');
       const data = await res.json().catch(() => ({}));
@@ -1034,8 +1157,84 @@ const pageTitle = 'WOLKO Camp Resources';
       els.loadErrorBanner.hidden = true;
     }
 
+    function renderCampManageList() {
+      const years = sortedYears();
+      els.campManageList.innerHTML = years.flatMap(year =>
+        ['summer', 'winter'].flatMap(season =>
+          campsForYearSeason(year, season).map(c => `
+            <div class="camp-manage-row">
+              <span class="camp-manage-row-label">${escapeHtml(year)} ${escapeHtml(season === 'summer' ? tr('summer') : tr('winter'))} · ${escapeHtml(c.name)}</span>
+              <button type="button" data-delete-camp="${escapeHtml(c.id)}">${escapeHtml(tr('delete'))}</button>
+            </div>`)
+        )
+      ).join('') || `<div class="empty" style="grid-column:auto;">${escapeHtml(tr('noCamps'))}</div>`;
+    }
+
+    els.campManageBtn.addEventListener('click', () => {
+      els.campManageError.textContent = '';
+      renderCampManageList();
+      els.campManageBackdrop.hidden = false;
+    });
+    els.campManageCloseBtn.addEventListener('click', () => { els.campManageBackdrop.hidden = true; });
+
+    els.newCampSeasonToggle.addEventListener('click', event => {
+      const btn = event.target.closest('.season-toggle-btn');
+      if (!btn) return;
+      els.newCampSeasonToggle.querySelectorAll('.season-toggle-btn').forEach(b => b.classList.toggle('active', b === btn));
+    });
+
+    els.addCampBtn.addEventListener('click', async () => {
+      const year = els.newCampYear.value.trim();
+      const season = els.newCampSeasonToggle.querySelector('.season-toggle-btn.active')?.dataset.season || 'summer';
+      const name = els.newCampName.value.trim();
+      if (!year || !name) {
+        els.campManageError.textContent = tr('campFieldsRequired');
+        return;
+      }
+      els.addCampBtn.disabled = true;
+      try {
+        const res = await fetch('/api/teach/camps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ year, season, name }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || tr('campSaveFailed'));
+        camps = data.camps;
+        els.newCampYear.value = '';
+        els.newCampName.value = '';
+        els.campManageError.textContent = '';
+        renderCampManageList();
+        render();
+      } catch (error) {
+        els.campManageError.textContent = error.message;
+      } finally {
+        els.addCampBtn.disabled = false;
+      }
+    });
+
+    els.campManageList.addEventListener('click', async event => {
+      const btn = event.target.closest('[data-delete-camp]');
+      if (!btn) return;
+      if (!confirm(tr('campDeleteConfirm'))) return;
+      try {
+        const res = await fetch(`/api/teach/camps?id=${encodeURIComponent(btn.dataset.deleteCamp)}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || tr('campDeleteFailed'));
+        camps = data.camps;
+        renderCampManageList();
+        render();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
     applyLanguage();
     render();
+    loadCamps().then(render).catch(() => {});
     loadItems().catch(error => {
       loadErrorIsStandard = !!error.isStandard;
       els.loadErrorBanner.textContent = error.message || tr('loadFailed');
