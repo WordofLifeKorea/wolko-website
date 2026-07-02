@@ -1219,7 +1219,9 @@ const pageTitle = 'WOLKO Schedule Planner';
         const total = Math.round(n * 24 * 60);
         return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
       }
-      return raw.replace(/^(\d{1,2}:\d{2}):00$/, '$1');
+      return raw
+        .replace(/\s*[–—~]\s*/g, '-')
+        .replace(/^(\d{1,2}:\d{2}):00$/, '$1');
     }
 
     function parseSheetDate(sheetName) {
@@ -1512,25 +1514,31 @@ const pageTitle = 'WOLKO Schedule Planner';
         const rowDate = dateCol >= 0 ? parseDateFromTextLine(cellText(row[dateCol])) : null;
         if (rowDate) currentDate = rowDate;
         if (!timeText || !title || /^(time|시간)/i.test(timeText) || /^(time|시간|일정|schedule)/i.test(title)) return;
-        const parsed = clockRange(timeText);
-        const rowGroup = sourceGroupFromText(sheetName, title, details, row.join(' ')) || sheetGroup;
-        events.push({
-          id: crypto.randomUUID(),
-          title,
-          type: inferType(title, details),
-          date: currentDate,
-          timeText,
-          start: autoAdjustHour(parsed.start),
-          end: autoAdjustHour(parsed.end),
-          staff: '',
-          vanId: '',
-          from: '',
-          to: '',
-          passengers: '',
-          notes: details,
-          sourceSheet: sheetName,
-          sourceGroupKey: rowGroup.key,
-          sourceGroupLabel: rowGroup.label,
+        const inlineSegments = splitInlineScheduleText(title);
+        const rowsToAdd = inlineSegments.length >= 2
+          ? inlineSegments.map(segment => ({ timeText: segment.timeText, title: segment.title, details: '' }))
+          : [{ timeText, title, details }];
+        rowsToAdd.forEach(item => {
+          const parsed = clockRange(item.timeText);
+          const rowGroup = sourceGroupFromText(sheetName, item.title, item.details, row.join(' ')) || sheetGroup;
+          events.push({
+            id: crypto.randomUUID(),
+            title: item.title,
+            type: inferType(item.title, item.details),
+            date: currentDate,
+            timeText: item.timeText,
+            start: autoAdjustHour(parsed.start),
+            end: autoAdjustHour(parsed.end),
+            staff: '',
+            vanId: '',
+            from: '',
+            to: '',
+            passengers: '',
+            notes: item.details,
+            sourceSheet: sheetName,
+            sourceGroupKey: rowGroup.key,
+            sourceGroupLabel: rowGroup.label,
+          });
         });
       });
       return events;
@@ -1892,6 +1900,24 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       return endTime ? `${startTime}-${endTime}` : startTime;
     }
 
+    function splitInlineScheduleText(value) {
+      const text = String(value || '').replace(/\s+/g, ' ').trim();
+      const timePattern = /(\d{1,2}:\d{2})(?:\s*[–—~-]\s*(\d{1,2}:\d{2}))?/g;
+      const matches = [...text.matchAll(timePattern)];
+      if (matches.length < 2) return [];
+      return matches.map((match, index) => {
+        const next = matches[index + 1];
+        const rawTitle = text
+          .slice(match.index + match[0].length, next ? next.index : text.length)
+          .replace(/^\s*[-–—:·•]\s*/, '')
+          .trim();
+        return {
+          timeText: normalizeNaturalTimeRange(match[1], match[2]),
+          title: rawTitle || tr('schedule'),
+        };
+      }).filter(item => item.title && !/^(time|시간|schedule|일정)$/i.test(item.title));
+    }
+
     function textRowsFromPlainText(text) {
       return String(text || '')
         .replace(/\r/g, '\n')
@@ -1947,12 +1973,23 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       )).filter(row => row.some(Boolean));
     }
 
+    function htmlTableName(table, index, filename) {
+      const explicit = table.getAttribute('aria-label') || table.querySelector('caption')?.textContent?.trim();
+      if (explicit) return explicit;
+      const page = table.closest('.page');
+      const title = page?.querySelector('.page-head h1')?.textContent?.trim() || '';
+      const sub = page?.querySelector('.page-head .sub')?.textContent?.trim() || '';
+      const badge = page?.querySelector('.page-head .badge')?.textContent?.trim() || '';
+      const bits = [badge, title, sub].filter(Boolean);
+      return bits.length ? bits.join(' · ') : `${filename} ${index + 1}`;
+    }
+
     async function importHtmlFile(file) {
       const html = await file.text().catch(() => '');
       if (!html) throw new Error(tr('htmlReadFailed'));
       const doc = new DOMParser().parseFromString(html, 'text/html');
       const tables = [...doc.querySelectorAll('table')].map((table, index) => ({
-        name: table.getAttribute('aria-label') || table.querySelector('caption')?.textContent?.trim() || `${file.name} ${index + 1}`,
+        name: htmlTableName(table, index, file.name),
         rows: rowsFromHtmlTable(table),
       })).filter(sheet => sheet.rows.length);
       if (tables.length) {
