@@ -133,6 +133,35 @@ export async function onRequestPost(context) {
   }
 }
 
+export async function onRequestPut(context) {
+  const { env, request } = context;
+  if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
+    return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
+  }
+  if (!(await verifyToken(request, env))) {
+    return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
+  }
+  try {
+    const body = await request.json();
+    const id = text(body.id, 80);
+    const name = text(body.name, 80);
+    if (!id || !name) {
+      return Response.json({ error: '수정할 캠프와 이름이 필요합니다.' }, { status: 400, headers: CORS });
+    }
+    const data = await readCamps(env);
+    const idx = data.camps.findIndex(c => c.id === id);
+    if (idx === -1) {
+      return Response.json({ error: '캠프를 찾을 수 없습니다.' }, { status: 404, headers: CORS });
+    }
+    data.camps[idx] = { ...data.camps[idx], name, updatedAt: new Date().toISOString() };
+    const saved = await writeCamps(env, data.camps);
+    return Response.json({ camps: saved.camps }, { headers: CORS });
+  } catch (error) {
+    console.error('teach camps update error:', error);
+    return Response.json({ error: '캠프 이름을 수정하지 못했습니다.' }, { status: 500, headers: CORS });
+  }
+}
+
 export async function onRequestDelete(context) {
   const { env, request } = context;
   if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
@@ -156,7 +185,7 @@ export async function onRequestOptions() {
   return new Response(null, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });

@@ -90,6 +90,8 @@ const pageTitle = 'WOLKO Camp Resources';
     .brand p { margin:3px 0 0; color:rgba(255,255,255,.62); font:500 10px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
     .toolbar { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; min-width:0; }
     .toolbar button { min-height:var(--btn-h-md); border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:0 16px; background:rgba(255,255,255,.15); color:#fff; font-size:12px; font-weight:600; }
+    .toolbar .edit-toggle { min-width:104px; transition:background .18s,color .18s,border-color .18s,box-shadow .18s; }
+    .toolbar .edit-toggle.is-active { background:#fff; color:var(--blue); border-color:#fff; box-shadow:0 4px 14px rgba(0,0,0,.18); }
     .lang-toggle {
       display:flex; align-items:center; position:relative; width:64px; height:26px;
       background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); border-radius:999px; padding:2px; cursor:pointer;
@@ -161,6 +163,7 @@ const pageTitle = 'WOLKO Camp Resources';
     .camp-filter-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
     .camp-filter-wrap[hidden] { display:none; }
     .camp-filter-wrap select { min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0 12px; background:#fff; color:var(--text); font:600 13px/1 var(--body); box-shadow:var(--shadow-soft); cursor:pointer; }
+    .camp-rename-btn { min-height:38px; padding:0 14px; white-space:nowrap; }
     .season-toggle { display:flex; gap:0; border:1px solid var(--border); border-radius:999px; padding:4px; background:#fff; box-shadow:var(--shadow-soft); }
     .season-toggle-btn { min-height:var(--btn-h-sm); border:0; border-radius:999px; padding:0 14px; background:transparent; color:var(--muted); font:700 12px/1 var(--sans); white-space:nowrap; cursor:pointer; }
     .season-toggle-btn.active { background:var(--blue); color:#fff; }
@@ -241,8 +244,7 @@ const pageTitle = 'WOLKO Camp Resources';
         <div class="lang-side is-inactive" id="langEn"><img src="https://flagcdn.com/w40/us.png" alt="US"><span>English</span></div>
       </div>
       <button class="secondary" id="installBtn" type="button" hidden data-ko="앱 설치" data-en="Install App">앱 설치</button>
-      <button class="secondary" id="editModeBtn" type="button" data-ko="편집 모드" data-en="Edit Mode">편집 모드</button>
-      <button class="ghost" id="exitEditBtn" type="button" hidden data-ko="편집 종료" data-en="Exit Edit">편집 종료</button>
+      <button class="edit-toggle" id="editModeBtn" type="button" aria-pressed="false">편집 모드</button>
     </div>
   </header>
 
@@ -269,6 +271,7 @@ const pageTitle = 'WOLKO Camp Resources';
         <button class="season-toggle-btn" data-season="winter" type="button" data-ko="겨울" data-en="Winter">겨울</button>
       </div>
       <select id="campSelect"></select>
+      <button class="secondary camp-rename-btn" id="campRenameBtn" type="button" hidden data-ko="이름 수정" data-en="Rename">이름 수정</button>
       <button class="ghost camp-manage-btn" id="campManageBtn" type="button" hidden data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</button>
     </div>
 
@@ -408,8 +411,13 @@ const pageTitle = 'WOLKO Camp Resources';
         campLoadFailed: '캠프 목록을 불러오지 못했습니다.',
         campSaveFailed: '캠프를 저장하지 못했습니다.',
         campDeleteFailed: '캠프를 삭제하지 못했습니다.',
+        campRenameFailed: '캠프 이름을 수정하지 못했습니다.',
         campFieldsRequired: '연도, 계절, 이름을 모두 입력해주세요.',
         campDeleteConfirm: '이 캠프를 삭제하시겠습니까? (연결된 자료는 삭제되지 않습니다)',
+        campRenamePrompt: '새 캠프 이름을 입력해주세요.',
+        campRenameEmpty: '캠프 이름을 입력해주세요.',
+        editModeEnter: '편집 모드',
+        editModeExit: '편집 중 · 나가기',
       },
       en: {
         noItems: 'No resources yet.',
@@ -439,8 +447,13 @@ const pageTitle = 'WOLKO Camp Resources';
         campLoadFailed: 'Could not load the camp list.',
         campSaveFailed: 'Could not save the camp.',
         campDeleteFailed: 'Could not delete the camp.',
+        campRenameFailed: 'Could not rename the camp.',
         campFieldsRequired: 'Please fill in year, season, and name.',
         campDeleteConfirm: 'Delete this camp? (Linked resources will not be deleted)',
+        campRenamePrompt: 'Enter the new camp name.',
+        campRenameEmpty: 'Please enter a camp name.',
+        editModeEnter: 'Edit Mode',
+        editModeExit: 'Editing · Exit',
       },
     };
 
@@ -470,13 +483,13 @@ const pageTitle = 'WOLKO Camp Resources';
       installGuideSteps: document.getElementById('installGuideSteps'),
       installGuideClose: document.getElementById('installGuideClose'),
       editModeBtn: document.getElementById('editModeBtn'),
-      exitEditBtn: document.getElementById('exitEditBtn'),
       mainTabs: document.getElementById('mainTabs'),
       subjectGroups: document.getElementById('subjectGroups'),
       campFilterWrap: document.getElementById('campFilterWrap'),
       yearSelect: document.getElementById('yearSelect'),
       seasonToggle: document.getElementById('seasonToggle'),
       campSelect: document.getElementById('campSelect'),
+      campRenameBtn: document.getElementById('campRenameBtn'),
       campManageBtn: document.getElementById('campManageBtn'),
       campManageBackdrop: document.getElementById('campManageBackdrop'),
       campManageList: document.getElementById('campManageList'),
@@ -540,6 +553,7 @@ const pageTitle = 'WOLKO Camp Resources';
       });
       updateLangToggleUI();
       updateInstallGuideText();
+      updateEditModeUI();
     }
 
     function updateInstallGuideText() {
@@ -721,6 +735,7 @@ const pageTitle = 'WOLKO Camp Resources';
       if (!campsHere.some(c => c.id === selectedCampId)) selectedCampId = campsHere[0]?.id || '';
       els.campSelect.innerHTML = campsHere.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
       els.campSelect.value = selectedCampId;
+      updateEditModeUI();
     }
 
     function renderCategoryGroups() {
@@ -881,15 +896,54 @@ const pageTitle = 'WOLKO Camp Resources';
 
     els.campSelect.addEventListener('change', () => {
       selectedCampId = els.campSelect.value;
+      updateEditModeUI();
       renderCategoryGroups();
       renderPersonDatalist();
     });
 
+    async function renameSelectedCamp() {
+      const camp = campById(selectedCampId);
+      if (!camp) return;
+      const nextName = prompt(tr('campRenamePrompt'), camp.name);
+      if (nextName === null) return;
+      const name = nextName.trim();
+      if (!name) {
+        alert(tr('campRenameEmpty'));
+        return;
+      }
+      if (name === camp.name) return;
+      els.campRenameBtn.disabled = true;
+      try {
+        const res = await fetch('/api/teach/camps', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ id: camp.id, name }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          token = '';
+          exitEditMode();
+          els.loginError.textContent = tr('loginFailed');
+          els.loginScreen.hidden = false;
+          return;
+        }
+        if (!res.ok) throw new Error(data.error || tr('campRenameFailed'));
+        camps = data.camps;
+        selectedCampId = camp.id;
+        renderCampManageList();
+        render();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        els.campRenameBtn.disabled = false;
+      }
+    }
+    els.campRenameBtn.addEventListener('click', renameSelectedCamp);
+
     function enterEditMode() {
       editMode = true;
-      els.editModeBtn.hidden = true;
-      els.exitEditBtn.hidden = false;
-      els.campManageBtn.hidden = false;
+      updateEditModeUI();
       render();
     }
 
@@ -897,19 +951,26 @@ const pageTitle = 'WOLKO Camp Resources';
       editMode = false;
       token = '';
       localStorage.removeItem(TOKEN_KEY);
-      els.editModeBtn.hidden = false;
-      els.exitEditBtn.hidden = true;
-      els.campManageBtn.hidden = true;
+      updateEditModeUI();
       render();
     }
 
+    function updateEditModeUI() {
+      if (!els.editModeBtn) return;
+      els.editModeBtn.classList.toggle('is-active', editMode);
+      els.editModeBtn.setAttribute('aria-pressed', editMode ? 'true' : 'false');
+      els.editModeBtn.textContent = editMode ? tr('editModeExit') : tr('editModeEnter');
+      if (els.campManageBtn) els.campManageBtn.hidden = !editMode;
+      if (els.campRenameBtn) els.campRenameBtn.hidden = !editMode || !selectedCampId;
+    }
+
     els.editModeBtn.addEventListener('click', () => {
+      if (editMode) { exitEditMode(); return; }
       if (token) { enterEditMode(); return; }
       els.loginError.textContent = '';
       els.passwordInput.value = '';
       els.loginScreen.hidden = false;
     });
-    els.exitEditBtn.addEventListener('click', exitEditMode);
     els.loginCancelBtn.addEventListener('click', () => { els.loginScreen.hidden = true; });
 
     async function login() {
