@@ -121,6 +121,17 @@ function cleanTransportPlan(plan, index, vans) {
   };
 }
 
+function cleanSchedulePdf(pdf) {
+  if (!pdf || typeof pdf !== 'object' || Array.isArray(pdf)) return null;
+  const url = text(pdf.url, 500);
+  if (!url || !/^\/api\/schedule-planner\/file\/|^https?:\/\//.test(url)) return null;
+  return {
+    url,
+    filename: text(pdf.filename, 160) || 'schedule.pdf',
+    uploadedAt: text(pdf.uploadedAt, 40),
+  };
+}
+
 function emptyPlan() {
   return {
     title: 'WOLKO Staff Schedule',
@@ -131,6 +142,7 @@ function emptyPlan() {
     events: [],
     people: [],
     transportPlans: [],
+    schedulePdf: null,
     updatedAt: '',
   };
 }
@@ -153,6 +165,7 @@ function cleanPlan(input, touch = true) {
     events,
     people,
     transportPlans,
+    schedulePdf: cleanSchedulePdf(source.schedulePdf),
     updatedAt: touch ? new Date().toISOString() : text(source.updatedAt, 40),
   };
 }

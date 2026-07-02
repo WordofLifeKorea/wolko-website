@@ -87,8 +87,6 @@ const pageTitle = 'WOLKO Schedule Planner';
     .toolbar input { width:160px; color:#fff; color-scheme:dark; }
     .toolbar input[type="file"] { display:none; }
     .toolbar select { color-scheme:dark; cursor:pointer; max-width:200px; }
-    #importHistoryDeleteBtn { background:rgba(239,68,68,.25); border-color:rgba(239,68,68,.4); padding:6px 11px; }
-    #importHistoryDeleteBtn:hover { background:rgba(239,68,68,.45); }
     .date-picker {
       position:relative; flex:0 0 420px; max-width:100%; min-height:58px; padding:7px 9px 7px 12px;
       border:1px solid rgba(255,255,255,.48); border-radius:18px; background:#fff; color:var(--text);
@@ -316,6 +314,16 @@ const pageTitle = 'WOLKO Schedule Planner';
       display:flex; align-items:center; justify-content:center; flex:1; min-height:80px;
       border:1.5px dashed #d5e4ea; border-radius:10px; color:var(--light); font-size:12px; font-weight:400;
     }
+    .pdf-viewer-card {
+      border:1px solid #dbe7ec; border-radius:var(--radius-lg); background:#fff; overflow:hidden; box-shadow:var(--shadow-soft);
+    }
+    .pdf-viewer-head {
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      padding:14px 16px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,#f4fbfd,#fff);
+    }
+    .pdf-viewer-title { color:var(--blue); font:800 14px/1.3 var(--sans); }
+    .pdf-viewer-meta { color:var(--muted); font-size:12px; margin-top:3px; }
+    .pdf-frame { width:100%; height:min(78vh,900px); border:0; display:block; background:#f8fafc; }
     .van-grid { display:grid; gap:12px; }
     .van-row { border:1px solid var(--border); border-radius:var(--radius-md); background:#fbfcfd; overflow:hidden; box-shadow:var(--shadow-soft); }
     .van-row-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 15px; background:#fff; border-bottom:1px solid var(--border); }
@@ -574,11 +582,8 @@ const pageTitle = 'WOLKO Schedule Planner';
       </div>
       <button class="lang-toggle" type="button" id="langToggleBtn">EN</button>
       <button type="button" id="saveBtn" data-ko="저장" data-en="Save">저장</button>
-      <button type="button" id="importBtn" data-ko="PDF/HTML 가져오기" data-en="Import PDF/HTML">PDF/HTML 가져오기</button>
-      <select id="importHistorySelect" style="display:none"></select>
-      <button type="button" id="importHistoryLoadBtn" style="display:none" data-ko="적용" data-en="Load">적용</button>
-      <button type="button" id="importHistoryDeleteBtn" style="display:none">✕</button>
-      <input id="excelInput" type="file" accept=".pdf,.html,.htm">
+      <button type="button" id="importBtn" data-ko="PDF 업로드" data-en="Upload PDF">PDF 업로드</button>
+      <input id="pdfInput" type="file" accept="application/pdf,.pdf">
       <button type="button" id="logoutBtn" data-ko="로그아웃" data-en="Log Out">로그아웃</button>
       <span class="save-state" id="saveState" style="display:none">로그인 필요</span>
     </div>
@@ -747,6 +752,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         </div>
         <div class="tabs">
           <button class="tab active" data-view="day" type="button" data-ko="일간 운영표" data-en="Daily Schedule">일간 운영표</button>
+          <button class="tab" data-view="pdf" type="button" data-ko="PDF 운영표" data-en="PDF Schedule">PDF 운영표</button>
           <button class="tab" data-view="week" type="button" data-ko="주간 요약" data-en="Week Summary">주간 요약</button>
           <button class="tab" data-view="vans" type="button" data-ko="차량 배정표" data-en="Vehicle Plan">차량 배정표</button>
           <button class="tab" data-view="people" type="button" data-ko="인원 명단" data-en="People List">인원 명단</button>
@@ -760,6 +766,7 @@ const pageTitle = 'WOLKO Schedule Planner';
           <button class="secondary restore-btn" id="restoreDeleteBtn" type="button" data-ko="마지막 삭제 복구" data-en="Restore Last Delete">마지막 삭제 복구</button>
         </div>
         <div class="view active" id="view-day"></div>
+        <div class="view" id="view-pdf"></div>
         <div class="view" id="view-week"></div>
         <div class="view" id="view-vans"></div>
         <div class="view" id="view-people"></div>
@@ -769,26 +776,11 @@ const pageTitle = 'WOLKO Schedule Planner';
     </section>
   </main>
 
-  <div class="sp-dialog-backdrop" id="translateDialog" style="display:none">
-    <div class="sp-dialog" role="dialog" aria-modal="true">
-      <div class="sp-dialog-title">번역</div>
-      <div class="sp-dialog-msg">영어로 작성된 내용을 한국어로 번역하시겠습니까?<br><span style="font-size:12px;color:var(--muted)">Anthropic API 사용 · 처음 실행 시 API 키 입력 필요</span></div>
-      <div class="sp-dialog-btns">
-        <button class="sp-btn-cancel" id="translateDialogCancel">취소</button>
-        <button class="sp-btn-no" id="translateDialogNo">번역 안 함</button>
-        <button class="sp-btn-yes" id="translateDialogYes">번역</button>
-      </div>
-    </div>
-  </div>
-
   <button class="sidebar-reopen-tab" id="sidebarReopenTab" type="button">입력창 열기</button>
 
   <script>
     const TOKEN_KEY          = 'wolko_schedule_planner_token';
     const LANG_KEY           = 'wolko_schedule_planner_lang';
-    const IMPORT_HISTORY_KEY = 'wolko_schedule_import_history';
-    const ANTHROPIC_KEY_LS   = 'wolko_anthropic_api_key';
-    const MAX_IMPORT_HISTORY = 15;
     const COPY = {
       ko: {
         loginNeeded: '로그인 필요',
@@ -802,23 +794,17 @@ const pageTitle = 'WOLKO Schedule Planner';
         saving: '저장 중...',
         saveFailed: '저장하지 못했습니다.',
         loadFailed: '데이터를 불러오지 못했습니다.',
-        importLoading: 'PDF/HTML 가져오는 중...',
-        translating: '한국어로 번역 중...',
-        importHistoryLabel: '이전 가져오기',
-        importHistoryConfirm: '현재 일정이 교체됩니다. 계속하시겠습니까?',
-        importDone: ({ events, people, plans }) => `가져오기 완료 · 일정 ${events}개 · 명단 ${people}명 · 차량표 ${plans}개`,
+        importLoading: 'PDF 업로드 중...',
+        importDone: ({ filename }) => `PDF 업로드 완료 · ${filename}`,
         importFailed: '파일을 가져오지 못했습니다.',
         titleRequired: '제목, 날짜, 시간을 입력해주세요.',
         personRequired: '명단에 추가할 이름을 입력해주세요.',
         transportRequired: '차량 배정표 제목을 입력해주세요.',
         loginFailed: '로그인하지 못했습니다.',
         passwordLanguageWarning: '비밀번호는 영어 입력 상태에서 입력해주세요.',
-        zipUnsupported: '이 브라우저에서는 xlsx 압축 해제를 지원하지 않습니다. 최신 Chrome 또는 Safari에서 다시 시도해주세요.',
-        invalidXlsx: '올바른 xlsx 파일이 아닙니다.',
-        workbookReadFailed: '엑셀 통합 문서를 읽지 못했습니다.',
-        pdfLoadFailed: 'PDF 텍스트를 읽지 못했습니다.',
-        htmlReadFailed: 'HTML 파일을 읽지 못했습니다.',
-        unsupportedImportFile: 'PDF 또는 HTML 파일을 선택해주세요.',
+        unsupportedImportFile: 'PDF 파일을 선택해주세요.',
+        noSchedulePdf: '업로드된 PDF 운영표가 없습니다.',
+        pdfOpen: '새 탭에서 열기',
         noVehicle: '차량 없음',
         noDetails: '세부 정보 없음',
         staff: '담당',
@@ -835,7 +821,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         updateSchedule: '일정 수정',
         delete: '삭제',
         deleteDayConfirm: ({ date, count, filter }) => `${date}${filter ? ` · ${filter}` : ''} 일정 ${count}개를 삭제할까요?\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
-        deleteAllConfirm: ({ events, people, vans, plans }) => `전체 데이터를 삭제할까요?\n일정 ${events}개, 명단 ${people}명, 차량 ${vans}대, 차량 배정표 ${plans}개가 삭제됩니다.\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
+        deleteAllConfirm: ({ events, people, vans, plans, pdf }) => `전체 데이터를 삭제할까요?\n일정 ${events}개, 명단 ${people}명, 차량 ${vans}대, 차량 배정표 ${plans}개${pdf ? ', PDF 운영표 1개' : ''}가 삭제됩니다.\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
         deleteNone: '삭제할 데이터가 없습니다.',
         deleteDayDone: count => `선택한 날짜의 일정 ${count}개를 삭제했습니다.`,
         deleteAllDone: '전체 데이터를 삭제했습니다.',
@@ -859,7 +845,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         vanNamePh: '차량 이름',
         seatsPh: '좌석',
         driverPh: '기본 운전자',
-        printView: { day: '일간 운영표', week: '주간 요약', vans: '차량 배정표', people: '인원 명단', list: '전체 운영표', fleet: '차량 목록' },
+        printView: { day: '일간 운영표', pdf: 'PDF 운영표', week: '주간 요약', vans: '차량 배정표', people: '인원 명단', list: '전체 운영표', fleet: '차량 목록' },
         printSummary: ({ view, date, today, week, vans }) => `${view} · 기준일 ${date} · 일간 ${today}개 · 주간 ${week}개 · 차량 ${vans}대`,
         listHeaders: ['날짜','시간','일정','담당','차량','이동','인원',''],
         peopleHeaders: ['번호','이름','성별','한국 나이','티셔츠','생일','메모 / 알러지',''],
@@ -878,23 +864,17 @@ const pageTitle = 'WOLKO Schedule Planner';
         saving: 'Saving...',
         saveFailed: 'Could not save.',
         loadFailed: 'Could not load data.',
-        importLoading: 'Importing PDF/HTML...',
-        translating: 'Translating to Korean...',
-        importHistoryLabel: 'Recent imports',
-        importHistoryConfirm: 'This will replace the current schedule. Continue?',
-        importDone: ({ events, people, plans }) => `Import complete · ${events} schedules · ${people} people · ${plans} vehicle plans`,
+        importLoading: 'Uploading PDF...',
+        importDone: ({ filename }) => `PDF uploaded · ${filename}`,
         importFailed: 'Could not import the file.',
         titleRequired: 'Please enter a title, date, and time.',
         personRequired: 'Please enter a name to add.',
         transportRequired: 'Please enter a vehicle plan title.',
         loginFailed: 'Could not sign in.',
         passwordLanguageWarning: 'Please switch to English input before entering the password.',
-        zipUnsupported: 'This browser cannot decompress xlsx files. Please try again in the latest Chrome or Safari.',
-        invalidXlsx: 'This is not a valid xlsx file.',
-        workbookReadFailed: 'Could not read the Excel workbook.',
-        pdfLoadFailed: 'Could not read PDF text.',
-        htmlReadFailed: 'Could not read the HTML file.',
-        unsupportedImportFile: 'Please choose a PDF or HTML file.',
+        unsupportedImportFile: 'Please choose a PDF file.',
+        noSchedulePdf: 'No PDF schedule has been uploaded.',
+        pdfOpen: 'Open in New Tab',
         noVehicle: 'No vehicle',
         noDetails: 'No details',
         staff: 'Staff',
@@ -911,7 +891,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         updateSchedule: 'Update Schedule',
         delete: 'Delete',
         deleteDayConfirm: ({ date, count, filter }) => `Delete ${count} schedule item(s) for ${date}${filter ? ` · ${filter}` : ''}?\nYou can restore this with "Restore Last Delete".`,
-        deleteAllConfirm: ({ events, people, vans, plans }) => `Delete all planner data?\nThis removes ${events} schedule item(s), ${people} people, ${vans} vehicle(s), and ${plans} vehicle plan(s).\nYou can restore this with "Restore Last Delete".`,
+        deleteAllConfirm: ({ events, people, vans, plans, pdf }) => `Delete all planner data?\nThis removes ${events} schedule item(s), ${people} people, ${vans} vehicle(s), ${plans} vehicle plan(s)${pdf ? ', and 1 PDF schedule' : ''}.\nYou can restore this with "Restore Last Delete".`,
         deleteNone: 'There is no data to delete.',
         deleteDayDone: count => `Deleted ${count} schedule item(s) for the selected date.`,
         deleteAllDone: 'Deleted all planner data.',
@@ -935,7 +915,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         vanNamePh: 'Vehicle name',
         seatsPh: 'Seats',
         driverPh: 'Default driver',
-        printView: { day: 'Daily Schedule', week: 'Week Summary', vans: 'Vehicle Plan', people: 'People List', list: 'All Schedule', fleet: 'Vans' },
+        printView: { day: 'Daily Schedule', pdf: 'PDF Schedule', week: 'Week Summary', vans: 'Vehicle Plan', people: 'People List', list: 'All Schedule', fleet: 'Vans' },
         printSummary: ({ view, date, today, week, vans }) => `${view} · Date ${date} · Day ${today} · Week ${week} · Vans ${vans}`,
         listHeaders: ['Date','Time','Schedule','Staff','Vehicle','Route','People',''],
         peopleHeaders: ['No','Name','Gender','K-age','T-size','B-day','Note / Allergy',''],
@@ -973,10 +953,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       langToggleBtn: document.getElementById('langToggleBtn'),
       saveBtn: document.getElementById('saveBtn'),
       importBtn: document.getElementById('importBtn'),
-      importHistorySelect: document.getElementById('importHistorySelect'),
-      importHistoryLoadBtn: document.getElementById('importHistoryLoadBtn'),
-      importHistoryDeleteBtn: document.getElementById('importHistoryDeleteBtn'),
-      excelInput: document.getElementById('excelInput'),
+      pdfInput: document.getElementById('pdfInput'),
       logoutBtn: document.getElementById('logoutBtn'),
       planTitle: document.getElementById('planTitle'),
       planTitleView: document.getElementById('planTitleView'),
@@ -1037,6 +1014,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       events: [],
       people: [],
       transportPlans: [],
+      schedulePdf: null,
       updatedAt: '',
     };
 
@@ -1055,7 +1033,6 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.langToggleBtn.setAttribute('aria-label', currentLang === 'ko' ? 'Switch to English' : '한국어로 전환');
       els.addEventBtn.textContent = editingId ? tr('updateSchedule') : tr('addSchedule');
       applyAuthState();
-      renderImportHistorySelect();
     }
 
     function applyAuthState() {
@@ -1168,926 +1145,28 @@ const pageTitle = 'WOLKO Schedule Planner';
         .replace(/^-+|-+$/g, '') || 'unknown';
     }
 
-    function isMostlyDateSheetName(name) {
-      const value = String(name || '').trim();
-      return /^(sun|mon|tue|wed|thu|fri|sat)(day)?$/i.test(value)
-        || /^[월화수목금토일](요일)?$/.test(value)
-        || /\b\d{1,2}[./\-]\d{1,2}\b/.test(value)
-        || /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*\d{1,2}\b/i.test(value)
-        || /\d{1,2}\s*월\s*\d{1,2}/.test(value);
-    }
-
-    function sourceGroupFromText(...parts) {
-      const raw = parts.map(part => String(part || '')).join(' ');
-      const value = raw.toLowerCase().replace(/[_-]+/g, ' ');
-      const compact = value.replace(/\s+/g, '');
-      const exact = (key, label) => ({ key, label });
-      if (/\bsf\s*#?\s*1\b/i.test(raw) || /student\s*fusion\s*(team\s*)?1/i.test(raw) || compact.includes('sf1')) {
-        return exact('student-fusion-team-1', 'Student Fusion Team 1');
+    async function uploadSchedulePdf(file) {
+      if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') {
+        throw new Error(tr('unsupportedImportFile'));
       }
-      if (/\bsf\s*#?\s*2\b/i.test(raw) || /student\s*fusion\s*(team\s*)?2/i.test(raw) || compact.includes('sf2')) {
-        return exact('student-fusion-team-2', 'Student Fusion Team 2');
-      }
-      if (/wolko\s*camp|english\s*wolko|월코\s*캠프/i.test(raw)) {
-        return exact('english-wolko-camp', 'English WOLKO Camp');
-      }
-      if (/student\s*fusion|\bsf\b/i.test(raw)) {
-        return exact('student-fusion', 'Student Fusion');
-      }
-      if (/wolko|월코/i.test(raw)) {
-        return exact('wolko', 'WOLKO');
-      }
-      return null;
-    }
-
-    function sourceGroupForSheet(sheetName) {
-      const matched = sourceGroupFromText(sheetName);
-      if (matched) return matched;
-      if (isMostlyDateSheetName(sheetName)) return { key: '', label: '' };
-      const label = cellText(sheetName);
-      return label ? { key: `sheet-${slugKey(label)}`, label } : { key: '', label: '' };
-    }
-
-    function cellText(value) {
-      return String(value ?? '').trim();
-    }
-
-    function formatExcelTime(value) {
-      const raw = cellText(value);
-      const n = Number(raw);
-      if (Number.isFinite(n) && n >= 0 && n < 1) {
-        const total = Math.round(n * 24 * 60);
-        return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
-      }
-      return raw
-        .replace(/\s*[–—~]\s*/g, '-')
-        .replace(/^(\d{1,2}:\d{2}):00$/, '$1');
-    }
-
-    function parseSheetDate(sheetName) {
-      const year = parseInt((els.selectedDate.value || todayIso()).slice(0, 4), 10);
-      const name = String(sheetName || '');
-      const ymd = (m, d) => m >= 1 && m <= 12 && d >= 1 && d <= 31
-        ? `${year}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}` : null;
-      // "7월 28일" or "7월28일"
-      let r = name.match(/(\d{1,2})\s*월\s*(\d{1,2})/);
-      if (r) return ymd(+r[1], +r[2]) || els.selectedDate.value || todayIso();
-      // "7/28" or "07.28" or "7-28"
-      r = name.match(/(\d{1,2})[/.\-](\d{1,2})/);
-      if (r) return ymd(+r[1], +r[2]) || els.selectedDate.value || todayIso();
-      // "Jul 28" or "July 28"
-      const months = {
-        jan:1,january:1,feb:2,february:2,mar:3,march:3,apr:4,april:4,
-        may:5,jun:6,june:6,jul:7,july:7,aug:8,august:8,sep:9,sept:9,
-        september:9,oct:10,october:10,nov:11,november:11,dec:12,december:12,
-      };
-      r = name.match(/\b([A-Za-z]+)\s+(\d{1,2})/);
-      if (r) { const m = months[r[1].toLowerCase()]; if (m) return ymd(m, +r[2]) || els.selectedDate.value || todayIso(); }
-      return els.selectedDate.value || todayIso();
-    }
-
-    function inferType(title, details) {
-      const value = `${title} ${details}`.toLowerCase();
-      if (/depart|arrive|airport|van|transport|station|subway|train|vehicle|dorm/.test(value)) return 'transport';
-      if (/breakfast|brunch|lunch|dinner|bbq|meal/.test(value)) return 'meal';
-      if (/meeting|debrief|announcement/.test(value)) return 'meeting';
-      if (/prep|training|practice|orientation/.test(value)) return 'prep';
-      return 'program';
-    }
-
-    function readUint16(view, offset) {
-      return view.getUint16(offset, true);
-    }
-
-    function readUint32(view, offset) {
-      return view.getUint32(offset, true);
-    }
-
-    async function inflateZipEntry(bytes, method) {
-      if (method === 0) return bytes;
-      if (method !== 8 || !window.DecompressionStream) {
-        throw new Error(tr('zipUnsupported'));
-      }
-      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
-      return new Uint8Array(await new Response(stream).arrayBuffer());
-    }
-
-    async function unzipXlsx(buffer) {
-      const bytes = new Uint8Array(buffer);
-      const view = new DataView(buffer);
-      let eocd = -1;
-      for (let i = bytes.length - 22; i >= 0; i -= 1) {
-        if (readUint32(view, i) === 0x06054b50) {
-          eocd = i;
-          break;
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch('/api/schedule-planner/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          token = '';
+          applyAuthState();
+          showLogin(() => els.pdfInput.click());
         }
+        throw new Error(data.error || tr('importFailed'));
       }
-      if (eocd < 0) throw new Error(tr('invalidXlsx'));
-      const entries = readUint16(view, eocd + 10);
-      let cursor = readUint32(view, eocd + 16);
-      const decoder = new TextDecoder();
-      const files = {};
-      for (let i = 0; i < entries; i += 1) {
-        if (readUint32(view, cursor) !== 0x02014b50) break;
-        const method = readUint16(view, cursor + 10);
-        const compressedSize = readUint32(view, cursor + 20);
-        const nameLen = readUint16(view, cursor + 28);
-        const extraLen = readUint16(view, cursor + 30);
-        const commentLen = readUint16(view, cursor + 32);
-        const localOffset = readUint32(view, cursor + 42);
-        const name = decoder.decode(bytes.slice(cursor + 46, cursor + 46 + nameLen));
-        const localNameLen = readUint16(view, localOffset + 26);
-        const localExtraLen = readUint16(view, localOffset + 28);
-        const dataStart = localOffset + 30 + localNameLen + localExtraLen;
-        const compressed = bytes.slice(dataStart, dataStart + compressedSize);
-        files[name] = decoder.decode(await inflateZipEntry(compressed, method));
-        cursor += 46 + nameLen + extraLen + commentLen;
-      }
-      return files;
-    }
-
-    function relMap(xml) {
-      const doc = new DOMParser().parseFromString(xml || '', 'application/xml');
-      const map = {};
-      Array.from(doc.getElementsByTagName('Relationship')).forEach(rel => {
-        map[rel.getAttribute('Id')] = rel.getAttribute('Target');
-      });
-      return map;
-    }
-
-    function sharedStrings(xml) {
-      if (!xml) return [];
-      const doc = new DOMParser().parseFromString(xml, 'application/xml');
-      return Array.from(doc.getElementsByTagName('si')).map(si => si.textContent || '');
-    }
-
-    function columnIndex(ref) {
-      const letters = String(ref || '').match(/[A-Z]+/)?.[0] || 'A';
-      return [...letters].reduce((sum, ch) => sum * 26 + ch.charCodeAt(0) - 64, 0) - 1;
-    }
-
-    function parseWorksheet(xml, shared) {
-      const doc = new DOMParser().parseFromString(xml, 'application/xml');
-      const rowMap = {};
-      Array.from(doc.getElementsByTagName('row')).forEach(xmlRow => {
-        // r 속성은 1-based 실제 행 번호 → 0-based 인덱스로 변환
-        const rowIdx = parseInt(xmlRow.getAttribute('r') || '1', 10) - 1;
-        const values = [];
-        Array.from(xmlRow.getElementsByTagName('c')).forEach(cell => {
-          const index = columnIndex(cell.getAttribute('r'));
-          const type = cell.getAttribute('t');
-          const v = cell.getElementsByTagName('v')[0]?.textContent || '';
-          values[index] = type === 's' ? (shared[parseInt(v, 10)] || '') : (type === 'inlineStr' ? cell.textContent || '' : v);
-        });
-        rowMap[rowIdx] = values;
-      });
-      if (!Object.keys(rowMap).length) return [];
-      const maxIdx = Math.max(...Object.keys(rowMap).map(Number));
-      return Array.from({ length: maxIdx + 1 }, (_, i) => rowMap[i] || []);
-    }
-
-    async function readWorkbook(buffer) {
-      const files = await unzipXlsx(buffer);
-      const workbookXml = files['xl/workbook.xml'];
-      if (!workbookXml) throw new Error(tr('workbookReadFailed'));
-      const workbookDoc = new DOMParser().parseFromString(workbookXml, 'application/xml');
-      const rels = relMap(files['xl/_rels/workbook.xml.rels']);
-      const shared = sharedStrings(files['xl/sharedStrings.xml']);
-      return Array.from(workbookDoc.getElementsByTagName('sheet')).map(sheet => {
-        const name = sheet.getAttribute('name') || 'Sheet';
-        const relId = sheet.getAttribute('r:id') || sheet.getAttribute('id');
-        const target = rels[relId] || '';
-        const path = target.startsWith('xl/') ? target : `xl/${target.replace(/^\/?xl\//, '')}`;
-        return { name, rows: parseWorksheet(files[path] || '', shared) };
-      });
-    }
-
-    function importPeopleSheet(rows, sheetName = '') {
-      const people = [];
-      rows.slice(2).forEach(row => {
-        const sfName = cellText(row[1]);
-        if (sfName && sfName.toLowerCase() !== 'first') {
-          people.push({
-            id: crypto.randomUUID(),
-            group: 'sf',
-            no: parseInt(cellText(row[0]), 10) || people.filter(person => person.group === 'sf').length + 1,
-            name: sfName,
-            gender: cellText(row[2]),
-            age: cellText(row[3]),
-            shirt: cellText(row[4]),
-            birthday: cellText(row[5]),
-            note: cellText(row[6]),
-          });
-        }
-        const wolkoName = cellText(row[9]);
-        if (wolkoName && !/k\(t-size\)/i.test(wolkoName)) {
-          people.push({
-            id: crypto.randomUUID(),
-            group: 'wolko',
-            no: parseInt(cellText(row[8]), 10) || people.filter(person => person.group === 'wolko').length + 1,
-            name: wolkoName,
-            gender: cellText(row[10]),
-            age: '',
-            shirt: '',
-            birthday: '',
-            note: cellText(row[11]),
-          });
-        }
-      });
-      const fixedLayoutPeople = people.filter(person => person.name);
-      if (fixedLayoutPeople.length) return fixedLayoutPeople;
-
-      const headerIndex = rows.findIndex(row => row.some(cell => /name|이름|성명|camper|student|member|참가자|팀원|staff|스태프/i.test(cellText(cell))));
-      const headers = (rows[headerIndex] || []).map(cell => cellText(cell).toLowerCase());
-      const findCol = patterns => headers.findIndex(header => patterns.some(pattern => pattern.test(header)));
-      const nameCol = findCol([/name/, /이름/, /성명/, /camper/, /student/, /member/, /참가자/, /팀원/, /staff/, /스태프/]);
-      const genderCol = findCol([/gender/, /sex/, /성별/]);
-      const ageCol = findCol([/age/, /grade/, /나이/, /학년/]);
-      const shirtCol = findCol([/shirt/, /size/, /티셔츠/, /사이즈/]);
-      const birthdayCol = findCol([/birth/, /birthday/, /dob/, /생년월일/, /생일/]);
-      const noteCol = findCol([/note/, /memo/, /remark/, /메모/, /비고/]);
-      const groupCol = findCol([/team/, /group/, /camp/, /팀/, /조/, /캠프/]);
-      const fallbackNameCol = nameCol >= 0 ? nameCol : rows.reduce((best, row, ri) => {
-        if (ri <= headerIndex) return best;
-        row.forEach((cell, ci) => {
-          const text = cellText(cell);
-          if (!text || /^\d+$/.test(text) || parseDateFromTextLine(text) || /\d{1,2}:\d{2}/.test(text)) return;
-          best.counts[ci] = (best.counts[ci] || 0) + 1;
-          if ((best.counts[ci] || 0) > (best.counts[best.col] || 0)) best.col = ci;
-        });
-        return best;
-      }, { col: 0, counts: {} }).col;
-      const startIndex = headerIndex >= 0 ? headerIndex + 1 : 0;
-      const sheetGroup = sourceGroupForSheet(sheetName);
-      const groupName = (row) => cellText(row[groupCol]) || sheetGroup.label || sheetName;
-
-      return rows.slice(startIndex).map((row, index) => {
-        const name = cellText(row[fallbackNameCol]);
-        if (!name || /name|이름|성명|camper|student|member|참가자|팀원/i.test(name)) return null;
-        const matchedGroup = sourceGroupFromText(groupName(row), row.join(' '));
-        return {
-          id: crypto.randomUUID(),
-          group: matchedGroup?.key?.includes('wolko') ? 'wolko' : 'sf',
-          no: parseInt(cellText(row[0]), 10) || index + 1,
-          name,
-          gender: genderCol >= 0 ? cellText(row[genderCol]) : '',
-          age: ageCol >= 0 ? cellText(row[ageCol]) : '',
-          shirt: shirtCol >= 0 ? cellText(row[shirtCol]) : '',
-          birthday: birthdayCol >= 0 ? cellText(row[birthdayCol]) : '',
-          note: noteCol >= 0 ? cellText(row[noteCol]) : groupName(row),
-        };
-      }).filter(person => person?.name);
-    }
-
-    function importScheduleSheet(sheetName, rows) {
-      const year = parseInt((els.selectedDate.value || todayIso()).slice(0, 4), 10);
-      let currentDate = parseSheetDate(sheetName);
-      const sheetGroup = sourceGroupForSheet(sheetName);
-
-      // 시간값 판별: Excel 소수(0~1) 또는 HH:MM 패턴
-      const looksLikeTime = v => {
-        if (v === undefined || v === null || v === '') return false;
-        const n = Number(v);
-        if (Number.isFinite(n) && n > 0 && n < 1) return true;
-        return /^\d{1,2}:\d{2}/.test(String(v));
-      };
-
-      // 행에서 날짜 감지 (시간 열이 비어있고 날짜 패턴이 있는 행 = 날짜 헤더)
-      const parseDateFromRow = (row, tCol) => {
-        if (looksLikeTime(row[tCol])) return null; // 시간값 있으면 이벤트 행
-        const texts = (row || []).filter(v => v !== undefined && v !== null && v !== '').map(v => cellText(v));
-        if (!texts.length || texts.length > 5) return null;
-        const combined = texts.join(' ');
-        let m = combined.match(/(\d{1,2})\s*월\s*(\d{1,2})/);
-        if (m) { const mo=+m[1],d=+m[2]; if(mo>=1&&mo<=12&&d>=1&&d<=31) return `${year}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
-        m = combined.match(/\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2})\b/i);
-        if (m) { const mos={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12}; const mo=mos[m[1].toLowerCase().slice(0,3)]; if(mo) return `${year}-${String(mo).padStart(2,'0')}-${String(+m[2]).padStart(2,'0')}`; }
-        return null;
-      };
-
-      // 데이터 시작 행과 시간 열을 자동 탐지
-      let dataStart = 0;
-      let timeCol = -1;
-      for (let ri = 0; ri < Math.min(rows.length, 15); ri++) {
-        const row = rows[ri] || [];
-        for (let ci = 0; ci < Math.min(row.length, 5); ci++) {
-          if (looksLikeTime(row[ci])) { timeCol = ci; dataStart = ri; break; }
-        }
-        if (timeCol >= 0) break;
-      }
-      if (timeCol < 0) { timeCol = 1; dataStart = 3; }
-
-      let dateCol = -1;
-      const headerRow = rows[Math.max(0, dataStart - 1)] || [];
-      headerRow.forEach((cell, ci) => {
-        if (/date|day|날짜|요일/i.test(cellText(cell)) && ci !== timeCol) dateCol = ci;
-      });
-      if (dateCol < 0) {
-        let best = { col: -1, count: 0 };
-        for (let ci = 0; ci < Math.min(8, Math.max(...rows.map(row => row.length), 0)); ci += 1) {
-          if (ci === timeCol) continue;
-          const count = rows.slice(dataStart, dataStart + 20).filter(row => parseDateFromTextLine(cellText(row[ci]))).length;
-          if (count > best.count) best = { col: ci, count };
-        }
-        if (best.count >= 2) dateCol = best.col;
-      }
-
-      const namedTitleCol = headerRow.findIndex(cell => /activity|schedule|program|title|event|일정|프로그램|활동|제목|내용/i.test(cellText(cell)));
-      let titleCol = namedTitleCol >= 0 && namedTitleCol !== timeCol && namedTitleCol !== dateCol ? namedTitleCol : timeCol + 1;
-      if (titleCol === dateCol) titleCol += 1;
-      const namedDetailsCol = headerRow.findIndex(cell => /detail|note|memo|location|place|비고|메모|장소|세부/i.test(cellText(cell)));
-      let detailsCol = namedDetailsCol >= 0 && namedDetailsCol !== timeCol && namedDetailsCol !== dateCol && namedDetailsCol !== titleCol
-        ? namedDetailsCol : titleCol + 1;
-      if (detailsCol === dateCol || detailsCol === timeCol) detailsCol += 1;
-
-      console.log(`[Import] "${sheetName}" → date:${currentDate} timeCol:${timeCol} dataStart:${dataStart}`);
-
-      const events = [];
-      rows.slice(dataStart).forEach(row => {
-        // 날짜 헤더 행 감지
-        const dateFromRow = parseDateFromRow(row, timeCol);
-        if (dateFromRow) { currentDate = dateFromRow; console.log(`[Import] 날짜 변경 → ${currentDate}`); return; }
-
-        const timeText = formatExcelTime(row[timeCol]);
-        const title = cellText(row[titleCol]);
-        const details = cellText(row[detailsCol]);
-        const rowDate = dateCol >= 0 ? parseDateFromTextLine(cellText(row[dateCol])) : null;
-        if (rowDate) currentDate = rowDate;
-        if (!timeText || !title || /^(time|시간)/i.test(timeText) || /^(time|시간|일정|schedule)/i.test(title)) return;
-        const inlineSegments = splitInlineScheduleText(title);
-        const rowsToAdd = inlineSegments.length >= 2
-          ? inlineSegments.map(segment => ({ timeText: segment.timeText, title: segment.title, details: '' }))
-          : [{ timeText, title, details }];
-        rowsToAdd.forEach(item => {
-          const parsed = clockRange(item.timeText);
-          const rowGroup = sourceGroupFromText(sheetName, item.title, item.details, row.join(' ')) || sheetGroup;
-          events.push({
-            id: crypto.randomUUID(),
-            title: item.title,
-            type: inferType(item.title, item.details),
-            date: currentDate,
-            timeText: item.timeText,
-            start: autoAdjustHour(parsed.start),
-            end: autoAdjustHour(parsed.end),
-            staff: '',
-            vanId: '',
-            from: '',
-            to: '',
-            passengers: '',
-            notes: item.details,
-            sourceSheet: sheetName,
-            sourceGroupKey: rowGroup.key,
-            sourceGroupLabel: rowGroup.label,
-          });
-        });
-      });
-      return events;
-    }
-
-    function importTransportSheet(sheetName, rows) {
-      const title = cellText(rows[1]?.[1]) || sheetName;
-      const sheetGroup = sourceGroupForSheet(sheetName);
-      const names = rows[2] || [];
-      const drivers = rows[3] || [];
-      const importedVans = [];
-      for (let col = 1; col < Math.min(names.length, 12); col += 1) {
-        const name = cellText(names[col]);
-        if (!name || /student fusion|wol staff/i.test(name)) continue;
-        importedVans.push({
-          id: `import-van-${crypto.randomUUID()}`,
-          name,
-          seats: 0,
-          driver: cellText(drivers[col]).replace(/^D\s*-\s*/i, ''),
-          memo: '',
-          col,
-        });
-      }
-      if (!importedVans.length) {
-        const vehicleName = value => /van|vehicle|car|bus|밴|차량|버스|호차|기사|driver/i.test(cellText(value));
-        const headerRowIndex = rows.findIndex(row => row.filter(vehicleName).length >= 2);
-        if (headerRowIndex >= 0) {
-          const header = rows[headerRowIndex] || [];
-          header.forEach((cell, col) => {
-            const name = cellText(cell);
-            if (col === 0 || !vehicleName(name)) return;
-            importedVans.push({
-              id: `import-van-${crypto.randomUUID()}`,
-              name,
-              seats: 0,
-              driver: '',
-              memo: '',
-              col,
-            });
-          });
-          const driverRow = rows.slice(headerRowIndex + 1, headerRowIndex + 4)
-            .find(row => /driver|기사|운전자/i.test(row.map(cellText).join(' ')));
-          importedVans.forEach(van => {
-            van.driver = cellText(driverRow?.[van.col]).replace(/^D\s*-\s*/i, '');
-          });
-        } else {
-          rows.forEach((row, index) => {
-            const text = row.map(cellText).filter(Boolean).join(' · ');
-            if (!/van|vehicle|car|bus|밴|차량|버스|호차/i.test(text)) return;
-            const name = row.map(cellText).find(vehicleName) || `${tr('vehicle')} ${index + 1}`;
-            importedVans.push({
-              id: `import-van-${crypto.randomUUID()}`,
-              name,
-              seats: 0,
-              driver: (text.match(/(?:driver|기사|운전자)\s*[:：-]?\s*([^·]+)/i)?.[1] || '').trim(),
-              memo: '',
-              col: -1,
-              rowText: text,
-            });
-          });
-        }
-      }
-      const vans = importedVans.map(({ col, ...van }) => van);
-      const assignments = {};
-      importedVans.forEach(van => {
-        assignments[van.id] = {
-          driver: van.driver,
-          passengers: van.col >= 0
-            ? rows.slice(4).map(row => cellText(row[van.col])).filter(Boolean).join('\n')
-            : (van.rowText || '').replace(van.name, '').trim(),
-          notes: '',
-        };
-      });
-      return {
-        vans,
-        transportPlan: {
-          id: crypto.randomUUID(),
-          title,
-          date: els.selectedDate.value || todayIso(),
-          description: cellText(rows[2]?.[8]),
-          vanIds: vans.map(v => v.id),
-          assignments,
-          sourceSheet: sheetName,
-          sourceGroupKey: sheetGroup.key,
-          sourceGroupLabel: sheetGroup.label,
-        },
-      };
-    }
-
-    function isScheduleSheetName(name) {
-      if (/schedule|일정|운영표/i.test(name)) return true;
-      // "Jul 4", "July 4", "07/04", "7.4" 형태의 날짜 시트명
-      if (/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*\d{1,2}\b/i.test(name)) return true;
-      if (/\b\d{1,2}[./]\d{1,2}\b/.test(name)) return true;
-      return false;
-    }
-
-    function isPeopleSheetName(name) {
-      return /people|person|list|명단|인원/i.test(name);
-    }
-
-    function sheetText(sheet) {
-      return `${sheet.name || ''} ${(sheet.rows || []).map(row => row.map(cellText).join(' ')).join(' ')}`.toLowerCase();
-    }
-
-    function countTimeCells(rows) {
-      return (rows || []).reduce((count, row) => count + row.filter(value => {
-        const text = formatExcelTime(value);
-        const n = Number(value);
-        return (Number.isFinite(n) && n > 0 && n < 1) || /\b\d{1,2}:\d{2}\b/.test(text) || /\b\d{1,2}\s*(am|pm)\b/i.test(text);
-      }).length, 0);
-    }
-
-    function countHeaderMatches(rows, patterns) {
-      return (rows || []).slice(0, 8).reduce((count, row) => count + row.filter(cell => {
-        const text = cellText(cell);
-        return patterns.some(pattern => pattern.test(text));
-      }).length, 0);
-    }
-
-    function inferSheetCategory(sheet) {
-      const rows = sheet.rows || [];
-      const text = sheetText(sheet);
-      const timeCount = countTimeCells(rows);
-      const dateCount = rows.flat().filter(cell => parseDateFromTextLine(cellText(cell))).length;
-      const scores = {
-        schedule: 0,
-        people: 0,
-        transport: 0,
-      };
-
-      if (isScheduleSheetName(sheet.name)) scores.schedule += 5;
-      if (isPeopleSheetName(sheet.name)) scores.people += 5;
-      if (/transport|vehicle|van|driver|passenger|pickup|drop.?off|차량|운행|배차|픽업|드라이버|기사|탑승/i.test(sheet.name)) scores.transport += 6;
-
-      scores.schedule += Math.min(timeCount, 8);
-      scores.schedule += Math.min(dateCount, 4);
-      scores.schedule += countHeaderMatches(rows, [/time/i, /schedule/i, /program/i, /activity/i, /시간/, /일정/, /프로그램/]) * 2;
-
-      scores.people += countHeaderMatches(rows, [/name/i, /gender/i, /age/i, /grade/i, /shirt/i, /birth/i, /team/i, /member/i, /이름/, /성별/, /학년/, /나이/, /티셔츠/, /생년월일/, /팀원/, /명단/]) * 2;
-      scores.transport += countHeaderMatches(rows, [/van/i, /vehicle/i, /car/i, /bus/i, /driver/i, /passenger/i, /from/i, /to/i, /밴/, /차량/, /버스/, /기사/, /운전자/, /탑승/, /출발/, /도착/]) * 2;
-
-      if (/breakfast|lunch|dinner|worship|meeting|orientation|activity|session|meal|식사|예배|모임|오리엔테이션|프로그램/.test(text)) scores.schedule += 3;
-      if (/first|last|male|female|student|staff|camper|grade|shirt|birthday|학생|스태프|캠퍼|남|여|학년/.test(text)) scores.people += 3;
-      if (/driver|passenger|airport|station|pickup|drop.?off|route|차량|기사|탑승|공항|역|픽업|드랍|노선/.test(text)) scores.transport += 4;
-
-      if (scores.transport >= scores.schedule && scores.transport >= scores.people && scores.transport >= 5) return 'transport';
-      if (scores.people >= scores.schedule && scores.people >= scores.transport && scores.people >= 5) return 'people';
-      if (scores.schedule >= 4) return 'schedule';
-      return 'ignore';
-    }
-
-    function importSheetsAutomatically(sheets) {
-      const imported = { events: [], people: [], vans: [], transportPlans: [], sheetLog: [] };
-      console.group('[Schedule Planner] Auto Import');
-      sheets.forEach(sheet => {
-        const cat = inferSheetCategory(sheet);
-        console.log(`Sheet: "${sheet.name}" → ${cat}`);
-        if (cat === 'people') {
-          const before = imported.people.length;
-          imported.people.push(...importPeopleSheet(sheet.rows, sheet.name));
-          imported.sheetLog.push(`인원: "${sheet.name}" → ${imported.people.length - before}명`);
-        } else if (cat === 'schedule') {
-          const before = imported.events.length;
-          imported.events.push(...importScheduleSheet(sheet.name, sheet.rows));
-          imported.sheetLog.push(`일정: "${sheet.name}" → ${imported.events.length - before}개`);
-        } else if (cat === 'transport') {
-          const transport = importTransportSheet(sheet.name, sheet.rows);
-          if (transport.vans.length) {
-            imported.vans.push(...transport.vans);
-            imported.transportPlans.push(transport.transportPlan);
-            imported.sheetLog.push(`차량: "${sheet.name}" → 밴 ${transport.vans.length}대`);
-          } else {
-            imported.sheetLog.push(`차량: "${sheet.name}" → 인식된 차량 없음`);
-          }
-        } else {
-          imported.sheetLog.push(`무시됨: "${sheet.name}"`);
-        }
-      });
-      console.groupEnd();
-      return imported;
-    }
-
-    function loadImportHistory() {
-      try { return JSON.parse(localStorage.getItem(IMPORT_HISTORY_KEY) || '[]'); }
-      catch { return []; }
-    }
-
-    function saveImportToHistory(filename, imported) {
-      const history = loadImportHistory();
-      const entry = {
-        id: crypto.randomUUID(),
-        name: filename.replace(/\.(xlsx?|pdf|html?)$/i, ''),
-        date: new Date().toISOString(),
-        snapshot: {
-          events: imported.events,
-          people: imported.people,
-          vans: imported.vans,
-          transportPlans: imported.transportPlans,
-        },
-      };
-      history.unshift(entry);
-      if (history.length > MAX_IMPORT_HISTORY) history.splice(MAX_IMPORT_HISTORY);
-      try { localStorage.setItem(IMPORT_HISTORY_KEY, JSON.stringify(history)); } catch (e) {
-        console.warn('Import history save failed (storage full?):', e);
-      }
-    }
-
-    function renderImportHistorySelect() {
-      const history = loadImportHistory();
-      const sel = els.importHistorySelect;
-      if (!history.length) { sel.style.display = 'none'; return; }
-      const locale = currentLang === 'ko' ? 'ko-KR' : 'en-US';
-      sel.innerHTML = `<option value="">${escapeHtml(tr('importHistoryLabel'))}</option>`
-        + history.map(e => {
-            const d = new Date(e.date);
-            const dateStr = d.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
-              + ' ' + d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-            return `<option value="${escapeHtml(e.id)}">${escapeHtml(e.name)} · ${dateStr}</option>`;
-          }).join('');
-      sel.style.display = '';
-    }
-
-    // 'yes' | 'no' | 'cancel' 을 resolve 하는 3분기 다이얼로그
-    function askTranslate() {
-      return new Promise(resolve => {
-        const dlg = document.getElementById('translateDialog');
-        const yes = document.getElementById('translateDialogYes');
-        const no = document.getElementById('translateDialogNo');
-        const cancel = document.getElementById('translateDialogCancel');
-        dlg.style.display = 'flex';
-        const done = v => { dlg.style.display = 'none'; resolve(v); };
-        const yH = () => done('yes');
-        const nH = () => done('no');
-        const cH = () => done('cancel');
-        yes.addEventListener('click', yH, { once: true });
-        no.addEventListener('click', nH, { once: true });
-        cancel.addEventListener('click', cH, { once: true });
-      });
-    }
-
-    function needsTranslation(text) {
-      if (!text || typeof text !== 'string' || !text.trim()) return false;
-      if (/[가-힯ᄀ-ᇿ㄰-㆏]/.test(text)) return false;
-      return /[a-zA-Z]{2,}/.test(text);
-    }
-
-    async function translateImported(imported) {
-      const fields = ['title', 'notes', 'from', 'to', 'staff', 'passengers'];
-      const targets = [];
-      imported.events.forEach((ev, ei) => {
-        fields.forEach(f => {
-          if (needsTranslation(ev[f])) targets.push({ ei, f, text: ev[f] });
-        });
-      });
-      if (!targets.length) { console.log('[Translate] 번역할 영어 텍스트 없음'); return; }
-      console.log(`[Translate] ${targets.length}개 항목 번역 요청`);
-
-      let apiKey = localStorage.getItem(ANTHROPIC_KEY_LS);
-      if (!apiKey) {
-        apiKey = prompt('Anthropic API 키를 입력하세요.\n(브라우저에 저장되며 다음부터는 묻지 않습니다)');
-        if (!apiKey) { alert('번역을 건너뜁니다. (API 키 없음)'); return; }
-        localStorage.setItem(ANTHROPIC_KEY_LS, apiKey.trim());
-      }
-
-      const translationPrompt = `You are translating English camp schedule text to Korean.
-Rules:
-- Translate each item to natural Korean.
-- Keep proper nouns (names of people, places like "WOLKO Center", "Songtan") as-is.
-- Keep time expressions as-is.
-- Return ONLY a valid JSON array of translated strings, same length and order as input.
-- No explanation, no markdown, no extra text.
-
-Input: ${JSON.stringify(targets.map(t => t.text))}`;
-
-      try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'x-api-key': apiKey.trim(),
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true',
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 4096,
-            messages: [{ role: 'user', content: translationPrompt }],
-          }),
-        });
-        if (!res.ok) {
-          const errBody = await res.text().catch(() => '');
-          console.error('[Translate] API 오류', res.status, errBody);
-          if (res.status === 401) {
-            localStorage.removeItem(ANTHROPIC_KEY_LS);
-            alert(`API 키가 올바르지 않습니다. 다음 번역 시 다시 입력하세요.\n${errBody.slice(0, 100)}`);
-          } else {
-            alert(`번역 실패 (${res.status})\n${errBody.slice(0, 200)}`);
-          }
-          return;
-        }
-        const data = await res.json();
-        let raw = data.content?.[0]?.text?.trim() || '[]';
-        const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-        if (fenced) raw = fenced[1].trim();
-        let translations;
-        try { translations = JSON.parse(raw); } catch { alert('번역 결과 파싱 오류'); return; }
-        if (!Array.isArray(translations)) { alert('번역 결과 형식 오류'); return; }
-        while (translations.length < targets.length) translations.push(targets[translations.length].text);
-        translations = translations.slice(0, targets.length);
-        console.log('[Translate] 완료:', translations);
-        translations.forEach((translated, i) => {
-          if (translated) {
-            const { ei, f } = targets[i];
-            const ev = imported.events[ei];
-            if (!ev._en) ev._en = {};
-            ev._en[f] = ev[f];
-            ev[f] = translated;
-          }
-        });
-      } catch (err) {
-        console.error('[Translate] 네트워크 오류:', err);
-        alert(`번역 오류: ${err.message}`);
-      }
-    }
-
-    function parseDateFromTextLine(line) {
-      const year = parseInt((els.selectedDate.value || todayIso()).slice(0, 4), 10);
-      const value = String(line || '');
-      const ymd = (m, d) => m >= 1 && m <= 12 && d >= 1 && d <= 31
-        ? `${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}` : null;
-      let match = value.match(/\b(20\d{2})[./-](\d{1,2})[./-](\d{1,2})\b/);
-      if (match) return `${match[1]}-${String(+match[2]).padStart(2, '0')}-${String(+match[3]).padStart(2, '0')}`;
-      match = value.match(/(\d{1,2})\s*월\s*(\d{1,2})/);
-      if (match) return ymd(+match[1], +match[2]);
-      match = value.match(/\b(\d{1,2})[./-](\d{1,2})\b/);
-      if (match) return ymd(+match[1], +match[2]);
-      const months = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
-      match = value.match(/\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2})\b/i);
-      if (match) return ymd(months[match[1].toLowerCase().slice(0, 3)], +match[2]);
-      return null;
-    }
-
-    function normalizeNaturalClock(value) {
-      const raw = String(value || '').trim().toLowerCase();
-      const match = raw.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
-      if (!match) return normalizeClock(raw);
-      let hour = parseInt(match[1], 10);
-      const minute = match[2] || '00';
-      const meridiem = match[3];
-      if (meridiem === 'pm' && hour < 12) hour += 12;
-      if (meridiem === 'am' && hour === 12) hour = 0;
-      return `${String(hour).padStart(2, '0')}:${minute}`;
-    }
-
-    function normalizeNaturalTimeRange(start, end) {
-      const startTime = normalizeNaturalClock(start);
-      const endTime = end ? normalizeNaturalClock(end) : '';
-      return endTime ? `${startTime}-${endTime}` : startTime;
-    }
-
-    function splitInlineScheduleText(value) {
-      const text = String(value || '').replace(/\s+/g, ' ').trim();
-      const timePattern = /(\d{1,2}:\d{2})(?:\s*[–—~-]\s*(\d{1,2}:\d{2}))?/g;
-      const matches = [...text.matchAll(timePattern)];
-      if (matches.length < 2) return [];
-      return matches.map((match, index) => {
-        const next = matches[index + 1];
-        const rawTitle = text
-          .slice(match.index + match[0].length, next ? next.index : text.length)
-          .replace(/^\s*[-–—:·•]\s*/, '')
-          .trim();
-        return {
-          timeText: normalizeNaturalTimeRange(match[1], match[2]),
-          title: rawTitle || tr('schedule'),
-        };
-      }).filter(item => item.title && !/^(time|시간|schedule|일정)$/i.test(item.title));
-    }
-
-    function textRowsFromPlainText(text) {
-      return String(text || '')
-        .replace(/\r/g, '\n')
-        .split('\n')
-        .map(line => line.replace(/\s+/g, ' ').trim())
-        .filter(Boolean)
-        .map(line => {
-          const date = parseDateFromTextLine(line);
-          if (date) return [line];
-          const time = line.match(/^(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)(?:\s*[-–~]\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?))?\s+(.+)$/i);
-          if (!time) return ['', line, ''];
-          const timeText = normalizeNaturalTimeRange(time[1], time[2]);
-          const rest = time[3].trim();
-          const parts = rest.split(/\s{2,}| {1,}[-|•]\s*/).filter(Boolean);
-          return ['', timeText, parts[0] || rest, parts.slice(1).join(' · ')];
-        });
-    }
-
-    function importedFromTextDocument(filename, text) {
-      const lines = String(text || '')
-        .replace(/\r/g, '\n')
-        .split('\n')
-        .map(line => line.replace(/\s+/g, ' ').trim())
-        .filter(Boolean);
-      const sections = [];
-      let current = { name: filename, lines: [] };
-      const pushCurrent = () => {
-        if (current.lines.length) sections.push({
-          name: current.name,
-          rows: textRowsFromPlainText(current.lines.join('\n')),
-        });
-      };
-      lines.forEach(line => {
-        const headingSheet = { name: line, rows: [[line]] };
-        const isHeading = line.length < 80
-          && !/^(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i.test(line)
-          && inferSheetCategory(headingSheet) !== 'ignore';
-        if (isHeading && current.lines.length) {
-          pushCurrent();
-          current = { name: line, lines: [] };
-        } else {
-          current.lines.push(line);
-        }
-      });
-      pushCurrent();
-      const sheets = sections.length ? sections : [{ name: filename, rows: textRowsFromPlainText(text) }];
-      return importSheetsAutomatically(sheets);
-    }
-
-    function rowsFromHtmlTable(table) {
-      return [...table.querySelectorAll('tr')].map(row => (
-        [...row.querySelectorAll('th,td')].map(cell => cell.textContent.replace(/\s+/g, ' ').trim())
-      )).filter(row => row.some(Boolean));
-    }
-
-    function htmlTableName(table, index, filename) {
-      const explicit = table.getAttribute('aria-label') || table.querySelector('caption')?.textContent?.trim();
-      if (explicit) return explicit;
-      const page = table.closest('.page');
-      const title = page?.querySelector('.page-head h1')?.textContent?.trim() || '';
-      const sub = page?.querySelector('.page-head .sub')?.textContent?.trim() || '';
-      const badge = page?.querySelector('.page-head .badge')?.textContent?.trim() || '';
-      const bits = [badge, title, sub].filter(Boolean);
-      return bits.length ? bits.join(' · ') : `${filename} ${index + 1}`;
-    }
-
-    function importDailyHtmlTables(doc, filename) {
-      const dayTables = [...doc.querySelectorAll('table.day-table')];
-      if (!dayTables.length) return null;
-      const imported = { events: [], people: [], vans: [], transportPlans: [], sheetLog: [] };
-      const documentGroup = sourceGroupFromText(doc.title, filename) || sourceGroupForSheet(filename);
-      dayTables.forEach((table, index) => {
-        const sheetName = htmlTableName(table, index, filename);
-        const date = parseSheetDate(sheetName);
-        const sheetGroup = sourceGroupFromText(sheetName, doc.title, filename) || documentGroup;
-        const rows = rowsFromHtmlTable(table).slice(1);
-        const before = imported.events.length;
-        rows.forEach(row => {
-          const timeText = formatExcelTime(row[0]);
-          const title = cellText(row[1]);
-          const details = cellText(row[2]);
-          if (!timeText || !title || /^(time|시간)$/i.test(timeText)) return;
-          const parsed = clockRange(timeText);
-          imported.events.push({
-            id: crypto.randomUUID(),
-            title,
-            type: inferType(title, details),
-            date,
-            timeText,
-            start: autoAdjustHour(parsed.start),
-            end: autoAdjustHour(parsed.end),
-            staff: '',
-            vanId: '',
-            from: '',
-            to: '',
-            passengers: '',
-            notes: details,
-            sourceSheet: sheetName,
-            sourceGroupKey: sheetGroup.key,
-            sourceGroupLabel: sheetGroup.label,
-          });
-        });
-        imported.sheetLog.push(`일정: "${sheetName}" → ${imported.events.length - before}개`);
-      });
-      return imported;
-    }
-
-    async function importHtmlFile(file) {
-      const html = await file.text().catch(() => '');
-      if (!html) throw new Error(tr('htmlReadFailed'));
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const dailyImported = importDailyHtmlTables(doc, file.name);
-      if (dailyImported) return dailyImported;
-      const tables = [...doc.querySelectorAll('table')].map((table, index) => ({
-        name: htmlTableName(table, index, file.name),
-        rows: rowsFromHtmlTable(table),
-      })).filter(sheet => sheet.rows.length);
-      if (tables.length) {
-        return importSheetsAutomatically(tables);
-      }
-      return importedFromTextDocument(file.name, doc.body?.innerText || html);
-    }
-
-    async function loadPdfJs() {
-      if (window.pdfjsLib) return window.pdfjsLib;
-      const pdfjs = await import(/* @vite-ignore */ 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
-      pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
-      window.pdfjsLib = pdfjs;
-      return pdfjs;
-    }
-
-    async function importPdfFile(file) {
-      try {
-        const pdfjs = await loadPdfJs();
-        const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
-        const lines = [];
-        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-          const page = await pdf.getPage(pageNumber);
-          const content = await page.getTextContent();
-          let lastY = null;
-          let line = [];
-          content.items.forEach(item => {
-            const y = Math.round(item.transform?.[5] || 0);
-            if (lastY !== null && Math.abs(y - lastY) > 4 && line.length) {
-              lines.push(line.join(' '));
-              line = [];
-            }
-            line.push(item.str);
-            lastY = y;
-          });
-          if (line.length) lines.push(line.join(' '));
-        }
-        const text = lines.join('\n');
-        if (!text.trim()) throw new Error(tr('pdfLoadFailed'));
-        return importedFromTextDocument(file.name, text);
-      } catch (error) {
-        throw new Error(error.message || tr('pdfLoadFailed'));
-      }
-    }
-
-    async function importPlannerFile(file) {
-      if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') return importPdfFile(file);
-      if (/\.html?$/i.test(file.name) || /text\/html/i.test(file.type)) return importHtmlFile(file);
-      if (/\.xlsx$/i.test(file.name)) return importExcelFile(file);
-      throw new Error(tr('unsupportedImportFile'));
-    }
-
-    async function importExcelFile(file) {
-      const sheets = await readWorkbook(await file.arrayBuffer());
-      return importSheetsAutomatically(sheets);
+      return data.pdf;
     }
 
     function periodOf(event) {
@@ -2133,18 +1212,6 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       return currentGroupFilter === 'all' || sourceKey(item) === currentGroupFilter;
     }
 
-    function firstImportedDate(imported) {
-      return [...new Set((imported.events || []).map(event => event.date).filter(Boolean))].sort()[0] || '';
-    }
-
-    function jumpToImportedDate(imported) {
-      const firstDate = firstImportedDate(imported);
-      if (!firstDate) return;
-      els.selectedDate.value = firstDate;
-      els.eventDate.value = firstDate;
-      calendarMonth = firstOfMonth(firstDate);
-    }
-
     function filteredEvents(events = plan.events) {
       return (events || []).filter(matchesGroupFilter);
     }
@@ -2183,6 +1250,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
         events: Array.isArray(plan.events) ? plan.events : [],
         people: Array.isArray(plan.people) ? plan.people : [],
         transportPlans: Array.isArray(plan.transportPlans) ? plan.transportPlans : [],
+        schedulePdf: plan.schedulePdf || null,
         updatedAt: plan.updatedAt || '',
       }));
     }
@@ -2233,8 +1301,9 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
         people: (plan.people || []).length,
         vans: (plan.vans || []).length,
         plans: (plan.transportPlans || []).length,
+        pdf: plan.schedulePdf ? 1 : 0,
       };
-      if (!totals.events && !totals.people && !totals.vans && !totals.plans) {
+      if (!totals.events && !totals.people && !totals.vans && !totals.plans && !totals.pdf) {
         setState(tr('deleteNone'));
         return;
       }
@@ -2244,6 +1313,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       plan.people = [];
       plan.vans = [];
       plan.transportPlans = [];
+      plan.schedulePdf = null;
       currentGroupFilter = 'all';
       clearForm();
       markDirty();
@@ -2263,6 +1333,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       plan.vans = Array.isArray(plan.vans) ? plan.vans : [];
       plan.events = Array.isArray(plan.events) ? plan.events : [];
       plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
+      plan.schedulePdf = plan.schedulePdf || null;
       els.planTitle.value = plan.title || '';
       currentGroupFilter = 'all';
       clearForm();
@@ -2377,6 +1448,23 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
 
     function dowShort(iso) {
       return new Intl.DateTimeFormat(currentLang === 'ko' ? 'ko-KR' : 'en-US', { weekday: 'short' }).format(new Date(`${iso}T00:00:00`));
+    }
+    function renderPdf() {
+      const pdf = plan.schedulePdf;
+      document.getElementById('view-pdf').innerHTML = pdf?.url
+        ? `
+          <div class="pdf-viewer-card">
+            <div class="pdf-viewer-head">
+              <div>
+                <div class="pdf-viewer-title">${escapeHtml(pdf.filename || 'schedule.pdf')}</div>
+                <div class="pdf-viewer-meta">${escapeHtml(pdf.uploadedAt ? new Date(pdf.uploadedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US') : '')}</div>
+              </div>
+              <a class="secondary" href="${escapeHtml(pdf.url)}" target="_blank" rel="noopener">${escapeHtml(tr('pdfOpen'))}</a>
+            </div>
+            <iframe class="pdf-frame" src="${escapeHtml(pdf.url)}" title="${escapeHtml(pdf.filename || 'PDF Schedule')}"></iframe>
+          </div>
+        `
+        : `<div class="empty">${escapeHtml(tr('noSchedulePdf'))}</div>`;
     }
     function dayMonthStr(iso) {
       return new Intl.DateTimeFormat(currentLang === 'ko' ? 'ko-KR' : 'en-US', { month: 'numeric', day: 'numeric' }).format(new Date(`${iso}T00:00:00`));
@@ -2642,6 +1730,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       renderFilterControls();
       renderStats();
       renderDay();
+      renderPdf();
       renderWeek();
       renderVans();
       renderPeople();
@@ -2819,6 +1908,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       plan = data.plan || plan;
       plan.people = Array.isArray(plan.people) ? plan.people : [];
       plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
+      plan.schedulePdf = plan.schedulePdf || null;
       els.planTitle.value = plan.title || '';
       setState(plan.updatedAt ? `${tr('saved')} ${new Date(plan.updatedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US')}` : (token ? tr('editMode') : tr('viewMode')));
       render();
@@ -2916,8 +2006,8 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     els.langToggleBtn.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
     els.saveBtn.addEventListener('click', savePlan);
     els.importBtn.addEventListener('click', () => {
-      if (!requireEditor(() => els.excelInput.click())) return;
-      els.excelInput.click();
+      if (!requireEditor(() => els.pdfInput.click())) return;
+      els.pdfInput.click();
     });
     els.groupFilterSelect.addEventListener('change', () => {
       currentGroupFilter = els.groupFilterSelect.value || 'all';
@@ -2926,91 +2016,27 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     els.dateJumpSelect.addEventListener('change', () => {
       if (els.dateJumpSelect.value) selectScheduleDate(els.dateJumpSelect.value, { close: false });
     });
-    function resetHistorySelection() {
-      els.importHistorySelect.value = '';
-      els.importHistoryLoadBtn.style.display = 'none';
-      els.importHistoryDeleteBtn.style.display = 'none';
-    }
-
-    async function applyHistoryEntry(id) {
-      const entry = loadImportHistory().find(e => e.id === id);
-      resetHistorySelection();
-      if (!entry) return;
-      if ((plan.events.length || plan.people.length) && !confirm(tr('importHistoryConfirm'))) return;
-      const s = entry.snapshot;
-      const imported = {
-        events: (s.events || []).map(e => ({ ...e })),
-        people: s.people || [],
-        vans: s.vans || [],
-        transportPlans: s.transportPlans || [],
-      };
-      if (currentLang === 'ko') {
-        const answer = await askTranslate();
-        if (answer === 'cancel') return;
-        if (answer === 'yes') { setState(tr('translating')); await translateImported(imported); }
-      }
-      plan.events = imported.events;
-      plan.people = imported.people;
-      if (imported.vans.length) plan.vans = imported.vans;
-      plan.transportPlans = imported.transportPlans;
-      jumpToImportedDate(imported);
-      currentView = plan.events.length ? 'day' : (plan.people.length ? 'people' : 'vans');
-      markDirty();
-    }
-
-    els.importHistorySelect.addEventListener('change', () => {
-      const has = !!els.importHistorySelect.value;
-      els.importHistoryLoadBtn.style.display = has ? '' : 'none';
-      els.importHistoryDeleteBtn.style.display = has ? '' : 'none';
-    });
-
-    els.importHistoryLoadBtn.addEventListener('click', () => {
-      const id = els.importHistorySelect.value;
-      if (id) {
-        if (!requireEditor(() => applyHistoryEntry(id))) return;
-        applyHistoryEntry(id);
-      }
-    });
-
-    els.importHistoryDeleteBtn.addEventListener('click', () => {
-      const id = els.importHistorySelect.value;
-      if (!id) return;
-      const history = loadImportHistory().filter(e => e.id !== id);
-      try { localStorage.setItem(IMPORT_HISTORY_KEY, JSON.stringify(history)); } catch {}
-      resetHistorySelection();
-      renderImportHistorySelect();
-    });
-    els.excelInput.addEventListener('change', async () => {
-      const file = els.excelInput.files?.[0];
+    els.pdfInput.addEventListener('change', async () => {
+      const file = els.pdfInput.files?.[0];
       if (!file) return;
       if (!requireEditor()) {
-        els.excelInput.value = '';
+        els.pdfInput.value = '';
         return;
       }
       setState(tr('importLoading'));
       els.importBtn.disabled = true;
       try {
-        const imported = await importPlannerFile(file);
-        if (currentLang === 'ko') {
-          const answer = await askTranslate();
-          if (answer === 'cancel') { setState(''); return; }
-          if (answer === 'yes') { setState(tr('translating')); await translateImported(imported); }
-        }
-        saveImportToHistory(file.name, imported);
-        renderImportHistorySelect();
-        plan.events = imported.events;
-        plan.people = imported.people;
-        if (imported.vans.length) plan.vans = imported.vans;
-        plan.transportPlans = imported.transportPlans;
-        jumpToImportedDate(imported);
-        currentView = imported.events.length ? 'day' : (imported.people.length ? 'people' : 'vans');
+        const pdf = await uploadSchedulePdf(file);
+        plan.schedulePdf = pdf;
+        currentView = 'pdf';
         markDirty();
-        setState(tr('importDone', { events: imported.events.length, people: imported.people.length, plans: imported.transportPlans.length }));
+        await savePlan();
+        setState(tr('importDone', { filename: pdf.filename || file.name }));
       } catch (error) {
         setState(error.message || tr('importFailed'));
       } finally {
         els.importBtn.disabled = false;
-        els.excelInput.value = '';
+        els.pdfInput.value = '';
       }
     });
     els.logoutBtn.addEventListener('click', () => {
