@@ -109,6 +109,10 @@ const pageTitle = 'WOLKO Camp Resources';
     .tab-head.theme-sf { border-color:#dccdf7; background:linear-gradient(135deg,#fff,#f5eefd); }
     .tab-head.theme-sf .tab-title { color:#6d28d9; }
     .tab-head.theme-sf .tab-count { background:#ede4fc; color:#6d28d9; }
+    .subject-group.theme-wolko,
+    .subject-group.theme-sf { border-radius:calc(var(--radius-lg) + 4px); padding:5px; margin-bottom:22px; }
+    .subject-group.theme-wolko { background:linear-gradient(135deg,#dbeafe,#eaf3fd); box-shadow:0 0 0 1px #9ec8f2; }
+    .subject-group.theme-sf { background:linear-gradient(135deg,#ede4fc,#f5eefd); box-shadow:0 0 0 1px #c3a8ee; }
     .tab-title { color:var(--blue); font:700 16px/1.2 var(--sans); letter-spacing:-.01em; }
     .tab-count { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:6px 11px; font-size:11px; font-weight:500; }
     .subject-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; padding:14px; border:1px solid #dbe7ec; border-top:0; border-radius:0 0 var(--radius-md) var(--radius-md); background:#fbfdfe; }
@@ -489,7 +493,7 @@ const pageTitle = 'WOLKO Camp Resources';
       const extra = Object.keys(byPerson).filter(p => p && !WOLKO_PINNED_PEOPLE.includes(p)).sort((a, b) => a.localeCompare(b, 'ko'));
       const names = pinPeople ? [...WOLKO_PINNED_PEOPLE, ...extra] : Object.keys(byPerson).filter(Boolean).sort((a, b) => a.localeCompare(b, 'ko'));
       return `
-        <div class="subject-group">
+        <div class="subject-group theme-wolko">
           <div class="tab-head theme-wolko">
             <div class="tab-title">${escapeHtml(TEAM_WOLKO)}</div>
             <div class="tab-count">${teamItems.length}</div>
@@ -502,7 +506,7 @@ const pageTitle = 'WOLKO Camp Resources';
 
     function flatListHtml(headerLabel, listItems, addDefaults, themeClass) {
       return `
-        <div class="subject-group">
+        <div class="subject-group${themeClass ? ` ${themeClass}` : ''}">
           <div class="tab-head${themeClass ? ` ${themeClass}` : ''}">
             <div class="tab-title">${escapeHtml(headerLabel)}</div>
             <div class="tab-count">${listItems.length}</div>

@@ -136,13 +136,22 @@ async function writeData(env, items) {
   return data;
 }
 
+function inferLegacyTab(item) {
+  // tab 필드가 도입되기 전에 저장된 항목: team이 있으면 수업자료(teacher) 데이터였던 것으로 간주
+  if (item.tab && TAB_SET.has(item.tab)) return item.tab;
+  return item.team ? 'teacher' : 'general';
+}
+
 export async function onRequestGet(context) {
   const { env } = context;
   if (!env.CAMP_KV) {
     return Response.json({ items: [] }, { headers: CORS });
   }
   const data = await readData(env);
-  return Response.json({ items: data.items }, { headers: CORS });
+  const items = data.items.map(item => (
+    item.tab && TAB_SET.has(item.tab) ? item : { ...item, tab: inferLegacyTab(item) }
+  ));
+  return Response.json({ items }, { headers: CORS });
 }
 
 export async function onRequestPost(context) {
