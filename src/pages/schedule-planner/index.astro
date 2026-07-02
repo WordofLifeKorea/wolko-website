@@ -495,11 +495,6 @@ const pageTitle = 'WOLKO Schedule Planner';
     .sp-btn-no:hover { background:#e2eaf0; }
     .sp-btn-cancel { background:transparent; color:var(--muted); border-color:#dbe7ec; }
     .sp-btn-cancel:hover { background:#f8fafc; }
-    .sp-sheet-picker { max-width:480px; }
-    .sp-sheet-list { margin:0 0 20px; max-height:50vh; overflow-y:auto; }
-    .sp-sheet-row { display:grid; grid-template-columns:1fr auto; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #f1f5f9; }
-    .sp-sheet-name { font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .sp-sheet-cat { border:1px solid #dbe7ec; border-radius:8px; padding:5px 8px; font-size:12px; background:#f8fafc; cursor:pointer; color:var(--text); }
   </style>
 </head>
 <body>
@@ -747,18 +742,6 @@ const pageTitle = 'WOLKO Schedule Planner';
       </section>
     </section>
   </main>
-
-  <div class="sp-dialog-backdrop" id="sheetPickerDialog" style="display:none">
-    <div class="sp-dialog sp-sheet-picker" role="dialog" aria-modal="true">
-      <div class="sp-dialog-title">시트 설정</div>
-      <div class="sp-dialog-msg" style="margin-bottom:12px">각 시트를 어떻게 처리할지 선택하세요</div>
-      <div class="sp-sheet-list" id="sheetPickerList"></div>
-      <div class="sp-dialog-btns">
-        <button class="sp-btn-cancel" id="sheetPickerCancel">취소</button>
-        <button class="sp-btn-yes" id="sheetPickerOk">확인</button>
-      </div>
-    </div>
-  </div>
 
   <div class="sp-dialog-backdrop" id="translateDialog" style="display:none">
     <div class="sp-dialog" role="dialog" aria-modal="true">
@@ -1316,7 +1299,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       });
     }
 
-    function importPeopleSheet(rows) {
+    function importPeopleSheet(rows, sheetName = '') {
       const people = [];
       rows.slice(2).forEach(row => {
         const sfName = cellText(row[1]);
@@ -1348,7 +1331,49 @@ const pageTitle = 'WOLKO Schedule Planner';
           });
         }
       });
-      return people.filter(person => person.name);
+      const fixedLayoutPeople = people.filter(person => person.name);
+      if (fixedLayoutPeople.length) return fixedLayoutPeople;
+
+      const headerIndex = rows.findIndex(row => row.some(cell => /name|이름|성명|camper|student|member|참가자|팀원|staff|스태프/i.test(cellText(cell))));
+      const headers = (rows[headerIndex] || []).map(cell => cellText(cell).toLowerCase());
+      const findCol = patterns => headers.findIndex(header => patterns.some(pattern => pattern.test(header)));
+      const nameCol = findCol([/name/, /이름/, /성명/, /camper/, /student/, /member/, /참가자/, /팀원/, /staff/, /스태프/]);
+      const genderCol = findCol([/gender/, /sex/, /성별/]);
+      const ageCol = findCol([/age/, /grade/, /나이/, /학년/]);
+      const shirtCol = findCol([/shirt/, /size/, /티셔츠/, /사이즈/]);
+      const birthdayCol = findCol([/birth/, /birthday/, /dob/, /생년월일/, /생일/]);
+      const noteCol = findCol([/note/, /memo/, /remark/, /메모/, /비고/]);
+      const groupCol = findCol([/team/, /group/, /camp/, /팀/, /조/, /캠프/]);
+      const fallbackNameCol = nameCol >= 0 ? nameCol : rows.reduce((best, row, ri) => {
+        if (ri <= headerIndex) return best;
+        row.forEach((cell, ci) => {
+          const text = cellText(cell);
+          if (!text || /^\d+$/.test(text) || parseDateFromTextLine(text) || /\d{1,2}:\d{2}/.test(text)) return;
+          best.counts[ci] = (best.counts[ci] || 0) + 1;
+          if ((best.counts[ci] || 0) > (best.counts[best.col] || 0)) best.col = ci;
+        });
+        return best;
+      }, { col: 0, counts: {} }).col;
+      const startIndex = headerIndex >= 0 ? headerIndex + 1 : 0;
+      const sheetGroup = sourceGroupForSheet(sheetName);
+      const groupName = (row) => cellText(row[groupCol]) || sheetGroup.label || sheetName;
+
+      return rows.slice(startIndex).map((row, index) => {
+        const name = cellText(row[fallbackNameCol]);
+        if (!name || /name|이름|성명|camper|student|member|참가자|팀원/i.test(name)) return null;
+        const matchedGroup = sourceGroupFromText(groupName(row), row.join(' '));
+        return {
+          id: crypto.randomUUID(),
+          group: matchedGroup?.key?.includes('wolko') ? 'wolko' : 'sf',
+          no: parseInt(cellText(row[0]), 10) || index + 1,
+          name,
+          gender: genderCol >= 0 ? cellText(row[genderCol]) : '',
+          age: ageCol >= 0 ? cellText(row[ageCol]) : '',
+          shirt: shirtCol >= 0 ? cellText(row[shirtCol]) : '',
+          birthday: birthdayCol >= 0 ? cellText(row[birthdayCol]) : '',
+          note: noteCol >= 0 ? cellText(row[noteCol]) : groupName(row),
+        };
+      }).filter(person => person?.name);
     }
 
     function importScheduleSheet(sheetName, rows) {
@@ -1389,8 +1414,28 @@ const pageTitle = 'WOLKO Schedule Planner';
       }
       if (timeCol < 0) { timeCol = 1; dataStart = 3; }
 
-      const titleCol = timeCol + 1;
-      const detailsCol = timeCol + 2;
+      let dateCol = -1;
+      const headerRow = rows[Math.max(0, dataStart - 1)] || [];
+      headerRow.forEach((cell, ci) => {
+        if (/date|day|날짜|요일/i.test(cellText(cell)) && ci !== timeCol) dateCol = ci;
+      });
+      if (dateCol < 0) {
+        let best = { col: -1, count: 0 };
+        for (let ci = 0; ci < Math.min(8, Math.max(...rows.map(row => row.length), 0)); ci += 1) {
+          if (ci === timeCol) continue;
+          const count = rows.slice(dataStart, dataStart + 20).filter(row => parseDateFromTextLine(cellText(row[ci]))).length;
+          if (count > best.count) best = { col: ci, count };
+        }
+        if (best.count >= 2) dateCol = best.col;
+      }
+
+      const namedTitleCol = headerRow.findIndex(cell => /activity|schedule|program|title|event|일정|프로그램|활동|제목|내용/i.test(cellText(cell)));
+      let titleCol = namedTitleCol >= 0 && namedTitleCol !== timeCol && namedTitleCol !== dateCol ? namedTitleCol : timeCol + 1;
+      if (titleCol === dateCol) titleCol += 1;
+      const namedDetailsCol = headerRow.findIndex(cell => /detail|note|memo|location|place|비고|메모|장소|세부/i.test(cellText(cell)));
+      let detailsCol = namedDetailsCol >= 0 && namedDetailsCol !== timeCol && namedDetailsCol !== dateCol && namedDetailsCol !== titleCol
+        ? namedDetailsCol : titleCol + 1;
+      if (detailsCol === dateCol || detailsCol === timeCol) detailsCol += 1;
 
       console.log(`[Import] "${sheetName}" → date:${currentDate} timeCol:${timeCol} dataStart:${dataStart}`);
 
@@ -1403,6 +1448,8 @@ const pageTitle = 'WOLKO Schedule Planner';
         const timeText = formatExcelTime(row[timeCol]);
         const title = cellText(row[titleCol]);
         const details = cellText(row[detailsCol]);
+        const rowDate = dateCol >= 0 ? parseDateFromTextLine(cellText(row[dateCol])) : null;
+        if (rowDate) currentDate = rowDate;
         if (!timeText || !title || /^(time|시간)/i.test(timeText) || /^(time|시간|일정|schedule)/i.test(title)) return;
         const parsed = clockRange(timeText);
         const rowGroup = sourceGroupFromText(sheetName, title, details, row.join(' ')) || sheetGroup;
@@ -1446,12 +1493,53 @@ const pageTitle = 'WOLKO Schedule Planner';
           col,
         });
       }
+      if (!importedVans.length) {
+        const vehicleName = value => /van|vehicle|car|bus|밴|차량|버스|호차|기사|driver/i.test(cellText(value));
+        const headerRowIndex = rows.findIndex(row => row.filter(vehicleName).length >= 2);
+        if (headerRowIndex >= 0) {
+          const header = rows[headerRowIndex] || [];
+          header.forEach((cell, col) => {
+            const name = cellText(cell);
+            if (col === 0 || !vehicleName(name)) return;
+            importedVans.push({
+              id: `import-van-${crypto.randomUUID()}`,
+              name,
+              seats: 0,
+              driver: '',
+              memo: '',
+              col,
+            });
+          });
+          const driverRow = rows.slice(headerRowIndex + 1, headerRowIndex + 4)
+            .find(row => /driver|기사|운전자/i.test(row.map(cellText).join(' ')));
+          importedVans.forEach(van => {
+            van.driver = cellText(driverRow?.[van.col]).replace(/^D\s*-\s*/i, '');
+          });
+        } else {
+          rows.forEach((row, index) => {
+            const text = row.map(cellText).filter(Boolean).join(' · ');
+            if (!/van|vehicle|car|bus|밴|차량|버스|호차/i.test(text)) return;
+            const name = row.map(cellText).find(vehicleName) || `${tr('vehicle')} ${index + 1}`;
+            importedVans.push({
+              id: `import-van-${crypto.randomUUID()}`,
+              name,
+              seats: 0,
+              driver: (text.match(/(?:driver|기사|운전자)\s*[:：-]?\s*([^·]+)/i)?.[1] || '').trim(),
+              memo: '',
+              col: -1,
+              rowText: text,
+            });
+          });
+        }
+      }
       const vans = importedVans.map(({ col, ...van }) => van);
       const assignments = {};
       importedVans.forEach(van => {
         assignments[van.id] = {
           driver: van.driver,
-          passengers: rows.slice(4).map(row => cellText(row[van.col])).filter(Boolean).join('\n'),
+          passengers: van.col >= 0
+            ? rows.slice(4).map(row => cellText(row[van.col])).filter(Boolean).join('\n')
+            : (van.rowText || '').replace(van.name, '').trim(),
           notes: '',
         };
       });
@@ -1481,6 +1569,88 @@ const pageTitle = 'WOLKO Schedule Planner';
 
     function isPeopleSheetName(name) {
       return /people|person|list|명단|인원/i.test(name);
+    }
+
+    function sheetText(sheet) {
+      return `${sheet.name || ''} ${(sheet.rows || []).map(row => row.map(cellText).join(' ')).join(' ')}`.toLowerCase();
+    }
+
+    function countTimeCells(rows) {
+      return (rows || []).reduce((count, row) => count + row.filter(value => {
+        const text = formatExcelTime(value);
+        const n = Number(value);
+        return (Number.isFinite(n) && n > 0 && n < 1) || /\b\d{1,2}:\d{2}\b/.test(text) || /\b\d{1,2}\s*(am|pm)\b/i.test(text);
+      }).length, 0);
+    }
+
+    function countHeaderMatches(rows, patterns) {
+      return (rows || []).slice(0, 8).reduce((count, row) => count + row.filter(cell => {
+        const text = cellText(cell);
+        return patterns.some(pattern => pattern.test(text));
+      }).length, 0);
+    }
+
+    function inferSheetCategory(sheet) {
+      const rows = sheet.rows || [];
+      const text = sheetText(sheet);
+      const timeCount = countTimeCells(rows);
+      const dateCount = rows.flat().filter(cell => parseDateFromTextLine(cellText(cell))).length;
+      const scores = {
+        schedule: 0,
+        people: 0,
+        transport: 0,
+      };
+
+      if (isScheduleSheetName(sheet.name)) scores.schedule += 5;
+      if (isPeopleSheetName(sheet.name)) scores.people += 5;
+      if (/transport|vehicle|van|driver|passenger|pickup|drop.?off|차량|운행|배차|픽업|드라이버|기사|탑승/i.test(sheet.name)) scores.transport += 6;
+
+      scores.schedule += Math.min(timeCount, 8);
+      scores.schedule += Math.min(dateCount, 4);
+      scores.schedule += countHeaderMatches(rows, [/time/i, /schedule/i, /program/i, /activity/i, /시간/, /일정/, /프로그램/]) * 2;
+
+      scores.people += countHeaderMatches(rows, [/name/i, /gender/i, /age/i, /grade/i, /shirt/i, /birth/i, /team/i, /member/i, /이름/, /성별/, /학년/, /나이/, /티셔츠/, /생년월일/, /팀원/, /명단/]) * 2;
+      scores.transport += countHeaderMatches(rows, [/van/i, /vehicle/i, /car/i, /bus/i, /driver/i, /passenger/i, /from/i, /to/i, /밴/, /차량/, /버스/, /기사/, /운전자/, /탑승/, /출발/, /도착/]) * 2;
+
+      if (/breakfast|lunch|dinner|worship|meeting|orientation|activity|session|meal|식사|예배|모임|오리엔테이션|프로그램/.test(text)) scores.schedule += 3;
+      if (/first|last|male|female|student|staff|camper|grade|shirt|birthday|학생|스태프|캠퍼|남|여|학년/.test(text)) scores.people += 3;
+      if (/driver|passenger|airport|station|pickup|drop.?off|route|차량|기사|탑승|공항|역|픽업|드랍|노선/.test(text)) scores.transport += 4;
+
+      if (scores.transport >= scores.schedule && scores.transport >= scores.people && scores.transport >= 5) return 'transport';
+      if (scores.people >= scores.schedule && scores.people >= scores.transport && scores.people >= 5) return 'people';
+      if (scores.schedule >= 4) return 'schedule';
+      return 'ignore';
+    }
+
+    function importSheetsAutomatically(sheets) {
+      const imported = { events: [], people: [], vans: [], transportPlans: [], sheetLog: [] };
+      console.group('[Schedule Planner] Auto Import');
+      sheets.forEach(sheet => {
+        const cat = inferSheetCategory(sheet);
+        console.log(`Sheet: "${sheet.name}" → ${cat}`);
+        if (cat === 'people') {
+          const before = imported.people.length;
+          imported.people.push(...importPeopleSheet(sheet.rows, sheet.name));
+          imported.sheetLog.push(`인원: "${sheet.name}" → ${imported.people.length - before}명`);
+        } else if (cat === 'schedule') {
+          const before = imported.events.length;
+          imported.events.push(...importScheduleSheet(sheet.name, sheet.rows));
+          imported.sheetLog.push(`일정: "${sheet.name}" → ${imported.events.length - before}개`);
+        } else if (cat === 'transport') {
+          const transport = importTransportSheet(sheet.name, sheet.rows);
+          if (transport.vans.length) {
+            imported.vans.push(...transport.vans);
+            imported.transportPlans.push(transport.transportPlan);
+            imported.sheetLog.push(`차량: "${sheet.name}" → 밴 ${transport.vans.length}대`);
+          } else {
+            imported.sheetLog.push(`차량: "${sheet.name}" → 인식된 차량 없음`);
+          }
+        } else {
+          imported.sheetLog.push(`무시됨: "${sheet.name}"`);
+        }
+      });
+      console.groupEnd();
+      return imported;
     }
 
     function loadImportHistory() {
@@ -1521,38 +1691,6 @@ const pageTitle = 'WOLKO Schedule Planner';
             return `<option value="${escapeHtml(e.id)}">${escapeHtml(e.name)} · ${dateStr}</option>`;
           }).join('');
       sel.style.display = '';
-    }
-
-    // 시트별 카테고리 선택 다이얼로그
-    function askSheetCategories(sheets) {
-      return new Promise(resolve => {
-        const dlg = document.getElementById('sheetPickerDialog');
-        const list = document.getElementById('sheetPickerList');
-        const ok = document.getElementById('sheetPickerOk');
-        const cancel = document.getElementById('sheetPickerCancel');
-        list.innerHTML = sheets.map((s, i) => {
-          const auto = isPeopleSheetName(s.name) ? 'people' : isScheduleSheetName(s.name) ? 'schedule' : 'ignore';
-          return `<div class="sp-sheet-row">
-            <span class="sp-sheet-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
-            <select class="sp-sheet-cat" data-idx="${i}">
-              <option value="schedule" ${auto==='schedule'?'selected':''}>📅 일정</option>
-              <option value="people" ${auto==='people'?'selected':''}>👥 인원</option>
-              <option value="transport">🚐 차량</option>
-              <option value="ignore" ${auto==='ignore'?'selected':''}>❌ 무시</option>
-            </select>
-          </div>`;
-        }).join('');
-        dlg.style.display = 'flex';
-        const done = (cancelled) => {
-          dlg.style.display = 'none';
-          if (cancelled) { resolve(null); return; }
-          const result = {};
-          list.querySelectorAll('[data-idx]').forEach(sel => { result[+sel.dataset.idx] = sel.value; });
-          resolve(result);
-        };
-        ok.addEventListener('click', () => done(false), { once: true });
-        cancel.addEventListener('click', () => done(true), { once: true });
-      });
     }
 
     // 'yes' | 'no' | 'cancel' 을 resolve 하는 3분기 다이얼로그
@@ -1663,7 +1801,9 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       const value = String(line || '');
       const ymd = (m, d) => m >= 1 && m <= 12 && d >= 1 && d <= 31
         ? `${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}` : null;
-      let match = value.match(/(\d{1,2})\s*월\s*(\d{1,2})/);
+      let match = value.match(/\b(20\d{2})[./-](\d{1,2})[./-](\d{1,2})\b/);
+      if (match) return `${match[1]}-${String(+match[2]).padStart(2, '0')}-${String(+match[3]).padStart(2, '0')}`;
+      match = value.match(/(\d{1,2})\s*월\s*(\d{1,2})/);
       if (match) return ymd(+match[1], +match[2]);
       match = value.match(/\b(\d{1,2})[./-](\d{1,2})\b/);
       if (match) return ymd(+match[1], +match[2]);
@@ -1710,16 +1850,34 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     }
 
     function importedFromTextDocument(filename, text) {
-      const rows = textRowsFromPlainText(text);
-      const imported = {
-        events: importScheduleSheet(filename, rows),
-        people: [],
-        vans: [],
-        transportPlans: [],
-        sheetLog: [],
+      const lines = String(text || '')
+        .replace(/\r/g, '\n')
+        .split('\n')
+        .map(line => line.replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+      const sections = [];
+      let current = { name: filename, lines: [] };
+      const pushCurrent = () => {
+        if (current.lines.length) sections.push({
+          name: current.name,
+          rows: textRowsFromPlainText(current.lines.join('\n')),
+        });
       };
-      imported.sheetLog.push(`일정: "${filename}" → ${imported.events.length}개`);
-      return imported;
+      lines.forEach(line => {
+        const headingSheet = { name: line, rows: [[line]] };
+        const isHeading = line.length < 80
+          && !/^(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i.test(line)
+          && inferSheetCategory(headingSheet) !== 'ignore';
+        if (isHeading && current.lines.length) {
+          pushCurrent();
+          current = { name: line, lines: [] };
+        } else {
+          current.lines.push(line);
+        }
+      });
+      pushCurrent();
+      const sheets = sections.length ? sections : [{ name: filename, rows: textRowsFromPlainText(text) }];
+      return importSheetsAutomatically(sheets);
     }
 
     function rowsFromHtmlTable(table) {
@@ -1737,29 +1895,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
         rows: rowsFromHtmlTable(table),
       })).filter(sheet => sheet.rows.length);
       if (tables.length) {
-        const categories = await askSheetCategories(tables);
-        if (!categories) throw new Error('취소됨');
-        const imported = { events: [], people: [], vans: [], transportPlans: [], sheetLog: [] };
-        tables.forEach((sheet, i) => {
-          const cat = categories[i];
-          if (cat === 'people') {
-            const before = imported.people.length;
-            imported.people.push(...importPeopleSheet(sheet.rows));
-            imported.sheetLog.push(`인원: "${sheet.name}" → ${imported.people.length - before}명`);
-          } else if (cat === 'transport') {
-            const transport = importTransportSheet(sheet.name, sheet.rows);
-            if (transport.vans.length) {
-              imported.vans.push(...transport.vans);
-              imported.transportPlans.push(transport.transportPlan);
-            }
-            imported.sheetLog.push(`차량: "${sheet.name}" → 밴 ${transport.vans.length}대`);
-          } else if (cat === 'schedule') {
-            const before = imported.events.length;
-            imported.events.push(...importScheduleSheet(sheet.name, sheet.rows));
-            imported.sheetLog.push(`일정: "${sheet.name}" → ${imported.events.length - before}개`);
-          }
-        });
-        return imported;
+        return importSheetsAutomatically(tables);
       }
       return importedFromTextDocument(file.name, doc.body?.innerText || html);
     }
@@ -1810,37 +1946,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
 
     async function importExcelFile(file) {
       const sheets = await readWorkbook(await file.arrayBuffer());
-
-      // 시트별 카테고리 선택
-      const categories = await askSheetCategories(sheets);
-      if (!categories) throw new Error('취소됨');
-
-      const imported = { events: [], people: [], vans: [], transportPlans: [], sheetLog: [] };
-      console.group('[Schedule Planner] Excel Import');
-      sheets.forEach((sheet, i) => {
-        const cat = categories[i];
-        console.log(`Sheet: "${sheet.name}" → ${cat}`);
-        if (cat === 'people') {
-          const before = imported.people.length;
-          imported.people.push(...importPeopleSheet(sheet.rows));
-          imported.sheetLog.push(`인원: "${sheet.name}" → ${imported.people.length - before}명`);
-        } else if (cat === 'schedule') {
-          const before = imported.events.length;
-          imported.events.push(...importScheduleSheet(sheet.name, sheet.rows));
-          imported.sheetLog.push(`일정: "${sheet.name}" → ${imported.events.length - before}개`);
-        } else if (cat === 'transport') {
-          const transport = importTransportSheet(sheet.name, sheet.rows);
-          if (transport.vans.length) {
-            imported.vans.push(...transport.vans);
-            imported.transportPlans.push(transport.transportPlan);
-            imported.sheetLog.push(`차량: "${sheet.name}" → 밴 ${transport.vans.length}대`);
-          }
-        } else {
-          imported.sheetLog.push(`무시됨: "${sheet.name}"`);
-        }
-      });
-      console.groupEnd();
-      return imported;
+      return importSheetsAutomatically(sheets);
     }
 
     function periodOf(event) {
