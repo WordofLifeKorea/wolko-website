@@ -708,6 +708,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       visit_visitor: '방문자', no_visits: '아직 방문 기록이 없습니다.',
       no_account: '계정이 없으신가요?', signup: '회원가입', have_account: '이미 계정이 있으신가요?',
       name_label: '이름 *', name_ph: '예: 홍길동', password_confirm: '비밀번호 확인',
+      password_language_warning: '비밀번호는 영어 입력 상태에서 입력해주세요.',
       signup_btn: '회원가입', signing_up: '처리 중...',
       signup_error: '오류가 발생했습니다. 이미 사용 중인 이메일일 수 있습니다.',
       pw_short: '비밀번호는 6자 이상이어야 합니다.', pw_mismatch: '비밀번호가 일치하지 않습니다.',
@@ -754,6 +755,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       visit_visitor: 'Visitor', no_visits: 'No visit records yet.',
       no_account: "Don't have an account?", signup: 'Sign Up', have_account: 'Already have an account?',
       name_label: 'Name *', name_ph: 'e.g. John Kim', password_confirm: 'Confirm Password',
+      password_language_warning: 'Please switch to English input before entering the password.',
       signup_btn: 'Sign Up', signing_up: 'Processing...',
       signup_error: 'Sign up failed. Email may already be in use.',
       pw_short: 'Password must be at least 6 characters.', pw_mismatch: 'Passwords do not match.',
@@ -791,8 +793,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   function enforceAsciiPasswordInput(input) {
+    function warnPasswordLanguage() {
+      const err = document.getElementById('signupErr') || document.getElementById('loginErr');
+      if (err) {
+        err.textContent = t('password_language_warning');
+        err.style.display = 'block';
+      }
+    }
     input.addEventListener('beforeinput', e => {
-      if (e.data && !PASSWORD_ALLOWED_RE.test(e.data)) e.preventDefault();
+      if (e.data && !PASSWORD_ALLOWED_RE.test(e.data)) {
+        e.preventDefault();
+        warnPasswordLanguage();
+      }
     });
     input.addEventListener('paste', e => {
       const text = e.clipboardData?.getData('text') || '';
@@ -803,11 +815,15 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         const end = input.selectionEnd ?? start;
         input.setRangeText(clean, start, end, 'end');
         input.dispatchEvent(new Event('input', { bubbles: true }));
+        warnPasswordLanguage();
       }
     });
     input.addEventListener('input', () => {
       const clean = cleanPasswordValue(input.value);
-      if (input.value !== clean) input.value = clean;
+      if (input.value !== clean) {
+        input.value = clean;
+        warnPasswordLanguage();
+      }
     });
   }
 

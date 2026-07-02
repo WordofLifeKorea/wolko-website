@@ -799,6 +799,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         personRequired: '명단에 추가할 이름을 입력해주세요.',
         transportRequired: '차량 배정표 제목을 입력해주세요.',
         loginFailed: '로그인하지 못했습니다.',
+        passwordLanguageWarning: '비밀번호는 영어 입력 상태에서 입력해주세요.',
         zipUnsupported: '이 브라우저에서는 xlsx 압축 해제를 지원하지 않습니다. 최신 Chrome 또는 Safari에서 다시 시도해주세요.',
         invalidXlsx: '올바른 xlsx 파일이 아닙니다.',
         workbookReadFailed: '엑셀 통합 문서를 읽지 못했습니다.',
@@ -860,6 +861,7 @@ const pageTitle = 'WOLKO Schedule Planner';
         personRequired: 'Please enter a name to add.',
         transportRequired: 'Please enter a vehicle plan title.',
         loginFailed: 'Could not sign in.',
+        passwordLanguageWarning: 'Please switch to English input before entering the password.',
         zipUnsupported: 'This browser cannot decompress xlsx files. Please try again in the latest Chrome or Safari.',
         invalidXlsx: 'This is not a valid xlsx file.',
         workbookReadFailed: 'Could not read the Excel workbook.',
@@ -2227,6 +2229,43 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       }
     }
 
+    const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
+    function cleanPasswordValue(value) {
+      return String(value || '').replace(/[^\x21-\x7E]/g, '');
+    }
+    function warnPasswordLanguage() {
+      els.loginError.textContent = tr('passwordLanguageWarning');
+    }
+    function enforceAsciiPasswordInput(input) {
+      input.setAttribute('inputmode', 'latin');
+      input.setAttribute('pattern', '[\\x21-\\x7E]*');
+      input.addEventListener('beforeinput', event => {
+        if (event.data && !PASSWORD_ALLOWED_RE.test(event.data)) {
+          event.preventDefault();
+          warnPasswordLanguage();
+        }
+      });
+      input.addEventListener('paste', event => {
+        const text = event.clipboardData?.getData('text') || '';
+        const clean = cleanPasswordValue(text);
+        if (text !== clean) {
+          event.preventDefault();
+          const start = input.selectionStart ?? input.value.length;
+          const end = input.selectionEnd ?? start;
+          input.setRangeText(clean, start, end, 'end');
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          warnPasswordLanguage();
+        }
+      });
+      input.addEventListener('input', () => {
+        const clean = cleanPasswordValue(input.value);
+        if (input.value !== clean) {
+          input.value = clean;
+          warnPasswordLanguage();
+        }
+      });
+    }
+
     async function loadPlan() {
       setState(tr('loading'));
       const res = await fetch('/api/schedule-planner/data', {
@@ -2306,6 +2345,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     applySidebar();
 
     els.loginBtn.addEventListener('click', login);
+    enforceAsciiPasswordInput(els.passwordInput);
     els.passwordInput.addEventListener('keydown', event => { if (event.key === 'Enter') login(); });
     els.calendarToggle.addEventListener('click', toggleCalendar);
     els.calendarPrev.addEventListener('click', () => shiftCalendarMonth(-1));

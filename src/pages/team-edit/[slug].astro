@@ -810,8 +810,15 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     }
 
     function enforceAsciiPasswordInput(input) {
+      function warnPasswordLanguage() {
+        loginError.textContent = 'Please switch to English input before entering the password.';
+        loginPw.classList.add('error');
+      }
       input.addEventListener('beforeinput', e => {
-        if (e.data && !PASSWORD_ALLOWED_RE.test(e.data)) e.preventDefault();
+        if (e.data && !PASSWORD_ALLOWED_RE.test(e.data)) {
+          e.preventDefault();
+          warnPasswordLanguage();
+        }
       });
       input.addEventListener('paste', e => {
         const text = e.clipboardData?.getData('text') || '';
@@ -822,11 +829,15 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
           const end = input.selectionEnd ?? start;
           input.setRangeText(clean, start, end, 'end');
           input.dispatchEvent(new Event('input', { bubbles: true }));
+          warnPasswordLanguage();
         }
       });
       input.addEventListener('input', () => {
         const clean = cleanPasswordValue(input.value);
-        if (input.value !== clean) input.value = clean;
+        if (input.value !== clean) {
+          input.value = clean;
+          warnPasswordLanguage();
+        }
       });
     }
 

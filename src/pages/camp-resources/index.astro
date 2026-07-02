@@ -170,7 +170,7 @@ const pageTitle = 'WOLKO Camp Resources';
     .present-card-actions { display:flex; gap:6px; margin-top:4px; }
     .present-card-actions button { flex:1; min-height:var(--btn-h-sm); border-radius:8px; padding:0 8px; font-size:11px; font-weight:600; border:1px solid #dbe7ec; background:#f8fafc; color:var(--text); }
     .present-card-actions button.danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
-    .present-card-add { align-items:center; justify-content:center; color:var(--muted); border-style:dashed; font-weight:700; cursor:pointer; box-shadow:none; }
+    .present-card-add { grid-column:1 / -1; align-items:center; justify-content:center; color:var(--muted); border-style:dashed; font-weight:700; cursor:pointer; box-shadow:none; }
     .present-card-add:hover { color:var(--blue); border-color:var(--blue); background:#f4fbfd; }
     .empty { padding:24px; border:1px dashed #ccdce3; border-radius:var(--radius-md); color:var(--light); text-align:center; font-weight:400; background:#fff; grid-column:1/-1; }
     .camp-filter-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
@@ -406,6 +406,7 @@ const pageTitle = 'WOLKO Camp Resources';
         delete: '삭제',
         deleteConfirm: '이 자료를 삭제하시겠습니까?',
         loginFailed: '로그인하지 못했습니다.',
+        passwordLanguageWarning: '비밀번호는 영어 입력 상태에서 입력해주세요.',
         saveFailed: '저장하지 못했습니다.',
         deleteFailed: '삭제하지 못했습니다.',
         loadFailed: '목록을 불러오지 못했습니다.',
@@ -445,6 +446,7 @@ const pageTitle = 'WOLKO Camp Resources';
         delete: 'Delete',
         deleteConfirm: 'Delete this resource?',
         loginFailed: 'Login failed.',
+        passwordLanguageWarning: 'Please switch to English input before entering the password.',
         saveFailed: 'Could not save.',
         deleteFailed: 'Could not delete.',
         loadFailed: 'Could not load the list.',
@@ -623,6 +625,44 @@ const pageTitle = 'WOLKO Camp Resources';
       }
       render();
     }
+
+    const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
+    function cleanPasswordValue(value) {
+      return String(value || '').replace(/[^\x21-\x7E]/g, '');
+    }
+    function warnPasswordLanguage() {
+      els.loginError.textContent = tr('passwordLanguageWarning');
+    }
+    function enforceAsciiPasswordInput(input) {
+      input.setAttribute('inputmode', 'latin');
+      input.setAttribute('pattern', '[\\x21-\\x7E]*');
+      input.addEventListener('beforeinput', event => {
+        if (event.data && !PASSWORD_ALLOWED_RE.test(event.data)) {
+          event.preventDefault();
+          warnPasswordLanguage();
+        }
+      });
+      input.addEventListener('paste', event => {
+        const text = event.clipboardData?.getData('text') || '';
+        const clean = cleanPasswordValue(text);
+        if (text !== clean) {
+          event.preventDefault();
+          const start = input.selectionStart ?? input.value.length;
+          const end = input.selectionEnd ?? start;
+          input.setRangeText(clean, start, end, 'end');
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          warnPasswordLanguage();
+        }
+      });
+      input.addEventListener('input', () => {
+        const clean = cleanPasswordValue(input.value);
+        if (input.value !== clean) {
+          input.value = clean;
+          warnPasswordLanguage();
+        }
+      });
+    }
+    enforceAsciiPasswordInput(els.passwordInput);
 
     function campById(id) {
       return camps.find(c => c.id === id) || null;

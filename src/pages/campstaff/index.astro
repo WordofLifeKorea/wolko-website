@@ -736,6 +736,46 @@
 
     function currentCampId() { return $('campSelect').value || CAMPS[0].id; }
     function currentCampTitle() { return CAMPS.find(camp => camp.id === currentCampId())?.title || currentCampId(); }
+    const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
+
+    function cleanPasswordValue(value) {
+      return String(value || '').replace(/[^\x21-\x7E]/g, '');
+    }
+
+    function warnPasswordLanguage() {
+      if ($('loginError')) $('loginError').textContent = '비밀번호는 영어 입력 상태에서 입력해주세요.';
+    }
+
+    function enforceAsciiPasswordInput(input) {
+      if (!input) return;
+      input.setAttribute('inputmode', 'latin');
+      input.setAttribute('pattern', '[\\x21-\\x7E]*');
+      input.addEventListener('beforeinput', event => {
+        if (event.data && !PASSWORD_ALLOWED_RE.test(event.data)) {
+          event.preventDefault();
+          warnPasswordLanguage();
+        }
+      });
+      input.addEventListener('paste', event => {
+        const text = event.clipboardData?.getData('text') || '';
+        const clean = cleanPasswordValue(text);
+        if (text !== clean) {
+          event.preventDefault();
+          const start = input.selectionStart ?? input.value.length;
+          const end = input.selectionEnd ?? start;
+          input.setRangeText(clean, start, end, 'end');
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          warnPasswordLanguage();
+        }
+      });
+      input.addEventListener('input', () => {
+        const clean = cleanPasswordValue(input.value);
+        if (input.value !== clean) {
+          input.value = clean;
+          warnPasswordLanguage();
+        }
+      });
+    }
 
     function setup() {
       $('campSelect').innerHTML = CAMPS.map(camp => `<option value="${camp.id}">${camp.title}</option>`).join('');
@@ -746,6 +786,8 @@
       $('modalCancel').addEventListener('click', closeModal);
       $('modalSave').addEventListener('click', saveCamper);
       $('authBtn').addEventListener('click', submitAuth);
+      enforceAsciiPasswordInput($('authPassword'));
+      enforceAsciiPasswordInput($('accountPassword'));
       $('loadAccountsBtn').addEventListener('click', loadAccounts);
       $('accountSaveBtn').addEventListener('click', upsertAccount);
       document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => setAuthMode(btn.dataset.mode)));

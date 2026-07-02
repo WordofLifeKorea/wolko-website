@@ -247,6 +247,7 @@
         loginTitle:'관리자 로그인', showPassword:'비밀번호 표시',
         loginPw:'비밀번호를 입력하세요', loginVerifying:'확인 중…', loginBtn:'로그인',
         loginRequired:'비밀번호를 입력해주세요.', loginWrong:'비밀번호가 올바르지 않습니다.',
+        passwordLanguageWarning:'비밀번호는 영어 입력 상태에서 입력해주세요.',
         campRegTitle:'캠프 신청 목록', editMode:'수정 모드', editing:'수정 중', csvDownload:'CSV 다운로드',
         thApplicant:'신청자', thCounseling:'상담',
         thStatus:'상태', thCamp:'캠프', thType:'유형', thName:'이름',
@@ -334,6 +335,7 @@
         loginTitle:'Admin Login', showPassword:'Show password',
         loginPw:'Enter password', loginVerifying:'Verifying…', loginBtn:'Login',
         loginRequired:'Please enter your password.', loginWrong:'Incorrect password.',
+        passwordLanguageWarning:'Please switch to English input before entering the password.',
         campRegTitle:'Camp Registrations', editMode:'Edit Mode', editing:'Editing', csvDownload:'Export CSV',
         thApplicant:'Applicant', thCounseling:'Counseling',
         thStatus:'Status', thCamp:'Camp', thType:'Type', thName:'Name',
@@ -874,6 +876,47 @@
     document.getElementById('pwInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') doLogin();
     });
+
+    const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
+    function cleanPasswordValue(value) {
+      return String(value || '').replace(/[^\x21-\x7E]/g, '');
+    }
+    function warnPasswordLanguage() {
+      const errEl = document.getElementById('loginError');
+      const inputEl = document.getElementById('pwInput');
+      if (errEl) errEl.textContent = t('passwordLanguageWarning');
+      if (inputEl) inputEl.classList.add('error');
+    }
+    function enforceAsciiPasswordInput(input) {
+      input.setAttribute('inputmode', 'latin');
+      input.setAttribute('pattern', '[\\x21-\\x7E]*');
+      input.addEventListener('beforeinput', event => {
+        if (event.data && !PASSWORD_ALLOWED_RE.test(event.data)) {
+          event.preventDefault();
+          warnPasswordLanguage();
+        }
+      });
+      input.addEventListener('paste', event => {
+        const text = event.clipboardData?.getData('text') || '';
+        const clean = cleanPasswordValue(text);
+        if (text !== clean) {
+          event.preventDefault();
+          const start = input.selectionStart ?? input.value.length;
+          const end = input.selectionEnd ?? start;
+          input.setRangeText(clean, start, end, 'end');
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          warnPasswordLanguage();
+        }
+      });
+      input.addEventListener('input', () => {
+        const clean = cleanPasswordValue(input.value);
+        if (input.value !== clean) {
+          input.value = clean;
+          warnPasswordLanguage();
+        }
+      });
+    }
+    enforceAsciiPasswordInput(document.getElementById('pwInput'));
 
     async function doLogin() {
       const pw = document.getElementById('pwInput').value;
