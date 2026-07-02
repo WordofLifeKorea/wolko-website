@@ -183,7 +183,10 @@ const pageTitle = 'WOLKO Camp Resources';
     .camp-manage-list { display:grid; gap:8px; max-height:260px; overflow-y:auto; margin-bottom:16px; }
     .camp-manage-row { display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:9px 12px; background:#fbfdfe; }
     .camp-manage-row-label { font-size:12.5px; color:var(--text); }
-    .camp-manage-row button { min-height:var(--btn-h-xs); min-width:52px; border:1px solid #f1c9cf; border-radius:8px; background:#fff8f9; color:var(--red); font-size:11px; font-weight:700; cursor:pointer; padding:0 10px; }
+    .camp-manage-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+    .camp-default-badge { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:5px 9px; font-size:10.5px; font-weight:800; white-space:nowrap; }
+    .camp-manage-row button { min-height:var(--btn-h-xs); min-width:52px; border:1px solid #d7e4e9; border-radius:8px; background:#fff; color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; padding:0 10px; }
+    .camp-manage-row button.danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
     .camp-manage-add-row { display:grid; margin-bottom:6px; }
     .camp-manage-add-row .field { margin-bottom:12px; }
     .field { display:grid; gap:6px; margin-bottom:14px; }
@@ -422,6 +425,9 @@ const pageTitle = 'WOLKO Camp Resources';
         campDeleteConfirm: '이 캠프를 삭제하시겠습니까? (연결된 자료는 삭제되지 않습니다)',
         campRenamePrompt: '새 캠프 이름을 입력해주세요.',
         campRenameEmpty: '캠프 이름을 입력해주세요.',
+        setDefaultCamp: '기본 설정',
+        defaultCamp: '기본',
+        defaultCampSaveFailed: '기본 캠프를 저장하지 못했습니다.',
         editModeEnter: '편집 모드',
         editModeExit: '편집 중 · 나가기',
       },
@@ -458,6 +464,9 @@ const pageTitle = 'WOLKO Camp Resources';
         campDeleteConfirm: 'Delete this camp? (Linked resources will not be deleted)',
         campRenamePrompt: 'Enter the new camp name.',
         campRenameEmpty: 'Please enter a camp name.',
+        setDefaultCamp: 'Set Default',
+        defaultCamp: 'Default',
+        defaultCampSaveFailed: 'Could not save the default camp.',
         editModeEnter: 'Edit Mode',
         editModeExit: 'Editing · Exit',
       },
@@ -529,6 +538,7 @@ const pageTitle = 'WOLKO Camp Resources';
 
     let items = [];
     let camps = [];
+    let defaultCampId = '';
     let selectedYear = '';
     let selectedSeason = '';
     let selectedCampId = '';
@@ -631,6 +641,15 @@ const pageTitle = 'WOLKO Camp Resources';
 
     function campsForYearSeason(year, season) {
       return camps.filter(c => c.year === year && c.season === season).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    }
+
+    function applyDefaultCampSelection() {
+      const camp = campById(defaultCampId);
+      if (!camp) return false;
+      selectedYear = camp.year;
+      selectedSeason = camp.season;
+      selectedCampId = camp.id;
+      return true;
     }
 
     function presentCardHtml(item) {
@@ -737,6 +756,9 @@ const pageTitle = 'WOLKO Camp Resources';
       const years = sortedYears();
       els.campFilterWrap.hidden = years.length === 0;
       if (!years.length) return;
+      if (!selectedCampId && applyDefaultCampSelection()) {
+        // 기본 캠프가 있으면 첫 화면 선택에 우선 적용한다.
+      }
       if (!years.includes(selectedYear)) selectedYear = years[0];
       els.yearSelect.innerHTML = years.map(y => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`).join('');
       els.yearSelect.value = selectedYear;
@@ -1234,6 +1256,8 @@ const pageTitle = 'WOLKO Camp Resources';
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || tr('campLoadFailed'));
       camps = Array.isArray(data.camps) ? data.camps : [];
+      defaultCampId = data.defaultCampId || '';
+      applyDefaultCampSelection();
     }
 
     async function loadItems() {
@@ -1256,7 +1280,12 @@ const pageTitle = 'WOLKO Camp Resources';
           campsForYearSeason(year, season).map(c => `
             <div class="camp-manage-row">
               <span class="camp-manage-row-label">${escapeHtml(year)} ${escapeHtml(season === 'summer' ? tr('summer') : tr('winter'))} · ${escapeHtml(c.name)}</span>
-              <button type="button" data-delete-camp="${escapeHtml(c.id)}">${escapeHtml(tr('delete'))}</button>
+              <div class="camp-manage-actions">
+                ${c.id === defaultCampId
+                  ? `<span class="camp-default-badge">${escapeHtml(tr('defaultCamp'))}</span>`
+                  : `<button type="button" data-default-camp="${escapeHtml(c.id)}">${escapeHtml(tr('setDefaultCamp'))}</button>`}
+                <button class="danger" type="button" data-delete-camp="${escapeHtml(c.id)}">${escapeHtml(tr('delete'))}</button>
+              </div>
             </div>`)
         )
       ).join('') || `<div class="empty" style="grid-column:auto;">${escapeHtml(tr('noCamps'))}</div>`;
@@ -1293,6 +1322,7 @@ const pageTitle = 'WOLKO Camp Resources';
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || tr('campSaveFailed'));
         camps = data.camps;
+        defaultCampId = data.defaultCampId || defaultCampId;
         els.newCampYear.value = '';
         els.newCampName.value = '';
         els.campManageError.textContent = '';
@@ -1306,6 +1336,26 @@ const pageTitle = 'WOLKO Camp Resources';
     });
 
     els.campManageList.addEventListener('click', async event => {
+      const defaultBtn = event.target.closest('[data-default-camp]');
+      if (defaultBtn) {
+        try {
+          const res = await fetch('/api/teach/camps', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ action: 'setDefault', id: defaultBtn.dataset.defaultCamp }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || tr('defaultCampSaveFailed'));
+          camps = data.camps;
+          defaultCampId = data.defaultCampId || '';
+          selectedCampId = defaultCampId || selectedCampId;
+          renderCampManageList();
+          render();
+        } catch (error) {
+          alert(error.message);
+        }
+        return;
+      }
       const btn = event.target.closest('[data-delete-camp]');
       if (!btn) return;
       if (!confirm(tr('campDeleteConfirm'))) return;
@@ -1317,6 +1367,7 @@ const pageTitle = 'WOLKO Camp Resources';
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || tr('campDeleteFailed'));
         camps = data.camps;
+        if (defaultCampId && !campById(defaultCampId)) defaultCampId = data.defaultCampId || '';
         renderCampManageList();
         render();
       } catch (error) {

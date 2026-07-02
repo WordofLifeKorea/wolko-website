@@ -39,7 +39,7 @@ function text(value, max = 240) {
 }
 
 function emptyCamps() {
-  return { camps: [], updatedAt: '' };
+  return { camps: [], defaultCampId: '', updatedAt: '' };
 }
 
 async function readCamps(env) {
@@ -48,7 +48,17 @@ async function readCamps(env) {
 }
 
 async function writeCamps(env, camps) {
-  const data = { camps, updatedAt: new Date().toISOString() };
+  const current = await readCamps(env);
+  const validDefault = camps.some(c => c.id === current.defaultCampId) ? current.defaultCampId : '';
+  const data = { camps, defaultCampId: validDefault, updatedAt: new Date().toISOString() };
+  await env.CAMP_KV.put(CAMPS_KEY, JSON.stringify(data));
+  return data;
+}
+
+async function writeCampState(env, state) {
+  const camps = Array.isArray(state.camps) ? state.camps : [];
+  const defaultCampId = camps.some(c => c.id === state.defaultCampId) ? state.defaultCampId : '';
+  const data = { camps, defaultCampId, updatedAt: new Date().toISOString() };
   await env.CAMP_KV.put(CAMPS_KEY, JSON.stringify(data));
   return data;
 }
@@ -104,7 +114,7 @@ export async function onRequestGet(context) {
   }
   let camps = await readCamps(env);
   camps = await migrateLegacySessions(env, camps);
-  return Response.json({ camps: camps.camps }, { headers: CORS });
+  return Response.json({ camps: camps.camps, defaultCampId: camps.defaultCampId || '' }, { headers: CORS });
 }
 
 export async function onRequestPost(context) {
@@ -143,6 +153,19 @@ export async function onRequestPut(context) {
   }
   try {
     const body = await request.json();
+    const action = text(body.action, 40);
+    if (action === 'setDefault') {
+      const defaultCampId = text(body.id, 80);
+      if (!defaultCampId) {
+        return Response.json({ error: '기본 캠프를 선택해주세요.' }, { status: 400, headers: CORS });
+      }
+      const data = await readCamps(env);
+      if (!data.camps.some(c => c.id === defaultCampId)) {
+        return Response.json({ error: '캠프를 찾을 수 없습니다.' }, { status: 404, headers: CORS });
+      }
+      const saved = await writeCampState(env, { ...data, defaultCampId });
+      return Response.json({ camps: saved.camps, defaultCampId: saved.defaultCampId }, { headers: CORS });
+    }
     const id = text(body.id, 80);
     const name = text(body.name, 80);
     if (!id || !name) {
@@ -155,7 +178,7 @@ export async function onRequestPut(context) {
     }
     data.camps[idx] = { ...data.camps[idx], name, updatedAt: new Date().toISOString() };
     const saved = await writeCamps(env, data.camps);
-    return Response.json({ camps: saved.camps }, { headers: CORS });
+    return Response.json({ camps: saved.camps, defaultCampId: saved.defaultCampId || '' }, { headers: CORS });
   } catch (error) {
     console.error('teach camps update error:', error);
     return Response.json({ error: '캠프 이름을 수정하지 못했습니다.' }, { status: 500, headers: CORS });
@@ -178,7 +201,7 @@ export async function onRequestDelete(context) {
   const data = await readCamps(env);
   const filtered = data.camps.filter(c => c.id !== id);
   const saved = await writeCamps(env, filtered);
-  return Response.json({ camps: saved.camps }, { headers: CORS });
+  return Response.json({ camps: saved.camps, defaultCampId: saved.defaultCampId || '' }, { headers: CORS });
 }
 
 export async function onRequestOptions() {
