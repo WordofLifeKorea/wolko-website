@@ -27,8 +27,11 @@ const ERROR_MESSAGES = {
   bgm: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.',
 };
 
-function getTeachFilesBucket(env) {
-  return env.TEACH_FILES || env.CAMP_RESOURCES_FILES || env.CAMP_FILES || env.R2_BUCKET || env.BUCKET;
+function getTeachFileStore(env) {
+  const bucket = env.TEACH_FILES || env.CAMP_RESOURCES_FILES || env.CAMP_FILES || env.R2_BUCKET || env.BUCKET;
+  if (bucket) return { type: 'r2', storage: bucket };
+  if (env.CAMP_KV) return { type: 'kv', storage: env.CAMP_KV };
+  return null;
 }
 
 async function verifyToken(request, env) {
@@ -65,9 +68,9 @@ function extOf(filename, kind) {
 
 export async function onRequestPost(context) {
   const { env, request } = context;
-  const bucket = getTeachFilesBucket(env);
-  if (!env.ADMIN_PASSWORD || !bucket) {
-    return Response.json({ error: '서버 설정이 필요합니다. (R2 버킷 미연결)' }, { status: 500, headers: CORS });
+  const store = getTeachFileStore(env);
+  if (!env.ADMIN_PASSWORD || !store) {
+    return Response.json({ error: '서버 설정이 필요합니다. (파일 저장소 미연결)' }, { status: 500, headers: CORS });
   }
   if (!(await verifyToken(request, env))) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
@@ -88,15 +91,20 @@ export async function onRequestPost(context) {
       return Response.json({ error: '파일이 너무 큽니다. (최대 20MB)' }, { status: 400, headers: CORS });
     }
 
-    const key = `${crypto.randomUUID()}.${ext}`;
-    await bucket.put(key, file.stream(), {
-      httpMetadata: {
-        contentType: file.type || CONTENT_TYPES[ext],
-        contentDisposition: `inline; filename="${encodeURIComponent(file.name)}"`,
-      },
-    });
+    const key = `${store.type === 'kv' ? 'teach-file:' : ''}${crypto.randomUUID()}.${ext}`;
+    const contentType = file.type || CONTENT_TYPES[ext] || 'application/octet-stream';
+    const contentDisposition = `inline; filename*=UTF-8''${encodeURIComponent(file.name)}`;
+    if (store.type === 'r2') {
+      await store.storage.put(key, file.stream(), {
+        httpMetadata: { contentType, contentDisposition },
+      });
+    } else {
+      await store.storage.put(key, file.stream(), {
+        metadata: { contentType, contentDisposition, filename: file.name },
+      });
+    }
 
-    const url = new URL(`/api/teach/file/${key}`, request.url).toString();
+    const url = new URL(`/api/teach/file/${encodeURIComponent(key)}`, request.url).toString();
     return Response.json({ url, filename: file.name }, { headers: CORS });
   } catch (error) {
     console.error('teach upload error:', error);
