@@ -62,6 +62,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       font-weight:700; letter-spacing:.01em; transition:background .18s ease,transform .12s ease,box-shadow .18s ease;
     }
     .login-btn { width:100%; height:48px; }
+    .login-close-btn { width:100%; margin-top:10px; }
     .login-btn:hover,.primary:hover { background:var(--blue-lt); }
     .secondary,.ghost {
       min-height:40px; border:1px solid #d7e4e9; border-radius:var(--radius-sm); background:#fff; color:var(--blue);
@@ -211,6 +212,11 @@ const pageTitle = 'WOLKO Schedule Planner';
       width:auto; min-width:150px; min-height:40px; border:1.5px solid #d9e5ea; border-radius:999px;
       background:#fff; color:var(--blue); padding:8px 34px 8px 13px; font-size:12px; font-weight:800;
     }
+    .schedule-tools button {
+      min-height:40px; border-radius:999px; padding:8px 14px; font-size:12px; font-weight:800;
+    }
+    .schedule-tools .restore-btn { border-color:#b8dfe6; background:#e9f8fb; color:var(--blue); }
+    .schedule-tools button:disabled { opacity:.45; cursor:not-allowed; }
     .source-badge {
       display:inline-flex; align-items:center; margin-right:7px; border-radius:999px; background:#e9f8fb; color:var(--blue);
       padding:2px 8px; font-size:10px; font-weight:900; letter-spacing:.02em; vertical-align:middle;
@@ -407,6 +413,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       .topbar,
       .layout > aside,
       .tabs,
+      .schedule-tools,
       .panel-head .form-actions,
       .mini-actions,
       .save-state { display:none !important; }
@@ -498,7 +505,7 @@ const pageTitle = 'WOLKO Schedule Planner';
   </style>
 </head>
 <body>
-  <div class="login-screen" id="loginScreen">
+  <div class="login-screen hidden" id="loginScreen">
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -512,6 +519,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       <input class="login-input" id="passwordInput" type="password" data-ph-ko="관리자 비밀번호" data-ph-en="Admin password" placeholder="관리자 비밀번호" autocomplete="current-password">
       <p class="login-error" id="loginError"></p>
       <button class="login-btn" id="loginBtn" type="button" data-ko="로그인" data-en="Sign In">로그인</button>
+      <button class="ghost login-close-btn" id="loginCloseBtn" type="button" data-ko="보기로 돌아가기" data-en="Back to View">보기로 돌아가기</button>
     </div>
   </div>
 
@@ -722,6 +730,9 @@ const pageTitle = 'WOLKO Schedule Planner';
             <select id="groupFilterSelect" aria-label="Schedule group filter"></select>
             <select id="dateJumpSelect" aria-label="Schedule date shortcut"></select>
             <button class="secondary" id="todayBtn" type="button" data-ko="오늘" data-en="Today">오늘</button>
+            <button class="secondary danger" id="deleteDayBtn" type="button" data-ko="선택일 삭제" data-en="Delete Day">선택일 삭제</button>
+            <button class="secondary danger" id="deleteAllBtn" type="button" data-ko="전체 삭제" data-en="Delete All">전체 삭제</button>
+            <button class="secondary restore-btn" id="restoreDeleteBtn" type="button" data-ko="마지막 삭제 복구" data-en="Restore Last Delete">마지막 삭제 복구</button>
             <button class="secondary" id="printBtn" type="button" data-ko="프린트" data-en="Print">프린트</button>
           </div>
         </div>
@@ -766,6 +777,10 @@ const pageTitle = 'WOLKO Schedule Planner';
     const COPY = {
       ko: {
         loginNeeded: '로그인 필요',
+        editLoginRequired: '수정하려면 관리자 비밀번호를 입력해주세요.',
+        viewMode: '보기 모드',
+        editMode: '수정 가능',
+        editLogin: '수정 로그인',
         saveNeeded: '저장 필요',
         loading: '불러오는 중...',
         saved: '저장됨',
@@ -804,6 +819,13 @@ const pageTitle = 'WOLKO Schedule Planner';
         addSchedule: '일정 추가',
         updateSchedule: '일정 수정',
         delete: '삭제',
+        deleteDayConfirm: ({ date, count, filter }) => `${date}${filter ? ` · ${filter}` : ''} 일정 ${count}개를 삭제할까요?\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
+        deleteAllConfirm: ({ events, people, vans, plans }) => `전체 데이터를 삭제할까요?\n일정 ${events}개, 명단 ${people}명, 차량 ${vans}대, 차량 배정표 ${plans}개가 삭제됩니다.\n삭제 후 "마지막 삭제 복구"로 되돌릴 수 있습니다.`,
+        deleteNone: '삭제할 데이터가 없습니다.',
+        deleteDayDone: count => `선택한 날짜의 일정 ${count}개를 삭제했습니다.`,
+        deleteAllDone: '전체 데이터를 삭제했습니다.',
+        restoreNone: '복구할 삭제 백업이 없습니다.',
+        restoreDone: '마지막 삭제 전 상태로 복구했습니다.',
         noDayEvents: '선택한 날짜에 등록된 일정이 없습니다.',
         noWeekEvents: '일정 없음',
         noVehiclePlans: '차량 배정표를 추가하면 밴별 배정표가 여기에 표시됩니다.',
@@ -831,6 +853,10 @@ const pageTitle = 'WOLKO Schedule Planner';
       },
       en: {
         loginNeeded: 'Login required',
+        editLoginRequired: 'Enter the admin password to edit.',
+        viewMode: 'View mode',
+        editMode: 'Edit mode',
+        editLogin: 'Edit Login',
         saveNeeded: 'Unsaved changes',
         loading: 'Loading...',
         saved: 'Saved',
@@ -869,6 +895,13 @@ const pageTitle = 'WOLKO Schedule Planner';
         addSchedule: 'Add Schedule',
         updateSchedule: 'Update Schedule',
         delete: 'Delete',
+        deleteDayConfirm: ({ date, count, filter }) => `Delete ${count} schedule item(s) for ${date}${filter ? ` · ${filter}` : ''}?\nYou can restore this with "Restore Last Delete".`,
+        deleteAllConfirm: ({ events, people, vans, plans }) => `Delete all planner data?\nThis removes ${events} schedule item(s), ${people} people, ${vans} vehicle(s), and ${plans} vehicle plan(s).\nYou can restore this with "Restore Last Delete".`,
+        deleteNone: 'There is no data to delete.',
+        deleteDayDone: count => `Deleted ${count} schedule item(s) for the selected date.`,
+        deleteAllDone: 'Deleted all planner data.',
+        restoreNone: 'There is no delete backup to restore.',
+        restoreDone: 'Restored the planner to the state before the last delete.',
         noDayEvents: 'No schedules for the selected date.',
         noWeekEvents: 'No schedule',
         noVehiclePlans: 'Add a vehicle plan to show assignments by van.',
@@ -907,6 +940,7 @@ const pageTitle = 'WOLKO Schedule Planner';
       loginScreen: document.getElementById('loginScreen'),
       passwordInput: document.getElementById('passwordInput'),
       loginBtn: document.getElementById('loginBtn'),
+      loginCloseBtn: document.getElementById('loginCloseBtn'),
       loginError: document.getElementById('loginError'),
       datePicker: document.getElementById('datePicker'),
       calendarToggle: document.getElementById('calendarToggle'),
@@ -961,6 +995,9 @@ const pageTitle = 'WOLKO Schedule Planner';
       groupFilterSelect: document.getElementById('groupFilterSelect'),
       dateJumpSelect: document.getElementById('dateJumpSelect'),
       todayBtn: document.getElementById('todayBtn'),
+      deleteDayBtn: document.getElementById('deleteDayBtn'),
+      deleteAllBtn: document.getElementById('deleteAllBtn'),
+      restoreDeleteBtn: document.getElementById('restoreDeleteBtn'),
       printBtn: document.getElementById('printBtn'),
       statToday: document.getElementById('statToday'),
       statWeek: document.getElementById('statWeek'),
@@ -974,6 +1011,8 @@ const pageTitle = 'WOLKO Schedule Planner';
     let currentView = 'day';
     let calendarMonth = '';
     let currentGroupFilter = 'all';
+    let pendingEditorAction = null;
+    const DELETE_BACKUP_KEY = 'wolko_schedule_planner_delete_backup_v1';
     let plan = {
       title: 'WOLKO Staff Schedule',
       vans: [
@@ -1000,8 +1039,15 @@ const pageTitle = 'WOLKO Schedule Planner';
       els.langToggleBtn.textContent = currentLang === 'ko' ? 'EN' : 'KR';
       els.langToggleBtn.setAttribute('aria-label', currentLang === 'ko' ? 'Switch to English' : '한국어로 전환');
       els.addEventBtn.textContent = editingId ? tr('updateSchedule') : tr('addSchedule');
+      applyAuthState();
       renderImportHistorySelect();
-      if (!token) setState(tr('loginNeeded'));
+    }
+
+    function applyAuthState() {
+      els.logoutBtn.textContent = token ? (currentLang === 'ko' ? '로그아웃' : 'Log Out') : tr('editLogin');
+      if (!els.saveState.textContent || [COPY.ko.loginNeeded, COPY.en.loginNeeded, COPY.ko.viewMode, COPY.en.viewMode, COPY.ko.editMode, COPY.en.editMode].includes(els.saveState.textContent)) {
+        setState(token ? tr('editMode') : tr('viewMode'));
+      }
     }
 
     function setLanguage(lang) {
@@ -2023,6 +2069,101 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       render();
     }
 
+    function clonePlanSnapshot() {
+      return JSON.parse(JSON.stringify({
+        title: plan.title || 'WOLKO Staff Schedule',
+        vans: Array.isArray(plan.vans) ? plan.vans : [],
+        events: Array.isArray(plan.events) ? plan.events : [],
+        people: Array.isArray(plan.people) ? plan.people : [],
+        transportPlans: Array.isArray(plan.transportPlans) ? plan.transportPlans : [],
+        updatedAt: plan.updatedAt || '',
+      }));
+    }
+
+    function saveDeleteBackup(reason) {
+      try {
+        localStorage.setItem(DELETE_BACKUP_KEY, JSON.stringify({
+          reason,
+          savedAt: new Date().toISOString(),
+          plan: clonePlanSnapshot(),
+        }));
+      } catch (error) {
+        console.warn('Delete backup save failed:', error);
+      }
+    }
+
+    function hasDeleteBackup() {
+      try { return !!JSON.parse(localStorage.getItem(DELETE_BACKUP_KEY) || 'null')?.plan; }
+      catch { return false; }
+    }
+
+    function deleteSelectedDayData() {
+      const date = els.selectedDate.value || todayIso();
+      const beforeEvents = plan.events.length;
+      const beforePlans = (plan.transportPlans || []).length;
+      const filterLabel = currentGroupFilter === 'all'
+        ? ''
+        : groupOptions().find(group => group.key === currentGroupFilter)?.label || '';
+      const shouldDeleteItem = item => item.date === date && matchesGroupFilter(item);
+      const count = plan.events.filter(shouldDeleteItem).length
+        + (plan.transportPlans || []).filter(shouldDeleteItem).length;
+      if (!count) {
+        setState(tr('deleteNone'));
+        return;
+      }
+      if (!confirm(tr('deleteDayConfirm', { date, count, filter: filterLabel }))) return;
+      saveDeleteBackup(`day:${date}`);
+      plan.events = plan.events.filter(item => !shouldDeleteItem(item));
+      plan.transportPlans = (plan.transportPlans || []).filter(item => !shouldDeleteItem(item));
+      if (editingId && !plan.events.some(item => item.id === editingId)) clearForm();
+      markDirty();
+      setState(tr('deleteDayDone', (beforeEvents - plan.events.length) + (beforePlans - plan.transportPlans.length)));
+    }
+
+    function deleteAllData() {
+      const totals = {
+        events: plan.events.length,
+        people: (plan.people || []).length,
+        vans: (plan.vans || []).length,
+        plans: (plan.transportPlans || []).length,
+      };
+      if (!totals.events && !totals.people && !totals.vans && !totals.plans) {
+        setState(tr('deleteNone'));
+        return;
+      }
+      if (!confirm(tr('deleteAllConfirm', totals))) return;
+      saveDeleteBackup('all');
+      plan.events = [];
+      plan.people = [];
+      plan.vans = [];
+      plan.transportPlans = [];
+      currentGroupFilter = 'all';
+      clearForm();
+      markDirty();
+      setState(tr('deleteAllDone'));
+    }
+
+    function restoreLastDelete() {
+      let backup;
+      try { backup = JSON.parse(localStorage.getItem(DELETE_BACKUP_KEY) || 'null'); }
+      catch { backup = null; }
+      if (!backup?.plan) {
+        setState(tr('restoreNone'));
+        return;
+      }
+      plan = backup.plan;
+      plan.people = Array.isArray(plan.people) ? plan.people : [];
+      plan.vans = Array.isArray(plan.vans) ? plan.vans : [];
+      plan.events = Array.isArray(plan.events) ? plan.events : [];
+      plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
+      els.planTitle.value = plan.title || '';
+      currentGroupFilter = 'all';
+      clearForm();
+      try { localStorage.removeItem(DELETE_BACKUP_KEY); } catch {}
+      markDirty();
+      setState(tr('restoreDone'));
+    }
+
     function evText(ev, field) {
       if (currentLang === 'en' && ev._en?.[field]) return ev._en[field];
       return ev[field] || '';
@@ -2399,6 +2540,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       renderPeople();
       renderList();
       renderFleet();
+      els.restoreDeleteBtn.disabled = !hasDeleteBackup();
       document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === `view-${currentView}`));
       document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === currentView));
       if (els.eventVan.dataset.value !== undefined) {
@@ -2469,6 +2611,25 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       renderVansSelect();
     }
 
+    function showLogin(action = null) {
+      pendingEditorAction = action;
+      els.loginError.textContent = tr('editLoginRequired');
+      els.loginScreen.classList.remove('hidden');
+      setTimeout(() => els.passwordInput.focus(), 30);
+    }
+
+    function hideLogin() {
+      els.loginScreen.classList.add('hidden');
+      els.loginError.textContent = '';
+      els.passwordInput.value = '';
+    }
+
+    function requireEditor(action = null) {
+      if (token) return true;
+      showLogin(action);
+      return false;
+    }
+
     async function login() {
       els.loginBtn.disabled = true;
       els.loginError.textContent = '';
@@ -2482,8 +2643,12 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
         if (!res.ok) throw new Error(data.error || tr('loginFailed'));
         token = data.token;
         localStorage.setItem(TOKEN_KEY, token);
-        els.loginScreen.classList.add('hidden');
+        hideLogin();
+        applyAuthState();
         await loadPlan();
+        const action = pendingEditorAction;
+        pendingEditorAction = null;
+        if (typeof action === 'function') setTimeout(action, 0);
       } catch (error) {
         els.loginError.textContent = error.message;
       } finally {
@@ -2530,26 +2695,30 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
 
     async function loadPlan() {
       setState(tr('loading'));
-      const res = await fetch('/api/schedule-planner/data', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch('/api/schedule-planner/data', { headers });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        localStorage.removeItem(TOKEN_KEY);
-        token = '';
-        els.loginScreen.classList.remove('hidden');
-        setState(tr('loginNeeded'));
+        if (res.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          token = '';
+          applyAuthState();
+          showLogin();
+          throw new Error(data.error || tr('loginNeeded'));
+        }
+        setState(data.error || tr('loadFailed'));
         throw new Error(data.error || tr('loadFailed'));
       }
       plan = data.plan || plan;
       plan.people = Array.isArray(plan.people) ? plan.people : [];
       plan.transportPlans = Array.isArray(plan.transportPlans) ? plan.transportPlans : [];
       els.planTitle.value = plan.title || '';
-      setState(plan.updatedAt ? `${tr('saved')} ${new Date(plan.updatedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US')}` : tr('saved'));
+      setState(plan.updatedAt ? `${tr('saved')} ${new Date(plan.updatedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US')}` : (token ? tr('editMode') : tr('viewMode')));
       render();
     }
 
     async function savePlan() {
+      if (!requireEditor(savePlan)) return;
       plan.title = els.planTitle.value.trim() || 'WOLKO Staff Schedule';
       setState(tr('saving'));
       els.saveBtn.disabled = true;
@@ -2560,7 +2729,15 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
           body: JSON.stringify({ plan }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || tr('saveFailed'));
+        if (!res.ok) {
+          if (res.status === 401) {
+            localStorage.removeItem(TOKEN_KEY);
+            token = '';
+            applyAuthState();
+            showLogin(savePlan);
+          }
+          throw new Error(data.error || tr('saveFailed'));
+        }
         plan = data.plan;
         els.planTitle.value = plan.title || '';
         setState(`${tr('saved')} ${new Date(plan.updatedAt).toLocaleString(currentLang === 'ko' ? 'ko-KR' : 'en-US')}`);
@@ -2607,6 +2784,11 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     applySidebar();
 
     els.loginBtn.addEventListener('click', login);
+    els.loginCloseBtn.addEventListener('click', () => {
+      pendingEditorAction = null;
+      hideLogin();
+      applyAuthState();
+    });
     enforceAsciiPasswordInput(els.passwordInput);
     els.passwordInput.addEventListener('keydown', event => { if (event.key === 'Enter') login(); });
     els.calendarToggle.addEventListener('click', toggleCalendar);
@@ -2626,7 +2808,10 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     });
     els.langToggleBtn.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
     els.saveBtn.addEventListener('click', savePlan);
-    els.importBtn.addEventListener('click', () => els.excelInput.click());
+    els.importBtn.addEventListener('click', () => {
+      if (!requireEditor(() => els.excelInput.click())) return;
+      els.excelInput.click();
+    });
     els.groupFilterSelect.addEventListener('change', () => {
       currentGroupFilter = els.groupFilterSelect.value || 'all';
       render();
@@ -2673,7 +2858,10 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
 
     els.importHistoryLoadBtn.addEventListener('click', () => {
       const id = els.importHistorySelect.value;
-      if (id) applyHistoryEntry(id);
+      if (id) {
+        if (!requireEditor(() => applyHistoryEntry(id))) return;
+        applyHistoryEntry(id);
+      }
     });
 
     els.importHistoryDeleteBtn.addEventListener('click', () => {
@@ -2687,6 +2875,10 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     els.excelInput.addEventListener('change', async () => {
       const file = els.excelInput.files?.[0];
       if (!file) return;
+      if (!requireEditor()) {
+        els.excelInput.value = '';
+        return;
+      }
       setState(tr('importLoading'));
       els.importBtn.disabled = true;
       try {
@@ -2713,10 +2905,13 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       }
     });
     els.logoutBtn.addEventListener('click', () => {
+      if (!token) {
+        showLogin();
+        return;
+      }
       localStorage.removeItem(TOKEN_KEY);
       token = '';
-      els.loginScreen.classList.remove('hidden');
-      setState(tr('loginNeeded'));
+      applyAuthState();
     });
     els.selectedDate.addEventListener('change', () => {
       els.eventDate.value = els.selectedDate.value;
@@ -2725,13 +2920,30 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     els.todayBtn.addEventListener('click', () => {
       selectScheduleDate(todayIso(), { close: false });
     });
+    els.deleteDayBtn.addEventListener('click', () => {
+      if (!requireEditor(deleteSelectedDayData)) return;
+      deleteSelectedDayData();
+    });
+    els.deleteAllBtn.addEventListener('click', () => {
+      if (!requireEditor(deleteAllData)) return;
+      deleteAllData();
+    });
+    els.restoreDeleteBtn.addEventListener('click', () => {
+      if (!requireEditor(restoreLastDelete)) return;
+      restoreLastDelete();
+    });
     els.printBtn.addEventListener('click', () => window.print());
     els.resetEventBtn.addEventListener('click', clearForm);
     els.planTitle.addEventListener('input', () => {
+      if (!requireEditor()) {
+        els.planTitle.value = plan.title || '';
+        return;
+      }
       plan.title = els.planTitle.value.trim() || 'WOLKO Staff Schedule';
       markDirty();
     });
     els.addEventBtn.addEventListener('click', () => {
+      if (!requireEditor(() => els.addEventBtn.click())) return;
       const event = readForm();
       if (!event.title || !event.date || !event.timeText) {
         setState(tr('titleRequired'));
@@ -2744,12 +2956,14 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       markDirty();
     });
     els.deleteEventBtn.addEventListener('click', () => {
+      if (!requireEditor(() => els.deleteEventBtn.click())) return;
       if (!editingId) return;
       plan.events = plan.events.filter(event => event.id !== editingId);
       clearForm();
       markDirty();
     });
     els.addPersonBtn.addEventListener('click', () => {
+      if (!requireEditor(() => els.addPersonBtn.click())) return;
       const name = els.personName.value.trim();
       if (!name) {
         setState(tr('personRequired'));
@@ -2778,6 +2992,7 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       markDirty();
     });
     els.addTransportBtn.addEventListener('click', () => {
+      if (!requireEditor(() => els.addTransportBtn.click())) return;
       const title = els.transportTitle.value.trim();
       if (!title) {
         setState(tr('transportRequired'));
@@ -2815,21 +3030,25 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       }
       const removeVan = event.target.closest('[data-remove-van]')?.dataset.removeVan;
       if (removeVan) {
+        if (!requireEditor(() => event.target.closest('[data-remove-van]')?.click())) return;
         plan.vans = plan.vans.filter(van => van.id !== removeVan);
         plan.events = plan.events.map(item => item.vanId === removeVan ? { ...item, vanId: '' } : item);
         markDirty();
       }
       if (event.target.id === 'addVanBtn') {
+        if (!requireEditor(() => document.getElementById('addVanBtn')?.click())) return;
         plan.vans.push({ id: crypto.randomUUID(), name: `${tr('vehicle')} ${plan.vans.length + 1}`, seats: 0, driver: '', memo: '' });
         markDirty();
       }
       const removePerson = event.target.closest('[data-remove-person]')?.dataset.removePerson;
       if (removePerson) {
+        if (!requireEditor(() => event.target.closest('[data-remove-person]')?.click())) return;
         plan.people = (plan.people || []).filter(person => person.id !== removePerson);
         markDirty();
       }
       const removeTransport = event.target.closest('[data-remove-transport]')?.dataset.removeTransport;
       if (removeTransport) {
+        if (!requireEditor(() => event.target.closest('[data-remove-transport]')?.click())) return;
         plan.transportPlans = (plan.transportPlans || []).filter(item => item.id !== removeTransport);
         markDirty();
       }
@@ -2837,6 +3056,10 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     document.addEventListener('input', event => {
       const assignField = event.target.dataset.assignField;
       if (assignField) {
+        if (!requireEditor()) {
+          renderVans();
+          return;
+        }
         const transport = (plan.transportPlans || []).find(item => item.id === event.target.dataset.transportId);
         if (!transport) return;
         const vanId = event.target.dataset.vanId;
@@ -2849,6 +3072,10 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
       const field = event.target.dataset.vanField;
       const vanId = event.target.dataset.vanId;
       if (!field || !vanId) return;
+      if (!requireEditor()) {
+        renderFleet();
+        return;
+      }
       const van = plan.vans.find(item => item.id === vanId);
       if (!van) return;
       van[field] = field === 'seats' ? Math.max(0, parseInt(event.target.value, 10) || 0) : event.target.value.trim();
@@ -2861,12 +3088,9 @@ Input: ${JSON.stringify(targets.map(t => t.text))}`;
     clearForm();
     applyLanguage();
     render();
-    if (token) {
-      els.loginScreen.classList.add('hidden');
-      loadPlan().catch(error => {
-        els.loginError.textContent = error.message;
-      });
-    }
+    loadPlan().catch(error => {
+      setState(error.message || tr('loadFailed'));
+    });
   </script>
 </body>
 </html>
