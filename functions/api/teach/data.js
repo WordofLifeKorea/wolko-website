@@ -5,6 +5,7 @@ const CORS = {
 
 const DATA_KEY = 'teach:data:v1';
 const MAX_ITEMS = 2000;
+const THUMBNAIL_BACKFILL_LIMIT = 8;
 const TAB_SET = new Set(['teacher', 'program', 'counselor', 'preacher', 'general']);
 
 function toHex(bytes) {
@@ -164,6 +165,29 @@ async function writeData(env, items) {
   return data;
 }
 
+async function backfillMissingThumbnails(env, items) {
+  const indexes = [];
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i];
+    if (!item?.url || item.thumbnailUrl) continue;
+    if (isDirectResourceUrl(item.url)) continue;
+    indexes.push(i);
+    if (indexes.length >= THUMBNAIL_BACKFILL_LIMIT) break;
+  }
+  if (!indexes.length) return;
+
+  let changed = false;
+  const nextItems = items.map(item => ({ ...item }));
+  await Promise.all(indexes.map(async index => {
+    const thumbnailUrl = await fetchLinkThumbnail(nextItems[index].url);
+    if (!thumbnailUrl) return;
+    nextItems[index].thumbnailUrl = text(thumbnailUrl, 500);
+    nextItems[index].updatedAt = new Date().toISOString();
+    changed = true;
+  }));
+  if (changed) await writeData(env, nextItems);
+}
+
 function inferLegacyTab(item) {
   // tab 필드가 도입되기 전에 저장됐거나 잘못 general로 들어간 항목:
   // team/person이 있으면 수업자료(teacher) 데이터였던 것으로 간주한다.
@@ -178,6 +202,9 @@ export async function onRequestGet(context) {
     return Response.json({ items: [] }, { headers: CORS });
   }
   const data = await readData(env);
+  if (typeof context.waitUntil === 'function') {
+    context.waitUntil(backfillMissingThumbnails(env, data.items));
+  }
   const items = data.items.map(item => (
     { ...item, tab: inferLegacyTab(item) }
   ));
