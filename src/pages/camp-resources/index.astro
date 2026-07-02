@@ -615,6 +615,11 @@ const pageTitle = 'WOLKO Camp Resources';
       return (campIds || []).map(id => campById(id)?.name).filter(Boolean).join(', ');
     }
 
+    function itemTab(item) {
+      if (item?.team || item?.person) return 'teacher';
+      return TAB_KEYS.includes(item?.tab) ? item.tab : 'general';
+    }
+
     function sortedYears() {
       return [...new Set(camps.map(c => c.year))].sort((a, b) => String(b).localeCompare(String(a), 'ko', { numeric: true }));
     }
@@ -753,11 +758,11 @@ const pageTitle = 'WOLKO Camp Resources';
 
     function renderCategoryGroups() {
       if (currentTab === 'general') {
-        const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && (i.tab === 'general' || !TAB_KEYS.includes(i.tab)));
+        const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && itemTab(i) === 'general');
         els.subjectGroups.innerHTML = flatListHtml(tabLabel('general'), campItems, { tab: 'general' });
         return;
       }
-      const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && i.tab === currentTab);
+      const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && itemTab(i) === currentTab);
       if (currentTab === 'teacher') {
         const byTeam = groupByTeam(campItems);
         els.subjectGroups.innerHTML = TEAMS_ORDER.map(team => {

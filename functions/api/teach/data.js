@@ -145,7 +145,9 @@ async function writeData(env, items) {
 }
 
 function inferLegacyTab(item) {
-  // tab 필드가 도입되기 전에 저장된 항목: team이 있으면 수업자료(teacher) 데이터였던 것으로 간주
+  // tab 필드가 도입되기 전에 저장됐거나 잘못 general로 들어간 항목:
+  // team/person이 있으면 수업자료(teacher) 데이터였던 것으로 간주한다.
+  if (item.team || item.person) return 'teacher';
   if (item.tab && TAB_SET.has(item.tab)) return item.tab;
   return item.team ? 'teacher' : 'general';
 }
@@ -157,7 +159,7 @@ export async function onRequestGet(context) {
   }
   const data = await readData(env);
   const items = data.items.map(item => (
-    item.tab && TAB_SET.has(item.tab) ? item : { ...item, tab: inferLegacyTab(item) }
+    { ...item, tab: inferLegacyTab(item) }
   ));
   return Response.json({ items }, { headers: CORS });
 }
