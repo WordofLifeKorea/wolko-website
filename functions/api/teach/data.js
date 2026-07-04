@@ -120,18 +120,21 @@ async function cleanItem(input, existing) {
     : (existing?.campIds || []);
   const title = text(input?.title, 160) || existing?.title || '';
   const url = text(input?.url, 500) || existing?.url || '';
+  const archiveUrl = input?.archiveUrl !== undefined ? text(input.archiveUrl, 500) : (existing?.archiveUrl || '');
   const bgmUrl = input?.bgmUrl !== undefined ? text(input.bgmUrl, 500) : (existing?.bgmUrl || '');
   if (!tab) return { error: '탭 값이 올바르지 않습니다.' };
   if (!campIds.length) return { error: '캠프를 하나 이상 선택해주세요.' };
   if (!title) return { error: '제목을 입력해주세요.' };
-  if (!url) return { error: '링크 또는 파일을 입력해주세요.' };
-  if (!isValidUrl(url)) return { error: `링크 형식이 올바르지 않습니다: ${url.slice(0, 80)}` };
+  if (!url && !archiveUrl) return { error: '링크 또는 보관 파일을 입력해주세요.' };
+  if (url && !isValidUrl(url)) return { error: `링크 형식이 올바르지 않습니다: ${url.slice(0, 80)}` };
+  if (archiveUrl && !isValidUrl(archiveUrl)) return { error: `보관 파일 링크 형식이 올바르지 않습니다: ${archiveUrl.slice(0, 80)}` };
   if (tab === 'teacher' && !team) return { error: '팀을 선택해주세요.' };
   if (bgmUrl && !isValidUrl(bgmUrl)) return { error: `BGM 링크 형식이 올바르지 않습니다: ${bgmUrl.slice(0, 80)}` };
   const now = new Date().toISOString();
   let thumbnailUrl = existing?.thumbnailUrl || '';
-  if (!thumbnailUrl || url !== existing?.url) {
-    thumbnailUrl = await fetchLinkThumbnail(url);
+  const thumbnailSourceUrl = url || archiveUrl;
+  if (thumbnailSourceUrl && (!thumbnailUrl || thumbnailSourceUrl !== (existing?.url || existing?.archiveUrl || ''))) {
+    thumbnailUrl = await fetchLinkThumbnail(thumbnailSourceUrl);
   }
   return {
     item: {
@@ -142,6 +145,7 @@ async function cleanItem(input, existing) {
       campIds,
       title,
       url,
+      archiveUrl,
       bgmUrl,
       thumbnailUrl: text(thumbnailUrl, 500),
       createdAt: existing?.createdAt || now,
@@ -169,8 +173,9 @@ async function backfillMissingThumbnails(env, items) {
   const indexes = [];
   for (let i = 0; i < items.length; i += 1) {
     const item = items[i];
-    if (!item?.url || item.thumbnailUrl) continue;
-    if (isDirectResourceUrl(item.url)) continue;
+    const resourceUrl = item?.url || item?.archiveUrl || '';
+    if (!resourceUrl || item.thumbnailUrl) continue;
+    if (isDirectResourceUrl(resourceUrl)) continue;
     indexes.push(i);
     if (indexes.length >= THUMBNAIL_BACKFILL_LIMIT) break;
   }
@@ -179,7 +184,7 @@ async function backfillMissingThumbnails(env, items) {
   let changed = false;
   const nextItems = items.map(item => ({ ...item }));
   await Promise.all(indexes.map(async index => {
-    const thumbnailUrl = await fetchLinkThumbnail(nextItems[index].url);
+    const thumbnailUrl = await fetchLinkThumbnail(nextItems[index].url || nextItems[index].archiveUrl);
     if (!thumbnailUrl) return;
     nextItems[index].thumbnailUrl = text(thumbnailUrl, 500);
     nextItems[index].updatedAt = new Date().toISOString();

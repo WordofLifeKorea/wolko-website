@@ -168,6 +168,11 @@ const pageTitle = 'WOLKO Camp Resources';
     .present-card-meta { color:var(--muted); font-size:11px; font-weight:500; }
     .bgm-chip { align-self:flex-start; display:inline-flex; align-items:center; gap:4px; border-radius:999px; background:#f0fdfa; color:#0f766e; padding:4px 10px; font-size:11px; font-weight:600; text-decoration:none; }
     .bgm-chip:hover { background:#ccfbf1; }
+    .resource-chip-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .resource-chip { align-self:flex-start; display:inline-flex; align-items:center; gap:4px; border-radius:999px; background:#eef4f7; color:#45616f; padding:4px 10px; font-size:11px; font-weight:700; text-decoration:none; }
+    .resource-chip.is-archived { background:#ecfdf5; color:#047857; }
+    .resource-chip.is-missing { background:#fff7ed; color:#c45f00; }
+    .resource-chip:hover { filter:brightness(.97); }
     .present-card-actions { display:flex; gap:6px; margin-top:4px; }
     .present-card-actions button { flex:1; min-height:var(--btn-h-sm); border-radius:8px; padding:0 8px; font-size:11px; font-weight:600; border:1px solid #dbe7ec; background:#f8fafc; color:var(--text); }
     .present-card-actions button.danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
@@ -343,10 +348,14 @@ const pageTitle = 'WOLKO Camp Resources';
         <input id="itemTitle" type="text">
       </div>
       <div class="field">
-        <label data-ko="링크 / 파일" data-en="Link / File">링크 / 파일</label>
+        <label data-ko="우선 열 링크" data-en="Primary Link">우선 열 링크</label>
         <input id="itemUrl" type="url" placeholder="https://www.canva.com/design/...">
       </div>
-      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="파일 업로드 (PDF·PPTX·이미지)" data-en="Upload File (PDF/PPTX/Image)">파일 업로드 (PDF·PPTX·이미지)</button>
+      <div class="field">
+        <label data-ko="보관 파일 (선택)" data-en="Archive File (optional)">보관 파일 (선택)</label>
+        <input id="itemArchiveUrl" type="url" placeholder="업로드하면 자동 입력됩니다">
+      </div>
+      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="보관 파일 업로드 (PDF·PPTX·이미지)" data-en="Upload Archive File (PDF/PPTX/Image)">보관 파일 업로드 (PDF·PPTX·이미지)</button>
       <input id="uploadFileInput" type="file" accept=".pdf,.pptx,.png,.jpg,.jpeg,.webp,.gif,.heic,.heif" hidden>
       <div class="field" id="bgmFieldWrap">
         <div class="field-divider"></div>
@@ -436,7 +445,7 @@ const pageTitle = 'WOLKO Camp Resources';
         saveFailed: '저장하지 못했습니다.',
         deleteFailed: '삭제하지 못했습니다.',
         loadFailed: '목록을 불러오지 못했습니다.',
-        validationError: '캠프를 하나 이상 선택하고, 제목과 URL을 입력해주세요.',
+        validationError: '캠프를 하나 이상 선택하고, 제목과 링크 또는 보관 파일을 입력해주세요.',
         validationErrorTeam: '팀을 선택해주세요.',
         validationErrorPerson: 'WOLKO 팀은 이름을 입력해주세요.',
         addTitle: '자료 추가',
@@ -479,7 +488,7 @@ const pageTitle = 'WOLKO Camp Resources';
         saveFailed: 'Could not save.',
         deleteFailed: 'Could not delete.',
         loadFailed: 'Could not load the list.',
-        validationError: 'Please select at least one camp and fill in title and URL.',
+        validationError: 'Please select at least one camp and fill in title and a link or archive file.',
         validationErrorTeam: 'Please choose a team.',
         validationErrorPerson: 'Please enter a name for the WOLKO team.',
         addTitle: 'Add Resource',
@@ -566,6 +575,7 @@ const pageTitle = 'WOLKO Camp Resources';
       campCheckboxList: document.getElementById('campCheckboxList'),
       itemTitle: document.getElementById('itemTitle'),
       itemUrl: document.getElementById('itemUrl'),
+      itemArchiveUrl: document.getElementById('itemArchiveUrl'),
       itemDialogError: document.getElementById('itemDialogError'),
       itemDialogCancelBtn: document.getElementById('itemDialogCancelBtn'),
       itemDialogSaveBtn: document.getElementById('itemDialogSaveBtn'),
@@ -727,12 +737,13 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     function previewMeta(item) {
-      const ext = resourceExt(item.url);
+      const previewUrl = item.url || item.archiveUrl || '';
+      const ext = resourceExt(previewUrl);
       if (item.thumbnailUrl) return { image: item.thumbnailUrl };
-      if (/^(png|jpe?g|webp|gif|heic|heif)$/i.test(ext)) return { image: item.url };
+      if (/^(png|jpe?g|webp|gif|heic|heif)$/i.test(ext)) return { image: previewUrl };
       if (ext === 'pdf') return { label: 'PDF', sub: 'File', className: 'is-pdf' };
       if (ext === 'pptx') return { label: 'PPT', sub: 'Slides', className: 'is-pptx' };
-      const host = resourceHost(item.url);
+      const host = resourceHost(previewUrl);
       if (/canva\.com$/i.test(host)) return { label: 'CV', sub: 'Canva', className: 'is-link' };
       return { label: 'URL', sub: host || 'Link', className: 'is-link' };
     }
@@ -777,8 +788,12 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     function presentCardHtml(item) {
+      const openUrl = item.url || item.archiveUrl || '';
+      const archiveChip = item.archiveUrl
+        ? `<a class="resource-chip is-archived" href="${escapeHtml(item.archiveUrl)}" target="_blank" rel="noopener" data-stop>${currentLang === 'en' ? 'Archived' : '보관됨'}</a>`
+        : (editMode ? `<span class="resource-chip is-missing">${currentLang === 'en' ? 'Needs archive' : '보관 필요'}</span>` : '');
       return `
-        <div class="present-card${editMode ? ' is-editable' : ''}" data-open-url="${escapeHtml(item.url)}" data-item-id="${escapeHtml(item.id)}">
+        <div class="present-card${editMode ? ' is-editable' : ''}" data-open-url="${escapeHtml(openUrl)}" data-item-id="${escapeHtml(item.id)}">
           ${cardPreviewHtml(item)}
           ${editMode ? `<button class="drag-handle" type="button" draggable="true" data-stop title="${escapeHtml(tr('dragHint'))}" aria-label="${escapeHtml(tr('dragHint'))}">
             <svg viewBox="0 0 16 24" aria-hidden="true">
@@ -793,7 +808,7 @@ const pageTitle = 'WOLKO Camp Resources';
           <div class="present-card-body">
             <div class="present-card-title">${escapeHtml(item.title)}</div>
             <div class="present-card-meta">${escapeHtml(campNamesFor(item.campIds))}</div>
-            ${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}
+            ${(archiveChip || item.bgmUrl) ? `<div class="resource-chip-row">${archiveChip}${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}</div>` : ''}
             ${editMode ? `
               <div class="present-card-actions" data-stop>
                 <button type="button" data-edit-item="${escapeHtml(item.id)}">${escapeHtml(tr('edit'))}</button>
@@ -973,7 +988,7 @@ const pageTitle = 'WOLKO Camp Resources';
         return;
       }
       const card = event.target.closest('[data-open-url]');
-      if (card) window.open(card.dataset.openUrl, '_blank', 'noopener');
+      if (card && card.dataset.openUrl) window.open(card.dataset.openUrl, '_blank', 'noopener');
     });
 
     let draggedCard = null;
@@ -1230,6 +1245,7 @@ const pageTitle = 'WOLKO Camp Resources';
       renderCampCheckboxes((item && item.campIds) || (selectedCampId ? [selectedCampId] : []));
       els.itemTitle.value = (item && item.title) || '';
       els.itemUrl.value = (item && item.url) || '';
+      els.itemArchiveUrl.value = (item && item.archiveUrl) || '';
       els.itemBgmUrl.value = (item && item.bgmUrl) || '';
       els.itemDialogError.textContent = '';
       els.itemDialogBackdrop.hidden = false;
@@ -1248,9 +1264,10 @@ const pageTitle = 'WOLKO Camp Resources';
         campIds,
         title: els.itemTitle.value.trim(),
         url: els.itemUrl.value.trim(),
+        archiveUrl: els.itemArchiveUrl.value.trim(),
         bgmUrl: hasBgm ? els.itemBgmUrl.value.trim() : '',
       };
-      if (!payload.campIds.length || !payload.title || !payload.url) {
+      if (!payload.campIds.length || !payload.title || (!payload.url && !payload.archiveUrl)) {
         els.itemDialogError.textContent = tr('validationError');
         return;
       }
@@ -1333,7 +1350,7 @@ const pageTitle = 'WOLKO Camp Resources';
       const file = els.uploadFileInput.files?.[0];
       els.uploadFileInput.value = '';
       if (!file) return;
-      await uploadFile(file, 'presentation', /\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i, els.itemUrl, els.uploadFileBtn);
+      await uploadFile(file, 'presentation', /\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i, els.itemArchiveUrl, els.uploadFileBtn);
     });
 
     els.uploadBgmBtn.addEventListener('click', () => els.uploadBgmInput.click());
