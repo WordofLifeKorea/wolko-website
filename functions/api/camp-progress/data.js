@@ -29,6 +29,11 @@ function safeTeamColor(value) {
   return ['red', 'blue', 'yellow', 'green'].includes(value) ? value : '';
 }
 
+function isPlaceholderParticipantName(name, index) {
+  const normalized = String(name || '').trim();
+  return normalized === `학생 ${index + 1}` || normalized === `Student ${index + 1}`;
+}
+
 function isFinalConfirmed(reg) {
   if (reg.status === 'confirmed') return true;
   return reg.status === undefined && reg.confirmed === true;
@@ -131,12 +136,14 @@ function campersFromGroup(reg) {
   const count = Math.max(parseInt(reg.groupCount, 10) || 0, Array.isArray(reg.participants) ? reg.participants.length : 0);
   return Array.from({ length: count }, (_, index) => {
     const participant = reg.participants?.[index] || {};
+    const participantName = String(participant.name || '').trim();
+    if (!participantName || isPlaceholderParticipantName(participantName, index)) return null;
     return {
       camperId: `${reg.regId}:${index}`,
       regId: reg.regId,
       participantIndex: index,
       campId: reg.campId,
-      name: participant.name || `학생 ${index + 1}`,
+      name: participantName,
       grade: reg.groupCount ? `단체 ${reg.groupCount}명` : '',
       gender: participant.gender || '',
       church: reg.church || '',
@@ -151,7 +158,7 @@ function campersFromGroup(reg) {
       registrationType: 'group-participant',
       confirmed: isFinalConfirmed(reg),
     };
-  });
+  }).filter(Boolean);
 }
 
 export async function onRequestGet(context) {

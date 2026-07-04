@@ -946,19 +946,30 @@
       return state.canEditAll || state.counselorRegIds.includes(camper.counselorRegId);
     }
 
+    function visibleCampers() {
+      return (state.campers || []).filter(camper => {
+        if (camper.registrationType !== 'group-participant') return true;
+        const name = String(camper.name || '').trim();
+        if (!name) return false;
+        const number = Number(camper.participantIndex) + 1;
+        return name !== `학생 ${number}` && name !== `Student ${number}`;
+      });
+    }
+
     function renderBoard() {
-      const saved = state.campers.filter(camper => camper.saved).length;
-      const dedicated = state.campers.filter(camper => camper.dedicated).length;
-      $('statCampers').textContent = state.campers.length;
+      const campers = visibleCampers();
+      const saved = campers.filter(camper => camper.saved).length;
+      const dedicated = campers.filter(camper => camper.dedicated).length;
+      $('statCampers').textContent = campers.length;
       $('statSaved').textContent = saved;
       $('statDedicated').textContent = dedicated;
       const counselorGroups = state.counselors.map(counselor => ({
         id:counselor.regId,
         name:counselor.name,
         email:counselor.email,
-        campers:state.campers.filter(camper => camper.counselorRegId === counselor.regId),
+        campers:campers.filter(camper => camper.counselorRegId === counselor.regId),
       }));
-      const unassignedCampers = state.campers.filter(camper => !camper.counselorRegId);
+      const unassignedCampers = campers.filter(camper => !camper.counselorRegId);
 
       $('counselorBoard').innerHTML = counselorGroups.map(group => {
         const counselor = state.counselors.find(c => c.regId === group.id);
