@@ -1,12 +1,18 @@
 /**
  * POST /api/register
  * Camp registration handler — stores in Cloudflare KV (as PENDING),
- * then fires email notification (Resend) + Google Sheets sync in background.
+ * then fires email notification (Resend) + Google Sheets sync + admin notice in background.
  *
  * Registration is saved with confirmed: false.
  * Admin must confirm after verifying payment → then KV count increments.
+ *
+ * Admin notice requires env vars: SOLAPI_API_KEY, SOLAPI_API_SECRET,
+ * SOLAPI_SENDER_PHONE (등록된 발신번호), ADMIN_NOTIFY_PHONE (수신번호).
+ * KAKAO_TEMPLATE_ADMIN_NOTIFY 알림톡 템플릿이 승인되어 있으면 알림톡으로,
+ * 아니면(심사중/미설정) SMS로 자동 폴백.
  */
 import { appendRow } from '../lib/googleSheets.js';
+import { sendSms, sendAlimtalk } from '../lib/solapi.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -281,6 +287,57 @@ async function sendRegistrationEmail(env, reg) {
   });
 }
 
+// ── 관리자 알림 (알림톡 우선, 미승인/실패 시 SMS 폴백) ──────────────────────────
+
+function adminNotifyFields(reg) {
+  const isGroup = reg.registrationType === 'group';
+  const typeLabel = isGroup ? `단체 (${reg.groupCount}명)` : '개인';
+  const waitlistTag = reg.isWaitlist ? `[예비${reg.waitlistNumber}순위] ` : '';
+  const kstTime = new Date(reg.registeredAt).toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  });
+  return { typeLabel, waitlistTag, kstTime };
+}
+
+function buildAdminSmsText(reg) {
+  const { typeLabel, waitlistTag, kstTime } = adminNotifyFields(reg);
+  return `[월코 캠프 신청 접수]
+${waitlistTag}${reg.name}님이 ${reg.campId} 캠프 신청서를 작성하였습니다.
+
+신청유형: ${typeLabel}
+연락처: ${reg.phone}
+접수일시: ${kstTime}
+
+관리자: https://wolko.org/wolkoadmin`;
+}
+
+function buildAdminAlimtalkVariables(reg) {
+  const { typeLabel, kstTime } = adminNotifyFields(reg);
+  return {
+    '#{이름}':     reg.name,
+    '#{캠프명}':   reg.campId,
+    '#{유형}':     typeLabel,
+    '#{연락처}':   reg.phone,
+    '#{접수일시}': kstTime,
+  };
+}
+
+async function notifyAdmin(env, reg) {
+  if (!env.ADMIN_NOTIFY_PHONE) return;
+
+  if (env.KAKAO_TEMPLATE_ADMIN_NOTIFY) {
+    try {
+      await sendAlimtalk(env, env.ADMIN_NOTIFY_PHONE, env.KAKAO_TEMPLATE_ADMIN_NOTIFY, buildAdminAlimtalkVariables(reg));
+      return;
+    } catch (e) {
+      console.error('admin alimtalk failed, falling back to SMS:', e);
+    }
+  }
+
+  await sendSms(env, env.ADMIN_NOTIFY_PHONE, buildAdminSmsText(reg));
+}
+
 // ── Google Sheets 동기화 ──────────────────────────────────────────────────────
 
 function regToSheetRow(reg) {
@@ -526,11 +583,12 @@ export async function onRequestPost(context) {
       spotsF > 0 ? env.CAMP_KV.put(subKeyF, String(curSubsF + spotsF)) : Promise.resolve(),
     ]);
 
-    // KV 저장 완료 후 이메일·시트는 백그라운드에서 실행 (응답 속도에 영향 없음)
+    // KV 저장 완료 후 이메일·시트·SMS는 백그라운드에서 실행 (응답 속도에 영향 없음)
     context.waitUntil(
       Promise.allSettled([
         sendRegistrationEmail(env, reg).catch(e => console.error('registration email failed:', e)),
         syncToSheet(env, reg).catch(e => console.error('sheets sync failed:', e)),
+        notifyAdmin(env, reg).catch(e => console.error('admin notify failed:', e)),
       ])
     );
 

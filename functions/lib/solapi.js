@@ -56,3 +56,37 @@ export async function sendAlimtalk(env, phone, templateId, variables) {
   }
   return res.json();
 }
+
+/**
+ * SMS/LMS 발송 (사전승인 템플릿 불필요, 솔라피에 등록된 발신번호 필요)
+ * 90바이트 초과 시 솔라피가 자동으로 LMS로 전환 발송
+ * @param {object} env - Cloudflare env (SOLAPI_API_KEY, SOLAPI_API_SECRET, SOLAPI_SENDER_PHONE 필요)
+ * @param {string} phone - 수신자 전화번호 (하이픈 포함 가능)
+ * @param {string} text - 메시지 본문
+ */
+export async function sendSms(env, phone, text) {
+  if (!env.SOLAPI_API_KEY || !env.SOLAPI_API_SECRET || !env.SOLAPI_SENDER_PHONE) return;
+
+  const to = phone.replace(/[^0-9]/g, '');
+  const from = env.SOLAPI_SENDER_PHONE.replace(/[^0-9]/g, '');
+  if (!to || to.length < 10) return;
+
+  const authorization = await buildSolapiAuth(env.SOLAPI_API_KEY, env.SOLAPI_API_SECRET);
+
+  const res = await fetch('https://api.solapi.com/messages/v4/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': authorization,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message: { to, from, text },
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Solapi SMS ${res.status}: ${err}`);
+  }
+  return res.json();
+}

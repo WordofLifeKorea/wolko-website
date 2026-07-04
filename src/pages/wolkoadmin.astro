@@ -658,7 +658,7 @@
     let allRegs = [];
     let activeCamp = 'all';
     let activeSeason = SEASONS[SEASONS.length - 1].id; // 최신 시즌 기본 선택
-    let sortState = { key: 'registeredAt', direction: 'desc' };
+    let sortState = { key: 'status', direction: 'desc' }; // 기본: 최종확정 → 예약금확인 → 대기중
     let activeTeamFilter = 'all';
     let authToken = sessionStorage.getItem('wolko-admin-token') || '';
     let staffEditMode = false;
@@ -1163,8 +1163,14 @@
       return [...regs].sort((a, b) => {
         const av = sortValue(a, key);
         const bv = sortValue(b, key);
-        if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
-        return String(av).localeCompare(String(bv), ['ko', 'en'], { numeric: true, sensitivity: 'base' }) * dir;
+        const cmp = (typeof av === 'number' && typeof bv === 'number')
+          ? (av - bv) * dir
+          : String(av).localeCompare(String(bv), ['ko', 'en'], { numeric: true, sensitivity: 'base' }) * dir;
+        // 상태로 정렬할 때는 같은 상태 안에서 최신 신청 순으로 표시
+        if (cmp === 0 && key === 'status') {
+          return sortValue(b, 'registeredAt') - sortValue(a, 'registeredAt');
+        }
+        return cmp;
       });
     }
 
