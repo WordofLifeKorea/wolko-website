@@ -1118,6 +1118,10 @@
       }));
     }
 
+    function isConfirmedReg(r) {
+      return r.status === 'confirmed' || (r.status === undefined && r.confirmed === true);
+    }
+
     function updateCardStats() {
       // 시즌 카드 (all): 현재 시즌 전체 통계
       const ids = seasonCampIds(activeSeason);
@@ -1125,7 +1129,8 @@
       const seasonCap = seasonCamps.reduce((s, c) => s + c.capacity, 0);
       const seasonRegs = allRegs.filter(r => ids.has(r.campId) && r.registrationType !== 'staff');
       const seasonTotal = seasonRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
-      const seasonRemain = Math.max(0, seasonCap - seasonTotal);
+      const seasonConfirmed = seasonRegs.filter(isConfirmedReg).reduce((s, r) => s + regHeadcount(r), 0);
+      const seasonRemain = Math.max(0, seasonCap - seasonConfirmed);
       const allRegEl = document.getElementById('card-all-reg');
       const allCapEl = document.getElementById('card-all-cap');
       if (allRegEl) allRegEl.textContent = seasonTotal;
@@ -1135,7 +1140,8 @@
       ADMIN_CAMP_GROUPS.flatMap(g => g.camps).forEach(c => {
         const regs = allRegs.filter(r => r.campId === c.id && r.registrationType !== 'staff');
         const total = regs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
-        const remain = Math.max(0, c.capacity - total);
+        const confirmed = regs.filter(isConfirmedReg).reduce((s, r) => s + regHeadcount(r), 0);
+        const remain = Math.max(0, c.capacity - confirmed);
         const regEl = document.getElementById(`card-${c.id}-reg`);
         const capEl = document.getElementById(`card-${c.id}-cap`);
         if (regEl) regEl.textContent = total;
@@ -1433,11 +1439,19 @@
         const discountAmount = parseInt(r.scholarshipDiscountAmount, 10) || 0;
         const baseFee = parseInt(r.campFeeBase, 10) || (CAMP_BASE_FEE * (r.registrationType === 'group' ? (parseInt(r.groupCount, 10) || 1) : 1));
         const finalFee = parseInt(r.campFeeFinal, 10) || Math.max(0, baseFee - discountAmount);
-        const completedParticipants = groupParticipants.filter(participant =>
+        const namedParticipants = groupParticipants.filter(participant =>
           String(participant.name || '').trim()
-        ).length;
+        );
+        const completedParticipants = namedParticipants.length;
+        const namedMaleCount = namedParticipants.filter(participant => participant.gender === 'male').length;
+        const namedFemaleCount = namedParticipants.filter(participant => participant.gender === 'female').length;
+        const groupGenderCell = (namedMaleCount > 0 || namedFemaleCount > 0)
+          ? `<span style="font-size:12px;white-space:nowrap"><span style="color:#3b82f6;font-weight:600">${t('male')} ${namedMaleCount}</span> · <span style="color:#ec4899;font-weight:600">${t('female')} ${namedFemaleCount}</span></span>`
+          : '';
         const isExpanded = expandedRegistrationDetails.has(r.regId);
-        const typeMeta = r.registrationType === 'group' ? `${esc(gradeOrCount)}` : `${esc(gradeOrCount)} · ${genderCell}`;
+        const typeMeta = r.registrationType === 'group'
+          ? `${esc(gradeOrCount)}${groupGenderCell ? ' · ' + groupGenderCell : ''}`
+          : `${esc(gradeOrCount)} · ${genderCell}`;
         const typeText = `${typeBadge}<span class="registration-type-meta">${typeMeta}</span>`;
         const contactCell = `<div class="summary-stack"><strong>${esc(r.phone || '—')}</strong><span>${esc(r.email || '—')}</span></div>`;
         const counselorName = r.registrationType === 'group'
