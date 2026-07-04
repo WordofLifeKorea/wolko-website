@@ -145,27 +145,80 @@
           </button>
         </div>
       </div>
-      <div class="table-scroll">
-        <table class="camp-reg-table">
-          <thead>
-            <tr>
-              <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thApplicant">신청자</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="status"><span data-t="thStatus">상태</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="camp"><span data-t="thCamp">캠프</span></button></th>
-              <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
-              <th><span data-t="thCounseling">상담</span></th>
-              <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
-            </tr>
-          </thead>
-          <tbody id="campRegBody">
-            <tr><td colspan="6">
-              <div class="state-box">
-                <div class="spinner"></div>
-                <p data-t="loginFirst">로그인 후 자동으로 불러옵니다.</p>
-              </div>
-            </td></tr>
-          </tbody>
-        </table>
+      <div class="camp-status-group" data-status="confirmed">
+        <div class="camp-status-group-head">
+          <span class="camp-status-dot camp-status-dot-confirmed"></span>
+          <span class="camp-status-group-title" data-t="confirmed">최종확정</span>
+          <span class="camp-status-group-count" id="campCountConfirmed"></span>
+        </div>
+        <div class="table-scroll">
+          <table class="camp-reg-table">
+            <thead>
+              <tr>
+                <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thApplicant">신청자</span></button></th>
+                <th><span data-t="thStatus">상태</span></th>
+                <th><button class="sort-btn" type="button" data-sort="camp"><span data-t="thCamp">캠프</span></button></th>
+                <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
+                <th><span data-t="thCounseling">상담</span></th>
+                <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
+              </tr>
+            </thead>
+            <tbody id="campRegBodyConfirmed">
+              <tr><td colspan="6">
+                <div class="state-box">
+                  <div class="spinner"></div>
+                  <p data-t="loginFirst">로그인 후 자동으로 불러옵니다.</p>
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="camp-status-group" data-status="deposit">
+        <div class="camp-status-group-head">
+          <span class="camp-status-dot camp-status-dot-deposit"></span>
+          <span class="camp-status-group-title" data-t="depositConfirmed">예약금확인</span>
+          <span class="camp-status-group-count" id="campCountDeposit"></span>
+        </div>
+        <div class="table-scroll">
+          <table class="camp-reg-table">
+            <thead>
+              <tr>
+                <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thApplicant">신청자</span></button></th>
+                <th><span data-t="thStatus">상태</span></th>
+                <th><button class="sort-btn" type="button" data-sort="camp"><span data-t="thCamp">캠프</span></button></th>
+                <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
+                <th><span data-t="thCounseling">상담</span></th>
+                <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
+              </tr>
+            </thead>
+            <tbody id="campRegBodyDeposit"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="camp-status-group" data-status="pending">
+        <div class="camp-status-group-head">
+          <span class="camp-status-dot camp-status-dot-pending"></span>
+          <span class="camp-status-group-title" data-t="pending">대기중</span>
+          <span class="camp-status-group-count" id="campCountPending"></span>
+        </div>
+        <div class="table-scroll">
+          <table class="camp-reg-table">
+            <thead>
+              <tr>
+                <th><button class="sort-btn" type="button" data-sort="name"><span data-t="thApplicant">신청자</span></button></th>
+                <th><span data-t="thStatus">상태</span></th>
+                <th><button class="sort-btn" type="button" data-sort="camp"><span data-t="thCamp">캠프</span></button></th>
+                <th><button class="sort-btn" type="button" data-sort="phone"><span data-t="thPhone">연락처</span></button></th>
+                <th><span data-t="thCounseling">상담</span></th>
+                <th><button class="sort-btn" type="button" data-sort="registeredAt"><span data-t="thDate">신청일시</span></button></th>
+              </tr>
+            </thead>
+            <tbody id="campRegBodyPending"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -658,7 +711,7 @@
     let allRegs = [];
     let activeCamp = 'all';
     let activeSeason = SEASONS[SEASONS.length - 1].id; // 최신 시즌 기본 선택
-    let sortState = { key: 'status', direction: 'desc' }; // 기본: 최종확정 → 예약금확인 → 대기중
+    let sortState = { key: 'registeredAt', direction: 'desc' }; // 상태별 그룹은 3개 카드로 물리적 분리되어 있음
     let activeTeamFilter = 'all';
     let authToken = sessionStorage.getItem('wolko-admin-token') || '';
     let staffEditMode = false;
@@ -1269,22 +1322,7 @@
 
     function renderCampTable() {
       const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
-      const tbody = document.getElementById('campRegBody');
       document.getElementById('campTableCount').textContent = tt('tableCountFn', regs.length);
-
-      if (regs.length === 0) {
-        tbody.innerHTML = `
-          <tr><td colspan="6">
-            <div class="state-box">
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                <rect x="8" y="6" width="24" height="30" rx="3" stroke="#8fa8b5" stroke-width="2"/>
-                <path d="M14 14h12M14 20h8M14 26h6" stroke="#8fa8b5" stroke-width="1.8" stroke-linecap="round"/>
-              </svg>
-              <p>${t('noCampRegs')}</p>
-            </div>
-          </td></tr>`;
-        return;
-      }
 
       const renderCampRow = (r, i) => {
         const date = new Date(r.registeredAt);
@@ -1514,30 +1552,51 @@
         </tr>${detailRow}`;
       };
 
-      // 캠프별 그룹화
-      const byCamp = new Map();
-      regs.forEach((r, i) => {
-        if (!byCamp.has(r.campId)) byCamp.set(r.campId, []);
-        byCamp.get(r.campId).push({ reg: r, idx: i });
+      // 캠프별 그룹화 후 HTML 생성 (상태별 하위 목록에서 재사용)
+      const buildCampGroupedHtml = (list) => {
+        if (list.length === 0) {
+          const emptyMsg = adminLang === 'en' ? 'No registrations in this status.' : '해당 상태의 신청이 없습니다.';
+          return `<tr><td colspan="6"><div class="state-box" style="padding:26px 20px;"><p>${emptyMsg}</p></div></td></tr>`;
+        }
+        const byCamp = new Map();
+        list.forEach((r, i) => {
+          if (!byCamp.has(r.campId)) byCamp.set(r.campId, []);
+          byCamp.get(r.campId).push({ reg: r, idx: i });
+        });
+
+        const groupsHtml = [];
+        byCamp.forEach((entries, campId) => {
+          const campStyle = getCampRowStyle({ campId });
+          const headerStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
+          const campLabel = campDisplayName(campId);
+          groupsHtml.push(`<tr class="camp-section-row" style="${headerStyle}">
+            <td colspan="6">
+              <div class="camp-section-head">
+                <span class="camp-section-title">${esc(campLabel)}</span>
+                <span class="camp-section-count">${tt('tableCountFn', entries.length)}</span>
+              </div>
+            </td>
+          </tr>`);
+          groupsHtml.push(entries.map(e => renderCampRow(e.reg, e.idx)).join(''));
+        });
+        return groupsHtml.join('');
+      };
+
+      // 상태별 3분류: 최종확정 → 예약금확인 → 대기중
+      const confirmedRegs = regs.filter(r => (r.status || (r.confirmed === true ? 'confirmed' : 'pending')) === 'confirmed');
+      const depositRegs    = regs.filter(r => (r.status || (r.confirmed === true ? 'confirmed' : 'pending')) === 'deposit');
+      const pendingRegs    = regs.filter(r => {
+        const s = r.status || (r.confirmed === true ? 'confirmed' : 'pending');
+        return s !== 'confirmed' && s !== 'deposit';
       });
 
-      const groupsHtml = [];
-      byCamp.forEach((entries, campId) => {
-        const campStyle = getCampRowStyle({ campId });
-        const headerStyle = `--camp-row-bg:${campStyle.bg};--camp-row-border:${campStyle.border};`;
-        const campLabel = campDisplayName(campId);
-        groupsHtml.push(`<tr class="camp-section-row" style="${headerStyle}">
-          <td colspan="6">
-            <div class="camp-section-head">
-              <span class="camp-section-title">${esc(campLabel)}</span>
-              <span class="camp-section-count">${tt('tableCountFn', entries.length)}</span>
-            </div>
-          </td>
-        </tr>`);
-        groupsHtml.push(entries.map(e => renderCampRow(e.reg, e.idx)).join(''));
-      });
+      document.getElementById('campRegBodyConfirmed').innerHTML = buildCampGroupedHtml(confirmedRegs);
+      document.getElementById('campRegBodyDeposit').innerHTML   = buildCampGroupedHtml(depositRegs);
+      document.getElementById('campRegBodyPending').innerHTML   = buildCampGroupedHtml(pendingRegs);
 
-      tbody.innerHTML = groupsHtml.join('');
+      document.getElementById('campCountConfirmed').textContent = tt('tableCountFn', confirmedRegs.length);
+      document.getElementById('campCountDeposit').textContent   = tt('tableCountFn', depositRegs.length);
+      document.getElementById('campCountPending').textContent   = tt('tableCountFn', pendingRegs.length);
     }
 
     function renderStaffTable() {
