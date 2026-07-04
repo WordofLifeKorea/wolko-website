@@ -1128,7 +1128,7 @@
       const seasonCamps = ADMIN_CAMP_GROUPS.flatMap(g => g.camps).filter(c => ids.has(c.id));
       const seasonCap = seasonCamps.reduce((s, c) => s + c.capacity, 0);
       const seasonRegs = allRegs.filter(r => ids.has(r.campId) && r.registrationType !== 'staff');
-      const seasonTotal = seasonRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      const seasonTotal = seasonRegs.reduce((s, r) => s + regHeadcount(r), 0);
       const seasonConfirmed = seasonRegs.filter(isConfirmedReg).reduce((s, r) => s + regHeadcount(r), 0);
       const seasonRemain = Math.max(0, seasonCap - seasonConfirmed);
       const allRegEl = document.getElementById('card-all-reg');
@@ -1139,7 +1139,7 @@
       // 개별 캠프 카드
       ADMIN_CAMP_GROUPS.flatMap(g => g.camps).forEach(c => {
         const regs = allRegs.filter(r => r.campId === c.id && r.registrationType !== 'staff');
-        const total = regs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+        const total = regs.reduce((s, r) => s + regHeadcount(r), 0);
         const confirmed = regs.filter(isConfirmedReg).reduce((s, r) => s + regHeadcount(r), 0);
         const remain = Math.max(0, c.capacity - confirmed);
         const regEl = document.getElementById(`card-${c.id}-reg`);
@@ -1270,6 +1270,19 @@
       return list.filter(p => p && String(p.name || '').trim()).length;
     }
 
+    // 단체 신청의 성별 인원도 실제 이름이 입력된 참가자의 성별 기준으로 집계
+    function regGenderCounts(r) {
+      if (r.registrationType !== 'group') {
+        return { male: r.gender === 'male' ? 1 : 0, female: r.gender === 'female' ? 1 : 0 };
+      }
+      const list = Array.isArray(r.participants) ? r.participants : [];
+      const named = list.filter(p => p && String(p.name || '').trim());
+      return {
+        male: named.filter(p => p.gender === 'male').length,
+        female: named.filter(p => p.gender === 'female').length,
+      };
+    }
+
     // ── Dashboard ──
     function renderDash() {
       const regs = filteredRegs();
@@ -1287,20 +1300,18 @@
       const confirmedRegs = campRegs.filter(r => r.status === 'confirmed' || (r.status === undefined && r.confirmed === true));
       const pendingRegs   = campRegs.filter(r => !(r.status === 'confirmed' || (r.status === undefined && r.confirmed === true)));
 
-      const total     = campRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      const total     = campRegs.reduce((s, r) => s + regHeadcount(r), 0);
       const confirmed = confirmedRegs.reduce((s, r) => s + regHeadcount(r), 0);
-      const pending   = pendingRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      const pending   = pendingRegs.reduce((s, r) => s + regHeadcount(r), 0);
       const remain    = Math.max(0, cap - confirmed);
       const pct       = cap > 0 ? Math.round((confirmed / cap) * 100) : 0;
 
-      // 성별 (확정 기준)
-      const maleTotal = confirmedRegs.reduce((s, r) =>
-        r.registrationType === 'group' ? s + (r.maleCount || 0) : s + (r.gender === 'male' ? 1 : 0), 0);
-      const femaleTotal = confirmedRegs.reduce((s, r) =>
-        r.registrationType === 'group' ? s + (r.femaleCount || 0) : s + (r.gender === 'female' ? 1 : 0), 0);
+      // 성별 (확정 기준, 단체는 이름이 입력된 참가자의 실제 성별)
+      const maleTotal = confirmedRegs.reduce((s, r) => s + regGenderCounts(r).male, 0);
+      const femaleTotal = confirmedRegs.reduce((s, r) => s + regGenderCounts(r).female, 0);
 
       const waitlistRegs = campRegs.filter(r => r.isWaitlist === true);
-      const waitlistCount = waitlistRegs.reduce((s, r) => s + (r.registrationType === 'group' ? (r.groupCount || 1) : 1), 0);
+      const waitlistCount = waitlistRegs.reduce((s, r) => s + regHeadcount(r), 0);
 
       const staffRegs = regs.filter(r => r.registrationType === 'staff');
       const staffCount = staffRegs.length;
