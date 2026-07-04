@@ -1370,11 +1370,11 @@
         const typeDot = r.registrationType === 'group'
           ? `<span class="reg-type-dot reg-type-dot-group" title="${t('groupBadge')}"></span>`
           : `<span class="reg-type-dot reg-type-dot-individual" title="${t('individualBadge')}"></span>`;
-        const gradeOrCount = r.registrationType === 'group' ? tt('personCountFn', r.groupCount) : (r.grade || '—');
+        const gradeOrCount = r.registrationType === 'group' ? tt('personCountFn', regHeadcount(r)) : (r.grade || '—');
 
         let genderCell;
         if (r.registrationType === 'group') {
-          const m = r.maleCount || 0, f = r.femaleCount || 0;
+          const { male: m, female: f } = regGenderCounts(r);
           genderCell = (m > 0 || f > 0)
             ? `<span style="font-size:12px;white-space:nowrap"><span style="color:#3b82f6;font-weight:600">${t('male')} ${m}</span> · <span style="color:#ec4899;font-weight:600">${t('female')} ${f}</span></span>`
             : `<span style="color:var(--light)">—</span>`;
@@ -1440,16 +1440,16 @@
           : camperEditMode
           ? `<input class="edit-input edit-input-wide" type="text" value="${esc(r.counselorMemo || '')}" placeholder="${t('counselorMemoPh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorMemo" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
           : `<span class="${r.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(r.counselorMemo || '')}">${esc(r.counselorMemo || '—')}</span>`;
+        const applicantMemo = campApplicantMemo(r);
+        const discountAmount = parseInt(r.scholarshipDiscountAmount, 10) || 0;
+        const baseFee = parseInt(r.campFeeBase, 10) || (CAMP_BASE_FEE * (r.registrationType === 'group' ? (parseInt(r.groupCount, 10) || 1) : 1));
+        const finalFee = parseInt(r.campFeeFinal, 10) || Math.max(0, baseFee - discountAmount);
         const groupParticipants = r.registrationType === 'group'
           ? Array.from(
               { length: Math.max(Number(r.groupCount) || 0, Array.isArray(r.participants) ? r.participants.length : 0) },
               (_, participantIndex) => r.participants?.[participantIndex] || {}
             )
           : [];
-        const applicantMemo = campApplicantMemo(r);
-        const discountAmount = parseInt(r.scholarshipDiscountAmount, 10) || 0;
-        const baseFee = parseInt(r.campFeeBase, 10) || (CAMP_BASE_FEE * (r.registrationType === 'group' ? (parseInt(r.groupCount, 10) || 1) : 1));
-        const finalFee = parseInt(r.campFeeFinal, 10) || Math.max(0, baseFee - discountAmount);
         const namedParticipants = groupParticipants.filter(participant =>
           String(participant.name || '').trim()
         );
