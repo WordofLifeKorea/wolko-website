@@ -1479,7 +1479,7 @@
           </div>
         </div>`;
         const participantDetailSection = groupParticipants.length
-          ? `<div class="registration-detail-section registration-detail-participants">
+          ? `<div class="registration-detail-section registration-detail-participants${camperEditMode ? ' is-editing' : ' is-readonly'}">
               <div class="registration-detail-section-title">${t('detailStudentList')}</div>
               <div class="detail-participant-list">
                 ${groupParticipants.map((participant, participantIndex) => {
@@ -1568,30 +1568,32 @@
               </div>
             </div>`
           : r.registrationType === 'group'
-          ? `<div class="registration-detail-section registration-detail-participants"><div class="registration-detail-section-title">${t('detailStudentList')}</div><div class="group-participant-empty">${t('checkParticipants')}</div></div>`
+          ? `<div class="registration-detail-section registration-detail-participants${camperEditMode ? ' is-editing' : ' is-readonly'}"><div class="registration-detail-section-title">${t('detailStudentList')}</div><div class="group-participant-empty">${t('checkParticipants')}</div></div>`
           : '';
+        const detailPanelContent = r.registrationType === 'group'
+          ? participantDetailSection
+          : `<div class="registration-detail-section">
+              <div class="registration-detail-section-title">${t('detailApplicationInfo')}</div>
+              <div class="registration-detail-grid">
+                ${detailItem(t('thType'), typeBadge)}
+                ${detailItem(t('thGrade'), esc(gradeOrCount))}
+                ${detailItem(t('thGender'), genderCell)}
+                ${detailItem(t('thChurch'), esc(r.church || '—'))}
+                ${detailItem(t('thSchool'), esc(r.school || '—'))}
+                ${detailItem(t('thEmergency'), esc(r.emergency || '—'))}
+                ${detailItem(t('thPhone'), esc(r.phone || '—'))}
+                ${detailItem(t('thEmail'), esc(r.email || '—'))}
+                ${detailItem(t('thNotes'), esc(applicantMemo || '—'), true)}
+              </div>
+            </div>
+            ${refundDetailSection}
+            ${scholarshipDetailSection}
+            ${counselingDetailSection}`;
         const detailRow = isExpanded
           ? `<tr class="registration-detail-row" style="${rowStyle}">
               <td colspan="6">
                 <div class="registration-detail-panel">
-                  <div class="registration-detail-section">
-                    <div class="registration-detail-section-title">${t('detailApplicationInfo')}</div>
-                    <div class="registration-detail-grid">
-                      ${detailItem(t('thType'), typeBadge)}
-                      ${detailItem(t('thGrade'), esc(gradeOrCount))}
-                      ${detailItem(t('thGender'), genderCell)}
-                      ${detailItem(t('thChurch'), esc(r.church || '—'))}
-                      ${detailItem(t('thSchool'), esc(r.school || '—'))}
-                      ${detailItem(t('thEmergency'), esc(r.emergency || '—'))}
-                      ${detailItem(t('thPhone'), esc(r.phone || '—'))}
-                      ${detailItem(t('thEmail'), esc(r.email || '—'))}
-                      ${detailItem(t('thNotes'), esc(applicantMemo || '—'), true)}
-                    </div>
-                  </div>
-                  ${refundDetailSection}
-                  ${scholarshipDetailSection}
-                  ${counselingDetailSection}
-                  ${participantDetailSection}
+                  ${detailPanelContent}
                 </div>
               </td>
             </tr>`
