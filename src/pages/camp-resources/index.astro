@@ -791,7 +791,7 @@ const pageTitle = 'WOLKO Camp Resources';
       const openUrl = item.url || item.archiveUrl || '';
       const archiveChip = item.archiveUrl
         ? `<a class="resource-chip is-archived" href="${escapeHtml(item.archiveUrl)}" target="_blank" rel="noopener" data-stop>${currentLang === 'en' ? 'Archived' : '보관됨'}</a>`
-        : (editMode ? `<span class="resource-chip is-missing">${currentLang === 'en' ? 'Needs archive' : '보관 필요'}</span>` : '');
+        : `<span class="resource-chip is-missing">${currentLang === 'en' ? 'Needs archive' : '보관 필요'}</span>`;
       return `
         <div class="present-card${editMode ? ' is-editable' : ''}" data-open-url="${escapeHtml(openUrl)}" data-item-id="${escapeHtml(item.id)}">
           ${cardPreviewHtml(item)}
