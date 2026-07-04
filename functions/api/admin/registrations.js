@@ -471,7 +471,7 @@ export async function onRequestPut(context) {
     }
 
     const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea', 'counselorRegId', 'counselorMemo', 'saved', 'dedicated', 'scholarshipDiscounts'];
-    const PARTICIPANT_FIELDS = ['name', 'gender', 'birthDate', 'grade', 'parentInfo', 'refundAccount', 'note', 'counselorRegId', 'counselorMemo', 'saved', 'dedicated'];
+    const PARTICIPANT_FIELDS = ['name', 'gender', 'birthDate', 'grade', 'parentInfo', 'refundAccount', 'counselorRegId', 'counselorMemo', 'saved', 'dedicated'];
     const allowedFields = participantIndex === undefined ? ALLOWED_FIELDS : PARTICIPANT_FIELDS;
     if (!allowedFields.includes(field)) {
       return Response.json({ error: '업데이트할 수 없는 필드입니다.' }, { status: 400, headers: CORS });

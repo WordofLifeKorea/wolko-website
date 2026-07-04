@@ -2298,10 +2298,21 @@ tbody tr.camp-tint.is-dedicated:hover td {
   border-radius: 8px;
   background: rgba(255,255,255,0.72);
   border-bottom: 1px solid rgba(196,122,0,0.12);
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
 }
 .detail-participant-item:last-child { border-bottom: 1px solid rgba(196,122,0,0.12); }
 .detail-participant-item.is-saved  { background: rgba(56,168,223,0.05); }
 .detail-participant-item.is-dedicated { background: rgba(50,168,82,0.05); }
+.detail-participant-item:hover,
+.detail-participant-item:focus-visible {
+  border-color: rgba(196,122,0,0.28);
+  box-shadow: 0 4px 14px rgba(120,85,28,0.08);
+}
+.detail-participant-item.is-open {
+  background: rgba(255,255,255,0.92);
+  border-color: rgba(196,122,0,0.28);
+}
 .group-participant-main {
   display: flex;
   align-items: center;
@@ -2313,10 +2324,31 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .group-participant-counselor-note {
   min-width: 0;
 }
+.group-participant-expand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0,79,104,0.07);
+  color: var(--mid);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.group-participant-extra {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(196,122,0,0.18);
+  cursor: default;
+}
 .group-participant-admin-grid {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: minmax(120px, 0.8fr) minmax(90px, 0.6fr) minmax(210px, 1.4fr) minmax(180px, 1.1fr) minmax(170px, 1fr);
+  grid-template-columns: minmax(120px, 0.8fr) minmax(90px, 0.6fr) minmax(210px, 1.4fr) minmax(180px, 1.1fr);
   gap: 8px;
   min-width: 0;
 }
@@ -2343,15 +2375,6 @@ tbody tr.camp-tint.is-dedicated:hover td {
   font-size: 12px;
   line-height: 1.45;
   overflow-wrap: anywhere;
-}
-.group-participant-admin-note .group-participant-admin-value {
-  max-height: 58px;
-  overflow: hidden;
-}
-.group-participant-note-input {
-  width: 100%;
-  min-height: 34px;
-  max-height: 92px;
 }
 .group-participant-counselor-note {
   grid-column: 1 / -1;
