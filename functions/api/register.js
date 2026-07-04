@@ -472,6 +472,13 @@ export async function onRequestPost(context) {
       spotsF = gender === 'female' ? 1 : 0;
     }
 
+    // 참가자 명단을 추후 제출하는 단체 신청은 이름이 아직 입력되지 않았으므로
+    // 정원 카운터에는 0명으로 반영한다 (관리자가 이후 이름을 입력할 때마다
+    // functions/api/admin/registrations.js 에서 실제 인원만큼 다시 계산됨).
+    const spotsForCapacity  = deferParticipantDetails ? 0 : spotsNeeded;
+    const spotsMForCapacity = deferParticipantDetails ? 0 : spotsM;
+    const spotsFForCapacity = deferParticipantDetails ? 0 : spotsF;
+
     const dupeKey = `camp:${campId}:email:${emailNorm}`;
     if (await env.CAMP_KV.get(dupeKey)) {
       return Response.json({ error: '이미 신청된 이메일 주소입니다.' }, { status: 409, headers: CORS });
@@ -484,14 +491,14 @@ export async function onRequestPost(context) {
     const subKeyF = `camp:${campId}:submissions:female`;
     const currentSubs = parseInt(await env.CAMP_KV.get(subKey) || '0');
 
-    if (registrationType === 'group' && currentSubs + spotsNeeded > campCapacity) {
+    if (registrationType === 'group' && !deferParticipantDetails && currentSubs + spotsForCapacity > campCapacity) {
       const remaining = Math.max(0, campCapacity - currentSubs);
       return Response.json({
         error: `현재 잔여 정원은 ${remaining}명입니다. 참여 인원을 줄여주세요.`,
       }, { status: 409, headers: CORS });
     }
 
-    if (currentSubs + spotsNeeded > campCapacity + WAITLIST_SIZE) {
+    if (currentSubs + spotsForCapacity > campCapacity + WAITLIST_SIZE) {
       return Response.json({
         error: '신청이 마감되었습니다. 정원과 예비 인원이 모두 찼습니다.',
       }, { status: 409, headers: CORS });
@@ -578,9 +585,9 @@ export async function onRequestPost(context) {
     await Promise.all([
       env.CAMP_KV.put(`camp:${campId}:reg:${regId}`, JSON.stringify(reg)),
       env.CAMP_KV.put(dupeKey, regId),
-      env.CAMP_KV.put(subKey, String(currentSubs + spotsNeeded)),
-      spotsM > 0 ? env.CAMP_KV.put(subKeyM, String(curSubsM + spotsM)) : Promise.resolve(),
-      spotsF > 0 ? env.CAMP_KV.put(subKeyF, String(curSubsF + spotsF)) : Promise.resolve(),
+      env.CAMP_KV.put(subKey, String(currentSubs + spotsForCapacity)),
+      spotsMForCapacity > 0 ? env.CAMP_KV.put(subKeyM, String(curSubsM + spotsMForCapacity)) : Promise.resolve(),
+      spotsFForCapacity > 0 ? env.CAMP_KV.put(subKeyF, String(curSubsF + spotsFForCapacity)) : Promise.resolve(),
     ]);
 
     // KV 저장 완료 후 이메일·시트·SMS는 백그라운드에서 실행 (응답 속도에 영향 없음)

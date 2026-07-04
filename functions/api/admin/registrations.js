@@ -60,15 +60,20 @@ function isFinalConfirmed(reg) {
   return reg.status === undefined && reg.confirmed === true;
 }
 
+// 단체 신청은 참가자 명단에 이름이 실제로 입력된 인원만 정원에 반영한다.
+// (참가자 명단을 나중에 제출하는 단체 신청은 groupCount만큼 자리를 확보해도
+//  이름이 입력되기 전까지는 정원 카운트에 포함하지 않는다)
 function registrationSpots(reg) {
   if (reg.registrationType === 'staff') {
     return { total: 0, male: 0, female: 0 };
   }
   if (reg.registrationType === 'group') {
+    const participants = Array.isArray(reg.participants) ? reg.participants : [];
+    const named = participants.filter(p => p && String(p.name || '').trim());
     return {
-      total: reg.groupCount || 1,
-      male: reg.maleCount || 0,
-      female: reg.femaleCount || 0,
+      total: named.length,
+      male: named.filter(p => p.gender === 'male').length,
+      female: named.filter(p => p.gender === 'female').length,
     };
   }
   return {
@@ -185,6 +190,29 @@ async function syncConfirmedCounters(env, campId, registrations) {
   return counts;
 }
 
+/**
+ * 신규 신청 정원 게이트(register.js)가 참조하는 submissions 카운터를
+ * 실제 등록 데이터(이름 입력된 인원 기준) 로 동기화한다.
+ * staff 신청은 정원 집계에서 제외.
+ */
+async function syncSubmissionCounters(env, campId, registrations) {
+  const totals = registrations.reduce((acc, reg) => {
+    if (reg.registrationType === 'staff') return acc;
+    const spots = registrationSpots(reg);
+    acc.total += spots.total;
+    acc.male += spots.male;
+    acc.female += spots.female;
+    return acc;
+  }, { total: 0, male: 0, female: 0 });
+
+  await Promise.all([
+    env.CAMP_KV.put(`camp:${campId}:submissions`, String(totals.total)),
+    env.CAMP_KV.put(`camp:${campId}:submissions:male`, String(totals.male)),
+    env.CAMP_KV.put(`camp:${campId}:submissions:female`, String(totals.female)),
+  ]);
+  return totals;
+}
+
 export async function onRequestGet(context) {
   const { env, request } = context;
   if (!await verifyToken(request, env)) {
@@ -217,7 +245,10 @@ export async function onRequestGet(context) {
     }
 
     if (campId) {
-      await syncConfirmedCounters(env, campId, allRegs);
+      await Promise.all([
+        syncConfirmedCounters(env, campId, allRegs),
+        syncSubmissionCounters(env, campId, allRegs),
+      ]);
     } else {
       const regsByCamp = new Map();
       allRegs.forEach(reg => {
@@ -226,7 +257,10 @@ export async function onRequestGet(context) {
         regsByCamp.get(reg.campId).push(reg);
       });
       await Promise.all(
-        Array.from(regsByCamp, ([id, regs]) => syncConfirmedCounters(env, id, regs))
+        Array.from(regsByCamp, ([id, regs]) => Promise.all([
+          syncConfirmedCounters(env, id, regs),
+          syncSubmissionCounters(env, id, regs),
+        ]))
       );
     }
 
@@ -259,33 +293,15 @@ export async function onRequestDelete(context) {
     }
 
     const dupeKey = `camp:${campId}:email:${reg.email}`;
-    const spotsToFree = reg.registrationType === 'group' ? (reg.groupCount || 1) : 1;
-    const spotsM = reg.registrationType === 'group' ? (reg.maleCount || 0) : (reg.gender === 'male' ? 1 : 0);
-    const spotsF = reg.registrationType === 'group' ? (reg.femaleCount || 0) : (reg.gender === 'female' ? 1 : 0);
-
-    const subKey    = `camp:${campId}:submissions`;
-    const subKeyM   = `camp:${campId}:submissions:male`;
-    const subKeyF   = `camp:${campId}:submissions:female`;
     const campRegs = await listCampRegistrations(env, campId);
 
-    const ops = [env.CAMP_KV.delete(regKey), env.CAMP_KV.delete(dupeKey)];
+    await Promise.all([env.CAMP_KV.delete(regKey), env.CAMP_KV.delete(dupeKey)]);
 
-    // submissions 카운터는 항상 감소
-    const [curSubs, curSubsM, curSubsF] = await Promise.all([
-      env.CAMP_KV.get(subKey).then(v => parseInt(v || '0')),
-      env.CAMP_KV.get(subKeyM).then(v => parseInt(v || '0')),
-      env.CAMP_KV.get(subKeyF).then(v => parseInt(v || '0')),
+    const remainingRegs = campRegs.filter(item => item.regId !== regId);
+    const [counts] = await Promise.all([
+      syncConfirmedCounters(env, campId, remainingRegs),
+      syncSubmissionCounters(env, campId, remainingRegs),
     ]);
-    ops.push(env.CAMP_KV.put(subKey, String(Math.max(0, curSubs - spotsToFree))));
-    if (spotsM > 0) ops.push(env.CAMP_KV.put(subKeyM, String(Math.max(0, curSubsM - spotsM))));
-    if (spotsF > 0) ops.push(env.CAMP_KV.put(subKeyF, String(Math.max(0, curSubsF - spotsF))));
-
-    await Promise.all(ops);
-    const counts = await syncConfirmedCounters(
-      env,
-      campId,
-      campRegs.filter(item => item.regId !== regId)
-    );
     return Response.json({ success: true, newCount: counts.count }, { headers: CORS });
   } catch (e) {
     console.error('admin delete error:', e);
@@ -337,11 +353,11 @@ export async function onRequestPatch(context) {
 
       const campRegs = await listCampRegistrations(env, campId);
       await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));
-      const counts = await syncConfirmedCounters(
-        env,
-        campId,
-        replaceRegistration(campRegs, updatedReg)
-      );
+      const nextRegs = replaceRegistration(campRegs, updatedReg);
+      const [counts] = await Promise.all([
+        syncConfirmedCounters(env, campId, nextRegs),
+        syncSubmissionCounters(env, campId, nextRegs),
+      ]);
 
       // 예약금 수납 알림톡
       context.waitUntil((async () => {
@@ -384,11 +400,11 @@ export async function onRequestPatch(context) {
 
       const campRegs = await listCampRegistrations(env, campId);
       await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));
-      const counts = await syncConfirmedCounters(
-        env,
-        campId,
-        replaceRegistration(campRegs, updatedReg)
-      );
+      const nextRegs = replaceRegistration(campRegs, updatedReg);
+      const [counts] = await Promise.all([
+        syncConfirmedCounters(env, campId, nextRegs),
+        syncSubmissionCounters(env, campId, nextRegs),
+      ]);
 
       // 최종 확정 알림톡
       context.waitUntil((async () => {
@@ -433,11 +449,11 @@ export async function onRequestPatch(context) {
 
       const campRegs = await listCampRegistrations(env, campId);
       await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));
-      const counts = await syncConfirmedCounters(
-        env,
-        campId,
-        replaceRegistration(campRegs, updatedReg)
-      );
+      const revertRegs = replaceRegistration(campRegs, updatedReg);
+      const [counts] = await Promise.all([
+        syncConfirmedCounters(env, campId, revertRegs),
+        syncSubmissionCounters(env, campId, revertRegs),
+      ]);
       return Response.json({
         success: true,
         ...counts,
@@ -539,28 +555,14 @@ export async function onRequestPut(context) {
       const nextFemaleCount = allGendersEntered ? participants.filter(participant => participant.gender === 'female').length : (reg.femaleCount || 0);
       updatedReg = { ...reg, participants, maleCount: nextMaleCount, femaleCount: nextFemaleCount };
 
-      if (allGendersEntered && (nextMaleCount !== (reg.maleCount || 0) || nextFemaleCount !== (reg.femaleCount || 0))) {
-        const countKeyM = `camp:${campId}:count:male`;
-        const countKeyF = `camp:${campId}:count:female`;
-        const subKeyM = `camp:${campId}:submissions:male`;
-        const subKeyF = `camp:${campId}:submissions:female`;
-        const [curCountM, curCountF, curSubsM, curSubsF] = await Promise.all([
-          env.CAMP_KV.get(countKeyM).then(v => parseInt(v || '0')),
-          env.CAMP_KV.get(countKeyF).then(v => parseInt(v || '0')),
-          env.CAMP_KV.get(subKeyM).then(v => parseInt(v || '0')),
-          env.CAMP_KV.get(subKeyF).then(v => parseInt(v || '0')),
+      // 참가자 이름/성별이 바뀌면 정원 카운터(신청 게이트 + 확정 인원)를 실제 명단 기준으로 즉시 재계산
+      if (field === 'name' || field === 'gender') {
+        const campRegs = await listCampRegistrations(env, campId);
+        const nextRegs = replaceRegistration(campRegs, updatedReg);
+        await Promise.all([
+          syncConfirmedCounters(env, campId, nextRegs),
+          syncSubmissionCounters(env, campId, nextRegs),
         ]);
-        const maleDelta = nextMaleCount - (reg.maleCount || 0);
-        const femaleDelta = nextFemaleCount - (reg.femaleCount || 0);
-        const ops = [
-          env.CAMP_KV.put(subKeyM, String(Math.max(0, curSubsM + maleDelta))),
-          env.CAMP_KV.put(subKeyF, String(Math.max(0, curSubsF + femaleDelta))),
-        ];
-        if (isFinalConfirmed(reg)) {
-          ops.push(env.CAMP_KV.put(countKeyM, String(Math.max(0, curCountM + maleDelta))));
-          ops.push(env.CAMP_KV.put(countKeyF, String(Math.max(0, curCountF + femaleDelta))));
-        }
-        await Promise.all(ops);
       }
     } else {
       updatedReg = { ...reg, [field]: value };
