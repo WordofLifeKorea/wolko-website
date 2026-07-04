@@ -1482,6 +1482,10 @@ tbody tr.camp-tint.is-dedicated:hover td {
   width: 68px;
   padding: 4px 5px;
 }
+.group-participant-input-wide {
+  width: 100%;
+  min-width: 0;
+}
 .group-participant-input:focus,
 .group-participant-select:focus {
   border-color: #0077a3;
@@ -2280,18 +2284,86 @@ tbody tr.camp-tint.is-dedicated:hover td {
 }
 .detail-participant-list {
   margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .detail-participant-item {
   display: grid;
-  grid-template-columns: 52px minmax(110px, 1fr) 64px minmax(100px, 150px) minmax(108px, auto) minmax(150px, 1.5fr);
-  align-items: center;
-  gap: 6px 14px;
-  padding: 9px 0;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(150px, 0.8fr) minmax(120px, auto);
+  align-items: start;
+  gap: 10px 14px;
+  padding: 12px;
+  border: 1px solid rgba(196,122,0,0.12);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.72);
   border-bottom: 1px solid rgba(196,122,0,0.12);
 }
-.detail-participant-item:last-child { border-bottom: none; }
-.detail-participant-item.is-saved  { background: rgba(56,168,223,0.05); border-radius: 6px; padding-left: 6px; }
-.detail-participant-item.is-dedicated { background: rgba(50,168,82,0.05); border-radius: 6px; padding-left: 6px; }
+.detail-participant-item:last-child { border-bottom: 1px solid rgba(196,122,0,0.12); }
+.detail-participant-item.is-saved  { background: rgba(56,168,223,0.05); }
+.detail-participant-item.is-dedicated { background: rgba(50,168,82,0.05); }
+.group-participant-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.group-participant-counselor,
+.group-participant-counselor-note {
+  min-width: 0;
+}
+.group-participant-admin-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(90px, 0.6fr) minmax(210px, 1.4fr) minmax(180px, 1.1fr) minmax(170px, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+.group-participant-admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.group-participant-admin-label {
+  color: var(--light);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+.group-participant-admin-value {
+  min-height: 30px;
+  padding: 6px 8px;
+  border: 1px solid rgba(0,79,104,0.08);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.62);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.group-participant-admin-note .group-participant-admin-value {
+  max-height: 58px;
+  overflow: hidden;
+}
+.group-participant-note-input {
+  width: 100%;
+  min-height: 34px;
+  max-height: 92px;
+}
+.group-participant-counselor-note {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.group-participant-counselor-note .counselor-memo-input,
+.group-participant-counselor-note .counselor-memo-readonly {
+  width: 100%;
+  max-width: 100%;
+}
 
 /* ── GENDER TOGGLE BUTTONS ── */
 .gender-toggle { display: inline-flex; gap: 3px; }
@@ -2676,6 +2748,13 @@ tbody tr.camp-tint.is-dedicated:hover td {
     gap: 8px;
     padding: 10px 0;
   }
+  .group-participant-main,
+  .spiritual-inline {
+    justify-content: flex-start;
+  }
+  .group-participant-admin-grid {
+    grid-template-columns: 1fr;
+  }
 
   /* 캠프 카드 */
   .camp-cards { flex-direction: column; gap: 10px; margin-bottom: 24px; }
@@ -3037,6 +3116,9 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .detail-participant-item {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+  .group-participant-admin-grid {
+    grid-template-columns: 1fr;
   }
 
   .registration-detail-item {

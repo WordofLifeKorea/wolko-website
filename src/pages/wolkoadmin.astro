@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=70">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=71">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
@@ -365,6 +365,11 @@
         summaryMemoExists:'메모 있음',
         studentListFn: (done, total, editing)=>`학생 명단 ${done} / ${total}명${editing ? ' 입력' : ''}`,
         studentNamePh:'학생 이름', studentLabelFn: n=>`학생 ${n}`, genderSelect:'성별', genderMissing:'성별 미입력',
+        participantBirthDate:'생년월일', participantBirthDatePh:'YYYY-MM-DD',
+        participantGrade:'학년', participantGradePh:'예: 중1',
+        participantParentInfo:'부모님 성함 및 전화번호', participantParentInfoPh:'예: 김월코 010-0000-0000',
+        participantRefundAccount:'환불계좌', participantRefundAccountPh:'예: 농협 123-4567-8910-11',
+        participantNote:'참고', participantNotePh:'참고 사항',
         checkParticipants:'참여 인원 수를 확인해주세요.', nameMissing:'이름 없음',
         chooseFromList:'— 명단에서 선택 —', wolkoStaff:'월코 스태프', staffApplicants:'스태프 신청자', orDirectInput:'또는 직접 입력',
         customTeamOther:'기타', customTeamInputPh:'팀 이름 직접 입력...', teamSaveFail:'팀 저장 실패',
@@ -455,6 +460,11 @@
         summaryMemoExists:'Memo added',
         studentListFn: (done, total, editing)=>`Students ${done}/${total}${editing ? ' editing' : ''}`,
         studentNamePh:'Student name', studentLabelFn: n=>`Student ${n}`, genderSelect:'Gender', genderMissing:'Gender missing',
+        participantBirthDate:'Birth Date', participantBirthDatePh:'YYYY-MM-DD',
+        participantGrade:'Grade', participantGradePh:'e.g. 7th',
+        participantParentInfo:'Parent Name & Phone', participantParentInfoPh:'e.g. Parent 010-0000-0000',
+        participantRefundAccount:'Refund Account', participantRefundAccountPh:'e.g. Bank 123-4567-8910',
+        participantNote:'Note', participantNotePh:'Note',
         checkParticipants:'Please check the participant count.', nameMissing:'No name',
         chooseFromList:'— Select from list —', wolkoStaff:'WOLKO Staff', staffApplicants:'Staff Applicants', orDirectInput:'or enter manually',
         customTeamOther:'Other', customTeamInputPh:'Enter team name...', teamSaveFail:'Failed to save team',
@@ -1494,13 +1504,52 @@
                 : participant.gender === 'female'
                 ? `<span class="group-participant-gender female">${t('female')}</span>`
                 : `<span class="group-participant-empty">${t('notEntered')}</span>`;
+              const participantTextField = (field, labelKey, placeholderKey, extraClass = '') => {
+                const value = participant[field] || '';
+                if (camperEditMode) {
+                  return `<label class="group-participant-admin-field ${extraClass}">
+                    <span class="group-participant-admin-label">${t(labelKey)}</span>
+                    <input class="group-participant-input group-participant-input-wide" type="text" value="${esc(value)}" placeholder="${t(placeholderKey)}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="${field}" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">
+                  </label>`;
+                }
+                return `<span class="group-participant-admin-field ${extraClass}">
+                  <span class="group-participant-admin-label">${t(labelKey)}</span>
+                  <span class="${value ? 'group-participant-admin-value' : 'group-participant-empty'}">${esc(value || t('notEntered'))}</span>
+                </span>`;
+              };
+              const participantNoteField = (() => {
+                const value = participant.note || '';
+                if (camperEditMode) {
+                  return `<label class="group-participant-admin-field group-participant-admin-note">
+                    <span class="group-participant-admin-label">${t('participantNote')}</span>
+                    <textarea class="counselor-memo-input group-participant-note-input" placeholder="${t('participantNotePh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="note" onblur="updateField(this)">${esc(value)}</textarea>
+                  </label>`;
+                }
+                return `<span class="group-participant-admin-field group-participant-admin-note">
+                  <span class="group-participant-admin-label">${t('participantNote')}</span>
+                  <span class="${value ? 'group-participant-admin-value' : 'group-participant-empty'}" title="${esc(value)}">${esc(value || t('notEntered'))}</span>
+                </span>`;
+              })();
+              const participantAdminFields = [
+                participantTextField('birthDate', 'participantBirthDate', 'participantBirthDatePh'),
+                participantTextField('grade', 'participantGrade', 'participantGradePh'),
+                participantTextField('parentInfo', 'participantParentInfo', 'participantParentInfoPh', 'group-participant-admin-parent'),
+                participantTextField('refundAccount', 'participantRefundAccount', 'participantRefundAccountPh'),
+                participantNoteField,
+              ].join('');
               return `<div class="detail-participant-item${participantClass}">
-                <span class="group-participant-label">${tt('studentLabelFn', participantIndex + 1)}</span>
-                <span class="group-participant-name">${participantName}</span>
-                <span>${participantGender}</span>
-                <span>${participantCounselor}</span>
-                <span class="spiritual-inline">${participantSalvation}${participantDedication}</span>
-                <span>${participantMemo}</span>
+                <div class="group-participant-main">
+                  <span class="group-participant-label">${tt('studentLabelFn', participantIndex + 1)}</span>
+                  <span class="group-participant-name">${participantName}</span>
+                  <span>${participantGender}</span>
+                </div>
+                <div class="group-participant-counselor">${participantCounselor}</div>
+                <div class="spiritual-inline">${participantSalvation}${participantDedication}</div>
+                <div class="group-participant-admin-grid">${participantAdminFields}</div>
+                <div class="group-participant-counselor-note">
+                  <span class="group-participant-admin-label">${t('thCounselorMemo')}</span>
+                  ${participantMemo}
+                </div>
               </div>`;
             }).join('')}
               </div>
@@ -2713,7 +2762,19 @@
           const participantList = Array.isArray(r.participants)
             ? r.participants.map((participant, index) => {
                 const participantCounselor = allRegs.find(staff => staff.regId === participant.counselorRegId && staff.campId === r.campId);
-                return `${index + 1}. ${participant.name || t('notEntered')} (${participant.gender === 'male' ? t('male') : participant.gender === 'female' ? t('female') : t('genderMissing')}${participantCounselor ? ` / ${participantCounselor.name}` : ''}${participant.saved ? ' / ' + t('savedLabel') : ''}${participant.dedicated ? ' / ' + t('dedicatedLabel') : ''}${participant.counselorMemo ? ` / ${t('thCounselorMemo')}: ${participant.counselorMemo}` : ''})`;
+                const participantDetails = [
+                  participant.gender === 'male' ? t('male') : participant.gender === 'female' ? t('female') : t('genderMissing'),
+                  participant.birthDate ? `${t('participantBirthDate')}: ${participant.birthDate}` : '',
+                  participant.grade ? `${t('participantGrade')}: ${participant.grade}` : '',
+                  participant.parentInfo ? `${t('participantParentInfo')}: ${participant.parentInfo}` : '',
+                  participant.refundAccount ? `${t('participantRefundAccount')}: ${participant.refundAccount}` : '',
+                  participantCounselor ? `${t('thCounselor')}: ${participantCounselor.name}` : '',
+                  participant.saved ? t('savedLabel') : '',
+                  participant.dedicated ? t('dedicatedLabel') : '',
+                  participant.note ? `${t('participantNote')}: ${participant.note}` : '',
+                  participant.counselorMemo ? `${t('thCounselorMemo')}: ${participant.counselorMemo}` : '',
+                ].filter(Boolean).join(' / ');
+                return `${index + 1}. ${participant.name || t('notEntered')} (${participantDetails})`;
               }).join('\n')
             : '';
           return [
