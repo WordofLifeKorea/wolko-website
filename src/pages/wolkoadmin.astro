@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=72">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=73">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="manifest" href="/admin-manifest.json">
   <meta name="theme-color" content="#004f68">
@@ -1515,10 +1515,17 @@
                   <span class="${value ? 'group-participant-admin-value' : 'group-participant-empty'}">${esc(value || t('notEntered'))}</span>
                 </span>`;
               };
-              const participantAdminFields = [
-                participantTextField('birthDate', 'participantBirthDate', 'participantBirthDatePh'),
+              const participantReadonlyField = (label, value, extraClass = '') => `<span class="group-participant-admin-field ${extraClass}">
+                <span class="group-participant-admin-label">${label}</span>
+                <span class="${value ? 'group-participant-admin-value' : 'group-participant-empty'}">${esc(value || t('notEntered'))}</span>
+              </span>`;
+              const participantBasicFields = [
                 participantTextField('grade', 'participantGrade', 'participantGradePh'),
+                participantTextField('birthDate', 'participantBirthDate', 'participantBirthDatePh'),
+                participantReadonlyField(t('thCamp'), campDisplayName(r.campId)),
                 participantTextField('parentInfo', 'participantParentInfo', 'participantParentInfoPh', 'group-participant-admin-parent'),
+              ].join('');
+              const participantAdminFields = [
                 participantTextField('refundAccount', 'participantRefundAccount', 'participantRefundAccountPh'),
               ].join('');
               const participantKey = `${r.regId}:${participantIndex}`;
@@ -1541,6 +1548,7 @@
                 </div>
                 <div class="group-participant-counselor">${participantCounselor}</div>
                 <div class="spiritual-inline">${participantSalvation}${participantDedication}</div>
+                <div class="group-participant-basic-grid">${participantBasicFields}</div>
                 ${participantExtra}
               </div>`;
             }).join('')}
