@@ -2815,11 +2815,16 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .camp-reg-table .registration-detail-panel {
     border-radius: 12px;
   }
+  .detail-participant-list {
+    gap: 4px;
+  }
   .detail-participant-item {
     grid-template-columns: 1fr;
     align-items: stretch;
-    gap: 8px;
-    padding: 10px 0;
+    gap: 6px;
+    padding: 9px 12px;
+    border-left: 3px solid rgba(196,122,0,0.3);
+    border-radius: 6px;
   }
   .group-participant-main,
   .spiritual-inline {
@@ -2828,6 +2833,12 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .group-participant-basic-grid,
   .group-participant-admin-grid {
     grid-template-columns: 1fr;
+  }
+  /* 접힌 상태에서는 이름·성별만 보이는 목록형으로 단순화, "상세" 클릭 시에만 나머지 정보 표시 */
+  .registration-detail-participants.is-readonly .detail-participant-item:not(.is-open) .group-participant-counselor,
+  .registration-detail-participants.is-readonly .detail-participant-item:not(.is-open) .spiritual-inline,
+  .registration-detail-participants.is-readonly .detail-participant-item:not(.is-open) .group-participant-basic-grid {
+    display: none;
   }
 
   /* 캠프 카드 */
