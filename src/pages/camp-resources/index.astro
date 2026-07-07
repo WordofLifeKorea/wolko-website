@@ -331,7 +331,7 @@ const pageTitle = 'WOLKO Camp Resources';
         <select id="itemTeam">
           <option value="WOLKO">WOLKO</option>
           <option value="Student Fusion Team Projects">Student Fusion Team Projects</option>
-          <option value="레슨플랜">레슨플랜</option>
+          <option value="레슨플랜" data-ko="레슨플랜" data-en="Lesson Plans">레슨플랜</option>
         </select>
       </div>
       <div class="field" id="personFieldWrap">
@@ -353,7 +353,7 @@ const pageTitle = 'WOLKO Camp Resources';
       </div>
       <div class="field">
         <label data-ko="보관 파일 (선택)" data-en="Archive File (optional)">보관 파일 (선택)</label>
-        <input id="itemArchiveUrl" type="url" placeholder="업로드하면 자동 입력됩니다">
+        <input id="itemArchiveUrl" type="url" data-ph-ko="업로드하면 자동 입력됩니다" data-ph-en="Auto-filled after upload" placeholder="업로드하면 자동 입력됩니다">
       </div>
       <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="보관 파일 업로드 (PDF·PPTX·이미지)" data-en="Upload Archive File (PDF/PPTX/Image)">보관 파일 업로드 (PDF·PPTX·이미지)</button>
       <input id="uploadFileInput" type="file" accept=".pdf,.pptx,.png,.jpg,.jpeg,.webp,.gif,.heic,.heif" hidden>
@@ -420,6 +420,10 @@ const pageTitle = 'WOLKO Camp Resources';
     const TEAM_SF = 'Student Fusion Team Projects';
     const TEAM_LESSON_PLAN = '레슨플랜';
     const TEAMS_ORDER = [TEAM_SF, TEAM_WOLKO, TEAM_LESSON_PLAN];
+    const TEAM_LABELS_EN = { [TEAM_LESSON_PLAN]: 'Lesson Plans' };
+    function teamLabel(team) {
+      return currentLang === 'en' ? (TEAM_LABELS_EN[team] || team) : team;
+    }
     const WOLKO_PINNED_PEOPLE = ['Zach', 'Niki', 'Molly', 'Debbie', 'Shannon'];
     const TABS = [
       { key: 'teacher', ko: '수업자료', en: 'Class Materials' },
@@ -950,7 +954,7 @@ const pageTitle = 'WOLKO Camp Resources';
         els.subjectGroups.innerHTML = TEAMS_ORDER.map(team => {
           if (team === TEAM_WOLKO) return wolkoTeamHtml(byTeam[team] || [], { pinPeople: true });
           const theme = team === TEAM_SF ? 'theme-sf' : 'theme-lesson';
-          return flatListHtml(team, byTeam[team] || [], { tab: 'teacher', team }, theme);
+          return flatListHtml(teamLabel(team), byTeam[team] || [], { tab: 'teacher', team }, theme);
         }).join('');
       } else {
         els.subjectGroups.innerHTML = flatListHtml(tabLabel(currentTab), campItems, { tab: currentTab });
