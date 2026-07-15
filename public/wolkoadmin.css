@@ -2676,113 +2676,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
     padding: 12px;
     background: #f6fafb;
   }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-    margin: 0 0 12px;
-    overflow: hidden;
-    border: 1px solid rgba(0,79,104,0.13);
-    border-left: 6px solid var(--camp-row-border);
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--camp-row-bg) 44%, #fff);
-    box-shadow: 0 8px 18px rgba(16,56,70,0.07);
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint:hover td,
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint.is-expanded td,
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint.is-pending:hover td,
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint.is-saved:hover td,
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint.is-dedicated:hover td {
-    background: transparent;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    min-width: 0;
-    padding: 9px 12px;
-    border-bottom: 1px solid rgba(0,79,104,0.08);
-    background: transparent !important;
-    color: var(--text);
-    white-space: normal !important;
-    box-shadow: none !important;
-    text-align: right;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:last-child {
-    border-bottom: 0;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td::before {
-    content: attr(data-label);
-    flex: 0 0 88px;
-    color: #7890a0;
-    font-size: 11px;
-    font-weight: 800;
-    line-height: 1.55;
-    text-align: left;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(1) {
-    order: -3;
-    display: block;
-    padding: 13px 12px 6px;
-    border-bottom: 0;
-    text-align: left;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(1)::before {
-    display: none;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(1) .registration-status-cell {
-    width: 100%;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(1) .registration-person-name {
-    font-size: 13.5px;
-    white-space: normal;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(3) {
-    order: -2;
-    justify-content: flex-start;
-    padding-top: 0;
-    padding-bottom: 10px;
-    color: var(--camp-row-border);
-    font-size: 12px !important;
-    font-weight: 800;
-    text-align: left;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(3)::before {
-    display: none;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(2) {
-    order: -1;
-    align-items: center;
-    background: rgba(255,255,255,0.62) !important;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(6) {
-    background: rgba(255,255,255,0.62) !important;
-  }
-  .camp-reg-table .registration-status-cell,
-  .camp-reg-table .summary-stack,
-  .camp-reg-table .summary-actions,
-  .camp-reg-table .spiritual-inline,
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td > span {
-    min-width: 0;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-  .camp-reg-table tbody tr.registration-summary-row.camp-tint td:nth-child(2) > span {
-    flex-wrap: wrap !important;
-    justify-content: flex-end;
-  }
-  .camp-reg-table .summary-stack {
-    text-align: right;
-  }
-  .camp-reg-table .summary-stack strong,
-  .camp-reg-table .summary-stack span {
-    white-space: normal;
-  }
-  .camp-reg-table .summary-actions {
-    gap: 8px;
-    text-align: right;
-  }
+  /* (구형 카드형 변환 규칙 제거됨 — 760px 목록형 스타일이 전 구간에 적용됨) */
   .camp-reg-table .camper-select,
   .camp-reg-table .edit-input,
   .camp-reg-table .edit-input-wide,
@@ -2971,7 +2865,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .camp-team-member,
   .detail-participant-item {
     content-visibility: auto;
-    contain-intrinsic-size: auto 84px;
+    contain-intrinsic-size: auto 56px;
   }
 
   .camp-reg-table .registration-summary-row.camp-tint,
@@ -2981,7 +2875,8 @@ tbody tr.camp-tint.is-dedicated:hover td {
     align-items: center;
     column-gap: 10px;
     margin: 0;
-    padding: 11px 14px 11px 18px;
+    padding: 9px 14px 9px 16px;
+    min-height: 48px;
     border: 0;
     border-bottom: 1px solid rgba(0,79,104,0.08);
     border-left: 4px solid var(--camp-row-border);
@@ -3034,34 +2929,16 @@ tbody tr.camp-tint.is-dedicated:hover td {
     align-self: start;
   }
 
-  /* 스태프: 팀 (둘째 td) — 두번째 줄 */
+  /* 스태프: 팀 배지 (둘째 td) — 우측, 상태 배지와 같은 자리 */
   .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(2) {
-    grid-column: 1 / -1;
-    grid-row: 2;
+    grid-column: 2;
+    grid-row: 1;
     display: block;
-    margin-top: 4px;
+    align-self: center;
+    text-align: right;
   }
 
-  /* 스태프: 연락처 (셋째 td) — 두번째 줄 우측 */
-  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(3) {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    display: block;
-    margin-top: 2px;
-    font-size: 11.5px !important;
-    color: var(--mid);
-  }
-
-  /* 캠퍼: 캠프명 (셋째 td) — 작게 표시 */
-  .camp-reg-table .registration-summary-row.camp-tint td:nth-child(3) {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    display: block;
-    margin-top: 4px;
-    font-size: 11.5px !important;
-  }
-
-  /* 캠퍼: 연락처 (둘째 td) — 우측 상단 */
+  /* 캠퍼: 상태 배지 (둘째 td) — 우측 */
   .camp-reg-table .registration-summary-row.camp-tint td:nth-child(2) {
     grid-column: 2;
     grid-row: 1;
@@ -3070,10 +2947,13 @@ tbody tr.camp-tint.is-dedicated:hover td {
     font-size: 11.5px !important;
   }
 
-  /* 모바일에서는 부가 컬럼들 숨김 */
+  /* 한 줄 목록: 캠프명(캠퍼 td3)은 캠프 헤더에서, 연락처(스태프 td3)는
+     펼침 상세에서 이미 보이므로 행에서는 숨겨 높이를 얇게 유지 */
+  .camp-reg-table .registration-summary-row.camp-tint td:nth-child(3),
   .camp-reg-table .registration-summary-row.camp-tint td:nth-child(4),
   .camp-reg-table .registration-summary-row.camp-tint td:nth-child(5),
   .camp-reg-table .registration-summary-row.camp-tint td:nth-child(6),
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(3),
   .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(4),
   .staff-reg-table tbody tr.staff-summary-row.camp-tint td:nth-child(5) {
     display: none !important;
