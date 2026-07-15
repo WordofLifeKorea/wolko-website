@@ -1614,11 +1614,16 @@
             ${refundDetailSection}
             ${scholarshipDetailSection}
             ${counselingDetailSection}`;
+        const registrationDateActions = `<div class="registration-detail-actions has-date">
+          <span class="registration-detail-date">${esc(dateStr)}</span>
+          <button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button>
+        </div>`;
         const detailRow = isExpanded
           ? `<tr class="registration-detail-row" style="${rowStyle}">
               <td colspan="6">
                 <div class="registration-detail-panel">
                   ${detailPanelContent}
+                  ${registrationDateActions}
                 </div>
               </td>
             </tr>`
