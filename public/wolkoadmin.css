@@ -2873,22 +2873,61 @@ tbody tr.camp-tint.is-dedicated:hover td {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    column-gap: 10px;
-    margin: 0;
-    padding: 9px 14px 9px 16px;
-    min-height: 48px;
+    column-gap: 12px;
+    position: relative;
+    margin: 0 10px;
+    padding: 12px 12px 12px 20px;
+    min-height: 54px;
     border: 0;
-    border-bottom: 1px solid rgba(0,79,104,0.08);
-    border-left: 4px solid var(--camp-row-border);
-    border-radius: 0;
+    border-radius: 12px;
     background: #fff;
     box-shadow: none;
     font-family: var(--f-sans);
+    transition: background .16s ease, box-shadow .16s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* 행 사이 초박형 헤어라인 (마지막 행 제외) — 카드 사이를 부드럽게 구분 */
+  .camp-reg-table .registration-summary-row.camp-tint::after,
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint::after {
+    content: "";
+    position: absolute;
+    left: 20px; right: 12px; bottom: 0;
+    height: 1px;
+    background: rgba(0,79,104,0.06);
+  }
+  .camp-reg-table .registration-summary-row.camp-tint:last-of-type::after,
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint:last-of-type::after,
+  .camp-reg-table .registration-summary-row.camp-tint.is-expanded::after,
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint.is-expanded::after {
+    display: none;
+  }
+  /* 좌측 캡슐형 강조 — 둥근 끝, 세로 중앙 */
+  .camp-reg-table .registration-summary-row.camp-tint::before,
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint::before {
+    content: "";
+    position: absolute;
+    left: 8px; top: 50%;
+    width: 3px; height: 18px;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: var(--camp-row-border);
+    opacity: .5;
+    transition: height .16s ease, opacity .16s ease;
   }
 
   .camp-reg-table .registration-summary-row.camp-tint.is-expanded,
   .staff-reg-table tbody tr.staff-summary-row.camp-tint.is-expanded {
-    background: color-mix(in srgb, var(--camp-row-bg) 35%, #fff);
+    background: color-mix(in srgb, var(--camp-row-bg) 42%, #fff);
+    box-shadow: 0 6px 18px rgba(16,56,70,0.08);
+  }
+  .camp-reg-table .registration-summary-row.camp-tint.is-expanded::before,
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint.is-expanded::before {
+    height: 30px;
+    opacity: 1;
+  }
+  .camp-reg-table .registration-summary-row.camp-tint:active,
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint:active {
+    background: color-mix(in srgb, var(--camp-row-bg) 55%, #fff);
   }
 
   .camp-reg-table .registration-summary-row.camp-tint:hover td,
@@ -2959,32 +2998,65 @@ tbody tr.camp-tint.is-dedicated:hover td {
     display: none !important;
   }
 
+  /* 이름·메타를 세로로 쌓아 한눈에 읽히는 계층 구조 */
+  .camp-reg-table .registration-summary-row.camp-tint td:first-child .registration-status-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
   .camp-reg-table .registration-person-name,
   .staff-reg-table .staff-name-cell {
     display: inline;
     overflow: visible;
     color: var(--text);
     font-family: var(--f-sans);
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 800;
     letter-spacing: -0.01em;
-    line-height: 1.35;
+    line-height: 1.3;
     text-overflow: clip;
     white-space: normal;
+  }
+  /* 이름 앞 색 점을 조금 더 또렷하게 */
+  .camp-reg-table .registration-summary-row.camp-tint .reg-type-dot {
+    width: 6px; height: 6px;
+    margin-right: 7px;
+    vertical-align: 1px;
   }
 
   .staff-reg-table .staff-name-line {
     display: inline-flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 7px;
   }
 
+  /* 메타 줄: 유형 배지 + 학년/인원(옅은 텍스트) + 성별 배지 — 항상 한 줄 유지 */
   .camp-reg-table .registration-expanded-meta {
-    display: inline;
-    margin-left: 6px;
-    font-size: 11px;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin-left: 13px;
+    min-width: 0;
+    font-size: 11.5px;
     color: var(--mid);
+  }
+  .camp-reg-table .registration-expanded-meta .badge {
+    flex: 0 0 auto;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .camp-reg-table .registration-type-meta {
+    margin-left: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    color: var(--light);
+    font-weight: 600;
+    white-space: nowrap;
   }
 
   /* chevron 제거 — 목록형에선 깔끔하게 */
@@ -3061,7 +3133,21 @@ tbody tr.camp-tint.is-dedicated:hover td {
     grid-template-columns: 96px minmax(0, 1fr);
   }
 
-  .camp-reg-table td:nth-child(2) > span,
+  /* 상태 셀: 배지 + 액션 버튼을 세로로 쌓아 열 폭을 좁게 유지 (좌측 이름·메타 눌림 방지) */
+  .camp-reg-table .registration-summary-row.camp-tint td:nth-child(2) > span {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 6px !important;
+    white-space: normal !important;
+  }
+  .camp-reg-table .registration-summary-row.camp-tint td:nth-child(2) .btn-confirm,
+  .camp-reg-table .registration-summary-row.camp-tint td:nth-child(2) .btn-revert {
+    min-height: 25px;
+    padding: 0 9px;
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
   .camp-reg-table .summary-actions {
     flex-wrap: wrap !important;
     justify-content: flex-end;
@@ -3138,34 +3224,75 @@ tbody tr.camp-tint.is-dedicated:hover td {
     min-height: 30px;
   }
 
+  /* ── 모바일: 상태 그룹 헤더 (최종확정 / 예약금확인 / 대기중) ── */
+  .camp-status-group { border-top: 0; }
+  .camp-status-group + .camp-status-group { margin-top: 4px; }
+  .camp-status-group-head {
+    padding: 16px 18px 6px;
+    gap: 9px;
+  }
+  .camp-status-dot {
+    width: 9px; height: 9px;
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 14%, transparent);
+  }
+  .camp-status-dot-confirmed { color: #16a34a; }
+  .camp-status-dot-deposit { color: #2563eb; }
+  .camp-status-dot-pending { color: #d97706; }
+  .camp-status-group-title {
+    font-family: var(--f-sans);
+    font-size: 13.5px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .camp-status-group-count {
+    font-family: var(--f-sans);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
   /* ── 모바일: 스태프 캠프 섹션 헤더 (목록형) ── */
   .camp-section-row {
     display: block !important;
-    background: var(--camp-row-bg, rgba(0,79,104,0.05));
+    background: transparent !important;
   }
   .camp-section-row td {
     display: block !important;
-    padding: 14px 14px 12px 18px !important;
+    padding: 15px 14px 8px 20px !important;
     background: transparent !important;
-    border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+    border: 0 !important;
     text-align: left !important;
     font-family: var(--f-sans) !important;
-    box-shadow: inset 4px 0 0 var(--camp-row-border, var(--blue)) !important;
+    box-shadow: none !important;
   }
   .camp-section-row td::before {
     display: none !important;
   }
   .camp-section-head {
-    gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  /* 캠프명 앞 작은 색 점으로 캠프 식별 (헤비한 색 밴드 대체) */
+  .camp-section-head::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--camp-row-border, var(--blue));
+    flex: 0 0 auto;
   }
   .camp-section-title {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 800;
-    letter-spacing: -0.01em;
+    letter-spacing: 0.03em;
+    color: var(--mid);
   }
   .camp-section-count {
-    font-size: 10.5px;
-    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    color: var(--light);
+    background: rgba(0,79,104,0.05);
+    border-radius: 999px;
   }
 
   /* ── 모바일: 스태프 행 폰트 통일 ── */
