@@ -1882,10 +1882,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  padding: 10px 12px;
-  background: #fff;
-  border: 1px solid rgba(0,79,104,0.08) !important;
-  border-radius: 8px;
+  margin-bottom: 0;
 }
 .camp-team-unassigned .camp-team-member .camp-team-member-controls {
   flex-direction: row;
@@ -1922,10 +1919,14 @@ tbody tr.camp-tint.is-dedicated:hover td {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 9px 0;
-  border-top: 1px solid rgba(0,79,104,0.08);
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: #fff;
+  border: 1px solid rgba(0,79,104,0.10);
+  border-left: 3px solid var(--blue);
+  border-radius: 8px;
 }
-.camp-team-member:first-of-type { border-top: none; }
+.camp-team-member:last-child { margin-bottom: 0; }
 .camp-team-member strong {
   display: block;
   color: var(--text);
@@ -1950,7 +1951,8 @@ tbody tr.camp-tint.is-dedicated:hover td {
   font-weight: 900;
   white-space: nowrap;
 }
-/* 리더는 이름 색으로만 구분, 카드 박스 없이 일반 행과 동일한 간격 */
+/* 리더는 카드 좌측 강조선 색으로 구분 */
+.camp-team-member.is-leader { border-left-color: #0d9488; }
 .camp-team-member.is-leader .couple-person-row strong {
   color: #0d9488;
 }
@@ -2311,24 +2313,23 @@ tbody tr.camp-tint.is-dedicated:hover td {
   align-items: start;
   gap: 10px 14px;
   padding: 12px;
-  border: 1px solid rgba(196,122,0,0.12);
+  border: 1px solid rgba(0,79,104,0.12);
+  border-left: 3px solid var(--blue);
   border-radius: 8px;
   background: rgba(255,255,255,0.72);
-  border-bottom: 1px solid rgba(196,122,0,0.12);
   cursor: pointer;
   transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
 }
-.detail-participant-item:last-child { border-bottom: 1px solid rgba(196,122,0,0.12); }
 .detail-participant-item.is-saved  { background: rgba(56,168,223,0.05); }
 .detail-participant-item.is-dedicated { background: rgba(50,168,82,0.05); }
 .detail-participant-item:hover,
 .detail-participant-item:focus-visible {
-  border-color: rgba(196,122,0,0.28);
-  box-shadow: 0 4px 14px rgba(120,85,28,0.08);
+  border-color: rgba(0,79,104,0.28);
+  box-shadow: 0 4px 14px rgba(16,56,70,0.08);
 }
 .detail-participant-item.is-open {
   background: rgba(255,255,255,0.92);
-  border-color: rgba(196,122,0,0.28);
+  border-color: rgba(0,79,104,0.28);
 }
 .group-participant-main {
   display: flex;
@@ -2825,7 +2826,6 @@ tbody tr.camp-tint.is-dedicated:hover td {
     align-items: stretch;
     gap: 6px;
     padding: 9px 12px;
-    border-left: 3px solid rgba(196,122,0,0.3);
     border-radius: 6px;
   }
   .group-participant-main,
@@ -2963,6 +2963,15 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .staff-reg-table tbody {
     padding: 0;
     background: #fff;
+  }
+
+  /* 화면 밖 행/카드는 렌더링을 미뤄서 스크롤 끊김 완화 (신청·스태프 목록이 길어질수록 효과 큼) */
+  .camp-reg-table .registration-summary-row.camp-tint,
+  .staff-reg-table tbody tr.staff-summary-row.camp-tint,
+  .camp-team-member,
+  .detail-participant-item {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 84px;
   }
 
   .camp-reg-table .registration-summary-row.camp-tint,
