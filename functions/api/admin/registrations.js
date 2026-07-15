@@ -481,9 +481,77 @@ export async function onRequestPut(context) {
   }
 
   try {
-    const { regId, campId, field, value, participantIndex } = await request.json();
-    if (!regId || !campId || !field) {
-      return Response.json({ error: 'regId, campId, field가 필요합니다.' }, { status: 400, headers: CORS });
+    const { regId, campId, field, value, participantIndex, action } = await request.json();
+    if (!regId || !campId) {
+      return Response.json({ error: 'regId, campId가 필요합니다.' }, { status: 400, headers: CORS });
+    }
+
+    // ── 단체 학생 명단에서 특정 학생 삭제 (뒤 순번 자동 당김) ──
+    if (action === 'removeParticipant') {
+      const regKey = `camp:${campId}:reg:${regId}`;
+      const reg = await env.CAMP_KV.get(regKey, 'json');
+      if (!reg) {
+        return Response.json({ error: '해당 신청을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
+      }
+      if (reg.registrationType !== 'group') {
+        return Response.json({ error: '단체 신청의 학생만 삭제할 수 있습니다.' }, { status: 400, headers: CORS });
+      }
+      const index = Number(participantIndex);
+      const slotCount = Math.max(parseInt(reg.groupCount, 10) || 0, Array.isArray(reg.participants) ? reg.participants.length : 0);
+      if (!Number.isInteger(index) || index < 0 || index >= slotCount) {
+        return Response.json({ error: '학생 정보가 올바르지 않습니다.' }, { status: 400, headers: CORS });
+      }
+      if (slotCount <= 1) {
+        return Response.json({ error: '마지막 학생은 삭제할 수 없습니다. 신청 전체를 삭제해주세요.' }, { status: 400, headers: CORS });
+      }
+
+      // 전체 슬롯 배열을 만든 뒤 해당 인덱스를 제거 → 뒤 학생이 자동으로 앞으로 당겨짐
+      const slots = Array.from({ length: slotCount }, (_, i) => ({ ...(reg.participants?.[i] || {}) }));
+      slots.splice(index, 1);
+
+      const named = slots.filter(p => p && String(p.name || '').trim());
+      const nextGroupCount = slots.length;
+      const nextMaleCount = named.filter(p => p.gender === 'male').length;
+      const nextFemaleCount = named.filter(p => p.gender === 'female').length;
+
+      // 정원(슬롯) 감소 → 예약금/잔금 재계산 및 장학금 한도 재정규화
+      const spots = Math.max(1, nextGroupCount);
+      const normalizedScholarshipDiscounts = normalizeScholarshipDiscounts(reg.scholarshipDiscounts, spots);
+      const normalizedScholarshipDiscountAmount = scholarshipDiscountAmount(normalizedScholarshipDiscounts);
+      const normalizedScholarshipDiscountDetails = normalizeScholarshipDiscountDetailsForAdmin(
+        reg.scholarshipDiscountDetails,
+        normalizedScholarshipDiscounts
+      );
+      const campFeeBase = CAMP_BASE_FEE * spots;
+
+      const updatedReg = {
+        ...reg,
+        participants: slots,
+        groupCount: nextGroupCount,
+        maleCount: nextMaleCount,
+        femaleCount: nextFemaleCount,
+        scholarshipDiscounts: normalizedScholarshipDiscounts,
+        scholarshipDiscountDetails: normalizedScholarshipDiscountDetails,
+        scholarshipDiscountText: scholarshipDiscountText(normalizedScholarshipDiscounts),
+        scholarshipDiscountDetailText: scholarshipDiscountDetailText(normalizedScholarshipDiscountDetails),
+        scholarshipDiscountAmount: normalizedScholarshipDiscountAmount,
+        campFeeBase,
+        campFeeFinal: Math.max(0, campFeeBase - normalizedScholarshipDiscountAmount),
+      };
+
+      await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));
+      const campRegs = await listCampRegistrations(env, campId);
+      const nextRegs = replaceRegistration(campRegs, updatedReg);
+      await Promise.all([
+        syncConfirmedCounters(env, campId, nextRegs),
+        syncSubmissionCounters(env, campId, nextRegs),
+      ]);
+
+      return Response.json({ success: true, reg: updatedReg }, { headers: CORS });
+    }
+
+    if (!field) {
+      return Response.json({ error: 'field가 필요합니다.' }, { status: 400, headers: CORS });
     }
 
     const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea', 'counselorRegId', 'counselorMemo', 'saved', 'dedicated', 'scholarshipDiscounts'];

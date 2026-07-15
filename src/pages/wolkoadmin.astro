@@ -329,6 +329,7 @@
         teamLeaderSection:'팀 리더', memberSection:'멤버', applicantSection:'지원 스태프',
         teamSaved:'팀 정보가 저장되었습니다.', teamSaveErr:'팀 저장 오류: ',
         deleted:'신청이 삭제되었습니다.', deleteErr:'삭제 오류: ',
+        deleteStudent:'학생 삭제', studentDeleteConfirm:'이 학생을 명단에서 삭제하시겠습니까?\n뒤 순번의 학생들이 앞으로 당겨집니다.', studentDeleted:'학생이 삭제되었습니다.',
         csvDone:'CSV 다운로드 완료!', csvStaffDone:'스태프 CSV 다운로드 완료!',
         fieldSaved:'저장되었습니다.', fieldErr:'저장 오류: ',
         unassignedTeam:'미등록 팀', allAssigned:'미등록 인원이 없습니다.',
@@ -423,6 +424,7 @@
         teamLeaderSection:'Team Leaders', memberSection:'Members', applicantSection:'Applied Staff',
         teamSaved:'Team info saved.', teamSaveErr:'Team save error: ',
         deleted:'Registration deleted.', deleteErr:'Delete error: ',
+        deleteStudent:'Remove', studentDeleteConfirm:'Remove this student from the roster?\nStudents after this slot will shift up.', studentDeleted:'Student removed.',
         csvDone:'CSV download complete!', csvStaffDone:'Staff CSV download complete!',
         fieldSaved:'Saved.', fieldErr:'Save error: ',
         unassignedTeam:'Unregistered Team', allAssigned:'No unregistered people.',
@@ -1583,6 +1585,7 @@
                   <span class="group-participant-name">${participantName}</span>
                   <span>${participantGender}</span>
                   <span class="group-participant-expand">${isParticipantExpanded ? t('detailClose') : t('detailOpen')}</span>
+                  ${camperEditMode ? `<button class="group-participant-delete" type="button" onclick="removeGroupParticipant('${esc(r.regId)}','${esc(r.campId)}',${participantIndex})" title="${t('deleteStudent')}" aria-label="${t('deleteStudent')}">${t('deleteStudent')}</button>` : ''}
                 </div>
                 <div class="group-participant-counselor">${participantCounselor}</div>
                 <div class="spiritual-inline">${participantSalvation}${participantDedication}</div>
@@ -2646,6 +2649,29 @@
         else inputEl.value = original;
         inputEl.classList.remove('saving');
         showToast(t('fieldErr') + e.message, 'error');
+      }
+    }
+
+    async function removeGroupParticipant(regId, campId, participantIndex) {
+      if (!confirm(t('studentDeleteConfirm'))) return;
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ regId, campId, action: 'removeParticipant', participantIndex: Number(participantIndex) }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('deleteFail'));
+        const reg = allRegs.find(r => r.regId === regId && r.campId === campId);
+        if (reg) Object.assign(reg, data.reg);
+        // 인덱스 기반 펼침 상태가 재정렬되므로 해당 신청의 펼침 상태 초기화
+        [...expandedGroupParticipants].forEach(key => { if (key.startsWith(regId + ':')) expandedGroupParticipants.delete(key); });
+        updateCardStats();
+        renderCampTable();
+        renderDash();
+        showToast(t('studentDeleted'), 'success');
+      } catch (e) {
+        showToast(t('deleteErr') + e.message, 'error');
       }
     }
 
