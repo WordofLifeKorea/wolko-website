@@ -50,7 +50,7 @@ async function verifyToken(request, env) {
   }
 }
 
-async function counselorRegIdsForEmail(env, campId, email) {
+async function listCampRegistrations(env, campId) {
   const registrations = [];
   let cursor;
   do {
@@ -59,9 +59,21 @@ async function counselorRegIdsForEmail(env, campId, email) {
     registrations.push(...regs.filter(Boolean));
     cursor = result.list_complete ? null : result.cursor;
   } while (cursor);
+  return registrations;
+}
+
+async function counselorRegIdsForEmail(env, campId, email) {
+  const registrations = await listCampRegistrations(env, campId);
   return registrations
     .filter(reg => isCounselorStaff(reg) && normalizeEmail(reg.email) === email)
     .map(reg => reg.regId);
+}
+
+/** 담당 카운슬러로 지정하려는 regId가 실제로 이 캠프의 상담자 팀 스태프인지 확인 (빈 값 = 미배정 처리 허용) */
+async function isAssignableCounselor(env, campId, regId) {
+  if (!regId) return true;
+  const registrations = await listCampRegistrations(env, campId);
+  return registrations.some(reg => reg.regId === regId && isCounselorStaff(reg));
 }
 
 function normalizeValue(field, value) {
@@ -113,9 +125,21 @@ export async function onRequestPut(context) {
       return Response.json({ error: '캠퍼 정보를 찾을 수 없습니다.' }, { status: 404, headers: CORS });
     }
 
-    const allowedCounselors = session.role === 'admin'
-      ? null
-      : await counselorRegIdsForEmail(env, campId, session.email);
+    // 담당 카운슬러 배정(counselorRegId)은 로그인한 카운슬러 누구나 가능 —
+    // "이미 내 캠퍼여야만 수정 가능" 규칙에서 예외로 둔다 (미배정/타 카운슬러
+    // 캠퍼도 배정할 수 있어야 체크인 현장에서 실제로 쓸모가 있음).
+    // 그 외 필드(구원/헌신/간증/메모)는 기존대로 담당 카운슬러 또는 관리자만.
+    const isAssignmentField = field === 'counselorRegId';
+    const needsOwnershipCheck = session.role !== 'admin' && !isAssignmentField;
+    const allowedCounselors = needsOwnershipCheck
+      ? await counselorRegIdsForEmail(env, campId, session.email)
+      : null;
+    if (isAssignmentField) {
+      const nextRegId = String(body.value || '').trim();
+      if (!(await isAssignableCounselor(env, campId, nextRegId))) {
+        return Response.json({ error: '이 캠프의 상담자 팀 스태프만 담당 카운슬러로 지정할 수 있습니다.' }, { status: 400, headers: CORS });
+      }
+    }
     const nextValue = normalizeValue(field, body.value);
     let updatedReg;
 
@@ -128,7 +152,7 @@ export async function onRequestPut(context) {
         return Response.json({ error: '학생 번호가 올바르지 않습니다.' }, { status: 400, headers: CORS });
       }
       const current = reg.participants?.[participantIndex] || {};
-      if (session.role !== 'admin' && !allowedCounselors.includes(current.counselorRegId || '')) {
+      if (needsOwnershipCheck && !allowedCounselors.includes(current.counselorRegId || '')) {
         return Response.json({ error: '담당 캠퍼만 수정할 수 있습니다.' }, { status: 403, headers: CORS });
       }
       const participants = Array.from({ length: groupCount }, (_, index) =>
@@ -147,7 +171,7 @@ export async function onRequestPut(context) {
       }
       updatedReg = { ...reg, teamColor: nextValue };
     } else {
-      if (session.role !== 'admin' && !allowedCounselors.includes(reg.counselorRegId || '')) {
+      if (needsOwnershipCheck && !allowedCounselors.includes(reg.counselorRegId || '')) {
         return Response.json({ error: '담당 캠퍼만 수정할 수 있습니다.' }, { status: 403, headers: CORS });
       }
       updatedReg = { ...reg, [field]: nextValue };
