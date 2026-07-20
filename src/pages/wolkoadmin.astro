@@ -137,6 +137,12 @@
             </svg>
             <span data-t="editMode">수정 모드</span>
           </button>
+          <button class="btn-print" onclick="printRoster()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M4 5V1.5h6V5M4 10.5H2.5v-4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v4H10M4 8.5h6v4H4z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-t="rosterPrint">명단 인쇄</span>
+          </button>
           <button class="btn-csv" onclick="downloadCsv('camp')">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -288,6 +294,9 @@
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
+  <!-- 인쇄용 명단 (화면에서는 숨김, 인쇄 시에만 표시) -->
+  <div id="printRoster" aria-hidden="true"></div>
+
   <script is:inline>
     // ── Language System ──
     let adminLang = localStorage.getItem('wolkoAdminLang') || 'ko';
@@ -301,7 +310,8 @@
         loginPw:'비밀번호를 입력하세요', loginVerifying:'확인 중…', loginBtn:'로그인',
         loginRequired:'비밀번호를 입력해주세요.', loginWrong:'비밀번호가 올바르지 않습니다.',
         passwordLanguageWarning:'비밀번호는 영어 입력 상태에서 입력해주세요.',
-        campRegTitle:'캠프 신청 목록', editMode:'수정 모드', editing:'수정 중', csvDownload:'CSV 다운로드',
+        campRegTitle:'캠프 신청 목록', editMode:'수정 모드', editing:'수정 중', csvDownload:'CSV 다운로드', rosterPrint:'명단 인쇄',
+        rosterEmpty:'인쇄할 명단이 없습니다.',
         thApplicant:'신청자', thCounseling:'상담',
         thStatus:'상태', thCamp:'캠프', thType:'유형', thName:'이름',
         thCounselor:'담당 카운슬러', thSalvation:'구원', thDedication:'헌신',
@@ -394,7 +404,8 @@
         loginPw:'Enter password', loginVerifying:'Verifying…', loginBtn:'Login',
         loginRequired:'Please enter your password.', loginWrong:'Incorrect password.',
         passwordLanguageWarning:'Please switch to English input before entering the password.',
-        campRegTitle:'Camp Registrations', editMode:'Edit Mode', editing:'Editing', csvDownload:'Export CSV',
+        campRegTitle:'Camp Registrations', editMode:'Edit Mode', editing:'Editing', csvDownload:'Export CSV', rosterPrint:'Print Roster',
+        rosterEmpty:'No campers to print.',
         thApplicant:'Applicant', thCounseling:'Counseling',
         thStatus:'Status', thCamp:'Camp', thType:'Type', thName:'Name',
         thCounselor:'Counselor', thSalvation:'Saved', thDedication:'Dedicated',
@@ -2885,6 +2896,92 @@
         a.click(); URL.revokeObjectURL(url);
         showToast(t('csvDone'), 'success');
       }
+    }
+
+    // ── 인쇄용 명단 (학생 1명당 1행으로 펼쳐서 표시 + 인쇄) ──
+    function counselorNameFor(campId, counselorRegId) {
+      if (!counselorRegId) return '';
+      const c = allRegs.find(staff => staff.regId === counselorRegId && staff.campId === campId);
+      return c ? c.name : '';
+    }
+
+    function rosterEntriesByCamp() {
+      const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
+      const byCamp = new Map();
+      const pushEntry = (campId, entry) => {
+        if (!byCamp.has(campId)) byCamp.set(campId, []);
+        byCamp.get(campId).push(entry);
+      };
+      regs.forEach(r => {
+        if (r.registrationType === 'group') {
+          const parts = Array.isArray(r.participants) ? r.participants : [];
+          parts.forEach(p => {
+            const nm = String(p?.name || '').trim();
+            if (!nm) return;
+            pushEntry(r.campId, {
+              name: nm,
+              gender: p.gender,
+              grade: p.grade || t('groupBadge'),
+              org: [r.name, r.church].filter(Boolean).join(' · '),
+              counselor: counselorNameFor(r.campId, p.counselorRegId),
+              phone: r.phone || '',
+            });
+          });
+        } else {
+          pushEntry(r.campId, {
+            name: r.name,
+            gender: r.gender,
+            grade: r.grade || t('individualBadge'),
+            org: [r.church, r.school].filter(Boolean).join(' · '),
+            counselor: counselorNameFor(r.campId, r.counselorRegId),
+            phone: r.phone || '',
+          });
+        }
+      });
+      return byCamp;
+    }
+
+    function printRoster() {
+      const byCamp = rosterEntriesByCamp();
+      const total = [...byCamp.values()].reduce((sum, list) => sum + list.length, 0);
+      if (!total) { showToast(t('rosterEmpty'), 'error'); return; }
+
+      const genderLabel = g => g === 'male' ? t('male') : g === 'female' ? t('female') : '';
+      const cols = adminLang === 'en'
+        ? ['No.', 'Name', 'Sex', 'Grade/Type', 'Affiliation', 'Counselor', 'Phone', 'Check']
+        : ['번호', '이름', '성별', '학년/구분', '소속', '담당 카운슬러', '연락처', '확인'];
+      const campScope = activeCamp === 'all' ? t('campAll') : campDisplayName(activeCamp);
+      const printedAt = new Date().toLocaleString(adminLang === 'en' ? 'en-US' : 'ko-KR');
+
+      let no = 0;
+      const bodyRows = [...byCamp.entries()].map(([campId, list]) => {
+        const header = `<tr class="roster-print-group-row"><td colspan="8">${esc(campDisplayName(campId))} · ${list.length}${adminLang === 'en' ? '' : '명'}</td></tr>`;
+        const rows = list.map(e => {
+          no += 1;
+          return `<tr>
+            <td class="col-no">${no}</td>
+            <td>${esc(e.name)}</td>
+            <td class="col-gender">${esc(genderLabel(e.gender))}</td>
+            <td>${esc(e.grade)}</td>
+            <td>${esc(e.org)}</td>
+            <td>${esc(e.counselor)}</td>
+            <td>${esc(e.phone)}</td>
+            <td class="col-check"></td>
+          </tr>`;
+        }).join('');
+        return header + rows;
+      }).join('');
+
+      document.getElementById('printRoster').innerHTML = `
+        <div class="roster-print-head">
+          <h1 class="roster-print-title">${adminLang === 'en' ? 'Camper Roster' : '캠퍼 명단'} — ${esc(campScope)}</h1>
+          <p class="roster-print-sub">${adminLang === 'en' ? 'Total' : '총'} ${total}${adminLang === 'en' ? ' campers' : '명'} · ${esc(printedAt)}</p>
+        </div>
+        <table class="roster-print-table">
+          <thead><tr>${cols.map((c, i) => `<th class="${i === 0 ? 'col-no' : i === 2 ? 'col-gender' : i === 7 ? 'col-check' : ''}">${esc(c)}</th>`).join('')}</tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>`;
+      window.print();
     }
 
     // ── Toast ──

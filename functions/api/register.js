@@ -11,7 +11,7 @@
  * KAKAO_TEMPLATE_ADMIN_NOTIFY 알림톡 템플릿이 승인되어 있으면 알림톡으로,
  * 아니면(심사중/미설정) SMS로 자동 폴백.
  */
-import { appendRow } from '../lib/googleSheets.js';
+import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
 
 const CORS = {
@@ -342,17 +342,23 @@ async function notifyAdmin(env, reg) {
 
 function regToSheetRow(reg) {
   const isGroup = reg.registrationType === 'group';
-  const participantSummary = isGroup && reg.participants?.length
-    ? reg.participants.map((participant, index) => `${index + 1}. ${participant.name} (${participant.gender === 'male' ? '남' : '여'})`).join('\n')
+  const namedParticipants = isGroup && Array.isArray(reg.participants)
+    ? reg.participants.filter(p => String(p?.name || '').trim())
+    : [];
+  // 참가 학생 명단은 별도 '참가자명단' 탭에 학생 1명당 1행으로 저장한다.
+  // 여기(요약 행)에는 뭉쳐 넣지 않고 한 줄 안내만 남겨 셀을 깔끔하게 유지.
+  const participantNote = isGroup
+    ? (reg.participantDetailsDeferred
+        ? '참가 학생 명단: 추후 제출 예정'
+        : `참가 학생 ${namedParticipants.length}명 → '참가자명단' 시트 참고`)
     : '';
   const notes = [
-    reg.participantDetailsDeferred ? '참가 학생 명단: 추후 제출 예정' : '',
+    participantNote,
     reg.refundAccount ? `환불 계좌: ${reg.refundBank || ''} ${reg.refundAccount} (예금주: ${reg.refundHolder || ''})`.trim() : '',
     reg.scholarshipDiscountText ? `장학금/할인: ${reg.scholarshipDiscountText}` : '',
     reg.scholarshipDiscountDetailText ? `할인 상세: ${reg.scholarshipDiscountDetailText}` : '',
     `총 납입금: ${formatWon(reg.campFeeFinal ?? CAMP_BASE_FEE)} (기본 ${formatWon(reg.campFeeBase ?? CAMP_BASE_FEE)} / 할인 ${formatWon(reg.scholarshipDiscountAmount || 0)})`,
     reg.referralSource ? `알게 된 경로: ${reg.referralSource}` : '',
-    participantSummary,
     reg.notes || '',
   ].filter(Boolean).join('\n\n');
   return [
@@ -377,14 +383,62 @@ function regToSheetRow(reg) {
   ];
 }
 
+const ROSTER_TAB = '참가자명단';
+const ROSTER_RANGE = '참가자명단!A:I';
+const ROSTER_HEADERS = ['신청일시', '신청ID', '캠프ID', '단체/담당자', '순번', '학생이름', '성별', '교회/단체', '담당자연락처'];
+
+/** 단체 신청의 참가 학생을 학생 1명당 1행으로 변환 (이름 있는 학생만) */
+function groupRosterRows(reg) {
+  if (reg.registrationType !== 'group' || !Array.isArray(reg.participants)) return [];
+  return reg.participants.reduce((rows, participant, index) => {
+    const studentName = String(participant?.name || '').trim();
+    if (!studentName) return rows;
+    rows.push([
+      reg.registeredAt,                                                   // A 신청일시
+      reg.regId,                                                          // B 신청ID (요약 행과 매칭용)
+      reg.campId,                                                         // C 캠프ID
+      reg.name || '',                                                     // D 단체/담당자명
+      index + 1,                                                          // E 순번
+      studentName,                                                       // F 학생이름
+      participant.gender === 'male' ? '남' : participant.gender === 'female' ? '여' : '', // G 성별
+      reg.church || '',                                                  // H 교회/단체
+      reg.phone || '',                                                    // I 담당자 연락처
+    ]);
+    return rows;
+  }, []);
+}
+
 async function syncToSheet(env, reg) {
   if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_SHEET_ID) return;
-  await appendRow({
-    serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
-    sheetId: env.GOOGLE_SHEET_ID,
-    range: '시트1!A:R',
-    row: regToSheetRow(reg),
-  });
+
+  // 1) 요약 행 (신청 1건 = 1행) — 기존 '시트1' 그대로. 실패해도 명단 저장에 영향 없도록 격리.
+  try {
+    await appendRow({
+      serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
+      sheetId: env.GOOGLE_SHEET_ID,
+      range: '시트1!A:R',
+      row: regToSheetRow(reg),
+    });
+  } catch (e) {
+    console.error('sheets summary sync failed:', e);
+  }
+
+  // 2) 단체 참가 학생 명단 — 학생 1명당 1행으로 '참가자명단' 탭에 저장 (없으면 자동 생성).
+  try {
+    const rosterRows = groupRosterRows(reg);
+    if (rosterRows.length) {
+      await appendRowsToTab({
+        serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
+        sheetId: env.GOOGLE_SHEET_ID,
+        tabTitle: ROSTER_TAB,
+        range: ROSTER_RANGE,
+        headers: ROSTER_HEADERS,
+        rows: rosterRows,
+      });
+    }
+  } catch (e) {
+    console.error('sheets roster sync failed:', e);
+  }
 }
 
 // ── 메인 핸들러 ───────────────────────────────────────────────────────────────

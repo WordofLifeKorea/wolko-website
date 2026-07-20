@@ -71,6 +71,47 @@ export async function getAccessToken(serviceAccount) {
   return json.access_token;
 }
 
+/** Low-level: append one or more rows using an existing access token. */
+async function appendValues(token, sheetId, range, rows) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: rows }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Sheets append error ${res.status}: ${err}`);
+  }
+}
+
+/** List the tab (sheet) titles of a spreadsheet. */
+async function sheetTitles(token, sheetId) {
+  const res = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties.title`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Sheets metadata error ${res.status}: ${err}`);
+  }
+  const json = await res.json();
+  return (json.sheets || []).map(s => s.properties?.title).filter(Boolean);
+}
+
+/** Create a new tab. Ignores "already exists" races (returns false), throws on other errors. */
+async function addSheetTab(token, sheetId, title) {
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests: [{ addSheet: { properties: { title } } }] }),
+  });
+  if (res.ok) return true;
+  const err = await res.text();
+  if (/already exists/i.test(err)) return false;
+  throw new Error(`Sheets addSheet error ${res.status}: ${err}`);
+}
+
 /**
  * Append one row to a Google Sheet.
  * @param {object} opts
@@ -82,20 +123,31 @@ export async function getAccessToken(serviceAccount) {
 export async function appendRow({ serviceAccountJson, sheetId, range, row }) {
   const serviceAccount = JSON.parse(serviceAccountJson);
   const token = await getAccessToken(serviceAccount);
+  await appendValues(token, sheetId, range, [row]);
+}
 
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+/**
+ * Append multiple rows to a dedicated tab, creating the tab (with a header row)
+ * if it does not exist yet. Safe for concurrent creation.
+ * @param {object} opts
+ * @param {string} opts.serviceAccountJson
+ * @param {string} opts.sheetId
+ * @param {string} opts.tabTitle            - tab name, e.g. "참가자명단" (no spaces / special chars)
+ * @param {string} opts.range               - full A1 range incl. tab, e.g. "참가자명단!A:I"
+ * @param {Array<string>} opts.headers      - header row written once on tab creation
+ * @param {Array<Array<string|number>>} opts.rows
+ */
+export async function appendRowsToTab({ serviceAccountJson, sheetId, tabTitle, range, headers, rows }) {
+  if (!rows || !rows.length) return;
+  const serviceAccount = JSON.parse(serviceAccountJson);
+  const token = await getAccessToken(serviceAccount);
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ values: [row] }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Sheets append error ${res.status}: ${err}`);
+  const titles = await sheetTitles(token, sheetId);
+  if (!titles.includes(tabTitle)) {
+    const created = await addSheetTab(token, sheetId, tabTitle);
+    if (created && headers && headers.length) {
+      await appendValues(token, sheetId, range, [headers]);
+    }
   }
+  await appendValues(token, sheetId, range, rows);
 }
