@@ -436,6 +436,7 @@ const pageTitle = 'WOLKO Camp Resources';
     const TAB_KEYS = TABS.map(t => t.key);
     const DEFAULT_TAB = 'teacher';
     const HIDDEN_TABS = ['schedule'];
+    try { localStorage.removeItem(TOKEN_KEY); } catch(e) {}
 
     const COPY = {
       ko: {
@@ -603,7 +604,7 @@ const pageTitle = 'WOLKO Camp Resources';
       : DEFAULT_TAB;
     let dialogTab = DEFAULT_TAB;
     let editMode = false;
-    let token = localStorage.getItem(TOKEN_KEY) || '';
+    let token = '';
     let loginMode = 'access';
     let editingItemId = '';
     let deferredInstallPrompt = null;
@@ -1219,7 +1220,6 @@ const pageTitle = 'WOLKO Camp Resources';
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || tr('loginFailed'));
         token = data.token;
-        localStorage.setItem(TOKEN_KEY, token);
         els.loginScreen.hidden = true;
         if (loginMode === 'edit') {
           enterEditMode();
@@ -1589,13 +1589,7 @@ const pageTitle = 'WOLKO Camp Resources';
 
     applyLanguage();
     render();
-    if (token) {
-      bootstrapData().then(() => {
-        if (token) els.loginScreen.hidden = true;
-      });
-    } else {
-      showLogin('access');
-    }
+    showLogin('access');
     if (!isStandalone) {
       els.installBtn.hidden = false;
     }

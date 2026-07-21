@@ -221,9 +221,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
   .qt-list {
     display: grid;
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 34px 22px;
+    align-items: start;
   }
-  .qt-item,
   .empty-state {
     border: 1px solid #dbe9ee;
     border-radius: 12px;
@@ -232,24 +233,103 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     box-shadow: 0 6px 18px rgba(0,79,104,0.06);
   }
   .qt-item {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+  .qt-item:hover .qt-book {
+    transform: translateY(-7px) rotate(-1deg);
+    box-shadow: 10px 20px 40px rgba(0,79,104,0.22);
+  }
+  .qt-book-link {
+    position: relative;
+    color: inherit;
+    text-decoration: none;
+  }
+  .qt-book-link::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    width: 142px;
+    height: 8px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(0,79,104,0.08), rgba(0,79,104,0.2), rgba(0,79,104,0.08));
+  }
+  .qt-book {
+    width: 116px;
+    height: 158px;
+    display: flex;
+    margin: 0 auto;
+    border-radius: 4px 7px 7px 4px;
+    box-shadow: 5px 8px 20px rgba(0,0,0,0.15);
+    transition: transform 0.25s cubic-bezier(.22,.68,0,1.2), box-shadow 0.25s;
+  }
+  .qt-book-spine {
+    width: 22px;
+    flex-shrink: 0;
+    border-radius: 4px 0 0 4px;
+    background: linear-gradient(180deg, #004f68 0%, #0a5b76 100%);
+    box-shadow: inset -3px 0 6px rgba(0,0,0,0.24);
+  }
+  .qt-book-cover {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 14px 10px;
+    border: 1px solid rgba(0,79,104,0.18);
+    border-left: 0;
+    border-radius: 0 7px 7px 0;
+    background:
+      linear-gradient(145deg, rgba(255,255,255,0.76), rgba(255,255,255,0) 48%),
+      linear-gradient(135deg, #e8f4f8 0%, #cce5f0 100%);
+  }
+  .qt-book-mark {
+    width: 26px;
+    height: 34px;
+    border-radius: 50% 50% 44% 44%;
+    background: rgba(0,79,104,0.13);
+    color: #004f68;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .qt-book-month {
+    color: #004f68;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1.25;
+  }
+  .qt-book-type {
+    color: #6b8794;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
   }
   .qt-title {
     margin: 0;
     color: #163542;
-    font-size: 1.05rem;
-    line-height: 1.35;
+    font-size: 0.96rem;
+    font-weight: 800;
+    line-height: 1.38;
+    word-break: keep-all;
   }
   .qt-meta {
     display: flex;
+    justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-top: 8px;
+    margin-top: 6px;
     color: #6b8794;
-    font-size: 0.86rem;
+    font-size: 0.78rem;
   }
   .qt-actions {
     display: flex;
@@ -258,15 +338,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     flex-wrap: wrap;
   }
   .download-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: none;
     background: #004f68;
     color: #fff;
     text-decoration: none;
   }
   .download-btn:hover { background: #007a9a; }
   .delete-btn {
+    min-height: 30px;
+    padding: 0 11px;
+    font-size: 0.78rem;
     background: #fff5f6;
     color: #c42a36;
     border: 1px solid #f0cbd0;
@@ -345,14 +426,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       grid-template-columns: 1fr;
     }
     .qt-item {
-      grid-template-columns: 1fr;
+      gap: 11px;
     }
     .qt-actions {
-      justify-content: stretch;
+      justify-content: center;
     }
     .download-btn,
     .delete-btn {
-      flex: 1;
+      flex: 0 0 auto;
     }
   }
 </style>
@@ -438,10 +519,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     els.qtList.innerHTML = items.map(item => `
       <article class="qt-item">
-        <div>
+        <a class="qt-book-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener" aria-label="${escapeHtml(item.title)} 열기">
+          <div class="qt-book">
+            <div class="qt-book-spine"></div>
+            <div class="qt-book-cover">
+              <span class="qt-book-mark">✦</span>
+              <span class="qt-book-month">${escapeHtml(formatMonth(item.month) || 'QT')}</span>
+              <span class="qt-book-type">PDF</span>
+            </div>
+          </div>
+        </a>
+        <div class="qt-info">
           <h2 class="qt-title">${escapeHtml(item.title)}</h2>
           <div class="qt-meta">
-            ${item.month ? `<span>${escapeHtml(formatMonth(item.month))}</span>` : ''}
             ${item.filename ? `<span>${escapeHtml(item.filename)}</span>` : ''}
             ${item.size ? `<span>${escapeHtml(formatBytes(item.size))}</span>` : ''}
             ${item.uploadedAt ? `<span>${escapeHtml(new Date(item.uploadedAt).toLocaleDateString('ko-KR'))}</span>` : ''}
