@@ -10,59 +10,154 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   <section class="qt-hero">
     <div class="qt-hero-inner">
       <a href="/resources" class="breadcrumb">
-        <span class="wl-ko">← 자료실</span>
-        <span class="wl-en">← Resources</span>
+        <span class="wl-ko">자료실</span>
+        <span class="wl-en">Resources</span>
       </a>
-      <div class="hero-row">
-        <div>
-          <h1>
-            <span class="res-emoji">📖</span>
-            <span class="wl-ko">매일묵상집</span>
-            <span class="wl-en">Q.T Book</span>
-          </h1>
-          <p>
-            <span class="wl-ko">업로드된 매일묵상집 PDF를 다운로드할 수 있습니다.</span>
-            <span class="wl-en">Download uploaded Q.T book PDF files.</span>
-          </p>
-        </div>
-        <button class="admin-toggle" id="adminToggle" type="button">관리 로그인</button>
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        <span class="wl-ko">월코 매일묵상집</span>
+        <span class="wl-en">WOLKO Q.T Book</span>
       </div>
+      <h1>
+        <span class="wl-ko">말씀과 함께하는 <em>매일의 시간</em></span>
+        <span class="wl-en">Daily Time <em>in the Word</em></span>
+      </h1>
+      <p class="hero-sub">
+        <span class="wl-ko">업로드된 매일묵상집 PDF를 책장처럼 둘러보고, 선택한 파일을 페이지 안에서 바로 읽을 수 있습니다.</span>
+        <span class="wl-en">Browse uploaded Q.T book PDFs and read the selected file directly on this page.</span>
+      </p>
+      <button class="admin-toggle" id="adminToggle" type="button">관리 로그인</button>
     </div>
   </section>
 
-  <main class="qt-container">
-    <section class="admin-panel" id="adminPanel" hidden>
-      <div class="panel-head">
-        <div>
-          <h2>파일 업로드</h2>
-          <p>PDF 파일을 선택하면 목록에 바로 추가됩니다.</p>
-        </div>
-        <button class="ghost-btn" id="logoutBtn" type="button">관리 종료</button>
-      </div>
-      <form class="upload-form" id="uploadForm">
-        <label>
-          <span>제목</span>
-          <input id="titleInput" type="text" placeholder="예: 2026년 7월 매일묵상집" maxlength="160">
-        </label>
-        <label>
-          <span>월</span>
-          <input id="monthInput" type="month">
-        </label>
-        <label class="file-field">
-          <span>PDF 파일</span>
-          <div class="file-picker">
-            <button class="file-picker-btn" id="filePickBtn" type="button">파일 선택</button>
-            <span class="file-name" id="fileNameText">선택된 파일 없음</span>
+  <main>
+    <section class="admin-shell" id="adminPanel" hidden>
+      <div class="admin-panel">
+        <div class="panel-head">
+          <div>
+            <h2>파일 업로드</h2>
+            <p>PDF 파일을 선택하면 책장과 뷰어에 바로 반영됩니다.</p>
           </div>
-          <input id="fileInput" type="file" accept=".pdf,application/pdf" hidden>
-        </label>
-        <button class="primary-btn" id="uploadBtn" type="submit">업로드</button>
-      </form>
-      <p class="status-line" id="uploadStatus"></p>
+          <button class="ghost-btn" id="logoutBtn" type="button">관리 종료</button>
+        </div>
+        <form class="upload-form" id="uploadForm">
+          <label>
+            <span>제목</span>
+            <input id="titleInput" type="text" placeholder="예: 2026년 7월 매일묵상집" maxlength="160">
+          </label>
+          <label>
+            <span>월</span>
+            <input id="monthInput" type="month">
+          </label>
+          <label class="file-field">
+            <span>PDF 파일</span>
+            <div class="file-picker">
+              <button class="file-picker-btn" id="filePickBtn" type="button">파일 선택</button>
+              <span class="file-name" id="fileNameText">선택된 파일 없음</span>
+            </div>
+            <input id="fileInput" type="file" accept=".pdf,application/pdf" hidden>
+          </label>
+          <button class="primary-btn" id="uploadBtn" type="submit">업로드</button>
+        </form>
+        <p class="status-line" id="uploadStatus"></p>
+      </div>
     </section>
 
-    <p class="load-error" id="loadError" hidden></p>
-    <section class="qt-list" id="qtList" aria-live="polite"></section>
+    <section class="archive-section">
+      <div class="archive-inner">
+        <div class="archive-top">
+          <div>
+            <div class="archive-section-title">
+              <span class="wl-ko">매일묵상집 책장</span>
+              <span class="wl-en">Q.T Book Shelf</span>
+            </div>
+            <p class="archive-sub">
+              <span class="wl-ko">책을 선택하면 아래 뷰어에서 바로 열립니다.</span>
+              <span class="wl-en">Select a book to open it in the viewer below.</span>
+            </p>
+          </div>
+          <span class="archive-count" id="archiveCount">0 PDF</span>
+        </div>
+        <p class="load-error" id="loadError" hidden></p>
+        <div class="qt-grid" id="qtList" aria-live="polite">
+          <div class="empty-state">
+            <p>매일묵상집 목록을 불러오는 중입니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="flipbook-section">
+      <div class="flipbook-wrap">
+        <div class="no-pdf" id="viewerEmpty">
+          <div class="no-pdf-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="10" y="6" width="28" height="36" rx="4" stroke="#004f68" stroke-width="2"/><path d="M18 18h12M18 24h12M18 30h8" stroke="#004f68" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <h3><span class="wl-ko">매일묵상집 준비 중</span><span class="wl-en">Q.T Book Coming Soon</span></h3>
+          <p><span class="wl-ko">업로드된 매일묵상집이 아직 없습니다.</span><span class="wl-en">No Q.T book has been uploaded yet.</span></p>
+        </div>
+
+        <div id="viewerContent" hidden>
+          <div class="report-meta">
+            <div>
+              <div class="report-title" id="reportTitle">매일묵상집</div>
+              <div class="report-date" id="reportDate"></div>
+            </div>
+            <a href="#" target="_blank" rel="noopener" class="download-btn" id="reportDownload">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v7M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="wl-ko">PDF 다운로드</span><span class="wl-en">Download PDF</span>
+            </a>
+          </div>
+
+          <div id="flipbook-container">
+            <div class="fb-controls">
+              <div class="fb-nav">
+                <button class="fb-btn" id="fb-first" title="처음 페이지" disabled>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 2v10M5 7l5-4v8L5 7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="fb-btn" id="fb-prev" title="이전 페이지" disabled>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L4 7l5-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <span class="fb-page-info" id="fb-page-info">1 / -</span>
+                <button class="fb-btn" id="fb-next" title="다음 페이지" disabled>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l5 4-5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="fb-btn" id="fb-last" title="마지막 페이지" disabled>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 2v10M9 7L4 3v8l5-4z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+              <div class="fb-right">
+                <div class="fb-zoom-btns">
+                  <button class="fb-zoom-btn" id="fb-zoom-out" title="축소">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  </button>
+                  <button class="fb-zoom-btn" id="fb-zoom-in" title="확대">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  </button>
+                </div>
+                <button class="fb-fullscreen-btn" id="fb-fullscreen" title="전체화면">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5V2h3M9 2h3v3M12 9v3H9M5 12H2V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+            <div id="spread-viewport">
+              <button class="fb-arrow-btn" id="fb-arrow-prev" title="이전 페이지" disabled>
+                <svg width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M8 2L2 9l6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="fb-arrow-btn" id="fb-arrow-next" title="다음 페이지" disabled>
+                <svg width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M2 2l6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div id="fb-loading" class="fb-loading-indicator">
+                <div class="fb-spinner"></div>
+                <span id="fb-loading-text">PDF를 불러오는 중입니다...</span>
+              </div>
+              <div id="flip-book"></div>
+            </div>
+            <div class="fb-dots-bar" id="fb-dots"></div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div class="login-screen" id="loginScreen" hidden>
@@ -79,88 +174,120 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style is:global>
+  :root {
+    --qt-deep: #004f68;
+    --qt-mid: #0a5b76;
+    --qt-light: #73d1f5;
+    --qt-bg: #f4f8fb;
+    --qt-white: #ffffff;
+    --qt-text: #152028;
+    --qt-muted: #5b6b78;
+    --qt-line: rgba(0,79,104,0.12);
+    --qt-radius-xl: 28px;
+  }
+
   .qt-hero {
-    background: linear-gradient(135deg, #004f68 0%, #007a9a 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 88px 24px 64px;
+    text-align: center;
+    background: linear-gradient(135deg, #083d51 0%, var(--qt-deep) 60%, var(--qt-mid) 100%);
     color: #fff;
-    padding: 48px 24px 40px;
+  }
+  .qt-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
   }
   .qt-hero-inner {
-    max-width: 900px;
+    position: relative;
+    z-index: 2;
+    max-width: 760px;
     margin: 0 auto;
   }
   .breadcrumb {
-    display: inline-block;
-    color: rgba(255,255,255,0.76);
+    position: absolute;
+    top: -44px;
+    left: 0;
+    color: rgba(255,255,255,0.72);
     text-decoration: none;
-    font-size: 0.9rem;
-    margin-bottom: 14px;
-    transition: color 0.15s;
+    font-size: 13px;
+    font-weight: 700;
   }
   .breadcrumb:hover { color: #fff; }
-  .hero-row {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.22);
+    color: rgba(255,255,255,0.9);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    margin-bottom: 22px;
+    text-transform: uppercase;
+  }
+  .hero-eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--qt-light);
   }
   .qt-hero h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    margin: 0 0 14px;
+    color: #fff;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.13;
   }
-  .qt-hero p {
-    margin: 12px 0 0;
-    color: rgba(255,255,255,0.82);
-    line-height: 1.65;
+  .qt-hero h1 em {
+    color: #9ae3ff;
+    font-style: normal;
   }
-  .res-emoji { font-size: 1.8rem; }
-
-  .qt-container {
-    max-width: 900px;
+  .hero-sub {
+    max-width: 590px;
     margin: 0 auto;
-    padding: 42px 24px 80px;
-  }
-  .admin-toggle,
-  .primary-btn,
-  .ghost-btn,
-  .download-btn,
-  .delete-btn {
-    min-height: 40px;
-    border-radius: 9px;
-    padding: 0 16px;
-    font-weight: 700;
-    border: 0;
-    cursor: pointer;
+    color: rgba(255,255,255,0.8);
+    font-size: 16px;
+    line-height: 1.88;
   }
   .admin-toggle {
-    background: rgba(255,255,255,0.16);
+    position: absolute;
+    top: -48px;
+    right: 0;
+    min-height: 38px;
+    border-radius: 999px;
+    padding: 0 16px;
+    background: rgba(255,255,255,0.13);
     color: #fff;
-    border: 1px solid rgba(255,255,255,0.34);
+    border: 1px solid rgba(255,255,255,0.28);
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
     white-space: nowrap;
   }
-  .admin-toggle:hover { background: rgba(255,255,255,0.24); }
-  .primary-btn {
-    background: #004f68;
-    color: #fff;
-  }
-  .primary-btn:hover { background: #007a9a; }
-  .primary-btn:disabled { opacity: 0.56; cursor: not-allowed; }
-  .ghost-btn {
-    background: #f7fbfd;
-    color: #004f68;
-    border: 1px solid #d4e7ee;
-  }
-  .ghost-btn:hover { background: #edf7fa; }
+  .admin-toggle:hover { background: rgba(255,255,255,0.22); }
 
+  .admin-shell {
+    padding: 32px 24px 0;
+    background: var(--qt-bg);
+  }
+  .admin-shell[hidden] { display: none; }
   .admin-panel {
-    margin-bottom: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
     border: 1px solid #d9e9ef;
-    border-radius: 12px;
+    border-radius: 18px;
     padding: 22px;
-    background: #f8fcfd;
+    background: rgba(255,255,255,0.78);
+    box-shadow: 0 12px 28px rgba(0,79,104,0.06);
   }
   .panel-head {
     display: flex;
@@ -171,7 +298,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
   .panel-head h2 {
     margin: 0;
-    color: #004f68;
+    color: var(--qt-deep);
     font-size: 1.15rem;
   }
   .panel-head p {
@@ -218,7 +345,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     border: 1px solid #bed6df;
     border-radius: 7px;
     background: #f4fafc;
-    color: #004f68;
+    color: var(--qt-deep);
     padding: 0 12px;
     font-weight: 800;
     cursor: pointer;
@@ -236,6 +363,31 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .primary-btn,
+  .ghost-btn,
+  .delete-btn {
+    min-height: 40px;
+    border-radius: 9px;
+    padding: 0 16px;
+    font-weight: 800;
+    border: 0;
+    cursor: pointer;
+  }
+  .primary-btn {
+    background: var(--qt-deep);
+    color: #fff;
+  }
+  .primary-btn:hover { background: #007a9a; }
+  .primary-btn:disabled {
+    opacity: 0.56;
+    cursor: not-allowed;
+  }
+  .ghost-btn {
+    background: #f7fbfd;
+    color: var(--qt-deep);
+    border: 1px solid #d4e7ee;
+  }
+  .ghost-btn:hover { background: #edf7fa; }
   .status-line {
     min-height: 20px;
     margin: 12px 0 0;
@@ -247,6 +399,44 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     color: #c42a36;
   }
 
+  .archive-section {
+    padding: 56px 24px 72px;
+    background: var(--qt-bg);
+  }
+  .archive-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .archive-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+  .archive-section-title {
+    color: var(--qt-text);
+    font-size: 18px;
+    font-weight: 800;
+  }
+  .archive-sub {
+    margin: 8px 0 0;
+    color: var(--qt-muted);
+    font-size: 14px;
+  }
+  .archive-count {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    border-radius: 999px;
+    border: 1px solid var(--qt-line);
+    padding: 0 13px;
+    background: var(--qt-white);
+    color: var(--qt-deep);
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
   .load-error {
     margin: 0 0 18px;
     padding: 12px 14px;
@@ -255,62 +445,69 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     background: #fff8f9;
     color: #c42a36;
   }
-  .qt-list {
+  .qt-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-    gap: 34px 22px;
-    align-items: start;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 32px 22px;
   }
   .empty-state {
-    border: 1px solid #dbe9ee;
-    border-radius: 12px;
-    background: #fff;
-    padding: 18px;
-    box-shadow: 0 6px 18px rgba(0,79,104,0.06);
+    grid-column: 1 / -1;
+    border: 2px dashed var(--qt-line);
+    border-radius: var(--qt-radius-xl);
+    background: rgba(255,255,255,0.72);
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--qt-muted);
   }
-  .qt-item {
-    position: relative;
+  .empty-state p { margin: 0; }
+  .qt-card {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
     text-align: center;
   }
-  .qt-item:hover .qt-book {
+  .qt-card-button {
+    appearance: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-align: center;
+  }
+  .qt-card-button:hover .qt-book,
+  .qt-card.current .qt-book {
     transform: translateY(-7px) rotate(-1deg);
     box-shadow: 10px 20px 40px rgba(0,79,104,0.22);
   }
-  .qt-book-link {
-    position: relative;
-    color: inherit;
-    text-decoration: none;
+  .qt-card:not(.current) .qt-book {
+    filter: grayscale(1);
+    opacity: 0.58;
   }
-  .qt-book-link::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -9px;
-    width: 142px;
-    height: 8px;
-    transform: translateX(-50%);
-    border-radius: 999px;
-    background: linear-gradient(90deg, rgba(0,79,104,0.08), rgba(0,79,104,0.2), rgba(0,79,104,0.08));
+  .qt-card:not(.current) .qt-card-button:hover .qt-book {
+    filter: grayscale(0);
+    opacity: 1;
   }
   .qt-book {
-    width: 116px;
-    height: 158px;
+    width: 108px;
+    height: 148px;
     display: flex;
-    margin: 0 auto;
-    border-radius: 4px 7px 7px 4px;
-    box-shadow: 5px 8px 20px rgba(0,0,0,0.15);
-    transition: transform 0.25s cubic-bezier(.22,.68,0,1.2), box-shadow 0.25s;
+    border-radius: 0 6px 6px 0;
+    box-shadow: 5px 8px 20px rgba(0,0,0,0.14);
+    transition: transform 0.25s cubic-bezier(.22,.68,0,1.2), box-shadow 0.25s, filter 0.18s, opacity 0.18s;
   }
   .qt-book-spine {
-    width: 22px;
+    width: 20px;
     flex-shrink: 0;
     border-radius: 4px 0 0 4px;
-    background: linear-gradient(180deg, #004f68 0%, #0a5b76 100%);
-    box-shadow: inset -3px 0 6px rgba(0,0,0,0.24);
+    background: linear-gradient(180deg, var(--qt-deep) 0%, var(--qt-mid) 100%);
+    box-shadow: inset -3px 0 6px rgba(0,0,0,0.22);
   }
   .qt-book-cover {
     flex: 1;
@@ -318,68 +515,62 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    padding: 14px 10px;
+    gap: 5px;
     border: 1px solid rgba(0,79,104,0.18);
     border-left: 0;
-    border-radius: 0 7px 7px 0;
-    background:
-      linear-gradient(145deg, rgba(255,255,255,0.76), rgba(255,255,255,0) 48%),
-      linear-gradient(135deg, #e8f4f8 0%, #cce5f0 100%);
-  }
-  .qt-book-mark {
-    width: 26px;
-    height: 34px;
-    border-radius: 50% 50% 44% 44%;
-    background: rgba(0,79,104,0.13);
-    color: #004f68;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
+    border-radius: 0 6px 6px 0;
+    background: linear-gradient(135deg, #e8f4f8 0%, #cce5f0 100%);
   }
   .qt-book-month {
-    color: #004f68;
-    font-size: 12px;
+    color: var(--qt-deep);
+    font-size: 18px;
     font-weight: 900;
-    line-height: 1.25;
+    line-height: 1.22;
+  }
+  .qt-book-year {
+    color: var(--qt-muted);
+    font-size: 12px;
+    font-weight: 800;
   }
   .qt-book-type {
-    color: #6b8794;
+    color: var(--qt-muted);
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 900;
     letter-spacing: 0.08em;
   }
   .qt-title {
     margin: 0;
-    color: #163542;
-    font-size: 0.96rem;
+    color: var(--qt-text);
+    font-size: 13px;
     font-weight: 800;
-    line-height: 1.38;
+    line-height: 1.4;
     word-break: keep-all;
   }
+  .qt-date {
+    color: var(--qt-muted);
+    font-size: 11px;
+  }
   .qt-meta {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-    color: #6b8794;
-    font-size: 0.78rem;
+    color: var(--qt-muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .qt-current-badge {
+    display: none;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: rgba(0,79,104,0.10);
+    color: var(--qt-deep);
+    font-size: 10px;
+    font-weight: 900;
+  }
+  .qt-card.current .qt-current-badge {
+    display: inline-block;
   }
   .qt-actions {
     display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
+    justify-content: center;
   }
-  .download-btn {
-    display: none;
-    background: #004f68;
-    color: #fff;
-    text-decoration: none;
-  }
-  .download-btn:hover { background: #007a9a; }
   .delete-btn {
     min-height: 30px;
     padding: 0 11px;
@@ -389,12 +580,280 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     border: 1px solid #f0cbd0;
   }
   .delete-btn:hover { background: #fdecee; }
-  .empty-state {
-    text-align: center;
-    color: #6b8794;
+
+  .flipbook-section {
+    padding: 48px 24px 80px;
+    background: var(--qt-white);
   }
-  .empty-state p {
-    margin: 0;
+  .flipbook-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .no-pdf {
+    text-align: center;
+    padding: 80px 24px;
+    border: 2px dashed var(--qt-line);
+    border-radius: var(--qt-radius-xl);
+    background: var(--qt-bg);
+  }
+  .no-pdf-icon {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+    opacity: 0.6;
+  }
+  .no-pdf h3 {
+    margin: 0 0 10px;
+    color: var(--qt-text);
+    font-size: 22px;
+    font-weight: 800;
+  }
+  .no-pdf p {
+    max-width: 420px;
+    margin: 0 auto;
+    color: var(--qt-muted);
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  #viewerContent[hidden] { display: none; }
+  .report-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--qt-line);
+  }
+  .report-meta > div {
+    flex: 1;
+    min-width: 220px;
+  }
+  .report-title {
+    color: var(--qt-text);
+    font-size: 22px;
+    font-weight: 800;
+  }
+  .report-date {
+    margin-top: 5px;
+    color: var(--qt-muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    background: rgba(0,79,104,0.08);
+    color: var(--qt-deep);
+    border: 1px solid var(--qt-line);
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.18s;
+  }
+  .download-btn:hover { background: rgba(0,79,104,0.16); }
+
+  #flipbook-container {
+    position: relative;
+    width: 100%;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: var(--qt-radius-xl);
+    background: #f5f2ee;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .fb-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.03);
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+  }
+  .fb-nav,
+  .fb-right,
+  .fb-zoom-btns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .fb-btn,
+  .fb-zoom-btn,
+  .fb-fullscreen-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.11);
+    background: rgba(255,255,255,0.7);
+    color: var(--qt-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s;
+    user-select: none;
+  }
+  .fb-btn:hover,
+  .fb-zoom-btn:hover,
+  .fb-fullscreen-btn:hover {
+    background: #fff;
+    border-color: rgba(0,0,0,0.18);
+  }
+  .fb-btn:disabled,
+  .fb-zoom-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .fb-page-info {
+    min-width: 72px;
+    padding: 0 4px;
+    color: var(--qt-muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+  }
+  #spread-viewport {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+    padding: 20px 16px;
+    overflow: hidden;
+    background: #f5f2ee;
+    touch-action: none;
+  }
+  .fb-arrow-btn {
+    position: absolute;
+    top: 50%;
+    z-index: 20;
+    width: 36px;
+    height: 64px;
+    border: 1px solid rgba(0,0,0,0.09);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.82);
+    color: var(--qt-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.45;
+    transform: translateY(-50%);
+    transition: opacity 0.18s, background 0.18s, transform 0.18s;
+    backdrop-filter: blur(4px);
+  }
+  .fb-arrow-btn:hover:not(:disabled) {
+    opacity: 1;
+    background: #fff;
+    transform: translateY(-50%) scale(1.07);
+  }
+  .fb-arrow-btn:disabled {
+    opacity: 0.12;
+    cursor: default;
+  }
+  #fb-arrow-prev { left: 10px; }
+  #fb-arrow-next { right: 10px; }
+  .fb-loading-indicator {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: var(--qt-muted);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .fb-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(0,0,0,0.10);
+    border-top-color: var(--qt-deep);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #flip-book {
+    width: 100%;
+    height: 100%;
+    transition: opacity 0.18s ease;
+  }
+  #flip-book.spread-fade-out { opacity: 0; }
+  .spread-img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-height: var(--page-maxh, 40vh);
+    user-select: none;
+    -webkit-user-drag: none;
+    flex-shrink: 1;
+    transition: max-height 0.2s ease;
+  }
+  .spread-img-left {
+    max-width: 50%;
+    box-shadow: -3px 0 16px rgba(0,0,0,0.14), inset -6px 0 14px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-right: 0;
+    border-radius: 2px 0 0 2px;
+  }
+  .spread-img-right {
+    max-width: 50%;
+    box-shadow: 3px 0 16px rgba(0,0,0,0.14), inset 6px 0 14px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-left: 0;
+    border-radius: 0 2px 2px 0;
+  }
+  .spread-img-cover {
+    max-width: 48%;
+    box-shadow: 0 6px 32px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 2px;
+  }
+  .fb-dots-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+    background: rgba(0,0,0,0.025);
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .fb-dot {
+    width: 8px;
+    height: 8px;
+    border: 0;
+    border-radius: 50%;
+    padding: 0;
+    background: rgba(0,0,0,0.15);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.18s, width 0.22s;
+  }
+  .fb-dot.active {
+    width: 22px;
+    border-radius: 999px;
+    background: var(--qt-deep);
+  }
+  .fb-dot:hover:not(.active) { background: rgba(0,79,104,0.38); }
+  .fb-dots-text {
+    color: var(--qt-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
 
   .login-screen {
@@ -423,7 +882,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
   .login-card h2 {
     margin: 0 0 8px;
-    color: #004f68;
+    color: var(--qt-deep);
     font-size: 1.25rem;
   }
   .login-card p {
@@ -449,34 +908,65 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     margin-top: 8px;
   }
 
-  @media (max-width: 760px) {
-    .qt-hero { padding: 36px 16px 30px; }
-    .hero-row,
+  @media (max-width: 900px) {
+    .qt-grid { grid-template-columns: repeat(3, 1fr); }
+    .upload-form { grid-template-columns: 1fr 160px; }
+    .upload-form .file-field,
+    .upload-form .primary-btn { grid-column: span 2; }
+  }
+  @media (max-width: 700px) {
+    .qt-hero { padding: 72px 16px 48px; }
+    .breadcrumb,
+    .admin-toggle {
+      position: static;
+      display: inline-flex;
+      margin-bottom: 18px;
+    }
+    .admin-toggle { margin-top: 22px; margin-bottom: 0; }
+    .hero-eyebrow { margin-bottom: 16px; }
+    .hero-sub { font-size: 15px; }
+    .admin-shell,
+    .archive-section,
+    .flipbook-section {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    .archive-top,
     .panel-head {
       align-items: stretch;
       flex-direction: column;
     }
-    .qt-hero h1 { font-size: 1.6rem; }
-    .qt-container { padding: 30px 16px 60px; }
-    .upload-form {
+    .qt-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px 14px;
+    }
+    .upload-form,
+    .upload-form .file-field,
+    .upload-form .primary-btn {
       grid-template-columns: 1fr;
+      grid-column: auto;
     }
-    .qt-item {
-      gap: 11px;
+    .fb-controls { padding: 10px 14px; }
+    .fb-fullscreen-btn,
+    .fb-zoom-btns { display: none; }
+    .fb-arrow-btn {
+      width: 28px;
+      height: 50px;
+      border-radius: 6px;
+      opacity: 0.55;
     }
-    .qt-actions {
-      justify-content: center;
-    }
-    .download-btn,
-    .delete-btn {
-      flex: 0 0 auto;
-    }
+    #fb-arrow-prev { left: 6px; }
+    #fb-arrow-next { right: 6px; }
   }
 </style>
 
 <script>
   const TOKEN_KEY = 'wolko_qt_book_token';
   const MAX_SIZE = 35 * 1024 * 1024;
+  const PDFJS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  const PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const DB_NAME = 'wolko-qt-book-pdf-v1';
+  const STORE_NAME = 'pages';
 
   const els = {
     adminToggle: document.getElementById('adminToggle'),
@@ -491,7 +981,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     filePickBtn: document.getElementById('filePickBtn'),
     fileNameText: document.getElementById('fileNameText'),
     qtList: document.getElementById('qtList'),
+    archiveCount: document.getElementById('archiveCount'),
     loadError: document.getElementById('loadError'),
+    viewerEmpty: document.getElementById('viewerEmpty'),
+    viewerContent: document.getElementById('viewerContent'),
+    reportTitle: document.getElementById('reportTitle'),
+    reportDate: document.getElementById('reportDate'),
+    reportDownload: document.getElementById('reportDownload'),
+    container: document.getElementById('flipbook-container'),
+    loadingEl: document.getElementById('fb-loading'),
+    flipBookEl: document.getElementById('flip-book'),
+    pageInfo: document.getElementById('fb-page-info'),
+    dotsBar: document.getElementById('fb-dots'),
     loginScreen: document.getElementById('loginScreen'),
     passwordInput: document.getElementById('passwordInput'),
     loginBtn: document.getElementById('loginBtn'),
@@ -502,6 +1003,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let items = [];
   let token = localStorage.getItem(TOKEN_KEY) || '';
   let adminMode = false;
+  let currentItemId = '';
+  let db = null;
+  let pdfScriptPromise = null;
+  let isMobile = window.innerWidth < 768;
+  let SCALE = isMobile ? 2.0 : 3.0;
+  let displayVh = 80;
+  let mobilePages = [];
+  let mobilePage = 0;
+  let allPages = [];
+  let spreadIdx = 0;
+  let totalSpreads = 0;
+  let touchReset = () => {};
 
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
@@ -520,11 +1033,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     return `${match[1]}년 ${Number(match[2])}월`;
   }
 
+  function bookMonth(month) {
+    const match = String(month || '').match(/^(\d{4})-(\d{2})$/);
+    if (!match) return { year: 'QT', month: 'PDF' };
+    return { year: match[1], month: `${Number(match[2])}월` };
+  }
+
+  function uploadedDate(item) {
+    if (!item.uploadedAt) return '';
+    try {
+      return new Date(item.uploadedAt).toLocaleDateString('ko-KR');
+    } catch {
+      return '';
+    }
+  }
+
   function setAdminMode(next) {
     adminMode = next;
     els.adminPanel.hidden = !adminMode;
     els.adminToggle.textContent = adminMode ? '관리 중' : '관리 로그인';
-    render();
+    renderShelf();
   }
 
   function showLogin(message = '') {
@@ -545,42 +1073,74 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     els.uploadStatus.classList.toggle('is-error', isError);
   }
 
-  function render() {
+  function renderShelf() {
+    els.archiveCount.textContent = `${items.length} PDF`;
+
     if (!items.length) {
+      currentItemId = '';
       els.qtList.innerHTML = `
         <div class="empty-state">
           <p>아직 업로드된 매일묵상집이 없습니다.</p>
         </div>
       `;
+      els.viewerContent.hidden = true;
+      els.viewerEmpty.hidden = false;
       return;
     }
 
-    els.qtList.innerHTML = items.map(item => `
-      <article class="qt-item">
-        <a class="qt-book-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener" aria-label="${escapeHtml(item.title)} 열기">
-          <div class="qt-book">
-            <div class="qt-book-spine"></div>
-            <div class="qt-book-cover">
-              <span class="qt-book-mark">✦</span>
-              <span class="qt-book-month">${escapeHtml(formatMonth(item.month) || 'QT')}</span>
-              <span class="qt-book-type">PDF</span>
+    if (!currentItemId || !items.some(item => item.id === currentItemId)) {
+      currentItemId = items[0].id;
+    }
+
+    els.qtList.innerHTML = items.map(item => {
+      const label = bookMonth(item.month);
+      const isCurrent = item.id === currentItemId;
+      return `
+        <article class="qt-card${isCurrent ? ' current' : ''}" data-id="${escapeHtml(item.id)}">
+          <button class="qt-card-button" type="button" data-select="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.title)} 보기">
+            <div class="qt-book" aria-hidden="true">
+              <div class="qt-book-spine"></div>
+              <div class="qt-book-cover">
+                <span class="qt-book-month">${escapeHtml(label.month)}</span>
+                <span class="qt-book-year">${escapeHtml(label.year)}</span>
+                <span class="qt-book-type">PDF</span>
+              </div>
             </div>
-          </div>
-        </a>
-        <div class="qt-info">
-          <h2 class="qt-title">${escapeHtml(item.title)}</h2>
-          <div class="qt-meta">
-            ${item.filename ? `<span>${escapeHtml(item.filename)}</span>` : ''}
-            ${item.size ? `<span>${escapeHtml(formatBytes(item.size))}</span>` : ''}
-            ${item.uploadedAt ? `<span>${escapeHtml(new Date(item.uploadedAt).toLocaleDateString('ko-KR'))}</span>` : ''}
-          </div>
-        </div>
-        <div class="qt-actions">
-          <a class="download-btn" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">열기</a>
-          ${adminMode ? `<button class="delete-btn" type="button" data-delete="${escapeHtml(item.id)}">삭제</button>` : ''}
-        </div>
-      </article>
-    `).join('');
+            <div>
+              <h2 class="qt-title">${escapeHtml(item.title)}</h2>
+              <div class="qt-date">${escapeHtml(formatMonth(item.month) || uploadedDate(item))}</div>
+              <div class="qt-meta">
+                ${item.size ? `${escapeHtml(formatBytes(item.size))}` : ''}
+              </div>
+            </div>
+            <span class="qt-current-badge">현재 보는 중</span>
+          </button>
+          ${adminMode ? `<div class="qt-actions"><button class="delete-btn" type="button" data-delete="${escapeHtml(item.id)}">삭제</button></div>` : ''}
+        </article>
+      `;
+    }).join('');
+  }
+
+  function markCurrentCard() {
+    els.qtList.querySelectorAll('.qt-card').forEach(card => {
+      card.classList.toggle('current', card.dataset.id === currentItemId);
+    });
+  }
+
+  function selectItem(item, shouldScroll = false) {
+    if (!item?.url) return;
+    currentItemId = item.id;
+    markCurrentCard();
+    els.viewerEmpty.hidden = true;
+    els.viewerContent.hidden = false;
+    els.reportTitle.textContent = item.title || '매일묵상집';
+    els.reportDate.textContent = formatMonth(item.month) || uploadedDate(item);
+    els.reportDownload.href = item.url;
+    els.container.dataset.pdf = item.url;
+    touchReset();
+    loadPdf(item.url).then(() => {
+      if (shouldScroll) els.container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   async function loadItems() {
@@ -590,10 +1150,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (!res.ok) throw new Error(data.error || '목록을 불러오지 못했습니다.');
       items = Array.isArray(data.items) ? data.items : [];
       els.loadError.hidden = true;
-      render();
+      renderShelf();
+      if (items.length) selectItem(items.find(item => item.id === currentItemId) || items[0]);
     } catch (error) {
       els.loadError.textContent = error.message;
       els.loadError.hidden = false;
+      renderShelf();
     }
   }
 
@@ -655,10 +1217,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
       if (!res.ok) throw new Error(data.error || '업로드하지 못했습니다.');
       items = Array.isArray(data.items) ? data.items : items;
+      currentItemId = items[0]?.id || '';
       els.uploadForm.reset();
       els.fileNameText.textContent = '선택된 파일 없음';
       setUploadStatus('업로드되었습니다.');
-      render();
+      renderShelf();
+      if (items.length) selectItem(items[0], true);
     } catch (error) {
       setUploadStatus(error.message, true);
     } finally {
@@ -681,10 +1245,427 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
       if (!res.ok) throw new Error(data.error || '삭제하지 못했습니다.');
       items = Array.isArray(data.items) ? data.items : items.filter(item => item.id !== id);
-      render();
+      if (currentItemId === id) currentItemId = items[0]?.id || '';
+      renderShelf();
+      if (items.length) selectItem(items.find(item => item.id === currentItemId) || items[0]);
     } catch (error) {
       alert(error.message);
     }
+  }
+
+  function loadScript(src) {
+    if (window.pdfjsLib) return Promise.resolve();
+    if (!pdfScriptPromise) {
+      pdfScriptPromise = new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = res;
+        s.onerror = rej;
+        document.head.appendChild(s);
+      }).then(() => {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+      });
+    }
+    return pdfScriptPromise;
+  }
+
+  function showSpinner() {
+    els.loadingEl.innerHTML = '<div class="fb-spinner"></div><span>PDF를 불러오는 중입니다...</span>';
+    els.loadingEl.style.display = 'flex';
+    els.flipBookEl.style.display = 'none';
+  }
+
+  function showError(message) {
+    els.loadingEl.innerHTML = `<span style="color:#c42a36;text-align:center;padding:0 20px;">${message}</span>`;
+    els.loadingEl.style.display = 'flex';
+    els.flipBookEl.style.display = 'none';
+  }
+
+  function openDB() {
+    return new Promise((res, rej) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = event => {
+        event.target.result.createObjectStore(STORE_NAME, { keyPath: 'key' });
+      };
+      req.onsuccess = event => res(event.target.result);
+      req.onerror = () => rej(null);
+    });
+  }
+
+  function getCache(database, key) {
+    return new Promise(res => {
+      try {
+        const tx = database.transaction(STORE_NAME, 'readonly');
+        const req = tx.objectStore(STORE_NAME).get(key);
+        req.onsuccess = () => res(req.result || null);
+        req.onerror = () => res(null);
+      } catch {
+        res(null);
+      }
+    });
+  }
+
+  function setCache(database, key, data) {
+    try {
+      const tx = database.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put({ key, data, ts: Date.now() });
+    } catch {}
+  }
+
+  function renderPage(pdfDoc, pageNum) {
+    return pdfDoc.getPage(pageNum).then(page => {
+      const vp = page.getViewport({ scale: SCALE });
+      const canvas = document.createElement('canvas');
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+      const ctx = canvas.getContext('2d', { alpha: false });
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      return page.render({
+        canvasContext: ctx,
+        viewport: vp,
+        intent: 'print',
+      }).promise.then(() => ({ url: canvas.toDataURL('image/png'), w: vp.width, h: vp.height }));
+    });
+  }
+
+  function buildDots(count, onDotClick) {
+    els.dotsBar.innerHTML = '';
+    if (count <= 1) return;
+    if (count > 12) {
+      const span = document.createElement('span');
+      span.className = 'fb-dots-text';
+      span.id = 'fb-dots-text-el';
+      els.dotsBar.appendChild(span);
+      return;
+    }
+    for (let i = 0; i < count; i += 1) {
+      const btn = document.createElement('button');
+      btn.className = 'fb-dot';
+      btn.setAttribute('aria-label', `${i + 1}번째`);
+      btn.addEventListener('click', () => onDotClick(i));
+      els.dotsBar.appendChild(btn);
+    }
+  }
+
+  function updateDots(activeIdx, total) {
+    const textEl = document.getElementById('fb-dots-text-el');
+    if (textEl) {
+      textEl.textContent = `${activeIdx + 1} / ${total}`;
+      return;
+    }
+    els.dotsBar.querySelectorAll('.fb-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === activeIdx);
+    });
+  }
+
+  function buildMobileViewer(pages) {
+    mobilePages = pages;
+    mobilePage = 0;
+    els.flipBookEl.innerHTML = '';
+    els.flipBookEl.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;';
+
+    const img = document.createElement('img');
+    img.id = 'mob-page-img';
+    img.style.cssText = 'max-width:calc(100% - 56px);height:auto;display:block;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.45);user-select:none;-webkit-user-drag:none;';
+    img.draggable = false;
+    img.src = pages[0].url;
+    els.flipBookEl.appendChild(img);
+
+    buildDots(pages.length, goMobilePage);
+    updateMobileNav();
+    els.loadingEl.style.display = 'none';
+    els.flipBookEl.style.display = 'flex';
+  }
+
+  function updateMobileNav() {
+    const total = mobilePages.length;
+    els.pageInfo.textContent = `${mobilePage + 1} / ${total}`;
+    const atFirst = mobilePage === 0;
+    const atLast = mobilePage >= total - 1;
+    document.getElementById('fb-prev').disabled = atFirst;
+    document.getElementById('fb-first').disabled = atFirst;
+    document.getElementById('fb-next').disabled = atLast;
+    document.getElementById('fb-last').disabled = atLast;
+    document.getElementById('fb-arrow-prev').disabled = atFirst;
+    document.getElementById('fb-arrow-next').disabled = atLast;
+    updateDots(mobilePage, total);
+  }
+
+  function goMobilePage(i) {
+    if (i < 0 || i >= mobilePages.length) return;
+    mobilePage = i;
+    const img = document.getElementById('mob-page-img');
+    if (img) img.src = mobilePages[i].url;
+    updateMobileNav();
+  }
+
+  function buildDesktopViewer(pages) {
+    allPages = pages;
+    spreadIdx = 0;
+    totalSpreads = 1 + Math.ceil((pages.length - 1) / 2);
+    els.flipBookEl.innerHTML = '';
+    els.flipBookEl.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;';
+
+    const left = document.createElement('img');
+    left.id = 'desk-left';
+    left.className = 'spread-img';
+    left.draggable = false;
+    const right = document.createElement('img');
+    right.id = 'desk-right';
+    right.className = 'spread-img';
+    right.draggable = false;
+    els.flipBookEl.appendChild(left);
+    els.flipBookEl.appendChild(right);
+
+    buildDots(totalSpreads, goDesktopSpread);
+    applySpreadImages();
+    els.loadingEl.style.display = 'none';
+    els.flipBookEl.style.display = 'flex';
+  }
+
+  function applySpreadImages() {
+    const left = document.getElementById('desk-left');
+    const right = document.getElementById('desk-right');
+    if (!left || !right) return;
+
+    if (spreadIdx === 0) {
+      left.style.display = 'none';
+      right.className = 'spread-img spread-img-cover';
+      right.src = allPages[0].url;
+      right.style.display = 'block';
+    } else {
+      const leftIdx = spreadIdx * 2 - 1;
+      const rightIdx = spreadIdx * 2;
+      left.className = 'spread-img spread-img-left';
+      right.className = 'spread-img spread-img-right';
+      if (leftIdx < allPages.length) {
+        left.src = allPages[leftIdx].url;
+        left.style.display = 'block';
+      } else {
+        left.style.display = 'none';
+      }
+      if (rightIdx < allPages.length) {
+        right.src = allPages[rightIdx].url;
+        right.style.display = 'block';
+      } else {
+        right.style.display = 'none';
+      }
+    }
+    updateDesktopNav();
+  }
+
+  function updateDesktopNav() {
+    const firstPage = spreadIdx === 0 ? 1 : spreadIdx * 2;
+    const lastPage = spreadIdx === 0 ? 1 : Math.min(spreadIdx * 2 + 1, allPages.length);
+    els.pageInfo.textContent = `${firstPage}${lastPage > firstPage ? `-${lastPage}` : ''} / ${allPages.length}`;
+    const atFirst = spreadIdx === 0;
+    const atLast = spreadIdx >= totalSpreads - 1;
+    document.getElementById('fb-prev').disabled = atFirst;
+    document.getElementById('fb-first').disabled = atFirst;
+    document.getElementById('fb-next').disabled = atLast;
+    document.getElementById('fb-last').disabled = atLast;
+    document.getElementById('fb-arrow-prev').disabled = atFirst;
+    document.getElementById('fb-arrow-next').disabled = atLast;
+    updateDots(spreadIdx, totalSpreads);
+  }
+
+  function goDesktopSpread(idx) {
+    if (idx < 0 || idx >= totalSpreads || idx === spreadIdx) return;
+    spreadIdx = idx;
+    els.flipBookEl.classList.add('spread-fade-out');
+    setTimeout(() => {
+      applySpreadImages();
+      els.flipBookEl.classList.remove('spread-fade-out');
+    }, 160);
+  }
+
+  function buildViewer(pages) {
+    if (isMobile) buildMobileViewer(pages);
+    else buildDesktopViewer(pages);
+  }
+
+  function navigatePrev() {
+    if (isMobile) goMobilePage(mobilePage - 1);
+    else goDesktopSpread(spreadIdx - 1);
+  }
+  function navigateNext() {
+    if (isMobile) goMobilePage(mobilePage + 1);
+    else goDesktopSpread(spreadIdx + 1);
+  }
+  function navigateFirst() {
+    if (isMobile) goMobilePage(0);
+    else goDesktopSpread(0);
+  }
+  function navigateLast() {
+    if (isMobile) goMobilePage(mobilePages.length - 1);
+    else goDesktopSpread(totalSpreads - 1);
+  }
+
+  function loadPdf(pdfUrl) {
+    showSpinner();
+    return loadScript(PDFJS_SRC)
+      .then(() => {
+        const cacheKey = `${pdfUrl}@${SCALE.toFixed(1)}`;
+        return (db ? Promise.resolve(db) : openDB().then(database => {
+          db = database;
+          return database;
+        }))
+          .catch(() => null)
+          .then(database => {
+            if (!database) return renderAndBuild(pdfUrl, null, cacheKey);
+            return getCache(database, cacheKey).then(hit => {
+              if (hit?.data?.length) {
+                buildViewer(hit.data);
+                return null;
+              }
+              return renderAndBuild(pdfUrl, database, cacheKey);
+            });
+          });
+      })
+      .catch(error => {
+        console.error(error);
+        showError(`PDF를 불러오지 못했습니다.<br>${error?.message || ''}`);
+      });
+  }
+
+  function renderAndBuild(pdfUrl, database, cacheKey) {
+    return window.pdfjsLib.getDocument(pdfUrl).promise.then(pdfDoc => {
+      const pages = [];
+      function next(i) {
+        if (i > pdfDoc.numPages) return Promise.resolve();
+        return renderPage(pdfDoc, i).then(page => {
+          pages.push(page);
+          return next(i + 1);
+        });
+      }
+      return next(1).then(() => {
+        if (database) setCache(database, cacheKey, pages);
+        buildViewer(pages);
+      });
+    });
+  }
+
+  function applyDisplayZoom() {
+    els.container.style.setProperty('--page-maxh', `${displayVh}vh`);
+    document.getElementById('fb-zoom-in').disabled = displayVh >= 82;
+    document.getElementById('fb-zoom-out').disabled = displayVh <= 30;
+  }
+
+  function setupTouch() {
+    const viewport = document.getElementById('spread-viewport');
+    const inner = document.getElementById('flip-book');
+    let czoom = 1;
+    let tx = 0;
+    let ty = 0;
+    let startDist = 0;
+    let anchorElX = 0;
+    let anchorElY = 0;
+    let gStartZoom = 1;
+    let gStartTx = 0;
+    let gStartTy = 0;
+    let panStart = { x: 0, y: 0 };
+    let swipeStartX = 0;
+    let isPinching = false;
+    let lastTap = 0;
+    let pinchEndedAt = 0;
+
+    function dist(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    function mid(touches) {
+      return {
+        x: (touches[0].clientX + touches[1].clientX) / 2,
+        y: (touches[0].clientY + touches[1].clientY) / 2,
+      };
+    }
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+    function applyTransform() {
+      inner.style.transformOrigin = '0 0';
+      inner.style.transform = `translate(${tx}px,${ty}px) scale(${czoom})`;
+    }
+    function resetTransform() {
+      czoom = 1;
+      tx = 0;
+      ty = 0;
+      inner.style.transform = '';
+      inner.style.transformOrigin = '';
+    }
+    touchReset = resetTransform;
+
+    viewport.addEventListener('touchstart', event => {
+      if (event.touches.length === 2) {
+        isPinching = true;
+        event.preventDefault();
+        startDist = dist(event.touches);
+        const m = mid(event.touches);
+        gStartZoom = czoom;
+        gStartTx = tx;
+        gStartTy = ty;
+        const rect = inner.getBoundingClientRect();
+        anchorElX = (m.x - rect.left) / gStartZoom;
+        anchorElY = (m.y - rect.top) / gStartZoom;
+      } else if (event.touches.length === 1) {
+        swipeStartX = event.touches[0].clientX;
+        if (czoom > 1.05) {
+          panStart.x = event.touches[0].clientX - tx;
+          panStart.y = event.touches[0].clientY - ty;
+        }
+      }
+    }, { passive: false });
+
+    viewport.addEventListener('touchmove', event => {
+      if (event.touches.length === 2 && isPinching) {
+        event.preventDefault();
+        const newZoom = clamp(gStartZoom * (dist(event.touches) / startDist), 1, 5);
+        tx = gStartTx - anchorElX * (newZoom - gStartZoom);
+        ty = gStartTy - anchorElY * (newZoom - gStartZoom);
+        tx = clamp(tx, -viewport.clientWidth * newZoom, viewport.clientWidth * newZoom);
+        ty = clamp(ty, -viewport.clientHeight * newZoom, viewport.clientHeight * newZoom);
+        czoom = newZoom;
+        applyTransform();
+      } else if (event.touches.length === 1 && czoom > 1.05 && !isPinching) {
+        event.preventDefault();
+        tx = clamp(event.touches[0].clientX - panStart.x, -viewport.clientWidth * czoom, viewport.clientWidth * czoom);
+        ty = clamp(event.touches[0].clientY - panStart.y, -viewport.clientHeight * czoom, viewport.clientHeight * czoom);
+        applyTransform();
+      }
+    }, { passive: false });
+
+    viewport.addEventListener('touchend', event => {
+      if (event.touches.length < 2) {
+        const wasPinching = isPinching;
+        isPinching = false;
+        if (wasPinching) {
+          pinchEndedAt = Date.now();
+          if (event.touches.length === 1 && czoom > 1.05) {
+            panStart.x = event.touches[0].clientX - tx;
+            panStart.y = event.touches[0].clientY - ty;
+          }
+        }
+        if (czoom < 1.05) resetTransform();
+        if (isMobile && !wasPinching && czoom <= 1.05 && event.changedTouches.length === 1) {
+          const deltaX = event.changedTouches[0].clientX - swipeStartX;
+          if (Math.abs(deltaX) > 50) {
+            if (deltaX < 0) navigateNext();
+            else navigatePrev();
+            return;
+          }
+        }
+      }
+
+      if (event.changedTouches.length === 1 && event.touches.length === 0 && Date.now() - pinchEndedAt > 500) {
+        const now = Date.now();
+        if (now - lastTap < 300) resetTransform();
+        lastTap = now;
+      }
+    });
   }
 
   els.adminToggle.addEventListener('click', () => {
@@ -707,11 +1688,42 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     els.fileNameText.textContent = file ? file.name : '선택된 파일 없음';
   });
   els.qtList.addEventListener('click', event => {
-    const button = event.target.closest('[data-delete]');
-    if (!button) return;
-    deleteItem(button.dataset.delete);
+    const deleteButton = event.target.closest('[data-delete]');
+    if (deleteButton) {
+      deleteItem(deleteButton.dataset.delete);
+      return;
+    }
+    const selectButton = event.target.closest('[data-select]');
+    if (!selectButton) return;
+    const item = items.find(entry => entry.id === selectButton.dataset.select);
+    selectItem(item, true);
+  });
+  document.getElementById('fb-prev').addEventListener('click', navigatePrev);
+  document.getElementById('fb-next').addEventListener('click', navigateNext);
+  document.getElementById('fb-first').addEventListener('click', navigateFirst);
+  document.getElementById('fb-last').addEventListener('click', navigateLast);
+  document.getElementById('fb-arrow-prev').addEventListener('click', navigatePrev);
+  document.getElementById('fb-arrow-next').addEventListener('click', navigateNext);
+  document.getElementById('fb-fullscreen').addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (els.container.requestFullscreen) els.container.requestFullscreen();
+  });
+  document.getElementById('fb-zoom-in').addEventListener('click', () => {
+    displayVh = Math.min(displayVh + 10, 82);
+    applyDisplayZoom();
+  });
+  document.getElementById('fb-zoom-out').addEventListener('click', () => {
+    displayVh = Math.max(displayVh - 10, 30);
+    applyDisplayZoom();
+  });
+  document.addEventListener('keydown', event => {
+    if (els.viewerContent.hidden) return;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') navigateNext();
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') navigatePrev();
   });
 
+  if (!isMobile) applyDisplayZoom();
+  setupTouch();
   loadItems();
   if (token) setAdminMode(true);
 </script>
