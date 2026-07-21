@@ -257,7 +257,7 @@ const pageTitle = 'WOLKO Camp Resources';
   </style>
 </head>
 <body>
-  <div class="login-screen" id="loginScreen" hidden>
+  <div class="login-screen" id="loginScreen">
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -265,7 +265,7 @@ const pageTitle = 'WOLKO Camp Resources';
           <span class="login-logo-name">WOLKO 월코</span>
         </div>
       </div>
-      <p class="login-title" data-ko="편집 모드 로그인" data-en="Edit Mode Login">편집 모드 로그인</p>
+      <p class="login-title" id="loginTitle" data-ko="자료실 로그인" data-en="Resource Login">자료실 로그인</p>
       <input class="login-input" id="passwordInput" type="password" data-ph-ko="공유 비밀번호" data-ph-en="Shared password" placeholder="공유 비밀번호" autocomplete="current-password">
       <p class="login-error" id="loginError"></p>
       <button class="login-btn" id="loginBtn" type="button" data-ko="확인" data-en="Confirm">확인</button>
@@ -537,6 +537,7 @@ const pageTitle = 'WOLKO Camp Resources';
 
     const els = {
       loginScreen: document.getElementById('loginScreen'),
+      loginTitle: document.getElementById('loginTitle'),
       passwordInput: document.getElementById('passwordInput'),
       loginBtn: document.getElementById('loginBtn'),
       loginCancelBtn: document.getElementById('loginCancelBtn'),
@@ -603,6 +604,7 @@ const pageTitle = 'WOLKO Camp Resources';
     let dialogTab = DEFAULT_TAB;
     let editMode = false;
     let token = localStorage.getItem(TOKEN_KEY) || '';
+    let loginMode = 'access';
     let editingItemId = '';
     let deferredInstallPrompt = null;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
@@ -626,7 +628,44 @@ const pageTitle = 'WOLKO Camp Resources';
       });
       updateLangToggleUI();
       updateInstallGuideText();
+      updateLoginUI();
       updateEditModeUI();
+    }
+
+    function authHeaders(base = {}) {
+      return token ? { ...base, Authorization: `Bearer ${token}` } : base;
+    }
+
+    function authError(message) {
+      const err = new Error(message || tr('loginFailed'));
+      err.isAuth = true;
+      return err;
+    }
+
+    function updateLoginUI() {
+      if (!els.loginTitle) return;
+      const isEdit = loginMode === 'edit';
+      els.loginTitle.textContent = isEdit
+        ? (currentLang === 'en' ? 'Edit Mode Login' : '편집 모드 로그인')
+        : (currentLang === 'en' ? 'Resource Login' : '자료실 로그인');
+      els.loginCancelBtn.hidden = !isEdit;
+    }
+
+    function showLogin(mode = 'access', message = '') {
+      loginMode = mode;
+      updateLoginUI();
+      els.loginError.textContent = message;
+      els.passwordInput.value = '';
+      els.loginScreen.hidden = false;
+      setTimeout(() => els.passwordInput.focus(), 20);
+    }
+
+    function requireAccess(message = '') {
+      token = '';
+      localStorage.removeItem(TOKEN_KEY);
+      editMode = false;
+      updateEditModeUI();
+      showLogin('access', message);
     }
 
     function updateInstallGuideText() {
@@ -1044,11 +1083,7 @@ const pageTitle = 'WOLKO Camp Resources';
         });
         const data = await res.json().catch(() => ({}));
         if (res.status === 401) {
-          localStorage.removeItem(TOKEN_KEY);
-          token = '';
-          exitEditMode();
-          els.loginError.textContent = tr('loginFailed');
-          els.loginScreen.hidden = false;
+          requireAccess(data.error || tr('loginFailed'));
           return;
         }
         if (!res.ok) throw new Error(data.error || tr('reorderFailed'));
@@ -1126,11 +1161,7 @@ const pageTitle = 'WOLKO Camp Resources';
         });
         const data = await res.json().catch(() => ({}));
         if (res.status === 401) {
-          localStorage.removeItem(TOKEN_KEY);
-          token = '';
-          exitEditMode();
-          els.loginError.textContent = tr('loginFailed');
-          els.loginScreen.hidden = false;
+          requireAccess(data.error || tr('loginFailed'));
           return;
         }
         if (!res.ok) throw new Error(data.error || tr('campRenameFailed'));
@@ -1154,8 +1185,6 @@ const pageTitle = 'WOLKO Camp Resources';
 
     function exitEditMode() {
       editMode = false;
-      token = '';
-      localStorage.removeItem(TOKEN_KEY);
       updateEditModeUI();
       render();
     }
@@ -1172,11 +1201,11 @@ const pageTitle = 'WOLKO Camp Resources';
     els.editModeBtn.addEventListener('click', () => {
       if (editMode) { exitEditMode(); return; }
       if (token) { enterEditMode(); return; }
-      els.loginError.textContent = '';
-      els.passwordInput.value = '';
-      els.loginScreen.hidden = false;
+      showLogin('edit');
     });
-    els.loginCancelBtn.addEventListener('click', () => { els.loginScreen.hidden = true; });
+    els.loginCancelBtn.addEventListener('click', () => {
+      if (loginMode === 'edit') els.loginScreen.hidden = true;
+    });
 
     async function login() {
       els.loginBtn.disabled = true;
@@ -1192,7 +1221,13 @@ const pageTitle = 'WOLKO Camp Resources';
         token = data.token;
         localStorage.setItem(TOKEN_KEY, token);
         els.loginScreen.hidden = true;
-        enterEditMode();
+        if (loginMode === 'edit') {
+          enterEditMode();
+        } else {
+          editMode = false;
+          updateEditModeUI();
+          await bootstrapData();
+        }
       } catch (error) {
         els.loginError.textContent = error.message;
       } finally {
@@ -1292,12 +1327,8 @@ const pageTitle = 'WOLKO Camp Resources';
         });
         const data = await res.json().catch(() => ({}));
         if (res.status === 401) {
-          localStorage.removeItem(TOKEN_KEY);
-          token = '';
-          exitEditMode();
           els.itemDialogBackdrop.hidden = true;
-          els.loginError.textContent = tr('loginFailed');
-          els.loginScreen.hidden = false;
+          requireAccess(data.error || tr('loginFailed'));
           return;
         }
         if (!res.ok) throw new Error(data.error || tr('saveFailed'));
@@ -1374,11 +1405,7 @@ const pageTitle = 'WOLKO Camp Resources';
         });
         const data = await res.json().catch(() => ({}));
         if (res.status === 401) {
-          localStorage.removeItem(TOKEN_KEY);
-          token = '';
-          exitEditMode();
-          els.loginError.textContent = tr('loginFailed');
-          els.loginScreen.hidden = false;
+          requireAccess(data.error || tr('loginFailed'));
           return;
         }
         if (!res.ok) throw new Error(data.error || tr('deleteFailed'));
@@ -1419,8 +1446,9 @@ const pageTitle = 'WOLKO Camp Resources';
     });
 
     async function loadCamps() {
-      const res = await fetch('/api/teach/camps');
+      const res = await fetch('/api/teach/camps', { headers: authHeaders() });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 401) throw authError(data.error);
       if (!res.ok) throw new Error(data.error || tr('campLoadFailed'));
       camps = Array.isArray(data.camps) ? data.camps : [];
       defaultCampId = data.defaultCampId || '';
@@ -1428,8 +1456,9 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     async function loadItems() {
-      const res = await fetch('/api/teach/data');
+      const res = await fetch('/api/teach/data', { headers: authHeaders() });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 401) throw authError(data.error);
       if (!res.ok) {
         const err = new Error(data.error || tr('loadFailed'));
         err.isStandard = !data.error;
@@ -1546,14 +1575,12 @@ const pageTitle = 'WOLKO Camp Resources';
       try {
         await loadCamps();
         render();
-      } catch (error) {
-        loadErrorIsStandard = false;
-        els.loadErrorBanner.textContent = error.message || tr('campLoadFailed');
-        els.loadErrorBanner.hidden = false;
-      }
-      try {
         await loadItems();
       } catch (error) {
+        if (error.isAuth) {
+          requireAccess(error.message);
+          return;
+        }
         loadErrorIsStandard = !!error.isStandard;
         els.loadErrorBanner.textContent = error.message || tr('loadFailed');
         els.loadErrorBanner.hidden = false;
@@ -1562,8 +1589,13 @@ const pageTitle = 'WOLKO Camp Resources';
 
     applyLanguage();
     render();
-    bootstrapData();
-    if (token) enterEditMode();
+    if (token) {
+      bootstrapData().then(() => {
+        if (token) els.loginScreen.hidden = true;
+      });
+    } else {
+      showLogin('access');
+    }
     if (!isStandalone) {
       els.installBtn.hidden = false;
     }

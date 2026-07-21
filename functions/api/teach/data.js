@@ -202,9 +202,12 @@ function inferLegacyTab(item) {
 }
 
 export async function onRequestGet(context) {
-  const { env } = context;
-  if (!env.CAMP_KV) {
-    return Response.json({ items: [] }, { headers: CORS });
+  const { env, request } = context;
+  if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
+    return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
+  }
+  if (!(await verifyToken(request, env))) {
+    return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
   const data = await readData(env);
   if (typeof context.waitUntil === 'function') {
