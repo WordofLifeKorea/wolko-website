@@ -7,48 +7,99 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   description="WOLKO 매일묵상집 (Q.T Book) 다운로드 페이지입니다."
   activeNav="resources"
 >
-  <section class="res-hero">
-    <div class="res-hero-inner">
+  <section class="qt-hero">
+    <div class="qt-hero-inner">
       <a href="/resources" class="breadcrumb">
         <span class="wl-ko">← 자료실</span>
         <span class="wl-en">← Resources</span>
       </a>
-      <h1>
-        <span class="res-emoji">📖</span>
-        <span class="wl-ko">매일묵상집</span>
-        <span class="wl-en">Q.T Book</span>
-      </h1>
+      <div class="hero-row">
+        <div>
+          <h1>
+            <span class="res-emoji">📖</span>
+            <span class="wl-ko">매일묵상집</span>
+            <span class="wl-en">Q.T Book</span>
+          </h1>
+          <p>
+            <span class="wl-ko">업로드된 매일묵상집 PDF를 다운로드할 수 있습니다.</span>
+            <span class="wl-en">Download uploaded Q.T book PDF files.</span>
+          </p>
+        </div>
+        <button class="admin-toggle" id="adminToggle" type="button">관리 로그인</button>
+      </div>
     </div>
   </section>
 
-  <div class="res-container">
-    <div class="empty-state">
-      <p class="wl-ko">준비 중입니다. 곧 자료가 업로드될 예정입니다.</p>
-      <p class="wl-en">Coming soon. Materials will be uploaded shortly.</p>
+  <main class="qt-container">
+    <section class="admin-panel" id="adminPanel" hidden>
+      <div class="panel-head">
+        <div>
+          <h2>파일 업로드</h2>
+          <p>PDF 파일을 선택하면 목록에 바로 추가됩니다.</p>
+        </div>
+        <button class="ghost-btn" id="logoutBtn" type="button">관리 종료</button>
+      </div>
+      <form class="upload-form" id="uploadForm">
+        <label>
+          <span>제목</span>
+          <input id="titleInput" type="text" placeholder="예: 2026년 7월 매일묵상집" maxlength="160">
+        </label>
+        <label>
+          <span>월</span>
+          <input id="monthInput" type="month">
+        </label>
+        <label class="file-field">
+          <span>PDF 파일</span>
+          <input id="fileInput" type="file" accept=".pdf,application/pdf">
+        </label>
+        <button class="primary-btn" id="uploadBtn" type="submit">업로드</button>
+      </form>
+      <p class="status-line" id="uploadStatus"></p>
+    </section>
+
+    <p class="load-error" id="loadError" hidden></p>
+    <section class="qt-list" id="qtList" aria-live="polite"></section>
+  </main>
+
+  <div class="login-screen" id="loginScreen" hidden>
+    <div class="login-card">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <h2>관리 로그인</h2>
+      <p>매일묵상집 파일 업로드 권한이 필요합니다.</p>
+      <input id="passwordInput" type="password" placeholder="공유 비밀번호" autocomplete="current-password">
+      <p class="login-error" id="loginError"></p>
+      <button class="primary-btn" id="loginBtn" type="button">확인</button>
+      <button class="ghost-btn" id="loginCancelBtn" type="button">취소</button>
     </div>
   </div>
 </BaseLayout>
 
 <style>
-  .res-hero {
+  .qt-hero {
     background: linear-gradient(135deg, #004f68 0%, #007a9a 100%);
     color: #fff;
     padding: 48px 24px 40px;
   }
-  .res-hero-inner {
-    max-width: 860px;
+  .qt-hero-inner {
+    max-width: 900px;
     margin: 0 auto;
   }
   .breadcrumb {
     display: inline-block;
-    color: rgba(255,255,255,0.75);
+    color: rgba(255,255,255,0.76);
     text-decoration: none;
     font-size: 0.9rem;
     margin-bottom: 14px;
     transition: color 0.15s;
   }
   .breadcrumb:hover { color: #fff; }
-  .res-hero h1 {
+  .hero-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .qt-hero h1 {
     font-size: 2rem;
     font-weight: 700;
     margin: 0;
@@ -56,29 +107,477 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     align-items: center;
     gap: 12px;
   }
+  .qt-hero p {
+    margin: 12px 0 0;
+    color: rgba(255,255,255,0.82);
+    line-height: 1.65;
+  }
   .res-emoji { font-size: 1.8rem; }
 
-  .res-container {
-    max-width: 860px;
+  .qt-container {
+    max-width: 900px;
     margin: 0 auto;
-    padding: 48px 24px 80px;
+    padding: 42px 24px 80px;
   }
-  .empty-state {
+  .admin-toggle,
+  .primary-btn,
+  .ghost-btn,
+  .download-btn,
+  .delete-btn {
+    min-height: 40px;
+    border-radius: 9px;
+    padding: 0 16px;
+    font-weight: 700;
+    border: 0;
+    cursor: pointer;
+  }
+  .admin-toggle {
+    background: rgba(255,255,255,0.16);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.34);
+    white-space: nowrap;
+  }
+  .admin-toggle:hover { background: rgba(255,255,255,0.24); }
+  .primary-btn {
+    background: #004f68;
+    color: #fff;
+  }
+  .primary-btn:hover { background: #007a9a; }
+  .primary-btn:disabled { opacity: 0.56; cursor: not-allowed; }
+  .ghost-btn {
     background: #f7fbfd;
-    border: 1px dashed #b0d4e0;
-    border-radius: 10px;
-    padding: 48px 24px;
+    color: #004f68;
+    border: 1px solid #d4e7ee;
+  }
+  .ghost-btn:hover { background: #edf7fa; }
+
+  .admin-panel {
+    margin-bottom: 24px;
+    border: 1px solid #d9e9ef;
+    border-radius: 12px;
+    padding: 22px;
+    background: #f8fcfd;
+  }
+  .panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .panel-head h2 {
+    margin: 0;
+    color: #004f68;
+    font-size: 1.15rem;
+  }
+  .panel-head p {
+    margin: 6px 0 0;
+    color: #6b8794;
+    font-size: 0.92rem;
+  }
+  .upload-form {
+    display: grid;
+    grid-template-columns: 1.4fr 180px 1fr auto;
+    gap: 12px;
+    align-items: end;
+  }
+  .upload-form label {
+    display: grid;
+    gap: 7px;
+    color: #45616f;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .upload-form input {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid #cfdfe6;
+    border-radius: 9px;
+    padding: 0 12px;
+    color: #1d3340;
+    background: #fff;
+  }
+  .file-field input {
+    padding: 9px 10px;
+  }
+  .status-line {
+    min-height: 20px;
+    margin: 12px 0 0;
+    color: #6b8794;
+    font-size: 0.9rem;
+  }
+  .status-line.is-error,
+  .login-error {
+    color: #c42a36;
+  }
+
+  .load-error {
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border: 1px solid #f0cbd0;
+    border-radius: 9px;
+    background: #fff8f9;
+    color: #c42a36;
+  }
+  .qt-list {
+    display: grid;
+    gap: 14px;
+  }
+  .qt-item,
+  .empty-state {
+    border: 1px solid #dbe9ee;
+    border-radius: 12px;
+    background: #fff;
+    padding: 18px;
+    box-shadow: 0 6px 18px rgba(0,79,104,0.06);
+  }
+  .qt-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+  .qt-title {
+    margin: 0;
+    color: #163542;
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+  .qt-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    color: #6b8794;
+    font-size: 0.86rem;
+  }
+  .qt-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #004f68;
+    color: #fff;
+    text-decoration: none;
+  }
+  .download-btn:hover { background: #007a9a; }
+  .delete-btn {
+    background: #fff5f6;
+    color: #c42a36;
+    border: 1px solid #f0cbd0;
+  }
+  .delete-btn:hover { background: #fdecee; }
+  .empty-state {
     text-align: center;
-    color: #6b8fa0;
+    color: #6b8794;
   }
   .empty-state p {
     margin: 0;
-    font-size: 0.97rem;
   }
 
-  @media (max-width: 600px) {
-    .res-hero { padding: 36px 16px 30px; }
-    .res-hero h1 { font-size: 1.6rem; }
-    .res-container { padding: 32px 16px 60px; }
+  .login-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0,25,35,0.62);
+    backdrop-filter: blur(8px);
+  }
+  .login-screen[hidden] { display: none; }
+  .login-card {
+    width: min(390px, 100%);
+    border-radius: 16px;
+    background: #fff;
+    padding: 30px 28px 26px;
+    text-align: center;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.24);
+  }
+  .login-card img {
+    height: 44px;
+    margin-bottom: 12px;
+  }
+  .login-card h2 {
+    margin: 0 0 8px;
+    color: #004f68;
+    font-size: 1.25rem;
+  }
+  .login-card p {
+    margin: 0 0 16px;
+    color: #6b8794;
+    font-size: 0.92rem;
+  }
+  .login-card input {
+    width: 100%;
+    height: 48px;
+    border: 1px solid #cfdfe6;
+    border-radius: 10px;
+    padding: 0 14px;
+    margin-bottom: 8px;
+  }
+  .login-error {
+    min-height: 20px;
+    font-size: 0.86rem;
+  }
+  .login-card .primary-btn,
+  .login-card .ghost-btn {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 760px) {
+    .qt-hero { padding: 36px 16px 30px; }
+    .hero-row,
+    .panel-head {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .qt-hero h1 { font-size: 1.6rem; }
+    .qt-container { padding: 30px 16px 60px; }
+    .upload-form {
+      grid-template-columns: 1fr;
+    }
+    .qt-item {
+      grid-template-columns: 1fr;
+    }
+    .qt-actions {
+      justify-content: stretch;
+    }
+    .download-btn,
+    .delete-btn {
+      flex: 1;
+    }
   }
 </style>
+
+<script>
+  const TOKEN_KEY = 'wolko_qt_book_token';
+  const MAX_SIZE = 35 * 1024 * 1024;
+
+  const els = {
+    adminToggle: document.getElementById('adminToggle'),
+    adminPanel: document.getElementById('adminPanel'),
+    logoutBtn: document.getElementById('logoutBtn'),
+    uploadForm: document.getElementById('uploadForm'),
+    uploadBtn: document.getElementById('uploadBtn'),
+    uploadStatus: document.getElementById('uploadStatus'),
+    titleInput: document.getElementById('titleInput'),
+    monthInput: document.getElementById('monthInput'),
+    fileInput: document.getElementById('fileInput'),
+    qtList: document.getElementById('qtList'),
+    loadError: document.getElementById('loadError'),
+    loginScreen: document.getElementById('loginScreen'),
+    passwordInput: document.getElementById('passwordInput'),
+    loginBtn: document.getElementById('loginBtn'),
+    loginCancelBtn: document.getElementById('loginCancelBtn'),
+    loginError: document.getElementById('loginError'),
+  };
+
+  let items = [];
+  let token = localStorage.getItem(TOKEN_KEY) || '';
+  let adminMode = false;
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+  }
+
+  function formatBytes(size) {
+    if (!size) return '';
+    if (size >= 1024 * 1024) return `${(size / 1024 / 1024).toFixed(1)}MB`;
+    return `${Math.max(1, Math.round(size / 1024))}KB`;
+  }
+
+  function formatMonth(month) {
+    if (!month) return '';
+    const match = String(month).match(/^(\d{4})-(\d{2})$/);
+    if (!match) return month;
+    return `${match[1]}년 ${Number(match[2])}월`;
+  }
+
+  function setAdminMode(next) {
+    adminMode = next;
+    els.adminPanel.hidden = !adminMode;
+    els.adminToggle.textContent = adminMode ? '관리 중' : '관리 로그인';
+    render();
+  }
+
+  function showLogin(message = '') {
+    els.loginError.textContent = message;
+    els.passwordInput.value = '';
+    els.loginScreen.hidden = false;
+    setTimeout(() => els.passwordInput.focus(), 20);
+  }
+
+  function logout() {
+    token = '';
+    localStorage.removeItem(TOKEN_KEY);
+    setAdminMode(false);
+  }
+
+  function setUploadStatus(message, isError = false) {
+    els.uploadStatus.textContent = message;
+    els.uploadStatus.classList.toggle('is-error', isError);
+  }
+
+  function render() {
+    if (!items.length) {
+      els.qtList.innerHTML = `
+        <div class="empty-state">
+          <p>아직 업로드된 매일묵상집이 없습니다.</p>
+        </div>
+      `;
+      return;
+    }
+
+    els.qtList.innerHTML = items.map(item => `
+      <article class="qt-item">
+        <div>
+          <h2 class="qt-title">${escapeHtml(item.title)}</h2>
+          <div class="qt-meta">
+            ${item.month ? `<span>${escapeHtml(formatMonth(item.month))}</span>` : ''}
+            ${item.filename ? `<span>${escapeHtml(item.filename)}</span>` : ''}
+            ${item.size ? `<span>${escapeHtml(formatBytes(item.size))}</span>` : ''}
+            ${item.uploadedAt ? `<span>${escapeHtml(new Date(item.uploadedAt).toLocaleDateString('ko-KR'))}</span>` : ''}
+          </div>
+        </div>
+        <div class="qt-actions">
+          <a class="download-btn" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">열기</a>
+          ${adminMode ? `<button class="delete-btn" type="button" data-delete="${escapeHtml(item.id)}">삭제</button>` : ''}
+        </div>
+      </article>
+    `).join('');
+  }
+
+  async function loadItems() {
+    try {
+      const res = await fetch('/api/qt-book/data');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || '목록을 불러오지 못했습니다.');
+      items = Array.isArray(data.items) ? data.items : [];
+      els.loadError.hidden = true;
+      render();
+    } catch (error) {
+      els.loadError.textContent = error.message;
+      els.loadError.hidden = false;
+    }
+  }
+
+  async function login() {
+    els.loginBtn.disabled = true;
+    els.loginError.textContent = '';
+    try {
+      const res = await fetch('/api/qt-book/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: els.passwordInput.value.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || '로그인하지 못했습니다.');
+      token = data.token;
+      localStorage.setItem(TOKEN_KEY, token);
+      els.loginScreen.hidden = true;
+      setAdminMode(true);
+    } catch (error) {
+      els.loginError.textContent = error.message;
+    } finally {
+      els.loginBtn.disabled = false;
+    }
+  }
+
+  async function uploadFile(event) {
+    event.preventDefault();
+    const file = els.fileInput.files?.[0];
+    if (!file) {
+      setUploadStatus('PDF 파일을 선택해주세요.', true);
+      return;
+    }
+    if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') {
+      setUploadStatus('PDF 파일만 업로드할 수 있습니다.', true);
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      setUploadStatus('파일이 너무 큽니다. (최대 35MB)', true);
+      return;
+    }
+
+    els.uploadBtn.disabled = true;
+    setUploadStatus('업로드 중...');
+    try {
+      const form = new FormData();
+      form.append('title', els.titleInput.value.trim());
+      form.append('month', els.monthInput.value);
+      form.append('file', file);
+      const res = await fetch('/api/qt-book/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        logout();
+        showLogin(data.error || '다시 로그인해주세요.');
+        return;
+      }
+      if (!res.ok) throw new Error(data.error || '업로드하지 못했습니다.');
+      items = Array.isArray(data.items) ? data.items : items;
+      els.uploadForm.reset();
+      setUploadStatus('업로드되었습니다.');
+      render();
+    } catch (error) {
+      setUploadStatus(error.message, true);
+    } finally {
+      els.uploadBtn.disabled = false;
+    }
+  }
+
+  async function deleteItem(id) {
+    if (!confirm('이 매일묵상집 파일을 삭제하시겠습니까?')) return;
+    try {
+      const res = await fetch(`/api/qt-book/data?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        logout();
+        showLogin(data.error || '다시 로그인해주세요.');
+        return;
+      }
+      if (!res.ok) throw new Error(data.error || '삭제하지 못했습니다.');
+      items = Array.isArray(data.items) ? data.items : items.filter(item => item.id !== id);
+      render();
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  els.adminToggle.addEventListener('click', () => {
+    if (token) {
+      setAdminMode(true);
+      return;
+    }
+    showLogin();
+  });
+  els.logoutBtn.addEventListener('click', logout);
+  els.loginBtn.addEventListener('click', login);
+  els.loginCancelBtn.addEventListener('click', () => { els.loginScreen.hidden = true; });
+  els.passwordInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') login();
+  });
+  els.uploadForm.addEventListener('submit', uploadFile);
+  els.qtList.addEventListener('click', event => {
+    const button = event.target.closest('[data-delete]');
+    if (!button) return;
+    deleteItem(button.dataset.delete);
+  });
+
+  loadItems();
+  if (token) setAdminMode(true);
+</script>
