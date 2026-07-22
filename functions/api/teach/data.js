@@ -205,24 +205,19 @@ function normalizeItem(item) {
   return { ...item, tab: inferLegacyTab(item) };
 }
 
-function isPublicItem(item) {
-  return inferLegacyTab(item) === 'general';
-}
-
 export async function onRequestGet(context) {
   const { env, request } = context;
   if (!env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
-  const staffAccess = env.ADMIN_PASSWORD ? await verifyToken(request, env) : false;
+  if (!env.ADMIN_PASSWORD || !(await verifyToken(request, env))) {
+    return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
+  }
   const data = await readData(env);
   if (typeof context.waitUntil === 'function') {
     context.waitUntil(backfillMissingThumbnails(env, data.items));
   }
-  const items = data.items
-    .filter(item => staffAccess || isPublicItem(item))
-    .map(normalizeItem);
-  return Response.json({ items, staffAccess }, { headers: CORS });
+  return Response.json({ items: data.items.map(normalizeItem), staffAccess: true }, { headers: CORS });
 }
 
 export async function onRequestPost(context) {

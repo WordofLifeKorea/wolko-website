@@ -308,7 +308,7 @@ const pageTitle = 'WOLKO Camp Resources';
     }
   </style>
 
-  <div class="login-screen" id="loginScreen" hidden>
+  <div class="login-screen" id="loginScreen">
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -320,7 +320,6 @@ const pageTitle = 'WOLKO Camp Resources';
       <input class="login-input" id="passwordInput" type="password" data-ph-ko="공유 비밀번호" data-ph-en="Shared password" placeholder="공유 비밀번호" autocomplete="current-password">
       <p class="login-error" id="loginError"></p>
       <button class="login-btn" id="loginBtn" type="button" data-ko="확인" data-en="Confirm">확인</button>
-      <button class="ghost" id="loginCancelBtn" type="button" style="width:100%;margin-top:10px;" data-ko="취소" data-en="Cancel">취소</button>
     </div>
   </div>
 
@@ -364,7 +363,7 @@ const pageTitle = 'WOLKO Camp Resources';
           <button class="main-tab-btn" data-tab="program" type="button" data-ko="프로그램팀" data-en="Program Team">프로그램팀</button>
           <button class="main-tab-btn" data-tab="counselor" type="button" data-ko="상담자" data-en="Counselors">상담자</button>
           <button class="main-tab-btn" data-tab="preacher" type="button" data-ko="설교자" data-en="Preachers">설교자</button>
-          <button class="main-tab-btn" data-tab="general" type="button" data-ko="공개 자료" data-en="Public Resources">공개 자료</button>
+          <button class="main-tab-btn" data-tab="general" type="button" data-ko="일반 자료" data-en="General Files">일반 자료</button>
           <button class="main-tab-btn" data-tab="schedule" type="button" data-ko="스케줄" data-en="Schedule" hidden>스케줄</button>
         </div>
 
@@ -493,12 +492,11 @@ const pageTitle = 'WOLKO Camp Resources';
       { key: 'program', ko: '프로그램팀', en: 'Program Team' },
       { key: 'counselor', ko: '상담자', en: 'Counselors' },
       { key: 'preacher', ko: '설교자', en: 'Preachers' },
-      { key: 'general', ko: '공개 자료', en: 'Public Resources' },
+      { key: 'general', ko: '일반 자료', en: 'General Files' },
       { key: 'schedule', ko: '스케줄', en: 'Schedule' },
     ];
     const TAB_KEYS = TABS.map(t => t.key);
     const DEFAULT_TAB = 'general';
-    const STAFF_TABS = ['teacher', 'program', 'counselor', 'preacher'];
     const HIDDEN_TABS = ['schedule'];
     try { localStorage.removeItem(TOKEN_KEY); } catch(e) {}
 
@@ -607,7 +605,6 @@ const pageTitle = 'WOLKO Camp Resources';
       loginTitle: document.getElementById('loginTitle'),
       passwordInput: document.getElementById('passwordInput'),
       loginBtn: document.getElementById('loginBtn'),
-      loginCancelBtn: document.getElementById('loginCancelBtn'),
       loginError: document.getElementById('loginError'),
       langToggle: document.getElementById('campLangToggle'),
       langSlider: document.getElementById('campLangSlider'),
@@ -707,8 +704,7 @@ const pageTitle = 'WOLKO Camp Resources';
 
     function isTabVisible(key) {
       if (HIDDEN_TABS.includes(key)) return false;
-      if (STAFF_TABS.includes(key)) return hasStaffAccess();
-      return true;
+      return hasStaffAccess();
     }
 
     function authError(message) {
@@ -726,7 +722,6 @@ const pageTitle = 'WOLKO Camp Resources';
         : isStaff
           ? (currentLang === 'en' ? 'Staff Login' : 'Staff 로그인')
         : (currentLang === 'en' ? 'Resource Login' : '자료실 로그인');
-      els.loginCancelBtn.hidden = !(isEdit || isStaff);
     }
 
     function showLogin(mode = 'access', message = '') {
@@ -1289,9 +1284,6 @@ const pageTitle = 'WOLKO Camp Resources';
       if (editMode) { exitEditMode(); return; }
       if (token) { enterEditMode(); return; }
       showLogin('staff');
-    });
-    els.loginCancelBtn.addEventListener('click', () => {
-      if (loginMode === 'edit' || loginMode === 'staff') els.loginScreen.hidden = true;
     });
 
     async function login() {
