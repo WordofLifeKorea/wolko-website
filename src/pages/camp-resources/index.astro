@@ -263,7 +263,7 @@ const pageTitle = 'WOLKO Camp Resources';
     }
   </style>
 
-  <div class="login-screen" id="loginScreen">
+  <div class="login-screen" id="loginScreen" hidden>
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -294,7 +294,7 @@ const pageTitle = 'WOLKO Camp Resources';
         <div class="camp-lang-side is-inactive" id="campLangEn"><img src="https://flagcdn.com/w40/us.png" alt="US"><span>English</span></div>
       </div>
       <button class="secondary" id="installBtn" type="button" hidden data-ko="앱 설치" data-en="Install App">앱 설치</button>
-      <button class="edit-toggle" id="editModeBtn" type="button" aria-pressed="false">편집 모드</button>
+      <button class="edit-toggle" id="editModeBtn" type="button" aria-pressed="false">Staff 로그인</button>
     </div>
   </header>
 
@@ -309,7 +309,7 @@ const pageTitle = 'WOLKO Camp Resources';
       <button class="main-tab-btn" data-tab="program" type="button" data-ko="프로그램팀" data-en="Program Team">프로그램팀</button>
       <button class="main-tab-btn" data-tab="counselor" type="button" data-ko="상담자" data-en="Counselors">상담자</button>
       <button class="main-tab-btn" data-tab="preacher" type="button" data-ko="설교자" data-en="Preachers">설교자</button>
-      <button class="main-tab-btn" data-tab="general" type="button">General Files</button>
+      <button class="main-tab-btn" data-tab="general" type="button" data-ko="공개 자료" data-en="Public Resources">공개 자료</button>
       <button class="main-tab-btn" data-tab="schedule" type="button" data-ko="스케줄" data-en="Schedule" hidden>스케줄</button>
     </div>
 
@@ -436,11 +436,12 @@ const pageTitle = 'WOLKO Camp Resources';
       { key: 'program', ko: '프로그램팀', en: 'Program Team' },
       { key: 'counselor', ko: '상담자', en: 'Counselors' },
       { key: 'preacher', ko: '설교자', en: 'Preachers' },
-      { key: 'general', ko: 'General Files', en: 'General Files' },
+      { key: 'general', ko: '공개 자료', en: 'Public Resources' },
       { key: 'schedule', ko: '스케줄', en: 'Schedule' },
     ];
     const TAB_KEYS = TABS.map(t => t.key);
-    const DEFAULT_TAB = 'teacher';
+    const DEFAULT_TAB = 'general';
+    const STAFF_TABS = ['teacher', 'program', 'counselor', 'preacher'];
     const HIDDEN_TABS = ['schedule'];
     try { localStorage.removeItem(TOKEN_KEY); } catch(e) {}
 
@@ -484,6 +485,7 @@ const pageTitle = 'WOLKO Camp Resources';
         defaultCampSaveFailed: '기본 캠프를 저장하지 못했습니다.',
         editModeEnter: '편집 모드',
         editModeExit: '편집 중 · 나가기',
+        staffLogin: 'Staff 로그인',
         scheduleTitle: '스케줄 플래너',
         scheduleDesc: '스태프 일정과 차량 운영 계획을 이 탭에서 바로 관리합니다.',
         openSchedule: '새 탭에서 열기',
@@ -527,6 +529,7 @@ const pageTitle = 'WOLKO Camp Resources';
         defaultCampSaveFailed: 'Could not save the default camp.',
         editModeEnter: 'Edit Mode',
         editModeExit: 'Editing · Exit',
+        staffLogin: 'Staff Login',
         scheduleTitle: 'Schedule Planner',
         scheduleDesc: 'Manage staff schedules and van operations directly from this tab.',
         openSchedule: 'Open in New Tab',
@@ -605,9 +608,7 @@ const pageTitle = 'WOLKO Camp Resources';
     let selectedYear = '';
     let selectedSeason = '';
     let selectedCampId = '';
-    let currentTab = (TABS.some(t => t.key === localStorage.getItem(TAB_KEY)) && !HIDDEN_TABS.includes(localStorage.getItem(TAB_KEY)))
-      ? localStorage.getItem(TAB_KEY)
-      : DEFAULT_TAB;
+    let currentTab = DEFAULT_TAB;
     let dialogTab = DEFAULT_TAB;
     let editMode = false;
     let token = '';
@@ -643,6 +644,16 @@ const pageTitle = 'WOLKO Camp Resources';
       return token ? { ...base, Authorization: `Bearer ${token}` } : base;
     }
 
+    function hasStaffAccess() {
+      return !!token;
+    }
+
+    function isTabVisible(key) {
+      if (HIDDEN_TABS.includes(key)) return false;
+      if (STAFF_TABS.includes(key)) return hasStaffAccess();
+      return true;
+    }
+
     function authError(message) {
       const err = new Error(message || tr('loginFailed'));
       err.isAuth = true;
@@ -652,10 +663,13 @@ const pageTitle = 'WOLKO Camp Resources';
     function updateLoginUI() {
       if (!els.loginTitle) return;
       const isEdit = loginMode === 'edit';
+      const isStaff = loginMode === 'staff';
       els.loginTitle.textContent = isEdit
         ? (currentLang === 'en' ? 'Edit Mode Login' : '편집 모드 로그인')
+        : isStaff
+          ? (currentLang === 'en' ? 'Staff Login' : 'Staff 로그인')
         : (currentLang === 'en' ? 'Resource Login' : '자료실 로그인');
-      els.loginCancelBtn.hidden = !isEdit;
+      els.loginCancelBtn.hidden = !(isEdit || isStaff);
     }
 
     function showLogin(mode = 'access', message = '') {
@@ -671,8 +685,10 @@ const pageTitle = 'WOLKO Camp Resources';
       token = '';
       localStorage.removeItem(TOKEN_KEY);
       editMode = false;
+      if (!isTabVisible(currentTab)) currentTab = DEFAULT_TAB;
       updateEditModeUI();
-      showLogin('access', message);
+      render();
+      showLogin('staff', message);
     }
 
     function updateInstallGuideText() {
@@ -938,7 +954,9 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     function renderMainTabs() {
+      if (!isTabVisible(currentTab)) currentTab = DEFAULT_TAB;
       els.mainTabs.querySelectorAll('.main-tab-btn').forEach(btn => {
+        btn.hidden = !isTabVisible(btn.dataset.tab);
         btn.classList.toggle('active', btn.dataset.tab === currentTab);
       });
     }
@@ -1114,6 +1132,7 @@ const pageTitle = 'WOLKO Camp Resources';
     els.mainTabs.addEventListener('click', event => {
       const btn = event.target.closest('.main-tab-btn');
       if (!btn) return;
+      if (!isTabVisible(btn.dataset.tab)) return;
       currentTab = btn.dataset.tab;
       localStorage.setItem(TAB_KEY, currentTab);
       renderMainTabs();
@@ -1200,7 +1219,9 @@ const pageTitle = 'WOLKO Camp Resources';
       if (!els.editModeBtn) return;
       els.editModeBtn.classList.toggle('is-active', editMode);
       els.editModeBtn.setAttribute('aria-pressed', editMode ? 'true' : 'false');
-      els.editModeBtn.textContent = editMode ? tr('editModeExit') : tr('editModeEnter');
+      els.editModeBtn.textContent = hasStaffAccess()
+        ? (editMode ? tr('editModeExit') : tr('editModeEnter'))
+        : tr('staffLogin');
       if (els.campManageBtn) els.campManageBtn.hidden = !editMode;
       if (els.campRenameBtn) els.campRenameBtn.hidden = !editMode || !selectedCampId;
     }
@@ -1208,10 +1229,10 @@ const pageTitle = 'WOLKO Camp Resources';
     els.editModeBtn.addEventListener('click', () => {
       if (editMode) { exitEditMode(); return; }
       if (token) { enterEditMode(); return; }
-      showLogin('edit');
+      showLogin('staff');
     });
     els.loginCancelBtn.addEventListener('click', () => {
-      if (loginMode === 'edit') els.loginScreen.hidden = true;
+      if (loginMode === 'edit' || loginMode === 'staff') els.loginScreen.hidden = true;
     });
 
     async function login() {
@@ -1227,12 +1248,13 @@ const pageTitle = 'WOLKO Camp Resources';
         if (!res.ok) throw new Error(data.error || tr('loginFailed'));
         token = data.token;
         els.loginScreen.hidden = true;
+        await bootstrapData();
         if (loginMode === 'edit') {
           enterEditMode();
         } else {
           editMode = false;
           updateEditModeUI();
-          await bootstrapData();
+          render();
         }
       } catch (error) {
         els.loginError.textContent = error.message;
@@ -1470,6 +1492,7 @@ const pageTitle = 'WOLKO Camp Resources';
         err.isStandard = !data.error;
         throw err;
       }
+      if (token && data.staffAccess === false) throw authError(data.error || tr('loginFailed'));
       items = Array.isArray(data.items) ? data.items : [];
       render();
       els.loadErrorBanner.hidden = true;
@@ -1595,7 +1618,7 @@ const pageTitle = 'WOLKO Camp Resources';
 
     applyLanguage();
     render();
-    showLogin('access');
+    bootstrapData();
     if (!isStandalone) {
       els.installBtn.hidden = false;
     }

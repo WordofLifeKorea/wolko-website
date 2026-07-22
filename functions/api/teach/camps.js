@@ -108,12 +108,9 @@ async function migrateLegacySessions(env, camps) {
 }
 
 export async function onRequestGet(context) {
-  const { env, request } = context;
-  if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
+  const { env } = context;
+  if (!env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
-  }
-  if (!(await verifyToken(request, env))) {
-    return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
   let camps = await readCamps(env);
   camps = await migrateLegacySessions(env, camps);
