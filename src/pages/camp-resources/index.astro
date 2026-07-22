@@ -113,11 +113,34 @@ const pageTitle = 'WOLKO Camp Resources';
     .camp-lang-side.is-inactive { opacity:.6; }
     .page { max-width:min(1100px,calc(100vw - 32px)); margin:0 auto; padding:var(--space-page) 18px 90px; }
     .hero {
-      margin-bottom:20px; padding:24px; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--card); box-shadow:var(--shadow-card);
+      margin-bottom:14px; padding:24px; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--card); box-shadow:var(--shadow-card);
     }
     .hero h2 { margin:0; color:var(--text); font:900 clamp(20px,3vw,26px)/1.18 var(--sans); letter-spacing:-.02em; }
     .hero p { margin:9px 0 0; max-width:780px; color:var(--muted); font-size:13.5px; line-height:1.7; font-weight:400; }
-    .main-tabs { display:flex; gap:0; border:1px solid var(--border); border-radius:999px; padding:4px; background:#fff; width:fit-content; max-width:100%; overflow-x:auto; margin-bottom:18px; box-shadow:var(--shadow-soft); }
+    .resource-control-panel {
+      display:grid; gap:14px; margin-bottom:18px; padding:16px;
+      border:1px solid var(--border); border-radius:var(--radius-lg); background:rgba(255,255,255,.92);
+      box-shadow:var(--shadow-card);
+    }
+    .resource-control-head {
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      padding-bottom:12px; border-bottom:1px solid #e7eef2;
+    }
+    .resource-control-kicker {
+      color:var(--teal); font:800 11px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase;
+    }
+    .resource-control-title {
+      margin:5px 0 0; color:var(--blue); font:800 17px/1.25 var(--sans); letter-spacing:-.01em;
+    }
+    .resource-control-note {
+      margin:4px 0 0; color:var(--muted); font-size:12.5px; font-weight:500;
+    }
+    .resource-control-status {
+      display:inline-flex; align-items:center; min-height:30px; border-radius:999px; padding:0 12px;
+      background:#e9f8fb; color:var(--blue); font:800 11.5px/1 var(--sans); white-space:nowrap;
+    }
+    .resource-control-body { display:grid; gap:12px; }
+    .main-tabs { display:flex; gap:0; border:1px solid var(--border); border-radius:999px; padding:4px; background:#fff; width:fit-content; max-width:100%; overflow-x:auto; margin-bottom:0; box-shadow:var(--shadow-soft); }
     .main-tab-btn { flex:0 0 auto; min-height:var(--btn-h-sm); border-radius:999px; padding:0 18px; border:0; background:transparent; color:var(--muted); font:700 12.5px/1 var(--sans); white-space:nowrap; transition:background .15s,color .15s; }
     .main-tab-btn.active { background:var(--blue); color:#fff; }
     .main-tab-btn[hidden] { display:none; }
@@ -186,7 +209,7 @@ const pageTitle = 'WOLKO Camp Resources';
     .present-card-add { grid-column:1 / -1; align-items:center; justify-content:center; color:var(--muted); border-style:dashed; font-weight:700; cursor:pointer; box-shadow:none; }
     .present-card-add:hover { color:var(--blue); border-color:var(--blue); background:#f4fbfd; }
     .empty { padding:24px; border:1px dashed #ccdce3; border-radius:var(--radius-md); color:var(--light); text-align:center; font-weight:400; background:#fff; grid-column:1/-1; }
-    .camp-filter-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+    .camp-filter-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0; padding-top:12px; border-top:1px solid #e7eef2; }
     .camp-filter-wrap[hidden] { display:none; }
     .camp-filter-wrap select { min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0 12px; background:#fff; color:var(--text); font:600 13px/1 var(--body); box-shadow:var(--shadow-soft); cursor:pointer; }
     .camp-rename-btn { min-height:38px; padding:0 14px; white-space:nowrap; }
@@ -258,6 +281,24 @@ const pageTitle = 'WOLKO Camp Resources';
     .schedule-panel-link:hover { background:#f4fbfd; border-color:var(--blue); }
     .schedule-frame { width:100%; height:min(980px, calc(100vh - 170px)); min-height:680px; border:0; display:block; background:#f8fafc; }
     @media (max-width:720px) {
+      :root { --space-page:18px; }
+      .topbar { padding:10px 16px; gap:10px; }
+      .brand h1 { font-size:13px; }
+      .toolbar { width:100%; justify-content:space-between; }
+      .page { max-width:100%; padding:var(--space-page) 12px 80px; }
+      .hero { padding:18px; border-radius:18px; }
+      .resource-control-panel { padding:13px; border-radius:18px; }
+      .resource-control-head { align-items:flex-start; }
+      .resource-control-status { order:-1; }
+      .main-tabs { width:100%; }
+      .main-tab-btn { flex:1 0 auto; padding:0 14px; }
+      .camp-filter-wrap { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+      .camp-filter-wrap select,
+      .camp-filter-wrap .season-toggle,
+      .camp-filter-wrap button { width:100%; }
+      .camp-filter-wrap #campSelect,
+      .camp-filter-wrap .camp-rename-btn,
+      .camp-filter-wrap .camp-manage-btn { grid-column:1 / -1; margin-left:0; }
       .schedule-panel-head { padding:15px; }
       .schedule-frame { height:820px; min-height:620px; }
     }
@@ -288,7 +329,7 @@ const pageTitle = 'WOLKO Camp Resources';
       </div>
     </div>
     <div class="toolbar">
-      <div class="camp-lang-toggle" id="campLangToggle">
+      <div class="camp-lang-toggle" id="campLangToggle" aria-label="Language toggle" role="button" tabindex="0">
         <div class="camp-lang-slider" id="campLangSlider"></div>
         <div class="camp-lang-side is-active" id="campLangKo"><img src="https://flagcdn.com/w40/kr.png" alt="KR"><span>한국어</span></div>
         <div class="camp-lang-side is-inactive" id="campLangEn"><img src="https://flagcdn.com/w40/us.png" alt="US"><span>English</span></div>
@@ -300,31 +341,43 @@ const pageTitle = 'WOLKO Camp Resources';
 
   <main class="page">
     <section class="hero">
-      <h2 data-ko="캠프 자료실" data-en="Camp Resources">캠프 자료실</h2>
-      <p data-ko="탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다." data-en="Choose a tab and click a card to open its resource in a new tab.">탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다.</p>
+      <h2 data-ko="캠프 자료를 한 곳에서 정리합니다" data-en="Organize camp resources in one place">캠프 자료를 한 곳에서 정리합니다</h2>
+      <p data-ko="상단은 페이지 이동과 편집 기능만 담당하고, 자료 분류와 캠프 선택은 아래 컨트롤 영역에서 한 번에 관리합니다." data-en="The top bar handles page actions only. Choose resource categories and camps from the control panel below.">상단은 페이지 이동과 편집 기능만 담당하고, 자료 분류와 캠프 선택은 아래 컨트롤 영역에서 한 번에 관리합니다.</p>
     </section>
 
-    <div class="main-tabs" id="mainTabs" role="tablist">
-      <button class="main-tab-btn" data-tab="teacher" type="button" data-ko="수업자료" data-en="Class Materials">수업자료</button>
-      <button class="main-tab-btn" data-tab="program" type="button" data-ko="프로그램팀" data-en="Program Team">프로그램팀</button>
-      <button class="main-tab-btn" data-tab="counselor" type="button" data-ko="상담자" data-en="Counselors">상담자</button>
-      <button class="main-tab-btn" data-tab="preacher" type="button" data-ko="설교자" data-en="Preachers">설교자</button>
-      <button class="main-tab-btn" data-tab="general" type="button" data-ko="공개 자료" data-en="Public Resources">공개 자료</button>
-      <button class="main-tab-btn" data-tab="schedule" type="button" data-ko="스케줄" data-en="Schedule" hidden>스케줄</button>
-    </div>
+    <section class="resource-control-panel" aria-label="Camp resource controls">
+      <div class="resource-control-head">
+        <div>
+          <div class="resource-control-kicker" data-ko="자료실 메뉴" data-en="Resource Menu">자료실 메뉴</div>
+          <h3 class="resource-control-title" data-ko="분류와 캠프를 여기서 선택하세요" data-en="Choose category and camp here">분류와 캠프를 여기서 선택하세요</h3>
+          <p class="resource-control-note" data-ko="탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다." data-en="Choose a tab and click a card to open its resource in a new tab.">탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다.</p>
+        </div>
+        <span class="resource-control-status" data-ko="자료실 전용 메뉴" data-en="Resources Only">자료실 전용 메뉴</span>
+      </div>
+      <div class="resource-control-body">
+        <div class="main-tabs" id="mainTabs" role="tablist">
+          <button class="main-tab-btn" data-tab="teacher" type="button" data-ko="수업자료" data-en="Class Materials">수업자료</button>
+          <button class="main-tab-btn" data-tab="program" type="button" data-ko="프로그램팀" data-en="Program Team">프로그램팀</button>
+          <button class="main-tab-btn" data-tab="counselor" type="button" data-ko="상담자" data-en="Counselors">상담자</button>
+          <button class="main-tab-btn" data-tab="preacher" type="button" data-ko="설교자" data-en="Preachers">설교자</button>
+          <button class="main-tab-btn" data-tab="general" type="button" data-ko="공개 자료" data-en="Public Resources">공개 자료</button>
+          <button class="main-tab-btn" data-tab="schedule" type="button" data-ko="스케줄" data-en="Schedule" hidden>스케줄</button>
+        </div>
+
+        <div class="camp-filter-wrap" id="campFilterWrap" hidden>
+          <select id="yearSelect"></select>
+          <div class="season-toggle" id="seasonToggle">
+            <button class="season-toggle-btn" data-season="summer" type="button" data-ko="여름" data-en="Summer">여름</button>
+            <button class="season-toggle-btn" data-season="winter" type="button" data-ko="겨울" data-en="Winter">겨울</button>
+          </div>
+          <select id="campSelect"></select>
+          <button class="secondary camp-rename-btn" id="campRenameBtn" type="button" hidden data-ko="이름 수정" data-en="Rename">이름 수정</button>
+          <button class="ghost camp-manage-btn" id="campManageBtn" type="button" hidden data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</button>
+        </div>
+      </div>
+    </section>
 
     <p class="load-error-banner" id="loadErrorBanner" hidden></p>
-
-    <div class="camp-filter-wrap" id="campFilterWrap" hidden>
-      <select id="yearSelect"></select>
-      <div class="season-toggle" id="seasonToggle">
-        <button class="season-toggle-btn" data-season="summer" type="button" data-ko="여름" data-en="Summer">여름</button>
-        <button class="season-toggle-btn" data-season="winter" type="button" data-ko="겨울" data-en="Winter">겨울</button>
-      </div>
-      <select id="campSelect"></select>
-      <button class="secondary camp-rename-btn" id="campRenameBtn" type="button" hidden data-ko="이름 수정" data-en="Rename">이름 수정</button>
-      <button class="ghost camp-manage-btn" id="campManageBtn" type="button" hidden data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</button>
-    </div>
 
     <section id="subjectGroups"></section>
   </main>
@@ -1447,6 +1500,11 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     els.langToggle.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
+    els.langToggle.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      setLanguage(currentLang === 'ko' ? 'en' : 'ko');
+    });
     els.installGuideClose.addEventListener('click', () => { els.installGuide.hidden = true; });
     els.installGuide.addEventListener('click', event => {
       if (event.target === els.installGuide) els.installGuide.hidden = true;
