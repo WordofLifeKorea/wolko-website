@@ -55,10 +55,14 @@ const pageTitle = 'WOLKO Camp Resources';
     }
     * { box-sizing:border-box; }
     body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); font-family:var(--body); line-height:1.5; }
+    /* 자료실은 공통 홈페이지 내비게이션 없이 전용 도구 화면으로 사용한다. */
+    #mainNav,
+    #mobileMenu,
+    #menuBackdrop { display:none !important; }
     button,input,select,textarea { font:500 13px/1.35 var(--body); }
     button { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
     .login-screen {
-      position:fixed; left:0; right:0; bottom:0; top:calc(var(--nav-h, 72px) + 22px); z-index:900; display:flex; align-items:center; justify-content:center; padding:20px;
+      position:fixed; inset:0; z-index:900; display:flex; align-items:center; justify-content:center; padding:20px;
       background:linear-gradient(145deg,#003d52,#00627f);
     }
     .login-screen[hidden] { display:none; }
@@ -88,7 +92,7 @@ const pageTitle = 'WOLKO Camp Resources';
     .danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
     .topbar {
       position:relative; z-index:1; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:18px;
-      margin-top:calc(var(--nav-h, 72px) + 28px);
+      margin-top:0;
       padding:10px 32px; background:var(--blue); color:#fff; box-shadow:0 2px 12px rgba(0,79,104,.25); flex-wrap:wrap;
     }
     .brand { display:flex; align-items:center; gap:10px; min-width:0; }
