@@ -135,7 +135,7 @@ export async function onRequestPut(context) {
     const allowedCounselors = needsOwnershipCheck
       ? await counselorRegIdsForEmail(env, campId, session.email)
       : null;
-    if (isAssignmentField) {
+    if (field === 'counselorRegId') {
       const nextRegId = String(body.value || '').trim();
       if (!(await isAssignableCounselor(env, campId, nextRegId))) {
         return Response.json({ error: '이 캠프의 상담자 팀 스태프만 담당 카운슬러로 지정할 수 있습니다.' }, { status: 400, headers: CORS });
