@@ -1,28 +1,28 @@
-name: 캠프 신청 자동 오픈
+name: Auto Open and Close Camp Registrations
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # 5분마다 실행 (GitHub Actions 최소 단위)
-  workflow_dispatch:          # 수동 실행 버튼
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 jobs:
-  auto-open:
+  update-camp-status:
     runs-on: ubuntu-latest
     steps:
-      - name: 체크아웃
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Node.js 설정
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: 오픈 날짜 확인 및 status 업데이트
+      - name: Update camp registration status
         run: node scripts/auto-open-camps.mjs
 
-      - name: 변경사항 커밋 & 푸시
+      - name: Commit and push changes
         run: |
           git config user.name "wolko-bot"
           git config user.email "wolkorea1@gmail.com"
           git add src/content/camp_schedules/
-          git diff --cached --quiet && echo "변경 없음" || (git commit -m "자동: 캠프 신청 오픈 상태 업데이트" && git push)
+          git diff --cached --quiet && echo "No changes" || (git commit -m "chore: update camp registration status [automated]" && git push)
