@@ -1062,7 +1062,7 @@
           select.addEventListener(type, event => event.stopPropagation());
         });
         select.addEventListener('keydown', event => event.stopPropagation());
-        select.addEventListener('change', () => setCamperAssignment(select.dataset.camperId, select.value, select));
+        select.addEventListener('change', () => setCamperTeacherAssignment(select.dataset.camperId, select.value, select));
       });
       document.querySelectorAll('.cl-color-btn').forEach(btn => btn.addEventListener('click', e => {
         e.stopPropagation();
@@ -1098,19 +1098,21 @@
     }
 
     function renderTeacherAssignBadge(camper) {
-      const assigned = state.counselors.find(counselor => counselor.regId === camper.counselorRegId);
-      const assignedClass = camper.counselorRegId ? ' is-assigned' : '';
+      const assigned = String(camper.teacherName || '').trim();
+      const assignedClass = assigned ? ' is-assigned' : '';
       if (!canAssignCamper()) {
         return assigned
-          ? `<span class="teacher-assign-badge is-assigned" title="담당 선생님: ${esc(assigned.name)}">${esc(assigned.name)}</span>`
+          ? `<span class="teacher-assign-badge is-assigned" title="티칭 담당: ${esc(assigned)}">${esc(assigned)}</span>`
           : '';
       }
-      const options = ['<option value="">선생님 선택</option>']
-        .concat(state.counselors.map(counselor => (
-          `<option value="${esc(counselor.regId)}"${counselor.regId === camper.counselorRegId ? ' selected' : ''}>${esc(counselor.name)}</option>`
+      const teacherNames = teachingTeamMembers();
+      const optionNames = assigned && !teacherNames.includes(assigned) ? [assigned, ...teacherNames] : teacherNames;
+      const options = ['<option value="">티칭 선택</option>']
+        .concat(optionNames.map(name => (
+          `<option value="${esc(name)}"${name === assigned ? ' selected' : ''}>${esc(name)}</option>`
         )))
         .join('');
-      return `<select class="teacher-assign-select${assignedClass}" data-stop data-camper-id="${esc(camper.camperId)}" aria-label="${esc(camper.name)} 담당 선생님 선택" title="담당 선생님 선택">${options}</select>`;
+      return `<select class="teacher-assign-select${assignedClass}" data-stop data-camper-id="${esc(camper.camperId)}" aria-label="${esc(camper.name)} 티칭 담당 선택" title="티칭 담당 선택">${options}</select>`;
     }
 
     function renderColorSwatch(regId, color, editable) {
@@ -1223,15 +1225,15 @@
       return data;
     }
 
-    async function setCamperAssignment(camperId, counselorRegId, selectEl) {
+    async function setCamperTeacherAssignment(camperId, teacherName, selectEl) {
       const camper = state.campers.find(item => item.camperId === camperId);
       if (!camper) return;
-      const previous = camper.counselorRegId || '';
-      if (previous === counselorRegId) return;
+      const previous = camper.teacherName || '';
+      if (previous === teacherName) return;
       if (selectEl) selectEl.disabled = true;
       try {
-        await updateCamperField(camper, 'counselorRegId', counselorRegId);
-        camper.counselorRegId = counselorRegId;
+        await updateCamperField(camper, 'teacherName', teacherName);
+        camper.teacherName = teacherName;
         await loadData();
       } catch (error) {
         if (selectEl) {
@@ -1333,6 +1335,18 @@
       const dn = memberDisplayName(member);
       const override = config.personTeams?.[dn];
       return Array.isArray(override) ? override : (member.teams || []);
+    }
+
+    function teachingTeamMembers() {
+      const seen = new Set();
+      return allTeamMembers()
+        .filter(member => getEffectiveTeams(member).includes('티칭'))
+        .map(member => memberDisplayName(member))
+        .filter(name => {
+          if (!name || seen.has(name)) return false;
+          seen.add(name);
+          return true;
+        });
     }
 
     async function saveTeamOverview(config) {

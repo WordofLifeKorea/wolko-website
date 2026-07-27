@@ -4,7 +4,7 @@ const CORS = {
 };
 
 const TEAM_COLORS = new Set(['', 'red', 'blue', 'yellow', 'green']);
-const ALLOWED_FIELDS = new Set(['saved', 'dedicated', 'testimony', 'counselorMemo', 'teamColor', 'counselorRegId']);
+const ALLOWED_FIELDS = new Set(['saved', 'dedicated', 'testimony', 'counselorMemo', 'teamColor', 'counselorRegId', 'teacherName']);
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -88,6 +88,7 @@ function normalizeValue(field, value) {
     if (v && !/^[a-zA-Z0-9_-]+$/.test(v)) throw new Error('카운슬러 ID 형식이 올바르지 않습니다.');
     return v;
   }
+  if (field === 'teacherName') return String(value || '').trim().slice(0, 80);
   return String(value || '').trim().slice(0, 4000);
 }
 
@@ -129,7 +130,7 @@ export async function onRequestPut(context) {
     // "이미 내 캠퍼여야만 수정 가능" 규칙에서 예외로 둔다 (미배정/타 카운슬러
     // 캠퍼도 배정할 수 있어야 체크인 현장에서 실제로 쓸모가 있음).
     // 그 외 필드(구원/헌신/간증/메모)는 기존대로 담당 카운슬러 또는 관리자만.
-    const isAssignmentField = field === 'counselorRegId';
+    const isAssignmentField = field === 'counselorRegId' || field === 'teacherName';
     const needsOwnershipCheck = session.role !== 'admin' && !isAssignmentField;
     const allowedCounselors = needsOwnershipCheck
       ? await counselorRegIdsForEmail(env, campId, session.email)
