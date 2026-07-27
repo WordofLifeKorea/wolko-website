@@ -977,18 +977,23 @@
       });
     }
 
+    function counselorGroupKey(counselor) {
+      const name = String(counselor.name || '').trim();
+      if (name === '오예빈' || name === '최하은') return 'pair:oyebin-choihaeun';
+      return `counselor:${counselor.regId}`;
+    }
+
     function buildCounselorGroups(campers) {
       const groups = [];
-      const groupsByColor = new Map();
+      const groupsByKey = new Map();
       for (const counselor of state.counselors) {
-        const teamColor = counselor.teamColor || '';
-        const key = teamColor ? `team:${teamColor}` : `counselor:${counselor.regId}`;
-        if (!groupsByColor.has(key)) {
-          const group = { key, teamColor, counselors:[], campers:[] };
-          groupsByColor.set(key, group);
+        const key = counselorGroupKey(counselor);
+        if (!groupsByKey.has(key)) {
+          const group = { key, counselors:[], campers:[] };
+          groupsByKey.set(key, group);
           groups.push(group);
         }
-        groupsByColor.get(key).counselors.push(counselor);
+        groupsByKey.get(key).counselors.push(counselor);
       }
       for (const group of groups) {
         const ids = new Set(group.counselors.map(counselor => counselor.regId));
@@ -1008,7 +1013,7 @@
       const unassignedCampers = campers.filter(camper => !camper.counselorRegId);
 
       $('counselorBoard').innerHTML = counselorGroups.map(group => {
-        const teamColor = group.teamColor || '';
+        const teamColor = group.counselors.find(counselor => counselor.teamColor)?.teamColor || '';
         const groupName = group.counselors.map(counselor => counselor.name).filter(Boolean).join(' · ');
         const groupEmail = group.counselors.map(counselor => counselor.email).filter(Boolean).join(' / ');
         const colorSwatch = group.counselors.map(counselor => {
