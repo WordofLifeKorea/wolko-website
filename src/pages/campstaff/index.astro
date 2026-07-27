@@ -218,7 +218,7 @@
     .camper-btn {
       width:100%; display:grid; grid-template-columns:5px minmax(0,1fr) auto; gap:14px; align-items:center;
       border:0; border-bottom:1px solid var(--line); border-radius:0; padding:13px 18px; background:#fff;
-      color:inherit; text-align:left; transition:background .15s,padding-left .15s;
+      color:inherit; text-align:left; cursor:pointer; transition:background .15s,padding-left .15s;
     }
     .camper-btn:hover { background:#f8fafc; padding-left:22px; }
     .camper-btn:last-child { border-bottom:0; }
@@ -237,6 +237,25 @@
     }
     .gender-badge.gender-male { background:rgba(59,130,246,.12); color:#2563eb; }
     .gender-badge.gender-female { background:rgba(236,72,153,.12); color:#db2777; }
+    .teacher-assign-select,
+    .teacher-assign-badge {
+      flex:0 1 auto; min-width:0; max-width:132px; height:24px; border-radius:999px;
+      border:1px solid #d7e3ea; background:#f8fbfc; color:var(--mid);
+      padding:2px 24px 2px 9px; font:800 10.5px/1 var(--body);
+      letter-spacing:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .teacher-assign-select {
+      appearance:none; cursor:pointer;
+      background-image:linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+      background-position:calc(100% - 12px) 9px, calc(100% - 8px) 9px;
+      background-size:4px 4px, 4px 4px; background-repeat:no-repeat;
+    }
+    .teacher-assign-select.is-assigned,
+    .teacher-assign-badge.is-assigned {
+      border-color:#b8dce6; background:#e9f8fb; color:var(--blue);
+    }
+    .teacher-assign-select:disabled { opacity:.62; cursor:progress; }
+    .teacher-assign-badge { display:inline-flex; align-items:center; padding-right:9px; }
     .chips { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; flex-shrink:0; }
     .chip { padding:3px 8px; border-radius:999px; font:800 10px/1 var(--sans); letter-spacing:.02em; white-space:nowrap; }
     .chip-saved { background:#e0f3ff; color:#1685bd; }
@@ -1003,7 +1022,25 @@
         $('unassignedList').innerHTML = unassignedCampers.map(c => renderCamperButton(c, '')).join('');
       }
 
-      document.querySelectorAll('.camper-btn').forEach(btn => btn.addEventListener('click', () => openCamper(btn.dataset.camperId)));
+      document.querySelectorAll('.camper-btn').forEach(btn => {
+        btn.addEventListener('click', event => {
+          if (event.target.closest('[data-stop]')) return;
+          openCamper(btn.dataset.camperId);
+        });
+        btn.addEventListener('keydown', event => {
+          if (event.target.closest('[data-stop]')) return;
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          openCamper(btn.dataset.camperId);
+        });
+      });
+      document.querySelectorAll('.teacher-assign-select').forEach(select => {
+        ['click', 'pointerdown', 'mousedown'].forEach(type => {
+          select.addEventListener(type, event => event.stopPropagation());
+        });
+        select.addEventListener('keydown', event => event.stopPropagation());
+        select.addEventListener('change', () => setCamperAssignment(select.dataset.camperId, select.value, select));
+      });
       document.querySelectorAll('.cl-color-btn').forEach(btn => btn.addEventListener('click', e => {
         e.stopPropagation();
         toggleColorPicker(btn);
@@ -1023,17 +1060,34 @@
         : camper.gender === 'female'
         ? '<span class="gender-badge gender-female">여</span>'
         : '';
-      return `<button class="camper-btn" type="button" data-camper-id="${esc(camper.camperId)}">
+      const teacherBadge = renderTeacherAssignBadge(camper);
+      return `<div class="camper-btn" role="button" tabindex="0" data-camper-id="${esc(camper.camperId)}">
         <span class="team-dot ${effectiveColor ? 'team-' + effectiveColor : ''}"></span>
         <span class="camper-main">
-          <span class="camper-name-line"><strong>${esc(camper.name)}</strong>${genderBadge}</span>
+          <span class="camper-name-line"><strong>${esc(camper.name)}</strong>${genderBadge}${teacherBadge}</span>
           <span>${esc([camper.grade, camper.church].filter(Boolean).join(' · ') || '정보 없음')}${locked}</span>
         </span>
         <span class="chips">
           ${camper.saved ? '<span class="chip chip-saved">구원</span>' : ''}
           ${camper.dedicated ? '<span class="chip chip-dedicated">헌신</span>' : ''}
         </span>
-      </button>`;
+      </div>`;
+    }
+
+    function renderTeacherAssignBadge(camper) {
+      const assigned = state.counselors.find(counselor => counselor.regId === camper.counselorRegId);
+      const assignedClass = camper.counselorRegId ? ' is-assigned' : '';
+      if (!canAssignCamper()) {
+        return assigned
+          ? `<span class="teacher-assign-badge is-assigned" title="담당 선생님: ${esc(assigned.name)}">${esc(assigned.name)}</span>`
+          : '';
+      }
+      const options = ['<option value="">선생님 선택</option>']
+        .concat(state.counselors.map(counselor => (
+          `<option value="${esc(counselor.regId)}"${counselor.regId === camper.counselorRegId ? ' selected' : ''}>${esc(counselor.name)}</option>`
+        )))
+        .join('');
+      return `<select class="teacher-assign-select${assignedClass}" data-stop data-camper-id="${esc(camper.camperId)}" aria-label="${esc(camper.name)} 담당 선생님 선택" title="담당 선생님 선택">${options}</select>`;
     }
 
     function renderColorSwatch(regId, color, editable) {
@@ -1129,20 +1183,45 @@
       selectedCamper = null;
     }
 
-    async function saveField(field, value) {
+    async function updateCamperField(camper, field, value) {
       const res = await fetch('/api/camp-progress/update', {
         method:'PUT',
         headers:authHeaders(),
         body:JSON.stringify({
-          campId:selectedCamper.campId,
-          regId:selectedCamper.regId,
-          participantIndex:selectedCamper.participantIndex,
+          campId:camper.campId,
+          regId:camper.regId,
+          participantIndex:camper.participantIndex,
           field,
           value,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '저장 실패');
+      return data;
+    }
+
+    async function setCamperAssignment(camperId, counselorRegId, selectEl) {
+      const camper = state.campers.find(item => item.camperId === camperId);
+      if (!camper) return;
+      const previous = camper.counselorRegId || '';
+      if (previous === counselorRegId) return;
+      if (selectEl) selectEl.disabled = true;
+      try {
+        await updateCamperField(camper, 'counselorRegId', counselorRegId);
+        camper.counselorRegId = counselorRegId;
+        await loadData();
+      } catch (error) {
+        if (selectEl) {
+          selectEl.value = previous;
+          selectEl.disabled = false;
+        }
+        alert(error.message);
+      }
+    }
+
+    async function saveField(field, value) {
+      if (!selectedCamper) return;
+      await updateCamperField(selectedCamper, field, value);
     }
 
     async function saveCamper() {
