@@ -977,6 +977,26 @@
       });
     }
 
+    function buildCounselorGroups(campers) {
+      const groups = [];
+      const groupsByColor = new Map();
+      for (const counselor of state.counselors) {
+        const teamColor = counselor.teamColor || '';
+        const key = teamColor ? `team:${teamColor}` : `counselor:${counselor.regId}`;
+        if (!groupsByColor.has(key)) {
+          const group = { key, teamColor, counselors:[], campers:[] };
+          groupsByColor.set(key, group);
+          groups.push(group);
+        }
+        groupsByColor.get(key).counselors.push(counselor);
+      }
+      for (const group of groups) {
+        const ids = new Set(group.counselors.map(counselor => counselor.regId));
+        group.campers = campers.filter(camper => ids.has(camper.counselorRegId));
+      }
+      return groups;
+    }
+
     function renderBoard() {
       const campers = visibleCampers();
       const saved = campers.filter(camper => camper.saved).length;
@@ -984,24 +1004,22 @@
       $('statCampers').textContent = campers.length;
       $('statSaved').textContent = saved;
       $('statDedicated').textContent = dedicated;
-      const counselorGroups = state.counselors.map(counselor => ({
-        id:counselor.regId,
-        name:counselor.name,
-        email:counselor.email,
-        campers:campers.filter(camper => camper.counselorRegId === counselor.regId),
-      }));
+      const counselorGroups = buildCounselorGroups(campers);
       const unassignedCampers = campers.filter(camper => !camper.counselorRegId);
 
       $('counselorBoard').innerHTML = counselorGroups.map(group => {
-        const counselor = state.counselors.find(c => c.regId === group.id);
-        const teamColor = counselor?.teamColor || '';
-        const canEditColor = state.canEditAll || state.counselorRegIds.includes(group.id);
-        const colorSwatch = renderColorSwatch(group.id, teamColor, canEditColor);
+        const teamColor = group.teamColor || '';
+        const groupName = group.counselors.map(counselor => counselor.name).filter(Boolean).join(' · ');
+        const groupEmail = group.counselors.map(counselor => counselor.email).filter(Boolean).join(' / ');
+        const colorSwatch = group.counselors.map(counselor => {
+          const canEditColor = state.canEditAll || state.counselorRegIds.includes(counselor.regId);
+          return renderColorSwatch(counselor.regId, counselor.teamColor || '', canEditColor);
+        }).join('');
         return `<article class="counselor-card${teamColor ? ' has-team-' + teamColor : ''}">
           <div class="counselor-head">
             <div class="counselor-head-info">
-              <strong>${esc(group.name)}</strong>
-              <span>${esc(group.email || '')}</span>
+              <strong>${esc(groupName)}</strong>
+              <span>${esc(groupEmail || '')}</span>
             </div>
             ${colorSwatch}
             <span class="counselor-count">${group.campers.length}명</span>
