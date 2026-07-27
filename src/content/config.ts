@@ -104,6 +104,7 @@ const camp_schedule = defineCollection({
     order: z.number().default(99),
     open_date: z.string().optional(),
     start_date: z.string().optional(),
+    staff_registration_open: z.boolean().optional(),
   }),
 });
 

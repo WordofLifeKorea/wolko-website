@@ -1546,6 +1546,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                     data-camp-name-ko={d.title_ko}
                     data-camp-name-en={d.title_en}
                     data-start-date={(d as any).start_date ?? ''}
+                    data-staff-registration-open={(d as any).staff_registration_open ? 'true' : 'false'}
                   >
                     <div class="crp-staff-card-icon">
                       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -3404,9 +3405,10 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
   // 스태프 카드 start_date 체크 → 버튼/상태 업데이트
   document.querySelectorAll('.crp-staff-card').forEach(function(card) {
     var startDate = card.dataset.startDate;
+    var staffRegistrationOpen = card.dataset.staffRegistrationOpen === 'true';
     var btn  = card.querySelector('.crp-staff-open-btn');
     var stat = card.querySelector('.crp-staff-status');
-    if (startDate && new Date() >= new Date(startDate)) {
+    if (!staffRegistrationOpen && startDate && new Date() >= new Date(startDate)) {
       if (btn)  { btn.disabled = true; }
       if (stat) {
         stat.className = 'crp-staff-status crp-staff-status-closed';
