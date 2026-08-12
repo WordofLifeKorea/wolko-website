@@ -27,6 +27,6 @@ bio_en: Jenny grew up in a Christian home, attending church alongside her
   This connection with WOLKO has continued, and she now works alongside young
   people in ministry settings.
 gender: female
-support_url_en: https://give.wol.org/giveto(1H616S)
+support_url: https://online.mrm.or.kr/BYlAoN0
 photo_position: center 20%
 ---
