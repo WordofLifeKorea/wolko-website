@@ -58,6 +58,13 @@ async function listReservations(env) {
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^\d{2}:\d{2}$/;
 
+function parseOptionalNonNegNumber(value, max, label) {
+  if (value === undefined || value === null || value === '') return null;
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 0 || num > max) throw new Error(`${label} 값이 올바르지 않습니다.`);
+  return num;
+}
+
 function parseReservationInput(body) {
   const vehicleId = String(body.vehicleId || '').trim();
   const startDate = String(body.startDate || '').trim();
@@ -68,6 +75,8 @@ function parseReservationInput(body) {
   const phone = String(body.phone || '').trim().slice(0, 30);
   const purpose = String(body.purpose || '').trim().slice(0, 200);
   const notes = String(body.notes || '').trim().slice(0, 1000);
+  const actualHours = parseOptionalNonNegNumber(body.actualHours, 1000, '실제 운행 시간');
+  const actualKm = parseOptionalNonNegNumber(body.actualKm, 100000, '실제 운행 거리');
 
   if (!VEHICLE_IDS.has(vehicleId)) throw new Error('차량을 선택해 주세요.');
   if (!DATE_RE.test(startDate) || !DATE_RE.test(endDate)) throw new Error('날짜 형식이 올바르지 않습니다.');
@@ -82,7 +91,7 @@ function parseReservationInput(body) {
   if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) throw new Error('날짜/시간이 올바르지 않습니다.');
   if (endMs <= startMs) throw new Error('종료 일시는 시작 일시보다 나중이어야 합니다.');
 
-  return { vehicleId, startDate, startTime, endDate, endTime, startAt, endAt, reserverName, phone, purpose, notes };
+  return { vehicleId, startDate, startTime, endDate, endTime, startAt, endAt, reserverName, phone, purpose, notes, actualHours, actualKm };
 }
 
 function findConflict(reservations, candidate, excludeId) {

@@ -66,16 +66,27 @@
       </div>
     </div>
 
+    <div class="car-view-tabs">
+      <button class="car-view-tab is-active" id="viewTabReservations" onclick="setView('reservations')" data-t="viewReservations">예약현황</button>
+      <button class="car-view-tab" id="viewTabMaintenance" onclick="setView('maintenance')" data-t="viewMaintenance">정비 관리</button>
+    </div>
+
     <div class="car-tabs" id="carTabs"></div>
 
-    <button class="car-past-toggle" id="pastToggleBtn" onclick="togglePast()" data-t="past">지난 예약 보기</button>
+    <div id="reservationsView">
+      <button class="car-past-toggle" id="pastToggleBtn" onclick="togglePast()" data-t="past">지난 예약 보기</button>
+      <div id="agendaContainer"></div>
+    </div>
 
-    <div id="agendaContainer"></div>
+    <div id="maintenanceView" class="hidden">
+      <div class="car-maint-banner hidden" id="maintBanner"></div>
+      <div id="maintListContainer"></div>
+    </div>
   </div>
 
-  <button class="car-fab" onclick="openModal()">
+  <button class="car-fab" onclick="openFab()">
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    <span data-t="newReservation">새 예약</span>
+    <span id="fabLabel">새 예약</span>
   </button>
 
   <!-- ── RESERVATION MODAL ── -->
@@ -138,9 +149,73 @@
           <textarea id="carNotes" maxlength="1000"></textarea>
         </div>
 
+        <div class="car-field-row">
+          <div class="car-field">
+            <label data-t="fieldActualHours">실제 운행 시간 (시간, 선택)</label>
+            <input type="number" id="carActualHours" min="0" max="1000" step="0.5" inputmode="decimal">
+          </div>
+          <div class="car-field">
+            <label data-t="fieldActualKm">실제 운행 거리 (km, 선택)</label>
+            <input type="number" id="carActualKm" min="0" max="100000" step="1" inputmode="numeric">
+          </div>
+        </div>
+        <p class="car-field-hint" data-t="actualUsageHint">운행 후 대략적으로 입력해 주세요.</p>
+
         <div class="car-modal-foot">
           <button type="button" class="car-btn car-btn-secondary" onclick="closeModal()" data-t="cancel">취소</button>
           <button type="submit" class="car-btn car-btn-primary" id="carSaveBtn" data-t="save">예약하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── MAINTENANCE MODAL ── -->
+  <div class="car-modal-overlay hidden" id="carMaintModalOverlay">
+    <div class="car-modal">
+      <div class="car-modal-head">
+        <p class="car-modal-title" id="carMaintModalTitle" data-t="newMaintenance">정비 기록 추가</p>
+        <button class="car-modal-close" onclick="closeMaintModal()" aria-label="닫기">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 1.5l12 12M13.5 1.5l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <p class="car-modal-error" id="carMaintModalError"></p>
+
+      <form id="carMaintForm" onsubmit="submitMaintForm(event)">
+        <div class="car-field">
+          <label data-t="fieldVehicle">차량</label>
+          <select id="carMaintVehicle"></select>
+        </div>
+
+        <div class="car-field-row">
+          <div class="car-field">
+            <label data-t="fieldMaintDate">정비 날짜</label>
+            <input type="date" id="carMaintDate" required>
+          </div>
+          <div class="car-field">
+            <label data-t="fieldMaintKm">교체 당시 키로수 (km)</label>
+            <input type="number" id="carMaintKm" min="0" max="2000000" step="1" required inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldServiceType">정비 종류</label>
+          <select id="carMaintType"></select>
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldTechnician">담당자 이름</label>
+          <input type="text" id="carMaintTech" maxlength="60" required>
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldMaintNotes">메모 (선택)</label>
+          <textarea id="carMaintNotes" maxlength="1000"></textarea>
+        </div>
+
+        <div class="car-modal-foot">
+          <button type="button" class="car-btn car-btn-secondary" onclick="closeMaintModal()" data-t="cancel">취소</button>
+          <button type="submit" class="car-btn car-btn-primary" id="carMaintSaveBtn" data-t="saveRecord">저장</button>
         </div>
       </form>
     </div>
@@ -164,6 +239,14 @@
       { id: 'silver-van', color: 'var(--van)', label: 'Silver Van' },
       { id: 'santa-fe',   color: 'var(--santafe)', label: 'Santa Fe' },
     ];
+
+    const SERVICE_TYPE_LABELS = {
+      oil:        { ko: '엔진오일 교체', en: 'Engine Oil Change' },
+      tire:       { ko: '타이어 교체',   en: 'Tire Change' },
+      battery:    { ko: '배터리 교체',   en: 'Battery Change' },
+      inspection: { ko: '정기 점검',     en: 'Regular Inspection' },
+      other:      { ko: '기타',          en: 'Other' },
+    };
 
     const CAR_T = {
       ko: {
@@ -204,6 +287,25 @@
         conflictPrefix: '이미 예약됨: ',
         errGeneric: '처리 중 오류가 발생했습니다.',
         sessionExpired: '세션이 만료되었습니다. 다시 로그인해 주세요.',
+        viewReservations: '예약현황',
+        viewMaintenance: '정비 관리',
+        fieldActualHours: '실제 운행 시간 (시간, 선택)',
+        fieldActualKm: '실제 운행 거리 (km, 선택)',
+        actualUsageHint: '운행 후 대략적으로 입력해 주세요.',
+        newMaintenance: '정비 기록 추가',
+        editMaintenance: '정비 기록 수정',
+        fieldMaintDate: '정비 날짜',
+        fieldMaintKm: '교체 당시 키로수 (km)',
+        fieldServiceType: '정비 종류',
+        fieldTechnician: '담당자 이름',
+        fieldMaintNotes: '메모 (선택)',
+        saveRecord: '저장',
+        emptyMaintenance: '정비 기록이 없습니다.',
+        lastOilChange: '최근 엔진오일 교체',
+        noOilRecord: '엔진오일 교체 기록이 없습니다.',
+        maintSavedToast: '정비 기록이 저장되었습니다.',
+        maintUpdatedToast: '정비 기록이 수정되었습니다.',
+        maintDeletedToast: '정비 기록이 삭제되었습니다.',
       },
       en: {
         pageTitle: 'Vehicle Schedule',
@@ -243,16 +345,39 @@
         conflictPrefix: 'Already booked: ',
         errGeneric: 'Something went wrong.',
         sessionExpired: 'Session expired. Please log in again.',
+        viewReservations: 'Reservations',
+        viewMaintenance: 'Maintenance',
+        fieldActualHours: 'Actual drive time (hrs, optional)',
+        fieldActualKm: 'Actual distance (km, optional)',
+        actualUsageHint: 'Fill in roughly after the trip.',
+        newMaintenance: 'Add Maintenance Record',
+        editMaintenance: 'Edit Maintenance Record',
+        fieldMaintDate: 'Service date',
+        fieldMaintKm: 'Mileage at service (km)',
+        fieldServiceType: 'Service type',
+        fieldTechnician: 'Technician',
+        fieldMaintNotes: 'Notes (optional)',
+        saveRecord: 'Save',
+        emptyMaintenance: 'No maintenance records.',
+        lastOilChange: 'Last oil change',
+        noOilRecord: 'No oil change record yet.',
+        maintSavedToast: 'Maintenance record saved.',
+        maintUpdatedToast: 'Maintenance record updated.',
+        maintDeletedToast: 'Maintenance record deleted.',
       },
     };
 
     let carLang = localStorage.getItem('wolkoCarLang') || 'ko';
     let carToken = sessionStorage.getItem('wolko-car-token') || '';
     let reservations = [];
+    let maintenanceRecords = [];
     let activeVehicle = 'all';
+    let currentView = 'reservations';
     let showPast = false;
     let editingId = null;
+    let editingMaintId = null;
     let pendingDeleteId = null;
+    let pendingDeleteType = 'reservation';
 
     const $ = id => document.getElementById(id);
     function t(key) { return CAR_T[carLang]?.[key] ?? CAR_T.ko[key] ?? key; }
@@ -288,7 +413,10 @@
       $('pastToggleBtn').textContent = showPast ? t('hidePast') : t('past');
       renderTabs();
       renderVehicleSelect();
-      renderAgenda();
+      renderMaintVehicleSelect();
+      renderServiceTypeSelect();
+      $('fabLabel').textContent = currentView === 'reservations' ? t('newReservation') : t('newMaintenance');
+      if (currentView === 'reservations') renderAgenda(); else renderMaintenance();
     }
     function toggleCarLang() {
       carLang = carLang === 'ko' ? 'en' : 'ko';
@@ -325,7 +453,7 @@
         const screen = $('loginScreen');
         screen.classList.add('hidden');
         setTimeout(() => screen.style.display = 'none', 400);
-        await loadReservations();
+        await loadAll();
       } catch (e) {
         errEl.textContent = e.message;
       } finally {
@@ -359,10 +487,39 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('errGeneric'));
         reservations = data.reservations || [];
-        renderAgenda();
+        if (currentView === 'reservations') renderAgenda();
       } catch (e) {
         showToast(e.message || t('errGeneric'), true);
       }
+    }
+    async function loadMaintenance() {
+      try {
+        const res = await fetch('/api/car/maintenance', { headers: authHeaders() });
+        if (handleAuthError(res)) return;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('errGeneric'));
+        maintenanceRecords = data.records || [];
+        if (currentView === 'maintenance') renderMaintenance();
+      } catch (e) {
+        showToast(e.message || t('errGeneric'), true);
+      }
+    }
+    async function loadAll() {
+      await Promise.all([loadReservations(), loadMaintenance()]);
+    }
+
+    /* ── VIEW SWITCH ── */
+    function setView(view) {
+      currentView = view;
+      $('viewTabReservations').classList.toggle('is-active', view === 'reservations');
+      $('viewTabMaintenance').classList.toggle('is-active', view === 'maintenance');
+      $('reservationsView').classList.toggle('hidden', view !== 'reservations');
+      $('maintenanceView').classList.toggle('hidden', view !== 'maintenance');
+      $('fabLabel').textContent = view === 'reservations' ? t('newReservation') : t('newMaintenance');
+      if (view === 'reservations') renderAgenda(); else renderMaintenance();
+    }
+    function openFab() {
+      if (currentView === 'reservations') openModal(); else openMaintModal();
     }
 
     /* ── TABS ── */
@@ -379,7 +536,7 @@
     function setActiveVehicle(id) {
       activeVehicle = id;
       renderTabs();
-      renderAgenda();
+      if (currentView === 'reservations') renderAgenda(); else renderMaintenance();
     }
     function togglePast() {
       showPast = !showPast;
@@ -416,6 +573,14 @@
     }
     function conflictSummary(c) {
       return `${c.reserverName} · ${formatTimeRange(c)}`;
+    }
+    function formatKm(n) {
+      return Number(n).toLocaleString(carLang === 'en' ? 'en-US' : 'ko-KR') + 'km';
+    }
+    function serviceTypeLabel(id) {
+      const s = SERVICE_TYPE_LABELS[id];
+      if (!s) return id;
+      return carLang === 'en' ? s.en : s.ko;
     }
 
     /* ── AGENDA ── */
@@ -462,12 +627,16 @@
                 <p class="car-card-purpose">${esc(r.purpose)}</p>
                 <p class="car-card-meta">${esc(r.reserverName)}${r.phone ? ' · ' + esc(r.phone) : ''}</p>
                 ${r.notes ? `<p class="car-card-notes">${esc(r.notes)}</p>` : ''}
+                ${(r.actualHours != null || r.actualKm != null) ? `<span class="car-card-usage">🛣️ ${[
+                  r.actualHours != null ? esc(r.actualHours) + (carLang === 'en' ? 'h' : '시간') : '',
+                  r.actualKm != null ? esc(formatKm(r.actualKm)) : '',
+                ].filter(Boolean).join(' · ')}</span>` : ''}
               </div>
               <div class="car-card-actions">
                 <button class="car-card-btn" onclick="openModal('${r.id}')" aria-label="edit">
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9.5 1.5l3 3-8 8-3.5.5.5-3.5 8-8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
                 </button>
-                <button class="car-card-btn danger" onclick="openConfirm('${r.id}')" aria-label="delete">
+                <button class="car-card-btn danger" onclick="openConfirm('${r.id}','reservation')" aria-label="delete">
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3.5h8M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4 3.5l.5 9a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1l.5-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
               </div>
@@ -478,9 +647,74 @@
       container.innerHTML = html;
     }
 
+    /* ── MAINTENANCE RENDER ── */
+    function renderMaintBanner() {
+      const el = $('maintBanner');
+      if (activeVehicle === 'all') { el.innerHTML = ''; el.classList.add('hidden'); return; }
+      el.classList.remove('hidden');
+      const oilRecords = maintenanceRecords
+        .filter(m => m.vehicleId === activeVehicle && m.serviceType === 'oil')
+        .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+      const latest = oilRecords[0];
+      el.classList.toggle('is-empty', !latest);
+      el.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
+        <div>
+          <p class="car-maint-banner-label">${esc(t('lastOilChange'))}</p>
+          <p class="car-maint-banner-value">${latest ? `${esc(latest.date)} · ${esc(formatKm(latest.mileageKm))} · ${esc(latest.technician)}` : esc(t('noOilRecord'))}</p>
+        </div>`;
+    }
+
+    function renderMaintenance() {
+      renderMaintBanner();
+      const container = $('maintListContainer');
+      let list = maintenanceRecords.filter(m => activeVehicle === 'all' || m.vehicleId === activeVehicle);
+      list = [...list].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+
+      if (!list.length) {
+        container.innerHTML = `
+          <div class="car-empty">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
+            <div>${esc(t('emptyMaintenance'))}</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(m => {
+        const v = vehicleById(m.vehicleId);
+        return `
+          <div class="car-card" style="--card-color:${v ? v.color : 'var(--blue)'}">
+            <div class="car-card-body">
+              <div class="car-card-top">
+                <span class="car-card-vehicle"><span class="dot"></span>${esc(v ? v.label : m.vehicleId)}</span>
+                <span class="car-card-time">${esc(m.date)}</span>
+              </div>
+              <p class="car-card-purpose"><span class="car-card-service-type">${esc(serviceTypeLabel(m.serviceType))}</span></p>
+              <p class="car-card-meta">${esc(formatKm(m.mileageKm))} · ${esc(m.technician)}</p>
+              ${m.notes ? `<p class="car-card-notes">${esc(m.notes)}</p>` : ''}
+            </div>
+            <div class="car-card-actions">
+              <button class="car-card-btn" onclick="openMaintModal('${m.id}')" aria-label="edit">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9.5 1.5l3 3-8 8-3.5.5.5-3.5 8-8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="car-card-btn danger" onclick="openConfirm('${m.id}','maintenance')" aria-label="delete">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3.5h8M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4 3.5l.5 9a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1l.5-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
     /* ── MODAL ── */
     function renderVehicleSelect() {
       $('carVehicle').innerHTML = VEHICLES.map(v => `<option value="${v.id}">${esc(v.label)}</option>`).join('');
+    }
+    function renderMaintVehicleSelect() {
+      $('carMaintVehicle').innerHTML = VEHICLES.map(v => `<option value="${v.id}">${esc(v.label)}</option>`).join('');
+    }
+    function renderServiceTypeSelect() {
+      $('carMaintType').innerHTML = Object.keys(SERVICE_TYPE_LABELS)
+        .map(id => `<option value="${id}">${esc(serviceTypeLabel(id))}</option>`).join('');
     }
     function showFormError(msg) {
       const el = $('carModalError');
@@ -513,6 +747,8 @@
         $('carPhone').value = r.phone || '';
         $('carPurpose').value = r.purpose;
         $('carNotes').value = r.notes || '';
+        $('carActualHours').value = r.actualHours ?? '';
+        $('carActualKm').value = r.actualKm ?? '';
         $('carSaveBtn').textContent = t('saveEdit');
       } else {
         editingId = null;
@@ -545,6 +781,8 @@
         phone: $('carPhone').value.trim(),
         purpose: $('carPurpose').value.trim(),
         notes: $('carNotes').value.trim(),
+        actualHours: $('carActualHours').value,
+        actualKm: $('carActualKm').value,
       };
       if (editingId) payload.id = editingId;
 
@@ -576,9 +814,88 @@
       }
     }
 
+    /* ── MAINTENANCE MODAL ── */
+    function showMaintFormError(msg) {
+      const el = $('carMaintModalError');
+      el.textContent = msg;
+      el.classList.add('is-visible');
+    }
+    function clearMaintFormError() {
+      const el = $('carMaintModalError');
+      el.textContent = '';
+      el.classList.remove('is-visible');
+    }
+    function openMaintModal(recordId) {
+      clearMaintFormError();
+      renderMaintVehicleSelect();
+      renderServiceTypeSelect();
+      const overlay = $('carMaintModalOverlay');
+
+      if (recordId) {
+        const m = maintenanceRecords.find(x => x.id === recordId);
+        if (!m) return;
+        editingMaintId = m.id;
+        $('carMaintModalTitle').textContent = t('editMaintenance');
+        $('carMaintVehicle').value = m.vehicleId;
+        $('carMaintDate').value = m.date;
+        $('carMaintKm').value = m.mileageKm;
+        $('carMaintType').value = m.serviceType;
+        $('carMaintTech').value = m.technician;
+        $('carMaintNotes').value = m.notes || '';
+        $('carMaintSaveBtn').textContent = t('saveEdit');
+      } else {
+        editingMaintId = null;
+        $('carMaintModalTitle').textContent = t('newMaintenance');
+        $('carMaintForm').reset();
+        $('carMaintVehicle').value = activeVehicle !== 'all' ? activeVehicle : VEHICLES[0].id;
+        $('carMaintType').value = 'oil';
+        $('carMaintDate').value = todayStr();
+        $('carMaintSaveBtn').textContent = t('saveRecord');
+      }
+      overlay.classList.remove('hidden');
+    }
+    function closeMaintModal() {
+      $('carMaintModalOverlay').classList.add('hidden');
+      editingMaintId = null;
+    }
+    async function submitMaintForm(event) {
+      event.preventDefault();
+      clearMaintFormError();
+      const payload = {
+        vehicleId: $('carMaintVehicle').value,
+        date: $('carMaintDate').value,
+        mileageKm: $('carMaintKm').value,
+        serviceType: $('carMaintType').value,
+        technician: $('carMaintTech').value.trim(),
+        notes: $('carMaintNotes').value.trim(),
+      };
+      if (editingMaintId) payload.id = editingMaintId;
+
+      const btn = $('carMaintSaveBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/car/maintenance', {
+          method: editingMaintId ? 'PUT' : 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(payload),
+        });
+        if (handleAuthError(res)) return;
+        const data = await res.json();
+        if (!res.ok) { showMaintFormError(data.error || t('errGeneric')); return; }
+        closeMaintModal();
+        showToast(editingMaintId ? t('maintUpdatedToast') : t('maintSavedToast'));
+        await loadMaintenance();
+      } catch (e) {
+        showMaintFormError(t('errGeneric'));
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     /* ── DELETE ── */
-    function openConfirm(id) {
+    function openConfirm(id, type) {
       pendingDeleteId = id;
+      pendingDeleteType = type || 'reservation';
       $('confirmOverlay').classList.remove('hidden');
     }
     function closeConfirm() {
@@ -588,17 +905,19 @@
     async function confirmDelete() {
       if (!pendingDeleteId) return;
       const id = pendingDeleteId;
+      const type = pendingDeleteType;
       closeConfirm();
+      const endpoint = type === 'maintenance' ? '/api/car/maintenance' : '/api/car/reservations';
       try {
-        const res = await fetch('/api/car/reservations?id=' + encodeURIComponent(id), {
+        const res = await fetch(endpoint + '?id=' + encodeURIComponent(id), {
           method: 'DELETE',
           headers: authHeaders(),
         });
         if (handleAuthError(res)) return;
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('errGeneric'));
-        showToast(t('deletedToast'));
-        await loadReservations();
+        showToast(type === 'maintenance' ? t('maintDeletedToast') : t('deletedToast'));
+        if (type === 'maintenance') await loadMaintenance(); else await loadReservations();
       } catch (e) {
         showToast(e.message || t('errGeneric'), true);
       }
@@ -610,7 +929,7 @@
       const screen = $('loginScreen');
       screen.classList.add('hidden');
       screen.style.display = 'none';
-      loadReservations();
+      loadAll();
     }
   </script>
 </body>
