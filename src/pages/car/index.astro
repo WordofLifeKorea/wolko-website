@@ -74,6 +74,21 @@
     <div class="car-tabs" id="carTabs"></div>
 
     <div id="reservationsView">
+      <div class="car-calendar">
+        <div class="cal-header">
+          <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(-1)" aria-label="prev">‹</button>
+          <span class="cal-month-label" id="calMonthLabel"></span>
+          <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(1)" aria-label="next">›</button>
+          <button type="button" class="cal-today-btn" onclick="goToCurrentMonth()" data-t="today">오늘</button>
+        </div>
+        <div id="calGrid"></div>
+      </div>
+
+      <div class="car-selected-date-bar hidden" id="selectedDateBar">
+        <span id="selectedDateLabel"></span>
+        <button type="button" onclick="clearSelectedDate()" data-t="clearDate">전체 보기</button>
+      </div>
+
       <button class="car-past-toggle" id="pastToggleBtn" onclick="togglePast()" data-t="past">지난 예약 보기</button>
       <div id="agendaContainer"></div>
     </div>
@@ -264,6 +279,7 @@
         editReservation: '예약 수정',
         past: '지난 예약 보기',
         hidePast: '지난 예약 숨기기',
+        clearDate: '전체 보기',
         emptyUpcoming: '예정된 예약이 없습니다.',
         today: '오늘',
         tomorrow: '내일',
@@ -322,6 +338,7 @@
         editReservation: 'Edit Reservation',
         past: 'Show past reservations',
         hidePast: 'Hide past reservations',
+        clearDate: 'Show all',
         emptyUpcoming: 'No upcoming reservations.',
         today: 'Today',
         tomorrow: 'Tomorrow',
@@ -374,6 +391,8 @@
     let activeVehicle = 'all';
     let currentView = 'reservations';
     let showPast = false;
+    let calendarMonth = (() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d; })();
+    let selectedDate = null;
     let editingId = null;
     let editingMaintId = null;
     let pendingDeleteId = null;
@@ -416,7 +435,7 @@
       renderMaintVehicleSelect();
       renderServiceTypeSelect();
       $('fabLabel').textContent = currentView === 'reservations' ? t('newReservation') : t('newMaintenance');
-      if (currentView === 'reservations') renderAgenda(); else renderMaintenance();
+      if (currentView === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
     }
     function toggleCarLang() {
       carLang = carLang === 'ko' ? 'en' : 'ko';
@@ -487,7 +506,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('errGeneric'));
         reservations = data.reservations || [];
-        if (currentView === 'reservations') renderAgenda();
+        if (currentView === 'reservations') { renderCalendar(); renderAgenda(); }
       } catch (e) {
         showToast(e.message || t('errGeneric'), true);
       }
@@ -516,7 +535,7 @@
       $('reservationsView').classList.toggle('hidden', view !== 'reservations');
       $('maintenanceView').classList.toggle('hidden', view !== 'maintenance');
       $('fabLabel').textContent = view === 'reservations' ? t('newReservation') : t('newMaintenance');
-      if (view === 'reservations') renderAgenda(); else renderMaintenance();
+      if (view === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
     }
     function openFab() {
       if (currentView === 'reservations') openModal(); else openMaintModal();
@@ -536,7 +555,7 @@
     function setActiveVehicle(id) {
       activeVehicle = id;
       renderTabs();
-      if (currentView === 'reservations') renderAgenda(); else renderMaintenance();
+      if (currentView === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
     }
     function togglePast() {
       showPast = !showPast;
@@ -547,7 +566,9 @@
     /* ── DATE HELPERS ── */
     function pad2(n) { return String(n).padStart(2, '0'); }
     function todayStr() {
-      const d = new Date();
+      return toDateStr(new Date());
+    }
+    function toDateStr(d) {
       return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
     }
     function formatDateShort(dateStr) {
@@ -574,6 +595,10 @@
     function conflictSummary(c) {
       return `${c.reserverName} · ${formatTimeRange(c)}`;
     }
+    function formatSelectedDateLabel(ds) {
+      const { main, sub } = dateHeaderLabel(ds);
+      return sub ? `${main} ${sub}` : main;
+    }
     function formatKm(n) {
       return Number(n).toLocaleString(carLang === 'en' ? 'en-US' : 'ko-KR') + 'km';
     }
@@ -588,7 +613,18 @@
       const container = $('agendaContainer');
       const nowMs = Date.now();
       let list = reservations.filter(r => activeVehicle === 'all' || r.vehicleId === activeVehicle);
-      if (!showPast) list = list.filter(r => Date.parse(r.endAt) >= nowMs);
+
+      if (selectedDate) {
+        list = list.filter(r => selectedDate >= r.startDate && selectedDate <= r.endDate);
+        $('selectedDateBar').classList.remove('hidden');
+        $('selectedDateLabel').textContent = formatSelectedDateLabel(selectedDate);
+        $('pastToggleBtn').classList.add('hidden');
+      } else {
+        if (!showPast) list = list.filter(r => Date.parse(r.endAt) >= nowMs);
+        $('selectedDateBar').classList.add('hidden');
+        $('pastToggleBtn').classList.remove('hidden');
+      }
+
       list = [...list].sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
 
       if (!list.length) {
@@ -645,6 +681,72 @@
         html += `</div>`;
       });
       container.innerHTML = html;
+    }
+
+    /* ── CALENDAR ── */
+    function renderCalendar() {
+      const year = calendarMonth.getFullYear();
+      const month = calendarMonth.getMonth();
+      const firstOfMonth = new Date(year, month, 1);
+      const startOffset = firstOfMonth.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+      const todayStr_ = todayStr();
+      const wkKo = ['일', '월', '화', '수', '목', '금', '토'];
+      const wkEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const wk = carLang === 'en' ? wkEn : wkKo;
+
+      $('calMonthLabel').textContent = carLang === 'en'
+        ? calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+        : `${year}년 ${month + 1}월`;
+
+      let cellsHtml = '';
+      for (let i = 0; i < totalCells; i++) {
+        const cellDate = new Date(year, month, i - startOffset + 1);
+        const cellStr = toDateStr(cellDate);
+        const inMonth = cellDate.getMonth() === month;
+        const isToday = cellStr === todayStr_;
+        const isSelected = cellStr === selectedDate;
+        const dayMatches = inMonth
+          ? reservations.filter(r => (activeVehicle === 'all' || r.vehicleId === activeVehicle) && cellStr >= r.startDate && cellStr <= r.endDate)
+          : [];
+        const dots = dayMatches.slice(0, 4).map(r => {
+          const v = vehicleById(r.vehicleId);
+          return `<span class="cal-dot" style="background:${v ? v.color : 'var(--blue)'}"></span>`;
+        }).join('');
+        const extra = dayMatches.length > 4 ? `<span class="cal-more">+${dayMatches.length - 4}</span>` : '';
+        cellsHtml += `
+          <button type="button" class="cal-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}${isSelected ? ' is-selected' : ''}"
+            ${inMonth ? `onclick="selectCalendarDate('${cellStr}')"` : 'disabled'}>
+            <span class="cal-daynum">${cellDate.getDate()}</span>
+            <span class="cal-dots">${dots}${extra}</span>
+          </button>`;
+      }
+
+      $('calGrid').innerHTML = `
+        <div class="cal-weekdays">${wk.map(w => `<span>${esc(w)}</span>`).join('')}</div>
+        <div class="cal-days">${cellsHtml}</div>`;
+    }
+    function shiftCalendarMonth(delta) {
+      calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + delta, 1);
+      renderCalendar();
+    }
+    function goToCurrentMonth() {
+      const now = new Date();
+      calendarMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      selectedDate = null;
+      renderCalendar();
+      renderAgenda();
+    }
+    function selectCalendarDate(dateStr_) {
+      selectedDate = (selectedDate === dateStr_) ? null : dateStr_;
+      renderCalendar();
+      renderAgenda();
+    }
+    function clearSelectedDate() {
+      selectedDate = null;
+      renderCalendar();
+      renderAgenda();
     }
 
     /* ── MAINTENANCE RENDER ── */
@@ -731,7 +833,7 @@
       clearFormError();
       renderVehicleSelect();
       const overlay = $('carModalOverlay');
-      const today = todayStr();
+      const today = selectedDate || todayStr();
 
       if (reservationId) {
         const r = reservations.find(x => x.id === reservationId);
