@@ -1,0 +1,127 @@
+---
+// WOLKO 허브 — 내부 도구 모음 런처. 비공개 주소, 각 도구는 자체 로그인을 그대로 사용.
+// No BaseLayout; standalone page (wolkoadmin/car와 동일한 패턴)
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>WOLKO 허브</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/hub.css?v=1">
+  <link rel="manifest" href="/hub-manifest.json">
+  <meta name="theme-color" content="#004f68">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WOLKO">
+  <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
+</head>
+<body>
+
+  <header class="hub-header">
+    <a class="hub-header-logo" href="/">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <span data-t="headerTitle">WOLKO 허브</span>
+    </a>
+    <button class="btn-lang-toggle" onclick="toggleHubLang()" title="Language">
+      <span id="langToggleLabel">EN</span>
+    </button>
+  </header>
+
+  <div class="hub-wrap">
+    <p class="hub-title" data-t="pageTitle">내부 도구</p>
+    <p class="hub-subtitle" data-t="subtitle">사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.</p>
+
+    <div class="hub-grid" id="hubGrid"></div>
+
+    <p class="hub-note" data-t="note">이 페이지를 홈 화면에 추가하면 앱처럼 아이콘 하나로 모든 도구에 바로 접근할 수 있습니다.</p>
+  </div>
+
+  <script is:inline>
+    const ICONS = {
+      clipboard: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M9 12h6M9 16h6"/>',
+      users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      car: '<path d="M14 16H9m10 0h2v-3.15a1 1 0 0 0-.84-.99L18 11.5l-2.35-3.13a1 1 0 0 0-.8-.4H6.5a2 2 0 0 0-1.79 1.11L3.6 11.5A5 5 0 0 0 3 14v2h2"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/>',
+      calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+      landmark: '<path d="M3 22h18M6 18V11M10 18V11M14 18V11M18 18V11M12 2 3 7h18z"/>',
+    };
+
+    const TOOLS = [
+      { href: '/wolkoadmin', color: '#004f68', icon: 'clipboard',
+        title_ko: '관리자', title_en: 'Admin',
+        desc_ko: '캠프 신청 현황 · 확정 관리', desc_en: 'Camp registration & confirmation' },
+      { href: '/campstaff', color: '#0077a3', icon: 'users',
+        title_ko: '캠프 진행', title_en: 'Camp Progress',
+        desc_ko: '카운슬러 상담기록 · 팀 현황', desc_en: 'Counselor records & team status' },
+      { href: '/car', color: '#c17a1f', icon: 'car',
+        title_ko: '차량 스케줄', title_en: 'Vehicle Schedule',
+        desc_ko: '차량 예약 · 정비 관리', desc_en: 'Reservations & maintenance' },
+      { href: '/schedule-planner', color: '#1da462', icon: 'calendar',
+        title_ko: '스케줄 플래너', title_en: 'Schedule Planner',
+        desc_ko: '스태프 일정 · 차량 운행 계획', desc_en: 'Staff & van schedules' },
+      { href: '/crs', color: '#7a5fc4', icon: 'landmark',
+        title_ko: 'CRS', title_en: 'CRS',
+        desc_ko: 'Church Relationship System', desc_en: 'Church Relationship System' },
+    ];
+
+    const HUB_T = {
+      ko: {
+        headerTitle: 'WOLKO 허브',
+        pageTitle: '내부 도구',
+        subtitle: '사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.',
+        note: '이 페이지를 홈 화면에 추가하면 앱처럼 아이콘 하나로 모든 도구에 바로 접근할 수 있습니다.',
+      },
+      en: {
+        headerTitle: 'WOLKO Hub',
+        pageTitle: 'Internal Tools',
+        subtitle: 'Pick a tool below. Each one has its own login.',
+        note: 'Add this page to your home screen to access every tool from a single app icon.',
+      },
+    };
+
+    let hubLang = localStorage.getItem('wolkoHubLang') || 'ko';
+    const $ = id => document.getElementById(id);
+    function t(key) { return HUB_T[hubLang]?.[key] ?? HUB_T.ko[key] ?? key; }
+
+    function renderGrid() {
+      $('hubGrid').innerHTML = TOOLS.map(tool => `
+        <a class="hub-card" href="${tool.href}" style="--tool-color:${tool.color}">
+          <span class="hub-card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
+          </span>
+          <span class="hub-card-body">
+            <p class="hub-card-title">${hubLang === 'en' ? tool.title_en : tool.title_ko}</p>
+            <p class="hub-card-desc">${hubLang === 'en' ? tool.desc_en : tool.desc_ko}</p>
+          </span>
+          <span class="hub-card-arrow">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </a>
+      `).join('');
+    }
+
+    function applyLangToDOM() {
+      document.documentElement.lang = hubLang === 'en' ? 'en' : 'ko';
+      document.title = hubLang === 'en' ? 'WOLKO Hub' : 'WOLKO 허브';
+      document.querySelectorAll('[data-t]').forEach(el => {
+        el.textContent = t(el.getAttribute('data-t'));
+      });
+      $('langToggleLabel').textContent = hubLang === 'ko' ? 'EN' : '한';
+      renderGrid();
+    }
+    function toggleHubLang() {
+      hubLang = hubLang === 'ko' ? 'en' : 'ko';
+      localStorage.setItem('wolkoHubLang', hubLang);
+      applyLangToDOM();
+    }
+
+    applyLangToDOM();
+  </script>
+</body>
+</html>
