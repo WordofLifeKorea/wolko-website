@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=1">
+  <link rel="stylesheet" href="/hub.css?v=2">
   <link rel="manifest" href="/hub-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -24,23 +24,32 @@
 </head>
 <body>
 
-  <header class="hub-header">
-    <a class="hub-header-logo" href="/">
-      <img src="/images/WOLKO Circle.png" alt="WOLKO">
-      <span data-t="headerTitle">WOLKO 허브</span>
-    </a>
-    <button class="btn-lang-toggle" onclick="toggleHubLang()" title="Language">
-      <span id="langToggleLabel">EN</span>
-    </button>
-  </header>
+  <div class="hub-shell">
+    <nav class="hub-sidebar">
+      <a class="hub-sidebar-brand" href="/">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <span data-t="headerTitle">WOLKO 허브</span>
+      </a>
 
-  <div class="hub-wrap">
-    <p class="hub-title" data-t="pageTitle">내부 도구</p>
-    <p class="hub-subtitle" data-t="subtitle">사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.</p>
+      <div class="hub-nav" id="hubNav"></div>
 
-    <div class="hub-grid" id="hubGrid"></div>
+      <div class="hub-sidebar-foot">
+        <button class="hub-sidebar-lang" onclick="toggleHubLang()" title="Language">
+          <span id="langToggleLabel">EN</span>
+        </button>
+      </div>
+    </nav>
 
-    <p class="hub-note" data-t="note">이 페이지를 홈 화면에 추가하면 앱처럼 아이콘 하나로 모든 도구에 바로 접근할 수 있습니다.</p>
+    <main class="hub-main">
+      <div class="hub-wrap">
+        <p class="hub-title" data-t="pageTitle">내부 도구</p>
+        <p class="hub-subtitle" data-t="subtitle">사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.</p>
+
+        <div class="hub-grid" id="hubGrid"></div>
+
+        <p class="hub-note" data-t="note">이 페이지를 홈 화면에 추가하면 앱처럼 아이콘 하나로 모든 도구에 바로 접근할 수 있습니다.</p>
+      </div>
+    </main>
   </div>
 
   <script is:inline>
@@ -106,6 +115,17 @@
       `).join('');
     }
 
+    function renderNav() {
+      $('hubNav').innerHTML = TOOLS.map(tool => `
+        <a class="hub-nav-item" href="${tool.href}">
+          <span class="hub-nav-item-icon" style="color:${tool.color}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
+          </span>
+          <span class="hub-nav-item-label">${hubLang === 'en' ? tool.title_en : tool.title_ko}</span>
+        </a>
+      `).join('');
+    }
+
     function applyLangToDOM() {
       document.documentElement.lang = hubLang === 'en' ? 'en' : 'ko';
       document.title = hubLang === 'en' ? 'WOLKO Hub' : 'WOLKO 허브';
@@ -113,6 +133,7 @@
         el.textContent = t(el.getAttribute('data-t'));
       });
       $('langToggleLabel').textContent = hubLang === 'ko' ? 'EN' : '한';
+      renderNav();
       renderGrid();
     }
     function toggleHubLang() {
