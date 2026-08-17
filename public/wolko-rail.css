@@ -1,0 +1,84 @@
+/* WOLKO 내부 도구 공용 좌측 레일 — car/wolkoadmin/campstaff 등에서 공유 */
+.wolko-rail { display: none; }
+
+@media (min-width: 900px) {
+  body.wolko-rail-active { margin-left: 58px; }
+
+  .wolko-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 58px;
+    height: 100vh;
+    padding: 14px 0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(255,255,255,.08), transparent 45%),
+      linear-gradient(175deg, #003548 0%, #004f68 45%, #00668a 100%);
+    z-index: 400;
+    overflow-y: auto;
+  }
+  .wolko-rail::-webkit-scrollbar { display: none; }
+
+  .wolko-rail-logo-link {
+    display: block;
+    margin-bottom: 16px;
+    border-radius: 9px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .wolko-rail-logo { width: 34px; height: 34px; border-radius: 9px; display: block; }
+
+  .wolko-rail-item {
+    position: relative;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    color: rgba(255,255,255,.72);
+    text-decoration: none;
+    transition: background .15s, color .15s;
+  }
+  .wolko-rail-item svg { width: 18px; height: 18px; }
+  .wolko-rail-item:hover { background: rgba(255,255,255,.12); color: #fff; }
+  .wolko-rail-item.is-active { background: var(--rail-color, rgba(255,255,255,.18)); color: #fff; }
+
+  .wolko-rail-item::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #06232f;
+    color: #fff;
+    font: 700 11.5px/1 'Noto Sans KR', sans-serif;
+    padding: 6px 10px;
+    border-radius: 7px;
+    white-space: nowrap;
+    opacity: 0;
+    transform-origin: left center;
+    pointer-events: none;
+    transition: opacity .12s, transform .12s;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  }
+  .wolko-rail-item:hover::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(2px);
+  }
+
+  .wolko-rail-hub {
+    margin-top: auto;
+    color: rgba(255,255,255,.5);
+  }
+  .wolko-rail-divider {
+    width: 26px;
+    height: 1px;
+    margin: 6px 0;
+    background: rgba(255,255,255,.14);
+  }
+}
