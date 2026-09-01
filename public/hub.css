@@ -22,12 +22,23 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── LOGIN SCREEN ── */
+.login-screen {
+  position: fixed; inset: 0;
+  background: linear-gradient(145deg, #003d52, #00627f);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.4s ease;
+}
+.login-screen.hidden { opacity: 0; pointer-events: none; }
+
 /* ── SHELL (사이드바 + 메인) ── */
 .hub-shell {
   display: flex;
   min-height: 100vh;
   align-items: stretch;
 }
+.hub-shell[hidden] { display: none; }
 
 /* ── SIDEBAR ── */
 .hub-sidebar {
@@ -114,6 +125,9 @@ html, body {
 .hub-nav-item-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .hub-sidebar-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   padding-top: 14px;
   margin-top: 10px;
   border-top: 1px solid rgba(255,255,255,.12);
@@ -178,7 +192,7 @@ html, body {
   .hub-nav-item::before { display: none; }
   .hub-nav-item-icon { width: 26px; height: 26px; }
   .hub-nav-item-label { font-size: 10.5px; }
-  .hub-sidebar-foot { padding: 0; margin: 0 0 0 8px; border: none; flex-shrink: 0; }
+  .hub-sidebar-foot { flex-direction: row; padding: 0; margin: 0 0 0 8px; border: none; flex-shrink: 0; }
   .hub-sidebar-lang { width: auto; padding: 8px 12px; }
   .hub-wrap { padding: 24px 16px 60px; }
 }

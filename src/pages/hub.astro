@@ -13,7 +13,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=4">
+  <link rel="stylesheet" href="/hub.css?v=5">
+  <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="manifest" href="/hub-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -24,7 +25,46 @@
 </head>
 <body>
 
-  <div class="hub-shell">
+  <!-- ── 보안 질문 (기기당 최초 1회) ── -->
+  <div class="login-screen" id="securityScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" data-t="securityTitle">보안 질문</p>
+      <p class="login-description" data-t="securityQuestion">월코센터 wifi 이름은 무엇인가요?</p>
+      <div class="login-input-wrap">
+        <input class="login-input" type="text" id="securityInput" autocomplete="off">
+      </div>
+      <p class="login-error" id="securityError"></p>
+      <button class="login-btn" id="securityBtn" onclick="checkSecurityAnswer()" data-t="continueBtn">계속</button>
+    </div>
+  </div>
+
+  <!-- ── 비밀번호 로그인 ── -->
+  <div class="login-screen hidden" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" data-t="loginTitle">허브 로그인</p>
+      <div class="login-input-wrap">
+        <input class="login-input" type="password" id="pwInput" autocomplete="current-password">
+      </div>
+      <p class="login-error" id="loginError"></p>
+      <button class="login-btn" id="loginBtn" onclick="doLogin()" data-t="loginBtn">로그인</button>
+    </div>
+  </div>
+
+  <div class="hub-shell" id="hubShell" hidden>
     <nav class="hub-sidebar">
       <a class="hub-sidebar-brand" href="/">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -41,6 +81,7 @@
         <button class="hub-sidebar-lang" onclick="toggleHubLang()" title="Language">
           <span id="langToggleLabel">EN</span>
         </button>
+        <button class="hub-sidebar-lang" onclick="doLogout()" data-t="logout">로그아웃</button>
       </div>
     </nav>
 
@@ -96,6 +137,16 @@
         subtitle: '사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.',
         note: '이 페이지를 홈 화면에 추가하면 앱처럼 아이콘 하나로 모든 도구에 바로 접근할 수 있습니다.',
         recentBadge: '최근 사용',
+        securityTitle: '보안 질문',
+        securityQuestion: '월코센터 wifi 이름은 무엇인가요?',
+        securityWrong: '답이 올바르지 않습니다.',
+        continueBtn: '계속',
+        loginTitle: '허브 로그인',
+        loginBtn: '로그인',
+        loginVerifying: '확인 중…',
+        loginRequired: '비밀번호를 입력해 주세요.',
+        loginWrong: '비밀번호가 올바르지 않습니다.',
+        logout: '로그아웃',
       },
       en: {
         headerTitle: 'WOLKO Hub',
@@ -105,6 +156,16 @@
         subtitle: 'Pick a tool below. Each one has its own login.',
         note: 'Add this page to your home screen to access every tool from a single app icon.',
         recentBadge: 'Recent',
+        securityTitle: 'Security Question',
+        securityQuestion: 'What is the WOLKO center wifi name?',
+        securityWrong: 'That answer is not correct.',
+        continueBtn: 'Continue',
+        loginTitle: 'Hub Login',
+        loginBtn: 'Login',
+        loginVerifying: 'Verifying…',
+        loginRequired: 'Please enter a password.',
+        loginWrong: 'Incorrect password.',
+        logout: 'Log out',
       },
     };
 
@@ -167,7 +228,104 @@
       applyLangToDOM();
     }
 
+    /* ── 보안 질문 (기기당 최초 1회) ── */
+    const WIFI_ANSWER = 'wolkomesh';
+    function checkSecurityAnswer() {
+      const val = $('securityInput').value.trim().toLowerCase();
+      if (val === WIFI_ANSWER) {
+        try { localStorage.setItem('wolko-hub-device-verified', 'true'); } catch (e) {}
+        $('securityScreen').classList.add('hidden');
+        setTimeout(() => $('securityScreen').style.display = 'none', 400);
+        $('loginScreen').classList.remove('hidden');
+      } else {
+        $('securityError').textContent = t('securityWrong');
+      }
+    }
+    $('securityInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkSecurityAnswer(); });
+
+    /* ── 비밀번호 로그인 (세션마다) ── */
+    function isHubTokenValid(token) {
+      try {
+        const decoded = atob(token);
+        const lastColon = decoded.lastIndexOf(':');
+        const data = decoded.slice(0, lastColon);
+        const parts = data.split(':');
+        if (parts[0] !== 'wolko-hub') return false;
+        const expires = parseInt(parts[1], 10);
+        return !!expires && Date.now() < expires;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function showHub() {
+      $('securityScreen').style.display = 'none';
+      $('loginScreen').style.display = 'none';
+      $('hubShell').hidden = false;
+    }
+
+    async function doLogin() {
+      const pw = $('pwInput').value;
+      const btn = $('loginBtn');
+      const errEl = $('loginError');
+      if (!pw) { errEl.textContent = t('loginRequired'); return; }
+
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = t('loginVerifying');
+      errEl.textContent = '';
+
+      try {
+        const res = await fetch('/api/hub/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('loginWrong'));
+
+        // 허브 로그인 한 번으로 관리자/차량/스케줄 플래너까지 자동 로그인되도록
+        // 각 도구가 실제로 확인하는 storage 키에 그대로 심어둔다.
+        sessionStorage.setItem('wolko-hub-token', data.hubToken);
+        sessionStorage.setItem('wolko-admin-token', data.adminToken);
+        sessionStorage.setItem('wolko-car-token', data.carToken);
+        try { localStorage.setItem('wolko_schedule_planner_token', data.schedulePlannerToken); } catch (e) {}
+
+        showHub();
+      } catch (e) {
+        errEl.textContent = e.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    }
+    $('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    function doLogout() {
+      sessionStorage.removeItem('wolko-hub-token');
+      sessionStorage.removeItem('wolko-admin-token');
+      sessionStorage.removeItem('wolko-car-token');
+      try { localStorage.removeItem('wolko_schedule_planner_token'); } catch (e) {}
+      location.reload();
+    }
+
+    function initAuthFlow() {
+      const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
+      if (hubToken && isHubTokenValid(hubToken)) {
+        showHub();
+        return;
+      }
+      let deviceVerified = false;
+      try { deviceVerified = localStorage.getItem('wolko-hub-device-verified') === 'true'; } catch (e) {}
+      if (deviceVerified) {
+        $('securityScreen').style.display = 'none';
+        $('loginScreen').classList.remove('hidden');
+      }
+      // deviceVerified가 아니면 기본 상태(보안 질문 화면)를 그대로 둠
+    }
+
     applyLangToDOM();
+    initAuthFlow();
   </script>
 </body>
 </html>
