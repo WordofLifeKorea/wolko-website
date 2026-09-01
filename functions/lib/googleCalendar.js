@@ -5,6 +5,11 @@
  *
  * One-way sync only: WOLKO reservation → Calendar event.
  * Editing/deleting the event directly in Google Calendar has no effect back on WOLKO.
+ *
+ * 예약을 수정할 때는 기존 이벤트를 갱신하지 않고 삭제 후 새로 만든다(요청 사항).
+ * 방금 지운 이벤트 ID는 구글 쪽에서 바로 재사용하면 오류가 날 수 있어서,
+ * 매번 구글이 새로 발급하는 ID를 받아 예약 레코드에 저장해두고 다음
+ * 수정/삭제 때 그 ID를 그대로 쓴다.
  */
 
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar';
@@ -62,10 +67,11 @@ async function getAccessToken(serviceAccount) {
 
 /**
  * WOLKO reservation id → 캘린더 이벤트 ID로 결정적 변환.
- * Calendar API 이벤트 ID는 [a-v0-9] 문자만 허용(5~1024자) — "wolko" 같은
- * 흔한 접두사도 w가 섞이면 규칙을 어기므로 해시 결과만 그대로 쓴다.
+ * 새 이벤트 ID를 구글이 발급해주기 전, 이 코드가 배포되기 전에 만들어진
+ * 옛날 예약(calendarEventId가 저장 안 되어 있는 경우)을 지울 때 쓰는
+ * 하위호환용 폴백이다.
  */
-async function toEventId(rawId) {
+export async function legacyDeterministicEventId(rawId) {
   const digest = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(`wolko-car:${rawId}`));
   const bytes = new Uint8Array(digest);
   const chars = '0123456789abcdefghijklmnopqrstuv'; // [a-v0-9]
@@ -74,11 +80,10 @@ async function toEventId(rawId) {
   return out;
 }
 
-/** 예약을 캘린더 이벤트로 생성/갱신(upsert). 캘린더에 없으면 새로 만들고, 있으면 덮어씀. */
-export async function upsertCalendarEvent({ serviceAccountJson, calendarId, reservationId, summary, description, startAt, endAt }) {
+/** 새 캘린더 이벤트 생성. 이벤트 ID는 구글이 발급 — 반환값의 id를 예약 레코드에 저장해둬야 다음에 지울 수 있다. */
+export async function createCalendarEvent({ serviceAccountJson, calendarId, summary, description, startAt, endAt }) {
   const serviceAccount = JSON.parse(serviceAccountJson);
   const token = await getAccessToken(serviceAccount);
-  const eventId = await toEventId(reservationId);
   const body = {
     summary,
     description,
@@ -86,33 +91,26 @@ export async function upsertCalendarEvent({ serviceAccountJson, calendarId, rese
     end: { dateTime: endAt, timeZone: 'Asia/Seoul' },
   };
 
-  const base = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`;
-
-  const putRes = await fetch(`${base}/${eventId}`, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (putRes.ok) return;
-  if (putRes.status !== 404 && putRes.status !== 410) {
-    throw new Error(`Calendar update error ${putRes.status}: ${await putRes.text()}`);
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }
+  );
+  if (!res.ok) {
+    throw new Error(`Calendar create error ${res.status}: ${await res.text()}`);
   }
-
-  const postRes = await fetch(base, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...body, id: eventId }),
-  });
-  if (!postRes.ok) {
-    throw new Error(`Calendar create error ${postRes.status}: ${await postRes.text()}`);
-  }
+  const json = await res.json();
+  return json.id;
 }
 
-/** 예약 삭제 시 캘린더 이벤트도 함께 삭제. 이미 없으면 조용히 무시. */
-export async function deleteCalendarEvent({ serviceAccountJson, calendarId, reservationId }) {
+/** 이벤트 ID로 캘린더 이벤트 삭제. 이미 없으면(404/410) 조용히 무시. */
+export async function deleteCalendarEventById({ serviceAccountJson, calendarId, eventId }) {
+  if (!eventId) return;
   const serviceAccount = JSON.parse(serviceAccountJson);
   const token = await getAccessToken(serviceAccount);
-  const eventId = await toEventId(reservationId);
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
     { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }

@@ -9,7 +9,7 @@
  * (차량을 추가/변경할 땐 두 곳을 함께 수정)
  */
 
-import { upsertCalendarEvent, deleteCalendarEvent } from '../../lib/googleCalendar.js';
+import { createCalendarEvent, deleteCalendarEventById, legacyDeterministicEventId } from '../../lib/googleCalendar.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -22,42 +22,57 @@ const KV_PREFIX = 'car:res:';
 
 /**
  * 예약 → 구글 캘린더 이벤트 단방향 동기화.
+ * 수정 시에는 기존 이벤트를 갱신하지 않고 (oldEventId가 있으면) 삭제 후
+ * 새로 만든다 — 방금 지운 이벤트 id를 곧바로 재사용하면 구글 쪽에서
+ * 오류가 날 수 있어서, 매번 구글이 새로 발급하는 id를 받는다.
  * GOOGLE_SERVICE_ACCOUNT_JSON / GOOGLE_CAR_CALENDAR_ID 둘 다 없으면 스킵.
  * 절대 throw하지 않는다 — 실패 이유를 {ok:false, error} 형태로 돌려주면
  * 호출부가 그걸 응답에 그대로 실어서 화면에 보여준다(로그를 못 봐도
  * 무엇이 문제인지 바로 알 수 있게).
  */
-async function syncReservationToCalendar(env, reservation) {
+async function syncReservationToCalendar(env, reservation, oldEventId) {
   if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_CAR_CALENDAR_ID) return { skipped: true };
+
+  if (oldEventId) {
+    try {
+      await deleteCalendarEventById({
+        serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
+        calendarId: env.GOOGLE_CAR_CALENDAR_ID,
+        eventId: oldEventId,
+      });
+    } catch (error) {
+      console.error('calendar old-event delete failed (continuing to create new one):', error);
+    }
+  }
+
   try {
     const vehicleLabel = VEHICLE_LABELS[reservation.vehicleId] || reservation.vehicleId;
     const descLines = [`예약자: ${reservation.reserverName}${reservation.phone ? ' · ' + reservation.phone : ''}`];
     if (reservation.notes) descLines.push(reservation.notes);
     descLines.push('(WOLKO 차량 스케줄에서 자동 동기화됨 — 여기서 수정해도 반영되지 않습니다)');
 
-    await upsertCalendarEvent({
+    const calendarEventId = await createCalendarEvent({
       serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
       calendarId: env.GOOGLE_CAR_CALENDAR_ID,
-      reservationId: reservation.id,
       summary: `[${vehicleLabel}] ${reservation.purpose}`,
       description: descLines.join('\n'),
       startAt: reservation.startAt,
       endAt: reservation.endAt,
     });
-    return { ok: true };
+    return { ok: true, calendarEventId };
   } catch (error) {
     console.error('calendar sync failed:', error);
     return { ok: false, error: error.message || String(error) };
   }
 }
 
-async function syncDeleteToCalendar(env, reservationId) {
+async function syncDeleteToCalendar(env, eventId) {
   if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_CAR_CALENDAR_ID) return { skipped: true };
   try {
-    await deleteCalendarEvent({
+    await deleteCalendarEventById({
       serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
       calendarId: env.GOOGLE_CAR_CALENDAR_ID,
-      reservationId,
+      eventId,
     });
     return { ok: true };
   } catch (error) {
@@ -187,9 +202,12 @@ export async function onRequestPost(context) {
     }
 
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const reservation = { id, ...parsed, createdAt: new Date().toISOString() };
+    let reservation = { id, ...parsed, createdAt: new Date().toISOString() };
+    const calendarSync = await syncReservationToCalendar(env, reservation, null);
+    if (calendarSync.ok && calendarSync.calendarEventId) {
+      reservation = { ...reservation, calendarEventId: calendarSync.calendarEventId };
+    }
     await env.CAMP_KV.put(`${KV_PREFIX}${id}`, JSON.stringify(reservation));
-    const calendarSync = await syncReservationToCalendar(env, reservation);
     return Response.json({ ok: true, reservation, calendarSync }, { headers: CORS });
   } catch (error) {
     return Response.json({ error: error.message || '저장하지 못했습니다.' }, { status: 400, headers: CORS });
@@ -228,9 +246,15 @@ export async function onRequestPut(context) {
       return Response.json({ error: '해당 시간에 이미 예약이 있습니다.', conflict }, { status: 409, headers: CORS });
     }
 
-    const reservation = { ...existing, ...parsed, id, updatedAt: new Date().toISOString() };
+    let reservation = { ...existing, ...parsed, id, updatedAt: new Date().toISOString() };
+    const oldEventId = existing.calendarEventId || await legacyDeterministicEventId(id);
+    const calendarSync = await syncReservationToCalendar(env, reservation, oldEventId);
+    if (calendarSync.ok && calendarSync.calendarEventId) {
+      reservation.calendarEventId = calendarSync.calendarEventId;
+    } else if (calendarSync.ok === false) {
+      delete reservation.calendarEventId;
+    }
     await env.CAMP_KV.put(key, JSON.stringify(reservation));
-    const calendarSync = await syncReservationToCalendar(env, reservation);
     return Response.json({ ok: true, reservation, calendarSync }, { headers: CORS });
   } catch (error) {
     return Response.json({ error: error.message || '수정하지 못했습니다.' }, { status: 400, headers: CORS });
@@ -247,8 +271,11 @@ export async function onRequestDelete(context) {
   if (!id) {
     return Response.json({ error: '예약 ID가 없습니다.' }, { status: 400, headers: CORS });
   }
-  await env.CAMP_KV.delete(`${KV_PREFIX}${id}`);
-  const calendarSync = await syncDeleteToCalendar(env, id);
+  const key = `${KV_PREFIX}${id}`;
+  const existing = await env.CAMP_KV.get(key, 'json');
+  await env.CAMP_KV.delete(key);
+  const eventIdToDelete = existing?.calendarEventId || await legacyDeterministicEventId(id);
+  const calendarSync = await syncDeleteToCalendar(env, eventIdToDelete);
   return Response.json({ ok: true, calendarSync }, { headers: CORS });
 }
 
