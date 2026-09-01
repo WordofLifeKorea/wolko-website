@@ -9,13 +9,48 @@
  * (차량을 추가/변경할 땐 두 곳을 함께 수정)
  */
 
+import { upsertCalendarEvent, deleteCalendarEvent } from '../../lib/googleCalendar.js';
+
 const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
 };
 
 const VEHICLE_IDS = new Set(['silver-van', 'santa-fe']);
+const VEHICLE_LABELS = { 'silver-van': 'Silver Van', 'santa-fe': 'Santa Fe' };
 const KV_PREFIX = 'car:res:';
+
+/**
+ * 예약 → 구글 캘린더 이벤트 단방향 동기화.
+ * GOOGLE_SERVICE_ACCOUNT_JSON / GOOGLE_CAR_CALENDAR_ID 둘 다 설정되어 있을 때만 동작하고,
+ * 실패해도 예약 저장 자체는 절대 막지 않는다(호출부에서 waitUntil + catch로 감쌈).
+ */
+async function syncReservationToCalendar(env, reservation) {
+  if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_CAR_CALENDAR_ID) return;
+  const vehicleLabel = VEHICLE_LABELS[reservation.vehicleId] || reservation.vehicleId;
+  const descLines = [`예약자: ${reservation.reserverName}${reservation.phone ? ' · ' + reservation.phone : ''}`];
+  if (reservation.notes) descLines.push(reservation.notes);
+  descLines.push('(WOLKO 차량 스케줄에서 자동 동기화됨 — 여기서 수정해도 반영되지 않습니다)');
+
+  await upsertCalendarEvent({
+    serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
+    calendarId: env.GOOGLE_CAR_CALENDAR_ID,
+    reservationId: reservation.id,
+    summary: `[${vehicleLabel}] ${reservation.purpose}`,
+    description: descLines.join('\n'),
+    startAt: reservation.startAt,
+    endAt: reservation.endAt,
+  });
+}
+
+async function syncDeleteToCalendar(env, reservationId) {
+  if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_CAR_CALENDAR_ID) return;
+  await deleteCalendarEvent({
+    serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
+    calendarId: env.GOOGLE_CAR_CALENDAR_ID,
+    reservationId,
+  });
+}
 
 async function verifyToken(request, env) {
   if (!env.ADMIN_PASSWORD) return false;
@@ -140,6 +175,7 @@ export async function onRequestPost(context) {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const reservation = { id, ...parsed, createdAt: new Date().toISOString() };
     await env.CAMP_KV.put(`${KV_PREFIX}${id}`, JSON.stringify(reservation));
+    context.waitUntil(syncReservationToCalendar(env, reservation).catch(e => console.error('calendar sync failed:', e)));
     return Response.json({ ok: true, reservation }, { headers: CORS });
   } catch (error) {
     return Response.json({ error: error.message || '저장하지 못했습니다.' }, { status: 400, headers: CORS });
@@ -180,6 +216,7 @@ export async function onRequestPut(context) {
 
     const reservation = { ...existing, ...parsed, id, updatedAt: new Date().toISOString() };
     await env.CAMP_KV.put(key, JSON.stringify(reservation));
+    context.waitUntil(syncReservationToCalendar(env, reservation).catch(e => console.error('calendar sync failed:', e)));
     return Response.json({ ok: true, reservation }, { headers: CORS });
   } catch (error) {
     return Response.json({ error: error.message || '수정하지 못했습니다.' }, { status: 400, headers: CORS });
@@ -197,6 +234,7 @@ export async function onRequestDelete(context) {
     return Response.json({ error: '예약 ID가 없습니다.' }, { status: 400, headers: CORS });
   }
   await env.CAMP_KV.delete(`${KV_PREFIX}${id}`);
+  context.waitUntil(syncDeleteToCalendar(env, id).catch(e => console.error('calendar delete sync failed:', e)));
   return Response.json({ ok: true }, { headers: CORS });
 }
 
