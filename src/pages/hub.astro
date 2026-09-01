@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=3">
+  <link rel="stylesheet" href="/hub.css?v=4">
   <link rel="manifest" href="/hub-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -95,6 +95,7 @@
         pageTitle: '내부 도구',
         subtitle: '사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.',
         note: '이 페이지를 홈 화면에 추가하면 앱처럼 아이콘 하나로 모든 도구에 바로 접근할 수 있습니다.',
+        recentBadge: '최근 사용',
       },
       en: {
         headerTitle: 'WOLKO Hub',
@@ -103,21 +104,32 @@
         pageTitle: 'Internal Tools',
         subtitle: 'Pick a tool below. Each one has its own login.',
         note: 'Add this page to your home screen to access every tool from a single app icon.',
+        recentBadge: 'Recent',
       },
     };
 
-    let hubLang = localStorage.getItem('wolkoHubLang') || 'ko';
+    // wolko.org 본사이트와 언어 설정을 공유(wolko-lang) — 어느 쪽에서 바꾸든 서로 이어짐
+    let hubLang = localStorage.getItem('wolko-lang') || localStorage.getItem('wolkoHubLang') || 'ko';
     const $ = id => document.getElementById(id);
     function t(key) { return HUB_T[hubLang]?.[key] ?? HUB_T.ko[key] ?? key; }
 
+    function markVisited(href) {
+      try { localStorage.setItem('wolko-hub-last', href); } catch (e) {}
+    }
+
     function renderGrid() {
+      let lastHref = '';
+      try { lastHref = localStorage.getItem('wolko-hub-last') || ''; } catch (e) {}
       $('hubGrid').innerHTML = TOOLS.map(tool => `
-        <a class="hub-card" href="${tool.href}" style="--tool-color:${tool.color}">
+        <a class="hub-card" href="${tool.href}" style="--tool-color:${tool.color}" onclick="markVisited('${tool.href}')">
           <span class="hub-card-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
           </span>
           <span class="hub-card-body">
-            <p class="hub-card-title">${hubLang === 'en' ? tool.title_en : tool.title_ko}</p>
+            <span class="hub-card-title-row">
+              <p class="hub-card-title">${hubLang === 'en' ? tool.title_en : tool.title_ko}</p>
+              ${tool.href === lastHref ? `<span class="hub-card-badge">${t('recentBadge')}</span>` : ''}
+            </span>
             <p class="hub-card-desc">${hubLang === 'en' ? tool.desc_en : tool.desc_ko}</p>
           </span>
           <span class="hub-card-arrow">
@@ -129,7 +141,7 @@
 
     function renderNav() {
       $('hubNav').innerHTML = TOOLS.map(tool => `
-        <a class="hub-nav-item" href="${tool.href}" style="--item-color:${tool.color}">
+        <a class="hub-nav-item" href="${tool.href}" style="--item-color:${tool.color}" onclick="markVisited('${tool.href}')">
           <span class="hub-nav-item-icon">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
           </span>
@@ -150,7 +162,8 @@
     }
     function toggleHubLang() {
       hubLang = hubLang === 'ko' ? 'en' : 'ko';
-      localStorage.setItem('wolkoHubLang', hubLang);
+      localStorage.setItem('wolko-lang', hubLang);
+      localStorage.removeItem('wolkoHubLang');
       applyLangToDOM();
     }
 

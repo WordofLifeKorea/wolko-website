@@ -94,6 +94,12 @@ html, body {
 }
 .hub-nav-item:hover { background: rgba(255,255,255,.1); color: #fff; }
 .hub-nav-item:hover::before { opacity: 1; }
+.hub-nav-item:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+  background: rgba(255,255,255,.12);
+  color: #fff;
+}
 .hub-nav-item-icon {
   flex-shrink: 0;
   width: 30px; height: 30px;
@@ -125,13 +131,21 @@ html, body {
   transition: background .15s, border-color .15s;
 }
 .hub-sidebar-lang:hover { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.4); }
+.hub-sidebar-lang:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* ── MAIN ── */
-.hub-main { flex: 1; min-width: 0; }
+.hub-main {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  background:
+    radial-gradient(ellipse 900px 320px at 15% -10%, rgba(0,119,163,.07), transparent 60%);
+}
 .hub-wrap {
   max-width: 760px;
   margin: 0 auto;
   padding: 44px 28px 60px;
+  position: relative;
 }
 
 /* 좁은 화면에서는 사이드바가 상단 가로 바로 접힘 */
@@ -218,6 +232,24 @@ html, body {
   transform: translateY(-2px);
   border-color: var(--tool-color, var(--blue));
   box-shadow: 0 12px 28px -8px rgba(16,42,56,.18);
+}
+.hub-card:focus-visible {
+  outline: 2px solid var(--tool-color, var(--blue));
+  outline-offset: 2px;
+}
+.hub-card-title-row { display: flex; align-items: center; gap: 8px; }
+.hub-card-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0,79,104,.08);
+  background: color-mix(in srgb, var(--tool-color, var(--blue)) 12%, white);
+  color: var(--tool-color, var(--blue));
+  font: 800 9.5px/1.6 var(--f-body);
+  letter-spacing: -.005em;
+  white-space: nowrap;
 }
 .hub-card-icon {
   flex-shrink: 0;
