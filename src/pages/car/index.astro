@@ -411,13 +411,19 @@
       return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + carToken };
     }
 
-    function showToast(msg, isError) {
+    function showToast(msg, isError, durationMs) {
       const el = $('carToast');
       el.textContent = msg;
       el.classList.toggle('is-error', !!isError);
       el.classList.add('is-visible');
       clearTimeout(showToast._timer);
-      showToast._timer = setTimeout(() => el.classList.remove('is-visible'), 2600);
+      showToast._timer = setTimeout(() => el.classList.remove('is-visible'), durationMs || 2600);
+    }
+    function calendarSyncSuffix(calendarSync) {
+      if (!calendarSync || calendarSync.ok || calendarSync.skipped) return '';
+      return carLang === 'en'
+        ? ` (Calendar sync failed: ${calendarSync.error})`
+        : ` (캘린더 동기화 실패: ${calendarSync.error})`;
     }
 
     /* ── LANG ── */
@@ -909,7 +915,12 @@
           return;
         }
         closeModal();
-        showToast(editingId ? t('updatedToast') : t('savedToast'));
+        const syncSuffix = calendarSyncSuffix(data.calendarSync);
+        showToast(
+          (editingId ? t('updatedToast') : t('savedToast')) + syncSuffix,
+          !!syncSuffix,
+          syncSuffix ? 8000 : 2600
+        );
         // KV는 쓰기 직후 목록 조회에 곧바로 반영되지 않을 수 있어(eventual
         // consistency), 서버에 다시 물어보지 않고 방금 저장 응답으로 받은
         // 예약을 그대로 화면에 반영한다.
@@ -1028,7 +1039,12 @@
         if (handleAuthError(res)) return;
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('errGeneric'));
-        showToast(type === 'maintenance' ? t('maintDeletedToast') : t('deletedToast'));
+        const delSyncSuffix = type === 'reservation' ? calendarSyncSuffix(data.calendarSync) : '';
+        showToast(
+          (type === 'maintenance' ? t('maintDeletedToast') : t('deletedToast')) + delSyncSuffix,
+          !!delSyncSuffix,
+          delSyncSuffix ? 8000 : 2600
+        );
         // 삭제도 마찬가지로 로컬 배열에서 바로 제거(재조회 없이 즉시 반영).
         if (type === 'maintenance') {
           maintenanceRecords = maintenanceRecords.filter(m => m.id !== id);
