@@ -78,9 +78,14 @@
       <div class="hub-nav" id="hubNav"></div>
 
       <div class="hub-sidebar-foot">
-        <button class="hub-sidebar-lang" onclick="toggleHubLang()" title="Language">
-          <span id="langToggleLabel">EN</span>
-        </button>
+        <div class="hub-lang-toggle" role="group" aria-label="Language">
+          <button class="hub-lang-btn" id="langKoBtn" onclick="setHubLang('ko')" aria-label="한국어" title="한국어">
+            <span aria-hidden="true">🇰🇷</span> KO
+          </button>
+          <button class="hub-lang-btn" id="langEnBtn" onclick="setHubLang('en')" aria-label="English" title="English">
+            <span aria-hidden="true">🇺🇸</span> EN
+          </button>
+        </div>
         <button class="hub-sidebar-lang" onclick="doLogout()" data-t="logout">로그아웃</button>
       </div>
     </nav>
@@ -169,8 +174,9 @@
       },
     };
 
-    // wolko.org 본사이트와 언어 설정을 공유(wolko-lang) — 어느 쪽에서 바꾸든 서로 이어짐
-    let hubLang = localStorage.getItem('wolko-lang') || localStorage.getItem('wolkoHubLang') || 'ko';
+    // wolko.org 본사이트와 언어 설정을 공유(wolko-lang) — 어느 쪽에서 바꾸든 서로 이어짐.
+    // 단, 허브 자체의 기본값은 영어(저장된 값이 아예 없을 때만) — 한국인 스태프는 KO로 바꾸면 됨.
+    let hubLang = localStorage.getItem('wolko-lang') || localStorage.getItem('wolkoHubLang') || 'en';
     const $ = id => document.getElementById(id);
     function t(key) { return HUB_T[hubLang]?.[key] ?? HUB_T.ko[key] ?? key; }
 
@@ -217,12 +223,13 @@
       document.querySelectorAll('[data-t]').forEach(el => {
         el.textContent = t(el.getAttribute('data-t'));
       });
-      $('langToggleLabel').textContent = hubLang === 'ko' ? 'EN' : '한';
+      $('langKoBtn').classList.toggle('is-active', hubLang === 'ko');
+      $('langEnBtn').classList.toggle('is-active', hubLang === 'en');
       renderNav();
       renderGrid();
     }
-    function toggleHubLang() {
-      hubLang = hubLang === 'ko' ? 'en' : 'ko';
+    function setHubLang(lang) {
+      hubLang = lang;
       localStorage.setItem('wolko-lang', hubLang);
       localStorage.removeItem('wolkoHubLang');
       applyLangToDOM();
