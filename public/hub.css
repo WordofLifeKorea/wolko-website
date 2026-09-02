@@ -341,3 +341,116 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .hub-card { animation: none; }
 }
+
+/* ── LOGIN 보조 링크 버튼 (이메일 ↔ 비밀번호 전환) ── */
+.login-link-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: var(--auth-blue, var(--blue));
+  font: 700 12.5px/1 var(--f-body);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.login-link-btn:hover { opacity: .75; }
+
+/* ── 승인 대기 배지 ── */
+.hub-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font: 800 10px/1 var(--f-body);
+}
+.hub-pending-badge.hidden { display: none; }
+
+/* ── 승인 대기 모달 ── */
+.hub-pending-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10,24,32,.5);
+  padding: 20px;
+}
+.hub-pending-overlay.hidden { display: none; }
+.hub-pending-card {
+  width: 100%;
+  max-width: 440px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+}
+.hub-pending-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.hub-pending-head p { margin: 0; font: 800 15px/1.3 var(--f-body); color: var(--text); }
+.hub-modal-close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  border: none; background: var(--bg); color: var(--mid); cursor: pointer;
+}
+.hub-pending-empty { margin: 24px 0; text-align: center; color: var(--light); font-size: 13px; }
+.hub-pending-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.hub-pending-email { margin: 0; font: 700 13px/1.4 var(--f-body); color: var(--text); word-break: break-all; }
+.hub-pending-role { margin: 2px 0 0; font-size: 11.5px; color: var(--mid); }
+.hub-pending-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.hub-pending-approve, .hub-pending-reject {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: none;
+  font: 800 11.5px/1 var(--f-body);
+  cursor: pointer;
+}
+.hub-pending-approve { background: var(--blue); color: #fff; }
+.hub-pending-approve:hover { background: var(--blue-lt); }
+.hub-pending-reject { background: var(--bg); color: var(--mid); }
+.hub-pending-reject:hover { background: var(--border); }
+
+/* ── 토스트 ── */
+.hub-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 700;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: var(--text);
+  color: #fff;
+  font: 700 12.5px/1 var(--f-body);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+  white-space: nowrap;
+  max-width: calc(100vw - 40px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hub-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.hub-toast.is-error { background: var(--accent); }

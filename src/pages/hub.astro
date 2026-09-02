@@ -1,5 +1,5 @@
 ---
-// WOLKO 허브 — 내부 도구 모음 런처. 비공개 주소, 각 도구는 자체 로그인을 그대로 사용.
+// WOLKO 허브 — 내부 도구 모음 런처. 이메일 승인 로그인(+비밀번호 폴백).
 // No BaseLayout; standalone page (wolkoadmin/car와 동일한 패턴)
 ---
 <!DOCTYPE html>
@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=5">
+  <link rel="stylesheet" href="/hub.css?v=6">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="manifest" href="/hub-manifest.json">
   <meta name="theme-color" content="#004f68">
@@ -25,8 +25,8 @@
 </head>
 <body>
 
-  <!-- ── 보안 질문 (기기당 최초 1회) ── -->
-  <div class="login-screen" id="securityScreen">
+  <!-- ── 이메일 로그인 (기본) ── -->
+  <div class="login-screen" id="emailScreen">
     <div class="login-card">
       <div class="login-logo">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
@@ -35,17 +35,48 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" data-t="securityTitle">보안 질문</p>
-      <p class="login-description" data-t="securityQuestion">월코센터 wifi 이름은 무엇인가요?</p>
+      <p class="login-title" data-t="emailLoginTitle">허브 로그인</p>
+      <p class="login-description" data-t="emailLoginDesc">이메일을 입력하면 로그인 링크를 보내드립니다.</p>
       <div class="login-input-wrap">
-        <input class="login-input" type="text" id="securityInput" autocomplete="off">
+        <input class="login-input" type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
       </div>
-      <p class="login-error" id="securityError"></p>
-      <button class="login-btn" id="securityBtn" onclick="checkSecurityAnswer()" data-t="continueBtn">계속</button>
+      <p class="login-error" id="emailError"></p>
+      <button class="login-btn" id="emailBtn" onclick="requestLogin()" data-t="sendLinkBtn">로그인 링크 받기</button>
+      <button class="login-link-btn" onclick="showScreen('loginScreen')" data-t="usePasswordBtn">비밀번호로 로그인</button>
     </div>
   </div>
 
-  <!-- ── 비밀번호 로그인 ── -->
+  <!-- ── 발송/대기 안내 ── -->
+  <div class="login-screen hidden" id="statusScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" id="statusTitle"></p>
+      <p class="login-description" id="statusDesc"></p>
+      <button class="login-btn" onclick="showScreen('emailScreen')" data-t="backBtn">뒤로</button>
+    </div>
+  </div>
+
+  <!-- ── 매직링크 확인 중 ── -->
+  <div class="login-screen hidden" id="magicVerifyScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" data-t="magicVerifying">로그인 확인 중…</p>
+    </div>
+  </div>
+
+  <!-- ── 비밀번호 로그인 (폴백) ── -->
   <div class="login-screen hidden" id="loginScreen">
     <div class="login-card">
       <div class="login-logo">
@@ -61,6 +92,7 @@
       </div>
       <p class="login-error" id="loginError"></p>
       <button class="login-btn" id="loginBtn" onclick="doLogin()" data-t="loginBtn">로그인</button>
+      <button class="login-link-btn" onclick="showScreen('emailScreen')" data-t="useEmailBtn">이메일로 로그인</button>
     </div>
   </div>
 
@@ -78,6 +110,10 @@
       <div class="hub-nav" id="hubNav"></div>
 
       <div class="hub-sidebar-foot">
+        <button class="hub-sidebar-lang" id="pendingBtn" onclick="openPendingPanel()" hidden>
+          <span data-t="pendingLabel">승인 대기</span>
+          <span class="hub-pending-badge" id="pendingCount"></span>
+        </button>
         <div class="hub-lang-toggle" role="group" aria-label="Language">
           <button class="hub-lang-btn" id="langKoBtn" onclick="setHubLang('ko')" aria-label="한국어" title="한국어">
             <span aria-hidden="true">🇰🇷</span> KO
@@ -105,6 +141,21 @@
       </div>
     </main>
   </div>
+
+  <!-- ── 승인 대기 목록 (master 전용) ── -->
+  <div class="hub-pending-overlay hidden" id="pendingModal">
+    <div class="hub-pending-card">
+      <div class="hub-pending-head">
+        <p data-t="pendingListTitle">승인 대기 목록</p>
+        <button class="hub-modal-close" onclick="closePendingPanel()" aria-label="close">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 1.5l12 12M13.5 1.5l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div id="pendingList"></div>
+    </div>
+  </div>
+
+  <div class="hub-toast" id="hubToast"></div>
 
   <script is:inline>
     const ICONS = {
@@ -142,16 +193,37 @@
         subtitle: '사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.',
         note: '이 페이지를 홈 화면에 추가하면 앱처럼 아이콘 하나로 모든 도구에 바로 접근할 수 있습니다.',
         recentBadge: '최근 사용',
-        securityTitle: '보안 질문',
-        securityQuestion: '월코센터 wifi 이름은 무엇인가요?',
-        securityWrong: '답이 올바르지 않습니다.',
-        continueBtn: '계속',
-        loginTitle: '허브 로그인',
+        emailLoginTitle: '허브 로그인',
+        emailLoginDesc: '이메일을 입력하면 로그인 링크를 보내드립니다.',
+        sendLinkBtn: '로그인 링크 받기',
+        sendingBtn: '전송 중…',
+        emailRequired: '이메일을 입력해 주세요.',
+        emailInvalid: '올바른 이메일 주소를 입력해 주세요.',
+        usePasswordBtn: '비밀번호로 로그인',
+        useEmailBtn: '이메일로 로그인',
+        backBtn: '뒤로',
+        sentTitle: '이메일을 확인해주세요',
+        sentDesc: '로그인 링크를 보냈습니다. 15분 이내에 눌러 주세요.',
+        pendingStatusTitle: '승인 대기 중',
+        pendingStatusDesc: '마스터 관리자 승인 후 다시 로그인 링크를 요청해 주세요.',
+        magicVerifying: '로그인 확인 중…',
+        magicFailed: '링크가 만료되었거나 올바르지 않습니다. 다시 시도해 주세요.',
+        loginTitle: '허브 로그인 (비밀번호)',
         loginBtn: '로그인',
         loginVerifying: '확인 중…',
         loginRequired: '비밀번호를 입력해 주세요.',
         loginWrong: '비밀번호가 올바르지 않습니다.',
         logout: '로그아웃',
+        pendingLabel: '승인 대기',
+        pendingListTitle: '승인 대기 목록',
+        pendingEmpty: '대기 중인 요청이 없습니다.',
+        approveBtn: '승인',
+        rejectBtn: '거부',
+        roleAdmin: '관리자',
+        roleCounselor: '상담사',
+        roleMaster: '마스터',
+        approvedToast: '승인했습니다.',
+        rejectedToast: '거부했습니다.',
       },
       en: {
         headerTitle: 'WOLKO Hub',
@@ -161,24 +233,54 @@
         subtitle: 'Pick a tool below. Each one has its own login.',
         note: 'Add this page to your home screen to access every tool from a single app icon.',
         recentBadge: 'Recent',
-        securityTitle: 'Security Question',
-        securityQuestion: 'What is the WOLKO center wifi name?',
-        securityWrong: 'That answer is not correct.',
-        continueBtn: 'Continue',
-        loginTitle: 'Hub Login',
+        emailLoginTitle: 'Hub Login',
+        emailLoginDesc: "Enter your email and we'll send you a login link.",
+        sendLinkBtn: 'Send login link',
+        sendingBtn: 'Sending…',
+        emailRequired: 'Please enter your email.',
+        emailInvalid: 'Please enter a valid email address.',
+        usePasswordBtn: 'Log in with password',
+        useEmailBtn: 'Log in with email',
+        backBtn: 'Back',
+        sentTitle: 'Check your email',
+        sentDesc: 'We sent you a login link. It expires in 15 minutes.',
+        pendingStatusTitle: 'Awaiting approval',
+        pendingStatusDesc: 'Please request a new login link after a master admin approves your access.',
+        magicVerifying: 'Verifying your login…',
+        magicFailed: 'This link is invalid or expired. Please try again.',
+        loginTitle: 'Hub Login (Password)',
         loginBtn: 'Login',
         loginVerifying: 'Verifying…',
         loginRequired: 'Please enter a password.',
         loginWrong: 'Incorrect password.',
         logout: 'Log out',
+        pendingLabel: 'Pending',
+        pendingListTitle: 'Pending Requests',
+        pendingEmpty: 'No pending requests.',
+        approveBtn: 'Approve',
+        rejectBtn: 'Reject',
+        roleAdmin: 'Admin',
+        roleCounselor: 'Counselor',
+        roleMaster: 'Master',
+        approvedToast: 'Approved.',
+        rejectedToast: 'Rejected.',
       },
     };
 
-    // wolko.org 본사이트와 언어 설정을 공유(wolko-lang) — 어느 쪽에서 바꾸든 서로 이어짐.
-    // 단, 허브 자체의 기본값은 영어(저장된 값이 아예 없을 때만) — 한국인 스태프는 KO로 바꾸면 됨.
+    // wolko.org 본사이트와 언어 설정을 공유(wolko-lang). 허브 자체 기본값은 영어.
     let hubLang = localStorage.getItem('wolko-lang') || localStorage.getItem('wolkoHubLang') || 'en';
+    let currentSession = null; // { email, role }
     const $ = id => document.getElementById(id);
     function t(key) { return HUB_T[hubLang]?.[key] ?? HUB_T.ko[key] ?? key; }
+
+    function showToast(msg, isError) {
+      const el = $('hubToast');
+      el.textContent = msg;
+      el.classList.toggle('is-error', !!isError);
+      el.classList.add('is-visible');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.remove('is-visible'), 3000);
+    }
 
     function markVisited(href) {
       try { localStorage.setItem('wolko-hub-last', href); } catch (e) {}
@@ -235,42 +337,87 @@
       applyLangToDOM();
     }
 
-    /* ── 보안 질문 (기기당 최초 1회) ── */
-    const WIFI_ANSWER = 'wolkomesh';
-    function checkSecurityAnswer() {
-      const val = $('securityInput').value.trim().toLowerCase();
-      if (val === WIFI_ANSWER) {
-        try { localStorage.setItem('wolko-hub-device-verified', 'true'); } catch (e) {}
-        $('securityScreen').classList.add('hidden');
-        setTimeout(() => $('securityScreen').style.display = 'none', 400);
-        $('loginScreen').classList.remove('hidden');
-      } else {
-        $('securityError').textContent = t('securityWrong');
-      }
+    /* ── 화면 전환 ── */
+    const SCREENS = ['emailScreen', 'statusScreen', 'magicVerifyScreen', 'loginScreen'];
+    function showScreen(id) {
+      SCREENS.forEach(s => {
+        $(s).style.display = s === id ? 'flex' : 'none';
+        $(s).classList.toggle('hidden', s !== id);
+      });
     }
-    $('securityInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkSecurityAnswer(); });
 
-    /* ── 비밀번호 로그인 (세션마다) ── */
-    function isHubTokenValid(token) {
+    /* ── 이메일 로그인 ── */
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    async function requestLogin() {
+      const email = $('emailInput').value.trim().toLowerCase();
+      const errEl = $('emailError');
+      errEl.textContent = '';
+      if (!email) { errEl.textContent = t('emailRequired'); return; }
+      if (!EMAIL_RE.test(email)) { errEl.textContent = t('emailInvalid'); return; }
+
+      const btn = $('emailBtn');
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = t('sendingBtn');
+
       try {
-        const decoded = atob(token);
-        const lastColon = decoded.lastIndexOf(':');
-        const data = decoded.slice(0, lastColon);
-        const parts = data.split(':');
-        if (parts[0] !== 'wolko-hub') return false;
-        const expires = parseInt(parts[1], 10);
-        return !!expires && Date.now() < expires;
+        const res = await fetch('/api/hub/request-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('emailInvalid'));
+
+        if (data.status === 'pending') {
+          $('statusTitle').textContent = t('pendingStatusTitle');
+          $('statusDesc').textContent = t('pendingStatusDesc');
+        } else {
+          $('statusTitle').textContent = t('sentTitle');
+          $('statusDesc').textContent = t('sentDesc');
+        }
+        showScreen('statusScreen');
       } catch (e) {
-        return false;
+        errEl.textContent = e.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    }
+    $('emailInput').addEventListener('keydown', e => { if (e.key === 'Enter') requestLogin(); });
+
+    /* ── 매직링크 검증 ── */
+    async function verifyMagicToken(token) {
+      showScreen('magicVerifyScreen');
+      try {
+        const res = await fetch('/api/hub/verify-magic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('magicFailed'));
+        applySession(data);
+        showHub();
+      } catch (e) {
+        showScreen('emailScreen');
+        $('emailError').textContent = e.message;
       }
     }
 
-    function showHub() {
-      $('securityScreen').style.display = 'none';
-      $('loginScreen').style.display = 'none';
-      $('hubShell').hidden = false;
+    function applySession(data) {
+      currentSession = { email: data.email, role: data.role };
+      sessionStorage.setItem('wolko-hub-token', data.hubToken);
+      sessionStorage.setItem('wolko-hub-email', data.email || '');
+      sessionStorage.setItem('wolko-hub-role', data.role || '');
+      if (data.adminToken) sessionStorage.setItem('wolko-admin-token', data.adminToken);
+      if (data.carToken) sessionStorage.setItem('wolko-car-token', data.carToken);
+      if (data.schedulePlannerToken) {
+        try { localStorage.setItem('wolko_schedule_planner_token', data.schedulePlannerToken); } catch (e) {}
+      }
     }
 
+    /* ── 비밀번호 로그인 (폴백) ── */
     async function doLogin() {
       const pw = $('pwInput').value;
       const btn = $('loginBtn');
@@ -290,14 +437,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('loginWrong'));
-
-        // 허브 로그인 한 번으로 관리자/차량/스케줄 플래너까지 자동 로그인되도록
-        // 각 도구가 실제로 확인하는 storage 키에 그대로 심어둔다.
-        sessionStorage.setItem('wolko-hub-token', data.hubToken);
-        sessionStorage.setItem('wolko-admin-token', data.adminToken);
-        sessionStorage.setItem('wolko-car-token', data.carToken);
-        try { localStorage.setItem('wolko_schedule_planner_token', data.schedulePlannerToken); } catch (e) {}
-
+        applySession({ ...data, email: 'wolkorea1@gmail.com', role: 'master' });
         showHub();
       } catch (e) {
         errEl.textContent = e.message;
@@ -310,25 +450,124 @@
 
     function doLogout() {
       sessionStorage.removeItem('wolko-hub-token');
+      sessionStorage.removeItem('wolko-hub-email');
+      sessionStorage.removeItem('wolko-hub-role');
       sessionStorage.removeItem('wolko-admin-token');
       sessionStorage.removeItem('wolko-car-token');
       try { localStorage.removeItem('wolko_schedule_planner_token'); } catch (e) {}
       location.reload();
     }
 
-    function initAuthFlow() {
+    function showHub() {
+      SCREENS.forEach(s => { $(s).style.display = 'none'; });
+      $('hubShell').hidden = false;
+      $('pendingBtn').hidden = currentSession?.role !== 'master';
+      if (currentSession?.role === 'master') refreshPendingCount();
+    }
+
+    function isHubTokenValid(token) {
+      try {
+        const decoded = atob(token);
+        const lastColon = decoded.lastIndexOf(':');
+        const data = decoded.slice(0, lastColon);
+        const parts = data.split(':');
+        if (parts[0] !== 'wolko-hub' || parts.length !== 4) return false;
+        const expires = parseInt(parts[3], 10);
+        return !!expires && Date.now() < expires;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    /* ── 승인 대기 패널 (master 전용) ── */
+    function authHeaders() {
+      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('wolko-hub-token') };
+    }
+    function roleLabel(role) {
+      return role === 'admin' ? t('roleAdmin') : role === 'master' ? t('roleMaster') : t('roleCounselor');
+    }
+    async function refreshPendingCount() {
+      try {
+        const res = await fetch('/api/hub/pending', { headers: authHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const pendingCount = (data.accounts || []).filter(a => a.status === 'pending').length;
+        const badge = $('pendingCount');
+        badge.textContent = pendingCount || '';
+        badge.classList.toggle('hidden', !pendingCount);
+      } catch (e) {}
+    }
+    async function openPendingPanel() {
+      $('pendingModal').classList.remove('hidden');
+      $('pendingList').innerHTML = '';
+      try {
+        const res = await fetch('/api/hub/pending', { headers: authHeaders() });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        const pending = (data.accounts || []).filter(a => a.status === 'pending');
+        if (!pending.length) {
+          $('pendingList').innerHTML = `<p class="hub-pending-empty">${t('pendingEmpty')}</p>`;
+          return;
+        }
+        $('pendingList').innerHTML = pending.map(a => `
+          <div class="hub-pending-item">
+            <div>
+              <p class="hub-pending-email">${esc(a.email)}</p>
+              <p class="hub-pending-role">${esc(roleLabel(a.role))}</p>
+            </div>
+            <div class="hub-pending-actions">
+              <button class="hub-pending-approve" onclick="respondToRequest('${esc(a.email)}','approve')">${t('approveBtn')}</button>
+              <button class="hub-pending-reject" onclick="respondToRequest('${esc(a.email)}','reject')">${t('rejectBtn')}</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        $('pendingList').innerHTML = `<p class="hub-pending-empty">${esc(e.message || '')}</p>`;
+      }
+    }
+    function closePendingPanel() {
+      $('pendingModal').classList.add('hidden');
+    }
+    async function respondToRequest(email, action) {
+      try {
+        const res = await fetch('/api/hub/approve', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ email, action }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        showToast(action === 'approve' ? t('approvedToast') : t('rejectedToast'));
+        openPendingPanel();
+        refreshPendingCount();
+      } catch (e) {
+        showToast(e.message || '', true);
+      }
+    }
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    /* ── 초기화 ── */
+    async function initAuthFlow() {
+      const params = new URLSearchParams(location.search);
+      const magic = params.get('magic');
+      if (magic) {
+        history.replaceState({}, '', location.pathname);
+        await verifyMagicToken(magic);
+        return;
+      }
+
       const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
       if (hubToken && isHubTokenValid(hubToken)) {
+        currentSession = {
+          email: sessionStorage.getItem('wolko-hub-email') || '',
+          role: sessionStorage.getItem('wolko-hub-role') || '',
+        };
         showHub();
         return;
       }
-      let deviceVerified = false;
-      try { deviceVerified = localStorage.getItem('wolko-hub-device-verified') === 'true'; } catch (e) {}
-      if (deviceVerified) {
-        $('securityScreen').style.display = 'none';
-        $('loginScreen').classList.remove('hidden');
-      }
-      // deviceVerified가 아니면 기본 상태(보안 질문 화면)를 그대로 둠
+      showScreen('emailScreen');
     }
 
     applyLangToDOM();

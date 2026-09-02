@@ -13,22 +13,17 @@
  *  기존처럼 그 페이지에서 직접 로그인해야 함)
  */
 
+import { signToken } from '../../lib/hubAccounts.js';
+
 const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
 };
 const PASSWORD_RE = /^[\x21-\x7E]+$/;
 const TOKEN_LIFETIME_MS = 24 * 60 * 60 * 1000; // 24시간, 각 도구 자체 로그인과 동일
-
-async function signToken(secret, data) {
-  const key = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
-  const sigHex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return btoa(`${data}:${sigHex}`);
-}
+// 비밀번호 로그인은 이메일 승인 체계와 별개인 레거시/예비 경로 —
+// wolkorea1@gmail.com이 계속 이 경로를 쓸 예정이라 master 권한으로 발급.
+const PASSWORD_LOGIN_EMAIL = 'wolkorea1@gmail.com';
 
 export async function onRequestPost(context) {
   const { env, request } = context;
@@ -57,7 +52,7 @@ export async function onRequestPost(context) {
 
     const expires = Date.now() + TOKEN_LIFETIME_MS;
     const [hubToken, adminToken, carToken, schedulePlannerToken] = await Promise.all([
-      signToken(env.ADMIN_PASSWORD, `wolko-hub:${expires}`),
+      signToken(env.ADMIN_PASSWORD, `wolko-hub:${PASSWORD_LOGIN_EMAIL}:master:${expires}`),
       signToken(env.ADMIN_PASSWORD, `wolko-admin:${expires}`),
       signToken(env.ADMIN_PASSWORD, `wolko-car:${expires}`),
       signToken(env.ADMIN_PASSWORD, `wolko-schedule-planner:admin:${expires}`),
