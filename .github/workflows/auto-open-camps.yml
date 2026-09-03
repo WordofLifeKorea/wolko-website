@@ -5,6 +5,13 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-open-camps
+  cancel-in-progress: false
+
 jobs:
   update-camp-status:
     runs-on: ubuntu-latest
@@ -15,7 +22,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Update camp registration status
         run: node scripts/auto-open-camps.mjs
@@ -25,4 +32,4 @@ jobs:
           git config user.name "wolko-bot"
           git config user.email "wolkorea1@gmail.com"
           git add src/content/camp_schedules/
-          git diff --cached --quiet && echo "No changes" || (git commit -m "chore: update camp registration status [automated]" && git push)
+          git diff --cached --quiet && echo "No changes" || (git commit -m "chore: update camp registration status [automated]" && git pull --rebase origin main && git push origin HEAD:main)
