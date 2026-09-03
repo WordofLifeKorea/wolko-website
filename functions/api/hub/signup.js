@@ -1,6 +1,6 @@
 /**
  * POST /api/hub/signup
- * body: { email, password }
+ * body: { email, password, requestedRole?: 'admin' | 'counselor' }
  *
  * 이메일+비밀번호 가입/최초 로그인 설정:
  *  - master 계정(하드코딩)이면 승인 없이 즉시 계정을 만들거나 비밀번호를 갱신하고 로그인 가능.
@@ -10,10 +10,13 @@
  *  - 이미 pending이면 그대로 대기 안내(중복 알림 메일은 안 보냄).
  *  - 거부된 계정이면 에러.
  *
- * 역할(admin/counselor)은 가입 시점에는 정해지지 않고, master가 승인할 때 지정한다.
+ * requestedRole은 허브 첫 화면에서 고른 가입 트랙(관리자/상담사)을 참고용으로
+ * 저장해두는 값일 뿐, 최종 역할은 master가 승인 시 지정한다. 다만 관리자
+ * 트랙(requestedRole: 'admin')은 @wol.org 이메일만 요청할 수 있도록 여기서
+ * 먼저 막는다 — 실제 역할 부여 시점(approve.js)에서도 다시 검증한다.
  */
 import {
-  normalizeEmail, isValidEmail, isValidPassword, isMasterEmail,
+  normalizeEmail, isValidEmail, isValidPassword, isMasterEmail, isWolDomain,
   getAccount, putAccount, hashPassword, sendEmail,
   pendingRequestEmailHtml, MASTER_EMAILS,
 } from '../../lib/hubAccounts.js';
@@ -38,11 +41,15 @@ export async function onRequestPost(context) {
 
   const email = normalizeEmail(body.email);
   const password = String(body.password || '');
+  const requestedRole = body.requestedRole === 'admin' ? 'admin' : 'counselor';
   if (!isValidEmail(email)) {
     return Response.json({ error: '올바른 이메일 주소를 입력해 주세요.' }, { status: 400, headers: CORS });
   }
   if (!isValidPassword(password)) {
     return Response.json({ error: '비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.' }, { status: 400, headers: CORS });
+  }
+  if (requestedRole === 'admin' && !isWolDomain(email) && !isMasterEmail(email)) {
+    return Response.json({ error: '관리자 가입은 wol.org 이메일만 가능합니다.' }, { status: 400, headers: CORS });
   }
 
   try {
@@ -62,7 +69,7 @@ export async function onRequestPost(context) {
 
     if (!account) {
       account = {
-        email, role: null, status: 'pending',
+        email, role: null, requestedRole, status: 'pending',
         passwordHash: hash, passwordSalt: salt,
         requestedAt: new Date().toISOString(),
       };

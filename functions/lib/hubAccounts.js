@@ -4,14 +4,20 @@
  * 역할 3단계:
  *  - master : 하드코딩된 최고 관리자 2명. 승인 없이 항상 가입/로그인 가능하고,
  *             다른 사람의 가입 요청을 승인(+역할 지정)/거부할 수 있는 유일한 계정.
- *  - admin  : master가 승인 시 "관리자"로 지정. 허브를 통해 관리자/차량
- *             스케줄/스케줄 플래너까지 SSO.
- *  - counselor : master가 승인 시 "상담사"로 지정. 허브는 통과하지만
- *             관리자 도구 SSO는 받지 않음(캠프 진행 페이지의 기존 상담사
- *             계정 체계는 이것과 완전히 별개).
+ *  - admin  : master가 승인 시 "관리자"로 지정. @wol.org 이메일에만 지정 가능
+ *             (가입/승인 양쪽에서 서버가 도메인을 검증). 허브를 통해 관리자/
+ *             차량 스케줄/스케줄 플래너까지 SSO.
+ *  - counselor : master가 승인 시 "상담사"로 지정. 도메인 제한 없음. 허브는
+ *             통과하지만 관리자 도구 SSO는 받지 않음(캠프 진행 페이지의
+ *             기존 상담사 계정 체계는 이것과 완전히 별개).
  *
  * 가입 시점에는 역할이 정해지지 않고(role: null, status: 'pending'),
- * master가 승인하면서 admin/counselor 중 하나로 역할을 지정한다.
+ * 대신 가입자가 고른 트랙(requestedRole: 'admin'|'counselor')을 참고용으로
+ * 저장해둔다. master가 승인하면서 admin/counselor 중 하나로 역할을 최종
+ * 지정하며, admin 지정은 서버가 @wol.org 도메인인지 다시 확인한다.
+ *
+ * 공유 비밀번호(ADMIN_PASSWORD) 로그인 경로는 없다 — master도 자기 이메일+
+ * 비밀번호 계정으로 로그인한다.
  */
 
 export const MASTER_EMAILS = ['wolkorea1@gmail.com', 'hkim3@wol.org'];
@@ -35,6 +41,10 @@ export function isValidPassword(password) {
 
 export function isMasterEmail(email) {
   return MASTER_EMAILS.includes(normalizeEmail(email));
+}
+
+export function isWolDomain(email) {
+  return normalizeEmail(email).endsWith('@wol.org');
 }
 
 function b64url(buf) {

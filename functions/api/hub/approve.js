@@ -4,12 +4,14 @@
  * body: { email, action: 'approve' | 'reject', role?: 'admin' | 'counselor' }
  *
  * 승인(action: 'approve') 시 role을 반드시 지정해야 하며, 그 역할로 계정이
- * 확정된다. 승인 완료 후 해당 이메일로 안내 메일을 보낸다(비밀번호는 가입 시
+ * 확정된다. admin 역할은 @wol.org 이메일에만 부여할 수 있다 — 실제 권한이
+ * 부여되는 지점이 여기이므로 가입 시점 검증과 별개로 여기서도 다시 막는다.
+ * 승인 완료 후 해당 이메일로 안내 메일을 보낸다(비밀번호는 가입 시
  * 이미 설정했으므로 바로 로그인 가능).
  */
 import {
   normalizeEmail, parseHubSessionToken, getAccount, putAccount,
-  sendEmail, approvedEmailHtml,
+  sendEmail, approvedEmailHtml, isWolDomain,
 } from '../../lib/hubAccounts.js';
 
 const CORS = {
@@ -48,6 +50,9 @@ export async function onRequestPost(context) {
   const role = body.role === 'admin' ? 'admin' : body.role === 'counselor' ? 'counselor' : null;
   if (action === 'approve' && !role) {
     return Response.json({ error: '승인 시 역할(관리자/상담사)을 지정해 주세요.' }, { status: 400, headers: CORS });
+  }
+  if (action === 'approve' && role === 'admin' && !isWolDomain(email)) {
+    return Response.json({ error: '관리자 역할은 wol.org 이메일에만 지정할 수 있습니다.' }, { status: 400, headers: CORS });
   }
 
   const account = await getAccount(env, email);
