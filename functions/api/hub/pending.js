@@ -32,7 +32,8 @@ export async function onRequestGet(context) {
 
   const accounts = await listAccounts(env);
   accounts.sort((a, b) => new Date(b.requestedAt || 0) - new Date(a.requestedAt || 0));
-  return Response.json({ accounts }, { headers: CORS });
+  const safeAccounts = accounts.map(({ passwordHash, passwordSalt, ...rest }) => rest);
+  return Response.json({ accounts: safeAccounts }, { headers: CORS });
 }
 
 export async function onRequestOptions() {

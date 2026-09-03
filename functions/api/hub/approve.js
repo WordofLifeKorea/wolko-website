@@ -1,13 +1,15 @@
 /**
  * POST /api/hub/approve
  * Authorization: Bearer <허브 세션 토큰> — master 권한만 허용.
- * body: { email, action: 'approve' | 'reject' }
+ * body: { email, action: 'approve' | 'reject', role?: 'admin' | 'counselor' }
  *
- * 승인 시 해당 이메일로 즉시 매직링크를 보내 바로 로그인할 수 있게 안내.
+ * 승인(action: 'approve') 시 role을 반드시 지정해야 하며, 그 역할로 계정이
+ * 확정된다. 승인 완료 후 해당 이메일로 안내 메일을 보낸다(비밀번호는 가입 시
+ * 이미 설정했으므로 바로 로그인 가능).
  */
 import {
   normalizeEmail, parseHubSessionToken, getAccount, putAccount,
-  createMagicLinkToken, sendEmail, approvedEmailHtml,
+  sendEmail, approvedEmailHtml,
 } from '../../lib/hubAccounts.js';
 
 const CORS = {
@@ -43,12 +45,18 @@ export async function onRequestPost(context) {
 
   const email = normalizeEmail(body.email);
   const action = body.action === 'reject' ? 'reject' : 'approve';
+  const role = body.role === 'admin' ? 'admin' : body.role === 'counselor' ? 'counselor' : null;
+  if (action === 'approve' && !role) {
+    return Response.json({ error: '승인 시 역할(관리자/상담사)을 지정해 주세요.' }, { status: 400, headers: CORS });
+  }
+
   const account = await getAccount(env, email);
   if (!account) {
     return Response.json({ error: '요청을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
   }
 
   account.status = action === 'approve' ? 'approved' : 'rejected';
+  if (action === 'approve') account.role = role;
   account.approvedAt = new Date().toISOString();
   account.approvedBy = session.email;
   await putAccount(env, account);
@@ -56,19 +64,18 @@ export async function onRequestPost(context) {
   if (action === 'approve') {
     try {
       const url = new URL(request.url);
-      const token = await createMagicLinkToken(env.ADMIN_PASSWORD, email, account.role);
-      const link = `${url.origin}/hub?magic=${encodeURIComponent(token)}`;
       await sendEmail(env, {
         to: email,
         subject: 'WOLKO 허브 접속이 승인되었습니다',
-        html: approvedEmailHtml({ url: link, role: account.role }),
+        html: approvedEmailHtml({ url: `${url.origin}/hub`, role: account.role }),
       });
     } catch (e) {
       console.error('approved notification email failed:', e);
     }
   }
 
-  return Response.json({ ok: true, account }, { headers: CORS });
+  const { passwordHash, passwordSalt, ...safeAccount } = account;
+  return Response.json({ ok: true, account: safeAccount }, { headers: CORS });
 }
 
 export async function onRequestOptions() {

@@ -1,21 +1,23 @@
 /**
- * 허브(/hub) 이메일 로그인 계정/토큰 공용 헬퍼.
+ * 허브(/hub) 이메일+비밀번호 로그인 계정/토큰 공용 헬퍼.
  *
  * 역할 3단계:
- *  - master : 하드코딩된 최고 관리자 2명. 승인 없이 항상 로그인 가능하고,
- *             다른 사람의 로그인 요청을 승인/거부할 수 있는 유일한 계정.
- *  - admin  : @wol.org 이메일만 요청 가능. master 승인 후 로그인 가능.
- *             허브를 통해 관리자/차량 스케줄/스케줄 플래너까지 SSO.
- *  - counselor : 아무 이메일이나 요청 가능. master 승인 후 로그인 가능.
- *             허브는 통과하지만 관리자 도구 SSO는 받지 않음(캠프 진행
- *             페이지의 기존 상담사 계정 체계는 이것과 완전히 별개).
+ *  - master : 하드코딩된 최고 관리자 2명. 승인 없이 항상 가입/로그인 가능하고,
+ *             다른 사람의 가입 요청을 승인(+역할 지정)/거부할 수 있는 유일한 계정.
+ *  - admin  : master가 승인 시 "관리자"로 지정. 허브를 통해 관리자/차량
+ *             스케줄/스케줄 플래너까지 SSO.
+ *  - counselor : master가 승인 시 "상담사"로 지정. 허브는 통과하지만
+ *             관리자 도구 SSO는 받지 않음(캠프 진행 페이지의 기존 상담사
+ *             계정 체계는 이것과 완전히 별개).
+ *
+ * 가입 시점에는 역할이 정해지지 않고(role: null, status: 'pending'),
+ * master가 승인하면서 admin/counselor 중 하나로 역할을 지정한다.
  */
 
 export const MASTER_EMAILS = ['wolkorea1@gmail.com', 'hkim3@wol.org'];
 const ACCOUNT_PREFIX = 'hub:account:';
-const USED_MAGIC_PREFIX = 'hub:usedmagic:';
-const MAGIC_LINK_LIFETIME_MS = 15 * 60 * 1000; // 15분
 const SESSION_LIFETIME_MS = 24 * 60 * 60 * 1000; // 24시간
+const PBKDF2_ITERATIONS = 100000;
 
 export function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -26,13 +28,13 @@ export function isValidEmail(email) {
   return EMAIL_RE.test(email);
 }
 
-export function isMasterEmail(email) {
-  return MASTER_EMAILS.includes(normalizeEmail(email));
+const PASSWORD_RE = /^[\x21-\x7E]{8,}$/;
+export function isValidPassword(password) {
+  return typeof password === 'string' && PASSWORD_RE.test(password);
 }
 
-export function roleForEmail(email) {
-  if (isMasterEmail(email)) return 'master';
-  return normalizeEmail(email).endsWith('@wol.org') ? 'admin' : 'counselor';
+export function isMasterEmail(email) {
+  return MASTER_EMAILS.includes(normalizeEmail(email));
 }
 
 function b64url(buf) {
@@ -40,6 +42,44 @@ function b64url(buf) {
   let str = '';
   for (const b of bytes) str += String.fromCharCode(b);
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function b64urlToBytes(str) {
+  let s = String(str || '').replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  const bin = atob(s);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function pbkdf2Bytes(password, saltBytes) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: saltBytes, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  return new Uint8Array(bits);
+}
+
+/** 새 비밀번호를 해싱해 { hash, salt } (둘 다 base64url 문자열)로 반환 */
+export async function hashPassword(password) {
+  const saltBytes = crypto.getRandomValues(new Uint8Array(16));
+  const hashBytes = await pbkdf2Bytes(password, saltBytes);
+  return { hash: b64url(hashBytes), salt: b64url(saltBytes) };
+}
+
+/** 입력한 비밀번호가 저장된 hash/salt와 일치하는지 확인(상수 시간 비교) */
+export async function verifyPassword(password, hash, salt) {
+  if (!hash || !salt) return false;
+  const hashBytes = await pbkdf2Bytes(password, b64urlToBytes(salt));
+  const computed = b64url(hashBytes);
+  if (computed.length !== hash.length) return false;
+  let diff = 0;
+  for (let i = 0; i < computed.length; i++) diff |= computed.charCodeAt(i) ^ hash.charCodeAt(i);
+  return diff === 0;
 }
 
 async function hmacKey(secret) {
@@ -71,36 +111,6 @@ export async function verifyToken(secret, token) {
   } catch {
     return null;
   }
-}
-
-/** 매직링크 토큰 발급: wolko-hub-magic:{email}:{role}:{expires} */
-export async function createMagicLinkToken(secret, email, role) {
-  const expires = Date.now() + MAGIC_LINK_LIFETIME_MS;
-  const data = `wolko-hub-magic:${email}:${role}:${expires}`;
-  return signToken(secret, data);
-}
-
-/** 매직링크 토큰 검증(형식 + 만료만) — 1회용 체크는 호출부에서 KV로 별도 처리 */
-export async function parseMagicLinkToken(secret, token) {
-  const data = await verifyToken(secret, token);
-  if (!data) return null;
-  const parts = data.split(':');
-  if (parts[0] !== 'wolko-hub-magic' || parts.length !== 4) return null;
-  const [, email, role, expiresStr] = parts;
-  const expires = parseInt(expiresStr, 10);
-  if (!expires || Date.now() > expires) return null;
-  return { email, role, raw: token };
-}
-
-/** 매직링크 토큰을 1회만 쓸 수 있게 표시. 이미 썼으면 false. */
-export async function claimMagicLinkOnce(env, token) {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
-  const hashHex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
-  const key = `${USED_MAGIC_PREFIX}${hashHex}`;
-  const already = await env.CAMP_KV.get(key);
-  if (already) return false;
-  await env.CAMP_KV.put(key, '1', { expirationTtl: 60 * 60 }); // 1시간 뒤 자동 정리(매직링크 수명보다 충분히 김)
-  return true;
 }
 
 /** 허브 세션 토큰 발급: wolko-hub:{email}:{role}:{expires} */
@@ -162,26 +172,12 @@ export async function sendEmail(env, { to, subject, html }) {
   }
 }
 
-export function magicLinkEmailHtml({ url, role }) {
-  const roleLabel = role === 'master' ? '마스터 관리자' : role === 'admin' ? '관리자' : '상담사';
+export function pendingRequestEmailHtml({ email }) {
   return `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
-      <h2 style="color:#004f68;">WOLKO 허브 로그인</h2>
-      <p>아래 버튼을 눌러 로그인하세요 (${roleLabel} 권한, 15분 이내 1회만 유효).</p>
-      <p style="margin:28px 0;">
-        <a href="${url}" style="background:#004f68;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;display:inline-block;">허브 로그인</a>
-      </p>
-      <p style="color:#888;font-size:12px;">이 이메일을 요청하지 않았다면 무시하셔도 됩니다.</p>
-    </div>`;
-}
-
-export function pendingRequestEmailHtml({ email, role }) {
-  const roleLabel = role === 'admin' ? '관리자' : '상담사';
-  return `
-    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
-      <h2 style="color:#004f68;">새 허브 접속 요청</h2>
-      <p><strong>${email}</strong> 님이 <strong>${roleLabel}</strong> 권한으로 WOLKO 허브 접속을 요청했습니다.</p>
-      <p>허브에 로그인해서 "승인 대기" 목록에서 승인/거부해 주세요.</p>
+      <h2 style="color:#004f68;">새 허브 가입 요청</h2>
+      <p><strong>${email}</strong> 님이 WOLKO 허브 가입을 요청했습니다.</p>
+      <p>허브에 로그인해서 "승인 대기" 목록에서 역할(관리자/상담사)을 지정하여 승인하거나 거부해 주세요.</p>
     </div>`;
 }
 
@@ -190,7 +186,7 @@ export function approvedEmailHtml({ url, role }) {
   return `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
       <h2 style="color:#004f68;">WOLKO 허브 접속이 승인되었습니다</h2>
-      <p>${roleLabel} 권한으로 승인되었습니다. 아래 버튼으로 바로 로그인하세요 (15분 이내 1회만 유효).</p>
+      <p>${roleLabel} 권한으로 승인되었습니다. 가입하신 이메일과 비밀번호로 바로 로그인하세요.</p>
       <p style="margin:28px 0;">
         <a href="${url}" style="background:#004f68;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;display:inline-block;">허브 로그인</a>
       </p>
