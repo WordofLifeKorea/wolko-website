@@ -607,7 +607,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import {
-    getAuth, signInWithEmailAndPassword, signInWithCustomToken, signOut, onAuthStateChanged
+    getAuth, signInWithEmailAndPassword, signInWithCustomToken, signOut, onAuthStateChanged, getIdTokenResult
   } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import {
     getDatabase, ref, push, get, set, update, remove, child
@@ -1971,6 +1971,19 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
   });
 
+  // 실제 이메일 확인: 일반 로그인은 user.email이 그대로 있고,
+  // 허브 SSO 로그인은 uid가 안전 치환된 값이라 커스텀 클레임에서 읽어야 한다.
+  async function resolveUserEmail(user) {
+    if (user.email) return user.email;
+    try {
+      const idTokenResult = await getIdTokenResult(user);
+      if (idTokenResult.claims?.email) return idTokenResult.claims.email;
+    } catch (e) {
+      console.error('resolveUserEmail failed:', e);
+    }
+    return user.uid;
+  }
+
   // ── 인증 상태 감지 ──
   onAuthStateChanged(auth, async user => {
     currentUser = user;
@@ -1983,8 +1996,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           else { renderPending(); }
         } else {
           // 기존 사용자(이 기능 도입 전) 또는 허브 SSO 최초 로그인 → 자동 승인
-          // 허브 SSO는 커스텀 토큰 uid에 이메일을 그대로 담으므로 user.email이 비어있을 수 있음
-          const userEmail = user.email || user.uid;
+          // 허브 SSO는 uid가 이메일을 안전한 문자로 치환한 값이라 user.email이 비어있음 —
+          // 실제 이메일은 커스텀 토큰의 email 클레임에서 읽어온다.
+          const userEmail = await resolveUserEmail(user);
           const autoData = { name: userEmail.split('@')[0], email: userEmail, status: 'approved', role: 'member', createdAt: Date.now() };
           await set(ref(db, `users/${user.uid}`), autoData);
           currentUserData = autoData;

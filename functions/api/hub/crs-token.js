@@ -35,10 +35,14 @@ export async function onRequestPost(context) {
   }
 
   try {
+    // Firebase Realtime Database 키는 . # $ [ ] / 를 포함할 수 없어 이메일을
+    // 그대로 uid/키로 쓸 수 없다 — 안전한 문자로 치환하고, 실제 이메일은
+    // 커스텀 클레임으로 함께 실어 보낸다.
+    const safeUid = session.email.replace(/[.#$[\]/]/g, '_');
     const customToken = await createFirebaseCustomToken(
       env.FIREBASE_CRS_SERVICE_ACCOUNT,
-      session.email,
-      { hubRole: session.role }
+      safeUid,
+      { email: session.email, hubRole: session.role }
     );
     return Response.json({ customToken, email: session.email }, { headers: CORS });
   } catch (e) {
