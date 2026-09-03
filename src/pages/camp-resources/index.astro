@@ -252,20 +252,6 @@ const pageTitle = 'WOLKO Camp Resources';
     .upload-placeholder-btn[disabled] { opacity:.55; cursor:not-allowed; }
     .load-error-banner { margin-bottom:16px; padding:12px 16px; border:1px solid #f1c9cf; border-radius:var(--radius-md); background:#fff8f9; color:var(--red); font-size:12.5px; }
     .load-error-banner[hidden] { display:none; }
-    .install-guide {
-      position:fixed; inset:0; z-index:1200; display:flex; align-items:center; justify-content:center; padding:20px;
-      background:rgba(0,18,28,.58); backdrop-filter:blur(8px);
-    }
-    .install-guide[hidden] { display:none; }
-    .install-guide-card {
-      width:min(390px,100%); border-radius:22px; background:#fff; padding:26px 24px 22px;
-      box-shadow:0 22px 60px rgba(0,0,0,.24);
-    }
-    .install-guide-title { margin:0 0 8px; color:var(--blue); font:800 18px/1.25 var(--sans); }
-    .install-guide-desc { margin:0 0 16px; color:var(--muted); font-size:13px; line-height:1.65; }
-    .install-guide-steps { margin:0 0 20px; padding-left:20px; color:var(--text); font-size:13px; line-height:1.8; }
-    .install-guide-actions { display:flex; justify-content:flex-end; }
-    .install-guide-actions .primary { min-width:96px; }
     .schedule-panel {
       border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff;
       box-shadow:var(--shadow-card); overflow:hidden;
@@ -337,7 +323,6 @@ const pageTitle = 'WOLKO Camp Resources';
         <div class="camp-lang-side is-active" id="campLangKo"><img src="https://flagcdn.com/w40/kr.png" alt="KR"><span>한국어</span></div>
         <div class="camp-lang-side is-inactive" id="campLangEn"><img src="https://flagcdn.com/w40/us.png" alt="US"><span>English</span></div>
       </div>
-      <button class="secondary" id="installBtn" type="button" hidden data-ko="앱 설치" data-en="Install App">앱 설치</button>
       <button class="edit-toggle" id="editModeBtn" type="button" aria-pressed="false">Staff 로그인</button>
     </div>
   </header>
@@ -463,16 +448,6 @@ const pageTitle = 'WOLKO Camp Resources';
     </div>
   </div>
 
-  <div class="install-guide" id="installGuide" hidden>
-    <div class="install-guide-card">
-      <h2 class="install-guide-title" id="installGuideTitle">앱으로 설치하기</h2>
-      <p class="install-guide-desc" id="installGuideDesc">브라우저 메뉴에서 홈 화면에 추가할 수 있어요.</p>
-      <ol class="install-guide-steps" id="installGuideSteps"></ol>
-      <div class="install-guide-actions">
-        <button class="primary" id="installGuideClose" type="button" data-ko="확인" data-en="OK">확인</button>
-      </div>
-    </div>
-  </div>
 
   <script>
     const TOKEN_KEY = 'wolko_camp_resources_token';
@@ -610,12 +585,6 @@ const pageTitle = 'WOLKO Camp Resources';
       langSlider: document.getElementById('campLangSlider'),
       langKo: document.getElementById('campLangKo'),
       langEn: document.getElementById('campLangEn'),
-      installBtn: document.getElementById('installBtn'),
-      installGuide: document.getElementById('installGuide'),
-      installGuideTitle: document.getElementById('installGuideTitle'),
-      installGuideDesc: document.getElementById('installGuideDesc'),
-      installGuideSteps: document.getElementById('installGuideSteps'),
-      installGuideClose: document.getElementById('installGuideClose'),
       editModeBtn: document.getElementById('editModeBtn'),
       mainTabs: document.getElementById('mainTabs'),
       subjectGroups: document.getElementById('subjectGroups'),
@@ -668,10 +637,6 @@ const pageTitle = 'WOLKO Camp Resources';
     let token = '';
     let loginMode = 'access';
     let editingItemId = '';
-    let deferredInstallPrompt = null;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-      || window.navigator.standalone === true;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
@@ -689,7 +654,6 @@ const pageTitle = 'WOLKO Camp Resources';
         option.textContent = option.dataset[currentLang];
       });
       updateLangToggleUI();
-      updateInstallGuideText();
       updateLoginUI();
       updateEditModeUI();
     }
@@ -741,28 +705,6 @@ const pageTitle = 'WOLKO Camp Resources';
       updateEditModeUI();
       render();
       showLogin('staff', message);
-    }
-
-    function updateInstallGuideText() {
-      if (!els.installGuideTitle || !els.installGuideDesc || !els.installGuideSteps) return;
-      const copy = currentLang === 'en'
-        ? {
-            title: 'Install as an App',
-            desc: isIOS ? 'Install this page from Safari.' : 'Install this page from your browser menu.',
-            steps: isIOS
-              ? ['Tap the share button at the bottom of Safari.', 'Choose "Add to Home Screen".', 'Tap "Add".']
-              : ['Tap the browser menu in the upper right.', 'Choose "Install app" or "Add to Home screen".', 'Confirm the installation.'],
-          }
-        : {
-            title: '앱으로 설치하기',
-            desc: isIOS ? 'Safari 브라우저에서 홈 화면에 추가할 수 있어요.' : '브라우저 메뉴에서 앱처럼 설치할 수 있어요.',
-            steps: isIOS
-              ? ['Safari 하단의 공유 버튼을 누르세요.', '"홈 화면에 추가"를 선택하세요.', '"추가"를 누르면 설치가 완료됩니다.']
-              : ['오른쪽 상단 브라우저 메뉴를 누르세요.', '"앱 설치" 또는 "홈 화면에 추가"를 선택하세요.', '설치를 확인하면 완료됩니다.'],
-          };
-      els.installGuideTitle.textContent = copy.title;
-      els.installGuideDesc.textContent = copy.desc;
-      els.installGuideSteps.innerHTML = copy.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('');
     }
 
     function updateLangToggleUI() {
@@ -1501,34 +1443,6 @@ const pageTitle = 'WOLKO Camp Resources';
       event.preventDefault();
       setLanguage(currentLang === 'ko' ? 'en' : 'ko');
     });
-    els.installGuideClose.addEventListener('click', () => { els.installGuide.hidden = true; });
-    els.installGuide.addEventListener('click', event => {
-      if (event.target === els.installGuide) els.installGuide.hidden = true;
-    });
-    els.installBtn.addEventListener('click', async () => {
-      if (deferredInstallPrompt) {
-        deferredInstallPrompt.prompt();
-        const choice = await deferredInstallPrompt.userChoice;
-        if (choice.outcome === 'accepted') {
-          deferredInstallPrompt = null;
-          els.installBtn.hidden = true;
-        }
-        return;
-      }
-      updateInstallGuideText();
-      els.installGuide.hidden = false;
-    });
-
-    window.addEventListener('beforeinstallprompt', event => {
-      event.preventDefault();
-      deferredInstallPrompt = event;
-      if (!isStandalone) els.installBtn.hidden = false;
-    });
-    window.addEventListener('appinstalled', () => {
-      deferredInstallPrompt = null;
-      els.installBtn.hidden = true;
-    });
-
     async function loadCamps() {
       const res = await fetch('/api/teach/camps', { headers: authHeaders() });
       const data = await res.json().catch(() => ({}));
@@ -1675,9 +1589,6 @@ const pageTitle = 'WOLKO Camp Resources';
     applyLanguage();
     render();
     bootstrapData();
-    if (!isStandalone) {
-      els.installBtn.hidden = false;
-    }
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/camp-resources-sw.js', { scope: '/camp-resources' })

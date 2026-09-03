@@ -60,10 +60,6 @@
     <div class="adm-header-right">
       <a href="/admin" target="_blank" class="adm-header-badge" style="text-decoration:none;cursor:pointer;" title="콘텐츠 편집 CMS">✏️ <span data-t="contentCms">콘텐츠 CMS</span></a>
       <span class="adm-header-badge">CAMP ADMIN</span>
-      <button class="btn-install-adm" id="adminInstallBtn" onclick="triggerAdminInstall()" style="display:none">
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11.5h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span data-t="installApp">앱 설치</span>
-      </button>
       <button class="btn-lang-toggle" onclick="toggleAdminLang()" title="Language">
         <span id="langToggleLabel">EN</span>
       </button>
@@ -307,7 +303,7 @@
     const ADMIN_T = {
       ko: {
         pageTitle:'관리자 — WOLKO 캠프 신청 현황',
-        adminTitle:'WOLKO 관리자', contentCms:'콘텐츠 CMS', logout:'로그아웃', installApp:'앱 설치',
+        adminTitle:'WOLKO 관리자', contentCms:'콘텐츠 CMS', logout:'로그아웃',
         loginTitle:'관리자 로그인', showPassword:'비밀번호 표시',
         loginPw:'비밀번호를 입력하세요', loginVerifying:'확인 중…', loginBtn:'로그인',
         loginRequired:'비밀번호를 입력해주세요.', loginWrong:'비밀번호가 올바르지 않습니다.',
@@ -392,16 +388,12 @@
         finalSuccess:'최종 확정되었습니다. 알림톡을 발송했습니다.', confirmErr:'확정 오류: ',
         csvNoStaff:'다운로드할 스태프 데이터가 없습니다.', csvNoCamp:'다운로드할 신청 데이터가 없습니다.',
         csvStaffFile:'스태프지원', csvCampFile:'신청목록',
-        installGuideTitle:'앱으로 설치하기', installGuideChrome:'Chrome 브라우저 메뉴에서 설치할 수 있어요.',
-        installGuideIos:'Safari 브라우저에서 설치할 수 있어요.',
-        installStepChrome1:'오른쪽 상단 ⋮ 메뉴 탭', installStepShare:'하단 가운데 공유 버튼 (□↑) 탭',
-        installStepHome:'"홈 화면에 추가" 선택', installStepAdd:'"추가" 탭', confirmBtn:'확인',
         season2026Summer:'2026 여름', campGroupWolko:'WOLKO 캠프', campGroupUnion:'연합캠프',
         campAll:'전체 캠프', campJunior2026:'2026 여름 주니어 영어 캠프', campUnion2026:'2026 교회 연합캠프',
       },
       en: {
         pageTitle:'Admin — WOLKO Camp Registration',
-        adminTitle:'WOLKO Admin', contentCms:'Content CMS', logout:'Log Out', installApp:'Install App',
+        adminTitle:'WOLKO Admin', contentCms:'Content CMS', logout:'Log Out',
         loginTitle:'Admin Login', showPassword:'Show password',
         loginPw:'Enter password', loginVerifying:'Verifying…', loginBtn:'Login',
         loginRequired:'Please enter your password.', loginWrong:'Incorrect password.',
@@ -488,10 +480,6 @@
         finalSuccess:'Registration finalized. Kakao notification sent.', confirmErr:'Confirm error: ',
         csvNoStaff:'No staff data to download.', csvNoCamp:'No camp registration data to download.',
         csvStaffFile:'StaffApplications', csvCampFile:'CampRegistrations',
-        installGuideTitle:'Install as App', installGuideChrome:'Install from the Chrome browser menu.',
-        installGuideIos:'Install from Safari.',
-        installStepChrome1:'Tap the ⋮ menu in the upper right', installStepShare:'Tap the share button (□↑)',
-        installStepHome:'Choose "Add to Home Screen"', installStepAdd:'Tap "Add"', confirmBtn:'OK',
         season2026Summer:'Summer 2026', campGroupWolko:'WOLKO Camps', campGroupUnion:'Union Camps',
         campAll:'All Camps', campJunior2026:'2026 Summer Junior English Camp', campUnion2026:'2026 Church Union Camp',
       }
@@ -514,21 +502,6 @@
       if (eyeBtn) eyeBtn.setAttribute('aria-label', t('showPassword'));
       const langBtn = document.getElementById('langToggleLabel');
       if (langBtn) langBtn.textContent = adminLang === 'ko' ? 'EN' : '한';
-      applyInstallGuideText();
-    }
-    function applyInstallGuideText() {
-      const titleEl = document.getElementById('admGuideTitle');
-      const descEl = document.getElementById('admGuideDesc');
-      const stepsEl = document.getElementById('admGuideSteps');
-      const okEl = document.getElementById('admGuideOk');
-      if (!descEl || !stepsEl) return;
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (titleEl) titleEl.textContent = t('installGuideTitle');
-      descEl.textContent = isIOS ? t('installGuideIos') : t('installGuideChrome');
-      stepsEl.innerHTML = isIOS
-        ? `<li>${t('installStepShare')}</li><li>${t('installStepHome')}</li><li>${t('installStepAdd')}</li>`
-        : `<li>${t('installStepChrome1')}</li><li>${t('installStepHome')}</li><li>${t('installStepAdd')}</li>`;
-      if (okEl) okEl.textContent = t('confirmBtn');
     }
     function toggleAdminLang() {
       adminLang = adminLang === 'ko' ? 'en' : 'ko';
@@ -3003,50 +2976,6 @@
       loadRegs();
     }
 
-    // ── PWA 설치 ──
-    let deferredAdminPrompt = null;
-    const isAdminStandalone = window.matchMedia('(display-mode: standalone)').matches
-      || window.navigator.standalone === true;
-    const isAdminIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-    // iOS일 경우 안내 모달 내용 교체
-    if (isAdminIOS) {
-      document.getElementById('admGuideEmoji').textContent = '🍎';
-    }
-    applyInstallGuideText();
-
-    if (!isAdminStandalone) {
-      document.getElementById('adminInstallBtn').style.display = '';
-
-      window.addEventListener('beforeinstallprompt', e => {
-        e.preventDefault();
-        deferredAdminPrompt = e;
-      });
-    }
-
-    window.addEventListener('appinstalled', () => {
-      deferredAdminPrompt = null;
-      document.getElementById('adminInstallBtn').style.display = 'none';
-    });
-
-    function triggerAdminInstall() {
-      if (deferredAdminPrompt) {
-        deferredAdminPrompt.prompt();
-        deferredAdminPrompt.userChoice.then(({ outcome }) => {
-          if (outcome === 'accepted') {
-            deferredAdminPrompt = null;
-            document.getElementById('adminInstallBtn').style.display = 'none';
-          }
-        });
-      } else {
-        document.getElementById('adminInstallGuide').style.display = 'flex';
-      }
-    }
-
-    function closeAdminGuide() {
-      document.getElementById('adminInstallGuide').style.display = 'none';
-    }
-
     // ── 서비스워커 등록 ──
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -3056,24 +2985,5 @@
     }
   </script>
 
-  <!-- 앱 설치 안내 모달 -->
-  <div id="adminInstallGuide" style="display:none;position:fixed;inset:0;background:rgba(0,15,30,.55);backdrop-filter:blur(7px);z-index:9999;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeAdminGuide()">
-    <div style="background:#fff;border-radius:20px;max-width:320px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);">
-      <div style="display:flex;justify-content:flex-end;padding:.8rem 1rem .2rem;">
-        <button onclick="closeAdminGuide()" style="background:none;border:none;font-size:1.4rem;color:#aaa;cursor:pointer;line-height:1;">×</button>
-      </div>
-      <div style="padding:.4rem 1.5rem 1.8rem;text-align:center;">
-        <div id="admGuideEmoji" style="font-size:2.2rem;margin-bottom:.8rem;">📲</div>
-        <h3 id="admGuideTitle" style="margin:0 0 .5rem;font-size:1.05rem;color:#004f68;">앱으로 설치하기</h3>
-        <p id="admGuideDesc" style="font-size:.83rem;color:#5a6f79;margin:0 0 1.2rem;line-height:1.6;">Chrome 브라우저 메뉴에서 설치할 수 있어요.</p>
-        <ol id="admGuideSteps" style="text-align:left;font-size:.86rem;line-height:2.1;color:#2d4a56;padding-left:1.2rem;margin:0 0 1.4rem;">
-          <li>오른쪽 상단 <strong>⋮ 메뉴</strong> 탭</li>
-          <li><strong>"홈 화면에 추가"</strong> 선택</li>
-          <li><strong>"추가"</strong> 탭</li>
-        </ol>
-        <button id="admGuideOk" onclick="closeAdminGuide()" style="width:100%;padding:.75rem;background:#004f68;color:#fff;border:none;border-radius:10px;font-size:.93rem;font-weight:700;cursor:pointer;">확인</button>
-      </div>
-    </div>
-  </div>
 </body>
 </html>

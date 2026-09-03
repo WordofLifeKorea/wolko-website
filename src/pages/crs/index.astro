@@ -42,8 +42,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .app-header .user-info { display:flex; align-items:center; gap:.8rem; font-size:.85rem; }
   .btn-logout { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; padding:.35rem .9rem; border-radius:20px; font-size:.8rem; cursor:pointer; transition:background .2s; }
   .btn-logout:hover { background:rgba(255,255,255,.25); }
-  .btn-install { background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.4); color:#fff; padding:.35rem .9rem; border-radius:20px; font-size:.8rem; cursor:pointer; transition:background .2s; display:inline-flex; align-items:center; gap:.3rem; font-weight:600; }
-  .btn-install:hover { background:rgba(255,255,255,.28); }
 
   /* ── 상단 컨트롤 ── */
   .top-bar { display:flex; gap:.8rem; flex-wrap:wrap; position:sticky; top:0; z-index:10; background:#f4f6f9; padding:1.2rem 0 .9rem; margin-bottom:0; max-width:560px; width:100%; margin-left:auto; margin-right:auto; box-sizing:border-box; padding-left:1.2rem; padding-right:1.2rem; }
@@ -264,13 +262,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     border-bottom:1px solid rgba(255,255,255,.1);
     box-shadow:0 8px 24px rgba(17,52,64,.16);
   }
-  .app-brand { display:flex; align-items:center; gap:.75rem; min-width:0; }
+  .app-brand { display:flex; align-items:center; gap:.75rem; min-width:0; color:#fff; }
   .app-brand-mark {
     display:grid; place-items:center; width:35px; height:35px; flex:0 0 auto;
     border:1px solid rgba(255,255,255,.24); border-radius:10px;
-    background:rgba(255,255,255,.1); color:#fff; font-size:.8rem; font-weight:900;
+    background:rgba(255,255,255,.1); overflow:hidden;
   }
-  .app-header h1 { font-size:1rem; letter-spacing:0; line-height:1.1; }
+  .app-brand-mark img { width:100%; height:100%; object-fit:cover; }
+  .app-header h1 { font-size:1rem; letter-spacing:0; line-height:1.1; color:#fff; }
   .app-kicker { display:block; margin-top:.2rem; color:rgba(255,255,255,.58); font-size:.66rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; }
   .app-header .user-info { gap:.55rem; color:rgba(255,255,255,.78); font-weight:600; }
   .app-header .user-info > span { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -506,12 +505,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     .app-header .user-info > span { display:none; }
     .crs-lang-toggle { height:30px; padding:2px; }
     .crs-lang-toggle span { min-width:21px; height:24px; padding:0 3px; }
-    .btn-install, .admin-btn, .btn-logout {
+    .admin-btn, .btn-logout {
       min-height:30px; padding:.36rem .5rem; border-radius:7px;
       font-size:.7rem; line-height:1; white-space:nowrap;
     }
-    .btn-install { gap:.22rem; }
-    .btn-install svg { width:12px; height:12px; }
     .app-body { height:auto; }
     .app-body.split .detail-panel { top:0; border-left:none; box-shadow:none; }
     .detail-panel-head { gap:.62rem; padding:.72rem .82rem; }
@@ -1081,7 +1078,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     root.innerHTML = `
       <div class="app-header">
         <a class="app-brand" href="/hub" title="WOLKO 허브로 돌아가기" style="text-decoration:none">
-          <div class="app-brand-mark">W</div>
+          <div class="app-brand-mark"><img src="/images/WOLKO Circle.png" alt="WOLKO"></div>
           <div>
             <h1>CRS for WOLKO</h1>
             <span class="app-kicker">Church Relationship System</span>
@@ -1090,10 +1087,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         <div class="user-info">
           ${crsLangToggleMarkup()}
           <span>${esc(currentUserData?.name || currentUser.email || currentUser.uid)}</span>
-          ${!isStandalone ? `<button class="btn-install" id="installBtn">
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11.5h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            ${isKo ? '앱 설치' : 'Install'}
-          </button>` : ''}
           ${currentUserData?.role === 'admin' ? `<button class="admin-btn" id="adminBtn">${t('admin_btn')}</button>` : ''}
           <button class="btn-logout" id="logoutBtn">${t('logout')}</button>
         </div>
@@ -1241,50 +1234,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         </div>
       </div>
 
-      <!-- 앱 설치 안내 모달 -->
-      <div class="modal-backdrop" id="installGuide">
-        <div class="modal" style="max-width:340px;text-align:center;">
-          <div class="modal-header" style="justify-content:flex-end;padding-bottom:.5rem;">
-            <button class="btn-close" id="installGuideClose">×</button>
-          </div>
-          <div style="padding:.5rem 1.5rem 1.8rem;">
-            <div style="font-size:2.2rem;margin-bottom:.8rem;">${isIOS ? '🍎' : '📲'}</div>
-            <h3 style="margin:0 0 .5rem;font-size:1.1rem;color:#004f68;">${isKo ? '앱으로 설치하기' : 'Install as App'}</h3>
-            <p style="font-size:.85rem;color:#5a6f79;margin:0 0 1.2rem;line-height:1.6;">
-              ${isIOS
-                ? (isKo ? 'Safari 브라우저에서 설치할 수 있어요.' : 'You can install from Safari.')
-                : (isKo ? 'Chrome 브라우저 메뉴에서 설치할 수 있어요.' : 'You can install from the Chrome browser menu.')}
-            </p>
-            <ol style="text-align:left;font-size:.88rem;line-height:2;color:#2d4a56;padding-left:1.2rem;margin:0 0 1.4rem;">
-              ${isIOS ? `
-              <li>${isKo ? '하단 가운데 <strong>공유 버튼 (□↑)</strong> 탭' : 'Tap <strong>Share button (□↑)</strong> at the bottom'}</li>
-              <li>${isKo ? '<strong>"홈 화면에 추가"</strong> 선택' : 'Select <strong>"Add to Home Screen"</strong>'}</li>
-              <li>${isKo ? '<strong>"추가"</strong> 탭' : 'Tap <strong>"Add"</strong>'}</li>
-              ` : `
-              <li>${isKo ? '오른쪽 상단 <strong>⋮ 메뉴</strong> 탭' : 'Tap <strong>⋮ menu</strong> (top right)'}</li>
-              <li>${isKo ? '<strong>"홈 화면에 추가"</strong> 선택' : 'Select <strong>"Add to Home Screen"</strong>'}</li>
-              <li>${isKo ? '<strong>"추가"</strong> 탭' : 'Tap <strong>"Add"</strong>'}</li>
-              `}
-            </ol>
-            <button id="installGuideClose2" style="width:100%;padding:.75rem;background:#004f68;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;">
-              ${isKo ? '확인' : 'OK'}
-            </button>
-          </div>
-        </div>
-      </div>
-
     `;
 
     bindCrsLangToggle();
     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
     document.getElementById('addChurchBtn').addEventListener('click', () => openEditModal(null));
-    if (!isStandalone) {
-      document.getElementById('installBtn')?.addEventListener('click', triggerInstall);
-    }
-    const closeGuide = () => document.getElementById('installGuide')?.classList.remove('open');
-    document.getElementById('installGuideClose')?.addEventListener('click', closeGuide);
-    document.getElementById('installGuideClose2')?.addEventListener('click', closeGuide);
-    document.getElementById('installGuide')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeGuide(); });
     if (currentUserData?.role === 'admin') {
       document.getElementById('adminBtn').addEventListener('click', openAdminModal);
     }
@@ -2065,14 +2019,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     closeDetailModal({ useHistory: false });
   });
 
-  // ── PWA 설치 프롬프트 ──
-  let deferredInstallPrompt = null;
-
-  // 이미 설치된 경우(standalone 모드) 버튼 표시 안 함
+  // standalone(설치된 앱) 모드 여부 — 뒤로가기 종료 가드에 사용
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
-  // 플랫폼 감지
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   let allowAppExit = false;
 
   function ensureStandaloneExitGuard() {
@@ -2122,35 +2071,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   ensureStandaloneExitGuard();
-
-  if (!isStandalone) {
-    window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault();
-      deferredInstallPrompt = e;
-      // 버튼은 항상 표시 중 — 별도 처리 불필요
-    });
-  }
-
-  window.addEventListener('appinstalled', () => {
-    deferredInstallPrompt = null;
-    // 설치 완료 → 버튼 숨김 (다음 renderApp 호출 시 isStandalone으로 자동 처리)
-    document.getElementById('installBtn')?.style.setProperty('display', 'none');
-  });
-
-  async function triggerInstall() {
-    if (deferredInstallPrompt) {
-      // 네이티브 설치 프롬프트 발동
-      deferredInstallPrompt.prompt();
-      const { outcome } = await deferredInstallPrompt.userChoice;
-      if (outcome === 'accepted') {
-        deferredInstallPrompt = null;
-        document.getElementById('installBtn')?.style.setProperty('display', 'none');
-      }
-    } else {
-      // 프롬프트 미준비 → Chrome 메뉴 안내 표시
-      document.getElementById('installGuide')?.classList.add('open');
-    }
-  }
 
   // ── 네이버 지도 ──
   let crsMap = null;
