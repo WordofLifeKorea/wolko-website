@@ -607,7 +607,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import {
-    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged
+    getAuth, signInWithEmailAndPassword, signInWithCustomToken, signOut, onAuthStateChanged
   } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import {
     getDatabase, ref, push, get, set, update, remove, child
@@ -707,6 +707,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       visit_history: '방문 기록', add_visit: '＋ 방문 추가', save_visit: '저장',
       visit_visitor: '방문자', no_visits: '아직 방문 기록이 없습니다.',
       no_account: '계정이 없으신가요?', signup: '회원가입', have_account: '이미 계정이 있으신가요?',
+      hub_login_title: '허브에서 로그인해주세요',
+      hub_login_desc: 'CRS는 이제 WOLKO 허브 계정으로 로그인합니다. 허브에 로그인한 뒤 CRS 카드를 눌러 다시 접속해주세요.',
+      hub_login_btn: '허브로 이동',
+      sso_connecting: '허브 계정으로 연결 중...',
+      sso_error: '허브 인증에 실패했습니다. 허브에서 다시 로그인해주세요.',
+      legacy_login_link: '기존 CRS 계정으로 로그인',
+      back: '뒤로',
       name_label: '이름 *', name_ph: '예: 홍길동', password_confirm: '비밀번호 확인',
       password_language_warning: '비밀번호는 영어 입력 상태에서 입력해주세요.',
       signup_btn: '회원가입', signing_up: '처리 중...',
@@ -754,6 +761,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       visit_history: 'Visit History', add_visit: '＋ Add Visit', save_visit: 'Save',
       visit_visitor: 'Visitor', no_visits: 'No visit records yet.',
       no_account: "Don't have an account?", signup: 'Sign Up', have_account: 'Already have an account?',
+      hub_login_title: 'Please log in via the WOLKO Hub',
+      hub_login_desc: 'CRS now signs in with your WOLKO Hub account. Log in at the Hub, then open the CRS card again.',
+      hub_login_btn: 'Go to Hub',
+      sso_connecting: 'Connecting with your Hub account...',
+      sso_error: 'Hub authentication failed. Please log in again at the Hub.',
+      legacy_login_link: 'Log in with an existing CRS account',
+      back: 'Back',
       name_label: 'Name *', name_ph: 'e.g. John Kim', password_confirm: 'Confirm Password',
       password_language_warning: 'Please switch to English input before entering the password.',
       signup_btn: 'Sign Up', signing_up: 'Processing...',
@@ -781,6 +795,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   const root = document.getElementById('crs-root');
   let currentUser = null;
   let currentUserData = null;
+  let ssoAttempted = false;
   let churches = [];
   let editingChurch = null;
   let viewingChurch = null;
@@ -936,8 +951,32 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
   }
 
-  // ── 로그인 화면 ──
-  function renderLogin() {
+  // ── 허브 로그인 안내 화면 (기본) ──
+  function renderHubPrompt(errorMsg) {
+    resetCrsMap();
+    setCrsAppActive(false);
+    root.innerHTML = `
+      <div class="login-wrap">
+        <div class="login-card">
+          <div class="login-logo">
+            <img src="/images/WOLKO Circle.png" alt="WOLKO">
+            <div class="login-logo-text">
+              <span class="login-logo-name">WOLKO 월코</span>
+              <span class="login-logo-sub">Word of Life Korea</span>
+            </div>
+          </div>
+          <p class="login-title">CRS for WOLKO</p>
+          <p class="login-description">${t('hub_login_desc')}</p>
+          <div class="login-err" id="hubErr" style="${errorMsg ? 'display:block' : ''}">${esc(errorMsg || '')}</div>
+          <a class="btn-primary" href="/hub" style="display:block;text-align:center;text-decoration:none;">${t('hub_login_btn')}</a>
+          <div class="signup-toggle"><a id="goLegacyLogin">${t('legacy_login_link')}</a></div>
+        </div>
+      </div>`;
+    document.getElementById('goLegacyLogin').addEventListener('click', renderLegacyLogin);
+  }
+
+  // ── 기존 CRS 계정 로그인 (폴백) ──
+  function renderLegacyLogin() {
     resetCrsMap();
     setCrsAppActive(false);
     root.innerHTML = `
@@ -958,7 +997,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <label>${t('password')}</label>
           <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" inputmode="latin" pattern="[\x21-\x7E]*">
           <button class="btn-primary" id="loginBtn">${t('login')}</button>
-          <div class="signup-toggle">${t('no_account')} <a id="goSignup">${t('signup')}</a></div>
+          <div class="signup-toggle"><a id="goHubPrompt">${t('back')}</a></div>
         </div>
       </div>`;
 
@@ -984,70 +1023,29 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     }
     btnEl.addEventListener('click', doLogin);
     pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-    document.getElementById('goSignup').addEventListener('click', renderSignup);
+    document.getElementById('goHubPrompt').addEventListener('click', () => renderHubPrompt());
   }
 
-  // ── 회원가입 화면 ──
-  function renderSignup() {
-    resetCrsMap();
-    setCrsAppActive(false);
-    root.innerHTML = `
-      <div class="login-wrap">
-        <div class="login-card">
-          <div class="login-logo">
-            <img src="/images/WOLKO Circle.png" alt="WOLKO">
-            <div class="login-logo-text">
-              <span class="login-logo-name">WOLKO 월코</span>
-              <span class="login-logo-sub">Word of Life Korea</span>
-            </div>
-          </div>
-          <p class="login-title">CRS for WOLKO</p>
-          <p class="login-description">${t('subtitle')}</p>
-          <div class="login-err" id="signupErr"></div>
-          <label>${t('name_label')}</label>
-          <input type="text" id="signupName" placeholder="${t('name_ph')}" autocomplete="name">
-          <label>${t('email')}</label>
-          <input type="email" id="signupEmail" placeholder="missionary@wolko.or.kr" autocomplete="email">
-          <label>${t('password')}</label>
-          <input type="password" id="signupPw" placeholder="••••••••" autocomplete="new-password" inputmode="latin" pattern="[\x21-\x7E]*">
-          <label>${t('password_confirm')}</label>
-          <input type="password" id="signupPw2" placeholder="••••••••" autocomplete="new-password" inputmode="latin" pattern="[\x21-\x7E]*">
-          <button class="btn-primary" id="signupBtn">${t('signup_btn')}</button>
-          <div class="signup-toggle">${t('have_account')} <a id="goLogin">${t('login')}</a></div>
-        </div>
-      </div>`;
-
-    const errEl  = document.getElementById('signupErr');
-    const btnEl  = document.getElementById('signupBtn');
-    const signupPwEl = document.getElementById('signupPw');
-    const signupPw2El = document.getElementById('signupPw2');
-    enforceAsciiPasswordInput(signupPwEl);
-    enforceAsciiPasswordInput(signupPw2El);
-
-    async function doSignup() {
-      const name  = document.getElementById('signupName').value.trim();
-      const email = document.getElementById('signupEmail').value.trim();
-      const pw    = signupPwEl.value;
-      const pw2   = signupPw2El.value;
-      errEl.style.display = 'none';
-      if (!name)       { errEl.style.display='block'; errEl.textContent=t('name_required_signup'); return; }
-      if (!email)      { errEl.style.display='block'; errEl.textContent=t('email_required'); return; }
-      if (pw.length<6) { errEl.style.display='block'; errEl.textContent=t('pw_short'); return; }
-      if (pw !== pw2)  { errEl.style.display='block'; errEl.textContent=t('pw_mismatch'); return; }
-      btnEl.disabled = true; btnEl.textContent = t('signing_up');
-      try {
-        const cred = await createUserWithEmailAndPassword(auth, email, pw);
-        await set(ref(db, `users/${cred.user.uid}`), {
-          name, email, status: 'pending', role: 'member', createdAt: Date.now()
-        });
-      } catch(e) {
-        errEl.style.display = 'block'; errEl.textContent = t('signup_error');
-        btnEl.disabled = false; btnEl.textContent = t('signup_btn');
+  // ── 허브 세션으로 CRS(Firebase) SSO 시도 ──
+  async function attemptHubSSO() {
+    const hubToken = sessionStorage.getItem('wolko-hub-token');
+    if (!hubToken) return false;
+    try {
+      const res = await fetch('/api/hub/crs-token', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + hubToken },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('crs sso failed:', data.error);
+        return false;
       }
+      await signInWithCustomToken(auth, data.customToken);
+      return true;
+    } catch (e) {
+      console.error('crs sso error:', e);
+      return false;
     }
-    btnEl.addEventListener('click', doSignup);
-    signupPw2El.addEventListener('keydown', e => { if(e.key==='Enter') doSignup(); });
-    document.getElementById('goLogin').addEventListener('click', renderLogin);
   }
 
   // ── 승인 대기 화면 ──
@@ -1091,7 +1089,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         </a>
         <div class="user-info">
           ${crsLangToggleMarkup()}
-          <span>${esc(currentUserData?.name || currentUser.email)}</span>
+          <span>${esc(currentUserData?.name || currentUser.email || currentUser.uid)}</span>
           ${!isStandalone ? `<button class="btn-install" id="installBtn">
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11.5h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             ${isKo ? '앱 설치' : 'Install'}
@@ -1984,8 +1982,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           if (currentUserData.status === 'approved') { renderApp(); startIdleTracking(); }
           else { renderPending(); }
         } else {
-          // 기존 사용자(이 기능 도입 전) → 자동 승인
-          const autoData = { name: user.email.split('@')[0], email: user.email, status: 'approved', role: 'member', createdAt: Date.now() };
+          // 기존 사용자(이 기능 도입 전) 또는 허브 SSO 최초 로그인 → 자동 승인
+          // 허브 SSO는 커스텀 토큰 uid에 이메일을 그대로 담으므로 user.email이 비어있을 수 있음
+          const userEmail = user.email || user.uid;
+          const autoData = { name: userEmail.split('@')[0], email: userEmail, status: 'approved', role: 'member', createdAt: Date.now() };
           await set(ref(db, `users/${user.uid}`), autoData);
           currentUserData = autoData;
           renderApp();
@@ -1998,7 +1998,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     } else {
       stopIdleTracking();
       currentUserData = null;
-      renderLogin();
+      if (!ssoAttempted) {
+        ssoAttempted = true;
+        const ok = await attemptHubSSO();
+        if (ok) return; // onAuthStateChanged가 새 user로 다시 호출됨
+        renderHubPrompt(sessionStorage.getItem('wolko-hub-token') ? t('sso_error') : '');
+      } else {
+        renderHubPrompt();
+      }
     }
   });
 
@@ -2023,7 +2030,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         renderPending();
       }
     } else {
-      renderLogin();
+      renderHubPrompt();
     }
   }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
