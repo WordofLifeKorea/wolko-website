@@ -8,6 +8,7 @@ role_badge: Staff
 campus: jeju
 category: stw
 order: 3
+active: false
 gender: female
 photo_url: /images/uploads/berny-photo_url-1779239309510.jpg
 photo_position: "center 42%"

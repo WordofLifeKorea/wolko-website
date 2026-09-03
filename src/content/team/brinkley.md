@@ -12,6 +12,7 @@ title_en: Marketing Coordinator · WOLBI Jeju
 role_badge: Staff
 campus: jeju
 category: stw
+active: false
 order: 3
 photo_url: /images/uploads/brink3.jpg
 photo_position: "center 38%"

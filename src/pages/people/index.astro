@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const allTeam = await getCollection('team');
+const allTeam = (await getCollection('team')).filter(p => p.data.active !== false);
 
 // 캠퍼스 + 구분별 그룹화 & 정렬
 const pyMissionary = allTeam

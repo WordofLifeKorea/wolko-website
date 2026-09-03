@@ -11,6 +11,8 @@ const team = defineCollection({
     campus: z.enum(['pyeongtaek', 'jeju']),
     category: z.enum(['missionary', 'stw']),
     order: z.number().default(99),
+    // 비활성화 (본국 귀국 등으로 목록/페이지에서 숨김. 데이터는 보존)
+    active: z.boolean().default(true).optional(),
     // 사진
     photo_url:      z.string().optional(),
     photo_position: z.string().optional(),
