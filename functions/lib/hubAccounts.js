@@ -37,6 +37,11 @@ export function isValidPassword(password) {
   return typeof password === 'string' && PASSWORD_RE.test(password);
 }
 
+const PHONE_RE = /^[0-9+\-\s()]{7,20}$/;
+export function isValidPhone(phone) {
+  return typeof phone === 'string' && PHONE_RE.test(phone);
+}
+
 export function isMasterEmail(email) {
   return MASTER_EMAILS.includes(normalizeEmail(email));
 }
@@ -180,11 +185,15 @@ export async function sendEmail(env, { to, subject, html }) {
   }
 }
 
-export function pendingRequestEmailHtml({ email }) {
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+export function pendingRequestEmailHtml({ email, name, phone }) {
   return `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
       <h2 style="color:#004f68;">새 허브 가입 요청</h2>
-      <p><strong>${email}</strong> 님이 WOLKO 허브 가입을 요청했습니다.</p>
+      <p><strong>${escapeHtml(name)}</strong> 님(${escapeHtml(phone)})이 <strong>${escapeHtml(email)}</strong>로 WOLKO 허브 가입을 요청했습니다.</p>
       <p>허브에 로그인해서 "승인 대기" 목록에서 역할(관리자/상담사)을 지정하여 승인하거나 거부해 주세요.</p>
     </div>`;
 }

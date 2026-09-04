@@ -1,6 +1,6 @@
 /**
  * POST /api/hub/signup
- * body: { email, password }
+ * body: { name, phone, email, password }
  *
  * 이메일+비밀번호 가입/최초 로그인 설정 — 단일 가입 화면, 트랙 구분 없음:
  *  - master 계정(하드코딩)이면 승인 없이 즉시 계정을 만들거나 비밀번호를 갱신하고 로그인 가능.
@@ -14,7 +14,7 @@
  * 지정한다. admin 지정은 approve.js가 @wol.org 도메인인지 검증한다.
  */
 import {
-  normalizeEmail, isValidEmail, isValidPassword, isMasterEmail,
+  normalizeEmail, isValidEmail, isValidPassword, isValidPhone, isMasterEmail,
   getAccount, putAccount, hashPassword, sendEmail,
   pendingRequestEmailHtml, MASTER_EMAILS,
 } from '../../lib/hubAccounts.js';
@@ -37,8 +37,16 @@ export async function onRequestPost(context) {
     return Response.json({ error: '잘못된 요청입니다.' }, { status: 400, headers: CORS });
   }
 
+  const name = String(body.name || '').trim();
+  const phone = String(body.phone || '').trim();
   const email = normalizeEmail(body.email);
   const password = String(body.password || '');
+  if (!name) {
+    return Response.json({ error: '이름을 입력해 주세요.' }, { status: 400, headers: CORS });
+  }
+  if (!isValidPhone(phone)) {
+    return Response.json({ error: '올바른 휴대폰 번호를 입력해 주세요.' }, { status: 400, headers: CORS });
+  }
   if (!isValidEmail(email)) {
     return Response.json({ error: '올바른 이메일 주소를 입력해 주세요.' }, { status: 400, headers: CORS });
   }
@@ -53,7 +61,7 @@ export async function onRequestPost(context) {
       const existing = await getAccount(env, email);
       await putAccount(env, {
         ...(existing || {}),
-        email, role: 'master', status: 'approved',
+        email, name, phone, role: 'master', status: 'approved',
         passwordHash: hash, passwordSalt: salt,
       });
       return Response.json({ status: 'approved' }, { headers: CORS });
@@ -63,7 +71,7 @@ export async function onRequestPost(context) {
 
     if (!account) {
       account = {
-        email, role: null, status: 'pending',
+        email, name, phone, role: null, status: 'pending',
         passwordHash: hash, passwordSalt: salt,
         requestedAt: new Date().toISOString(),
       };
@@ -72,7 +80,7 @@ export async function onRequestPost(context) {
         await sendEmail(env, {
           to: MASTER_EMAILS,
           subject: `[WOLKO 허브] 새 가입 요청: ${email}`,
-          html: pendingRequestEmailHtml({ email }),
+          html: pendingRequestEmailHtml({ email, name, phone }),
         });
       } catch (e) {
         console.error('pending notification email failed:', e);
@@ -89,7 +97,7 @@ export async function onRequestPost(context) {
 
     // approved 계정: 비밀번호가 아직 없으면(과거 승인분) 이번 요청으로 최초 설정 허용
     if (!account.passwordHash) {
-      await putAccount(env, { ...account, passwordHash: hash, passwordSalt: salt });
+      await putAccount(env, { ...account, name, phone, passwordHash: hash, passwordSalt: salt });
       return Response.json({ status: 'approved' }, { headers: CORS });
     }
 

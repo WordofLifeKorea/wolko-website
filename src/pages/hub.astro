@@ -64,6 +64,12 @@
       <p class="login-title" data-t="signupTitle">허브 가입</p>
       <p class="login-description" data-t="signupDesc">이메일과 비밀번호를 등록하면 마스터 관리자 승인 후 로그인할 수 있습니다.</p>
       <div class="login-input-wrap">
+        <input class="login-input" type="text" id="signupNameInput" placeholder="이름" autocomplete="name">
+      </div>
+      <div class="login-input-wrap">
+        <input class="login-input" type="tel" id="signupPhoneInput" placeholder="휴대폰 번호" autocomplete="tel">
+      </div>
+      <div class="login-input-wrap">
         <input class="login-input" type="email" id="signupEmailInput" placeholder="you@example.com" autocomplete="email">
       </div>
       <div class="login-input-wrap">
@@ -190,6 +196,9 @@
         signupBtn: '가입 요청',
         signupSending: '요청 중…',
         backToLoginBtn: '이미 계정이 있으신가요? 로그인',
+        nameRequired: '이름을 입력해 주세요.',
+        phoneRequired: '휴대폰 번호를 입력해 주세요.',
+        phoneInvalid: '올바른 휴대폰 번호를 입력해 주세요.',
         emailRequired: '이메일을 입력해 주세요.',
         emailInvalid: '올바른 이메일 주소를 입력해 주세요.',
         passwordRequired: '비밀번호를 입력해 주세요.',
@@ -231,6 +240,9 @@
         signupBtn: 'Request access',
         signupSending: 'Requesting…',
         backToLoginBtn: 'Already have an account? Log in',
+        nameRequired: 'Please enter your name.',
+        phoneRequired: 'Please enter your phone number.',
+        phoneInvalid: 'Please enter a valid phone number.',
         emailRequired: 'Please enter your email.',
         emailInvalid: 'Please enter a valid email address.',
         passwordRequired: 'Please enter a password.',
@@ -376,11 +388,17 @@
     $('loginPwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doAccountLogin(); });
 
     /* ── 이메일+비밀번호 가입 ── */
+    const PHONE_RE = /^[0-9+\-\s()]{7,20}$/;
     async function doSignup() {
+      const name = $('signupNameInput').value.trim();
+      const phone = $('signupPhoneInput').value.trim();
       const email = $('signupEmailInput').value.trim().toLowerCase();
       const password = $('signupPwInput').value;
       const errEl = $('signupError');
       errEl.textContent = '';
+      if (!name) { errEl.textContent = t('nameRequired'); return; }
+      if (!phone) { errEl.textContent = t('phoneRequired'); return; }
+      if (!PHONE_RE.test(phone)) { errEl.textContent = t('phoneInvalid'); return; }
       if (!email) { errEl.textContent = t('emailRequired'); return; }
       if (!EMAIL_RE.test(email)) { errEl.textContent = t('emailInvalid'); return; }
       if (!password) { errEl.textContent = t('passwordRequired'); return; }
@@ -394,7 +412,7 @@
         const res = await fetch('/api/hub/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ name, phone, email, password }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('passwordInvalid'));
@@ -406,6 +424,8 @@
           $('statusTitle').textContent = t('signupApprovedTitle');
           $('statusDesc').textContent = t('signupApprovedDesc');
         }
+        $('signupNameInput').value = '';
+        $('signupPhoneInput').value = '';
         $('signupEmailInput').value = '';
         $('signupPwInput').value = '';
         showScreen('statusScreen');
@@ -416,6 +436,8 @@
         btn.textContent = original;
       }
     }
+    $('signupNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
+    $('signupPhoneInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
     $('signupPwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
 
     function applySession(data) {
@@ -482,10 +504,12 @@
       const isWol = /@wol\.org$/i.test(a.email);
       const adminOption = isWol ? `<option value="admin">${t('roleAdmin')}</option>` : '';
       const counselorOption = `<option value="counselor">${t('roleCounselor')}</option>`;
+      const nameLine = a.name ? `${esc(a.name)}${a.phone ? ' · ' + esc(a.phone) : ''}` : '';
       return `
           <div class="hub-pending-item">
             <div>
               <p class="hub-pending-email">${esc(a.email)}</p>
+              ${nameLine ? `<p class="hub-pending-role">${nameLine}</p>` : ''}
               <p class="hub-pending-role">${esc(formatRequestedAt(a.requestedAt))}</p>
             </div>
             <div class="hub-pending-actions">
