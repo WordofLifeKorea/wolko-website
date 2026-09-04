@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/car.css?v=4">
+  <link rel="stylesheet" href="/car.css?v=5">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=4">
   <script src="/wolko-rail.js?v=4" defer></script>
@@ -69,8 +69,14 @@
     </div>
 
     <div class="car-view-tabs">
-      <button class="car-view-tab is-active" id="viewTabReservations" onclick="setView('reservations')" data-t="viewReservations">예약현황</button>
-      <button class="car-view-tab" id="viewTabMaintenance" onclick="setView('maintenance')" data-t="viewMaintenance">정비 관리</button>
+      <button class="car-view-tab is-active" id="viewTabReservations" onclick="setView('reservations')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span data-t="viewReservations">예약현황</span>
+      </button>
+      <button class="car-view-tab" id="viewTabMaintenance" onclick="setView('maintenance')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span data-t="viewMaintenance">정비 관리</span>
+      </button>
     </div>
 
     <div class="car-tabs" id="carTabs"></div>
@@ -272,6 +278,15 @@
       inspection: { ko: '정기 점검',     en: 'Regular Inspection' },
       other:      { ko: '기타',          en: 'Other' },
     };
+
+    const SERVICE_TYPE_ICON = {
+      oil:        { icon: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>', color: 'var(--blue-lt)' },
+      tire:       { icon: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>', color: '#3a4a52' },
+      battery:    { icon: '<rect x="3" y="8" width="15" height="8" rx="1.5"/><path d="M20 10.5v3"/><path d="m12 9-2.5 3.5h3L10 16"/>', color: 'var(--orange)' },
+      inspection: { icon: '<path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3z"/><path d="m9 12 2 2 4-4.5"/>', color: 'var(--green)' },
+      other:      { icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>', color: 'var(--mid)' },
+    };
+    function serviceTypeMeta(type) { return SERVICE_TYPE_ICON[type] || SERVICE_TYPE_ICON.other; }
 
     const CAR_T = {
       ko: {
@@ -914,7 +929,9 @@
       const latest = oilRecords[0];
       el.classList.toggle('is-empty', !latest);
       el.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
+        <span class="car-maint-banner-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+        </span>
         <div>
           <p class="car-maint-banner-label">${esc(t('lastOilChange'))}</p>
           <p class="car-maint-banner-value">${latest ? `${esc(latest.date)} · ${esc(formatKm(latest.mileageKm))} · ${esc(latest.technician)}` : esc(t('noOilRecord'))}</p>
@@ -930,7 +947,7 @@
       if (!list.length) {
         container.innerHTML = `
           <div class="car-empty">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
             <div>${esc(t('emptyMaintenance'))}</div>
           </div>`;
         return;
@@ -938,24 +955,35 @@
 
       container.innerHTML = list.map(m => {
         const v = vehicleById(m.vehicleId);
+        const type = serviceTypeMeta(m.serviceType);
         return `
-          <div class="car-card" style="--card-color:${v ? v.color : 'var(--blue)'}">
-            <div class="car-card-body">
-              <div class="car-card-top">
-                <span class="car-card-vehicle"><span class="dot"></span>${esc(v ? v.label : m.vehicleId)}</span>
-                <span class="car-card-time">${esc(m.date)}</span>
-              </div>
-              <p class="car-card-purpose"><span class="car-card-service-type">${esc(serviceTypeLabel(m.serviceType))}</span></p>
-              <p class="car-card-meta">${esc(formatKm(m.mileageKm))} · ${esc(m.technician)}</p>
-              ${m.notes ? `<p class="car-card-notes">${esc(m.notes)}</p>` : ''}
+          <div class="maint-row">
+            <div class="maint-row-rail">
+              <span class="maint-card-icon" style="--type-color:${type.color}">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${type.icon}</svg>
+              </span>
             </div>
-            <div class="car-card-actions">
-              <button class="car-card-btn" onclick="openMaintModal('${m.id}')" aria-label="edit">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9.5 1.5l3 3-8 8-3.5.5.5-3.5 8-8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-              </button>
-              <button class="car-card-btn danger" onclick="openConfirm('${m.id}','maintenance')" aria-label="delete">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3.5h8M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4 3.5l.5 9a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1l.5-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
+            <div class="car-card car-card--maint" style="--card-color:${v ? v.color : 'var(--blue)'}">
+              <div class="car-card-body">
+                <div class="car-card-top">
+                  <span class="car-card-vehicle"><span class="dot"></span>${esc(v ? v.label : m.vehicleId)}</span>
+                  <span class="car-card-time">${esc(m.date)}</span>
+                </div>
+                <p class="maint-card-title">${esc(serviceTypeLabel(m.serviceType))}</p>
+                <div class="maint-card-stats">
+                  <span class="maint-stat">${esc(formatKm(m.mileageKm))}</span>
+                  <span class="maint-stat">${esc(m.technician)}</span>
+                </div>
+                ${m.notes ? `<p class="car-card-notes">${esc(m.notes)}</p>` : ''}
+              </div>
+              <div class="car-card-actions">
+                <button class="car-card-btn" onclick="openMaintModal('${m.id}')" aria-label="edit">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9.5 1.5l3 3-8 8-3.5.5.5-3.5 8-8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="car-card-btn danger" onclick="openConfirm('${m.id}','maintenance')" aria-label="delete">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3.5h8M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4 3.5l.5 9a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1l.5-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
             </div>
           </div>`;
       }).join('');

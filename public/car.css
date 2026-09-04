@@ -108,6 +108,10 @@ html, body {
   background: #e8edf0;
 }
 .car-view-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   padding: 9px 10px;
   border: none;
   border-radius: 9px;
@@ -115,9 +119,11 @@ html, body {
   color: var(--mid);
   font: 800 12.5px/1 var(--f-body);
   cursor: pointer;
-  transition: all .15s;
+  transition: background .2s cubic-bezier(.22,.8,.25,1), color .2s ease, box-shadow .2s ease;
 }
+.car-view-tab svg { flex-shrink: 0; opacity: .8; }
 .car-view-tab.is-active { background: #fff; color: var(--blue); box-shadow: 0 2px 8px rgba(16,42,56,.1); }
+.car-view-tab.is-active svg { opacity: 1; }
 
 /* ── VEHICLE TABS ── */
 .car-tabs {
@@ -366,14 +372,22 @@ html, body {
 .car-maint-banner {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: 12px;
+  padding: 14px 16px;
   margin-bottom: 16px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: linear-gradient(135deg, rgba(0,79,104,.08), rgba(0,119,163,.04));
   border: 1px solid rgba(0,79,104,.12);
 }
-.car-maint-banner svg { flex-shrink: 0; color: var(--blue); }
+.car-maint-banner-icon {
+  flex-shrink: 0;
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(140deg, rgba(0,79,104,.16), rgba(0,79,104,.06));
+  border: 1px solid rgba(0,79,104,.16);
+  color: var(--blue);
+}
 .car-maint-banner-label { font: 700 11px/1.3 var(--f-body); color: var(--mid); margin: 0 0 2px; }
 .car-maint-banner-value { font: 800 13.5px/1.3 var(--f-body); color: var(--text); margin: 0; }
 .car-maint-banner.is-empty .car-maint-banner-value { color: var(--light); font-weight: 600; }
@@ -391,15 +405,43 @@ html, body {
   font: 700 11px/1 var(--f-body);
 }
 
-/* ── MAINTENANCE CARD extras ── */
-.car-card-service-type {
+/* ── MAINTENANCE TIMELINE ── */
+#maintListContainer { display: flex; flex-direction: column; }
+.maint-row { position: relative; display: flex; align-items: stretch; gap: 12px; padding-bottom: 10px; }
+.maint-row:last-child { padding-bottom: 0; }
+.maint-row-rail { position: relative; flex-shrink: 0; width: 40px; display: flex; justify-content: center; }
+.maint-row-rail::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 40px; bottom: -10px;
+  width: 2px;
+  background: var(--border);
+  transform: translateX(-50%);
+}
+.maint-row:last-child .maint-row-rail::after { display: none; }
+.maint-card-icon {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--type-color, var(--blue)) 18%, white), color-mix(in srgb, var(--type-color, var(--blue)) 6%, white));
+  border: 1px solid color-mix(in srgb, var(--type-color, var(--blue)) 22%, white);
+  box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--type-color, var(--blue)) 35%, transparent);
+  color: var(--type-color, var(--blue));
+}
+.car-card--maint { flex: 1; min-width: 0; margin-bottom: 0; }
+.maint-card-title { margin: 2px 0 6px; font: 800 14.5px/1.3 var(--f-body); color: var(--text); }
+.maint-card-stats { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.maint-stat {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: 999px;
-  background: var(--card-color, var(--blue));
-  color: #fff;
-  font: 800 10.5px/1.6 var(--f-body);
+  background: var(--bg);
+  color: var(--mid);
+  font: 700 11px/1.5 var(--f-body);
 }
 
 /* ── FAB ── */
@@ -585,4 +627,10 @@ html, body {
 
   .car-card { padding: 12px 12px 12px 15px; }
   .car-card-purpose { font-size: 13px; }
+
+  .maint-row-rail { width: 32px; }
+  .maint-row-rail::after { top: 32px; }
+  .maint-card-icon { width: 32px; height: 32px; border-radius: 10px; }
+  .maint-card-icon svg { width: 14px; height: 14px; }
+  .maint-card-title { font-size: 13.5px; }
 }
