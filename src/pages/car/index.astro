@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/car.css?v=3">
+  <link rel="stylesheet" href="/car.css?v=4">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=3">
   <script src="/wolko-rail.js?v=3" defer></script>
@@ -76,19 +76,23 @@
     <div class="car-tabs" id="carTabs"></div>
 
     <div id="reservationsView">
-      <div class="car-calendar">
-        <div class="cal-header">
-          <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(-1)" aria-label="prev">‹</button>
-          <button type="button" class="cal-month-label" id="calMonthLabel" onclick="toggleMonthPicker()"></button>
-          <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(1)" aria-label="next">›</button>
-          <button type="button" class="cal-today-btn" onclick="goToCurrentMonth()" data-t="today">오늘</button>
+      <div class="cal-flanking-row">
+        <div class="cal-mini" id="miniPrev"></div>
+        <div class="car-calendar">
+          <div class="cal-header">
+            <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(-1)" aria-label="prev">‹</button>
+            <button type="button" class="cal-month-label" id="calMonthLabel" onclick="toggleMonthPicker()"></button>
+            <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(1)" aria-label="next">›</button>
+            <button type="button" class="cal-today-btn" onclick="goToCurrentMonth()" data-t="today">오늘</button>
+          </div>
+          <div class="cal-month-picker hidden" id="monthPicker">
+            <select id="pickerMonth" aria-label="month"></select>
+            <input type="number" id="pickerYear" aria-label="year" min="2000" max="2100">
+            <button type="button" onclick="jumpToPickedMonth()" data-t="jumpBtn">이동</button>
+          </div>
+          <div id="calGrid"></div>
         </div>
-        <div class="cal-month-picker hidden" id="monthPicker">
-          <select id="pickerMonth" aria-label="month"></select>
-          <input type="number" id="pickerYear" aria-label="year" min="2000" max="2100">
-          <button type="button" onclick="jumpToPickedMonth()" data-t="jumpBtn">이동</button>
-        </div>
-        <div id="calGrid"></div>
+        <div class="cal-mini" id="miniNext"></div>
       </div>
 
       <div class="car-selected-date-bar hidden" id="selectedDateBar">
@@ -796,6 +800,50 @@
       $('calGrid').innerHTML = `
         <div class="cal-weekdays">${wk.map(w => `<span>${esc(w)}</span>`).join('')}</div>
         ${weeksHtml}`;
+
+      // 넓은 화면(≥1500px)에서만 CSS로 보이는 이전/다음 달 미리보기 — 좁으면 그냥 빈 채로 둔다.
+      renderMiniMonth($('miniPrev'), new Date(year, month - 1, 1));
+      renderMiniMonth($('miniNext'), new Date(year, month + 1, 1));
+    }
+
+    /** 이전/다음 달 미리보기 미니 캘린더 — 점 하나로 "그날 예약 있다"만 표시, 클릭하면 그 달로 이동.
+        차량 목록은 이미 전체 기간을 다 불러와 두므로(loadAll) 별도 조회 없이 그대로 쓴다. */
+    function renderMiniMonth(container, monthDate) {
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth();
+      const firstOfMonth = new Date(year, month, 1);
+      const startOffset = firstOfMonth.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+      const todayStr_ = todayStr();
+      const filteredReservations = reservations.filter(r => activeVehicle === 'all' || r.vehicleId === activeVehicle);
+
+      let cellsHtml = '';
+      for (let i = 0; i < totalCells; i++) {
+        const cellDate = new Date(year, month, i - startOffset + 1);
+        const cellStr = toDateStr(cellDate);
+        const inMonth = cellDate.getMonth() === month;
+        const isToday = cellStr === todayStr_;
+        const hasItems = inMonth && filteredReservations.some(r => cellStr >= r.startDate && cellStr <= r.endDate);
+        cellsHtml += `
+          <button type="button" class="cal-mini-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}"
+            ${inMonth ? `onclick="jumpMiniMonth(${year},${month},'${cellStr}')"` : 'disabled'}>
+            ${cellDate.getDate()}${hasItems ? '<span class="cal-mini-dot"></span>' : ''}
+          </button>`;
+      }
+      const monthLabel = carLang === 'en'
+        ? monthDate.toLocaleString('en-US', { month: 'short', year: 'numeric' })
+        : `${year}년 ${month + 1}월`;
+      container.innerHTML = `
+        <button type="button" class="cal-mini-header" onclick="jumpMiniMonth(${year},${month})">${esc(monthLabel)}</button>
+        <div class="cal-mini-grid">${cellsHtml}</div>`;
+    }
+    function jumpMiniMonth(year, month, dateStr) {
+      calendarMonth = new Date(year, month, 1);
+      selectedDate = dateStr || null;
+      $('monthPicker').classList.add('hidden');
+      renderCalendar();
+      renderAgenda();
     }
 
     /* ── 연/월 직접 이동 ── */

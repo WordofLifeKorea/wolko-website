@@ -58,7 +58,34 @@
     .sc-notice-card .sc-btn { margin-top:14px; display:inline-flex; }
 
     /* ── 캘린더(구글 캘린더 월간 뷰 스타일 — 여러 날짜에 걸친 일정은 막대로, 시간 지정 일정은 한 줄로) ── */
-    .sc-calendar { margin-bottom:16px; border-radius:16px; border:1px solid var(--border); background:var(--card); overflow:hidden; }
+    .cal-flanking-row { display:flex; align-items:flex-start; gap:16px; margin-bottom:16px; }
+    .sc-calendar { flex:1; min-width:0; margin-bottom:0; border-radius:16px; border:1px solid var(--border); background:var(--card); overflow:hidden; }
+
+    /* ── 이전/다음 달 미리보기(넓은 화면에서만, 캘린더 양옆) ── */
+    .cal-mini {
+      display:none; flex-direction:column; flex:0 0 220px; width:220px; padding:12px;
+      border-radius:14px; border:1px solid var(--border); background:#fafcfd;
+    }
+    .cal-mini-header {
+      margin:0 0 8px; padding:4px 6px; border:none; background:none; border-radius:6px;
+      font:800 11.5px/1 var(--body); color:var(--mid); text-align:center; cursor:pointer;
+    }
+    .cal-mini-header:hover { background:var(--bg); color:var(--blue); }
+    .cal-mini-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+    .cal-mini-cell {
+      aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+      border:none; border-radius:6px; background:transparent; color:var(--mid); font:600 9.5px/1 var(--body); cursor:pointer;
+    }
+    .cal-mini-cell:hover:not(:disabled) { background:var(--bg); }
+    .cal-mini-cell:disabled { cursor:default; }
+    .cal-mini-cell.is-outside { visibility:hidden; }
+    .cal-mini-cell.is-today { background:var(--blue); color:#fff; font-weight:800; }
+    .cal-mini-dot { width:3px; height:3px; border-radius:50%; background:var(--blue); }
+    .cal-mini-cell.is-today .cal-mini-dot { background:#fff; }
+    @media (min-width:1500px) {
+      .sc-wrap { max-width:1680px; }
+      .cal-mini { display:flex; }
+    }
     .cal-header { display:flex; align-items:center; gap:8px; padding:14px 14px 10px; }
     .cal-nav-btn {
       flex-shrink:0; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;
@@ -273,19 +300,23 @@
 
     <!-- 캘린더 본체 -->
     <div id="calendarBody" class="hidden">
-      <div class="sc-calendar">
-        <div class="cal-header">
-          <button type="button" class="cal-nav-btn" onclick="shiftMonth(-1)" aria-label="prev">‹</button>
-          <button type="button" class="cal-month-label" id="calMonthLabel" onclick="toggleMonthPicker()"></button>
-          <button type="button" class="cal-nav-btn" onclick="shiftMonth(1)" aria-label="next">›</button>
-          <button type="button" class="cal-today-btn" onclick="goToCurrentMonth()" data-t="today">오늘</button>
+      <div class="cal-flanking-row">
+        <div class="cal-mini" id="miniPrev"></div>
+        <div class="sc-calendar">
+          <div class="cal-header">
+            <button type="button" class="cal-nav-btn" onclick="shiftMonth(-1)" aria-label="prev">‹</button>
+            <button type="button" class="cal-month-label" id="calMonthLabel" onclick="toggleMonthPicker()"></button>
+            <button type="button" class="cal-nav-btn" onclick="shiftMonth(1)" aria-label="next">›</button>
+            <button type="button" class="cal-today-btn" onclick="goToCurrentMonth()" data-t="today">오늘</button>
+          </div>
+          <div class="cal-month-picker hidden" id="monthPicker">
+            <select id="pickerMonth" aria-label="month"></select>
+            <input type="number" id="pickerYear" aria-label="year" min="2000" max="2100">
+            <button type="button" class="sc-btn" onclick="jumpToPickedMonth()" data-t="jumpBtn">이동</button>
+          </div>
+          <div id="calGrid"></div>
         </div>
-        <div class="cal-month-picker hidden" id="monthPicker">
-          <select id="pickerMonth" aria-label="month"></select>
-          <input type="number" id="pickerYear" aria-label="year" min="2000" max="2100">
-          <button type="button" class="sc-btn" onclick="jumpToPickedMonth()" data-t="jumpBtn">이동</button>
-        </div>
-        <div id="calGrid"></div>
+        <div class="cal-mini" id="miniNext"></div>
       </div>
 
       <div class="sc-selected-date-bar hidden" id="selectedDateBar">
@@ -530,8 +561,9 @@
       // 로딩 중이거나 실패했을 때 화면이 비어 보이지 않게 한다.
       renderCalendar();
       renderAgenda();
-      const rangeStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1 - 7);
-      const rangeEnd = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 7);
+      // 이전/다음 달 미리보기 미니 캘린더에도 쓸 수 있게 앞뒤로 한 달씩 넉넉히 가져온다.
+      const rangeStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1);
+      const rangeEnd = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 2, 0);
       $('loadingIndicator').classList.remove('hidden');
       $('errorNotice').classList.add('hidden');
       try {
@@ -675,6 +707,47 @@
       $('calGrid').innerHTML = `
         <div class="cal-weekdays">${wk.map(w => `<span>${esc(w)}</span>`).join('')}</div>
         ${weeksHtml}`;
+
+      // 넓은 화면(≥1500px)에서만 CSS로 보이는 이전/다음 달 미리보기 — 좁으면 그냥 빈 채로 둔다.
+      renderMiniMonth($('miniPrev'), new Date(year, month - 1, 1));
+      renderMiniMonth($('miniNext'), new Date(year, month + 1, 1));
+    }
+
+    /** 이전/다음 달 미리보기 미니 캘린더 — 점 하나로 "그날 뭔가 있다"만 표시, 클릭하면 그 달로 이동. */
+    function renderMiniMonth(container, monthDate) {
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth();
+      const firstOfMonth = new Date(year, month, 1);
+      const startOffset = firstOfMonth.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+      const todayStr_ = todayStr();
+
+      let cellsHtml = '';
+      for (let i = 0; i < totalCells; i++) {
+        const cellDate = new Date(year, month, i - startOffset + 1);
+        const cellStr = toDateStr(cellDate);
+        const inMonth = cellDate.getMonth() === month;
+        const isToday = cellStr === todayStr_;
+        const hasItems = inMonth && events.some(ev => { const r = eventDateRange(ev); return cellStr >= r.startDate && cellStr <= r.endDate; });
+        cellsHtml += `
+          <button type="button" class="cal-mini-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}"
+            ${inMonth ? `onclick="jumpMiniMonth(${year},${month},'${cellStr}')"` : 'disabled'}>
+            ${cellDate.getDate()}${hasItems ? '<span class="cal-mini-dot"></span>' : ''}
+          </button>`;
+      }
+      const monthLabel = scLang === 'en'
+        ? monthDate.toLocaleString('en-US', { month: 'short', year: 'numeric' })
+        : `${year}년 ${month + 1}월`;
+      container.innerHTML = `
+        <button type="button" class="cal-mini-header" onclick="jumpMiniMonth(${year},${month})">${esc(monthLabel)}</button>
+        <div class="cal-mini-grid">${cellsHtml}</div>`;
+    }
+    function jumpMiniMonth(year, month, dateStr) {
+      calendarMonth = new Date(year, month, 1);
+      selectedDate = dateStr || null;
+      $('monthPicker').classList.add('hidden');
+      loadEvents();
     }
 
     /* 날짜를 선택했을 때만 그날 일정을 보여준다 — 그리드 자체가 이미 한눈에 보기용이라
