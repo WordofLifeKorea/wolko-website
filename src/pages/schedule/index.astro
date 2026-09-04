@@ -17,8 +17,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolko-rail.css?v=2">
-  <script src="/wolko-rail.js?v=2" defer></script>
+  <link rel="stylesheet" href="/wolko-rail.css?v=3">
+  <script src="/wolko-rail.js?v=3" defer></script>
   <meta name="theme-color" content="#004f68">
   <style is:global>
     :root {
@@ -76,7 +76,7 @@
     .cal-week { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid var(--border); }
     .cal-daynum-cell {
       grid-row:1 / -1; display:flex; justify-content:flex-end; align-items:flex-start; border:none; border-right:1px solid var(--border);
-      background:transparent; padding:5px 6px 2px; cursor:pointer; font-family:var(--body); min-height:34px;
+      background:transparent; padding:7px 8px 4px; cursor:pointer; font-family:var(--body); min-height:112px;
     }
     .cal-daynum-cell:nth-child(7n) { border-right:none; }
     .cal-daynum-cell:hover { background:var(--bg); }
@@ -89,12 +89,12 @@
     }
 
     .cal-bar {
-      margin:1px 3px; padding:1.5px 6px; border-radius:4px; background:var(--blue); color:#fff;
-      font:700 10px/1.6 var(--body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+      margin:2px 3px; padding:3px 7px; border-radius:4px; background:var(--blue); color:#fff;
+      font:700 10.5px/1.5 var(--body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
     }
     .cal-timed {
-      margin:1px 3px; padding:1.5px 6px; border-radius:4px; display:flex; align-items:center; gap:4px;
-      font:600 10px/1.6 var(--body); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+      margin:2px 3px; padding:3px 7px; border-radius:4px; display:flex; align-items:center; gap:5px;
+      font:600 10.5px/1.5 var(--body); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
     }
     .cal-timed:hover, .cal-bar:hover { filter:brightness(0.95); }
     .cal-timed-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; background:var(--blue); }
@@ -141,11 +141,10 @@
     }
     .sc-card::before { content:''; position:absolute; left:0; top:12px; bottom:12px; width:4px; border-radius:3px; background:var(--card-color, var(--blue)); }
     .sc-card-body { flex:1; min-width:0; }
-    .sc-card-top { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
-    .sc-card-time { font:700 12.5px/1 var(--body); color:var(--blue); }
-    .sc-card-title { margin:2px 0 0; font:700 13.5px/1.4 var(--body); color:var(--text); }
-    .sc-card-desc { margin:4px 0 0; font-size:11.5px; color:var(--mid); line-height:1.6; white-space:pre-wrap; }
-    .sc-card-location { margin:4px 0 0; font-size:11.5px; color:var(--light); }
+    .sc-card-title { margin:0; font:700 13.5px/1.45 var(--body); color:var(--text); }
+    .sc-card-time { display:inline-block; margin-right:7px; font:700 10.5px/1 var(--body); color:var(--mid); white-space:nowrap; }
+    .sc-card-desc { margin:5px 0 0; font-size:11.5px; color:var(--mid); line-height:1.6; white-space:pre-wrap; }
+    .sc-card-location { margin:5px 0 0; font-size:11.5px; color:var(--light); }
     .sc-card-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
     .sc-card-btn {
       display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%;
@@ -671,10 +670,7 @@
           html += `
             <div class="sc-card" style="--card-color:${eventColor(ev)}">
               <div class="sc-card-body">
-                <div class="sc-card-top">
-                  <span class="sc-card-time">${esc(formatTimeRange(ev))}</span>
-                </div>
-                <p class="sc-card-title">${esc(ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'))}</p>
+                <p class="sc-card-title"><span class="sc-card-time">${esc(formatTimeRange(ev))}</span>${esc(ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'))}</p>
                 ${ev.location ? `<p class="sc-card-location">📍 ${esc(ev.location)}</p>` : ''}
                 ${ev.description ? `<p class="sc-card-desc">${esc(ev.description)}</p>` : ''}
               </div>
