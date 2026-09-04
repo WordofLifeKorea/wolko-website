@@ -1,30 +1,84 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+// CRS(Church Relationship System) — 다른 허브 도구(car/schedule/wolkoadmin)와 동일하게
+// 독립 페이지로 전환. 예전엔 BaseLayout(메인 사이트 전체 메뉴+푸터)을 썼는데, 내부 도구에
+// 공개 사이트 내비게이션/푸터가 딸려나오는 게 맞지 않아서 자체 헤더 하나로 교체했다.
+// No BaseLayout; standalone page (다른 허브 도구와 동일한 패턴)
 const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 ---
-<BaseLayout title="CRS for WOLKO" whiteNav={true} languageOnlyNav={true}>
-  <Fragment slot="head">
-    <link rel="manifest" href="/crs-manifest.json">
-    <meta name="theme-color" content="#004f68">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="WOLKO CRS">
-    <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
-    <link rel="stylesheet" href="/wolko-auth.css?v=1">
-    <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
-  </Fragment>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>CRS for WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="manifest" href="/crs-manifest.json">
+  <meta name="theme-color" content="#004f68">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WOLKO CRS">
+  <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
+  <link rel="stylesheet" href="/wolko-auth.css?v=1">
+  <link rel="stylesheet" href="/wolko-rail.css?v=3">
+  <script src="/wolko-rail.js?v=3" defer></script>
+  <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
+</head>
+<body>
+  <!-- ── 자체 헤더(허브로 돌아가기 + 언어 토글) — 로그인/승인대기 화면 등 CRS 앱이
+       아직 활성화되지 않은 상태에서만 보이고, 앱이 뜨면 renderApp()이 그리는
+       .app-header(로그아웃/관리자 버튼 등 포함)로 자연스럽게 넘어간다 ── -->
+  <header class="app-header" id="crsShellHeader">
+    <a class="app-brand" href="/hub" title="WOLKO 허브로 돌아가기" style="text-decoration:none">
+      <div class="app-brand-mark"><img src="/images/WOLKO Circle.png" alt="WOLKO"></div>
+      <div>
+        <h1>CRS for WOLKO</h1>
+        <span class="app-kicker">Church Relationship System</span>
+      </div>
+    </a>
+    <div class="user-info">
+      <button class="crs-lang-toggle" id="shellLangToggle" type="button" aria-label="한국어 / English">
+        <span class="active">한</span>
+        <span>EN</span>
+      </button>
+    </div>
+  </header>
+
   <div id="crs-root"></div>
-</BaseLayout>
+
+  <script is:inline>
+    // BaseLayout이 제공하던 window.toggleLang()과 언어 설정 복원을 CRS 자체에 그대로 이식.
+    // 나머지(재렌더링 등)는 CRS 자체 MutationObserver가 body의 lang-en 클래스 변화를 보고 처리한다.
+    function syncShellLangToggle(isEn) {
+      const toggle = document.getElementById('shellLangToggle');
+      if (!toggle) return;
+      const spans = toggle.querySelectorAll('span');
+      if (spans[0]) spans[0].classList.toggle('active', !isEn);
+      if (spans[1]) spans[1].classList.toggle('active', isEn);
+    }
+    function applyCrsShellLang(isEn) {
+      document.body.classList.toggle('lang-en', isEn);
+      try { localStorage.setItem('wolko-lang', isEn ? 'en' : 'ko'); } catch (e) {}
+      syncShellLangToggle(isEn);
+    }
+    window.toggleLang = function () {
+      applyCrsShellLang(!document.body.classList.contains('lang-en'));
+    };
+    document.getElementById('shellLangToggle').addEventListener('click', () => window.toggleLang());
+    try {
+      if (localStorage.getItem('wolko-lang') === 'en') applyCrsShellLang(true);
+    } catch (e) {}
+  </script>
 
 <style is:global>
   /* ── 전체 레이아웃 ── */
-  #crs-root { min-height: 100vh; background: #f4f6f9; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; padding-top: 76px; }
+  #crs-root { min-height: 100vh; background: #f4f6f9; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; }
   /* body overflow:hidden은 iOS Safari에서 fixed 네비 오작동 유발 → 제거
      스크롤 격리는 overscroll-behavior:contain으로 처리 */
 
   /* ── 로그인 화면 ── */
-  .login-wrap { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 76px); padding:2rem; }
+  .login-wrap { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 64px); padding:2rem; }
   .login-card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.10); padding:2.5rem 2rem; width:100%; max-width:400px; }
   .login-logo { text-align:center; margin-bottom:1.5rem; }
   .login-logo h1 { font-size:1.5rem; font-weight:800; color:#004f68; margin:0.5rem 0 0.2rem; }
@@ -201,7 +255,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .signup-toggle a { color:#004f68; font-weight:600; cursor:pointer; }
   .signup-toggle a:hover { text-decoration:underline; }
   /* ── 승인 대기 화면 ── */
-  .pending-wrap { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 76px); padding:2rem; }
+  .pending-wrap { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 64px); padding:2rem; }
   .pending-card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.10); padding:2.5rem 2rem; width:100%; max-width:400px; text-align:center; }
   .pending-icon { width:56px; height:56px; background:#e8f4f8; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; }
   .pending-card h2 { font-size:1.2rem; font-weight:800; color:#004f68; margin:0 0 .7rem; }
@@ -249,7 +303,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     --crs-cyan:#2d9fba;
     --crs-green:#27795f;
     --crs-red:#b64045;
-    padding-top:58px;
     background:#edf2f3;
     color:var(--crs-ink);
   }
@@ -273,10 +326,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .app-kicker { display:block; margin-top:.2rem; color:rgba(255,255,255,.58); font-size:.66rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; }
   .app-header .user-info { gap:.55rem; color:rgba(255,255,255,.78); font-weight:600; }
   .app-header .user-info > span { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .nav.language-only { visibility:hidden; }
-  body.crs-auth-ready .nav.language-only { visibility:visible; }
-  body.crs-app-active .nav.language-only { display:none; }
-  body.crs-app-active #crs-root { padding-top:0; }
+  #crsShellHeader { visibility:hidden; }
+  body.crs-auth-ready #crsShellHeader { visibility:visible; }
+  body.crs-app-active #crsShellHeader { display:none; }
   .crs-lang-toggle {
     display:flex; align-items:center; gap:2px; height:32px; padding:3px;
     border:1px solid rgba(255,255,255,.2); border-radius:999px;
@@ -483,7 +535,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     .steps-list { grid-template-columns:1fr; }
   }
   @media(max-width:768px) {
-    #crs-root { padding-top:58px; }
     body.crs-detail-open { overflow:hidden; }
     body.crs-detail-open .app-header { visibility:hidden; }
     .app-header {
@@ -2457,3 +2508,5 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
   }
 </script>
+</body>
+</html>
