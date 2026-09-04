@@ -289,8 +289,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     .modal-body { padding:1rem 1rem 1.2rem; }
   }
 
-  /* ── CRS professional UI concept ── */
-  #crs-root {
+  /* ── CRS professional UI concept ──
+     색상 커스텀 프로퍼티는 :root에 둔다 — #crs-root 안에만 있으면 그 밖에 있는
+     #crsShellHeader(로그인 전 화면에서 쓰는 자체 헤더)가 상속을 못 받아서
+     var(--crs-brand-dark) 등이 전부 빈 값으로 풀려버린다(실제로 겪은 버그). */
+  :root {
     --crs-ink:#173440;
     --crs-muted:#637983;
     --crs-faint:#8ba0a9;
@@ -303,6 +306,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     --crs-cyan:#2d9fba;
     --crs-green:#27795f;
     --crs-red:#b64045;
+  }
+  #crs-root {
     background:#edf2f3;
     color:var(--crs-ink);
   }
