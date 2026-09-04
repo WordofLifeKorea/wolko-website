@@ -65,7 +65,17 @@
       border-radius:50%; border:1px solid var(--border); background:#fff; color:var(--mid); font-size:16px; line-height:1; cursor:pointer;
     }
     .cal-nav-btn:hover { border-color:var(--blue); color:var(--blue); }
-    .cal-month-label { flex:1; text-align:center; font:800 15px/1 var(--body); color:var(--text); }
+    .cal-month-label {
+      flex:1; text-align:center; font:800 15px/1 var(--body); color:var(--text);
+      background:none; border:none; padding:4px 8px; border-radius:8px; cursor:pointer;
+    }
+    .cal-month-label:hover { background:var(--bg); }
+    .cal-month-picker { display:flex; align-items:center; justify-content:center; gap:8px; padding:0 14px 12px; }
+    .cal-month-picker select, .cal-month-picker input[type="number"] {
+      padding:6px 8px; border-radius:8px; border:1px solid var(--border); font:600 12.5px/1 var(--body);
+      color:var(--text); background:#fff; outline:none;
+    }
+    .cal-month-picker input[type="number"] { width:72px; }
     .cal-today-btn {
       flex-shrink:0; padding:5px 10px; border-radius:999px; border:1px solid var(--border); background:#fff;
       color:var(--mid); font:700 11px/1 var(--body); cursor:pointer;
@@ -198,6 +208,41 @@
     .sc-modal-btn-primary:hover { background:var(--blue-lt); }
     .sc-modal-btn-secondary { background:var(--bg); color:var(--mid); flex:0 0 auto; padding:12px 18px; }
     .sc-modal-btn-secondary:hover { background:var(--border); }
+
+    /* ── 모바일 ── */
+    @media (max-width:680px) {
+      .sc-header { padding:11px 14px; }
+      .sc-logo span { font-size:13px; }
+      .sc-wrap { padding:14px 10px; }
+      .sc-title { font-size:19px; }
+      .sc-subtitle { font-size:12px; }
+
+      .cal-header { padding:11px 8px 8px; gap:4px; }
+      .cal-nav-btn { width:26px; height:26px; font-size:15px; }
+      .cal-month-label { font-size:13px; padding:4px 4px; }
+      .cal-today-btn { padding:5px 8px; font-size:10px; }
+      .cal-month-picker { padding:0 8px 10px; gap:6px; flex-wrap:wrap; }
+      .cal-month-picker select, .cal-month-picker input[type="number"] { font-size:11.5px; padding:5px 6px; }
+      .cal-month-picker input[type="number"] { width:62px; }
+
+      .cal-weekdays span { font-size:9px; padding:5px 0; }
+      .cal-daynum-cell { min-height:92px; padding:4px 5px 2px; }
+      .cal-daynum { font-size:10.5px; }
+      .cal-daynum-cell.is-today .cal-daynum { width:17px; height:17px; }
+
+      .cal-bar, .cal-timed { margin:1px; padding:2px 4px; font-size:8.5px; border-radius:3px; gap:3px; }
+      .cal-timed-dot { width:5px; height:5px; }
+      .cal-more-cell { margin:1px; padding:2px 4px; font-size:8.5px; }
+
+      .sc-fab { right:14px; bottom:16px; padding:12px 16px; font-size:12.5px; }
+      .sc-fab svg { width:13px; height:13px; }
+
+      .sc-field-row { grid-template-columns:1fr; gap:0; }
+      .sc-modal { padding:16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+
+      .sc-card { padding:12px 12px 12px 15px; }
+      .sc-card-title { font-size:13px; }
+    }
   </style>
 </head>
 <body>
@@ -231,9 +276,14 @@
       <div class="sc-calendar">
         <div class="cal-header">
           <button type="button" class="cal-nav-btn" onclick="shiftMonth(-1)" aria-label="prev">‹</button>
-          <span class="cal-month-label" id="calMonthLabel"></span>
+          <button type="button" class="cal-month-label" id="calMonthLabel" onclick="toggleMonthPicker()"></button>
           <button type="button" class="cal-nav-btn" onclick="shiftMonth(1)" aria-label="next">›</button>
           <button type="button" class="cal-today-btn" onclick="goToCurrentMonth()" data-t="today">오늘</button>
+        </div>
+        <div class="cal-month-picker hidden" id="monthPicker">
+          <select id="pickerMonth" aria-label="month"></select>
+          <input type="number" id="pickerYear" aria-label="year" min="2000" max="2100">
+          <button type="button" class="sc-btn" onclick="jumpToPickedMonth()" data-t="jumpBtn">이동</button>
         </div>
         <div id="calGrid"></div>
       </div>
@@ -320,6 +370,7 @@
         loginRequiredDesc: '이 페이지를 보려면 먼저 허브에 로그인해 주세요.',
         goToHubBtn: '허브로 이동',
         today: '오늘',
+        jumpBtn: '이동',
         clearDate: '닫기',
         loading: '불러오는 중…',
         allDay: '종일',
@@ -354,6 +405,7 @@
         loginRequiredDesc: 'Please log in to the hub first to view this page.',
         goToHubBtn: 'Go to Hub',
         today: 'Today',
+        jumpBtn: 'Go',
         clearDate: 'Close',
         loading: 'Loading…',
         allDay: 'All day',
@@ -403,6 +455,7 @@
       document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.getAttribute('data-t')); });
       const label = $('scLangLabel');
       if (label) label.textContent = scLang === 'ko' ? 'EN' : '한';
+      populateMonthPicker();
       if (!$('calendarBody').classList.contains('hidden')) { renderCalendar(); renderAgenda(); }
     }
     function toggleScLang() {
@@ -501,10 +554,12 @@
       }
     }
 
-    const MAX_LANES = 3; // 한 주에 겹쳐 보일 수 있는 막대/일정 줄 수 — 넘으면 "+N"으로 묶음
+    // 좁은 화면에서는 한 주에 3줄씩 욱여넣으면 너무 빽빽해져서 2줄로 줄인다 —
+    // 넘치는 건 어차피 "+N"으로 묶이고 탭하면 아래 상세 패널에서 다 보이므로 정보 손실은 없다.
+    function maxLanesForViewport() { return window.innerWidth <= 680 ? 2 : 3; }
 
     /** 한 주에 표시할 항목(막대/시간지정 한 줄)을 겹치지 않게 줄(lane)에 배치. 못 들어가면 overflow로 뺀다. */
-    function layoutWeekItems(items) {
+    function layoutWeekItems(items, maxLanes) {
       const sorted = [...items].sort((a, b) => {
         if (a.type !== b.type) return a.type === 'bar' ? -1 : 1; // 여러 날짜짜리 막대를 먼저 배치
         if (a.startCol !== b.startCol) return a.startCol - b.startCol;
@@ -515,7 +570,7 @@
       const overflowItems = [];
       sorted.forEach(item => {
         let laneIdx = -1;
-        for (let l = 0; l < MAX_LANES; l++) {
+        for (let l = 0; l < maxLanes; l++) {
           const occ = laneOccupancy[l] || [];
           const collide = occ.some(([s, e]) => !(item.endCol < s || item.startCol > e));
           if (!collide) { laneIdx = l; break; }
@@ -547,6 +602,7 @@
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
       const totalWeeks = totalCells / 7;
+      const maxLanes = maxLanesForViewport();
       const todayStr_ = todayStr();
       const wkKo = ['일', '월', '화', '수', '목', '금', '토'];
       const wkEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -575,7 +631,7 @@
           if (startCol === -1 || endCol === -1) return;
           items.push({ startCol, endCol, type: ev.allDay ? 'bar' : 'timed', ev });
         });
-        const { placed, overflowByCol } = layoutWeekItems(items);
+        const { placed, overflowByCol } = layoutWeekItems(items, maxLanes);
 
         let dayCellsHtml = '';
         weekDates.forEach((d, col) => {
@@ -609,11 +665,11 @@
         let moreHtml = '';
         Object.keys(overflowByCol).forEach(colStr => {
           const col = Number(colStr);
-          const row = MAX_LANES + 2;
+          const row = maxLanes + 2;
           moreHtml += `<button type="button" class="cal-more-cell" style="grid-column:${col + 1};grid-row:${row}" onclick="selectDate('${weekDateStrs[col]}')">+${overflowByCol[col]}</button>`;
         });
 
-        weeksHtml += `<div class="cal-week" style="grid-template-rows:auto repeat(${MAX_LANES}, auto) auto">${dayCellsHtml}${itemsHtml}${moreHtml}</div>`;
+        weeksHtml += `<div class="cal-week" style="grid-template-rows:auto repeat(${maxLanes}, auto) auto">${dayCellsHtml}${itemsHtml}${moreHtml}</div>`;
       }
 
       $('calGrid').innerHTML = `
@@ -675,11 +731,43 @@
     function shiftMonth(delta) {
       calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + delta, 1);
       selectedDate = null;
+      $('monthPicker').classList.add('hidden');
       loadEvents();
     }
     function goToCurrentMonth() {
       calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
       selectedDate = todayStr();
+      $('monthPicker').classList.add('hidden');
+      loadEvents();
+    }
+
+    /* ── 연/월 직접 이동 ── */
+    function populateMonthPicker() {
+      const monthNamesKo = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+      const monthNamesEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const names = scLang === 'en' ? monthNamesEn : monthNamesKo;
+      const select = $('pickerMonth');
+      if (!select) return;
+      const prevValue = select.value;
+      select.innerHTML = names.map((m, i) => `<option value="${i}">${esc(m)}</option>`).join('');
+      if (prevValue) select.value = prevValue;
+    }
+    function toggleMonthPicker() {
+      const picker = $('monthPicker');
+      const willShow = picker.classList.contains('hidden');
+      picker.classList.toggle('hidden');
+      if (willShow) {
+        $('pickerYear').value = calendarMonth.getFullYear();
+        $('pickerMonth').value = calendarMonth.getMonth();
+      }
+    }
+    function jumpToPickedMonth() {
+      const year = parseInt($('pickerYear').value, 10);
+      const month = parseInt($('pickerMonth').value, 10);
+      if (!Number.isFinite(year) || !Number.isFinite(month)) return;
+      calendarMonth = new Date(year, month, 1);
+      selectedDate = null;
+      $('monthPicker').classList.add('hidden');
       loadEvents();
     }
     function selectDate(dateStr_) {
@@ -832,6 +920,15 @@
         alert(e.message || t('deleteFailed'));
       }
     }
+
+    // 화면 폭이 바뀌면(창 크기 조절, 화면 회전) 줄 수/레이아웃을 다시 계산해서 그린다.
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!$('calendarBody').classList.contains('hidden')) { renderCalendar(); renderAgenda(); }
+      }, 150);
+    });
 
     /* ── 초기화 ── */
     applyScLang();
