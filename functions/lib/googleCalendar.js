@@ -89,13 +89,14 @@ export async function legacyDeterministicEventId(rawId) {
  * allDay가 true면 startAt/endAt은 'YYYY-MM-DD'(종료일은 구글 규칙대로 배타적/exclusive),
  * 아니면 ISO datetime 문자열.
  */
-export async function createCalendarEvent({ serviceAccountJson, calendarId, summary, description, location, startAt, endAt, allDay }) {
+export async function createCalendarEvent({ serviceAccountJson, calendarId, summary, description, location, startAt, endAt, allDay, colorId }) {
   const serviceAccount = JSON.parse(serviceAccountJson);
   const token = await getAccessToken(serviceAccount);
   const body = {
     summary,
     description,
     ...(location ? { location } : {}),
+    ...(colorId ? { colorId } : {}),
     start: allDay ? { date: startAt } : { dateTime: startAt, timeZone: 'Asia/Seoul' },
     end: allDay ? { date: endAt } : { dateTime: endAt, timeZone: 'Asia/Seoul' },
   };
@@ -139,6 +140,7 @@ export async function listCalendarEvents({ serviceAccountJson, calendarId, timeM
     allDay: !ev.start?.dateTime,
     start: ev.start?.dateTime || ev.start?.date,
     end: ev.end?.dateTime || ev.end?.date,
+    colorId: ev.colorId || null,
   }));
 }
 

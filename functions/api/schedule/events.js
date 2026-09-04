@@ -43,7 +43,9 @@ function addDays(dateStr, days) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-/** body → { summary, description, location, allDay, startAt, endAt } (all-day면 startAt/endAt은 'YYYY-MM-DD', endAt은 구글 규칙대로 배타적으로 이미 +1일 되어있음) */
+const COLOR_IDS = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']);
+
+/** body → { summary, description, location, allDay, startAt, endAt, colorId } (all-day면 startAt/endAt은 'YYYY-MM-DD', endAt은 구글 규칙대로 배타적으로 이미 +1일 되어있음) */
 function parseEventInput(body) {
   const summary = String(body.summary || '').trim().slice(0, 200);
   const description = String(body.description || '').trim().slice(0, 2000);
@@ -51,13 +53,14 @@ function parseEventInput(body) {
   const allDay = !!body.allDay;
   const startDate = String(body.startDate || '').trim();
   const endDate = String(body.endDate || '').trim();
+  const colorId = COLOR_IDS.has(String(body.colorId || '')) ? String(body.colorId) : null;
 
   if (!summary) throw new Error('제목을 입력해 주세요.');
   if (!DATE_RE.test(startDate) || !DATE_RE.test(endDate)) throw new Error('날짜 형식이 올바르지 않습니다.');
 
   if (allDay) {
     if (endDate < startDate) throw new Error('종료일은 시작일보다 나중이어야 합니다.');
-    return { summary, description, location, allDay: true, startAt: startDate, endAt: addDays(endDate, 1) };
+    return { summary, description, location, colorId, allDay: true, startAt: startDate, endAt: addDays(endDate, 1) };
   }
 
   const startTime = String(body.startTime || '09:00').trim();
@@ -69,7 +72,7 @@ function parseEventInput(body) {
   const endMs = Date.parse(endAt);
   if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) throw new Error('날짜/시간이 올바르지 않습니다.');
   if (endMs <= startMs) throw new Error('종료 일시는 시작 일시보다 나중이어야 합니다.');
-  return { summary, description, location, allDay: false, startAt, endAt };
+  return { summary, description, location, colorId, allDay: false, startAt, endAt };
 }
 
 export async function onRequestGet(context) {
@@ -128,12 +131,12 @@ export async function onRequestPost(context) {
     const eventId = await createCalendarEvent({
       serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
       calendarId: env.GOOGLE_STAFF_CALENDAR_ID,
-      summary: parsed.summary, description: parsed.description, location: parsed.location,
+      summary: parsed.summary, description: parsed.description, location: parsed.location, colorId: parsed.colorId,
       startAt: parsed.startAt, endAt: parsed.endAt, allDay: parsed.allDay,
     });
     return Response.json({
       ok: true,
-      event: { id: eventId, summary: parsed.summary, description: parsed.description, location: parsed.location, allDay: parsed.allDay, start: parsed.startAt, end: parsed.endAt },
+      event: { id: eventId, summary: parsed.summary, description: parsed.description, location: parsed.location, colorId: parsed.colorId, allDay: parsed.allDay, start: parsed.startAt, end: parsed.endAt },
     }, { headers: CORS });
   } catch (error) {
     console.error('schedule create error:', error);
@@ -176,12 +179,12 @@ export async function onRequestPut(context) {
     const newEventId = await createCalendarEvent({
       serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
       calendarId: env.GOOGLE_STAFF_CALENDAR_ID,
-      summary: parsed.summary, description: parsed.description, location: parsed.location,
+      summary: parsed.summary, description: parsed.description, location: parsed.location, colorId: parsed.colorId,
       startAt: parsed.startAt, endAt: parsed.endAt, allDay: parsed.allDay,
     });
     return Response.json({
       ok: true,
-      event: { id: newEventId, summary: parsed.summary, description: parsed.description, location: parsed.location, allDay: parsed.allDay, start: parsed.startAt, end: parsed.endAt },
+      event: { id: newEventId, summary: parsed.summary, description: parsed.description, location: parsed.location, colorId: parsed.colorId, allDay: parsed.allDay, start: parsed.startAt, end: parsed.endAt },
     }, { headers: CORS });
   } catch (error) {
     console.error('schedule update error:', error);

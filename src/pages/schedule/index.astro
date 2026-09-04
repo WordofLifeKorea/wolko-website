@@ -45,7 +45,7 @@
     }
     .sc-btn:hover { border-color:var(--blue); background:#f4fbfd; }
 
-    .sc-wrap { max-width:640px; margin:0 auto; padding:22px; }
+    .sc-wrap { max-width:1040px; margin:0 auto; padding:22px; }
     .sc-title-row { margin-bottom:14px; }
     .sc-title { margin:0; font:800 22px/1.25 var(--sans); color:var(--blue); }
     .sc-subtitle { margin:4px 0 0; color:var(--mid); font-size:13px; line-height:1.55; }
@@ -57,39 +57,63 @@
     }
     .sc-notice-card .sc-btn { margin-top:14px; display:inline-flex; }
 
-    /* ── 캘린더(차량 스케줄 페이지와 동일한 스타일) ── */
-    .sc-calendar { margin-bottom:16px; padding:14px; border-radius:16px; border:1px solid var(--border); background:var(--card); }
-    .cal-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+    /* ── 캘린더(구글 캘린더 월간 뷰 스타일 — 여러 날짜에 걸친 일정은 막대로, 시간 지정 일정은 한 줄로) ── */
+    .sc-calendar { margin-bottom:16px; border-radius:16px; border:1px solid var(--border); background:var(--card); overflow:hidden; }
+    .cal-header { display:flex; align-items:center; gap:8px; padding:14px 14px 10px; }
     .cal-nav-btn {
       flex-shrink:0; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;
       border-radius:50%; border:1px solid var(--border); background:#fff; color:var(--mid); font-size:16px; line-height:1; cursor:pointer;
     }
     .cal-nav-btn:hover { border-color:var(--blue); color:var(--blue); }
-    .cal-month-label { flex:1; text-align:center; font:800 14px/1 var(--body); color:var(--text); }
+    .cal-month-label { flex:1; text-align:center; font:800 15px/1 var(--body); color:var(--text); }
     .cal-today-btn {
       flex-shrink:0; padding:5px 10px; border-radius:999px; border:1px solid var(--border); background:#fff;
       color:var(--mid); font:700 11px/1 var(--body); cursor:pointer;
     }
     .cal-today-btn:hover { border-color:var(--blue); color:var(--blue); }
-    .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:2px; }
-    .cal-weekdays span { text-align:center; font:700 10.5px/1 var(--body); color:var(--light); padding:4px 0; }
-    .cal-days { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
-    .cal-cell {
-      aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-      border:none; border-radius:10px; background:transparent; color:var(--text); font-family:var(--body); cursor:pointer; padding:2px;
+    .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid var(--border); }
+    .cal-weekdays span { text-align:center; font:700 10.5px/1 var(--body); color:var(--light); padding:8px 0; }
+    .cal-week { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid var(--border); }
+    .cal-daynum-cell {
+      grid-row:1 / -1; display:flex; justify-content:flex-end; align-items:flex-start; border:none; border-right:1px solid var(--border);
+      background:transparent; padding:5px 6px 2px; cursor:pointer; font-family:var(--body); min-height:34px;
     }
-    .cal-cell:hover:not(:disabled) { background:var(--bg); }
-    .cal-cell:disabled { cursor:default; }
-    .cal-cell.is-outside .cal-daynum { color:var(--border); }
-    .cal-daynum { font:700 12.5px/1 var(--body); }
-    .cal-cell.is-today .cal-daynum {
-      display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%;
+    .cal-daynum-cell:nth-child(7n) { border-right:none; }
+    .cal-daynum-cell:hover { background:var(--bg); }
+    .cal-daynum-cell.is-outside .cal-daynum { color:var(--border); }
+    .cal-daynum-cell.is-selected { background:#eef4f6; }
+    .cal-daynum { font:700 12px/1 var(--body); color:var(--text); }
+    .cal-daynum-cell.is-today .cal-daynum {
+      display:inline-flex; align-items:center; justify-content:center; width:19px; height:19px; border-radius:50%;
       background:var(--blue); color:#fff;
     }
-    .cal-cell.is-selected { background:#eef4f6; box-shadow:inset 0 0 0 1.5px var(--blue); }
-    .cal-dots { display:flex; align-items:center; justify-content:center; gap:2px; min-height:6px; }
-    .cal-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; background:var(--blue); }
-    .cal-more { font-size:8px; font-weight:800; color:var(--light); }
+
+    .cal-bar {
+      margin:1px 3px; padding:1.5px 6px; border-radius:4px; background:var(--blue); color:#fff;
+      font:700 10px/1.6 var(--body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+    }
+    .cal-timed {
+      margin:1px 3px; padding:1.5px 6px; border-radius:4px; display:flex; align-items:center; gap:4px;
+      font:600 10px/1.6 var(--body); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+    }
+    .cal-timed:hover, .cal-bar:hover { filter:brightness(0.95); }
+    .cal-timed-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; background:var(--blue); }
+    .cal-timed-time { flex-shrink:0; color:var(--mid); font-weight:700; }
+    .cal-more-cell {
+      margin:1px 3px; padding:1.5px 6px; border:none; background:transparent; color:var(--mid);
+      font:700 10px/1.6 var(--body); text-align:left; cursor:pointer;
+    }
+    .cal-more-cell:hover { color:var(--blue); text-decoration:underline; }
+
+    /* ── 색상 팔레트(구글 캘린더 색상 11종 + 기본) ── */
+    .sc-color-picker { display:flex; flex-wrap:wrap; gap:8px; }
+    .sc-color-swatch {
+      width:24px; height:24px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;
+      display:inline-flex; align-items:center; justify-content:center; color:#fff;
+    }
+    .sc-color-swatch.is-selected { border-color:var(--text); box-shadow:0 0 0 2px #fff inset; }
+    .sc-color-swatch.is-default { background:var(--bg); border:1.5px solid var(--border); }
+    .sc-color-swatch.is-default.is-selected { border-color:var(--text); }
 
     .sc-selected-date-bar {
       display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin-bottom:12px;
@@ -115,7 +139,7 @@
       position:relative; display:flex; gap:10px; padding:14px 14px 14px 18px; margin-bottom:8px; border-radius:14px;
       border:1px solid var(--border); background:var(--card); box-shadow:0 1px 3px rgba(16,42,56,.04);
     }
-    .sc-card::before { content:''; position:absolute; left:0; top:12px; bottom:12px; width:4px; border-radius:3px; background:var(--blue); }
+    .sc-card::before { content:''; position:absolute; left:0; top:12px; bottom:12px; width:4px; border-radius:3px; background:var(--card-color, var(--blue)); }
     .sc-card-body { flex:1; min-width:0; }
     .sc-card-top { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
     .sc-card-time { font:700 12.5px/1 var(--body); color:var(--blue); }
@@ -283,6 +307,10 @@
         <label data-t="fieldDescription">설명 (선택)</label>
         <textarea id="fDescription" maxlength="2000"></textarea>
       </div>
+      <div class="sc-field">
+        <label data-t="fieldColor">색상</label>
+        <div class="sc-color-picker" id="colorPicker"></div>
+      </div>
 
       <div class="sc-modal-foot">
         <button class="sc-modal-btn sc-modal-btn-secondary" onclick="closeModal()" data-t="cancelBtn">취소</button>
@@ -316,6 +344,7 @@
         fieldEndTime: '종료 시간',
         fieldLocation: '위치 (선택)',
         fieldDescription: '설명 (선택)',
+        fieldColor: '색상',
         cancelBtn: '취소',
         saveBtn: '저장',
         saving: '저장 중…',
@@ -348,6 +377,7 @@
         fieldEndTime: 'End time',
         fieldLocation: 'Location (optional)',
         fieldDescription: 'Description (optional)',
+        fieldColor: 'Color',
         cancelBtn: 'Cancel',
         saveBtn: 'Save',
         saving: 'Saving…',
@@ -358,6 +388,15 @@
         deleteFailed: 'Could not delete.',
       },
     };
+    // 구글 캘린더 공식 이벤트 색상 11종(colorId 1~11) — 구글에서 지정한 색을 그대로 반영해 보여주고,
+    // 여기서 새로 만들 때도 같은 팔레트로 고를 수 있게 한다.
+    const EVENT_COLORS = {
+      '1': '#7986cb', '2': '#33b679', '3': '#8e24aa', '4': '#e67c73', '5': '#f6bf26',
+      '6': '#f4511e', '7': '#039be5', '8': '#616161', '9': '#3f51b5', '10': '#0b8043', '11': '#d50000',
+    };
+    function eventColor(ev) {
+      return (ev.colorId && EVENT_COLORS[ev.colorId]) || 'var(--blue)';
+    }
     let scLang = localStorage.getItem('wolko-lang') || 'ko';
     const $ = id => document.getElementById(id);
     function t(key) { return SC_T[scLang]?.[key] ?? SC_T.ko[key] ?? key; }
@@ -435,6 +474,7 @@
     let loadToken = 0;
     let canWrite = false; // admin/master만 등록/수정/삭제 가능(서버가 다시 검증)
     let editingId = null; // 모달이 수정 모드일 때 대상 이벤트 id, 등록 모드면 null
+    let selectedColorId = null; // null이면 캘린더 기본색(파랑)
 
     async function loadEvents() {
       const myToken = ++loadToken;
@@ -466,6 +506,44 @@
       }
     }
 
+    const MAX_LANES = 3; // 한 주에 겹쳐 보일 수 있는 막대/일정 줄 수 — 넘으면 "+N"으로 묶음
+
+    /** 한 주에 표시할 항목(막대/시간지정 한 줄)을 겹치지 않게 줄(lane)에 배치. 못 들어가면 overflow로 뺀다. */
+    function layoutWeekItems(items) {
+      const sorted = [...items].sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'bar' ? -1 : 1; // 여러 날짜짜리 막대를 먼저 배치
+        if (a.startCol !== b.startCol) return a.startCol - b.startCol;
+        return (b.endCol - b.startCol) - (a.endCol - a.startCol);
+      });
+      const laneOccupancy = [];
+      const placed = [];
+      const overflowItems = [];
+      sorted.forEach(item => {
+        let laneIdx = -1;
+        for (let l = 0; l < MAX_LANES; l++) {
+          const occ = laneOccupancy[l] || [];
+          const collide = occ.some(([s, e]) => !(item.endCol < s || item.startCol > e));
+          if (!collide) { laneIdx = l; break; }
+        }
+        if (laneIdx === -1) {
+          overflowItems.push(item);
+        } else {
+          laneOccupancy[laneIdx] = laneOccupancy[laneIdx] || [];
+          laneOccupancy[laneIdx].push([item.startCol, item.endCol]);
+          placed.push({ ...item, lane: laneIdx });
+        }
+      });
+      const overflowByCol = {};
+      overflowItems.forEach(item => {
+        for (let c = item.startCol; c <= item.endCol; c++) overflowByCol[c] = (overflowByCol[c] || 0) + 1;
+      });
+      return { placed, overflowByCol };
+    }
+
+    function formatEventStartTime(ev) {
+      return new Date(ev.start).toLocaleTimeString(scLang === 'en' ? 'en-US' : 'ko-KR', { hour: '2-digit', minute: '2-digit' });
+    }
+
     function renderCalendar() {
       const year = calendarMonth.getFullYear();
       const month = calendarMonth.getMonth();
@@ -473,6 +551,7 @@
       const startOffset = firstOfMonth.getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+      const totalWeeks = totalCells / 7;
       const todayStr_ = todayStr();
       const wkKo = ['일', '월', '화', '수', '목', '금', '토'];
       const wkEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -482,29 +561,69 @@
         ? calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })
         : `${year}년 ${month + 1}월`;
 
-      let cellsHtml = '';
-      for (let i = 0; i < totalCells; i++) {
-        const cellDate = new Date(year, month, i - startOffset + 1);
-        const cellStr = toDateStr(cellDate);
-        const inMonth = cellDate.getMonth() === month;
-        const isToday = cellStr === todayStr_;
-        const isSelected = cellStr === selectedDate;
-        const dayMatches = inMonth
-          ? events.filter(ev => { const r = eventDateRange(ev); return cellStr >= r.startDate && cellStr <= r.endDate; })
-          : [];
-        const dots = dayMatches.slice(0, 4).map(() => `<span class="cal-dot"></span>`).join('');
-        const extra = dayMatches.length > 4 ? `<span class="cal-more">+${dayMatches.length - 4}</span>` : '';
-        cellsHtml += `
-          <button type="button" class="cal-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}${isSelected ? ' is-selected' : ''}"
-            ${inMonth ? `onclick="selectDate('${cellStr}')"` : 'disabled'}>
-            <span class="cal-daynum">${cellDate.getDate()}</span>
-            <span class="cal-dots">${dots}${extra}</span>
-          </button>`;
+      let weeksHtml = '';
+      for (let w = 0; w < totalWeeks; w++) {
+        const weekDates = [];
+        for (let d = 0; d < 7; d++) weekDates.push(new Date(year, month, w * 7 - startOffset + 1 + d));
+        const weekDateStrs = weekDates.map(toDateStr);
+        const weekStartStr = weekDateStrs[0];
+        const weekEndStr = weekDateStrs[6];
+
+        const items = [];
+        events.forEach(ev => {
+          const r = eventDateRange(ev);
+          if (r.endDate < weekStartStr || r.startDate > weekEndStr) return;
+          const clippedStart = r.startDate < weekStartStr ? weekStartStr : r.startDate;
+          const clippedEnd = r.endDate > weekEndStr ? weekEndStr : r.endDate;
+          const startCol = weekDateStrs.indexOf(clippedStart);
+          const endCol = weekDateStrs.indexOf(clippedEnd);
+          if (startCol === -1 || endCol === -1) return;
+          items.push({ startCol, endCol, type: ev.allDay ? 'bar' : 'timed', ev });
+        });
+        const { placed, overflowByCol } = layoutWeekItems(items);
+
+        let dayCellsHtml = '';
+        weekDates.forEach((d, col) => {
+          const cellStr = weekDateStrs[col];
+          const inMonth = d.getMonth() === month;
+          const isToday = cellStr === todayStr_;
+          const isSelected = cellStr === selectedDate;
+          dayCellsHtml += `
+            <button type="button" class="cal-daynum-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}${isSelected ? ' is-selected' : ''}"
+              style="grid-column:${col + 1}" onclick="selectDate('${cellStr}')">
+              <span class="cal-daynum">${d.getDate()}</span>
+            </button>`;
+        });
+
+        let itemsHtml = '';
+        placed.forEach(item => {
+          const row = item.lane + 2;
+          const gridArea = `grid-column:${item.startCol + 1}/${item.endCol + 2};grid-row:${row}`;
+          const title = esc(item.ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'));
+          const color = eventColor(item.ev);
+          if (item.type === 'bar') {
+            itemsHtml += `<div class="cal-bar" style="${gridArea};background:${color}" onclick="selectDate('${weekDateStrs[item.startCol]}')" title="${title}">${title}</div>`;
+          } else {
+            itemsHtml += `<div class="cal-timed" style="${gridArea}" onclick="selectDate('${weekDateStrs[item.startCol]}')" title="${title}">
+              <span class="cal-timed-dot" style="background:${color}"></span>
+              <span class="cal-timed-time">${esc(formatEventStartTime(item.ev))}</span><span>${title}</span>
+            </div>`;
+          }
+        });
+
+        let moreHtml = '';
+        Object.keys(overflowByCol).forEach(colStr => {
+          const col = Number(colStr);
+          const row = MAX_LANES + 2;
+          moreHtml += `<button type="button" class="cal-more-cell" style="grid-column:${col + 1};grid-row:${row}" onclick="selectDate('${weekDateStrs[col]}')">+${overflowByCol[col]}</button>`;
+        });
+
+        weeksHtml += `<div class="cal-week" style="grid-template-rows:auto repeat(${MAX_LANES}, auto) auto">${dayCellsHtml}${itemsHtml}${moreHtml}</div>`;
       }
 
       $('calGrid').innerHTML = `
         <div class="cal-weekdays">${wk.map(w => `<span>${esc(w)}</span>`).join('')}</div>
-        <div class="cal-days">${cellsHtml}</div>`;
+        ${weeksHtml}`;
     }
 
     function renderAgenda() {
@@ -550,7 +669,7 @@
           </div>`;
         items.forEach(ev => {
           html += `
-            <div class="sc-card">
+            <div class="sc-card" style="--card-color:${eventColor(ev)}">
               <div class="sc-card-body">
                 <div class="sc-card-top">
                   <span class="sc-card-time">${esc(formatTimeRange(ev))}</span>
@@ -605,8 +724,20 @@
       $('fStartTimeWrap').classList.toggle('hidden', isAllDay);
       $('fEndTimeWrap').classList.toggle('hidden', isAllDay);
     }
+    function selectColor(id) {
+      selectedColorId = id;
+      renderColorPicker();
+    }
+    function renderColorPicker() {
+      const defaultSwatch = `<button type="button" class="sc-color-swatch is-default${!selectedColorId ? ' is-selected' : ''}" onclick="selectColor(null)" aria-label="default"></button>`;
+      const swatches = Object.keys(EVENT_COLORS).map(id => `
+        <button type="button" class="sc-color-swatch${selectedColorId === id ? ' is-selected' : ''}" style="background:${EVENT_COLORS[id]}" onclick="selectColor('${id}')" aria-label="color ${id}"></button>
+      `).join('');
+      $('colorPicker').innerHTML = defaultSwatch + swatches;
+    }
     function openCreateModal() {
       editingId = null;
+      selectedColorId = null;
       $('modalTitle').textContent = t('newEventTitle');
       $('modalError').classList.remove('is-visible');
       $('fSummary').value = '';
@@ -619,6 +750,7 @@
       $('fStartTime').value = '09:00';
       $('fEndTime').value = '10:00';
       onAllDayToggle();
+      renderColorPicker();
       $('modalOverlay').classList.remove('hidden');
       $('fSummary').focus();
     }
@@ -626,6 +758,7 @@
       const ev = events.find(e => e.id === id);
       if (!ev) return;
       editingId = id;
+      selectedColorId = ev.colorId || null;
       $('modalTitle').textContent = t('editEventTitle');
       $('modalError').classList.remove('is-visible');
       $('fSummary').value = ev.summary || '';
@@ -635,6 +768,7 @@
       const r = eventDateRange(ev);
       $('fStartDate').value = r.startDate;
       $('fEndDate').value = r.endDate;
+      renderColorPicker();
       if (!ev.allDay) {
         $('fStartTime').value = toTimeStr(new Date(ev.start));
         $('fEndTime').value = toTimeStr(new Date(ev.end));
@@ -665,6 +799,7 @@
         summary,
         location: $('fLocation').value.trim(),
         description: $('fDescription').value.trim(),
+        colorId: selectedColorId,
         allDay,
         startDate, endDate,
         startTime: $('fStartTime').value,
