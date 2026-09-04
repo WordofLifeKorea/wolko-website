@@ -241,7 +241,7 @@ html, body {
 .hub-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 13px;
+  gap: 14px;
 }
 @media (min-width: 560px) {
   .hub-grid { grid-template-columns: 1fr 1fr; }
@@ -250,19 +250,30 @@ html, body {
 
 .hub-card {
   position: relative;
+  overflow: hidden;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  padding: 18px;
-  border-radius: 18px;
+  gap: 15px;
+  padding: 20px;
+  border-radius: 20px;
   border: 1px solid var(--border);
   background: var(--card);
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 1px 2px rgba(16,42,56,.03);
-  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  box-shadow: 0 2px 12px -8px rgba(16,42,56,.12);
+  transition: transform .24s cubic-bezier(.22,.8,.25,1), box-shadow .24s cubic-bezier(.22,.8,.25,1), border-color .24s ease;
   animation: hub-card-in .45s ease backwards;
 }
+.hub-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(160px 110px at 105% -10%, color-mix(in srgb, var(--tool-color, var(--blue)) 14%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity .28s ease;
+  pointer-events: none;
+}
+.hub-card:hover::after { opacity: 1; }
 .hub-grid > a:nth-child(1) { animation-delay: .02s; }
 .hub-grid > a:nth-child(2) { animation-delay: .07s; }
 .hub-grid > a:nth-child(3) { animation-delay: .12s; }
@@ -273,9 +284,9 @@ html, body {
   to { opacity: 1; transform: translateY(0); }
 }
 .hub-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--tool-color, var(--blue));
-  box-shadow: 0 12px 28px -8px rgba(16,42,56,.18);
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--tool-color, var(--blue)) 55%, var(--border));
+  box-shadow: 0 18px 34px -14px color-mix(in srgb, var(--tool-color, var(--blue)) 40%, rgba(16,42,56,.28));
 }
 .hub-card:focus-visible {
   outline: 2px solid var(--tool-color, var(--blue));
@@ -296,32 +307,41 @@ html, body {
   white-space: nowrap;
 }
 .hub-card-icon {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
+  border-radius: 15px;
   background: rgba(0,79,104,.08);
-  background: linear-gradient(140deg, color-mix(in srgb, var(--tool-color, var(--blue)) 16%, white), color-mix(in srgb, var(--tool-color, var(--blue)) 6%, white));
+  background: linear-gradient(140deg, color-mix(in srgb, var(--tool-color, var(--blue)) 18%, white), color-mix(in srgb, var(--tool-color, var(--blue)) 6%, white));
   border: 1px solid rgba(0,79,104,.14);
-  border: 1px solid color-mix(in srgb, var(--tool-color, var(--blue)) 18%, white);
+  border: 1px solid color-mix(in srgb, var(--tool-color, var(--blue)) 20%, white);
+  box-shadow: 0 3px 8px -3px color-mix(in srgb, var(--tool-color, var(--blue)) 30%, transparent);
   color: var(--tool-color, var(--blue));
-  transition: transform .16s ease;
+  transition: transform .24s cubic-bezier(.22,.8,.25,1), box-shadow .24s ease;
 }
-.hub-card:hover .hub-card-icon { transform: scale(1.06); }
-.hub-card-body { flex: 1; min-width: 0; padding-top: 1px; }
-.hub-card-title { margin: 0 0 4px; font: 800 15px/1.3 var(--f-body); color: var(--text); letter-spacing: -.005em; }
+.hub-card:hover .hub-card-icon {
+  transform: scale(1.07) rotate(-2deg);
+  box-shadow: 0 6px 14px -4px color-mix(in srgb, var(--tool-color, var(--blue)) 45%, transparent);
+}
+.hub-card-body { position: relative; z-index: 1; flex: 1; min-width: 0; padding-top: 1px; }
+.hub-card-title { margin: 0 0 4px; font: 800 15px/1.3 var(--f-body); color: var(--text); letter-spacing: -.005em; transition: color .2s ease; }
+.hub-card:hover .hub-card-title { color: var(--tool-color, var(--blue)); }
 .hub-card-desc { margin: 0; font-size: 12px; line-height: 1.55; color: var(--mid); }
 .hub-card-arrow {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   display: flex;
   color: var(--light);
   margin-top: 13px;
-  transition: transform .16s ease, color .16s ease;
+  transition: transform .24s cubic-bezier(.22,.8,.25,1), color .2s ease;
 }
-.hub-card:hover .hub-card-arrow { transform: translateX(3px); color: var(--tool-color, var(--blue)); }
+.hub-card:hover .hub-card-arrow { transform: translateX(4px); color: var(--tool-color, var(--blue)); }
 
 .hub-note {
   display: flex;
