@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/car.css?v=2">
+  <link rel="stylesheet" href="/car.css?v=3">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=3">
   <script src="/wolko-rail.js?v=3" defer></script>
@@ -79,19 +79,23 @@
       <div class="car-calendar">
         <div class="cal-header">
           <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(-1)" aria-label="prev">‹</button>
-          <span class="cal-month-label" id="calMonthLabel"></span>
+          <button type="button" class="cal-month-label" id="calMonthLabel" onclick="toggleMonthPicker()"></button>
           <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(1)" aria-label="next">›</button>
           <button type="button" class="cal-today-btn" onclick="goToCurrentMonth()" data-t="today">오늘</button>
+        </div>
+        <div class="cal-month-picker hidden" id="monthPicker">
+          <select id="pickerMonth" aria-label="month"></select>
+          <input type="number" id="pickerYear" aria-label="year" min="2000" max="2100">
+          <button type="button" onclick="jumpToPickedMonth()" data-t="jumpBtn">이동</button>
         </div>
         <div id="calGrid"></div>
       </div>
 
       <div class="car-selected-date-bar hidden" id="selectedDateBar">
         <span id="selectedDateLabel"></span>
-        <button type="button" onclick="clearSelectedDate()" data-t="clearDate">전체 보기</button>
+        <button type="button" onclick="clearSelectedDate()" data-t="clearDate">닫기</button>
       </div>
 
-      <button class="car-past-toggle" id="pastToggleBtn" onclick="togglePast()" data-t="past">지난 예약 보기</button>
       <div id="agendaContainer"></div>
     </div>
 
@@ -279,10 +283,10 @@
         tabAll: '전체',
         newReservation: '새 예약',
         editReservation: '예약 수정',
-        past: '지난 예약 보기',
-        hidePast: '지난 예약 숨기기',
-        clearDate: '전체 보기',
-        emptyUpcoming: '예정된 예약이 없습니다.',
+        clearDate: '닫기',
+        selectDayHint: '날짜를 클릭하면 그날의 예약이 여기에 표시됩니다.',
+        emptyDay: '이 날짜에는 예약이 없습니다.',
+        jumpBtn: '이동',
         today: '오늘',
         tomorrow: '내일',
         fieldVehicle: '차량',
@@ -338,10 +342,10 @@
         tabAll: 'All',
         newReservation: 'New Reservation',
         editReservation: 'Edit Reservation',
-        past: 'Show past reservations',
-        hidePast: 'Hide past reservations',
-        clearDate: 'Show all',
-        emptyUpcoming: 'No upcoming reservations.',
+        clearDate: 'Close',
+        selectDayHint: "Click a date to see that day's reservations here.",
+        emptyDay: 'No reservations on this date.',
+        jumpBtn: 'Go',
         today: 'Today',
         tomorrow: 'Tomorrow',
         fieldVehicle: 'Vehicle',
@@ -392,9 +396,8 @@
     let maintenanceRecords = [];
     let activeVehicle = 'all';
     let currentView = 'reservations';
-    let showPast = false;
     let calendarMonth = (() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d; })();
-    let selectedDate = null;
+    let selectedDate = todayStr(); // 기본으로 오늘 날짜가 선택된 채로 시작
     let editingId = null;
     let editingMaintId = null;
     let pendingDeleteId = null;
@@ -437,7 +440,7 @@
       $('pwInput').placeholder = t('loginPw');
       const langBtn = $('langToggleLabel');
       if (langBtn) langBtn.textContent = carLang === 'ko' ? 'EN' : '한';
-      $('pastToggleBtn').textContent = showPast ? t('hidePast') : t('past');
+      populateMonthPicker();
       renderTabs();
       renderVehicleSelect();
       renderMaintVehicleSelect();
@@ -565,12 +568,6 @@
       renderTabs();
       if (currentView === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
     }
-    function togglePast() {
-      showPast = !showPast;
-      $('pastToggleBtn').textContent = showPast ? t('hidePast') : t('past');
-      renderAgenda();
-    }
-
     /* ── DATE HELPERS ── */
     function pad2(n) { return String(n).padStart(2, '0'); }
     function todayStr() {
@@ -617,81 +614,105 @@
     }
 
     /* ── AGENDA ── */
+    /* 날짜를 선택했을 때만 그날 예약을 보여준다 — 그리드 자체가 이미 한눈에 보기용이라
+       선택 전 기본 상태에서까지 "예정된 예약" 전체 목록을 쌓아두면 중복이고 산만해진다. */
     function renderAgenda() {
       const container = $('agendaContainer');
       const nowMs = Date.now();
-      let list = reservations.filter(r => activeVehicle === 'all' || r.vehicleId === activeVehicle);
 
-      if (selectedDate) {
-        list = list.filter(r => selectedDate >= r.startDate && selectedDate <= r.endDate);
-        $('selectedDateBar').classList.remove('hidden');
-        $('selectedDateLabel').textContent = formatSelectedDateLabel(selectedDate);
-        $('pastToggleBtn').classList.add('hidden');
-      } else {
-        if (!showPast) list = list.filter(r => Date.parse(r.endAt) >= nowMs);
+      if (!selectedDate) {
         $('selectedDateBar').classList.add('hidden');
-        $('pastToggleBtn').classList.remove('hidden');
-      }
-
-      list = [...list].sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
-
-      if (!list.length) {
         container.innerHTML = `
           <div class="car-empty">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3"/><path d="M3 12h18"/></svg>
-            <div>${esc(t('emptyUpcoming'))}</div>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div>${esc(t('selectDayHint'))}</div>
           </div>`;
         return;
       }
 
-      const groups = new Map();
-      list.forEach(r => {
-        if (!groups.has(r.startDate)) groups.set(r.startDate, []);
-        groups.get(r.startDate).push(r);
-      });
+      $('selectedDateBar').classList.remove('hidden');
+      $('selectedDateLabel').textContent = formatSelectedDateLabel(selectedDate);
 
-      let html = '';
-      groups.forEach((items, dateStr) => {
-        const { main, sub, isToday } = dateHeaderLabel(dateStr);
-        html += `<div class="car-date-group">
-          <div class="car-date-head${isToday ? ' is-today' : ''}">
-            <span class="d-main">${esc(main)}</span>
-            ${sub ? `<span class="d-sub">${esc(sub)}</span>` : ''}
+      const list = reservations
+        .filter(r => (activeVehicle === 'all' || r.vehicleId === activeVehicle) && selectedDate >= r.startDate && selectedDate <= r.endDate)
+        .sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
+
+      if (!list.length) {
+        container.innerHTML = `
+          <div class="car-empty">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3"/><path d="M3 12h18"/></svg>
+            <div>${esc(t('emptyDay'))}</div>
           </div>`;
-        items.forEach(r => {
-          const v = vehicleById(r.vehicleId);
-          const isPast = Date.parse(r.endAt) < nowMs;
-          html += `
-            <div class="car-card${isPast ? ' is-past' : ''}" style="--card-color:${v ? v.color : 'var(--blue)'}">
-              <div class="car-card-body">
-                <div class="car-card-top">
-                  <span class="car-card-vehicle"><span class="dot"></span>${esc(v ? v.label : r.vehicleId)}</span>
-                  <span class="car-card-time">${esc(formatTimeRange(r))}</span>
-                </div>
-                <p class="car-card-purpose">${esc(r.purpose)}</p>
-                <p class="car-card-meta">${esc(r.reserverName)}${r.phone ? ' · ' + esc(r.phone) : ''}</p>
-                ${r.notes ? `<p class="car-card-notes">${esc(r.notes)}</p>` : ''}
-                ${(r.actualHours != null || r.actualKm != null) ? `<span class="car-card-usage">🛣️ ${[
-                  r.actualHours != null ? esc(r.actualHours) + (carLang === 'en' ? 'h' : '시간') : '',
-                  r.actualKm != null ? esc(formatKm(r.actualKm)) : '',
-                ].filter(Boolean).join(' · ')}</span>` : ''}
+        return;
+      }
+
+      container.innerHTML = list.map(r => {
+        const v = vehicleById(r.vehicleId);
+        const isPast = Date.parse(r.endAt) < nowMs;
+        return `
+          <div class="car-card${isPast ? ' is-past' : ''}" style="--card-color:${v ? v.color : 'var(--blue)'}">
+            <div class="car-card-body">
+              <div class="car-card-top">
+                <span class="car-card-vehicle"><span class="dot"></span>${esc(v ? v.label : r.vehicleId)}</span>
+                <span class="car-card-time">${esc(formatTimeRange(r))}</span>
               </div>
-              <div class="car-card-actions">
-                <button class="car-card-btn" onclick="openModal('${r.id}')" aria-label="edit">
-                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9.5 1.5l3 3-8 8-3.5.5.5-3.5 8-8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-                </button>
-                <button class="car-card-btn danger" onclick="openConfirm('${r.id}','reservation')" aria-label="delete">
-                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3.5h8M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4 3.5l.5 9a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1l.5-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-              </div>
-            </div>`;
-        });
-        html += `</div>`;
-      });
-      container.innerHTML = html;
+              <p class="car-card-purpose">${esc(r.purpose)}</p>
+              <p class="car-card-meta">${esc(r.reserverName)}${r.phone ? ' · ' + esc(r.phone) : ''}</p>
+              ${r.notes ? `<p class="car-card-notes">${esc(r.notes)}</p>` : ''}
+              ${(r.actualHours != null || r.actualKm != null) ? `<span class="car-card-usage">🛣️ ${[
+                r.actualHours != null ? esc(r.actualHours) + (carLang === 'en' ? 'h' : '시간') : '',
+                r.actualKm != null ? esc(formatKm(r.actualKm)) : '',
+              ].filter(Boolean).join(' · ')}</span>` : ''}
+            </div>
+            <div class="car-card-actions">
+              <button class="car-card-btn" onclick="openModal('${r.id}')" aria-label="edit">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9.5 1.5l3 3-8 8-3.5.5.5-3.5 8-8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="car-card-btn danger" onclick="openConfirm('${r.id}','reservation')" aria-label="delete">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3.5h8M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4 3.5l.5 9a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1l.5-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     /* ── CALENDAR ── */
+    // 좁은 화면에서는 한 주에 3줄씩 욱여넣으면 너무 빽빽해져서 2줄로 줄인다 —
+    // 넘치는 건 어차피 "+N"으로 묶이고 탭하면 아래 상세 패널에서 다 보이므로 정보 손실은 없다.
+    function maxLanesForViewport() { return window.innerWidth <= 680 ? 2 : 3; }
+
+    /** 한 주에 표시할 항목(막대/시간지정 한 줄)을 겹치지 않게 줄(lane)에 배치. 못 들어가면 overflow로 뺀다. */
+    function layoutWeekItems(items, maxLanes) {
+      const sorted = [...items].sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'bar' ? -1 : 1; // 여러 날짜짜리 예약(막대)을 먼저 배치
+        if (a.startCol !== b.startCol) return a.startCol - b.startCol;
+        return (b.endCol - b.startCol) - (a.endCol - a.startCol);
+      });
+      const laneOccupancy = [];
+      const placed = [];
+      const overflowItems = [];
+      sorted.forEach(item => {
+        let laneIdx = -1;
+        for (let l = 0; l < maxLanes; l++) {
+          const occ = laneOccupancy[l] || [];
+          const collide = occ.some(([s, e]) => !(item.endCol < s || item.startCol > e));
+          if (!collide) { laneIdx = l; break; }
+        }
+        if (laneIdx === -1) {
+          overflowItems.push(item);
+        } else {
+          laneOccupancy[laneIdx] = laneOccupancy[laneIdx] || [];
+          laneOccupancy[laneIdx].push([item.startCol, item.endCol]);
+          placed.push({ ...item, lane: laneIdx });
+        }
+      });
+      const overflowByCol = {};
+      overflowItems.forEach(item => {
+        for (let c = item.startCol; c <= item.endCol; c++) overflowByCol[c] = (overflowByCol[c] || 0) + 1;
+      });
+      return { placed, overflowByCol };
+    }
+
     function renderCalendar() {
       const year = calendarMonth.getFullYear();
       const month = calendarMonth.getMonth();
@@ -699,6 +720,8 @@
       const startOffset = firstOfMonth.getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+      const totalWeeks = totalCells / 7;
+      const maxLanes = maxLanesForViewport();
       const todayStr_ = todayStr();
       const wkKo = ['일', '월', '화', '수', '목', '금', '토'];
       const wkEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -708,41 +731,116 @@
         ? calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })
         : `${year}년 ${month + 1}월`;
 
-      let cellsHtml = '';
-      for (let i = 0; i < totalCells; i++) {
-        const cellDate = new Date(year, month, i - startOffset + 1);
-        const cellStr = toDateStr(cellDate);
-        const inMonth = cellDate.getMonth() === month;
-        const isToday = cellStr === todayStr_;
-        const isSelected = cellStr === selectedDate;
-        const dayMatches = inMonth
-          ? reservations.filter(r => (activeVehicle === 'all' || r.vehicleId === activeVehicle) && cellStr >= r.startDate && cellStr <= r.endDate)
-          : [];
-        const dots = dayMatches.slice(0, 4).map(r => {
-          const v = vehicleById(r.vehicleId);
-          return `<span class="cal-dot" style="background:${v ? v.color : 'var(--blue)'}"></span>`;
-        }).join('');
-        const extra = dayMatches.length > 4 ? `<span class="cal-more">+${dayMatches.length - 4}</span>` : '';
-        cellsHtml += `
-          <button type="button" class="cal-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}${isSelected ? ' is-selected' : ''}"
-            ${inMonth ? `onclick="selectCalendarDate('${cellStr}')"` : 'disabled'}>
-            <span class="cal-daynum">${cellDate.getDate()}</span>
-            <span class="cal-dots">${dots}${extra}</span>
-          </button>`;
+      const filteredReservations = reservations.filter(r => activeVehicle === 'all' || r.vehicleId === activeVehicle);
+
+      let weeksHtml = '';
+      for (let w = 0; w < totalWeeks; w++) {
+        const weekDates = [];
+        for (let d = 0; d < 7; d++) weekDates.push(new Date(year, month, w * 7 - startOffset + 1 + d));
+        const weekDateStrs = weekDates.map(toDateStr);
+        const weekStartStr = weekDateStrs[0];
+        const weekEndStr = weekDateStrs[6];
+
+        const items = [];
+        filteredReservations.forEach(r => {
+          if (r.endDate < weekStartStr || r.startDate > weekEndStr) return;
+          const clippedStart = r.startDate < weekStartStr ? weekStartStr : r.startDate;
+          const clippedEnd = r.endDate > weekEndStr ? weekEndStr : r.endDate;
+          const startCol = weekDateStrs.indexOf(clippedStart);
+          const endCol = weekDateStrs.indexOf(clippedEnd);
+          if (startCol === -1 || endCol === -1) return;
+          items.push({ startCol, endCol, type: r.startDate === r.endDate ? 'timed' : 'bar', r });
+        });
+        const { placed, overflowByCol } = layoutWeekItems(items, maxLanes);
+
+        let dayCellsHtml = '';
+        weekDates.forEach((d, col) => {
+          const cellStr = weekDateStrs[col];
+          const inMonth = d.getMonth() === month;
+          const isToday = cellStr === todayStr_;
+          const isSelected = cellStr === selectedDate;
+          dayCellsHtml += `
+            <button type="button" class="cal-daynum-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}${isSelected ? ' is-selected' : ''}"
+              style="grid-column:${col + 1}" onclick="selectCalendarDate('${cellStr}')">
+              <span class="cal-daynum">${d.getDate()}</span>
+            </button>`;
+        });
+
+        let itemsHtml = '';
+        placed.forEach(item => {
+          const row = item.lane + 2;
+          const gridArea = `grid-column:${item.startCol + 1}/${item.endCol + 2};grid-row:${row}`;
+          const v = vehicleById(item.r.vehicleId);
+          const color = v ? v.color : 'var(--blue)';
+          const title = esc(item.r.purpose || '');
+          if (item.type === 'bar') {
+            itemsHtml += `<div class="cal-bar" style="${gridArea};--card-color:${color}" onclick="selectCalendarDate('${weekDateStrs[item.startCol]}')" title="${title}">${title}</div>`;
+          } else {
+            itemsHtml += `<div class="cal-timed" style="${gridArea};--card-color:${color}" onclick="selectCalendarDate('${weekDateStrs[item.startCol]}')" title="${title}">
+              <span class="cal-timed-dot"></span>
+              <span class="cal-timed-time">${esc(item.r.startTime)}</span><span>${title}</span>
+            </div>`;
+          }
+        });
+
+        let moreHtml = '';
+        Object.keys(overflowByCol).forEach(colStr => {
+          const col = Number(colStr);
+          const row = maxLanes + 2;
+          moreHtml += `<button type="button" class="cal-more-cell" style="grid-column:${col + 1};grid-row:${row}" onclick="selectCalendarDate('${weekDateStrs[col]}')">+${overflowByCol[col]}</button>`;
+        });
+
+        weeksHtml += `<div class="cal-week" style="grid-template-rows:auto repeat(${maxLanes}, auto) auto">${dayCellsHtml}${itemsHtml}${moreHtml}</div>`;
       }
 
       $('calGrid').innerHTML = `
         <div class="cal-weekdays">${wk.map(w => `<span>${esc(w)}</span>`).join('')}</div>
-        <div class="cal-days">${cellsHtml}</div>`;
+        ${weeksHtml}`;
     }
+
+    /* ── 연/월 직접 이동 ── */
+    function populateMonthPicker() {
+      const monthNamesKo = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+      const monthNamesEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const names = carLang === 'en' ? monthNamesEn : monthNamesKo;
+      const select = $('pickerMonth');
+      if (!select) return;
+      const prevValue = select.value;
+      select.innerHTML = names.map((m, i) => `<option value="${i}">${esc(m)}</option>`).join('');
+      if (prevValue) select.value = prevValue;
+    }
+    function toggleMonthPicker() {
+      const picker = $('monthPicker');
+      const willShow = picker.classList.contains('hidden');
+      picker.classList.toggle('hidden');
+      if (willShow) {
+        $('pickerYear').value = calendarMonth.getFullYear();
+        $('pickerMonth').value = calendarMonth.getMonth();
+      }
+    }
+    function jumpToPickedMonth() {
+      const year = parseInt($('pickerYear').value, 10);
+      const month = parseInt($('pickerMonth').value, 10);
+      if (!Number.isFinite(year) || !Number.isFinite(month)) return;
+      calendarMonth = new Date(year, month, 1);
+      selectedDate = null;
+      $('monthPicker').classList.add('hidden');
+      renderCalendar();
+      renderAgenda();
+    }
+
     function shiftCalendarMonth(delta) {
       calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + delta, 1);
+      selectedDate = null;
+      $('monthPicker').classList.add('hidden');
       renderCalendar();
+      renderAgenda();
     }
     function goToCurrentMonth() {
       const now = new Date();
       calendarMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      selectedDate = null;
+      selectedDate = todayStr();
+      $('monthPicker').classList.add('hidden');
       renderCalendar();
       renderAgenda();
     }
@@ -1057,6 +1155,15 @@
         showToast(e.message || t('errGeneric'), true);
       }
     }
+
+    // 화면 폭이 바뀌면(창 크기 조절, 화면 회전) 줄 수/레이아웃을 다시 계산해서 그린다.
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (currentView === 'reservations') { renderCalendar(); renderAgenda(); }
+      }, 150);
+    });
 
     /* ── INIT ── */
     applyLangToDOM();
