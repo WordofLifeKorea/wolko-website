@@ -3,7 +3,7 @@
  * body: { email, password }
  *
  * 승인된 계정의 이메일+비밀번호 로그인. 성공 시 허브 세션 토큰을 발급하고,
- * role이 admin/master면 관리자/차량 스케줄/스케줄 플래너 SSO 토큰까지 함께 발급한다.
+ * role이 admin/master면 관리자/차량 스케줄 SSO 토큰까지 함께 발급한다.
  * (상담사는 허브 세션만 발급 — 관리자 도구 접근 권한 없음)
  */
 import {
@@ -60,14 +60,12 @@ export async function onRequestPost(context) {
 
     if (account.role === 'admin' || account.role === 'master') {
       const expires = Date.now() + 24 * 60 * 60 * 1000;
-      const [adminToken, carToken, schedulePlannerToken] = await Promise.all([
+      const [adminToken, carToken] = await Promise.all([
         signToken(env.ADMIN_PASSWORD, `wolko-admin:${expires}`),
         signToken(env.ADMIN_PASSWORD, `wolko-car:${expires}`),
-        signToken(env.ADMIN_PASSWORD, `wolko-schedule-planner:admin:${expires}`),
       ]);
       result.adminToken = adminToken;
       result.carToken = carToken;
-      result.schedulePlannerToken = schedulePlannerToken;
     }
 
     return Response.json(result, { headers: CORS });

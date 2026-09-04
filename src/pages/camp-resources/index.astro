@@ -252,24 +252,6 @@ const pageTitle = 'WOLKO Camp Resources';
     .upload-placeholder-btn[disabled] { opacity:.55; cursor:not-allowed; }
     .load-error-banner { margin-bottom:16px; padding:12px 16px; border:1px solid #f1c9cf; border-radius:var(--radius-md); background:#fff8f9; color:var(--red); font-size:12.5px; }
     .load-error-banner[hidden] { display:none; }
-    .schedule-panel {
-      border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff;
-      box-shadow:var(--shadow-card); overflow:hidden;
-    }
-    .schedule-panel-head {
-      display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
-      padding:18px 20px; border-bottom:1px solid var(--border);
-      background:linear-gradient(135deg,#fff,#f4fbfd);
-    }
-    .schedule-panel-title { margin:0; color:var(--blue); font:800 18px/1.25 var(--sans); }
-    .schedule-panel-desc { margin:5px 0 0; color:var(--muted); font-size:12.5px; line-height:1.55; }
-    .schedule-panel-link {
-      display:inline-flex; align-items:center; justify-content:center; min-height:38px; padding:0 14px;
-      border:1px solid #cfe0e7; border-radius:999px; background:#fff; color:var(--blue);
-      font:800 12px/1 var(--sans); text-decoration:none; white-space:nowrap; box-shadow:var(--shadow-soft);
-    }
-    .schedule-panel-link:hover { background:#f4fbfd; border-color:var(--blue); }
-    .schedule-frame { width:100%; height:min(980px, calc(100vh - 170px)); min-height:680px; border:0; display:block; background:#f8fafc; }
     @media (max-width:720px) {
       :root { --space-page:18px; }
       .topbar { padding:10px 16px; gap:10px; }
@@ -289,8 +271,6 @@ const pageTitle = 'WOLKO Camp Resources';
       .camp-filter-wrap #campSelect,
       .camp-filter-wrap .camp-rename-btn,
       .camp-filter-wrap .camp-manage-btn { grid-column:1 / -1; margin-left:0; }
-      .schedule-panel-head { padding:15px; }
-      .schedule-frame { height:820px; min-height:620px; }
     }
   </style>
 
@@ -468,11 +448,9 @@ const pageTitle = 'WOLKO Camp Resources';
       { key: 'counselor', ko: '상담자', en: 'Counselors' },
       { key: 'preacher', ko: '설교자', en: 'Preachers' },
       { key: 'general', ko: '일반 자료', en: 'General Files' },
-      { key: 'schedule', ko: '스케줄', en: 'Schedule' },
     ];
     const TAB_KEYS = TABS.map(t => t.key);
     const DEFAULT_TAB = 'teacher';
-    const HIDDEN_TABS = ['schedule'];
     try { localStorage.removeItem(TOKEN_KEY); } catch(e) {}
 
     const COPY = {
@@ -516,9 +494,6 @@ const pageTitle = 'WOLKO Camp Resources';
         editModeEnter: '편집 모드',
         editModeExit: '편집 중 · 나가기',
         staffLogin: 'Staff 로그인',
-        scheduleTitle: '스케줄 플래너',
-        scheduleDesc: '스태프 일정과 차량 운영 계획을 이 탭에서 바로 관리합니다.',
-        openSchedule: '새 탭에서 열기',
       },
       en: {
         noItems: 'No resources yet.',
@@ -560,9 +535,6 @@ const pageTitle = 'WOLKO Camp Resources';
         editModeEnter: 'Edit Mode',
         editModeExit: 'Editing · Exit',
         staffLogin: 'Staff Login',
-        scheduleTitle: 'Schedule Planner',
-        scheduleDesc: 'Manage staff schedules and van operations directly from this tab.',
-        openSchedule: 'Open in New Tab',
       },
     };
 
@@ -666,8 +638,7 @@ const pageTitle = 'WOLKO Camp Resources';
       return !!token;
     }
 
-    function isTabVisible(key) {
-      if (HIDDEN_TABS.includes(key)) return false;
+    function isTabVisible() {
       return hasStaffAccess();
     }
 
@@ -958,11 +929,6 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     function renderCampFilter() {
-      if (currentTab === 'schedule') {
-        els.campFilterWrap.hidden = true;
-        updateEditModeUI();
-        return;
-      }
       const years = sortedYears();
       els.campFilterWrap.hidden = years.length === 0;
       if (!years.length) return;
@@ -989,20 +955,6 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     function renderCategoryGroups() {
-      if (currentTab === 'schedule') {
-        els.subjectGroups.innerHTML = `
-          <section class="schedule-panel">
-            <div class="schedule-panel-head">
-              <div>
-                <h3 class="schedule-panel-title">${escapeHtml(tr('scheduleTitle'))}</h3>
-                <p class="schedule-panel-desc">${escapeHtml(tr('scheduleDesc'))}</p>
-              </div>
-              <a class="schedule-panel-link" href="/schedule-planner/" target="_blank" rel="noopener">${escapeHtml(tr('openSchedule'))}</a>
-            </div>
-            <iframe class="schedule-frame" src="/schedule-planner/" title="${escapeHtml(tr('scheduleTitle'))}"></iframe>
-          </section>`;
-        return;
-      }
       if (currentTab === 'general') {
         const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && itemTab(i) === 'general');
         els.subjectGroups.innerHTML = flatListHtml(tabLabel('general'), campItems, { tab: 'general' });
