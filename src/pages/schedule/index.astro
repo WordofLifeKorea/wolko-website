@@ -1,8 +1,9 @@
 ---
-// 스태프 캘린더 — 비공개 구글 캘린더(서비스 계정에만 "보기" 공유)를 서버에서
-// 읽어와 차량 스케줄 페이지와 같은 스타일의 자체 월간 캘린더로 보여준다.
-// 읽기 전용(일정 추가/수정은 Google 캘린더에서 직접). 허브 로그인 필요 — 이
-// 페이지 자체는 비밀번호를 받지 않고 허브 세션 토큰(sessionStorage)을 그대로 쓴다.
+// 스태프 캘린더 — 비공개 구글 캘린더(서비스 계정에만 "일정 변경" 권한으로 공유)를
+// 서버에서 읽고 쓰며, 차량 스케줄 페이지와 같은 스타일의 자체 월간 캘린더로 보여준다.
+// 조회는 허브에 로그인한 누구나(상담사 포함), 등록/수정/삭제는 admin/master만
+// 가능 — 서버(events.js)가 role을 재검증한다. 이 페이지 자체는 비밀번호를
+// 따로 받지 않고 허브 세션 토큰(sessionStorage)을 그대로 쓴다.
 // No BaseLayout; standalone page (다른 허브 도구와 동일한 패턴)
 ---
 <!DOCTYPE html>
@@ -111,17 +112,75 @@
     .sc-empty svg { display:block; margin:0 auto 10px; opacity:.5; }
 
     .sc-card {
-      position:relative; padding:14px 14px 14px 18px; margin-bottom:8px; border-radius:14px;
+      position:relative; display:flex; gap:10px; padding:14px 14px 14px 18px; margin-bottom:8px; border-radius:14px;
       border:1px solid var(--border); background:var(--card); box-shadow:0 1px 3px rgba(16,42,56,.04);
     }
     .sc-card::before { content:''; position:absolute; left:0; top:12px; bottom:12px; width:4px; border-radius:3px; background:var(--blue); }
+    .sc-card-body { flex:1; min-width:0; }
     .sc-card-top { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
     .sc-card-time { font:700 12.5px/1 var(--body); color:var(--blue); }
     .sc-card-title { margin:2px 0 0; font:700 13.5px/1.4 var(--body); color:var(--text); }
     .sc-card-desc { margin:4px 0 0; font-size:11.5px; color:var(--mid); line-height:1.6; white-space:pre-wrap; }
     .sc-card-location { margin:4px 0 0; font-size:11.5px; color:var(--light); }
+    .sc-card-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+    .sc-card-btn {
+      display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%;
+      border:1px solid var(--border); background:#fff; color:var(--mid); cursor:pointer; transition:all .12s;
+    }
+    .sc-card-btn:hover { border-color:var(--blue); color:var(--blue); background:#f2f8fb; }
+    .sc-card-btn.danger:hover { border-color:var(--red); color:#fff; background:var(--red); }
 
     .sc-loading { text-align:center; padding:40px 0; color:var(--light); font-size:12.5px; }
+
+    /* ── FAB(새 일정 등록) ── */
+    .sc-fab {
+      position:fixed; right:20px; bottom:24px; z-index:25; display:inline-flex; align-items:center; gap:8px;
+      padding:14px 20px; border-radius:999px; border:none; background:var(--blue); color:#fff;
+      font:800 13.5px/1 var(--body); cursor:pointer; box-shadow:0 10px 26px rgba(0,79,104,.35); transition:transform .12s;
+    }
+    .sc-fab:hover { transform:translateY(-1px); }
+    .sc-fab:active { transform:scale(.97); }
+
+    /* ── 등록/수정 모달 ── */
+    .sc-modal-overlay {
+      position:fixed; inset:0; z-index:40; display:flex; align-items:flex-end; justify-content:center;
+      background:rgba(10,24,32,.5);
+    }
+    .sc-modal { width:100%; max-width:480px; max-height:92vh; overflow-y:auto; background:#fff; border-radius:20px 20px 0 0; padding:20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
+    @media (min-width:640px) {
+      .sc-modal-overlay { align-items:center; padding:24px; }
+      .sc-modal { border-radius:20px; max-height:88vh; }
+    }
+    .sc-modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .sc-modal-title { margin:0; font:800 16px/1.3 var(--body); color:var(--text); }
+    .sc-modal-close {
+      display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%;
+      border:none; background:var(--bg); color:var(--mid); cursor:pointer;
+    }
+    .sc-field { margin-bottom:13px; }
+    .sc-field label { display:block; margin-bottom:5px; font:700 12px/1 var(--body); color:var(--mid); }
+    .sc-field input, .sc-field textarea {
+      width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--bg);
+      color:var(--text); font:500 14px/1.4 var(--body); outline:none; transition:border-color .15s, background .15s;
+    }
+    .sc-field input:focus, .sc-field textarea:focus { border-color:var(--blue); background:#fff; }
+    .sc-field textarea { resize:vertical; min-height:60px; }
+    .sc-field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .sc-field-check { display:flex; align-items:center; gap:8px; }
+    .sc-field-check input { width:auto; }
+    .sc-field-check label { margin:0; }
+    .sc-modal-error {
+      margin:0 0 12px; padding:10px 12px; border-radius:10px; background:#fdecec; color:var(--red);
+      font:700 12.5px/1.5 var(--body); display:none;
+    }
+    .sc-modal-error.is-visible { display:block; }
+    .sc-modal-foot { display:flex; gap:8px; margin-top:18px; }
+    .sc-modal-btn { flex:1; padding:12px; border-radius:12px; border:none; font:800 14px/1 var(--body); cursor:pointer; transition:opacity .15s, transform .1s; }
+    .sc-modal-btn:active { transform:scale(.98); }
+    .sc-modal-btn-primary { background:var(--blue); color:#fff; }
+    .sc-modal-btn-primary:hover { background:var(--blue-lt); }
+    .sc-modal-btn-secondary { background:var(--bg); color:var(--mid); flex:0 0 auto; padding:12px 18px; }
+    .sc-modal-btn-secondary:hover { background:var(--border); }
   </style>
 </head>
 <body>
@@ -136,7 +195,7 @@
   <div class="sc-wrap">
     <div class="sc-title-row">
       <p class="sc-title" data-t="pageTitle">스태프 캘린더</p>
-      <p class="sc-subtitle" data-t="subtitle">WOLKO 스태프 일정 공유 캘린더입니다. 조회 전용이며, 일정 추가·수정은 캘린더 관리자에게 문의해 주세요.</p>
+      <p class="sc-subtitle" data-t="subtitle">WOLKO 스태프 일정 공유 캘린더입니다.</p>
     </div>
 
     <!-- 허브 로그인 필요 안내 -->
@@ -172,11 +231,71 @@
     </div>
   </div>
 
+  <button class="sc-fab hidden" id="fabBtn" onclick="openCreateModal()">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <span data-t="newEvent">새 일정</span>
+  </button>
+
+  <!-- ── 등록/수정 모달 ── -->
+  <div class="sc-modal-overlay hidden" id="modalOverlay">
+    <div class="sc-modal">
+      <div class="sc-modal-head">
+        <p class="sc-modal-title" id="modalTitle" data-t="newEventTitle">새 일정</p>
+        <button class="sc-modal-close" onclick="closeModal()" aria-label="close">
+          <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M1.5 1.5l12 12M13.5 1.5l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <p class="sc-modal-error" id="modalError"></p>
+
+      <div class="sc-field">
+        <label data-t="fieldSummary">제목</label>
+        <input type="text" id="fSummary" maxlength="200">
+      </div>
+      <div class="sc-field sc-field-check">
+        <input type="checkbox" id="fAllDay" onchange="onAllDayToggle()">
+        <label for="fAllDay" data-t="fieldAllDay">종일</label>
+      </div>
+      <div class="sc-field-row">
+        <div class="sc-field">
+          <label data-t="fieldStartDate">시작일</label>
+          <input type="date" id="fStartDate">
+        </div>
+        <div class="sc-field" id="fStartTimeWrap">
+          <label data-t="fieldStartTime">시작 시간</label>
+          <input type="time" id="fStartTime" value="09:00">
+        </div>
+      </div>
+      <div class="sc-field-row">
+        <div class="sc-field">
+          <label data-t="fieldEndDate">종료일</label>
+          <input type="date" id="fEndDate">
+        </div>
+        <div class="sc-field" id="fEndTimeWrap">
+          <label data-t="fieldEndTime">종료 시간</label>
+          <input type="time" id="fEndTime" value="10:00">
+        </div>
+      </div>
+      <div class="sc-field">
+        <label data-t="fieldLocation">위치 (선택)</label>
+        <input type="text" id="fLocation" maxlength="200">
+      </div>
+      <div class="sc-field">
+        <label data-t="fieldDescription">설명 (선택)</label>
+        <textarea id="fDescription" maxlength="2000"></textarea>
+      </div>
+
+      <div class="sc-modal-foot">
+        <button class="sc-modal-btn sc-modal-btn-secondary" onclick="closeModal()" data-t="cancelBtn">취소</button>
+        <button class="sc-modal-btn sc-modal-btn-primary" id="saveBtn" onclick="submitEventForm()" data-t="saveBtn">저장</button>
+      </div>
+    </div>
+  </div>
+
   <script is:inline>
     const SC_T = {
       ko: {
         pageTitle: '스태프 캘린더',
-        subtitle: 'WOLKO 스태프 일정 공유 캘린더입니다. 조회 전용이며, 일정 추가·수정은 캘린더 관리자에게 문의해 주세요.',
+        subtitle: 'WOLKO 스태프 일정 공유 캘린더입니다.',
         loginRequiredDesc: '이 페이지를 보려면 먼저 허브에 로그인해 주세요.',
         goToHubBtn: '허브로 이동',
         today: '오늘',
@@ -186,10 +305,29 @@
         emptyUpcoming: '예정된 일정이 없습니다.',
         loadError: '캘린더를 불러오지 못했습니다.',
         setupNotice: '아직 캘린더가 연결되지 않았습니다. 관리자에게 문의해 주세요.',
+        newEvent: '새 일정',
+        newEventTitle: '새 일정',
+        editEventTitle: '일정 수정',
+        fieldSummary: '제목',
+        fieldAllDay: '종일',
+        fieldStartDate: '시작일',
+        fieldStartTime: '시작 시간',
+        fieldEndDate: '종료일',
+        fieldEndTime: '종료 시간',
+        fieldLocation: '위치 (선택)',
+        fieldDescription: '설명 (선택)',
+        cancelBtn: '취소',
+        saveBtn: '저장',
+        saving: '저장 중…',
+        summaryRequired: '제목을 입력해 주세요.',
+        dateRequired: '날짜를 입력해 주세요.',
+        saveFailed: '저장하지 못했습니다.',
+        deleteConfirm: '이 일정을 삭제하시겠습니까?',
+        deleteFailed: '삭제하지 못했습니다.',
       },
       en: {
         pageTitle: 'Staff Calendar',
-        subtitle: 'WOLKO staff shared calendar (view only). Contact the calendar admin to add or edit events.',
+        subtitle: 'WOLKO staff shared calendar.',
         loginRequiredDesc: 'Please log in to the hub first to view this page.',
         goToHubBtn: 'Go to Hub',
         today: 'Today',
@@ -199,6 +337,25 @@
         emptyUpcoming: 'No upcoming events.',
         loadError: 'Could not load the calendar.',
         setupNotice: 'No calendar has been connected yet. Please contact an admin.',
+        newEvent: 'New Event',
+        newEventTitle: 'New Event',
+        editEventTitle: 'Edit Event',
+        fieldSummary: 'Title',
+        fieldAllDay: 'All day',
+        fieldStartDate: 'Start date',
+        fieldStartTime: 'Start time',
+        fieldEndDate: 'End date',
+        fieldEndTime: 'End time',
+        fieldLocation: 'Location (optional)',
+        fieldDescription: 'Description (optional)',
+        cancelBtn: 'Cancel',
+        saveBtn: 'Save',
+        saving: 'Saving…',
+        summaryRequired: 'Please enter a title.',
+        dateRequired: 'Please enter a date.',
+        saveFailed: 'Could not save.',
+        deleteConfirm: 'Delete this event?',
+        deleteFailed: 'Could not delete.',
       },
     };
     let scLang = localStorage.getItem('wolko-lang') || 'ko';
@@ -222,16 +379,21 @@
 
     /* ── 허브 세션 토큰 검증(hub.astro의 isHubTokenValid와 동일한 형식) ── */
     function isHubTokenValid(token) {
+      return !!parseHubToken(token);
+    }
+    /** 서명 검증은 서버가 다시 하므로(모든 쓰기 요청에서), 여기선 형식/만료만 보고 role을 꺼내 쓴다. */
+    function parseHubToken(token) {
       try {
         const decoded = atob(token);
         const lastColon = decoded.lastIndexOf(':');
         const data = decoded.slice(0, lastColon);
         const parts = data.split(':');
-        if (parts[0] !== 'wolko-hub' || parts.length !== 4) return false;
+        if (parts[0] !== 'wolko-hub' || parts.length !== 4) return null;
         const expires = parseInt(parts[3], 10);
-        return !!expires && Date.now() < expires;
+        if (!expires || Date.now() >= expires) return null;
+        return { email: parts[1], role: parts[2], expires };
       } catch (e) {
-        return false;
+        return null;
       }
     }
 
@@ -271,6 +433,8 @@
     let selectedDate = null;
     let events = []; // 현재 로드된(표시 중인 월 기준) 이벤트 목록
     let loadToken = 0;
+    let canWrite = false; // admin/master만 등록/수정/삭제 가능(서버가 다시 검증)
+    let editingId = null; // 모달이 수정 모드일 때 대상 이벤트 id, 등록 모드면 null
 
     async function loadEvents() {
       const myToken = ++loadToken;
@@ -387,12 +551,23 @@
         items.forEach(ev => {
           html += `
             <div class="sc-card">
-              <div class="sc-card-top">
-                <span class="sc-card-time">${esc(formatTimeRange(ev))}</span>
+              <div class="sc-card-body">
+                <div class="sc-card-top">
+                  <span class="sc-card-time">${esc(formatTimeRange(ev))}</span>
+                </div>
+                <p class="sc-card-title">${esc(ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'))}</p>
+                ${ev.location ? `<p class="sc-card-location">📍 ${esc(ev.location)}</p>` : ''}
+                ${ev.description ? `<p class="sc-card-desc">${esc(ev.description)}</p>` : ''}
               </div>
-              <p class="sc-card-title">${esc(ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'))}</p>
-              ${ev.location ? `<p class="sc-card-location">📍 ${esc(ev.location)}</p>` : ''}
-              ${ev.description ? `<p class="sc-card-desc">${esc(ev.description)}</p>` : ''}
+              ${canWrite ? `
+              <div class="sc-card-actions">
+                <button class="sc-card-btn" onclick="openEditModal('${esc(ev.id)}')" aria-label="edit">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </button>
+                <button class="sc-card-btn danger" onclick="deleteEvent('${esc(ev.id)}')" aria-label="delete">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+                </button>
+              </div>` : ''}
             </div>`;
         });
         html += `</div>`;
@@ -421,10 +596,137 @@
       renderAgenda();
     }
 
+    /* ── 등록/수정 모달 ── */
+    function toTimeStr(d) {
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+    function onAllDayToggle() {
+      const isAllDay = $('fAllDay').checked;
+      $('fStartTimeWrap').classList.toggle('hidden', isAllDay);
+      $('fEndTimeWrap').classList.toggle('hidden', isAllDay);
+    }
+    function openCreateModal() {
+      editingId = null;
+      $('modalTitle').textContent = t('newEventTitle');
+      $('modalError').classList.remove('is-visible');
+      $('fSummary').value = '';
+      $('fLocation').value = '';
+      $('fDescription').value = '';
+      $('fAllDay').checked = false;
+      const baseDate = selectedDate || todayStr();
+      $('fStartDate').value = baseDate;
+      $('fEndDate').value = baseDate;
+      $('fStartTime').value = '09:00';
+      $('fEndTime').value = '10:00';
+      onAllDayToggle();
+      $('modalOverlay').classList.remove('hidden');
+      $('fSummary').focus();
+    }
+    function openEditModal(id) {
+      const ev = events.find(e => e.id === id);
+      if (!ev) return;
+      editingId = id;
+      $('modalTitle').textContent = t('editEventTitle');
+      $('modalError').classList.remove('is-visible');
+      $('fSummary').value = ev.summary || '';
+      $('fLocation').value = ev.location || '';
+      $('fDescription').value = ev.description || '';
+      $('fAllDay').checked = !!ev.allDay;
+      const r = eventDateRange(ev);
+      $('fStartDate').value = r.startDate;
+      $('fEndDate').value = r.endDate;
+      if (!ev.allDay) {
+        $('fStartTime').value = toTimeStr(new Date(ev.start));
+        $('fEndTime').value = toTimeStr(new Date(ev.end));
+      }
+      onAllDayToggle();
+      $('modalOverlay').classList.remove('hidden');
+      $('fSummary').focus();
+    }
+    function closeModal() {
+      $('modalOverlay').classList.add('hidden');
+    }
+
+    function authHeaders() {
+      return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('wolko-hub-token') || '') };
+    }
+
+    async function submitEventForm() {
+      const errEl = $('modalError');
+      errEl.classList.remove('is-visible');
+      const summary = $('fSummary').value.trim();
+      const allDay = $('fAllDay').checked;
+      const startDate = $('fStartDate').value;
+      const endDate = $('fEndDate').value;
+      if (!summary) { errEl.textContent = t('summaryRequired'); errEl.classList.add('is-visible'); return; }
+      if (!startDate || !endDate) { errEl.textContent = t('dateRequired'); errEl.classList.add('is-visible'); return; }
+
+      const payload = {
+        summary,
+        location: $('fLocation').value.trim(),
+        description: $('fDescription').value.trim(),
+        allDay,
+        startDate, endDate,
+        startTime: $('fStartTime').value,
+        endTime: $('fEndTime').value,
+      };
+      if (editingId) payload.id = editingId;
+
+      const btn = $('saveBtn');
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = t('saving');
+      try {
+        const res = await fetch('/api/schedule/events', {
+          method: editingId ? 'PUT' : 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('saveFailed'));
+
+        if (editingId) {
+          const idx = events.findIndex(e => e.id === editingId);
+          if (idx !== -1) events[idx] = data.event; else events.push(data.event);
+        } else {
+          events.push(data.event);
+        }
+        closeModal();
+        renderCalendar();
+        renderAgenda();
+      } catch (e) {
+        errEl.textContent = e.message || t('saveFailed');
+        errEl.classList.add('is-visible');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    }
+
+    async function deleteEvent(id) {
+      if (!confirm(t('deleteConfirm'))) return;
+      try {
+        const res = await fetch(`/api/schedule/events?id=${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('deleteFailed'));
+        events = events.filter(e => e.id !== id);
+        renderCalendar();
+        renderAgenda();
+      } catch (e) {
+        alert(e.message || t('deleteFailed'));
+      }
+    }
+
     /* ── 초기화 ── */
     applyScLang();
     const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
-    if (hubToken && isHubTokenValid(hubToken)) {
+    const hubSession = hubToken ? parseHubToken(hubToken) : null;
+    if (hubSession) {
+      canWrite = hubSession.role === 'admin' || hubSession.role === 'master';
+      $('fabBtn').classList.toggle('hidden', !canWrite);
       $('calendarBody').classList.remove('hidden');
       loadEvents();
     } else {

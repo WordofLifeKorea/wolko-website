@@ -83,15 +83,21 @@ export async function legacyDeterministicEventId(rawId) {
   return out;
 }
 
-/** 새 캘린더 이벤트 생성. 이벤트 ID는 구글이 발급 — 반환값의 id를 예약 레코드에 저장해둬야 다음에 지울 수 있다. */
-export async function createCalendarEvent({ serviceAccountJson, calendarId, summary, description, startAt, endAt }) {
+/**
+ * 새 캘린더 이벤트 생성. 이벤트 ID는 구글이 발급 — 반환값의 id를 예약 레코드에
+ * 저장해둬야 다음에 지울 수 있다.
+ * allDay가 true면 startAt/endAt은 'YYYY-MM-DD'(종료일은 구글 규칙대로 배타적/exclusive),
+ * 아니면 ISO datetime 문자열.
+ */
+export async function createCalendarEvent({ serviceAccountJson, calendarId, summary, description, location, startAt, endAt, allDay }) {
   const serviceAccount = JSON.parse(serviceAccountJson);
   const token = await getAccessToken(serviceAccount);
   const body = {
     summary,
     description,
-    start: { dateTime: startAt, timeZone: 'Asia/Seoul' },
-    end: { dateTime: endAt, timeZone: 'Asia/Seoul' },
+    ...(location ? { location } : {}),
+    start: allDay ? { date: startAt } : { dateTime: startAt, timeZone: 'Asia/Seoul' },
+    end: allDay ? { date: endAt } : { dateTime: endAt, timeZone: 'Asia/Seoul' },
   };
 
   const res = await fetch(
