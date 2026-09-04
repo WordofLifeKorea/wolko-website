@@ -1,0 +1,126 @@
+---
+// 스태프 캘린더 — 공유 구글 캘린더를 iframe으로 표시.
+// 캘린더 자체가 "공개" 설정이라 이 페이지는 로그인 없이 조회 가능(구글 링크로도 어차피 열람 가능하므로).
+// 일정 추가/수정은 Google 캘린더에서 직접 — 이 페이지는 보기 전용 뷰어.
+// No BaseLayout; standalone page (다른 허브 도구와 동일한 패턴)
+
+const CALENDAR_ID = ''; // TODO: 스태프 캘린더의 Calendar ID로 교체
+// (Google 캘린더 → 대상 캘린더 설정 및 공유 → "캘린더 통합" 섹션의 "캘린더 ID")
+const hasCalendar = CALENDAR_ID.trim().length > 0;
+const EMBED_SRC = hasCalendar
+  ? `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(CALENDAR_ID)}&ctz=Asia%2FSeoul&mode=MONTH&showTitle=0&showPrint=0&showCalendars=0&showTz=0`
+  : '';
+const OPEN_SRC = hasCalendar
+  ? `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(CALENDAR_ID)}`
+  : '';
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>스태프 캘린더 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#004f68">
+  <style>
+    :root {
+      --blue:#004f68; --blue-lt:#0077a3; --text:#1a2d38; --muted:#5a7585;
+      --border:#e4eaee; --bg:#f4f6f8; --sans:'Montserrat',sans-serif; --body:'Noto Sans KR',sans-serif;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); font-family:var(--body); color:var(--text); }
+    .sc-header {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:14px 22px; background:#fff; border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:5;
+    }
+    .sc-logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--blue); }
+    .sc-logo img { width:30px; height:30px; object-fit:contain; }
+    .sc-logo span { font:800 15px/1 var(--sans); letter-spacing:.02em; }
+    .sc-right { display:flex; align-items:center; gap:8px; }
+    .sc-btn {
+      display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 14px;
+      border:1.5px solid var(--border); border-radius:999px; background:#fff; color:var(--blue);
+      font:800 12px/1 var(--sans); text-decoration:none; cursor:pointer;
+    }
+    .sc-btn:hover { border-color:var(--blue); background:#f4fbfd; }
+    .sc-wrap { max-width:1100px; margin:0 auto; padding:22px; }
+    .sc-title-row { margin-bottom:14px; }
+    .sc-title { margin:0; font:800 22px/1.25 var(--sans); color:var(--blue); }
+    .sc-subtitle { margin:4px 0 0; color:var(--muted); font-size:13px; line-height:1.55; }
+    .sc-frame-card {
+      border:1px solid var(--border); border-radius:16px; background:#fff; overflow:hidden;
+      box-shadow:0 10px 28px rgba(16,42,56,.06);
+    }
+    .sc-frame { width:100%; height:min(880px, calc(100vh - 210px)); min-height:600px; border:0; display:block; }
+    .sc-empty-card {
+      border:1.5px dashed var(--border); border-radius:16px; background:#fff;
+      padding:48px 24px; text-align:center; color:var(--muted); font-size:13.5px; line-height:1.6;
+    }
+  </style>
+</head>
+<body>
+  <header class="sc-header">
+    <a class="sc-logo" href="/hub" title="WOLKO 허브로 돌아가기">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <span data-t="pageTitle">스태프 캘린더</span>
+    </a>
+    <div class="sc-right">
+      <button class="sc-btn" onclick="toggleScLang()"><span id="scLangLabel">EN</span></button>
+      {hasCalendar && (
+        <a class="sc-btn" href={OPEN_SRC} target="_blank" rel="noopener" data-t="openInGoogle">Google 캘린더에서 열기</a>
+      )}
+    </div>
+  </header>
+
+  <div class="sc-wrap">
+    <div class="sc-title-row">
+      <p class="sc-title" data-t="pageTitle">스태프 캘린더</p>
+      <p class="sc-subtitle" data-t="subtitle">WOLKO 스태프 일정 공유 캘린더입니다. 일정 추가·수정은 Google 캘린더에서 직접 해주세요.</p>
+    </div>
+    {hasCalendar ? (
+      <div class="sc-frame-card">
+        <iframe class="sc-frame" src={EMBED_SRC} title="WOLKO Staff Calendar"></iframe>
+      </div>
+    ) : (
+      <div class="sc-empty-card" data-t="setupNotice">아직 캘린더가 연결되지 않았습니다. 관리자에게 문의해 주세요.</div>
+    )}
+  </div>
+
+  <script is:inline>
+    const SC_T = {
+      ko: {
+        pageTitle: '스태프 캘린더',
+        subtitle: 'WOLKO 스태프 일정 공유 캘린더입니다. 일정 추가·수정은 Google 캘린더에서 직접 해주세요.',
+        openInGoogle: 'Google 캘린더에서 열기',
+        setupNotice: '아직 캘린더가 연결되지 않았습니다. 관리자에게 문의해 주세요.',
+      },
+      en: {
+        pageTitle: 'Staff Calendar',
+        subtitle: 'WOLKO staff shared calendar. To add or edit events, open it directly in Google Calendar.',
+        openInGoogle: 'Open in Google Calendar',
+        setupNotice: 'No calendar has been connected yet. Please contact an admin.',
+      },
+    };
+    let scLang = localStorage.getItem('wolko-lang') || 'ko';
+    function scT(key) { return SC_T[scLang]?.[key] ?? SC_T.ko[key] ?? key; }
+    function applyScLang() {
+      document.documentElement.lang = scLang === 'en' ? 'en' : 'ko';
+      document.title = (scLang === 'en' ? 'Staff Calendar' : '스태프 캘린더') + ' — WOLKO';
+      document.querySelectorAll('[data-t]').forEach(el => { el.textContent = scT(el.getAttribute('data-t')); });
+      const label = document.getElementById('scLangLabel');
+      if (label) label.textContent = scLang === 'ko' ? 'EN' : '한';
+    }
+    function toggleScLang() {
+      scLang = scLang === 'ko' ? 'en' : 'ko';
+      localStorage.setItem('wolko-lang', scLang);
+      applyScLang();
+    }
+    applyScLang();
+  </script>
+</body>
+</html>
