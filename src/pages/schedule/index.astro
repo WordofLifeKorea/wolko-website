@@ -45,7 +45,7 @@
     }
     .sc-btn:hover { border-color:var(--blue); background:#f4fbfd; }
 
-    .sc-wrap { max-width:1040px; margin:0 auto; padding:22px; }
+    .sc-wrap { max-width:1320px; margin:0 auto; padding:22px; }
     .sc-title-row { margin-bottom:14px; }
     .sc-title { margin:0; font:800 22px/1.25 var(--sans); color:var(--blue); }
     .sc-subtitle { margin:4px 0 0; color:var(--mid); font-size:13px; line-height:1.55; }
@@ -76,7 +76,7 @@
     .cal-week { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid var(--border); }
     .cal-daynum-cell {
       grid-row:1 / -1; display:flex; justify-content:flex-end; align-items:flex-start; border:none; border-right:1px solid var(--border);
-      background:transparent; padding:7px 8px 4px; cursor:pointer; font-family:var(--body); min-height:112px;
+      background:transparent; padding:7px 8px 4px; cursor:pointer; font-family:var(--body); min-height:150px;
     }
     .cal-daynum-cell:nth-child(7n) { border-right:none; }
     .cal-daynum-cell:hover { background:var(--bg); }
@@ -89,11 +89,11 @@
     }
 
     .cal-bar {
-      margin:2px 3px; padding:3px 7px; border-radius:4px; background:var(--blue); color:#fff;
+      margin:2px 2px; padding:2.5px 6px; border-radius:4px; background:var(--blue); color:#fff;
       font:700 10.5px/1.5 var(--body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
     }
     .cal-timed {
-      margin:2px 3px; padding:3px 7px; border-radius:4px; display:flex; align-items:center; gap:5px;
+      margin:2px 2px; padding:2.5px 6px; border-radius:4px; display:flex; align-items:center; gap:4px;
       font:600 10.5px/1.5 var(--body); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
     }
     .cal-timed:hover, .cal-bar:hover { filter:brightness(0.95); }
@@ -125,12 +125,6 @@
       font:700 11px/1 var(--body); cursor:pointer;
     }
     .sc-selected-date-bar button:hover { color:var(--blue); }
-
-    .sc-date-group { margin-bottom:22px; }
-    .sc-date-head { display:flex; align-items:baseline; gap:8px; margin-bottom:8px; padding-left:2px; }
-    .sc-date-head .d-main { font:800 13.5px/1 var(--body); color:var(--text); }
-    .sc-date-head .d-sub { font-size:11.5px; color:var(--light); font-weight:600; }
-    .sc-date-head.is-today .d-main { color:var(--blue); }
 
     .sc-empty { padding:60px 20px; text-align:center; color:var(--light); font-size:13px; line-height:1.7; }
     .sc-empty svg { display:block; margin:0 auto 10px; opacity:.5; }
@@ -246,7 +240,7 @@
 
       <div class="sc-selected-date-bar hidden" id="selectedDateBar">
         <span id="selectedDateLabel"></span>
-        <button type="button" onclick="clearSelectedDate()" data-t="clearDate">전체 보기</button>
+        <button type="button" onclick="clearSelectedDate()" data-t="clearDate">닫기</button>
       </div>
 
       <div id="loadingIndicator" class="sc-loading hidden" data-t="loading">불러오는 중…</div>
@@ -326,10 +320,11 @@
         loginRequiredDesc: '이 페이지를 보려면 먼저 허브에 로그인해 주세요.',
         goToHubBtn: '허브로 이동',
         today: '오늘',
-        clearDate: '전체 보기',
+        clearDate: '닫기',
         loading: '불러오는 중…',
         allDay: '종일',
-        emptyUpcoming: '예정된 일정이 없습니다.',
+        selectDayHint: '날짜를 클릭하면 그날의 일정이 여기에 표시됩니다.',
+        emptyDay: '이 날짜에는 일정이 없습니다.',
         loadError: '캘린더를 불러오지 못했습니다.',
         setupNotice: '아직 캘린더가 연결되지 않았습니다. 관리자에게 문의해 주세요.',
         newEvent: '새 일정',
@@ -359,10 +354,11 @@
         loginRequiredDesc: 'Please log in to the hub first to view this page.',
         goToHubBtn: 'Go to Hub',
         today: 'Today',
-        clearDate: 'Show all',
+        clearDate: 'Close',
         loading: 'Loading…',
         allDay: 'All day',
-        emptyUpcoming: 'No upcoming events.',
+        selectDayHint: 'Click a date to see that day\'s schedule here.',
+        emptyDay: 'No events on this date.',
         loadError: 'Could not load the calendar.',
         setupNotice: 'No calendar has been connected yet. Please contact an admin.',
         newEvent: 'New Event',
@@ -468,7 +464,7 @@
 
     /* ── 상태 ── */
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    let selectedDate = null;
+    let selectedDate = todayStr(); // 기본으로 오늘 날짜가 선택된 채로 시작 — 아래 상세 목록이 바로 채워지도록
     let events = []; // 현재 로드된(표시 중인 월 기준) 이벤트 목록
     let loadToken = 0;
     let canWrite = false; // admin/master만 등록/수정/삭제 가능(서버가 다시 검증)
@@ -625,69 +621,55 @@
         ${weeksHtml}`;
     }
 
+    /* 날짜를 선택했을 때만 그날 일정을 보여준다 — 그리드 자체가 이미 한눈에 보기용이라
+       선택 전 기본 상태에서까지 "예정된 일정" 전체 목록을 쌓아두면 중복이고 산만해진다. */
     function renderAgenda() {
       const container = $('agendaContainer');
-      const nowMs = Date.now();
-      let list = events;
 
-      if (selectedDate) {
-        list = list.filter(ev => { const r = eventDateRange(ev); return selectedDate >= r.startDate && selectedDate <= r.endDate; });
-        $('selectedDateBar').classList.remove('hidden');
-        const { main, sub } = dateHeaderLabel(selectedDate);
-        $('selectedDateLabel').textContent = `${main} (${sub})`;
-      } else {
-        list = list.filter(ev => Date.parse(ev.end) >= nowMs || ev.allDay);
+      if (!selectedDate) {
         $('selectedDateBar').classList.add('hidden');
-      }
-
-      list = [...list].sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
-
-      if (!list.length) {
         container.innerHTML = `
           <div class="sc-empty">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3"/><path d="M3 12h18"/></svg>
-            <div>${esc(t('emptyUpcoming'))}</div>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div>${esc(t('selectDayHint'))}</div>
           </div>`;
         return;
       }
 
-      const groups = new Map();
-      list.forEach(ev => {
-        const { startDate } = eventDateRange(ev);
-        if (!groups.has(startDate)) groups.set(startDate, []);
-        groups.get(startDate).push(ev);
-      });
+      $('selectedDateBar').classList.remove('hidden');
+      const { main, sub } = dateHeaderLabel(selectedDate);
+      $('selectedDateLabel').textContent = `${main} (${sub})`;
 
-      let html = '';
-      groups.forEach((items, dateStr) => {
-        const { main, sub, isToday } = dateHeaderLabel(dateStr);
-        html += `<div class="sc-date-group">
-          <div class="sc-date-head${isToday ? ' is-today' : ''}">
-            <span class="d-main">${esc(main)}</span>
-            <span class="d-sub">${esc(sub)}</span>
+      const list = events
+        .filter(ev => { const r = eventDateRange(ev); return selectedDate >= r.startDate && selectedDate <= r.endDate; })
+        .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+
+      if (!list.length) {
+        container.innerHTML = `
+          <div class="sc-empty">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3"/><path d="M3 12h18"/></svg>
+            <div>${esc(t('emptyDay'))}</div>
           </div>`;
-        items.forEach(ev => {
-          html += `
-            <div class="sc-card" style="--card-color:${eventColor(ev)}">
-              <div class="sc-card-body">
-                <p class="sc-card-title"><span class="sc-card-time">${esc(formatTimeRange(ev))}</span>${esc(ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'))}</p>
-                ${ev.location ? `<p class="sc-card-location">📍 ${esc(ev.location)}</p>` : ''}
-                ${ev.description ? `<p class="sc-card-desc">${esc(ev.description)}</p>` : ''}
-              </div>
-              ${canWrite ? `
-              <div class="sc-card-actions">
-                <button class="sc-card-btn" onclick="openEditModal('${esc(ev.id)}')" aria-label="edit">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                </button>
-                <button class="sc-card-btn danger" onclick="deleteEvent('${esc(ev.id)}')" aria-label="delete">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
-                </button>
-              </div>` : ''}
-            </div>`;
-        });
-        html += `</div>`;
-      });
-      container.innerHTML = html;
+        return;
+      }
+
+      container.innerHTML = list.map(ev => `
+        <div class="sc-card" style="--card-color:${eventColor(ev)}">
+          <div class="sc-card-body">
+            <p class="sc-card-title"><span class="sc-card-time">${esc(formatTimeRange(ev))}</span>${esc(ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'))}</p>
+            ${ev.location ? `<p class="sc-card-location">📍 ${esc(ev.location)}</p>` : ''}
+            ${ev.description ? `<p class="sc-card-desc">${esc(ev.description)}</p>` : ''}
+          </div>
+          ${canWrite ? `
+          <div class="sc-card-actions">
+            <button class="sc-card-btn" onclick="openEditModal('${esc(ev.id)}')" aria-label="edit">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+            </button>
+            <button class="sc-card-btn danger" onclick="deleteEvent('${esc(ev.id)}')" aria-label="delete">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+            </button>
+          </div>` : ''}
+        </div>`).join('');
     }
 
     function shiftMonth(delta) {
@@ -697,7 +679,7 @@
     }
     function goToCurrentMonth() {
       calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-      selectedDate = null;
+      selectedDate = todayStr();
       loadEvents();
     }
     function selectDate(dateStr_) {
