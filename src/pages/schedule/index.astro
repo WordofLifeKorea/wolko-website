@@ -1,18 +1,9 @@
 ---
-// 스태프 캘린더 — 공유 구글 캘린더를 iframe으로 표시.
-// 캘린더 자체가 "공개" 설정이라 이 페이지는 로그인 없이 조회 가능(구글 링크로도 어차피 열람 가능하므로).
-// 일정 추가/수정은 Google 캘린더에서 직접 — 이 페이지는 보기 전용 뷰어.
+// 스태프 캘린더 — 비공개 구글 캘린더(서비스 계정에만 "보기" 공유)를 서버에서
+// 읽어와 차량 스케줄 페이지와 같은 스타일의 자체 월간 캘린더로 보여준다.
+// 읽기 전용(일정 추가/수정은 Google 캘린더에서 직접). 허브 로그인 필요 — 이
+// 페이지 자체는 비밀번호를 받지 않고 허브 세션 토큰(sessionStorage)을 그대로 쓴다.
 // No BaseLayout; standalone page (다른 허브 도구와 동일한 패턴)
-
-const CALENDAR_ID = ''; // TODO: 스태프 캘린더의 Calendar ID로 교체
-// (Google 캘린더 → 대상 캘린더 설정 및 공유 → "캘린더 통합" 섹션의 "캘린더 ID")
-const hasCalendar = CALENDAR_ID.trim().length > 0;
-const EMBED_SRC = hasCalendar
-  ? `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(CALENDAR_ID)}&ctz=Asia%2FSeoul&mode=MONTH&showTitle=0&showPrint=0&showCalendars=0&showTz=0`
-  : '';
-const OPEN_SRC = hasCalendar
-  ? `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(CALENDAR_ID)}`
-  : '';
 ---
 <!DOCTYPE html>
 <html lang="ko">
@@ -28,11 +19,14 @@ const OPEN_SRC = hasCalendar
   <meta name="theme-color" content="#004f68">
   <style>
     :root {
-      --blue:#004f68; --blue-lt:#0077a3; --text:#1a2d38; --muted:#5a7585;
-      --border:#e4eaee; --bg:#f4f6f8; --sans:'Montserrat',sans-serif; --body:'Noto Sans KR',sans-serif;
+      --blue:#004f68; --blue-lt:#0077a3; --text:#1a2d38; --mid:#5a7585; --light:#8fa8b5;
+      --border:#e4eaee; --bg:#f4f6f8; --card:#fff; --red:#c42a36;
+      --sans:'Montserrat',sans-serif; --body:'Noto Sans KR',sans-serif;
     }
     * { box-sizing:border-box; }
     body { margin:0; background:var(--bg); font-family:var(--body); color:var(--text); }
+    .hidden { display:none !important; }
+
     .sc-header {
       display:flex; align-items:center; justify-content:space-between; gap:12px;
       padding:14px 22px; background:#fff; border-bottom:1px solid var(--border);
@@ -41,26 +35,91 @@ const OPEN_SRC = hasCalendar
     .sc-logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--blue); }
     .sc-logo img { width:30px; height:30px; object-fit:contain; }
     .sc-logo span { font:800 15px/1 var(--sans); letter-spacing:.02em; }
-    .sc-right { display:flex; align-items:center; gap:8px; }
     .sc-btn {
       display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 14px;
       border:1.5px solid var(--border); border-radius:999px; background:#fff; color:var(--blue);
       font:800 12px/1 var(--sans); text-decoration:none; cursor:pointer;
     }
     .sc-btn:hover { border-color:var(--blue); background:#f4fbfd; }
-    .sc-wrap { max-width:1100px; margin:0 auto; padding:22px; }
+
+    .sc-wrap { max-width:640px; margin:0 auto; padding:22px; }
     .sc-title-row { margin-bottom:14px; }
     .sc-title { margin:0; font:800 22px/1.25 var(--sans); color:var(--blue); }
-    .sc-subtitle { margin:4px 0 0; color:var(--muted); font-size:13px; line-height:1.55; }
-    .sc-frame-card {
-      border:1px solid var(--border); border-radius:16px; background:#fff; overflow:hidden;
-      box-shadow:0 10px 28px rgba(16,42,56,.06);
-    }
-    .sc-frame { width:100%; height:min(880px, calc(100vh - 210px)); min-height:600px; border:0; display:block; }
-    .sc-empty-card {
+    .sc-subtitle { margin:4px 0 0; color:var(--mid); font-size:13px; line-height:1.55; }
+
+    /* ── 안내 화면(로그인 필요 / 설정 필요 / 에러) ── */
+    .sc-notice-card {
       border:1.5px dashed var(--border); border-radius:16px; background:#fff;
-      padding:48px 24px; text-align:center; color:var(--muted); font-size:13.5px; line-height:1.6;
+      padding:48px 24px; text-align:center; color:var(--mid); font-size:13.5px; line-height:1.6;
     }
+    .sc-notice-card .sc-btn { margin-top:14px; display:inline-flex; }
+
+    /* ── 캘린더(차량 스케줄 페이지와 동일한 스타일) ── */
+    .sc-calendar { margin-bottom:16px; padding:14px; border-radius:16px; border:1px solid var(--border); background:var(--card); }
+    .cal-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+    .cal-nav-btn {
+      flex-shrink:0; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;
+      border-radius:50%; border:1px solid var(--border); background:#fff; color:var(--mid); font-size:16px; line-height:1; cursor:pointer;
+    }
+    .cal-nav-btn:hover { border-color:var(--blue); color:var(--blue); }
+    .cal-month-label { flex:1; text-align:center; font:800 14px/1 var(--body); color:var(--text); }
+    .cal-today-btn {
+      flex-shrink:0; padding:5px 10px; border-radius:999px; border:1px solid var(--border); background:#fff;
+      color:var(--mid); font:700 11px/1 var(--body); cursor:pointer;
+    }
+    .cal-today-btn:hover { border-color:var(--blue); color:var(--blue); }
+    .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:2px; }
+    .cal-weekdays span { text-align:center; font:700 10.5px/1 var(--body); color:var(--light); padding:4px 0; }
+    .cal-days { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+    .cal-cell {
+      aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+      border:none; border-radius:10px; background:transparent; color:var(--text); font-family:var(--body); cursor:pointer; padding:2px;
+    }
+    .cal-cell:hover:not(:disabled) { background:var(--bg); }
+    .cal-cell:disabled { cursor:default; }
+    .cal-cell.is-outside .cal-daynum { color:var(--border); }
+    .cal-daynum { font:700 12.5px/1 var(--body); }
+    .cal-cell.is-today .cal-daynum {
+      display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%;
+      background:var(--blue); color:#fff;
+    }
+    .cal-cell.is-selected { background:#eef4f6; box-shadow:inset 0 0 0 1.5px var(--blue); }
+    .cal-dots { display:flex; align-items:center; justify-content:center; gap:2px; min-height:6px; }
+    .cal-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; background:var(--blue); }
+    .cal-more { font-size:8px; font-weight:800; color:var(--light); }
+
+    .sc-selected-date-bar {
+      display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin-bottom:12px;
+      border-radius:10px; background:#eef4f6;
+    }
+    .sc-selected-date-bar span { font:800 12.5px/1 var(--body); color:var(--blue); }
+    .sc-selected-date-bar button {
+      flex-shrink:0; padding:5px 10px; border-radius:999px; border:none; background:#fff; color:var(--mid);
+      font:700 11px/1 var(--body); cursor:pointer;
+    }
+    .sc-selected-date-bar button:hover { color:var(--blue); }
+
+    .sc-date-group { margin-bottom:22px; }
+    .sc-date-head { display:flex; align-items:baseline; gap:8px; margin-bottom:8px; padding-left:2px; }
+    .sc-date-head .d-main { font:800 13.5px/1 var(--body); color:var(--text); }
+    .sc-date-head .d-sub { font-size:11.5px; color:var(--light); font-weight:600; }
+    .sc-date-head.is-today .d-main { color:var(--blue); }
+
+    .sc-empty { padding:60px 20px; text-align:center; color:var(--light); font-size:13px; line-height:1.7; }
+    .sc-empty svg { display:block; margin:0 auto 10px; opacity:.5; }
+
+    .sc-card {
+      position:relative; padding:14px 14px 14px 18px; margin-bottom:8px; border-radius:14px;
+      border:1px solid var(--border); background:var(--card); box-shadow:0 1px 3px rgba(16,42,56,.04);
+    }
+    .sc-card::before { content:''; position:absolute; left:0; top:12px; bottom:12px; width:4px; border-radius:3px; background:var(--blue); }
+    .sc-card-top { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
+    .sc-card-time { font:700 12.5px/1 var(--body); color:var(--blue); }
+    .sc-card-title { margin:2px 0 0; font:700 13.5px/1.4 var(--body); color:var(--text); }
+    .sc-card-desc { margin:4px 0 0; font-size:11.5px; color:var(--mid); line-height:1.6; white-space:pre-wrap; }
+    .sc-card-location { margin:4px 0 0; font-size:11.5px; color:var(--light); }
+
+    .sc-loading { text-align:center; padding:40px 0; color:var(--light); font-size:12.5px; }
   </style>
 </head>
 <body>
@@ -69,12 +128,7 @@ const OPEN_SRC = hasCalendar
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
       <span data-t="pageTitle">스태프 캘린더</span>
     </a>
-    <div class="sc-right">
-      <button class="sc-btn" onclick="toggleScLang()"><span id="scLangLabel">EN</span></button>
-      {hasCalendar && (
-        <a class="sc-btn" href={OPEN_SRC} target="_blank" rel="noopener" data-t="openInGoogle">Google 캘린더에서 열기</a>
-      )}
-    </div>
+    <button class="sc-btn" onclick="toggleScLang()"><span id="scLangLabel">EN</span></button>
   </header>
 
   <div class="sc-wrap">
@@ -82,13 +136,38 @@ const OPEN_SRC = hasCalendar
       <p class="sc-title" data-t="pageTitle">스태프 캘린더</p>
       <p class="sc-subtitle" data-t="subtitle">WOLKO 스태프 일정 공유 캘린더입니다. 일정 추가·수정은 Google 캘린더에서 직접 해주세요.</p>
     </div>
-    {hasCalendar ? (
-      <div class="sc-frame-card">
-        <iframe class="sc-frame" src={EMBED_SRC} title="WOLKO Staff Calendar"></iframe>
+
+    <!-- 허브 로그인 필요 안내 -->
+    <div class="sc-notice-card hidden" id="loginNotice">
+      <p data-t="loginRequiredDesc">이 페이지를 보려면 먼저 허브에 로그인해 주세요.</p>
+      <a class="sc-btn" href="/hub" data-t="goToHubBtn">허브로 이동</a>
+    </div>
+
+    <!-- 로드 실패 안내 -->
+    <div class="sc-notice-card hidden" id="errorNotice">
+      <p id="errorNoticeText"></p>
+    </div>
+
+    <!-- 캘린더 본체 -->
+    <div id="calendarBody" class="hidden">
+      <div class="sc-calendar">
+        <div class="cal-header">
+          <button type="button" class="cal-nav-btn" onclick="shiftMonth(-1)" aria-label="prev">‹</button>
+          <span class="cal-month-label" id="calMonthLabel"></span>
+          <button type="button" class="cal-nav-btn" onclick="shiftMonth(1)" aria-label="next">›</button>
+          <button type="button" class="cal-today-btn" onclick="goToCurrentMonth()" data-t="today">오늘</button>
+        </div>
+        <div id="calGrid"></div>
       </div>
-    ) : (
-      <div class="sc-empty-card" data-t="setupNotice">아직 캘린더가 연결되지 않았습니다. 관리자에게 문의해 주세요.</div>
-    )}
+
+      <div class="sc-selected-date-bar hidden" id="selectedDateBar">
+        <span id="selectedDateLabel"></span>
+        <button type="button" onclick="clearSelectedDate()" data-t="clearDate">전체 보기</button>
+      </div>
+
+      <div id="loadingIndicator" class="sc-loading hidden" data-t="loading">불러오는 중…</div>
+      <div id="agendaContainer"></div>
+    </div>
   </div>
 
   <script is:inline>
@@ -96,31 +175,259 @@ const OPEN_SRC = hasCalendar
       ko: {
         pageTitle: '스태프 캘린더',
         subtitle: 'WOLKO 스태프 일정 공유 캘린더입니다. 일정 추가·수정은 Google 캘린더에서 직접 해주세요.',
-        openInGoogle: 'Google 캘린더에서 열기',
+        loginRequiredDesc: '이 페이지를 보려면 먼저 허브에 로그인해 주세요.',
+        goToHubBtn: '허브로 이동',
+        today: '오늘',
+        clearDate: '전체 보기',
+        loading: '불러오는 중…',
+        allDay: '종일',
+        emptyUpcoming: '예정된 일정이 없습니다.',
+        loadError: '캘린더를 불러오지 못했습니다.',
         setupNotice: '아직 캘린더가 연결되지 않았습니다. 관리자에게 문의해 주세요.',
       },
       en: {
         pageTitle: 'Staff Calendar',
         subtitle: 'WOLKO staff shared calendar. To add or edit events, open it directly in Google Calendar.',
-        openInGoogle: 'Open in Google Calendar',
+        loginRequiredDesc: 'Please log in to the hub first to view this page.',
+        goToHubBtn: 'Go to Hub',
+        today: 'Today',
+        clearDate: 'Show all',
+        loading: 'Loading…',
+        allDay: 'All day',
+        emptyUpcoming: 'No upcoming events.',
+        loadError: 'Could not load the calendar.',
         setupNotice: 'No calendar has been connected yet. Please contact an admin.',
       },
     };
     let scLang = localStorage.getItem('wolko-lang') || 'ko';
-    function scT(key) { return SC_T[scLang]?.[key] ?? SC_T.ko[key] ?? key; }
+    const $ = id => document.getElementById(id);
+    function t(key) { return SC_T[scLang]?.[key] ?? SC_T.ko[key] ?? key; }
+    function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
     function applyScLang() {
       document.documentElement.lang = scLang === 'en' ? 'en' : 'ko';
       document.title = (scLang === 'en' ? 'Staff Calendar' : '스태프 캘린더') + ' — WOLKO';
-      document.querySelectorAll('[data-t]').forEach(el => { el.textContent = scT(el.getAttribute('data-t')); });
-      const label = document.getElementById('scLangLabel');
+      document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.getAttribute('data-t')); });
+      const label = $('scLangLabel');
       if (label) label.textContent = scLang === 'ko' ? 'EN' : '한';
+      if (!$('calendarBody').classList.contains('hidden')) { renderCalendar(); renderAgenda(); }
     }
     function toggleScLang() {
       scLang = scLang === 'ko' ? 'en' : 'ko';
       localStorage.setItem('wolko-lang', scLang);
       applyScLang();
     }
+
+    /* ── 허브 세션 토큰 검증(hub.astro의 isHubTokenValid와 동일한 형식) ── */
+    function isHubTokenValid(token) {
+      try {
+        const decoded = atob(token);
+        const lastColon = decoded.lastIndexOf(':');
+        const data = decoded.slice(0, lastColon);
+        const parts = data.split(':');
+        if (parts[0] !== 'wolko-hub' || parts.length !== 4) return false;
+        const expires = parseInt(parts[3], 10);
+        return !!expires && Date.now() < expires;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    /* ── 날짜 유틸 ── */
+    function toDateStr(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+    function todayStr() { return toDateStr(new Date()); }
+    function eventDateRange(ev) {
+      if (ev.allDay) {
+        const endD = new Date(`${ev.end}T00:00:00`);
+        endD.setDate(endD.getDate() - 1); // 구글 all-day 종료일은 배타적(exclusive)
+        return { startDate: ev.start, endDate: toDateStr(endD) };
+      }
+      return { startDate: ev.start.slice(0, 10), endDate: ev.end.slice(0, 10) };
+    }
+    function formatTimeRange(ev) {
+      if (ev.allDay) return t('allDay');
+      const startD = new Date(ev.start), endD = new Date(ev.end);
+      const fmt = d => d.toLocaleTimeString(scLang === 'en' ? 'en-US' : 'ko-KR', { hour: '2-digit', minute: '2-digit' });
+      return `${fmt(startD)} – ${fmt(endD)}`;
+    }
+    function dateHeaderLabel(dateStr) {
+      const d = new Date(`${dateStr}T00:00:00`);
+      const isToday = dateStr === todayStr();
+      const wkKo = ['일', '월', '화', '수', '목', '금', '토'];
+      const wkEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const wk = scLang === 'en' ? wkEn : wkKo;
+      const main = scLang === 'en'
+        ? d.toLocaleString('en-US', { month: 'short', day: 'numeric' })
+        : `${d.getMonth() + 1}월 ${d.getDate()}일`;
+      return { main, sub: wk[d.getDay()], isToday };
+    }
+
+    /* ── 상태 ── */
+    let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let selectedDate = null;
+    let events = []; // 현재 로드된(표시 중인 월 기준) 이벤트 목록
+    let loadToken = 0;
+
+    async function loadEvents() {
+      const myToken = ++loadToken;
+      // 요청이 끝나기 전에도 그리드/아젠다는 즉시(현재 갖고 있는 events로) 그려서
+      // 로딩 중이거나 실패했을 때 화면이 비어 보이지 않게 한다.
+      renderCalendar();
+      renderAgenda();
+      const rangeStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1 - 7);
+      const rangeEnd = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 7);
+      $('loadingIndicator').classList.remove('hidden');
+      $('errorNotice').classList.add('hidden');
+      try {
+        const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
+        const res = await fetch(`/api/schedule/events?start=${toDateStr(rangeStart)}&end=${toDateStr(rangeEnd)}`, {
+          headers: { Authorization: 'Bearer ' + hubToken },
+        });
+        const data = await res.json();
+        if (myToken !== loadToken) return; // 더 최근 요청이 있으면 이 결과는 버림
+        if (!res.ok) throw new Error(data.error || t('loadError'));
+        events = data.events || [];
+        renderCalendar();
+        renderAgenda();
+      } catch (e) {
+        if (myToken !== loadToken) return;
+        $('errorNoticeText').textContent = e.message || t('loadError');
+        $('errorNotice').classList.remove('hidden');
+      } finally {
+        if (myToken === loadToken) $('loadingIndicator').classList.add('hidden');
+      }
+    }
+
+    function renderCalendar() {
+      const year = calendarMonth.getFullYear();
+      const month = calendarMonth.getMonth();
+      const firstOfMonth = new Date(year, month, 1);
+      const startOffset = firstOfMonth.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+      const todayStr_ = todayStr();
+      const wkKo = ['일', '월', '화', '수', '목', '금', '토'];
+      const wkEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const wk = scLang === 'en' ? wkEn : wkKo;
+
+      $('calMonthLabel').textContent = scLang === 'en'
+        ? calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+        : `${year}년 ${month + 1}월`;
+
+      let cellsHtml = '';
+      for (let i = 0; i < totalCells; i++) {
+        const cellDate = new Date(year, month, i - startOffset + 1);
+        const cellStr = toDateStr(cellDate);
+        const inMonth = cellDate.getMonth() === month;
+        const isToday = cellStr === todayStr_;
+        const isSelected = cellStr === selectedDate;
+        const dayMatches = inMonth
+          ? events.filter(ev => { const r = eventDateRange(ev); return cellStr >= r.startDate && cellStr <= r.endDate; })
+          : [];
+        const dots = dayMatches.slice(0, 4).map(() => `<span class="cal-dot"></span>`).join('');
+        const extra = dayMatches.length > 4 ? `<span class="cal-more">+${dayMatches.length - 4}</span>` : '';
+        cellsHtml += `
+          <button type="button" class="cal-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}${isSelected ? ' is-selected' : ''}"
+            ${inMonth ? `onclick="selectDate('${cellStr}')"` : 'disabled'}>
+            <span class="cal-daynum">${cellDate.getDate()}</span>
+            <span class="cal-dots">${dots}${extra}</span>
+          </button>`;
+      }
+
+      $('calGrid').innerHTML = `
+        <div class="cal-weekdays">${wk.map(w => `<span>${esc(w)}</span>`).join('')}</div>
+        <div class="cal-days">${cellsHtml}</div>`;
+    }
+
+    function renderAgenda() {
+      const container = $('agendaContainer');
+      const nowMs = Date.now();
+      let list = events;
+
+      if (selectedDate) {
+        list = list.filter(ev => { const r = eventDateRange(ev); return selectedDate >= r.startDate && selectedDate <= r.endDate; });
+        $('selectedDateBar').classList.remove('hidden');
+        const { main, sub } = dateHeaderLabel(selectedDate);
+        $('selectedDateLabel').textContent = `${main} (${sub})`;
+      } else {
+        list = list.filter(ev => Date.parse(ev.end) >= nowMs || ev.allDay);
+        $('selectedDateBar').classList.add('hidden');
+      }
+
+      list = [...list].sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+
+      if (!list.length) {
+        container.innerHTML = `
+          <div class="sc-empty">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3"/><path d="M3 12h18"/></svg>
+            <div>${esc(t('emptyUpcoming'))}</div>
+          </div>`;
+        return;
+      }
+
+      const groups = new Map();
+      list.forEach(ev => {
+        const { startDate } = eventDateRange(ev);
+        if (!groups.has(startDate)) groups.set(startDate, []);
+        groups.get(startDate).push(ev);
+      });
+
+      let html = '';
+      groups.forEach((items, dateStr) => {
+        const { main, sub, isToday } = dateHeaderLabel(dateStr);
+        html += `<div class="sc-date-group">
+          <div class="sc-date-head${isToday ? ' is-today' : ''}">
+            <span class="d-main">${esc(main)}</span>
+            <span class="d-sub">${esc(sub)}</span>
+          </div>`;
+        items.forEach(ev => {
+          html += `
+            <div class="sc-card">
+              <div class="sc-card-top">
+                <span class="sc-card-time">${esc(formatTimeRange(ev))}</span>
+              </div>
+              <p class="sc-card-title">${esc(ev.summary || (scLang === 'en' ? '(No title)' : '(제목 없음)'))}</p>
+              ${ev.location ? `<p class="sc-card-location">📍 ${esc(ev.location)}</p>` : ''}
+              ${ev.description ? `<p class="sc-card-desc">${esc(ev.description)}</p>` : ''}
+            </div>`;
+        });
+        html += `</div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function shiftMonth(delta) {
+      calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + delta, 1);
+      selectedDate = null;
+      loadEvents();
+    }
+    function goToCurrentMonth() {
+      calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      selectedDate = null;
+      loadEvents();
+    }
+    function selectDate(dateStr_) {
+      selectedDate = (selectedDate === dateStr_) ? null : dateStr_;
+      renderCalendar();
+      renderAgenda();
+    }
+    function clearSelectedDate() {
+      selectedDate = null;
+      renderCalendar();
+      renderAgenda();
+    }
+
+    /* ── 초기화 ── */
     applyScLang();
+    const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
+    if (hubToken && isHubTokenValid(hubToken)) {
+      $('calendarBody').classList.remove('hidden');
+      loadEvents();
+    } else {
+      $('loginNotice').classList.remove('hidden');
+    }
   </script>
 </body>
 </html>

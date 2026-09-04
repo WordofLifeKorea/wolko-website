@@ -3,13 +3,16 @@
  * Reuses the same service-account RS256 JWT signing approach as googleSheets.js,
  * just requesting the Calendar scope instead of Sheets.
  *
- * One-way sync only: WOLKO reservation → Calendar event.
- * Editing/deleting the event directly in Google Calendar has no effect back on WOLKO.
+ * 차량 예약: 단방향 동기화(WOLKO 예약 → Calendar 이벤트). 구글 쪽에서 직접
+ * 수정/삭제해도 WOLKO에는 반영되지 않는다.
  *
  * 예약을 수정할 때는 기존 이벤트를 갱신하지 않고 삭제 후 새로 만든다(요청 사항).
  * 방금 지운 이벤트 ID는 구글 쪽에서 바로 재사용하면 오류가 날 수 있어서,
  * 매번 구글이 새로 발급하는 ID를 받아 예약 레코드에 저장해두고 다음
  * 수정/삭제 때 그 ID를 그대로 쓴다.
+ *
+ * 스태프 캘린더: 읽기 전용(listCalendarEvents). 이 서비스 계정에 "보기" 권한만
+ * 공유된 별도 캘린더에서 이벤트를 가져와 보여주기만 한다 — 쓰기는 없음.
  */
 
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar';
@@ -104,6 +107,33 @@ export async function createCalendarEvent({ serviceAccountJson, calendarId, summ
   }
   const json = await res.json();
   return json.id;
+}
+
+/** 지정한 기간의 이벤트 목록을 읽기 전용으로 가져온다(스태프 캘린더 조회용). */
+export async function listCalendarEvents({ serviceAccountJson, calendarId, timeMin, timeMax }) {
+  const serviceAccount = JSON.parse(serviceAccountJson);
+  const token = await getAccessToken(serviceAccount);
+  const params = new URLSearchParams({
+    timeMin, timeMax, singleEvents: 'true', orderBy: 'startTime', maxResults: '250',
+  });
+
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!res.ok) {
+    throw new Error(`Calendar list error ${res.status}: ${await res.text()}`);
+  }
+  const json = await res.json();
+  return (json.items || []).map(ev => ({
+    id: ev.id,
+    summary: ev.summary || '',
+    description: ev.description || '',
+    location: ev.location || '',
+    allDay: !ev.start?.dateTime,
+    start: ev.start?.dateTime || ev.start?.date,
+    end: ev.end?.dateTime || ev.end?.date,
+  }));
 }
 
 /** 이벤트 ID로 캘린더 이벤트 삭제. 이미 없으면(404/410) 조용히 무시. */
