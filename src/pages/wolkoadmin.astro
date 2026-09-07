@@ -7,7 +7,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>관리자 — WOLKO 캠프 신청 현황</title>
+  <title>캠프 관리자 — WOLKO 캠프 신청 현황</title>
   <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +21,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="WOLKO 관리자">
+  <meta name="apple-mobile-web-app-title" content="캠프 관리자">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
 </head>
 <body>
@@ -46,7 +46,7 @@
   <header class="adm-header">
     <a class="adm-header-logo" href="/hub" title="WOLKO 허브로 돌아가기">
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
-      <span data-t="adminTitle">WOLKO 관리자</span>
+      <span data-t="adminTitle">캠프 관리자</span>
     </a>
     <div class="adm-header-right">
       <a href="/admin" target="_blank" class="adm-header-badge" style="text-decoration:none;cursor:pointer;" title="콘텐츠 편집 CMS">✏️ <span data-t="contentCms">콘텐츠 CMS</span></a>
@@ -293,8 +293,8 @@
     function teamLabel(tm) { return adminLang === 'en' ? (STAFF_TEAMS_EN[tm] || tm) : tm; }
     const ADMIN_T = {
       ko: {
-        pageTitle:'관리자 — WOLKO 캠프 신청 현황',
-        adminTitle:'WOLKO 관리자', contentCms:'콘텐츠 CMS', logout:'로그아웃',
+        pageTitle:'캠프 관리자 — WOLKO 캠프 신청 현황',
+        adminTitle:'캠프 관리자', contentCms:'콘텐츠 CMS', logout:'로그아웃',
         hubLoginTitle:'허브 로그인이 필요합니다',
         hubLoginDesc:'캠프 매니지먼트는 WOLKO 허브 계정으로 접속합니다. 허브에 로그인한 뒤 캠프 매니지먼트 카드를 눌러 다시 접속해 주세요.',
         goToHubBtn:'허브로 이동',
@@ -303,7 +303,7 @@
         thApplicant:'신청자', thCounseling:'상담',
         thStatus:'상태', thCamp:'캠프', thType:'유형', thName:'이름',
         thCounselor:'담당 카운슬러', thSalvation:'구원', thDedication:'헌신',
-        thCounselorMemo:'상담자 메모', thPhone:'연락처', thEmail:'이메일',
+        thCounselorMemo:'상담자 메모', thCamperTestimony:'간증문', thPhone:'연락처', thEmail:'이메일',
         thGrade:'학년 / 인원', thGender:'성별', thChurch:'교회', thSchool:'학교',
         thEmergency:'비상연락처', thNotes:'메모', thDate:'신청일시', thDelete:'삭제',
         staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
@@ -351,7 +351,7 @@
         noCampRegs:'캠프 신청 내역이 없습니다.', staffBadge:'스태프', groupBadge:'단체', individualBadge:'개인',
         waitlistFn: n=>`예비${n ? ' ' + n : ''}`, confirmed:'최종확정', depositConfirmed:'예약금확인', pending:'대기중',
         finalConfirmBtn:'최종확정', depositBtn:'예약금수납', unassignedShort:'미배정',
-        savedLabel:'구원', dedicatedLabel:'헌신', counselorMemoPh:'특이사항 | 기도제목',
+        savedLabel:'구원', dedicatedLabel:'헌신', counselorMemoPh:'특이사항 | 기도제목', testimonyPh:'간증문 내용',
         detailOpen:'상세', detailClose:'닫기', detailApplicationInfo:'신청 정보', detailRefundInfo:'환불 정보',
         detailScholarshipInfo:'장학금 / 할인', detailCounseling:'상담 관리',
         thRefundBank:'환불 은행', thRefundAccount:'환불 계좌', thRefundHolder:'예금주',
@@ -361,7 +361,7 @@
         scholarshipExcellentCamper:'지난 캠프 우수 캠퍼',
         scholarshipUnit:'적용 인원', scholarshipNoDiscount:'선택된 장학금/할인이 없습니다.',
         detailStudentList:'학생 명단', summaryGroupManaged:'단체 명단에서 관리', summaryNoCounseling:'상담 정보 없음',
-        summaryMemoExists:'메모 있음',
+        summaryMemoExists:'메모 있음', summaryTestimonyExists:'간증문 있음',
         studentListFn: (done, total, editing)=>`학생 명단 ${done} / ${total}명${editing ? ' 입력' : ''}`,
         studentNamePh:'학생 이름', studentLabelFn: n=>`학생 ${n}`, genderSelect:'성별', genderMissing:'성별 미입력',
         participantBirthDate:'생년월일', participantBirthDatePh:'YYYY-MM-DD',
@@ -380,10 +380,11 @@
         csvStaffFile:'스태프지원', csvCampFile:'신청목록',
         season2026Summer:'2026 여름', campGroupWolko:'WOLKO 캠프', campGroupUnion:'연합캠프',
         campAll:'전체 캠프', campJunior2026:'2026 여름 주니어 영어 캠프', campUnion2026:'2026 교회 연합캠프',
+        season2027Winter:'2027 겨울', campWinter2027:'2027 겨울 캠프 (준비중)',
       },
       en: {
-        pageTitle:'Admin — WOLKO Camp Registration',
-        adminTitle:'WOLKO Admin', contentCms:'Content CMS', logout:'Log Out',
+        pageTitle:'Camp Manager — WOLKO Camp Registration',
+        adminTitle:'Camp Manager', contentCms:'Content CMS', logout:'Log Out',
         hubLoginTitle:'Hub login required',
         hubLoginDesc:'Camp Management now signs in with your WOLKO Hub account. Log in at the Hub, then open the Camp Management card again.',
         goToHubBtn:'Go to Hub',
@@ -392,7 +393,7 @@
         thApplicant:'Applicant', thCounseling:'Counseling',
         thStatus:'Status', thCamp:'Camp', thType:'Type', thName:'Name',
         thCounselor:'Counselor', thSalvation:'Saved', thDedication:'Dedicated',
-        thCounselorMemo:'Counselor Note', thPhone:'Phone', thEmail:'Email',
+        thCounselorMemo:'Counselor Note', thCamperTestimony:'Testimony', thPhone:'Phone', thEmail:'Email',
         thGrade:'Grade / Count', thGender:'Gender', thChurch:'Church', thSchool:'School',
         thEmergency:'Emergency', thNotes:'Notes', thDate:'Registered', thDelete:'Delete',
         staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
@@ -442,7 +443,7 @@
         noCampRegs:'No camp registrations.', staffBadge:'Staff', groupBadge:'Group', individualBadge:'Individual',
         waitlistFn: n=>`Waitlist${n ? ' ' + n : ''}`, confirmed:'Confirmed', depositConfirmed:'Deposit OK', pending:'Pending',
         finalConfirmBtn:'Confirm', depositBtn:'Deposit',
-        unassignedShort:'Unassigned', savedLabel:'Saved', dedicatedLabel:'Dedicated', counselorMemoPh:'Notes | Prayer requests',
+        unassignedShort:'Unassigned', savedLabel:'Saved', dedicatedLabel:'Dedicated', counselorMemoPh:'Notes | Prayer requests', testimonyPh:'Testimony text',
         detailOpen:'Details', detailClose:'Close', detailApplicationInfo:'Application Info', detailRefundInfo:'Refund Info',
         detailScholarshipInfo:'Scholarship / Discount', detailCounseling:'Counseling',
         thRefundBank:'Refund Bank', thRefundAccount:'Refund Account', thRefundHolder:'Account Holder',
@@ -452,7 +453,7 @@
         scholarshipExcellentCamper:'Previous Best Camper',
         scholarshipUnit:'Applied count', scholarshipNoDiscount:'No scholarship/discount selected.',
         detailStudentList:'Student List', summaryGroupManaged:'Managed in group list', summaryNoCounseling:'No counseling info',
-        summaryMemoExists:'Memo added',
+        summaryMemoExists:'Memo added', summaryTestimonyExists:'Testimony added',
         studentListFn: (done, total, editing)=>`Students ${done}/${total}${editing ? ' editing' : ''}`,
         studentNamePh:'Student name', studentLabelFn: n=>`Student ${n}`, genderSelect:'Gender', genderMissing:'Gender missing',
         participantBirthDate:'Birth Date', participantBirthDatePh:'YYYY-MM-DD',
@@ -471,6 +472,7 @@
         csvStaffFile:'StaffApplications', csvCampFile:'CampRegistrations',
         season2026Summer:'Summer 2026', campGroupWolko:'WOLKO Camps', campGroupUnion:'Union Camps',
         campAll:'All Camps', campJunior2026:'2026 Summer Junior English Camp', campUnion2026:'2026 Church Union Camp',
+        season2027Winter:'Winter 2027', campWinter2027:'2027 Winter Camp (Preparing)',
       }
     };
     function t(key) { return ADMIN_T[adminLang]?.[key] ?? ADMIN_T.ko?.[key] ?? key; }
@@ -522,20 +524,20 @@
           },
         ],
       },
-      // 다음 시즌 추가 예시:
-      // {
-      //   id: '2027-winter',
-      //   label: '2027 겨울',
-      //   groups: [
-      //     {
-      //       group: 'wolko',
-      //       label: 'WOLKO 캠프',
-      //       camps: [
-      //         { id: '2027-winter-camp-1', title: '2027 겨울 캠프', dateKo: '1월 10일 – 15일', capacity: 40 },
-      //       ],
-      //     },
-      //   ],
-      // },
+      {
+        id: '2027-winter',
+        label: '2027 겨울',
+        groups: [
+          {
+            group: 'wolko',
+            label: 'WOLKO 캠프',
+            camps: [
+              // 세부 일정/정원 확정 전 — 확정되면 title/dateKo/capacity만 갱신하면 됨
+              { id: '2027-winter-camp-1', title: '2027 겨울 캠프 (준비중)', dateKo: '일정 미정', capacity: 40 },
+            ],
+          },
+        ],
+      },
     ];
 
     // 하위 호환: CAMP_GROUPS는 전체 시즌 통합 목록
@@ -563,9 +565,11 @@
       all: 'campAll',
       '2026-inland-english-junior': 'campJunior2026',
       '2026-inland-union': 'campUnion2026',
+      '2027-winter-camp-1': 'campWinter2027',
     };
     const SEASON_LABEL_KEYS = {
       '2026-summer': 'season2026Summer',
+      '2027-winter': 'season2027Winter',
     };
     const CAMP_GROUP_LABEL_KEYS = {
       wolko: 'campGroupWolko',
@@ -588,6 +592,7 @@
       '2026-jeju-momentum-1': { bg: '#f0e8ff', border: '#8364d8' },
       '2026-jeju-momentum-2': { bg: '#ffe6ef', border: '#d86491' },
       '2026-test-camp': { bg: '#edf4f7', border: '#7899a9' },
+      '2027-winter-camp-1': { bg: '#e7ecfb', border: '#5b6fd6' },
     };
     const CAMP_ROW_FALLBACK = { bg: '#eef4f7', border: '#7f9bab' };
 
@@ -1073,7 +1078,9 @@
       } catch (e) {
         showToast(t('dataLoadFail') + e.message, 'error');
         const errHtml = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>${t('dataLoadRetry')}</p></div>`;
-        document.getElementById('campRegBody').innerHTML  = `<tr><td colspan="6">${errHtml}</td></tr>`;
+        document.getElementById('campRegBodyConfirmed').innerHTML = `<tr><td colspan="6">${errHtml}</td></tr>`;
+        document.getElementById('campRegBodyDeposit').innerHTML   = `<tr><td colspan="6">${errHtml}</td></tr>`;
+        document.getElementById('campRegBodyPending').innerHTML   = `<tr><td colspan="6">${errHtml}</td></tr>`;
         document.getElementById('staffRegBody').innerHTML = `<tr><td colspan="5">${errHtml}</td></tr>`;
       }
     }
@@ -1332,6 +1339,11 @@
           : camperEditMode
           ? `<input class="edit-input edit-input-wide" type="text" value="${esc(r.counselorMemo || '')}" placeholder="${t('counselorMemoPh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="counselorMemo" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
           : `<span class="${r.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(r.counselorMemo || '')}">${esc(r.counselorMemo || '—')}</span>`;
+        const testimonyCell = r.registrationType === 'group'
+          ? '<span class="camper-na">—</span>'
+          : camperEditMode
+          ? `<textarea class="counselor-memo-input" placeholder="${t('testimonyPh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="testimony" onblur="updateField(this)">${esc(r.testimony || '')}</textarea>`
+          : `<span class="${r.testimony ? 'counselor-memo-readonly' : 'group-participant-empty'}">${esc(r.testimony || '—')}</span>`;
         const applicantMemo = campApplicantMemo(r);
         const discountAmount = parseInt(r.scholarshipDiscountAmount, 10) || 0;
         const baseFee = parseInt(r.campFeeBase, 10) || (CAMP_BASE_FEE * (r.registrationType === 'group' ? (parseInt(r.groupCount, 10) || 1) : 1));
@@ -1363,7 +1375,7 @@
         const spiritualSummary = r.registrationType === 'group'
           ? (groupParticipants.length ? t('summaryGroupManaged') : t('groupBadge'))
           : `${r.saved ? t('savedLabel') : ''}${r.saved && r.dedicated ? ' · ' : ''}${r.dedicated ? t('dedicatedLabel') : ''}` || t('summaryNoCounseling');
-        const counselingSummary = `<div class="summary-stack"><strong>${counselorName}</strong><span>${esc(spiritualSummary)}${r.counselorMemo ? ' · ' + t('summaryMemoExists') : ''}</span></div>`;
+        const counselingSummary = `<div class="summary-stack"><strong>${counselorName}</strong><span>${esc(spiritualSummary)}${r.counselorMemo ? ' · ' + t('summaryMemoExists') : ''}${r.testimony ? ' · ' + t('summaryTestimonyExists') : ''}</span></div>`;
         const manageCell = `<div class="summary-actions"><span>${dateStr}</span><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></div>`;
         const detailItem = (label, value, wide = false) => `<div class="registration-detail-item${wide ? ' registration-detail-wide' : ''}">
           <span class="registration-detail-label">${label}</span>
@@ -1393,6 +1405,10 @@
               <span class="counseling-detail-label">${t('thCounselorMemo')}</span>
               <div class="counseling-detail-value counseling-memo-value">${counselorMemoCell}</div>
             </div>
+            <div class="counseling-detail-card counseling-detail-card-wide">
+              <span class="counseling-detail-label">${t('thCamperTestimony')}</span>
+              <div class="counseling-detail-value counseling-memo-value">${testimonyCell}</div>
+            </div>
           </div>
         </div>`;
         const participantDetailSection = groupParticipants.length
@@ -1421,6 +1437,9 @@
               const participantMemo = camperEditMode
                 ? `<textarea class="counselor-memo-input" placeholder="${t('counselorMemoPh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="counselorMemo" onblur="updateField(this)">${esc(participant.counselorMemo || '')}</textarea>`
                 : `<span class="${participant.counselorMemo ? 'counselor-memo-readonly' : 'group-participant-empty'}" title="${esc(participant.counselorMemo || '')}">${esc(participant.counselorMemo || '—')}</span>`;
+              const participantTestimony = camperEditMode
+                ? `<textarea class="counselor-memo-input" placeholder="${t('testimonyPh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="testimony" onblur="updateField(this)">${esc(participant.testimony || '')}</textarea>`
+                : `<span class="${participant.testimony ? 'counselor-memo-readonly' : 'group-participant-empty'}">${esc(participant.testimony || '—')}</span>`;
               const participantGender = camperEditMode
                 ? `<select class="group-participant-select" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="gender" onchange="updateField(this)">
                   <option value="">${t('genderSelect')}</option>
@@ -1466,6 +1485,10 @@
                     <div class="group-participant-counselor-note">
                       <span class="group-participant-admin-label">${t('thCounselorMemo')}</span>
                       ${participantMemo}
+                    </div>
+                    <div class="group-participant-counselor-note">
+                      <span class="group-participant-admin-label">${t('thCamperTestimony')}</span>
+                      ${participantTestimony}
                     </div>
                   </div>`
                 : '';
@@ -2724,8 +2747,8 @@
         const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
         if (regs.length === 0) { showToast(t('csvNoCamp'), 'error'); return; }
         const headers = adminLang === 'en'
-          ? ['No','Status','Camp','Type','Name','Students','Counselor','Saved','Dedicated','Counselor Note','Phone','Email','Grade/Count','Gender','Church','School','Emergency','Refund Bank','Refund Account','Refund Holder','Discounts','Discount Details','Final Payment','Notes','Registered','RegID']
-          : ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','환불 은행','환불 계좌','예금주','장학금/할인','할인 상세','총 납입금','메모','신청일시','RegID'];
+          ? ['No','Status','Camp','Type','Name','Students','Counselor','Saved','Dedicated','Counselor Note','Testimony','Phone','Email','Grade/Count','Gender','Church','School','Emergency','Refund Bank','Refund Account','Refund Holder','Discounts','Discount Details','Final Payment','Notes','Registered','RegID']
+          : ['번호','상태','캠프','유형','이름','학생 명단','담당 카운슬러','구원','헌신','상담자 메모','간증문','연락처','이메일','학년/인원','성별','교회','학교','비상연락처','환불 은행','환불 계좌','예금주','장학금/할인','할인 상세','총 납입금','메모','신청일시','RegID'];
         const rows = regs.map((r, i) => {
           const date = new Date(r.registeredAt).toLocaleString('ko-KR');
           const gradeOrCount = r.registrationType === 'group' ? `${t('groupBadge')} ${tt('personCountFn', r.groupCount)}` : (r.grade || '');
@@ -2752,6 +2775,7 @@
                   participant.saved ? t('savedLabel') : '',
                   participant.dedicated ? t('dedicatedLabel') : '',
                   participant.counselorMemo ? `${t('thCounselorMemo')}: ${participant.counselorMemo}` : '',
+                  participant.testimony ? `${t('thCamperTestimony')}: ${participant.testimony}` : '',
                 ].filter(Boolean).join(' / ');
                 return `${index + 1}. ${participant.name || t('notEntered')} (${participantDetails})`;
               }).join('\n')
@@ -2759,7 +2783,7 @@
           return [
             i + 1, statusVal, campDisplayName(r.campId),
             r.registrationType === 'group' ? t('groupBadge') : t('individualBadge'),
-            r.name, participantList, counselor?.name || '', r.saved ? 'O' : '', r.dedicated ? 'O' : '', r.counselorMemo || '',
+            r.name, participantList, counselor?.name || '', r.saved ? 'O' : '', r.dedicated ? 'O' : '', r.counselorMemo || '', r.testimony || '',
             r.phone, r.email, gradeOrCount, genderVal,
             r.church || '', r.school || '', r.emergency || '',
             r.refundBank || '', r.refundAccount || '', r.refundHolder || '',
