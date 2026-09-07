@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=75">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=76">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=4">
   <script src="/wolko-rail.js?v=4" defer></script>
@@ -362,6 +362,7 @@
         scholarshipUnit:'적용 인원', scholarshipNoDiscount:'선택된 장학금/할인이 없습니다.',
         detailStudentList:'학생 명단', summaryGroupManaged:'단체 명단에서 관리', summaryNoCounseling:'상담 정보 없음',
         summaryMemoExists:'메모 있음', summaryTestimonyExists:'간증문 있음',
+        groupNotesToggle:'상담자 메모·간증문 모아보기', groupNotesEmpty:'작성된 메모·간증문이 없습니다.',
         studentListFn: (done, total, editing)=>`학생 명단 ${done} / ${total}명${editing ? ' 입력' : ''}`,
         studentNamePh:'학생 이름', studentLabelFn: n=>`학생 ${n}`, genderSelect:'성별', genderMissing:'성별 미입력',
         participantBirthDate:'생년월일', participantBirthDatePh:'YYYY-MM-DD',
@@ -369,6 +370,7 @@
         participantParentInfo:'부모님 성함 및 전화번호', participantParentInfoPh:'예: 김월코 010-0000-0000',
         participantRefundAccount:'환불계좌', participantRefundAccountPh:'예: 농협 123-4567-8910-11',
         checkParticipants:'참여 인원 수를 확인해주세요.', nameMissing:'이름 없음',
+        noNamedParticipantsYet:'아직 이름이 입력된 학생이 없습니다.',
         chooseFromList:'— 명단에서 선택 —', wolkoStaff:'월코 스태프', staffApplicants:'스태프 신청자', orDirectInput:'또는 직접 입력',
         customTeamOther:'기타', customTeamInputPh:'팀 이름 직접 입력...', teamSaveFail:'팀 저장 실패',
         updateFail:'업데이트 실패', deleteFail:'삭제 실패', processFail:'처리 실패', confirmFail:'확정 실패',
@@ -454,6 +456,7 @@
         scholarshipUnit:'Applied count', scholarshipNoDiscount:'No scholarship/discount selected.',
         detailStudentList:'Student List', summaryGroupManaged:'Managed in group list', summaryNoCounseling:'No counseling info',
         summaryMemoExists:'Memo added', summaryTestimonyExists:'Testimony added',
+        groupNotesToggle:'View all counselor notes & testimonies', groupNotesEmpty:'No notes or testimonies yet.',
         studentListFn: (done, total, editing)=>`Students ${done}/${total}${editing ? ' editing' : ''}`,
         studentNamePh:'Student name', studentLabelFn: n=>`Student ${n}`, genderSelect:'Gender', genderMissing:'Gender missing',
         participantBirthDate:'Birth Date', participantBirthDatePh:'YYYY-MM-DD',
@@ -461,6 +464,7 @@
         participantParentInfo:'Parent Name & Phone', participantParentInfoPh:'e.g. Parent 010-0000-0000',
         participantRefundAccount:'Refund Account', participantRefundAccountPh:'e.g. Bank 123-4567-8910',
         checkParticipants:'Please check the participant count.', nameMissing:'No name',
+        noNamedParticipantsYet:'No students have been named yet.',
         chooseFromList:'— Select from list —', wolkoStaff:'WOLKO Staff', staffApplicants:'Staff Applicants', orDirectInput:'or enter manually',
         customTeamOther:'Other', customTeamInputPh:'Enter team name...', teamSaveFail:'Failed to save team',
         updateFail:'Update failed', deleteFail:'Delete failed', processFail:'Process failed', confirmFail:'Confirm failed',
@@ -706,6 +710,7 @@
     const expandedRegistrationDetails = new Set();
     const expandedStaffDetails = new Set();
     const expandedGroupParticipants = new Set();
+    const expandedGroupNotes = new Set();
     const UNASSIGNED = '__unassigned__';
     let teamOverviewConfig = emptyTeamOverviewConfig();
     let teamOverviewConfigCamp = null;
@@ -1357,6 +1362,11 @@
         const namedParticipants = groupParticipants.filter(participant =>
           String(participant.name || '').trim()
         );
+        const groupSavedCount = namedParticipants.filter(p => p.saved).length;
+        const groupDedicatedCount = namedParticipants.filter(p => p.dedicated).length;
+        const groupNotesEntries = namedParticipants.filter(p =>
+          String(p.counselorMemo || '').trim() || String(p.testimony || '').trim()
+        );
         const completedParticipants = namedParticipants.length;
         const namedMaleCount = namedParticipants.filter(participant => participant.gender === 'male').length;
         const namedFemaleCount = namedParticipants.filter(participant => participant.gender === 'female').length;
@@ -1411,11 +1421,33 @@
             </div>
           </div>
         </div>`;
+        const isGroupNotesOpen = expandedGroupNotes.has(r.regId);
+        const groupCounselingSummary = `<div class="group-counseling-summary">
+          <div class="group-counseling-counts">
+            <span class="counseling-stat-chip is-saved">${t('savedLabel')} ${tt('personCountFn', groupSavedCount)}</span>
+            <span class="counseling-stat-chip is-dedicated">${t('dedicatedLabel')} ${tt('personCountFn', groupDedicatedCount)}</span>
+          </div>
+          <button type="button" class="group-notes-toggle" onclick="toggleGroupNotes(event,'${esc(r.regId)}')" aria-expanded="${isGroupNotesOpen}">
+            <span>${t('groupNotesToggle')} (${groupNotesEntries.length})</span>
+            <svg class="group-notes-toggle-chevron${isGroupNotesOpen ? ' is-open' : ''}" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          ${isGroupNotesOpen ? `<div class="group-notes-panel">
+            ${groupNotesEntries.length
+              ? groupNotesEntries.map(p => `<div class="group-notes-entry">
+                  <span class="group-notes-entry-name">${esc(p.name)}</span>
+                  ${String(p.counselorMemo || '').trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label">${t('thCounselorMemo')}</span><span class="group-notes-entry-value">${esc(p.counselorMemo)}</span></div>` : ''}
+                  ${String(p.testimony || '').trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label">${t('thCamperTestimony')}</span><span class="group-notes-entry-value">${esc(p.testimony)}</span></div>` : ''}
+                </div>`).join('')
+              : `<div class="group-notes-empty">${t('groupNotesEmpty')}</div>`}
+          </div>` : ''}
+        </div>`;
         const participantDetailSection = groupParticipants.length
           ? `<div class="registration-detail-section registration-detail-participants${camperEditMode ? ' is-editing' : ' is-readonly'}">
               <div class="registration-detail-section-title">${t('detailStudentList')}</div>
+              ${groupCounselingSummary}
               <div class="detail-participant-list">
                 ${groupParticipants.map((participant, participantIndex) => {
+              if (!camperEditMode && !String(participant.name || '').trim()) return '';
               const participantClass = participant.dedicated ? ' is-dedicated' : participant.saved ? ' is-saved' : '';
               const participantName = camperEditMode
                 ? `<input class="group-participant-input" type="text" value="${esc(participant.name || '')}" placeholder="${t('studentNamePh')}" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="name" onblur="updateField(this)" onkeydown="if(event.key==='Enter')this.blur()">`
@@ -1482,6 +1514,7 @@
               const participantExtra = isParticipantExpanded
                 ? `<div class="group-participant-extra">
                     <div class="group-participant-admin-grid">${participantAdminFields}</div>
+                    <div class="spiritual-inline">${participantSalvation}${participantDedication}</div>
                     <div class="group-participant-counselor-note">
                       <span class="group-participant-admin-label">${t('thCounselorMemo')}</span>
                       ${participantMemo}
@@ -1501,11 +1534,10 @@
                   <span class="group-participant-expand">${isParticipantExpanded ? t('detailClose') : t('detailOpen')}</span>
                 </div>
                 <div class="group-participant-counselor">${participantCounselor}</div>
-                <div class="spiritual-inline">${participantSalvation}${participantDedication}</div>
                 <div class="group-participant-basic-grid">${participantBasicFields}</div>
                 ${participantExtra}
               </div>`;
-            }).join('')}
+            }).join('') || (!camperEditMode ? `<div class="group-participant-empty">${t('noNamedParticipantsYet')}</div>` : '')}
               </div>
             </div>`
           : r.registrationType === 'group'
@@ -2459,6 +2491,13 @@
     function toggleRegistrationDetail(regId) {
       if (expandedRegistrationDetails.has(regId)) expandedRegistrationDetails.delete(regId);
       else expandedRegistrationDetails.add(regId);
+      renderCampTable();
+    }
+
+    function toggleGroupNotes(event, regId) {
+      event.stopPropagation();
+      if (expandedGroupNotes.has(regId)) expandedGroupNotes.delete(regId);
+      else expandedGroupNotes.add(regId);
       renderCampTable();
     }
 
