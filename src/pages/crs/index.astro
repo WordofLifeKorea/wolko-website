@@ -246,10 +246,23 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .step-item { display:flex; align-items:flex-start; gap:.9rem; padding:.75rem .4rem; border-bottom:1px solid #f0f5f7; cursor:pointer; transition:background .15s; border-radius:10px; margin:0 -.4rem; }
   .step-item:last-child { border-bottom:none; }
   .step-item:hover { background:#f4f9fb; }
-  .step-check { width:22px; height:22px; border-radius:7px; border:2px solid #d0dde4; background:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; margin-top:1px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
-  .step-check.checked { background:linear-gradient(135deg,#004f68,#007ea1); border-color:#004f68; box-shadow:0 2px 6px rgba(0,79,104,.3); }
-  .step-check svg { display:none; }
-  .step-check.checked svg { display:block; }
+  /* 단계 완료 여부를 체크박스가 아니라 "몇 번 했는지" 숫자로 보여준다 —
+     중복으로 일어나는 활동(캠프 참여, 설교 등)을 마킹할 방법이 없다는 요청으로 추가. */
+  .step-count-btn {
+    width:22px; height:22px; border-radius:7px; border:2px solid #d0dde4; background:#fff;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    margin-top:1px; padding:0; box-shadow:0 1px 3px rgba(0,0,0,.06);
+    font:800 11px/1 inherit; color:#b0c4ce; cursor:pointer; transition:all .2s;
+  }
+  .step-count-btn.has-count { background:linear-gradient(135deg,#004f68,#007ea1); border-color:#004f68; color:#fff; box-shadow:0 2px 6px rgba(0,79,104,.3); }
+  .step-entries-list { display:grid; gap:.5rem; margin-bottom:1.1rem; max-height:220px; overflow-y:auto; }
+  .step-entries-empty { margin:0 0 1.1rem; padding:.9rem; text-align:center; color:#9fb0b8; font-size:.82rem; background:#f7fafb; border-radius:10px; }
+  .step-entry-row { display:flex; align-items:center; justify-content:space-between; gap:.6rem; padding:.6rem .8rem; border:1px solid #e5edf1; border-radius:10px; background:#f9fbfc; }
+  .step-entry-info { display:flex; flex-direction:column; gap:.1rem; min-width:0; }
+  .step-entry-date { font-size:.8rem; font-weight:700; color:#0d2b38; }
+  .step-entry-person { font-size:.74rem; color:#6a8fa0; }
+  .step-entry-remove { flex-shrink:0; width:24px; height:24px; border-radius:50%; border:none; background:#fff0f0; color:#c43a47; font-size:.9rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .step-entry-remove:hover { background:#ffe0e0; }
   .step-text { flex:1; }
   .step-num { font-size:.72rem; font-weight:700; color:#b0c4ce; display:block; margin-bottom:.12rem; letter-spacing:.04em; }
   .step-desc { font-size:.88rem; color:#4a6070; line-height:1.4; }
@@ -482,7 +495,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
   .step-item:last-child { border-bottom:1px solid #e1e9eb; }
   .step-item:hover { border-color:#bdd4da; background:#f8fcfc; }
-  .step-check { width:19px; height:19px; border-radius:5px; }
+  .step-count-btn { width:19px; height:19px; border-radius:5px; font-size:9.5px; }
   .step-desc { color:#5c7078; font-size:.81rem; line-height:1.35; }
   .step-num { color:#9cafb5; font-size:.65rem; }
   .visit-card {
@@ -1297,6 +1310,32 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         </div>
       </div>
 
+      <!-- 단계 기록 모달 (몇 번, 누가, 언제) -->
+      <div class="modal-backdrop" id="stepModal">
+        <div class="modal">
+          <div class="modal-header">
+            <h2 id="stepModalTitle"></h2>
+            <button class="btn-close" id="stepModalClose">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="step-entries-list" id="stepEntriesList"></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>${getLang() === 'ko' ? '날짜' : 'Date'}</label>
+                <input type="date" id="stepEntryDate">
+              </div>
+              <div class="form-group">
+                <label>${getLang() === 'ko' ? '담당자' : 'Recorded by'}</label>
+                <input type="text" id="stepEntryPerson" placeholder="${getLang() === 'ko' ? '이름' : 'Name'}">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn-save" id="stepEntryAddBtn" type="button">${getLang() === 'ko' ? '기록 추가' : 'Add record'}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     `;
 
     bindCrsLangToggle();
@@ -1308,6 +1347,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('adminModalClose').addEventListener('click', () => {
       document.getElementById('adminModal').classList.remove('open');
     });
+    document.getElementById('stepModalClose').addEventListener('click', closeStepModal);
+    document.getElementById('stepEntryAddBtn').addEventListener('click', addStepEntry);
     document.getElementById('editModalClose').addEventListener('click', closeEditModal);
     document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
     document.getElementById('editSaveBtn').addEventListener('click', saveChurch);
@@ -1690,14 +1731,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
     const stepsHtml = stepsArr.map((desc, i) => {
       const num = i + 1;
-      const checked = !!steps[num];
+      const count = stepCount(steps[num]);
       return `
-        <div class="step-item${checked ? ' done' : ''}" data-step="${num}">
-          <div class="step-check${checked ? ' checked' : ''}">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <path d="M2 6.5l3.5 3.5 5.5-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
+        <div class="step-item${count > 0 ? ' done' : ''}" data-step="${num}">
+          <button type="button" class="step-count-btn${count > 0 ? ' has-count' : ''}" tabindex="-1">${count}</button>
           <div class="step-text">
             <span class="step-num">Step ${num}</span>
             <span class="step-desc">${esc(desc)}</span>
@@ -1801,7 +1838,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
     ensureDetailMap(church);
     document.querySelectorAll('.step-item').forEach(item => {
-      item.addEventListener('click', () => toggleStep(church, parseInt(item.dataset.step)));
+      item.addEventListener('click', () => openStepModal(church, parseInt(item.dataset.step)));
     });
     document.getElementById('detailEditBtn').addEventListener('click', () => {
       closeDetailModal(); openEditModal(church);
@@ -1848,18 +1885,93 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
   }
 
-  // ── 단계 토글 ──
-  async function toggleStep(church, stepNum) {
+  // ── 단계 기록(횟수) ──
+  // steps[num]은 undefined(0회) | true(예전 체크박스 시절 기록, 날짜/담당자 불명) |
+  // [{date, person}, ...](신규 — 몇일에 누가 했는지 기록). 빈 배열은 절대 저장하지 않고
+  // 항상 키를 지운다 — 그래야 기존의 "steps[i+1]" truthy 체크들이 그대로 맞게 동작한다.
+  function stepCount(value) {
+    return Array.isArray(value) ? value.length : (value ? 1 : 0);
+  }
+  function stepEntriesOf(value) {
+    if (Array.isArray(value)) return value;
+    return value ? [{ legacy: true }] : [];
+  }
+  let stepModalChurch = null;
+  let stepModalNum = null;
+
+  function openStepModal(church, stepNum) {
+    stepModalChurch = church;
+    stepModalNum = stepNum;
+    const stepsArr = getLang() === 'ko' ? STEPS_KO : STEPS;
+    document.getElementById('stepModalTitle').textContent = `Step ${stepNum}: ${stepsArr[stepNum - 1]}`;
+    document.getElementById('stepEntryDate').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('stepEntryPerson').value = '';
+    renderStepEntries();
+    document.getElementById('stepModal').classList.add('open');
+  }
+  function closeStepModal() {
+    document.getElementById('stepModal').classList.remove('open');
+    stepModalChurch = null;
+    stepModalNum = null;
+  }
+  function renderStepEntries() {
+    const value = (stepModalChurch.steps || {})[stepModalNum];
+    const entries = stepEntriesOf(value);
+    const listEl = document.getElementById('stepEntriesList');
+    if (!entries.length) {
+      listEl.innerHTML = `<p class="step-entries-empty">${getLang() === 'ko' ? '아직 기록이 없습니다.' : 'No records yet.'}</p>`;
+      return;
+    }
+    listEl.innerHTML = entries.map((entry, idx) => `
+      <div class="step-entry-row">
+        <div class="step-entry-info">
+          <span class="step-entry-date">${esc(entry.date || (getLang() === 'ko' ? '날짜 미상' : 'Unknown date'))}</span>
+          <span class="step-entry-person">${esc(entry.person || (entry.legacy ? (getLang() === 'ko' ? '이전 기록' : 'Legacy record') : (getLang() === 'ko' ? '이름 미상' : 'Unknown')))}</span>
+        </div>
+        <button type="button" class="step-entry-remove" onclick="removeStepEntry(${idx})" aria-label="delete">×</button>
+      </div>`).join('');
+  }
+  async function saveStepValue(newValue) {
+    const church = stepModalChurch;
     const steps = { ...(church.steps || {}) };
-    steps[stepNum] = !steps[stepNum];
+    if (newValue === null) delete steps[stepModalNum];
+    else steps[stepModalNum] = newValue;
+    await update(ref(db, `churches/${church.id}`), { steps, updatedAt: Date.now() });
+    church.steps = steps;
+    const idx = churches.findIndex(c => c.id === church.id);
+    if (idx !== -1) churches[idx].steps = steps;
+  }
+  async function addStepEntry() {
+    const date = document.getElementById('stepEntryDate').value;
+    const person = document.getElementById('stepEntryPerson').value.trim();
+    const church = stepModalChurch;
+    const rawValue = (church.steps || {})[stepModalNum];
+    const current = Array.isArray(rawValue) ? rawValue : (rawValue ? [{ legacy: true }] : []);
+    const next = [...current, { date, person }];
+    const btn = document.getElementById('stepEntryAddBtn');
+    btn.disabled = true;
     try {
-      await update(ref(db, `churches/${church.id}`), { steps, updatedAt: Date.now() });
-      church.steps = steps;
-      const idx = churches.findIndex(c => c.id === church.id);
-      if (idx !== -1) churches[idx].steps = steps;
+      await saveStepValue(next);
+      renderStepEntries();
       renderDetailBody(church);
       renderChurchList();
-    } catch(e) {
+    } catch (e) {
+      alert(t('step_error') + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  async function removeStepEntry(idx) {
+    const church = stepModalChurch;
+    const rawValue = (church.steps || {})[stepModalNum];
+    const current = Array.isArray(rawValue) ? rawValue : (rawValue ? [{ legacy: true }] : []);
+    const next = current.filter((_, i) => i !== idx);
+    try {
+      await saveStepValue(next.length ? next : null);
+      renderStepEntries();
+      renderDetailBody(church);
+      renderChurchList();
+    } catch (e) {
       alert(t('step_error') + e.message);
     }
   }
