@@ -1,0 +1,132 @@
+---
+// Resource & Media — 발표용 Resource 작업 현황 리포트(구 portal.astro, 주소 /portal → /resource로 이동).
+// "WOLKO Portal" 이름은 내부 도구 런처(portal.astro, 구 hub.astro)가 물려받았다.
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Resource & Media — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/wolko-auth.css?v=1">
+  <link rel="stylesheet" href="/wolko-rail.css?v=6">
+  <link rel="stylesheet" href="/portal.css?v=1">
+  <script src="/wolko-rail.js?v=6" defer></script>
+</head>
+<body>
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo"><img src="/images/WOLKO Circle.png" alt="WOLKO"><div class="login-logo-text"><span class="login-logo-name">WOLKO 월코</span><span class="login-logo-sub">Word of Life Korea</span></div></div>
+      <p class="login-title">포탈 로그인이 필요합니다</p>
+      <p class="login-description">Resource & Media는 WOLKO 포탈 계정으로 확인할 수 있습니다.</p>
+      <a class="login-btn" href="/portal" style="display:block;text-align:center;text-decoration:none;">포탈로 이동</a>
+    </div>
+  </div>
+
+  <header class="portal-header">
+    <a class="portal-brand" href="/portal"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span>Resource & Media</span></a>
+    <div class="portal-header-actions"><span class="viewer-label" id="viewerLabel"></span><a class="back-link" href="/portal">포탈</a><button class="logout-btn" type="button" onclick="logout()">로그아웃</button></div>
+  </header>
+
+  <main class="portal-main" id="portalMain" hidden>
+    <section class="hero-panel">
+      <div class="hero-copy"><p class="eyebrow">RESOURCE REPORT</p><h1>자료 제작 진행 현황</h1><p>번역과 제작 중인 자료를 한눈에 확인하고, 발표에 바로 사용할 수 있는 진행 리포트입니다.</p></div>
+      <div class="overall-progress" id="overallProgress"><div class="progress-ring progress-ring-lg" id="overallRing"><div class="ring-inner"><strong id="overallPercent">0%</strong><span>전체 완성도</span></div></div><p id="overallCaption">항목을 불러오는 중입니다</p></div>
+    </section>
+
+    <section class="summary-grid" id="summaryGrid"></section>
+
+    <section class="report-section">
+      <div class="section-head"><div><p class="section-eyebrow">ACTIVE RESOURCES</p><h2>작업 중인 자료</h2></div><button class="add-resource" id="addResourceBtn" type="button" hidden onclick="openEditor()"><span>+</span> 항목 추가</button></div>
+      <p class="report-updated" id="updatedAt"></p>
+      <div class="resource-grid" id="resourceGrid"></div>
+    </section>
+  </main>
+
+  <div class="editor-overlay" id="editorOverlay" hidden>
+    <form class="editor-card" id="editorForm">
+      <div class="editor-head"><div><p class="section-eyebrow">RESOURCE EDITOR</p><h2 id="editorTitle">작업 항목 추가</h2></div><button class="icon-close" type="button" onclick="closeEditor()" aria-label="닫기">×</button></div>
+      <p class="editor-error" id="editorError"></p>
+      <input type="hidden" id="resourceId">
+      <input type="hidden" id="thumbnailData">
+      <label class="field"><span>자료 이름</span><input id="resourceName" maxlength="120" required placeholder="예: 2026 Summer Camp Student Book"></label>
+      <div class="field-row"><label class="field"><span>진행 상태</span><select id="resourceStatus"><option value="planning">기획 중</option><option value="translating">번역 중</option><option value="review">검수 중</option><option value="complete">완료</option></select></label><label class="field"><span>완성도 <b id="progressValue">0%</b></span><input id="resourceProgress" type="range" min="0" max="100" value="0" oninput="document.getElementById('progressValue').textContent=this.value+'%'"></label></div>
+      <label class="field"><span>번역/제작 내용</span><input id="resourceTranslation" maxlength="120" placeholder="예: 학생 교재 영문 번역 및 편집"></label>
+      <label class="field"><span>간단한 진행 메모</span><textarea id="resourceDetail" maxlength="260" placeholder="현재 작업 범위 또는 다음 단계"></textarea></label>
+      <div class="thumbnail-field"><div><span class="field-label">발표용 썸네일</span><p>JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB</p></div><label class="thumbnail-upload"><input id="thumbnailInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onchange="loadThumbnail(this)"><span>이미지 선택</span></label><div class="thumbnail-preview" id="thumbnailPreview"><span>NO IMAGE</span></div></div>
+      <div class="editor-actions"><button class="delete-resource" id="deleteResourceBtn" type="button" hidden onclick="deleteResource()">삭제</button><span></span><button class="cancel-resource" type="button" onclick="closeEditor()">취소</button><button class="save-resource" id="saveResourceBtn" type="submit">저장</button></div>
+    </form>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script is:inline>
+    let resources = [];
+    let canWrite = false;
+    const $ = id => document.getElementById(id);
+    const STATUS = { planning: ['기획 중', '#7a8790'], translating: ['번역 중', '#6f55c9'], review: ['검수 중', '#d88217'], complete: ['완료', '#16865a'] };
+
+    function parseSession() {
+      const token = sessionStorage.getItem('wolko-hub-token') || '';
+      try { const raw = atob(token).split(':'); const exp = Number(raw[3]); return raw[0] === 'wolko-hub' && raw.length === 5 && exp > Date.now() ? { token, email: raw[1], role: raw[2] } : null; } catch { return null; }
+    }
+    function authHeaders() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (parseSession()?.token || '') }; }
+    function esc(value) { return String(value || '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char])); }
+    function toast(message, isError = false) { const el = $('toast'); el.textContent = message; el.classList.toggle('is-error', isError); el.classList.add('show'); clearTimeout(toast.timer); toast.timer = setTimeout(() => el.classList.remove('show'), 3200); }
+    function percent(items) { return items.length ? Math.round(items.reduce((sum, item) => sum + Number(item.progress || 0), 0) / items.length) : 0; }
+    function ring(percentValue, color, large = false) { return `<div class="progress-ring${large ? ' progress-ring-lg' : ''}" style="--progress:${percentValue};--ring-color:${color}"><div class="ring-inner"><strong>${percentValue}%</strong>${large ? '<span>전체 완성도</span>' : ''}</div></div>`; }
+    function statusMarkup(status) { const entry = STATUS[status] || STATUS.planning; return `<span class="status-pill" style="--status:${entry[1]}"><i></i>${entry[0]}</span>`; }
+    function formatUpdated(value) { if (!value) return ''; try { return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) + ' 업데이트'; } catch { return ''; } }
+
+    function render() {
+      const total = resources.length;
+      const overall = percent(resources);
+      const translating = resources.filter(item => item.status === 'translating').length;
+      const complete = resources.filter(item => item.progress === 100 || item.status === 'complete').length;
+      $('overallRing').style.setProperty('--progress', overall); $('overallPercent').textContent = overall + '%';
+      $('overallCaption').textContent = total ? `${total}개 항목의 평균 진행률` : '아직 등록된 작업 항목이 없습니다';
+      $('summaryGrid').innerHTML = [
+        ['전체 항목', total, 'RESOURCE ITEMS'], ['평균 완성도', overall + '%', 'OVERALL PROGRESS'], ['번역 진행', translating, 'IN TRANSLATION'], ['완료 자료', complete, 'READY TO PRESENT'],
+      ].map(([label, value, note]) => `<article class="summary-card"><p>${note}</p><strong>${value}</strong><span>${label}</span></article>`).join('');
+      $('resourceGrid').innerHTML = total ? resources.map(item => {
+        const entry = STATUS[item.status] || STATUS.planning;
+        const thumb = item.thumbnailData ? `<img src="${item.thumbnailData}" alt="">` : `<span class="thumb-placeholder">W<br>RESOURCE</span>`;
+        return `<article class="resource-card"><div class="resource-thumb">${thumb}</div><div class="resource-body"><div class="resource-top">${statusMarkup(item.status)}${canWrite ? `<button class="edit-btn" type="button" onclick="openEditor('${item.id}')">수정</button>` : ''}</div><h3>${esc(item.title)}</h3><p class="translation-line">${item.translation ? esc(item.translation) : '번역/제작 내용 미입력'}</p>${item.detail ? `<p class="detail-line">${esc(item.detail)}</p>` : ''}<div class="resource-progress"><div class="bar"><i style="width:${item.progress}%"></i></div><span>${item.progress}%</span></div></div><div class="card-ring">${ring(item.progress, entry[1])}</div></article>`;
+      }).join('') : `<div class="empty-state"><strong>아직 등록된 작업 항목이 없습니다.</strong><span>${canWrite ? '오른쪽 위의 항목 추가 버튼으로 첫 리소스를 등록해보세요.' : '관리자가 작업 항목을 등록하면 이곳에 표시됩니다.'}</span></div>`;
+      $('addResourceBtn').hidden = !canWrite;
+    }
+
+    async function loadResources() {
+      const res = await fetch('/api/portal/resources', { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) return logout();
+      if (!res.ok) throw new Error(data.error || '리포트를 불러오지 못했습니다.');
+      resources = Array.isArray(data.items) ? data.items : []; canWrite = !!data.canWrite; $('updatedAt').textContent = formatUpdated(data.updatedAt); render();
+    }
+
+    function openEditor(id = '') {
+      const item = resources.find(entry => entry.id === id);
+      $('editorForm').reset(); $('resourceId').value = item?.id || ''; $('resourceName').value = item?.title || ''; $('resourceStatus').value = item?.status || 'planning'; $('resourceProgress').value = item?.progress || 0; $('progressValue').textContent = `${item?.progress || 0}%`; $('resourceTranslation').value = item?.translation || ''; $('resourceDetail').value = item?.detail || ''; $('thumbnailData').value = item?.thumbnailData || ''; $('editorTitle').textContent = item ? '작업 항목 수정' : '작업 항목 추가'; $('deleteResourceBtn').hidden = !item; renderThumbnail(item?.thumbnailData || ''); $('editorError').textContent = ''; $('editorOverlay').hidden = false; $('resourceName').focus();
+    }
+    function closeEditor() { $('editorOverlay').hidden = true; }
+    function renderThumbnail(data) { $('thumbnailPreview').innerHTML = data ? `<img src="${data}" alt="">` : '<span>NO IMAGE</span>'; }
+    async function loadThumbnail(input) {
+      const file = input.files?.[0]; if (!file) return;
+      if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) { $('editorError').textContent = 'JPG, PNG, WEBP, GIF 이미지만 올릴 수 있습니다.'; return; }
+      try { const data = await compressImage(file); $('thumbnailData').value = data; renderThumbnail(data); } catch { $('editorError').textContent = '이미지를 처리하지 못했습니다.'; }
+    }
+    function compressImage(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onerror = reject; reader.onload = () => { const image = new Image(); image.onerror = reject; image.onload = () => { const scale = Math.min(1, 1200 / Math.max(image.width, image.height)); const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(image.width * scale)); canvas.height = Math.max(1, Math.round(image.height * scale)); canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height); let data = canvas.toDataURL('image/webp', .82); if (data.length > 1450000) data = canvas.toDataURL('image/jpeg', .68); if (data.length > 1500000) return reject(new Error('too-large')); resolve(data); }; image.src = reader.result; }; reader.readAsDataURL(file); }); }
+    async function saveResource(event) { event.preventDefault(); const id = $('resourceId').value; const item = { title: $('resourceName').value, status: $('resourceStatus').value, progress: $('resourceProgress').value, translation: $('resourceTranslation').value, detail: $('resourceDetail').value, thumbnailData: $('thumbnailData').value }; const button = $('saveResourceBtn'); button.disabled = true; $('editorError').textContent = ''; try { const res = await fetch('/api/portal/resources', { method: id ? 'PUT' : 'POST', headers: authHeaders(), body: JSON.stringify(id ? { id, item } : { item }) }); const data = await res.json().catch(() => ({})); if (!res.ok) throw new Error(data.error || '저장하지 못했습니다.'); resources = data.items; $('updatedAt').textContent = formatUpdated(data.updatedAt); closeEditor(); render(); toast('리포트를 저장했습니다.'); } catch (error) { $('editorError').textContent = error.message; } finally { button.disabled = false; } }
+    async function deleteResource() { const id = $('resourceId').value; if (!id || !confirm('이 작업 항목을 삭제할까요?')) return; try { const res = await fetch('/api/portal/resources?id=' + encodeURIComponent(id), { method: 'DELETE', headers: authHeaders() }); const data = await res.json().catch(() => ({})); if (!res.ok) throw new Error(data.error || '삭제하지 못했습니다.'); resources = data.items; $('updatedAt').textContent = formatUpdated(data.updatedAt); closeEditor(); render(); toast('작업 항목을 삭제했습니다.'); } catch (error) { $('editorError').textContent = error.message; } }
+    function logout() { sessionStorage.removeItem('wolko-hub-token'); sessionStorage.removeItem('wolko-hub-email'); sessionStorage.removeItem('wolko-hub-role'); location.href = '/portal'; }
+    $('editorForm').addEventListener('submit', saveResource); $('editorOverlay').addEventListener('click', event => { if (event.target === $('editorOverlay')) closeEditor(); });
+    const session = parseSession();
+    if (session) { $('loginScreen').hidden = true; $('portalMain').hidden = false; $('viewerLabel').textContent = session.email; loadResources().catch(error => toast(error.message, true)); }
+  </script>
+</body>
+</html>

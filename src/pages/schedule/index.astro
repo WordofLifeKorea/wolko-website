@@ -1,10 +1,10 @@
 ---
 // 스태프 캘린더 — 비공개 구글 캘린더(서비스 계정에만 "일정 변경" 권한으로 공유)를
 // 서버에서 읽고 쓰며, 차량 스케줄 페이지와 같은 스타일의 자체 월간 캘린더로 보여준다.
-// 조회는 허브에 로그인한 누구나(상담사 포함), 등록/수정/삭제는 admin/master만
+// 조회는 포탈에 로그인한 누구나(상담사 포함), 등록/수정/삭제는 admin/master만
 // 가능 — 서버(events.js)가 role을 재검증한다. 이 페이지 자체는 비밀번호를
-// 따로 받지 않고 허브 세션 토큰(sessionStorage)을 그대로 쓴다.
-// No BaseLayout; standalone page (다른 허브 도구와 동일한 패턴)
+// 따로 받지 않고 포탈 세션 토큰(sessionStorage)을 그대로 쓴다.
+// No BaseLayout; standalone page (다른 포탈 도구와 동일한 패턴)
 ---
 <!DOCTYPE html>
 <html lang="ko">
@@ -17,8 +17,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolko-rail.css?v=5">
-  <script src="/wolko-rail.js?v=5" defer></script>
+  <link rel="stylesheet" href="/wolko-rail.css?v=6">
+  <script src="/wolko-rail.js?v=6" defer></script>
   <meta name="theme-color" content="#004f68">
   <style is:global>
     :root {
@@ -274,7 +274,7 @@
 </head>
 <body>
   <header class="sc-header">
-    <a class="sc-logo" href="/hub" title="WOLKO 허브로 돌아가기">
+    <a class="sc-logo" href="/portal" title="WOLKO 포탈로 돌아가기">
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
       <span data-t="pageTitle">스태프 캘린더</span>
     </a>
@@ -287,10 +287,10 @@
       <p class="sc-subtitle" data-t="subtitle">WOLKO 스태프 일정 공유 캘린더입니다.</p>
     </div>
 
-    <!-- 허브 로그인 필요 안내 -->
+    <!-- 포탈 로그인 필요 안내 -->
     <div class="sc-notice-card hidden" id="loginNotice">
-      <p data-t="loginRequiredDesc">이 페이지를 보려면 먼저 허브에 로그인해 주세요.</p>
-      <a class="sc-btn" href="/hub" data-t="goToHubBtn">허브로 이동</a>
+      <p data-t="loginRequiredDesc">이 페이지를 보려면 먼저 포탈에 로그인해 주세요.</p>
+      <a class="sc-btn" href="/portal" data-t="goToHubBtn">포탈로 이동</a>
     </div>
 
     <!-- 로드 실패 안내 -->
@@ -398,8 +398,8 @@
       ko: {
         pageTitle: '스태프 캘린더',
         subtitle: 'WOLKO 스태프 일정 공유 캘린더입니다.',
-        loginRequiredDesc: '이 페이지를 보려면 먼저 허브에 로그인해 주세요.',
-        goToHubBtn: '허브로 이동',
+        loginRequiredDesc: '이 페이지를 보려면 먼저 포탈에 로그인해 주세요.',
+        goToHubBtn: '포탈로 이동',
         today: '오늘',
         jumpBtn: '이동',
         clearDate: '닫기',
@@ -433,8 +433,8 @@
       en: {
         pageTitle: 'Staff Calendar',
         subtitle: 'WOLKO staff shared calendar.',
-        loginRequiredDesc: 'Please log in to the hub first to view this page.',
-        goToHubBtn: 'Go to Hub',
+        loginRequiredDesc: 'Please log in to the Portal first to view this page.',
+        goToHubBtn: 'Go to Portal',
         today: 'Today',
         jumpBtn: 'Go',
         clearDate: 'Close',
@@ -495,7 +495,7 @@
       applyScLang();
     }
 
-    /* ── 허브 세션 토큰 검증(hub.astro의 isHubTokenValid와 동일한 형식) ── */
+    /* ── 포탈 세션 토큰 검증(portal.astro의 isHubTokenValid와 동일한 형식) ── */
     function isHubTokenValid(token) {
       return !!parseHubToken(token);
     }

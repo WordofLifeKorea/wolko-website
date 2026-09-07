@@ -26,7 +26,7 @@ async function getValidVehicleIds(env) {
   return new Set([...BUILTIN_VEHICLE_IDS, ...missionary.map(v => v.id)]);
 }
 
-/** 차량 캘린더는 별도 토큰 없이 허브 세션 토큰을 그대로 쓴다(role admin/master만 통과). */
+/** 차량 캘린더는 별도 토큰 없이 포탈 세션 토큰을 그대로 쓴다(role admin/master만 통과). */
 async function verifyToken(request, env) {
   if (!env.ADMIN_PASSWORD) return false;
   const auth = request.headers.get('Authorization') || '';

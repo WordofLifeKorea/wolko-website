@@ -1,12 +1,14 @@
 /**
- * 허브(/hub) 이메일+비밀번호 로그인 계정/토큰 공용 헬퍼.
+ * 포탈(/portal, 구 /hub) 이메일+비밀번호 로그인 계정/토큰 공용 헬퍼.
+ * 토큰 자체의 포맷 문자열('wolko-hub:...')은 기존 발급된 세션을 무효화하지
+ * 않기 위해 이름을 바꾸지 않고 그대로 유지한다.
  *
  * 역할 3단계:
  *  - master : 하드코딩된 최고 관리자 2명. 승인 없이 항상 가입/로그인 가능하고,
  *             다른 사람의 가입 요청을 승인(+역할 지정)/거부할 수 있는 유일한 계정.
  *  - admin  : master가 승인 시 "관리자"로 지정. @wol.org 이메일에만 지정 가능
- *             (approve.js가 도메인을 검증). 허브를 통해 관리자/차량 스케줄까지 SSO.
- *  - counselor : master가 승인 시 "상담사"로 지정. 도메인 제한 없음. 허브는
+ *             (approve.js가 도메인을 검증). 포탈을 통해 관리자/차량 스케줄까지 SSO.
+ *  - counselor : master가 승인 시 "상담사"로 지정. 도메인 제한 없음. 포탈은
  *             통과하지만 관리자 도구 SSO는 받지 않음(캠프 진행 페이지의
  *             기존 상담사 계정 체계는 이것과 완전히 별개).
  *
@@ -126,14 +128,14 @@ export async function verifyToken(secret, token) {
   }
 }
 
-/** 허브 세션 토큰 발급: wolko-hub:{email}:{role}:{expires} */
+/** 포탈 세션 토큰 발급: wolko-hub:{email}:{role}:{expires} */
 export async function createHubSessionToken(secret, email, role) {
   const expires = Date.now() + SESSION_LIFETIME_MS;
   const data = `wolko-hub:${email}:${role}:${expires}`;
   return signToken(secret, data);
 }
 
-/** 허브 세션 토큰 검증 → { email, role } 또는 null */
+/** 포탈 세션 토큰 검증 → { email, role } 또는 null */
 export async function parseHubSessionToken(secret, token) {
   const data = await verifyToken(secret, token);
   if (!data) return null;
@@ -173,7 +175,7 @@ export async function sendEmail(env, { to, subject, html }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'WOLKO Hub <hub@wolko.org>',
+      from: 'WOLKO Portal <hub@wolko.org>',
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
@@ -192,9 +194,9 @@ function escapeHtml(s) {
 export function pendingRequestEmailHtml({ email, name, phone }) {
   return `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
-      <h2 style="color:#004f68;">새 허브 가입 요청</h2>
-      <p><strong>${escapeHtml(name)}</strong> 님(${escapeHtml(phone)})이 <strong>${escapeHtml(email)}</strong>로 WOLKO 허브 가입을 요청했습니다.</p>
-      <p>허브에 로그인해서 "승인 대기" 목록에서 역할(관리자/상담사)을 지정하여 승인하거나 거부해 주세요.</p>
+      <h2 style="color:#004f68;">새 포탈 가입 요청</h2>
+      <p><strong>${escapeHtml(name)}</strong> 님(${escapeHtml(phone)})이 <strong>${escapeHtml(email)}</strong>로 WOLKO 포탈 가입을 요청했습니다.</p>
+      <p>포탈에 로그인해서 "승인 대기" 목록에서 역할(관리자/상담사)을 지정하여 승인하거나 거부해 주세요.</p>
     </div>`;
 }
 
@@ -202,10 +204,10 @@ export function approvedEmailHtml({ url, role }) {
   const roleLabel = role === 'admin' ? '관리자' : '상담사';
   return `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
-      <h2 style="color:#004f68;">WOLKO 허브 접속이 승인되었습니다</h2>
+      <h2 style="color:#004f68;">WOLKO 포탈 접속이 승인되었습니다</h2>
       <p>${roleLabel} 권한으로 승인되었습니다. 가입하신 이메일과 비밀번호로 바로 로그인하세요.</p>
       <p style="margin:28px 0;">
-        <a href="${url}" style="background:#004f68;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;display:inline-block;">허브 로그인</a>
+        <a href="${url}" style="background:#004f68;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;display:inline-block;">포탈 로그인</a>
       </p>
     </div>`;
 }

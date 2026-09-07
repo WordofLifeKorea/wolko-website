@@ -1,5 +1,5 @@
 /**
- * GET    /api/schedule/events?start=&end=  — 목록 조회. role 무관, 유효한 허브 계정이면 누구나.
+ * GET    /api/schedule/events?start=&end=  — 목록 조회. role 무관, 유효한 포탈 계정이면 누구나.
  * POST   /api/schedule/events               — 새 일정 등록. admin/master만.
  * PUT    /api/schedule/events                — 일정 수정(body.id 필요). admin/master만.
  * DELETE /api/schedule/events?id=            — 일정 삭제. admin/master만.

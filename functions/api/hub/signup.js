@@ -79,7 +79,7 @@ export async function onRequestPost(context) {
       try {
         await sendEmail(env, {
           to: MASTER_EMAILS,
-          subject: `[WOLKO 허브] 새 가입 요청: ${email}`,
+          subject: `[WOLKO 포탈] 새 가입 요청: ${email}`,
           html: pendingRequestEmailHtml({ email, name, phone }),
         });
       } catch (e) {

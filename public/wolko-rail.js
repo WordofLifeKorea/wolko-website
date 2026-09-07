@@ -12,7 +12,7 @@
       icon: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>' },
     { href: '/campstaff', color: '#0077a3', label: '카운슬러',
       icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
-    { href: '/portal', color: '#008e92', label: 'Resource 리포트',
+    { href: '/resource', color: '#008e92', label: 'Resource & Media',
       icon: '<path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="7" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="11" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="7" r="1" fill="currentColor" stroke="none"/>' },
   ];
   var HUB_ICON = '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>';
@@ -24,12 +24,12 @@
 
   function init() {
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (path === '/hub') return; // 허브 자체 사이드바와 중복 방지
+    if (path === '/portal') return; // 포탈 런처 자체 사이드바와 중복 방지
 
     var rail = document.createElement('nav');
     rail.className = 'wolko-rail';
 
-    var html = '<a class="wolko-rail-logo-link" href="/hub" data-label="허브" style="position:relative">' +
+    var html = '<a class="wolko-rail-logo-link" href="/portal" data-label="포탈" style="position:relative">' +
       '<img class="wolko-rail-logo" src="/images/WOLKO Circle.png" alt="WOLKO"></a>' +
       '<div class="wolko-rail-divider"></div>';
 
@@ -39,7 +39,7 @@
         svg(tool.icon) + '</a>';
     });
 
-    html += '<a class="wolko-rail-item wolko-rail-hub" href="/hub" data-label="전체 도구 보기">' + svg(HUB_ICON) + '</a>';
+    html += '<a class="wolko-rail-item wolko-rail-hub" href="/portal" data-label="전체 도구 보기">' + svg(HUB_ICON) + '</a>';
 
     rail.innerHTML = html;
     document.body.insertBefore(rail, document.body.firstChild);

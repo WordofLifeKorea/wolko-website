@@ -1,8 +1,8 @@
 ---
-// CRS(Church Relationship System) — 다른 허브 도구(car/schedule/wolkoadmin)와 동일하게
+// CRS(Church Relationship System) — 다른 포탈 도구(car/schedule/wolkoadmin)와 동일하게
 // 독립 페이지로 전환. 예전엔 BaseLayout(메인 사이트 전체 메뉴+푸터)을 썼는데, 내부 도구에
 // 공개 사이트 내비게이션/푸터가 딸려나오는 게 맞지 않아서 자체 헤더 하나로 교체했다.
-// No BaseLayout; standalone page (다른 허브 도구와 동일한 패턴)
+// No BaseLayout; standalone page (다른 포탈 도구와 동일한 패턴)
 const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 ---
 <!DOCTYPE html>
@@ -21,16 +21,16 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <meta name="apple-mobile-web-app-title" content="WOLKO CRS">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
-  <link rel="stylesheet" href="/wolko-rail.css?v=5">
-  <script src="/wolko-rail.js?v=5" defer></script>
+  <link rel="stylesheet" href="/wolko-rail.css?v=6">
+  <script src="/wolko-rail.js?v=6" defer></script>
   <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
 </head>
 <body>
-  <!-- ── 자체 헤더(허브로 돌아가기 + 언어 토글) — 로그인/승인대기 화면 등 CRS 앱이
+  <!-- ── 자체 헤더(포탈로 돌아가기 + 언어 토글) — 로그인/승인대기 화면 등 CRS 앱이
        아직 활성화되지 않은 상태에서만 보이고, 앱이 뜨면 renderApp()이 그리는
        .app-header(로그아웃/관리자 버튼 등 포함)로 자연스럽게 넘어간다 ── -->
   <header class="app-header" id="crsShellHeader">
-    <a class="app-brand" href="/hub" title="WOLKO 허브로 돌아가기" style="text-decoration:none">
+    <a class="app-brand" href="/portal" title="WOLKO 포탈로 돌아가기" style="text-decoration:none">
       <div class="app-brand-mark"><img src="/images/WOLKO Circle.png" alt="WOLKO"></div>
       <div>
         <h1>CRS for WOLKO</h1>
@@ -773,11 +773,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       visit_history: '방문 기록', add_visit: '＋ 방문 추가', save_visit: '저장',
       visit_visitor: '방문자', no_visits: '아직 방문 기록이 없습니다.',
       no_account: '계정이 없으신가요?', signup: '회원가입', have_account: '이미 계정이 있으신가요?',
-      hub_login_title: '허브에서 로그인해주세요',
-      hub_login_desc: 'CRS는 이제 WOLKO 허브 계정으로 로그인합니다. 허브에 로그인한 뒤 CRS 카드를 눌러 다시 접속해주세요.',
-      hub_login_btn: '허브로 이동',
-      sso_connecting: '허브 계정으로 연결 중...',
-      sso_error: '허브 인증에 실패했습니다. 허브에서 다시 로그인해주세요.',
+      hub_login_title: '포탈에서 로그인해주세요',
+      hub_login_desc: 'CRS는 이제 WOLKO 포탈 계정으로 로그인합니다. 포탈에 로그인한 뒤 CRS 카드를 눌러 다시 접속해주세요.',
+      hub_login_btn: '포탈로 이동',
+      sso_connecting: '포탈 계정으로 연결 중...',
+      sso_error: '포탈 인증에 실패했습니다. 포탈에서 다시 로그인해주세요.',
       legacy_login_link: '기존 CRS 계정으로 로그인',
       back: '뒤로',
       name_label: '이름 *', name_ph: '예: 홍길동', password_confirm: '비밀번호 확인',
@@ -827,11 +827,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       visit_history: 'Visit History', add_visit: '＋ Add Visit', save_visit: 'Save',
       visit_visitor: 'Visitor', no_visits: 'No visit records yet.',
       no_account: "Don't have an account?", signup: 'Sign Up', have_account: 'Already have an account?',
-      hub_login_title: 'Please log in via the WOLKO Hub',
-      hub_login_desc: 'CRS now signs in with your WOLKO Hub account. Log in at the Hub, then open the CRS card again.',
-      hub_login_btn: 'Go to Hub',
-      sso_connecting: 'Connecting with your Hub account...',
-      sso_error: 'Hub authentication failed. Please log in again at the Hub.',
+      hub_login_title: 'Please log in via the WOLKO Portal',
+      hub_login_desc: 'CRS now signs in with your WOLKO Portal account. Log in at the Portal, then open the CRS card again.',
+      hub_login_btn: 'Go to Portal',
+      sso_connecting: 'Connecting with your Portal account...',
+      sso_error: 'Portal authentication failed. Please log in again at the Portal.',
       legacy_login_link: 'Log in with an existing CRS account',
       back: 'Back',
       name_label: 'Name *', name_ph: 'e.g. John Kim', password_confirm: 'Confirm Password',
@@ -1017,7 +1017,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
   }
 
-  // ── 허브 로그인 안내 화면 (기본) ──
+  // ── 포탈 로그인 안내 화면 (기본) ──
   function renderHubPrompt(errorMsg) {
     resetCrsMap();
     setCrsAppActive(false);
@@ -1034,7 +1034,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <p class="login-title">CRS for WOLKO</p>
           <p class="login-description">${t('hub_login_desc')}</p>
           <div class="login-err" id="hubErr" style="${errorMsg ? 'display:block' : ''}">${esc(errorMsg || '')}</div>
-          <a class="btn-primary" href="/hub" style="display:block;text-align:center;text-decoration:none;">${t('hub_login_btn')}</a>
+          <a class="btn-primary" href="/portal" style="display:block;text-align:center;text-decoration:none;">${t('hub_login_btn')}</a>
           <div class="signup-toggle"><a id="goLegacyLogin">${t('legacy_login_link')}</a></div>
         </div>
       </div>`;
@@ -1092,7 +1092,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('goHubPrompt').addEventListener('click', () => renderHubPrompt());
   }
 
-  // ── 허브 세션으로 CRS(Firebase) SSO 시도 ──
+  // ── 포탈 세션으로 CRS(Firebase) SSO 시도 ──
   async function attemptHubSSO() {
     const hubToken = sessionStorage.getItem('wolko-hub-token');
     if (!hubToken) return false;
@@ -1146,7 +1146,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
     root.innerHTML = `
       <div class="app-header">
-        <a class="app-brand" href="/hub" title="WOLKO 허브로 돌아가기" style="text-decoration:none">
+        <a class="app-brand" href="/portal" title="WOLKO 포탈로 돌아가기" style="text-decoration:none">
           <div class="app-brand-mark"><img src="/images/WOLKO Circle.png" alt="WOLKO"></div>
           <div>
             <h1>CRS for WOLKO</h1>
@@ -1995,7 +1995,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   });
 
   // 실제 이메일 확인: 일반 로그인은 user.email이 그대로 있고,
-  // 허브 SSO 로그인은 uid가 안전 치환된 값이라 커스텀 클레임에서 읽어야 한다.
+  // 포탈 SSO 로그인은 uid가 안전 치환된 값이라 커스텀 클레임에서 읽어야 한다.
   async function resolveUserEmail(user) {
     if (user.email) return user.email;
     try {
@@ -2018,8 +2018,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           if (currentUserData.status === 'approved') { renderApp(); startIdleTracking(); }
           else { renderPending(); }
         } else {
-          // 기존 사용자(이 기능 도입 전) 또는 허브 SSO 최초 로그인 → 자동 승인
-          // 허브 SSO는 uid가 이메일을 안전한 문자로 치환한 값이라 user.email이 비어있음 —
+          // 기존 사용자(이 기능 도입 전) 또는 포탈 SSO 최초 로그인 → 자동 승인
+          // 포탈 SSO는 uid가 이메일을 안전한 문자로 치환한 값이라 user.email이 비어있음 —
           // 실제 이메일은 커스텀 토큰의 email 클레임에서 읽어온다.
           const userEmail = await resolveUserEmail(user);
           const autoData = { name: userEmail.split('@')[0], email: userEmail, status: 'approved', role: 'member', createdAt: Date.now() };

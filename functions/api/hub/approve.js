@@ -1,6 +1,6 @@
 /**
  * POST /api/hub/approve
- * Authorization: Bearer <허브 세션 토큰> — master 권한만 허용.
+ * Authorization: Bearer <포탈 세션 토큰> — master 권한만 허용.
  * body: { email, action: 'approve' | 'reject', role?: 'admin' | 'counselor' }
  *
  * 승인(action: 'approve') 시 role을 반드시 지정해야 하며, 그 역할로 계정이
@@ -71,8 +71,8 @@ export async function onRequestPost(context) {
       const url = new URL(request.url);
       await sendEmail(env, {
         to: email,
-        subject: 'WOLKO 허브 접속이 승인되었습니다',
-        html: approvedEmailHtml({ url: `${url.origin}/hub`, role: account.role }),
+        subject: 'WOLKO 포탈 접속이 승인되었습니다',
+        html: approvedEmailHtml({ url: `${url.origin}/portal`, role: account.role }),
       });
     } catch (e) {
       console.error('approved notification email failed:', e);

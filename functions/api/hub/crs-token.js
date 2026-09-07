@@ -1,9 +1,9 @@
 /**
  * POST /api/hub/crs-token
- * Authorization: Bearer <허브 세션 토큰> — admin/master 권한만 허용.
+ * Authorization: Bearer <포탈 세션 토큰> — admin/master 권한만 허용.
  *
  * CRS(Firebase Auth 프로젝트: wolko-crs)에 SSO로 로그인하기 위한 Firebase
- * 커스텀 토큰을 발급한다. uid는 허브 이메일을 그대로 사용하므로, CRS
+ * 커스텀 토큰을 발급한다. uid는 포탈 이메일을 그대로 사용하므로, CRS
  * Firebase 프로젝트에 해당 uid의 사용자가 없으면 최초 로그인 시 자동 생성된다.
  *
  * 필요 환경변수: FIREBASE_CRS_SERVICE_ACCOUNT
@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   const session = token ? await parseHubSessionToken(env.ADMIN_PASSWORD, token) : null;
   if (!session) {
-    return Response.json({ error: '허브 로그인이 필요합니다.' }, { status: 401, headers: CORS });
+    return Response.json({ error: '포탈 로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
   if (session.role !== 'admin' && session.role !== 'master') {
     return Response.json({ error: 'CRS 접근 권한이 없습니다.' }, { status: 403, headers: CORS });

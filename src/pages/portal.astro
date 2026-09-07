@@ -1,5 +1,10 @@
 ---
-// WOLKO Portal — 발표용 Resource 작업 현황 리포트
+// WOLKO Portal — 내부 도구 모음 런처(구 hub.astro, 주소 /hub → /portal로 통일).
+// 이메일+비밀번호 승인 로그인, 단일 화면(트랙 구분 없음). 역할(admin/counselor)은
+// 가입 시점엔 안 정해지고 master 승인 시 지정 — admin은 서버가 @wol.org 도메인인지
+// 검증(approve.js). 공유 비밀번호 로그인 없음.
+// 발표용 Resource 작업 현황 리포트는 별도 페이지(resource.astro, 구 portal.astro)로 분리돼 있다.
+// No BaseLayout; standalone page (wolkoadmin/car와 동일한 패턴)
 ---
 <!DOCTYPE html>
 <html lang="ko">
@@ -7,125 +12,589 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
-  <title>Resource Report — WOLKO</title>
+  <title>WOLKO Portal</title>
   <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/hub.css?v=10">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
-  <link rel="stylesheet" href="/wolko-rail.css?v=5">
-  <link rel="stylesheet" href="/portal.css?v=1">
-  <script src="/wolko-rail.js?v=5" defer></script>
+  <link rel="manifest" href="/portal-manifest.json">
+  <meta name="theme-color" content="#004f68">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WOLKO">
+  <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
 </head>
 <body>
-  <div class="login-screen" id="loginScreen">
+
+  <!-- ── 이메일+비밀번호 로그인 (기본) ── -->
+  <div class="login-screen" id="emailScreen">
     <div class="login-card">
-      <div class="login-logo"><img src="/images/WOLKO Circle.png" alt="WOLKO"><div class="login-logo-text"><span class="login-logo-name">WOLKO 월코</span><span class="login-logo-sub">Word of Life Korea</span></div></div>
-      <p class="login-title">허브 로그인이 필요합니다</p>
-      <p class="login-description">Resource 리포트는 WOLKO 허브 계정으로 확인할 수 있습니다.</p>
-      <a class="login-btn" href="/hub" style="display:block;text-align:center;text-decoration:none;">허브로 이동</a>
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" data-t="emailLoginTitle">포탈 로그인</p>
+      <p class="login-description" data-t="emailLoginDesc">가입하신 이메일과 비밀번호로 로그인하세요.</p>
+      <div class="login-input-wrap">
+        <input class="login-input" type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="login-input-wrap">
+        <input class="login-input" type="password" id="loginPwInput" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <p class="login-error" id="emailError"></p>
+      <button class="login-btn" id="emailBtn" onclick="doAccountLogin()" data-t="loginBtn">로그인</button>
+      <button class="login-link-btn" onclick="showScreen('signupScreen')" data-t="goSignupBtn">계정이 없으신가요? 가입하기</button>
     </div>
   </div>
 
-  <header class="portal-header">
-    <a class="portal-brand" href="/hub"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span>WOLKO <b>PORTAL</b></span></a>
-    <div class="portal-header-actions"><span class="viewer-label" id="viewerLabel"></span><a class="back-link" href="/hub">허브</a><button class="logout-btn" type="button" onclick="logout()">로그아웃</button></div>
-  </header>
-
-  <main class="portal-main" id="portalMain" hidden>
-    <section class="hero-panel">
-      <div class="hero-copy"><p class="eyebrow">RESOURCE REPORT</p><h1>자료 제작 진행 현황</h1><p>번역과 제작 중인 자료를 한눈에 확인하고, 발표에 바로 사용할 수 있는 진행 리포트입니다.</p></div>
-      <div class="overall-progress" id="overallProgress"><div class="progress-ring progress-ring-lg" id="overallRing"><div class="ring-inner"><strong id="overallPercent">0%</strong><span>전체 완성도</span></div></div><p id="overallCaption">항목을 불러오는 중입니다</p></div>
-    </section>
-
-    <section class="summary-grid" id="summaryGrid"></section>
-
-    <section class="report-section">
-      <div class="section-head"><div><p class="section-eyebrow">ACTIVE RESOURCES</p><h2>작업 중인 자료</h2></div><button class="add-resource" id="addResourceBtn" type="button" hidden onclick="openEditor()"><span>+</span> 항목 추가</button></div>
-      <p class="report-updated" id="updatedAt"></p>
-      <div class="resource-grid" id="resourceGrid"></div>
-    </section>
-  </main>
-
-  <div class="editor-overlay" id="editorOverlay" hidden>
-    <form class="editor-card" id="editorForm">
-      <div class="editor-head"><div><p class="section-eyebrow">RESOURCE EDITOR</p><h2 id="editorTitle">작업 항목 추가</h2></div><button class="icon-close" type="button" onclick="closeEditor()" aria-label="닫기">×</button></div>
-      <p class="editor-error" id="editorError"></p>
-      <input type="hidden" id="resourceId">
-      <input type="hidden" id="thumbnailData">
-      <label class="field"><span>자료 이름</span><input id="resourceName" maxlength="120" required placeholder="예: 2026 Summer Camp Student Book"></label>
-      <div class="field-row"><label class="field"><span>진행 상태</span><select id="resourceStatus"><option value="planning">기획 중</option><option value="translating">번역 중</option><option value="review">검수 중</option><option value="complete">완료</option></select></label><label class="field"><span>완성도 <b id="progressValue">0%</b></span><input id="resourceProgress" type="range" min="0" max="100" value="0" oninput="document.getElementById('progressValue').textContent=this.value+'%'"></label></div>
-      <label class="field"><span>번역/제작 내용</span><input id="resourceTranslation" maxlength="120" placeholder="예: 학생 교재 영문 번역 및 편집"></label>
-      <label class="field"><span>간단한 진행 메모</span><textarea id="resourceDetail" maxlength="260" placeholder="현재 작업 범위 또는 다음 단계"></textarea></label>
-      <div class="thumbnail-field"><div><span class="field-label">발표용 썸네일</span><p>JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB</p></div><label class="thumbnail-upload"><input id="thumbnailInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onchange="loadThumbnail(this)"><span>이미지 선택</span></label><div class="thumbnail-preview" id="thumbnailPreview"><span>NO IMAGE</span></div></div>
-      <div class="editor-actions"><button class="delete-resource" id="deleteResourceBtn" type="button" hidden onclick="deleteResource()">삭제</button><span></span><button class="cancel-resource" type="button" onclick="closeEditor()">취소</button><button class="save-resource" id="saveResourceBtn" type="submit">저장</button></div>
-    </form>
+  <!-- ── 이메일+비밀번호 가입 ── -->
+  <div class="login-screen hidden" id="signupScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" data-t="signupTitle">포탈 가입</p>
+      <p class="login-description" data-t="signupDesc">이메일과 비밀번호를 등록하면 마스터 관리자 승인 후 로그인할 수 있습니다.</p>
+      <div class="login-input-wrap">
+        <input class="login-input" type="text" id="signupNameInput" placeholder="이름" autocomplete="name">
+      </div>
+      <div class="login-input-wrap">
+        <input class="login-input" type="tel" id="signupPhoneInput" placeholder="휴대폰 번호" autocomplete="tel">
+      </div>
+      <div class="login-input-wrap">
+        <input class="login-input" type="email" id="signupEmailInput" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="login-input-wrap">
+        <input class="login-input" type="password" id="signupPwInput" placeholder="8자 이상" autocomplete="new-password">
+      </div>
+      <p class="login-error" id="signupError"></p>
+      <button class="login-btn" id="signupBtn" onclick="doSignup()" data-t="signupBtn">가입 요청</button>
+      <button class="login-link-btn" onclick="showScreen('emailScreen')" data-t="backToLoginBtn">이미 계정이 있으신가요? 로그인</button>
+    </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <!-- ── 발송/대기 안내 ── -->
+  <div class="login-screen hidden" id="statusScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" id="statusTitle"></p>
+      <p class="login-description" id="statusDesc"></p>
+      <button class="login-btn" onclick="showScreen('emailScreen')" data-t="backBtn">뒤로</button>
+    </div>
+  </div>
+
+  <div class="hub-shell" id="hubShell" hidden>
+    <nav class="hub-sidebar">
+      <a class="hub-sidebar-brand" href="/">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <span class="hub-sidebar-brand-text">
+          <span class="hub-sidebar-brand-name" data-t="headerTitle">WOLKO Portal</span>
+          <span class="hub-sidebar-brand-sub">Word of Life Korea</span>
+        </span>
+      </a>
+
+      <p class="hub-nav-label" data-t="navLabel">도구</p>
+      <div class="hub-nav" id="hubNav"></div>
+
+      <div class="hub-sidebar-foot">
+        <button class="hub-sidebar-lang" id="pendingBtn" onclick="openPendingPanel()" hidden>
+          <span data-t="pendingLabel">승인 대기</span>
+          <span class="hub-pending-badge" id="pendingCount"></span>
+        </button>
+        <div class="hub-lang-toggle" role="group" aria-label="Language">
+          <button class="hub-lang-btn" id="langKoBtn" onclick="setHubLang('ko')" aria-label="한국어" title="한국어">
+            <img src="https://flagcdn.com/w20/kr.png" alt="" width="16" height="12"> KO
+          </button>
+          <button class="hub-lang-btn" id="langEnBtn" onclick="setHubLang('en')" aria-label="English" title="English">
+            <img src="https://flagcdn.com/w20/us.png" alt="" width="16" height="12"> EN
+          </button>
+        </div>
+        <button class="hub-sidebar-lang" onclick="doLogout()" data-t="logout">로그아웃</button>
+      </div>
+    </nav>
+
+    <main class="hub-main">
+      <div class="hub-wrap">
+        <p class="hub-kicker" data-t="kicker">WOLKO INTERNAL</p>
+        <p class="hub-title" data-t="pageTitle">내부 도구</p>
+        <p class="hub-subtitle" data-t="subtitle">사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.</p>
+
+        <div class="hub-grid" id="hubGrid"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── 승인 대기 목록 (master 전용) ── -->
+  <div class="hub-pending-overlay hidden" id="pendingModal">
+    <div class="hub-pending-card">
+      <div class="hub-pending-head">
+        <p data-t="pendingListTitle">승인 대기 목록</p>
+        <button class="hub-modal-close" onclick="closePendingPanel()" aria-label="close">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 1.5l12 12M13.5 1.5l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div id="pendingList"></div>
+    </div>
+  </div>
+
+  <div class="hub-toast" id="hubToast"></div>
 
   <script is:inline>
-    let resources = [];
-    let canWrite = false;
+    const ICONS = {
+      clipboard: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>',
+      users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      car: '<path d="M14 16H9m10 0h2v-3.15a1 1 0 0 0-.84-.99L18 11.5l-2.35-3.13a1 1 0 0 0-.8-.4H6.5a2 2 0 0 0-1.79 1.11L3.6 11.5A5 5 0 0 0 3 14v2h2"/><circle cx="6.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/>',
+      landmark: '<path d="M12 2v3M10.3 3.5h3.4"/><path d="M4 10.5 12 5l8 5.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6.5a2 2 0 0 1 4 0V20"/>',
+      calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/><rect x="7" y="13.5" width="4" height="4" rx="1" fill="currentColor" stroke="none"/>',
+      chart: '<path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="7" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="11" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="7" r="1" fill="currentColor" stroke="none"/>',
+    };
+
+    const TOOLS = [
+      { href: '/schedule', color: '#1da462', icon: 'calendar',
+        title_ko: '월코 캘린더', title_en: 'WOLKO Calendar',
+        desc_ko: '스태프 일정 공유 캘린더', desc_en: 'Shared staff schedule calendar' },
+      { href: '/car', color: '#c17a1f', icon: 'car',
+        title_ko: '차량 캘린더', title_en: 'Vehicle Calendar',
+        desc_ko: '차량 예약 · 정비 관리', desc_en: 'Reservations & maintenance' },
+      { href: '/crs', color: '#7a5fc4', icon: 'landmark',
+        title_ko: 'CRS', title_en: 'CRS',
+        desc_ko: 'Church Relationship System', desc_en: 'Church Relationship System' },
+      { href: '/wolkoadmin', color: '#004f68', icon: 'clipboard',
+        title_ko: '캠프 관리자', title_en: 'Camp Manager',
+        desc_ko: '캠프 신청 현황 · 확정 관리', desc_en: 'Camp registration & confirmation' },
+      { href: '/campstaff', color: '#0077a3', icon: 'users',
+        title_ko: '카운슬러', title_en: 'Counselor',
+        desc_ko: '카운슬러 상담기록 · 팀 현황', desc_en: 'Counselor records & team status' },
+      { href: '/resource', color: '#008e92', icon: 'chart',
+        title_ko: 'Resource & Media', title_en: 'Resource & Media',
+        desc_ko: '자료 제작 · 번역 진행 현황', desc_en: 'Resource production & translation progress' },
+    ];
+
+    const HUB_T = {
+      ko: {
+        headerTitle: 'WOLKO Portal',
+        navLabel: '도구',
+        kicker: 'WOLKO 내부용',
+        pageTitle: '내부 도구',
+        subtitle: '사용할 도구를 선택하세요.',
+        recentBadge: '최근 사용',
+        emailLoginTitle: '포탈 로그인',
+        emailLoginDesc: '가입하신 이메일과 비밀번호로 로그인하세요.',
+        goSignupBtn: '계정이 없으신가요? 가입하기',
+        signupTitle: '포탈 가입',
+        signupDesc: '이메일과 비밀번호를 등록하면 마스터 관리자 승인 후 로그인할 수 있습니다.',
+        namePlaceholder: '이름',
+        phonePlaceholder: '휴대폰 번호',
+        signupPwPlaceholder: '8자 이상',
+        signupBtn: '가입 요청',
+        signupSending: '요청 중…',
+        backToLoginBtn: '이미 계정이 있으신가요? 로그인',
+        nameRequired: '이름을 입력해 주세요.',
+        phoneRequired: '휴대폰 번호를 입력해 주세요.',
+        phoneInvalid: '올바른 휴대폰 번호를 입력해 주세요.',
+        emailRequired: '이메일을 입력해 주세요.',
+        emailInvalid: '올바른 이메일 주소를 입력해 주세요.',
+        passwordRequired: '비밀번호를 입력해 주세요.',
+        passwordInvalid: '비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.',
+        backBtn: '뒤로',
+        signupApprovedTitle: '가입이 완료되었습니다',
+        signupApprovedDesc: '이제 방금 등록한 이메일과 비밀번호로 로그인할 수 있습니다.',
+        pendingStatusTitle: '승인 대기 중',
+        pendingStatusDesc: '마스터 관리자 승인 후 로그인할 수 있습니다. 승인되면 이메일로 안내해 드립니다.',
+        loginBtn: '로그인',
+        loginVerifying: '확인 중…',
+        loginWrong: '비밀번호가 올바르지 않습니다.',
+        logout: '로그아웃',
+        pendingLabel: '승인 대기',
+        pendingListTitle: '승인 대기 목록',
+        pendingEmpty: '대기 중인 요청이 없습니다.',
+        approveBtn: '승인',
+        rejectBtn: '거부',
+        roleAdmin: '관리자',
+        roleCounselor: '상담사',
+        roleMaster: '마스터',
+        rolePlaceholder: '역할 선택',
+        approvedToast: '승인했습니다.',
+        rejectedToast: '거부했습니다.',
+        roleRequiredToast: '역할을 선택해 주세요.',
+      },
+      en: {
+        headerTitle: 'WOLKO Portal',
+        navLabel: 'Tools',
+        kicker: 'WOLKO Internal',
+        pageTitle: 'Internal Tools',
+        subtitle: 'Pick a tool below.',
+        recentBadge: 'Recent',
+        emailLoginTitle: 'Portal Login',
+        emailLoginDesc: 'Log in with the email and password you signed up with.',
+        goSignupBtn: "Don't have an account? Sign up",
+        signupTitle: 'Portal Sign Up',
+        signupDesc: 'Register an email and password. A master admin must approve access before you can log in.',
+        namePlaceholder: 'Name',
+        phonePlaceholder: 'Phone number',
+        signupPwPlaceholder: '8+ characters',
+        signupBtn: 'Request access',
+        signupSending: 'Requesting…',
+        backToLoginBtn: 'Already have an account? Log in',
+        nameRequired: 'Please enter your name.',
+        phoneRequired: 'Please enter your phone number.',
+        phoneInvalid: 'Please enter a valid phone number.',
+        emailRequired: 'Please enter your email.',
+        emailInvalid: 'Please enter a valid email address.',
+        passwordRequired: 'Please enter a password.',
+        passwordInvalid: 'Password must be at least 8 characters (letters/numbers/symbols).',
+        backBtn: 'Back',
+        signupApprovedTitle: 'Sign-up complete',
+        signupApprovedDesc: 'You can now log in with the email and password you just registered.',
+        pendingStatusTitle: 'Awaiting approval',
+        pendingStatusDesc: "You'll be able to log in once a master admin approves your access. We'll email you when that happens.",
+        loginBtn: 'Login',
+        loginVerifying: 'Verifying…',
+        loginWrong: 'Incorrect password.',
+        logout: 'Log out',
+        pendingLabel: 'Pending',
+        pendingListTitle: 'Pending Requests',
+        pendingEmpty: 'No pending requests.',
+        approveBtn: 'Approve',
+        rejectBtn: 'Reject',
+        roleAdmin: 'Admin',
+        roleCounselor: 'Counselor',
+        roleMaster: 'Master',
+        rolePlaceholder: 'Select role',
+        approvedToast: 'Approved.',
+        rejectedToast: 'Rejected.',
+        roleRequiredToast: 'Please select a role.',
+      },
+    };
+
+    // wolko.org 본사이트와 언어 설정을 공유(wolko-lang). 포탈 자체 기본값은 영어.
+    let hubLang = localStorage.getItem('wolko-lang') || localStorage.getItem('wolkoHubLang') || 'en';
+    let currentSession = null; // { email, role }
     const $ = id => document.getElementById(id);
-    const STATUS = { planning: ['기획 중', '#7a8790'], translating: ['번역 중', '#6f55c9'], review: ['검수 중', '#d88217'], complete: ['완료', '#16865a'] };
+    function t(key) { return HUB_T[hubLang]?.[key] ?? HUB_T.ko[key] ?? key; }
 
-    function parseSession() {
-      const token = sessionStorage.getItem('wolko-hub-token') || '';
-      try { const raw = atob(token).split(':'); const exp = Number(raw[3]); return raw[0] === 'wolko-hub' && raw.length === 5 && exp > Date.now() ? { token, email: raw[1], role: raw[2] } : null; } catch { return null; }
-    }
-    function authHeaders() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (parseSession()?.token || '') }; }
-    function esc(value) { return String(value || '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char])); }
-    function toast(message, isError = false) { const el = $('toast'); el.textContent = message; el.classList.toggle('is-error', isError); el.classList.add('show'); clearTimeout(toast.timer); toast.timer = setTimeout(() => el.classList.remove('show'), 3200); }
-    function percent(items) { return items.length ? Math.round(items.reduce((sum, item) => sum + Number(item.progress || 0), 0) / items.length) : 0; }
-    function ring(percentValue, color, large = false) { return `<div class="progress-ring${large ? ' progress-ring-lg' : ''}" style="--progress:${percentValue};--ring-color:${color}"><div class="ring-inner"><strong>${percentValue}%</strong>${large ? '<span>전체 완성도</span>' : ''}</div></div>`; }
-    function statusMarkup(status) { const entry = STATUS[status] || STATUS.planning; return `<span class="status-pill" style="--status:${entry[1]}"><i></i>${entry[0]}</span>`; }
-    function formatUpdated(value) { if (!value) return ''; try { return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) + ' 업데이트'; } catch { return ''; } }
-
-    function render() {
-      const total = resources.length;
-      const overall = percent(resources);
-      const translating = resources.filter(item => item.status === 'translating').length;
-      const complete = resources.filter(item => item.progress === 100 || item.status === 'complete').length;
-      $('overallRing').style.setProperty('--progress', overall); $('overallPercent').textContent = overall + '%';
-      $('overallCaption').textContent = total ? `${total}개 항목의 평균 진행률` : '아직 등록된 작업 항목이 없습니다';
-      $('summaryGrid').innerHTML = [
-        ['전체 항목', total, 'RESOURCE ITEMS'], ['평균 완성도', overall + '%', 'OVERALL PROGRESS'], ['번역 진행', translating, 'IN TRANSLATION'], ['완료 자료', complete, 'READY TO PRESENT'],
-      ].map(([label, value, note]) => `<article class="summary-card"><p>${note}</p><strong>${value}</strong><span>${label}</span></article>`).join('');
-      $('resourceGrid').innerHTML = total ? resources.map(item => {
-        const entry = STATUS[item.status] || STATUS.planning;
-        const thumb = item.thumbnailData ? `<img src="${item.thumbnailData}" alt="">` : `<span class="thumb-placeholder">W<br>RESOURCE</span>`;
-        return `<article class="resource-card"><div class="resource-thumb">${thumb}</div><div class="resource-body"><div class="resource-top">${statusMarkup(item.status)}${canWrite ? `<button class="edit-btn" type="button" onclick="openEditor('${item.id}')">수정</button>` : ''}</div><h3>${esc(item.title)}</h3><p class="translation-line">${item.translation ? esc(item.translation) : '번역/제작 내용 미입력'}</p>${item.detail ? `<p class="detail-line">${esc(item.detail)}</p>` : ''}<div class="resource-progress"><div class="bar"><i style="width:${item.progress}%"></i></div><span>${item.progress}%</span></div></div><div class="card-ring">${ring(item.progress, entry[1])}</div></article>`;
-      }).join('') : `<div class="empty-state"><strong>아직 등록된 작업 항목이 없습니다.</strong><span>${canWrite ? '오른쪽 위의 항목 추가 버튼으로 첫 리소스를 등록해보세요.' : '관리자가 작업 항목을 등록하면 이곳에 표시됩니다.'}</span></div>`;
-      $('addResourceBtn').hidden = !canWrite;
+    function showToast(msg, isError) {
+      const el = $('hubToast');
+      el.textContent = msg;
+      el.classList.toggle('is-error', !!isError);
+      el.classList.add('is-visible');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.remove('is-visible'), 3000);
     }
 
-    async function loadResources() {
-      const res = await fetch('/api/portal/resources', { headers: authHeaders() });
-      const data = await res.json().catch(() => ({}));
-      if (res.status === 401) return logout();
-      if (!res.ok) throw new Error(data.error || '리포트를 불러오지 못했습니다.');
-      resources = Array.isArray(data.items) ? data.items : []; canWrite = !!data.canWrite; $('updatedAt').textContent = formatUpdated(data.updatedAt); render();
+    function markVisited(href) {
+      try { localStorage.setItem('wolko-hub-last', href); } catch (e) {}
     }
 
-    function openEditor(id = '') {
-      const item = resources.find(entry => entry.id === id);
-      $('editorForm').reset(); $('resourceId').value = item?.id || ''; $('resourceName').value = item?.title || ''; $('resourceStatus').value = item?.status || 'planning'; $('resourceProgress').value = item?.progress || 0; $('progressValue').textContent = `${item?.progress || 0}%`; $('resourceTranslation').value = item?.translation || ''; $('resourceDetail').value = item?.detail || ''; $('thumbnailData').value = item?.thumbnailData || ''; $('editorTitle').textContent = item ? '작업 항목 수정' : '작업 항목 추가'; $('deleteResourceBtn').hidden = !item; renderThumbnail(item?.thumbnailData || ''); $('editorError').textContent = ''; $('editorOverlay').hidden = false; $('resourceName').focus();
+    function renderGrid() {
+      let lastHref = '';
+      try { lastHref = localStorage.getItem('wolko-hub-last') || ''; } catch (e) {}
+      $('hubGrid').innerHTML = TOOLS.map(tool => `
+        <a class="hub-card" href="${tool.href}" style="--tool-color:${tool.color}" onclick="markVisited('${tool.href}')">
+          <span class="hub-card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
+          </span>
+          <span class="hub-card-body">
+            <span class="hub-card-title-row">
+              <p class="hub-card-title">${hubLang === 'en' ? tool.title_en : tool.title_ko}</p>
+              ${tool.href === lastHref ? `<span class="hub-card-badge">${t('recentBadge')}</span>` : ''}
+            </span>
+            <p class="hub-card-desc">${hubLang === 'en' ? tool.desc_en : tool.desc_ko}</p>
+          </span>
+          <span class="hub-card-arrow">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </a>
+      `).join('');
     }
-    function closeEditor() { $('editorOverlay').hidden = true; }
-    function renderThumbnail(data) { $('thumbnailPreview').innerHTML = data ? `<img src="${data}" alt="">` : '<span>NO IMAGE</span>'; }
-    async function loadThumbnail(input) {
-      const file = input.files?.[0]; if (!file) return;
-      if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) { $('editorError').textContent = 'JPG, PNG, WEBP, GIF 이미지만 올릴 수 있습니다.'; return; }
-      try { const data = await compressImage(file); $('thumbnailData').value = data; renderThumbnail(data); } catch { $('editorError').textContent = '이미지를 처리하지 못했습니다.'; }
+
+    function renderNav() {
+      $('hubNav').innerHTML = TOOLS.map(tool => `
+        <a class="hub-nav-item" href="${tool.href}" style="--item-color:${tool.color}" onclick="markVisited('${tool.href}')">
+          <span class="hub-nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
+          </span>
+          <span class="hub-nav-item-label">${hubLang === 'en' ? tool.title_en : tool.title_ko}</span>
+        </a>
+      `).join('');
     }
-    function compressImage(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onerror = reject; reader.onload = () => { const image = new Image(); image.onerror = reject; image.onload = () => { const scale = Math.min(1, 1200 / Math.max(image.width, image.height)); const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(image.width * scale)); canvas.height = Math.max(1, Math.round(image.height * scale)); canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height); let data = canvas.toDataURL('image/webp', .82); if (data.length > 1450000) data = canvas.toDataURL('image/jpeg', .68); if (data.length > 1500000) return reject(new Error('too-large')); resolve(data); }; image.src = reader.result; }; reader.readAsDataURL(file); }); }
-    async function saveResource(event) { event.preventDefault(); const id = $('resourceId').value; const item = { title: $('resourceName').value, status: $('resourceStatus').value, progress: $('resourceProgress').value, translation: $('resourceTranslation').value, detail: $('resourceDetail').value, thumbnailData: $('thumbnailData').value }; const button = $('saveResourceBtn'); button.disabled = true; $('editorError').textContent = ''; try { const res = await fetch('/api/portal/resources', { method: id ? 'PUT' : 'POST', headers: authHeaders(), body: JSON.stringify(id ? { id, item } : { item }) }); const data = await res.json().catch(() => ({})); if (!res.ok) throw new Error(data.error || '저장하지 못했습니다.'); resources = data.items; $('updatedAt').textContent = formatUpdated(data.updatedAt); closeEditor(); render(); toast('리포트를 저장했습니다.'); } catch (error) { $('editorError').textContent = error.message; } finally { button.disabled = false; } }
-    async function deleteResource() { const id = $('resourceId').value; if (!id || !confirm('이 작업 항목을 삭제할까요?')) return; try { const res = await fetch('/api/portal/resources?id=' + encodeURIComponent(id), { method: 'DELETE', headers: authHeaders() }); const data = await res.json().catch(() => ({})); if (!res.ok) throw new Error(data.error || '삭제하지 못했습니다.'); resources = data.items; $('updatedAt').textContent = formatUpdated(data.updatedAt); closeEditor(); render(); toast('작업 항목을 삭제했습니다.'); } catch (error) { $('editorError').textContent = error.message; } }
-    function logout() { sessionStorage.removeItem('wolko-hub-token'); sessionStorage.removeItem('wolko-hub-email'); sessionStorage.removeItem('wolko-hub-role'); location.href = '/hub'; }
-    $('editorForm').addEventListener('submit', saveResource); $('editorOverlay').addEventListener('click', event => { if (event.target === $('editorOverlay')) closeEditor(); });
-    const session = parseSession();
-    if (session) { $('loginScreen').hidden = true; $('portalMain').hidden = false; $('viewerLabel').textContent = session.email; loadResources().catch(error => toast(error.message, true)); }
+
+    function applyLangToDOM() {
+      document.documentElement.lang = hubLang === 'en' ? 'en' : 'ko';
+      document.title = 'WOLKO Portal';
+      document.querySelectorAll('[data-t]').forEach(el => {
+        el.textContent = t(el.getAttribute('data-t'));
+      });
+      $('signupNameInput').placeholder = t('namePlaceholder');
+      $('signupPhoneInput').placeholder = t('phonePlaceholder');
+      $('signupPwInput').placeholder = t('signupPwPlaceholder');
+      $('langKoBtn').classList.toggle('is-active', hubLang === 'ko');
+      $('langEnBtn').classList.toggle('is-active', hubLang === 'en');
+      renderNav();
+      renderGrid();
+    }
+    function setHubLang(lang) {
+      hubLang = lang;
+      localStorage.setItem('wolko-lang', hubLang);
+      localStorage.removeItem('wolkoHubLang');
+      applyLangToDOM();
+    }
+
+    /* ── 화면 전환 ── */
+    const SCREENS = ['emailScreen', 'signupScreen', 'statusScreen'];
+    function showScreen(id) {
+      SCREENS.forEach(s => {
+        $(s).style.display = s === id ? 'flex' : 'none';
+        $(s).classList.toggle('hidden', s !== id);
+      });
+    }
+
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    /* ── 이메일+비밀번호 로그인 ── */
+    async function doAccountLogin() {
+      const email = $('emailInput').value.trim().toLowerCase();
+      const password = $('loginPwInput').value;
+      const errEl = $('emailError');
+      errEl.textContent = '';
+      if (!email) { errEl.textContent = t('emailRequired'); return; }
+      if (!EMAIL_RE.test(email)) { errEl.textContent = t('emailInvalid'); return; }
+      if (!password) { errEl.textContent = t('passwordRequired'); return; }
+
+      const btn = $('emailBtn');
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = t('loginVerifying');
+
+      try {
+        const res = await fetch('/api/hub/account-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('loginWrong'));
+        applySession(data);
+        showHub();
+      } catch (e) {
+        errEl.textContent = e.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    }
+    $('emailInput').addEventListener('keydown', e => { if (e.key === 'Enter') doAccountLogin(); });
+    $('loginPwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doAccountLogin(); });
+
+    /* ── 이메일+비밀번호 가입 ── */
+    const PHONE_RE = /^[0-9+\-\s()]{7,20}$/;
+    async function doSignup() {
+      const name = $('signupNameInput').value.trim();
+      const phone = $('signupPhoneInput').value.trim();
+      const email = $('signupEmailInput').value.trim().toLowerCase();
+      const password = $('signupPwInput').value;
+      const errEl = $('signupError');
+      errEl.textContent = '';
+      if (!name) { errEl.textContent = t('nameRequired'); return; }
+      if (!phone) { errEl.textContent = t('phoneRequired'); return; }
+      if (!PHONE_RE.test(phone)) { errEl.textContent = t('phoneInvalid'); return; }
+      if (!email) { errEl.textContent = t('emailRequired'); return; }
+      if (!EMAIL_RE.test(email)) { errEl.textContent = t('emailInvalid'); return; }
+      if (!password) { errEl.textContent = t('passwordRequired'); return; }
+
+      const btn = $('signupBtn');
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = t('signupSending');
+
+      try {
+        const res = await fetch('/api/hub/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('passwordInvalid'));
+
+        if (data.status === 'pending') {
+          $('statusTitle').textContent = t('pendingStatusTitle');
+          $('statusDesc').textContent = t('pendingStatusDesc');
+        } else {
+          $('statusTitle').textContent = t('signupApprovedTitle');
+          $('statusDesc').textContent = t('signupApprovedDesc');
+        }
+        $('signupNameInput').value = '';
+        $('signupPhoneInput').value = '';
+        $('signupEmailInput').value = '';
+        $('signupPwInput').value = '';
+        showScreen('statusScreen');
+      } catch (e) {
+        errEl.textContent = e.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    }
+    $('signupNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
+    $('signupPhoneInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
+    $('signupPwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
+
+    function applySession(data) {
+      currentSession = { email: data.email, role: data.role };
+      sessionStorage.setItem('wolko-hub-token', data.hubToken);
+      sessionStorage.setItem('wolko-hub-email', data.email || '');
+      sessionStorage.setItem('wolko-hub-role', data.role || '');
+    }
+
+    function doLogout() {
+      sessionStorage.removeItem('wolko-hub-token');
+      sessionStorage.removeItem('wolko-hub-email');
+      sessionStorage.removeItem('wolko-hub-role');
+      location.reload();
+    }
+
+    function showHub() {
+      SCREENS.forEach(s => { $(s).style.display = 'none'; });
+      $('hubShell').hidden = false;
+      $('pendingBtn').hidden = currentSession?.role !== 'master';
+      if (currentSession?.role === 'master') refreshPendingCount();
+    }
+
+    function isHubTokenValid(token) {
+      try {
+        const decoded = atob(token);
+        const lastColon = decoded.lastIndexOf(':');
+        const data = decoded.slice(0, lastColon);
+        const parts = data.split(':');
+        if (parts[0] !== 'wolko-hub' || parts.length !== 4) return false;
+        const expires = parseInt(parts[3], 10);
+        return !!expires && Date.now() < expires;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    /* ── 승인 대기 패널 (master 전용) ── */
+    function authHeaders() {
+      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('wolko-hub-token') };
+    }
+    function formatRequestedAt(iso) {
+      if (!iso) return '';
+      try { return new Date(iso).toLocaleString(hubLang === 'en' ? 'en-US' : 'ko-KR'); } catch (e) { return ''; }
+    }
+    async function refreshPendingCount() {
+      try {
+        const res = await fetch('/api/hub/pending', { headers: authHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const pendingCount = (data.accounts || []).filter(a => a.status === 'pending').length;
+        const badge = $('pendingCount');
+        badge.textContent = pendingCount || '';
+        badge.classList.toggle('hidden', !pendingCount);
+      } catch (e) {}
+    }
+    function renderPendingItem(a) {
+      // admin 역할은 @wol.org 이메일에만 부여 가능(approve.js가 다시 검증) —
+      // 드롭다운에서도 애초에 고를 수 없게 옵션 자체를 숨긴다.
+      const isWol = /@wol\.org$/i.test(a.email);
+      const adminOption = isWol ? `<option value="admin">${t('roleAdmin')}</option>` : '';
+      const counselorOption = `<option value="counselor">${t('roleCounselor')}</option>`;
+      const nameLine = a.name ? `${esc(a.name)}${a.phone ? ' · ' + esc(a.phone) : ''}` : '';
+      return `
+          <div class="hub-pending-item">
+            <div>
+              <p class="hub-pending-email">${esc(a.email)}</p>
+              ${nameLine ? `<p class="hub-pending-role">${nameLine}</p>` : ''}
+              <p class="hub-pending-role">${esc(formatRequestedAt(a.requestedAt))}</p>
+            </div>
+            <div class="hub-pending-actions">
+              <select class="hub-pending-role-select">
+                <option value="" disabled selected>${t('rolePlaceholder')}</option>
+                ${adminOption}${counselorOption}
+              </select>
+              <button class="hub-pending-approve" onclick="respondToRequest('${esc(a.email)}','approve',this)">${t('approveBtn')}</button>
+              <button class="hub-pending-reject" onclick="respondToRequest('${esc(a.email)}','reject',this)">${t('rejectBtn')}</button>
+            </div>
+          </div>`;
+    }
+    async function openPendingPanel() {
+      $('pendingModal').classList.remove('hidden');
+      $('pendingList').innerHTML = '';
+      try {
+        const res = await fetch('/api/hub/pending', { headers: authHeaders() });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        const pending = (data.accounts || []).filter(a => a.status === 'pending');
+        if (!pending.length) {
+          $('pendingList').innerHTML = `<p class="hub-pending-empty">${t('pendingEmpty')}</p>`;
+          return;
+        }
+        $('pendingList').innerHTML = pending.map(renderPendingItem).join('');
+      } catch (e) {
+        $('pendingList').innerHTML = `<p class="hub-pending-empty">${esc(e.message || '')}</p>`;
+      }
+    }
+    function closePendingPanel() {
+      $('pendingModal').classList.add('hidden');
+    }
+    async function respondToRequest(email, action, btnEl) {
+      let role;
+      if (action === 'approve') {
+        const select = btnEl.closest('.hub-pending-actions').querySelector('.hub-pending-role-select');
+        role = select.value;
+        if (!role) { showToast(t('roleRequiredToast'), true); return; }
+      }
+      try {
+        const res = await fetch('/api/hub/approve', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ email, action, role }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        showToast(action === 'approve' ? t('approvedToast') : t('rejectedToast'));
+        openPendingPanel();
+        refreshPendingCount();
+      } catch (e) {
+        showToast(e.message || '', true);
+      }
+    }
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    /* ── 초기화 ── */
+    async function initAuthFlow() {
+      const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
+      if (hubToken && isHubTokenValid(hubToken)) {
+        currentSession = {
+          email: sessionStorage.getItem('wolko-hub-email') || '',
+          role: sessionStorage.getItem('wolko-hub-role') || '',
+        };
+        showHub();
+        return;
+      }
+      showScreen('emailScreen');
+    }
+
+    applyLangToDOM();
+    initAuthFlow();
   </script>
 </body>
 </html>

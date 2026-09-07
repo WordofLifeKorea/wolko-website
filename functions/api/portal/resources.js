@@ -39,7 +39,7 @@ function error(message, status) { return Response.json({ error: message }, { sta
 export async function onRequestGet({ env, request }) {
   if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
   const session = await sessionFor(request, env);
-  if (!session) return error('허브 로그인이 필요합니다.', 401);
+  if (!session) return error('포탈 로그인이 필요합니다.', 401);
   const data = await readData(env);
   return Response.json({ items: data.items, canWrite: canWrite(session), updatedAt: data.updatedAt || '' }, { headers: CORS });
 }
@@ -47,7 +47,7 @@ export async function onRequestGet({ env, request }) {
 export async function onRequestPost({ env, request }) {
   if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
   const session = await sessionFor(request, env);
-  if (!session) return error('허브 로그인이 필요합니다.', 401);
+  if (!session) return error('포탈 로그인이 필요합니다.', 401);
   if (!canWrite(session)) return error('관리자 권한이 필요합니다.', 403);
   try {
     const item = normalize((await request.json()).item);
@@ -62,7 +62,7 @@ export async function onRequestPost({ env, request }) {
 export async function onRequestPut({ env, request }) {
   if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
   const session = await sessionFor(request, env);
-  if (!session) return error('허브 로그인이 필요합니다.', 401);
+  if (!session) return error('포탈 로그인이 필요합니다.', 401);
   if (!canWrite(session)) return error('관리자 권한이 필요합니다.', 403);
   try {
     const body = await request.json();
@@ -80,7 +80,7 @@ export async function onRequestPut({ env, request }) {
 export async function onRequestDelete({ env, request }) {
   if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
   const session = await sessionFor(request, env);
-  if (!session) return error('허브 로그인이 필요합니다.', 401);
+  if (!session) return error('포탈 로그인이 필요합니다.', 401);
   if (!canWrite(session)) return error('관리자 권한이 필요합니다.', 403);
   const id = new URL(request.url).searchParams.get('id') || '';
   const data = await readData(env);

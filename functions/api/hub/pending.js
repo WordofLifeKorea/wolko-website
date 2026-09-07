@@ -1,6 +1,6 @@
 /**
  * GET /api/hub/pending
- * Authorization: Bearer <허브 세션 토큰> — master 권한만 허용.
+ * Authorization: Bearer <포탈 세션 토큰> — master 권한만 허용.
  *
  * 승인 대기 중인 계정 목록을 반환.
  */

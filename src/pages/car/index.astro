@@ -15,8 +15,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/car.css?v=6">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
-  <link rel="stylesheet" href="/wolko-rail.css?v=5">
-  <script src="/wolko-rail.js?v=5" defer></script>
+  <link rel="stylesheet" href="/wolko-rail.css?v=6">
+  <script src="/wolko-rail.js?v=6" defer></script>
   <link rel="manifest" href="/car-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -27,7 +27,7 @@
 </head>
 <body>
 
-  <!-- ── 허브 로그인 안내 화면 ── 이 페이지는 별도 비밀번호 없이 허브 세션(관리자/마스터)만으로 접속한다 -->
+  <!-- ── 포탈 로그인 안내 화면 ── 이 페이지는 별도 비밀번호 없이 포탈 세션(관리자/마스터)만으로 접속한다 -->
   <div class="login-screen" id="loginScreen">
     <div class="login-card">
       <div class="login-logo">
@@ -37,15 +37,15 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" data-t="hubLoginTitle">허브 로그인이 필요합니다</p>
-      <p class="login-description" data-t="hubLoginDesc">차량 캘린더는 WOLKO 허브 계정으로 접속합니다. 허브에 로그인한 뒤 차량 캘린더 카드를 눌러 다시 접속해 주세요.</p>
-      <a class="login-btn" href="/hub" style="display:block;text-align:center;text-decoration:none;" data-t="goToHubBtn">허브로 이동</a>
+      <p class="login-title" data-t="hubLoginTitle">포탈 로그인이 필요합니다</p>
+      <p class="login-description" data-t="hubLoginDesc">차량 캘린더는 WOLKO 포탈 계정으로 접속합니다. 포탈에 로그인한 뒤 차량 캘린더 카드를 눌러 다시 접속해 주세요.</p>
+      <a class="login-btn" href="/portal" style="display:block;text-align:center;text-decoration:none;" data-t="goToHubBtn">포탈로 이동</a>
     </div>
   </div>
 
   <!-- ── HEADER ── -->
   <header class="car-header">
-    <a class="car-header-logo" href="/hub" title="WOLKO 허브로 돌아가기">
+    <a class="car-header-logo" href="/portal" title="WOLKO 포탈로 돌아가기">
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
       <span data-t="pageTitle">차량 스케줄</span>
     </a>
@@ -326,9 +326,9 @@
       ko: {
         pageTitle: '차량 스케줄',
         subtitle: 'WOLKO 차량 예약 현황',
-        hubLoginTitle: '허브 로그인이 필요합니다',
-        hubLoginDesc: '차량 캘린더는 WOLKO 허브 계정으로 접속합니다. 허브에 로그인한 뒤 차량 캘린더 카드를 눌러 다시 접속해 주세요.',
-        goToHubBtn: '허브로 이동',
+        hubLoginTitle: '포탈 로그인이 필요합니다',
+        hubLoginDesc: '차량 캘린더는 WOLKO 포탈 계정으로 접속합니다. 포탈에 로그인한 뒤 차량 캘린더 카드를 눌러 다시 접속해 주세요.',
+        goToHubBtn: '포탈로 이동',
         logout: '로그아웃',
         tabAll: '전체',
         newReservation: '새 예약',
@@ -392,9 +392,9 @@
       en: {
         pageTitle: 'Vehicle Schedule',
         subtitle: 'WOLKO Vehicle Reservations',
-        hubLoginTitle: 'Hub login required',
-        hubLoginDesc: 'The vehicle calendar now signs in with your WOLKO Hub account. Log in at the Hub, then open the Vehicle Calendar card again.',
-        goToHubBtn: 'Go to Hub',
+        hubLoginTitle: 'Portal login required',
+        hubLoginDesc: 'The vehicle calendar now signs in with your WOLKO Portal account. Log in at the Portal, then open the Vehicle Calendar card again.',
+        goToHubBtn: 'Go to Portal',
         logout: 'Log out',
         tabAll: 'All',
         newReservation: 'New Reservation',
@@ -480,7 +480,7 @@
       return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (sessionStorage.getItem('wolko-hub-token') || '') };
     }
 
-    /* ── 허브 세션 토큰 검증(hub.astro/schedule의 isHubTokenValid와 동일한 형식) ── */
+    /* ── 포탈 세션 토큰 검증(portal.astro/schedule의 isHubTokenValid와 동일한 형식) ── */
     function parseHubToken(token) {
       try {
         const decoded = atob(token);
@@ -497,7 +497,7 @@
     }
     function goToHub() {
       try { sessionStorage.removeItem('wolko-hub-token'); } catch (e) {}
-      location.href = '/hub';
+      location.href = '/portal';
     }
 
     function showToast(msg, isError, durationMs) {
