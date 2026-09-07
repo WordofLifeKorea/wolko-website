@@ -202,26 +202,18 @@ html, body {
     height: auto;
     flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     padding: 10px 14px;
     overflow: visible;
   }
-  .hub-sidebar-brand { padding: 0; margin: 0 10px 0 0; border: none; }
+  .hub-sidebar-brand { padding: 0; margin: 0; border: none; }
   .hub-sidebar-brand-text { display: none; }
   .hub-nav-label { display: none; }
-  .hub-nav {
-    flex: 1;
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 4px;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .hub-nav::-webkit-scrollbar { display: none; }
-  .hub-nav-item { flex-direction: column; gap: 3px; padding: 6px 10px; }
-  .hub-nav-item::before { display: none; }
-  .hub-nav-item-icon { width: 26px; height: 26px; }
-  .hub-nav-item-label { font-size: 10.5px; }
-  .hub-sidebar-foot { flex-direction: row; padding: 0; margin: 0 0 0 8px; border: none; flex-shrink: 0; }
+  /* 도구 메뉴는 본문의 카드 그리드가 이미 같은 목록을 훨씬 큼직하게 보여주므로,
+     좁은 화면에서 로고와 승인 대기 버튼 사이에 끼어 거의 안 보이던 가로 스크롤
+     메뉴는 없앤다(중복 + 시인성/조작성 저하). 상단 바는 로고 + 계정 컨트롤만. */
+  .hub-nav { display: none; }
+  .hub-sidebar-foot { flex-direction: row; padding: 0; margin: 0; border: none; flex-shrink: 0; gap: 6px; }
   .hub-sidebar-lang { width: auto; padding: 8px 12px; }
   .hub-lang-btn { padding: 6px 5px; font-size: 10px; }
   .hub-wrap { padding: 24px 16px 60px; }

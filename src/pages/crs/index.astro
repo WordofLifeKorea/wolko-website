@@ -77,23 +77,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   /* body overflow:hidden은 iOS Safari에서 fixed 네비 오작동 유발 → 제거
      스크롤 격리는 overscroll-behavior:contain으로 처리 */
 
-  /* ── 로그인 화면 ── */
+  /* ── 로그인 화면 ── 카드/입력창/버튼/여백은 wolko-auth.css 공용 컴포넌트(.login-wrap)가 담당.
+     예전엔 여기서 같은 걸 다시 정의했는데, 이 파일이 나중에 로드되면서 동일 우선순위 규칙(.login-wrap
+     자체의 padding/min-height)을 덮어써 모바일에서 wolko-auth.css의 좁은 화면 패딩 축소가
+     먹히지 않는 버그가 있었다. 배경 그라디언트만 여기 남기고 나머지는 공용 컴포넌트에 맡긴다. */
   .login-wrap {
-    display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 64px); padding:2rem;
     background:
       radial-gradient(circle at 18% 12%, rgba(255,255,255,.14), transparent 30%),
       linear-gradient(145deg, #003d52, #00627f);
   }
-  .login-card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.10); padding:2.5rem 2rem; width:100%; max-width:400px; }
-  .login-logo { text-align:center; margin-bottom:1.5rem; }
-  .login-logo h1 { font-size:1.5rem; font-weight:800; color:#004f68; margin:0.5rem 0 0.2rem; }
-  .login-logo p { font-size:.85rem; color:#888; margin:0; }
-  .login-card label { display:block; font-size:.85rem; font-weight:600; color:#444; margin-bottom:.3rem; }
-  .login-card input { width:100%; box-sizing:border-box; padding:.7rem 1rem; border:1.5px solid #ddd; border-radius:8px; font-size:.95rem; margin-bottom:1rem; outline:none; transition:border .2s; }
-  .login-card input:focus { border-color:#004f68; }
   .btn-primary { width:100%; padding:.8rem; background:#004f68; color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer; transition:background .2s; }
   .btn-primary:hover { background:#003a50; }
-  .login-err { color:#e53935; font-size:.85rem; margin-bottom:.8rem; text-align:center; display:none; }
+  .login-err { display:none; }
 
   /* ── 앱 헤더 ── */
   .app-header { background:#004f68; color:#fff; padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:76px; z-index:999; box-shadow:0 2px 8px rgba(0,0,0,.15); }
