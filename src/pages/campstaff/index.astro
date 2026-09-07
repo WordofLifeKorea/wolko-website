@@ -373,6 +373,8 @@
     .field textarea { min-height:120px; resize:vertical; line-height:1.65; font-family:var(--body); }
     .field-hint { margin:0; color:var(--light); font-size:11px; line-height:1.5; }
     .checks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .checks-3col { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .checks-3col .check-pill { padding:14px 8px; gap:6px; font-size:11.5px; white-space:normal; text-align:center; }
     .check-pill {
       display:flex; align-items:center; justify-content:center; gap:10px;
       padding:14px 16px; border:1.5px solid var(--border); border-radius:12px;
@@ -670,8 +672,9 @@
           </div>
           <div class="field">
             <label>영적 현황</label>
-            <div class="checks">
-              <label class="check-pill"><input id="modalSaved" type="checkbox"><span class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9 10,3"/></svg></span>구원</label>
+            <div class="checks checks-3col">
+              <label class="check-pill"><input id="modalSavedBefore" type="checkbox"><span class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9 10,3"/></svg></span>구원(캠프 전)</label>
+              <label class="check-pill"><input id="modalSavedAfter" type="checkbox"><span class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9 10,3"/></svg></span>구원(캠프 후)</label>
               <label class="check-pill"><input id="modalDedicated" type="checkbox"><span class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9 10,3"/></svg></span>헌신</label>
             </div>
           </div>
@@ -800,6 +803,9 @@
       $('modalClose').addEventListener('click', closeModal);
       $('modalCancel').addEventListener('click', closeModal);
       $('modalSave').addEventListener('click', saveCamper);
+      // 구원(캠프 전)/구원(캠프 후)는 상호 배타 — 하나를 체크하면 다른 하나는 자동 해제
+      $('modalSavedBefore').addEventListener('change', () => { if ($('modalSavedBefore').checked) $('modalSavedAfter').checked = false; });
+      $('modalSavedAfter').addEventListener('change', () => { if ($('modalSavedAfter').checked) $('modalSavedBefore').checked = false; });
       $('authBtn').addEventListener('click', submitAuth);
       enforceAsciiPasswordInput($('authPassword'));
       enforceAsciiPasswordInput($('accountPassword'));
@@ -1079,7 +1085,7 @@
           <span>${esc([camper.grade, camper.church].filter(Boolean).join(' · ') || '정보 없음')}${locked}</span>
         </span>
         <span class="chips">
-          ${camper.saved ? '<span class="chip chip-saved">구원</span>' : ''}
+          ${camper.savedTiming === 'before' ? '<span class="chip chip-saved">구원(전)</span>' : camper.savedTiming === 'after' ? '<span class="chip chip-saved">구원(후)</span>' : camper.saved ? '<span class="chip chip-saved">구원</span>' : ''}
           ${camper.dedicated ? '<span class="chip chip-dedicated">헌신</span>' : ''}
         </span>
       </div>`;
@@ -1178,11 +1184,12 @@
       $('modalCounselor').innerHTML = counselorOptions;
       $('modalCounselor').value = selectedCamper.counselorRegId || '';
       $('modalCounselor').disabled = !assignable;
-      $('modalSaved').checked = !!selectedCamper.saved;
+      $('modalSavedBefore').checked = selectedCamper.savedTiming === 'before';
+      $('modalSavedAfter').checked = selectedCamper.savedTiming === 'after';
       $('modalDedicated').checked = !!selectedCamper.dedicated;
       $('modalTestimony').value = selectedCamper.testimony || '';
       $('modalMemo').value = selectedCamper.counselorMemo || '';
-      ['modalSaved','modalDedicated','modalTestimony','modalMemo'].forEach(id => $(id).disabled = !editable);
+      ['modalSavedBefore','modalSavedAfter','modalDedicated','modalTestimony','modalMemo'].forEach(id => $(id).disabled = !editable);
       $('modalSave').disabled = !(editable || assignable);
       $('modalSave').textContent = (editable || assignable) ? '저장' : '읽기 전용';
       $('modalCounselorHint').hidden = editable || !assignable;
@@ -1248,7 +1255,8 @@
         // 담당 배정은 누구나, 구원/헌신/간증/상담 내역은 담당 카운슬러(또는 관리자)만 저장
         if (assignable) await saveField('counselorRegId', $('modalCounselor').value);
         if (editable) {
-          await saveField('saved', $('modalSaved').checked);
+          const savedTiming = $('modalSavedBefore').checked ? 'before' : ($('modalSavedAfter').checked ? 'after' : '');
+          await saveField('savedTiming', savedTiming);
           await saveField('dedicated', $('modalDedicated').checked);
           await saveField('testimony', $('modalTestimony').value);
           await saveField('counselorMemo', $('modalMemo').value);

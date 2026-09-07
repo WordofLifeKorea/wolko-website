@@ -540,8 +540,8 @@ export async function onRequestPut(context) {
       return Response.json({ error: 'field가 필요합니다.' }, { status: 400, headers: CORS });
     }
 
-    const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea', 'counselorRegId', 'teacherName', 'counselorMemo', 'testimony', 'saved', 'dedicated', 'scholarshipDiscounts'];
-    const PARTICIPANT_FIELDS = ['name', 'gender', 'birthDate', 'grade', 'parentInfo', 'refundAccount', 'counselorRegId', 'teacherName', 'counselorMemo', 'testimony', 'saved', 'dedicated'];
+    const ALLOWED_FIELDS = ['gender', 'phone', 'notes', 'serviceArea', 'counselorRegId', 'teacherName', 'counselorMemo', 'testimony', 'saved', 'savedTiming', 'dedicated', 'scholarshipDiscounts'];
+    const PARTICIPANT_FIELDS = ['name', 'gender', 'birthDate', 'grade', 'parentInfo', 'refundAccount', 'counselorRegId', 'teacherName', 'counselorMemo', 'testimony', 'saved', 'savedTiming', 'dedicated'];
     const allowedFields = participantIndex === undefined ? ALLOWED_FIELDS : PARTICIPANT_FIELDS;
     if (!allowedFields.includes(field)) {
       return Response.json({ error: '업데이트할 수 없는 필드입니다.' }, { status: 400, headers: CORS });
@@ -556,6 +556,12 @@ export async function onRequestPut(context) {
     if ((field === 'saved' || field === 'dedicated') && typeof value !== 'boolean') {
       return Response.json({ error: '영적 상태 값이 올바르지 않습니다.' }, { status: 400, headers: CORS });
     }
+    if (field === 'savedTiming' && !['', 'before', 'after'].includes(value)) {
+      return Response.json({ error: '구원 시점 값이 올바르지 않습니다.' }, { status: 400, headers: CORS });
+    }
+    // savedTiming(캠프 전/후 구원)을 설정하면 하위 호환을 위해 saved(boolean)도 함께 파생시킨다
+    // — saved만 보는 기존 집계/필터 코드는 그대로 동작하고, 시점 구분은 savedTiming에서 읽는다.
+    const derivedFields = field === 'savedTiming' ? { saved: value !== '' } : {};
     if (field === 'counselorRegId' && value) {
       const counselor = await env.CAMP_KV.get(`camp:${campId}:reg:${value}`, 'json');
       const counselorTeams = String(counselor?.serviceArea || counselor?.notes || '').split(',').map(team => team.trim());
@@ -601,7 +607,7 @@ export async function onRequestPut(context) {
       }
       const participants = Array.from({ length: groupCount }, (_, participantPosition) =>
         participantPosition === index
-          ? { ...(reg.participants?.[participantPosition] || {}), [field]: typeof value === 'string' ? value.trim() : value }
+          ? { ...(reg.participants?.[participantPosition] || {}), [field]: typeof value === 'string' ? value.trim() : value, ...derivedFields }
           : { ...(reg.participants?.[participantPosition] || {}) }
       );
       const allGendersEntered = participants.every(participant => ['male', 'female'].includes(participant.gender));
@@ -619,7 +625,7 @@ export async function onRequestPut(context) {
         ]);
       }
     } else {
-      updatedReg = { ...reg, [field]: value };
+      updatedReg = { ...reg, [field]: value, ...derivedFields };
     }
     await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));
     return Response.json({ success: true, reg: updatedReg }, { headers: CORS });

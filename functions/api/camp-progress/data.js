@@ -4,6 +4,7 @@ const CORS = {
 };
 
 const TEAM_OVERVIEW_KEYS = ['customTeams', 'personRoles', 'personTeams', 'campExclude', 'campRoles', 'customMembers'];
+const SAVED_TIMINGS = new Set(['before', 'after']);
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -124,6 +125,7 @@ function camperFromRegistration(reg) {
     counselorRegId: reg.counselorRegId || '',
     teacherName: reg.teacherName || '',
     saved: !!reg.saved,
+    savedTiming: SAVED_TIMINGS.has(reg.savedTiming) ? reg.savedTiming : '',
     dedicated: !!reg.dedicated,
     testimony: reg.testimony || '',
     counselorMemo: reg.counselorMemo || '',
@@ -153,6 +155,7 @@ function campersFromGroup(reg) {
       counselorRegId: participant.counselorRegId || '',
       teacherName: participant.teacherName || '',
       saved: !!participant.saved,
+      savedTiming: SAVED_TIMINGS.has(participant.savedTiming) ? participant.savedTiming : '',
       dedicated: !!participant.dedicated,
       testimony: participant.testimony || '',
       counselorMemo: participant.counselorMemo || '',

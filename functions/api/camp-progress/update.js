@@ -4,7 +4,8 @@ const CORS = {
 };
 
 const TEAM_COLORS = new Set(['', 'red', 'blue', 'yellow', 'green']);
-const ALLOWED_FIELDS = new Set(['saved', 'dedicated', 'testimony', 'counselorMemo', 'teamColor', 'counselorRegId', 'teacherName']);
+const ALLOWED_FIELDS = new Set(['saved', 'savedTiming', 'dedicated', 'testimony', 'counselorMemo', 'teamColor', 'counselorRegId', 'teacherName']);
+const SAVED_TIMINGS = new Set(['', 'before', 'after']);
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -78,6 +79,11 @@ async function isAssignableCounselor(env, campId, regId) {
 
 function normalizeValue(field, value) {
   if (field === 'saved' || field === 'dedicated') return !!value;
+  if (field === 'savedTiming') {
+    const v = String(value || '').trim();
+    if (!SAVED_TIMINGS.has(v)) throw new Error('구원 시점 값이 올바르지 않습니다.');
+    return v;
+  }
   if (field === 'teamColor') {
     const color = String(value || '').trim();
     if (!TEAM_COLORS.has(color)) throw new Error('팀 색상 값이 올바르지 않습니다.');
@@ -142,6 +148,9 @@ export async function onRequestPut(context) {
       }
     }
     const nextValue = normalizeValue(field, body.value);
+    // savedTiming(캠프 전/후 구원)을 설정하면 하위 호환을 위해 saved(boolean)도 함께 파생시킨다
+    // — saved만 보는 기존 집계/필터 코드는 그대로 동작하고, 시점 구분은 savedTiming에서 읽는다.
+    const derivedFields = field === 'savedTiming' ? { saved: nextValue !== '' } : {};
     let updatedReg;
 
     if (hasParticipantIndex) {
@@ -158,7 +167,7 @@ export async function onRequestPut(context) {
       }
       const participants = Array.from({ length: groupCount }, (_, index) =>
         index === participantIndex
-          ? { ...(reg.participants?.[index] || {}), [field]: nextValue }
+          ? { ...(reg.participants?.[index] || {}), [field]: nextValue, ...derivedFields }
           : { ...(reg.participants?.[index] || {}) }
       );
       updatedReg = { ...reg, participants };
@@ -175,7 +184,7 @@ export async function onRequestPut(context) {
       if (needsOwnershipCheck && !allowedCounselors.includes(reg.counselorRegId || '')) {
         return Response.json({ error: '담당 캠퍼만 수정할 수 있습니다.' }, { status: 403, headers: CORS });
       }
-      updatedReg = { ...reg, [field]: nextValue };
+      updatedReg = { ...reg, [field]: nextValue, ...derivedFields };
     }
 
     await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));

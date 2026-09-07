@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=77">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=78">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=4">
   <script src="/wolko-rail.js?v=4" defer></script>
@@ -352,7 +352,7 @@
         noCampRegs:'캠프 신청 내역이 없습니다.', staffBadge:'스태프', groupBadge:'단체', individualBadge:'개인',
         waitlistFn: n=>`예비${n ? ' ' + n : ''}`, confirmed:'최종확정', depositConfirmed:'예약금확인', pending:'대기중',
         finalConfirmBtn:'최종확정', depositBtn:'예약금수납', unassignedShort:'미배정',
-        savedLabel:'구원', dedicatedLabel:'헌신', counselorMemoPh:'특이사항 | 기도제목', testimonyPh:'간증문 내용',
+        savedLabel:'구원', savedBeforeLabel:'구원(캠프 전)', savedAfterLabel:'구원(캠프 후)', dedicatedLabel:'헌신', counselorMemoPh:'특이사항 | 기도제목', testimonyPh:'간증문 내용',
         detailOpen:'상세', detailClose:'닫기', detailApplicationInfo:'신청 정보', detailRefundInfo:'환불 정보',
         detailScholarshipInfo:'장학금 / 할인', detailCounseling:'상담 관리',
         thRefundBank:'환불 은행', thRefundAccount:'환불 계좌', thRefundHolder:'예금주',
@@ -446,7 +446,7 @@
         noCampRegs:'No camp registrations.', staffBadge:'Staff', groupBadge:'Group', individualBadge:'Individual',
         waitlistFn: n=>`Waitlist${n ? ' ' + n : ''}`, confirmed:'Confirmed', depositConfirmed:'Deposit OK', pending:'Pending',
         finalConfirmBtn:'Confirm', depositBtn:'Deposit',
-        unassignedShort:'Unassigned', savedLabel:'Saved', dedicatedLabel:'Dedicated', counselorMemoPh:'Notes | Prayer requests', testimonyPh:'Testimony text',
+        unassignedShort:'Unassigned', savedLabel:'Saved', savedBeforeLabel:'Saved (before camp)', savedAfterLabel:'Saved (at camp)', dedicatedLabel:'Dedicated', counselorMemoPh:'Notes | Prayer requests', testimonyPh:'Testimony text',
         detailOpen:'Details', detailClose:'Close', detailApplicationInfo:'Application Info', detailRefundInfo:'Refund Info',
         detailScholarshipInfo:'Scholarship / Discount', detailCounseling:'Counseling',
         thRefundBank:'Refund Bank', thRefundAccount:'Refund Account', thRefundHolder:'Account Holder',
@@ -1181,12 +1181,18 @@
     // 평탄화해서 반환 — 단체는 이름이 입력된 학생만, 개인은 본인 1명.
     function regCampers(r) {
       if (r.registrationType !== 'group') {
-        return [{ name: r.name, saved: !!r.saved, dedicated: !!r.dedicated, counselorMemo: r.counselorMemo || '', testimony: r.testimony || '' }];
+        return [{ name: r.name, saved: !!r.saved, savedTiming: r.savedTiming || '', dedicated: !!r.dedicated, counselorMemo: r.counselorMemo || '', testimony: r.testimony || '' }];
       }
       const list = Array.isArray(r.participants) ? r.participants : [];
       return list
         .filter(p => p && String(p.name || '').trim())
-        .map(p => ({ name: p.name, saved: !!p.saved, dedicated: !!p.dedicated, counselorMemo: p.counselorMemo || '', testimony: p.testimony || '' }));
+        .map(p => ({ name: p.name, saved: !!p.saved, savedTiming: p.savedTiming || '', dedicated: !!p.dedicated, counselorMemo: p.counselorMemo || '', testimony: p.testimony || '' }));
+    }
+
+    function savedTimingLabel(entity) {
+      if (entity.savedTiming === 'before') return t('savedBeforeLabel');
+      if (entity.savedTiming === 'after') return t('savedAfterLabel');
+      return entity.saved ? t('savedLabel') : '';
     }
 
     function regGenderCounts(r) {
@@ -1276,12 +1282,16 @@
       const el = document.getElementById('campCounselingSummary');
       if (!el) return;
       const campers = regs.flatMap(regCampers);
-      const savedCount = campers.filter(c => c.saved).length;
+      const savedBeforeCount = campers.filter(c => c.savedTiming === 'before').length;
+      const savedAfterCount = campers.filter(c => c.savedTiming === 'after').length;
+      const savedUntimedCount = campers.filter(c => c.saved && !c.savedTiming).length;
       const dedicatedCount = campers.filter(c => c.dedicated).length;
       const notesEntries = campers.filter(c => c.counselorMemo.trim() || c.testimony.trim());
       el.innerHTML = `<div class="camp-counseling-summary">
         <div class="group-counseling-counts">
-          <span class="counseling-stat-chip is-saved">${t('savedLabel')} ${tt('personCountFn', savedCount)}</span>
+          <span class="counseling-stat-chip is-saved">${t('savedBeforeLabel')} ${tt('personCountFn', savedBeforeCount)}</span>
+          <span class="counseling-stat-chip is-saved">${t('savedAfterLabel')} ${tt('personCountFn', savedAfterCount)}</span>
+          ${savedUntimedCount ? `<span class="counseling-stat-chip is-saved">${t('savedLabel')} ${tt('personCountFn', savedUntimedCount)}</span>` : ''}
           <span class="counseling-stat-chip is-dedicated">${t('dedicatedLabel')} ${tt('personCountFn', dedicatedCount)}</span>
         </div>
         <button type="button" class="group-notes-toggle" onclick="toggleCampNotes()" aria-expanded="${campNotesOpen}">
@@ -1383,7 +1393,8 @@
             </select>`;
         const salvationCell = r.registrationType === 'group'
           ? '<span class="camper-na">—</span>'
-          : `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="saved" onchange="updateField(this)"${r.saved ? ' checked' : ''}><span>${t('savedLabel')}</span></label>`;
+          : `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="savedTiming" data-timing="before" data-savedgroup="${esc(r.regId)}" onchange="updateField(this)"${r.savedTiming === 'before' ? ' checked' : ''}><span>${t('savedBeforeLabel')}</span></label>
+             <label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="savedTiming" data-timing="after" data-savedgroup="${esc(r.regId)}" onchange="updateField(this)"${r.savedTiming === 'after' ? ' checked' : ''}><span>${t('savedAfterLabel')}</span></label>`;
         const dedicationCell = r.registrationType === 'group'
           ? '<span class="camper-na">—</span>'
           : `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-field="dedicated" onchange="updateField(this)"${r.dedicated ? ' checked' : ''}><span>${t('dedicatedLabel')}</span></label>`;
@@ -1410,7 +1421,9 @@
         const namedParticipants = groupParticipants.filter(participant =>
           String(participant.name || '').trim()
         );
-        const groupSavedCount = namedParticipants.filter(p => p.saved).length;
+        const groupSavedBeforeCount = namedParticipants.filter(p => p.savedTiming === 'before').length;
+        const groupSavedAfterCount = namedParticipants.filter(p => p.savedTiming === 'after').length;
+        const groupSavedUntimedCount = namedParticipants.filter(p => p.saved && !p.savedTiming).length;
         const groupDedicatedCount = namedParticipants.filter(p => p.dedicated).length;
         const groupNotesEntries = namedParticipants.filter(p =>
           String(p.counselorMemo || '').trim() || String(p.testimony || '').trim()
@@ -1432,7 +1445,7 @@
           : esc(counselorStaff.find(staff => staff.regId === r.counselorRegId)?.name || '미배정');
         const spiritualSummary = r.registrationType === 'group'
           ? (groupParticipants.length ? t('summaryGroupManaged') : t('groupBadge'))
-          : `${r.saved ? t('savedLabel') : ''}${r.saved && r.dedicated ? ' · ' : ''}${r.dedicated ? t('dedicatedLabel') : ''}` || t('summaryNoCounseling');
+          : `${savedTimingLabel(r)}${r.saved && r.dedicated ? ' · ' : ''}${r.dedicated ? t('dedicatedLabel') : ''}` || t('summaryNoCounseling');
         const counselingSummary = `<div class="summary-stack"><strong>${counselorName}</strong><span>${esc(spiritualSummary)}${r.counselorMemo ? ' · ' + t('summaryMemoExists') : ''}${r.testimony ? ' · ' + t('summaryTestimonyExists') : ''}</span></div>`;
         const manageCell = `<div class="summary-actions"><span>${dateStr}</span><button class="btn-del" onclick="deleteReg('${r.regId}','${r.campId}')">${t('thDelete')}</button></div>`;
         const detailItem = (label, value, wide = false) => `<div class="registration-detail-item${wide ? ' registration-detail-wide' : ''}">
@@ -1472,7 +1485,9 @@
         const isGroupNotesOpen = expandedGroupNotes.has(r.regId);
         const groupCounselingSummary = `<div class="group-counseling-summary">
           <div class="group-counseling-counts">
-            <span class="counseling-stat-chip is-saved">${t('savedLabel')} ${tt('personCountFn', groupSavedCount)}</span>
+            <span class="counseling-stat-chip is-saved">${t('savedBeforeLabel')} ${tt('personCountFn', groupSavedBeforeCount)}</span>
+            <span class="counseling-stat-chip is-saved">${t('savedAfterLabel')} ${tt('personCountFn', groupSavedAfterCount)}</span>
+            ${groupSavedUntimedCount ? `<span class="counseling-stat-chip is-saved">${t('savedLabel')} ${tt('personCountFn', groupSavedUntimedCount)}</span>` : ''}
             <span class="counseling-stat-chip is-dedicated">${t('dedicatedLabel')} ${tt('personCountFn', groupDedicatedCount)}</span>
           </div>
           <button type="button" class="group-notes-toggle" onclick="toggleGroupNotes(event,'${esc(r.regId)}')" aria-expanded="${isGroupNotesOpen}">
@@ -1508,9 +1523,11 @@
                     .join('')}
                 </select>`
                 : `<span class="${participant.counselorRegId ? 'group-participant-readonly' : 'group-participant-empty'}">${esc(counselorStaff.find(staff => staff.regId === participant.counselorRegId)?.name || t('unassignedShort'))}</span>`;
+              const participantSavedGroup = `${r.regId}:${participantIndex}`;
               const participantSalvation = camperEditMode
-                ? `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="saved" onchange="updateField(this)"${participant.saved ? ' checked' : ''}><span>${t('savedLabel')}</span></label>`
-                : (participant.saved ? `<span class="group-participant-state saved">${t('savedLabel')}</span>` : '<span class="camper-na">—</span>');
+                ? `<label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="savedTiming" data-timing="before" data-savedgroup="${esc(participantSavedGroup)}" onchange="updateField(this)"${participant.savedTiming === 'before' ? ' checked' : ''}><span>${t('savedBeforeLabel')}</span></label>
+                   <label class="spiritual-check spiritual-check-saved"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="savedTiming" data-timing="after" data-savedgroup="${esc(participantSavedGroup)}" onchange="updateField(this)"${participant.savedTiming === 'after' ? ' checked' : ''}><span>${t('savedAfterLabel')}</span></label>`
+                : (participant.savedTiming === 'before' ? `<span class="group-participant-state saved">${t('savedBeforeLabel')}</span>` : participant.savedTiming === 'after' ? `<span class="group-participant-state saved">${t('savedAfterLabel')}</span>` : participant.saved ? `<span class="group-participant-state saved">${t('savedLabel')}</span>` : '<span class="camper-na">—</span>');
               const participantDedication = camperEditMode
                 ? `<label class="spiritual-check spiritual-check-dedicated"><input type="checkbox" data-regid="${esc(r.regId)}" data-campid="${esc(r.campId)}" data-participantindex="${participantIndex}" data-field="dedicated" onchange="updateField(this)"${participant.dedicated ? ' checked' : ''}><span>${t('dedicatedLabel')}</span></label>`
                 : (participant.dedicated ? `<span class="group-participant-state dedicated">${t('dedicatedLabel')}</span>` : '<span class="camper-na">—</span>');
@@ -2612,13 +2629,24 @@
         inputEl.value = value;
       }
 
+      // 구원(캠프 전)/구원(캠프 후)는 체크박스 2개가 상호 배타 — value는 '' | 'before' | 'after'
+      const wasChecked = !inputEl.checked; // change 이벤트는 브라우저가 이미 토글한 뒤 발생 → 클릭 전 상태
+      if (field === 'savedTiming') {
+        value = inputEl.checked ? inputEl.dataset.timing : '';
+        if (inputEl.checked && inputEl.dataset.savedgroup) {
+          document.querySelectorAll(`[data-savedgroup="${inputEl.dataset.savedgroup}"]`).forEach(el => {
+            if (el !== inputEl) el.checked = false;
+          });
+        }
+      }
+
       const reg = allRegs.find(r => r.regId === regId);
       if (!reg) return;
       const record = participantIndex === undefined ? reg : (reg.participants?.[Number(participantIndex)] || {});
       if (!record) return;
 
       // 값 변경 없으면 스킵
-      const original = inputEl.type === 'checkbox' ? !!record[field] : String(record[field] || '').trim();
+      const original = field === 'savedTiming' ? (record.savedTiming || '') : inputEl.type === 'checkbox' ? !!record[field] : String(record[field] || '').trim();
       if (value === original) return;
 
       inputEl.classList.add('saving');
@@ -2630,11 +2658,9 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('updateFail'));
-        if (participantIndex === undefined) {
-          record[field] = value;
-        } else {
-          Object.assign(reg, data.reg);
-        }
+        // reg 전체를 서버 응답으로 덮어써서, 서버가 함께 파생시킨 필드(예: savedTiming → saved)까지
+        // 클라이언트 캐시(allRegs)에 반영되게 한다 — 단체는 참가자 배열째로, 개인은 reg 전체를.
+        Object.assign(reg, data.reg);
         inputEl.classList.remove('saving');
         inputEl.classList.add('saved');
         setTimeout(() => inputEl.classList.remove('saved'), 1500);
@@ -2645,7 +2671,8 @@
         }
         showToast(t('fieldSaved'), 'success');
       } catch (e) {
-        if (inputEl.type === 'checkbox') inputEl.checked = original;
+        if (field === 'savedTiming') inputEl.checked = wasChecked;
+        else if (inputEl.type === 'checkbox') inputEl.checked = original;
         else inputEl.value = original;
         inputEl.classList.remove('saving');
         showToast(t('fieldErr') + e.message, 'error');
@@ -2859,7 +2886,7 @@
                   participant.parentInfo ? `${t('participantParentInfo')}: ${participant.parentInfo}` : '',
                   participant.refundAccount ? `${t('participantRefundAccount')}: ${participant.refundAccount}` : '',
                   participantCounselor ? `${t('thCounselor')}: ${participantCounselor.name}` : '',
-                  participant.saved ? t('savedLabel') : '',
+                  savedTimingLabel(participant),
                   participant.dedicated ? t('dedicatedLabel') : '',
                   participant.counselorMemo ? `${t('thCounselorMemo')}: ${participant.counselorMemo}` : '',
                   participant.testimony ? `${t('thCamperTestimony')}: ${participant.testimony}` : '',
@@ -2870,7 +2897,7 @@
           return [
             i + 1, statusVal, campDisplayName(r.campId),
             r.registrationType === 'group' ? t('groupBadge') : t('individualBadge'),
-            r.name, participantList, counselor?.name || '', r.saved ? 'O' : '', r.dedicated ? 'O' : '', r.counselorMemo || '', r.testimony || '',
+            r.name, participantList, counselor?.name || '', savedTimingLabel(r), r.dedicated ? 'O' : '', r.counselorMemo || '', r.testimony || '',
             r.phone, r.email, gradeOrCount, genderVal,
             r.church || '', r.school || '', r.emergency || '',
             r.refundBank || '', r.refundAccount || '', r.refundHolder || '',
