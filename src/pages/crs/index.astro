@@ -22,6 +22,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=7">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=1">
   <script src="/wolko-rail.js?v=7" defer></script>
   <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
 </head>
@@ -31,16 +32,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
        .app-header(로그아웃/관리자 버튼 등 포함)로 자연스럽게 넘어간다 ── -->
   <header class="app-header" id="crsShellHeader">
     <a class="app-brand" href="/portal" title="WOLKO 포탈로 돌아가기" style="text-decoration:none">
-      <div class="app-brand-mark"><img src="/images/WOLKO Circle.png" alt="WOLKO"></div>
-      <div>
-        <h1>CRS for WOLKO</h1>
-        <span class="app-kicker">Church Relationship System</span>
-      </div>
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <h1>CRS for WOLKO</h1>
     </a>
     <div class="user-info">
-      <div class="crs-lang-toggle" id="shellLangToggle" role="group" aria-label="한국어 / English">
-        <button type="button" class="crs-lang-btn is-active" data-lang="ko" aria-label="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>한</span></button>
-        <button type="button" class="crs-lang-btn" data-lang="en" aria-label="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      <div class="wl-lang-toggle" id="shellLangToggle" role="group" aria-label="한국어 / English">
+        <button type="button" class="wl-lang-btn is-active" data-lang="ko" aria-label="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" data-lang="en" aria-label="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
       </div>
     </div>
   </header>
@@ -53,7 +51,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     function syncShellLangToggle(isEn) {
       const toggle = document.getElementById('shellLangToggle');
       if (!toggle) return;
-      const btns = toggle.querySelectorAll('.crs-lang-btn');
+      const btns = toggle.querySelectorAll('.wl-lang-btn');
       if (btns[0]) btns[0].classList.toggle('is-active', !isEn);
       if (btns[1]) btns[1].classList.toggle('is-active', isEn);
     }
@@ -69,7 +67,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     window.toggleLang = function () {
       window.setLang(document.body.classList.contains('lang-en') ? 'ko' : 'en');
     };
-    document.getElementById('shellLangToggle').querySelectorAll('.crs-lang-btn').forEach(btn => {
+    document.getElementById('shellLangToggle').querySelectorAll('.wl-lang-btn').forEach(btn => {
       btn.addEventListener('click', () => window.setLang(btn.dataset.lang));
     });
     try {
@@ -282,11 +280,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   /* ── 관리자 패널 ── */
   .admin-btn { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; padding:.35rem .9rem; border-radius:20px; font-size:.8rem; cursor:pointer; transition:background .2s; }
   .admin-btn:hover { background:rgba(255,255,255,.25); }
+  /* 다른 도구들의 .viewer-label과 같은 느낌 — 배지가 아니라 옅은 텍스트 하나만 */
   .user-name-badge {
-    display:inline-flex; align-items:center; max-width:180px;
-    padding:.35rem .8rem; border-radius:20px;
-    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16);
-    color:rgba(255,255,255,.82); font-size:.78rem; font-weight:700;
+    display:inline-block; max-width:180px;
+    color:rgba(255,255,255,.6); font-size:.78rem; font-weight:600;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   .user-row { display:flex; align-items:center; gap:.8rem; padding:.9rem 0; border-bottom:1px solid #f0f0f0; }
@@ -337,46 +334,30 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     background:#edf2f3;
     color:var(--crs-ink);
   }
+  /* 다른 포탈 도구(car/wolkoadmin) 헤더와 같은 구조로 맞춤: 로고 이미지 하나 + 한 줄
+     제목, 좌우 padding/높이도 동일한 값을 쓴다. */
   .app-header {
-    min-height:64px;
+    min-height:auto;
     box-sizing:border-box;
-    padding:.8rem max(1.15rem,calc((100vw - 1440px) / 2 + 1.3rem));
+    padding:12px max(20px,calc((100vw - 1440px) / 2 + 20px));
     top:0;
     background:var(--crs-brand-dark);
-    border-bottom:1px solid rgba(255,255,255,.1);
-    box-shadow:0 8px 24px rgba(17,52,64,.16);
+    box-shadow:none;
   }
-  .app-brand { display:flex; align-items:center; gap:.75rem; min-width:0; color:#fff; }
-  .app-brand-mark {
-    display:grid; place-items:center; width:35px; height:35px; flex:0 0 auto;
-    border:1px solid rgba(255,255,255,.24); border-radius:10px;
-    background:rgba(255,255,255,.1); overflow:hidden;
-  }
-  .app-brand-mark img { width:100%; height:100%; object-fit:cover; }
-  .app-header h1 { font-size:1rem; letter-spacing:0; line-height:1.1; color:#fff; }
-  .app-kicker { display:block; margin-top:.2rem; color:rgba(255,255,255,.58); font-size:.66rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; }
-  .app-header .user-info { gap:.55rem; color:rgba(255,255,255,.78); font-weight:600; }
+  .app-brand { display:flex; align-items:center; gap:10px; min-width:0; color:#fff; text-decoration:none; }
+  .app-brand img { width:28px; height:28px; border-radius:8px; flex-shrink:0; }
+  .app-header h1 { margin:0; font-size:15px; font-weight:800; line-height:1; letter-spacing:-.01em; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .app-header .user-info { gap:8px; color:rgba(255,255,255,.78); font-weight:600; }
   .app-header .user-info > span { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   #crsShellHeader { visibility:hidden; }
   body.crs-auth-ready #crsShellHeader { visibility:visible; }
   body.crs-app-active #crsShellHeader { display:none; }
-  .crs-lang-toggle {
-    display:flex; align-items:center; gap:2px; height:32px; padding:3px;
-    border:1px solid rgba(255,255,255,.2); border-radius:999px;
-    background:rgba(255,255,255,.1); color:rgba(255,255,255,.68);
-    font-size:.68rem; font-weight:800; line-height:1;
-  }
-  .crs-lang-btn {
-    display:flex; align-items:center; justify-content:center; gap:4px;
-    min-width:25px; height:24px; padding:0 7px;
-    border:none; border-radius:999px; background:transparent; color:inherit;
-    cursor:pointer; font:inherit;
-  }
-  .crs-lang-btn img { display:block; width:14px; height:10px; border-radius:1px; flex-shrink:0; }
-  .crs-lang-btn.is-active { background:#fff; color:var(--crs-brand); }
+  /* 언어 토글은 다른 포탈 도구와 같은 공용 컴포넌트(wolko-lang-toggle.css)를 쓴다 —
+     여기서 따로 정의하지 않는다. 모바일 상세 패널의 밝은 배경용 변형만 아래
+     .detail-lang-toggle에서 색만 다시 입힌다. */
   .admin-btn, .btn-logout {
-    padding:.42rem .72rem; border-color:rgba(255,255,255,.2); border-radius:8px;
-    background:rgba(255,255,255,.09); font-weight:750;
+    height:32px; padding:0 12px; border-color:rgba(255,255,255,.32); border-radius:8px;
+    background:rgba(255,255,255,.08); font-size:12px; font-weight:700;
   }
   .admin-btn:hover, .btn-logout:hover { background:rgba(255,255,255,.17); }
   .app-body { max-width:1440px; height:calc(100vh - 4rem); background:#edf2f3; }
@@ -580,17 +561,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       gap:.58rem;
     }
     .app-brand { gap:.52rem; min-width:0; }
-    .app-brand-mark { display:none; }
-    .app-header h1 { overflow:hidden; font-size:.93rem; text-overflow:ellipsis; white-space:nowrap; }
-    .app-kicker { display:none; }
+    .app-header h1 { font-size:.93rem; }
     .app-header .user-info {
       width:100%; box-sizing:border-box; flex-shrink:0; justify-content:flex-end;
       gap:.34rem; padding-top:.52rem; border-top:1px solid rgba(255,255,255,.13);
     }
     .app-header .user-info > span { display:none; }
-    .crs-lang-toggle { height:30px; padding:2px; }
-    .crs-lang-btn { min-width:21px; height:24px; padding:0 4px; }
-    .crs-lang-btn span { display:none; }
     .admin-btn, .btn-logout {
       min-height:30px; padding:.36rem .5rem; border-radius:7px;
       font-size:.7rem; line-height:1; white-space:nowrap;
@@ -611,12 +587,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       border:1px solid #b9d6dc; background:#f0f7f8; color:#58727b;
       box-shadow:0 2px 7px rgba(17,76,91,.12);
     }
-    .detail-lang-toggle .crs-lang-btn {
-      min-width:25px; height:26px; padding:0 4px;
+    .detail-lang-toggle .wl-lang-btn {
+      min-width:25px; height:26px; padding:0 4px; background:transparent;
       border:1px solid transparent; color:#58727b;
     }
-    .detail-lang-toggle .crs-lang-btn span { display:none; }
-    .detail-lang-toggle .crs-lang-btn.is-active {
+    .detail-lang-toggle .wl-lang-btn span { display:none; }
+    .detail-lang-toggle .wl-lang-btn.is-active {
       border-color:var(--crs-brand); background:var(--crs-brand); color:#fff;
       box-shadow:0 1px 3px rgba(0,86,108,.22);
     }
@@ -1023,14 +999,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   function crsLangToggleMarkup(id = 'crsLangToggle', extraClass = '') {
     const isKo = getLang() === 'ko';
     return `
-      <div class="crs-lang-toggle${extraClass ? ` ${extraClass}` : ''}" id="${id}" role="group" aria-label="한국어 / English">
-        <button type="button" class="crs-lang-btn${isKo ? ' is-active' : ''}" data-lang="ko" aria-label="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>한</span></button>
-        <button type="button" class="crs-lang-btn${isKo ? '' : ' is-active'}" data-lang="en" aria-label="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      <div class="wl-lang-toggle${extraClass ? ` ${extraClass}` : ''}" id="${id}" role="group" aria-label="한국어 / English">
+        <button type="button" class="wl-lang-btn${isKo ? ' is-active' : ''}" data-lang="ko" aria-label="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn${isKo ? '' : ' is-active'}" data-lang="en" aria-label="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
       </div>`;
   }
 
   function bindCrsLangToggle() {
-    document.querySelectorAll('.crs-lang-toggle .crs-lang-btn').forEach(btn => {
+    document.querySelectorAll('.wl-lang-toggle .wl-lang-btn').forEach(btn => {
       btn.addEventListener('click', () => window.setLang?.(btn.dataset.lang));
     });
   }
