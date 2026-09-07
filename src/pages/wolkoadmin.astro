@@ -1,5 +1,5 @@
 ---
-// Admin page — password protected via /api/admin/login
+// Admin page — 별도 관리자 비밀번호 없이 허브(/hub) 세션 토큰(role admin/master)으로 접속한다.
 // No BaseLayout; standalone page
 ---
 <!DOCTYPE html>
@@ -26,7 +26,7 @@
 </head>
 <body>
 
-  <!-- ── LOGIN SCREEN ── -->
+  <!-- ── 허브 로그인 안내 화면 ── 이 페이지는 별도 비밀번호 없이 허브 세션(관리자/마스터)만으로 접속한다 -->
   <div class="login-screen" id="loginScreen">
     <div class="login-card">
       <div class="login-logo">
@@ -36,18 +36,9 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" data-t="loginTitle">관리자 로그인</p>
-      <div class="login-input-wrap">
-        <input class="login-input" type="password" id="pwInput" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
-        <button class="login-eye" id="eyeBtn" onclick="togglePw()" type="button" aria-label="비밀번호 표시">
-          <svg id="eyeIcon" width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M1 9C2.5 5.5 5.5 3 9 3s6.5 2.5 8 6c-1.5 3.5-4.5 6-8 6S2.5 12.5 1 9z" stroke="currentColor" stroke-width="1.5"/>
-            <circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-          </svg>
-        </button>
-      </div>
-      <p class="login-error" id="loginError"></p>
-      <button class="login-btn" id="loginBtn" onclick="doLogin()">로그인</button>
+      <p class="login-title" data-t="hubLoginTitle">허브 로그인이 필요합니다</p>
+      <p class="login-description" data-t="hubLoginDesc">캠프 매니지먼트는 WOLKO 허브 계정으로 접속합니다. 허브에 로그인한 뒤 캠프 매니지먼트 카드를 눌러 다시 접속해 주세요.</p>
+      <a class="login-btn" href="/hub" style="display:block;text-align:center;text-decoration:none;" data-t="goToHubBtn">허브로 이동</a>
     </div>
   </div>
 
@@ -304,10 +295,9 @@
       ko: {
         pageTitle:'관리자 — WOLKO 캠프 신청 현황',
         adminTitle:'WOLKO 관리자', contentCms:'콘텐츠 CMS', logout:'로그아웃',
-        loginTitle:'관리자 로그인', showPassword:'비밀번호 표시',
-        loginPw:'비밀번호를 입력하세요', loginVerifying:'확인 중…', loginBtn:'로그인',
-        loginRequired:'비밀번호를 입력해주세요.', loginWrong:'비밀번호가 올바르지 않습니다.',
-        passwordLanguageWarning:'비밀번호는 영어 입력 상태에서 입력해주세요.',
+        hubLoginTitle:'허브 로그인이 필요합니다',
+        hubLoginDesc:'캠프 매니지먼트는 WOLKO 허브 계정으로 접속합니다. 허브에 로그인한 뒤 캠프 매니지먼트 카드를 눌러 다시 접속해 주세요.',
+        goToHubBtn:'허브로 이동',
         campRegTitle:'캠프 신청 목록', editMode:'수정 모드', editing:'수정 중', csvDownload:'CSV 다운로드', rosterPrint:'명단 인쇄',
         rosterEmpty:'인쇄할 명단이 없습니다.',
         thApplicant:'신청자', thCounseling:'상담',
@@ -394,10 +384,9 @@
       en: {
         pageTitle:'Admin — WOLKO Camp Registration',
         adminTitle:'WOLKO Admin', contentCms:'Content CMS', logout:'Log Out',
-        loginTitle:'Admin Login', showPassword:'Show password',
-        loginPw:'Enter password', loginVerifying:'Verifying…', loginBtn:'Login',
-        loginRequired:'Please enter your password.', loginWrong:'Incorrect password.',
-        passwordLanguageWarning:'Please switch to English input before entering the password.',
+        hubLoginTitle:'Hub login required',
+        hubLoginDesc:'Camp Management now signs in with your WOLKO Hub account. Log in at the Hub, then open the Camp Management card again.',
+        goToHubBtn:'Go to Hub',
         campRegTitle:'Camp Registrations', editMode:'Edit Mode', editing:'Editing', csvDownload:'Export CSV', rosterPrint:'Print Roster',
         rosterEmpty:'No campers to print.',
         thApplicant:'Applicant', thCounseling:'Counseling',
@@ -496,10 +485,6 @@
         const v = t(el.dataset.t);
         if (typeof v === 'string') el.textContent = v;
       });
-      const pwInput = document.getElementById('pwInput');
-      if (pwInput) pwInput.placeholder = t('loginPw');
-      const eyeBtn = document.getElementById('eyeBtn');
-      if (eyeBtn) eyeBtn.setAttribute('aria-label', t('showPassword'));
       const langBtn = document.getElementById('langToggleLabel');
       if (langBtn) langBtn.textContent = adminLang === 'ko' ? 'EN' : '한';
     }
@@ -709,7 +694,6 @@
     let activeSeason = SEASONS[SEASONS.length - 1].id; // 최신 시즌 기본 선택
     let sortState = { key: 'registeredAt', direction: 'desc' }; // 상태별 그룹은 3개 카드로 물리적 분리되어 있음
     let activeTeamFilter = 'all';
-    let authToken = sessionStorage.getItem('wolko-admin-token') || '';
     let staffEditMode = false;
     let camperEditMode = false;
     let teamPanelEditMode = false;
@@ -855,8 +839,7 @@
             headers: authHeaders(),
           });
           if (res.status === 401) {
-            sessionStorage.removeItem('wolko-admin-token');
-            location.reload();
+            goToHub();
             return;
           }
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -909,110 +892,32 @@
       teamOverviewConfigCamp = campId;
     }
 
-    // ── Login ──
-    function togglePw() {
-      const input = document.getElementById('pwInput');
-      const icon = document.getElementById('eyeIcon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerHTML = `<path d="M2 2l14 14M7.5 7.6A2.5 2.5 0 0011.4 11.5M5.2 5.3C3.3 6.5 1.9 7.9 1 9c1.5 3.5 4.5 6 8 6 1.4 0 2.8-.4 4-1M9 3C12.5 3 15.5 5.5 17 9c-.5 1.1-1.2 2.1-2 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`;
-      } else {
-        input.type = 'password';
-        icon.innerHTML = `<path d="M1 9C2.5 5.5 5.5 3 9 3s6.5 2.5 8 6c-1.5 3.5-4.5 6-8 6S2.5 12.5 1 9z" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/>`;
-      }
-    }
-
-    document.getElementById('pwInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') doLogin();
-    });
-
-    const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
-    function cleanPasswordValue(value) {
-      return String(value || '').replace(/[^\x21-\x7E]/g, '');
-    }
-    function warnPasswordLanguage() {
-      const errEl = document.getElementById('loginError');
-      const inputEl = document.getElementById('pwInput');
-      if (errEl) errEl.textContent = t('passwordLanguageWarning');
-      if (inputEl) inputEl.classList.add('error');
-    }
-    function enforceAsciiPasswordInput(input) {
-      input.setAttribute('inputmode', 'latin');
-      input.setAttribute('pattern', '[\\x21-\\x7E]*');
-      input.addEventListener('beforeinput', event => {
-        if (event.data && !PASSWORD_ALLOWED_RE.test(event.data)) {
-          event.preventDefault();
-          warnPasswordLanguage();
-        }
-      });
-      input.addEventListener('paste', event => {
-        const text = event.clipboardData?.getData('text') || '';
-        const clean = cleanPasswordValue(text);
-        if (text !== clean) {
-          event.preventDefault();
-          const start = input.selectionStart ?? input.value.length;
-          const end = input.selectionEnd ?? start;
-          input.setRangeText(clean, start, end, 'end');
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          warnPasswordLanguage();
-        }
-      });
-      input.addEventListener('input', () => {
-        const clean = cleanPasswordValue(input.value);
-        if (input.value !== clean) {
-          input.value = clean;
-          warnPasswordLanguage();
-        }
-      });
-    }
-    enforceAsciiPasswordInput(document.getElementById('pwInput'));
-
-    async function doLogin() {
-      const pw = document.getElementById('pwInput').value;
-      const btn = document.getElementById('loginBtn');
-      const errEl = document.getElementById('loginError');
-      const inputEl = document.getElementById('pwInput');
-      if (!pw) { errEl.textContent = t('loginRequired'); return; }
-
-      btn.disabled = true;
-      btn.textContent = t('loginVerifying');
-      errEl.textContent = '';
-      inputEl.classList.remove('error');
-
+    // ── Login ── 별도 비밀번호 없이 허브 세션 토큰(role admin/master)만으로 접속
+    function parseHubToken(token) {
       try {
-        const res = await fetch('/api/admin/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pw }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || t('loginWrong'));
-
-        authToken = data.token;
-        sessionStorage.setItem('wolko-admin-token', authToken);
-
-        const screen = document.getElementById('loginScreen');
-        screen.classList.add('hidden');
-        setTimeout(() => screen.style.display = 'none', 400);
-        applyLangToDOM();
-        loadRegs();
+        const decoded = atob(token);
+        const lastColon = decoded.lastIndexOf(':');
+        const data = decoded.slice(0, lastColon);
+        const parts = data.split(':');
+        if (parts[0] !== 'wolko-hub' || parts.length !== 4) return null;
+        const expires = parseInt(parts[3], 10);
+        if (!expires || Date.now() >= expires) return null;
+        return { email: parts[1], role: parts[2], expires };
       } catch (e) {
-        errEl.textContent = e.message;
-        inputEl.classList.add('error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = t('loginBtn');
+        return null;
       }
+    }
+    function goToHub() {
+      try { sessionStorage.removeItem('wolko-hub-token'); } catch (e) {}
+      location.href = '/hub';
     }
 
     function doLogout() {
-      sessionStorage.removeItem('wolko-admin-token');
-      authToken = '';
-      location.reload();
+      goToHub();
     }
 
     function authHeaders() {
-      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` };
+      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('wolko-hub-token') || ''}` };
     }
 
     // ── Camp cards ──
@@ -1155,8 +1060,7 @@
       try {
         const res = await fetch('/api/admin/registrations', { headers: authHeaders() });
         if (res.status === 401) {
-          sessionStorage.removeItem('wolko-admin-token');
-          location.reload();
+          goToHub();
           return;
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2969,8 +2873,10 @@
       toastTimer = setTimeout(() => { t.className = 'toast'; }, 3000);
     }
 
-    // ── Auto-login if token exists ──
-    if (authToken) {
+    // ── 허브 세션이 유효한 admin/master면 자동 입장 ──
+    const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
+    const hubSession = hubToken ? parseHubToken(hubToken) : null;
+    if (hubSession && (hubSession.role === 'admin' || hubSession.role === 'master')) {
       document.getElementById('loginScreen').classList.add('hidden');
       setTimeout(() => { document.getElementById('loginScreen').style.display = 'none'; }, 0);
       loadRegs();

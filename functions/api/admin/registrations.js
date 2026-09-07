@@ -12,6 +12,7 @@
  * 구 데이터 호환: status 없는 데이터는 confirmed 필드로 판단
  */
 import { sendAlimtalk } from '../../lib/solapi.js';
+import { parseHubSessionToken } from '../../lib/hubAccounts.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -29,29 +30,14 @@ const SIBLING_CAMP_LABELS = {
   jeju: '제주 캠프',
 };
 
+/** 캠프 매니지먼트는 별도 토큰 없이 허브 세션 토큰을 그대로 쓴다(role admin/master만 통과). */
 async function verifyToken(request, env) {
   if (!env.ADMIN_PASSWORD) return false;
   const auth = request.headers.get('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   if (!token) return false;
-
-  try {
-    const decoded = atob(token);
-    const lastColon = decoded.lastIndexOf(':');
-    const sigHex = decoded.slice(lastColon + 1);
-    const data = decoded.slice(0, lastColon);
-    const parts = data.split(':');
-    const expires = parseInt(parts[1]);
-    if (!expires || Date.now() > expires) return false;
-    const key = await crypto.subtle.importKey(
-      'raw', new TextEncoder().encode(env.ADMIN_PASSWORD),
-      { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']
-    );
-    const sig = new Uint8Array(sigHex.match(/.{2}/g).map(b => parseInt(b, 16)));
-    return await crypto.subtle.verify('HMAC', key, sig, new TextEncoder().encode(data));
-  } catch {
-    return false;
-  }
+  const session = await parseHubSessionToken(env.ADMIN_PASSWORD, token);
+  return !!session && (session.role === 'admin' || session.role === 'master');
 }
 
 /** 잔금까지 확인되어 최종 확정된 신청인지 여부 */

@@ -27,7 +27,7 @@
 </head>
 <body>
 
-  <!-- ── LOGIN SCREEN ── -->
+  <!-- ── 허브 로그인 안내 화면 ── 이 페이지는 별도 비밀번호 없이 허브 세션(관리자/마스터)만으로 접속한다 -->
   <div class="login-screen" id="loginScreen">
     <div class="login-card">
       <div class="login-logo">
@@ -37,12 +37,9 @@
           <span class="login-logo-sub">Word of Life Korea</span>
         </div>
       </div>
-      <p class="login-title" data-t="loginTitle">차량 스케줄 로그인</p>
-      <div class="login-input-wrap">
-        <input class="login-input" type="password" id="pwInput" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
-      </div>
-      <p class="login-error" id="loginError"></p>
-      <button class="login-btn" id="loginBtn" onclick="doLogin()" data-t="loginBtn">로그인</button>
+      <p class="login-title" data-t="hubLoginTitle">허브 로그인이 필요합니다</p>
+      <p class="login-description" data-t="hubLoginDesc">차량 캘린더는 WOLKO 허브 계정으로 접속합니다. 허브에 로그인한 뒤 차량 캘린더 카드를 눌러 다시 접속해 주세요.</p>
+      <a class="login-btn" href="/hub" style="display:block;text-align:center;text-decoration:none;" data-t="goToHubBtn">허브로 이동</a>
     </div>
   </div>
 
@@ -292,12 +289,9 @@
       ko: {
         pageTitle: '차량 스케줄',
         subtitle: 'WOLKO 차량 예약 현황',
-        loginTitle: '차량 스케줄 로그인',
-        loginPw: '비밀번호를 입력하세요',
-        loginBtn: '로그인',
-        loginVerifying: '확인 중…',
-        loginRequired: '비밀번호를 입력해 주세요.',
-        loginWrong: '비밀번호가 올바르지 않습니다.',
+        hubLoginTitle: '허브 로그인이 필요합니다',
+        hubLoginDesc: '차량 캘린더는 WOLKO 허브 계정으로 접속합니다. 허브에 로그인한 뒤 차량 캘린더 카드를 눌러 다시 접속해 주세요.',
+        goToHubBtn: '허브로 이동',
         logout: '로그아웃',
         tabAll: '전체',
         newReservation: '새 예약',
@@ -351,12 +345,9 @@
       en: {
         pageTitle: 'Vehicle Schedule',
         subtitle: 'WOLKO Vehicle Reservations',
-        loginTitle: 'Vehicle Schedule Login',
-        loginPw: 'Enter password',
-        loginBtn: 'Login',
-        loginVerifying: 'Verifying…',
-        loginRequired: 'Please enter a password.',
-        loginWrong: 'Incorrect password.',
+        hubLoginTitle: 'Hub login required',
+        hubLoginDesc: 'The vehicle calendar now signs in with your WOLKO Hub account. Log in at the Hub, then open the Vehicle Calendar card again.',
+        goToHubBtn: 'Go to Hub',
         logout: 'Log out',
         tabAll: 'All',
         newReservation: 'New Reservation',
@@ -410,7 +401,6 @@
     };
 
     let carLang = localStorage.getItem('wolkoCarLang') || 'ko';
-    let carToken = sessionStorage.getItem('wolko-car-token') || '';
     let reservations = [];
     let maintenanceRecords = [];
     let activeVehicle = 'all';
@@ -430,7 +420,27 @@
     function vehicleById(id) { return VEHICLES.find(v => v.id === id); }
 
     function authHeaders() {
-      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + carToken };
+      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (sessionStorage.getItem('wolko-hub-token') || '') };
+    }
+
+    /* ── 허브 세션 토큰 검증(hub.astro/schedule의 isHubTokenValid와 동일한 형식) ── */
+    function parseHubToken(token) {
+      try {
+        const decoded = atob(token);
+        const lastColon = decoded.lastIndexOf(':');
+        const data = decoded.slice(0, lastColon);
+        const parts = data.split(':');
+        if (parts[0] !== 'wolko-hub' || parts.length !== 4) return null;
+        const expires = parseInt(parts[3], 10);
+        if (!expires || Date.now() >= expires) return null;
+        return { email: parts[1], role: parts[2], expires };
+      } catch (e) {
+        return null;
+      }
+    }
+    function goToHub() {
+      try { sessionStorage.removeItem('wolko-hub-token'); } catch (e) {}
+      location.href = '/hub';
     }
 
     function showToast(msg, isError, durationMs) {
@@ -456,7 +466,6 @@
         const key = el.getAttribute('data-t');
         el.textContent = t(key);
       });
-      $('pwInput').placeholder = t('loginPw');
       const langBtn = $('langToggleLabel');
       if (langBtn) langBtn.textContent = carLang === 'ko' ? 'EN' : '한';
       populateMonthPicker();
@@ -474,55 +483,14 @@
     }
 
     /* ── LOGIN ── */
-    $('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-    async function doLogin() {
-      const pw = $('pwInput').value;
-      const btn = $('loginBtn');
-      const errEl = $('loginError');
-      if (!pw) { errEl.textContent = t('loginRequired'); return; }
-
-      btn.disabled = true;
-      const originalLabel = btn.textContent;
-      btn.textContent = t('loginVerifying');
-      errEl.textContent = '';
-
-      try {
-        const res = await fetch('/api/car/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pw }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || t('loginWrong'));
-
-        carToken = data.token;
-        sessionStorage.setItem('wolko-car-token', carToken);
-
-        const screen = $('loginScreen');
-        screen.classList.add('hidden');
-        setTimeout(() => screen.style.display = 'none', 400);
-        await loadAll();
-      } catch (e) {
-        errEl.textContent = e.message;
-      } finally {
-        btn.disabled = false;
-        btn.textContent = originalLabel;
-      }
-    }
-
     function doLogout() {
-      sessionStorage.removeItem('wolko-car-token');
-      carToken = '';
-      location.reload();
+      goToHub();
     }
 
     function handleAuthError(res) {
       if (res.status === 401) {
         showToast(t('sessionExpired'), true);
-        sessionStorage.removeItem('wolko-car-token');
-        carToken = '';
-        setTimeout(() => location.reload(), 1200);
+        setTimeout(goToHub, 1200);
         return true;
       }
       return false;
@@ -1243,7 +1211,9 @@
 
     /* ── INIT ── */
     applyLangToDOM();
-    if (carToken) {
+    const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
+    const hubSession = hubToken ? parseHubToken(hubToken) : null;
+    if (hubSession && (hubSession.role === 'admin' || hubSession.role === 'master')) {
       const screen = $('loginScreen');
       screen.classList.add('hidden');
       screen.style.display = 'none';

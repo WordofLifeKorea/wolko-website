@@ -2,13 +2,15 @@
  * POST /api/hub/account-login
  * body: { email, password }
  *
- * 승인된 계정의 이메일+비밀번호 로그인. 성공 시 허브 세션 토큰을 발급하고,
- * role이 admin/master면 관리자/차량 스케줄 SSO 토큰까지 함께 발급한다.
- * (상담사는 허브 세션만 발급 — 관리자 도구 접근 권한 없음)
+ * 승인된 계정의 이메일+비밀번호 로그인. 성공 시 허브 세션 토큰 하나만 발급한다.
+ * 관리자 도구(캠프 매니지먼트/차량 캘린더)는 이 허브 세션 토큰을 그대로 사용해
+ * 서버에서 role을 검사하므로 별도 SSO 토큰이 필요 없다.
+ * (상담사도 허브 세션은 발급받지만, role이 admin/master가 아니므로 관리자
+ * 도구 API가 거부한다 — 상담사 전용 도구는 이것과 완전히 별개의 계정 체계)
  */
 import {
   normalizeEmail, isValidEmail, getAccount, verifyPassword,
-  createHubSessionToken, signToken,
+  createHubSessionToken,
 } from '../../lib/hubAccounts.js';
 
 const CORS = {
@@ -56,19 +58,7 @@ export async function onRequestPost(context) {
     }
 
     const hubToken = await createHubSessionToken(env.ADMIN_PASSWORD, email, account.role);
-    const result = { hubToken, email, role: account.role };
-
-    if (account.role === 'admin' || account.role === 'master') {
-      const expires = Date.now() + 24 * 60 * 60 * 1000;
-      const [adminToken, carToken] = await Promise.all([
-        signToken(env.ADMIN_PASSWORD, `wolko-admin:${expires}`),
-        signToken(env.ADMIN_PASSWORD, `wolko-car:${expires}`),
-      ]);
-      result.adminToken = adminToken;
-      result.carToken = carToken;
-    }
-
-    return Response.json(result, { headers: CORS });
+    return Response.json({ hubToken, email, role: account.role }, { headers: CORS });
   } catch (error) {
     console.error('hub account-login error:', error);
     return Response.json({ error: '처리 중 오류가 발생했습니다.' }, { status: 500, headers: CORS });

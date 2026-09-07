@@ -1,3 +1,5 @@
+import { parseHubSessionToken } from '../../lib/hubAccounts.js';
+
 const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
@@ -17,26 +19,8 @@ async function verifyAdmin(request, env) {
   const auth = request.headers.get('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   if (!token) return false;
-
-  try {
-    const decoded = atob(token);
-    const lastColon = decoded.lastIndexOf(':');
-    const sigHex = decoded.slice(lastColon + 1);
-    const data = decoded.slice(0, lastColon);
-    const parts = data.split(':');
-    if (parts[0] !== 'wolko-admin' || parts.length < 2) return false;
-    const expires = parseInt(parts[1], 10);
-    if (!expires || Date.now() > expires) return false;
-
-    const key = await crypto.subtle.importKey(
-      'raw', new TextEncoder().encode(env.ADMIN_PASSWORD),
-      { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']
-    );
-    const sig = new Uint8Array(sigHex.match(/.{2}/g).map(b => parseInt(b, 16)));
-    return await crypto.subtle.verify('HMAC', key, sig, new TextEncoder().encode(data));
-  } catch {
-    return false;
-  }
+  const session = await parseHubSessionToken(env.ADMIN_PASSWORD, token);
+  return !!session && (session.role === 'admin' || session.role === 'master');
 }
 
 function emptyConfig() {

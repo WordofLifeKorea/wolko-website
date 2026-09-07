@@ -186,13 +186,16 @@
         navLabel: '도구',
         kicker: 'WOLKO 내부용',
         pageTitle: '내부 도구',
-        subtitle: '사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.',
+        subtitle: '사용할 도구를 선택하세요.',
         recentBadge: '최근 사용',
         emailLoginTitle: '허브 로그인',
         emailLoginDesc: '가입하신 이메일과 비밀번호로 로그인하세요.',
         goSignupBtn: '계정이 없으신가요? 가입하기',
         signupTitle: '허브 가입',
         signupDesc: '이메일과 비밀번호를 등록하면 마스터 관리자 승인 후 로그인할 수 있습니다.',
+        namePlaceholder: '이름',
+        phonePlaceholder: '휴대폰 번호',
+        signupPwPlaceholder: '8자 이상',
         signupBtn: '가입 요청',
         signupSending: '요청 중…',
         backToLoginBtn: '이미 계정이 있으신가요? 로그인',
@@ -230,13 +233,16 @@
         navLabel: 'Tools',
         kicker: 'WOLKO Internal',
         pageTitle: 'Internal Tools',
-        subtitle: 'Pick a tool below. Each one has its own login.',
+        subtitle: 'Pick a tool below.',
         recentBadge: 'Recent',
         emailLoginTitle: 'Hub Login',
         emailLoginDesc: 'Log in with the email and password you signed up with.',
         goSignupBtn: "Don't have an account? Sign up",
         signupTitle: 'Hub Sign Up',
         signupDesc: 'Register an email and password. A master admin must approve access before you can log in.',
+        namePlaceholder: 'Name',
+        phonePlaceholder: 'Phone number',
+        signupPwPlaceholder: '8+ characters',
         signupBtn: 'Request access',
         signupSending: 'Requesting…',
         backToLoginBtn: 'Already have an account? Log in',
@@ -329,6 +335,9 @@
       document.querySelectorAll('[data-t]').forEach(el => {
         el.textContent = t(el.getAttribute('data-t'));
       });
+      $('signupNameInput').placeholder = t('namePlaceholder');
+      $('signupPhoneInput').placeholder = t('phonePlaceholder');
+      $('signupPwInput').placeholder = t('signupPwPlaceholder');
       $('langKoBtn').classList.toggle('is-active', hubLang === 'ko');
       $('langEnBtn').classList.toggle('is-active', hubLang === 'en');
       renderNav();
@@ -445,16 +454,12 @@
       sessionStorage.setItem('wolko-hub-token', data.hubToken);
       sessionStorage.setItem('wolko-hub-email', data.email || '');
       sessionStorage.setItem('wolko-hub-role', data.role || '');
-      if (data.adminToken) sessionStorage.setItem('wolko-admin-token', data.adminToken);
-      if (data.carToken) sessionStorage.setItem('wolko-car-token', data.carToken);
     }
 
     function doLogout() {
       sessionStorage.removeItem('wolko-hub-token');
       sessionStorage.removeItem('wolko-hub-email');
       sessionStorage.removeItem('wolko-hub-role');
-      sessionStorage.removeItem('wolko-admin-token');
-      sessionStorage.removeItem('wolko-car-token');
       location.reload();
     }
 
