@@ -661,7 +661,11 @@
           const startCol = weekDateStrs.indexOf(clippedStart);
           const endCol = weekDateStrs.indexOf(clippedEnd);
           if (startCol === -1 || endCol === -1) return;
-          items.push({ startCol, endCol, type: ev.allDay ? 'bar' : 'timed', ev });
+          // 시간 지정 일정이라도 여러 날에 걸치면 종일 일정처럼 막대(bar)로 그린다 —
+          // 'timed' 스타일(점+시각)은 배경색이 없어서, 그리드 상으론 여러 칸을 차지해도
+          // 시작일에만 뭔가 있는 것처럼 보이는 문제가 있었다(실사용 버그 리포트로 확인).
+          const isMultiDay = r.startDate !== r.endDate;
+          items.push({ startCol, endCol, type: (ev.allDay || isMultiDay) ? 'bar' : 'timed', ev });
         });
         const { placed, overflowByCol } = layoutWeekItems(items, maxLanes);
 
