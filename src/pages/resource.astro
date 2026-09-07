@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=7">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=1">
-  <link rel="stylesheet" href="/portal.css?v=4">
+  <link rel="stylesheet" href="/portal.css?v=5">
   <script src="/wolko-rail.js?v=7" defer></script>
 </head>
 <body>
@@ -58,49 +58,71 @@
   </main>
 
   <div class="editor-overlay" id="editorOverlay" hidden>
-    <form class="editor-card" id="editorForm">
-      <div class="editor-head"><div><p class="section-eyebrow" id="editorEyebrow">RESOURCE EDITOR</p><h2 id="editorTitle">작업 항목 추가</h2></div><button class="icon-close" type="button" onclick="closeEditor()" aria-label="close">×</button></div>
+    <div class="editor-card" id="editorCard">
+      <div class="editor-head"><div><p class="section-eyebrow" id="editorEyebrow">RESOURCE DETAIL</p><h2 id="editorTitle"></h2></div><button class="icon-close" type="button" onclick="closeEditor()" aria-label="close">×</button></div>
       <p class="editor-error" id="editorError"></p>
-      <input type="hidden" id="resourceId">
-      <input type="hidden" id="thumbnailData">
-      <label class="field"><span data-t="fieldName">자료 이름</span><input id="resourceName" maxlength="120" required placeholder="예: 2026 Summer Camp Student Book"></label>
-      <div class="field-row">
-        <label class="field"><span data-t="fieldStatus">진행 상태</span><select id="resourceStatus">
-          <option value="planning" data-t="statusPlanning">기획 중</option>
-          <option value="translating" data-t="statusTranslating">번역 중</option>
-          <option value="review" data-t="statusReview">검수 중</option>
-          <option value="complete" data-t="statusComplete">완료</option>
-        </select></label>
-        <label class="field"><span><span data-t="fieldProgress">완성도</span> <b id="progressValue">0%</b></span><input id="resourceProgress" type="range" min="0" max="100" step="10" value="0" oninput="document.getElementById('progressValue').textContent=this.value+'%'"></label>
-      </div>
-      <label class="field"><span data-t="fieldTranslation">번역/제작 내용</span><input id="resourceTranslation" maxlength="120" placeholder="예: 학생 교재 영문 번역 및 편집"></label>
-      <label class="field"><span data-t="fieldDetail">간단한 진행 메모</span><textarea id="resourceDetail" maxlength="260" placeholder="현재 작업 범위 또는 다음 단계"></textarea></label>
-      <div class="thumbnail-field">
-        <div><span class="field-label" data-t="fieldThumbnail">발표용 썸네일</span><p data-t="thumbnailHint">JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB</p></div>
-        <label class="thumbnail-upload"><input id="thumbnailInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onchange="loadThumbnail(this)"><span data-t="chooseImage">이미지 선택</span></label>
-        <div class="thumbnail-preview" id="thumbnailPreview"><span>NO IMAGE</span></div>
+
+      <!-- ── 보기 모드(기본) — 정돈된 진행 현황 요약, 수정 버튼을 눌러야 편집 폼으로 ── -->
+      <div class="detail-view" id="detailView">
+        <div class="detail-top-row">
+          <div class="resource-thumb" id="detailThumb"><span class="thumb-placeholder">W<br>RESOURCE</span></div>
+          <div class="detail-top-info">
+            <span class="status-pill" id="detailStatusPill"></span>
+            <div class="resource-progress"><div class="bar"><i id="detailProgressBar" style="width:0%"></i></div><span id="detailProgressPct">0%</span></div>
+          </div>
+        </div>
+        <div class="detail-field"><span class="field-label" data-t="fieldTranslation">번역/제작 내용</span><p id="detailTranslation"></p></div>
+        <div class="detail-field" id="detailDetailField" hidden><span class="field-label" data-t="fieldDetail">간단한 진행 메모</span><p id="detailDetail"></p></div>
+
+        <div class="file-slot" id="workFileSlot">
+          <div class="file-slot-head"><span class="field-label" data-t="workFileLabel">작업 파일 (현재까지 진행분)</span><p data-t="fileHint">PDF · 이미지 · 문서 · 최대 8MB</p></div>
+          <div class="file-slot-body" id="workFileBody"></div>
+        </div>
+        <div class="file-slot" id="originalFileSlot">
+          <div class="file-slot-head"><span class="field-label" data-t="originalFileLabel">원본 파일</span><p data-t="fileHint">PDF · 이미지 · 문서 · 최대 8MB</p></div>
+          <div class="file-slot-body" id="originalFileBody"></div>
+        </div>
+        <div class="upload-log-section" id="uploadLogSection">
+          <span class="field-label" data-t="uploadLogLabel">업로드 로그</span>
+          <div class="upload-log" id="uploadLogList"></div>
+        </div>
+
+        <div class="detail-actions">
+          <button type="button" class="cancel-resource" onclick="closeEditor()" data-t="closeBtn">닫기</button>
+          <button type="button" class="save-resource" id="editResourceBtn" onclick="enterEditMode()" hidden data-t="editBtn">수정</button>
+        </div>
       </div>
 
-      <div class="file-slot" id="workFileSlot">
-        <div class="file-slot-head"><span class="field-label" data-t="workFileLabel">작업 파일 (현재까지 진행분)</span><p data-t="fileHint">PDF · 이미지 · 문서 · 최대 8MB</p></div>
-        <div class="file-slot-body" id="workFileBody"></div>
-      </div>
-      <div class="file-slot" id="originalFileSlot">
-        <div class="file-slot-head"><span class="field-label" data-t="originalFileLabel">원본 파일</span><p data-t="fileHint">PDF · 이미지 · 문서 · 최대 8MB</p></div>
-        <div class="file-slot-body" id="originalFileBody"></div>
-      </div>
-      <div class="upload-log-section" id="uploadLogSection">
-        <span class="field-label" data-t="uploadLogLabel">업로드 로그</span>
-        <div class="upload-log" id="uploadLogList"></div>
-      </div>
+      <!-- ── 수정 모드 — "수정" 버튼을 눌렀을 때만 ── -->
+      <form id="editorForm" hidden>
+        <input type="hidden" id="resourceId">
+        <input type="hidden" id="thumbnailData">
+        <label class="field"><span data-t="fieldName">자료 이름</span><input id="resourceName" maxlength="120" required placeholder="예: 2026 Summer Camp Student Book"></label>
+        <div class="field-row">
+          <label class="field"><span data-t="fieldStatus">진행 상태</span><select id="resourceStatus">
+            <option value="planning" data-t="statusPlanning">기획 중</option>
+            <option value="translating" data-t="statusTranslating">번역 중</option>
+            <option value="review" data-t="statusReview">검수 중</option>
+            <option value="complete" data-t="statusComplete">완료</option>
+          </select></label>
+          <label class="field"><span><span data-t="fieldProgress">완성도</span> <b id="progressValue">0%</b></span><input id="resourceProgress" type="range" min="0" max="100" step="10" value="0" oninput="document.getElementById('progressValue').textContent=this.value+'%'"></label>
+        </div>
+        <label class="field"><span data-t="fieldTranslation">번역/제작 내용</span><input id="resourceTranslation" maxlength="120" placeholder="예: 학생 교재 영문 번역 및 편집"></label>
+        <label class="field"><span data-t="fieldDetail">간단한 진행 메모</span><textarea id="resourceDetail" maxlength="260" placeholder="현재 작업 범위 또는 다음 단계"></textarea></label>
+        <div class="thumbnail-field">
+          <div><span class="field-label" data-t="fieldThumbnail">발표용 썸네일</span><p data-t="thumbnailHint">JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB</p></div>
+          <label class="thumbnail-upload"><input id="thumbnailInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onchange="loadThumbnail(this)"><span data-t="chooseImage">이미지 선택</span></label>
+          <div class="thumbnail-preview" id="thumbnailPreview"><span>NO IMAGE</span></div>
+        </div>
 
-      <div class="editor-actions">
-        <button class="delete-resource" id="deleteResourceBtn" type="button" hidden onclick="deleteResource()" data-t="deleteBtn">삭제</button>
-        <span></span>
-        <button class="cancel-resource" type="button" onclick="closeEditor()" id="cancelBtn" data-t="cancelBtn">취소</button>
-        <button class="save-resource" id="saveResourceBtn" type="submit" data-t="saveBtn">저장</button>
-      </div>
-    </form>
+        <div class="editor-actions">
+          <button class="delete-resource" id="deleteResourceBtn" type="button" hidden onclick="deleteResource()" data-t="deleteBtn">삭제</button>
+          <span></span>
+          <button class="cancel-resource" type="button" onclick="exitEditMode()" id="cancelBtn" data-t="cancelBtn">취소</button>
+          <button class="save-resource" id="saveResourceBtn" type="submit" data-t="saveBtn">저장</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -117,7 +139,7 @@
         statusPlanning: '기획 중', statusTranslating: '번역 중', statusReview: '검수 중', statusComplete: '완료',
         noTranslation: '번역/제작 내용 미입력',
         emptyTitle: '아직 등록된 작업 항목이 없습니다.', emptyHintWrite: '오른쪽 위의 항목 추가 버튼으로 첫 리소스를 등록해보세요.', emptyHintRead: '관리자가 작업 항목을 등록하면 이곳에 표시됩니다.',
-        editorAdd: '작업 항목 추가', editorEdit: '작업 항목 수정', editorView: '작업 항목 보기',
+        editorAdd: '작업 항목 추가', editorEdit: '작업 항목 수정', editBtn: '수정',
         fieldName: '자료 이름', fieldStatus: '진행 상태', fieldProgress: '완성도', fieldTranslation: '번역/제작 내용', fieldDetail: '간단한 진행 메모',
         fieldThumbnail: '발표용 썸네일', thumbnailHint: 'JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB', chooseImage: '이미지 선택',
         workFileLabel: '작업 파일 (현재까지 진행분)', originalFileLabel: '원본 파일', fileHint: 'PDF · 이미지 · 문서 · 최대 8MB',
@@ -143,7 +165,7 @@
         statusPlanning: 'Planning', statusTranslating: 'Translating', statusReview: 'Reviewing', statusComplete: 'Complete',
         noTranslation: 'No translation info yet',
         emptyTitle: 'No work items registered yet.', emptyHintWrite: 'Use the Add Item button above to register your first resource.', emptyHintRead: "Items will appear here once an admin adds them.",
-        editorAdd: 'Add Work Item', editorEdit: 'Edit Work Item', editorView: 'View Work Item',
+        editorAdd: 'Add Work Item', editorEdit: 'Edit Work Item', editBtn: 'Edit',
         fieldName: 'Resource name', fieldStatus: 'Status', fieldProgress: 'Progress', fieldTranslation: 'Translation / production notes', fieldDetail: 'Progress notes',
         fieldThumbnail: 'Presentation thumbnail', thumbnailHint: 'JPG, PNG, WEBP, GIF · auto-compressed · up to 1MB', chooseImage: 'Choose image',
         workFileLabel: 'Work file (progress so far)', originalFileLabel: 'Original file', fileHint: 'PDF · image · document · up to 8MB',
@@ -167,6 +189,7 @@
     let lastUpdatedAt = '';
     let canWrite = false;
     let currentItem = null; // 에디터가 열려 있는 동안의 현재 항목(파일 업로드 등에서 참조)
+    let editorMode = 'view'; // 'view' | 'edit'
     const $ = id => document.getElementById(id);
     const STATUS_COLOR = { planning: '#7a8790', translating: '#6f55c9', review: '#d88217', complete: '#16865a' };
     const MAX_FILE_BYTES = 8 * 1024 * 1024;
@@ -321,25 +344,50 @@
       }
     }
 
-    /* ── 에디터(보기/수정 겸용) ── */
+    /* ── 에디터(보기 모드 기본 + 수정 버튼으로 편집 폼) ── */
+    function renderDetailView() {
+      const item = currentItem;
+      if (!item) return;
+      const thumb = item.thumbnailData ? `<img src="${item.thumbnailData}" alt="">` : `<span class="thumb-placeholder">W<br>RESOURCE</span>`;
+      $('detailThumb').innerHTML = thumb;
+      const pillEl = $('detailStatusPill');
+      pillEl.style.setProperty('--status', STATUS_COLOR[item.status] || STATUS_COLOR.planning);
+      pillEl.innerHTML = `<i></i>${esc(statusLabel(item.status))}`;
+      $('detailProgressBar').style.width = item.progress + '%';
+      $('detailProgressPct').textContent = item.progress + '%';
+      $('detailTranslation').textContent = item.translation ? item.translation : t('noTranslation');
+      $('detailDetailField').hidden = !item.detail;
+      $('detailDetail').textContent = item.detail || '';
+    }
+    function showEditorMode(mode) {
+      editorMode = mode;
+      const isEdit = mode === 'edit';
+      $('detailView').hidden = isEdit;
+      $('editorForm').hidden = !isEdit;
+      $('editorEyebrow').textContent = isEdit ? 'RESOURCE EDITOR' : 'RESOURCE DETAIL';
+      $('editorTitle').textContent = isEdit ? (currentItem ? t('editorEdit') : t('editorAdd')) : (currentItem?.title || '');
+      if (isEdit) $('resourceName').focus();
+    }
+    function enterEditMode() { showEditorMode('edit'); }
+    function exitEditMode() {
+      // 취소 — 입력값은 버리고(폼은 다음에 열 때 다시 채움) 원래 저장된 값 그대로 보기 모드로 돌아간다.
+      if (!currentItem) { closeEditor(); return; }
+      openEditor(currentItem.id);
+    }
     function openEditor(id = '') {
       const item = resources.find(entry => entry.id === id) || null;
       currentItem = item;
-      const readOnly = !canWrite;
       $('editorForm').reset(); $('resourceId').value = item?.id || ''; $('resourceName').value = item?.title || ''; $('resourceStatus').value = item?.status || 'planning'; $('resourceProgress').value = item?.progress || 0; $('progressValue').textContent = `${item?.progress || 0}%`; $('resourceTranslation').value = item?.translation || ''; $('resourceDetail').value = item?.detail || ''; $('thumbnailData').value = item?.thumbnailData || '';
-      $('editorTitle').textContent = readOnly ? t('editorView') : (item ? t('editorEdit') : t('editorAdd'));
-      $('deleteResourceBtn').hidden = readOnly || !item;
-      $('saveResourceBtn').hidden = readOnly;
-      $('cancelBtn').textContent = readOnly ? t('closeBtn') : t('cancelBtn');
-      [$('resourceName'), $('resourceStatus'), $('resourceProgress'), $('resourceTranslation'), $('resourceDetail')].forEach(el => { el.disabled = readOnly; el.readOnly = readOnly && (el.tagName !== 'SELECT'); });
-      $('thumbnailInput').closest('.thumbnail-upload').style.display = readOnly ? 'none' : '';
       renderThumbnail(item?.thumbnailData || '');
-      renderFileSlot('work'); renderFileSlot('original'); renderUploadLog();
+      $('deleteResourceBtn').hidden = !item;
+      $('editResourceBtn').hidden = !canWrite;
       $('editorError').textContent = '';
+      renderFileSlot('work'); renderFileSlot('original'); renderUploadLog();
       $('editorOverlay').hidden = false;
-      if (!readOnly) $('resourceName').focus();
+      if (item) { renderDetailView(); showEditorMode('view'); }
+      else { showEditorMode('edit'); }
     }
-    function closeEditor() { $('editorOverlay').hidden = true; currentItem = null; }
+    function closeEditor() { $('editorOverlay').hidden = true; currentItem = null; editorMode = 'view'; }
     function renderThumbnail(data) { $('thumbnailPreview').innerHTML = data ? `<img src="${data}" alt="">` : '<span>NO IMAGE</span>'; }
     async function loadThumbnail(input) {
       const file = input.files?.[0]; if (!file) return;
