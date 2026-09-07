@@ -1,6 +1,6 @@
 ---
 
-bio_en: "The gospel is the power of God. I am truly a weak and prideful person, but through Jesus’ death on the cross and resurrection, I have received a new name: “Christian.” By His great grace, God has called me to be the salt and light of this world. Whenever I reflect on His humility, love, grace, and mercy in saving me and using me for His glory, my heart is filled with awe and gratitude. Yesterday has passed, and no one knows what tomorrow will bring, so I pray to live today loving God and loving the people around me with all my heart."
+bio_en: "Gospel is the power of God. I am truly a weak and prideful person, but through Jesus’ death on the cross and resurrection, I have received a new name: “Christian.” By His great grace, God has called me to be the salt and light of this world. Whenever I reflect on His humility, love, grace, and mercy in saving me and using me for His glory, my heart is filled with awe and gratitude. Yesterday has passed, and no one knows what tomorrow will bring, so I pray to live today loving God and loving the people around me with all my heart."
 gender: female
 name_ko: 정지온
 name_en: Joanna Jung
