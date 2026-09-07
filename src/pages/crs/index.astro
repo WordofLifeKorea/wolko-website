@@ -282,6 +282,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   /* ── 관리자 패널 ── */
   .admin-btn { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; padding:.35rem .9rem; border-radius:20px; font-size:.8rem; cursor:pointer; transition:background .2s; }
   .admin-btn:hover { background:rgba(255,255,255,.25); }
+  .user-name-badge {
+    display:inline-flex; align-items:center; max-width:180px;
+    padding:.35rem .8rem; border-radius:20px;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16);
+    color:rgba(255,255,255,.82); font-size:.78rem; font-weight:700;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
   .user-row { display:flex; align-items:center; gap:.8rem; padding:.9rem 0; border-bottom:1px solid #f0f0f0; }
   .user-row:last-child { border-bottom:none; }
   .user-info-block { flex:1; min-width:0; }
@@ -1166,7 +1173,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         </a>
         <div class="user-info">
           ${crsLangToggleMarkup()}
-          <span>${esc(currentUserData?.name || currentUser.email || currentUser.uid)}</span>
+          <span class="user-name-badge" title="${esc(currentUserData?.name || currentUser.email || currentUser.uid)}">${esc(currentUserData?.name || currentUser.email || currentUser.uid)}</span>
           ${currentUserData?.role === 'admin' ? `<button class="admin-btn" id="adminBtn">${t('admin_btn')}</button>` : ''}
           <button class="btn-logout" id="logoutBtn">${t('logout')}</button>
         </div>
