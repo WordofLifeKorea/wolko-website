@@ -1,23 +1,18 @@
-import { parseHubSessionToken } from '../../lib/hubAccounts.js';
+import { sessionFor, canWrite, text, readData, saveData, error } from '../../lib/portalResources.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
-const KV_KEY = 'portal:resources:v1';
-const MAX_ITEMS = 120;
 const MAX_THUMBNAIL_LENGTH = 1_500_000;
 
-async function sessionFor(request, env) {
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  return token && env.ADMIN_PASSWORD ? parseHubSessionToken(env.ADMIN_PASSWORD, token) : null;
-}
-
-function canWrite(session) { return session && (session.role === 'admin' || session.role === 'master'); }
-function text(value, max) { return String(value || '').trim().slice(0, max); }
-function progress(value) { const n = Number(value); return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : 0; }
+// 진행률은 10% 단위로만 선택하게 해달라는 요청 — 서버에서도 가장 가까운
+// 10의 배수로 스냅해서, 프론트를 거치지 않은 요청이 와도 규칙이 깨지지 않게 한다.
+function progress(value) { const n = Number(value); return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n / 10) * 10)) : 0; }
 function thumbnail(value) {
   const data = String(value || '');
   return /^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(data) && data.length <= MAX_THUMBNAIL_LENGTH ? data : '';
 }
+// 작업 파일/원본 파일(workFile/originalFile)과 업로드 로그(uploadLog)는 이 항목
+// 편집 폼에서 다루지 않는다 — resource-file.js가 업로드/삭제 시 별도로 갱신하므로,
+// 여기서는 기존 값을 그대로 보존해서 제목/진행률 등만 고쳐도 지워지지 않게 한다.
 function normalize(input, existing = {}) {
   const status = ['planning', 'translating', 'review', 'complete'].includes(input?.status) ? input.status : (existing.status || 'planning');
   return {
@@ -28,13 +23,13 @@ function normalize(input, existing = {}) {
     status,
     progress: progress(input?.progress),
     thumbnailData: thumbnail(input?.thumbnailData),
+    workFile: existing.workFile || null,
+    originalFile: existing.originalFile || null,
+    uploadLog: Array.isArray(existing.uploadLog) ? existing.uploadLog : [],
     createdAt: existing.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
 }
-async function readData(env) { const data = await env.CAMP_KV.get(KV_KEY, 'json'); return data && Array.isArray(data.items) ? data : { items: [] }; }
-async function saveData(env, items) { const data = { items: items.slice(0, MAX_ITEMS), updatedAt: new Date().toISOString() }; await env.CAMP_KV.put(KV_KEY, JSON.stringify(data)); return data; }
-function error(message, status) { return Response.json({ error: message }, { status, headers: CORS }); }
 
 export async function onRequestGet({ env, request }) {
   if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
@@ -87,6 +82,12 @@ export async function onRequestDelete({ env, request }) {
   const items = data.items.filter(item => item.id !== id);
   if (items.length === data.items.length) return error('작업 항목을 찾을 수 없습니다.', 404);
   const saved = await saveData(env, items);
+  try {
+    await Promise.all([
+      env.CAMP_KV.delete(`portal:resource-file:${id}:work`),
+      env.CAMP_KV.delete(`portal:resource-file:${id}:original`),
+    ]);
+  } catch {}
   return Response.json({ items: saved.items, updatedAt: saved.updatedAt }, { headers: CORS });
 }
 
