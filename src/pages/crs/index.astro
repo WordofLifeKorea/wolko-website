@@ -77,6 +77,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
 <style is:global>
   /* ── 전체 레이아웃 ── */
+  /* CRS는 독립 앱 화면이다. 브라우저 기본 body 8px 여백이 남으면 상단 배너와
+     좌측 레일 주변에 흰 테두리가 생기므로 다른 포털 도구처럼 명시적으로 제거한다. */
+  html, body { margin:0; padding:0; }
   #crs-root { min-height: 100vh; background: #f4f6f9; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; }
   /* body overflow:hidden은 iOS Safari에서 fixed 네비 오작동 유발 → 제거
      스크롤 격리는 overscroll-behavior:contain으로 처리 */
