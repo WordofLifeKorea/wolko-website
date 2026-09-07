@@ -1,5 +1,7 @@
 /* WOLKO 내부 도구 공용 좌측 레일 — 데스크톱 폭(900px~)에서만 표시.
-   각 도구 페이지 head에 이 스크립트와 wolko-rail.css를 넣으면 자동 삽입됨. */
+   각 도구 페이지 head에 이 스크립트와 wolko-rail.css를 넣으면 자동 삽입됨.
+   라벨은 항상 펼쳐서 보여준다(예전엔 아이콘만 두고 호버해야 이름이 보였는데,
+   페이지 사이 이동이 잘 안 보인다는 피드백으로 상시 펼침으로 바꿨다). */
 (function () {
   var TOOLS = [
     { href: '/schedule', color: '#1da462', label: '월코 캘린더',
@@ -29,17 +31,18 @@
     var rail = document.createElement('nav');
     rail.className = 'wolko-rail';
 
-    var html = '<a class="wolko-rail-logo-link" href="/portal" data-label="포탈" style="position:relative">' +
-      '<img class="wolko-rail-logo" src="/images/WOLKO Circle.png" alt="WOLKO"></a>' +
+    var html = '<a class="wolko-rail-logo-link" href="/portal">' +
+      '<img class="wolko-rail-logo" src="/images/WOLKO Circle.png" alt="WOLKO">' +
+      '<span class="wolko-rail-logo-text">WOLKO Portal</span></a>' +
       '<div class="wolko-rail-divider"></div>';
 
     TOOLS.forEach(function (tool) {
       var active = path === tool.href;
-      html += '<a class="wolko-rail-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" data-label="' + tool.label + '" style="--rail-color:' + tool.color + '">' +
-        svg(tool.icon) + '</a>';
+      html += '<a class="wolko-rail-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" style="--rail-color:' + tool.color + '">' +
+        svg(tool.icon) + '<span class="wolko-rail-item-label">' + tool.label + '</span></a>';
     });
 
-    html += '<a class="wolko-rail-item wolko-rail-hub" href="/portal" data-label="전체 도구 보기">' + svg(HUB_ICON) + '</a>';
+    html += '<a class="wolko-rail-item wolko-rail-hub" href="/portal">' + svg(HUB_ICON) + '<span class="wolko-rail-item-label">전체 도구 보기</span></a>';
 
     rail.innerHTML = html;
     document.body.insertBefore(rail, document.body.firstChild);
