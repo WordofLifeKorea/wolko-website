@@ -80,8 +80,15 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   /* ── 로그인 화면 ── 카드/입력창/버튼/여백은 wolko-auth.css 공용 컴포넌트(.login-wrap)가 담당.
      예전엔 여기서 같은 걸 다시 정의했는데, 이 파일이 나중에 로드되면서 동일 우선순위 규칙(.login-wrap
      자체의 padding/min-height)을 덮어써 모바일에서 wolko-auth.css의 좁은 화면 패딩 축소가
-     먹히지 않는 버그가 있었다. 배경 그라디언트만 여기 남기고 나머지는 공용 컴포넌트에 맡긴다. */
+     먹히지 않는 버그가 있었다. 배경 그라디언트만 여기 남기고 나머지는 공용 컴포넌트에 맡긴다.
+     또한 car/wolkoadmin의 .login-screen과 달리 이 화면은 자체 헤더(#crsShellHeader) 아래
+     "남는 공간"에서만 세로 중앙정렬돼, 헤더 바 + 빈 여백 + 카드가 3단으로 분리되어 보이는
+     문제가 있었다 — 다른 도구들처럼 화면 전체를 덮는 고정 오버레이로 바꿔 헤더까지 가려서
+     하나의 화면으로 보이게 한다. */
   .login-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
     background:
       radial-gradient(circle at 18% 12%, rgba(255,255,255,.14), transparent 30%),
       linear-gradient(145deg, #003d52, #00627f);
@@ -254,14 +261,15 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .signup-toggle { text-align:center; margin-top:1rem; font-size:.83rem; color:#888; }
   .signup-toggle a { color:#004f68; font-weight:600; cursor:pointer; }
   .signup-toggle a:hover { text-decoration:underline; }
-  /* ── 승인 대기 화면 ── */
+  /* ── 승인 대기 화면 ── .login-wrap과 같은 이유로 전체 화면 고정 오버레이로 통일 */
   .pending-wrap {
-    display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 64px); padding:2rem;
+    position: fixed; inset: 0; z-index: 9999;
+    display:flex; align-items:center; justify-content:center; padding:32px 18px;
     background:
       radial-gradient(circle at 18% 12%, rgba(255,255,255,.14), transparent 30%),
       linear-gradient(145deg, #003d52, #00627f);
   }
-  .pending-card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.10); padding:2.5rem 2rem; width:100%; max-width:400px; text-align:center; }
+  .pending-card { background:#fff; border-radius:24px; box-shadow:0 26px 72px rgba(0,30,44,.26); padding:42px 36px 34px; width:min(420px,100%); max-width:420px; text-align:center; }
   .pending-icon { width:56px; height:56px; background:#e8f4f8; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; }
   .pending-card h2 { font-size:1.2rem; font-weight:800; color:#004f68; margin:0 0 .7rem; }
   .pending-card p { font-size:.88rem; color:#666; margin:0 0 1.5rem; line-height:1.7; white-space:pre-line; }
