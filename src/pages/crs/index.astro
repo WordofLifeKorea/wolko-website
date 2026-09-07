@@ -350,21 +350,24 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   /* 다른 포탈 도구(car/wolkoadmin) 헤더와 같은 구조로 맞춤: 로고 이미지 하나 + 한 줄
      제목, 좌우 padding/높이도 동일한 값을 쓴다. */
   .app-header {
-    min-height:auto;
+    min-height:64px;
     box-sizing:border-box;
-    padding:12px max(20px,calc((100vw - 1440px) / 2 + 20px));
+    padding:0 clamp(20px,3vw,46px);
     top:0;
+    z-index:100;
     background:var(--crs-brand-dark);
-    box-shadow:none;
+    box-shadow:0 1px 0 rgba(255,255,255,.08);
   }
-  .app-brand { display:flex; align-items:center; gap:10px; min-width:0; color:#fff; text-decoration:none; }
-  .app-brand img { width:28px; height:28px; border-radius:8px; flex-shrink:0; }
-  .app-header h1 { margin:0; font-size:15px; font-weight:800; line-height:1; letter-spacing:-.01em; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .app-brand { display:flex; align-items:center; gap:11px; min-width:0; color:#fff; text-decoration:none; }
+  .app-brand-mark { width:34px; height:34px; display:grid; place-items:center; flex-shrink:0; border-radius:10px; background:rgba(76,195,210,.13); }
+  .app-brand img { width:28px; height:28px; border-radius:8px; display:block; }
+  .app-header h1 { margin:0; font-size:15px; font-weight:800; line-height:1.1; letter-spacing:-.01em; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .app-kicker { display:block; margin-top:3px; color:rgba(255,255,255,.58); font-size:10px; font-weight:600; line-height:1.1; letter-spacing:.02em; }
   .app-header .user-info { gap:8px; color:rgba(255,255,255,.78); font-weight:600; }
   .app-header .user-info > span { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  #crsShellHeader { visibility:hidden; }
-  body.crs-auth-ready #crsShellHeader { visibility:visible; }
-  body.crs-app-active #crsShellHeader { display:none; }
+  /* 로그인/승인 화면은 전체 화면 오버레이를 사용한다. 보이지 않는 셸 헤더가
+     레이아웃 공간을 차지해 상단에 흰 띠가 생기지 않도록 항상 제외한다. */
+  #crsShellHeader { display:none; }
   /* 언어 토글은 다른 포탈 도구와 같은 공용 컴포넌트(wolko-lang-toggle.css)를 쓴다 —
      여기서 따로 정의하지 않는다. 모바일 상세 패널의 밝은 배경용 변형만 아래
      .detail-lang-toggle에서 색만 다시 입힌다. */
@@ -373,7 +376,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     background:rgba(255,255,255,.08); font-size:12px; font-weight:700;
   }
   .admin-btn:hover, .btn-logout:hover { background:rgba(255,255,255,.17); }
-  .app-body { max-width:1440px; height:calc(100vh - 4rem); background:#edf2f3; }
+  .app-body { max-width:1440px; height:calc(100vh - 64px); background:#edf2f3; }
   .list-panel { background:#edf2f3; }
   .list-panel-inner { max-width:620px; padding:0 1.25rem 4rem; }
   .top-bar {
@@ -573,6 +576,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       padding:.68rem .78rem .62rem;
       gap:.58rem;
     }
+    .app-kicker { display:none; }
     .app-brand { gap:.52rem; min-width:0; }
     .app-header h1 { font-size:.93rem; }
     .app-header .user-info {
