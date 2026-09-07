@@ -6,8 +6,7 @@
   var TOOLS = [
     { href: '/schedule', color: '#1da462', label: '월코 캘린더',
       icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/><rect x="7" y="13.5" width="4" height="4" rx="1" fill="currentColor" stroke="none"/>' },
-    { href: '/car', color: '#c17a1f', label: '차량 캘린더',
-      icon: '<path d="M14 16H9m10 0h2v-3.15a1 1 0 0 0-.84-.99L18 11.5l-2.35-3.13a1 1 0 0 0-.8-.4H6.5a2 2 0 0 0-1.79 1.11L3.6 11.5A5 5 0 0 0 3 14v2h2"/><circle cx="6.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/>' },
+    // 차량 캘린더: 당장 쓸 일이 없어 임시로 사이드바에서 숨김 (페이지/기능은 그대로 유지, /car 직접 접속은 가능)
     { href: '/crs', color: '#7a5fc4', label: 'CRS',
       icon: '<path d="M12 2v3M10.3 3.5h3.4"/><path d="M4 10.5 12 5l8 5.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6.5a2 2 0 0 1 4 0V20"/>' },
     { href: '/wolkoadmin', color: '#004f68', label: '캠프 관리자',
