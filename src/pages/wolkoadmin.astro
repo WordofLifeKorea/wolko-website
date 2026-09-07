@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=78">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=79">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=4">
   <script src="/wolko-rail.js?v=4" defer></script>
@@ -242,6 +242,7 @@
           </button>
         </div>
       </div>
+      <div id="staffTestimonySummary"></div>
       <div class="table-scroll">
         <table class="staff-reg-table">
           <thead>
@@ -364,6 +365,7 @@
         detailStudentList:'학생 명단', summaryGroupManaged:'단체 명단에서 관리', summaryNoCounseling:'상담 정보 없음',
         summaryMemoExists:'메모 있음', summaryTestimonyExists:'간증문 있음',
         groupNotesToggle:'상담자 메모·간증문 모아보기', groupNotesEmpty:'작성된 메모·간증문이 없습니다.',
+        staffTestimonyToggle:'간증문 모아보기',
         studentListFn: (done, total, editing)=>`학생 명단 ${done} / ${total}명${editing ? ' 입력' : ''}`,
         studentNamePh:'학생 이름', studentLabelFn: n=>`학생 ${n}`, genderSelect:'성별', genderMissing:'성별 미입력',
         participantBirthDate:'생년월일', participantBirthDatePh:'YYYY-MM-DD',
@@ -458,6 +460,7 @@
         detailStudentList:'Student List', summaryGroupManaged:'Managed in group list', summaryNoCounseling:'No counseling info',
         summaryMemoExists:'Memo added', summaryTestimonyExists:'Testimony added',
         groupNotesToggle:'View all counselor notes & testimonies', groupNotesEmpty:'No notes or testimonies yet.',
+        staffTestimonyToggle:'View all testimonies',
         studentListFn: (done, total, editing)=>`Students ${done}/${total}${editing ? ' editing' : ''}`,
         studentNamePh:'Student name', studentLabelFn: n=>`Student ${n}`, genderSelect:'Gender', genderMissing:'Gender missing',
         participantBirthDate:'Birth Date', participantBirthDatePh:'YYYY-MM-DD',
@@ -713,6 +716,7 @@
     const expandedGroupParticipants = new Set();
     const expandedGroupNotes = new Set();
     let campNotesOpen = false;
+    let staffNotesOpen = false;
     const UNASSIGNED = '__unassigned__';
     let teamOverviewConfig = emptyTeamOverviewConfig();
     let teamOverviewConfigCamp = null;
@@ -1303,7 +1307,7 @@
             ? notesEntries.map(c => `<div class="group-notes-entry">
                 <span class="group-notes-entry-name">${esc(c.name)}</span>
                 ${c.counselorMemo.trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label">${t('thCounselorMemo')}</span><span class="group-notes-entry-value">${esc(c.counselorMemo)}</span></div>` : ''}
-                ${c.testimony.trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label">${t('thCamperTestimony')}</span><span class="group-notes-entry-value">${esc(c.testimony)}</span></div>` : ''}
+                ${c.testimony.trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label is-testimony">${t('thCamperTestimony')}</span><span class="group-notes-entry-value">${esc(c.testimony)}</span></div>` : ''}
               </div>`).join('')
             : `<div class="group-notes-empty">${t('groupNotesEmpty')}</div>`}
         </div>` : ''}
@@ -1313,6 +1317,31 @@
     function toggleCampNotes() {
       campNotesOpen = !campNotesOpen;
       renderCampTable();
+    }
+
+    function renderStaffTestimonySummary(regs) {
+      const el = document.getElementById('staffTestimonySummary');
+      if (!el) return;
+      const entries = regs.filter(r => String(r.testimony || '').trim());
+      el.innerHTML = `<div class="camp-counseling-summary">
+        <button type="button" class="group-notes-toggle" onclick="toggleStaffNotes()" aria-expanded="${staffNotesOpen}">
+          <span>${t('staffTestimonyToggle')} (${entries.length})</span>
+          <svg class="group-notes-toggle-chevron${staffNotesOpen ? ' is-open' : ''}" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        ${staffNotesOpen ? `<div class="group-notes-panel">
+          ${entries.length
+            ? entries.map(r => `<div class="group-notes-entry">
+                <span class="group-notes-entry-name">${esc(r.name)}</span>
+                <div class="group-notes-entry-row"><span class="group-notes-entry-label is-testimony">${t('thTestimony')}</span><span class="group-notes-entry-value">${esc(r.testimony)}</span></div>
+              </div>`).join('')
+            : `<div class="group-notes-empty">${t('groupNotesEmpty')}</div>`}
+        </div>` : ''}
+      </div>`;
+    }
+
+    function toggleStaffNotes() {
+      staffNotesOpen = !staffNotesOpen;
+      renderStaffTable();
     }
 
     function renderCampTable() {
@@ -1499,7 +1528,7 @@
               ? groupNotesEntries.map(p => `<div class="group-notes-entry">
                   <span class="group-notes-entry-name">${esc(p.name)}</span>
                   ${String(p.counselorMemo || '').trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label">${t('thCounselorMemo')}</span><span class="group-notes-entry-value">${esc(p.counselorMemo)}</span></div>` : ''}
-                  ${String(p.testimony || '').trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label">${t('thCamperTestimony')}</span><span class="group-notes-entry-value">${esc(p.testimony)}</span></div>` : ''}
+                  ${String(p.testimony || '').trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label is-testimony">${t('thCamperTestimony')}</span><span class="group-notes-entry-value">${esc(p.testimony)}</span></div>` : ''}
                 </div>`).join('')
               : `<div class="group-notes-empty">${t('groupNotesEmpty')}</div>`}
           </div>` : ''}
@@ -1710,6 +1739,7 @@
       const regs = sortedRegs(filteredRegs().filter(r => r.registrationType === 'staff'));
       const tbody = document.getElementById('staffRegBody');
       document.getElementById('staffTableCount').textContent = tt('tableCountFn', regs.length);
+      renderStaffTestimonySummary(regs);
 
       if (regs.length === 0) {
         tbody.innerHTML = `
