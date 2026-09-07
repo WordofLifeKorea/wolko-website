@@ -12,8 +12,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=79">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=80">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=7">
   <script src="/wolko-rail.js?v=7" defer></script>
   <link rel="manifest" href="/admin-manifest.json">
@@ -51,9 +52,10 @@
     <div class="adm-header-right">
       <a href="/admin" target="_blank" class="adm-header-badge" style="text-decoration:none;cursor:pointer;" title="콘텐츠 편집 CMS">✏️ <span data-t="contentCms">콘텐츠 CMS</span></a>
       <span class="adm-header-badge">CAMP ADMIN</span>
-      <button class="btn-lang-toggle" onclick="toggleAdminLang()" title="Language">
-        <span id="langToggleLabel">EN</span>
-      </button>
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" onclick="setAdminLang('ko')" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" onclick="setAdminLang('en')" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
       <button class="btn-logout" onclick="doLogout()"><span data-t="logout">로그아웃</span></button>
     </div>
   </header>
@@ -495,11 +497,12 @@
         const v = t(el.dataset.t);
         if (typeof v === 'string') el.textContent = v;
       });
-      const langBtn = document.getElementById('langToggleLabel');
-      if (langBtn) langBtn.textContent = adminLang === 'ko' ? 'EN' : '한';
+      document.getElementById('langKoBtn')?.classList.toggle('is-active', adminLang === 'ko');
+      document.getElementById('langEnBtn')?.classList.toggle('is-active', adminLang === 'en');
     }
-    function toggleAdminLang() {
-      adminLang = adminLang === 'ko' ? 'en' : 'ko';
+    function setAdminLang(lang) {
+      if (adminLang === lang) return;
+      adminLang = lang;
       localStorage.setItem('wolkoAdminLang', adminLang);
       applyLangToDOM();
       buildCampCards();

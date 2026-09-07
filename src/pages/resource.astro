@@ -15,7 +15,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=7">
-  <link rel="stylesheet" href="/portal.css?v=2">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=1">
+  <link rel="stylesheet" href="/portal.css?v=4">
   <script src="/wolko-rail.js?v=7" defer></script>
 </head>
 <body>
@@ -32,7 +33,10 @@
     <a class="portal-brand" href="/portal"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span>Resource & Media</span></a>
     <div class="portal-header-actions">
       <span class="viewer-label" id="viewerLabel"></span>
-      <button class="lang-toggle-btn" type="button" id="langToggleBtn" onclick="toggleLang()">EN</button>
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" onclick="setLang('ko')" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" onclick="setLang('en')" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
       <a class="back-link" href="/portal" data-t="backToPortal">포탈</a>
       <button class="logout-btn" type="button" onclick="logout()" data-t="logout">로그아웃</button>
     </div>
@@ -189,10 +193,12 @@
         const val = t(key);
         if (typeof val === 'string') el.textContent = val;
       });
-      $('langToggleBtn').textContent = lang === 'en' ? '한' : 'EN';
+      $('langKoBtn')?.classList.toggle('is-active', lang === 'ko');
+      $('langEnBtn')?.classList.toggle('is-active', lang === 'en');
     }
-    function toggleLang() {
-      lang = lang === 'en' ? 'ko' : 'en';
+    function setLang(next) {
+      if (lang === next) return;
+      lang = next;
       localStorage.setItem('wolko-lang', lang);
       applyStaticLang();
       render();

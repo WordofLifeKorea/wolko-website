@@ -1,0 +1,40 @@
+/* WOLKO 내부 도구 공용 언어 토글(국기 + KO/EN) — 밝은 헤더용 두 페이지가
+   제각각 만들어 쓰던 토글 버튼을 통일한 것. 클릭하면 바로 그 언어로 전환
+   (기존처럼 왔다갔다 뒤집는 방식이 아니라 KO/EN 버튼을 각각 직접 누른다).
+   좁은 화면에서는 글자를 숨기고 국기만 남긴다. */
+.wl-lang-toggle {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 10px;
+  background: #f1f5f7;
+  border: 1px solid #dde5ea;
+  flex-shrink: 0;
+}
+.wl-lang-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 9px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #7a8b93;
+  font: 800 11px/1 'Noto Sans KR', -apple-system, sans-serif;
+  letter-spacing: .02em;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.wl-lang-btn img { display: block; width: 16px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+.wl-lang-btn:hover { color: #3a5560; }
+.wl-lang-btn.is-active { background: #fff; color: #004f68; box-shadow: 0 1px 3px rgba(16,42,56,.14); }
+.wl-lang-btn:focus-visible { outline: 2px solid #004f68; outline-offset: 1px; }
+
+@media (max-width: 640px) {
+  .wl-lang-btn span { display: none; }
+  .wl-lang-btn { padding: 0; width: 30px; min-height: 28px; }
+  .wl-lang-toggle { gap: 2px; padding: 2px; }
+}

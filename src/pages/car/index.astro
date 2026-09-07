@@ -13,8 +13,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/car.css?v=6">
+  <link rel="stylesheet" href="/car.css?v=7">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=7">
   <script src="/wolko-rail.js?v=7" defer></script>
   <link rel="manifest" href="/car-manifest.json">
@@ -50,9 +51,10 @@
       <span data-t="pageTitle">차량 스케줄</span>
     </a>
     <div class="car-header-right">
-      <button class="btn-lang-toggle" onclick="toggleCarLang()" title="Language">
-        <span id="langToggleLabel">EN</span>
-      </button>
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" onclick="setCarLang('ko')" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" onclick="setCarLang('en')" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
       <button class="btn-logout" onclick="doLogout()"><span data-t="logout">로그아웃</span></button>
     </div>
   </header>
@@ -523,8 +525,8 @@
         const key = el.getAttribute('data-t');
         el.textContent = t(key);
       });
-      const langBtn = $('langToggleLabel');
-      if (langBtn) langBtn.textContent = carLang === 'ko' ? 'EN' : '한';
+      $('langKoBtn')?.classList.toggle('is-active', carLang === 'ko');
+      $('langEnBtn')?.classList.toggle('is-active', carLang === 'en');
       populateMonthPicker();
       refreshMissionaryLabels();
       renderTabs();
@@ -534,8 +536,9 @@
       $('fabLabel').textContent = currentView === 'reservations' ? t('newReservation') : t('newMaintenance');
       if (currentView === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
     }
-    function toggleCarLang() {
-      carLang = carLang === 'ko' ? 'en' : 'ko';
+    function setCarLang(lang) {
+      if (carLang === lang) return;
+      carLang = lang;
       localStorage.setItem('wolkoCarLang', carLang);
       applyLangToDOM();
     }

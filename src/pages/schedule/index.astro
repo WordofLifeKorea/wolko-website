@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/wolko-rail.css?v=7">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=1">
   <script src="/wolko-rail.js?v=7" defer></script>
   <meta name="theme-color" content="#004f68">
   <style is:global>
@@ -278,7 +279,10 @@
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
       <span data-t="pageTitle">스태프 캘린더</span>
     </a>
-    <button class="sc-btn" onclick="toggleScLang()"><span id="scLangLabel">EN</span></button>
+    <div class="wl-lang-toggle" role="group" aria-label="Language">
+      <button type="button" class="wl-lang-btn" id="langKoBtn" onclick="setScLang('ko')" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+      <button type="button" class="wl-lang-btn" id="langEnBtn" onclick="setScLang('en')" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+    </div>
   </header>
 
   <div class="sc-wrap">
@@ -484,13 +488,14 @@
       document.documentElement.lang = scLang === 'en' ? 'en' : 'ko';
       document.title = (scLang === 'en' ? 'Staff Calendar' : '스태프 캘린더') + ' — WOLKO';
       document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.getAttribute('data-t')); });
-      const label = $('scLangLabel');
-      if (label) label.textContent = scLang === 'ko' ? 'EN' : '한';
+      $('langKoBtn')?.classList.toggle('is-active', scLang === 'ko');
+      $('langEnBtn')?.classList.toggle('is-active', scLang === 'en');
       populateMonthPicker();
       if (!$('calendarBody').classList.contains('hidden')) { renderCalendar(); renderAgenda(); }
     }
-    function toggleScLang() {
-      scLang = scLang === 'ko' ? 'en' : 'ko';
+    function setScLang(lang) {
+      if (scLang === lang) return;
+      scLang = lang;
       localStorage.setItem('wolko-lang', scLang);
       applyScLang();
     }

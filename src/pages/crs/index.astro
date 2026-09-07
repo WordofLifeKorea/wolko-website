@@ -38,10 +38,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       </div>
     </a>
     <div class="user-info">
-      <button class="crs-lang-toggle" id="shellLangToggle" type="button" aria-label="한국어 / English">
-        <span class="active">한</span>
-        <span>EN</span>
-      </button>
+      <div class="crs-lang-toggle" id="shellLangToggle" role="group" aria-label="한국어 / English">
+        <button type="button" class="crs-lang-btn is-active" data-lang="ko" aria-label="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>한</span></button>
+        <button type="button" class="crs-lang-btn" data-lang="en" aria-label="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
     </div>
   </header>
 
@@ -53,19 +53,25 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     function syncShellLangToggle(isEn) {
       const toggle = document.getElementById('shellLangToggle');
       if (!toggle) return;
-      const spans = toggle.querySelectorAll('span');
-      if (spans[0]) spans[0].classList.toggle('active', !isEn);
-      if (spans[1]) spans[1].classList.toggle('active', isEn);
+      const btns = toggle.querySelectorAll('.crs-lang-btn');
+      if (btns[0]) btns[0].classList.toggle('is-active', !isEn);
+      if (btns[1]) btns[1].classList.toggle('is-active', isEn);
     }
     function applyCrsShellLang(isEn) {
       document.body.classList.toggle('lang-en', isEn);
       try { localStorage.setItem('wolko-lang', isEn ? 'en' : 'ko'); } catch (e) {}
       syncShellLangToggle(isEn);
     }
-    window.toggleLang = function () {
-      applyCrsShellLang(!document.body.classList.contains('lang-en'));
+    // setLang(lang)이 표준 진입점 — toggleLang()은 예전 호출부와의 호환용 별칭.
+    window.setLang = function (lang) {
+      applyCrsShellLang(lang === 'en');
     };
-    document.getElementById('shellLangToggle').addEventListener('click', () => window.toggleLang());
+    window.toggleLang = function () {
+      window.setLang(document.body.classList.contains('lang-en') ? 'ko' : 'en');
+    };
+    document.getElementById('shellLangToggle').querySelectorAll('.crs-lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => window.setLang(btn.dataset.lang));
+    });
     try {
       if (localStorage.getItem('wolko-lang') === 'en') applyCrsShellLang(true);
     } catch (e) {}
@@ -351,13 +357,16 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     display:flex; align-items:center; gap:2px; height:32px; padding:3px;
     border:1px solid rgba(255,255,255,.2); border-radius:999px;
     background:rgba(255,255,255,.1); color:rgba(255,255,255,.68);
-    cursor:pointer; font-size:.68rem; font-weight:800; line-height:1;
+    font-size:.68rem; font-weight:800; line-height:1;
   }
-  .crs-lang-toggle span {
-    display:grid; place-items:center; min-width:25px; height:24px; padding:0 5px;
-    border-radius:999px;
+  .crs-lang-btn {
+    display:flex; align-items:center; justify-content:center; gap:4px;
+    min-width:25px; height:24px; padding:0 7px;
+    border:none; border-radius:999px; background:transparent; color:inherit;
+    cursor:pointer; font:inherit;
   }
-  .crs-lang-toggle span.active { background:#fff; color:var(--crs-brand); }
+  .crs-lang-btn img { display:block; width:14px; height:10px; border-radius:1px; flex-shrink:0; }
+  .crs-lang-btn.is-active { background:#fff; color:var(--crs-brand); }
   .admin-btn, .btn-logout {
     padding:.42rem .72rem; border-color:rgba(255,255,255,.2); border-radius:8px;
     background:rgba(255,255,255,.09); font-weight:750;
@@ -573,7 +582,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     }
     .app-header .user-info > span { display:none; }
     .crs-lang-toggle { height:30px; padding:2px; }
-    .crs-lang-toggle span { min-width:21px; height:24px; padding:0 3px; }
+    .crs-lang-btn { min-width:21px; height:24px; padding:0 4px; }
+    .crs-lang-btn span { display:none; }
     .admin-btn, .btn-logout {
       min-height:30px; padding:.36rem .5rem; border-radius:7px;
       font-size:.7rem; line-height:1; white-space:nowrap;
@@ -594,11 +604,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       border:1px solid #b9d6dc; background:#f0f7f8; color:#58727b;
       box-shadow:0 2px 7px rgba(17,76,91,.12);
     }
-    .detail-lang-toggle span {
-      min-width:25px; height:26px; padding:0 5px;
+    .detail-lang-toggle .crs-lang-btn {
+      min-width:25px; height:26px; padding:0 4px;
       border:1px solid transparent; color:#58727b;
     }
-    .detail-lang-toggle span.active {
+    .detail-lang-toggle .crs-lang-btn span { display:none; }
+    .detail-lang-toggle .crs-lang-btn.is-active {
       border-color:var(--crs-brand); background:var(--crs-brand); color:#fff;
       box-shadow:0 1px 3px rgba(0,86,108,.22);
     }
@@ -1005,15 +1016,15 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   function crsLangToggleMarkup(id = 'crsLangToggle', extraClass = '') {
     const isKo = getLang() === 'ko';
     return `
-      <button class="crs-lang-toggle${extraClass ? ` ${extraClass}` : ''}" id="${id}" type="button" aria-label="${isKo ? 'Switch to English' : '한국어로 전환'}">
-        <span class="${isKo ? 'active' : ''}">한</span>
-        <span class="${isKo ? '' : 'active'}">EN</span>
-      </button>`;
+      <div class="crs-lang-toggle${extraClass ? ` ${extraClass}` : ''}" id="${id}" role="group" aria-label="한국어 / English">
+        <button type="button" class="crs-lang-btn${isKo ? ' is-active' : ''}" data-lang="ko" aria-label="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>한</span></button>
+        <button type="button" class="crs-lang-btn${isKo ? '' : ' is-active'}" data-lang="en" aria-label="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>`;
   }
 
   function bindCrsLangToggle() {
-    document.querySelectorAll('.crs-lang-toggle').forEach(toggle => {
-      toggle.addEventListener('click', () => window.toggleLang?.());
+    document.querySelectorAll('.crs-lang-toggle .crs-lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => window.setLang?.(btn.dataset.lang));
     });
   }
 
