@@ -17,9 +17,17 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
 };
 
-const VEHICLE_IDS = new Set(['silver-van', 'santa-fe']);
-const VEHICLE_LABELS = { 'silver-van': 'Silver Van', 'santa-fe': 'Santa Fe' };
+const BUILTIN_VEHICLE_LABELS = { 'silver-van': 'Silver Van', 'santa-fe': 'Santa Fe' };
 const KV_PREFIX = 'car:res:';
+const VEHICLES_KV_KEY = 'car:vehicles:missionary';
+
+/** WOLKO 고정 차량(빌트인) + KV에 등록된 선교사 차량을 합친 id → 표시 이름 맵 */
+async function getVehicleLabels(env) {
+  const missionary = (await env.CAMP_KV.get(VEHICLES_KV_KEY, 'json')) || [];
+  const map = new Map(Object.entries(BUILTIN_VEHICLE_LABELS));
+  missionary.forEach(v => map.set(v.id, v.name));
+  return map;
+}
 
 /**
  * 예약 → 구글 캘린더 이벤트 단방향 동기화.
@@ -31,7 +39,7 @@ const KV_PREFIX = 'car:res:';
  * 호출부가 그걸 응답에 그대로 실어서 화면에 보여준다(로그를 못 봐도
  * 무엇이 문제인지 바로 알 수 있게).
  */
-async function syncReservationToCalendar(env, reservation, oldEventId) {
+async function syncReservationToCalendar(env, reservation, oldEventId, vehicleLabel) {
   if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_CAR_CALENDAR_ID) return { skipped: true };
 
   if (oldEventId) {
@@ -47,7 +55,6 @@ async function syncReservationToCalendar(env, reservation, oldEventId) {
   }
 
   try {
-    const vehicleLabel = VEHICLE_LABELS[reservation.vehicleId] || reservation.vehicleId;
     const descLines = [`예약자: ${reservation.reserverName}${reservation.phone ? ' · ' + reservation.phone : ''}`];
     if (reservation.notes) descLines.push(reservation.notes);
     descLines.push('(WOLKO 차량 스케줄에서 자동 동기화됨 — 여기서 수정해도 반영되지 않습니다)');
@@ -114,7 +121,7 @@ function parseOptionalNonNegNumber(value, max, label) {
   return num;
 }
 
-function parseReservationInput(body) {
+function parseReservationInput(body, vehicleLabels) {
   const vehicleId = String(body.vehicleId || '').trim();
   const startDate = String(body.startDate || '').trim();
   const startTime = String(body.startTime || '09:00').trim();
@@ -127,7 +134,7 @@ function parseReservationInput(body) {
   const actualHours = parseOptionalNonNegNumber(body.actualHours, 1000, '실제 운행 시간');
   const actualKm = parseOptionalNonNegNumber(body.actualKm, 100000, '실제 운행 거리');
 
-  if (!VEHICLE_IDS.has(vehicleId)) throw new Error('차량을 선택해 주세요.');
+  if (!vehicleLabels.has(vehicleId)) throw new Error('차량을 선택해 주세요.');
   if (!DATE_RE.test(startDate) || !DATE_RE.test(endDate)) throw new Error('날짜 형식이 올바르지 않습니다.');
   if (!TIME_RE.test(startTime) || !TIME_RE.test(endTime)) throw new Error('시간 형식이 올바르지 않습니다.');
   if (!reserverName) throw new Error('예약자 이름을 입력해 주세요.');
@@ -179,7 +186,8 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const parsed = parseReservationInput(body);
+    const vehicleLabels = await getVehicleLabels(env);
+    const parsed = parseReservationInput(body, vehicleLabels);
     const reservations = await listReservations(env);
     const conflict = findConflict(reservations, parsed, null);
     if (conflict) {
@@ -188,7 +196,7 @@ export async function onRequestPost(context) {
 
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     let reservation = { id, ...parsed, createdAt: new Date().toISOString() };
-    const calendarSync = await syncReservationToCalendar(env, reservation, null);
+    const calendarSync = await syncReservationToCalendar(env, reservation, null, vehicleLabels.get(parsed.vehicleId) || parsed.vehicleId);
     if (calendarSync.ok && calendarSync.calendarEventId) {
       reservation = { ...reservation, calendarEventId: calendarSync.calendarEventId };
     }
@@ -224,7 +232,8 @@ export async function onRequestPut(context) {
       return Response.json({ error: '예약을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
     }
 
-    const parsed = parseReservationInput(body);
+    const vehicleLabels = await getVehicleLabels(env);
+    const parsed = parseReservationInput(body, vehicleLabels);
     const reservations = await listReservations(env);
     const conflict = findConflict(reservations, parsed, id);
     if (conflict) {
@@ -233,7 +242,7 @@ export async function onRequestPut(context) {
 
     let reservation = { ...existing, ...parsed, id, updatedAt: new Date().toISOString() };
     const oldEventId = existing.calendarEventId || await legacyDeterministicEventId(id);
-    const calendarSync = await syncReservationToCalendar(env, reservation, oldEventId);
+    const calendarSync = await syncReservationToCalendar(env, reservation, oldEventId, vehicleLabels.get(parsed.vehicleId) || parsed.vehicleId);
     if (calendarSync.ok && calendarSync.calendarEventId) {
       reservation.calendarEventId = calendarSync.calendarEventId;
     } else if (calendarSync.ok === false) {

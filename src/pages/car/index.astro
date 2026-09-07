@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/car.css?v=5">
+  <link rel="stylesheet" href="/car.css?v=6">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=4">
   <script src="/wolko-rail.js?v=4" defer></script>
@@ -249,6 +249,33 @@
     </div>
   </div>
 
+  <!-- ── ADD MISSIONARY VEHICLE ── -->
+  <div class="car-modal-overlay hidden" id="carVehicleModalOverlay">
+    <div class="car-modal">
+      <div class="car-modal-head">
+        <p class="car-modal-title" data-t="addVehicleTitle">선교사 차량 추가</p>
+        <button class="car-modal-close" onclick="closeVehicleModal()" aria-label="닫기">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 1.5l12 12M13.5 1.5l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <p class="car-modal-error" id="carVehicleModalError"></p>
+
+      <form id="carVehicleForm" onsubmit="submitVehicleForm(event)">
+        <div class="car-field">
+          <label data-t="fieldMissionaryName">선교사님 이름</label>
+          <input type="text" id="carVehicleName" maxlength="40" required placeholder="예: 김선교사">
+          <p class="car-field-hint" data-t="missionaryVehicleHint">"○○○ 선교사 차량"으로 목록에 표시됩니다.</p>
+        </div>
+
+        <div class="car-modal-foot">
+          <button type="button" class="car-btn car-btn-secondary" onclick="closeVehicleModal()" data-t="cancel">취소</button>
+          <button type="submit" class="car-btn car-btn-primary" id="carVehicleSaveBtn" data-t="addBtn">추가</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ── DELETE CONFIRM ── -->
   <div class="car-confirm-overlay hidden" id="confirmOverlay">
     <div class="car-confirm-card">
@@ -263,10 +290,20 @@
   <div class="car-toast" id="carToast"></div>
 
   <script is:inline>
-    const VEHICLES = [
+    const BUILTIN_VEHICLES = [
       { id: 'silver-van', color: 'var(--van)', label: 'Silver Van' },
       { id: 'santa-fe',   color: 'var(--santafe)', label: 'Santa Fe' },
     ];
+    // 메인랜드 선교사 차량 — 인원이 계속 늘거나 바뀌어서 하드코딩 대신 서버(KV)에서
+    // 받아온 목록을 빌트인 차량 뒤에 이어 붙인다. loadVehicles()가 채워 넣는다.
+    let VEHICLES = [...BUILTIN_VEHICLES];
+    const MISSIONARY_COLORS = ['#c2410c', '#0f766e', '#7c3aed', '#be185d', '#4d7c0f', '#1d4ed8'];
+    function missionaryColor(index) { return MISSIONARY_COLORS[index % MISSIONARY_COLORS.length]; }
+    // 라벨은 이름 + 언어별 접미/접두를 붙여 조합 — 언어 토글 시 refreshMissionaryLabels()로 다시 계산한다.
+    function missionaryVehicleLabel(name) { return carLang === 'en' ? `${name}'s Vehicle` : `${name} 선교사 차량`; }
+    function refreshMissionaryLabels() {
+      VEHICLES.forEach(v => { if (v.isMissionary) v.label = missionaryVehicleLabel(v.rawName); });
+    }
 
     const SERVICE_TYPE_LABELS = {
       oil:        { ko: '엔진오일 교체', en: 'Engine Oil Change' },
@@ -318,6 +355,16 @@
         deleteConfirmYes: '삭제',
         savedToast: '예약이 저장되었습니다.',
         deletedToast: '예약이 삭제되었습니다.',
+        addMissionaryVehicle: '선교사 차량 추가',
+        removeVehicle: '차량 삭제',
+        addVehicleTitle: '선교사 차량 추가',
+        fieldMissionaryName: '선교사님 이름',
+        missionaryVehicleHint: '"○○○ 선교사 차량"으로 목록에 표시됩니다.',
+        addBtn: '추가',
+        missionaryNameRequired: '선교사님 이름을 입력해 주세요.',
+        vehicleAddedToast: '차량이 추가되었습니다.',
+        vehicleDeletedToast: '차량이 삭제되었습니다.',
+        vehicleDeleteConfirm: '이 차량을 목록에서 삭제할까요? 기존 예약/정비 기록은 남아있습니다.',
         updatedToast: '예약이 수정되었습니다.',
         conflictPrefix: '이미 예약됨: ',
         errGeneric: '처리 중 오류가 발생했습니다.',
@@ -374,6 +421,16 @@
         deleteConfirmYes: 'Delete',
         savedToast: 'Reservation saved.',
         deletedToast: 'Reservation deleted.',
+        addMissionaryVehicle: 'Add Missionary Vehicle',
+        removeVehicle: 'Remove vehicle',
+        addVehicleTitle: 'Add Missionary Vehicle',
+        fieldMissionaryName: "Missionary's name",
+        missionaryVehicleHint: 'Will be shown in the list as "○○○\'s Vehicle."',
+        addBtn: 'Add',
+        missionaryNameRequired: "Please enter the missionary's name.",
+        vehicleAddedToast: 'Vehicle added.',
+        vehicleDeletedToast: 'Vehicle removed.',
+        vehicleDeleteConfirm: 'Remove this vehicle from the list? Existing reservations and maintenance records are kept.',
         updatedToast: 'Reservation updated.',
         conflictPrefix: 'Already booked: ',
         errGeneric: 'Something went wrong.',
@@ -469,6 +526,7 @@
       const langBtn = $('langToggleLabel');
       if (langBtn) langBtn.textContent = carLang === 'ko' ? 'EN' : '한';
       populateMonthPicker();
+      refreshMissionaryLabels();
       renderTabs();
       renderVehicleSelect();
       renderMaintVehicleSelect();
@@ -522,7 +580,24 @@
       }
     }
     async function loadAll() {
+      await loadVehicles();
       await Promise.all([loadReservations(), loadMaintenance()]);
+    }
+
+    async function loadVehicles() {
+      try {
+        const res = await fetch('/api/car/vehicles', { headers: authHeaders() });
+        if (handleAuthError(res)) return;
+        if (!res.ok) return;
+        const data = await res.json();
+        const missionary = (data.vehicles || []).map((v, i) => ({ id: v.id, rawName: v.name, label: missionaryVehicleLabel(v.name), color: missionaryColor(i), isMissionary: true }));
+        VEHICLES = [...BUILTIN_VEHICLES, ...missionary];
+        renderTabs();
+        renderVehicleSelect();
+        renderMaintVehicleSelect();
+      } catch (e) {
+        // 실패해도 빌트인 차량 2대로는 계속 동작
+      }
     }
 
     /* ── VIEW SWITCH ── */
@@ -547,8 +622,13 @@
         <button class="car-tab${activeVehicle === v.id ? ' is-active' : ''}" onclick="setActiveVehicle('${v.id}')">
           ${v.color ? `<span class="dot" style="background:${v.color}"></span>` : ''}
           ${esc(v.label)}
+          ${v.isMissionary ? `<span class="car-tab-remove" onclick="event.stopPropagation();openConfirm('${v.id}','vehicle')" title="${t('removeVehicle')}" aria-label="${t('removeVehicle')}">×</span>` : ''}
         </button>
-      `).join('');
+      `).join('') + `
+        <button class="car-tab car-tab-add" onclick="openVehicleModal()">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          ${t('addMissionaryVehicle')}
+        </button>`;
     }
     function setActiveVehicle(id) {
       activeVehicle = id;
@@ -1157,10 +1237,49 @@
       }
     }
 
+    /* ── 선교사 차량 추가 ── */
+    function openVehicleModal() {
+      $('carVehicleModalError').textContent = '';
+      $('carVehicleForm').reset();
+      $('carVehicleModalOverlay').classList.remove('hidden');
+      $('carVehicleName').focus();
+    }
+    function closeVehicleModal() {
+      $('carVehicleModalOverlay').classList.add('hidden');
+    }
+    async function submitVehicleForm(event) {
+      event.preventDefault();
+      const errEl = $('carVehicleModalError');
+      errEl.textContent = '';
+      const name = $('carVehicleName').value.trim();
+      if (!name) { errEl.textContent = t('missionaryNameRequired'); return; }
+
+      const btn = $('carVehicleSaveBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/car/vehicles', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ name }),
+        });
+        if (handleAuthError(res)) return;
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.error || t('errGeneric'); return; }
+        closeVehicleModal();
+        showToast(t('vehicleAddedToast'));
+        await loadVehicles();
+      } catch (e) {
+        errEl.textContent = t('errGeneric');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     /* ── DELETE ── */
     function openConfirm(id, type) {
       pendingDeleteId = id;
       pendingDeleteType = type || 'reservation';
+      $('confirmText').textContent = pendingDeleteType === 'vehicle' ? t('vehicleDeleteConfirm') : t('deleteConfirm');
       $('confirmOverlay').classList.remove('hidden');
     }
     function closeConfirm() {
@@ -1172,7 +1291,7 @@
       const id = pendingDeleteId;
       const type = pendingDeleteType;
       closeConfirm();
-      const endpoint = type === 'maintenance' ? '/api/car/maintenance' : '/api/car/reservations';
+      const endpoint = type === 'maintenance' ? '/api/car/maintenance' : type === 'vehicle' ? '/api/car/vehicles' : '/api/car/reservations';
       try {
         const res = await fetch(endpoint + '?id=' + encodeURIComponent(id), {
           method: 'DELETE',
@@ -1181,6 +1300,13 @@
         if (handleAuthError(res)) return;
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('errGeneric'));
+        if (type === 'vehicle') {
+          showToast(t('vehicleDeletedToast'));
+          if (activeVehicle === id) activeVehicle = 'all';
+          await loadVehicles();
+          if (currentView === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
+          return;
+        }
         const delSyncSuffix = type === 'reservation' ? calendarSyncSuffix(data.calendarSync) : '';
         showToast(
           (type === 'maintenance' ? t('maintDeletedToast') : t('deletedToast')) + delSyncSuffix,

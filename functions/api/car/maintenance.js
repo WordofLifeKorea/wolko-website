@@ -14,10 +14,17 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
 };
 
-const VEHICLE_IDS = new Set(['silver-van', 'santa-fe']);
+const BUILTIN_VEHICLE_IDS = new Set(['silver-van', 'santa-fe']);
 const SERVICE_TYPES = new Set(['oil', 'tire', 'battery', 'inspection', 'other']);
 const KV_PREFIX = 'car:maint:';
+const VEHICLES_KV_KEY = 'car:vehicles:missionary';
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** WOLKO 고정 차량(빌트인) + KV에 등록된 선교사 차량을 합친 유효 차량 id 집합 */
+async function getValidVehicleIds(env) {
+  const missionary = (await env.CAMP_KV.get(VEHICLES_KV_KEY, 'json')) || [];
+  return new Set([...BUILTIN_VEHICLE_IDS, ...missionary.map(v => v.id)]);
+}
 
 /** 차량 캘린더는 별도 토큰 없이 허브 세션 토큰을 그대로 쓴다(role admin/master만 통과). */
 async function verifyToken(request, env) {
@@ -41,7 +48,7 @@ async function listMaintenance(env) {
   return items;
 }
 
-function parseMaintenanceInput(body) {
+function parseMaintenanceInput(body, validVehicleIds) {
   const vehicleId = String(body.vehicleId || '').trim();
   const date = String(body.date || '').trim();
   const serviceType = String(body.serviceType || '').trim();
@@ -49,7 +56,7 @@ function parseMaintenanceInput(body) {
   const technician = String(body.technician || '').trim().slice(0, 60);
   const notes = String(body.notes || '').trim().slice(0, 1000);
 
-  if (!VEHICLE_IDS.has(vehicleId)) throw new Error('차량을 선택해 주세요.');
+  if (!validVehicleIds.has(vehicleId)) throw new Error('차량을 선택해 주세요.');
   if (!DATE_RE.test(date)) throw new Error('날짜 형식이 올바르지 않습니다.');
   if (!SERVICE_TYPES.has(serviceType)) throw new Error('정비 종류를 선택해 주세요.');
   if (!technician) throw new Error('담당자 이름을 입력해 주세요.');
@@ -86,7 +93,7 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const parsed = parseMaintenanceInput(body);
+    const parsed = parseMaintenanceInput(body, await getValidVehicleIds(env));
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const record = { id, ...parsed, createdAt: new Date().toISOString() };
     await env.CAMP_KV.put(`${KV_PREFIX}${id}`, JSON.stringify(record));
@@ -120,7 +127,7 @@ export async function onRequestPut(context) {
     if (!existing) {
       return Response.json({ error: '정비 기록을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
     }
-    const parsed = parseMaintenanceInput(body);
+    const parsed = parseMaintenanceInput(body, await getValidVehicleIds(env));
     const record = { ...existing, ...parsed, id, updatedAt: new Date().toISOString() };
     await env.CAMP_KV.put(key, JSON.stringify(record));
     return Response.json({ ok: true, record }, { headers: CORS });
