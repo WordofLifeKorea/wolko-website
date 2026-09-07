@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=76">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=77">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=4">
   <script src="/wolko-rail.js?v=4" defer></script>
@@ -140,6 +140,7 @@
           </button>
         </div>
       </div>
+      <div id="campCounselingSummary"></div>
       <div class="camp-status-group" data-status="confirmed">
         <div class="camp-status-group-head">
           <span class="camp-status-dot camp-status-dot-confirmed"></span>
@@ -711,6 +712,7 @@
     const expandedStaffDetails = new Set();
     const expandedGroupParticipants = new Set();
     const expandedGroupNotes = new Set();
+    let campNotesOpen = false;
     const UNASSIGNED = '__unassigned__';
     let teamOverviewConfig = emptyTeamOverviewConfig();
     let teamOverviewConfigCamp = null;
@@ -1175,6 +1177,18 @@
     }
 
     // 단체 신청의 성별 인원도 실제 이름이 입력된 참가자의 성별 기준으로 집계
+    // 등록 한 건(개인 또는 단체)에 속한 실제 캠퍼(들)를 구원/헌신/메모/간증문과 함께
+    // 평탄화해서 반환 — 단체는 이름이 입력된 학생만, 개인은 본인 1명.
+    function regCampers(r) {
+      if (r.registrationType !== 'group') {
+        return [{ name: r.name, saved: !!r.saved, dedicated: !!r.dedicated, counselorMemo: r.counselorMemo || '', testimony: r.testimony || '' }];
+      }
+      const list = Array.isArray(r.participants) ? r.participants : [];
+      return list
+        .filter(p => p && String(p.name || '').trim())
+        .map(p => ({ name: p.name, saved: !!p.saved, dedicated: !!p.dedicated, counselorMemo: p.counselorMemo || '', testimony: p.testimony || '' }));
+    }
+
     function regGenderCounts(r) {
       if (r.registrationType !== 'group') {
         return { male: r.gender === 'male' ? 1 : 0, female: r.gender === 'female' ? 1 : 0 };
@@ -1258,9 +1272,43 @@
       renderStaffTable();
     }
 
+    function renderCampCounselingSummary(regs) {
+      const el = document.getElementById('campCounselingSummary');
+      if (!el) return;
+      const campers = regs.flatMap(regCampers);
+      const savedCount = campers.filter(c => c.saved).length;
+      const dedicatedCount = campers.filter(c => c.dedicated).length;
+      const notesEntries = campers.filter(c => c.counselorMemo.trim() || c.testimony.trim());
+      el.innerHTML = `<div class="camp-counseling-summary">
+        <div class="group-counseling-counts">
+          <span class="counseling-stat-chip is-saved">${t('savedLabel')} ${tt('personCountFn', savedCount)}</span>
+          <span class="counseling-stat-chip is-dedicated">${t('dedicatedLabel')} ${tt('personCountFn', dedicatedCount)}</span>
+        </div>
+        <button type="button" class="group-notes-toggle" onclick="toggleCampNotes()" aria-expanded="${campNotesOpen}">
+          <span>${t('groupNotesToggle')} (${notesEntries.length})</span>
+          <svg class="group-notes-toggle-chevron${campNotesOpen ? ' is-open' : ''}" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        ${campNotesOpen ? `<div class="group-notes-panel">
+          ${notesEntries.length
+            ? notesEntries.map(c => `<div class="group-notes-entry">
+                <span class="group-notes-entry-name">${esc(c.name)}</span>
+                ${c.counselorMemo.trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label">${t('thCounselorMemo')}</span><span class="group-notes-entry-value">${esc(c.counselorMemo)}</span></div>` : ''}
+                ${c.testimony.trim() ? `<div class="group-notes-entry-row"><span class="group-notes-entry-label">${t('thCamperTestimony')}</span><span class="group-notes-entry-value">${esc(c.testimony)}</span></div>` : ''}
+              </div>`).join('')
+            : `<div class="group-notes-empty">${t('groupNotesEmpty')}</div>`}
+        </div>` : ''}
+      </div>`;
+    }
+
+    function toggleCampNotes() {
+      campNotesOpen = !campNotesOpen;
+      renderCampTable();
+    }
+
     function renderCampTable() {
       const regs = sortedRegs(filteredRegs().filter(r => r.registrationType !== 'staff'));
       document.getElementById('campTableCount').textContent = tt('tableCountFn', regs.length);
+      renderCampCounselingSummary(regs);
 
       const renderCampRow = (r, i) => {
         const date = new Date(r.registeredAt);
