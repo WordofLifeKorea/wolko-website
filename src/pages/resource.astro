@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=8">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=6">
+  <link rel="stylesheet" href="/portal.css?v=7">
   <script src="/wolko-rail.js?v=9" defer></script>
 </head>
 <body>
@@ -51,7 +51,7 @@
     <section class="summary-grid" id="summaryGrid"></section>
 
     <section class="report-section">
-      <div class="section-head"><div><p class="section-eyebrow" data-t="activeEyebrow">ACTIVE RESOURCES</p><h2 data-t="sectionTitle">작업 중인 자료</h2></div><button class="add-resource" id="addResourceBtn" type="button" hidden onclick="openEditor()"><span>+</span> <span data-t="addResourceBtn">항목 추가</span></button></div>
+      <div class="section-head"><div><h2 data-t="sectionTitle">작업 중인 자료</h2></div><button class="add-resource" id="addResourceBtn" type="button" hidden onclick="openEditor()"><span>+</span> <span data-t="addResourceBtn">항목 추가</span></button></div>
       <p class="report-updated" id="updatedAt"></p>
       <div class="resource-grid" id="resourceGrid"></div>
     </section>
@@ -135,8 +135,7 @@
         heroEyebrow: '리소스 리포트', heroTitle: '자료 제작 진행 현황', heroDesc: '번역과 제작 중인 자료를 한눈에 확인하고, 발표에 바로 사용할 수 있는 진행 리포트입니다.',
         overallLabel: '전체 완성도', overallCaptionN: n => `${n}개 항목의 평균 진행률`, overallCaptionEmpty: '아직 등록된 작업 항목이 없습니다',
         summaryItems: '전체 항목', summaryAvg: '평균 완성도', summaryTranslating: '번역 진행', summaryComplete: '완료 자료',
-        summaryItemsNote: '전체 자료', summaryAvgNote: '전체 진행률', summaryTranslatingNote: '번역 진행 중', summaryCompleteNote: '발표 준비 완료',
-        activeEyebrow: '진행 중인 자료', sectionTitle: '작업 중인 자료', addResourceBtn: '항목 추가',
+        sectionTitle: '작업 중인 자료', addResourceBtn: '항목 추가',
         detailEyebrow: '자료 상세', editorEyebrow: '자료 편집',
         statusPlanning: '기획 중', statusTranslating: '번역 중', statusReview: '검수 중', statusComplete: '완료',
         noTranslation: '번역/제작 내용 미입력',
@@ -164,8 +163,7 @@
         heroEyebrow: 'RESOURCE REPORT', heroTitle: 'Resource Production Status', heroDesc: 'See translation and production work at a glance — a progress report ready to present anytime.',
         overallLabel: 'Overall completion', overallCaptionN: n => `Average progress across ${n} item${n === 1 ? '' : 's'}`, overallCaptionEmpty: 'No work items registered yet',
         summaryItems: 'Total Items', summaryAvg: 'Avg. Progress', summaryTranslating: 'In Translation', summaryComplete: 'Ready to Present',
-        summaryItemsNote: 'RESOURCE ITEMS', summaryAvgNote: 'OVERALL PROGRESS', summaryTranslatingNote: 'IN TRANSLATION', summaryCompleteNote: 'READY TO PRESENT',
-        activeEyebrow: 'ACTIVE RESOURCES', sectionTitle: 'Active Resources', addResourceBtn: 'Add Item',
+        sectionTitle: 'Active Resources', addResourceBtn: 'Add Item',
         detailEyebrow: 'RESOURCE DETAIL', editorEyebrow: 'RESOURCE EDITOR',
         statusPlanning: 'Planning', statusTranslating: 'Translating', statusReview: 'Reviewing', statusComplete: 'Complete',
         noTranslation: 'No translation info yet',
@@ -247,8 +245,8 @@
       $('overallRing').style.setProperty('--progress', overall); $('overallPercent').textContent = overall + '%';
       $('overallCaption').textContent = total ? t('overallCaptionN')(total) : t('overallCaptionEmpty');
       $('summaryGrid').innerHTML = [
-        [t('summaryItems'), total, t('summaryItemsNote')], [t('summaryAvg'), overall + '%', t('summaryAvgNote')], [t('summaryTranslating'), translating, t('summaryTranslatingNote')], [t('summaryComplete'), complete, t('summaryCompleteNote')],
-      ].map(([label, value, note]) => `<article class="summary-card"><p>${esc(note)}</p><strong>${value}</strong><span>${esc(label)}</span></article>`).join('');
+        [t('summaryItems'), total], [t('summaryAvg'), overall + '%'], [t('summaryTranslating'), translating], [t('summaryComplete'), complete],
+      ].map(([label, value]) => `<article class="summary-card"><strong>${value}</strong><span>${esc(label)}</span></article>`).join('');
       $('resourceGrid').innerHTML = total ? resources.map(item => {
         const color = STATUS_COLOR[item.status] || STATUS_COLOR.planning;
         const thumb = item.thumbnailData ? `<img src="${item.thumbnailData}" alt="">` : `<span class="thumb-placeholder">W<br>RESOURCE</span>`;
