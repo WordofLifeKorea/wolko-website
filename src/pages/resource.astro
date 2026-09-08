@@ -97,7 +97,7 @@
       <form id="editorForm" hidden>
         <input type="hidden" id="resourceId">
         <input type="hidden" id="thumbnailData">
-        <label class="field"><span data-t="fieldName">자료 이름</span><input id="resourceName" maxlength="120" required placeholder="예: 2026 Summer Camp Student Book"></label>
+        <label class="field"><span data-t="fieldName">자료 이름</span><input id="resourceName" maxlength="120" required data-t-ph="nameField"></label>
         <div class="field-row">
           <label class="field"><span data-t="fieldStatus">진행 상태</span><select id="resourceStatus">
             <option value="planning" data-t="statusPlanning">기획 중</option>
@@ -107,8 +107,8 @@
           </select></label>
           <label class="field"><span><span data-t="fieldProgress">완성도</span> <b id="progressValue">0%</b></span><input id="resourceProgress" type="range" min="0" max="100" step="10" value="0" oninput="document.getElementById('progressValue').textContent=this.value+'%'"></label>
         </div>
-        <label class="field"><span data-t="fieldTranslation">번역/제작 내용</span><input id="resourceTranslation" maxlength="120" placeholder="예: 학생 교재 영문 번역 및 편집"></label>
-        <label class="field"><span data-t="fieldDetail">간단한 진행 메모</span><textarea id="resourceDetail" maxlength="260" placeholder="현재 작업 범위 또는 다음 단계"></textarea></label>
+        <label class="field"><span data-t="fieldTranslation">번역/제작 내용</span><input id="resourceTranslation" maxlength="120" data-t-ph="translationField"></label>
+        <label class="field"><span data-t="fieldDetail">간단한 진행 메모</span><textarea id="resourceDetail" maxlength="260" data-t-ph="detailField"></textarea></label>
         <div class="thumbnail-field">
           <div><span class="field-label" data-t="fieldThumbnail">발표용 썸네일</span><p data-t="thumbnailHint">JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB</p></div>
           <label class="thumbnail-upload"><input id="thumbnailInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onchange="loadThumbnail(this)"><span data-t="chooseImage">이미지 선택</span></label>
@@ -141,6 +141,7 @@
         emptyTitle: '아직 등록된 작업 항목이 없습니다.', emptyHintWrite: '오른쪽 위의 항목 추가 버튼으로 첫 리소스를 등록해보세요.', emptyHintRead: '관리자가 작업 항목을 등록하면 이곳에 표시됩니다.',
         editorAdd: '작업 항목 추가', editorEdit: '작업 항목 수정', editBtn: '수정',
         fieldName: '자료 이름', fieldStatus: '진행 상태', fieldProgress: '완성도', fieldTranslation: '번역/제작 내용', fieldDetail: '간단한 진행 메모',
+        nameField: '예: 2026 Summer Camp Student Book', translationField: '예: 학생 교재 영문 번역 및 편집', detailField: '현재 작업 범위 또는 다음 단계',
         fieldThumbnail: '발표용 썸네일', thumbnailHint: 'JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB', chooseImage: '이미지 선택',
         workFileLabel: '작업 파일 (현재까지 진행분)', originalFileLabel: '원본 파일', fileHint: 'PDF · 이미지 · 문서 · 최대 8MB',
         chooseFile: '파일 선택', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileWrite: '업로드된 파일이 없습니다', noFileRead: '업로드된 파일이 없습니다',
@@ -167,6 +168,7 @@
         emptyTitle: 'No work items registered yet.', emptyHintWrite: 'Use the Add Item button above to register your first resource.', emptyHintRead: "Items will appear here once an admin adds them.",
         editorAdd: 'Add Work Item', editorEdit: 'Edit Work Item', editBtn: 'Edit',
         fieldName: 'Resource name', fieldStatus: 'Status', fieldProgress: 'Progress', fieldTranslation: 'Translation / production notes', fieldDetail: 'Progress notes',
+        nameField: 'e.g. 2026 Summer Camp Student Book', translationField: 'e.g. English translation & editing of the student textbook', detailField: 'Current scope or next steps',
         fieldThumbnail: 'Presentation thumbnail', thumbnailHint: 'JPG, PNG, WEBP, GIF · auto-compressed · up to 1MB', chooseImage: 'Choose image',
         workFileLabel: 'Work file (progress so far)', originalFileLabel: 'Original file', fileHint: 'PDF · image · document · up to 8MB',
         chooseFile: 'Choose file', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileWrite: 'No file uploaded yet', noFileRead: 'No file uploaded yet',
@@ -215,6 +217,10 @@
         const key = el.getAttribute('data-t');
         const val = t(key);
         if (typeof val === 'string') el.textContent = val;
+      });
+      document.querySelectorAll('[data-t-ph]').forEach(el => {
+        const val = t(el.getAttribute('data-t-ph'));
+        if (typeof val === 'string') el.placeholder = val;
       });
       $('langKoBtn')?.classList.toggle('is-active', lang === 'ko');
       $('langEnBtn')?.classList.toggle('is-active', lang === 'en');
