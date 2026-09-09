@@ -700,7 +700,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 </style>
 
 <script type="module">
-  import { overdueChurches, lastActivity, activityDays } from '/crs-reminders.js?v=2';
+  import { overdueChurches, lastVisitAt, visitDays } from '/crs-reminders.js?v=3';
   import { DENOMINATION_FILTERS, denominationFamily } from '/crs-denomination-filters.js';
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import {
@@ -1551,7 +1551,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     ensureCrsMap();
   }
 
-  // 알림과 같은 최근 수정/교류 기록 기준으로 경과일을 표시한다.
+  // 카드의 D+N은 수정/기록 입력 시각이 아닌 실제 마지막 방문일 기준이다.
   // 90일 미만 초록, 90~179일 노랑, 180일 이상 빨강.
   function ddayLevel(days) {
     if (days >= 180) return 'stale';
@@ -1559,11 +1559,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     return 'ok';
   }
   function ddayBadgeHtml(church) {
-    const days = activityDays(church);
-    if (days === null) return `<span class="dday-badge" title="${getLang()==='ko' ? '수정일 또는 교류 기록 날짜를 입력해 주세요.' : 'Add an update or activity date.'}">${getLang()==='ko' ? '날짜 미등록' : 'No date recorded'}</span>`;
-    const label = days <= 0 ? 'D-DAY' : `D+${days}`;
-    const date = new Date(lastActivity(church)).toLocaleDateString(getLang()==='ko' ? 'ko-KR' : 'en-US');
-    return `<span class="dday-badge ${ddayLevel(days)}" title="${getLang()==='ko' ? '최근 수정·교류 기록 기준' : 'Latest update or activity'}: ${esc(date)}">${label}</span>`;
+    const days = visitDays(church);
+    if (days === null) return `<span class="dday-badge" title="${getLang()==='ko' ? '마지막 방문 날짜를 입력해 주세요.' : 'Enter the last visit date.'}">${getLang()==='ko' ? '방문일 미등록' : 'No visit date'}</span>`;
+    const label = days < 0 ? `D${days}` : `D+${days}`;
+    const date = new Date(lastVisitAt(church)).toLocaleDateString(getLang()==='ko' ? 'ko-KR' : 'en-US', { timeZone: 'Asia/Seoul' });
+    return `<span class="dday-badge ${ddayLevel(days)}" title="${getLang()==='ko' ? '마지막 방문일 기준' : 'Since last visit'}: ${esc(date)}">${label}</span>`;
   }
 
   function closeContactAlerts() {
@@ -1626,7 +1626,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         (!activeMissionaryFilter || c.assignedMissionary === activeMissionaryFilter) &&
         (!activeDenominationFilter || denominationFamily(c.denomination) === activeDenominationFilter)
       )
-      .sort((a, b) => (activityDays(b) ?? 0) - (activityDays(a) ?? 0));
+      .sort((a, b) => (visitDays(b) ?? -Infinity) - (visitDays(a) ?? -Infinity));
 
     if (filtered.length === 0) {
       listEl.innerHTML = `

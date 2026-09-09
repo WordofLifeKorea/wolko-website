@@ -20,6 +20,18 @@ export function activityDays(church, now = Date.now()) {
   return activityAt ? Math.max(0, Math.floor((now - activityAt) / DAY)) : null;
 }
 
+export function lastVisitAt(church) {
+  return Math.max(timestamp(church.lastVisitDate), timestamp(church.visitDate),
+    ...Object.values(church.visits || {}).filter(Boolean).map(visit => timestamp(visit.date)));
+}
+
+export function visitDays(church, now = Date.now()) {
+  const visitAt = lastVisitAt(church);
+  // Count calendar days in Korea, independent of the viewer's timezone or edit time.
+  const koreaDay = value => Math.floor((value + 9 * 3600000) / DAY);
+  return visitAt ? koreaDay(now) - koreaDay(visitAt) : null;
+}
+
 export function overdueChurches(churches, now = Date.now()) {
   return churches.map(church => {
     const activityAt = lastActivity(church);

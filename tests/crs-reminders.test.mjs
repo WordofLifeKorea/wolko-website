@@ -1,13 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
-import { overdueChurches, lastActivity, activityDays } from '../public/crs-reminders.js';
+import { overdueChurches, lastActivity, activityDays, lastVisitAt, visitDays } from '../public/crs-reminders.js';
 import { reminderRecipients, reminderKey, reminderMessage, deliverReminder } from '../functions/lib/crsReminders.js';
 import { onRequestPost } from '../functions/api/crs-reminders.js';
 
 const DAY = 86400000, now = Date.parse('2026-09-09T00:00:00Z');
 const church = { id: 'c1', churchName: '테스트교회', updatedAt: now - 180 * DAY };
 const overdue = overdueChurches([church], now)[0];
+
+test('visit counter ignores edits and recording timestamps', () => {
+  const record = { updatedAt:now, createdAt:now, lastVisitDate:'2026-06-01',
+    visits:{a:{date:'2026-06-10',recordedAt:now}}, steps:{1:[{date:'2026-09-09'}]} };
+  assert.equal(lastVisitAt(record),Date.parse('2026-06-10'));
+  assert.equal(visitDays(record,now),91);
+  assert.equal(visitDays({updatedAt:now,createdAt:now},now),null);
+  assert.equal(visitDays({visitDate:'2026-09-01'},now),8);
+});
+test('visit counter advances at Korean midnight and handles today/future dates', () => {
+  const record={lastVisitDate:'2026-09-09'};
+  assert.equal(visitDays(record,Date.parse('2026-09-09T23:59:00+09:00')),0);
+  assert.equal(visitDays(record,Date.parse('2026-09-10T00:01:00+09:00')),1);
+  assert.equal(visitDays({lastVisitDate:'2026-09-10'},now),-1);
+});
 
 test('180-day inclusive boundary; invalid/missing/future timestamps excluded', () => {
   const data = [church, { ...church, id:'recent', updatedAt: now-180*DAY+1 },
