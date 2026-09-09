@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/hub.css?v=12">
+  <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
@@ -26,6 +27,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="WOLKO">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
+  <script is:inline src="/wolko-session.js?v=1"></script>
 </head>
 <body>
 
@@ -47,6 +49,7 @@
       <div class="login-input-wrap">
         <input class="login-input" type="password" id="loginPwInput" placeholder="••••••••" autocomplete="current-password">
       </div>
+      <label class="remember-email"><input type="checkbox" id="rememberEmail"><span data-t="rememberEmail">아이디 저장</span></label>
       <p class="login-error" id="emailError"></p>
       <button class="login-btn" id="emailBtn" onclick="doAccountLogin()" data-t="loginBtn">로그인</button>
       <button class="login-link-btn" onclick="showScreen('signupScreen')" data-t="goSignupBtn">계정이 없으신가요? 가입하기</button>
@@ -192,6 +195,7 @@
         subtitle: '사용할 도구를 선택하세요.',
         recentBadge: '최근 사용',
         emailLoginTitle: '포탈 로그인',
+        rememberEmail: '아이디 저장',
         emailLoginDesc: '가입하신 이메일과 비밀번호로 로그인하세요.',
         goSignupBtn: '계정이 없으신가요? 가입하기',
         signupTitle: '포탈 가입',
@@ -239,6 +243,7 @@
         subtitle: 'Pick a tool below.',
         recentBadge: 'Recent',
         emailLoginTitle: 'Portal Login',
+        rememberEmail: 'Remember email',
         emailLoginDesc: 'Log in with the email and password you signed up with.',
         goSignupBtn: "Don't have an account? Sign up",
         signupTitle: 'Portal Sign Up',
@@ -363,6 +368,15 @@
     }
 
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const rememberedEmail = window.WolkoSession.rememberedEmail();
+    $('emailInput').value = rememberedEmail;
+    $('rememberEmail').checked = !!rememberedEmail;
+    $('rememberEmail').addEventListener('change', () => {
+      if (!$('rememberEmail').checked) window.WolkoSession.rememberEmail('', false);
+    });
+    function saveRememberedEmail(email) {
+      window.WolkoSession.rememberEmail(email, $('rememberEmail').checked);
+    }
 
     /* ── 이메일+비밀번호 로그인 ── */
     async function doAccountLogin() {
@@ -398,6 +412,7 @@
             throw new Error(counselorData.error || t('loginWrong'));
           }
           sessionStorage.setItem('wolko-camp-progress-token', counselorData.token);
+          saveRememberedEmail(email);
           sessionStorage.setItem('wolko-camp-progress-role', 'counselor');
           sessionStorage.removeItem('wolko-hub-token');
           sessionStorage.removeItem('wolko-hub-email');
@@ -407,6 +422,8 @@
           return;
         }
         if (!res.ok) throw new Error(data.error || t('loginWrong'));
+        saveRememberedEmail(email);
+        $('loginPwInput').value = '';
         applySession(data);
         showHub();
       } catch (e) {

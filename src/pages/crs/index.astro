@@ -26,6 +26,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <link rel="stylesheet" href="/crs-reminders.css?v=1">
   <script src="/wolko-rail.js?v=9" defer></script>
   <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
+  <script is:inline src="/wolko-session.js?v=1"></script>
 </head>
 <body>
   <!-- ── 자체 헤더(포탈로 돌아가기 + 언어 토글) — 로그인/승인대기 화면 등 CRS 앱이
@@ -898,6 +899,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let currentUser = null;
   let currentUserData = null;
   let ssoAttempted = false;
+  let loggingOut = false;
+  window.WolkoSession.onLogout(async () => {
+    loggingOut = true;
+    stopIdleTracking();
+    await signOut(auth);
+  });
   let churches = [];
   let churchLoadFailed = false;
   let editingChurch = null;
@@ -1078,7 +1085,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   async function doAutoLogout() {
     document.getElementById('crs-idle-warn')?.remove();
-    await signOut(auth);
+    await window.WolkoSession.logoutAll();
   }
 
   function onVisibilityChange() {
@@ -1131,27 +1138,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   // ── 포탈 로그인 안내 화면 (기본) ──
-  function renderHubPrompt(errorMsg) {
+  function renderHubPrompt() {
     resetCrsMap();
     setCrsAppActive(false);
-    root.innerHTML = `
-      <div class="login-wrap">
-        <div class="login-card">
-          <div class="login-logo">
-            <img src="/images/WOLKO Circle.png" alt="WOLKO">
-            <div class="login-logo-text">
-              <span class="login-logo-name">WOLKO 월코</span>
-              <span class="login-logo-sub">Word of Life Korea</span>
-            </div>
-          </div>
-          <p class="login-title">CRS for WOLKO</p>
-          <p class="login-description">${t('hub_login_desc')}</p>
-          <div class="login-err" id="hubErr" style="${errorMsg ? 'display:block' : ''}">${esc(errorMsg || '')}</div>
-          <a class="btn-primary" href="/portal" style="display:block;text-align:center;text-decoration:none;">${t('hub_login_btn')}</a>
-          <div class="signup-toggle"><a id="goLegacyLogin">${t('legacy_login_link')}</a></div>
-        </div>
-      </div>`;
-    document.getElementById('goLegacyLogin').addEventListener('click', renderLegacyLogin);
+    root.innerHTML = '';
+    location.replace('/portal');
   }
 
   // ── 기존 CRS 계정 로그인 (폴백) ──
@@ -1244,7 +1235,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <button class="btn-primary" id="pendingLogout">${t('logout')}</button>
         </div>
       </div>`;
-    document.getElementById('pendingLogout').addEventListener('click', () => signOut(auth));
+    document.getElementById('pendingLogout').addEventListener('click', () => window.WolkoSession.logoutAll());
   }
 
   // ── 메인 앱 화면 ──
@@ -1469,7 +1460,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     `;
 
     bindCrsLangToggle();
-    document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+    document.getElementById('logoutBtn').addEventListener('click', () => window.WolkoSession.logoutAll());
     document.getElementById('addChurchBtn').addEventListener('click', () => openEditModal(null));
     if (currentUserData?.role === 'admin') {
       document.getElementById('adminBtn').addEventListener('click', openAdminModal);
@@ -2348,6 +2339,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   // ── 인증 상태 감지 ──
   onAuthStateChanged(auth, async user => {
+    if (loggingOut) return;
+    if (window.WolkoSession.invalidatedOnLoad) {
+      window.WolkoSession.logoutAll(true);
+      return;
+    }
     currentUser = user;
     if (user) {
       try {
