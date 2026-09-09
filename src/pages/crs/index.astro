@@ -915,7 +915,6 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     },
     { label: '감리교', options: ['감리교'] },
     { label: '성결교', options: ['기성 (성결)', '예성 (성결)'] },
-    { label: '침례교', options: ['기침 (침례)', '성침 (침례)'] },
     { label: '기타 교단', options: ['순복음', '성공회', '독립교단'] },
   ];
   const DEFAULT_DENOMINATIONS = DENOMINATION_GROUPS.flatMap(group => group.options);
@@ -1001,25 +1000,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   // 교단은 중분류가 보이는 select로, 담당 선교사는 자유 입력 가능한 datalist로 제공한다.
-  // 과거에 저장된 교단명은 "기존/기타 교단" 그룹에 더해 수정 중 값이 사라지지 않게 한다.
   function populateFieldDatalists() {
     const missionarySet = new Set();
     churches.forEach(c => {
       if (c.assignedMissionary) missionarySet.add(c.assignedMissionary);
     });
-    const savedDenominations = [...new Set(churches.map(c => c.denomination).filter(Boolean))]
-      .filter(value => !DEFAULT_DENOMINATIONS.includes(value))
-      .sort();
     const denomEl = document.getElementById('fDenomination');
     const missionaryEl = document.getElementById('missionaryOptions');
     if (denomEl) {
       denomEl.innerHTML = `<option value="">${esc(t('denomination_ph'))}</option>` +
         DENOMINATION_GROUPS.map(group =>
           `<optgroup label="${esc(group.label)}">${group.options.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join('')}</optgroup>`
-        ).join('') +
-        (savedDenominations.length
-          ? `<optgroup label="기존/기타 교단">${savedDenominations.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join('')}</optgroup>`
-          : '');
+        ).join('');
     }
     if (missionaryEl) missionaryEl.innerHTML = [...missionarySet].map(v => `<option value="${esc(v)}">`).join('');
   }
@@ -1661,7 +1653,16 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('fChurchName').value = church?.churchName || '';
     document.getElementById('fPastorName').value = church?.pastorName || '';
     document.getElementById('fPastorPhone').value = church?.pastorPhone || '';
-    document.getElementById('fDenomination').value = church?.denomination || '';
+    populateFieldDatalists();
+    const denominationSelect = document.getElementById('fDenomination');
+    const savedDenomination = church?.denomination || '';
+    // Preserve this church's saved value without offering removed choices in the menu.
+    if (savedDenomination && !DEFAULT_DENOMINATIONS.includes(savedDenomination)) {
+      const option = new Option(savedDenomination, savedDenomination);
+      option.hidden = true;
+      denominationSelect.add(option);
+    }
+    denominationSelect.value = savedDenomination;
     document.getElementById('fMissionary').value = church?.assignedMissionary || '';
     document.getElementById('fNotes').value = church?.notes || '';
     document.getElementById('fDetailAddress').value = church?.detailAddress || '';
