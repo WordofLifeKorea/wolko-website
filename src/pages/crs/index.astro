@@ -117,14 +117,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .search-input:focus { border-color:#004f68; box-shadow:0 0 0 3px rgba(0,79,104,.09); }
   .btn-add { background:#004f68; color:#fff; border:none; border-radius:9px; padding:.65rem 1.1rem; font-size:.88rem; font-weight:700; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:.4rem; transition:background .18s; }
   .btn-add:hover { background:#003a50; }
-  .filter-tabs-group { flex-basis:100%; display:flex; flex-direction:column; gap:.45rem; margin-top:.15rem; padding-top:.6rem; border-top:1px dashed #dbe4e8; }
-  .filter-tabs-group[hidden], .filter-tabs-row[hidden] { display:none; }
-  .filter-tabs-row { display:flex; align-items:center; gap:.4rem; overflow-x:auto; padding-bottom:.15rem; }
-  .filter-tabs-row::-webkit-scrollbar { display:none; }
-  .filter-tab-label { flex-shrink:0; width:4.6rem; font-size:.66rem; font-weight:800; color:#8397a0; white-space:nowrap; letter-spacing:.02em; }
-  .filter-chip { flex-shrink:0; padding:.32rem .7rem; border-radius:20px; border:1px solid #dde5ea; background:#fff; color:#57707a; font-size:.74rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; transition:background .15s, color .15s, border-color .15s; }
-  .filter-chip:hover { border-color:#b8ced5; }
-  .filter-chip.active { background:#004f68; border-color:#004f68; color:#fff; }
+  .filter-select { flex-shrink:0; min-width:150px; height:2.5rem; padding:0 1.9rem 0 .85rem; border:1.5px solid #dde5ea; border-radius:9px; background:#fff; color:#3a5560; font-size:.83rem; font-weight:600; font-family:inherit; cursor:pointer; outline:none; transition:border .2s, box-shadow .2s;
+    appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none' stroke='%237c9099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='5 8 10 13 15 8'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right .5rem center;
+  }
+  .filter-select[hidden] { display:none; }
+  .filter-select:focus { border-color:#004f68; box-shadow:0 0 0 3px rgba(0,79,104,.09); }
+  .filter-select.is-active { border-color:#004f68; background-color:#f2f8fa; color:#004f68; font-weight:700; }
 
   /* ── 교회 카드 리스트 ── */
   .church-list { display:grid; gap:.9rem; }
@@ -998,46 +998,30 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     if (missionaryEl) missionaryEl.innerHTML = [...missionarySet].map(v => `<option value="${esc(v)}">`).join('');
   }
 
-  // 왼쪽 목록 위 필터 탭(담당 선교사 / 교파) — 실제 등록된 값으로만 탭을 만들고,
-  // 값이 하나도 없으면 그 줄 자체를 숨긴다.
-  function renderFilterTabs() {
+  // 왼쪽 목록 위 필터 드롭다운(담당 선교사 / 교파) — 실제 등록된 값으로만
+  // 옵션을 만들고, 값이 하나도 없으면 그 드롭다운 자체를 숨긴다.
+  function renderFilterSelects() {
     const missionaries = [...new Set(churches.map(c => c.assignedMissionary).filter(Boolean))].sort();
     const denominations = [...new Set(churches.map(c => c.denomination).filter(Boolean))].sort();
 
-    const buildRow = (values, active, attr) => {
-      const allActive = !active;
-      const chips = values.map(v =>
-        `<button type="button" class="filter-chip${active === v ? ' active' : ''}" data-${attr}="${esc(v)}">${esc(v)}</button>`
-      ).join('');
-      return `<button type="button" class="filter-chip${allActive ? ' active' : ''}" data-${attr}="">${esc(t('filter_all'))}</button>${chips}`;
-    };
-
-    const missionaryEl = document.getElementById('missionaryFilterTabs');
-    const denominationEl = document.getElementById('denominationFilterTabs');
+    const missionaryEl = document.getElementById('missionaryFilterSelect');
+    const denominationEl = document.getElementById('denominationFilterSelect');
     if (missionaryEl) {
       missionaryEl.hidden = !missionaries.length;
-      missionaryEl.innerHTML = missionaries.length
-        ? `<span class="filter-tab-label">${esc(t('missionary_label'))}</span>${buildRow(missionaries, activeMissionaryFilter, 'missionary')}`
-        : '';
-      missionaryEl.querySelectorAll('.filter-chip').forEach(btn => btn.addEventListener('click', () => {
-        activeMissionaryFilter = btn.dataset.missionary || null;
-        renderFilterTabs();
-        renderChurchList();
-      }));
+      missionaryEl.innerHTML = `<option value="">${esc(t('missionary_label'))}: ${esc(t('filter_all'))}</option>` +
+        missionaries.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+      activeMissionaryFilter = missionaries.includes(activeMissionaryFilter) ? activeMissionaryFilter : null;
+      missionaryEl.value = activeMissionaryFilter || '';
+      missionaryEl.classList.toggle('is-active', !!activeMissionaryFilter);
     }
     if (denominationEl) {
       denominationEl.hidden = !denominations.length;
-      denominationEl.innerHTML = denominations.length
-        ? `<span class="filter-tab-label">${esc(t('denomination_label'))}</span>${buildRow(denominations, activeDenominationFilter, 'denomination')}`
-        : '';
-      denominationEl.querySelectorAll('.filter-chip').forEach(btn => btn.addEventListener('click', () => {
-        activeDenominationFilter = btn.dataset.denomination || null;
-        renderFilterTabs();
-        renderChurchList();
-      }));
+      denominationEl.innerHTML = `<option value="">${esc(t('denomination_label'))}: ${esc(t('filter_all'))}</option>` +
+        denominations.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+      activeDenominationFilter = denominations.includes(activeDenominationFilter) ? activeDenominationFilter : null;
+      denominationEl.value = activeDenominationFilter || '';
+      denominationEl.classList.toggle('is-active', !!activeDenominationFilter);
     }
-    const filterGroupEl = missionaryEl?.closest('.filter-tabs-group');
-    if (filterGroupEl) filterGroupEl.hidden = !missionaries.length && !denominations.length;
   }
 
   // ── 자동 로그아웃 (20분 비활동) ──
@@ -1276,11 +1260,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         <div class="list-panel" id="listPanel">
           <div class="top-bar">
             <input class="search-input" id="searchInput" placeholder="${t('search_ph')}">
+            <select class="filter-select" id="missionaryFilterSelect" hidden></select>
+            <select class="filter-select" id="denominationFilterSelect" hidden></select>
             <button class="btn-add" id="addChurchBtn">${t('add_church')}</button>
-            <div class="filter-tabs-group">
-              <div class="filter-tabs-row" id="missionaryFilterTabs"></div>
-              <div class="filter-tabs-row" id="denominationFilterTabs"></div>
-            </div>
           </div>
           <div class="list-panel-inner">
             <div class="church-list" id="churchList" style="padding-top:.8rem">
@@ -1478,6 +1460,16 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
     document.getElementById('detailPanelClose').addEventListener('click', closeDetailModal);
     document.getElementById('searchInput').addEventListener('input', renderChurchList);
+    document.getElementById('missionaryFilterSelect').addEventListener('change', e => {
+      activeMissionaryFilter = e.target.value || null;
+      e.target.classList.toggle('is-active', !!activeMissionaryFilter);
+      renderChurchList();
+    });
+    document.getElementById('denominationFilterSelect').addEventListener('change', e => {
+      activeDenominationFilter = e.target.value || null;
+      e.target.classList.toggle('is-active', !!activeDenominationFilter);
+      renderChurchList();
+    });
 
     // 시/도 → 시/군/구 연동
     document.getElementById('fRegion').addEventListener('change', function() {
@@ -1524,7 +1516,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     await ensureChurchNumbers();
     buildColorMap();
     populateFieldDatalists();
-    renderFilterTabs();
+    renderFilterSelects();
     renderChurchList();
     ensureCrsMap();
   }
