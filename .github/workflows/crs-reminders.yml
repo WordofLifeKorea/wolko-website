@@ -1,0 +1,51 @@
+name: CRS Contact Reminders
+
+on:
+  schedule:
+    - cron: '17 0 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Check configuration and counts without sending email'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crs-contact-reminders
+  cancel-in-progress: false
+
+jobs:
+  remind:
+    if: vars.CRS_REMINDERS_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check and send reminders
+        env:
+          CRS_REMINDER_SECRET: ${{ secrets.CRS_REMINDER_SECRET }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CRS_REMINDER_SECRET" || { echo 'Missing CRS_REMINDER_SECRET'; exit 1; }
+          url='https://wolko.org/api/crs-reminders'
+          if [ "$DRY_RUN" = 'true' ]; then url="$url?dryRun=1"; fi
+          review=0
+          for batch in $(seq 1 100); do
+            result=$(curl --fail-with-body --silent --show-error --max-time 90 \
+              -X POST -H "Authorization: Bearer $CRS_REMINDER_SECRET" "$url")
+            echo "$result" | jq '{dryRun, sent, remaining, review, overdue, recipients, from}'
+            if [ "$DRY_RUN" = 'true' ]; then exit 0; fi
+            review=$(echo "$result" | jq -r '.review // 0')
+            remaining=$(echo "$result" | jq -r '.remaining')
+            if [ "$remaining" = '0' ]; then
+              test "$review" = '0' || { echo 'Delivery records need manual review'; exit 1; }
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'Batch limit reached; remaining deliveries will resume on the next run.'
+          exit 1

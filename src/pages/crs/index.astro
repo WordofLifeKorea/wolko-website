@@ -23,6 +23,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/crs-reminders.css?v=1">
   <script src="/wolko-rail.js?v=9" defer></script>
   <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
 </head>
@@ -698,6 +699,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 </style>
 
 <script type="module">
+  import { overdueChurches } from '/crs-reminders.js';
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import {
     getAuth, signInWithEmailAndPassword, signInWithCustomToken, signOut, onAuthStateChanged, getIdTokenResult
@@ -896,6 +898,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let currentUserData = null;
   let ssoAttempted = false;
   let churches = [];
+  let churchLoadFailed = false;
   let editingChurch = null;
   let viewingChurch = null;
   let churchColorMap = {};
@@ -1265,6 +1268,17 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           </div>
         </a>
         <div class="user-info">
+          <div class="crs-notifications">
+            <button type="button" class="crs-bell" id="crsBell" aria-expanded="false" aria-controls="crsNotificationPanel" aria-label="${isKo ? '교회 교류 알림' : 'Church follow-up alerts'}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+              <span class="crs-bell-count" id="crsBellCount" hidden></span>
+            </button>
+            <section class="crs-notification-panel" id="crsNotificationPanel" aria-label="${isKo ? '교회 교류 알림' : 'Church follow-up alerts'}" hidden>
+              <h2>${isKo ? '교류 확인이 필요한 교회' : 'Churches needing follow-up'}</h2>
+              <p>${isKo ? '마지막 수정 또는 방문 기록 이후 180일 이상 경과했습니다.' : 'No update or visit has been recorded for at least 180 days.'}</p>
+              <div class="crs-notification-list" id="crsNotificationList"></div>
+            </section>
+          </div>
           ${crsLangToggleMarkup()}
           <span class="user-name-badge" title="${esc(currentUserData?.name || currentUser.email || currentUser.uid)}">${esc(currentUserData?.name || currentUser.email || currentUser.uid)}</span>
           ${currentUserData?.role === 'admin' ? `<button class="admin-btn" id="adminBtn">${t('admin_btn')}</button>` : ''}
@@ -1513,12 +1527,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       btn.addEventListener('click', () => switchCrsTab(btn.dataset.tab));
     });
 
+    document.getElementById('crsBell').addEventListener('click', () => {
+      const panel = document.getElementById('crsNotificationPanel');
+      panel.hidden = !panel.hidden;
+      document.getElementById('crsBell').setAttribute('aria-expanded', String(!panel.hidden));
+    });
     loadChurches();
     ensureCrsMap();
   }
 
   // ── 교회 목록 로드 ──
   async function loadChurches() {
+    churchLoadFailed = false;
     try {
       const snap = await get(ref(db, 'churches'));
       if (snap.exists()) {
@@ -1530,6 +1550,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         churches = [];
       }
     } catch(e) {
+      churchLoadFailed = true;
       churches = [];
     }
     await ensureChurchNumbers();
@@ -1558,8 +1579,48 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     return `<span class="dday-badge ${ddayLevel(days)}" title="${getLang()==='ko' ? '마지막 업데이트로부터 경과일' : 'Days since last update'}">${label}</span>`;
   }
 
+  function closeContactAlerts() {
+    const panel = document.getElementById('crsNotificationPanel');
+    if (panel) panel.hidden = true;
+    document.getElementById('crsBell')?.setAttribute('aria-expanded', 'false');
+  }
+  document.addEventListener('click', event => {
+    if (!event.target.closest('.crs-notifications')) closeContactAlerts();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && document.getElementById('crsNotificationPanel')?.hidden === false) {
+      closeContactAlerts();
+      document.getElementById('crsBell')?.focus();
+    }
+  });
+  function renderContactAlerts() {
+    const list = document.getElementById('crsNotificationList');
+    if (!list) return;
+    const overdue = overdueChurches(churches);
+    const ko = getLang() === 'ko';
+    const count = document.getElementById('crsBellCount');
+    if (churchLoadFailed) {
+      count.hidden = false;
+      count.textContent = '!';
+      document.getElementById('crsBell').setAttribute('aria-label', ko ? '교류 알림 조회 실패' : 'Follow-up alerts unavailable');
+      list.innerHTML = `<p>${ko ? '교회 기록을 불러오지 못했습니다. 새로고침 후 다시 확인해 주세요.' : 'Could not load church records. Refresh to try again.'}</p>`;
+      return;
+    }
+    count.hidden = overdue.length === 0;
+    count.textContent = String(overdue.length);
+    document.getElementById('crsBell').setAttribute('aria-label', ko ? `교회 교류 알림 ${overdue.length}건` : `${overdue.length} church follow-up alerts`);
+    list.innerHTML = overdue.length ? overdue.map(church => `<button type="button" class="crs-notification-item" data-church-id="${esc(church.id)}"><strong>${esc(church.churchName || (ko ? '이름 없는 교회' : 'Unnamed church'))}</strong><span>${ko ? `${church.inactiveDays}일간 기록 없음 · 컨택 확인 필요` : `No record for ${church.inactiveDays} days · Follow-up needed`}</span></button>`).join('') : `<p>${ko ? '현재 교류 확인이 필요한 교회가 없습니다.' : 'No churches need follow-up at this time.'}</p>`;
+    list.querySelectorAll('[data-church-id]').forEach(button => button.addEventListener('click', () => {
+      const church = churches.find(item => item.id === button.dataset.churchId);
+      closeContactAlerts();
+      if (church) openDetailModal(church);
+    }));
+  }
+  setInterval(renderContactAlerts, 60000);
+
   // ── 교회 목록 렌더 ──
   function renderChurchList() {
+    renderContactAlerts();
     const listEl = document.getElementById('churchList');
     if (!listEl) return;
     const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
