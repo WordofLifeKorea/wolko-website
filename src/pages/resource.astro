@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=17">
+  <link rel="stylesheet" href="/portal.css?v=18">
   <script src="/wolko-rail.js?v=9" defer></script>
 </head>
 <body>
@@ -156,7 +156,7 @@
         nameField: '예: 2026 Summer Camp Student Book', translationField: '예: 학생 교재 영문 번역 및 편집', detailField: '현재 작업 범위 또는 다음 단계',
         fieldThumbnail: '발표용 썸네일', thumbnailHint: 'JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB', chooseImage: '이미지 선택',
         filesLabel: '첨부 파일', fileHint: 'PDF · 이미지 · 문서 · 최대 24MB',
-        addFile: '+ 파일 추가', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileWrite: '업로드된 파일이 없습니다', noFileRead: '업로드된 파일이 없습니다', uploading: '업로드 중...',
+        addFile: '+ 파일 추가', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileRead: '업로드된 파일이 없습니다', uploading: '업로드 중...',
         unfiledLabel: '미분류', originalLabel: '원본', revisedLabel: '번역본',
         folderNamePh: '레슨 이름 (예: 레슨 1)', addFolder: '+ 폴더 추가', deleteFolder: '폴더 삭제',
         backToFolders: '← 목록', renameFolder: '이름 변경', renameFolderPrompt: '새 폴더 이름을 입력하세요',
@@ -192,7 +192,7 @@
         nameField: 'e.g. 2026 Summer Camp Student Book', translationField: 'e.g. English translation & editing of the student textbook', detailField: 'Current scope or next steps',
         fieldThumbnail: 'Presentation thumbnail', thumbnailHint: 'JPG, PNG, WEBP, GIF · auto-compressed · up to 1MB', chooseImage: 'Choose image',
         filesLabel: 'Attached Files', fileHint: 'PDF · image · document · up to 24MB',
-        addFile: '+ Add File', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileWrite: 'No file uploaded yet', noFileRead: 'No file uploaded yet', uploading: 'Uploading...',
+        addFile: '+ Add File', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileRead: 'No file uploaded yet', uploading: 'Uploading...',
         unfiledLabel: 'Unfiled', originalLabel: 'Original', revisedLabel: 'Translated',
         folderNamePh: 'Folder name (e.g. Lesson 1)', addFolder: '+ Add Folder', deleteFolder: 'Delete Folder',
         backToFolders: '← Back', renameFolder: 'Rename', renameFolderPrompt: 'Enter a new folder name',
@@ -331,11 +331,21 @@
       const [label, color, bg] = FILE_TYPE_MAP[ext] || [ext ? ext.slice(0, 4).toUpperCase() : 'FILE', '#67808d', '#eef2f4'];
       return `<span class="file-type-icon" style="color:${color};background:${bg};">${esc(label)}</span>`;
     }
-    function fileRowHtml(meta) {
+    // 파일 하나를 아이콘 타일로 — 아이콘/이름 부분을 누르면 미리보기, 교체·이동·
+    // 삭제는 타일 아래쪽 작은 버튼 줄로 뺐다(폴더 아이콘 그리드와 통일감).
+    function fileTileHtml(meta) {
       const metaLine = `${t('uploadedBy')(esc(meta.uploadedByName || meta.uploadedBy || ''), esc(formatLogTime(meta.uploadedAt)))} · ${humanFileSize(meta.fileSize)}`;
-      const replaceInput = canWrite ? `<label class="file-btn"><input type="file" data-file-id="${meta.id}" data-folder-id="${meta.folderId || ''}" data-category="${meta.category || ''}" onchange="handleFileUploadEvent(this)">${esc(t('replaceFile'))}</label>` : '';
-      const removeBtn = canWrite ? `<button type="button" class="file-btn is-danger" onclick="deleteFile('${meta.id}')">${esc(t('removeFile'))}</button>` : '';
-      return `<div class="file-row">${fileIconHtml(meta.fileName)}<div class="file-row-info"><span class="file-row-name">${esc(meta.fileName)}</span><span class="file-row-meta">${metaLine}</span></div><div class="file-row-actions"><button type="button" class="file-btn" onclick="previewFile('${meta.id}')">${esc(t('previewFile'))}</button>${replaceInput}${moveOptionsHtml(meta)}${removeBtn}</div></div>`;
+      const replaceInput = canWrite ? `<label class="file-tile-btn"><input type="file" data-file-id="${meta.id}" data-folder-id="${meta.folderId || ''}" data-category="${meta.category || ''}" onchange="handleFileUploadEvent(this)">${esc(t('replaceFile'))}</label>` : '';
+      const removeBtn = canWrite ? `<button type="button" class="file-tile-btn is-danger" onclick="deleteFile('${meta.id}')">${esc(t('removeFile'))}</button>` : '';
+      const moveSelect = moveOptionsHtml(meta);
+      return `<div class="file-tile">
+        <button type="button" class="file-tile-preview" onclick="previewFile('${meta.id}')" title="${esc(t('previewFile'))}">
+          ${fileIconHtml(meta.fileName)}
+          <span class="file-tile-name" title="${esc(meta.fileName)}">${esc(meta.fileName)}</span>
+          <span class="file-tile-meta">${metaLine}</span>
+        </button>
+        ${canWrite ? `<div class="file-tile-actions">${replaceInput}${moveSelect}${removeBtn}</div>` : ''}
+      </div>`;
     }
     function filesIn(folderId, category) {
       return (currentItem.files || [])
@@ -343,10 +353,11 @@
         .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
     }
     function fileGroupHtml(files, folderId, category) {
-      const rows = files.map(fileRowHtml).join('');
-      const emptyMsg = files.length ? '' : `<p class="file-empty">${esc(canWrite ? t('noFileWrite') : t('noFileRead'))}</p>`;
-      const addRow = canWrite ? `<label class="file-btn file-add-btn"><input type="file" multiple data-folder-id="${folderId || ''}" data-category="${category || ''}" onchange="handleFileUploadEvent(this)">${esc(t('addFile'))}</label>` : '';
-      return emptyMsg + rows + addRow;
+      const tiles = files.map(fileTileHtml).join('');
+      const emptyMsg = !files.length && !canWrite ? `<p class="file-empty">${esc(t('noFileRead'))}</p>` : '';
+      const addTile = canWrite ? `<label class="file-tile file-tile-add"><input type="file" multiple data-folder-id="${folderId || ''}" data-category="${category || ''}" onchange="handleFileUploadEvent(this)"><span class="file-tile-add-icon">+</span><span class="file-tile-name">${esc(t('addFile'))}</span></label>` : '';
+      const addRow = `<div class="file-icon-grid">${tiles}${addTile}</div>`;
+      return emptyMsg + addRow;
     }
     const FOLDER_ICON_SVG = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>';
     let currentFolderId = null; // null = 폴더 탐색기 최상위(미분류 + 폴더 아이콘 목록), 그 외엔 그 폴더 안
