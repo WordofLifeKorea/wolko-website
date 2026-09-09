@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=28">
+  <link rel="stylesheet" href="/portal.css?v=29">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <style is:global>
@@ -182,6 +182,7 @@
           </div>
           <div class="notes-list" id="notesList"></div>
           <div class="note-composer" id="noteComposer" hidden>
+            <blockquote class="note-composer-quote" id="noteComposerQuote" hidden></blockquote>
             <textarea id="noteComposerText" maxlength="500" data-t-ph="notePlaceholder"></textarea>
             <div class="note-composer-actions">
               <button type="button" onclick="cancelNoteComposer()" data-t="noteCancel">취소</button>
@@ -235,8 +236,9 @@
         fileRemoveConfirm: '이 파일을 삭제할까요?', fileUploadedToast: '파일을 업로드했습니다.', filesUploadedToast: n => `파일 ${n}개를 업로드했습니다.`, fileRemovedToast: '파일을 삭제했습니다.',
         moveFile: '이동', fileMovedToast: '파일을 이동했습니다.', fileMoveFailed: '파일을 이동하지 못했습니다.',
         addNote: '🖍 드래그해서 노트 남기기', addNoteActive: '✕ 표시 취소', addNoteHint: '문서 위를 드래그해서 표시할 위치를 정해주세요',
+        addNoteAreaPdf: '🖼 이미지·표 영역 표시', addNoteHintPdf: '글자는 그냥 마우스로 드래그해서 선택하면 메모 창이 바로 떠요. 이미지·표처럼 글자가 없는 부분은 이 버튼을 눌러 사각형으로 표시하세요.',
         addGeneralNote: '+ 노트 남기기', addTimeNote: '+ 이 시점에 노트',
-        notesLabel: '노트', notesEmpty: '아직 노트가 없습니다. 위의 "드래그해서 노트 남기기" 버튼을 누른 뒤 문서를 드래그해보세요.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
+        notesLabel: '노트', notesEmpty: '아직 노트가 없습니다. 문서 위의 글자를 드래그하거나, 위 버튼을 눌러 영역을 표시해보세요.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
         noteCancel: '취소', noteSave: '저장', noteResolve: '해결', noteReopen: '재열기', noteDelete: '삭제',
         noteDeleteConfirm: '이 노트를 삭제할까요?', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
         noteDeletedToast: '노트를 삭제했습니다.',
@@ -281,8 +283,9 @@
         fileRemoveConfirm: 'Delete this file?', fileUploadedToast: 'File uploaded.', filesUploadedToast: n => `Uploaded ${n} files.`, fileRemovedToast: 'File removed.',
         moveFile: 'Move', fileMovedToast: 'File moved.', fileMoveFailed: 'Could not move the file.',
         addNote: '🖍 Drag to Add a Note', addNoteActive: '✕ Cancel Marking', addNoteHint: 'Drag over the document to mark where the note belongs',
+        addNoteAreaPdf: '🖼 Mark an Image/Table Area', addNoteHintPdf: 'Just drag over any text to select it — a note box pops up automatically. Use this button only for non-text parts like images or tables.',
         addGeneralNote: '+ Add Note', addTimeNote: '+ Note at This Time',
-        notesLabel: 'Notes', notesEmpty: 'No notes yet. Click "Drag to Add a Note" above, then drag over the document.', notePlaceholder: 'Describe what needs fixing here',
+        notesLabel: 'Notes', notesEmpty: 'No notes yet. Drag over text in the document, or click the button above to mark an area.', notePlaceholder: 'Describe what needs fixing here',
         noteCancel: 'Cancel', noteSave: 'Save', noteResolve: 'Resolve', noteReopen: 'Reopen', noteDelete: 'Delete',
         noteDeleteConfirm: 'Delete this note?', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
         noteDeletedToast: 'Note deleted.',
@@ -655,7 +658,7 @@
       return VIEWER_KIND_MAP[ext] || 'other';
     }
     let viewerFileId = null, viewerKind = null, viewerUrl = null, viewerPage = 1, viewerPdfDoc = null, viewerZoom = 1;
-    let drawModeOn = false, dragState = null, pendingNote = null;
+    let drawModeOn = false, dragState = null, pendingNote = null, pdfjsLibRef = null;
     async function previewFile(fileId) {
       const meta = (currentItem?.files || []).find(f => f.id === fileId);
       if (!meta) return;
@@ -697,8 +700,14 @@
       const locked = !$('editorOverlay').hidden || !$('viewerOverlay').hidden;
       document.body.classList.toggle('modal-open', locked);
     }
+    // PDF는 글자 위 드래그만으로 노트가 자동으로 떠서 버튼이 "글자가 아닌
+    // 부분(이미지·표)을 사각형으로 표시"하는 보조 기능이 되고, 이미지 파일은
+    // 텍스트 레이어가 없어서 이 버튼이 여전히 유일한 방법이다 — 안내 문구를
+    // 다르게 보여준다.
+    function addNoteButtonLabel() { return viewerKind === 'pdf' ? t('addNoteAreaPdf') : t('addNote'); }
+    function addNoteHintText() { return viewerKind === 'pdf' ? t('addNoteHintPdf') : t('addNoteHint'); }
     function viewerToolbarHtml() {
-      return `<button type="button" class="viewer-annotate-toggle" id="viewerDrawToggle" onclick="toggleDrawMode()">${esc(t('addNote'))}</button><span class="viewer-draw-hint" id="viewerDrawHint" hidden>${esc(t('addNoteHint'))}</span><a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</a>`;
+      return `<button type="button" class="viewer-annotate-toggle" id="viewerDrawToggle" onclick="toggleDrawMode()">${esc(addNoteButtonLabel())}</button><span class="viewer-draw-hint" id="viewerDrawHint" hidden>${esc(addNoteHintText())}</span><a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</a>`;
     }
     function renderImageStage(url) {
       $('viewerToolbar').innerHTML = viewerToolbarHtml();
@@ -720,13 +729,15 @@
     }
     async function renderPdfStage(url) {
       $('viewerToolbar').innerHTML = `${viewerToolbarHtml()}<div class="viewer-zoom-nav"><button type="button" onclick="viewerZoomOut()" aria-label="zoom out">−</button><button type="button" id="viewerZoomLabel" onclick="viewerZoomReset()" title="${esc(t('zoomReset'))}"></button><button type="button" onclick="viewerZoomIn()" aria-label="zoom in">+</button></div><div class="viewer-page-nav"><button type="button" id="viewerPrevBtn" onclick="viewerPrevPage()">‹</button><span id="viewerPageLabel"></span><button type="button" id="viewerNextBtn" onclick="viewerNextPage()">›</button></div>`;
-      $('viewerSurface').innerHTML = `<div class="viewer-surface-inner" id="viewerSurfaceInner"><canvas id="viewerCanvas"></canvas></div>`;
+      $('viewerSurface').innerHTML = `<div class="viewer-surface-inner" id="viewerSurfaceInner"><canvas id="viewerCanvas"></canvas><div class="textLayer" id="viewerTextLayer"></div></div>`;
       try {
         const pdfjsLib = await window.__loadPdfjs();
+        pdfjsLibRef = pdfjsLib;
         viewerPdfDoc = await pdfjsLib.getDocument({ url }).promise;
         viewerPage = 1;
         await renderPdfPage();
         attachDragHighlight($('viewerSurfaceInner'));
+        attachTextSelectionNote($('viewerTextLayer'), $('viewerSurfaceInner'));
       } catch (e) {
         // 기기·브라우저에 따라 pdf.js 로딩이 실패하는 원인이 다를 수 있어서
         // (워커 로드, 렌더링 등) 실제 에러를 화면에 조그맣게 같이 보여준다 —
@@ -783,10 +794,30 @@
       // 넘겨줘야 한다.
       const transform = dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null;
       await page.render({ canvasContext: canvas.getContext('2d'), viewport, transform }).promise;
+      await renderTextLayer(page, viewport);
       $('viewerPageLabel').textContent = t('pageOf')(viewerPage, viewerPdfDoc.numPages);
       $('viewerZoomLabel').textContent = Math.round(viewerZoom * 100) + '%';
       syncPageNav();
       renderHighlights();
+    }
+    // 실제 글자를 드래그로 선택할 수 있게, 렌더링된 캔버스 위에 눈에 보이지
+    // 않는(투명한) 선택 가능한 텍스트를 글자 위치 그대로 겹쳐 깐다 — pdf.js가
+    // 이 용도로 공식 제공하는 TextLayer를 그대로 쓴다. 이 레이어가 기대하는
+    // CSS 변수(--total-scale-factor 등)는 원래 pdf.js의 풀 뷰어(PDFPageView)가
+    // 자동으로 설정해주는데, 우리는 저수준 API만 쓰고 있어서 직접 넣어줘야
+    // 글자 상자 크기·위치가 캔버스와 정확히 맞는다.
+    async function renderTextLayer(page, viewport) {
+      const layer = $('viewerTextLayer');
+      if (!layer || !pdfjsLibRef?.TextLayer) return;
+      layer.innerHTML = '';
+      layer.style.setProperty('--total-scale-factor', String(viewport.scale));
+      layer.style.setProperty('--scale-round-x', '1px');
+      layer.style.setProperty('--scale-round-y', '1px');
+      try {
+        await new pdfjsLibRef.TextLayer({ textContentSource: page.streamTextContent(), container: layer, viewport }).render();
+      } catch (err) {
+        console.error('text layer render failed', err);
+      }
     }
     function syncPageNav() {
       const multiPage = !!(viewerPdfDoc && viewerPdfDoc.numPages > 1);
@@ -810,7 +841,7 @@
     function toggleDrawMode() {
       drawModeOn = !drawModeOn;
       const btn = $('viewerDrawToggle');
-      if (btn) { btn.classList.toggle('is-active', drawModeOn); btn.textContent = drawModeOn ? t('addNoteActive') : t('addNote'); }
+      if (btn) { btn.classList.toggle('is-active', drawModeOn); btn.textContent = drawModeOn ? t('addNoteActive') : addNoteButtonLabel(); }
       $('viewerDrawHint')?.toggleAttribute('hidden', !drawModeOn);
       $('viewerSurfaceInner')?.classList.toggle('is-drawing', drawModeOn);
     }
@@ -855,6 +886,46 @@
         openNoteComposer({ kind: 'area', x, y, w, h, page: viewerKind === 'pdf' ? viewerPage : null });
       });
     }
+    // 텍스트 레이어 위에서 마우스/손가락으로 글자를 드래그해 선택하면(따로
+    // 버튼을 누를 필요 없이) 곧바로 메모 입력창이 뜬다. 영역 표시 모드(사각형
+    // 자유 드래그)가 켜져 있을 때는 그쪽 로직이 이미 pointerdown에서
+    // preventDefault + setPointerCapture로 텍스트 선택 자체가 시작되지 않게
+    // 막아주므로 서로 부딪히지 않는다.
+    function attachTextSelectionNote(textLayerEl, surfaceEl) {
+      if (!textLayerEl) return;
+      textLayerEl.addEventListener('pointerup', () => {
+        if (drawModeOn) return;
+        // mouseup 시점엔 아직 브라우저 선택 영역이 확정되지 않을 수 있어 한 틱 늦춘다.
+        setTimeout(() => {
+          const captured = captureTextSelectionRects(surfaceEl, textLayerEl);
+          if (!captured) return;
+          openNoteComposer({ kind: 'area', x: captured.x, y: captured.y, w: captured.w, h: captured.h, rects: captured.rects, page: viewerPage, quote: captured.text });
+        }, 0);
+      });
+    }
+    // 드래그로 선택된 실제 텍스트 범위(Range)를 줄 단위 사각형들로 변환한다.
+    // 한 줄이면 사각형 1개, 여러 줄에 걸치면 줄 수만큼 생긴다 — 각각을 0~1
+    // 비율로 정규화해서 저장하므로 화면 크기·확대율이 달라져도 항상 같은
+    // 글자 위치를 가리킨다(기존 자유 드래그 사각형과 동일한 좌표계).
+    function captureTextSelectionRects(surfaceEl, textLayerEl) {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+      const range = sel.getRangeAt(0);
+      if (!textLayerEl.contains(range.commonAncestorContainer)) return null;
+      const quote = sel.toString().replace(/\s+/g, ' ').trim();
+      if (!quote) return null;
+      const rect = surfaceEl.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      const rects = Array.from(range.getClientRects())
+        .map(r => ({ x: (r.left - rect.left) / rect.width, y: (r.top - rect.top) / rect.height, w: r.width / rect.width, h: r.height / rect.height }))
+        .filter(r => r.w > 0.001 && r.h > 0.001)
+        .map(r => ({ x: Math.max(0, Math.min(1, r.x)), y: Math.max(0, Math.min(1, r.y)), w: Math.max(0, Math.min(1 - Math.max(0, r.x), r.w)), h: Math.max(0, Math.min(1 - Math.max(0, r.y), r.h)) }))
+        .slice(0, 20);
+      if (!rects.length) return null;
+      const minX = Math.min(...rects.map(r => r.x)), minY = Math.min(...rects.map(r => r.y));
+      const maxX = Math.max(...rects.map(r => r.x + r.w)), maxY = Math.max(...rects.map(r => r.y + r.h));
+      return { rects, x: minX, y: minY, w: maxX - minX, h: maxY - minY, text: quote };
+    }
     function addTimeNote() {
       const el = $('viewerMedia');
       if (!el) return;
@@ -864,6 +935,11 @@
       pendingNote = pending;
       toggleNotesPanel(true);
       $('noteComposer').hidden = false;
+      const quoteEl = $('noteComposerQuote');
+      if (quoteEl) {
+        if (pending.quote) { quoteEl.hidden = false; quoteEl.textContent = '“' + (pending.quote.length > 140 ? pending.quote.slice(0, 140) + '…' : pending.quote) + '”'; }
+        else quoteEl.hidden = true;
+      }
       $('noteComposerText').value = '';
       $('noteComposerText').focus();
     }
@@ -871,12 +947,13 @@
       pendingNote = null;
       const composer = $('noteComposer');
       if (composer) composer.hidden = true;
+      window.getSelection()?.removeAllRanges();
     }
     async function submitNoteComposer() {
       const textVal = $('noteComposerText').value.trim();
       if (!textVal || !pendingNote) return;
       const body = { id: currentItem.id, fileId: viewerFileId, kind: pendingNote.kind, text: textVal };
-      if (pendingNote.kind === 'area') Object.assign(body, { x: pendingNote.x, y: pendingNote.y, w: pendingNote.w, h: pendingNote.h, page: pendingNote.page });
+      if (pendingNote.kind === 'area') Object.assign(body, { x: pendingNote.x, y: pendingNote.y, w: pendingNote.w, h: pendingNote.h, page: pendingNote.page, rects: pendingNote.rects, quote: pendingNote.quote });
       if (pendingNote.kind === 'time') body.timeSec = pendingNote.timeSec;
       try {
         const res = await fetch('/api/portal/resource-annotation', { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
@@ -923,6 +1000,7 @@
         return `<div class="note-item is-${a.status}" data-note-id="${a.id}">
           <div class="note-item-head"><b><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span>${esc(a.createdByName)}</b><span>${esc(formatLogTime(a.createdAt))}</span></div>
           ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
+          ${a.quote ? `<blockquote class="note-item-quote">${esc(a.quote)}</blockquote>` : ''}
           <p>${esc(a.text)}</p>
           ${canManage ? `<div class="note-item-actions"><button type="button" onclick="toggleNoteStatus('${a.id}','${a.status === 'open' ? 'resolved' : 'open'}')">${esc(a.status === 'open' ? t('noteResolve') : t('noteReopen'))}</button><button type="button" class="is-danger" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button></div>` : ''}
         </div>`;
@@ -934,15 +1012,21 @@
       surface.querySelectorAll('.highlight-box:not(.is-drawing)').forEach(el => el.remove());
       if (viewerKind !== 'pdf' && viewerKind !== 'image') return;
       annotationsForViewerFile().filter(a => a.kind === 'area' && (viewerKind !== 'pdf' || (a.page || 1) === viewerPage)).forEach(a => {
-        const box = document.createElement('div');
-        box.className = 'highlight-box is-' + a.status;
         const color = highlightColorFor(a.createdBy);
-        box.style.borderColor = color;
-        box.style.background = color + '2e';
-        box.style.left = (a.x * 100) + '%'; box.style.top = (a.y * 100) + '%'; box.style.width = (a.w * 100) + '%'; box.style.height = (a.h * 100) + '%';
-        box.title = `${a.createdByName}: ${a.text}`;
-        box.addEventListener('click', () => jumpToNoteListItem(a.id));
-        surface.appendChild(box);
+        // 텍스트를 드래그해서 만든 노트는 줄마다 사각형이 따로 있어서(rects)
+        // 그 줄들을 각각 그리고, 옛날 방식(자유 사각형 하나)은 그대로 x/y/w/h
+        // 하나만 그린다 — 형광펜처럼 줄 단위로 딱 붙게 보이려는 것.
+        const boxRects = (Array.isArray(a.rects) && a.rects.length) ? a.rects : [{ x: a.x, y: a.y, w: a.w, h: a.h }];
+        boxRects.forEach(r => {
+          const box = document.createElement('div');
+          box.className = 'highlight-box is-' + a.status + (a.rects?.length ? ' is-text-rect' : '');
+          box.style.borderColor = color;
+          box.style.background = color + '2e';
+          box.style.left = (r.x * 100) + '%'; box.style.top = (r.y * 100) + '%'; box.style.width = (r.w * 100) + '%'; box.style.height = (r.h * 100) + '%';
+          box.title = `${a.createdByName}: ${a.text}`;
+          box.addEventListener('click', () => jumpToNoteListItem(a.id));
+          surface.appendChild(box);
+        });
       });
     }
     function jumpToNoteListItem(annotationId) {

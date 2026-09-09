@@ -34,13 +34,23 @@ export async function onRequestPost({ env, request }) {
   if (!id || !fileId || !kind) return error('잘못된 요청입니다.', 400);
   if (!noteText) return error('노트 내용을 입력해 주세요.', 400);
 
-  let page = null, x = null, y = null, w = null, h = null, timeSec = null;
+  let page = null, x = null, y = null, w = null, h = null, timeSec = null, rects = null, quote = '';
   if (kind === 'area') {
     x = num01(body.x); y = num01(body.y); w = num01(body.w); h = num01(body.h);
     if ([x, y, w, h].some(v => v === null || v < 0 || v > 1)) return error('하이라이트 위치가 올바르지 않습니다.', 400);
     if (x + w > 1.0001 || y + h > 1.0001) return error('하이라이트 위치가 올바르지 않습니다.', 400);
     const pageInput = Number(body.page);
     page = Number.isInteger(pageInput) && pageInput > 0 ? pageInput : null;
+    // 텍스트를 드래그로 선택한 노트는 줄마다 사각형이 하나씩 생겨서(여러 줄에
+    // 걸치면 개수가 늘어난다) x/y/w/h(전체를 감싸는 바깥 상자) 외에 실제
+    // 하이라이트로 그릴 줄별 사각형 목록도 같이 받는다 — 최대 20개로 제한.
+    if (Array.isArray(body.rects) && body.rects.length) {
+      const cleaned = body.rects.slice(0, 20).map(r => ({ x: num01(r?.x), y: num01(r?.y), w: num01(r?.w), h: num01(r?.h) }));
+      const rectsValid = cleaned.every(r => [r.x, r.y, r.w, r.h].every(v => v !== null && v >= 0 && v <= 1) && r.x + r.w <= 1.0001 && r.y + r.h <= 1.0001);
+      if (!rectsValid) return error('하이라이트 위치가 올바르지 않습니다.', 400);
+      rects = cleaned;
+    }
+    quote = text(body.quote, 300);
   } else if (kind === 'time') {
     timeSec = num01(body.timeSec);
     if (timeSec === null || timeSec < 0) return error('노트 시점이 올바르지 않습니다.', 400);
@@ -59,7 +69,7 @@ export async function onRequestPost({ env, request }) {
   const createdByName = account?.name || session.email;
   const now = new Date().toISOString();
   const annotation = {
-    id: crypto.randomUUID(), fileId, kind, page, x, y, w, h, timeSec,
+    id: crypto.randomUUID(), fileId, kind, page, x, y, w, h, timeSec, rects, quote,
     text: noteText, status: 'open',
     createdBy: session.email, createdByName, createdAt: now, updatedAt: now,
   };
