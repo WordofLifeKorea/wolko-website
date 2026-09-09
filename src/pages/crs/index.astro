@@ -117,9 +117,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .search-input:focus { border-color:#004f68; box-shadow:0 0 0 3px rgba(0,79,104,.09); }
   .btn-add { background:#004f68; color:#fff; border:none; border-radius:9px; padding:.65rem 1.1rem; font-size:.88rem; font-weight:700; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:.4rem; transition:background .18s; }
   .btn-add:hover { background:#003a50; }
-  .filter-tabs-row { flex-basis:100%; display:flex; align-items:center; gap:.4rem; overflow-x:auto; padding-bottom:.1rem; }
-  .filter-tabs-row::-webkit-scrollbar { height:3px; }
-  .filter-tab-label { flex-shrink:0; font-size:.68rem; font-weight:800; color:#7c9099; white-space:nowrap; letter-spacing:.02em; }
+  .filter-tabs-group { flex-basis:100%; display:flex; flex-direction:column; gap:.45rem; margin-top:.15rem; padding-top:.6rem; border-top:1px dashed #dbe4e8; }
+  .filter-tabs-group[hidden], .filter-tabs-row[hidden] { display:none; }
+  .filter-tabs-row { display:flex; align-items:center; gap:.4rem; overflow-x:auto; padding-bottom:.15rem; }
+  .filter-tabs-row::-webkit-scrollbar { display:none; }
+  .filter-tab-label { flex-shrink:0; width:4.6rem; font-size:.66rem; font-weight:800; color:#8397a0; white-space:nowrap; letter-spacing:.02em; }
   .filter-chip { flex-shrink:0; padding:.32rem .7rem; border-radius:20px; border:1px solid #dde5ea; background:#fff; color:#57707a; font-size:.74rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; transition:background .15s, color .15s, border-color .15s; }
   .filter-chip:hover { border-color:#b8ced5; }
   .filter-chip.active { background:#004f68; border-color:#004f68; color:#fff; }
@@ -1013,6 +1015,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const missionaryEl = document.getElementById('missionaryFilterTabs');
     const denominationEl = document.getElementById('denominationFilterTabs');
     if (missionaryEl) {
+      missionaryEl.hidden = !missionaries.length;
       missionaryEl.innerHTML = missionaries.length
         ? `<span class="filter-tab-label">${esc(t('missionary_label'))}</span>${buildRow(missionaries, activeMissionaryFilter, 'missionary')}`
         : '';
@@ -1023,6 +1026,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       }));
     }
     if (denominationEl) {
+      denominationEl.hidden = !denominations.length;
       denominationEl.innerHTML = denominations.length
         ? `<span class="filter-tab-label">${esc(t('denomination_label'))}</span>${buildRow(denominations, activeDenominationFilter, 'denomination')}`
         : '';
@@ -1032,6 +1036,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         renderChurchList();
       }));
     }
+    const filterGroupEl = missionaryEl?.closest('.filter-tabs-group');
+    if (filterGroupEl) filterGroupEl.hidden = !missionaries.length && !denominations.length;
   }
 
   // ── 자동 로그아웃 (20분 비활동) ──
@@ -1271,8 +1277,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <div class="top-bar">
             <input class="search-input" id="searchInput" placeholder="${t('search_ph')}">
             <button class="btn-add" id="addChurchBtn">${t('add_church')}</button>
-            <div class="filter-tabs-row" id="missionaryFilterTabs"></div>
-            <div class="filter-tabs-row" id="denominationFilterTabs"></div>
+            <div class="filter-tabs-group">
+              <div class="filter-tabs-row" id="missionaryFilterTabs"></div>
+              <div class="filter-tabs-row" id="denominationFilterTabs"></div>
+            </div>
           </div>
           <div class="list-panel-inner">
             <div class="church-list" id="churchList" style="padding-top:.8rem">
