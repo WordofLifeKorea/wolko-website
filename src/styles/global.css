@@ -41,6 +41,22 @@
 
 html { scroll-behavior: smooth; }
 body.modal-open { overflow: hidden; }
+
+/* 스크롤 중에만 스크롤바가 살짝 보였다가 멈추면 사라진다(BaseLayout의
+   스크롤 감지 스크립트가 html에 is-scrolling 클래스를 잠깐 붙여준다).
+   파이어폭스는 스크롤바를 완전히 숨기지 못해 얇게 유지하고, 스크롤 중에만
+   색을 진하게 바꾸는 정도로 타협한다. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color .2s ease;
+}
+html.is-scrolling { scrollbar-color: rgba(0,79,104,0.35) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: transparent; border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; transition: background-color .2s ease; }
+html.is-scrolling::-webkit-scrollbar-thumb { background-color: rgba(0,79,104,0.35); }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(0,79,104,0.55) !important; }
 body {
   font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
   color: var(--text-dark);

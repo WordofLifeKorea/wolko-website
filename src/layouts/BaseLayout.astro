@@ -282,6 +282,16 @@ const {
       nav.classList.toggle('scrolled', window.scrollY > 40);
     });
 
+    // 스크롤바는 스크롤 중에만 살짝 보였다가 멈추면 사라진다(global.css 참고).
+    let scrollbarFadeTimer;
+    window.addEventListener('scroll', () => {
+      document.documentElement.classList.add('is-scrolling');
+      clearTimeout(scrollbarFadeTimer);
+      scrollbarFadeTimer = setTimeout(() => {
+        document.documentElement.classList.remove('is-scrolling');
+      }, 900);
+    }, { passive: true });
+
     // 언어 토글
     const langRootTargets = [
       document.getElementById(langRoot),
