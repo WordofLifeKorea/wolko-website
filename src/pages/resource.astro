@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=19">
+  <link rel="stylesheet" href="/portal.css?v=20">
   <style is:global>
     .file-context-menu { position:fixed; z-index:10000; width:min(230px,calc(100vw - 16px)); padding:6px; background:#fff; border:1px solid #dce8ed; border-radius:12px; box-shadow:0 12px 36px rgba(16,41,54,.2); }
     .file-context-menu button { display:block; width:100%; min-height:42px; border:0; border-radius:7px; background:transparent; text-align:left; padding:10px 14px; color:#102936; font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; }
@@ -358,11 +358,38 @@
         .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
     }
     function fileGroupHtml(files, folderId, category) {
+      if (folderId) return fileDetailsHtml(files, folderId, category);
       const tiles = files.map(fileTileHtml).join('');
       const emptyMsg = !files.length && !canWrite ? `<p class="file-empty">${esc(t('noFileRead'))}</p>` : '';
       const addTile = canWrite ? `<label class="file-tile file-tile-add"><input type="file" multiple data-folder-id="${folderId || ''}" data-category="${category || ''}" onchange="handleFileUploadEvent(this)"><span class="file-tile-add-icon">+</span><span class="file-tile-name">${esc(t('addFile'))}</span></label>` : '';
       const addRow = `<div class="file-icon-grid">${tiles}${addTile}</div>`;
       return emptyMsg + addRow;
+    }
+    function fileDetailsHtml(files, folderId, category) {
+      const labels = lang === 'en'
+        ? ['Name', 'Size', 'Kind', 'Uploaded']
+        : ['이름', '크기', '종류', '업로드 일시'];
+      const rows = files.map(meta => {
+        const extension = meta.fileName.includes('.') ? meta.fileName.split('.').pop().toUpperCase() : '';
+        const kind = extension || (lang === 'en' ? 'File' : '파일');
+        let date = '', time = '';
+        try {
+          const uploadedAt = new Date(meta.uploadedAt);
+          const locale = lang === 'en' ? 'en-US' : 'ko-KR';
+          date = new Intl.DateTimeFormat(locale, {
+            year:'numeric', month:'2-digit', day:'2-digit',
+          }).format(uploadedAt);
+          time = new Intl.DateTimeFormat(locale, { hour:'2-digit', minute:'2-digit' }).format(uploadedAt);
+        } catch {}
+        return `<tr data-context-file="${esc(meta.id)}" onclick="previewFile('${meta.id}')">
+          <td><button type="button" class="file-details-name" title="${esc(meta.fileName)}">${fileIconHtml(meta.fileName)}<span>${esc(meta.fileName)}</span></button></td>
+          <td class="file-details-size">${humanFileSize(meta.fileSize)}</td>
+          <td class="file-details-kind">${esc(kind)}</td>
+          <td class="file-details-date" title="${esc(meta.uploadedByName || meta.uploadedBy || '')}"><span>${esc(date)}</span> <span class="file-details-time">${esc(time)}</span></td>
+        </tr>`;
+      }).join('');
+      const addRow = canWrite ? `<label class="file-details-add"><input type="file" multiple data-folder-id="${folderId}" data-category="${category || ''}" onchange="handleFileUploadEvent(this)"><span aria-hidden="true">+</span>${esc(t('addFile'))}</label>` : '';
+      return `<div class="file-details-wrap"><table class="file-details-table"><thead><tr>${labels.map((label, i) => `<th scope="col" class="${['', 'file-details-size', 'file-details-kind', 'file-details-date'][i]}">${esc(label)}</th>`).join('')}</tr></thead><tbody>${rows || `<tr><td colspan="4" class="file-details-empty">${esc(t('noFileRead'))}</td></tr>`}</tbody></table></div>${addRow}`;
     }
     const FOLDER_ICON_SVG = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>';
     let currentFolderId = null; // null = 폴더 탐색기 최상위(미분류 + 폴더 아이콘 목록), 그 외엔 그 폴더 안
