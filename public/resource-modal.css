@@ -1,0 +1,47 @@
+.editor-head .icon-close {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #dce5e9;
+  border-radius: 12px;
+  background: #f8fafb;
+  color: #607783;
+  font-size: 0;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.editor-head .icon-close::before,
+.editor-head .icon-close::after {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.editor-head .icon-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.editor-head .icon-close:hover {
+  background: #edf3f5;
+  border-color: #b9ccd4;
+  color: #244c5c;
+}
+
+.editor-head .icon-close:focus-visible {
+  outline: 2px solid #005c76;
+  outline-offset: 3px;
+}
+
+@media (pointer: coarse) {
+  .editor-head .icon-close { width: 44px; height: 44px; flex-basis: 44px; }
+}
