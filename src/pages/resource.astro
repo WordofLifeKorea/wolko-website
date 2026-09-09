@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=25">
+  <link rel="stylesheet" href="/portal.css?v=27">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <style is:global>
@@ -171,6 +171,8 @@
       <div class="viewer-body">
         <div class="viewer-stage">
           <div class="viewer-toolbar" id="viewerToolbar"></div>
+          <button type="button" class="viewer-side-nav is-prev" id="viewerSideNavPrev" onclick="viewerPrevPage()" aria-label="previous page" hidden>‹</button>
+          <button type="button" class="viewer-side-nav is-next" id="viewerSideNavNext" onclick="viewerNextPage()" aria-label="next page" hidden>›</button>
           <div class="viewer-stage-surface" id="viewerSurface"></div>
         </div>
         <div class="notes-panel" id="notesPanel">
@@ -238,7 +240,7 @@
         noteDeleteConfirm: '이 노트를 삭제할까요?', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
         noteDeletedToast: '노트를 삭제했습니다.',
         openInNewTab: '새 탭에서 열기', cannotPreviewInline: '이 파일 형식은 바로 미리보기를 지원하지 않아요.',
-        pageOf: (n, total) => `${n} / ${total}`, loadingFile: '불러오는 중...', pdfLoadFailed: 'PDF를 불러오지 못했습니다.',
+        pageOf: (n, total) => `${n} / ${total}`, loadingFile: '불러오는 중...', pdfLoadFailed: 'PDF를 불러오지 못했습니다.', zoomReset: '눌러서 100%(화면 폭 맞춤)로',
       },
       en: {
         loginTitle: 'Portal login required', loginDesc: 'Resource & Media is available with your WOLKO Portal account.', loginBtn: 'Go to Portal',
@@ -283,7 +285,7 @@
         noteDeleteConfirm: 'Delete this note?', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
         noteDeletedToast: 'Note deleted.',
         openInNewTab: 'Open in new tab', cannotPreviewInline: "This file type can't be previewed inline.",
-        pageOf: (n, total) => `${n} / ${total}`, loadingFile: 'Loading...', pdfLoadFailed: 'Could not load the PDF.',
+        pageOf: (n, total) => `${n} / ${total}`, loadingFile: 'Loading...', pdfLoadFailed: 'Could not load the PDF.', zoomReset: 'Click to reset to 100% (fit width)',
       },
     };
     let lang = localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko';
@@ -646,18 +648,21 @@
       const ext = (fileName.split('.').pop() || '').toLowerCase();
       return VIEWER_KIND_MAP[ext] || 'other';
     }
-    let viewerFileId = null, viewerKind = null, viewerUrl = null, viewerPage = 1, viewerPdfDoc = null;
+    let viewerFileId = null, viewerKind = null, viewerUrl = null, viewerPage = 1, viewerPdfDoc = null, viewerZoom = 1;
     let drawModeOn = false, dragState = null, pendingNote = null;
     async function previewFile(fileId) {
       const meta = (currentItem?.files || []).find(f => f.id === fileId);
       if (!meta) return;
       closeFileMenu();
       const kind = viewerKindOf(meta.fileName);
-      viewerFileId = fileId; viewerKind = kind; viewerPage = 1; viewerPdfDoc = null; drawModeOn = false; pendingNote = null;
+      viewerFileId = fileId; viewerKind = kind; viewerPage = 1; viewerPdfDoc = null; viewerZoom = 1; drawModeOn = false; pendingNote = null;
       $('viewerFileName').textContent = meta.fileName;
       $('viewerToolbar').innerHTML = '';
       $('viewerSurface').innerHTML = `<p class="viewer-loading">${esc(t('loadingFile'))}</p>`;
+      $('viewerSideNavPrev').hidden = true;
+      $('viewerSideNavNext').hidden = true;
       $('viewerOverlay').hidden = false;
+      syncBodyScrollLock();
       renderNotesList();
       toggleNotesPanel(window.innerWidth > 620);
       if (kind === 'other') { renderFallbackStage(meta); return; }
@@ -674,9 +679,17 @@
     }
     function closeViewer() {
       $('viewerOverlay').hidden = true;
+      syncBodyScrollLock();
       if (viewerUrl) { URL.revokeObjectURL(viewerUrl); viewerUrl = null; }
       viewerFileId = null; viewerPdfDoc = null; drawModeOn = false; dragState = null;
       cancelNoteComposer();
+    }
+    // 모달이 열려 있는 동안 뒤에 있는 페이지가 같이 스크롤되면(스크롤 이벤트가
+    // 빠져나가면) 뒤에 뜬 화면이 움직이는 게 비쳐 보인다 — 에디터나 뷰어 중
+    // 하나라도 열려 있으면 body 스크롤 자체를 막는다.
+    function syncBodyScrollLock() {
+      const locked = !$('editorOverlay').hidden || !$('viewerOverlay').hidden;
+      document.body.classList.toggle('modal-open', locked);
     }
     function viewerToolbarHtml() {
       return `<button type="button" class="viewer-annotate-toggle" id="viewerDrawToggle" onclick="toggleDrawMode()">${esc(t('addNote'))}</button><span class="viewer-draw-hint" id="viewerDrawHint" hidden>${esc(t('addNoteHint'))}</span><a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</a>`;
@@ -700,7 +713,7 @@
       $('viewerSurface').innerHTML = `<div class="viewer-fallback"><p>${esc(t('cannotPreviewInline'))}</p><button type="button" class="viewer-newtab-btn" onclick="openInNewTab('${meta.id}')">${esc(t('openInNewTab'))}</button><button type="button" class="viewer-newtab-btn" onclick="openNoteComposer({kind:'general'})">${esc(t('addGeneralNote'))}</button></div>`;
     }
     async function renderPdfStage(url) {
-      $('viewerToolbar').innerHTML = `${viewerToolbarHtml()}<div class="viewer-page-nav"><button type="button" onclick="viewerPrevPage()">‹</button><span id="viewerPageLabel"></span><button type="button" onclick="viewerNextPage()">›</button></div>`;
+      $('viewerToolbar').innerHTML = `${viewerToolbarHtml()}<div class="viewer-zoom-nav"><button type="button" onclick="viewerZoomOut()" aria-label="zoom out">−</button><button type="button" id="viewerZoomLabel" onclick="viewerZoomReset()" title="${esc(t('zoomReset'))}"></button><button type="button" onclick="viewerZoomIn()" aria-label="zoom in">+</button></div><div class="viewer-page-nav"><button type="button" id="viewerPrevBtn" onclick="viewerPrevPage()">‹</button><span id="viewerPageLabel"></span><button type="button" id="viewerNextBtn" onclick="viewerNextPage()">›</button></div>`;
       $('viewerSurface').innerHTML = `<div class="viewer-surface-inner" id="viewerSurfaceInner"><canvas id="viewerCanvas"></canvas></div>`;
       try {
         const pdfjsLib = await window.__loadPdfjs();
@@ -712,7 +725,27 @@
         $('viewerSurface').innerHTML = `<p class="viewer-error">${esc(t('pdfLoadFailed'))}</p>`;
       }
     }
+    // 확대/축소·페이지 이동을 빠르게 연달아 누르면 캔버스 하나에 render()를
+    // 두 번 겹쳐 부르게 되는데, pdf.js는 이걸 곧바로 에러로 던진다(취소해도
+    // 캔버스가 즉시 풀리는 게 아니라서 취소·재시도 방식은 오히려 더 꼬인다).
+    // 그래서 아예 겹쳐 부르지 않는다 — 렌더 중에 또 요청이 오면 "끝나고 한 번
+    // 더"만 표시해두고, 지금 진행 중인 렌더가 끝난 뒤 최신 상태(마지막 확대율/
+    // 페이지)로 딱 한 번만 다시 그린다.
+    let viewerRendering = false;
+    let viewerRenderPending = false;
     async function renderPdfPage() {
+      if (viewerRendering) { viewerRenderPending = true; return; }
+      viewerRendering = true;
+      try {
+        do {
+          viewerRenderPending = false;
+          await renderPdfPageNow();
+        } while (viewerRenderPending);
+      } finally {
+        viewerRendering = false;
+      }
+    }
+    async function renderPdfPageNow() {
       const page = await viewerPdfDoc.getPage(viewerPage);
       const canvas = $('viewerCanvas');
       // #viewerSurfaceInner는 캔버스 크기에 맞춰 줄어드는(shrink-to-fit) 래퍼라
@@ -721,15 +754,44 @@
       // (#viewerSurface, padding 16px 양쪽)를 기준으로 재야 한다.
       const containerWidth = ($('viewerSurface').clientWidth - 32) || 600;
       const unscaled = page.getViewport({ scale: 1 });
-      const scale = containerWidth / unscaled.width;
-      const viewport = page.getViewport({ scale });
-      canvas.width = viewport.width; canvas.height = viewport.height;
-      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      const baseScale = containerWidth / unscaled.width; // "100%" 확대 = 화면 폭에 맞춤
+      const viewport = page.getViewport({ scale: baseScale * viewerZoom });
+      // 캔버스 픽셀 수를 CSS 크기 그대로(1배)로 그리면 레티나(고밀도) 화면에서
+      // 브라우저가 이걸 확대해서 뿌리느라 뿌옇게 보인다 — 실제 비트맵은
+      // devicePixelRatio배로 더 크게 그리고, 화면에 보이는 CSS 크기만 원래
+      // 크기로 되돌린다(모바일에서 특히 체감이 크다).
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      canvas.width = Math.round(viewport.width * dpr);
+      canvas.height = Math.round(viewport.height * dpr);
+      canvas.style.width = viewport.width + 'px';
+      canvas.style.height = viewport.height + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      await page.render({ canvasContext: ctx, viewport }).promise;
       $('viewerPageLabel').textContent = t('pageOf')(viewerPage, viewerPdfDoc.numPages);
+      $('viewerZoomLabel').textContent = Math.round(viewerZoom * 100) + '%';
+      syncPageNav();
       renderHighlights();
+    }
+    function syncPageNav() {
+      const multiPage = !!(viewerPdfDoc && viewerPdfDoc.numPages > 1);
+      const prevDisabled = !multiPage || viewerPage <= 1;
+      const nextDisabled = !multiPage || (viewerPdfDoc && viewerPage >= viewerPdfDoc.numPages);
+      $('viewerSideNavPrev').hidden = !multiPage;
+      $('viewerSideNavNext').hidden = !multiPage;
+      $('viewerSideNavPrev').disabled = prevDisabled;
+      $('viewerSideNavNext').disabled = nextDisabled;
+      if ($('viewerPrevBtn')) $('viewerPrevBtn').disabled = prevDisabled;
+      if ($('viewerNextBtn')) $('viewerNextBtn').disabled = nextDisabled;
     }
     function viewerPrevPage() { if (viewerPage > 1) { viewerPage--; renderPdfPage(); } }
     function viewerNextPage() { if (viewerPdfDoc && viewerPage < viewerPdfDoc.numPages) { viewerPage++; renderPdfPage(); } }
+    // 확대 배율은 "화면 폭에 맞춤"(100%)을 기준으로 한 배수다 — 하이라이트
+    // 박스는 좌표를 %(퍼센트)로 저장해두기 때문에 배율이 바뀌어도(캔버스
+    // 크기가 바뀌어도) 다시 계산할 필요 없이 항상 같은 위치를 가리킨다.
+    function viewerZoomIn() { viewerZoom = Math.min(3, Math.round((viewerZoom + 0.25) * 100) / 100); renderPdfPage(); }
+    function viewerZoomOut() { viewerZoom = Math.max(0.5, Math.round((viewerZoom - 0.25) * 100) / 100); renderPdfPage(); }
+    function viewerZoomReset() { viewerZoom = 1; renderPdfPage(); }
     function toggleDrawMode() {
       drawModeOn = !drawModeOn;
       const btn = $('viewerDrawToggle');
@@ -771,7 +833,9 @@
         const x = Math.min(startX, curX), y = Math.min(startY, curY), w = Math.abs(curX - startX), h = Math.abs(curY - startY);
         dragState = null;
         $('viewerDragBox')?.remove();
-        toggleDrawMode();
+        // 노트 하나 남길 때마다 버튼을 다시 누르게 하면 번거로우니, 표시 모드는
+        // 사용자가 직접 버튼을 눌러 끌 때까지 계속 켜둔다 — 연달아 여러 곳에
+        // 노트를 남길 수 있다.
         if (w < 0.01 || h < 0.01) return; // 너무 작은 드래그(실수로 살짝 눌림)는 무시
         openNoteComposer({ kind: 'area', x, y, w, h, page: viewerKind === 'pdf' ? viewerPage : null });
       });
@@ -823,6 +887,15 @@
       const panel = $('notesPanel');
       panel.classList.toggle('is-open', typeof force === 'boolean' ? force : !panel.classList.contains('is-open'));
     }
+    // 노트 작성자마다 고정된 색을 배정한다(이메일을 해시해서 팔레트에서 하나
+    // 고르는 방식 — 서버에 따로 저장할 필요 없이 항상 같은 사람은 같은 색).
+    const HIGHLIGHT_PALETTE = ['#d88217', '#0077a3', '#6f55c9', '#c0392b', '#16865a', '#8e44ad', '#d81b60', '#00838f'];
+    function highlightColorFor(email) {
+      const str = String(email || '');
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+      return HIGHLIGHT_PALETTE[hash % HIGHLIGHT_PALETTE.length];
+    }
     function renderNotesList() {
       const list = annotationsForViewerFile();
       $('viewerNotesCount').textContent = list.length ? String(list.length) : '';
@@ -833,7 +906,7 @@
         const where = a.kind === 'time' ? formatTimeSec(a.timeSec) : (a.kind === 'area' && a.page ? t('pageOf')(a.page, a.page) : '');
         const jumpAttr = a.kind !== 'general' ? ` onclick="jumpToNote('${a.id}')"` : '';
         return `<div class="note-item is-${a.status}" data-note-id="${a.id}">
-          <div class="note-item-head"><b>${esc(a.createdByName)}</b><span>${esc(formatLogTime(a.createdAt))}</span></div>
+          <div class="note-item-head"><b><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span>${esc(a.createdByName)}</b><span>${esc(formatLogTime(a.createdAt))}</span></div>
           ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
           <p>${esc(a.text)}</p>
           ${canManage ? `<div class="note-item-actions"><button type="button" onclick="toggleNoteStatus('${a.id}','${a.status === 'open' ? 'resolved' : 'open'}')">${esc(a.status === 'open' ? t('noteResolve') : t('noteReopen'))}</button><button type="button" class="is-danger" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button></div>` : ''}
@@ -848,8 +921,11 @@
       annotationsForViewerFile().filter(a => a.kind === 'area' && (viewerKind !== 'pdf' || (a.page || 1) === viewerPage)).forEach(a => {
         const box = document.createElement('div');
         box.className = 'highlight-box is-' + a.status;
+        const color = highlightColorFor(a.createdBy);
+        box.style.borderColor = color;
+        box.style.background = color + '2e';
         box.style.left = (a.x * 100) + '%'; box.style.top = (a.y * 100) + '%'; box.style.width = (a.w * 100) + '%'; box.style.height = (a.h * 100) + '%';
-        box.title = a.text;
+        box.title = `${a.createdByName}: ${a.text}`;
         box.addEventListener('click', () => jumpToNoteListItem(a.id));
         surface.appendChild(box);
       });
@@ -1053,10 +1129,11 @@
       $('editorError').textContent = '';
       renderFilesAndFolders(); renderUploadLog();
       $('editorOverlay').hidden = false;
+      syncBodyScrollLock();
       if (item) { renderDetailView(); showEditorMode('view'); }
       else { showEditorMode('edit'); }
     }
-    function closeEditor() { closeFileMenu(); $('editorOverlay').hidden = true; currentItem = null; editorMode = 'view'; }
+    function closeEditor() { closeFileMenu(); $('editorOverlay').hidden = true; syncBodyScrollLock(); currentItem = null; editorMode = 'view'; }
     // 진행 단계 스텝퍼 — 버튼 N을 누르면 1~N단계가 완료로, 이미 N단계까지
     // 완료된 상태에서 N을 다시 누르면 한 단계 되돌린다(간단한 토글식 취소).
     let editorStagePercents = [0, 0, 0];
