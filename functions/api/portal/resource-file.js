@@ -28,7 +28,7 @@ import { getAccount } from '../../lib/hubAccounts.js';
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_FILE_BYTES = 24 * 1024 * 1024; // KV 값 한도(25MiB)보다 안전 여유를 둔 최대치
 const MAX_LOG_ENTRIES = 20;
-const MAX_FILES_PER_ITEM = 20;
+const MAX_FILES_PER_ITEM = 100; // 임의로 정한 안전장치일 뿐 — 레슨이 여러 개면 20개는 금방 넘는다
 
 function fileKvKey(id, fileId) { return `portal:resource-file:${id}:${fileId}`; }
 
