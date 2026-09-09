@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=27">
+  <link rel="stylesheet" href="/portal.css?v=28">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <style is:global>
@@ -221,6 +221,7 @@
         backToFolders: '← 목록', renameFolder: '폴더 이름 변경', renameFolderPrompt: '새 폴더 이름을 입력하세요',
         fileCount: n => `파일 ${n}개`,
         folderDeleteConfirm: '이 폴더를 삭제할까요? 안의 파일은 미분류로 이동합니다.',
+        folderDeletePasswordPrompt: '삭제를 확인하려면 내 계정 비밀번호를 입력하세요',
         folderDeletedToast: '폴더를 삭제했습니다.', folderSaveFailed: '폴더를 만들지 못했습니다.', folderDeleteFailed: '폴더를 삭제하지 못했습니다.',
         savedAfterCreate: '항목을 저장한 뒤 파일을 첨부할 수 있습니다.',
         uploadedBy: (name, time) => `${name}님 · ${time}`,
@@ -266,6 +267,7 @@
         backToFolders: '← Back', renameFolder: 'Rename Folder', renameFolderPrompt: 'Enter a new folder name',
         fileCount: n => `${n} file${n === 1 ? '' : 's'}`,
         folderDeleteConfirm: 'Delete this folder? Files inside will move to Unfiled.',
+        folderDeletePasswordPrompt: 'Enter your account password to confirm deletion',
         folderDeletedToast: 'Folder deleted.', folderSaveFailed: 'Could not create the folder.', folderDeleteFailed: 'Could not delete the folder.',
         savedAfterCreate: 'Save this item first, then you can attach files.',
         uploadedBy: (name, time) => `${name} · ${time}`,
@@ -602,8 +604,10 @@
     }
     async function deleteFolder(folderId) {
       if (!confirm(t('folderDeleteConfirm'))) return;
+      const password = prompt(t('folderDeletePasswordPrompt'));
+      if (!password) return;
       try {
-        const res = await fetch(`/api/portal/resource-folder?id=${encodeURIComponent(currentItem.id)}&folderId=${encodeURIComponent(folderId)}`, { method: 'DELETE', headers: authHeaders() });
+        const res = await fetch(`/api/portal/resource-folder?id=${encodeURIComponent(currentItem.id)}&folderId=${encodeURIComponent(folderId)}`, { method: 'DELETE', headers: authHeaders(), body: JSON.stringify({ password }) });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('folderDeleteFailed'));
         currentItem = data.item;
@@ -722,7 +726,12 @@
         await renderPdfPage();
         attachDragHighlight($('viewerSurfaceInner'));
       } catch (e) {
-        $('viewerSurface').innerHTML = `<p class="viewer-error">${esc(t('pdfLoadFailed'))}</p>`;
+        // 기기·브라우저에 따라 pdf.js 로딩이 실패하는 원인이 다를 수 있어서
+        // (워커 로드, 렌더링 등) 실제 에러를 화면에 조그맣게 같이 보여준다 —
+        // 어떤 기기에서 왜 안 되는지 스크린샷만으로 알 수 있게 하기 위함.
+        // 미리보기가 안 돼도 새 탭에서 원본은 열어볼 수 있게 링크를 남겨둔다.
+        console.error('PDF render failed', e);
+        $('viewerSurface').innerHTML = `<div class="viewer-fallback"><p>${esc(t('pdfLoadFailed'))}</p><p class="viewer-error-detail">${esc(e?.name || '')}: ${esc(e?.message || String(e))}</p><button type="button" class="viewer-newtab-btn" onclick="openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</button></div>`;
       }
     }
     // 확대/축소·페이지 이동을 빠르게 연달아 누르면 캔버스 하나에 render()를
@@ -765,9 +774,13 @@
       canvas.height = Math.round(viewport.height * dpr);
       canvas.style.width = viewport.width + 'px';
       canvas.style.height = viewport.height + 'px';
-      const ctx = canvas.getContext('2d');
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      await page.render({ canvasContext: ctx, viewport }).promise;
+      // dpr 배율은 render() 호출 전에 직접 ctx.setTransform으로 미리 걸어두면
+      // 안 된다 — pdf.js가 render() 내부에서 자기 나름대로 캔버스 변환을
+      // 설정하는 과정과 꼬여서 렌더가 끝나지 않고 멈춰버린다(promise가 영영
+      // 안 풀림). pdf.js가 공식적으로 지원하는 방식대로 transform 옵션으로
+      // 넘겨줘야 한다.
+      const transform = dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport, transform }).promise;
       $('viewerPageLabel').textContent = t('pageOf')(viewerPage, viewerPdfDoc.numPages);
       $('viewerZoomLabel').textContent = Math.round(viewerZoom * 100) + '%';
       syncPageNav();

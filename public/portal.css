@@ -128,9 +128,14 @@ body.modal-open { overflow:hidden; }
 .viewer-loading,.viewer-error { margin:auto;color:var(--muted);font-size:13px; }
 .viewer-surface-inner { position:relative;max-width:100%;margin:0 auto; }
 .viewer-surface-inner.is-drawing { touch-action:none;cursor:crosshair; }
-.viewer-img,#viewerCanvas { display:block;max-width:100%;height:auto; }
+.viewer-img { display:block;max-width:100%;height:auto; }
+/* 캔버스는 JS가 확대율에 맞춰 폭/높이를 둘 다 정확한 px로 정해준다 —
+   max-width:100%를 두면 확대해도 폭은 컨테이너에 그대로 눌린 채 높이만
+   커져서 "세로로만 확대되는" 것처럼 보인다. */
+#viewerCanvas { display:block; }
 .viewer-media { display:block;max-width:100%;max-height:70vh; }
 .viewer-fallback { margin:auto;display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--muted);font-size:13px;text-align:center; }
+.viewer-error-detail { margin:-6px 0 0;color:#9aabb2;font-size:10.5px;font-family:monospace;word-break:break-all;max-width:320px; }
 /* 하이라이트 색은 작성자별로 고정 배정된다(JS의 highlightColorFor) — 여기
    기본값은 인라인 스타일이 없을 때(그리는 중 미리보기 등)의 대비용이다. */
 .highlight-box { position:absolute;border:2px solid #d88217;background:rgba(216,130,23,.18);border-radius:2px;cursor:pointer; }

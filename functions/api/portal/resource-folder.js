@@ -5,9 +5,11 @@
  *
  * POST   /api/portal/resource-folder                        — 폴더 생성. admin/master만.
  * PUT    /api/portal/resource-folder                         — 폴더 이름 변경. admin/master만.
- * DELETE /api/portal/resource-folder?id=&folderId=           — 폴더 삭제(안의 파일은 미분류로 이동, 파일 자체는 지우지 않음). admin/master만.
+ * DELETE /api/portal/resource-folder?id=&folderId=           — 폴더 삭제(안의 파일은 미분류로 이동, 파일 자체는 지우지 않음).
+ *        body: { password }                                   — 실수로 누르는 걸 막기 위해 본인 계정 비밀번호를 한 번 더 확인한다. admin/master만.
  */
 import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf } from '../../lib/portalResources.js';
+import { getAccount, verifyPassword } from '../../lib/hubAccounts.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_FOLDERS_PER_ITEM = 20;
@@ -81,6 +83,14 @@ export async function onRequestDelete({ env, request }) {
   const id = text(url.searchParams.get('id'), 80);
   const folderId = text(url.searchParams.get('folderId'), 80);
   if (!id || !folderId) return error('잘못된 요청입니다.', 400);
+
+  let body;
+  try { body = await request.json(); } catch { return error('비밀번호를 입력해 주세요.', 400); }
+  const password = String(body?.password || '');
+  if (!password) return error('비밀번호를 입력해 주세요.', 400);
+  const account = await getAccount(env, session.email);
+  const passwordOk = account?.passwordHash && await verifyPassword(password, account.passwordHash, account.passwordSalt);
+  if (!passwordOk) return error('비밀번호가 올바르지 않습니다.', 403);
 
   const data = await readData(env);
   const index = data.items.findIndex(item => item.id === id);
