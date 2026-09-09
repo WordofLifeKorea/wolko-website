@@ -36,3 +36,16 @@ export async function saveData(env, items) {
 export function error(message, status) {
   return Response.json({ error: message }, { status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
 }
+
+// 항목의 첨부 파일 목록을 항상 배열 형태로 돌려준다. 예전엔 "작업 파일"/
+// "원본 파일" 두 칸(workFile/originalFile)이 고정이었는데, 지금은 개수 제한
+// 없는 자유 목록(files)이다 — 예전 데이터도 이 형태로 변환해서 보여준다
+// (실제 파일 blob은 이미 portal:resource-file:{id}:work / :original 키에
+// 그대로 있으므로, id로 그 키 이름을 재사용하면 데이터 이전 없이 바로 호환된다).
+export function filesOf(item) {
+  if (Array.isArray(item?.files)) return item.files;
+  const legacy = [];
+  if (item?.workFile) legacy.push({ id: 'work', ...item.workFile });
+  if (item?.originalFile) legacy.push({ id: 'original', ...item.originalFile });
+  return legacy;
+}

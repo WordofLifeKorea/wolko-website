@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=7">
+  <link rel="stylesheet" href="/portal.css?v=8">
   <script src="/wolko-rail.js?v=9" defer></script>
 </head>
 <body>
@@ -74,13 +74,9 @@
         <div class="detail-field"><span class="field-label" data-t="fieldTranslation">번역/제작 내용</span><p id="detailTranslation"></p></div>
         <div class="detail-field" id="detailDetailField" hidden><span class="field-label" data-t="fieldDetail">간단한 진행 메모</span><p id="detailDetail"></p></div>
 
-        <div class="file-slot" id="workFileSlot">
-          <div class="file-slot-head"><span class="field-label" data-t="workFileLabel">작업 파일 (현재까지 진행분)</span><p data-t="fileHint">PDF · 이미지 · 문서 · 최대 24MB</p></div>
-          <div class="file-slot-body" id="workFileBody"></div>
-        </div>
-        <div class="file-slot" id="originalFileSlot">
-          <div class="file-slot-head"><span class="field-label" data-t="originalFileLabel">원본 파일</span><p data-t="fileHint">PDF · 이미지 · 문서 · 최대 24MB</p></div>
-          <div class="file-slot-body" id="originalFileBody"></div>
+        <div class="file-slot" id="filesSlot">
+          <div class="file-slot-head"><span class="field-label" data-t="filesLabel">첨부 파일</span><p data-t="fileHint">PDF · 이미지 · 문서 · 최대 24MB</p></div>
+          <div class="file-slot-body" id="filesBody"></div>
         </div>
         <div class="upload-log-section" id="uploadLogSection">
           <span class="field-label" data-t="uploadLogLabel">업로드 로그</span>
@@ -144,12 +140,12 @@
         fieldName: '자료 이름', fieldStatus: '진행 상태', fieldProgress: '완성도', fieldTranslation: '번역/제작 내용', fieldDetail: '간단한 진행 메모',
         nameField: '예: 2026 Summer Camp Student Book', translationField: '예: 학생 교재 영문 번역 및 편집', detailField: '현재 작업 범위 또는 다음 단계',
         fieldThumbnail: '발표용 썸네일', thumbnailHint: 'JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB', chooseImage: '이미지 선택',
-        workFileLabel: '작업 파일 (현재까지 진행분)', originalFileLabel: '원본 파일', fileHint: 'PDF · 이미지 · 문서 · 최대 24MB',
-        chooseFile: '파일 선택', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileWrite: '업로드된 파일이 없습니다', noFileRead: '업로드된 파일이 없습니다',
+        filesLabel: '첨부 파일', fileHint: 'PDF · 이미지 · 문서 · 최대 24MB',
+        addFile: '+ 파일 추가', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileWrite: '업로드된 파일이 없습니다', noFileRead: '업로드된 파일이 없습니다',
         savedAfterCreate: '항목을 저장한 뒤 파일을 첨부할 수 있습니다.',
         uploadedBy: (name, time) => `${name}님 · ${time}`,
         uploadLogLabel: '업로드 로그', uploadLogEmpty: '아직 업로드 기록이 없습니다.',
-        logWorkVerb: '작업 파일 업로드', logOriginalVerb: '원본 파일 업로드',
+        logUploadedFile: name => `${name} 업로드`,
         deleteBtn: '삭제', cancelBtn: '취소', closeBtn: '닫기', saveBtn: '저장',
         nameRequired: '작업 항목 이름을 입력해주세요.', saveFailed: '저장하지 못했습니다.', deleteFailed: '삭제하지 못했습니다.', loadFailed: '리포트를 불러오지 못했습니다.',
         savedToast: '리포트를 저장했습니다.', deletedToast: '작업 항목을 삭제했습니다.', deleteConfirm: '이 작업 항목을 삭제할까요?',
@@ -172,12 +168,12 @@
         fieldName: 'Resource name', fieldStatus: 'Status', fieldProgress: 'Progress', fieldTranslation: 'Translation / production notes', fieldDetail: 'Progress notes',
         nameField: 'e.g. 2026 Summer Camp Student Book', translationField: 'e.g. English translation & editing of the student textbook', detailField: 'Current scope or next steps',
         fieldThumbnail: 'Presentation thumbnail', thumbnailHint: 'JPG, PNG, WEBP, GIF · auto-compressed · up to 1MB', chooseImage: 'Choose image',
-        workFileLabel: 'Work file (progress so far)', originalFileLabel: 'Original file', fileHint: 'PDF · image · document · up to 24MB',
-        chooseFile: 'Choose file', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileWrite: 'No file uploaded yet', noFileRead: 'No file uploaded yet',
+        filesLabel: 'Attached Files', fileHint: 'PDF · image · document · up to 24MB',
+        addFile: '+ Add File', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileWrite: 'No file uploaded yet', noFileRead: 'No file uploaded yet',
         savedAfterCreate: 'Save this item first, then you can attach files.',
         uploadedBy: (name, time) => `${name} · ${time}`,
         uploadLogLabel: 'Upload log', uploadLogEmpty: 'No uploads yet.',
-        logWorkVerb: 'uploaded work file', logOriginalVerb: 'uploaded original file',
+        logUploadedFile: name => `uploaded ${name}`,
         deleteBtn: 'Delete', cancelBtn: 'Cancel', closeBtn: 'Close', saveBtn: 'Save',
         nameRequired: 'Please enter a resource name.', saveFailed: 'Could not save.', deleteFailed: 'Could not delete.', loadFailed: 'Could not load the report.',
         savedToast: 'Report saved.', deletedToast: 'Work item deleted.', deleteConfirm: 'Delete this work item?',
@@ -264,28 +260,28 @@
     }
 
     /* ── 작업 파일 / 원본 파일 ── */
-    function renderFileSlot(kind) {
-      const meta = kind === 'work' ? currentItem?.workFile : currentItem?.originalFile;
-      const disabled = !currentItem; // 새 항목(아직 저장 전)은 파일을 못 붙인다
-      if (disabled) {
-        $(kind + 'FileBody').innerHTML = `<p class="file-empty">${esc(t('savedAfterCreate'))}</p>`;
+    function renderFilesList() {
+      if (!currentItem) { // 새 항목(아직 저장 전)은 파일을 못 붙인다
+        $('filesBody').innerHTML = `<p class="file-empty">${esc(t('savedAfterCreate'))}</p>`;
         return;
       }
-      const uploadInput = canWrite ? `<label class="file-btn"><input type="file" onchange="handleFileUpload('${kind}', this)">${esc(meta ? t('replaceFile') : t('chooseFile'))}</label>` : '';
-      if (!meta) {
-        $(kind + 'FileBody').innerHTML = `<div class="file-row"><p class="file-empty">${esc(canWrite ? t('noFileWrite') : t('noFileRead'))}</p><div class="file-row-actions">${uploadInput}</div></div>`;
-        return;
-      }
-      const metaLine = `${t('uploadedBy')(esc(meta.uploadedByName || meta.uploadedBy || ''), esc(formatLogTime(meta.uploadedAt)))} · ${humanFileSize(meta.fileSize)}`;
-      const removeBtn = canWrite ? `<button type="button" class="file-btn is-danger" onclick="deleteFile('${kind}')">${esc(t('removeFile'))}</button>` : '';
-      $(kind + 'FileBody').innerHTML = `<div class="file-row"><div class="file-row-info"><span class="file-row-name">${esc(meta.fileName)}</span><span class="file-row-meta">${metaLine}</span></div><div class="file-row-actions"><button type="button" class="file-btn" onclick="previewFile('${kind}')">${esc(t('previewFile'))}</button>${uploadInput}${removeBtn}</div></div>`;
+      const files = [...(currentItem.files || [])].sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+      const rows = files.map(meta => {
+        const metaLine = `${t('uploadedBy')(esc(meta.uploadedByName || meta.uploadedBy || ''), esc(formatLogTime(meta.uploadedAt)))} · ${humanFileSize(meta.fileSize)}`;
+        const replaceInput = canWrite ? `<label class="file-btn"><input type="file" onchange="handleFileUpload(this, '${meta.id}')">${esc(t('replaceFile'))}</label>` : '';
+        const removeBtn = canWrite ? `<button type="button" class="file-btn is-danger" onclick="deleteFile('${meta.id}')">${esc(t('removeFile'))}</button>` : '';
+        return `<div class="file-row"><div class="file-row-info"><span class="file-row-name">${esc(meta.fileName)}</span><span class="file-row-meta">${metaLine}</span></div><div class="file-row-actions"><button type="button" class="file-btn" onclick="previewFile('${meta.id}')">${esc(t('previewFile'))}</button>${replaceInput}${removeBtn}</div></div>`;
+      }).join('');
+      const emptyMsg = files.length ? '' : `<p class="file-empty">${esc(canWrite ? t('noFileWrite') : t('noFileRead'))}</p>`;
+      const addRow = canWrite ? `<label class="file-btn file-add-btn"><input type="file" onchange="handleFileUpload(this)">${esc(t('addFile'))}</label>` : '';
+      $('filesBody').innerHTML = emptyMsg + rows + addRow;
     }
     function renderUploadLog() {
       const log = currentItem?.uploadLog || [];
       if (!log.length) { $('uploadLogList').innerHTML = `<p class="upload-log-empty">${esc(t('uploadLogEmpty'))}</p>`; return; }
-      $('uploadLogList').innerHTML = log.map(entry => `<div class="upload-log-item"><b>${esc(entry.uploadedByName || '')}</b><span>${esc(entry.kind === 'work' ? t('logWorkVerb') : t('logOriginalVerb'))} · ${esc(formatLogTime(entry.uploadedAt))}</span></div>`).join('');
+      $('uploadLogList').innerHTML = log.map(entry => `<div class="upload-log-item"><b>${esc(entry.uploadedByName || '')}</b><span>${esc(t('logUploadedFile')(entry.fileName || ''))} · ${esc(formatLogTime(entry.uploadedAt))}</span></div>`).join('');
     }
-    async function handleFileUpload(kind, inputEl) {
+    async function handleFileUpload(inputEl, fileId = null) {
       const file = inputEl.files?.[0]; if (!file) return;
       if (file.size > MAX_FILE_BYTES) { toast(t('fileTooLarge'), true); inputEl.value = ''; return; }
       try {
@@ -295,16 +291,15 @@
           reader.onload = () => resolve(reader.result);
           reader.readAsDataURL(file);
         });
-        const res = await fetch('/api/portal/resource-file', {
-          method: 'POST', headers: authHeaders(),
-          body: JSON.stringify({ id: currentItem.id, kind, fileName: file.name, fileType: file.type, fileSize: file.size, fileData }),
-        });
+        const body = { id: currentItem.id, fileName: file.name, fileType: file.type, fileData };
+        if (fileId) body.fileId = fileId;
+        const res = await fetch('/api/portal/resource-file', { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('fileUploadFailed'));
         currentItem = data.item;
         const idx = resources.findIndex(r => r.id === currentItem.id);
         if (idx !== -1) resources[idx] = currentItem;
-        renderFileSlot('work'); renderFileSlot('original'); renderUploadLog(); render();
+        renderFilesList(); renderUploadLog(); render();
         toast(t('fileUploadedToast'));
       } catch (e) {
         toast(e.message || t('fileUploadFailed'), true);
@@ -312,13 +307,13 @@
         inputEl.value = '';
       }
     }
-    async function previewFile(kind) {
+    async function previewFile(fileId) {
       // 팝업 차단 우회: fetch(비동기) 이후에 window.open을 부르면 "사용자 조작 직후"로
       // 인정 안 하는 브라우저가 있어 조용히 막힌다 — 클릭 즉시(동기) 빈 탭을 먼저 열어두고,
       // 데이터가 오면 그 탭의 위치만 바꾼다.
       const win = window.open('', '_blank');
       try {
-        const res = await fetch(`/api/portal/resource-file?id=${encodeURIComponent(currentItem.id)}&kind=${kind}`, { headers: authHeaders() });
+        const res = await fetch(`/api/portal/resource-file?id=${encodeURIComponent(currentItem.id)}&fileId=${encodeURIComponent(fileId)}`, { headers: authHeaders() });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('filePreviewFailed'));
         const dataUrl = data.file.fileData;
@@ -336,16 +331,16 @@
         toast(e.message || t('filePreviewFailed'), true);
       }
     }
-    async function deleteFile(kind) {
+    async function deleteFile(fileId) {
       if (!confirm(t('fileRemoveConfirm'))) return;
       try {
-        const res = await fetch(`/api/portal/resource-file?id=${encodeURIComponent(currentItem.id)}&kind=${kind}`, { method: 'DELETE', headers: authHeaders() });
+        const res = await fetch(`/api/portal/resource-file?id=${encodeURIComponent(currentItem.id)}&fileId=${encodeURIComponent(fileId)}`, { method: 'DELETE', headers: authHeaders() });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('fileDeleteFailed'));
         currentItem = data.item;
         const idx = resources.findIndex(r => r.id === currentItem.id);
         if (idx !== -1) resources[idx] = currentItem;
-        renderFileSlot(kind); render();
+        renderFilesList(); render();
         toast(t('fileRemovedToast'));
       } catch (e) {
         toast(e.message || t('fileDeleteFailed'), true);
@@ -390,7 +385,7 @@
       $('deleteResourceBtn').hidden = !item;
       $('editResourceBtn').hidden = !canWrite;
       $('editorError').textContent = '';
-      renderFileSlot('work'); renderFileSlot('original'); renderUploadLog();
+      renderFilesList(); renderUploadLog();
       $('editorOverlay').hidden = false;
       if (item) { renderDetailView(); showEditorMode('view'); }
       else { showEditorMode('edit'); }

@@ -1,4 +1,4 @@
-import { sessionFor, canWrite, text, readData, saveData, error } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf } from '../../lib/portalResources.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_THUMBNAIL_LENGTH = 1_500_000;
@@ -10,9 +10,9 @@ function thumbnail(value) {
   const data = String(value || '');
   return /^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(data) && data.length <= MAX_THUMBNAIL_LENGTH ? data : '';
 }
-// 작업 파일/원본 파일(workFile/originalFile)과 업로드 로그(uploadLog)는 이 항목
-// 편집 폼에서 다루지 않는다 — resource-file.js가 업로드/삭제 시 별도로 갱신하므로,
-// 여기서는 기존 값을 그대로 보존해서 제목/진행률 등만 고쳐도 지워지지 않게 한다.
+// 첨부 파일 목록(files)과 업로드 로그(uploadLog)는 이 항목 편집 폼에서 다루지
+// 않는다 — resource-file.js가 업로드/삭제 시 별도로 갱신하므로, 여기서는 기존
+// 값을 그대로 보존해서 제목/진행률 등만 고쳐도 지워지지 않게 한다.
 function normalize(input, existing = {}) {
   const status = ['planning', 'translating', 'review', 'complete'].includes(input?.status) ? input.status : (existing.status || 'planning');
   return {
@@ -23,8 +23,7 @@ function normalize(input, existing = {}) {
     status,
     progress: progress(input?.progress),
     thumbnailData: thumbnail(input?.thumbnailData),
-    workFile: existing.workFile || null,
-    originalFile: existing.originalFile || null,
+    files: filesOf(existing),
     uploadLog: Array.isArray(existing.uploadLog) ? existing.uploadLog : [],
     createdAt: existing.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -36,7 +35,8 @@ export async function onRequestGet({ env, request }) {
   const session = await sessionFor(request, env);
   if (!session) return error('포탈 로그인이 필요합니다.', 401);
   const data = await readData(env);
-  return Response.json({ items: data.items, canWrite: canWrite(session), updatedAt: data.updatedAt || '' }, { headers: CORS });
+  const items = data.items.map(item => ({ ...item, files: filesOf(item) }));
+  return Response.json({ items, canWrite: canWrite(session), updatedAt: data.updatedAt || '' }, { headers: CORS });
 }
 
 export async function onRequestPost({ env, request }) {
@@ -79,14 +79,12 @@ export async function onRequestDelete({ env, request }) {
   if (!canWrite(session)) return error('관리자 권한이 필요합니다.', 403);
   const id = new URL(request.url).searchParams.get('id') || '';
   const data = await readData(env);
+  const target = data.items.find(item => item.id === id);
+  if (!target) return error('작업 항목을 찾을 수 없습니다.', 404);
   const items = data.items.filter(item => item.id !== id);
-  if (items.length === data.items.length) return error('작업 항목을 찾을 수 없습니다.', 404);
   const saved = await saveData(env, items);
   try {
-    await Promise.all([
-      env.CAMP_KV.delete(`portal:resource-file:${id}:work`),
-      env.CAMP_KV.delete(`portal:resource-file:${id}:original`),
-    ]);
+    await Promise.all(filesOf(target).map(f => env.CAMP_KV.delete(`portal:resource-file:${id}:${f.id}`)));
   } catch {}
   return Response.json({ items: saved.items, updatedAt: saved.updatedAt }, { headers: CORS });
 }

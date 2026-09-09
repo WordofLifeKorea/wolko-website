@@ -1,10 +1,13 @@
 /**
- * 작업 항목(Resource & Media)에 딸린 파일 첨부 — "작업 파일"(work, 현재까지 작업한
- * 진행분)과 "원본 파일"(original, 원본 소스) 두 슬롯을 따로 관리한다.
+ * 작업 항목(Resource & Media)에 딸린 파일 첨부 — 예전엔 "작업 파일"/"원본 파일"
+ * 두 칸이 고정이었지만, 지금은 필요한 만큼 자유롭게 추가하는 파일 목록이다.
+ * 각 파일은 자체 id(새 파일은 crypto.randomUUID(), 예전 데이터는 'work'/
+ * 'original')를 가진다.
  *
- * GET    /api/portal/resource-file?id=&kind=work|original   — 파일 데이터(미리보기용) 조회.
- * POST   /api/portal/resource-file                           — 업로드(교체). admin/master만.
- * DELETE /api/portal/resource-file?id=&kind=work|original    — 첨부 삭제. admin/master만.
+ * GET    /api/portal/resource-file?id=&fileId=   — 파일 데이터(미리보기용) 조회.
+ * POST   /api/portal/resource-file                — 업로드. body.fileId가 있으면 그 파일을
+ *                                                    교체하고, 없으면 새 파일을 추가한다. admin/master만.
+ * DELETE /api/portal/resource-file?id=&fileId=   — 첨부 삭제. admin/master만.
  *
  * 파일 본문은 항목 목록과 분리된 별도 KV 키에 저장해서 목록 조회 응답이
  * 무거워지지 않게 한다. 항목 레코드에는 이름/크기/업로더/시각 같은 가벼운
@@ -16,15 +19,15 @@
  * 예전 방식으로 이미 올라간 파일도 계속 읽을 수 있도록 GET에서 두 형식을
  * 다 처리한다.
  */
-import { sessionFor, canWrite, text, readData, saveData, error } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_FILE_BYTES = 24 * 1024 * 1024; // KV 값 한도(25MiB)보다 안전 여유를 둔 최대치
-const KINDS = new Set(['work', 'original']);
 const MAX_LOG_ENTRIES = 20;
+const MAX_FILES_PER_ITEM = 20;
 
-function fileKvKey(id, kind) { return `portal:resource-file:${id}:${kind}`; }
+function fileKvKey(id, fileId) { return `portal:resource-file:${id}:${fileId}`; }
 
 function base64ToBytes(dataUrl) {
   const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
@@ -50,10 +53,10 @@ export async function onRequestGet({ env, request }) {
 
   const url = new URL(request.url);
   const id = text(url.searchParams.get('id'), 80);
-  const kind = url.searchParams.get('kind');
-  if (!id || !KINDS.has(kind)) return error('잘못된 요청입니다.', 400);
+  const fileId = text(url.searchParams.get('fileId'), 80);
+  if (!id || !fileId) return error('잘못된 요청입니다.', 400);
 
-  const { value, metadata } = await env.CAMP_KV.getWithMetadata(fileKvKey(id, kind), 'arrayBuffer');
+  const { value, metadata } = await env.CAMP_KV.getWithMetadata(fileKvKey(id, fileId), 'arrayBuffer');
   if (!value) return error('파일을 찾을 수 없습니다.', 404);
 
   let file;
@@ -77,11 +80,11 @@ export async function onRequestPost({ env, request }) {
   try { body = await request.json(); } catch { return error('잘못된 요청입니다.', 400); }
 
   const id = text(body.id, 80);
-  const kind = body.kind;
+  const existingFileId = text(body.fileId, 80);
   const fileName = text(body.fileName, 200);
   const fileType = text(body.fileType, 100);
   const fileData = String(body.fileData || '');
-  if (!id || !KINDS.has(kind)) return error('잘못된 요청입니다.', 400);
+  if (!id) return error('잘못된 요청입니다.', 400);
   if (!fileName || !fileData) return error('파일을 선택해 주세요.', 400);
   if (!/^data:[\w.+-]+\/[\w.+-]+;base64,/i.test(fileData)) return error('파일 형식이 올바르지 않습니다.', 400);
 
@@ -95,17 +98,29 @@ export async function onRequestPost({ env, request }) {
   const index = data.items.findIndex(item => item.id === id);
   if (index < 0) return error('작업 항목을 찾을 수 없습니다.', 404);
 
+  const item = { ...data.items[index] };
+  const files = filesOf(item);
+  const fileIndex = existingFileId ? files.findIndex(f => f.id === existingFileId) : -1;
+  if (existingFileId && fileIndex < 0) return error('파일을 찾을 수 없습니다.', 404);
+  if (!existingFileId && files.length >= MAX_FILES_PER_ITEM) {
+    return error(`파일은 최대 ${MAX_FILES_PER_ITEM}개까지 첨부할 수 있습니다.`, 400);
+  }
+
   const account = await getAccount(env, session.email);
   const uploadedByName = account?.name || session.email;
   const now = new Date().toISOString();
-  const fileSize = bytes.length;
+  const fileId = existingFileId || crypto.randomUUID();
 
-  await env.CAMP_KV.put(fileKvKey(id, kind), bytes, { metadata: { fileName, fileType } });
+  await env.CAMP_KV.put(fileKvKey(id, fileId), bytes, { metadata: { fileName, fileType } });
 
-  const meta = { fileName, fileType, fileSize, uploadedBy: session.email, uploadedByName, uploadedAt: now };
-  const item = { ...data.items[index] };
-  if (kind === 'work') item.workFile = meta; else item.originalFile = meta;
-  const logEntry = { kind, fileName, uploadedByName, uploadedAt: now };
+  const meta = { id: fileId, fileName, fileType, fileSize: bytes.length, uploadedBy: session.email, uploadedByName, uploadedAt: now };
+  const nextFiles = [...files];
+  if (fileIndex >= 0) nextFiles[fileIndex] = meta; else nextFiles.push(meta);
+
+  item.files = nextFiles;
+  delete item.workFile;
+  delete item.originalFile;
+  const logEntry = { fileName, uploadedByName, uploadedAt: now };
   item.uploadLog = [logEntry, ...(Array.isArray(item.uploadLog) ? item.uploadLog : [])].slice(0, MAX_LOG_ENTRIES);
   item.updatedAt = now;
   data.items[index] = item;
@@ -121,16 +136,18 @@ export async function onRequestDelete({ env, request }) {
 
   const url = new URL(request.url);
   const id = text(url.searchParams.get('id'), 80);
-  const kind = url.searchParams.get('kind');
-  if (!id || !KINDS.has(kind)) return error('잘못된 요청입니다.', 400);
+  const fileId = text(url.searchParams.get('fileId'), 80);
+  if (!id || !fileId) return error('잘못된 요청입니다.', 400);
 
   const data = await readData(env);
   const index = data.items.findIndex(item => item.id === id);
   if (index < 0) return error('작업 항목을 찾을 수 없습니다.', 404);
 
-  await env.CAMP_KV.delete(fileKvKey(id, kind));
+  await env.CAMP_KV.delete(fileKvKey(id, fileId));
   const item = { ...data.items[index] };
-  if (kind === 'work') item.workFile = null; else item.originalFile = null;
+  item.files = filesOf(item).filter(f => f.id !== fileId);
+  delete item.workFile;
+  delete item.originalFile;
   item.updatedAt = new Date().toISOString();
   data.items[index] = item;
   const saved = await saveData(env, data.items);
