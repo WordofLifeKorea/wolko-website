@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=20">
+  <link rel="stylesheet" href="/portal.css?v=21">
   <style is:global>
     .file-context-menu { position:fixed; z-index:10000; width:min(230px,calc(100vw - 16px)); padding:6px; background:#fff; border:1px solid #dce8ed; border-radius:12px; box-shadow:0 12px 36px rgba(16,41,54,.2); }
     .file-context-menu button { display:block; width:100%; min-height:42px; border:0; border-radius:7px; background:transparent; text-align:left; padding:10px 14px; color:#102936; font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; }
@@ -413,13 +413,13 @@
             ${canWrite ? `<button type="button" class="file-btn" onclick="renameFolder('${openFolderData.id}')">${esc(t('renameFolder'))}</button>` : ''}
             ${canWrite ? `<button type="button" class="file-btn is-danger" onclick="deleteFolder('${openFolderData.id}')">${esc(t('deleteFolder'))}</button>` : ''}
           </div>
-          <div class="folder-category is-original">
-            <div class="folder-category-label">${esc(t('originalLabel'))}</div>
-            ${fileGroupHtml(filesIn(openFolderData.id, 'original'), openFolderData.id, 'original')}
-          </div>
           <div class="folder-category is-revised">
-            <div class="folder-category-label">${esc(t('revisedLabel'))}</div>
+            <div class="folder-category-label">${esc(t('revisedLabel'))}<span>${esc(t('fileCount')(filesIn(openFolderData.id, 'revised').length))}</span></div>
             ${fileGroupHtml(filesIn(openFolderData.id, 'revised'), openFolderData.id, 'revised')}
+          </div>
+          <div class="folder-category is-original">
+            <div class="folder-category-label">${esc(t('originalLabel'))}<span>${esc(t('fileCount')(filesIn(openFolderData.id, 'original').length))}</span></div>
+            ${fileGroupHtml(filesIn(openFolderData.id, 'original'), openFolderData.id, 'original')}
           </div>`;
         return;
       }
