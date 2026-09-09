@@ -1,4 +1,4 @@
-import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, stagePercentsOf, progressFromStagePercents, STAGE_COUNT } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, annotationsOf, stagePercentsOf, progressFromStagePercents, STAGE_COUNT } from '../../lib/portalResources.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_THUMBNAIL_LENGTH = 1_500_000;
@@ -27,6 +27,7 @@ function normalize(input, existing = {}) {
     thumbnailData: thumbnail(input?.thumbnailData),
     files: filesOf(existing),
     folders: foldersOf(existing),
+    annotations: annotationsOf(existing),
     uploadLog: Array.isArray(existing.uploadLog) ? existing.uploadLog : [],
     createdAt: existing.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -38,7 +39,7 @@ export async function onRequestGet({ env, request }) {
   const session = await sessionFor(request, env);
   if (!session) return error('포탈 로그인이 필요합니다.', 401);
   const data = await readData(env);
-  const items = data.items.map(item => { const stagePercents = stagePercentsOf(item); return { ...item, files: filesOf(item), folders: foldersOf(item), stagePercents, progress: progressFromStagePercents(stagePercents) }; });
+  const items = data.items.map(item => { const stagePercents = stagePercentsOf(item); return { ...item, files: filesOf(item), folders: foldersOf(item), annotations: annotationsOf(item), stagePercents, progress: progressFromStagePercents(stagePercents) }; });
   return Response.json({ items, canWrite: canWrite(session), updatedAt: data.updatedAt || '' }, { headers: CORS });
 }
 

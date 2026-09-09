@@ -22,7 +22,7 @@
  * 예전 방식으로 이미 올라간 파일도 계속 읽을 수 있도록 GET에서 두 형식을
  * 다 처리한다.
  */
-import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, annotationsOf } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -192,6 +192,7 @@ export async function onRequestDelete({ env, request }) {
   await env.CAMP_KV.delete(fileKvKey(id, fileId));
   const item = { ...data.items[index] };
   item.files = filesOf(item).filter(f => f.id !== fileId);
+  item.annotations = annotationsOf(item).filter(a => a.fileId !== fileId);
   delete item.workFile;
   delete item.originalFile;
   item.updatedAt = new Date().toISOString();

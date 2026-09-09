@@ -28,6 +28,19 @@
     [data-context-file] { -webkit-touch-callout:none; }
   </style>
   <script src="/wolko-rail.js?v=9" defer></script>
+  <script>
+    // PDF 렌더링은 파일 하나가 몇 MB씩이라 처음 PDF를 열 때만 동적으로
+    // 불러온다(모바일 데이터 절약). is:inline 스크립트는 번들링이 안 되므로
+    // npm 패키지를 쓰려면 이렇게 별도의(번들링되는) 스크립트로 다리를 놓는다.
+    window.__loadPdfjs = async () => {
+      if (window.__pdfjsLib) return window.__pdfjsLib;
+      const pdfjsLib = await import('pdfjs-dist');
+      const workerUrl = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+      window.__pdfjsLib = pdfjsLib;
+      return pdfjsLib;
+    };
+  </script>
 </head>
 <body>
   <div class="login-screen" id="loginScreen">
@@ -145,6 +158,38 @@
     </div>
   </div>
 
+  <div class="viewer-overlay" id="viewerOverlay" hidden>
+    <div class="viewer-card">
+      <div class="viewer-head">
+        <span class="viewer-file-name" id="viewerFileName"></span>
+        <div class="viewer-head-actions">
+          <button type="button" class="viewer-notes-toggle" id="viewerNotesToggle" onclick="toggleNotesPanel()"><span data-t="notesLabel">노트</span> <span id="viewerNotesCount"></span></button>
+          <button class="icon-close" type="button" onclick="closeViewer()" aria-label="close">×</button>
+        </div>
+      </div>
+      <div class="viewer-body">
+        <div class="viewer-stage">
+          <div class="viewer-toolbar" id="viewerToolbar"></div>
+          <div class="viewer-stage-surface" id="viewerSurface"></div>
+        </div>
+        <div class="notes-panel" id="notesPanel">
+          <div class="notes-panel-head">
+            <span data-t="notesLabel">노트</span>
+            <button type="button" class="notes-panel-close" onclick="toggleNotesPanel(false)" aria-label="close">×</button>
+          </div>
+          <div class="notes-list" id="notesList"></div>
+          <div class="note-composer" id="noteComposer" hidden>
+            <textarea id="noteComposerText" maxlength="500" data-t-ph="notePlaceholder"></textarea>
+            <div class="note-composer-actions">
+              <button type="button" onclick="cancelNoteComposer()" data-t="noteCancel">취소</button>
+              <button type="button" class="is-primary" onclick="submitNoteComposer()" data-t="noteSave">저장</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script is:inline>
@@ -185,6 +230,13 @@
         fileTooLarge: '파일 용량이 너무 큽니다(최대 24MB).', fileUploadFailed: '파일을 업로드하지 못했습니다.', filePreviewFailed: '파일을 불러오지 못했습니다.', fileDeleteFailed: '파일을 삭제하지 못했습니다.',
         fileRemoveConfirm: '이 파일을 삭제할까요?', fileUploadedToast: '파일을 업로드했습니다.', filesUploadedToast: n => `파일 ${n}개를 업로드했습니다.`, fileRemovedToast: '파일을 삭제했습니다.',
         moveFile: '이동', fileMovedToast: '파일을 이동했습니다.', fileMoveFailed: '파일을 이동하지 못했습니다.',
+        addNote: '+ 영역 표시', addGeneralNote: '+ 노트 남기기', addTimeNote: '+ 이 시점에 노트',
+        notesLabel: '노트', notesEmpty: '아직 노트가 없습니다.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
+        noteCancel: '취소', noteSave: '저장', noteResolve: '해결', noteReopen: '재열기', noteDelete: '삭제',
+        noteDeleteConfirm: '이 노트를 삭제할까요?', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
+        noteDeletedToast: '노트를 삭제했습니다.',
+        openInNewTab: '새 탭에서 열기', cannotPreviewInline: '이 파일 형식은 바로 미리보기를 지원하지 않아요.',
+        pageOf: (n, total) => `${n} / ${total}`, loadingFile: '불러오는 중...', pdfLoadFailed: 'PDF를 불러오지 못했습니다.',
       },
       en: {
         loginTitle: 'Portal login required', loginDesc: 'Resource & Media is available with your WOLKO Portal account.', loginBtn: 'Go to Portal',
@@ -222,6 +274,13 @@
         fileTooLarge: 'File is too large (max 24MB).', fileUploadFailed: 'Could not upload the file.', filePreviewFailed: 'Could not load the file.', fileDeleteFailed: 'Could not delete the file.',
         fileRemoveConfirm: 'Delete this file?', fileUploadedToast: 'File uploaded.', filesUploadedToast: n => `Uploaded ${n} files.`, fileRemovedToast: 'File removed.',
         moveFile: 'Move', fileMovedToast: 'File moved.', fileMoveFailed: 'Could not move the file.',
+        addNote: '+ Mark Area', addGeneralNote: '+ Add Note', addTimeNote: '+ Note at This Time',
+        notesLabel: 'Notes', notesEmpty: 'No notes yet.', notePlaceholder: 'Describe what needs fixing here',
+        noteCancel: 'Cancel', noteSave: 'Save', noteResolve: 'Resolve', noteReopen: 'Reopen', noteDelete: 'Delete',
+        noteDeleteConfirm: 'Delete this note?', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
+        noteDeletedToast: 'Note deleted.',
+        openInNewTab: 'Open in new tab', cannotPreviewInline: "This file type can't be previewed inline.",
+        pageOf: (n, total) => `${n} / ${total}`, loadingFile: 'Loading...', pdfLoadFailed: 'Could not load the PDF.',
       },
     };
     let lang = localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko';
@@ -346,8 +405,11 @@
     // File actions are available through the context menu and keyboard menu key.
     function fileTileHtml(meta) {
       const metaLine = `${t('uploadedBy')(esc(meta.uploadedByName || meta.uploadedBy || ''), esc(formatLogTime(meta.uploadedAt)))} · ${humanFileSize(meta.fileSize)}`;
+      const openNotes = (currentItem.annotations || []).filter(a => a.fileId === meta.id && a.status === 'open').length;
+      const noteBadge = openNotes ? `<span class="file-tile-note-badge">${openNotes}</span>` : '';
       return `<div class="file-tile" data-context-file="${meta.id}">
         <button type="button" class="file-tile-preview" onclick="previewFile('${meta.id}')" title="${esc(t('previewFile'))}">
+          ${noteBadge}
           ${fileIconHtml(meta.fileName)}
           <span class="file-tile-name" title="${esc(meta.fileName)}">${esc(meta.fileName)}</span>
           <span class="file-tile-meta">${metaLine}</span>
@@ -548,30 +610,276 @@
         toast(e.message || t('folderDeleteFailed'), true);
       }
     }
-    async function previewFile(fileId) {
+    // 파일 데이터를 받아 Blob URL로 바꾼다 — 뷰어에 표시하거나(previewFile)
+    // 새 탭에서 그대로 열 때(openInNewTab) 둘 다 이 로직을 쓴다.
+    async function fetchFileAsBlobUrl(fileId) {
+      const res = await fetch(`/api/portal/resource-file?id=${encodeURIComponent(currentItem.id)}&fileId=${encodeURIComponent(fileId)}`, { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || t('filePreviewFailed'));
+      const dataUrl = data.file.fileData;
+      const parts = dataUrl.match(/^data:([^;]+);base64,(.*)$/s);
+      if (!parts) throw new Error(t('filePreviewFailed'));
+      const byteChars = atob(parts[2]);
+      const bytes = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([bytes], { type: parts[1] });
+      return URL.createObjectURL(blob);
+    }
+    function openInNewTab(fileId) {
       // 팝업 차단 우회: fetch(비동기) 이후에 window.open을 부르면 "사용자 조작 직후"로
       // 인정 안 하는 브라우저가 있어 조용히 막힌다 — 클릭 즉시(동기) 빈 탭을 먼저 열어두고,
       // 데이터가 오면 그 탭의 위치만 바꾼다.
       const win = window.open('', '_blank');
-      try {
-        const res = await fetch(`/api/portal/resource-file?id=${encodeURIComponent(currentItem.id)}&fileId=${encodeURIComponent(fileId)}`, { headers: authHeaders() });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || t('filePreviewFailed'));
-        const dataUrl = data.file.fileData;
-        const parts = dataUrl.match(/^data:([^;]+);base64,(.*)$/s);
-        if (!parts) throw new Error(t('filePreviewFailed'));
-        const byteChars = atob(parts[2]);
-        const bytes = new Uint8Array(byteChars.length);
-        for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
-        const blob = new Blob([bytes], { type: parts[1] });
-        const url = URL.createObjectURL(blob);
+      fetchFileAsBlobUrl(fileId).then(url => {
         if (win) win.location = url; else window.open(url, '_blank');
         setTimeout(() => URL.revokeObjectURL(url), 60000);
-      } catch (e) {
+      }).catch(e => {
         if (win) win.close();
         toast(e.message || t('filePreviewFailed'), true);
+      });
+    }
+    const VIEWER_KIND_MAP = { pdf: 'pdf', png: 'image', jpg: 'image', jpeg: 'image', gif: 'image', webp: 'image', mp4: 'video', mov: 'video', mp3: 'audio', wav: 'audio', m4a: 'audio' };
+    function viewerKindOf(fileName) {
+      const ext = (fileName.split('.').pop() || '').toLowerCase();
+      return VIEWER_KIND_MAP[ext] || 'other';
+    }
+    let viewerFileId = null, viewerKind = null, viewerUrl = null, viewerPage = 1, viewerPdfDoc = null;
+    let drawModeOn = false, dragState = null, pendingNote = null;
+    async function previewFile(fileId) {
+      const meta = (currentItem?.files || []).find(f => f.id === fileId);
+      if (!meta) return;
+      closeFileMenu();
+      const kind = viewerKindOf(meta.fileName);
+      viewerFileId = fileId; viewerKind = kind; viewerPage = 1; viewerPdfDoc = null; drawModeOn = false; pendingNote = null;
+      $('viewerFileName').textContent = meta.fileName;
+      $('viewerToolbar').innerHTML = '';
+      $('viewerSurface').innerHTML = `<p class="viewer-loading">${esc(t('loadingFile'))}</p>`;
+      $('viewerOverlay').hidden = false;
+      renderNotesList();
+      toggleNotesPanel(window.innerWidth > 620);
+      if (kind === 'other') { renderFallbackStage(meta); return; }
+      try {
+        const url = await fetchFileAsBlobUrl(fileId);
+        viewerUrl = url;
+        if (kind === 'pdf') await renderPdfStage(url);
+        else if (kind === 'image') renderImageStage(url);
+        else renderMediaStage(url, kind);
+      } catch (e) {
+        toast(e.message || t('filePreviewFailed'), true);
+        closeViewer();
       }
     }
+    function closeViewer() {
+      $('viewerOverlay').hidden = true;
+      if (viewerUrl) { URL.revokeObjectURL(viewerUrl); viewerUrl = null; }
+      viewerFileId = null; viewerPdfDoc = null; drawModeOn = false; dragState = null;
+      cancelNoteComposer();
+    }
+    function viewerToolbarHtml() {
+      return `<button type="button" class="viewer-annotate-toggle" id="viewerDrawToggle" onclick="toggleDrawMode()">${esc(t('addNote'))}</button><a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</a>`;
+    }
+    function renderImageStage(url) {
+      $('viewerToolbar').innerHTML = viewerToolbarHtml();
+      $('viewerSurface').innerHTML = `<div class="viewer-surface-inner" id="viewerSurfaceInner"><img id="viewerImg" class="viewer-img"></div>`;
+      const img = $('viewerImg');
+      const ready = () => { attachDragHighlight($('viewerSurfaceInner')); renderHighlights(); };
+      img.onload = ready;
+      img.src = url;
+      if (img.complete) ready();
+    }
+    function renderMediaStage(url, kind) {
+      const tag = kind === 'video' ? 'video' : 'audio';
+      $('viewerToolbar').innerHTML = `<button type="button" onclick="addTimeNote()">${esc(t('addTimeNote'))}</button><a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</a>`;
+      $('viewerSurface').innerHTML = `<div class="viewer-surface-inner"><${tag} src="${url}" controls id="viewerMedia" class="viewer-media"></${tag}></div>`;
+    }
+    function renderFallbackStage(meta) {
+      $('viewerToolbar').innerHTML = '';
+      $('viewerSurface').innerHTML = `<div class="viewer-fallback"><p>${esc(t('cannotPreviewInline'))}</p><button type="button" class="viewer-newtab-btn" onclick="openInNewTab('${meta.id}')">${esc(t('openInNewTab'))}</button><button type="button" class="viewer-newtab-btn" onclick="openNoteComposer({kind:'general'})">${esc(t('addGeneralNote'))}</button></div>`;
+    }
+    async function renderPdfStage(url) {
+      $('viewerToolbar').innerHTML = `${viewerToolbarHtml()}<div class="viewer-page-nav"><button type="button" onclick="viewerPrevPage()">‹</button><span id="viewerPageLabel"></span><button type="button" onclick="viewerNextPage()">›</button></div>`;
+      $('viewerSurface').innerHTML = `<div class="viewer-surface-inner" id="viewerSurfaceInner"><canvas id="viewerCanvas"></canvas></div>`;
+      try {
+        const pdfjsLib = await window.__loadPdfjs();
+        viewerPdfDoc = await pdfjsLib.getDocument({ url }).promise;
+        viewerPage = 1;
+        await renderPdfPage();
+        attachDragHighlight($('viewerSurfaceInner'));
+      } catch (e) {
+        $('viewerSurface').innerHTML = `<p class="viewer-error">${esc(t('pdfLoadFailed'))}</p>`;
+      }
+    }
+    async function renderPdfPage() {
+      const page = await viewerPdfDoc.getPage(viewerPage);
+      const canvas = $('viewerCanvas');
+      const containerWidth = $('viewerSurfaceInner').clientWidth || 600;
+      const unscaled = page.getViewport({ scale: 1 });
+      const scale = containerWidth / unscaled.width;
+      const viewport = page.getViewport({ scale });
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      $('viewerPageLabel').textContent = t('pageOf')(viewerPage, viewerPdfDoc.numPages);
+      renderHighlights();
+    }
+    function viewerPrevPage() { if (viewerPage > 1) { viewerPage--; renderPdfPage(); } }
+    function viewerNextPage() { if (viewerPdfDoc && viewerPage < viewerPdfDoc.numPages) { viewerPage++; renderPdfPage(); } }
+    function toggleDrawMode() {
+      drawModeOn = !drawModeOn;
+      $('viewerDrawToggle')?.classList.toggle('is-active', drawModeOn);
+      $('viewerSurfaceInner')?.classList.toggle('is-drawing', drawModeOn);
+    }
+    // PDF 캔버스/이미지 공용 드래그 하이라이트 — 마우스 전용 이벤트가 아니라
+    // Pointer Events를 써서 손가락 드래그도 똑같이 처리한다. 좌표는 화면
+    // 크기와 무관하게 0~1로 정규화해서 저장하므로, 나중에 다른 화면 크기에서
+    // 다시 열어도(퍼센트 기반 CSS로) 항상 같은 위치를 가리킨다.
+    function attachDragHighlight(surfaceEl) {
+      if (!surfaceEl) return;
+      surfaceEl.addEventListener('pointerdown', event => {
+        if (!drawModeOn) return;
+        try { surfaceEl.setPointerCapture(event.pointerId); } catch {}
+        const rect = surfaceEl.getBoundingClientRect();
+        dragState = { rect, pointerId: event.pointerId, startX: (event.clientX - rect.left) / rect.width, startY: (event.clientY - rect.top) / rect.height };
+        const box = document.createElement('div');
+        box.className = 'highlight-box is-drawing';
+        box.id = 'viewerDragBox';
+        surfaceEl.appendChild(box);
+        event.preventDefault();
+      });
+      surfaceEl.addEventListener('pointermove', event => {
+        if (!dragState || event.pointerId !== dragState.pointerId) return;
+        const { rect, startX, startY } = dragState;
+        const curX = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+        const curY = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+        const x = Math.min(startX, curX), y = Math.min(startY, curY), w = Math.abs(curX - startX), h = Math.abs(curY - startY);
+        const box = $('viewerDragBox');
+        if (box) { box.style.left = (x * 100) + '%'; box.style.top = (y * 100) + '%'; box.style.width = (w * 100) + '%'; box.style.height = (h * 100) + '%'; }
+      });
+      surfaceEl.addEventListener('pointerup', event => {
+        if (!dragState || event.pointerId !== dragState.pointerId) return;
+        const { rect, startX, startY } = dragState;
+        const curX = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+        const curY = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+        const x = Math.min(startX, curX), y = Math.min(startY, curY), w = Math.abs(curX - startX), h = Math.abs(curY - startY);
+        dragState = null;
+        $('viewerDragBox')?.remove();
+        toggleDrawMode();
+        if (w < 0.01 || h < 0.01) return; // 너무 작은 드래그(실수로 살짝 눌림)는 무시
+        openNoteComposer({ kind: 'area', x, y, w, h, page: viewerKind === 'pdf' ? viewerPage : null });
+      });
+    }
+    function addTimeNote() {
+      const el = $('viewerMedia');
+      if (!el) return;
+      openNoteComposer({ kind: 'time', timeSec: el.currentTime });
+    }
+    function openNoteComposer(pending) {
+      pendingNote = pending;
+      toggleNotesPanel(true);
+      $('noteComposer').hidden = false;
+      $('noteComposerText').value = '';
+      $('noteComposerText').focus();
+    }
+    function cancelNoteComposer() {
+      pendingNote = null;
+      const composer = $('noteComposer');
+      if (composer) composer.hidden = true;
+    }
+    async function submitNoteComposer() {
+      const textVal = $('noteComposerText').value.trim();
+      if (!textVal || !pendingNote) return;
+      const body = { id: currentItem.id, fileId: viewerFileId, kind: pendingNote.kind, text: textVal };
+      if (pendingNote.kind === 'area') Object.assign(body, { x: pendingNote.x, y: pendingNote.y, w: pendingNote.w, h: pendingNote.h, page: pendingNote.page });
+      if (pendingNote.kind === 'time') body.timeSec = pendingNote.timeSec;
+      try {
+        const res = await fetch('/api/portal/resource-annotation', { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('noteSaveFailed'));
+        currentItem = data.item;
+        const idx = resources.findIndex(r => r.id === currentItem.id);
+        if (idx !== -1) resources[idx] = currentItem;
+        cancelNoteComposer();
+        renderNotesList(); renderHighlights(); renderFilesAndFolders();
+      } catch (e) {
+        toast(e.message || t('noteSaveFailed'), true);
+      }
+    }
+    function annotationsForViewerFile() {
+      return (currentItem?.annotations || []).filter(a => a.fileId === viewerFileId);
+    }
+    function formatTimeSec(sec) {
+      const s = Math.max(0, Math.round(sec || 0));
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+    function toggleNotesPanel(force) {
+      const panel = $('notesPanel');
+      panel.classList.toggle('is-open', typeof force === 'boolean' ? force : !panel.classList.contains('is-open'));
+    }
+    function renderNotesList() {
+      const list = annotationsForViewerFile();
+      $('viewerNotesCount').textContent = list.length ? String(list.length) : '';
+      if (!list.length) { $('notesList').innerHTML = `<p class="upload-log-empty">${esc(t('notesEmpty'))}</p>`; return; }
+      const session = parseSession();
+      $('notesList').innerHTML = list.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(a => {
+        const canManage = !!(session && (session.email === a.createdBy || canWrite));
+        const where = a.kind === 'time' ? formatTimeSec(a.timeSec) : (a.kind === 'area' && a.page ? t('pageOf')(a.page, a.page) : '');
+        const jumpAttr = a.kind !== 'general' ? ` onclick="jumpToNote('${a.id}')"` : '';
+        return `<div class="note-item is-${a.status}" data-note-id="${a.id}">
+          <div class="note-item-head"><b>${esc(a.createdByName)}</b><span>${esc(formatLogTime(a.createdAt))}</span></div>
+          ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
+          <p>${esc(a.text)}</p>
+          ${canManage ? `<div class="note-item-actions"><button type="button" onclick="toggleNoteStatus('${a.id}','${a.status === 'open' ? 'resolved' : 'open'}')">${esc(a.status === 'open' ? t('noteResolve') : t('noteReopen'))}</button><button type="button" class="is-danger" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button></div>` : ''}
+        </div>`;
+      }).join('');
+    }
+    function renderHighlights() {
+      const surface = $('viewerSurfaceInner');
+      if (!surface) return;
+      surface.querySelectorAll('.highlight-box:not(.is-drawing)').forEach(el => el.remove());
+      if (viewerKind !== 'pdf' && viewerKind !== 'image') return;
+      annotationsForViewerFile().filter(a => a.kind === 'area' && (viewerKind !== 'pdf' || (a.page || 1) === viewerPage)).forEach(a => {
+        const box = document.createElement('div');
+        box.className = 'highlight-box is-' + a.status;
+        box.style.left = (a.x * 100) + '%'; box.style.top = (a.y * 100) + '%'; box.style.width = (a.w * 100) + '%'; box.style.height = (a.h * 100) + '%';
+        box.title = a.text;
+        box.addEventListener('click', () => jumpToNoteListItem(a.id));
+        surface.appendChild(box);
+      });
+    }
+    function jumpToNoteListItem(annotationId) {
+      toggleNotesPanel(true);
+      document.querySelector(`[data-note-id="${annotationId}"]`)?.scrollIntoView({ block: 'nearest' });
+    }
+    function jumpToNote(annotationId) {
+      const a = annotationsForViewerFile().find(x => x.id === annotationId);
+      if (!a) return;
+      if (a.kind === 'time') { const media = $('viewerMedia'); if (media) media.currentTime = a.timeSec; }
+      if (a.kind === 'area' && viewerKind === 'pdf' && a.page && a.page !== viewerPage) { viewerPage = a.page; renderPdfPage(); }
+    }
+    async function toggleNoteStatus(annotationId, status) {
+      try {
+        const res = await fetch('/api/portal/resource-annotation', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ id: currentItem.id, annotationId, status }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('noteUpdateFailed'));
+        currentItem = data.item;
+        const idx = resources.findIndex(r => r.id === currentItem.id);
+        if (idx !== -1) resources[idx] = currentItem;
+        renderNotesList(); renderHighlights(); renderFilesAndFolders();
+      } catch (e) { toast(e.message || t('noteUpdateFailed'), true); }
+    }
+    async function deleteAnnotation(annotationId) {
+      if (!confirm(t('noteDeleteConfirm'))) return;
+      try {
+        const res = await fetch(`/api/portal/resource-annotation?id=${encodeURIComponent(currentItem.id)}&annotationId=${encodeURIComponent(annotationId)}`, { method: 'DELETE', headers: authHeaders() });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('noteDeleteFailed'));
+        currentItem = data.item;
+        const idx = resources.findIndex(r => r.id === currentItem.id);
+        if (idx !== -1) resources[idx] = currentItem;
+        renderNotesList(); renderHighlights(); renderFilesAndFolders();
+        toast(t('noteDeletedToast'));
+      } catch (e) { toast(e.message || t('noteDeleteFailed'), true); }
+    }
+    $('viewerOverlay').addEventListener('click', event => { if (event.target === $('viewerOverlay')) closeViewer(); });
     function moveFileEvent(selectEl) {
       const [folderId, category] = selectEl.value.split('|');
       closeFileMenu();

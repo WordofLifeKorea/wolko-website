@@ -88,3 +88,11 @@ export function progressFromStagePercents(percents) {
 export function foldersOf(item) {
   return Array.isArray(item?.folders) ? item.folders : [];
 }
+
+// 파일 미리보기 위 하이라이트+노트. 텍스트만 담는 가벼운 메타데이터라
+// folders와 마찬가지로 항목 레코드 안에 그대로 저장한다.
+export const MAX_ANNOTATIONS_PER_ITEM = 300;
+
+export function annotationsOf(item) {
+  return Array.isArray(item?.annotations) ? item.annotations : [];
+}
