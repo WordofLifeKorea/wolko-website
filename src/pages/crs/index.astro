@@ -117,6 +117,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .search-input:focus { border-color:#004f68; box-shadow:0 0 0 3px rgba(0,79,104,.09); }
   .btn-add { background:#004f68; color:#fff; border:none; border-radius:9px; padding:.65rem 1.1rem; font-size:.88rem; font-weight:700; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:.4rem; transition:background .18s; }
   .btn-add:hover { background:#003a50; }
+  .filter-tabs-row { flex-basis:100%; display:flex; align-items:center; gap:.4rem; overflow-x:auto; padding-bottom:.1rem; }
+  .filter-tabs-row::-webkit-scrollbar { height:3px; }
+  .filter-tab-label { flex-shrink:0; font-size:.68rem; font-weight:800; color:#7c9099; white-space:nowrap; letter-spacing:.02em; }
+  .filter-chip { flex-shrink:0; padding:.32rem .7rem; border-radius:20px; border:1px solid #dde5ea; background:#fff; color:#57707a; font-size:.74rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; transition:background .15s, color .15s, border-color .15s; }
+  .filter-chip:hover { border-color:#b8ced5; }
+  .filter-chip.active { background:#004f68; border-color:#004f68; color:#fff; }
 
   /* ── 교회 카드 리스트 ── */
   .church-list { display:grid; gap:.9rem; }
@@ -770,6 +776,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       church_name_label: '교회 이름 *', church_name_ph: '예: 평택중앙교회',
       pastor_label: '담임목사 성함 *', pastor_ph: '예: 홍길동 목사',
       pastor_phone: '목사님 연락처', pastor_phone_ph: '예: 010-1234-5678',
+      denomination_label: '교파', denomination_ph: '교파 선택 또는 입력',
+      missionary_label: '담당 선교사', missionary_ph: '담당 선교사 선택 또는 입력',
+      filter_all: '전체',
       visit_date: '방문 날짜', location: '시 / 도', region_ph: '-- 시/도 선택 --',
       district: '시 / 군 / 구', district_ph: '-- 시/도를 먼저 선택하세요 --', district_ph_select: '-- 시/군/구 선택 --',
       purpose: '방문 목적', purpose_ph: '-- 방문 목적 선택 --',
@@ -824,6 +833,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       church_name_label: 'Church Name *', church_name_ph: 'e.g. Pyeongtaek Central Church',
       pastor_label: 'Senior Pastor *', pastor_ph: 'e.g. Pastor John Kim',
       pastor_phone: 'Pastor\'s Phone', pastor_phone_ph: 'e.g. 010-1234-5678',
+      denomination_label: 'Denomination', denomination_ph: 'Select or type a denomination',
+      missionary_label: 'Assigned Missionary', missionary_ph: 'Select or type a missionary',
+      filter_all: 'All',
       visit_date: 'Visit Date', location: 'Province / City', region_ph: '-- Select Province --',
       district: 'City / District', district_ph: '-- Select province first --', district_ph_select: '-- Select district --',
       purpose: 'Visit Purpose', purpose_ph: '-- Select Visit Purpose --',
@@ -885,6 +897,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let viewingChurch = null;
   let churchColorMap = {};
   let selectedChurchAddress = null;
+  let activeMissionaryFilter = null;
+  let activeDenominationFilter = null;
+  const DEFAULT_DENOMINATIONS = ['장로교', '감리교', '침례교', '성결교', '순복음', '루터교', '독립교회', '기타'];
   const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
 
   function cleanPasswordValue(value) {
@@ -964,6 +979,59 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       updates[`churches/${c.id}/number`] = num;
     });
     try { await update(ref(db), updates); } catch (e) { /* 다음 로드 때 다시 시도됨 */ }
+  }
+
+  // 교파/담당 선교사 입력창의 datalist(드롭다운 제안 목록)를 실제 등록된 값들로 채운다.
+  // 교파는 기본 목록(DEFAULT_DENOMINATIONS)에 실제 사용된 값을 더해서 보여준다.
+  function populateFieldDatalists() {
+    const denomSet = new Set(DEFAULT_DENOMINATIONS);
+    const missionarySet = new Set();
+    churches.forEach(c => {
+      if (c.denomination) denomSet.add(c.denomination);
+      if (c.assignedMissionary) missionarySet.add(c.assignedMissionary);
+    });
+    const denomEl = document.getElementById('denominationOptions');
+    const missionaryEl = document.getElementById('missionaryOptions');
+    if (denomEl) denomEl.innerHTML = [...denomSet].map(v => `<option value="${esc(v)}">`).join('');
+    if (missionaryEl) missionaryEl.innerHTML = [...missionarySet].map(v => `<option value="${esc(v)}">`).join('');
+  }
+
+  // 왼쪽 목록 위 필터 탭(담당 선교사 / 교파) — 실제 등록된 값으로만 탭을 만들고,
+  // 값이 하나도 없으면 그 줄 자체를 숨긴다.
+  function renderFilterTabs() {
+    const missionaries = [...new Set(churches.map(c => c.assignedMissionary).filter(Boolean))].sort();
+    const denominations = [...new Set(churches.map(c => c.denomination).filter(Boolean))].sort();
+
+    const buildRow = (values, active, attr) => {
+      const allActive = !active;
+      const chips = values.map(v =>
+        `<button type="button" class="filter-chip${active === v ? ' active' : ''}" data-${attr}="${esc(v)}">${esc(v)}</button>`
+      ).join('');
+      return `<button type="button" class="filter-chip${allActive ? ' active' : ''}" data-${attr}="">${esc(t('filter_all'))}</button>${chips}`;
+    };
+
+    const missionaryEl = document.getElementById('missionaryFilterTabs');
+    const denominationEl = document.getElementById('denominationFilterTabs');
+    if (missionaryEl) {
+      missionaryEl.innerHTML = missionaries.length
+        ? `<span class="filter-tab-label">${esc(t('missionary_label'))}</span>${buildRow(missionaries, activeMissionaryFilter, 'missionary')}`
+        : '';
+      missionaryEl.querySelectorAll('.filter-chip').forEach(btn => btn.addEventListener('click', () => {
+        activeMissionaryFilter = btn.dataset.missionary || null;
+        renderFilterTabs();
+        renderChurchList();
+      }));
+    }
+    if (denominationEl) {
+      denominationEl.innerHTML = denominations.length
+        ? `<span class="filter-tab-label">${esc(t('denomination_label'))}</span>${buildRow(denominations, activeDenominationFilter, 'denomination')}`
+        : '';
+      denominationEl.querySelectorAll('.filter-chip').forEach(btn => btn.addEventListener('click', () => {
+        activeDenominationFilter = btn.dataset.denomination || null;
+        renderFilterTabs();
+        renderChurchList();
+      }));
+    }
   }
 
   // ── 자동 로그아웃 (20분 비활동) ──
@@ -1203,6 +1271,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <div class="top-bar">
             <input class="search-input" id="searchInput" placeholder="${t('search_ph')}">
             <button class="btn-add" id="addChurchBtn">${t('add_church')}</button>
+            <div class="filter-tabs-row" id="missionaryFilterTabs"></div>
+            <div class="filter-tabs-row" id="denominationFilterTabs"></div>
           </div>
           <div class="list-panel-inner">
             <div class="church-list" id="churchList" style="padding-top:.8rem">
@@ -1283,6 +1353,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
               <div class="form-group">
                 <label>${t('pastor_phone')}</label>
                 <input type="tel" id="fPastorPhone" placeholder="${t('pastor_phone_ph')}">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>${t('denomination_label')}</label>
+                <input type="text" id="fDenomination" list="denominationOptions" placeholder="${t('denomination_ph')}">
+                <datalist id="denominationOptions"></datalist>
+              </div>
+              <div class="form-group">
+                <label>${t('missionary_label')}</label>
+                <input type="text" id="fMissionary" list="missionaryOptions" placeholder="${t('missionary_ph')}">
+                <datalist id="missionaryOptions"></datalist>
               </div>
             </div>
             <div class="form-row">
@@ -1433,6 +1515,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     }
     await ensureChurchNumbers();
     buildColorMap();
+    populateFieldDatalists();
+    renderFilterTabs();
     renderChurchList();
     ensureCrsMap();
   }
@@ -1462,9 +1546,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
     const filtered = churches
       .filter(c =>
-        (c.churchName || '').toLowerCase().includes(q) ||
-        (c.pastorName || '').toLowerCase().includes(q) ||
-        (c.location || '').toLowerCase().includes(q)
+        ((c.churchName || '').toLowerCase().includes(q) ||
+          (c.pastorName || '').toLowerCase().includes(q) ||
+          (c.location || '').toLowerCase().includes(q)) &&
+        (!activeMissionaryFilter || c.assignedMissionary === activeMissionaryFilter) &&
+        (!activeDenominationFilter || c.denomination === activeDenominationFilter)
       )
       .sort((a, b) => (ddayDays(b.updatedAt) ?? 0) - (ddayDays(a.updatedAt) ?? 0));
 
@@ -1503,6 +1589,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         : [c.lastVisitDate, c.lastVisitVisitor].filter(Boolean).join(' · ');
       const metaItems = [
         c.location ? `<span><em class="meta-label">${getLang()==='ko'?'지역':'Loc'}</em>${esc(c.location)}</span>` : '',
+        c.denomination ? `<span><em class="meta-label">${esc(t('denomination_label'))}</em>${esc(c.denomination)}</span>` : '',
+        c.assignedMissionary ? `<span><em class="meta-label">${esc(t('missionary_label'))}</em>${esc(c.assignedMissionary)}</span>` : '',
         lastVisitDisplay ? `<span><em class="meta-label">${t('last_visit')}</em>${esc(lastVisitDisplay)}</span>` : '',
         visitsArr.length ? `<span><em class="meta-label">${getLang()==='ko'?'방문':'Visits'}</em>${visitsArr.length}회</span>` : '',
       ].filter(Boolean).join('');
@@ -1548,6 +1636,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     document.getElementById('fChurchName').value = church?.churchName || '';
     document.getElementById('fPastorName').value = church?.pastorName || '';
     document.getElementById('fPastorPhone').value = church?.pastorPhone || '';
+    document.getElementById('fDenomination').value = church?.denomination || '';
+    document.getElementById('fMissionary').value = church?.assignedMissionary || '';
     document.getElementById('fNotes').value = church?.notes || '';
     document.getElementById('fDetailAddress').value = church?.detailAddress || '';
 
@@ -1696,6 +1786,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const data = {
       churchName, pastorName,
       pastorPhone: document.getElementById('fPastorPhone').value.trim(),
+      denomination: document.getElementById('fDenomination').value.trim(),
+      assignedMissionary: document.getElementById('fMissionary').value.trim(),
       region, district, detailAddress,
       lat: selectedChurchAddress?.lat ?? null,
       lng: selectedChurchAddress?.lng ?? null,
