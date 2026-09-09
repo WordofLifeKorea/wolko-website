@@ -21,7 +21,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <meta name="apple-mobile-web-app-title" content="WOLKO CRS">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
-  <link rel="stylesheet" href="/wolko-rail.css?v=8">
+  <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <script src="/wolko-rail.js?v=9" defer></script>
   <script is:inline src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}`}></script>
@@ -126,8 +126,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .church-card-body { padding:.85rem 1.3rem 1rem; }
   .church-name { font-size:1rem; font-weight:700; color:#0d2b38; margin:0 0 .2rem; line-height:1.3; }
   .pastor-name { font-size:.82rem; color:#6a8fa0; margin:0; }
-  .step-badge { background:#004f68; color:#fff; font-size:.72rem; font-weight:700; padding:.28rem .75rem; border-radius:20px; white-space:nowrap; flex-shrink:1; letter-spacing:.2px; max-width:58%; overflow:hidden; text-overflow:ellipsis; }
+  .step-badge { background:#004f68; color:#fff; font-size:.72rem; font-weight:700; padding:.28rem .75rem; border-radius:20px; white-space:nowrap; letter-spacing:.2px; }
   .step-badge.complete { background:#1a8c68; }
+  .dday-badge { font-size:.64rem; font-weight:800; padding:.16rem .5rem; border-radius:20px; white-space:nowrap; background:#eef2f4; color:#5b7079; letter-spacing:.2px; }
+  .dday-badge.warn { background:#fff2df; color:#a5690a; }
+  .dday-badge.stale { background:#fdeaea; color:#c23838; }
   @media(max-width:480px) { .badge-desc { display:none; } }
   .step-bar-wrap { margin-bottom:.75rem; }
   .step-bar-bg { background:#ddeaf0; border-radius:99px; height:8px; overflow:hidden; }
@@ -414,7 +417,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .church-name { color:var(--crs-ink); font-size:.97rem; font-weight:820; }
   .pastor-name { color:#748990; font-size:.78rem; }
   .step-badge {
-    max-width:54%; padding:.26rem .57rem; border:1px solid #c9e0e6; border-radius:6px;
+    padding:.26rem .57rem; border:1px solid #c9e0e6; border-radius:6px;
     background:#e8f4f6; color:#006079; font-size:.68rem; font-weight:800;
   }
   .step-badge.complete { border-color:#c9e5da; background:#e7f5ef; color:var(--crs-green); }
@@ -935,16 +938,31 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     { bg:'#FFF8F0', accent:'#F0B050', marker:'#C87C10' },
   ];
 
+  // 교회에 매긴 번호는 등록 시 한 번 정해지면 바뀌지 않는다(진행 상태로 목록
+  // 순서가 계속 바뀌어도 번호/색은 고정). 색상도 번호에 묶어서 같이 고정한다 —
+  // 번호는 그대로인데 진행 상태가 바뀔 때마다 색이 바뀌면 오히려 헷갈린다.
   function buildColorMap() {
-    const sorted = [...churches].sort((a, b) => {
-      const dA = STEPS.filter((_, i) => (a.steps || {})[i+1]).length;
-      const dB = STEPS.filter((_, i) => (b.steps || {})[i+1]).length;
-      return dB - dA;
-    });
     churchColorMap = {};
-    sorted.forEach((c, i) => {
-      churchColorMap[c.id] = { rank: i + 1, ...PASTEL_COLORS[i % PASTEL_COLORS.length] };
+    churches.forEach(c => {
+      const num = c.number || 1;
+      churchColorMap[c.id] = { rank: num, ...PASTEL_COLORS[(num - 1) % PASTEL_COLORS.length] };
     });
+  }
+
+  // 기존에 번호가 없는 교회(이 기능 배포 전 데이터)에 한해, 등록일 순서대로
+  // 번호를 한 번만 배정해 Firebase에 기록한다. 이미 번호가 있는 교회는 건드리지 않음.
+  async function ensureChurchNumbers() {
+    const missing = churches.filter(c => !c.number);
+    if (!missing.length) return;
+    const maxExisting = churches.reduce((max, c) => Math.max(max, c.number || 0), 0);
+    const sorted = [...missing].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    const updates = {};
+    sorted.forEach((c, i) => {
+      const num = maxExisting + i + 1;
+      c.number = num;
+      updates[`churches/${c.id}/number`] = num;
+    });
+    try { await update(ref(db), updates); } catch (e) { /* 다음 로드 때 다시 시도됨 */ }
   }
 
   // ── 자동 로그아웃 (20분 비활동) ──
@@ -1412,9 +1430,24 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     } catch(e) {
       churches = [];
     }
+    await ensureChurchNumbers();
     buildColorMap();
     renderChurchList();
     ensureCrsMap();
+  }
+
+  // 마지막 업데이트(updatedAt) 이후 며칠 지났는지 "D+N" 뱃지로 표시.
+  // 오늘이면 D-DAY, 오래 방치될수록(7일↑ warn, 30일↑ stale) 색으로 눈에 띄게 한다.
+  function ddayDays(updatedAt) {
+    if (!updatedAt) return null;
+    return Math.floor((Date.now() - updatedAt) / 86400000);
+  }
+  function ddayBadgeHtml(updatedAt) {
+    const days = ddayDays(updatedAt);
+    if (days === null) return '';
+    const level = days >= 30 ? ' stale' : days >= 7 ? ' warn' : '';
+    const label = days <= 0 ? 'D-DAY' : `D+${days}`;
+    return `<span class="dday-badge${level}" title="${getLang()==='ko' ? '마지막 업데이트로부터 경과일' : 'Days since last update'}">${label}</span>`;
   }
 
   // ── 교회 목록 렌더 ──
@@ -1483,7 +1516,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
                 <p class="pastor-name">${t('pastor_prefix')} ${esc(c.pastorName || t('not_entered'))}</p>
               </div>
             </div>
-            <span class="step-badge${isComplete?' complete':''}">${badgeHtml}</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;flex-shrink:0;">
+              <span class="step-badge${isComplete?' complete':''}">${badgeHtml}</span>
+              ${ddayBadgeHtml(c.updatedAt)}
+            </div>
           </div>
           <div class="church-card-body">
             <div class="step-bar-wrap">
@@ -1674,6 +1710,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         data.steps = {};
         data.createdAt = now;
         data.createdBy = currentUser.uid;
+        data.number = churches.reduce((max, c) => Math.max(max, c.number || 0), 0) + 1;
         await push(ref(db, 'churches'), data);
       }
       closeEditModal();
