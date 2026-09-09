@@ -128,7 +128,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .pastor-name { font-size:.82rem; color:#6a8fa0; margin:0; }
   .step-badge { background:#004f68; color:#fff; font-size:.72rem; font-weight:700; padding:.28rem .75rem; border-radius:20px; white-space:nowrap; letter-spacing:.2px; }
   .step-badge.complete { background:#1a8c68; }
-  .dday-badge { font-size:.64rem; font-weight:800; padding:.16rem .5rem; border-radius:20px; white-space:nowrap; background:#eef2f4; color:#5b7079; letter-spacing:.2px; }
+  .dday-badge { font-size:.64rem; font-weight:800; padding:.16rem .5rem; border-radius:20px; white-space:nowrap; letter-spacing:.2px; }
+  .dday-badge.ok { background:#e7f5ef; color:#1a8c68; }
   .dday-badge.warn { background:#fff2df; color:#a5690a; }
   .dday-badge.stale { background:#fdeaea; color:#c23838; }
   @media(max-width:480px) { .badge-desc { display:none; } }
@@ -1437,17 +1438,21 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   // 마지막 업데이트(updatedAt) 이후 며칠 지났는지 "D+N" 뱃지로 표시.
-  // 오늘이면 D-DAY, 오래 방치될수록(7일↑ warn, 30일↑ stale) 색으로 눈에 띄게 한다.
+  // 6개월(180일) 미만 초록, 6~12개월 노랑, 12개월(365일) 이상 빨강.
   function ddayDays(updatedAt) {
     if (!updatedAt) return null;
     return Math.floor((Date.now() - updatedAt) / 86400000);
   }
+  function ddayLevel(days) {
+    if (days >= 365) return 'stale';
+    if (days >= 180) return 'warn';
+    return 'ok';
+  }
   function ddayBadgeHtml(updatedAt) {
     const days = ddayDays(updatedAt);
     if (days === null) return '';
-    const level = days >= 30 ? ' stale' : days >= 7 ? ' warn' : '';
     const label = days <= 0 ? 'D-DAY' : `D+${days}`;
-    return `<span class="dday-badge${level}" title="${getLang()==='ko' ? '마지막 업데이트로부터 경과일' : 'Days since last update'}">${label}</span>`;
+    return `<span class="dday-badge ${ddayLevel(days)}" title="${getLang()==='ko' ? '마지막 업데이트로부터 경과일' : 'Days since last update'}">${label}</span>`;
   }
 
   // ── 교회 목록 렌더 ──
@@ -1461,11 +1466,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         (c.pastorName || '').toLowerCase().includes(q) ||
         (c.location || '').toLowerCase().includes(q)
       )
-      .sort((a, b) => {
-        const dA = STEPS.filter((_, i) => (a.steps || {})[i+1]).length;
-        const dB = STEPS.filter((_, i) => (b.steps || {})[i+1]).length;
-        return dB - dA;
-      });
+      .sort((a, b) => (ddayDays(b.updatedAt) ?? 0) - (ddayDays(a.updatedAt) ?? 0));
 
     if (filtered.length === 0) {
       listEl.innerHTML = `
