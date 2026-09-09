@@ -19,6 +19,13 @@ test('wrong portal passwords do not fall through to counselor authentication', (
   assert.doesNotMatch(portal, /res\.status === 404 \|\| res\.status === 401/);
 });
 
+test('successful login gives password managers a credential update signal', () => {
+  assert.match(portal, /new window\.PasswordCredential\(\$\('portalLoginForm'\)\)/);
+  assert.match(portal, /await navigator\.credentials\.store\(credential\)/);
+  assert.match(portal, /await offerCredentialUpdate\(\);\s*location\.replace\('\/portal\/\?signed-in=1'\)/);
+  assert.doesNotMatch(portal, /\$\('loginPwInput'\)\.value = '';\s*applySession\(data\)/);
+});
+
 test('shared resource passwords are excluded from account autofill', () => {
   for (const source of [campResources, qtBook]) {
     assert.match(source, /id="passwordInput"[^>]+name="resource-access-code"[^>]+autocomplete="off"/);

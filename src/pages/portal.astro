@@ -380,6 +380,16 @@
       window.WolkoSession.rememberEmail(email, $('rememberEmail').checked);
     }
 
+    async function offerCredentialUpdate() {
+      if (!navigator.credentials?.store || typeof window.PasswordCredential === 'undefined') return;
+      try {
+        const credential = new window.PasswordCredential($('portalLoginForm'));
+        await navigator.credentials.store(credential);
+      } catch (e) {
+        // Password managers decide whether to show a save/update prompt.
+      }
+    }
+
     /* ── 이메일+비밀번호 로그인 ── */
     async function doAccountLogin() {
       const email = $('emailInput').value.trim().toLowerCase();
@@ -419,15 +429,15 @@
           sessionStorage.removeItem('wolko-hub-token');
           sessionStorage.removeItem('wolko-hub-email');
           sessionStorage.removeItem('wolko-hub-role');
-          $('loginPwInput').value = '';
+          await offerCredentialUpdate();
           location.replace('/campstaff');
           return;
         }
         if (!res.ok) throw new Error(data.error || t('loginWrong'));
         saveRememberedEmail(email);
-        $('loginPwInput').value = '';
         applySession(data);
-        showHub();
+        await offerCredentialUpdate();
+        location.replace('/portal/?signed-in=1');
       } catch (e) {
         errEl.textContent = e.message;
       } finally {
@@ -626,6 +636,9 @@
           role: sessionStorage.getItem('wolko-hub-role') || '',
         };
         showHub();
+        if (new URLSearchParams(location.search).has('signed-in')) {
+          history.replaceState(null, '', '/portal/');
+        }
         return;
       }
       showScreen('emailScreen');
