@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=24">
+  <link rel="stylesheet" href="/portal.css?v=25">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <style is:global>
@@ -231,8 +231,9 @@
         fileTooLarge: '파일 용량이 너무 큽니다(최대 24MB).', fileUploadFailed: '파일을 업로드하지 못했습니다.', filePreviewFailed: '파일을 불러오지 못했습니다.', fileDeleteFailed: '파일을 삭제하지 못했습니다.',
         fileRemoveConfirm: '이 파일을 삭제할까요?', fileUploadedToast: '파일을 업로드했습니다.', filesUploadedToast: n => `파일 ${n}개를 업로드했습니다.`, fileRemovedToast: '파일을 삭제했습니다.',
         moveFile: '이동', fileMovedToast: '파일을 이동했습니다.', fileMoveFailed: '파일을 이동하지 못했습니다.',
-        addNote: '+ 영역 표시', addGeneralNote: '+ 노트 남기기', addTimeNote: '+ 이 시점에 노트',
-        notesLabel: '노트', notesEmpty: '아직 노트가 없습니다.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
+        addNote: '🖍 드래그해서 노트 남기기', addNoteActive: '✕ 표시 취소', addNoteHint: '문서 위를 드래그해서 표시할 위치를 정해주세요',
+        addGeneralNote: '+ 노트 남기기', addTimeNote: '+ 이 시점에 노트',
+        notesLabel: '노트', notesEmpty: '아직 노트가 없습니다. 위의 "드래그해서 노트 남기기" 버튼을 누른 뒤 문서를 드래그해보세요.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
         noteCancel: '취소', noteSave: '저장', noteResolve: '해결', noteReopen: '재열기', noteDelete: '삭제',
         noteDeleteConfirm: '이 노트를 삭제할까요?', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
         noteDeletedToast: '노트를 삭제했습니다.',
@@ -275,8 +276,9 @@
         fileTooLarge: 'File is too large (max 24MB).', fileUploadFailed: 'Could not upload the file.', filePreviewFailed: 'Could not load the file.', fileDeleteFailed: 'Could not delete the file.',
         fileRemoveConfirm: 'Delete this file?', fileUploadedToast: 'File uploaded.', filesUploadedToast: n => `Uploaded ${n} files.`, fileRemovedToast: 'File removed.',
         moveFile: 'Move', fileMovedToast: 'File moved.', fileMoveFailed: 'Could not move the file.',
-        addNote: '+ Mark Area', addGeneralNote: '+ Add Note', addTimeNote: '+ Note at This Time',
-        notesLabel: 'Notes', notesEmpty: 'No notes yet.', notePlaceholder: 'Describe what needs fixing here',
+        addNote: '🖍 Drag to Add a Note', addNoteActive: '✕ Cancel Marking', addNoteHint: 'Drag over the document to mark where the note belongs',
+        addGeneralNote: '+ Add Note', addTimeNote: '+ Note at This Time',
+        notesLabel: 'Notes', notesEmpty: 'No notes yet. Click "Drag to Add a Note" above, then drag over the document.', notePlaceholder: 'Describe what needs fixing here',
         noteCancel: 'Cancel', noteSave: 'Save', noteResolve: 'Resolve', noteReopen: 'Reopen', noteDelete: 'Delete',
         noteDeleteConfirm: 'Delete this note?', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
         noteDeletedToast: 'Note deleted.',
@@ -677,7 +679,7 @@
       cancelNoteComposer();
     }
     function viewerToolbarHtml() {
-      return `<button type="button" class="viewer-annotate-toggle" id="viewerDrawToggle" onclick="toggleDrawMode()">${esc(t('addNote'))}</button><a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</a>`;
+      return `<button type="button" class="viewer-annotate-toggle" id="viewerDrawToggle" onclick="toggleDrawMode()">${esc(t('addNote'))}</button><span class="viewer-draw-hint" id="viewerDrawHint" hidden>${esc(t('addNoteHint'))}</span><a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</a>`;
     }
     function renderImageStage(url) {
       $('viewerToolbar').innerHTML = viewerToolbarHtml();
@@ -713,7 +715,11 @@
     async function renderPdfPage() {
       const page = await viewerPdfDoc.getPage(viewerPage);
       const canvas = $('viewerCanvas');
-      const containerWidth = $('viewerSurfaceInner').clientWidth || 600;
+      // #viewerSurfaceInner는 캔버스 크기에 맞춰 줄어드는(shrink-to-fit) 래퍼라
+      // 여기서 폭을 재면 "캔버스 기본 크기(300px) → 그 크기로 렌더 → 래퍼가 그
+      // 크기로 굳어짐"처럼 계속 작게 맴돈다. 항상 꽉 차 있는 바깥 스테이지
+      // (#viewerSurface, padding 16px 양쪽)를 기준으로 재야 한다.
+      const containerWidth = ($('viewerSurface').clientWidth - 32) || 600;
       const unscaled = page.getViewport({ scale: 1 });
       const scale = containerWidth / unscaled.width;
       const viewport = page.getViewport({ scale });
@@ -726,7 +732,9 @@
     function viewerNextPage() { if (viewerPdfDoc && viewerPage < viewerPdfDoc.numPages) { viewerPage++; renderPdfPage(); } }
     function toggleDrawMode() {
       drawModeOn = !drawModeOn;
-      $('viewerDrawToggle')?.classList.toggle('is-active', drawModeOn);
+      const btn = $('viewerDrawToggle');
+      if (btn) { btn.classList.toggle('is-active', drawModeOn); btn.textContent = drawModeOn ? t('addNoteActive') : t('addNote'); }
+      $('viewerDrawHint')?.toggleAttribute('hidden', !drawModeOn);
       $('viewerSurfaceInner')?.classList.toggle('is-drawing', drawModeOn);
     }
     // PDF 캔버스/이미지 공용 드래그 하이라이트 — 마우스 전용 이벤트가 아니라
