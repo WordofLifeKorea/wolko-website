@@ -386,6 +386,26 @@
           body: JSON.stringify({ email, password }),
         });
         const data = await res.json();
+        // Camp counselor credentials use their own account store and session.
+        if (res.status === 404 || res.status === 401 || (res.ok && data.role === 'counselor')) {
+          const counselorRes = await fetch('/api/camp-progress/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: 'login', email, password }),
+          });
+          const counselorData = await counselorRes.json();
+          if (!counselorRes.ok || counselorData.role !== 'counselor' || !counselorData.token) {
+            throw new Error(counselorData.error || t('loginWrong'));
+          }
+          sessionStorage.setItem('wolko-camp-progress-token', counselorData.token);
+          sessionStorage.setItem('wolko-camp-progress-role', 'counselor');
+          sessionStorage.removeItem('wolko-hub-token');
+          sessionStorage.removeItem('wolko-hub-email');
+          sessionStorage.removeItem('wolko-hub-role');
+          $('loginPwInput').value = '';
+          location.replace('/campstaff');
+          return;
+        }
         if (!res.ok) throw new Error(data.error || t('loginWrong'));
         applySession(data);
         showHub();
