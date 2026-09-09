@@ -43,16 +43,18 @@
       </div>
       <p class="login-title" data-t="emailLoginTitle">포탈 로그인</p>
       <p class="login-description" data-t="emailLoginDesc">가입하신 이메일과 비밀번호로 로그인하세요.</p>
-      <div class="login-input-wrap">
-        <input class="login-input" type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <div class="login-input-wrap">
-        <input class="login-input" type="password" id="loginPwInput" placeholder="••••••••" autocomplete="current-password">
-      </div>
-      <label class="remember-email"><input type="checkbox" id="rememberEmail"><span data-t="rememberEmail">아이디 저장</span></label>
-      <p class="login-error" id="emailError"></p>
-      <button class="login-btn" id="emailBtn" onclick="doAccountLogin()" data-t="loginBtn">로그인</button>
-      <button class="login-link-btn" onclick="showScreen('signupScreen')" data-t="goSignupBtn">계정이 없으신가요? 가입하기</button>
+      <form class="portal-login-form" id="portalLoginForm" action="/api/hub/account-login" method="post" novalidate>
+        <div class="login-input-wrap">
+          <input class="login-input" type="email" id="emailInput" name="username" placeholder="you@example.com" autocomplete="username" autocapitalize="none" spellcheck="false">
+        </div>
+        <div class="login-input-wrap">
+          <input class="login-input" type="password" id="loginPwInput" name="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <label class="remember-email"><input type="checkbox" id="rememberEmail"><span data-t="rememberEmail">아이디 저장</span></label>
+        <p class="login-error" id="emailError"></p>
+        <button class="login-btn" id="emailBtn" type="submit" data-t="loginBtn">로그인</button>
+      </form>
+      <button class="login-link-btn" type="button" onclick="showScreen('signupScreen')" data-t="goSignupBtn">계정이 없으신가요? 가입하기</button>
     </div>
   </div>
 
@@ -401,7 +403,7 @@
         });
         const data = await res.json();
         // Camp counselor credentials use their own account store and session.
-        if (res.status === 404 || res.status === 401 || (res.ok && data.role === 'counselor')) {
+        if (res.status === 404 || (res.ok && data.role === 'counselor')) {
           const counselorRes = await fetch('/api/camp-progress/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -433,8 +435,10 @@
         btn.textContent = original;
       }
     }
-    $('emailInput').addEventListener('keydown', e => { if (e.key === 'Enter') doAccountLogin(); });
-    $('loginPwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doAccountLogin(); });
+    $('portalLoginForm').addEventListener('submit', event => {
+      event.preventDefault();
+      doAccountLogin();
+    });
 
     /* ── 이메일+비밀번호 가입 ── */
     const PHONE_RE = /^[0-9+\-\s()]{7,20}$/;
