@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=16">
+  <link rel="stylesheet" href="/portal.css?v=17">
   <script src="/wolko-rail.js?v=9" defer></script>
 </head>
 <body>
@@ -314,11 +314,28 @@
       if (!options.length) return '';
       return `<select class="file-move-select" data-file-id="${meta.id}" onchange="moveFileEvent(this)"><option value="" selected disabled>${esc(t('moveFile'))}</option>${options.join('')}</select>`;
     }
+    // 확장자별로 색이 다른 작은 뱃지 아이콘 — 실제 아이콘 파일 없이 목록을
+    // 파일 탐색기처럼 한눈에 훑어볼 수 있게 한다.
+    const FILE_TYPE_MAP = {
+      pdf: ['PDF', '#c0392b', '#fdecea'],
+      zip: ['ZIP', '#6c5ce7', '#efecfd'], rar: ['ZIP', '#6c5ce7', '#efecfd'], '7z': ['ZIP', '#6c5ce7', '#efecfd'],
+      doc: ['DOC', '#2b579a', '#e8eefa'], docx: ['DOC', '#2b579a', '#e8eefa'],
+      xls: ['XLS', '#1e7145', '#e7f5ee'], xlsx: ['XLS', '#1e7145', '#e7f5ee'],
+      ppt: ['PPT', '#c0392b', '#fdecea'], pptx: ['PPT', '#c0392b', '#fdecea'],
+      png: ['IMG', '#008e92', '#e6f6f6'], jpg: ['IMG', '#008e92', '#e6f6f6'], jpeg: ['IMG', '#008e92', '#e6f6f6'], gif: ['IMG', '#008e92', '#e6f6f6'], webp: ['IMG', '#008e92', '#e6f6f6'],
+      mp4: ['VID', '#d88217', '#fdf3e7'], mov: ['VID', '#d88217', '#fdf3e7'],
+      mp3: ['AUD', '#d88217', '#fdf3e7'], wav: ['AUD', '#d88217', '#fdf3e7'], m4a: ['AUD', '#d88217', '#fdf3e7'],
+    };
+    function fileIconHtml(fileName) {
+      const ext = (fileName.split('.').pop() || '').toLowerCase();
+      const [label, color, bg] = FILE_TYPE_MAP[ext] || [ext ? ext.slice(0, 4).toUpperCase() : 'FILE', '#67808d', '#eef2f4'];
+      return `<span class="file-type-icon" style="color:${color};background:${bg};">${esc(label)}</span>`;
+    }
     function fileRowHtml(meta) {
       const metaLine = `${t('uploadedBy')(esc(meta.uploadedByName || meta.uploadedBy || ''), esc(formatLogTime(meta.uploadedAt)))} · ${humanFileSize(meta.fileSize)}`;
       const replaceInput = canWrite ? `<label class="file-btn"><input type="file" data-file-id="${meta.id}" data-folder-id="${meta.folderId || ''}" data-category="${meta.category || ''}" onchange="handleFileUploadEvent(this)">${esc(t('replaceFile'))}</label>` : '';
       const removeBtn = canWrite ? `<button type="button" class="file-btn is-danger" onclick="deleteFile('${meta.id}')">${esc(t('removeFile'))}</button>` : '';
-      return `<div class="file-row"><div class="file-row-info"><span class="file-row-name">${esc(meta.fileName)}</span><span class="file-row-meta">${metaLine}</span></div><div class="file-row-actions"><button type="button" class="file-btn" onclick="previewFile('${meta.id}')">${esc(t('previewFile'))}</button>${replaceInput}${moveOptionsHtml(meta)}${removeBtn}</div></div>`;
+      return `<div class="file-row">${fileIconHtml(meta.fileName)}<div class="file-row-info"><span class="file-row-name">${esc(meta.fileName)}</span><span class="file-row-meta">${metaLine}</span></div><div class="file-row-actions"><button type="button" class="file-btn" onclick="previewFile('${meta.id}')">${esc(t('previewFile'))}</button>${replaceInput}${moveOptionsHtml(meta)}${removeBtn}</div></div>`;
     }
     function filesIn(folderId, category) {
       return (currentItem.files || [])
