@@ -16,7 +16,15 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=18">
+  <link rel="stylesheet" href="/portal.css?v=19">
+  <style is:global>
+    .file-context-menu { position:fixed; z-index:10000; width:min(230px,calc(100vw - 16px)); padding:6px; background:#fff; border:1px solid #dce8ed; border-radius:12px; box-shadow:0 12px 36px rgba(16,41,54,.2); }
+    .file-context-menu button { display:block; width:100%; min-height:42px; border:0; border-radius:7px; background:transparent; text-align:left; padding:10px 14px; color:#102936; font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; }
+    .file-context-menu button:last-child { color:#c42a36; }
+    .file-context-menu button:hover,.file-context-menu button:focus-visible { background:#eef6f8; outline:2px solid #b7d8e0; }
+    .file-context-menu select { width:100%; min-height:42px; }
+    [data-context-file] { -webkit-touch-callout:none; }
+  </style>
   <script src="/wolko-rail.js?v=9" defer></script>
 </head>
 <body>
@@ -156,10 +164,11 @@
         nameField: '예: 2026 Summer Camp Student Book', translationField: '예: 학생 교재 영문 번역 및 편집', detailField: '현재 작업 범위 또는 다음 단계',
         fieldThumbnail: '발표용 썸네일', thumbnailHint: 'JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB', chooseImage: '이미지 선택',
         filesLabel: '첨부 파일', fileHint: 'PDF · 이미지 · 문서 · 최대 24MB',
-        addFile: '+ 파일 추가', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileRead: '업로드된 파일이 없습니다', uploading: '업로드 중...',
+        addFile: '파일 추가', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileRead: '업로드된 파일이 없습니다', uploading: '업로드 중...',
+        renameFile: '이름 변경', renameFilePrompt: '새 파일 이름을 입력하세요',
         unfiledLabel: '미분류', originalLabel: '원본', revisedLabel: '번역본',
         folderNamePh: '레슨 이름 (예: 레슨 1)', addFolder: '+ 폴더 추가', deleteFolder: '폴더 삭제',
-        backToFolders: '← 목록', renameFolder: '이름 변경', renameFolderPrompt: '새 폴더 이름을 입력하세요',
+        backToFolders: '← 목록', renameFolder: '폴더 이름 변경', renameFolderPrompt: '새 폴더 이름을 입력하세요',
         fileCount: n => `파일 ${n}개`,
         folderDeleteConfirm: '이 폴더를 삭제할까요? 안의 파일은 미분류로 이동합니다.',
         folderDeletedToast: '폴더를 삭제했습니다.', folderSaveFailed: '폴더를 만들지 못했습니다.', folderDeleteFailed: '폴더를 삭제하지 못했습니다.',
@@ -192,10 +201,11 @@
         nameField: 'e.g. 2026 Summer Camp Student Book', translationField: 'e.g. English translation & editing of the student textbook', detailField: 'Current scope or next steps',
         fieldThumbnail: 'Presentation thumbnail', thumbnailHint: 'JPG, PNG, WEBP, GIF · auto-compressed · up to 1MB', chooseImage: 'Choose image',
         filesLabel: 'Attached Files', fileHint: 'PDF · image · document · up to 24MB',
-        addFile: '+ Add File', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileRead: 'No file uploaded yet', uploading: 'Uploading...',
+        addFile: 'Add File', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileRead: 'No file uploaded yet', uploading: 'Uploading...',
+        renameFile: 'Rename', renameFilePrompt: 'Enter a new file name',
         unfiledLabel: 'Unfiled', originalLabel: 'Original', revisedLabel: 'Translated',
         folderNamePh: 'Folder name (e.g. Lesson 1)', addFolder: '+ Add Folder', deleteFolder: 'Delete Folder',
-        backToFolders: '← Back', renameFolder: 'Rename', renameFolderPrompt: 'Enter a new folder name',
+        backToFolders: '← Back', renameFolder: 'Rename Folder', renameFolderPrompt: 'Enter a new folder name',
         fileCount: n => `${n} file${n === 1 ? '' : 's'}`,
         folderDeleteConfirm: 'Delete this folder? Files inside will move to Unfiled.',
         folderDeletedToast: 'Folder deleted.', folderSaveFailed: 'Could not create the folder.', folderDeleteFailed: 'Could not delete the folder.',
@@ -331,20 +341,15 @@
       const [label, color, bg] = FILE_TYPE_MAP[ext] || [ext ? ext.slice(0, 4).toUpperCase() : 'FILE', '#67808d', '#eef2f4'];
       return `<span class="file-type-icon" style="color:${color};background:${bg};">${esc(label)}</span>`;
     }
-    // 파일 하나를 아이콘 타일로 — 아이콘/이름 부분을 누르면 미리보기, 교체·이동·
-    // 삭제는 타일 아래쪽 작은 버튼 줄로 뺐다(폴더 아이콘 그리드와 통일감).
+    // File actions are available through the context menu and keyboard menu key.
     function fileTileHtml(meta) {
       const metaLine = `${t('uploadedBy')(esc(meta.uploadedByName || meta.uploadedBy || ''), esc(formatLogTime(meta.uploadedAt)))} · ${humanFileSize(meta.fileSize)}`;
-      const replaceInput = canWrite ? `<label class="file-tile-btn"><input type="file" data-file-id="${meta.id}" data-folder-id="${meta.folderId || ''}" data-category="${meta.category || ''}" onchange="handleFileUploadEvent(this)">${esc(t('replaceFile'))}</label>` : '';
-      const removeBtn = canWrite ? `<button type="button" class="file-tile-btn is-danger" onclick="deleteFile('${meta.id}')">${esc(t('removeFile'))}</button>` : '';
-      const moveSelect = moveOptionsHtml(meta);
-      return `<div class="file-tile">
+      return `<div class="file-tile" data-context-file="${meta.id}">
         <button type="button" class="file-tile-preview" onclick="previewFile('${meta.id}')" title="${esc(t('previewFile'))}">
           ${fileIconHtml(meta.fileName)}
           <span class="file-tile-name" title="${esc(meta.fileName)}">${esc(meta.fileName)}</span>
           <span class="file-tile-meta">${metaLine}</span>
         </button>
-        ${canWrite ? `<div class="file-tile-actions">${replaceInput}${moveSelect}${removeBtn}</div>` : ''}
       </div>`;
     }
     function filesIn(folderId, category) {
@@ -364,6 +369,7 @@
     function openFolder(folderId) { currentFolderId = folderId; renderFilesAndFolders(); }
     function closeFolderView() { currentFolderId = null; renderFilesAndFolders(); }
     function renderFilesAndFolders() {
+      closeFileMenu();
       if (!currentItem) { // 새 항목(아직 저장 전)은 파일을 못 붙인다
         $('filesBody').innerHTML = `<p class="file-empty">${esc(t('savedAfterCreate'))}</p>`;
         return;
@@ -539,7 +545,96 @@
     }
     function moveFileEvent(selectEl) {
       const [folderId, category] = selectEl.value.split('|');
+      closeFileMenu();
       moveFile(selectEl.dataset.fileId, folderId || null, category || null);
+    }
+    let fileMenu = null;
+    let fileMenuTrigger = null;
+    function closeFileMenu() {
+      fileMenu?.remove();
+      fileMenu = null;
+    }
+    function openFileMenu(tile, x, y) {
+      if (!canWrite || !currentItem) return;
+      const meta = (currentItem.files || []).find(f => f.id === tile.dataset.contextFile);
+      if (!meta) return;
+      closeFileMenu();
+      fileMenuTrigger = tile.querySelector('button');
+      fileMenu = document.createElement('div');
+      fileMenu.className = 'file-context-menu';
+      fileMenu.setAttribute('role', 'dialog');
+      fileMenu.setAttribute('aria-label', meta.fileName);
+      for (const [label, action] of [
+        [t('renameFile'), () => { closeFileMenu(); renameFile(meta.id); }],
+        [t('moveFile'), () => {
+          fileMenu.innerHTML = moveOptionsHtml(meta);
+          fileMenu.querySelector('select')?.focus();
+        }],
+        [t('removeFile'), () => { closeFileMenu(); deleteFile(meta.id); }],
+      ]) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = label;
+        button.addEventListener('click', action);
+        fileMenu.append(button);
+      }
+      document.body.append(fileMenu);
+      fileMenu.style.left = Math.max(8, Math.min(x, window.innerWidth - fileMenu.offsetWidth - 8)) + 'px';
+      fileMenu.style.top = Math.max(8, Math.min(y, window.innerHeight - fileMenu.offsetHeight - 8)) + 'px';
+      fileMenu.querySelector('button').focus();
+    }
+    document.addEventListener('contextmenu', event => {
+      const tile = event.target.closest('[data-context-file]');
+      if (tile && canWrite) { event.preventDefault(); openFileMenu(tile, event.clientX, event.clientY); }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && fileMenu) {
+        event.preventDefault(); event.stopImmediatePropagation();
+        closeFileMenu(); fileMenuTrigger?.focus();
+      }
+      const tile = event.target.closest('[data-context-file]');
+      if (tile && canWrite && (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10'))) {
+        event.preventDefault();
+        const rect = tile.getBoundingClientRect();
+        openFileMenu(tile, rect.left, rect.top);
+      }
+    }, true);
+    document.addEventListener('pointerdown', event => { if (fileMenu && !fileMenu.contains(event.target)) closeFileMenu(); });
+    window.addEventListener('resize', closeFileMenu);
+    document.addEventListener('scroll', event => { if (fileMenu && !fileMenu.contains(event.target)) closeFileMenu(); }, true);
+    let filePressTimer;
+    let suppressFileClick = false;
+    document.addEventListener('pointerdown', event => {
+      const tile = event.target.closest('[data-context-file]');
+      suppressFileClick = false;
+      if (event.pointerType !== 'touch' || !tile || !canWrite) return;
+      filePressTimer = setTimeout(() => {
+        suppressFileClick = true;
+        openFileMenu(tile, event.clientX, event.clientY);
+      }, 550);
+    });
+    for (const type of ['pointerup', 'pointercancel', 'pointermove']) {
+      document.addEventListener(type, () => clearTimeout(filePressTimer));
+    }
+    document.addEventListener('click', event => {
+      if (suppressFileClick && event.target.closest('[data-context-file]')) {
+        event.preventDefault(); event.stopImmediatePropagation(); suppressFileClick = false;
+      }
+    }, true);
+    async function renameFile(fileId) {
+      const meta = (currentItem?.files || []).find(f => f.id === fileId);
+      if (!meta || !canWrite) return;
+      const fileName = prompt(t('renameFilePrompt'), meta.fileName)?.trim();
+      if (!fileName || fileName === meta.fileName) return;
+      try {
+        const res = await fetch('/api/portal/resource-file', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ id: currentItem.id, fileId, fileName }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('fileMoveFailed'));
+        currentItem = data.item;
+        const idx = resources.findIndex(r => r.id === currentItem.id);
+        if (idx !== -1) resources[idx] = currentItem;
+        renderFilesAndFolders();
+      } catch (error) { toast(error.message, true); }
     }
     async function moveFile(fileId, folderId, category) {
       try {
@@ -615,7 +710,7 @@
       if (item) { renderDetailView(); showEditorMode('view'); }
       else { showEditorMode('edit'); }
     }
-    function closeEditor() { $('editorOverlay').hidden = true; currentItem = null; editorMode = 'view'; }
+    function closeEditor() { closeFileMenu(); $('editorOverlay').hidden = true; currentItem = null; editorMode = 'view'; }
     // 진행 단계 스텝퍼 — 버튼 N을 누르면 1~N단계가 완료로, 이미 N단계까지
     // 완료된 상태에서 N을 다시 누르면 한 단계 되돌린다(간단한 토글식 취소).
     let editorStagePercents = [0, 0, 0];

@@ -70,6 +70,10 @@ export async function onRequestGet({ env, request }) {
     // 예전 형식: 값 자체가 {fileName,fileType,fileData} JSON 문자열.
     try { file = JSON.parse(new TextDecoder().decode(value)); } catch { return error('파일을 불러오지 못했습니다.', 500); }
   }
+  const data = await readData(env);
+  const item = data.items.find(entry => entry.id === id);
+  const currentFile = item && filesOf(item).find(entry => entry.id === fileId);
+  if (currentFile) file.fileName = currentFile.fileName;
   return Response.json({ file }, { headers: CORS });
 }
 
@@ -158,7 +162,12 @@ export async function onRequestPut({ env, request }) {
   const fileIndex = files.findIndex(f => f.id === fileId);
   if (fileIndex < 0) return error('파일을 찾을 수 없습니다.', 404);
 
-  item.files = files.map((f, i) => i === fileIndex ? { ...f, folderId, category: folderId ? category : null } : f);
+  const renaming = Object.hasOwn(body, 'fileName');
+  const fileName = text(body.fileName, 200);
+  if (renaming && (!fileName || /[\\/\x00-\x1f]/.test(fileName))) return error('파일 이름이 올바르지 않습니다.', 400);
+  item.files = files.map((f, i) => i === fileIndex
+    ? (renaming ? { ...f, fileName } : { ...f, folderId, category: folderId ? category : null })
+    : f);
   item.updatedAt = new Date().toISOString();
   data.items[index] = item;
   const saved = await saveData(env, data.items);
