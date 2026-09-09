@@ -616,7 +616,9 @@
         renderFilesAndFolders();
         toast(t('folderDeletedToast'));
       } catch (e) {
-        toast(e.message || t('folderDeleteFailed'), true);
+        // 삭제 실패(특히 비밀번호 틀림)는 토스트만으로는 prompt() 창을 막
+        // 닫은 직후라 놓치기 쉬워서, alert로 명확하게 알려준다.
+        alert(e.message || t('folderDeleteFailed'));
       }
     }
     // 파일 데이터를 받아 Blob URL로 바꾼다 — 뷰어에 표시하거나(previewFile)
