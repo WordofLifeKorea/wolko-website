@@ -902,10 +902,23 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let selectedChurchAddress = null;
   let activeMissionaryFilter = null;
   let activeDenominationFilter = null;
-  const DEFAULT_DENOMINATIONS = [
-    '기장', '예장고신', '예장합동', '예장백석', '예장통합', '감리교',
-    '기성', '예성', '기침', '성침', '순복음', '성공회', '독립교단',
+  const DENOMINATION_GROUPS = [
+    {
+      label: '장로교',
+      options: [
+        '기장 (기독교 장로회)',
+        '예장고신 (예수교 장로회)',
+        '예장합동 (예수교 장로회)',
+        '예장백석 (예수교 장로회)',
+        '예장통합 (예수교 장로회)',
+      ],
+    },
+    { label: '감리교', options: ['감리교'] },
+    { label: '성결교', options: ['기성 (성결)', '예성 (성결)'] },
+    { label: '침례교', options: ['기침 (침례)', '성침 (침례)'] },
+    { label: '기타 교단', options: ['순복음', '성공회', '독립교단'] },
   ];
+  const DEFAULT_DENOMINATIONS = DENOMINATION_GROUPS.flatMap(group => group.options);
   const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
 
   function cleanPasswordValue(value) {
@@ -987,18 +1000,27 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     try { await update(ref(db), updates); } catch (e) { /* 다음 로드 때 다시 시도됨 */ }
   }
 
-  // 교단/담당 선교사 입력창의 datalist(드롭다운 제안 목록)를 실제 등록된 값들로 채운다.
-  // 교단은 기본 목록(DEFAULT_DENOMINATIONS)에 실제 사용된 값을 더해서 보여준다.
+  // 교단은 중분류가 보이는 select로, 담당 선교사는 자유 입력 가능한 datalist로 제공한다.
+  // 과거에 저장된 교단명은 "기존/기타 교단" 그룹에 더해 수정 중 값이 사라지지 않게 한다.
   function populateFieldDatalists() {
-    const denomSet = new Set(DEFAULT_DENOMINATIONS);
     const missionarySet = new Set();
     churches.forEach(c => {
-      if (c.denomination) denomSet.add(c.denomination);
       if (c.assignedMissionary) missionarySet.add(c.assignedMissionary);
     });
-    const denomEl = document.getElementById('denominationOptions');
+    const savedDenominations = [...new Set(churches.map(c => c.denomination).filter(Boolean))]
+      .filter(value => !DEFAULT_DENOMINATIONS.includes(value))
+      .sort();
+    const denomEl = document.getElementById('fDenomination');
     const missionaryEl = document.getElementById('missionaryOptions');
-    if (denomEl) denomEl.innerHTML = [...denomSet].map(v => `<option value="${esc(v)}">`).join('');
+    if (denomEl) {
+      denomEl.innerHTML = `<option value="">${esc(t('denomination_ph'))}</option>` +
+        DENOMINATION_GROUPS.map(group =>
+          `<optgroup label="${esc(group.label)}">${group.options.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join('')}</optgroup>`
+        ).join('') +
+        (savedDenominations.length
+          ? `<optgroup label="기존/기타 교단">${savedDenominations.map(value => `<option value="${esc(value)}">${esc(value)}</option>`).join('')}</optgroup>`
+          : '');
+    }
     if (missionaryEl) missionaryEl.innerHTML = [...missionarySet].map(v => `<option value="${esc(v)}">`).join('');
   }
 
@@ -1352,8 +1374,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
             <div class="form-row">
               <div class="form-group">
                 <label>${t('denomination_label')}</label>
-                <input type="text" id="fDenomination" list="denominationOptions" placeholder="${t('denomination_ph')}">
-                <datalist id="denominationOptions"></datalist>
+                <select id="fDenomination"></select>
               </div>
               <div class="form-group">
                 <label>${t('missionary_label')}</label>
