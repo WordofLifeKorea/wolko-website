@@ -700,6 +700,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
 <script type="module">
   import { overdueChurches } from '/crs-reminders.js';
+  import { DENOMINATION_FILTERS, denominationFamily } from '/crs-denomination-filters.js';
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import {
     getAuth, signInWithEmailAndPassword, signInWithCustomToken, signOut, onAuthStateChanged, getIdTokenResult
@@ -1021,11 +1022,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     if (missionaryEl) missionaryEl.innerHTML = [...missionarySet].map(v => `<option value="${esc(v)}">`).join('');
   }
 
-  // 왼쪽 목록 위 필터 드롭다운(담당 선교사 / 교단) — 실제 등록된 값으로만
-  // 옵션을 만들고, 값이 하나도 없으면 그 드롭다운 자체를 숨긴다.
+  // 선교사는 등록된 값으로, 교단은 표시용 큰 분류로 필터링한다.
   function renderFilterSelects() {
     const missionaries = [...new Set(churches.map(c => c.assignedMissionary).filter(Boolean))].sort();
-    const denominations = [...new Set(churches.map(c => c.denomination).filter(Boolean))].sort();
 
     const missionaryEl = document.getElementById('missionaryFilterSelect');
     const denominationEl = document.getElementById('denominationFilterSelect');
@@ -1038,10 +1037,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       missionaryEl.classList.toggle('is-active', !!activeMissionaryFilter);
     }
     if (denominationEl) {
-      denominationEl.hidden = !denominations.length;
+      denominationEl.hidden = false;
       denominationEl.innerHTML = `<option value="">${esc(t('denomination_label'))}: ${esc(t('filter_all'))}</option>` +
-        denominations.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
-      activeDenominationFilter = denominations.includes(activeDenominationFilter) ? activeDenominationFilter : null;
+        DENOMINATION_FILTERS.map(group => `<option value="${group.id}">${esc(group[getLang()])}</option>`).join('');
+      activeDenominationFilter = DENOMINATION_FILTERS.some(group => group.id === activeDenominationFilter) ? activeDenominationFilter : null;
       denominationEl.value = activeDenominationFilter || '';
       denominationEl.classList.toggle('is-active', !!activeDenominationFilter);
     }
@@ -1630,7 +1629,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           (c.pastorName || '').toLowerCase().includes(q) ||
           (c.location || '').toLowerCase().includes(q)) &&
         (!activeMissionaryFilter || c.assignedMissionary === activeMissionaryFilter) &&
-        (!activeDenominationFilter || c.denomination === activeDenominationFilter)
+        (!activeDenominationFilter || denominationFamily(c.denomination) === activeDenominationFilter)
       )
       .sort((a, b) => (ddayDays(b.updatedAt) ?? 0) - (ddayDays(a.updatedAt) ?? 0));
 
