@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=11">
+  <link rel="stylesheet" href="/portal.css?v=12">
   <script src="/wolko-rail.js?v=9" defer></script>
 </head>
 <body>
@@ -159,6 +159,8 @@
         addFile: '+ 파일 추가', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileWrite: '업로드된 파일이 없습니다', noFileRead: '업로드된 파일이 없습니다',
         unfiledLabel: '미분류', originalLabel: '원본', revisedLabel: '수정본',
         folderNamePh: '레슨 이름 (예: 레슨 1)', addFolder: '+ 폴더 추가', deleteFolder: '폴더 삭제',
+        backToFolders: '← 목록', renameFolder: '이름 변경', renameFolderPrompt: '새 폴더 이름을 입력하세요',
+        fileCount: n => `파일 ${n}개`,
         folderDeleteConfirm: '이 폴더를 삭제할까요? 안의 파일은 미분류로 이동합니다.',
         folderDeletedToast: '폴더를 삭제했습니다.', folderSaveFailed: '폴더를 만들지 못했습니다.', folderDeleteFailed: '폴더를 삭제하지 못했습니다.',
         savedAfterCreate: '항목을 저장한 뒤 파일을 첨부할 수 있습니다.',
@@ -192,6 +194,8 @@
         addFile: '+ Add File', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileWrite: 'No file uploaded yet', noFileRead: 'No file uploaded yet',
         unfiledLabel: 'Unfiled', originalLabel: 'Original', revisedLabel: 'Revised',
         folderNamePh: 'Folder name (e.g. Lesson 1)', addFolder: '+ Add Folder', deleteFolder: 'Delete Folder',
+        backToFolders: '← Back', renameFolder: 'Rename', renameFolderPrompt: 'Enter a new folder name',
+        fileCount: n => `${n} file${n === 1 ? '' : 's'}`,
         folderDeleteConfirm: 'Delete this folder? Files inside will move to Unfiled.',
         folderDeletedToast: 'Folder deleted.', folderSaveFailed: 'Could not create the folder.', folderDeleteFailed: 'Could not delete the folder.',
         savedAfterCreate: 'Save this item first, then you can attach files.',
@@ -310,34 +314,51 @@
       const addRow = canWrite ? `<label class="file-btn file-add-btn"><input type="file" multiple data-folder-id="${folderId || ''}" data-category="${category || ''}" onchange="handleFileUploadEvent(this)">${esc(t('addFile'))}</label>` : '';
       return emptyMsg + rows + addRow;
     }
+    const FOLDER_ICON_SVG = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>';
+    let currentFolderId = null; // null = 폴더 탐색기 최상위(미분류 + 폴더 아이콘 목록), 그 외엔 그 폴더 안
+    function openFolder(folderId) { currentFolderId = folderId; renderFilesAndFolders(); }
+    function closeFolderView() { currentFolderId = null; renderFilesAndFolders(); }
     function renderFilesAndFolders() {
       if (!currentItem) { // 새 항목(아직 저장 전)은 파일을 못 붙인다
         $('filesBody').innerHTML = `<p class="file-empty">${esc(t('savedAfterCreate'))}</p>`;
         return;
       }
       const folders = currentItem.folders || [];
+      const openFolderData = currentFolderId ? folders.find(f => f.id === currentFolderId) : null;
+
+      // 폴더 안으로 들어간 상태 — 뒤로가기 + 그 폴더의 원본/수정본만 보여준다.
+      if (openFolderData) {
+        $('filesBody').innerHTML = `
+          <div class="folder-nav">
+            <button type="button" class="folder-back-btn" onclick="closeFolderView()">${esc(t('backToFolders'))}</button>
+            <span class="folder-nav-name">${esc(openFolderData.name)}</span>
+            ${canWrite ? `<button type="button" class="file-btn" onclick="renameFolder('${openFolderData.id}')">${esc(t('renameFolder'))}</button>` : ''}
+            ${canWrite ? `<button type="button" class="file-btn is-danger" onclick="deleteFolder('${openFolderData.id}')">${esc(t('deleteFolder'))}</button>` : ''}
+          </div>
+          <div class="folder-category">
+            <div class="folder-category-label">${esc(t('originalLabel'))}</div>
+            ${fileGroupHtml(filesIn(openFolderData.id, 'original'), openFolderData.id, 'original')}
+          </div>
+          <div class="folder-category">
+            <div class="folder-category-label">${esc(t('revisedLabel'))}</div>
+            ${fileGroupHtml(filesIn(openFolderData.id, 'revised'), openFolderData.id, 'revised')}
+          </div>`;
+        return;
+      }
+
+      // 최상위 — 미분류 파일 + 폴더 아이콘 그리드(더블클릭 없이 클릭으로 열기).
+      currentFolderId = null;
       const unfiled = filesIn(null, undefined);
       let html = '';
       if (unfiled.length || !folders.length) {
         html += `<div class="file-group"><div class="file-group-head">${esc(t('unfiledLabel'))}</div>${fileGroupHtml(unfiled, null, null)}</div>`;
       }
-      folders.forEach(folder => {
-        html += `
-          <div class="folder-block">
-            <div class="folder-head">
-              <span class="folder-name">${esc(folder.name)}</span>
-              ${canWrite ? `<button type="button" class="file-btn is-danger" onclick="deleteFolder('${folder.id}')">${esc(t('deleteFolder'))}</button>` : ''}
-            </div>
-            <div class="folder-category">
-              <div class="folder-category-label">${esc(t('originalLabel'))}</div>
-              ${fileGroupHtml(filesIn(folder.id, 'original'), folder.id, 'original')}
-            </div>
-            <div class="folder-category">
-              <div class="folder-category-label">${esc(t('revisedLabel'))}</div>
-              ${fileGroupHtml(filesIn(folder.id, 'revised'), folder.id, 'revised')}
-            </div>
-          </div>`;
-      });
+      if (folders.length) {
+        html += `<div class="folder-grid">${folders.map(folder => {
+          const count = (currentItem.files || []).filter(f => f.folderId === folder.id).length;
+          return `<button type="button" class="folder-icon-item" onclick="openFolder('${folder.id}')">${FOLDER_ICON_SVG}<span class="folder-icon-name">${esc(folder.name)}</span><span class="folder-icon-count">${t('fileCount')(count)}</span></button>`;
+        }).join('')}</div>`;
+      }
       if (canWrite) {
         html += `<div class="folder-add-row"><input type="text" id="newFolderName" maxlength="60" placeholder="${esc(t('folderNamePh'))}"><button type="button" class="file-btn" onclick="addFolder()">${esc(t('addFolder'))}</button></div>`;
       }
@@ -401,6 +422,22 @@
       if (!name) return;
       try {
         const res = await fetch('/api/portal/resource-folder', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ id: currentItem.id, name }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('folderSaveFailed'));
+        currentItem = data.item;
+        const idx = resources.findIndex(r => r.id === currentItem.id);
+        if (idx !== -1) resources[idx] = currentItem;
+        renderFilesAndFolders();
+      } catch (e) {
+        toast(e.message || t('folderSaveFailed'), true);
+      }
+    }
+    async function renameFolder(folderId) {
+      const folder = (currentItem.folders || []).find(f => f.id === folderId);
+      const name = prompt(t('renameFolderPrompt'), folder?.name || '')?.trim();
+      if (!name || name === folder?.name) return;
+      try {
+        const res = await fetch('/api/portal/resource-folder', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ id: currentItem.id, folderId, name }) });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('folderSaveFailed'));
         currentItem = data.item;
@@ -499,6 +536,7 @@
     function openEditor(id = '') {
       const item = resources.find(entry => entry.id === id) || null;
       currentItem = item;
+      currentFolderId = null;
       $('editorForm').reset(); $('resourceId').value = item?.id || ''; $('resourceName').value = item?.title || ''; renderStageStepper(item?.stagePercents || [0, 0, 0]); $('resourceTranslation').value = item?.translation || ''; $('resourceDetail').value = item?.detail || ''; $('thumbnailData').value = item?.thumbnailData || '';
       renderThumbnail(item?.thumbnailData || '');
       $('deleteResourceBtn').hidden = !item;
