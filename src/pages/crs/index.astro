@@ -1438,14 +1438,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   // 마지막 업데이트(updatedAt) 이후 며칠 지났는지 "D+N" 뱃지로 표시.
-  // 6개월(180일) 미만 초록, 6~12개월 노랑, 12개월(365일) 이상 빨강.
+  // 90일 미만 초록, 90~179일 노랑, 180일 이상 빨강.
   function ddayDays(updatedAt) {
     if (!updatedAt) return null;
     return Math.floor((Date.now() - updatedAt) / 86400000);
   }
   function ddayLevel(days) {
-    if (days >= 365) return 'stale';
-    if (days >= 180) return 'warn';
+    if (days >= 180) return 'stale';
+    if (days >= 90) return 'warn';
     return 'ok';
   }
   function ddayBadgeHtml(updatedAt) {
