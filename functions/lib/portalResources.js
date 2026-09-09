@@ -49,3 +49,26 @@ export function filesOf(item) {
   if (item?.originalFile) legacy.push({ id: 'original', ...item.originalFile });
   return legacy;
 }
+
+// 진행 상황은 번역/검토/디자인·퍼블리시 3단계(각 33.3%)로 고정한다. 예전엔
+// 진행 상태(기획/번역/검수/완료)와 0~100 자유 진행률이 따로 있었는데, 그
+// 조합을 가장 가까운 단계로 한 번만 옮겨준다 — 옛 진행률 숫자는 버리고
+// 상태만 기준으로 삼는다(3단계는 정확히 0/33/67/100%뿐이라 옛 자유
+// 진행률을 그대로 대응시킬 방법이 없다).
+export const STAGE_COUNT = 3;
+
+export function legacyStageFromStatus(status) {
+  if (status === 'complete') return 3;
+  if (status === 'review') return 2;
+  return 0; // planning, translating, 그 외 전부 "아직 번역 중"으로 취급
+}
+
+export function stageOf(item) {
+  const n = Number(item?.stage);
+  if (Number.isInteger(n) && n >= 0 && n <= STAGE_COUNT) return n;
+  return legacyStageFromStatus(item?.status);
+}
+
+export function progressFromStage(stage) {
+  return Math.round((stage / STAGE_COUNT) * 100);
+}

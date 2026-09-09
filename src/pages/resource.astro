@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=8">
+  <link rel="stylesheet" href="/portal.css?v=9">
   <script src="/wolko-rail.js?v=9" defer></script>
 </head>
 <body>
@@ -94,14 +94,14 @@
         <input type="hidden" id="resourceId">
         <input type="hidden" id="thumbnailData">
         <label class="field"><span data-t="fieldName">자료 이름</span><input id="resourceName" maxlength="120" required data-t-ph="nameField"></label>
-        <div class="field-row">
-          <label class="field"><span data-t="fieldStatus">진행 상태</span><select id="resourceStatus">
-            <option value="planning" data-t="statusPlanning">기획 중</option>
-            <option value="translating" data-t="statusTranslating">번역 중</option>
-            <option value="review" data-t="statusReview">검수 중</option>
-            <option value="complete" data-t="statusComplete">완료</option>
-          </select></label>
-          <label class="field"><span><span data-t="fieldProgress">완성도</span> <b id="progressValue">0%</b></span><input id="resourceProgress" type="range" min="0" max="100" step="10" value="0" oninput="document.getElementById('progressValue').textContent=this.value+'%'"></label>
+        <div class="field">
+          <span><span data-t="fieldStage">진행 단계</span> <b id="stagePct">0%</b></span>
+          <input type="hidden" id="resourceStage" value="0">
+          <div class="stage-stepper" id="stageStepper">
+            <button type="button" class="stage-btn" data-stage="1"><i>1</i><span data-t="stage1Name">번역</span></button>
+            <button type="button" class="stage-btn" data-stage="2"><i>2</i><span data-t="stage2Name">검토</span></button>
+            <button type="button" class="stage-btn" data-stage="3"><i>3</i><span data-t="stage3Name">디자인 및 퍼블리시</span></button>
+          </div>
         </div>
         <label class="field"><span data-t="fieldTranslation">번역/제작 내용</span><input id="resourceTranslation" maxlength="120" data-t-ph="translationField"></label>
         <label class="field"><span data-t="fieldDetail">간단한 진행 메모</span><textarea id="resourceDetail" maxlength="260" data-t-ph="detailField"></textarea></label>
@@ -133,11 +133,12 @@
         summaryItems: '전체 항목', summaryAvg: '평균 완성도', summaryTranslating: '번역 진행', summaryComplete: '완료 자료',
         sectionTitle: '작업 중인 자료', addResourceBtn: '항목 추가',
         detailEyebrow: '자료 상세', editorEyebrow: '자료 편집',
-        statusPlanning: '기획 중', statusTranslating: '번역 중', statusReview: '검수 중', statusComplete: '완료',
+        stageActive1: '번역 중', stageActive2: '검토 중', stageActive3: '디자인·퍼블리시 중', stageComplete: '완료',
+        stage1Name: '번역', stage2Name: '검토', stage3Name: '디자인 및 퍼블리시', fieldStage: '진행 단계',
         noTranslation: '번역/제작 내용 미입력',
         emptyTitle: '아직 등록된 작업 항목이 없습니다.', emptyHintWrite: '오른쪽 위의 항목 추가 버튼으로 첫 리소스를 등록해보세요.', emptyHintRead: '관리자가 작업 항목을 등록하면 이곳에 표시됩니다.',
         editorAdd: '작업 항목 추가', editorEdit: '작업 항목 수정', editBtn: '수정',
-        fieldName: '자료 이름', fieldStatus: '진행 상태', fieldProgress: '완성도', fieldTranslation: '번역/제작 내용', fieldDetail: '간단한 진행 메모',
+        fieldName: '자료 이름', fieldTranslation: '번역/제작 내용', fieldDetail: '간단한 진행 메모',
         nameField: '예: 2026 Summer Camp Student Book', translationField: '예: 학생 교재 영문 번역 및 편집', detailField: '현재 작업 범위 또는 다음 단계',
         fieldThumbnail: '발표용 썸네일', thumbnailHint: 'JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB', chooseImage: '이미지 선택',
         filesLabel: '첨부 파일', fileHint: 'PDF · 이미지 · 문서 · 최대 24MB',
@@ -161,11 +162,12 @@
         summaryItems: 'Total Items', summaryAvg: 'Avg. Progress', summaryTranslating: 'In Translation', summaryComplete: 'Ready to Present',
         sectionTitle: 'Active Resources', addResourceBtn: 'Add Item',
         detailEyebrow: 'RESOURCE DETAIL', editorEyebrow: 'RESOURCE EDITOR',
-        statusPlanning: 'Planning', statusTranslating: 'Translating', statusReview: 'Reviewing', statusComplete: 'Complete',
+        stageActive1: 'Translating', stageActive2: 'Reviewing', stageActive3: 'Design & Publish', stageComplete: 'Complete',
+        stage1Name: 'Translation', stage2Name: 'Review', stage3Name: 'Design & Publish', fieldStage: 'Progress Stage',
         noTranslation: 'No translation info yet',
         emptyTitle: 'No work items registered yet.', emptyHintWrite: 'Use the Add Item button above to register your first resource.', emptyHintRead: "Items will appear here once an admin adds them.",
         editorAdd: 'Add Work Item', editorEdit: 'Edit Work Item', editBtn: 'Edit',
-        fieldName: 'Resource name', fieldStatus: 'Status', fieldProgress: 'Progress', fieldTranslation: 'Translation / production notes', fieldDetail: 'Progress notes',
+        fieldName: 'Resource name', fieldTranslation: 'Translation / production notes', fieldDetail: 'Progress notes',
         nameField: 'e.g. 2026 Summer Camp Student Book', translationField: 'e.g. English translation & editing of the student textbook', detailField: 'Current scope or next steps',
         fieldThumbnail: 'Presentation thumbnail', thumbnailHint: 'JPG, PNG, WEBP, GIF · auto-compressed · up to 1MB', chooseImage: 'Choose image',
         filesLabel: 'Attached Files', fileHint: 'PDF · image · document · up to 24MB',
@@ -191,7 +193,8 @@
     let currentItem = null; // 에디터가 열려 있는 동안의 현재 항목(파일 업로드 등에서 참조)
     let editorMode = 'view'; // 'view' | 'edit'
     const $ = id => document.getElementById(id);
-    const STATUS_COLOR = { planning: '#7a8790', translating: '#6f55c9', review: '#d88217', complete: '#16865a' };
+    const STAGE_COUNT = 3;
+    const STAGE_COLORS = ['#6f55c9', '#d88217', '#0077a3', '#16865a']; // stage 0~3(완료)
     const MAX_FILE_BYTES = 24 * 1024 * 1024; // Cloudflare KV 값 한도(25MiB) 아래 안전 여유
 
     function parseSession() {
@@ -203,8 +206,9 @@
     function toast(message, isError = false) { const el = $('toast'); el.textContent = message; el.classList.toggle('is-error', isError); el.classList.add('show'); clearTimeout(toast.timer); toast.timer = setTimeout(() => el.classList.remove('show'), 3200); }
     function percent(items) { return items.length ? Math.round(items.reduce((sum, item) => sum + Number(item.progress || 0), 0) / items.length) : 0; }
     function ring(percentValue, color, large = false) { return `<div class="progress-ring${large ? ' progress-ring-lg' : ''}" style="--progress:${percentValue};--ring-color:${color}"><div class="ring-inner"><strong>${percentValue}%</strong>${large ? `<span>${esc(t('overallLabel'))}</span>` : ''}</div></div>`; }
-    function statusLabel(status) { return t('status' + status.charAt(0).toUpperCase() + status.slice(1)); }
-    function statusMarkup(status) { return `<span class="status-pill" style="--status:${STATUS_COLOR[status] || STATUS_COLOR.planning}"><i></i>${esc(statusLabel(status))}</span>`; }
+    function stageColor(stage) { return STAGE_COLORS[Math.max(0, Math.min(STAGE_COUNT, Number(stage) || 0))]; }
+    function stageLabel(stage) { return Number(stage) >= STAGE_COUNT ? t('stageComplete') : t('stageActive' + (Number(stage) + 1)); }
+    function stageMarkup(stage) { return `<span class="status-pill" style="--status:${stageColor(stage)}"><i></i>${esc(stageLabel(stage))}</span>`; }
     function formatUpdated(value) { if (!value) return ''; try { return new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) + (lang === 'en' ? ' updated' : ' 업데이트'); } catch { return ''; } }
     function formatLogTime(value) { try { return new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value)); } catch { return ''; } }
     function humanFileSize(bytes) { const n = Number(bytes) || 0; if (n < 1024) return n + ' B'; if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB'; return (n / (1024 * 1024)).toFixed(1) + ' MB'; }
@@ -236,17 +240,17 @@
       $('updatedAt').textContent = formatUpdated(lastUpdatedAt);
       const total = resources.length;
       const overall = percent(resources);
-      const translating = resources.filter(item => item.status === 'translating').length;
-      const complete = resources.filter(item => item.progress === 100 || item.status === 'complete').length;
+      const translating = resources.filter(item => (Number(item.stage) || 0) === 0).length;
+      const complete = resources.filter(item => (Number(item.stage) || 0) >= STAGE_COUNT).length;
       $('overallRing').style.setProperty('--progress', overall); $('overallPercent').textContent = overall + '%';
       $('overallCaption').textContent = total ? t('overallCaptionN')(total) : t('overallCaptionEmpty');
       $('summaryGrid').innerHTML = [
         [t('summaryItems'), total], [t('summaryAvg'), overall + '%'], [t('summaryTranslating'), translating], [t('summaryComplete'), complete],
       ].map(([label, value]) => `<article class="summary-card"><strong>${value}</strong><span>${esc(label)}</span></article>`).join('');
       $('resourceGrid').innerHTML = total ? resources.map(item => {
-        const color = STATUS_COLOR[item.status] || STATUS_COLOR.planning;
+        const color = stageColor(item.stage);
         const thumb = item.thumbnailData ? `<img src="${item.thumbnailData}" alt="">` : `<span class="thumb-placeholder">W<br>RESOURCE</span>`;
-        return `<article class="resource-card" onclick="openEditor('${item.id}')"><div class="resource-thumb">${thumb}</div><div class="resource-body"><div class="resource-top">${statusMarkup(item.status)}</div><h3>${esc(item.title)}</h3><p class="translation-line">${item.translation ? esc(item.translation) : esc(t('noTranslation'))}</p>${item.detail ? `<p class="detail-line">${esc(item.detail)}</p>` : ''}<div class="resource-progress"><div class="bar"><i style="width:${item.progress}%"></i></div><span>${item.progress}%</span></div></div><div class="card-ring">${ring(item.progress, color)}</div></article>`;
+        return `<article class="resource-card" onclick="openEditor('${item.id}')"><div class="resource-thumb">${thumb}</div><div class="resource-body"><div class="resource-top">${stageMarkup(item.stage)}</div><h3>${esc(item.title)}</h3><p class="translation-line">${item.translation ? esc(item.translation) : esc(t('noTranslation'))}</p>${item.detail ? `<p class="detail-line">${esc(item.detail)}</p>` : ''}<div class="resource-progress"><div class="bar"><i style="width:${item.progress}%"></i></div><span>${item.progress}%</span></div></div><div class="card-ring">${ring(item.progress, color)}</div></article>`;
       }).join('') : `<div class="empty-state"><strong>${esc(t('emptyTitle'))}</strong><span>${esc(canWrite ? t('emptyHintWrite') : t('emptyHintRead'))}</span></div>`;
       $('addResourceBtn').hidden = !canWrite;
     }
@@ -354,8 +358,8 @@
       const thumb = item.thumbnailData ? `<img src="${item.thumbnailData}" alt="">` : `<span class="thumb-placeholder">W<br>RESOURCE</span>`;
       $('detailThumb').innerHTML = thumb;
       const pillEl = $('detailStatusPill');
-      pillEl.style.setProperty('--status', STATUS_COLOR[item.status] || STATUS_COLOR.planning);
-      pillEl.innerHTML = `<i></i>${esc(statusLabel(item.status))}`;
+      pillEl.style.setProperty('--status', stageColor(item.stage));
+      pillEl.innerHTML = `<i></i>${esc(stageLabel(item.stage))}`;
       $('detailProgressBar').style.width = item.progress + '%';
       $('detailProgressPct').textContent = item.progress + '%';
       $('detailTranslation').textContent = item.translation ? item.translation : t('noTranslation');
@@ -380,7 +384,7 @@
     function openEditor(id = '') {
       const item = resources.find(entry => entry.id === id) || null;
       currentItem = item;
-      $('editorForm').reset(); $('resourceId').value = item?.id || ''; $('resourceName').value = item?.title || ''; $('resourceStatus').value = item?.status || 'planning'; $('resourceProgress').value = item?.progress || 0; $('progressValue').textContent = `${item?.progress || 0}%`; $('resourceTranslation').value = item?.translation || ''; $('resourceDetail').value = item?.detail || ''; $('thumbnailData').value = item?.thumbnailData || '';
+      $('editorForm').reset(); $('resourceId').value = item?.id || ''; $('resourceName').value = item?.title || ''; renderStageStepper(item?.stage || 0); $('resourceTranslation').value = item?.translation || ''; $('resourceDetail').value = item?.detail || ''; $('thumbnailData').value = item?.thumbnailData || '';
       renderThumbnail(item?.thumbnailData || '');
       $('deleteResourceBtn').hidden = !item;
       $('editResourceBtn').hidden = !canWrite;
@@ -391,6 +395,20 @@
       else { showEditorMode('edit'); }
     }
     function closeEditor() { $('editorOverlay').hidden = true; currentItem = null; editorMode = 'view'; }
+    // 진행 단계 스텝퍼 — 버튼 N을 누르면 1~N단계가 완료로, 이미 N단계까지
+    // 완료된 상태에서 N을 다시 누르면 한 단계 되돌린다(간단한 토글식 취소).
+    function renderStageStepper(stage) {
+      stage = Math.max(0, Math.min(STAGE_COUNT, Number(stage) || 0));
+      $('resourceStage').value = stage;
+      $('stagePct').textContent = Math.round((stage / STAGE_COUNT) * 100) + '%';
+      document.querySelectorAll('#stageStepper .stage-btn').forEach(btn => {
+        btn.classList.toggle('is-done', stage >= Number(btn.dataset.stage));
+      });
+    }
+    function setStageValue(newStage) {
+      const current = Number($('resourceStage').value) || 0;
+      renderStageStepper(current === newStage ? newStage - 1 : newStage);
+    }
     function renderThumbnail(data) { $('thumbnailPreview').innerHTML = data ? `<img src="${data}" alt="">` : '<span>NO IMAGE</span>'; }
     async function loadThumbnail(input) {
       const file = input.files?.[0]; if (!file) return;
@@ -401,7 +419,7 @@
     async function saveResource(event) {
       event.preventDefault();
       const id = $('resourceId').value;
-      const item = { title: $('resourceName').value, status: $('resourceStatus').value, progress: $('resourceProgress').value, translation: $('resourceTranslation').value, detail: $('resourceDetail').value, thumbnailData: $('thumbnailData').value };
+      const item = { title: $('resourceName').value, stage: $('resourceStage').value, translation: $('resourceTranslation').value, detail: $('resourceDetail').value, thumbnailData: $('thumbnailData').value };
       const button = $('saveResourceBtn'); button.disabled = true; $('editorError').textContent = '';
       try {
         const res = await fetch('/api/portal/resources', { method: id ? 'PUT' : 'POST', headers: authHeaders(), body: JSON.stringify(id ? { id, item } : { item }) });
@@ -431,6 +449,7 @@
     }
     function logout() { sessionStorage.removeItem('wolko-hub-token'); sessionStorage.removeItem('wolko-hub-email'); sessionStorage.removeItem('wolko-hub-role'); location.href = '/portal'; }
     $('editorForm').addEventListener('submit', saveResource); $('editorOverlay').addEventListener('click', event => { if (event.target === $('editorOverlay')) closeEditor(); });
+    document.querySelectorAll('#stageStepper .stage-btn').forEach(btn => btn.addEventListener('click', () => setStageValue(Number(btn.dataset.stage))));
 
     applyStaticLang();
     const session = parseSession();
