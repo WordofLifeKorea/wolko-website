@@ -72,3 +72,9 @@ export function stageOf(item) {
 export function progressFromStage(stage) {
   return Math.round((stage / STAGE_COUNT) * 100);
 }
+
+// 레슨/파트별로 파일을 묶어두는 폴더 — 파일 blob과 달리 KV에 항목 레코드
+// 안에 그대로 저장되는 가벼운 메타데이터다.
+export function foldersOf(item) {
+  return Array.isArray(item?.folders) ? item.folders : [];
+}

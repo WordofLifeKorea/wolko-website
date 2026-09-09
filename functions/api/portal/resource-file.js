@@ -7,6 +7,7 @@
  * GET    /api/portal/resource-file?id=&fileId=   — 파일 데이터(미리보기용) 조회.
  * POST   /api/portal/resource-file                — 업로드. body.fileId가 있으면 그 파일을
  *                                                    교체하고, 없으면 새 파일을 추가한다. admin/master만.
+ *                                                    body.folderId/category(원본|수정본)로 폴더에 바로 소속시킬 수 있다.
  * DELETE /api/portal/resource-file?id=&fileId=   — 첨부 삭제. admin/master만.
  *
  * 파일 본문은 항목 목록과 분리된 별도 KV 키에 저장해서 목록 조회 응답이
@@ -81,6 +82,8 @@ export async function onRequestPost({ env, request }) {
 
   const id = text(body.id, 80);
   const existingFileId = text(body.fileId, 80);
+  const folderId = text(body.folderId, 80) || null;
+  const category = ['original', 'revised'].includes(body.category) ? body.category : null;
   const fileName = text(body.fileName, 200);
   const fileType = text(body.fileType, 100);
   const fileData = String(body.fileData || '');
@@ -113,7 +116,7 @@ export async function onRequestPost({ env, request }) {
 
   await env.CAMP_KV.put(fileKvKey(id, fileId), bytes, { metadata: { fileName, fileType } });
 
-  const meta = { id: fileId, fileName, fileType, fileSize: bytes.length, uploadedBy: session.email, uploadedByName, uploadedAt: now };
+  const meta = { id: fileId, folderId, category, fileName, fileType, fileSize: bytes.length, uploadedBy: session.email, uploadedByName, uploadedAt: now };
   const nextFiles = [...files];
   if (fileIndex >= 0) nextFiles[fileIndex] = meta; else nextFiles.push(meta);
 
