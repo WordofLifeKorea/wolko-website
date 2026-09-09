@@ -1,4 +1,4 @@
-import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, stageOf, progressFromStage, STAGE_COUNT } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, stagePercentsOf, progressFromStagePercents, STAGE_COUNT } from '../../lib/portalResources.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_THUMBNAIL_LENGTH = 1_500_000;
@@ -7,20 +7,23 @@ function thumbnail(value) {
   const data = String(value || '');
   return /^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(data) && data.length <= MAX_THUMBNAIL_LENGTH ? data : '';
 }
+function parseStagePercents(input, existing) {
+  if (!Array.isArray(input) || input.length !== STAGE_COUNT) return stagePercentsOf(existing);
+  return input.map(v => { const n = Number(v); return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n / 10) * 10)) : 0; });
+}
 // 첨부 파일 목록(files)/폴더(folders)/업로드 로그(uploadLog)는 이 항목 편집
 // 폼에서 다루지 않는다 — resource-file.js/resource-folder.js가 별도로
 // 갱신하므로, 여기서는 기존 값을 그대로 보존해서 제목/단계 등만 고쳐도
 // 지워지지 않게 한다.
 function normalize(input, existing = {}) {
-  const stageInput = Number(input?.stage);
-  const stage = Number.isInteger(stageInput) && stageInput >= 0 && stageInput <= STAGE_COUNT ? stageInput : stageOf(existing);
+  const stagePercents = parseStagePercents(input?.stagePercents, existing);
   return {
     id: existing.id || crypto.randomUUID(),
     title: text(input?.title, 120) || existing.title || '',
     detail: text(input?.detail, 260),
     translation: text(input?.translation, 120),
-    stage,
-    progress: progressFromStage(stage),
+    stagePercents,
+    progress: progressFromStagePercents(stagePercents),
     thumbnailData: thumbnail(input?.thumbnailData),
     files: filesOf(existing),
     folders: foldersOf(existing),
@@ -35,7 +38,7 @@ export async function onRequestGet({ env, request }) {
   const session = await sessionFor(request, env);
   if (!session) return error('포탈 로그인이 필요합니다.', 401);
   const data = await readData(env);
-  const items = data.items.map(item => { const stage = stageOf(item); return { ...item, files: filesOf(item), folders: foldersOf(item), stage, progress: progressFromStage(stage) }; });
+  const items = data.items.map(item => { const stagePercents = stagePercentsOf(item); return { ...item, files: filesOf(item), folders: foldersOf(item), stagePercents, progress: progressFromStagePercents(stagePercents) }; });
   return Response.json({ items, canWrite: canWrite(session), updatedAt: data.updatedAt || '' }, { headers: CORS });
 }
 

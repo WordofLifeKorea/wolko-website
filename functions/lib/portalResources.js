@@ -50,11 +50,11 @@ export function filesOf(item) {
   return legacy;
 }
 
-// 진행 상황은 번역/검토/디자인·퍼블리시 3단계(각 33.3%)로 고정한다. 예전엔
-// 진행 상태(기획/번역/검수/완료)와 0~100 자유 진행률이 따로 있었는데, 그
-// 조합을 가장 가까운 단계로 한 번만 옮겨준다 — 옛 진행률 숫자는 버리고
-// 상태만 기준으로 삼는다(3단계는 정확히 0/33/67/100%뿐이라 옛 자유
-// 진행률을 그대로 대응시킬 방법이 없다).
+// 진행 상황은 번역/검토/디자인·퍼블리시 3단계로 고정하되, 각 단계 안에서도
+// 10% 단위로 세부 퍼센트를 매길 수 있다(예: 번역 70% + 검토 0% + 퍼블리시
+// 0% → 전체 23%). 예전엔 "단계를 몇 개 완료했는지"만 있었는데(stage:0~3),
+// 그 값을 각 단계 100%/0%로 한 번만 옮겨서 세부 퍼센트 도입 전 데이터와도
+// 호환한다.
 export const STAGE_COUNT = 3;
 
 export function legacyStageFromStatus(status) {
@@ -63,14 +63,24 @@ export function legacyStageFromStatus(status) {
   return 0; // planning, translating, 그 외 전부 "아직 번역 중"으로 취급
 }
 
-export function stageOf(item) {
-  const n = Number(item?.stage);
-  if (Number.isInteger(n) && n >= 0 && n <= STAGE_COUNT) return n;
-  return legacyStageFromStatus(item?.status);
+function snap10(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n / 10) * 10)) : 0;
 }
 
-export function progressFromStage(stage) {
-  return Math.round((stage / STAGE_COUNT) * 100);
+export function stagePercentsOf(item) {
+  if (Array.isArray(item?.stagePercents) && item.stagePercents.length === STAGE_COUNT) {
+    return item.stagePercents.map(snap10);
+  }
+  const stageInput = Number(item?.stage);
+  const stage = Number.isInteger(stageInput) && stageInput >= 0 && stageInput <= STAGE_COUNT
+    ? stageInput
+    : legacyStageFromStatus(item?.status);
+  return Array.from({ length: STAGE_COUNT }, (_, i) => (i < stage ? 100 : 0));
+}
+
+export function progressFromStagePercents(percents) {
+  return Math.round(percents.reduce((sum, p) => sum + p, 0) / percents.length);
 }
 
 // 레슨/파트별로 파일을 묶어두는 폴더 — 파일 blob과 달리 KV에 항목 레코드
