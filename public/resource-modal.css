@@ -1,3 +1,46 @@
+.editor-overlay {
+  z-index: 450;
+  grid-template-columns: minmax(0, 1fr);
+  padding: clamp(12px, 2vw, 24px);
+}
+
+.editor-overlay .editor-card {
+  min-width: 0;
+  max-width: 100%;
+  max-height: calc(100dvh - 48px);
+  container-type: inline-size;
+  overscroll-behavior: contain;
+}
+
+.editor-head > div { min-width: 0; }
+.editor-head h2 { overflow-wrap: anywhere; }
+
+@media (min-width: 900px) {
+  body.wolko-rail-active .editor-overlay {
+    left: var(--wolko-sidebar-width, 220px);
+  }
+}
+
+@media (max-width: 620px) {
+  .editor-overlay .editor-card {
+    max-height: calc(100dvh - 24px);
+    padding: 20px 14px;
+    border-radius: 14px;
+  }
+}
+
+/* Respond to the actual dialog width, not the viewport behind the sidebar. */
+@container (max-width: 620px) {
+  .file-details-table .file-details-kind,
+  .file-details-table .file-details-size { display: none; }
+  .file-details-table .file-details-date { width: 112px; font-size: 11px; }
+  .file-details-time { display: block; margin-top: 2px; }
+  .file-details-table th, .file-details-table td { padding-left: 8px; padding-right: 8px; }
+  .folder-nav { flex-wrap: wrap; }
+  .folder-nav-name { flex-basis: 60%; }
+  .file-slot-head { flex-wrap: wrap; }
+}
+
 .editor-head .icon-close {
   position: relative;
   display: grid;
