@@ -3,14 +3,21 @@ const DAY = 86400000;
 
 function timestamp(value) {
   if (value == null || value === '') return 0;
-  const result = typeof value === 'number' ? value : Date.parse(value);
+  const result = typeof value === 'number' || /^\d{12,}$/.test(String(value).trim()) ? Number(value) : Date.parse(value);
   return Number.isFinite(result) && result > 0 ? result : 0;
 }
 
 export function lastActivity(church) {
   return Math.max(timestamp(church.updatedAt), timestamp(church.createdAt),
     timestamp(church.lastVisitDate), timestamp(church.visitDate), ...Object.values(church.visits || {}).filter(Boolean).flatMap(visit =>
-      [timestamp(visit.date), timestamp(visit.recordedAt)]));
+      [timestamp(visit.date), timestamp(visit.recordedAt)]),
+    ...Object.values(church.steps || {}).flat().filter(Boolean).flatMap(entry =>
+      [timestamp(entry.date), timestamp(entry.recordedAt)]));
+}
+
+export function activityDays(church, now = Date.now()) {
+  const activityAt = lastActivity(church);
+  return activityAt ? Math.max(0, Math.floor((now - activityAt) / DAY)) : null;
 }
 
 export function overdueChurches(churches, now = Date.now()) {

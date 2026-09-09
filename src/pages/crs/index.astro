@@ -699,7 +699,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 </style>
 
 <script type="module">
-  import { overdueChurches } from '/crs-reminders.js';
+  import { overdueChurches, lastActivity, activityDays } from '/crs-reminders.js?v=2';
   import { DENOMINATION_FILTERS, denominationFamily } from '/crs-denomination-filters.js';
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import {
@@ -1560,22 +1560,19 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     ensureCrsMap();
   }
 
-  // 마지막 업데이트(updatedAt) 이후 며칠 지났는지 "D+N" 뱃지로 표시.
+  // 알림과 같은 최근 수정/교류 기록 기준으로 경과일을 표시한다.
   // 90일 미만 초록, 90~179일 노랑, 180일 이상 빨강.
-  function ddayDays(updatedAt) {
-    if (!updatedAt) return null;
-    return Math.floor((Date.now() - updatedAt) / 86400000);
-  }
   function ddayLevel(days) {
     if (days >= 180) return 'stale';
     if (days >= 90) return 'warn';
     return 'ok';
   }
-  function ddayBadgeHtml(updatedAt) {
-    const days = ddayDays(updatedAt);
-    if (days === null) return '';
+  function ddayBadgeHtml(church) {
+    const days = activityDays(church);
+    if (days === null) return `<span class="dday-badge" title="${getLang()==='ko' ? '수정일 또는 교류 기록 날짜를 입력해 주세요.' : 'Add an update or activity date.'}">${getLang()==='ko' ? '날짜 미등록' : 'No date recorded'}</span>`;
     const label = days <= 0 ? 'D-DAY' : `D+${days}`;
-    return `<span class="dday-badge ${ddayLevel(days)}" title="${getLang()==='ko' ? '마지막 업데이트로부터 경과일' : 'Days since last update'}">${label}</span>`;
+    const date = new Date(lastActivity(church)).toLocaleDateString(getLang()==='ko' ? 'ko-KR' : 'en-US');
+    return `<span class="dday-badge ${ddayLevel(days)}" title="${getLang()==='ko' ? '최근 수정·교류 기록 기준' : 'Latest update or activity'}: ${esc(date)}">${label}</span>`;
   }
 
   function closeContactAlerts() {
@@ -1615,7 +1612,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       if (church) openDetailModal(church);
     }));
   }
-  setInterval(renderContactAlerts, 60000);
+  setInterval(() => {
+    renderContactAlerts();
+    document.querySelectorAll('.church-card[data-id]').forEach(card => {
+      const church = churches.find(item => item.id === card.dataset.id);
+      const badge = card.querySelector('.dday-badge');
+      if (church && badge) badge.outerHTML = ddayBadgeHtml(church);
+    });
+  }, 60000);
 
   // ── 교회 목록 렌더 ──
   function renderChurchList() {
@@ -1631,7 +1635,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         (!activeMissionaryFilter || c.assignedMissionary === activeMissionaryFilter) &&
         (!activeDenominationFilter || denominationFamily(c.denomination) === activeDenominationFilter)
       )
-      .sort((a, b) => (ddayDays(b.updatedAt) ?? 0) - (ddayDays(a.updatedAt) ?? 0));
+      .sort((a, b) => (activityDays(b) ?? 0) - (activityDays(a) ?? 0));
 
     if (filtered.length === 0) {
       listEl.innerHTML = `
@@ -1686,7 +1690,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;flex-shrink:0;">
               <span class="step-badge${isComplete?' complete':''}">${badgeHtml}</span>
-              ${ddayBadgeHtml(c.updatedAt)}
+              ${ddayBadgeHtml(c)}
             </div>
           </div>
           <div class="church-card-body">
@@ -2161,10 +2165,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const steps = { ...(church.steps || {}) };
     if (newValue === null) delete steps[stepModalNum];
     else steps[stepModalNum] = newValue;
-    await update(ref(db, `churches/${church.id}`), { steps, updatedAt: Date.now() });
+    const updatedAt = Date.now();
+    await update(ref(db, `churches/${church.id}`), { steps, updatedAt });
+    church.updatedAt = updatedAt;
     church.steps = steps;
     const idx = churches.findIndex(c => c.id === church.id);
-    if (idx !== -1) churches[idx].steps = steps;
+    if (idx !== -1) Object.assign(churches[idx], { steps, updatedAt });
   }
   async function addStepEntry() {
     const date = document.getElementById('stepEntryDate').value;
@@ -2283,11 +2289,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   // ── 마지막 방문 날짜 저장 ──
   async function saveLastVisit(church, date, visitor) {
     try {
-      await update(ref(db, `churches/${church.id}`), { lastVisitDate: date, lastVisitVisitor: visitor, updatedAt: Date.now() });
+      const updatedAt = Date.now();
+      await update(ref(db, `churches/${church.id}`), { lastVisitDate: date, lastVisitVisitor: visitor, updatedAt });
+      church.updatedAt = updatedAt;
       church.lastVisitDate = date;
       church.lastVisitVisitor = visitor;
       const idx = churches.findIndex(c => c.id === church.id);
-      if (idx !== -1) { churches[idx].lastVisitDate = date; churches[idx].lastVisitVisitor = visitor; }
+      if (idx !== -1) { churches[idx].lastVisitDate = date; churches[idx].lastVisitVisitor = visitor; churches[idx].updatedAt = updatedAt; }
       renderChurchList();
       showSaveAlert();
     } catch(e) {

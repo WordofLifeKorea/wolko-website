@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
-import { overdueChurches, lastActivity } from '../public/crs-reminders.js';
+import { overdueChurches, lastActivity, activityDays } from '../public/crs-reminders.js';
 import { reminderRecipients, reminderKey, reminderMessage, deliverReminder } from '../functions/lib/crsReminders.js';
 import { onRequestPost } from '../functions/api/crs-reminders.js';
 
@@ -18,6 +18,17 @@ test('new visits and legacy visit dates clear old update warnings', () => {
   assert.equal(overdueChurches([{ ...church, visits:{ v:{ date:'2026-09-08', recordedAt:now } } }], now).length, 0);
   assert.equal(lastActivity({ ...church, visitDate:'2026-09-08' }), Date.parse('2026-09-08'));
   assert.equal(lastActivity({ createdAt:now, visits:{ removed:null } }), now);
+});
+test('D-Day supports ISO and numeric-string dates without resetting stored dates', () => {
+  for (const updatedAt of [now-12*DAY, String(now-12*DAY), new Date(now-12*DAY).toISOString()]) {
+    assert.equal(activityDays({updatedAt}, now),12);
+  }
+  assert.equal(activityDays({lastVisitDate:'2026-09-01'}, now),8);
+  assert.equal(activityDays({createdAt:now-5*DAY}, now),5);
+  assert.equal(activityDays({steps:{1:[{date:'2026-09-02'}],2:true}},now),7);
+  assert.equal(activityDays({updatedAt:'invalid'},now),null);
+  assert.equal(activityDays({},now),null);
+  assert.equal(activityDays({updatedAt:now+DAY},now),0);
 });
 test('approved accounts only, deduplicated and normalized', () => {
   assert.deepEqual(reminderRecipients([{status:'approved',email:' A@wol.org '}, {status:'approved',email:'a@wol.org'},
