@@ -779,7 +779,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       church_name_label: '교회 이름 *', church_name_ph: '예: 평택중앙교회',
       pastor_label: '담임목사 성함 *', pastor_ph: '예: 홍길동 목사',
       pastor_phone: '목사님 연락처', pastor_phone_ph: '예: 010-1234-5678',
-      denomination_label: '교파', denomination_ph: '교파 선택 또는 입력',
+      denomination_label: '교단', denomination_ph: '교단 선택 또는 입력',
       missionary_label: '담당 선교사', missionary_ph: '담당 선교사 선택 또는 입력',
       filter_all: '전체',
       visit_date: '방문 날짜', location: '시 / 도', region_ph: '-- 시/도 선택 --',
@@ -987,8 +987,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     try { await update(ref(db), updates); } catch (e) { /* 다음 로드 때 다시 시도됨 */ }
   }
 
-  // 교파/담당 선교사 입력창의 datalist(드롭다운 제안 목록)를 실제 등록된 값들로 채운다.
-  // 교파는 기본 목록(DEFAULT_DENOMINATIONS)에 실제 사용된 값을 더해서 보여준다.
+  // 교단/담당 선교사 입력창의 datalist(드롭다운 제안 목록)를 실제 등록된 값들로 채운다.
+  // 교단은 기본 목록(DEFAULT_DENOMINATIONS)에 실제 사용된 값을 더해서 보여준다.
   function populateFieldDatalists() {
     const denomSet = new Set(DEFAULT_DENOMINATIONS);
     const missionarySet = new Set();
@@ -1002,7 +1002,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     if (missionaryEl) missionaryEl.innerHTML = [...missionarySet].map(v => `<option value="${esc(v)}">`).join('');
   }
 
-  // 왼쪽 목록 위 필터 드롭다운(담당 선교사 / 교파) — 실제 등록된 값으로만
+  // 왼쪽 목록 위 필터 드롭다운(담당 선교사 / 교단) — 실제 등록된 값으로만
   // 옵션을 만들고, 값이 하나도 없으면 그 드롭다운 자체를 숨긴다.
   function renderFilterSelects() {
     const missionaries = [...new Set(churches.map(c => c.assignedMissionary).filter(Boolean))].sort();
