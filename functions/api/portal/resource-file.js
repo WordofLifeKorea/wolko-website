@@ -8,6 +8,8 @@
  * POST   /api/portal/resource-file                — 업로드. body.fileId가 있으면 그 파일을
  *                                                    교체하고, 없으면 새 파일을 추가한다. admin/master만.
  *                                                    body.folderId/category(원본|수정본)로 폴더에 바로 소속시킬 수 있다.
+ * PUT    /api/portal/resource-file                — 이미 올라간 파일을 다른 폴더/원본·수정본으로
+ *                                                    옮긴다(blob은 그대로, 메타데이터만 갱신). admin/master만.
  * DELETE /api/portal/resource-file?id=&fileId=   — 첨부 삭제. admin/master만.
  *
  * 파일 본문은 항목 목록과 분리된 별도 KV 키에 저장해서 목록 조회 응답이
@@ -20,7 +22,7 @@
  * 예전 방식으로 이미 올라간 파일도 계속 읽을 수 있도록 GET에서 두 형식을
  * 다 처리한다.
  */
-import { sessionFor, canWrite, text, readData, saveData, error, filesOf } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -131,6 +133,38 @@ export async function onRequestPost({ env, request }) {
   return Response.json({ item, updatedAt: saved.updatedAt }, { headers: CORS });
 }
 
+export async function onRequestPut({ env, request }) {
+  if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
+  const session = await sessionFor(request, env);
+  if (!session) return error('포탈 로그인이 필요합니다.', 401);
+  if (!canWrite(session)) return error('관리자 권한이 필요합니다.', 403);
+
+  let body;
+  try { body = await request.json(); } catch { return error('잘못된 요청입니다.', 400); }
+  const id = text(body.id, 80);
+  const fileId = text(body.fileId, 80);
+  const folderId = text(body.folderId, 80) || null;
+  const category = ['original', 'revised'].includes(body.category) ? body.category : null;
+  if (!id || !fileId) return error('잘못된 요청입니다.', 400);
+
+  const data = await readData(env);
+  const index = data.items.findIndex(item => item.id === id);
+  if (index < 0) return error('작업 항목을 찾을 수 없습니다.', 404);
+
+  const item = { ...data.items[index] };
+  if (folderId && !foldersOf(item).some(f => f.id === folderId)) return error('폴더를 찾을 수 없습니다.', 404);
+
+  const files = filesOf(item);
+  const fileIndex = files.findIndex(f => f.id === fileId);
+  if (fileIndex < 0) return error('파일을 찾을 수 없습니다.', 404);
+
+  item.files = files.map((f, i) => i === fileIndex ? { ...f, folderId, category: folderId ? category : null } : f);
+  item.updatedAt = new Date().toISOString();
+  data.items[index] = item;
+  const saved = await saveData(env, data.items);
+  return Response.json({ item, updatedAt: saved.updatedAt }, { headers: CORS });
+}
+
 export async function onRequestDelete({ env, request }) {
   if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
   const session = await sessionFor(request, env);
@@ -158,5 +192,5 @@ export async function onRequestDelete({ env, request }) {
 }
 
 export async function onRequestOptions() {
-  return new Response(null, { headers: { ...CORS, 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
+  return new Response(null, { headers: { ...CORS, 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
 }

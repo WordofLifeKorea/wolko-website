@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=12">
+  <link rel="stylesheet" href="/portal.css?v=16">
   <script src="/wolko-rail.js?v=9" defer></script>
 </head>
 <body>
@@ -78,10 +78,10 @@
           <div class="file-slot-head"><span class="field-label" data-t="filesLabel">첨부 파일</span><p data-t="fileHint">PDF · 이미지 · 문서 · 최대 24MB</p></div>
           <div class="file-slot-body" id="filesBody"></div>
         </div>
-        <div class="upload-log-section" id="uploadLogSection">
-          <span class="field-label" data-t="uploadLogLabel">업로드 로그</span>
+        <details class="upload-log-section" id="uploadLogSection">
+          <summary class="field-label" data-t="uploadLogLabel">업로드 로그</summary>
           <div class="upload-log" id="uploadLogList"></div>
-        </div>
+        </details>
 
         <div class="detail-actions">
           <button type="button" class="cancel-resource" onclick="closeEditor()" data-t="closeBtn">닫기</button>
@@ -156,8 +156,8 @@
         nameField: '예: 2026 Summer Camp Student Book', translationField: '예: 학생 교재 영문 번역 및 편집', detailField: '현재 작업 범위 또는 다음 단계',
         fieldThumbnail: '발표용 썸네일', thumbnailHint: 'JPG, PNG, WEBP, GIF · 자동 압축 · 최대 1MB', chooseImage: '이미지 선택',
         filesLabel: '첨부 파일', fileHint: 'PDF · 이미지 · 문서 · 최대 24MB',
-        addFile: '+ 파일 추가', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileWrite: '업로드된 파일이 없습니다', noFileRead: '업로드된 파일이 없습니다',
-        unfiledLabel: '미분류', originalLabel: '원본', revisedLabel: '수정본',
+        addFile: '+ 파일 추가', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileWrite: '업로드된 파일이 없습니다', noFileRead: '업로드된 파일이 없습니다', uploading: '업로드 중...',
+        unfiledLabel: '미분류', originalLabel: '원본', revisedLabel: '번역본',
         folderNamePh: '레슨 이름 (예: 레슨 1)', addFolder: '+ 폴더 추가', deleteFolder: '폴더 삭제',
         backToFolders: '← 목록', renameFolder: '이름 변경', renameFolderPrompt: '새 폴더 이름을 입력하세요',
         fileCount: n => `파일 ${n}개`,
@@ -173,6 +173,7 @@
         thumbnailTypeError: 'JPG, PNG, WEBP, GIF 이미지만 올릴 수 있습니다.', thumbnailProcessError: '이미지를 처리하지 못했습니다.',
         fileTooLarge: '파일 용량이 너무 큽니다(최대 24MB).', fileUploadFailed: '파일을 업로드하지 못했습니다.', filePreviewFailed: '파일을 불러오지 못했습니다.', fileDeleteFailed: '파일을 삭제하지 못했습니다.',
         fileRemoveConfirm: '이 파일을 삭제할까요?', fileUploadedToast: '파일을 업로드했습니다.', filesUploadedToast: n => `파일 ${n}개를 업로드했습니다.`, fileRemovedToast: '파일을 삭제했습니다.',
+        moveFile: '이동', fileMovedToast: '파일을 이동했습니다.', fileMoveFailed: '파일을 이동하지 못했습니다.',
       },
       en: {
         loginTitle: 'Portal login required', loginDesc: 'Resource & Media is available with your WOLKO Portal account.', loginBtn: 'Go to Portal',
@@ -191,8 +192,8 @@
         nameField: 'e.g. 2026 Summer Camp Student Book', translationField: 'e.g. English translation & editing of the student textbook', detailField: 'Current scope or next steps',
         fieldThumbnail: 'Presentation thumbnail', thumbnailHint: 'JPG, PNG, WEBP, GIF · auto-compressed · up to 1MB', chooseImage: 'Choose image',
         filesLabel: 'Attached Files', fileHint: 'PDF · image · document · up to 24MB',
-        addFile: '+ Add File', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileWrite: 'No file uploaded yet', noFileRead: 'No file uploaded yet',
-        unfiledLabel: 'Unfiled', originalLabel: 'Original', revisedLabel: 'Revised',
+        addFile: '+ Add File', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileWrite: 'No file uploaded yet', noFileRead: 'No file uploaded yet', uploading: 'Uploading...',
+        unfiledLabel: 'Unfiled', originalLabel: 'Original', revisedLabel: 'Translated',
         folderNamePh: 'Folder name (e.g. Lesson 1)', addFolder: '+ Add Folder', deleteFolder: 'Delete Folder',
         backToFolders: '← Back', renameFolder: 'Rename', renameFolderPrompt: 'Enter a new folder name',
         fileCount: n => `${n} file${n === 1 ? '' : 's'}`,
@@ -208,6 +209,7 @@
         thumbnailTypeError: 'Only JPG, PNG, WEBP, or GIF images are allowed.', thumbnailProcessError: 'Could not process the image.',
         fileTooLarge: 'File is too large (max 24MB).', fileUploadFailed: 'Could not upload the file.', filePreviewFailed: 'Could not load the file.', fileDeleteFailed: 'Could not delete the file.',
         fileRemoveConfirm: 'Delete this file?', fileUploadedToast: 'File uploaded.', filesUploadedToast: n => `Uploaded ${n} files.`, fileRemovedToast: 'File removed.',
+        moveFile: 'Move', fileMovedToast: 'File moved.', fileMoveFailed: 'Could not move the file.',
       },
     };
     let lang = localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko';
@@ -297,11 +299,26 @@
     }
 
     /* ── 첨부 파일 (레슨 폴더 안에 원본/수정본으로 정리) ── */
+    // 이미 올라간 파일을 다른 폴더(원본/수정본)나 미분류로 옮기는 드롭다운.
+    // 지금 있는 위치는 목록에서 빼서, 옮길 곳만 보이게 한다.
+    function moveOptionsHtml(meta) {
+      if (!canWrite) return '';
+      const folders = currentItem.folders || [];
+      const current = `${meta.folderId || ''}|${meta.category || ''}`;
+      const options = [];
+      if (current !== '|') options.push(`<option value="|">${esc(t('unfiledLabel'))}</option>`);
+      folders.forEach(f => {
+        if (`${f.id}|original` !== current) options.push(`<option value="${f.id}|original">${esc(f.name)} · ${esc(t('originalLabel'))}</option>`);
+        if (`${f.id}|revised` !== current) options.push(`<option value="${f.id}|revised">${esc(f.name)} · ${esc(t('revisedLabel'))}</option>`);
+      });
+      if (!options.length) return '';
+      return `<select class="file-move-select" data-file-id="${meta.id}" onchange="moveFileEvent(this)"><option value="" selected disabled>${esc(t('moveFile'))}</option>${options.join('')}</select>`;
+    }
     function fileRowHtml(meta) {
       const metaLine = `${t('uploadedBy')(esc(meta.uploadedByName || meta.uploadedBy || ''), esc(formatLogTime(meta.uploadedAt)))} · ${humanFileSize(meta.fileSize)}`;
       const replaceInput = canWrite ? `<label class="file-btn"><input type="file" data-file-id="${meta.id}" data-folder-id="${meta.folderId || ''}" data-category="${meta.category || ''}" onchange="handleFileUploadEvent(this)">${esc(t('replaceFile'))}</label>` : '';
       const removeBtn = canWrite ? `<button type="button" class="file-btn is-danger" onclick="deleteFile('${meta.id}')">${esc(t('removeFile'))}</button>` : '';
-      return `<div class="file-row"><div class="file-row-info"><span class="file-row-name">${esc(meta.fileName)}</span><span class="file-row-meta">${metaLine}</span></div><div class="file-row-actions"><button type="button" class="file-btn" onclick="previewFile('${meta.id}')">${esc(t('previewFile'))}</button>${replaceInput}${removeBtn}</div></div>`;
+      return `<div class="file-row"><div class="file-row-info"><span class="file-row-name">${esc(meta.fileName)}</span><span class="file-row-meta">${metaLine}</span></div><div class="file-row-actions"><button type="button" class="file-btn" onclick="previewFile('${meta.id}')">${esc(t('previewFile'))}</button>${replaceInput}${moveOptionsHtml(meta)}${removeBtn}</div></div>`;
     }
     function filesIn(folderId, category) {
       return (currentItem.files || [])
@@ -335,11 +352,11 @@
             ${canWrite ? `<button type="button" class="file-btn" onclick="renameFolder('${openFolderData.id}')">${esc(t('renameFolder'))}</button>` : ''}
             ${canWrite ? `<button type="button" class="file-btn is-danger" onclick="deleteFolder('${openFolderData.id}')">${esc(t('deleteFolder'))}</button>` : ''}
           </div>
-          <div class="folder-category">
+          <div class="folder-category is-original">
             <div class="folder-category-label">${esc(t('originalLabel'))}</div>
             ${fileGroupHtml(filesIn(openFolderData.id, 'original'), openFolderData.id, 'original')}
           </div>
-          <div class="folder-category">
+          <div class="folder-category is-revised">
             <div class="folder-category-label">${esc(t('revisedLabel'))}</div>
             ${fileGroupHtml(filesIn(openFolderData.id, 'revised'), openFolderData.id, 'revised')}
           </div>`;
@@ -360,7 +377,7 @@
         }).join('')}</div>`;
       }
       if (canWrite) {
-        html += `<div class="folder-add-row"><input type="text" id="newFolderName" maxlength="60" placeholder="${esc(t('folderNamePh'))}"><button type="button" class="file-btn" onclick="addFolder()">${esc(t('addFolder'))}</button></div>`;
+        html += `<div class="folder-add-row"><input type="text" id="newFolderName" maxlength="60" placeholder="${esc(t('folderNamePh'))}" onkeydown="if(event.key==='Enter'){event.preventDefault();addFolder();}"><button type="button" class="file-btn" onclick="addFolder()">${esc(t('addFolder'))}</button></div>`;
       }
       $('filesBody').innerHTML = html;
     }
@@ -390,6 +407,11 @@
     async function handleFileUpload(inputEl, opts = {}) {
       const files = [...(inputEl.files || [])];
       if (!files.length) return;
+      // 업로드가 몇 초 걸릴 수 있어서(특히 큰 파일), 끝날 때까지 파일이 갑자기
+      // "뿅" 나타나는 것처럼 보이지 않게 누른 버튼 자리에 바로 스피너를 띄운다.
+      // renderFilesAndFolders()가 끝나고 다시 그리면서 원래 모습으로 돌아간다.
+      const labelEl = inputEl.closest('label');
+      if (labelEl) { labelEl.classList.add('is-uploading'); labelEl.innerHTML = `<span class="btn-spinner"></span>${esc(t('uploading'))}`; }
       let successCount = 0;
       let failMessage = '';
       for (const file of files) {
@@ -485,6 +507,24 @@
       } catch (e) {
         if (win) win.close();
         toast(e.message || t('filePreviewFailed'), true);
+      }
+    }
+    function moveFileEvent(selectEl) {
+      const [folderId, category] = selectEl.value.split('|');
+      moveFile(selectEl.dataset.fileId, folderId || null, category || null);
+    }
+    async function moveFile(fileId, folderId, category) {
+      try {
+        const res = await fetch('/api/portal/resource-file', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ id: currentItem.id, fileId, folderId, category }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('fileMoveFailed'));
+        currentItem = data.item;
+        const idx = resources.findIndex(r => r.id === currentItem.id);
+        if (idx !== -1) resources[idx] = currentItem;
+        renderFilesAndFolders();
+        toast(t('fileMovedToast'));
+      } catch (e) {
+        toast(e.message || t('fileMoveFailed'), true);
       }
     }
     async function deleteFile(fileId) {
