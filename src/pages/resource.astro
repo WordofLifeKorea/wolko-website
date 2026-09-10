@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=44">
+  <link rel="stylesheet" href="/portal.css?v=46">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -242,6 +242,7 @@
         addGeneralNote: '+ 노트 남기기', addTimeNote: '+ 이 시점에 노트',
         notesLabel: '노트', notesShared: '모든 포탈 사용자와 자동 동기화', notesEmpty: '아직 노트가 없습니다. 문서 위의 글자를 드래그하거나, 위 버튼을 눌러 영역을 표시해보세요.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
         noteCancel: '취소', noteSave: '저장', noteResolve: '해결', noteReopen: '재열기', noteDelete: '삭제',
+        statusOpen: '미해결', statusResolved: '해결됨',
         noteDeleteConfirm: '이 노트를 삭제할까요? (휴지통에서 10일간 복원할 수 있습니다)', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
         noteDeletedToast: '노트를 휴지통으로 옮겼습니다.',
         trashLabel: '휴지통', backToNotes: '← 노트 목록', trashEmpty: '휴지통이 비어 있습니다.', noteRestore: '복원',
@@ -294,6 +295,7 @@
         addGeneralNote: '+ Add Note', addTimeNote: '+ Note at This Time',
         notesLabel: 'Notes', notesShared: 'Auto-synced with every portal user', notesEmpty: 'No notes yet. Drag over text in the document, or click the button above to mark an area.', notePlaceholder: 'Describe what needs fixing here',
         noteCancel: 'Cancel', noteSave: 'Save', noteResolve: 'Resolve', noteReopen: 'Reopen', noteDelete: 'Delete',
+        statusOpen: 'Open', statusResolved: 'Resolved',
         noteDeleteConfirm: 'Delete this note? (Recoverable from Trash for 10 days)', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
         noteDeletedToast: 'Note moved to Trash.',
         trashLabel: 'Trash', backToNotes: '← Notes', trashEmpty: 'Trash is empty.', noteRestore: 'Restore',
@@ -1095,10 +1097,10 @@
       $('notesList').innerHTML = trashList.slice().sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt)).map(a => {
         const canManage = !!(session && (session.email === a.createdBy || canWrite));
         const daysLeft = Math.max(0, Math.ceil((new Date(a.deletedAt).getTime() + ANNOTATION_TRASH_RETENTION_MS - Date.now()) / 86400000));
-        return `<div class="note-item is-trashed" data-note-id="${a.id}">
-          <div class="note-item-head"><b><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span>${esc(a.createdByName)}</b><span>${esc(formatLogTime(a.deletedAt))}</span></div>
+        return `<div class="note-item is-trashed" data-note-id="${a.id}" style="--note-accent:${highlightColorFor(a.createdBy)}">
+          <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><time>${esc(formatLogTime(a.deletedAt))}</time></div>
           ${a.quote ? `<blockquote class="note-item-quote">${esc(a.quote)}</blockquote>` : ''}
-          <p>${esc(a.text)}</p>
+          <p class="note-item-text">${esc(a.text)}</p>
           <p class="note-trash-expiry">${esc(t('trashExpiresIn')(daysLeft))}</p>
           ${canManage ? `<div class="note-item-actions"><button type="button" onclick="restoreAnnotation('${a.id}')">${esc(t('noteRestore'))}</button></div>` : ''}
         </div>`;
@@ -1140,11 +1142,14 @@
           <textarea class="note-comment-input" id="noteCommentInput-${a.id}" maxlength="500" aria-label="${esc(t('commentPlaceholder'))}" placeholder="${esc(t('commentPlaceholder'))}" oninput="commentDraft=this.value" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();submitNoteComment('${a.id}');}">${esc(commentDraft)}</textarea>
           <div class="note-composer-actions"><button type="button" onclick="cancelCommentComposer()">${esc(t('noteCancel'))}</button><button type="button" class="is-primary" onclick="submitNoteComment('${a.id}')">${esc(t('commentSave'))}</button></div>
         </div>` : '';
-        return `<div class="note-item is-${a.status}" data-note-id="${a.id}">
-          <div class="note-item-head"><b><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span>${esc(a.createdByName)}</b><span>${esc(formatLogTime(a.createdAt))}</span></div>
-          ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
+        return `<div class="note-item is-${a.status}" data-note-id="${a.id}" style="--note-accent:${highlightColorFor(a.createdBy)}">
+          <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><time>${esc(formatLogTime(a.createdAt))}</time></div>
+          <div class="note-item-meta">
+            <span class="note-status-pill">${esc(a.status === 'open' ? t('statusOpen') : t('statusResolved'))}</span>
+            ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
+          </div>
           ${a.quote ? `<blockquote class="note-item-quote">${esc(a.quote)}</blockquote>` : ''}
-          <p>${esc(a.text)}</p>
+          <p class="note-item-text">${esc(a.text)}</p>
           ${commentsMarkup}
           <div class="note-item-actions"><button type="button" onclick="openCommentComposer('${a.id}')">${esc(t('noteComment'))}</button>${canManage ? `<button type="button" onclick="toggleNoteStatus('${a.id}','${a.status === 'open' ? 'resolved' : 'open'}')">${esc(a.status === 'open' ? t('noteResolve') : t('noteReopen'))}</button><button type="button" class="is-danger" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div>
           ${commentComposer}
