@@ -284,10 +284,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
   .ct-form-btn:hover { background:var(--m); transform:translateY(-2px); }
   .ct-form-note {
+    display:flex; align-items:center; gap:10px;
     font-size:13px; color:var(--s); line-height:1.7;
-    padding:12px 16px; background:rgba(0,79,104,0.04);
-    border-radius:10px; border-left:3px solid var(--m);
+    padding:12px 16px; background:#f5f9fb;
+    border:1px solid rgba(0,126,161,0.14); border-radius:10px;
     flex:1; min-width:220px;
+  }
+  .ct-form-note-icon {
+    display:inline-grid; place-items:center; flex:0 0 22px;
+    width:22px; height:22px; border-radius:50%;
+    background:rgba(0,126,161,0.10); color:var(--m);
+    font-size:12px; font-weight:800; line-height:1;
   }
 
   /* privacy consent */
@@ -553,6 +560,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </svg>
           </button>
           <p class="ct-form-note">
+            <span class="ct-form-note-icon" aria-hidden="true">i</span>
             <span class="wl-ko">보내주신 문의는 영업일 기준 1–2일 내로 답변 드리겠습니다. 긴급한 사항은 전화로 연락해 주세요.</span>
             <span class="wl-en">We typically respond within 1–2 business days. For urgent matters, please call us directly.</span>
           </p>

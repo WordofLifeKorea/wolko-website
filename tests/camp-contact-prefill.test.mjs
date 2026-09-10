@@ -24,3 +24,9 @@ test('contact form anchor and query preset use the selected value for submission
   assert.doesNotMatch(contact, /id="ct-type-val"/);
   assert.match(contact, /<option value="camp">캠프 신청 \/ Camp Registration<\/option>/);
 });
+
+test('response guidance uses a balanced card highlight instead of a side stripe', () => {
+  assert.match(contact, /class="ct-form-note-icon" aria-hidden="true">i<\/span>/);
+  assert.match(contact, /\.ct-form-note\s*\{[^}]*border:1px solid/s);
+  assert.doesNotMatch(contact, /\.ct-form-note\s*\{[^}]*border-left:/s);
+});
