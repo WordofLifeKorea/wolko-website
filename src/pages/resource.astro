@@ -801,7 +801,10 @@
       // 여기서 폭을 재면 "캔버스 기본 크기(300px) → 그 크기로 렌더 → 래퍼가 그
       // 크기로 굳어짐"처럼 계속 작게 맴돈다. 항상 꽉 차 있는 바깥 스테이지
       // (#viewerSurface, padding 16px 양쪽)를 기준으로 재야 한다.
-      const containerWidth = ($('viewerSurface').clientWidth - 32) || 600;
+      const surface = $('viewerSurface');
+      const surfaceStyle = getComputedStyle(surface);
+      const horizontalPadding = (parseFloat(surfaceStyle.paddingLeft) || 0) + (parseFloat(surfaceStyle.paddingRight) || 0);
+      const containerWidth = (surface.clientWidth - horizontalPadding) || 600;
       const unscaled = page.getViewport({ scale: 1 });
       const baseScale = containerWidth / unscaled.width; // "100%" 확대 = 화면 폭에 맞춤
       if (viewerFitMode === 'page') {
