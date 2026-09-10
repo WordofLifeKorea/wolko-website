@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=52">
+  <link rel="stylesheet" href="/portal.css?v=53">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -182,7 +182,7 @@
             <button type="button" class="notes-trash-toggle" id="notesTrashToggle" onclick="toggleNotesTrashView()" hidden></button>
             <button type="button" class="notes-panel-close" onclick="toggleNotesPanel(false)" aria-label="close">×</button>
           </div>
-          <div class="notes-list" id="notesList"></div>
+          <button type="button" class="note-new-button" onclick="openNoteComposer({kind:'general'})"><span data-t="addGeneralNote">+ 노트 남기기</span></button>
           <div class="note-composer" id="noteComposer" hidden>
             <blockquote class="note-composer-quote" id="noteComposerQuote" hidden></blockquote>
             <textarea id="noteComposerText" maxlength="500" data-t-ph="notePlaceholder"></textarea>
@@ -191,6 +191,7 @@
               <button type="button" class="is-primary" onclick="submitNoteComposer()" data-t="noteSave">저장</button>
             </div>
           </div>
+          <div class="notes-list" id="notesList"></div>
         </div>
       </div>
     </div>
@@ -679,6 +680,7 @@
     let drawModeOn = false, dragState = null, pendingNote = null, pdfjsLibRef = null;
     let notesSyncTimer = null, notesSyncInFlight = false, notesSyncRevision = 0, notesSyncController = null, notesSyncCooldownUntil = 0;
     let commentDrafts = {}, commentSubmitInFlight = false;
+    const expandedNotes = new Set();
     async function previewFile(fileId) {
       const meta = (currentItem?.files || []).find(f => f.id === fileId);
       if (!meta) return;
@@ -1163,7 +1165,9 @@
           <textarea class="note-comment-input" id="noteCommentInput-${a.id}" rows="2" maxlength="500" aria-label="${esc(t('commentPlaceholder'))}" placeholder="${esc(t('commentPlaceholder'))}" oninput="commentDrafts['${a.id}']=this.value" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();submitNoteComment('${a.id}');}">${esc(commentDrafts[a.id] || '')}</textarea>
           <button type="button" class="note-reply-submit" onclick="submitNoteComment('${a.id}')" ${commentSubmitInFlight ? 'disabled' : ''}>${lang === 'ko' ? '의견 남기기' : 'Reply'}</button>
         </div>`;
-        return `<div class="note-item is-${a.status}" data-note-id="${a.id}" style="--note-accent:${highlightColorFor(a.createdBy)}">
+        return `<details class="note-item is-${a.status}" data-note-id="${a.id}" ${expandedNotes.has(a.id) ? 'open' : ''} ontoggle="if(this.isConnected){this.open ? expandedNotes.add('${a.id}') : expandedNotes.delete('${a.id}');}">
+          <summary class="note-summary" onclick="if(!this.parentElement.open) jumpToNote('${a.id}')"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><span class="note-summary-location">${esc(where || (lang === 'ko' ? '문서 노트' : 'Document note'))}</span><span class="note-summary-chevron" aria-hidden="true">⌄</span></summary>
+          <div class="note-expanded">
           <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><div class="note-item-head-tools"><time>${esc(formatLogTime(a.createdAt))}</time>${canManage ? `<button type="button" class="note-delete-button" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div></div>
           <div class="note-item-meta">
             <label class="note-status-pill"><input type="checkbox" ${a.status === 'resolved' ? 'checked' : ''} ${canManage ? '' : 'disabled'} aria-label="${esc(t('noteResolve'))}" onchange="toggleNoteStatus('${a.id}',this.checked ? 'resolved' : 'open')"><span>${esc(a.status === 'open' ? t('statusOpen') : t('statusResolved'))}</span></label>
@@ -1173,7 +1177,8 @@
           <p class="note-item-text">${esc(a.text)}</p>
           ${commentsMarkup}
           ${commentComposer}
-        </div>`;
+          </div>
+        </details>`;
       }).join('');
       if (restoreCommentFocus) requestAnimationFrame(() => {
         const input = $(restoreCommentFocus);
@@ -1246,8 +1251,10 @@
       });
     }
     function jumpToNoteListItem(annotationId) {
+      expandedNotes.add(annotationId);
       toggleNotesPanel(true);
-      document.querySelector(`[data-note-id="${annotationId}"]`)?.scrollIntoView({ block: 'nearest' });
+      const item = document.querySelector(`[data-note-id="${annotationId}"]`);
+      if (item) { item.open = true; item.scrollIntoView({ block: 'nearest' }); }
     }
     function jumpToNote(annotationId) {
       const a = annotationsForViewerFile().find(x => x.id === annotationId);

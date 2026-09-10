@@ -217,6 +217,18 @@ body.modal-open { overflow:hidden; }
 /* Author color stays in the dot; emphasis uses a uniform outline and surface. */
 .note-item { position:relative;padding:14px;border:1px solid #d7e3e8;border-radius:12px;font-size:12px;background:#fff;box-shadow:0 2px 8px rgba(16,41,54,.05); }
 .note-item + .note-item { margin-top:9px; }
+.note-item:has(> .note-summary) { padding:0; }
+.note-summary { display:flex;align-items:center;gap:8px;min-height:44px;padding:10px 12px;box-sizing:border-box;cursor:pointer;list-style:none; }
+.note-summary::-webkit-details-marker { display:none; }
+.note-summary .note-item-who { flex:1;overflow:hidden; }
+.note-summary b { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 12px/1.4 var(--body);color:#33474f; }
+.note-summary-location { color:#315e73;text-decoration:underline;text-underline-offset:3px;font:600 11px/1.4 var(--body); }
+.note-summary-chevron { color:#6d8791; }
+.note-item[open] > .note-summary .note-summary-chevron { transform:rotate(180deg); }
+.note-summary:focus-visible { outline:2px solid var(--teal);outline-offset:2px;border-radius:10px; }
+.note-expanded { padding:12px 14px 14px;border-top:1px solid #e4ecef; }
+.note-new-button { flex-shrink:0;margin:10px 12px 0;padding:8px 12px;border:1px solid #d4e4e9;border-radius:8px;background:#edf5f7;color:#00566d;font:700 12px/1.4 var(--body);cursor:pointer; }
+.notes-panel > .note-composer { flex:0 1 auto;min-height:0;overflow-y:auto;border-top:0;border-bottom:1px solid var(--line); }
 .note-item.is-resolved { background:#f7faf9;border-color:#dce8e3; }
 .note-item.is-trashed { background:#faf8f6;border-color:#e7d7cd; }
 .note-trash-expiry { margin:6px 0 0;color:#a5827a;font-size:10.5px;font-weight:600; }

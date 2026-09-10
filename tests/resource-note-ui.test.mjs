@@ -14,7 +14,7 @@ function fixture(email = 'author') {
     parseSession: () => ({ email }), canWrite: false, lang: 'ko',
     t: key => key === 'notePageLabel' ? page => `${page} page` : key,
     esc: value => String(value), formatLogTime: value => value, highlightColorFor: () => '#008e92',
-    commentDrafts: { a: 'Draft A', b: 'Draft B' }, commentSubmitInFlight: false,
+    commentDrafts: { a: 'Draft A', b: 'Draft B' }, commentSubmitInFlight: false, expandedNotes: new Set(),
     currentItem: { id: 'resource' }, authHeaders: () => ({}),
     fetch: async () => ({ ok: true, json: async () => ({ item: {} }) }),
     applyNoteMutationItem() {}, renderFilesAndFolders() {}, toast() {},
@@ -31,6 +31,12 @@ test('inline reply, header delete and checkbox replace action links', () => {
   assert.match(html, /note-delete-button/);
   assert.match(html, /type="checkbox"/);
   assert.doesNotMatch(html, /note-item-actions|openCommentComposer/);
+  assert.match(html, /<details class="note-item/);
+  assert.match(html, /<summary class="note-summary" onclick=/);
+  assert.doesNotMatch(html, /data-note-id="a" open/);
+  context.expandedNotes.add('a');
+  context.renderNotesList();
+  assert.match(elements.notesList.innerHTML, /data-note-id="a" open/);
 });
 test('other users can reply but cannot delete or resolve', () => {
   const { context, elements } = fixture('reader');
