@@ -38,6 +38,18 @@ test('public layout and every standalone app load the sizing system', async () =
   }
 });
 
+test('portal mobile header actions stay visually compact', async () => {
+  const [css, portal] = await Promise.all([
+    read('public/hub.css'),
+    read('src/pages/portal.astro'),
+  ]);
+
+  assert.match(css, /\.hub-sidebar-lang\s*\{[^}]*min-height:\s*36px\s*!important;/s);
+  assert.match(css, /\.hub-lang-btn\s*\{[^}]*height:\s*30px;[^}]*min-height:\s*30px\s*!important;/s);
+  assert.match(css, /\.hub-lang-toggle\s*\{[^}]*height:\s*36px;/s);
+  assert.match(portal, /\/hub\.css\?v=13/);
+});
+
 test('contact navigation follows the selected language everywhere', async () => {
   const layout = await read('src/layouts/BaseLayout.astro');
   const localizedContactLinks = layout.match(
