@@ -678,7 +678,7 @@
     let viewerFitMode = 'width';
     let drawModeOn = false, dragState = null, pendingNote = null, pdfjsLibRef = null;
     let notesSyncTimer = null, notesSyncInFlight = false, notesSyncRevision = 0, notesSyncController = null, notesSyncCooldownUntil = 0;
-    let commentComposerAnnotationId = null, commentDraft = '', commentSubmitInFlight = false;
+    let commentDrafts = {}, commentSubmitInFlight = false;
     async function previewFile(fileId) {
       const meta = (currentItem?.files || []).find(f => f.id === fileId);
       if (!meta) return;
@@ -1156,20 +1156,19 @@
             </div>`;
           }).join('')}
         </div>` : '';
-        const commentComposer = commentComposerAnnotationId === a.id ? `<div class="note-comment-composer">
-          <textarea class="note-comment-input" id="noteCommentInput-${a.id}" maxlength="500" aria-label="${esc(t('commentPlaceholder'))}" placeholder="${esc(t('commentPlaceholder'))}" oninput="commentDraft=this.value" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();submitNoteComment('${a.id}');}">${esc(commentDraft)}</textarea>
-          <div class="note-composer-actions"><button type="button" onclick="cancelCommentComposer()">${esc(t('noteCancel'))}</button><button type="button" class="is-primary" onclick="submitNoteComment('${a.id}')">${esc(t('commentSave'))}</button></div>
-        </div>` : '';
+        const commentComposer = `<div class="note-comment-composer">
+          <textarea class="note-comment-input" id="noteCommentInput-${a.id}" rows="2" maxlength="500" aria-label="${esc(t('commentPlaceholder'))}" placeholder="${esc(t('commentPlaceholder'))}" oninput="commentDrafts['${a.id}']=this.value" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();submitNoteComment('${a.id}');}">${esc(commentDrafts[a.id] || '')}</textarea>
+          <button type="button" class="note-reply-submit" onclick="submitNoteComment('${a.id}')" ${commentSubmitInFlight ? 'disabled' : ''}>${lang === 'ko' ? '의견 남기기' : 'Reply'}</button>
+        </div>`;
         return `<div class="note-item is-${a.status}" data-note-id="${a.id}" style="--note-accent:${highlightColorFor(a.createdBy)}">
-          <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><time>${esc(formatLogTime(a.createdAt))}</time></div>
+          <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><div class="note-item-head-tools"><time>${esc(formatLogTime(a.createdAt))}</time>${canManage ? `<button type="button" class="note-delete-button" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div></div>
           <div class="note-item-meta">
-            <span class="note-status-pill">${esc(a.status === 'open' ? t('statusOpen') : t('statusResolved'))}</span>
+            <label class="note-status-pill"><input type="checkbox" ${a.status === 'resolved' ? 'checked' : ''} ${canManage ? '' : 'disabled'} aria-label="${esc(t('noteResolve'))}" onchange="toggleNoteStatus('${a.id}',this.checked ? 'resolved' : 'open')"><span>${esc(a.status === 'open' ? t('statusOpen') : t('statusResolved'))}</span></label>
             ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
           </div>
           ${a.quote ? `<blockquote class="note-item-quote">“${esc(a.quote)}”</blockquote>` : ''}
           <p class="note-item-text">${esc(a.text)}</p>
           ${commentsMarkup}
-          <div class="note-item-actions"><button type="button" onclick="openCommentComposer('${a.id}')">${esc(t('noteComment'))}</button>${canManage ? `<button type="button" onclick="toggleNoteStatus('${a.id}','${a.status === 'open' ? 'resolved' : 'open'}')">${esc(a.status === 'open' ? t('noteResolve') : t('noteReopen'))}</button><button type="button" class="is-danger" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div>
           ${commentComposer}
         </div>`;
       }).join('');
@@ -1182,24 +1181,18 @@
         }
       });
     }
-    function openCommentComposer(annotationId) {
-      commentComposerAnnotationId = annotationId;
-      commentDraft = '';
-      renderNotesList();
-      requestAnimationFrame(() => $(`noteCommentInput-${annotationId}`)?.focus());
-    }
     function cancelCommentComposer(shouldRender = true) {
-      commentComposerAnnotationId = null;
-      commentDraft = '';
+      commentDrafts = {};
       if (shouldRender && viewerFileId) renderNotesList();
     }
     async function submitNoteComment(annotationId) {
       if (commentSubmitInFlight) return;
       const input = $(`noteCommentInput-${annotationId}`);
-      const textValue = (input?.value || commentDraft).trim();
+      const textValue = (input?.value || commentDrafts[annotationId] || '').trim();
       if (!textValue) return;
-      commentDraft = textValue;
+      commentDrafts[annotationId] = textValue;
       commentSubmitInFlight = true;
+      renderNotesList();
       try {
         const res = await fetch('/api/portal/resource-comment', {
           method: 'POST', headers: authHeaders(),
@@ -1207,12 +1200,11 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('commentSaveFailed'));
-        commentComposerAnnotationId = null;
-        commentDraft = '';
+        if (commentDrafts[annotationId] === textValue) delete commentDrafts[annotationId];
         applyNoteMutationItem(data.item);
         renderNotesList(); renderFilesAndFolders();
       } catch (error) { toast(error.message || t('commentSaveFailed'), true); }
-      finally { commentSubmitInFlight = false; }
+      finally { commentSubmitInFlight = false; renderNotesList(); }
     }
     async function deleteNoteComment(annotationId, commentId) {
       if (!confirm(t('commentDeleteConfirm'))) return;
@@ -1267,7 +1259,7 @@
         if (!res.ok) throw new Error(data.error || t('noteUpdateFailed'));
         applyNoteMutationItem(data.item);
         renderNotesList(); renderHighlights(); renderFilesAndFolders();
-      } catch (e) { toast(e.message || t('noteUpdateFailed'), true); }
+      } catch (e) { toast(e.message || t('noteUpdateFailed'), true); renderNotesList(); }
     }
     async function deleteAnnotation(annotationId) {
       if (!confirm(t('noteDeleteConfirm'))) return;

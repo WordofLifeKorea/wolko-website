@@ -172,7 +172,7 @@ body.modal-open { overflow:hidden; }
    기존처럼 테두리가 뚜렷한 상자로 남긴다. */
 .highlight-box.is-text-rect { border:none;border-radius:1px; }
 .note-item-author-dot { display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px; }
-.note-composer-quote { margin:0 0 8px;padding:6px 10px;border-left:3px solid var(--teal);background:#f4fbfa;color:var(--muted);font:600 11.5px/1.5 var(--body);white-space:pre-wrap; }
+.note-composer-quote { margin:0 0 8px;padding:10px 12px;border:1px solid #d8e7eb;border-radius:8px;background:#edf5f7;color:#294956;font:600 12px/1.65 var(--body);font-style:normal;white-space:pre-wrap;overflow-wrap:anywhere; }
 /* top:0;bottom:0로 높이를 뷰어 전체에 고정하면, 노트가 적을 땐 내용 아래로
    패널 자체의 흰 배경만 텅 빈 채 뷰어 바닥까지 이어져서 오른쪽 아래가
    낭비되는 것처럼 보인다 — max-height로 "최대 이만큼까지"만 정해두고,
@@ -214,24 +214,28 @@ body.modal-open { overflow:hidden; }
    많아지면 그때부터 이 안에서만 스크롤), 남는 공간은 작성창 아래(패널
    맨 아래)로 가게 한다. */
 .notes-list { flex:0 1 auto;min-height:0;overflow-y:auto;padding:12px; }
-/* 작성자 색을 카드 왼쪽 굵은 띠로도 써서(하이라이트 색과 동일) "누가 남긴
-   노트인지"가 글자를 읽기 전에 색으로 먼저 눈에 들어오게 한다 — 해결된
-   노트는 그 띠를 회색으로 바래게 해서 "더 안 봐도 되는 것"이 자연히
-   뒤로 물러나 보이게 한다. */
-.note-item { position:relative;padding:12px 13px 11px 14px;border:1px solid #e7edf0;border-left:3px solid var(--note-accent, var(--line));border-radius:12px;font-size:12px;background:#fff;box-shadow:0 1px 2px rgba(16,41,54,.03); }
+/* Author color stays in the dot; emphasis uses a uniform outline and surface. */
+.note-item { position:relative;padding:14px;border:1px solid #d7e3e8;border-radius:12px;font-size:12px;background:#fff;box-shadow:0 2px 8px rgba(16,41,54,.05); }
 .note-item + .note-item { margin-top:9px; }
-.note-item.is-resolved { background:#f7faf9;border-color:#e2edea;border-left-color:#cddbd6; }
-.note-item.is-trashed { background:#faf8f6;border-color:#f0e5df;border-left-color:#e7d7cd;opacity:.85; }
+.note-item.is-resolved { background:#f7faf9;border-color:#dce8e3; }
+.note-item.is-trashed { background:#faf8f6;border-color:#e7d7cd; }
 .note-trash-expiry { margin:6px 0 0;color:#a5827a;font-size:10.5px;font-weight:600; }
 .note-item-head { display:flex;align-items:center;justify-content:space-between;gap:8px; }
 .note-item-who { display:flex;align-items:center;gap:6px;min-width:0; }
 .note-item-head b { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#33474f;font:700 12px/1.3 var(--body); }
 .note-item-head time { flex-shrink:0;color:#aab8bd;font-size:10px; }
+.note-item-head-tools { display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px; }
+.note-item .note-delete-button { display:inline-flex;align-items:center;justify-content:center;height:28px;min-height:28px !important;padding:0 8px;border:1px solid #edd9dd;border-radius:7px;background:#fff7f8;color:#ae3e51;font:600 11px/1 var(--body);cursor:pointer; }
+.note-delete-button:hover { background:#fbeaec; }
 .note-item-meta { display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:7px; }
-.note-status-pill { display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;background:#faf0e3;color:#ac7a3d;font:700 9.5px/1.5 var(--body); }
+.note-item-meta .note-status-pill,.note-item-meta .note-item-where { display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;height:28px;min-height:28px !important;padding:0 10px;border:1px solid transparent;border-radius:7px;font:700 11px/1 var(--body);white-space:nowrap; }
+.note-status-pill { gap:6px;background:#fff2e2;color:#8c591f;cursor:pointer; }
+.note-status-pill input { width:14px;height:14px;min-height:0 !important;margin:0;accent-color:#008e92;cursor:pointer; }
 .note-item.is-resolved .note-status-pill { background:#e8f3f0;color:#3f8f74; }
-.note-item-where { border:0;background:#eef4f6;color:#3d7086;border-radius:20px;padding:2px 9px;font:600 10px/1.5 var(--body);cursor:pointer; }
-.note-item-quote { margin:8px 0 0;padding:5px 9px;border-left:2px solid #dde5e8;background:#f8fafb;color:#8b9aa1;font:500 11px/1.5 var(--body);font-style:italic;white-space:pre-wrap; }
+.note-item-where { background:#edf4f7;color:#315e73;cursor:pointer; }
+.note-item-where:hover { background:#dfeef3; }
+.note-item-where:focus-visible { outline:2px solid var(--teal);outline-offset:2px; }
+.note-item-quote { margin:10px 0 0;padding:10px 12px;border:1px solid #d8e7eb;border-radius:8px;background:#edf5f7;color:#294956;font:600 12px/1.65 var(--body);font-style:normal;white-space:pre-wrap;overflow-wrap:anywhere; }
 .note-item-text { margin:9px 0 0;color:#2b444f;font:600 12.5px/1.6 var(--body);white-space:pre-wrap; }
 .note-item-actions { display:flex;gap:14px;margin-top:10px;padding-top:9px;border-top:1px solid #eef2f4; }
 .note-item-actions button { border:0;background:none;padding:0;color:#3d7086;font:600 11px/1 var(--body);cursor:pointer; }
@@ -247,8 +251,10 @@ body.modal-open { overflow:hidden; }
 .note-comment-head > span { flex-shrink:0;color:#a7b5ba;font-size:9.5px; }
 .note-comment p { margin:0;color:#2b444f;font-size:11.5px;line-height:1.5;white-space:pre-wrap; }
 .note-comment-delete { min-height:24px !important;margin-top:4px;border:0;background:transparent;color:#c43a47;font:700 10px/1 var(--body);cursor:pointer; }
-.note-comment-composer { margin-top:10px;padding:10px;border:1px solid #dbe8eb;border-radius:9px;background:#f8fbfc; }
-.note-comment-composer textarea { display:block;width:100%;min-height:64px;border:1px solid #d4e2e6;border-radius:8px;padding:8px 9px;background:#fff;color:var(--ink);font:600 12px/1.5 var(--body);resize:vertical;outline:none; }
+.note-comment-composer { display:flex;align-items:flex-end;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #e4ecef; }
+.note-comment-composer textarea { display:block;flex:1;min-width:0;width:100%;box-sizing:border-box;min-height:44px;border:1px solid #d4e2e6;border-radius:8px;padding:8px 9px;background:#fff;color:var(--ink);font:500 12px/1.5 var(--body);resize:vertical;outline:none; }
+.note-reply-submit { flex-shrink:0;min-height:44px;padding:0 10px;border:0;border-radius:8px;background:#00566d;color:#fff;font:700 11px/1.3 var(--body);cursor:pointer; }
+.note-reply-submit:disabled { opacity:.5;cursor:wait; }
 .note-comment-composer textarea:focus { border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,142,146,.08); }
 .note-composer { flex-shrink:0;padding:12px;border-top:1px solid var(--line); }
 .note-composer textarea { width:100%;min-height:70px;border:1px solid #d7e4e8;border-radius:9px;padding:9px 10px;color:var(--ink);font:600 12.5px/1.5 var(--body);resize:vertical;outline:none; }
