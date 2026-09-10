@@ -1,0 +1,232 @@
+/* WOLKO shared control sizing
+   Standard: compact controls 36px, form/action controls 44px, mobile touch targets 44px. */
+:root {
+  --wl-control-height: 44px;
+  --wl-control-height-compact: 36px;
+  --wl-control-radius: 10px;
+  --wl-control-gap: 10px;
+}
+
+:where(
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  a[class*="btn"],
+  a[class*="button"]
+) {
+  box-sizing: border-box;
+  min-height: var(--wl-control-height-compact) !important;
+  font-family: inherit;
+}
+
+:where(
+  input:not([type]),
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  select
+) {
+  box-sizing: border-box;
+  min-height: var(--wl-control-height) !important;
+  font-family: inherit;
+}
+
+/* Primary page actions should align even when their original padding differs. */
+:where(
+  .btn-edit-mode,
+  .btn-print,
+  .btn-csv,
+  .btn-team-panel-edit,
+  .btn-cm-add,
+  .camp-manage-btn,
+  .camp-rename-btn,
+  .login-btn,
+  .btn-primary,
+  .primary-btn,
+  .secondary-btn,
+  .ghost-btn,
+  .car-btn,
+  .sc-modal-btn,
+  .btn-save,
+  .btn-cancel,
+  .btn-confirm,
+  .btn-delete,
+  .btn-add,
+  .btn-add-visit,
+  .btn-visit-cancel,
+  .btn-visit-save,
+  .btn-approve,
+  .btn-reject-user,
+  .save-resource,
+  .cancel-resource,
+  .delete-resource,
+  .add-resource,
+  .upload-placeholder-btn,
+  .file-picker-btn,
+  .pdf-upload-btn,
+  .ct-form-btn,
+  .crp-reg-btn,
+  .crp-open-btn,
+  .crp-staff-open-btn,
+  .crp-countdown-reveal-btn,
+  .crp-refund-agree-btn,
+  .mp-btn,
+  .download-btn,
+  .btn-apply,
+  .btn-contact,
+  .wh-home-btn,
+  .wolko-partnership-v2__btn,
+  .wolko-vnlp-btn,
+  .gv-cbtn,
+  .gv-intl-btn,
+  .gv-involve-btn,
+  .gv-kakao-btn,
+  .lo-map-btn
+) {
+  min-height: var(--wl-control-height) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Forms and every dialog use the same input and action height. */
+:where(
+  .login-form,
+  .portal-login-form,
+  .form-group,
+  .field,
+  .car-field,
+  .sc-field,
+  .ct-field,
+  .crp-field,
+  [role="dialog"],
+  .modal,
+  .editor-card,
+  .car-modal,
+  .sc-modal,
+  .tch-dialog
+) :where(
+  input:not([type]),
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  select,
+  button
+) {
+  min-height: var(--wl-control-height) !important;
+}
+
+/* Dense table editing remains compact but no longer varies from row to row. */
+:where(
+  .edit-input,
+  .edit-input-wide,
+  .camper-select,
+  .group-participant-select,
+  .group-participant-input,
+  .teacher-assign-select,
+  .camp-role-select,
+  .cm-reg-select,
+  .cm-select,
+  .stage-pct-select
+) {
+  min-height: var(--wl-control-height-compact) !important;
+}
+
+/* Camp admin toolbar: one visual baseline for all three actions. */
+.table-toolbar > div:last-child {
+  display: flex;
+  align-items: center;
+  gap: var(--wl-control-gap);
+  flex-wrap: wrap;
+}
+
+.btn-edit-mode,
+.btn-print,
+.btn-csv,
+.btn-team-panel-edit {
+  padding-block: 0 !important;
+  padding-inline: 16px !important;
+  font-size: 13px !important;
+}
+
+.season-select {
+  min-height: var(--wl-control-height) !important;
+  padding-block: 0 !important;
+}
+
+/* Header language control is a compact segmented switch, not a page action. */
+.wl-lang-toggle {
+  height: var(--wl-control-height-compact) !important;
+}
+
+.wl-lang-btn {
+  min-height: 0 !important;
+}
+
+/* Intrinsically small controls keep their intended geometry. */
+:where(
+  .sort-btn,
+  .step-count-btn,
+  .cl-color-btn,
+  .sc-color-swatch,
+  .drag-handle,
+  .viewer-page-nav button,
+  .viewer-zoom-nav button,
+  .viewer-side-nav,
+  .file-details-newtab button,
+  .file-tile-newtab,
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"],
+  input[type="file"]
+) {
+  min-height: 0 !important;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --wl-control-height-compact: 44px;
+  }
+
+  /* Keep mobile modal close buttons easy to hit without changing their icon size. */
+  :where(
+    .icon-close,
+    .btn-close,
+    .car-modal-close,
+    .sc-modal-close,
+    .notes-panel-close,
+    .hub-modal-close,
+    .detail-panel-close-mobile,
+    .crp-modal-close,
+    .crp-success-close
+  ) {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .table-section:not(.staff-section) .btn-edit-mode,
+  .table-section:not(.staff-section) .btn-csv,
+  .table-section:not(.staff-section) .btn-print {
+    min-height: var(--wl-control-height) !important;
+  }
+}
