@@ -142,9 +142,31 @@ html, body { overflow-x: hidden; max-width: 100%; }
   display: flex; align-items: flex-end; justify-content: space-between; gap: 32px;
 }
 .crp-reg-header-text {}
+.crp-reg-header-aside {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
+  max-width: 360px;
+}
 .crp-reg-header-note {
   font-size: 13px; line-height: 1.8; color: var(--c-muted);
-  text-align: right; max-width: 280px; word-break: keep-all;
+  text-align: right; margin: 0; word-break: keep-all;
+}
+.crp-reg-header-cafes {
+  display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
+}
+.crp-reg-header-cafe-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 36px; padding: 0 13px;
+  border: 1px solid rgba(0,79,104,0.20); border-radius: 9px;
+  background: var(--c-white); color: var(--c-deep);
+  font-size: 11px; font-weight: 700; line-height: 1.3;
+  text-decoration: none; white-space: nowrap;
+  transition: border-color .2s, background .2s, transform .2s;
+}
+.crp-reg-header-cafe-link:hover {
+  border-color: var(--c-mid); background: var(--c-pale); transform: translateY(-1px);
+}
+.crp-reg-header-cafe-link:focus-visible {
+  outline: 3px solid rgba(0,126,161,.18); outline-offset: 2px;
 }
 
 /* ── REG GRID ── */
@@ -515,7 +537,9 @@ body.lang-en .crp-countdown-notice {
   body.lang-en .crp-reg-grid--inland { grid-template-columns: 1fr 1fr; }
   .crp-reg-header { flex-direction: column; align-items: flex-start; }
   .crp-group-header { flex-direction: column; align-items: flex-start; gap: 6px; }
-  .crp-reg-header-note { text-align: left; max-width: 100%; }
+  .crp-reg-header-aside { align-items: flex-start; max-width: 100%; }
+  .crp-reg-header-note { text-align: left; }
+  .crp-reg-header-cafes { justify-content: flex-start; }
 }
 @media (max-width: 640px) {
   .crp-hero { padding: 100px 24px 56px; }
@@ -526,6 +550,8 @@ body.lang-en .crp-countdown-notice {
   #lang-root.lang-en .crp-reg-grid--inland,
   body.lang-en .crp-reg-grid,
   body.lang-en .crp-reg-grid--inland { grid-template-columns: 1fr; }
+  .crp-reg-header-cafes { width: 100%; }
+  .crp-reg-header-cafe-link { flex: 1 1 100%; min-height: 44px; }
   .crp-contact-bar { padding: 28px 24px; }
   .crp-contact-divider { display: none; }
 }
@@ -1338,10 +1364,22 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           <span class="wl-en">Select the camp you'd like to register for, then click "Register Now" to fill out the application form.</span>
         </p>
       </div>
-      <p class="crp-reg-header-note">
-        <span class="wl-ko">네이버 카페에서도<br>최신 캠프 소식을 확인하세요.</span>
-        <span class="wl-en">Check our Naver Cafe<br>for the latest camp news.</span>
-      </p>
+      <div class="crp-reg-header-aside">
+        <p class="crp-reg-header-note">
+          <span class="wl-ko">네이버 카페에서도<br>최신 캠프 소식을 확인하세요.</span>
+          <span class="wl-en">Check our Naver Cafe<br>for the latest camp news.</span>
+        </p>
+        <nav class="crp-reg-header-cafes" aria-label="캠프 네이버 카페 바로가기">
+          <a href="https://cafe.naver.com/wolkojrcamp" target="_blank" rel="noopener" class="crp-reg-header-cafe-link">
+            <span class="wl-ko">월코 캠프 네이버 카페 →</span>
+            <span class="wl-en">WOLKO Camp Cafe →</span>
+          </a>
+          <a href="https://cafe.naver.com/wolcamp" target="_blank" rel="noopener" class="crp-reg-header-cafe-link">
+            <span class="wl-ko">제주 캠프 네이버 카페 →</span>
+            <span class="wl-en">Jeju Camp Cafe →</span>
+          </a>
+        </nav>
+      </div>
     </div>
 
     {schedules.length > 0 ? (
