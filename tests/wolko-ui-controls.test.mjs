@@ -37,3 +37,12 @@ test('public layout and every standalone app load the sizing system', async () =
     assert.match(source, /\/wolko-ui\.css\?v=1/, `${file} must load wolko-ui.css`);
   }
 });
+
+test('contact navigation follows the selected language everywhere', async () => {
+  const layout = await read('src/layouts/BaseLayout.astro');
+  const localizedContactLinks = layout.match(
+    /<a href="\/contact"><span class="wl-ko">문의<\/span><span class="wl-en">Contact<\/span><\/a>/g,
+  ) || [];
+
+  assert.equal(localizedContactLinks.length, 3);
+});
