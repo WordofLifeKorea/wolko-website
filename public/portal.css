@@ -106,7 +106,7 @@
 .viewer-head-actions { display:flex;align-items:center;gap:10px;flex-shrink:0; }
 .viewer-notes-toggle { display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:8px 11px;color:var(--blue);font:700 12px/1 var(--body);cursor:pointer; }
 .viewer-notes-toggle.is-active { border-color:var(--teal);background:#eefaf9;color:var(--teal); }
-.viewer-body { position:relative;display:flex;flex:1;min-height:0;overflow:hidden; }
+.viewer-body { position:relative;display:flex;flex:1;width:100%;min-height:0;overflow:hidden; }
 .viewer-stage { display:flex;flex-direction:column;flex:1;min-width:0;background:#f4f6f8;position:relative; }
 .viewer-side-nav { position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--ink);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(16,41,54,.16); }
 .viewer-side-nav.is-prev { left:14px; }
@@ -179,7 +179,9 @@ body.modal-open { overflow:hidden; }
    낭비되는 것처럼 보인다 — max-height로 "최대 이만큼까지"만 정해두고,
    실제 높이는 내용만큼만(노트가 많아지면 그 상한까지 커지고 목록 안에서
    스크롤) 차지하게 한다. */
-.notes-panel { position:absolute;z-index:5;top:0;right:0;max-height:100%;display:flex;flex-direction:column;width:clamp(300px,30vw,400px);border-left:1px solid var(--line);border-bottom-left-radius:12px;background:#fff;box-shadow:-10px 0 28px rgba(16,41,54,.14);overflow:hidden;transform:translateX(100%);visibility:hidden;pointer-events:none;transition:transform .2s ease,visibility 0s linear .2s; }
+/* width는 뷰포트 단위(vw) 대신 컨테이너 기준 %로 — 중첩된 fixed/flex 구조
+   안에서 vw가 엉뚱하게 계산되는 브라우저별 차이를 피하려는 것. */
+.notes-panel { position:absolute;z-index:5;top:0;right:0;left:auto;max-height:100%;display:flex;flex-direction:column;width:clamp(300px,30%,400px);border-left:1px solid var(--line);border-bottom-left-radius:12px;background:#fff;box-shadow:-10px 0 28px rgba(16,41,54,.14);overflow:hidden;transform:translateX(100%);visibility:hidden;pointer-events:none;transition:transform .2s ease,visibility 0s linear .2s; }
 .notes-panel.is-open { transform:translateX(0);visibility:visible;pointer-events:auto;transition-delay:0s; }
 .notes-panel-head { flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);font:800 13px/1 var(--body); }
 .notes-panel-close { width:28px;height:28px;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--muted);font-size:18px;cursor:pointer; }
