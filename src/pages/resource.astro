@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=29">
+  <link rel="stylesheet" href="/portal.css?v=30">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <style is:global>
@@ -878,11 +878,21 @@
         const curY = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
         const x = Math.min(startX, curX), y = Math.min(startY, curY), w = Math.abs(curX - startX), h = Math.abs(curY - startY);
         dragState = null;
-        $('viewerDragBox')?.remove();
+        const box = $('viewerDragBox');
+        if (w < 0.01 || h < 0.01) { box?.remove(); return; } // 너무 작은 드래그(실수로 살짝 눌림)는 무시
+        // 저장 전까지 상자를 지우지 않고 연하게(is-pending) 남겨서 "방금 여기를
+        // 표시했다"는 게 계속 보이게 한다 — 노트를 저장하면(renderHighlights가
+        // 다시 그리면서) 진한 색의 정식 하이라이트로 바뀐다.
+        if (box) {
+          box.classList.remove('is-drawing');
+          box.classList.add('is-pending');
+          const color = highlightColorFor(parseSession()?.email);
+          box.style.borderColor = color;
+          box.style.background = color + '2e';
+        }
         // 노트 하나 남길 때마다 버튼을 다시 누르게 하면 번거로우니, 표시 모드는
         // 사용자가 직접 버튼을 눌러 끌 때까지 계속 켜둔다 — 연달아 여러 곳에
         // 노트를 남길 수 있다.
-        if (w < 0.01 || h < 0.01) return; // 너무 작은 드래그(실수로 살짝 눌림)는 무시
         openNoteComposer({ kind: 'area', x, y, w, h, page: viewerKind === 'pdf' ? viewerPage : null });
       });
     }
@@ -948,6 +958,7 @@
       const composer = $('noteComposer');
       if (composer) composer.hidden = true;
       window.getSelection()?.removeAllRanges();
+      $('viewerDragBox')?.remove();
     }
     async function submitNoteComposer() {
       const textVal = $('noteComposerText').value.trim();
@@ -1009,7 +1020,7 @@
     function renderHighlights() {
       const surface = $('viewerSurfaceInner');
       if (!surface) return;
-      surface.querySelectorAll('.highlight-box:not(.is-drawing)').forEach(el => el.remove());
+      surface.querySelectorAll('.highlight-box:not(.is-drawing):not(.is-pending)').forEach(el => el.remove());
       if (viewerKind !== 'pdf' && viewerKind !== 'image') return;
       annotationsForViewerFile().filter(a => a.kind === 'area' && (viewerKind !== 'pdf' || (a.page || 1) === viewerPage)).forEach(a => {
         const color = highlightColorFor(a.createdBy);
