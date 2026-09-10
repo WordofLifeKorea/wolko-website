@@ -667,7 +667,7 @@
     }
     let viewerFileId = null, viewerKind = null, viewerUrl = null, viewerPage = 1, viewerPdfDoc = null, viewerZoom = 1;
     let drawModeOn = false, dragState = null, pendingNote = null, pdfjsLibRef = null;
-    let notesSyncTimer = null, notesSyncInFlight = false, notesSyncRevision = 0, notesSyncController = null;
+    let notesSyncTimer = null, notesSyncInFlight = false, notesSyncRevision = 0, notesSyncController = null, notesSyncCooldownUntil = 0;
     let commentComposerAnnotationId = null, commentDraft = '', commentSubmitInFlight = false;
     async function previewFile(fileId) {
       const meta = (currentItem?.files || []).find(f => f.id === fileId);
@@ -995,6 +995,11 @@
     }
     function applyNoteMutationItem(item) {
       notesSyncRevision++;
+      // KV는 쓰기 직후 바로 읽어도 최신값이 아닐 수 있다(전역 전파 지연) —
+      // 방금 내가 저장/삭제한 직후 5초 주기 동기화가 옛날 값을 읽어와
+      // 화면을 도로 덮어써서 "삭제했는데 다시 나타난다"처럼 보이는 걸 막기
+      // 위해, 로컬 변경 직후 잠깐은 동기화 결과를 무시한다.
+      notesSyncCooldownUntil = Date.now() + 4000;
       currentItem = item;
       const idx = resources.findIndex(resource => resource.id === currentItem.id);
       if (idx !== -1) resources[idx] = currentItem;
@@ -1004,7 +1009,7 @@
     }
     async function syncViewerAnnotations() {
       const itemId = currentItem?.id;
-      if (!itemId || !viewerFileId || $('viewerOverlay').hidden || notesSyncInFlight) return;
+      if (!itemId || !viewerFileId || $('viewerOverlay').hidden || notesSyncInFlight || Date.now() < notesSyncCooldownUntil) return;
       notesSyncInFlight = true;
       const requestRevision = notesSyncRevision;
       const controller = new AbortController();
