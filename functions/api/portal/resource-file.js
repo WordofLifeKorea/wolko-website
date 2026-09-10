@@ -9,7 +9,9 @@
  *                                                    교체하고, 없으면 새 파일을 추가한다. admin/master만.
  *                                                    body.folderId/category(원본|수정본)로 폴더에 바로 소속시킬 수 있다.
  * PUT    /api/portal/resource-file                — 이미 올라간 파일을 다른 폴더/원본·수정본으로
- *                                                    옮긴다(blob은 그대로, 메타데이터만 갱신). admin/master만.
+ *                                                    옮기거나, body.reviewerSlug(+confirmed)로 평택센터
+ *                                                    선교사 검토 체크리스트를 갱신한다(blob은 그대로,
+ *                                                    메타데이터만 갱신). admin/master만.
  * DELETE /api/portal/resource-file?id=&fileId=   — 첨부 삭제. admin/master만.
  *
  * 파일 본문은 항목 목록과 분리된 별도 KV 키에 저장해서 목록 조회 응답이
@@ -147,8 +149,6 @@ export async function onRequestPut({ env, request }) {
   try { body = await request.json(); } catch { return error('잘못된 요청입니다.', 400); }
   const id = text(body.id, 80);
   const fileId = text(body.fileId, 80);
-  const folderId = text(body.folderId, 80) || null;
-  const category = ['original', 'revised'].includes(body.category) ? body.category : null;
   if (!id || !fileId) return error('잘못된 요청입니다.', 400);
 
   const data = await readData(env);
@@ -156,18 +156,34 @@ export async function onRequestPut({ env, request }) {
   if (index < 0) return error('작업 항목을 찾을 수 없습니다.', 404);
 
   const item = { ...data.items[index] };
-  if (folderId && !foldersOf(item).some(f => f.id === folderId)) return error('폴더를 찾을 수 없습니다.', 404);
-
   const files = filesOf(item);
   const fileIndex = files.findIndex(f => f.id === fileId);
   if (fileIndex < 0) return error('파일을 찾을 수 없습니다.', 404);
 
-  const renaming = Object.hasOwn(body, 'fileName');
-  const fileName = text(body.fileName, 200);
-  if (renaming && (!fileName || /[\\/\x00-\x1f]/.test(fileName))) return error('파일 이름이 올바르지 않습니다.', 400);
-  item.files = files.map((f, i) => i === fileIndex
-    ? (renaming ? { ...f, fileName } : { ...f, folderId, category: folderId ? category : null })
-    : f);
+  if (Object.hasOwn(body, 'reviewerSlug')) {
+    // 평택센터 선교사 검토 체크리스트 — team 콘텐츠의 slug를 키로, 확인한
+    // 사람만 기록해둔다(안 한 사람은 그냥 키가 없는 것으로 취급).
+    const slug = text(body.reviewerSlug, 60);
+    if (!slug) return error('잘못된 요청입니다.', 400);
+    const reviewConfirmations = { ...(files[fileIndex].reviewConfirmations || {}) };
+    if (body.confirmed === false) {
+      delete reviewConfirmations[slug];
+    } else {
+      const account = await getAccount(env, session.email);
+      reviewConfirmations[slug] = { confirmedBy: session.email, confirmedByName: account?.name || session.email, confirmedAt: new Date().toISOString() };
+    }
+    item.files = files.map((f, i) => i === fileIndex ? { ...f, reviewConfirmations } : f);
+  } else {
+    const folderId = text(body.folderId, 80) || null;
+    const category = ['original', 'revised'].includes(body.category) ? body.category : null;
+    if (folderId && !foldersOf(item).some(f => f.id === folderId)) return error('폴더를 찾을 수 없습니다.', 404);
+    const renaming = Object.hasOwn(body, 'fileName');
+    const fileName = text(body.fileName, 200);
+    if (renaming && (!fileName || /[\\/\x00-\x1f]/.test(fileName))) return error('파일 이름이 올바르지 않습니다.', 400);
+    item.files = files.map((f, i) => i === fileIndex
+      ? (renaming ? { ...f, fileName } : { ...f, folderId, category: folderId ? category : null })
+      : f);
+  }
   item.updatedAt = new Date().toISOString();
   data.items[index] = item;
   const saved = await saveData(env, data.items);

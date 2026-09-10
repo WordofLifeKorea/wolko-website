@@ -1,6 +1,15 @@
 ---
 // Resource & Media — 발표용 Resource 작업 현황 리포트(구 portal.astro, 주소 /portal → /resource로 이동).
 // "WOLKO Portal" 이름은 내부 도구 런처(portal.astro, 구 hub.astro)가 물려받았다.
+import { getCollection } from 'astro:content';
+
+// 평택센터 선교사 검토 체크리스트용 명단 — 인턴/스태프(category: stw)는 빼고
+// 선교사(category: missionary)만, team 콘텐츠에서 그대로 가져온다(따로
+// 유지보수하지 않아도 팀 소개 페이지와 항상 같은 명단).
+const pyeongtaekMissionaries = (await getCollection('team'))
+  .filter(p => p.data.active !== false && p.data.campus === 'pyeongtaek' && p.data.category === 'missionary')
+  .sort((a, b) => a.data.order - b.data.order)
+  .map(p => ({ slug: p.slug, name: p.data.name_ko }));
 ---
 <!DOCTYPE html>
 <html lang="ko">
@@ -16,7 +25,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=55">
+  <link rel="stylesheet" href="/portal.css?v=56">
   <script is:inline src="/pdf-continuous.js?v=1"></script>
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
@@ -180,6 +189,7 @@
         <div class="notes-panel" id="notesPanel" aria-hidden="true">
           <div class="notes-panel-head">
             <span class="notes-panel-title"><b data-t="notesLabel">노트</b><small data-t="notesShared">모든 포탈 사용자와 자동 동기화</small></span>
+            <button type="button" class="notes-trash-toggle" id="notesReviewToggle" onclick="toggleNotesReviewView()" hidden></button>
             <button type="button" class="notes-trash-toggle" id="notesTrashToggle" onclick="toggleNotesTrashView()" hidden></button>
             <button type="button" class="notes-panel-close" onclick="toggleNotesPanel(false)" aria-label="close">×</button>
           </div>
@@ -200,6 +210,7 @@
 
   <div class="toast" id="toast"></div>
 
+  <script is:inline define:vars={{ REVIEWER_ROSTER: pyeongtaekMissionaries }}>window.REVIEWER_ROSTER = REVIEWER_ROSTER;</script>
   <script is:inline>
     const T = {
       ko: {
@@ -248,6 +259,7 @@
         noteDeleteConfirm: '이 노트를 삭제할까요? (휴지통에서 10일간 복원할 수 있습니다)', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
         noteDeletedToast: '노트를 휴지통으로 옮겼습니다.',
         trashLabel: '휴지통', backToNotes: '← 노트 목록', trashEmpty: '휴지통이 비어 있습니다.', noteRestore: '복원',
+        reviewLabel: (done, total) => `검토 확인 (${done}/${total})`, reviewUpdateFailed: '검토 확인을 저장하지 못했습니다.', reviewEmpty: '평택센터 선교사 명단을 불러오지 못했습니다.',
         trashExpiresIn: n => n <= 0 ? '오늘 완전히 삭제됩니다' : `${n}일 후 완전히 삭제됩니다`,
         noteRestoredToast: '노트를 복원했습니다.', noteRestoreFailed: '노트를 복원하지 못했습니다.',
         noteComment: '의견 추가', commentsLabel: n => `추가 의견 ${n}개`, commentPlaceholder: '이 노트에 대한 의견을 입력해 주세요', commentSave: '등록', commentDelete: '삭제',
@@ -301,6 +313,7 @@
         noteDeleteConfirm: 'Delete this note? (Recoverable from Trash for 10 days)', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
         noteDeletedToast: 'Note moved to Trash.',
         trashLabel: 'Trash', backToNotes: '← Notes', trashEmpty: 'Trash is empty.', noteRestore: 'Restore',
+        reviewLabel: (done, total) => `Review (${done}/${total})`, reviewUpdateFailed: 'Could not save the review status.', reviewEmpty: 'Could not load the Pyeongtaek missionary roster.',
         trashExpiresIn: n => n <= 0 ? 'Permanently deleted today' : `Permanently deleted in ${n} day${n === 1 ? '' : 's'}`,
         noteRestoredToast: 'Note restored.', noteRestoreFailed: 'Could not restore the note.',
         noteComment: 'Add comment', commentsLabel: n => `${n} comment${n === 1 ? '' : 's'}`, commentPlaceholder: 'Add your thoughts about this note', commentSave: 'Post', commentDelete: 'Delete',
@@ -683,6 +696,7 @@
     let notesSyncTimer = null, notesSyncInFlight = false, notesSyncRevision = 0, notesSyncController = null, notesSyncCooldownUntil = 0;
     let commentDrafts = {}, commentSubmitInFlight = false;
     const expandedNotes = new Set();
+    function isDesktopViewer() { return window.matchMedia('(min-width:621px)').matches; }
     async function previewFile(fileId) {
       continuousPdf?.destroy();
       continuousPdf = null;
@@ -690,7 +704,7 @@
       if (!meta) return;
       closeFileMenu();
       const kind = viewerKindOf(meta.fileName);
-      viewerFileId = fileId; viewerKind = kind; viewerPage = 1; viewerPdfDoc = null; viewerZoom = 1; viewerFitMode = 'width'; drawModeOn = false; pendingNote = null; notesTrashView = false;
+      viewerFileId = fileId; viewerKind = kind; viewerPage = 1; viewerPdfDoc = null; viewerZoom = 1; viewerFitMode = 'width'; drawModeOn = false; pendingNote = null; notesTrashView = false; notesReviewView = false;
       $('viewerFileName').textContent = meta.fileName;
       $('viewerToolbar').innerHTML = '';
       $('viewerSurface').innerHTML = `<p class="viewer-loading">${esc(t('loadingFile'))}</p>`;
@@ -699,7 +713,7 @@
       $('viewerOverlay').hidden = false;
       syncBodyScrollLock();
       renderNotesList();
-      toggleNotesPanel(false);
+      toggleNotesPanel(isDesktopViewer());
       startViewerNotesSync();
       if (kind === 'other') { renderFallbackStage(meta); return; }
       try {
@@ -1116,10 +1130,43 @@
       return HIGHLIGHT_PALETTE[hash % HIGHLIGHT_PALETTE.length];
     }
     let notesTrashView = false;
+    let notesReviewView = false;
     function toggleNotesTrashView() {
       notesTrashView = !notesTrashView;
+      if (notesTrashView) notesReviewView = false;
       cancelCommentComposer(false);
       renderNotesList();
+    }
+    function toggleNotesReviewView() {
+      notesReviewView = !notesReviewView;
+      if (notesReviewView) notesTrashView = false;
+      cancelCommentComposer(false);
+      renderNotesList();
+    }
+    function viewerFileMeta() { return (currentItem?.files || []).find(f => f.id === viewerFileId); }
+    function reviewRosterState() {
+      const confirmed = viewerFileMeta()?.reviewConfirmations || {};
+      return REVIEWER_ROSTER.map(r => ({ ...r, info: confirmed[r.slug] || null }));
+    }
+    async function setReviewConfirmation(slug, confirmed) {
+      if (!canWrite || !currentItem || !viewerFileId) return;
+      try {
+        const res = await fetch('/api/portal/resource-file', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ id: currentItem.id, fileId: viewerFileId, reviewerSlug: slug, confirmed }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('reviewUpdateFailed'));
+        applyNoteMutationItem(data.item);
+        renderNotesList();
+      } catch (e) { toast(e.message || t('reviewUpdateFailed'), true); renderNotesList(); }
+    }
+    function renderReviewChecklist() {
+      const rows = reviewRosterState();
+      if (!rows.length) { $('notesList').innerHTML = `<p class="upload-log-empty">${esc(t('reviewEmpty'))}</p>`; return; }
+      $('notesList').innerHTML = rows.map(r => `
+        <label class="review-item${r.info ? ' is-confirmed' : ''}">
+          <input type="checkbox" ${r.info ? 'checked' : ''} onchange="setReviewConfirmation('${r.slug}', this.checked)">
+          <span class="review-item-name">${esc(r.name)}</span>
+          ${r.info ? `<span class="review-item-meta">${esc(formatLogTime(r.info.confirmedAt))}</span>` : ''}
+        </label>`).join('');
     }
     function renderTrashList(trashList) {
       if (!trashList.length) { $('notesList').innerHTML = `<p class="upload-log-empty">${esc(t('trashEmpty'))}</p>`; return; }
@@ -1137,6 +1184,13 @@
       }).join('');
     }
     function renderNotesList() {
+      const reviewToggle = $('notesReviewToggle');
+      if (reviewToggle) {
+        const rows = reviewRosterState();
+        reviewToggle.hidden = !canWrite || !rows.length;
+        reviewToggle.textContent = notesReviewView ? t('backToNotes') : t('reviewLabel')(rows.filter(r => r.info).length, rows.length);
+      }
+      if (notesReviewView) { renderReviewChecklist(); return; }
       const trashList = trashedAnnotationsForViewerFile();
       const trashToggle = $('notesTrashToggle');
       if (trashToggle) {
