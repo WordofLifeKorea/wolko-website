@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=30">
+  <link rel="stylesheet" href="/portal.css?v=31">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <style is:global>
@@ -164,7 +164,7 @@
       <div class="viewer-head">
         <span class="viewer-file-name" id="viewerFileName"></span>
         <div class="viewer-head-actions">
-          <button type="button" class="viewer-notes-toggle" id="viewerNotesToggle" onclick="toggleNotesPanel()"><span data-t="notesLabel">노트</span> <span id="viewerNotesCount"></span></button>
+          <button type="button" class="viewer-notes-toggle" id="viewerNotesToggle" onclick="toggleNotesPanel()" aria-controls="notesPanel" aria-expanded="false"><span data-t="notesLabel">노트</span> <span id="viewerNotesCount"></span></button>
           <button class="icon-close" type="button" onclick="closeViewer()" aria-label="close">×</button>
         </div>
       </div>
@@ -175,7 +175,7 @@
           <button type="button" class="viewer-side-nav is-next" id="viewerSideNavNext" onclick="viewerNextPage()" aria-label="next page" hidden>›</button>
           <div class="viewer-stage-surface" id="viewerSurface"></div>
         </div>
-        <div class="notes-panel" id="notesPanel">
+        <div class="notes-panel" id="notesPanel" aria-hidden="true">
           <div class="notes-panel-head">
             <span data-t="notesLabel">노트</span>
             <button type="button" class="notes-panel-close" onclick="toggleNotesPanel(false)" aria-label="close">×</button>
@@ -673,7 +673,7 @@
       $('viewerOverlay').hidden = false;
       syncBodyScrollLock();
       renderNotesList();
-      toggleNotesPanel(window.innerWidth > 620);
+      toggleNotesPanel(false);
       if (kind === 'other') { renderFallbackStage(meta); return; }
       try {
         const url = await fetchFileAsBlobUrl(fileId);
@@ -988,7 +988,11 @@
     }
     function toggleNotesPanel(force) {
       const panel = $('notesPanel');
-      panel.classList.toggle('is-open', typeof force === 'boolean' ? force : !panel.classList.contains('is-open'));
+      const isOpen = typeof force === 'boolean' ? force : !panel.classList.contains('is-open');
+      panel.classList.toggle('is-open', isOpen);
+      panel.setAttribute('aria-hidden', String(!isOpen));
+      $('viewerNotesToggle').classList.toggle('is-active', isOpen);
+      $('viewerNotesToggle').setAttribute('aria-expanded', String(isOpen));
     }
     // 노트 작성자마다 고정된 색을 배정한다(이메일을 해시해서 팔레트에서 하나
     // 고르는 방식 — 서버에 따로 저장할 필요 없이 항상 같은 사람은 같은 색).
