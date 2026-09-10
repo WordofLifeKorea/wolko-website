@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=50">
+  <link rel="stylesheet" href="/portal.css?v=51">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -251,7 +251,7 @@
         noteComment: '의견 추가', commentsLabel: n => `추가 의견 ${n}개`, commentPlaceholder: '이 노트에 대한 의견을 입력해 주세요', commentSave: '등록', commentDelete: '삭제',
         commentDeleteConfirm: '이 의견을 삭제할까요?', commentSaveFailed: '의견을 등록하지 못했습니다.', commentDeleteFailed: '의견을 삭제하지 못했습니다.', commentDeletedToast: '의견을 삭제했습니다.',
         openInNewTab: '새 탭에서 열기', cannotPreviewInline: '이 파일 형식은 바로 미리보기를 지원하지 않아요.',
-        pageOf: (n, total) => `${n} / ${total}`, loadingFile: '불러오는 중...', pdfLoadFailed: 'PDF를 불러오지 못했습니다.', zoomReset: '눌러서 100%(화면 폭 맞춤)로',
+        pageOf: (n, total) => `${n} / ${total}`, notePageLabel: n => `${n}페이지`, loadingFile: '불러오는 중...', pdfLoadFailed: 'PDF를 불러오지 못했습니다.', zoomReset: '눌러서 100%(화면 폭 맞춤)로',
       },
       en: {
         loginTitle: 'Portal login required', loginDesc: 'Resource & Media is available with your WOLKO Portal account.', loginBtn: 'Go to Login',
@@ -304,7 +304,7 @@
         noteComment: 'Add comment', commentsLabel: n => `${n} comment${n === 1 ? '' : 's'}`, commentPlaceholder: 'Add your thoughts about this note', commentSave: 'Post', commentDelete: 'Delete',
         commentDeleteConfirm: 'Delete this comment?', commentSaveFailed: 'Could not post the comment.', commentDeleteFailed: 'Could not delete the comment.', commentDeletedToast: 'Comment deleted.',
         openInNewTab: 'Open in new tab', cannotPreviewInline: "This file type can't be previewed inline.",
-        pageOf: (n, total) => `${n} / ${total}`, loadingFile: 'Loading...', pdfLoadFailed: 'Could not load the PDF.', zoomReset: 'Click to reset to 100% (fit width)',
+        pageOf: (n, total) => `${n} / ${total}`, notePageLabel: n => `Page ${n}`, loadingFile: 'Loading...', pdfLoadFailed: 'Could not load the PDF.', zoomReset: 'Click to reset to 100% (fit width)',
       },
     };
     let lang = localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko';
@@ -1114,7 +1114,7 @@
         const daysLeft = Math.max(0, Math.ceil((new Date(a.deletedAt).getTime() + ANNOTATION_TRASH_RETENTION_MS - Date.now()) / 86400000));
         return `<div class="note-item is-trashed" data-note-id="${a.id}" style="--note-accent:${highlightColorFor(a.createdBy)}">
           <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><time>${esc(formatLogTime(a.deletedAt))}</time></div>
-          ${a.quote ? `<blockquote class="note-item-quote">${esc(a.quote)}</blockquote>` : ''}
+          ${a.quote ? `<blockquote class="note-item-quote">“${esc(a.quote)}”</blockquote>` : ''}
           <p class="note-item-text">${esc(a.text)}</p>
           <p class="note-trash-expiry">${esc(t('trashExpiresIn')(daysLeft))}</p>
           ${canManage ? `<div class="note-item-actions"><button type="button" onclick="restoreAnnotation('${a.id}')">${esc(t('noteRestore'))}</button></div>` : ''}
@@ -1139,7 +1139,7 @@
       const session = parseSession();
       $('notesList').innerHTML = list.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(a => {
         const canManage = !!(session && (session.email === a.createdBy || canWrite));
-        const where = a.kind === 'time' ? formatTimeSec(a.timeSec) : (a.kind === 'area' && a.page ? t('pageOf')(a.page, a.page) : '');
+        const where = a.kind === 'time' ? formatTimeSec(a.timeSec) : (a.kind === 'area' && a.page ? t('notePageLabel')(a.page) : '');
         const jumpAttr = a.kind !== 'general' ? ` onclick="jumpToNote('${a.id}')"` : '';
         const comments = Array.isArray(a.comments) ? a.comments.slice().sort((x, y) => new Date(x.createdAt) - new Date(y.createdAt)) : [];
         const commentsMarkup = comments.length ? `<div class="note-comments">
@@ -1163,7 +1163,7 @@
             <span class="note-status-pill">${esc(a.status === 'open' ? t('statusOpen') : t('statusResolved'))}</span>
             ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
           </div>
-          ${a.quote ? `<blockquote class="note-item-quote">${esc(a.quote)}</blockquote>` : ''}
+          ${a.quote ? `<blockquote class="note-item-quote">“${esc(a.quote)}”</blockquote>` : ''}
           <p class="note-item-text">${esc(a.text)}</p>
           ${commentsMarkup}
           <div class="note-item-actions"><button type="button" onclick="openCommentComposer('${a.id}')">${esc(t('noteComment'))}</button>${canManage ? `<button type="button" onclick="toggleNoteStatus('${a.id}','${a.status === 'open' ? 'resolved' : 'open'}')">${esc(a.status === 'open' ? t('noteResolve') : t('noteReopen'))}</button><button type="button" class="is-danger" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div>
