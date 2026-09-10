@@ -61,6 +61,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .ct-sh {
     display:flex; align-items:baseline; gap:12px;
     margin-top:72px; margin-bottom:24px;
+    scroll-margin-top:100px;
   }
   .ct-sh:first-of-type { margin-top:0; }
   .ct-sh-label {
@@ -477,20 +478,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
     <!-- CONTACT FORM -->
-    <div class="ct-sh">
+    <div class="ct-sh" id="contact-form">
       <span class="ct-sh-label"><span class="wl-ko">문의 보내기</span><span class="wl-en">Send a Message</span></span>
     </div>
     <div class="ct-form-wrap">
       <form onsubmit="handleSubmit(event)">
-        <input type="hidden" name="type" id="ct-type-val" value="general" />
-
         <!-- 문의 유형 드롭다운 -->
         <div class="ct-dropdown-wrap">
           <label class="ct-dropdown-label" for="ct-type-select">
             <span class="wl-ko">문의 유형</span><span class="wl-en">Inquiry Type</span>
           </label>
           <div class="ct-select-wrap">
-            <select id="ct-type-select" onchange="document.getElementById('ct-type-val').value=this.value">
+            <select id="ct-type-select" name="type">
               <optgroup label="─────────────────────────">
                 <option value="general">일반 문의 / General Inquiry</option>
                 <option value="ministry">사역 협력 / Ministry Partnership</option>
@@ -580,6 +579,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </div><!-- end lang-root -->
 
 <script is:inline>
+(function applyInquiryPreset() {
+  var typeSelect = document.getElementById('ct-type-select');
+  if (!typeSelect) return;
+
+  var requestedType = new URLSearchParams(window.location.search).get('type');
+  var isAllowedType = Array.from(typeSelect.options).some(function(option) {
+    return option.value === requestedType;
+  });
+  if (!isAllowedType) return;
+
+  typeSelect.value = requestedType;
+})();
+
 async function handleSubmit(e) {
   e.preventDefault();
   var form = e.target;
@@ -591,7 +603,7 @@ async function handleSubmit(e) {
   var name    = form.querySelector('#ct-name').value.trim();
   var email   = form.querySelector('#ct-email').value.trim();
   var phone   = (form.querySelector('#ct-phone').value || '').trim();
-  var type    = document.getElementById('ct-type-val').value;
+  var type    = document.getElementById('ct-type-select').value;
   var message = form.querySelector('#ct-msg').value.trim();
 
   try {
