@@ -93,9 +93,17 @@ export function foldersOf(item) {
 // folders와 마찬가지로 항목 레코드 안에 그대로 저장한다.
 export const MAX_ANNOTATIONS_PER_ITEM = 300;
 export const MAX_COMMENTS_PER_ANNOTATION = 100;
+// 노트를 삭제하면 바로 지우지 않고 deletedAt만 표시해 휴지통에 담아두고,
+// 이 기간이 지난 것만 실제로 걷어낸다(복원 가능 기간).
+export const ANNOTATION_TRASH_RETENTION_MS = 10 * 24 * 60 * 60 * 1000;
 
+// annotationsOf를 거치는 모든 곳(조회 응답, 다른 항목 수정 시 재저장 등)에서
+// 자연스럽게 오래된 휴지통 항목이 걸러지므로, 별도의 정리 배치가 없어도
+// 저장소가 무한정 커지지 않는다.
 export function annotationsOf(item) {
-  return Array.isArray(item?.annotations) ? item.annotations : [];
+  const raw = Array.isArray(item?.annotations) ? item.annotations : [];
+  const now = Date.now();
+  return raw.filter(a => !a.deletedAt || now - new Date(a.deletedAt).getTime() < ANNOTATION_TRASH_RETENTION_MS);
 }
 
 export function commentsOf(annotation) {

@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=42">
+  <link rel="stylesheet" href="/portal.css?v=44">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -179,6 +179,7 @@
         <div class="notes-panel" id="notesPanel" aria-hidden="true">
           <div class="notes-panel-head">
             <span class="notes-panel-title"><b data-t="notesLabel">노트</b><small data-t="notesShared">모든 포탈 사용자와 자동 동기화</small></span>
+            <button type="button" class="notes-trash-toggle" id="notesTrashToggle" onclick="toggleNotesTrashView()" hidden></button>
             <button type="button" class="notes-panel-close" onclick="toggleNotesPanel(false)" aria-label="close">×</button>
           </div>
           <div class="notes-list" id="notesList"></div>
@@ -241,8 +242,11 @@
         addGeneralNote: '+ 노트 남기기', addTimeNote: '+ 이 시점에 노트',
         notesLabel: '노트', notesShared: '모든 포탈 사용자와 자동 동기화', notesEmpty: '아직 노트가 없습니다. 문서 위의 글자를 드래그하거나, 위 버튼을 눌러 영역을 표시해보세요.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
         noteCancel: '취소', noteSave: '저장', noteResolve: '해결', noteReopen: '재열기', noteDelete: '삭제',
-        noteDeleteConfirm: '이 노트를 삭제할까요?', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
-        noteDeletedToast: '노트를 삭제했습니다.',
+        noteDeleteConfirm: '이 노트를 삭제할까요? (휴지통에서 10일간 복원할 수 있습니다)', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
+        noteDeletedToast: '노트를 휴지통으로 옮겼습니다.',
+        trashLabel: '휴지통', backToNotes: '← 노트 목록', trashEmpty: '휴지통이 비어 있습니다.', noteRestore: '복원',
+        trashExpiresIn: n => n <= 0 ? '오늘 완전히 삭제됩니다' : `${n}일 후 완전히 삭제됩니다`,
+        noteRestoredToast: '노트를 복원했습니다.', noteRestoreFailed: '노트를 복원하지 못했습니다.',
         noteComment: '의견 추가', commentsLabel: n => `추가 의견 ${n}개`, commentPlaceholder: '이 노트에 대한 의견을 입력해 주세요', commentSave: '등록', commentDelete: '삭제',
         commentDeleteConfirm: '이 의견을 삭제할까요?', commentSaveFailed: '의견을 등록하지 못했습니다.', commentDeleteFailed: '의견을 삭제하지 못했습니다.', commentDeletedToast: '의견을 삭제했습니다.',
         openInNewTab: '새 탭에서 열기', cannotPreviewInline: '이 파일 형식은 바로 미리보기를 지원하지 않아요.',
@@ -290,8 +294,11 @@
         addGeneralNote: '+ Add Note', addTimeNote: '+ Note at This Time',
         notesLabel: 'Notes', notesShared: 'Auto-synced with every portal user', notesEmpty: 'No notes yet. Drag over text in the document, or click the button above to mark an area.', notePlaceholder: 'Describe what needs fixing here',
         noteCancel: 'Cancel', noteSave: 'Save', noteResolve: 'Resolve', noteReopen: 'Reopen', noteDelete: 'Delete',
-        noteDeleteConfirm: 'Delete this note?', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
-        noteDeletedToast: 'Note deleted.',
+        noteDeleteConfirm: 'Delete this note? (Recoverable from Trash for 10 days)', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
+        noteDeletedToast: 'Note moved to Trash.',
+        trashLabel: 'Trash', backToNotes: '← Notes', trashEmpty: 'Trash is empty.', noteRestore: 'Restore',
+        trashExpiresIn: n => n <= 0 ? 'Permanently deleted today' : `Permanently deleted in ${n} day${n === 1 ? '' : 's'}`,
+        noteRestoredToast: 'Note restored.', noteRestoreFailed: 'Could not restore the note.',
         noteComment: 'Add comment', commentsLabel: n => `${n} comment${n === 1 ? '' : 's'}`, commentPlaceholder: 'Add your thoughts about this note', commentSave: 'Post', commentDelete: 'Delete',
         commentDeleteConfirm: 'Delete this comment?', commentSaveFailed: 'Could not post the comment.', commentDeleteFailed: 'Could not delete the comment.', commentDeletedToast: 'Comment deleted.',
         openInNewTab: 'Open in new tab', cannotPreviewInline: "This file type can't be previewed inline.",
@@ -421,7 +428,7 @@
     // File actions are available through the context menu and keyboard menu key.
     function fileTileHtml(meta) {
       const metaLine = `${t('uploadedBy')(esc(meta.uploadedByName || meta.uploadedBy || ''), esc(formatLogTime(meta.uploadedAt)))} · ${humanFileSize(meta.fileSize)}`;
-      const openNotes = (currentItem.annotations || []).filter(a => a.fileId === meta.id && a.status === 'open').length;
+      const openNotes = (currentItem.annotations || []).filter(a => a.fileId === meta.id && a.status === 'open' && !a.deletedAt).length;
       const noteBadge = openNotes ? `<span class="file-tile-note-badge">${openNotes}</span>` : '';
       return `<div class="file-tile" data-context-file="${meta.id}">
         <button type="button" class="file-tile-newtab" onclick="event.stopPropagation();openInNewTab('${meta.id}')" title="${esc(t('openInNewTab'))}" aria-label="${esc(t('openInNewTab'))}">↗</button>
@@ -674,7 +681,7 @@
       if (!meta) return;
       closeFileMenu();
       const kind = viewerKindOf(meta.fileName);
-      viewerFileId = fileId; viewerKind = kind; viewerPage = 1; viewerPdfDoc = null; viewerZoom = 1; drawModeOn = false; pendingNote = null;
+      viewerFileId = fileId; viewerKind = kind; viewerPage = 1; viewerPdfDoc = null; viewerZoom = 1; drawModeOn = false; pendingNote = null; notesTrashView = false;
       $('viewerFileName').textContent = meta.fileName;
       $('viewerToolbar').innerHTML = '';
       $('viewerSurface').innerHTML = `<p class="viewer-loading">${esc(t('loadingFile'))}</p>`;
@@ -991,7 +998,10 @@
       }
     }
     function annotationsForViewerFile() {
-      return (currentItem?.annotations || []).filter(a => a.fileId === viewerFileId);
+      return (currentItem?.annotations || []).filter(a => a.fileId === viewerFileId && !a.deletedAt);
+    }
+    function trashedAnnotationsForViewerFile() {
+      return (currentItem?.annotations || []).filter(a => a.fileId === viewerFileId && a.deletedAt);
     }
     function applyNoteMutationItem(item) {
       notesSyncRevision++;
@@ -1066,19 +1076,48 @@
     // 노트 작성자마다 고정된 색을 배정한다(이메일을 해시해서 팔레트에서 하나
     // 고르는 방식 — 서버에 따로 저장할 필요 없이 항상 같은 사람은 같은 색).
     const HIGHLIGHT_PALETTE = ['#d88217', '#0077a3', '#6f55c9', '#c0392b', '#16865a', '#8e44ad', '#d81b60', '#00838f'];
+    const ANNOTATION_TRASH_RETENTION_MS = 10 * 24 * 60 * 60 * 1000; // 서버(portalResources.js)와 동일한 보관 기간
     function highlightColorFor(email) {
       const str = String(email || '');
       let hash = 0;
       for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
       return HIGHLIGHT_PALETTE[hash % HIGHLIGHT_PALETTE.length];
     }
+    let notesTrashView = false;
+    function toggleNotesTrashView() {
+      notesTrashView = !notesTrashView;
+      cancelCommentComposer(false);
+      renderNotesList();
+    }
+    function renderTrashList(trashList) {
+      if (!trashList.length) { $('notesList').innerHTML = `<p class="upload-log-empty">${esc(t('trashEmpty'))}</p>`; return; }
+      const session = parseSession();
+      $('notesList').innerHTML = trashList.slice().sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt)).map(a => {
+        const canManage = !!(session && (session.email === a.createdBy || canWrite));
+        const daysLeft = Math.max(0, Math.ceil((new Date(a.deletedAt).getTime() + ANNOTATION_TRASH_RETENTION_MS - Date.now()) / 86400000));
+        return `<div class="note-item is-trashed" data-note-id="${a.id}">
+          <div class="note-item-head"><b><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span>${esc(a.createdByName)}</b><span>${esc(formatLogTime(a.deletedAt))}</span></div>
+          ${a.quote ? `<blockquote class="note-item-quote">${esc(a.quote)}</blockquote>` : ''}
+          <p>${esc(a.text)}</p>
+          <p class="note-trash-expiry">${esc(t('trashExpiresIn')(daysLeft))}</p>
+          ${canManage ? `<div class="note-item-actions"><button type="button" onclick="restoreAnnotation('${a.id}')">${esc(t('noteRestore'))}</button></div>` : ''}
+        </div>`;
+      }).join('');
+    }
     function renderNotesList() {
+      const trashList = trashedAnnotationsForViewerFile();
+      const trashToggle = $('notesTrashToggle');
+      if (trashToggle) {
+        trashToggle.hidden = !notesTrashView && !trashList.length;
+        trashToggle.textContent = notesTrashView ? t('backToNotes') : `${t('trashLabel')}${trashList.length ? ` (${trashList.length})` : ''}`;
+      }
+      const list = annotationsForViewerFile();
+      $('viewerNotesCount').textContent = list.length ? String(list.length) : '';
+      if (notesTrashView) { renderTrashList(trashList); return; }
       const focusedCommentInput = document.activeElement?.classList?.contains('note-comment-input') ? document.activeElement : null;
       const restoreCommentFocus = focusedCommentInput?.id || '';
       const restoreSelectionStart = focusedCommentInput?.selectionStart;
       const restoreSelectionEnd = focusedCommentInput?.selectionEnd;
-      const list = annotationsForViewerFile();
-      $('viewerNotesCount').textContent = list.length ? String(list.length) : '';
       if (!list.length) { $('notesList').innerHTML = `<p class="upload-log-empty">${esc(t('notesEmpty'))}</p>`; return; }
       const session = parseSession();
       $('notesList').innerHTML = list.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(a => {
@@ -1217,6 +1256,16 @@
         renderNotesList(); renderHighlights(); renderFilesAndFolders();
         toast(t('noteDeletedToast'));
       } catch (e) { toast(e.message || t('noteDeleteFailed'), true); }
+    }
+    async function restoreAnnotation(annotationId) {
+      try {
+        const res = await fetch('/api/portal/resource-annotation', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ id: currentItem.id, annotationId, restore: true }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('noteRestoreFailed'));
+        applyNoteMutationItem(data.item);
+        renderNotesList(); renderHighlights(); renderFilesAndFolders();
+        toast(t('noteRestoredToast'));
+      } catch (e) { toast(e.message || t('noteRestoreFailed'), true); }
     }
     $('viewerOverlay').addEventListener('click', event => { if (event.target === $('viewerOverlay')) closeViewer(); });
     window.addEventListener('focus', syncViewerAnnotations);

@@ -4,10 +4,12 @@
  * 붙는 일반 노트로 남긴다. 폴더/업로드 로그와 마찬가지로 blob이 아니라
  * 항목 레코드 안에 그대로 저장되는 가벼운 텍스트 메타데이터다.
  *
- * GET    /api/portal/resource-annotation?id=                          — 현재 노트 목록. 열린 뷰어의 사용자 간 동기화용.
+ * GET    /api/portal/resource-annotation?id=                          — 현재 노트 목록(휴지통 포함). 열린 뷰어의 사용자 간 동기화용.
  * POST   /api/portal/resource-annotation                              — 노트 작성. 로그인만 하면(상담사 포함) 누구나 가능.
- * PUT    /api/portal/resource-annotation                               — 노트 텍스트/상태(해결·재열기) 수정. 작성자 본인 또는 admin/master만.
- * DELETE /api/portal/resource-annotation?id=&annotationId=            — 노트 삭제. 작성자 본인 또는 admin/master만.
+ * PUT    /api/portal/resource-annotation                               — 노트 텍스트/상태(해결·재열기) 수정, 또는 { restore: true }로 휴지통에서 복원.
+ *                                                                        작성자 본인 또는 admin/master만.
+ * DELETE /api/portal/resource-annotation?id=&annotationId=            — 노트를 휴지통으로 이동(바로 지우지 않음 — deletedAt만 표시).
+ *                                                                        10일 지나면 annotationsOf가 자동으로 걸러낸다. 작성자 본인 또는 admin/master만.
  */
 import { sessionFor, canWrite, text, readData, saveData, error, filesOf, annotationsOf, commentsOf, MAX_ANNOTATIONS_PER_ITEM } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
@@ -131,6 +133,10 @@ export async function onRequestPut({ env, request }) {
     if (!['open', 'resolved'].includes(body.status)) return error('잘못된 요청입니다.', 400);
     updated.status = body.status;
   }
+  if (body.restore === true) {
+    if (!existing.deletedAt) return error('삭제되지 않은 노트입니다.', 400);
+    updated.deletedAt = null;
+  }
   item.annotations = annotations.map((a, i) => i === annotationIndex ? updated : a);
   item.updatedAt = new Date().toISOString();
   data.items[index] = item;
@@ -158,7 +164,10 @@ export async function onRequestDelete({ env, request }) {
   if (!existing) return error('노트를 찾을 수 없습니다.', 404);
   if (existing.createdBy !== session.email && !canWrite(session)) return error('이 노트를 삭제할 권한이 없습니다.', 403);
 
-  item.annotations = annotations.filter(a => a.id !== annotationId);
+  // 바로 걷어내지 않고 휴지통으로 — deletedAt만 표시해두면 열흘 안에는
+  // 복원할 수 있고, 지나면 annotationsOf가 알아서 걸러낸다.
+  const now = new Date().toISOString();
+  item.annotations = annotations.map(a => a.id === annotationId ? { ...a, deletedAt: now, updatedAt: now } : a);
   item.updatedAt = new Date().toISOString();
   data.items[index] = item;
   const saved = await saveData(env, data.items);
