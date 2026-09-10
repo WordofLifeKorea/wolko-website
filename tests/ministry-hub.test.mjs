@@ -37,3 +37,11 @@ test('public ministry entry points lead to the overview hub', async () => {
   assert.match(about, /<a href="\/ministry" class="hero-cta">/);
   assert.match(sitemap, /<loc>https:\/\/wolko\.org\/ministry\/<\/loc>/);
 });
+
+test('about commitment cards use a corner glow instead of a side stripe', async () => {
+  const about = await read('src/pages/about/index.astro');
+
+  assert.doesNotMatch(about, /\.commit-card::before\s*\{[^}]*left:0;[^}]*height:100%/s);
+  assert.match(about, /\.commit-card::before\s*\{[^}]*right:-64px;[^}]*radial-gradient/s);
+  assert.match(about, /\.commit-icon\s*\{[^}]*linear-gradient/s);
+});
