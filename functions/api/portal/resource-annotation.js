@@ -4,19 +4,38 @@
  * 붙는 일반 노트로 남긴다. 폴더/업로드 로그와 마찬가지로 blob이 아니라
  * 항목 레코드 안에 그대로 저장되는 가벼운 텍스트 메타데이터다.
  *
+ * GET    /api/portal/resource-annotation?id=                          — 현재 노트 목록. 열린 뷰어의 사용자 간 동기화용.
  * POST   /api/portal/resource-annotation                              — 노트 작성. 로그인만 하면(상담사 포함) 누구나 가능.
  * PUT    /api/portal/resource-annotation                               — 노트 텍스트/상태(해결·재열기) 수정. 작성자 본인 또는 admin/master만.
  * DELETE /api/portal/resource-annotation?id=&annotationId=            — 노트 삭제. 작성자 본인 또는 admin/master만.
  */
-import { sessionFor, canWrite, text, readData, saveData, error, filesOf, annotationsOf, MAX_ANNOTATIONS_PER_ITEM } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf, annotationsOf, commentsOf, MAX_ANNOTATIONS_PER_ITEM } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
 
-const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' };
 const KIND_VALUES = ['area', 'time', 'general'];
 
 function num01(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
+}
+
+export async function onRequestGet({ env, request }) {
+  if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
+  const session = await sessionFor(request, env);
+  if (!session) return error('포탈 로그인이 필요합니다.', 401);
+
+  const id = text(new URL(request.url).searchParams.get('id'), 80);
+  if (!id) return error('잘못된 요청입니다.', 400);
+
+  const data = await readData(env);
+  const item = data.items.find(candidate => candidate.id === id);
+  if (!item) return error('작업 항목을 찾을 수 없습니다.', 404);
+  const annotations = annotationsOf(item).map(annotation => ({
+    ...annotation,
+    comments: commentsOf(annotation),
+  }));
+  return Response.json({ annotations, updatedAt: item.updatedAt || data.updatedAt || '' }, { headers: CORS });
 }
 
 export async function onRequestPost({ env, request }) {
@@ -70,7 +89,7 @@ export async function onRequestPost({ env, request }) {
   const now = new Date().toISOString();
   const annotation = {
     id: crypto.randomUUID(), fileId, kind, page, x, y, w, h, timeSec, rects, quote,
-    text: noteText, status: 'open',
+    text: noteText, status: 'open', comments: [],
     createdBy: session.email, createdByName, createdAt: now, updatedAt: now,
   };
   item.annotations = [...annotations, annotation];
@@ -147,5 +166,5 @@ export async function onRequestDelete({ env, request }) {
 }
 
 export async function onRequestOptions() {
-  return new Response(null, { headers: { ...CORS, 'Access-Control-Allow-Methods': 'POST, PUT, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
+  return new Response(null, { headers: { ...CORS, 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
 }

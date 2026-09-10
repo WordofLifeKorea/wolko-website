@@ -14,11 +14,20 @@ test('PDF viewer opens with notes closed and exposes an accessible toggle', () =
 
 test('notes use an overlay drawer without reducing the PDF width', () => {
   assert.match(css, /\.viewer-body \{[^}]*position:relative;[^}]*overflow:hidden;/);
-  assert.match(css, /\.notes-panel \{[^}]*position:absolute;[^}]*width:clamp\(300px,30vw,400px\)[^}]*transform:translateX\(100%\)/);
+  assert.match(css, /\.notes-panel \{[^}]*position:absolute;[^}]*width:clamp\(300px,30%,400px\)[^}]*transform:translateX\(420px\)/);
   assert.match(css, /\.notes-panel\.is-open \{[^}]*transform:translateX\(0\)/);
 });
 
 test('mobile notes open as a bottom sheet', () => {
   assert.match(css, /@media \(max-width:620px\)[\s\S]*\.notes-panel \{[^}]*position:fixed;[^}]*top:auto;[^}]*transform:translateY\(100%\)/);
   assert.match(css, /@media \(max-width:620px\)[\s\S]*\.notes-panel\.is-open \{[^}]*transform:translateY\(0\)/);
+});
+
+test('shared notes expose threaded comments and automatic refresh', () => {
+  assert.match(page, /data-t="notesShared"/);
+  assert.match(page, /fetch\('\/api\/portal\/resource-comment'/);
+  assert.match(page, /window\.setInterval\(syncViewerAnnotations, 5000\)/);
+  assert.match(page, /document\.addEventListener\('visibilitychange'/);
+  assert.match(css, /\.note-comments \{/);
+  assert.match(css, /\.note-comment-composer \{/);
 });

@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=38">
+  <link rel="stylesheet" href="/portal.css?v=39">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -178,7 +178,7 @@
         </div>
         <div class="notes-panel" id="notesPanel" aria-hidden="true">
           <div class="notes-panel-head">
-            <span data-t="notesLabel">노트</span>
+            <span class="notes-panel-title"><b data-t="notesLabel">노트</b><small data-t="notesShared">모든 포탈 사용자와 자동 동기화</small></span>
             <button type="button" class="notes-panel-close" onclick="toggleNotesPanel(false)" aria-label="close">×</button>
           </div>
           <div class="notes-list" id="notesList"></div>
@@ -239,10 +239,12 @@
         addNote: '🖍 드래그해서 노트 남기기', addNoteActive: '✕ 표시 취소', addNoteHint: '문서 위를 드래그해서 표시할 위치를 정해주세요',
         addNoteAreaPdf: '🖼 이미지·표 영역 표시', addNoteHintPdf: '글자는 그냥 마우스로 드래그해서 선택하면 메모 창이 바로 떠요. 이미지·표처럼 글자가 없는 부분은 이 버튼을 눌러 사각형으로 표시하세요.',
         addGeneralNote: '+ 노트 남기기', addTimeNote: '+ 이 시점에 노트',
-        notesLabel: '노트', notesEmpty: '아직 노트가 없습니다. 문서 위의 글자를 드래그하거나, 위 버튼을 눌러 영역을 표시해보세요.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
+        notesLabel: '노트', notesShared: '모든 포탈 사용자와 자동 동기화', notesEmpty: '아직 노트가 없습니다. 문서 위의 글자를 드래그하거나, 위 버튼을 눌러 영역을 표시해보세요.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
         noteCancel: '취소', noteSave: '저장', noteResolve: '해결', noteReopen: '재열기', noteDelete: '삭제',
         noteDeleteConfirm: '이 노트를 삭제할까요?', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
         noteDeletedToast: '노트를 삭제했습니다.',
+        noteComment: '의견 추가', commentsLabel: n => `추가 의견 ${n}개`, commentPlaceholder: '이 노트에 대한 의견을 입력해 주세요', commentSave: '등록', commentDelete: '삭제',
+        commentDeleteConfirm: '이 의견을 삭제할까요?', commentSaveFailed: '의견을 등록하지 못했습니다.', commentDeleteFailed: '의견을 삭제하지 못했습니다.', commentDeletedToast: '의견을 삭제했습니다.',
         openInNewTab: '새 탭에서 열기', cannotPreviewInline: '이 파일 형식은 바로 미리보기를 지원하지 않아요.',
         pageOf: (n, total) => `${n} / ${total}`, loadingFile: '불러오는 중...', pdfLoadFailed: 'PDF를 불러오지 못했습니다.', zoomReset: '눌러서 100%(화면 폭 맞춤)로',
       },
@@ -286,10 +288,12 @@
         addNote: '🖍 Drag to Add a Note', addNoteActive: '✕ Cancel Marking', addNoteHint: 'Drag over the document to mark where the note belongs',
         addNoteAreaPdf: '🖼 Mark an Image/Table Area', addNoteHintPdf: 'Just drag over any text to select it — a note box pops up automatically. Use this button only for non-text parts like images or tables.',
         addGeneralNote: '+ Add Note', addTimeNote: '+ Note at This Time',
-        notesLabel: 'Notes', notesEmpty: 'No notes yet. Drag over text in the document, or click the button above to mark an area.', notePlaceholder: 'Describe what needs fixing here',
+        notesLabel: 'Notes', notesShared: 'Auto-synced with every portal user', notesEmpty: 'No notes yet. Drag over text in the document, or click the button above to mark an area.', notePlaceholder: 'Describe what needs fixing here',
         noteCancel: 'Cancel', noteSave: 'Save', noteResolve: 'Resolve', noteReopen: 'Reopen', noteDelete: 'Delete',
         noteDeleteConfirm: 'Delete this note?', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
         noteDeletedToast: 'Note deleted.',
+        noteComment: 'Add comment', commentsLabel: n => `${n} comment${n === 1 ? '' : 's'}`, commentPlaceholder: 'Add your thoughts about this note', commentSave: 'Post', commentDelete: 'Delete',
+        commentDeleteConfirm: 'Delete this comment?', commentSaveFailed: 'Could not post the comment.', commentDeleteFailed: 'Could not delete the comment.', commentDeletedToast: 'Comment deleted.',
         openInNewTab: 'Open in new tab', cannotPreviewInline: "This file type can't be previewed inline.",
         pageOf: (n, total) => `${n} / ${total}`, loadingFile: 'Loading...', pdfLoadFailed: 'Could not load the PDF.', zoomReset: 'Click to reset to 100% (fit width)',
       },
@@ -351,6 +355,7 @@
       applyStaticLang();
       render();
       if (!$('editorOverlay').hidden) openEditor($('resourceId').value);
+      if (!$('viewerOverlay').hidden) renderNotesList();
     }
 
     function render() {
@@ -662,6 +667,8 @@
     }
     let viewerFileId = null, viewerKind = null, viewerUrl = null, viewerPage = 1, viewerPdfDoc = null, viewerZoom = 1;
     let drawModeOn = false, dragState = null, pendingNote = null, pdfjsLibRef = null;
+    let notesSyncTimer = null, notesSyncInFlight = false, notesSyncRevision = 0, notesSyncController = null;
+    let commentComposerAnnotationId = null, commentDraft = '', commentSubmitInFlight = false;
     async function previewFile(fileId) {
       const meta = (currentItem?.files || []).find(f => f.id === fileId);
       if (!meta) return;
@@ -677,6 +684,7 @@
       syncBodyScrollLock();
       renderNotesList();
       toggleNotesPanel(false);
+      startViewerNotesSync();
       if (kind === 'other') { renderFallbackStage(meta); return; }
       try {
         const url = await fetchFileAsBlobUrl(fileId);
@@ -694,6 +702,8 @@
       syncBodyScrollLock();
       if (viewerUrl) { URL.revokeObjectURL(viewerUrl); viewerUrl = null; }
       viewerFileId = null; viewerPdfDoc = null; drawModeOn = false; dragState = null;
+      stopViewerNotesSync();
+      cancelCommentComposer(false);
       cancelNoteComposer();
     }
     // 모달이 열려 있는 동안 뒤에 있는 페이지가 같이 스크롤되면(스크롤 이벤트가
@@ -973,9 +983,7 @@
         const res = await fetch('/api/portal/resource-annotation', { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('noteSaveFailed'));
-        currentItem = data.item;
-        const idx = resources.findIndex(r => r.id === currentItem.id);
-        if (idx !== -1) resources[idx] = currentItem;
+        applyNoteMutationItem(data.item);
         cancelNoteComposer();
         renderNotesList(); renderHighlights(); renderFilesAndFolders();
       } catch (e) {
@@ -984,6 +992,59 @@
     }
     function annotationsForViewerFile() {
       return (currentItem?.annotations || []).filter(a => a.fileId === viewerFileId);
+    }
+    function applyNoteMutationItem(item) {
+      notesSyncRevision++;
+      currentItem = item;
+      const idx = resources.findIndex(resource => resource.id === currentItem.id);
+      if (idx !== -1) resources[idx] = currentItem;
+    }
+    function annotationsSignature(annotations) {
+      return JSON.stringify(Array.isArray(annotations) ? annotations : []);
+    }
+    async function syncViewerAnnotations() {
+      const itemId = currentItem?.id;
+      if (!itemId || !viewerFileId || $('viewerOverlay').hidden || notesSyncInFlight) return;
+      notesSyncInFlight = true;
+      const requestRevision = notesSyncRevision;
+      const controller = new AbortController();
+      notesSyncController = controller;
+      try {
+        const res = await fetch(`/api/portal/resource-annotation?id=${encodeURIComponent(itemId)}`, {
+          headers: authHeaders(), cache: 'no-store', signal: controller.signal,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) return logout();
+        if (!res.ok || requestRevision !== notesSyncRevision || currentItem?.id !== itemId || !viewerFileId) return;
+        const nextAnnotations = Array.isArray(data.annotations) ? data.annotations : [];
+        if (annotationsSignature(currentItem.annotations) === annotationsSignature(nextAnnotations)) return;
+        currentItem = { ...currentItem, annotations: nextAnnotations };
+        const idx = resources.findIndex(resource => resource.id === itemId);
+        if (idx !== -1) resources[idx] = currentItem;
+        renderNotesList(); renderHighlights(); renderFilesAndFolders();
+      } catch {
+        // 자동 동기화 실패는 다음 주기에 다시 시도한다. 작성 작업의 오류와 달리
+        // 일시적인 네트워크 끊김으로 토스트를 반복 노출하지 않는다.
+      } finally {
+        if (notesSyncController === controller) {
+          notesSyncController = null;
+          notesSyncInFlight = false;
+        }
+      }
+    }
+    function startViewerNotesSync() {
+      stopViewerNotesSync();
+      notesSyncRevision++;
+      syncViewerAnnotations();
+      notesSyncTimer = window.setInterval(syncViewerAnnotations, 5000);
+    }
+    function stopViewerNotesSync() {
+      if (notesSyncTimer) window.clearInterval(notesSyncTimer);
+      notesSyncController?.abort();
+      notesSyncTimer = null;
+      notesSyncController = null;
+      notesSyncInFlight = false;
+      notesSyncRevision++;
     }
     function formatTimeSec(sec) {
       const s = Math.max(0, Math.round(sec || 0));
@@ -1007,6 +1068,10 @@
       return HIGHLIGHT_PALETTE[hash % HIGHLIGHT_PALETTE.length];
     }
     function renderNotesList() {
+      const focusedCommentInput = document.activeElement?.classList?.contains('note-comment-input') ? document.activeElement : null;
+      const restoreCommentFocus = focusedCommentInput?.id || '';
+      const restoreSelectionStart = focusedCommentInput?.selectionStart;
+      const restoreSelectionEnd = focusedCommentInput?.selectionEnd;
       const list = annotationsForViewerFile();
       $('viewerNotesCount').textContent = list.length ? String(list.length) : '';
       if (!list.length) { $('notesList').innerHTML = `<p class="upload-log-empty">${esc(t('notesEmpty'))}</p>`; return; }
@@ -1015,14 +1080,84 @@
         const canManage = !!(session && (session.email === a.createdBy || canWrite));
         const where = a.kind === 'time' ? formatTimeSec(a.timeSec) : (a.kind === 'area' && a.page ? t('pageOf')(a.page, a.page) : '');
         const jumpAttr = a.kind !== 'general' ? ` onclick="jumpToNote('${a.id}')"` : '';
+        const comments = Array.isArray(a.comments) ? a.comments.slice().sort((x, y) => new Date(x.createdAt) - new Date(y.createdAt)) : [];
+        const commentsMarkup = comments.length ? `<div class="note-comments">
+          <div class="note-comments-label">${esc(t('commentsLabel')(comments.length))}</div>
+          ${comments.map(comment => {
+            const canManageComment = !!(session && (session.email === comment.createdBy || canWrite));
+            return `<div class="note-comment">
+              <div class="note-comment-head"><b><span class="note-item-author-dot" style="background:${highlightColorFor(comment.createdBy)}"></span>${esc(comment.createdByName || comment.createdBy)}</b><span>${esc(formatLogTime(comment.createdAt))}</span></div>
+              <p>${esc(comment.text)}</p>
+              ${canManageComment ? `<button type="button" class="note-comment-delete" onclick="deleteNoteComment('${a.id}','${comment.id}')">${esc(t('commentDelete'))}</button>` : ''}
+            </div>`;
+          }).join('')}
+        </div>` : '';
+        const commentComposer = commentComposerAnnotationId === a.id ? `<div class="note-comment-composer">
+          <textarea class="note-comment-input" id="noteCommentInput-${a.id}" maxlength="500" aria-label="${esc(t('commentPlaceholder'))}" placeholder="${esc(t('commentPlaceholder'))}" oninput="commentDraft=this.value" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();submitNoteComment('${a.id}');}">${esc(commentDraft)}</textarea>
+          <div class="note-composer-actions"><button type="button" onclick="cancelCommentComposer()">${esc(t('noteCancel'))}</button><button type="button" class="is-primary" onclick="submitNoteComment('${a.id}')">${esc(t('commentSave'))}</button></div>
+        </div>` : '';
         return `<div class="note-item is-${a.status}" data-note-id="${a.id}">
           <div class="note-item-head"><b><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span>${esc(a.createdByName)}</b><span>${esc(formatLogTime(a.createdAt))}</span></div>
           ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
           ${a.quote ? `<blockquote class="note-item-quote">${esc(a.quote)}</blockquote>` : ''}
           <p>${esc(a.text)}</p>
-          ${canManage ? `<div class="note-item-actions"><button type="button" onclick="toggleNoteStatus('${a.id}','${a.status === 'open' ? 'resolved' : 'open'}')">${esc(a.status === 'open' ? t('noteResolve') : t('noteReopen'))}</button><button type="button" class="is-danger" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button></div>` : ''}
+          ${commentsMarkup}
+          <div class="note-item-actions"><button type="button" onclick="openCommentComposer('${a.id}')">${esc(t('noteComment'))}</button>${canManage ? `<button type="button" onclick="toggleNoteStatus('${a.id}','${a.status === 'open' ? 'resolved' : 'open'}')">${esc(a.status === 'open' ? t('noteResolve') : t('noteReopen'))}</button><button type="button" class="is-danger" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div>
+          ${commentComposer}
         </div>`;
       }).join('');
+      if (restoreCommentFocus) requestAnimationFrame(() => {
+        const input = $(restoreCommentFocus);
+        if (!input) return;
+        input.focus();
+        if (Number.isInteger(restoreSelectionStart) && Number.isInteger(restoreSelectionEnd)) {
+          input.setSelectionRange(restoreSelectionStart, restoreSelectionEnd);
+        }
+      });
+    }
+    function openCommentComposer(annotationId) {
+      commentComposerAnnotationId = annotationId;
+      commentDraft = '';
+      renderNotesList();
+      requestAnimationFrame(() => $(`noteCommentInput-${annotationId}`)?.focus());
+    }
+    function cancelCommentComposer(shouldRender = true) {
+      commentComposerAnnotationId = null;
+      commentDraft = '';
+      if (shouldRender && viewerFileId) renderNotesList();
+    }
+    async function submitNoteComment(annotationId) {
+      if (commentSubmitInFlight) return;
+      const input = $(`noteCommentInput-${annotationId}`);
+      const textValue = (input?.value || commentDraft).trim();
+      if (!textValue) return;
+      commentDraft = textValue;
+      commentSubmitInFlight = true;
+      try {
+        const res = await fetch('/api/portal/resource-comment', {
+          method: 'POST', headers: authHeaders(),
+          body: JSON.stringify({ id: currentItem.id, annotationId, text: textValue }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('commentSaveFailed'));
+        commentComposerAnnotationId = null;
+        commentDraft = '';
+        applyNoteMutationItem(data.item);
+        renderNotesList(); renderFilesAndFolders();
+      } catch (error) { toast(error.message || t('commentSaveFailed'), true); }
+      finally { commentSubmitInFlight = false; }
+    }
+    async function deleteNoteComment(annotationId, commentId) {
+      if (!confirm(t('commentDeleteConfirm'))) return;
+      try {
+        const params = new URLSearchParams({ id: currentItem.id, annotationId, commentId });
+        const res = await fetch(`/api/portal/resource-comment?${params}`, { method: 'DELETE', headers: authHeaders() });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('commentDeleteFailed'));
+        applyNoteMutationItem(data.item);
+        renderNotesList(); renderFilesAndFolders();
+        toast(t('commentDeletedToast'));
+      } catch (error) { toast(error.message || t('commentDeleteFailed'), true); }
     }
     function renderHighlights() {
       const surface = $('viewerSurfaceInner');
@@ -1063,9 +1198,7 @@
         const res = await fetch('/api/portal/resource-annotation', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ id: currentItem.id, annotationId, status }) });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('noteUpdateFailed'));
-        currentItem = data.item;
-        const idx = resources.findIndex(r => r.id === currentItem.id);
-        if (idx !== -1) resources[idx] = currentItem;
+        applyNoteMutationItem(data.item);
         renderNotesList(); renderHighlights(); renderFilesAndFolders();
       } catch (e) { toast(e.message || t('noteUpdateFailed'), true); }
     }
@@ -1075,14 +1208,14 @@
         const res = await fetch(`/api/portal/resource-annotation?id=${encodeURIComponent(currentItem.id)}&annotationId=${encodeURIComponent(annotationId)}`, { method: 'DELETE', headers: authHeaders() });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('noteDeleteFailed'));
-        currentItem = data.item;
-        const idx = resources.findIndex(r => r.id === currentItem.id);
-        if (idx !== -1) resources[idx] = currentItem;
+        applyNoteMutationItem(data.item);
         renderNotesList(); renderHighlights(); renderFilesAndFolders();
         toast(t('noteDeletedToast'));
       } catch (e) { toast(e.message || t('noteDeleteFailed'), true); }
     }
     $('viewerOverlay').addEventListener('click', event => { if (event.target === $('viewerOverlay')) closeViewer(); });
+    window.addEventListener('focus', syncViewerAnnotations);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) syncViewerAnnotations(); });
     function moveFileEvent(selectEl) {
       const [folderId, category] = selectEl.value.split('|');
       closeFileMenu();
