@@ -73,3 +73,18 @@ test('high zoom canvas pixel allocation stays bounded', async () => {
   assert.ok(viewer.entries[0].canvas.width * viewer.entries[0].canvas.height < 4010000);
   viewer.destroy();
 });
+
+test('single page toggle hides other pages and can return to scrolling', async () => {
+  const { viewer, pageChanges } = fixture();
+  await viewer.init();
+  await viewer.setScale(1, 1);
+  viewer.setSinglePage(true, 1);
+  assert.equal(viewer.entries.filter(e => !e.shell.hidden).length, 1);
+  viewer.scrollToPage(2);
+  assert.equal(viewer.entries[0].shell.hidden, true);
+  assert.equal(viewer.entries[1].shell.hidden, false);
+  assert.equal(pageChanges.at(-1), 2);
+  viewer.setSinglePage(false, 2);
+  assert.equal(viewer.entries.filter(e => !e.shell.hidden).length, 33);
+  viewer.destroy();
+});

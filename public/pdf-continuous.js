@@ -64,10 +64,16 @@ window.WolkoPdfContinuous = class {
   scrollToPage(number, fraction = 0) {
     const entry = this.entries[number - 1];
     if (!entry?.viewport) return;
+    if (this.singlePage) this.entries.forEach(item => { item.shell.hidden = item.number !== number; });
     const top = entry.shell.getBoundingClientRect().top - this.surface.getBoundingClientRect().top;
     this.surface.scrollTop += top - 16 + entry.viewport.height * fraction;
     this.onPage(number);
     this.pump();
+  }
+  setSinglePage(enabled, number) {
+    this.singlePage = enabled;
+    this.entries.forEach(entry => { entry.shell.hidden = enabled && entry.number !== number; });
+    this.scrollToPage(number);
   }
   updateCurrentPage() {
     if (this.dead || !this.scale) return;
@@ -75,6 +81,7 @@ window.WolkoPdfContinuous = class {
     const probe = root.top + Math.min(100, this.surface.clientHeight * .2);
     let closest = this.entries[0], distance = Infinity;
     for (const entry of this.entries) {
+      if (entry.shell.hidden) continue;
       const rect = entry.shell.getBoundingClientRect();
       const next = probe < rect.top ? rect.top - probe : probe > rect.bottom ? probe - rect.bottom : 0;
       if (next < distance) { closest = entry; distance = next; }
@@ -99,7 +106,7 @@ window.WolkoPdfContinuous = class {
         const height = this.surface.clientHeight;
         const nearby = this.entries.filter(entry => {
           const rect = entry.shell.getBoundingClientRect();
-          const near = rect.bottom >= root.top - height && rect.top <= root.bottom + height;
+          const near = !entry.shell.hidden && rect.bottom >= root.top - height && rect.top <= root.bottom + height;
           if (!near && entry.rendered && !entry.shell.contains(document.activeElement)) this.release(entry);
           return near;
         }).sort((a, b) => Math.abs(a.shell.getBoundingClientRect().top - root.top) - Math.abs(b.shell.getBoundingClientRect().top - root.top));
