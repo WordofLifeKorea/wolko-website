@@ -29,6 +29,14 @@ for (const width of [390, 1440]) {
       renderTextLayer: async () => {}, syncPageNav() {}, renderHighlights() {},
       t: () => (page, total) => `${page} / ${total}`,
     });
+    context.continuousPdf = {
+      async setScale(scale, number) { rendered.push({ number, scale, width: 600 * scale, height: 900 * scale }); },
+      scrollToPage(number) {
+        context.viewerPage = number;
+        elements.viewerPageLabel.textContent = `${number} / 33`;
+        rendered.push({ ...rendered.at(-1), number });
+      },
+    };
     vm.runInContext(rendering + controls, context);
     await context.viewerFitPage();
     assert.ok(rendered.at(-1).height <= 644);

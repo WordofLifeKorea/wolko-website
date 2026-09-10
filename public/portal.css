@@ -135,6 +135,11 @@ body.modal-open { overflow:hidden; }
 .viewer-stage-surface { flex:1;min-height:0;overflow:auto;display:flex;align-items:flex-start;padding:16px; }
 .viewer-loading,.viewer-error { margin:auto;color:var(--muted);font-size:13px; }
 .viewer-surface-inner { position:relative;max-width:100%;margin:0 auto; }
+.pdf-page-stack { display:flex;flex-direction:column;gap:20px;flex:none;min-width:100%;margin:0 auto; }
+.pdf-page-stack .pdf-scroll-page { flex:none;max-width:none;margin:0 auto;background:#fff;box-shadow:0 1px 6px rgba(16,41,54,.12);overflow:hidden;overflow-anchor:none; }
+.pdf-scroll-page canvas { display:block; }
+.pdf-page-loading { position:absolute;inset:0;display:grid;place-items:center;color:#6d8791;font:500 14px/1.4 var(--body);pointer-events:none; }
+.pdf-page-loading[hidden] { display:none; }
 .viewer-surface-inner.is-drawing { touch-action:none;cursor:crosshair; }
 .viewer-img { display:block;max-width:100%;height:auto; }
 /* 캔버스는 JS가 확대율에 맞춰 폭/높이를 둘 다 정확한 px로 정해준다 —

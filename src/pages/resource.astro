@@ -16,7 +16,8 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=53">
+  <link rel="stylesheet" href="/portal.css?v=55">
+  <script is:inline src="/pdf-continuous.js?v=1"></script>
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -677,11 +678,14 @@
     }
     let viewerFileId = null, viewerKind = null, viewerUrl = null, viewerPage = 1, viewerPdfDoc = null, viewerZoom = 1;
     let viewerFitMode = 'width';
+    let continuousPdf = null;
     let drawModeOn = false, dragState = null, pendingNote = null, pdfjsLibRef = null;
     let notesSyncTimer = null, notesSyncInFlight = false, notesSyncRevision = 0, notesSyncController = null, notesSyncCooldownUntil = 0;
     let commentDrafts = {}, commentSubmitInFlight = false;
     const expandedNotes = new Set();
     async function previewFile(fileId) {
+      continuousPdf?.destroy();
+      continuousPdf = null;
       const meta = (currentItem?.files || []).find(f => f.id === fileId);
       if (!meta) return;
       closeFileMenu();
@@ -710,6 +714,8 @@
       }
     }
     function closeViewer() {
+      continuousPdf?.destroy();
+      continuousPdf = null;
       $('viewerOverlay').hidden = true;
       syncBodyScrollLock();
       if (viewerUrl) { URL.revokeObjectURL(viewerUrl); viewerUrl = null; }
@@ -759,15 +765,29 @@
         <button type="button" onclick="viewerFitMiddle()" aria-label="중간 배율 / Balanced zoom" title="중간 배율 / Balanced zoom"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="display:block;margin:auto" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg></button>
         <button type="button" onclick="viewerFitPage()" aria-label="한 페이지 맞춤 / Fit page" title="한 페이지 맞춤 / Fit page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="display:block;margin:auto" aria-hidden="true"><rect x="7" y="5" width="10" height="14" rx="1"/><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button>
       `);
-      $('viewerSurface').innerHTML = `<div class="viewer-surface-inner" id="viewerSurfaceInner"><canvas id="viewerCanvas"></canvas><div class="textLayer" id="viewerTextLayer"></div></div>`;
+      const openingFile = viewerFileId;
       try {
         const pdfjsLib = await window.__loadPdfjs();
         pdfjsLibRef = pdfjsLib;
-        viewerPdfDoc = await pdfjsLib.getDocument({ url }).promise;
+        const loadedPdf = await pdfjsLib.getDocument({ url }).promise;
+        if (openingFile !== viewerFileId) { loadedPdf.destroy(); return; }
+        viewerPdfDoc = loadedPdf;
+        continuousPdf = new window.WolkoPdfContinuous($('viewerSurface'), viewerPdfDoc, pdfjsLib,
+          number => {
+            viewerPage = number;
+            $('viewerPageLabel').textContent = t('pageOf')(number, viewerPdfDoc.numPages);
+            syncPageNav();
+          },
+          (surface, number) => renderHighlights(surface, number),
+          (surface, layer) => {
+            attachDragHighlight(surface);
+            attachTextSelectionNote(layer, surface);
+          });
+        const currentViewer = continuousPdf;
+        await currentViewer.init();
+        if (currentViewer !== continuousPdf) return;
         viewerPage = 1;
         await renderPdfPage();
-        attachDragHighlight($('viewerSurfaceInner'));
-        attachTextSelectionNote($('viewerTextLayer'), $('viewerSurfaceInner'));
       } catch (e) {
         // 기기·브라우저에 따라 pdf.js 로딩이 실패하는 원인이 다를 수 있어서
         // (워커 로드, 렌더링 등) 실제 에러를 화면에 조그맣게 같이 보여준다 —
@@ -798,8 +818,10 @@
       }
     }
     async function renderPdfPageNow() {
+      const currentViewer = continuousPdf;
+      if (!currentViewer || !viewerPdfDoc) return;
       const page = await viewerPdfDoc.getPage(viewerPage);
-      const canvas = $('viewerCanvas');
+      if (currentViewer !== continuousPdf) return;
       // #viewerSurfaceInner는 캔버스 크기에 맞춰 줄어드는(shrink-to-fit) 래퍼라
       // 여기서 폭을 재면 "캔버스 기본 크기(300px) → 그 크기로 렌더 → 래퍼가 그
       // 크기로 굳어짐"처럼 계속 작게 맴돈다. 항상 꽉 차 있는 바깥 스테이지
@@ -820,24 +842,9 @@
         const pageFitZoom = Math.min(1, availableHeight / unscaled.height / baseScale);
         viewerZoom = viewerFitMode === 'middle' ? (1 + pageFitZoom) / 2 : pageFitZoom;
       } else if (viewerFitMode === 'width') viewerZoom = 1;
-      const viewport = page.getViewport({ scale: baseScale * viewerZoom });
-      // 캔버스 픽셀 수를 CSS 크기 그대로(1배)로 그리면 레티나(고밀도) 화면에서
-      // 브라우저가 이걸 확대해서 뿌리느라 뿌옇게 보인다 — 실제 비트맵은
-      // devicePixelRatio배로 더 크게 그리고, 화면에 보이는 CSS 크기만 원래
-      // 크기로 되돌린다(모바일에서 특히 체감이 크다).
-      const dpr = Math.min(window.devicePixelRatio || 1, 3);
-      canvas.width = Math.round(viewport.width * dpr);
-      canvas.height = Math.round(viewport.height * dpr);
-      canvas.style.width = viewport.width + 'px';
-      canvas.style.height = viewport.height + 'px';
-      // dpr 배율은 render() 호출 전에 직접 ctx.setTransform으로 미리 걸어두면
-      // 안 된다 — pdf.js가 render() 내부에서 자기 나름대로 캔버스 변환을
-      // 설정하는 과정과 꼬여서 렌더가 끝나지 않고 멈춰버린다(promise가 영영
-      // 안 풀림). pdf.js가 공식적으로 지원하는 방식대로 transform 옵션으로
-      // 넘겨줘야 한다.
-      const transform = dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null;
-      await page.render({ canvasContext: canvas.getContext('2d'), viewport, transform }).promise;
-      await renderTextLayer(page, viewport);
+      if (!continuousPdf) return;
+      await continuousPdf.setScale(baseScale * viewerZoom, viewerPage);
+      if (currentViewer !== continuousPdf) return;
       $('viewerPageLabel').textContent = t('pageOf')(viewerPage, viewerPdfDoc.numPages);
       $('viewerZoomLabel').textContent = Math.round(viewerZoom * 100) + '%';
       syncPageNav();
@@ -873,22 +880,22 @@
       if ($('viewerPrevBtn')) $('viewerPrevBtn').disabled = prevDisabled;
       if ($('viewerNextBtn')) $('viewerNextBtn').disabled = nextDisabled;
     }
-    function viewerPrevPage() { if (viewerPage > 1) { viewerPage--; renderPdfPage(); } }
-    function viewerNextPage() { if (viewerPdfDoc && viewerPage < viewerPdfDoc.numPages) { viewerPage++; renderPdfPage(); } }
+    function viewerPrevPage() { if (viewerPage > 1) continuousPdf?.scrollToPage(viewerPage - 1); }
+    function viewerNextPage() { if (viewerPdfDoc && viewerPage < viewerPdfDoc.numPages) continuousPdf?.scrollToPage(viewerPage + 1); }
     // 확대 배율은 "화면 폭에 맞춤"(100%)을 기준으로 한 배수다 — 하이라이트
     // 박스는 좌표를 %(퍼센트)로 저장해두기 때문에 배율이 바뀌어도(캔버스
     // 크기가 바뀌어도) 다시 계산할 필요 없이 항상 같은 위치를 가리킨다.
     function viewerZoomIn() { viewerFitMode = null; viewerZoom = Math.min(3, Math.round((viewerZoom + 0.25) * 100) / 100); renderPdfPage(); }
     function viewerZoomOut() { viewerFitMode = null; viewerZoom = Math.max(0.1, Math.round((viewerZoom - 0.25) * 100) / 100); renderPdfPage(); }
     function viewerZoomReset() { viewerFitMode = 'width'; viewerZoom = 1; renderPdfPage(); }
-    async function viewerFitPage() { viewerFitMode = 'page'; await renderPdfPage(); $('viewerSurface')?.scrollTo(0, 0); }
-    async function viewerFitMiddle() { viewerFitMode = 'middle'; await renderPdfPage(); $('viewerSurface')?.scrollTo(0, 0); }
+    async function viewerFitPage() { viewerFitMode = 'page'; await renderPdfPage(); continuousPdf?.scrollToPage(viewerPage); }
+    async function viewerFitMiddle() { viewerFitMode = 'middle'; await renderPdfPage(); continuousPdf?.scrollToPage(viewerPage); }
     function toggleDrawMode() {
       drawModeOn = !drawModeOn;
       const btn = $('viewerDrawToggle');
       if (btn) { btn.classList.toggle('is-active', drawModeOn); btn.textContent = drawModeOn ? t('addNoteActive') : addNoteButtonLabel(); }
       $('viewerDrawHint')?.toggleAttribute('hidden', !drawModeOn);
-      $('viewerSurfaceInner')?.classList.toggle('is-drawing', drawModeOn);
+      document.querySelectorAll('#viewerSurface .viewer-surface-inner').forEach(surface => surface.classList.toggle('is-drawing', drawModeOn));
     }
     // PDF 캔버스/이미지 공용 드래그 하이라이트 — 마우스 전용 이벤트가 아니라
     // Pointer Events를 써서 손가락 드래그도 똑같이 처리한다. 좌표는 화면
@@ -938,7 +945,7 @@
         // 노트 하나 남길 때마다 버튼을 다시 누르게 하면 번거로우니, 표시 모드는
         // 사용자가 직접 버튼을 눌러 끌 때까지 계속 켜둔다 — 연달아 여러 곳에
         // 노트를 남길 수 있다.
-        openNoteComposer({ kind: 'area', x, y, w, h, page: viewerKind === 'pdf' ? viewerPage : null });
+        openNoteComposer({ kind: 'area', x, y, w, h, page: viewerKind === 'pdf' ? Number(surfaceEl.dataset.pdfPage) : null });
       });
     }
     // 텍스트 레이어 위에서 마우스/손가락으로 글자를 드래그해 선택하면(따로
@@ -954,7 +961,7 @@
         setTimeout(() => {
           const captured = captureTextSelectionRects(surfaceEl, textLayerEl);
           if (!captured) return;
-          openNoteComposer({ kind: 'area', x: captured.x, y: captured.y, w: captured.w, h: captured.h, rects: captured.rects, page: viewerPage, quote: captured.text });
+          openNoteComposer({ kind: 'area', x: captured.x, y: captured.y, w: captured.w, h: captured.h, rects: captured.rects, page: Number(surfaceEl.dataset.pdfPage), quote: captured.text });
         }, 0);
       });
     }
@@ -1226,12 +1233,16 @@
         toast(t('commentDeletedToast'));
       } catch (error) { toast(error.message || t('commentDeleteFailed'), true); }
     }
-    function renderHighlights() {
-      const surface = $('viewerSurfaceInner');
+    function renderHighlights(surface = null, pageNumber = viewerPage) {
+      if (!surface && viewerKind === 'pdf') {
+        document.querySelectorAll('.pdf-scroll-page').forEach(page => renderHighlights(page, Number(page.dataset.pdfPage)));
+        return;
+      }
+      surface ||= $('viewerSurfaceInner');
       if (!surface) return;
       surface.querySelectorAll('.highlight-box:not(.is-drawing):not(.is-pending)').forEach(el => el.remove());
       if (viewerKind !== 'pdf' && viewerKind !== 'image') return;
-      annotationsForViewerFile().filter(a => a.kind === 'area' && (viewerKind !== 'pdf' || (a.page || 1) === viewerPage)).forEach(a => {
+      annotationsForViewerFile().filter(a => a.kind === 'area' && (viewerKind !== 'pdf' || (a.page || 1) === pageNumber)).forEach(a => {
         const color = highlightColorFor(a.createdBy);
         // 텍스트를 드래그해서 만든 노트는 줄마다 사각형이 따로 있어서(rects)
         // 그 줄들을 각각 그리고, 옛날 방식(자유 사각형 하나)은 그대로 x/y/w/h
@@ -1260,7 +1271,7 @@
       const a = annotationsForViewerFile().find(x => x.id === annotationId);
       if (!a) return;
       if (a.kind === 'time') { const media = $('viewerMedia'); if (media) media.currentTime = a.timeSec; }
-      if (a.kind === 'area' && viewerKind === 'pdf' && a.page && a.page !== viewerPage) { viewerPage = a.page; renderPdfPage(); }
+      if (a.kind === 'area' && viewerKind === 'pdf' && a.page) continuousPdf?.scrollToPage(a.page, a.y || 0);
     }
     async function toggleNoteStatus(annotationId, status) {
       try {
