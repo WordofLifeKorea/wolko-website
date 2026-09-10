@@ -27,6 +27,13 @@ test('program cards replace links with accessible animated eligibility hints', (
   assert.match(camp, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
+test('feature and experience cards share the same subtle hover motion', () => {
+  assert.match(camp, /\.feat-item:hover\s*\{[^}]*transform: translateX\(4px\);[^}]*box-shadow: 0 4px 24px/s);
+  assert.match(camp, /\.flow-step:hover\s*\{[^}]*transform: translateX\(4px\);[^}]*box-shadow: 0 4px 24px/s);
+  assert.match(camp, /@media \(hover: none\)[\s\S]*\.feat-item:hover,[\s\S]*\.flow-step:hover\s*\{ transform: none; box-shadow: none; \}/);
+  assert.match(camp, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.feat-item,[\s\S]*\.flow-step \{ transition: none; \}/);
+});
+
 test('contact form anchor and query preset use the selected value for submission', () => {
   assert.match(contact, /id="contact-form"/);
   assert.match(contact, /scroll-margin-top:\s*100px/);

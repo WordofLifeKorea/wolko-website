@@ -208,8 +208,8 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .wcp-wrap .features-layout { max-width: var(--max-w); margin: 0 auto; display: grid; grid-template-columns: 320px 1fr; gap: var(--sp-3xl); align-items: start; }
 .wcp-wrap .features-sticky { position: sticky; top: 100px; }
 .wcp-wrap .feat-list { display: flex; flex-direction: column; gap: 12px; }
-.wcp-wrap .feat-item { display: grid; grid-template-columns: 68px 1fr; align-items: stretch; background: var(--c-white); border-radius: 12px; overflow: hidden; border: 1px solid var(--c-border); transition: box-shadow .25s ease, background .25s ease, border-color .25s ease; will-change: box-shadow; }
-.wcp-wrap .feat-item:hover { box-shadow: 0 10px 28px rgba(0,79,104,0.10); border-color: rgba(0,79,104,0.16); }
+.wcp-wrap .feat-item { display: grid; grid-template-columns: 68px 1fr; align-items: stretch; background: var(--c-white); border-radius: 12px; overflow: hidden; border: 1px solid var(--c-border); transition: box-shadow .25s ease, transform .25s ease, border-color .25s ease; will-change: transform, box-shadow; }
+.wcp-wrap .feat-item:hover { transform: translateX(4px); box-shadow: 0 4px 24px rgba(0,79,104,0.10); border-color: rgba(0,79,104,0.16); }
 .wcp-wrap .feat-num { align-self: stretch; height: 100%; min-height: 100%; background: linear-gradient(180deg, var(--c-deep), #0a5b76); color: rgba(255,255,255,0.68); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; writing-mode: vertical-lr; letter-spacing: 0.12em; padding: var(--sp-sm) 0; border-radius: 12px 0 0 12px; }
 .wcp-wrap .feat-body { padding: 22px 22px 20px; }
 .wcp-wrap .feat-name { font-family: var(--f-serif); font-size: 22px; font-weight: 700; color: var(--c-deep); margin-bottom: 10px; line-height: 1.3; letter-spacing: -0.02em; }
@@ -304,7 +304,8 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 @media (hover: none) {
   .wcp-wrap .quick-item:hover,
   .wcp-wrap .prog-card:hover,
-  .wcp-wrap .feat-item:hover { transform: none; box-shadow: none; }
+  .wcp-wrap .feat-item:hover,
+  .wcp-wrap .flow-step:hover { transform: none; box-shadow: none; }
   .wcp-wrap .prog-hint { opacity: 1; transform: none; }
   .wcp-wrap .prog-img { filter: brightness(.84); }
 }
@@ -312,7 +313,9 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 @media (prefers-reduced-motion: reduce) {
   .wcp-wrap .prog-card,
   .wcp-wrap .prog-img,
-  .wcp-wrap .prog-hint { transition: none; }
+  .wcp-wrap .prog-hint,
+  .wcp-wrap .feat-item,
+  .wcp-wrap .flow-step { transition: none; }
 }
 
 </style>

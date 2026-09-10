@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=37">
+  <link rel="stylesheet" href="/portal.css?v=38">
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -1040,10 +1040,7 @@
           const box = document.createElement('div');
           box.className = 'highlight-box is-' + a.status + (isText ? ' is-text-rect' : '');
           box.style.borderColor = color;
-          // 텍스트 밑줄(is-text-rect)은 CSS가 배경 없이 밑줄만 그리게 두고
-          // (원색 사진·어두운 슬라이드 위에서도 글자가 안 가려지게), 자유
-          // 사각형(이미지·표 표시)만 반투명 배경을 채운다.
-          if (!isText) box.style.background = color + '2e';
+          box.style.background = color + '2e';
           box.style.left = (r.x * 100) + '%'; box.style.top = (r.y * 100) + '%'; box.style.width = (r.w * 100) + '%'; box.style.height = (r.h * 100) + '%';
           box.title = `${a.createdByName}: ${a.text}`;
           box.addEventListener('click', () => jumpToNoteListItem(a.id));
@@ -1144,6 +1141,15 @@
     }, true);
     document.addEventListener('pointerdown', event => { if (fileMenu && !fileMenu.contains(event.target)) closeFileMenu(); });
     window.addEventListener('resize', closeFileMenu);
+    // 창 크기가 바뀌면(가로폭 기준 "화면 폭에 맞춤" 확대율을 쓰고 있으므로)
+    // PDF를 다시 그려서 항상 새 폭에 맞게 재조정한다 — 드래그 중 연속으로
+    // 발생하는 resize 이벤트를 매번 다시 그리진 않고 잠깐 멈췄을 때 한 번만.
+    let viewerResizeTimer = null;
+    window.addEventListener('resize', () => {
+      if (viewerKind !== 'pdf' || !viewerPdfDoc || $('viewerOverlay').hidden) return;
+      clearTimeout(viewerResizeTimer);
+      viewerResizeTimer = setTimeout(() => renderPdfPage(), 200);
+    });
     document.addEventListener('scroll', event => { if (fileMenu && !fileMenu.contains(event.target)) closeFileMenu(); }, true);
     let filePressTimer;
     let suppressFileClick = false;
