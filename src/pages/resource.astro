@@ -675,6 +675,7 @@
       return VIEWER_KIND_MAP[ext] || 'other';
     }
     let viewerFileId = null, viewerKind = null, viewerUrl = null, viewerPage = 1, viewerPdfDoc = null, viewerZoom = 1;
+    let viewerFitMode = 'width';
     let drawModeOn = false, dragState = null, pendingNote = null, pdfjsLibRef = null;
     let notesSyncTimer = null, notesSyncInFlight = false, notesSyncRevision = 0, notesSyncController = null, notesSyncCooldownUntil = 0;
     let commentComposerAnnotationId = null, commentDraft = '', commentSubmitInFlight = false;
@@ -683,7 +684,7 @@
       if (!meta) return;
       closeFileMenu();
       const kind = viewerKindOf(meta.fileName);
-      viewerFileId = fileId; viewerKind = kind; viewerPage = 1; viewerPdfDoc = null; viewerZoom = 1; drawModeOn = false; pendingNote = null; notesTrashView = false;
+      viewerFileId = fileId; viewerKind = kind; viewerPage = 1; viewerPdfDoc = null; viewerZoom = 1; viewerFitMode = 'width'; drawModeOn = false; pendingNote = null; notesTrashView = false;
       $('viewerFileName').textContent = meta.fileName;
       $('viewerToolbar').innerHTML = '';
       $('viewerSurface').innerHTML = `<p class="viewer-loading">${esc(t('loadingFile'))}</p>`;
@@ -762,6 +763,10 @@
         attachTextSelectionNote($('viewerTextLayer'), $('viewerSurfaceInner'));
       } catch (e) {
         // 기기·브라우저에 따라 pdf.js 로딩이 실패하는 원인이 다를 수 있어서
+      $('viewerToolbar').querySelector('.viewer-zoom-nav').insertAdjacentHTML('beforeend', `
+        <button type="button" onclick="viewerZoomReset()" aria-label="너비 맞춤 / Fit width" title="너비 맞춤 / Fit width"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="display:block;margin:auto" aria-hidden="true"><path d="M3 4v16M21 4v16M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg></button>
+        <button type="button" onclick="viewerFitPage()" aria-label="한 페이지 맞춤 / Fit page" title="한 페이지 맞춤 / Fit page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="display:block;margin:auto" aria-hidden="true"><rect x="7" y="5" width="10" height="14" rx="1"/><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button>
+      `);
         // (워커 로드, 렌더링 등) 실제 에러를 화면에 조그맣게 같이 보여준다 —
         // 어떤 기기에서 왜 안 되는지 스크린샷만으로 알 수 있게 하기 위함.
         // 미리보기가 안 돼도 새 탭에서 원본은 열어볼 수 있게 링크를 남겨둔다.
@@ -813,6 +818,10 @@
       // 안 된다 — pdf.js가 render() 내부에서 자기 나름대로 캔버스 변환을
       // 설정하는 과정과 꼬여서 렌더가 끝나지 않고 멈춰버린다(promise가 영영
       // 안 풀림). pdf.js가 공식적으로 지원하는 방식대로 transform 옵션으로
+      if (viewerFitMode === 'page') {
+        const availableHeight = Math.max(1, surface.clientHeight - (parseFloat(surfaceStyle.paddingTop) || 0) - (parseFloat(surfaceStyle.paddingBottom) || 0) - 2);
+        viewerZoom = Math.min(1, availableHeight / unscaled.height / baseScale);
+      } else if (viewerFitMode === 'width') viewerZoom = 1;
       // 넘겨줘야 한다.
       const transform = dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null;
       await page.render({ canvasContext: canvas.getContext('2d'), viewport, transform }).promise;
@@ -857,9 +866,10 @@
     // 확대 배율은 "화면 폭에 맞춤"(100%)을 기준으로 한 배수다 — 하이라이트
     // 박스는 좌표를 %(퍼센트)로 저장해두기 때문에 배율이 바뀌어도(캔버스
     // 크기가 바뀌어도) 다시 계산할 필요 없이 항상 같은 위치를 가리킨다.
-    function viewerZoomIn() { viewerZoom = Math.min(3, Math.round((viewerZoom + 0.25) * 100) / 100); renderPdfPage(); }
-    function viewerZoomOut() { viewerZoom = Math.max(0.5, Math.round((viewerZoom - 0.25) * 100) / 100); renderPdfPage(); }
-    function viewerZoomReset() { viewerZoom = 1; renderPdfPage(); }
+    function viewerZoomIn() { viewerFitMode = null; viewerZoom = Math.min(3, Math.round((viewerZoom + 0.25) * 100) / 100); renderPdfPage(); }
+    function viewerZoomOut() { viewerFitMode = null; viewerZoom = Math.max(0.1, Math.round((viewerZoom - 0.25) * 100) / 100); renderPdfPage(); }
+    function viewerZoomReset() { viewerFitMode = 'width'; viewerZoom = 1; renderPdfPage(); }
+    function viewerFitPage() { viewerFitMode = 'page'; renderPdfPage(); }
     function toggleDrawMode() {
       drawModeOn = !drawModeOn;
       const btn = $('viewerDrawToggle');
