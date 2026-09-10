@@ -8,7 +8,9 @@ const contact = await readFile(new URL('src/pages/contact/index.astro', root), '
 
 test('inland camp cards open the camp inquiry form while Jeju keeps its cafe link', () => {
   const inlandLinks = camp.match(/href="\/contact\?type=camp&amp;camp=inland#contact-form"/g) || [];
-  assert.equal(inlandLinks.length, 2);
+  assert.equal(inlandLinks.length, 4);
+  assert.match(camp, /href="\/contact\?type=camp&amp;camp=inland#contact-form" class="cta-card"/);
+  assert.match(camp, /href="\/contact\?type=camp&amp;camp=inland#contact-form" class="btn-contact"/);
   assert.match(camp, /href="https:\/\/cafe\.naver\.com\/wolcamp"/);
 });
 
