@@ -30,7 +30,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
-  <link rel="stylesheet" href="/pdf-viewer-layout.css?v=1">
+  <link rel="stylesheet" href="/pdf-viewer-layout.css?v=2">
   <style is:global>
     .file-context-menu { position:fixed; z-index:10000; width:min(230px,calc(100vw - 16px)); padding:6px; background:#fff; border:1px solid #dce8ed; border-radius:12px; box-shadow:0 12px 36px rgba(16,41,54,.2); }
     .file-context-menu button { display:block; width:100%; min-height:42px; border:0; border-radius:7px; background:transparent; text-align:left; padding:10px 14px; color:#102936; font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; }
@@ -783,6 +783,21 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         <button type="button" onclick="viewerFitMiddle()" aria-label="중간 배율 / Balanced zoom" title="중간 배율 / Balanced zoom"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:auto" aria-hidden="true"><rect x="6.5" y="4" width="11" height="16" rx="2"/><path d="M10 9h4M10 12h4M10 15h2" opacity=".6"/><path d="M3 10v4M21 10v4" opacity=".45"/></svg></button>
         <button type="button" onclick="viewerFitPage()" aria-label="한 페이지 맞춤 / Fit page" title="한 페이지 맞춤 / Fit page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:auto" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" opacity=".45"/><rect x="8" y="6.5" width="8" height="11" rx="1.5"/></svg></button>
       `);
+      const toolbarIcon = (paths) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+      const controlIcons = [
+        ['[onclick="viewerZoomOut()"]', '<path d="M6 12h12"/>'],
+        ['[onclick="viewerZoomIn()"]', '<path d="M6 12h12M12 6v12"/>'],
+        ['#viewerPrevBtn', '<path d="m14 7-5 5 5 5"/>'],
+        ['#viewerNextBtn', '<path d="m10 7 5 5-5 5"/>'],
+        ['[aria-label="너비 맞춤 / Fit width"]', '<path d="M3 6v12M21 6v12M6 12h12m-9-3-3 3 3 3m6-6 3 3-3 3"/>'],
+        ['[aria-label="중간 배율 / Balanced zoom"]', '<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>'],
+        ['[aria-label="한 페이지 맞춤 / Fit page"]', '<path d="M7 3H3v4m14-4h4v4M3 17v4h4m14-4v4h-4"/><rect x="8" y="6" width="8" height="12" rx="1"/>'],
+      ];
+      controlIcons.forEach(([selector, paths]) => {
+        $('viewerToolbar').querySelector(selector).innerHTML = toolbarIcon(paths);
+      });
+      $('viewerPrevBtn').setAttribute('aria-label', lang === 'ko' ? '이전 페이지' : 'Previous page');
+      $('viewerNextBtn').setAttribute('aria-label', lang === 'ko' ? '다음 페이지' : 'Next page');
       const openingFile = viewerFileId;
       $('viewerToolbar').insertAdjacentHTML('beforeend', `<button type="button" class="viewer-layout-toggle" id="viewerLayoutToggle" onclick="togglePdfLayout()" aria-pressed="false">${lang === 'ko' ? '한 장씩 넘기기' : 'Single page'}</button>`);
       try {

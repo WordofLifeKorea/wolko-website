@@ -21,6 +21,25 @@
 #viewerOverlay .notes-panel-head { gap:8px;padding:12px; }
 #viewerOverlay .notes-list { min-height:0;overscroll-behavior:contain; }
 #viewerOverlay .viewer-toolbar { gap:6px;padding:8px 10px; }
+#viewerOverlay .viewer-zoom-nav,
+#viewerOverlay .viewer-page-nav { display:flex;align-items:center;gap:6px;flex-shrink:0; }
+#viewerOverlay .viewer-toolbar button {
+  display:inline-flex;align-items:center;justify-content:center;
+  box-sizing:border-box;height:36px;min-height:36px !important;
+  padding:0 10px;border-radius:9px;line-height:1;flex-shrink:0;
+}
+#viewerOverlay .viewer-zoom-nav button[aria-label],
+#viewerOverlay .viewer-page-nav button {
+  width:36px;min-width:36px;padding:0;
+}
+#viewerOverlay .viewer-toolbar button svg {
+  display:block;width:20px;height:20px;flex:none;margin:0;
+  stroke-width:1.8;
+}
+#viewerOverlay #viewerZoomLabel { min-width:56px;padding:0 8px;font-size:13px;font-variant-numeric:tabular-nums; }
+#viewerOverlay #viewerPageLabel { display:flex;align-items:center;justify-content:center;min-width:54px;line-height:1;font-variant-numeric:tabular-nums; }
+#viewerOverlay .viewer-toolbar button:focus-visible { outline:2px solid #00899a;outline-offset:2px; }
+#viewerOverlay .viewer-toolbar button:disabled { opacity:.4;cursor:default; }
 
 @media (max-width:900px) {
   #viewerOverlay > .viewer-card { grid-template-rows:44px minmax(0,1fr); }
