@@ -65,11 +65,10 @@ const {
         </ul>
       </li>
       <li class="nav-item">
-        <a href="/ministry" class={`nav-link has-dropdown${activeNav === 'ministry' ? ' active' : ''}`}>
+        <a href="/ministry" data-direct-link class={`nav-link has-dropdown${activeNav === 'ministry' ? ' active' : ''}`}>
           <span class="wl-ko">사역</span><span class="wl-en">Ministry</span>
         </a>
         <ul class="nav-dropdown">
-          <li><a href="/ministry"><span class="wl-ko">사역 한눈에 보기</span><span class="wl-en">Ministry Overview</span></a></li>
           <li><a href="/camp"><span class="wl-ko">캠프사역</span><span class="wl-en">Camp Ministry</span></a></li>
           <li><a href="/wolbi-jeju"><span class="wl-ko">제주월비</span><span class="wl-en">Jeju WOLBI</span></a></li>
           <li><a href="/youth"><span class="wl-ko">청소년 사역</span><span class="wl-en">Youth Ministry</span></a></li>
@@ -154,14 +153,15 @@ const {
 
     <div class="mobile-menu-divider"></div>
     <div class="mobile-menu-item">
-      <button class="mobile-parent" onclick="toggleMobileSub(this)">
-        <span><span class="wl-ko">사역</span><span class="wl-en">Ministry</span></span>
-        <span class="mobile-parent-chevron">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
-      </button>
-      <ul class="mobile-sub">
-        <li><a href="/ministry"><span class="wl-ko">사역 한눈에 보기</span><span class="wl-en">Ministry Overview</span></a></li>
+      <div class="mobile-parent-split">
+        <a class="mobile-parent-link" href="/ministry"><span class="wl-ko">사역</span><span class="wl-en">Ministry</span></a>
+        <button class="mobile-parent-toggle" type="button" onclick="toggleMobileSub(this)" aria-label="사역 세부 메뉴 / Ministry submenu" aria-controls="mobileMinistrySub" aria-expanded="false">
+          <span class="mobile-parent-chevron" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="#004f68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </button>
+      </div>
+      <ul class="mobile-sub" id="mobileMinistrySub">
         <li><a href="/camp"><span class="wl-ko">캠프사역</span><span class="wl-en">Camp Ministry</span></a></li>
         <li><a href="/wolbi-jeju"><span class="wl-ko">제주월비</span><span class="wl-en">Jeju WOLBI</span></a></li>
         <li><a href="/youth"><span class="wl-ko">청소년 사역</span><span class="wl-en">Youth Ministry</span></a></li>
@@ -249,7 +249,6 @@ const {
       </div>
       <div class="footer-col">
         <p class="footer-col-title">MINISTRY</p>
-        <a href="/ministry"><span class="wl-ko">사역 한눈에 보기</span><span class="wl-en">Ministry Overview</span></a>
         <a href="/camp"><span class="wl-ko">캠프사역</span><span class="wl-en">Camp Ministry</span></a>
         <a href="/wolbi-jeju"><span class="wl-ko">제주월비</span><span class="wl-en">Jeju WOLBI</span></a>
         <a href="/youth"><span class="wl-ko">청소년 사역</span><span class="wl-en">Youth Ministry</span></a>
@@ -388,8 +387,12 @@ const {
       // 다른 열린 항목 닫기
       document.querySelectorAll('.mobile-menu-item.is-open').forEach(function(el) {
         el.classList.remove('is-open');
+        el.querySelector('.mobile-parent-toggle')?.setAttribute('aria-expanded', 'false');
       });
-      if (!isOpen) item.classList.add('is-open');
+      if (!isOpen) {
+        item.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
     };
 
     document.querySelectorAll('.nav-item').forEach(function(item) {
@@ -418,6 +421,7 @@ const {
         if (!item.contains(e.relatedTarget)) item.classList.remove('is-open');
       });
       trigger.addEventListener('click', function(e) {
+        if (trigger.hasAttribute('data-direct-link')) return;
         if (window.matchMedia('(hover: none)').matches && !item.classList.contains('is-open')) {
           e.preventDefault();
           closeOtherDropdowns();
