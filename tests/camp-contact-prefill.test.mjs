@@ -6,12 +6,25 @@ const root = new URL('../', import.meta.url);
 const camp = await readFile(new URL('src/pages/camp/index.astro', root), 'utf8');
 const contact = await readFile(new URL('src/pages/contact/index.astro', root), 'utf8');
 
-test('inland camp cards open the camp inquiry form while Jeju keeps its cafe link', () => {
+test('camp inquiry actions open the preselected form while info cards keep cafe links', () => {
   const inlandLinks = camp.match(/href="\/contact\?type=camp&amp;camp=inland#contact-form"/g) || [];
-  assert.equal(inlandLinks.length, 4);
+  assert.equal(inlandLinks.length, 2);
   assert.match(camp, /href="\/contact\?type=camp&amp;camp=inland#contact-form" class="cta-card"/);
   assert.match(camp, /href="\/contact\?type=camp&amp;camp=inland#contact-form" class="btn-contact"/);
   assert.match(camp, /href="https:\/\/cafe\.naver\.com\/wolcamp"/);
+});
+
+test('program cards replace links with accessible animated eligibility hints', () => {
+  assert.doesNotMatch(camp, /class="prog-link"/);
+  assert.match(camp, /초6–중3/);
+  assert.match(camp, /만 11–15세/);
+  assert.match(camp, /고1–고3/);
+  assert.match(camp, /만 15–18세/);
+  assert.match(camp, /교회 단위 참여/);
+  assert.match(camp, /tabindex="0" aria-describedby="english-camp-hint"/);
+  assert.match(camp, /\.prog-card:hover \.prog-hint,[\s\S]*\.prog-card:focus \.prog-hint/);
+  assert.match(camp, /@media \(hover: none\)[\s\S]*\.prog-hint \{ opacity: 1; transform: none; \}/);
+  assert.match(camp, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
 test('contact form anchor and query preset use the selected value for submission', () => {

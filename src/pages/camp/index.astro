@@ -178,15 +178,30 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
 .wcp-wrap .programs-grid { max-width: var(--max-w); margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-md); align-items: stretch; }
 .wcp-wrap .prog-card { border-radius: 10px; overflow: hidden; background: var(--c-white); border: 1px solid var(--c-border); display: flex; flex-direction: column; }
 .wcp-wrap .prog-card:hover { transform: translateY(-4px); box-shadow: 0 16px 42px rgba(0,79,104,0.12); border-color: rgba(0,79,104,0.18); }
-.wcp-wrap .prog-img { aspect-ratio: 16/10; object-fit: cover; display: block; width: 100%; }
+.wcp-wrap .prog-card:focus-visible { outline: 3px solid rgba(0,126,161,.24); outline-offset: 4px; }
+.wcp-wrap .prog-media { position: relative; overflow: hidden; background: var(--c-deep); }
+.wcp-wrap .prog-img { aspect-ratio: 16/10; object-fit: cover; display: block; width: 100%; transition: transform .5s cubic-bezier(.2,.75,.25,1), filter .4s ease; }
 .wcp-wrap .prog-body { padding: var(--sp-lg) var(--sp-lg) var(--sp-xl); display: flex; flex-direction: column; flex: 1; }
 .wcp-wrap .prog-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-mid); margin-bottom: var(--sp-sm); }
 .wcp-wrap .prog-pill::before { content: ''; width: 12px; height: 2px; background: var(--c-red); }
 .wcp-wrap .prog-title { font-family: var(--f-serif); font-size: 24px; font-weight: 700; color: var(--c-deep); margin-bottom: 14px; line-height: 1.18; letter-spacing: -0.015em; }
-.wcp-wrap .prog-desc { font-size: 16px; line-height: 1.85; color: var(--c-sub); word-break: keep-all; flex: 1; margin-bottom: var(--sp-md); }
-.wcp-wrap .prog-link { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--c-mid); letter-spacing: 0.04em; transition: gap .2s, color .2s; margin-top: auto; }
-.wcp-wrap .prog-link::after { content: '→'; }
-.wcp-wrap .prog-card:hover .prog-link { gap: 10px; color: var(--c-deep); }
+.wcp-wrap .prog-desc { font-size: 16px; line-height: 1.85; color: var(--c-sub); word-break: keep-all; flex: 1; margin-bottom: 0; }
+.wcp-wrap .prog-hint {
+  position: absolute; left: 16px; right: 16px; bottom: 16px;
+  display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 3px 16px;
+  padding: 13px 15px; border: 1px solid rgba(255,255,255,.24); border-radius: 9px;
+  background: rgba(0,55,73,.90); color: var(--c-white);
+  box-shadow: 0 14px 34px rgba(0,24,34,.25); backdrop-filter: blur(10px);
+  opacity: 0; transform: translateY(14px) scale(.98); pointer-events: none;
+  transition: opacity .28s ease, transform .38s cubic-bezier(.2,.8,.25,1);
+}
+.wcp-wrap .prog-hint-label { grid-column: 1; color: var(--c-light); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.wcp-wrap .prog-hint strong { grid-column: 1; font-size: 16px; line-height: 1.35; letter-spacing: -.01em; }
+.wcp-wrap .prog-hint-age { grid-column: 2; grid-row: 1 / span 2; color: rgba(255,255,255,.78); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.wcp-wrap .prog-card:hover .prog-hint,
+.wcp-wrap .prog-card:focus .prog-hint { opacity: 1; transform: translateY(0) scale(1); }
+.wcp-wrap .prog-card:hover .prog-img,
+.wcp-wrap .prog-card:focus .prog-img { transform: scale(1.035); filter: brightness(.76); }
 
 /* ── FEATURES ── */
 .wcp-wrap .features { background: var(--c-pale); padding: var(--sp-3xl) var(--pad-h); margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw; }
@@ -290,6 +305,14 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   .wcp-wrap .quick-item:hover,
   .wcp-wrap .prog-card:hover,
   .wcp-wrap .feat-item:hover { transform: none; box-shadow: none; }
+  .wcp-wrap .prog-hint { opacity: 1; transform: none; }
+  .wcp-wrap .prog-img { filter: brightness(.84); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wcp-wrap .prog-card,
+  .wcp-wrap .prog-img,
+  .wcp-wrap .prog-hint { transition: none; }
 }
 
 </style>
@@ -473,40 +496,52 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
       </h2>
     </div>
     <div class="programs-grid">
-      <article class="prog-card reveal" id="english-camp">
-        <img class="prog-img" src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Camp_Group.jpg" alt="영어캠프">
+      <article class="prog-card reveal" id="english-camp" tabindex="0" aria-describedby="english-camp-hint">
+        <div class="prog-media">
+          <img class="prog-img" src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Camp_Group.jpg" alt="영어캠프">
+          <div class="prog-hint" id="english-camp-hint">
+            <span class="prog-hint-label"><span class="wl-ko">참여 대상</span><span class="wl-en">Eligibility</span></span>
+            <strong><span class="wl-ko">초6–중3</span><span class="wl-en">Grades 6–9</span></strong>
+            <span class="prog-hint-age"><span class="wl-ko">만 11–15세</span><span class="wl-en">Ages 11–15</span></span>
+          </div>
+        </div>
         <div class="prog-body">
           <div class="prog-pill"><span class="wl-ko">영어 캠프</span><span class="wl-en">English Camp</span></div>
           <h3 class="prog-title wl-ko">영어캠프</h3><h3 class="prog-title wl-en">English Camp</h3>
-          <p class="prog-desc wl-ko">캠프 대부분의 일정이 영어로 진행되며, 원어민 선생님들과 함께 생활하는 가운데 영어 실력뿐 아니라 영적 성장을 함께 경험할 수 있도록 구성된 프로그램입니다. 초등학교 4학년부터 중학교 3학년까지 신청이 가능합니다.</p>
-          <p class="prog-desc wl-en">Most of the camp schedule runs in English, and living alongside native-speaking staff, campers grow not only in their English ability but also spiritually. Open to students from 4th grade through 9th grade.</p>
-          <a href="/contact?type=camp&amp;camp=inland#contact-form" class="prog-link">
-            <span class="wl-ko">내륙캠프 참여 문의</span><span class="wl-en">Inquire About Inland Camp</span>
-          </a>
+          <p class="prog-desc wl-ko">캠프 대부분의 일정이 영어로 진행되며, 원어민 선생님들과 함께 생활하는 가운데 영어 실력뿐 아니라 영적 성장을 함께 경험할 수 있도록 구성된 프로그램입니다. 초등학교 6학년부터 중학교 3학년까지 신청이 가능합니다.</p>
+          <p class="prog-desc wl-en">Most of the camp schedule runs in English, and living alongside native-speaking staff, campers grow not only in their English ability but also spiritually. Open to students from 6th grade through 9th grade.</p>
         </div>
       </article>
-      <article class="prog-card reveal reveal-delay-1" id="jeju-camp">
-        <img class="prog-img" src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Jeju 1.jpg" alt="제주캠프">
+      <article class="prog-card reveal reveal-delay-1" id="jeju-camp" tabindex="0" aria-describedby="jeju-camp-hint">
+        <div class="prog-media">
+          <img class="prog-img" src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Jeju 1.jpg" alt="제주캠프">
+          <div class="prog-hint" id="jeju-camp-hint">
+            <span class="prog-hint-label"><span class="wl-ko">참여 대상</span><span class="wl-en">Eligibility</span></span>
+            <strong><span class="wl-ko">고1–고3</span><span class="wl-en">Grades 10–12</span></strong>
+            <span class="prog-hint-age"><span class="wl-ko">만 15–18세</span><span class="wl-en">Ages 15–18</span></span>
+          </div>
+        </div>
         <div class="prog-body">
           <div class="prog-pill"><span class="wl-ko">제주 캠프</span><span class="wl-en">Jeju Camp</span></div>
           <h3 class="prog-title wl-ko">제주캠프</h3><h3 class="prog-title wl-en">Jeju Camp</h3>
-          <p class="prog-desc wl-ko">제주 월비캠퍼스에서 진행되는 영어 캠프 및 모멘텀 캠프 등 다양한 프로그램이 운영됩니다. 중학생부터 고등학생까지 참여할 수 있는 캠프입니다.</p>
-          <p class="prog-desc wl-en">A variety of programs — including English Camp and Momentum Camp — are held at the WOLBI Jeju Campus. Open to middle and high school students.</p>
-          <a href="https://cafe.naver.com/wolcamp" target="_blank" rel="noopener" class="prog-link">
-            <span class="wl-ko">제주캠프 참여 문의</span><span class="wl-en">Inquire About Jeju Camp</span>
-          </a>
+          <p class="prog-desc wl-ko">제주 월비캠퍼스에서 진행되는 영어 캠프 및 모멘텀 캠프 등 다양한 프로그램이 운영됩니다. 고등학교 1학년부터 3학년까지 참여할 수 있는 캠프입니다.</p>
+          <p class="prog-desc wl-en">A variety of programs — including English Camp and Momentum Camp — are held at the WOLBI Jeju Campus. Open to students in grades 10 through 12.</p>
         </div>
       </article>
-      <article class="prog-card reveal reveal-delay-2" id="union-camp">
-        <img class="prog-img" src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Union_Camp.jpg" alt="연합캠프">
+      <article class="prog-card reveal reveal-delay-2" id="union-camp" tabindex="0" aria-describedby="union-camp-hint">
+        <div class="prog-media">
+          <img class="prog-img" src="https://wolko.synology.me/Web_Contents/Photos/Camp_Ministry/Union_Camp.jpg" alt="연합캠프">
+          <div class="prog-hint" id="union-camp-hint">
+            <span class="prog-hint-label"><span class="wl-ko">참여 방식</span><span class="wl-en">Participation</span></span>
+            <strong><span class="wl-ko">교회 단위 참여</span><span class="wl-en">Church Groups</span></strong>
+            <span class="prog-hint-age"><span class="wl-ko">교역자와 함께 신청</span><span class="wl-en">Apply with a Leader</span></span>
+          </div>
+        </div>
         <div class="prog-body">
           <div class="prog-pill"><span class="wl-ko">연합캠프</span><span class="wl-en">Union Camp</span></div>
           <h3 class="prog-title wl-ko">연합캠프</h3><h3 class="prog-title wl-en">Union Camp</h3>
           <p class="prog-desc wl-ko">월코는 교회가 복음 사역의 중심이 되기를 바랍니다. 교회와 연합하여 청소년을 섬기고, 다음 세대의 실질적인 변화를 이끄는 캠프를 진행합니다.</p>
           <p class="prog-desc wl-en">WOLKO believes the local church should be at the center of Gospel ministry. We partner with churches to serve youth and lead the next generation toward real transformation.</p>
-          <a href="/contact?type=camp&amp;camp=inland#contact-form" class="prog-link">
-            <span class="wl-ko">내륙캠프 참여 문의</span><span class="wl-en">Inquire About Inland Camp</span>
-          </a>
         </div>
       </article>
     </div>
