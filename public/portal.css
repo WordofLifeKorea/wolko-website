@@ -106,8 +106,8 @@
 .viewer-head-actions { display:flex;align-items:center;gap:10px;flex-shrink:0; }
 .viewer-notes-toggle { display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:8px 11px;color:var(--blue);font:700 12px/1 var(--body);cursor:pointer; }
 .viewer-notes-toggle.is-active { border-color:var(--teal);background:#eefaf9;color:var(--teal); }
-.viewer-body { position:relative;display:flex;flex:1;width:100%;min-height:0;overflow:hidden; }
-.viewer-stage { display:flex;flex-direction:column;flex:1;min-width:0;background:#f4f6f8;position:relative; }
+.viewer-body { position:absolute;inset:var(--viewer-head-height) 0 0;display:flex;min-width:0;min-height:0;overflow:hidden; }
+.viewer-stage { position:relative;flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;background:#f4f6f8; }
 .viewer-side-nav { position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--ink);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(16,41,54,.16); }
 .viewer-side-nav.is-prev { left:14px; }
 .viewer-side-nav.is-next { right:14px; }
@@ -181,20 +181,13 @@ body.modal-open { overflow:hidden; }
 .highlight-box.is-text-rect { border:none;border-radius:1px; }
 .note-item-author-dot { display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px; }
 .note-composer-quote { margin:0 0 8px;padding:10px 12px;border:1px solid #d8e7eb;border-radius:8px;background:#edf5f7;color:#294956;font:600 12px/1.65 var(--body);font-style:normal;white-space:pre-wrap;overflow-wrap:anywhere; }
-/* top:0;bottom:0로 높이를 뷰어 전체에 고정하면, 노트가 적을 땐 내용 아래로
-   패널 자체의 흰 배경만 텅 빈 채 뷰어 바닥까지 이어져서 오른쪽 아래가
-   낭비되는 것처럼 보인다 — max-height로 "최대 이만큼까지"만 정해두고,
-   실제 높이는 내용만큼만(노트가 많아지면 그 상한까지 커지고 목록 안에서
-   스크롤) 차지하게 한다. */
-/* width는 뷰포트 단위(vw) 대신 컨테이너 기준 %로 — 중첩된 fixed/flex 구조
-   안에서 vw가 엉뚱하게 계산되는 브라우저별 차이를 피하려는 것. */
-/* 닫힌 상태를 translateX(100%)(자기 자신의 너비 기준 %)로 표현하면, 그
-   너비 자체가 clamp()로 계산되는 값이라 사파리에서 트랜지션이 끝난 뒤에도
-   위치가 어긋난 채로 굳어버리는 경우가 있었다(오른쪽 끝에 안 붙고 간격이
-   남음, 크롬에서는 재현 안 됨) — 자기 너비를 참조하지 않는 고정 px만큼
-   (최대 너비보다 넉넉히) 밀어내는 방식으로 바꿔 그 계산을 아예 없앤다. */
-.notes-panel { position:absolute;z-index:5;top:0;left:0;right:auto;max-height:100%;display:flex;flex-direction:column;width:clamp(300px,30%,400px);border-right:1px solid var(--line);border-bottom-right-radius:12px;background:#fff;box-shadow:10px 0 28px rgba(16,41,54,.14);overflow:hidden;transform:translateX(-420px);visibility:hidden;pointer-events:none;transition:transform .2s ease,visibility 0s linear .2s; }
-.notes-panel.is-open { transform:translateX(0);visibility:visible;pointer-events:auto;transition-delay:0s; }
+/* PC에서는 오버레이가 아니라 오른쪽에 박힌 고정 사이드바 — .viewer-body의
+   flex 자식이라 폭을 0↔360px로 트랜지션하는 것만으로 문서 스테이지가 자동
+   으로 넓어지거나 좁아진다(overlay 시절처럼 덮어씌우지 않음). 기본은 열림
+   (openViewer에서 데스크톱이면 toggleNotesPanel(true)), 헤더 버튼으로 접을
+   수 있다. 모바일은 여전히 하단 시트 오버레이(아래 @media에서 전부 재정의). */
+.notes-panel { position:relative;z-index:5;flex-shrink:0;display:flex;flex-direction:column;width:0;border-left:1px solid transparent;background:#fff;overflow:hidden;transition:width .2s ease,border-color .2s ease; }
+.notes-panel.is-open { width:360px;border-left-color:var(--line); }
 .notes-panel-head { flex-shrink:0;display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line); }
 .notes-panel-title { flex:1;display:flex;flex-direction:column;gap:4px;min-width:0; }
 .notes-panel-title b { color:var(--ink);font:800 13px/1 var(--body); }
@@ -240,6 +233,12 @@ body.modal-open { overflow:hidden; }
 .note-item.is-resolved { background:#f7faf9;border-color:#dce8e3; }
 .note-item.is-trashed { background:#faf8f6;border-color:#e7d7cd; }
 .note-trash-expiry { margin:6px 0 0;color:#a5827a;font-size:10.5px;font-weight:600; }
+.review-item { display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #e7edf0;border-radius:10px;font-size:12px;background:#fff;cursor:pointer; }
+.review-item + .review-item { margin-top:7px; }
+.review-item.is-confirmed { background:#eefaf6;border-color:#cfe9df; }
+.review-item input[type="checkbox"] { width:18px;height:18px;flex-shrink:0;accent-color:var(--teal);cursor:pointer; }
+.review-item-name { flex:1;min-width:0;color:#2b444f;font:700 12.5px/1.4 var(--body); }
+.review-item-meta { flex-shrink:0;color:#5f9c85;font-size:10px;white-space:nowrap; }
 .note-item-head { display:flex;align-items:center;justify-content:space-between;gap:8px; }
 .note-item-who { display:flex;align-items:center;gap:6px;min-width:0; }
 .note-item-head b { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#33474f;font:700 12px/1.3 var(--body); }
@@ -287,7 +286,12 @@ body.modal-open { overflow:hidden; }
   .viewer-head-actions { gap:6px; }
   .viewer-notes-toggle { padding:8px 9px; }
   .viewer-body { flex-direction:column; }
-  .notes-panel { position:fixed;top:auto;left:0;right:0;bottom:0;width:auto;max-height:min(68vh,620px);border-left:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -8px 26px rgba(0,0,0,.18);transform:translateY(100%); }
+  /* PC용 .notes-panel.is-open{width:360px}는 클래스 2개짜리라, 여기서
+     .notes-panel(클래스 1개)에만 width:auto를 주면 열린 상태에서는 특정도가
+     더 높은 PC 쪽 360px가 그대로 새어들어온다 — .is-open도 똑같이 다시
+     선언해야 특정도가 같아져서 이 media query(나중에 오는 쪽)가 이긴다. */
+  .notes-panel, .notes-panel.is-open { width:auto; }
+  .notes-panel { position:fixed;top:auto;left:0;right:0;bottom:0;max-height:min(68vh,620px);border-left:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -8px 26px rgba(0,0,0,.18);transform:translateY(100%); }
   .notes-panel.is-open { transform:translateY(0); }
   .notes-list { padding:10px; }
   .note-item { padding:10px; }
