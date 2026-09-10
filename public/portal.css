@@ -24,6 +24,9 @@
 .file-details-kind { width:80px; }
 .file-details-date { width:190px; font-variant-numeric:tabular-nums; }
 .file-details-table .file-details-empty { padding:20px; text-align:center; white-space:normal; }
+.file-details-table .file-details-newtab { width:40px; padding:0 8px; text-align:center; overflow:visible; }
+.file-details-newtab button { width:26px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--muted);font-size:12px;line-height:1;cursor:pointer; }
+.file-details-newtab button:hover { background:#eefaf9;color:var(--teal);border-color:var(--teal); }
 .file-details-add { position:relative; display:flex; align-items:center; justify-content:center; gap:8px; min-height:42px; margin-top:8px; border:1px dashed #c4dbe0; border-radius:8px; color:var(--blue); font-size:12px; font-weight:700; cursor:pointer; }
 .file-details-add input { position:absolute; width:1px; height:1px; opacity:0; }
 .file-details-add:focus-within { outline:2px solid var(--teal); }
@@ -37,9 +40,13 @@
   .folder-nav { flex-wrap:wrap; }
   .folder-nav-name { flex-basis:60%; }
 }
-.file-tile { display:flex;flex-direction:column;border:1px solid #dde9ec;border-radius:10px;background:#fff;overflow:hidden; }
+.file-tile { position:relative;display:flex;flex-direction:column;border:1px solid #dde9ec;border-radius:10px;background:#fff;overflow:hidden; }
 .file-tile-preview { position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 8px 10px;border:none;background:none;cursor:pointer;font-family:inherit;width:100%; }
 .file-tile-note-badge { position:absolute;top:6px;right:6px;min-width:17px;height:17px;padding:0 4px;display:flex;align-items:center;justify-content:center;border-radius:9px;background:#d88217;color:#fff;font:800 10px/1 var(--body); }
+/* 모달을 거치지 않고 목록에서 바로 원본을 새 탭에서 열 수 있는 버튼 —
+   노트 배지(top-right)와 겹치지 않게 반대쪽 구석에 둔다. */
+.file-tile-newtab { position:absolute;top:6px;left:6px;z-index:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:6px;background:rgba(255,255,255,.92);color:var(--muted);font-size:12px;line-height:1;cursor:pointer; }
+.file-tile-newtab:hover { background:#eefaf9;color:var(--teal);border-color:var(--teal); }
 .file-tile-preview:hover { background:#f9fcfc; }
 .file-tile-name { max-width:100%;color:var(--ink);font:700 10.5px/1.3 var(--body);text-align:center;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all; }
 .file-tile-meta { color:#93a6ad;font-size:9px;text-align:center; }
