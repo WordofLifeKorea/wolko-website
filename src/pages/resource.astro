@@ -805,7 +805,12 @@
       const unscaled = page.getViewport({ scale: 1 });
       const baseScale = containerWidth / unscaled.width; // "100%" 확대 = 화면 폭에 맞춤
       if (viewerFitMode === 'page') {
-        const availableHeight = Math.max(1, surface.clientHeight - (parseFloat(surfaceStyle.paddingTop) || 0) - (parseFloat(surfaceStyle.paddingBottom) || 0) - 2);
+        const surfaceRect = surface.getBoundingClientRect();
+        const visibleViewport = window.visualViewport;
+        const viewportBottom = visibleViewport ? visibleViewport.offsetTop + visibleViewport.height : window.innerHeight;
+        const overlayBottom = $('viewerOverlay').getBoundingClientRect().bottom;
+        const visibleBottom = Math.min(surfaceRect.bottom, overlayBottom, viewportBottom);
+        const availableHeight = Math.max(1, visibleBottom - Math.max(surfaceRect.top, visibleViewport?.offsetTop || 0) - (parseFloat(surfaceStyle.paddingTop) || 0) - (parseFloat(surfaceStyle.paddingBottom) || 0) - 4);
         viewerZoom = Math.min(1, availableHeight / unscaled.height / baseScale);
       } else if (viewerFitMode === 'width') viewerZoom = 1;
       const viewport = page.getViewport({ scale: baseScale * viewerZoom });
@@ -869,7 +874,7 @@
     function viewerZoomIn() { viewerFitMode = null; viewerZoom = Math.min(3, Math.round((viewerZoom + 0.25) * 100) / 100); renderPdfPage(); }
     function viewerZoomOut() { viewerFitMode = null; viewerZoom = Math.max(0.1, Math.round((viewerZoom - 0.25) * 100) / 100); renderPdfPage(); }
     function viewerZoomReset() { viewerFitMode = 'width'; viewerZoom = 1; renderPdfPage(); }
-    function viewerFitPage() { viewerFitMode = 'page'; renderPdfPage(); }
+    async function viewerFitPage() { viewerFitMode = 'page'; await renderPdfPage(); $('viewerSurface')?.scrollTo(0, 0); }
     function toggleDrawMode() {
       drawModeOn = !drawModeOn;
       const btn = $('viewerDrawToggle');
