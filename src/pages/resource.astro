@@ -30,6 +30,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
+  <link rel="stylesheet" href="/pdf-viewer-layout.css?v=1">
   <style is:global>
     .file-context-menu { position:fixed; z-index:10000; width:min(230px,calc(100vw - 16px)); padding:6px; background:#fff; border:1px solid #dce8ed; border-radius:12px; box-shadow:0 12px 36px rgba(16,41,54,.2); }
     .file-context-menu button { display:block; width:100%; min-height:42px; border:0; border-radius:7px; background:transparent; text-align:left; padding:10px 14px; color:#102936; font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; }
@@ -696,7 +697,10 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     let notesSyncTimer = null, notesSyncInFlight = false, notesSyncRevision = 0, notesSyncController = null, notesSyncCooldownUntil = 0;
     let commentDrafts = {}, commentSubmitInFlight = false;
     const expandedNotes = new Set();
-    function isDesktopViewer() { return window.matchMedia('(min-width:621px)').matches; }
+    function isDesktopViewer() { return window.matchMedia('(min-width:901px)').matches; }
+    window.matchMedia('(min-width:901px)').addEventListener('change', event => {
+      if (!$('viewerOverlay').hidden) toggleNotesPanel(event.matches);
+    });
     async function previewFile(fileId) {
       continuousPdf?.destroy();
       continuousPdf = null;
@@ -1123,7 +1127,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     }
     function toggleNotesPanel(force) {
       const panel = $('notesPanel');
-      const isOpen = typeof force === 'boolean' ? force : !panel.classList.contains('is-open');
+      const isOpen = isDesktopViewer() || (typeof force === 'boolean' ? force : !panel.classList.contains('is-open'));
       panel.classList.toggle('is-open', isOpen);
       panel.setAttribute('aria-hidden', String(!isOpen));
       $('viewerNotesToggle').classList.toggle('is-active', isOpen);
