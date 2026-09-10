@@ -33,6 +33,10 @@ for (const width of [390, 1440]) {
     await context.viewerFitPage();
     assert.ok(rendered.at(-1).height <= 644);
     assert.ok(rendered.at(-1).width <= width - 32);
+    const fitScale = rendered.at(-1).scale;
+    await context.viewerFitMiddle();
+    const widthScale = (width - 32) / 600;
+    assert.ok(Math.abs(rendered.at(-1).scale - (widthScale + fitScale) / 2) < 0.00001);
     context.viewerNextPage();
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(elements.viewerPageLabel.textContent, '2 / 33');

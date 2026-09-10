@@ -754,6 +754,7 @@
       $('viewerToolbar').innerHTML = `${viewerToolbarHtml()}<div class="viewer-zoom-nav"><button type="button" onclick="viewerZoomOut()" aria-label="zoom out">−</button><button type="button" id="viewerZoomLabel" onclick="viewerZoomReset()" title="${esc(t('zoomReset'))}"></button><button type="button" onclick="viewerZoomIn()" aria-label="zoom in">+</button></div><div class="viewer-page-nav"><button type="button" id="viewerPrevBtn" onclick="viewerPrevPage()">‹</button><span id="viewerPageLabel"></span><button type="button" id="viewerNextBtn" onclick="viewerNextPage()">›</button></div>`;
       $('viewerToolbar').querySelector('.viewer-zoom-nav').insertAdjacentHTML('beforeend', `
         <button type="button" onclick="viewerZoomReset()" aria-label="너비 맞춤 / Fit width" title="너비 맞춤 / Fit width"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="display:block;margin:auto" aria-hidden="true"><path d="M3 4v16M21 4v16M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg></button>
+        <button type="button" onclick="viewerFitMiddle()" aria-label="중간 배율 / Balanced zoom" title="중간 배율 / Balanced zoom"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="display:block;margin:auto" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg></button>
         <button type="button" onclick="viewerFitPage()" aria-label="한 페이지 맞춤 / Fit page" title="한 페이지 맞춤 / Fit page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="display:block;margin:auto" aria-hidden="true"><rect x="7" y="5" width="10" height="14" rx="1"/><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button>
       `);
       $('viewerSurface').innerHTML = `<div class="viewer-surface-inner" id="viewerSurfaceInner"><canvas id="viewerCanvas"></canvas><div class="textLayer" id="viewerTextLayer"></div></div>`;
@@ -807,14 +808,15 @@
       const containerWidth = (surface.clientWidth - horizontalPadding) || 600;
       const unscaled = page.getViewport({ scale: 1 });
       const baseScale = containerWidth / unscaled.width; // "100%" 확대 = 화면 폭에 맞춤
-      if (viewerFitMode === 'page') {
+      if (viewerFitMode === 'page' || viewerFitMode === 'middle') {
         const surfaceRect = surface.getBoundingClientRect();
         const visibleViewport = window.visualViewport;
         const viewportBottom = visibleViewport ? visibleViewport.offsetTop + visibleViewport.height : window.innerHeight;
         const overlayBottom = $('viewerOverlay').getBoundingClientRect().bottom;
         const visibleBottom = Math.min(surfaceRect.bottom, overlayBottom, viewportBottom);
         const availableHeight = Math.max(1, visibleBottom - Math.max(surfaceRect.top, visibleViewport?.offsetTop || 0) - (parseFloat(surfaceStyle.paddingTop) || 0) - (parseFloat(surfaceStyle.paddingBottom) || 0) - 4);
-        viewerZoom = Math.min(1, availableHeight / unscaled.height / baseScale);
+        const pageFitZoom = Math.min(1, availableHeight / unscaled.height / baseScale);
+        viewerZoom = viewerFitMode === 'middle' ? (1 + pageFitZoom) / 2 : pageFitZoom;
       } else if (viewerFitMode === 'width') viewerZoom = 1;
       const viewport = page.getViewport({ scale: baseScale * viewerZoom });
       // 캔버스 픽셀 수를 CSS 크기 그대로(1배)로 그리면 레티나(고밀도) 화면에서
@@ -878,6 +880,7 @@
     function viewerZoomOut() { viewerFitMode = null; viewerZoom = Math.max(0.1, Math.round((viewerZoom - 0.25) * 100) / 100); renderPdfPage(); }
     function viewerZoomReset() { viewerFitMode = 'width'; viewerZoom = 1; renderPdfPage(); }
     async function viewerFitPage() { viewerFitMode = 'page'; await renderPdfPage(); $('viewerSurface')?.scrollTo(0, 0); }
+    async function viewerFitMiddle() { viewerFitMode = 'middle'; await renderPdfPage(); $('viewerSurface')?.scrollTo(0, 0); }
     function toggleDrawMode() {
       drawModeOn = !drawModeOn;
       const btn = $('viewerDrawToggle');
