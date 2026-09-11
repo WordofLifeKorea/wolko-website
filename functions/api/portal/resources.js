@@ -1,4 +1,4 @@
-import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, annotationsOf, stagePercentsOf, progressFromStagePercents, STAGE_COUNT } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, annotationsOf, stagePercentsOf, progressFromStagePercents, reviewPercentOf, REVIEW_STAGE_INDEX, STAGE_COUNT } from '../../lib/portalResources.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_THUMBNAIL_LENGTH = 1_500_000;
@@ -17,6 +17,7 @@ function parseStagePercents(input, existing) {
 // 지워지지 않게 한다.
 function normalize(input, existing = {}) {
   const stagePercents = parseStagePercents(input?.stagePercents, existing);
+  stagePercents[REVIEW_STAGE_INDEX] = reviewPercentOf(existing);
   return {
     id: existing.id || crypto.randomUUID(),
     title: text(input?.title, 120) || existing.title || '',

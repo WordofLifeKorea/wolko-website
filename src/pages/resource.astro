@@ -49,6 +49,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     .file-context-menu button:hover,.file-context-menu button:focus-visible { background:#eef6f8; outline:2px solid #b7d8e0; }
     .file-context-menu select { width:100%; min-height:42px; }
     [data-context-file], [data-context-folder] { -webkit-touch-callout:none; }
+    .stage-pct-auto { display:block; width:100%; margin-top:2px; padding:4px 6px; border:1px dashed #d7e4e8; border-radius:6px; background:#fff; color:#102936; font-size:11px; font-weight:700; line-height:1.3; }
+    .stage-pct-auto-note { color:inherit; font-size:10px; font-weight:600; opacity:.8; }
     .password-dialog { width:min(360px,calc(100vw - 32px)); padding:22px; border:0; border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,.3); color:#102936; font-family:inherit; }
     .password-dialog::backdrop { background:rgba(6,31,40,.55); }
     .password-dialog p { margin:0 0 14px; font-size:14px; font-weight:600; line-height:1.55; }
@@ -160,9 +162,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
             </div>
             <div class="stage-card" data-stage-index="1">
               <i>2</i><span data-t="stage2Name">검토</span>
-              <select class="stage-pct-select" onchange="setStagePercent(1, this.value)">
-                <option value="0">0%</option><option value="10">10%</option><option value="20">20%</option><option value="30">30%</option><option value="40">40%</option><option value="50">50%</option><option value="60">60%</option><option value="70">70%</option><option value="80">80%</option><option value="90">90%</option><option value="100">100%</option>
-              </select>
+              <b class="stage-pct-auto" id="reviewStagePct">0%</b>
+              <small class="stage-pct-auto-note" id="reviewStageNote"></small>
             </div>
             <div class="stage-card" data-stage-index="2">
               <i>3</i><span data-t="stage3Name">디자인 및 퍼블리시</span>
@@ -280,7 +281,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         noteDeleteConfirm: '이 노트를 삭제할까요? (휴지통에서 10일간 복원할 수 있습니다)', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
         noteDeletedToast: '노트를 휴지통으로 옮겼습니다.',
         trashLabel: '휴지통', backToNotes: '← 노트 목록', trashEmpty: '휴지통이 비어 있습니다.', noteRestore: '복원',
-        reviewLabel: (done, total) => `검토 완료 확인 (${done}/${total})`, reviewUpdateFailed: '검토 완료 확인을 저장하지 못했습니다.', reviewEmpty: '평택센터 선교사 명단을 불러오지 못했습니다.',
+        reviewLabel: (done, total) => `검토 완료 확인 (${done}/${total})`, reviewStageNote: n => `검토 완료 ${n}명 · 3명이면 100%`, reviewUpdateFailed: '검토 완료 확인을 저장하지 못했습니다.', reviewEmpty: '평택센터 선교사 명단을 불러오지 못했습니다.',
         trashExpiresIn: n => n <= 0 ? '오늘 완전히 삭제됩니다' : `${n}일 후 완전히 삭제됩니다`,
         noteRestoredToast: '노트를 복원했습니다.', noteRestoreFailed: '노트를 복원하지 못했습니다.',
         noteComment: '의견 추가', commentsLabel: n => `추가 의견 ${n}개`, commentPlaceholder: '이 노트에 대한 의견을 입력해 주세요', commentSave: '등록', commentDelete: '삭제',
@@ -335,7 +336,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         noteDeleteConfirm: 'Delete this note? (Recoverable from Trash for 10 days)', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
         noteDeletedToast: 'Note moved to Trash.',
         trashLabel: 'Trash', backToNotes: '← Notes', trashEmpty: 'Trash is empty.', noteRestore: 'Restore',
-        reviewLabel: (done, total) => `Review sign-off (${done}/${total})`, reviewUpdateFailed: 'Could not save the review sign-off.', reviewEmpty: 'Could not load the Pyeongtaek missionary roster.',
+        reviewLabel: (done, total) => `Review sign-off (${done}/${total})`, reviewStageNote: n => `${n} signed off · 100% at 3`, reviewUpdateFailed: 'Could not save the review sign-off.', reviewEmpty: 'Could not load the Pyeongtaek missionary roster.',
         trashExpiresIn: n => n <= 0 ? 'Permanently deleted today' : `Permanently deleted in ${n} day${n === 1 ? '' : 's'}`,
         noteRestoredToast: 'Note restored.', noteRestoreFailed: 'Could not restore the note.',
         noteComment: 'Add comment', commentsLabel: n => `${n} comment${n === 1 ? '' : 's'}`, commentPlaceholder: 'Add your thoughts about this note', commentSave: 'Post', commentDelete: 'Delete',
@@ -657,6 +658,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       const idx = resources.findIndex(r => r.id === currentItem.id);
       if (idx !== -1) resources[idx] = currentItem;
       renderFilesAndFolders(); renderUploadLog(); render();
+      if (editorMode === 'view') renderDetailView();
       if (successCount) toast(successCount > 1 ? t('filesUploadedToast')(successCount) : t('fileUploadedToast'));
       if (failMessage) toast(failMessage, true);
       inputEl.value = '';
@@ -1309,6 +1311,9 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         if (!res.ok) throw new Error(data.error || t('reviewUpdateFailed'));
         applyNoteMutationItem(data.item);
         renderNotesList();
+        // 체크 수가 곧 검토 단계 %라서, 뒤에 깔린 목록 카드와 상세 보기의 진행률도 같이 갱신한다.
+        render();
+        if (!$('editorOverlay').hidden && editorMode === 'view') renderDetailView();
       } catch (e) { toast(e.message || t('reviewUpdateFailed'), true); renderNotesList(); }
     }
     function renderReviewChecklist() {
@@ -1658,6 +1663,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         const idx = resources.findIndex(r => r.id === currentItem.id);
         if (idx !== -1) resources[idx] = currentItem;
         renderFilesAndFolders(); render();
+        if (editorMode === 'view') renderDetailView();
         toast(t('fileRemovedToast'));
       } catch (e) {
         toast(e.message || t('fileDeleteFailed'), true);
@@ -1718,6 +1724,14 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     // 진행 단계 스텝퍼 — 버튼 N을 누르면 1~N단계가 완료로, 이미 N단계까지
     // 완료된 상태에서 N을 다시 누르면 한 단계 되돌린다(간단한 토글식 취소).
     let editorStagePercents = [0, 0, 0];
+    // 검토(두 번째) 단계는 손으로 고르지 않는다 — 서버가 "검토 완료"를 체크한
+    // 서로 다른 선교사 수로 매긴 값(1명 33%, 3명 이상 100%)을 그대로 보여준다.
+    const REVIEW_STAGE_INDEX = 1;
+    function reviewerCount(item) {
+      const slugs = new Set();
+      for (const file of item?.files || []) Object.keys(file.reviewConfirmations || {}).forEach(slug => slugs.add(slug));
+      return slugs.size;
+    }
     function renderStageStepper(percents) {
       editorStagePercents = percents.slice(0, STAGE_COUNT);
       $('stagePct').textContent = Math.round(editorStagePercents.reduce((s, p) => s + p, 0) / STAGE_COUNT) + '%';
@@ -1725,8 +1739,11 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         const pct = editorStagePercents[i] || 0;
         card.classList.toggle('is-done', pct >= 100);
         card.classList.toggle('is-started', pct > 0 && pct < 100);
-        card.querySelector('.stage-pct-select').value = pct;
+        const select = card.querySelector('.stage-pct-select');
+        if (select) select.value = pct;
       });
+      $('reviewStagePct').textContent = (editorStagePercents[REVIEW_STAGE_INDEX] || 0) + '%';
+      $('reviewStageNote').textContent = t('reviewStageNote')(reviewerCount(currentItem));
     }
     function setStagePercent(index, value) {
       editorStagePercents[index] = Number(value) || 0;

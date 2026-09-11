@@ -24,7 +24,7 @@
  * 예전 방식으로 이미 올라간 파일도 계속 읽을 수 있도록 GET에서 두 형식을
  * 다 처리한다.
  */
-import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, annotationsOf } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, annotationsOf, refreshProgress } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -134,6 +134,7 @@ export async function onRequestPost({ env, request }) {
   const logEntry = { fileName, uploadedByName, uploadedAt: now };
   item.uploadLog = [logEntry, ...(Array.isArray(item.uploadLog) ? item.uploadLog : [])].slice(0, MAX_LOG_ENTRIES);
   item.updatedAt = now;
+  refreshProgress(item);
   data.items[index] = item;
   const saved = await saveData(env, data.items);
   return Response.json({ item, updatedAt: saved.updatedAt }, { headers: CORS });
@@ -185,6 +186,7 @@ export async function onRequestPut({ env, request }) {
       : f);
   }
   item.updatedAt = new Date().toISOString();
+  refreshProgress(item);
   data.items[index] = item;
   const saved = await saveData(env, data.items);
   return Response.json({ item, updatedAt: saved.updatedAt }, { headers: CORS });
@@ -212,6 +214,7 @@ export async function onRequestDelete({ env, request }) {
   delete item.workFile;
   delete item.originalFile;
   item.updatedAt = new Date().toISOString();
+  refreshProgress(item);
   data.items[index] = item;
   const saved = await saveData(env, data.items);
   return Response.json({ item, updatedAt: saved.updatedAt }, { headers: CORS });

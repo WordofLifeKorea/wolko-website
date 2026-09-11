@@ -68,7 +68,26 @@ function snap10(value) {
   return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n / 10) * 10)) : 0;
 }
 
-export function stagePercentsOf(item) {
+// 두 번째(검토) 단계만은 손으로 정하지 않는다 — 이 항목의 파일 중 하나라도
+// "검토 완료"를 체크한 서로 다른 선교사 수로 매긴다. 한 명당 33%, 3명이면
+// 100%이고, 4명 이상이어도 100%를 넘지 않는다.
+export const REVIEW_STAGE_INDEX = 1;
+export const REVIEWERS_FOR_FULL_REVIEW = 3;
+
+export function reviewerCountOf(item) {
+  const slugs = new Set();
+  for (const file of filesOf(item)) {
+    for (const slug of Object.keys(file.reviewConfirmations || {})) slugs.add(slug);
+  }
+  return slugs.size;
+}
+
+export function reviewPercentOf(item) {
+  const count = reviewerCountOf(item);
+  return count >= REVIEWERS_FOR_FULL_REVIEW ? 100 : count * 33;
+}
+
+function storedStagePercentsOf(item) {
   if (Array.isArray(item?.stagePercents) && item.stagePercents.length === STAGE_COUNT) {
     return item.stagePercents.map(snap10);
   }
@@ -79,8 +98,22 @@ export function stagePercentsOf(item) {
   return Array.from({ length: STAGE_COUNT }, (_, i) => (i < stage ? 100 : 0));
 }
 
+export function stagePercentsOf(item) {
+  const percents = storedStagePercentsOf(item);
+  percents[REVIEW_STAGE_INDEX] = reviewPercentOf(item);
+  return percents;
+}
+
 export function progressFromStagePercents(percents) {
   return Math.round(percents.reduce((sum, p) => sum + p, 0) / percents.length);
+}
+
+// 검토 체크가 바뀌는 곳(체크 토글, 파일 교체·삭제)에서 저장 직전에 불러서,
+// 응답으로 돌려주는 항목의 진행률도 바로 최신이 되게 한다.
+export function refreshProgress(item) {
+  item.stagePercents = stagePercentsOf(item);
+  item.progress = progressFromStagePercents(item.stagePercents);
+  return item;
 }
 
 // 레슨/파트별로 파일을 묶어두는 폴더 — 파일 blob과 달리 KV에 항목 레코드
