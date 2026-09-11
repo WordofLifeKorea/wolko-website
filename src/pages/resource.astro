@@ -244,6 +244,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         filesLabel: '첨부 파일', fileHint: 'PDF · 이미지 · 문서 · 최대 24MB',
         addFile: '파일 추가', replaceFile: '교체', previewFile: '미리보기', removeFile: '삭제', noFileRead: '업로드된 파일이 없습니다', uploading: '업로드 중...',
         renameFile: '이름 변경', renameFilePrompt: '새 파일 이름을 입력하세요',
+        downloadFile: '다운로드', fileDownloadFailed: '파일을 내려받지 못했습니다.',
         unfiledLabel: '미분류', originalLabel: '원본', revisedLabel: '번역본',
         folderNamePh: '레슨 이름 (예: 레슨 1)', addFolder: '+ 폴더 추가', deleteFolder: '폴더 삭제',
         backToFolders: '← 목록', renameFolder: '폴더 이름 변경', renameFolderPrompt: '새 폴더 이름을 입력하세요',
@@ -298,6 +299,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         filesLabel: 'Attached Files', fileHint: 'PDF · image · document · up to 24MB',
         addFile: 'Add File', replaceFile: 'Replace', previewFile: 'Preview', removeFile: 'Remove', noFileRead: 'No file uploaded yet', uploading: 'Uploading...',
         renameFile: 'Rename', renameFilePrompt: 'Enter a new file name',
+        downloadFile: 'Download', fileDownloadFailed: 'Could not download the file.',
         unfiledLabel: 'Unfiled', originalLabel: 'Original', revisedLabel: 'Translated',
         folderNamePh: 'Folder name (e.g. Lesson 1)', addFolder: '+ Add Folder', deleteFolder: 'Delete Folder',
         backToFolders: '← Back', renameFolder: 'Rename Folder', renameFolderPrompt: 'Enter a new folder name',
@@ -695,6 +697,23 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         if (win) win.close();
         toast(e.message || t('filePreviewFailed'), true);
       });
+    }
+    // 내려받기는 새 탭을 열지 않고 blob URL을 <a download>으로 눌러준다 —
+    // 원래 파일 이름 그대로 저장되도록 파일명을 같이 넘긴다. URL 해제는
+    // openInNewTab과 마찬가지로 저장이 끝날 시간을 두고 뒤로 미룬다.
+    async function downloadFile(fileId) {
+      const meta = (currentItem?.files || []).find(f => f.id === fileId);
+      if (!meta) return;
+      try {
+        const url = await fetchFileAsBlobUrl(fileId);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = meta.fileName;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (e) { toast(e.message || t('fileDownloadFailed'), true); }
     }
     const VIEWER_KIND_MAP = { pdf: 'pdf', png: 'image', jpg: 'image', jpeg: 'image', gif: 'image', webp: 'image', mp4: 'video', mov: 'video', mp3: 'audio', wav: 'audio', m4a: 'audio' };
     function viewerKindOf(fileName) {
@@ -1422,6 +1441,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       fileMenu.setAttribute('role', 'dialog');
       fileMenu.setAttribute('aria-label', meta.fileName);
       for (const [label, action] of [
+        [t('downloadFile'), () => { closeFileMenu(); downloadFile(meta.id); }],
         [t('renameFile'), () => { closeFileMenu(); renameFile(meta.id); }],
         [t('moveFile'), () => {
           fileMenu.innerHTML = moveOptionsHtml(meta);
