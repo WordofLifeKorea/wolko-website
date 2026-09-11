@@ -345,6 +345,38 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     let currentItem = null; // 에디터가 열려 있는 동안의 현재 항목(파일 업로드 등에서 참조)
     let editorMode = 'view'; // 'view' | 'edit'
     const $ = id => document.getElementById(id);
+    // ── 브라우저 뒤로가기 = 모달 한 겹 닫기 ──
+    // 모달(항목 상세, 폴더 안, 수정 폼, 파일 뷰어, 모바일 노트 시트)을 열 때마다
+    // 같은 주소로 history를 한 칸씩 쌓아둔다. 그러면 뒤로가기가 페이지를 떠나지
+    // 않고 popstate로 들어와서 가장 나중에 연 한 겹만 닫는다. 칸들은 주소가
+    // 같아 서로 구분이 없으니, 이 스택 길이와 쌓아둔 칸 수만 맞으면 된다.
+    const historyLayers = [];
+    let pendingHistoryBack = 0, selfHistoryPops = 0;
+    function pushHistoryLayer(name, close) {
+      if (historyLayers.some(layer => layer.name === name)) return;
+      historyLayers.push({ name, close });
+      history.pushState({ resourceLayer: name }, '');
+    }
+    // ×/닫기 버튼처럼 화면에서 직접 닫았을 때 — 그 겹과 그 위에 열려 있던 겹들의
+    // history 칸도 되돌려야, 나중에 뒤로가기가 이미 닫힌 칸에서 헛돌지 않는다.
+    // 한 번에 여러 겹이 닫힐 수 있어서(뷰어 닫기 = 노트 시트까지) 모아서 한 번에 되돌린다.
+    function releaseHistoryLayer(name) {
+      const index = historyLayers.findIndex(layer => layer.name === name);
+      if (index === -1) return;
+      const removed = historyLayers.length - index;
+      historyLayers.length = index;
+      pendingHistoryBack += removed;
+      if (pendingHistoryBack === removed) queueMicrotask(() => {
+        const steps = pendingHistoryBack;
+        pendingHistoryBack = 0;
+        selfHistoryPops++;
+        history.go(-steps);
+      });
+    }
+    window.addEventListener('popstate', () => {
+      if (selfHistoryPops > 0) { selfHistoryPops--; return; }
+      historyLayers.pop()?.close();
+    });
     const STAGE_COUNT = 3;
     const STAGE_COLORS = ['#6f55c9', '#d88217', '#0077a3', '#16865a']; // stage 0~3(완료)
     const MAX_FILE_BYTES = 24 * 1024 * 1024; // Cloudflare KV 값 한도(25MiB) 아래 안전 여유
@@ -513,7 +545,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     }
     const FOLDER_ICON_SVG = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>';
     let currentFolderId = null; // null = 폴더 탐색기 최상위(미분류 + 폴더 아이콘 목록), 그 외엔 그 폴더 안
-    function openFolder(folderId) { currentFolderId = folderId; renderFilesAndFolders(); }
+    function openFolder(folderId) { currentFolderId = folderId; renderFilesAndFolders(); pushHistoryLayer('folder', closeFolderView); }
     function closeFolderView() { currentFolderId = null; renderFilesAndFolders(); }
     function renderFilesAndFolders() {
       closeFileMenu();
@@ -545,7 +577,9 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       }
 
       // 최상위 — 미분류 파일 + 폴더 아이콘 그리드(더블클릭 없이 클릭으로 열기).
+      // "← 목록"으로 나왔거나, 보고 있던 폴더가 삭제됐거나 — 어느 쪽이든 폴더 겹은 닫힌 것.
       currentFolderId = null;
+      releaseHistoryLayer('folder');
       const unfiled = filesIn(null, undefined);
       let html = '';
       if (unfiled.length || !folders.length) {
@@ -746,6 +780,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       $('viewerSideNavNext').hidden = true;
       $('viewerOverlay').hidden = false;
       syncBodyScrollLock();
+      pushHistoryLayer('viewer', closeViewer);
       renderNotesList();
       toggleNotesPanel(isDesktopViewer());
       startViewerNotesSync();
@@ -762,6 +797,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       }
     }
     function closeViewer() {
+      releaseHistoryLayer('viewer');
       continuousPdf?.destroy();
       continuousPdf = null;
       $('viewerOverlay').hidden = true;
@@ -1173,6 +1209,9 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     function toggleNotesPanel(force) {
       const panel = $('notesPanel');
       const isOpen = isDesktopViewer() || (typeof force === 'boolean' ? force : !panel.classList.contains('is-open'));
+      // 모바일 하단 시트만 한 겹으로 친다 — PC 사이드바는 늘 펼쳐져 있어 닫을 게 없다.
+      if (isOpen && !isDesktopViewer()) pushHistoryLayer('notes', () => toggleNotesPanel(false));
+      else releaseHistoryLayer('notes');
       panel.classList.toggle('is-open', isOpen);
       panel.setAttribute('aria-hidden', String(!isOpen));
       $('viewerNotesToggle').classList.toggle('is-active', isOpen);
@@ -1574,6 +1613,10 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       $('editorForm').hidden = !isEdit;
       $('editorEyebrow').textContent = isEdit ? t('editorEyebrow') : t('detailEyebrow');
       $('editorTitle').textContent = isEdit ? (currentItem ? t('editorEdit') : t('editorAdd')) : (currentItem?.title || '');
+      // 기존 항목의 수정 폼은 상세 보기 위의 한 겹(뒤로가기 = 취소). 새 항목은
+      // 폼 자체가 모달이라 따로 쌓지 않는다.
+      if (isEdit && currentItem) pushHistoryLayer('edit', exitEditMode);
+      else if (!isEdit) releaseHistoryLayer('edit');
       if (isEdit) $('resourceName').focus();
     }
     function enterEditMode() { showEditorMode('edit'); }
@@ -1594,10 +1637,11 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       renderFilesAndFolders(); renderUploadLog();
       $('editorOverlay').hidden = false;
       syncBodyScrollLock();
+      pushHistoryLayer('editor', closeEditor);
       if (item) { renderDetailView(); showEditorMode('view'); }
       else { showEditorMode('edit'); }
     }
-    function closeEditor() { closeFileMenu(); $('editorOverlay').hidden = true; syncBodyScrollLock(); currentItem = null; editorMode = 'view'; }
+    function closeEditor() { releaseHistoryLayer('editor'); closeFileMenu(); $('editorOverlay').hidden = true; syncBodyScrollLock(); currentItem = null; editorMode = 'view'; }
     // 진행 단계 스텝퍼 — 버튼 N을 누르면 1~N단계가 완료로, 이미 N단계까지
     // 완료된 상태에서 N을 다시 누르면 한 단계 되돌린다(간단한 토글식 취소).
     let editorStagePercents = [0, 0, 0];
