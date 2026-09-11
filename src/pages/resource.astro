@@ -37,11 +37,11 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/portal.css?v=58">
-  <script is:inline src="/pdf-continuous.js?v=2"></script>
+  <script is:inline src="/pdf-continuous.js?v=3"></script>
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
-  <link rel="stylesheet" href="/pdf-viewer-layout.css?v=2">
+  <link rel="stylesheet" href="/pdf-viewer-layout.css?v=3">
   <style is:global>
     .file-context-menu { position:fixed; z-index:10000; width:min(230px,calc(100vw - 16px)); padding:6px; background:#fff; border:1px solid #dce8ed; border-radius:12px; box-shadow:0 12px 36px rgba(16,41,54,.2); }
     .file-context-menu button { display:block; width:100%; min-height:42px; border:0; border-radius:7px; background:transparent; text-align:left; padding:10px 14px; color:#102936; font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; }
@@ -931,9 +931,11 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         viewerPdfDoc = loadedPdf;
         continuousPdf = new window.WolkoPdfContinuous($('viewerSurface'), viewerPdfDoc, pdfjsLib,
           number => {
+            const pageChanged = viewerPage !== number;
             viewerPage = number;
             $('viewerPageLabel').textContent = t('pageOf')(number, viewerPdfDoc.numPages);
             syncPageNav();
+            if (pageChanged && notesPageOnly) renderNotesList();
           },
           (surface, number) => renderHighlights(surface, number),
           (surface, layer) => {
@@ -1121,31 +1123,151 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     // 막아주므로 서로 부딪히지 않는다.
     function attachTextSelectionNote(textLayerEl, surfaceEl) {
       if (!textLayerEl) return;
-      textLayerEl.addEventListener('pointerup', () => {
-        if (drawModeOn) return;
+      let selectionGesture = null;
+      textLayerEl.addEventListener('pointerdown', event => {
+        if (drawModeOn || event.button !== 0) return;
+        selectionGesture = { pointerId: event.pointerId, pointerType: event.pointerType, startX: event.clientX, startY: event.clientY };
+      });
+      textLayerEl.addEventListener('pointercancel', () => { selectionGesture = null; });
+      textLayerEl.addEventListener('pointerup', event => {
+        if (drawModeOn) { selectionGesture = null; return; }
+        const completedGesture = selectionGesture?.pointerId === event.pointerId
+          ? { ...selectionGesture, endX: event.clientX, endY: event.clientY }
+          : null;
+        selectionGesture = null;
         // mouseup 시점엔 아직 브라우저 선택 영역이 확정되지 않을 수 있어 한 틱 늦춘다.
         setTimeout(() => {
-          const captured = captureTextSelectionRects(surfaceEl, textLayerEl);
+          const captured = captureTextSelectionRects(surfaceEl, textLayerEl, completedGesture);
           if (!captured) return;
+          // Safari가 DOM 순서상 같은 행의 좌우 열까지 기본 선택색으로 칠하더라도,
+          // 실제 포인터가 지나간 글자만 계산한 임시 하이라이트로 즉시 교체한다.
+          renderPendingTextSelection(surfaceEl, captured.rects);
+          window.getSelection()?.removeAllRanges();
           openNoteComposer({ kind: 'area', x: captured.x, y: captured.y, w: captured.w, h: captured.h, rects: captured.rects, page: Number(surfaceEl.dataset.pdfPage), quote: captured.text });
         }, 0);
       });
     }
-    // 드래그로 선택된 실제 텍스트 범위(Range)를 줄 단위 사각형들로 변환한다.
-    // 한 줄이면 사각형 1개, 여러 줄에 걸치면 줄 수만큼 생긴다 — 각각을 0~1
-    // 비율로 정규화해서 저장하므로 화면 크기·확대율이 달라져도 항상 같은
-    // 글자 위치를 가리킨다(기존 자유 드래그 사각형과 동일한 좌표계).
-    function captureTextSelectionRects(surfaceEl, textLayerEl) {
+    function selectionGestureBounds(gesture) {
+      if (!gesture || gesture.pointerType === 'touch') return null;
+      const dx = Math.abs(gesture.startX - gesture.endX);
+      const dy = Math.abs(gesture.startY - gesture.endY);
+      // Click-based word selection has no meaningful drag rectangle.
+      if (Math.hypot(dx, dy) < 4) return null;
+      const padding = 5;
+      return {
+        verticalTravel: dy,
+        left: Math.min(gesture.startX, gesture.endX) - padding,
+        right: Math.max(gesture.startX, gesture.endX) + padding,
+        top: Math.min(gesture.startY, gesture.endY) - padding,
+        bottom: Math.max(gesture.startY, gesture.endY) + padding,
+      };
+    }
+    function selectionRectTouchesGesture(rect, bounds) {
+      if (!bounds) return true;
+      // PDF content order can place punctuation after unrelated paragraphs.
+      // Never accept those paragraphs merely because the native Range spans them.
+      if (rect.bottom <= bounds.top || rect.top >= bounds.bottom) return false;
+      // Wrapped text extends beyond the horizontal endpoints of a drag.
+      if (bounds.verticalTravel >= rect.height * .65) return true;
+      const centerX = rect.left + (rect.width / 2);
+      return centerX >= bounds.left && centerX <= bounds.right
+        && rect.bottom >= bounds.top && rect.top <= bounds.bottom;
+    }
+    // Safari는 표처럼 같은 높이에 여러 텍스트 조각이 있는 PDF에서 Range 양끝
+    // 사이의 좌우 열까지 한꺼번에 선택하는 경우가 있다. 선택된 각 글자의 실제
+    // 화면 좌표를 재서 포인터가 지나간 영역 안에 있는 문자만 다시 모은다.
+    function selectedCharactersInGesture(range, textLayerEl, gestureBounds) {
+      const characters = [];
+      const charRange = document.createRange();
+      const walker = document.createTreeWalker(textLayerEl, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+      while (node) {
+        if (node.data && range.intersectsNode(node)) {
+          let start = node === range.startContainer ? range.startOffset : 0;
+          let end = node === range.endContainer ? range.endOffset : node.data.length;
+          start = Math.max(0, Math.min(node.data.length, start));
+          end = Math.max(start, Math.min(node.data.length, end));
+          for (let offset = start; offset < end;) {
+            const codePointLength = (node.data.codePointAt(offset) || 0) > 0xffff ? 2 : 1;
+            const nextOffset = Math.min(end, offset + codePointLength);
+            charRange.setStart(node, offset);
+            charRange.setEnd(node, nextOffset);
+            const charRect = Array.from(charRange.getClientRects()).find(rect =>
+              rect.width > 0 && rect.height > 0 && selectionRectTouchesGesture(rect, gestureBounds)
+            );
+            if (charRect) {
+              characters.push({
+                text: node.data.slice(offset, nextOffset),
+                rect: { left: charRect.left, right: charRect.right, top: charRect.top, bottom: charRect.bottom, width: charRect.width, height: charRect.height },
+              });
+            }
+            offset = nextOffset;
+          }
+        }
+        node = walker.nextNode();
+      }
+      return characters;
+    }
+    function quoteFromSelectedCharacters(characters) {
+      let quote = '';
+      let previous = null;
+      characters.forEach(character => {
+        const isWhitespace = /^\s+$/.test(character.text);
+        if (previous && !isWhitespace && !/\s$/.test(quote)) {
+          const previousCenterY = previous.rect.top + (previous.rect.height / 2);
+          const currentCenterY = character.rect.top + (character.rect.height / 2);
+          const sameLine = Math.abs(previousCenterY - currentCenterY) <= Math.max(2, Math.min(previous.rect.height, character.rect.height) * .55);
+          const gap = character.rect.left - previous.rect.right;
+          if (!sameLine || gap > Math.max(3, Math.min(previous.rect.height, character.rect.height) * .3)) quote += ' ';
+        }
+        quote += character.text;
+        previous = character;
+      });
+      return quote.replace(/\s+/g, ' ').trim();
+    }
+    function mergeCharacterRects(characters) {
+      const sorted = characters.map(character => ({ ...character.rect }))
+        .sort((a, b) => (a.top - b.top) || (a.left - b.left));
+      return sorted.reduce((merged, rect) => {
+        const previous = merged[merged.length - 1];
+        if (previous) {
+          const previousCenterY = previous.top + (previous.height / 2);
+          const currentCenterY = rect.top + (rect.height / 2);
+          const sameLine = Math.abs(previousCenterY - currentCenterY) <= Math.max(2, Math.min(previous.height, rect.height) * .55);
+          const joinGap = Math.max(3, Math.min(previous.height, rect.height) * .3);
+          if (sameLine && rect.left <= previous.right + joinGap) {
+            previous.left = Math.min(previous.left, rect.left);
+            previous.right = Math.max(previous.right, rect.right);
+            previous.top = Math.min(previous.top, rect.top);
+            previous.bottom = Math.max(previous.bottom, rect.bottom);
+            previous.width = previous.right - previous.left;
+            previous.height = previous.bottom - previous.top;
+            return merged;
+          }
+        }
+        merged.push(rect);
+        return merged;
+      }, []);
+    }
+    // 글자 단위로 보정한 선택 영역을 줄 단위 사각형으로 합친 뒤 0~1 비율로
+    // 저장한다. 확대율이나 기기 폭이 달라져도 같은 글자 위치를 가리킨다.
+    function captureTextSelectionRects(surfaceEl, textLayerEl, gesture = null) {
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
       const range = sel.getRangeAt(0);
       if (!textLayerEl.contains(range.commonAncestorContainer)) return null;
-      const quote = sel.toString().replace(/\s+/g, ' ').trim();
+      const gestureBounds = selectionGestureBounds(gesture);
+      const characters = selectedCharactersInGesture(range, textLayerEl, gestureBounds);
+      const quote = quoteFromSelectedCharacters(characters);
       if (!quote) return null;
       const rect = surfaceEl.getBoundingClientRect();
       if (!rect.width || !rect.height) return null;
-      const rects = Array.from(range.getClientRects())
-        .map(r => ({ x: (r.left - rect.left) / rect.width, y: (r.top - rect.top) / rect.height, w: r.width / rect.width, h: r.height / rect.height }))
+      const rects = mergeCharacterRects(characters)
+        .map(r => {
+          const left = Math.max(rect.left, r.left), top = Math.max(rect.top, r.top);
+          const right = Math.min(rect.right, r.right), bottom = Math.min(rect.bottom, r.bottom);
+          return { x: (left - rect.left) / rect.width, y: (top - rect.top) / rect.height, w: (right - left) / rect.width, h: (bottom - top) / rect.height };
+        })
         .filter(r => r.w > 0.001 && r.h > 0.001)
         .map(r => ({ x: Math.max(0, Math.min(1, r.x)), y: Math.max(0, Math.min(1, r.y)), w: Math.max(0, Math.min(1 - Math.max(0, r.x), r.w)), h: Math.max(0, Math.min(1 - Math.max(0, r.y), r.h)) }))
         .slice(0, 20);
@@ -1153,6 +1275,20 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       const minX = Math.min(...rects.map(r => r.x)), minY = Math.min(...rects.map(r => r.y));
       const maxX = Math.max(...rects.map(r => r.x + r.w)), maxY = Math.max(...rects.map(r => r.y + r.h));
       return { rects, x: minX, y: minY, w: maxX - minX, h: maxY - minY, text: quote };
+    }
+    function renderPendingTextSelection(surfaceEl, rects) {
+      surfaceEl.querySelectorAll('.viewer-selection-pending').forEach(el => el.remove());
+      const color = highlightColorFor(parseSession()?.email);
+      rects.forEach(rect => {
+        const box = document.createElement('div');
+        box.className = 'highlight-box is-text-rect is-pending viewer-selection-pending';
+        box.style.background = color + '2e';
+        box.style.left = (rect.x * 100) + '%';
+        box.style.top = (rect.y * 100) + '%';
+        box.style.width = (rect.w * 100) + '%';
+        box.style.height = (rect.h * 100) + '%';
+        surfaceEl.appendChild(box);
+      });
     }
     function addTimeNote() {
       const el = $('viewerMedia');
@@ -1177,10 +1313,36 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       if (composer) composer.hidden = true;
       window.getSelection()?.removeAllRanges();
       $('viewerDragBox')?.remove();
+      document.querySelectorAll('.viewer-selection-pending').forEach(el => el.remove());
     }
+    function handleNoteComposerKeydown(event) {
+      if ($('noteComposer').hidden || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        cancelNoteComposer();
+      } else if (event.key === 'Enter' && event.target === $('noteComposerText')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (event.shiftKey || event.altKey) {
+          const input = event.target;
+          const start = input.selectionStart;
+          const end = input.selectionEnd;
+          if (input.maxLength >= 0 && input.value.length - (end - start) + 1 > input.maxLength) return;
+          input.setRangeText('\n', start, end, 'end');
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          return;
+        }
+        if (!event.repeat) submitNoteComposer();
+      }
+    }
+    document.addEventListener('keydown', handleNoteComposerKeydown, true);
+    let noteComposerSaving = false;
     async function submitNoteComposer() {
       const textVal = $('noteComposerText').value.trim();
-      if (!textVal || !pendingNote) return;
+      if (!textVal || !pendingNote || noteComposerSaving) return;
+      noteComposerSaving = true;
+      const submittedNote = pendingNote;
       const body = { id: currentItem.id, fileId: viewerFileId, kind: pendingNote.kind, text: textVal };
       if (pendingNote.kind === 'area') Object.assign(body, { x: pendingNote.x, y: pendingNote.y, w: pendingNote.w, h: pendingNote.h, page: pendingNote.page, rects: pendingNote.rects, quote: pendingNote.quote });
       if (pendingNote.kind === 'time') body.timeSec = pendingNote.timeSec;
@@ -1189,10 +1351,12 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || t('noteSaveFailed'));
         applyNoteMutationItem(data.item);
-        cancelNoteComposer();
+        if (pendingNote === submittedNote) cancelNoteComposer();
         renderNotesList(); renderHighlights(); renderFilesAndFolders();
       } catch (e) {
         toast(e.message || t('noteSaveFailed'), true);
+      } finally {
+        noteComposerSaving = false;
       }
     }
     function annotationsForViewerFile() {
@@ -1341,7 +1505,29 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         </div>`;
       }).join('');
     }
+    let notesPageOnly = false;
+    function setNotesPageFilter(currentOnly) {
+      notesPageOnly = currentOnly;
+      renderNotesList();
+      $('notesList').scrollTop = 0;
+    }
+    function visibleSortedNotes(list) {
+      return list.filter(a => !notesPageOnly || Number(a.page) === viewerPage)
+        .slice().sort((a, b) => {
+          const pageA = Number(a.page) > 0 ? Number(a.page) : Infinity;
+          const pageB = Number(b.page) > 0 ? Number(b.page) : Infinity;
+          return (pageA === pageB ? 0 : pageA - pageB) || new Date(a.createdAt) - new Date(b.createdAt);
+        });
+    }
     function renderNotesList() {
+      let filter = $('notesPageFilter');
+      if (!filter) {
+        filter = document.createElement('div');
+        filter.id = 'notesPageFilter';
+        $('notesList').before(filter);
+      }
+      filter.hidden = viewerKind !== 'pdf' || notesTrashView || notesReviewView;
+      filter.innerHTML = `<button type="button" aria-pressed="${!notesPageOnly}" onclick="setNotesPageFilter(false)">${lang === 'ko' ? '전체 노트' : 'All notes'}</button><button type="button" aria-pressed="${notesPageOnly}" onclick="setNotesPageFilter(true)">${lang === 'ko' ? '현재 페이지' : 'Current page'}</button>`;
       const reviewToggle = $('notesReviewToggle');
       if (reviewToggle) {
         const rows = reviewRosterState();
@@ -1355,16 +1541,17 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         trashToggle.hidden = !notesTrashView && !trashList.length;
         trashToggle.textContent = notesTrashView ? t('backToNotes') : `${t('trashLabel')}${trashList.length ? ` (${trashList.length})` : ''}`;
       }
-      const list = annotationsForViewerFile();
-      $('viewerNotesCount').textContent = list.length ? String(list.length) : '';
+      const allNotes = annotationsForViewerFile();
+      const list = viewerKind === 'pdf' ? visibleSortedNotes(allNotes) : allNotes;
+      $('viewerNotesCount').textContent = allNotes.length ? String(allNotes.length) : '';
       if (notesTrashView) { renderTrashList(trashList); return; }
       const focusedCommentInput = document.activeElement?.classList?.contains('note-comment-input') ? document.activeElement : null;
       const restoreCommentFocus = focusedCommentInput?.id || '';
       const restoreSelectionStart = focusedCommentInput?.selectionStart;
       const restoreSelectionEnd = focusedCommentInput?.selectionEnd;
-      if (!list.length) { $('notesList').innerHTML = `<p class="upload-log-empty">${esc(t('notesEmpty'))}</p>`; return; }
+      if (!list.length) { $('notesList').innerHTML = `<p class="upload-log-empty">${esc(notesPageOnly && viewerKind === 'pdf' ? (lang === 'ko' ? '현재 페이지에 노트가 없습니다.' : 'No notes on this page.') : t('notesEmpty'))}</p>`; return; }
       const session = parseSession();
-      $('notesList').innerHTML = list.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(a => {
+      $('notesList').innerHTML = (viewerKind === 'pdf' ? list : list.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))).map(a => {
         const canManage = !!(session && (session.email === a.createdBy || canWrite));
         const where = a.kind === 'time' ? formatTimeSec(a.timeSec) : (a.kind === 'area' && a.page ? t('notePageLabel')(a.page) : '');
         const jumpAttr = a.kind !== 'general' ? ` onclick="jumpToNote('${a.id}')"` : '';
@@ -1385,7 +1572,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
           <button type="button" class="note-reply-submit" onclick="submitNoteComment('${a.id}')" ${commentSubmitInFlight ? 'disabled' : ''}>${lang === 'ko' ? '의견 남기기' : 'Reply'}</button>
         </div>`;
         return `<details class="note-item is-${a.status}" data-note-id="${a.id}" ${expandedNotes.has(a.id) ? 'open' : ''} ontoggle="if(this.isConnected){this.open ? expandedNotes.add('${a.id}') : expandedNotes.delete('${a.id}');}">
-          <summary class="note-summary" onclick="if(!this.parentElement.open) jumpToNote('${a.id}')"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><span class="note-summary-location">${esc(where || (lang === 'ko' ? '문서 노트' : 'Document note'))}</span><span class="note-summary-chevron" aria-hidden="true">⌄</span></summary>
+          <summary class="note-summary" onclick="if(!this.parentElement.open) jumpToNote('${a.id}')"><span class="note-summary-proposal">${esc(a.text)}</span><span class="note-summary-location">${esc(where || (lang === 'ko' ? '문서 노트' : 'Document note'))}</span><span class="note-summary-chevron" aria-hidden="true">⌄</span></summary>
           <div class="note-expanded">
           <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><div class="note-item-head-tools"><time>${esc(formatLogTime(a.createdAt))}</time>${canManage ? `<button type="button" class="note-delete-button" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div></div>
           <div class="note-item-meta">

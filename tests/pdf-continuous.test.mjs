@@ -39,7 +39,7 @@ function fixture() {
   vm.runInContext(readFileSync(new URL('../public/pdf-continuous.js', import.meta.url), 'utf8'), context);
   const viewer = new context.window.WolkoPdfContinuous(root, pdf, { TextLayer: class { async render() {} cancel() {} } },
     number => pageChanges.push(number), (shell, number) => ready.push(number), () => {});
-  return { viewer, root, pdf, rendered, ready, pageChanges };
+  return { viewer, root, pdf, rendered, ready, pageChanges, context };
 }
 
 test('all pages laid out, only nearby canvases rendered, navigation evicts old pages', async () => {
@@ -63,6 +63,34 @@ test('all pages laid out, only nearby canvases rendered, navigation evicts old p
   viewer.destroy();
   assert.equal(pdf.destroyed, true);
   assert.ok(viewer.entries.every(e => e.canvas.width === 0));
+});
+
+test('text order follows visual lines rather than PDF content order', () => {
+  const { viewer } = fixture();
+  const span = (left, top) => ({ tagName: 'SPAN', children: [], style: { getPropertyValue: () => '' },
+    getBoundingClientRect: () => ({ left, top, width: 10, height: 20 }) });
+  const first = span(10, 0), punctuation = span(100, 1), next = span(10, 30);
+  const layer = { children: [first, next, punctuation], append(...nodes) { this.children = nodes; } };
+  viewer.orderTextLayer(layer);
+  assert.deepEqual(layer.children, [first, punctuation, next]);
+  viewer.orderTextLayer(layer);
+  assert.deepEqual(layer.children, [first, punctuation, next]);
+});
+
+test('scroll eviction preserves the selected text layer until selection is cleared', async () => {
+  const { viewer, context } = fixture();
+  await viewer.init();
+  await viewer.setScale(1, 1);
+  const anchor = {};
+  viewer.entries[0].shell.contains = node => node === anchor;
+  context.window.getSelection = () => ({ isCollapsed: false, anchorNode: anchor });
+  viewer.scrollToPage(20);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(viewer.entries[0].canvas.width > 0);
+  context.window.getSelection = () => ({ isCollapsed: true });
+  await viewer.pump();
+  assert.equal(viewer.entries[0].canvas.width, 0);
+  viewer.destroy();
 });
 
 test('high zoom canvas pixel allocation stays bounded', async () => {

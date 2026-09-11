@@ -95,6 +95,34 @@ window.WolkoPdfContinuous = class {
     entry.loading.hidden = false;
     entry.rendered = false;
   }
+  orderTextLayer(layer) {
+    const units = [];
+    for (const node of Array.from(layer.children)) {
+      if (node.tagName === 'BR' && units.length) {
+        units[units.length - 1].nodes.push(node);
+        continue;
+      }
+      // Leave structured/rotated text intact rather than guessing its reading order.
+      if (node.tagName !== 'SPAN' || node.children.length || node.dir === 'rtl') return;
+      const rotation = node.style.getPropertyValue('--rotate');
+      if (rotation && parseFloat(rotation) !== 0) return;
+      const rect = node.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      units.push({ nodes: [node], rect, center: rect.top + rect.height / 2 });
+    }
+    const rows = [];
+    units.sort((a, b) => a.center - b.center || a.rect.left - b.rect.left);
+    for (const unit of units) {
+      const row = rows[rows.length - 1];
+      if (row && Math.abs(unit.center - row.center) <= Math.min(unit.rect.height, row.height) * .4) {
+        row.units.push(unit);
+      } else {
+        rows.push({ center: unit.center, height: unit.rect.height, units: [unit] });
+      }
+    }
+    const ordered = rows.flatMap(row => row.units.sort((a, b) => a.rect.left - b.rect.left).flatMap(unit => unit.nodes));
+    if (ordered.some((node, index) => layer.children[index] !== node)) layer.append(...ordered);
+  }
   async pump() {
     if (this.dead || !this.scale) return;
     if (this.busy) { this.again = true; return; }
@@ -107,7 +135,10 @@ window.WolkoPdfContinuous = class {
         const nearby = this.entries.filter(entry => {
           const rect = entry.shell.getBoundingClientRect();
           const near = !entry.shell.hidden && rect.bottom >= root.top - height && rect.top <= root.bottom + height;
-          if (!near && entry.rendered && !entry.shell.contains(document.activeElement)) this.release(entry);
+          const selection = window.getSelection?.();
+          const selected = selection && !selection.isCollapsed &&
+            (entry.shell.contains(selection.anchorNode) || entry.shell.contains(selection.focusNode));
+          if (!near && entry.rendered && !selected && !entry.shell.contains(document.activeElement)) this.release(entry);
           return near;
         }).sort((a, b) => Math.abs(a.shell.getBoundingClientRect().top - root.top) - Math.abs(b.shell.getBoundingClientRect().top - root.top));
         const generation = this.generation;
@@ -129,6 +160,7 @@ window.WolkoPdfContinuous = class {
             this.textTask = new this.pdfjs.TextLayer({ textContentSource: entry.page.streamTextContent(), container: layer, viewport });
             await this.textTask.render();
             if (this.dead || generation !== this.generation) break;
+            this.orderTextLayer(layer);
             entry.rendered = true;
             entry.loading.hidden = true;
             this.onReady(entry.shell, entry.number);
