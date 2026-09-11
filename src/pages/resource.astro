@@ -49,6 +49,14 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     .file-context-menu button:hover,.file-context-menu button:focus-visible { background:#eef6f8; outline:2px solid #b7d8e0; }
     .file-context-menu select { width:100%; min-height:42px; }
     [data-context-file], [data-context-folder] { -webkit-touch-callout:none; }
+    .password-dialog { width:min(360px,calc(100vw - 32px)); padding:22px; border:0; border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,.3); color:#102936; font-family:inherit; }
+    .password-dialog::backdrop { background:rgba(6,31,40,.55); }
+    .password-dialog p { margin:0 0 14px; font-size:14px; font-weight:600; line-height:1.55; }
+    .password-dialog input { display:block; width:100%; box-sizing:border-box; border:1px solid #d7e4e8; border-radius:10px; padding:11px 12px; font:600 15px/1.4 inherit; outline:none; }
+    .password-dialog input:focus { border-color:#008e92; box-shadow:0 0 0 3px rgba(0,142,146,.12); }
+    .password-dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+    .password-dialog-actions button { min-height:40px; padding:0 16px; border:1px solid #dce8ed; border-radius:9px; background:#fff; color:#67808d; font:700 13px/1 inherit; cursor:pointer; }
+    .password-dialog-actions button[value="ok"] { border-color:#c42a36; background:#c42a36; color:#fff; }
   </style>
   <script src="/wolko-rail.js?v=9" defer></script>
   <script>
@@ -685,9 +693,45 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         toast(e.message || t('folderSaveFailed'), true);
       }
     }
+    // 브라우저 기본 prompt()는 일반 텍스트 칸이라 한글 입력 상태가 그대로 남아
+    // (로그인 창의 비밀번호 칸은 자동으로 영문 입력으로 바뀌는데) 비밀번호가
+    // 한글로 쳐지거나, 아이폰에선 첫 글자가 대문자로 바뀌어 틀리곤 했다 —
+    // 진짜 비밀번호 입력칸(type=password)을 띄워서 받는다. 취소하면 null.
+    function askPassword(message) {
+      return new Promise(resolve => {
+        const dialog = document.createElement('dialog');
+        dialog.className = 'password-dialog';
+        dialog.innerHTML = `<form method="dialog">
+          <p>${esc(message)}</p>
+          <input type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+          <div class="password-dialog-actions">
+            <button type="button" value="cancel">${esc(t('cancelBtn'))}</button>
+            <button type="submit" value="ok">${esc(t('deleteBtn'))}</button>
+          </div>
+        </form>`;
+        const input = dialog.querySelector('input');
+        dialog.querySelector('button[value="cancel"]').addEventListener('click', () => dialog.close('cancel'));
+        // Enter = 삭제, Esc = 취소 — 브라우저 기본 동작에만 맡기지 않고 직접 처리한다.
+        dialog.addEventListener('keydown', event => {
+          if (event.isComposing) return;
+          if (event.key === 'Escape') { event.preventDefault(); dialog.close('cancel'); }
+          else if (event.key === 'Enter' && event.target === input) {
+            event.preventDefault();
+            dialog.querySelector('form').requestSubmit(dialog.querySelector('button[value="ok"]'));
+          }
+        });
+        dialog.addEventListener('close', () => {
+          resolve(dialog.returnValue === 'ok' ? input.value : null);
+          dialog.remove();
+        });
+        document.body.append(dialog);
+        dialog.showModal();
+        input.focus();
+      });
+    }
     async function deleteFolder(folderId) {
       if (!confirm(t('folderDeleteConfirm'))) return;
-      const password = prompt(t('folderDeletePasswordPrompt'));
+      const password = await askPassword(t('folderDeletePasswordPrompt'));
       if (!password) return;
       try {
         const res = await fetch(`/api/portal/resource-folder?id=${encodeURIComponent(currentItem.id)}&folderId=${encodeURIComponent(folderId)}`, { method: 'DELETE', headers: authHeaders(), body: JSON.stringify({ password }) });
@@ -699,7 +743,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         renderFilesAndFolders();
         toast(t('folderDeletedToast'));
       } catch (e) {
-        // 삭제 실패(특히 비밀번호 틀림)는 토스트만으로는 prompt() 창을 막
+        // 삭제 실패(특히 비밀번호 틀림)는 토스트만으로는 비밀번호 창을 막
         // 닫은 직후라 놓치기 쉬워서, alert로 명확하게 알려준다.
         alert(e.message || t('folderDeleteFailed'));
       }
