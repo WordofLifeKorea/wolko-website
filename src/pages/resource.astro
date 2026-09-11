@@ -3,13 +3,24 @@
 // "WOLKO Portal" 이름은 내부 도구 런처(portal.astro, 구 hub.astro)가 물려받았다.
 import { getCollection } from 'astro:content';
 
+// team 콘텐츠에는 부부가 "남편 & 아내" 한 칸으로 들어 있는데, 검토 체크는
+// 한 칸이 한 가정이라 남자 선교사 이름만 남긴다. 외국인 부부는 성(마지막
+// 토큰)을 아내 쪽에 붙여 쓰므로 그 성만 다시 이어 붙인다
+// ("제이콥 & 크리스탈 몰스" → "제이콥 몰스", "채병국 & 김미영" → "채병국").
+function husbandName(nameKo) {
+  const [husband, wife] = String(nameKo).split('&').map(part => part.trim());
+  if (!wife) return husband;
+  const wifeParts = wife.split(/\s+/);
+  return wifeParts.length > 1 ? `${husband} ${wifeParts[wifeParts.length - 1]}` : husband;
+}
+
 // 평택센터 선교사 검토 체크리스트용 명단 — 인턴/스태프(category: stw)는 빼고
 // 선교사(category: missionary)만, team 콘텐츠에서 그대로 가져온다(따로
 // 유지보수하지 않아도 팀 소개 페이지와 항상 같은 명단).
 const pyeongtaekMissionaries = (await getCollection('team'))
   .filter(p => p.data.active !== false && p.data.campus === 'pyeongtaek' && p.data.category === 'missionary')
   .sort((a, b) => a.data.order - b.data.order)
-  .map(p => ({ slug: p.slug, name: p.data.name_ko }));
+  .map(p => ({ slug: p.slug, name: husbandName(p.data.name_ko) }));
 ---
 <!DOCTYPE html>
 <html lang="ko">
@@ -260,7 +271,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         noteDeleteConfirm: '이 노트를 삭제할까요? (휴지통에서 10일간 복원할 수 있습니다)', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
         noteDeletedToast: '노트를 휴지통으로 옮겼습니다.',
         trashLabel: '휴지통', backToNotes: '← 노트 목록', trashEmpty: '휴지통이 비어 있습니다.', noteRestore: '복원',
-        reviewLabel: (done, total) => `검토 확인 (${done}/${total})`, reviewUpdateFailed: '검토 확인을 저장하지 못했습니다.', reviewEmpty: '평택센터 선교사 명단을 불러오지 못했습니다.',
+        reviewLabel: (done, total) => `검토 완료 확인 (${done}/${total})`, reviewUpdateFailed: '검토 완료 확인을 저장하지 못했습니다.', reviewEmpty: '평택센터 선교사 명단을 불러오지 못했습니다.',
         trashExpiresIn: n => n <= 0 ? '오늘 완전히 삭제됩니다' : `${n}일 후 완전히 삭제됩니다`,
         noteRestoredToast: '노트를 복원했습니다.', noteRestoreFailed: '노트를 복원하지 못했습니다.',
         noteComment: '의견 추가', commentsLabel: n => `추가 의견 ${n}개`, commentPlaceholder: '이 노트에 대한 의견을 입력해 주세요', commentSave: '등록', commentDelete: '삭제',
@@ -314,7 +325,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         noteDeleteConfirm: 'Delete this note? (Recoverable from Trash for 10 days)', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
         noteDeletedToast: 'Note moved to Trash.',
         trashLabel: 'Trash', backToNotes: '← Notes', trashEmpty: 'Trash is empty.', noteRestore: 'Restore',
-        reviewLabel: (done, total) => `Review (${done}/${total})`, reviewUpdateFailed: 'Could not save the review status.', reviewEmpty: 'Could not load the Pyeongtaek missionary roster.',
+        reviewLabel: (done, total) => `Review sign-off (${done}/${total})`, reviewUpdateFailed: 'Could not save the review sign-off.', reviewEmpty: 'Could not load the Pyeongtaek missionary roster.',
         trashExpiresIn: n => n <= 0 ? 'Permanently deleted today' : `Permanently deleted in ${n} day${n === 1 ? '' : 's'}`,
         noteRestoredToast: 'Note restored.', noteRestoreFailed: 'Could not restore the note.',
         noteComment: 'Add comment', commentsLabel: n => `${n} comment${n === 1 ? '' : 's'}`, commentPlaceholder: 'Add your thoughts about this note', commentSave: 'Post', commentDelete: 'Delete',
