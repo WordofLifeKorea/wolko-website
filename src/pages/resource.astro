@@ -41,7 +41,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
-  <link rel="stylesheet" href="/pdf-viewer-layout.css?v=4">
+  <link rel="stylesheet" href="/pdf-viewer-layout.css?v=5">
   <style is:global>
     .file-context-menu { position:fixed; z-index:10000; width:min(230px,calc(100vw - 16px)); padding:6px; background:#fff; border:1px solid #dce8ed; border-radius:12px; box-shadow:0 12px 36px rgba(16,41,54,.2); }
     .file-context-menu button { display:block; width:100%; min-height:42px; border:0; border-radius:7px; background:transparent; text-align:left; padding:10px 14px; color:#102936; font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; }
@@ -1578,8 +1578,10 @@ const pyeongtaekMissionaries = (await getCollection('team'))
           <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><div class="note-item-head-tools"><time>${esc(formatLogTime(a.createdAt))}</time>${canManage ? `<button type="button" class="note-delete-button" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div></div>
           <div class="note-item-meta">
             <label class="note-status-pill"><input type="checkbox" ${a.status === 'resolved' ? 'checked' : ''} ${canManage ? '' : 'disabled'} aria-label="${esc(t('noteResolve'))}" onchange="toggleNoteStatus('${a.id}',this.checked ? 'resolved' : 'open')"><span>${esc(a.status === 'open' ? t('statusOpen') : t('statusResolved'))}</span></label>
+            ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
           </div>
           ${a.quote ? `<blockquote class="note-item-quote">“${esc(a.quote)}”</blockquote>` : ''}
+          <p class="note-item-text">${esc(a.text)}</p>
           ${commentsMarkup}
           ${commentComposer}
           </div>
