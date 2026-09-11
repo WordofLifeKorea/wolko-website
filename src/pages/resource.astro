@@ -1296,7 +1296,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       openNoteComposer({ kind: 'time', timeSec: el.currentTime });
     }
     function openNoteComposer(pending) {
-      pendingNote = pending;
+      // 작성 창 하나 = requestId 하나. 저장이 두 번 날아가도 서버가 같은 요청으로 알아보고 한 번만 만든다.
+      pendingNote = { ...pending, requestId: crypto.randomUUID() };
       toggleNotesPanel(true);
       $('noteComposer').hidden = false;
       const quoteEl = $('noteComposerQuote');
@@ -1346,6 +1347,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       const body = { id: currentItem.id, fileId: viewerFileId, kind: pendingNote.kind, text: textVal };
       if (pendingNote.kind === 'area') Object.assign(body, { x: pendingNote.x, y: pendingNote.y, w: pendingNote.w, h: pendingNote.h, page: pendingNote.page, rects: pendingNote.rects, quote: pendingNote.quote });
       if (pendingNote.kind === 'time') body.timeSec = pendingNote.timeSec;
+      body.requestId = pendingNote.requestId;
       try {
         const res = await fetch('/api/portal/resource-annotation', { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
         const data = await res.json().catch(() => ({}));

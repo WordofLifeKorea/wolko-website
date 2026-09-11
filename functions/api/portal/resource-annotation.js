@@ -22,6 +22,14 @@ function num01(value) {
   return Number.isFinite(n) ? n : null;
 }
 
+const DUPLICATE_WINDOW_MS = 60 * 1000;
+
+// 파일·종류·위치(소수 셋째 자리까지)·인용문·내용이 같으면 같은 노트로 본다.
+function annotationFingerprint(a) {
+  const round = v => (v === null || v === undefined ? null : Math.round(Number(v) * 1000) / 1000);
+  return JSON.stringify([a.fileId, a.kind, a.page ?? null, round(a.x), round(a.y), round(a.w), round(a.h), round(a.timeSec), a.quote || '', a.text]);
+}
+
 export async function onRequestGet({ env, request }) {
   if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
   const session = await sessionFor(request, env);
@@ -84,6 +92,21 @@ export async function onRequestPost({ env, request }) {
   const item = { ...data.items[index] };
   if (!filesOf(item).some(f => f.id === fileId)) return error('파일을 찾을 수 없습니다.', 404);
   const annotations = annotationsOf(item);
+
+  // 같은 노트가 두 번 저장되는 걸 막는다(저장을 두 번 누름, 응답이 늦어 다시
+  // 누름, 재시도 등). 한 작성 창에서 온 요청은 requestId가 같으니 이미 있으면
+  // 새로 만들지 않고, requestId를 안 보내는 예전 화면에서 온 요청도 같은 사람이
+  // 같은 자리에 같은 내용을 짧은 시간 안에 또 보내면 같은 노트로 본다.
+  const requestId = text(body.requestId, 80);
+  const fingerprint = annotationFingerprint({ fileId, kind, page, x, y, w, h, timeSec, quote, text: noteText });
+  const recentSince = Date.now() - DUPLICATE_WINDOW_MS;
+  const duplicate = annotations.find(a =>
+    (requestId && a.requestId === requestId)
+    || (!a.deletedAt && a.createdBy === session.email
+      && new Date(a.createdAt).getTime() >= recentSince
+      && annotationFingerprint(a) === fingerprint));
+  if (duplicate) return Response.json({ item, updatedAt: data.updatedAt || '', duplicate: true }, { headers: CORS });
+
   if (annotations.length >= MAX_ANNOTATIONS_PER_ITEM) return error(`노트는 최대 ${MAX_ANNOTATIONS_PER_ITEM}개까지 남길 수 있습니다.`, 400);
 
   const account = await getAccount(env, session.email);
@@ -93,6 +116,7 @@ export async function onRequestPost({ env, request }) {
     id: crypto.randomUUID(), fileId, kind, page, x, y, w, h, timeSec, rects, quote,
     text: noteText, status: 'open', comments: [],
     createdBy: session.email, createdByName, createdAt: now, updatedAt: now,
+    ...(requestId ? { requestId } : {}),
   };
   item.annotations = [...annotations, annotation];
   item.updatedAt = now;
