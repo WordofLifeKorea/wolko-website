@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const page = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
+const lateCss = readFileSync(new URL('../public/pdf-viewer-layout.css', import.meta.url), 'utf8');
 
 test('PDF viewer opens with notes closed and exposes an accessible toggle', () => {
   assert.match(page, /id="viewerNotesToggle"[^>]+aria-controls="notesPanel"[^>]+aria-expanded="false"/);
@@ -17,6 +18,9 @@ test('notes use an overlay drawer without reducing the PDF width', () => {
   assert.match(css, /\.viewer-stage \{[^}]*position:absolute;[^}]*inset:0;/);
   assert.match(css, /\.notes-panel \{[^}]*position:absolute;[^}]*width:clamp\(300px,30%,400px\)[^}]*transform:translateX\(420px\)/);
   assert.match(css, /\.notes-panel\.is-open \{[^}]*transform:translateX\(0\)/);
+  assert.doesNotMatch(lateCss, /#viewerOverlay \.viewer-body\s*\{[^}]*grid-template-columns/);
+  assert.doesNotMatch(lateCss, /#viewerOverlay \.notes-panel\s*\{[^}]*position:relative/);
+  assert.match(page, /pdf-viewer-layout\.css\?v=6/);
 });
 
 test('viewer frame avoids Safari percentage-width flex sizing', () => {
