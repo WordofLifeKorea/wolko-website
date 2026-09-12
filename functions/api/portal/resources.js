@@ -1,4 +1,5 @@
 import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, annotationsOf, stagePercentsOf, progressFromStagePercents, reviewPercentOf, REVIEW_STAGE_INDEX, STAGE_COUNT } from '../../lib/portalResources.js';
+import { deleteFileVersions } from '../../lib/portalResourceVersions.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_THUMBNAIL_LENGTH = 1_500_000;
@@ -89,7 +90,10 @@ export async function onRequestDelete({ env, request }) {
   const items = data.items.filter(item => item.id !== id);
   const saved = await saveData(env, items);
   try {
-    await Promise.all(filesOf(target).map(f => env.CAMP_KV.delete(`portal:resource-file:${id}:${f.id}`)));
+    await Promise.all(filesOf(target).map(async file => {
+      await env.CAMP_KV.delete(`portal:resource-file:${id}:${file.id}`);
+      await deleteFileVersions(env, id, file);
+    }));
   } catch {}
   return Response.json({ items: saved.items, updatedAt: saved.updatedAt }, { headers: CORS });
 }

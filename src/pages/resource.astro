@@ -36,7 +36,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=58">
+  <link rel="stylesheet" href="/portal.css?v=59">
   <script is:inline src="/pdf-continuous.js?v=3"></script>
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
@@ -62,17 +62,6 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   </style>
   <script src="/wolko-rail.js?v=9" defer></script>
   <script>
-    window.__previewDocx = async (blob, frame) => {
-      const { renderAsync } = await import('docx-preview');
-      const isolated = document.implementation.createHTMLDocument('DOCX');
-      const body = isolated.createElement('div');
-      const styles = isolated.createElement('div');
-      await renderAsync(blob, body, styles, {
-        useBase64URL: true, renderAltChunks: false,
-        ignoreLastRenderedPageBreak: false, renderHeaders: true, renderFooters: true,
-      });
-      frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; font-src data: blob:">${styles.innerHTML}<style>body{margin:0;background:#edf1f3}.docx-wrapper{padding:12px!important}section.docx{margin-left:auto;margin-right:auto}</style></head><body>${body.innerHTML}</body></html>`;
-    };
     // PDF 렌더링은 파일 하나가 몇 MB씩이라 처음 PDF를 열 때만 동적으로
     // 불러온다(모바일 데이터 절약). is:inline 스크립트는 번들링이 안 되므로
     // npm 패키지를 쓰려면 이렇게 별도의(번들링되는) 스크립트로 다리를 놓는다.
@@ -239,6 +228,14 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     </div>
   </div>
 
+  <dialog class="docx-version-dialog" id="docxVersionDialog">
+    <div class="docx-version-head">
+      <div><b data-t="docxVersions">문서 버전</b><small data-t="docxVersionsHint">편집 전 파일을 자동으로 보관합니다</small></div>
+      <button type="button" onclick="closeDocxVersions()" aria-label="close">×</button>
+    </div>
+    <div class="docx-version-list" id="docxVersionList"></div>
+  </dialog>
+
   <div class="toast" id="toast"></div>
 
   <script is:inline define:vars={{ REVIEWER_ROSTER: pyeongtaekMissionaries }}>window.REVIEWER_ROSTER = REVIEWER_ROSTER;</script>
@@ -282,8 +279,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         fileTooLarge: '파일 용량이 너무 큽니다(최대 24MB).', fileUploadFailed: '파일을 업로드하지 못했습니다.', filePreviewFailed: '파일을 불러오지 못했습니다.', fileDeleteFailed: '파일을 삭제하지 못했습니다.',
         fileRemoveConfirm: '이 파일을 삭제할까요?', fileUploadedToast: '파일을 업로드했습니다.', filesUploadedToast: n => `파일 ${n}개를 업로드했습니다.`, fileRemovedToast: '파일을 삭제했습니다.',
         moveFile: '이동', fileMovedToast: '파일을 이동했습니다.', fileMoveFailed: '파일을 이동하지 못했습니다.',
-        addNote: '🖍 드래그해서 노트 남기기', addNoteActive: '✕ 표시 취소', addNoteHint: '문서 위를 드래그해서 표시할 위치를 정해주세요',
-        addNoteAreaPdf: '🖼 이미지·표 영역 표시', addNoteHintPdf: '글자는 그냥 마우스로 드래그해서 선택하면 메모 창이 바로 떠요. 이미지·표처럼 글자가 없는 부분은 이 버튼을 눌러 사각형으로 표시하세요.',
+        addNote: '드래그해서 노트 남기기', addNoteActive: '표시 취소', addNoteHint: '문서 위를 드래그해서 표시할 위치를 정해주세요',
+        addNoteAreaPdf: '이미지·표 영역 표시', addNoteHintPdf: '글자는 그냥 마우스로 드래그해서 선택하면 메모 창이 바로 떠요. 이미지·표처럼 글자가 없는 부분은 이 버튼을 눌러 사각형으로 표시하세요.',
         addGeneralNote: '+ 노트 남기기', addTimeNote: '+ 이 시점에 노트',
         notesLabel: '노트', notesShared: '모든 포탈 사용자와 자동 동기화', notesEmpty: '아직 노트가 없습니다. 문서 위의 글자를 드래그하거나, 위 버튼을 눌러 영역을 표시해보세요.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
         noteCancel: '취소', noteSave: '저장', noteResolve: '해결', noteReopen: '재열기', noteDelete: '삭제',
@@ -298,6 +295,10 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         commentDeleteConfirm: '이 의견을 삭제할까요?', commentSaveFailed: '의견을 등록하지 못했습니다.', commentDeleteFailed: '의견을 삭제하지 못했습니다.', commentDeletedToast: '의견을 삭제했습니다.',
         openInNewTab: '새 탭에서 열기', cannotPreviewInline: '이 파일 형식은 바로 미리보기를 지원하지 않아요.',
         pageOf: (n, total) => `${n} / ${total}`, notePageLabel: n => `${n}페이지`, loadingFile: '불러오는 중...', pdfLoadFailed: 'PDF를 불러오지 못했습니다.', zoomReset: '눌러서 100%(화면 폭 맞춤)로',
+        docxSaving: '변경 내용 자동 저장', docxViewOnly: '읽기 전용', docxVersions: '문서 버전', docxVersionsHint: '편집 전 파일을 자동으로 보관합니다',
+        docxVersionEmpty: '아직 이전 버전이 없습니다. 첫 편집을 저장하면 현재 업로드본이 원본으로 보관됩니다.', docxVersionOpen: '열기', docxVersionRestore: '복원',
+        docxVersionRestoreConfirm: '이 버전으로 문서를 복원할까요? 현재 문서도 복원 전 버전으로 보관됩니다.', docxVersionRestoreFailed: '문서를 복원하지 못했습니다.', docxVersionRestored: '문서를 복원했습니다.',
+        docxEditorFailed: '문서 편집기를 불러오지 못했습니다.', docxCurrent: '현재 문서',
       },
       en: {
         loginTitle: 'Portal login required', loginDesc: 'Resource & Media is available with your WOLKO Portal account.', loginBtn: 'Go to Login',
@@ -337,8 +338,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         fileTooLarge: 'File is too large (max 24MB).', fileUploadFailed: 'Could not upload the file.', filePreviewFailed: 'Could not load the file.', fileDeleteFailed: 'Could not delete the file.',
         fileRemoveConfirm: 'Delete this file?', fileUploadedToast: 'File uploaded.', filesUploadedToast: n => `Uploaded ${n} files.`, fileRemovedToast: 'File removed.',
         moveFile: 'Move', fileMovedToast: 'File moved.', fileMoveFailed: 'Could not move the file.',
-        addNote: '🖍 Drag to Add a Note', addNoteActive: '✕ Cancel Marking', addNoteHint: 'Drag over the document to mark where the note belongs',
-        addNoteAreaPdf: '🖼 Mark an Image/Table Area', addNoteHintPdf: 'Just drag over any text to select it — a note box pops up automatically. Use this button only for non-text parts like images or tables.',
+        addNote: 'Drag to Add a Note', addNoteActive: 'Cancel Marking', addNoteHint: 'Drag over the document to mark where the note belongs',
+        addNoteAreaPdf: 'Mark an Image/Table Area', addNoteHintPdf: 'Just drag over any text to select it — a note box pops up automatically. Use this button only for non-text parts like images or tables.',
         addGeneralNote: '+ Add Note', addTimeNote: '+ Note at This Time',
         notesLabel: 'Notes', notesShared: 'Auto-synced with every portal user', notesEmpty: 'No notes yet. Drag over text in the document, or click the button above to mark an area.', notePlaceholder: 'Describe what needs fixing here',
         noteCancel: 'Cancel', noteSave: 'Save', noteResolve: 'Resolve', noteReopen: 'Reopen', noteDelete: 'Delete',
@@ -353,6 +354,10 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         commentDeleteConfirm: 'Delete this comment?', commentSaveFailed: 'Could not post the comment.', commentDeleteFailed: 'Could not delete the comment.', commentDeletedToast: 'Comment deleted.',
         openInNewTab: 'Open in new tab', cannotPreviewInline: "This file type can't be previewed inline.",
         pageOf: (n, total) => `${n} / ${total}`, notePageLabel: n => `Page ${n}`, loadingFile: 'Loading...', pdfLoadFailed: 'Could not load the PDF.', zoomReset: 'Click to reset to 100% (fit width)',
+        docxSaving: 'Changes save automatically', docxViewOnly: 'View only', docxVersions: 'Document versions', docxVersionsHint: 'The file before each edit is preserved',
+        docxVersionEmpty: 'No earlier versions yet. The uploaded file will be preserved as the original after the first saved edit.', docxVersionOpen: 'Open', docxVersionRestore: 'Restore',
+        docxVersionRestoreConfirm: 'Restore this version? The current document will also be preserved first.', docxVersionRestoreFailed: 'Could not restore the document.', docxVersionRestored: 'Document restored.',
+        docxEditorFailed: 'Could not load the document editor.', docxCurrent: 'Current document',
       },
     };
     let lang = localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko';
@@ -822,6 +827,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       return VIEWER_KIND_MAP[ext] || 'other';
     }
     let viewerFileId = null, viewerKind = null, viewerUrl = null, viewerPage = 1, viewerPdfDoc = null, viewerZoom = 1;
+    let onlyOfficeEditor = null, onlyOfficeApiPromise = null;
     let viewerFitMode = 'width';
     let continuousPdf = null;
     let drawModeOn = false, dragState = null, pendingNote = null, pdfjsLibRef = null;
@@ -849,15 +855,15 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       syncBodyScrollLock();
       pushHistoryLayer('viewer', closeViewer);
       renderNotesList();
-      toggleNotesPanel(isDesktopViewer());
+      toggleNotesPanel(false);
       startViewerNotesSync();
       if (kind === 'other') { renderFallbackStage(meta); return; }
       try {
+        if (kind === 'docx') { await renderDocxStage(meta); return; }
         const url = await fetchFileAsBlobUrl(fileId);
         if (viewerFileId !== fileId || $('viewerOverlay').hidden) { URL.revokeObjectURL(url); return; }
         viewerUrl = url;
         if (kind === 'pdf') await renderPdfStage(url);
-        else if (kind === 'docx') await renderDocxStage(url, meta);
         else if (kind === 'image') renderImageStage(url);
         else renderMediaStage(url, kind);
       } catch (e) {
@@ -867,9 +873,13 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     }
     function closeViewer() {
       releaseHistoryLayer('viewer');
+      try { onlyOfficeEditor?.destroyEditor(); } catch {}
+      onlyOfficeEditor = null;
+      closeDocxVersions();
       continuousPdf?.destroy();
       continuousPdf = null;
       $('viewerOverlay').hidden = true;
+      $('viewerSurface').classList.remove('is-onlyoffice');
       syncBodyScrollLock();
       if (viewerUrl) { URL.revokeObjectURL(viewerUrl); viewerUrl = null; }
       viewerFileId = null; viewerPdfDoc = null; drawModeOn = false; dragState = null;
@@ -890,8 +900,18 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     // 다르게 보여준다.
     function addNoteButtonLabel() { return viewerKind === 'pdf' ? t('addNoteAreaPdf') : t('addNote'); }
     function addNoteHintText() { return viewerKind === 'pdf' ? t('addNoteHintPdf') : t('addNoteHint'); }
+    function viewerToolbarIcon(kind) {
+      if (kind === 'external') return '<svg class="viewer-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M10 14l9-9M19 13v6H5V5h6"/></svg>';
+      if (kind === 'time') return '<svg class="viewer-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2M19 4v4M17 6h4"/></svg>';
+      return '<svg class="viewer-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H4a1 1 0 0 0-1 1v4M16 3h4a1 1 0 0 1 1 1v4M8 21H4a1 1 0 0 1-1-1v-4M16 21h4a1 1 0 0 0 1-1v-4"/></svg>';
+    }
+    function viewerNewTabLinkHtml() {
+      const label = esc(t('openInNewTab'));
+      return `<a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')" aria-label="${label}" title="${label}">${viewerToolbarIcon('external')}<span class="viewer-toolbar-label">${label}</span></a>`;
+    }
     function viewerToolbarHtml() {
-      return `<button type="button" class="viewer-annotate-toggle" id="viewerDrawToggle" onclick="toggleDrawMode()">${esc(addNoteButtonLabel())}</button><span class="viewer-draw-hint" id="viewerDrawHint" hidden>${esc(addNoteHintText())}</span><a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</a>`;
+      const label = esc(addNoteButtonLabel());
+      return `<button type="button" class="viewer-annotate-toggle" id="viewerDrawToggle" onclick="toggleDrawMode()" aria-label="${label}" title="${label}">${viewerToolbarIcon('mark')}<span class="viewer-toolbar-label">${label}</span></button><span class="viewer-draw-hint" id="viewerDrawHint" hidden>${esc(addNoteHintText())}</span>${viewerNewTabLinkHtml()}`;
     }
     function renderImageStage(url) {
       $('viewerToolbar').innerHTML = viewerToolbarHtml();
@@ -904,24 +924,118 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     }
     function renderMediaStage(url, kind) {
       const tag = kind === 'video' ? 'video' : 'audio';
-      $('viewerToolbar').innerHTML = `<button type="button" onclick="addTimeNote()">${esc(t('addTimeNote'))}</button><a class="viewer-newtab-link" href="#" onclick="event.preventDefault();openInNewTab('${viewerFileId}')">${esc(t('openInNewTab'))}</a>`;
+      const noteLabel = esc(t('addTimeNote'));
+      $('viewerToolbar').innerHTML = `<button type="button" class="viewer-time-note" onclick="addTimeNote()" aria-label="${noteLabel}" title="${noteLabel}">${viewerToolbarIcon('time')}<span class="viewer-toolbar-label">${noteLabel}</span></button>${viewerNewTabLinkHtml()}`;
       $('viewerSurface').innerHTML = `<div class="viewer-surface-inner"><${tag} src="${url}" controls id="viewerMedia" class="viewer-media"></${tag}></div>`;
     }
-    async function renderDocxStage(url, meta) {
-      const frame = document.createElement('iframe');
-      frame.title = meta.fileName;
-      frame.setAttribute('sandbox', '');
-      frame.style.cssText = 'width:100%;height:100%;min-height:60vh;border:0;display:block;background:#edf1f3';
-      const blob = await (await fetch(url)).blob();
-      await window.__previewDocx(blob, frame);
+    function loadOnlyOfficeApi(origin) {
+      if (window.DocsAPI?.DocEditor) return Promise.resolve();
+      if (onlyOfficeApiPromise) return onlyOfficeApiPromise;
+      onlyOfficeApiPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = `${origin}/web-apps/apps/api/documents/api.js`;
+        script.onload = () => window.DocsAPI?.DocEditor ? resolve() : reject(new Error('DocsAPI unavailable'));
+        script.onerror = () => reject(new Error('ONLYOFFICE API load failed'));
+        document.head.append(script);
+      }).catch(error => {
+        onlyOfficeApiPromise = null;
+        throw error;
+      });
+      return onlyOfficeApiPromise;
+    }
+    async function renderDocxStage(meta, versionId = '') {
+      try { onlyOfficeEditor?.destroyEditor(); } catch {}
+      onlyOfficeEditor = null;
+      $('viewerSurface').classList.add('is-onlyoffice');
+      $('viewerSurface').innerHTML = `<div class="onlyoffice-editor-shell"><div id="onlyofficeEditor"></div></div>`;
+      $('viewerToolbar').innerHTML = `<span class="docx-editor-status">${esc(t('loadingFile'))}</span>`;
+      toggleNotesPanel(false);
+      const query = new URLSearchParams({ id: currentItem.id, fileId: meta.id, lang });
+      if (versionId) query.set('versionId', versionId);
+      const response = await fetch(`/api/portal/onlyoffice-config?${query}`, { headers: authHeaders() });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || t('docxEditorFailed'));
+      await loadOnlyOfficeApi(data.documentServerUrl);
       if (viewerFileId !== meta.id || $('viewerOverlay').hidden) return;
-      $('viewerSurface').replaceChildren(frame);
-      $('viewerToolbar').innerHTML = `<span>${lang === 'ko' ? 'DOCX 미리보기 · 편집 기능은 준비 중입니다' : 'DOCX preview · Editing is not available yet'}</span>`;
-      const download = document.createElement('a');
-      download.href = url;
-      download.download = meta.fileName;
-      download.textContent = lang === 'ko' ? '원본 다운로드' : 'Download original';
-      $('viewerToolbar').append(download);
+      $('viewerToolbar').innerHTML = `
+        <span class="docx-editor-status"><i></i>${esc(versionId ? data.versionLabel : (data.editable ? t('docxSaving') : t('docxViewOnly')))}</span>
+        <button type="button" class="docx-version-button" onclick="openDocxVersions()">${esc(t('docxVersions'))}</button>
+        ${versionId ? `<button type="button" class="docx-download-button" onclick="openCurrentDocx()">${esc(t('docxCurrent'))}</button>` : `<button type="button" class="docx-download-button" onclick="downloadFile('${meta.id}')">${esc(lang === 'ko' ? '다운로드' : 'Download')}</button>`}
+      `;
+      data.config.events = {
+        onError(event) {
+          console.error('ONLYOFFICE editor error', event?.data);
+          toast(t('docxEditorFailed'), true);
+        },
+      };
+      onlyOfficeEditor = new window.DocsAPI.DocEditor('onlyofficeEditor', data.config);
+    }
+    async function openCurrentDocx() {
+      const meta = (currentItem?.files || []).find(file => file.id === viewerFileId);
+      if (meta) await renderDocxStage(meta);
+    }
+    function closeDocxVersions() {
+      const dialog = $('docxVersionDialog');
+      if (dialog?.open) dialog.close();
+    }
+    function docxVersionTime(value) {
+      if (!value) return '';
+      return new Date(value).toLocaleString(lang === 'ko' ? 'ko-KR' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+    async function openDocxVersions() {
+      if (!currentItem || !viewerFileId) return;
+      const dialog = $('docxVersionDialog');
+      dialog.showModal();
+      $('docxVersionList').innerHTML = `<p class="docx-version-empty">${esc(t('loadingFile'))}</p>`;
+      try {
+        const query = new URLSearchParams({ id: currentItem.id, fileId: viewerFileId });
+        const response = await fetch(`/api/portal/resource-version?${query}`, { headers: authHeaders() });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || t('docxEditorFailed'));
+        const versions = Array.isArray(data.versions) ? data.versions : [];
+        $('docxVersionList').innerHTML = versions.length ? versions.map(version => `
+          <article class="docx-version-item">
+            <div><b>${esc(version.isOriginal ? (lang === 'ko' ? '원본' : 'Original') : version.label)}</b><span>${esc(docxVersionTime(version.createdAt))}${version.createdByName ? ` · ${esc(version.createdByName)}` : ''}</span></div>
+            <div>
+              <button type="button" onclick="openDocxVersion('${version.id}')">${esc(t('docxVersionOpen'))}</button>
+              ${canWrite ? `<button type="button" class="is-restore" onclick="restoreDocxVersion('${version.id}')">${esc(t('docxVersionRestore'))}</button>` : ''}
+            </div>
+          </article>
+        `).join('') : `<p class="docx-version-empty">${esc(t('docxVersionEmpty'))}</p>`;
+      } catch (error) {
+        $('docxVersionList').innerHTML = `<p class="docx-version-empty is-error">${esc(error.message || t('docxEditorFailed'))}</p>`;
+      }
+    }
+    async function openDocxVersion(versionId) {
+      try {
+        const meta = (currentItem?.files || []).find(file => file.id === viewerFileId);
+        if (!meta) throw new Error(t('filePreviewFailed'));
+        closeDocxVersions();
+        await renderDocxStage(meta, versionId);
+      } catch (error) {
+        toast(error.message || t('filePreviewFailed'), true);
+      }
+    }
+    async function restoreDocxVersion(versionId) {
+      if (!canWrite || !confirm(t('docxVersionRestoreConfirm'))) return;
+      try {
+        const response = await fetch('/api/portal/resource-version', {
+          method: 'POST', headers: authHeaders(),
+          body: JSON.stringify({ id: currentItem.id, fileId: viewerFileId, versionId }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || t('docxVersionRestoreFailed'));
+        const fileId = viewerFileId;
+        currentItem = data.item;
+        const index = resources.findIndex(resource => resource.id === currentItem.id);
+        if (index !== -1) resources[index] = currentItem;
+        closeDocxVersions();
+        closeViewer();
+        toast(t('docxVersionRestored'));
+        await previewFile(fileId);
+      } catch (error) {
+        toast(error.message || t('docxVersionRestoreFailed'), true);
+      }
     }
     function renderFallbackStage(meta) {
       $('viewerToolbar').innerHTML = '';
@@ -1011,8 +1125,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       if (currentViewer !== continuousPdf) return;
       // #viewerSurfaceInner는 캔버스 크기에 맞춰 줄어드는(shrink-to-fit) 래퍼라
       // 여기서 폭을 재면 "캔버스 기본 크기(300px) → 그 크기로 렌더 → 래퍼가 그
-      // 크기로 굳어짐"처럼 계속 작게 맴돈다. 항상 꽉 차 있는 바깥 스테이지
-      // (#viewerSurface, padding 16px 양쪽)를 기준으로 재야 한다.
+      // 크기로 굳어짐"처럼 계속 작게 맴돈다. 항상 꽉 차 있는 바깥 스테이지를
+      // 기준으로 재되, 반응형 CSS에서 달라지는 실제 좌우 패딩도 함께 뺀다.
       const surface = $('viewerSurface');
       const surfaceStyle = getComputedStyle(surface);
       const horizontalPadding = (parseFloat(surfaceStyle.paddingLeft) || 0) + (parseFloat(surfaceStyle.paddingRight) || 0);
@@ -1089,7 +1203,14 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     function toggleDrawMode() {
       drawModeOn = !drawModeOn;
       const btn = $('viewerDrawToggle');
-      if (btn) { btn.classList.toggle('is-active', drawModeOn); btn.textContent = drawModeOn ? t('addNoteActive') : addNoteButtonLabel(); }
+      if (btn) {
+        const label = drawModeOn ? t('addNoteActive') : addNoteButtonLabel();
+        btn.classList.toggle('is-active', drawModeOn);
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+        const text = btn.querySelector('.viewer-toolbar-label');
+        if (text) text.textContent = label;
+      }
       $('viewerDrawHint')?.toggleAttribute('hidden', !drawModeOn);
       document.querySelectorAll('#viewerSurface .viewer-surface-inner').forEach(surface => surface.classList.toggle('is-drawing', drawModeOn));
     }
@@ -1459,8 +1580,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     }
     function toggleNotesPanel(force) {
       const panel = $('notesPanel');
-      const isOpen = isDesktopViewer() || (typeof force === 'boolean' ? force : !panel.classList.contains('is-open'));
-      // 모바일 하단 시트만 한 겹으로 친다 — PC 사이드바는 늘 펼쳐져 있어 닫을 게 없다.
+      const isOpen = typeof force === 'boolean' ? force : !panel.classList.contains('is-open');
+      // 모바일 하단 시트만 브라우저 뒤로가기로 닫히는 별도 레이어로 친다.
       if (isOpen && !isDesktopViewer()) pushHistoryLayer('notes', () => toggleNotesPanel(false));
       else releaseHistoryLayer('notes');
       panel.classList.toggle('is-open', isOpen);
@@ -1816,11 +1937,13 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     // PDF를 다시 그려서 항상 새 폭에 맞게 재조정한다 — 드래그 중 연속으로
     // 발생하는 resize 이벤트를 매번 다시 그리진 않고 잠깐 멈췄을 때 한 번만.
     let viewerResizeTimer = null;
-    window.addEventListener('resize', () => {
+    function scheduleViewerPdfResize() {
       if (viewerKind !== 'pdf' || !viewerPdfDoc || $('viewerOverlay').hidden) return;
       clearTimeout(viewerResizeTimer);
       viewerResizeTimer = setTimeout(() => renderPdfPage(), 200);
-    });
+    }
+    window.addEventListener('resize', scheduleViewerPdfResize);
+    window.visualViewport?.addEventListener('resize', scheduleViewerPdfResize);
     document.addEventListener('scroll', event => { if (fileMenu && !fileMenu.contains(event.target)) closeFileMenu(); }, true);
     let filePressTimer;
     let suppressFileClick = false;

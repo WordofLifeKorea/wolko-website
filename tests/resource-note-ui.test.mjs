@@ -4,12 +4,13 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const source = readFileSync(process.env.RESOURCE_SOURCE || new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
-const code = source.slice(source.indexOf('    function renderNotesList()'), source.indexOf('    async function deleteNoteComment('));
+const code = source.slice(source.indexOf('    function visibleSortedNotes('), source.indexOf('    async function deleteNoteComment('));
 function fixture(email = 'author') {
-  const elements = { notesList: {}, viewerNotesCount: {} };
+  const elements = { notesList: {}, notesPageFilter: {}, viewerNotesCount: {} };
   const note = { id: 'a', createdBy: 'author', createdByName: 'Author', createdAt: '2026-09-10', kind: 'area', page: 1, status: 'open', quote: 'Source', text: 'Note' };
   const context = vm.createContext({
-    $: id => elements[id], document: {}, notesTrashView: false,
+    $: id => elements[id], document: {}, notesTrashView: false, notesReviewView: false,
+    notesPageOnly: false, viewerKind: 'pdf', viewerPage: 1,
     trashedAnnotationsForViewerFile: () => [], annotationsForViewerFile: () => [note],
     parseSession: () => ({ email }), canWrite: false, lang: 'ko',
     t: key => key === 'notePageLabel' ? page => `${page} page` : key,

@@ -26,6 +26,7 @@
  */
 import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, annotationsOf, refreshProgress } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
+import { deleteFileVersions } from '../../lib/portalResourceVersions.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_FILE_BYTES = 24 * 1024 * 1024; // KV 값 한도(25MiB)보다 안전 여유를 둔 최대치
@@ -122,9 +123,16 @@ export async function onRequestPost({ env, request }) {
   const now = new Date().toISOString();
   const fileId = existingFileId || crypto.randomUUID();
 
+  if (fileIndex >= 0) await deleteFileVersions(env, id, files[fileIndex]);
+
   await env.CAMP_KV.put(fileKvKey(id, fileId), bytes, { metadata: { fileName, fileType } });
 
-  const meta = { id: fileId, folderId, category, fileName, fileType, fileSize: bytes.length, uploadedBy: session.email, uploadedByName, uploadedAt: now };
+  const replacedFile = fileIndex >= 0 ? files[fileIndex] : null;
+  const meta = {
+    id: fileId, folderId, category, fileName, fileType, fileSize: bytes.length,
+    uploadedBy: session.email, uploadedByName, uploadedAt: now,
+    documentRevision: replacedFile ? Number(replacedFile.documentRevision || 0) + 1 : 0,
+  };
   const nextFiles = [...files];
   if (fileIndex >= 0) nextFiles[fileIndex] = meta; else nextFiles.push(meta);
 
@@ -207,8 +215,10 @@ export async function onRequestDelete({ env, request }) {
   const index = data.items.findIndex(item => item.id === id);
   if (index < 0) return error('작업 항목을 찾을 수 없습니다.', 404);
 
-  await env.CAMP_KV.delete(fileKvKey(id, fileId));
   const item = { ...data.items[index] };
+  const deletedFile = filesOf(item).find(f => f.id === fileId);
+  await env.CAMP_KV.delete(fileKvKey(id, fileId));
+  if (deletedFile) await deleteFileVersions(env, id, deletedFile);
   item.files = filesOf(item).filter(f => f.id !== fileId);
   item.annotations = annotationsOf(item).filter(a => a.fileId !== fileId);
   delete item.workFile;
