@@ -48,8 +48,39 @@ function trimVersions(versions) {
   return { kept, removed: versions.filter(version => !keptIds.has(version.id)) };
 }
 
+export async function ensureOriginalVersion(env, { id, file, bytes }) {
+  const currentVersions = versionsOf(file);
+  if (currentVersions.some(version => version.isOriginal)) {
+    return { file, created: false };
+  }
+  const versionId = 'original';
+  const record = {
+    id: versionId,
+    label: '원본',
+    fileName: file.fileName,
+    fileType: file.fileType || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    fileSize: bytes.byteLength,
+    createdAt: file.uploadedAt || new Date().toISOString(),
+    createdBy: file.uploadedBy || '',
+    createdByName: file.uploadedByName || file.uploadedBy || '',
+    isOriginal: true,
+    hash: await sha256Hex(bytes),
+  };
+  await env.CAMP_KV.put(resourceVersionKey(id, file.id, versionId), bytes, {
+    metadata: { fileName: record.fileName, fileType: record.fileType },
+  });
+  const { kept, removed } = trimVersions([...currentVersions, record]);
+  await Promise.all(removed.map(version => env.CAMP_KV.delete(resourceVersionKey(id, file.id, version.id))));
+  return { file: { ...file, versions: kept }, created: true };
+}
+
 export async function archiveCurrentFile(env, { id, file, bytes, actorEmail, actorName, label }) {
   const currentVersions = versionsOf(file);
+  const currentHash = await sha256Hex(bytes);
+  const untouchedOriginal = !label
+    && Number(file.editVersion || 0) === 0
+    && currentVersions.some(version => version.isOriginal && version.hash === currentHash);
+  if (untouchedOriginal) return currentVersions;
   const versionId = crypto.randomUUID();
   const record = {
     id: versionId,
@@ -61,7 +92,7 @@ export async function archiveCurrentFile(env, { id, file, bytes, actorEmail, act
     createdBy: actorEmail || '',
     createdByName: actorName || actorEmail || '',
     isOriginal: currentVersions.length === 0,
-    hash: await sha256Hex(bytes),
+    hash: currentHash,
   };
   await env.CAMP_KV.put(resourceVersionKey(id, file.id, versionId), bytes, {
     metadata: { fileName: record.fileName, fileType: record.fileType },

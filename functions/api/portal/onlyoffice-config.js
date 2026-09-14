@@ -1,7 +1,7 @@
-import { sessionFor, canWrite, text, readData, error, filesOf } from '../../lib/portalResources.js';
+import { sessionFor, canWrite, text, readData, saveData, error, filesOf } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
 import { createFileAccessToken, onlyOfficeOrigin, onlyOfficeSecret, signJwt } from '../../lib/onlyoffice.js';
-import { versionsOf } from '../../lib/portalResourceVersions.js';
+import { ensureOriginalVersion, readStoredResourceFile, versionsOf } from '../../lib/portalResourceVersions.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -34,11 +34,25 @@ export async function onRequestGet({ env, request }) {
   const versionId = text(url.searchParams.get('versionId'), 80);
   const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'ko';
   const data = await readData(env);
-  const item = data.items.find(entry => entry.id === id);
-  const file = item && filesOf(item).find(entry => entry.id === fileId);
+  const itemIndex = data.items.findIndex(entry => entry.id === id);
+  const item = itemIndex >= 0 ? { ...data.items[itemIndex] } : null;
+  const files = filesOf(item);
+  const fileIndex = files.findIndex(entry => entry.id === fileId);
+  let file = fileIndex >= 0 ? files[fileIndex] : null;
   if (!item || !file) return error('파일을 찾을 수 없습니다.', 404);
   if (!/\.docx$/i.test(file.fileName || '') && file.fileType !== DOCX_TYPE) {
     return error('DOCX 파일만 편집할 수 있습니다.', 400);
+  }
+  if (!versionsOf(file).some(entry => entry.isOriginal)) {
+    const stored = await readStoredResourceFile(env, id, fileId);
+    if (!stored) return error('원본 파일을 찾을 수 없습니다.', 404);
+    const ensured = await ensureOriginalVersion(env, { id, file, bytes: stored.bytes });
+    if (ensured.created) {
+      file = ensured.file;
+      item.files = files.map((entry, index) => index === fileIndex ? file : entry);
+      data.items[itemIndex] = item;
+      await saveData(env, data.items);
+    }
   }
   const version = versionId ? versionsOf(file).find(entry => entry.id === versionId) : null;
   if (versionId && !version) return error('문서 버전을 찾을 수 없습니다.', 404);
@@ -81,6 +95,13 @@ export async function onRequestGet({ env, request }) {
         compactHeader: true,
         forcesave: true,
         help: true,
+        review: {
+          hideReviewDisplay: false,
+          showReviewChanges: false,
+          reviewDisplay: 'markup',
+          trackChanges: editable,
+          hoverMode: false,
+        },
       },
     },
     height: '100%',

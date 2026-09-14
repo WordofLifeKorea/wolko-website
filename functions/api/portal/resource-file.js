@@ -26,14 +26,16 @@
  */
 import { sessionFor, canWrite, text, readData, saveData, error, filesOf, foldersOf, annotationsOf, refreshProgress } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
-import { deleteFileVersions } from '../../lib/portalResourceVersions.js';
+import { archiveCurrentFile, deleteFileVersions, ensureOriginalVersion, readStoredResourceFile } from '../../lib/portalResourceVersions.js';
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const MAX_FILE_BYTES = 24 * 1024 * 1024; // KV 값 한도(25MiB)보다 안전 여유를 둔 최대치
 const MAX_LOG_ENTRIES = 20;
 const MAX_FILES_PER_ITEM = 100; // 임의로 정한 안전장치일 뿐 — 레슨이 여러 개면 20개는 금방 넘는다
+const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 function fileKvKey(id, fileId) { return `portal:resource-file:${id}:${fileId}`; }
+function isDocx(fileName, fileType) { return /\.docx$/i.test(fileName || '') || fileType === DOCX_TYPE; }
 
 function base64ToBytes(dataUrl) {
   const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
@@ -123,16 +125,42 @@ export async function onRequestPost({ env, request }) {
   const now = new Date().toISOString();
   const fileId = existingFileId || crypto.randomUUID();
 
-  if (fileIndex >= 0) await deleteFileVersions(env, id, files[fileIndex]);
+  const replacedFile = fileIndex >= 0 ? files[fileIndex] : null;
+  const replacingDocx = replacedFile && isDocx(replacedFile.fileName, replacedFile.fileType) && isDocx(fileName, fileType);
+  let preservedFile = replacedFile;
+  if (replacingDocx) {
+    const current = await readStoredResourceFile(env, id, fileId);
+    if (!current) return error('교체 전 원본 파일을 찾을 수 없습니다.', 404);
+    preservedFile = (await ensureOriginalVersion(env, { id, file: replacedFile, bytes: current.bytes })).file;
+    if (Number(preservedFile.editVersion || 0) > 0) {
+      preservedFile = {
+        ...preservedFile,
+        versions: await archiveCurrentFile(env, {
+          id, file: preservedFile, bytes: current.bytes,
+          actorEmail: session.email, actorName: uploadedByName, label: '교체 전 버전',
+        }),
+      };
+    }
+  } else if (fileIndex >= 0) {
+    await deleteFileVersions(env, id, replacedFile);
+  }
 
   await env.CAMP_KV.put(fileKvKey(id, fileId), bytes, { metadata: { fileName, fileType } });
 
-  const replacedFile = fileIndex >= 0 ? files[fileIndex] : null;
-  const meta = {
+  let meta = {
     id: fileId, folderId, category, fileName, fileType, fileSize: bytes.length,
     uploadedBy: session.email, uploadedByName, uploadedAt: now,
     documentRevision: replacedFile ? Number(replacedFile.documentRevision || 0) + 1 : 0,
   };
+  if (replacingDocx) {
+    meta = {
+      ...meta,
+      editVersion: Number(preservedFile.editVersion || 0) + 1,
+      versions: preservedFile.versions,
+    };
+  } else if (isDocx(fileName, fileType)) {
+    meta = (await ensureOriginalVersion(env, { id, file: meta, bytes })).file;
+  }
   const nextFiles = [...files];
   if (fileIndex >= 0) nextFiles[fileIndex] = meta; else nextFiles.push(meta);
 

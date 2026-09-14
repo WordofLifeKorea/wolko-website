@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 const source = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
+const configSource = readFileSync(new URL('../functions/api/portal/onlyoffice-config.js', import.meta.url), 'utf8');
 test('DOCX dispatch is case insensitive without treating legacy DOC as DOCX', () => {
   const start = source.indexOf('    const VIEWER_KIND_MAP');
   const end = source.indexOf('    let viewerFileId', start);
@@ -22,4 +23,7 @@ test('DOCX opens in ONLYOFFICE and keeps version history controls', () => {
   assert.match(source, /function openCurrentDocx\(\)/);
   assert.match(css, /\.viewer-stage-surface\.is-onlyoffice \{[^}]*padding:0;[^}]*overflow:hidden/);
   assert.match(css, /\.onlyoffice-editor-shell,#onlyofficeEditor \{[^}]*height:100%/);
+  assert.match(configSource, /ensureOriginalVersion/);
+  assert.match(configSource, /review:\s*\{[\s\S]*reviewDisplay:\s*'markup'[\s\S]*trackChanges:\s*editable/);
+  assert.match(source, /변경 추적 · 자동 저장/);
 });
