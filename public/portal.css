@@ -255,7 +255,7 @@ body.modal-open { overflow:hidden; }
 .note-item[open] > .note-summary .note-summary-chevron { transform:rotate(180deg); }
 .note-summary:focus-visible { outline:2px solid var(--teal);outline-offset:2px;border-radius:10px; }
 .note-expanded { padding:12px 14px 14px;border-top:1px solid #e4ecef; }
-.notes-panel > .note-composer { flex:0 1 auto;min-height:0;overflow-y:auto;border-top:0;border-bottom:1px solid var(--line); }
+.notes-panel > .note-composer { flex:0 0 auto;display:flex;flex-direction:column;min-height:0;max-height:min(52%,420px);overflow:hidden;border-top:0;border-bottom:1px solid var(--line); }
 .note-item.is-resolved { background:#f7faf9;border-color:#dce8e3; }
 .note-item.is-trashed { background:#faf8f6;border-color:#e7d7cd; }
 .note-trash-expiry { margin:6px 0 0;color:#a5827a;font-size:10.5px;font-weight:600; }
@@ -302,9 +302,10 @@ body.modal-open { overflow:hidden; }
 .note-reply-submit:disabled { opacity:.5;cursor:wait; }
 .note-comment-composer textarea:focus { border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,142,146,.08); }
 .note-composer { flex-shrink:0;padding:12px;border-top:1px solid var(--line); }
+.note-composer-fields { min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable; }
 .note-composer textarea { width:100%;min-height:70px;border:1px solid #d7e4e8;border-radius:9px;padding:9px 10px;color:var(--ink);font:600 12.5px/1.5 var(--body);resize:vertical;outline:none; }
 .note-composer textarea:focus { border-color:var(--teal); }
-.note-composer-actions { display:flex;justify-content:flex-end;gap:8px;margin-top:8px; }
+.note-composer-actions { display:flex;flex-shrink:0;justify-content:flex-end;gap:8px;margin-top:8px;background:#fff; }
 .note-composer-actions button { min-height:32px;padding:0 13px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--muted);font:700 12px/1 var(--body);cursor:pointer; }
 .note-composer-actions button.is-primary { border-color:var(--teal);background:var(--teal);color:#fff; }
 @media (max-width:620px) {
@@ -334,6 +335,7 @@ body.modal-open { overflow:hidden; }
   .notes-panel { position:fixed;top:auto;left:0;right:0;bottom:0;width:auto;max-height:min(68vh,620px);border-left:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -8px 26px rgba(0,0,0,.18);transform:translateY(100%); }
   .notes-panel.is-open { transform:translateY(0); }
   .notes-list { padding:10px; }
+  .notes-panel > .note-composer { max-height:min(58%,360px); }
   .note-item { padding:10px; }
   .note-comment-composer { padding:8px; }
   .viewer-media { max-height:40vh; }
