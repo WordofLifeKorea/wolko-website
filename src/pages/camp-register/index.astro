@@ -3628,12 +3628,14 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
 
   populateStaffBirthSelects();
 
-  // 스태프 지원이 열려 있는 캠프 = 아직 시작 전이거나 관리자가 따로 열어둔 캠프
+  // 스태프 지원은 캠프가 공개된 순간부터 열려 있고, 캠프 시작일(한국 시간) 0시에 닫힌다.
+  // 관리자가 staff_registration_open으로 따로 열어둔 캠프는 예외.
   function staffCampOptions() {
-    var now = new Date();
+    var todayKst = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
     return Array.prototype.slice.call(document.querySelectorAll('#staffCampOptions li')).filter(function(li) {
       if (li.dataset.staffRegistrationOpen === 'true') return true;
-      return !li.dataset.startDate || now < new Date(li.dataset.startDate);
+      var startDay = (li.dataset.startDate || '').slice(0, 10);
+      return !startDay || todayKst < startDay;
     });
   }
 
