@@ -2591,7 +2591,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               </span>
             </label>
             <div id="staffCampChips"></div>
-            <div class="staff-commitment" id="staffCommitmentBox">
+            <div class="staff-commitment" id="staffCommitmentBox" hidden>
               <span class="wl-ko">월코캠프와 제주캠프는 캠프 시작 전 주가 준비 주간입니다. 준비 주간과 캠프 주간을 합쳐 약 2주를 함께할 수 있어야 지원할 수 있어요.</span>
               <span class="wl-en">For WOLKO Camp and Jeju Camp, the week before camp is a preparation week. You must be able to commit about 2 weeks (prep week + camp week) to apply.</span>
               <label for="staffCommitment">
@@ -3672,6 +3672,13 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       '<span class="staff-camp-empty"><span class="wl-ko">지금 지원할 수 있는 캠프가 없습니다.</span><span class="wl-en">No camps are open right now.</span></span>';
   }
 
+  // 2주 헌신 안내는 캠프를 하나라도 체크했을 때만 보여준다.
+  function syncCommitmentBox() {
+    var show = checkedCampInputs().length > 0;
+    byId('staffCommitmentBox').hidden = !show;
+    if (!show) byId('staffCommitment').checked = false;
+  }
+
   function syncPreviousCampDetail() {
     byId('staffPreviousCampDetailField').hidden = radioValue('previousCamp') !== 'yes';
   }
@@ -3739,7 +3746,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     clearDraft();
     staffForm.reset();
     renderCampChips([]);
-    syncPreviousCampDetail();
+    syncPreviousCampDetail(); syncCommitmentBox();
     clearFieldErrors();
     draftNotice.hidden = true;
     staffErrorMsg.hidden = true;
@@ -3753,6 +3760,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
   staffForm.addEventListener('change', function(e) {
     formDirty = true;
     if (e.target.name === 'previousCamp') syncPreviousCampDetail();
+    if (e.target.name === 'staffCamp') syncCommitmentBox();
     var chips = e.target.closest ? e.target.closest('.staff-team-chips, #staffCampChips, #staffCommitmentBox') : null;
     if (chips) chips.classList.remove('is-invalid');
     if (e.target.classList) e.target.classList.remove('error');
@@ -3772,7 +3780,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
         applyDraft(draft);
         showDraftNotice(draft.savedAt);
       }
-      syncPreviousCampDetail();
+      syncPreviousCampDetail(); syncCommitmentBox();
       formDirty = false;
       staffFormWrap.hidden  = false;
       staffSuccessWrap.hidden = true;
