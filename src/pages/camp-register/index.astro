@@ -1814,6 +1814,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               data-date-ko={s.data.date_ko}
               data-date-en={s.data.date_en}
               data-training-ko={s.data.staff_training_ko ?? ''}
+              data-commitment={s.data.staff_commitment_required ? 'true' : 'false'}
               data-training-en={s.data.staff_training_en ?? ''}
               data-start-date={s.data.start_date ?? ''}
               data-staff-registration-open={s.data.staff_registration_open ? 'true' : 'false'}
@@ -2583,11 +2584,11 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             </label>
             <div id="staffCampChips"></div>
             <div class="staff-commitment" id="staffCommitmentBox" hidden>
-              <span class="wl-ko">월코캠프와 제주캠프는 캠프 시작 전 주가 준비 주간입니다. 준비 주간과 캠프 주간을 합쳐 약 2주를 함께할 수 있어야 지원할 수 있어요.</span>
-              <span class="wl-en">For WOLKO Camp and Jeju Camp, the week before camp is a preparation week. You must be able to commit about 2 weeks (prep week + camp week) to apply.</span>
+              <span class="wl-ko">2027 겨울 월코 영어 캠프는 캠프 시작 전 주가 준비 주간입니다. 준비 주간과 캠프 주간을 합쳐 약 2주를 함께할 수 있어야 지원할 수 있어요.</span>
+              <span class="wl-en">For the 2027 Winter WOLKO English Camp, the week before camp is a preparation week. You must be able to commit about 2 weeks (prep week + camp week) to apply.</span>
               <label for="staffCommitment">
                 <input type="checkbox" id="staffCommitment">
-                <span><span class="wl-ko">월코캠프 스태프는 준비 주간을 포함해 약 2주간 참여해야 함을 이해하고, 이에 동의합니다.</span><span class="wl-en">I understand that WOLKO Camp staff must serve for about two weeks, including the preparation week, and I agree to this commitment.</span></span>
+                <span><span class="wl-ko">월코 영어 캠프 스태프는 준비 주간을 포함해 약 2주간 참여해야 함을 이해하고, 이에 동의합니다.</span><span class="wl-en">I understand that WOLKO English Camp staff must serve for about two weeks, including the preparation week, and I agree to this commitment.</span></span>
               </label>
             </div>
           </div>
@@ -3652,7 +3653,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       html += '<div class="staff-camp-group"><div class="staff-camp-group-title"><span class="wl-ko">' + REGION_LABEL[region][0] + '</span><span class="wl-en">' + REGION_LABEL[region][1] + '</span></div><div class="staff-camp-list">';
       items.forEach(function(li) {
         var d = li.dataset;
-        html += '<label class="staff-camp-option"><input type="checkbox" name="staffCamp" value="' + escHtml(d.campId) + '" data-name-ko="' + escHtml(d.nameKo) + '"' +
+        html += '<label class="staff-camp-option"><input type="checkbox" name="staffCamp" value="' + escHtml(d.campId) + '" data-name-ko="' + escHtml(d.nameKo) + '" data-commitment="' + (d.commitment === 'true' ? 'true' : 'false') + '"' +
           (checkedIds.indexOf(d.campId) !== -1 ? ' checked' : '') + '>' +
           '<span class="staff-camp-option-name"><span class="wl-ko">' + escHtml(d.nameKo) + '</span><span class="wl-en">' + escHtml(d.nameEn || d.nameKo) + '</span></span>' +
           '<span class="staff-camp-option-date"><span class="wl-ko">캠프 ' + escHtml(d.dateKo) + '</span><span class="wl-en">Camp ' + escHtml(d.dateEn || d.dateKo) + '</span>' +
@@ -3665,9 +3666,9 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       '<span class="staff-camp-empty"><span class="wl-ko">지금 지원할 수 있는 캠프가 없습니다.</span><span class="wl-en">No camps are open right now.</span></span>';
   }
 
-  // 2주 헌신 안내는 캠프를 하나라도 체크했을 때만 보여준다.
+  // 2주 헌신 안내는 준비 주간이 있는 캠프(staff_commitment_required)를 체크했을 때만 보여준다.
   function syncCommitmentBox() {
-    var show = checkedCampInputs().length > 0;
+    var show = checkedCampInputs().some(function(input) { return input.dataset.commitment === 'true'; });
     byId('staffCommitmentBox').hidden = !show;
     if (!show) byId('staffCommitment').checked = false;
   }
@@ -3873,7 +3874,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       [!payload.team1, 'staffTeam1', '선호하는 팀(1지망)을 선택해 주세요.', 'Please choose your 1st-choice team.'],
       [payload.team2 && payload.team2 === payload.team1, 'staffTeam2', '2지망은 1지망과 다른 팀으로 선택해 주세요.', 'Your 2nd choice must differ from your 1st choice.'],
       [!payload.availableCamps.length, 'staffCamp', '섬길 수 있는 캠프를 하나 이상 선택해 주세요.', 'Please select at least one camp you can serve.'],
-      [!payload.commitment, 'staffCommitment', '준비 주간을 포함한 약 2주 헌신이 가능한지 확인해 주세요.', 'Please confirm you can commit about 2 weeks including the prep week.'],
+      [!byId('staffCommitmentBox').hidden && !payload.commitment, 'staffCommitment', '준비 주간을 포함한 약 2주 헌신이 가능한지 확인해 주세요.', 'Please confirm you can commit about 2 weeks including the prep week.'],
       [!byId('staffPrivacyConsent').checked, 'staffPrivacyConsent', '개인정보 수집 및 이용에 동의해 주세요.', 'Please consent to the privacy policy.'],
     ];
     for (var i = 0; i < checks.length; i++) {

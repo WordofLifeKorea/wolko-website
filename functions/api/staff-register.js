@@ -190,7 +190,7 @@ export async function onRequestPost(context) {
 
     const required = [name, phone, email, gender, birthDate, introduction, faithStory, church,
       cultHistory, englishAbility, mediaTech, previousCamp, team1];
-    if (required.some(value => !value) || !availableCamps.length || (previousCamp === 'yes' && !previousCampDetail) || !commitment) {
+    if (required.some(value => !value) || !availableCamps.length || (previousCamp === 'yes' && !previousCampDetail)) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
