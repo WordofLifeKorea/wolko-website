@@ -11,8 +11,19 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
 };
 
+const STAFF_TEAMS = ['프로그램', '티칭', '상담자', '테크', '찬양팀'];
+const YES_NO = ['yes', 'no'];
+
 function escHtml(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function clean(value, max) {
+  return String(value ?? '').trim().slice(0, max);
+}
+
+function yesNoLabel(value) {
+  return value === 'yes' ? '예' : value === 'no' ? '아니오' : '—';
 }
 
 function buildStaffEmailHtml(reg) {
@@ -21,6 +32,20 @@ function buildStaffEmailHtml(reg) {
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit',
   });
+  const divider = '<tr><td colspan="2"><div style="border-top:1px solid rgba(0,79,104,0.1);margin:4px 0;"></div></td></tr>';
+  const row = (label, value) => `
+        <tr>
+          <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:150px;vertical-align:top;">${label}</td>
+          <td style="padding:8px 0;font-size:14px;font-weight:600;">${value}</td>
+        </tr>`;
+  const block = (label, value) => value ? `
+        <tr>
+          <td colspan="2" style="padding:10px 0 4px;color:#5a6f79;font-size:13px;">${label}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:8px 16px;background:#f4f8fb;border-radius:10px;font-size:15px;line-height:1.75;color:#0d1b24;white-space:pre-wrap;">${escHtml(value)}</td>
+        </tr>` : '';
+  const teams = [reg.team1 && `1지망 ${reg.team1}`, reg.team2 && `2지망 ${reg.team2}`].filter(Boolean).join(' · ');
 
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -33,58 +58,29 @@ function buildStaffEmailHtml(reg) {
     </div>
     <div style="padding:32px 36px;">
       <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">캠프 ID</td>
-          <td style="padding:8px 0;font-size:14px;font-weight:600;">${reg.campId}</td>
-        </tr>
-        <tr><td colspan="2"><div style="border-top:1px solid rgba(0,79,104,0.1);margin:4px 0;"></div></td></tr>
-        <tr>
-          <td style="padding:8px 0;color:#5a6f79;font-size:13px;">이름</td>
-          <td style="padding:8px 0;font-size:14px;font-weight:600;">${reg.name}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;color:#5a6f79;font-size:13px;">이메일</td>
-          <td style="padding:8px 0;font-size:14px;"><a href="mailto:${reg.email}" style="color:#0d9488;text-decoration:none;">${reg.email}</a></td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;color:#5a6f79;font-size:13px;">연락처</td>
-          <td style="padding:8px 0;font-size:14px;">${reg.phone}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;color:#5a6f79;font-size:13px;">생년월일</td>
-          <td style="padding:8px 0;font-size:14px;">${reg.birthDate || '—'}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;color:#5a6f79;font-size:13px;">교회</td>
-          <td style="padding:8px 0;font-size:14px;">${reg.church || '—'}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;color:#5a6f79;font-size:13px;">이전 캠프 참여</td>
-          <td style="padding:8px 0;font-size:14px;">${reg.previousCamp === 'yes' ? '예' : reg.previousCamp === 'no' ? '아니오' : '—'}</td>
-        </tr>
-        <tr><td colspan="2"><div style="border-top:1px solid rgba(0,79,104,0.1);margin:4px 0;"></div></td></tr>
-        ${reg.serviceArea ? `
-        <tr>
-          <td style="padding:8px 0;color:#5a6f79;font-size:13px;">섬기고 싶은 분야</td>
-          <td style="padding:0;"></td>
-        </tr>
-        <tr>
-          <td colspan="2" style="padding:8px 16px;background:#f0fdfa;border-radius:10px;font-size:15px;line-height:1.75;color:#0d1b24;white-space:pre-wrap;">${escHtml(reg.serviceArea)}</td>
-        </tr>` : ''}
-        ${reg.testimony ? `
-        <tr>
-          <td colspan="2" style="padding:8px 0 4px;color:#5a6f79;font-size:13px;">자기소개 및 간증</td>
-        </tr>
-        <tr>
-          <td colspan="2" style="padding:8px 16px;background:#f4f8fb;border-radius:10px;font-size:15px;line-height:1.75;color:#0d1b24;white-space:pre-wrap;">${escHtml(reg.testimony)}</td>
-        </tr>` : ''}
-        ${reg.notes ? `
-        <tr>
-          <td colspan="2" style="padding:8px 0 4px;color:#5a6f79;font-size:13px;">메모</td>
-        </tr>
-        <tr>
-          <td colspan="2" style="padding:8px 16px;background:#f4f8fb;border-radius:10px;font-size:15px;line-height:1.75;color:#0d1b24;white-space:pre-wrap;">${escHtml(reg.notes)}</td>
-        </tr>` : ''}
+        ${row('지원한 캠프', escHtml(reg.campTitleKo || reg.campId))}
+        ${row('섬길 수 있는 캠프', escHtml((reg.availableCampNames || []).join(', ') || '—'))}
+        ${divider}
+        ${row('이름', escHtml(reg.name))}
+        ${row('생년월일', escHtml(reg.birthDate || '—'))}
+        ${row('성별', reg.gender === 'male' ? '남' : reg.gender === 'female' ? '여' : '—')}
+        ${row('연락처', escHtml(reg.phone))}
+        ${row('이메일', `<a href="mailto:${escHtml(reg.email)}" style="color:#0d9488;text-decoration:none;">${escHtml(reg.email)}</a>`)}
+        ${divider}
+        ${row('출석 교회', escHtml(reg.church || '—'))}
+        ${row('교회 홈페이지', escHtml(reg.churchWebsite || '—'))}
+        ${row('담임 목사님·교회 연락처', escHtml(reg.pastorContact || '—'))}
+        ${row('하나님의 교회·신천지 참여', yesNoLabel(reg.cultHistory))}
+        ${divider}
+        ${row('생활 영어', yesNoLabel(reg.englishAbility))}
+        ${row('미디어·테크', yesNoLabel(reg.mediaTech))}
+        ${row('다룰 수 있는 악기', escHtml(reg.instruments || '—'))}
+        ${row('기독교 캠프 봉사 경험', yesNoLabel(reg.previousCamp))}
+        ${row('선호하는 팀', escHtml(teams || '—'))}
+        ${block('간단한 자기소개', reg.introduction)}
+        ${block('언제, 어떻게 예수님을 믿게 되었나요?', reg.faithStory)}
+        ${block('캠프 봉사 경험 상세', reg.previousCampDetail)}
+        ${block('참고 사항', reg.notes)}
       </table>
     </div>
     <div style="padding:20px 36px;background:#f0fdfa;border-top:1px solid rgba(13,148,136,0.12);font-size:12px;color:#5a6f79;line-height:1.6;">
@@ -98,7 +94,7 @@ function buildStaffEmailHtml(reg) {
 
 async function sendStaffEmail(env, reg) {
   if (!env.RESEND_API_KEY) return;
-  const subject = `[스태프 지원] ${reg.name} · ${reg.campId}`;
+  const subject = `[스태프 지원] ${reg.name} · ${reg.campTitleKo || reg.campId}`;
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -120,7 +116,7 @@ async function syncStaffToSheet(env, reg) {
   await appendRow({
     serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
     sheetId: env.GOOGLE_SHEET_ID,
-    range: '시트1!A:U',
+    range: '시트1!A:AG',
     row: [
       reg.registeredAt,       // A 신청일시
       reg.regId,              // B 신청ID
@@ -137,12 +133,24 @@ async function syncStaffToSheet(env, reg) {
       0,                      // M 여성수
       1,                      // N 총인원
       '',                     // O 비상연락처
-      reg.serviceArea || '',  // P 섬기고 싶은 분야 (메모 컬럼 활용)
+      reg.serviceArea || '',  // P 섬기고 싶은 분야 (1지망, 2지망)
       '대기중',               // Q 확정여부
       '',                     // R 확정일시
       reg.birthDate || '',     // S 생년월일
-      reg.previousCamp || '',  // T 이전 캠프 참여 경험
-      reg.testimony || '',     // U 자기소개 및 간증
+      reg.previousCamp || '',  // T 기독교 캠프 봉사 경험
+      reg.faithStory || '',    // U 예수님을 믿게 된 이야기
+      reg.introduction || '',  // V 간단한 자기소개
+      reg.churchWebsite || '', // W 출석 교회 홈페이지
+      reg.pastorContact || '', // X 담임 목사님 혹은 교회 연락처
+      reg.cultHistory || '',   // Y 하나님의 교회·신천지 참여
+      reg.englishAbility || '',// Z 생활 영어
+      reg.instruments || '',   // AA 다룰 수 있는 악기
+      reg.mediaTech || '',     // AB 미디어·테크
+      reg.previousCampDetail || '', // AC 캠프 봉사 경험 상세
+      reg.team1 || '',         // AD 선호 팀 1지망
+      reg.team2 || '',         // AE 선호 팀 2지망
+      (reg.availableCampNames || []).join(', '), // AF 섬길 수 있는 캠프
+      reg.notes || '',         // AG 참고 사항
     ],
   });
 }
@@ -152,41 +160,81 @@ export async function onRequestPost(context) {
 
   try {
     const data = await request.json();
-    const { campId, name, phone, email, gender, birthDate, church, previousCamp, serviceArea, notes, testimony, campTitleKo } = data;
+    const campId = clean(data.campId, 80);
+    const name = clean(data.name, 60);
+    const phone = clean(data.phone, 30);
+    const email = clean(data.email, 120).toLowerCase();
+    const gender = ['male', 'female'].includes(data.gender) ? data.gender : '';
+    const birthDate = clean(data.birthDate, 10);
+    const introduction = clean(data.introduction, 2000);
+    const faithStory = clean(data.faithStory, 3000);
+    const church = clean(data.church, 100);
+    const churchWebsite = clean(data.churchWebsite, 200);
+    const pastorContact = clean(data.pastorContact, 150);
+    const cultHistory = YES_NO.includes(data.cultHistory) ? data.cultHistory : '';
+    const englishAbility = YES_NO.includes(data.englishAbility) ? data.englishAbility : '';
+    const mediaTech = YES_NO.includes(data.mediaTech) ? data.mediaTech : '';
+    const instruments = clean(data.instruments, 200);
+    const previousCamp = YES_NO.includes(data.previousCamp) ? data.previousCamp : '';
+    const previousCampDetail = previousCamp === 'yes' ? clean(data.previousCampDetail, 2000) : '';
+    const team1 = STAFF_TEAMS.includes(data.team1) ? data.team1 : '';
+    const team2 = STAFF_TEAMS.includes(data.team2) && data.team2 !== team1 ? data.team2 : '';
+    const availableCamps = (Array.isArray(data.availableCamps) ? data.availableCamps : [])
+      .map(id => clean(id, 80)).filter(Boolean).slice(0, 20);
+    const availableCampNames = (Array.isArray(data.availableCampNames) ? data.availableCampNames : [])
+      .map(title => clean(title, 120)).filter(Boolean).slice(0, 20);
+    const notes = clean(data.notes, 2000);
+    const campTitleKo = clean(data.campTitleKo, 120);
 
-    if (!campId || !name?.trim() || !phone?.trim() || !email?.trim() || !birthDate || !previousCamp || !testimony?.trim()) {
+    const required = [campId, name, phone, email, gender, birthDate, introduction, faithStory, church, pastorContact,
+      cultHistory, englishAbility, mediaTech, previousCamp, team1];
+    if (required.some(value => !value) || !availableCamps.length || (previousCamp === 'yes' && !previousCampDetail)) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
     }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(birthDate))) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
       return Response.json({ error: '생년월일 형식이 올바르지 않습니다.' }, { status: 400, headers: CORS });
     }
-    if (!['yes', 'no'].includes(previousCamp)) {
-      return Response.json({ error: '이전 캠프 참여 경험을 선택해주세요.' }, { status: 400, headers: CORS });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return Response.json({ error: '이메일 주소 형식이 올바르지 않습니다.' }, { status: 400, headers: CORS });
     }
 
-    const emailNorm = email.trim().toLowerCase();
-
     // 동일 캠프 중복 이메일 차단
-    const dupeKey = `camp:${campId}:staff:email:${emailNorm}`;
+    const dupeKey = `camp:${campId}:staff:email:${email}`;
     if (await env.CAMP_KV.get(dupeKey)) {
       return Response.json({ error: '이미 지원하신 이메일 주소입니다.' }, { status: 409, headers: CORS });
     }
 
     const regId = `staff-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+    // 관리자 화면은 serviceArea(쉼표로 구분한 팀 목록)로 팀 뱃지·상담자 배정을,
+    // testimony로 간증 요약을 보여주므로 그 두 칸은 새 질문 답으로 채워 호환을 유지한다.
     const reg = {
       regId, campId,
       registrationType: 'staff',
-      name: name.trim(),
-      phone: phone.trim(),
-      email: emailNorm,
-      gender: gender || '',
+      campTitleKo,
+      name,
+      phone,
+      email,
+      gender,
       birthDate,
-      church: church?.trim() || '',
+      introduction,
+      faithStory,
+      church,
+      churchWebsite,
+      pastorContact,
+      cultHistory,
+      englishAbility,
+      mediaTech,
+      instruments,
       previousCamp,
-      serviceArea: serviceArea?.trim() || '',
-      notes: notes?.trim() || '',
-      testimony: testimony.trim(),
+      previousCampDetail,
+      team1,
+      team2,
+      serviceArea: [team1, team2].filter(Boolean).join(', '),
+      availableCamps,
+      availableCampNames,
+      notes,
+      testimony: faithStory,
       registeredAt: new Date().toISOString(),
       confirmed: false,
       confirmedAt: null,

@@ -499,7 +499,38 @@ body.lang-en .crp-countdown-notice {
 /* Team Chips */
 .staff-team-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
 .staff-team-chip { display:inline-flex; }
-.staff-team-chip input[type="checkbox"] { position:absolute; opacity:0; width:0; height:0; }
+.staff-team-chip input[type="checkbox"], .staff-team-chip input[type="radio"] { position:absolute; opacity:0; width:0; height:0; }
+.staff-team-chip input:focus-visible ~ .staff-team-chip-label { outline:2px solid #0d9488; outline-offset:2px; }
+.staff-team-chips.is-invalid .staff-team-chip-label { border-color:var(--c-red); }
+.staff-camp-empty { font-size:13px; color:var(--c-muted); }
+
+/* 임시 저장 */
+.staff-draft-notice {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin-bottom:18px; padding:11px 14px; border-radius:10px;
+  background:#f0fdfa; border:1px solid rgba(13,148,136,0.25);
+  font-size:13px; color:#0f766e; line-height:1.5;
+}
+.staff-draft-notice[hidden] { display:none; }
+.staff-draft-discard {
+  flex-shrink:0; border:0; background:none; padding:4px 2px;
+  color:#0f766e; font-size:13px; font-weight:700; text-decoration:underline; cursor:pointer;
+}
+.staff-form-actions { display:flex; gap:10px; margin-top:20px; }
+.staff-form-actions .crp-submit { flex:1; margin-top:0; }
+.staff-draft-btn {
+  flex:0 0 auto; padding:0 22px; border-radius:12px;
+  border:1.5px solid rgba(13,148,136,0.45); background:#fff; color:#0f766e;
+  font-size:15px; font-weight:700; font-family:var(--f-sans); cursor:pointer;
+  transition:background 0.18s, border-color 0.18s;
+}
+.staff-draft-btn:hover { background:#f0fdfa; border-color:#0d9488; }
+.staff-draft-hint { margin:10px 0 0; font-size:11.5px; color:var(--c-muted); text-align:center; }
+@media (max-width: 640px) {
+  #staffModal .staff-form-actions { position:sticky; bottom:max(12px, env(safe-area-inset-bottom)); z-index:25; }
+  #staffModal .staff-form-actions .crp-submit { position:static; }
+  .staff-draft-btn { padding:0 16px; box-shadow:0 10px 30px rgba(13,148,136,0.18); }
+}
 .staff-team-chip-label {
   display:inline-block; padding:7px 18px;
   border:1.5px solid rgba(0,79,104,0.2); border-radius:999px;
@@ -749,7 +780,7 @@ body.lang-en .crp-countdown-notice {
   border-color: var(--c-mid); background: #fff;
   box-shadow: 0 0 0 3px rgba(0,126,161,0.09);
 }
-.crp-field input.error, .crp-field select.error { border-color: var(--c-red); }
+.crp-field input.error, .crp-field select.error, .crp-field textarea.error { border-color: var(--c-red); }
 
 /* Form section dividers */
 .crp-form-section {
@@ -2339,6 +2370,14 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
         <input type="hidden" id="staffCampId">
         <input type="hidden" id="staffCampNameKo">
 
+        <!-- 임시 저장본을 불러왔을 때 안내 -->
+        <div class="staff-draft-notice" id="staffDraftNotice" hidden>
+          <span id="staffDraftNoticeText"></span>
+          <button type="button" class="staff-draft-discard" id="staffDraftDiscard">
+            <span class="wl-ko">새로 작성</span><span class="wl-en">Start over</span>
+          </button>
+        </div>
+
         <div class="crp-form-section" style="margin-top:0;">
           <span class="crp-form-section-label">
             <span class="wl-ko">지원자 정보</span><span class="wl-en">Applicant Info</span>
@@ -2349,15 +2388,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
         <div class="crp-form-grid">
           <div class="crp-field">
             <label><span class="wl-ko">이름</span><span class="wl-en">Name</span> <span class="req">*</span></label>
-            <input id="staffName" name="name" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
-          </div>
-          <div class="crp-field">
-            <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
-            <input id="staffPhone" name="phone" placeholder="010-0000-0000">
-          </div>
-          <div class="crp-field crp-field--full">
-            <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
-            <input id="staffEmail" name="email" type="email" placeholder="example@email.com">
+            <input id="staffName" name="name" maxlength="60" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
           </div>
           <div class="crp-field">
             <label><span class="wl-ko">성별</span><span class="wl-en">Gender</span> <span class="req">*</span></label>
@@ -2367,7 +2398,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <option value="female" data-ko="여" data-en="Female">여</option>
             </select>
           </div>
-          <div class="crp-field">
+          <div class="crp-field crp-field--full">
             <label><span class="wl-ko">생년월일</span><span class="wl-en">Date of Birth</span> <span class="req">*</span></label>
             <div class="staff-birth-grid">
               <select id="staffBirthYear" name="birthYear" data-opt-ko="년도" data-opt-en="Year">
@@ -2381,75 +2412,134 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               </select>
             </div>
           </div>
-          <div class="crp-field crp-field--full">
-            <label><span class="wl-ko">교회</span><span class="wl-en">Church</span></label>
-            <input id="staffChurch" name="church" data-ph-ko="소속 교회명" data-ph-en="Your church" placeholder="소속 교회명">
+          <div class="crp-field">
+            <label><span class="wl-ko">연락 가능한 전화번호</span><span class="wl-en">Phone Number</span> <span class="req">*</span></label>
+            <input id="staffPhone" name="phone" type="tel" maxlength="30" placeholder="010-0000-0000">
           </div>
-          <div class="crp-field crp-field--full">
-            <label><span class="wl-ko">이전 캠프 참여 경험</span><span class="wl-en">Previous Camp Experience</span> <span class="req">*</span></label>
-            <select id="staffPreviousCamp" name="previousCamp" data-opt-ko="선택" data-opt-en="Select">
-              <option value="" disabled selected>선택</option>
-              <option value="yes" data-ko="예" data-en="Yes">예</option>
-              <option value="no" data-ko="아니오" data-en="No">아니오</option>
-            </select>
+          <div class="crp-field">
+            <label><span class="wl-ko">이메일 주소</span><span class="wl-en">Email Address</span> <span class="req">*</span></label>
+            <input id="staffEmail" name="email" type="email" maxlength="120" placeholder="example@email.com">
           </div>
         </div>
 
         <div class="crp-form-section">
           <span class="crp-form-section-label">
-            <span class="wl-ko">섬김 분야</span><span class="wl-en">Area of Service</span>
+            <span class="wl-ko">신앙과 교회</span><span class="wl-en">Faith &amp; Church</span>
           </span>
           <hr class="crp-form-section-line">
         </div>
 
         <div class="crp-form-grid">
           <div class="crp-field crp-field--full">
-            <label>
-              <span class="wl-ko">섬기고 싶은 팀</span>
-              <span class="wl-en">Team Preference</span>
-              <span class="req">*</span>
-              <span style="font-size:11px;color:var(--c-muted);font-weight:400;margin-left:4px;">
-                <span class="wl-ko">(복수 선택 가능)</span>
-                <span class="wl-en">(multiple selections allowed)</span>
-              </span>
-            </label>
-            <div class="staff-team-chips" id="staffTeamChips">
-              <label class="staff-team-chip">
-                <input type="checkbox" name="staffTeam" value="프로그램">
-                <span class="staff-team-chip-label"><span class="wl-ko">프로그램</span><span class="wl-en">Program</span></span>
-              </label>
-              <label class="staff-team-chip">
-                <input type="checkbox" name="staffTeam" value="티칭">
-                <span class="staff-team-chip-label"><span class="wl-ko">티칭</span><span class="wl-en">Teaching</span></span>
-              </label>
-              <label class="staff-team-chip">
-                <input type="checkbox" name="staffTeam" value="상담자">
-                <span class="staff-team-chip-label"><span class="wl-ko">상담자</span><span class="wl-en">Counselor</span></span>
-              </label>
-              <label class="staff-team-chip">
-                <input type="checkbox" name="staffTeam" value="테크">
-                <span class="staff-team-chip-label"><span class="wl-ko">테크</span><span class="wl-en">Tech</span></span>
-              </label>
-              <label class="staff-team-chip">
-                <input type="checkbox" name="staffTeam" value="찬양팀">
-                <span class="staff-team-chip-label"><span class="wl-ko">찬양팀</span><span class="wl-en">Worship Team</span></span>
-              </label>
+            <label><span class="wl-ko">간단한 자기소개</span><span class="wl-en">Brief Self-Introduction</span> <span class="req">*</span></label>
+            <textarea id="staffIntro" name="introduction" rows="4" maxlength="2000"></textarea>
+          </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">언제, 어떻게 예수님을 믿게 되었나요?</span><span class="wl-en">When and how did you come to believe in Jesus?</span> <span class="req">*</span></label>
+            <textarea id="staffFaith" name="faithStory" rows="5" maxlength="3000"></textarea>
+          </div>
+          <div class="crp-field">
+            <label><span class="wl-ko">출석 교회 이름</span><span class="wl-en">Church Name</span> <span class="req">*</span></label>
+            <input id="staffChurch" name="church" maxlength="100" data-ph-ko="예: 월코교회" data-ph-en="e.g. WOLKO Church" placeholder="예: 월코교회">
+          </div>
+          <div class="crp-field">
+            <label><span class="wl-ko">출석 교회 홈페이지</span><span class="wl-en">Church Website</span></label>
+            <input id="staffChurchWebsite" name="churchWebsite" maxlength="200" data-ph-ko="없으면 비워두세요" data-ph-en="Leave blank if none" placeholder="없으면 비워두세요">
+          </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">담임 목사님 혹은 교회 연락처</span><span class="wl-en">Senior Pastor or Church Contact</span> <span class="req">*</span></label>
+            <input id="staffPastorContact" name="pastorContact" maxlength="150" data-ph-ko="예: 홍길동 목사님 010-0000-0000" data-ph-en="e.g. Pastor Kim, 010-0000-0000" placeholder="예: 홍길동 목사님 010-0000-0000">
+          </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">하나님의 교회나 신천지에 참여한 적이 있습니까?</span><span class="wl-en">Have you ever been involved with the World Mission Society Church of God or Shincheonji?</span> <span class="req">*</span></label>
+            <div class="staff-team-chips">
+              <label class="staff-team-chip"><input type="radio" name="cultHistory" value="yes"><span class="staff-team-chip-label"><span class="wl-ko">예</span><span class="wl-en">Yes</span></span></label>
+              <label class="staff-team-chip"><input type="radio" name="cultHistory" value="no"><span class="staff-team-chip-label"><span class="wl-ko">아니오</span><span class="wl-en">No</span></span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="crp-form-section">
+          <span class="crp-form-section-label">
+            <span class="wl-ko">역량과 경험</span><span class="wl-en">Skills &amp; Experience</span>
+          </span>
+          <hr class="crp-form-section-line">
+        </div>
+
+        <div class="crp-form-grid">
+          <div class="crp-field">
+            <label><span class="wl-ko">생활 영어가 가능합니까?</span><span class="wl-en">Can you speak everyday English?</span> <span class="req">*</span></label>
+            <div class="staff-team-chips">
+              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="yes"><span class="staff-team-chip-label"><span class="wl-ko">예</span><span class="wl-en">Yes</span></span></label>
+              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="no"><span class="staff-team-chip-label"><span class="wl-ko">아니오</span><span class="wl-en">No</span></span></label>
+            </div>
+          </div>
+          <div class="crp-field">
+            <label><span class="wl-ko">미디어나 테크를 잘 다룹니까?</span><span class="wl-en">Are you good with media or tech?</span> <span class="req">*</span></label>
+            <div class="staff-team-chips">
+              <label class="staff-team-chip"><input type="radio" name="mediaTech" value="yes"><span class="staff-team-chip-label"><span class="wl-ko">예</span><span class="wl-en">Yes</span></span></label>
+              <label class="staff-team-chip"><input type="radio" name="mediaTech" value="no"><span class="staff-team-chip-label"><span class="wl-ko">아니오</span><span class="wl-en">No</span></span></label>
             </div>
           </div>
           <div class="crp-field crp-field--full">
-            <label><span class="wl-ko">간단한 자기소개 및 짧은 간증</span><span class="wl-en">Brief Introduction &amp; Testimony</span> <span class="req">*</span></label>
-            <textarea
-              id="staffTestimony"
-              name="testimony"
-              rows="5"
-              data-ph-ko="간단한 자기소개와 언제, 어떻게 예수님을 인격적으로 만나게 되었는지 짧게 적어주세요."
-              data-ph-en="Briefly introduce yourself and share when and how you personally came to know Jesus."
-              placeholder="간단한 자기소개와 언제, 어떻게 예수님을 인격적으로 만나게 되었는지 짧게 적어주세요."
-            ></textarea>
+            <label><span class="wl-ko">다룰 수 있는 악기가 있나요?</span><span class="wl-en">Do you play any instruments?</span></label>
+            <input id="staffInstruments" name="instruments" maxlength="200" data-ph-ko="예: 기타, 피아노 (없으면 비워두세요)" data-ph-en="e.g. guitar, piano (leave blank if none)" placeholder="예: 기타, 피아노 (없으면 비워두세요)">
           </div>
           <div class="crp-field crp-field--full">
-            <label><span class="wl-ko">메모 (선택)</span><span class="wl-en">Additional Notes (optional)</span></label>
-            <textarea id="staffNotes" name="notes" rows="2"></textarea>
+            <label><span class="wl-ko">기독교 캠프에서 봉사했던 경험이 있나요?</span><span class="wl-en">Have you served at a Christian camp before?</span> <span class="req">*</span></label>
+            <div class="staff-team-chips">
+              <label class="staff-team-chip"><input type="radio" name="previousCamp" value="yes"><span class="staff-team-chip-label"><span class="wl-ko">예</span><span class="wl-en">Yes</span></span></label>
+              <label class="staff-team-chip"><input type="radio" name="previousCamp" value="no"><span class="staff-team-chip-label"><span class="wl-ko">아니오</span><span class="wl-en">No</span></span></label>
+            </div>
+          </div>
+          <div class="crp-field crp-field--full" id="staffPreviousCampDetailField" hidden>
+            <label><span class="wl-ko">있으면 자세히 나눠주세요</span><span class="wl-en">Please share the details</span> <span class="req">*</span></label>
+            <textarea id="staffPreviousCampDetail" name="previousCampDetail" rows="3" maxlength="2000" data-ph-ko="어떤 캠프에서, 언제, 어떤 역할로 섬겼는지 적어주세요." data-ph-en="Which camp, when, and what role you served in." placeholder="어떤 캠프에서, 언제, 어떤 역할로 섬겼는지 적어주세요."></textarea>
+          </div>
+        </div>
+
+        <div class="crp-form-section">
+          <span class="crp-form-section-label">
+            <span class="wl-ko">섬김 희망</span><span class="wl-en">Where You'd Like to Serve</span>
+          </span>
+          <hr class="crp-form-section-line">
+        </div>
+
+        <div class="crp-form-grid">
+          <div class="crp-field">
+            <label><span class="wl-ko">선호하는 팀 (1지망)</span><span class="wl-en">Preferred Team (1st choice)</span> <span class="req">*</span></label>
+            <select id="staffTeam1" name="team1" data-opt-ko="선택" data-opt-en="Select">
+              <option value="" disabled selected>선택</option>
+              <option value="프로그램" data-ko="프로그램" data-en="Program">프로그램</option>
+              <option value="티칭" data-ko="티칭" data-en="Teaching">티칭</option>
+              <option value="상담자" data-ko="상담자" data-en="Counselor">상담자</option>
+              <option value="테크" data-ko="테크" data-en="Tech">테크</option>
+              <option value="찬양팀" data-ko="찬양팀" data-en="Worship Team">찬양팀</option>
+            </select>
+          </div>
+          <div class="crp-field">
+            <label><span class="wl-ko">선호하는 팀 (2지망)</span><span class="wl-en">Preferred Team (2nd choice)</span></label>
+            <select id="staffTeam2" name="team2" data-opt-ko="선택 안 함" data-opt-en="None">
+              <option value="" selected>선택 안 함</option>
+              <option value="프로그램" data-ko="프로그램" data-en="Program">프로그램</option>
+              <option value="티칭" data-ko="티칭" data-en="Teaching">티칭</option>
+              <option value="상담자" data-ko="상담자" data-en="Counselor">상담자</option>
+              <option value="테크" data-ko="테크" data-en="Tech">테크</option>
+              <option value="찬양팀" data-ko="찬양팀" data-en="Worship Team">찬양팀</option>
+            </select>
+          </div>
+          <div class="crp-field crp-field--full">
+            <label>
+              <span class="wl-ko">섬길 수 있는 캠프</span><span class="wl-en">Camps You Can Serve</span> <span class="req">*</span>
+              <span style="font-size:11px;color:var(--c-muted);font-weight:400;margin-left:4px;">
+                <span class="wl-ko">(복수 선택 가능)</span><span class="wl-en">(select all that apply)</span>
+              </span>
+            </label>
+            <div class="staff-team-chips" id="staffCampChips"></div>
+          </div>
+          <div class="crp-field crp-field--full">
+            <label><span class="wl-ko">참고 사항이 있으면 알려주세요</span><span class="wl-en">Anything else we should know?</span></label>
+            <textarea id="staffNotes" name="notes" rows="3" maxlength="2000"></textarea>
           </div>
         </div>
 
@@ -2460,20 +2550,29 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
             <strong class="wl-en">I consent to the collection and use of personal information.</strong>
             <br>
-            <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 연락처, 이메일, 생년월일, 교회, 섬기고 싶은 분야, 이전 캠프 경험, 자기소개 및 간증 &nbsp;·&nbsp; 목적: 캠프 스태프 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
-            <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, phone, email, date of birth, church, service area, previous camp experience, introduction and testimony &nbsp;·&nbsp; Purpose: staff management &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
+            <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 생년월일, 성별, 연락처, 이메일, 자기소개, 신앙 간증, 출석 교회 정보(교회명·홈페이지·담임 목사님 혹은 교회 연락처), 이단 단체 참여 여부, 생활 영어·미디어/테크·악기 역량, 캠프 봉사 경험, 선호 팀, 섬길 수 있는 캠프, 참고 사항 &nbsp;·&nbsp; 목적: 캠프 스태프 선발 및 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
+            <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, date of birth, gender, phone, email, self-introduction, faith story, church info (name, website, pastor or church contact), involvement with cult groups, English/media/tech/instrument skills, camp service experience, team preferences, available camps, additional notes &nbsp;·&nbsp; Purpose: staff selection and management &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
           </label>
         </div>
 
         <div id="staffErrorMsg" class="crp-error-msg" hidden></div>
 
-        <button type="submit" class="crp-submit crp-submit--teal" id="staffSubmitBtn" style="margin-top:20px;">
-          <div class="spinner"></div>
-          <span class="crp-submit-label">
-            <span class="wl-ko">스태프 지원하기</span>
-            <span class="wl-en">Submit Application</span>
-          </span>
-        </button>
+        <div class="staff-form-actions">
+          <button type="button" class="staff-draft-btn" id="staffDraftBtn">
+            <span class="wl-ko">임시 저장</span><span class="wl-en">Save Draft</span>
+          </button>
+          <button type="submit" class="crp-submit crp-submit--teal" id="staffSubmitBtn">
+            <div class="spinner"></div>
+            <span class="crp-submit-label">
+              <span class="wl-ko">스태프 지원하기</span>
+              <span class="wl-en">Submit Application</span>
+            </span>
+          </button>
+        </div>
+        <p class="staff-draft-hint">
+          <span class="wl-ko">임시 저장한 내용은 지금 쓰고 있는 기기의 브라우저에만 보관돼요.</span>
+          <span class="wl-en">Drafts are kept only in this device's browser.</span>
+        </p>
       </form>
     </div>
 
@@ -3412,16 +3511,43 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
 (function() {
   var staffModal      = document.getElementById('staffModal');
   var staffModalTitle = document.getElementById('staffModalTitle');
+  var staffForm       = document.getElementById('staffForm');
   var staffFormWrap   = document.getElementById('staffFormWrap');
   var staffSuccessWrap= document.getElementById('staffSuccessWrap');
   var staffErrorMsg   = document.getElementById('staffErrorMsg');
   var staffSubmitBtn  = document.getElementById('staffSubmitBtn');
   var staffCampIdInput= document.getElementById('staffCampId');
+  var draftNotice     = document.getElementById('staffDraftNotice');
+  var draftNoticeText = document.getElementById('staffDraftNoticeText');
+  var draftBtn        = document.getElementById('staffDraftBtn');
+
+  // 임시 저장은 서버가 아니라 이 브라우저(localStorage)에만 둔다 — 로그인 없이
+  // 쓰는 공개 폼이라 기기를 옮기면 이어 쓸 수 없지만, 따로 계정이 필요 없다.
+  var DRAFT_KEY = 'wolko-staff-application-draft-v1';
+  var DRAFT_FIELDS = ['staffName', 'staffGender', 'staffBirthYear', 'staffBirthMonth', 'staffBirthDay', 'staffPhone', 'staffEmail',
+    'staffIntro', 'staffFaith', 'staffChurch', 'staffChurchWebsite', 'staffPastorContact', 'staffInstruments',
+    'staffPreviousCampDetail', 'staffTeam1', 'staffTeam2', 'staffNotes'];
+  var DRAFT_RADIOS = ['cultHistory', 'englishAbility', 'mediaTech', 'previousCamp'];
+  var formDirty = false;
+
+  function byId(id) { return document.getElementById(id); }
+  function escHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+  function radioValue(name) {
+    var checked = staffForm.querySelector('input[name="' + name + '"]:checked');
+    return checked ? checked.value : '';
+  }
+  function checkedCampInputs() {
+    return Array.prototype.slice.call(staffForm.querySelectorAll('input[name="staffCamp"]:checked'));
+  }
 
   function populateStaffBirthSelects() {
-    var yearEl = document.getElementById('staffBirthYear');
-    var monthEl = document.getElementById('staffBirthMonth');
-    var dayEl = document.getElementById('staffBirthDay');
+    var yearEl = byId('staffBirthYear');
+    var monthEl = byId('staffBirthMonth');
+    var dayEl = byId('staffBirthDay');
     if (!yearEl || yearEl.dataset.ready) return;
 
     var currentYear = new Date().getFullYear();
@@ -3456,16 +3582,132 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     }
   });
 
-  // 모달 열기
+  // "섬길 수 있는 캠프" — 지금 스태프 지원이 열려 있는 캠프들을 체크칩으로 보여준다.
+  function renderCampChips(checkedIds) {
+    var seen = {};
+    var html = '';
+    document.querySelectorAll('.crp-staff-open-btn').forEach(function(btn) {
+      var id = btn.dataset.campId;
+      if (!id || btn.disabled || seen[id]) return;
+      seen[id] = true;
+      var nameKo = btn.dataset.campNameKo || id;
+      var nameEn = btn.dataset.campNameEn || nameKo;
+      html += '<label class="staff-team-chip"><input type="checkbox" name="staffCamp" value="' + escHtml(id) + '" data-name-ko="' + escHtml(nameKo) + '"' +
+        (checkedIds.indexOf(id) !== -1 ? ' checked' : '') + '>' +
+        '<span class="staff-team-chip-label"><span class="wl-ko">' + escHtml(nameKo) + '</span><span class="wl-en">' + escHtml(nameEn) + '</span></span></label>';
+    });
+    byId('staffCampChips').innerHTML = html ||
+      '<span class="staff-camp-empty"><span class="wl-ko">지금 지원할 수 있는 캠프가 없습니다.</span><span class="wl-en">No camps are open right now.</span></span>';
+  }
+
+  function syncPreviousCampDetail() {
+    byId('staffPreviousCampDetailField').hidden = radioValue('previousCamp') !== 'yes';
+  }
+
+  // ── 임시 저장 ──
+  function readDraft() {
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { return null; }
+  }
+  function writeDraft(draft) {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); return true; } catch (e) { return false; }
+  }
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  }
+  function collectDraft() {
+    var draft = { fields: {}, radios: {}, camps: [], savedAt: new Date().toISOString() };
+    DRAFT_FIELDS.forEach(function(id) { draft.fields[id] = byId(id).value; });
+    DRAFT_RADIOS.forEach(function(name) { draft.radios[name] = radioValue(name); });
+    draft.camps = checkedCampInputs().map(function(input) { return input.value; });
+    return draft;
+  }
+  function applyDraft(draft) {
+    DRAFT_FIELDS.forEach(function(id) {
+      if (draft.fields && typeof draft.fields[id] === 'string') byId(id).value = draft.fields[id];
+    });
+    DRAFT_RADIOS.forEach(function(name) {
+      var value = draft.radios ? draft.radios[name] : '';
+      staffForm.querySelectorAll('input[name="' + name + '"]').forEach(function(radio) { radio.checked = radio.value === value; });
+    });
+  }
+  function draftTime(iso, locale) {
+    try {
+      return new Date(iso).toLocaleString(locale, { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    } catch (e) { return ''; }
+  }
+  function showDraftNotice(savedAt) {
+    var ko = draftTime(savedAt, 'ko-KR');
+    var en = draftTime(savedAt, 'en-US');
+    draftNoticeText.innerHTML =
+      '<span class="wl-ko">임시 저장한 내용을 불러왔어요' + (ko ? ' · ' + escHtml(ko) : '') + '</span>' +
+      '<span class="wl-en">Your saved draft was restored' + (en ? ' · ' + escHtml(en) : '') + '</span>';
+    draftNotice.hidden = false;
+  }
+  function clearFieldErrors() {
+    staffForm.querySelectorAll('.error').forEach(function(node) { node.classList.remove('error'); });
+    staffForm.querySelectorAll('.is-invalid').forEach(function(node) { node.classList.remove('is-invalid'); });
+  }
+
+  draftBtn.addEventListener('click', function() {
+    if (!writeDraft(collectDraft())) {
+      crpShowError(staffErrorMsg, '이 브라우저에서는 임시 저장을 할 수 없습니다.', 'Drafts cannot be saved in this browser.');
+      return;
+    }
+    formDirty = false;
+    staffErrorMsg.hidden = true;
+    draftBtn.innerHTML = '<span class="wl-ko">저장했어요</span><span class="wl-en">Saved</span>';
+    clearTimeout(draftBtn._resetTimer);
+    draftBtn._resetTimer = setTimeout(function() {
+      draftBtn.innerHTML = '<span class="wl-ko">임시 저장</span><span class="wl-en">Save Draft</span>';
+    }, 2000);
+  });
+
+  byId('staffDraftDiscard').addEventListener('click', function() {
+    if (!confirm(crpText('임시 저장한 내용을 지우고 새로 작성할까요?', 'Discard the saved draft and start over?'))) return;
+    clearDraft();
+    staffForm.reset();
+    renderCampChips(staffCampIdInput.value ? [staffCampIdInput.value] : []);
+    syncPreviousCampDetail();
+    clearFieldErrors();
+    draftNotice.hidden = true;
+    staffErrorMsg.hidden = true;
+    formDirty = false;
+  });
+
+  staffForm.addEventListener('input', function(e) {
+    formDirty = true;
+    if (e.target.classList) e.target.classList.remove('error');
+  });
+  staffForm.addEventListener('change', function(e) {
+    formDirty = true;
+    if (e.target.name === 'previousCamp') syncPreviousCampDetail();
+    var chips = e.target.closest ? e.target.closest('.staff-team-chips') : null;
+    if (chips) chips.classList.remove('is-invalid');
+    if (e.target.classList) e.target.classList.remove('error');
+  });
+
+  // 모달 열기 — 임시 저장본이 있으면 채워 넣고, 누른 캠프는 "섬길 수 있는 캠프"에 미리 체크한다.
   document.querySelectorAll('.crp-staff-open-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       if (btn.disabled) return;
       staffCampIdInput.value = btn.dataset.campId || '';
-      document.getElementById('staffCampNameKo').value = btn.dataset.campNameKo || '';
+      byId('staffCampNameKo').value = btn.dataset.campNameKo || '';
       staffModalTitle.textContent = crpIsEn()
         ? (btn.dataset.campNameEn || '')
         : (btn.dataset.campNameKo || '');
-      document.getElementById('staffForm').reset();
+      staffForm.reset();
+      clearFieldErrors();
+      draftNotice.hidden = true;
+      var draft = readDraft();
+      var camps = draft && Array.isArray(draft.camps) ? draft.camps.slice() : [];
+      if (btn.dataset.campId && camps.indexOf(btn.dataset.campId) === -1) camps.push(btn.dataset.campId);
+      renderCampChips(camps);
+      if (draft) {
+        applyDraft(draft);
+        showDraftNotice(draft.savedAt);
+      }
+      syncPreviousCampDetail();
+      formDirty = false;
       staffFormWrap.hidden  = false;
       staffSuccessWrap.hidden = true;
       staffErrorMsg.hidden  = true;
@@ -3476,66 +3718,101 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     });
   });
 
-  // 모달 닫기
-  function closeStaffModal() {
+  // 모달 닫기 — 저장 안 한 입력이 있으면 한 번 묻는다(긴 폼이 실수로 날아가지 않게).
+  function closeStaffModal(force) {
+    if (!force && formDirty && !staffFormWrap.hidden &&
+        !confirm(crpText('작성 중인 내용이 있어요. 임시 저장하지 않고 닫으면 사라집니다. 닫을까요?', 'You have unsaved changes. Close without saving a draft?'))) {
+      return;
+    }
     staffModal.hidden = true;
     document.body.style.overflow = '';
   }
-  document.getElementById('staffOverlay').addEventListener('click', closeStaffModal);
-  document.getElementById('staffCloseBtn').addEventListener('click', closeStaffModal);
-  document.getElementById('staffSuccessClose').addEventListener('click', closeStaffModal);
+  byId('staffOverlay').addEventListener('click', function() { closeStaffModal(false); });
+  byId('staffCloseBtn').addEventListener('click', function() { closeStaffModal(false); });
+  byId('staffSuccessClose').addEventListener('click', function() { closeStaffModal(true); });
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && !staffModal.hidden) closeStaffModal();
+    if (e.key === 'Escape' && !staffModal.hidden) closeStaffModal(false);
   });
 
+  // 빠진 항목으로 스크롤하고 빨갛게 표시한다. key는 입력칸 id 또는 예/아니오 라디오 name.
+  function markInvalid(key) {
+    var target = byId(key);
+    if (target && target.type !== 'checkbox') {
+      target.classList.add('error');
+    } else {
+      var input = target || staffForm.querySelector('input[name="' + key + '"]');
+      var chips = input ? input.closest('.staff-team-chips') : byId('staffCampChips');
+      target = chips || input;
+      if (chips) chips.classList.add('is-invalid');
+    }
+    if (target && target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (target && target.focus && /^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName)) target.focus({ preventScroll: true });
+  }
+
   // 폼 제출
-  document.getElementById('staffForm').addEventListener('submit', async function(e) {
+  staffForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     staffErrorMsg.hidden = true;
+    clearFieldErrors();
 
-    var name        = document.getElementById('staffName').value.trim();
-    var phone       = document.getElementById('staffPhone').value.trim();
-    var email       = document.getElementById('staffEmail').value.trim();
-    var gender      = document.getElementById('staffGender').value;
-    var birthYear   = document.getElementById('staffBirthYear').value;
-    var birthMonth  = document.getElementById('staffBirthMonth').value;
-    var birthDay    = document.getElementById('staffBirthDay').value;
-    var birthDate   = birthYear && birthMonth && birthDay ? birthYear + '-' + birthMonth + '-' + birthDay : '';
-    var church      = document.getElementById('staffChurch').value.trim();
-    var previousCamp = document.getElementById('staffPreviousCamp').value;
-    var serviceArea = Array.from(document.querySelectorAll('input[name="staffTeam"]:checked')).map(function(el){ return el.value; }).join(', ');
-    var notes       = document.getElementById('staffNotes').value.trim();
-    var testimony   = document.getElementById('staffTestimony').value.trim();
-    var privacy     = document.getElementById('staffPrivacyConsent').checked;
-    var campId      = staffCampIdInput.value;
+    function text(id) { return byId(id).value.trim(); }
+    var birthYear  = byId('staffBirthYear').value;
+    var birthMonth = byId('staffBirthMonth').value;
+    var birthDay   = byId('staffBirthDay').value;
+    var camps = checkedCampInputs();
+    var payload = {
+      campId: staffCampIdInput.value,
+      campTitleKo: byId('staffCampNameKo').value,
+      name: text('staffName'),
+      gender: byId('staffGender').value,
+      birthDate: birthYear && birthMonth && birthDay ? birthYear + '-' + birthMonth + '-' + birthDay : '',
+      phone: text('staffPhone'),
+      email: text('staffEmail'),
+      introduction: text('staffIntro'),
+      faithStory: text('staffFaith'),
+      church: text('staffChurch'),
+      churchWebsite: text('staffChurchWebsite'),
+      pastorContact: text('staffPastorContact'),
+      cultHistory: radioValue('cultHistory'),
+      englishAbility: radioValue('englishAbility'),
+      mediaTech: radioValue('mediaTech'),
+      instruments: text('staffInstruments'),
+      previousCamp: radioValue('previousCamp'),
+      previousCampDetail: radioValue('previousCamp') === 'yes' ? text('staffPreviousCampDetail') : '',
+      team1: byId('staffTeam1').value,
+      team2: byId('staffTeam2').value,
+      availableCamps: camps.map(function(input) { return input.value; }),
+      availableCampNames: camps.map(function(input) { return input.dataset.nameKo || input.value; }),
+      notes: text('staffNotes'),
+    };
 
-    if (!name || !phone || !email) {
-      crpShowError(staffErrorMsg, '이름, 연락처, 이메일은 필수 항목입니다.', 'Name, phone, and email are required.');
-      return;
-    }
-    if (!gender) {
-      crpShowError(staffErrorMsg, '성별을 선택해 주세요.', 'Please select your gender.');
-      return;
-    }
-    if (!birthDate) {
-      crpShowError(staffErrorMsg, '생년월일을 선택해 주세요.', 'Please select your date of birth.');
-      return;
-    }
-    if (!previousCamp) {
-      crpShowError(staffErrorMsg, '이전 캠프 참여 경험을 선택해 주세요.', 'Please select whether you have previous camp experience.');
-      return;
-    }
-    if (!serviceArea) {
-      crpShowError(staffErrorMsg, '섬기고 싶은 팀을 하나 이상 선택해 주세요.', 'Please select at least one team.');
-      return;
-    }
-    if (!testimony) {
-      crpShowError(staffErrorMsg, '간단한 자기소개 및 간증을 입력해 주세요.', 'Please enter a brief introduction and testimony.');
-      return;
-    }
-    if (!privacy) {
-      crpShowError(staffErrorMsg, '개인정보 수집 및 이용에 동의해 주세요.', 'Please consent to the privacy policy.');
-      return;
+    // 위에서부터 차례로 확인해서, 처음 빠진 항목 하나만 알려준다.
+    var checks = [
+      [!payload.name, 'staffName', '이름을 입력해 주세요.', 'Please enter your name.'],
+      [!payload.gender, 'staffGender', '성별을 선택해 주세요.', 'Please select your gender.'],
+      [!payload.birthDate, 'staffBirthYear', '생년월일을 선택해 주세요.', 'Please select your date of birth.'],
+      [!payload.phone, 'staffPhone', '연락 가능한 전화번호를 입력해 주세요.', 'Please enter your phone number.'],
+      [!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email), 'staffEmail', '이메일 주소를 정확히 입력해 주세요.', 'Please enter a valid email address.'],
+      [!payload.introduction, 'staffIntro', '간단한 자기소개를 입력해 주세요.', 'Please write a brief self-introduction.'],
+      [!payload.faithStory, 'staffFaith', '언제, 어떻게 예수님을 믿게 되었는지 적어 주세요.', 'Please share when and how you came to believe in Jesus.'],
+      [!payload.church, 'staffChurch', '출석 교회 이름을 입력해 주세요.', 'Please enter your church name.'],
+      [!payload.pastorContact, 'staffPastorContact', '담임 목사님 혹은 교회 연락처를 입력해 주세요.', 'Please enter your pastor or church contact.'],
+      [!payload.cultHistory, 'cultHistory', '하나님의 교회·신천지 참여 여부를 선택해 주세요.', 'Please answer the question about Church of God / Shincheonji.'],
+      [!payload.englishAbility, 'englishAbility', '생활 영어 가능 여부를 선택해 주세요.', 'Please answer whether you can speak everyday English.'],
+      [!payload.mediaTech, 'mediaTech', '미디어·테크를 잘 다루는지 선택해 주세요.', 'Please answer whether you are good with media or tech.'],
+      [!payload.previousCamp, 'previousCamp', '기독교 캠프 봉사 경험 여부를 선택해 주세요.', 'Please answer whether you have served at a Christian camp.'],
+      [payload.previousCamp === 'yes' && !payload.previousCampDetail, 'staffPreviousCampDetail', '캠프 봉사 경험을 자세히 나눠 주세요.', 'Please share details of your camp service.'],
+      [!payload.team1, 'staffTeam1', '선호하는 팀(1지망)을 선택해 주세요.', 'Please choose your 1st-choice team.'],
+      [payload.team2 && payload.team2 === payload.team1, 'staffTeam2', '2지망은 1지망과 다른 팀으로 선택해 주세요.', 'Your 2nd choice must differ from your 1st choice.'],
+      [!payload.availableCamps.length, 'staffCamp', '섬길 수 있는 캠프를 하나 이상 선택해 주세요.', 'Please select at least one camp you can serve.'],
+      [!byId('staffPrivacyConsent').checked, 'staffPrivacyConsent', '개인정보 수집 및 이용에 동의해 주세요.', 'Please consent to the privacy policy.'],
+    ];
+    for (var i = 0; i < checks.length; i++) {
+      if (checks[i][0]) {
+        crpShowError(staffErrorMsg, checks[i][2], checks[i][3]);
+        markInvalid(checks[i][1]);
+        return;
+      }
     }
 
     staffSubmitBtn.disabled = true;
@@ -3545,17 +3822,19 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       var res = await fetch('/api/staff-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campId, name, phone, email, gender, birthDate, church, previousCamp, serviceArea, notes, testimony, campTitleKo: document.getElementById('staffCampNameKo').value }),
+        body: JSON.stringify(payload),
       });
       var data = await res.json();
 
       if (res.ok && data.success) {
+        clearDraft();
+        formDirty = false;
         staffFormWrap.hidden   = true;
         staffSuccessWrap.hidden = false;
         var isEn = crpIsEn();
-        document.getElementById('staffSuccessMsg').innerHTML = isEn
-          ? '<strong>' + name + '</strong>, your staff application has been received.<br>Our team will contact you individually regarding your service area.'
-          : '<strong>' + name + '</strong>님의 스태프 지원이 접수되었습니다.<br>섬기실 분야에 대해 담당자가 개별적으로 연락드릴 예정입니다.';
+        byId('staffSuccessMsg').innerHTML = isEn
+          ? '<strong>' + escHtml(payload.name) + '</strong>, your staff application has been received.<br>Our team will contact you individually regarding your service area.'
+          : '<strong>' + escHtml(payload.name) + '</strong>님의 스태프 지원이 접수되었습니다.<br>섬기실 분야에 대해 담당자가 개별적으로 연락드릴 예정입니다.';
       } else {
         crpShowError(staffErrorMsg, data.error || '오류가 발생했습니다. 다시 시도해 주세요.', 'An error occurred. Please try again.');
         staffSubmitBtn.disabled = false;
