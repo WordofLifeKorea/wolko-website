@@ -37,9 +37,10 @@ test('mobile notes open as a bottom sheet', () => {
 test('note composer keeps its action buttons visible when the list is full', () => {
   assert.match(page, /class="note-composer-fields">[\s\S]*id="noteComposerQuote"[\s\S]*id="noteComposerText"[\s\S]*class="note-composer-actions"/);
   assert.match(css, /\.notes-panel > \.note-composer \{[^}]*flex:0 0 auto;[^}]*display:flex;[^}]*max-height:min\(52%,420px\);[^}]*overflow:hidden/);
+  assert.match(css, /\.notes-panel > \.note-composer\[hidden\] \{[^}]*display:none/);
   assert.match(css, /\.note-composer-fields \{[^}]*overflow-y:auto/);
   assert.match(css, /\.note-composer-actions \{[^}]*flex-shrink:0/);
-  assert.match(page, /portal\.css\?v=60/);
+  assert.match(page, /portal\.css\?v=61/);
 });
 
 test('closing the notes panel clears a pending note composer', () => {
