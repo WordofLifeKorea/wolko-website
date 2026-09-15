@@ -42,6 +42,10 @@ test('note composer keeps its action buttons visible when the list is full', () 
   assert.match(page, /portal\.css\?v=60/);
 });
 
+test('closing the notes panel clears a pending note composer', () => {
+  assert.match(page, /function toggleNotesPanel\(force\)[\s\S]*if \(!isOpen && pendingNote\) cancelNoteComposer\(\)/);
+});
+
 test('mobile PDF viewer keeps the header and toolbar compact', () => {
   assert.match(page, /class="viewer-toolbar-icon"[^>]+aria-hidden="true"/);
   assert.match(page, /class="viewer-toolbar-label"/);
