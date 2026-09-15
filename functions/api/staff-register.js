@@ -59,7 +59,7 @@ function buildStaffEmailHtml(reg) {
     <div style="padding:32px 36px;">
       <table style="width:100%;border-collapse:collapse;">
         ${row('지원한 캠프', escHtml(reg.campTitleKo || reg.campId))}
-        ${row('섬길 수 있는 캠프', escHtml((reg.availableCampNames || []).join(', ') || '—'))}
+        ${row('2주 헌신 확인', reg.commitment ? '예' : '—')}
         ${divider}
         ${row('이름', escHtml(reg.name))}
         ${row('생년월일', escHtml(reg.birthDate || '—'))}
@@ -162,7 +162,6 @@ export async function onRequestPost(context) {
 
   try {
     const data = await request.json();
-    const campId = clean(data.campId, 80);
     const name = clean(data.name, 60);
     const phone = clean(data.phone, 30);
     const email = clean(data.email, 120).toLowerCase();
@@ -187,11 +186,11 @@ export async function onRequestPost(context) {
     const availableCampNames = (Array.isArray(data.availableCampNames) ? data.availableCampNames : [])
       .map(title => clean(title, 120)).filter(Boolean).slice(0, 20);
     const notes = clean(data.notes, 2000);
-    const campTitleKo = clean(data.campTitleKo, 120);
+    const commitment = data.commitment === true;
 
-    const required = [campId, name, phone, email, gender, birthDate, introduction, faithStory,
+    const required = [name, phone, email, gender, birthDate, introduction, faithStory,
       cultHistory, englishAbility, mediaTech, previousCamp, team1];
-    if (required.some(value => !value) || !availableCamps.length || (previousCamp === 'yes' && !previousCampDetail)) {
+    if (required.some(value => !value) || !availableCamps.length || (previousCamp === 'yes' && !previousCampDetail) || !commitment) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
@@ -201,61 +200,59 @@ export async function onRequestPost(context) {
       return Response.json({ error: '이메일 주소 형식이 올바르지 않습니다.' }, { status: 400, headers: CORS });
     }
 
-    // 동일 캠프 중복 이메일 차단
-    const dupeKey = `camp:${campId}:staff:email:${email}`;
-    if (await env.CAMP_KV.get(dupeKey)) {
-      return Response.json({ error: '이미 지원하신 이메일 주소입니다.' }, { status: 409, headers: CORS });
+    // 선택한 캠프마다 한 건씩 저장해서 캠프별 관리자 목록에 모두 보이게 한다.
+    // 이미 같은 이메일로 지원한 캠프는 건너뛰고, 전부 이미 지원한 캠프면 409.
+    const dupeChecks = await Promise.all(availableCamps.map(id => env.CAMP_KV.get(`camp:${id}:staff:email:${email}`)));
+    const newCampIdx = availableCamps.map((_, i) => i).filter(i => !dupeChecks[i]);
+    if (!newCampIdx.length) {
+      return Response.json({ error: '선택한 캠프에 이미 지원하신 이메일 주소입니다.' }, { status: 409, headers: CORS });
     }
 
-    const regId = `staff-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const applicationId = `staff-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const registeredAt = new Date().toISOString();
+    const campTitleKo = availableCampNames.join(', ');
 
     // 관리자 화면은 serviceArea(쉼표로 구분한 팀 목록)로 팀 뱃지·상담자 배정을,
     // testimony로 간증 요약을 보여주므로 그 두 칸은 새 질문 답으로 채워 호환을 유지한다.
-    const reg = {
-      regId, campId,
+    const base = {
+      applicationId,
       registrationType: 'staff',
-      campTitleKo,
-      name,
-      phone,
-      email,
-      gender,
-      birthDate,
-      introduction,
-      faithStory,
-      church,
-      churchWebsite,
-      pastorName,
-      pastorContact,
-      cultHistory,
-      englishAbility,
-      mediaTech,
-      instruments,
-      previousCamp,
-      previousCampDetail,
-      team1,
-      team2,
+      name, phone, email, gender, birthDate,
+      introduction, faithStory,
+      church, churchWebsite, pastorName, pastorContact,
+      cultHistory, englishAbility, mediaTech, instruments,
+      previousCamp, previousCampDetail,
+      team1, team2,
       serviceArea: [team1, team2].filter(Boolean).join(', '),
-      availableCamps,
-      availableCampNames,
+      availableCamps, availableCampNames,
+      commitment,
       notes,
       testimony: faithStory,
-      registeredAt: new Date().toISOString(),
+      registeredAt,
       confirmed: false,
       confirmedAt: null,
     };
 
-    await Promise.all([
-      env.CAMP_KV.put(`camp:${campId}:reg:${regId}`, JSON.stringify(reg)),
-      env.CAMP_KV.put(dupeKey, regId),
-    ]);
+    const regs = newCampIdx.map(i => ({
+      ...base,
+      regId: `${applicationId}-${i + 1}`,
+      campId: availableCamps[i],
+      campTitleKo: availableCampNames[i] || availableCamps[i],
+    }));
+    await Promise.all(regs.flatMap(reg => [
+      env.CAMP_KV.put(`camp:${reg.campId}:reg:${reg.regId}`, JSON.stringify(reg)),
+      env.CAMP_KV.put(`camp:${reg.campId}:staff:email:${email}`, reg.regId),
+    ]));
 
+    // 알림은 지원서 한 장당 한 번만
+    const summary = { ...base, regId: applicationId, campId: regs.map(r => r.campId).join(', '), campTitleKo: regs.map(r => r.campTitleKo).join(', ') };
     context.waitUntil(
       Promise.allSettled([
-        sendStaffEmail(env, reg).catch(e => console.error('staff email failed:', e)),
-        syncStaffToSheet(env, reg).catch(e => console.error('staff sheets sync failed:', e)),
-        sendAlimtalk(env, reg.phone, env.KAKAO_TEMPLATE_STAFF, {
-          '#{이름}':   reg.name,
-          '#{캠프명}': campTitleKo || reg.campId,
+        sendStaffEmail(env, summary).catch(e => console.error('staff email failed:', e)),
+        syncStaffToSheet(env, summary).catch(e => console.error('staff sheets sync failed:', e)),
+        sendAlimtalk(env, summary.phone, env.KAKAO_TEMPLATE_STAFF, {
+          '#{이름}':   summary.name,
+          '#{캠프명}': summary.campTitleKo || campTitleKo,
         }).catch(e => console.error('staff alimtalk failed:', e)),
       ])
     );

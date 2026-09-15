@@ -494,6 +494,28 @@ body.lang-en .crp-countdown-notice {
   white-space: nowrap; transition: background .2s, transform .18s;
 }
 .crp-staff-open-btn:hover { background: #0f766e; transform: translateY(-1px); }
+.crp-staff-card--group { margin-top: 14px; }
+.crp-staff-card--group .crp-staff-card-camp { font-size: 15px; white-space: normal; }
+.crp-staff-card-sub { margin-top: 3px; font-size: 12px; color: #4b635e; line-height: 1.45; word-break: keep-all; }
+.staff-camp-group { width: 100%; }
+.staff-camp-group + .staff-camp-group { margin-top: 12px; }
+.staff-camp-group-title { font-size: 11.5px; font-weight: 800; color: #0f766e; letter-spacing: 0.04em; margin-bottom: 6px; }
+.staff-camp-list { display: flex; flex-direction: column; gap: 6px; }
+.staff-camp-option { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1.5px solid rgba(0,79,104,0.14); border-radius: 10px; background: #fff; cursor: pointer; transition: border-color .15s, background .15s; }
+.staff-camp-option:hover { border-color: #0d9488; }
+.crp-field .staff-camp-option input { width: 17px !important; height: 17px !important; min-height: 0 !important; padding: 0; accent-color: #0d9488; flex-shrink: 0; margin: 0; }
+.staff-camp-option:has(input:checked) { border-color: #0d9488; background: #f0fdfa; }
+.staff-camp-option-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; color: var(--c-text); word-break: keep-all; }
+.staff-camp-option-date { flex-shrink: 0; font-size: 12.5px; color: var(--c-muted); text-align: right; }
+@media (max-width: 480px) {
+  .staff-camp-option { flex-wrap: wrap; }
+  .staff-camp-option-date { flex-basis: 100%; text-align: left; padding-left: 27px; }
+}
+#staffCampChips.is-invalid .staff-camp-option { border-color: var(--c-red); }
+.staff-commitment { margin-top: 10px; padding: 12px 14px; border-radius: 10px; background: #fff7ed; border: 1px solid rgba(234,88,12,0.25); font-size: 12.5px; line-height: 1.6; color: #7c2d12; word-break: keep-all; }
+.staff-commitment label { display: flex; gap: 8px; align-items: flex-start; margin-top: 8px; font-weight: 700; cursor: pointer; color: #7c2d12; }
+.crp-field .staff-commitment input { width: 17px !important; height: 17px !important; min-height: 0 !important; padding: 0; margin: 2px 0 0; accent-color: #0d9488; flex-shrink: 0; }
+.staff-commitment.is-invalid { border-color: var(--c-red); }
 .crp-staff-open-btn:disabled { background: rgba(100,116,139,0.18); color: #64748b; cursor: default; transform: none; }
 
 /* Team Chips */
@@ -1614,43 +1636,31 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       </span>
                     )}
                   </div>
-                  {/* ── 스태프 카드 ── */}
-                  <div
-                    class="crp-staff-card"
-                    data-camp-id={s.id}
-                    data-camp-name-ko={d.title_ko}
-                    data-camp-name-en={d.title_en}
-                    data-start-date={(d as any).start_date ?? ''}
-                    data-staff-registration-open={(d as any).staff_registration_open ? 'true' : 'false'}
-                  >
-                    <div class="crp-staff-card-icon">
-                      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    </div>
-                    <div class="crp-staff-card-body">
-                      <div class="crp-staff-card-info">
-                        <div class="crp-staff-card-tag">STAFF · VOLUNTEER</div>
-                        <div class="crp-staff-card-camp">
-                          <span class="wl-ko">{d.title_ko}</span>
-                          <span class="wl-en">{d.title_en}</span>
-                        </div>
-                        <span class="crp-staff-status crp-staff-status-open">
-                          <span class="wl-ko">지원 가능</span><span class="wl-en">Open</span>
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      class="crp-staff-open-btn"
-                      data-camp-id={s.id}
-                      data-camp-name-ko={d.title_ko}
-                      data-camp-name-en={d.title_en}
-                    >
-                      <span class="wl-ko">지원하기 →</span>
-                      <span class="wl-en">Apply →</span>
-                    </button>
-                  </div>
                   </div>
                 );
               })}
+            </div>
+            <div class="crp-staff-card crp-staff-card--group" data-region="inland">
+              <div class="crp-staff-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div class="crp-staff-card-body">
+                <div class="crp-staff-card-info">
+                  <div class="crp-staff-card-tag">STAFF · VOLUNTEER</div>
+                  <div class="crp-staff-card-camp">
+                    <span class="wl-ko">월코캠프 스태프 지원</span>
+                    <span class="wl-en">WOLKO Camp Staff Application</span>
+                  </div>
+                  <div class="crp-staff-card-sub">
+                    <span class="wl-ko">여러 캠프를 한 번에 지원할 수 있어요 · 준비 주간 포함 약 2주 헌신</span>
+                    <span class="wl-en">Apply for multiple camps at once · About 2 weeks incl. prep week</span>
+                  </div>
+                </div>
+              </div>
+              <button class="crp-staff-open-btn" data-region="inland">
+                <span class="wl-ko">지원하기 →</span>
+                <span class="wl-en">Apply →</span>
+              </button>
             </div>
           </div>
         )}
@@ -1778,8 +1788,44 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 );
               })}
             </div>
+            <div class="crp-staff-card crp-staff-card--group" data-region="jeju">
+              <div class="crp-staff-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div class="crp-staff-card-body">
+                <div class="crp-staff-card-info">
+                  <div class="crp-staff-card-tag">STAFF · VOLUNTEER</div>
+                  <div class="crp-staff-card-camp">
+                    <span class="wl-ko">제주캠프 스태프 지원</span>
+                    <span class="wl-en">Jeju Camp Staff Application</span>
+                  </div>
+                  <div class="crp-staff-card-sub">
+                    <span class="wl-ko">여러 캠프를 한 번에 지원할 수 있어요 · 준비 주간 포함 약 2주 헌신</span>
+                    <span class="wl-en">Apply for multiple camps at once · About 2 weeks incl. prep week</span>
+                  </div>
+                </div>
+              </div>
+              <button class="crp-staff-open-btn" data-region="jeju">
+                <span class="wl-ko">지원하기 →</span>
+                <span class="wl-en">Apply →</span>
+              </button>
+            </div>
           </div>
         )}
+        <ul id="staffCampOptions" hidden>
+          {[...inlandCamps, ...jejuCamps].map((s) => (
+            <li
+              data-camp-id={s.id}
+              data-region={s.data.camp_type === 'jeju' ? 'jeju' : 'inland'}
+              data-name-ko={s.data.title_ko}
+              data-name-en={s.data.title_en}
+              data-date-ko={s.data.date_ko}
+              data-date-en={s.data.date_en}
+              data-start-date={s.data.start_date ?? ''}
+              data-staff-registration-open={s.data.staff_registration_open ? 'true' : 'false'}
+            ></li>
+          ))}
+        </ul>
       </>
     ) : (
       <div class="crp-reg-empty reveal">
@@ -2361,7 +2407,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
       <div class="crp-modal-badge crp-staff-modal-badge">
         <span class="wl-ko">스태프 · 봉사자 지원</span><span class="wl-en">Staff / Volunteer Application</span>
       </div>
-      <div class="crp-modal-title" id="staffModalTitle"></div>
+      <div class="crp-modal-title" id="staffModalTitle"><span class="wl-ko">캠프 스태프 지원서</span><span class="wl-en">Camp Staff Application</span></div>
       <div class="crp-staff-modal-desc">
         <span class="wl-ko">섬기고 싶은 분야를 자유롭게 적어주세요. 담당자가 개별 연락드립니다.</span>
         <span class="wl-en">Let us know how you'd like to serve. Our team will contact you individually.</span>
@@ -2371,8 +2417,6 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
     <!-- 폼 -->
     <div class="crp-form-wrap" id="staffFormWrap">
       <form id="staffForm" novalidate>
-        <input type="hidden" id="staffCampId">
-        <input type="hidden" id="staffCampNameKo">
 
         <!-- 임시 저장본을 불러왔을 때 안내 -->
         <div class="staff-draft-notice" id="staffDraftNotice" hidden>
@@ -2543,7 +2587,15 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <span class="wl-ko">(복수 선택 가능)</span><span class="wl-en">(select all that apply)</span>
               </span>
             </label>
-            <div class="staff-team-chips" id="staffCampChips"></div>
+            <div id="staffCampChips"></div>
+            <div class="staff-commitment" id="staffCommitmentBox">
+              <span class="wl-ko">월코캠프와 제주캠프는 캠프 시작 전 주가 준비 주간입니다. 준비 주간과 캠프 주간을 합쳐 약 2주를 함께할 수 있어야 지원할 수 있어요.</span>
+              <span class="wl-en">For WOLKO Camp and Jeju Camp, the week before camp is a preparation week. You must be able to commit about 2 weeks (prep week + camp week) to apply.</span>
+              <label for="staffCommitment">
+                <input type="checkbox" id="staffCommitment">
+                <span><span class="wl-ko">선택한 캠프마다 준비 주간을 포함한 약 2주 동안 함께할 수 있습니다.</span><span class="wl-en">I can commit about 2 weeks, including the prep week, for each camp I selected.</span></span>
+              </label>
+            </div>
           </div>
           <div class="crp-field crp-field--full">
             <label><span class="wl-ko">참고 사항이 있으면 알려주세요</span><span class="wl-en">Anything else we should know?</span></label>
@@ -3518,13 +3570,11 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
 /* ══ STAFF MODAL ══ */
 (function() {
   var staffModal      = document.getElementById('staffModal');
-  var staffModalTitle = document.getElementById('staffModalTitle');
   var staffForm       = document.getElementById('staffForm');
   var staffFormWrap   = document.getElementById('staffFormWrap');
   var staffSuccessWrap= document.getElementById('staffSuccessWrap');
   var staffErrorMsg   = document.getElementById('staffErrorMsg');
   var staffSubmitBtn  = document.getElementById('staffSubmitBtn');
-  var staffCampIdInput= document.getElementById('staffCampId');
   var draftNotice     = document.getElementById('staffDraftNotice');
   var draftNoticeText = document.getElementById('staffDraftNoticeText');
   var draftBtn        = document.getElementById('staffDraftBtn');
@@ -3575,34 +3625,43 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
 
   populateStaffBirthSelects();
 
-  // 스태프 카드 start_date 체크 → 버튼/상태 업데이트
-  document.querySelectorAll('.crp-staff-card').forEach(function(card) {
-    var startDate = card.dataset.startDate;
-    var staffRegistrationOpen = card.dataset.staffRegistrationOpen === 'true';
-    var btn  = card.querySelector('.crp-staff-open-btn');
-    var stat = card.querySelector('.crp-staff-status');
-    if (!staffRegistrationOpen && startDate && new Date() >= new Date(startDate)) {
-      if (btn)  { btn.disabled = true; }
-      if (stat) {
-        stat.className = 'crp-staff-status crp-staff-status-closed';
-        stat.innerHTML = '<span class="wl-ko">마감</span><span class="wl-en">Closed</span>';
-      }
+  // 스태프 지원이 열려 있는 캠프 = 아직 시작 전이거나 관리자가 따로 열어둔 캠프
+  function staffCampOptions() {
+    var now = new Date();
+    return Array.prototype.slice.call(document.querySelectorAll('#staffCampOptions li')).filter(function(li) {
+      if (li.dataset.staffRegistrationOpen === 'true') return true;
+      return !li.dataset.startDate || now < new Date(li.dataset.startDate);
+    });
+  }
+
+  // 지역 카드: 열린 캠프가 하나도 없으면 버튼을 잠근다.
+  document.querySelectorAll('.crp-staff-card--group').forEach(function(card) {
+    var region = card.dataset.region;
+    var hasOpen = staffCampOptions().some(function(li) { return li.dataset.region === region; });
+    var btn = card.querySelector('.crp-staff-open-btn');
+    if (!hasOpen && btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="wl-ko">마감</span><span class="wl-en">Closed</span>';
     }
   });
 
-  // "섬길 수 있는 캠프" — 지금 스태프 지원이 열려 있는 캠프들을 체크칩으로 보여준다.
+  // "섬길 수 있는 캠프" — 열려 있는 캠프를 지역별로 묶어 날짜와 함께 보여준다.
+  var REGION_LABEL = { inland: ['월코캠프 · 평택', 'WOLKO Camp · Pyeongtaek'], jeju: ['제주캠프 · 월비캠퍼스', 'Jeju Camp · WOLBI Campus'] };
   function renderCampChips(checkedIds) {
-    var seen = {};
+    var options = staffCampOptions();
     var html = '';
-    document.querySelectorAll('.crp-staff-open-btn').forEach(function(btn) {
-      var id = btn.dataset.campId;
-      if (!id || btn.disabled || seen[id]) return;
-      seen[id] = true;
-      var nameKo = btn.dataset.campNameKo || id;
-      var nameEn = btn.dataset.campNameEn || nameKo;
-      html += '<label class="staff-team-chip"><input type="checkbox" name="staffCamp" value="' + escHtml(id) + '" data-name-ko="' + escHtml(nameKo) + '"' +
-        (checkedIds.indexOf(id) !== -1 ? ' checked' : '') + '>' +
-        '<span class="staff-team-chip-label"><span class="wl-ko">' + escHtml(nameKo) + '</span><span class="wl-en">' + escHtml(nameEn) + '</span></span></label>';
+    ['inland', 'jeju'].forEach(function(region) {
+      var items = options.filter(function(li) { return li.dataset.region === region; });
+      if (!items.length) return;
+      html += '<div class="staff-camp-group"><div class="staff-camp-group-title"><span class="wl-ko">' + REGION_LABEL[region][0] + '</span><span class="wl-en">' + REGION_LABEL[region][1] + '</span></div><div class="staff-camp-list">';
+      items.forEach(function(li) {
+        var d = li.dataset;
+        html += '<label class="staff-camp-option"><input type="checkbox" name="staffCamp" value="' + escHtml(d.campId) + '" data-name-ko="' + escHtml(d.nameKo) + '"' +
+          (checkedIds.indexOf(d.campId) !== -1 ? ' checked' : '') + '>' +
+          '<span class="staff-camp-option-name"><span class="wl-ko">' + escHtml(d.nameKo) + '</span><span class="wl-en">' + escHtml(d.nameEn || d.nameKo) + '</span></span>' +
+          '<span class="staff-camp-option-date"><span class="wl-ko">' + escHtml(d.dateKo) + '</span><span class="wl-en">' + escHtml(d.dateEn || d.dateKo) + '</span></span></label>';
+      });
+      html += '</div></div>';
     });
     byId('staffCampChips').innerHTML = html ||
       '<span class="staff-camp-empty"><span class="wl-ko">지금 지원할 수 있는 캠프가 없습니다.</span><span class="wl-en">No camps are open right now.</span></span>';
@@ -3674,7 +3733,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     if (!confirm(crpText('임시 저장한 내용을 지우고 새로 작성할까요?', 'Discard the saved draft and start over?'))) return;
     clearDraft();
     staffForm.reset();
-    renderCampChips(staffCampIdInput.value ? [staffCampIdInput.value] : []);
+    renderCampChips([]);
     syncPreviousCampDetail();
     clearFieldErrors();
     draftNotice.hidden = true;
@@ -3689,26 +3748,20 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
   staffForm.addEventListener('change', function(e) {
     formDirty = true;
     if (e.target.name === 'previousCamp') syncPreviousCampDetail();
-    var chips = e.target.closest ? e.target.closest('.staff-team-chips') : null;
+    var chips = e.target.closest ? e.target.closest('.staff-team-chips, #staffCampChips, #staffCommitmentBox') : null;
     if (chips) chips.classList.remove('is-invalid');
     if (e.target.classList) e.target.classList.remove('error');
   });
 
-  // 모달 열기 — 임시 저장본이 있으면 채워 넣고, 누른 캠프는 "섬길 수 있는 캠프"에 미리 체크한다.
+  // 모달 열기 — 임시 저장본이 있으면 채워 넣는다.
   document.querySelectorAll('.crp-staff-open-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       if (btn.disabled) return;
-      staffCampIdInput.value = btn.dataset.campId || '';
-      byId('staffCampNameKo').value = btn.dataset.campNameKo || '';
-      staffModalTitle.textContent = crpIsEn()
-        ? (btn.dataset.campNameEn || '')
-        : (btn.dataset.campNameKo || '');
       staffForm.reset();
       clearFieldErrors();
       draftNotice.hidden = true;
       var draft = readDraft();
       var camps = draft && Array.isArray(draft.camps) ? draft.camps.slice() : [];
-      if (btn.dataset.campId && camps.indexOf(btn.dataset.campId) === -1) camps.push(btn.dataset.campId);
       renderCampChips(camps);
       if (draft) {
         applyDraft(draft);
@@ -3749,7 +3802,9 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       target.classList.add('error');
     } else {
       var input = target || staffForm.querySelector('input[name="' + key + '"]');
-      var chips = input ? input.closest('.staff-team-chips') : byId('staffCampChips');
+      var chips = key === 'staffCamp' ? byId('staffCampChips')
+        : key === 'staffCommitment' ? byId('staffCommitmentBox')
+        : input ? input.closest('.staff-team-chips') : null;
       target = chips || input;
       if (chips) chips.classList.add('is-invalid');
     }
@@ -3769,8 +3824,6 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     var birthDay   = byId('staffBirthDay').value;
     var camps = checkedCampInputs();
     var payload = {
-      campId: staffCampIdInput.value,
-      campTitleKo: byId('staffCampNameKo').value,
       name: text('staffName'),
       gender: byId('staffGender').value,
       birthDate: birthYear && birthMonth && birthDay ? birthYear + '-' + birthMonth + '-' + birthDay : '',
@@ -3793,6 +3846,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       availableCamps: camps.map(function(input) { return input.value; }),
       availableCampNames: camps.map(function(input) { return input.dataset.nameKo || input.value; }),
       notes: text('staffNotes'),
+      commitment: byId('staffCommitment').checked,
     };
 
     // 위에서부터 차례로 확인해서, 처음 빠진 항목 하나만 알려준다.
@@ -3812,6 +3866,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       [!payload.team1, 'staffTeam1', '선호하는 팀(1지망)을 선택해 주세요.', 'Please choose your 1st-choice team.'],
       [payload.team2 && payload.team2 === payload.team1, 'staffTeam2', '2지망은 1지망과 다른 팀으로 선택해 주세요.', 'Your 2nd choice must differ from your 1st choice.'],
       [!payload.availableCamps.length, 'staffCamp', '섬길 수 있는 캠프를 하나 이상 선택해 주세요.', 'Please select at least one camp you can serve.'],
+      [!payload.commitment, 'staffCommitment', '준비 주간을 포함한 약 2주 헌신이 가능한지 확인해 주세요.', 'Please confirm you can commit about 2 weeks including the prep week.'],
       [!byId('staffPrivacyConsent').checked, 'staffPrivacyConsent', '개인정보 수집 및 이용에 동의해 주세요.', 'Please consent to the privacy policy.'],
     ];
     for (var i = 0; i < checks.length; i++) {
@@ -3886,13 +3941,6 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       var campBtn = document.querySelector('.crp-open-btn[data-camp-id="' + campIdInput.value + '"]');
       if (campBtn) modalTitle.textContent = en ? (campBtn.dataset.campNameEn || '') : (campBtn.dataset.campNameKo || '');
       if (currentModalCapData) updateCrpModalCap(currentModalCapData, currentModalCapacity);
-    }
-    var staffModalEl = document.getElementById('staffModal');
-    if (staffModalEl && !staffModalEl.hidden) {
-      var staffCampId = document.getElementById('staffCampId')?.value || '';
-      var staffBtn = document.querySelector('.crp-staff-open-btn[data-camp-id="' + staffCampId + '"]');
-      var staffTitle = document.getElementById('staffModalTitle');
-      if (staffBtn && staffTitle) staffTitle.textContent = en ? (staffBtn.dataset.campNameEn || '') : (staffBtn.dataset.campNameKo || '');
     }
     [errorMsg, document.getElementById('staffErrorMsg')].forEach(function(el) {
       if (el && !el.hidden && el.dataset.errKo && el.dataset.errEn) {
