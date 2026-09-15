@@ -2490,8 +2490,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             <textarea id="staffFaith" name="faithStory" rows="5" maxlength="3000"></textarea>
           </div>
           <div class="crp-field">
-            <label><span class="wl-ko">출석 교회 이름</span><span class="wl-en">Church Name</span></label>
-            <input id="staffChurch" name="church" maxlength="100" data-ph-ko="예: 월코교회" data-ph-en="e.g. WOLKO Church" placeholder="예: 월코교회">
+            <label><span class="wl-ko">출석 교회</span><span class="wl-en">Church</span> <span class="req">*</span></label>
+            <input id="staffChurch" name="church" maxlength="100" data-ph-ko="예: 월코교회 또는 없음" data-ph-en="e.g. WOLKO Church, or None" placeholder="예: 월코교회 또는 없음">
           </div>
           <div class="crp-field">
             <label><span class="wl-ko">출석 교회 홈페이지</span><span class="wl-en">Church Website</span></label>
@@ -3873,6 +3873,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       [!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email), 'staffEmail', '이메일 주소를 정확히 입력해 주세요.', 'Please enter a valid email address.'],
       [!payload.introduction, 'staffIntro', '간단한 자기소개를 입력해 주세요.', 'Please write a brief self-introduction.'],
       [!payload.faithStory, 'staffFaith', '언제, 어떻게 예수님을 믿게 되었는지 적어 주세요.', 'Please share when and how you came to believe in Jesus.'],
+      [!payload.church, 'staffChurch', '출석 교회를 입력해 주세요. 없으면 "없음"이라고 적어 주세요.', 'Please enter your church, or "None" if you don\'t attend one.'],
       [!payload.cultHistory, 'cultHistory', '하나님의 교회·신천지 참여 여부를 선택해 주세요.', 'Please answer the question about Church of God / Shincheonji.'],
       [!payload.englishAbility, 'englishAbility', '생활 영어 가능 여부를 선택해 주세요.', 'Please answer whether you can speak everyday English.'],
       [!payload.mediaTech, 'mediaTech', '미디어·테크를 잘 다루는지 선택해 주세요.', 'Please answer whether you are good with media or tech.'],

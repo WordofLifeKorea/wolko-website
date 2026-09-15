@@ -188,7 +188,7 @@ export async function onRequestPost(context) {
     const notes = clean(data.notes, 2000);
     const commitment = data.commitment === true;
 
-    const required = [name, phone, email, gender, birthDate, introduction, faithStory,
+    const required = [name, phone, email, gender, birthDate, introduction, faithStory, church,
       cultHistory, englishAbility, mediaTech, previousCamp, team1];
     if (required.some(value => !value) || !availableCamps.length || (previousCamp === 'yes' && !previousCampDetail) || !commitment) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
