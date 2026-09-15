@@ -532,7 +532,7 @@ body.lang-en .crp-countdown-notice {
   .staff-draft-btn { padding:0 16px; box-shadow:0 10px 30px rgba(13,148,136,0.18); }
 }
 .staff-team-chip-label {
-  display:inline-block; padding:7px 18px;
+  display:inline-block; padding:5px 16px;
   border:1.5px solid rgba(0,79,104,0.2); border-radius:999px;
   font-size:13px; font-weight:600; cursor:pointer; user-select:none;
   transition:all 0.15s; background:#fff; color:var(--c-muted);
@@ -766,14 +766,17 @@ body.lang-en .crp-countdown-notice {
 .crp-field label .req { color: var(--c-red); margin-left: 2px; }
 .crp-field input, .crp-field select, .crp-field textarea {
   border: 1.5px solid rgba(0,79,104,0.13); border-radius: 8px;
-  padding: 12px 14px; font-size: 14px; font-family: var(--f-sans);
+  padding: 10px 13px; font-size: 14px; font-family: var(--f-sans);
   color: var(--c-text); background: #f7fbfd;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   outline: none; width: 100%; resize: vertical;
 }
 .crp-field input, .crp-field select {
-  height: 46px; min-height: 46px; box-sizing: border-box; line-height: 1.2;
+  height: 40px; min-height: 40px; box-sizing: border-box; line-height: 1.2;
 }
+/* wolko-ui.css의 전역 44px 최소 높이보다 이 신청서는 조금 더 촘촘하게 */
+.crp-field input:not([type="checkbox"]):not([type="radio"]), .crp-field select { height: 40px !important; min-height: 40px !important; }
+.crp-submit, .staff-draft-btn { min-height: 44px !important; }
 .crp-field input::placeholder, .crp-field textarea::placeholder { color: #afc2cc; }
 .staff-birth-grid { display: grid; grid-template-columns: 1.2fr 0.9fr 0.9fr; gap: 8px; }
 .crp-field input:focus, .crp-field select:focus, .crp-field textarea:focus {
@@ -929,7 +932,7 @@ body.lang-en .crp-refund-modal-hint.wl-en { display: block !important; }
 
 /* Submit button */
 .crp-submit {
-  width: 100%; padding: 20px;
+  width: 100%; padding: 15px;
   background: var(--c-red); color: #fff;
   border: none; border-radius: 12px;
   font-size: 16px; font-weight: 700; font-family: var(--f-sans);
