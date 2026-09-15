@@ -59,7 +59,8 @@ function buildStaffEmailHtml(reg) {
     <div style="padding:32px 36px;">
       <table style="width:100%;border-collapse:collapse;">
         ${row('지원한 캠프', escHtml(reg.campTitleKo || reg.campId))}
-        ${row('2주 헌신 확인', reg.commitment ? '예' : '—')}
+        ${row('2주 참여 동의', reg.commitment ? '예' : '—')}
+        ${reg.trainingException ? row('캠프 트레이닝', '<span style="color:#c2410c;">개인 사정으로 불참 (참고 사항 확인)</span>') : ''}
         ${divider}
         ${row('이름', escHtml(reg.name))}
         ${row('생년월일', escHtml(reg.birthDate || '—'))}
@@ -117,7 +118,7 @@ async function syncStaffToSheet(env, reg) {
   await appendRow({
     serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
     sheetId: env.GOOGLE_SHEET_ID,
-    range: '시트1!A:AH',
+    range: '시트1!A:AI',
     row: [
       reg.registeredAt,       // A 신청일시
       reg.regId,              // B 신청ID
@@ -153,6 +154,7 @@ async function syncStaffToSheet(env, reg) {
       (reg.availableCampNames || []).join(', '), // AF 섬길 수 있는 캠프
       reg.notes || '',         // AG 참고 사항
       reg.pastorName || '',    // AH 담임 목사님 성함
+      reg.trainingException ? '트레이닝 불참' : (reg.commitment ? '2주 참여 동의' : ''), // AI 캠프 트레이닝 참여
     ],
   });
 }
@@ -187,6 +189,7 @@ export async function onRequestPost(context) {
       .map(title => clean(title, 120)).filter(Boolean).slice(0, 20);
     const notes = clean(data.notes, 2000);
     const commitment = data.commitment === true;
+    const trainingException = data.trainingException === true;
 
     const required = [name, phone, email, gender, birthDate, introduction, faithStory, church,
       cultHistory, englishAbility, mediaTech, previousCamp, team1];
@@ -226,6 +229,7 @@ export async function onRequestPost(context) {
       serviceArea: [team1, team2].filter(Boolean).join(', '),
       availableCamps, availableCampNames,
       commitment,
+      trainingException,
       notes,
       testimony: faithStory,
       registeredAt,

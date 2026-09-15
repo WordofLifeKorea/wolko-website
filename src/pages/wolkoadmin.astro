@@ -314,7 +314,7 @@
         thEmergency:'비상연락처', thNotes:'메모', thDate:'신청일시', thDelete:'삭제',
         staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
         thBirthDate:'생년월일', thPreviousCamp:'캠프 경험', thTestimony:'자기소개·간증',
-        thChurchWebsite:'교회 홈페이지', thPastorName:'담임 목사님 성함', thPastorContact:'목사님·교회 연락처', thCultHistory:'하나님의 교회·신천지 참여', thEnglish:'생활 영어', thMediaTech:'미디어·테크', thInstruments:'악기', thAvailableCamps:'섬길 수 있는 캠프', thIntroduction:'자기소개', thPreviousCampDetail:'캠프 봉사 경험 상세', thFaithStory:'예수님을 믿게 된 이야기',
+        thChurchWebsite:'교회 홈페이지', thPastorName:'담임 목사님 성함', thTraining:'캠프 트레이닝', trainingExceptionLabel:'개인 사정으로 불참 (메모 확인)', trainingCommitLabel:'2주 참여 동의', thPastorContact:'목사님·교회 연락처', thCultHistory:'하나님의 교회·신천지 참여', thEnglish:'생활 영어', thMediaTech:'미디어·테크', thInstruments:'악기', thAvailableCamps:'섬길 수 있는 캠프', thIntroduction:'자기소개', thPreviousCampDetail:'캠프 봉사 경험 상세', thFaithStory:'예수님을 믿게 된 이야기',
         deleteConfirm:'정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
         loginFirst:'로그인 후 자동으로 불러옵니다.', totalCapacity:'전체 정원 현황', statLoading:'불러오는 중…',
         statTotal:'총 신청', statRemain:'잔여 정원', statWaitlist:'예비 신청', statStaff:'스태프 지원',
@@ -408,7 +408,7 @@
         thEmergency:'Emergency', thNotes:'Notes', thDate:'Registered', thDelete:'Delete',
         staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
         thBirthDate:'Birth Date', thPreviousCamp:'Camp Exp.', thTestimony:'Intro/Testimony',
-        thChurchWebsite:'Church Website', thPastorName:'Senior Pastor', thPastorContact:'Pastor/Church Contact', thCultHistory:'WMSCOG/Shincheonji', thEnglish:'Everyday English', thMediaTech:'Media/Tech', thInstruments:'Instruments', thAvailableCamps:'Available Camps', thIntroduction:'Introduction', thPreviousCampDetail:'Camp Service Details', thFaithStory:'Faith Story',
+        thChurchWebsite:'Church Website', thPastorName:'Senior Pastor', thTraining:'Camp Training', trainingExceptionLabel:'Cannot attend (see notes)', trainingCommitLabel:'Agreed to 2 weeks', thPastorContact:'Pastor/Church Contact', thCultHistory:'WMSCOG/Shincheonji', thEnglish:'Everyday English', thMediaTech:'Media/Tech', thInstruments:'Instruments', thAvailableCamps:'Available Camps', thIntroduction:'Introduction', thPreviousCampDetail:'Camp Service Details', thFaithStory:'Faith Story',
         deleteConfirm:'Delete this registration?\nThis action cannot be undone.',
         loginFirst:'Data will load after login.', totalCapacity:'Overall Capacity', statLoading:'Loading…',
         statTotal:'Total Reg.', statRemain:'Remaining', statWaitlist:'Waitlist', statStaff:'Staff Applied',
@@ -1820,6 +1820,7 @@
                       ${Array.isArray(r.availableCampNames) && r.availableCampNames.length ? staffDetailItem(t('thAvailableCamps'), esc(r.availableCampNames.join(', ')), true) : ''}
                       ${r.introduction ? staffDetailItem(t('thIntroduction'), esc(r.introduction), true) : ''}
                       ${r.previousCampDetail ? staffDetailItem(t('thPreviousCampDetail'), esc(r.previousCampDetail), true) : ''}
+                      ${r.trainingException ? staffDetailItem(t('thTraining'), `<span style="color:#c2410c;font-weight:700;">${t('trainingExceptionLabel')}</span>`) : r.commitment ? staffDetailItem(t('thTraining'), esc(t('trainingCommitLabel'))) : ''}
                       ${staffDetailItem(t('thApplicantMemo'), memoCell, true)}
                       ${staffDetailItem(r.faithStory ? t('thFaithStory') : t('thTestimony'), testimonyCell, true)}
                     </div>

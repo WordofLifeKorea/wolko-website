@@ -516,6 +516,8 @@ body.lang-en .crp-countdown-notice {
 .staff-commitment label { display: flex; gap: 8px; align-items: flex-start; margin-top: 8px; font-weight: 700; cursor: pointer; color: #7c2d12; }
 .crp-field .staff-commitment input { width: 17px !important; height: 17px !important; min-height: 0 !important; padding: 0; margin: 2px 0 0; accent-color: #0d9488; flex-shrink: 0; }
 .staff-commitment.is-invalid { border-color: var(--c-red); }
+.staff-commitment .staff-commitment-exception { font-weight: 600; }
+.staff-commitment-exception-hint { margin: 4px 0 0 25px; font-size: 11.5px; color: #9a3412; line-height: 1.55; }
 .crp-staff-open-btn:disabled { background: rgba(100,116,139,0.18); color: #64748b; cursor: default; transform: none; }
 
 /* Team Chips */
@@ -2590,6 +2592,14 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <input type="checkbox" id="staffCommitment">
                 <span><span class="wl-ko">캠프 트레이닝과 캠프 기간을 포함해 약 2주간 참여할 것에 동의합니다.</span><span class="wl-en">I agree to take part for about 2 weeks, including camp training and the camp itself.</span></span>
               </label>
+              <label for="staffTrainingException" class="staff-commitment-exception">
+                <input type="checkbox" id="staffTrainingException">
+                <span><span class="wl-ko">개인 사정으로 캠프 트레이닝에 참여할 수 없어요.</span><span class="wl-en">I can't attend camp training due to personal circumstances.</span></span>
+              </label>
+              <p class="staff-commitment-exception-hint">
+                <span class="wl-ko">개인 사정으로 캠프 트레이닝에 참여할 수 없다면 위 체크박스를 선택한 뒤, 아래 참고 사항에 사유를 간단히 적어 주세요.</span>
+                <span class="wl-en">If you can't attend camp training for personal reasons, check the box above and briefly explain in the notes below.</span>
+              </p>
             </div>
           </div>
           <div class="crp-field crp-field--full">
@@ -3670,7 +3680,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
   function syncCommitmentBox() {
     var show = checkedCampInputs().some(function(input) { return input.dataset.commitment === 'true'; });
     byId('staffCommitmentBox').hidden = !show;
-    if (!show) byId('staffCommitment').checked = false;
+    if (!show) { byId('staffCommitment').checked = false; byId('staffTrainingException').checked = false; }
   }
 
   function syncPreviousCampDetail() {
@@ -3755,6 +3765,9 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     formDirty = true;
     if (e.target.name === 'previousCamp') syncPreviousCampDetail();
     if (e.target.name === 'staffCamp') syncCommitmentBox();
+    // 2주 참여 동의와 트레이닝 불참은 둘 중 하나만 고른다.
+    if (e.target.id === 'staffCommitment' && e.target.checked) byId('staffTrainingException').checked = false;
+    if (e.target.id === 'staffTrainingException' && e.target.checked) byId('staffCommitment').checked = false;
     var chips = e.target.closest ? e.target.closest('.staff-team-chips, #staffCampChips, #staffCommitmentBox') : null;
     if (chips) chips.classList.remove('is-invalid');
     if (e.target.classList) e.target.classList.remove('error');
@@ -3854,6 +3867,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       availableCampNames: camps.map(function(input) { return input.dataset.nameKo || input.value; }),
       notes: text('staffNotes'),
       commitment: byId('staffCommitment').checked,
+      trainingException: byId('staffTrainingException').checked,
     };
 
     // 위에서부터 차례로 확인해서, 처음 빠진 항목 하나만 알려준다.
@@ -3874,7 +3888,8 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       [!payload.team1, 'staffTeam1', '선호하는 팀(1지망)을 선택해 주세요.', 'Please choose your 1st-choice team.'],
       [payload.team2 && payload.team2 === payload.team1, 'staffTeam2', '2지망은 1지망과 다른 팀으로 선택해 주세요.', 'Your 2nd choice must differ from your 1st choice.'],
       [!payload.availableCamps.length, 'staffCamp', '섬길 수 있는 캠프를 하나 이상 선택해 주세요.', 'Please select at least one camp you can serve.'],
-      [!byId('staffCommitmentBox').hidden && !payload.commitment, 'staffCommitment', '준비 주간을 포함한 약 2주 헌신이 가능한지 확인해 주세요.', 'Please confirm you can commit about 2 weeks including the prep week.'],
+      [!byId('staffCommitmentBox').hidden && !payload.commitment && !payload.trainingException, 'staffCommitment', '약 2주간 참여에 동의하거나, 캠프 트레이닝 불참 사유가 있으면 해당 항목을 체크해 주세요.', 'Please agree to the 2-week commitment, or check the box if you cannot attend camp training.'],
+      [payload.trainingException && !payload.notes, 'staffNotes', '캠프 트레이닝에 참여할 수 없는 사유를 참고 사항에 간단히 적어 주세요.', 'Please briefly explain in the notes why you cannot attend camp training.'],
       [!byId('staffPrivacyConsent').checked, 'staffPrivacyConsent', '개인정보 수집 및 이용에 동의해 주세요.', 'Please consent to the privacy policy.'],
     ];
     for (var i = 0; i < checks.length; i++) {
