@@ -2442,16 +2442,20 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             <textarea id="staffFaith" name="faithStory" rows="5" maxlength="3000"></textarea>
           </div>
           <div class="crp-field">
-            <label><span class="wl-ko">출석 교회 이름</span><span class="wl-en">Church Name</span> <span class="req">*</span></label>
+            <label><span class="wl-ko">출석 교회 이름</span><span class="wl-en">Church Name</span></label>
             <input id="staffChurch" name="church" maxlength="100" data-ph-ko="예: 월코교회" data-ph-en="e.g. WOLKO Church" placeholder="예: 월코교회">
           </div>
           <div class="crp-field">
             <label><span class="wl-ko">출석 교회 홈페이지</span><span class="wl-en">Church Website</span></label>
             <input id="staffChurchWebsite" name="churchWebsite" maxlength="200" data-ph-ko="없으면 비워두세요" data-ph-en="Leave blank if none" placeholder="없으면 비워두세요">
           </div>
-          <div class="crp-field crp-field--full">
-            <label><span class="wl-ko">담임 목사님 혹은 교회 연락처</span><span class="wl-en">Senior Pastor or Church Contact</span> <span class="req">*</span></label>
-            <input id="staffPastorContact" name="pastorContact" maxlength="150" data-ph-ko="예: 홍길동 목사님 010-0000-0000" data-ph-en="e.g. Pastor Kim, 010-0000-0000" placeholder="예: 홍길동 목사님 010-0000-0000">
+          <div class="crp-field">
+            <label><span class="wl-ko">담임 목사님 성함</span><span class="wl-en">Senior Pastor's Name</span></label>
+            <input id="staffPastorName" name="pastorName" maxlength="60" data-ph-ko="예: 홍길동 목사님" data-ph-en="e.g. Pastor Kim" placeholder="예: 홍길동 목사님">
+          </div>
+          <div class="crp-field">
+            <label><span class="wl-ko">담임 목사님 혹은 교회 연락처</span><span class="wl-en">Pastor or Church Contact</span></label>
+            <input id="staffPastorContact" name="pastorContact" type="tel" maxlength="60" data-ph-ko="예: 010-0000-0000" data-ph-en="e.g. 010-0000-0000" placeholder="예: 010-0000-0000">
           </div>
           <div class="crp-field crp-field--full">
             <label><span class="wl-ko">하나님의 교회나 신천지에 참여한 적이 있습니까?</span><span class="wl-en">Have you ever been involved with the World Mission Society Church of God or Shincheonji?</span> <span class="req">*</span></label>
@@ -2553,7 +2557,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             <strong class="wl-ko">개인정보 수집 및 이용에 동의합니다.</strong>
             <strong class="wl-en">I consent to the collection and use of personal information.</strong>
             <br>
-            <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 생년월일, 성별, 연락처, 이메일, 자기소개, 신앙 간증, 출석 교회 정보(교회명·홈페이지·담임 목사님 혹은 교회 연락처), 이단 단체 참여 여부, 생활 영어·미디어/테크·악기 역량, 캠프 봉사 경험, 선호 팀, 섬길 수 있는 캠프, 참고 사항 &nbsp;·&nbsp; 목적: 캠프 스태프 선발 및 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
+            <span class="wl-ko" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">수집 항목: 이름, 생년월일, 성별, 연락처, 이메일, 자기소개, 신앙 간증, 출석 교회 정보(교회명·홈페이지·담임 목사님 성함·연락처), 이단 단체 참여 여부, 생활 영어·미디어/테크·악기 역량, 캠프 봉사 경험, 선호 팀, 섬길 수 있는 캠프, 참고 사항 &nbsp;·&nbsp; 목적: 캠프 스태프 선발 및 운영 관리 &nbsp;·&nbsp; 보유 기간: 캠프 종료 후 별도 요청 시까지</span>
             <span class="wl-en" style="font-size:11.5px;color:var(--c-muted);line-height:1.7;">Items: name, date of birth, gender, phone, email, self-introduction, faith story, church info (name, website, pastor or church contact), involvement with cult groups, English/media/tech/instrument skills, camp service experience, team preferences, available camps, additional notes &nbsp;·&nbsp; Purpose: staff selection and management &nbsp;·&nbsp; Retention: until deletion is requested after camp ends</span>
           </label>
         </div>
@@ -3528,7 +3532,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
   // 쓰는 공개 폼이라 기기를 옮기면 이어 쓸 수 없지만, 따로 계정이 필요 없다.
   var DRAFT_KEY = 'wolko-staff-application-draft-v1';
   var DRAFT_FIELDS = ['staffName', 'staffGender', 'staffBirthYear', 'staffBirthMonth', 'staffBirthDay', 'staffPhone', 'staffEmail',
-    'staffIntro', 'staffFaith', 'staffChurch', 'staffChurchWebsite', 'staffPastorContact', 'staffInstruments',
+    'staffIntro', 'staffFaith', 'staffChurch', 'staffChurchWebsite', 'staffPastorName', 'staffPastorContact', 'staffInstruments',
     'staffPreviousCampDetail', 'staffTeam1', 'staffTeam2', 'staffNotes'];
   var DRAFT_RADIOS = ['cultHistory', 'englishAbility', 'mediaTech', 'previousCamp'];
   var formDirty = false;
@@ -3775,6 +3779,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       faithStory: text('staffFaith'),
       church: text('staffChurch'),
       churchWebsite: text('staffChurchWebsite'),
+      pastorName: text('staffPastorName'),
       pastorContact: text('staffPastorContact'),
       cultHistory: radioValue('cultHistory'),
       englishAbility: radioValue('englishAbility'),
@@ -3798,8 +3803,6 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       [!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email), 'staffEmail', '이메일 주소를 정확히 입력해 주세요.', 'Please enter a valid email address.'],
       [!payload.introduction, 'staffIntro', '간단한 자기소개를 입력해 주세요.', 'Please write a brief self-introduction.'],
       [!payload.faithStory, 'staffFaith', '언제, 어떻게 예수님을 믿게 되었는지 적어 주세요.', 'Please share when and how you came to believe in Jesus.'],
-      [!payload.church, 'staffChurch', '출석 교회 이름을 입력해 주세요.', 'Please enter your church name.'],
-      [!payload.pastorContact, 'staffPastorContact', '담임 목사님 혹은 교회 연락처를 입력해 주세요.', 'Please enter your pastor or church contact.'],
       [!payload.cultHistory, 'cultHistory', '하나님의 교회·신천지 참여 여부를 선택해 주세요.', 'Please answer the question about Church of God / Shincheonji.'],
       [!payload.englishAbility, 'englishAbility', '생활 영어 가능 여부를 선택해 주세요.', 'Please answer whether you can speak everyday English.'],
       [!payload.mediaTech, 'mediaTech', '미디어·테크를 잘 다루는지 선택해 주세요.', 'Please answer whether you are good with media or tech.'],

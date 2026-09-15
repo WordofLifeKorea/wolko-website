@@ -69,6 +69,7 @@ function buildStaffEmailHtml(reg) {
         ${divider}
         ${row('출석 교회', escHtml(reg.church || '—'))}
         ${row('교회 홈페이지', escHtml(reg.churchWebsite || '—'))}
+        ${row('담임 목사님 성함', escHtml(reg.pastorName || '—'))}
         ${row('담임 목사님·교회 연락처', escHtml(reg.pastorContact || '—'))}
         ${row('하나님의 교회·신천지 참여', yesNoLabel(reg.cultHistory))}
         ${divider}
@@ -116,7 +117,7 @@ async function syncStaffToSheet(env, reg) {
   await appendRow({
     serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
     sheetId: env.GOOGLE_SHEET_ID,
-    range: '시트1!A:AG',
+    range: '시트1!A:AH',
     row: [
       reg.registeredAt,       // A 신청일시
       reg.regId,              // B 신청ID
@@ -151,6 +152,7 @@ async function syncStaffToSheet(env, reg) {
       reg.team2 || '',         // AE 선호 팀 2지망
       (reg.availableCampNames || []).join(', '), // AF 섬길 수 있는 캠프
       reg.notes || '',         // AG 참고 사항
+      reg.pastorName || '',    // AH 담임 목사님 성함
     ],
   });
 }
@@ -170,6 +172,7 @@ export async function onRequestPost(context) {
     const faithStory = clean(data.faithStory, 3000);
     const church = clean(data.church, 100);
     const churchWebsite = clean(data.churchWebsite, 200);
+    const pastorName = clean(data.pastorName, 60);
     const pastorContact = clean(data.pastorContact, 150);
     const cultHistory = YES_NO.includes(data.cultHistory) ? data.cultHistory : '';
     const englishAbility = YES_NO.includes(data.englishAbility) ? data.englishAbility : '';
@@ -186,7 +189,7 @@ export async function onRequestPost(context) {
     const notes = clean(data.notes, 2000);
     const campTitleKo = clean(data.campTitleKo, 120);
 
-    const required = [campId, name, phone, email, gender, birthDate, introduction, faithStory, church, pastorContact,
+    const required = [campId, name, phone, email, gender, birthDate, introduction, faithStory,
       cultHistory, englishAbility, mediaTech, previousCamp, team1];
     if (required.some(value => !value) || !availableCamps.length || (previousCamp === 'yes' && !previousCampDetail)) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
@@ -221,6 +224,7 @@ export async function onRequestPost(context) {
       faithStory,
       church,
       churchWebsite,
+      pastorName,
       pastorContact,
       cultHistory,
       englishAbility,
