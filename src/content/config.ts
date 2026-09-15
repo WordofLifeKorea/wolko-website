@@ -107,6 +107,8 @@ const camp_schedule = defineCollection({
     open_date: z.string().optional(),
     start_date: z.string().optional(),
     staff_registration_open: z.boolean().optional(),
+    staff_training_ko: z.string().optional(),
+    staff_training_en: z.string().optional(),
   }),
 });
 
