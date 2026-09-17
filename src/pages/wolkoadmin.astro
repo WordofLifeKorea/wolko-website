@@ -1815,7 +1815,7 @@
                       ${r.pastorContact ? staffDetailItem(t('thPastorContact'), esc(r.pastorContact)) : ''}
                       ${r.cultHistory ? staffDetailItem(t('thCultHistory'), esc(previousCampLabel(r.cultHistory))) : ''}
                       ${r.englishAbility ? staffDetailItem(t('thEnglish'), /^[0-5]$/.test(String(r.englishAbility)) ? esc(r.englishAbility + ' / 5') : esc(previousCampLabel(r.englishAbility))) : ''}
-                      ${r.mediaTech ? staffDetailItem(t('thMediaTech'), esc(previousCampLabel(r.mediaTech))) : ''}
+                      ${r.mediaTech ? staffDetailItem(t('thMediaTech'), /^[0-5]$/.test(String(r.mediaTech)) ? esc(r.mediaTech + ' / 5') : esc(previousCampLabel(r.mediaTech))) : ''}
                       ${r.instruments ? staffDetailItem(t('thInstruments'), esc(r.instruments)) : ''}
                       ${Array.isArray(r.availableCampNames) && r.availableCampNames.length ? staffDetailItem(t('thAvailableCamps'), esc(r.availableCampNames.join(', ')), true) : ''}
                       ${r.introduction ? staffDetailItem(t('thIntroduction'), esc(r.introduction), true) : ''}

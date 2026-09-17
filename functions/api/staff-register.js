@@ -75,7 +75,7 @@ function buildStaffEmailHtml(reg) {
         ${row('하나님의 교회·신천지 참여', yesNoLabel(reg.cultHistory))}
         ${divider}
         ${row('일상 생활 영어', reg.englishAbility === '' || reg.englishAbility == null ? '—' : `${escHtml(reg.englishAbility)} / 5`)}
-        ${row('미디어·테크', yesNoLabel(reg.mediaTech))}
+        ${row('미디어·테크', reg.mediaTech === '' || reg.mediaTech == null ? '—' : `${escHtml(reg.mediaTech)} / 5`)}
         ${row('다룰 수 있는 악기', escHtml(reg.instruments || '—'))}
         ${row('기독교 캠프 봉사 경험', yesNoLabel(reg.previousCamp))}
         ${row('선호하는 팀', escHtml(teams || '—'))}
@@ -178,7 +178,8 @@ export async function onRequestPost(context) {
     const cultHistory = YES_NO.includes(data.cultHistory) ? data.cultHistory : '';
     // 일상 생활 영어는 0(못함)~5(유창) 단계
     const englishAbility = ['0','1','2','3','4','5'].includes(String(data.englishAbility)) ? String(data.englishAbility) : '';
-    const mediaTech = YES_NO.includes(data.mediaTech) ? data.mediaTech : '';
+    // 미디어·테크도 0(못함)~5(능숙) 단계
+    const mediaTech = ['0','1','2','3','4','5'].includes(String(data.mediaTech)) ? String(data.mediaTech) : '';
     const instruments = clean(data.instruments, 200);
     const previousCamp = YES_NO.includes(data.previousCamp) ? data.previousCamp : '';
     const previousCampDetail = previousCamp === 'yes' ? clean(data.previousCampDetail, 2000) : '';
