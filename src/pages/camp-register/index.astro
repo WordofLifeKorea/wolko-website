@@ -522,6 +522,7 @@ body.lang-en .crp-countdown-notice {
 
 /* Team Chips */
 .staff-team-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.staff-scale-chips .staff-team-chip-label { min-width:40px; text-align:center; font-variant-numeric:tabular-nums; }
 .staff-team-chip { display:inline-flex; }
 .staff-team-chip input[type="checkbox"], .staff-team-chip input[type="radio"] { position:absolute; opacity:0; width:0; height:0; }
 .staff-team-chip input:focus-visible ~ .staff-team-chip-label { outline:2px solid #0d9488; outline-offset:2px; }
@@ -2517,10 +2518,18 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 
         <div class="crp-form-grid">
           <div class="crp-field">
-            <label><span class="wl-ko">생활 영어가 어느 정도 가능하신가요?</span><span class="wl-en">Can you speak everyday English?</span> <span class="req">*</span></label>
-            <div class="staff-team-chips">
-              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="yes"><span class="staff-team-chip-label"><span class="wl-ko">예</span><span class="wl-en">Yes</span></span></label>
-              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="no"><span class="staff-team-chip-label"><span class="wl-ko">아니오</span><span class="wl-en">No</span></span></label>
+            <label><span class="wl-ko">일상 생활 영어는 어느 정도 가능하신가요?</span><span class="wl-en">How well can you use everyday English?</span> <span class="req">*</span>
+              <span style="font-size:11px;color:var(--c-muted);font-weight:400;margin-left:4px;">
+                <span class="wl-ko">(0 = 못함, 5 = 유창)</span><span class="wl-en">(0 = not at all, 5 = fluent)</span>
+              </span>
+            </label>
+            <div class="staff-team-chips staff-scale-chips">
+              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="0"><span class="staff-team-chip-label">0</span></label>
+              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="1"><span class="staff-team-chip-label">1</span></label>
+              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="2"><span class="staff-team-chip-label">2</span></label>
+              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="3"><span class="staff-team-chip-label">3</span></label>
+              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="4"><span class="staff-team-chip-label">4</span></label>
+              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="5"><span class="staff-team-chip-label">5</span></label>
             </div>
           </div>
           <div class="crp-field">
@@ -3881,7 +3890,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
       [!payload.faithStory, 'staffFaith', '언제, 어떻게 예수님을 믿게 되었는지 적어 주세요.', 'Please share when and how you came to believe in Jesus.'],
       [!payload.church, 'staffChurch', '출석 교회를 입력해 주세요. 없으면 "없음"이라고 적어 주세요.', 'Please enter your church, or "None" if you don\'t attend one.'],
       [!payload.cultHistory, 'cultHistory', '하나님의 교회·신천지 참여 여부를 선택해 주세요.', 'Please answer the question about Church of God / Shincheonji.'],
-      [!payload.englishAbility, 'englishAbility', '생활 영어 가능 여부를 선택해 주세요.', 'Please answer whether you can speak everyday English.'],
+      [!payload.englishAbility, 'englishAbility', '일상 생활 영어 수준을 0~5 중에서 선택해 주세요.', 'Please rate your everyday English from 0 to 5.'],
       [!payload.mediaTech, 'mediaTech', '미디어·테크를 잘 다루는지 선택해 주세요.', 'Please answer whether you are good with media or tech.'],
       [!payload.previousCamp, 'previousCamp', '기독교 캠프 봉사 경험 여부를 선택해 주세요.', 'Please answer whether you have served at a Christian camp.'],
       [payload.previousCamp === 'yes' && !payload.previousCampDetail, 'staffPreviousCampDetail', '캠프 봉사 경험을 자세히 나눠 주세요.', 'Please share details of your camp service.'],

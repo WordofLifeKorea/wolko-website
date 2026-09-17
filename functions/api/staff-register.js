@@ -74,7 +74,7 @@ function buildStaffEmailHtml(reg) {
         ${row('담임 목사님·교회 연락처', escHtml(reg.pastorContact || '—'))}
         ${row('하나님의 교회·신천지 참여', yesNoLabel(reg.cultHistory))}
         ${divider}
-        ${row('생활 영어', yesNoLabel(reg.englishAbility))}
+        ${row('일상 생활 영어', reg.englishAbility === '' || reg.englishAbility == null ? '—' : `${escHtml(reg.englishAbility)} / 5`)}
         ${row('미디어·테크', yesNoLabel(reg.mediaTech))}
         ${row('다룰 수 있는 악기', escHtml(reg.instruments || '—'))}
         ${row('기독교 캠프 봉사 경험', yesNoLabel(reg.previousCamp))}
@@ -176,7 +176,8 @@ export async function onRequestPost(context) {
     const pastorName = clean(data.pastorName, 60);
     const pastorContact = clean(data.pastorContact, 150);
     const cultHistory = YES_NO.includes(data.cultHistory) ? data.cultHistory : '';
-    const englishAbility = YES_NO.includes(data.englishAbility) ? data.englishAbility : '';
+    // 일상 생활 영어는 0(못함)~5(유창) 단계
+    const englishAbility = ['0','1','2','3','4','5'].includes(String(data.englishAbility)) ? String(data.englishAbility) : '';
     const mediaTech = YES_NO.includes(data.mediaTech) ? data.mediaTech : '';
     const instruments = clean(data.instruments, 200);
     const previousCamp = YES_NO.includes(data.previousCamp) ? data.previousCamp : '';
