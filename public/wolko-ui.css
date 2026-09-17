@@ -39,6 +39,39 @@
   font-family: inherit;
 }
 
+/* 동그란 아이콘 버튼은 위의 전역 최소 높이 때문에 타원으로 찌그러지므로,
+   각자 정해둔 가로·세로 크기를 그대로 쓰게 두고 비율만 1:1로 잠근다. */
+:where(
+  .icon-close,
+  .btn-close,
+  .icon-btn,
+  .notes-panel-close,
+  .hub-modal-close,
+  .car-modal-close,
+  .sc-modal-close,
+  .detail-panel-close,
+  .crp-modal-close,
+  .cal-nav-btn,
+  .sc-card-btn,
+  .car-card-btn,
+  .car-tab-remove,
+  .m-remove,
+  .cl-color-btn,
+  .cl-color-opt,
+  .step-entry-remove,
+  .group-participant-delete,
+  .custom-team-del,
+  .team-toggle-icon,
+  .viewer-side-nav,
+  .wh-vision-chevron,
+  .wp-acc-chevron
+) {
+  min-height: 0 !important;
+  min-width: 0 !important;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+}
+
 /* Primary page actions should align even when their original padding differs. */
 :where(
   .btn-edit-mode,
@@ -215,10 +248,9 @@
     .crp-modal-close,
     .crp-success-close
   ) {
+    /* min-height만 남기면 동그라미가 세로로 늘어나므로 지정하지 않는다. */
     width: 44px !important;
     height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
