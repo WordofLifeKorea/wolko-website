@@ -522,7 +522,19 @@ body.lang-en .crp-countdown-notice {
 
 /* Team Chips */
 .staff-team-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-.staff-scale-chips .staff-team-chip-label { min-width:40px; text-align:center; font-variant-numeric:tabular-nums; }
+.staff-scale { margin-top:10px; }
+.staff-scale-track { position:relative; display:flex; justify-content:space-between; align-items:flex-start; padding:0 2px; }
+.staff-scale-track::before { content:''; position:absolute; left:12px; right:12px; top:10px; height:2px; background:rgba(0,79,104,0.16); }
+.staff-scale-step { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; flex:1; }
+.crp-field .staff-scale-step input { position:absolute; opacity:0; width:0 !important; height:0 !important; min-height:0 !important; padding:0; margin:0; }
+.staff-scale-dot { width:22px; height:22px; border-radius:50%; border:2px solid rgba(0,79,104,0.28); background:#fff; box-shadow:0 0 0 4px #fff; transition:border-color .15s, background .15s; }
+.staff-scale-step:hover .staff-scale-dot { border-color:#0d9488; }
+.staff-scale-step input:checked ~ .staff-scale-dot { border-color:#0d9488; background:#0d9488; box-shadow:0 0 0 4px #fff, inset 0 0 0 3px #fff; }
+.staff-scale-step input:focus-visible ~ .staff-scale-dot { outline:2px solid #0d9488; outline-offset:3px; }
+.staff-scale-num { font-size:12.5px; font-weight:700; color:var(--c-muted); font-variant-numeric:tabular-nums; }
+.staff-scale-step input:checked ~ .staff-scale-num { color:#0f766e; }
+.staff-scale-ends { display:flex; justify-content:space-between; margin-top:2px; font-size:11.5px; color:var(--c-muted); }
+.staff-scale-ends-right { margin-left:auto; }
 .staff-team-chip { display:inline-flex; }
 .staff-team-chip input[type="checkbox"], .staff-team-chip input[type="radio"] { position:absolute; opacity:0; width:0; height:0; }
 .staff-team-chip input:focus-visible ~ .staff-team-chip-label { outline:2px solid #0d9488; outline-offset:2px; }
@@ -2523,13 +2535,19 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <span class="wl-ko">(0 = 못함, 5 = 유창)</span><span class="wl-en">(0 = not at all, 5 = fluent)</span>
               </span>
             </label>
-            <div class="staff-team-chips staff-scale-chips">
-              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="0"><span class="staff-team-chip-label">0</span></label>
-              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="1"><span class="staff-team-chip-label">1</span></label>
-              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="2"><span class="staff-team-chip-label">2</span></label>
-              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="3"><span class="staff-team-chip-label">3</span></label>
-              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="4"><span class="staff-team-chip-label">4</span></label>
-              <label class="staff-team-chip"><input type="radio" name="englishAbility" value="5"><span class="staff-team-chip-label">5</span></label>
+            <div class="staff-scale">
+              <div class="staff-scale-track">
+                <label class="staff-scale-step"><input type="radio" name="englishAbility" value="0"><span class="staff-scale-dot"></span><span class="staff-scale-num">0</span></label>
+                <label class="staff-scale-step"><input type="radio" name="englishAbility" value="1"><span class="staff-scale-dot"></span><span class="staff-scale-num">1</span></label>
+                <label class="staff-scale-step"><input type="radio" name="englishAbility" value="2"><span class="staff-scale-dot"></span><span class="staff-scale-num">2</span></label>
+                <label class="staff-scale-step"><input type="radio" name="englishAbility" value="3"><span class="staff-scale-dot"></span><span class="staff-scale-num">3</span></label>
+                <label class="staff-scale-step"><input type="radio" name="englishAbility" value="4"><span class="staff-scale-dot"></span><span class="staff-scale-num">4</span></label>
+                <label class="staff-scale-step"><input type="radio" name="englishAbility" value="5"><span class="staff-scale-dot"></span><span class="staff-scale-num">5</span></label>
+              </div>
+              <div class="staff-scale-ends">
+                <span class="wl-ko">못함</span><span class="wl-en">Not at all</span>
+                <span class="staff-scale-ends-right"><span class="wl-ko">유창</span><span class="wl-en">Fluent</span></span>
+              </div>
             </div>
           </div>
           <div class="crp-field">
