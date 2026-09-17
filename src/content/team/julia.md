@@ -9,7 +9,7 @@ category: stw
 order: 3
 gender: female
 photo_url: "/images/uploads/julia.jpg"
-photo_position: "center 30%"
+photo_position: "center 35%"
 show_spouse: false
 verse_ref: "디모데후서 3:16-17"
 verse_ko: "모든 성경 말씀은 하나님께서 감동을 주셔서 기록되었기 때문에 진리를 가르쳐 주며, 삶 가운데 무엇이 잘못되었는지 알게 해 줍니다. 또한 그 잘못을 바르게 잡아 주고 의롭게 사는 법을 가르쳐 줍니다. 말씀을 통해 하나님을 바르게 섬기는 자로 준비하게 되고, 모든 좋은 일을 할 수 있는 사람으로 자라게 됩니다."
