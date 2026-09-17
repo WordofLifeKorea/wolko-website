@@ -84,7 +84,7 @@ export async function archiveCurrentFile(env, { id, file, bytes, actorEmail, act
   const versionId = crypto.randomUUID();
   const record = {
     id: versionId,
-    label: label || (currentVersions.length ? `버전 ${Number(file.editVersion || 0)}` : '원본'),
+    label: label || (currentVersions.length ? `수정 전 버전 ${Number(file.editVersion || 0)}` : '원본'),
     fileName: file.fileName,
     fileType: file.fileType || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     fileSize: bytes.byteLength,

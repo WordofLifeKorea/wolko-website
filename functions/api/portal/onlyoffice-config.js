@@ -5,6 +5,7 @@ import { ensureOriginalVersion, readStoredResourceFile, versionsOf } from '../..
 
 const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+const FINALIZE_REVISIONS_PLUGIN = 'asc.{A63F1E5B-5C83-4E74-A5B7-30B6E9D0B1F4}';
 
 function appOrigin(request, env) {
   const configured = String(env.PUBLIC_SITE_URL || '').trim();
@@ -96,10 +97,10 @@ export async function onRequestGet({ env, request }) {
         forcesave: true,
         help: true,
         review: {
-          hideReviewDisplay: false,
+          hideReviewDisplay: true,
           showReviewChanges: false,
           reviewDisplay: 'markup',
-          trackChanges: editable,
+          trackChanges: false,
           hoverMode: false,
         },
       },
@@ -110,6 +111,12 @@ export async function onRequestGet({ env, request }) {
   };
   if (!version) {
     config.editorConfig.callbackUrl = `${siteOrigin}/api/portal/onlyoffice-callback?id=${encodeURIComponent(id)}&fileId=${encodeURIComponent(fileId)}&actor=${actor}&revision=${Number(file.documentRevision || 0)}`;
+    if (editable) {
+      config.editorConfig.plugins = {
+        autostart: [FINALIZE_REVISIONS_PLUGIN],
+        pluginsData: [`${siteOrigin}/onlyoffice/finalize-revisions/config.json`],
+      };
+    }
   }
   config.token = await signJwt(config, secret);
   return Response.json({

@@ -5,6 +5,8 @@ import { readFileSync } from 'node:fs';
 const source = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
 const configSource = readFileSync(new URL('../functions/api/portal/onlyoffice-config.js', import.meta.url), 'utf8');
+const pluginConfig = JSON.parse(readFileSync(new URL('../public/onlyoffice/finalize-revisions/config.json', import.meta.url), 'utf8'));
+const pluginSource = readFileSync(new URL('../public/onlyoffice/finalize-revisions/plugin.js', import.meta.url), 'utf8');
 test('DOCX dispatch is case insensitive without treating legacy DOC as DOCX', () => {
   const start = source.indexOf('    const VIEWER_KIND_MAP');
   const end = source.indexOf('    let viewerFileId', start);
@@ -24,6 +26,15 @@ test('DOCX opens in ONLYOFFICE and keeps version history controls', () => {
   assert.match(css, /\.viewer-stage-surface\.is-onlyoffice \{[^}]*padding:0;[^}]*overflow:hidden/);
   assert.match(css, /\.onlyoffice-editor-shell,#onlyofficeEditor \{[^}]*height:100%/);
   assert.match(configSource, /ensureOriginalVersion/);
-  assert.match(configSource, /review:\s*\{[\s\S]*reviewDisplay:\s*'markup'[\s\S]*trackChanges:\s*editable/);
-  assert.match(source, /변경 추적 · 자동 저장/);
+  assert.match(configSource, /review:\s*\{[\s\S]*hideReviewDisplay:\s*true[\s\S]*trackChanges:\s*false/);
+  assert.match(configSource, /finalize-revisions\/config\.json/);
+  assert.match(configSource, /autostart:\s*\[FINALIZE_REVISIONS_PLUGIN\]/);
+  assert.match(source, /자동 저장 · 버전 기록/);
+  assert.match(source, /문서에는 최종 내용만 남기고 원본과 수정 전 파일은 별도로 보관합니다/);
+});
+test('DOCX finalizes embedded revision marks before normal editing', () => {
+  assert.equal(pluginConfig.guid, 'asc.{A63F1E5B-5C83-4E74-A5B7-30B6E9D0B1F4}');
+  assert.deepEqual(pluginConfig.variations[0].EditorsSupport, ['word']);
+  assert.equal(pluginConfig.variations[0].isVisual, false);
+  assert.match(pluginSource, /AcceptReviewChanges', \[true\]/);
 });
