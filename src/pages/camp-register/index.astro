@@ -506,7 +506,6 @@ body.lang-en .crp-countdown-notice {
 .staff-camp-option:has(input:checked) { border-color: #0d9488; background: #f0fdfa; }
 .staff-camp-option-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; color: var(--c-text); word-break: keep-all; }
 .staff-camp-option-date { flex-shrink: 0; font-size: 12.5px; color: var(--c-muted); text-align: right; line-height: 1.5; }
-.staff-camp-option-training { display: block; color: #0f766e; font-weight: 700; }
 @media (max-width: 480px) {
   .staff-camp-option { flex-wrap: wrap; }
   .staff-camp-option-date { flex-basis: 100%; text-align: left; padding-left: 27px; }
@@ -3694,9 +3693,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
         html += '<label class="staff-camp-option"><input type="checkbox" name="staffCamp" value="' + escHtml(d.campId) + '" data-name-ko="' + escHtml(d.nameKo) + '" data-commitment="' + (d.commitment === 'true' ? 'true' : 'false') + '"' +
           (checkedIds.indexOf(d.campId) !== -1 ? ' checked' : '') + '>' +
           '<span class="staff-camp-option-name"><span class="wl-ko">' + escHtml(d.nameKo) + '</span><span class="wl-en">' + escHtml(d.nameEn || d.nameKo) + '</span></span>' +
-          '<span class="staff-camp-option-date"><span class="wl-ko">캠프 ' + escHtml(d.dateKo) + '</span><span class="wl-en">Camp ' + escHtml(d.dateEn || d.dateKo) + '</span>' +
-          (d.trainingKo ? '<span class="staff-camp-option-training"><span class="wl-ko">캠프 트레이닝 ' + escHtml(d.trainingKo) + '</span><span class="wl-en">Camp training ' + escHtml(d.trainingEn || d.trainingKo) + '</span></span>' : '') +
-          '</span></label>';
+          '<span class="staff-camp-option-date"><span class="wl-ko">' + escHtml(d.dateKo) + '</span><span class="wl-en">' + escHtml(d.dateEn || d.dateKo) + '</span></span></label>';
       });
       html += '</div></div>';
     });
