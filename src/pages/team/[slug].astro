@@ -18,6 +18,8 @@ const jejuSTW      = allTeam.filter(p => p.data.category === 'stw'        && p.d
 const d = person.data;
 const campusKo = d.campus === 'pyeongtaek' ? '평택 월코센터' : '제주 월비캠퍼스';
 const campusEn = d.campus === 'pyeongtaek' ? 'Pyeongtaek WOLKO Center' : 'Jeju WOLBI Campus';
+// 빈 줄로 나뉜 문단을 그대로 살려서 보여준다
+const paras = (text?: string) => (text ?? '').split(/\n{2,}/).map(t => t.trim()).filter(Boolean);
 const hasBio = (d.bio_ko && d.bio_ko.trim()) || (d.bio_en && d.bio_en.trim());
 const hasBio2 = (d.bio_ko_2 && d.bio_ko_2.trim()) || (d.bio_en_2 && d.bio_en_2.trim());
 const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
@@ -237,8 +239,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 .mp-verse::before {
   content: '\201C';
   position: absolute; font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: 320px; color: rgba(115,209,245,0.04);
-  top: -60px; left: 20px; line-height: 1; pointer-events: none;
+  font-size: 220px; color: rgba(115,209,245,0.05);
+  /* 위로 올리면 섹션 밖으로 잘려 쉼표처럼 보이므로 안쪽에 놓는다 */
+  top: 8px; left: 24px; line-height: 1; pointer-events: none;
 }
 .mp-wrap .mp-verse-text {
   font-family: 'Pretendard Variable', Pretendard, sans-serif;
@@ -938,8 +941,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         {hasBio ? (
           <>
             <div class="mp-bio-wrap" data-bio-wrap>
-              {d.bio_ko && <p class="mp-story-body wl-ko-block">{d.bio_ko}</p>}
-              {d.bio_en && <p class="mp-story-body wl-en-block">{d.bio_en}</p>}
+              {d.bio_ko && paras(d.bio_ko).map((t) => <p class="mp-story-body wl-ko-block">{t}</p>)}
+              {d.bio_en && paras(d.bio_en).map((t) => <p class="mp-story-body wl-en-block">{t}</p>)}
             </div>
             <button class="mp-bio-toggle" data-bio-toggle>
               <span class="wl-ko">더 보기 ↓</span>
@@ -970,8 +973,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
               <span class="wl-en">{d.spouse_en || name2En}</span>
             </h2>
             <div class="mp-bio-wrap" data-bio-wrap>
-              {d.bio_ko_2 && <p class="mp-story-body wl-ko-block">{d.bio_ko_2}</p>}
-              {d.bio_en_2 && <p class="mp-story-body wl-en-block">{d.bio_en_2}</p>}
+              {d.bio_ko_2 && paras(d.bio_ko_2).map((t) => <p class="mp-story-body wl-ko-block">{t}</p>)}
+              {d.bio_en_2 && paras(d.bio_en_2).map((t) => <p class="mp-story-body wl-en-block">{t}</p>)}
             </div>
             <button class="mp-bio-toggle" data-bio-toggle>
               <span class="wl-ko">더 보기 ↓</span>

@@ -48,5 +48,6 @@ bio_en: |-
   Even today, there are many young people and teenagers who attend church but do not truly understand what it means to have a relationship with God. There are also many who faithfully attend church but continue to live with an emptiness that nothing seems to fill.
 
   Because of this, I wanted to share with them the meaning of the Gospel and the significance of Jesus' death on the cross. In order to serve these young people and teenagers, I decided to serve at WOLBI JEJU.
+support_url: https://online.mrm.or.kr/tdrLOZT
 report_url: ""
 ---
