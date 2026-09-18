@@ -94,6 +94,8 @@ export async function onRequestGet({ env, request }) {
       customization: {
         autosave: true,
         compactHeader: true,
+        // 리본 아이콘 줄을 한 줄로 줄여서 문서가 보이는 영역을 넓힌다
+        compactToolbar: true,
         forcesave: true,
         help: true,
         review: {

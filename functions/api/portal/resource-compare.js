@@ -125,6 +125,8 @@ export async function onRequestPost({ env, request }) {
       user: { id: session.email, name: account?.name || session.email },
       customization: {
         compactHeader: true,
+        // 리본 아이콘 줄을 한 줄로 줄여서 문서가 보이는 영역을 넓힌다
+        compactToolbar: true,
         help: true,
         review: {
           hideReviewDisplay: false,
