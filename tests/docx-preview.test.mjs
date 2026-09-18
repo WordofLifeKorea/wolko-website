@@ -5,6 +5,8 @@ import { readFileSync } from 'node:fs';
 const source = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
 const configSource = readFileSync(new URL('../functions/api/portal/onlyoffice-config.js', import.meta.url), 'utf8');
+const compareApiSource = readFileSync(new URL('../functions/api/portal/resource-compare.js', import.meta.url), 'utf8');
+const compareScript = readFileSync(new URL('../public/onlyoffice/compare-docx.js', import.meta.url), 'utf8');
 const pluginConfig = JSON.parse(readFileSync(new URL('../public/onlyoffice/finalize-revisions/config.json', import.meta.url), 'utf8'));
 const pluginSource = readFileSync(new URL('../public/onlyoffice/finalize-revisions/plugin.js', import.meta.url), 'utf8');
 test('DOCX dispatch is case insensitive without treating legacy DOC as DOCX', () => {
@@ -31,6 +33,16 @@ test('DOCX opens in ONLYOFFICE and keeps version history controls', () => {
   assert.match(configSource, /autostart:\s*\[FINALIZE_REVISIONS_PLUGIN\]/);
   assert.match(source, /자동 저장 · 세션별 버전 기록/);
   assert.match(source, /원본과 최근 수정본 10개를 별도로 보관합니다/);
+});
+test('DOCX history can open a temporary in-document comparison', () => {
+  assert.match(source, /docxVersionCompare: '현재본과 비교'/);
+  assert.match(source, /async function compareDocxVersion\(versionId\)/);
+  assert.match(source, /fetch\('\/api\/portal\/resource-compare'/);
+  assert.match(compareApiSource, /\/docbuilder\?shardkey=/);
+  assert.match(compareApiSource, /showReviewChanges:\s*true/);
+  assert.match(compareApiSource, /mode:\s*'view'/);
+  assert.match(compareScript, /Api\.CompareDocuments\(previous\)/);
+  assert.match(compareScript, /SaveFile\('docx', 'WOLKO-Comparison\.docx'\)/);
 });
 test('DOCX finalizes embedded revision marks before normal editing', () => {
   assert.equal(pluginConfig.guid, 'asc.{A63F1E5B-5C83-4E74-A5B7-30B6E9D0B1F4}');

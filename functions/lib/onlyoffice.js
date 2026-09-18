@@ -59,8 +59,8 @@ export async function verifyJwt(token, secret) {
   }
 }
 
-export async function createFileAccessToken({ id, fileId, expires }, secret) {
-  return signJwt({ id, fileId, exp: Math.floor(expires / 1000) }, secret);
+export async function createFileAccessToken({ id, fileId, versionId = '', expires }, secret) {
+  return signJwt({ id, fileId, versionId, exp: Math.floor(expires / 1000) }, secret);
 }
 
 export function callbackToken(request, body) {

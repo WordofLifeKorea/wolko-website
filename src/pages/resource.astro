@@ -298,9 +298,9 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         openInNewTab: '새 탭에서 열기', cannotPreviewInline: '이 파일 형식은 바로 미리보기를 지원하지 않아요.',
         pageOf: (n, total) => `${n} / ${total}`, notePageLabel: n => `${n}페이지`, loadingFile: '불러오는 중...', pdfLoadFailed: 'PDF를 불러오지 못했습니다.', zoomReset: '눌러서 100%(화면 폭 맞춤)로',
         docxSaving: '자동 저장 · 세션별 버전 기록', docxViewOnly: '읽기 전용', docxVersions: '수정 이력', docxVersionsHint: '문서에는 최종 내용만 남기고 원본과 최근 수정본 10개를 별도로 보관합니다',
-        docxVersionEmpty: '원본 외에 저장된 편집 버전이 아직 없습니다.', docxVersionOpen: '열기', docxVersionRestore: '복원',
+        docxVersionEmpty: '원본 외에 저장된 편집 버전이 아직 없습니다.', docxVersionOpen: '열기', docxVersionCompare: '현재본과 비교', docxVersionRestore: '복원',
         docxVersionRestoreConfirm: '이 버전으로 문서를 복원할까요? 현재 문서도 복원 전 버전으로 보관됩니다.', docxVersionRestoreFailed: '문서를 복원하지 못했습니다.', docxVersionRestored: '문서를 복원했습니다.',
-        docxEditorFailed: '문서 편집기를 불러오지 못했습니다.', docxCurrent: '현재 문서',
+        docxEditorFailed: '문서 편집기를 불러오지 못했습니다.', docxCompareFailed: '수정 내역을 만들지 못했습니다.', docxCompareLoading: '수정 내역을 만드는 중...', docxCurrent: '현재 문서',
       },
       en: {
         loginTitle: 'Portal login required', loginDesc: 'Resource & Media is available with your WOLKO Portal account.', loginBtn: 'Go to Login',
@@ -357,9 +357,9 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         openInNewTab: 'Open in new tab', cannotPreviewInline: "This file type can't be previewed inline.",
         pageOf: (n, total) => `${n} / ${total}`, notePageLabel: n => `Page ${n}`, loadingFile: 'Loading...', pdfLoadFailed: 'Could not load the PDF.', zoomReset: 'Click to reset to 100% (fit width)',
         docxSaving: 'Autosave · session history', docxViewOnly: 'View only', docxVersions: 'Edit history', docxVersionsHint: 'Only final content remains in the document; the original and 10 latest edited versions are stored separately',
-        docxVersionEmpty: 'There are no saved edit versions beyond the preserved original yet.', docxVersionOpen: 'Open', docxVersionRestore: 'Restore',
+        docxVersionEmpty: 'There are no saved edit versions beyond the preserved original yet.', docxVersionOpen: 'Open', docxVersionCompare: 'Compare to current', docxVersionRestore: 'Restore',
         docxVersionRestoreConfirm: 'Restore this version? The current document will also be preserved first.', docxVersionRestoreFailed: 'Could not restore the document.', docxVersionRestored: 'Document restored.',
-        docxEditorFailed: 'Could not load the document editor.', docxCurrent: 'Current document',
+        docxEditorFailed: 'Could not load the document editor.', docxCompareFailed: 'Could not create the change view.', docxCompareLoading: 'Creating change view...', docxCurrent: 'Current document',
       },
     };
     let lang = localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko';
@@ -1000,6 +1000,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
             <div><b>${esc(version.isOriginal ? (lang === 'ko' ? '원본' : 'Original') : version.label)}</b><span>${esc(docxVersionTime(version.createdAt))}${version.createdByName ? ` · ${esc(version.createdByName)}` : ''}</span></div>
             <div>
               <button type="button" onclick="openDocxVersion('${version.id}')">${esc(t('docxVersionOpen'))}</button>
+              <button type="button" class="is-compare" onclick="compareDocxVersion('${version.id}')">${esc(t('docxVersionCompare'))}</button>
               ${canWrite ? `<button type="button" class="is-restore" onclick="restoreDocxVersion('${version.id}')">${esc(t('docxVersionRestore'))}</button>` : ''}
             </div>
           </article>
@@ -1016,6 +1017,41 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         await renderDocxStage(meta, versionId);
       } catch (error) {
         toast(error.message || t('filePreviewFailed'), true);
+      }
+    }
+    async function compareDocxVersion(versionId) {
+      const meta = (currentItem?.files || []).find(file => file.id === viewerFileId);
+      if (!meta) return toast(t('filePreviewFailed'), true);
+      closeDocxVersions();
+      $('viewerToolbar').innerHTML = `<span class="docx-editor-status">${esc(t('docxCompareLoading'))}</span>`;
+      try {
+        const response = await fetch('/api/portal/resource-compare', {
+          method: 'POST', headers: authHeaders(),
+          body: JSON.stringify({ id: currentItem.id, fileId: meta.id, versionId, lang }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || t('docxCompareFailed'));
+        try { onlyOfficeEditor?.destroyEditor(); } catch {}
+        onlyOfficeEditor = null;
+        $('viewerSurface').classList.add('is-onlyoffice');
+        $('viewerSurface').innerHTML = `<div class="onlyoffice-editor-shell"><div id="onlyofficeEditor"></div></div>`;
+        await loadOnlyOfficeApi(data.documentServerUrl);
+        if (viewerFileId !== meta.id || $('viewerOverlay').hidden) return;
+        $('viewerToolbar').innerHTML = `
+          <span class="docx-editor-status is-compare"><i></i>${esc(data.comparisonLabel)}</span>
+          <button type="button" class="docx-version-button" onclick="openDocxVersions()">${esc(t('docxVersions'))}</button>
+          <button type="button" class="docx-download-button" onclick="openCurrentDocx()">${esc(t('docxCurrent'))}</button>
+        `;
+        data.config.events = {
+          onError(event) {
+            console.error('ONLYOFFICE comparison error', event?.data);
+            toast(t('docxCompareFailed'), true);
+          },
+        };
+        onlyOfficeEditor = new window.DocsAPI.DocEditor('onlyofficeEditor', data.config);
+      } catch (error) {
+        toast(error.message || t('docxCompareFailed'), true);
+        await renderDocxStage(meta);
       }
     }
     async function restoreDocxVersion(versionId) {

@@ -24,10 +24,11 @@ function memoryKv() {
 
 test('ONLYOFFICE access tokens verify and expire', async () => {
   const secret = 'test-secret';
-  const token = await createFileAccessToken({ id: 'resource', fileId: 'file', expires: Date.now() + 60_000 }, secret);
+  const token = await createFileAccessToken({ id: 'resource', fileId: 'file', versionId: 'version-1', expires: Date.now() + 60_000 }, secret);
   const payload = await verifyJwt(token, secret);
   assert.equal(payload.id, 'resource');
   assert.equal(payload.fileId, 'file');
+  assert.equal(payload.versionId, 'version-1');
   assert.equal(await verifyJwt(token, 'wrong-secret'), null);
   const expired = await signJwt({ exp: Math.floor(Date.now() / 1000) - 1 }, secret);
   assert.equal(await verifyJwt(expired, secret), null);
