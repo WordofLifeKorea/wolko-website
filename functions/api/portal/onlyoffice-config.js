@@ -48,7 +48,7 @@ export async function onRequestGet({ env, request }) {
     const stored = await readStoredResourceFile(env, id, fileId);
     if (!stored) return error('원본 파일을 찾을 수 없습니다.', 404);
     const ensured = await ensureOriginalVersion(env, { id, file, bytes: stored.bytes });
-    if (ensured.created) {
+    if (ensured.created || ensured.pruned) {
       file = ensured.file;
       item.files = files.map((entry, index) => index === fileIndex ? file : entry);
       data.items[itemIndex] = item;

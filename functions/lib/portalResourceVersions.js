@@ -1,4 +1,4 @@
-const MAX_VERSIONS = 20;
+const MAX_EDIT_VERSIONS = 10;
 
 export const resourceFileKey = (id, fileId) => `portal:resource-file:${id}:${fileId}`;
 export const resourceVersionKey = (id, fileId, versionId) => `portal:resource-file-version:${id}:${fileId}:${versionId}`;
@@ -39,10 +39,10 @@ export async function sha256Hex(bytes) {
 }
 
 function trimVersions(versions) {
-  if (versions.length <= MAX_VERSIONS) return { kept: versions, removed: [] };
   const original = versions.find(version => version.isOriginal);
   const regular = versions.filter(version => !version.isOriginal);
-  const kept = regular.slice(0, original ? MAX_VERSIONS - 1 : MAX_VERSIONS);
+  if (regular.length <= MAX_EDIT_VERSIONS) return { kept: versions, removed: [] };
+  const kept = regular.slice(0, MAX_EDIT_VERSIONS);
   if (original) kept.push(original);
   const keptIds = new Set(kept.map(version => version.id));
   return { kept, removed: versions.filter(version => !keptIds.has(version.id)) };
@@ -51,7 +51,10 @@ function trimVersions(versions) {
 export async function ensureOriginalVersion(env, { id, file, bytes }) {
   const currentVersions = versionsOf(file);
   if (currentVersions.some(version => version.isOriginal)) {
-    return { file, created: false };
+    const { kept, removed } = trimVersions(currentVersions);
+    if (!removed.length) return { file, created: false, pruned: false };
+    await Promise.all(removed.map(version => env.CAMP_KV.delete(resourceVersionKey(id, file.id, version.id))));
+    return { file: { ...file, versions: kept }, created: false, pruned: true };
   }
   const versionId = 'original';
   const record = {
@@ -71,7 +74,7 @@ export async function ensureOriginalVersion(env, { id, file, bytes }) {
   });
   const { kept, removed } = trimVersions([...currentVersions, record]);
   await Promise.all(removed.map(version => env.CAMP_KV.delete(resourceVersionKey(id, file.id, version.id))));
-  return { file: { ...file, versions: kept }, created: true };
+  return { file: { ...file, versions: kept }, created: true, pruned: removed.length > 0 };
 }
 
 export async function archiveCurrentFile(env, { id, file, bytes, actorEmail, actorName, label }) {
@@ -114,7 +117,11 @@ export async function replaceWithEditedFile(env, { id, file, currentBytes, edite
       finalized: true,
     };
   }
-  const versions = await archiveCurrentFile(env, { id, file, bytes: currentBytes, actorEmail, actorName });
+  const documentRevision = Number(file.documentRevision || 0);
+  const sessionAlreadyArchived = Number(file.versionedDocumentRevision ?? -1) === documentRevision;
+  const versions = sessionAlreadyArchived
+    ? versionsOf(file)
+    : await archiveCurrentFile(env, { id, file, bytes: currentBytes, actorEmail, actorName });
   const nextFile = {
     ...file,
     fileSize: editedBytes.byteLength,
@@ -122,7 +129,8 @@ export async function replaceWithEditedFile(env, { id, file, currentBytes, edite
     editedBy: actorEmail || '',
     editedByName: actorName || actorEmail || '',
     editVersion: Number(file.editVersion || 0) + 1,
-    documentRevision: Number(file.documentRevision || 0) + (finalSave ? 1 : 0),
+    documentRevision: documentRevision + (finalSave ? 1 : 0),
+    versionedDocumentRevision: documentRevision,
     lastOnlyOfficeSaveId: saveId || '',
     versions,
   };

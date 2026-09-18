@@ -29,8 +29,8 @@ test('DOCX opens in ONLYOFFICE and keeps version history controls', () => {
   assert.match(configSource, /review:\s*\{[\s\S]*hideReviewDisplay:\s*true[\s\S]*trackChanges:\s*false/);
   assert.match(configSource, /finalize-revisions\/config\.json/);
   assert.match(configSource, /autostart:\s*\[FINALIZE_REVISIONS_PLUGIN\]/);
-  assert.match(source, /자동 저장 · 버전 기록/);
-  assert.match(source, /문서에는 최종 내용만 남기고 원본과 수정 전 파일은 별도로 보관합니다/);
+  assert.match(source, /자동 저장 · 세션별 버전 기록/);
+  assert.match(source, /원본과 최근 수정본 10개를 별도로 보관합니다/);
 });
 test('DOCX finalizes embedded revision marks before normal editing', () => {
   assert.equal(pluginConfig.guid, 'asc.{A63F1E5B-5C83-4E74-A5B7-30B6E9D0B1F4}');
