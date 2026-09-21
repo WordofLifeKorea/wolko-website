@@ -1785,7 +1785,6 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       $('notesList').innerHTML = (viewerKind === 'pdf' ? list : list.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))).map(a => {
         const canManage = !!(session && (session.email === a.createdBy || canWrite));
         const where = a.kind === 'time' ? formatTimeSec(a.timeSec) : (a.kind === 'area' && a.page ? t('notePageLabel')(a.page) : '');
-        const jumpAttr = a.kind !== 'general' ? ` onclick="jumpToNote('${a.id}')"` : '';
         const comments = Array.isArray(a.comments) ? a.comments.slice().sort((x, y) => new Date(x.createdAt) - new Date(y.createdAt)) : [];
         const commentsMarkup = comments.length ? `<div class="note-comments">
           <div class="note-comments-label">${esc(t('commentsLabel')(comments.length))}</div>
@@ -1799,17 +1798,13 @@ const pyeongtaekMissionaries = (await getCollection('team'))
           }).join('')}
         </div>` : '';
         const commentComposer = `<div class="note-comment-composer">
-          <textarea class="note-comment-input" id="noteCommentInput-${a.id}" rows="2" maxlength="500" aria-label="${esc(t('commentPlaceholder'))}" placeholder="${esc(t('commentPlaceholder'))}" oninput="commentDrafts['${a.id}']=this.value" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();submitNoteComment('${a.id}');}">${esc(commentDrafts[a.id] || '')}</textarea>
+          <textarea class="note-comment-input" id="noteCommentInput-${a.id}" rows="1" maxlength="500" aria-label="${esc(t('commentPlaceholder'))}" placeholder="${esc(t('commentPlaceholder'))}" oninput="commentDrafts['${a.id}']=this.value" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();submitNoteComment('${a.id}');}">${esc(commentDrafts[a.id] || '')}</textarea>
           <button type="button" class="note-reply-submit" onclick="submitNoteComment('${a.id}')" ${commentSubmitInFlight ? 'disabled' : ''}>${lang === 'ko' ? '의견 남기기' : 'Reply'}</button>
         </div>`;
         return `<details class="note-item is-${a.status}" data-note-id="${a.id}" ${expandedNotes.has(a.id) ? 'open' : ''} ontoggle="if(this.isConnected){this.open ? expandedNotes.add('${a.id}') : expandedNotes.delete('${a.id}');}">
           <summary class="note-summary" onclick="if(!this.parentElement.open) jumpToNote('${a.id}')"><span class="note-summary-proposal">${esc(a.text)}</span><span class="note-summary-location">${esc(where || (lang === 'ko' ? '문서 노트' : 'Document note'))}</span><span class="note-summary-chevron" aria-hidden="true">⌄</span></summary>
           <div class="note-expanded">
-          <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><div class="note-item-head-tools"><time>${esc(formatLogTime(a.createdAt))}</time>${canManage ? `<button type="button" class="note-delete-button" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div></div>
-          <div class="note-item-meta">
-            <label class="note-status-pill"><input type="checkbox" ${a.status === 'resolved' ? 'checked' : ''} ${canManage ? '' : 'disabled'} aria-label="${esc(t('noteResolve'))}" onchange="toggleNoteStatus('${a.id}',this.checked ? 'resolved' : 'open')"><span>${esc(a.status === 'open' ? t('statusOpen') : t('statusResolved'))}</span></label>
-            ${where ? `<button type="button" class="note-item-where"${jumpAttr}>${esc(where)}</button>` : ''}
-          </div>
+          <div class="note-item-head"><span class="note-item-who"><span class="note-item-author-dot" style="background:${highlightColorFor(a.createdBy)}"></span><b>${esc(a.createdByName)}</b></span><div class="note-item-head-tools"><time>${esc(formatLogTime(a.createdAt))}</time>${canManage ? `<button type="button" class="note-status-button" onclick="toggleNoteStatus('${a.id}','${a.status === 'open' ? 'resolved' : 'open'}')">${esc(a.status === 'open' ? t('noteResolve') : t('noteReopen'))}</button>` : ''}${canManage ? `<button type="button" class="note-delete-button" onclick="deleteAnnotation('${a.id}')">${esc(t('noteDelete'))}</button>` : ''}</div></div>
           ${a.quote ? `<blockquote class="note-item-quote">“${esc(a.quote)}”</blockquote>` : ''}
           <p class="note-item-text">${esc(a.text)}</p>
           ${commentsMarkup}
