@@ -41,7 +41,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
-  <link rel="stylesheet" href="/pdf-viewer-layout.css?v=7">
+  <link rel="stylesheet" href="/pdf-viewer-layout.css?v=8">
   <style is:global>
     .file-context-menu { position:fixed; z-index:10000; width:min(230px,calc(100vw - 16px)); padding:6px; background:#fff; border:1px solid #dce8ed; border-radius:12px; box-shadow:0 12px 36px rgba(16,41,54,.2); }
     .file-context-menu button { display:block; width:100%; min-height:42px; border:0; border-radius:7px; background:transparent; text-align:left; padding:10px 14px; color:#102936; font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; }
@@ -855,6 +855,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       $('viewerSideNavNext').hidden = true;
       $('viewerOverlay').hidden = false;
       syncBodyScrollLock();
+      syncViewerGeometry();
+      requestAnimationFrame(syncViewerGeometry);
       pushHistoryLayer('viewer', closeViewer);
       renderNotesList();
       toggleNotesPanel(false);
@@ -881,6 +883,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       continuousPdf?.destroy();
       continuousPdf = null;
       $('viewerOverlay').hidden = true;
+      resetViewerGeometry();
       $('viewerSurface').classList.remove('is-onlyoffice');
       syncBodyScrollLock();
       if (viewerUrl) { URL.revokeObjectURL(viewerUrl); viewerUrl = null; }
@@ -893,8 +896,43 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     // 빠져나가면) 뒤에 뜬 화면이 움직이는 게 비쳐 보인다 — 에디터나 뷰어 중
     // 하나라도 열려 있으면 body 스크롤 자체를 막는다.
     function syncBodyScrollLock() {
-      const locked = !$('editorOverlay').hidden || !$('viewerOverlay').hidden;
+      const viewerOpen = !$('viewerOverlay').hidden;
+      const locked = !$('editorOverlay').hidden || viewerOpen;
       document.body.classList.toggle('modal-open', locked);
+      document.body.classList.toggle('viewer-open', viewerOpen);
+    }
+    // Safari can occasionally resolve an absolutely positioned child against
+    // the page's pre-modal width (not the full-screen viewer), especially when
+    // the desktop rail has added a body margin. Read the visible viewer frame
+    // and pin both layers to that measured size instead of trusting `inset`.
+    function syncViewerGeometry() {
+      const overlay = $('viewerOverlay');
+      if (!overlay || overlay.hidden) return;
+      const card = overlay.querySelector('.viewer-card');
+      const head = overlay.querySelector('.viewer-head');
+      const body = overlay.querySelector('.viewer-body');
+      const stage = overlay.querySelector('.viewer-stage');
+      if (!card || !head || !body || !stage) return;
+      const cardRect = card.getBoundingClientRect();
+      const overlayRect = overlay.getBoundingClientRect();
+      const width = Math.max(1, Math.round(cardRect.width), Math.round(overlayRect.width), document.documentElement.clientWidth, window.innerWidth || 0);
+      const height = Math.max(1, Math.round(cardRect.height), Math.round(overlayRect.height), document.documentElement.clientHeight, window.innerHeight || 0);
+      const headHeight = Math.round(head.getBoundingClientRect().height);
+      Object.assign(body.style, {
+        left: '0px', top: `${headHeight}px`, right: 'auto', bottom: 'auto',
+        width: `${width}px`, height: `${Math.max(0, height - headHeight)}px`
+      });
+      Object.assign(stage.style, {
+        left: '0px', top: '0px', right: 'auto', bottom: 'auto',
+        width: '100%', height: '100%'
+      });
+    }
+    function resetViewerGeometry() {
+      for (const selector of ['.viewer-body', '.viewer-stage']) {
+        const element = $('viewerOverlay')?.querySelector(selector);
+        if (!element) continue;
+        for (const property of ['left', 'top', 'right', 'bottom', 'width', 'height']) element.style.removeProperty(property);
+      }
     }
     // PDF는 글자 위 드래그만으로 노트가 자동으로 떠서 버튼이 "글자가 아닌
     // 부분(이미지·표)을 사각형으로 표시"하는 보조 기능이 되고, 이미지 파일은
@@ -1629,6 +1667,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       panel.setAttribute('aria-hidden', String(!isOpen));
       $('viewerNotesToggle').classList.toggle('is-active', isOpen);
       $('viewerNotesToggle').setAttribute('aria-expanded', String(isOpen));
+      requestAnimationFrame(syncViewerGeometry);
     }
     // 노트 작성자마다 고정된 색을 배정한다(이메일을 해시해서 팔레트에서 하나
     // 고르는 방식 — 서버에 따로 저장할 필요 없이 항상 같은 사람은 같은 색).
@@ -1979,12 +2018,14 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     // 발생하는 resize 이벤트를 매번 다시 그리진 않고 잠깐 멈췄을 때 한 번만.
     let viewerResizeTimer = null;
     function scheduleViewerPdfResize() {
+      syncViewerGeometry();
       if (viewerKind !== 'pdf' || !viewerPdfDoc || $('viewerOverlay').hidden) return;
       clearTimeout(viewerResizeTimer);
       viewerResizeTimer = setTimeout(() => renderPdfPage(), 200);
     }
     window.addEventListener('resize', scheduleViewerPdfResize);
     window.visualViewport?.addEventListener('resize', scheduleViewerPdfResize);
+    window.visualViewport?.addEventListener('scroll', scheduleViewerPdfResize);
     document.addEventListener('scroll', event => { if (fileMenu && !fileMenu.contains(event.target)) closeFileMenu(); }, true);
     let filePressTimer;
     let suppressFileClick = false;

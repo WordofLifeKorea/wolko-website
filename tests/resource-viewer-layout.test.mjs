@@ -20,13 +20,22 @@ test('notes use an overlay drawer without reducing the PDF width', () => {
   assert.match(css, /\.notes-panel\.is-open \{[^}]*transform:translateX\(0\)/);
   assert.doesNotMatch(lateCss, /#viewerOverlay \.viewer-body\s*\{[^}]*grid-template-columns/);
   assert.doesNotMatch(lateCss, /#viewerOverlay \.notes-panel\s*\{[^}]*position:relative/);
-  assert.match(page, /pdf-viewer-layout\.css\?v=7/);
+  assert.match(page, /pdf-viewer-layout\.css\?v=8/);
 });
 
 test('viewer frame avoids Safari percentage-width flex sizing', () => {
   assert.match(css, /\.viewer-overlay \{[^}]*position:fixed;[^}]*inset:0;[^}]*display:block;[^}]*overflow:hidden;/);
   assert.match(css, /\.viewer-card \{[^}]*position:absolute;[^}]*inset:0;[^}]*width:auto;[^}]*max-width:none;[^}]*height:auto;/);
   assert.match(page, /window\.visualViewport\?\.addEventListener\('resize', scheduleViewerPdfResize\)/);
+});
+
+test('Safari viewer geometry is synchronized to the visible viewport', () => {
+  assert.match(page, /document\.body\.classList\.toggle\('viewer-open', viewerOpen\)/);
+  assert.match(page, /function syncViewerGeometry\(\)[\s\S]*card\.getBoundingClientRect\(\)[\s\S]*document\.documentElement\.clientWidth[\s\S]*Object\.assign\(body\.style/);
+  assert.match(page, /Object\.assign\(stage\.style,[\s\S]*width: '100%'[\s\S]*height: '100%'/);
+  assert.match(page, /window\.visualViewport\?\.addEventListener\('scroll', scheduleViewerPdfResize\)/);
+  assert.match(lateCss, /body\.wolko-rail-active\.viewer-open \{ margin-left:0 !important; \}/);
+  assert.match(lateCss, /body\.viewer-open #viewerOverlay,[\s\S]*width:100vw;height:100dvh/);
 });
 
 test('mobile notes open as a bottom sheet', () => {
