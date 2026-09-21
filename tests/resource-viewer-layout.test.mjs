@@ -20,7 +20,7 @@ test('notes use an overlay drawer without reducing the PDF width', () => {
   assert.match(css, /\.notes-panel\.is-open \{[^}]*transform:translateX\(0\)/);
   assert.doesNotMatch(lateCss, /#viewerOverlay \.viewer-body\s*\{[^}]*grid-template-columns/);
   assert.doesNotMatch(lateCss, /#viewerOverlay \.notes-panel\s*\{[^}]*position:relative/);
-  assert.match(page, /pdf-viewer-layout\.css\?v=6/);
+  assert.match(page, /pdf-viewer-layout\.css\?v=7/);
 });
 
 test('viewer frame avoids Safari percentage-width flex sizing', () => {
@@ -32,6 +32,12 @@ test('viewer frame avoids Safari percentage-width flex sizing', () => {
 test('mobile notes open as a bottom sheet', () => {
   assert.match(css, /@media \(max-width:620px\)[\s\S]*\.notes-panel \{[^}]*position:fixed;[^}]*top:auto;[^}]*transform:translateY\(100%\)/);
   assert.match(css, /@media \(max-width:620px\)[\s\S]*\.notes-panel\.is-open \{[^}]*transform:translateY\(0\)/);
+});
+
+test('narrow Safari desktop uses the bottom sheet instead of a half-width blank area', () => {
+  assert.match(lateCss, /#viewerOverlay \.viewer-body,[\s\S]*#viewerOverlay \.viewer-stage \{[^}]*left:0;right:0;width:auto;max-width:none/);
+  assert.match(lateCss, /@media \(max-width:900px\)[\s\S]*#viewerOverlay \.notes-panel \{[^}]*position:fixed;[^}]*left:0;right:0;[^}]*max-height:min\(68dvh,620px\)[^}]*translate3d\(0,100%,0\)/);
+  assert.match(lateCss, /@media \(max-width:900px\)[\s\S]*#viewerOverlay \.notes-panel\.is-open \{[^}]*translate3d\(0,0,0\)/);
 });
 
 test('note composer keeps its action buttons visible when the list is full', () => {

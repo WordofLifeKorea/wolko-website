@@ -1,7 +1,8 @@
 /* Viewer geometry lives in portal.css. Keep this file to component refinements so
    later-loaded rules cannot put the stage and notes drawer back into a split grid. */
 #viewerOverlay .viewer-head { min-width:0; }
-#viewerOverlay .viewer-stage { min-width:0;min-height:0;overflow:hidden; }
+#viewerOverlay .viewer-body,
+#viewerOverlay .viewer-stage { left:0;right:0;width:auto;max-width:none;min-width:0;min-height:0;overflow:hidden; }
 #viewerOverlay .viewer-stage-surface { min-width:0;min-height:0;overscroll-behavior:contain; }
 #viewerOverlay .notes-panel-head { gap:8px;padding:12px; }
 #viewerOverlay .notes-list { min-height:0;overscroll-behavior:contain; }
@@ -36,6 +37,18 @@
   #viewerOverlay .viewer-head .icon-close { width:32px !important;height:32px !important;min-width:32px !important;min-height:32px !important; }
   #viewerOverlay .viewer-toolbar { flex-wrap:nowrap;overflow-x:auto;min-height:40px;gap:5px;padding:4px 8px; }
   #viewerOverlay .viewer-notes-toggle { display:inline-flex;min-height:32px !important;padding:5px 8px; }
+  /* Safari on Retina Macs can report a narrow visual viewport while keeping a
+     desktop layout viewport. A side drawer then occupies the rendered half of
+     the viewer and leaves the other half blank. Use the same bottom sheet as
+     mobile for this intermediate width so the PDF always keeps full width. */
+  #viewerOverlay .notes-panel {
+    position:fixed;top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;
+    max-height:min(68dvh,620px);border-left:0;border-top:1px solid var(--line);
+    border-radius:16px 16px 0 0;box-shadow:0 -8px 26px rgba(0,0,0,.18);
+    transform:translate3d(0,100%,0);
+  }
+  #viewerOverlay .notes-panel.is-open { transform:translate3d(0,0,0); }
+  #viewerOverlay .notes-panel-close { display:grid; }
 }
 @media (prefers-reduced-motion:reduce) {
   #viewerOverlay .notes-panel { transition:none; }
