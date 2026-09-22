@@ -75,7 +75,10 @@ test('camp admin exposes equal-height mobile header controls and a password form
   assert.match(page, /id="currentPassword"[^>]+autocomplete="current-password"/);
   assert.match(page, /id="newPassword"[^>]+autocomplete="new-password"/);
   assert.match(page, /fetch\('\/api\/hub\/account-password'/);
-  assert.match(css, /\.adm-header-control,[\s\S]*\.adm-header-right \.wl-lang-toggle \{[^}]*height: 36px;[^}]*min-height: 36px !important/);
-  assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.adm-header-right \.wl-lang-toggle \{ height:34px !important;[^}]*min-height:34px !important/);
-  assert.match(page, /wolkoadmin\.css\?v=82/);
+  assert.match(page, /id="langToggleBtn"[^>]+toggleAdminLang\(\)[^>]+role="switch"/);
+  assert.match(page, /function toggleAdminLang\(\) \{ setAdminLang\(adminLang === 'ko' \? 'en' : 'ko'\); \}/);
+  assert.match(css, /\.adm-header-control,[\s\S]*\.adm-lang-switch \{[^}]*height: 36px;[^}]*min-height: 36px !important/);
+  assert.match(css, /\.adm-lang-switch\[data-lang="en"\] \.adm-lang-thumb \{ transform:translateX\(100%\); \}/);
+  assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.adm-lang-switch \{[^}]*height:34px;[^}]*min-height:34px !important/);
+  assert.match(page, /wolkoadmin\.css\?v=83/);
 });

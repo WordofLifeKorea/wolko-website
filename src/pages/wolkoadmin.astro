@@ -12,9 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=82">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=83">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
-  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
   <script src="/wolko-rail.js?v=9" defer></script>
@@ -59,10 +58,11 @@
       <button type="button" class="adm-header-control adm-account-button" onclick="openAccountModal()" data-t-title="accountSettings" data-t-aria="accountSettings" title="개인정보 수정" aria-label="개인정보 수정">
         <svg class="adm-account-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="9" r="3"/><path d="M6.7 18.4a6.2 6.2 0 0 1 10.6 0"/></svg>
       </button>
-      <div class="wl-lang-toggle" role="group" aria-label="Language">
-        <button type="button" class="wl-lang-btn" id="langKoBtn" onclick="setAdminLang('ko')" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
-        <button type="button" class="wl-lang-btn" id="langEnBtn" onclick="setAdminLang('en')" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
-      </div>
+      <button type="button" class="adm-lang-switch" id="langToggleBtn" onclick="toggleAdminLang()" role="switch" aria-checked="false" aria-label="영어로 변경" title="영어로 변경" data-lang="ko">
+        <span class="adm-lang-thumb" aria-hidden="true"></span>
+        <span class="adm-lang-option adm-lang-ko"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></span>
+        <span class="adm-lang-option adm-lang-en"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></span>
+      </button>
       <button class="adm-header-control btn-logout" onclick="doLogout()"><span data-t="logout">로그아웃</span></button>
     </div>
   </header>
@@ -342,7 +342,7 @@
     const ADMIN_T = {
       ko: {
         pageTitle:'캠프 관리자 — WOLKO 캠프 신청 현황',
-        adminTitle:'캠프 관리자', contentCms:'콘텐츠 CMS', logout:'로그아웃',
+        adminTitle:'캠프 관리자', contentCms:'콘텐츠 CMS', logout:'로그아웃', switchToEnglish:'영어로 변경', switchToKorean:'한국어로 변경',
         accountSettings:'개인정보 수정', accountTitle:'개인정보 수정', accountDesc:'현재 비밀번호를 확인한 뒤 새 비밀번호로 변경합니다.',
         accountEmail:'계정 이메일', currentPassword:'현재 비밀번호', newPassword:'새 비밀번호', confirmNewPassword:'새 비밀번호 확인',
         passwordRules:'8자 이상의 영문, 숫자, 특수문자를 사용해 주세요.', cancel:'취소', changePassword:'비밀번호 변경',
@@ -442,7 +442,7 @@
       },
       en: {
         pageTitle:'Camp Manager — WOLKO Camp Registration',
-        adminTitle:'Camp Manager', contentCms:'Content CMS', logout:'Log Out',
+        adminTitle:'Camp Manager', contentCms:'Content CMS', logout:'Log Out', switchToEnglish:'Switch to English', switchToKorean:'Switch to Korean',
         accountSettings:'Account settings', accountTitle:'Account settings', accountDesc:'Verify your current password, then choose a new password.',
         accountEmail:'Account email', currentPassword:'Current password', newPassword:'New password', confirmNewPassword:'Confirm new password',
         passwordRules:'Use at least 8 ASCII letters, numbers, or symbols.', cancel:'Cancel', changePassword:'Change password',
@@ -557,9 +557,17 @@
       });
       document.querySelectorAll('[data-t-title]').forEach(el => { el.title = t(el.dataset.tTitle); });
       document.querySelectorAll('[data-t-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.tAria)); });
-      document.getElementById('langKoBtn')?.classList.toggle('is-active', adminLang === 'ko');
-      document.getElementById('langEnBtn')?.classList.toggle('is-active', adminLang === 'en');
+      const langToggle = document.getElementById('langToggleBtn');
+      if (langToggle) {
+        const isEnglish = adminLang === 'en';
+        const nextLanguage = isEnglish ? t('switchToKorean') : t('switchToEnglish');
+        langToggle.dataset.lang = adminLang;
+        langToggle.setAttribute('aria-checked', String(isEnglish));
+        langToggle.setAttribute('aria-label', nextLanguage);
+        langToggle.title = nextLanguage;
+      }
     }
+    function toggleAdminLang() { setAdminLang(adminLang === 'ko' ? 'en' : 'ko'); }
     function setAdminLang(lang) {
       if (adminLang === lang) return;
       adminLang = lang;
