@@ -70,10 +70,12 @@ test('camp admin exposes equal-height mobile header controls and a password form
   const page = await readFile(new URL('../src/pages/wolkoadmin.astro', import.meta.url), 'utf8');
   const css = await readFile(new URL('../public/wolkoadmin.css', import.meta.url), 'utf8');
   assert.match(page, /class="adm-header-control adm-account-button"[^>]+openAccountModal/);
+  assert.match(page, /class="adm-account-icon"[^>]+viewBox="0 0 24 24"/);
+  assert.doesNotMatch(page, />CAMP ADMIN</);
   assert.match(page, /id="currentPassword"[^>]+autocomplete="current-password"/);
   assert.match(page, /id="newPassword"[^>]+autocomplete="new-password"/);
   assert.match(page, /fetch\('\/api\/hub\/account-password'/);
   assert.match(css, /\.adm-header-control,[\s\S]*\.adm-header-right \.wl-lang-toggle \{[^}]*height: 36px;[^}]*min-height: 36px !important/);
   assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.adm-header-right \.wl-lang-toggle \{ height:34px !important;[^}]*min-height:34px !important/);
-  assert.match(page, /wolkoadmin\.css\?v=81/);
+  assert.match(page, /wolkoadmin\.css\?v=82/);
 });

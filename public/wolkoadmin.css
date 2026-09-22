@@ -210,8 +210,16 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
   background: rgba(255,255,255,0.15);
   color: rgba(255,255,255,0.9);
   cursor: pointer;
+  transition: background .2s, border-color .2s, transform .2s;
 }
-.adm-account-button:hover { background: rgba(255,255,255,0.25);color:#fff; }
+.adm-account-button .adm-account-icon {
+  width: 20px;
+  height: 20px;
+  flex-basis: 20px;
+  stroke-width: 1.75;
+}
+.adm-account-button:hover { background: rgba(255,255,255,0.25);border-color:rgba(255,255,255,.4);color:#fff;transform:translateY(-1px); }
+.adm-account-button:focus-visible { outline:2px solid #fff;outline-offset:2px; }
 .btn-logout {
   background: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.2);
@@ -2815,7 +2823,7 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .adm-header-right .wl-lang-toggle { height:34px !important;min-height:34px !important;border-radius:8px; }
   .adm-account-button { width:34px;height:34px;min-height:34px !important;padding:0; }
   .adm-header-control svg { width:15px;height:15px;flex-basis:15px; }
-  .adm-header-badge:not(a) { display: none; }
+  .adm-account-button .adm-account-icon { width:18px;height:18px;flex-basis:18px; }
   .btn-install-adm { gap: 4px; }
   .btn-install-adm svg { width: 12px; height: 12px; }
   .account-modal { align-items:end;padding:0; }
