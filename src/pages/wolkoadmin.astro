@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=80">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=81">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=9">
@@ -52,13 +52,19 @@
       <span data-t="adminTitle">캠프 관리자</span>
     </a>
     <div class="adm-header-right">
-      <a href="/admin" target="_blank" class="adm-header-badge" style="text-decoration:none;cursor:pointer;" title="콘텐츠 편집 CMS">✏️ <span data-t="contentCms">콘텐츠 CMS</span></a>
+      <a href="/admin" target="_blank" class="adm-header-control adm-header-badge" title="콘텐츠 편집 CMS">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+        <span data-t="contentCms">콘텐츠 CMS</span>
+      </a>
       <span class="adm-header-badge">CAMP ADMIN</span>
+      <button type="button" class="adm-header-control adm-account-button" onclick="openAccountModal()" data-t-title="accountSettings" data-t-aria="accountSettings" title="개인정보 수정" aria-label="개인정보 수정">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/><path d="M18.5 3.5 20 5l-3 3-1.5-1.5Z"/></svg>
+      </button>
       <div class="wl-lang-toggle" role="group" aria-label="Language">
         <button type="button" class="wl-lang-btn" id="langKoBtn" onclick="setAdminLang('ko')" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
         <button type="button" class="wl-lang-btn" id="langEnBtn" onclick="setAdminLang('en')" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
       </div>
-      <button class="btn-logout" onclick="doLogout()"><span data-t="logout">로그아웃</span></button>
+      <button class="adm-header-control btn-logout" onclick="doLogout()"><span data-t="logout">로그아웃</span></button>
     </div>
   </header>
 
@@ -286,6 +292,43 @@
 
   </div>
 
+  <!-- ── ACCOUNT / PASSWORD ── -->
+  <div class="account-modal" id="accountModal" hidden role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
+    <section class="account-dialog">
+      <header class="account-dialog-head">
+        <div>
+          <h2 id="accountModalTitle" data-t="accountTitle">개인정보 수정</h2>
+          <p data-t="accountDesc">현재 비밀번호를 확인한 뒤 새 비밀번호로 변경합니다.</p>
+        </div>
+        <button type="button" class="account-dialog-close" onclick="closeAccountModal()" data-t-aria="cancel" aria-label="취소"><span aria-hidden="true">×</span></button>
+      </header>
+      <form id="passwordChangeForm" class="account-form" onsubmit="changePassword(event)">
+        <label>
+          <span data-t="accountEmail">계정 이메일</span>
+          <input type="email" id="accountEmail" name="username" autocomplete="username" readonly>
+        </label>
+        <label>
+          <span data-t="currentPassword">현재 비밀번호</span>
+          <input type="password" id="currentPassword" name="current-password" autocomplete="current-password" required>
+        </label>
+        <label>
+          <span data-t="newPassword">새 비밀번호</span>
+          <input type="password" id="newPassword" name="new-password" autocomplete="new-password" minlength="8" required>
+        </label>
+        <label>
+          <span data-t="confirmNewPassword">새 비밀번호 확인</span>
+          <input type="password" id="confirmNewPassword" name="new-password-confirmation" autocomplete="new-password" minlength="8" required>
+        </label>
+        <p class="account-password-rule" data-t="passwordRules">8자 이상의 영문, 숫자, 특수문자를 사용해 주세요.</p>
+        <p class="account-form-error" id="accountFormError" role="alert" aria-live="polite"></p>
+        <div class="account-form-actions">
+          <button type="button" class="account-cancel" onclick="closeAccountModal()" data-t="cancel">취소</button>
+          <button type="submit" class="account-submit" id="accountSubmit" data-t="changePassword">비밀번호 변경</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
@@ -301,6 +344,12 @@
       ko: {
         pageTitle:'캠프 관리자 — WOLKO 캠프 신청 현황',
         adminTitle:'캠프 관리자', contentCms:'콘텐츠 CMS', logout:'로그아웃',
+        accountSettings:'개인정보 수정', accountTitle:'개인정보 수정', accountDesc:'현재 비밀번호를 확인한 뒤 새 비밀번호로 변경합니다.',
+        accountEmail:'계정 이메일', currentPassword:'현재 비밀번호', newPassword:'새 비밀번호', confirmNewPassword:'새 비밀번호 확인',
+        passwordRules:'8자 이상의 영문, 숫자, 특수문자를 사용해 주세요.', cancel:'취소', changePassword:'비밀번호 변경',
+        currentPasswordRequired:'현재 비밀번호를 입력해 주세요.', newPasswordRequired:'새 비밀번호를 입력해 주세요.', passwordMismatch:'새 비밀번호가 서로 일치하지 않습니다.',
+        currentPasswordInvalid:'현재 비밀번호가 올바르지 않습니다.', passwordInvalid:'비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.', samePassword:'새 비밀번호는 현재 비밀번호와 다르게 설정해 주세요.',
+        passwordChanged:'비밀번호가 변경되었습니다.', passwordChangeFailed:'비밀번호를 변경하지 못했습니다.',
         hubLoginTitle:'포탈 로그인이 필요합니다',
         hubLoginDesc:'캠프 관리자는 WOLKO 포탈 계정으로 접속합니다. 포탈에 로그인한 뒤 캠프 관리자 카드를 눌러 다시 접속해 주세요.',
         goToHubBtn:'포탈로 이동',
@@ -395,6 +444,12 @@
       en: {
         pageTitle:'Camp Manager — WOLKO Camp Registration',
         adminTitle:'Camp Manager', contentCms:'Content CMS', logout:'Log Out',
+        accountSettings:'Account settings', accountTitle:'Account settings', accountDesc:'Verify your current password, then choose a new password.',
+        accountEmail:'Account email', currentPassword:'Current password', newPassword:'New password', confirmNewPassword:'Confirm new password',
+        passwordRules:'Use at least 8 ASCII letters, numbers, or symbols.', cancel:'Cancel', changePassword:'Change password',
+        currentPasswordRequired:'Enter your current password.', newPasswordRequired:'Enter a new password.', passwordMismatch:'The new passwords do not match.',
+        currentPasswordInvalid:'The current password is incorrect.', passwordInvalid:'Use at least 8 ASCII letters, numbers, or symbols.', samePassword:'Choose a password different from the current password.',
+        passwordChanged:'Your password has been changed.', passwordChangeFailed:'Could not change your password.',
         hubLoginTitle:'Portal login required',
         hubLoginDesc:'Camp Manager now signs in with your WOLKO Portal account. Log in at the Portal, then open the Camp Manager card again.',
         goToHubBtn:'Go to Portal',
@@ -501,6 +556,8 @@
         const v = t(el.dataset.t);
         if (typeof v === 'string') el.textContent = v;
       });
+      document.querySelectorAll('[data-t-title]').forEach(el => { el.title = t(el.dataset.tTitle); });
+      document.querySelectorAll('[data-t-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.tAria)); });
       document.getElementById('langKoBtn')?.classList.toggle('is-active', adminLang === 'ko');
       document.getElementById('langEnBtn')?.classList.toggle('is-active', adminLang === 'en');
     }
@@ -942,6 +999,65 @@
     function authHeaders() {
       return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('wolko-hub-token') || ''}` };
     }
+
+    // ── Account / password ──
+    function openAccountModal() {
+      const modal = document.getElementById('accountModal');
+      document.getElementById('passwordChangeForm').reset();
+      document.getElementById('accountEmail').value = hubSession?.email || '';
+      document.getElementById('accountFormError').textContent = '';
+      modal.hidden = false;
+      document.body.classList.add('account-modal-open');
+      requestAnimationFrame(() => document.getElementById('currentPassword').focus());
+    }
+    function closeAccountModal() {
+      const modal = document.getElementById('accountModal');
+      if (modal.hidden) return;
+      modal.hidden = true;
+      document.body.classList.remove('account-modal-open');
+      document.getElementById('passwordChangeForm').reset();
+      document.getElementById('accountFormError').textContent = '';
+      document.querySelector('.adm-account-button')?.focus();
+    }
+    async function changePassword(event) {
+      event.preventDefault();
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmation = document.getElementById('confirmNewPassword').value;
+      const errorEl = document.getElementById('accountFormError');
+      const submit = document.getElementById('accountSubmit');
+      errorEl.textContent = '';
+      if (!currentPassword) { errorEl.textContent = t('currentPasswordRequired'); return; }
+      if (!newPassword) { errorEl.textContent = t('newPasswordRequired'); return; }
+      if (newPassword !== confirmation) { errorEl.textContent = t('passwordMismatch'); return; }
+      submit.disabled = true;
+      try {
+        const res = await fetch('/api/hub/account-password', {
+          method: 'POST', headers: authHeaders(), body: JSON.stringify({ currentPassword, newPassword }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const errorKeys = {
+            CURRENT_PASSWORD_INVALID: 'currentPasswordInvalid', PASSWORD_INVALID: 'passwordInvalid',
+            SAME_PASSWORD: 'samePassword', SESSION_INVALID: 'passwordChangeFailed',
+          };
+          if (res.status === 401) goToHub();
+          throw new Error(errorKeys[data.code] ? t(errorKeys[data.code]) : (data.error || t('passwordChangeFailed')));
+        }
+        closeAccountModal();
+        showToast(t('passwordChanged'), 'success');
+      } catch (error) {
+        errorEl.textContent = error.message || t('passwordChangeFailed');
+      } finally {
+        submit.disabled = false;
+      }
+    }
+    document.getElementById('accountModal').addEventListener('click', event => {
+      if (event.target === event.currentTarget) closeAccountModal();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !document.getElementById('accountModal').hidden) closeAccountModal();
+    });
 
     // ── Camp cards ──
     function makeCard(id, kicker, title, capacity) {

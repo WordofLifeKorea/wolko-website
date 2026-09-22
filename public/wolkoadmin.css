@@ -170,24 +170,87 @@ body { font-family: var(--f-body); background: var(--bg); color: var(--text); mi
   color: rgba(255,255,255,0.9); letter-spacing: 0.04em;
 }
 .adm-header-right { display: flex; align-items: center; gap: 12px; }
+.adm-header-control,
+.adm-header-right .wl-lang-toggle {
+  height: 36px;
+  min-height: 36px !important;
+  border-radius: 9px;
+}
+.adm-header-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.adm-header-control svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .adm-header-badge {
   background: rgba(255,255,255,0.15);
   border: 1px solid rgba(255,255,255,0.25);
   color: rgba(255,255,255,0.8);
   font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
-  padding: 4px 10px; border-radius: 100px;
+  padding: 0 11px; border-radius: 9px;
   font-family: var(--f-sans);
 }
+.adm-account-button {
+  width: 36px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.9);
+  cursor: pointer;
+}
+.adm-account-button:hover { background: rgba(255,255,255,0.25);color:#fff; }
 .btn-logout {
   background: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.2);
   color: rgba(255,255,255,0.75);
   font-size: 12px; font-weight: 600;
-  padding: 5px 12px; border-radius: 100px;
+  padding: 0 12px; border-radius: 9px;
   cursor: pointer; font-family: var(--f-body);
   transition: background 0.2s;
 }
 .btn-logout:hover { background: rgba(255,255,255,0.22); color: #fff; }
+
+/* ── ACCOUNT / PASSWORD MODAL ── */
+body.account-modal-open { overflow:hidden; }
+.account-modal {
+  position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;
+  background:rgba(4,30,41,.68);backdrop-filter:blur(4px);
+}
+.account-modal[hidden] { display:none; }
+.account-dialog {
+  width:min(440px,100%);max-height:calc(100dvh - 40px);overflow:auto;
+  border:1px solid rgba(207,222,228,.9);border-radius:18px;background:#fff;
+  box-shadow:0 24px 70px rgba(2,28,39,.3);
+}
+.account-dialog-head { display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 22px 17px;border-bottom:1px solid var(--border); }
+.account-dialog-head h2 { color:var(--text);font:700 19px/1.3 var(--f-sans); }
+.account-dialog-head p { margin-top:6px;color:var(--mid);font-size:12px;line-height:1.55; }
+.account-dialog-close { flex:0 0 36px;width:36px;height:36px;min-height:36px !important;border:1px solid var(--border);border-radius:9px;background:#f7fafb;color:var(--mid);font-size:24px;line-height:1;cursor:pointer; }
+.account-form { display:grid;gap:14px;padding:20px 22px 22px; }
+.account-form label { display:grid;gap:7px;color:var(--text);font-size:12px;font-weight:700; }
+.account-form input { width:100%;height:44px;padding:0 12px;border:1px solid #ccdce2;border-radius:10px;background:#fff;color:var(--text);font:500 14px/1 var(--f-body);outline:none; }
+.account-form input:focus { border-color:var(--blue-lt);box-shadow:0 0 0 3px rgba(0,119,163,.1); }
+.account-form input[readonly] { background:#f3f7f8;color:var(--mid); }
+.account-password-rule { margin-top:-3px;color:var(--light);font-size:11px;line-height:1.5; }
+.account-form-error { min-height:18px;color:var(--red);font-size:11.5px;font-weight:600;line-height:1.45; }
+.account-form-actions { display:flex;justify-content:flex-end;gap:8px;margin-top:2px; }
+.account-form-actions button { height:44px;padding:0 17px;border-radius:10px;font:700 12px/1 var(--f-body);cursor:pointer; }
+.account-cancel { border:1px solid var(--border);background:#fff;color:var(--mid); }
+.account-submit { border:1px solid var(--blue);background:var(--blue);color:#fff; }
+.account-submit:disabled { opacity:.55;cursor:wait; }
 
 /* ── LAYOUT ── */
 .adm-wrap {
@@ -2739,8 +2802,9 @@ tbody tr.camp-tint.is-dedicated:hover td {
   .adm-header-badge,
   .btn-install-adm,
   .btn-logout {
-    min-height: 30px;
-    padding: 5px 9px;
+    height: 34px;
+    min-height: 34px !important;
+    padding: 0 9px;
     border-radius: 8px;
     font-size: 11px;
     line-height: 1;
@@ -2748,9 +2812,18 @@ tbody tr.camp-tint.is-dedicated:hover td {
     white-space: nowrap;
     flex-shrink: 0;
   }
+  .adm-header-right .wl-lang-toggle { height:34px !important;min-height:34px !important;border-radius:8px; }
+  .adm-account-button { width:34px;height:34px;min-height:34px !important;padding:0; }
+  .adm-header-control svg { width:15px;height:15px;flex-basis:15px; }
   .adm-header-badge:not(a) { display: none; }
   .btn-install-adm { gap: 4px; }
   .btn-install-adm svg { width: 12px; height: 12px; }
+  .account-modal { align-items:end;padding:0; }
+  .account-dialog { width:100%;max-height:92dvh;border-radius:18px 18px 0 0;border-bottom:0; }
+  .account-dialog-head { padding:18px 16px 14px; }
+  .account-form { padding:16px;gap:12px; }
+  .account-form-actions { display:grid;grid-template-columns:1fr 1fr; }
+  .account-form-actions button { width:100%; }
   .login-card { padding: 36px 24px 28px; margin: 16px; }
   th, td { padding: 10px 10px; }
   .login-input-wrap { margin-bottom: 44px; }
