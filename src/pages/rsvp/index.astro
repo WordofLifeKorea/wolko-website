@@ -263,11 +263,20 @@ const events = [
             <option value="7">7</option>
             <option value="8">8</option>
             <option value="9">9</option>
-            <option value="10">10</option>
+            <option value="more">10명 이상 / 10+</option>
           </select>
           <p class="rv-field-hint">
             <span class="wl-ko">본인을 포함한 인원을 선택해 주세요. 동반하시는 분이 있다면 함께 세어 주세요.</span>
             <span class="wl-en">Include yourself in the count, along with anyone coming with you.</span>
+          </p>
+        </div>
+
+        <div class="rv-field" id="rsvpPartySizeCustomField" hidden>
+          <label for="rsvpPartySizeCustom"><span class="wl-ko">참석 인원을 적어 주세요</span><span class="wl-en">Enter the number attending</span> <span class="req">*</span></label>
+          <input id="rsvpPartySizeCustom" type="number" inputmode="numeric" min="10" max="200" step="1" placeholder="10">
+          <p class="rv-field-hint">
+            <span class="wl-ko">단체로 오시는 경우 대략적인 인원도 괜찮습니다. 확정되면 다시 알려주세요.</span>
+            <span class="wl-en">For groups, an approximate number is fine — just let us know once it's confirmed.</span>
           </p>
         </div>
 
@@ -346,6 +355,7 @@ const events = [
     eventIdInput.value = btn.dataset.eventId || '';
     titleEl.textContent = isEn() ? (btn.dataset.eventTitleEn || '') : (btn.dataset.eventTitleKo || '');
     form.reset();
+    syncPartySizeCustom();
     clearErrors();
     formWrap.hidden = false;
     successWrap.hidden = true;
@@ -371,6 +381,14 @@ const events = [
     if (e.target.classList) e.target.classList.remove('error');
   });
 
+  // 10명 이상을 고르면 직접 입력 칸을 연다.
+  function syncPartySizeCustom() {
+    var isMore = byId('rsvpPartySize').value === 'more';
+    byId('rsvpPartySizeCustomField').hidden = !isMore;
+    if (!isMore) byId('rsvpPartySizeCustom').value = '';
+  }
+  byId('rsvpPartySize').addEventListener('change', syncPartySizeCustom);
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     clearErrors();
@@ -380,7 +398,9 @@ const events = [
       name: byId('rsvpName').value.trim(),
       phone: byId('rsvpPhone').value.trim(),
       email: byId('rsvpEmail').value.trim(),
-      partySize: Number(byId('rsvpPartySize').value),
+      partySize: byId('rsvpPartySize').value === 'more'
+        ? Number(byId('rsvpPartySizeCustom').value)
+        : Number(byId('rsvpPartySize').value),
       notes: byId('rsvpNotes').value.trim(),
     };
 
@@ -388,6 +408,7 @@ const events = [
       [!payload.name, 'rsvpName', '성함을 입력해 주세요.', 'Please enter your name.'],
       [!payload.phone, 'rsvpPhone', '전화번호를 입력해 주세요.', 'Please enter your phone number.'],
       [!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email), 'rsvpEmail', '이메일 주소를 정확히 입력해 주세요.', 'Please enter a valid email address.'],
+      [byId('rsvpPartySize').value === 'more' && (!Number.isInteger(payload.partySize) || payload.partySize < 10 || payload.partySize > 200), 'rsvpPartySizeCustom', '참석 인원을 10명 이상 200명 이하로 적어 주세요.', 'Please enter a number between 10 and 200.'],
       [!payload.partySize, 'rsvpPartySize', '참석 인원을 선택해 주세요.', 'Please select how many will attend.'],
       [!byId('rsvpConsent').checked, 'rsvpConsent', '개인정보 수집 및 이용에 동의해 주세요.', 'Please agree to the privacy notice.'],
     ];

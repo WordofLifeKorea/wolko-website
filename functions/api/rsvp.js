@@ -17,7 +17,7 @@ const EVENTS = {
   'thanksgiving-night': { ko: '감사의 밤', en: 'Night of Thanksgiving' },
 };
 
-const MAX_PARTY_SIZE = 10;
+const MAX_PARTY_SIZE = 200;
 
 function clean(value, max) {
   return String(value ?? '').trim().slice(0, max);
