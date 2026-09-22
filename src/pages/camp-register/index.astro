@@ -696,6 +696,21 @@ body.lang-en .crp-countdown-notice {
 
 #staffModal .crp-staff-modal-head {
   background: linear-gradient(135deg, #0b5f59 0%, #0f766e 58%, #0d9488 100%);
+  flex: 0 0 auto;
+  width: 100%;
+}
+#staffModal .crp-modal-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#staffModal .crp-staff-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
 }
 #staffModal .crp-staff-modal-badge {
   color: #ffffff;
@@ -714,6 +729,10 @@ body.lang-en .crp-countdown-notice {
   text-shadow: 0 1px 2px rgba(0,0,0,0.16);
 }
 #staffModal .crp-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  margin: 0;
   background: rgba(7, 89, 81, 0.92);
   color: #ffffff;
   border: 1px solid rgba(255,255,255,0.62);
@@ -869,6 +888,7 @@ body.lang-en .crp-countdown-notice {
   .crp-form-wrap { padding: 22px 20px calc(36px + env(safe-area-inset-bottom)); }
   .crp-form-grid { grid-template-columns: 1fr; }
   .crp-modal-close { top: 12px; right: 12px; }
+  #staffModal .crp-modal-close { top:12px;right:12px; }
   .crp-consent { padding: 13px 14px; }
 }
 
@@ -2424,6 +2444,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
       </div>
     </div>
 
+    <div class="crp-staff-modal-body">
     <!-- 폼 -->
     <div class="crp-form-wrap" id="staffFormWrap">
       <form id="staffForm" novalidate>
@@ -2683,6 +2704,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           <span class="wl-ko">확인</span><span class="wl-en">Close</span>
         </span>
       </button>
+    </div>
     </div>
   </div>
 </div>
