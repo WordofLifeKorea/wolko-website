@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=13">
+  <link rel="stylesheet" href="/hub.css?v=14">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -123,6 +123,10 @@
           <span data-t="pendingLabel">승인 대기</span>
           <span class="hub-pending-badge" id="pendingCount"></span>
         </button>
+        <button class="hub-sidebar-lang hub-install-button" id="installAppBtn" type="button" onclick="installPortalApp()" data-t-title="installApp" data-t-aria="installApp" title="앱 설치" aria-label="앱 설치">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11"/><path d="m8 10 4 4 4-4"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>
+          <span class="hub-install-label" data-t="installApp">앱 설치</span>
+        </button>
         <div class="hub-lang-toggle" role="group" aria-label="Language">
           <button class="hub-lang-btn" id="langKoBtn" onclick="setHubLang('ko')" aria-label="한국어" title="한국어">
             <img src="https://flagcdn.com/w20/kr.png" alt="" width="16" height="12"><span>KO</span>
@@ -157,6 +161,18 @@
       </div>
       <div id="pendingList"></div>
     </div>
+  </div>
+
+  <div class="hub-install-overlay hidden" id="installHelpModal" role="dialog" aria-modal="true" aria-labelledby="installHelpTitle">
+    <section class="hub-install-card">
+      <button class="hub-modal-close hub-install-close" type="button" onclick="closeInstallHelp()" data-t-aria="close" aria-label="닫기">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 1.5l12 12M13.5 1.5l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <img class="hub-install-icon" src="/images/portal-icon.svg" alt="">
+      <h2 id="installHelpTitle" data-t="installHelpTitle">WOLKO 앱 설치</h2>
+      <p id="installHelpText"></p>
+      <button class="hub-install-confirm" type="button" onclick="closeInstallHelp()" data-t="close">확인</button>
+    </section>
   </div>
 
   <div class="hub-toast" id="hubToast"></div>
@@ -225,6 +241,13 @@
         loginVerifying: '확인 중…',
         loginWrong: '비밀번호가 올바르지 않습니다.',
         logout: '로그아웃',
+        installApp: '앱 설치',
+        installHelpTitle: 'WOLKO 앱 설치',
+        installHelpIOS: 'Safari 하단의 공유 버튼을 누른 뒤 홈 화면에 추가를 선택해 주세요.',
+        installHelpSafari: 'Safari 메뉴에서 파일 → Dock에 추가를 선택해 주세요.',
+        installHelpDefault: '브라우저 메뉴에서 앱 설치 또는 홈 화면에 추가를 선택해 주세요.',
+        installDone: 'WOLKO 앱이 설치되었습니다.',
+        close: '확인',
         pendingLabel: '승인 대기',
         pendingListTitle: '승인 대기 목록',
         pendingEmpty: '대기 중인 요청이 없습니다.',
@@ -273,6 +296,13 @@
         loginVerifying: 'Verifying…',
         loginWrong: 'Incorrect password.',
         logout: 'Log out',
+        installApp: 'Install app',
+        installHelpTitle: 'Install the WOLKO app',
+        installHelpIOS: 'Tap Share in Safari, then choose Add to Home Screen.',
+        installHelpSafari: 'In Safari, choose File → Add to Dock.',
+        installHelpDefault: 'Open your browser menu and choose Install app or Add to Home Screen.',
+        installDone: 'The WOLKO app has been installed.',
+        close: 'OK',
         pendingLabel: 'Pending',
         pendingListTitle: 'Pending Requests',
         pendingEmpty: 'No pending requests.',
@@ -346,6 +376,8 @@
       document.querySelectorAll('[data-t]').forEach(el => {
         el.textContent = t(el.getAttribute('data-t'));
       });
+      document.querySelectorAll('[data-t-title]').forEach(el => { el.title = t(el.dataset.tTitle); });
+      document.querySelectorAll('[data-t-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.tAria)); });
       $('signupNameInput').placeholder = t('namePlaceholder');
       $('signupPhoneInput').placeholder = t('phonePlaceholder');
       $('signupPwInput').placeholder = t('signupPwPlaceholder');
@@ -360,6 +392,56 @@
       localStorage.removeItem('wolkoHubLang');
       applyLangToDOM();
     }
+
+    let deferredInstallPrompt = null;
+    function isPortalStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+    function syncInstallButton() {
+      const button = $('installAppBtn');
+      if (button) button.hidden = isPortalStandalone();
+    }
+    function installHelpMessage() {
+      const ua = navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|Edg|OPR|Android/.test(ua);
+      return isIOS ? t('installHelpIOS') : (isSafari ? t('installHelpSafari') : t('installHelpDefault'));
+    }
+    function openInstallHelp() {
+      $('installHelpText').textContent = installHelpMessage();
+      $('installHelpModal').classList.remove('hidden');
+      document.body.classList.add('hub-modal-open');
+      document.querySelector('.hub-install-close')?.focus();
+    }
+    function closeInstallHelp() {
+      $('installHelpModal').classList.add('hidden');
+      document.body.classList.remove('hub-modal-open');
+      $('installAppBtn')?.focus();
+    }
+    async function installPortalApp() {
+      if (isPortalStandalone()) return;
+      if (!deferredInstallPrompt) { openInstallHelp(); return; }
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+    }
+    window.addEventListener('beforeinstallprompt', event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      syncInstallButton();
+    });
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      syncInstallButton();
+      showToast(t('installDone'));
+    });
+    window.matchMedia('(display-mode: standalone)').addEventListener?.('change', syncInstallButton);
+    $('installHelpModal').addEventListener('click', event => {
+      if (event.target === $('installHelpModal')) closeInstallHelp();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !$('installHelpModal').classList.contains('hidden')) closeInstallHelp();
+    });
 
     /* ── 화면 전환 ── */
     const SCREENS = ['emailScreen', 'signupScreen', 'statusScreen'];
@@ -646,7 +728,15 @@
     }
 
     applyLangToDOM();
+    syncInstallButton();
     initAuthFlow();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/portal-sw.js', { scope: '/portal/' })
+          .catch(error => console.warn('Portal SW registration failed:', error));
+      });
+    }
   </script>
 </body>
 </html>

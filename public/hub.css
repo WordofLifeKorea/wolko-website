@@ -22,6 +22,7 @@ html, body {
   font-family: var(--f-body);
   -webkit-font-smoothing: antialiased;
 }
+body.hub-modal-open { overflow: hidden; }
 
 /* ── LOGIN SCREEN ── */
 .login-screen {
@@ -147,6 +148,16 @@ html, body {
 }
 .hub-sidebar-lang:hover { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.4); }
 .hub-sidebar-lang:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.hub-install-button svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
 .hub-lang-toggle {
   display: grid;
@@ -218,6 +229,8 @@ html, body {
   .hub-nav { display: none; }
   .hub-sidebar-foot { flex-direction: row; padding: 0; margin: 0; border: none; flex-shrink: 0; gap: 6px; }
   .hub-sidebar-lang { width: auto; min-height: 36px !important; padding: 0 10px; }
+  .hub-install-button { width:36px;padding:0; }
+  .hub-install-label { display:none; }
   .hub-lang-btn { width: 28px; height: 30px; min-height: 30px !important; padding: 0; }
   .hub-lang-btn span { display: none; }
   .hub-lang-toggle { height: 36px; gap: 2px; padding: 2px; }
@@ -356,7 +369,8 @@ html, body {
 .hub-note svg { flex-shrink: 0; margin-top: 1px; color: var(--blue-lt); }
 
 @media (prefers-reduced-motion: reduce) {
-  .hub-card { animation: none; }
+  .hub-card,
+  .hub-install-card { animation: none; }
 }
 
 /* ── LOGIN 보조 링크 버튼 (이메일 ↔ 비밀번호 전환) ── */
@@ -427,6 +441,59 @@ html, body {
   display: inline-flex; align-items: center; justify-content: center;
   width: 28px; height: 28px; border-radius: 50%;
   border: none; background: var(--bg); color: var(--mid); cursor: pointer;
+}
+
+/* ── 앱 설치 안내 ── */
+.hub-install-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 760;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10,24,32,.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+.hub-install-overlay.hidden { display:none; }
+.hub-install-card {
+  position: relative;
+  width: min(100%, 360px);
+  padding: 30px 26px 24px;
+  border: 1px solid rgba(0,79,104,.12);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0,30,44,.25);
+  text-align: center;
+  animation: hub-install-in .24s cubic-bezier(.22,1,.36,1);
+}
+.hub-install-close { position:absolute;top:14px;right:14px; }
+.hub-install-icon {
+  display: block;
+  width: 68px;
+  height: 68px;
+  margin: 4px auto 16px;
+  border-radius: 18px;
+  box-shadow: 0 9px 24px rgba(0,79,104,.2);
+}
+.hub-install-card h2 { margin:0;color:var(--text);font:800 19px/1.35 var(--f-body); }
+.hub-install-card p { margin:10px 0 20px;color:var(--mid);font-size:13px;line-height:1.75;word-break:keep-all; }
+.hub-install-confirm {
+  width:100%;
+  min-height:42px;
+  border:0;
+  border-radius:11px;
+  background:var(--blue);
+  color:#fff;
+  font:800 13px/1 var(--f-body);
+  cursor:pointer;
+}
+.hub-install-confirm:hover { background:var(--blue-lt); }
+.hub-install-confirm:focus-visible { outline:3px solid rgba(0,119,163,.25);outline-offset:2px; }
+@keyframes hub-install-in {
+  from { opacity:0;transform:translateY(12px) scale(.98); }
+  to { opacity:1;transform:none; }
 }
 .hub-pending-empty { margin: 24px 0; text-align: center; color: var(--light); font-size: 13px; }
 .hub-pending-item {

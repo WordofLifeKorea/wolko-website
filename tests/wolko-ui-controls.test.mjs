@@ -47,7 +47,7 @@ test('portal mobile header actions stay visually compact', async () => {
   assert.match(css, /\.hub-sidebar-lang\s*\{[^}]*min-height:\s*36px\s*!important;/s);
   assert.match(css, /\.hub-lang-btn\s*\{[^}]*height:\s*30px;[^}]*min-height:\s*30px\s*!important;/s);
   assert.match(css, /\.hub-lang-toggle\s*\{[^}]*height:\s*36px;/s);
-  assert.match(portal, /\/hub\.css\?v=13/);
+  assert.match(portal, /\/hub\.css\?v=14/);
 });
 
 test('contact navigation follows the selected language everywhere', async () => {
