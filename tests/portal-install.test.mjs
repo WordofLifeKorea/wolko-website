@@ -35,7 +35,7 @@ test('portal manifest and service worker meet install requirements', async () =>
   assert.equal(manifest.display, 'standalone');
   assert.equal(manifest.icons[0].type, 'image/svg+xml');
   assert.match(manifest.icons[0].purpose, /maskable/);
-  assert.match(worker, /const CACHE_NAME = 'wolko-portal-v1'/);
+  assert.match(worker, /const CACHE_NAME = 'wolko-portal-v2'/);
   assert.match(worker, /url\.pathname\.startsWith\('\/api\/'\)/);
   assert.match(icon, /viewBox="0 0 512 512"/);
 });

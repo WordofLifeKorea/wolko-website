@@ -1,5 +1,9 @@
 :root {
   --wolko-sidebar-width: 220px;
+  --hub-safe-top: env(safe-area-inset-top, 0px);
+  --hub-safe-right: env(safe-area-inset-right, 0px);
+  --hub-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --hub-safe-left: env(safe-area-inset-left, 0px);
   --blue: #004f68;
   --blue-lt: #0077a3;
   --accent: #c42a36;
@@ -15,6 +19,7 @@
 
 * { box-sizing: border-box; }
 html, body {
+  min-height: 100%;
   margin: 0;
   padding: 0;
   background: var(--bg);
@@ -30,6 +35,10 @@ body.hub-modal-open { overflow: hidden; }
   background: linear-gradient(145deg, #003d52, #00627f);
   display: flex; align-items: center; justify-content: center;
   z-index: 9999;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-y: auto;
+  padding: calc(24px + var(--hub-safe-top)) calc(24px + var(--hub-safe-right)) calc(24px + var(--hub-safe-bottom)) calc(24px + var(--hub-safe-left));
   transition: opacity 0.4s ease;
 }
 .login-screen.hidden { opacity: 0; pointer-events: none; }
@@ -38,6 +47,7 @@ body.hub-modal-open { overflow: hidden; }
 .hub-shell {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   align-items: stretch;
 }
 .hub-shell[hidden] { display: none; }
@@ -55,6 +65,7 @@ body.hub-modal-open { overflow: hidden; }
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
 }
 .hub-sidebar-brand {
@@ -212,11 +223,11 @@ body.hub-modal-open { overflow: hidden; }
     z-index: 10;
     width: 100%;
     height: auto;
-    min-height: 50px;
+    min-height: calc(50px + var(--hub-safe-top));
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 7px 12px;
+    padding: calc(7px + var(--hub-safe-top)) calc(12px + var(--hub-safe-right)) 7px calc(12px + var(--hub-safe-left));
     overflow: visible;
   }
   .hub-sidebar-brand { padding: 0; margin: 0; border: none; }
@@ -234,7 +245,7 @@ body.hub-modal-open { overflow: hidden; }
   .hub-lang-btn { width: 28px; height: 30px; min-height: 30px !important; padding: 0; }
   .hub-lang-btn span { display: none; }
   .hub-lang-toggle { height: 36px; gap: 2px; padding: 2px; }
-  .hub-wrap { padding: 24px 16px 60px; }
+  .hub-wrap { padding: 24px calc(16px + var(--hub-safe-right)) calc(60px + var(--hub-safe-bottom)) calc(16px + var(--hub-safe-left)); }
 }
 
 .hub-kicker {
@@ -418,7 +429,7 @@ body.hub-modal-open { overflow: hidden; }
   align-items: center;
   justify-content: center;
   background: rgba(10,24,32,.5);
-  padding: 20px;
+  padding: calc(20px + var(--hub-safe-top)) calc(20px + var(--hub-safe-right)) calc(20px + var(--hub-safe-bottom)) calc(20px + var(--hub-safe-left));
 }
 .hub-pending-overlay.hidden { display: none; }
 .hub-pending-card {
@@ -451,7 +462,7 @@ body.hub-modal-open { overflow: hidden; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: calc(20px + var(--hub-safe-top)) calc(20px + var(--hub-safe-right)) calc(20px + var(--hub-safe-bottom)) calc(20px + var(--hub-safe-left));
   background: rgba(10,24,32,.55);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);

@@ -47,7 +47,23 @@ test('portal mobile header actions stay visually compact', async () => {
   assert.match(css, /\.hub-sidebar-lang\s*\{[^}]*min-height:\s*36px\s*!important;/s);
   assert.match(css, /\.hub-lang-btn\s*\{[^}]*height:\s*30px;[^}]*min-height:\s*30px\s*!important;/s);
   assert.match(css, /\.hub-lang-toggle\s*\{[^}]*height:\s*36px;/s);
-  assert.match(portal, /\/hub\.css\?v=14/);
+  assert.match(portal, /\/hub\.css\?v=15/);
+});
+
+test('portal mobile layout respects Safari safe areas and dynamic viewport', async () => {
+  const [css, authCss, portal] = await Promise.all([
+    read('public/hub.css'),
+    read('public/wolko-auth.css'),
+    read('src/pages/portal.astro'),
+  ]);
+
+  assert.match(portal, /viewport-fit=cover/);
+  assert.match(css, /--hub-safe-top:\s*env\(safe-area-inset-top, 0px\)/);
+  assert.match(css, /\.hub-shell\s*\{[^}]*min-height:\s*100dvh;/s);
+  assert.match(css, /\.hub-sidebar\s*\{[^}]*min-height:\s*calc\(50px \+ var\(--hub-safe-top\)\);/s);
+  assert.match(css, /padding:\s*calc\(7px \+ var\(--hub-safe-top\)\)/);
+  assert.match(css, /\.hub-wrap\s*\{[^}]*var\(--hub-safe-bottom\)/s);
+  assert.match(authCss, /env\(safe-area-inset-top, 0px\)/);
 });
 
 test('contact navigation follows the selected language everywhere', async () => {

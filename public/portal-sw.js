@@ -1,9 +1,9 @@
 // WOLKO Portal service worker
-const CACHE_NAME = 'wolko-portal-v1';
+const CACHE_NAME = 'wolko-portal-v2';
 const PRECACHE = [
   '/portal/',
   '/portal-manifest.json',
-  '/hub.css?v=14',
+  '/hub.css?v=15',
   '/images/portal-icon.svg',
   '/images/WOLKO Circle.png',
 ];
