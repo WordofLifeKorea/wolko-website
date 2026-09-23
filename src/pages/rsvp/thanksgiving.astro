@@ -112,12 +112,11 @@ const leaves = [
     .inv-verse p { margin:0; font-family:var(--serif); font-size:17px; line-height:1.9; color:var(--wine); word-break:keep-all; }
     .inv-verse cite { display:block; margin-top:12px; font-style:normal; font-size:12.5px; color:var(--muted); }
 
-    .inv-info { display:grid; gap:14px; max-width:340px; margin:0 auto; text-align:left; }
-    .inv-info-row { display:flex; gap:14px; align-items:flex-start; padding:16px 18px; border-radius:14px; background:#fff; border:1px solid var(--line); }
-    .inv-info-icon { flex-shrink:0; width:36px; height:36px; border-radius:50%; background:rgba(217,119,47,0.12); color:var(--rust); display:grid; place-items:center; }
-    .inv-info-icon svg { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
-    .inv-info-row dt { font-size:12px; font-weight:700; color:var(--muted); }
-    .inv-info-row dd { margin:3px 0 0; font-size:15.5px; font-weight:700; color:var(--ink); word-break:keep-all; }
+    .inv-info { max-width:320px; margin:0 auto; text-align:center; }
+    .inv-info-row { padding:18px 0; border-bottom:1px solid var(--line); }
+    .inv-info-row:last-child { border-bottom:0; }
+    .inv-info-row dt { font-family:var(--serif); font-size:12.5px; letter-spacing:0.16em; color:var(--amber); }
+    .inv-info-row dd { margin:8px 0 0; font-size:17px; font-weight:600; color:var(--ink); line-height:1.5; word-break:keep-all; }
 
     .inv-parking { max-width:340px; margin:16px auto 0; padding:14px 16px; border-radius:12px; background:#fff1dc; border:1px solid rgba(217,119,47,0.3); font-size:13.5px; line-height:1.75; color:#7a3a17; text-align:left; word-break:keep-all; }
     .inv-parking b { display:block; margin-bottom:3px; }
@@ -231,12 +230,12 @@ const leaves = [
     <h2 class="inv-h">일시와 장소</h2>
     <dl class="inv-info" data-reveal="stagger">
       <div class="inv-info-row">
-        <span class="inv-info-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>
-        <div><dt>일시</dt><dd>{event.date}</dd></div>
+        <dt>일시</dt>
+        <dd>{event.date}</dd>
       </div>
       <div class="inv-info-row">
-        <span class="inv-info-icon"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
-        <div><dt>장소</dt><dd>{event.place}</dd></div>
+        <dt>장소</dt>
+        <dd>{event.place}</dd>
       </div>
     </dl>
     <div class="inv-parking">
