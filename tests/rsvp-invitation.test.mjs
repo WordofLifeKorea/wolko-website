@@ -30,6 +30,14 @@ test('RSVP invitation includes the parking notice', async () => {
   assert.match(page, /길 건너편 공영 주차장/);
 });
 
+test('RSVP listing keeps parking details in the invitation and sizes mobile actions equally', async () => {
+  const listing = await read('src/pages/rsvp/index.astro');
+
+  assert.doesNotMatch(listing, /rv-parking|주차장이 협소하여/);
+  assert.match(listing, /@media \(max-width: 640px\)[\s\S]*\.rv-card-actions \{ display: grid; grid-template-columns: 1fr; \}/);
+  assert.match(listing, /\.rv-card-actions > \.rv-rsvp-btn,[\s\S]*\.rv-card-actions > \.rv-share-btn \{ width: 100%; height: 48px;/);
+});
+
 test('RSVP invitation leaves are sourced emoji, not hand-drawn paths', async () => {
   const page = await read('src/pages/rsvp/thanksgiving.astro');
 
