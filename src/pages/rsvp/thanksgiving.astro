@@ -171,8 +171,7 @@ const leaves = [
     .inv-footer b { display:block; margin-bottom:4px; color:var(--cream); font-size:13px; letter-spacing:0.06em; }
     .inv-footer a { color:var(--gold); text-decoration:none; }
 
-    /* 배경음악 토글: 꺼짐(어두운 회색) ↔ 켜짐(주황 그라데이션 + 은은한 펄스 링)으로
-       아이콘뿐 아니라 색으로도 상태가 한눈에 보이게 한다. */
+    /* 배경음악 토글: 꺼짐(어두운 회색) ↔ 켜짐(주황 그라데이션 + 은은한 펄스 링). */
     .inv-music { position:fixed; right:max(18px, calc((100% - 480px) / 2 + 18px)); bottom:18px; z-index:20;
       width:48px; height:48px; border-radius:50%; border:1.5px solid rgba(255,248,236,.32);
       background:rgba(35,16,13,.82); backdrop-filter:blur(6px); color:rgba(255,248,236,.6);
@@ -181,7 +180,6 @@ const leaves = [
     .inv-music:hover { background:rgba(35,16,13,.95); }
     .inv-music:active { transform:scale(.94); }
     .inv-music svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-    .inv-music svg[hidden] { display:none !important; }
     .inv-music[hidden] { display:none; }
     .inv-music.is-playing {
       background:linear-gradient(135deg, var(--rust), var(--amber));
@@ -337,8 +335,7 @@ const leaves = [
   <source src="/audio/rsvp-bgm.mp3" type="audio/mpeg">
 </audio>
 <button type="button" class="inv-music" id="invMusicToggle" hidden aria-label="배경음악 재생/일시정지" aria-pressed="false">
-  <svg viewBox="0 0 24 24" id="invMusicIconOn" hidden><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-  <svg viewBox="0 0 24 24" id="invMusicIconOff"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
 </button>
 
 <script is:inline define:vars={{ eventId: event.id, pageUrl }}>
@@ -454,19 +451,14 @@ const leaves = [
   // (완전 무음 자동재생조차 막는 브라우저에서는 그 첫 터치가 재생 자체도 함께 시도한다.)
   var bgm = $('invBgm');
   var musicBtn = $('invMusicToggle');
-  var iconOn = $('invMusicIconOn');
-  var iconOff = $('invMusicIconOff');
   var userControlled = false; // 사용자가 버튼을 직접 눌러 상태를 정한 적이 있는지
 
-  // 실제로 소리가 들리는 상태(재생 중이면서 음소거가 아닐 때)에만 음표 아이콘을 보여준다.
-  // 두 아이콘 중 정확히 하나만 항상 보이도록, 재생/일시정지/음소거 변화가 있을 때마다 이 함수로 동기화한다.
+  // 재생/일시정지/음소거 변화에 맞춰 버튼 상태를 동기화한다.
   function syncMusicIcon() {
     var audible = !bgm.paused && !bgm.muted;
     musicBtn.classList.toggle('is-playing', audible);
     musicBtn.setAttribute('aria-pressed', audible ? 'true' : 'false');
     musicBtn.setAttribute('aria-label', audible ? '배경음악 일시정지' : '배경음악 재생');
-    iconOn.hidden = !audible;
-    iconOff.hidden = audible;
   }
   bgm.addEventListener('play', syncMusicIcon);
   bgm.addEventListener('pause', syncMusicIcon);

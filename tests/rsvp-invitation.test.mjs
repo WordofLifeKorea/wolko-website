@@ -52,11 +52,14 @@ test('RSVP card and cover use a quiet invitation line while details retain the a
   assert.match(invite, /<dd>\{event\.place\}<\/dd>/);
 });
 
-test('RSVP music toggle shows one icon and handles its own first interaction', async () => {
+test('RSVP music toggle uses one unslashed note and handles its own first interaction', async () => {
   const invite = await read('src/pages/rsvp/thanksgiving.astro');
 
-  assert.match(invite, /\.inv-music svg\[hidden\] \{ display:none !important; \}/);
-  assert.match(invite, /iconOn\.hidden = !audible;\s*iconOff\.hidden = audible;/);
+  const musicButton = invite.match(/<button type="button" class="inv-music"[\s\S]*?<\/button>/)?.[0];
+  assert.ok(musicButton);
+  assert.equal((musicButton.match(/<svg/g) ?? []).length, 1);
+  assert.doesNotMatch(musicButton, /<line/);
+  assert.match(invite, /musicBtn\.classList\.toggle\('is-playing', audible\)/);
   assert.match(invite, /musicBtn\.contains\(event\.target\)/);
   assert.match(invite, /musicBtn\.setAttribute\('aria-label', audible \? '배경음악 일시정지' : '배경음악 재생'\)/);
 });
