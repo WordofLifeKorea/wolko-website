@@ -540,12 +540,18 @@ const fwSparkAngles = Array.from({ length: 18 }, (_, i) => Math.round(i * 20 + (
   var iconOff = $('invMusicIconOff');
   var userControlled = false; // 사용자가 버튼을 직접 눌러 상태를 정한 적이 있는지
 
-  function setMusicState(playing) {
-    musicBtn.classList.toggle('is-playing', playing);
-    musicBtn.setAttribute('aria-pressed', playing ? 'true' : 'false');
-    iconOn.hidden = !playing;
-    iconOff.hidden = playing;
+  // 실제로 소리가 들리는 상태(재생 중이면서 음소거가 아닐 때)에만 음표 아이콘을 보여준다.
+  // 두 아이콘 중 정확히 하나만 항상 보이도록, 재생/일시정지/음소거 변화가 있을 때마다 이 함수로 동기화한다.
+  function syncMusicIcon() {
+    var audible = !bgm.paused && !bgm.muted;
+    musicBtn.classList.toggle('is-playing', audible);
+    musicBtn.setAttribute('aria-pressed', audible ? 'true' : 'false');
+    iconOn.hidden = !audible;
+    iconOff.hidden = audible;
   }
+  bgm.addEventListener('play', syncMusicIcon);
+  bgm.addEventListener('pause', syncMusicIcon);
+  bgm.addEventListener('volumechange', syncMusicIcon); // muted 속성이 바뀔 때도 발생
 
   function revealMusicButton() { musicBtn.hidden = false; }
   bgm.addEventListener('canplay', revealMusicButton, { once: true });
@@ -553,21 +559,16 @@ const fwSparkAngles = Array.from({ length: 18 }, (_, i) => Math.round(i * 20 + (
   bgm.addEventListener('error', function () { musicBtn.hidden = true; });
   bgm.load();
 
+  // 기본값으로 바로 흘러나오게 한다. 브라우저는 소리 없는(muted) 자동재생만 허용하므로,
+  // 페이지가 뜨자마자 muted로 먼저 틀어두고(이때 아이콘은 "꺼짐"으로 보인다),
+  // 화면을 처음 터치하는 순간 소리를 켠다.
   bgm.muted = true;
-  bgm.play().then(function () {
-    revealMusicButton();
-    setMusicState(true); // 소리는 아직 꺼져 있지만, 재생 자체는 기본값으로 시작된 상태
-  }).catch(function () { /* muted 자동재생조차 막는 브라우저 — 첫 터치에서 재시도한다 */ });
+  bgm.play().then(revealMusicButton).catch(function () { /* muted 자동재생조차 막는 브라우저 — 첫 터치에서 재시도한다 */ });
 
-  // 화면을 처음 터치/클릭하는 순간 소리를 켠다. 사용자가 버튼으로 직접 껐다면 되살리지 않는다.
   function unmuteOnFirstInteraction() {
     if (userControlled) return;
     bgm.muted = false;
-    if (bgm.paused) {
-      bgm.play().then(function () { revealMusicButton(); setMusicState(true); }).catch(function () {});
-    } else {
-      setMusicState(true);
-    }
+    if (bgm.paused) bgm.play().then(revealMusicButton).catch(function () {});
   }
   ['pointerdown', 'touchstart'].forEach(function (evt) {
     document.addEventListener(evt, unmuteOnFirstInteraction, { passive: true });
@@ -577,10 +578,9 @@ const fwSparkAngles = Array.from({ length: 18 }, (_, i) => Math.round(i * 20 + (
     userControlled = true;
     if (bgm.paused || bgm.muted) {
       bgm.muted = false;
-      bgm.play().then(function () { setMusicState(true); }).catch(function () { setMusicState(false); });
+      bgm.play().catch(syncMusicIcon);
     } else {
       bgm.pause();
-      setMusicState(false);
     }
   });
 })();
