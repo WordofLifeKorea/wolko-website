@@ -44,6 +44,21 @@ test('RSVP invitation supports parties of 10 or more', async () => {
   assert.match(page, /min="10" max="200"/);
 });
 
+test('RSVP invitation fireworks vary their burst shape and pause when motion is reduced', async () => {
+  const [page, script] = await Promise.all([
+    read('src/pages/rsvp/thanksgiving.astro'),
+    read('public/rsvp-fireworks.js'),
+  ]);
+
+  assert.match(page, /<canvas class="inv-fireworks" id="invFireworks" aria-hidden="true"><\/canvas>/);
+  assert.match(page, /<script src="\/rsvp-fireworks\.js" defer><\/script>/);
+  assert.doesNotMatch(page, /inv-fw-spark|fwSparkAngles/);
+  assert.match(script, /\['peony', 'ring', 'palm', 'willow'\]/);
+  assert.match(script, /prefers-reduced-motion: reduce/);
+  assert.match(script, /IntersectionObserver/);
+  assert.match(script, /document\.hidden/);
+});
+
 test('RSVP listing uses native sharing with a copy fallback', async () => {
   const listing = await read('src/pages/rsvp/index.astro');
 

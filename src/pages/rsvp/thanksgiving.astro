@@ -23,16 +23,6 @@ const leaves = [
   [95, 22, 12, 6.5,'🍁'],
 ];
 
-// 표지에서 이따금 터지는 폭죽. 터지는 지점(left/top)까지 아래에서 shell이 솟아올랐다가
-// 그 자리에서 사방으로 불꽃이 퍼지며 아래로 처지듯 사그라든다.
-const fireworks = [
-  { left: 14, top: 20, rise: '58vh', dur: 5.6, delay: 0.4, color: '#ffd27a', color2: '#ff8f6b' },
-  { left: 66, top: 14, rise: '66vh', dur: 6.6, delay: 2.6, color: '#ffb3c7', color2: '#ffe27a' },
-  { left: 40, top: 26, rise: '52vh', dur: 7.2, delay: 4.2, color: '#a9d8ff', color2: '#ffe1a8' },
-  { left: 86, top: 18, rise: '62vh', dur: 6,   delay: 1.3, color: '#ffe1a8', color2: '#ff9d6c' },
-  { left: 54, top: 34, rise: '46vh', dur: 6.8, delay: 5.5, color: '#c9a9ff', color2: '#ffd27a' },
-];
-const fwSparkAngles = Array.from({ length: 18 }, (_, i) => Math.round(i * 20 + (i % 2 ? 6 : -6)));
 ---
 
 <!DOCTYPE html>
@@ -76,69 +66,7 @@ const fwSparkAngles = Array.from({ length: 18 }, (_, i) => Math.round(i * 20 + (
     }
     .inv-leaf { position:absolute; top:-40px; opacity:0.9; font-size:inherit; line-height:1; animation:inv-fall linear infinite; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
 
-    /* 표지 하늘에서 이따금 터지는 폭죽: shell이 아래에서 솟아올랐다가(rise) 그 자리에서
-       사방으로 불꽃이 퍼지며(spark) 중력에 처지듯 사그라든다. 대부분은 숨어 있다가 짧게 터진다. */
-    .inv-fw { position:absolute; width:0; height:0; animation-iteration-count:infinite; animation-timing-function:linear; pointer-events:none; }
-
-    .inv-fw-core {
-      position:absolute; left:-3px; top:0; width:6px; height:6px; border-radius:50%;
-      background:#fff8ec; opacity:0;
-      box-shadow:0 9px 0 -3px rgba(255,224,176,.55), 0 18px 0 -4px rgba(255,224,176,.35), 0 29px 0 -4.5px rgba(255,224,176,.18);
-      animation-name:inv-fw-core; animation-duration:inherit; animation-delay:inherit; animation-iteration-count:inherit; animation-timing-function:inherit;
-    }
-    .inv-fw-flash {
-      position:absolute; left:-55px; top:-55px; width:110px; height:110px; border-radius:50%;
-      background:radial-gradient(circle, rgba(255,255,255,.98), var(--fw-color) 38%, transparent 70%);
-      opacity:0;
-      animation-name:inv-fw-flash; animation-duration:inherit; animation-delay:inherit; animation-iteration-count:inherit; animation-timing-function:inherit;
-    }
-    .inv-fw-smoke {
-      position:absolute; left:-16px; top:-16px; width:32px; height:32px; border-radius:50%;
-      background:radial-gradient(circle, rgba(255,236,214,.5), transparent 70%);
-      opacity:0; filter:blur(3px);
-      animation-name:inv-fw-smoke; animation-duration:inherit; animation-delay:inherit; animation-iteration-count:inherit; animation-timing-function:inherit;
-    }
-    .inv-fw-spark {
-      position:absolute; left:-2.5px; top:0; width:5px; height:5px; border-radius:50%;
-      background:var(--fw-color); box-shadow:0 0 7px 2px var(--fw-color);
-      opacity:0; transform:translateY(var(--fw-rise)) rotate(var(--a)) translateX(0);
-      animation-name:inv-fw-spark; animation-duration:inherit; animation-delay:inherit; animation-iteration-count:inherit; animation-timing-function:inherit;
-    }
-    .inv-fw-spark.is-alt { background:var(--fw-color2); box-shadow:0 0 7px 2px var(--fw-color2); }
-    .inv-fw-spark.is-far { width:3.5px; height:3.5px; }
-
-    @keyframes inv-fw-core {
-      0%   { opacity:0; transform:translateY(var(--fw-rise)) scale(.6); }
-      4%   { opacity:1; }
-      40%  { opacity:1; transform:translateY(0) scale(.6); }
-      44%  { opacity:1; transform:translateY(0) scale(2.4); }
-      48%  { opacity:0; transform:translateY(0) scale(.4); }
-      100% { opacity:0; }
-    }
-    @keyframes inv-fw-flash {
-      0%, 41% { opacity:0; transform:scale(.25); }
-      45%     { opacity:1; transform:scale(1); }
-      50%     { opacity:.5; transform:scale(1.25); }
-      60%     { opacity:0; transform:scale(1.9); }
-      100%    { opacity:0; }
-    }
-    @keyframes inv-fw-smoke {
-      0%, 44% { opacity:0; transform:scale(.6); }
-      50%     { opacity:.55; transform:scale(1); }
-      100%    { opacity:0; transform:scale(2.4); }
-    }
-    @keyframes inv-fw-spark {
-      0%   { opacity:0; transform:translateY(var(--fw-rise)) rotate(var(--a)) translateX(0) scale(1); }
-      40%  { opacity:0; transform:translateY(0) rotate(var(--a)) translateX(0) scale(1); }
-      44%  { opacity:0; transform:translateY(0) rotate(var(--a)) translateX(0) scale(1); }
-      46%  { opacity:1; transform:translateY(0) rotate(var(--a)) translateX(4px) scale(1.1); }
-      58%  { opacity:1; transform:translateY(4px) rotate(var(--a)) translateX(var(--fw-dist, 54px)) scale(1); }
-      66%  { opacity:.65; }
-      70%  { opacity:1; transform:translateY(14px) rotate(var(--a)) translateX(calc(var(--fw-dist, 54px) + 6px)) scale(.85); }
-      84%  { opacity:.45; transform:translateY(34px) rotate(var(--a)) translateX(calc(var(--fw-dist, 54px) + 12px)) scale(.55); }
-      96%  { opacity:0; transform:translateY(52px) rotate(var(--a)) translateX(calc(var(--fw-dist, 54px) + 14px)) scale(.25); }
-      100% { opacity:0; }
-    }
+    .inv-fireworks { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
     @keyframes inv-fall {
       0%   { transform:translate3d(0,-40px,0) rotate(0deg); opacity:0; }
       8%   { opacity:0.9; }
@@ -166,7 +94,7 @@ const fwSparkAngles = Array.from({ length: 18 }, (_, i) => Math.round(i * 20 + (
     @keyframes inv-rise { to { opacity:1; transform:translateY(0); } }
 
     @media (prefers-reduced-motion: reduce) {
-      .inv-leaf, .inv-fw { display:none; }
+      .inv-leaf, .inv-fireworks { display:none; }
       [data-reveal], [data-reveal="stagger"] > *, .inv-cover-anim { opacity:1 !important; transform:none !important; transition:none !important; animation:none !important; }
     }
     .inv-eyebrow { position:relative; font-size:12px; font-weight:700; letter-spacing:0.32em; color:var(--gold); }
@@ -282,18 +210,7 @@ const fwSparkAngles = Array.from({ length: 18 }, (_, i) => Math.round(i * 20 + (
       <span class="inv-leaf" aria-hidden="true"
         style={`left:${left}%;font-size:${size}px;animation-duration:${dur}s;animation-delay:-${delay}s;`}>{glyph}</span>
     ))}
-    {fireworks.map((fw) => (
-      <div class="inv-fw" aria-hidden="true"
-        style={`left:${fw.left}%;top:${fw.top}%;--fw-color:${fw.color};--fw-color2:${fw.color2};--fw-rise:${fw.rise};animation-duration:${fw.dur}s;animation-delay:-${fw.delay}s;`}>
-        <span class="inv-fw-core"></span>
-        <span class="inv-fw-flash"></span>
-        <span class="inv-fw-smoke"></span>
-        {fwSparkAngles.map((a, i) => (
-          <span class={`inv-fw-spark${i % 2 ? ' is-alt' : ''}${i % 3 === 0 ? ' is-far' : ''}`}
-            style={`--a:${a}deg;--fw-dist:${i % 3 === 0 ? 70 : 48}px;`}></span>
-        ))}
-      </div>
-    ))}
+    <canvas class="inv-fireworks" id="invFireworks" aria-hidden="true"></canvas>
     <div class="inv-eyebrow inv-cover-anim" style="animation-delay:.15s">INVITATION</div>
     <h1 class="inv-title inv-cover-anim" style="animation-delay:.32s">{event.title}</h1>
     <div class="inv-title-en inv-cover-anim" style="animation-delay:.5s">NIGHT OF THANKSGIVING</div>
@@ -585,5 +502,6 @@ const fwSparkAngles = Array.from({ length: 18 }, (_, i) => Math.round(i * 20 + (
   });
 })();
 </script>
+<script src="/rsvp-fireworks.js" defer></script>
 </body>
 </html>
