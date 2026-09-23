@@ -6,7 +6,7 @@ const event = {
   id: 'thanksgiving-night',
   title: '감사의 밤',
   date: '2026년 11월 26일(목) 오후 7시',
-  place: '장소 추후 공지',
+  place: '경기도 평택시 경기대로 1407, 2층 월코센터',
 };
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
@@ -17,8 +17,8 @@ const ogDescription = '11월 26일(목) 오후 7시 · 월코 사역에 함께�
 // 아래에서 위로 둥실둥실 떠오르는 풍선(이모지): [왼쪽 위치 %, 크기 px, 떠오르는 시간 s, 시작 지연 s, 글자]
 const leaves = [
   [2, 22, 12, 0,   '🍁'], [9, 16, 15, 3,   '🍂'], [17, 20, 11, 6,   '🍁'],
-  [24, 15, 16, 1,  '🍃'], [32, 24, 13, 8,  '🍂'], [40, 17, 14, 4,   '🍁'],
-  [48, 26, 12, 9,  '🍂'], [56, 15, 17, 2,  '🍁'], [64, 21, 11, 7,   '🍃'],
+  [24, 15, 16, 1,  '🍂'], [32, 24, 13, 8,  '🍂'], [40, 17, 14, 4,   '🍁'],
+  [48, 26, 12, 9,  '🍂'], [56, 15, 17, 2,  '🍁'], [64, 21, 11, 7,   '🍂'],
   [72, 18, 15, 5,  '🍂'], [80, 25, 13, 10, '🍁'], [88, 16, 16, 0.5, '🍂'],
   [95, 22, 12, 6.5,'🍁'],
 ];
@@ -26,12 +26,13 @@ const leaves = [
 // 표지에서 이따금 터지는 폭죽. 터지는 지점(left/top)까지 아래에서 shell이 솟아올랐다가
 // 그 자리에서 사방으로 불꽃이 퍼지며 아래로 처지듯 사그라든다.
 const fireworks = [
-  { left: 18, top: 22, rise: '56vh', dur: 6.4, delay: 0.4, color: '#ffd27a', color2: '#ff8f6b' },
-  { left: 68, top: 16, rise: '64vh', dur: 7.6, delay: 2.8, color: '#ffb3c7', color2: '#ffe27a' },
-  { left: 42, top: 28, rise: '50vh', dur: 8.2, delay: 4.6, color: '#a9d8ff', color2: '#ffe1a8' },
-  { left: 86, top: 20, rise: '60vh', dur: 7,   delay: 1.5, color: '#ffe1a8', color2: '#ff9d6c' },
+  { left: 14, top: 20, rise: '58vh', dur: 5.6, delay: 0.4, color: '#ffd27a', color2: '#ff8f6b' },
+  { left: 66, top: 14, rise: '66vh', dur: 6.6, delay: 2.6, color: '#ffb3c7', color2: '#ffe27a' },
+  { left: 40, top: 26, rise: '52vh', dur: 7.2, delay: 4.2, color: '#a9d8ff', color2: '#ffe1a8' },
+  { left: 86, top: 18, rise: '62vh', dur: 6,   delay: 1.3, color: '#ffe1a8', color2: '#ff9d6c' },
+  { left: 54, top: 34, rise: '46vh', dur: 6.8, delay: 5.5, color: '#c9a9ff', color2: '#ffd27a' },
 ];
-const fwSparkAngles = Array.from({ length: 12 }, (_, i) => Math.round(i * 30 + (i % 2 ? 7 : -7)));
+const fwSparkAngles = Array.from({ length: 18 }, (_, i) => Math.round(i * 20 + (i % 2 ? 6 : -6)));
 ---
 
 <!DOCTYPE html>
@@ -86,8 +87,8 @@ const fwSparkAngles = Array.from({ length: 12 }, (_, i) => Math.round(i * 30 + (
       animation-name:inv-fw-core; animation-duration:inherit; animation-delay:inherit; animation-iteration-count:inherit; animation-timing-function:inherit;
     }
     .inv-fw-flash {
-      position:absolute; left:-40px; top:-40px; width:80px; height:80px; border-radius:50%;
-      background:radial-gradient(circle, rgba(255,255,255,.95), var(--fw-color) 42%, transparent 72%);
+      position:absolute; left:-55px; top:-55px; width:110px; height:110px; border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.98), var(--fw-color) 38%, transparent 70%);
       opacity:0;
       animation-name:inv-fw-flash; animation-duration:inherit; animation-delay:inherit; animation-iteration-count:inherit; animation-timing-function:inherit;
     }
@@ -99,11 +100,12 @@ const fwSparkAngles = Array.from({ length: 12 }, (_, i) => Math.round(i * 30 + (
     }
     .inv-fw-spark {
       position:absolute; left:-2.5px; top:0; width:5px; height:5px; border-radius:50%;
-      background:var(--fw-color); box-shadow:0 0 6px 1.5px var(--fw-color);
+      background:var(--fw-color); box-shadow:0 0 7px 2px var(--fw-color);
       opacity:0; transform:translateY(var(--fw-rise)) rotate(var(--a)) translateX(0);
       animation-name:inv-fw-spark; animation-duration:inherit; animation-delay:inherit; animation-iteration-count:inherit; animation-timing-function:inherit;
     }
-    .inv-fw-spark.is-alt { background:var(--fw-color2); box-shadow:0 0 6px 1.5px var(--fw-color2); }
+    .inv-fw-spark.is-alt { background:var(--fw-color2); box-shadow:0 0 7px 2px var(--fw-color2); }
+    .inv-fw-spark.is-far { width:3.5px; height:3.5px; }
 
     @keyframes inv-fw-core {
       0%   { opacity:0; transform:translateY(var(--fw-rise)) scale(.6); }
@@ -114,9 +116,10 @@ const fwSparkAngles = Array.from({ length: 12 }, (_, i) => Math.round(i * 30 + (
       100% { opacity:0; }
     }
     @keyframes inv-fw-flash {
-      0%, 41% { opacity:0; transform:scale(.3); }
-      45%     { opacity:.95; transform:scale(1); }
-      58%     { opacity:0; transform:scale(1.6); }
+      0%, 41% { opacity:0; transform:scale(.25); }
+      45%     { opacity:1; transform:scale(1); }
+      50%     { opacity:.5; transform:scale(1.25); }
+      60%     { opacity:0; transform:scale(1.9); }
       100%    { opacity:0; }
     }
     @keyframes inv-fw-smoke {
@@ -128,10 +131,12 @@ const fwSparkAngles = Array.from({ length: 12 }, (_, i) => Math.round(i * 30 + (
       0%   { opacity:0; transform:translateY(var(--fw-rise)) rotate(var(--a)) translateX(0) scale(1); }
       40%  { opacity:0; transform:translateY(0) rotate(var(--a)) translateX(0) scale(1); }
       44%  { opacity:0; transform:translateY(0) rotate(var(--a)) translateX(0) scale(1); }
-      46%  { opacity:1; transform:translateY(0) rotate(var(--a)) translateX(4px) scale(1); }
-      60%  { opacity:1; transform:translateY(6px) rotate(var(--a)) translateX(50px) scale(.9); }
-      78%  { opacity:.55; transform:translateY(30px) rotate(var(--a)) translateX(62px) scale(.55); }
-      94%  { opacity:0; transform:translateY(48px) rotate(var(--a)) translateX(66px) scale(.3); }
+      46%  { opacity:1; transform:translateY(0) rotate(var(--a)) translateX(4px) scale(1.1); }
+      58%  { opacity:1; transform:translateY(4px) rotate(var(--a)) translateX(var(--fw-dist, 54px)) scale(1); }
+      66%  { opacity:.65; }
+      70%  { opacity:1; transform:translateY(14px) rotate(var(--a)) translateX(calc(var(--fw-dist, 54px) + 6px)) scale(.85); }
+      84%  { opacity:.45; transform:translateY(34px) rotate(var(--a)) translateX(calc(var(--fw-dist, 54px) + 12px)) scale(.55); }
+      96%  { opacity:0; transform:translateY(52px) rotate(var(--a)) translateX(calc(var(--fw-dist, 54px) + 14px)) scale(.25); }
       100% { opacity:0; }
     }
     @keyframes inv-fall {
@@ -238,19 +243,34 @@ const fwSparkAngles = Array.from({ length: 12 }, (_, i) => Math.round(i * 30 + (
     .inv-footer b { display:block; margin-bottom:4px; color:var(--cream); font-size:13px; letter-spacing:0.06em; }
     .inv-footer a { color:var(--gold); text-decoration:none; }
 
-    /* 배경음악 토글 */
+    /* 배경음악 토글: 꺼짐(어두운 회색) ↔ 켜짐(주황 그라데이션 + 은은한 펄스 링)으로
+       아이콘뿐 아니라 색으로도 상태가 한눈에 보이게 한다. */
     .inv-music { position:fixed; right:max(18px, calc((100% - 480px) / 2 + 18px)); bottom:18px; z-index:20;
-      width:46px; height:46px; border-radius:50%; border:1px solid rgba(255,248,236,.5);
-      background:rgba(58,22,18,.72); backdrop-filter:blur(6px); color:var(--cream);
-      display:grid; place-items:center; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,.25);
-      transition:background .2s, transform .18s; }
-    .inv-music:hover { background:rgba(58,22,18,.88); }
+      width:48px; height:48px; border-radius:50%; border:1.5px solid rgba(255,248,236,.32);
+      background:rgba(35,16,13,.82); backdrop-filter:blur(6px); color:rgba(255,248,236,.6);
+      display:grid; place-items:center; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,.3);
+      transition:background .25s, border-color .25s, color .25s, transform .18s, box-shadow .25s; }
+    .inv-music:hover { background:rgba(35,16,13,.95); }
     .inv-music:active { transform:scale(.94); }
-    .inv-music svg { width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+    .inv-music svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
     .inv-music[hidden] { display:none; }
+    .inv-music.is-playing {
+      background:linear-gradient(135deg, var(--rust), var(--amber));
+      border-color:rgba(255,226,180,.9); color:#fff8ec;
+      box-shadow:0 8px 24px rgba(217,119,47,.5);
+    }
+    .inv-music.is-playing::after {
+      content:''; position:absolute; inset:-7px; border-radius:50%;
+      border:1.5px solid rgba(255,195,130,.6);
+      animation:inv-music-pulse 1.8s ease-out infinite;
+    }
     .inv-music.is-playing svg { animation:inv-note-bob 1.6s ease-in-out infinite; }
     @keyframes inv-note-bob { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-2px) rotate(-6deg); } }
-    @media (prefers-reduced-motion: reduce) { .inv-music.is-playing svg { animation:none; } }
+    @keyframes inv-music-pulse { 0% { opacity:.75; transform:scale(1); } 100% { opacity:0; transform:scale(1.4); } }
+    @media (prefers-reduced-motion: reduce) {
+      .inv-music.is-playing svg { animation:none; }
+      .inv-music.is-playing::after { animation:none; opacity:.35; }
+    }
   </style>
 </head>
 <body>
@@ -269,7 +289,8 @@ const fwSparkAngles = Array.from({ length: 12 }, (_, i) => Math.round(i * 30 + (
         <span class="inv-fw-flash"></span>
         <span class="inv-fw-smoke"></span>
         {fwSparkAngles.map((a, i) => (
-          <span class={`inv-fw-spark${i % 2 ? ' is-alt' : ''}`} style={`--a:${a}deg;`}></span>
+          <span class={`inv-fw-spark${i % 2 ? ' is-alt' : ''}${i % 3 === 0 ? ' is-far' : ''}`}
+            style={`--a:${a}deg;--fw-dist:${i % 3 === 0 ? 70 : 48}px;`}></span>
         ))}
       </div>
     ))}
@@ -510,13 +531,14 @@ const fwSparkAngles = Array.from({ length: 12 }, (_, i) => Math.round(i * 30 + (
     document.querySelectorAll('[data-reveal]').forEach(function (el) { el.classList.add('is-visible'); });
   }
 
-  // 배경음악: 파일이 실제로 있을 때만 버튼을 보여주고, 첫 화면 탭에서 재생을 시도한다.
-  // (모바일 브라우저는 사용자 동작 없이는 자동재생을 막기 때문)
+  // 배경음악: 기본값으로 바로 흘러나오게 한다. 브라우저는 소리 없는(muted) 자동재생만 허용하므로,
+  // 페이지가 뜨자마자 muted로 먼저 틀어두고, 화면을 처음 터치하는 순간 소리를 켠다.
+  // (완전 무음 자동재생조차 막는 브라우저에서는 그 첫 터치가 재생 자체도 함께 시도한다.)
   var bgm = $('invBgm');
   var musicBtn = $('invMusicToggle');
   var iconOn = $('invMusicIconOn');
   var iconOff = $('invMusicIconOff');
-  var musicStarted = false;
+  var userControlled = false; // 사용자가 버튼을 직접 눌러 상태를 정한 적이 있는지
 
   function setMusicState(playing) {
     musicBtn.classList.toggle('is-playing', playing);
@@ -531,20 +553,30 @@ const fwSparkAngles = Array.from({ length: 12 }, (_, i) => Math.round(i * 30 + (
   bgm.addEventListener('error', function () { musicBtn.hidden = true; });
   bgm.load();
 
-  // 재생 버튼이 아직 뜨기 전이라도, 첫 화면 탭이 오면 바로 재생을 시도한다
-  // (버튼 노출 여부와 무관하게 시도해야 버튼이 뜨기도 전에 막히지 않는다).
-  function tryStartMusic() {
-    if (musicStarted) return;
-    musicStarted = true;
-    bgm.play().then(function () { revealMusicButton(); setMusicState(true); }).catch(function () { setMusicState(false); });
+  bgm.muted = true;
+  bgm.play().then(function () {
+    revealMusicButton();
+    setMusicState(true); // 소리는 아직 꺼져 있지만, 재생 자체는 기본값으로 시작된 상태
+  }).catch(function () { /* muted 자동재생조차 막는 브라우저 — 첫 터치에서 재시도한다 */ });
+
+  // 화면을 처음 터치/클릭하는 순간 소리를 켠다. 사용자가 버튼으로 직접 껐다면 되살리지 않는다.
+  function unmuteOnFirstInteraction() {
+    if (userControlled) return;
+    bgm.muted = false;
+    if (bgm.paused) {
+      bgm.play().then(function () { revealMusicButton(); setMusicState(true); }).catch(function () {});
+    } else {
+      setMusicState(true);
+    }
   }
   ['pointerdown', 'touchstart'].forEach(function (evt) {
-    document.addEventListener(evt, tryStartMusic, { once: true, passive: true });
+    document.addEventListener(evt, unmuteOnFirstInteraction, { passive: true });
   });
 
   musicBtn.addEventListener('click', function () {
-    musicStarted = true;
-    if (bgm.paused) {
+    userControlled = true;
+    if (bgm.paused || bgm.muted) {
+      bgm.muted = false;
       bgm.play().then(function () { setMusicState(true); }).catch(function () { setMusicState(false); });
     } else {
       bgm.pause();
