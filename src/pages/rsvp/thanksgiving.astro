@@ -101,7 +101,7 @@ const leaves = [
     .inv-title { position:relative; margin:22px 0 14px; font-family:var(--serif); font-size:52px; font-weight:600; letter-spacing:0.04em; line-height:1.2; }
     .inv-title-en { position:relative; font-size:14px; font-weight:700; letter-spacing:0.18em; color:rgba(255,248,236,0.75); }
     .inv-cover-rule { position:relative; width:56px; height:1px; margin:28px auto; background:rgba(232,165,71,0.7); }
-    .inv-cover-when { position:relative; font-size:15px; line-height:1.9; color:rgba(255,248,236,0.9); }
+    .inv-cover-when { position:relative; font-size:13px; line-height:1.9; color:rgba(255,248,236,0.72); }
 
     /* 본문 공통 */
     .inv-section { padding:56px 30px; text-align:center; }
@@ -181,6 +181,7 @@ const leaves = [
     .inv-music:hover { background:rgba(35,16,13,.95); }
     .inv-music:active { transform:scale(.94); }
     .inv-music svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .inv-music svg[hidden] { display:none !important; }
     .inv-music[hidden] { display:none; }
     .inv-music.is-playing {
       background:linear-gradient(135deg, var(--rust), var(--amber));
@@ -215,7 +216,7 @@ const leaves = [
     <h1 class="inv-title inv-cover-anim" style="animation-delay:.32s">{event.title}</h1>
     <div class="inv-title-en inv-cover-anim" style="animation-delay:.5s">NIGHT OF THANKSGIVING</div>
     <div class="inv-cover-rule inv-cover-anim" style="animation-delay:.68s"></div>
-    <div class="inv-cover-when inv-cover-anim" style="animation-delay:.84s">{event.date}<br>{event.place}</div>
+    <div class="inv-cover-when inv-cover-anim" style="animation-delay:.84s">{event.date}<br>함께한 한 해를 돌아보며 감사를 나누는 저녁</div>
   </header>
 
   <!-- 초대 인사 -->
@@ -463,6 +464,7 @@ const leaves = [
     var audible = !bgm.paused && !bgm.muted;
     musicBtn.classList.toggle('is-playing', audible);
     musicBtn.setAttribute('aria-pressed', audible ? 'true' : 'false');
+    musicBtn.setAttribute('aria-label', audible ? '배경음악 일시정지' : '배경음악 재생');
     iconOn.hidden = !audible;
     iconOff.hidden = audible;
   }
@@ -482,8 +484,8 @@ const leaves = [
   bgm.muted = true;
   bgm.play().then(revealMusicButton).catch(function () { /* muted 자동재생조차 막는 브라우저 — 첫 터치에서 재시도한다 */ });
 
-  function unmuteOnFirstInteraction() {
-    if (userControlled) return;
+  function unmuteOnFirstInteraction(event) {
+    if (userControlled || musicBtn.contains(event.target)) return;
     bgm.muted = false;
     if (bgm.paused) bgm.play().then(revealMusicButton).catch(function () {});
   }

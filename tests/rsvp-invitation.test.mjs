@@ -39,6 +39,28 @@ test('RSVP listing keeps parking details in the invitation and sizes mobile acti
   assert.match(listing, /\.rv-card-actions > \.rv-rsvp-btn,[\s\S]*\.rv-card-actions > \.rv-share-btn \{ width: 100%; height: 48px;/);
 });
 
+test('RSVP card and cover use a quiet invitation line while details retain the address', async () => {
+  const [listing, invite] = await Promise.all([
+    read('src/pages/rsvp/index.astro'),
+    read('src/pages/rsvp/thanksgiving.astro'),
+  ]);
+
+  assert.match(listing, /theme_ko: '함께한 한 해를 돌아보며 감사를 나누는 저녁'/);
+  assert.match(listing, /\{event\.theme_ko\}/);
+  assert.doesNotMatch(listing, /경기도 평택시 경기대로 1407/);
+  assert.match(invite, /class="inv-cover-when[^\n]*\{event\.date\}<br>함께한 한 해를 돌아보며 감사를 나누는 저녁/);
+  assert.match(invite, /<dd>\{event\.place\}<\/dd>/);
+});
+
+test('RSVP music toggle shows one icon and handles its own first interaction', async () => {
+  const invite = await read('src/pages/rsvp/thanksgiving.astro');
+
+  assert.match(invite, /\.inv-music svg\[hidden\] \{ display:none !important; \}/);
+  assert.match(invite, /iconOn\.hidden = !audible;\s*iconOff\.hidden = audible;/);
+  assert.match(invite, /musicBtn\.contains\(event\.target\)/);
+  assert.match(invite, /musicBtn\.setAttribute\('aria-label', audible \? '배경음악 일시정지' : '배경음악 재생'\)/);
+});
+
 test('RSVP invitation leaves are sourced emoji, not hand-drawn paths', async () => {
   const page = await read('src/pages/rsvp/thanksgiving.astro');
 
