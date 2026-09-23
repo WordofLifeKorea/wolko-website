@@ -16,24 +16,29 @@ const events = [
     open: true,
   },
 ];
+const featuredEvent = events[0];
 ---
 
 <BaseLayout
   title="이벤트 참석 신청 — Word of Life Korea"
   description="월코 이벤트 참석 여부(RSVP)를 알려주세요. 감사의 밤 등 예정된 행사에 참석 신청하실 수 있습니다."
   activeNav="connect"
+  languageOnlyNav={true}
+  ogTitle="감사의 밤에 초대합니다 — WOLKO"
+  ogDescription="함께 걸어온 분들과 감사의 마음을 나누는 자리에 초대합니다. 초대장을 확인하고 참석 여부를 알려주세요."
+  ogImage="/images/rsvp-share.png"
 >
 
 <style>
   :root {
-    --d:#004f68; --m:#007ea1; --l:#73d1f5;
-    --r:#c42a36; --k:#0d1b24; --s:#3d5a6a;
-    --bg:#f4f8fb; --line:rgba(0,79,104,0.1);
+    --d:#5a3525; --m:#8c5132; --l:#d3a35c;
+    --r:#a5482d; --k:#39271f; --s:#6e584b;
+    --bg:#f5eee3; --line:rgba(90,53,37,0.13);
     --f-sans:'Pretendard Variable',Pretendard,'Apple SD Gothic Neo',sans-serif;
   }
 
   .rv-hero {
-    background: linear-gradient(135deg, #0a1e2b 0%, #004f68 60%, #006a8a 100%);
+    background: linear-gradient(135deg, #4a2d20 0%, #8c5132 60%, #b77842 100%);
     padding: 140px 24px 96px; text-align: center; color: #fff;
   }
   .rv-hero-eyebrow {
@@ -51,12 +56,12 @@ const events = [
 
   .rv-card {
     border: 1px solid var(--line); border-radius: 18px; background: #fff;
-    padding: 32px; box-shadow: 0 4px 24px rgba(0,79,104,0.06);
+    padding: 32px; box-shadow: 0 4px 24px rgba(77,43,27,0.07);
   }
   .rv-card + .rv-card { margin-top: 20px; }
   .rv-card-badge {
     display: inline-block; padding: 4px 12px; border-radius: 999px;
-    background: rgba(0,126,161,0.1); color: var(--m);
+    background: rgba(140,81,50,0.1); color: var(--m);
     font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
   }
   .rv-card h2 { margin: 14px 0 6px; font-size: 26px; font-weight: 800; color: var(--k); word-break: keep-all; }
@@ -90,11 +95,11 @@ const events = [
   .rv-share-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 7px;
     min-height: 48px; padding: 0 18px; border-radius: 12px;
-    border: 1.5px solid rgba(0,79,104,0.18); background: #fff; color: var(--d);
+    border: 1.5px solid rgba(90,53,37,0.18); background: #fff; color: var(--d);
     font-family: var(--f-sans); font-size: 13.5px; font-weight: 700; cursor: pointer;
     transition: border-color .2s, background .2s;
   }
-  .rv-share-btn:hover { border-color: var(--m); background: #f4fbfd; }
+  .rv-share-btn:hover { border-color: var(--m); background: #fff8ed; }
   .rv-share-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 
   .rv-empty { padding: 56px 24px; text-align: center; color: var(--s); }
@@ -105,7 +110,7 @@ const events = [
   .rv-modal { position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; padding: 20px; background: rgba(6,31,40,0.62); backdrop-filter: blur(6px); overflow-y: auto; }
   .rv-modal[hidden] { display: none; }
   .rv-modal-card { width: min(520px, 100%); max-height: calc(100dvh - 40px); overflow-y: auto; border-radius: 18px; background: #fff; box-shadow: 0 26px 80px rgba(0,0,0,0.3); }
-  .rv-modal-head { position: relative; padding: 26px 28px 20px; background: linear-gradient(135deg, #004f68 0%, #007ea1 100%); color: #fff; }
+  .rv-modal-head { position: relative; padding: 26px 28px 20px; background: linear-gradient(135deg, #5a3525 0%, #a0643c 100%); color: #fff; }
   .rv-modal-head .rv-modal-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(115,209,245,0.9); }
   .rv-modal-head h3 { margin: 6px 0 0; font-size: 21px; font-weight: 800; }
   .rv-modal-close {
@@ -120,14 +125,14 @@ const events = [
   .rv-field label { display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 700; color: var(--s); }
   .rv-field .req { color: var(--r); margin-left: 2px; }
   .rv-field input, .rv-field select, .rv-field textarea {
-    width: 100%; box-sizing: border-box; border: 1.5px solid rgba(0,79,104,0.14);
-    border-radius: 9px; padding: 10px 13px; background: #f7fbfd;
+    width: 100%; box-sizing: border-box; border: 1.5px solid rgba(90,53,37,0.16);
+    border-radius: 9px; padding: 10px 13px; background: #fffaf2;
     font-family: var(--f-sans); font-size: 14px; color: var(--k); outline: none;
     transition: border-color .2s, box-shadow .2s, background .2s;
   }
   .rv-field input, .rv-field select { height: 42px !important; min-height: 42px !important; }
   .rv-field textarea { min-height: 78px; resize: vertical; }
-  .rv-field input:focus, .rv-field select:focus, .rv-field textarea:focus { border-color: var(--m); background: #fff; box-shadow: 0 0 0 3px rgba(0,126,161,0.1); }
+  .rv-field input:focus, .rv-field select:focus, .rv-field textarea:focus { border-color: var(--m); background: #fff; box-shadow: 0 0 0 3px rgba(140,81,50,0.12); }
   .rv-field input.error, .rv-field select.error { border-color: var(--r); }
   .rv-field-hint { margin: 6px 0 0; font-size: 11.5px; color: #7d939c; line-height: 1.6; }
   .rv-consent { display: flex; gap: 9px; align-items: flex-start; margin-top: 4px; font-size: 12px; line-height: 1.7; color: var(--s); }
@@ -142,7 +147,7 @@ const events = [
   .rv-submit:hover:not(:disabled) { background: #a82330; }
   .rv-submit:disabled { opacity: 0.6; cursor: wait; }
   .rv-success { padding: 40px 28px 34px; text-align: center; }
-  .rv-success-icon { width: 60px; height: 60px; margin: 0 auto 18px; border-radius: 50%; background: rgba(0,126,161,0.1); color: var(--m); display: grid; place-items: center; }
+  .rv-success-icon { width: 60px; height: 60px; margin: 0 auto 18px; border-radius: 50%; background: rgba(140,81,50,0.1); color: var(--m); display: grid; place-items: center; }
   .rv-success-icon svg { width: 28px; height: 28px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .rv-success h3 { margin: 0 0 10px; font-size: 21px; font-weight: 800; color: var(--k); }
   .rv-success p { margin: 0 0 24px; font-size: 14px; line-height: 1.8; color: var(--s); word-break: keep-all; }
@@ -155,18 +160,130 @@ const events = [
     .rv-modal-body { padding: 20px 20px 24px; }
     .rv-modal-head { padding: 22px 20px 18px; }
   }
+
+  /* 모바일 초대장 */
+  :global(body) { background: #f5eee3; }
+  :global(.nav.language-only .lang-toggle) { border-color:rgba(90,53,37,.16); background:rgba(255,250,242,.88); box-shadow:0 5px 18px rgba(77,43,27,.1); }
+  :global(.nav.language-only .lang-slider) { background:#8c5132; }
+  .rv-invitation { overflow: hidden; color: var(--k); }
+  .rv-hero {
+    position: relative; isolation: isolate; display: grid; place-items: center;
+    min-height: min(820px, 100svh); padding: 92px 24px 78px;
+    color:var(--k);
+    background:
+      radial-gradient(circle at 86% 12%, rgba(255,248,227,.72), transparent 29%),
+      radial-gradient(circle at 10% 88%, rgba(174,91,50,.12), transparent 31%),
+      linear-gradient(155deg, #fff8ec 0%, #f1dec0 56%, #ddb77f 100%);
+  }
+  .rv-hero::before {
+    content: ''; position: absolute; inset: 22px; z-index: -1;
+    border: 1px solid rgba(90,53,37,.2); border-radius: 28px;
+  }
+  .rv-hero::after {
+    content: ''; position: absolute; top: 58px; left: 50%; width: 1px; height: 52px;
+    background: linear-gradient(transparent, rgba(140,81,50,.42));
+  }
+  .rv-hero-inner { width: min(100%, 520px); text-align: center; }
+  .rv-monogram {
+    display: grid; place-items: center; width: 50px; height: 50px; margin: 0 auto 42px;
+    border: 1px solid rgba(90,53,37,.42); border-radius: 50%;
+    color: var(--d); font: 700 18px/1 var(--f-sans); letter-spacing: -.06em;
+  }
+  .rv-harvest { display:block; width:104px; height:50px; margin:-12px auto 20px; color:#a66d34; opacity:.84; }
+  .rv-harvest path { fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .rv-hero-eyebrow { justify-content: center; margin: 0 0 20px; font-size: 11px; letter-spacing: .24em; color:#8c5132; }
+  .rv-hero-eyebrow::before, .rv-hero-eyebrow::after { background:rgba(140,81,50,.5); }
+  .rv-hero h1 { margin-bottom: 14px; font-size: clamp(38px, 10vw, 62px); letter-spacing: -.045em; color:#4b2e21; }
+  .rv-hero .rv-hero-en { margin: 0; color: rgba(90,53,37,.68); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .rv-hero .rv-hero-message { margin: 42px auto 0; max-width: 360px; font-size: 14px; line-height: 2; color:#6d4d3b; word-break: keep-all; }
+  .rv-hero-facts { display: flex; justify-content: center; gap: 28px; margin-top: 38px; color:var(--k); }
+  .rv-hero-fact { position: relative; min-width: 120px; }
+  .rv-hero-fact + .rv-hero-fact::before { content:''; position:absolute; left:-14px; top:4px; bottom:4px; width:1px; background:rgba(90,53,37,.22); }
+  .rv-hero-fact small { display:block; margin-bottom:7px; color:#9a6236; font-size:10px; font-weight:800; letter-spacing:.14em; }
+  .rv-hero-fact strong { display:block; font-size:13px; line-height:1.55; word-break:keep-all; }
+  .rv-scroll-cue { display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:48px; color:rgba(90,53,37,.48); font-size:9px; font-weight:700; letter-spacing:.18em; }
+  .rv-scroll-cue span { width:1px; height:30px; background:linear-gradient(rgba(90,53,37,.45), transparent); }
+
+  .rv-letter { padding: 82px 24px 70px; background: #fffaf1; text-align: center; }
+  .rv-letter-inner { max-width: 540px; margin: 0 auto; }
+  .rv-letter-kicker { margin:0 0 20px; color:#a66d34; font-size:11px; font-weight:800; letter-spacing:.18em; }
+  .rv-letter h2 { margin:0 0 24px; color:var(--d); font-size:clamp(24px,6vw,32px); line-height:1.45; letter-spacing:-.035em; }
+  .rv-letter p { margin:0; color:var(--s); font-size:14px; line-height:2.05; word-break:keep-all; }
+  .rv-letter-mark { display:block; width:42px; height:2px; margin:32px auto 0; background:linear-gradient(90deg,#a5482d 0 32%,#c9954e 32%); }
+
+  .rv-wrap { max-width: 620px; padding: 72px 22px 116px; }
+  .rv-section-title { justify-content:center; color:var(--d); font-size:11px; letter-spacing:.18em; }
+  .rv-section-title::before, .rv-section-title::after { content:''; flex:0 1 54px; height:1px; background:var(--line); }
+  .rv-card { padding:32px 28px; border-radius:24px; background:#fffcf7; box-shadow:0 16px 46px rgba(77,43,27,.09); }
+  .rv-card-badge { background:#f4ead8; color:#8c5132; }
+  .rv-card h2 { font-size:30px; }
+  .rv-parking { border:0; background:#f7f2e9; color:#72582e; }
+  .rv-card-actions { align-items:stretch; }
+  .rv-card-actions > button { flex:1 1 190px; }
+  .rv-share-btn { border-color:rgba(90,53,37,.18); background:#fffaf2; color:var(--d); }
+  .rv-mobile-actions { display:none; }
+
+  @media (max-width: 640px) {
+    .rv-hero { min-height:100svh; padding:82px 22px 68px; }
+    .rv-hero::before { inset:14px; border-radius:22px; }
+    .rv-monogram { margin-bottom:34px; }
+    .rv-hero-message { margin-top:38px; }
+    .rv-hero-facts { gap:20px; }
+    .rv-hero-fact { min-width:0; flex:1; }
+    .rv-hero-fact + .rv-hero-fact::before { left:-10px; }
+    .rv-letter { padding:68px 24px 62px; }
+    .rv-wrap { padding:58px 16px calc(112px + env(safe-area-inset-bottom, 0px)); }
+    .rv-card { padding:26px 20px; border-radius:20px; }
+    .rv-card h2 { font-size:26px; }
+    .rv-card-actions { display:none; }
+    .rv-mobile-actions {
+      position:fixed; z-index:80; left:0; right:0; bottom:0; display:grid; grid-template-columns:1fr 1.45fr; gap:8px;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+      border-top:1px solid rgba(90,53,37,.12); background:rgba(255,250,242,.94);
+      box-shadow:0 -10px 34px rgba(77,43,27,.1); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    }
+    .rv-mobile-actions button { min-height:46px; border-radius:12px; font-family:var(--f-sans); font-weight:800; }
+    .rv-mobile-share { border:1px solid rgba(90,53,37,.2); background:#fffaf2; color:var(--d); }
+    .rv-mobile-rsvp { border:0; background:var(--r); color:#fff; }
+    .rv-modal { padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px)); }
+  }
 </style>
 
+<main class="rv-invitation">
 <section class="rv-hero">
-  <div class="rv-hero-eyebrow">WOLKO EVENT · RSVP</div>
-  <h1>
-    <span class="wl-ko">이벤트 참석 신청</span>
-    <span class="wl-en">Event RSVP</span>
-  </h1>
-  <p>
-    <span class="wl-ko">월코의 예정된 행사에 함께해 주세요. 참석 여부를 미리 알려주시면 자리를 준비하는 데 큰 도움이 됩니다.</span>
-    <span class="wl-en">Join us at our upcoming events. Letting us know in advance helps us prepare a place for you.</span>
-  </p>
+  <div class="rv-hero-inner">
+    <div class="rv-monogram" aria-hidden="true">W</div>
+    <svg class="rv-harvest" viewBox="0 0 104 50" aria-hidden="true">
+      <path d="M52 45V6M52 17c-9-1-14-5-16-11 9 0 14 4 16 11ZM52 26c-10-1-17-5-20-12 10 0 17 5 20 12ZM52 36c-11-1-19-5-23-13 12 0 19 5 23 13ZM52 17c9-1 14-5 16-11-9 0-14 4-16 11ZM52 26c10-1 17-5 20-12-10 0-17 5-20 12ZM52 36c11-1 19-5 23-13-12 0-19 5-23 13"/>
+    </svg>
+    <div class="rv-hero-eyebrow">YOU'RE INVITED</div>
+    <h1>
+      <span class="wl-ko">{featuredEvent.title_ko}</span>
+      <span class="wl-en">{featuredEvent.title_en}</span>
+    </h1>
+    <p class="rv-hero-en">Word of Life Korea</p>
+    <p class="rv-hero-message">
+      <span class="wl-ko">함께 걸어온 소중한 분들과<br>감사의 마음을 나누고 싶습니다.</span>
+      <span class="wl-en">We would love to share an evening of gratitude with the people who have walked alongside us.</span>
+    </p>
+    <div class="rv-hero-facts">
+      <div class="rv-hero-fact"><small>DATE</small><strong><span class="wl-ko">{featuredEvent.date_ko}</span><span class="wl-en">{featuredEvent.date_en}</span></strong></div>
+      <div class="rv-hero-fact"><small>VENUE</small><strong><span class="wl-ko">{featuredEvent.place_ko}</span><span class="wl-en">{featuredEvent.place_en}</span></strong></div>
+    </div>
+    <div class="rv-scroll-cue" aria-hidden="true">SCROLL<span></span></div>
+  </div>
+</section>
+
+<section class="rv-letter">
+  <div class="rv-letter-inner">
+    <p class="rv-letter-kicker">WITH GRATITUDE</p>
+    <h2><span class="wl-ko">감사의 자리에<br>소중한 당신을 초대합니다</span><span class="wl-en">You are warmly invited<br>to an evening of gratitude</span></h2>
+    <p>
+      <span class="wl-ko">한 해 동안 월코의 사역을 위해 기도하고 동행해 주신 마음을 기억합니다.<br>함께 둘러앉아 이야기를 나누고, 하나님께서 이루신 일들을 돌아보는 자리에 함께해 주세요.</span>
+      <span class="wl-en">We remember with gratitude your prayers and partnership throughout the year. Please join us as we share stories and celebrate what God has done.</span>
+    </p>
+    <span class="rv-letter-mark" aria-hidden="true"></span>
+  </div>
 </section>
 
 <div class="rv-wrap">
@@ -175,7 +292,7 @@ const events = [
   </h2>
 
   {events.length > 0 ? events.map((event) => (
-    <div class="rv-card">
+    <div class="rv-card" id={`event-${event.id}`} data-event-card={event.id}>
       <span class="rv-card-badge">
         <span class="wl-ko">참석 신청 받는 중</span><span class="wl-en">RSVP Open</span>
       </span>
@@ -218,9 +335,9 @@ const events = [
           <span class="wl-ko">참석 신청하기 →</span>
           <span class="wl-en">RSVP →</span>
         </button>
-        <button type="button" class="rv-share-btn rsvp-share-btn" data-event-id={event.id}>
+        <button type="button" class="rv-share-btn rsvp-share-btn" data-event-id={event.id} data-event-title-ko={event.title_ko} data-event-title-en={event.title_en}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
-          <span class="wl-ko">신청 링크 복사</span><span class="wl-en">Copy RSVP link</span>
+          <span class="wl-ko">초대장 공유하기</span><span class="wl-en">Share invitation</span>
         </button>
       </div>
     </div>
@@ -237,6 +354,16 @@ const events = [
     </div>
   )}
 </div>
+
+<div class="rv-mobile-actions" aria-label="초대장 빠른 메뉴">
+  <button type="button" class="rv-mobile-share rsvp-share-btn" data-event-id={featuredEvent.id} data-event-title-ko={featuredEvent.title_ko} data-event-title-en={featuredEvent.title_en}>
+    <span class="wl-ko">공유하기</span><span class="wl-en">Share</span>
+  </button>
+  <button type="button" class="rv-mobile-rsvp rsvp-open-btn" data-event-id={featuredEvent.id} data-event-title-ko={featuredEvent.title_ko} data-event-title-en={featuredEvent.title_en}>
+    <span class="wl-ko">참석 여부 전하기</span><span class="wl-en">Send RSVP</span>
+  </button>
+</div>
+</main>
 
 <!-- RSVP 모달 -->
 <div class="rv-modal" id="rsvpModal" hidden>
@@ -391,11 +518,25 @@ const events = [
     return location.origin + location.pathname.replace(/\/$/, '') + '/?event=' + encodeURIComponent(eventId);
   }
 
-  // 신청 링크 복사 — 공유용 주소는 /rsvp?event=행사ID 형태다.
+  // 모바일에서는 시스템 공유창을 열어 카카오톡 등으로 바로 보낼 수 있게 한다.
+  // 공유 API가 없는 브라우저에서는 같은 링크를 클립보드에 복사한다.
   document.querySelectorAll('.rsvp-share-btn').forEach(function (btn) {
     var labelHtml = btn.innerHTML;
     btn.addEventListener('click', async function () {
       var link = eventLink(btn.dataset.eventId || '');
+      var eventTitle = isEn() ? (btn.dataset.eventTitleEn || 'WOLKO Event') : (btn.dataset.eventTitleKo || '월코 이벤트');
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: eventTitle,
+            text: isEn() ? 'You are invited. Please view the invitation and let us know if you can join us.' : eventTitle + '에 초대합니다. 초대장을 확인하고 참석 여부를 알려주세요.',
+            url: link,
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
       try {
         await navigator.clipboard.writeText(link);
       } catch (err) {
@@ -408,14 +549,11 @@ const events = [
     });
   });
 
-  // ?event=행사ID 로 들어오면 그 행사 신청 창을 바로 연다.
+  // 공유 링크는 초대장 본문부터 읽게 하고 해당 행사 카드만 표시해 둔다.
   var requestedEvent = new URLSearchParams(location.search).get('event');
   if (requestedEvent) {
-    var target = document.querySelector('.rsvp-open-btn[data-event-id="' + requestedEvent.replace(/"/g, '') + '"]');
-    if (target) {
-      target.scrollIntoView({ block: 'center' });
-      openModal(target);
-    }
+    var targetCard = document.querySelector('[data-event-card="' + requestedEvent.replace(/"/g, '') + '"]');
+    if (targetCard) targetCard.setAttribute('data-shared-event', 'true');
   }
   byId('rsvpCloseBtn').addEventListener('click', closeModal);
   byId('rsvpSuccessClose').addEventListener('click', closeModal);
