@@ -14,12 +14,11 @@ const ogImage = new URL('/images/rsvp-share.png', Astro.site).toString();
 const ogTitle = '감사의 밤에 초대합니다 — WOLKO';
 const ogDescription = '11월 26일(목) 오후 7시 · 월코 사역에 함께해 주신 분들께 감사를 전하는 자리에 초대합니다.';
 
-// 바람에 들뜬 듯 아래에서 위로 솟구치는 낙엽·반짝임(이모지): [왼쪽 위치 %, 크기 px, 움직이는 시간 s, 시작 지연 s, 글자]
-const leaves = [
-  [4, 24, 6.5, 0,   '🍁'], [14, 16, 5.5, .8, '✨'], [24, 22, 7,   .3, '🍂'],
-  [34, 15, 5,   1.6, '🍁'], [45, 26, 6,   .5, '🍃'], [55, 17, 5.5, 2.1, '✨'],
-  [65, 23, 6.5, .2,  '🍂'], [75, 16, 5,   1.3, '🍁'], [85, 25, 7,   .9,  '🍂'],
-  [94, 18, 5.5, 1.8, '✨'],
+// 아래에서 위로 둥실둥실 떠오르는 풍선(이모지): [왼쪽 위치 %, 크기 px, 떠오르는 시간 s, 시작 지연 s, 글자]
+const balloons = [
+  [5, 30, 9,  0,  '🎈'], [16, 24, 10.5, 1.4, '🎈'], [27, 32, 8.5, .5, '🎈'],
+  [38, 22, 11, 2.2, '🎈'], [49, 30, 9.5, .9, '🎈'], [60, 24, 10, 1.8, '🎈'],
+  [71, 32, 9,  .3, '🎈'], [82, 22, 10.5, 1.6, '🎈'], [92, 28, 9.5, .7, '🎈'],
 ];
 ---
 
@@ -62,15 +61,15 @@ const leaves = [
       background:radial-gradient(120% 80% at 50% 0%, #8a3620 0%, var(--wine) 55%, #3a1612 100%);
       color:var(--cream); overflow:hidden;
     }
-    .inv-leaf { position:absolute; bottom:-10%; opacity:0; font-size:inherit; line-height:1; animation:inv-leaf-rise ease-in-out infinite; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
-    @keyframes inv-leaf-rise {
-      0%   { transform:translate3d(0,0,0) scale(.6) rotate(0deg); opacity:0; }
-      12%  { opacity:1; transform:translate3d(6px,-14vh,0) scale(1) rotate(40deg); }
-      32%  { transform:translate3d(-20px,-34vh,0) scale(1.08) rotate(-50deg); }
-      52%  { transform:translate3d(18px,-55vh,0) scale(.95) rotate(110deg); }
-      72%  { transform:translate3d(-14px,-76vh,0) scale(1.05) rotate(-90deg); opacity:1; }
+    .inv-balloon { position:absolute; bottom:-12%; opacity:0; font-size:inherit; line-height:1; animation:inv-balloon-rise ease-in-out infinite; pointer-events:none; filter:drop-shadow(0 3px 5px rgba(0,0,0,.22)); }
+    @keyframes inv-balloon-rise {
+      0%   { transform:translate3d(0,0,0) rotate(-4deg); opacity:0; }
+      14%  { opacity:.95; }
+      35%  { transform:translate3d(14px,-32vh,0) rotate(4deg); }
+      55%  { transform:translate3d(-12px,-56vh,0) rotate(-3deg); }
+      75%  { transform:translate3d(10px,-80vh,0) rotate(3deg); opacity:.95; }
       92%  { opacity:.5; }
-      100% { transform:translate3d(10px,-102vh,0) scale(.7) rotate(200deg); opacity:0; }
+      100% { transform:translate3d(-6px,-104vh,0) rotate(0deg); opacity:0; }
     }
 
     /* 스크롤로 들어오는 섹션 공통 연출 */
@@ -90,7 +89,7 @@ const leaves = [
     @keyframes inv-rise { to { opacity:1; transform:translateY(0); } }
 
     @media (prefers-reduced-motion: reduce) {
-      .inv-leaf { display:none; }
+      .inv-balloon { display:none; }
       [data-reveal], [data-reveal="stagger"] > *, .inv-cover-anim { opacity:1 !important; transform:none !important; transition:none !important; animation:none !important; }
     }
     .inv-eyebrow { position:relative; font-size:12px; font-weight:700; letter-spacing:0.32em; color:var(--gold); }
@@ -187,8 +186,8 @@ const leaves = [
 
   <!-- 표지 -->
   <header class="inv-cover">
-    {leaves.map(([left, size, dur, delay, glyph]) => (
-      <span class="inv-leaf" aria-hidden="true"
+    {balloons.map(([left, size, dur, delay, glyph]) => (
+      <span class="inv-balloon" aria-hidden="true"
         style={`left:${left}%;font-size:${size}px;animation-duration:${dur}s;animation-delay:-${delay}s;`}>{glyph}</span>
     ))}
     <div class="inv-eyebrow inv-cover-anim" style="animation-delay:.15s">INVITATION</div>

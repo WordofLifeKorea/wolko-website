@@ -30,10 +30,10 @@ test('RSVP invitation includes the parking notice', async () => {
   assert.match(page, /길 건너편 공영 주차장/);
 });
 
-test('RSVP invitation leaves are sourced emoji, not hand-drawn paths', async () => {
+test('RSVP invitation balloons are sourced emoji, not hand-drawn paths', async () => {
   const page = await read('src/pages/rsvp/thanksgiving.astro');
 
-  assert.match(page, /🍁|🍂|🍃/);
+  assert.match(page, /🎈/);
   assert.doesNotMatch(page, /M2 12 C 10 1, 30 1, 38 12/);
 });
 
