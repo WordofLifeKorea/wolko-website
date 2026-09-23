@@ -139,11 +139,6 @@
     context.moveTo(spark.x, spark.y);
     spark.trail.forEach(point => context.lineTo(point.x, point.y));
     context.stroke();
-    context.fillStyle = spark.color;
-    context.globalAlpha = fade * glimmer * 0.38;
-    context.beginPath();
-    context.arc(spark.x, spark.y, spark.size * 3, 0, Math.PI * 2);
-    context.fill();
     context.fillStyle = spark.age < 0.18 ? '#fff9e7' : spark.color;
     context.globalAlpha = fade * glimmer;
     context.beginPath();
