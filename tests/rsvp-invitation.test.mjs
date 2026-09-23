@@ -9,7 +9,8 @@ test('RSVP listing page links out to the dedicated invitation instead of a modal
   const page = await read('src/pages/rsvp/index.astro');
 
   assert.match(page, /invite: '\/rsvp\/thanksgiving\/'/);
-  assert.match(page, /href=\{`\$\{event\.invite\}#rsvp`\}/);
+  assert.match(page, /href=\{event\.invite\}/);
+  assert.doesNotMatch(page, /href=\{`\$\{event\.invite\}#rsvp`\}/);
   assert.doesNotMatch(page, /rv-modal/);
   assert.doesNotMatch(page, /openModal\(/);
 });
