@@ -82,9 +82,13 @@ test('RSVP invitation fireworks vary their burst shape and pause when motion is 
   ]);
 
   assert.match(page, /<canvas class="inv-fireworks" id="invFireworks" aria-hidden="true"><\/canvas>/);
-  assert.match(page, /<script src="\/rsvp-fireworks\.js\?v=2" defer><\/script>/);
+  assert.match(page, /<script src="\/rsvp-fireworks\.js\?v=3" defer><\/script>/);
   assert.doesNotMatch(page, /inv-fw-spark|fwSparkAngles/);
-  assert.match(script, /\['peony', 'ring', 'palm', 'willow'\]/);
+  assert.match(script, /\['peony', 'ring'\]/);
+  assert.doesNotMatch(script, /'palm'|'willow'/);
+  assert.match(script, /i \* Math\.PI \* 2 \/ count/);
+  assert.match(script, /width \* 0\.32[\s\S]*width \* 0\.68/);
+  assert.match(script, /const burstScale = Math\.min\(1, width \/ 520\)/);
   assert.doesNotMatch(script, /spark\.size \* 3/);
   assert.match(script, /spark\.trail\.forEach\(point => context\.lineTo/);
   assert.match(script, /prefers-reduced-motion: reduce/);

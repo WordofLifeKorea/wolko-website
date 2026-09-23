@@ -40,7 +40,7 @@
     const duration = random(0.7, 1);
     const x = random(width * 0.18, width * 0.82);
     const y = height + 8;
-    const targetX = Math.max(width * 0.12, Math.min(width * 0.88, x + random(-55, 55)));
+    const targetX = Math.max(width * 0.32, Math.min(width * 0.68, x + random(-55, 55)));
     const targetY = random(height * 0.24, height * 0.4);
     rockets.push({
       x, y, px: x, py: y, vx: (targetX - x) / duration,
@@ -51,36 +51,31 @@
 
   function burst(rocket) {
     flashes.push({ x: rocket.x, y: rocket.y, age: 0 });
-    const shapes = ['peony', 'ring', 'palm', 'willow'];
+    const shapes = ['peony', 'ring'];
     const shape = shapes[Math.floor(Math.random() * shapes.length)];
-    const count = shape === 'palm' ? 44 : Math.round(random(58, 76));
+    const count = Math.round(random(58, 76));
     const rotation = random(0, Math.PI * 2);
+    const burstScale = Math.min(1, width / 520);
     for (let i = 0; i < count; i++) {
-      const angle = shape === 'palm'
-        ? -Math.PI + i * Math.PI / count + random(-0.14, 0.14)
-        : rotation + i * Math.PI * 2 / count + random(-0.2, 0.2);
-      const speed = shape === 'ring' ? random(132, 162)
-        : shape === 'willow' ? random(65, 118)
-          : shape === 'palm' ? random(100, 185) : random(80, 180);
+      const angle = rotation + i * Math.PI * 2 / count + random(-0.2, 0.2);
+      const speed = (shape === 'ring' ? random(132, 162) : random(80, 180)) * burstScale;
       sparks.push({
         x: rocket.x, y: rocket.y, vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed, age: 0,
-        life: shape === 'willow' ? random(2.2, 2.9) : random(1.6, 2.4),
-        gravity: shape === 'willow' || shape === 'palm' ? 108 : 74,
+        life: random(1.6, 2.4),
+        gravity: 74,
         size: random(1.3, 2.5), color: rocket.color[i % rocket.color.length],
         trail: [], flicker: random(0, Math.PI * 2), crackle: i % (shape === 'ring' ? 5 : 7) === 0,
       });
     }
-    if (shape === 'peony' || shape === 'ring') {
-      for (let i = 0; i < 20; i++) {
-        const angle = rotation + i * Math.PI / 10 + random(-0.16, 0.16);
-        const speed = random(38, 72);
-        sparks.push({
-          x: rocket.x, y: rocket.y, vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed, age: 0, life: random(0.75, 1.25),
-          gravity: 74, size: 1.2, color: '#fff3d4', trail: [], flicker: random(0, Math.PI * 2),
-        });
-      }
+    for (let i = 0; i < 20; i++) {
+      const angle = rotation + i * Math.PI / 10 + random(-0.16, 0.16);
+      const speed = random(38, 72) * burstScale;
+      sparks.push({
+        x: rocket.x, y: rocket.y, vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed, age: 0, life: random(0.75, 1.25),
+        gravity: 74, size: 1.2, color: '#fff3d4', trail: [], flicker: random(0, Math.PI * 2),
+      });
     }
   }
 
