@@ -15,10 +15,12 @@ const ogTitle = '감사의 밤에 초대합니다 — WOLKO';
 const ogDescription = '11월 26일(목) 오후 7시 · 월코 사역에 함께해 주신 분들께 감사를 전하는 자리에 초대합니다.';
 
 // 아래에서 위로 둥실둥실 떠오르는 풍선(이모지): [왼쪽 위치 %, 크기 px, 떠오르는 시간 s, 시작 지연 s, 글자]
-const balloons = [
-  [5, 30, 9,  0,  '🎈'], [16, 24, 10.5, 1.4, '🎈'], [27, 32, 8.5, .5, '🎈'],
-  [38, 22, 11, 2.2, '🎈'], [49, 30, 9.5, .9, '🎈'], [60, 24, 10, 1.8, '🎈'],
-  [71, 32, 9,  .3, '🎈'], [82, 22, 10.5, 1.6, '🎈'], [92, 28, 9.5, .7, '🎈'],
+const leaves = [
+  [2, 22, 12, 0,   '🍁'], [9, 16, 15, 3,   '🍂'], [17, 20, 11, 6,   '🍁'],
+  [24, 15, 16, 1,  '🍃'], [32, 24, 13, 8,  '🍂'], [40, 17, 14, 4,   '🍁'],
+  [48, 26, 12, 9,  '🍂'], [56, 15, 17, 2,  '🍁'], [64, 21, 11, 7,   '🍃'],
+  [72, 18, 15, 5,  '🍂'], [80, 25, 13, 10, '🍁'], [88, 16, 16, 0.5, '🍂'],
+  [95, 22, 12, 6.5,'🍁'],
 ];
 ---
 
@@ -61,15 +63,15 @@ const balloons = [
       background:radial-gradient(120% 80% at 50% 0%, #8a3620 0%, var(--wine) 55%, #3a1612 100%);
       color:var(--cream); overflow:hidden;
     }
-    .inv-balloon { position:absolute; bottom:-12%; opacity:0; font-size:inherit; line-height:1; animation:inv-balloon-rise ease-in-out infinite; pointer-events:none; filter:drop-shadow(0 3px 5px rgba(0,0,0,.22)); }
-    @keyframes inv-balloon-rise {
-      0%   { transform:translate3d(0,0,0) rotate(-4deg); opacity:0; }
-      14%  { opacity:.95; }
-      35%  { transform:translate3d(14px,-32vh,0) rotate(4deg); }
-      55%  { transform:translate3d(-12px,-56vh,0) rotate(-3deg); }
-      75%  { transform:translate3d(10px,-80vh,0) rotate(3deg); opacity:.95; }
-      92%  { opacity:.5; }
-      100% { transform:translate3d(-6px,-104vh,0) rotate(0deg); opacity:0; }
+    .inv-leaf { position:absolute; top:-40px; opacity:0.9; font-size:inherit; line-height:1; animation:inv-fall linear infinite; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    @keyframes inv-fall {
+      0%   { transform:translate3d(0,-40px,0) rotate(0deg); opacity:0; }
+      8%   { opacity:0.9; }
+      25%  { transform:translate3d(-16px,22vh,0) rotate(-70deg); }
+      50%  { transform:translate3d(24px,48vh,0) rotate(150deg); }
+      75%  { transform:translate3d(-14px,74vh,0) rotate(250deg); }
+      92%  { opacity:0.85; }
+      100% { transform:translate3d(16px,98vh,0) rotate(360deg); opacity:0; }
     }
 
     /* 스크롤로 들어오는 섹션 공통 연출 */
@@ -89,7 +91,7 @@ const balloons = [
     @keyframes inv-rise { to { opacity:1; transform:translateY(0); } }
 
     @media (prefers-reduced-motion: reduce) {
-      .inv-balloon { display:none; }
+      .inv-leaf { display:none; }
       [data-reveal], [data-reveal="stagger"] > *, .inv-cover-anim { opacity:1 !important; transform:none !important; transition:none !important; animation:none !important; }
     }
     .inv-eyebrow { position:relative; font-size:12px; font-weight:700; letter-spacing:0.32em; color:var(--gold); }
@@ -186,8 +188,8 @@ const balloons = [
 
   <!-- 표지 -->
   <header class="inv-cover">
-    {balloons.map(([left, size, dur, delay, glyph]) => (
-      <span class="inv-balloon" aria-hidden="true"
+    {leaves.map(([left, size, dur, delay, glyph]) => (
+      <span class="inv-leaf" aria-hidden="true"
         style={`left:${left}%;font-size:${size}px;animation-duration:${dur}s;animation-delay:-${delay}s;`}>{glyph}</span>
     ))}
     <div class="inv-eyebrow inv-cover-anim" style="animation-delay:.15s">INVITATION</div>
