@@ -1,0 +1,370 @@
+---
+// 카카오톡으로 보내는 모바일 초대장. /rsvp/ 목록에서 "참석 신청하기"를 누르면 이 페이지로 이동한다.
+import '../../styles/global.css';
+
+const event = {
+  id: 'thanksgiving-night',
+  title: '감사의 밤',
+  date: '2026년 11월 26일(목) 오후 7시',
+  place: '장소 추후 공지',
+};
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImage = new URL('/images/rsvp-share.png', Astro.site).toString();
+const ogTitle = '감사의 밤에 초대합니다 — WOLKO';
+const ogDescription = '11월 26일(목) 오후 7시 · 월코 사역에 함께해 주신 분들께 감사를 전하는 자리에 초대합니다.';
+
+// 흩날리는 낙엽(이모지): [왼쪽 위치 %, 크기 px, 떨어지는 시간 s, 시작 지연 s, 글자]
+const leaves = [
+  [6, 26, 13, 0, '🍁'], [18, 18, 16, 4, '🍂'], [31, 22, 12, 7, '🍁'],
+  [47, 16, 17, 2, '🍃'], [60, 24, 14, 9, '🍂'], [73, 18, 15, 5, '🍁'],
+  [86, 28, 12, 1, '🍂'], [94, 16, 18, 8, '🍁'],
+];
+---
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{ogTitle}</title>
+  <meta name="description" content={ogDescription}>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="canonical" href={pageUrl}>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="WOLKO 월코">
+  <meta property="og:title" content={ogTitle}>
+  <meta property="og:description" content={ogDescription}>
+  <meta property="og:url" content={pageUrl}>
+  <meta property="og:image" content={ogImage}>
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#5c211b">
+
+  <style>
+    :root {
+      --wine:#5c211b; --rust:#9a3b22; --amber:#d9772f; --gold:#e8a547;
+      --cream:#fff8ec; --paper:#fdf4e6; --ink:#3b1f17; --muted:#8a6552;
+      --line:rgba(122,62,34,0.16);
+      --serif:'AppleMyungjo','Nanum Myeongjo','Noto Serif KR',serif;
+      --sans:'Pretendard Variable',Pretendard,'Apple SD Gothic Neo',sans-serif;
+    }
+    html, body { margin:0; padding:0; background:#3a1612; }
+    body { font-family:var(--sans); color:var(--ink); -webkit-font-smoothing:antialiased; }
+    .inv { max-width:480px; margin:0 auto; background:var(--paper); min-height:100vh; box-shadow:0 0 60px rgba(0,0,0,0.35); overflow:hidden; }
+
+    /* 표지 */
+    .inv-cover {
+      position:relative; min-height:88vh; padding:72px 28px 56px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+      background:radial-gradient(120% 80% at 50% 0%, #8a3620 0%, var(--wine) 55%, #3a1612 100%);
+      color:var(--cream); overflow:hidden;
+    }
+    .inv-leaf { position:absolute; top:-40px; opacity:0.9; font-size:inherit; line-height:1; animation:inv-fall linear infinite; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    @keyframes inv-fall {
+      0%   { transform:translate3d(0,-40px,0) rotate(0deg); opacity:0; }
+      10%  { opacity:0.9; }
+      50%  { transform:translate3d(28px,48vh,0) rotate(160deg); }
+      100% { transform:translate3d(-18px,96vh,0) rotate(320deg); opacity:0; }
+    }
+    @media (prefers-reduced-motion: reduce) { .inv-leaf { display:none; } }
+    .inv-eyebrow { position:relative; font-size:12px; font-weight:700; letter-spacing:0.32em; color:var(--gold); }
+    .inv-title { position:relative; margin:22px 0 14px; font-family:var(--serif); font-size:52px; font-weight:400; letter-spacing:0.04em; line-height:1.2; }
+    .inv-title-en { position:relative; font-size:14px; letter-spacing:0.18em; color:rgba(255,248,236,0.75); }
+    .inv-cover-rule { position:relative; width:56px; height:1px; margin:28px auto; background:rgba(232,165,71,0.7); }
+    .inv-cover-when { position:relative; font-size:15px; line-height:1.9; color:rgba(255,248,236,0.9); }
+    .inv-scroll { position:absolute; bottom:22px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:0.2em; color:rgba(255,248,236,0.55); }
+    .inv-scroll::after { content:''; display:block; width:1px; height:26px; margin:8px auto 0; background:rgba(255,248,236,0.45); }
+
+    /* 본문 공통 */
+    .inv-section { padding:56px 30px; text-align:center; }
+    .inv-section + .inv-section { border-top:1px solid var(--line); }
+    .inv-label { font-size:11px; font-weight:800; letter-spacing:0.28em; color:var(--amber); margin-bottom:18px; }
+    .inv-h { margin:0 0 20px; font-family:var(--serif); font-size:24px; font-weight:400; color:var(--wine); }
+    .inv-p { margin:0; font-size:15px; line-height:2; color:var(--ink); word-break:keep-all; }
+    .inv-sign { margin-top:22px; font-size:13.5px; color:var(--muted); }
+
+    .inv-verse { margin:0 auto; max-width:340px; padding:26px 22px; border-radius:16px; background:var(--cream); border:1px solid var(--line); }
+    .inv-verse p { margin:0; font-family:var(--serif); font-size:17px; line-height:1.9; color:var(--wine); word-break:keep-all; }
+    .inv-verse cite { display:block; margin-top:12px; font-style:normal; font-size:12.5px; color:var(--muted); }
+
+    .inv-info { display:grid; gap:14px; max-width:340px; margin:0 auto; text-align:left; }
+    .inv-info-row { display:flex; gap:14px; align-items:flex-start; padding:16px 18px; border-radius:14px; background:#fff; border:1px solid var(--line); }
+    .inv-info-icon { flex-shrink:0; width:36px; height:36px; border-radius:50%; background:rgba(217,119,47,0.12); color:var(--rust); display:grid; place-items:center; }
+    .inv-info-icon svg { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .inv-info-row dt { font-size:12px; font-weight:700; color:var(--muted); }
+    .inv-info-row dd { margin:3px 0 0; font-size:15.5px; font-weight:700; color:var(--ink); word-break:keep-all; }
+
+    .inv-parking { max-width:340px; margin:16px auto 0; padding:14px 16px; border-radius:12px; background:#fff1dc; border:1px solid rgba(217,119,47,0.3); font-size:13.5px; line-height:1.75; color:#7a3a17; text-align:left; word-break:keep-all; }
+    .inv-parking b { display:block; margin-bottom:3px; }
+
+    /* 참석 신청 */
+    .inv-form { max-width:340px; margin:0 auto; text-align:left; }
+    .inv-field { margin-bottom:14px; }
+    .inv-field label { display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:var(--muted); }
+    .inv-field .req { color:var(--rust); margin-left:2px; }
+    .inv-field input, .inv-field select, .inv-field textarea {
+      width:100%; box-sizing:border-box; border:1.5px solid rgba(122,62,34,0.2); border-radius:11px;
+      padding:11px 13px; background:#fff; font-family:var(--sans); font-size:16px; color:var(--ink); outline:none;
+      -webkit-appearance:none; appearance:none;
+    }
+    .inv-field input, .inv-field select { height:46px !important; min-height:46px !important; }
+    .inv-field select { background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%); background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%; background-size:5px 5px; background-repeat:no-repeat; }
+    .inv-field textarea { min-height:80px; resize:vertical; }
+    .inv-field input:focus, .inv-field select:focus, .inv-field textarea:focus { border-color:var(--amber); box-shadow:0 0 0 3px rgba(217,119,47,0.15); }
+    .inv-field .error { border-color:var(--rust); }
+    .inv-hint { margin:6px 0 0; font-size:12px; line-height:1.6; color:var(--muted); }
+    .inv-consent { display:flex; gap:9px; align-items:flex-start; margin-top:6px; font-size:12.5px; line-height:1.7; color:var(--muted); }
+    .inv-consent input { width:18px !important; height:18px !important; min-height:0 !important; margin:2px 0 0; accent-color:var(--rust); flex-shrink:0; }
+    .inv-error { display:none; margin-top:14px; padding:11px 13px; border-radius:10px; background:#fde8e3; color:#9a2a18; font-size:13px; font-weight:600; line-height:1.6; }
+    .inv-error.show { display:block; }
+    .inv-btn {
+      display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:52px; margin-top:18px;
+      border:none; border-radius:14px; background:linear-gradient(135deg,var(--rust),var(--amber)); color:#fff;
+      font-family:var(--sans); font-size:16px; font-weight:800; letter-spacing:0.02em; cursor:pointer;
+      box-shadow:0 8px 22px rgba(154,59,34,0.28);
+    }
+    .inv-btn:disabled { opacity:0.6; cursor:wait; }
+    .inv-done { display:none; max-width:340px; margin:0 auto; padding:30px 22px; border-radius:18px; background:#fff; border:1px solid var(--line); }
+    .inv-done.show { display:block; }
+    .inv-done-mark { width:56px; height:56px; margin:0 auto 16px; border-radius:50%; background:rgba(217,119,47,0.14); color:var(--rust); display:grid; place-items:center; }
+    .inv-done-mark svg { width:26px; height:26px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+    .inv-done h3 { margin:0 0 10px; font-family:var(--serif); font-size:22px; font-weight:400; color:var(--wine); }
+    .inv-done p { margin:0; font-size:14.5px; line-height:1.85; color:var(--ink); word-break:keep-all; }
+
+    /* 공유 · 푸터 */
+    .inv-share { display:flex; gap:10px; max-width:340px; margin:0 auto; }
+    .inv-share button { flex:1; min-height:48px; border-radius:12px; border:1.5px solid rgba(122,62,34,0.22); background:#fff; color:var(--wine); font-family:var(--sans); font-size:14px; font-weight:700; cursor:pointer; }
+    .inv-footer { padding:34px 24px 44px; text-align:center; background:var(--wine); color:rgba(255,248,236,0.7); font-size:12px; line-height:1.8; }
+    .inv-footer b { display:block; margin-bottom:4px; color:var(--cream); font-size:13px; letter-spacing:0.06em; }
+    .inv-footer a { color:var(--gold); text-decoration:none; }
+  </style>
+</head>
+<body>
+<main class="inv">
+
+  <!-- 표지 -->
+  <header class="inv-cover">
+    {leaves.map(([left, size, dur, delay, glyph]) => (
+      <span class="inv-leaf" aria-hidden="true"
+        style={`left:${left}%;font-size:${size}px;animation-duration:${dur}s;animation-delay:-${delay}s;`}>{glyph}</span>
+    ))}
+    <div class="inv-eyebrow">INVITATION</div>
+    <h1 class="inv-title">{event.title}</h1>
+    <div class="inv-title-en">NIGHT OF THANKSGIVING</div>
+    <div class="inv-cover-rule"></div>
+    <div class="inv-cover-when">{event.date}<br>{event.place}</div>
+    <div class="inv-scroll">SCROLL</div>
+  </header>
+
+  <!-- 초대 인사 -->
+  <section class="inv-section">
+    <div class="inv-label">WITH GRATITUDE</div>
+    <h2 class="inv-h">초대합니다</h2>
+    <p class="inv-p">
+      풍성한 결실의 계절,<br>
+      캠프와 훈련, 기도와 섬김으로<br>
+      월코 사역에 참여하고 동참해 주신<br>
+      모든 분들께 감사의 마음을 전합니다.<br><br>
+      하나님께서 이 땅의 다음 세대 가운데<br>
+      행하신 일들을 함께 나누며<br>
+      감사로 가득한 저녁을 보내려 합니다.<br>
+      귀한 걸음으로 함께해 주세요.
+    </p>
+    <p class="inv-sign">Word of Life Korea 드림</p>
+  </section>
+
+  <!-- 말씀 -->
+  <section class="inv-section">
+    <blockquote class="inv-verse">
+      <p>여호와께 감사하라<br>그는 선하시며<br>그 인자하심이 영원함이로다</p>
+      <cite>시편 107편 1절</cite>
+    </blockquote>
+  </section>
+
+  <!-- 일시 · 장소 -->
+  <section class="inv-section">
+    <div class="inv-label">WHEN &amp; WHERE</div>
+    <h2 class="inv-h">일시와 장소</h2>
+    <dl class="inv-info">
+      <div class="inv-info-row">
+        <span class="inv-info-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>
+        <div><dt>일시</dt><dd>{event.date}</dd></div>
+      </div>
+      <div class="inv-info-row">
+        <span class="inv-info-icon"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+        <div><dt>장소</dt><dd>{event.place}</dd></div>
+      </div>
+    </dl>
+    <div class="inv-parking">
+      <b>주차 안내</b>
+      주차장이 협소하여 길 건너편 공영 주차장을 이용하셔야 할 수 있습니다. 가능하시면 대중교통을 이용하시거나 함께 타고 와 주세요.
+    </div>
+  </section>
+
+  <!-- 참석 신청 -->
+  <section class="inv-section" id="rsvp">
+    <div class="inv-label">RSVP</div>
+    <h2 class="inv-h">참석 여부를 알려주세요</h2>
+    <p class="inv-p" style="margin-bottom:26px;">자리 준비를 위해 미리 알려주시면<br>큰 도움이 됩니다.</p>
+
+    <form class="inv-form" id="invForm" novalidate>
+      <div class="inv-field">
+        <label for="invName">성함 <span class="req">*</span></label>
+        <input id="invName" maxlength="60" autocomplete="name" placeholder="홍길동">
+      </div>
+      <div class="inv-field">
+        <label for="invPhone">전화번호 <span class="req">*</span></label>
+        <input id="invPhone" type="tel" maxlength="30" autocomplete="tel" placeholder="010-0000-0000">
+      </div>
+      <div class="inv-field">
+        <label for="invEmail">이메일 <span class="req">*</span></label>
+        <input id="invEmail" type="email" maxlength="120" autocomplete="email" placeholder="example@email.com">
+      </div>
+      <div class="inv-field">
+        <label for="invParty">참석 인원 (본인 포함) <span class="req">*</span></label>
+        <select id="invParty">
+          <option value="1">1명</option><option value="2">2명</option><option value="3">3명</option>
+          <option value="4">4명</option><option value="5">5명</option><option value="6">6명</option>
+          <option value="7">7명</option><option value="8">8명</option><option value="9">9명</option>
+          <option value="more">10명 이상</option>
+        </select>
+      </div>
+      <div class="inv-field" id="invPartyCustomField" hidden>
+        <label for="invPartyCustom">참석 인원을 적어 주세요 <span class="req">*</span></label>
+        <input id="invPartyCustom" type="number" inputmode="numeric" min="10" max="200" placeholder="10">
+        <p class="inv-hint">단체로 오시는 경우 대략적인 인원도 괜찮습니다.</p>
+      </div>
+      <div class="inv-field">
+        <label for="invNotes">남기실 말씀 (선택)</label>
+        <textarea id="invNotes" maxlength="1000" placeholder="축하와 감사의 한마디도 좋아요"></textarea>
+      </div>
+      <label class="inv-consent" for="invConsent">
+        <input type="checkbox" id="invConsent">
+        <span>참석 안내를 위한 개인정보(성함, 연락처, 이메일) 수집·이용에 동의합니다.</span>
+      </label>
+      <div class="inv-error" id="invError"></div>
+      <button type="submit" class="inv-btn" id="invSubmit">참석 신청하기</button>
+    </form>
+
+    <div class="inv-done" id="invDone">
+      <div class="inv-done-mark"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h3>감사합니다</h3>
+      <p id="invDoneMsg"></p>
+    </div>
+  </section>
+
+  <!-- 공유 -->
+  <section class="inv-section">
+    <div class="inv-label">SHARE</div>
+    <h2 class="inv-h">초대장 전하기</h2>
+    <div class="inv-share">
+      <button type="button" id="invShare">공유하기</button>
+      <button type="button" id="invCopy">링크 복사</button>
+    </div>
+  </section>
+
+  <footer class="inv-footer">
+    <b>WORD OF LIFE KOREA</b>
+    문의 031-611-9216 · <a href="mailto:wolkorea1@gmail.com">wolkorea1@gmail.com</a><br>
+    <a href="https://wolko.org">wolko.org</a>
+  </footer>
+</main>
+
+<script is:inline define:vars={{ eventId: event.id, pageUrl }}>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $('invForm');
+  var err = $('invError');
+  var submit = $('invSubmit');
+
+  function showError(msg, fieldId) {
+    err.textContent = msg;
+    err.classList.add('show');
+    if (fieldId && $(fieldId)) {
+      $(fieldId).classList.add('error');
+      $(fieldId).scrollIntoView({ block: 'center', behavior: 'smooth' });
+      $(fieldId).focus({ preventScroll: true });
+    }
+  }
+  function clearErrors() {
+    err.classList.remove('show');
+    form.querySelectorAll('.error').forEach(function (el) { el.classList.remove('error'); });
+  }
+
+  $('invParty').addEventListener('change', function () {
+    var more = this.value === 'more';
+    $('invPartyCustomField').hidden = !more;
+    if (!more) $('invPartyCustom').value = '';
+  });
+  form.addEventListener('input', function (e) { if (e.target.classList) e.target.classList.remove('error'); });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    clearErrors();
+    var more = $('invParty').value === 'more';
+    var payload = {
+      eventId: eventId,
+      name: $('invName').value.trim(),
+      phone: $('invPhone').value.trim(),
+      email: $('invEmail').value.trim(),
+      partySize: more ? Number($('invPartyCustom').value) : Number($('invParty').value),
+      notes: $('invNotes').value.trim(),
+    };
+    if (!payload.name) return showError('성함을 입력해 주세요.', 'invName');
+    if (!payload.phone) return showError('전화번호를 입력해 주세요.', 'invPhone');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) return showError('이메일 주소를 정확히 입력해 주세요.', 'invEmail');
+    if (more && (!Number.isInteger(payload.partySize) || payload.partySize < 10 || payload.partySize > 200)) {
+      return showError('참석 인원을 10명 이상 200명 이하로 적어 주세요.', 'invPartyCustom');
+    }
+    if (!$('invConsent').checked) return showError('개인정보 수집 및 이용에 동의해 주세요.', 'invConsent');
+
+    submit.disabled = true;
+    try {
+      var res = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      var data = await res.json();
+      if (res.ok && data.success) {
+        form.style.display = 'none';
+        $('invDone').classList.add('show');
+        $('invDoneMsg').innerHTML = '';
+        var strong = document.createElement('strong');
+        strong.textContent = payload.name;
+        $('invDoneMsg').appendChild(strong);
+        $('invDoneMsg').appendChild(document.createTextNode('님 포함 총 ' + payload.partySize + '명으로 접수되었습니다. 감사의 밤에서 뵙겠습니다!'));
+      } else {
+        showError(data.error || '오류가 발생했습니다. 다시 시도해 주세요.');
+        submit.disabled = false;
+      }
+    } catch (x) {
+      showError('네트워크 오류가 발생했습니다. 다시 시도해 주세요.');
+      submit.disabled = false;
+    }
+  });
+
+  async function copyLink(btn) {
+    try {
+      await navigator.clipboard.writeText(pageUrl);
+      var label = btn.textContent;
+      btn.textContent = '복사했어요';
+      setTimeout(function () { btn.textContent = label; }, 2000);
+    } catch (x) {
+      window.prompt('이 링크를 복사해 주세요:', pageUrl);
+    }
+  }
+  $('invCopy').addEventListener('click', function () { copyLink(this); });
+  $('invShare').addEventListener('click', async function () {
+    if (navigator.share) {
+      try { await navigator.share({ title: '감사의 밤에 초대합니다', text: '월코 감사의 밤 초대장', url: pageUrl }); } catch (x) { /* 공유 창을 닫은 경우 */ }
+    } else {
+      copyLink(this);
+    }
+  });
+})();
+</script>
+</body>
+</html>
