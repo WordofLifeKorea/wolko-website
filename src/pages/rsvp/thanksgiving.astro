@@ -22,6 +22,12 @@ const leaves = [
   [72, 18, 15, 5,  '🍂'], [80, 25, 13, 10, '🍁'], [88, 16, 16, 0.5, '🍂'],
   [95, 22, 12, 6.5,'🍁'],
 ];
+
+// 표지에서 이따금 터지는 폭죽: [왼쪽 위치 %, 위쪽 위치 %, 크기 px, 한 주기 길이 s, 시작 지연 s, 글자]
+const fireworks = [
+  [16, 20, 30, 5.5, 0.6, '🎆'], [66, 14, 26, 6.5, 2.8, '🎇'],
+  [40, 30, 24, 7,   4.2, '🎆'], [84, 34, 22, 6,   1.5, '🎇'],
+];
 ---
 
 <!DOCTYPE html>
@@ -64,6 +70,21 @@ const leaves = [
       color:var(--cream); overflow:hidden;
     }
     .inv-leaf { position:absolute; top:-40px; opacity:0.9; font-size:inherit; line-height:1; animation:inv-fall linear infinite; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+
+    /* 표지 하늘에서 이따금 터지는 폭죽. 대부분의 시간은 숨어 있다가 짧게 팡 터진다. */
+    .inv-fw { position:absolute; font-size:inherit; line-height:1; opacity:0; transform:scale(.4); animation:inv-fw-burst ease-out infinite; pointer-events:none; }
+    .inv-fw::before {
+      content:''; position:absolute; left:50%; top:50%; width:280%; height:280%; z-index:-1;
+      transform:translate(-50%,-50%); border-radius:50%;
+      background:radial-gradient(circle, rgba(255,224,176,.85), rgba(232,165,71,.3) 45%, transparent 72%);
+      filter:blur(2px);
+    }
+    @keyframes inv-fw-burst {
+      0%, 92%   { opacity:0; transform:scale(.35); }
+      94%       { opacity:1; transform:scale(1.25); }
+      96%       { opacity:.9; transform:scale(1); }
+      100%      { opacity:0; transform:scale(.85); }
+    }
     @keyframes inv-fall {
       0%   { transform:translate3d(0,-40px,0) rotate(0deg); opacity:0; }
       8%   { opacity:0.9; }
@@ -91,7 +112,7 @@ const leaves = [
     @keyframes inv-rise { to { opacity:1; transform:translateY(0); } }
 
     @media (prefers-reduced-motion: reduce) {
-      .inv-leaf { display:none; }
+      .inv-leaf, .inv-fw { display:none; }
       [data-reveal], [data-reveal="stagger"] > *, .inv-cover-anim { opacity:1 !important; transform:none !important; transition:none !important; animation:none !important; }
     }
     .inv-eyebrow { position:relative; font-size:12px; font-weight:700; letter-spacing:0.32em; color:var(--gold); }
@@ -191,6 +212,10 @@ const leaves = [
     {leaves.map(([left, size, dur, delay, glyph]) => (
       <span class="inv-leaf" aria-hidden="true"
         style={`left:${left}%;font-size:${size}px;animation-duration:${dur}s;animation-delay:-${delay}s;`}>{glyph}</span>
+    ))}
+    {fireworks.map(([left, top, size, dur, delay, glyph]) => (
+      <span class="inv-fw" aria-hidden="true"
+        style={`left:${left}%;top:${top}%;font-size:${size}px;animation-duration:${dur}s;animation-delay:-${delay}s;`}>{glyph}</span>
     ))}
     <div class="inv-eyebrow inv-cover-anim" style="animation-delay:.15s">INVITATION</div>
     <h1 class="inv-title inv-cover-anim" style="animation-delay:.32s">{event.title}</h1>
