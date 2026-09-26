@@ -90,8 +90,9 @@ export function applyRoles(container, assignment) {
 }
 
 export function initCrowd(doc = document, request = fetch) {
-  const people = doc.getElementById('invPeople');
-  if (!people) return;
+  const wrapper = doc.getElementById('invPeople');
+  const dolls = doc.getElementById('invPeopleDolls');
+  if (!wrapper || !dolls) return;
   let newestRequest = 0;
   let rotateTimer = null;
 
@@ -99,22 +100,22 @@ export function initCrowd(doc = document, request = fetch) {
     clearTimeout(rotateTimer);
     const reduceMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion) return;
-    const count = people.children.length;
+    const count = dolls.children.length;
     if (!count) return;
-    applyRoles(people, pickRoles(count));
+    applyRoles(dolls, pickRoles(count));
     rotateTimer = setTimeout(scheduleRoleRotation, ROTATE_MIN_MS + Math.random() * ROTATE_JITTER_MS);
   }
 
   async function refresh() {
     const sequence = ++newestRequest;
     try {
-      const response = await request('/api/rsvp-count?eventId=' + encodeURIComponent(people.dataset.eventId));
+      const response = await request('/api/rsvp-count?eventId=' + encodeURIComponent(wrapper.dataset.eventId));
       if (!response.ok) return;
       const data = await response.json();
       if (sequence !== newestRequest) return;
       const total = Math.max(0, Math.floor(Number(data.totalGuests) || 0));
-      people.hidden = total === 0;
-      renderCrowd(people, total);
+      wrapper.hidden = total === 0;
+      renderCrowd(dolls, total);
       scheduleRoleRotation();
     } catch { /* 장식용 정보이니 실패해도 초대장 사용에는 지장이 없다 */ }
   }

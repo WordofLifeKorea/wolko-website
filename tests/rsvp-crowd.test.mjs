@@ -40,10 +40,12 @@ function installFakeSvgDocument() {
   };
 }
 
-test('invitation shows a wandering real-headcount crowd, no gift boxes/gauge, no status text', async () => {
+test('invitation shows a wandering real-headcount crowd with a quiet hint, no gift boxes/gauge, no numeric status', async () => {
   const page = await readFile(new URL('../src/pages/rsvp/thanksgiving.astro', import.meta.url), 'utf8');
   assert.doesNotMatch(page, /inv-gift|inv-gauge|inv-gathering-title|inv-crowd-status|invGatheringStatus/);
   assert.match(page, /id="invPeople" data-event-id=\{event\.id\} hidden aria-hidden="true"/);
+  assert.match(page, /id="invPeopleDolls"/);
+  assert.match(page, /inv-people-caption/, 'a subtle caption should explain what the dolls represent');
   assert.match(page, /is-walk-r|is-walk-l/);
   assert.doesNotMatch(page, /left:-8%|left:108%/, 'roaming range must stay on-screen, not run past the edges');
   assert.match(page, /animation-direction:alternate/, 'roamers should bounce back and forth, not teleport');
@@ -110,10 +112,11 @@ test('the wave hand shares the arm animation class and both are removed together
 test('successful counts populate the crowd and a submitted RSVP refreshes it', async () => {
   globalThis.matchMedia = () => ({ matches: true }); // reduced-motion path: skip role rotation, no DOM needed for it
   try {
-    const people = { innerHTML: '', hidden: true, dataset: { eventId: 'thanksgiving-night' } };
+    const wrapper = { hidden: true, dataset: { eventId: 'thanksgiving-night' } };
+    const dolls = { innerHTML: '' };
     const listeners = {};
     const doc = {
-      getElementById: id => ({ invPeople: people })[id],
+      getElementById: id => ({ invPeople: wrapper, invPeopleDolls: dolls })[id],
       addEventListener: (event, fn) => { listeners[event] = fn; },
     };
     let total = 4;
@@ -123,13 +126,13 @@ test('successful counts populate the crowd and a submitted RSVP refreshes it', a
     };
     initCrowd(doc, request);
     await new Promise(resolve => setImmediate(resolve));
-    assert.equal(people.hidden, false);
-    assert.equal((people.innerHTML.match(/class="inv-person is-walk-[rl]"/g) || []).length, 4);
+    assert.equal(wrapper.hidden, false);
+    assert.equal((dolls.innerHTML.match(/class="inv-person is-walk-[rl]"/g) || []).length, 4);
 
     total = 0;
     await listeners['rsvp:submitted']();
-    assert.equal(people.hidden, true);
-    assert.equal(people.innerHTML, '');
+    assert.equal(wrapper.hidden, true);
+    assert.equal(dolls.innerHTML, '');
   } finally {
     delete globalThis.matchMedia;
   }
