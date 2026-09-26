@@ -95,7 +95,7 @@ const leaves = [
 
     @media (prefers-reduced-motion: reduce) {
       .inv-leaf, .inv-fireworks { display:none; }
-      [data-reveal], [data-reveal="stagger"] > *, .inv-cover-anim, .inv-count { opacity:1 !important; transform:none !important; transition:none !important; animation:none !important; }
+      [data-reveal], [data-reveal="stagger"] > *, .inv-cover-anim { opacity:1 !important; transform:none !important; transition:none !important; animation:none !important; }
     }
     .inv-eyebrow { position:relative; font-size:12px; font-weight:700; letter-spacing:0.32em; color:var(--gold); }
     .inv-title { position:relative; margin:22px 0 14px; font-family:var(--serif); font-size:52px; font-weight:600; letter-spacing:0.04em; line-height:1.2; }
@@ -103,29 +103,35 @@ const leaves = [
     .inv-cover-rule { position:relative; width:56px; height:1px; margin:28px auto; background:rgba(232,165,71,0.7); }
     .inv-cover-when { position:relative; font-size:13px; line-height:1.9; color:rgba(255,248,236,0.72); }
 
-    /* 참석 인원 카운터: 신청이 들어오기 전엔 조용히 숨어 있다가, 숫자가 생기면 살며시 나타난다 */
-    .inv-count {
-      position:relative; margin:22px auto 0; display:inline-flex; align-items:baseline; gap:8px;
-      padding:8px 18px; border-radius:999px; border:1px solid rgba(232,165,71,0.32);
-      background:linear-gradient(180deg, rgba(255,248,236,0.07), rgba(255,248,236,0.02));
-      box-shadow:0 0 0 rgba(232,165,71,0);
-      opacity:0; transform:translateY(8px) scale(.97);
-      transition:opacity .7s cubic-bezier(.2,.8,.3,1), transform .7s cubic-bezier(.2,.8,.3,1), box-shadow .7s ease;
-    }
-    .inv-count.is-visible { opacity:1; transform:translateY(0) scale(1); box-shadow:0 0 14px rgba(232,165,71,.14); }
-    .inv-count-label { position:relative; font-size:9px; font-weight:800; letter-spacing:0.2em; color:rgba(255,248,236,0.62); }
-    .inv-count-number {
-      position:relative; font-family:var(--serif); font-size:18px; font-weight:700; line-height:1;
-      background:linear-gradient(135deg,#f7dd9c 0%, var(--gold) 55%, #c9863a 100%);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-      filter:drop-shadow(0 0 6px rgba(232,165,71,.3));
-    }
-    .inv-count-number .inv-count-unit { font-family:var(--sans); font-size:12px; font-weight:800; margin-left:1px; }
-    .inv-count-number.is-pop { animation:inv-count-pop .5s cubic-bezier(.2,.8,.3,1.3); }
-    @keyframes inv-count-pop { 0% { transform:scale(1); } 45% { transform:scale(1.08); } 100% { transform:scale(1); } }
+    .inv-gathering { position:relative; width:min(100%, 330px); margin:32px auto 0; padding:20px 18px 15px; border:1px solid rgba(244,218,175,.16); border-radius:20px; background:rgba(255,242,217,.045); }
+    .inv-gathering[hidden] { display:none; }
+    .inv-gathering-title { margin:0; color:#f3dfbb; font-size:13px; font-weight:600; letter-spacing:.04em; }
+    .inv-gifts { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); align-items:end; gap:8px; height:66px; margin:16px 0 13px; }
+    .inv-gift { color:#d3a76d; opacity:.16; transform:translateY(3px) scale(.83); transition:opacity .6s ease, transform .65s cubic-bezier(.2,.8,.3,1.2); transition-delay:calc(var(--gift-index) * 100ms); }
+    .inv-gift svg { display:block; width:100%; height:52px; overflow:visible; }
+    .inv-gift:nth-child(2n) { color:#e4b49c; }
+    .inv-gift:nth-child(3) { color:#d7c898; }
+    .inv-gift.is-filled { opacity:1; transform:translateY(0) scale(1); }
+    .inv-gathering.is-visible .inv-gift.is-new { animation:inv-gift-arrive .8s cubic-bezier(.2,.8,.3,1.2) both; animation-delay:calc(var(--gift-index) * 100ms); }
+    .inv-gathering.is-visible .inv-gift.is-new .inv-gift-bow { animation:inv-gift-bow .9s ease both; animation-delay:calc(var(--gift-index) * 100ms + 200ms); transform-origin:32px 22px; }
+    .inv-gift-spark { opacity:0; }
+    .inv-gathering.is-visible .inv-gift.is-new .inv-gift-spark { animation:inv-gift-spark 1.1s ease both; animation-delay:calc(var(--gift-index) * 100ms + 250ms); }
+    .inv-gauge { height:5px; overflow:hidden; border-radius:99px; background:rgba(255,238,209,.12); }
+    .inv-gauge-fill { display:block; width:100%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#b77a51,#f0c783); transform:scaleX(0); transform-origin:left; transition:transform 1.3s cubic-bezier(.2,.7,.3,1); }
+    .inv-gathering.is-visible .inv-gauge-fill { transform:scaleX(var(--gathering-progress,0)); }
+    .inv-gathering-status { margin:12px 0 0; color:rgba(255,248,236,.7); font-size:11px; line-height:1.7; }
+    .inv-gathering-caption { margin:4px 0 0; color:rgba(255,248,236,.48); font-size:10px; }
+    @keyframes inv-gift-arrive { 0% { opacity:0; transform:translateY(12px) scale(.65) rotate(-7deg); } 65% { opacity:1; transform:translateY(-4px) scale(1.05) rotate(3deg); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes inv-gift-bow { 0%,100% { transform:rotate(0); } 40% { transform:rotate(-9deg); } 70% { transform:rotate(5deg); } }
+    @keyframes inv-gift-spark { 0%,100% { opacity:0; } 40% { opacity:.9; } }
     @media (prefers-reduced-motion: reduce) {
-      .inv-count { transition:none; }
-      .inv-count-number.is-pop { animation:none; }
+      .inv-gift, .inv-gauge-fill { transition:none; }
+      .inv-gathering.is-visible .inv-gift.is-new, .inv-gathering.is-visible .inv-gift.is-new .inv-gift-bow, .inv-gathering.is-visible .inv-gift.is-new .inv-gift-spark { animation:none; }
+    }
+    @media (max-width:360px) {
+      .inv-gathering { padding:18px 12px 14px; }
+      .inv-gifts { gap:4px; }
+      .inv-gift svg { height:44px; }
     }
 
     /* 본문 공통 */
@@ -240,10 +246,25 @@ const leaves = [
     <div class="inv-title-en inv-cover-anim" style="animation-delay:.5s">NIGHT OF THANKSGIVING</div>
     <div class="inv-cover-rule inv-cover-anim" style="animation-delay:.68s"></div>
     <div class="inv-cover-when inv-cover-anim" style="animation-delay:.84s">{event.date}<br>함께한 한 해를 돌아보며 감사를 나누는 저녁</div>
-    <div class="inv-count" id="invCount" hidden aria-live="polite">
-      <span class="inv-count-label">지금까지 함께하기로 한 분</span>
-      <span class="inv-count-number" id="invCountNumber"><span id="invCountValue">0</span><span class="inv-count-unit">명</span></span>
-    </div>
+    <section class="inv-gathering" id="invGathering" data-event-id={event.id} hidden aria-label="함께 쌓이는 감사의 선물">
+      <h2 class="inv-gathering-title">함께 쌓이는 감사의 선물</h2>
+      <div class="inv-gifts" aria-hidden="true">
+        {Array.from({ length:5 }, (_, index) => (
+          <div class="inv-gift" style={`--gift-index:${index}`}>
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="M10 29h44v27a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V29Z" fill="currentColor" fill-opacity=".76"/>
+              <rect x="7" y="22" width="50" height="11" rx="3" fill="currentColor"/>
+              <path d="M28 22h8v38h-8z" fill="#fff0ce" fill-opacity=".8"/>
+              <g class="inv-gift-bow" stroke="#fff0ce" stroke-width="2.4"><path d="M32 22C15 23 14 8 22 10c6 1 10 12 10 12Zm0 0c17 1 18-14 10-12-6 1-10 12-10 12Z"/></g>
+              <path class="inv-gift-spark" d="M6 7v8M2 11h8M56 2v6M53 5h6" stroke="#ffe1a1" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        ))}
+      </div>
+      <div class="inv-gauge" aria-hidden="true"><span class="inv-gauge-fill"></span></div>
+      <p class="inv-gathering-status" id="invGatheringStatus" role="status"></p>
+      <p class="inv-gathering-caption">한 분 한 분의 참여가 감사의 선물로 쌓여요</p>
+    </section>
   </header>
 
   <!-- 초대 인사 -->
@@ -431,6 +452,7 @@ const leaves = [
         strong.textContent = payload.name;
         $('invDoneMsg').appendChild(strong);
         $('invDoneMsg').appendChild(document.createTextNode('님 포함 총 ' + payload.partySize + '명으로 접수되었습니다. 감사의 밤에서 뵙겠습니다!'));
+        document.dispatchEvent(new Event('rsvp:submitted'));
       } else {
         showError(data.error || '오류가 발생했습니다. 다시 시도해 주세요.');
         submit.disabled = false;
@@ -474,47 +496,6 @@ const leaves = [
   } else {
     document.querySelectorAll('[data-reveal]').forEach(function (el) { el.classList.add('is-visible'); });
   }
-
-  // 참석 인원 카운터: 신청이 하나도 없을 땐 "0명"이 어색하니 조용히 숨겨두고,
-  // 실제로 인원이 생기면 그때 살며시 나타나며 숫자가 올라간다.
-  (function () {
-    var box = $('invCount');
-    var numEl = $('invCountValue');
-    if (!box || !numEl) return;
-    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    fetch('/api/rsvp-count?eventId=' + encodeURIComponent(eventId))
-      .then(function (res) { return res.ok ? res.json() : null; })
-      .then(function (data) {
-        var total = data ? Number(data.totalGuests) : 0;
-        if (!total || total < 1) return;
-        box.hidden = false;
-        if (reduceMotion) {
-          numEl.textContent = total.toLocaleString('ko-KR');
-          requestAnimationFrame(function () { box.classList.add('is-visible'); });
-          return;
-        }
-        requestAnimationFrame(function () {
-          box.classList.add('is-visible');
-          var start = null;
-          var duration = 1500;
-          function tick(now) {
-            if (start === null) start = now;
-            var p = Math.min(1, (now - start) / duration);
-            var eased = 1 - Math.pow(1 - p, 3);
-            numEl.textContent = Math.round(eased * total).toLocaleString('ko-KR');
-            if (p < 1) {
-              requestAnimationFrame(tick);
-            } else {
-              numEl.textContent = total.toLocaleString('ko-KR');
-              $('invCountNumber').classList.add('is-pop');
-            }
-          }
-          requestAnimationFrame(tick);
-        });
-      })
-      .catch(function () { /* 실패해도 조용히 넘어간다 — 장식용 숫자일 뿐이다 */ });
-  })();
 
   // 배경음악: 기본값으로 바로 흘러나오게 한다. 브라우저는 소리 없는(muted) 자동재생만 허용하므로,
   // 페이지가 뜨자마자 muted로 먼저 틀어두고, 화면을 처음 터치하는 순간 소리를 켠다.
@@ -567,5 +548,6 @@ const leaves = [
 })();
 </script>
 <script src="/rsvp-fireworks.js?v=3" defer></script>
+<script src="/rsvp-celebration.js?v=1" type="module"></script>
 </body>
 </html>
