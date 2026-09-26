@@ -275,6 +275,45 @@
       </div>
     </div>
 
+    <div class="table-section" style="margin-top:28px;">
+      <div class="table-toolbar">
+        <div>
+          <span class="table-title" style="color:#a5482d;" data-t="rsvpTitle">이벤트 참석 신청(RSVP) 목록</span>
+          <span class="table-count" id="rsvpTableCount"></span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-csv" onclick="downloadRsvpCsv()" style="background:rgba(165,72,45,0.08);color:#a5482d;border-color:rgba(165,72,45,0.2);">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-t="csvDownload">CSV 다운로드</span>
+          </button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="staff-reg-table">
+          <thead>
+            <tr>
+              <th><span data-t="thName">이름</span></th>
+              <th><span data-t="thPhone">연락처</span></th>
+              <th><span data-t="thEmail">이메일</span></th>
+              <th><span data-t="thParty">참석 인원</span></th>
+              <th><span data-t="thNotes">메모</span></th>
+              <th><span data-t="thDate">신청일시</span></th>
+            </tr>
+          </thead>
+          <tbody id="rsvpRegBody">
+            <tr><td colspan="6">
+              <div class="state-box">
+                <div class="spinner"></div>
+                <p data-t="loginFirst">로그인 후 자동으로 불러옵니다.</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- ── CMS / SHEETS LINKS ── -->
     <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:10px;">
       <a href="/admin" target="_blank" style="display:inline-flex;align-items:center;gap:10px;padding:14px 24px;background:#fff;border:1.5px solid rgba(0,79,104,0.14);border-radius:12px;color:#004f68;font-size:14px;font-weight:600;text-decoration:none;transition:box-shadow 0.15s,border-color 0.15s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,79,104,0.10)';this.style.borderColor='rgba(0,79,104,0.3)'" onmouseout="this.style.boxShadow='';this.style.borderColor='rgba(0,79,104,0.14)'">
@@ -356,6 +395,7 @@
         rosterEmpty:'인쇄할 명단이 없습니다.',
         thApplicant:'신청자', thCounseling:'상담',
         thStatus:'상태', thCamp:'캠프', thType:'유형', thName:'이름',
+        rsvpTitle:'이벤트 참석 신청(RSVP) 목록', thParty:'참석 인원', csvRsvpFile:'RSVP_명단', csvNoRsvp:'다운로드할 RSVP 신청이 없습니다.', csvRsvpDone:'RSVP 명단을 CSV로 저장했습니다.',
         thCounselor:'담당 카운슬러', thSalvation:'구원', thDedication:'헌신',
         thCounselorMemo:'상담자 메모', thCamperTestimony:'간증문', thPhone:'연락처', thEmail:'이메일',
         thGrade:'학년 / 인원', thGender:'성별', thChurch:'교회', thSchool:'학교',
@@ -456,6 +496,7 @@
         rosterEmpty:'No campers to print.',
         thApplicant:'Applicant', thCounseling:'Counseling',
         thStatus:'Status', thCamp:'Camp', thType:'Type', thName:'Name',
+        rsvpTitle:'Event RSVP List', thParty:'Party Size', csvRsvpFile:'RSVP_List', csvNoRsvp:'No RSVP entries to download.', csvRsvpDone:'RSVP list saved as CSV.',
         thCounselor:'Counselor', thSalvation:'Saved', thDedication:'Dedicated',
         thCounselorMemo:'Counselor Note', thCamperTestimony:'Testimony', thPhone:'Phone', thEmail:'Email',
         thGrade:'Grade / Count', thGender:'Gender', thChurch:'Church', thSchool:'School',
@@ -1005,6 +1046,61 @@
 
     function authHeaders() {
       return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('wolko-hub-token') || ''}` };
+    }
+
+    // ── 이벤트 참석 신청(RSVP) ──
+    let rsvpEntries = [];
+    async function loadRsvpData() {
+      const body = document.getElementById('rsvpRegBody');
+      const countEl = document.getElementById('rsvpTableCount');
+      try {
+        const res = await fetch('/api/rsvp?eventId=thanksgiving-night', { headers: authHeaders() });
+        if (res.status === 401) { goToHub(); return; }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        rsvpEntries = data.rsvps || [];
+        countEl.textContent = adminLang === 'en'
+          ? `${data.totalRsvps ?? rsvpEntries.length} entries · ${data.totalGuests ?? 0} guests`
+          : `${data.totalRsvps ?? rsvpEntries.length}건 · 총 ${data.totalGuests ?? 0}명`;
+        if (rsvpEntries.length === 0) {
+          body.innerHTML = `<tr><td colspan="6"><div class="state-box"><p>${adminLang === 'en' ? 'No RSVPs yet.' : '아직 참석 신청이 없습니다.'}</p></div></td></tr>`;
+          return;
+        }
+        const sorted = [...rsvpEntries].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+        body.innerHTML = sorted.map(r => `
+          <tr>
+            <td>${esc(r.name)}</td>
+            <td>${esc(r.phone)}</td>
+            <td>${esc(r.email)}</td>
+            <td>${Number(r.partySize) || 0}${adminLang === 'en' ? '' : '명'}</td>
+            <td>${esc(r.notes || '—')}</td>
+            <td>${new Date(r.createdAt).toLocaleString('ko-KR')}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        body.innerHTML = `<tr><td colspan="6"><div class="state-box"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#c42a36" stroke-width="2"/><path d="M20 12v10M20 26v2" stroke="#c42a36" stroke-width="2" stroke-linecap="round"/></svg><p>${t('dataLoadRetry')}</p></div></td></tr>`;
+      }
+    }
+
+    function downloadRsvpCsv() {
+      if (rsvpEntries.length === 0) { showToast(t('csvNoRsvp'), 'error'); return; }
+      const today = new Date().toISOString().slice(0, 10);
+      const bom = '﻿';
+      const headers = adminLang === 'en'
+        ? ['No', 'Name', 'Phone', 'Email', 'Party Size', 'Notes', 'Submitted', 'RsvpID']
+        : ['번호', '이름', '연락처', '이메일', '참석 인원', '메모', '신청일시', 'RsvpID'];
+      const sorted = [...rsvpEntries].sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+      const rows = sorted.map((r, i) => [
+        i + 1, r.name, r.phone, r.email, Number(r.partySize) || 0, r.notes || '',
+        new Date(r.createdAt).toLocaleString('ko-KR'), r.rsvpId,
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+      const csv = bom + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `WOLKO_${t('csvRsvpFile')}_${today}.csv`;
+      a.click(); URL.revokeObjectURL(url);
+      showToast(t('csvRsvpDone'), 'success');
     }
 
     // ── Account / password ──
@@ -3189,6 +3285,7 @@
       document.getElementById('loginScreen').classList.add('hidden');
       setTimeout(() => { document.getElementById('loginScreen').style.display = 'none'; }, 0);
       loadRegs();
+      loadRsvpData();
     }
 
     // ── 서비스워커 등록 ──
