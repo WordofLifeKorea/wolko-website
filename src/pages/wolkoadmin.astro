@@ -275,7 +275,7 @@
       </div>
     </div>
 
-    <div class="table-section" style="margin-top:28px;">
+    <div class="table-section" id="rsvp" style="margin-top:28px;">
       <div class="table-toolbar">
         <div>
           <span class="table-title" style="color:#a5482d;" data-t="rsvpTitle">이벤트 참석 신청(RSVP) 목록</span>
@@ -3286,6 +3286,11 @@
       setTimeout(() => { document.getElementById('loginScreen').style.display = 'none'; }, 0);
       loadRegs();
       loadRsvpData();
+      // 좌측 메뉴 "이벤트 관리"에서 해시로 들어왔을 때, 페이지 내부 스크롤 컨테이너가
+      // 따로 있어도 확실히 이동하도록 native 앵커 이동 대신 직접 스크롤한다.
+      if (location.hash === '#rsvp') {
+        setTimeout(() => document.getElementById('rsvp')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+      }
     }
 
     // ── 서비스워커 등록 ──
