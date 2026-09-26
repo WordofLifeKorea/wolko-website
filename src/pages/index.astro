@@ -505,7 +505,89 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     opacity: 1 !important; transform: none !important;
   }
 }
+
+/* ═══════════════════════════
+   감사의 밤 안내 팝업
+═══════════════════════════ */
+.wh-promo-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(15, 8, 6, 0.55);
+  backdrop-filter: blur(3px);
+  opacity: 0; visibility: hidden;
+  transition: opacity .35s ease, visibility 0s linear .35s;
+}
+.wh-promo-overlay.is-open { opacity: 1; visibility: visible; transition: opacity .35s ease; }
+.wh-promo-card {
+  position: relative; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto;
+  background: #fff; border-radius: 20px; overflow-x: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,.35);
+  transform: translateY(18px) scale(.97);
+  transition: transform .4s cubic-bezier(.2,.8,.3,1.1);
+}
+.wh-promo-overlay.is-open .wh-promo-card { transform: translateY(0) scale(1); }
+.wh-promo-close {
+  position: absolute; top: 12px; right: 12px; z-index: 2;
+  width: 30px; height: 30px; border-radius: 50%; border: none;
+  background: rgba(0,0,0,.35); color: #fff; display: grid; place-items: center; cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.wh-promo-close svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+.wh-promo-close:hover { background: rgba(0,0,0,.5); }
+.wh-promo-image { display: block; width: 100%; aspect-ratio: 1200 / 630; object-fit: cover; }
+.wh-promo-body { padding: 22px 24px 24px; text-align: center; }
+.wh-promo-eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: .22em; color: #b0631f; text-transform: uppercase; margin-bottom: 9px; }
+.wh-promo-title { margin: 0 0 8px; font-family: var(--ff-serif); font-size: 24px; font-weight: 800; color: #3b1f17; }
+.wh-promo-meta { margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: #6b5346; }
+.wh-promo-actions { display: flex; flex-direction: column; gap: 9px; }
+.wh-promo-btn {
+  display: block; padding: 13px 20px; border-radius: 12px; text-decoration: none;
+  background: linear-gradient(135deg, #9a3b22, #d9772f); color: #fff;
+  font-weight: 800; font-size: 14.5px; box-shadow: 0 10px 24px rgba(154,59,34,.28);
+}
+.wh-promo-dismiss {
+  background: none; border: none; padding: 4px; font-size: 12px; color: #9a8a80;
+  cursor: pointer; text-decoration: underline; text-underline-offset: 2px; font-family: var(--ff-sans);
+}
+@media (prefers-reduced-motion: reduce) {
+  .wh-promo-overlay, .wh-promo-card { transition: none !important; }
+}
 </style>
+
+<!-- ══ 감사의 밤 안내 팝업 ══ -->
+<div class="wh-promo-overlay" id="thanksgivingPromo" hidden>
+  <div class="wh-promo-card">
+    <button type="button" class="wh-promo-close" id="thanksgivingPromoClose" aria-label="닫기">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <img class="wh-promo-image" src="/images/rsvp-share.png" alt="Night of Thanksgiving" loading="lazy">
+    <div class="wh-promo-body">
+      <div class="wh-promo-eyebrow">
+        <span class="wl-ko">감사의 밤에 초대합니다</span>
+        <span class="wl-en">You're Invited</span>
+      </div>
+      <h2 class="wh-promo-title">
+        <span class="wl-ko">감사의 밤</span>
+        <span class="wl-en">Night of Thanksgiving</span>
+      </h2>
+      <p class="wh-promo-meta">
+        <span class="wl-ko">2026년 11월 26일(목) 오후 6시 · 월코센터</span>
+        <span class="wl-en">Thu, Nov 26, 2026 · 6:00 PM · WOLKO Center</span>
+      </p>
+      <div class="wh-promo-actions">
+        <a class="wh-promo-btn" href="/rsvp/thanksgiving/" id="thanksgivingPromoCta">
+          <span class="wl-ko">초대장 보기 · 참석 신청</span>
+          <span class="wl-en">View Invitation &amp; RSVP</span>
+        </a>
+        <button type="button" class="wh-promo-dismiss" id="thanksgivingPromoDismiss">
+          <span class="wl-ko">다시 보지 않기</span>
+          <span class="wl-en">Don't show again</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="wh-home-combined">
 
@@ -841,6 +923,49 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (!isOpen) item.classList.add('is-active');
       });
     });
+  })();
+
+  // ── 감사의 밤 안내 팝업 ──────────────────────────────────
+  // "다시 보지 않기"는 localStorage(영구), 그냥 닫기/배경 클릭/신청 이동은
+  // sessionStorage(이번 방문 동안만)로 구분해서 과하게 반복 노출되지 않게 한다.
+  (function () {
+    var PERMA_KEY = 'wolko-promo-thanksgiving-2026-11-26-hide';
+    var SESSION_KEY = 'wolko-promo-thanksgiving-2026-11-26-seen';
+    var overlay = document.getElementById('thanksgivingPromo');
+    if (!overlay) return;
+
+    try {
+      if (localStorage.getItem(PERMA_KEY) === '1') return;
+      if (sessionStorage.getItem(SESSION_KEY) === '1') return;
+    } catch (e) {}
+
+    function markSeen() {
+      try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (e) {}
+    }
+    function openPromo() {
+      overlay.hidden = false;
+      requestAnimationFrame(function () { overlay.classList.add('is-open'); });
+      document.body.style.overflow = 'hidden';
+    }
+    function closePromo() {
+      overlay.classList.remove('is-open');
+      document.body.style.overflow = '';
+      markSeen();
+      setTimeout(function () { overlay.hidden = true; }, 350);
+    }
+
+    document.getElementById('thanksgivingPromoClose').addEventListener('click', closePromo);
+    document.getElementById('thanksgivingPromoCta').addEventListener('click', markSeen);
+    document.getElementById('thanksgivingPromoDismiss').addEventListener('click', function () {
+      try { localStorage.setItem(PERMA_KEY, '1'); } catch (e) {}
+      closePromo();
+    });
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closePromo(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePromo();
+    });
+
+    setTimeout(openPromo, 700);
   })();
 </script>
 
