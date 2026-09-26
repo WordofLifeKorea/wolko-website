@@ -60,6 +60,12 @@ function setRole(personEl, role) {
   personEl.classList.remove('is-lookup');
   // 팔(line)과 손(circle) 둘 다 같은 클래스를 쓰므로 first-match만 지우면
   // 손이 점처럼 남는다 — querySelectorAll로 둘 다 지운다.
+  //
+  // <g>로 묶어서 그룹 하나만 애니메이션하면 더 간단하겠지만, 실제로 확인해보니
+  // 이 렌더러에서는 SVG <g>에 건 CSS animation(transform)이 아예 재생되지 않는다
+  // (getAnimations()가 항상 빈 배열). line은 정상 재생되므로, line과 circle에
+  // 똑같은 transform-origin·keyframe으로 각각 애니메이션을 걸어 항상 같은 각도로
+  // 같이 돌게 만든다 — 결과적으로 그룹으로 묶은 것과 동일하게 움직인다.
   personEl.querySelectorAll('.inv-person-wave-arm').forEach(el => el.remove());
   if (role === 'wave') {
     const svg = personEl.querySelector('svg');
@@ -69,7 +75,7 @@ function setRole(personEl, role) {
     arm.setAttribute('x1', '13.5'); arm.setAttribute('y1', '14.5');
     arm.setAttribute('x2', '19'); arm.setAttribute('y2', '8.5');
     const hand = document.createElementNS(ns, 'circle');
-    hand.setAttribute('class', 'inv-person-wave-arm');
+    hand.setAttribute('class', 'inv-person-arm inv-person-wave-arm');
     hand.setAttribute('cx', '19'); hand.setAttribute('cy', '8.5'); hand.setAttribute('r', '1.5');
     hand.setAttribute('fill', 'currentColor');
     svg.appendChild(arm);

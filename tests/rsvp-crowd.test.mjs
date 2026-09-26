@@ -45,6 +45,8 @@ test('invitation shows a wandering real-headcount crowd, no gift boxes/gauge, no
   assert.doesNotMatch(page, /inv-gift|inv-gauge|inv-gathering-title|inv-crowd-status|invGatheringStatus/);
   assert.match(page, /id="invPeople" data-event-id=\{event\.id\} hidden aria-hidden="true"/);
   assert.match(page, /is-walk-r|is-walk-l/);
+  assert.doesNotMatch(page, /left:-8%|left:108%/, 'roaming range must stay on-screen, not run past the edges');
+  assert.match(page, /animation-direction:alternate/, 'roamers should bounce back and forth, not teleport');
   assert.match(page, /prefers-reduced-motion: reduce/);
   assert.match(page, /rsvp-crowd\.js\?v=\d+/);
   assert.match(page, /document\.dispatchEvent\(new Event\('rsvp:submitted'\)\)/);
@@ -85,12 +87,17 @@ test('pickRoles hands out at most one role per person and never more roles than 
   assert.deepEqual(new Set(Object.values(shuffled)), new Set(['wave', 'lookup']));
 });
 
-test('moving the wave role off a person removes both the arm and the hand dot', () => {
+test('the wave hand shares the arm animation class and both are removed together', () => {
   installFakeSvgDocument();
   try {
     const container = { children: [makeMockPerson(), makeMockPerson()] };
     applyRoles(container, { 0: 'wave' });
-    assert.equal(container.children[0].querySelectorAll('.inv-person-wave-arm').length, 2); // line + hand
+    const armParts = container.children[0].querySelectorAll('.inv-person-wave-arm');
+    assert.equal(armParts.length, 2); // line + hand
+    // SVG <g> 그룹은 이 렌더러에서 CSS animation(transform)이 재생되지 않으므로,
+    // 손(circle)도 팔(line)과 똑같이 inv-person-arm 애니메이션 클래스를 들고 있어야
+    // 같은 각도로 같이 돈다 — 그룹으로 묶어서 하나만 애니메이션하면 손이 멈춰 보인다.
+    armParts.forEach(el => assert.equal(el.getAttribute('class').includes('inv-person-arm'), true));
 
     applyRoles(container, { 1: 'wave' }); // role moves to the other person
     assert.equal(container.children[0].querySelectorAll('.inv-person-wave-arm').length, 0, 'no leftover dot on the old waver');

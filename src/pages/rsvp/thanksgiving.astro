@@ -220,16 +220,17 @@ const leaves = [
     .inv-person.is-lookup .inv-person-head-group { transform-origin:10px 11px; animation:inv-lookup 4s ease-in-out infinite; }
     @keyframes inv-lookup { 0%,55%,100% { transform:rotate(0deg); } 72%,88% { transform:rotate(-22deg); } }
 
-    /* 표지 아랫단을 자유롭게 가로지르며 걸어다니는 사람들 */
+    /* 표지 아랫단 안에서만(화면 밖으로 나가지 않도록) 자유롭게 왔다갔다 걸어다니는 사람들.
+       animation-direction:alternate로 끝에서 부드럽게 방향을 바꿔 튕겨 다니게 한다. */
     .inv-person.is-walk-r, .inv-person.is-walk-l {
-      animation-timing-function:linear; animation-iteration-count:infinite;
+      animation-timing-function:ease-in-out; animation-iteration-count:infinite; animation-direction:alternate;
     }
     .inv-person.is-walk-r { animation-name:inv-walk-r; }
     .inv-person.is-walk-l { animation-name:inv-walk-l; }
     .inv-person.is-walk-l svg { animation-name:inv-idle-bob-mirrored; }
     @keyframes inv-idle-bob-mirrored { 0%,100% { transform:scaleX(-1) translateY(0); } 50% { transform:scaleX(-1) translateY(-2.5px); } }
-    @keyframes inv-walk-r { from { left:-8%; } to { left:108%; } }
-    @keyframes inv-walk-l { from { left:108%; } to { left:-8%; } }
+    @keyframes inv-walk-r { from { left:3%; } to { left:85%; } }
+    @keyframes inv-walk-l { from { left:85%; } to { left:3%; } }
 
     @media (prefers-reduced-motion: reduce) {
       .inv-people { display:none; }
@@ -538,6 +539,6 @@ const leaves = [
 })();
 </script>
 <script src="/rsvp-fireworks.js?v=3" defer></script>
-<script src="/rsvp-crowd.js?v=3" type="module"></script>
+<script src="/rsvp-crowd.js?v=4" type="module"></script>
 </body>
 </html>
