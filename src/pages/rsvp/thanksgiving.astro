@@ -219,10 +219,15 @@ const leaves = [
     @keyframes inv-wave { 0%,100% { transform:rotate(0deg); } 25% { transform:rotate(-40deg); } 50% { transform:rotate(-8deg); } 75% { transform:rotate(-35deg); } }
     .inv-person.is-lookup .inv-person-head-group { transform-origin:10px 11px; animation:inv-lookup 4s ease-in-out infinite; }
     @keyframes inv-lookup { 0%,55%,100% { transform:rotate(0deg); } 72%,88% { transform:rotate(-22deg); } }
-    .inv-person.is-walk { animation:inv-walk-bob .5s ease-in-out infinite; }
+    .inv-person.is-walk { animation:inv-walk-wander 2.4s ease-in-out infinite; }
     .inv-person.is-walk .inv-person-leg-l { animation:inv-leg-l .5s ease-in-out infinite; }
     .inv-person.is-walk .inv-person-leg-r { animation:inv-leg-r .5s ease-in-out infinite; }
-    @keyframes inv-walk-bob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-3px); } }
+    @keyframes inv-walk-wander {
+      0%, 100% { transform:translate(0,0); }
+      25%      { transform:translate(9px,-3px); }
+      50%      { transform:translate(0,0); }
+      75%      { transform:translate(-9px,-3px); }
+    }
     @keyframes inv-leg-l { 0%,100% { transform:rotate(18deg); } 50% { transform:rotate(-18deg); } }
     @keyframes inv-leg-r { 0%,100% { transform:rotate(-18deg); } 50% { transform:rotate(18deg); } }
     @media (prefers-reduced-motion: reduce) {
@@ -533,6 +538,6 @@ const leaves = [
 })();
 </script>
 <script src="/rsvp-fireworks.js?v=3" defer></script>
-<script src="/rsvp-crowd.js?v=1" type="module"></script>
+<script src="/rsvp-crowd.js?v=2" type="module"></script>
 </body>
 </html>

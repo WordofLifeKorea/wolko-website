@@ -46,7 +46,7 @@ test('invitation shows a real-headcount crowd instead of gift boxes and a gauge'
   assert.match(page, /id="invGathering" data-event-id=\{event\.id\}/);
   assert.match(page, /id="invPeople" aria-hidden="true"/);
   assert.match(page, /prefers-reduced-motion: reduce/);
-  assert.match(page, /rsvp-crowd\.js\?v=1/);
+  assert.match(page, /rsvp-crowd\.js\?v=\d+/);
   assert.match(page, /document\.dispatchEvent\(new Event\('rsvp:submitted'\)\)/);
 });
 
