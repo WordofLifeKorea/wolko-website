@@ -1,0 +1,522 @@
+---
+// 경비 리포트(Expense Report) — 포탈 세션으로 접속. 제출 → 승인(master/admin) → 장부 반영(회계 담당)
+// No BaseLayout; standalone page (car/wolkoadmin과 동일한 패턴)
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>경비 리포트 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/expense.css?v=1">
+  <meta name="theme-color" content="#004f68">
+  <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
+  <script is:inline src="/wolko-session.js?v=1"></script>
+</head>
+<body>
+  <header class="ex-header">
+    <div class="ex-title"><img src="/images/WOLKO Circle.png" alt="WOLKO">Expense Report</div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span class="ex-user" id="exUser"></span>
+      <a href="/portal">← 포탈</a>
+    </div>
+  </header>
+
+  <main class="ex-wrap">
+    <nav class="ex-tabs" id="exTabs"></nav>
+    <section id="exView"></section>
+  </main>
+  <div class="ex-toast" id="exToast"></div>
+
+  <script is:inline>
+    /* ── 계정과목(Account) 목록 — 미국 본부 양식 기준. 추가/변경은 여기서만 하면 됨 ── */
+    const ACCOUNTS = [
+      'Automotive and Boat (5602)', 'Computer Hardware (5210)', 'Computer Software (5209)',
+      'Donations and Remembrances (5418)', 'Dues and Subscriptions (5421)', 'Food Supplies (5251)',
+      'General Program and Publicity (5401)', 'General Supplies (5252)', 'Hotels and Motels (5434)',
+      'Insurance Expense (5307)', 'Library (5420)', 'Literature (5408)', 'Meals Expenditure (5435)',
+      'Mileage (5433)', 'Office (5201)', 'Office Equipment (5205)', 'Outside Printing (5407)',
+      'Passports and Visas (5402)', 'Penalties and Fines (5305)',
+    ];
+    const OTHER = '__other';
+    const STATUS_LABEL = { submitted: '승인 대기', approved: '승인됨 · 장부 대기', processed: '장부 반영 완료', rejected: '반려됨' };
+    const LS = { project: 'wolko-expense-project', projects: 'wolko-expense-projects', rate: 'wolko-expense-rate' };
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    const usd = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const won = n => '₩' + Math.round(Number(n || 0)).toLocaleString('ko-KR');
+    const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+    const lsGet = (k, fb = '') => { try { return localStorage.getItem(k) ?? fb; } catch { return fb; } };
+    const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+    const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+
+    const token = () => sessionStorage.getItem('wolko-hub-token') || '';
+    const hdr = () => ({ 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() });
+
+    let me = null;
+    let counts = { mine: 0, approve: 0, accounting: 0 };
+    let tab = 'new';
+    let data = { mine: [], approve: [], accounting: [] };
+    let form = null;
+    let acctFilter = 'todo';
+
+    function toast(msg, isError) {
+      const el = $('exToast');
+      el.textContent = msg;
+      el.classList.toggle('error', !!isError);
+      el.classList.add('show');
+      clearTimeout(toast.t);
+      toast.t = setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, { ...opts, headers: { ...hdr(), ...(opts.headers || {}) } });
+      if (res.status === 401) { sessionStorage.removeItem('wolko-hub-token'); location.replace('/portal'); throw new Error('로그인이 필요합니다.'); }
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || '요청에 실패했습니다.');
+      return body;
+    }
+
+    /* ─────────── 폼 상태 ─────────── */
+    function blankRow(prev) {
+      return { project: '', account: prev?.account || '', currency: prev?.currency || 'KRW', amount: '', ministryPurpose: '', when: today(), where: '', receipts: [] };
+    }
+    function newForm() {
+      return { editingId: null, description: '', project: lsGet(LS.project), exchangeRate: lsGet(LS.rate), rows: [blankRow()] };
+    }
+    function formFromReport(r, asCopy) {
+      return {
+        editingId: asCopy ? null : r.id,
+        description: r.description || '',
+        project: r.project || '',
+        exchangeRate: r.exchangeRate ? String(r.exchangeRate) : lsGet(LS.rate),
+        rows: r.rows.map(x => ({
+          project: x.project || '', account: x.account, currency: x.currency || 'USD', amount: String(x.amount),
+          ministryPurpose: x.ministryPurpose, when: asCopy ? today() : (x.when || today()), where: x.where || '',
+          receipts: asCopy ? [] : (x.receipts || []).map(f => ({ ...f })),
+        })),
+      };
+    }
+    const isKnownAccount = a => !a || ACCOUNTS.includes(a);
+
+    function rowUsd(r) {
+      const amt = Number(r.amount);
+      if (!(amt > 0)) return 0;
+      if (r.currency === 'USD') return amt;
+      const rate = Number(form.exchangeRate);
+      return rate > 0 ? Math.round((amt / rate) * 100) / 100 : 0;
+    }
+    function formTotal() { return form.rows.reduce((s, r) => s + rowUsd(r), 0); }
+
+    /* ─────────── 렌더링: 새 리포트 ─────────── */
+    function renderTabs() {
+      const tabs = [{ id: 'new', label: form?.editingId ? '리포트 수정' : '새 리포트' }, { id: 'mine', label: '내 리포트', n: counts.mine }];
+      if (me.isApprover) tabs.push({ id: 'approve', label: '승인 대기', n: counts.approve });
+      if (me.isAccountant) tabs.push({ id: 'accounting', label: '회계 장부', n: counts.accounting });
+      if (me.role === 'master') tabs.push({ id: 'staff', label: '회계 담당 지정' });
+      $('exTabs').innerHTML = tabs.map(t => `<button class="ex-tab ${t.id === tab ? 'active' : ''}" data-tab="${t.id}">${esc(t.label)}${t.n ? `<span class="ex-badge">${t.n}</span>` : ''}</button>`).join('');
+    }
+
+    function projectOptions() {
+      let list = [];
+      try { list = JSON.parse(lsGet(LS.projects, '[]')); } catch {}
+      return list.map(p => `<option value="${esc(p)}">`).join('');
+    }
+
+    function rowHtml(r, i) {
+      const known = isKnownAccount(r.account);
+      const sel = known ? r.account : OTHER;
+      return `
+      <div class="ex-row" data-i="${i}">
+        <div class="ex-row-head">
+          <span class="ex-row-num">ITEM ${i + 1}</span>
+          ${form.rows.length > 1 ? `<button class="ex-btn sm danger" data-act="del-row" data-i="${i}">삭제</button>` : ''}
+        </div>
+        <div class="ex-grid">
+          <div class="ex-field">
+            <label>Account<span class="ko">계정과목</span></label>
+            <select class="ex-select" data-f="accountSel">
+              <option value="">— 선택 —</option>
+              ${ACCOUNTS.map(a => `<option value="${esc(a)}" ${sel === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
+              <option value="${OTHER}" ${sel === OTHER ? 'selected' : ''}>기타 (직접 입력)</option>
+            </select>
+            <input class="ex-input" style="margin-top:6px" data-f="accountOther" placeholder="계정과목 직접 입력 (예: Supplies (5250))" value="${esc(known ? '' : r.account)}" ${sel === OTHER ? '' : 'hidden'}>
+          </div>
+          <div class="ex-field">
+            <label>Amount<span class="ko">금액</span></label>
+            <div class="ex-amount">
+              <select class="ex-select" data-f="currency"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩ KRW</option><option value="USD" ${r.currency === 'USD' ? 'selected' : ''}>$ USD</option></select>
+              <input class="ex-input" data-f="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="${esc(r.amount)}">
+            </div>
+            <div class="ex-usd" data-usd></div>
+          </div>
+          <div class="ex-field">
+            <label>When<span class="ko">날짜</span></label>
+            <input class="ex-input" data-f="when" type="date" value="${esc(r.when)}">
+          </div>
+          <div class="ex-field">
+            <label>Where<span class="ko">장소 (선택)</span></label>
+            <input class="ex-input" data-f="where" value="${esc(r.where)}" placeholder="예: 이마트 평택점">
+          </div>
+        </div>
+        <div class="ex-field" style="margin-top:14px">
+          <label>Ministry Purpose<span class="ko">사역 목적</span></label>
+          <textarea class="ex-textarea" data-f="ministryPurpose" placeholder="무엇을 위해 사용했는지 (예: 캠프 스태프 식사)">${esc(r.ministryPurpose)}</textarea>
+        </div>
+        <div class="ex-field" style="margin-top:14px">
+          <label>Receipt<span class="ko">영수증</span></label>
+          <div class="ex-receipts">
+            ${r.receipts.map((f, k) => `<span class="ex-chip">📎 ${esc(f.name)}<button data-act="del-receipt" data-i="${i}" data-k="${k}" aria-label="삭제">×</button></span>`).join('')}
+            <label class="ex-btn sm" style="cursor:pointer">＋ 사진/파일 추가<input type="file" data-f="receipt" accept="image/*,application/pdf" multiple hidden></label>
+          </div>
+        </div>
+        <div class="ex-field" style="margin-top:14px" data-projrow ${r.project ? '' : 'hidden'}>
+          <label>이 항목만 다른 Project</label>
+          <input class="ex-input" data-f="project" value="${esc(r.project)}" placeholder="비워두면 위 Project 사용">
+        </div>
+        <button class="ex-btn sm" style="margin-top:12px;border-style:dashed" data-act="row-project" data-i="${i}" ${r.project ? 'hidden' : ''}>이 항목만 다른 Project 지정</button>
+      </div>`;
+  }
+
+    function renderNew() {
+      const editing = !!form.editingId;
+      $('exView').innerHTML = `
+      <div class="ex-card">
+        <h2>${editing ? '경비 리포트 수정' : '새 경비 리포트'}</h2>
+        <p class="ex-sub">${esc(me.name)} 님 명의로 제출됩니다. 제출하면 관리자에게 승인 요청 메일이 발송됩니다.</p>
+        <div class="ex-grid">
+          <div class="ex-field">
+            <label>Description<span class="ko">설명</span></label>
+            <input class="ex-input" id="fDesc" value="${esc(form.description)}" placeholder="예: 9월 캠프 준비 경비">
+          </div>
+          <div class="ex-field">
+            <label>Project<span class="ko">프로젝트 (마지막 값 기억)</span></label>
+            <input class="ex-input" id="fProject" list="fProjectList" value="${esc(form.project)}" placeholder="예: 1552044602 - Kim, Hwan Kyu">
+            <datalist id="fProjectList">${projectOptions()}</datalist>
+          </div>
+          <div class="ex-field">
+            <label>환율<span class="ko">1 USD = ? KRW</span></label>
+            <input class="ex-input" id="fRate" type="number" inputmode="decimal" min="0" step="any" value="${esc(form.exchangeRate)}" placeholder="예: 1380">
+            <div class="ex-hint">원화(KRW) 항목이 있을 때만 필요해요.</div>
+          </div>
+        </div>
+        <div class="ex-rows" id="fRows">${form.rows.map(rowHtml).join('')}</div>
+        <div style="margin-top:14px"><button class="ex-btn" data-act="add-row">＋ 항목 추가</button></div>
+        <div class="ex-total-bar">
+          <div class="ex-total" id="fTotal"></div>
+          <div class="ex-actions" style="margin:0">
+            ${editing ? '<button class="ex-btn" data-act="cancel-edit">수정 취소</button>' : ''}
+            <button class="ex-btn primary" id="fSubmit" data-act="submit">${editing ? '수정 후 다시 제출' : '경비 리포트 제출'}</button>
+          </div>
+        </div>
+      </div>`;
+      refreshComputed();
+    }
+
+    function refreshComputed() {
+      document.querySelectorAll('.ex-row').forEach(el => {
+        const r = form.rows[+el.dataset.i];
+        const hint = el.querySelector('[data-usd]');
+        if (!r || !hint) return;
+        hint.textContent = r.currency === 'KRW' && Number(r.amount) > 0
+          ? (Number(form.exchangeRate) > 0 ? `≈ ${usd(rowUsd(r))}` : '환율을 입력하면 달러로 환산돼요')
+          : '';
+      });
+      const t = $('fTotal');
+      if (t) t.innerHTML = `<small>합계 (USD)</small>${usd(formTotal())}`;
+    }
+
+    /* ─────────── 렌더링: 리포트 카드 ─────────── */
+    function projectOf(rep, row) { return row.project || rep.project || ''; }
+
+    function receiptChips(rep, row) {
+      return (row.receipts || []).map(f => `<span class="ex-chip link" data-act="open-receipt" data-rid="${esc(rep.id)}" data-fid="${esc(f.id)}">📎 ${esc(f.name)}</span>`).join('');
+    }
+
+    function reportCard(rep, mode) {
+      const rows = rep.rows.map(r => `
+        <tr>
+          <td>${esc(r.when || '')}</td>
+          <td>${esc(r.account)}${projectOf(rep, r) ? `<div class="ex-meta">${esc(projectOf(rep, r))}</div>` : ''}</td>
+          <td>${esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}<div class="ex-receipts" style="margin-top:6px">${receiptChips(rep, r)}</div></td>
+          <td class="r">${usd(r.amountUsd)}${r.currency === 'KRW' ? `<div class="ex-meta">${won(r.amount)}</div>` : ''}</td>
+        </tr>`).join('');
+
+      let notes = '';
+      if (rep.status === 'rejected') notes = `<div class="ex-note reject"><b>반려 사유</b> — ${esc(rep.reviewNote)} <span class="ex-meta">(${esc(rep.reviewedByName || '')} · ${fmtDate(rep.reviewedAt)})</span></div>`;
+      else if (rep.status === 'approved') notes = `<div class="ex-note ok">${esc(rep.reviewedByName || '')} 님이 ${fmtDate(rep.reviewedAt)}에 승인했습니다.${rep.reviewNote ? ' — ' + esc(rep.reviewNote) : ''}</div>`;
+      else if (rep.status === 'processed') notes = `<div class="ex-note ok">${fmtDate(rep.processedAt)} 장부 반영 완료 (${esc(rep.processedByName || '')})${rep.processNote ? ' — ' + esc(rep.processNote) : ''}</div>`;
+
+      let actions = '';
+      if (mode === 'mine') {
+        if (rep.status === 'rejected') actions += `<button class="ex-btn primary sm" data-act="edit" data-id="${esc(rep.id)}">수정 후 재제출</button>`;
+        if (rep.status === 'submitted') actions += `<button class="ex-btn sm" data-act="edit" data-id="${esc(rep.id)}">수정</button>`;
+        if (rep.status === 'submitted' || rep.status === 'rejected') actions += `<button class="ex-btn sm danger" data-act="withdraw" data-id="${esc(rep.id)}">철회</button>`;
+        actions += `<button class="ex-btn sm" data-act="copy" data-id="${esc(rep.id)}">복사해서 새로 작성</button>`;
+      } else if (mode === 'approve' && rep.status === 'submitted') {
+        actions = `<button class="ex-btn green sm" data-act="approve" data-id="${esc(rep.id)}">승인</button><button class="ex-btn danger sm" data-act="reject" data-id="${esc(rep.id)}">반려</button>`;
+      } else if (mode === 'accounting' && rep.status === 'approved') {
+        actions = `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}">장부 반영 완료 처리</button>`;
+      }
+
+      return `
+      <article class="ex-card">
+        <div class="ex-report-head">
+          <div>
+            <div class="ex-report-title">${esc(rep.description || '(설명 없음)')}</div>
+            <div class="ex-meta">${mode === 'mine' ? '' : esc(rep.submitterName) + ' · '}${fmtDate(rep.submittedAt)} 제출${rep.project ? ' · ' + esc(rep.project) : ''}</div>
+          </div>
+          <div>
+            <div class="ex-report-total">${usd(rep.total)}</div>
+            <span class="ex-status ${rep.status}">${STATUS_LABEL[rep.status]}</span>
+          </div>
+        </div>
+        <div class="ex-table-wrap"><table class="ex-table">
+          <thead><tr><th>When</th><th>Account</th><th>Ministry Purpose</th><th style="text-align:right">Amount</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div>
+        ${notes}
+        ${actions ? `<div class="ex-actions">${actions}</div>` : ''}
+      </article>`;
+    }
+
+    function renderList(mode) {
+      let list = data[mode];
+      if (mode === 'approve') {
+        const pending = list.filter(r => r.status === 'submitted');
+        const done = list.filter(r => r.status !== 'submitted');
+        $('exView').innerHTML =
+          (pending.length ? pending.map(r => reportCard(r, mode)).join('') : '<div class="ex-empty">승인 대기 중인 리포트가 없습니다 ✓</div>') +
+          (done.length ? `<p class="ex-sub" style="margin:22px 0 10px">최근 처리한 리포트</p>` + done.map(r => reportCard(r, mode)).join('') : '');
+        return;
+      }
+      if (mode === 'accounting') {
+        const shown = list.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed'));
+        const byAcct = {};
+        shown.forEach(r => r.rows.forEach(x => { byAcct[x.account] = (byAcct[x.account] || 0) + x.amountUsd; }));
+        const sum = shown.reduce((s, r) => s + r.total, 0);
+        $('exView').innerHTML = `
+          <div class="ex-card">
+            <div class="ex-filter">
+              <button class="ex-tab ${acctFilter === 'todo' ? 'active' : ''}" data-filter="todo">장부 대기</button>
+              <button class="ex-tab ${acctFilter === 'done' ? 'active' : ''}" data-filter="done">반영 완료</button>
+              <button class="ex-tab ${acctFilter === 'all' ? 'active' : ''}" data-filter="all">전체</button>
+              <span style="flex:1"></span>
+              <button class="ex-btn sm" data-act="csv" ${shown.length ? '' : 'disabled'}>CSV 내보내기</button>
+            </div>
+            <div><b>${shown.length}건 · ${usd(sum)}</b></div>
+            <div class="ex-summary">${Object.entries(byAcct).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span class="ex-sum-chip">${esc(k)} <b>${usd(v)}</b></span>`).join('')}</div>
+          </div>
+          ${shown.length ? shown.map(r => reportCard(r, mode)).join('') : '<div class="ex-empty">해당하는 리포트가 없습니다.</div>'}`;
+        return;
+      }
+      $('exView').innerHTML = list.length ? list.map(r => reportCard(r, mode)).join('') : '<div class="ex-empty">아직 제출한 리포트가 없습니다.</div>';
+    }
+
+    async function renderStaff() {
+      $('exView').innerHTML = '<div class="ex-empty">불러오는 중…</div>';
+      try {
+        const { accounts } = await api('/api/hub/accountant');
+        $('exView').innerHTML = `
+          <div class="ex-card">
+            <h2>회계 담당 지정</h2>
+            <p class="ex-sub">회계 담당자로 지정된 계정은 승인된 경비 리포트를 열람하고 장부 반영 처리를 할 수 있으며, 경비가 승인될 때마다 알림 메일을 받습니다.</p>
+            ${accounts.length ? accounts.map(a => `
+              <div class="ex-toggle-row">
+                <div><b>${esc(a.name || a.email)}</b><div class="ex-meta">${esc(a.email)} · ${a.role === 'admin' ? '관리자' : '상담사'}</div></div>
+                <button class="ex-btn sm ${a.isAccountant ? 'green' : ''}" data-act="toggle-acct" data-email="${esc(a.email)}" data-on="${a.isAccountant ? 1 : 0}">${a.isAccountant ? '회계 담당 ✓' : '지정'}</button>
+              </div>`).join('') : '<div class="ex-empty">승인된 계정이 없습니다.</div>'}
+          </div>`;
+      } catch (e) { toast(e.message, true); }
+    }
+
+    /* ─────────── 데이터 로딩 / 화면 전환 ─────────── */
+    async function refreshCounts() {
+      const c = await api('/api/expense/reports?scope=counts');
+      me = c.me; counts = { mine: c.mine, approve: c.approve, accounting: c.accounting };
+      $('exUser').textContent = me.name + (me.isAccountant ? ' · 회계' : '');
+    }
+    async function load(scope) {
+      const r = await api('/api/expense/reports?scope=' + scope);
+      data[scope] = r.reports;
+    }
+    async function show(next) {
+      tab = next;
+      try {
+        await refreshCounts();
+        if (tab === 'mine') await load('mine');
+        if (tab === 'approve') await load('approve');
+        if (tab === 'accounting') await load('accounting');
+      } catch (e) { toast(e.message, true); }
+      renderTabs();
+      if (tab === 'new') renderNew();
+      else if (tab === 'staff') renderStaff();
+      else renderList(tab);
+      window.scrollTo({ top: 0 });
+    }
+
+    /* ─────────── 영수증 업로드 (이미지는 줄여서 올림) ─────────── */
+    function shrinkImage(file) {
+      return new Promise(resolve => {
+        if (!file.type.startsWith('image/') || file.type === 'image/heic') return resolve(file);
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          const max = 1600, scale = Math.min(1, max / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          c.toBlob(b => { URL.revokeObjectURL(url); resolve(b ? new File([b], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }) : file); }, 'image/jpeg', 0.82);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+      });
+    }
+    const toDataUrl = file => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
+
+    async function uploadReceipts(i, files) {
+      const row = form.rows[i];
+      for (const original of files) {
+        if (row.receipts.length >= 5) { toast('항목당 영수증은 최대 5개까지 첨부할 수 있어요.', true); break; }
+        try {
+          toast('영수증 업로드 중…');
+          const file = await shrinkImage(original);
+          const data = await toDataUrl(file);
+          const out = await api('/api/expense/receipt', { method: 'POST', body: JSON.stringify({ name: file.name, type: file.type, data }) });
+          row.receipts.push({ id: out.id, name: out.name, type: out.type });
+        } catch (e) { toast(e.message, true); }
+      }
+      const rowsEl = $('fRows'); const scroll = window.scrollY;
+      rowsEl.innerHTML = form.rows.map(rowHtml).join('');
+      refreshComputed(); window.scrollTo({ top: scroll });
+      toast('영수증이 첨부되었습니다.');
+    }
+
+    async function openReceipt(reportId, fileId) {
+      const w = window.open('', '_blank');
+      try {
+        const res = await fetch(`/api/expense/receipt?reportId=${encodeURIComponent(reportId)}&fileId=${encodeURIComponent(fileId)}`, { headers: { Authorization: 'Bearer ' + token() } });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || '영수증을 열 수 없습니다.');
+        const url = URL.createObjectURL(await res.blob());
+        if (w) w.location = url; else location.href = url;
+      } catch (e) { if (w) w.close(); toast(e.message, true); }
+    }
+
+    /* ─────────── 제출 ─────────── */
+    async function submitForm() {
+      const btn = $('fSubmit'); btn.disabled = true;
+      try {
+        const payload = {
+          id: form.editingId, description: form.description.trim(), project: form.project.trim(),
+          exchangeRate: Number(form.exchangeRate) || 0,
+          rows: form.rows.map(r => ({ ...r, amount: Number(r.amount) })),
+        };
+        await api('/api/expense/reports', { method: form.editingId ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+        if (form.project.trim()) {
+          lsSet(LS.project, form.project.trim());
+          let list = []; try { list = JSON.parse(lsGet(LS.projects, '[]')); } catch {}
+          lsSet(LS.projects, JSON.stringify([form.project.trim(), ...list.filter(p => p !== form.project.trim())].slice(0, 8)));
+        }
+        if (Number(form.exchangeRate) > 0) lsSet(LS.rate, String(form.exchangeRate));
+        toast(form.editingId ? '수정되어 다시 제출되었습니다.' : '제출되었습니다. 관리자에게 알림이 전송됩니다.');
+        form = newForm();
+        await show('mine');
+      } catch (e) { toast(e.message, true); btn.disabled = false; }
+    }
+
+    /* ─────────── CSV ─────────── */
+    function exportCsv() {
+      const shown = data.accounting.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed'));
+      const head = ['Report ID', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Account', 'Ministry Purpose', 'Where', 'Currency', 'Original Amount', 'USD Amount', 'Exchange Rate'];
+      const lines = [head];
+      shown.forEach(r => r.rows.forEach(x => lines.push([r.id, STATUS_LABEL[r.status], r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account, x.ministryPurpose, x.where, x.currency, x.amount, x.amountUsd.toFixed(2), r.exchangeRate || ''])));
+      const csv = '﻿' + lines.map(l => l.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      a.download = `WOLKO_expense_${today()}.csv`; a.click();
+    }
+
+    /* ─────────── 이벤트 ─────────── */
+    document.addEventListener('click', async e => {
+      const tabBtn = e.target.closest('[data-tab]');
+      if (tabBtn) { if (tabBtn.dataset.tab === 'new' && !form) form = newForm(); return show(tabBtn.dataset.tab); }
+      const f = e.target.closest('[data-filter]');
+      if (f) { acctFilter = f.dataset.filter; return renderList('accounting'); }
+
+      const el = e.target.closest('[data-act]');
+      if (!el) return;
+      const act = el.dataset.act, i = +el.dataset.i, id = el.dataset.id;
+      const find = mode => data[mode].find(r => r.id === id);
+
+      try {
+        if (act === 'add-row') { form.rows.push(blankRow(form.rows[form.rows.length - 1])); renderNew(); }
+        else if (act === 'del-row') { form.rows.splice(i, 1); renderNew(); }
+        else if (act === 'row-project') { form.rows[i].project = ' '; renderNew(); }
+        else if (act === 'del-receipt') {
+          form.rows[i].receipts.splice(+el.dataset.k, 1);
+          $('fRows').innerHTML = form.rows.map(rowHtml).join(''); refreshComputed();
+        }
+        else if (act === 'submit') await submitForm();
+        else if (act === 'cancel-edit') { form = newForm(); renderTabs(); renderNew(); }
+        else if (act === 'open-receipt') await openReceipt(el.dataset.rid, el.dataset.fid);
+        else if (act === 'edit') { form = formFromReport(find('mine'), false); tab = 'new'; renderTabs(); renderNew(); window.scrollTo({ top: 0 }); }
+        else if (act === 'copy') { form = formFromReport(find('mine'), true); tab = 'new'; renderTabs(); renderNew(); window.scrollTo({ top: 0 }); toast('지난 리포트를 복사했어요. 금액·날짜를 확인해 주세요.'); }
+        else if (act === 'withdraw') {
+          if (!confirm('이 리포트를 철회(삭제)할까요?')) return;
+          await api('/api/expense/reports?id=' + encodeURIComponent(id), { method: 'DELETE' });
+          toast('철회되었습니다.'); await show('mine');
+        }
+        else if (act === 'approve') { await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'approve' }) }); toast('승인했습니다. 회계 담당자에게 알림이 전송됩니다.'); await show('approve'); }
+        else if (act === 'reject') {
+          const note = prompt('반려 사유를 입력해 주세요.'); if (note === null) return;
+          await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'reject', note }) }); toast('반려했습니다.'); await show('approve');
+        }
+        else if (act === 'process') {
+          if (!confirm('장부에 반영을 마쳤나요? "반영 완료"로 처리합니다.')) return;
+          await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'process' }) }); toast('장부 반영 완료로 처리했습니다.'); await show('accounting');
+        }
+        else if (act === 'csv') exportCsv();
+        else if (act === 'toggle-acct') {
+          await api('/api/hub/accountant', { method: 'POST', body: JSON.stringify({ email: el.dataset.email, isAccountant: el.dataset.on !== '1' }) });
+          await renderStaff();
+        }
+      } catch (err) { toast(err.message, true); }
+    });
+
+    document.addEventListener('input', e => {
+      const t = e.target;
+      if (t.id === 'fDesc') form.description = t.value;
+      else if (t.id === 'fProject') form.project = t.value;
+      else if (t.id === 'fRate') { form.exchangeRate = t.value; refreshComputed(); }
+      else if (t.dataset.f) {
+        const rowEl = t.closest('.ex-row'); if (!rowEl) return;
+        const r = form.rows[+rowEl.dataset.i], f = t.dataset.f;
+        if (f === 'accountSel') {
+          const other = rowEl.querySelector('[data-f="accountOther"]');
+          if (t.value === OTHER) { other.hidden = false; other.focus(); r.account = other.value.trim(); }
+          else { other.hidden = true; r.account = t.value; }
+        }
+        else if (f === 'accountOther') r.account = t.value.trim();
+        else if (f === 'receipt') { uploadReceipts(+rowEl.dataset.i, [...t.files]); t.value = ''; }
+        else { r[f] = t.value; refreshComputed(); }
+      }
+    });
+
+    /* ─────────── 시작 ─────────── */
+    (async function init() {
+      if (!token()) return location.replace('/portal');
+      try {
+        await refreshCounts();
+        form = newForm();
+        await show(counts.approve > 0 && me.isApprover ? 'approve' : (counts.accounting > 0 && me.isAccountant ? 'accounting' : 'new'));
+      } catch (e) { toast(e.message, true); }
+    })();
+  </script>
+</body>
+</html>

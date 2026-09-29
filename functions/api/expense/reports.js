@@ -1,0 +1,293 @@
+/**
+ * GET    /api/expense/reports?scope=mine|approve|accounting|counts
+ * POST   /api/expense/reports                     — 새 경비 리포트 제출
+ * PATCH  /api/expense/reports                     — body: { id, action, note? }
+ *          action: 'approve' | 'reject'  (승인자)   submitted → approved | rejected
+ *                  'process'             (회계담당) approved → processed (장부 반영 완료)
+ * DELETE /api/expense/reports?id=                 — 제출자가 아직 승인 전인 본인 리포트 철회
+ *
+ * 인증: Authorization: Bearer <포탈 세션 토큰>  (권한 규칙은 lib/expenses.js 참고)
+ */
+import { sendEmail } from '../../lib/hubAccounts.js';
+import {
+  CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
+  err, clip, expenseSession, approverEmails, accountantEmails, listReports,
+  totalOf, reportEmailHtml, formatUsd, finalizeReceipts,
+} from '../../lib/expenses.js';
+
+const reportKey = id => `${REPORT_PREFIX}${id}`;
+
+function cleanRows(rawRows, exchangeRate) {
+  if (!Array.isArray(rawRows) || rawRows.length === 0) return { error: '경비 항목을 한 줄 이상 입력해 주세요.' };
+  if (rawRows.length > MAX_ROWS) return { error: `항목은 최대 ${MAX_ROWS}줄까지 입력할 수 있습니다.` };
+
+  const rows = [];
+  for (const [i, r] of rawRows.entries()) {
+    const n = i + 1;
+    const currency = r?.currency === 'KRW' ? 'KRW' : 'USD';
+    const amount = Math.round(Number(r?.amount) * 100) / 100; // 입력한 통화 기준 원금액
+    const account = clip(r?.account, 120);
+    const ministryPurpose = clip(r?.ministryPurpose, 500);
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 1e9) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
+    if (currency === 'KRW' && !(exchangeRate > 0)) return { error: '원화(KRW) 항목이 있어 환율을 입력해 주세요.' };
+    if (!account) return { error: `${n}번째 줄의 Account를 선택해 주세요.` };
+    if (!ministryPurpose) return { error: `${n}번째 줄의 Ministry Purpose를 입력해 주세요.` };
+
+    const amountUsd = currency === 'KRW' ? Math.round((amount / exchangeRate) * 100) / 100 : amount;
+    if (amountUsd <= 0 || amountUsd > 1000000) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
+
+    const receipts = (Array.isArray(r?.receipts) ? r.receipts : [])
+      .slice(0, MAX_RECEIPTS_PER_ROW)
+      .map(f => ({ id: clip(f?.id, 64), name: clip(f?.name, 160), type: clip(f?.type, 60) }))
+      .filter(f => f.id);
+
+    rows.push({
+      project: clip(r?.project, 160), // 비어 있으면 리포트 상단 Project를 따른다
+      account, currency, amount, amountUsd, ministryPurpose,
+      when: clip(r?.when, 20),
+      where: clip(r?.where, 160),
+      receipts,
+    });
+  }
+  return { rows };
+}
+
+function cleanExchangeRate(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 100 && n < 10000 ? Math.round(n * 100) / 100 : 0; // KRW per USD
+}
+
+async function notify(context, to, subject, html) {
+  const { env } = context;
+  if (!env.RESEND_API_KEY || !to.length) return;
+  context.waitUntil(
+    sendEmail(env, { to, subject, html }).catch(e => console.error('expense notification failed:', e))
+  );
+}
+
+export async function onRequestGet(context) {
+  const { env, request } = context;
+  const session = await expenseSession(request, env);
+  if (!session) return err('포탈 로그인이 필요합니다.', 401);
+
+  const scope = new URL(request.url).searchParams.get('scope') || 'mine';
+  const all = await listReports(env);
+
+  const mine = all.filter(r => r.submitterEmail === session.email);
+  const toApprove = session.isApprover
+    ? all.filter(r => r.status === 'submitted' && r.submitterEmail !== session.email)
+    : [];
+  const accounting = session.isAccountant ? all.filter(r => r.status === 'approved' || r.status === 'processed') : [];
+
+  if (scope === 'counts') {
+    return Response.json({
+      me: { email: session.email, name: session.name, role: session.role, isApprover: session.isApprover, isAccountant: session.isAccountant },
+      mine: mine.filter(r => r.status === 'rejected' || r.status === 'submitted').length,
+      approve: toApprove.length,
+      accounting: accounting.filter(r => r.status === 'approved').length,
+    }, { headers: CORS });
+  }
+
+  if (scope === 'approve') {
+    if (!session.isApprover) return err('승인 권한이 없습니다.', 403);
+    // 승인 화면에서는 대기 건과 함께 최근 처리 이력도 보여준다
+    const history = all.filter(r => r.status !== 'submitted' && r.reviewedBy === session.email).slice(0, 30);
+    return Response.json({ reports: [...toApprove, ...history] }, { headers: CORS });
+  }
+  if (scope === 'accounting') {
+    if (!session.isAccountant) return err('회계 담당자만 볼 수 있습니다.', 403);
+    return Response.json({ reports: accounting }, { headers: CORS });
+  }
+  return Response.json({ reports: mine }, { headers: CORS });
+}
+
+export async function onRequestPost(context) {
+  const { env, request } = context;
+  const session = await expenseSession(request, env);
+  if (!session) return err('포탈 로그인이 필요합니다.', 401);
+
+  let body;
+  try { body = await request.json(); } catch { return err('잘못된 요청입니다.'); }
+
+  const exchangeRate = cleanExchangeRate(body.exchangeRate);
+  const cleaned = cleanRows(body.rows, exchangeRate);
+  if (cleaned.error) return err(cleaned.error);
+
+  const id = `exp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const report = {
+    id,
+    status: 'submitted',
+    submitterEmail: session.email,
+    submitterName: session.name,
+    description: clip(body.description, 200),
+    project: clip(body.project, 160),
+    exchangeRate,
+    rows: cleaned.rows,
+    total: totalOf(cleaned.rows),
+    submittedAt: new Date().toISOString(),
+    log: [{ at: new Date().toISOString(), by: session.email, action: 'submit' }],
+  };
+  await finalizeReceipts(env, report);
+  await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
+
+  const origin = new URL(request.url).origin;
+  const approvers = (await approverEmails(env)).filter(e => e !== session.email);
+  await notify(context, approvers,
+    `[경비 승인 요청] ${report.submitterName} · ${formatUsd(report.total)}`,
+    reportEmailHtml({
+      heading: '새 경비 리포트 승인 요청',
+      intro: `<strong>${report.submitterName}</strong> 님이 경비 리포트를 제출했습니다. 포탈에서 검토 후 승인 또는 반려해 주세요.`,
+      report, url: `${origin}/expense`, ctaLabel: '경비 리포트 확인',
+    }));
+
+  return Response.json({ ok: true, report }, { headers: CORS });
+}
+
+export async function onRequestPatch(context) {
+  const { env, request } = context;
+  const session = await expenseSession(request, env);
+  if (!session) return err('포탈 로그인이 필요합니다.', 401);
+
+  let body;
+  try { body = await request.json(); } catch { return err('잘못된 요청입니다.'); }
+
+  const id = clip(body.id, 80);
+  const action = body.action;
+  const report = id ? await env.CAMP_KV.get(reportKey(id), 'json') : null;
+  if (!report) return err('리포트를 찾을 수 없습니다.', 404);
+
+  const now = new Date().toISOString();
+  const origin = new URL(request.url).origin;
+
+  if (action === 'approve' || action === 'reject') {
+    if (!session.isApprover) return err('승인 권한이 없습니다.', 403);
+    if (report.submitterEmail === session.email) return err('본인이 제출한 리포트는 직접 승인할 수 없습니다.', 403);
+    if (report.status !== 'submitted') return err('이미 처리된 리포트입니다.', 409);
+    const note = clip(body.note, 300);
+    if (action === 'reject' && !note) return err('반려 사유를 입력해 주세요.');
+
+    report.status = action === 'approve' ? 'approved' : 'rejected';
+    report.reviewedBy = session.email;
+    report.reviewedByName = session.name;
+    report.reviewedAt = now;
+    report.reviewNote = note;
+    report.log.push({ at: now, by: session.email, action, note });
+    await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
+
+    if (action === 'approve') {
+      await notify(context, await accountantEmails(env),
+        `[경비 장부 반영 요청] ${report.submitterName} · ${formatUsd(report.total)}`,
+        reportEmailHtml({
+          heading: '승인된 경비 리포트 — 장부 반영 요청',
+          intro: `<strong>${report.reviewedByName}</strong> 님이 승인한 경비 리포트입니다. 장부에 반영한 뒤 포탈에서 "장부 반영 완료"로 처리해 주세요.`,
+          report, url: `${origin}/expense`, ctaLabel: '회계 장부 열기',
+        }));
+      await notify(context, [report.submitterEmail],
+        `[경비 승인됨] ${formatUsd(report.total)}`,
+        reportEmailHtml({ heading: '경비 리포트가 승인되었습니다', intro: '회계 담당자에게 전달되었습니다.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }));
+    } else {
+      await notify(context, [report.submitterEmail],
+        `[경비 반려됨] ${formatUsd(report.total)}`,
+        reportEmailHtml({
+          heading: '경비 리포트가 반려되었습니다',
+          intro: `사유: ${note.replace(/</g, '&lt;')}`,
+          report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기',
+        }));
+    }
+    return Response.json({ ok: true, report }, { headers: CORS });
+  }
+
+  if (action === 'process') {
+    if (!session.isAccountant) return err('회계 담당자만 처리할 수 있습니다.', 403);
+    if (report.status !== 'approved') return err('승인된 리포트만 장부 반영 처리할 수 있습니다.', 409);
+    report.status = 'processed';
+    report.processedBy = session.email;
+    report.processedByName = session.name;
+    report.processedAt = now;
+    report.processNote = clip(body.note, 300);
+    report.log.push({ at: now, by: session.email, action: 'process', note: report.processNote });
+    await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
+    return Response.json({ ok: true, report }, { headers: CORS });
+  }
+
+  return err('알 수 없는 작업입니다.');
+}
+
+export async function onRequestPut(context) {
+  const { env, request } = context;
+  const session = await expenseSession(request, env);
+  if (!session) return err('포탈 로그인이 필요합니다.', 401);
+
+  let body;
+  try { body = await request.json(); } catch { return err('잘못된 요청입니다.'); }
+
+  const id = clip(body.id, 80);
+  const report = id ? await env.CAMP_KV.get(reportKey(id), 'json') : null;
+  if (!report) return err('리포트를 찾을 수 없습니다.', 404);
+  if (report.submitterEmail !== session.email) return err('본인 리포트만 수정할 수 있습니다.', 403);
+  if (report.status !== 'rejected' && report.status !== 'submitted') return err('승인된 리포트는 수정할 수 없습니다.', 409);
+
+  const exchangeRate = cleanExchangeRate(body.exchangeRate);
+  const cleaned = cleanRows(body.rows, exchangeRate);
+  if (cleaned.error) return err(cleaned.error);
+
+  const wasRejected = report.status === 'rejected';
+  const now = new Date().toISOString();
+  Object.assign(report, {
+    status: 'submitted',
+    description: clip(body.description, 200),
+    project: clip(body.project, 160),
+    exchangeRate,
+    rows: cleaned.rows,
+    total: totalOf(cleaned.rows),
+    submittedAt: now,
+    reviewedBy: null, reviewedByName: null, reviewedAt: null, reviewNote: '',
+  });
+  report.log.push({ at: now, by: session.email, action: wasRejected ? 'resubmit' : 'edit' });
+  await finalizeReceipts(env, report);
+  await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
+
+  if (wasRejected) {
+    const origin = new URL(request.url).origin;
+    const approvers = (await approverEmails(env)).filter(e => e !== session.email);
+    await notify(context, approvers,
+      `[경비 재제출] ${report.submitterName} · ${formatUsd(report.total)}`,
+      reportEmailHtml({
+        heading: '수정된 경비 리포트 재제출',
+        intro: `<strong>${report.submitterName}</strong> 님이 반려된 리포트를 수정해 다시 제출했습니다.`,
+        report, url: `${origin}/expense`, ctaLabel: '경비 리포트 확인',
+      }));
+  }
+  return Response.json({ ok: true, report }, { headers: CORS });
+}
+
+export async function onRequestDelete(context) {
+  const { env, request } = context;
+  const session = await expenseSession(request, env);
+  if (!session) return err('포탈 로그인이 필요합니다.', 401);
+
+  const id = clip(new URL(request.url).searchParams.get('id'), 80);
+  const report = id ? await env.CAMP_KV.get(reportKey(id), 'json') : null;
+  if (!report) return err('리포트를 찾을 수 없습니다.', 404);
+  if (report.submitterEmail !== session.email) return err('본인 리포트만 철회할 수 있습니다.', 403);
+  if (report.status !== 'submitted' && report.status !== 'rejected') {
+    return err('승인된 리포트는 철회할 수 없습니다. 회계 담당자에게 문의해 주세요.', 409);
+  }
+
+  const receiptIds = report.rows.flatMap(r => r.receipts.map(f => f.id));
+  await Promise.all([
+    env.CAMP_KV.delete(reportKey(id)),
+    ...receiptIds.map(fid => env.CAMP_KV.delete(`${RECEIPT_PREFIX}${id}:${fid}`)),
+  ]);
+  return Response.json({ ok: true }, { headers: CORS });
+}
+
+export async function onRequestOptions() {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
+}
