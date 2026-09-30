@@ -127,3 +127,92 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
   .ex-line:first-child .ex-grow { order: 0; flex-basis: 100%; }
   .ex-line:first-child .ex-x, .ex-line:first-child .ex-x-space { margin-left: auto; }
 }
+
+/* ── 영수증 미리보기 ── */
+.ex-chip-main { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.ex-thumb { width: 26px; height: 26px; border-radius: 6px; object-fit: cover; border: 1px solid #cfe3ea; }
+.ex-chip.link:hover, .ex-chip-main:hover { text-decoration: underline; }
+.ex-pv { position: fixed; inset: 0; z-index: 300; background: rgba(8, 20, 28, .88); display: flex; flex-direction: column; }
+.ex-pv[hidden] { display: none; }
+.ex-pv-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; color: #fff; }
+.ex-pv-bar .ex-btn { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.25); color: #fff; text-decoration: none; }
+.ex-pv-title { flex: 1; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ex-pv-count { font-size: 12px; opacity: .75; }
+.ex-pv-stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0 56px 20px; }
+.ex-pv-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; background: #fff; }
+.ex-pv-frame { width: min(900px, 100%); height: 100%; border: 0; border-radius: 8px; background: #fff; }
+.ex-pv-msg { color: #fff; font-size: 14px; text-align: center; padding: 20px; }
+.ex-pv-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 64px; border: 0; border-radius: 12px; background: rgba(255,255,255,.14); color: #fff; font-size: 30px; cursor: pointer; }
+.ex-pv-nav.prev { left: 8px; } .ex-pv-nav.next { right: 8px; }
+.ex-pv-nav:hover { background: rgba(255,255,255,.26); }
+.ex-pv-nav[hidden] { display: none; }
+@media (max-width: 640px) { .ex-pv-stage { padding: 0 8px 12px; } .ex-pv-nav { width: 36px; height: 52px; opacity: .85; } }
+
+/* ══ v3 — 테두리 없는 조용한 스타일 (바깥 카드만 박스, 안쪽은 구분선 + 호버/포커스 때만 강조) ══ */
+::placeholder { color: #a9bac3; }
+
+/* 상단 폼: 밑줄만 */
+.ex-grid .ex-input { border: 0; border-bottom: 1.5px solid var(--border); border-radius: 0; background: transparent; padding: 8px 2px; }
+.ex-grid .ex-input:focus { border-bottom-color: var(--blue); background: transparent; }
+
+/* 항목: 박스 대신 구분선으로 나눈 표 */
+.ex-rows { gap: 0; margin-top: 14px; border-top: 1px solid var(--border); }
+.ex-row { border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; padding: 12px 0; }
+.ex-num { background: #e6eff3; color: var(--blue); }
+
+.ex-row .ex-input, .ex-row .ex-select, .ex-row .ex-rate-input {
+  border: 0; border-radius: 8px; background: transparent; padding: 8px 8px;
+  transition: background .12s, box-shadow .12s;
+}
+.ex-row .ex-input:hover, .ex-row .ex-select:hover { background: #f3f7f9; }
+.ex-row .ex-input:focus, .ex-row .ex-select:focus, .ex-row .ex-rate-input:focus { background: #f3f7f9; box-shadow: inset 0 -2px 0 var(--blue); }
+.ex-row .ex-select {
+  appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%238fa8b5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+}
+.ex-row .ex-select:hover, .ex-row .ex-select:focus { background-color: #f3f7f9; }
+.ex-row input[type="date"] { color: var(--mid); }
+
+/* 첫 줄: 열 정렬 (데스크톱) / 둘째 줄: 목적 + 도구 */
+@media (min-width: 641px) {
+  .ex-l1 { display: grid; grid-template-columns: 24px 132px minmax(0, 1fr) 56px 120px 28px; gap: 8px; align-items: center; }
+  .ex-l2 { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; margin-top: 4px; }
+  .ex-l2::before { content: ''; }
+  .ex-amount { display: contents; }
+  .ex-amount .ex-select { width: auto; }
+  .ex-amount .ex-input { width: auto; }
+}
+.ex-amount .ex-input { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ex-amount .ex-select { color: var(--mid); font-weight: 700; padding-right: 18px; }
+.ex-l2 .ex-input { color: var(--text); }
+
+/* 도구 버튼: 테두리 없는 텍스트 버튼 */
+.ex-row .ex-btn.sm { border-color: transparent; background: transparent; color: var(--mid); font-weight: 600; }
+.ex-row .ex-btn.sm:hover { background: #f3f7f9; color: var(--blue); }
+.ex-x { color: #b9c8cf; }
+
+/* 환율 줄 / 칩 / 펼침: 배경 박스 대신 옅은 글자 */
+.ex-rateline { background: transparent; padding: 2px 8px 0 32px; color: var(--mid); font-size: 12.5px; }
+.ex-rateline b { color: var(--blue); }
+.ex-row .ex-rate-input { width: 88px; padding: 3px 6px; font-size: 12.5px; background: #f3f7f9; }
+.ex-receipts { padding-left: 32px; }
+.ex-chip { border-color: transparent; background: #eef4f7; }
+.ex-more { padding-left: 32px; }
+.ex-more .ex-input { background: #f7fafb; }
+
+/* 항목 추가 버튼도 조용하게 */
+[data-act="add-row"] { border: 0; background: transparent; color: var(--blue); padding-left: 0; }
+[data-act="add-row"]:hover { background: transparent; text-decoration: underline; }
+
+@media (max-width: 640px) {
+  .ex-rateline, .ex-receipts, .ex-more { padding-left: 0; }
+}
+
+/* 모바일: 둘째 줄은 "목적(전체 폭) → 영수증/⋯" 순서 */
+@media (max-width: 640px) {
+  .ex-l2 .ex-grow { order: 0; flex-basis: 100%; }
+  .ex-l2 { row-gap: 2px; }
+  .ex-title { font-size: 13px; }
+  .ex-header > div:last-child { gap: 10px !important; }
+}
