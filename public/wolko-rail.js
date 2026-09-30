@@ -13,6 +13,8 @@
       icon: '<path d="M8 3v3M16 3v3M4 8h16"/><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 17.5h.01M12 17.5h.01"/>' },
     { group: 'wolko', href: '/resource', color: '#008e92', label: 'Resource & Media', label_en: 'Resource & Media',
       icon: '<path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="7" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="11" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="7" r="1" fill="currentColor" stroke="none"/>' },
+    { group: 'wolko', href: '/expense', color: '#b8741a', label: '경비 리포트', label_en: 'Expense Report',
+      icon: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>' },
     { group: 'camp', href: '/wolkoadmin', color: '#004f68', label: '캠프 관리자', label_en: 'Camp Manager',
       icon: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>' },
     { group: 'camp', href: '/campstaff', color: '#0077a3', label: '카운슬러', label_en: 'Counselor',
@@ -50,7 +52,7 @@
 
     var html = '<a class="wolko-rail-logo-link" href="/portal">' +
       '<img class="wolko-rail-logo" src="/images/WOLKO Circle.png" alt="WOLKO">' +
-      '<span class="wolko-rail-logo-text">WOLKO Portal</span></a>' +
+      '<span class="wolko-rail-logo-text"><span class="wolko-rail-logo-name">WOLKO Portal</span><span class="wolko-rail-logo-sub">Word of Life Korea</span></span></a>' +
       '<div class="wolko-rail-divider"></div>';
 
     GROUPS.forEach(function (g) {
@@ -58,11 +60,11 @@
       TOOLS.filter(function (tool) { return tool.group === g.id; }).forEach(function (tool) {
       var active = path === tool.href;
       html += '<a class="wolko-rail-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" style="--rail-color:' + tool.color + '">' +
-        svg(tool.icon) + '<span class="wolko-rail-item-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
+        '<span class="wolko-rail-item-icon">' + svg(tool.icon, 15) + '</span><span class="wolko-rail-item-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
       });
     });
 
-    html += '<a class="wolko-rail-item wolko-rail-hub" href="/portal">' + svg(HUB_ICON) +
+    html += '<a class="wolko-rail-item wolko-rail-hub" href="/portal"><span class="wolko-rail-item-icon">' + svg(HUB_ICON, 15) + '</span>' +
       '<span class="wolko-rail-item-label" data-ko="' + HUB_LABEL.ko + '" data-en="' + HUB_LABEL.en + '"></span></a>';
 
     rail.innerHTML = html;
