@@ -26,17 +26,22 @@ import {
  * 경비 '관리자' 등급 — 리포트 승인 + 모든 사람의 리포트 조회 권한 (소문자 이메일).
  * 등급 변경은 관리자가 Claude에게 요청 → 이 목록을 수정해 배포한다.
  *   관리자 : 사무엘(samuelsong) · Jacob Morse · Jeremy Rodgers · 손진영(회계 겸임)
- *   그 외  : Developer(hkim3) · Owner(wolkorea1) · Member(ychae, joemin, peterchae …) → 본인 것만
+ *   임시  : Owner(wolkorea1@gmail.com) — 홈페이지 개발이 끝날 때까지 회계 관리자 권한 (끝나면 제거)
+ *   그 외  : Developer(hkim3) · Member(ychae, joemin, peterchae …) → 본인 것만
  */
 export const EXPENSE_ADMIN_EMAILS = [
   'samuelsong@wol.org',
   'jacobmorse@wol.org',
   'jeremyrodgers@wol.org',
   'jennyson@wol.org',
+  'wolkorea1@gmail.com', // 임시: 홈페이지 개발 종료 시 제거
 ];
 
 /** 장부 회계 담당 포탈 로그인 이메일(소문자). 예: 손진영(Jenny) */
-export const ACCOUNTANT_EMAILS = ['jennyson@wol.org'];
+export const ACCOUNTANT_EMAILS = [
+  'jennyson@wol.org',
+  'wolkorea1@gmail.com', // 임시: 홈페이지 개발 종료 시 제거
+];
 
 export const REPORT_PREFIX = 'expense:report:';
 export const RECEIPT_PREFIX = 'expense:receipt:';

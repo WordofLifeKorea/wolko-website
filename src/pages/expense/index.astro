@@ -167,7 +167,8 @@
       return { account: prev?.account || '', currency: 'KRW', amount: '', rate: '', rateNote: null, item: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
     }
     function newForm() {
-      return { editingId: null, description: '', project: lsGet(LS.project), rows: [blankRow()] };
+      // 마지막으로 쓴 값이 있으면 그걸, 없으면 로그인한 어카운트 홀더 이름을 기본값으로 채운다
+      return { editingId: null, description: '', project: lsGet(LS.project) || me?.name || '', rows: [blankRow()] };
     }
     function formFromReport(r, asCopy) {
       return {

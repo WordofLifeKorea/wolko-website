@@ -188,13 +188,12 @@ test('경비 권한은 "관리자" 등급만: master/포탈 admin이어도 목�
   await acc('boss@wol.org', 'Boss', 'admin');
   await acc('esooy@wol.org', 'Estelle', 'admin'); // 포탈 role은 admin이지만 경비 관리자 등급 아님
   const dev = ['hkim3@wol.org', 'master'];         // Developer (포탈 master)
-  const owner = ['wolkorea1@gmail.com', 'master']; // Owner
   const estelle = ['esooy@wol.org', 'admin'];
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });
   const id = sub.report.id;
 
-  for (const who of [dev, owner, estelle]) {
+  for (const who of [dev, estelle]) {
     assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', who)).status, 403, '전체 조회 불가');
     assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=approve', who)).status, 403, '승인 목록 불가');
     assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, action: 'approve' })).status, 403, '승인 불가');
@@ -212,5 +211,19 @@ test('경비 권한은 "관리자" 등급만: master/포탈 admin이어도 목�
 
 test('경비 관리자 등급 목록 확인', () => {
   for (const e of ['samuelsong@wol.org', 'jacobmorse@wol.org', 'jeremyrodgers@wol.org', 'jennyson@wol.org']) assert.ok(EXPENSE_ADMIN_EMAILS.includes(e), e);
-  for (const e of ['hkim3@wol.org', 'wolkorea1@gmail.com', 'ychae@wol.org', 'joemin@wol.org', 'peterchae@wol.org']) assert.ok(!EXPENSE_ADMIN_EMAILS.includes(e), e);
+  for (const e of ['hkim3@wol.org', 'ychae@wol.org', 'joemin@wol.org', 'peterchae@wol.org']) assert.ok(!EXPENSE_ADMIN_EMAILS.includes(e), e);
+});
+
+test('Owner(wolkorea1@gmail.com)는 홈페이지 개발이 끝날 때까지 임시 회계 관리자', async () => {
+  assert.ok(EXPENSE_ADMIN_EMAILS.includes('wolkorea1@gmail.com'));
+  assert.ok(ACCOUNTANT_EMAILS.includes('wolkorea1@gmail.com'));
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  const owner = ['wolkorea1@gmail.com', 'master'];
+  const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });
+  const me = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', owner);
+  assert.equal(me.me.isApprover, true);
+  assert.equal(me.me.isAccountant, true);
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', owner, { id: sub.report.id, action: 'approve' })).report.status, 'approved');
 });
