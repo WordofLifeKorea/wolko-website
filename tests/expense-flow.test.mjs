@@ -227,3 +227,44 @@ test('Owner(wolkorea1@gmail.com)는 홈페이지 개발이 끝날 때까지 임�
   assert.equal(me.me.isAccountant, true);
   assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', owner, { id: sub.report.id, action: 'approve' })).report.status, 'approved');
 });
+
+test('회계 담당은 리포트를 삭제해도 영수증까지 백업되어 복구할 수 있다', async () => {
+  const { store, acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  await acc('acct@x.com', 'Ann', 'counselor');
+  const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
+  const up = await call(F.onRequestPost, 'POST', '/api/expense/receipt', cyn, { name: 'r.png', type: 'image/png', data: 'data:image/png;base64,' + btoa('img') });
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'Del', rows: [{ ...row, receipts: [{ id: up.id, name: 'r.png', type: 'image/png' }] }] });
+  const id = sub.report.id;
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ['boss@wol.org', 'admin'], { id, action: 'approve' });
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'process' });
+  assert.ok(store.has(`expense:receipt:${id}:${up.id}`));
+
+  // 회계 담당이 아니면 삭제/복구/휴지통 조회 불가
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', cyn, { id, action: 'trash' })).status, 403);
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ['boss@wol.org', 'admin'], { id, action: 'trash' })).status, 403);
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=trash', ['boss@wol.org', 'admin'])).status, 403);
+
+  // 삭제: 리포트·원본 영수증은 사라지고 백업만 남는다
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'trash' })).status, 200);
+  assert.ok(!store.has(`expense:report:${id}`));
+  assert.ok(!store.has(`expense:receipt:${id}:${up.id}`));
+  assert.ok(store.has(`expense:trash:${id}`));
+  assert.ok(store.has(`expense:trashfile:${id}:${up.id}`));
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', ann)).reports.length, 0);
+  const trash = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=trash', ann);
+  assert.deepEqual(trash.trash.map(x => x.report.id), [id]);
+  assert.equal(trash.trash[0].deletedBy, 'acct@x.com');
+
+  // 복구: 리포트와 영수증이 그대로 돌아온다
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', cyn, { id, action: 'restore' })).status, 403);
+  const back = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'restore' });
+  assert.equal(back.status, 200);
+  assert.equal(back.report.status, 'processed');
+  assert.ok(store.has(`expense:receipt:${id}:${up.id}`));
+  assert.ok(!store.has(`expense:trash:${id}`));
+  assert.ok(!store.has(`expense:trashfile:${id}:${up.id}`));
+  assert.equal((await call(F.onRequestGet, 'GET', `/api/expense/receipt?reportId=${id}&fileId=${up.id}`, ann)).status, 200);
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'restore' })).status, 404, '이미 복구된 건은 다시 복구할 수 없다');
+});

@@ -1,9 +1,11 @@
 /**
- * GET    /api/expense/reports?scope=mine|approve|accounting|all|counts  (all = 모든 사람의 리포트, 승인자/회계담당만)
+ * GET    /api/expense/reports?scope=mine|approve|accounting|all|trash|counts  (all = 모든 사람의 리포트, 승인자/회계담당만 · trash = 삭제(백업)된 리포트, 회계담당만)
  * POST   /api/expense/reports                     — 새 경비 리포트 제출
  * PATCH  /api/expense/reports                     — body: { id, action, note? }
  *          action: 'approve' | 'reject'  (승인자)   submitted → approved | rejected
  *                  'process'             (회계담당) approved → processed (송금 처리 완료)
+ *                  'trash'               (회계담당) 어떤 상태의 리포트든 삭제 — 영수증 포함 통째로 백업되어 복구 가능
+ *                  'restore'             (회계담당) 삭제(백업)된 리포트를 원래대로 복구
  * DELETE /api/expense/reports?id=                 — 제출자가 아직 승인 전인 본인 리포트 철회
  *
  * 인증: Authorization: Bearer <포탈 세션 토큰>  (권한 규칙은 lib/expenses.js 참고)
@@ -12,7 +14,7 @@ import { sendEmail } from '../../lib/hubAccounts.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
   err, clip, expenseSession, approverEmails, accountantEmails, listReports,
-  totalOf, reportEmailHtml, formatKrw, finalizeReceipts,
+  totalOf, reportEmailHtml, formatKrw, finalizeReceipts, trashReport, restoreReport, listTrash,
 } from '../../lib/expenses.js';
 
 const reportKey = id => `${REPORT_PREFIX}${id}`;
@@ -101,6 +103,10 @@ export async function onRequestGet(context) {
     if (!canViewAll) return err('전체 리포트는 관리자와 회계 담당자만 볼 수 있습니다.', 403);
     return Response.json({ reports: all }, { headers: CORS });
   }
+  if (scope === 'trash') {
+    if (!session.isAccountant) return err('회계 담당자만 볼 수 있습니다.', 403);
+    return Response.json({ trash: await listTrash(env) }, { headers: CORS });
+  }
   if (scope === 'accounting') {
     if (!session.isAccountant) return err('회계 담당자만 볼 수 있습니다.', 403);
     return Response.json({ reports: accounting }, { headers: CORS });
@@ -158,6 +164,15 @@ export async function onRequestPatch(context) {
 
   const id = clip(body.id, 80);
   const action = body.action;
+
+  if (action === 'restore') {
+    if (!session.isAccountant) return err('회계 담당자만 복구할 수 있습니다.', 403);
+    const restored = id ? await restoreReport(env, id, session) : { error: 'notfound' };
+    if (restored.error === 'notfound') return err('백업된 리포트를 찾을 수 없습니다.', 404);
+    if (restored.error === 'exists') return err('같은 ID의 리포트가 이미 있습니다.', 409);
+    return Response.json({ ok: true, report: restored.report }, { headers: CORS });
+  }
+
   const report = id ? await env.CAMP_KV.get(reportKey(id), 'json') : null;
   if (!report) return err('리포트를 찾을 수 없습니다.', 404);
 
@@ -213,6 +228,12 @@ export async function onRequestPatch(context) {
     report.log.push({ at: now, by: session.email, action: 'process', note: report.processNote });
     await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
     return Response.json({ ok: true, report }, { headers: CORS });
+  }
+
+  if (action === 'trash') {
+    if (!session.isAccountant) return err('회계 담당자만 삭제할 수 있습니다.', 403);
+    await trashReport(env, report, session);
+    return Response.json({ ok: true }, { headers: CORS });
   }
 
   return err('알 수 없는 작업입니다.');

@@ -45,6 +45,8 @@ export const ACCOUNTANT_EMAILS = [
 
 export const REPORT_PREFIX = 'expense:report:';
 export const RECEIPT_PREFIX = 'expense:receipt:';
+export const TRASH_PREFIX = 'expense:trash:';          // 회계 담당이 삭제한 리포트의 백업(복구 가능, 만료 없음)
+export const TRASH_FILE_PREFIX = 'expense:trashfile:'; // 삭제된 리포트의 영수증 파일 백업
 export const CORS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 
 export const MAX_ROWS = 30;
@@ -161,4 +163,56 @@ export async function finalizeReceipts(env, report) {
     }
     row.receipts = kept;
   }
+}
+
+/**
+ * 리포트를 삭제하되 복구할 수 있게 통째로 백업한다.
+ * 순서: 백업 기록·영수증 복사 → 원본 영수증 삭제 → 원본 리포트 삭제 (중간에 실패해도 데이터가 사라지지 않게)
+ */
+export async function trashReport(env, report, by) {
+  const files = [];
+  for (const row of report.rows) {
+    for (const f of row.receipts || []) {
+      const src = await env.CAMP_KV.getWithMetadata(`${RECEIPT_PREFIX}${report.id}:${f.id}`, 'arrayBuffer');
+      if (!src.value) continue;
+      await env.CAMP_KV.put(`${TRASH_FILE_PREFIX}${report.id}:${f.id}`, src.value, { metadata: src.metadata });
+      files.push(f.id);
+    }
+  }
+  const record = { report, files, deletedAt: new Date().toISOString(), deletedBy: by.email, deletedByName: by.name };
+  await env.CAMP_KV.put(`${TRASH_PREFIX}${report.id}`, JSON.stringify(record));
+  await Promise.all(files.map(fid => env.CAMP_KV.delete(`${RECEIPT_PREFIX}${report.id}:${fid}`)));
+  await env.CAMP_KV.delete(`${REPORT_PREFIX}${report.id}`);
+  return record;
+}
+
+/** 삭제된 리포트를 원래대로 되살린다(영수증 포함). 이미 같은 ID의 리포트가 있으면 null. */
+export async function restoreReport(env, id, by) {
+  const record = await env.CAMP_KV.get(`${TRASH_PREFIX}${id}`, 'json');
+  if (!record) return { error: 'notfound' };
+  if (await env.CAMP_KV.get(`${REPORT_PREFIX}${id}`)) return { error: 'exists' };
+  for (const fid of record.files || []) {
+    const src = await env.CAMP_KV.getWithMetadata(`${TRASH_FILE_PREFIX}${id}:${fid}`, 'arrayBuffer');
+    if (src.value) await env.CAMP_KV.put(`${RECEIPT_PREFIX}${id}:${fid}`, src.value, { metadata: src.metadata });
+  }
+  const report = record.report;
+  report.log = [...(report.log || []), { at: new Date().toISOString(), by: by.email, action: 'restore' }];
+  await env.CAMP_KV.put(`${REPORT_PREFIX}${id}`, JSON.stringify(report));
+  await Promise.all([
+    env.CAMP_KV.delete(`${TRASH_PREFIX}${id}`),
+    ...(record.files || []).map(fid => env.CAMP_KV.delete(`${TRASH_FILE_PREFIX}${id}:${fid}`)),
+  ]);
+  return { report };
+}
+
+export async function listTrash(env) {
+  const items = [];
+  let cursor;
+  do {
+    const result = await env.CAMP_KV.list({ prefix: TRASH_PREFIX, ...(cursor ? { cursor } : {}), limit: 1000 });
+    const values = await Promise.all(result.keys.map(k => env.CAMP_KV.get(k.name, 'json')));
+    items.push(...values.filter(Boolean));
+    cursor = result.list_complete ? null : result.cursor;
+  } while (cursor);
+  return items.sort((a, b) => new Date(b.deletedAt || 0) - new Date(a.deletedAt || 0));
 }
