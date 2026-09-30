@@ -12,29 +12,31 @@ import { sendEmail } from '../../lib/hubAccounts.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
   err, clip, expenseSession, approverEmails, accountantEmails, listReports,
-  totalOf, reportEmailHtml, formatUsd, finalizeReceipts,
+  totalOf, reportEmailHtml, formatKrw, finalizeReceipts,
 } from '../../lib/expenses.js';
 
 const reportKey = id => `${REPORT_PREFIX}${id}`;
 
-function cleanRows(rawRows, exchangeRate) {
+function cleanRows(rawRows) {
   if (!Array.isArray(rawRows) || rawRows.length === 0) return { error: '경비 항목을 한 줄 이상 입력해 주세요.' };
   if (rawRows.length > MAX_ROWS) return { error: `항목은 최대 ${MAX_ROWS}줄까지 입력할 수 있습니다.` };
 
   const rows = [];
   for (const [i, r] of rawRows.entries()) {
     const n = i + 1;
-    const currency = r?.currency === 'KRW' ? 'KRW' : 'USD';
+    const currency = r?.currency === 'USD' ? 'USD' : 'KRW'; // 기준 통화는 KRW
     const amount = Math.round(Number(r?.amount) * 100) / 100; // 입력한 통화 기준 원금액
     const account = clip(r?.account, 120);
     const ministryPurpose = clip(r?.ministryPurpose, 500);
-    if (!Number.isFinite(amount) || amount <= 0 || amount > 1e9) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
-    if (currency === 'KRW' && !(exchangeRate > 0)) return { error: '원화(KRW) 항목이 있어 환율을 입력해 주세요.' };
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 1e10) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
     if (!account) return { error: `${n}번째 줄의 Account를 선택해 주세요.` };
     if (!ministryPurpose) return { error: `${n}번째 줄의 Ministry Purpose를 입력해 주세요.` };
 
-    const amountUsd = currency === 'KRW' ? Math.round((amount / exchangeRate) * 100) / 100 : amount;
-    if (amountUsd <= 0 || amountUsd > 1000000) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
+    // USD 항목: 영수 날짜 기준 환율(KRW per USD)로 원화 환산. 환율은 화면에서 자동 조회 후 수정 가능.
+    const rate = Number(r?.rate);
+    if (currency === 'USD' && !(rate > 100 && rate < 10000)) return { error: `${n}번째 줄의 환율을 확인해 주세요.` };
+    const amountKrw = currency === 'USD' ? Math.round(amount * rate) : Math.round(amount);
+    if (amountKrw <= 0 || amountKrw > 1e10) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
 
     const receipts = (Array.isArray(r?.receipts) ? r.receipts : [])
       .slice(0, MAX_RECEIPTS_PER_ROW)
@@ -43,18 +45,15 @@ function cleanRows(rawRows, exchangeRate) {
 
     rows.push({
       project: clip(r?.project, 160), // 비어 있으면 리포트 상단 Project를 따른다
-      account, currency, amount, amountUsd, ministryPurpose,
+      account, currency, amount, amountKrw,
+      rate: currency === 'USD' ? Math.round(rate * 100) / 100 : null,
+      ministryPurpose,
       when: clip(r?.when, 20),
       where: clip(r?.where, 160),
       receipts,
     });
   }
   return { rows };
-}
-
-function cleanExchangeRate(value) {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 100 && n < 10000 ? Math.round(n * 100) / 100 : 0; // KRW per USD
 }
 
 async function notify(context, to, subject, html) {
@@ -109,8 +108,7 @@ export async function onRequestPost(context) {
   let body;
   try { body = await request.json(); } catch { return err('잘못된 요청입니다.'); }
 
-  const exchangeRate = cleanExchangeRate(body.exchangeRate);
-  const cleaned = cleanRows(body.rows, exchangeRate);
+  const cleaned = cleanRows(body.rows);
   if (cleaned.error) return err(cleaned.error);
 
   const id = `exp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -121,7 +119,6 @@ export async function onRequestPost(context) {
     submitterName: session.name,
     description: clip(body.description, 200),
     project: clip(body.project, 160),
-    exchangeRate,
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: new Date().toISOString(),
@@ -133,7 +130,7 @@ export async function onRequestPost(context) {
   const origin = new URL(request.url).origin;
   const approvers = (await approverEmails(env)).filter(e => e !== session.email);
   await notify(context, approvers,
-    `[경비 승인 요청] ${report.submitterName} · ${formatUsd(report.total)}`,
+    `[경비 승인 요청] ${report.submitterName} · ${formatKrw(report.total)}`,
     reportEmailHtml({
       heading: '새 경비 리포트 승인 요청',
       intro: `<strong>${report.submitterName}</strong> 님이 경비 리포트를 제출했습니다. 포탈에서 검토 후 승인 또는 반려해 주세요.`,
@@ -176,18 +173,18 @@ export async function onRequestPatch(context) {
 
     if (action === 'approve') {
       await notify(context, await accountantEmails(env),
-        `[경비 장부 반영 요청] ${report.submitterName} · ${formatUsd(report.total)}`,
+        `[경비 장부 반영 요청] ${report.submitterName} · ${formatKrw(report.total)}`,
         reportEmailHtml({
           heading: '승인된 경비 리포트 — 장부 반영 요청',
           intro: `<strong>${report.reviewedByName}</strong> 님이 승인한 경비 리포트입니다. 장부에 반영한 뒤 포탈에서 "장부 반영 완료"로 처리해 주세요.`,
           report, url: `${origin}/expense`, ctaLabel: '회계 장부 열기',
         }));
       await notify(context, [report.submitterEmail],
-        `[경비 승인됨] ${formatUsd(report.total)}`,
+        `[경비 승인됨] ${formatKrw(report.total)}`,
         reportEmailHtml({ heading: '경비 리포트가 승인되었습니다', intro: '회계 담당자에게 전달되었습니다.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }));
     } else {
       await notify(context, [report.submitterEmail],
-        `[경비 반려됨] ${formatUsd(report.total)}`,
+        `[경비 반려됨] ${formatKrw(report.total)}`,
         reportEmailHtml({
           heading: '경비 리포트가 반려되었습니다',
           intro: `사유: ${note.replace(/</g, '&lt;')}`,
@@ -227,8 +224,7 @@ export async function onRequestPut(context) {
   if (report.submitterEmail !== session.email) return err('본인 리포트만 수정할 수 있습니다.', 403);
   if (report.status !== 'rejected' && report.status !== 'submitted') return err('승인된 리포트는 수정할 수 없습니다.', 409);
 
-  const exchangeRate = cleanExchangeRate(body.exchangeRate);
-  const cleaned = cleanRows(body.rows, exchangeRate);
+  const cleaned = cleanRows(body.rows);
   if (cleaned.error) return err(cleaned.error);
 
   const wasRejected = report.status === 'rejected';
@@ -237,7 +233,6 @@ export async function onRequestPut(context) {
     status: 'submitted',
     description: clip(body.description, 200),
     project: clip(body.project, 160),
-    exchangeRate,
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: now,
@@ -251,7 +246,7 @@ export async function onRequestPut(context) {
     const origin = new URL(request.url).origin;
     const approvers = (await approverEmails(env)).filter(e => e !== session.email);
     await notify(context, approvers,
-      `[경비 재제출] ${report.submitterName} · ${formatUsd(report.total)}`,
+      `[경비 재제출] ${report.submitterName} · ${formatKrw(report.total)}`,
       reportEmailHtml({
         heading: '수정된 경비 리포트 재제출',
         intro: `<strong>${report.submitterName}</strong> 님이 반려된 리포트를 수정해 다시 제출했습니다.`,

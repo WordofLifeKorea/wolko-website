@@ -96,3 +96,34 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
   .ex-card { padding: 16px; }
   .ex-user { display: none; }
 }
+
+/* ── 컴팩트 항목 행 (v2) ── */
+.ex-rows { gap: 10px; }
+.ex-row { padding: 12px 14px; border-radius: 12px; }
+.ex-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ex-num { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--blue); color: #fff; font: 700 11px var(--f-sans); display: inline-flex; align-items: center; justify-content: center; }
+.ex-w-date { width: 142px; flex: none; }
+.ex-grow { flex: 1 1 180px; min-width: 0; }
+.ex-line .ex-input, .ex-line .ex-select { padding: 8px 10px; font-size: 13px; }
+.ex-amount { display: flex; gap: 4px; flex: none; }
+.ex-amount .ex-select { width: 56px; padding-left: 8px; padding-right: 4px; }
+.ex-amount .ex-input { width: 116px; }
+.ex-x { flex: none; width: 28px; height: 28px; border: 0; border-radius: 8px; background: none; color: var(--light); font-size: 20px; line-height: 1; cursor: pointer; }
+.ex-x:hover { background: #fdeef0; color: var(--red); }
+.ex-x-space { flex: none; width: 28px; }
+.ex-attach { cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.ex-more-btn { min-width: 44px; }
+.ex-receipts { margin-top: 8px; }
+.ex-rateline { margin-top: 8px; padding: 7px 10px; border-radius: 8px; background: #eef6f9; color: var(--blue); font-size: 12.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ex-rate-input { width: 92px; padding: 3px 6px; border: 1.5px solid #cfe3ea; border-radius: 6px; background: #fff; font-size: 12.5px; }
+.ex-rate-note { color: var(--mid); }
+.ex-more { margin-top: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.ex-more .ex-input { padding: 8px 10px; font-size: 13px; }
+
+@media (max-width: 640px) {
+  .ex-w-date { width: 132px; }
+  .ex-amount .ex-input { width: 100px; }
+  .ex-grow { flex-basis: 100%; order: 5; }   /* 좁은 화면: 계정과목/목적을 각자 한 줄로 */
+  .ex-line:first-child .ex-grow { order: 0; flex-basis: 100%; }
+  .ex-line:first-child .ex-x, .ex-line:first-child .ex-x-space { margin-left: auto; }
+}

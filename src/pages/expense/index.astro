@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=1">
+  <link rel="stylesheet" href="/expense.css?v=2">
   <meta name="theme-color" content="#004f68">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <script is:inline src="/wolko-session.js?v=1"></script>
@@ -34,23 +34,21 @@
   <div class="ex-toast" id="exToast"></div>
 
   <script is:inline>
-    /* ── 계정과목(Account) 목록 — 미국 본부 양식 기준. 추가/변경은 여기서만 하면 됨 ── */
+    /* ── 계정과목(Account) 목록 — 관리 번호 포함. 추가/변경은 여기서만 하면 됨 ── */
     const ACCOUNTS = [
-      'Automotive and Boat (5602)', 'Computer Hardware (5210)', 'Computer Software (5209)',
-      'Donations and Remembrances (5418)', 'Dues and Subscriptions (5421)', 'Food Supplies (5251)',
-      'General Program and Publicity (5401)', 'General Supplies (5252)', 'Hotels and Motels (5434)',
-      'Insurance Expense (5307)', 'Library (5420)', 'Literature (5408)', 'Meals Expenditure (5435)',
-      'Mileage (5433)', 'Office (5201)', 'Office Equipment (5205)', 'Outside Printing (5407)',
-      'Passports and Visas (5402)', 'Penalties and Fines (5305)',
+      'WOLKO (8021)', 'Car Gas (8400)', 'Car Maintenance (8500)', 'Car Tax (8320)',
+      'Junior Camp (8040)', 'Ministry Center Expense (8289)', 'Student Ministries (8042)',
+      'SYME Equipment (8395)', 'SYME Program Event (8974)', 'SYME Food (8968)',
+      'Missionary Account (8025)', 'Teacher (8052)', 'Pyeongtaek EM (8067)', 'Other/Unknown',
     ];
     const OTHER = '__other';
     const STATUS_LABEL = { submitted: '승인 대기', approved: '승인됨 · 장부 대기', processed: '장부 반영 완료', rejected: '반려됨' };
-    const LS = { project: 'wolko-expense-project', projects: 'wolko-expense-projects', rate: 'wolko-expense-rate' };
+    const LS = { project: 'wolko-expense-project', projects: 'wolko-expense-projects' };
 
     const $ = id => document.getElementById(id);
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-    const usd = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const won = n => '₩' + Math.round(Number(n || 0)).toLocaleString('ko-KR');
+    const usdFmt = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const krw = n => '₩' + Math.round(Number(n || 0)).toLocaleString('ko-KR');
     const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
     const lsGet = (k, fb = '') => { try { return localStorage.getItem(k) ?? fb; } catch { return fb; } };
     const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
@@ -84,35 +82,57 @@
     }
 
     /* ─────────── 폼 상태 ─────────── */
+    // 기준 통화는 KRW. USD 항목은 영수 날짜 기준 환율(1 USD = rate KRW)로 환산한다.
     function blankRow(prev) {
-      return { project: '', account: prev?.account || '', currency: prev?.currency || 'KRW', amount: '', ministryPurpose: '', when: today(), where: '', receipts: [] };
+      return { account: prev?.account || '', currency: 'KRW', amount: '', rate: '', rateNote: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
     }
     function newForm() {
-      return { editingId: null, description: '', project: lsGet(LS.project), exchangeRate: lsGet(LS.rate), rows: [blankRow()] };
+      return { editingId: null, description: '', project: lsGet(LS.project), rows: [blankRow()] };
     }
     function formFromReport(r, asCopy) {
       return {
         editingId: asCopy ? null : r.id,
         description: r.description || '',
         project: r.project || '',
-        exchangeRate: r.exchangeRate ? String(r.exchangeRate) : lsGet(LS.rate),
         rows: r.rows.map(x => ({
-          project: x.project || '', account: x.account, currency: x.currency || 'USD', amount: String(x.amount),
-          ministryPurpose: x.ministryPurpose, when: asCopy ? today() : (x.when || today()), where: x.where || '',
+          account: x.account, currency: x.currency || 'KRW', amount: String(x.amount),
+          rate: asCopy || !x.rate ? '' : String(x.rate), rateNote: asCopy || !x.rate ? '' : '저장된 환율',
+          ministryPurpose: x.ministryPurpose, when: asCopy ? today() : (x.when || today()),
+          where: x.where || '', project: x.project || '',
           receipts: asCopy ? [] : (x.receipts || []).map(f => ({ ...f })),
+          more: !!(x.where || x.project),
         })),
       };
     }
     const isKnownAccount = a => !a || ACCOUNTS.includes(a);
 
-    function rowUsd(r) {
+    function rowKrw(r) {
       const amt = Number(r.amount);
       if (!(amt > 0)) return 0;
-      if (r.currency === 'USD') return amt;
-      const rate = Number(form.exchangeRate);
-      return rate > 0 ? Math.round((amt / rate) * 100) / 100 : 0;
+      if (r.currency === 'KRW') return Math.round(amt);
+      const rate = Number(r.rate);
+      return rate > 0 ? Math.round(amt * rate) : 0;
     }
-    function formTotal() { return form.rows.reduce((s, r) => s + rowUsd(r), 0); }
+    function formTotal() { return form.rows.reduce((s, r) => s + rowKrw(r), 0); }
+
+    /* 영수 날짜 기준 환율 자동 조회 (서버가 주말/휴일은 직전 영업일로 맞춰줌) */
+    const rateTimers = new WeakMap();
+    function scheduleRate(r, immediate) {
+      clearTimeout(rateTimers.get(r));
+      if (r.currency !== 'USD' || !r.when) return;
+      const run = async () => {
+        const wanted = r.when;
+        r.rateNote = '환율 조회 중…'; paintRates();
+        try {
+          const out = await api('/api/expense/rate?date=' + encodeURIComponent(wanted));
+          if (r.when !== wanted || r.currency !== 'USD') return; // 그 사이 바뀜
+          r.rate = String(out.rate);
+          r.rateNote = out.source === 'latest' ? '최신 환율' : (out.date === wanted ? wanted.slice(5) + ' 기준' : out.date.slice(5) + ' 기준(영업일)');
+        } catch (e) { r.rateNote = '자동 조회 실패 — 직접 입력'; }
+        paintRates(); refreshComputed();
+      };
+      if (immediate) run(); else rateTimers.set(r, setTimeout(run, 350));
+    }
 
     /* ─────────── 렌더링: 새 리포트 ─────────── */
     function renderTabs() {
@@ -134,62 +154,41 @@
       const sel = known ? r.account : OTHER;
       return `
       <div class="ex-row" data-i="${i}">
-        <div class="ex-row-head">
-          <span class="ex-row-num">ITEM ${i + 1}</span>
-          ${form.rows.length > 1 ? `<button class="ex-btn sm danger" data-act="del-row" data-i="${i}">삭제</button>` : ''}
-        </div>
-        <div class="ex-grid">
-          <div class="ex-field">
-            <label>Account<span class="ko">계정과목</span></label>
-            <select class="ex-select" data-f="accountSel">
-              <option value="">— 선택 —</option>
-              ${ACCOUNTS.map(a => `<option value="${esc(a)}" ${sel === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
-              <option value="${OTHER}" ${sel === OTHER ? 'selected' : ''}>기타 (직접 입력)</option>
-            </select>
-            <input class="ex-input" style="margin-top:6px" data-f="accountOther" placeholder="계정과목 직접 입력 (예: Supplies (5250))" value="${esc(known ? '' : r.account)}" ${sel === OTHER ? '' : 'hidden'}>
+        <div class="ex-line">
+          <span class="ex-num">${i + 1}</span>
+          <input class="ex-input ex-w-date" data-f="when" type="date" value="${esc(r.when)}" aria-label="When">
+          <select class="ex-select ex-grow" data-f="accountSel" aria-label="Account">
+            <option value="">Account · 계정과목</option>
+            ${ACCOUNTS.map(a => `<option value="${esc(a)}" ${sel === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
+            ${known ? '' : `<option value="${OTHER}" selected>이전 계정과목 (직접 입력)</option>`}
+          </select>
+          <div class="ex-amount">
+            <select class="ex-select" data-f="currency" aria-label="통화"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩</option><option value="USD" ${r.currency === 'USD' ? 'selected' : ''}>$</option></select>
+            <input class="ex-input" data-f="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="금액" value="${esc(r.amount)}" aria-label="Amount">
           </div>
-          <div class="ex-field">
-            <label>Amount<span class="ko">금액</span></label>
-            <div class="ex-amount">
-              <select class="ex-select" data-f="currency"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩ KRW</option><option value="USD" ${r.currency === 'USD' ? 'selected' : ''}>$ USD</option></select>
-              <input class="ex-input" data-f="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="${esc(r.amount)}">
-            </div>
-            <div class="ex-usd" data-usd></div>
-          </div>
-          <div class="ex-field">
-            <label>When<span class="ko">날짜</span></label>
-            <input class="ex-input" data-f="when" type="date" value="${esc(r.when)}">
-          </div>
-          <div class="ex-field">
-            <label>Where<span class="ko">장소 (선택)</span></label>
-            <input class="ex-input" data-f="where" value="${esc(r.where)}" placeholder="예: 이마트 평택점">
-          </div>
+          ${form.rows.length > 1 ? `<button class="ex-x" data-act="del-row" data-i="${i}" aria-label="항목 삭제">×</button>` : '<span class="ex-x-space"></span>'}
         </div>
-        <div class="ex-field" style="margin-top:14px">
-          <label>Ministry Purpose<span class="ko">사역 목적</span></label>
-          <textarea class="ex-textarea" data-f="ministryPurpose" placeholder="무엇을 위해 사용했는지 (예: 캠프 스태프 식사)">${esc(r.ministryPurpose)}</textarea>
+        <input class="ex-input" style="margin-top:8px" data-f="accountOther" placeholder="계정과목 직접 입력 (예: Supplies (5250))" value="${esc(known ? '' : r.account)}" ${sel === OTHER ? '' : 'hidden'}>
+        <div class="ex-line" style="margin-top:8px">
+          <input class="ex-input ex-grow" data-f="ministryPurpose" placeholder="Ministry Purpose · 사역 목적" value="${esc(r.ministryPurpose)}" maxlength="500">
+          <label class="ex-btn sm ex-attach" title="영수증 첨부">📎 영수증${r.receipts.length ? ' ' + r.receipts.length : ''}<input type="file" data-f="receipt" accept="image/*,application/pdf" multiple hidden></label>
+          <button class="ex-btn sm ex-more-btn" data-act="toggle-more" data-i="${i}" aria-expanded="${r.more}">${r.more ? '접기' : '⋯'}</button>
         </div>
-        <div class="ex-field" style="margin-top:14px">
-          <label>Receipt<span class="ko">영수증</span></label>
-          <div class="ex-receipts">
-            ${r.receipts.map((f, k) => `<span class="ex-chip">📎 ${esc(f.name)}<button data-act="del-receipt" data-i="${i}" data-k="${k}" aria-label="삭제">×</button></span>`).join('')}
-            <label class="ex-btn sm" style="cursor:pointer">＋ 사진/파일 추가<input type="file" data-f="receipt" accept="image/*,application/pdf" multiple hidden></label>
-          </div>
+        ${r.receipts.length ? `<div class="ex-receipts">${r.receipts.map((f, k) => `<span class="ex-chip">${esc(f.name)}<button data-act="del-receipt" data-i="${i}" data-k="${k}" aria-label="삭제">×</button></span>`).join('')}</div>` : ''}
+        <div class="ex-rateline" data-rateline ${r.currency === 'USD' ? '' : 'hidden'}></div>
+        <div class="ex-more" ${r.more ? '' : 'hidden'}>
+          <input class="ex-input" data-f="where" placeholder="Where · 장소 (선택)" value="${esc(r.where)}">
+          <input class="ex-input" data-f="project" placeholder="이 항목만 다른 Project (선택)" value="${esc(r.project)}">
         </div>
-        <div class="ex-field" style="margin-top:14px" data-projrow ${r.project ? '' : 'hidden'}>
-          <label>이 항목만 다른 Project</label>
-          <input class="ex-input" data-f="project" value="${esc(r.project)}" placeholder="비워두면 위 Project 사용">
-        </div>
-        <button class="ex-btn sm" style="margin-top:12px;border-style:dashed" data-act="row-project" data-i="${i}" ${r.project ? 'hidden' : ''}>이 항목만 다른 Project 지정</button>
       </div>`;
-  }
+    }
 
     function renderNew() {
       const editing = !!form.editingId;
       $('exView').innerHTML = `
       <div class="ex-card">
         <h2>${editing ? '경비 리포트 수정' : '새 경비 리포트'}</h2>
-        <p class="ex-sub">${esc(me.name)} 님 명의로 제출됩니다. 제출하면 관리자에게 승인 요청 메일이 발송됩니다.</p>
+        <p class="ex-sub">${esc(me.name)} 님 명의로 제출됩니다. 기준 통화는 원화(₩)이고, 달러($) 항목은 영수 날짜 환율로 자동 환산돼요.</p>
         <div class="ex-grid">
           <div class="ex-field">
             <label>Description<span class="ko">설명</span></label>
@@ -200,14 +199,9 @@
             <input class="ex-input" id="fProject" list="fProjectList" value="${esc(form.project)}" placeholder="예: 1552044602 - Kim, Hwan Kyu">
             <datalist id="fProjectList">${projectOptions()}</datalist>
           </div>
-          <div class="ex-field">
-            <label>환율<span class="ko">1 USD = ? KRW</span></label>
-            <input class="ex-input" id="fRate" type="number" inputmode="decimal" min="0" step="any" value="${esc(form.exchangeRate)}" placeholder="예: 1380">
-            <div class="ex-hint">원화(KRW) 항목이 있을 때만 필요해요.</div>
-          </div>
         </div>
         <div class="ex-rows" id="fRows">${form.rows.map(rowHtml).join('')}</div>
-        <div style="margin-top:14px"><button class="ex-btn" data-act="add-row">＋ 항목 추가</button></div>
+        <div style="margin-top:12px"><button class="ex-btn" data-act="add-row">＋ 항목 추가</button></div>
         <div class="ex-total-bar">
           <div class="ex-total" id="fTotal"></div>
           <div class="ex-actions" style="margin:0">
@@ -216,20 +210,33 @@
           </div>
         </div>
       </div>`;
-      refreshComputed();
+      form.rows.forEach(r => { if (r.currency === 'USD' && !Number(r.rate)) scheduleRate(r, true); });
+      paintRates(); refreshComputed();
+    }
+
+    /* USD 줄의 환율 안내줄: "$25.00 × [1355.05] = ₩33,876 · 09-25 기준" */
+    function paintRates() {
+      document.querySelectorAll('.ex-row').forEach(el => {
+        const r = form.rows[+el.dataset.i], line = el.querySelector('[data-rateline]');
+        if (!r || !line) return;
+        line.hidden = r.currency !== 'USD';
+        if (r.currency !== 'USD') return;
+        if (!line.dataset.ready) {
+          line.innerHTML = '<span data-r-usd></span> × <input class="ex-rate-input" data-f="rate" type="number" inputmode="decimal" step="any" min="0" aria-label="환율"> = <b data-r-krw></b><span class="ex-rate-note" data-r-note></span>';
+          line.dataset.ready = '1';
+        }
+        line.querySelector('[data-r-usd]').textContent = usdFmt(Number(r.amount) || 0);
+        const inp = line.querySelector('[data-f="rate"]');
+        if (document.activeElement !== inp) inp.value = r.rate;
+        line.querySelector('[data-r-krw]').textContent = krw(rowKrw(r));
+        line.querySelector('[data-r-note]').textContent = r.rateNote ? ' · ' + r.rateNote : '';
+      });
     }
 
     function refreshComputed() {
-      document.querySelectorAll('.ex-row').forEach(el => {
-        const r = form.rows[+el.dataset.i];
-        const hint = el.querySelector('[data-usd]');
-        if (!r || !hint) return;
-        hint.textContent = r.currency === 'KRW' && Number(r.amount) > 0
-          ? (Number(form.exchangeRate) > 0 ? `≈ ${usd(rowUsd(r))}` : '환율을 입력하면 달러로 환산돼요')
-          : '';
-      });
+      paintRates();
       const t = $('fTotal');
-      if (t) t.innerHTML = `<small>합계 (USD)</small>${usd(formTotal())}`;
+      if (t) t.innerHTML = '<small>합계 (KRW)</small>' + krw(formTotal());
     }
 
     /* ─────────── 렌더링: 리포트 카드 ─────────── */
@@ -245,7 +252,7 @@
           <td>${esc(r.when || '')}</td>
           <td>${esc(r.account)}${projectOf(rep, r) ? `<div class="ex-meta">${esc(projectOf(rep, r))}</div>` : ''}</td>
           <td>${esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}<div class="ex-receipts" style="margin-top:6px">${receiptChips(rep, r)}</div></td>
-          <td class="r">${usd(r.amountUsd)}${r.currency === 'KRW' ? `<div class="ex-meta">${won(r.amount)}</div>` : ''}</td>
+          <td class="r">${krw(r.amountKrw)}${r.currency === 'USD' ? `<div class="ex-meta">${usdFmt(r.amount)} × ${Number(r.rate).toLocaleString('ko-KR')}</div>` : ''}</td>
         </tr>`).join('');
 
       let notes = '';
@@ -273,7 +280,7 @@
             <div class="ex-meta">${mode === 'mine' ? '' : esc(rep.submitterName) + ' · '}${fmtDate(rep.submittedAt)} 제출${rep.project ? ' · ' + esc(rep.project) : ''}</div>
           </div>
           <div>
-            <div class="ex-report-total">${usd(rep.total)}</div>
+            <div class="ex-report-total">${krw(rep.total)}</div>
             <span class="ex-status ${rep.status}">${STATUS_LABEL[rep.status]}</span>
           </div>
         </div>
@@ -299,7 +306,7 @@
       if (mode === 'accounting') {
         const shown = list.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed'));
         const byAcct = {};
-        shown.forEach(r => r.rows.forEach(x => { byAcct[x.account] = (byAcct[x.account] || 0) + x.amountUsd; }));
+        shown.forEach(r => r.rows.forEach(x => { byAcct[x.account] = (byAcct[x.account] || 0) + x.amountKrw; }));
         const sum = shown.reduce((s, r) => s + r.total, 0);
         $('exView').innerHTML = `
           <div class="ex-card">
@@ -310,8 +317,8 @@
               <span style="flex:1"></span>
               <button class="ex-btn sm" data-act="csv" ${shown.length ? '' : 'disabled'}>CSV 내보내기</button>
             </div>
-            <div><b>${shown.length}건 · ${usd(sum)}</b></div>
-            <div class="ex-summary">${Object.entries(byAcct).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span class="ex-sum-chip">${esc(k)} <b>${usd(v)}</b></span>`).join('')}</div>
+            <div><b>${shown.length}건 · ${krw(sum)}</b></div>
+            <div class="ex-summary">${Object.entries(byAcct).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span class="ex-sum-chip">${esc(k)} <b>${krw(v)}</b></span>`).join('')}</div>
           </div>
           ${shown.length ? shown.map(r => reportCard(r, mode)).join('') : '<div class="ex-empty">해당하는 리포트가 없습니다.</div>'}`;
         return;
@@ -414,8 +421,7 @@
       try {
         const payload = {
           id: form.editingId, description: form.description.trim(), project: form.project.trim(),
-          exchangeRate: Number(form.exchangeRate) || 0,
-          rows: form.rows.map(r => ({ ...r, amount: Number(r.amount) })),
+          rows: form.rows.map(r => ({ ...r, amount: Number(r.amount), rate: Number(r.rate) || 0 })),
         };
         await api('/api/expense/reports', { method: form.editingId ? 'PUT' : 'POST', body: JSON.stringify(payload) });
         if (form.project.trim()) {
@@ -423,7 +429,6 @@
           let list = []; try { list = JSON.parse(lsGet(LS.projects, '[]')); } catch {}
           lsSet(LS.projects, JSON.stringify([form.project.trim(), ...list.filter(p => p !== form.project.trim())].slice(0, 8)));
         }
-        if (Number(form.exchangeRate) > 0) lsSet(LS.rate, String(form.exchangeRate));
         toast(form.editingId ? '수정되어 다시 제출되었습니다.' : '제출되었습니다. 관리자에게 알림이 전송됩니다.');
         form = newForm();
         await show('mine');
@@ -433,9 +438,9 @@
     /* ─────────── CSV ─────────── */
     function exportCsv() {
       const shown = data.accounting.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed'));
-      const head = ['Report ID', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Account', 'Ministry Purpose', 'Where', 'Currency', 'Original Amount', 'USD Amount', 'Exchange Rate'];
+      const head = ['Report ID', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Account', 'Ministry Purpose', 'Where', 'Currency', 'Original Amount', 'Exchange Rate (KRW/USD)', 'KRW Amount'];
       const lines = [head];
-      shown.forEach(r => r.rows.forEach(x => lines.push([r.id, STATUS_LABEL[r.status], r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account, x.ministryPurpose, x.where, x.currency, x.amount, x.amountUsd.toFixed(2), r.exchangeRate || ''])));
+      shown.forEach(r => r.rows.forEach(x => lines.push([r.id, STATUS_LABEL[r.status], r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account, x.ministryPurpose, x.where, x.currency, x.amount, x.rate || '', x.amountKrw])));
       const csv = '﻿' + lines.map(l => l.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -457,7 +462,7 @@
       try {
         if (act === 'add-row') { form.rows.push(blankRow(form.rows[form.rows.length - 1])); renderNew(); }
         else if (act === 'del-row') { form.rows.splice(i, 1); renderNew(); }
-        else if (act === 'row-project') { form.rows[i].project = ' '; renderNew(); }
+        else if (act === 'toggle-more') { form.rows[i].more = !form.rows[i].more; $('fRows').innerHTML = form.rows.map(rowHtml).join(''); refreshComputed(); }
         else if (act === 'del-receipt') {
           form.rows[i].receipts.splice(+el.dataset.k, 1);
           $('fRows').innerHTML = form.rows.map(rowHtml).join(''); refreshComputed();
@@ -493,7 +498,6 @@
       const t = e.target;
       if (t.id === 'fDesc') form.description = t.value;
       else if (t.id === 'fProject') form.project = t.value;
-      else if (t.id === 'fRate') { form.exchangeRate = t.value; refreshComputed(); }
       else if (t.dataset.f) {
         const rowEl = t.closest('.ex-row'); if (!rowEl) return;
         const r = form.rows[+rowEl.dataset.i], f = t.dataset.f;
@@ -504,6 +508,9 @@
         }
         else if (f === 'accountOther') r.account = t.value.trim();
         else if (f === 'receipt') { uploadReceipts(+rowEl.dataset.i, [...t.files]); t.value = ''; }
+        else if (f === 'currency') { r.currency = t.value; if (r.currency === 'USD') { r.rate = ''; scheduleRate(r, true); } else r.rateNote = ''; refreshComputed(); }
+        else if (f === 'when') { r.when = t.value; if (r.currency === 'USD') { r.rate = ''; scheduleRate(r); } }
+        else if (f === 'rate') { r.rate = t.value; r.rateNote = '직접 입력'; const n = rowEl.querySelector('[data-r-note]'); if (n) n.textContent = ' · 직접 입력'; refreshComputed(); }
         else { r[f] = t.value; refreshComputed(); }
       }
     });

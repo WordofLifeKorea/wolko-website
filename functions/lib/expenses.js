@@ -89,11 +89,11 @@ export async function listReports(env) {
 }
 
 export function totalOf(rows) {
-  return Math.round(rows.reduce((sum, r) => sum + (Number(r.amountUsd) || 0), 0) * 100) / 100;
+  return Math.round(rows.reduce((sum, r) => sum + (Number(r.amountKrw) || 0), 0));
 }
 
-export function formatUsd(amount) {
-  return '$' + Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export function formatKrw(amount) {
+  return '₩' + Math.round(Number(amount) || 0).toLocaleString('ko-KR');
 }
 
 export function esc(s) {
@@ -106,7 +106,7 @@ export function reportEmailHtml({ heading, intro, report, url, ctaLabel }) {
     <tr>
       <td style="padding:6px 8px;border-bottom:1px solid #eee;">${esc(r.account)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #eee;">${esc(r.ministryPurpose)}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">${formatUsd(r.amountUsd)}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">${formatKrw(r.amountKrw)}</td>
     </tr>`).join('');
   return `
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;">
@@ -115,7 +115,7 @@ export function reportEmailHtml({ heading, intro, report, url, ctaLabel }) {
       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px;">
         <tr><td style="color:#5a7585;width:110px;padding:4px 0;">제출자</td><td>${esc(report.submitterName)} (${esc(report.submitterEmail)})</td></tr>
         <tr><td style="color:#5a7585;padding:4px 0;">설명</td><td>${esc(report.description || '—')}</td></tr>
-        <tr><td style="color:#5a7585;padding:4px 0;">합계</td><td><strong>${formatUsd(report.total)}</strong></td></tr>
+        <tr><td style="color:#5a7585;padding:4px 0;">합계</td><td><strong>${formatKrw(report.total)}</strong></td></tr>
       </table>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">${rows}</table>
       <p style="margin:24px 0;">

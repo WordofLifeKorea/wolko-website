@@ -53,13 +53,14 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
     { name: 'x.exe', type: 'application/x-msdownload', data: 'data:x;base64,AA==' });
   assert.equal(bad.status, 400, '허용되지 않은 파일 형식');
 
-  const rows = [{ account: 'Meals Expenditure (5435)', currency: 'KRW', amount: 138000, ministryPurpose: 'Camp meals', when: '2026-09-29', receipts: [{ id: fid, name: 'r.jpg', type: 'image/jpeg' }] }];
-  const noRate = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'Sep', rows });
-  assert.equal(noRate.status, 400, '원화 항목은 환율 필수');
+  const rows = [{ account: 'Meals Expenditure (5435)', currency: 'USD', amount: 100, rate: 1380, ministryPurpose: 'Camp meals', when: '2026-09-29', receipts: [{ id: fid, name: 'r.jpg', type: 'image/jpeg' }] }];
+  const noRate = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'Sep', rows: [{ ...rows[0], rate: 0 }] });
+  assert.equal(noRate.status, 400, 'USD 항목은 환율 필수');
 
-  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'Sep', project: 'P1', exchangeRate: 1380, rows });
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'Sep', project: 'P1', rows });
   assert.equal(sub.status, 200);
-  assert.equal(sub.report.total, 100, '138,000원 ÷ 1380 = $100');
+  assert.equal(sub.report.total, 138000, '$100 × 1,380 = ₩138,000');
+  assert.equal(sub.report.rows[0].amountKrw, 138000);
   const id = sub.report.id;
   assert.ok(sent[0].to.includes('boss@wol.org') && !sent[0].to.includes('cyn@x.com'), '승인자에게만 알림');
   assert.ok(store.has(`expense:receipt:${id}:${fid}`), '영수증이 영구 키로 이동');
@@ -74,7 +75,7 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
   const rej = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'reject', note: '영수증 흐림' });
   assert.equal(rej.report.status, 'rejected');
 
-  const re = await call(R.onRequestPut, 'PUT', '/api/expense/reports', cyn, { id, description: 'Sep v2', project: 'P1', exchangeRate: 1380, rows: [{ ...rows[0], receipts: [{ id: fid, name: 'r.jpg', type: 'image/jpeg' }] }] });
+  const re = await call(R.onRequestPut, 'PUT', '/api/expense/reports', cyn, { id, description: 'Sep v2', project: 'P1', rows: [{ ...rows[0], receipts: [{ id: fid, name: 'r.jpg', type: 'image/jpeg' }] }] });
   assert.equal(re.report.status, 'submitted');
   assert.equal(re.report.reviewNote, '');
   assert.equal(re.report.rows[0].receipts.length, 1, '재제출해도 영수증 유지');
@@ -103,4 +104,38 @@ test('회계 담당 지정은 master만 가능', async () => {
   assert.equal((await call(A.onRequestPost, 'POST', '/api/hub/accountant', boss, { email: 'cyn@x.com', isAccountant: true })).status, 403);
   const r = await call(A.onRequestPost, 'POST', '/api/hub/accountant', master, { email: 'cyn@x.com', isAccountant: true });
   assert.equal(r.isAccountant, true);
+});
+
+test('KRW 항목은 환율 없이 원화 그대로, 합계는 KRW', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  const r = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'mix', rows: [
+    { account: 'Office (5201)', currency: 'KRW', amount: 12500, ministryPurpose: 'pens', when: '2026-09-29' },
+    { account: 'Office (5201)', currency: 'USD', amount: 10.5, rate: 1355.05, ministryPurpose: 'online', when: '2026-09-29' },
+  ] });
+  assert.equal(r.status, 200);
+  assert.equal(r.report.rows[0].amountKrw, 12500);
+  assert.equal(r.report.rows[0].rate, null);
+  assert.equal(r.report.rows[1].amountKrw, 14228); // 10.5 × 1355.05 = 14228.025
+  assert.equal(r.report.total, 26728);
+});
+
+test('환율 조회: 날짜 기준으로 가져오고 캐시한다', async () => {
+  const { store, acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  let calls = 0;
+  globalThis.fetch = async url => {
+    calls++;
+    assert.match(String(url), /\/v1\/2026-09-27\?base=USD&symbols=KRW/);
+    return { ok: true, json: async () => ({ date: '2026-09-25', rates: { KRW: 1355.05 } }) };
+  };
+  const RT = await import('../functions/api/expense/rate.js');
+  const a = await call(RT.onRequestGet, 'GET', '/api/expense/rate?date=2026-09-27', cyn);
+  assert.equal(a.rate, 1355.05);
+  assert.equal(a.date, '2026-09-25', '주말은 직전 영업일 환율');
+  const b = await call(RT.onRequestGet, 'GET', '/api/expense/rate?date=2026-09-27', cyn);
+  assert.equal(b.rate, 1355.05);
+  assert.equal(calls, 1, '두 번째는 캐시');
+  assert.ok(store.has('expense:rate:2026-09-27'));
+  assert.equal((await call(RT.onRequestGet, 'GET', '/api/expense/rate?date=bad', cyn)).status, 400);
 });
