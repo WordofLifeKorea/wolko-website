@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=6">
+  <link rel="stylesheet" href="/expense.css?v=7">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <meta name="theme-color" content="#004f68">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
@@ -54,7 +54,7 @@
         tabNew: '새 리포트', tabEdit: '리포트 수정', tabMine: '내 리포트', tabApprove: '승인 대기', tabAcct: '회계 장부', tabStaff: '회계 담당 지정',
         st_submitted: '승인 대기', st_approved: '승인됨 · 장부 대기', st_processed: '장부 반영 완료', st_rejected: '반려됨',
         acctPh: 'Account · 계정과목', acctPrev: '이전 계정과목 (직접 입력)', currency: '통화', amountPh: '금액', delRow: '항목 삭제',
-        acctOtherPh: '계정과목 직접 입력 (예: Supplies (5250))', purposePh: 'Ministry Purpose · 사역 목적',
+        acctOtherPh: '계정과목 직접 입력 (예: Supplies (5250))', itemPh: '구매 품목명 (예: 캠프 간식)', purposePh: '구매 목적 (예: 스태프 야식)', thItem: '품목 · 목적',
         attachTitle: '영수증 첨부', attach: '영수증', less: '접기', remove: '삭제',
         wherePh: 'Where · 장소 (선택)', rowProjPh: '이 항목만 다른 Project (선택)',
         titleNew: '새 경비 리포트', titleEdit: '경비 리포트 수정',
@@ -90,7 +90,7 @@
         tabNew: 'New report', tabEdit: 'Edit report', tabMine: 'My reports', tabApprove: 'To approve', tabAcct: 'Accounting', tabStaff: 'Assign accountants',
         st_submitted: 'Pending approval', st_approved: 'Approved · awaiting ledger', st_processed: 'Posted to ledger', st_rejected: 'Rejected',
         acctPh: 'Account', acctPrev: 'Previous account (custom)', currency: 'Currency', amountPh: 'Amount', delRow: 'Remove item',
-        acctOtherPh: 'Enter account (e.g. Supplies (5250))', purposePh: 'Ministry Purpose',
+        acctOtherPh: 'Enter account (e.g. Supplies (5250))', itemPh: 'Item purchased (e.g. camp snacks)', purposePh: 'Purpose (e.g. staff late-night meal)', thItem: 'Item · Purpose',
         attachTitle: 'Attach receipt', attach: 'Receipt', less: 'Less', remove: 'Remove',
         wherePh: 'Where (optional)', rowProjPh: 'Different project for this item (optional)',
         titleNew: 'New expense report', titleEdit: 'Edit expense report',
@@ -169,7 +169,7 @@
     /* ─────────── 폼 상태 ─────────── */
     // 기준 통화는 KRW. USD 항목은 영수 날짜 기준 환율(1 USD = rate KRW)로 환산한다.
     function blankRow(prev) {
-      return { account: prev?.account || '', currency: 'KRW', amount: '', rate: '', rateNote: null, ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
+      return { account: prev?.account || '', currency: 'KRW', amount: '', rate: '', rateNote: null, item: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
     }
     function newForm() {
       return { editingId: null, description: '', project: lsGet(LS.project), rows: [blankRow()] };
@@ -182,7 +182,7 @@
         rows: r.rows.map(x => ({
           account: x.account, currency: x.currency || 'KRW', amount: String(x.amount),
           rate: asCopy || !x.rate ? '' : String(x.rate), rateNote: asCopy || !x.rate ? null : { k: 'rateSaved' },
-          ministryPurpose: x.ministryPurpose, when: asCopy ? today() : (x.when || today()),
+          item: x.item || '', ministryPurpose: x.ministryPurpose, when: asCopy ? today() : (x.when || today()),
           where: x.where || '', project: x.project || '',
           receipts: asCopy ? [] : (x.receipts || []).map(f => ({ ...f })),
           more: !!(x.where || x.project),
@@ -255,6 +255,7 @@
         </div>
         <input class="ex-input" style="margin-top:8px" data-f="accountOther" placeholder="${t('acctOtherPh')}" value="${esc(known ? '' : r.account)}" ${sel === OTHER ? '' : 'hidden'}>
         <div class="ex-line ex-l2">
+          <input class="ex-input ex-grow ex-item" data-f="item" placeholder="${t('itemPh')}" value="${esc(r.item)}" maxlength="120">
           <input class="ex-input ex-grow" data-f="ministryPurpose" placeholder="${t('purposePh')}" value="${esc(r.ministryPurpose)}" maxlength="500">
           <label class="ex-btn sm ex-attach" title="${t('attachTitle')}">📎 ${t('attach')}${r.receipts.length ? ' ' + r.receipts.length : ''}<input type="file" data-f="receipt" accept="image/*,application/pdf" multiple hidden></label>
           <button class="ex-btn sm ex-more-btn" data-act="toggle-more" data-i="${i}" aria-expanded="${r.more}">${r.more ? t('less') : '⋯'}</button>
@@ -336,7 +337,7 @@
         <tr>
           <td>${esc(r.when || '')}</td>
           <td>${esc(r.account)}${projectOf(rep, r) ? `<div class="ex-meta">${esc(projectOf(rep, r))}</div>` : ''}</td>
-          <td>${esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}<div class="ex-receipts" style="margin-top:6px">${receiptChips(rep, r)}</div></td>
+          <td>${r.item ? `<b>${esc(r.item)}</b><div class="ex-meta">${esc(r.ministryPurpose)}</div>` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}<div class="ex-receipts" style="margin-top:6px">${receiptChips(rep, r)}</div></td>
           <td class="r">${krw(r.amountKrw)}${r.currency === 'USD' ? `<div class="ex-meta">${usdFmt(r.amount)} × ${Number(r.rate).toLocaleString('ko-KR')}</div>` : ''}</td>
         </tr>`).join('');
 
@@ -370,7 +371,7 @@
           </div>
         </div>
         <div class="ex-table-wrap"><table class="ex-table">
-          <thead><tr><th>When</th><th>Account</th><th>Ministry Purpose</th><th style="text-align:right">Amount</th></tr></thead>
+          <thead><tr><th>When</th><th>Account</th><th>${t('thItem')}</th><th style="text-align:right">Amount</th></tr></thead>
           <tbody>${rows}</tbody>
         </table></div>
         ${notes}
@@ -597,9 +598,9 @@
     /* ─────────── CSV ─────────── */
     function exportCsv() {
       const shown = data.accounting.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed'));
-      const head = ['Report ID', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Account', 'Ministry Purpose', 'Where', 'Currency', 'Original Amount', 'Exchange Rate (KRW/USD)', 'KRW Amount'];
+      const head = ['Report ID', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Account', 'Item', 'Purpose', 'Where', 'Currency', 'Original Amount', 'Exchange Rate (KRW/USD)', 'KRW Amount'];
       const lines = [head];
-      shown.forEach(r => r.rows.forEach(x => lines.push([r.id, t('st_' + r.status), r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account, x.ministryPurpose, x.where, x.currency, x.amount, x.rate || '', x.amountKrw])));
+      shown.forEach(r => r.rows.forEach(x => lines.push([r.id, t('st_' + r.status), r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account, x.item || '', x.ministryPurpose, x.where, x.currency, x.amount, x.rate || '', x.amountKrw])));
       const csv = '﻿' + lines.map(l => l.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));

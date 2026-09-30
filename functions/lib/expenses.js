@@ -105,7 +105,7 @@ export function reportEmailHtml({ heading, intro, report, url, ctaLabel }) {
   const rows = (report.rows || []).map(r => `
     <tr>
       <td style="padding:6px 8px;border-bottom:1px solid #eee;">${esc(r.account)}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #eee;">${esc(r.ministryPurpose)}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #eee;"><strong>${esc(r.item || '')}</strong>${r.item ? '<br>' : ''}<span style="color:#5a7585;">${esc(r.ministryPurpose)}</span></td>
       <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right;">${formatKrw(r.amountKrw)}</td>
     </tr>`).join('');
   return `

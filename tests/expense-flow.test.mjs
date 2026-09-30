@@ -53,7 +53,7 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
     { name: 'x.exe', type: 'application/x-msdownload', data: 'data:x;base64,AA==' });
   assert.equal(bad.status, 400, '허용되지 않은 파일 형식');
 
-  const rows = [{ account: 'Meals Expenditure (5435)', currency: 'USD', amount: 100, rate: 1380, ministryPurpose: 'Camp meals', when: '2026-09-29', receipts: [{ id: fid, name: 'r.jpg', type: 'image/jpeg' }] }];
+  const rows = [{ account: 'Meals Expenditure (5435)', currency: 'USD', amount: 100, rate: 1380, item: 'Pizza', ministryPurpose: 'Camp meals', when: '2026-09-29', receipts: [{ id: fid, name: 'r.jpg', type: 'image/jpeg' }] }];
   const noRate = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'Sep', rows: [{ ...rows[0], rate: 0 }] });
   assert.equal(noRate.status, 400, 'USD 항목은 환율 필수');
 
@@ -110,8 +110,8 @@ test('KRW 항목은 환율 없이 원화 그대로, 합계는 KRW', async () => 
   const { acc, call } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');
   const r = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'mix', rows: [
-    { account: 'Office (5201)', currency: 'KRW', amount: 12500, ministryPurpose: 'pens', when: '2026-09-29' },
-    { account: 'Office (5201)', currency: 'USD', amount: 10.5, rate: 1355.05, ministryPurpose: 'online', when: '2026-09-29' },
+    { account: 'Office (5201)', currency: 'KRW', amount: 12500, item: 'Pens', ministryPurpose: 'pens', when: '2026-09-29' },
+    { account: 'Office (5201)', currency: 'USD', amount: 10.5, rate: 1355.05, item: 'Books', ministryPurpose: 'online', when: '2026-09-29' },
   ] });
   assert.equal(r.status, 200);
   assert.equal(r.report.rows[0].amountKrw, 12500);
@@ -138,4 +138,15 @@ test('환율 조회: 날짜 기준으로 가져오고 캐시한다', async () =>
   assert.equal(calls, 1, '두 번째는 캐시');
   assert.ok(store.has('expense:rate:2026-09-27'));
   assert.equal((await call(RT.onRequestGet, 'GET', '/api/expense/rate?date=bad', cyn)).status, 400);
+});
+
+test('구매 품목명은 필수', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  const base = { account: 'Office (5201)', currency: 'KRW', amount: 1000, ministryPurpose: '캠프', when: '2026-09-29' };
+  const miss = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'x', rows: [base] });
+  assert.equal(miss.status, 400);
+  assert.match(miss.error, /구매 품목명/);
+  const ok = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'x', rows: [{ ...base, item: '볼펜' }] });
+  assert.equal(ok.report.rows[0].item, '볼펜');
 });

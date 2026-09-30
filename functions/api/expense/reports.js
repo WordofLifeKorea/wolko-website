@@ -27,10 +27,12 @@ function cleanRows(rawRows) {
     const currency = r?.currency === 'USD' ? 'USD' : 'KRW'; // 기준 통화는 KRW
     const amount = Math.round(Number(r?.amount) * 100) / 100; // 입력한 통화 기준 원금액
     const account = clip(r?.account, 120);
-    const ministryPurpose = clip(r?.ministryPurpose, 500);
+    const item = clip(r?.item, 120); // 구매 품목명
+    const ministryPurpose = clip(r?.ministryPurpose, 500); // 구매 목적
     if (!Number.isFinite(amount) || amount <= 0 || amount > 1e10) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
     if (!account) return { error: `${n}번째 줄의 Account를 선택해 주세요.` };
-    if (!ministryPurpose) return { error: `${n}번째 줄의 Ministry Purpose를 입력해 주세요.` };
+    if (!item) return { error: `${n}번째 줄의 구매 품목명을 입력해 주세요.` };
+    if (!ministryPurpose) return { error: `${n}번째 줄의 구매 목적을 입력해 주세요.` };
 
     // USD 항목: 영수 날짜 기준 환율(KRW per USD)로 원화 환산. 환율은 화면에서 자동 조회 후 수정 가능.
     const rate = Number(r?.rate);
@@ -47,6 +49,7 @@ function cleanRows(rawRows) {
       project: clip(r?.project, 160), // 비어 있으면 리포트 상단 Project를 따른다
       account, currency, amount, amountKrw,
       rate: currency === 'USD' ? Math.round(rate * 100) / 100 : null,
+      item,
       ministryPurpose,
       when: clip(r?.when, 20),
       where: clip(r?.where, 160),
