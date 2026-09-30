@@ -43,6 +43,13 @@
     });
   }
 
+  // 왼쪽 바의 로고 영역 높이를 각 페이지 상단 바 높이에 맞춘다
+  function syncHeadHeight() {
+    var hd = document.querySelector('body > header, body header');
+    var h = hd ? Math.round(hd.getBoundingClientRect().height) : 0;
+    if (h >= 40 && h <= 120) document.documentElement.style.setProperty('--wolko-head-h', h + 'px');
+  }
+
   function init() {
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
     if (path === '/portal') return; // 포탈 런처 자체 사이드바와 중복 방지
@@ -71,6 +78,11 @@
     document.body.insertBefore(rail, document.body.firstChild);
     document.body.classList.add('wolko-rail-active');
     syncLabels();
+    syncHeadHeight();
+    window.addEventListener('resize', syncHeadHeight);
+    window.addEventListener('load', syncHeadHeight);
+    var hd = document.querySelector('body > header, body header');
+    if (hd && window.ResizeObserver) new ResizeObserver(syncHeadHeight).observe(hd);
 
     new MutationObserver(syncLabels).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   }
