@@ -241,3 +241,20 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
 
 /* 카드 자체의 경계도 살짝 진하게 */
 .ex-card { border-color: #d3dfe5; }
+
+/* ══ v5 — 항목별 부드러운 카드: 옅은 배경 + 간격으로 구분 ══ */
+.ex-rows { border-top: 0; gap: 10px; margin-top: 16px; }
+.ex-row {
+  background: #f6f9fb; border: 1px solid #e3ebf0; border-radius: 14px;
+  padding: 14px 16px; margin: 0;
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+.ex-row:nth-child(even) { background: #f6f9fb; }
+.ex-row:focus-within { background: #fff; border-color: #b9cfda; box-shadow: 0 2px 10px rgba(0,79,104,.07); }
+.ex-row .ex-input, .ex-row .ex-select { border-bottom-color: #c9d8e0; }
+.ex-row .ex-input:hover, .ex-row .ex-select:hover, .ex-row .ex-input:focus, .ex-row .ex-select:focus { background: #fff; }
+.ex-row .ex-rate-input { background: #fff; }
+.ex-more .ex-input { background: #fff; }
+.ex-chip { background: #fff; border-color: #dbe6ec; }
+
+@media (max-width: 640px) { .ex-row { padding: 12px; } }
