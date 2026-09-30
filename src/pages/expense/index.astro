@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=13">
+  <link rel="stylesheet" href="/expense.css?v=14">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <meta name="theme-color" content="#004f68">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
@@ -221,7 +221,7 @@
       if (me.isApprover) tabs.push({ id: 'approve', label: t('tabApprove'), n: counts.approve });
       if (me.isAccountant) tabs.push({ id: 'accounting', label: t('tabAcct'), n: counts.accounting });
       if (me.canViewAll) tabs.push({ id: 'all', label: t('tabAll') });
-      $('exTabs').innerHTML = tabs.map(x => `<button class="ex-tab ${x.id === tab ? 'active' : ''}" data-tab="${x.id}">${esc(x.label)}${x.n ? `<span class="ex-badge">${x.n}</span>` : ''}</button>`).join('');
+      $('exTabs').innerHTML = tabs.map(x => `<button class="ex-tab ${x.id === 'new' ? (form?.editingId ? 'ex-tab-new is-edit' : 'ex-tab-new') : ''} ${x.id === tab ? 'active' : ''}" data-tab="${x.id}">${esc(x.label)}${x.n ? `<span class="ex-badge">${x.n}</span>` : ''}</button>`).join('');
     }
 
     function projectOptions() {
