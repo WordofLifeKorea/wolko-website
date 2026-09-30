@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=15">
+  <link rel="stylesheet" href="/hub.css?v=16">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -115,7 +115,6 @@
         </span>
       </a>
 
-      <p class="hub-nav-label" data-t="navLabel">도구</p>
       <div class="hub-nav" id="hubNav"></div>
 
       <div class="hub-sidebar-foot">
@@ -145,7 +144,7 @@
         <p class="hub-title" data-t="pageTitle">내부 도구</p>
         <p class="hub-subtitle" data-t="subtitle">사용할 도구를 선택하세요. 각 도구는 자체 로그인이 필요합니다.</p>
 
-        <div class="hub-grid" id="hubGrid"></div>
+        <div class="hub-groups" id="hubGrid"></div>
       </div>
     </main>
   </div>
@@ -190,27 +189,32 @@
     };
 
     const TOOLS = [
-      { href: '/schedule', color: '#1da462', icon: 'calendar',
+      { group: 'wolko', href: '/schedule', color: '#1da462', icon: 'calendar',
         title_ko: '월코 캘린더', title_en: 'WOLKO Calendar',
         desc_ko: '스태프 일정 공유 캘린더', desc_en: 'Shared staff schedule calendar' },
-      { href: '/crs', color: '#7a5fc4', icon: 'landmark',
+      { group: 'wolko', href: '/crs', color: '#7a5fc4', icon: 'landmark',
         title_ko: 'CRS', title_en: 'CRS',
         desc_ko: 'Church Relationship System', desc_en: 'Church Relationship System' },
-      { href: '/wolkoadmin', color: '#004f68', icon: 'clipboard',
+      { group: 'camp', href: '/wolkoadmin', color: '#004f68', icon: 'clipboard',
         title_ko: '캠프 관리자', title_en: 'Camp Manager',
         desc_ko: '캠프 신청 현황 · 확정 관리', desc_en: 'Camp registration & confirmation' },
-      { href: '/wolkoevents', color: '#a5482d', icon: 'checklist',
+      { group: 'wolko', href: '/wolkoevents', color: '#a5482d', icon: 'checklist',
         title_ko: '이벤트 관리', title_en: 'Event Management',
         desc_ko: '행사 참석 신청(RSVP) 현황', desc_en: 'Event RSVP management' },
-      { href: '/campstaff', color: '#0077a3', icon: 'users',
+      { group: 'camp', href: '/campstaff', color: '#0077a3', icon: 'users',
         title_ko: '카운슬러', title_en: 'Counselor',
         desc_ko: '카운슬러 상담기록 · 팀 현황', desc_en: 'Counselor records & team status' },
-      { href: '/expense', color: '#b8741a', icon: 'receipt',
+      { group: 'wolko', href: '/expense', color: '#b8741a', icon: 'receipt',
         title_ko: '경비 리포트', title_en: 'Expense Report',
         desc_ko: '경비 제출 · 승인 · 회계 업무', desc_en: 'Submit, approve & pay expenses' },
-      { href: '/resource', color: '#008e92', icon: 'chart',
+      { group: 'wolko', href: '/resource', color: '#008e92', icon: 'chart',
         title_ko: 'Resource & Media', title_en: 'Resource & Media',
         desc_ko: '자료 제작 · 번역 진행 현황', desc_en: 'Resource production & translation progress' },
+    ];
+
+    const GROUPS = [
+      { id: 'wolko', ko: '월코', en: 'WOLKO' },
+      { id: 'camp', ko: '캠프', en: 'Camp' },
     ];
 
     const HUB_T = {
@@ -348,7 +352,7 @@
     function renderGrid() {
       let lastHref = '';
       try { lastHref = localStorage.getItem('wolko-hub-last') || ''; } catch (e) {}
-      $('hubGrid').innerHTML = TOOLS.map(tool => `
+      const card = tool => `
         <a class="hub-card" href="${tool.href}" style="--tool-color:${tool.color}" onclick="markVisited('${tool.href}')">
           <span class="hub-card-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
@@ -363,18 +367,26 @@
           <span class="hub-card-arrow">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
-        </a>
+        </a>`;
+      $('hubGrid').innerHTML = GROUPS.map(g => `
+        <section class="hub-group">
+          <p class="hub-group-label">${hubLang === 'en' ? g.en : g.ko}</p>
+          <div class="hub-grid">${TOOLS.filter(x => x.group === g.id).map(card).join('')}</div>
+        </section>
       `).join('');
     }
 
     function renderNav() {
-      $('hubNav').innerHTML = TOOLS.map(tool => `
+      const item = tool => `
         <a class="hub-nav-item" href="${tool.href}" style="--item-color:${tool.color}" onclick="markVisited('${tool.href}')">
           <span class="hub-nav-item-icon">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
           </span>
           <span class="hub-nav-item-label">${hubLang === 'en' ? tool.title_en : tool.title_ko}</span>
-        </a>
+        </a>`;
+      $('hubNav').innerHTML = GROUPS.map(g => `
+        <p class="hub-nav-label">${hubLang === 'en' ? g.en : g.ko}</p>
+        ${TOOLS.filter(x => x.group === g.id).map(item).join('')}
       `).join('');
     }
 

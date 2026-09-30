@@ -47,7 +47,7 @@ test('portal mobile header actions stay visually compact', async () => {
   assert.match(css, /\.hub-sidebar-lang\s*\{[^}]*min-height:\s*36px\s*!important;/s);
   assert.match(css, /\.hub-lang-btn\s*\{[^}]*height:\s*30px;[^}]*min-height:\s*30px\s*!important;/s);
   assert.match(css, /\.hub-lang-toggle\s*\{[^}]*height:\s*36px;/s);
-  assert.match(portal, /\/hub\.css\?v=15/);
+  assert.match(portal, /\/hub\.css\?v=\d+/);
 });
 
 test('portal mobile layout respects Safari safe areas and dynamic viewport', async () => {

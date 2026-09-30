@@ -3,20 +3,20 @@
    라벨은 항상 펼쳐서 보여준다(예전엔 아이콘만 두고 호버해야 이름이 보였는데,
    페이지 사이 이동이 잘 안 보인다는 피드백으로 상시 펼침으로 바꿨다). */
 (function () {
+  var GROUPS = [{ id: 'wolko', ko: '월코', en: 'WOLKO' }, { id: 'camp', ko: '캠프', en: 'Camp' }];
   var TOOLS = [
-    { href: '/schedule', color: '#1da462', label: '월코 캘린더', label_en: 'WOLKO Calendar',
+    { group: 'wolko', href: '/schedule', color: '#1da462', label: '월코 캘린더', label_en: 'WOLKO Calendar',
       icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/><rect x="7" y="13.5" width="4" height="4" rx="1" fill="currentColor" stroke="none"/>' },
-    // 차량 캘린더: 당장 쓸 일이 없어 임시로 사이드바에서 숨김 (페이지/기능은 그대로 유지, /car 직접 접속은 가능)
-    { href: '/crs', color: '#7a5fc4', label: 'CRS', label_en: 'CRS',
+    { group: 'wolko', href: '/crs', color: '#7a5fc4', label: 'CRS', label_en: 'CRS',
       icon: '<path d="M12 2v3M10.3 3.5h3.4"/><path d="M4 10.5 12 5l8 5.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6.5a2 2 0 0 1 4 0V20"/>' },
-    { href: '/wolkoadmin', color: '#004f68', label: '캠프 관리자', label_en: 'Camp Manager',
-      icon: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>' },
-    { href: '/wolkoevents', color: '#a5482d', label: '이벤트 관리', label_en: 'Event Management',
+    { group: 'wolko', href: '/wolkoevents', color: '#a5482d', label: '이벤트 관리', label_en: 'Event Management',
       icon: '<path d="M8 3v3M16 3v3M4 8h16"/><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 17.5h.01M12 17.5h.01"/>' },
-    { href: '/campstaff', color: '#0077a3', label: '카운슬러', label_en: 'Counselor',
-      icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
-    { href: '/resource', color: '#008e92', label: 'Resource & Media', label_en: 'Resource & Media',
+    { group: 'wolko', href: '/resource', color: '#008e92', label: 'Resource & Media', label_en: 'Resource & Media',
       icon: '<path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="7" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="11" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="7" r="1" fill="currentColor" stroke="none"/>' },
+    { group: 'camp', href: '/wolkoadmin', color: '#004f68', label: '캠프 관리자', label_en: 'Camp Manager',
+      icon: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>' },
+    { group: 'camp', href: '/campstaff', color: '#0077a3', label: '카운슬러', label_en: 'Counselor',
+      icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
   ];
   var HUB_ICON = '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>';
   var HUB_LABEL = { ko: '전체 도구 보기', en: 'View All Tools' };
@@ -36,7 +36,7 @@
 
   function syncLabels() {
     var lang = currentLang();
-    document.querySelectorAll('.wolko-rail-item-label[data-ko]').forEach(function (el) {
+    document.querySelectorAll('.wolko-rail-item-label[data-ko], .wolko-rail-group[data-ko]').forEach(function (el) {
       el.textContent = lang === 'en' ? el.getAttribute('data-en') : el.getAttribute('data-ko');
     });
   }
@@ -53,10 +53,13 @@
       '<span class="wolko-rail-logo-text">WOLKO Portal</span></a>' +
       '<div class="wolko-rail-divider"></div>';
 
-    TOOLS.forEach(function (tool) {
+    GROUPS.forEach(function (g) {
+      html += '<div class="wolko-rail-group" data-ko="' + g.ko + '" data-en="' + g.en + '"></div>';
+      TOOLS.filter(function (tool) { return tool.group === g.id; }).forEach(function (tool) {
       var active = path === tool.href;
       html += '<a class="wolko-rail-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" style="--rail-color:' + tool.color + '">' +
         svg(tool.icon) + '<span class="wolko-rail-item-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
+      });
     });
 
     html += '<a class="wolko-rail-item wolko-rail-hub" href="/portal">' + svg(HUB_ICON) +
