@@ -200,6 +200,32 @@ const leaves = [
       .inv-music.is-playing svg { animation:none; }
       .inv-music.is-playing::after { animation:none; opacity:.35; }
     }
+
+    /* ── PC(넓은 화면): 모바일 폭(480px) 고정을 풀고 화면 전체를 쓴다 ── */
+    @media (min-width: 900px) {
+      .inv { max-width:none; box-shadow:none; }
+      .inv-cover { padding:110px 8vw 100px; }
+      .inv-eyebrow { font-size:15px; letter-spacing:0.4em; }
+      .inv-title { margin:30px 0 20px; font-size:clamp(84px, 9vw, 140px); }
+      .inv-title-en { font-size:clamp(18px, 1.7vw, 26px); }
+      .inv-cover-rule { width:84px; margin:40px auto; }
+      .inv-cover-when { font-size:clamp(16px, 1.4vw, 21px); }
+      .inv-section { padding:110px 8vw; }
+      .inv-label { font-size:13px; margin-bottom:22px; }
+      .inv-h { font-size:38px; margin-bottom:28px; }
+      .inv-p { font-size:19px; }
+      .inv-sign { font-size:16px; }
+      .inv-verse { max-width:620px; padding:40px 36px; }
+      .inv-verse p { font-size:24px; }
+      .inv-verse cite { font-size:14.5px; }
+      .inv-info, .inv-parking { max-width:520px; }
+      .inv-info-row dd { font-size:21px; }
+      .inv-parking { font-size:15px; }
+      .inv-form, .inv-done, .inv-share { max-width:520px; }
+      .inv-footer { padding:54px 8vw 64px; font-size:14px; }
+      .inv-footer b { font-size:15px; }
+      .inv-music { right:32px; bottom:32px; }
+    }
   </style>
   <style is:global>
     /* JS(rsvp-crowd.js)가 런타임에 innerHTML로 만들어 넣는 요소들이라 Astro의 컴포넌트
@@ -252,6 +278,12 @@ const leaves = [
       100% { left:3%;  transform:scaleX(1); }
     }
 
+    @media (min-width: 900px) {
+      .inv-people { bottom:22px; }
+      .inv-people-caption { font-size:13px; }
+      .inv-person { width:27px; height:38px; }
+      .inv-people-dolls { height:44px; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .inv-people { display:none; }
     }
