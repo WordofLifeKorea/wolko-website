@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=10">
+  <link rel="stylesheet" href="/expense.css?v=11">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <meta name="theme-color" content="#004f68">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
@@ -21,14 +21,13 @@
 </head>
 <body>
   <header class="ex-header">
-    <div class="ex-title"><img src="/images/WOLKO Circle.png" alt="WOLKO">Expense Report</div>
+    <a class="ex-title" href="/portal" title="WOLKO Portal" aria-label="WOLKO Portal"><img src="/images/WOLKO Circle.png" alt="WOLKO">Expense Report</a>
     <div style="display:flex;align-items:center;gap:16px;">
       <span class="ex-user" id="exUser"></span>
       <div class="wl-lang-toggle" role="group" aria-label="Language">
         <button type="button" class="wl-lang-btn" id="langKoBtn" data-lang="ko" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
         <button type="button" class="wl-lang-btn" id="langEnBtn" data-lang="en" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
       </div>
-      <a href="/portal" data-t="back">← 포탈</a>
     </div>
   </header>
 
@@ -50,7 +49,7 @@
     /* ── 번역 사전 (한국어/English). 화면 문구는 전부 여기서만 관리 ── */
     const T = {
       ko: {
-        pageTitle: '경비 리포트 — WOLKO', back: '← 포탈',
+        pageTitle: '경비 리포트 — WOLKO',
         tabNew: '새 리포트', tabEdit: '리포트 수정', tabMine: '내 리포트', tabApprove: '승인 대기', tabAcct: '회계 장부', tabStaff: '회계 담당 지정',
         st_submitted: '승인 대기', st_approved: '승인됨 · 장부 대기', st_processed: '장부 반영 완료', st_rejected: '반려됨',
         acctPh: 'Account · 계정과목', acctPrev: '이전 계정과목 (직접 입력)', currency: '통화', amountPh: '금액', delRow: '항목 삭제',
@@ -86,7 +85,7 @@
         errLogin: '로그인이 필요합니다.', errReq: '요청에 실패했습니다.',
       },
       en: {
-        pageTitle: 'Expense Report — WOLKO', back: '← Portal',
+        pageTitle: 'Expense Report — WOLKO',
         tabNew: 'New report', tabEdit: 'Edit report', tabMine: 'My reports', tabApprove: 'To approve', tabAcct: 'Accounting', tabStaff: 'Assign accountants',
         st_submitted: 'Pending approval', st_approved: 'Approved · awaiting ledger', st_processed: 'Posted to ledger', st_rejected: 'Rejected',
         acctPh: 'Account', acctPrev: 'Previous account (custom)', currency: 'Currency', amountPh: 'Amount', delRow: 'Remove item',
