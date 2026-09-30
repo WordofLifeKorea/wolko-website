@@ -45,8 +45,9 @@
       'WOLKO (8021)', 'Car Gas (8400)', 'Car Maintenance (8500)', 'Car Tax (8320)',
       'Junior Camp (8040)', 'Ministry Center Expense (8289)', 'Student Ministries (8042)',
       'SYME Equipment (8395)', 'SYME Program Event (8974)', 'SYME Food (8968)',
-      'Missionary Account (8025)', 'Teacher (8052)', 'Pyeongtaek EM (8067)', 'Other/Unknown',
+      'Missionary Account (8025)', 'Teacher (8052)', 'Pyeongtaek EM (8067)',
     ];
+    const DEFAULT_ACCOUNT = 'Missionary Account (8025)';
     const OTHER = '__other';
     /* ── 번역 사전 (한국어/English). 화면 문구는 전부 여기서만 관리 ── */
     const T = {
@@ -62,7 +63,7 @@
         subNew: n => n + ' 님 명의로 제출됩니다. 기준 통화는 원화(₩)이고, 달러($) 항목은 영수 날짜 환율로 자동 환산돼요.',
         lblDesc: 'Description<span class="ko">설명</span>', descPh: '예: 9월 캠프 준비 경비',
         lblProject: 'Project<span class="ko">프로젝트 (마지막 값 기억)</span>', projPh: '예: 1552044602 - Kim, Hwan Kyu',
-        addRow: '＋ 항목 추가', cancelEdit: '수정 취소', submitEdit: '수정 후 다시 제출', submit: '경비 리포트 제출', totalKrw: '합계 (KRW)',
+        addRow: '＋ 항목 추가', resetDraft: '작성 내용 지우기', cResetDraft: '작성 중인 내용을 모두 지울까요?', tDraftRestored: '작성 중이던 내용을 불러왔어요.', cancelEdit: '수정 취소', submitEdit: '수정 후 다시 제출', submit: '경비 리포트 제출', totalKrw: '합계 (KRW)',
         rateSaved: '저장된 환율', rateLoading: '환율 조회 중…', rateLatest: '최신 환율',
         rateAsOf: d => d + ' 기준', rateBiz: d => d + ' 기준(영업일)', rateFail: '자동 조회 실패 — 직접 입력', rateManual: '직접 입력', rateAria: '환율',
         noteRejected: '반려 사유',
@@ -100,7 +101,7 @@
         subNew: n => 'Submitted under ' + n + '. The base currency is KRW (₩); dollar ($) items are converted automatically at the exchange rate on the receipt date.',
         lblDesc: 'Description', descPh: 'e.g. September camp supplies',
         lblProject: 'Project<span class="ko">remembers last value</span>', projPh: 'e.g. 1552044602 - Kim, Hwan Kyu',
-        addRow: '+ Add item', cancelEdit: 'Cancel edit', submitEdit: 'Save & resubmit', submit: 'Submit expense report', totalKrw: 'Total (KRW)',
+        addRow: '+ Add item', resetDraft: 'Clear draft', cResetDraft: 'Clear everything you have entered?', tDraftRestored: 'Restored your unsent draft.', cancelEdit: 'Cancel edit', submitEdit: 'Save & resubmit', submit: 'Submit expense report', totalKrw: 'Total (KRW)',
         rateSaved: 'Saved rate', rateLoading: 'Fetching rate…', rateLatest: 'Latest rate',
         rateAsOf: d => 'as of ' + d, rateBiz: d => 'as of ' + d + ' (prev. business day)', rateFail: 'Auto lookup failed — enter manually', rateManual: 'Entered manually', rateAria: 'Exchange rate',
         noteRejected: 'Reason for rejection',
@@ -133,7 +134,7 @@
       return typeof v === 'function' ? v(...args) : v;
     }
     const rateText = n => !n ? '' : n.k === 'asof' ? t('rateAsOf', n.d) : n.k === 'biz' ? t('rateBiz', n.d) : t(n.k);
-    const LS = { project: 'wolko-expense-project', projects: 'wolko-expense-projects' };
+    const LS = { draft: 'wolko-expense-draft:', project: 'wolko-expense-project', projects: 'wolko-expense-projects' };
 
     const $ = id => document.getElementById(id);
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -174,12 +175,35 @@
     /* ─────────── 폼 상태 ─────────── */
     // 기준 통화는 KRW. USD 항목은 영수 날짜 기준 환율(1 USD = rate KRW)로 환산한다.
     function blankRow(prev) {
-      return { account: prev?.account || '', currency: 'KRW', amount: '', rate: '', rateNote: null, item: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
+      return { account: prev ? prev.account : DEFAULT_ACCOUNT, otherSel: !!prev?.otherSel, currency: 'KRW', amount: '', rate: '', rateNote: null, item: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
     }
     function newForm() {
       // 마지막으로 쓴 값이 있으면 그걸, 없으면 로그인한 어카운트 홀더 이름을 기본값으로 채운다
       return { editingId: null, description: '', project: lsGet(LS.project) || me?.name || '', rows: [blankRow()] };
     }
+    /* ─────────── 작성 중 자동 저장 (새로고침·뒤로가기·브라우저 종료 후에도 복원) ─────────── */
+    // 서버의 임시 영수증이 3일 뒤 삭제되므로 초안도 같은 기간만 보관한다. 수정 중인 리포트는 저장하지 않는다.
+    const DRAFT_TTL = 3 * 24 * 3600 * 1000;
+    const draftKey = () => LS.draft + (me?.email || '');
+    let uploadsBusy = 0;
+    function saveDraft() {
+      if (!form || !me || form.editingId) return;
+      if (JSON.stringify(form) === JSON.stringify(newForm())) { try { localStorage.removeItem(draftKey()); } catch {} return; }
+      lsSet(draftKey(), JSON.stringify({ t: Date.now(), form }));
+    }
+    let draftTimer = 0;
+    function scheduleDraft() { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 400); }
+    function loadDraft() {
+      try {
+        const d = JSON.parse(lsGet(draftKey(), 'null'));
+        if (!d || !d.form || Date.now() - d.t > DRAFT_TTL || !Array.isArray(d.form.rows) || !d.form.rows.length) return null;
+        return { ...d.form, editingId: null, rows: d.form.rows.map(r => ({ ...blankRow(), ...r, receipts: Array.isArray(r.receipts) ? r.receipts : [] })) };
+      } catch { return null; }
+    }
+    addEventListener('pagehide', () => { clearTimeout(draftTimer); saveDraft(); });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { clearTimeout(draftTimer); saveDraft(); } });
+    addEventListener('beforeunload', e => { if (uploadsBusy) { clearTimeout(draftTimer); saveDraft(); e.preventDefault(); e.returnValue = ''; } });
+
     function formFromReport(r, asCopy) {
       return {
         editingId: asCopy ? null : r.id,
@@ -242,7 +266,7 @@
 
     function rowHtml(r, i) {
       const known = isKnownAccount(r.account);
-      const sel = known ? r.account : OTHER;
+      const sel = (!known || r.otherSel) ? OTHER : r.account;
       return `
       <div class="ex-row" data-i="${i}">
         <div class="ex-line ex-l1">
@@ -251,7 +275,7 @@
           <select class="ex-select ex-grow" data-f="accountSel" aria-label="Account">
             <option value="">${t('acctPh')}</option>
             ${ACCOUNTS.map(a => `<option value="${esc(a)}" ${sel === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
-            ${known ? '' : `<option value="${OTHER}" selected>${t('acctPrev')}</option>`}
+            <option value="${OTHER}" ${sel === OTHER ? 'selected' : ''}>Other/Unknown</option>
           </select>
           <div class="ex-amount">
             <select class="ex-select" data-f="currency" aria-label="${t('currency')}"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩</option><option value="USD" ${r.currency === 'USD' ? 'selected' : ''}>$</option></select>
@@ -259,7 +283,7 @@
           </div>
           ${form.rows.length > 1 ? `<button class="ex-x" data-act="del-row" data-i="${i}" aria-label="${t('delRow')}">×</button>` : '<span class="ex-x-space"></span>'}
         </div>
-        <input class="ex-input" style="margin-top:8px" data-f="accountOther" placeholder="${t('acctOtherPh')}" value="${esc(known ? '' : r.account)}" ${sel === OTHER ? '' : 'hidden'}>
+        <input class="ex-input" style="margin-top:8px" data-f="accountOther" placeholder="${t('acctOtherPh')}" value="${esc(sel === OTHER ? r.account : '')}" ${sel === OTHER ? '' : 'hidden'}>
         <div class="ex-line ex-l2">
           <input class="ex-input ex-grow ex-item" data-f="item" placeholder="${t('itemPh')}" value="${esc(r.item)}" maxlength="120">
           <input class="ex-input ex-grow" data-f="ministryPurpose" placeholder="${t('purposePh')}" value="${esc(r.ministryPurpose)}" maxlength="500">
@@ -297,7 +321,7 @@
         <div class="ex-total-bar">
           <div class="ex-total" id="fTotal"></div>
           <div class="ex-actions" style="margin:0">
-            ${editing ? `<button class="ex-btn" data-act="cancel-edit">${t('cancelEdit')}</button>` : ''}
+            ${editing ? `<button class="ex-btn" data-act="cancel-edit">${t('cancelEdit')}</button>` : `<button class="ex-btn" data-act="reset-draft">${t('resetDraft')}</button>`}
             <button class="ex-btn primary" id="fSubmit" data-act="submit">${editing ? t('submitEdit') : t('submit')}</button>
           </div>
         </div>
@@ -499,6 +523,7 @@
 
     async function uploadReceipts(i, files) {
       const row = form.rows[i];
+      uploadsBusy++;
       for (const original of files) {
         if (row.receipts.length >= 5) { toast(t('max5'), true); break; }
         try {
@@ -510,6 +535,7 @@
           blobCache.set(out.id, { url: URL.createObjectURL(file), type: file.type, name: out.name });
         } catch (e) { toast(e.message, true); }
       }
+      uploadsBusy--; saveDraft();
       const rowsEl = $('fRows'); const scroll = window.scrollY;
       rowsEl.innerHTML = form.rows.map(rowHtml).join('');
       refreshComputed(); window.scrollTo({ top: scroll });
@@ -678,6 +704,7 @@
         }
         else if (act === 'submit') await submitForm();
         else if (act === 'cancel-edit') { form = newForm(); renderTabs(); renderNew(); }
+        else if (act === 'reset-draft') { if (!confirm(t('cResetDraft'))) return; form = newForm(); saveDraft(); renderNew(); }
         else if (act === 'open-receipt') openReceiptFrom(el);
         else if (act === 'edit') { form = formFromReport(find('mine'), false); tab = 'new'; renderTabs(); renderNew(); window.scrollTo({ top: 0 }); }
         else if (act === 'copy') { form = formFromReport(find('mine'), true); tab = 'new'; renderTabs(); renderNew(); window.scrollTo({ top: 0 }); toast(t('tCopied')); }
@@ -707,6 +734,7 @@
         else if (act === 'csv') exportCsv();
         else if (act === 'csv-all') exportCsv(visibleAll());
       } catch (err) { toast(err.message, true); }
+      scheduleDraft();
     });
 
     document.addEventListener('change', e => { if (e.target.id === 'allPerson') { allPerson = e.target.value; renderAll(); } });
@@ -720,8 +748,8 @@
         const r = form.rows[+rowEl.dataset.i], f = el.dataset.f;
         if (f === 'accountSel') {
           const other = rowEl.querySelector('[data-f="accountOther"]');
-          if (el.value === OTHER) { other.hidden = false; other.focus(); r.account = other.value.trim(); }
-          else { other.hidden = true; r.account = el.value; }
+          if (el.value === OTHER) { r.otherSel = true; other.hidden = false; other.focus(); r.account = other.value.trim(); }
+          else { r.otherSel = false; other.hidden = true; r.account = el.value; }
         }
         else if (f === 'accountOther') r.account = el.value.trim();
         else if (f === 'receipt') { uploadReceipts(+rowEl.dataset.i, [...el.files]); el.value = ''; }
@@ -730,6 +758,7 @@
         else if (f === 'rate') { r.rate = el.value; r.rateNote = { k: 'rateManual' }; const n = rowEl.querySelector('[data-r-note]'); if (n) n.textContent = ' · ' + t('rateManual'); refreshComputed(); }
         else { r[f] = el.value; refreshComputed(); }
       }
+      scheduleDraft();
     });
 
     /* ─────────── 시작 ─────────── */
@@ -739,6 +768,8 @@
       try {
         await refreshCounts();
         form = newForm();
+        const draft = loadDraft();
+        if (draft) { form = draft; await show('new'); toast(t('tDraftRestored')); return; }
         await show(counts.approve > 0 && me.isApprover ? 'approve' : (counts.accounting > 0 && me.isAccountant ? 'accounting' : 'new'));
       } catch (e) { toast(e.message, true); }
     })();
