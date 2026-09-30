@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import * as H from '../functions/lib/hubAccounts.js';
 import * as R from '../functions/api/expense/reports.js';
 import * as F from '../functions/api/expense/receipt.js';
-import { ACCOUNTANT_EMAILS } from '../functions/lib/expenses.js';
+import { ACCOUNTANT_EMAILS, EXPENSE_ADMIN_EMAILS } from '../functions/lib/expenses.js';
 
 function setup() {
   const store = new Map();
@@ -39,6 +39,7 @@ const boss = ['boss@wol.org', 'admin'];
 const ann = ['acct@x.com', 'counselor'];
 const master = ['wolkorea1@gmail.com', 'master'];
 if (!ACCOUNTANT_EMAILS.includes('acct@x.com')) ACCOUNTANT_EMAILS.push('acct@x.com');
+if (!EXPENSE_ADMIN_EMAILS.includes('boss@wol.org')) EXPENSE_ADMIN_EMAILS.push('boss@wol.org'); // 테스트용 '관리자' 등급
 
 test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 반영', async () => {
   const { store, sent, acc, call } = setup();
@@ -179,4 +180,37 @@ test('구매 품목명은 필수', async () => {
   assert.match(miss.error, /구매 품목명/);
   const ok = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'x', rows: [{ ...base, item: '볼펜' }] });
   assert.equal(ok.report.rows[0].item, '볼펜');
+});
+
+test('경비 권한은 "관리자" 등급만: master/포탈 admin이어도 목록에 없으면 승인·전체 조회 불가', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  await acc('esooy@wol.org', 'Estelle', 'admin'); // 포탈 role은 admin이지만 경비 관리자 등급 아님
+  const dev = ['hkim3@wol.org', 'master'];         // Developer (포탈 master)
+  const owner = ['wolkorea1@gmail.com', 'master']; // Owner
+  const estelle = ['esooy@wol.org', 'admin'];
+  const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });
+  const id = sub.report.id;
+
+  for (const who of [dev, owner, estelle]) {
+    assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', who)).status, 403, '전체 조회 불가');
+    assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=approve', who)).status, 403, '승인 목록 불가');
+    assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, action: 'approve' })).status, 403, '승인 불가');
+    const me = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', who);
+    assert.equal(me.me.isApprover, false);
+    assert.equal(me.me.canViewAll, false);
+  }
+  // 본인 리포트 제출/조회는 가능
+  const own = await call(R.onRequestPost, 'POST', '/api/expense/reports', dev, { description: 'dev', rows: [row] });
+  assert.equal(own.status, 200);
+  assert.deepEqual((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=mine', dev)).reports.map(x => x.description), ['dev']);
+  // 관리자 등급은 승인 가능
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ['boss@wol.org', 'admin'], { id, action: 'approve' })).report.status, 'approved');
+});
+
+test('경비 관리자 등급 목록 확인', () => {
+  for (const e of ['samuelsong@wol.org', 'jacobmorse@wol.org', 'jeremyrodgers@wol.org', 'jennyson@wol.org']) assert.ok(EXPENSE_ADMIN_EMAILS.includes(e), e);
+  for (const e of ['hkim3@wol.org', 'wolkorea1@gmail.com', 'ychae@wol.org', 'joemin@wol.org', 'peterchae@wol.org']) assert.ok(!EXPENSE_ADMIN_EMAILS.includes(e), e);
 });

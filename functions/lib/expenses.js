@@ -4,9 +4,10 @@
  * 흐름:  submitted(제출) → approved(승인) → processed(장부 반영 완료)
  *                       ↘ rejected(반려)
  *
- * 권한:
+ * 권한 (경비 리포트 전용 — 포탈 계정의 role(master/admin/counselor)과는 무관하며, 아래 목록으로만 결정):
  *  - 제출자   : 승인된 포탈 계정이면 누구나 (본인 리포트만 조회/철회)
- *  - 승인자   : role이 master 또는 admin (본인이 제출한 건은 승인 불가)
+ *  - 승인자   : EXPENSE_ADMIN_EMAILS 의 '관리자' 등급만 (본인이 제출한 건은 승인 불가).
+ *               Developer / Owner / Member 등급은 승인도, 다른 사람 리포트 조회도 할 수 없다.
  *  - 회계담당 : 아래 ACCOUNTANT_EMAILS 목록의 계정. 화면에서 지정하지 않고,
  *               관리자가 Claude에게 요청하면 이 목록을 코드에서 수정해 배포한다.
  *               장부 반영 처리를 하고 승인 알림 메일을 받는다.
@@ -18,8 +19,21 @@
  *  - expense:receipt:{id}:{fileId}  영수증 바이너리 (메타데이터에 파일명/타입)
  */
 import {
-  parseHubSessionToken, getAccount, listAccounts, normalizeEmail, MASTER_EMAILS,
+  parseHubSessionToken, getAccount, normalizeEmail,
 } from './hubAccounts.js';
+
+/**
+ * 경비 '관리자' 등급 — 리포트 승인 + 모든 사람의 리포트 조회 권한 (소문자 이메일).
+ * 등급 변경은 관리자가 Claude에게 요청 → 이 목록을 수정해 배포한다.
+ *   관리자 : 사무엘(samuelsong) · Jacob Morse · Jeremy Rodgers · 손진영(회계 겸임)
+ *   그 외  : Developer(hkim3) · Owner(wolkorea1) · Member(ychae, joemin, peterchae …) → 본인 것만
+ */
+export const EXPENSE_ADMIN_EMAILS = [
+  'samuelsong@wol.org',
+  'jacobmorse@wol.org',
+  'jeremyrodgers@wol.org',
+  'jennyson@wol.org',
+];
 
 /** 장부 회계 담당 포탈 로그인 이메일(소문자). 예: 손진영(Jenny) */
 export const ACCOUNTANT_EMAILS = ['jennyson@wol.org'];
@@ -52,26 +66,21 @@ export async function expenseSession(request, env) {
 
   const account = await getAccount(env, session.email);
   const isMaster = session.role === 'master';
-  // master는 하드코딩 계정이라 KV 계정이 없을 수 있다
+  // master는 하드코딩 계정이라 KV 계정이 없을 수 있다(제출은 가능, 승인/전체조회는 위 목록에 있어야만)
   if (!isMaster && (!account || account.status !== 'approved')) return null;
 
   return {
     email: normalizeEmail(session.email),
     name: account?.name || session.email,
     role: session.role,
-    isApprover: isMaster || session.role === 'admin',
+    isApprover: EXPENSE_ADMIN_EMAILS.includes(normalizeEmail(session.email)),
     isAccountant: ACCOUNTANT_EMAILS.includes(normalizeEmail(session.email)),
   };
 }
 
-/** 승인 알림을 받을 사람들: 승인된 admin + master */
-export async function approverEmails(env) {
-  const accounts = await listAccounts(env);
-  const set = new Set(MASTER_EMAILS);
-  for (const a of accounts) {
-    if (a.status === 'approved' && a.role === 'admin') set.add(normalizeEmail(a.email));
-  }
-  return [...set];
+/** 승인 요청 알림을 받을 사람들: 경비 관리자 등급 */
+export async function approverEmails() {
+  return [...EXPENSE_ADMIN_EMAILS];
 }
 
 /** 회계 승인 알림을 받을 사람들 */

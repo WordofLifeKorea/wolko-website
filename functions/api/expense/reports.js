@@ -136,7 +136,7 @@ export async function onRequestPost(context) {
   await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
 
   const origin = new URL(request.url).origin;
-  const approvers = (await approverEmails(env)).filter(e => e !== session.email);
+  const approvers = (await approverEmails()).filter(e => e !== session.email);
   await notify(context, approvers,
     `[경비 승인 요청] ${report.submitterName} · ${formatKrw(report.total)}`,
     reportEmailHtml({
@@ -252,7 +252,7 @@ export async function onRequestPut(context) {
 
   if (wasRejected) {
     const origin = new URL(request.url).origin;
-    const approvers = (await approverEmails(env)).filter(e => e !== session.email);
+    const approvers = (await approverEmails()).filter(e => e !== session.email);
     await notify(context, approvers,
       `[경비 재제출] ${report.submitterName} · ${formatKrw(report.total)}`,
       reportEmailHtml({
