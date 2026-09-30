@@ -3,7 +3,7 @@
  * POST   /api/expense/reports                     — 새 경비 리포트 제출
  * PATCH  /api/expense/reports                     — body: { id, action, note? }
  *          action: 'approve' | 'reject'  (승인자)   submitted → approved | rejected
- *                  'process'             (회계담당) approved → processed (장부 반영 완료)
+ *                  'process'             (회계담당) approved → processed (송금 처리 완료)
  * DELETE /api/expense/reports?id=                 — 제출자가 아직 승인 전인 본인 리포트 철회
  *
  * 인증: Authorization: Bearer <포탈 세션 토큰>  (권한 규칙은 lib/expenses.js 참고)
@@ -181,11 +181,11 @@ export async function onRequestPatch(context) {
 
     if (action === 'approve') {
       await notify(context, await accountantEmails(),
-        `[경비 장부 반영 요청] ${report.submitterName} · ${formatKrw(report.total)}`,
+        `[경비 송금 처리 요청] ${report.submitterName} · ${formatKrw(report.total)}`,
         reportEmailHtml({
-          heading: '승인된 경비 리포트 — 장부 반영 요청',
-          intro: `<strong>${report.reviewedByName}</strong> 님이 승인한 경비 리포트입니다. 장부에 반영한 뒤 포탈에서 "장부 반영 완료"로 처리해 주세요.`,
-          report, url: `${origin}/expense`, ctaLabel: '회계 장부 열기',
+          heading: '승인된 경비 리포트 — 송금 처리 요청',
+          intro: `<strong>${report.reviewedByName}</strong> 님이 승인한 경비 리포트입니다. 송금을 마친 뒤 포탈에서 "송금 처리 완료"로 처리해 주세요.`,
+          report, url: `${origin}/expense`, ctaLabel: '회계 업무 열기',
         }));
       await notify(context, [report.submitterEmail],
         `[경비 승인됨] ${formatKrw(report.total)}`,
@@ -204,7 +204,7 @@ export async function onRequestPatch(context) {
 
   if (action === 'process') {
     if (!session.isAccountant) return err('회계 담당자만 처리할 수 있습니다.', 403);
-    if (report.status !== 'approved') return err('승인된 리포트만 장부 반영 처리할 수 있습니다.', 409);
+    if (report.status !== 'approved') return err('승인된 리포트만 송금 처리할 수 있습니다.', 409);
     report.status = 'processed';
     report.processedBy = session.email;
     report.processedByName = session.name;
