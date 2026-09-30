@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import * as H from '../functions/lib/hubAccounts.js';
 import * as R from '../functions/api/expense/reports.js';
 import * as F from '../functions/api/expense/receipt.js';
-import * as A from '../functions/api/hub/accountant.js';
+import { ACCOUNTANT_EMAILS } from '../functions/lib/expenses.js';
 
 function setup() {
   const store = new Map();
@@ -38,6 +38,7 @@ const cyn = ['cyn@x.com', 'counselor'];
 const boss = ['boss@wol.org', 'admin'];
 const ann = ['acct@x.com', 'counselor'];
 const master = ['wolkorea1@gmail.com', 'master'];
+if (!ACCOUNTANT_EMAILS.includes('acct@x.com')) ACCOUNTANT_EMAILS.push('acct@x.com');
 
 test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 반영', async () => {
   const { store, sent, acc, call } = setup();
@@ -97,13 +98,42 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
   assert.equal((await call(F.onRequestGet, 'GET', `/api/expense/receipt?reportId=${id}&fileId=${fid}`, ['other@x.com', 'counselor'])).status, 403, '제3자는 영수증 열람 불가');
 });
 
-test('회계 담당 지정은 master만 가능', async () => {
+test('전체 리포트 조회는 관리자·회계 담당만, 일반 계정은 본인 것만', async () => {
   const { acc, call } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('bob@x.com', 'Bob', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  assert.equal((await call(A.onRequestPost, 'POST', '/api/hub/accountant', boss, { email: 'cyn@x.com', isAccountant: true })).status, 403);
-  const r = await call(A.onRequestPost, 'POST', '/api/hub/accountant', master, { email: 'cyn@x.com', isAccountant: true });
-  assert.equal(r.isAccountant, true);
+  await acc('acct@x.com', 'Ann', 'counselor');
+  const bob = ['bob@x.com', 'counselor'];
+  const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
+  await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });
+  await call(R.onRequestPost, 'POST', '/api/expense/reports', bob, { description: 'B', rows: [row] });
+
+  // 일반 계정: 본인 것만, 전체 조회 거부
+  const mine = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=mine', cyn);
+  assert.deepEqual(mine.reports.map(r => r.description), ['A']);
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', cyn)).status, 403);
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', cyn)).me.canViewAll, false);
+
+  // 관리자(승인자)와 회계 담당은 모든 사람의 리포트(승인 전 포함)를 본다
+  for (const who of [boss, ann]) {
+    const all = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', who);
+    assert.equal(all.status, 200);
+    assert.deepEqual(all.reports.map(r => r.description).sort(), ['A', 'B']);
+  }
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ann)).me.canViewAll, true);
+
+  // 다른 사람의 영수증은 일반 계정이 못 보고, 관리자/회계는 승인 전이어도 열람
+  const up = await call(F.onRequestPost, 'POST', '/api/expense/receipt', cyn, { name: 'r.png', type: 'image/png', data: 'data:image/png;base64,' + btoa('img') });
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'C', rows: [{ ...row, receipts: [{ id: up.id, name: 'r.png', type: 'image/png' }] }] });
+  const url = `/api/expense/receipt?reportId=${sub.report.id}&fileId=${up.id}`;
+  assert.equal((await call(F.onRequestGet, 'GET', url, bob)).status, 403);
+  assert.equal((await call(F.onRequestGet, 'GET', url, ann)).status, 200);
+  assert.equal((await call(F.onRequestGet, 'GET', url, boss)).status, 200);
+});
+
+test('회계 담당은 코드 목록의 계정(jennyson@wol.org 포함)', async () => {
+  assert.ok(ACCOUNTANT_EMAILS.includes('jennyson@wol.org'));
 });
 
 test('KRW 항목은 환율 없이 원화 그대로, 합계는 KRW', async () => {

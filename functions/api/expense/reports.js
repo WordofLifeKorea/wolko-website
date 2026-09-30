@@ -1,5 +1,5 @@
 /**
- * GET    /api/expense/reports?scope=mine|approve|accounting|counts
+ * GET    /api/expense/reports?scope=mine|approve|accounting|all|counts  (all = 모든 사람의 리포트, 승인자/회계담당만)
  * POST   /api/expense/reports                     — 새 경비 리포트 제출
  * PATCH  /api/expense/reports                     — body: { id, action, note? }
  *          action: 'approve' | 'reject'  (승인자)   submitted → approved | rejected
@@ -80,10 +80,11 @@ export async function onRequestGet(context) {
     ? all.filter(r => r.status === 'submitted' && r.submitterEmail !== session.email)
     : [];
   const accounting = session.isAccountant ? all.filter(r => r.status === 'approved' || r.status === 'processed') : [];
+  const canViewAll = session.isApprover || session.isAccountant;
 
   if (scope === 'counts') {
     return Response.json({
-      me: { email: session.email, name: session.name, role: session.role, isApprover: session.isApprover, isAccountant: session.isAccountant },
+      me: { email: session.email, name: session.name, role: session.role, isApprover: session.isApprover, isAccountant: session.isAccountant, canViewAll },
       mine: mine.filter(r => r.status === 'rejected' || r.status === 'submitted').length,
       approve: toApprove.length,
       accounting: accounting.filter(r => r.status === 'approved').length,
@@ -95,6 +96,10 @@ export async function onRequestGet(context) {
     // 승인 화면에서는 대기 건과 함께 최근 처리 이력도 보여준다
     const history = all.filter(r => r.status !== 'submitted' && r.reviewedBy === session.email).slice(0, 30);
     return Response.json({ reports: [...toApprove, ...history] }, { headers: CORS });
+  }
+  if (scope === 'all') {
+    if (!canViewAll) return err('전체 리포트는 관리자와 회계 담당자만 볼 수 있습니다.', 403);
+    return Response.json({ reports: all }, { headers: CORS });
   }
   if (scope === 'accounting') {
     if (!session.isAccountant) return err('회계 담당자만 볼 수 있습니다.', 403);
@@ -175,7 +180,7 @@ export async function onRequestPatch(context) {
     await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
 
     if (action === 'approve') {
-      await notify(context, await accountantEmails(env),
+      await notify(context, await accountantEmails(),
         `[경비 장부 반영 요청] ${report.submitterName} · ${formatKrw(report.total)}`,
         reportEmailHtml({
           heading: '승인된 경비 리포트 — 장부 반영 요청',

@@ -73,7 +73,7 @@ export async function onRequestGet({ env, request }) {
   if (!report) return err('리포트를 찾을 수 없습니다.', 404);
 
   const isOwner = report.submitterEmail === session.email;
-  const canSee = isOwner || session.isApprover || (session.isAccountant && ['approved', 'processed'].includes(report.status));
+  const canSee = isOwner || session.isApprover || session.isAccountant; // 승인자·회계담당은 모든 리포트의 영수증 열람 가능
   if (!canSee) return err('열람 권한이 없습니다.', 403);
 
   const known = report.rows.some(r => r.receipts.some(f => f.id === fileId));

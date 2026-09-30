@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=12">
+  <link rel="stylesheet" href="/expense.css?v=13">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <meta name="theme-color" content="#004f68">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
@@ -50,7 +50,7 @@
     const T = {
       ko: {
         pageTitle: '경비 리포트 — WOLKO',
-        tabNew: '새 리포트', tabEdit: '리포트 수정', tabMine: '내 리포트', tabApprove: '승인 대기', tabAcct: '회계 장부', tabStaff: '회계 담당 지정',
+        tabNew: '새 리포트', tabEdit: '리포트 수정', tabMine: '내 리포트', tabApprove: '승인 대기', tabAcct: '회계 장부', tabAll: '전체 리포트',
         st_submitted: '승인 대기', st_approved: '승인됨 · 장부 대기', st_processed: '장부 반영 완료', st_rejected: '반려됨',
         acctPh: 'Account · 계정과목', acctPrev: '이전 계정과목 (직접 입력)', currency: '통화', amountPh: '금액', delRow: '항목 삭제',
         acctOtherPh: '계정과목 직접 입력 (예: Supplies (5250))', itemPh: '구매 품목명 (예: 캠프 간식)', purposePh: '구매 목적 (예: 스태프 야식)', thItem: '품목 · 목적',
@@ -72,9 +72,7 @@
         emptyApprove: '승인 대기 중인 리포트가 없습니다 ✓', recent: '최근 처리한 리포트',
         fTodo: '장부 대기', fDone: '반영 완료', fAll: '전체', csv: 'CSV 내보내기',
         countLine: (n, sum) => n + '건 · ' + sum, emptyFilter: '해당하는 리포트가 없습니다.', emptyMine: '아직 제출한 리포트가 없습니다.',
-        loading: '불러오는 중…', staffTitle: '회계 담당 지정',
-        staffSub: '회계 담당자로 지정된 계정은 승인된 경비 리포트를 열람하고 장부 반영 처리를 할 수 있으며, 경비가 승인될 때마다 알림 메일을 받습니다.',
-        roleAdmin: '관리자', roleCounselor: '상담사', acctOn: '회계 담당 ✓', assign: '지정', noAccts: '승인된 계정이 없습니다.', userAcct: ' · 회계',
+        loading: '불러오는 중…', allPeople: '모든 제출자', allTotal: (n, sum) => n + '건 · ' + sum, userAcct: ' · 회계',
         uploading: '영수증 업로드 중…', max5: '항목당 영수증은 최대 5개까지 첨부할 수 있어요.', attached: '영수증이 첨부되었습니다.',
         pvNoLoad: '미리보기를 불러올 수 없습니다.', pvOpenFail: '영수증을 열 수 없습니다.', pvNewTab: '새 탭', pvSave: '저장', pvClose: '닫기', pvPrev: '이전', pvNext: '다음',
         pvBadImg: '이 형식은 미리볼 수 없어요. 위의 "저장"으로 받아서 확인해 주세요.', pvUnsupported: '미리보기를 지원하지 않는 형식입니다. "저장"으로 받아 주세요.',
@@ -86,7 +84,7 @@
       },
       en: {
         pageTitle: 'Expense Report — WOLKO',
-        tabNew: 'New report', tabEdit: 'Edit report', tabMine: 'My reports', tabApprove: 'To approve', tabAcct: 'Accounting', tabStaff: 'Assign accountants',
+        tabNew: 'New report', tabEdit: 'Edit report', tabMine: 'My reports', tabApprove: 'To approve', tabAcct: 'Accounting', tabAll: 'All reports',
         st_submitted: 'Pending approval', st_approved: 'Approved · awaiting ledger', st_processed: 'Posted to ledger', st_rejected: 'Rejected',
         acctPh: 'Account', acctPrev: 'Previous account (custom)', currency: 'Currency', amountPh: 'Amount', delRow: 'Remove item',
         acctOtherPh: 'Enter account (e.g. Supplies (5250))', itemPh: 'Item purchased (e.g. camp snacks)', purposePh: 'Purpose (e.g. staff late-night meal)', thItem: 'Item · Purpose',
@@ -108,9 +106,7 @@
         emptyApprove: 'No reports are waiting for approval ✓', recent: 'Recently processed',
         fTodo: 'To post', fDone: 'Posted', fAll: 'All', csv: 'Export CSV',
         countLine: (n, sum) => n + (n === 1 ? ' report · ' : ' reports · ') + sum, emptyFilter: 'No matching reports.', emptyMine: 'You have not submitted any reports yet.',
-        loading: 'Loading…', staffTitle: 'Assign accountants',
-        staffSub: 'Accounts marked as accountant can view approved expense reports, post them to the ledger, and receive an email whenever an expense is approved.',
-        roleAdmin: 'Admin', roleCounselor: 'Counselor', acctOn: 'Accountant ✓', assign: 'Assign', noAccts: 'No approved accounts.', userAcct: ' · Accounting',
+        loading: 'Loading…', allPeople: 'All submitters', allTotal: (n, sum) => n + (n === 1 ? ' report · ' : ' reports · ') + sum, userAcct: ' · Accounting',
         uploading: 'Uploading receipt…', max5: 'You can attach up to 5 receipts per item.', attached: 'Receipt attached.',
         pvNoLoad: 'Cannot load the preview.', pvOpenFail: 'Cannot open the receipt.', pvNewTab: 'New tab', pvSave: 'Save', pvClose: 'Close', pvPrev: 'Previous', pvNext: 'Next',
         pvBadImg: 'This format cannot be previewed. Use "Save" above to download it.', pvUnsupported: 'Preview is not supported for this file type. Use "Save" to download it.',
@@ -144,7 +140,7 @@
     let me = null;
     let counts = { mine: 0, approve: 0, accounting: 0 };
     let tab = 'new';
-    let data = { mine: [], approve: [], accounting: [] };
+    let data = { mine: [], approve: [], accounting: [], all: [] };
     let form = null;
     let acctFilter = 'todo';
 
@@ -223,7 +219,7 @@
       const tabs = [{ id: 'new', label: form?.editingId ? t('tabEdit') : t('tabNew') }, { id: 'mine', label: t('tabMine'), n: counts.mine }];
       if (me.isApprover) tabs.push({ id: 'approve', label: t('tabApprove'), n: counts.approve });
       if (me.isAccountant) tabs.push({ id: 'accounting', label: t('tabAcct'), n: counts.accounting });
-      if (me.role === 'master') tabs.push({ id: 'staff', label: t('tabStaff') });
+      if (me.canViewAll) tabs.push({ id: 'all', label: t('tabAll') });
       $('exTabs').innerHTML = tabs.map(x => `<button class="ex-tab ${x.id === tab ? 'active' : ''}" data-tab="${x.id}">${esc(x.label)}${x.n ? `<span class="ex-badge">${x.n}</span>` : ''}</button>`).join('');
     }
 
@@ -411,21 +407,32 @@
       $('exView').innerHTML = list.length ? list.map(r => reportCard(r, mode)).join('') : `<div class="ex-empty">${t('emptyMine')}</div>`;
     }
 
-    async function renderStaff() {
-      $('exView').innerHTML = `<div class="ex-empty">${t('loading')}</div>`;
-      try {
-        const { accounts } = await api('/api/hub/accountant');
-        $('exView').innerHTML = `
-          <div class="ex-card">
-            <h2>${t('staffTitle')}</h2>
-            <p class="ex-sub">${t('staffSub')}</p>
-            ${accounts.length ? accounts.map(a => `
-              <div class="ex-toggle-row">
-                <div><b>${esc(a.name || a.email)}</b><div class="ex-meta">${esc(a.email)} · ${a.role === 'admin' ? t('roleAdmin') : t('roleCounselor')}</div></div>
-                <button class="ex-btn sm ${a.isAccountant ? 'green' : ''}" data-act="toggle-acct" data-email="${esc(a.email)}" data-on="${a.isAccountant ? 1 : 0}">${a.isAccountant ? t('acctOn') : t('assign')}</button>
-              </div>`).join('') : `<div class="ex-empty">${t('noAccts')}</div>`}
-          </div>`;
-      } catch (e) { toast(e.message, true); }
+    /* 전체 리포트(승인자·회계담당 전용): 모든 사람의 리포트를 제출자/상태로 걸러 본다 */
+    let allStatus = 'all', allPerson = '';
+    function visibleAll() {
+      return data.all.filter(r => (allStatus === 'all' || r.status === allStatus) && (!allPerson || r.submitterEmail === allPerson));
+    }
+    function renderAll() {
+      const people = [...new Map(data.all.map(r => [r.submitterEmail, r.submitterName])).entries()].sort((x, y) => String(x[1]).localeCompare(String(y[1]), 'ko'));
+      const shown = visibleAll();
+      const sum = shown.reduce((s, r) => s + r.total, 0);
+      const statuses = ['all', 'submitted', 'approved', 'processed', 'rejected'];
+      $('exView').innerHTML = `
+        <div class="ex-card">
+          <div class="ex-filter">
+            ${statuses.map(k => `<button class="ex-tab ${allStatus === k ? 'active' : ''}" data-allstatus="${k}">${k === 'all' ? t('fAll') : t('st_' + k)}</button>`).join('')}
+          </div>
+          <div class="ex-filter">
+            <select class="ex-select-plain" id="allPerson" aria-label="${esc(t('allPeople'))}">
+              <option value="">${esc(t('allPeople'))}</option>
+              ${people.map(([email, name]) => `<option value="${esc(email)}" ${allPerson === email ? 'selected' : ''}>${esc(name)}</option>`).join('')}
+            </select>
+            <span style="flex:1"></span>
+            <button class="ex-btn sm" data-act="csv-all" ${shown.length ? '' : 'disabled'}>${t('csv')}</button>
+          </div>
+          <div><b>${t('allTotal', shown.length, krw(sum))}</b></div>
+        </div>
+        ${shown.length ? shown.map(r => reportCard(r, 'all')).join('') : `<div class="ex-empty">${t('emptyFilter')}</div>`}`;
     }
 
     /* ─────────── 데이터 로딩 / 화면 전환 ─────────── */
@@ -445,10 +452,11 @@
         if (tab === 'mine') await load('mine');
         if (tab === 'approve') await load('approve');
         if (tab === 'accounting') await load('accounting');
+        if (tab === 'all') await load('all');
       } catch (e) { toast(e.message, true); }
       renderTabs();
       if (tab === 'new') renderNew();
-      else if (tab === 'staff') renderStaff();
+      else if (tab === 'all') renderAll();
       else renderList(tab);
       window.scrollTo({ top: 0 });
     }
@@ -595,8 +603,8 @@
     }
 
     /* ─────────── CSV ─────────── */
-    function exportCsv() {
-      const shown = data.accounting.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed'));
+    function exportCsv(listOverride) {
+      const shown = listOverride || data.accounting.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed'));
       const head = ['Report ID', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Account', 'Item', 'Purpose', 'Where', 'Currency', 'Original Amount', 'Exchange Rate (KRW/USD)', 'KRW Amount'];
       const lines = [head];
       shown.forEach(r => r.rows.forEach(x => lines.push([r.id, t('st_' + r.status), r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account, x.item || '', x.ministryPurpose, x.where, x.currency, x.amount, x.rate || '', x.amountKrw])));
@@ -623,7 +631,7 @@
       applyStatic();
       if (!me) return;
       paintUser(); renderTabs();
-      if (tab === 'new') renderNew(); else if (tab === 'staff') renderStaff(); else renderList(tab);
+      if (tab === 'new') renderNew(); else if (tab === 'all') renderAll(); else renderList(tab);
       if ($('exPreview') && !$('exPreview').hidden) paintPreview();
     }
 
@@ -633,6 +641,8 @@
       if (lb) return setLang(lb.dataset.lang);
       const tabBtn = e.target.closest('[data-tab]');
       if (tabBtn) { if (tabBtn.dataset.tab === 'new' && !form) form = newForm(); return show(tabBtn.dataset.tab); }
+      const sb = e.target.closest('[data-allstatus]');
+      if (sb) { allStatus = sb.dataset.allstatus; return renderAll(); }
       const f = e.target.closest('[data-filter]');
       if (f) { acctFilter = f.dataset.filter; return renderList('accounting'); }
 
@@ -669,12 +679,11 @@
           await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'process' }) }); toast(t('tProcessed')); await show('accounting');
         }
         else if (act === 'csv') exportCsv();
-        else if (act === 'toggle-acct') {
-          await api('/api/hub/accountant', { method: 'POST', body: JSON.stringify({ email: el.dataset.email, isAccountant: el.dataset.on !== '1' }) });
-          await renderStaff();
-        }
+        else if (act === 'csv-all') exportCsv(visibleAll());
       } catch (err) { toast(err.message, true); }
     });
+
+    document.addEventListener('change', e => { if (e.target.id === 'allPerson') { allPerson = e.target.value; renderAll(); } });
 
     document.addEventListener('input', e => {
       const el = e.target;

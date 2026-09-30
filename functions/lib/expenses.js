@@ -7,8 +7,11 @@
  * 권한:
  *  - 제출자   : 승인된 포탈 계정이면 누구나 (본인 리포트만 조회/철회)
  *  - 승인자   : role이 master 또는 admin (본인이 제출한 건은 승인 불가)
- *  - 회계담당 : 계정에 accountant 플래그가 있는 사람 (master가 지정).
- *               승인된 리포트만 볼 수 있고, 장부 반영 처리를 한다.
+ *  - 회계담당 : 아래 ACCOUNTANT_EMAILS 목록의 계정. 화면에서 지정하지 않고,
+ *               관리자가 Claude에게 요청하면 이 목록을 코드에서 수정해 배포한다.
+ *               장부 반영 처리를 하고 승인 알림 메일을 받는다.
+ *  - 전체 조회 : 승인자(master/admin)와 회계담당만 모든 사람의 리포트를 볼 수 있다.
+ *               그 외 계정은 본인 리포트만 조회 가능.
  *
  * 저장소(CAMP_KV):
  *  - expense:report:{id}            리포트 JSON
@@ -17,6 +20,9 @@
 import {
   parseHubSessionToken, getAccount, listAccounts, normalizeEmail, MASTER_EMAILS,
 } from './hubAccounts.js';
+
+/** 장부 회계 담당 포탈 로그인 이메일(소문자). 예: 손진영(Jenny) */
+export const ACCOUNTANT_EMAILS = ['jennyson@wol.org'];
 
 export const REPORT_PREFIX = 'expense:report:';
 export const RECEIPT_PREFIX = 'expense:receipt:';
@@ -54,7 +60,7 @@ export async function expenseSession(request, env) {
     name: account?.name || session.email,
     role: session.role,
     isApprover: isMaster || session.role === 'admin',
-    isAccountant: !!account?.isAccountant,
+    isAccountant: ACCOUNTANT_EMAILS.includes(normalizeEmail(session.email)),
   };
 }
 
@@ -68,12 +74,9 @@ export async function approverEmails(env) {
   return [...set];
 }
 
-/** 회계 승인 알림을 받을 사람들: accountant 플래그가 있는 승인된 계정 */
-export async function accountantEmails(env) {
-  const accounts = await listAccounts(env);
-  return accounts
-    .filter(a => a.status === 'approved' && a.isAccountant)
-    .map(a => normalizeEmail(a.email));
+/** 회계 승인 알림을 받을 사람들 */
+export async function accountantEmails() {
+  return [...ACCOUNTANT_EMAILS];
 }
 
 export async function listReports(env) {
