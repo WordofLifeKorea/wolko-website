@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=14">
+  <link rel="stylesheet" href="/expense.css?v=15">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=12">
   <script src="/wolko-rail.js?v=12" defer></script>
@@ -83,7 +83,7 @@
         tCopied: '지난 리포트를 복사했어요. 금액·날짜를 확인해 주세요.', cWithdraw: '이 리포트를 철회(삭제)할까요?', tWithdrawn: '철회되었습니다.',
         tApproved: '승인했습니다. 회계 담당자에게 알림이 전송됩니다.', pReject: '반려 사유를 입력해 주세요.', tRejected: '반려했습니다.',
         cProcess: '송금을 마쳤나요? "송금 처리 완료"로 처리합니다.', tProcessed: '송금 처리 완료로 처리했습니다.',
-        btnTrash: '삭제', btnRestore: '복구', fTrash: '삭제됨', emptyTrash: '삭제된 리포트가 없습니다.',
+        btnTrash: '삭제', btnRestore: '복구', pLabel: '제출일', pTo: '~', pThis: '이번 달', pLast: '지난 달', pAll: '전체 기간', fTrash: '삭제됨', emptyTrash: '삭제된 리포트가 없습니다.',
         cTrash: '이 리포트를 삭제할까요?\n영수증까지 통째로 백업되어 "삭제됨"에서 언제든 복구할 수 있어요.', tTrashed: '삭제했습니다. "삭제됨"에서 복구할 수 있어요.',
         cRestore: '이 리포트를 복구할까요?', tRestored: '복구했습니다.',
         noteTrashed: (n, d) => '삭제됨 — ' + n + ' · ' + d,
@@ -121,7 +121,7 @@
         tCopied: 'Copied the previous report. Please check the amounts and dates.', cWithdraw: 'Withdraw (delete) this report?', tWithdrawn: 'Withdrawn.',
         tApproved: 'Approved. Accountants have been notified.', pReject: 'Enter the reason for rejection.', tRejected: 'Rejected.',
         cProcess: 'Have you finished sending the payment? It will be marked as payment completed.', tProcessed: 'Marked as payment completed.',
-        btnTrash: 'Delete', btnRestore: 'Restore', fTrash: 'Deleted', emptyTrash: 'No deleted reports.',
+        btnTrash: 'Delete', btnRestore: 'Restore', pLabel: 'Submitted', pTo: '–', pThis: 'This month', pLast: 'Last month', pAll: 'All time', fTrash: 'Deleted', emptyTrash: 'No deleted reports.',
         cTrash: 'Delete this report?\nIt is backed up with its receipts and can be restored from "Deleted" anytime.', tTrashed: 'Deleted. You can restore it from "Deleted".',
         cRestore: 'Restore this report?', tRestored: 'Restored.',
         noteTrashed: (n, d) => 'Deleted — ' + n + ' · ' + d,
@@ -413,6 +413,33 @@
       </article>`;
     }
 
+    /* 기간 필터(제출일 기준) + 계정과목별 합계 — 회계 업무와 전체 리포트가 함께 쓴다 */
+    let period = { from: '', to: '' };
+    const dayOf = iso => { const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+    const inPeriod = r => { const d = dayOf(r.submittedAt); return (!period.from || d >= period.from) && (!period.to || d <= period.to); };
+    function monthRange(offset) {
+      const n = new Date(), a = new Date(n.getFullYear(), n.getMonth() + offset, 1), b = new Date(n.getFullYear(), n.getMonth() + offset + 1, 0);
+      const f = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return { from: f(a), to: f(b) };
+    }
+    function periodHtml() {
+      const cur = monthRange(0), prev = monthRange(-1), is = r => period.from === r.from && period.to === r.to;
+      return `<div class="ex-filter ex-period">
+        <span class="ex-period-lbl">${t('pLabel')}</span>
+        <input type="date" class="ex-select-plain ex-date" id="pFrom" value="${esc(period.from)}" aria-label="from">
+        <span>${t('pTo')}</span>
+        <input type="date" class="ex-select-plain ex-date" id="pTo" value="${esc(period.to)}" aria-label="to">
+        <button class="ex-tab ${is(cur) ? 'active' : ''}" data-period="this">${t('pThis')}</button>
+        <button class="ex-tab ${is(prev) ? 'active' : ''}" data-period="last">${t('pLast')}</button>
+        <button class="ex-tab ${!period.from && !period.to ? 'active' : ''}" data-period="all">${t('pAll')}</button>
+      </div>`;
+    }
+    function acctChips(shown) {
+      const byAcct = {};
+      shown.forEach(r => r.rows.forEach(x => { byAcct[x.account] = (byAcct[x.account] || 0) + x.amountKrw; }));
+      return `<div class="ex-summary">${Object.entries(byAcct).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span class="ex-sum-chip">${esc(k)} <b>${krw(v)}</b></span>`).join('')}</div>`;
+    }
+
     function renderList(mode) {
       let list = data[mode];
       if (mode === 'approve') {
@@ -425,9 +452,7 @@
       }
       if (mode === 'accounting') {
         const inTrash = acctFilter === 'trash';
-        const shown = inTrash ? data.trash.map(x => x.report) : list.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed'));
-        const byAcct = {};
-        shown.forEach(r => r.rows.forEach(x => { byAcct[x.account] = (byAcct[x.account] || 0) + x.amountKrw; }));
+        const shown = inTrash ? data.trash.map(x => x.report) : list.filter(r => (acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed')) && inPeriod(r));
         const sum = shown.reduce((s, r) => s + r.total, 0);
         $('exView').innerHTML = `
           <div class="ex-card">
@@ -439,8 +464,9 @@
               <span style="flex:1"></span>
               <button class="ex-btn sm" data-act="csv" ${shown.length ? '' : 'disabled'}>${t('csv')}</button>
             </div>
+            ${periodHtml()}
             <div><b>${t('countLine', shown.length, krw(sum))}</b></div>
-            <div class="ex-summary">${Object.entries(byAcct).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span class="ex-sum-chip">${esc(k)} <b>${krw(v)}</b></span>`).join('')}</div>
+            ${acctChips(shown)}
           </div>
           ${shown.length ? (inTrash ? data.trash.map(x => reportCard(x.report, 'trash', x)) : shown.map(r => reportCard(r, mode))).join('') : `<div class="ex-empty">${t(inTrash ? 'emptyTrash' : 'emptyFilter')}</div>`}`;
         return;
@@ -451,7 +477,7 @@
     /* 전체 리포트(승인자·회계담당 전용): 모든 사람의 리포트를 제출자/상태로 걸러 본다 */
     let allStatus = 'all', allPerson = '';
     function visibleAll() {
-      return data.all.filter(r => (allStatus === 'all' || r.status === allStatus) && (!allPerson || r.submitterEmail === allPerson));
+      return data.all.filter(r => (allStatus === 'all' || r.status === allStatus) && (!allPerson || r.submitterEmail === allPerson) && inPeriod(r));
     }
     function renderAll() {
       const people = [...new Map(data.all.map(r => [r.submitterEmail, r.submitterName])).entries()].sort((x, y) => String(x[1]).localeCompare(String(y[1]), 'ko'));
@@ -471,7 +497,9 @@
             <span style="flex:1"></span>
             <button class="ex-btn sm" data-act="csv-all" ${shown.length ? '' : 'disabled'}>${t('csv')}</button>
           </div>
+          ${periodHtml()}
           <div><b>${t('allTotal', shown.length, krw(sum))}</b></div>
+          ${acctChips(shown)}
         </div>
         ${shown.length ? shown.map(r => reportCard(r, 'all')).join('') : `<div class="ex-empty">${t('emptyFilter')}</div>`}`;
     }
@@ -647,7 +675,7 @@
 
     /* ─────────── CSV ─────────── */
     function exportCsv(listOverride) {
-      const shown = listOverride || data.accounting.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed'));
+      const shown = listOverride || data.accounting.filter(r => acctFilter === 'all' || (acctFilter === 'todo' ? r.status === 'approved' : r.status === 'processed')).filter(inPeriod);
       const head = ['Report ID', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Account', 'Item', 'Purpose', 'Where', 'Currency', 'Original Amount', 'Exchange Rate (KRW/USD)', 'KRW Amount'];
       const lines = [head];
       shown.forEach(r => r.rows.forEach(x => lines.push([r.id, t('st_' + r.status), r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account, x.item || '', x.ministryPurpose, x.where, x.currency, x.amount, x.rate || '', x.amountKrw])));
@@ -684,6 +712,8 @@
       if (lb) return setLang(lb.dataset.lang);
       const tabBtn = e.target.closest('[data-tab]');
       if (tabBtn) { if (tabBtn.dataset.tab === 'new' && !form) form = newForm(); return show(tabBtn.dataset.tab); }
+      const pb = e.target.closest('[data-period]');
+      if (pb) { period = pb.dataset.period === 'all' ? { from: '', to: '' } : monthRange(pb.dataset.period === 'last' ? -1 : 0); return rerenderStats(); }
       const sb = e.target.closest('[data-allstatus]');
       if (sb) { allStatus = sb.dataset.allstatus; return renderAll(); }
       const f = e.target.closest('[data-filter]');
@@ -737,7 +767,11 @@
       scheduleDraft();
     });
 
-    document.addEventListener('change', e => { if (e.target.id === 'allPerson') { allPerson = e.target.value; renderAll(); } });
+    const rerenderStats = () => (tab === 'all' ? renderAll() : renderList('accounting'));
+    document.addEventListener('change', e => {
+      if (e.target.id === 'allPerson') { allPerson = e.target.value; renderAll(); }
+      else if (e.target.id === 'pFrom' || e.target.id === 'pTo') { period[e.target.id === 'pFrom' ? 'from' : 'to'] = e.target.value; rerenderStats(); }
+    });
 
     document.addEventListener('input', e => {
       const el = e.target;
