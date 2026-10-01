@@ -13,7 +13,7 @@
 import { sendEmail } from '../../lib/hubAccounts.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
-  err, clip, expenseSession, approverEmails, accountantEmails, listReports,
+  EXPENSE_REPLY_TO, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
   totalOf, reportEmailHtml, formatKrw, finalizeReceipts, trashReport, restoreReport, listTrash,
 } from '../../lib/expenses.js';
 
@@ -65,7 +65,7 @@ async function notify(context, to, subject, html) {
   const { env } = context;
   if (!env.RESEND_API_KEY || !to.length) return;
   context.waitUntil(
-    sendEmail(env, { to, subject, html }).catch(e => console.error('expense notification failed:', e))
+    sendEmail(env, { to, subject, html, replyTo: EXPENSE_REPLY_TO }).catch(e => console.error('expense notification failed:', e))
   );
 }
 

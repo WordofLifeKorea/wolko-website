@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import * as H from '../functions/lib/hubAccounts.js';
 import * as R from '../functions/api/expense/reports.js';
 import * as F from '../functions/api/expense/receipt.js';
-import { ACCOUNTANT_EMAILS, EXPENSE_ADMIN_EMAILS } from '../functions/lib/expenses.js';
+import { ACCOUNTANT_EMAILS, EXPENSE_ADMIN_EMAILS, NEW_REPORT_NOTIFY_EMAILS } from '../functions/lib/expenses.js';
 
 function setup() {
   const store = new Map();
@@ -40,6 +40,8 @@ const ann = ['acct@x.com', 'counselor'];
 const master = ['wolkorea1@gmail.com', 'master'];
 if (!ACCOUNTANT_EMAILS.includes('acct@x.com')) ACCOUNTANT_EMAILS.push('acct@x.com');
 if (!EXPENSE_ADMIN_EMAILS.includes('boss@wol.org')) EXPENSE_ADMIN_EMAILS.push('boss@wol.org'); // 테스트용 '관리자' 등급
+const DEFAULT_NOTIFY = [...NEW_REPORT_NOTIFY_EMAILS];
+if (!NEW_REPORT_NOTIFY_EMAILS.includes('boss@wol.org')) NEW_REPORT_NOTIFY_EMAILS.push('boss@wol.org');
 
 test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 반영', async () => {
   const { store, sent, acc, call } = setup();
@@ -65,6 +67,10 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
   assert.equal(sub.report.rows[0].amountKrw, 138000);
   const id = sub.report.id;
   assert.ok(sent[0].to.includes('boss@wol.org') && !sent[0].to.includes('cyn@x.com'), '승인자에게만 알림');
+  for (const e of ['jeremyrodgers@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org']) assert.ok(sent[0].to.includes(e), e + ' 알림');
+  assert.ok(!sent[0].to.includes('jennyson@wol.org') && !sent[0].to.includes('wolkorea1@gmail.com'), '새 리포트 알림은 세 명에게만');
+  assert.equal(sent[0].reply_to, 'wolkorea1@gmail.com', '답장은 wolkorea1로');
+  assert.deepEqual(DEFAULT_NOTIFY, ['samuelsong@wol.org', 'jacobmorse@wol.org', 'jeremyrodgers@wol.org']);
   assert.ok(store.has(`expense:receipt:${id}:${fid}`), '영수증이 영구 키로 이동');
   assert.ok(![...store.keys()].some(k => k.includes(':tmp:')), '임시 키 정리됨');
 

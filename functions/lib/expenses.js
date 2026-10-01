@@ -85,9 +85,12 @@ export async function expenseSession(request, env) {
   };
 }
 
-/** 승인 요청 알림을 받을 사람들: 경비 관리자 등급 */
+/** 새 리포트(제출·재제출) 알림을 받을 사람들 — 승인 권한자와는 별개로 관리한다 */
+export const NEW_REPORT_NOTIFY_EMAILS = ['samuelsong@wol.org', 'jacobmorse@wol.org', 'jeremyrodgers@wol.org'];
+/** 알림 메일에서 답장을 받을 주소 (발신은 인증된 wolko.org 도메인) */
+export const EXPENSE_REPLY_TO = 'wolkorea1@gmail.com';
 export async function approverEmails() {
-  return [...EXPENSE_ADMIN_EMAILS];
+  return [...NEW_REPORT_NOTIFY_EMAILS];
 }
 
 /** 회계 승인 알림을 받을 사람들 */
