@@ -1,7 +1,7 @@
 /**
  * 경비 리포트(Expense Report) 공용 헬퍼.
  *
- * 흐름:  submitted(제출) → approved(승인) → processed(장부 반영 완료)
+ * 흐름:  submitted(제출) → approved(승인 + 카테고리 확정) → processed(송금 완료)
  *                       ↘ rejected(반려)
  *
  * 권한 (경비 리포트 전용 — 포탈 계정의 role(master/admin/counselor)과는 무관하며, 아래 목록으로만 결정):
@@ -10,7 +10,7 @@
  *               Developer / Owner / Member 등급은 승인도, 다른 사람 리포트 조회도 할 수 없다.
  *  - 회계담당 : 아래 ACCOUNTANT_EMAILS 목록의 계정. 화면에서 지정하지 않고,
  *               관리자가 Claude에게 요청하면 이 목록을 코드에서 수정해 배포한다.
- *               장부 반영 처리를 하고 승인 알림 메일을 받는다.
+ *               송금 완료 처리를 하고 승인 알림 메일을 받는다.
  *  - 전체 조회 : 승인자(master/admin)와 회계담당만 모든 사람의 리포트를 볼 수 있다.
  *               그 외 계정은 본인 리포트만 조회 가능.
  *

@@ -343,3 +343,48 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-period { align-items: center; gap: 8px; margin: 10px 0 12px; }
 .ex-period-lbl { font-size: 12px; font-weight: 700; color: var(--mid, #5b7480); }
 .ex-select-plain.ex-date { min-width: 0; width: 140px; padding: 7px 10px; }
+
+/* ══ v7 — 캠퍼스 토글 / 카테고리 확정 / 사람별 카드 목록 ══ */
+.ex-seg { display: inline-flex; padding: 3px; gap: 3px; background: #eef3f6; border-radius: 10px; }
+.ex-seg-btn { border: 0; background: transparent; padding: 7px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; color: var(--mid); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.ex-seg-btn.active { background: #fff; color: var(--blue); box-shadow: 0 1px 3px rgba(16,42,56,.14); }
+.ex-seg-n { font-size: 11px; background: #dbe7ed; color: var(--blue); border-radius: 999px; padding: 1px 7px; }
+.ex-seg-btn.active .ex-seg-n { background: var(--blue); color: #fff; }
+
+/* 승인 화면: 카테고리 확정 */
+.ex-cat { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 190px; }
+.ex-cat .ex-select-plain { min-width: 190px; width: 100%; }
+.ex-confirm { border: 1px solid #c9d8e0; background: #fff; color: var(--blue); }
+.ex-confirm.done { background: var(--green); border-color: var(--green); color: #fff; }
+.ex-btn:disabled.green { background: #b9d9c8; border-color: #b9d9c8; }
+
+/* 송금 관리 / 전체: 사람별 카드 */
+.ex-gbar { margin-bottom: 14px; }
+.ex-gcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; align-items: start; }
+.ex-person { background: var(--card); border: 1px solid #d3dfe5; border-radius: 16px; overflow: hidden; }
+.ex-person-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #f6f9fb; border-bottom: 1px solid #e3ebf0; }
+.ex-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--blue); color: #fff; font: 700 14px var(--f-sans); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.ex-person-name { flex: 1; min-width: 0; }
+.ex-person-total { font-family: var(--f-sans); font-weight: 800; color: var(--blue); }
+.ex-subs { list-style: none; }
+.ex-subs li { border-bottom: 1px solid #edf2f5; }
+.ex-subs li:last-child { border-bottom: 0; }
+.ex-sub-row { width: 100%; display: grid; grid-template-columns: 42px 1fr auto auto; gap: 10px; align-items: center; padding: 11px 16px; border: 0; background: transparent; text-align: left; cursor: pointer; font-size: 13px; }
+.ex-sub-row:hover { background: #f6f9fb; }
+.ex-sub-date { color: var(--mid); font-variant-numeric: tabular-nums; }
+.ex-sub-desc { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.ex-sub-amt { font-weight: 700; font-variant-numeric: tabular-nums; }
+.ex-status.mini { padding: 2px 9px; font-size: 10.5px; white-space: nowrap; }
+.ex-detail { padding: 4px 16px 14px 68px; background: #fbfdfe; }
+.ex-d-item { padding: 8px 0; border-bottom: 1px dashed #e3ebf0; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; }
+.ex-d-item:last-of-type { border-bottom: 0; }
+.ex-d-sub { grid-column: 1 / -1; }
+.ex-d-amt { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 640px) {
+  .ex-gcards { grid-template-columns: 1fr; }
+  .ex-sub-row { grid-template-columns: 36px 1fr auto; padding: 11px 12px; }
+  .ex-sub-row .ex-status { grid-column: 2 / -1; justify-self: start; }
+  .ex-detail { padding: 4px 12px 14px 12px; }
+  .ex-cat { min-width: 0; width: 100%; }
+}

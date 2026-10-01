@@ -3,6 +3,7 @@
  * POST   /api/expense/reports                     — 새 경비 리포트 제출
  * PATCH  /api/expense/reports                     — body: { id, action, note? }
  *          action: 'approve' | 'reject'  (승인자)   submitted → approved | rejected
+ *                    approve 는 body.categories(항목별 계정과목, rows와 같은 길이)로 카테고리를 확정해야 한다
  *                  'process'             (회계담당) approved → processed (송금 처리 완료)
  *                  'trash'               (회계담당) 어떤 상태의 리포트든 삭제 — 영수증 포함 통째로 백업되어 복구 가능
  *                  'restore'             (회계담당) 삭제(백업)된 리포트를 원래대로 복구
@@ -11,6 +12,7 @@
  * 인증: Authorization: Bearer <포탈 세션 토큰>  (권한 규칙은 lib/expenses.js 참고)
  */
 import { sendEmail } from '../../lib/hubAccounts.js';
+import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS } from '../../../src/lib/expense-config.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
   EXPENSE_REPLY_TO, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
@@ -59,6 +61,10 @@ function cleanRows(rawRows) {
     });
   }
   return { rows };
+}
+
+function cleanCampus(value) {
+  return CAMPUSES.includes(value) ? value : DEFAULT_CAMPUS;
 }
 
 async function notify(context, to, subject, html) {
@@ -133,6 +139,7 @@ export async function onRequestPost(context) {
     submitterName: session.name,
     description: clip(body.description, 200),
     project: clip(body.project, 160),
+    campus: cleanCampus(body.campus),
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: new Date().toISOString(),
@@ -186,6 +193,20 @@ export async function onRequestPatch(context) {
     const note = clip(body.note, 300);
     if (action === 'reject' && !note) return err('반려 사유를 입력해 주세요.');
 
+    if (action === 'approve') {
+      // 회계 담당이 다시 분류하지 않도록, 승인자가 모든 항목의 카테고리를 확정해야 승인된다
+      const cats = Array.isArray(body.categories) ? body.categories : [];
+      if (cats.length !== report.rows.length || cats.some(c => !ACCOUNTS.includes(c))) {
+        return err('승인하려면 모든 항목의 카테고리(계정과목)를 확인해 주세요.');
+      }
+      report.rows.forEach((row, i) => {
+        if (row.account !== cats[i]) { row.submittedAccount = row.account; row.categoryChanged = true; }
+        row.account = cats[i];
+      });
+      report.categoriesConfirmedBy = session.email;
+      report.categoriesConfirmedAt = now;
+    }
+
     report.status = action === 'approve' ? 'approved' : 'rejected';
     report.reviewedBy = session.email;
     report.reviewedByName = session.name;
@@ -199,12 +220,12 @@ export async function onRequestPatch(context) {
         `[경비 송금 처리 요청] ${report.submitterName} · ${formatKrw(report.total)}`,
         reportEmailHtml({
           heading: '승인된 경비 리포트 — 송금 처리 요청',
-          intro: `<strong>${report.reviewedByName}</strong> 님이 승인한 경비 리포트입니다. 송금을 마친 뒤 포탈에서 "송금 처리 완료"로 처리해 주세요.`,
+          intro: `<strong>${report.reviewedByName}</strong> 님이 승인한 경비 리포트입니다. 카테고리는 승인자가 확정했습니다. 송금을 마친 뒤 포탈에서 "송금 처리 완료"로 처리해 주세요.`,
           report, url: `${origin}/expense`, ctaLabel: '회계 업무 열기',
         }));
       await notify(context, [report.submitterEmail],
         `[경비 승인됨] ${formatKrw(report.total)}`,
-        reportEmailHtml({ heading: '경비 리포트가 승인되었습니다', intro: '회계 담당자에게 전달되었습니다.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }));
+        reportEmailHtml({ heading: '경비 리포트가 승인되었습니다', intro: '회계 담당자에게 전달되었습니다. 송금이 완료되면 다시 알려드릴게요.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }));
     } else {
       await notify(context, [report.submitterEmail],
         `[경비 반려됨] ${formatKrw(report.total)}`,
@@ -227,6 +248,9 @@ export async function onRequestPatch(context) {
     report.processNote = clip(body.note, 300);
     report.log.push({ at: now, by: session.email, action: 'process', note: report.processNote });
     await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
+    await notify(context, [report.submitterEmail],
+      `[경비 송금 처리 완료] ${formatKrw(report.total)}`,
+      reportEmailHtml({ heading: '경비 송금 처리가 완료되었습니다', intro: '승인된 경비 리포트의 송금이 완료되었습니다.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }));
     return Response.json({ ok: true, report }, { headers: CORS });
   }
 
@@ -262,6 +286,7 @@ export async function onRequestPut(context) {
     status: 'submitted',
     description: clip(body.description, 200),
     project: clip(body.project, 160),
+    campus: cleanCampus(body.campus),
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: now,
