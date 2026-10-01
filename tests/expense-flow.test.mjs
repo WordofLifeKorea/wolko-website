@@ -15,7 +15,7 @@ function setup() {
     async delete(k) { store.delete(k); },
     async list({ prefix }) { return { keys: [...store.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })), list_complete: true }; },
   };
-  const env = { CAMP_KV: kv, ADMIN_PASSWORD: 'secret', RESEND_API_KEY: 'x' };
+  const env = { CAMP_KV: kv, ADMIN_PASSWORD: 'secret', RESEND_API_KEY: 'x', EXPENSE_EMAIL: 'on' };
   const sent = [];
   globalThis.fetch = async (_url, o) => { sent.push(JSON.parse(o.body)); return { ok: true }; };
   const acc = (email, name, role, extra = {}) =>

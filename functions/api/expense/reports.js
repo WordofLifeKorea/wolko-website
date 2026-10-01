@@ -69,7 +69,7 @@ function cleanCampus(value) {
 
 async function notify(context, to, subject, html) {
   const { env } = context;
-  if (!EXPENSE_EMAIL_ENABLED || !env.RESEND_API_KEY || !to.length) return;
+  if (!(EXPENSE_EMAIL_ENABLED || env.EXPENSE_EMAIL === 'on') || !env.RESEND_API_KEY || !to.length) return;
   context.waitUntil(
     sendEmail(env, { to, subject, html, replyTo: EXPENSE_REPLY_TO }).catch(e => console.error('expense notification failed:', e))
   );
