@@ -15,7 +15,7 @@ import { sendEmail } from '../../lib/hubAccounts.js';
 import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS } from '../../../src/lib/expense-config.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
-  EXPENSE_REPLY_TO, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
+  EXPENSE_REPLY_TO, EXPENSE_EMAIL_ENABLED, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
   totalOf, reportEmailHtml, formatKrw, finalizeReceipts, trashReport, restoreReport, listTrash,
 } from '../../lib/expenses.js';
 
@@ -69,7 +69,7 @@ function cleanCampus(value) {
 
 async function notify(context, to, subject, html) {
   const { env } = context;
-  if (!env.RESEND_API_KEY || !to.length) return;
+  if (!EXPENSE_EMAIL_ENABLED || !env.RESEND_API_KEY || !to.length) return;
   context.waitUntil(
     sendEmail(env, { to, subject, html, replyTo: EXPENSE_REPLY_TO }).catch(e => console.error('expense notification failed:', e))
   );
@@ -96,6 +96,10 @@ export async function onRequestGet(context) {
       mine: mine.filter(r => r.status === 'rejected' || r.status === 'submitted').length,
       approve: toApprove.length,
       accounting: accounting.filter(r => r.status === 'approved').length,
+      // 내 리포트의 결과 알림(송금 완료/반려) — 화면에서 마지막으로 확인한 시각과 비교해 배지로 표시
+      alerts: mine.filter(r => r.status === 'processed' || r.status === 'rejected')
+        .map(r => ({ id: r.id, status: r.status, at: r.status === 'processed' ? r.processedAt : r.reviewedAt }))
+        .filter(a => a.at && Date.now() - new Date(a.at).getTime() < 14 * 864e5),
     }, { headers: CORS });
   }
 

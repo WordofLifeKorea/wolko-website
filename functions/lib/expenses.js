@@ -88,6 +88,9 @@ export async function expenseSession(request, env) {
 /** 새 리포트(제출·재제출) 알림을 받을 사람들 — 승인 권한자와는 별개로 관리한다 */
 export const NEW_REPORT_NOTIFY_EMAILS = ['samuelsong@wol.org', 'jacobmorse@wol.org', 'jeremyrodgers@wol.org'];
 /** 알림 메일에서 답장을 받을 주소 (발신은 인증된 wolko.org 도메인) */
+/** 메일 알림은 일단 중지 — 포탈 알림(배지)만 사용. 다시 켜려면 true */
+export const EXPENSE_EMAIL_ENABLED = false;
+
 export const EXPENSE_REPLY_TO = 'wolkorea1@gmail.com';
 export async function approverEmails() {
   return [...NEW_REPORT_NOTIFY_EMAILS];

@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=17">
+  <link rel="stylesheet" href="/expense.css?v=18">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=12">
   <script src="/wolko-rail.js?v=12" defer></script>
@@ -163,7 +163,11 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     const hdr = () => ({ 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() });
 
     let me = null;
-    let counts = { mine: 0, approve: 0, accounting: 0 };
+    let counts = { mine: 0, approve: 0, accounting: 0, alerts: [] };
+    const SEEN_KEY = 'wolko-expense-seen';
+    const seenAt = () => { try { return Number(localStorage.getItem(SEEN_KEY)) || 0; } catch (e) { return 0; } };
+    const markSeen = () => { try { localStorage.setItem(SEEN_KEY, String(Date.now())); } catch (e) {} };
+    const unseenAlerts = () => (counts.alerts || []).filter(a => new Date(a.at).getTime() > seenAt()).length;
     let tab = 'new';
     let data = { mine: [], approve: [], accounting: [], all: [], trash: [] };
     let form = null;
@@ -266,7 +270,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
 
     /* ─────────── 렌더링: 새 리포트 ─────────── */
     function renderTabs() {
-      const tabs = [{ id: 'new', label: form?.editingId ? t('tabEdit') : t('tabNew') }, { id: 'mine', label: t('tabMine'), n: counts.mine }];
+      const tabs = [{ id: 'new', label: form?.editingId ? t('tabEdit') : t('tabNew') }, { id: 'mine', label: t('tabMine'), n: unseenAlerts() }];
       if (me.isApprover) tabs.push({ id: 'approve', label: t('tabApprove'), n: counts.approve });
       if (me.isAccountant) tabs.push({ id: 'accounting', label: t('tabAcct'), n: counts.accounting });
       if (me.canViewAll) tabs.push({ id: 'all', label: t('tabAll') });
@@ -613,7 +617,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       tab = next;
       try {
         await refreshCounts();
-        if (tab === 'mine') await load('mine');
+        if (tab === 'mine') { await load('mine'); markSeen(); }
         if (tab === 'approve') await load('approve');
         if (tab === 'accounting') await load('accounting');
         if (tab === 'all') await load('all');

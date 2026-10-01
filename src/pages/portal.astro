@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=16">
+  <link rel="stylesheet" href="/hub.css?v=17">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
@@ -376,6 +376,24 @@
       `).join('');
     }
 
+    /* 경비 리포트 알림 배지 — 메일 대신 포탈에서 확인 (승인 대기 / 송금 대기 / 내 리포트 결과) */
+    async function loadExpenseBadge() {
+      const token = sessionStorage.getItem('wolko-hub-token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/expense/reports?scope=counts', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        const c = await res.json();
+        let seen = 0; try { seen = Number(localStorage.getItem('wolko-expense-seen')) || 0; } catch (e) {}
+        const unseen = (c.alerts || []).filter(a => new Date(a.at).getTime() > seen).length;
+        const n = (c.approve || 0) + (c.accounting || 0) + unseen;
+        const row = document.querySelector('a.hub-card[href="/expense"] .hub-card-title-row');
+        if (!row || !n) return;
+        row.querySelector('.hub-card-alert')?.remove();
+        row.insertAdjacentHTML('beforeend', '<span class="hub-card-alert" aria-label="' + n + '">' + n + '</span>');
+      } catch (e) {}
+    }
+
     function renderNav() {
       const item = tool => `
         <a class="hub-nav-item" href="${tool.href}" style="--item-color:${tool.color}" onclick="markVisited('${tool.href}')">
@@ -405,6 +423,7 @@
       $('langEnBtn').classList.toggle('is-active', hubLang === 'en');
       renderNav();
       renderGrid();
+      loadExpenseBadge();
     }
     function setHubLang(lang) {
       hubLang = lang;
