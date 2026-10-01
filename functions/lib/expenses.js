@@ -62,6 +62,9 @@ export function clip(value, max) {
   return String(value ?? '').trim().slice(0, max);
 }
 
+/** 포탈 계정에 이름이 등록되지 않은 사용자의 표시 이름 (이름이 등록되면 계정 값이 우선) */
+export const DISPLAY_NAMES = { 'hkim3@wol.org': '김환규' };
+
 /** 요청의 포탈 토큰 → { email, name, role, isApprover, isAccountant } 또는 null */
 export async function expenseSession(request, env) {
   if (!env.CAMP_KV || !env.ADMIN_PASSWORD) return null;
@@ -78,7 +81,7 @@ export async function expenseSession(request, env) {
 
   return {
     email: normalizeEmail(session.email),
-    name: account?.name || session.email,
+    name: account?.name || DISPLAY_NAMES[normalizeEmail(session.email)] || session.email,
     role: session.role,
     isApprover: EXPENSE_ADMIN_EMAILS.includes(normalizeEmail(session.email)),
     isAccountant: ACCOUNTANT_EMAILS.includes(normalizeEmail(session.email)),

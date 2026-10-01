@@ -195,9 +195,11 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     function blankRow(prev) {
       return { account: prev ? prev.account : DEFAULT_ACCOUNT, otherSel: !!prev?.otherSel, currency: 'KRW', amount: '', rate: '', rateNote: null, item: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
     }
+    // 이름이 등록되지 않아 이메일이 이름 자리에 들어온 경우는 설명 기본값에서 제외
+    const myName = () => (me?.name && !String(me.name).includes('@') ? me.name : '');
     function newForm() {
       // 마지막으로 쓴 값이 있으면 그걸, 없으면 로그인한 어카운트 홀더 이름을 기본값으로 채운다
-      return { editingId: null, campus: lsGet(LS.campus) === 'jeju' ? 'jeju' : 'wolko', description: '', project: lsGet(LS.project) || me?.name || '', rows: [blankRow()] };
+      return { editingId: null, campus: lsGet(LS.campus) === 'jeju' ? 'jeju' : 'wolko', description: myName() ? myName() + ' ' : '', project: lsGet(LS.project) || me?.name || '', rows: [blankRow()] };
     }
     /* ─────────── 작성 중 자동 저장 (새로고침·뒤로가기·브라우저 종료 후에도 복원) ─────────── */
     // 서버의 임시 영수증이 3일 뒤 삭제되므로 초안도 같은 기간만 보관한다. 수정 중인 리포트는 저장하지 않는다.
