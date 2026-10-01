@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=16">
+  <link rel="stylesheet" href="/expense.css?v=17">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=12">
   <script src="/wolko-rail.js?v=12" defer></script>
@@ -68,6 +68,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         rateAsOf: d => d + ' 기준', rateBiz: d => d + ' 기준(영업일)', rateFail: '자동 조회 실패 — 직접 입력', rateManual: '직접 입력', rateAria: '환율',
         noteRejected: '반려 사유',
         noteApproved: (n, d) => n + ' 님이 ' + d + '에 승인했습니다.',
+        approvedBy: n => '승인 ' + n,
         noteProcessed: (d, n) => d + ' 송금 처리 완료 (' + n + ')',
         btnResubmit: '수정 후 재제출', btnEdit: '수정', btnWithdraw: '철회', btnCopy: '복사해서 새로 작성',
         btnApprove: '승인', btnReject: '반려', btnProcess: '송금 처리 완료', noDesc: '(설명 없음)',
@@ -112,6 +113,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         rateAsOf: d => 'as of ' + d, rateBiz: d => 'as of ' + d + ' (prev. business day)', rateFail: 'Auto lookup failed — enter manually', rateManual: 'Entered manually', rateAria: 'Exchange rate',
         noteRejected: 'Reason for rejection',
         noteApproved: (n, d) => 'Approved by ' + n + ' on ' + d + '.',
+        approvedBy: n => 'Approved by ' + n,
         noteProcessed: (d, n) => 'Payment completed on ' + d + ' (' + n + ')',
         btnResubmit: 'Edit & resubmit', btnEdit: 'Edit', btnWithdraw: 'Withdraw', btnCopy: 'Copy as new',
         btnApprove: 'Approve', btnReject: 'Reject', btnProcess: 'Mark payment completed', noDesc: '(No description)',
@@ -419,7 +421,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       let notes = '';
       if (rep.status === 'rejected') notes = `<div class="ex-note reject"><b>${t('noteRejected')}</b> — ${esc(rep.reviewNote)} <span class="ex-meta">(${esc(rep.reviewedByName || '')} · ${fmtDate(rep.reviewedAt)})</span></div>`;
       else if (rep.status === 'approved') notes = `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName || '', fmtDate(rep.reviewedAt)))}${rep.reviewNote ? ' — ' + esc(rep.reviewNote) : ''}</div>`;
-      else if (rep.status === 'processed') notes = `<div class="ex-note ok">${esc(t('noteProcessed', fmtDate(rep.processedAt), rep.processedByName || ''))}${rep.processNote ? ' — ' + esc(rep.processNote) : ''}</div>`;
+      else if (rep.status === 'processed') notes = (rep.reviewedByName ? `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName, fmtDate(rep.reviewedAt)))}</div>` : '') + `<div class="ex-note ok">${esc(t('noteProcessed', fmtDate(rep.processedAt), rep.processedByName || ''))}${rep.processNote ? ' — ' + esc(rep.processNote) : ''}</div>`;
 
       let actions = '';
       if (mode === 'mine') {
@@ -525,7 +527,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       let note = '';
       if (rep.status === 'rejected') note = `<div class="ex-note reject"><b>${t('noteRejected')}</b> — ${esc(rep.reviewNote)}</div>`;
       else if (rep.status === 'approved') note = `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName || '', fmtDate(rep.reviewedAt)))}</div>`;
-      else if (rep.status === 'processed') note = `<div class="ex-note ok">${esc(t('noteProcessed', fmtDate(rep.processedAt), rep.processedByName || ''))}</div>`;
+      else if (rep.status === 'processed') note = (rep.reviewedByName ? `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName, fmtDate(rep.reviewedAt)))}</div>` : '') + `<div class="ex-note ok">${esc(t('noteProcessed', fmtDate(rep.processedAt), rep.processedByName || ''))}</div>`;
       let action = '';
       if (mode === 'accounting') {
         action = '<div class="ex-actions">' + (rep.status === 'approved' ? `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}">${t('btnProcess')}</button>` : '')
@@ -571,7 +573,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
             <li>
               <button type="button" class="ex-sub-row" data-toggle="${esc(r.id)}" aria-expanded="${G.open.has(r.id)}">
                 <span class="ex-sub-date">${esc(shortDate(r.submittedAt))}</span>
-                <span class="ex-sub-desc">${esc(r.description || t('noDesc'))}<span class="ex-meta"> · ${esc(t('gItems', r.rows.length))}</span></span>
+                <span class="ex-sub-desc">${esc(r.description || t('noDesc'))}<span class="ex-meta"> · ${esc(t('gItems', r.rows.length))}${r.reviewedByName ? ' · ' + esc(t('approvedBy', r.reviewedByName)) : ''}</span></span>
                 <span class="ex-sub-amt">${krw(r.total)}</span>
                 <span class="ex-status mini ${r.status}">${t('st_' + r.status)}</span>
               </button>
