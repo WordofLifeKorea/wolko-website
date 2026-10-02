@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=27">
+  <link rel="stylesheet" href="/expense.css?v=28">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=12">
   <script src="/wolko-rail.js?v=12" defer></script>
@@ -53,7 +53,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         tabNew: '새 리포트', tabEdit: '리포트 수정', tabMine: '내 리포트', tabApprove: '승인 대기', tabAcct: '회계 업무', tabAll: '전체 리포트',
         st_submitted: '승인 대기', st_approved: '승인됨 · 송금 대기', st_processed: '송금 처리 완료', st_rejected: '반려됨',
         acctPh: 'Account · 계정과목', acctPrev: '이전 계정과목 (직접 입력)', currency: '통화', amountPh: '금액', delRow: '항목 삭제',
-        srcPh: '선교 항목 · 계좌 (예: 월코캠프, SF1)', srcHint: '항목마다 <b>어떤 선교 항목의 지출인지</b>, 그리고 <b>개인 계좌 · 다른 선교사의 개인 계좌 · 월코 메인 계좌</b> 중 어디서 나가는지 직접 적어 주세요. 예) 개인 사역계좌, 월코캠프, 월코, Student Ministry, SF1, Vietnam Camp … 카테고리(코드)는 승인자가 확인해서 확정합니다.', srcSubmitted: a => '작성자 입력: ' + a, srcLbl: '작성자 입력', catUnset: '카테고리 미확정', memoPh: '메모 (선택) - 출금 계좌가 확실하지 않거나 설명이 필요한 경우 적어주세요.', memoLbl: '메모', memoSubLbl: '제출자 메모', aMemoLbl: '승인 메모', aMemoPh: '승인 메모 (선택) - 출금 계좌 확인 내용', memoCheck: '메모 확인 필요', csvMemo: '메모', itemPh: '구매 품목', purposePh: '구매 목적 (필요시 작성)', thItem: '품목 · 목적',
+        srcPh: '선교 항목 · 계좌 (예: 월코캠프, SF1)', srcHint: '어떤 선교 항목의 지출인지, 어느 계좌에서 나가는지(<b>개인 · 다른 선교사 개인 · 월코 메인</b>) 적어 주세요.<span class="ex-srcex">예) 개인 사역계좌 · 월코캠프 · 월코 · Student Ministry · SF1 · Vietnam Camp</span><span class="ex-srcex">카테고리(코드)는 승인자가 확인해서 확정합니다.</span>', srcSubmitted: a => '작성자 입력: ' + a, srcLbl: '작성자 입력', catUnset: '카테고리 미확정', memoPh: '메모 (선택) - 출금 계좌가 확실하지 않거나 설명이 필요한 경우 적어주세요.', memoLbl: '메모', memoSubLbl: '제출자 메모', aMemoLbl: '승인 메모', aMemoPh: '승인 메모 (선택) - 출금 계좌 확인 내용', memoCheck: '메모 확인 필요', csvMemo: '메모', itemPh: '구매 품목', purposePh: '구매 목적 (필요시 작성)', thItem: '품목 · 목적',
         attachTitle: '영수증 첨부', attach: '영수증', less: '접기', remove: '삭제',
         wherePh: 'Where · 장소 (선택)', rowProjPh: '이 항목만 다른 Project (선택)',
         titleNew: '새 경비 리포트', titleEdit: '경비 리포트 수정',
@@ -98,7 +98,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         tabNew: 'New report', tabEdit: 'Edit report', tabMine: 'My reports', tabApprove: 'To approve', tabAcct: 'Accounting', tabAll: 'All reports',
         st_submitted: 'Pending approval', st_approved: 'Approved · awaiting payment', st_processed: 'Payment completed', st_rejected: 'Rejected',
         acctPh: 'Account', acctPrev: 'Previous account (custom)', currency: 'Currency', amountPh: 'Amount', delRow: 'Remove item',
-        srcPh: 'Ministry · account (e.g. WOLKO Camp, SF1)', srcHint: 'For every item, write <b>which ministry the expense is for</b> and whether it comes from <b>your personal account, another missionary\'s personal account, or the WOLKO main account</b>. e.g. Personal ministry account, WOLKO Camp, WOLKO, Student Ministry, SF1, Vietnam Camp … The approver reviews and confirms the category (code).', srcSubmitted: a => 'Written by submitter: ' + a, srcLbl: 'Submitter wrote', catUnset: 'Category not set', memoPh: 'Memo (optional) - Add a note if the withdrawal account is unclear or needs explanation.', memoLbl: 'Memo', memoSubLbl: 'Submitter memo', aMemoLbl: 'Approval note', aMemoPh: 'Approval note (optional) - confirmed withdrawal account', memoCheck: 'Memo — please review', csvMemo: 'Memo', itemPh: 'Item purchased', purposePh: 'Purpose (if needed)', thItem: 'Item · Purpose',
+        srcPh: 'Ministry · account (e.g. WOLKO Camp, SF1)', srcHint: 'Write which ministry the expense is for and which account it comes from (<b>personal · another missionary\'s personal · WOLKO main</b>).<span class="ex-srcex">e.g. Personal ministry account · WOLKO Camp · WOLKO · Student Ministry · SF1 · Vietnam Camp</span><span class="ex-srcex">The approver reviews and confirms the category (code).</span>', srcSubmitted: a => 'Written by submitter: ' + a, srcLbl: 'Submitter wrote', catUnset: 'Category not set', memoPh: 'Memo (optional) - Add a note if the withdrawal account is unclear or needs explanation.', memoLbl: 'Memo', memoSubLbl: 'Submitter memo', aMemoLbl: 'Approval note', aMemoPh: 'Approval note (optional) - confirmed withdrawal account', memoCheck: 'Memo — please review', csvMemo: 'Memo', itemPh: 'Item purchased', purposePh: 'Purpose (if needed)', thItem: 'Item · Purpose',
         attachTitle: 'Attach receipt', attach: 'Receipt', less: 'Less', remove: 'Remove',
         wherePh: 'Where (optional)', rowProjPh: 'Different project for this item (optional)',
         titleNew: 'New expense report', titleEdit: 'Edit expense report',
