@@ -332,8 +332,15 @@ test('전체 비우기: 회계 담당만, 확인 값 필요, 백업되어 복구
   assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { action: 'trash-all' })).status, 400, '확인 값 없이는 불가');
   const out = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { action: 'trash-all', confirm: 'DELETE-ALL' });
   assert.equal(out.count, 1);
+  assert.equal(out.remaining, 0);
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=mine', cyn)).reports.length, 0);
   assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id: a.report.id, action: 'restore' })).status, 200);
+
+  for (let i = 0; i < 6; i++) await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'n' + i, rows: [row] });
+  const first = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { action: 'trash-all', confirm: 'DELETE-ALL' });
+  assert.deepEqual([first.count, first.remaining], [4, 3], '한 번에 4건씩, 남은 건수를 알려준다');
+  const second = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { action: 'trash-all', confirm: 'DELETE-ALL' });
+  assert.deepEqual([second.count, second.remaining], [3, 0]);
 });
 
 

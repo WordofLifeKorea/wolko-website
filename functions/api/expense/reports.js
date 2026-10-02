@@ -189,9 +189,11 @@ export async function onRequestPatch(context) {
   if (action === 'trash-all') {
     if (!session.isAccountant) return err('회계 담당자만 삭제할 수 있습니다.', 403);
     if (body.confirm !== 'DELETE-ALL') return err('확인 값이 필요합니다.');
+    // 한 번에 몇 건만 처리한다(요청당 KV 호출 수 제한 때문). 남은 건수를 돌려주면 화면이 끝날 때까지 반복 호출한다.
     const reports = await listReports(env);
-    for (const r of reports) await trashReport(env, r, session); // 백업 후 이동 — 삭제됨 목록에서 하나씩 복구 가능
-    return Response.json({ ok: true, count: reports.length }, { headers: CORS });
+    const batch = reports.slice(0, 4);
+    for (const r of batch) await trashReport(env, r, session); // 백업 후 이동 — 삭제됨 목록에서 하나씩 복구 가능
+    return Response.json({ ok: true, count: batch.length, remaining: reports.length - batch.length }, { headers: CORS });
   }
 
   if (action === 'restore') {
