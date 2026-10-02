@@ -416,3 +416,8 @@ test('환율 조회: CAD는 frankfurter, VND는 별도 일별 환율 데이터, 
   const bad = await call(RT.onRequestGet, 'GET', '/api/expense/rate?date=2026-09-29&currency=XYZ', cyn);
   assert.ok(bad.error);
 });
+
+test('이예영(ylee7@wol.org)은 회계 담당이지만 경비 승인 권한은 없다', async () => {
+  assert.ok(ACCOUNTANT_EMAILS.includes('ylee7@wol.org'));
+  assert.ok(!EXPENSE_ADMIN_EMAILS.includes('ylee7@wol.org'));
+});

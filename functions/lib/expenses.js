@@ -40,6 +40,7 @@ export const EXPENSE_ADMIN_EMAILS = [
 /** 장부 회계 담당 포탈 로그인 이메일(소문자). 예: 손진영(Jenny) */
 export const ACCOUNTANT_EMAILS = [
   'jennyson@wol.org',
+  'ylee7@wol.org', // 이예영(Rose) — 회계 담당만(경비 승인 권한 없음)
   'wolkorea1@gmail.com', // 임시: 홈페이지 개발 종료 시 제거
 ];
 
