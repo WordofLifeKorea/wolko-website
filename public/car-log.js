@@ -17,6 +17,7 @@
       qrTitle: '차량에 부착할 QR 코드', qrHelp: '고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.', qrPrint: 'QR 코드 인쇄',
       photoDialog: '차량 사진', closePhoto: '사진 닫기',
       pickVehicle: '차량을 선택해 주세요', noEntries: '아직 등록된 사용 기록이 없습니다.', viewPhoto: '사진 보기',
+      clearAll: '전체 비우기', clearConfirm: '지금 있는 모든 사용 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n계속하려면 "삭제"라고 입력하세요.', cleared: n => n + '건을 삭제했어요.',
       mileageAfter: '사용 후 마일리지', mileagePh: '사용 후 계기판 km', mileageSave: '저장', mileageEdit: '수정', mileageSaved: '마일리지를 저장했습니다.', mileageFail: '마일리지를 숫자(km)로 입력해 주세요.',
       useMinistry: '사역용', usePersonal: '개인용', timeExif: '사진 촬영 시각', timeSaved: '기록 시각',
       connectFail: '일지 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', loadFail: '일지를 불러오지 못했습니다.',
@@ -39,6 +40,7 @@
       qrTitle: 'QR codes for the vehicles', qrHelp: 'Print the code for each fixed vehicle and attach it. Scanning selects that vehicle automatically.', qrPrint: 'Print QR codes',
       photoDialog: 'Vehicle photo', closePhoto: 'Close photo',
       pickVehicle: 'Select a vehicle', noEntries: 'No usage records yet.', viewPhoto: 'View photo',
+      clearAll: 'Clear all', clearConfirm: 'This deletes ALL current usage records and photos.\n(They are kept in a deleted-items backup)\n\nType DELETE to continue.', cleared: n => n + ' record(s) deleted.',
       mileageAfter: 'Mileage after use', mileagePh: 'Odometer after use (km)', mileageSave: 'Save', mileageEdit: 'Edit', mileageSaved: 'Mileage saved.', mileageFail: 'Enter the mileage as a number (km).',
       useMinistry: 'Ministry', usePersonal: 'Personal', timeExif: 'photo taken', timeSaved: 'recorded',
       connectFail: 'Could not reach the log service. Please try again shortly.', loadFail: 'Could not load the log.',
@@ -102,6 +104,7 @@
     $('loginPanel').hidden = true;
     $('logApp').hidden = false;
     me = data.user;
+    $('clearAllBtn').hidden = me.role !== 'master';
     $('currentUser').textContent = shownName(data.user.name);
     const select = $('vehicleSelect');
     select.replaceChildren(new Option(t('pickVehicle'), ''));
@@ -357,6 +360,23 @@
     finally { $('saveButton').textContent = t('save'); updateReady(); }
   });
 
+  $('clearAllBtn').addEventListener('click', async () => {
+    const typed = prompt(t('clearConfirm'));
+    if (!typed || !['삭제', 'DELETE'].includes(typed.trim())) return;
+    $('formError').textContent = '';
+    let total = 0, remaining = 1;
+    try {
+      while (remaining > 0) {
+        const response = await fetch('/api/car/usage', { method: 'DELETE', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: 'DELETE-ALL' }) });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || t('saveFail'));
+        total += data.count; remaining = data.count ? data.remaining : 0;
+      }
+      entries = [];
+      renderEntries();
+      $('photoTime').textContent = t('cleared', total);
+    } catch (error) { $('formError').textContent = error.message; }
+  });
   $('closePhoto').addEventListener('click', closePhoto);
   $('photoDialog').addEventListener('click', event => { if (event.target === $('photoDialog')) closePhoto(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && !$('photoDialog').hidden) closePhoto(); });

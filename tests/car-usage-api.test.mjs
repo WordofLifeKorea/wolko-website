@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHubSessionToken } from '../functions/lib/hubAccounts.js';
-import { onRequestGet as listUsage, onRequestPost as saveUsage, onRequestPatch as patchUsage } from '../functions/api/car/usage.js';
+import { onRequestGet as listUsage, onRequestPost as saveUsage, onRequestPatch as patchUsage, onRequestDelete as clearUsage } from '../functions/api/car/usage.js';
 import { onRequestGet as getPhoto } from '../functions/api/car/usage-photo.js';
 
 function memoryEnv() {
   const values = new Map();
+  const metas = new Map();
   return {
     ADMIN_PASSWORD: 'test-secret',
     CAMP_KV: {
@@ -16,7 +17,13 @@ function memoryEnv() {
         if (type === 'arrayBuffer') return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
         return value;
       },
-      async put(key, value) { values.set(key, value); },
+      async put(key, value, options) { values.set(key, value); if (options?.metadata) metas.set(key, options.metadata); },
+      async getWithMetadata(key, type) {
+        const value = values.get(key);
+        if (value === undefined) return { value: null, metadata: null };
+        const out = type === 'arrayBuffer' ? value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) : value;
+        return { value: out, metadata: metas.get(key) ?? null };
+      },
       async delete(key) { values.delete(key); },
       async list({ prefix }) { return { keys: [...values.keys()].filter(name => name.startsWith(prefix)).map(name => ({ name })), list_complete: true }; },
     },
@@ -124,4 +131,23 @@ test('mileage after use can be added by the author only', async () => {
   assert.equal((await ok.json()).entry.mileageAfter, 45210);
   const list = await (await listUsage({ env, request: new Request('https://example.com/api/car/usage', { headers: { Authorization: `Bearer ${mine}` } }) })).json();
   assert.equal(list.entries[0].mileageAfter, 45210);
+});
+
+test('clearing the usage log is master-only, needs confirmation, runs in batches and keeps a backup', async () => {
+  const env = memoryEnv();
+  await env.CAMP_KV.put('hub:account:driver@wol.org', JSON.stringify({ email: 'driver@wol.org', name: '운전자', status: 'approved' }));
+  const user = await createHubSessionToken(env.ADMIN_PASSWORD, 'driver@wol.org', 'counselor');
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  for (let i = 0; i < 7; i++) await saveUsage({ env, request: postRequest(user) });
+  const del = (token, body) => clearUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'DELETE', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
+  assert.equal((await del(user, { confirm: 'DELETE-ALL' })).status, 403);
+  assert.equal((await del(master, {})).status, 400);
+  const first = await (await del(master, { confirm: 'DELETE-ALL' })).json();
+  assert.deepEqual([first.count, first.remaining], [5, 2]);
+  const second = await (await del(master, { confirm: 'DELETE-ALL' })).json();
+  assert.deepEqual([second.count, second.remaining], [2, 0]);
+  const list = await (await listUsage({ env, request: new Request('https://example.com/api/car/usage', { headers: { Authorization: `Bearer ${master}` } }) })).json();
+  assert.equal(list.entries.length, 0);
+  const trashed = await env.CAMP_KV.list({ prefix: 'car:usage:trash:entry:' });
+  assert.equal(trashed.keys.length, 7, '삭제 보관함에 백업');
 });

@@ -1,4 +1,4 @@
-import { ENTRY_PREFIX, PHOTO_PREFIX, fail, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
+import { ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
 
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
 
@@ -9,6 +9,26 @@ export async function onRequestGet({ env, request }) {
   return Response.json({ user: session, vehicles: [...vehicles].map(([id, name]) => ({ id, name })), entries: entries.slice(0, 100) }, {
     headers: { 'Cache-Control': 'no-store' },
   });
+}
+
+// 전체 비우기(마스터 전용): 기록과 사진을 삭제 보관함 키로 옮긴다(백업). 한 번에 몇 건씩 처리하고 남은 건수를 돌려준다.
+export async function onRequestDelete({ env, request }) {
+  const session = await usageSession(request, env);
+  if (!session) return fail('포탈 로그인이 필요합니다.', 401);
+  if (session.role !== 'master') return fail('마스터 관리자만 비울 수 있습니다.', 403);
+  let body;
+  try { body = await request.json(); } catch { body = null; }
+  if (body?.confirm !== 'DELETE-ALL') return fail('확인 값이 필요합니다.');
+  const entries = await listEntries(env);
+  const batch = entries.slice(0, 5);
+  for (const entry of batch) {
+    const photo = await env.CAMP_KV.getWithMetadata(`${PHOTO_PREFIX}${entry.id}`, 'arrayBuffer');
+    if (photo.value) await env.CAMP_KV.put(`${TRASH_PHOTO_PREFIX}${entry.id}`, photo.value, { metadata: photo.metadata ?? undefined });
+    await env.CAMP_KV.put(`${TRASH_ENTRY_PREFIX}${entry.id}`, JSON.stringify({ ...entry, deletedAt: new Date().toISOString(), deletedBy: session.email }));
+    await env.CAMP_KV.delete(`${PHOTO_PREFIX}${entry.id}`);
+    await env.CAMP_KV.delete(`${ENTRY_PREFIX}${entry.id}`);
+  }
+  return Response.json({ ok: true, count: batch.length, remaining: entries.length - batch.length }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 // 사용 후 마일리지(km) 입력: 기록한 본인(또는 마스터)만, 숫자만. 한 번 더 고치는 것도 허용한다.

@@ -3,6 +3,8 @@ import { DISPLAY_NAMES } from './expenses.js';
 
 export const ENTRY_PREFIX = 'car:usage:entry:';
 export const PHOTO_PREFIX = 'car:usage:photo:';
+export const TRASH_ENTRY_PREFIX = 'car:usage:trash:entry:';
+export const TRASH_PHOTO_PREFIX = 'car:usage:trash:photo:';
 const VEHICLES_KEY = 'car:vehicles:missionary';
 const BUILTIN_VEHICLES = { 'silver-van': 'Silver Van', 'santa-fe': 'Santa Fe' };
 
