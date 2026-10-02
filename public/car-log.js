@@ -73,6 +73,8 @@
   let previewUrl = null;
   let fullPhotoUrl = null;
 
+  // 예전 기록에 이메일이 이름 자리에 저장돼 있어도 이름처럼 보이게 한다
+  const shownName = name => String(name || '').includes('@') ? String(name).split('@')[0] : String(name || '');
   function headers() { return { Authorization: `Bearer ${sessionStorage.getItem(tokenKey) || ''}` }; }
   function showLogin(message = '') {
     $('loadStatus').hidden = true;
@@ -96,7 +98,7 @@
     $('loadStatus').hidden = true;
     $('loginPanel').hidden = true;
     $('logApp').hidden = false;
-    $('currentUser').textContent = `${data.user.name} (${data.user.email})`;
+    $('currentUser').textContent = shownName(data.user.name);
     const select = $('vehicleSelect');
     select.replaceChildren(new Option(t('pickVehicle'), ''));
     data.vehicles.forEach(vehicle => select.add(new Option(vehicle.name, vehicle.id)));
@@ -123,7 +125,7 @@
       const title = document.createElement('strong');
       title.textContent = `${entry.vehicleName} · ${entry.useType === 'ministry' ? t('useMinistry') : t('usePersonal')}`;
       const details = document.createElement('span');
-      details.textContent = `${formatTime(entry.photoTakenAt)} · ${entry.userName} · ${entry.timeSource === 'exif' ? t('timeExif') : t('timeSaved')}`;
+      details.textContent = `${formatTime(entry.photoTakenAt)} · ${shownName(entry.userName)} · ${entry.timeSource === 'exif' ? t('timeExif') : t('timeSaved')}`;
       body.append(title, details);
       const button = document.createElement('button');
       button.type = 'button';
