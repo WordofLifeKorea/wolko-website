@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=23">
+  <link rel="stylesheet" href="/expense.css?v=24">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=12">
   <script src="/wolko-rail.js?v=12" defer></script>
@@ -56,7 +56,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         tabNew: '새 리포트', tabEdit: '리포트 수정', tabMine: '내 리포트', tabApprove: '승인 대기', tabAcct: '회계 업무', tabAll: '전체 리포트',
         st_submitted: '승인 대기', st_approved: '승인됨 · 송금 대기', st_processed: '송금 처리 완료', st_rejected: '반려됨',
         acctPh: 'Account · 계정과목', acctPrev: '이전 계정과목 (직접 입력)', currency: '통화', amountPh: '금액', delRow: '항목 삭제',
-        memoPh: '메모 (선택) - 출금 계좌가 확실하지 않거나 설명이 필요한 경우 적어주세요.', memoLbl: '메모', aMemoPh: '승인 메모 (선택)', memoCheck: '메모 확인 필요', csvMemo: '메모', itemPh: '구매 품목명 (예: 캠프 간식)', purposePh: '구매 목적 (예: 스태프 야식)', thItem: '품목 · 목적',
+        memoPh: '메모 (선택) - 출금 계좌가 확실하지 않거나 설명이 필요한 경우 적어주세요.', memoLbl: '메모', aMemoLbl: '승인 메모', aMemoPh: '승인 메모 (선택) - 출금 계좌 확인 내용', memoCheck: '메모 확인 필요', csvMemo: '메모', itemPh: '구매 품목명 (예: 캠프 간식)', purposePh: '구매 목적 (예: 스태프 야식)', thItem: '품목 · 목적',
         attachTitle: '영수증 첨부', attach: '영수증', less: '접기', remove: '삭제',
         wherePh: 'Where · 장소 (선택)', rowProjPh: '이 항목만 다른 Project (선택)',
         titleNew: '새 경비 리포트', titleEdit: '경비 리포트 수정',
@@ -91,7 +91,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         campus_wolko: '평택', campus_jeju: '제주', btnTrashAll: '전체 비우기', cTrashAll: '지금 있는 모든 리포트를 삭제합니다.\n(백업되어 "삭제됨"에서 하나씩 복구할 수 있어요)\n\n계속하려면 "삭제"라고 입력하세요.', tTrashAll: n => n + '건을 삭제했어요.',
         catConfirm: '확인', catDone: '✓ 확인됨', catConfirmAll: '카테고리 모두 확인', catPick: '카테고리 선택',
         catNeed: '모든 항목의 카테고리를 확인해야 승인할 수 있어요.',
-        catHint: '승인하기 전에 항목마다 카테고리(계정과목)를 확인·확정해 주세요. 확정한 값이 그대로 회계 담당자에게 전달됩니다.',
+        catHint: '승인하기 전에 항목마다 카테고리(계정과목)와 출금 계좌를 확인하고, 필요하면 승인 메모를 남긴 뒤 "확인"을 눌러 주세요. 메모가 있는 항목은 반드시 확인해야 승인됩니다. 확정한 값이 그대로 회계 담당자에게 전달됩니다.',
         catSubmitted: a => '제출 시: ' + a,
         gN: n => n + '건', gPeople: n => n + '명', gEmpty: '표시할 리포트가 없습니다.', gItems: n => '항목 ' + n + '개',
         errLogin: '로그인이 필요합니다.', errReq: '요청에 실패했습니다.',
@@ -101,7 +101,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         tabNew: 'New report', tabEdit: 'Edit report', tabMine: 'My reports', tabApprove: 'To approve', tabAcct: 'Accounting', tabAll: 'All reports',
         st_submitted: 'Pending approval', st_approved: 'Approved · awaiting payment', st_processed: 'Payment completed', st_rejected: 'Rejected',
         acctPh: 'Account', acctPrev: 'Previous account (custom)', currency: 'Currency', amountPh: 'Amount', delRow: 'Remove item',
-        memoPh: 'Memo (optional) - Add a note if the withdrawal account is unclear or needs explanation.', memoLbl: 'Memo', aMemoPh: 'Approval note (optional)', memoCheck: 'Memo — please review', csvMemo: 'Memo', itemPh: 'Item purchased (e.g. camp snacks)', purposePh: 'Purpose (e.g. staff late-night meal)', thItem: 'Item · Purpose',
+        memoPh: 'Memo (optional) - Add a note if the withdrawal account is unclear or needs explanation.', memoLbl: 'Memo', aMemoLbl: 'Approval note', aMemoPh: 'Approval note (optional) - confirmed withdrawal account', memoCheck: 'Memo — please review', csvMemo: 'Memo', itemPh: 'Item purchased (e.g. camp snacks)', purposePh: 'Purpose (e.g. staff late-night meal)', thItem: 'Item · Purpose',
         attachTitle: 'Attach receipt', attach: 'Receipt', less: 'Less', remove: 'Remove',
         wherePh: 'Where (optional)', rowProjPh: 'Different project for this item (optional)',
         titleNew: 'New expense report', titleEdit: 'Edit expense report',
@@ -136,7 +136,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         campus_wolko: 'Pyeongtaek', campus_jeju: 'Jeju', btnTrashAll: 'Delete all', cTrashAll: 'This deletes ALL current reports.\n(They are backed up and can be restored one by one from "Deleted")\n\nType DELETE to continue.', tTrashAll: n => n + ' report(s) deleted.',
         catConfirm: 'Confirm', catDone: '✓ Confirmed', catConfirmAll: 'Confirm all categories', catPick: 'Select category',
         catNeed: 'Confirm the category of every item before approving.',
-        catHint: 'Before approving, confirm the category (account) of each item. The confirmed value goes straight to the accountant.',
+        catHint: 'Before approving, confirm each item\'s category and withdrawal account, add an approval note if needed, then press Confirm. Items with a memo must be confirmed. The confirmed values go straight to the accountant.',
         catSubmitted: a => 'Submitted as: ' + a,
         gN: n => n + (n === 1 ? ' report' : ' reports'), gPeople: n => n + (n === 1 ? ' person' : ' people'), gEmpty: 'No reports to show.', gItems: n => n + (n === 1 ? ' item' : ' items'),
         errLogin: 'Please sign in.', errReq: 'Request failed.',
@@ -379,7 +379,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     function projectOf(rep, row) { return row.project || rep.project || ''; }
 
     const memoHtml = r => (r.memo ? `<div class="ex-memo"><b>📝 ${esc(t('memoLbl'))}</b> ${esc(r.memo)}</div>` : '')
-      + (r.approverMemo ? `<div class="ex-memo ap"><b>✔ ${esc(t('aMemoPh').replace(/\s*\(.*\)/, ''))}</b> ${esc(r.approverMemo)}</div>` : '');
+      + (r.approverMemo ? `<div class="ex-memo ap"><b>✔ ${esc(t('aMemoLbl'))}</b> ${esc(r.approverMemo)}</div>` : '');
     function receiptChips(rep, row) {
       return (row.receipts || []).map(f => `<span class="ex-chip link" data-act="open-receipt" data-rid="${esc(rep.id)}" data-fid="${esc(f.id)}" data-name="${esc(f.name)}" data-type="${esc(f.type)}">📎 ${esc(f.name)}</span>`).join('');
     }
@@ -406,9 +406,12 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
             <option value="">${esc(t('catPick'))}</option>
             ${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${cur === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
           </select>
-          <button class="ex-btn sm ex-confirm ${st.confirmed[i] ? 'done' : ''}" data-act="confirm-cat" data-id="${esc(rep.id)}" data-i="${i}">${st.confirmed[i] ? t('catDone') : t('catConfirm')}</button>
-        </div>${r.account && r.account !== cur ? `<div class="ex-meta">${esc(t('catSubmitted', r.account))}</div>` : ''}
-        <input class="ex-input ex-amemo" data-amemo="${i}" data-repid="${esc(rep.id)}" placeholder="${esc(t('aMemoPh'))}" value="${esc(st.memos[i])}" maxlength="300">`;
+          ${r.account && r.account !== cur ? `<div class="ex-meta">${esc(t('catSubmitted', r.account))}</div>` : ''}
+          <div class="ex-cat-confirm">
+            <input class="ex-input ex-amemo" data-amemo="${i}" data-repid="${esc(rep.id)}" placeholder="${esc(t('aMemoPh'))}" value="${esc(st.memos[i])}" maxlength="300">
+            <button class="ex-btn sm ex-confirm ${st.confirmed[i] ? 'done' : ''}" data-act="confirm-cat" data-id="${esc(rep.id)}" data-i="${i}">${st.confirmed[i] ? t('catDone') : t('catConfirm')}</button>
+          </div>
+        </div>`;
     }
 
     function reportCard(rep, mode, trashInfo) {
