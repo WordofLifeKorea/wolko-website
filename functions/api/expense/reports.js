@@ -256,8 +256,10 @@ export async function onRequestPatch(context) {
         return err('승인하려면 모든 항목의 카테고리(계정과목)를 확인해 주세요.');
       }
       // 제출자가 메모를 남긴 항목은 승인자가 하나씩 확인(체크)해야 한다
+      // 위임하면 확인하지 않은 항목은 자동으로 확인 처리된다(autoChecks) — 기록에는 자동 확인으로 남긴다.
       const checks = Array.isArray(body.checks) ? body.checks : [];
-      if (report.rows.some((row, i) => row.memo && checks[i] !== true)) return err('메모가 있는 항목을 모두 확인해 주세요.');
+      const autoChecks = delegate && Array.isArray(body.autoChecks) ? body.autoChecks : [];
+      if (report.rows.some((row, i) => row.memo && checks[i] !== true && autoChecks[i] !== true)) return err('메모가 있는 항목을 모두 확인해 주세요.');
       const aMemos = Array.isArray(body.approverMemos) ? body.approverMemos : [];
       report.rows.forEach((row, i) => {
         if (cats[i]) {
@@ -266,7 +268,10 @@ export async function onRequestPatch(context) {
         }
         const am = clip(aMemos[i], 300);
         if (am) row.approverMemo = am; else delete row.approverMemo;
-        if (row.memo) row.memoCheckedBy = session.email;
+        if (row.memo) {
+          if (autoChecks[i] === true) row.memoAutoChecked = true; else delete row.memoAutoChecked;
+          row.memoCheckedBy = session.email;
+        }
       });
       if (delegate && report.rows.some(r => !ACCOUNTS.includes(r.account))) {
         report.categoryDelegated = true;

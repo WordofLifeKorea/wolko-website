@@ -566,3 +566,17 @@ test('위임은 확인하지 않은 항목만: 확인한 항목의 코드는 확
   assert.equal(all.report.categoriesConfirmedBy, 'boss@wol.org');
   assert.equal((await patch(id2, ann, { action: 'process' })).status, 200);
 });
+
+test('위임하면 확인하지 않은 항목(메모 포함)은 자동 확인으로 기록된다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  const row = (item, extra = {}) => ({ source: '월코캠프', currency: 'KRW', amount: 1000, item, when: '2026-09-29', ...extra });
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'auto', rows: [row('a', { memo: '메모 있음' }), row('b')] });
+  const id = sub.report.id;
+  const patch = body => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, ...body });
+  assert.equal((await patch({ action: 'approve', delegate: true, categories: ['', ''], checks: [false, false] })).status, 400, '자동 확인 표시 없이 메모 항목 미확인은 거절');
+  const ok = await patch({ action: 'approve', delegate: true, categories: ['', ''], checks: [true, true], autoChecks: [true, true] });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.report.rows[0].memoAutoChecked, true);
+});
