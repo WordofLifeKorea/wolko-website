@@ -17,6 +17,7 @@
       qrTitle: '차량에 부착할 QR 코드', qrHelp: '고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.', qrPrint: 'QR 코드 인쇄',
       photoDialog: '차량 사진', closePhoto: '사진 닫기',
       pickVehicle: '차량을 선택해 주세요', noEntries: '아직 등록된 사용 기록이 없습니다.', viewPhoto: '사진 보기',
+      mileageAfter: '사용 후 마일리지', mileagePh: '사용 후 계기판 km', mileageSave: '저장', mileageEdit: '수정', mileageSaved: '마일리지를 저장했습니다.', mileageFail: '마일리지를 숫자(km)로 입력해 주세요.',
       useMinistry: '사역용', usePersonal: '개인용', timeExif: '사진 촬영 시각', timeSaved: '기록 시각',
       connectFail: '일지 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', loadFail: '일지를 불러오지 못했습니다.',
       photoOpenFail: '사진을 열지 못했습니다.', resizeFail: '사진 크기를 줄이지 못했습니다. 다른 사진을 선택해 주세요.',
@@ -38,6 +39,7 @@
       qrTitle: 'QR codes for the vehicles', qrHelp: 'Print the code for each fixed vehicle and attach it. Scanning selects that vehicle automatically.', qrPrint: 'Print QR codes',
       photoDialog: 'Vehicle photo', closePhoto: 'Close photo',
       pickVehicle: 'Select a vehicle', noEntries: 'No usage records yet.', viewPhoto: 'View photo',
+      mileageAfter: 'Mileage after use', mileagePh: 'Odometer after use (km)', mileageSave: 'Save', mileageEdit: 'Edit', mileageSaved: 'Mileage saved.', mileageFail: 'Enter the mileage as a number (km).',
       useMinistry: 'Ministry', usePersonal: 'Personal', timeExif: 'photo taken', timeSaved: 'recorded',
       connectFail: 'Could not reach the log service. Please try again shortly.', loadFail: 'Could not load the log.',
       photoOpenFail: 'Could not open the photo.', resizeFail: 'Could not shrink the photo. Please choose another one.',
@@ -68,6 +70,7 @@
     applyLang();
   }
   let entries = [];
+  let me = null;
   let photoBlob = null;
   let photoTakenAt = null;
   let previewUrl = null;
@@ -98,6 +101,7 @@
     $('loadStatus').hidden = true;
     $('loginPanel').hidden = true;
     $('logApp').hidden = false;
+    me = data.user;
     $('currentUser').textContent = shownName(data.user.name);
     const select = $('vehicleSelect');
     select.replaceChildren(new Option(t('pickVehicle'), ''));
@@ -132,8 +136,55 @@
       button.textContent = t('viewPhoto');
       button.addEventListener('click', () => openPhoto(entry.id));
       row.append(body, button);
+      row.append(mileageBlock(entry));
       list.append(row);
     });
+  }
+
+  // 사용 후 마일리지: 값이 있으면 보여주고, 본인 기록이면 입력/수정할 수 있다
+  function mileageBlock(entry) {
+    const box = document.createElement('div');
+    box.className = 'log-mileage';
+    const mine = me && (entry.userEmail === me.email || me.role === 'master');
+    const draw = editing => {
+      box.replaceChildren();
+      if (entry.mileageAfter != null && !editing) {
+        const text = document.createElement('span');
+        text.className = 'log-mileage-value';
+        text.textContent = `${t('mileageAfter')} ${Number(entry.mileageAfter).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR')} km`;
+        box.append(text);
+        if (mine) {
+          const edit = document.createElement('button');
+          edit.type = 'button'; edit.className = 'log-link'; edit.textContent = t('mileageEdit');
+          edit.addEventListener('click', () => draw(true));
+          box.append(edit);
+        }
+        return;
+      }
+      if (!mine) return;
+      const input = document.createElement('input');
+      input.type = 'number'; input.inputMode = 'numeric'; input.min = '0'; input.step = '1';
+      input.placeholder = t('mileagePh'); input.setAttribute('aria-label', t('mileageAfter'));
+      if (entry.mileageAfter != null) input.value = entry.mileageAfter;
+      const save = document.createElement('button');
+      save.type = 'button'; save.textContent = t('mileageSave');
+      save.addEventListener('click', async () => {
+        const km = Number(input.value);
+        if (input.value === '' || !Number.isInteger(km) || km < 0) { $('formError').textContent = t('mileageFail'); return; }
+        $('formError').textContent = '';
+        save.disabled = true;
+        try {
+          const response = await fetch('/api/car/usage', { method: 'PATCH', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ id: entry.id, mileageAfter: km }) });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || t('saveFail'));
+          Object.assign(entry, data.entry);
+          draw(false);
+        } catch (error) { $('formError').textContent = error.message; save.disabled = false; }
+      });
+      box.append(input, save);
+    };
+    draw(false);
+    return box;
   }
 
   async function openPhoto(id) {

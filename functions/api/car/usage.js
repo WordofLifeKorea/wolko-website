@@ -11,6 +11,24 @@ export async function onRequestGet({ env, request }) {
   });
 }
 
+// 사용 후 마일리지(km) 입력: 기록한 본인(또는 마스터)만, 숫자만. 한 번 더 고치는 것도 허용한다.
+export async function onRequestPatch({ env, request }) {
+  const session = await usageSession(request, env);
+  if (!session) return fail('포탈 로그인이 필요합니다.', 401);
+  let body;
+  try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
+  const id = String(body?.id || '');
+  const entry = id ? await env.CAMP_KV.get(`${ENTRY_PREFIX}${id}`, 'json') : null;
+  if (!entry) return fail('기록을 찾을 수 없습니다.', 404);
+  if (entry.userEmail !== session.email && session.role !== 'master') return fail('본인이 기록한 일지만 수정할 수 있습니다.', 403);
+  const km = Number(body?.mileageAfter);
+  if (!Number.isInteger(km) || km < 0 || km > 2_000_000) return fail('마일리지는 0 이상의 숫자(km)로 입력해 주세요.');
+  entry.mileageAfter = km;
+  entry.mileageAfterAt = new Date().toISOString();
+  await env.CAMP_KV.put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
+  return Response.json({ entry }, { headers: { 'Cache-Control': 'no-store' } });
+}
+
 export async function onRequestPost({ env, request }) {
   const session = await usageSession(request, env);
   if (!session) return fail('포탈 로그인이 필요합니다.', 401);

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHubSessionToken } from '../functions/lib/hubAccounts.js';
-import { onRequestGet as listUsage, onRequestPost as saveUsage } from '../functions/api/car/usage.js';
+import { onRequestGet as listUsage, onRequestPost as saveUsage, onRequestPatch as patchUsage } from '../functions/api/car/usage.js';
 import { onRequestGet as getPhoto } from '../functions/api/car/usage-photo.js';
 
 function memoryEnv() {
@@ -105,4 +105,23 @@ test('usage log offers only Silver Van and Santa Fe, even if missionary vehicles
   assert.deepEqual(data.vehicles.map(v => v.id), ['silver-van', 'santa-fe']);
   const bad = await saveUsage({ env, request: postRequest(token, { vehicleId: 'kim-car' }) });
   assert.equal(bad.status, 400, '선교사 개인 차량은 사용 일지에서 선택할 수 없다');
+});
+
+test('mileage after use can be added by the author only', async () => {
+  const env = memoryEnv();
+  for (const [email, name] of [['driver@wol.org', '운전자'], ['other@wol.org', '다른사람']]) {
+    await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name, status: 'approved' }));
+  }
+  const mine = await createHubSessionToken(env.ADMIN_PASSWORD, 'driver@wol.org', 'counselor');
+  const other = await createHubSessionToken(env.ADMIN_PASSWORD, 'other@wol.org', 'counselor');
+  const saved = await (await saveUsage({ env, request: postRequest(mine) })).json();
+  const patch = (token, body) => patchUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
+  assert.equal((await patch(other, { id: saved.entry.id, mileageAfter: 1000 })).status, 403);
+  assert.equal((await patch(mine, { id: saved.entry.id, mileageAfter: -5 })).status, 400);
+  assert.equal((await patch(mine, { id: saved.entry.id, mileageAfter: 'abc' })).status, 400);
+  const ok = await patch(mine, { id: saved.entry.id, mileageAfter: 45210 });
+  assert.equal(ok.status, 200);
+  assert.equal((await ok.json()).entry.mileageAfter, 45210);
+  const list = await (await listUsage({ env, request: new Request('https://example.com/api/car/usage', { headers: { Authorization: `Bearer ${mine}` } }) })).json();
+  assert.equal(list.entries[0].mileageAfter, 45210);
 });
