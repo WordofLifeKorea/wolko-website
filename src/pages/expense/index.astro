@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=47">
+  <link rel="stylesheet" href="/expense.css?v=48">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=13">
   <link rel="stylesheet" href="/wolko-header.css?v=1">
@@ -60,7 +60,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         attachTitle: '영수증 첨부', attach: '영수증', less: '접기', remove: '삭제',
         wherePh: 'Where · 장소 (선택)', rowProjPh: '이 항목만 다른 Project (선택)',
         titleNew: '새 경비 리포트', titleEdit: '경비 리포트 수정',
-        subNew: n => n + ' 님 명의로 제출됩니다. 기준 통화는 원화(₩)이고, 달러($) · 캐나다 달러(C$) · 베트남 동(₫) 항목은 영수 날짜 환율로 자동 환산돼요.',
+        subNew: n => n + ' 님 명의로 제출됩니다.', fxBase: '기준 통화', fxBaseVal: '₩ 원화', fxAuto: '외화는 영수 날짜 환율로 자동 환산돼요',
         lblDesc: 'Description<span class="ko">설명</span>', descPh: '예: 9월 캠프 준비 경비',
         lblProject: 'Project<span class="ko">프로젝트 (마지막 값 기억)</span>', projPh: '예: 1552044602 - Kim, Hwan Kyu',
         addRow: '＋ 항목 추가', resetDraft: '작성 내용 지우기', cResetDraft: '작성 중인 내용을 모두 지울까요?', tDraftRestored: '작성 중이던 내용을 불러왔어요.', cancelEdit: '수정 취소', submitEdit: '수정 후 다시 제출', submit: '경비 리포트 제출', totalKrw: '합계 (KRW)',
@@ -105,7 +105,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         attachTitle: 'Attach receipt', attach: 'Receipt', less: 'Less', remove: 'Remove',
         wherePh: 'Where (optional)', rowProjPh: 'Different project for this item (optional)',
         titleNew: 'New expense report', titleEdit: 'Edit expense report',
-        subNew: n => 'Submitted under ' + n + '. The base currency is KRW (₩); dollar ($), Canadian dollar (C$) and Vietnamese dong (₫) items are converted automatically at the exchange rate on the receipt date.',
+        subNew: n => 'Submitted under ' + n + '.', fxBase: 'Base currency', fxBaseVal: '₩ KRW', fxAuto: 'Foreign amounts are converted at the receipt-date rate',
         lblDesc: 'Description', descPh: 'e.g. September camp supplies',
         lblProject: 'Project<span class="ko">remembers last value</span>', projPh: 'e.g. 1552044602 - Kim, Hwan Kyu',
         addRow: '+ Add item', resetDraft: 'Clear draft', cResetDraft: 'Clear everything you have entered?', tDraftRestored: 'Restored your unsent draft.', cancelEdit: 'Cancel edit', submitEdit: 'Save & resubmit', submit: 'Submit expense report', totalKrw: 'Total (KRW)',
@@ -339,7 +339,12 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
       $('exView').innerHTML = `
       <div class="ex-card">
         <h2>${editing ? t('titleEdit') : t('titleNew')}</h2>
-        <p class="ex-sub">${esc(t('subNew', me.name))}</p>
+        <p class="ex-sub ex-submitter">${esc(t('subNew', me.name))}</p>
+        <div class="ex-fxnote">
+          <span class="ex-fx-base"><em>${esc(t('fxBase'))}</em> <b>${esc(t('fxBaseVal'))}</b></span>
+          <span class="ex-fx-auto">${esc(t('fxAuto'))}</span>
+          <span class="ex-fx-chips" aria-hidden="true">${Object.keys(FX).map(c => `<i>${esc(FX[c].symbol)} ${c}</i>`).join('')}</span>
+        </div>
         <div class="ex-grid">
           <div class="ex-field">
             <label>${t('lblDesc')}</label>
@@ -477,8 +482,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         actions += `<button class="ex-btn sm" data-act="copy" data-id="${esc(rep.id)}">${t('btnCopy')}</button>`;
       } else if (approving) {
         const ready = approvalReady(st);
-        actions = (st.delegated ? '' : `<button class="ex-btn sm" data-act="confirm-all" data-id="${esc(rep.id)}">${t('catConfirmAll')}</button>`)
-          + `<button class="ex-btn sm ex-delegate ${st.delegated ? 'on' : ''}" data-act="delegate" data-id="${esc(rep.id)}">${t(st.delegated ? 'catDelegated' : 'catDelegate')}</button><span style="flex:1"></span><button class="ex-btn danger sm" data-act="reject" data-id="${esc(rep.id)}">${t('btnReject')}</button><button class="ex-btn green sm" data-act="approve" data-id="${esc(rep.id)}" ${ready ? '' : 'disabled'}>${t('btnApprove')}</button>`;
+        actions = `<button class="ex-btn sm ex-delegate ${st.delegated ? 'on' : ''}" data-act="delegate" data-id="${esc(rep.id)}">${t(st.delegated ? 'catDelegated' : 'catDelegate')}</button><span style="flex:1"></span><button class="ex-btn danger sm" data-act="reject" data-id="${esc(rep.id)}">${t('btnReject')}</button><button class="ex-btn green sm" data-act="approve" data-id="${esc(rep.id)}" ${ready ? '' : 'disabled'}>${t('btnApprove')}</button>`;
       } else if (mode === 'accounting') {
         if (rep.status === 'approved') actions = `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}">${t('btnProcess')}</button>`;
         actions += `<button class="ex-btn danger sm" data-act="trash" data-id="${esc(rep.id)}">${t('btnTrash')}</button>`;
