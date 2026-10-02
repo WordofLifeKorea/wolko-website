@@ -444,3 +444,25 @@ test('회계 담당(승인 권한 없음)은 전체 리포트에서 승인 대�
   assert.ok(asBoss.reports.some(r => r.id === s2.report.id), '승인 권한자는 승인 대기도 본다');
   assert.equal(asBoss.reports.find(r => r.id === j.report.id).campus, 'jeju');
 });
+
+test('승인된 리포트는 내용 고정: 작성자 수정·철회 불가, 카테고리(코드)만 회계 담당이 수정 가능', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  await acc('acct@x.com', 'Ann', 'counselor');
+  const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29' };
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'lock', rows: [row] });
+  const id = sub.report.id;
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Junior Camp (8040)'], checks: [true] });
+  assert.equal((await call(R.onRequestPut, 'PUT', '/api/expense/reports', cyn, { id, description: 'x', rows: [{ ...row, amount: 9 }] })).status, 409, '승인 후 작성자 수정 불가');
+  assert.equal((await call(R.onRequestDelete, 'DELETE', '/api/expense/reports?id=' + id, cyn)).status, 409, '승인 후 철회 불가');
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'reject', note: 'x' })).status, 409, '승인 후 반려 불가');
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'recategorize', categories: ['Teacher (8052)'] })).status, 403, '승인자도 카테고리 재수정 불가');
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'recategorize', categories: ['Nope'] })).status, 400);
+  const ok = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'recategorize', categories: ['Teacher (8052)'] });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.report.rows[0].account, 'Teacher (8052)');
+  assert.equal(ok.report.rows[0].amountKrw, 1000, '금액 등 내용은 그대로');
+  assert.equal(ok.report.rows[0].categoryHistory[0].from, 'Junior Camp (8040)');
+  assert.ok(ok.report.log.some(l => l.action === 'recategorize' && l.by === 'acct@x.com'));
+});

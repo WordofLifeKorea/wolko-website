@@ -274,6 +274,26 @@ export async function onRequestPatch(context) {
     return Response.json({ ok: true, report }, { headers: CORS });
   }
 
+  // 회계 담당: 승인·송금 단계의 리포트에서 카테고리(코드)만 마지막으로 고칠 수 있다. 금액·품목 등 내용은 고정.
+  if (action === 'recategorize') {
+    if (!session.isAccountant) return err('회계 담당자만 카테고리를 수정할 수 있습니다.', 403);
+    if (report.status !== 'approved' && report.status !== 'processed') return err('승인된 리포트만 카테고리를 수정할 수 있습니다.', 409);
+    const cats = Array.isArray(body.categories) ? body.categories : [];
+    if (cats.length !== report.rows.length || cats.some(c => !ACCOUNTS.includes(c))) return err('모든 항목의 카테고리(계정과목)를 선택해 주세요.');
+    let changed = 0;
+    report.rows.forEach((row, i) => {
+      if (row.account === cats[i]) return;
+      row.categoryHistory = [...(row.categoryHistory || []), { from: row.account || '', to: cats[i], by: session.email, at: now }];
+      row.account = cats[i];
+      row.categoryChanged = true;
+      changed++;
+    });
+    if (!changed) return Response.json({ ok: true, report, changed }, { headers: CORS });
+    report.log.push({ at: now, by: session.email, action: 'recategorize', note: `${changed}개 항목` });
+    await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
+    return Response.json({ ok: true, report, changed }, { headers: CORS });
+  }
+
   if (action === 'process') {
     if (!session.isAccountant) return err('회계 담당자만 처리할 수 있습니다.', 403);
     if (report.status !== 'approved') return err('승인된 리포트만 송금 처리할 수 있습니다.', 409);
