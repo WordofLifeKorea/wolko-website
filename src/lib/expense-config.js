@@ -11,6 +11,16 @@ export const ACCOUNTS = [
   'Missionary Account (8025)', 'Teacher (8052)', 'Pyeongtaek EM (8067)', 'Other/Unknown',
 ];
 
+/**
+ * 외화: 기준 통화는 KRW. 영수 날짜 기준 환율(1단위 = rate KRW)로 환산한다.
+ * min/max = 서버가 받아들이는 환율 범위, digits = 금액 소수 자리, dp = 환율 저장 소수 자리.
+ */
+export const FOREIGN_CURRENCIES = {
+  USD: { symbol: '$', digits: 2, dp: 2, min: 100, max: 10000 },
+  CAD: { symbol: 'C$', digits: 2, dp: 2, min: 100, max: 10000 },
+  VND: { symbol: '₫', digits: 0, dp: 4, min: 0.005, max: 1 },
+};
+
 /** 리포트가 속한 캠퍼스: 월코(평택) | 제주 */
 export const CAMPUSES = ['wolko', 'jeju'];
 export const DEFAULT_CAMPUS = 'wolko';

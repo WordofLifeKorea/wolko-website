@@ -1,5 +1,5 @@
 ---
-import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/expense-config.js';
+import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES as CFG_FX } from '../../lib/expense-config.js';
 // 경비 리포트(Expense Report) — 포탈 세션으로 접속. 제출 → 승인·카테고리 확정(관리자) → 송금 처리(회계 담당)
 // No BaseLayout; standalone page (car/wolkoadmin과 동일한 패턴)
 ---
@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=41">
+  <link rel="stylesheet" href="/expense.css?v=42">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=13">
   <link rel="stylesheet" href="/wolko-header.css?v=1">
@@ -41,11 +41,13 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   </main>
   <div class="ex-toast" id="exToast"></div>
 
-  <script type="application/json" id="exCfg" set:html={JSON.stringify({ ACCOUNTS: CFG_ACCOUNTS, CAMPUSES: CFG_CAMPUSES })}></script>
+  <script type="application/json" id="exCfg" set:html={JSON.stringify({ ACCOUNTS: CFG_ACCOUNTS, CAMPUSES: CFG_CAMPUSES, FX: CFG_FX })}></script>
   <script is:inline>
     /* ── 계정과목/캠퍼스는 src/lib/expense-config.js 에서 서버와 공유 ── */
     const CFG = JSON.parse(document.getElementById('exCfg').textContent);
     const CAMPUSES = CFG.CAMPUSES;
+    const FX = CFG.FX;                                   // 외화 설정(USD · CAD · VND)
+    const isFx = c => !!FX[c];
     const APPROVAL_ACCOUNTS = CFG.ACCOUNTS;                                 // 승인자가 확정할 수 있는 전체 목록(Other/Unknown 포함)
     /* ── 번역 사전 (한국어/English). 화면 문구는 전부 여기서만 관리 ── */
     const T = {
@@ -58,7 +60,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         attachTitle: '영수증 첨부', attach: '영수증', less: '접기', remove: '삭제',
         wherePh: 'Where · 장소 (선택)', rowProjPh: '이 항목만 다른 Project (선택)',
         titleNew: '새 경비 리포트', titleEdit: '경비 리포트 수정',
-        subNew: n => n + ' 님 명의로 제출됩니다. 기준 통화는 원화(₩)이고, 달러($) 항목은 영수 날짜 환율로 자동 환산돼요.',
+        subNew: n => n + ' 님 명의로 제출됩니다. 기준 통화는 원화(₩)이고, 달러($) · 캐나다 달러(C$) · 베트남 동(₫) 항목은 영수 날짜 환율로 자동 환산돼요.',
         lblDesc: 'Description<span class="ko">설명</span>', descPh: '예: 9월 캠프 준비 경비',
         lblProject: 'Project<span class="ko">프로젝트 (마지막 값 기억)</span>', projPh: '예: 1552044602 - Kim, Hwan Kyu',
         addRow: '＋ 항목 추가', resetDraft: '작성 내용 지우기', cResetDraft: '작성 중인 내용을 모두 지울까요?', tDraftRestored: '작성 중이던 내용을 불러왔어요.', cancelEdit: '수정 취소', submitEdit: '수정 후 다시 제출', submit: '경비 리포트 제출', totalKrw: '합계 (KRW)',
@@ -103,7 +105,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         attachTitle: 'Attach receipt', attach: 'Receipt', less: 'Less', remove: 'Remove',
         wherePh: 'Where (optional)', rowProjPh: 'Different project for this item (optional)',
         titleNew: 'New expense report', titleEdit: 'Edit expense report',
-        subNew: n => 'Submitted under ' + n + '. The base currency is KRW (₩); dollar ($) items are converted automatically at the exchange rate on the receipt date.',
+        subNew: n => 'Submitted under ' + n + '. The base currency is KRW (₩); dollar ($), Canadian dollar (C$) and Vietnamese dong (₫) items are converted automatically at the exchange rate on the receipt date.',
         lblDesc: 'Description', descPh: 'e.g. September camp supplies',
         lblProject: 'Project<span class="ko">remembers last value</span>', projPh: 'e.g. 1552044602 - Kim, Hwan Kyu',
         addRow: '+ Add item', resetDraft: 'Clear draft', cResetDraft: 'Clear everything you have entered?', tDraftRestored: 'Restored your unsent draft.', cancelEdit: 'Cancel edit', submitEdit: 'Save & resubmit', submit: 'Submit expense report', totalKrw: 'Total (KRW)',
@@ -155,7 +157,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
 
     const $ = id => document.getElementById(id);
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-    const usdFmt = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // 외화 금액 표기: $25.00 · C$25.00 · ₫1,250,000
+    const fxFmt = (c, n) => FX[c].symbol + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: FX[c].digits, maximumFractionDigits: FX[c].digits });
+    const rateFmt = n => Number(n).toLocaleString('ko-KR', { maximumFractionDigits: 4 });
     const krw = n => '₩' + Math.round(Number(n || 0)).toLocaleString('ko-KR');
     const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
     const lsGet = (k, fb = '') => { try { return localStorage.getItem(k) ?? fb; } catch { return fb; } };
@@ -258,13 +262,14 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     const rateTimers = new WeakMap();
     function scheduleRate(r, immediate) {
       clearTimeout(rateTimers.get(r));
-      if (r.currency !== 'USD' || !r.when) return;
+      if (!isFx(r.currency) || !r.when) return;
       const run = async () => {
         const wanted = r.when;
         r.rateNote = { k: 'rateLoading' }; paintRates();
         try {
-          const out = await api('/api/expense/rate?date=' + encodeURIComponent(wanted));
-          if (r.when !== wanted || r.currency !== 'USD') return; // 그 사이 바뀜
+          const cur = r.currency;
+          const out = await api('/api/expense/rate?date=' + encodeURIComponent(wanted) + '&currency=' + encodeURIComponent(cur));
+          if (r.when !== wanted || r.currency !== cur) return; // 그 사이 바뀜
           r.rate = String(out.rate);
           r.rateNote = out.source === 'latest' ? { k: 'rateLatest' } : (out.date === wanted ? { k: 'asof', d: wanted.slice(5) } : { k: 'biz', d: out.date.slice(5) });
         } catch (e) { r.rateNote = { k: 'rateFail' }; }
@@ -309,7 +314,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
           </div>
           <div class="ex-amount">
             <input class="ex-input" data-f="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="${t('amountPh')}" value="${esc(r.amount)}" aria-label="Amount">
-            <select class="ex-select" data-f="currency" aria-label="${t('currency')}"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩</option><option value="USD" ${r.currency === 'USD' ? 'selected' : ''}>$</option></select>
+            <select class="ex-select" data-f="currency" aria-label="${t('currency')}"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩ KRW</option>${Object.keys(FX).map(c => `<option value="${c}" ${r.currency === c ? 'selected' : ''}>${FX[c].symbol} ${c}</option>`).join('')}</select>
           </div>
           ${form.rows.length > 1 ? `<button class="ex-x" data-act="del-row" data-i="${i}" aria-label="${t('delRow')}">×</button>` : '<span class="ex-x-space"></span>'}
         </div>
@@ -321,7 +326,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
           <button class="ex-btn sm ex-more-btn" data-act="toggle-more" data-i="${i}" aria-expanded="${r.more}">${r.more ? t('less') : '⋯'}</button>
         </div>
         ${r.receipts.length ? `<div class="ex-receipts">${r.receipts.map((f, k) => `<span class="ex-chip"><span class="ex-chip-main" data-act="open-receipt" data-rid="${esc(form.editingId || '')}" data-fid="${esc(f.id)}" data-name="${esc(f.name)}" data-type="${esc(f.type)}">${thumbHtml(f)}${esc(f.name)}</span><button data-act="del-receipt" data-i="${i}" data-k="${k}" aria-label="${t('remove')}">×</button></span>`).join('')}</div>` : ''}
-        <div class="ex-rateline" data-rateline ${r.currency === 'USD' ? '' : 'hidden'}></div>
+        <div class="ex-rateline" data-rateline ${isFx(r.currency) ? '' : 'hidden'}></div>
         <div class="ex-more" ${r.more ? '' : 'hidden'}>
           <input class="ex-input" data-f="where" placeholder="${t('wherePh')}" value="${esc(r.where)}">
           <input class="ex-input" data-f="project" placeholder="${t('rowProjPh')}" value="${esc(r.project)}">
@@ -357,7 +362,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
           </div>
         </div>
       </div>`;
-      form.rows.forEach(r => { if (r.currency === 'USD' && !Number(r.rate)) scheduleRate(r, true); });
+      form.rows.forEach(r => { if (isFx(r.currency) && !Number(r.rate)) scheduleRate(r, true); });
       paintRates(); refreshComputed();
     }
 
@@ -366,13 +371,13 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       document.querySelectorAll('.ex-row').forEach(el => {
         const r = form.rows[+el.dataset.i], line = el.querySelector('[data-rateline]');
         if (!r || !line) return;
-        line.hidden = r.currency !== 'USD';
-        if (r.currency !== 'USD') return;
+        line.hidden = !isFx(r.currency);
+        if (!isFx(r.currency)) return;
         if (!line.dataset.ready) {
           line.innerHTML = '<span data-r-usd></span> × <input class="ex-rate-input" data-f="rate" type="number" inputmode="decimal" step="any" min="0" aria-label="' + t('rateAria') + '"> = <b data-r-krw></b><span class="ex-rate-note" data-r-note></span>';
           line.dataset.ready = '1';
         }
-        line.querySelector('[data-r-usd]').textContent = usdFmt(Number(r.amount) || 0);
+        line.querySelector('[data-r-usd]').textContent = fxFmt(r.currency, Number(r.amount) || 0);
         const inp = line.querySelector('[data-f="rate"]');
         if (document.activeElement !== inp) inp.value = r.rate;
         line.querySelector('[data-r-krw]').textContent = krw(rowKrw(r));
@@ -439,7 +444,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
           <td>${esc(r.when || '')}</td>
           <td>${approving ? catCell(rep, r, i, st) : catView(r)}${projectOf(rep, r) ? `<div class="ex-meta">${esc(projectOf(rep, r))}</div>` : ''}</td>
           <td>${r.item ? `<b>${esc(r.item)}</b>${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${memoHtml(r)}<div class="ex-receipts" style="margin-top:6px">${receiptChips(rep, r)}</div></td>
-          <td class="r">${krw(r.amountKrw)}${r.currency === 'USD' ? `<div class="ex-meta">${usdFmt(r.amount)} × ${Number(r.rate).toLocaleString('ko-KR')}</div>` : ''}</td>
+          <td class="r">${krw(r.amountKrw)}${isFx(r.currency) ? `<div class="ex-meta">${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)}</div>` : ''}</td>
         </tr>`).join('');
 
       let notes = '';
@@ -544,7 +549,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       const items = rep.rows.map(r => `
         <div class="ex-d-item">
           <div class="ex-d-main"><b>${esc(r.item || r.ministryPurpose)}</b>${r.item && r.ministryPurpose ? ` <span class="ex-meta">— ${esc(r.ministryPurpose)}</span>` : ''}</div>
-          <div class="ex-d-amt">${krw(r.amountKrw)}${r.currency === 'USD' ? `<span class="ex-meta"> (${usdFmt(r.amount)} × ${Number(r.rate).toLocaleString('ko-KR')})</span>` : ''}</div>
+          <div class="ex-d-amt">${krw(r.amountKrw)}${isFx(r.currency) ? `<span class="ex-meta"> (${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)})</span>` : ''}</div>
           <div class="ex-d-sub ex-meta">${esc(r.when || '')} · ${r.account ? esc(r.account) : esc(r.source || '') + ' (' + esc(t('catUnset')) + ')'}${r.account && subText(r) && subText(r) !== r.account ? ' (' + esc(t('srcSubmitted', subText(r))) + ')' : ''}${r.where ? ' · 📍 ' + esc(r.where) : ''}</div>
           ${memoHtml(r)}
           ${(r.receipts || []).length ? `<div class="ex-receipts" style="margin-top:4px">${receiptChips(rep, r)}</div>` : ''}
@@ -827,7 +832,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     }
 
     function exportCsv(shown) {
-      const head = ['Report ID', 'Campus', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Category (confirmed)', 'Submitted by (ministry/account)', 'Item', 'Purpose', 'Memo', 'Approver Memo', 'Where', 'Currency', 'Original Amount', 'Exchange Rate (KRW/USD)', 'KRW Amount'];
+      const head = ['Report ID', 'Campus', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Category (confirmed)', 'Submitted by (ministry/account)', 'Item', 'Purpose', 'Memo', 'Approver Memo', 'Where', 'Currency', 'Original Amount', 'Exchange Rate (KRW per 1 unit)', 'KRW Amount'];
       const lines = [head];
       shown.forEach(r => r.rows.forEach(x => lines.push([r.id, campusOf(r) === 'jeju' ? 'JEJU' : 'PYEONGTAEK', t('st_' + r.status), r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account || '', subText(x), x.item || '', x.ministryPurpose, x.memo || '', x.approverMemo || '', x.where, x.currency, x.amount, x.rate || '', x.amountKrw])));
       const csv = '﻿' + lines.map(l => l.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -1014,8 +1019,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
           else { r.srcCustom = false; r.source = el.value; txt.hidden = true; hideSrcTip(); el.classList.remove('is-empty'); }
         }
         else if (f === 'receipt') { uploadReceipts(+rowEl.dataset.i, [...el.files]); el.value = ''; }
-        else if (f === 'currency') { r.currency = el.value; if (r.currency === 'USD') { r.rate = ''; scheduleRate(r, true); } else r.rateNote = null; refreshComputed(); }
-        else if (f === 'when') { r.when = el.value; if (r.currency === 'USD') { r.rate = ''; scheduleRate(r); } }
+        else if (f === 'currency') { r.currency = el.value; if (isFx(r.currency)) { r.rate = ''; scheduleRate(r, true); } else r.rateNote = null; refreshComputed(); }
+        else if (f === 'when') { r.when = el.value; if (isFx(r.currency)) { r.rate = ''; scheduleRate(r); } }
         else if (f === 'rate') { r.rate = el.value; r.rateNote = { k: 'rateManual' }; const n = rowEl.querySelector('[data-r-note]'); if (n) n.textContent = ' · ' + t('rateManual'); refreshComputed(); }
         else { r[f] = el.value; refreshComputed(); }
       }

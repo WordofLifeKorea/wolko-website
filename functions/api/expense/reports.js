@@ -12,7 +12,7 @@
  * 인증: Authorization: Bearer <포탈 세션 토큰>  (권한 규칙은 lib/expenses.js 참고)
  */
 import { sendEmail, listAccounts } from '../../lib/hubAccounts.js';
-import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS } from '../../../src/lib/expense-config.js';
+import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS, FOREIGN_CURRENCIES } from '../../../src/lib/expense-config.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
   EXPENSE_REPLY_TO, EXPENSE_EMAIL_ENABLED, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
@@ -28,7 +28,8 @@ function cleanRows(rawRows) {
   const rows = [];
   for (const [i, r] of rawRows.entries()) {
     const n = i + 1;
-    const currency = r?.currency === 'USD' ? 'USD' : 'KRW'; // 기준 통화는 KRW
+    const currency = FOREIGN_CURRENCIES[r?.currency] ? r.currency : 'KRW'; // 기준 통화는 KRW
+    const fx = FOREIGN_CURRENCIES[currency];
     const amount = Math.round(Number(r?.amount) * 100) / 100; // 입력한 통화 기준 원금액
     const source = clip(r?.source, 160); // 작성자가 직접 적은 '어떤 선교 항목/계좌인지' (카테고리는 승인자가 확정)
     const account = clip(r?.account, 120); // 승인 전에는 비어 있다(예전 화면에서 온 값이 있으면 유지)
@@ -41,8 +42,8 @@ function cleanRows(rawRows) {
 
     // USD 항목: 영수 날짜 기준 환율(KRW per USD)로 원화 환산. 환율은 화면에서 자동 조회 후 수정 가능.
     const rate = Number(r?.rate);
-    if (currency === 'USD' && !(rate > 100 && rate < 10000)) return { error: `${n}번째 줄의 환율을 확인해 주세요.` };
-    const amountKrw = currency === 'USD' ? Math.round(amount * rate) : Math.round(amount);
+    if (fx && !(rate >= fx.min && rate <= fx.max)) return { error: `${n}번째 줄의 환율을 확인해 주세요.` };
+    const amountKrw = fx ? Math.round(amount * rate) : Math.round(amount);
     if (amountKrw <= 0 || amountKrw > 1e10) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
 
     const receipts = (Array.isArray(r?.receipts) ? r.receipts : [])
@@ -53,7 +54,7 @@ function cleanRows(rawRows) {
     rows.push({
       project: clip(r?.project, 160), // 비어 있으면 리포트 상단 Project를 따른다
       source: source || account, account, currency, amount, amountKrw,
-      rate: currency === 'USD' ? Math.round(rate * 100) / 100 : null,
+      rate: fx ? Math.round(rate * 10 ** fx.dp) / 10 ** fx.dp : null,
       item,
       ministryPurpose,
       memo,

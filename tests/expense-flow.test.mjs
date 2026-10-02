@@ -379,3 +379,40 @@ test('작성자는 선교 항목·계좌를 직접 적고, 카테고리(코드)�
   assert.equal(ok.status, 200);
   assert.deepEqual(ok.report.rows.map(r => [r.source, r.account, !!r.categoryChanged]), [['월코캠프', 'Junior Camp (8040)', false], ['개인 사역계좌', 'Teacher (8052)', false]]);
 });
+
+test('외화: 캐나다 달러·베트남 동도 영수 날짜 환율로 원화 환산, 환율 범위를 검증한다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  const row = extra => ({ source: '월코캠프', amount: 100, item: 'x', when: '2026-09-29', ...extra });
+  const ok = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'fx', rows: [
+    row({ currency: 'CAD', amount: 10, rate: 955.55 }),
+    row({ currency: 'VND', amount: 1000000, rate: 0.0537 }),
+  ] });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.report.rows[0].amountKrw, 9556);   // 10 × 955.55
+  assert.equal(ok.report.rows[1].amountKrw, 53700);  // 1,000,000 × 0.0537
+  assert.equal(ok.report.rows[1].rate, 0.0537, 'VND는 환율 소수 4자리까지 보존');
+  assert.equal((await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'bad', rows: [row({ currency: 'VND', rate: 1355 })] })).status, 400, 'VND에 달러 환율을 넣으면 거절');
+  assert.equal((await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'bad', rows: [row({ currency: 'CAD', rate: 0 })] })).status, 400, '환율 필수');
+  assert.equal((await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'bad', rows: [row({ currency: 'EUR', rate: 1500 })] })).report?.rows?.[0]?.currency ?? 'KRW', 'KRW', '지원하지 않는 통화는 원화로 처리');
+});
+
+test('환율 조회: CAD는 frankfurter, VND는 별도 일별 환율 데이터, 지원하지 않는 통화는 거절', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  const urls = [];
+  globalThis.fetch = async url => {
+    urls.push(String(url));
+    if (String(url).includes('currency-api')) return { ok: true, json: async () => ({ date: '2026-09-29', vnd: { krw: 0.05373 } }) };
+    return { ok: true, json: async () => ({ date: '2026-09-29', rates: { KRW: 955.553 } }) };
+  };
+  const RT = await import('../functions/api/expense/rate.js');
+  const cad = await call(RT.onRequestGet, 'GET', '/api/expense/rate?date=2026-09-29&currency=CAD', cyn);
+  assert.equal(cad.rate, 955.55);
+  assert.match(urls[0], /base=CAD&symbols=KRW/);
+  const vnd = await call(RT.onRequestGet, 'GET', '/api/expense/rate?date=2026-09-29&currency=VND', cyn);
+  assert.equal(vnd.rate, 0.0537);
+  assert.match(urls[1], /currency-api@2026-09-29\/v1\/currencies\/vnd\.json/);
+  const bad = await call(RT.onRequestGet, 'GET', '/api/expense/rate?date=2026-09-29&currency=XYZ', cyn);
+  assert.ok(bad.error);
+});
