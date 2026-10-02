@@ -16,7 +16,7 @@ import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS, CAMPUS_OVERRIDES, FOREIGN_CURRENCIE
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
   EXPENSE_REPLY_TO, EXPENSE_EMAIL_ENABLED, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
-  totalOf, reportEmailHtml, formatKrw, finalizeReceipts, trashReport, restoreReport, listTrash,
+  bustReportCache, totalOf, reportEmailHtml, formatKrw, finalizeReceipts, trashReport, restoreReport, listTrash,
 } from '../../lib/expenses.js';
 
 const reportKey = id => `${REPORT_PREFIX}${id}`;
@@ -72,10 +72,14 @@ function cleanCampus(value) {
 
 // 소속 캠퍼스(평택|제주)는 작성자가 고르지 않고, 포탈 가입 때 정한 제출자 계정의 값을 따른다.
 // 값이 없는 기존 계정은 모두 평택(wolko)이다.
+let campusMapCache = { at: 0, map: null };
+export function resetCampusCache() { campusMapCache = { at: 0, map: null }; }
 async function getCampusMap(env) {
+  if (campusMapCache.map && Date.now() - campusMapCache.at < 120000) return campusMapCache.map;
   const map = {};
   for (const a of await listAccounts(env)) if (a?.email) map[a.email] = cleanCampus(a.campus);
   Object.assign(map, CAMPUS_OVERRIDES);
+  campusMapCache = { at: Date.now(), map };
   return map;
 }
 const applyCampus = (reports, map) => reports.map(r => ({ ...r, campus: cleanCampus(map[r.submitterEmail]) }));
@@ -139,7 +143,7 @@ export async function onRequestGet(context) {
   return Response.json({ reports: mine }, { headers: CORS });
 }
 
-export async function onRequestPost(context) {
+async function handlePost(context) {
   const { env, request } = context;
   const session = await expenseSession(request, env);
   if (!session) return err('포탈 로그인이 필요합니다.', 401);
@@ -180,7 +184,7 @@ export async function onRequestPost(context) {
   return Response.json({ ok: true, report }, { headers: CORS });
 }
 
-export async function onRequestPatch(context) {
+async function handlePatch(context) {
   const { env, request } = context;
   const session = await expenseSession(request, env);
   if (!session) return err('포탈 로그인이 필요합니다.', 401);
@@ -371,7 +375,7 @@ export async function onRequestPatch(context) {
   return err('알 수 없는 작업입니다.');
 }
 
-export async function onRequestPut(context) {
+async function handlePut(context) {
   const { env, request } = context;
   const session = await expenseSession(request, env);
   if (!session) return err('포탈 로그인이 필요합니다.', 401);
@@ -419,7 +423,7 @@ export async function onRequestPut(context) {
   return Response.json({ ok: true, report }, { headers: CORS });
 }
 
-export async function onRequestDelete(context) {
+async function handleDelete(context) {
   const { env, request } = context;
   const session = await expenseSession(request, env);
   if (!session) return err('포탈 로그인이 필요합니다.', 401);
@@ -440,6 +444,13 @@ export async function onRequestDelete(context) {
   ]);
   return Response.json({ ok: true }, { headers: CORS });
 }
+
+// 쓰기 요청이 끝나면 목록 캐시를 비워 방금 바뀐 내용이 바로 보이게 한다
+const withFreshList = fn => async context => { try { return await fn(context); } finally { bustReportCache(); } };
+export const onRequestPost = withFreshList(handlePost);
+export const onRequestPatch = withFreshList(handlePatch);
+export const onRequestPut = withFreshList(handlePut);
+export const onRequestDelete = withFreshList(handleDelete);
 
 export async function onRequestOptions() {
   return new Response(null, {

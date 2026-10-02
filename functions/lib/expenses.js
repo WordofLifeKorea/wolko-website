@@ -106,7 +106,18 @@ export async function accountantEmails() {
   return [...ACCOUNTANT_EMAILS];
 }
 
-export async function listReports(env) {
+// KV list/read 횟수를 줄이기 위해 같은 워커 인스턴스 안에서는 목록을 잠깐(6초) 재사용한다. 쓰기가 일어나면 바로 비운다.
+let reportCache = { at: 0, promise: null };
+export function bustReportCache() { reportCache = { at: 0, promise: null }; }
+export function listReports(env) {
+  const now = Date.now();
+  if (reportCache.promise && now - reportCache.at < 6000) return reportCache.promise.then(items => items.map(r => ({ ...r })));
+  const promise = loadReports(env);
+  reportCache = { at: now, promise };
+  promise.catch(() => { if (reportCache.promise === promise) bustReportCache(); });
+  return promise.then(items => items.map(r => ({ ...r })));
+}
+async function loadReports(env) {
   const items = [];
   let cursor;
   do {

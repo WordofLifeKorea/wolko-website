@@ -674,7 +674,10 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
     const renderAll = () => renderGrouped('all');
 
     /* ─────────── 데이터 로딩 / 화면 전환 ─────────── */
-    async function refreshCounts() {
+    let countsAt = 0;
+    async function refreshCounts(force) {
+      if (!force && me && Date.now() - countsAt < 20000) return; // 탭을 옮길 때마다 서버를 부르지 않는다(배지는 20초마다 갱신)
+      countsAt = Date.now();
       const c = await api('/api/expense/reports?scope=counts');
       me = c.me;
       if (!G.campusInit) { G.campusInit = true; G.campus = me.campus === 'jeju' ? 'jeju' : 'wolko'; } // 내 소속 캠퍼스 정보를 먼저 보여준다

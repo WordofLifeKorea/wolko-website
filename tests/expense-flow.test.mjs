@@ -4,9 +4,10 @@ import assert from 'node:assert/strict';
 import * as H from '../functions/lib/hubAccounts.js';
 import * as R from '../functions/api/expense/reports.js';
 import * as F from '../functions/api/expense/receipt.js';
-import { ACCOUNTANT_EMAILS, EXPENSE_ADMIN_EMAILS, NEW_REPORT_NOTIFY_EMAILS } from '../functions/lib/expenses.js';
+import { ACCOUNTANT_EMAILS, EXPENSE_ADMIN_EMAILS, NEW_REPORT_NOTIFY_EMAILS, bustReportCache } from '../functions/lib/expenses.js';
 
 function setup() {
+  R.resetCampusCache(); bustReportCache();
   const store = new Map();
   const kv = {
     async get(k, t) { const v = store.get(k); if (!v) return null; return t === 'json' ? JSON.parse(v.value) : v.value; },
@@ -31,7 +32,7 @@ function setup() {
     const isJson = (res.headers.get('Content-Type') || '').includes('json');
     return { status: res.status, res, ...(isJson ? await res.json() : {}) };
   };
-  return { store, sent, acc, call };
+  return { store, sent, acc, call, kv };
 }
 
 const cyn = ['cyn@x.com', 'counselor'];
@@ -579,4 +580,29 @@ test('위임하면 확인하지 않은 항목(메모 포함)은 자동 확인으
   const ok = await patch({ action: 'approve', delegate: true, categories: ['', ''], checks: [true, true], autoChecks: [true, true] });
   assert.equal(ok.status, 200);
   assert.equal(ok.report.rows[0].memoAutoChecked, true);
+});
+
+test('KV 조회 절약: 목록은 잠깐 재사용하고, 쓰기 직후에는 바로 새로 읽는다', async () => {
+  const { acc, call, kv } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  let lists = 0;
+  const origList = kv.list.bind(kv);
+  kv.list = async o => { if (o.prefix === 'expense:report:') lists++; return origList(o); };
+  const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'x', when: '2026-09-29' };
+  await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'one', rows: [row] });
+  lists = 0;
+  await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=mine', cyn);
+  await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', cyn);
+  assert.equal(lists, 1, '연속 조회는 목록을 한 번만 읽는다');
+  await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'two', rows: [row] });
+  const mine = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=mine', cyn);
+  assert.equal(mine.reports.length, 2, '쓰기 직후에는 새로 읽어 바로 반영');
+});
+
+test('참석 인원 조회는 KV가 실패해도 500을 내지 않는다', async () => {
+  const RC = await import('../functions/api/rsvp-count.js');
+  const env = { CAMP_KV: { list: async () => { throw new Error('KV list() limit exceeded for the day.'); } } };
+  const res = await RC.onRequestGet({ env, request: new Request('https://t.co/api/rsvp-count') });
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).unavailable, true);
 });

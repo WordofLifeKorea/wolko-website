@@ -17,21 +17,27 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const eventId = clean(new URL(request.url).searchParams.get('eventId') || 'thanksgiving-night', 60);
 
-  const list = await env.CAMP_KV.list({ prefix: `rsvp:${eventId}:` });
   let totalGuests = 0;
   let totalRsvps = 0;
-  for (const key of list.keys) {
-    if (key.name.includes(':email:')) continue;
-    const raw = await env.CAMP_KV.get(key.name);
-    if (!raw) continue;
-    try {
-      const rsvp = JSON.parse(raw);
-      totalGuests += Number(rsvp.partySize) || 0;
-      totalRsvps += 1;
-    } catch (e) { /* 손상된 값은 건너뛴다 */ }
+  try {
+    const list = await env.CAMP_KV.list({ prefix: `rsvp:${eventId}:` });
+    for (const key of list.keys) {
+      if (key.name.includes(':email:')) continue;
+      const raw = await env.CAMP_KV.get(key.name);
+      if (!raw) continue;
+      try {
+        const rsvp = JSON.parse(raw);
+        totalGuests += Number(rsvp.partySize) || 0;
+        totalRsvps += 1;
+      } catch (e) { /* 손상된 값은 건너뛴다 */ }
+    }
+  } catch (e) {
+    // KV 한도 초과 등으로 읽지 못해도 페이지가 깨지지 않게 빈 값으로 응답한다(캐시하지 않음)
+    return Response.json({ eventId, totalGuests: 0, totalRsvps: 0, unavailable: true }, { headers: { ...CORS, 'Cache-Control': 'no-store' } });
   }
 
-  return Response.json({ eventId, totalGuests, totalRsvps }, { headers: CORS });
+  // 공개 숫자이므로 CDN에서 1분간 재사용해 KV 조회를 줄인다
+  return Response.json({ eventId, totalGuests, totalRsvps }, { headers: { ...CORS, 'Cache-Control': 'public, max-age=30, s-maxage=60' } });
 }
 
 export async function onRequestOptions() {
