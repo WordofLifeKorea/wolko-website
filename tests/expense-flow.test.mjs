@@ -508,3 +508,29 @@ test('내 소속 캠퍼스가 counts 응답에 담겨 전체 리포트에서 먼
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['pt@x.com', 'counselor'])).me.campus, 'wolko');
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['jeremyrodgers@wol.org', 'admin'])).me.campus, 'jeju');
 });
+
+test('카테고리를 회계 담당에게 위임하면 회계 담당이 모든 항목을 선택해야 송금 처리할 수 있다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  await acc('acct@x.com', 'Ann', 'counselor');
+  const row = (item, extra = {}) => ({ source: '월코캠프', currency: 'KRW', amount: 1000, item, when: '2026-09-29', ...extra });
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'del', rows: [row('a'), row('b', { memo: '확인 필요' })] });
+  const id = sub.report.id;
+  const patch = (who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, ...body });
+  assert.equal((await patch(boss, { action: 'approve', delegate: true, checks: [false, false] })).status, 400, '메모 항목은 위임해도 승인자가 확인해야 함');
+  const ok = await patch(boss, { action: 'approve', delegate: true, checks: [false, true] });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.report.status, 'approved');
+  assert.equal(ok.report.categoryDelegated, true);
+  assert.deepEqual(ok.report.rows.map(r => r.account), ['', '']);
+  assert.equal((await patch(ann, { action: 'process' })).status, 409, '카테고리 선택 전에는 송금 처리 불가');
+  assert.equal((await patch(ann, { action: 'recategorize', categories: ['Junior Camp (8040)', 'Nope'] })).status, 400, '전부 선택해야 함');
+  assert.equal((await patch(ann, { action: 'process' })).status, 409);
+  const done = await patch(ann, { action: 'recategorize', categories: ['Junior Camp (8040)', 'Teacher (8052)'] });
+  assert.equal(done.status, 200);
+  assert.equal(done.report.categoryDelegated, false);
+  assert.equal(done.report.categoriesConfirmedBy, 'acct@x.com');
+  assert.equal(done.report.rows[0].categoryChanged, undefined, '처음 선택은 변경이 아님');
+  assert.equal((await patch(ann, { action: 'process' })).status, 200, '모두 선택하면 송금 처리 가능');
+});

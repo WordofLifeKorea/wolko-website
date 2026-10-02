@@ -246,9 +246,11 @@ export async function onRequestPatch(context) {
     if (action === 'reject' && !note) return err('반려 사유를 입력해 주세요.');
 
     if (action === 'approve') {
-      // 회계 담당이 다시 분류하지 않도록, 승인자가 모든 항목의 카테고리를 확정해야 승인된다
-      const cats = Array.isArray(body.categories) ? body.categories : [];
-      if (cats.length !== report.rows.length || cats.some(c => !ACCOUNTS.includes(c))) {
+      // 승인자가 모든 항목의 카테고리를 확정해야 승인된다. 단, '회계 담당에게 위임'하면 카테고리 없이 승인하고
+      // 회계 담당이 전부 선택해야 송금 처리를 할 수 있다.
+      const delegate = body.delegate === true;
+      const cats = delegate ? report.rows.map(r => r.account || '') : (Array.isArray(body.categories) ? body.categories : []);
+      if (!delegate && (cats.length !== report.rows.length || cats.some(c => !ACCOUNTS.includes(c)))) {
         return err('승인하려면 모든 항목의 카테고리(계정과목)를 확인해 주세요.');
       }
       // 제출자가 메모를 남긴 항목은 승인자가 하나씩 확인(체크)해야 한다
@@ -256,14 +258,24 @@ export async function onRequestPatch(context) {
       if (report.rows.some((row, i) => row.memo && checks[i] !== true)) return err('메모가 있는 항목을 모두 확인해 주세요.');
       const aMemos = Array.isArray(body.approverMemos) ? body.approverMemos : [];
       report.rows.forEach((row, i) => {
-        if (row.account && row.account !== cats[i]) { row.submittedAccount = row.account; row.categoryChanged = true; }
-        row.account = cats[i];
+        if (!delegate) {
+          if (row.account && row.account !== cats[i]) { row.submittedAccount = row.account; row.categoryChanged = true; }
+          row.account = cats[i];
+        }
         const am = clip(aMemos[i], 300);
         if (am) row.approverMemo = am; else delete row.approverMemo;
         if (row.memo) row.memoCheckedBy = session.email;
       });
-      report.categoriesConfirmedBy = session.email;
-      report.categoriesConfirmedAt = now;
+      if (delegate) {
+        report.categoryDelegated = true;
+        report.categoryDelegatedBy = session.email;
+        report.categoryDelegatedAt = now;
+        delete report.categoriesConfirmedBy; delete report.categoriesConfirmedAt;
+      } else {
+        delete report.categoryDelegated; delete report.categoryDelegatedBy; delete report.categoryDelegatedAt;
+        report.categoriesConfirmedBy = session.email;
+        report.categoriesConfirmedAt = now;
+      }
     }
 
     report.status = action === 'approve' ? 'approved' : 'rejected';
@@ -309,10 +321,15 @@ export async function onRequestPatch(context) {
     report.rows.forEach((row, i) => {
       if (row.account === cats[i]) return;
       row.categoryHistory = [...(row.categoryHistory || []), { from: row.account || '', to: cats[i], by: session.email, at: now }];
+      if (row.account) row.categoryChanged = true;
       row.account = cats[i];
-      row.categoryChanged = true;
       changed++;
     });
+    if (report.categoryDelegated && report.rows.every(r => ACCOUNTS.includes(r.account))) {
+      report.categoryDelegated = false;
+      report.categoriesConfirmedBy = session.email;
+      report.categoriesConfirmedAt = now;
+    }
     if (!changed) return Response.json({ ok: true, report, changed }, { headers: CORS });
     report.log.push({ at: now, by: session.email, action: 'recategorize', note: `${changed}개 항목` });
     await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
@@ -322,6 +339,9 @@ export async function onRequestPatch(context) {
   if (action === 'process') {
     if (!session.isAccountant) return err('회계 담당자만 처리할 수 있습니다.', 403);
     if (report.status !== 'approved') return err('승인된 리포트만 송금 처리할 수 있습니다.', 409);
+    if (report.categoryDelegated && report.rows.some(r => !ACCOUNTS.includes(r.account))) {
+      return err('승인자가 위임한 카테고리를 모든 항목에 선택·저장한 뒤 송금 처리할 수 있습니다.', 409);
+    }
     report.status = 'processed';
     report.processedBy = session.email;
     report.processedByName = session.name;

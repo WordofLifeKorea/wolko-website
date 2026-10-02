@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=46">
+  <link rel="stylesheet" href="/expense.css?v=47">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=13">
   <link rel="stylesheet" href="/wolko-header.css?v=1">
@@ -90,7 +90,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         noteTrashed: (n, d) => '삭제됨 — ' + n + ' · ' + d,
         campus_wolko: '평택', campus_jeju: '제주', btnTrashAll: '전체 비우기', cTrashAll: '지금 있는 모든 리포트를 삭제합니다.\n(백업되어 "삭제됨"에서 하나씩 복구할 수 있어요)\n\n계속하려면 "삭제"라고 입력하세요.', tTrashAll: n => n + '건을 삭제했어요.',
         catConfirm: '확인', catDone: '✓ 확인됨', catConfirmAll: '카테고리 모두 확인', catPick: '카테고리 선택',
-        catNeed: '모든 항목의 카테고리를 확인해야 승인할 수 있어요.',
+        catNeed: '모든 항목의 카테고리를 확인해야 승인할 수 있어요.', catDelegate: '카테고리 회계 담당자에게 위임하기', catDelegated: '✓ 회계 담당자에게 위임됨 (취소)', catDelegateNote: '카테고리는 회계 담당자가 모든 항목에 선택해야 송금 처리를 할 수 있어요. 제출자 메모가 있는 항목만 확인해 주세요.', delegatedWait: '카테고리 선택 대기 중 — 회계 담당자가 모든 항목에 선택·저장해야 송금 처리할 수 있어요.', catNeedAll: '모든 항목의 카테고리를 선택해 주세요.',
         catHint: '항목마다 카테고리를 고르고 “확인”을 눌러야 승인할 수 있어요. 메모가 있는 항목은 꼭 확인해 주세요.',
         catSubmitted: a => '제출 시: ' + a,
         gN: n => n + '건', gPeople: n => n + '명', gEmpty: '표시할 리포트가 없습니다.', gItems: n => '항목 ' + n + '개',
@@ -135,7 +135,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         noteTrashed: (n, d) => 'Deleted — ' + n + ' · ' + d,
         campus_wolko: 'Pyeongtaek', campus_jeju: 'Jeju', btnTrashAll: 'Delete all', cTrashAll: 'This deletes ALL current reports.\n(They are backed up and can be restored one by one from "Deleted")\n\nType DELETE to continue.', tTrashAll: n => n + ' report(s) deleted.',
         catConfirm: 'Confirm', catDone: '✓ Confirmed', catConfirmAll: 'Confirm all categories', catPick: 'Select category',
-        catNeed: 'Confirm the category of every item before approving.',
+        catNeed: 'Confirm the category of every item before approving.', catDelegate: 'Delegate categories to accounting', catDelegated: '✓ Delegated to accounting (cancel)', catDelegateNote: 'Accounting must pick a category for every item before payment can be marked done. Only items with a memo need your confirmation.', delegatedWait: 'Waiting for categories — accounting must pick and save one for every item before marking payment done.', catNeedAll: 'Pick a category for every item.',
         catHint: 'Pick a category for every item and press Confirm before approving. Items with a memo must be confirmed.',
         catSubmitted: a => 'Submitted as: ' + a,
         gN: n => n + (n === 1 ? ' report' : ' reports'), gPeople: n => n + (n === 1 ? ' person' : ' people'), gEmpty: 'No reports to show.', gItems: n => n + (n === 1 ? ' item' : ' items'),
@@ -409,8 +409,12 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
     /* 승인 화면: 항목별 카테고리 확정 상태 (제출자가 고른 값이 기본값) */
     const catState = {};
     function catStateFor(rep) {
-      return catState[rep.id] ??= { accounts: rep.rows.map(x => APPROVAL_ACCOUNTS.includes(x.account) ? x.account : ''), confirmed: rep.rows.map(() => false), memos: rep.rows.map(() => '') };
+      return catState[rep.id] ??= { delegated: false, needCheck: rep.rows.map(x => !!x.memo), accounts: rep.rows.map(x => APPROVAL_ACCOUNTS.includes(x.account) ? x.account : ''), confirmed: rep.rows.map(() => false), memos: rep.rows.map(() => '') };
     }
+    // 위임하면 카테고리 없이도 승인할 수 있지만, 제출자 메모가 있는 항목은 승인자가 꼭 확인해야 한다
+    const approvalReady = st => st.delegated
+      ? st.confirmed.every((c, i) => c || !st.needCheck[i])
+      : st.accounts.every(Boolean) && st.confirmed.every(Boolean);
     function paintApproval(id) {
       const art = document.querySelector('[data-rep="' + id + '"]'), st = catState[id];
       if (!art || !st) return;
@@ -418,20 +422,19 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         const btn = art.querySelector('[data-act="confirm-cat"][data-i="' + i + '"]');
         if (btn) { btn.classList.toggle('done', st.confirmed[i]); btn.textContent = st.confirmed[i] ? t('catDone') : t('catConfirm'); }
       });
-      const ok = st.accounts.every(Boolean) && st.confirmed.every(Boolean);
-      const ab = art.querySelector('[data-act="approve"]'); if (ab) ab.disabled = !ok;
+      const ab = art.querySelector('[data-act="approve"]'); if (ab) ab.disabled = !approvalReady(st);
     }
     function catCell(rep, r, i, st) {
       const cur = st.accounts[i];
       return `<div class="ex-cat">
           <div class="ex-src"><b>${esc(r.source || r.submittedAccount || r.account || '')}</b></div>
-          <select class="ex-select-plain" data-cat="${i}" data-repid="${esc(rep.id)}" aria-label="${esc(t('catPick'))}">
+          ${st.delegated ? '' : `<select class="ex-select-plain" data-cat="${i}" data-repid="${esc(rep.id)}" aria-label="${esc(t('catPick'))}">
             <option value="">${esc(t('catPick'))}</option>
             ${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${cur === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
-          </select>
+          </select>`}
           <div class="ex-cat-confirm">
             <input class="ex-input ex-amemo" data-amemo="${i}" data-repid="${esc(rep.id)}" placeholder="${esc(t('aMemoPh'))}" value="${esc(st.memos[i])}" maxlength="300">
-            <button class="ex-btn sm ex-confirm ${st.confirmed[i] ? 'done' : ''}" data-act="confirm-cat" data-id="${esc(rep.id)}" data-i="${i}">${st.confirmed[i] ? t('catDone') : t('catConfirm')}</button>
+            ${st.delegated && !st.needCheck[i] ? '' : `<button class="ex-btn sm ex-confirm ${st.confirmed[i] ? 'done' : ''}" data-act="confirm-cat" data-id="${esc(rep.id)}" data-i="${i}">${st.confirmed[i] ? t('catDone') : t('catConfirm')}</button>`}
           </div>
         </div>`;
     }
@@ -473,8 +476,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         if (rep.status === 'submitted' || rep.status === 'rejected') actions += `<button class="ex-btn sm danger" data-act="withdraw" data-id="${esc(rep.id)}">${t('btnWithdraw')}</button>`;
         actions += `<button class="ex-btn sm" data-act="copy" data-id="${esc(rep.id)}">${t('btnCopy')}</button>`;
       } else if (approving) {
-        const ready = st.accounts.every(Boolean) && st.confirmed.every(Boolean);
-        actions = `<button class="ex-btn sm" data-act="confirm-all" data-id="${esc(rep.id)}">${t('catConfirmAll')}</button><span style="flex:1"></span><button class="ex-btn danger sm" data-act="reject" data-id="${esc(rep.id)}">${t('btnReject')}</button><button class="ex-btn green sm" data-act="approve" data-id="${esc(rep.id)}" ${ready ? '' : 'disabled'}>${t('btnApprove')}</button>`;
+        const ready = approvalReady(st);
+        actions = (st.delegated ? '' : `<button class="ex-btn sm" data-act="confirm-all" data-id="${esc(rep.id)}">${t('catConfirmAll')}</button>`)
+          + `<button class="ex-btn sm ex-delegate ${st.delegated ? 'on' : ''}" data-act="delegate" data-id="${esc(rep.id)}">${t(st.delegated ? 'catDelegated' : 'catDelegate')}</button><span style="flex:1"></span><button class="ex-btn danger sm" data-act="reject" data-id="${esc(rep.id)}">${t('btnReject')}</button><button class="ex-btn green sm" data-act="approve" data-id="${esc(rep.id)}" ${ready ? '' : 'disabled'}>${t('btnApprove')}</button>`;
       } else if (mode === 'accounting') {
         if (rep.status === 'approved') actions = `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}">${t('btnProcess')}</button>`;
         actions += `<button class="ex-btn danger sm" data-act="trash" data-id="${esc(rep.id)}">${t('btnTrash')}</button>`;
@@ -499,7 +503,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
           <thead><tr><th>${t('thWhen')}</th><th>${t('thCat')}</th><th>${t('thItem')}</th><th style="text-align:right">${t('thAmt')}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table></div>
-        ${approving ? `<p class="ex-sub" style="margin:12px 0 0">${esc(t('catHint'))}</p>` : ''}
+        ${approving ? `<p class="ex-sub" style="margin:12px 0 0">${esc(t(st.delegated ? 'catDelegateNote' : 'catHint'))}</p>` : ''}
         ${notes}
         ${actions ? `<div class="ex-actions">${actions}</div>` : ''}
       </article>`;
@@ -578,18 +582,20 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
       else if (rep.status === 'approved') note = `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName || '', fmtDate(rep.reviewedAt)))}</div>`;
       else if (rep.status === 'processed') note = (rep.reviewedByName ? `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName, fmtDate(rep.reviewedAt)))}</div>` : '') + `<div class="ex-note ok">${esc(t('noteProcessed', fmtDate(rep.processedAt), rep.processedByName || ''))}</div>`;
       const locked = rep.status === 'approved' || rep.status === 'processed';
+      const waiting = rep.status === 'approved' && rep.categoryDelegated && rep.rows.some(r => !APPROVAL_ACCOUNTS.includes(r.account));
       // 회계 담당만 마지막에 카테고리(코드)를 고칠 수 있고, 그 외 내용은 승인 후 고정
       const recat = locked && me?.isAccountant && (mode === 'accounting' || mode === 'all') ? `
         <div class="ex-recat" data-recat="${esc(rep.id)}">
           <p class="ex-recat-title">${esc(t('recatTitle'))}</p>
+          ${waiting ? `<p class="ex-recat-wait">${esc(t('delegatedWait'))}</p>` : ''}
           ${rep.rows.map((r, i) => `<label class="ex-recat-row"><span>${esc(r.item || r.ministryPurpose || '')} <b>${krw(r.amountKrw)}</b></span>
-            <select class="ex-select-plain" data-recat-i="${i}">${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${r.account === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</select></label>`).join('')}
+            <select class="ex-select-plain" data-recat-i="${i}">${APPROVAL_ACCOUNTS.includes(r.account) ? '' : `<option value="" selected>${esc(t('catPick'))}</option>`}${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${r.account === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</select></label>`).join('')}
           <button class="ex-btn sm" data-act="recat-save" data-id="${esc(rep.id)}">${esc(t('recatSave'))}</button>
         </div>` : '';
       const lockNote = locked ? `<div class="ex-meta ex-locked">${esc(t('lockedNote'))}</div>` : '';
       let action = '<div class="ex-actions">';
       if (me?.isAccountant && (mode === 'accounting' || mode === 'all') && rep.status === 'approved') action += `<button class="ex-btn danger sm" data-act="acct-return" data-id="${esc(rep.id)}">${t('btnReturn')}</button>`;
-      if (mode === 'accounting' && rep.status === 'approved') action += `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}">${t('btnProcess')}</button>`;
+      if (mode === 'accounting' && rep.status === 'approved') action += `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}" ${waiting ? 'disabled title="' + esc(t('delegatedWait')) + '"' : ''}>${t('btnProcess')}</button>`;
       // 삭제(백업 후 이동)는 회계 담당자만 — 회계 업무와 전체 리포트 모두에서
       if (me?.isAccountant && (mode === 'accounting' || mode === 'all')) action += `<button class="ex-btn danger sm" data-act="trash" data-id="${esc(rep.id)}">${t('btnTrash')}</button>`;
       action += '</div>';
@@ -977,8 +983,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         }
         else if (act === 'approve') {
           const st = catState[id];
-          if (!st || st.accounts.some(a => !a) || st.confirmed.some(c => !c)) { toast(t('catNeed'), true); return; }
-          await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'approve', categories: st.accounts, approverMemos: st.memos, checks: st.confirmed }) });
+          if (!st || !approvalReady(st)) { toast(t('catNeed'), true); return; }
+          await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'approve', delegate: st.delegated, categories: st.delegated ? [] : st.accounts, approverMemos: st.memos, checks: st.confirmed }) });
           delete catState[id]; toast(t('tApproved')); await show('approve');
         }
         else if (act === 'reject') {
@@ -1017,6 +1023,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         else if (act === 'recat-save') {
           const box = el.closest('[data-recat]');
           const cats = [...box.querySelectorAll('[data-recat-i]')].map(s => s.value);
+          if (cats.some(c => !c)) { toast(t('catNeedAll'), true); return; }
           const out = await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'recategorize', categories: cats }) });
           [data.all, data.accounting].forEach(list => { const i = list.findIndex(x => x.id === id); if (i >= 0) list[i] = { ...list[i], rows: out.report.rows }; });
           toast(t('tRecat', out.changed)); renderGrouped(tab);
@@ -1024,8 +1031,14 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         else if (act === 'csv-g') exportCsv(gFiltered(tab, G.campus));
         else if (act === 'confirm-cat') {
           const st = catState[id]; if (!st) return;
-          if (!st.accounts[i]) { toast(t('catPick'), true); return; }
+          if (!st.delegated && !st.accounts[i]) { toast(t('catPick'), true); return; }
           st.confirmed[i] = !st.confirmed[i]; paintApproval(id);
+        }
+        else if (act === 'delegate') {
+          const st = catState[id]; if (!st) return;
+          st.delegated = !st.delegated;
+          st.confirmed = st.confirmed.map(() => false);
+          renderList('approve');
         }
         else if (act === 'confirm-all') {
           const st = catState[id]; if (!st) return;
