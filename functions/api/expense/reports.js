@@ -248,9 +248,11 @@ export async function onRequestPatch(context) {
     if (action === 'approve') {
       // 승인자가 모든 항목의 카테고리를 확정해야 승인된다. 단, '회계 담당에게 위임'하면 카테고리 없이 승인하고
       // 회계 담당이 전부 선택해야 송금 처리를 할 수 있다.
+      // 위임하면 승인자가 확인한 항목의 카테고리만 확정되고, 확인하지 않은 항목(빈 값)만 회계 담당에게 위임된다.
       const delegate = body.delegate === true;
-      const cats = delegate ? report.rows.map(r => r.account || '') : (Array.isArray(body.categories) ? body.categories : []);
-      if (!delegate && (cats.length !== report.rows.length || cats.some(c => !ACCOUNTS.includes(c)))) {
+      const given = Array.isArray(body.categories) ? body.categories : [];
+      const cats = delegate && !given.length ? report.rows.map(() => '') : given;
+      if (cats.length !== report.rows.length || cats.some(c => !(ACCOUNTS.includes(c) || (delegate && c === '')))) {
         return err('승인하려면 모든 항목의 카테고리(계정과목)를 확인해 주세요.');
       }
       // 제출자가 메모를 남긴 항목은 승인자가 하나씩 확인(체크)해야 한다
@@ -258,7 +260,7 @@ export async function onRequestPatch(context) {
       if (report.rows.some((row, i) => row.memo && checks[i] !== true)) return err('메모가 있는 항목을 모두 확인해 주세요.');
       const aMemos = Array.isArray(body.approverMemos) ? body.approverMemos : [];
       report.rows.forEach((row, i) => {
-        if (!delegate) {
+        if (cats[i]) {
           if (row.account && row.account !== cats[i]) { row.submittedAccount = row.account; row.categoryChanged = true; }
           row.account = cats[i];
         }
@@ -266,7 +268,7 @@ export async function onRequestPatch(context) {
         if (am) row.approverMemo = am; else delete row.approverMemo;
         if (row.memo) row.memoCheckedBy = session.email;
       });
-      if (delegate) {
+      if (delegate && report.rows.some(r => !ACCOUNTS.includes(r.account))) {
         report.categoryDelegated = true;
         report.categoryDelegatedBy = session.email;
         report.categoryDelegatedAt = now;

@@ -534,3 +534,35 @@ test('카테고리를 회계 담당에게 위임하면 회계 담당이 모든 �
   assert.equal(done.report.rows[0].categoryChanged, undefined, '처음 선택은 변경이 아님');
   assert.equal((await patch(ann, { action: 'process' })).status, 200, '모두 선택하면 송금 처리 가능');
 });
+
+test('위임은 확인하지 않은 항목만: 확인한 항목의 코드는 확정되고 나머지만 회계 담당이 선택한다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  await acc('acct@x.com', 'Ann', 'counselor');
+  const row = item => ({ source: '월코캠프', currency: 'KRW', amount: 1000, item, when: '2026-09-29' });
+  const mk = async () => (await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'p', rows: [row('a'), row('b')] })).report.id;
+  const patch = (id, who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, ...body });
+
+  const id = await mk();
+  assert.equal((await patch(id, boss, { action: 'approve', delegate: false, categories: ['Junior Camp (8040)', ''] })).status, 400, '위임 없이는 모든 항목을 확정해야 함');
+  assert.equal((await patch(id, boss, { action: 'approve', delegate: true, categories: ['Junior Camp (8040)', 'Bad'] })).status, 400);
+  const ok = await patch(id, boss, { action: 'approve', delegate: true, categories: ['Junior Camp (8040)', ''], checks: [true, false] });
+  assert.equal(ok.status, 200);
+  assert.deepEqual(ok.report.rows.map(r => r.account), ['Junior Camp (8040)', '']);
+  assert.equal(ok.report.categoryDelegated, true);
+  assert.equal((await patch(id, ann, { action: 'process' })).status, 409);
+  const done = await patch(id, ann, { action: 'recategorize', categories: ['Junior Camp (8040)', 'Teacher (8052)'] });
+  assert.equal(done.status, 200);
+  assert.equal(done.report.categoryDelegated, false);
+  assert.equal(done.report.rows[0].categoryChanged, undefined);
+  assert.equal((await patch(id, ann, { action: 'process' })).status, 200);
+
+  // 위임 버튼을 눌렀어도 모든 항목을 확인했다면 위임 없이 확정으로 처리
+  const id2 = await mk();
+  const all = await patch(id2, boss, { action: 'approve', delegate: true, categories: ['Junior Camp (8040)', 'Teacher (8052)'], checks: [true, true] });
+  assert.equal(all.status, 200);
+  assert.equal(all.report.categoryDelegated, undefined);
+  assert.equal(all.report.categoriesConfirmedBy, 'boss@wol.org');
+  assert.equal((await patch(id2, ann, { action: 'process' })).status, 200);
+});
