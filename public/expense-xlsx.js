@@ -98,9 +98,21 @@
         const m = [x.memo, x.approverMemo && '(' + x.approverMemo + ')'].filter(Boolean).join(' ');
         if (m) notes.push((x.item || x.ministryPurpose || '') + ': ' + m);
       });
-      cell(`A${rem}`, { richText: [{ text: 'Remarks: ', font: { name: FONT, bold: true, italic: true, size: 11 } }, { text: notes.join(' / '), font: { name: FONT, italic: true, size: 11 } }] }, { wrap: true });
+      // 카테고리(계정과목)별 소계 — 계정번호 순
+      const sub = new Map();
+      lines.forEach(x => sub.set(x.account, (sub.get(x.account) || 0) + Number(x.amountKrw || 0)));
+      const subLines = [...sub.entries()].sort((a, b) => (splitAccount(a[0]).num || 99999) - (splitAccount(b[0]).num || 99999))
+        .map(([acct, v]) => '  ' + acct + ':  ₩ ' + Math.round(v).toLocaleString('en-US'));
+      const noteText = notes.join(' / ');
+      const rich = [{ text: 'Remarks: ', font: { name: FONT, bold: true, italic: true, size: 11 } }, { text: noteText, font: { name: FONT, italic: true, size: 11 } }];
+      if (subLines.length) {
+        rich.push({ text: '\nSubtotal by category', font: { name: FONT, bold: true, italic: true, size: 11 } });
+        rich.push({ text: '\n' + subLines.join('\n'), font: { name: FONT, size: 11 } });
+      }
+      cell(`A${rem}`, { richText: rich }, { wrap: true });
+      ws.getCell(`A${rem}`).alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
       fillBorder(`A${rem}:E${rem}`);
-      ws.getRow(rem).height = Math.max(22, 16 * Math.ceil(notes.join(' / ').length / 70 + 0.5));
+      ws.getRow(rem).height = Math.max(22, 16 * (Math.ceil(noteText.length / 70 + 0.5) + (subLines.length ? subLines.length + 1 : 0)));
 
       const foot = rem + 1;
       ws.getRow(foot).height = 52;

@@ -529,6 +529,10 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
           ${memoHtml(r)}
           ${(r.receipts || []).length ? `<div class="ex-receipts" style="margin-top:4px">${receiptChips(rep, r)}</div>` : ''}
         </div>`).join('');
+      const bySub = {};
+      rep.rows.forEach(r => { bySub[r.account] = (bySub[r.account] || 0) + r.amountKrw; });
+      const subtotal = Object.keys(bySub).length > 1 || rep.rows.length > 1
+        ? `<div class="ex-summary" style="margin:10px 0 4px">${Object.entries(bySub).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span class="ex-sum-chip">${esc(k)} <b>${krw(v)}</b></span>`).join('')}</div>` : '';
       let note = '';
       if (rep.status === 'rejected') note = `<div class="ex-note reject"><b>${t('noteRejected')}</b> — ${esc(rep.reviewNote)}</div>`;
       else if (rep.status === 'approved') note = `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName || '', fmtDate(rep.reviewedAt)))}</div>`;
@@ -538,7 +542,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       // 삭제(백업 후 이동)는 회계 담당자만 — 회계 업무와 전체 리포트 모두에서
       if (me?.isAccountant && (mode === 'accounting' || mode === 'all')) action += `<button class="ex-btn danger sm" data-act="trash" data-id="${esc(rep.id)}">${t('btnTrash')}</button>`;
       action += '</div>';
-      return items + note + action;
+      return items + subtotal + note + action;
     }
 
     function renderGrouped(mode) {
