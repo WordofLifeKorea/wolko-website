@@ -37,7 +37,6 @@ function cleanRows(rawRows) {
     if (!Number.isFinite(amount) || amount <= 0 || amount > 1e10) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
     if (!account) return { error: `${n}번째 줄의 Account를 선택해 주세요.` };
     if (!item) return { error: `${n}번째 줄의 구매 품목명을 입력해 주세요.` };
-    if (!ministryPurpose) return { error: `${n}번째 줄의 구매 목적을 입력해 주세요.` };
     if (account === 'Other/Unknown' && !memo) return { error: `${n}번째 줄은 Other/Unknown이라 메모에 내용을 적어 주세요.` };
 
     // USD 항목: 영수 날짜 기준 환율(KRW per USD)로 원화 환산. 환율은 화면에서 자동 조회 후 수정 가능.
