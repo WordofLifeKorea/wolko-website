@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=37">
+  <link rel="stylesheet" href="/expense.css?v=41">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=12">
   <script src="/wolko-rail.js?v=15" defer></script>
@@ -298,7 +298,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         <div class="ex-line ex-l1">
           <span class="ex-num">${i + 1}</span>
           <input class="ex-input ex-w-date" data-f="when" type="date" value="${esc(r.when)}" aria-label="When">
-          <div class="ex-srcwrap">
+          <div class="ex-srcwrap ${srcIsCustom(r) ? 'is-custom' : ''}">
             <select class="ex-select ex-srcsel ${!srcIsCustom(r) && !r.source ? 'is-empty' : ''}" data-f="srcSel" aria-label="${esc(t('srcLbl'))}">
               <option value="" disabled hidden ${!srcIsCustom(r) && !r.source ? 'selected' : ''}>${esc(t('srcSelPh'))}</option>
               ${SRC_PRESETS.map(v => `<option value="${esc(v)}" ${!srcIsCustom(r) && r.source === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}
@@ -1009,6 +1009,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         const r = form.rows[+rowEl.dataset.i], f = el.dataset.f;
         if (f === 'srcSel') {
           const txt = rowEl.querySelector('[data-f="source"]');
+          el.closest('.ex-srcwrap').classList.toggle('is-custom', el.value === SRC_CUSTOM);
           if (el.value === SRC_CUSTOM) { r.srcCustom = true; r.source = ''; txt.value = ''; txt.hidden = false; txt.focus(); }
           else { r.srcCustom = false; r.source = el.value; txt.hidden = true; hideSrcTip(); el.classList.remove('is-empty'); }
         }

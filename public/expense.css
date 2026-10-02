@@ -434,3 +434,21 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-srcwrap .ex-source { flex: 1 1 170px; min-width: 0; }
 .ex-srcwrap [hidden] { display: none; }
 .ex-row .ex-srcsel.is-empty { color: var(--mid); opacity: .75; }
+
+/* ── 레이아웃 정리: 한 줄에 선택 + 직접 입력칸, 여백 통일 ── */
+@media (min-width: 641px) {
+  .ex-srcwrap { display: contents; }
+  .ex-l1 { grid-template-columns: 24px 156px minmax(150px, 210px) minmax(0, 1fr) 120px 60px 28px; }
+  .ex-srcwrap .ex-srcsel { grid-column: 3 / 5; max-width: none; width: 100%; min-width: 0; }
+  .ex-l1 > *, .ex-l1 .ex-amount > *, .ex-srcwrap .ex-srcsel { grid-row: 1; }
+  /* 직접 입력칸: 기본은 날짜 아래 줄(메모 줄과 같은 폭), 화면이 넓으면 같은 줄 */
+  .ex-srcwrap .ex-source { grid-column: 2 / -1; grid-row: 2; width: 100%; flex: none; margin-top: 8px; }
+  .ex-row { padding: 16px 16px 14px; }
+  .ex-l2, .ex-lmemo { margin-top: 10px; }
+}
+.ex-srchint { margin: 14px 0 16px; }
+
+@media (min-width: 1280px) {
+  .ex-srcwrap.is-custom .ex-srcsel { grid-column: 3; }
+  .ex-srcwrap .ex-source { grid-column: 4; grid-row: 1; margin-top: 0; }
+}
