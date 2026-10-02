@@ -288,7 +288,7 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
   .ex-l1 .ex-num { grid-column: 1; grid-row: 1; }
   .ex-l1 [data-f="when"] { grid-column: 2 / 4; grid-row: 1; width: 100%; }
   .ex-l1 .ex-x, .ex-l1 .ex-x-space { grid-column: 4; grid-row: 1; margin: 0; justify-self: end; }
-  .ex-l1 [data-f="source"] { grid-column: 1 / -1; grid-row: 2; width: 100%; order: 0; flex: none; }
+  .ex-l1 .ex-srcwrap { grid-column: 1 / -1; grid-row: 2; width: 100%; }
   .ex-l1 [data-f="currency"] { grid-column: 4; grid-row: 3; width: 100%; }
   .ex-l1 [data-f="amount"] { grid-column: 1 / 4; grid-row: 3; width: 100%; font-size: 16px; }
 
@@ -427,3 +427,10 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-row input[type="number"]::-webkit-outer-spin-button,
 .ex-row input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .ex-row input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+/* 사역명 · 계좌: 기본 선택지 + 직접 입력 */
+.ex-srcwrap { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; flex: 1 1 180px; min-width: 0; }
+.ex-srcwrap .ex-srcsel { flex: 1 1 150px; max-width: 210px; min-width: 130px; }
+.ex-srcwrap .ex-source { flex: 1 1 170px; min-width: 0; }
+.ex-srcwrap [hidden] { display: none; }
+.ex-row .ex-srcsel.is-empty { color: var(--mid); opacity: .75; }
