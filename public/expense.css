@@ -360,7 +360,7 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 
 /* 송금 관리 / 전체: 사람별 카드 */
 .ex-gbar { margin-bottom: 14px; }
-.ex-gcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; align-items: start; }
+.ex-gcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(560px, 1fr)); gap: 14px; align-items: start; }
 .ex-person { background: var(--card); border: 1px solid #d3dfe5; border-radius: 16px; overflow: hidden; }
 .ex-person-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #f6f9fb; border-bottom: 1px solid #e3ebf0; }
 .ex-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--blue); color: #fff; font: 700 14px var(--f-sans); display: inline-flex; align-items: center; justify-content: center; flex: none; }
@@ -369,7 +369,7 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-subs { list-style: none; }
 .ex-subs li { border-bottom: 1px solid #edf2f5; }
 .ex-subs li:last-child { border-bottom: 0; }
-.ex-sub-row { width: 100%; display: grid; grid-template-columns: 42px 1fr auto auto; gap: 10px; align-items: center; padding: 11px 16px; border: 0; background: transparent; text-align: left; cursor: pointer; font-size: 13px; }
+.ex-sub-row { width: 100%; display: grid; grid-template-columns: 42px 1fr auto auto auto; gap: 10px; align-items: center; padding: 11px 16px; border: 0; background: transparent; text-align: left; cursor: pointer; font-size: 13px; }
 .ex-sub-row:hover { background: #f6f9fb; }
 .ex-sub-date { color: var(--mid); font-variant-numeric: tabular-nums; }
 .ex-sub-desc { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
@@ -384,7 +384,12 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 @media (max-width: 640px) {
   .ex-gcards { grid-template-columns: 1fr; }
   .ex-sub-row { grid-template-columns: 36px 1fr auto; padding: 11px 12px; }
+  .ex-sub-dl { grid-column: 2 / -1; justify-self: start; }
   .ex-sub-row .ex-status { grid-column: 2 / -1; justify-self: start; }
   .ex-detail { padding: 4px 12px 14px 12px; }
   .ex-cat { min-width: 0; width: 100%; }
 }
+
+.ex-sub-dl { font-size: 11.5px; font-weight: 700; color: var(--blue); border: 1px solid #c9d8e0; border-radius: 8px; padding: 4px 10px; background: #fff; white-space: nowrap; cursor: pointer; }
+.ex-sub-dl:hover { background: #eaf4f8; border-color: var(--blue); }
+.ex-sub-dl:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
