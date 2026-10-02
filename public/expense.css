@@ -179,7 +179,7 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
 
 /* 첫 줄: 열 정렬 (데스크톱) / 둘째 줄: 목적 + 도구 */
 @media (min-width: 641px) {
-  .ex-l1 { display: grid; grid-template-columns: 24px 132px minmax(0, 1fr) 56px 120px 28px; gap: 8px; align-items: center; }
+  .ex-l1 { display: grid; grid-template-columns: 24px 132px minmax(0, 1fr) 120px 56px 28px; gap: 8px; align-items: center; }
   .ex-l2 { display: grid; grid-template-columns: 24px minmax(0, 0.8fr) minmax(0, 1.4fr) auto auto; gap: 8px; align-items: center; margin-top: 4px; }
   .ex-l2::before { content: ''; }
   .ex-lmemo { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 14px; margin-top: 4px; }
@@ -283,13 +283,14 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
   .ex-row { padding: 12px; }
 
   /* 1줄: ①번호 + 날짜 + ✕ / 2줄: 계정과목 / 3줄: 통화 + 금액 */
-  .ex-l1 { display: grid; grid-template-columns: 24px 68px 1fr 28px; gap: 8px; align-items: center; }
+  .ex-l1 { display: grid; grid-template-columns: 24px 68px 1fr 64px; gap: 8px; align-items: center; }
+  .ex-amount { display: contents; }
   .ex-l1 .ex-num { grid-column: 1; grid-row: 1; }
   .ex-l1 [data-f="when"] { grid-column: 2 / 4; grid-row: 1; width: 100%; }
-  .ex-l1 .ex-x, .ex-l1 .ex-x-space { grid-column: 4; grid-row: 1; margin: 0; }
-  .ex-l1 [data-f="accountSel"] { grid-column: 1 / -1; grid-row: 2; width: 100%; order: 0; flex: none; }
-  .ex-l1 [data-f="currency"] { grid-column: 1 / 3; grid-row: 3; width: 100%; }
-  .ex-l1 [data-f="amount"] { grid-column: 3 / -1; grid-row: 3; width: 100%; font-size: 16px; }
+  .ex-l1 .ex-x, .ex-l1 .ex-x-space { grid-column: 4; grid-row: 1; margin: 0; justify-self: end; }
+  .ex-l1 [data-f="source"] { grid-column: 1 / -1; grid-row: 2; width: 100%; order: 0; flex: none; }
+  .ex-l1 [data-f="currency"] { grid-column: 4; grid-row: 3; width: 100%; }
+  .ex-l1 [data-f="amount"] { grid-column: 1 / 4; grid-row: 3; width: 100%; font-size: 16px; }
 
   /* 품목 / 목적은 각각 한 줄, 아래에 영수증 · ⋯ */
   .ex-l2 { display: grid; grid-template-columns: auto auto 1fr; gap: 6px 8px; align-items: center; margin-top: 6px; }
@@ -334,7 +335,7 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 /* 날짜 ↔ 계정과목 간격 (날짜 박스가 칸을 넘쳐 붙던 문제) */
 .ex-row input[type="date"] { min-width: 0; box-sizing: border-box; }
 @media (min-width: 641px) {
-  .ex-l1 { grid-template-columns: 24px 156px minmax(0, 1fr) 60px 120px 28px; column-gap: 14px; row-gap: 8px; }
+  .ex-l1 { grid-template-columns: 24px 156px minmax(0, 1fr) 120px 60px 28px; column-gap: 14px; row-gap: 8px; }
   .ex-l1 .ex-w-date { width: 100%; }
   .ex-l2 { column-gap: 14px; }
 }

@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=28">
+  <link rel="stylesheet" href="/expense.css?v=30">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=12">
   <script src="/wolko-rail.js?v=12" defer></script>
@@ -296,8 +296,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
           <input class="ex-input ex-w-date" data-f="when" type="date" value="${esc(r.when)}" aria-label="When">
           <input class="ex-input ex-grow ex-source" data-f="source" list="fSrcList" placeholder="${esc(t('srcPh'))}" value="${esc(r.source)}" maxlength="160" aria-label="${esc(t('srcLbl'))}">
           <div class="ex-amount">
-            <select class="ex-select" data-f="currency" aria-label="${t('currency')}"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩</option><option value="USD" ${r.currency === 'USD' ? 'selected' : ''}>$</option></select>
             <input class="ex-input" data-f="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="${t('amountPh')}" value="${esc(r.amount)}" aria-label="Amount">
+            <select class="ex-select" data-f="currency" aria-label="${t('currency')}"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩</option><option value="USD" ${r.currency === 'USD' ? 'selected' : ''}>$</option></select>
           </div>
           ${form.rows.length > 1 ? `<button class="ex-x" data-act="del-row" data-i="${i}" aria-label="${t('delRow')}">×</button>` : '<span class="ex-x-space"></span>'}
         </div>
