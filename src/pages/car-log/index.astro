@@ -1,0 +1,94 @@
+---
+// 차량 QR → 사용 전 사진 → 로그인 계정에 연결된 사용 일지.
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>차량 사용 일지 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="stylesheet" href="/car-log.css?v=1">
+  <link rel="stylesheet" href="/wolko-rail.css?v=12">
+  <script src="/wolko-rail.js?v=14" defer></script>
+  <script src="/car-log.js?v=1" defer></script>
+  <meta name="theme-color" content="#004f68">
+</head>
+<body>
+  <header class="log-header">
+    <a href="/portal/" class="log-brand"><img src="/images/WOLKO Circle.png" alt=""><span>WOLKO Portal</span></a>
+    <span class="log-header-label">차량 사용 일지</span>
+  </header>
+
+  <main class="log-wrap">
+    <div class="log-intro">
+      <p class="log-kicker">VEHICLE LOG</p>
+      <h1>차량 사용 일지</h1>
+      <p>운행 전 사진 한 장으로 사용 시각과 목적을 남깁니다.</p>
+    </div>
+    <p class="log-loading" id="loadStatus">일지를 불러오는 중…</p>
+
+    <section class="log-panel" id="loginPanel" hidden>
+      <div class="log-panel-head"><span class="log-step">01</span><h2>포탈 로그인</h2></div>
+      <p class="log-help">차량 QR을 새 탭에서 열었다면 다시 로그인해야 할 수 있습니다. 기록자는 로그인 계정으로 자동 저장됩니다.</p>
+      <form id="loginForm" class="log-form">
+        <label>이메일<input id="loginEmail" type="email" autocomplete="username" required></label>
+        <label>비밀번호<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button class="log-primary" type="submit">로그인하고 계속하기</button>
+      </form>
+      <p class="log-error" id="loginError" role="alert"></p>
+    </section>
+
+    <div id="logApp" hidden>
+      <section class="log-panel">
+        <div class="log-panel-head"><span class="log-step">01</span><h2>운행 전 기록</h2></div>
+        <p class="log-user">기록자 <strong id="currentUser"></strong></p>
+        <form id="usageForm" class="log-form">
+          <label>차량 선택
+            <select id="vehicleSelect" name="vehicleId" required></select>
+          </label>
+          <fieldset class="log-purpose">
+            <legend>사용 목적</legend>
+            <div class="log-purpose-options">
+              <label><input type="radio" name="useType" value="ministry" required><span>사역용</span></label>
+              <label><input type="radio" name="useType" value="personal" required><span>개인용</span></label>
+            </div>
+          </fieldset>
+          <div class="log-photo-step">
+            <strong>운행 전 사진</strong>
+            <p>계기판이나 차량 상태가 보이도록 찍어 주세요. 사용 목적을 고르면 카메라를 열 수 있습니다.</p>
+            <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+            <button id="photoButton" class="log-secondary" type="button" disabled>카메라 열기 · 사진 선택</button>
+            <img id="photoPreview" class="log-preview" alt="선택한 차량 사진 미리보기" hidden>
+            <p class="log-time" id="photoTime" aria-live="polite"></p>
+          </div>
+          <button id="saveButton" class="log-primary" type="submit" disabled>사용 일지 저장</button>
+        </form>
+        <p class="log-error" id="formError" role="alert"></p>
+      </section>
+
+      <section class="log-panel log-history">
+        <div class="log-panel-head"><span class="log-step">02</span><h2>최근 사용 내역</h2></div>
+        <p class="log-help">기록은 로그인 계정과 함께 저장됩니다. 사진은 포탈 사용자만 볼 수 있습니다.</p>
+        <div id="entryList" class="log-entries"></div>
+      </section>
+
+      <details class="log-panel log-qr">
+        <summary>차량에 부착할 QR 코드</summary>
+        <p class="log-help">고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.</p>
+        <div class="log-qr-grid">
+          <div><img src="/images/car-qr-silver-van.svg" alt="Silver Van 사용 일지 QR 코드"><strong>Silver Van</strong></div>
+          <div><img src="/images/car-qr-santa-fe.svg" alt="Santa Fe 사용 일지 QR 코드"><strong>Santa Fe</strong></div>
+        </div>
+        <button class="log-secondary log-print" id="printQrButton" type="button">QR 코드 인쇄</button>
+      </details>
+    </div>
+  </main>
+
+  <div id="photoDialog" class="log-photo-dialog" hidden role="dialog" aria-modal="true" aria-label="차량 사진">
+    <button id="closePhoto" type="button" aria-label="사진 닫기">×</button>
+    <img id="fullPhoto" alt="차량 사용 전 사진">
+  </div>
+</body>
+</html>
