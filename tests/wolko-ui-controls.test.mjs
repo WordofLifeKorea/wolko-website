@@ -34,7 +34,7 @@ test('public layout and every standalone app load the sizing system', async () =
 
   for (const file of files) {
     const source = await read(file);
-    assert.match(source, /\/wolko-ui\.css\?v=1/, `${file} must load wolko-ui.css`);
+    assert.match(source, /\/wolko-ui\.css\?v=\d+/, `${file} must load wolko-ui.css`);
   }
 });
 
