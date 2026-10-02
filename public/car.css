@@ -191,8 +191,9 @@ html, body {
   font: 800 11.5px/1 var(--f-body); color: var(--mid); text-align: center; cursor: pointer;
 }
 .cal-mini-header:hover { background: var(--bg); color: var(--blue); }
-.cal-mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-mini-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; min-width: 0; }
 .cal-mini-cell {
+  width: 100%; min-width: 0; min-height: 0 !important; padding: 0;
   aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
   border: none; border-radius: 6px; background: transparent; color: var(--mid); font: 600 9.5px/1 var(--f-body); cursor: pointer;
 }
