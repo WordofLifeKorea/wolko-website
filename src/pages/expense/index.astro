@@ -146,6 +146,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     }
     const rateText = n => !n ? '' : n.k === 'asof' ? t('rateAsOf', n.d) : n.k === 'biz' ? t('rateBiz', n.d) : t(n.k);
     const LS = { draft: 'wolko-expense-draft:', project: 'wolko-expense-project', projects: 'wolko-expense-projects', sources: 'wolko-expense-sources' };
+    const DEFAULT_SOURCE = '개인 사역계좌';
     const SRC_EXAMPLES = ['월코캠', '개인 사역계좌', '월코 계좌', 'Student Ministry', 'SF1', 'Vietnam Camp'];
 
     const $ = id => document.getElementById(id);
@@ -191,7 +192,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     /* ─────────── 폼 상태 ─────────── */
     // 기준 통화는 KRW. USD 항목은 영수 날짜 기준 환율(1 USD = rate KRW)로 환산한다.
     function blankRow(prev) {
-      return { source: prev ? prev.source : '', memo: '', currency: 'KRW', amount: '', rate: '', rateNote: null, item: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
+      return { source: prev ? prev.source : DEFAULT_SOURCE, memo: '', currency: 'KRW', amount: '', rate: '', rateNote: null, item: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
     }
     // 이름이 등록되지 않아 이메일이 이름 자리에 들어온 경우는 설명 기본값에서 제외
     const myName = () => (me?.name && !String(me.name).includes('@') ? me.name : '');
