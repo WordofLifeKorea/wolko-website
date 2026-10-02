@@ -8,8 +8,8 @@ button,input,select { font:inherit; }
 .log-brand { display:inline-flex; align-items:center; gap:10px; color:var(--blue); text-decoration:none; font-size:14px; font-weight:800; }
 .log-brand img { width:30px; height:30px; }
 .log-header-label { color:var(--muted); font-size:12px; font-weight:700; }
-.log-wrap { max-width:760px; margin:auto; padding:40px 24px 80px; }
-.log-intro { margin-bottom:28px; }
+.log-wrap { max-width:1120px; margin:auto; padding:28px 28px 90px; }
+.log-intro { margin-bottom:24px; }
 .log-kicker { margin:0 0 8px; color:var(--teal); font-size:11px; font-weight:800; letter-spacing:.22em; }
 .log-intro h1 { margin:0 0 9px; color:var(--blue); font-size:clamp(28px,5vw,38px); letter-spacing:-.05em; }
 .log-intro > p:last-child { margin:0; color:var(--muted); font-size:14px; line-height:1.7; }
@@ -77,3 +77,42 @@ button:disabled { opacity:.48; cursor:not-allowed; }
 .car-view-tab.is-active svg { opacity:1; }
 @media (max-width:640px) { .car-header { padding:10px 14px; } }
 @media print { .car-header,.car-view-tabs { display:none !important; } }
+
+/* ── 레이아웃: PC는 기록 / 최근 내역 2단, 모바일은 1단 ── */
+.car-header-right { display:flex; align-items:center; gap:8px; }
+#logApp { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; align-items:start; }
+#logApp[hidden] { display:none !important; }
+#logApp > .log-panel { margin:0; }
+#loginPanel { max-width:480px; margin-left:auto; margin-right:auto; }
+.log-loading { text-align:center; padding:30px 0; }
+.log-history .log-entries { max-height:none; }
+@media (min-width:1000px) {
+  #logApp { grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr); gap:22px; }
+  #logApp > .log-qr { grid-column:1 / -1; }
+  .log-history { position:sticky; top:84px; }
+  .log-history .log-entries { max-height:min(62vh,640px); overflow:auto; padding-right:4px; }
+  .log-intro { display:flex; align-items:baseline; gap:18px; flex-wrap:wrap; }
+  .log-intro .log-kicker { flex-basis:100%; }
+  .log-intro h1 { margin:0; }
+  .log-intro > p:last-child { margin:0; }
+}
+@media (min-width:1000px) and (max-width:1250px) { .log-wrap { padding-left:20px; padding-right:20px; } }
+.log-photo-step { display:grid; gap:2px; }
+.log-photo-step .log-secondary { width:100%; }
+@media (max-width:640px) {
+  .log-wrap { padding:18px 12px 96px; }
+  .log-intro { margin-bottom:16px; }
+  .log-intro h1 { font-size:26px; }
+  .log-intro > p:last-child { font-size:13px; }
+  .log-panel { padding:18px 14px; margin-bottom:12px; }
+  .log-panel-head { margin-bottom:14px; }
+  .log-panel-head h2 { font-size:18px; }
+  .log-form { gap:16px; }
+  .log-purpose-options span { min-height:52px; }
+  .log-primary,.log-secondary { min-height:52px; font-size:15px; }
+  .log-entry { grid-template-columns:1fr; gap:10px; }
+  .log-entry button { justify-self:start; padding:10px 14px; }
+  .log-qr-grid { grid-template-columns:1fr 1fr; gap:10px; }
+  .car-view-tab { padding:11px 6px; font-size:12px; }
+  .car-view-tab svg { display:none; }
+}

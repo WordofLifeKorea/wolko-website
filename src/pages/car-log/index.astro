@@ -12,102 +12,109 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/car-log.css?v=2">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/car-log.css?v=4">
   <link rel="stylesheet" href="/wolko-rail.css?v=13">
-  <script src="/wolko-rail.js?v=16" defer></script>
-  <script src="/car-log.js?v=1" defer></script>
+  <script src="/wolko-rail.js?v=17" defer></script>
+  <script src="/car-log.js?v=2" defer></script>
   <meta name="theme-color" content="#004f68">
 </head>
 <body>
   <header class="car-header">
     <a class="car-header-logo" href="/portal" title="WOLKO 포탈로 돌아가기">
       <img src="/images/WOLKO Circle.png" alt="WOLKO">
-      <span>차량 스케줄</span>
+      <span data-t="pageTitle">차량 스케줄</span>
     </a>
+    <div class="car-header-right">
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
+    </div>
   </header>
 
   <main class="log-wrap">
-    <nav class="car-view-tabs" aria-label="차량 메뉴">
+    <nav class="car-view-tabs" aria-label="차량 메뉴" data-t-aria="menuLabel">
       <a class="car-view-tab is-active" href="/car-log/" aria-current="page">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
-        <span>사용 일지</span>
+        <span data-t="tabLog">사용 일지</span>
       </a>
       <a class="car-view-tab" href="/car/">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        <span>예약현황</span>
+        <span data-t="tabReservations">예약현황</span>
       </a>
       <a class="car-view-tab" href="/car/?view=maintenance">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-        <span>정비 관리</span>
+        <span data-t="tabMaintenance">정비 관리</span>
       </a>
     </nav>
 
     <div class="log-intro">
       <p class="log-kicker">VEHICLE LOG</p>
-      <h1>차량 사용 일지</h1>
-      <p>운행 전 사진 한 장으로 사용 시각과 목적을 남깁니다.</p>
+      <h1 data-t="h1">차량 사용 일지</h1>
+      <p data-t="intro">운행 전 사진 한 장으로 사용 시각과 목적을 남깁니다.</p>
     </div>
-    <p class="log-loading" id="loadStatus">일지를 불러오는 중…</p>
+    <p class="log-loading" id="loadStatus" data-t="loading">일지를 불러오는 중…</p>
 
     <section class="log-panel" id="loginPanel" hidden>
-      <div class="log-panel-head"><span class="log-step">01</span><h2>포탈 로그인</h2></div>
-      <p class="log-help">차량 QR을 새 탭에서 열었다면 다시 로그인해야 할 수 있습니다. 기록자는 로그인 계정으로 자동 저장됩니다.</p>
+      <div class="log-panel-head"><span class="log-step">01</span><h2 data-t="loginTitle">포탈 로그인</h2></div>
+      <p class="log-help" data-t="loginHelp">차량 QR을 새 탭에서 열었다면 다시 로그인해야 할 수 있습니다. 기록자는 로그인 계정으로 자동 저장됩니다.</p>
       <form id="loginForm" class="log-form">
-        <label>이메일<input id="loginEmail" type="email" autocomplete="username" required></label>
-        <label>비밀번호<input id="loginPassword" type="password" autocomplete="current-password" required></label>
-        <button class="log-primary" type="submit">로그인하고 계속하기</button>
+        <label><span data-t="email">이메일</span><input id="loginEmail" type="email" autocomplete="username" required></label>
+        <label><span data-t="password">비밀번호</span><input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button class="log-primary" type="submit" data-t="loginBtn">로그인하고 계속하기</button>
       </form>
       <p class="log-error" id="loginError" role="alert"></p>
     </section>
 
     <div id="logApp" hidden>
       <section class="log-panel">
-        <div class="log-panel-head"><span class="log-step">01</span><h2>운행 전 기록</h2></div>
-        <p class="log-user">기록자 <strong id="currentUser"></strong></p>
+        <div class="log-panel-head"><span class="log-step">01</span><h2 data-t="recordTitle">운행 전 기록</h2></div>
+        <p class="log-user"><span data-t="recorder">기록자</span> <strong id="currentUser"></strong></p>
         <form id="usageForm" class="log-form">
-          <label>차량 선택
+          <label><span data-t="vehicleLabel">차량 선택</span>
             <select id="vehicleSelect" name="vehicleId" required></select>
           </label>
           <fieldset class="log-purpose">
-            <legend>사용 목적</legend>
+            <legend data-t="purposeLegend">사용 목적</legend>
             <div class="log-purpose-options">
-              <label><input type="radio" name="useType" value="ministry" required><span>사역용</span></label>
-              <label><input type="radio" name="useType" value="personal" required><span>개인용</span></label>
+              <label><input type="radio" name="useType" value="ministry" required><span data-t="ministry">사역용</span></label>
+              <label><input type="radio" name="useType" value="personal" required><span data-t="personal">개인용</span></label>
             </div>
           </fieldset>
           <div class="log-photo-step">
-            <strong>운행 전 사진</strong>
-            <p>계기판이나 차량 상태가 보이도록 찍어 주세요. 사용 목적을 고르면 카메라를 열 수 있습니다.</p>
+            <strong data-t="photoTitle">운행 전 사진</strong>
+            <p data-t="photoHelp">계기판이나 차량 상태가 보이도록 찍어 주세요. 사용 목적을 고르면 카메라를 열 수 있습니다.</p>
             <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
-            <button id="photoButton" class="log-secondary" type="button" disabled>카메라 열기 · 사진 선택</button>
-            <img id="photoPreview" class="log-preview" alt="선택한 차량 사진 미리보기" hidden>
+            <button id="photoButton" class="log-secondary" type="button" disabled data-t="photoBtn">카메라 열기 · 사진 선택</button>
+            <img id="photoPreview" class="log-preview" alt=""  hidden>
             <p class="log-time" id="photoTime" aria-live="polite"></p>
           </div>
-          <button id="saveButton" class="log-primary" type="submit" disabled>사용 일지 저장</button>
+          <button id="saveButton" class="log-primary" type="submit" disabled data-t="save">사용 일지 저장</button>
         </form>
         <p class="log-error" id="formError" role="alert"></p>
       </section>
 
       <section class="log-panel log-history">
-        <div class="log-panel-head"><span class="log-step">02</span><h2>최근 사용 내역</h2></div>
-        <p class="log-help">기록은 로그인 계정과 함께 저장됩니다. 사진은 포탈 사용자만 볼 수 있습니다.</p>
+        <div class="log-panel-head"><span class="log-step">02</span><h2 data-t="historyTitle">최근 사용 내역</h2></div>
+        <p class="log-help" data-t="historyHelp">기록은 로그인 계정과 함께 저장됩니다. 사진은 포탈 사용자만 볼 수 있습니다.</p>
         <div id="entryList" class="log-entries"></div>
       </section>
 
       <details class="log-panel log-qr">
-        <summary>차량에 부착할 QR 코드</summary>
-        <p class="log-help">고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.</p>
+        <summary data-t="qrTitle">차량에 부착할 QR 코드</summary>
+        <p class="log-help" data-t="qrHelp">고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.</p>
         <div class="log-qr-grid">
           <div><img src="/images/car-qr-silver-van.svg" alt="Silver Van 사용 일지 QR 코드"><strong>Silver Van</strong></div>
           <div><img src="/images/car-qr-santa-fe.svg" alt="Santa Fe 사용 일지 QR 코드"><strong>Santa Fe</strong></div>
         </div>
-        <button class="log-secondary log-print" id="printQrButton" type="button">QR 코드 인쇄</button>
+        <button class="log-secondary log-print" id="printQrButton" type="button" data-t="qrPrint">QR 코드 인쇄</button>
       </details>
     </div>
   </main>
 
-  <div id="photoDialog" class="log-photo-dialog" hidden role="dialog" aria-modal="true" aria-label="차량 사진">
-    <button id="closePhoto" type="button" aria-label="사진 닫기">×</button>
+  <div id="photoDialog" class="log-photo-dialog" hidden role="dialog" aria-modal="true" aria-label="차량 사진" data-t-aria="photoDialog">
+    <button id="closePhoto" type="button" aria-label="사진 닫기" data-t-aria="closePhoto">×</button>
     <img id="fullPhoto" alt="차량 사용 전 사진">
   </div>
 </body>

@@ -2,7 +2,71 @@
   const $ = id => document.getElementById(id);
   const tokenKey = 'wolko-hub-token';
   const requestedVehicle = new URLSearchParams(location.search).get('vehicle');
-  const formatTime = value => new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+  /* ── 한/영 (차량 스케줄 페이지와 같은 wolkoCarLang 설정을 공유) ── */
+  const I18N = {
+    ko: {
+      pageTitle: '차량 스케줄', docTitle: '차량 사용 일지 — WOLKO', menuLabel: '차량 메뉴',
+      tabReservations: '예약현황', tabMaintenance: '정비 관리', tabLog: '사용 일지',
+      h1: '차량 사용 일지', intro: '운행 전 사진 한 장으로 사용 시각과 목적을 남깁니다.', loading: '일지를 불러오는 중…',
+      loginTitle: '포탈 로그인', loginHelp: '차량 QR을 새 탭에서 열었다면 다시 로그인해야 할 수 있습니다. 기록자는 로그인 계정으로 자동 저장됩니다.',
+      email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기',
+      recordTitle: '운행 전 기록', recorder: '기록자', vehicleLabel: '차량 선택', purposeLegend: '사용 목적', ministry: '사역용', personal: '개인용',
+      photoTitle: '운행 전 사진', photoHelp: '계기판이나 차량 상태가 보이도록 찍어 주세요. 사용 목적을 고르면 카메라를 열 수 있습니다.',
+      photoBtn: '카메라 열기 · 사진 선택', save: '사용 일지 저장', saving: '저장 중…',
+      historyTitle: '최근 사용 내역', historyHelp: '기록은 로그인 계정과 함께 저장됩니다. 사진은 포탈 사용자만 볼 수 있습니다.',
+      qrTitle: '차량에 부착할 QR 코드', qrHelp: '고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.', qrPrint: 'QR 코드 인쇄',
+      photoDialog: '차량 사진', closePhoto: '사진 닫기',
+      pickVehicle: '차량을 선택해 주세요', noEntries: '아직 등록된 사용 기록이 없습니다.', viewPhoto: '사진 보기',
+      useMinistry: '사역용', usePersonal: '개인용', timeExif: '사진 촬영 시각', timeSaved: '기록 시각',
+      connectFail: '일지 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', loadFail: '일지를 불러오지 못했습니다.',
+      photoOpenFail: '사진을 열지 못했습니다.', resizeFail: '사진 크기를 줄이지 못했습니다. 다른 사진을 선택해 주세요.',
+      loginFail: '로그인하지 못했습니다.', photoDiff: '사진 촬영 시각이 오늘과 다릅니다. 운행 전 사진을 새로 찍어 주세요.',
+      photoOld: '오래된 사진입니다. 운행 전 사진을 새로 찍어 주세요.', photoReadFail: '사진을 읽지 못했습니다.',
+      photoTaken: t => `사진 촬영: ${t} (사진 정보 기준)`, photoNoTime: '사진에 촬영 시각 정보가 없어 저장 시각으로 기록됩니다.',
+      saved: '사용 일지가 저장됐습니다.', saveFail: '저장하지 못했습니다.',
+    },
+    en: {
+      pageTitle: 'Vehicle Schedule', docTitle: 'Vehicle Usage Log — WOLKO', menuLabel: 'Vehicle menu',
+      tabReservations: 'Reservations', tabMaintenance: 'Maintenance', tabLog: 'Usage Log',
+      h1: 'Vehicle Usage Log', intro: 'Leave the time and purpose of use with a single pre-drive photo.', loading: 'Loading the log…',
+      loginTitle: 'Portal Login', loginHelp: 'If you opened the vehicle QR in a new tab you may need to log in again. The recorder is saved automatically from your account.',
+      email: 'Email', password: 'Password', loginBtn: 'Log in and continue',
+      recordTitle: 'Pre-drive record', recorder: 'Recorder', vehicleLabel: 'Vehicle', purposeLegend: 'Purpose of use', ministry: 'Ministry', personal: 'Personal',
+      photoTitle: 'Pre-drive photo', photoHelp: 'Take a photo that shows the dashboard or the vehicle condition. Choose the purpose first to open the camera.',
+      photoBtn: 'Open camera · choose photo', save: 'Save usage log', saving: 'Saving…',
+      historyTitle: 'Recent usage', historyHelp: 'Records are saved with your account. Photos are visible only to portal users.',
+      qrTitle: 'QR codes for the vehicles', qrHelp: 'Print the code for each fixed vehicle and attach it. Scanning selects that vehicle automatically.', qrPrint: 'Print QR codes',
+      photoDialog: 'Vehicle photo', closePhoto: 'Close photo',
+      pickVehicle: 'Select a vehicle', noEntries: 'No usage records yet.', viewPhoto: 'View photo',
+      useMinistry: 'Ministry', usePersonal: 'Personal', timeExif: 'photo taken', timeSaved: 'recorded',
+      connectFail: 'Could not reach the log service. Please try again shortly.', loadFail: 'Could not load the log.',
+      photoOpenFail: 'Could not open the photo.', resizeFail: 'Could not shrink the photo. Please choose another one.',
+      loginFail: 'Could not log in.', photoDiff: 'The photo was not taken today. Please take a new pre-drive photo.',
+      photoOld: 'This photo is old. Please take a new pre-drive photo.', photoReadFail: 'Could not read the photo.',
+      photoTaken: t => `Photo taken: ${t} (from photo data)`, photoNoTime: 'The photo has no capture time, so the save time will be recorded.',
+      saved: 'Usage log saved.', saveFail: 'Could not save.',
+    },
+  };
+  let lang = (() => { try { return localStorage.getItem('wolkoCarLang') === 'en' ? 'en' : 'ko'; } catch { return 'ko'; } })();
+  const t = (key, arg) => { const v = I18N[lang][key] ?? I18N.ko[key] ?? key; return typeof v === 'function' ? v(arg) : v; };
+  const formatTime = value => new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.title = t('docTitle');
+    document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+    document.querySelectorAll('[data-t-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.tAria)));
+    $('langKoBtn').classList.toggle('is-active', lang === 'ko');
+    $('langEnBtn').classList.toggle('is-active', lang === 'en');
+    const select = $('vehicleSelect');
+    if (select.options.length) select.options[0].text = t('pickVehicle');
+    if (!$('logApp').hidden) renderEntries();
+  }
+  function setLang(next) {
+    if (next === lang) return;
+    lang = next;
+    try { localStorage.setItem('wolkoCarLang', lang); } catch {}
+    applyLang();
+  }
   let entries = [];
   let photoBlob = null;
   let photoTakenAt = null;
@@ -25,16 +89,16 @@
   async function loadData() {
     const response = await fetch('/api/car/usage', { headers: headers() });
     if (response.status === 401) { showLogin(); return; }
-    const data = await response.json().catch(() => ({ error: '일지 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' }));
+    const data = await response.json().catch(() => ({ error: t('connectFail') }));
     if (!response.ok || !data.user || !Array.isArray(data.vehicles)) {
-      throw new Error(data.error || '일지를 불러오지 못했습니다.');
+      throw new Error(data.error || t('loadFail'));
     }
     $('loadStatus').hidden = true;
     $('loginPanel').hidden = true;
     $('logApp').hidden = false;
     $('currentUser').textContent = `${data.user.name} (${data.user.email})`;
     const select = $('vehicleSelect');
-    select.replaceChildren(new Option('차량을 선택해 주세요', ''));
+    select.replaceChildren(new Option(t('pickVehicle'), ''));
     data.vehicles.forEach(vehicle => select.add(new Option(vehicle.name, vehicle.id)));
     if (data.vehicles.some(vehicle => vehicle.id === requestedVehicle)) select.value = requestedVehicle;
     entries = data.entries || [];
@@ -48,7 +112,7 @@
     if (!entries.length) {
       const empty = document.createElement('p');
       empty.className = 'log-empty';
-      empty.textContent = '아직 등록된 사용 기록이 없습니다.';
+      empty.textContent = t('noEntries');
       list.append(empty);
       return;
     }
@@ -57,13 +121,13 @@
       row.className = 'log-entry';
       const body = document.createElement('div');
       const title = document.createElement('strong');
-      title.textContent = `${entry.vehicleName} · ${entry.useType === 'ministry' ? '사역용' : '개인용'}`;
+      title.textContent = `${entry.vehicleName} · ${entry.useType === 'ministry' ? t('useMinistry') : t('usePersonal')}`;
       const details = document.createElement('span');
-      details.textContent = `${formatTime(entry.photoTakenAt)} · ${entry.userName} · ${entry.timeSource === 'exif' ? '사진 촬영 시각' : '기록 시각'}`;
+      details.textContent = `${formatTime(entry.photoTakenAt)} · ${entry.userName} · ${entry.timeSource === 'exif' ? t('timeExif') : t('timeSaved')}`;
       body.append(title, details);
       const button = document.createElement('button');
       button.type = 'button';
-      button.textContent = '사진 보기';
+      button.textContent = t('viewPhoto');
       button.addEventListener('click', () => openPhoto(entry.id));
       row.append(body, button);
       list.append(row);
@@ -72,7 +136,7 @@
 
   async function openPhoto(id) {
     const response = await fetch(`/api/car/usage-photo?id=${encodeURIComponent(id)}`, { headers: headers() });
-    if (!response.ok) { $('formError').textContent = '사진을 열지 못했습니다.'; return; }
+    if (!response.ok) { $('formError').textContent = t('photoOpenFail'); return; }
     if (fullPhotoUrl) URL.revokeObjectURL(fullPhotoUrl);
     fullPhotoUrl = URL.createObjectURL(await response.blob());
     $('fullPhoto').src = fullPhotoUrl;
@@ -155,7 +219,7 @@
       const encode = quality => new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
       let blob = await encode(.82);
       if (blob?.size > 4 * 1024 * 1024) blob = await encode(.65);
-      if (!blob || blob.size > 4 * 1024 * 1024) throw new Error('사진 크기를 줄이지 못했습니다. 다른 사진을 선택해 주세요.');
+      if (!blob || blob.size > 4 * 1024 * 1024) throw new Error(t('resizeFail'));
       return blob;
     } finally { URL.revokeObjectURL(url); }
   }
@@ -171,7 +235,7 @@
         body: JSON.stringify({ email: $('loginEmail').value, password: $('loginPassword').value }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || '로그인하지 못했습니다.');
+      if (!response.ok) throw new Error(data.error || t('loginFail'));
       sessionStorage.setItem(tokenKey, data.hubToken);
       $('loginPassword').value = '';
       await loadData();
@@ -192,10 +256,10 @@
     try {
       const exifDate = await readExifDate(file);
       if (exifDate && (exifDate.getTime() < Date.now() - 24 * 60 * 60_000 || exifDate.getTime() > Date.now() + 5 * 60_000)) {
-        throw new Error('사진 촬영 시각이 오늘과 다릅니다. 운행 전 사진을 새로 찍어 주세요.');
+        throw new Error(t('photoDiff'));
       }
       if (!exifDate && file.lastModified && file.lastModified < Date.now() - 24 * 60 * 60_000) {
-        throw new Error('오래된 사진입니다. 운행 전 사진을 새로 찍어 주세요.');
+        throw new Error(t('photoOld'));
       }
       photoBlob = await toJpeg(file);
       photoTakenAt = exifDate?.toISOString() || null;
@@ -203,11 +267,9 @@
       previewUrl = URL.createObjectURL(photoBlob);
       $('photoPreview').src = previewUrl;
       $('photoPreview').hidden = false;
-      $('photoTime').textContent = exifDate
-        ? `사진 촬영: ${formatTime(exifDate)} (사진 정보 기준)`
-        : '사진에 촬영 시각 정보가 없어 저장 시각으로 기록됩니다.';
+      $('photoTime').textContent = exifDate ? t('photoTaken', formatTime(exifDate)) : t('photoNoTime');
     } catch (error) {
-      $('formError').textContent = error.message || '사진을 읽지 못했습니다.';
+      $('formError').textContent = error.message || t('photoReadFail');
       $('photoPreview').hidden = true;
       $('photoTime').textContent = '';
     }
@@ -219,7 +281,7 @@
     if (!photoBlob) return;
     $('formError').textContent = '';
     $('saveButton').disabled = true;
-    $('saveButton').textContent = '저장 중…';
+    $('saveButton').textContent = t('saving');
     try {
       const form = new FormData();
       form.append('vehicleId', $('vehicleSelect').value);
@@ -228,23 +290,26 @@
       if (photoTakenAt) { form.append('photoTakenAt', photoTakenAt); form.append('timeSource', 'exif'); }
       const response = await fetch('/api/car/usage', { method: 'POST', headers: headers(), body: form });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || '저장하지 못했습니다.');
+      if (!response.ok) throw new Error(data.error || t('saveFail'));
       entries.unshift(data.entry);
       renderEntries();
       photoBlob = null;
       photoTakenAt = null;
       $('photoInput').value = '';
       $('photoPreview').hidden = true;
-      $('photoTime').textContent = '사용 일지가 저장됐습니다.';
+      $('photoTime').textContent = t('saved');
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       previewUrl = null;
     } catch (error) { $('formError').textContent = error.message; }
-    finally { $('saveButton').textContent = '사용 일지 저장'; updateReady(); }
+    finally { $('saveButton').textContent = t('save'); updateReady(); }
   });
 
   $('closePhoto').addEventListener('click', closePhoto);
   $('photoDialog').addEventListener('click', event => { if (event.target === $('photoDialog')) closePhoto(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && !$('photoDialog').hidden) closePhoto(); });
   $('printQrButton').addEventListener('click', () => window.print());
+  $('langKoBtn').addEventListener('click', () => setLang('ko'));
+  $('langEnBtn').addEventListener('click', () => setLang('en'));
+  applyLang();
   loadData().catch(error => showLogin(error.message));
 })();
