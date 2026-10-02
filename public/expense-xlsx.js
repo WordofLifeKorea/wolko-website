@@ -82,7 +82,7 @@
         ws.getRow(row).height = 24;
         const hasMemo = !!(x && (x.memo || x.approverMemo));
         const bg = hasMemo ? C.memo : (i % 2 ? C.zebra : C.white);
-        const acc = x ? splitAccount(x.account) : { num: '', name: '' };
+        const acc = x ? (x.account ? splitAccount(x.account) : { num: '', name: x.source || '' }) : { num: '', name: '' };
         put('A' + row, acc.num, { fill: bg, bold: true, size: 12, color: C.blue, h: 'center' });
         put('B' + row, acc.name, { fill: bg, indent: 1 });
         put('C' + row, x ? (x.item || x.ministryPurpose || '') + (hasMemo ? '  ✎' : '') : '', { fill: bg, wrap: true, indent: 1 });
@@ -120,7 +120,7 @@
 
       // 카테고리별 소계 — 계정번호 순, 칸을 나눠 한눈에 보이게
       const sub = new Map();
-      lines.forEach(x => sub.set(x.account, (sub.get(x.account) || 0) + Number(x.amountKrw || 0)));
+      lines.forEach(x => { const k = x.account || x.source || ''; sub.set(k, (sub.get(k) || 0) + Number(x.amountKrw || 0)); });
       const subList = [...sub.entries()].sort((a, b) => (splitAccount(a[0]).num || 99999) - (splitAccount(b[0]).num || 99999));
       if (subList.length) {
         r++;

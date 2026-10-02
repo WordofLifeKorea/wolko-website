@@ -345,13 +345,11 @@ test('전체 비우기: 회계 담당만, 확인 값 필요, 백업되어 복구
 
 
 
-test('메모: 모든 카테고리에서 입력 가능, Other/Unknown은 필수, 메모 항목은 승인자가 확인해야 하고 승인 메모가 남는다', async () => {
+test('메모: 모든 항목에서 입력 가능, 메모 항목은 승인자가 확인해야 하고 승인 메모가 남는다', async () => {
   const { acc, call } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   const row = (account, memo) => ({ account, currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29', memo });
-  const noMemo = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'x', rows: [row('Other/Unknown', '')] });
-  assert.equal(noMemo.status, 400, 'Other/Unknown은 메모 필수');
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'm', rows: [row('Car Gas (8400)', '주유소 영수증 2장 합산'), row('Teacher (8052)', '')] });
   assert.equal(sub.status, 200);
   assert.equal(sub.report.rows[0].memo, '주유소 영수증 2장 합산');
@@ -363,4 +361,21 @@ test('메모: 모든 카테고리에서 입력 가능, Other/Unknown은 필수, 
   assert.equal(ok.report.rows[0].approverMemo, '확인함, 합산 맞음');
   assert.equal(ok.report.rows[0].memoCheckedBy, 'boss@wol.org');
   assert.equal(ok.report.rows[1].approverMemo, undefined);
+});
+
+test('작성자는 선교 항목·계좌를 직접 적고, 카테고리(코드)는 승인자가 확정한다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  const row = (source, extra = {}) => ({ source, currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29', ...extra });
+  assert.equal((await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'x', rows: [row('')] })).status, 400, '선교 항목·계좌는 필수');
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 's', rows: [row('월코캠프', { memo: '카드 아님' }), row('개인 사역계좌')] });
+  assert.equal(sub.status, 200, '구매 목적은 비워도 된다');
+  assert.deepEqual(sub.report.rows.map(r => [r.source, r.account]), [['월코캠프', ''], ['개인 사역계좌', '']]);
+  const id = sub.report.id;
+  const approve = body => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', ...body });
+  assert.equal((await approve({ categories: ['', 'Teacher (8052)'], checks: [true, true] })).status, 400, '카테고리를 모두 골라야 승인');
+  const ok = await approve({ categories: ['Junior Camp (8040)', 'Teacher (8052)'], checks: [true, true] });
+  assert.equal(ok.status, 200);
+  assert.deepEqual(ok.report.rows.map(r => [r.source, r.account, !!r.categoryChanged]), [['월코캠프', 'Junior Camp (8040)', false], ['개인 사역계좌', 'Teacher (8052)', false]]);
 });

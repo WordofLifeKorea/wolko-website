@@ -30,14 +30,14 @@ function cleanRows(rawRows) {
     const n = i + 1;
     const currency = r?.currency === 'USD' ? 'USD' : 'KRW'; // 기준 통화는 KRW
     const amount = Math.round(Number(r?.amount) * 100) / 100; // 입력한 통화 기준 원금액
-    const account = clip(r?.account, 120);
+    const source = clip(r?.source, 160); // 작성자가 직접 적은 '어떤 선교 항목/계좌인지' (카테고리는 승인자가 확정)
+    const account = clip(r?.account, 120); // 승인 전에는 비어 있다(예전 화면에서 온 값이 있으면 유지)
     const item = clip(r?.item, 120); // 구매 품목명
     const ministryPurpose = clip(r?.ministryPurpose, 500); // 구매 목적
     const memo = clip(r?.memo, 300); // 모든 카테고리에서 쓸 수 있는 메모(부가 설명)
     if (!Number.isFinite(amount) || amount <= 0 || amount > 1e10) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
-    if (!account) return { error: `${n}번째 줄의 Account를 선택해 주세요.` };
+    if (!source && !account) return { error: `${n}번째 줄에 어떤 선교 항목·계좌의 지출인지 적어 주세요.` };
     if (!item) return { error: `${n}번째 줄의 구매 품목명을 입력해 주세요.` };
-    if (account === 'Other/Unknown' && !memo) return { error: `${n}번째 줄은 Other/Unknown이라 메모에 내용을 적어 주세요.` };
 
     // USD 항목: 영수 날짜 기준 환율(KRW per USD)로 원화 환산. 환율은 화면에서 자동 조회 후 수정 가능.
     const rate = Number(r?.rate);
@@ -52,7 +52,7 @@ function cleanRows(rawRows) {
 
     rows.push({
       project: clip(r?.project, 160), // 비어 있으면 리포트 상단 Project를 따른다
-      account, currency, amount, amountKrw,
+      source: source || account, account, currency, amount, amountKrw,
       rate: currency === 'USD' ? Math.round(rate * 100) / 100 : null,
       item,
       ministryPurpose,
@@ -230,7 +230,7 @@ export async function onRequestPatch(context) {
       if (report.rows.some((row, i) => row.memo && checks[i] !== true)) return err('메모가 있는 항목을 모두 확인해 주세요.');
       const aMemos = Array.isArray(body.approverMemos) ? body.approverMemos : [];
       report.rows.forEach((row, i) => {
-        if (row.account !== cats[i]) { row.submittedAccount = row.account; row.categoryChanged = true; }
+        if (row.account && row.account !== cats[i]) { row.submittedAccount = row.account; row.categoryChanged = true; }
         row.account = cats[i];
         const am = clip(aMemos[i], 300);
         if (am) row.approverMemo = am; else delete row.approverMemo;
