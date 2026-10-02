@@ -41,6 +41,7 @@ export async function onRequestPost(context) {
   const phone = String(body.phone || '').trim();
   const email = normalizeEmail(body.email);
   const password = String(body.password || '');
+  const campus = body.campus === 'jeju' ? 'jeju' : 'wolko'; // 평택(wolko) | 제주
   if (!name) {
     return Response.json({ error: '이름을 입력해 주세요.' }, { status: 400, headers: CORS });
   }
@@ -61,7 +62,7 @@ export async function onRequestPost(context) {
       const existing = await getAccount(env, email);
       await putAccount(env, {
         ...(existing || {}),
-        email, name, phone, role: 'master', status: 'approved',
+        email, name, phone, campus, role: 'master', status: 'approved',
         passwordHash: hash, passwordSalt: salt,
       });
       return Response.json({ status: 'approved' }, { headers: CORS });
@@ -71,7 +72,7 @@ export async function onRequestPost(context) {
 
     if (!account) {
       account = {
-        email, name, phone, role: null, status: 'pending',
+        email, name, phone, campus, role: null, status: 'pending',
         passwordHash: hash, passwordSalt: salt,
         requestedAt: new Date().toISOString(),
       };

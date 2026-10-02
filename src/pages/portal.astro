@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/hub.css?v=17">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
-  <link rel="stylesheet" href="/wolko-auth.css?v=1">
+  <link rel="stylesheet" href="/wolko-auth.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=1">
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
@@ -73,6 +73,10 @@
       <p class="login-description" data-t="signupDesc">이메일과 비밀번호를 등록하면 마스터 관리자 승인 후 로그인할 수 있습니다.</p>
       <div class="login-input-wrap">
         <input class="login-input" type="text" id="signupNameInput" placeholder="이름" autocomplete="name">
+      </div>
+      <div class="login-input-wrap signup-campus" role="radiogroup" aria-label="소속">
+        <label class="signup-campus-opt"><input type="radio" name="signupCampus" value="wolko" checked><span data-t="campusPyeongtaek">평택</span></label>
+        <label class="signup-campus-opt"><input type="radio" name="signupCampus" value="jeju"><span data-t="campusJeju">제주</span></label>
       </div>
       <div class="login-input-wrap">
         <input class="login-input" type="tel" id="signupPhoneInput" placeholder="휴대폰 번호" autocomplete="tel">
@@ -233,6 +237,7 @@
         signupDesc: '이메일과 비밀번호를 등록하면 마스터 관리자 승인 후 로그인할 수 있습니다.',
         namePlaceholder: '이름',
         phonePlaceholder: '휴대폰 번호',
+        campusPyeongtaek: '평택', campusJeju: '제주',
         signupPwPlaceholder: '8자 이상',
         signupBtn: '가입 요청',
         signupSending: '요청 중…',
@@ -288,6 +293,7 @@
         signupDesc: 'Register an email and password. A master admin must approve access before you can log in.',
         namePlaceholder: 'Name',
         phonePlaceholder: 'Phone number',
+        campusPyeongtaek: 'Pyeongtaek', campusJeju: 'Jeju',
         signupPwPlaceholder: '8+ characters',
         signupBtn: 'Request access',
         signupSending: 'Requesting…',
@@ -579,6 +585,7 @@
       const phone = $('signupPhoneInput').value.trim();
       const email = $('signupEmailInput').value.trim().toLowerCase();
       const password = $('signupPwInput').value;
+      const campus = document.querySelector('input[name="signupCampus"]:checked')?.value || 'wolko';
       const errEl = $('signupError');
       errEl.textContent = '';
       if (!name) { errEl.textContent = t('nameRequired'); return; }
@@ -597,7 +604,7 @@
         const res = await fetch('/api/hub/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, phone, email, password }),
+          body: JSON.stringify({ name, phone, email, password, campus }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('passwordInvalid'));

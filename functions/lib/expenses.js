@@ -81,6 +81,7 @@ export async function expenseSession(request, env) {
 
   return {
     email: normalizeEmail(session.email),
+    campus: account?.campus,
     name: account?.name || DISPLAY_NAMES[normalizeEmail(session.email)] || session.email,
     role: session.role,
     isApprover: EXPENSE_ADMIN_EMAILS.includes(normalizeEmail(session.email)),

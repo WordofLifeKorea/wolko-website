@@ -277,11 +277,10 @@ test('회계 담당은 리포트를 삭제해도 영수증까지 백업되어 �
 
 test('승인 시 모든 항목의 카테고리를 확정해야 하고, 확정값이 회계로 넘어간다', async () => {
   const { acc, sent, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@x.com', 'Cynthia', 'counselor', { campus: 'jeju' });
   await acc('boss@wol.org', 'Boss', 'admin');
   await acc('acct@x.com', 'Ann', 'counselor');
   const row = (item, account) => ({ account, currency: 'KRW', amount: 1000, item, ministryPurpose: 'camp', when: '2026-09-29' });
-  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { action: 'set-campus', email: 'cyn@x.com', campus: 'jeju' });
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, {
     description: 'cat', rows: [row('휘발유', 'Car Gas (8400)'), row('간식', 'Office (5201)')],
   });
@@ -309,19 +308,32 @@ test('승인 시 모든 항목의 카테고리를 확정해야 하고, 확정값
   assert.ok(sent.some(m => m.to.includes('cyn@x.com') && /송금/.test(m.subject)), '제출자에게 송금 완료 알림');
 });
 
-test('캠퍼스는 작성자가 고르지 않고 제출자 계정 기준: 기본 월코, 승인자/회계가 사람별로 지정', async () => {
+test('캠퍼스(평택|제주)는 포탈 가입 때 정한 계정 값 기준, 값이 없는 기존 계정은 평택', async () => {
   const { acc, call } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('jj@x.com', 'Jeju', 'counselor', { campus: 'jeju' });
   await acc('boss@wol.org', 'Boss', 'admin');
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   const a = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'a', campus: 'jeju', rows: [row] });
-  assert.equal(a.report.campus, 'wolko', '작성 화면 값은 무시, 기본 월코');
-  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', cyn, { action: 'set-campus', email: 'cyn@x.com', campus: 'jeju' })).status, 403, '일반 사용자는 지정 불가');
-  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { action: 'set-campus', email: 'cyn@x.com', campus: 'mars' })).status, 400);
-  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { action: 'set-campus', email: 'cyn@x.com', campus: 'jeju' })).status, 200);
-  const all = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', boss);
-  assert.equal(all.reports.find(r => r.id === a.report.id).campus, 'jeju', '기존 리포트도 사람 기준으로 분류');
-  const b = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'b', rows: [row] });
+  assert.equal(a.report.campus, 'wolko', '요청 값은 무시, 기존 계정은 평택');
+  const b = await call(R.onRequestPost, 'POST', '/api/expense/reports', ['jj@x.com', 'counselor'], { description: 'b', rows: [row] });
   assert.equal(b.report.campus, 'jeju');
+  const all = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', boss);
+  assert.deepEqual(all.reports.map(r => [r.description, r.campus]).sort(), [['a', 'wolko'], ['b', 'jeju']]);
 });
+
+test('전체 비우기: 회계 담당만, 확인 값 필요, 백업되어 복구 가능', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('acct@x.com', 'Ann', 'counselor', { isAccountant: true });
+  const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
+  const a = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'a', rows: [row] });
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', cyn, { action: 'trash-all', confirm: 'DELETE-ALL' })).status, 403);
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { action: 'trash-all' })).status, 400, '확인 값 없이는 불가');
+  const out = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { action: 'trash-all', confirm: 'DELETE-ALL' });
+  assert.equal(out.count, 1);
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=mine', cyn)).reports.length, 0);
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id: a.report.id, action: 'restore' })).status, 200);
+});
+
 

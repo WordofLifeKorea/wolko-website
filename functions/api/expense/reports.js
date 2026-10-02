@@ -11,7 +11,7 @@
  *
  * 인증: Authorization: Bearer <포탈 세션 토큰>  (권한 규칙은 lib/expenses.js 참고)
  */
-import { sendEmail } from '../../lib/hubAccounts.js';
+import { sendEmail, listAccounts } from '../../lib/hubAccounts.js';
 import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS } from '../../../src/lib/expense-config.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
@@ -67,12 +67,14 @@ function cleanCampus(value) {
   return CAMPUSES.includes(value) ? value : DEFAULT_CAMPUS;
 }
 
-// 소속 캠퍼스는 작성자가 고르지 않고, 제출자 계정별로 한 번 지정해 둔 값을 따른다 (KV: expense:campus-map)
-const CAMPUS_MAP_KEY = 'expense:campus-map';
+// 소속 캠퍼스(평택|제주)는 작성자가 고르지 않고, 포탈 가입 때 정한 제출자 계정의 값을 따른다.
+// 값이 없는 기존 계정은 모두 평택(wolko)이다.
 async function getCampusMap(env) {
-  return (await env.CAMP_KV.get(CAMPUS_MAP_KEY, 'json')) || {};
+  const map = {};
+  for (const a of await listAccounts(env)) if (a?.email) map[a.email] = cleanCampus(a.campus);
+  return map;
 }
-const applyCampus = (reports, map) => reports.map(r => ({ ...r, campus: cleanCampus(map[r.submitterEmail] || r.campus) }));
+const applyCampus = (reports, map) => reports.map(r => ({ ...r, campus: cleanCampus(map[r.submitterEmail]) }));
 
 async function notify(context, to, subject, html) {
   const { env } = context;
@@ -151,7 +153,7 @@ export async function onRequestPost(context) {
     submitterName: session.name,
     description: clip(body.description, 200),
     project: clip(body.project, 160),
-    campus: cleanCampus((await getCampusMap(env))[session.email]),
+    campus: cleanCampus(session.campus),
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: new Date().toISOString(),
@@ -184,14 +186,12 @@ export async function onRequestPatch(context) {
   const id = clip(body.id, 80);
   const action = body.action;
 
-  if (action === 'set-campus') {
-    if (!(session.isApprover || session.isAccountant)) return err('권한이 없습니다.', 403);
-    const email = clip(body.email, 160).toLowerCase();
-    if (!email || !CAMPUSES.includes(body.campus)) return err('잘못된 요청입니다.');
-    const map = await getCampusMap(env);
-    map[email] = body.campus;
-    await env.CAMP_KV.put(CAMPUS_MAP_KEY, JSON.stringify(map));
-    return Response.json({ ok: true, email, campus: body.campus }, { headers: CORS });
+  if (action === 'trash-all') {
+    if (!session.isAccountant) return err('회계 담당자만 삭제할 수 있습니다.', 403);
+    if (body.confirm !== 'DELETE-ALL') return err('확인 값이 필요합니다.');
+    const reports = await listReports(env);
+    for (const r of reports) await trashReport(env, r, session); // 백업 후 이동 — 삭제됨 목록에서 하나씩 복구 가능
+    return Response.json({ ok: true, count: reports.length }, { headers: CORS });
   }
 
   if (action === 'restore') {
@@ -308,7 +308,7 @@ export async function onRequestPut(context) {
     status: 'submitted',
     description: clip(body.description, 200),
     project: clip(body.project, 160),
-    campus: cleanCampus((await getCampusMap(env))[session.email] || report.campus),
+    campus: cleanCampus(session.campus),
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: now,

@@ -280,3 +280,15 @@
     font-size: 17px;
   }
 }
+
+/* 포탈 가입: 소속(평택 | 제주) 선택 */
+.login-screen .signup-campus { display: flex; gap: 8px; }
+.login-screen .signup-campus-opt { flex: 1; position: relative; cursor: pointer; }
+.login-screen .signup-campus-opt input { position: absolute; opacity: 0; inset: 0; }
+.login-screen .signup-campus-opt span {
+  display: flex; align-items: center; justify-content: center; height: 48px;
+  border: 1.5px solid var(--auth-border); border-radius: 12px; background: #fafcfd;
+  color: var(--auth-light); font: 700 14px/1 var(--auth-body); transition: border-color .15s, background .15s, color .15s;
+}
+.login-screen .signup-campus-opt input:checked + span { border-color: var(--auth-blue, #004f68); background: #eaf4f8; color: var(--auth-blue, #004f68); }
+.login-screen .signup-campus-opt input:focus-visible + span { outline: 2px solid var(--auth-blue, #004f68); outline-offset: 2px; }
