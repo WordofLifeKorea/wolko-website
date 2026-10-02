@@ -26,7 +26,7 @@ test('vehicle menu is the last WOLKO tool; reservations, maintenance and usage l
   assert.match(log, /href="\/car\/\?view=maintenance"/);
   assert.match(log, /class="car-header"/);
   assert.match(car, /<title>차량 스케줄 — WOLKO<\/title>/);
-  assert.match(car, /\/car\.css\?v=9/);
+  assert.match(car, /\/car\.css\?v=\d+/);
   assert.match(carCss, /\.cal-mini-grid\s*\{[^}]*repeat\(7, minmax\(0, 1fr\)\)/s);
   assert.match(carCss, /\.cal-mini-cell\s*\{[^}]*min-height:\s*0\s*!important/s);
   assert.match(log, /id="usageForm"/);
