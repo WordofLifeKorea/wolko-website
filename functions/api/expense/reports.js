@@ -12,7 +12,7 @@
  * 인증: Authorization: Bearer <포탈 세션 토큰>  (권한 규칙은 lib/expenses.js 참고)
  */
 import { sendEmail, listAccounts } from '../../lib/hubAccounts.js';
-import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS, FOREIGN_CURRENCIES } from '../../../src/lib/expense-config.js';
+import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS, CAMPUS_OVERRIDES, FOREIGN_CURRENCIES } from '../../../src/lib/expense-config.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
   EXPENSE_REPLY_TO, EXPENSE_EMAIL_ENABLED, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
@@ -75,6 +75,7 @@ function cleanCampus(value) {
 async function getCampusMap(env) {
   const map = {};
   for (const a of await listAccounts(env)) if (a?.email) map[a.email] = cleanCampus(a.campus);
+  Object.assign(map, CAMPUS_OVERRIDES);
   return map;
 }
 const applyCampus = (reports, map) => reports.map(r => ({ ...r, campus: cleanCampus(map[r.submitterEmail]) }));
@@ -124,7 +125,8 @@ export async function onRequestGet(context) {
   }
   if (scope === 'all') {
     if (!canViewAll) return err('전체 리포트는 관리자와 회계 담당자만 볼 수 있습니다.', 403);
-    return Response.json({ reports: all }, { headers: CORS });
+    // 승인 권한이 없는 회계 담당자에게는 승인 대기(submitted) 상태의 리포트를 보여주지 않는다
+    return Response.json({ reports: session.isApprover ? all : all.filter(r => r.status !== 'submitted') }, { headers: CORS });
   }
   if (scope === 'trash') {
     if (!session.isAccountant) return err('회계 담당자만 볼 수 있습니다.', 403);
@@ -156,7 +158,7 @@ export async function onRequestPost(context) {
     submitterName: session.name,
     description: clip(body.description, 200),
     project: clip(body.project, 160),
-    campus: cleanCampus(session.campus),
+    campus: cleanCampus(CAMPUS_OVERRIDES[session.email] || session.campus),
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: new Date().toISOString(),
@@ -320,7 +322,7 @@ export async function onRequestPut(context) {
     status: 'submitted',
     description: clip(body.description, 200),
     project: clip(body.project, 160),
-    campus: cleanCampus(session.campus),
+    campus: cleanCampus(CAMPUS_OVERRIDES[session.email] || session.campus),
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: now,

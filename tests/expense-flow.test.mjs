@@ -122,12 +122,14 @@ test('전체 리포트 조회는 관리자·회계 담당만, 일반 계정은 �
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', cyn)).status, 403);
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', cyn)).me.canViewAll, false);
 
-  // 관리자(승인자)와 회계 담당은 모든 사람의 리포트(승인 전 포함)를 본다
-  for (const who of [boss, ann]) {
-    const all = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', who);
-    assert.equal(all.status, 200);
-    assert.deepEqual(all.reports.map(r => r.description).sort(), ['A', 'B']);
-  }
+  // 관리자(승인자)는 모든 사람의 리포트(승인 대기 포함)를 본다
+  const allBoss = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', boss);
+  assert.equal(allBoss.status, 200);
+  assert.deepEqual(allBoss.reports.map(r => r.description).sort(), ['A', 'B']);
+  // 회계 담당(승인 권한 없음)은 조회는 되지만 승인 대기 건은 보이지 않는다
+  const allAnn = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', ann);
+  assert.equal(allAnn.status, 200);
+  assert.deepEqual(allAnn.reports, []);
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ann)).me.canViewAll, true);
 
   // 다른 사람의 영수증은 일반 계정이 못 보고, 관리자/회계는 승인 전이어도 열람
@@ -420,4 +422,25 @@ test('환율 조회: CAD는 frankfurter, VND는 별도 일별 환율 데이터, 
 test('이예영(ylee7@wol.org)은 회계 담당이지만 경비 승인 권한은 없다', async () => {
   assert.ok(ACCOUNTANT_EMAILS.includes('ylee7@wol.org'));
   assert.ok(!EXPENSE_ADMIN_EMAILS.includes('ylee7@wol.org'));
+});
+
+test('회계 담당(승인 권한 없음)은 전체 리포트에서 승인 대기 건을 볼 수 없고, Jeremy는 제주로 분류된다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  await acc('ylee7@wol.org', 'Rose', 'counselor');
+  await acc('jeremyrodgers@wol.org', 'Jeremy', 'admin');
+  const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'x', when: '2026-09-29' };
+  const s1 = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'pending', rows: [row] });
+  const j = await call(R.onRequestPost, 'POST', '/api/expense/reports', ['jeremyrodgers@wol.org', 'admin'], { description: 'jeremy', rows: [row] });
+  assert.equal(j.report.campus, 'jeju');
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id: s1.report.id, action: 'approve', categories: ['Teacher (8052)'], checks: [true] });
+  const s2 = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'still pending', rows: [row] });
+  const rose = ['ylee7@wol.org', 'counselor'];
+  const asRose = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', rose);
+  assert.ok(asRose.reports.length > 0 && asRose.reports.every(r => r.status !== 'submitted'), '승인 대기는 보이지 않는다');
+  assert.ok(asRose.reports.some(r => r.id === s1.report.id), '승인된 건은 보인다');
+  const asBoss = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', boss);
+  assert.ok(asBoss.reports.some(r => r.id === s2.report.id), '승인 권한자는 승인 대기도 본다');
+  assert.equal(asBoss.reports.find(r => r.id === j.report.id).campus, 'jeju');
 });

@@ -24,3 +24,6 @@ export const FOREIGN_CURRENCIES = {
 /** 리포트가 속한 캠퍼스: 월코(평택) | 제주 */
 export const CAMPUSES = ['wolko', 'jeju'];
 export const DEFAULT_CAMPUS = 'wolko';
+
+/** 가입 때 고른 소속과 상관없이 이 이메일은 항상 이 캠퍼스로 분류한다 (코드로 관리) */
+export const CAMPUS_OVERRIDES = { 'jeremyrodgers@wol.org': 'jeju' };
