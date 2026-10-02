@@ -93,3 +93,16 @@ test('a rejected account cannot use an existing signed session', async () => {
   const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'admin');
   assert.equal((await saveUsage({ env, request: postRequest(token) })).status, 401);
 });
+
+test('usage log offers only Silver Van and Santa Fe, even if missionary vehicles exist', async () => {
+  const env = memoryEnv();
+  const email = 'driver@wol.org';
+  await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: '운전자', status: 'approved' }));
+  await env.CAMP_KV.put('car:vehicles:missionary', JSON.stringify([{ id: 'kim-car', name: 'Kim' }]));
+  const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'counselor');
+  const res = await listUsage({ env, request: new Request('https://example.com/api/car/usage', { headers: { Authorization: `Bearer ${token}` } }) });
+  const data = await res.json();
+  assert.deepEqual(data.vehicles.map(v => v.id), ['silver-van', 'santa-fe']);
+  const bad = await saveUsage({ env, request: postRequest(token, { vehicleId: 'kim-car' }) });
+  assert.equal(bad.status, 400, '선교사 개인 차량은 사용 일지에서 선택할 수 없다');
+});

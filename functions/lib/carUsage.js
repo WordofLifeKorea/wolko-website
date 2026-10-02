@@ -22,6 +22,9 @@ export async function usageSession(request, env) {
   return { email, name: account?.name || email, role: signed.role };
 }
 
+/** 사용 일지에서 고를 수 있는 차량: 고정 차량(Silver Van · Santa Fe)만. 선교사 개인 차량은 예약 캘린더에서만 쓴다. */
+export const selectableVehicles = () => new Map(Object.entries(BUILTIN_VEHICLES));
+
 export async function vehicleLabels(env) {
   const vehicles = (await env.CAMP_KV.get(VEHICLES_KEY, 'json')) || [];
   return new Map([...Object.entries(BUILTIN_VEHICLES), ...vehicles.map(v => [v.id, `${v.name} 선교사 차량`])]);

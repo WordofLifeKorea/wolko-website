@@ -1,0 +1,65 @@
+/* WOLKO 내부 도구 공용 상단 헤더 — 이벤트 관리 페이지의 헤더와 같은 모양으로 통일
+   (파란 바 · 흰 로고 글씨 · 반투명 KO/EN 토글 · 반투명 로그아웃 버튼). 높이는 wolko-rail.css가 60px로 맞춘다. */
+.sc-header, .portal-header, .topbar, .app-header, .car-header, .ex-header {
+  background: #004f68 !important;
+  background-image: none !important;
+  color: #fff !important;
+  border: 0 !important;
+  box-shadow: 0 2px 12px rgba(0, 79, 104, .25) !important;
+  padding-left: 32px !important;
+  padding-right: 32px !important;
+}
+@media (max-width: 640px) {
+  .sc-header, .portal-header, .topbar, .app-header, .car-header, .ex-header { padding-left: 14px !important; padding-right: 14px !important; }
+}
+
+/* 로고 + 제목 */
+.sc-logo, .portal-brand, .brand, .app-brand, .car-header-logo, .ex-title {
+  display: flex !important; align-items: center; gap: 10px !important;
+  text-decoration: none !important; color: rgba(255, 255, 255, .9) !important;
+}
+.sc-logo img, .portal-brand img, .brand img, .app-brand img, .car-header-logo img, .ex-title img {
+  height: 30px !important; width: auto !important; border-radius: 0 !important; box-shadow: none !important;
+}
+.sc-logo span, .portal-brand span, .brand h1, .app-brand h1, .car-header-logo span, .ex-title {
+  font-family: 'Montserrat', 'Noto Sans KR', sans-serif !important; font-size: 14px !important; font-weight: 700 !important;
+  letter-spacing: .04em !important; color: rgba(255, 255, 255, .9) !important; margin: 0; line-height: 1.2;
+}
+.brand p { display: none; }
+.portal-brand b { color: inherit; }
+.viewer-label, .ex-user { color: rgba(255, 255, 255, .72) !important; }
+
+/* KO / EN 토글 (이벤트 관리 페이지의 반투명 스위치와 같은 모양) */
+.sc-header .wl-lang-toggle, .portal-header .wl-lang-toggle, .app-header .wl-lang-toggle,
+.car-header .wl-lang-toggle, .ex-header .wl-lang-toggle, .topbar .wl-lang-toggle {
+  display: grid !important; grid-template-columns: repeat(2, 1fr); grid-auto-flow: row;
+  gap: 0; width: 116px; height: 36px; padding: 3px; border-radius: 9px;
+  background: rgba(255, 255, 255, .16) !important; border: 1px solid rgba(255, 255, 255, .28) !important;
+}
+.sc-header .wl-lang-btn, .portal-header .wl-lang-btn, .app-header .wl-lang-btn,
+.car-header .wl-lang-btn, .ex-header .wl-lang-btn, .topbar .wl-lang-btn {
+  color: rgba(255, 255, 255, .68) !important; font: 800 11px/1 'Montserrat', sans-serif !important;
+  padding: 0 !important; border-radius: 6px; background: transparent !important; box-shadow: none !important;
+}
+.sc-header .wl-lang-btn.is-active, .portal-header .wl-lang-btn.is-active, .app-header .wl-lang-btn.is-active,
+.car-header .wl-lang-btn.is-active, .ex-header .wl-lang-btn.is-active, .topbar .wl-lang-btn.is-active {
+  background: #fff !important; color: #004f68 !important; box-shadow: 0 2px 7px rgba(0, 35, 48, .2) !important;
+}
+@media (max-width: 640px) {
+  .sc-header .wl-lang-toggle, .portal-header .wl-lang-toggle, .app-header .wl-lang-toggle,
+  .car-header .wl-lang-toggle, .ex-header .wl-lang-toggle, .topbar .wl-lang-toggle { width: auto; }
+  .wl-lang-btn span { display: none; }
+  .wl-lang-btn { width: 30px; }
+}
+
+/* 로그아웃 · 포탈 이동 버튼 */
+.sc-header .btn-logout, .portal-header .logout-btn, .portal-header .back-link, .car-header .btn-logout,
+.app-header .btn-logout, .topbar #logoutBtn, .ex-header .btn-logout {
+  height: 36px; min-height: 36px !important; padding: 0 12px; border-radius: 9px;
+  background: rgba(255, 255, 255, .12) !important; border: 1px solid rgba(255, 255, 255, .2) !important;
+  color: rgba(255, 255, 255, .75) !important; font: 600 12px/1 'Noto Sans KR', sans-serif;
+  display: inline-flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer;
+  transition: background .2s;
+}
+.sc-header .btn-logout:hover, .portal-header .logout-btn:hover, .portal-header .back-link:hover, .car-header .btn-logout:hover,
+.app-header .btn-logout:hover, .topbar #logoutBtn:hover, .ex-header .btn-logout:hover { background: rgba(255, 255, 255, .22) !important; color: #fff !important; }
