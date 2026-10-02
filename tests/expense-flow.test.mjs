@@ -281,8 +281,9 @@ test('승인 시 모든 항목의 카테고리를 확정해야 하고, 확정값
   await acc('boss@wol.org', 'Boss', 'admin');
   await acc('acct@x.com', 'Ann', 'counselor');
   const row = (item, account) => ({ account, currency: 'KRW', amount: 1000, item, ministryPurpose: 'camp', when: '2026-09-29' });
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { action: 'set-campus', email: 'cyn@x.com', campus: 'jeju' });
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, {
-    description: 'cat', campus: 'jeju', rows: [row('휘발유', 'Car Gas (8400)'), row('간식', 'Office (5201)')],
+    description: 'cat', rows: [row('휘발유', 'Car Gas (8400)'), row('간식', 'Office (5201)')],
   });
   const id = sub.report.id;
   assert.equal(sub.report.campus, 'jeju');
@@ -308,14 +309,19 @@ test('승인 시 모든 항목의 카테고리를 확정해야 하고, 확정값
   assert.ok(sent.some(m => m.to.includes('cyn@x.com') && /송금/.test(m.subject)), '제출자에게 송금 완료 알림');
 });
 
-test('캠퍼스 값은 월코/제주만, 기본은 월코', async () => {
+test('캠퍼스는 작성자가 고르지 않고 제출자 계정 기준: 기본 월코, 승인자/회계가 사람별로 지정', async () => {
   const { acc, call } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
-  const a = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'a', rows: [row] });
-  assert.equal(a.report.campus, 'wolko');
-  const b = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'b', campus: 'mars', rows: [row] });
-  assert.equal(b.report.campus, 'wolko');
-  const c = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'c', campus: 'jeju', rows: [row] });
-  assert.equal(c.report.campus, 'jeju');
+  const a = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'a', campus: 'jeju', rows: [row] });
+  assert.equal(a.report.campus, 'wolko', '작성 화면 값은 무시, 기본 월코');
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', cyn, { action: 'set-campus', email: 'cyn@x.com', campus: 'jeju' })).status, 403, '일반 사용자는 지정 불가');
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { action: 'set-campus', email: 'cyn@x.com', campus: 'mars' })).status, 400);
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { action: 'set-campus', email: 'cyn@x.com', campus: 'jeju' })).status, 200);
+  const all = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', boss);
+  assert.equal(all.reports.find(r => r.id === a.report.id).campus, 'jeju', '기존 리포트도 사람 기준으로 분류');
+  const b = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'b', rows: [row] });
+  assert.equal(b.report.campus, 'jeju');
 });
+

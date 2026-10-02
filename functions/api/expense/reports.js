@@ -67,6 +67,13 @@ function cleanCampus(value) {
   return CAMPUSES.includes(value) ? value : DEFAULT_CAMPUS;
 }
 
+// 소속 캠퍼스는 작성자가 고르지 않고, 제출자 계정별로 한 번 지정해 둔 값을 따른다 (KV: expense:campus-map)
+const CAMPUS_MAP_KEY = 'expense:campus-map';
+async function getCampusMap(env) {
+  return (await env.CAMP_KV.get(CAMPUS_MAP_KEY, 'json')) || {};
+}
+const applyCampus = (reports, map) => reports.map(r => ({ ...r, campus: cleanCampus(map[r.submitterEmail] || r.campus) }));
+
 async function notify(context, to, subject, html) {
   const { env } = context;
   if (!(EXPENSE_EMAIL_ENABLED || env.EXPENSE_EMAIL === 'on') || !env.RESEND_API_KEY || !to.length) return;
@@ -81,7 +88,8 @@ export async function onRequestGet(context) {
   if (!session) return err('포탈 로그인이 필요합니다.', 401);
 
   const scope = new URL(request.url).searchParams.get('scope') || 'mine';
-  const all = await listReports(env);
+  const campusMap = await getCampusMap(env);
+  const all = applyCampus(await listReports(env), campusMap);
 
   const mine = all.filter(r => r.submitterEmail === session.email);
   const toApprove = session.isApprover
@@ -143,7 +151,7 @@ export async function onRequestPost(context) {
     submitterName: session.name,
     description: clip(body.description, 200),
     project: clip(body.project, 160),
-    campus: cleanCampus(body.campus),
+    campus: cleanCampus((await getCampusMap(env))[session.email]),
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: new Date().toISOString(),
@@ -175,6 +183,16 @@ export async function onRequestPatch(context) {
 
   const id = clip(body.id, 80);
   const action = body.action;
+
+  if (action === 'set-campus') {
+    if (!(session.isApprover || session.isAccountant)) return err('권한이 없습니다.', 403);
+    const email = clip(body.email, 160).toLowerCase();
+    if (!email || !CAMPUSES.includes(body.campus)) return err('잘못된 요청입니다.');
+    const map = await getCampusMap(env);
+    map[email] = body.campus;
+    await env.CAMP_KV.put(CAMPUS_MAP_KEY, JSON.stringify(map));
+    return Response.json({ ok: true, email, campus: body.campus }, { headers: CORS });
+  }
 
   if (action === 'restore') {
     if (!session.isAccountant) return err('회계 담당자만 복구할 수 있습니다.', 403);
@@ -290,7 +308,7 @@ export async function onRequestPut(context) {
     status: 'submitted',
     description: clip(body.description, 200),
     project: clip(body.project, 160),
-    campus: cleanCampus(body.campus),
+    campus: cleanCampus((await getCampusMap(env))[session.email] || report.campus),
     rows: cleaned.rows,
     total: totalOf(cleaned.rows),
     submittedAt: now,

@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=18">
+  <link rel="stylesheet" href="/expense.css?v=19">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=12">
   <script src="/wolko-rail.js?v=12" defer></script>
@@ -88,7 +88,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         cTrash: '이 리포트를 삭제할까요?\n영수증까지 통째로 백업되어 "삭제됨"에서 언제든 복구할 수 있어요.', tTrashed: '삭제했습니다. "삭제됨"에서 복구할 수 있어요.',
         cRestore: '이 리포트를 복구할까요?', tRestored: '복구했습니다.',
         noteTrashed: (n, d) => '삭제됨 — ' + n + ' · ' + d,
-        lblCampus: 'Campus<span class="ko">캠퍼스</span>', campus_wolko: '월코', campus_jeju: '제주',
+        campus_wolko: '월코', campus_jeju: '제주', moveTo_jeju: '제주로 이동', moveTo_wolko: '월코로 이동', tCampusMoved: '소속을 바꿨어요.',
         catConfirm: '확인', catDone: '✓ 확인됨', catConfirmAll: '카테고리 모두 확인', catPick: '카테고리 선택',
         catNeed: '모든 항목의 카테고리를 확인해야 승인할 수 있어요.',
         catHint: '승인하기 전에 항목마다 카테고리(계정과목)를 확인·확정해 주세요. 확정한 값이 그대로 회계 담당자에게 전달됩니다.',
@@ -133,7 +133,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         cTrash: 'Delete this report?\nIt is backed up with its receipts and can be restored from "Deleted" anytime.', tTrashed: 'Deleted. You can restore it from "Deleted".',
         cRestore: 'Restore this report?', tRestored: 'Restored.',
         noteTrashed: (n, d) => 'Deleted — ' + n + ' · ' + d,
-        lblCampus: 'Campus', campus_wolko: 'WOLKO', campus_jeju: 'JEJU',
+        campus_wolko: 'WOLKO', campus_jeju: 'JEJU', moveTo_jeju: 'Move to JEJU', moveTo_wolko: 'Move to WOLKO', tCampusMoved: 'Campus updated.',
         catConfirm: 'Confirm', catDone: '✓ Confirmed', catConfirmAll: 'Confirm all categories', catPick: 'Select category',
         catNeed: 'Confirm the category of every item before approving.',
         catHint: 'Before approving, confirm the category (account) of each item. The confirmed value goes straight to the accountant.',
@@ -148,7 +148,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       return typeof v === 'function' ? v(...args) : v;
     }
     const rateText = n => !n ? '' : n.k === 'asof' ? t('rateAsOf', n.d) : n.k === 'biz' ? t('rateBiz', n.d) : t(n.k);
-    const LS = { draft: 'wolko-expense-draft:', project: 'wolko-expense-project', projects: 'wolko-expense-projects', campus: 'wolko-expense-campus' };
+    const LS = { draft: 'wolko-expense-draft:', project: 'wolko-expense-project', projects: 'wolko-expense-projects' };
 
     const $ = id => document.getElementById(id);
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -199,7 +199,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     const myName = () => (me?.name && !String(me.name).includes('@') ? me.name : '');
     function newForm() {
       // 마지막으로 쓴 값이 있으면 그걸, 없으면 로그인한 어카운트 홀더 이름을 기본값으로 채운다
-      return { editingId: null, campus: lsGet(LS.campus) === 'jeju' ? 'jeju' : 'wolko', description: myName() ? myName() + ' ' : '', project: lsGet(LS.project) || me?.name || '', rows: [blankRow()] };
+      return { editingId: null, description: myName() ? myName() + ' ' : '', project: lsGet(LS.project) || me?.name || '', rows: [blankRow()] };
     }
     /* ─────────── 작성 중 자동 저장 (새로고침·뒤로가기·브라우저 종료 후에도 복원) ─────────── */
     // 서버의 임시 영수증이 3일 뒤 삭제되므로 초안도 같은 기간만 보관한다. 수정 중인 리포트는 저장하지 않는다.
@@ -227,7 +227,6 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     function formFromReport(r, asCopy) {
       return {
         editingId: asCopy ? null : r.id,
-        campus: r.campus === 'jeju' ? 'jeju' : 'wolko',
         description: r.description || '',
         project: r.project || '',
         rows: r.rows.map(x => ({
@@ -326,10 +325,6 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       <div class="ex-card">
         <h2>${editing ? t('titleEdit') : t('titleNew')}</h2>
         <p class="ex-sub">${esc(t('subNew', me.name))}</p>
-        <div class="ex-field" style="margin-bottom:14px">
-          <label>${t('lblCampus')}</label>
-          <div class="ex-seg" role="group">${CAMPUSES.map(c => `<button type="button" class="ex-seg-btn ${form.campus === c ? 'active' : ''}" data-campus="${c}">${t('campus_' + c)}</button>`).join('')}</div>
-        </div>
         <div class="ex-grid">
           <div class="ex-field">
             <label>${t('lblDesc')}</label>
@@ -451,7 +446,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         <div class="ex-report-head">
           <div>
             <div class="ex-report-title">${esc(rep.description || t('noDesc'))}</div>
-            <div class="ex-meta">${mode === 'mine' ? '' : esc(rep.submitterName) + ' · '}${esc(t('campus_' + (rep.campus === 'jeju' ? 'jeju' : 'wolko')))} · ${t('submittedOn', fmtDate(rep.submittedAt))}${rep.project ? ' · ' + esc(rep.project) : ''}</div>
+            <div class="ex-meta">${mode === 'mine' ? '' : esc(rep.submitterName) + ' · '}${mode === 'mine' ? '' : esc(t('campus_' + (rep.campus === 'jeju' ? 'jeju' : 'wolko'))) + ' · '}${t('submittedOn', fmtDate(rep.submittedAt))}${rep.project ? ' · ' + esc(rep.project) : ''}</div>
           </div>
           <div>
             <div class="ex-report-total">${krw(rep.total)}</div>
@@ -561,7 +556,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       const list = gFiltered(mode, G.campus);
       const sum = list.reduce((s, r) => s + r.total, 0);
       const byPerson = new Map();
-      list.forEach(r => { if (!byPerson.has(r.submitterEmail)) byPerson.set(r.submitterEmail, { name: r.submitterName, reports: [] }); byPerson.get(r.submitterEmail).reports.push(r); });
+      list.forEach(r => { if (!byPerson.has(r.submitterEmail)) byPerson.set(r.submitterEmail, { email: r.submitterEmail, name: r.submitterName, reports: [] }); byPerson.get(r.submitterEmail).reports.push(r); });
       const people = [...byPerson.values()].sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
 
       const cards = people.map(p => {
@@ -573,6 +568,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
             <span class="ex-avatar">${esc(String(p.name).trim().charAt(0).toUpperCase())}</span>
             <div class="ex-person-name"><b>${esc(p.name)}</b><div class="ex-meta">${esc(t('gN', p.reports.length))}${todo ? ' · ' + esc(t('st_approved')) + ' ' + todo : ''}</div></div>
             <div class="ex-person-total">${krw(total)}</div>
+            <button type="button" class="ex-btn sm ex-move" data-move-email="${esc(p.email)}" data-move-to="${G.campus === 'jeju' ? 'wolko' : 'jeju'}">${t('moveTo_' + (G.campus === 'jeju' ? 'wolko' : 'jeju'))}</button>
           </header>
           <ul class="ex-subs">
             ${p.reports.map(r => `
@@ -759,11 +755,10 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       const btn = $('fSubmit'); btn.disabled = true;
       try {
         const payload = {
-          id: form.editingId, campus: form.campus === 'jeju' ? 'jeju' : 'wolko', description: form.description.trim(), project: form.project.trim(),
+          id: form.editingId, description: form.description.trim(), project: form.project.trim(),
           rows: form.rows.map(r => ({ ...r, amount: Number(r.amount), rate: Number(r.rate) || 0 })),
         };
         await api('/api/expense/reports', { method: form.editingId ? 'PUT' : 'POST', body: JSON.stringify(payload) });
-        lsSet(LS.campus, form.campus === 'jeju' ? 'jeju' : 'wolko');
         if (form.project.trim()) {
           lsSet(LS.project, form.project.trim());
           let list = []; try { list = JSON.parse(lsGet(LS.projects, '[]')); } catch {}
@@ -807,16 +802,38 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       if ($('exPreview') && !$('exPreview').hidden) paintPreview();
     }
 
+    /* ─────────── 뒤로가기: 화면 이동 기록을 남겨 포탈 대신 직전 화면으로 돌아간다 ─────────── */
+    const navState = () => ({ ex: 1, tab, campus: G.campus, acct: acctFilter, all: allStatus });
+    function pushNav() {
+      const cur = history.state, now = navState();
+      if (cur && cur.ex && ['tab', 'campus', 'acct', 'all'].every(k => cur[k] === now[k])) return;
+      history.pushState(now, '');
+    }
+    addEventListener('popstate', async e => {
+      const st = e.state;
+      if (!st || !st.ex || !me) return;
+      G.campus = st.campus; acctFilter = st.acct; allStatus = st.all;
+      if (st.tab === 'new' && !form) form = newForm();
+      await show(st.tab);
+    });
+
     /* ─────────── 이벤트 ─────────── */
     document.addEventListener('click', async e => {
       const lb = e.target.closest('[data-lang]');
       if (lb) return setLang(lb.dataset.lang);
       const tabBtn = e.target.closest('[data-tab]');
-      if (tabBtn) { if (tabBtn.dataset.tab === 'new' && !form) form = newForm(); return show(tabBtn.dataset.tab); }
-      const cb = e.target.closest('[data-campus]');
-      if (cb) { form.campus = cb.dataset.campus; document.querySelectorAll('[data-campus]').forEach(b => b.classList.toggle('active', b === cb)); scheduleDraft(); return; }
+      if (tabBtn) { if (tabBtn.dataset.tab === 'new' && !form) form = newForm(); tab = tabBtn.dataset.tab; pushNav(); return show(tabBtn.dataset.tab); }
       const gc = e.target.closest('[data-gcampus]');
-      if (gc) { G.campus = gc.dataset.gcampus; return renderGrouped(tab); }
+      if (gc) { G.campus = gc.dataset.gcampus; pushNav(); return renderGrouped(tab); }
+      const mv = e.target.closest('[data-move-email]');
+      if (mv) {
+        try {
+          await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ action: 'set-campus', email: mv.dataset.moveEmail, campus: mv.dataset.moveTo }) });
+          [...data.all, ...data.accounting].forEach(r => { if (r.submitterEmail === mv.dataset.moveEmail) r.campus = mv.dataset.moveTo; });
+          toast(t('tCampusMoved')); renderGrouped(tab);
+        } catch (er) { toast(er.message, true); }
+        return;
+      }
       const tg = e.target.closest('[data-toggle]');
       if (tg) {
         const rid = tg.dataset.toggle, box = document.getElementById('d-' + rid);
@@ -827,9 +844,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       const pb = e.target.closest('[data-period]');
       if (pb) { period = pb.dataset.period === 'all' ? { from: '', to: '' } : monthRange(pb.dataset.period === 'last' ? -1 : 0); return rerenderStats(); }
       const sb = e.target.closest('[data-allstatus]');
-      if (sb) { allStatus = sb.dataset.allstatus; return renderAll(); }
+      if (sb) { allStatus = sb.dataset.allstatus; pushNav(); return renderAll(); }
       const f = e.target.closest('[data-filter]');
-      if (f) { acctFilter = f.dataset.filter; if (acctFilter === 'trash') { try { data.trash = (await api('/api/expense/reports?scope=trash')).trash; } catch (er) { toast(er.message, true); } } return renderList('accounting'); }
+      if (f) { acctFilter = f.dataset.filter; pushNav(); if (acctFilter === 'trash') { try { data.trash = (await api('/api/expense/reports?scope=trash')).trash; } catch (er) { toast(er.message, true); } } return renderList('accounting'); }
 
       const el = e.target.closest('[data-act]');
       if (!el) return;
@@ -930,8 +947,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         await refreshCounts();
         form = newForm();
         const draft = loadDraft();
-        if (draft) { form = draft; await show('new'); toast(t('tDraftRestored')); return; }
+        if (draft) { form = draft; await show('new'); history.replaceState(navState(), ''); toast(t('tDraftRestored')); return; }
         await show(counts.approve > 0 && me.isApprover ? 'approve' : (counts.accounting > 0 && me.isAccountant ? 'accounting' : 'new'));
+        history.replaceState(navState(), '');
       } catch (e) { toast(e.message, true); }
     })();
   </script>
