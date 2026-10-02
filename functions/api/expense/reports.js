@@ -106,7 +106,7 @@ export async function onRequestGet(context) {
 
   if (scope === 'counts') {
     return Response.json({
-      me: { email: session.email, name: session.name, role: session.role, isApprover: session.isApprover, isAccountant: session.isAccountant, canViewAll },
+      me: { email: session.email, name: session.name, role: session.role, isApprover: session.isApprover, isAccountant: session.isAccountant, canViewAll, campus: cleanCampus(CAMPUS_OVERRIDES[session.email] || session.campus) },
       mine: mine.filter(r => r.status === 'rejected' || r.status === 'submitted').length,
       approve: toApprove.length,
       accounting: accounting.filter(r => r.status === 'approved').length,
@@ -215,6 +215,29 @@ export async function onRequestPatch(context) {
   const now = new Date().toISOString();
   const origin = new URL(request.url).origin;
 
+  // 회계 담당: 승인된(아직 송금 전) 리포트를 승인자에게 되돌린다. 작성자가 아니라 승인자가 다시 검토·승인해야 한다.
+  if (action === 'return') {
+    if (!session.isAccountant) return err('회계 담당자만 반려할 수 있습니다.', 403);
+    if (report.status !== 'approved') return err('승인되었고 아직 송금 전인 리포트만 승인자에게 되돌릴 수 있습니다.', 409);
+    const note = clip(body.note, 300);
+    if (!note) return err('되돌리는 사유를 입력해 주세요.');
+    report.status = 'submitted';
+    report.returnedBy = session.email;
+    report.returnedByName = session.name;
+    report.returnedAt = now;
+    report.returnNote = note;
+    report.log.push({ at: now, by: session.email, action: 'return', note });
+    await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
+    await notify(context, await approverEmails(),
+      `[경비 재승인 요청] ${report.submitterName} · ${formatKrw(report.total)}`,
+      reportEmailHtml({
+        heading: '회계 담당자가 승인된 리포트를 되돌렸습니다',
+        intro: `<strong>${session.name}</strong> 님: ${note.replace(/</g, '&lt;')} — 확인 후 다시 승인하거나 반려해 주세요.`,
+        report, url: `${new URL(request.url).origin}/expense`, ctaLabel: '경비 리포트 확인',
+      }));
+    return Response.json({ ok: true, report }, { headers: CORS });
+  }
+
   if (action === 'approve' || action === 'reject') {
     if (!session.isApprover) return err('승인 권한이 없습니다.', 403);
     if (report.submitterEmail === session.email) return err('본인이 제출한 리포트는 직접 승인할 수 없습니다.', 403);
@@ -244,6 +267,8 @@ export async function onRequestPatch(context) {
     }
 
     report.status = action === 'approve' ? 'approved' : 'rejected';
+    if (report.returnNote) { report.returnHistory = [...(report.returnHistory || []), { by: report.returnedBy, at: report.returnedAt, note: report.returnNote }]; }
+    delete report.returnNote; delete report.returnedBy; delete report.returnedByName; delete report.returnedAt;
     report.reviewedBy = session.email;
     report.reviewedByName = session.name;
     report.reviewedAt = now;
@@ -332,6 +357,7 @@ export async function onRequestPut(context) {
   if (!report) return err('리포트를 찾을 수 없습니다.', 404);
   if (report.submitterEmail !== session.email) return err('본인 리포트만 수정할 수 있습니다.', 403);
   if (report.status !== 'rejected' && report.status !== 'submitted') return err('승인된 리포트는 수정할 수 없습니다.', 409);
+  if (report.returnNote) return err('회계 담당자가 되돌려 승인자가 다시 검토 중인 리포트는 수정할 수 없습니다.', 409);
 
   const cleaned = cleanRows(body.rows);
   if (cleaned.error) return err(cleaned.error);
@@ -375,6 +401,7 @@ export async function onRequestDelete(context) {
   const report = id ? await env.CAMP_KV.get(reportKey(id), 'json') : null;
   if (!report) return err('리포트를 찾을 수 없습니다.', 404);
   if (report.submitterEmail !== session.email) return err('본인 리포트만 철회할 수 있습니다.', 403);
+  if (report.returnNote) return err('회계 담당자가 되돌려 승인자가 다시 검토 중인 리포트는 철회할 수 없습니다.', 409);
   if (report.status !== 'submitted' && report.status !== 'rejected') {
     return err('승인된 리포트는 철회할 수 없습니다. 회계 담당자에게 문의해 주세요.', 409);
   }

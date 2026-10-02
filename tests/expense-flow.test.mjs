@@ -466,3 +466,45 @@ test('승인된 리포트는 내용 고정: 작성자 수정·철회 불가, 카
   assert.equal(ok.report.rows[0].categoryHistory[0].from, 'Junior Camp (8040)');
   assert.ok(ok.report.log.some(l => l.action === 'recategorize' && l.by === 'acct@x.com'));
 });
+
+test('회계 담당이 승인된 리포트를 반려하면 승인자에게 되돌아가 다시 승인해야 한다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  await acc('acct@x.com', 'Ann', 'counselor');
+  const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29' };
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'ret', rows: [row] });
+  const id = sub.report.id;
+  const patch = (who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, ...body });
+  assert.equal((await patch(ann, { action: 'return', note: 'x' })).status, 409, '승인 전에는 되돌릴 수 없음');
+  await patch(boss, { action: 'approve', categories: ['Junior Camp (8040)'], checks: [true] });
+  assert.equal((await patch(boss, { action: 'return', note: 'x' })).status, 403, '승인자는 회계 반려 불가');
+  assert.equal((await patch(ann, { action: 'return', note: '' })).status, 400, '사유 필수');
+  const back = await patch(ann, { action: 'return', note: '영수증 금액이 달라요' });
+  assert.equal(back.status, 200);
+  assert.equal(back.report.status, 'submitted');
+  assert.equal(back.report.returnNote, '영수증 금액이 달라요');
+  assert.equal((await call(R.onRequestPut, 'PUT', '/api/expense/reports', cyn, { id, description: 'x', rows: [row] })).status, 409, '되돌려진 리포트는 작성자도 수정 불가');
+  assert.equal((await call(R.onRequestDelete, 'DELETE', '/api/expense/reports?id=' + id, cyn)).status, 409, '철회도 불가');
+  const approveList = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=approve', boss);
+  assert.ok(approveList.reports.some(r => r.id === id), '승인자의 승인 대기에 다시 나타남');
+  const asAnn = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', ann);
+  assert.ok(!asAnn.reports.some(r => r.id === id), '회계 담당에게는 승인 대기가 보이지 않음');
+  const again = await patch(boss, { action: 'approve', categories: ['Teacher (8052)'], checks: [true] });
+  assert.equal(again.status, 200);
+  assert.equal(again.report.status, 'approved');
+  assert.equal(again.report.returnNote, undefined, '다시 승인하면 되돌림 메모는 기록으로만 남음');
+  assert.equal(again.report.returnHistory[0].note, '영수증 금액이 달라요');
+  assert.equal((await patch(ann, { action: 'process' })).status, 200);
+  assert.equal((await patch(ann, { action: 'return', note: 'late' })).status, 409, '송금 완료 후에는 불가');
+});
+
+test('내 소속 캠퍼스가 counts 응답에 담겨 전체 리포트에서 먼저 보인다 (Jeremy는 제주)', async () => {
+  const { acc, call } = setup();
+  await acc('jj@x.com', 'Jeju person', 'counselor', { campus: 'jeju' });
+  await acc('pt@x.com', 'Pyeongtaek person', 'counselor');
+  await acc('jeremyrodgers@wol.org', 'Jeremy', 'admin');
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['jj@x.com', 'counselor'])).me.campus, 'jeju');
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['pt@x.com', 'counselor'])).me.campus, 'wolko');
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['jeremyrodgers@wol.org', 'admin'])).me.campus, 'jeju');
+});
