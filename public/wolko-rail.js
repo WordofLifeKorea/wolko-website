@@ -15,7 +15,7 @@
       icon: '<path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="7" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="11" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="7" r="1" fill="currentColor" stroke="none"/>' },
     { group: 'wolko', href: '/expense', color: '#b8741a', label: '경비 리포트', label_en: 'Expense Report',
       icon: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>' },
-    { group: 'wolko', href: '/car-log', color: '#c17a1f', label: '차량 사용 일지', label_en: 'Vehicle Log',
+    { group: 'wolko', href: '/car', color: '#c17a1f', label: '차량 캘린더', label_en: 'Vehicle Calendar',
       icon: '<path d="M14 16H9m10 0h2v-3.15a1 1 0 0 0-.84-.99L18 11.5l-2.35-3.13a1 1 0 0 0-.8-.4H6.5a2 2 0 0 0-1.79 1.11L3.6 11.5A5 5 0 0 0 3 14v2h2"/><circle cx="6.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/>' },
     { group: 'camp', href: '/wolkoadmin', color: '#004f68', label: '캠프 관리자', label_en: 'Camp Manager',
       icon: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>' },
@@ -67,7 +67,7 @@
     GROUPS.forEach(function (g) {
       html += '<div class="wolko-rail-group" data-ko="' + g.ko + '" data-en="' + g.en + '"></div>';
       TOOLS.filter(function (tool) { return tool.group === g.id; }).forEach(function (tool) {
-      var active = path === tool.href;
+      var active = path === tool.href || (tool.href === '/car' && path === '/car-log'); // 사용 일지도 차량 메뉴의 한 탭
       html += '<a class="wolko-rail-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" style="--rail-color:' + tool.color + '">' +
         '<span class="wolko-rail-item-icon">' + svg(tool.icon, 15) + '</span><span class="wolko-rail-item-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
       });
