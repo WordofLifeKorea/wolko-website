@@ -33,10 +33,12 @@ function cleanRows(rawRows) {
     const account = clip(r?.account, 120);
     const item = clip(r?.item, 120); // 구매 품목명
     const ministryPurpose = clip(r?.ministryPurpose, 500); // 구매 목적
+    const memo = clip(r?.memo, 300); // 모든 카테고리에서 쓸 수 있는 메모(부가 설명)
     if (!Number.isFinite(amount) || amount <= 0 || amount > 1e10) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
     if (!account) return { error: `${n}번째 줄의 Account를 선택해 주세요.` };
     if (!item) return { error: `${n}번째 줄의 구매 품목명을 입력해 주세요.` };
     if (!ministryPurpose) return { error: `${n}번째 줄의 구매 목적을 입력해 주세요.` };
+    if (account === 'Other/Unknown' && !memo) return { error: `${n}번째 줄은 Other/Unknown이라 메모에 내용을 적어 주세요.` };
 
     // USD 항목: 영수 날짜 기준 환율(KRW per USD)로 원화 환산. 환율은 화면에서 자동 조회 후 수정 가능.
     const rate = Number(r?.rate);
@@ -55,6 +57,7 @@ function cleanRows(rawRows) {
       rate: currency === 'USD' ? Math.round(rate * 100) / 100 : null,
       item,
       ministryPurpose,
+      memo,
       when: clip(r?.when, 20),
       where: clip(r?.where, 160),
       receipts,
@@ -223,9 +226,16 @@ export async function onRequestPatch(context) {
       if (cats.length !== report.rows.length || cats.some(c => !ACCOUNTS.includes(c))) {
         return err('승인하려면 모든 항목의 카테고리(계정과목)를 확인해 주세요.');
       }
+      // 제출자가 메모를 남긴 항목은 승인자가 하나씩 확인(체크)해야 한다
+      const checks = Array.isArray(body.checks) ? body.checks : [];
+      if (report.rows.some((row, i) => row.memo && checks[i] !== true)) return err('메모가 있는 항목을 모두 확인해 주세요.');
+      const aMemos = Array.isArray(body.approverMemos) ? body.approverMemos : [];
       report.rows.forEach((row, i) => {
         if (row.account !== cats[i]) { row.submittedAccount = row.account; row.categoryChanged = true; }
         row.account = cats[i];
+        const am = clip(aMemos[i], 300);
+        if (am) row.approverMemo = am; else delete row.approverMemo;
+        if (row.memo) row.memoCheckedBy = session.email;
       });
       report.categoriesConfirmedBy = session.email;
       report.categoriesConfirmedAt = now;

@@ -14,7 +14,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=22">
+  <link rel="stylesheet" href="/expense.css?v=23">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=12">
   <script src="/wolko-rail.js?v=12" defer></script>
@@ -48,7 +48,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     const APPROVAL_ACCOUNTS = CFG.ACCOUNTS;                                 // 승인자가 확정할 수 있는 전체 목록(Other/Unknown 포함)
     const ACCOUNTS = CFG.ACCOUNTS.filter(a => a !== 'Other/Unknown');       // 작성 폼 드롭다운(기타는 직접 입력)
     const DEFAULT_ACCOUNT = 'Missionary Account (8025)';
-    const OTHER = '__other';
+    const OTHER = 'Other/Unknown'; // 기타는 계정으로 'Other/Unknown'을 저장하고 설명은 메모에 적는다
     /* ── 번역 사전 (한국어/English). 화면 문구는 전부 여기서만 관리 ── */
     const T = {
       ko: {
@@ -56,7 +56,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         tabNew: '새 리포트', tabEdit: '리포트 수정', tabMine: '내 리포트', tabApprove: '승인 대기', tabAcct: '회계 업무', tabAll: '전체 리포트',
         st_submitted: '승인 대기', st_approved: '승인됨 · 송금 대기', st_processed: '송금 처리 완료', st_rejected: '반려됨',
         acctPh: 'Account · 계정과목', acctPrev: '이전 계정과목 (직접 입력)', currency: '통화', amountPh: '금액', delRow: '항목 삭제',
-        acctOtherPh: '계정과목 직접 입력 (예: Supplies (5250))', itemPh: '구매 품목명 (예: 캠프 간식)', purposePh: '구매 목적 (예: 스태프 야식)', thItem: '품목 · 목적',
+        memoPh: '메모 (선택) — 부가 설명을 적어 주세요. Other/Unknown은 필수', memoLbl: '메모', aMemoPh: '승인 메모 (선택)', memoCheck: '메모 확인 필요', csvMemo: '메모', itemPh: '구매 품목명 (예: 캠프 간식)', purposePh: '구매 목적 (예: 스태프 야식)', thItem: '품목 · 목적',
         attachTitle: '영수증 첨부', attach: '영수증', less: '접기', remove: '삭제',
         wherePh: 'Where · 장소 (선택)', rowProjPh: '이 항목만 다른 Project (선택)',
         titleNew: '새 경비 리포트', titleEdit: '경비 리포트 수정',
@@ -101,7 +101,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         tabNew: 'New report', tabEdit: 'Edit report', tabMine: 'My reports', tabApprove: 'To approve', tabAcct: 'Accounting', tabAll: 'All reports',
         st_submitted: 'Pending approval', st_approved: 'Approved · awaiting payment', st_processed: 'Payment completed', st_rejected: 'Rejected',
         acctPh: 'Account', acctPrev: 'Previous account (custom)', currency: 'Currency', amountPh: 'Amount', delRow: 'Remove item',
-        acctOtherPh: 'Enter account (e.g. Supplies (5250))', itemPh: 'Item purchased (e.g. camp snacks)', purposePh: 'Purpose (e.g. staff late-night meal)', thItem: 'Item · Purpose',
+        memoPh: 'Memo (optional) — add any extra explanation. Required for Other/Unknown', memoLbl: 'Memo', aMemoPh: 'Approval note (optional)', memoCheck: 'Memo — please review', csvMemo: 'Memo', itemPh: 'Item purchased (e.g. camp snacks)', purposePh: 'Purpose (e.g. staff late-night meal)', thItem: 'Item · Purpose',
         attachTitle: 'Attach receipt', attach: 'Receipt', less: 'Less', remove: 'Remove',
         wherePh: 'Where (optional)', rowProjPh: 'Different project for this item (optional)',
         titleNew: 'New expense report', titleEdit: 'Edit expense report',
@@ -193,7 +193,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     /* ─────────── 폼 상태 ─────────── */
     // 기준 통화는 KRW. USD 항목은 영수 날짜 기준 환율(1 USD = rate KRW)로 환산한다.
     function blankRow(prev) {
-      return { account: prev ? prev.account : DEFAULT_ACCOUNT, otherSel: !!prev?.otherSel, currency: 'KRW', amount: '', rate: '', rateNote: null, item: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
+      return { account: prev ? prev.account : DEFAULT_ACCOUNT, memo: '', currency: 'KRW', amount: '', rate: '', rateNote: null, item: '', ministryPurpose: '', when: today(), where: '', project: '', receipts: [], more: false };
     }
     // 이름이 등록되지 않아 이메일이 이름 자리에 들어온 경우는 설명 기본값에서 제외
     const myName = () => (me?.name && !String(me.name).includes('@') ? me.name : '');
@@ -217,7 +217,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       try {
         const d = JSON.parse(lsGet(draftKey(), 'null'));
         if (!d || !d.form || Date.now() - d.t > DRAFT_TTL || !Array.isArray(d.form.rows) || !d.form.rows.length) return null;
-        return { ...d.form, editingId: null, rows: d.form.rows.map(r => ({ ...blankRow(), ...r, receipts: Array.isArray(r.receipts) ? r.receipts : [] })) };
+        return { ...d.form, editingId: null, rows: d.form.rows.map(r => { const o = { ...blankRow(), ...r, receipts: Array.isArray(r.receipts) ? r.receipts : [] }; delete o.otherSel; if (legacyOther(o.account)) { o.memo = [o.account, o.memo].filter(Boolean).join(' — '); o.account = OTHER; } return o; }) };
       } catch { return null; }
     }
     addEventListener('pagehide', () => { clearTimeout(draftTimer); saveDraft(); });
@@ -230,7 +230,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         description: r.description || '',
         project: r.project || '',
         rows: r.rows.map(x => ({
-          account: x.account, currency: x.currency || 'KRW', amount: String(x.amount),
+          account: legacyOther(x.account) ? OTHER : x.account, memo: legacyOther(x.account) ? [x.account, x.memo].filter(Boolean).join(' — ') : (x.memo || ''), currency: x.currency || 'KRW', amount: String(x.amount),
           rate: asCopy || !x.rate ? '' : String(x.rate), rateNote: asCopy || !x.rate ? null : { k: 'rateSaved' },
           item: x.item || '', ministryPurpose: x.ministryPurpose, when: asCopy ? today() : (x.when || today()),
           where: x.where || '', project: x.project || '',
@@ -239,7 +239,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         })),
       };
     }
-    const isKnownAccount = a => !a || ACCOUNTS.includes(a);
+    // 예전에 '직접 입력'으로 저장된 계정과목은 Other/Unknown + 메모로 옮긴다
+    const legacyOther = a => !!a && !ACCOUNTS.includes(a) && a !== OTHER;
 
     function rowKrw(r) {
       const amt = Number(r.amount);
@@ -285,8 +286,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     }
 
     function rowHtml(r, i) {
-      const known = isKnownAccount(r.account);
-      const sel = (!known || r.otherSel) ? OTHER : r.account;
+      const sel = r.account;
       return `
       <div class="ex-row" data-i="${i}">
         <div class="ex-line ex-l1">
@@ -303,7 +303,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
           </div>
           ${form.rows.length > 1 ? `<button class="ex-x" data-act="del-row" data-i="${i}" aria-label="${t('delRow')}">×</button>` : '<span class="ex-x-space"></span>'}
         </div>
-        <input class="ex-input" style="margin-top:8px" data-f="accountOther" placeholder="${t('acctOtherPh')}" value="${esc(sel === OTHER ? r.account : '')}" ${sel === OTHER ? '' : 'hidden'}>
+        <input class="ex-input" style="margin-top:8px" data-f="memo" placeholder="${t('memoPh')}" value="${esc(r.memo)}" maxlength="300" aria-label="${t('memoLbl')}">
         <div class="ex-line ex-l2">
           <input class="ex-input ex-grow ex-item" data-f="item" placeholder="${t('itemPh')}" value="${esc(r.item)}" maxlength="120">
           <input class="ex-input ex-grow" data-f="ministryPurpose" placeholder="${t('purposePh')}" value="${esc(r.ministryPurpose)}" maxlength="500">
@@ -378,6 +378,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     /* ─────────── 렌더링: 리포트 카드 ─────────── */
     function projectOf(rep, row) { return row.project || rep.project || ''; }
 
+    const memoHtml = r => (r.memo ? `<div class="ex-memo"><b>📝 ${esc(t('memoLbl'))}</b> ${esc(r.memo)}</div>` : '')
+      + (r.approverMemo ? `<div class="ex-memo ap"><b>✔ ${esc(t('aMemoPh').replace(/\s*\(.*\)/, ''))}</b> ${esc(r.approverMemo)}</div>` : '');
     function receiptChips(rep, row) {
       return (row.receipts || []).map(f => `<span class="ex-chip link" data-act="open-receipt" data-rid="${esc(rep.id)}" data-fid="${esc(f.id)}" data-name="${esc(f.name)}" data-type="${esc(f.type)}">📎 ${esc(f.name)}</span>`).join('');
     }
@@ -385,7 +387,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     /* 승인 화면: 항목별 카테고리 확정 상태 (제출자가 고른 값이 기본값) */
     const catState = {};
     function catStateFor(rep) {
-      return catState[rep.id] ??= { accounts: rep.rows.map(x => APPROVAL_ACCOUNTS.includes(x.account) ? x.account : ''), confirmed: rep.rows.map(() => false) };
+      return catState[rep.id] ??= { accounts: rep.rows.map(x => APPROVAL_ACCOUNTS.includes(x.account) ? x.account : ''), confirmed: rep.rows.map(() => false), memos: rep.rows.map(() => '') };
     }
     function paintApproval(id) {
       const art = document.querySelector('[data-rep="' + id + '"]'), st = catState[id];
@@ -405,7 +407,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
             ${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${cur === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
           </select>
           <button class="ex-btn sm ex-confirm ${st.confirmed[i] ? 'done' : ''}" data-act="confirm-cat" data-id="${esc(rep.id)}" data-i="${i}">${st.confirmed[i] ? t('catDone') : t('catConfirm')}</button>
-        </div>${r.account && r.account !== cur ? `<div class="ex-meta">${esc(t('catSubmitted', r.account))}</div>` : ''}`;
+        </div>${r.account && r.account !== cur ? `<div class="ex-meta">${esc(t('catSubmitted', r.account))}</div>` : ''}
+        <input class="ex-input ex-amemo" data-amemo="${i}" data-repid="${esc(rep.id)}" placeholder="${esc(t('aMemoPh'))}" value="${esc(st.memos[i])}" maxlength="300">`;
     }
 
     function reportCard(rep, mode, trashInfo) {
@@ -415,7 +418,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         <tr>
           <td>${esc(r.when || '')}</td>
           <td>${approving ? catCell(rep, r, i, st) : esc(r.account) + (r.categoryChanged && r.submittedAccount ? `<div class="ex-meta">${esc(t('catSubmitted', r.submittedAccount))}</div>` : '')}${projectOf(rep, r) ? `<div class="ex-meta">${esc(projectOf(rep, r))}</div>` : ''}</td>
-          <td>${r.item ? `<b>${esc(r.item)}</b><div class="ex-meta">${esc(r.ministryPurpose)}</div>` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}<div class="ex-receipts" style="margin-top:6px">${receiptChips(rep, r)}</div></td>
+          <td>${r.item ? `<b>${esc(r.item)}</b><div class="ex-meta">${esc(r.ministryPurpose)}</div>` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${memoHtml(r)}<div class="ex-receipts" style="margin-top:6px">${receiptChips(rep, r)}</div></td>
           <td class="r">${krw(r.amountKrw)}${r.currency === 'USD' ? `<div class="ex-meta">${usdFmt(r.amount)} × ${Number(r.rate).toLocaleString('ko-KR')}</div>` : ''}</td>
         </tr>`).join('');
 
@@ -523,6 +526,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
           <div class="ex-d-main"><b>${esc(r.item || r.ministryPurpose)}</b>${r.item ? ` <span class="ex-meta">— ${esc(r.ministryPurpose)}</span>` : ''}</div>
           <div class="ex-d-amt">${krw(r.amountKrw)}${r.currency === 'USD' ? `<span class="ex-meta"> (${usdFmt(r.amount)} × ${Number(r.rate).toLocaleString('ko-KR')})</span>` : ''}</div>
           <div class="ex-d-sub ex-meta">${esc(r.when || '')} · ${esc(r.account)}${r.categoryChanged && r.submittedAccount ? ' (' + esc(t('catSubmitted', r.submittedAccount)) + ')' : ''}${r.where ? ' · 📍 ' + esc(r.where) : ''}</div>
+          ${memoHtml(r)}
           ${(r.receipts || []).length ? `<div class="ex-receipts" style="margin-top:4px">${receiptChips(rep, r)}</div>` : ''}
         </div>`).join('');
       let note = '';
@@ -530,10 +534,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
       else if (rep.status === 'approved') note = `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName || '', fmtDate(rep.reviewedAt)))}</div>`;
       else if (rep.status === 'processed') note = (rep.reviewedByName ? `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName, fmtDate(rep.reviewedAt)))}</div>` : '') + `<div class="ex-note ok">${esc(t('noteProcessed', fmtDate(rep.processedAt), rep.processedByName || ''))}</div>`;
       let action = '<div class="ex-actions">';
-      if (mode === 'accounting') {
-        action += (rep.status === 'approved' ? `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}">${t('btnProcess')}</button>` : '')
-          + `<button class="ex-btn danger sm" data-act="trash" data-id="${esc(rep.id)}">${t('btnTrash')}</button>`;
-      }
+      if (mode === 'accounting' && rep.status === 'approved') action += `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}">${t('btnProcess')}</button>`;
+      // 삭제(백업 후 이동)는 회계 담당자만 — 회계 업무와 전체 리포트 모두에서
+      if (me?.isAccountant && (mode === 'accounting' || mode === 'all')) action += `<button class="ex-btn danger sm" data-act="trash" data-id="${esc(rep.id)}">${t('btnTrash')}</button>`;
       action += '</div>';
       return items + note + action;
     }
@@ -795,9 +798,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
     }
 
     function exportCsv(shown) {
-      const head = ['Report ID', 'Campus', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Account (confirmed)', 'Submitted Account', 'Item', 'Purpose', 'Where', 'Currency', 'Original Amount', 'Exchange Rate (KRW/USD)', 'KRW Amount'];
+      const head = ['Report ID', 'Campus', 'Status', 'Submitted', 'Submitter', 'Project', 'Date', 'Account (confirmed)', 'Submitted Account', 'Item', 'Purpose', 'Memo', 'Approver Memo', 'Where', 'Currency', 'Original Amount', 'Exchange Rate (KRW/USD)', 'KRW Amount'];
       const lines = [head];
-      shown.forEach(r => r.rows.forEach(x => lines.push([r.id, campusOf(r) === 'jeju' ? 'JEJU' : 'PYEONGTAEK', t('st_' + r.status), r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account, x.submittedAccount || '', x.item || '', x.ministryPurpose, x.where, x.currency, x.amount, x.rate || '', x.amountKrw])));
+      shown.forEach(r => r.rows.forEach(x => lines.push([r.id, campusOf(r) === 'jeju' ? 'JEJU' : 'PYEONGTAEK', t('st_' + r.status), r.submittedAt.slice(0, 10), r.submitterName, x.project || r.project || '', x.when, x.account, x.submittedAccount || '', x.item || '', x.ministryPurpose, x.memo || '', x.approverMemo || '', x.where, x.currency, x.amount, x.rate || '', x.amountKrw])));
       const csv = '﻿' + lines.map(l => l.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -891,7 +894,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         else if (act === 'approve') {
           const st = catState[id];
           if (!st || st.accounts.some(a => !a) || st.confirmed.some(c => !c)) { toast(t('catNeed'), true); return; }
-          await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'approve', categories: st.accounts }) });
+          await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'approve', categories: st.accounts, approverMemos: st.memos, checks: st.confirmed }) });
           delete catState[id]; toast(t('tApproved')); await show('approve');
         }
         else if (act === 'reject') {
@@ -904,7 +907,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
         }
         else if (act === 'trash') {
           if (!confirm(t('cTrash'))) return;
-          await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'trash' }) }); toast(t('tTrashed')); await show('accounting');
+          await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'trash' }) }); toast(t('tTrashed')); await show(tab === 'all' ? 'all' : 'accounting');
         }
         else if (act === 'restore') {
           if (!confirm(t('cRestore'))) return;
@@ -947,17 +950,13 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES } from '../../lib/ex
 
     document.addEventListener('input', e => {
       const el = e.target;
+      if (el.dataset.amemo !== undefined) { const st = catState[el.dataset.repid]; if (st) st.memos[+el.dataset.amemo] = el.value; return; }
       if (el.id === 'fDesc') form.description = el.value;
       else if (el.id === 'fProject') form.project = el.value;
       else if (el.dataset.f) {
         const rowEl = el.closest('.ex-row'); if (!rowEl) return;
         const r = form.rows[+rowEl.dataset.i], f = el.dataset.f;
-        if (f === 'accountSel') {
-          const other = rowEl.querySelector('[data-f="accountOther"]');
-          if (el.value === OTHER) { r.otherSel = true; other.hidden = false; other.focus(); r.account = other.value.trim(); }
-          else { r.otherSel = false; other.hidden = true; r.account = el.value; }
-        }
-        else if (f === 'accountOther') r.account = el.value.trim();
+        if (f === 'accountSel') r.account = el.value;
         else if (f === 'receipt') { uploadReceipts(+rowEl.dataset.i, [...el.files]); el.value = ''; }
         else if (f === 'currency') { r.currency = el.value; if (r.currency === 'USD') { r.rate = ''; scheduleRate(r, true); } else r.rateNote = null; refreshComputed(); }
         else if (f === 'when') { r.when = el.value; if (r.currency === 'USD') { r.rate = ''; scheduleRate(r); } }

@@ -94,6 +94,10 @@
       const rem = bank + 1;
       ws.mergeCells(`A${rem}:E${rem}`);
       const notes = [...new Set(p.reports.map(r => String(r.description || '').trim()).filter(Boolean))];
+      lines.forEach(x => { // 메모가 있는 항목은 Remarks에 "품목: 메모"로 함께 적는다
+        const m = [x.memo, x.approverMemo && '(' + x.approverMemo + ')'].filter(Boolean).join(' ');
+        if (m) notes.push((x.item || x.ministryPurpose || '') + ': ' + m);
+      });
       cell(`A${rem}`, { richText: [{ text: 'Remarks: ', font: { name: FONT, bold: true, italic: true, size: 11 } }, { text: notes.join(' / '), font: { name: FONT, italic: true, size: 11 } }] }, { wrap: true });
       fillBorder(`A${rem}:E${rem}`);
       ws.getRow(rem).height = Math.max(22, 16 * Math.ceil(notes.join(' / ').length / 70 + 0.5));

@@ -344,3 +344,23 @@ test('전체 비우기: 회계 담당만, 확인 값 필요, 백업되어 복구
 });
 
 
+
+test('메모: 모든 카테고리에서 입력 가능, Other/Unknown은 필수, 메모 항목은 승인자가 확인해야 하고 승인 메모가 남는다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  const row = (account, memo) => ({ account, currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29', memo });
+  const noMemo = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'x', rows: [row('Other/Unknown', '')] });
+  assert.equal(noMemo.status, 400, 'Other/Unknown은 메모 필수');
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'm', rows: [row('Car Gas (8400)', '주유소 영수증 2장 합산'), row('Teacher (8052)', '')] });
+  assert.equal(sub.status, 200);
+  assert.equal(sub.report.rows[0].memo, '주유소 영수증 2장 합산');
+  const id = sub.report.id, cats = ['Car Gas (8400)', 'Teacher (8052)'];
+  const approve = body => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: cats, ...body });
+  assert.equal((await approve({ checks: [false, true] })).status, 400, '메모 항목 확인 없이는 승인 불가');
+  const ok = await approve({ checks: [true, true], approverMemos: ['확인함, 합산 맞음', ''] });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.report.rows[0].approverMemo, '확인함, 합산 맞음');
+  assert.equal(ok.report.rows[0].memoCheckedBy, 'boss@wol.org');
+  assert.equal(ok.report.rows[1].approverMemo, undefined);
+});
