@@ -5,7 +5,7 @@
  * 같은 날 같은 담당자에게 두 번 보내지 않는다(drive:sms:{date}).
  */
 import { sendSms } from '../../lib/solapi.js';
-import { SMS_PREFIX, isDriveDay, parseDate, slotKey, todayKst, weekdayOf } from '../../lib/carDrive.js';
+import { SMS_PREFIX, isDriveDay, parseDate, shownName, slotKey, todayKst, weekdayOf } from '../../lib/carDrive.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -29,7 +29,7 @@ export async function onRequestPost({ env, request }) {
 
   const slot = await env.CAMP_KV.get(slotKey(date, 'pickup'), 'json');
   if (!slot) return Response.json({ date, pickup: null, sent: 0, configured }, { headers: H });
-  const info = { date, pickup: { name: slot.name, phone: mask(slot.phone) }, configured };
+  const info = { date, pickup: { name: shownName(slot), phone: mask(slot.phone) }, configured };
   if (dryRun) return Response.json({ ...info, dryRun: true, sent: 0 }, { headers: H });
   if (!configured) return Response.json({ ...info, error: 'Solapi 설정(SOLAPI_API_KEY/SECRET/SENDER_PHONE)이 필요합니다.', sent: 0 }, { status: 503, headers: H });
   if (!slot.phone) return Response.json({ ...info, error: '담당자 휴대폰 번호가 없습니다.', sent: 0 }, { status: 422, headers: H });
@@ -37,7 +37,7 @@ export async function onRequestPost({ env, request }) {
   const doneKey = `${SMS_PREFIX}${date}`;
   const done = await env.CAMP_KV.get(doneKey, 'json');
   if (done && done.email === slot.email) return Response.json({ ...info, sent: 0, alreadySent: true }, { headers: H });
-  await sendSms(env, slot.phone, reminderText(slot.name, date));
+  await sendSms(env, slot.phone, reminderText(shownName(slot), date));
   await env.CAMP_KV.put(doneKey, JSON.stringify({ email: slot.email, at: new Date().toISOString() }), { expirationTtl: 60 * 60 * 24 * 14 });
   return Response.json({ ...info, sent: 1 }, { headers: H });
 }

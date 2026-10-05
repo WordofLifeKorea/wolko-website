@@ -111,3 +111,15 @@ test('/api/hub/me 는 로그인한 계정의 이름과 이메일을 돌려준다
   assert.deepEqual(await ok.json(), { name: '김환규', email: 'a@x.com', role: 'counselor' });
   assert.equal((await onRequestGet({ env, request: req('GET', '/api/hub/me', 'bad') })).status, 401);
 });
+
+test('지정된 표시 이름(hkim3 → 김환규)이 신청 칸과 문자에 쓰인다 — 이미 저장된 신청도 이름으로 보인다', async () => {
+  const env = memoryEnv();
+  const token = await addAccount(env, 'hkim3@wol.org', 'hkim3');
+  const date = nextWeekday();
+  await env.CAMP_KV.put(`drive:slot:${date}:pickup`, JSON.stringify({ date, slot: 'pickup', email: 'hkim3@wol.org', name: 'hkim3', phone: '010-1234-5678' }));
+  const view = await (await D.onRequestGet({ env, request: req('GET', `/api/car/drive?start=${date}`, token) })).json();
+  assert.equal(view.slots[`${date}:pickup`].name, '김환규');
+  const ok = await D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, { date, slot: 'dropoff' }) });
+  assert.equal((await ok.json()).slot.name, '김환규');
+  assert.equal(RM.reminderText('김환규', date).includes('김환규님'), true);
+});

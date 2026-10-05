@@ -17,7 +17,7 @@ export async function onRequestGet({ env, request }) {
   const account = await getAccount(env, email);
   if (account ? account.status !== 'approved' : !isMasterEmail(email)) return Response.json({ error: 'unauthorized' }, { status: 401, headers: H });
   return Response.json({
-    name: account?.name || DISPLAY_NAMES[email] || email.split('@')[0],
+    name: DISPLAY_NAMES[email] || account?.name || email.split('@')[0],
     email,
     role: session.role,
   }, { headers: H });

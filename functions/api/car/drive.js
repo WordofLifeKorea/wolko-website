@@ -6,7 +6,7 @@
  * KV: drive:slot:{date}:{slot} — 목록 조회 없이 정해진 키만 읽는다(KV list 한도 절약).
  */
 import { isValidPhone } from '../../lib/hubAccounts.js';
-import { MAX_AHEAD_DAYS, SLOTS, driveSession, isDriveDay, parseDate, periodFor, shiftPeriod, slotKey, todayKst } from '../../lib/carDrive.js';
+import { MAX_AHEAD_DAYS, SLOTS, driveSession, shownName, isDriveDay, parseDate, periodFor, shiftPeriod, slotKey, todayKst } from '../../lib/carDrive.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
@@ -23,7 +23,7 @@ export async function onRequestGet({ env, request }) {
   const slots = {};
   keys.forEach(([d, s], i) => {
     const v = values[i];
-    if (v) slots[`${d}:${s}`] = { name: v.name, mine: v.email === session.email };
+    if (v) slots[`${d}:${s}`] = { name: shownName(v), mine: v.email === session.email };
   });
   return Response.json({
     me: { name: session.name, phone: session.phone, isAdmin: session.isAdmin },
@@ -49,12 +49,12 @@ export async function onRequestPost({ env, request }) {
 
   const key = slotKey(date, slot);
   const existing = await env.CAMP_KV.get(key, 'json');
-  if (existing) return fail(existing.email === session.email ? '이미 신청한 칸입니다.' : `${existing.name} 님이 먼저 신청했습니다.`, 409);
+  if (existing) return fail(existing.email === session.email ? '이미 신청한 칸입니다.' : `${shownName(existing)} 님이 먼저 신청했습니다.`, 409);
   const record = { date, slot, email: session.email, name: session.name, phone: isValidPhone(phone) ? phone : '', at: new Date().toISOString() };
   await env.CAMP_KV.put(key, JSON.stringify(record), { expirationTtl: 60 * 60 * 24 * 120 });
   // 동시에 두 명이 눌렀다면 나중에 쓴 쪽이 이긴다 — 다시 읽어 내 것이 아니면 알려준다
   const check = await env.CAMP_KV.get(key, 'json');
-  if (check && check.email !== session.email) return fail(`${check.name} 님이 먼저 신청했습니다.`, 409);
+  if (check && check.email !== session.email) return fail(`${shownName(check)} 님이 먼저 신청했습니다.`, 409);
   return Response.json({ ok: true, slot: { name: record.name, mine: true } }, { status: 201, headers: H });
 }
 
