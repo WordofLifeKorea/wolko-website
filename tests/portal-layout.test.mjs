@@ -24,6 +24,7 @@ test('every portal tool page loads the shared layout, control and header stylesh
     assert.match(source, /\/wolko-layout\.css\?v=\d+/, `${file} must load wolko-layout.css`);
     assert.match(source, /\/wolko-ui\.css\?v=\d+/, `${file} must load wolko-ui.css`);
     assert.match(source, /\/wolko-rail\.css\?v=\d+/, `${file} must load wolko-rail.css`);
+    assert.match(source, /\/wolko-header\.css\?v=\d+/, `${file} must load wolko-header.css`);
     assert.ok(
       source.indexOf('/wolko-layout.css') > source.indexOf('/wolko-rail.css'),
       `${file}: wolko-layout.css must come after the page-level shared styles`,
@@ -73,4 +74,23 @@ test('the shared header adds one logout button to every tool page that lacks one
   assert.match(js, /function mountLogout\(\)/);
   assert.match(js, /btn-logout wl-logout/);
   assert.match(js, /mountLogout\(\);/);
+});
+
+test('one header spec: 60px bar, brand left, controls right at 36px with 10px gaps, single row on phones', async () => {
+  const css = await read('public/wolko-header.css');
+  assert.match(css, /--wl-head-h:\s*60px/);
+  assert.match(css, /--wl-head-ctl:\s*36px/);
+  assert.match(css, /body > header > :first-child[^{]*\{[^}]*margin-right: auto !important/s);
+  assert.match(css, /flex-direction: row !important/);
+  assert.match(css, /@media \(max-width: 640px\)[\s\S]*--wl-head-h:\s*56px/);
+  assert.match(css, /@media \(max-width: 480px\)/);
+  // 두 가지 언어 토글 구현이 같은 크기를 쓴다
+  assert.match(css, /\.wl-lang-toggle, body > header \.adm-lang-switch/);
+  const rail = await read('public/wolko-rail.js');
+  assert.match(rail, /mountLogout/);
+});
+
+test('the resource page header no longer carries a duplicate portal button', async () => {
+  const source = await read('src/pages/resource.astro');
+  assert.ok(!source.includes('class="back-link"'));
 });

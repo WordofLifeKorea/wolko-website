@@ -144,7 +144,7 @@ body main.page {
 body :is(input:not([type]), input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="url"],
   input[type="search"], input[type="number"], input[type="date"], input[data-datepick], input[type="time"], input[type="datetime-local"], select):not(
   .edit-input, .edit-input-wide, .camper-select, .group-participant-select, .group-participant-input, .teacher-assign-select,
-  .camp-role-select, .cm-reg-select, .cm-select, .stage-pct-select) {
+  .camp-role-select, .cm-reg-select, .cm-select, .stage-pct-select):not(body > header *) {
   box-sizing: border-box;
   height: var(--wl-control-height, 44px) !important;
   min-height: var(--wl-control-height, 44px) !important;
@@ -178,15 +178,6 @@ body :is(input, select, textarea):focus-visible { outline: 2px solid var(--wl-ac
 .ex-tab { height: 36px; padding: 0 16px !important; font-size: 12.5px !important; font-weight: 700 !important; }
 .ex-tab-new { border-radius: 10px !important; }
 
-/* 왼쪽 바가 있는 화면에서는 헤더의 '포탈' 바로가기가 왼쪽 바와 중복이므로 숨긴다 */
-@media (min-width: 900px) {
-  body.wolko-rail-active .portal-header .back-link { display: none !important; }
-}
-@media (max-width: 899px) {
-  /* 로고가 이미 포탈로 연결되므로 좁은 화면에서도 '포탈' 버튼은 없앤다 (로그아웃이 화면 밖으로 밀리던 문제) */
-  .portal-header .back-link { display: none !important; }
-}
-
 /* ── 모바일 ── */
 @media (max-width: 640px) {
   :root {
@@ -196,28 +187,4 @@ body :is(input, select, textarea):focus-visible { outline: 2px solid var(--wl-ac
     --wl-section-gap: 18px;
     --wl-card-pad: 18px;
   }
-
-  /* 이벤트·캠프 관리자 헤더도 다른 도구처럼 한 줄(60px)로 — 내 정보 수정은 계정 칩이 맡으므로 톱니 버튼은 숨기고 CMS는 아이콘만 */
-  body .adm-header {
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    height: 60px !important;
-    min-height: 60px !important;
-    padding: 0 14px !important;
-    gap: 8px !important;
-  }
-  body .adm-header-right { width: auto !important; margin-left: auto; gap: 6px !important; }
-  body .adm-account-button { display: none !important; }
-  body .adm-header-badge span { display: none; }
-  body .adm-header-badge { width: 36px; padding: 0 !important; }
-  body .adm-lang-switch { width: 104px !important; flex: none; }
-  body .adm-header-logo { min-width: 0; flex: 1 1 auto; }
-  body .adm-header-logo span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-  body .ex-header > div { gap: 8px !important; }
-  /* 제목은 남는 칸만 쓰고(넘치면 잘림), 오른쪽 묶음은 줄어들지 않게 — 계정 칩과 겹치지 않도록 */
-  body > header > :first-child { flex: 1 1 0; min-width: 0; overflow: hidden; }
-  body > header > :last-child { flex: none; }
-  body .btn-logout, body .adm-header-control.btn-logout { height: 36px !important; min-height: 36px !important; padding: 0 10px !important; font-size: 12px !important; white-space: nowrap; }
-  .ex-title, .sc-logo span, .car-header-logo span, .portal-brand span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 }

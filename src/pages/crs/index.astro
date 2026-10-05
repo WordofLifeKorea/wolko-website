@@ -22,7 +22,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
-  <link rel="stylesheet" href="/wolko-header.css?v=1">
+  <link rel="stylesheet" href="/wolko-header.css?v=12">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=1">
   <script src="/wolko-datepicker.js?v=2" defer></script>
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
@@ -397,7 +397,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     background:rgba(255,255,255,.08); font-size:12px; font-weight:700;
   }
   .admin-btn:hover, .btn-logout:hover { background:rgba(255,255,255,.17); }
-  .app-body { max-width:1440px; height:calc(100vh - 64px); background:#edf2f3; }
+  .app-body { max-width:1440px; height:calc(100vh - var(--wl-head-h, 60px)); background:#edf2f3; }
   .list-panel { background:#edf2f3; }
   .list-panel-inner { max-width:620px; padding:0 1.25rem 4rem; }
   .top-bar {
@@ -594,26 +594,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   @media(max-width:768px) {
     body.crs-detail-open { overflow:hidden; }
     body.crs-detail-open .app-header { visibility:hidden; }
-    .app-header {
-      display:grid;
-      grid-template-columns:minmax(0,1fr);
-      position:relative; top:auto;
-      min-height:auto;
-      padding:.68rem .78rem .62rem;
-      gap:.58rem;
-    }
-    .app-kicker { display:none; }
-    .app-brand { gap:.52rem; min-width:0; }
-    .app-header h1 { font-size:.93rem; }
-    .app-header .user-info {
-      width:100%; box-sizing:border-box; flex-shrink:0; justify-content:flex-end;
-      gap:.34rem; padding-top:.52rem; border-top:1px solid rgba(255,255,255,.13);
-    }
+    /* 헤더는 wolko-header.css 의 통일 규격(한 줄·56px)을 따른다 */
     .app-header .user-info > span { display:none; }
-    .admin-btn, .btn-logout {
-      min-height:30px; padding:.36rem .5rem; border-radius:7px;
-      font-size:.7rem; line-height:1; white-space:nowrap;
-    }
     .app-body { height:auto; }
     .app-body.split .detail-panel { top:0; border-left:none; box-shadow:none; }
     .detail-panel-head { gap:.62rem; padding:.72rem .82rem; }

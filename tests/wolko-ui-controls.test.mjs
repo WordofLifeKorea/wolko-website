@@ -60,7 +60,7 @@ test('portal mobile layout respects Safari safe areas and dynamic viewport', asy
   assert.match(portal, /viewport-fit=cover/);
   assert.match(css, /--hub-safe-top:\s*env\(safe-area-inset-top, 0px\)/);
   assert.match(css, /\.hub-shell\s*\{[^}]*min-height:\s*100dvh;/s);
-  assert.match(css, /\.hub-sidebar\s*\{[^}]*min-height:\s*calc\(50px \+ var\(--hub-safe-top\)\);/s);
+  assert.match(css, /\.hub-sidebar\s*\{[^}]*min-height:\s*calc\(56px \+ var\(--hub-safe-top\)\);/s);
   assert.match(css, /padding:\s*calc\(7px \+ var\(--hub-safe-top\)\)/);
   assert.match(css, /\.hub-wrap\s*\{[^}]*var\(--hub-safe-bottom\)/s);
   assert.match(authCss, /env\(safe-area-inset-top, 0px\)/);

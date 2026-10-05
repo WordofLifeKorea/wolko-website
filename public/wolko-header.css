@@ -63,3 +63,112 @@
 }
 .sc-header .btn-logout:hover, .portal-header .logout-btn:hover, .portal-header .back-link:hover, .car-header .btn-logout:hover,
 .app-header .btn-logout:hover, .topbar #logoutBtn:hover, .ex-header .btn-logout:hover { background: rgba(255, 255, 255, .22) !important; color: #fff !important; }
+
+/* ══════════════════════════════════════════════════════════════════
+   통일 헤더 규격 — 모든 도구 페이지의 상단 바를 한 가지 모양으로 맞춘다.
+   구조: [로고 + 페이지 이름]  ……………  [계정 칩] [KO/EN] [페이지별 버튼…] [로그아웃]
+   높이 60px(모바일 56px) · 양옆 32px(모바일 14px) · 컨트롤 간격 10px(모바일 8px) · 컨트롤 높이 36px · 모서리 10px
+   ══════════════════════════════════════════════════════════════════ */
+:root { --wl-head-h: 60px; --wl-head-pad: 32px; --wl-head-gap: 10px; --wl-head-ctl: 36px; }
+
+body > header,
+.app-header {
+  position: sticky !important; top: 0 !important; z-index: 100 !important;
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; justify-content: flex-start !important;
+  gap: var(--wl-head-gap) !important;
+  box-sizing: border-box !important;
+  height: var(--wl-head-h) !important; min-height: var(--wl-head-h) !important;
+  padding: 0 var(--wl-head-pad) !important;
+  background: #004f68 !important; background-image: none !important;
+  color: #fff !important; border: 0 !important;
+  box-shadow: 0 2px 12px rgba(0, 79, 104, .25) !important;
+}
+/* 왼쪽 로고 묶음만 밀어내고, 나머지는 전부 오른쪽 끝에 같은 간격으로 붙는다 (묶음 div가 있든 없든 동일) */
+body > header > :first-child, .app-header > :first-child { margin-right: auto !important; min-width: 0; }
+body > header > :not(:first-child), .app-header > :not(:first-child) { flex: none; }
+body > header > div:not(:first-child), .app-header > .user-info,
+.adm-header-right, .car-header-right, .portal-header-actions, .toolbar {
+  display: flex !important; align-items: center !important; justify-content: flex-end !important;
+  flex-wrap: nowrap !important; gap: var(--wl-head-gap) !important; min-width: 0; width: auto !important; flex-direction: row !important;
+}
+
+/* 로고 + 이름 */
+body > header > :first-child, .app-header > .app-brand {
+  display: flex !important; align-items: center !important; gap: 10px !important;
+  text-decoration: none !important; color: rgba(255, 255, 255, .92) !important;
+  font: 700 14px/1.2 'Montserrat', 'Noto Sans KR', sans-serif !important; letter-spacing: .04em !important;
+}
+body > header > :first-child :is(span, h1, b, div), .app-header .app-brand :is(span, h1, b) {
+  font: inherit !important; letter-spacing: inherit !important; color: inherit !important; margin: 0 !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; line-height: 1.2 !important;
+}
+body > header > :first-child :is(p, small), .app-header .app-kicker { display: none !important; }
+body > header > :first-child img, .app-header .app-brand img {
+  height: 30px !important; width: auto !important; max-width: none; border-radius: 0 !important; box-shadow: none !important; flex: none;
+}
+.app-header .app-brand-mark { width: auto !important; height: auto !important; background: none !important; border-radius: 0 !important; display: block !important; }
+
+/* 오른쪽 컨트롤 공통: 36px · 모서리 10px · 반투명 */
+:root:root body > header :where(button, a.adm-header-control, a.back-link, .admin-btn):where(:not(.wl-lang-btn, .wl-user-chip, .adm-lang-switch, .crs-bell)),
+:root:root .app-header :where(button, .admin-btn):where(:not(.wl-lang-btn, .wl-user-chip, .adm-lang-switch, .crs-bell)) {
+  box-sizing: border-box; display: inline-flex !important; align-items: center; justify-content: center; gap: 6px;
+  height: var(--wl-head-ctl) !important; min-height: var(--wl-head-ctl) !important; width: auto;
+  padding: 0 14px !important; margin: 0 !important; border-radius: 10px !important;
+  background: rgba(255, 255, 255, .12) !important; border: 1px solid rgba(255, 255, 255, .2) !important;
+  color: rgba(255, 255, 255, .85) !important; font: 700 12.5px/1 'Noto Sans KR', sans-serif !important; letter-spacing: 0 !important;
+  white-space: nowrap; text-decoration: none; cursor: pointer; transition: background .2s, color .2s;
+}
+:root:root body > header :where(button, a.adm-header-control, a.back-link, .admin-btn):where(:not(.wl-lang-btn, .wl-user-chip, .adm-lang-switch, .crs-bell)):hover,
+:root:root .app-header :where(button, .admin-btn):where(:not(.wl-lang-btn, .wl-user-chip, .adm-lang-switch, .crs-bell)):hover {
+  background: rgba(255, 255, 255, .22) !important; color: #fff !important;
+}
+body > header select, .app-header select {
+  box-sizing: border-box; height: var(--wl-head-ctl) !important; min-height: var(--wl-head-ctl) !important;
+  padding: 0 12px !important; border-radius: 10px !important; max-width: 220px;
+  background-color: rgba(255, 255, 255, .12) !important; border: 1px solid rgba(255, 255, 255, .2) !important;
+  color: rgba(255, 255, 255, .92) !important; font: 700 12.5px/1 'Noto Sans KR', sans-serif !important; letter-spacing: 0 !important;
+}
+body > header select option { color: #102936; background: #fff; }
+body > header svg { flex: none; }
+body > header .adm-account-button { width: var(--wl-head-ctl) !important; padding: 0 !important; }
+
+/* 계정 칩 */
+body > header .wl-user-chip {
+  box-sizing: border-box; height: var(--wl-head-ctl) !important; min-height: var(--wl-head-ctl) !important; margin: 0 !important;
+  padding: 0 12px 0 4px !important; border-radius: 999px !important; gap: 9px; max-width: 240px; letter-spacing: 0 !important;
+  background: rgba(255, 255, 255, .14) !important; border: 1px solid rgba(255, 255, 255, .26) !important; color: #fff !important;
+}
+
+/* 언어 토글: KO/EN 두 가지 구현(.wl-lang-toggle / 이벤트·캠프 관리자의 .adm-lang-switch)을 같은 모양·크기로 */
+body > header .wl-lang-toggle, body > header .adm-lang-switch {
+  box-sizing: border-box; width: 116px !important; height: var(--wl-head-ctl) !important; min-height: var(--wl-head-ctl) !important;
+  border-radius: 10px !important; border: 1px solid rgba(255, 255, 255, .28) !important; background: rgba(255, 255, 255, .16) !important;
+}
+body > header .adm-lang-switch { padding: 3px !important; }
+body > header .wl-lang-toggle { padding: 3px !important; }
+body > header .wl-lang-btn, body > header .adm-lang-option, body > header .adm-lang-thumb { border-radius: 7px !important; }
+
+/* ── 좁은 화면 ── */
+@media (max-width: 640px) {
+  :root { --wl-head-h: 56px; --wl-head-pad: 14px; --wl-head-gap: 8px; }
+  :root:root:root body > header .wl-lang-toggle, :root:root:root body > header .adm-lang-switch { width: auto !important; min-width: 68px; }
+  :root:root:root body > header .adm-lang-option span { display: none; }
+  :root:root:root body > header :where(button, a.adm-header-control):where(:not(.wl-lang-btn, .wl-user-chip, .adm-lang-switch, .crs-bell)) { padding: 0 11px !important; }
+  :root:root:root body > header select { max-width: 112px; padding: 0 8px !important; }
+  /* 카운슬러 헤더의 '새로고침'은 아이콘으로 */
+  :root:root:root body > header #refreshBtn { font-size: 0 !important; padding: 0 !important; width: var(--wl-head-ctl); }
+  :root:root:root body > header #refreshBtn::before { content: '↻'; font-size: 17px; line-height: 1; }
+  /* 캠프 관리자: CMS는 아이콘만, 개인정보 톱니는 계정 칩이 대신하므로 숨김 */
+  :root:root:root body > header .adm-header-badge span { display: none; }
+  :root:root:root body > header .adm-header-badge { width: var(--wl-head-ctl); padding: 0 !important; }
+  :root:root:root body > header .adm-account-button { display: none !important; }
+}
+/* 아주 좁은 화면(폰): 이름은 페이지 제목 블록이 이미 보여주므로 로고만 남긴다 */
+@media (max-width: 480px) {
+  :root:root:root body > header > :first-child :is(span, h1, b, div), .app-header .app-brand h1 { display: none !important; }
+}
+@media (max-width: 360px) {
+  :root { --wl-head-pad: 10px; --wl-head-gap: 6px; }
+  :root:root:root body > header select { max-width: 84px; }
+  :root:root:root body > header .wl-user-chip { padding-right: 4px !important; }
+}
