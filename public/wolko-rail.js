@@ -52,6 +52,80 @@
     if (h >= 40 && h <= 120) document.documentElement.style.setProperty('--wolko-head-h', h + 'px');
   }
 
+  // 내 정보 수정: 이름 · 휴대폰 번호 (소속 · 역할 · 이메일은 보기만) + 비밀번호 변경
+  var PT = {
+    ko: { title: '내 정보', name: '이름', phone: '휴대폰 번호', email: '이메일', campus: '소속', role: '역할', save: '저장', close: '닫기', saved: '저장했어요.', pwTitle: '비밀번호 변경', pwCur: '현재 비밀번호', pwNew: '새 비밀번호 (8자 이상)', pwSave: '비밀번호 변경', pwDone: '비밀번호를 바꿨어요.', fail: '저장하지 못했어요.', campuses: { wolko: '평택', jeju: '제주' }, hint: '휴대폰 번호는 운행 스케줄 오전 픽업 알림 문자에 쓰여요.' },
+    en: { title: 'My info', name: 'Name', phone: 'Mobile number', email: 'Email', campus: 'Campus', role: 'Role', save: 'Save', close: 'Close', saved: 'Saved.', pwTitle: 'Change password', pwCur: 'Current password', pwNew: 'New password (8+ characters)', pwSave: 'Change password', pwDone: 'Password changed.', fail: 'Could not save.', campuses: { wolko: 'Pyeongtaek', jeju: 'Jeju' }, hint: 'Your mobile number is used for the morning pick-up text reminder.' },
+  };
+  function openProfile(me, chip) {
+    var t = PT[currentLang()] || PT.ko;
+    var token = '';
+    try { token = sessionStorage.getItem('wolko-hub-token') || ''; } catch (e) {}
+    var overlay = document.createElement('div');
+    overlay.className = 'wl-prof-overlay';
+    var card = document.createElement('div');
+    card.className = 'wl-prof-card';
+    card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true');
+    function field(label, value, opts) {
+      var wrap = document.createElement('label'); wrap.className = 'wl-prof-field';
+      var span = document.createElement('span'); span.textContent = label;
+      var input = document.createElement('input'); input.value = value || '';
+      Object.keys(opts || {}).forEach(function (k) { input.setAttribute(k, opts[k]); });
+      wrap.append(span, input); return { wrap: wrap, input: input };
+    }
+    var h = document.createElement('h3'); h.textContent = t.title;
+    var role = ROLE[me.role] ? ROLE[me.role][currentLang() === 'en' ? 1 : 0] : '';
+    var fName = field(t.name, me.name, { maxlength: '40', autocomplete: 'name' });
+    var fPhone = field(t.phone, me.phone, { type: 'tel', inputmode: 'tel', autocomplete: 'tel', placeholder: '010-1234-5678' });
+    var fMail = field(t.email, me.email, { readonly: '', disabled: '' });
+    var fCampus = field(t.campus + (role ? ' · ' + t.role : ''), (t.campuses[me.campus] || '') + (role ? ' · ' + role : ''), { readonly: '', disabled: '' });
+    var hint = document.createElement('p'); hint.className = 'wl-prof-hint'; hint.textContent = t.hint;
+    var msg = document.createElement('p'); msg.className = 'wl-prof-msg'; msg.setAttribute('role', 'status');
+    var save = document.createElement('button'); save.type = 'button'; save.className = 'wl-prof-primary'; save.textContent = t.save;
+    var pwH = document.createElement('h4'); pwH.textContent = t.pwTitle;
+    var fCur = field(t.pwCur, '', { type: 'password', autocomplete: 'current-password' });
+    var fNew = field(t.pwNew, '', { type: 'password', autocomplete: 'new-password' });
+    var pwMsg = document.createElement('p'); pwMsg.className = 'wl-prof-msg'; pwMsg.setAttribute('role', 'status');
+    var pwSave = document.createElement('button'); pwSave.type = 'button'; pwSave.className = 'wl-prof-secondary'; pwSave.textContent = t.pwSave;
+    var closeBtn = document.createElement('button'); closeBtn.type = 'button'; closeBtn.className = 'wl-prof-close'; closeBtn.setAttribute('aria-label', t.close); closeBtn.textContent = '×';
+    card.append(closeBtn, h, fName.wrap, fPhone.wrap, hint, fMail.wrap, fCampus.wrap, msg, save, pwH, fCur.wrap, fNew.wrap, pwMsg, pwSave);
+    overlay.append(card);
+    document.body.append(overlay);
+    function close() { overlay.remove(); document.removeEventListener('keydown', onKey); if (chip) chip.focus(); }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    closeBtn.addEventListener('click', close);
+    setTimeout(function () { fName.input.focus(); }, 30);
+    save.addEventListener('click', function () {
+      msg.textContent = ''; msg.className = 'wl-prof-msg'; save.disabled = true;
+      fetch('/api/hub/me', { method: 'PATCH', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ name: fName.input.value, phone: fPhone.input.value }) })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.d.error || t.fail);
+          Object.assign(me, res.d);
+          try { sessionStorage.setItem('wolko-hub-me:' + token.slice(-16), JSON.stringify(res.d)); } catch (e) {}
+          var chipName = document.querySelector('.wl-user-text b'); if (chipName) chipName.textContent = res.d.name;
+          var av = document.querySelector('.wl-user-avatar'); if (av) av.textContent = String(res.d.name || '?').trim().charAt(0).toUpperCase();
+          msg.textContent = t.saved; msg.className = 'wl-prof-msg ok';
+        })
+        .catch(function (e) { msg.textContent = e.message || t.fail; msg.className = 'wl-prof-msg err'; })
+        .then(function () { save.disabled = false; });
+    });
+    pwSave.addEventListener('click', function () {
+      pwMsg.textContent = ''; pwMsg.className = 'wl-prof-msg'; pwSave.disabled = true;
+      fetch('/api/hub/account-password', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: fCur.input.value, newPassword: fNew.input.value }) })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.d.error || t.fail);
+          fCur.input.value = ''; fNew.input.value = '';
+          pwMsg.textContent = t.pwDone; pwMsg.className = 'wl-prof-msg ok';
+        })
+        .catch(function (e) { pwMsg.textContent = e.message || t.fail; pwMsg.className = 'wl-prof-msg err'; })
+        .then(function () { pwSave.disabled = false; });
+    });
+  }
+
   // 우측 상단: 지금 로그인한 계정(이름 · 이메일)을 모든 도구 페이지 헤더에 보여준다
   var ROLE = { master: ['마스터', 'Master'], admin: ['관리자', 'Admin'], counselor: ['상담사', 'Counselor'] };
   function mountUserChip() {
@@ -64,11 +138,13 @@
     function draw(me) {
       var header = document.querySelector('body > header, body header:not(.ex-person-head):not(.account-dialog-head)');
       if (!header || !me || document.querySelector('.wl-user-chip')) return;
-      var chip = document.createElement('div');
+      var chip = document.createElement('button');
+      chip.type = 'button';
       chip.className = 'wl-user-chip';
+      chip.addEventListener('click', function () { openProfile(me, chip); });
       var lang = currentLang();
       var role = ROLE[me.role] ? ROLE[me.role][lang === 'en' ? 1 : 0] : '';
-      chip.title = me.name + ' · ' + me.email + (role ? ' · ' + role : '');
+      chip.title = me.name + ' · ' + me.email + (role ? ' · ' + role : '') + (lang === 'en' ? ' — edit my info' : ' — 내 정보 수정');
       var avatar = document.createElement('span');
       avatar.className = 'wl-user-avatar';
       avatar.textContent = String(me.name || '?').trim().charAt(0).toUpperCase();

@@ -108,7 +108,7 @@ test('/api/hub/me 는 로그인한 계정의 이름과 이메일을 돌려준다
   const token = await addAccount(env, 'a@x.com', '김환규');
   const ok = await onRequestGet({ env, request: req('GET', '/api/hub/me', token) });
   assert.equal(ok.status, 200);
-  assert.deepEqual(await ok.json(), { name: '김환규', email: 'a@x.com', role: 'counselor' });
+  assert.deepEqual(await ok.json(), { name: '김환규', email: 'a@x.com', role: 'counselor', phone: '010-1234-5678', campus: 'wolko' });
   assert.equal((await onRequestGet({ env, request: req('GET', '/api/hub/me', 'bad') })).status, 401);
 });
 
@@ -122,4 +122,24 @@ test('지정된 표시 이름(hkim3 → 김환규)이 신청 칸과 문자에 �
   const ok = await D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, { date, slot: 'dropoff' }) });
   assert.equal((await ok.json()).slot.name, '김환규');
   assert.equal(RM.reminderText('김환규', date).includes('김환규님'), true);
+});
+
+test('내 정보 수정: 이름과 휴대폰만 바꿀 수 있고, 바꾼 이름이 곧바로 쓰인다', async () => {
+  const { onRequestGet, onRequestPatch } = await import('../functions/api/hub/me.js');
+  const env = memoryEnv();
+  const token = await addAccount(env, 'hkim3@wol.org', 'hkim3', { campus: 'wolko' });
+  const get = async () => (await onRequestGet({ env, request: req('GET', '/api/hub/me', token) })).json();
+  assert.equal((await get()).name, '김환규', '이름이 이메일 앞부분뿐이면 지정된 표시 이름');
+  const patch = body => onRequestPatch({ env, request: req('PATCH', '/api/hub/me', token, body) });
+  assert.equal((await patch({ name: '', phone: '010-1111-2222' })).status, 400);
+  assert.equal((await patch({ name: 'a@b.c' })).status, 400);
+  assert.equal((await patch({ name: 'Hwankyu Kim', phone: 'abc' })).status, 400);
+  const ok = await patch({ name: 'Hwankyu Kim', phone: '010-9999-8888', campus: 'jeju', role: 'master', email: 'x@y.z' });
+  assert.equal(ok.status, 200);
+  const me = await ok.json();
+  assert.deepEqual([me.name, me.phone, me.campus, me.email, me.role], ['Hwankyu Kim', '010-9999-8888', 'wolko', 'hkim3@wol.org', 'counselor'], '소속 · 역할 · 이메일은 바뀌지 않는다');
+  assert.equal((await get()).name, 'Hwankyu Kim', '직접 고친 이름이 표시 이름보다 우선');
+  const date = nextWeekday();
+  const slot = await (await D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, { date, slot: 'pickup' }) })).json();
+  assert.equal(slot.slot.name, 'Hwankyu Kim');
 });

@@ -118,3 +118,27 @@
 @media (max-width: 460px) { .wl-user-text { display: none; } .wl-user-chip { padding: 0 4px; } }
 /* 경비 리포트 헤더에 있던 기존 사용자 표시는 중복이라 숨김 */
 body.has-user-chip #exUser, body.has-user-chip .viewer-label { display: none !important; }
+
+/* 내 정보 창 */
+button.wl-user-chip { font-family: inherit; cursor: pointer; transition: background .15s; }
+button.wl-user-chip:hover { background: rgba(255, 255, 255, .24); }
+.wl-prof-overlay { position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; padding: 18px; background: rgba(9, 28, 36, .55); backdrop-filter: blur(4px); }
+.wl-prof-card { position: relative; width: min(420px, 100%); max-height: calc(100vh - 36px); overflow: auto; padding: 26px 24px 22px; border-radius: 26px; background: #fff; box-shadow: 0 24px 60px rgba(0, 0, 0, .28); display: grid; gap: 10px; color: #102936; font-family: 'Noto Sans KR', sans-serif; }
+.wl-prof-card h3 { margin: 0 0 4px; font-size: 19px; letter-spacing: -.03em; }
+.wl-prof-card h4 { margin: 14px 0 0; padding-top: 14px; border-top: 1px solid #edf2f5; font-size: 14px; }
+.wl-prof-field { display: grid; gap: 5px; font-size: 12.5px; font-weight: 750; color: #4b6672; }
+.wl-prof-field input { height: 44px; padding: 0 14px; border: 1px solid #bfd5de; border-radius: 14px; font: 500 15px 'Noto Sans KR', sans-serif; color: #102936; background: #fff; box-sizing: border-box; width: 100%; }
+.wl-prof-field input:focus { outline: none; border-color: #008e92; box-shadow: 0 0 0 3px #e5f4f3; }
+.wl-prof-field input:disabled { background: #f3f7f9; color: #6a808a; }
+.wl-prof-hint { margin: -4px 2px 2px; font-size: 11.5px; color: #7d98a3; line-height: 1.5; }
+.wl-prof-msg { min-height: 0; margin: 0; font-size: 12.5px; font-weight: 700; }
+.wl-prof-msg:empty { display: none; }
+.wl-prof-msg.ok { color: #16865a; }
+.wl-prof-msg.err { color: #b03037; }
+.wl-prof-primary, .wl-prof-secondary { height: 46px; border-radius: 999px; font: 800 14px 'Noto Sans KR', sans-serif; cursor: pointer; border: 0; }
+.wl-prof-primary { background: #004f68; color: #fff; }
+.wl-prof-primary:hover { background: #006582; }
+.wl-prof-secondary { background: #eef5f8; color: #004f68; }
+.wl-prof-secondary:hover { background: #dcebf1; }
+.wl-prof-primary:disabled, .wl-prof-secondary:disabled { opacity: .5; cursor: not-allowed; }
+.wl-prof-close { position: absolute; right: 14px; top: 12px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: #eef5f8; color: #4b6672; font-size: 20px; line-height: 1; cursor: pointer; }

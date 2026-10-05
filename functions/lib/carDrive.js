@@ -1,6 +1,6 @@
 import { getAccount, isMasterEmail, normalizeEmail, parseHubSessionToken } from './hubAccounts.js';
 import { CAMPUS_OVERRIDES } from '../../src/lib/expense-config.js';
-import { DISPLAY_NAMES } from './expenses.js';
+import { pickName } from './expenses.js';
 
 export const SLOTS = ['pickup', 'dropoff'];
 export const SLOT_PREFIX = 'drive:slot:';
@@ -29,7 +29,7 @@ export function periodFor(dateStr) {
 }
 export const shiftPeriod = (start, n) => fromUtc(parseDate(start) + n * 14 * DAY);
 /** 화면에 보일 이름: 지정된 표시 이름이 있으면 그것, 없으면 신청 때 저장된 이름 */
-export const shownName = (record) => DISPLAY_NAMES[record?.email] || record?.name || '';
+export const shownName = (record) => pickName(record?.email, record?.name);
 export const slotKey = (date, slot) => `${SLOT_PREFIX}${date}:${slot}`;
 
 /**
@@ -48,5 +48,5 @@ export async function driveSession(request, env) {
   if (account ? account.status !== 'approved' : !master) return { status: 401, error: '포탈 로그인이 필요합니다.' };
   const campus = CAMPUS_OVERRIDES[email] || account?.campus || 'wolko';
   if (!master && campus !== 'wolko') return { status: 403, error: '평택센터 멤버만 사용할 수 있습니다.' };
-  return { email, name: DISPLAY_NAMES[email] || account?.name || email.split('@')[0], phone: account?.phone || '', isAdmin: master || signed.role === 'master' };
+  return { email, name: pickName(email, account?.name), phone: account?.phone || '', isAdmin: master || signed.role === 'master' };
 }

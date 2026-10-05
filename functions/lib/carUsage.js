@@ -1,5 +1,5 @@
 import { getAccount, isMasterEmail, normalizeEmail, parseHubSessionToken } from './hubAccounts.js';
-import { DISPLAY_NAMES } from './expenses.js';
+import { pickName } from './expenses.js';
 
 export const ENTRY_PREFIX = 'car:usage:entry:';
 export const PHOTO_PREFIX = 'car:usage:photo:';
@@ -23,7 +23,7 @@ export async function usageSession(request, env) {
   const account = await getAccount(env, email);
   if (account ? account.status !== 'approved' : !isMasterEmail(email)) return null;
   // 화면에는 이메일이 아니라 이름을 보여준다 (이름이 없는 계정은 지정된 표시 이름, 그것도 없으면 이메일 앞부분)
-  return { email, name: account?.name || DISPLAY_NAMES[email] || email.split('@')[0], role: signed.role };
+  return { email, name: pickName(email, account?.name), role: signed.role };
 }
 
 /** 사용 일지에서 고를 수 있는 차량: 고정 차량(Silver Van · Santa Fe)만. 선교사 개인 차량은 예약 캘린더에서만 쓴다. */
