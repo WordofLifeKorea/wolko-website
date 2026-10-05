@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/hub.css?v=17">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
-  <link rel="stylesheet" href="/wolko-auth.css?v=2">
+  <link rel="stylesheet" href="/wolko-auth.css?v=3">
   <link rel="stylesheet" href="/wolko-ui.css?v=2">
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
@@ -78,6 +78,11 @@
         <label class="signup-campus-opt"><input type="radio" name="signupCampus" value="wolko" checked><span data-t="campusPyeongtaek">평택</span></label>
         <label class="signup-campus-opt"><input type="radio" name="signupCampus" value="jeju"><span data-t="campusJeju">제주</span></label>
       </div>
+      <div class="login-input-wrap signup-role" role="radiogroup" aria-label="등급">
+        <label class="signup-campus-opt"><input type="radio" name="signupRole" value="member" checked><span data-t="roleMemberOpt">일반 멤버</span></label>
+        <label class="signup-campus-opt"><input type="radio" name="signupRole" value="admin"><span data-t="roleAdminOpt">관리자</span></label>
+      </div>
+      <p class="signup-role-hint" data-t="roleHint">관리자는 포탈 전체를 유지보수하는 역할이에요 (wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.</p>
       <div class="login-input-wrap">
         <input class="login-input" type="tel" id="signupPhoneInput" placeholder="휴대폰 번호" autocomplete="tel">
       </div>
@@ -241,6 +246,7 @@
         namePlaceholder: '이름',
         phonePlaceholder: '휴대폰 번호',
         campusPyeongtaek: '평택', campusJeju: '제주',
+        roleMemberOpt: '일반 멤버', roleAdminOpt: '관리자', roleHint: '관리자는 포탈 전체를 유지보수하는 역할이에요 (wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.', requestedLabel: '신청 등급',
         signupPwPlaceholder: '8자 이상',
         signupBtn: '가입 요청',
         signupSending: '요청 중…',
@@ -274,7 +280,7 @@
         approveBtn: '승인',
         rejectBtn: '거부',
         roleAdmin: '관리자',
-        roleCounselor: '상담사',
+        roleCounselor: '일반 멤버',
         roleMaster: '마스터',
         rolePlaceholder: '역할 선택',
         approvedToast: '승인했습니다.',
@@ -297,6 +303,7 @@
         namePlaceholder: 'Name',
         phonePlaceholder: 'Phone number',
         campusPyeongtaek: 'Pyeongtaek', campusJeju: 'Jeju',
+        roleMemberOpt: 'Member', roleAdminOpt: 'Admin', roleHint: 'Admins maintain the whole portal (wol.org email, master approval required). Page-level permissions are set separately.', requestedLabel: 'Requested',
         signupPwPlaceholder: '8+ characters',
         signupBtn: 'Request access',
         signupSending: 'Requesting…',
@@ -330,7 +337,7 @@
         approveBtn: 'Approve',
         rejectBtn: 'Reject',
         roleAdmin: 'Admin',
-        roleCounselor: 'Counselor',
+        roleCounselor: 'Member',
         roleMaster: 'Master',
         rolePlaceholder: 'Select role',
         approvedToast: 'Approved.',
@@ -589,6 +596,7 @@
       const email = $('signupEmailInput').value.trim().toLowerCase();
       const password = $('signupPwInput').value;
       const campus = document.querySelector('input[name="signupCampus"]:checked')?.value || 'wolko';
+      const requestedRole = document.querySelector('input[name="signupRole"]:checked')?.value || 'member';
       const errEl = $('signupError');
       errEl.textContent = '';
       if (!name) { errEl.textContent = t('nameRequired'); return; }
@@ -607,7 +615,7 @@
         const res = await fetch('/api/hub/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, phone, email, password, campus }),
+          body: JSON.stringify({ name, phone, email, password, campus, requestedRole }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('passwordInvalid'));
@@ -696,17 +704,20 @@
       const adminOption = isWol ? `<option value="admin">${t('roleAdmin')}</option>` : '';
       const counselorOption = `<option value="counselor">${t('roleCounselor')}</option>`;
       const nameLine = a.name ? `${esc(a.name)}${a.phone ? ' · ' + esc(a.phone) : ''}` : '';
+      const wantsAdmin = a.requestedRole === 'admin' && isWol;
+      const requestedLine = a.requestedRole ? `${t('requestedLabel')}: ${a.requestedRole === 'admin' ? t('roleAdmin') : t('roleCounselor')}` : '';
       return `
           <div class="hub-pending-item">
             <div>
               <p class="hub-pending-email">${esc(a.email)}</p>
               ${nameLine ? `<p class="hub-pending-role">${nameLine}</p>` : ''}
+              ${requestedLine ? `<p class="hub-pending-role"><b>${esc(requestedLine)}</b></p>` : ''}
               <p class="hub-pending-role">${esc(formatRequestedAt(a.requestedAt))}</p>
             </div>
             <div class="hub-pending-actions">
               <select class="hub-pending-role-select">
-                <option value="" disabled selected>${t('rolePlaceholder')}</option>
-                ${adminOption}${counselorOption}
+                <option value="" disabled ${a.requestedRole ? '' : 'selected'}>${t('rolePlaceholder')}</option>
+                ${adminOption.replace('<option value="admin">', wantsAdmin ? '<option value="admin" selected>' : '<option value="admin">')}${counselorOption.replace('<option value="counselor">', a.requestedRole && !wantsAdmin ? '<option value="counselor" selected>' : '<option value="counselor">')}
               </select>
               <button class="hub-pending-approve" onclick="respondToRequest('${esc(a.email)}','approve',this)">${t('approveBtn')}</button>
               <button class="hub-pending-reject" onclick="respondToRequest('${esc(a.email)}','reject',this)">${t('rejectBtn')}</button>

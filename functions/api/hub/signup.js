@@ -16,7 +16,7 @@
 import {
   normalizeEmail, isValidEmail, isValidPassword, isValidPhone, isMasterEmail,
   getAccount, putAccount, hashPassword, sendEmail,
-  pendingRequestEmailHtml, MASTER_EMAILS,
+  pendingRequestEmailHtml, MASTER_EMAILS, isWolDomain,
 } from '../../lib/hubAccounts.js';
 
 const CORS = {
@@ -42,6 +42,8 @@ export async function onRequestPost(context) {
   const email = normalizeEmail(body.email);
   const password = String(body.password || '');
   const campus = body.campus === 'jeju' ? 'jeju' : 'wolko'; // 평택(wolko) | 제주
+  // 가입 때 고르는 등급: 관리자(포탈 전체 유지보수) | 일반 멤버. 관리자는 신청일 뿐이고 마스터가 승인할 때 확정한다.
+  const requestedRole = body.requestedRole === 'admin' ? 'admin' : 'member';
   if (!name) {
     return Response.json({ error: '이름을 입력해 주세요.' }, { status: 400, headers: CORS });
   }
@@ -50,6 +52,9 @@ export async function onRequestPost(context) {
   }
   if (!isValidEmail(email)) {
     return Response.json({ error: '올바른 이메일 주소를 입력해 주세요.' }, { status: 400, headers: CORS });
+  }
+  if (requestedRole === 'admin' && !isWolDomain(email)) {
+    return Response.json({ error: '관리자는 wol.org 이메일로만 신청할 수 있어요. 일반 멤버로 가입해 주세요.' }, { status: 400, headers: CORS });
   }
   if (!isValidPassword(password)) {
     return Response.json({ error: '비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.' }, { status: 400, headers: CORS });
@@ -72,7 +77,7 @@ export async function onRequestPost(context) {
 
     if (!account) {
       account = {
-        email, name, phone, campus, role: null, status: 'pending',
+        email, name, phone, campus, requestedRole, role: null, status: 'pending',
         passwordHash: hash, passwordSalt: salt,
         requestedAt: new Date().toISOString(),
       };

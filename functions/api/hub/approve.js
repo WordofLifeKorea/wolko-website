@@ -49,7 +49,7 @@ export async function onRequestPost(context) {
   const action = body.action === 'reject' ? 'reject' : 'approve';
   const role = body.role === 'admin' ? 'admin' : body.role === 'counselor' ? 'counselor' : null;
   if (action === 'approve' && !role) {
-    return Response.json({ error: '승인 시 역할(관리자/상담사)을 지정해 주세요.' }, { status: 400, headers: CORS });
+    return Response.json({ error: '승인 시 역할(관리자/일반 멤버)을 지정해 주세요.' }, { status: 400, headers: CORS });
   }
   if (action === 'approve' && role === 'admin' && !isWolDomain(email)) {
     return Response.json({ error: '관리자 역할은 wol.org 이메일에만 지정할 수 있습니다.' }, { status: 400, headers: CORS });

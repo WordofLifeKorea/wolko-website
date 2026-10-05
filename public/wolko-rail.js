@@ -127,7 +127,7 @@
   }
 
   // 우측 상단: 지금 로그인한 계정(이름 · 이메일)을 모든 도구 페이지 헤더에 보여준다
-  var ROLE = { master: ['마스터', 'Master'], admin: ['관리자', 'Admin'], counselor: ['상담사', 'Counselor'] };
+  var ROLE = { master: ['마스터', 'Master'], admin: ['관리자', 'Admin'], counselor: ['일반 멤버', 'Member'] };
   function mountUserChip() {
     var token = '';
     try { token = sessionStorage.getItem('wolko-hub-token') || ''; } catch (e) {}

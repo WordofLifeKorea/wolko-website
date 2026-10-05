@@ -197,12 +197,12 @@ export function pendingRequestEmailHtml({ email, name, phone }) {
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
       <h2 style="color:#004f68;">새 포탈 가입 요청</h2>
       <p><strong>${escapeHtml(name)}</strong> 님(${escapeHtml(phone)})이 <strong>${escapeHtml(email)}</strong>로 WOLKO 포탈 가입을 요청했습니다.</p>
-      <p>포탈에 로그인해서 "승인 대기" 목록에서 역할(관리자/상담사)을 지정하여 승인하거나 거부해 주세요.</p>
+      <p>포탈에 로그인해서 "승인 대기" 목록에서 역할(관리자/일반 멤버)을 지정하여 승인하거나 거부해 주세요.</p>
     </div>`;
 }
 
 export function approvedEmailHtml({ url, role }) {
-  const roleLabel = role === 'admin' ? '관리자' : '상담사';
+  const roleLabel = role === 'admin' ? '관리자' : '일반 멤버';
   return `
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;">
       <h2 style="color:#004f68;">WOLKO 포탈 접속이 승인되었습니다</h2>

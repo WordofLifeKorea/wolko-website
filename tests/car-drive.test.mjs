@@ -143,3 +143,19 @@ test('내 정보 수정: 이름과 휴대폰만 바꿀 수 있고, 바꾼 이름
   const slot = await (await D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, { date, slot: 'pickup' }) })).json();
   assert.equal(slot.slot.name, 'Hwankyu Kim');
 });
+
+test('가입 때 등급(관리자/일반 멤버)을 고르고, 관리자는 wol.org 이메일만 신청할 수 있다', async () => {
+  const S = await import('../functions/api/hub/signup.js');
+  const env = memoryEnv({ RESEND_API_KEY: 'x' });
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({}), text: async () => '' });
+  const signup = body => S.onRequestPost({ env, request: new Request('https://t.co/api/hub/signup', { method: 'POST', body: JSON.stringify({ phone: '010-1111-2222', password: 'Passw0rd!x', campus: 'wolko', ...body }) }) });
+  const bad = await signup({ name: '가', email: 'a@gmail.com', requestedRole: 'admin' });
+  assert.equal(bad.status, 400, '관리자는 wol.org만');
+  const admin = await signup({ name: '나', email: 'b@wol.org', requestedRole: 'admin' });
+  assert.equal(admin.status, 200);
+  const member = await signup({ name: '다', email: 'c@gmail.com' });
+  assert.equal(member.status, 200);
+  const get = async email => JSON.parse(await env.CAMP_KV.get(`hub:account:${email}`));
+  assert.deepEqual([(await get('b@wol.org')).requestedRole, (await get('b@wol.org')).role, (await get('b@wol.org')).status], ['admin', null, 'pending'], '신청일 뿐 승인 전에는 권한이 없다');
+  assert.equal((await get('c@gmail.com')).requestedRole, 'member');
+});
