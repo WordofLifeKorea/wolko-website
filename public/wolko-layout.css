@@ -1,0 +1,223 @@
+/* WOLKO 포탈 도구 공용 레이아웃 규격
+   모든 도구 페이지(캘린더·CRS·이벤트·리소스·경비·차량·캠프 관리자·카운슬러)가 같은 페이지 폭·여백·제목·카드·입력창·버튼 간격을 쓰도록 한 곳에서 정한다.
+   각 페이지 CSS보다 뒤에 불러와서(!important) 페이지마다 달랐던 값을 덮어쓴다 — 값을 바꾸고 싶으면 아래 토큰만 고치면 된다.
+   헤더(60px 파란 바)는 wolko-header.css / wolko-rail.css, 컨트롤 높이(44px·36px)는 wolko-ui.css가 맡는다. */
+:root {
+  /* 페이지 틀 */
+  --wl-page-max: 1280px;
+  --wl-page-x: 28px;
+  --wl-page-top: 32px;
+  --wl-page-bottom: 88px;
+  --wl-section-gap: 24px;
+  /* 글자 */
+  --wl-ink: #102936;
+  --wl-text-muted: #5f7681;
+  --wl-accent: #008e92;
+  /* 카드(패널) */
+  --wl-line: #e1e9ee;
+  --wl-card-radius: 18px;
+  --wl-card-shadow: 0 6px 22px rgba(16, 41, 54, .05);
+  --wl-card-pad: 22px;
+  /* 입력창·버튼 */
+  --wl-field-line: #c9d9e0;
+  --wl-btn-gap: 10px;
+}
+
+/* ── 1. 페이지 폭 · 바깥 여백 ── */
+body .sc-wrap,
+body .adm-wrap,
+body .events-wrap,
+body .portal-main,
+body .ex-wrap,
+body .log-wrap,
+body .car-wrap,
+body main.page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--wl-page-max) !important;
+  margin: 0 auto !important;
+  padding: var(--wl-page-top) var(--wl-page-x) var(--wl-page-bottom) !important;
+}
+
+/* ── 2. 페이지 제목 블록 (작은 영문 라벨 · 제목 · 설명) ── */
+.wl-page-head,
+.sc-title-row,
+.car-title-row,
+.events-heading,
+.log-intro {
+  margin: 0 0 var(--wl-section-gap) !important;
+}
+.wl-eyebrow,
+.events-eyebrow,
+.log-kicker {
+  margin: 0 0 8px !important;
+  font: 800 11px/1 'Noto Sans KR', sans-serif !important;
+  letter-spacing: .16em !important;
+  color: var(--wl-accent);
+}
+.events-eyebrow { color: #a5482d; }
+.wl-page-head h1,
+.sc-title,
+.car-title,
+.events-heading h1,
+.log-intro h1 {
+  margin: 0 !important;
+  font: 800 clamp(24px, 3vw, 30px)/1.25 'Noto Sans KR', sans-serif !important;
+  letter-spacing: -.035em !important;
+  color: var(--wl-ink) !important;
+}
+.wl-page-head p:not(.wl-eyebrow),
+.sc-subtitle,
+.car-subtitle,
+.events-description,
+.log-intro > p:last-child {
+  margin: 8px 0 0 !important;
+  max-width: 720px;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  color: var(--wl-text-muted) !important;
+  word-break: keep-all;
+}
+
+/* 제목 블록을 가진 페이지의 오른쪽 위 보조 링크·버튼과 나란히 놓을 때 */
+.events-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+
+/* ── 2-1. 차량 메뉴 탭 (차량 스케줄 · 사용 일지 · 예약현황 · 정비 — 네 화면이 똑같이 보이도록) ── */
+.car-view-tabs {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 6px;
+  padding: 4px;
+  margin: 0 0 var(--wl-section-gap) !important;
+  border-radius: 12px;
+  background: #e8edf0;
+}
+.car-view-tab {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 0 !important; padding: 9px 10px;
+  border: 0; border-radius: 9px; background: transparent;
+  color: #4b6672; font: 800 12.5px/1 'Noto Sans KR', sans-serif; text-decoration: none;
+}
+.car-view-tab.is-active { background: #fff; color: #004f68; box-shadow: 0 2px 8px rgba(16, 42, 56, .1); }
+@media (max-width: 640px) {
+  .car-view-tab { padding: 10px 2px; font-size: 11.5px; }
+  .car-view-tab svg { display: none; }
+}
+
+/* ── 3. 카드(패널) ── */
+.ex-card,
+.ex-person,
+.table-section,
+.log-panel,
+.events-stat,
+.sc-notice-card {
+  background: #fff;
+  border: 1px solid var(--wl-line) !important;
+  border-radius: var(--wl-card-radius) !important;
+  box-shadow: var(--wl-card-shadow) !important;
+}
+.ex-card,
+.log-panel,
+.sc-notice-card { padding: var(--wl-card-pad) !important; }
+.ex-card { margin-bottom: var(--wl-section-gap) !important; }
+
+/* ── 3-1. 상단 큰 안내 카드(리소스 진행 현황 · 카운슬러 캠프 소개) — 같은 크기 규칙의 제목을 쓴다 ── */
+.hero-panel {
+  min-height: 0 !important;
+  padding: 30px clamp(24px, 4vw, 44px) !important;
+  border-radius: 24px !important;
+  margin-bottom: var(--wl-section-gap);
+}
+.hero-copy h1 { font: 800 clamp(24px, 3vw, 30px)/1.25 'Noto Sans KR', sans-serif !important; letter-spacing: -.035em !important; }
+.hero-copy p:last-child { margin-top: 10px !important; }
+.progress-ring-lg { width: 132px !important; height: 132px !important; }
+.progress-ring-lg .ring-inner strong { font-size: 30px !important; }
+.hero { padding: 24px 28px !important; border-radius: var(--wl-card-radius) !important; margin-bottom: var(--wl-section-gap) !important; }
+.hero h2 { font: 800 clamp(22px, 2.6vw, 28px)/1.25 'Noto Sans KR', sans-serif !important; letter-spacing: -.035em !important; color: var(--wl-ink) !important; }
+.hero p { font-size: 14px !important; line-height: 1.7 !important; color: var(--wl-text-muted) !important; }
+.hero p.wl-eyebrow { margin: 0 0 8px !important; font-size: 11px !important; line-height: 1 !important; color: var(--wl-accent) !important; }
+/* 섹션 제목(h2)은 페이지 제목보다 한 단계 작게 */
+.section-head h2 { font-size: 20px !important; letter-spacing: -.03em !important; }
+
+/* ── 4. 입력창 · 선택창: 높이 44px · 모서리 10px · 같은 테두리와 글자 크기 ──
+   (표 안에서 쓰는 촘촘한 입력창은 wolko-ui.css의 36px 규격을 그대로 둔다) */
+body :is(input:not([type]), input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="url"],
+  input[type="search"], input[type="number"], input[type="date"], input[data-datepick], input[type="time"], input[type="datetime-local"], select):not(
+  .edit-input, .edit-input-wide, .camper-select, .group-participant-select, .group-participant-input, .teacher-assign-select,
+  .camp-role-select, .cm-reg-select, .cm-select, .stage-pct-select) {
+  box-sizing: border-box;
+  height: var(--wl-control-height, 44px) !important;
+  min-height: var(--wl-control-height, 44px) !important;
+  border-radius: 10px !important;
+  border-color: var(--wl-field-line);
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.3;
+}
+body :is(input, select, textarea):focus-visible { outline: 2px solid var(--wl-accent); outline-offset: 1px; }
+
+/* ── 5. 버튼: 기본 44px / 작은 버튼 36px, 모서리 10px, 글자 13px·12.5px 700 ── */
+.log-primary, .log-secondary, .add-resource, .btn-edit-mode, .btn-print, .btn-csv, .login-btn,
+.events-export, .events-refresh, .btn-primary, .primary-btn, .secondary-btn, .ghost-btn {
+  min-height: var(--wl-control-height, 44px) !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+.ex-btn, .log-clear, .btn-logout {
+  min-height: var(--wl-control-height-compact, 36px) !important;
+  border-radius: 10px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+}
+/* 버튼 줄 간격: 동작 버튼은 10px, 알약(탭·필터) 묶음은 8px */
+.table-toolbar > div:last-child, .ex-actions, .ex-total-bar, .events-actions, .log-actions, .adm-header-right {
+  gap: var(--wl-btn-gap) !important;
+}
+.ex-tabs, .car-tabs { gap: 8px !important; }
+.ex-tab { height: 36px; padding: 0 16px !important; font-size: 12.5px !important; font-weight: 700 !important; }
+.ex-tab-new { border-radius: 10px !important; }
+
+/* 왼쪽 바가 있는 화면에서는 헤더의 '포탈' 바로가기가 왼쪽 바와 중복이므로 숨긴다 */
+@media (min-width: 900px) {
+  body.wolko-rail-active .portal-header .back-link { display: none !important; }
+}
+@media (max-width: 899px) {
+  /* 로고가 이미 포탈로 연결되므로 좁은 화면에서도 '포탈' 버튼은 없앤다 (로그아웃이 화면 밖으로 밀리던 문제) */
+  .portal-header .back-link { display: none !important; }
+}
+
+/* ── 모바일 ── */
+@media (max-width: 640px) {
+  :root {
+    --wl-page-x: 16px;
+    --wl-page-top: 20px;
+    --wl-page-bottom: 72px;
+    --wl-section-gap: 18px;
+    --wl-card-pad: 18px;
+  }
+
+  /* 이벤트·캠프 관리자 헤더도 다른 도구처럼 한 줄(60px)로 — 내 정보 수정은 계정 칩이 맡으므로 톱니 버튼은 숨기고 CMS는 아이콘만 */
+  body .adm-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    padding: 0 14px !important;
+    gap: 8px !important;
+  }
+  body .adm-header-right { width: auto !important; margin-left: auto; gap: 6px !important; }
+  body .adm-account-button { display: none !important; }
+  body .adm-header-badge span { display: none; }
+  body .adm-header-badge { width: 36px; padding: 0 !important; }
+  body .adm-lang-switch { width: 104px !important; flex: none; }
+  body .adm-header-logo { min-width: 0; flex: 1 1 auto; }
+  body .adm-header-logo span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  body .ex-header > div { gap: 8px !important; }
+  /* 제목은 남는 칸만 쓰고(넘치면 잘림), 오른쪽 묶음은 줄어들지 않게 — 계정 칩과 겹치지 않도록 */
+  body > header > :first-child { flex: 1 1 0; min-width: 0; overflow: hidden; }
+  body > header > :last-child { flex: none; }
+  body .btn-logout, body .adm-header-control.btn-logout { height: 36px !important; min-height: 36px !important; padding: 0 10px !important; font-size: 12px !important; white-space: nowrap; }
+  .ex-title, .sc-logo span, .car-header-logo span, .portal-brand span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+}

@@ -14,13 +14,15 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=51">
+  <link rel="stylesheet" href="/expense.css?v=52">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <link rel="stylesheet" href="/wolko-header.css?v=1">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=1">
+  <link rel="stylesheet" href="/wolko-ui.css?v=2">
+  <link rel="stylesheet" href="/wolko-layout.css?v=8">
   <script src="/wolko-datepicker.js?v=2" defer></script>
-  <script src="/wolko-rail.js?v=21" defer></script>
+  <script src="/wolko-rail.js?v=22" defer></script>
   <meta name="theme-color" content="#004f68">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <script is:inline src="/wolko-session.js?v=1"></script>
@@ -38,6 +40,11 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   </header>
 
   <main class="ex-wrap">
+    <div class="wl-page-head">
+      <p class="wl-eyebrow">WOLKO · EXPENSE</p>
+      <h1 data-t="headTitle">경비 리포트</h1>
+      <p data-t="headSub">영수증과 함께 경비를 제출하면 승인자와 회계 담당자가 차례로 확인해요.</p>
+    </div>
     <nav class="ex-tabs" id="exTabs"></nav>
     <section id="exView"></section>
   </main>
@@ -55,6 +62,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
     const T = {
       ko: {
         pageTitle: '경비 리포트 — WOLKO',
+        headTitle: '경비 리포트', headSub: '영수증과 함께 경비를 제출하면 승인자와 회계 담당자가 차례로 확인해요.',
         tabNew: '새 리포트', tabEdit: '리포트 수정', tabMine: '내 리포트', tabApprove: '승인 대기', tabAcct: '회계 업무', tabAll: '전체 리포트',
         st_submitted: '승인 대기', st_approved: '승인됨 · 송금 대기', st_processed: '송금 처리 완료', st_rejected: '반려됨',
         acctPh: 'Account · 계정과목', acctPrev: '이전 계정과목 (직접 입력)', currency: '통화', amountPh: '금액', delRow: '항목 삭제',
@@ -100,6 +108,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
       },
       en: {
         pageTitle: 'Expense Report — WOLKO',
+        headTitle: 'Expense Report', headSub: 'Submit expenses with receipts. The approver and the accountant review them in turn.',
         tabNew: 'New report', tabEdit: 'Edit report', tabMine: 'My reports', tabApprove: 'To approve', tabAcct: 'Accounting', tabAll: 'All reports',
         st_submitted: 'Pending approval', st_approved: 'Approved · awaiting payment', st_processed: 'Payment completed', st_rejected: 'Rejected',
         acctPh: 'Account', acctPrev: 'Previous account (custom)', currency: 'Currency', amountPh: 'Amount', delRow: 'Remove item',

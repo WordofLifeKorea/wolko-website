@@ -17,7 +17,9 @@
   <link rel="stylesheet" href="/car-drive.css?v=3">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <link rel="stylesheet" href="/wolko-header.css?v=1">
-  <script src="/wolko-rail.js?v=21" defer></script>
+  <link rel="stylesheet" href="/wolko-ui.css?v=2">
+  <link rel="stylesheet" href="/wolko-layout.css?v=8">
+  <script src="/wolko-rail.js?v=22" defer></script>
   <script src="/car-drive.js?v=4" defer></script>
   <meta name="theme-color" content="#004f68">
 </head>
@@ -36,18 +38,18 @@
   </header>
 
   <main class="log-wrap drive-wrap">
+    <div class="log-intro">
+      <p class="log-kicker">VEHICLE · DRIVING SCHEDULE</p>
+      <h1 data-t="h1">운행 스케줄</h1>
+      <p data-t="intro">평택센터 멤버가 2주 단위로 오전 픽업 · 드롭오프를 신청해요. 오전 픽업 담당자에게는 당일 아침 8시에 문자가 가요.</p>
+    </div>
+
     <nav class="car-view-tabs car-view-tabs-4" aria-label="차량 메뉴" data-t-aria="menuLabel">
       <a class="car-view-tab is-active" href="/car-drive/" aria-current="page"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span data-t="tabDrive">운행 스케줄</span></a>
       <a class="car-view-tab" href="/car-log/"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span data-t="tabLog">사용 일지</span></a>
       <a class="car-view-tab" href="/car/"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span data-t="tabReservations">예약현황</span></a>
       <a class="car-view-tab" href="/car/?view=maintenance"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span data-t="tabMaintenance">정비 관리</span></a>
     </nav>
-
-    <div class="log-intro">
-      <p class="log-kicker">DRIVING SCHEDULE</p>
-      <h1 data-t="h1">운행 스케줄</h1>
-      <p data-t="intro">평택센터 멤버가 2주 단위로 오전 픽업 · 드롭오프를 신청해요. 오전 픽업 담당자에게는 당일 아침 8시에 문자가 가요.</p>
-    </div>
     <p class="log-loading" id="loadStatus" data-t="loading">불러오는 중…</p>
 
     <section class="log-panel" id="loginPanel" hidden>

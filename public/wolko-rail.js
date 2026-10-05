@@ -40,7 +40,7 @@
 
   function syncLabels() {
     var lang = currentLang();
-    document.querySelectorAll('.wolko-rail-item-label[data-ko], .wolko-rail-group[data-ko]').forEach(function (el) {
+    document.querySelectorAll('.wolko-rail-item-label[data-ko], .wolko-rail-group[data-ko], .wl-logout[data-ko]').forEach(function (el) {
       el.textContent = lang === 'en' ? el.getAttribute('data-en') : el.getAttribute('data-ko');
     });
   }
@@ -170,10 +170,34 @@
       .catch(function () {});
   }
 
+  // 모든 도구 페이지 헤더 오른쪽 끝에 같은 '로그아웃' 버튼을 둔다 (페이지가 이미 가진 경우는 건드리지 않는다)
+  function mountLogout() {
+    var header = document.querySelector('body > header');
+    if (!header || header.querySelector('.btn-logout, .logout-btn, #logoutBtn, [onclick*="doLogout"]')) return;
+    var token = '';
+    try { token = sessionStorage.getItem('wolko-hub-token') || ''; } catch (e) {}
+    if (!token) return;
+    var toggle = header.querySelector('.wl-lang-toggle, .adm-lang-switch');
+    if (!toggle || !toggle.parentNode) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-logout wl-logout';
+    btn.setAttribute('data-ko', '로그아웃');
+    btn.setAttribute('data-en', 'Log out');
+    btn.textContent = currentLang() === 'en' ? 'Log out' : '로그아웃';
+    btn.addEventListener('click', function () {
+      if (window.WolkoSession) { window.WolkoSession.logoutAll(); return; }
+      try { ['wolko-hub-token', 'wolko-hub-email', 'wolko-hub-role'].forEach(function (k) { sessionStorage.removeItem(k); }); } catch (e) {}
+      window.location.replace('/portal');
+    });
+    toggle.parentNode.insertBefore(btn, toggle.nextSibling);
+  }
+
   function init() {
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
     if (path === '/portal') return; // 포탈 런처 자체 사이드바와 중복 방지
     mountUserChip();
+    mountLogout();
 
     var rail = document.createElement('nav');
     rail.className = 'wolko-rail';
