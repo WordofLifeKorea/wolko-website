@@ -5,10 +5,10 @@
     ko: {
       pageTitle: '차량 스케줄', docTitle: '운행 스케줄 — WOLKO', menuLabel: '차량 메뉴',
       tabLog: '사용 일지', tabReservations: '예약현황', tabMaintenance: '정비 관리', tabDrive: '운행 스케줄',
-      h1: '운행 스케줄', intro: '평택센터 멤버가 2주 단위로 오전 픽업 · 드롭오프를 신청해요. 오전 픽업 담당자에게는 당일 아침 8시에 문자가 가요.',
+      h1: '운행 스케줄', intro: '오전 픽업과 드롭오프를 신청하세요. 픽업 당일 아침 8시에 문자로 알려드려요.',
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: '평택센터 멤버의 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
       deniedTitle: '평택센터 멤버 전용이에요', deniedHelp: '이 스케줄은 평택센터 멤버만 사용할 수 있어요. 소속이 맞는데 이 안내가 보이면 관리자에게 문의해 주세요.',
-      period2w: '2주 단위', thisPeriod: '이번 2주', note: '칸을 누르면 로그인한 계정으로 바로 신청돼요. 내가 신청한 칸을 다시 누르면 취소돼요. 오전 픽업 문자는 계정에 등록된 휴대폰 번호로 가요.',
+      thisPeriod: '오늘로', note: '빈 칸을 누르면 바로 신청돼요 · 내 칸을 다시 누르면 취소돼요',
       week: n => n + '주차', pickup: '오전 픽업', dropoff: '드롭오프', signUp: '+ 신청', mineLabel: '내가 신청', today: '오늘',
       phoneTitle: '오전 픽업 알림 문자', phoneHelp: '픽업 당일 아침 8시에 이 번호로 문자를 보내드려요.', phoneLabel: '휴대폰 번호', phoneBad: '올바른 휴대폰 번호를 입력해 주세요.', cancel: '취소', signUpDo: '신청하기',
       cancelConfirm: '이 신청을 취소할까요?', cancelAdmin: '(관리자) 이 신청을 취소할까요?', failLoad: '스케줄을 불러오지 못했습니다.', failAct: '처리하지 못했습니다.',
@@ -17,10 +17,10 @@
     en: {
       pageTitle: 'Vehicle Schedule', docTitle: 'Driving Schedule — WOLKO', menuLabel: 'Vehicle menu',
       tabLog: 'Usage Log', tabReservations: 'Reservations', tabMaintenance: 'Maintenance', tabDrive: 'Driving',
-      h1: 'Driving Schedule', intro: 'Pyeongtaek Center members sign up for morning pick-up and drop-off in two-week blocks. The pick-up person gets a text at 8 AM that day.',
+      h1: 'Driving Schedule', intro: 'Sign up for morning pick-up and drop-off. The pick-up person gets a text at 8 AM that day.',
       loading: 'Loading…', loginTitle: 'Portal Login', loginHelp: 'Log in with your Pyeongtaek Center portal account.', email: 'Email', password: 'Password', loginBtn: 'Log in and continue', loginFail: 'Could not log in.',
       deniedTitle: 'Pyeongtaek Center members only', deniedHelp: 'This schedule is for Pyeongtaek Center members. If you belong here and still see this, please contact an admin.',
-      period2w: 'Two-week block', thisPeriod: 'This block', note: 'Tap a slot to sign up with your logged-in account; tap your own slot again to cancel. The pick-up text goes to the mobile number on your account.',
+      thisPeriod: 'Today', note: 'Tap an empty slot to sign up · tap your own slot again to cancel',
       week: n => 'Week ' + n, pickup: 'Pick up', dropoff: 'Drop off', signUp: '+ Sign up', mineLabel: 'Mine', today: 'Today',
       phoneTitle: 'Morning pick-up text', phoneHelp: 'We will text this number at 8 AM on the pick-up day.', phoneLabel: 'Mobile number', phoneBad: 'Please enter a valid mobile number.', cancel: 'Cancel', signUpDo: 'Sign up',
       cancelConfirm: 'Cancel this sign-up?', cancelAdmin: '(Admin) Cancel this sign-up?', failLoad: 'Could not load the schedule.', failAct: 'Could not complete that.',
@@ -86,14 +86,17 @@
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'drive-slot' + (info ? (info.mine ? ' taken mine' : ' taken') : '');
+    const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = t(slot);
+    const who = document.createElement('span'); who.className = 'who';
+    b.append(lbl, who);
     if (info) {
-      b.textContent = info.name;
-      if (info.mine) { const x = document.createElement('span'); x.className = 'x'; x.textContent = '✕'; b.append(x); }
+      who.textContent = info.name;
+      if (info.mine) { const x = document.createElement('i'); x.className = 'x'; x.textContent = '✕'; b.append(x); }
       b.disabled = !info.mine && !state.me.isAdmin;
       if (info.mine || state.me.isAdmin) b.addEventListener('click', () => cancelSlot(date, slot, info.mine));
       if (past && !state.me.isAdmin) b.disabled = true;
     } else {
-      b.textContent = t('signUp');
+      who.textContent = t('signUp');
       b.disabled = past;
       b.addEventListener('click', () => claim(date, slot));
     }
@@ -108,23 +111,25 @@
     const box = $('weeks');
     box.replaceChildren();
     [0, 1].forEach(w => {
+      const days = p.days.slice(w * 6, w * 6 + 6);
       const week = document.createElement('section');
       week.className = 'drive-week';
-      const title = document.createElement('p');
+      const title = document.createElement('header');
       title.className = 'drive-week-title';
-      title.textContent = `${t('week', w + 1)} · ${md(p.days[w * 6])} – ${md(p.days[w * 6 + 5])}`;
+      title.innerHTML = `<strong>${t('week', w + 1)}</strong><span>${md(days[0])} – ${md(days[days.length - 1])}</span>`;
       const grid = document.createElement('div');
       grid.className = 'drive-days';
-      p.days.slice(w * 6, w * 6 + 6).forEach(date => {
+      days.forEach(date => {
         const card = document.createElement('article');
         card.id = 'day-' + date;
         card.className = 'drive-day' + (date === state.today ? ' is-today' : '') + (date < state.today ? ' is-past' : '');
         const head = document.createElement('div');
         head.className = 'drive-day-head';
-        head.innerHTML = `<strong>${md(date)}</strong><span>${wk(date)}${date === state.today ? ' · ' + t('today') : ''}</span>`;
-        const l1 = document.createElement('p'); l1.className = 'drive-slot-label'; l1.textContent = t('pickup');
-        const l2 = document.createElement('p'); l2.className = 'drive-slot-label'; l2.textContent = t('dropoff');
-        card.append(head, l1, slotButton(date, 'pickup'), l2, slotButton(date, 'dropoff'));
+        head.innerHTML = `<strong>${md(date)}</strong><span class="dow">${wk(date)}</span>${date === state.today ? `<em>${t('today')}</em>` : ''}`;
+        const slots = document.createElement('div');
+        slots.className = 'drive-slots';
+        slots.append(slotButton(date, 'pickup'), slotButton(date, 'dropoff'));
+        card.append(head, slots);
         grid.append(card);
       });
       week.append(title, grid);
