@@ -14,12 +14,12 @@ test('vehicle menu is the last WOLKO tool; reservations, maintenance and usage l
     read('public/car.css'),
   ]);
 
-  assert.match(portal, /href: '\/car-log'[^\n]*icon: 'car'/);
-  assert.match(rail, /href: '\/car-log'[^\n]*label: '차량'/);
+  assert.match(portal, /href: '\/car-drive'[^\n]*icon: 'car'/);
+  assert.match(rail, /href: '\/car-drive'[^\n]*label: '차량'/);
   assert.doesNotMatch(portal, /href: '\/car'[,\s]/);
   assert.doesNotMatch(rail, /href: '\/car'[,\s]/);
-  assert.ok(portal.indexOf("href: '/resource'") < portal.indexOf("href: '/car-log'"));
-  assert.ok(rail.indexOf("href: '/expense'") < rail.indexOf("href: '/car-log'"));
+  assert.ok(portal.indexOf("href: '/resource'") < portal.indexOf("href: '/car-drive'"));
+  assert.ok(rail.indexOf("href: '/expense'") < rail.indexOf("href: '/car-drive'"));
   assert.match(car, /id="viewTabReservations"/);
   assert.match(car, /id="viewTabMaintenance"/);
   assert.match(car, /href="\/car-log\/"/);
