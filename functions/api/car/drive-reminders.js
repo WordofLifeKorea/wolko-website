@@ -13,7 +13,7 @@ const mask = p => String(p || '').replace(/[^0-9]/g, '').replace(/^(\d{3})\d+(\d
 
 export function reminderText(name, date) {
   const [, m, d] = date.split('-');
-  return `[WOLKO 운행] ${name}님, 오늘(${+m}/${+d} ${DAYS[weekdayOf(date)]}) 오전 픽업 담당이에요. 운행 스케줄: https://wolko.org/car-drive/`;
+  return `[WOLKO 운행] ${name}님, 오늘(${+m}/${+d} ${DAYS[weekdayOf(date)]}) 오전 픽업 담당이에요. 운행 스케줄: https://wolko.org/car-drive/#${date}`;
 }
 
 export async function onRequestPost({ env, request }) {

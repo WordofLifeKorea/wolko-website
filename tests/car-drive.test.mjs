@@ -94,6 +94,7 @@ test('8시 알림: 오늘 픽업 담당자에게 한 번만 문자를 보낸다'
   assert.equal(first.sent, 1);
   assert.equal(sent[0].body.message.to, '01011112222');
   assert.match(sent[0].body.message.text, /가나다님.*오전 픽업/);
+  assert.ok(sent[0].body.message.text.endsWith(`/car-drive/#${date}`), '링크에 날짜 앵커가 붙는다');
   const second = await (await run(`?date=${date}`)).json();
   assert.equal(second.sent, 0);
   assert.equal(second.alreadySent, true);

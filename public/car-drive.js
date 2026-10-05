@@ -34,7 +34,17 @@
   const wk = iso => t('days')[new Date(iso + 'T00:00:00Z').getUTCDay()];
 
   let state = null; // { me, today, period, slots }
-  let wantedStart = null;
+  // 링크에 날짜가 붙어 있으면(예: /car-drive/#2026-10-06) 그 날이 속한 2주 구간을 열고 그 날 카드로 이동한다
+  const hashDate = () => { const m = /^#(\d{4}-\d{2}-\d{2})$/.exec(location.hash); return m ? m[1] : null; };
+  let wantedStart = hashDate();
+  function focusHashDay() {
+    const d = hashDate();
+    const card = d && document.getElementById('day-' + d);
+    if (!card) return;
+    card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    card.classList.add('is-linked');
+    setTimeout(() => card.classList.remove('is-linked'), 2600);
+  }
 
   function applyLang() {
     document.documentElement.lang = lang;
@@ -55,6 +65,7 @@
     $('driveApp').hidden = which !== 'app';
   }
 
+  let focusedOnce = false;
   async function load(start) {
     wantedStart = start || wantedStart;
     const response = await fetch('/api/car/drive' + (wantedStart ? `?start=${encodeURIComponent(wantedStart)}` : ''), { headers: headers() });
@@ -66,6 +77,7 @@
     wantedStart = data.period.start;
     show('app');
     render();
+    if (!focusedOnce) { focusedOnce = true; focusHashDay(); }
   }
 
   function slotButton(date, slot) {
@@ -105,6 +117,7 @@
       grid.className = 'drive-days';
       p.days.slice(w * 6, w * 6 + 6).forEach(date => {
         const card = document.createElement('article');
+        card.id = 'day-' + date;
         card.className = 'drive-day' + (date === state.today ? ' is-today' : '') + (date < state.today ? ' is-past' : '');
         const head = document.createElement('div');
         head.className = 'drive-day-head';
@@ -184,6 +197,7 @@
     finally { button.disabled = false; }
   });
 
+  addEventListener('hashchange', () => { const d = hashDate(); if (d) { focusedOnce = true; load(d).then(focusHashDay).catch(() => {}); } });
   applyLang();
   show('loading');
   load().catch(error => { show('login'); $('loginError').textContent = error.message; });
