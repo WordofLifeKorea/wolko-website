@@ -196,7 +196,8 @@ test('경비 권한은 "관리자" 등급만: master/포탈 admin이어도 목�
   await acc('cyn@x.com', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   await acc('esooy@wol.org', 'Estelle', 'admin'); // 포탈 role은 admin이지만 경비 관리자 등급 아님
-  const dev = ['hkim3@wol.org', 'master'];         // Developer (포탈 master)
+  await acc('hkim3@wol.org', 'Dev', 'admin');
+  const dev = ['hkim3@wol.org', 'admin'];          // Developer (포탈 관리자 — 경비 관리자 등급은 아님)
   const estelle = ['esooy@wol.org', 'admin'];
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });

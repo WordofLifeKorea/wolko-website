@@ -137,7 +137,7 @@ test('내 정보 수정: 이름과 휴대폰만 바꿀 수 있고, 바꾼 이름
   const ok = await patch({ name: 'Hwankyu Kim', phone: '010-9999-8888', campus: 'jeju', role: 'master', email: 'x@y.z' });
   assert.equal(ok.status, 200);
   const me = await ok.json();
-  assert.deepEqual([me.name, me.phone, me.campus, me.email, me.role], ['Hwankyu Kim', '010-9999-8888', 'wolko', 'hkim3@wol.org', 'counselor'], '소속 · 역할 · 이메일은 바뀌지 않는다');
+  assert.deepEqual([me.name, me.phone, me.campus, me.email, me.role], ['Hwankyu Kim', '010-9999-8888', 'wolko', 'hkim3@wol.org', 'admin'], '소속 · 역할 · 이메일은 바뀌지 않는다(역할은 코드의 관리자 목록 기준)');
   assert.equal((await get()).name, 'Hwankyu Kim', '직접 고친 이름이 표시 이름보다 우선');
   const date = nextWeekday();
   const slot = await (await D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, { date, slot: 'pickup' }) })).json();
@@ -158,4 +158,24 @@ test('가입 때 등급(관리자/일반 멤버)을 고르고, 관리자는 wol.
   const get = async email => JSON.parse(await env.CAMP_KV.get(`hub:account:${email}`));
   assert.deepEqual([(await get('b@wol.org')).requestedRole, (await get('b@wol.org')).role, (await get('b@wol.org')).status], ['admin', null, 'pending'], '신청일 뿐 승인 전에는 권한이 없다');
   assert.equal((await get('c@gmail.com')).requestedRole, 'member');
+});
+
+test('등급은 코드의 목록이 기준: 마스터 wolkorea1 · 관리자 4명 · 나머지는 일반 멤버, 승인에서도 목록 밖은 관리자로 못 올린다', async () => {
+  const H = await import('../functions/lib/hubAccounts.js');
+  assert.deepEqual(H.MASTER_EMAILS, ['wolkorea1@gmail.com']);
+  for (const e of ['hkim3@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org', 'jeremyrodgers@wol.org']) assert.equal(H.effectiveRole(e, 'counselor'), 'admin', e);
+  assert.equal(H.effectiveRole('wolkorea1@gmail.com', 'counselor'), 'master');
+  assert.equal(H.effectiveRole('someone@wol.org', 'admin'), 'counselor', '예전에 admin이던 계정도 목록에 없으면 일반 멤버');
+  assert.equal(H.effectiveRole('someone@wol.org', 'master'), 'counselor');
+  const env = memoryEnv();
+  const token = await H.createHubSessionToken(env.ADMIN_PASSWORD, 'someone@wol.org', 'admin');
+  assert.equal((await H.parseHubSessionToken(env.ADMIN_PASSWORD, token)).role, 'counselor');
+  const { onRequestPost: approve } = await import('../functions/api/hub/approve.js');
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  await env.CAMP_KV.put('hub:account:someone@wol.org', JSON.stringify({ email: 'someone@wol.org', name: 's', status: 'pending', requestedRole: 'admin' }));
+  const post = body => approve({ env, request: new Request('https://t.co/api/hub/approve', { method: 'POST', headers: { Authorization: `Bearer ${master}` }, body: JSON.stringify(body) }) });
+  assert.equal((await post({ email: 'someone@wol.org', action: 'approve', role: 'admin' })).status, 400, '목록 밖 관리자 승인 거절');
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({}), text: async () => '' });
+  env.RESEND_API_KEY = 'x';
+  assert.equal((await post({ email: 'someone@wol.org', action: 'approve', role: 'counselor' })).status, 200, '일반 멤버로는 승인');
 });

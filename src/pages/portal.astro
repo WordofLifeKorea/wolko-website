@@ -246,7 +246,7 @@
         namePlaceholder: '이름',
         phonePlaceholder: '휴대폰 번호',
         campusPyeongtaek: '평택', campusJeju: '제주',
-        roleMemberOpt: '일반 멤버', roleAdminOpt: '관리자', roleHint: '관리자는 포탈 전체를 유지보수하는 역할이에요 (wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.', requestedLabel: '신청 등급',
+        roleMemberOpt: '일반 멤버', roleAdminOpt: '관리자', adminNotListed: '관리자 목록에 없음 — 개발자에게 등록 요청', roleHint: '관리자는 포탈 전체를 유지보수하는 역할이에요 (wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.', requestedLabel: '신청 등급',
         signupPwPlaceholder: '8자 이상',
         signupBtn: '가입 요청',
         signupSending: '요청 중…',
@@ -303,7 +303,7 @@
         namePlaceholder: 'Name',
         phonePlaceholder: 'Phone number',
         campusPyeongtaek: 'Pyeongtaek', campusJeju: 'Jeju',
-        roleMemberOpt: 'Member', roleAdminOpt: 'Admin', roleHint: 'Admins maintain the whole portal (wol.org email, master approval required). Page-level permissions are set separately.', requestedLabel: 'Requested',
+        roleMemberOpt: 'Member', roleAdminOpt: 'Admin', adminNotListed: 'not on the admin list — ask the developer', roleHint: 'Admins maintain the whole portal (wol.org email, master approval required). Page-level permissions are set separately.', requestedLabel: 'Requested',
         signupPwPlaceholder: '8+ characters',
         signupBtn: 'Request access',
         signupSending: 'Requesting…',
@@ -701,11 +701,11 @@
       // admin 역할은 @wol.org 이메일에만 부여 가능(approve.js가 다시 검증) —
       // 드롭다운에서도 애초에 고를 수 없게 옵션 자체를 숨긴다.
       const isWol = /@wol\.org$/i.test(a.email);
-      const adminOption = isWol ? `<option value="admin">${t('roleAdmin')}</option>` : '';
+      const adminOption = a.adminAllowed ? `<option value="admin">${t('roleAdmin')}</option>` : '';
       const counselorOption = `<option value="counselor">${t('roleCounselor')}</option>`;
       const nameLine = a.name ? `${esc(a.name)}${a.phone ? ' · ' + esc(a.phone) : ''}` : '';
-      const wantsAdmin = a.requestedRole === 'admin' && isWol;
-      const requestedLine = a.requestedRole ? `${t('requestedLabel')}: ${a.requestedRole === 'admin' ? t('roleAdmin') : t('roleCounselor')}` : '';
+      const wantsAdmin = a.requestedRole === 'admin' && a.adminAllowed;
+      const requestedLine = a.requestedRole ? `${t('requestedLabel')}: ${a.requestedRole === 'admin' ? t('roleAdmin') + (a.adminAllowed ? '' : ' (' + t('adminNotListed') + ')') : t('roleCounselor')}` : '';
       return `
           <div class="hub-pending-item">
             <div>

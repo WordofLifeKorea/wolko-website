@@ -9,7 +9,7 @@
  * 도구 API가 거부한다 — 상담사 전용 도구는 이것과 완전히 별개의 계정 체계)
  */
 import {
-  normalizeEmail, isValidEmail, getAccount, verifyPassword,
+  normalizeEmail, isValidEmail, getAccount, verifyPassword, effectiveRole,
   createHubSessionToken,
 } from '../../lib/hubAccounts.js';
 
@@ -58,7 +58,7 @@ export async function onRequestPost(context) {
     }
 
     const hubToken = await createHubSessionToken(env.ADMIN_PASSWORD, email, account.role);
-    return Response.json({ hubToken, email, role: account.role }, { headers: CORS });
+    return Response.json({ hubToken, email, role: effectiveRole(email, account.role) }, { headers: CORS });
   } catch (error) {
     console.error('hub account-login error:', error);
     return Response.json({ error: '처리 중 오류가 발생했습니다.' }, { status: 500, headers: CORS });

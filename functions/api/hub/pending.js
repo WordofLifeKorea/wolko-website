@@ -4,7 +4,7 @@
  *
  * 승인 대기 중인 계정 목록을 반환.
  */
-import { parseHubSessionToken, listAccounts } from '../../lib/hubAccounts.js';
+import { parseHubSessionToken, listAccounts, ADMIN_EMAILS, effectiveRole } from '../../lib/hubAccounts.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -32,7 +32,8 @@ export async function onRequestGet(context) {
 
   const accounts = await listAccounts(env);
   accounts.sort((a, b) => new Date(b.requestedAt || 0) - new Date(a.requestedAt || 0));
-  const safeAccounts = accounts.map(({ passwordHash, passwordSalt, ...rest }) => rest);
+  // adminAllowed: 코드의 관리자 목록에 있는 계정인지(승인 때 관리자로 지정할 수 있는지)
+  const safeAccounts = accounts.map(({ passwordHash, passwordSalt, ...rest }) => ({ ...rest, adminAllowed: ADMIN_EMAILS.includes(String(rest.email || '').toLowerCase()), effectiveRole: effectiveRole(rest.email) }));
   return Response.json({ accounts: safeAccounts }, { headers: CORS });
 }
 

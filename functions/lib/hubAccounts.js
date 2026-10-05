@@ -20,7 +20,17 @@
  * 비밀번호 계정으로 로그인한다.
  */
 
-export const MASTER_EMAILS = ['wolkorea1@gmail.com', 'hkim3@wol.org'];
+export const MASTER_EMAILS = ['wolkorea1@gmail.com'];
+/** 포탈 전체를 유지보수하는 관리자 — 이 목록이 기준이다. 목록에 없는 계정은 모두 일반 멤버(counselor). */
+export const ADMIN_EMAILS = ['hkim3@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org', 'jeremyrodgers@wol.org'];
+
+/** 계정에 저장된 값이나 토큰이 뭐라고 하든, 마스터/관리자는 코드의 목록으로만 결정한다 */
+export function effectiveRole(email, _claimed) {
+  const e = String(email || '').trim().toLowerCase();
+  if (MASTER_EMAILS.includes(e)) return 'master';
+  if (ADMIN_EMAILS.includes(e)) return 'admin';
+  return 'counselor';
+}
 const ACCOUNT_PREFIX = 'hub:account:';
 const SESSION_LIFETIME_MS = 24 * 60 * 60 * 1000; // 24시간
 const PBKDF2_ITERATIONS = 100000;
@@ -131,7 +141,7 @@ export async function verifyToken(secret, token) {
 /** 포탈 세션 토큰 발급: wolko-hub:{email}:{role}:{expires} */
 export async function createHubSessionToken(secret, email, role) {
   const expires = Date.now() + SESSION_LIFETIME_MS;
-  const data = `wolko-hub:${email}:${role}:${expires}`;
+  const data = `wolko-hub:${email}:${effectiveRole(email, role)}:${expires}`;
   return signToken(secret, data);
 }
 
@@ -144,7 +154,7 @@ export async function parseHubSessionToken(secret, token) {
   const [, email, role, expiresStr] = parts;
   const expires = parseInt(expiresStr, 10);
   if (!expires || Date.now() > expires) return null;
-  return { email, role };
+  return { email, role: effectiveRole(email, role) };
 }
 
 export async function getAccount(env, email) {

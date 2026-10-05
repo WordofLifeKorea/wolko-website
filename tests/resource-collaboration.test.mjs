@@ -74,6 +74,9 @@ test('comments on a note are shared with every signed-in portal user', async () 
   assert.equal(data.annotations[0].comments[0].text, 'I agree with this revision.');
 });
 
+import { ADMIN_EMAILS } from '../functions/lib/hubAccounts.js';
+if (!ADMIN_EMAILS.includes('admin@wol.org')) ADMIN_EMAILS.push('admin@wol.org'); // 테스트용 관리자
+
 test('only a comment author or an admin can delete the comment', async () => {
   const env = createEnv();
   const authorToken = await createHubSessionToken(env.ADMIN_PASSWORD, 'author@wol.org', 'counselor');

@@ -11,7 +11,7 @@
  */
 import {
   normalizeEmail, parseHubSessionToken, getAccount, putAccount,
-  sendEmail, approvedEmailHtml, isWolDomain,
+  sendEmail, approvedEmailHtml, isWolDomain, ADMIN_EMAILS,
 } from '../../lib/hubAccounts.js';
 
 const CORS = {
@@ -53,6 +53,10 @@ export async function onRequestPost(context) {
   }
   if (action === 'approve' && role === 'admin' && !isWolDomain(email)) {
     return Response.json({ error: '관리자 역할은 wol.org 이메일에만 지정할 수 있습니다.' }, { status: 400, headers: CORS });
+  }
+  // 관리자 등급은 코드의 관리자 목록(ADMIN_EMAILS)이 기준이다. 목록에 없으면 일반 멤버로만 승인할 수 있다.
+  if (action === 'approve' && role === 'admin' && !ADMIN_EMAILS.includes(email)) {
+    return Response.json({ error: '관리자는 코드의 관리자 목록에 등록된 계정만 지정할 수 있어요. 개발자에게 등록을 요청해 주세요.' }, { status: 400, headers: CORS });
   }
 
   const account = await getAccount(env, email);
