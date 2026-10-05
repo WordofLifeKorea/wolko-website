@@ -6,7 +6,7 @@
   const I18N = {
     ko: {
       pageTitle: '차량 스케줄', docTitle: '차량 사용 일지 — WOLKO', menuLabel: '차량 메뉴',
-      tabReservations: '예약현황', tabMaintenance: '정비 관리', tabLog: '사용 일지',
+      tabReservations: '예약현황', tabMaintenance: '정비 관리', tabLog: '사용 일지', tabDrive: '운행 스케줄',
       h1: '차량 사용 일지', intro: '운행 전 사진 한 장으로 사용 시각과 목적을 남깁니다.', loading: '일지를 불러오는 중…',
       loginTitle: '포탈 로그인', loginHelp: '차량 QR을 새 탭에서 열었다면 다시 로그인해야 할 수 있습니다. 기록자는 로그인 계정으로 자동 저장됩니다.',
       email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기',
@@ -29,7 +29,7 @@
     },
     en: {
       pageTitle: 'Vehicle Schedule', docTitle: 'Vehicle Usage Log — WOLKO', menuLabel: 'Vehicle menu',
-      tabReservations: 'Reservations', tabMaintenance: 'Maintenance', tabLog: 'Usage Log',
+      tabReservations: 'Reservations', tabMaintenance: 'Maintenance', tabLog: 'Usage Log', tabDrive: 'Driving',
       h1: 'Vehicle Usage Log', intro: 'Leave the time and purpose of use with a single pre-drive photo.', loading: 'Loading the log…',
       loginTitle: 'Portal Login', loginHelp: 'If you opened the vehicle QR in a new tab you may need to log in again. The recorder is saved automatically from your account.',
       email: 'Email', password: 'Password', loginBtn: 'Log in and continue',

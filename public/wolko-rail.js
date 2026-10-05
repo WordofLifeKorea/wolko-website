@@ -67,7 +67,7 @@
     GROUPS.forEach(function (g) {
       html += '<div class="wolko-rail-group" data-ko="' + g.ko + '" data-en="' + g.en + '"></div>';
       TOOLS.filter(function (tool) { return tool.group === g.id; }).forEach(function (tool) {
-      var active = path === tool.href || (tool.href === '/car-log' && path === '/car'); // 차량 메뉴: 사용 일지(기본) · 예약현황 · 정비 관리
+      var active = path === tool.href || (tool.href === '/car-log' && (path === '/car' || path === '/car-drive')); // 차량 메뉴: 사용 일지(기본) · 예약현황 · 정비 관리
       html += '<a class="wolko-rail-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" style="--rail-color:' + tool.color + '">' +
         '<span class="wolko-rail-item-icon">' + svg(tool.icon, 15) + '</span><span class="wolko-rail-item-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
       });
