@@ -52,9 +52,52 @@
     if (h >= 40 && h <= 120) document.documentElement.style.setProperty('--wolko-head-h', h + 'px');
   }
 
+  // 우측 상단: 지금 로그인한 계정(이름 · 이메일)을 모든 도구 페이지 헤더에 보여준다
+  var ROLE = { master: ['마스터', 'Master'], admin: ['관리자', 'Admin'], counselor: ['상담사', 'Counselor'] };
+  function mountUserChip() {
+    var token = '';
+    try { token = sessionStorage.getItem('wolko-hub-token') || ''; } catch (e) {}
+    if (!token || document.querySelector('.wl-user-chip')) return;
+    var cacheKey = 'wolko-hub-me:' + token.slice(-16);
+    var cached = null;
+    try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch (e) {}
+    function draw(me) {
+      var header = document.querySelector('body > header, body header:not(.ex-person-head):not(.account-dialog-head)');
+      if (!header || !me || document.querySelector('.wl-user-chip')) return;
+      var chip = document.createElement('div');
+      chip.className = 'wl-user-chip';
+      var lang = currentLang();
+      var role = ROLE[me.role] ? ROLE[me.role][lang === 'en' ? 1 : 0] : '';
+      chip.title = me.name + ' · ' + me.email + (role ? ' · ' + role : '');
+      var avatar = document.createElement('span');
+      avatar.className = 'wl-user-avatar';
+      avatar.textContent = String(me.name || '?').trim().charAt(0).toUpperCase();
+      var text = document.createElement('span');
+      text.className = 'wl-user-text';
+      var name = document.createElement('b');
+      name.textContent = me.name;
+      var email = document.createElement('small');
+      email.textContent = me.email;
+      text.append(name, email);
+      chip.append(avatar, text);
+      var group = header.querySelector('.car-header-right, .adm-header-right, .portal-header-actions, .user-info, .toolbar');
+      var toggle = header.querySelector('.wl-lang-toggle, .adm-lang-switch');
+      if (group) group.prepend(chip);
+      else if (toggle) toggle.parentNode.insertBefore(chip, toggle);
+      else header.append(chip);
+      document.body.classList.add('has-user-chip');
+    }
+    if (cached) { draw(cached); return; }
+    fetch('/api/hub/me', { headers: { Authorization: 'Bearer ' + token } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (me) { if (!me) return; try { sessionStorage.setItem(cacheKey, JSON.stringify(me)); } catch (e) {} draw(me); })
+      .catch(function () {});
+  }
+
   function init() {
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
     if (path === '/portal') return; // 포탈 런처 자체 사이드바와 중복 방지
+    mountUserChip();
 
     var rail = document.createElement('nav');
     rail.className = 'wolko-rail';

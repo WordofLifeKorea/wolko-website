@@ -100,3 +100,13 @@ test('8시 알림: 오늘 픽업 담당자에게 한 번만 문자를 보낸다'
   assert.equal(sent.length, 1, '같은 날 두 번 보내지 않는다');
   assert.equal((await (await run('?date=2026-10-11')).json()).skipped, 'sunday');
 });
+
+test('/api/hub/me 는 로그인한 계정의 이름과 이메일을 돌려준다', async () => {
+  const { onRequestGet } = await import('../functions/api/hub/me.js');
+  const env = memoryEnv();
+  const token = await addAccount(env, 'a@x.com', '김환규');
+  const ok = await onRequestGet({ env, request: req('GET', '/api/hub/me', token) });
+  assert.equal(ok.status, 200);
+  assert.deepEqual(await ok.json(), { name: '김환규', email: 'a@x.com', role: 'counselor' });
+  assert.equal((await onRequestGet({ env, request: req('GET', '/api/hub/me', 'bad') })).status, 401);
+});

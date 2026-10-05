@@ -107,3 +107,14 @@
     color: rgba(255,255,255,.55);
   }
 }
+
+/* 우측 상단 로그인 계정 표시 (모든 도구 페이지 헤더) */
+.wl-user-chip { display: inline-flex; align-items: center; gap: 9px; height: 36px; padding: 0 12px 0 4px; margin-right: 10px; border-radius: 999px; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .26); color: #fff; max-width: 260px; flex: none; }
+.wl-user-avatar { width: 28px; height: 28px; border-radius: 50%; background: #fff; color: #004f68; display: inline-flex; align-items: center; justify-content: center; font: 800 13px/1 'Montserrat', 'Noto Sans KR', sans-serif; flex: none; }
+.wl-user-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.wl-user-text b { font: 700 12.5px/1.15 'Noto Sans KR', sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wl-user-text small { font: 500 10.5px/1.15 'Noto Sans KR', sans-serif; color: rgba(255, 255, 255, .72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) { .wl-user-text small { display: none; } .wl-user-chip { max-width: 140px; margin-right: 6px; } }
+@media (max-width: 460px) { .wl-user-text { display: none; } .wl-user-chip { padding: 0 4px; } }
+/* 경비 리포트 헤더에 있던 기존 사용자 표시는 중복이라 숨김 */
+body.has-user-chip #exUser, body.has-user-chip .viewer-label { display: none !important; }
