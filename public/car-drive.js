@@ -8,7 +8,7 @@
       h1: '운행 스케줄', intro: '평택센터 멤버가 2주 단위로 오전 픽업 · 드롭오프를 신청해요. 오전 픽업 담당자에게는 당일 아침 8시에 문자가 가요.',
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: '평택센터 멤버의 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
       deniedTitle: '평택센터 멤버 전용이에요', deniedHelp: '이 스케줄은 평택센터 멤버만 사용할 수 있어요. 소속이 맞는데 이 안내가 보이면 관리자에게 문의해 주세요.',
-      period2w: '2주 단위', thisPeriod: '이번 2주', note: '칸을 눌러 신청하고, 내가 신청한 칸을 다시 누르면 취소돼요. 오전 픽업은 휴대폰 번호가 필요해요.',
+      period2w: '2주 단위', thisPeriod: '이번 2주', note: '칸을 누르면 로그인한 계정으로 바로 신청돼요. 내가 신청한 칸을 다시 누르면 취소돼요. 오전 픽업 문자는 계정에 등록된 휴대폰 번호로 가요.',
       week: n => n + '주차', pickup: '오전 픽업', dropoff: '드롭오프', signUp: '+ 신청', mineLabel: '내가 신청', today: '오늘',
       phoneTitle: '오전 픽업 알림 문자', phoneHelp: '픽업 당일 아침 8시에 이 번호로 문자를 보내드려요.', phoneLabel: '휴대폰 번호', phoneBad: '올바른 휴대폰 번호를 입력해 주세요.', cancel: '취소', signUpDo: '신청하기',
       cancelConfirm: '이 신청을 취소할까요?', cancelAdmin: '(관리자) 이 신청을 취소할까요?', failLoad: '스케줄을 불러오지 못했습니다.', failAct: '처리하지 못했습니다.',
@@ -20,7 +20,7 @@
       h1: 'Driving Schedule', intro: 'Pyeongtaek Center members sign up for morning pick-up and drop-off in two-week blocks. The pick-up person gets a text at 8 AM that day.',
       loading: 'Loading…', loginTitle: 'Portal Login', loginHelp: 'Log in with your Pyeongtaek Center portal account.', email: 'Email', password: 'Password', loginBtn: 'Log in and continue', loginFail: 'Could not log in.',
       deniedTitle: 'Pyeongtaek Center members only', deniedHelp: 'This schedule is for Pyeongtaek Center members. If you belong here and still see this, please contact an admin.',
-      period2w: 'Two-week block', thisPeriod: 'This block', note: 'Tap a slot to sign up; tap your own slot again to cancel. Morning pick-up needs a mobile number.',
+      period2w: 'Two-week block', thisPeriod: 'This block', note: 'Tap a slot to sign up with your logged-in account; tap your own slot again to cancel. The pick-up text goes to the mobile number on your account.',
       week: n => 'Week ' + n, pickup: 'Pick up', dropoff: 'Drop off', signUp: '+ Sign up', mineLabel: 'Mine', today: 'Today',
       phoneTitle: 'Morning pick-up text', phoneHelp: 'We will text this number at 8 AM on the pick-up day.', phoneLabel: 'Mobile number', phoneBad: 'Please enter a valid mobile number.', cancel: 'Cancel', signUpDo: 'Sign up',
       cancelConfirm: 'Cancel this sign-up?', cancelAdmin: '(Admin) Cancel this sign-up?', failLoad: 'Could not load the schedule.', failAct: 'Could not complete that.',
@@ -130,7 +130,9 @@
 
   let pending = null;
   function claim(date, slot) {
-    if (slot === 'pickup') {
+    // 포탈 계정에 번호가 있으면 묻지 않고 바로 신청(문자는 계정의 번호로 간다). 번호가 없을 때만 입력창을 연다.
+    const known = /^[0-9+\-\s()]{7,20}$/.test(state.me.phone || '');
+    if (slot === 'pickup' && !known) {
       pending = { date, slot };
       $('phoneWhen').textContent = t('whenText', `${md(date)} (${wk(date)})`, t('pickup'));
       $('phoneInput').value = state.me.phone || '';
