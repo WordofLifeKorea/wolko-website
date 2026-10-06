@@ -15,7 +15,7 @@ import { sendEmail, listAccounts } from '../../lib/hubAccounts.js';
 import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS, CAMPUS_OVERRIDES, FOREIGN_CURRENCIES } from '../../../src/lib/expense-config.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
-  EXPENSE_REPLY_TO, EXPENSE_EMAIL_ENABLED, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
+  EXPENSE_REPLY_TO, EXPENSE_EMAIL_ENABLED, NEW_REPORT_EMAIL_ENABLED, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
   bustReportCache, totalOf, reportEmailHtml, formatKrw, finalizeReceipts, trashReport, restoreReport, listTrash,
 } from '../../lib/expenses.js';
 
@@ -84,9 +84,11 @@ async function getCampusMap(env) {
 }
 const applyCampus = (reports, map) => reports.map(r => ({ ...r, campus: cleanCampus(map[r.submitterEmail]) }));
 
-async function notify(context, to, subject, html) {
+async function notify(context, to, subject, html, { newReport = false } = {}) {
   const { env } = context;
-  if (!(EXPENSE_EMAIL_ENABLED || env.EXPENSE_EMAIL === 'on') || !env.RESEND_API_KEY || !to.length) return;
+  // 새 리포트 알림은 따로 켜져 있고, 나머지 메일은 EXPENSE_EMAIL_ENABLED(또는 환경변수 EXPENSE_EMAIL=on)일 때만 보낸다
+  const allowed = (newReport && NEW_REPORT_EMAIL_ENABLED) || EXPENSE_EMAIL_ENABLED || env.EXPENSE_EMAIL === 'on';
+  if (!allowed || !env.RESEND_API_KEY || !to.length) return;
   context.waitUntil(
     sendEmail(env, { to, subject, html, replyTo: EXPENSE_REPLY_TO }).catch(e => console.error('expense notification failed:', e))
   );
@@ -179,7 +181,7 @@ async function handlePost(context) {
       heading: '새 경비 리포트 승인 요청',
       intro: `<strong>${report.submitterName}</strong> 님이 경비 리포트를 제출했습니다. 포탈에서 검토 후 승인 또는 반려해 주세요.`,
       report, url: `${origin}/expense`, ctaLabel: '경비 리포트 확인',
-    }));
+    }), { newReport: true });
 
   return Response.json({ ok: true, report }, { headers: CORS });
 }
@@ -418,7 +420,7 @@ async function handlePut(context) {
         heading: '수정된 경비 리포트 재제출',
         intro: `<strong>${report.submitterName}</strong> 님이 반려된 리포트를 수정해 다시 제출했습니다.`,
         report, url: `${origin}/expense`, ctaLabel: '경비 리포트 확인',
-      }));
+      }), { newReport: true });
   }
   return Response.json({ ok: true, report }, { headers: CORS });
 }

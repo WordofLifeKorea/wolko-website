@@ -6,7 +6,7 @@ import * as R from '../functions/api/expense/reports.js';
 import * as F from '../functions/api/expense/receipt.js';
 import { ACCOUNTANT_EMAILS, EXPENSE_ADMIN_EMAILS, NEW_REPORT_NOTIFY_EMAILS, bustReportCache } from '../functions/lib/expenses.js';
 
-function setup() {
+function setup(emailOn = true) {
   R.resetCampusCache(); bustReportCache();
   const store = new Map();
   const kv = {
@@ -16,7 +16,7 @@ function setup() {
     async delete(k) { store.delete(k); },
     async list({ prefix }) { return { keys: [...store.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })), list_complete: true }; },
   };
-  const env = { CAMP_KV: kv, ADMIN_PASSWORD: 'secret', RESEND_API_KEY: 'x', EXPENSE_EMAIL: 'on' };
+  const env = { CAMP_KV: kv, ADMIN_PASSWORD: 'secret', RESEND_API_KEY: 'x', ...(emailOn ? { EXPENSE_EMAIL: 'on' } : {}) };
   const sent = [];
   globalThis.fetch = async (_url, o) => { sent.push(JSON.parse(o.body)); return { ok: true }; };
   const acc = (email, name, role, extra = {}) =>
@@ -606,4 +606,24 @@ test('참석 인원 조회는 KV가 실패해도 500을 내지 않는다', async
   const res = await RC.onRequestGet({ env, request: new Request('https://t.co/api/rsvp-count') });
   assert.equal(res.status, 200);
   assert.equal((await res.json()).unavailable, true);
+});
+
+test('이메일 전체 스위치가 꺼져 있어도 새 리포트·재제출 알림은 세 명에게 가고, 나머지 메일은 가지 않는다', async () => {
+  const { sent, acc, call } = setup(false);
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });
+  assert.equal(sub.status, 200);
+  assert.equal(sent.length, 1, '새 리포트 알림 한 통');
+  for (const e of ['samuelsong@wol.org', 'jacobmorse@wol.org', 'jeremyrodgers@wol.org']) assert.ok(sent[0].to.includes(e), e);
+  const id = sub.report.id;
+  // 반려 → 제출자에게 가는 메일은 꺼져 있어 늘어나지 않는다
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'reject', note: '영수증 흐림' });
+  assert.equal(sent.length, 1, '반려 메일은 보내지 않는다');
+  // 수정해서 재제출 → 다시 세 명에게
+  const re = await call(R.onRequestPut, 'PUT', '/api/expense/reports', cyn, { id, description: 'A', rows: [row] });
+  assert.equal(re.status, 200);
+  assert.equal(sent.length, 2, '재제출 알림');
+  assert.ok(sent[1].to.includes('jacobmorse@wol.org'));
 });
