@@ -109,7 +109,7 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
     };
     let uiLang = (() => { try { return localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko'; } catch { return 'ko'; } })();
     const u = (k, ...a) => { const v = UI[uiLang][k]; return typeof v === 'function' ? v(...a) : v; };
-    let lang = 'ko';                 // 지금 쓰고 있는 언어
+    let lang = uiLang;               // 지금 쓰고 있는 언어 — 포탈의 KO/EN 토글을 따라간다(위쪽 버튼으로 따로 바꿔 쓸 수도 있다)
     const orig = { ...initial };     // 마지막으로 저장된 값
     const cur = { ...initial };      // 화면의 값
     const $ = id => document.getElementById(id);
@@ -242,6 +242,16 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
       } catch (e) { say(e.message, 'err'); }
     });
 
+    // 포탈 헤더의 KO/EN 토글을 바꾸면(같은 사이트의 저장값이 바뀌면) 이 화면의 안내문과 보이는 내용도 그 언어로 바뀐다
+    window.addEventListener('storage', e => {
+      if (e.key !== 'wolko-lang') return;
+      uiLang = e.newValue === 'en' ? 'en' : 'ko'; lang = uiLang; paint(); refreshDirty();
+    });
+    // 포탈 '내 페이지'가 언어를 바꿀 때 직접 알려 준다 (저장값 변경 알림이 안 오는 브라우저 대비)
+    window.addEventListener('message', e => {
+      if (e.origin !== location.origin || !e.data || e.data.type !== 'wolko-lang') return;
+      uiLang = e.data.lang === 'en' ? 'en' : 'ko'; lang = uiLang; paint(); refreshDirty();
+    });
     window.addEventListener('beforeunload', e => { if (dirtyKeys().length) { e.preventDefault(); e.returnValue = ''; } });
     (async function init() {
       try { await getToken(); } catch (e) { return; }

@@ -243,7 +243,7 @@ const team = (await getCollection('team'))
     $('langEnBtn').addEventListener('click', () => setLang('en'));
     function setLang(next) {
       if (next === lang) return; lang = next; try { localStorage.setItem('wolko-lang', lang); } catch {}
-      applyStatic(); if (S.me) { renderUser(); show(S.view); }
+      applyStatic(); if (S.me) { renderUser(); const fr = document.querySelector('.mp-frame'); if (fr && fr.contentWindow) { fr.contentWindow.postMessage({ type: 'wolko-lang', lang }, location.origin); renderWho(); renderTabs(); } else show(S.view); }
     }
     const renderUser = () => { $('exUser').textContent = S.me?.name || ''; };
 
