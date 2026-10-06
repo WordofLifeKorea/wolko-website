@@ -163,6 +163,11 @@ export async function onRequestPost(context) {
       });
     }
 
+    // 사이트(Cloudflare Pages)는 파일 하나가 25MiB 를 넘으면 배포 전체가 실패하므로, 여유를 두고 24MB 까지만 받는다
+    if (file.size > 24 * 1024 * 1024) {
+      return new Response(JSON.stringify({ error: '파일이 너무 커요 (24MB 이하).' }), { status: 413, headers: { ...CORS, 'Content-Type': 'application/json' } });
+    }
+
     // Validate file type
     const mimeType = file.type || '';
     const isPhoto = PHOTO_FIELDS.includes(field);

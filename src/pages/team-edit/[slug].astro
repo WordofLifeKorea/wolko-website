@@ -491,7 +491,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
 
     <div class="notice">
       <strong>Note:</strong> Click <strong>Save</strong> to push changes directly to GitHub. The site will rebuild in about 1–2 minutes.
-      Click a photo slot to upload a new photo (jpg, png, webp / max 30MB).
+      Click a photo slot to upload a new photo (jpg, png, webp / max 24MB).
     </div>
 
     <!-- ① Photo Section -->
@@ -841,8 +841,8 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       const file = fileInput.files[0];
       if (!file || !activeUploadField) return;
 
-      if (file.size > 30 * 1024 * 1024) {
-        setPhotoStatus(activeUploadField, 'File size must be under 30MB.', true);
+      if (file.size > 24 * 1024 * 1024) {
+        setPhotoStatus(activeUploadField, 'File size must be under 24MB.', true);
         return;
       }
 
@@ -901,8 +901,8 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       const file = pdfFileInput.files[0];
       if (!file) return;
 
-      if (file.size > 50 * 1024 * 1024) {
-        setPdfStatus('파일 크기는 50MB 이하여야 합니다.', true);
+      if (file.size > 24 * 1024 * 1024) {
+        setPdfStatus('파일 크기는 24MB 이하여야 합니다. (사이트가 한 파일당 25MB까지만 올릴 수 있어요)', true);
         return;
       }
 

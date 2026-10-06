@@ -68,7 +68,7 @@ const team = (await getCollection('team'))
         btnView: '소개 페이지 보기', btnEdit: '소개 페이지 편집하기',
         nlTitle: '"최근 뉴스레터" 링크', nlLead: '소개 페이지의 "최근 뉴스레터" 버튼이 열 주소예요. 포탈에서 정하면 바로 반영되고, 비우면 기존에 정해 둔 링크가 쓰여요.',
         pgPh: 'https://… (뉴스레터 · 블로그 · 구독 페이지 주소)', pgSave: '저장', pgClear: '링크 지우기',
-        pdfTitle: '새 뉴스레터 올리기 (PDF)', pdfLead: 'PDF 파일을 올리면 "최근 뉴스레터" 버튼이 그 파일로 바뀌어요. 사이트에 반영되기까지 1~2분 걸려요. (포탈에 정해 둔 링크가 있으면 새 파일이 우선하도록 지워져요.)', pdfPick: 'PDF 고르기', pdfBig: 'PDF는 20MB 이하만 올릴 수 있어요.', pdfType: 'PDF 파일만 올릴 수 있어요.', pdfUp: '올리는 중…', tPdf: 'PDF를 올렸어요. 소개 페이지에는 1~2분 안에 반영돼요.', pdfDone: '방금 올림 (반영 대기 중)',
+        pdfTitle: '새 뉴스레터 올리기 (PDF)', pdfLead: 'PDF 파일을 올리면 "최근 뉴스레터" 버튼이 그 파일로 바뀌어요. 사이트에 반영되기까지 1~2분 걸려요. (포탈에 정해 둔 링크가 있으면 새 파일이 우선하도록 지워져요.)', pdfPick: 'PDF 고르기', pdfBig: 'PDF는 24MB 이하만 올릴 수 있어요. (용량이 크면 PDF를 줄이거나, 위의 링크 방식으로 올려 주세요.)', pdfType: 'PDF 파일만 올릴 수 있어요.', pdfUp: '올리는 중…', tPdf: 'PDF를 올렸어요. 소개 페이지에는 1~2분 안에 반영돼요.', pdfDone: '방금 올림 (반영 대기 중)',
         pgNow: '현재 적용 중', pgBase: '기존 설정 링크', pgNone: '없음',
         tPgSaved: '링크를 저장했어요. 소개 페이지에는 1분 안에 반영돼요.', tPgCleared: '포탈 링크를 지웠어요. 기존 링크가 쓰여요.',
         thPage: '소개 페이지', linkEmail: '포탈 계정', linkPage: '소개 페이지', linkSave: '연결', pickPage: '페이지 고르기', pickAccount: '포탈 계정 고르기', tLinked: '연결했어요.', remove: '해제',
@@ -88,7 +88,7 @@ const team = (await getCollection('team'))
         btnView: 'View profile page', btnEdit: 'Edit profile page',
         nlTitle: '"Newsletter" link', nlLead: 'The address the "Newsletter" button on your profile page opens. A link set here applies right away; leave it empty to use the link already configured.',
         pgPh: 'https://… (newsletter, blog or sign-up page)', pgSave: 'Save', pgClear: 'Clear link',
-        pdfTitle: 'Upload a new newsletter (PDF)', pdfLead: 'Upload a PDF and the "Newsletter" button switches to that file. It takes 1–2 minutes to appear on the site. (A link set in the portal is cleared so the new file takes over.)', pdfPick: 'Choose PDF', pdfBig: 'PDF must be 20MB or smaller.', pdfType: 'Only PDF files can be uploaded.', pdfUp: 'Uploading…', tPdf: 'PDF uploaded. Your profile page updates within 1–2 minutes.', pdfDone: 'Just uploaded (waiting to go live)',
+        pdfTitle: 'Upload a new newsletter (PDF)', pdfLead: 'Upload a PDF and the "Newsletter" button switches to that file. It takes 1–2 minutes to appear on the site. (A link set in the portal is cleared so the new file takes over.)', pdfPick: 'Choose PDF', pdfBig: 'PDF must be 24MB or smaller. (If it is larger, shrink the PDF or use a link above.)', pdfType: 'Only PDF files can be uploaded.', pdfUp: 'Uploading…', tPdf: 'PDF uploaded. Your profile page updates within 1–2 minutes.', pdfDone: 'Just uploaded (waiting to go live)',
         pgNow: 'Currently used', pgBase: 'Existing configured link', pgNone: 'none',
         tPgSaved: 'Saved. Your profile page updates within a minute.', tPgCleared: 'Portal link cleared. The existing link is used.',
         thPage: 'Profile page', linkEmail: 'Portal account', linkPage: 'Profile page', linkSave: 'Link', pickPage: 'Choose a page', pickAccount: 'Choose a portal account', tLinked: 'Linked.', remove: 'Unlink',
@@ -182,7 +182,7 @@ const team = (await getCollection('team'))
       const slug = pageSlug(); if (!slug) return;
       const f = await pickPdf(); if (!f) return;
       if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) return toast(t('pdfType'), true);
-      if (f.size > 20 * 1024 * 1024) return toast(t('pdfBig'), true);
+      if (f.size > 24 * 1024 * 1024) return toast(t('pdfBig'), true);
       toast(t('pdfUp'));
       const tok = await teamToken(slug);
       const fd = new FormData(); fd.append('file', new File([f], f.name, { type: 'application/pdf' })); fd.append('field', 'report_url');

@@ -91,3 +91,12 @@ test('화면: 소개 페이지 편집 화면은 포탈 로그인으로 자동 �
   assert.match(page, /\/api\/team\/upload/);
   assert.match(page, /field', 'report_url'/);
 });
+
+test('업로드 용량: 사이트는 파일당 25MiB 가 한계라서 화면과 서버가 모두 24MB 에서 막는다 (넘으면 배포 전체가 실패)', () => {
+  const up = readFileSync(new URL('../functions/api/team/upload.js', import.meta.url), 'utf8');
+  assert.match(up, /file\.size > 24 \* 1024 \* 1024/);
+  const edit = readFileSync(new URL('../src/pages/team-edit/[slug].astro', import.meta.url), 'utf8');
+  assert.doesNotMatch(edit, /50 \* 1024 \* 1024|30 \* 1024 \* 1024/);
+  const page = readFileSync(new URL('../src/pages/mypage/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /f\.size > 24 \* 1024 \* 1024/);
+});
