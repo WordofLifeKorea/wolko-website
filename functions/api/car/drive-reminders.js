@@ -2,6 +2,7 @@
  * 운행 담당자 알림 — GitHub Actions가 30분마다 호출하고, 설정된 시각이 된 알림만 보낸다(카카오 알림톡 우선, 실패하면 문자).
  *   POST /api/car/drive-reminders            (Authorization: Bearer <DRIVE_REMINDER_SECRET 또는 CRS_REMINDER_SECRET>)
  *   쿼리: ?dryRun=1 보내지 않고 계획만 확인 · ?slot=pickup|dropoff 한쪽만 · ?force=1 시각과 상관없이 지금 보냄(수동 점검)
+ *         ?testPhone=010xxxxxxxx 그 번호로 시험 메시지 1건만 보낸다(?slot=pickup|dropoff, 기본 pickup · 신청자·중복 기록과 무관하게 아무것도 저장하지 않음)
  *         ?date=YYYY-MM-DD · ?time=HH:MM 그 날짜·시각 기준으로 실행(테스트용)
  * 시각: 오전은 요일과 상관없이 픽업 신청이 있는 날 매일, 오후는 요일별 설정(기본 화~목 17:00 · 금 12:00). 설정은 drive-settings.
  * 같은 날 같은 칸에는 한 번만 보낸다. 시각이 지난 뒤 5시간 안에만 보내고(스케줄이 늦게 돌아도 보냄), 시각 이후에 신청한 사람에게는 보내지 않는다.
@@ -45,6 +46,17 @@ export async function onRequestPost({ env, request }) {
   const nowMin = /^\d{2}:\d{2}$/.test(timeParam || '') ? minutesOf(timeParam) : kstMinutes();
   const only = params.get('slot');
   const slots = only === 'pickup' || only === 'dropoff' ? [only] : ['pickup', 'dropoff'];
+  const testPhone = String(params.get('testPhone') || '').replace(/[^0-9]/g, '');
+  if (testPhone) {
+    const slotName = only === 'dropoff' ? 'dropoff' : 'pickup';
+    if (!/^01[016789][0-9]{7,8}$/.test(testPhone)) return Response.json({ error: 'testPhone은 휴대폰 번호여야 합니다.' }, { status: 400, headers: H });
+    if (!(env.SOLAPI_API_KEY && env.SOLAPI_API_SECRET && env.SOLAPI_SENDER_PHONE)) return Response.json({ error: 'Solapi 설정(SOLAPI_API_KEY/SECRET/SENDER_PHONE)이 필요합니다.' }, { status: 503, headers: H });
+    const planned = env.KAKAO_PF_ID && (slotName === 'dropoff' ? env.KAKAO_TEMPLATE_DRIVE_DROPOFF : env.KAKAO_TEMPLATE_DRIVE_PICKUP) ? 'kakao+sms' : 'sms';
+    if (dryRun) return Response.json({ test: true, slot: slotName, to: mask(testPhone), channel: planned, sent: 0, dryRun: true }, { headers: H });
+    const templateId = slotName === 'dropoff' ? env.KAKAO_TEMPLATE_DRIVE_DROPOFF : env.KAKAO_TEMPLATE_DRIVE_PICKUP;
+    const firstChannel = await sendKakaoWithSmsFallback(env, testPhone, templateId, reminderVariables('테스트', date), reminderText('테스트', date, slotName));
+    return Response.json({ test: true, slot: slotName, date, to: mask(testPhone), channel: planned, firstChannel, sent: firstChannel ? 1 : 0 }, { headers: H });
+  }
   const settings = await getSettings(env);
   const weekday = weekdayOf(date);
   const kakaoReady = slot => !!(env.KAKAO_PF_ID && (slot === 'dropoff' ? env.KAKAO_TEMPLATE_DRIVE_DROPOFF : env.KAKAO_TEMPLATE_DRIVE_PICKUP));

@@ -21,6 +21,10 @@ on:
         description: 'Send right now, ignoring the set time (manual test)'
         type: boolean
         default: false
+      test_phone:
+        description: 'Send ONE test message to this phone number only (e.g. 01012345678; uses the chosen slot, pickup if both). Nobody else is messaged.'
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -41,6 +45,7 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
           INPUT_SLOT: ${{ inputs.slot }}
           FORCE: ${{ inputs.force }}
+          TEST_PHONE: ${{ inputs.test_phone }}
         shell: bash
         run: |
           set -euo pipefail
@@ -49,6 +54,7 @@ jobs:
           if [ "$DRY_RUN" = 'true' ]; then query="$query&dryRun=1"; fi
           if [ "$FORCE" = 'true' ]; then query="$query&force=1"; fi
           if [ "$INPUT_SLOT" = 'pickup' ] || [ "$INPUT_SLOT" = 'dropoff' ]; then query="$query&slot=$INPUT_SLOT"; fi
+          if [ -n "$TEST_PHONE" ]; then query="$query&testPhone=$(printf '%s' "$TEST_PHONE" | tr -cd '0-9')"; fi
           url="https://wolko.org/api/car/drive-reminders?${query#&}"
           for attempt in 1 2 3; do
             if result=$(curl --fail-with-body --silent --show-error --max-time 60 -X POST -H "Authorization: Bearer $DRIVE_REMINDER_SECRET" "$url"); then
