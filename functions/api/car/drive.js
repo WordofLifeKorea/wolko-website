@@ -3,11 +3,14 @@
  *   GET    /api/car/drive?start=YYYY-MM-DD           → 그 날짜가 속한 2주 구간의 신청 현황
  *   POST   /api/car/drive  { date, slot, phone? }    → 칸 신청 (이미 찼으면 409)
  *   DELETE /api/car/drive?date=...&slot=...          → 본인 신청 취소 (마스터는 누구든)
+ *   PATCH  /api/car/drive  { date, slot, email }     → 관리자가 사람을 직접 배정(email) 하거나 배정 해제(email 이 null). 닫힌 칸이면 열면서 배정한다.
  *   PUT    /api/car/drive  { date, slot, closed }    → 라이드가 필요 없는 칸 닫기/열기 (운행 스케줄 관리자·마스터). slot 은 pickup | dropoff | all(하루 전체).
  *                                                       닫으면 그 칸의 기존 신청은 취소되고 더는 신청할 수 없다.
  * KV: drive:slot:{date}:{slot} — 목록 조회 없이 정해진 키만 읽는다(KV list 한도 절약).
  */
-import { isValidPhone } from '../../lib/hubAccounts.js';
+import { isValidPhone, getAccount, isMasterEmail, normalizeEmail } from '../../lib/hubAccounts.js';
+import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
+import { pickName } from '../../lib/expenses.js';
 import { MAX_AHEAD_DAYS, SLOTS, closedKey, driveSession, shownName, isDefaultClosedDay, isSlotClosed, parseDate, periodFor, shiftPeriod, slotKey, todayKst } from '../../lib/carDrive.js';
 
 const H = { 'Cache-Control': 'no-store' };
@@ -106,4 +109,43 @@ export async function onRequestPut({ env, request }) {
   }
   await env.CAMP_KV.put(key, JSON.stringify(map), { expirationTtl: 60 * 60 * 24 * 120 });
   return Response.json({ ok: true, closed, cancelled }, { headers: H });
+}
+
+export async function onRequestPatch({ env, request }) {
+  const session = await driveSession(request, env);
+  if (session.error) return fail(session.error, session.status);
+  if (!session.isManager) return fail('운행 스케줄 관리자만 사람을 배정할 수 있습니다.', 403);
+  let body;
+  try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
+  const date = String(body?.date || ''), slot = String(body?.slot || '');
+  if (parseDate(date) === null || !SLOTS.includes(slot)) return fail('날짜와 시간대를 확인해 주세요.');
+  if (date < todayKst()) return fail('지난 날짜는 바꿀 수 없습니다.', 409);
+  const key = slotKey(date, slot);
+  const existing = await env.CAMP_KV.get(key, 'json');
+
+  // 배정 해제
+  if (body?.email === null || body?.email === '') {
+    if (existing) await env.CAMP_KV.delete(key);
+    return Response.json({ ok: true, assigned: null, removed: existing ? shownName(existing) : null }, { headers: H });
+  }
+
+  const email = normalizeEmail(body?.email);
+  const account = await getAccount(env, email);
+  const master = isMasterEmail(email);
+  if (account ? account.status !== 'approved' : !master) return fail('승인된 포탈 멤버만 배정할 수 있습니다.', 404);
+  const campus = CAMPUS_OVERRIDES[email] || account?.campus || 'wolko';
+  if (!master && campus !== 'wolko') return fail('평택센터 멤버만 배정할 수 있습니다.', 400);
+
+  // 닫힌 칸이면 열면서 배정한다
+  const mapKey = closedKey(periodFor(date).start);
+  const map = (await env.CAMP_KV.get(mapKey, 'json')) || {};
+  if (isSlotClosed(map, date, slot, !!existing)) {
+    if (isDefaultClosedDay(date)) map[`${date}:${slot}`] = { open: true, by: session.email, at: new Date().toISOString() };
+    else delete map[`${date}:${slot}`];
+    await env.CAMP_KV.put(mapKey, JSON.stringify(map), { expirationTtl: 60 * 60 * 24 * 120 });
+  }
+  const phone = String(account?.phone || '').trim();
+  const record = { date, slot, email, name: pickName(email, account?.name), phone: isValidPhone(phone) ? phone : '', at: new Date().toISOString(), assignedBy: session.email };
+  await env.CAMP_KV.put(key, JSON.stringify(record), { expirationTtl: 60 * 60 * 24 * 120 });
+  return Response.json({ ok: true, assigned: { name: shownName(record) }, replaced: existing && existing.email !== email ? shownName(existing) : null, noPhone: !record.phone }, { headers: H });
 }

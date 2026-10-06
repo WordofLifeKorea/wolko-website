@@ -13,6 +13,7 @@ function memoryEnv(extra = {}) {
       async get(key, type) { const v = values.get(key); if (v === undefined) return null; return type === 'json' ? JSON.parse(v) : v; },
       async put(key, value) { values.set(key, value); },
       async delete(key) { values.delete(key); },
+      async list({ prefix = '' } = {}) { return { keys: [...values.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })), list_complete: true }; },
     },
     ...extra,
   };
@@ -318,4 +319,43 @@ test('발송 시각 설정: 관리자만 보고 바꾸고, 바꾼 시각대로 �
   assert.equal((await r(MON, '16:00', 'dropoff')).sent, 1, '월요일 오후 알림을 새로 켬');
   assert.equal((await r(TUE, '17:00', 'dropoff')).skipped, 'not-yet', '화요일은 18:30으로 바뀜');
   assert.equal((await r(TUE, '18:30', 'dropoff')).sent, 1);
+});
+
+test('관리자(Estelle·마스터)는 사람을 직접 배정하고 해제할 수 있고, 닫힌 칸은 열면서 배정된다', async () => {
+  const M = await import('../functions/api/car/drive-members.js');
+  const env = memoryEnv();
+  const estelle = await addAccount(env, 'esooy@wol.org', 'Estelle Sooy');
+  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
+  await addAccount(env, 'nophone@x.com', '번호없음', { phone: '' });
+  await addAccount(env, 'jeju@x.com', '제주', { campus: 'jeju' });
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  const sat = (() => { const d = new Date(todayKst() + 'T00:00:00Z'); do { d.setUTCDate(d.getUTCDate() + 1); } while (d.getUTCDay() !== 6); return d.toISOString().slice(0, 10); })();
+  const patch = (token, body) => D.onRequestPatch({ env, request: req('PATCH', '/api/car/drive', token, body) });
+  const view = async token => (await D.onRequestGet({ env, request: req('GET', `/api/car/drive?start=${sat}`, token) })).json();
+
+  assert.equal((await patch(a, { date: sat, slot: 'pickup', email: 'a@x.com' })).status, 403, '일반 멤버는 배정할 수 없다');
+  assert.equal((await M.onRequestGet({ env, request: req('GET', '/api/car/drive-members', a) })).status, 403);
+  const members = (await (await M.onRequestGet({ env, request: req('GET', '/api/car/drive-members', estelle) })).json()).members;
+  assert.ok(members.some(m => m.email === 'a@x.com'));
+  assert.ok(!members.some(m => m.email === 'jeju@x.com'), '제주 소속은 목록에 없다');
+  assert.ok(!JSON.stringify(members).includes('010-1111'), '전화번호는 내려가지 않는다');
+
+  const ok = await patch(estelle, { date: sat, slot: 'pickup', email: 'a@x.com' }); // 토요일(기본 닫힘)에 배정 → 열리면서 배정
+  assert.equal(ok.status, 200);
+  const v = await view(a);
+  assert.equal(v.slots[`${sat}:pickup`].name, '가나다');
+  assert.ok(!v.closed[`${sat}:pickup`], '배정하면서 열렸다');
+  assert.ok(v.closed[`${sat}:dropoff`], '다른 칸은 그대로 닫힘');
+  const saved = JSON.parse((await env.CAMP_KV.get(`drive:slot:${sat}:pickup`)));
+  assert.equal(saved.phone, '010-1111-2222', '계정의 번호가 알림용으로 저장된다');
+  assert.equal(saved.assignedBy, 'esooy@wol.org');
+
+  const swap = await (await patch(master, { date: sat, slot: 'pickup', email: 'nophone@x.com' })).json();
+  assert.equal(swap.replaced, '가나다');
+  assert.equal(swap.noPhone, true);
+  assert.equal((await patch(master, { date: sat, slot: 'pickup', email: 'ghost@x.com' })).status, 404);
+  assert.equal((await patch(master, { date: sat, slot: 'pickup', email: 'jeju@x.com' })).status, 400);
+  assert.equal((await patch(estelle, { date: sat, slot: 'pickup', email: null })).status, 200, '배정 해제');
+  assert.equal((await view(a)).slots[`${sat}:pickup`], undefined);
+  assert.equal((await patch(estelle, { date: '2020-01-06', slot: 'pickup', email: 'a@x.com' })).status, 409, '지난 날짜는 안 된다');
 });

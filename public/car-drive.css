@@ -18,7 +18,8 @@
 .drive-day.is-past { opacity: .5; }
 .drive-day.is-linked { animation: driveLinked 2.4s ease-out; }
 @keyframes driveLinked { 0%, 60% { background: #d9f1ef; } 100% { background: inherit; } }
-.drive-day-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; min-height: 22px; }
+.drive-day-top { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.drive-day-head { display: flex; flex-wrap: nowrap; align-items: baseline; gap: 2px 6px; min-height: 26px; min-width: 0; white-space: nowrap; }
 .drive-day-head strong { font-size: 18px; font-weight: 800; letter-spacing: -.03em; color: var(--ink); }
 .drive-day-head .dow { font-size: 13px; font-weight: 700; color: #7d98a3; }
 .drive-day-head em { margin-left: auto; align-self: center; white-space: nowrap; padding: 3px 8px; border-radius: 999px; background: var(--teal, #008e92); color: #fff; font-size: 10.5px; font-weight: 800; font-style: normal; letter-spacing: .02em; }
@@ -44,9 +45,12 @@
 .drive-slot.managing { cursor: pointer; outline: 2px dashed rgba(176, 48, 55, .35); outline-offset: -2px; }
 .drive-slot.managing.closed { color: #b03037; }
 .drive-slot.managing:hover:not(:disabled) { background: #fdecee; }
-.day-toggle { min-height: 0 !important; margin-left: auto; align-self: center; height: 24px; padding: 0 8px; border: 1px solid #e3c4c7; border-radius: 8px; background: #fff; color: #b03037; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.day-toggle-row { min-height: 26px; }
+.day-toggle { min-height: 0 !important; width: 100%; height: 26px; padding: 0 8px; border: 1px solid #e3c4c7; border-radius: 8px; background: #fff; color: #b03037; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
 .drive-times-reset { justify-self: start; min-height: 0 !important; height: 32px; padding: 0 12px; border: 1px solid #bfd5de; border-radius: 8px; background: #fff; color: var(--blue); font-size: 12px; font-weight: 800; cursor: pointer; }
 .drive-times-default { margin: -4px 0 0; font-size: 11.5px; color: #7d98a3; }
+.drive-assign-actions { display: grid; grid-template-columns: 1.3fr 1fr; gap: 8px; }
+.drive-assign-actions .log-secondary:last-child { grid-column: 1 / -1; }
 .drive-times-sub { margin: 4px 0 0; font-size: 13px; font-weight: 750; }
 .drive-times-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .drive-times-grid label { display: grid; gap: 4px; font-size: 12.5px; font-weight: 700; color: #5f7681; }
@@ -65,7 +69,7 @@
   .drive-day { grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 12px; padding: 10px 14px; border-left: 0; border-top: 1px solid #edf2f5; }
   .drive-day:first-child { border-top: 0; }
   .drive-day.is-today { box-shadow: inset 4px 0 0 var(--teal, #008e92); }
-  .drive-day-head { flex-wrap: wrap; row-gap: 4px; align-items: center; }
+  .drive-day-head { align-items: center; }
   .drive-day-head em { margin-left: 0; }
   .drive-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
