@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=21">
+  <link rel="stylesheet" href="/hub.css?v=22">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=3">
   <link rel="stylesheet" href="/wolko-ui.css?v=2">
@@ -280,6 +280,7 @@
         pendingLabel: '승인 대기',
         pendingListTitle: '승인 대기 목록',
         pendingEmpty: '대기 중인 요청이 없습니다.',
+        rejectedTitle: '거부된 계정', rejectedHelp: '접근이 막힌 계정이에요. 다시 승인하면 바로 로그인할 수 있어요.', reapproveBtn: '다시 활성화',
         resetTitle: '비밀번호 초기화', resetHelp: '비밀번호를 잊은 멤버에게 임시 비밀번호를 걸어요. 그 계정으로 로그인하면 새 비밀번호를 정하는 창이 먼저 떠요.', resetPick: '계정 선택', resetTemp: '임시 비밀번호', resetBtn: '초기화', resetConfirm: (n, e) => `${n} (${e}) 계정의 비밀번호를 임시 비밀번호로 바꿀까요?`, resetDone: '임시 비밀번호로 바꿨어요. 로그인하면 변경 창이 떠요.',
         approveBtn: '승인',
         rejectBtn: '거부',
@@ -338,6 +339,7 @@
         pendingLabel: 'Pending',
         pendingListTitle: 'Pending Requests',
         pendingEmpty: 'No pending requests.',
+        rejectedTitle: 'Rejected accounts', rejectedHelp: 'These accounts are blocked. Approve again to let them sign in.', reapproveBtn: 'Re-activate',
         resetTitle: 'Reset password', resetHelp: 'Give a member who forgot their password a temporary one. They will be asked to choose a new password right after signing in.', resetPick: 'Account', resetTemp: 'Temporary password', resetBtn: 'Reset', resetConfirm: (n, e) => `Replace the password of ${n} (${e}) with the temporary one?`, resetDone: 'Temporary password set. They will be asked to change it when they sign in.',
         approveBtn: 'Approve',
         rejectBtn: 'Reject',
@@ -703,7 +705,8 @@
         badge.classList.toggle('hidden', !pendingCount);
       } catch (e) {}
     }
-    function renderPendingItem(a) {
+    function renderPendingItem(a, rejected) {
+      if (rejected && !a.requestedRole && a.role) a = { ...a, requestedRole: a.role }; // 다시 활성화할 때 기존 등급을 미리 골라 둔다
       // admin 역할은 @wol.org 이메일에만 부여 가능(approve.js가 다시 검증) —
       // 드롭다운에서도 애초에 고를 수 없게 옵션 자체를 숨긴다.
       const isWol = /@wol\.org$/i.test(a.email);
@@ -725,8 +728,8 @@
                 <option value="" disabled ${a.requestedRole ? '' : 'selected'}>${t('rolePlaceholder')}</option>
                 ${adminOption.replace('<option value="admin">', wantsAdmin ? '<option value="admin" selected>' : '<option value="admin">')}${counselorOption.replace('<option value="counselor">', a.requestedRole && !wantsAdmin ? '<option value="counselor" selected>' : '<option value="counselor">')}
               </select>
-              <button class="hub-pending-approve" onclick="respondToRequest('${esc(a.email)}','approve',this)">${t('approveBtn')}</button>
-              <button class="hub-pending-reject" onclick="respondToRequest('${esc(a.email)}','reject',this)">${t('rejectBtn')}</button>
+              <button class="hub-pending-approve" onclick="respondToRequest('${esc(a.email)}','approve',this)">${rejected ? t('reapproveBtn') : t('approveBtn')}</button>
+              ${rejected ? '' : `<button class="hub-pending-reject" onclick="respondToRequest('${esc(a.email)}','reject',this)">${t('rejectBtn')}</button>`}
             </div>
           </div>`;
     }
@@ -739,11 +742,11 @@
         if (!res.ok) throw new Error(data.error);
         const pending = (data.accounts || []).filter(a => a.status === 'pending');
         renderResetBox((data.accounts || []).filter(a => a.status === 'approved' && a.effectiveRole !== 'master'));
-        if (!pending.length) {
-          $('pendingList').innerHTML = `<p class="hub-pending-empty">${t('pendingEmpty')}</p>`;
-          return;
-        }
-        $('pendingList').innerHTML = pending.map(renderPendingItem).join('');
+        const rejected = (data.accounts || []).filter(a => a.status === 'rejected');
+        const rejectedHtml = rejected.length
+          ? `<div class="hub-rejected"><h4>${t('rejectedTitle')}</h4><p class="hub-reset-help">${t('rejectedHelp')}</p>${rejected.map(a => renderPendingItem(a, true)).join('')}</div>`
+          : '';
+        $('pendingList').innerHTML = (pending.length ? pending.map(a => renderPendingItem(a, false)).join('') : `<p class="hub-pending-empty">${t('pendingEmpty')}</p>`) + rejectedHtml;
       } catch (e) {
         $('pendingList').innerHTML = `<p class="hub-pending-empty">${esc(e.message || '')}</p>`;
       }
