@@ -252,3 +252,27 @@ test('알림톡 요청이 거절되면 문자로 다시 보낸다', async () => 
   assert.equal(sent.length, 2);
   assert.ok(!sent[1].message.kakaoOptions && sent[1].message.text);
 });
+
+test('오후 드롭오프 알림: 드롭오프 신청자에게 오후 템플릿으로, 오전 알림과 별개로 하루 한 번', async () => {
+  const env = memoryEnv({ DRIVE_REMINDER_SECRET: 'cron-secret', SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '010-0000-1111', KAKAO_PF_ID: 'KA01PF', KAKAO_TEMPLATE_DRIVE_PICKUP: 'tp-am', KAKAO_TEMPLATE_DRIVE_DROPOFF: 'tp-pm' });
+  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
+  const b = await addAccount(env, 'b@x.com', '라마바', { phone: '010-3333-4444' });
+  const date = nextWeekday();
+  await D.onRequestPost({ env, request: req('POST', '/api/car/drive', a, { date, slot: 'pickup' }) });
+  await D.onRequestPost({ env, request: req('POST', '/api/car/drive', b, { date, slot: 'dropoff' }) });
+  const sent = [];
+  globalThis.fetch = async (url, o) => { sent.push(JSON.parse(o.body).message); return { ok: true, json: async () => ({}) }; };
+  const run = slot => RM.onRequestPost({ env, request: new Request(`https://t.co/api/car/drive-reminders?date=${date}&slot=${slot}`, { method: 'POST', headers: { Authorization: 'Bearer cron-secret' } }) });
+  const pm = await (await run('dropoff')).json();
+  assert.equal(pm.sent, 1);
+  assert.equal(pm.slot, 'dropoff');
+  assert.equal(sent[0].to, '01033334444', '드롭오프 신청자에게 간다');
+  assert.equal(sent[0].kakaoOptions.templateId, 'tp-pm');
+  assert.equal(sent[0].kakaoOptions.variables['#{이름}'], '라마바');
+  assert.match(sent[0].text, /라마바님.*권사님 오후 라이드 담당입니다\. 감사합니다!/);
+  assert.equal((await (await run('dropoff')).json()).alreadySent, true, '오후는 하루 한 번');
+  const am = await (await run('pickup')).json();
+  assert.equal(am.sent, 1, '오전 알림은 오후와 별개로 나간다');
+  assert.equal(sent[1].kakaoOptions.templateId, 'tp-am');
+  assert.equal(sent[1].to, '01011112222');
+});

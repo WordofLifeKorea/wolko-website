@@ -1,5 +1,5 @@
 /**
- * 오전 픽업 담당자에게 8시(한국 시간) 알림 문자 — GitHub Actions가 매일 호출한다.
+ * 운행 담당자 알림 — GitHub Actions가 평일 두 번 호출한다: 오전 8시(픽업) · 오후 1시(드롭오프, 한국 시간).
  *   POST /api/car/drive-reminders            (Authorization: Bearer <DRIVE_REMINDER_SECRET 또는 CRS_REMINDER_SECRET>)
  *   쿼리: ?dryRun=1 보내지 않고 대상만 확인 · ?date=YYYY-MM-DD 그날 기준으로 실행(테스트용)
  * 같은 날 같은 담당자에게 두 번 보내지 않는다(drive:sms:{date}).
@@ -17,9 +17,11 @@ export function reminderVariables(name, date) {
   return { '#{이름}': name, '#{날짜}': `${+m}/${+d} ${DAYS[weekdayOf(date)]}` };
 }
 
-export function reminderText(name, date) {
+export function reminderText(name, date, slot = 'pickup') {
   const [, m, d] = date.split('-');
-  return `[WOLKO 운행] ${name}님, 오늘(${+m}/${+d} ${DAYS[weekdayOf(date)]}) 오전 픽업 담당이에요. 운행 스케줄: https://wolko.org/car-drive/#${date}`;
+  const when = `오늘(${+m}/${+d} ${DAYS[weekdayOf(date)]})`;
+  const body = slot === 'dropoff' ? `${when} 권사님 오후 라이드 담당입니다. 감사합니다!` : `${when} 오전 픽업 담당이에요.`;
+  return `[WOLKO 운행] ${name}님, ${body} 운행 스케줄: https://wolko.org/car-drive/#${date}`;
 }
 
 export async function onRequestPost({ env, request }) {
@@ -31,22 +33,24 @@ export async function onRequestPost({ env, request }) {
   const requested = params.get('date');
   const date = requested && parseDate(requested) !== null ? requested : todayKst();
   // 카카오 알림톡(KAKAO_PF_ID + KAKAO_TEMPLATE_DRIVE_PICKUP)을 먼저 보내고, 실패하면 같은 내용의 문자로 대체한다. 발신번호는 대체 문자에 필요하다.
-  const kakao = !!(env.KAKAO_PF_ID && env.KAKAO_TEMPLATE_DRIVE_PICKUP);
+  const slotName = params.get('slot') === 'dropoff' ? 'dropoff' : 'pickup';
+  const templateId = slotName === 'dropoff' ? env.KAKAO_TEMPLATE_DRIVE_DROPOFF : env.KAKAO_TEMPLATE_DRIVE_PICKUP;
+  const kakao = !!(env.KAKAO_PF_ID && templateId);
   const configured = !!(env.SOLAPI_API_KEY && env.SOLAPI_API_SECRET && env.SOLAPI_SENDER_PHONE);
   if (!isDriveDay(date)) return Response.json({ date, skipped: 'weekend', sent: 0, configured }, { headers: H });
 
-  const slot = await env.CAMP_KV.get(slotKey(date, 'pickup'), 'json');
-  if (!slot) return Response.json({ date, pickup: null, sent: 0, configured }, { headers: H });
-  const info = { date, pickup: { name: shownName(slot), phone: mask(slot.phone) }, configured, channel: kakao ? 'kakao+sms' : 'sms' };
+  const slot = await env.CAMP_KV.get(slotKey(date, slotName), 'json');
+  if (!slot) return Response.json({ date, slot: slotName, pickup: null, sent: 0, configured }, { headers: H });
+  const info = { date, slot: slotName, pickup: { name: shownName(slot), phone: mask(slot.phone) }, configured, channel: kakao ? 'kakao+sms' : 'sms' };
   if (dryRun) return Response.json({ ...info, dryRun: true, sent: 0 }, { headers: H });
   if (!configured) return Response.json({ ...info, error: 'Solapi 설정(SOLAPI_API_KEY/SECRET/SENDER_PHONE)이 필요합니다.', sent: 0 }, { status: 503, headers: H });
   if (!slot.phone) return Response.json({ ...info, error: '담당자 휴대폰 번호가 없습니다.', sent: 0 }, { status: 422, headers: H });
 
-  const doneKey = `${SMS_PREFIX}${date}`;
+  const doneKey = slotName === 'dropoff' ? `${SMS_PREFIX}${date}:dropoff` : `${SMS_PREFIX}${date}`; // 픽업은 예전 키를 그대로 쓴다
   const done = await env.CAMP_KV.get(doneKey, 'json');
   if (done && done.email === slot.email) return Response.json({ ...info, sent: 0, alreadySent: true }, { headers: H });
   const name = shownName(slot);
-  const channel = await sendKakaoWithSmsFallback(env, slot.phone, env.KAKAO_TEMPLATE_DRIVE_PICKUP, reminderVariables(name, date), reminderText(name, date));
+  const channel = await sendKakaoWithSmsFallback(env, slot.phone, templateId, reminderVariables(name, date), reminderText(name, date, slotName));
   await env.CAMP_KV.put(doneKey, JSON.stringify({ email: slot.email, at: new Date().toISOString() }), { expirationTtl: 60 * 60 * 24 * 14 });
   return Response.json({ ...info, sent: 1, firstChannel: channel }, { headers: H });
 }

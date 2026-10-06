@@ -1,21 +1,28 @@
-name: Drive pickup SMS reminder
+name: Drive reminders (pick-up 8 AM, drop-off 1 PM)
 
-# 월~토 오전 8시(한국 시간) = 전날 23:00 UTC (일~금). GitHub 스케줄은 몇 분 늦을 수 있다.
+# 월~금 오전 8시(한국 시간, 픽업) = 전날 23:00 UTC (일~목) · 월~금 오후 1시(한국 시간, 드롭오프) = 04:00 UTC (월~금).
+# GitHub 스케줄은 몇 분 늦을 수 있다.
 on:
   schedule:
-    - cron: '0 23 * * 0-5'
+    - cron: '0 23 * * 0-4'
+    - cron: '0 4 * * 1-5'
   workflow_dispatch:
     inputs:
       dry_run:
         description: 'Only check who would be texted (no SMS)'
         type: boolean
         default: true
+      slot:
+        description: 'Which reminder to run'
+        type: choice
+        options: [pickup, dropoff]
+        default: pickup
 
 permissions:
   contents: read
 
 concurrency:
-  group: drive-pickup-reminder
+  group: drive-reminder
   cancel-in-progress: false
 
 jobs:
@@ -24,16 +31,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Text today's pickup person
+      - name: Notify today's driver
         env:
           DRIVE_REMINDER_SECRET: ${{ secrets.DRIVE_REMINDER_SECRET || secrets.CRS_REMINDER_SECRET }}
           DRY_RUN: ${{ inputs.dry_run }}
+          INPUT_SLOT: ${{ inputs.slot }}
+          SCHEDULE: ${{ github.event.schedule }}
         shell: bash
         run: |
           set -euo pipefail
           test -n "$DRIVE_REMINDER_SECRET" || { echo 'Missing DRIVE_REMINDER_SECRET (or CRS_REMINDER_SECRET)'; exit 1; }
-          url='https://wolko.org/api/car/drive-reminders'
-          if [ "$DRY_RUN" = 'true' ]; then url="$url?dryRun=1"; fi
+          slot='pickup'
+          if [ "$SCHEDULE" = '0 4 * * 1-5' ] || [ "$INPUT_SLOT" = 'dropoff' ]; then slot='dropoff'; fi
+          url="https://wolko.org/api/car/drive-reminders?slot=$slot"
+          if [ "$DRY_RUN" = 'true' ]; then url="$url&dryRun=1"; fi
           for attempt in 1 2 3; do
             if result=$(curl --fail-with-body --silent --show-error --max-time 60 -X POST -H "Authorization: Bearer $DRIVE_REMINDER_SECRET" "$url"); then
               echo "$result" | jq '.'
