@@ -86,4 +86,6 @@ test('화면: 소개 페이지 편집 화면은 포탈 로그인으로 자동 �
   const page = readFileSync(new URL('../src/pages/mypage/index.astro', import.meta.url), 'utf8');
   assert.match(page, /\/team-edit\//);
   assert.match(page, /\/api\/newsletter\/profile/);
+  assert.match(page, /\/api\/team\/upload/);
+  assert.match(page, /field', 'report_url'/);
 });
