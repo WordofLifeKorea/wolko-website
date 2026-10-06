@@ -14,8 +14,9 @@ test('portal exposes a standard password-manager login form', () => {
   assert.match(portal, /portalLoginForm'\)\.addEventListener\('submit'/);
 });
 
-test('wrong portal passwords do not fall through to counselor authentication', () => {
-  assert.match(portal, /if \(res\.status === 404 \|\| \(res\.ok && data\.role === 'counselor'\)\)/);
+test('only unknown emails (404) fall through to counselor authentication; wrong passwords and approved members stay on the portal', () => {
+  assert.match(portal, /if \(res\.status === 404\) \{/);
+  assert.doesNotMatch(portal, /data\.role === 'counselor'\)\) \{/, '일반 멤버(내부 이름 counselor)는 카운슬러 로그인으로 보내지 않는다');
   assert.doesNotMatch(portal, /res\.status === 404 \|\| res\.status === 401/);
 });
 
