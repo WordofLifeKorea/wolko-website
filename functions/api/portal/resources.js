@@ -42,7 +42,7 @@ export async function onRequestGet({ env, request }) {
   if (!session) return error('포탈 로그인이 필요합니다.', 401);
   const data = await readData(env);
   const items = data.items.map(item => { const stagePercents = stagePercentsOf(item); return { ...item, files: filesOf(item), folders: foldersOf(item), annotations: annotationsOf(item), stagePercents, progress: progressFromStagePercents(stagePercents) }; });
-  return Response.json({ items, canWrite: canWrite(session), updatedAt: data.updatedAt || '' }, { headers: CORS });
+  return Response.json({ items, canWrite: canWrite(session), canUpload: !!session, updatedAt: data.updatedAt || '' }, { headers: CORS });
 }
 
 export async function onRequestPost({ env, request }) {

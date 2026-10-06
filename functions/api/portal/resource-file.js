@@ -86,7 +86,7 @@ export async function onRequestPost({ env, request }) {
   if (!env.CAMP_KV) return error('서버 설정이 필요합니다.', 500);
   const session = await sessionFor(request, env);
   if (!session) return error('포탈 로그인이 필요합니다.', 401);
-  if (!canWrite(session)) return error('관리자 권한이 필요합니다.', 403);
+  // 새 파일 추가는 로그인한 멤버 누구나 — 기존 파일 교체·수정·삭제는 관리자만
 
   let body;
   try { body = await request.json(); } catch { return error('잘못된 요청입니다.', 400); }
@@ -98,6 +98,7 @@ export async function onRequestPost({ env, request }) {
   const fileName = text(body.fileName, 200);
   const fileType = text(body.fileType, 100);
   const fileData = String(body.fileData || '');
+  if (existingFileId && !canWrite(session)) return error('파일 교체는 관리자만 할 수 있습니다.', 403);
   if (!id) return error('잘못된 요청입니다.', 400);
   if (!fileName || !fileData) return error('파일을 선택해 주세요.', 400);
   if (!/^data:[\w.+-]+\/[\w.+-]+;base64,/i.test(fileData)) return error('파일 형식이 올바르지 않습니다.', 400);

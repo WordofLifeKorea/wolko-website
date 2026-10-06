@@ -370,6 +370,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     let resources = [];
     let lastUpdatedAt = '';
     let canWrite = false;
+    let canUpload = false; // 새 파일 추가는 로그인한 멤버 누구나
     let currentItem = null; // 에디터가 열려 있는 동안의 현재 항목(파일 업로드 등에서 참조)
     let editorMode = 'view'; // 'view' | 'edit'
     const $ = id => document.getElementById(id);
@@ -480,7 +481,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) return logout();
       if (!res.ok) throw new Error(data.error || t('loadFailed'));
-      resources = Array.isArray(data.items) ? data.items : []; canWrite = !!data.canWrite; lastUpdatedAt = data.updatedAt || ''; render();
+      resources = Array.isArray(data.items) ? data.items : []; canWrite = !!data.canWrite; canUpload = !!data.canUpload; lastUpdatedAt = data.updatedAt || ''; render();
     }
 
     /* ── 첨부 파일 (레슨 폴더 안에 원본/수정본으로 정리) ── */
@@ -539,8 +540,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     function fileGroupHtml(files, folderId, category) {
       if (folderId) return fileDetailsHtml(files, folderId, category);
       const tiles = files.map(fileTileHtml).join('');
-      const emptyMsg = !files.length && !canWrite ? `<p class="file-empty">${esc(t('noFileRead'))}</p>` : '';
-      const addTile = canWrite ? `<label class="file-tile file-tile-add"><input type="file" multiple data-folder-id="${folderId || ''}" data-category="${category || ''}" onchange="handleFileUploadEvent(this)"><span class="file-tile-add-icon">+</span><span class="file-tile-name">${esc(t('addFile'))}</span></label>` : '';
+      const emptyMsg = !files.length && !canUpload ? `<p class="file-empty">${esc(t('noFileRead'))}</p>` : '';
+      const addTile = canUpload ? `<label class="file-tile file-tile-add"><input type="file" multiple data-folder-id="${folderId || ''}" data-category="${category || ''}" onchange="handleFileUploadEvent(this)"><span class="file-tile-add-icon">+</span><span class="file-tile-name">${esc(t('addFile'))}</span></label>` : '';
       const addRow = `<div class="file-icon-grid">${tiles}${addTile}</div>`;
       return emptyMsg + addRow;
     }
@@ -568,7 +569,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
           <td class="file-details-newtab"><button type="button" onclick="event.stopPropagation();openInNewTab('${meta.id}')" title="${esc(t('openInNewTab'))}" aria-label="${esc(t('openInNewTab'))}">↗</button></td>
         </tr>`;
       }).join('');
-      const addRow = canWrite ? `<label class="file-details-add"><input type="file" multiple data-folder-id="${folderId}" data-category="${category || ''}" onchange="handleFileUploadEvent(this)"><span aria-hidden="true">+</span>${esc(t('addFile'))}</label>` : '';
+      const addRow = canUpload ? `<label class="file-details-add"><input type="file" multiple data-folder-id="${folderId}" data-category="${category || ''}" onchange="handleFileUploadEvent(this)"><span aria-hidden="true">+</span>${esc(t('addFile'))}</label>` : '';
       return `<div class="file-details-wrap"><table class="file-details-table"><thead><tr>${labels.map((label, i) => `<th scope="col" class="${['', 'file-details-size', 'file-details-kind', 'file-details-date'][i]}">${esc(label)}</th>`).join('')}<th scope="col" class="file-details-newtab"></th></tr></thead><tbody>${rows || `<tr><td colspan="5" class="file-details-empty">${esc(t('noFileRead'))}</td></tr>`}</tbody></table></div>${addRow}`;
     }
     const FOLDER_ICON_SVG = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>';
