@@ -15,7 +15,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=55">
+  <link rel="stylesheet" href="/expense.css?v=57">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <link rel="stylesheet" href="/wolko-header.css?v=12">
@@ -421,9 +421,15 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
     const catKey = r => r.account || t('catUnset');
     const memoHtml = r => (r.memo ? `<div class="ex-memo">${esc(r.memo)}</div>` : '')
       + (r.approverMemo ? `<div class="ex-memo ap"><b>✔ ${esc(t('aMemoLbl'))}</b> ${esc(r.approverMemo)}</div>` : '');
+    // 보기 화면: 영수증은 왼쪽 썸네일 타일로 (이미지는 불러와서 채우고, PDF 등은 아이콘)
     function receiptChips(rep, row) {
-      return (row.receipts || []).map(f => `<span class="ex-chip link" data-act="open-receipt" data-rid="${esc(rep.id)}" data-fid="${esc(f.id)}" data-name="${esc(f.name)}" data-type="${esc(f.type)}">📎 ${esc(f.name)}</span>`).join('');
+      const tiles = (row.receipts || []).map(f => {
+        const img = (f.type || '').startsWith('image/'), pdf = /pdf/i.test(f.type || '');
+        return `<span class="ex-rthumb" data-act="open-receipt" data-rid="${esc(rep.id)}" data-fid="${esc(f.id)}" data-name="${esc(f.name)}" data-type="${esc(f.type)}" title="${esc(f.name)}">${img ? '' : (pdf ? 'PDF' : '📎')}</span>`;
+      }).join('');
+      return `<div class="ex-receipts ex-rcol">${tiles || '<span class="ex-rthumb none">—</span>'}</div>`;
     }
+    const itemWrap = (rep, r, body) => `<div class="ex-itemrow">${receiptChips(rep, r)}<div class="ex-itembody">${body}</div></div>`;
 
     /* 승인 화면: 항목별 카테고리 확정 상태 (제출자가 고른 값이 기본값) */
     const catState = {};
@@ -478,7 +484,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         <tr>
           <td>${esc(r.when || '')}</td>
           <td>${approving ? catCell(rep, r, i, st) : catView(r)}${rowProject(rep, r) ? `<div class="ex-meta">${esc(rowProject(rep, r))}</div>` : ''}</td>
-          <td>${r.item ? `<b>${esc(r.item)}</b>${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${memoHtml(r)}<div class="ex-receipts" style="margin-top:6px">${receiptChips(rep, r)}</div></td>
+          <td>${itemWrap(rep, r, `${r.item ? `<b>${esc(r.item)}</b>${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${memoHtml(r)}`)}</td>
           <td class="r">${krw(r.amountKrw)}${isFx(r.currency) ? `<div class="ex-meta">${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)}</div>` : ''}</td>
         </tr>`).join('');
 
@@ -589,7 +595,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
           <div class="ex-d-amt">${krw(r.amountKrw)}${isFx(r.currency) ? `<span class="ex-meta"> (${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)})</span>` : ''}</div>
           <div class="ex-d-sub ex-meta">${esc(r.when || '')} · ${r.account ? esc(r.account) : esc(srcShow(r.source || '')) + ' (' + esc(t('catUnset')) + ')'}${r.account && subText(r) && subText(r) !== r.account ? ' (' + esc(t('srcSubmitted', subText(r))) + ')' : ''}${r.where ? ' · 📍 ' + esc(r.where) : ''}</div>
           ${memoHtml(r)}
-          ${(r.receipts || []).length ? `<div class="ex-receipts" style="margin-top:4px">${receiptChips(rep, r)}</div>` : ''}
+          ${(r.receipts || []).length ? receiptChips(rep, r) : ''}
         </div>`).join('');
       const bySub = {};
       rep.rows.forEach(r => { bySub[catKey(r)] = (bySub[catKey(r)] || 0) + r.amountKrw; });
@@ -790,6 +796,17 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         }).catch(() => {});
       });
     }
+    // 보기 화면의 영수증 타일(.ex-rthumb)에 이미지 썸네일을 채운다 (화면이 다시 그려질 때마다)
+    function hydrateViewThumbs() {
+      document.querySelectorAll('#exView .ex-rthumb[data-fid]').forEach(el => {
+        if (el.dataset.loaded || !(el.dataset.type || '').startsWith('image/')) return;
+        el.dataset.loaded = '1';
+        receiptBlob(el.dataset.rid, { fid: el.dataset.fid, name: el.dataset.name, type: el.dataset.type }).then(item => {
+          el.style.backgroundImage = 'url("' + item.url + '")'; el.classList.add('has-img');
+        }).catch(() => { el.textContent = '📎'; });
+      });
+    }
+    new MutationObserver(hydrateViewThumbs).observe($('exView'), { childList: true, subtree: true });
     const pv = { list: [], i: 0, seq: 0 };
     function ensurePreviewModal() {
       if ($('exPreview')) return;

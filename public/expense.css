@@ -529,7 +529,7 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 
 /* 표가 들어 있는 칸 폭이 좁으면(창이 좁거나 옆 메뉴가 있을 때) 가로 스크롤 대신 항목별 카드형으로 */
 .ex-table-wrap { container-type: inline-size; }
-@container (max-width: 700px) {
+@container (max-width: 860px) {
   .ex-table { min-width: 0; table-layout: auto; }
   .ex-table thead { display: none; }
   .ex-table tbody tr { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; padding: 12px 0; border-bottom: 1px solid #e3ebf0; }
@@ -556,3 +556,20 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
   background: transparent; border: 0; padding: 0; border-radius: 0; font-size: 12.5px; font-weight: 600; color: var(--blue);
 }
 .ex-table .ex-chip.link:hover { text-decoration: underline; }
+
+/* ══ v10 — 품목 행: [영수증 썸네일] | 품목 · 목적 · 메모 ══ */
+.ex-itemrow { display: flex; gap: 12px; align-items: flex-start; }
+.ex-itembody { flex: 1 1 auto; min-width: 0; }
+.ex-itemrow > .ex-receipts.ex-rcol { flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; }
+.ex-rthumb {
+  width: 64px; height: 64px; border-radius: 8px; border: 1px solid #d5e3ea; background: #f1f6f8 center / cover no-repeat;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--blue); cursor: pointer; overflow: hidden;
+}
+.ex-rthumb:hover { border-color: var(--blue); }
+.ex-rthumb.none { cursor: default; border-style: dashed; background: transparent; color: #b5c5cd; font-weight: 400; }
+.ex-rthumb.has-img { color: transparent; }
+.ex-itembody > b { display: block; }
+.ex-itembody .ex-memo { margin-top: 6px; }
+.ex-d-item .ex-rcol { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; margin-top: 8px; padding: 0; }
+.ex-d-item .ex-rthumb { width: 48px; height: 48px; }
+@media (max-width: 640px) { .ex-rthumb { width: 56px; height: 56px; } }
