@@ -12,27 +12,26 @@
 .drive-week-title strong { font-size: 14px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
 .drive-week-title span { font-size: 12.5px; color: #7d98a3; font-weight: 600; }
 .drive-days { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
-.drive-day { display: grid; gap: 10px; align-content: start; padding: 14px 12px 16px; border-left: 1px solid #edf2f5; background: #fff; }
+.drive-day { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: start; padding: 14px 12px 16px; border-left: 1px solid #edf2f5; background: #fff; }
 .drive-day:first-child { border-left: 0; }
 .drive-day.is-today { background: #f0f9f9; box-shadow: inset 0 3px 0 var(--teal, #008e92); }
 .drive-day.is-past { opacity: .5; }
 .drive-day.is-linked { animation: driveLinked 2.4s ease-out; }
 @keyframes driveLinked { 0%, 60% { background: #d9f1ef; } 100% { background: inherit; } }
-.drive-day-head { display: flex; align-items: baseline; gap: 6px; min-height: 22px; }
+.drive-day-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; min-height: 22px; }
 .drive-day-head strong { font-size: 18px; font-weight: 800; letter-spacing: -.03em; color: var(--ink); }
 .drive-day-head .dow { font-size: 13px; font-weight: 700; color: #7d98a3; }
-.drive-day-head em { margin-left: auto; align-self: center; padding: 3px 8px; border-radius: 999px; background: var(--teal, #008e92); color: #fff; font-size: 10.5px; font-weight: 800; font-style: normal; letter-spacing: .02em; }
-.drive-slots { display: grid; gap: 6px; }
-.drive-slot { box-sizing: border-box; width: 100%; min-height: 40px; padding: 0 10px; border-radius: 10px; border: 1px dashed #bcd3dc; background: #f7fbfc; color: var(--blue); font: 700 13px/1.2 'Noto Sans KR', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 8px; text-align: left; transition: background .15s, border-color .15s; }
-.drive-slot .lbl { flex: none; font-size: 11px; font-weight: 700; color: #7d98a3; }
-.drive-slot .who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+.drive-day-head em { margin-left: auto; align-self: center; white-space: nowrap; padding: 3px 8px; border-radius: 999px; background: var(--teal, #008e92); color: #fff; font-size: 10.5px; font-weight: 800; font-style: normal; letter-spacing: .02em; }
+.drive-slots { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; min-width: 0; }
+.drive-slot { position: relative; box-sizing: border-box; width: 100%; min-width: 0; min-height: 50px; padding: 6px 10px; border-radius: 10px; border: 1px dashed #bcd3dc; background: #f7fbfc; color: var(--blue); font: 700 13.5px/1.25 'Noto Sans KR', sans-serif; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; text-align: left; transition: background .15s, border-color .15s; }
+.drive-slot .lbl { font-size: 10.5px; font-weight: 700; color: #7d98a3; letter-spacing: .01em; }
+.drive-slot .who { width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
 .drive-slot:hover:not(:disabled) { background: #e9f4f8; border-color: var(--blue); }
 .drive-slot.taken { border-style: solid; border-color: #d3e1e7; background: #eef3f5; color: var(--ink); cursor: default; }
 .drive-slot.mine { border-color: var(--teal); background: #e3f6f4; color: #0b5d62; cursor: pointer; }
 .drive-slot.mine .lbl { color: #4b9ca0; }
 .drive-slot.mine:hover { background: #d3f0ed; }
-.drive-slot { position: relative; }
-.drive-slot .x { flex: none; font-size: 12px; font-style: normal; opacity: .55; }
+.drive-slot .x { position: absolute; right: 8px; top: 8px; font-size: 12px; font-style: normal; opacity: .55; }
 .drive-slot:disabled { cursor: default; }
 .drive-slot:disabled:not(.taken) { opacity: .5; cursor: not-allowed; }
 .drive-slot.pending { opacity: .6; pointer-events: none; }
@@ -44,18 +43,15 @@
 .drive-modal-card label { display: grid; gap: 6px; font-size: 13px; font-weight: 750; }
 .drive-modal-card input { height: 48px; padding: 0 14px; border: 1px solid #bfd5de; border-radius: 12px; font-size: 16px; }
 .drive-modal-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; margin-top: 4px; }
-@media (max-width: 900px) {
+@media (max-width: 1180px) {
   /* 좁은 화면: 하루가 한 줄 — 왼쪽에 날짜·요일, 오른쪽에 픽업 / 드롭오프 */
   .drive-days { grid-template-columns: 1fr; }
-  .drive-day { grid-template-columns: 84px minmax(0, 1fr); align-items: center; gap: 12px; padding: 10px 14px; border-left: 0; border-top: 1px solid #edf2f5; }
+  .drive-day { grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 12px; padding: 10px 14px; border-left: 0; border-top: 1px solid #edf2f5; }
   .drive-day:first-child { border-top: 0; }
   .drive-day.is-today { box-shadow: inset 4px 0 0 var(--teal, #008e92); }
   .drive-day-head { flex-wrap: wrap; row-gap: 4px; align-items: center; }
   .drive-day-head em { margin-left: 0; }
-  .drive-slots { grid-template-columns: 1fr 1fr; }
-  .drive-slot { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; min-height: 48px; padding: 6px 10px; }
-  .drive-slot .who { text-align: left; width: 100%; }
-  .drive-slot .x { position: absolute; right: 8px; top: 8px; }
+  .drive-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
   .drive-week-title { padding: 12px 14px; }
