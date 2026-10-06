@@ -559,8 +559,10 @@
           body: JSON.stringify({ email, password }),
         });
         const data = await res.json();
-        // Camp counselor credentials use their own account store and session.
-        if (res.status === 404 || (res.ok && data.role === 'counselor')) {
+        // 카운슬러 계정은 포탈 계정과 완전히 별개다: 포탈에 없는 이메일(404)일 때만 카운슬러 로그인을 시도한다.
+        // (예전에는 role 이 'counselor' 인 계정도 여기로 보냈는데, 지금 'counselor'는 일반 멤버의 내부 이름이라
+        //  승인된 일반 멤버가 모두 카운슬러 로그인으로 넘어가 '계정을 찾을 수 없거나 비활성화' 오류를 만났다.)
+        if (res.status === 404) {
           const counselorRes = await fetch('/api/camp-progress/auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -568,7 +570,8 @@
           });
           const counselorData = await counselorRes.json();
           if (!counselorRes.ok || counselorData.role !== 'counselor' || !counselorData.token) {
-            throw new Error(counselorData.error || t('loginWrong'));
+            // 카운슬러 쪽에도 계정이 없을 때는 포탈의 안내(가입되지 않은 이메일)를 그대로 보여준다
+            throw new Error(counselorRes.status === 401 && /찾을 수 없/.test(counselorData.error || '') ? (data.error || t('loginWrong')) : (counselorData.error || t('loginWrong')));
           }
           sessionStorage.setItem('wolko-camp-progress-token', counselorData.token);
           saveRememberedEmail(email);
