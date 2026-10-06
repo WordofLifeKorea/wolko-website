@@ -405,6 +405,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
 
     function refreshComputed() {
       paintRates();
+      hydrateDraftThumbs();
       const totalEl = $('fTotal');
       if (totalEl) totalEl.innerHTML = '<small>' + t('totalKrw') + '</small>' + krw(formTotal());
     }
@@ -763,13 +764,31 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
     }
     async function receiptBlob(rid, f) {
       if (blobCache.has(f.fid)) return blobCache.get(f.fid);
-      if (!rid) throw new Error(t('pvNoLoad'));
-      const res = await fetch('/api/expense/receipt?reportId=' + encodeURIComponent(rid) + '&fileId=' + encodeURIComponent(f.fid), { headers: { Authorization: 'Bearer ' + token() } });
+      const get = q => fetch('/api/expense/receipt?' + q + '&fileId=' + encodeURIComponent(f.fid), { headers: { Authorization: 'Bearer ' + token() } });
+      // 제출된 리포트의 영수증이면 리포트 기준으로, 아직 제출 전(작성 중 임시 저장)이면 내 임시 파일로 불러온다
+      let res = rid ? await get('reportId=' + encodeURIComponent(rid)) : null;
+      if (!res || !res.ok) res = await get('draft=1');
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || t('pvOpenFail'));
       const blob = await res.blob();
       const item = { url: URL.createObjectURL(blob), type: blob.type || f.type, name: f.name };
       blobCache.set(f.fid, item);
       return item;
+    }
+    // 작성 중이던 리포트를 다시 열면 이미지 썸네일이 비어 있으므로, 임시 파일을 불러와 채운다 (실패해도 조용히 둔다)
+    const thumbTried = new Set();
+    function hydrateDraftThumbs() {
+      document.querySelectorAll('#fRows .ex-chip-main[data-fid]').forEach(el => {
+        const fid = el.dataset.fid;
+        if (blobCache.has(fid) || thumbTried.has(fid) || !(el.dataset.type || '').startsWith('image/')) return;
+        thumbTried.add(fid);
+        receiptBlob(el.dataset.rid, { fid, name: el.dataset.name, type: el.dataset.type }).then(item => {
+          const first = el.firstChild;
+          if (first && first.nodeType === 3 && first.textContent.includes('📎')) {
+            const img = document.createElement('img'); img.className = 'ex-thumb'; img.alt = ''; img.src = item.url;
+            first.replaceWith(img);
+          }
+        }).catch(() => {});
+      });
     }
     const pv = { list: [], i: 0, seq: 0 };
     function ensurePreviewModal() {

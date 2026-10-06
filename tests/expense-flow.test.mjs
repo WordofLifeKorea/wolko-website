@@ -644,3 +644,18 @@ test('이메일 전체 스위치가 꺼져 있어도 새 리포트·재제출은
   assert.deepEqual(sent[4].to, ['cyn@x.com']);
   assert.match(sent[4].subject, /송금 처리 완료/);
 });
+
+test('작성 중(제출 전) 임시 영수증은 본인만 다시 열어볼 수 있다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('bob@x.com', 'Bob', 'counselor');
+  const up = await call(F.onRequestPost, 'POST', '/api/expense/receipt', cyn, { name: 'shot.png', type: 'image/png', data: 'data:image/png;base64,' + btoa('img') });
+  assert.equal(up.status, 200);
+  const get = (who, fileId) => call(F.onRequestGet, 'GET', `/api/expense/receipt?draft=1&fileId=${fileId}`, who);
+  const mine = await get(cyn, up.id);
+  assert.equal(mine.status, 200);
+  assert.equal(mine.res.headers.get('Content-Type'), 'image/png');
+  assert.equal(await mine.res.text(), 'img');
+  assert.equal((await get(['bob@x.com', 'counselor'], up.id)).status, 404, '다른 사람의 임시 파일은 못 본다');
+  assert.equal((await get(cyn, 'missing')).status, 404);
+});

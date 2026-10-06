@@ -3,6 +3,7 @@
  *      → 영수증을 KV에 임시 저장하고 { id } 반환. 리포트 제출 시 rows[].receipts 에 이 id를 담는다.
  *        (리포트 id가 아직 없으므로 업로더 이메일 아래에 임시 키로 저장 → 제출 때 리포트 키로 옮김)
  * GET  /api/expense/receipt?reportId=&fileId=   → 영수증 파일 (제출자 / 승인자 / 회계담당만)
+ * GET  /api/expense/receipt?draft=1&fileId=      → 아직 제출하지 않은 내 임시 영수증 (작성 중인 리포트를 다시 열었을 때 미리보기용, 본인만)
  *
  * 화면에서 이미지를 미리 줄여서 올리므로 대부분 수백 KB 수준이다.
  */
@@ -69,6 +70,19 @@ export async function onRequestGet({ env, request }) {
   const url = new URL(request.url);
   const reportId = clip(url.searchParams.get('reportId'), 80);
   const fileId = clip(url.searchParams.get('fileId'), 64);
+
+  if (url.searchParams.get('draft') === '1') {
+    // 내가 올린 임시 파일만 — 키에 내 이메일이 들어 있어 남의 것은 읽을 수 없다
+    const tmp = fileId ? await env.CAMP_KV.getWithMetadata(tempKey(session.email, fileId), 'arrayBuffer') : { value: null };
+    if (!tmp.value) return err('임시 저장 기간(3일)이 지나 파일이 사라졌습니다. 다시 첨부해 주세요.', 404);
+    const meta = tmp.metadata || {};
+    return new Response(tmp.value, { headers: {
+      'Content-Type': meta.type || 'application/octet-stream',
+      'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(meta.name || 'receipt')}`,
+      'Cache-Control': 'private, max-age=300',
+    } });
+  }
+
   const report = reportId ? await env.CAMP_KV.get(`${REPORT_PREFIX}${reportId}`, 'json') : null;
   if (!report) return err('리포트를 찾을 수 없습니다.', 404);
 
