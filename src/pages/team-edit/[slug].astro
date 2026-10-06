@@ -57,8 +57,17 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+  <script is:inline>
+    // 포탈 '내 페이지' 안에 끼워 넣어 보여줄 때(?embed=1)는 자체 머리글 없이 본문만 보인다
+    if (/[?&]embed=1/.test(location.search)) document.documentElement.classList.add('embed');
+  </script>
   <style is:global>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html.embed .page-header { display: none; }
+    html.embed body { background: transparent; min-height: 0; }
+    html.embed .page-main { max-width: none; padding: 4px 2px 90px; }
+    html.embed .login-screen { position: static; min-height: 420px; }
+    html.embed .login-screen.hidden { display: none; }
 
     :root {
       --blue:    #004f68;
@@ -453,22 +462,10 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
         <span class="login-logo-name">WOLKO</span>
       </div>
-      <p class="login-title">Profile Login</p>
+      <p class="login-title">Portal Sign-in</p>
       <p class="login-name">{d.name_ko}</p>
-      <div class="login-input-wrap">
-        <input
-          type="password"
-          class="login-input"
-          id="loginPw"
-          placeholder="Enter password"
-          autocomplete="current-password"
-          inputmode="latin"
-          pattern="[\x21-\x7E]*"
-        >
-        <button class="login-eye" id="loginEye" type="button" aria-label="Show password">Show</button>
-      </div>
-      <p class="login-error" id="loginError"></p>
-      <button class="login-btn" id="loginBtn">Sign In</button>
+      <p class="login-error" id="loginError" style="color:#5a7585;min-height:44px;line-height:1.6;">포탈 계정으로 확인하는 중…<br>Checking your portal account…</p>
+      <a class="login-btn" id="loginBtn" href="/portal" style="display:none;text-align:center;text-decoration:none;">포탈로 로그인 · Sign in to the portal</a>
     </div>
   </div>
 
@@ -485,7 +482,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
       <a class="btn-preview" href={`/team/${slug}`} target="_blank">
         View My Page
       </a>
-      <button class="btn-logout" id="logoutBtn">Sign Out</button>
+      <button class="btn-logout" id="logoutBtn">Portal</button>
     </div>
   </header>
 
@@ -802,202 +799,34 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
 
     // ── Login ──────────────────────────────────────────────────
     const loginScreen = document.getElementById('loginScreen');
-    const loginPw     = document.getElementById('loginPw');
     const loginBtn    = document.getElementById('loginBtn');
     const loginError  = document.getElementById('loginError');
-    const loginEye    = document.getElementById('loginEye');
-    const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
-
-    function cleanPasswordValue(value) {
-      return String(value || '').replace(/[^\x21-\x7E]/g, '');
-    }
-
-    function enforceAsciiPasswordInput(input) {
-      function warnPasswordLanguage() {
-        loginError.textContent = 'Please switch to English input before entering the password.';
-        loginPw.classList.add('error');
-      }
-      input.addEventListener('beforeinput', e => {
-        if (e.data && !PASSWORD_ALLOWED_RE.test(e.data)) {
-          e.preventDefault();
-          warnPasswordLanguage();
-        }
-      });
-      input.addEventListener('paste', e => {
-        const text = e.clipboardData?.getData('text') || '';
-        const clean = cleanPasswordValue(text);
-        if (text !== clean) {
-          e.preventDefault();
-          const start = input.selectionStart ?? input.value.length;
-          const end = input.selectionEnd ?? start;
-          input.setRangeText(clean, start, end, 'end');
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          warnPasswordLanguage();
-        }
-      });
-      input.addEventListener('input', () => {
-        const clean = cleanPasswordValue(input.value);
-        if (input.value !== clean) {
-          input.value = clean;
-          warnPasswordLanguage();
-        }
-      });
-    }
-
-    enforceAsciiPasswordInput(loginPw);
 
     function showEditPage() {
       loginScreen.classList.add('hidden');
     }
+    function showLoginNeeded(msg, showBtn) {
+      loginScreen.classList.remove('hidden');
+      loginError.innerHTML = msg;
+      loginBtn.style.display = showBtn ? 'block' : 'none';
+    }
 
-    // Check if already logged in
-    if (authToken) {
-      // Quick verify by attempting a harmless call (just show the page)
-      showEditPage();
-    } else {
-      // 포탈에 로그인한 상태이고 이 소개 페이지에 연결된 계정(또는 마스터/관리자)이면 공용 비밀번호 없이 바로 입장
+    // 소개 페이지 편집은 포탈 로그인으로 들어온다 (이 소개 페이지에 연결된 계정, 또는 마스터/관리자)
+    async function enterWithPortal() {
       const hubToken = sessionStorage.getItem('wolko-hub-token');
-      if (hubToken) {
-        fetch('/api/team/portal-login', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + hubToken }, body: JSON.stringify({ slug }) })
-          .then(r => r.ok ? r.json() : null)
-          .then(d => { if (d && d.token) { authToken = d.token; sessionStorage.setItem(TOKEN_KEY, d.token); showEditPage(); } })
-          .catch(() => {});
-      }
+      if (!hubToken) return showLoginNeeded('먼저 포탈에 로그인해 주세요.<br>Please sign in to the portal first.', true);
+      try {
+        const r = await fetch('/api/team/portal-login', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + hubToken }, body: JSON.stringify({ slug }) });
+        if (r.status === 401) { sessionStorage.removeItem('wolko-hub-token'); return showLoginNeeded('포탈 로그인이 만료되었어요. 다시 로그인해 주세요.<br>Your portal session expired. Please sign in again.', true); }
+        if (r.status === 403) return showLoginNeeded('이 소개 페이지를 편집할 권한이 없어요.<br>포탈 "내 페이지"에서 마스터에게 연결을 요청해 주세요.<br>You are not linked to this profile page.', false);
+        const d = await r.json();
+        authToken = d.token; sessionStorage.setItem(TOKEN_KEY, d.token); showEditPage();
+      } catch (e) { showLoginNeeded('연결에 실패했어요. 잠시 후 다시 시도해 주세요.<br>Could not connect. Please try again.', false); }
     }
-
-    loginEye.addEventListener('click', () => {
-      const isHidden = loginPw.type === 'password';
-      loginPw.type = isHidden ? 'text' : 'password';
-      loginEye.textContent = isHidden ? 'Hide' : 'Show';
-      loginEye.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-    });
-
-    loginPw.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-    loginBtn.addEventListener('click', doLogin);
-
-    async function doLogin() {
-      const pw = loginPw.value.trim();
-      if (!pw) return;
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'Verifying...';
-      loginError.textContent = '';
-      loginPw.classList.remove('error');
-
-      try {
-        const res = await fetch('/api/team/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug, password: pw }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Login failed');
-        authToken = data.token;
-        sessionStorage.setItem(TOKEN_KEY, authToken);
-        showEditPage();
-      } catch (e) {
-        loginPw.classList.add('error');
-        loginError.textContent = e.message;
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Sign In';
-      }
-    }
-
-    // ── Auto-translate ─────────────────────────────────────────
-    window.autoTranslate = async function(koId, enId, ctx) {
-      const koEl = document.getElementById(koId);
-      const enEl = document.getElementById(enId);
-      if (!koEl || !enEl) return;
-
-      const koVal = koEl.value.trim();
-      const enVal = enEl.value.trim();
-
-      // 방향 결정: 비어 있는 쪽으로 번역
-      // 둘 다 있으면 → 사용자에게 선택 묻기
-      let from, targetEl;
-      if (koVal && !enVal) {
-        from = 'ko'; targetEl = enEl;
-      } else if (enVal && !koVal) {
-        from = 'en'; targetEl = koEl;
-      } else if (koVal && enVal) {
-        const choice = confirm('두 필드 모두 내용이 있습니다.\n\n확인 → 한국어 기준으로 영어 번역\n취소 → 영어 기준으로 한국어 번역');
-        from = choice ? 'ko' : 'en';
-        targetEl = choice ? enEl : koEl;
-      } else {
-        alert('번역할 내용을 먼저 입력해 주세요.');
-        return;
-      }
-
-      const sourceEl = from === 'ko' ? koEl : enEl;
-      const text = sourceEl.value.trim();
-
-      // 버튼 비활성화
-      const btn = event.currentTarget;
-      const origText = btn.innerHTML;
-      btn.disabled = true;
-      btn.textContent = '번역 중...';
-
-      try {
-        const res = await fetch('/api/team/translate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({ text, from, context: ctx }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '번역 실패');
-
-        targetEl.value = data.translated;
-        targetEl.style.borderColor = 'var(--green)';
-        setTimeout(() => { targetEl.style.borderColor = ''; }, 2000);
-      } catch (e) {
-        alert('번역 오류: ' + e.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = origText;
-      }
-    };
-
-    // ── Verse lookup ───────────────────────────────────────────
-    window.lookupVerse = async function() {
-      const ref = document.getElementById('f-verse_ref').value.trim();
-      if (!ref) { alert('구절 참조를 먼저 입력해 주세요.\n예: 시편 96:2-3 / John 3:16'); return; }
-
-      const btn = document.getElementById('btn-verse-lookup');
-      const origHTML = btn.innerHTML;
-      btn.disabled = true;
-      btn.textContent = '불러오는 중...';
-
-      try {
-        const res = await fetch('/api/team/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-          body: JSON.stringify({ text: ref, from: 'ref', context: 'verse_lookup' }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '불러오기 실패');
-
-        const koEl = document.getElementById('f-verse_ko');
-        const enEl = document.getElementById('f-verse_en');
-        if (data.ko) { koEl.value = data.ko; koEl.style.borderColor = 'var(--green)'; setTimeout(() => { koEl.style.borderColor = ''; }, 2500); }
-        if (data.en) { enEl.value = data.en; enEl.style.borderColor = 'var(--green)'; setTimeout(() => { enEl.style.borderColor = ''; }, 2500); }
-      } catch (e) {
-        alert('오류: ' + e.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = origHTML;
-      }
-    };
+    if (authToken) showEditPage(); else enterWithPortal();
 
     // ── Logout ─────────────────────────────────────────────────
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      sessionStorage.removeItem(TOKEN_KEY);
-      authToken = '';
-      loginScreen.classList.remove('hidden');
-      loginPw.value = '';
-    });
+    document.getElementById('logoutBtn').addEventListener('click', () => { location.href = '/portal'; });
 
     // ── Photo upload ───────────────────────────────────────────
     const fileInput = document.getElementById('fileInput');
@@ -1172,7 +1001,7 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
           // Token may have expired — prompt re-login
           sessionStorage.removeItem(TOKEN_KEY);
           authToken = '';
-          loginScreen.classList.remove('hidden');
+          enterWithPortal();
         }
       } finally {
         saveBtn.disabled = false;

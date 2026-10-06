@@ -21,7 +21,7 @@ const team = (await getCollection('team'))
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/expense.css?v=58">
-  <link rel="stylesheet" href="/mypage.css?v=1">
+  <link rel="stylesheet" href="/mypage.css?v=2">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -59,7 +59,8 @@ const team = (await getCollection('team'))
       ko: {
         pageTitle: '내 페이지 — WOLKO', headerTitle: '내 페이지',
         lead: '내 소개 페이지를 포탈 로그인으로 바로 편집하고, "최근 뉴스레터" 링크도 여기서 바꿀 수 있어요.',
-        tabPage: '내 소개 페이지', tabLinks: '작성자 연결',
+        tabPage: '내 소개 페이지', tabEdit: '소개 페이지 편집', editOpen: '새 창에서 열기',
+        tabLinks: '작성자 연결',
         writingAs: '관리 대상', myPage: '내 소개 페이지',
         notLinked: '아직 내 소개 페이지와 연결되지 않았어요. 마스터에게 포탈 이메일과 소개 페이지 연결을 요청해 주세요.',
         notLinkedAdmin: '내 계정은 아직 소개 페이지와 연결되지 않았어요. "작성자 연결"에서 연결하거나, 위에서 다른 사람 페이지를 골라 대신 관리할 수 있어요.',
@@ -78,7 +79,8 @@ const team = (await getCollection('team'))
       en: {
         pageTitle: 'My Page — WOLKO', headerTitle: 'My Page',
         lead: 'Edit your profile page with your portal login, and change your "Newsletter" link here.',
-        tabPage: 'My profile page', tabLinks: 'Account links',
+        tabPage: 'My profile page', tabEdit: 'Edit profile page', editOpen: 'Open in new window',
+        tabLinks: 'Account links',
         writingAs: 'Managing', myPage: 'My profile page',
         notLinked: 'Your account is not linked to your profile page yet. Please ask the master admin to link your portal email to your page.',
         notLinkedAdmin: 'Your account is not linked to a profile page yet. Link it under "Account links", or pick another page above to manage for them.',
@@ -134,14 +136,14 @@ const team = (await getCollection('team'))
     function renderTabs() {
       const linked = !!pageSlug();
       const tabs = [];
-      if (linked) tabs.push(['page', t('tabPage')]);
+      if (linked) tabs.push(['page', t('tabPage')], ['edit', t('tabEdit')]);
       if (S.canManage) tabs.push(['links', t('tabLinks')]);
       $('mpTabs').innerHTML = tabs.map(([k, l]) => `<button class="ex-tab ${S.view === k ? 'active' : ''}" data-tab="${k}">${l}</button>`).join('');
     }
     async function show(view) {
       if (view === 'page' && !pageSlug()) view = S.canManage ? 'links' : 'page';
       S.view = view; renderWho(); renderTabs();
-      if (view === 'page') await showPage(); else showLinks();
+      if (view === 'page') await showPage(); else if (view === 'edit') showEdit(); else showLinks();
     }
 
     /* ─────────── 내 소개 페이지 ─────────── */
@@ -156,7 +158,7 @@ const team = (await getCollection('team'))
         <div class="ex-card mp-profile">
           ${p?.photo ? `<img class="mp-photo" src="${esc(p.photo)}" alt="">` : ''}
           <div class="mp-profile-main"><h2>${esc(teamName(slug))}</h2><p class="mp-lead" style="margin:4px 0 14px">${esc(t('profileLead'))}</p>
-          <div class="mp-actions"><a class="ex-btn" href="/team/${esc(slug)}/" target="_blank" rel="noopener">${t('btnView')} ↗</a><a class="ex-btn primary" href="/team-edit/${esc(slug)}/" target="_blank" rel="noopener">${t('btnEdit')} ↗</a></div></div>
+          <div class="mp-actions"><a class="ex-btn" href="/team/${esc(slug)}/" target="_blank" rel="noopener">${t('btnView')} ↗</a><button class="ex-btn primary" data-tab="edit">${t('btnEdit')}</button></div></div>
         </div>
         <div class="ex-card"><h2>${esc(t('nlTitle'))}</h2><p class="mp-lead" style="margin:4px 0 14px">${esc(t('nlLead'))}</p>
           <div class="mp-field"><input class="ex-input" id="pgUrl" type="url" inputmode="url" value="${esc(d.url)}" placeholder="${esc(t('pgPh'))}"></div>
@@ -190,6 +192,14 @@ const team = (await getCollection('team'))
       await api('/api/newsletter/profile' + slugQ(), { method: 'PUT', body: JSON.stringify({ url: '' }) }); // 새 파일이 우선하도록 포탈 링크는 지운다
       S.justUploaded = slug; S.justUrl = body.url;
       toast(t('tPdf')); return showPage();
+    }
+
+
+    /* ─────────── 소개 페이지 편집: 기존 편집 시스템을 포탈 안에 그대로 끼워 넣는다 (포탈 로그인으로 자동 입장) ─────────── */
+    function showEdit() {
+      const slug = pageSlug();
+      $('mpView').innerHTML = `<div class="mp-edit-bar"><b>${esc(teamName(slug))}</b><a href="/team-edit/${esc(slug)}/" target="_blank" rel="noopener">${t('editOpen')} ↗</a></div>
+        <iframe class="mp-frame" src="/team-edit/${esc(slug)}/?embed=1" title="${esc(t('tabEdit'))}"></iframe>`;
     }
 
     /* ─────────── 작성자 연결 (마스터/관리자) ─────────── */
@@ -229,7 +239,7 @@ const team = (await getCollection('team'))
       } catch (err) { toast(err.message, true); }
     });
     document.addEventListener('change', async e => {
-      if (e.target.id === 'mpActing') { S.acting = e.target.value === S.link?.slug ? '' : e.target.value; return show('page'); }
+      if (e.target.id === 'mpActing') { S.acting = e.target.value === S.link?.slug ? '' : e.target.value; return show(S.view === 'edit' ? 'edit' : 'page'); }
     });
     $('langKoBtn').addEventListener('click', () => setLang('ko'));
     $('langEnBtn').addEventListener('click', () => setLang('en'));

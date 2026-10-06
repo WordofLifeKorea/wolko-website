@@ -80,11 +80,13 @@ test('소개 페이지 편집: 포탈 로그인으로 기존 편집 토큰을 �
 test('화면: 소개 페이지 편집 화면은 포탈 로그인으로 자동 입장하고, 소개 페이지에는 가입 폼 없이 링크 덮어쓰기만 있다', () => {
   const edit = readFileSync(new URL('../src/pages/team-edit/[slug].astro', import.meta.url), 'utf8');
   assert.match(edit, /\/api\/team\/portal-login/);
+  assert.doesNotMatch(edit, /id="loginPw"|\/api\/team\/login/, '비밀번호 로그인 칸은 없다');
   const team = readFileSync(new URL('../src/pages/team/[slug].astro', import.meta.url), 'utf8');
   assert.match(team, /\/api\/newsletter\/profile\?slug=/);
   assert.doesNotMatch(team, /mpSubForm|\/api\/newsletter\/subscribe/);
   const page = readFileSync(new URL('../src/pages/mypage/index.astro', import.meta.url), 'utf8');
-  assert.match(page, /\/team-edit\//);
+  assert.match(page, /\/team-edit\/.*\?embed=1/);
+  assert.match(edit, /embed=1/);
   assert.match(page, /\/api\/newsletter\/profile/);
   assert.match(page, /\/api\/team\/upload/);
   assert.match(page, /field', 'report_url'/);
