@@ -608,22 +608,39 @@ test('참석 인원 조회는 KV가 실패해도 500을 내지 않는다', async
   assert.equal((await res.json()).unavailable, true);
 });
 
-test('이메일 전체 스위치가 꺼져 있어도 새 리포트·재제출 알림은 세 명에게 가고, 나머지 메일은 가지 않는다', async () => {
+test('이메일 전체 스위치가 꺼져 있어도 새 리포트·재제출은 세 명에게, 승인/반려/송금 완료는 제출자에게 가고, 회계 담당자 요청은 가지 않는다', async () => {
   const { sent, acc, call } = setup(false);
   await acc('cyn@x.com', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
+  await acc('acct@x.com', 'Ann', 'counselor', { isAccountant: true });
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });
   assert.equal(sub.status, 200);
   assert.equal(sent.length, 1, '새 리포트 알림 한 통');
   for (const e of ['samuelsong@wol.org', 'jacobmorse@wol.org', 'jeremyrodgers@wol.org']) assert.ok(sent[0].to.includes(e), e);
   const id = sub.report.id;
-  // 반려 → 제출자에게 가는 메일은 꺼져 있어 늘어나지 않는다
+
+  // 반려 → 제출자에게
   await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'reject', note: '영수증 흐림' });
-  assert.equal(sent.length, 1, '반려 메일은 보내지 않는다');
+  assert.equal(sent.length, 2, '반려 피드백');
+  assert.deepEqual(sent[1].to, ['cyn@x.com']);
+  assert.match(sent[1].subject, /반려/);
+
   // 수정해서 재제출 → 다시 세 명에게
   const re = await call(R.onRequestPut, 'PUT', '/api/expense/reports', cyn, { id, description: 'A', rows: [row] });
   assert.equal(re.status, 200);
-  assert.equal(sent.length, 2, '재제출 알림');
-  assert.ok(sent[1].to.includes('jacobmorse@wol.org'));
+  assert.equal(sent.length, 3, '재제출 알림');
+  assert.ok(sent[2].to.includes('jacobmorse@wol.org'));
+
+  // 승인 → 제출자에게만 (회계 담당자에게 가는 송금 요청 메일은 꺼져 있다)
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Car Gas (8400)'] });
+  assert.equal(sent.length, 4, '승인 피드백 한 통만');
+  assert.deepEqual(sent[3].to, ['cyn@x.com']);
+  assert.match(sent[3].subject, /승인됨/);
+
+  // 송금 처리 완료 → 제출자에게
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'process' });
+  assert.equal(sent.length, 5);
+  assert.deepEqual(sent[4].to, ['cyn@x.com']);
+  assert.match(sent[4].subject, /송금 처리 완료/);
 });

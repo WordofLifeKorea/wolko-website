@@ -104,7 +104,9 @@ export const NEW_REPORT_NOTIFY_EMAILS = ['samuelsong@wol.org', 'jacobmorse@wol.o
 /** 알림 메일에서 답장을 받을 주소 (발신은 인증된 wolko.org 도메인) */
 /** 새 리포트(제출·재제출) 메일은 켜져 있다 — 위 NEW_REPORT_NOTIFY_EMAILS 로만 간다 */
 export const NEW_REPORT_EMAIL_ENABLED = true;
-/** 그 밖의 메일(승인됨·반려됨·송금 처리·회계 요청 등)은 일단 중지 — 포탈 알림(배지)만 사용. 다시 켜려면 true */
+/** 제출자에게 가는 결과 메일(승인됨 · 반려됨 · 송금 처리 완료)도 켜져 있다 */
+export const SUBMITTER_EMAIL_ENABLED = true;
+/** 그 밖의 메일(회계 담당자에게 가는 송금 요청, 되돌림 알림 등)은 일단 중지 — 포탈 알림(배지)만 사용. 다시 켜려면 true */
 export const EXPENSE_EMAIL_ENABLED = false;
 
 export const EXPENSE_REPLY_TO = 'wolkorea1@gmail.com';

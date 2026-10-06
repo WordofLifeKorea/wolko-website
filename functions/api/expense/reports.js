@@ -15,7 +15,7 @@ import { sendEmail, listAccounts } from '../../lib/hubAccounts.js';
 import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS, CAMPUS_OVERRIDES, FOREIGN_CURRENCIES } from '../../../src/lib/expense-config.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
-  EXPENSE_REPLY_TO, EXPENSE_EMAIL_ENABLED, NEW_REPORT_EMAIL_ENABLED, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
+  EXPENSE_REPLY_TO, EXPENSE_EMAIL_ENABLED, NEW_REPORT_EMAIL_ENABLED, SUBMITTER_EMAIL_ENABLED, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
   bustReportCache, totalOf, reportEmailHtml, formatKrw, finalizeReceipts, trashReport, restoreReport, listTrash,
 } from '../../lib/expenses.js';
 
@@ -84,10 +84,10 @@ async function getCampusMap(env) {
 }
 const applyCampus = (reports, map) => reports.map(r => ({ ...r, campus: cleanCampus(map[r.submitterEmail]) }));
 
-async function notify(context, to, subject, html, { newReport = false } = {}) {
+async function notify(context, to, subject, html, { newReport = false, toSubmitter = false } = {}) {
   const { env } = context;
   // 새 리포트 알림은 따로 켜져 있고, 나머지 메일은 EXPENSE_EMAIL_ENABLED(또는 환경변수 EXPENSE_EMAIL=on)일 때만 보낸다
-  const allowed = (newReport && NEW_REPORT_EMAIL_ENABLED) || EXPENSE_EMAIL_ENABLED || env.EXPENSE_EMAIL === 'on';
+  const allowed = (newReport && NEW_REPORT_EMAIL_ENABLED) || (toSubmitter && SUBMITTER_EMAIL_ENABLED) || EXPENSE_EMAIL_ENABLED || env.EXPENSE_EMAIL === 'on';
   if (!allowed || !env.RESEND_API_KEY || !to.length) return;
   context.waitUntil(
     sendEmail(env, { to, subject, html, replyTo: EXPENSE_REPLY_TO }).catch(e => console.error('expense notification failed:', e))
@@ -311,7 +311,7 @@ async function handlePatch(context) {
         }));
       await notify(context, [report.submitterEmail],
         `[경비 승인됨] ${formatKrw(report.total)}`,
-        reportEmailHtml({ heading: '경비 리포트가 승인되었습니다', intro: '회계 담당자에게 전달되었습니다. 송금이 완료되면 다시 알려드릴게요.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }));
+        reportEmailHtml({ heading: '경비 리포트가 승인되었습니다', intro: '회계 담당자에게 전달되었습니다. 송금이 완료되면 다시 알려드릴게요.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }), { toSubmitter: true });
     } else {
       await notify(context, [report.submitterEmail],
         `[경비 반려됨] ${formatKrw(report.total)}`,
@@ -319,7 +319,7 @@ async function handlePatch(context) {
           heading: '경비 리포트가 반려되었습니다',
           intro: `사유: ${note.replace(/</g, '&lt;')}`,
           report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기',
-        }));
+        }), { toSubmitter: true });
     }
     return Response.json({ ok: true, report }, { headers: CORS });
   }
@@ -364,7 +364,7 @@ async function handlePatch(context) {
     await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
     await notify(context, [report.submitterEmail],
       `[경비 송금 처리 완료] ${formatKrw(report.total)}`,
-      reportEmailHtml({ heading: '경비 송금 처리가 완료되었습니다', intro: '승인된 경비 리포트의 송금이 완료되었습니다.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }));
+      reportEmailHtml({ heading: '경비 송금 처리가 완료되었습니다', intro: '승인된 경비 리포트의 송금이 완료되었습니다.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }), { toSubmitter: true });
     return Response.json({ ok: true, report }, { headers: CORS });
   }
 
