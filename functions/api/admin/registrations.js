@@ -13,6 +13,7 @@
  */
 import { sendAlimtalk } from '../../lib/solapi.js';
 import { parseHubSessionToken, portalSession } from '../../lib/hubAccounts.js';
+import { ACCOUNTANT_EMAILS } from '../../lib/expenses.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -33,6 +34,12 @@ const SIBLING_CAMP_LABELS = {
 /** 캠프 관리자는 별도 토큰 없이 포탈 세션을 그대로 쓴다 — 로그인한(승인된) 포탈 멤버 누구나 보기·수정 가능. */
 async function verifyToken(request, env) {
   return !!(await portalSession(request, env));
+}
+
+/** 예약금 수납 · 최종 확정 · 되돌리기는 관리자/마스터 또는 회계 담당자만 (일반 멤버는 보기·그 밖의 편집만). */
+async function verifyProcessor(request, env) {
+  const s = await portalSession(request, env);
+  return !!s && (s.role === 'admin' || s.role === 'master' || ACCOUNTANT_EMAILS.includes(s.email));
 }
 
 /** 신청 삭제는 관리자/마스터만. */
@@ -309,7 +316,7 @@ export async function onRequestDelete(context) {
  */
 export async function onRequestPatch(context) {
   const { env, request } = context;
-  if (!await verifyToken(request, env)) {
+  if (!await verifyProcessor(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
   }
 

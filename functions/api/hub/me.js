@@ -4,7 +4,7 @@
  * Authorization: Bearer <포탈 세션 토큰>. 저장소 읽기 1~2회만 쓴다.
  */
 import { getAccount, isMasterEmail, isValidPhone, normalizeEmail, parseHubSessionToken, putAccount } from '../../lib/hubAccounts.js';
-import { pickName } from '../../lib/expenses.js';
+import { ACCOUNTANT_EMAILS, pickName } from '../../lib/expenses.js';
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 
 const H = { 'Cache-Control': 'no-store', 'Content-Type': 'application/json' };
@@ -28,6 +28,7 @@ const view = (email, account, session) => ({
   phone: account?.phone || '',
   campus: CAMPUS_OVERRIDES[email] || account?.campus || 'wolko',
   mustChangePassword: !!account?.mustChangePassword,
+  isAccountant: ACCOUNTANT_EMAILS.includes(email),
 });
 
 export async function onRequestGet({ env, request }) {

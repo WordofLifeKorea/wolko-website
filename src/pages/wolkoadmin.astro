@@ -1519,7 +1519,7 @@
           : '';
         let statusCell;
         if (regStatus === 'confirmed') {
-          const revertBtn = camperEditMode
+          const revertBtn = (camperEditMode && canProcess)
             ? `<button class="btn-revert" onclick="revertReg('${r.regId}','${r.campId}')" title="예약금확인 상태로 되돌리기"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg><span>예약금</span></button>`
             : '';
           statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
@@ -1529,12 +1529,12 @@
         } else if (regStatus === 'deposit') {
           statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
             <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">${t('depositConfirmed')}</span>${waitlistBadge}</span>
-            <button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">${t('finalConfirmBtn')}</button>
+            ${canProcess ? `<button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">${t('finalConfirmBtn')}</button>` : ''}
           </span>`;
         } else {
           statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
             <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">${t('pending')}</span>${waitlistBadge}</span>
-            <button class="btn-confirm btn-deposit" onclick="depositReg('${r.regId}','${r.campId}')">${t('depositBtn')}</button>
+            ${canProcess ? `<button class="btn-confirm btn-deposit" onclick="depositReg('${r.regId}','${r.campId}')">${t('depositBtn')}</button>` : ''}
           </span>`;
         }
         const campStyle = getCampRowStyle(r);
@@ -2940,7 +2940,19 @@
     }
 
     // ── 예약금 수납 ──
+    // 예약금 수납 · 최종 확정 · 되돌리기는 관리자/마스터 또는 회계 담당자만 (일반 멤버는 버튼이 보이지 않는다)
+    let canProcess = false;
+    function setCanProcess(v) { if (canProcess !== v) { canProcess = v; try { renderTable(); } catch (e) {} } }
+    async function loadMe() {
+      try {
+        const res = await fetch('/api/hub/me', { headers: authHeaders() });
+        if (!res.ok) return;
+        const me = await res.json();
+        setCanProcess(me.role === 'admin' || me.role === 'master' || !!me.isAccountant);
+      } catch (e) {}
+    }
     async function depositReg(regId, campId) {
+      if (!canProcess) return;
       if (!confirm(t('depositConfirmMsg'))) return;
       try {
         const res = await fetch('/api/admin/registrations', {
@@ -2963,6 +2975,7 @@
 
     // ── 확정 → 예약금 되돌리기 ──
     async function revertReg(regId, campId) {
+      if (!canProcess) return;
       if (!confirm(`최종확정을 취소하고 예약금확인 상태로 되돌리시겠습니까?\n잔금 입금 전인 경우에만 사용해주세요.`)) return;
       try {
         const res = await fetch('/api/admin/registrations', {
@@ -2985,6 +2998,7 @@
 
     // ── 최종 확정 ──
     async function confirmReg(regId, campId) {
+      if (!canProcess) return;
       if (!confirm(t('finalConfirmMsg'))) return;
       try {
         const res = await fetch('/api/admin/registrations', {
@@ -3191,8 +3205,10 @@
     const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
     const hubSession = hubToken ? parseHubToken(hubToken) : null;
     if (hubSession) {
+      canProcess = hubSession.role === 'admin' || hubSession.role === 'master';
       document.getElementById('loginScreen').classList.add('hidden');
       setTimeout(() => { document.getElementById('loginScreen').style.display = 'none'; }, 0);
+      loadMe();
       loadRegs();
     }
 
