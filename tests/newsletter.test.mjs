@@ -166,3 +166,62 @@ test('이미지: 작성자만 올리고, 누구나 볼 수 있으며 허용 형�
   assert.equal(r.status, 200); assert.equal(r.headers.get('content-type'), 'image/png');
   assert.equal((await call(Img, 'GET', '/api/newsletter/image?id=zzzzzzzzzz')).status, 404);
 });
+
+test('머리글 템플릿: 5종 모두 제목 · 부제 · 이름이 들어가고, 모르는 값은 클래식으로, 사진 배너는 우리 이미지만 쓴다', async () => {
+  const { renderHeader, cleanHeader, emailHtml, HEADER_TEMPLATES } = await import('../functions/lib/newsletter.js');
+  assert.deepEqual(HEADER_TEMPLATES, ['classic', 'banner', 'minimal', 'warm', 'night']);
+  for (const template of HEADER_TEMPLATES) {
+    const html = renderHeader({ title: '<b>소식</b>', header: { template, subtitle: '10월호', imageId: 'abcdef123456' } }, { displayName: '에이든' }, 'https://wolko.org');
+    assert.match(html, /&lt;b&gt;소식&lt;\/b&gt;/, template);
+    assert.match(html, /10월호/, template);
+    assert.match(html, /에이든/, template);
+    assert.doesNotMatch(html, /<b>소식/);
+  }
+  assert.equal(cleanHeader({ template: 'evil', imageId: '../x', subtitle: 'a'.repeat(200) }).template, 'classic');
+  assert.equal(cleanHeader({ template: 'evil', imageId: '../x' }).imageId, '');
+  assert.equal(cleanHeader({ subtitle: 'a'.repeat(200) }).subtitle.length, 80);
+  assert.match(renderHeader({ title: 'x', header: { template: 'banner', imageId: 'abcdef123456' } }, { displayName: 'A' }, 'https://wolko.org'), /url\('https:\/\/wolko\.org\/api\/newsletter\/image\?id=abcdef123456'\)/);
+  const mail = emailHtml({ post: { title: '제목', mode: 'simple', body: '본문', header: { template: 'night' } }, author: { displayName: '에이든' }, origin: 'https://wolko.org', webUrl: '', unsubUrl: 'https://u' });
+  assert.match(mail, /#0b2230/);
+  assert.match(mail, /본문/);
+});
+
+test('저장한 글에 머리글 설정이 남고 공개 글/미리보기에서 머리글 HTML 이 나온다', async () => {
+  const { env, call } = setup();
+  const t = await author(env);
+  await call(Links, 'PUT', '/api/newsletter/links', t.master, { email: 'aiden@wol.org', slug: 'aiden', displayName: '에이든' });
+  const body = { title: '소식', mode: 'simple', body: '본문', header: { template: 'warm', subtitle: '10월호' } };
+  const pv = await (await call(Posts, 'POST', '/api/newsletter/posts?preview=1', t.me, body)).json();
+  assert.match(pv.headerHtml, /#9a3b22/);
+  const { id } = await (await call(Posts, 'POST', '/api/newsletter/posts', t.me, body)).json();
+  assert.equal((await (await call(Posts, 'GET', `/api/newsletter/posts?mine=1&id=${id}`, t.me)).json()).post.header.template, 'warm');
+  await call(Posts, 'PATCH', '/api/newsletter/posts', t.me, { id, action: 'publish' });
+  const pub = await (await call(Posts, 'GET', `/api/newsletter/posts?slug=aiden&id=${id}`)).json();
+  assert.match(pub.post.headerHtml, /10월호/);
+});
+
+test('블록 꾸미기: 배경색·글자색·정렬·크기·여백·둥근 모서리는 검증된 값만 남고, 잘못된 값은 버린다', async () => {
+  const { cleanBlocks, renderBlocks, cleanStyle } = await import('../functions/lib/newsletter.js');
+  assert.deepEqual(cleanStyle({ bg: '#EEF6F8', color: 'red', align: 'center', size: 'l', pad: 'huge', round: true, evil: 1 }), { bg: '#eef6f8', align: 'center', size: 'l', round: true });
+  assert.deepEqual(cleanStyle({ align: 'left', size: 'm' }), {});
+  const blocks = cleanBlocks([{ type: 'text', text: '안녕', style: { bg: '#fff4e5', color: '#c42a36', align: 'center', size: 'l', round: true } }, { type: 'button', label: 'Go', url: 'https://wolko.org', style: { bg: '#168a52', color: '#ffffff', round: true } }, { type: 'text', text: '평범' }]);
+  assert.equal(blocks[2].style, undefined);
+  const html = renderBlocks(blocks, '');
+  assert.match(html, /background:#fff4e5;padding:16px 20px;border-radius:14px;text-align:center/);
+  assert.match(html, /color:#c42a36/);
+  assert.match(html, /font-size:20px/);
+  assert.match(html, /background:#168a52;color:#ffffff;font-weight:700/);
+  assert.match(html, /border-radius:999px/);
+  assert.equal(renderBlocks([blocks[2]], '').includes('<table'), false, '꾸미지 않은 블록은 그대로');
+});
+
+test('작성 화면: 블록 편집기만 쓰고(간단 모드 없음), 인용 블록은 추가 목록에서 빠지고, PDF 저장과 머리글 템플릿이 있다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/newsletter/index.astro', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /data-mode=/);
+  assert.doesNotMatch(src, /\['quote', 'addQuote'\]/);
+  assert.match(src, /data-act="pdf"/);
+  assert.match(src, /html2pdf/);
+  assert.match(src, /data-tpl=/);
+  assert.match(src, /data-spick=/);
+});

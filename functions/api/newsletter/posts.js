@@ -11,7 +11,7 @@
  */
 import { portalSession } from '../../lib/hubAccounts.js';
 import {
-  SLUG_RE, ID_RE, postKey, listPosts, authorFor, cleanPost, hasContent, renderBody, excerpt, firstImageId,
+  SLUG_RE, ID_RE, postKey, listPosts, authorFor, cleanPost, hasContent, renderBody, renderHeader, excerpt, firstImageId,
   newId, err, ok, LINK_PREFIX,
 } from '../../lib/newsletter.js';
 
@@ -42,7 +42,8 @@ export async function onRequestGet({ env, request }) {
     if (!ID_RE.test(id)) return err('글을 찾을 수 없어요.', 404);
     const p = await env.CAMP_KV.get(postKey(slug, id), 'json');
     if (!p || !p.publishedAt) return err('글을 찾을 수 없어요.', 404);
-    return Response.json({ post: { ...summary(p), html: renderBody(p, '') }, author: { slug, displayName: await displayNameOf(env, slug) } }, { headers: { 'Cache-Control': 'public, max-age=60' } });
+    const author = { slug, displayName: await displayNameOf(env, slug) };
+    return Response.json({ post: { ...summary(p), html: renderBody(p, ''), headerHtml: renderHeader(p, author, '') }, author }, { headers: { 'Cache-Control': 'public, max-age=60' } });
   }
   const posts = (await listPosts(env, slug)).filter(p => p.publishedAt);
   const name = await linkedName(env, slug);
@@ -56,7 +57,7 @@ export async function onRequestPost({ env, request }) {
   const a = await authorFor(env, s, b?.slug || null);
   if (!a) return err('본인 소개 페이지와 연결되어 있지 않아요.', 403);
   const clean = cleanPost(b);
-  if (new URL(request.url).searchParams.get('preview')) return ok({ html: renderBody(clean, ''), title: clean.title });
+  if (new URL(request.url).searchParams.get('preview')) return ok({ html: renderBody(clean, ''), headerHtml: renderHeader(clean, a, ''), title: clean.title });
   if (!clean.title) return err('제목을 입력해 주세요.');
   const now = new Date().toISOString();
   let post;

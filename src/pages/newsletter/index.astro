@@ -21,7 +21,7 @@ const team = (await getCollection('team'))
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/expense.css?v=58">
-  <link rel="stylesheet" href="/newsletter.css?v=1">
+  <link rel="stylesheet" href="/newsletter.css?v=3">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -66,6 +66,10 @@ const team = (await getCollection('team'))
         emptyPosts: '아직 쓴 글이 없어요. "새 글 쓰기"로 시작해 보세요.',
         stDraft: '초안', stPub: '게시됨', stSent: n => '발송 ' + n + '명',
         edited: '수정', untitled: '(제목 없음)',
+        hdrLabel: '머리글 디자인', hdrSubtitle: '부제 (선택)', hdrSubtitlePh: '예: 2026년 10월 소식', hdrImage: '머리글 사진', hdrPickImage: '사진 고르기', hdrChangeImage: '사진 바꾸기', hdrRemoveImage: '사진 빼기', hdrNeedImage: '이 디자인은 사진이 있으면 더 멋져요.',
+        tplClassic: '클래식', tplBanner: '사진 배너', tplMinimal: '미니멀', tplWarm: '따뜻한', tplNight: '밤하늘',
+        pdf: 'PDF로 저장', pdfMaking: 'PDF 만드는 중…', tPdf: 'PDF를 저장했어요. 카톡에서 파일로 보낼 수 있어요.', tPdfFail: 'PDF를 만들지 못했어요.',
+        stylSum: '꾸미기', stBg: '배경색', stColor: '글자색', stBtnBg: '버튼 색', stBtnColor: '버튼 글자색', stAlign: '정렬', alL: '왼쪽', alC: '가운데', alR: '오른쪽', stSize: '글자 크기', szS: '작게', szM: '보통', szL: '크게', stPad: '안쪽 여백', pdAuto: '자동', pdNone: '없음', pdNormal: '보통', pdLarge: '넓게', stRound: '둥근 모서리', stPill: '알약 모양', stNone: '없음',
         title: '제목', titlePh: '이번 소식의 제목', modeSimple: '간단하게 쓰기', modeBlocks: '블록으로 만들기',
         bodyLabel: '본문', bodyPh: '근황, 기도 제목, 감사한 일을 자유롭게 적어 주세요.\n\n빈 줄로 문단이 나뉘어요.',
         fmtHint: '**굵게**  *기울임*  [글자](https://주소)  /  "# "제목  "- "목록  "> "인용 — 위 버튼으로 넣을 수 있어요.',
@@ -108,6 +112,10 @@ const team = (await getCollection('team'))
         emptyPosts: 'No posts yet. Start with "New post".',
         stDraft: 'Draft', stPub: 'Published', stSent: n => 'Sent to ' + n,
         edited: 'Edited', untitled: '(untitled)',
+        hdrLabel: 'Header design', hdrSubtitle: 'Subtitle (optional)', hdrSubtitlePh: 'e.g. October 2026 update', hdrImage: 'Header photo', hdrPickImage: 'Choose photo', hdrChangeImage: 'Change photo', hdrRemoveImage: 'Remove photo', hdrNeedImage: 'This design looks best with a photo.',
+        tplClassic: 'Classic', tplBanner: 'Photo banner', tplMinimal: 'Minimal', tplWarm: 'Warm', tplNight: 'Night',
+        pdf: 'Save as PDF', pdfMaking: 'Creating PDF…', tPdf: 'PDF saved. You can send the file in a chat app.', tPdfFail: 'Could not create the PDF.',
+        stylSum: 'Style', stBg: 'Background', stColor: 'Text color', stBtnBg: 'Button color', stBtnColor: 'Button text', stAlign: 'Align', alL: 'Left', alC: 'Center', alR: 'Right', stSize: 'Text size', szS: 'Small', szM: 'Normal', szL: 'Large', stPad: 'Padding', pdAuto: 'Auto', pdNone: 'None', pdNormal: 'Normal', pdLarge: 'Large', stRound: 'Rounded corners', stPill: 'Pill shape', stNone: 'None',
         title: 'Title', titlePh: 'Title of this update', modeSimple: 'Write simply', modeBlocks: 'Build with blocks',
         bodyLabel: 'Body', bodyPh: 'Share news, prayer requests and thanks.\n\nA blank line starts a new paragraph.',
         fmtHint: '**bold**  *italic*  [text](https://url)  /  "# " heading  "- " list  "> " quote — or use the buttons above.',
@@ -206,14 +214,33 @@ const team = (await getCollection('team'))
     }
 
     /* ─────────── 편집기 ─────────── */
-    const blankPost = () => ({ id: '', title: '', mode: 'simple', body: '', button: { label: '', url: '' }, blocks: [], publishedAt: null, sentAt: null });
+    const blankPost = () => ({ id: '', title: '', mode: 'blocks', body: '', button: { label: '', url: '' }, blocks: [{ type: 'text', text: '' }], header: { template: 'classic', imageId: '', subtitle: '' }, publishedAt: null, sentAt: null });
     async function openPost(id) {
       const d = await api(postsUrl('&id=' + encodeURIComponent(id)));
       const p = d.post;
-      S.post = { ...blankPost(), ...p, button: p.button || { label: '', url: '' }, blocks: p.blocks || [], body: p.body || '' };
+      S.post = { ...blankPost(), ...p, button: p.button || { label: '', url: '' }, blocks: p.blocks || [], body: p.body || '', header: { ...blankPost().header, ...(p.header || {}) } };
+      if (S.post.mode !== 'blocks') { S.post.blocks = toBlocks(S.post); S.post.mode = 'blocks'; S.post.body = ''; S.post.button = { label: '', url: '' }; }
       S.dirty = false; await show('edit');
     }
     function newPost() { S.post = blankPost(); S.dirty = false; show('edit'); }
+
+
+    const BG_PRESETS = ['#eef6f8', '#fff4e5', '#e9f7ef', '#fdeeee', '#f3edfb', '#004f68', '#0b2230'];
+    const FG_PRESETS = ['#24323a', '#ffffff', '#005c76', '#c42a36', '#168a52'];
+    function stylePanel(b, i) {
+      const st = b.style || {}, isBtn = b.type === 'button', isDiv = b.type === 'divider', isImg = b.type === 'image';
+      if (isImg) return '';
+      const sw = (key, list) => list.map(c => `<button type="button" class="nl-sw ${st[key] === c ? 'on' : ''}" style="background:${c}" data-spick="${key}:${c}" data-i="${i}" aria-label="${c}"></button>`).join('');
+      const color = (key, label, list) => `<div class="nl-st"><span>${label}</span><div class="nl-sws">${sw(key, list)}<input type="color" data-sf="${key}" data-i="${i}" value="${st[key] || (key === 'bg' ? '#ffffff' : '#24323a')}" aria-label="${label}"><button type="button" class="nl-sw none ${st[key] ? '' : 'on'}" data-spick="${key}:" data-i="${i}" title="${t('stNone')}" aria-label="${t('stNone')}">∅</button></div></div>`;
+      const sel = (key, label, opts, dflt) => `<div class="nl-st"><span>${label}</span><select class="ex-select" data-sf="${key}" data-i="${i}">${opts.map(([v, l]) => `<option value="${v}" ${(st[key] || dflt) === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`;
+      const open = Object.keys(st).length || (S.styleOpen && S.styleOpen.has(i));
+      return `<details class="nl-style" data-sopen="${i}" ${open ? 'open' : ''}><summary>🎨 ${t('stylSum')}</summary>
+        ${isDiv ? color('color', t('stColor'), ['#dfe8ec', '#b9d3dc', '#004f68', '#c42a36'])
+        : color('bg', t(isBtn ? 'stBtnBg' : 'stBg'), BG_PRESETS) + color('color', t(isBtn ? 'stBtnColor' : 'stColor'), FG_PRESETS)}
+        ${isDiv ? '' : `<div class="nl-st-grid">${sel('align', t('stAlign'), [['left', t('alL')], ['center', t('alC')], ['right', t('alR')]], isBtn ? 'center' : 'left')}${sel('size', t('stSize'), [['s', t('szS')], ['m', t('szM')], ['l', t('szL')]], 'm')}${isBtn ? '' : sel('pad', t('stPad'), [['', t('pdAuto')], ['none', t('pdNone')], ['normal', t('pdNormal')], ['large', t('pdLarge')]], '')}</div>
+        <label class="nl-check" style="margin:6px 0 0"><input type="checkbox" data-sf="round" data-i="${i}" ${st.round ? 'checked' : ''}><span>${t(isBtn ? 'stPill' : 'stRound')}</span></label>`}
+      </details>`;
+    }
 
     function blockEditor(b, i, n) {
       const head = label => `<div class="nl-block-head"><span>${esc(label)}</span><button data-bact="up" data-i="${i}" ${i === 0 ? 'disabled' : ''} title="${t('up')}" aria-label="${t('up')}">↑</button><button data-bact="down" data-i="${i}" ${i === n - 1 ? 'disabled' : ''} title="${t('down')}" aria-label="${t('down')}">↓</button><button data-bact="del" data-i="${i}" title="${t('del')}" aria-label="${t('del')}">✕</button></div>`;
@@ -222,36 +249,37 @@ const team = (await getCollection('team'))
         : `<input class="ex-input" data-bf="${k}" data-i="${i}" value="${esc(b[k] || '')}" placeholder="${esc(ph)}">`;
       let inner = '';
       if (b.type === 'heading') inner = head(t('bHeading')) + f('text', t('headingPh'));
-      else if (b.type === 'text') inner = head(t('bText')) + f('text', t('textPh'), 'textarea');
+      else if (b.type === 'text') inner = head(t('bText')) + `<div class="nl-bar">${[['bold', '<b>B</b>', 'tbBold'], ['italic', '<i>I</i>', 'tbItalic'], ['link', '🔗', 'tbLink'], ['head', 'H', 'tbHead'], ['list', '•', 'tbList']].map(([k, ic, l]) => `<button type="button" data-btb="${k}" data-i="${i}" title="${t(l)}" aria-label="${t(l)}">${ic}</button>`).join('')}</div>` + f('text', t('textPh'), 'textarea');
       else if (b.type === 'image') inner = head(t('bImage')) + (b.id ? `<img class="nl-thumb" src="/api/newsletter/image?id=${esc(b.id)}" alt="">` : '') + `<button class="ex-btn sm" data-bact="pick" data-i="${i}">${b.id ? t('changeImage') : t('pickImage')}</button> ` + f('caption', t('captionPh'));
       else if (b.type === 'button') inner = head(t('bButton')) + `<div class="nl-grid2">${f('label', t('buttonLabelPh'))}${f('url', t('buttonUrlPh'))}</div>`;
       else if (b.type === 'quote') inner = head(t('bQuote')) + f('text', t('quotePh'), 'textarea') + f('cite', t('citePh'));
       else if (b.type === 'verse') inner = head(t('bVerse')) + f('text', t('versePh'), 'textarea') + f('ref', t('refPh'));
       else inner = head(t('bDivider')) + '<hr style="border:0;border-top:1px solid var(--border);margin:4px 0">';
-      return `<div class="nl-block" data-block="${i}">${inner}</div>`;
+      return `<div class="nl-block" data-block="${i}">${inner}${stylePanel(b, i)}</div>`;
     }
 
     function renderEditor() {
       const p = S.post;
       const subsCount = S.subs ? S.subs.counts.active : null;
+const TPLS = [['classic', 'tplClassic', '#004f68', '#fff'], ['banner', 'tplBanner', 'linear-gradient(180deg,#5fa7b8,#12495c)', '#fff'], ['minimal', 'tplMinimal', '#fff', '#102936'], ['warm', 'tplWarm', 'linear-gradient(135deg,#9a3b22,#d9772f)', '#fff'], ['night', 'tplNight', '#0b2230', '#73d1f5']];
+      const hdrUi = `<div class="nl-field"><label>${t('hdrLabel')}</label>
+        <div class="nl-tpls">${TPLS.map(([k, l, bg, fg]) => `<button type="button" class="nl-tpl ${p.header.template === k ? 'on' : ''}" data-tpl="${k}"><span class="nl-tpl-sw" style="background:${bg};color:${fg}"><i></i><b></b></span>${t(l)}</button>`).join('')}</div>
+        <div class="nl-grid2" style="margin-top:10px"><input class="ex-input" id="nlHdrSub" value="${esc(p.header.subtitle)}" placeholder="${esc(t('hdrSubtitlePh'))}" maxlength="80">
+        <div>${p.header.template === 'banner' ? `${p.header.imageId ? `<img class="nl-thumb" style="max-height:70px" src="/api/newsletter/image?id=${esc(p.header.imageId)}" alt="">` : ''}<button type="button" class="ex-btn sm" data-act="hdrimg">${p.header.imageId ? t('hdrChangeImage') : t('hdrPickImage')}</button>${p.header.imageId ? ` <button type="button" class="ex-btn sm" data-act="hdrimg-del">${t('hdrRemoveImage')}</button>` : `<p class="nl-hint" style="margin-top:6px">${esc(t('hdrNeedImage'))}</p>`}` : ''}</div></div></div>`;
       const blocksUi = `<div id="nlBlocks">${p.blocks.map((b, i) => blockEditor(b, i, p.blocks.length)).join('')}</div>
-        <div class="nl-add">${[['heading', 'addHeading'], ['text', 'addText'], ['image', 'addImage'], ['button', 'addButton'], ['quote', 'addQuote'], ['verse', 'addVerse'], ['divider', 'addDivider']].map(([k, l]) => `<button data-badd="${k}">${t(l)}</button>`).join('')}</div>`;
-      const simpleUi = `<div class="nl-field"><label>${t('bodyLabel')}</label>
-        <div class="nl-bar">${[['bold', '<b>B</b>', 'tbBold'], ['italic', '<i>I</i>', 'tbItalic'], ['link', '🔗', 'tbLink'], ['head', 'H', 'tbHead'], ['list', '•', 'tbList'], ['quote', '❝', 'tbQuote'], ['image', '🖼', 'tbImage']].map(([k, ic, l]) => `<button type="button" data-tb="${k}" title="${t(l)}" aria-label="${t(l)}">${ic}</button>`).join('')}</div>
-        <textarea class="ex-textarea nl-body" id="nlBody" placeholder="${esc(t('bodyPh'))}">${esc(p.body)}</textarea><p class="nl-hint">${esc(t('fmtHint'))}</p></div>
-        <div class="nl-grid2"><div class="nl-field"><label>${t('buttonLabel')}</label><input class="ex-input" id="nlBtnLabel" value="${esc(p.button.label)}" placeholder="${esc(t('buttonLabelPh'))}"></div>
-        <div class="nl-field"><label>${t('buttonUrl')}</label><input class="ex-input" id="nlBtnUrl" value="${esc(p.button.url)}" placeholder="${esc(t('buttonUrlPh'))}"></div></div>`;
+        <div class="nl-add">${[['heading', 'addHeading'], ['text', 'addText'], ['image', 'addImage'], ['button', 'addButton'], ['verse', 'addVerse'], ['divider', 'addDivider']].map(([k, l]) => `<button data-badd="${k}">${t(l)}</button>`).join('')}</div>`;
       $('nlView').innerHTML = `
         <div class="nl-editor">
           <div class="ex-card">
             <div class="nl-actions" style="margin:0 0 14px"><button class="ex-btn sm" data-act="back">${t('back')}</button><span class="grow"></span>
               <span class="nl-saved" id="nlSaved"></span></div>
             <div class="nl-field"><label>${t('title')}</label><input class="ex-input nl-title-input" id="nlTitle" value="${esc(p.title)}" placeholder="${esc(t('titlePh'))}" maxlength="120"></div>
-            <div class="nl-field"><div class="nl-seg" role="group"><button data-mode="simple" class="${p.mode === 'simple' ? 'on' : ''}">${t('modeSimple')}</button><button data-mode="blocks" class="${p.mode === 'blocks' ? 'on' : ''}">${t('modeBlocks')}</button></div></div>
-            ${p.mode === 'blocks' ? blocksUi : simpleUi}
+            ${hdrUi}
+            ${blocksUi}
             <div class="nl-actions">
               <button class="ex-btn" data-act="save">${t('save')}</button>
               <button class="ex-btn" data-act="test">${t('test')}</button>
+              <button class="ex-btn" data-act="pdf">${t('pdf')}</button>
               <button class="ex-btn ${p.publishedAt ? '' : 'green'}" data-act="${p.publishedAt ? 'unpublish' : 'publish'}">${p.publishedAt ? t('unpublish') : t('publish')}</button>
               <span class="grow"></span>
               ${p.id ? `<button class="ex-btn danger sm" data-act="delete">${t('delPost')}</button>` : ''}
@@ -259,10 +287,9 @@ const team = (await getCollection('team'))
             <div class="nl-actions"><button class="ex-btn primary" data-act="send" id="nlSendBtn">${t('sendSubs', subsCount ?? '…')}</button></div>
           </div>
           <div class="nl-preview"><p class="nl-preview-label">${t('preview').toUpperCase()}</p>
-            <div class="nl-preview-card"><div class="nl-preview-head" id="nlPvHead"></div><div class="nl-preview-body"><h1 id="nlPvTitle"></h1><div id="nlPvHtml"></div></div></div>
+            <div class="nl-preview-card"><div id="nlPvHeader"></div><div class="nl-preview-body"><div id="nlPvHtml"></div></div></div>
             <p class="nl-hint">${t('previewHint')}</p></div>
         </div>`;
-      $('nlPvHead').textContent = 'WOLKO · ' + teamName(S.acting || S.link?.slug || '');
       if (!S.subs) loadSubs().then(() => { const b = $('nlSendBtn'); if (b && S.view === 'edit') b.textContent = t('sendSubs', S.subs.counts.active); }).catch(() => {});
       schedulePreview(true);
     }
@@ -270,10 +297,10 @@ const team = (await getCollection('team'))
     const collect = () => {
       const p = S.post;
       p.title = ($('nlTitle')?.value ?? p.title);
-      if (p.mode === 'simple') { p.body = $('nlBody')?.value ?? p.body; p.button = { label: $('nlBtnLabel')?.value ?? '', url: $('nlBtnUrl')?.value ?? '' }; }
+      p.header.subtitle = $('nlHdrSub')?.value ?? p.header.subtitle;
       return p;
     };
-    const payload = () => { const p = collect(); return { id: p.id || undefined, slug: S.acting || undefined, title: p.title, mode: p.mode, body: p.body, button: p.button, blocks: p.blocks }; };
+    const payload = () => { const p = collect(); return { id: p.id || undefined, slug: S.acting || undefined, title: p.title, mode: p.mode, body: p.body, button: p.button, blocks: p.blocks, header: p.header }; };
 
     function schedulePreview(now) {
       clearTimeout(S.prevTimer);
@@ -283,7 +310,7 @@ const team = (await getCollection('team'))
         try {
           const d = await api('/api/newsletter/posts?preview=1', { method: 'POST', body: JSON.stringify(payload()) });
           if (seq !== S.pvSeq || !$('nlPvHtml')) return;
-          $('nlPvTitle').textContent = S.post.title || '';
+          $('nlPvHeader').innerHTML = d.headerHtml || '';
           $('nlPvHtml').innerHTML = d.html || `<p style="color:#9ab">${esc(t('previewEmpty'))}</p>`;
         } catch (e) { /* 미리보기 실패는 조용히 */ }
       }, now ? 0 : 450);
@@ -316,19 +343,6 @@ const team = (await getCollection('team'))
       if (p.button?.label && p.button?.url) blocks.push({ type: 'button', label: p.button.label, url: p.button.url });
       return blocks;
     }
-    function toSimple(p) {
-      const parts = []; let button = { label: '', url: '' };
-      for (const b of p.blocks) {
-        if (b.type === 'heading') parts.push('# ' + b.text);
-        else if (b.type === 'text') parts.push(b.text);
-        else if (b.type === 'quote') parts.push(String(b.text || '').split('\n').map(l => '> ' + l).join('\n') + (b.cite ? '\n> — ' + b.cite : ''));
-        else if (b.type === 'verse') parts.push('> ' + (b.text || '') + (b.ref ? '\n> — ' + b.ref : ''));
-        else if (b.type === 'image' && b.id) parts.push(`[[image:${b.id}|${b.caption || ''}]]`);
-        else if (b.type === 'button' && !button.label) button = { label: b.label || '', url: b.url || '' };
-      }
-      return { body: parts.filter(Boolean).join('\n\n'), button };
-    }
-
     /* 사진: 1600px 이하 JPEG 로 줄여서 올린다 */
     function pickFile() { return new Promise(res => { const f = $('nlFile'); f.value = ''; f.onchange = () => res(f.files[0] || null); f.click(); }); }
     async function uploadImage(file) {
@@ -351,8 +365,8 @@ const team = (await getCollection('team'))
       const s = ta.selectionStart, v = ta.value, ls = v.lastIndexOf('\n', s - 1) + 1;
       ta.value = v.slice(0, ls) + prefix + v.slice(ls); ta.focus(); ta.selectionStart = ta.selectionEnd = s + prefix.length;
     }
-    async function toolbar(kind) {
-      const ta = $('nlBody'); if (!ta) return;
+    async function toolbar(kind, i) {
+      const ta = document.querySelector(`[data-bf="text"][data-i="${i}"]`); if (!ta) return;
       if (kind === 'bold') wrapSel(ta, '**', '**', lang === 'en' ? 'bold' : '굵게');
       else if (kind === 'italic') wrapSel(ta, '*', '*', lang === 'en' ? 'italic' : '기울임');
       else if (kind === 'link') { const u = prompt('https://'); if (u) wrapSel(ta, '[', `](${u.trim()})`, lang === 'en' ? 'link text' : '링크 글자'); }
@@ -365,6 +379,45 @@ const team = (await getCollection('team'))
         catch (e) { toast(e.message || t('tImageFail'), true); return; }
       }
       markDirty();
+    }
+
+
+    /* PDF 로 저장 — 글 전체를 한 장(긴 세로 페이지)짜리 PDF 파일로 만든다. 카카오톡 등 메신저에 파일로 보내기 좋다. */
+    let pdfLib = null;
+    function loadPdfLib() {
+      if (window.html2pdf) return Promise.resolve();
+      return pdfLib || (pdfLib = new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        s.onload = res; s.onerror = () => { pdfLib = null; rej(new Error(t('tPdfFail'))); };
+        document.head.appendChild(s);
+      }));
+    }
+    async function exportPdf(returnBlob) {
+      collect();
+      if (!S.post.title.trim()) return toast(t('needTitle'), true);
+      toast(t('pdfMaking'));
+      const [d] = await Promise.all([api('/api/newsletter/posts?preview=1', { method: 'POST', body: JSON.stringify(payload()) }), loadPdfLib()]);
+      const W = 680;
+      // html2pdf 는 대상 요소를 복제해서 그리므로, 대상은 위치 지정이 없는 평범한 요소여야 한다(바깥 상자만 화면 밖에 둔다)
+      const holder = document.createElement('div');
+      holder.style.cssText = 'position:fixed;left:-10000px;top:0;width:680px;';
+      const box = document.createElement('div');
+      box.style.cssText = `width:${W}px;background:#fff;color:#24323a;font-family:-apple-system,'Segoe UI','Noto Sans KR',Arial,sans-serif;`;
+      box.innerHTML = `${d.headerHtml || ''}<div style="padding:22px 28px 26px;">${d.html || ''}</div><div style="padding:14px 28px;background:#f6f9fa;font-size:12px;color:#74848c;">WOLKO · ${esc(teamName(S.acting || S.link?.slug || ''))} · wolko.org</div>`;
+      holder.appendChild(box); document.body.appendChild(holder);
+      try {
+        await Promise.all([...box.querySelectorAll('img')].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; })));
+        const h = box.scrollHeight;
+        const worker = window.html2pdf().set({
+          margin: 0, filename: (S.post.title.trim().replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 60) || 'newsletter') + '.pdf',
+          image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: W },
+          jsPDF: { unit: 'px', format: [W, h], orientation: 'portrait', hotfixes: ['px_scaling'] }, pagebreak: { mode: [] },
+        }).from(box);
+        if (returnBlob) return await worker.outputPdf('blob');
+        await worker.save(); toast(t('tPdf'));
+      } catch (e) { toast(t('tPdfFail'), true); }
+      finally { holder.remove(); }
     }
 
     /* ─────────── 구독자 ─────────── */
@@ -403,16 +456,17 @@ const team = (await getCollection('team'))
 
     /* ─────────── 이벤트 ─────────── */
     document.addEventListener('click', async e => {
-      const el = e.target.closest('[data-act],[data-tab],[data-open],[data-mode],[data-tb],[data-bact],[data-badd],[data-sub-del],[data-unlink]'); if (!el) return;
+      const el = e.target.closest('[data-act],[data-spick],[data-tpl],[data-tab],[data-open],[data-btb],[data-bact],[data-badd],[data-sub-del],[data-unlink]'); if (!el) return;
       try {
+        if (el.dataset.spick) {
+          collect(); const [k, ...v] = el.dataset.spick.split(':'), bl = S.post.blocks[+el.dataset.i]; bl.style = bl.style || {};
+          if (v.join(':')) bl.style[k] = v.join(':'); else delete bl.style[k];
+          (S.styleOpen = S.styleOpen || new Set()).add(+el.dataset.i); renderEditorKeep(); return markDirty();
+        }
+        if (el.dataset.tpl) { collect(); S.post.header.template = el.dataset.tpl; renderEditor(); return markDirty(); }
         if (el.dataset.tab) { if (S.view === 'edit' && S.dirty) await savePost(true); return show(el.dataset.tab); }
         if (el.dataset.open) return openPost(el.dataset.open);
-        if (el.dataset.mode) {
-          const p = collect(); if (p.mode === el.dataset.mode) return;
-          if (el.dataset.mode === 'blocks') { p.blocks = toBlocks(p); p.mode = 'blocks'; } else { Object.assign(p, toSimple(p)); p.mode = 'simple'; }
-          renderEditor(); return markDirty();
-        }
-        if (el.dataset.tb) return toolbar(el.dataset.tb);
+        if (el.dataset.btb) { await toolbar(el.dataset.btb, el.dataset.i); S.post.blocks[+el.dataset.i].text = document.querySelector(`[data-bf="text"][data-i="${el.dataset.i}"]`).value; return; }
         if (el.dataset.badd) { collect(); S.post.blocks.push({ type: el.dataset.badd }); renderEditor(); return markDirty(); }
         if (el.dataset.bact) {
           collect(); const i = +el.dataset.i, bl = S.post.blocks, act = el.dataset.bact;
@@ -425,6 +479,9 @@ const team = (await getCollection('team'))
         if (el.dataset.subDel) { if (!confirm(t('cRemove', el.dataset.subDel))) return; await api('/api/newsletter/subscribers?email=' + encodeURIComponent(el.dataset.subDel) + slugQ('&'), { method: 'DELETE' }); return showSubs(); }
         if (el.dataset.unlink) { if (!confirm(t('cUnlink', el.dataset.unlink))) return; await api('/api/newsletter/links?email=' + encodeURIComponent(el.dataset.unlink), { method: 'DELETE' }); await loadLinks(); renderWho(); renderTabs(); return showLinks(); }
         const act = el.dataset.act;
+        if (act === 'hdrimg') { collect(); const f = await pickFile(); if (!f) return; S.post.header.imageId = await uploadImage(f); renderEditor(); return markDirty(); }
+        if (act === 'hdrimg-del') { collect(); S.post.header.imageId = ''; renderEditor(); return markDirty(); }
+        if (act === 'pdf') return exportPdf();
         if (act === 'new') return newPost();
         if (act === 'back') { if (S.dirty) await savePost(true); return show('posts'); }
         if (act === 'save') { if (await savePost(false)) renderEditorKeep(); return; }
@@ -458,7 +515,15 @@ const team = (await getCollection('team'))
     function renderEditorKeep() { collect(); const y = scrollY; renderEditor(); scrollTo(0, y); }
     document.addEventListener('input', e => {
       const el = e.target;
-      if (el.id === 'nlTitle' || el.id === 'nlBody' || el.id === 'nlBtnLabel' || el.id === 'nlBtnUrl') return markDirty();
+      if (el.id === 'nlTitle' || el.id === 'nlHdrSub') return markDirty();
+      if (el.dataset.sf !== undefined) {
+        const bl = S.post.blocks[+el.dataset.i]; bl.style = bl.style || {};
+        const v = el.type === 'checkbox' ? el.checked : el.value;
+        if (v === '' || v === false || (el.dataset.sf === 'align' && v === 'left') || (el.dataset.sf === 'size' && v === 'm')) delete bl.style[el.dataset.sf]; else bl.style[el.dataset.sf] = v;
+        (S.styleOpen = S.styleOpen || new Set()).add(+el.dataset.i);
+        if (el.type === 'color') { const nn = el.parentElement.querySelector('.none'); if (nn) nn.classList.remove('on'); }
+        return markDirty();
+      }
       if (el.dataset.bf !== undefined) { S.post.blocks[+el.dataset.i][el.dataset.bf] = el.value; markDirty(); }
     });
     document.addEventListener('change', async e => {
