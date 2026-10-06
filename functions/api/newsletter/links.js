@@ -1,13 +1,13 @@
 /**
  * 포탈 계정 ↔ 본인 소개 페이지 연결
- * GET    /api/newsletter/links           → { me: {slug, displayName}|null, links?: [...] }   (links 는 마스터/관리자만)
- * PUT    /api/newsletter/links           { email, slug, displayName }   마스터/관리자만
- * DELETE /api/newsletter/links?email=    마스터/관리자만
+ * GET    /api/newsletter/links           → { me: {slug, displayName}|null, links?: [...] }   (links 는 마스터만)
+ * PUT    /api/newsletter/links           { email, slug, displayName }   마스터만
+ * DELETE /api/newsletter/links?email=    마스터만
  */
 import { portalSession, normalizeEmail, isValidEmail, listAccounts } from '../../lib/hubAccounts.js';
 import { LINK_PREFIX, SLUG_RE, linkKey, clip, err, ok } from '../../lib/newsletter.js';
 
-const isAdmin = s => s.role === 'master' || s.role === 'admin';
+const isAdmin = s => s.role === 'master'; // 연결 지정 · 계정 목록은 마스터만
 
 export async function onRequestGet({ env, request }) {
   const s = await portalSession(request, env);

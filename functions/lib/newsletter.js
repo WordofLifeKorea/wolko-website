@@ -28,12 +28,12 @@ export function safeUrl(u) {
   return '';
 }
 
-/** 이 포탈 계정이 관리할 수 있는 소개 페이지(slug). 마스터/관리자는 어떤 페이지든 대신 관리할 수 있다. */
+/** 이 포탈 계정이 관리할 수 있는 소개 페이지(slug). 마스터만 어떤 페이지든 대신 관리할 수 있다. */
 export async function authorFor(env, session, requestedSlug) {
   const own = await env.CAMP_KV.get(linkKey(session.email), 'json');
-  const isAdmin = session.role === 'master' || session.role === 'admin';
+  const isMaster = session.role === 'master'; // 다른 사람 페이지를 대신 관리할 수 있는 건 마스터뿐 (관리자도 본인 페이지만)
   if (requestedSlug && SLUG_RE.test(requestedSlug) && requestedSlug !== own?.slug) {
-    if (!isAdmin) return null;
+    if (!isMaster) return null;
     const list = await env.CAMP_KV.list({ prefix: LINK_PREFIX });
     for (const k of list.keys) {
       const l = await env.CAMP_KV.get(k.name, 'json');

@@ -100,3 +100,25 @@ test('업로드 용량: 사이트는 파일당 25MiB 가 한계라서 화면과 
   const page = readFileSync(new URL('../src/pages/mypage/index.astro', import.meta.url), 'utf8');
   assert.match(page, /f\.size > 24 \* 1024 \* 1024/);
 });
+
+test('다른 사람 소개 페이지는 마스터만 바꿀 수 있다 — 관리자도 본인 페이지만, 연결 지정도 마스터만', async () => {
+  const { env, call } = setup(); const t = await people(env);
+  await putAccount(env, { email: 'hkim3@wol.org', name: 'Admin', role: 'admin', status: 'approved' });
+  const admin = await createHubSessionToken(env.ADMIN_PASSWORD, 'hkim3@wol.org', 'admin');
+  await call(Links, 'PUT', '/api/newsletter/links', t.master, { email: 'aiden@wol.org', slug: 'aiden' });
+  await call(Links, 'PUT', '/api/newsletter/links', t.master, { email: 'hkim3@wol.org', slug: 'kim' });
+  // 관리자: 본인(kim) 페이지는 가능, 남(aiden) 페이지는 불가
+  assert.equal((await call(PLogin, 'POST', '/api/team/portal-login', admin, { slug: 'kim' })).status, 200);
+  assert.equal((await call(PLogin, 'POST', '/api/team/portal-login', admin, { slug: 'aiden' })).status, 403);
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile?slug=aiden', admin, { url: 'https://evil.com' })).status, 403);
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', admin, { url: 'https://ok.com' })).status, 200);
+  // 연결 지정 · 계정 목록은 마스터만
+  assert.equal((await call(Links, 'PUT', '/api/newsletter/links', admin, { email: 'other@wol.org', slug: 'kim' })).status, 403);
+  assert.equal((await call(Links, 'DELETE', '/api/newsletter/links?email=aiden@wol.org', admin)).status, 403);
+  const view = await (await call(Links, 'GET', '/api/newsletter/links', admin)).json();
+  assert.equal(view.canManage, false); assert.equal(view.accounts, undefined); assert.equal(view.links, undefined);
+  // 마스터는 모든 페이지
+  assert.equal((await call(PLogin, 'POST', '/api/team/portal-login', t.master, { slug: 'aiden' })).status, 200);
+  assert.equal((await call(PLogin, 'POST', '/api/team/portal-login', t.master, { slug: 'kim' })).status, 200);
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile?slug=aiden', t.master, { url: 'https://m.com' })).status, 200);
+});

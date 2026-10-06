@@ -2,8 +2,8 @@
  * POST /api/team/portal-login   { slug }   Authorization: Bearer <포탈 세션 토큰>
  *
  * 포탈에 로그인한 계정이 본인 소개 페이지(연결된 slug)를 편집할 수 있게, 기존 편집 시스템이 쓰는 토큰(8시간)을
- * 공용 비밀번호 없이 발급한다. 마스터/관리자는 어떤 페이지든 가능. 발급된 토큰은 기존 /api/team/update · upload 가 그대로 인식한다.
- * (연결은 포탈의 '내 페이지 → 작성자 연결'에서 마스터/관리자가 지정한다.)
+ * 공용 비밀번호 없이 발급한다. 마스터만 어떤 페이지든 가능(관리자도 본인 페이지만). 발급된 토큰은 기존 /api/team/update · upload 가 그대로 인식한다.
+ * (연결은 포탈의 '내 페이지 → 작성자 연결'에서 마스터가 지정한다.)
  */
 import { portalSession } from '../../lib/hubAccounts.js';
 import { SLUG_RE, authorFor } from '../../lib/newsletter.js';
