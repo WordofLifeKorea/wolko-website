@@ -90,3 +90,36 @@ export async function sendSms(env, phone, text) {
   }
   return res.json();
 }
+
+/**
+ * 알림톡 우선 발송 + 실패 시 문자(SMS/LMS) 자동 대체 발송.
+ * 솔라피가 카카오 발송이 안 될 때(카톡 미설치·차단 등) 같은 요청의 text/from 으로 문자를 대신 보낸다.
+ * 알림톡 설정(KAKAO_PF_ID·templateId)이 없거나 알림톡 요청 자체가 실패하면 문자로 바로 보낸다.
+ * @param {string} templateId - 승인된 알림톡 템플릿 ID (없으면 문자만)
+ * @param {object} variables - 템플릿 변수 { '#{이름}': '홍길동', ... }
+ * @param {string} fallbackText - 대체 문자 본문
+ * @returns {Promise<'kakao'|'sms'|null>} 먼저 시도한 채널 (설정이 없으면 null)
+ */
+export async function sendKakaoWithSmsFallback(env, phone, templateId, variables, fallbackText) {
+  if (!env.SOLAPI_API_KEY || !env.SOLAPI_API_SECRET) return null;
+  const to = String(phone || '').replace(/[^0-9]/g, '');
+  if (!to || to.length < 10) return null;
+  if (!env.KAKAO_PF_ID || !templateId) {
+    await sendSms(env, phone, fallbackText);
+    return env.SOLAPI_SENDER_PHONE ? 'sms' : null;
+  }
+  const message = { to, text: fallbackText, kakaoOptions: { pfId: env.KAKAO_PF_ID, templateId, variables, disableSms: false } };
+  if (env.SOLAPI_SENDER_PHONE) message.from = env.SOLAPI_SENDER_PHONE.replace(/[^0-9]/g, '');
+  const authorization = await buildSolapiAuth(env.SOLAPI_API_KEY, env.SOLAPI_API_SECRET);
+  const res = await fetch('https://api.solapi.com/messages/v4/send', {
+    method: 'POST',
+    headers: { 'Authorization': authorization, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message }),
+  });
+  if (!res.ok) {
+    // 알림톡 요청이 거절되면(템플릿 불일치 등) 문자로 한 번 더 시도한다
+    await sendSms(env, phone, fallbackText);
+    return 'sms';
+  }
+  return 'kakao';
+}

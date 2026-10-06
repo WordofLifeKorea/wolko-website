@@ -4,12 +4,18 @@
  *   쿼리: ?dryRun=1 보내지 않고 대상만 확인 · ?date=YYYY-MM-DD 그날 기준으로 실행(테스트용)
  * 같은 날 같은 담당자에게 두 번 보내지 않는다(drive:sms:{date}).
  */
-import { sendSms } from '../../lib/solapi.js';
+import { sendKakaoWithSmsFallback } from '../../lib/solapi.js';
 import { SMS_PREFIX, isDriveDay, parseDate, shownName, slotKey, todayKst, weekdayOf } from '../../lib/carDrive.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const mask = p => String(p || '').replace(/[^0-9]/g, '').replace(/^(\d{3})\d+(\d{2})$/, '$1-****-**$2');
+
+/** 알림톡 템플릿 변수 — 솔라피 템플릿의 #{이름}, #{날짜}(예: 10/6 화) */
+export function reminderVariables(name, date) {
+  const [, m, d] = date.split('-');
+  return { '#{이름}': name, '#{날짜}': `${+m}/${+d} ${DAYS[weekdayOf(date)]}` };
+}
 
 export function reminderText(name, date) {
   const [, m, d] = date.split('-');
@@ -24,12 +30,14 @@ export async function onRequestPost({ env, request }) {
   const dryRun = params.get('dryRun') === '1';
   const requested = params.get('date');
   const date = requested && parseDate(requested) !== null ? requested : todayKst();
+  // 카카오 알림톡(KAKAO_PF_ID + KAKAO_TEMPLATE_DRIVE_PICKUP)을 먼저 보내고, 실패하면 같은 내용의 문자로 대체한다. 발신번호는 대체 문자에 필요하다.
+  const kakao = !!(env.KAKAO_PF_ID && env.KAKAO_TEMPLATE_DRIVE_PICKUP);
   const configured = !!(env.SOLAPI_API_KEY && env.SOLAPI_API_SECRET && env.SOLAPI_SENDER_PHONE);
   if (!isDriveDay(date)) return Response.json({ date, skipped: 'weekend', sent: 0, configured }, { headers: H });
 
   const slot = await env.CAMP_KV.get(slotKey(date, 'pickup'), 'json');
   if (!slot) return Response.json({ date, pickup: null, sent: 0, configured }, { headers: H });
-  const info = { date, pickup: { name: shownName(slot), phone: mask(slot.phone) }, configured };
+  const info = { date, pickup: { name: shownName(slot), phone: mask(slot.phone) }, configured, channel: kakao ? 'kakao+sms' : 'sms' };
   if (dryRun) return Response.json({ ...info, dryRun: true, sent: 0 }, { headers: H });
   if (!configured) return Response.json({ ...info, error: 'Solapi 설정(SOLAPI_API_KEY/SECRET/SENDER_PHONE)이 필요합니다.', sent: 0 }, { status: 503, headers: H });
   if (!slot.phone) return Response.json({ ...info, error: '담당자 휴대폰 번호가 없습니다.', sent: 0 }, { status: 422, headers: H });
@@ -37,7 +45,8 @@ export async function onRequestPost({ env, request }) {
   const doneKey = `${SMS_PREFIX}${date}`;
   const done = await env.CAMP_KV.get(doneKey, 'json');
   if (done && done.email === slot.email) return Response.json({ ...info, sent: 0, alreadySent: true }, { headers: H });
-  await sendSms(env, slot.phone, reminderText(shownName(slot), date));
+  const name = shownName(slot);
+  const channel = await sendKakaoWithSmsFallback(env, slot.phone, env.KAKAO_TEMPLATE_DRIVE_PICKUP, reminderVariables(name, date), reminderText(name, date));
   await env.CAMP_KV.put(doneKey, JSON.stringify({ email: slot.email, at: new Date().toISOString() }), { expirationTtl: 60 * 60 * 24 * 14 });
-  return Response.json({ ...info, sent: 1 }, { headers: H });
+  return Response.json({ ...info, sent: 1, firstChannel: channel }, { headers: H });
 }

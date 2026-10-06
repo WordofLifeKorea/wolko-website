@@ -215,3 +215,40 @@ test('운행 스케줄 관리자는 라이드가 필요 없는 칸을 닫고 열
   assert.equal((await put(estelle, { date: '2026-10-10', slot: 'pickup', closed: true })).status, 400, '주말은 칸이 없다');
   assert.equal((await put(estelle, { date: '2020-01-06', slot: 'pickup', closed: true })).status, 409, '지난 날짜는 바꿀 수 없다');
 });
+
+test('오전 픽업 알림은 카카오 알림톡을 먼저 보내고 같은 요청에 대체 문자를 실어 보낸다', async () => {
+  const env = memoryEnv({ DRIVE_REMINDER_SECRET: 'cron-secret', SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '010-0000-1111', KAKAO_PF_ID: 'KA01PF', KAKAO_TEMPLATE_DRIVE_PICKUP: 'KA01TP-pickup' });
+  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
+  const date = nextWeekday();
+  await D.onRequestPost({ env, request: req('POST', '/api/car/drive', a, { date, slot: 'pickup' }) });
+  const sent = [];
+  globalThis.fetch = async (url, o) => { sent.push(JSON.parse(o.body)); return { ok: true, json: async () => ({}) }; };
+  const run = () => RM.onRequestPost({ env, request: new Request(`https://t.co/api/car/drive-reminders?date=${date}`, { method: 'POST', headers: { Authorization: 'Bearer cron-secret' } }) });
+  const res = await (await run()).json();
+  assert.equal(res.sent, 1);
+  assert.equal(res.firstChannel, 'kakao');
+  assert.equal(res.channel, 'kakao+sms');
+  assert.equal(sent.length, 1, '한 번의 요청에 알림톡과 대체 문자가 함께 들어간다');
+  const m = sent[0].message;
+  assert.equal(m.to, '01011112222');
+  assert.equal(m.kakaoOptions.pfId, 'KA01PF');
+  assert.equal(m.kakaoOptions.templateId, 'KA01TP-pickup');
+  assert.equal(m.kakaoOptions.disableSms, false);
+  assert.equal(m.kakaoOptions.variables['#{이름}'], '가나다');
+  assert.match(m.kakaoOptions.variables['#{날짜}'], /^\d+\/\d+ [월화수목금]$/);
+  assert.equal(m.from, '01000001111');
+  assert.match(m.text, /가나다님.*오전 픽업/);
+});
+
+test('알림톡 요청이 거절되면 문자로 다시 보낸다', async () => {
+  const env = memoryEnv({ DRIVE_REMINDER_SECRET: 'cron-secret', SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '010-0000-1111', KAKAO_PF_ID: 'KA01PF', KAKAO_TEMPLATE_DRIVE_PICKUP: 'bad' });
+  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
+  const date = nextWeekday();
+  await D.onRequestPost({ env, request: req('POST', '/api/car/drive', a, { date, slot: 'pickup' }) });
+  const sent = [];
+  globalThis.fetch = async (url, o) => { const body = JSON.parse(o.body); sent.push(body); return body.message.kakaoOptions ? { ok: false, text: async () => 'template error' } : { ok: true, json: async () => ({}) }; };
+  const res = await (await RM.onRequestPost({ env, request: new Request(`https://t.co/api/car/drive-reminders?date=${date}`, { method: 'POST', headers: { Authorization: 'Bearer cron-secret' } }) })).json();
+  assert.equal(res.firstChannel, 'sms');
+  assert.equal(sent.length, 2);
+  assert.ok(!sent[1].message.kakaoOptions && sent[1].message.text);
+});
