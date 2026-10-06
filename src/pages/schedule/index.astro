@@ -24,7 +24,7 @@
   <script src="/wolko-datepicker.js?v=2" defer></script>
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-ui.css?v=2">
-  <link rel="stylesheet" href="/wolko-layout.css?v=12">
+  <link rel="stylesheet" href="/wolko-layout.css?v=13">
   <script src="/wolko-rail.js?v=24" defer></script>
   <meta name="theme-color" content="#004f68">
   <style is:global>
@@ -298,6 +298,12 @@
   </header>
 
   <div class="sc-wrap">
+    <div class="wl-page-actions">
+      <button class="sc-fab hidden" id="fabBtn" onclick="openCreateModal()">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span data-t="newEvent">새 일정</span>
+        </button>
+    </div>
     <!-- 포탈 로그인 필요 안내 -->
     <div class="sc-notice-card hidden" id="loginNotice">
       <p data-t="loginRequiredDesc">이 페이지를 보려면 먼저 포탈에 로그인해 주세요.</p>
@@ -339,11 +345,6 @@
       <div id="agendaContainer"></div>
     </div>
   </div>
-
-  <button class="sc-fab hidden" id="fabBtn" onclick="openCreateModal()">
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    <span data-t="newEvent">새 일정</span>
-  </button>
 
   <!-- ── 등록/수정 모달 ── -->
   <div class="sc-modal-overlay hidden" id="modalOverlay">

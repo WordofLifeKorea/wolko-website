@@ -107,6 +107,16 @@ body main.page {
 /* 제목 없이 한 줄만 두는 안내 문구 (탭 바로 아래) */
 .wl-lead { margin: 0 0 var(--wl-section-gap) !important; font-size: 13.5px; line-height: 1.7; color: var(--wl-text-muted); word-break: keep-all; }
 
+/* 페이지 오른쪽 위의 '추가' 버튼 줄 — 예전에는 오른쪽 아래에 떠 있어서 잘 안 보였다 */
+.wl-page-actions { display: flex; justify-content: flex-end; margin: 0 0 var(--wl-section-gap); }
+.wl-page-actions:not(:has(> :not(.hidden))) { display: none; }
+.wl-page-actions :is(.car-fab, .sc-fab) {
+  position: static !important; right: auto !important; bottom: auto !important;
+  min-height: var(--wl-control-height, 44px) !important; padding: 0 20px !important;
+  border-radius: 12px !important; font-size: 13.5px !important; white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(16, 41, 54, .16) !important;
+}
+
 /* ── 3. 카드(패널) ── */
 .ex-card,
 .ex-person,
