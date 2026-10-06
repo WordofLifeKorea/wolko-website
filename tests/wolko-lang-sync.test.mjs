@@ -43,3 +43,11 @@ test('an old English choice stored by only one page becomes the shared choice', 
   assert.equal(data.get('wolko-lang'), 'en');
   assert.equal(data.get('wolko-lang-choice'), 'en');
 });
+
+test('the public site layout and the camp-resources page share the same language', async () => {
+  const layout = await readFile(new URL('../src/layouts/BaseLayout.astro', import.meta.url), 'utf8');
+  assert.match(layout, /<script is:inline src="\/wolko-lang-sync\.js\?v=\d+"><\/script>/);
+  const { local, data } = run({ languages: ['en-US'] });
+  local.setItem('wolko_camp_resources_lang', 'ko');
+  assert.equal(data.get('wolko-lang'), 'ko', '공개 페이지에서 고른 언어가 포탈에도 이어진다');
+});

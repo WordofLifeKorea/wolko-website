@@ -1,10 +1,13 @@
 /* WOLKO 포탈 언어 동기화 — 모든 포탈 페이지 <head> 맨 앞에서 동기로 불러온다.
-   페이지마다 따로 쓰던 언어 저장 키(wolko-lang · wolkoCarLang · wolkoAdminLang · wolkoHubLang)를 하나로 묶는다.
+   페이지마다 따로 쓰던 언어 저장 키(wolko-lang · wolkoCarLang · wolkoAdminLang · wolkoHubLang · wolko_camp_resources_lang)를 하나로 묶는다.
+   공개 홈페이지(BaseLayout)와 포탈 페이지가 모두 불러온다.
    1) 사용자가 직접 KO/EN을 누른 적이 있으면 그 선택을 모든 페이지가 따른다.
    2) 누른 적이 없으면 기기(컴퓨터·휴대폰)의 기본 언어를 따른다: 한국어면 KO, 그 밖에는 EN.
    페이지 스크립트가 읽기 전에 키 값을 미리 맞춰 두고, 어느 페이지에서 언어를 바꾸든 나머지 키도 함께 바꾼다. */
 (function () {
-  var KEYS = ['wolko-lang', 'wolkoCarLang', 'wolkoAdminLang', 'wolkoHubLang'];
+  if (window.__wolkoLangSync) return; // 페이지가 두 번 불러도 한 번만 설치
+  window.__wolkoLangSync = true;
+  var KEYS = ['wolko-lang', 'wolkoCarLang', 'wolkoAdminLang', 'wolkoHubLang', 'wolko_camp_resources_lang'];
   var CHOICE = 'wolko-lang-choice';
   var store;
   try { store = window.localStorage; store.getItem(CHOICE); } catch (e) { return; }
