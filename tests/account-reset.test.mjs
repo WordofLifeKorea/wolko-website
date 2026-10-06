@@ -94,3 +94,22 @@ test('with no counselor-page account, the reset reports that none exists', async
   const res = await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '1234' });
   assert.equal((await res.json()).counselorAccount, 'none');
 });
+
+test('master deletes an account (and its counselor-page account) after typing the email; protected accounts stay', async () => {
+  const { onRequestPost: del } = await import('../functions/api/hub/delete-account.js');
+  const { env, master, admin } = await setup();
+  env.CAMP_KV.delete = async function () {}; // 아래에서 실제 삭제를 흉내
+  const store = new Map();
+  const kv = memoryKv(); const realPut = kv.put;
+  env.CAMP_KV = { ...kv, put: async (k, v) => { store.set(k, v); return realPut(k, v); }, get: kv.get, delete: async (k) => { store.set('__deleted__' + k, true); } };
+  await putAccount(env, { email: 'estelle@wol.org', name: 'Estelle', role: 'counselor', status: 'approved' });
+  await env.CAMP_KV.put('camp-progress:account:estelle@wol.org', JSON.stringify({ email: 'estelle@wol.org' }));
+  assert.equal((await post(del, env, '/api/hub/delete-account', admin, { email: 'estelle@wol.org', confirm: 'estelle@wol.org' })).status, 403);
+  assert.equal((await post(del, env, '/api/hub/delete-account', master, { email: 'estelle@wol.org', confirm: 'wrong@wol.org' })).status, 400);
+  assert.equal((await post(del, env, '/api/hub/delete-account', master, { email: 'wolkorea1@gmail.com', confirm: 'wolkorea1@gmail.com' })).status, 400);
+  const ok = await post(del, env, '/api/hub/delete-account', master, { email: 'estelle@wol.org', confirm: 'Estelle@wol.org' });
+  assert.equal(ok.status, 200);
+  assert.equal((await ok.json()).counselorAccount, true);
+  assert.ok(store.has('__deleted__hub:account:estelle@wol.org'));
+  assert.ok(store.has('hub:account-trash:estelle@wol.org'), '복구용 사본');
+});

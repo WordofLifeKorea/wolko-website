@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=22">
+  <link rel="stylesheet" href="/hub.css?v=23">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=3">
   <link rel="stylesheet" href="/wolko-ui.css?v=2">
@@ -281,6 +281,7 @@
         pendingListTitle: '승인 대기 목록',
         pendingEmpty: '대기 중인 요청이 없습니다.',
         resetCounselorOn: '카운슬러 계정의 비활성화도 풀었어요.', resetCounselorSame: '카운슬러 계정도 같은 임시 비밀번호로 바꿨어요.',
+        deleteTitle: '계정 삭제', deleteHelp: '선택한 계정을 지워요. 카운슬러 페이지 계정이 있으면 함께 지워지고, 30일 동안은 복구용 사본이 남아요.', deleteBtn: '계정 삭제', deletePrompt: e => `${e} 계정을 삭제합니다. 계속하려면 이 이메일을 그대로 입력해 주세요.`, deleteDone: '계정을 삭제했어요.', deleteCounselor: '카운슬러 계정도 함께 지웠어요.',
         rejectedTitle: '거부된 계정', rejectedHelp: '접근이 막힌 계정이에요. 다시 승인하면 바로 로그인할 수 있어요.', reapproveBtn: '다시 활성화',
         resetTitle: '비밀번호 초기화', resetHelp: '비밀번호를 잊은 멤버에게 임시 비밀번호를 걸어요. 그 계정으로 로그인하면 새 비밀번호를 정하는 창이 먼저 떠요.', resetPick: '계정 선택', resetTemp: '임시 비밀번호', resetBtn: '초기화', resetConfirm: (n, e) => `${n} (${e}) 계정의 비밀번호를 임시 비밀번호로 바꿀까요?`, resetDone: '임시 비밀번호로 바꿨어요. 로그인하면 변경 창이 떠요.',
         approveBtn: '승인',
@@ -341,6 +342,7 @@
         pendingListTitle: 'Pending Requests',
         pendingEmpty: 'No pending requests.',
         resetCounselorOn: 'The counselor-page account was re-activated too.', resetCounselorSame: 'The counselor-page account got the same temporary password.',
+        deleteTitle: 'Delete account', deleteHelp: 'Deletes the selected account, including its counselor-page account. A recovery copy is kept for 30 days.', deleteBtn: 'Delete account', deletePrompt: e => `You are deleting ${e}. Type this email exactly to continue.`, deleteDone: 'Account deleted.', deleteCounselor: 'The counselor-page account was deleted too.',
         rejectedTitle: 'Rejected accounts', rejectedHelp: 'These accounts are blocked. Approve again to let them sign in.', reapproveBtn: 'Re-activate',
         resetTitle: 'Reset password', resetHelp: 'Give a member who forgot their password a temporary one. They will be asked to choose a new password right after signing in.', resetPick: 'Account', resetTemp: 'Temporary password', resetBtn: 'Reset', resetConfirm: (n, e) => `Replace the password of ${n} (${e}) with the temporary one?`, resetDone: 'Temporary password set. They will be asked to change it when they sign in.',
         approveBtn: 'Approve',
@@ -743,7 +745,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         const pending = (data.accounts || []).filter(a => a.status === 'pending');
-        renderResetBox((data.accounts || []).filter(a => a.status === 'approved' && a.effectiveRole !== 'master'));
+        renderResetBox((data.accounts || []).filter(a => a.status === 'approved' && a.effectiveRole !== 'master'), (data.accounts || []).filter(a => a.effectiveRole !== 'master'));
         const rejected = (data.accounts || []).filter(a => a.status === 'rejected');
         const rejectedHtml = rejected.length
           ? `<div class="hub-rejected"><h4>${t('rejectedTitle')}</h4><p class="hub-reset-help">${t('rejectedHelp')}</p>${rejected.map(a => renderPendingItem(a, true)).join('')}</div>`
@@ -753,14 +755,33 @@
         $('pendingList').innerHTML = `<p class="hub-pending-empty">${esc(e.message || '')}</p>`;
       }
     }
-    function renderResetBox(accounts) {
+    function renderResetBox(accounts, allAccounts) {
       const list = accounts.slice().sort((x, y) => String(x.name || x.email).localeCompare(String(y.name || y.email), 'ko'));
       $('resetBox').innerHTML = `
         <h4>${t('resetTitle')}</h4>
         <p class="hub-reset-help">${t('resetHelp')}</p>
         <label>${t('resetPick')}<select id="resetEmail">${list.map(a => `<option value="${esc(a.email)}">${esc(a.name || a.email)} · ${esc(a.email)}</option>`).join('')}</select></label>
         <label>${t('resetTemp')}<input id="resetTemp" type="text" value="1234" autocomplete="off" autocapitalize="off"></label>
-        <button type="button" class="hub-reset-btn" id="resetBtn">${t('resetBtn')}</button>`;
+        <button type="button" class="hub-reset-btn" id="resetBtn">${t('resetBtn')}</button>
+        <div class="hub-delete">
+          <h4>${t('deleteTitle')}</h4>
+          <p class="hub-reset-help">${t('deleteHelp')}</p>
+          <label>${t('resetPick')}<select id="deleteEmail">${allAccounts.slice().sort((x, y) => String(x.name || x.email).localeCompare(String(y.name || y.email), 'ko')).map(a => `<option value="${esc(a.email)}">${esc(a.name || a.email)} · ${esc(a.email)}${a.status !== 'approved' ? ' (' + esc(a.status) + ')' : ''}</option>`).join('')}</select></label>
+          <button type="button" class="hub-reset-btn hub-delete-btn" id="deleteBtn">${t('deleteBtn')}</button>
+        </div>`;
+      $('deleteBtn').addEventListener('click', async () => {
+        const sel = $('deleteEmail');
+        if (!sel.value) return;
+        const typed = prompt(t('deletePrompt', sel.value));
+        if (typed === null) return;
+        try {
+          const res = await fetch('/api/hub/delete-account', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ email: sel.value, confirm: typed }) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+          showToast(t('deleteDone') + (data.counselorAccount ? ' ' + t('deleteCounselor') : ''));
+          openPendingPanel(); refreshPendingCount();
+        } catch (e) { showToast(e.message || '', true); }
+      });
       $('resetBtn').addEventListener('click', async () => {
         const sel = $('resetEmail');
         if (!sel.value) return;
