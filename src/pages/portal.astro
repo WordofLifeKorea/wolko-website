@@ -18,9 +18,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=23">
+  <link rel="stylesheet" href="/hub.css?v=24">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
-  <link rel="stylesheet" href="/wolko-auth.css?v=3">
+  <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <script src="/wolko-rail.js?v=24" defer></script>
@@ -58,7 +58,57 @@
         <p class="login-error" id="emailError"></p>
         <button class="login-btn" id="emailBtn" type="submit" data-t="loginBtn">로그인</button>
       </form>
+      <button class="login-link-btn" type="button" onclick="showScreen('resetRequestScreen')" data-t="forgotBtn">비밀번호를 잊으셨나요?</button>
       <button class="login-link-btn" type="button" onclick="showScreen('signupScreen')" data-t="goSignupBtn">계정이 없으신가요? 가입하기</button>
+    </div>
+  </div>
+
+  <!-- ── 비밀번호를 잊었을 때: 이메일로 재설정 링크 받기 ── -->
+  <div class="login-screen hidden" id="resetRequestScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" data-t="resetReqTitle">비밀번호 재설정</p>
+      <p class="login-description" data-t="resetReqDesc">가입하신 이메일을 입력하면 새 비밀번호를 정하는 링크를 보내드려요.</p>
+      <form class="portal-login-form" id="resetRequestForm" novalidate>
+        <div class="login-input-wrap">
+          <input class="login-input" type="email" id="resetEmailInput" placeholder="you@example.com" autocomplete="username" autocapitalize="none" spellcheck="false">
+        </div>
+        <p class="login-error" id="resetReqMsg" role="status"></p>
+        <button class="login-btn" id="resetReqBtn" type="submit" data-t="resetReqBtn">재설정 링크 받기</button>
+      </form>
+      <button class="login-link-btn" type="button" onclick="showScreen('emailScreen')" data-t="backToLoginOnlyBtn">로그인으로 돌아가기</button>
+    </div>
+  </div>
+
+  <!-- ── 메일의 링크로 들어와 새 비밀번호 정하기 ── -->
+  <div class="login-screen hidden" id="resetNewScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" data-t="resetNewTitle">새 비밀번호 정하기</p>
+      <p class="login-description" data-t="resetNewDesc">8자 이상으로 새 비밀번호를 입력해 주세요.</p>
+      <form class="portal-login-form" id="resetNewForm" novalidate>
+        <div class="login-input-wrap">
+          <input class="login-input" type="password" id="resetNewPw" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <div class="login-input-wrap">
+          <input class="login-input" type="password" id="resetNewPw2" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <p class="login-error" id="resetNewMsg" role="status"></p>
+        <button class="login-btn" id="resetNewBtn" type="submit" data-t="resetNewBtn">비밀번호 변경</button>
+      </form>
+      <button class="login-link-btn" type="button" onclick="showScreen('resetRequestScreen')" data-t="resetAgainBtn">링크를 다시 받기</button>
     </div>
   </div>
 
@@ -245,6 +295,7 @@
         rememberEmail: '아이디 저장',
         emailLoginDesc: '가입하신 이메일과 비밀번호로 로그인하세요.',
         goSignupBtn: '계정이 없으신가요? 가입하기',
+        forgotBtn: '비밀번호를 잊으셨나요?', resetReqTitle: '비밀번호 재설정', resetReqDesc: '가입하신 이메일을 입력하면 새 비밀번호를 정하는 링크를 보내드려요.', resetReqBtn: '재설정 링크 받기', resetReqSent: '메일을 보냈어요. 받은편지함(스팸함도)을 확인해 주세요. 링크는 30분 동안 쓸 수 있어요.', backToLoginOnlyBtn: '로그인으로 돌아가기', resetNewTitle: '새 비밀번호 정하기', resetNewDesc: '8자 이상으로 새 비밀번호를 입력해 주세요.', resetNewBtn: '비밀번호 변경', resetAgainBtn: '링크를 다시 받기', resetMismatch: '두 비밀번호가 서로 달라요.', resetShort: '비밀번호는 8자 이상으로 입력해 주세요.', resetDoneLogin: '비밀번호를 바꿨어요. 새 비밀번호로 로그인해 주세요.',
         signupTitle: '포탈 가입',
         signupDesc: '이메일과 비밀번호를 등록하면 마스터 관리자 승인 후 로그인할 수 있습니다.',
         namePlaceholder: '이름',
@@ -305,6 +356,7 @@
         rememberEmail: 'Remember email',
         emailLoginDesc: 'Log in with the email and password you signed up with.',
         goSignupBtn: "Don't have an account? Sign up",
+        forgotBtn: 'Forgot your password?', resetReqTitle: 'Reset password', resetReqDesc: 'Enter the email you signed up with and we will send you a link to choose a new password.', resetReqBtn: 'Send reset link', resetReqSent: 'We sent an email. Please check your inbox (and spam). The link works for 30 minutes.', backToLoginOnlyBtn: 'Back to log in', resetNewTitle: 'Choose a new password', resetNewDesc: 'Enter a new password of at least 8 characters.', resetNewBtn: 'Change password', resetAgainBtn: 'Get a new link', resetMismatch: 'The two passwords do not match.', resetShort: 'Use at least 8 characters.', resetDoneLogin: 'Password changed. Please log in with the new password.',
         signupTitle: 'Portal Sign Up',
         signupDesc: 'Register an email and password. A master admin must approve access before you can log in.',
         namePlaceholder: 'Name',
@@ -509,7 +561,7 @@
     });
 
     /* ── 화면 전환 ── */
-    const SCREENS = ['emailScreen', 'signupScreen', 'statusScreen'];
+    const SCREENS = ['emailScreen', 'signupScreen', 'statusScreen', 'resetRequestScreen', 'resetNewScreen'];
     function showScreen(id) {
       SCREENS.forEach(s => {
         $(s).style.display = s === id ? 'flex' : 'none';
@@ -826,8 +878,44 @@
       return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
     }
 
+    /* ── 비밀번호 재설정 (메일 링크) ── */
+    $('resetRequestForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const msg = $('resetReqMsg'); msg.textContent = ''; msg.classList.remove('is-ok');
+      const email = $('resetEmailInput').value.trim().toLowerCase();
+      if (!email) { msg.textContent = t('emailRequired'); return; }
+      if (!EMAIL_RE.test(email)) { msg.textContent = t('emailInvalid'); return; }
+      const btn = $('resetReqBtn'); btn.disabled = true;
+      try {
+        const res = await fetch('/api/hub/password-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'request', email }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || '');
+        msg.textContent = t('resetReqSent'); msg.classList.add('is-ok');
+      } catch (e) { msg.textContent = e.message || ''; }
+      finally { btn.disabled = false; }
+    });
+    $('resetNewForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const msg = $('resetNewMsg'); msg.textContent = '';
+      const pw = $('resetNewPw').value;
+      if (pw.length < 8) { msg.textContent = t('resetShort'); return; }
+      if (pw !== $('resetNewPw2').value) { msg.textContent = t('resetMismatch'); return; }
+      const btn = $('resetNewBtn'); btn.disabled = true;
+      try {
+        const token = new URLSearchParams(location.search).get('reset') || '';
+        const res = await fetch('/api/hub/password-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'confirm', token, newPassword: pw }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || '');
+        history.replaceState(null, '', '/portal/');
+        showScreen('emailScreen');
+        $('loginPwInput').value = ''; $('emailError').textContent = t('resetDoneLogin'); $('emailError').classList.add('is-ok');
+      } catch (e) { msg.textContent = e.message || ''; }
+      finally { btn.disabled = false; }
+    });
+
     /* ── 초기화 ── */
     async function initAuthFlow() {
+      if (new URLSearchParams(location.search).get('reset')) { showScreen('resetNewScreen'); return; } // 메일의 재설정 링크로 들어온 경우
       const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
       if (hubToken && isHubTokenValid(hubToken)) {
         currentSession = {
