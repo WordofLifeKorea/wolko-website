@@ -3,7 +3,7 @@
    라벨은 항상 펼쳐서 보여준다(예전엔 아이콘만 두고 호버해야 이름이 보였는데,
    페이지 사이 이동이 잘 안 보인다는 피드백으로 상시 펼침으로 바꿨다). */
 (function () {
-  var GROUPS = [{ id: 'wolko', ko: '월코', en: 'WOLKO' }, { id: 'camp', ko: '캠프', en: 'Camp' }];
+  var GROUPS = [{ id: 'wolko', ko: '월코', en: 'WOLKO' }, { id: 'camp', ko: '캠프', en: 'Camp' }, { id: 'personal', ko: '개인업무', en: 'Personal' }];
   var TOOLS = [
     { group: 'wolko', href: '/schedule', color: '#1da462', label: '월코 캘린더', label_en: 'WOLKO Calendar',
       icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/><rect x="7" y="13.5" width="4" height="4" rx="1" fill="currentColor" stroke="none"/>' },
@@ -13,16 +13,16 @@
       icon: '<path d="M8 3v3M16 3v3M4 8h16"/><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 17.5h.01M12 17.5h.01"/>' },
     { group: 'wolko', href: '/resource', color: '#008e92', label: 'Resource & Media', label_en: 'Resource & Media',
       icon: '<path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="7" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="11" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="7" r="1" fill="currentColor" stroke="none"/>' },
-    { group: 'wolko', href: '/expense', color: '#b8741a', label: '경비 리포트', label_en: 'Expense Report',
-      icon: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>' },
-    { group: 'wolko', href: '/mypage', color: '#6a4fb3', label: '내 페이지', label_en: 'My Page',
-      icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M19 8v6M16 11h6"/>' },
-    { group: 'wolko', href: '/car-drive', color: '#c17a1f', label: '차량', label_en: 'Vehicle',
-      icon: '<path d="M14 16H9m10 0h2v-3.15a1 1 0 0 0-.84-.99L18 11.5l-2.35-3.13a1 1 0 0 0-.8-.4H6.5a2 2 0 0 0-1.79 1.11L3.6 11.5A5 5 0 0 0 3 14v2h2"/><circle cx="6.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/>' },
     { group: 'camp', href: '/wolkoadmin', color: '#004f68', label: '캠프 관리자', label_en: 'Camp Manager',
       icon: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>' },
     { group: 'camp', href: '/campstaff', color: '#0077a3', label: '카운슬러', label_en: 'Counselor',
       icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
+    { group: 'personal', href: '/expense', color: '#b8741a', label: '경비 리포트', label_en: 'Expense Report',
+      icon: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>' },
+    { group: 'personal', href: '/car-drive', color: '#c17a1f', label: '차량', label_en: 'Vehicle',
+      icon: '<path d="M14 16H9m10 0h2v-3.15a1 1 0 0 0-.84-.99L18 11.5l-2.35-3.13a1 1 0 0 0-.8-.4H6.5a2 2 0 0 0-1.79 1.11L3.6 11.5A5 5 0 0 0 3 14v2h2"/><circle cx="6.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/>' },
+    { group: 'personal', href: '/mypage', color: '#6a4fb3', label: '내 페이지', label_en: 'My Page',
+      icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M19 8v6M16 11h6"/>' },
   ];
   var HUB_ICON = '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>';
   var HUB_LABEL = { ko: '전체 도구 보기', en: 'View All Tools' };
