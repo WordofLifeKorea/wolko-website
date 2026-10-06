@@ -61,6 +61,9 @@ test('본인 소개 페이지와 연결된 계정만 글을 쓸 수 있고, 마�
   assert.equal((await call(Posts, 'POST', '/api/newsletter/posts', t.me, { title: 'x', body: 'y' })).status, 403, '연결 전');
   assert.equal((await call(Links, 'PUT', '/api/newsletter/links', t.me, { email: 'aiden@wol.org', slug: 'aiden' })).status, 403, '멤버는 연결 못 함');
   assert.equal((await call(Links, 'PUT', '/api/newsletter/links', t.master, { email: 'aiden@wol.org', slug: 'aiden', displayName: '에이든' })).status, 200);
+  const adminView = await (await call(Links, 'GET', '/api/newsletter/links', t.master)).json();
+  assert.ok(adminView.accounts.some(a => a.email === 'aiden@wol.org'), '연결할 포탈 계정 목록(드롭다운용)');
+  assert.equal((await (await call(Links, 'GET', '/api/newsletter/links', t.me)).json()).accounts, undefined, '멤버에게는 계정 목록을 주지 않는다');
   const me = await (await call(Links, 'GET', '/api/newsletter/links', t.me)).json();
   assert.equal(me.me.slug, 'aiden');
   assert.equal((await call(Posts, 'POST', '/api/newsletter/posts', t.me, { title: '첫 소식', mode: 'simple', body: '안녕하세요' })).status, 200);

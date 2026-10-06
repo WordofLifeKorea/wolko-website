@@ -4,7 +4,7 @@
  * PUT    /api/newsletter/links           { email, slug, displayName }   마스터/관리자만
  * DELETE /api/newsletter/links?email=    마스터/관리자만
  */
-import { portalSession, normalizeEmail, isValidEmail } from '../../lib/hubAccounts.js';
+import { portalSession, normalizeEmail, isValidEmail, listAccounts } from '../../lib/hubAccounts.js';
 import { LINK_PREFIX, SLUG_RE, linkKey, clip, err, ok } from '../../lib/newsletter.js';
 
 const isAdmin = s => s.role === 'master' || s.role === 'admin';
@@ -16,6 +16,8 @@ export async function onRequestGet({ env, request }) {
   const body = { me: me ? { slug: me.slug, displayName: me.displayName || me.slug } : null, canManage: isAdmin(s) };
   if (isAdmin(s)) {
     const list = await env.CAMP_KV.list({ prefix: LINK_PREFIX });
+    const accounts = await listAccounts(env);
+    body.accounts = accounts.filter(a => a.status === 'approved' && a.email).map(a => ({ email: a.email, name: a.name && !String(a.name).includes('@') ? a.name : '' })).sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email, 'ko'));
     body.links = [];
     for (const k of list.keys) { const l = await env.CAMP_KV.get(k.name, 'json'); if (l) body.links.push({ email: k.name.slice(LINK_PREFIX.length), slug: l.slug, displayName: l.displayName || '' }); }
   }

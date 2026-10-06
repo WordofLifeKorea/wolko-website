@@ -95,7 +95,7 @@ const team = (await getCollection('team'))
         consent: '이 분들에게 내 소식을 이메일로 받는 것에 동의를 받았습니다.', addBtn: '추가', tAdded: (a, s, i) => a + '명 추가' + (s ? ', ' + s + '명은 이미 있거나 수신거부' : '') + (i ? ', ' + i + '건은 형식 오류' : '') + '.',
         needConsent: '수신 동의 확인에 체크해 주세요.', formHint: '소개 페이지에는 "소식 받기" 신청 칸이 있어요. 신청하면 확인 메일이 가고, 확인해야 구독이 시작돼요.',
         linksLead: '포탈 계정(이메일)이 어느 소개 페이지의 글을 쓸지 연결해요. 연결된 사람만 뉴스레터를 쓸 수 있어요.',
-        thPage: '소개 페이지', linkEmail: '포탈 이메일', linkPage: '소개 페이지', linkSave: '연결', pickPage: '페이지 고르기', tLinked: '연결했어요.', cUnlink: e => e + ' 연결을 해제할까요?',
+        thPage: '소개 페이지', linkEmail: '포탈 이메일', linkPage: '소개 페이지', linkSave: '연결', pickPage: '페이지 고르기', pickAccount: '포탈 계정 고르기', tLinked: '연결했어요.', cUnlink: e => e + ' 연결을 해제할까요?',
         errLogin: '로그인이 필요해요.', errReq: '요청에 실패했어요.',
       },
       en: {
@@ -137,7 +137,7 @@ const team = (await getCollection('team'))
         consent: 'These people have agreed to receive my updates by email.', addBtn: 'Add', tAdded: (a, s, i) => a + ' added' + (s ? ', ' + s + ' already there or unsubscribed' : '') + (i ? ', ' + i + ' invalid' : '') + '.',
         needConsent: 'Please confirm you have their consent.', formHint: 'Your profile page has a "Get updates" form. People get a confirmation email and only start receiving mail after confirming.',
         linksLead: 'Link a portal account (email) to the profile page it writes for. Only linked people can write newsletters.',
-        thPage: 'Profile page', linkEmail: 'Portal email', linkPage: 'Profile page', linkSave: 'Link', pickPage: 'Choose a page', tLinked: 'Linked.', cUnlink: e => 'Unlink ' + e + '?',
+        thPage: 'Profile page', linkEmail: 'Portal email', linkPage: 'Profile page', linkSave: 'Link', pickPage: 'Choose a page', pickAccount: 'Choose a portal account', tLinked: 'Linked.', cUnlink: e => 'Unlink ' + e + '?',
         errLogin: 'Please sign in.', errReq: 'Request failed.',
       },
     };
@@ -149,7 +149,7 @@ const team = (await getCollection('team'))
     const fmtDate = iso => iso ? new Date(iso).toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
     const teamName = slug => { const p = TEAM.find(x => x.slug === slug); return p ? (lang === 'en' ? p.en : p.ko) : slug; };
 
-    const S = { me: null, link: null, canManage: false, links: [], acting: '', view: 'posts', posts: [], post: null, subs: null, dirty: false, saving: false, prevTimer: 0, saveTimer: 0, pvSeq: 0 };
+    const S = { me: null, link: null, canManage: false, links: [], accounts: [], acting: '', view: 'posts', posts: [], post: null, subs: null, dirty: false, saving: false, prevTimer: 0, saveTimer: 0, pvSeq: 0 };
 
     function toast(msg, isError) {
       const el = $('exToast'); el.textContent = msg; el.classList.toggle('error', !!isError); el.classList.add('show');
@@ -390,13 +390,13 @@ const team = (await getCollection('team'))
       $('nlView').innerHTML = `<div class="ex-card"><p class="nl-lead">${esc(t('linksLead'))}</p>
         ${S.links.length ? `<div style="overflow-x:auto"><table class="nl-table"><thead><tr><th>${t('linkEmail')}</th><th>${t('thPage')}</th><th></th></tr></thead><tbody>
           ${S.links.map(l => `<tr><td>${esc(l.email)}</td><td>${esc(teamName(l.slug))} <span style="color:var(--light)">(${esc(l.slug)})</span></td><td><button class="ex-btn sm danger" data-unlink="${esc(l.email)}">${t('remove')}</button></td></tr>`).join('')}</tbody></table></div>` : ''}
-        <div class="nl-grid2" style="margin-top:14px"><div class="nl-field"><label>${t('linkEmail')}</label><input class="ex-input" id="lkEmail" type="email" placeholder="name@wol.org"></div>
+        <div class="nl-grid2" style="margin-top:14px"><div class="nl-field"><label>${t('linkEmail')}</label><select class="ex-select" id="lkEmail"><option value="">${t('pickAccount')}</option>${S.accounts.map(a => `<option value="${esc(a.email)}">${esc(a.name ? a.name + ' · ' + a.email : a.email)}${S.links.some(l => l.email === a.email) ? ' ✓' : ''}</option>`).join('')}</select></div>
         <div class="nl-field"><label>${t('linkPage')}</label><select class="ex-select" id="lkSlug"><option value="">${t('pickPage')}</option>${TEAM.map(p => `<option value="${esc(p.slug)}">${esc(lang === 'en' ? p.en : p.ko)}</option>`).join('')}</select></div></div>
         <button class="ex-btn primary" data-act="link">${t('linkSave')}</button></div>`;
     }
     async function loadLinks() {
       const d = await api('/api/newsletter/links');
-      S.link = d.me; S.canManage = d.canManage; S.links = d.links || [];
+      S.link = d.me; S.canManage = d.canManage; S.links = d.links || []; S.accounts = d.accounts || [];
       if (!S.acting && !S.link && S.links.length) S.acting = S.links[0].slug;
       if (S.acting && S.acting === S.link?.slug) S.acting = '';
     }
@@ -448,7 +448,7 @@ const team = (await getCollection('team'))
           toast(t('tAdded', d.added, d.skipped, d.invalid)); return showSubs();
         }
         if (act === 'link') {
-          const email = $('lkEmail').value.trim(), slug = $('lkSlug').value;
+          const email = $('lkEmail').value, slug = $('lkSlug').value;
           if (!email || !slug) return;
           await api('/api/newsletter/links', { method: 'PUT', body: JSON.stringify({ email, slug, displayName: teamName(slug) }) });
           toast(t('tLinked')); await loadLinks(); renderWho(); renderTabs(); return showLinks();
