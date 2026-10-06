@@ -137,11 +137,20 @@
     if (!token || document.querySelector('.wl-force-pw')) return;
     fetch('/api/hub/me', { headers: { Authorization: 'Bearer ' + token } })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (me) { if (me && me.mustChangePassword) openForcedPassword(token); })
+      .then(function (me) {
+        if (!me || !me.mustChangePassword) return;
+        openForcedPassword(function (current, next) {
+          return fetch('/api/hub/account-password', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: current, newPassword: next }) })
+            .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || ''); }); })
+            .then(function () { try { sessionStorage.removeItem('wolko-hub-me:' + token.slice(-16)); } catch (e) {} });
+        });
+      })
       .catch(function () {});
   }
   window.wolkoCheckPasswordReset = checkPasswordReset;
-  function openForcedPassword(token) {
+  // submit(현재, 새) 는 성공하면 resolve, 실패하면 Error 로 reject 하는 함수 — 포탈 계정과 카운슬러 계정이 같은 창을 쓴다
+  window.wolkoForcePasswordChange = function (submit) { if (!document.querySelector('.wl-force-pw')) openForcedPassword(submit); };
+  function openForcedPassword(submitFn) {
     var t = FT[currentLang()] || FT.ko;
     var overlay = document.createElement('div');
     overlay.className = 'wl-prof-overlay wl-force-pw';
@@ -167,14 +176,9 @@
       msg.textContent = ''; msg.className = 'wl-prof-msg';
       if (fNew.input.value !== fAgain.input.value) { msg.textContent = t.mismatch; msg.className = 'wl-prof-msg err'; return; }
       save.disabled = true;
-      fetch('/api/hub/account-password', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: fCur.input.value, newPassword: fNew.input.value }) })
-        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
-        .then(function (res) {
-          if (!res.ok) throw new Error(res.d.error || t.fail);
-          try { sessionStorage.removeItem('wolko-hub-me:' + token.slice(-16)); } catch (e) {}
-          overlay.remove();
-        })
-        .catch(function (e) { msg.textContent = e.message || t.fail; msg.className = 'wl-prof-msg err'; save.disabled = false; });
+      Promise.resolve().then(function () { return submitFn(fCur.input.value, fNew.input.value); })
+        .then(function () { overlay.remove(); })
+        .catch(function (e) { msg.textContent = (e && e.message) || t.fail; msg.className = 'wl-prof-msg err'; save.disabled = false; });
     }
     save.addEventListener('click', submit);
     card.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });

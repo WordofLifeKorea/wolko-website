@@ -90,8 +90,12 @@ export async function onRequestPost(context) {
     if (!email || !password) {
       return Response.json({ error: '이메일과 비밀번호가 필요합니다.' }, { status: 400, headers: CORS });
     }
-    if (!PASSWORD_RE.test(password)) {
+    // 가입할 때만 비밀번호 규칙을 검사한다. 로그인은 저장된 값과 비교만 하므로, 관리자가 걸어 준 짧은 임시 비밀번호(예: 1234)도 들어올 수 있다.
+    if (mode !== 'login' && mode !== 'changePassword' && !PASSWORD_RE.test(password)) {
       return Response.json({ error: '비밀번호는 영문/숫자/특수문자 6자 이상으로 입력해주세요.' }, { status: 400, headers: CORS });
+    }
+    if (password.length > 72) {
+      return Response.json({ error: '비밀번호가 너무 깁니다.' }, { status: 400, headers: CORS });
     }
 
     const key = accountKey(email);
@@ -130,7 +134,28 @@ export async function onRequestPost(context) {
         return Response.json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' }, { status: 401, headers: CORS });
       }
       const token = await generateToken({ role: 'counselor', email }, env.ADMIN_PASSWORD);
-      return Response.json({ token, role: 'counselor', account: { email, name: existing.name || '' } }, { headers: CORS });
+      return Response.json({ token, role: 'counselor', account: { email, name: existing.name || '' }, mustChangePassword: !!existing.mustChangePassword }, { headers: CORS });
+    }
+
+    if (mode === 'changePassword') {
+      // 임시 비밀번호로 들어온 카운슬러가 새 비밀번호를 정한다 (현재 비밀번호를 다시 확인한다)
+      const newPassword = String(body.newPassword || '');
+      if (!existing || existing.disabled) {
+        return Response.json({ error: '계정을 찾을 수 없거나 비활성화되었습니다.' }, { status: 401, headers: CORS });
+      }
+      if ((await hashPassword(password, existing.salt)) !== existing.passwordHash) {
+        return Response.json({ error: '현재 비밀번호가 올바르지 않습니다.' }, { status: 401, headers: CORS });
+      }
+      if (!PASSWORD_RE.test(newPassword) || newPassword.length < 8) {
+        return Response.json({ error: '새 비밀번호는 8자 이상으로 입력해 주세요.' }, { status: 400, headers: CORS });
+      }
+      if (newPassword === password) {
+        return Response.json({ error: '새 비밀번호는 현재 비밀번호와 다르게 정해 주세요.' }, { status: 400, headers: CORS });
+      }
+      const salt = randomHex();
+      const { mustChangePassword, ...rest } = existing;
+      await env.CAMP_KV.put(key, JSON.stringify({ ...rest, salt, passwordHash: await hashPassword(newPassword, salt), updatedAt: new Date().toISOString() }));
+      return Response.json({ ok: true }, { headers: CORS });
     }
 
     return Response.json({ error: '지원하지 않는 요청입니다.' }, { status: 400, headers: CORS });

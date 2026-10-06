@@ -62,3 +62,35 @@ test('after a reset the login flags the account and the new password clears the 
   const again = await (await post(login, env, '/api/hub/account-login', null, { email: 'estelle@wol.org', password: 'MyNewPass#1' })).json();
   assert.equal(again.mustChangePassword, false);
 });
+
+test('resetting also re-activates the counselor-page account and lets the short temporary password sign in there', async () => {
+  const { onRequestPost: campAuth } = await import('../functions/api/camp-progress/auth.js');
+  const { env, master } = await setup();
+  // 비활성화된 카운슬러 계정 (예전 비밀번호)
+  await env.CAMP_KV.put('camp-progress:account:estelle@wol.org', JSON.stringify({ email: 'estelle@wol.org', name: 'Estelle', salt: 'ab', passwordHash: 'old', disabled: true }));
+  const camp = (body) => campAuth({ env, request: new Request('https://wolko.org/api/camp-progress/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
+  assert.equal((await camp({ mode: 'login', email: 'estelle@wol.org', password: '1234' })).status, 401, '비활성화 상태에서는 로그인 불가');
+
+  const res = await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '1234' });
+  assert.equal((await res.json()).counselorAccount, 'reactivated');
+
+  const ok = await camp({ mode: 'login', email: 'estelle@wol.org', password: '1234' });
+  assert.equal(ok.status, 200);
+  const data = await ok.json();
+  assert.equal(data.mustChangePassword, true);
+
+  assert.equal((await camp({ mode: 'changePassword', email: 'estelle@wol.org', password: 'wrong', newPassword: 'BrandNew#2026' })).status, 401);
+  assert.equal((await camp({ mode: 'changePassword', email: 'estelle@wol.org', password: '1234', newPassword: '1234' })).status, 400);
+  assert.equal((await camp({ mode: 'changePassword', email: 'estelle@wol.org', password: '1234', newPassword: 'BrandNew#2026' })).status, 200);
+  const after = await (await camp({ mode: 'login', email: 'estelle@wol.org', password: 'BrandNew#2026' })).json();
+  assert.equal(after.mustChangePassword, false);
+  assert.equal((await camp({ mode: 'login', email: 'estelle@wol.org', password: '1234' })).status, 401, '임시 비밀번호는 더 이상 쓸 수 없다');
+  // 가입은 여전히 6자 이상 규칙
+  assert.equal((await camp({ mode: 'signup', email: 'new@wol.org', password: '1234' })).status, 400);
+});
+
+test('with no counselor-page account, the reset reports that none exists', async () => {
+  const { env, master } = await setup();
+  const res = await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '1234' });
+  assert.equal((await res.json()).counselorAccount, 'none');
+});

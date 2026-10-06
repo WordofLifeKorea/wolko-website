@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=3">
   <link rel="stylesheet" href="/wolko-ui.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
-  <script src="/wolko-rail.js?v=23" defer></script>
+  <script src="/wolko-rail.js?v=24" defer></script>
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -280,6 +280,7 @@
         pendingLabel: '승인 대기',
         pendingListTitle: '승인 대기 목록',
         pendingEmpty: '대기 중인 요청이 없습니다.',
+        resetCounselorOn: '카운슬러 계정의 비활성화도 풀었어요.', resetCounselorSame: '카운슬러 계정도 같은 임시 비밀번호로 바꿨어요.',
         rejectedTitle: '거부된 계정', rejectedHelp: '접근이 막힌 계정이에요. 다시 승인하면 바로 로그인할 수 있어요.', reapproveBtn: '다시 활성화',
         resetTitle: '비밀번호 초기화', resetHelp: '비밀번호를 잊은 멤버에게 임시 비밀번호를 걸어요. 그 계정으로 로그인하면 새 비밀번호를 정하는 창이 먼저 떠요.', resetPick: '계정 선택', resetTemp: '임시 비밀번호', resetBtn: '초기화', resetConfirm: (n, e) => `${n} (${e}) 계정의 비밀번호를 임시 비밀번호로 바꿀까요?`, resetDone: '임시 비밀번호로 바꿨어요. 로그인하면 변경 창이 떠요.',
         approveBtn: '승인',
@@ -339,6 +340,7 @@
         pendingLabel: 'Pending',
         pendingListTitle: 'Pending Requests',
         pendingEmpty: 'No pending requests.',
+        resetCounselorOn: 'The counselor-page account was re-activated too.', resetCounselorSame: 'The counselor-page account got the same temporary password.',
         rejectedTitle: 'Rejected accounts', rejectedHelp: 'These accounts are blocked. Approve again to let them sign in.', reapproveBtn: 'Re-activate',
         resetTitle: 'Reset password', resetHelp: 'Give a member who forgot their password a temporary one. They will be asked to choose a new password right after signing in.', resetPick: 'Account', resetTemp: 'Temporary password', resetBtn: 'Reset', resetConfirm: (n, e) => `Replace the password of ${n} (${e}) with the temporary one?`, resetDone: 'Temporary password set. They will be asked to change it when they sign in.',
         approveBtn: 'Approve',
@@ -768,7 +770,7 @@
           const res = await fetch('/api/hub/reset-password', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ email: sel.value, tempPassword: $('resetTemp').value }) });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error);
-          showToast(t('resetDone'));
+          showToast(t('resetDone') + (data.counselorAccount === 'reactivated' ? ' ' + t('resetCounselorOn') : data.counselorAccount === 'reset' ? ' ' + t('resetCounselorSame') : ''));
         } catch (e) { showToast(e.message || '', true); }
       });
     }
