@@ -44,29 +44,32 @@ test('shared layout tokens define one page width, padding, card and field size',
   assert.match(css, /max-width:\s*var\(--wl-page-max\)\s*!important/);
 });
 
-test('every tool page opens with the same eyebrow, title and description block', async () => {
-  const expectations = {
-    'src/pages/schedule/index.astro': 'class="wl-eyebrow"',
-    'src/pages/wolkoevents.astro': 'events-eyebrow',
-    'src/pages/expense/index.astro': 'class="wl-eyebrow"',
-    'src/pages/car-drive/index.astro': 'log-kicker',
-    'src/pages/car-log/index.astro': 'log-kicker',
-    'src/pages/car/index.astro': 'class="wl-eyebrow"',
-    'src/pages/wolkoadmin.astro': 'class="wl-eyebrow"',
-    'src/pages/campstaff/index.astro': 'class="wl-eyebrow"',
-  };
-  for (const [file, marker] of Object.entries(expectations)) {
-    assert.ok((await read(file)).includes(marker), `${file} must show an eyebrow label`);
+test('page titles are not repeated under the header: no eyebrow labels, no duplicate title blocks', async () => {
+  for (const file of ['src/pages/expense/index.astro', 'src/pages/schedule/index.astro', 'src/pages/car/index.astro', 'src/pages/wolkoadmin.astro']) {
+    const source = await read(file);
+    assert.ok(!source.includes('wl-page-head') && !source.includes('sc-title-row') && !source.includes('car-title-row'), `${file} must not repeat the header title`);
+  }
+  for (const file of TOOL_PAGES) {
+    const source = await read(file);
+    assert.ok(!/class="(wl-eyebrow|events-eyebrow|log-kicker)"/.test(source), `${file} must not show an eyebrow label`);
   }
 });
 
-test('vehicle pages show the title block first and the same four-tab menu below it', async () => {
+test('vehicle pages start with the same four-tab menu followed by a one-line lead', async () => {
   for (const file of ['src/pages/car-drive/index.astro', 'src/pages/car-log/index.astro']) {
     const source = await read(file);
-    assert.ok(source.indexOf('class="log-intro"') < source.indexOf('class="car-view-tabs'), `${file}: title block comes before the tab menu`);
+    assert.ok(!source.includes('class="log-intro"'), `${file}: no duplicated title block`);
+    assert.ok(source.indexOf('class="car-view-tabs') < source.indexOf('class="wl-lead"'), `${file}: tabs first, lead line after`);
   }
   const css = await read('public/wolko-layout.css');
   assert.match(css, /\.car-view-tabs\s*\{[^}]*repeat\(4, minmax\(0, 1fr\)\) !important/s);
+});
+
+test('every portal page loads the language sync before anything else reads the saved language', async () => {
+  for (const file of [...TOOL_PAGES, 'src/pages/portal.astro', 'src/pages/crs/index.astro']) {
+    const source = await read(file);
+    assert.match(source, /<script is:inline src="\/wolko-lang-sync\.js\?v=\d+"><\/script>/, `${file} must load wolko-lang-sync.js synchronously`);
+  }
 });
 
 test('the shared header adds one logout button to every tool page that lacks one', async () => {
