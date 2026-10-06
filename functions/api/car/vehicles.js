@@ -7,7 +7,7 @@
  * 계속 늘거나 바뀌므로 하드코딩하지 않고 KV에 배열로 저장해 관리자가 직접 추가/삭제한다.
  * KV key: car:vehicles:missionary → [{ id, name, addedAt }]
  */
-import { parseHubSessionToken } from '../../lib/hubAccounts.js';
+import { isPortalMember } from '../../lib/hubAccounts.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -17,14 +17,9 @@ const CORS = {
 const KV_KEY = 'car:vehicles:missionary';
 const NAME_MAX_LEN = 40;
 
-/** 차량 캘린더는 별도 토큰 없이 포탈 세션 토큰을 그대로 쓴다(role admin/master만 통과). */
+/** 차량 예약·정비·차량 목록은 승인된 포탈 멤버(등급 무관)가 모두 보고 쓸 수 있다. */
 async function verifyToken(request, env) {
-  if (!env.ADMIN_PASSWORD) return false;
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  if (!token) return false;
-  const session = await parseHubSessionToken(env.ADMIN_PASSWORD, token);
-  return !!session && (session.role === 'admin' || session.role === 'master');
+  return isPortalMember(request, env);
 }
 
 async function listVehicles(env) {

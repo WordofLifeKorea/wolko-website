@@ -1354,7 +1354,7 @@
     applyLangToDOM();
     const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
     const hubSession = hubToken ? parseHubToken(hubToken) : null;
-    if (hubSession && (hubSession.role === 'admin' || hubSession.role === 'master')) {
+    if (hubSession) { // 승인된 포탈 멤버는 등급과 상관없이 사용 — 서버가 계정 상태를 다시 확인한다
       const screen = $('loginScreen');
       screen.classList.add('hidden');
       screen.style.display = 'none';

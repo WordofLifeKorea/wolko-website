@@ -157,6 +157,18 @@ export async function parseHubSessionToken(secret, token) {
   return { email, role: effectiveRole(email, role) };
 }
 
+/** 승인된 포탈 계정(등급 무관) 또는 마스터의 유효한 포탈 세션이면 true — 차량 예약·정비처럼 멤버 모두가 쓰는 기능용 */
+export async function isPortalMember(request, env) {
+  if (!env.ADMIN_PASSWORD || !env.CAMP_KV) return false;
+  const auth = request.headers.get('Authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const session = token ? await parseHubSessionToken(env.ADMIN_PASSWORD, token) : null;
+  if (!session) return false;
+  if (isMasterEmail(session.email)) return true;
+  const account = await getAccount(env, session.email);
+  return !!account && account.status === 'approved';
+}
+
 export async function getAccount(env, email) {
   return env.CAMP_KV.get(`${ACCOUNT_PREFIX}${normalizeEmail(email)}`, 'json');
 }
