@@ -61,6 +61,7 @@ jobs:
               echo "$result" | jq '.'
               exit 0
             fi
+            echo "Server said: ${result:-(no body)}"
             echo "Attempt $attempt failed"; sleep 20
           done
           exit 1
