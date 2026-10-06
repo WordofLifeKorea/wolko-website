@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=63">
+  <link rel="stylesheet" href="/expense.css?v=64">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -625,7 +625,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         </div>`).join('');
       const bySub = {};
       rep.rows.forEach(r => { bySub[catKey(r)] = (bySub[catKey(r)] || 0) + r.amountKrw; });
-      const subtotal = Object.keys(bySub).length > 1 || rep.rows.length > 1
+      // 카테고리가 하나뿐이면 위 합계와 같은 숫자의 반복이므로 계정별 소계는 두 개 이상일 때만
+      const subtotal = Object.keys(bySub).length > 1
         ? `<div class="ex-summary" style="margin:10px 0 4px">${Object.entries(bySub).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span class="ex-sum-chip">${esc(k)} <b>${krw(v)}</b></span>`).join('')}</div>` : '';
       let note = '';
       if (rep.status === 'rejected') note = `<div class="ex-note reject"><b>${t('noteRejected')}</b> — ${esc(rep.reviewNote)}</div>`;
@@ -673,7 +674,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
           <header class="ex-person-head">
             <span class="ex-avatar">${esc(String(p.name).trim().charAt(0).toUpperCase())}</span>
             <div class="ex-person-name"><b>${esc(p.name)}</b><div class="ex-meta">${esc(t('gN', p.reports.length))}${todo ? ' · ' + esc(t('st_approved')) + ' ' + todo : ''}</div></div>
-            <div class="ex-person-total">${krw(total)}</div>
+            ${p.reports.length > 1 ? `<div class="ex-person-total">${krw(total)}</div>` : ''}
           </header>
           <ul class="ex-subs">
             ${p.reports.map(r => `
