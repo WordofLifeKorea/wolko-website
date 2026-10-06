@@ -469,6 +469,29 @@ test('승인된 리포트는 내용 고정: 작성자 수정·철회 불가, 카
   assert.ok(ok.report.log.some(l => l.action === 'recategorize' && l.by === 'acct@x.com'));
 });
 
+test('회계 담당은 송금 처리 전에 항목별 회계 노트를 남길 수 있고, 처리 후에는 바꿀 수 없다', async () => {
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  await acc('acct@x.com', 'Ann', 'counselor');
+  const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29', memo: '신청자 노트' };
+  const id = (await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'n', rows: [row] })).report.id;
+  const patch = (who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, ...body });
+  await patch(boss, { action: 'approve', categories: ['Junior Camp (8040)'], checks: [true], approverMemos: ['승인자 노트'] });
+  assert.equal((await patch(boss, { action: 'recategorize', categories: ['Junior Camp (8040)'], accountantMemos: ['x'] })).status, 403, '승인자는 회계 노트 불가');
+  const ok = await patch(ann, { action: 'recategorize', categories: ['Junior Camp (8040)'], accountantMemos: ['송금 전 확인 요망'] });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.report.rows[0].accountantMemo, '송금 전 확인 요망');
+  assert.equal(ok.report.rows[0].memo, '신청자 노트');
+  assert.equal(ok.report.rows[0].approverMemo, '승인자 노트');
+  const cleared = await patch(ann, { action: 'recategorize', categories: ['Junior Camp (8040)'], accountantMemos: [''] });
+  assert.equal(cleared.report.rows[0].accountantMemo, undefined, '비우면 삭제');
+  await patch(ann, { action: 'recategorize', categories: ['Junior Camp (8040)'], accountantMemos: ['다시'] });
+  await patch(ann, { action: 'process' });
+  const after = await patch(ann, { action: 'recategorize', categories: ['Junior Camp (8040)'], accountantMemos: ['처리 후'] });
+  assert.equal(after.report.rows[0].accountantMemo, '다시', '송금 처리 후에는 노트 고정');
+});
+
 test('회계 담당이 승인된 리포트를 반려하면 승인자에게 되돌아가 다시 승인해야 한다', async () => {
   const { acc, call } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');

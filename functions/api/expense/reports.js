@@ -343,10 +343,20 @@ async function handlePatch(context) {
       report.categoriesConfirmedBy = session.email;
       report.categoriesConfirmedAt = now;
     }
-    if (!changed) return Response.json({ ok: true, report, changed }, { headers: CORS });
-    report.log.push({ at: now, by: session.email, action: 'recategorize', note: `${changed}개 항목` });
+    // 회계 노트(항목별) — 송금 처리 전(승인 상태)에만 남기거나 고칠 수 있다
+    let noted = 0;
+    if (report.status === 'approved' && Array.isArray(body.accountantMemos)) {
+      report.rows.forEach((row, i) => {
+        const m = clip(body.accountantMemos[i], 300);
+        if ((row.accountantMemo || '') === m) return;
+        if (m) { row.accountantMemo = m; row.accountantMemoBy = session.email; } else { delete row.accountantMemo; delete row.accountantMemoBy; }
+        noted++;
+      });
+    }
+    if (!changed && !noted) return Response.json({ ok: true, report, changed, noted }, { headers: CORS });
+    report.log.push({ at: now, by: session.email, action: 'recategorize', note: `${changed}개 항목` + (noted ? `, 노트 ${noted}개` : '') });
     await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
-    return Response.json({ ok: true, report, changed }, { headers: CORS });
+    return Response.json({ ok: true, report, changed, noted }, { headers: CORS });
   }
 
   if (action === 'process') {

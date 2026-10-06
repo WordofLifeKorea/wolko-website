@@ -591,3 +591,22 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-d-date { flex: none; font-size: 12px; font-weight: 600; color: var(--mid); font-variant-numeric: tabular-nums; }
 .ex-d-main > b { min-width: 0; overflow-wrap: anywhere; }
 .ex-d-item > .ex-d-purpose { grid-column: 2 / -1; font-size: 13px; color: var(--text); line-height: 1.45; }
+
+/* ══ v13 — 노트 아이콘 (신청자 노랑 · 승인자 파랑 · 회계 초록) + 호버/탭 말풍선 ══ */
+.ex-notes { display: inline-flex; gap: 4px; align-items: center; margin-left: 2px; }
+.ex-nico { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid; cursor: help; outline: none; flex: none; }
+.ex-nico.sub { color: #a87a00; background: #fff4cf; border-color: #ecd58a; }
+.ex-nico.ap  { color: #1f6f93; background: #e3f1f8; border-color: #aacfe0; }
+.ex-nico.ac  { color: #2c7a4b; background: #e2f5e9; border-color: #a7d6b8; }
+.ex-ntip { position: absolute; left: 0; top: calc(100% + 6px); z-index: 30; width: max-content; max-width: min(260px, 70vw); padding: 7px 10px; border-radius: 8px; background: #fff; color: var(--text); border: 1px solid; font: 500 12.5px/1.5 var(--f-body); text-align: left; white-space: pre-wrap; box-shadow: 0 6px 18px rgba(20,50,64,.16); opacity: 0; visibility: hidden; transition: opacity .12s; pointer-events: none; }
+.ex-ntip b { display: block; font-size: 11px; font-weight: 800; margin-bottom: 2px; }
+.ex-nico.sub .ex-ntip { border-color: #ecd58a; } .ex-nico.sub .ex-ntip b { color: #a87a00; }
+.ex-nico.ap .ex-ntip { border-color: #aacfe0; } .ex-nico.ap .ex-ntip b { color: #1f6f93; }
+.ex-nico.ac .ex-ntip { border-color: #a7d6b8; } .ex-nico.ac .ex-ntip b { color: #2c7a4b; }
+.ex-nico:hover .ex-ntip, .ex-nico:focus .ex-ntip, .ex-nico:focus-visible .ex-ntip { opacity: 1; visibility: visible; }
+.ex-nico:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--blue); }
+.ex-anote { margin-top: 4px; width: 100%; }
+.ex-recat-row { flex-wrap: wrap; }
+.ex-recat-row .ex-anote { flex: 1 1 100%; max-width: none; }
+.ex-person { overflow: visible; }
+.ex-person-head { border-radius: 16px 16px 0 0; }
