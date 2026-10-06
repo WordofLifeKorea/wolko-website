@@ -172,3 +172,11 @@ body > header .wl-lang-btn, body > header .adm-lang-option, body > header .adm-l
   :root:root:root body > header select { max-width: 84px; }
   :root:root:root body > header .wl-user-chip { padding-right: 4px !important; }
 }
+
+/* 홈 화면에 설치한 앱(상태바가 투명)에서 상단바가 시계·노치 밑으로 깔리지 않게: 상태바 높이만큼 위쪽을 비운다.
+   (브라우저/데스크톱에서는 env(safe-area-inset-top)이 0이라 아무 변화 없음) */
+:root:root :is(body > header, .app-header, .sc-header, .portal-header, .topbar, .car-header, .ex-header) {
+  padding-top: env(safe-area-inset-top, 0px) !important;
+  height: calc(var(--wl-head-h) + env(safe-area-inset-top, 0px)) !important;
+  min-height: calc(var(--wl-head-h) + env(safe-area-inset-top, 0px)) !important;
+}
