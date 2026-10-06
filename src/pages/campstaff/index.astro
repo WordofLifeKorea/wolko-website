@@ -18,13 +18,7 @@
   <link rel="stylesheet" href="/wolko-ui.css?v=2">
   <link rel="stylesheet" href="/wolko-layout.css?v=15">
   <script src="/wolko-rail.js?v=23" defer></script>
-  <link rel="manifest" href="/campstaff-manifest.json">
   <meta name="theme-color" content="#004f68">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="스태프 포탈">
-  <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <style is:global>
     :root {
       --blue:#004f68;
@@ -1574,10 +1568,8 @@
 
     // ── 서비스워커 등록 ──
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/campstaff-sw.js', { scope: '/campstaff' })
-          .catch(e => console.warn('Campstaff SW registration failed:', e));
-      });
+      // 설치형 앱 기능은 포탈 첫 화면에서만 쓴다 — 예전에 등록된 이 페이지의 서비스워커는 정리한다
+      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => { if (/\/(admin|crs|campstaff|camp-resources)-sw\.js$/.test((r.active || r.waiting || r.installing || {}).scriptURL || '')) r.unregister(); })).catch(() => {});
     }
   </script>
 </body>

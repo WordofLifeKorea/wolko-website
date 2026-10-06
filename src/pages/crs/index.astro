@@ -15,13 +15,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
   <title>CRS for WOLKO</title>
   <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
-  <link rel="manifest" href="/crs-manifest.json">
   <meta name="theme-color" content="#004f68">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="WOLKO CRS">
-  <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -2860,11 +2854,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   // ── 서비스워커 등록 ──
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/crs-sw.js', { scope: '/crs' })
-        .catch(e => console.warn('CRS SW registration failed:', e));
-    });
-  }
+      // 설치형 앱 기능은 포탈 첫 화면에서만 쓴다 — 예전에 등록된 이 페이지의 서비스워커는 정리한다
+      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => { if (/\/(admin|crs|campstaff|camp-resources)-sw\.js$/.test((r.active || r.waiting || r.installing || {}).scriptURL || '')) r.unregister(); })).catch(() => {});
+    }
 </script>
 </body>
 </html>

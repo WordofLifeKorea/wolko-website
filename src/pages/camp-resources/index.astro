@@ -14,11 +14,6 @@ const pageTitle = 'WOLKO Camp Resources';
     <script is:inline src="/wolko-session.js?v=1"></script>
     <meta name="robots" content="noindex,nofollow">
     <meta name="theme-color" content="#004f68">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="WOLKO 자료실">
-    <link rel="manifest" href="/camp-resources-manifest.json">
-    <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -1544,10 +1539,8 @@ const pageTitle = 'WOLKO Camp Resources';
     render();
     bootstrapData();
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/camp-resources-sw.js', { scope: '/camp-resources' })
-          .catch(error => console.warn('Camp resources SW registration failed:', error));
-      });
+      // 설치형 앱 기능은 포탈 첫 화면에서만 쓴다 — 예전에 등록된 이 페이지의 서비스워커는 정리한다
+      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => { if (/\/(admin|crs|campstaff|camp-resources)-sw\.js$/.test((r.active || r.waiting || r.installing || {}).scriptURL || '')) r.unregister(); })).catch(() => {});
     }
   </script>
 </BaseLayout>
