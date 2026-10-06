@@ -1,6 +1,6 @@
 /**
  * POST /api/hub/crs-token
- * Authorization: Bearer <포탈 세션 토큰> — admin/master 권한만 허용.
+ * Authorization: Bearer <포탈 세션 토큰> — 승인된 포탈 멤버 누구나 (CRS 안의 관리자 기능은 hubRole 로 구분).
  *
  * CRS(Firebase Auth 프로젝트: wolko-crs)에 SSO로 로그인하기 위한 Firebase
  * 커스텀 토큰을 발급한다. uid는 포탈 이메일을 그대로 사용하므로, CRS
@@ -10,7 +10,7 @@
  *   (Firebase 콘솔 → wolko-crs 프로젝트 → 프로젝트 설정 → 서비스 계정 →
  *    "새 비공개 키 생성"으로 받은 JSON 파일 내용을 그대로 문자열로 저장)
  */
-import { parseHubSessionToken } from '../../lib/hubAccounts.js';
+import { portalSession } from '../../lib/hubAccounts.js';
 import { createFirebaseCustomToken } from '../../lib/firebaseAdmin.js';
 
 const CORS = {
@@ -24,14 +24,9 @@ export async function onRequestPost(context) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
 
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  const session = token ? await parseHubSessionToken(env.ADMIN_PASSWORD, token) : null;
+  const session = await portalSession(request, env);
   if (!session) {
     return Response.json({ error: '포탈 로그인이 필요합니다.' }, { status: 401, headers: CORS });
-  }
-  if (session.role !== 'admin' && session.role !== 'master') {
-    return Response.json({ error: 'CRS 접근 권한이 없습니다.' }, { status: 403, headers: CORS });
   }
 
   try {

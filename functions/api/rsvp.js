@@ -1,12 +1,12 @@
 /**
  * POST   /api/rsvp            — 이벤트 참석 신청 접수
- * GET    /api/rsvp?eventId=   — 관리자용 신청 목록 (admin/master)
+ * GET    /api/rsvp?eventId=   — 신청 목록 (포탈 멤버 누구나)
  * DELETE /api/rsvp?eventId=&rsvpId= — 관리자용 신청 삭제
  *
  * KV: rsvp:{eventId}:{rsvpId}          신청 한 건
  *     rsvp:{eventId}:email:{email}     같은 이메일 중복 신청 방지
  */
-import { parseHubSessionToken } from '../lib/hubAccounts.js';
+import { parseHubSessionToken, portalSession } from '../lib/hubAccounts.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -34,6 +34,11 @@ async function isAdmin(request, env) {
   if (!token) return false;
   const session = await parseHubSessionToken(env.ADMIN_PASSWORD, token);
   return !!session && (session.role === 'admin' || session.role === 'master');
+}
+
+/** 신청 현황 보기는 로그인한 포탈 멤버 누구나 (삭제는 관리자만). */
+async function isMember(request, env) {
+  return !!(await portalSession(request, env));
 }
 
 function buildEmailHtml(rsvp) {
@@ -157,7 +162,7 @@ export async function onRequestPost(context) {
 
 export async function onRequestGet(context) {
   const { request, env } = context;
-  if (!await isAdmin(request, env)) {
+  if (!await isMember(request, env)) {
     return Response.json({ error: 'Unauthorized' }, { status: 401, headers: CORS });
   }
 

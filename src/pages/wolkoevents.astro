@@ -1,6 +1,6 @@
 ---
 // 이벤트 관리(RSVP) — 캠프 관리자(wolkoadmin)와 분리된 별도 페이지.
-// 별도 관리자 비밀번호 없이 포탈(/portal) 세션 토큰(role admin/master)으로 접속한다.
+// 별도 관리자 비밀번호 없이 포탈(/portal) 세션 토큰(포탈 멤버 누구나)으로 접속한다.
 // No BaseLayout; standalone page
 ---
 <!DOCTYPE html>
@@ -199,7 +199,7 @@
       toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
     }
 
-    // ── Login ── 별도 비밀번호 없이 포탈 세션 토큰(role admin/master)만으로 접속
+    // ── Login ── 별도 비밀번호 없이 포탈 세션 토큰(포탈 멤버 누구나)만으로 접속
     function parseHubToken(token) {
       try {
         const decoded = atob(token);
@@ -295,10 +295,10 @@
       showToast(t('csvRsvpDone'), 'success');
     }
 
-    // ── 포탈 세션이 유효한 admin/master면 자동 입장 ──
+    // ── 포탈 세션이 유효하면(멤버 누구나) 자동 입장 ──
     const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
     const hubSession = hubToken ? parseHubToken(hubToken) : null;
-    if (hubSession && (hubSession.role === 'admin' || hubSession.role === 'master')) {
+    if (hubSession) {
       document.getElementById('loginScreen').classList.add('hidden');
       setTimeout(() => { document.getElementById('loginScreen').style.display = 'none'; }, 0);
       loadRsvpData();

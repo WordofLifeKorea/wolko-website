@@ -1,4 +1,4 @@
-import { parseHubSessionToken } from '../../lib/hubAccounts.js';
+import { portalSession } from '../../lib/hubAccounts.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -14,13 +14,9 @@ const CONFIG_KEYS = [
   'customMembers',
 ];
 
+/** 로그인한(승인된) 포탈 멤버 누구나. */
 async function verifyAdmin(request, env) {
-  if (!env.ADMIN_PASSWORD) return false;
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  if (!token) return false;
-  const session = await parseHubSessionToken(env.ADMIN_PASSWORD, token);
-  return !!session && (session.role === 'admin' || session.role === 'master');
+  return !!(await portalSession(request, env));
 }
 
 function emptyConfig() {

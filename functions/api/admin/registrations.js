@@ -12,7 +12,7 @@
  * 구 데이터 호환: status 없는 데이터는 confirmed 필드로 판단
  */
 import { sendAlimtalk } from '../../lib/solapi.js';
-import { parseHubSessionToken } from '../../lib/hubAccounts.js';
+import { parseHubSessionToken, portalSession } from '../../lib/hubAccounts.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -30,8 +30,13 @@ const SIBLING_CAMP_LABELS = {
   jeju: '제주 캠프',
 };
 
-/** 캠프 관리자는 별도 토큰 없이 포탈 세션 토큰을 그대로 쓴다(role admin/master만 통과). */
+/** 캠프 관리자는 별도 토큰 없이 포탈 세션을 그대로 쓴다 — 로그인한(승인된) 포탈 멤버 누구나 보기·수정 가능. */
 async function verifyToken(request, env) {
+  return !!(await portalSession(request, env));
+}
+
+/** 신청 삭제는 관리자/마스터만. */
+async function verifyAdmin(request, env) {
   if (!env.ADMIN_PASSWORD) return false;
   const auth = request.headers.get('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -260,7 +265,7 @@ export async function onRequestGet(context) {
 
 export async function onRequestDelete(context) {
   const { env, request } = context;
-  if (!await verifyToken(request, env)) {
+  if (!await verifyAdmin(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
   }
 
