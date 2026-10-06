@@ -30,16 +30,17 @@ const nextWeekday = () => { // 오늘 이후 가장 가까운 화요일
   return d.toISOString().slice(0, 10);
 };
 
-test('2주 구간: 월요일 시작, 월~토 × 2주 = 12일, 앞뒤로 14일씩 이동', () => {
+test('2주 구간: 월요일 시작, 월~금 × 2주 = 10일, 앞뒤로 14일씩 이동', () => {
   const p = periodFor('2026-10-08');
   assert.equal(p.start, '2026-10-05');
   assert.equal(p.end, '2026-10-18');
-  assert.equal(p.days.length, 12);
-  assert.deepEqual([p.days[0], p.days[5], p.days[6], p.days[11]], ['2026-10-05', '2026-10-10', '2026-10-12', '2026-10-17']);
+  assert.equal(p.days.length, 10);
+  assert.deepEqual([p.days[0], p.days[4], p.days[5], p.days[9]], ['2026-10-05', '2026-10-09', '2026-10-12', '2026-10-16']);
   assert.equal(periodFor('2026-10-19').start, '2026-10-19');
   assert.equal(periodFor('2026-10-04').start, '2026-09-21', '기준일 이전도 14일 단위');
   assert.equal(shiftPeriod('2026-10-05', 1), '2026-10-19');
   assert.equal(isDriveDay('2026-10-11'), false, '일요일은 제외');
+  assert.equal(isDriveDay('2026-10-10'), false, '토요일도 제외');
 });
 
 test('평택센터 멤버만 신청할 수 있고, 제주 소속은 거절된다', async () => {
@@ -66,6 +67,7 @@ test('칸 신청 · 중복 거절 · 본인만 취소 · 휴대폰 번호 필요
   assert.equal((await post(b, { date, slot: 'dropoff' })).status, 201, '드롭오프는 번호 없이도 가능');
   assert.equal((await post(a, { date: '2020-01-06', slot: 'pickup' })).status, 400, '지난 날짜');
   assert.equal((await post(a, { date: '2026-10-11', slot: 'pickup' })).status, 400, '일요일');
+  assert.equal((await post(a, { date: '2026-10-10', slot: 'pickup' })).status, 400, '토요일');
   const get = async token => (await D.onRequestGet({ env, request: req('GET', `/api/car/drive?start=${date}`, token) })).json();
   const view = await get(b);
   assert.deepEqual(view.slots[`${date}:pickup`], { name: '가나다', mine: false });
@@ -99,7 +101,7 @@ test('8시 알림: 오늘 픽업 담당자에게 한 번만 문자를 보낸다'
   assert.equal(second.sent, 0);
   assert.equal(second.alreadySent, true);
   assert.equal(sent.length, 1, '같은 날 두 번 보내지 않는다');
-  assert.equal((await (await run('?date=2026-10-11')).json()).skipped, 'sunday');
+  assert.equal((await (await run('?date=2026-10-11')).json()).skipped, 'weekend');
 });
 
 test('/api/hub/me 는 로그인한 계정의 이름과 이메일을 돌려준다', async () => {
@@ -178,4 +180,38 @@ test('등급은 코드의 목록이 기준: 마스터 wolkorea1 · 관리자 4�
   globalThis.fetch = async () => ({ ok: true, json: async () => ({}), text: async () => '' });
   env.RESEND_API_KEY = 'x';
   assert.equal((await post({ email: 'someone@wol.org', action: 'approve', role: 'counselor' })).status, 200, '일반 멤버로는 승인');
+});
+
+test('운행 스케줄 관리자는 라이드가 필요 없는 칸을 닫고 열 수 있다', async () => {
+  const env = memoryEnv();
+  const estelle = await addAccount(env, 'esooy@wol.org', 'Estelle Sooy');
+  const a = await addAccount(env, 'a@x.com', '가나다');
+  const date = nextWeekday();
+  const put = (token, body) => D.onRequestPut({ env, request: req('PUT', '/api/car/drive', token, body) });
+  const post = (token, body) => D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, body) });
+  const get = async token => (await D.onRequestGet({ env, request: req('GET', `/api/car/drive?start=${date}`, token) })).json();
+
+  assert.equal((await get(a)).me.isManager, false);
+  assert.equal((await get(estelle)).me.isManager, true);
+  assert.equal((await put(a, { date, slot: 'pickup', closed: true })).status, 403, '일반 멤버는 닫을 수 없다');
+
+  assert.equal((await post(a, { date, slot: 'pickup' })).status, 201);
+  const closed = await put(estelle, { date, slot: 'pickup', closed: true });
+  assert.equal(closed.status, 200);
+  assert.deepEqual((await closed.json()).cancelled, [{ slot: 'pickup', name: '가나다' }], '이미 신청한 사람의 신청은 취소된다');
+  const view = await get(a);
+  assert.equal(view.closed[`${date}:pickup`], true);
+  assert.equal(view.slots[`${date}:pickup`], undefined);
+  assert.equal((await post(a, { date, slot: 'pickup' })).status, 409, '닫힌 칸은 신청할 수 없다');
+  assert.equal((await post(a, { date, slot: 'dropoff' })).status, 201, '다른 칸은 그대로');
+
+  assert.equal((await put(estelle, { date, slot: 'pickup', closed: false })).status, 200);
+  assert.equal((await post(a, { date, slot: 'pickup' })).status, 201, '다시 열면 신청할 수 있다');
+
+  const all = await put(estelle, { date, slot: 'all', closed: true });
+  assert.equal((await all.json()).cancelled.length, 2, '하루 전체를 닫으면 두 칸의 신청이 모두 취소된다');
+  const day = await get(a);
+  assert.ok(day.closed[`${date}:pickup`] && day.closed[`${date}:dropoff`]);
+  assert.equal((await put(estelle, { date: '2026-10-10', slot: 'pickup', closed: true })).status, 400, '주말은 칸이 없다');
+  assert.equal((await put(estelle, { date: '2020-01-06', slot: 'pickup', closed: true })).status, 409, '지난 날짜는 바꿀 수 없다');
 });

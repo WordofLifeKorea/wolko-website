@@ -25,7 +25,7 @@ export async function onRequestPost({ env, request }) {
   const requested = params.get('date');
   const date = requested && parseDate(requested) !== null ? requested : todayKst();
   const configured = !!(env.SOLAPI_API_KEY && env.SOLAPI_API_SECRET && env.SOLAPI_SENDER_PHONE);
-  if (!isDriveDay(date)) return Response.json({ date, skipped: 'sunday', sent: 0, configured }, { headers: H });
+  if (!isDriveDay(date)) return Response.json({ date, skipped: 'weekend', sent: 0, configured }, { headers: H });
 
   const slot = await env.CAMP_KV.get(slotKey(date, 'pickup'), 'json');
   if (!slot) return Response.json({ date, pickup: null, sent: 0, configured }, { headers: H });

@@ -11,7 +11,7 @@
 .drive-week-title { display: flex; align-items: baseline; gap: 10px; padding: 14px 20px; border-bottom: 1px solid #edf2f5; }
 .drive-week-title strong { font-size: 14px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
 .drive-week-title span { font-size: 12.5px; color: #7d98a3; font-weight: 600; }
-.drive-days { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.drive-days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .drive-day { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: start; padding: 14px 12px 16px; border-left: 1px solid #edf2f5; background: #fff; }
 .drive-day:first-child { border-left: 0; }
 .drive-day.is-today { background: #f0f9f9; box-shadow: inset 0 3px 0 var(--teal, #008e92); }
@@ -35,6 +35,16 @@
 .drive-slot:disabled { cursor: default; }
 .drive-slot:disabled:not(.taken) { opacity: .5; cursor: not-allowed; }
 .drive-slot.pending { opacity: .6; pointer-events: none; }
+/* 칸 관리(운행 스케줄 관리자) */
+.drive-manage { height: 36px; padding: 0 14px; border: 1px solid #bcd3dc; border-radius: 10px; background: #fff; color: var(--blue); font-size: 12.5px; font-weight: 800; cursor: pointer; }
+.drive-manage.on { background: #b03037; border-color: #b03037; color: #fff; }
+.drive-manage-hint { margin: -10px 0 var(--wl-section-gap, 24px); padding: 10px 14px; border-radius: 10px; background: #fff4d6; color: #6b4a00; font-size: 12.5px; line-height: 1.6; }
+.drive-slot.closed { border-style: solid; border-color: #e2e8eb; background: repeating-linear-gradient(135deg, #f1f4f6, #f1f4f6 6px, #e8edf0 6px, #e8edf0 12px); color: #8da0a9; cursor: default; }
+.drive-slot.closed .lbl { color: #a7b5bc; }
+.drive-slot.managing { cursor: pointer; outline: 2px dashed rgba(176, 48, 55, .35); outline-offset: -2px; }
+.drive-slot.managing.closed { color: #b03037; }
+.drive-slot.managing:hover:not(:disabled) { background: #fdecee; }
+.day-toggle { min-height: 0 !important; margin-left: auto; align-self: center; height: 24px; padding: 0 8px; border: 1px solid #e3c4c7; border-radius: 8px; background: #fff; color: #b03037; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
 .drive-modal { position: fixed; inset: 0; z-index: 1500; display: grid; place-items: center; padding: 20px; background: rgba(9, 28, 36, .55); backdrop-filter: blur(4px); }
 .drive-modal[hidden] { display: none; }
 .drive-modal-card { width: min(400px, 100%); padding: 24px; border-radius: 24px; background: #fff; box-shadow: 0 24px 60px rgba(0, 0, 0, .25); display: grid; gap: 10px; }

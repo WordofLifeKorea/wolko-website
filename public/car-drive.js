@@ -8,7 +8,7 @@
       h1: '운행 스케줄', intro: '오전 픽업과 드롭오프를 신청하세요. 픽업 당일 아침 8시에 문자로 알려드려요.',
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: '평택센터 멤버의 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
       deniedTitle: '평택센터 멤버 전용이에요', deniedHelp: '이 스케줄은 평택센터 멤버만 사용할 수 있어요. 소속이 맞는데 이 안내가 보이면 관리자에게 문의해 주세요.',
-      thisPeriod: '오늘로', note: '빈 칸을 누르면 바로 신청돼요 · 내 칸을 다시 누르면 취소돼요',
+      thisPeriod: '오늘로', manage: '칸 관리', manageDone: '관리 끝내기', manageHint: '라이드가 필요 없는 칸을 눌러 닫아 주세요. 닫힌 칸을 누르면 다시 열려요. 신청이 있는 칸을 닫으면 그 신청은 취소돼요.', closedLabel: '닫힘', closeDay: '하루 닫기', openDay: '하루 열기', closeConfirm: n => `${n} 님의 신청이 취소돼요. 이 칸을 닫을까요?`, closeDayConfirm: n => `이 날의 신청 ${n}건이 취소돼요. 하루를 닫을까요?`, note: '빈 칸을 누르면 바로 신청돼요 · 내 칸을 다시 누르면 취소돼요',
       week: n => n + '주차', pickup: '오전 픽업', dropoff: '드롭오프', signUp: '+ 신청', mineLabel: '내가 신청', today: '오늘',
       phoneTitle: '오전 픽업 알림 문자', phoneHelp: '픽업 당일 아침 8시에 이 번호로 문자를 보내드려요.', phoneLabel: '휴대폰 번호', phoneBad: '올바른 휴대폰 번호를 입력해 주세요.', cancel: '취소', signUpDo: '신청하기',
       cancelConfirm: '이 신청을 취소할까요?', cancelAdmin: '(관리자) 이 신청을 취소할까요?', failLoad: '스케줄을 불러오지 못했습니다.', failAct: '처리하지 못했습니다.',
@@ -20,7 +20,7 @@
       h1: 'Driving Schedule', intro: 'Sign up for morning pick-up and drop-off. The pick-up person gets a text at 8 AM that day.',
       loading: 'Loading…', loginTitle: 'Portal Login', loginHelp: 'Log in with your Pyeongtaek Center portal account.', email: 'Email', password: 'Password', loginBtn: 'Log in and continue', loginFail: 'Could not log in.',
       deniedTitle: 'Pyeongtaek Center members only', deniedHelp: 'This schedule is for Pyeongtaek Center members. If you belong here and still see this, please contact an admin.',
-      thisPeriod: 'Today', note: 'Tap an empty slot to sign up · tap your own slot again to cancel',
+      thisPeriod: 'Today', manage: 'Manage slots', manageDone: 'Done', manageHint: 'Tap a slot that needs no ride to close it. Tap a closed slot to open it again. Closing a slot with a sign-up cancels that sign-up.', closedLabel: 'Closed', closeDay: 'Close day', openDay: 'Open day', closeConfirm: n => `${n}'s sign-up will be cancelled. Close this slot?`, closeDayConfirm: n => `${n} sign-up(s) on this day will be cancelled. Close the whole day?`, note: 'Tap an empty slot to sign up · tap your own slot again to cancel',
       week: n => 'Week ' + n, pickup: 'Pick up', dropoff: 'Drop off', signUp: '+ Sign up', mineLabel: 'Mine', today: 'Today',
       phoneTitle: 'Morning pick-up text', phoneHelp: 'We will text this number at 8 AM on the pick-up day.', phoneLabel: 'Mobile number', phoneBad: 'Please enter a valid mobile number.', cancel: 'Cancel', signUpDo: 'Sign up',
       cancelConfirm: 'Cancel this sign-up?', cancelAdmin: '(Admin) Cancel this sign-up?', failLoad: 'Could not load the schedule.', failAct: 'Could not complete that.',
@@ -80,16 +80,29 @@
     if (!focusedOnce) { focusedOnce = true; focusHashDay(); }
   }
 
+  let manage = false;
+  const isClosed = (date, slot) => !!(state.closed && state.closed[`${date}:${slot}`]);
   function slotButton(date, slot) {
     const info = state.slots[`${date}:${slot}`];
     const past = date < state.today;
+    const closed = isClosed(date, slot);
+    const managing = manage && state.me.isManager;
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'drive-slot' + (info ? (info.mine ? ' taken mine' : ' taken') : '');
+    b.className = 'drive-slot' + (closed ? ' closed' : info ? (info.mine ? ' taken mine' : ' taken') : '') + (managing && !past ? ' managing' : '');
     const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = t(slot);
     const who = document.createElement('span'); who.className = 'who';
     b.append(lbl, who);
-    if (info) {
+    if (managing) {
+      who.textContent = closed ? t('closedLabel') : info ? info.name : t('signUp');
+      b.disabled = past;
+      b.addEventListener('click', () => setClosed(date, slot, !closed, info));
+      return b;
+    }
+    if (closed) {
+      who.textContent = t('closedLabel');
+      b.disabled = true;
+    } else if (info) {
       who.textContent = info.name;
       if (info.mine) { const x = document.createElement('i'); x.className = 'x'; x.textContent = '✕'; b.append(x); }
       b.disabled = !info.mine && !state.me.isAdmin;
@@ -102,16 +115,30 @@
     }
     return b;
   }
+  async function setClosed(date, slot, closed, info) {
+    if (closed && slot !== 'all' && info && !confirm(t('closeConfirm', info.name))) return;
+    if (closed && slot === 'all') {
+      const n = ['pickup', 'dropoff'].filter(s => state.slots[`${date}:${s}`]).length;
+      if (n && !confirm(t('closeDayConfirm', n))) return;
+    }
+    await act('PUT', '/api/car/drive', { date, slot, closed });
+  }
 
   function render() {
     const p = state.period;
     const lastDay = p.days[p.days.length - 1];
     $('periodLabel').textContent = `${md(p.start)} (${wk(p.start)}) – ${md(lastDay)} (${wk(lastDay)})`;
     $('thisPeriod').hidden = state.today >= p.start && state.today <= p.end;
+    const mgr = !!state.me.isManager;
+    $('manageBtn').hidden = !mgr;
+    $('manageBtn').textContent = manage && mgr ? t('manageDone') : t('manage');
+    $('manageBtn').classList.toggle('on', manage && mgr);
+    $('manageHint').hidden = !(manage && mgr);
+    const per = p.days.length / 2;
     const box = $('weeks');
     box.replaceChildren();
     [0, 1].forEach(w => {
-      const days = p.days.slice(w * 6, w * 6 + 6);
+      const days = p.days.slice(w * per, w * per + per);
       const week = document.createElement('section');
       week.className = 'drive-week';
       const title = document.createElement('header');
@@ -126,6 +153,13 @@
         const head = document.createElement('div');
         head.className = 'drive-day-head';
         head.innerHTML = `<strong>${md(date)}</strong><span class="dow">${wk(date)}</span>${date === state.today ? `<em>${t('today')}</em>` : ''}`;
+        if (manage && mgr && date >= state.today) {
+          const bothClosed = isClosed(date, 'pickup') && isClosed(date, 'dropoff');
+          const tg = document.createElement('button');
+          tg.type = 'button'; tg.className = 'day-toggle'; tg.textContent = bothClosed ? t('openDay') : t('closeDay');
+          tg.addEventListener('click', () => setClosed(date, 'all', !bothClosed));
+          head.append(tg);
+        }
         const slots = document.createElement('div');
         slots.className = 'drive-slots';
         slots.append(slotButton(date, 'pickup'), slotButton(date, 'dropoff'));
@@ -179,6 +213,7 @@
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('phoneModal').hidden) { $('phoneModal').hidden = true; pending = null; } if (e.key === 'Enter' && !$('phoneModal').hidden && e.target === $('phoneInput')) $('phoneOk').click(); });
 
+  $('manageBtn').addEventListener('click', () => { manage = !manage; render(); });
   $('prevPeriod').addEventListener('click', () => load(state.period.prev));
   $('nextPeriod').addEventListener('click', () => load(state.period.next));
   $('thisPeriod').addEventListener('click', () => load(state.today));

@@ -5,6 +5,9 @@ import { pickName } from './expenses.js';
 export const SLOTS = ['pickup', 'dropoff'];
 export const SLOT_PREFIX = 'drive:slot:';
 export const SMS_PREFIX = 'drive:sms:';
+export const CLOSED_PREFIX = 'drive:closed:'; // drive:closed:{구간 시작일} → { '날짜:슬롯': { by, at } }
+/** 운행 스케줄 관리자: 라이드가 필요 없는 칸을 닫고 열 수 있다 (마스터는 항상 가능) */
+export const DRIVE_MANAGER_EMAILS = ['esooy@wol.org'];
 const DAY = 86400000;
 // 2주 단위 구간의 기준이 되는 월요일 (이 날짜부터 14일씩 끊는다)
 const ANCHOR = Date.UTC(2026, 9, 5);
@@ -16,21 +19,22 @@ export const parseDate = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(Strin
 /** 한국 시간 기준 오늘 (YYYY-MM-DD) */
 export const todayKst = (now = Date.now()) => fromUtc(now + 9 * 3600000);
 export const weekdayOf = s => new Date(parseDate(s)).getUTCDay(); // 0=일 … 6=토
-export const isDriveDay = s => { const d = weekdayOf(s); return d >= 1 && d <= 6; }; // 월~토
+export const isDriveDay = s => { const d = weekdayOf(s); return d >= 1 && d <= 5; }; // 월~금
 
-/** 어떤 날짜가 속한 2주 구간 { start, end, days[] } — days는 월~토 × 2주 = 12일 */
+/** 어떤 날짜가 속한 2주 구간 { start, end, days[] } — days는 월~금 × 2주 = 10일 */
 export function periodFor(dateStr) {
   const ms = parseDate(dateStr);
   if (ms === null) return null;
   const startMs = ANCHOR + Math.floor((ms - ANCHOR) / (14 * DAY)) * 14 * DAY;
   const days = [];
-  for (let w = 0; w < 2; w++) for (let d = 0; d < 6; d++) days.push(fromUtc(startMs + (w * 7 + d) * DAY));
+  for (let w = 0; w < 2; w++) for (let d = 0; d < 5; d++) days.push(fromUtc(startMs + (w * 7 + d) * DAY));
   return { start: fromUtc(startMs), end: fromUtc(startMs + 13 * DAY), days };
 }
 export const shiftPeriod = (start, n) => fromUtc(parseDate(start) + n * 14 * DAY);
 /** 화면에 보일 이름: 지정된 표시 이름이 있으면 그것, 없으면 신청 때 저장된 이름 */
 export const shownName = (record) => pickName(record?.email, record?.name);
 export const slotKey = (date, slot) => `${SLOT_PREFIX}${date}:${slot}`;
+export const closedKey = (periodStart) => `${CLOSED_PREFIX}${periodStart}`;
 
 /**
  * 운행 스케줄 접속자: 승인된 포탈 계정 중 평택센터 소속(또는 마스터).
@@ -48,5 +52,6 @@ export async function driveSession(request, env) {
   if (account ? account.status !== 'approved' : !master) return { status: 401, error: '포탈 로그인이 필요합니다.' };
   const campus = CAMPUS_OVERRIDES[email] || account?.campus || 'wolko';
   if (!master && campus !== 'wolko') return { status: 403, error: '평택센터 멤버만 사용할 수 있습니다.' };
-  return { email, name: pickName(email, account?.name), phone: account?.phone || '', isAdmin: master || signed.role === 'master' };
+  const isAdmin = master || signed.role === 'master';
+  return { email, name: pickName(email, account?.name), phone: account?.phone || '', isAdmin, isManager: isAdmin || DRIVE_MANAGER_EMAILS.includes(email) };
 }
