@@ -15,7 +15,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=52">
+  <link rel="stylesheet" href="/expense.css?v=53">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <link rel="stylesheet" href="/wolko-header.css?v=12">
@@ -63,6 +63,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         tabNew: '새 리포트', tabEdit: '리포트 수정', tabMine: '내 리포트', tabApprove: '승인 대기', tabAcct: '회계 업무', tabAll: '전체 리포트',
         st_submitted: '승인 대기', st_approved: '승인됨 · 송금 대기', st_processed: '송금 처리 완료', st_rejected: '반려됨',
         acctPh: 'Account · 계정과목', acctPrev: '이전 계정과목 (직접 입력)', currency: '통화', amountPh: '금액', delRow: '항목 삭제',
+        srcPersonal: '개인 사역계좌', srcWolko: '월코',
         srcSelPh: '사역명 · 계좌 (예: 월코캠, SF1, Vietnam Camp)', srcPh: '직접 입력 (예: 월코캠, SF1, Student Ministry, Vietnam Camp, 선교사 개인계좌)', srcCustomOpt: '직접 입력', srcHint: '사역명 또는 특정 계좌를 적어주세요. (예: 월코캠, 개인 사역계좌, 월코 계좌 등..)<span class="ex-srcex">카테고리(코드)는 승인자가 확인해서 확정합니다.</span>', srcTip: '<p>어떤 선교 항목의 지출인지,<br>어느 계좌에서 나가는지 적어 주세요.</p><p class="ex-tip-k">예시</p><span class="ex-tip-chips"><i>개인 사역계좌</i><i>월코캠프</i><i>월코</i><i>Student Ministry</i><i>SF1</i><i>Vietnam Camp</i></span><p class="ex-tip-note">카테고리(코드)는 승인자가 확인해서 확정합니다.</p>', srcSubmitted: a => a, srcLbl: '작성자 입력', catUnset: '카테고리 미확정', memoPh: '메모 (선택) - 출금 계좌가 확실하지 않거나 설명이 필요한 경우 적어주세요.', memoLbl: '메모', memoSubLbl: '제출자 메모', aMemoLbl: '승인 메모', aMemoPh: '승인 메모 (선택) - 출금 계좌 확인 내용', memoCheck: '메모 확인 필요', csvMemo: '메모', itemPh: '구매 품목', purposePh: '구매 목적 (필요시 작성)', thItem: '품목 · 목적', thWhen: '날짜', thCat: '카테고리', thAmt: '금액',
         attachTitle: '영수증 첨부', attach: '영수증', less: '접기', remove: '삭제',
         wherePh: 'Where · 장소 (선택)', rowProjPh: '이 항목만 다른 Project (선택)',
@@ -110,6 +111,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         tabNew: 'New report', tabEdit: 'Edit report', tabMine: 'My reports', tabApprove: 'To approve', tabAcct: 'Accounting', tabAll: 'All reports',
         st_submitted: 'Pending approval', st_approved: 'Approved · awaiting payment', st_processed: 'Payment completed', st_rejected: 'Rejected',
         acctPh: 'Account', acctPrev: 'Previous account (custom)', currency: 'Currency', amountPh: 'Amount', delRow: 'Remove item',
+        srcPersonal: 'Personal ministry account', srcWolko: 'WOLKO',
         srcSelPh: 'Ministry · account (e.g. WOLKO Camp, SF1, Vietnam Camp)', srcPh: 'Type it in (e.g. WOLKO Camp, SF1, Student Ministry, Vietnam Camp, a missionary\'s personal account)', srcCustomOpt: 'Type it in', srcHint: 'Enter the ministry name or a specific account. (e.g. WOLKO Camp, personal ministry account, WOLKO account, etc.)<span class="ex-srcex">The approver reviews and confirms the category (code).</span>', srcTip: '<p>Which ministry is the expense for,<br>and which account does it come from?</p><p class="ex-tip-k">Examples</p><span class="ex-tip-chips"><i>Personal ministry account</i><i>WOLKO Camp</i><i>WOLKO</i><i>Student Ministry</i><i>SF1</i><i>Vietnam Camp</i></span><p class="ex-tip-note">The approver reviews and confirms the category (code).</p>', srcSubmitted: a => a, srcLbl: 'Submitter wrote', catUnset: 'Category not set', memoPh: 'Memo (optional) - Add a note if the withdrawal account is unclear or needs explanation.', memoLbl: 'Memo', memoSubLbl: 'Submitter memo', aMemoLbl: 'Approval note', aMemoPh: 'Approval note (optional) - confirmed withdrawal account', memoCheck: 'Memo — please review', csvMemo: 'Memo', itemPh: 'Item purchased', purposePh: 'Purpose (if needed)', thItem: 'Item · Purpose', thWhen: 'Date', thCat: 'Category', thAmt: 'Amount',
         attachTitle: 'Attach receipt', attach: 'Receipt', less: 'Less', remove: 'Remove',
         wherePh: 'Where (optional)', rowProjPh: 'Different project for this item (optional)',
@@ -161,8 +163,10 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
     const DEFAULT_SOURCE = ''; // 처음엔 안내 문구가 떠 있고, 작성자가 고른다
     const SRC_PRESETS = ['개인 사역계좌', '월코']; // 나머지는 '직접 입력'
     const SRC_CUSTOM = '__custom';
+    const srcShow = v => v === '개인 사역계좌' ? t('srcPersonal') : v === '월코' ? t('srcWolko') : v;
     const srcIsCustom = r => !!r.srcCustom || (!!r.source && !SRC_PRESETS.includes(r.source));
-    const SRC_EXAMPLES = ['월코캠', '개인 사역계좌', '월코 계좌', 'Student Ministry', 'SF1', 'Vietnam Camp'];
+    const SRC_EXAMPLES_KO = ['월코캠', '개인 사역계좌', '월코 계좌', 'Student Ministry', 'SF1', 'Vietnam Camp'];
+    const SRC_EXAMPLES_EN = ['WOLKO Camp', 'Personal ministry account', 'WOLKO account', 'Student Ministry', 'SF1', 'Vietnam Camp'];
 
     const $ = id => document.getElementById(id);
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -304,7 +308,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
 
     function sourceOptions() {
       let used = []; try { used = JSON.parse(lsGet(LS.sources, '[]')); } catch {}
-      return [...new Set([...used, ...SRC_EXAMPLES])].map(v => `<option value="${esc(v)}">`).join('');
+      return [...new Set([...used, ...(lang === 'en' ? SRC_EXAMPLES_EN : SRC_EXAMPLES_KO)])].map(v => `<option value="${esc(v)}">`).join('');
     }
 
     function rowHtml(r, i) {
@@ -316,7 +320,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
           <div class="ex-srcwrap ${srcIsCustom(r) ? 'is-custom' : ''}">
             <select class="ex-select ex-srcsel ${!srcIsCustom(r) && !r.source ? 'is-empty' : ''}" data-f="srcSel" aria-label="${esc(t('srcLbl'))}">
               <option value="" disabled hidden ${!srcIsCustom(r) && !r.source ? 'selected' : ''}>${esc(t('srcSelPh'))}</option>
-              ${SRC_PRESETS.map(v => `<option value="${esc(v)}" ${!srcIsCustom(r) && r.source === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}
+              ${SRC_PRESETS.map(v => `<option value="${esc(v)}" ${!srcIsCustom(r) && r.source === v ? 'selected' : ''}>${esc(srcShow(v))}</option>`).join('')}
               <option value="${SRC_CUSTOM}" ${srcIsCustom(r) ? 'selected' : ''}>${esc(t('srcCustomOpt'))}</option>
             </select>
             <input class="ex-input ex-source" data-f="source" list="fSrcList" placeholder="${esc(t('srcPh'))}" value="${esc(srcIsCustom(r) ? r.source : '')}" maxlength="160" aria-label="${esc(t('srcLbl'))}" ${srcIsCustom(r) ? '' : 'hidden'}>
@@ -409,10 +413,10 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
     function projectOf(rep, row) { return row.project || rep.project || ''; }
 
     // 승인 전에는 작성자가 적은 내용(source)을, 승인 후에는 확정된 카테고리를 보여주고 서로 다르면 작성자 입력도 함께 보여준다
-    const subText = r => r.source || r.submittedAccount || '';
+    const subText = r => srcShow(r.source || r.submittedAccount || '');
     const catView = r => r.account
       ? esc(r.account) + (subText(r) && subText(r) !== r.account ? `<div class="ex-meta">${esc(t('srcSubmitted', subText(r)))}</div>` : '')
-      : `${esc(r.source || '')}<div class="ex-meta">${esc(t('catUnset'))}</div>`;
+      : `${esc(srcShow(r.source || ''))}<div class="ex-meta">${esc(t('catUnset'))}</div>`;
     const catKey = r => r.account || t('catUnset');
     const memoHtml = r => (r.memo ? `<div class="ex-memo">${esc(r.memo)}</div>` : '')
       + (r.approverMemo ? `<div class="ex-memo ap"><b>✔ ${esc(t('aMemoLbl'))}</b> ${esc(r.approverMemo)}</div>` : '');
@@ -441,7 +445,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
     function catCell(rep, r, i, st) {
       const cur = st.accounts[i];
       return `<div class="ex-cat">
-          <div class="ex-src"><b>${esc(r.source || r.submittedAccount || r.account || '')}</b></div>
+          <div class="ex-src"><b>${esc(srcShow(r.source || r.submittedAccount || r.account || ''))}</b></div>
           <select class="ex-select-plain" data-cat="${i}" data-repid="${esc(rep.id)}" aria-label="${esc(t('catPick'))}">
             <option value="">${esc(t('catPick'))}</option>
             ${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${cur === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
@@ -582,7 +586,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         <div class="ex-d-item">
           <div class="ex-d-main"><b>${esc(r.item || r.ministryPurpose)}</b>${r.item && r.ministryPurpose ? ` <span class="ex-meta">— ${esc(r.ministryPurpose)}</span>` : ''}</div>
           <div class="ex-d-amt">${krw(r.amountKrw)}${isFx(r.currency) ? `<span class="ex-meta"> (${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)})</span>` : ''}</div>
-          <div class="ex-d-sub ex-meta">${esc(r.when || '')} · ${r.account ? esc(r.account) : esc(r.source || '') + ' (' + esc(t('catUnset')) + ')'}${r.account && subText(r) && subText(r) !== r.account ? ' (' + esc(t('srcSubmitted', subText(r))) + ')' : ''}${r.where ? ' · 📍 ' + esc(r.where) : ''}</div>
+          <div class="ex-d-sub ex-meta">${esc(r.when || '')} · ${r.account ? esc(r.account) : esc(srcShow(r.source || '')) + ' (' + esc(t('catUnset')) + ')'}${r.account && subText(r) && subText(r) !== r.account ? ' (' + esc(t('srcSubmitted', subText(r))) + ')' : ''}${r.where ? ' · 📍 ' + esc(r.where) : ''}</div>
           ${memoHtml(r)}
           ${(r.receipts || []).length ? `<div class="ex-receipts" style="margin-top:4px">${receiptChips(rep, r)}</div>` : ''}
         </div>`).join('');
