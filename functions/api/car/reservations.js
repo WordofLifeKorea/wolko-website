@@ -10,7 +10,8 @@
  */
 
 import { createCalendarEvent, deleteCalendarEventById, legacyDeterministicEventId } from '../../lib/googleCalendar.js';
-import { isPortalMember } from '../../lib/hubAccounts.js';
+import { isPortalMember, portalSession } from '../../lib/hubAccounts.js';
+import { pickName } from '../../lib/expenses.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -94,6 +95,13 @@ async function verifyToken(request, env) {
   return isPortalMember(request, env);
 }
 
+/** 예약 삭제는 만든 본인, 관리자, 마스터만 — 만든 사람이 기록되지 않은 예전 예약은 관리자·마스터만 지울 수 있다 */
+function canDeleteReservation(me, reservation) {
+  if (!me) return false;
+  if (me.role === 'master' || me.role === 'admin') return true;
+  return !!reservation?.createdBy && reservation.createdBy === me.email;
+}
+
 async function listReservations(env) {
   const items = [];
   let cursor;
@@ -162,9 +170,10 @@ export async function onRequestGet(context) {
   if (!env.CAMP_KV || !(await verifyToken(request, env))) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
+  const me = await portalSession(request, env);
   const reservations = await listReservations(env);
   reservations.sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
-  return Response.json({ reservations }, { headers: CORS });
+  return Response.json({ reservations: reservations.map(r => ({ ...r, canDelete: canDeleteReservation(me, r) })) }, { headers: CORS });
 }
 
 export async function onRequestPost(context) {
@@ -190,7 +199,8 @@ export async function onRequestPost(context) {
     }
 
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    let reservation = { id, ...parsed, createdAt: new Date().toISOString() };
+    const me = await portalSession(request, env);
+    let reservation = { id, ...parsed, createdAt: new Date().toISOString(), createdBy: me?.email || '', createdByName: pickName(me?.email, me?.name) };
     const calendarSync = await syncReservationToCalendar(env, reservation, null, vehicleLabels.get(parsed.vehicleId) || parsed.vehicleId);
     if (calendarSync.ok && calendarSync.calendarEventId) {
       reservation = { ...reservation, calendarEventId: calendarSync.calendarEventId };
@@ -235,7 +245,7 @@ export async function onRequestPut(context) {
       return Response.json({ error: '해당 시간에 이미 예약이 있습니다.', conflict }, { status: 409, headers: CORS });
     }
 
-    let reservation = { ...existing, ...parsed, id, updatedAt: new Date().toISOString() };
+    let reservation = { ...existing, ...parsed, id, createdBy: existing.createdBy, createdByName: existing.createdByName, updatedAt: new Date().toISOString() };
     const oldEventId = existing.calendarEventId || await legacyDeterministicEventId(id);
     const calendarSync = await syncReservationToCalendar(env, reservation, oldEventId, vehicleLabels.get(parsed.vehicleId) || parsed.vehicleId);
     if (calendarSync.ok && calendarSync.calendarEventId) {
@@ -262,6 +272,9 @@ export async function onRequestDelete(context) {
   }
   const key = `${KV_PREFIX}${id}`;
   const existing = await env.CAMP_KV.get(key, 'json');
+  if (existing && !canDeleteReservation(await portalSession(request, env), existing)) {
+    return Response.json({ error: '예약은 만든 본인과 관리자, 마스터만 삭제할 수 있습니다.' }, { status: 403, headers: CORS });
+  }
   await env.CAMP_KV.delete(key);
   const eventIdToDelete = existing?.calendarEventId || await legacyDeterministicEventId(id);
   const calendarSync = await syncDeleteToCalendar(env, eventIdToDelete);
