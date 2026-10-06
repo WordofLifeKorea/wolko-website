@@ -1,0 +1,490 @@
+---
+import { getCollection } from 'astro:content';
+// 개인 뉴스레터 작성 — 선교사·스태프가 포탈 계정으로 로그인해 본인 소개 페이지에 올리고 구독자에게 메일로 보낸다.
+// 틀(헤더·탭·카드·입력창·버튼)은 경비 리포트 페이지와 같은 expense.css 를 쓴다.
+const team = (await getCollection('team'))
+  .filter(p => !p.slug.startsWith('map-order') && p.data.active !== false)
+  .map(p => ({ slug: p.slug, ko: p.data.name_ko, en: p.data.name_en }))
+  .sort((a, b) => a.ko.localeCompare(b.ko, 'ko'));
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>내 뉴스레터 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/expense.css?v=58">
+  <link rel="stylesheet" href="/newsletter.css?v=1">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/wolko-rail.css?v=15">
+  <link rel="stylesheet" href="/wolko-header.css?v=14">
+  <link rel="stylesheet" href="/wolko-ui.css?v=2">
+  <link rel="stylesheet" href="/wolko-layout.css?v=15">
+  <script src="/wolko-rail.js?v=25" defer></script>
+  <meta name="theme-color" content="#004f68">
+  <script is:inline src="/wolko-session.js?v=1"></script>
+</head>
+<body>
+  <header class="ex-header">
+    <a class="ex-title" href="/portal" title="WOLKO Portal" aria-label="WOLKO Portal"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span data-t="headerTitle">내 뉴스레터</span></a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span class="ex-user" id="exUser"></span>
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" data-lang="ko" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" data-lang="en" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="ex-wrap">
+    <p class="nl-lead" data-t="lead">내 소식을 글로 쓰면 내 소개 페이지에 올라가고, 구독자에게 이메일로도 보낼 수 있어요.</p>
+    <div class="nl-who" id="nlWho"></div>
+    <nav class="ex-tabs" id="nlTabs"></nav>
+    <section id="nlView"></section>
+  </main>
+  <div class="ex-toast" id="exToast"></div>
+  <input type="file" id="nlFile" accept="image/*" hidden>
+
+  <script type="application/json" id="nlTeam" set:html={JSON.stringify(team)}></script>
+  <script is:inline>
+    const TEAM = JSON.parse(document.getElementById('nlTeam').textContent);
+    const T = {
+      ko: {
+        pageTitle: '내 뉴스레터 — WOLKO', headerTitle: '내 뉴스레터',
+        lead: '내 소식을 글로 쓰면 내 소개 페이지에 올라가고, 구독자에게 이메일로도 보낼 수 있어요.',
+        tabPosts: '내 글', tabSubs: '구독자', tabLinks: '작성자 연결', newPost: '새 글 쓰기',
+        writingAs: '글쓰기 대상', myPage: '내 소개 페이지',
+        notLinked: '아직 내 소개 페이지와 연결되지 않았어요. 관리자(마스터)에게 포탈 이메일과 소개 페이지 연결을 요청해 주세요.',
+        notLinkedAdmin: '내 계정은 아직 소개 페이지와 연결되지 않았어요. 아래 "작성자 연결"에서 연결하거나, 다른 사람 페이지를 골라 대신 쓸 수 있어요.',
+        emptyPosts: '아직 쓴 글이 없어요. "새 글 쓰기"로 시작해 보세요.',
+        stDraft: '초안', stPub: '게시됨', stSent: n => '발송 ' + n + '명',
+        edited: '수정', untitled: '(제목 없음)',
+        title: '제목', titlePh: '이번 소식의 제목', modeSimple: '간단하게 쓰기', modeBlocks: '블록으로 만들기',
+        bodyLabel: '본문', bodyPh: '근황, 기도 제목, 감사한 일을 자유롭게 적어 주세요.\n\n빈 줄로 문단이 나뉘어요.',
+        fmtHint: '**굵게**  *기울임*  [글자](https://주소)  /  "# "제목  "- "목록  "> "인용 — 위 버튼으로 넣을 수 있어요.',
+        tbBold: '굵게', tbItalic: '기울임', tbLink: '링크', tbHead: '제목', tbList: '목록', tbQuote: '인용', tbImage: '사진',
+        buttonLabel: '버튼 글자 (선택)', buttonUrl: '버튼 링크 (선택)', buttonLabelPh: '예: 후원하기', buttonUrlPh: 'https://',
+        addHeading: '+ 제목', addText: '+ 글', addImage: '+ 사진', addButton: '+ 버튼', addDivider: '+ 구분선', addQuote: '+ 인용', addVerse: '+ 말씀',
+        bHeading: '제목', bText: '글', bImage: '사진', bButton: '버튼', bDivider: '구분선', bQuote: '인용', bVerse: '말씀',
+        headingPh: '소제목', textPh: '내용을 적어 주세요.', captionPh: '사진 설명 (선택)', pickImage: '사진 고르기', changeImage: '사진 바꾸기',
+        quotePh: '인용할 말', citePh: '출처 (선택)', versePh: '말씀 본문', refPh: '예: 요한복음 3:16',
+        up: '위로', down: '아래로', del: '삭제',
+        preview: '미리보기', previewHint: '받는 사람에게 보이는 모습이에요.', previewEmpty: '왼쪽에 내용을 쓰면 여기에 미리 보여요.',
+        save: '저장', saved: '저장됨', saving: '저장 중…', tSaved: '저장했어요.',
+        publish: '웹에 게시', unpublish: '게시 취소', tPublished: '내 소개 페이지에 게시했어요.', tUnpublished: '게시를 취소했어요.',
+        test: '나에게 테스트 메일', tTest: '내 이메일로 테스트 메일을 보냈어요.',
+        sendSubs: n => '구독자 ' + n + '명에게 보내기', tSent: (a, f) => a + '명에게 보냈어요' + (f ? ' (' + f + '건 실패)' : '.'),
+        cSend: n => '구독자 ' + n + '명에게 이메일을 보내고 내 소개 페이지에도 게시합니다.\n보낸 메일은 취소할 수 없어요. 보낼까요?',
+        cResend: '이미 구독자에게 보낸 글이에요. 다시 보낼까요?',
+        delPost: '글 삭제', cDelPost: '이 글을 삭제할까요? (이미 보낸 메일은 취소되지 않아요)', tDeleted: '삭제했어요.',
+        back: '← 목록', sentAt: d => '발송 ' + d,
+        needTitle: '제목을 입력해 주세요.',
+        uploading: '사진 올리는 중…', tImageFail: '사진을 올리지 못했어요.',
+        stActive: '수신 중', stPending: '확인 대기', stUnsub: '수신거부', cActive: '수신 중', cPending: '확인 대기', cUnsub: '수신거부',
+        subsLead: '내 소개 페이지의 "소식 받기"로 신청한 분들과, 직접 추가한 분들이에요.',
+        subsEmpty: '아직 구독자가 없어요.', thEmail: '이메일', thName: '이름', thStatus: '상태', thSource: '경로', thDate: '신청일',
+        srcForm: '신청', srcImport: '직접 추가', remove: '삭제', cRemove: e => e + ' 구독자를 삭제할까요?',
+        addSubs: '구독자 직접 추가', addSubsHint: '이메일을 한 줄에 하나씩, 또는 쉼표로 구분해서 붙여넣어 주세요. "이름 <주소>" 형식도 돼요.',
+        consent: '이 분들에게 내 소식을 이메일로 받는 것에 동의를 받았습니다.', addBtn: '추가', tAdded: (a, s, i) => a + '명 추가' + (s ? ', ' + s + '명은 이미 있거나 수신거부' : '') + (i ? ', ' + i + '건은 형식 오류' : '') + '.',
+        needConsent: '수신 동의 확인에 체크해 주세요.', formHint: '소개 페이지에는 "소식 받기" 신청 칸이 있어요. 신청하면 확인 메일이 가고, 확인해야 구독이 시작돼요.',
+        linksLead: '포탈 계정(이메일)이 어느 소개 페이지의 글을 쓸지 연결해요. 연결된 사람만 뉴스레터를 쓸 수 있어요.',
+        thPage: '소개 페이지', linkEmail: '포탈 이메일', linkPage: '소개 페이지', linkSave: '연결', pickPage: '페이지 고르기', tLinked: '연결했어요.', cUnlink: e => e + ' 연결을 해제할까요?',
+        errLogin: '로그인이 필요해요.', errReq: '요청에 실패했어요.',
+      },
+      en: {
+        pageTitle: 'My Newsletter — WOLKO', headerTitle: 'My Newsletter',
+        lead: 'Write your updates here. They appear on your profile page, and you can email them to your subscribers.',
+        tabPosts: 'My posts', tabSubs: 'Subscribers', tabLinks: 'Author links', newPost: 'New post',
+        writingAs: 'Writing as', myPage: 'My profile page',
+        notLinked: 'Your account is not linked to your profile page yet. Please ask an admin to link your portal email to your page.',
+        notLinkedAdmin: 'Your account is not linked to a profile page yet. Link it under "Author links", or pick someone else\'s page to write for.',
+        emptyPosts: 'No posts yet. Start with "New post".',
+        stDraft: 'Draft', stPub: 'Published', stSent: n => 'Sent to ' + n,
+        edited: 'Edited', untitled: '(untitled)',
+        title: 'Title', titlePh: 'Title of this update', modeSimple: 'Write simply', modeBlocks: 'Build with blocks',
+        bodyLabel: 'Body', bodyPh: 'Share news, prayer requests and thanks.\n\nA blank line starts a new paragraph.',
+        fmtHint: '**bold**  *italic*  [text](https://url)  /  "# " heading  "- " list  "> " quote — or use the buttons above.',
+        tbBold: 'Bold', tbItalic: 'Italic', tbLink: 'Link', tbHead: 'Heading', tbList: 'List', tbQuote: 'Quote', tbImage: 'Photo',
+        buttonLabel: 'Button text (optional)', buttonUrl: 'Button link (optional)', buttonLabelPh: 'e.g. Support us', buttonUrlPh: 'https://',
+        addHeading: '+ Heading', addText: '+ Text', addImage: '+ Photo', addButton: '+ Button', addDivider: '+ Divider', addQuote: '+ Quote', addVerse: '+ Verse',
+        bHeading: 'Heading', bText: 'Text', bImage: 'Photo', bButton: 'Button', bDivider: 'Divider', bQuote: 'Quote', bVerse: 'Verse',
+        headingPh: 'Heading', textPh: 'Write something.', captionPh: 'Caption (optional)', pickImage: 'Choose photo', changeImage: 'Change photo',
+        quotePh: 'Quote', citePh: 'Source (optional)', versePh: 'Verse text', refPh: 'e.g. John 3:16',
+        up: 'Up', down: 'Down', del: 'Delete',
+        preview: 'Preview', previewHint: 'This is how readers will see it.', previewEmpty: 'Write something on the left and it shows up here.',
+        save: 'Save', saved: 'Saved', saving: 'Saving…', tSaved: 'Saved.',
+        publish: 'Publish to web', unpublish: 'Unpublish', tPublished: 'Published to your profile page.', tUnpublished: 'Unpublished.',
+        test: 'Send test to me', tTest: 'Test email sent to your address.',
+        sendSubs: n => 'Email ' + n + ' subscriber' + (n === 1 ? '' : 's'), tSent: (a, f) => 'Sent to ' + a + (f ? ' (' + f + ' failed)' : '.'),
+        cSend: n => 'This emails ' + n + ' subscriber' + (n === 1 ? '' : 's') + ' and publishes the post on your profile page.\nSent emails cannot be recalled. Send now?',
+        cResend: 'This post was already emailed. Send it again?',
+        delPost: 'Delete post', cDelPost: 'Delete this post? (Emails already sent are not recalled.)', tDeleted: 'Deleted.',
+        back: '← All posts', sentAt: d => 'Sent ' + d,
+        needTitle: 'Please enter a title.',
+        uploading: 'Uploading photo…', tImageFail: 'Could not upload the photo.',
+        stActive: 'Active', stPending: 'Awaiting confirmation', stUnsub: 'Unsubscribed', cActive: 'Active', cPending: 'Pending', cUnsub: 'Unsubscribed',
+        subsLead: 'People who signed up with "Get updates" on your page, plus the ones you added yourself.',
+        subsEmpty: 'No subscribers yet.', thEmail: 'Email', thName: 'Name', thStatus: 'Status', thSource: 'Source', thDate: 'Date',
+        srcForm: 'Sign-up', srcImport: 'Added by me', remove: 'Remove', cRemove: e => 'Remove subscriber ' + e + '?',
+        addSubs: 'Add subscribers', addSubsHint: 'Paste emails one per line or separated by commas. "Name <address>" also works.',
+        consent: 'These people have agreed to receive my updates by email.', addBtn: 'Add', tAdded: (a, s, i) => a + ' added' + (s ? ', ' + s + ' already there or unsubscribed' : '') + (i ? ', ' + i + ' invalid' : '') + '.',
+        needConsent: 'Please confirm you have their consent.', formHint: 'Your profile page has a "Get updates" form. People get a confirmation email and only start receiving mail after confirming.',
+        linksLead: 'Link a portal account (email) to the profile page it writes for. Only linked people can write newsletters.',
+        thPage: 'Profile page', linkEmail: 'Portal email', linkPage: 'Profile page', linkSave: 'Link', pickPage: 'Choose a page', tLinked: 'Linked.', cUnlink: e => 'Unlink ' + e + '?',
+        errLogin: 'Please sign in.', errReq: 'Request failed.',
+      },
+    };
+    let lang = (() => { try { return localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko'; } catch { return 'ko'; } })();
+    const t = (k, ...a) => { const v = T[lang][k] ?? T.ko[k] ?? k; return typeof v === 'function' ? v(...a) : v; };
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const token = () => sessionStorage.getItem('wolko-hub-token') || '';
+    const fmtDate = iso => iso ? new Date(iso).toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+    const teamName = slug => { const p = TEAM.find(x => x.slug === slug); return p ? (lang === 'en' ? p.en : p.ko) : slug; };
+
+    const S = { me: null, link: null, canManage: false, links: [], acting: '', view: 'posts', posts: [], post: null, subs: null, dirty: false, saving: false, prevTimer: 0, saveTimer: 0, pvSeq: 0 };
+
+    function toast(msg, isError) {
+      const el = $('exToast'); el.textContent = msg; el.classList.toggle('error', !!isError); el.classList.add('show');
+      clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 3200);
+    }
+    async function api(path, opts = {}) {
+      const res = await fetch(path, { ...opts, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token(), ...(opts.headers || {}) } });
+      if (res.status === 401) { sessionStorage.removeItem('wolko-hub-token'); location.replace('/portal'); throw new Error(t('errLogin')); }
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || t('errReq'));
+      return body;
+    }
+    const slugQ = (pre = '?') => S.acting ? `${pre}slug=${encodeURIComponent(S.acting)}` : '';
+    const postsUrl = (extra = '') => '/api/newsletter/posts?mine=1' + (S.acting ? '&slug=' + encodeURIComponent(S.acting) : '') + extra;
+
+    /* ─────────── 공통 틀 ─────────── */
+    function applyStatic() {
+      document.documentElement.lang = lang; document.title = t('pageTitle');
+      document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+      $('langKoBtn').classList.toggle('is-active', lang === 'ko'); $('langEnBtn').classList.toggle('is-active', lang === 'en');
+    }
+    function renderWho() {
+      const el = $('nlWho');
+      if (!S.canManage || !S.links.length) { el.innerHTML = ''; return; }
+      const pages = [...new Map(S.links.map(l => [l.slug, l])).values()];
+      const own = S.link?.slug;
+      el.innerHTML = `<span>${t('writingAs')}</span><select class="ex-select" id="nlActing">${pages.map(l => `<option value="${esc(l.slug)}" ${(S.acting || own) === l.slug ? 'selected' : ''}>${esc(teamName(l.slug))}${l.slug === own ? ' · ' + t('myPage') : ''}</option>`).join('')}</select>`;
+    }
+    function renderTabs() {
+      const tabs = [['posts', t('tabPosts')], ['subs', t('tabSubs')]];
+      if (S.canManage) tabs.push(['links', t('tabLinks')]);
+      const linked = !!(S.acting || S.link);
+      $('nlTabs').innerHTML = (linked ? `<button class="ex-tab ex-tab-new ${S.view === 'edit' && !S.post?.id ? 'active' : ''}" data-act="new">${t('newPost')}</button>` : '')
+        + tabs.filter(([k]) => linked || k === 'links').map(([k, label]) => `<button class="ex-tab ${S.view === k || (k === 'posts' && S.view === 'edit') ? 'active' : ''}" data-tab="${k}">${label}</button>`).join('');
+    }
+    async function show(view) {
+      S.view = view; renderWho(); renderTabs();
+      if (view === 'posts') await showPosts(); else if (view === 'subs') await showSubs(); else if (view === 'links') showLinks(); else if (view === 'edit') renderEditor();
+    }
+
+    /* ─────────── 내 글 목록 ─────────── */
+    async function showPosts() {
+      const linked = S.acting || S.link;
+      if (!linked) { $('nlView').innerHTML = `<div class="ex-card nl-empty">${esc(S.canManage ? t('notLinkedAdmin') : t('notLinked'))}</div>`; return; }
+      const d = await api(postsUrl());
+      S.posts = d.posts;
+      $('nlView').innerHTML = S.posts.length ? `<div class="nl-list">${S.posts.map(p => `
+        <div class="nl-row" data-open="${esc(p.id)}">
+          <div class="nl-row-main"><div class="nl-row-title">${esc(p.title || t('untitled'))}</div>
+          <div class="nl-row-meta">${esc(t('edited'))} ${esc(fmtDate(p.updatedAt))}${p.sentAt ? ' · ' + esc(t('sentAt', fmtDate(p.sentAt))) : ''}</div></div>
+          ${p.sentAt ? `<span class="nl-pill sent">${esc(t('stSent', p.sentCount))}</span>` : ''}
+          <span class="nl-pill ${p.status === 'published' ? 'pub' : ''}">${esc(p.status === 'published' ? t('stPub') : t('stDraft'))}</span>
+        </div>`).join('')}</div>` : `<div class="ex-card nl-empty">${esc(t('emptyPosts'))}</div>`;
+    }
+
+    /* ─────────── 편집기 ─────────── */
+    const blankPost = () => ({ id: '', title: '', mode: 'simple', body: '', button: { label: '', url: '' }, blocks: [], publishedAt: null, sentAt: null });
+    async function openPost(id) {
+      const d = await api(postsUrl('&id=' + encodeURIComponent(id)));
+      const p = d.post;
+      S.post = { ...blankPost(), ...p, button: p.button || { label: '', url: '' }, blocks: p.blocks || [], body: p.body || '' };
+      S.dirty = false; await show('edit');
+    }
+    function newPost() { S.post = blankPost(); S.dirty = false; show('edit'); }
+
+    function blockEditor(b, i, n) {
+      const head = label => `<div class="nl-block-head"><span>${esc(label)}</span><button data-bact="up" data-i="${i}" ${i === 0 ? 'disabled' : ''} title="${t('up')}" aria-label="${t('up')}">↑</button><button data-bact="down" data-i="${i}" ${i === n - 1 ? 'disabled' : ''} title="${t('down')}" aria-label="${t('down')}">↓</button><button data-bact="del" data-i="${i}" title="${t('del')}" aria-label="${t('del')}">✕</button></div>`;
+      const f = (k, ph, tag = 'input') => tag === 'textarea'
+        ? `<textarea class="ex-textarea" rows="5" data-bf="${k}" data-i="${i}" placeholder="${esc(ph)}">${esc(b[k] || '')}</textarea>`
+        : `<input class="ex-input" data-bf="${k}" data-i="${i}" value="${esc(b[k] || '')}" placeholder="${esc(ph)}">`;
+      let inner = '';
+      if (b.type === 'heading') inner = head(t('bHeading')) + f('text', t('headingPh'));
+      else if (b.type === 'text') inner = head(t('bText')) + f('text', t('textPh'), 'textarea');
+      else if (b.type === 'image') inner = head(t('bImage')) + (b.id ? `<img class="nl-thumb" src="/api/newsletter/image?id=${esc(b.id)}" alt="">` : '') + `<button class="ex-btn sm" data-bact="pick" data-i="${i}">${b.id ? t('changeImage') : t('pickImage')}</button> ` + f('caption', t('captionPh'));
+      else if (b.type === 'button') inner = head(t('bButton')) + `<div class="nl-grid2">${f('label', t('buttonLabelPh'))}${f('url', t('buttonUrlPh'))}</div>`;
+      else if (b.type === 'quote') inner = head(t('bQuote')) + f('text', t('quotePh'), 'textarea') + f('cite', t('citePh'));
+      else if (b.type === 'verse') inner = head(t('bVerse')) + f('text', t('versePh'), 'textarea') + f('ref', t('refPh'));
+      else inner = head(t('bDivider')) + '<hr style="border:0;border-top:1px solid var(--border);margin:4px 0">';
+      return `<div class="nl-block" data-block="${i}">${inner}</div>`;
+    }
+
+    function renderEditor() {
+      const p = S.post;
+      const subsCount = S.subs ? S.subs.counts.active : null;
+      const blocksUi = `<div id="nlBlocks">${p.blocks.map((b, i) => blockEditor(b, i, p.blocks.length)).join('')}</div>
+        <div class="nl-add">${[['heading', 'addHeading'], ['text', 'addText'], ['image', 'addImage'], ['button', 'addButton'], ['quote', 'addQuote'], ['verse', 'addVerse'], ['divider', 'addDivider']].map(([k, l]) => `<button data-badd="${k}">${t(l)}</button>`).join('')}</div>`;
+      const simpleUi = `<div class="nl-field"><label>${t('bodyLabel')}</label>
+        <div class="nl-bar">${[['bold', '<b>B</b>', 'tbBold'], ['italic', '<i>I</i>', 'tbItalic'], ['link', '🔗', 'tbLink'], ['head', 'H', 'tbHead'], ['list', '•', 'tbList'], ['quote', '❝', 'tbQuote'], ['image', '🖼', 'tbImage']].map(([k, ic, l]) => `<button type="button" data-tb="${k}" title="${t(l)}" aria-label="${t(l)}">${ic}</button>`).join('')}</div>
+        <textarea class="ex-textarea nl-body" id="nlBody" placeholder="${esc(t('bodyPh'))}">${esc(p.body)}</textarea><p class="nl-hint">${esc(t('fmtHint'))}</p></div>
+        <div class="nl-grid2"><div class="nl-field"><label>${t('buttonLabel')}</label><input class="ex-input" id="nlBtnLabel" value="${esc(p.button.label)}" placeholder="${esc(t('buttonLabelPh'))}"></div>
+        <div class="nl-field"><label>${t('buttonUrl')}</label><input class="ex-input" id="nlBtnUrl" value="${esc(p.button.url)}" placeholder="${esc(t('buttonUrlPh'))}"></div></div>`;
+      $('nlView').innerHTML = `
+        <div class="nl-editor">
+          <div class="ex-card">
+            <div class="nl-actions" style="margin:0 0 14px"><button class="ex-btn sm" data-act="back">${t('back')}</button><span class="grow"></span>
+              <span class="nl-saved" id="nlSaved"></span></div>
+            <div class="nl-field"><label>${t('title')}</label><input class="ex-input nl-title-input" id="nlTitle" value="${esc(p.title)}" placeholder="${esc(t('titlePh'))}" maxlength="120"></div>
+            <div class="nl-field"><div class="nl-seg" role="group"><button data-mode="simple" class="${p.mode === 'simple' ? 'on' : ''}">${t('modeSimple')}</button><button data-mode="blocks" class="${p.mode === 'blocks' ? 'on' : ''}">${t('modeBlocks')}</button></div></div>
+            ${p.mode === 'blocks' ? blocksUi : simpleUi}
+            <div class="nl-actions">
+              <button class="ex-btn" data-act="save">${t('save')}</button>
+              <button class="ex-btn" data-act="test">${t('test')}</button>
+              <button class="ex-btn ${p.publishedAt ? '' : 'green'}" data-act="${p.publishedAt ? 'unpublish' : 'publish'}">${p.publishedAt ? t('unpublish') : t('publish')}</button>
+              <span class="grow"></span>
+              ${p.id ? `<button class="ex-btn danger sm" data-act="delete">${t('delPost')}</button>` : ''}
+            </div>
+            <div class="nl-actions"><button class="ex-btn primary" data-act="send" id="nlSendBtn">${t('sendSubs', subsCount ?? '…')}</button></div>
+          </div>
+          <div class="nl-preview"><p class="nl-preview-label">${t('preview').toUpperCase()}</p>
+            <div class="nl-preview-card"><div class="nl-preview-head" id="nlPvHead"></div><div class="nl-preview-body"><h1 id="nlPvTitle"></h1><div id="nlPvHtml"></div></div></div>
+            <p class="nl-hint">${t('previewHint')}</p></div>
+        </div>`;
+      $('nlPvHead').textContent = 'WOLKO · ' + teamName(S.acting || S.link?.slug || '');
+      if (!S.subs) loadSubs().then(() => { const b = $('nlSendBtn'); if (b && S.view === 'edit') b.textContent = t('sendSubs', S.subs.counts.active); }).catch(() => {});
+      schedulePreview(true);
+    }
+
+    const collect = () => {
+      const p = S.post;
+      p.title = ($('nlTitle')?.value ?? p.title);
+      if (p.mode === 'simple') { p.body = $('nlBody')?.value ?? p.body; p.button = { label: $('nlBtnLabel')?.value ?? '', url: $('nlBtnUrl')?.value ?? '' }; }
+      return p;
+    };
+    const payload = () => { const p = collect(); return { id: p.id || undefined, slug: S.acting || undefined, title: p.title, mode: p.mode, body: p.body, button: p.button, blocks: p.blocks }; };
+
+    function schedulePreview(now) {
+      clearTimeout(S.prevTimer);
+      S.prevTimer = setTimeout(async () => {
+        if (S.view !== 'edit') return;
+        const seq = ++S.pvSeq;
+        try {
+          const d = await api('/api/newsletter/posts?preview=1', { method: 'POST', body: JSON.stringify(payload()) });
+          if (seq !== S.pvSeq || !$('nlPvHtml')) return;
+          $('nlPvTitle').textContent = S.post.title || '';
+          $('nlPvHtml').innerHTML = d.html || `<p style="color:#9ab">${esc(t('previewEmpty'))}</p>`;
+        } catch (e) { /* 미리보기 실패는 조용히 */ }
+      }, now ? 0 : 450);
+    }
+    function markDirty() {
+      S.dirty = true; if ($('nlSaved')) $('nlSaved').textContent = '';
+      schedulePreview();
+      clearTimeout(S.saveTimer);
+      S.saveTimer = setTimeout(() => { if (S.dirty && (S.post.title || '').trim()) savePost(true); }, 2500);
+    }
+    async function savePost(silent) {
+      if (S.saving) return false;
+      collect();
+      if (!S.post.title.trim()) { if (!silent) toast(t('needTitle'), true); return false; }
+      S.saving = true; if ($('nlSaved')) $('nlSaved').textContent = t('saving');
+      try {
+        const d = await api('/api/newsletter/posts', { method: 'POST', body: JSON.stringify(payload()) });
+        S.post.id = d.id; S.dirty = false;
+        if ($('nlSaved')) $('nlSaved').textContent = t('saved');
+        if (!silent) toast(t('tSaved'));
+        return true;
+      } catch (e) { if (!silent) toast(e.message, true); if ($('nlSaved')) $('nlSaved').textContent = ''; return false; }
+      finally { S.saving = false; }
+    }
+
+    /* 글 ↔ 블록 변환 (가능한 만큼 내용을 옮긴다) */
+    function toBlocks(p) {
+      const blocks = [];
+      if (p.body.trim()) blocks.push({ type: 'text', text: p.body });
+      if (p.button?.label && p.button?.url) blocks.push({ type: 'button', label: p.button.label, url: p.button.url });
+      return blocks;
+    }
+    function toSimple(p) {
+      const parts = []; let button = { label: '', url: '' };
+      for (const b of p.blocks) {
+        if (b.type === 'heading') parts.push('# ' + b.text);
+        else if (b.type === 'text') parts.push(b.text);
+        else if (b.type === 'quote') parts.push(String(b.text || '').split('\n').map(l => '> ' + l).join('\n') + (b.cite ? '\n> — ' + b.cite : ''));
+        else if (b.type === 'verse') parts.push('> ' + (b.text || '') + (b.ref ? '\n> — ' + b.ref : ''));
+        else if (b.type === 'image' && b.id) parts.push(`[[image:${b.id}|${b.caption || ''}]]`);
+        else if (b.type === 'button' && !button.label) button = { label: b.label || '', url: b.url || '' };
+      }
+      return { body: parts.filter(Boolean).join('\n\n'), button };
+    }
+
+    /* 사진: 1600px 이하 JPEG 로 줄여서 올린다 */
+    function pickFile() { return new Promise(res => { const f = $('nlFile'); f.value = ''; f.onchange = () => res(f.files[0] || null); f.click(); }); }
+    async function uploadImage(file) {
+      toast(t('uploading'));
+      const bmp = await createImageBitmap(file);
+      const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(bmp, 0, 0, c.width, c.height);
+      const data = c.toDataURL('image/jpeg', 0.85);
+      const d = await api('/api/newsletter/image', { method: 'POST', body: JSON.stringify({ data }) });
+      return d.id;
+    }
+
+    function wrapSel(ta, before, after, ph) {
+      const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value, sel = v.slice(s, e) || ph;
+      ta.value = v.slice(0, s) + before + sel + after + v.slice(e);
+      ta.focus(); ta.selectionStart = s + before.length; ta.selectionEnd = s + before.length + sel.length;
+    }
+    function linePrefix(ta, prefix) {
+      const s = ta.selectionStart, v = ta.value, ls = v.lastIndexOf('\n', s - 1) + 1;
+      ta.value = v.slice(0, ls) + prefix + v.slice(ls); ta.focus(); ta.selectionStart = ta.selectionEnd = s + prefix.length;
+    }
+    async function toolbar(kind) {
+      const ta = $('nlBody'); if (!ta) return;
+      if (kind === 'bold') wrapSel(ta, '**', '**', lang === 'en' ? 'bold' : '굵게');
+      else if (kind === 'italic') wrapSel(ta, '*', '*', lang === 'en' ? 'italic' : '기울임');
+      else if (kind === 'link') { const u = prompt('https://'); if (u) wrapSel(ta, '[', `](${u.trim()})`, lang === 'en' ? 'link text' : '링크 글자'); }
+      else if (kind === 'head') linePrefix(ta, '# ');
+      else if (kind === 'list') linePrefix(ta, '- ');
+      else if (kind === 'quote') linePrefix(ta, '> ');
+      else if (kind === 'image') {
+        const f = await pickFile(); if (!f) return;
+        try { const id = await uploadImage(f); const s = ta.selectionStart; const ins = `\n\n[[image:${id}|]]\n\n`; ta.value = ta.value.slice(0, s) + ins + ta.value.slice(ta.selectionEnd); ta.focus(); ta.selectionStart = ta.selectionEnd = s + ins.length; }
+        catch (e) { toast(e.message || t('tImageFail'), true); return; }
+      }
+      markDirty();
+    }
+
+    /* ─────────── 구독자 ─────────── */
+    async function loadSubs() { S.subs = await api('/api/newsletter/subscribers' + slugQ()); return S.subs; }
+    async function showSubs() {
+      await loadSubs();
+      const d = S.subs, st = { active: t('stActive'), pending: t('stPending'), unsub: t('stUnsub') };
+      $('nlView').innerHTML = `
+        <div class="ex-card"><p class="nl-lead">${esc(t('subsLead'))}</p>
+          <div class="nl-stats"><div class="nl-stat"><b>${d.counts.active}</b>${t('cActive')}</div><div class="nl-stat"><b>${d.counts.pending}</b>${t('cPending')}</div><div class="nl-stat"><b>${d.counts.unsub}</b>${t('cUnsub')}</div></div>
+          ${d.subscribers.length ? `<div style="overflow-x:auto"><table class="nl-table"><thead><tr><th>${t('thEmail')}</th><th>${t('thName')}</th><th>${t('thStatus')}</th><th>${t('thSource')}</th><th>${t('thDate')}</th><th></th></tr></thead><tbody>
+            ${d.subscribers.map(s => `<tr><td>${esc(s.email)}</td><td>${esc(s.name)}</td><td>${esc(st[s.status] || s.status)}</td><td>${esc(s.source === 'import' ? t('srcImport') : t('srcForm'))}</td><td>${esc(fmtDate(s.createdAt))}</td><td><button class="ex-btn sm danger" data-sub-del="${esc(s.email)}">${t('remove')}</button></td></tr>`).join('')}</tbody></table></div>` : `<div class="nl-empty">${esc(t('subsEmpty'))}</div>`}
+        </div>
+        <div class="ex-card"><h2>${t('addSubs')}</h2><p class="nl-lead" style="margin-top:6px">${esc(t('addSubsHint'))}</p>
+          <textarea class="ex-textarea" id="nlImport" rows="5" placeholder="kim@example.com&#10;Lee &lt;lee@example.com&gt;"></textarea>
+          <label class="nl-check"><input type="checkbox" id="nlConsent"><span>${esc(t('consent'))}</span></label>
+          <button class="ex-btn primary" data-act="import">${t('addBtn')}</button>
+          <p class="nl-hint" style="margin-top:12px">${esc(t('formHint'))}</p></div>`;
+    }
+
+    /* ─────────── 작성자 연결 (마스터/관리자) ─────────── */
+    function showLinks() {
+      $('nlView').innerHTML = `<div class="ex-card"><p class="nl-lead">${esc(t('linksLead'))}</p>
+        ${S.links.length ? `<div style="overflow-x:auto"><table class="nl-table"><thead><tr><th>${t('linkEmail')}</th><th>${t('thPage')}</th><th></th></tr></thead><tbody>
+          ${S.links.map(l => `<tr><td>${esc(l.email)}</td><td>${esc(teamName(l.slug))} <span style="color:var(--light)">(${esc(l.slug)})</span></td><td><button class="ex-btn sm danger" data-unlink="${esc(l.email)}">${t('remove')}</button></td></tr>`).join('')}</tbody></table></div>` : ''}
+        <div class="nl-grid2" style="margin-top:14px"><div class="nl-field"><label>${t('linkEmail')}</label><input class="ex-input" id="lkEmail" type="email" placeholder="name@wol.org"></div>
+        <div class="nl-field"><label>${t('linkPage')}</label><select class="ex-select" id="lkSlug"><option value="">${t('pickPage')}</option>${TEAM.map(p => `<option value="${esc(p.slug)}">${esc(lang === 'en' ? p.en : p.ko)}</option>`).join('')}</select></div></div>
+        <button class="ex-btn primary" data-act="link">${t('linkSave')}</button></div>`;
+    }
+    async function loadLinks() {
+      const d = await api('/api/newsletter/links');
+      S.link = d.me; S.canManage = d.canManage; S.links = d.links || [];
+      if (!S.acting && !S.link && S.links.length) S.acting = S.links[0].slug;
+      if (S.acting && S.acting === S.link?.slug) S.acting = '';
+    }
+
+    /* ─────────── 이벤트 ─────────── */
+    document.addEventListener('click', async e => {
+      const el = e.target.closest('[data-act],[data-tab],[data-open],[data-mode],[data-tb],[data-bact],[data-badd],[data-sub-del],[data-unlink]'); if (!el) return;
+      try {
+        if (el.dataset.tab) { if (S.view === 'edit' && S.dirty) await savePost(true); return show(el.dataset.tab); }
+        if (el.dataset.open) return openPost(el.dataset.open);
+        if (el.dataset.mode) {
+          const p = collect(); if (p.mode === el.dataset.mode) return;
+          if (el.dataset.mode === 'blocks') { p.blocks = toBlocks(p); p.mode = 'blocks'; } else { Object.assign(p, toSimple(p)); p.mode = 'simple'; }
+          renderEditor(); return markDirty();
+        }
+        if (el.dataset.tb) return toolbar(el.dataset.tb);
+        if (el.dataset.badd) { collect(); S.post.blocks.push({ type: el.dataset.badd }); renderEditor(); return markDirty(); }
+        if (el.dataset.bact) {
+          collect(); const i = +el.dataset.i, bl = S.post.blocks, act = el.dataset.bact;
+          if (act === 'up' && i > 0) [bl[i - 1], bl[i]] = [bl[i], bl[i - 1]];
+          else if (act === 'down' && i < bl.length - 1) [bl[i + 1], bl[i]] = [bl[i], bl[i + 1]];
+          else if (act === 'del') bl.splice(i, 1);
+          else if (act === 'pick') { const f = await pickFile(); if (!f) return; bl[i].id = await uploadImage(f); }
+          renderEditor(); return markDirty();
+        }
+        if (el.dataset.subDel) { if (!confirm(t('cRemove', el.dataset.subDel))) return; await api('/api/newsletter/subscribers?email=' + encodeURIComponent(el.dataset.subDel) + slugQ('&'), { method: 'DELETE' }); return showSubs(); }
+        if (el.dataset.unlink) { if (!confirm(t('cUnlink', el.dataset.unlink))) return; await api('/api/newsletter/links?email=' + encodeURIComponent(el.dataset.unlink), { method: 'DELETE' }); await loadLinks(); renderWho(); renderTabs(); return showLinks(); }
+        const act = el.dataset.act;
+        if (act === 'new') return newPost();
+        if (act === 'back') { if (S.dirty) await savePost(true); return show('posts'); }
+        if (act === 'save') { if (await savePost(false)) renderEditorKeep(); return; }
+        if (act === 'publish' || act === 'unpublish') {
+          if (!(await savePost(true))) { if (!S.post.title.trim()) toast(t('needTitle'), true); return; }
+          const d = await api('/api/newsletter/posts', { method: 'PATCH', body: JSON.stringify({ id: S.post.id, action: act, slug: S.acting || undefined }) });
+          S.post.publishedAt = d.publishedAt; toast(t(act === 'publish' ? 'tPublished' : 'tUnpublished')); return renderEditorKeep();
+        }
+        if (act === 'test') { if (!(await savePost(true))) return toast(t('needTitle'), true); await api('/api/newsletter/send', { method: 'POST', body: JSON.stringify({ id: S.post.id, test: true, slug: S.acting || undefined }) }); return toast(t('tTest')); }
+        if (act === 'send') {
+          if (!(await savePost(true))) return toast(t('needTitle'), true);
+          const n = S.subs ? S.subs.counts.active : 0;
+          if (!confirm(S.post.sentAt ? t('cResend') : t('cSend', n))) return;
+          const d = await api('/api/newsletter/send', { method: 'POST', body: JSON.stringify({ id: S.post.id, resend: !!S.post.sentAt, slug: S.acting || undefined }) });
+          S.post.sentAt = new Date().toISOString(); S.post.publishedAt = S.post.publishedAt || S.post.sentAt; toast(t('tSent', d.sent, d.failed)); return renderEditorKeep();
+        }
+        if (act === 'delete') { if (!confirm(t('cDelPost'))) return; await api('/api/newsletter/posts?id=' + encodeURIComponent(S.post.id) + slugQ('&'), { method: 'DELETE' }); S.dirty = false; toast(t('tDeleted')); return show('posts'); }
+        if (act === 'import') {
+          if (!$('nlConsent').checked) return toast(t('needConsent'), true);
+          const d = await api('/api/newsletter/subscribers' + slugQ(), { method: 'POST', body: JSON.stringify({ text: $('nlImport').value, consent: true }) });
+          toast(t('tAdded', d.added, d.skipped, d.invalid)); return showSubs();
+        }
+        if (act === 'link') {
+          const email = $('lkEmail').value.trim(), slug = $('lkSlug').value;
+          if (!email || !slug) return;
+          await api('/api/newsletter/links', { method: 'PUT', body: JSON.stringify({ email, slug, displayName: teamName(slug) }) });
+          toast(t('tLinked')); await loadLinks(); renderWho(); renderTabs(); return showLinks();
+        }
+      } catch (err) { toast(err.message, true); }
+    });
+    function renderEditorKeep() { collect(); const y = scrollY; renderEditor(); scrollTo(0, y); }
+    document.addEventListener('input', e => {
+      const el = e.target;
+      if (el.id === 'nlTitle' || el.id === 'nlBody' || el.id === 'nlBtnLabel' || el.id === 'nlBtnUrl') return markDirty();
+      if (el.dataset.bf !== undefined) { S.post.blocks[+el.dataset.i][el.dataset.bf] = el.value; markDirty(); }
+    });
+    document.addEventListener('change', async e => {
+      if (e.target.id === 'nlActing') {
+        if (S.dirty && S.view === 'edit') await savePost(true);
+        S.acting = e.target.value === S.link?.slug ? '' : e.target.value; S.subs = null; S.post = null; return show(S.view === 'edit' ? 'posts' : S.view);
+      }
+    });
+    $('langKoBtn').addEventListener('click', () => setLang('ko'));
+    $('langEnBtn').addEventListener('click', () => setLang('en'));
+    function setLang(next) {
+      if (next === lang) return; lang = next; try { localStorage.setItem('wolko-lang', lang); } catch {}
+      applyStatic(); if (S.me) { renderUser(); if (S.view === 'edit') collect(); show(S.view); }
+    }
+    const renderUser = () => { $('exUser').textContent = S.me?.name || ''; };
+    window.addEventListener('beforeunload', e => { if (S.dirty && S.post?.title?.trim()) { e.preventDefault(); e.returnValue = ''; } });
+
+    (async function init() {
+      applyStatic();
+      if (!token()) return location.replace('/portal');
+      try {
+        S.me = await api('/api/hub/me'); renderUser();
+        await loadLinks();
+        await show('posts');
+      } catch (e) { toast(e.message, true); }
+    })();
+  </script>
+</body>
+</html>

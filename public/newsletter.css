@@ -1,0 +1,57 @@
+/* 개인 뉴스레터 작성 화면 — 틀(헤더·탭·카드·입력창·버튼)은 expense.css 를 그대로 쓰고, 여기엔 편집기 전용만 둔다 */
+.nl-lead { color: var(--mid); font-size: 14px; line-height: 1.6; margin: 0 0 18px; }
+.nl-who { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; font-size: 13px; color: var(--mid); }
+.nl-who select { width: auto; max-width: 260px; }
+.nl-list { display: grid; gap: 10px; }
+.nl-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: #fff; cursor: pointer; }
+.nl-row:hover { border-color: #b9d3dc; }
+.nl-row-main { flex: 1; min-width: 0; }
+.nl-row-title { font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nl-row-meta { font-size: 12px; color: var(--mid); margin-top: 3px; }
+.nl-pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #eef3f5; color: var(--mid); }
+.nl-pill.pub { background: #e2f4ea; color: #168a52; }
+.nl-pill.sent { background: #e5eef9; color: #2a62a8; }
+.nl-empty { text-align: center; color: var(--mid); padding: 36px 12px; font-size: 14px; }
+.nl-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .nl-editor { grid-template-columns: 1fr; } }
+.nl-field { margin-bottom: 14px; }
+.nl-field > label { display: block; font-size: 12px; font-weight: 700; color: var(--mid); margin-bottom: 5px; }
+.nl-title-input { font-size: 18px; font-weight: 700; }
+.nl-seg { display: inline-flex; border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
+.nl-seg button { border: 0; background: transparent; padding: 7px 14px; font-weight: 700; font-size: 13px; color: var(--mid); cursor: pointer; }
+.nl-seg button.on { background: var(--blue); color: #fff; }
+.nl-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.nl-bar button { border: 1px solid var(--border); background: #fff; border-radius: 8px; min-width: 34px; height: 34px; padding: 0 9px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.nl-bar button:hover { background: #f4f8fa; }
+.nl-body { min-height: 280px; line-height: 1.7; resize: vertical; }
+.nl-hint { font-size: 12px; color: var(--light); margin-top: 6px; line-height: 1.6; }
+.nl-block { border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; background: #fcfdfd; }
+.nl-block-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 12px; font-weight: 800; color: var(--blue); letter-spacing: .03em; }
+.nl-block-head span { flex: 1; }
+.nl-block-head button { border: 1px solid var(--border); background: #fff; border-radius: 7px; width: 30px; height: 30px; cursor: pointer; font-size: 13px; }
+.nl-block-head button:disabled { opacity: .4; cursor: default; }
+.nl-block .ex-input, .nl-block .ex-textarea { margin-bottom: 6px; }
+.nl-add { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.nl-add button { border: 1.5px dashed #b9d3dc; background: #fff; border-radius: 10px; padding: 8px 12px; font-weight: 700; font-size: 13px; color: var(--blue); cursor: pointer; }
+.nl-add button:hover { background: #f1f8fa; }
+.nl-thumb { max-width: 100%; max-height: 180px; border-radius: 8px; display: block; margin-bottom: 6px; }
+.nl-preview { position: sticky; top: 76px; background: #f1f5f7; border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+.nl-preview-card { background: #fff; border-radius: 12px; overflow: hidden; }
+.nl-preview-head { background: #004f68; color: #fff; padding: 12px 20px; font-size: 12px; letter-spacing: .08em; font-weight: 700; }
+.nl-preview-body { padding: 22px 20px 10px; word-break: break-word; }
+.nl-preview-body h1 { margin: 0 0 16px; font-size: 24px; line-height: 1.3; color: #102936; }
+.nl-preview-label { font-size: 11px; font-weight: 800; color: var(--light); letter-spacing: .08em; margin: 0 0 8px; }
+.nl-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 16px; }
+.nl-actions .grow { flex: 1; }
+.nl-saved { font-size: 12px; color: var(--light); }
+.nl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.nl-table th { text-align: left; font-size: 11px; color: var(--light); padding: 8px 8px; border-bottom: 1px solid var(--border); }
+.nl-table td { padding: 9px 8px; border-bottom: 1px solid #f0f4f7; vertical-align: middle; word-break: break-all; }
+.nl-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.nl-stat { padding: 10px 16px; border-radius: 12px; background: #f1f6f8; font-size: 12px; color: var(--mid); }
+.nl-stat b { display: block; font-size: 20px; color: var(--blue); }
+.nl-check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.5; margin: 8px 0 12px; }
+.nl-check input { margin-top: 3px; }
+.nl-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 640px) { .nl-grid2 { grid-template-columns: 1fr; } .nl-row { flex-wrap: wrap; } .nl-table { font-size: 12px; } }
+.nl-hide { display: none !important; }
