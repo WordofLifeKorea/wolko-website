@@ -5,7 +5,7 @@
  *
  * 비밀번호를 잊은 멤버의 계정에 임시 비밀번호를 걸어 준다. 계정에는 mustChangePassword 표시가 붙고,
  * 그 계정으로 로그인하면 화면마다 '새 비밀번호 설정' 창이 먼저 뜬다(account-password.js 로 바꾸면 표시가 지워진다).
- * 카운슬러 페이지 계정이 있으면 비활성화도 함께 풀고 같은 임시 비밀번호로 맞춘다.
+ * 카운슬러 페이지 계정은 포탈 계정과 별개라서 여기서 건드리지 않는다(카운슬러 페이지의 계정 관리에서 따로 관리).
  * 임시 비밀번호는 일반 규칙(8자 이상)보다 짧아도 되지만 4자 이상이어야 한다.
  */
 import {
@@ -43,22 +43,7 @@ export async function onRequestPost({ env, request }) {
     passwordResetBy: normalizeEmail(session.email),
   });
 
-  // 카운슬러 페이지 계정(camp-progress)도 같은 이메일이 있으면 함께 풀어 준다:
-  // 비활성화를 해제하고 같은 임시 비밀번호로 바꾸며, 로그인 뒤 새 비밀번호를 정하게 한다.
-  let counselorAccount = 'none';
-  const campKey = `camp-progress:account:${email}`;
-  const camp = await env.CAMP_KV.get(campKey, 'json');
-  if (camp) {
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
-    const campSalt = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${campSalt}:${temp}`));
-    const campHash = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
-    counselorAccount = camp.disabled ? 'reactivated' : 'reset';
-    await env.CAMP_KV.put(campKey, JSON.stringify({
-      ...camp, salt: campSalt, passwordHash: campHash, disabled: false, mustChangePassword: true, updatedAt: new Date().toISOString(),
-    }));
-  }
-  return Response.json({ ok: true, email, name: account.name || '', counselorAccount }, { headers: CORS });
+  return Response.json({ ok: true, email, name: account.name || '' }, { headers: CORS });
 }
 
 export async function onRequestOptions() {

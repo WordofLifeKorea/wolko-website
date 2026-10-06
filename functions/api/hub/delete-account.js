@@ -2,7 +2,7 @@
  * POST /api/hub/delete-account — master 전용
  * body: { email, confirm }  (confirm 에 같은 이메일을 한 번 더 적어야 한다)
  *
- * 포탈 계정을 지운다. 같은 이메일의 카운슬러 페이지 계정이 있으면 함께 지운다.
+ * 포탈 계정만 지운다. 카운슬러 페이지 계정은 포탈과 별개라서 건드리지 않는다.
  * 마스터 계정과 본인 계정은 지울 수 없다. 실수로 지웠을 때를 위해 30일 동안은
  * 지운 계정의 사본을 보관한다(hub:account-trash:이메일 — 개발자가 되살릴 수 있다).
  */
@@ -32,15 +32,7 @@ export async function onRequestPost({ env, request }) {
   await env.CAMP_KV.put(`hub:account-trash:${email}`, JSON.stringify({ ...account, deletedAt: new Date().toISOString(), deletedBy: normalizeEmail(session.email) }), { expirationTtl: TRASH_TTL });
   await env.CAMP_KV.delete(`hub:account:${email}`);
 
-  let counselorAccount = false;
-  const campKey = `camp-progress:account:${email}`;
-  const camp = await env.CAMP_KV.get(campKey, 'json');
-  if (camp) {
-    await env.CAMP_KV.put(`camp-progress:account-trash:${email}`, JSON.stringify(camp), { expirationTtl: TRASH_TTL });
-    await env.CAMP_KV.delete(campKey);
-    counselorAccount = true;
-  }
-  return Response.json({ ok: true, email, counselorAccount }, { headers: CORS });
+  return Response.json({ ok: true, email }, { headers: CORS });
 }
 
 export async function onRequestOptions() {

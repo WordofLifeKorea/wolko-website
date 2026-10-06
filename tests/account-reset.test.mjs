@@ -12,6 +12,7 @@ function memoryKv() {
   return {
     async get(key, type) { const v = values.get(key); return v == null ? null : (type === 'json' ? JSON.parse(v) : v); },
     async put(key, value) { values.set(key, value); },
+    async delete(key) { values.delete(key); },
   };
 }
 const post = (fn, env, path, token, body) => fn({
@@ -63,39 +64,19 @@ test('after a reset the login flags the account and the new password clears the 
   assert.equal(again.mustChangePassword, false);
 });
 
-test('resetting also re-activates the counselor-page account and lets the short temporary password sign in there', async () => {
-  const { onRequestPost: campAuth } = await import('../functions/api/camp-progress/auth.js');
+test('the counselor-page account is separate: reset and delete leave it alone', async () => {
+  const { onRequestPost: del } = await import('../functions/api/hub/delete-account.js');
   const { env, master } = await setup();
-  // 비활성화된 카운슬러 계정 (예전 비밀번호)
-  await env.CAMP_KV.put('camp-progress:account:estelle@wol.org', JSON.stringify({ email: 'estelle@wol.org', name: 'Estelle', salt: 'ab', passwordHash: 'old', disabled: true }));
-  const camp = (body) => campAuth({ env, request: new Request('https://wolko.org/api/camp-progress/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
-  assert.equal((await camp({ mode: 'login', email: 'estelle@wol.org', password: '1234' })).status, 401, '비활성화 상태에서는 로그인 불가');
-
+  const camp = { email: 'estelle@wol.org', name: 'Estelle', salt: 'ab', passwordHash: 'old', disabled: true };
+  await env.CAMP_KV.put('camp-progress:account:estelle@wol.org', JSON.stringify(camp));
   const res = await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '1234' });
-  assert.equal((await res.json()).counselorAccount, 'reactivated');
-
-  const ok = await camp({ mode: 'login', email: 'estelle@wol.org', password: '1234' });
-  assert.equal(ok.status, 200);
-  const data = await ok.json();
-  assert.equal(data.mustChangePassword, true);
-
-  assert.equal((await camp({ mode: 'changePassword', email: 'estelle@wol.org', password: 'wrong', newPassword: 'BrandNew#2026' })).status, 401);
-  assert.equal((await camp({ mode: 'changePassword', email: 'estelle@wol.org', password: '1234', newPassword: '1234' })).status, 400);
-  assert.equal((await camp({ mode: 'changePassword', email: 'estelle@wol.org', password: '1234', newPassword: 'BrandNew#2026' })).status, 200);
-  const after = await (await camp({ mode: 'login', email: 'estelle@wol.org', password: 'BrandNew#2026' })).json();
-  assert.equal(after.mustChangePassword, false);
-  assert.equal((await camp({ mode: 'login', email: 'estelle@wol.org', password: '1234' })).status, 401, '임시 비밀번호는 더 이상 쓸 수 없다');
-  // 가입은 여전히 6자 이상 규칙
-  assert.equal((await camp({ mode: 'signup', email: 'new@wol.org', password: '1234' })).status, 400);
+  assert.equal((await res.json()).counselorAccount, undefined);
+  assert.deepEqual(await env.CAMP_KV.get('camp-progress:account:estelle@wol.org', 'json'), camp, '카운슬러 계정은 그대로');
+  assert.equal((await post(del, env, '/api/hub/delete-account', master, { email: 'estelle@wol.org', confirm: 'estelle@wol.org' })).status, 200);
+  assert.deepEqual(await env.CAMP_KV.get('camp-progress:account:estelle@wol.org', 'json'), camp, '삭제해도 카운슬러 계정은 그대로');
 });
 
-test('with no counselor-page account, the reset reports that none exists', async () => {
-  const { env, master } = await setup();
-  const res = await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '1234' });
-  assert.equal((await res.json()).counselorAccount, 'none');
-});
-
-test('master deletes an account (and its counselor-page account) after typing the email; protected accounts stay', async () => {
+test('master deletes a portal account after typing the email; protected accounts stay', async () => {
   const { onRequestPost: del } = await import('../functions/api/hub/delete-account.js');
   const { env, master, admin } = await setup();
   env.CAMP_KV.delete = async function () {}; // 아래에서 실제 삭제를 흉내
@@ -103,13 +84,11 @@ test('master deletes an account (and its counselor-page account) after typing th
   const kv = memoryKv(); const realPut = kv.put;
   env.CAMP_KV = { ...kv, put: async (k, v) => { store.set(k, v); return realPut(k, v); }, get: kv.get, delete: async (k) => { store.set('__deleted__' + k, true); } };
   await putAccount(env, { email: 'estelle@wol.org', name: 'Estelle', role: 'counselor', status: 'approved' });
-  await env.CAMP_KV.put('camp-progress:account:estelle@wol.org', JSON.stringify({ email: 'estelle@wol.org' }));
   assert.equal((await post(del, env, '/api/hub/delete-account', admin, { email: 'estelle@wol.org', confirm: 'estelle@wol.org' })).status, 403);
   assert.equal((await post(del, env, '/api/hub/delete-account', master, { email: 'estelle@wol.org', confirm: 'wrong@wol.org' })).status, 400);
   assert.equal((await post(del, env, '/api/hub/delete-account', master, { email: 'wolkorea1@gmail.com', confirm: 'wolkorea1@gmail.com' })).status, 400);
   const ok = await post(del, env, '/api/hub/delete-account', master, { email: 'estelle@wol.org', confirm: 'Estelle@wol.org' });
   assert.equal(ok.status, 200);
-  assert.equal((await ok.json()).counselorAccount, true);
   assert.ok(store.has('__deleted__hub:account:estelle@wol.org'));
   assert.ok(store.has('hub:account-trash:estelle@wol.org'), '복구용 사본');
 });

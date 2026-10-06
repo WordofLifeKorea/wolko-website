@@ -280,8 +280,7 @@
         pendingLabel: '승인 대기',
         pendingListTitle: '승인 대기 목록',
         pendingEmpty: '대기 중인 요청이 없습니다.',
-        resetCounselorOn: '카운슬러 계정의 비활성화도 풀었어요.', resetCounselorSame: '카운슬러 계정도 같은 임시 비밀번호로 바꿨어요.',
-        deleteTitle: '계정 삭제', deleteHelp: '선택한 계정을 지워요. 카운슬러 페이지 계정이 있으면 함께 지워지고, 30일 동안은 복구용 사본이 남아요.', deleteBtn: '계정 삭제', deletePrompt: e => `${e} 계정을 삭제합니다. 계속하려면 이 이메일을 그대로 입력해 주세요.`, deleteDone: '계정을 삭제했어요.', deleteCounselor: '카운슬러 계정도 함께 지웠어요.',
+        deleteTitle: '계정 삭제', deleteHelp: '선택한 포탈 계정을 지워요. 카운슬러 페이지 계정은 따로 관리돼서 그대로예요. 30일 동안은 복구용 사본이 남아요.', deleteBtn: '계정 삭제', deletePrompt: e => `${e} 계정을 삭제합니다. 계속하려면 이 이메일을 그대로 입력해 주세요.`, deleteDone: '계정을 삭제했어요.',
         rejectedTitle: '거부된 계정', rejectedHelp: '접근이 막힌 계정이에요. 다시 승인하면 바로 로그인할 수 있어요.', reapproveBtn: '다시 활성화',
         resetTitle: '비밀번호 초기화', resetHelp: '비밀번호를 잊은 멤버에게 임시 비밀번호를 걸어요. 그 계정으로 로그인하면 새 비밀번호를 정하는 창이 먼저 떠요.', resetPick: '계정 선택', resetTemp: '임시 비밀번호', resetBtn: '초기화', resetConfirm: (n, e) => `${n} (${e}) 계정의 비밀번호를 임시 비밀번호로 바꿀까요?`, resetDone: '임시 비밀번호로 바꿨어요. 로그인하면 변경 창이 떠요.',
         approveBtn: '승인',
@@ -341,8 +340,7 @@
         pendingLabel: 'Pending',
         pendingListTitle: 'Pending Requests',
         pendingEmpty: 'No pending requests.',
-        resetCounselorOn: 'The counselor-page account was re-activated too.', resetCounselorSame: 'The counselor-page account got the same temporary password.',
-        deleteTitle: 'Delete account', deleteHelp: 'Deletes the selected account, including its counselor-page account. A recovery copy is kept for 30 days.', deleteBtn: 'Delete account', deletePrompt: e => `You are deleting ${e}. Type this email exactly to continue.`, deleteDone: 'Account deleted.', deleteCounselor: 'The counselor-page account was deleted too.',
+        deleteTitle: 'Delete account', deleteHelp: 'Deletes the selected portal account. Counselor-page accounts are managed separately and stay as they are. A recovery copy is kept for 30 days.', deleteBtn: 'Delete account', deletePrompt: e => `You are deleting ${e}. Type this email exactly to continue.`, deleteDone: 'Account deleted.',
         rejectedTitle: 'Rejected accounts', rejectedHelp: 'These accounts are blocked. Approve again to let them sign in.', reapproveBtn: 'Re-activate',
         resetTitle: 'Reset password', resetHelp: 'Give a member who forgot their password a temporary one. They will be asked to choose a new password right after signing in.', resetPick: 'Account', resetTemp: 'Temporary password', resetBtn: 'Reset', resetConfirm: (n, e) => `Replace the password of ${n} (${e}) with the temporary one?`, resetDone: 'Temporary password set. They will be asked to change it when they sign in.',
         approveBtn: 'Approve',
@@ -778,7 +776,7 @@
           const res = await fetch('/api/hub/delete-account', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ email: sel.value, confirm: typed }) });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error);
-          showToast(t('deleteDone') + (data.counselorAccount ? ' ' + t('deleteCounselor') : ''));
+          showToast(t('deleteDone'));
           openPendingPanel(); refreshPendingCount();
         } catch (e) { showToast(e.message || '', true); }
       });
@@ -791,7 +789,7 @@
           const res = await fetch('/api/hub/reset-password', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ email: sel.value, tempPassword: $('resetTemp').value }) });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error);
-          showToast(t('resetDone') + (data.counselorAccount === 'reactivated' ? ' ' + t('resetCounselorOn') : data.counselorAccount === 'reset' ? ' ' + t('resetCounselorSame') : ''));
+          showToast(t('resetDone'));
         } catch (e) { showToast(e.message || '', true); }
       });
     }
