@@ -1125,9 +1125,18 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   var box = document.getElementById('mpLetters'); if (!box) return;
   var slug = box.dataset.slug, en = function () { return document.documentElement.lang === 'en'; };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
+  // 포탈에서 연결된 계정이 정한 "최근 뉴스레터" 링크가 있으면, 파일에 적어 둔 기존 링크 대신 그것을 쓴다
+  function applyNewsletterLink(url) {
+    var old = document.getElementById('openReportBtn'), a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.id = 'openReportBtn'; a.className = 'mp-btn mp-btn-secondary';
+    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span class="wl-ko">최근 뉴스레터</span><span class="wl-en">Newsletter</span>';
+    if (old) old.replaceWith(a);
+    else { var anchor = document.querySelector('a.mp-btn-primary.wl-en'); if (anchor && anchor.parentNode) anchor.parentNode.appendChild(a); }
+  }
   fetch('/api/newsletter/posts?slug=' + encodeURIComponent(slug)).then(function (r) { return r.json(); }).then(function (d) {
     if (!d || !d.enabled) return;
     box.hidden = false;
+    if (d.newsletterUrl) applyNewsletterLink(d.newsletterUrl);
     var list = document.getElementById('mpLettersList');
     if (!d.posts.length) document.getElementById('mpLettersEmpty').hidden = false;
     list.innerHTML = d.posts.map(function (p) {

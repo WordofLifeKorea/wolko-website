@@ -59,7 +59,8 @@ const team = (await getCollection('team'))
       ko: {
         pageTitle: '내 뉴스레터 — WOLKO', headerTitle: '내 뉴스레터',
         lead: '내 소식을 글로 쓰면 내 소개 페이지에 올라가고, 구독자에게 이메일로도 보낼 수 있어요.',
-        tabPosts: '내 글', tabSubs: '구독자', tabLinks: '작성자 연결', newPost: '새 글 쓰기',
+        tabPosts: '내 글', tabSubs: '구독자', tabPage: '내 페이지 설정',
+        pgLead: '내 소개 페이지에 보이는 "최근 뉴스레터" 버튼의 링크를 여기서 바꿀 수 있어요. 비워 두면 기존에 정해 둔 링크가 그대로 쓰여요.', pgLabel: '최근 뉴스레터 링크', pgPh: 'https://… (뉴스레터 · 블로그 · 구독 페이지 주소)', pgSave: '저장', pgClear: '링크 지우기', pgOpen: '내 소개 페이지 열기', pgLetters: '내 소식 목록 페이지', tPgSaved: '링크를 저장했어요. 소개 페이지에는 1분 안에 반영돼요.', tPgCleared: '링크를 지웠어요.', pgNow: '현재 적용 중', pgNone: '(포탈에서 정한 링크 없음)', tabLinks: '작성자 연결', newPost: '새 글 쓰기',
         writingAs: '글쓰기 대상', myPage: '내 소개 페이지',
         notLinked: '아직 내 소개 페이지와 연결되지 않았어요. 관리자(마스터)에게 포탈 이메일과 소개 페이지 연결을 요청해 주세요.',
         notLinkedAdmin: '내 계정은 아직 소개 페이지와 연결되지 않았어요. 아래 "작성자 연결"에서 연결하거나, 다른 사람 페이지를 골라 대신 쓸 수 있어요.',
@@ -105,7 +106,8 @@ const team = (await getCollection('team'))
       en: {
         pageTitle: 'My Newsletter — WOLKO', headerTitle: 'My Newsletter',
         lead: 'Write your updates here. They appear on your profile page, and you can email them to your subscribers.',
-        tabPosts: 'My posts', tabSubs: 'Subscribers', tabLinks: 'Author links', newPost: 'New post',
+        tabPosts: 'My posts', tabSubs: 'Subscribers', tabPage: 'My page settings',
+        pgLead: 'Change the link behind the "Newsletter" button on your profile page here. If left empty, the link already set for your page keeps being used.', pgLabel: 'Newsletter link', pgPh: 'https://… (newsletter, blog or sign-up page)', pgSave: 'Save', pgClear: 'Clear link', pgOpen: 'Open my profile page', pgLetters: 'My updates page', tPgSaved: 'Saved. Your profile page updates within a minute.', tPgCleared: 'Link cleared.', pgNow: 'Currently set', pgNone: '(no link set in the portal)', tabLinks: 'Author links', newPost: 'New post',
         writingAs: 'Writing as', myPage: 'My profile page',
         notLinked: 'Your account is not linked to your profile page yet. Please ask an admin to link your portal email to your page.',
         notLinkedAdmin: 'Your account is not linked to a profile page yet. Link it under "Author links", or pick someone else\'s page to write for.',
@@ -187,7 +189,7 @@ const team = (await getCollection('team'))
       el.innerHTML = `<span>${t('writingAs')}</span><select class="ex-select" id="nlActing">${pages.map(l => `<option value="${esc(l.slug)}" ${(S.acting || own) === l.slug ? 'selected' : ''}>${esc(teamName(l.slug))}${l.slug === own ? ' · ' + t('myPage') : ''}</option>`).join('')}</select>`;
     }
     function renderTabs() {
-      const tabs = [['posts', t('tabPosts')], ['subs', t('tabSubs')]];
+      const tabs = [['posts', t('tabPosts')], ['subs', t('tabSubs')], ['page', t('tabPage')]];
       if (S.canManage) tabs.push(['links', t('tabLinks')]);
       const linked = !!(S.acting || S.link);
       $('nlTabs').innerHTML = (linked ? `<button class="ex-tab ex-tab-new ${S.view === 'edit' && !S.post?.id ? 'active' : ''}" data-act="new">${t('newPost')}</button>` : '')
@@ -195,7 +197,7 @@ const team = (await getCollection('team'))
     }
     async function show(view) {
       S.view = view; renderWho(); renderTabs();
-      if (view === 'posts') await showPosts(); else if (view === 'subs') await showSubs(); else if (view === 'links') showLinks(); else if (view === 'edit') renderEditor();
+      if (view === 'posts') await showPosts(); else if (view === 'subs') await showSubs(); else if (view === 'links') showLinks(); else if (view === 'page') await showPage(); else if (view === 'edit') renderEditor();
     }
 
     /* ─────────── 내 글 목록 ─────────── */
@@ -420,6 +422,19 @@ const TPLS = [['classic', 'tplClassic', '#004f68', '#fff'], ['banner', 'tplBanne
       finally { holder.remove(); }
     }
 
+
+    /* ─────────── 내 페이지 설정: 소개 페이지의 '최근 뉴스레터' 링크 ─────────── */
+    const pageSlug = () => S.acting || S.link?.slug || '';
+    async function showPage() {
+      const d = await api('/api/newsletter/profile' + slugQ());
+      const slug = pageSlug();
+      $('nlView').innerHTML = `<div class="ex-card"><p class="nl-lead">${esc(t('pgLead'))}</p>
+        <div class="nl-field"><label>${t('pgLabel')}</label><input class="ex-input" id="pgUrl" type="url" inputmode="url" value="${esc(d.url)}" placeholder="${esc(t('pgPh'))}"></div>
+        <p class="nl-hint" style="margin:-6px 0 12px">${esc(t('pgNow'))}: ${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.url)}</a>` : esc(t('pgNone'))}</p>
+        <div class="nl-actions" style="margin-top:0"><button class="ex-btn primary" data-act="pgsave">${t('pgSave')}</button>${d.url ? `<button class="ex-btn" data-act="pgclear">${t('pgClear')}</button>` : ''}</div>
+        <p class="nl-hint" style="margin-top:16px"><a href="/team/${esc(slug)}/" target="_blank" rel="noopener">${t('pgOpen')} ↗</a> &nbsp;·&nbsp; <a href="/letters/?s=${esc(slug)}" target="_blank" rel="noopener">${t('pgLetters')} ↗</a></p></div>`;
+    }
+
     /* ─────────── 구독자 ─────────── */
     async function loadSubs() { S.subs = await api('/api/newsletter/subscribers' + slugQ()); return S.subs; }
     async function showSubs() {
@@ -482,6 +497,11 @@ const TPLS = [['classic', 'tplClassic', '#004f68', '#fff'], ['banner', 'tplBanne
         if (act === 'hdrimg') { collect(); const f = await pickFile(); if (!f) return; S.post.header.imageId = await uploadImage(f); renderEditor(); return markDirty(); }
         if (act === 'hdrimg-del') { collect(); S.post.header.imageId = ''; renderEditor(); return markDirty(); }
         if (act === 'pdf') return exportPdf();
+        if (act === 'pgsave' || act === 'pgclear') {
+          const url = act === 'pgclear' ? '' : $('pgUrl').value.trim();
+          await api('/api/newsletter/profile' + slugQ(), { method: 'PUT', body: JSON.stringify({ url }) });
+          toast(t(url ? 'tPgSaved' : 'tPgCleared')); return showPage();
+        }
         if (act === 'new') return newPost();
         if (act === 'back') { if (S.dirty) await savePost(true); return show('posts'); }
         if (act === 'save') { if (await savePost(false)) renderEditorKeep(); return; }

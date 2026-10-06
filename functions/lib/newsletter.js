@@ -29,6 +29,7 @@ export const linkKey = email => `${LINK_PREFIX}${normalizeEmail(email)}`;
 export const postKey = (slug, id) => `${POST_PREFIX}${slug}:${id}`;
 export const subKey = (slug, email) => `${SUB_PREFIX}${slug}:${normalizeEmail(email)}`;
 export const imgKey = id => `${IMG_PREFIX}${id}`;
+export const profileKey = slug => `nl:profile:${slug}`;
 
 export const J = { 'Cache-Control': 'no-store', 'Content-Type': 'application/json' };
 export const err = (error, status = 400) => Response.json({ error }, { status, headers: J });

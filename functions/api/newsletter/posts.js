@@ -12,7 +12,7 @@
 import { portalSession } from '../../lib/hubAccounts.js';
 import {
   SLUG_RE, ID_RE, postKey, listPosts, authorFor, cleanPost, hasContent, renderBody, renderHeader, excerpt, firstImageId,
-  newId, err, ok, LINK_PREFIX,
+  newId, err, ok, LINK_PREFIX, profileKey,
 } from '../../lib/newsletter.js';
 
 const summary = p => ({ id: p.id, title: p.title, publishedAt: p.publishedAt, excerpt: excerpt(p), coverId: firstImageId(p) });
@@ -47,7 +47,8 @@ export async function onRequestGet({ env, request }) {
   }
   const posts = (await listPosts(env, slug)).filter(p => p.publishedAt);
   const name = await linkedName(env, slug);
-  return Response.json({ enabled: name !== null, displayName: name || '', posts: posts.map(summary) }, { headers: { 'Cache-Control': 'public, max-age=60' } });
+  const prof = name !== null ? await env.CAMP_KV.get(profileKey(slug), 'json') : null;
+  return Response.json({ enabled: name !== null, displayName: name || '', newsletterUrl: prof?.newsletterUrl || '', posts: posts.map(summary) }, { headers: { 'Cache-Control': 'public, max-age=60' } });
 }
 
 export async function onRequestPost({ env, request }) {

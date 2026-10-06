@@ -6,6 +6,7 @@ import * as Sub from '../functions/api/newsletter/subscribe.js';
 import * as Subs from '../functions/api/newsletter/subscribers.js';
 import * as Send from '../functions/api/newsletter/send.js';
 import * as Img from '../functions/api/newsletter/image.js';
+import * as Prof from '../functions/api/newsletter/profile.js';
 import { createHubSessionToken, putAccount } from '../functions/lib/hubAccounts.js';
 import { renderText, renderBlocks, cleanBlocks } from '../functions/lib/newsletter.js';
 
@@ -224,4 +225,22 @@ test('작성 화면: 블록 편집기만 쓰고(간단 모드 없음), 인용 �
   assert.match(src, /html2pdf/);
   assert.match(src, /data-tpl=/);
   assert.match(src, /data-spick=/);
+});
+
+test('내 페이지 설정: 연결된 계정이 소개 페이지의 뉴스레터 링크를 바꾸고, 공개 응답으로 전달된다', async () => {
+  const { env, call } = setup();
+  const t = await author(env);
+  await call(Links, 'PUT', '/api/newsletter/links', t.master, { email: 'aiden@wol.org', slug: 'aiden', displayName: '에이든' });
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', t.other, { url: 'https://x.com' })).status, 403, '연결 안 된 계정');
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', t.me, { url: 'javascript:alert(1)' })).status, 400);
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', t.me, { url: 'mailto:a@b.com' })).status, 400);
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', t.me, { url: 'https://mailchi.mp/abc/letter' })).status, 200);
+  assert.equal((await (await call(Prof, 'GET', '/api/newsletter/profile', t.me)).json()).url, 'https://mailchi.mp/abc/letter');
+  const pub = await (await call(Posts, 'GET', '/api/newsletter/posts?slug=aiden')).json();
+  assert.equal(pub.newsletterUrl, 'https://mailchi.mp/abc/letter');
+  // 마스터는 다른 사람 페이지 링크를 대신 바꿀 수 있다
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile?slug=aiden', t.master, { url: 'https://example.com/n' })).status, 200);
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile?slug=aiden', t.other, { url: 'https://evil.com' })).status, 403);
+  await call(Prof, 'PUT', '/api/newsletter/profile', t.me, { url: '' });
+  assert.equal((await (await call(Posts, 'GET', '/api/newsletter/posts?slug=aiden')).json()).newsletterUrl, '');
 });
