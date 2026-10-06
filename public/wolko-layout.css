@@ -111,7 +111,10 @@ body main.page {
 .wl-page-actions { display: flex; justify-content: flex-end; margin: 0 0 var(--wl-section-gap); }
 .wl-page-actions:not(:has(> :not(.hidden))) { display: none; }
 /* 차량 화면: 추가 버튼은 탭 메뉴 바로 아래 오른쪽 */
-.car-view-tabs + .wl-page-actions { margin: -6px 0 16px; }
+.car-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; }
+.car-toolbar .car-tabs { flex: 1 1 auto; min-width: 0; margin: 0 !important; }
+.car-toolbar .wl-page-actions { flex: none; margin: 0; }
+@media (max-width: 640px) { .car-toolbar { flex-wrap: wrap; } .car-toolbar .car-tabs { flex-basis: 100%; } .car-toolbar .wl-page-actions { margin-left: auto; } }
 .wl-page-actions :is(.car-fab, .sc-fab) {
   position: static !important; right: auto !important; bottom: auto !important;
   min-height: var(--wl-control-height, 44px) !important; padding: 0 20px !important;
