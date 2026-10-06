@@ -195,6 +195,7 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t('loginFail'));
       sessionStorage.setItem(tokenKey, data.hubToken);
+      if (window.wolkoCheckPasswordReset) window.wolkoCheckPasswordReset();
       $('loginPassword').value = '';
       show('loading');
       await load();

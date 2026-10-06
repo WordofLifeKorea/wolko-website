@@ -1,0 +1,64 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import { onRequestPost as reset } from '../functions/api/hub/reset-password.js';
+import { onRequestPost as login } from '../functions/api/hub/account-login.js';
+import { onRequestPost as changePassword } from '../functions/api/hub/account-password.js';
+import { onRequestGet as me } from '../functions/api/hub/me.js';
+import { createHubSessionToken, getAccount, hashPassword, putAccount, verifyPassword } from '../functions/lib/hubAccounts.js';
+
+function memoryKv() {
+  const values = new Map();
+  return {
+    async get(key, type) { const v = values.get(key); return v == null ? null : (type === 'json' ? JSON.parse(v) : v); },
+    async put(key, value) { values.set(key, value); },
+  };
+}
+const post = (fn, env, path, token, body) => fn({
+  env,
+  request: new Request('https://wolko.org' + path, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify(body) }),
+});
+
+async function setup() {
+  const env = { CAMP_KV: memoryKv(), ADMIN_PASSWORD: 'secret' };
+  const old = await hashPassword('Forgotten!99');
+  await putAccount(env, { email: 'estelle@wol.org', name: 'Estelle', role: 'counselor', status: 'approved', passwordHash: old.hash, passwordSalt: old.salt });
+  await putAccount(env, { email: 'wolkorea1@gmail.com', name: 'Master', role: 'master', status: 'approved', passwordHash: old.hash, passwordSalt: old.salt });
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  const admin = await createHubSessionToken(env.ADMIN_PASSWORD, 'hkim3@wol.org', 'admin');
+  return { env, master, admin };
+}
+
+test('only the master can reset a password, and the temporary password may be short', async () => {
+  const { env, master, admin } = await setup();
+  assert.equal((await post(reset, env, '/api/hub/reset-password', admin, { email: 'estelle@wol.org', tempPassword: '1234' })).status, 403);
+  assert.equal((await post(reset, env, '/api/hub/reset-password', null, { email: 'estelle@wol.org', tempPassword: '1234' })).status, 403);
+  assert.equal((await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '123' })).status, 400);
+  assert.equal((await post(reset, env, '/api/hub/reset-password', master, { email: 'nobody@wol.org', tempPassword: '1234' })).status, 404);
+  assert.equal((await post(reset, env, '/api/hub/reset-password', master, { email: 'wolkorea1@gmail.com', tempPassword: '1234' })).status, 400, '마스터 계정은 제외');
+  const ok = await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '1234' });
+  assert.equal(ok.status, 200);
+  const a = await getAccount(env, 'estelle@wol.org');
+  assert.equal(await verifyPassword('1234', a.passwordHash, a.passwordSalt), true);
+  assert.equal(await verifyPassword('Forgotten!99', a.passwordHash, a.passwordSalt), false);
+  assert.equal(a.mustChangePassword, true);
+});
+
+test('after a reset the login flags the account and the new password clears the flag', async () => {
+  const { env, master } = await setup();
+  await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '1234' });
+  const res = await post(login, env, '/api/hub/account-login', null, { email: 'estelle@wol.org', password: '1234' });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.mustChangePassword, true);
+  const profile = await me({ env, request: new Request('https://wolko.org/api/hub/me', { headers: { Authorization: `Bearer ${data.hubToken}` } }) });
+  assert.equal((await profile.json()).mustChangePassword, true);
+
+  assert.equal((await post(changePassword, env, '/api/hub/account-password', data.hubToken, { currentPassword: '1234', newPassword: '1234' })).status, 400);
+  assert.equal((await post(changePassword, env, '/api/hub/account-password', data.hubToken, { currentPassword: '1234', newPassword: 'short' })).status, 400, '새 비밀번호는 8자 이상');
+  assert.equal((await post(changePassword, env, '/api/hub/account-password', data.hubToken, { currentPassword: '1234', newPassword: 'MyNewPass#1' })).status, 200);
+  const after = await getAccount(env, 'estelle@wol.org');
+  assert.equal(after.mustChangePassword, undefined);
+  const again = await (await post(login, env, '/api/hub/account-login', null, { email: 'estelle@wol.org', password: 'MyNewPass#1' })).json();
+  assert.equal(again.mustChangePassword, false);
+});

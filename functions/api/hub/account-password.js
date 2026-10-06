@@ -42,8 +42,9 @@ export async function onRequestPost({ env, request }) {
     if (!currentOk) return failure('현재 비밀번호가 올바르지 않습니다.', 'CURRENT_PASSWORD_INVALID', 403);
 
     const { hash, salt } = await hashPassword(newPassword);
+    const { mustChangePassword, ...rest } = account; // 임시 비밀번호로 들어온 계정은 이제 표시를 지운다
     await putAccount(env, {
-      ...account,
+      ...rest,
       passwordHash: hash,
       passwordSalt: salt,
       passwordChangedAt: new Date().toISOString(),

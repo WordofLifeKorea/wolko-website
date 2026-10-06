@@ -126,6 +126,60 @@
     });
   }
 
+  // 관리자가 임시 비밀번호로 초기화한 계정: 로그인하면 닫을 수 없는 '새 비밀번호 설정' 창을 먼저 띄운다
+  var FT = {
+    ko: { title: '새 비밀번호를 설정해 주세요', desc: '임시 비밀번호로 로그인했어요. 안전을 위해 지금 새 비밀번호로 바꿔 주세요.', cur: '임시 비밀번호', nw: '새 비밀번호 (8자 이상)', again: '새 비밀번호 확인', save: '비밀번호 변경', mismatch: '새 비밀번호가 서로 달라요.', fail: '변경하지 못했어요.' },
+    en: { title: 'Set a new password', desc: 'You signed in with a temporary password. Please choose a new one now.', cur: 'Temporary password', nw: 'New password (8+ characters)', again: 'Confirm new password', save: 'Change password', mismatch: 'The new passwords do not match.', fail: 'Could not change it.' },
+  };
+  function checkPasswordReset() {
+    var token = '';
+    try { token = sessionStorage.getItem('wolko-hub-token') || ''; } catch (e) {}
+    if (!token || document.querySelector('.wl-force-pw')) return;
+    fetch('/api/hub/me', { headers: { Authorization: 'Bearer ' + token } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (me) { if (me && me.mustChangePassword) openForcedPassword(token); })
+      .catch(function () {});
+  }
+  window.wolkoCheckPasswordReset = checkPasswordReset;
+  function openForcedPassword(token) {
+    var t = FT[currentLang()] || FT.ko;
+    var overlay = document.createElement('div');
+    overlay.className = 'wl-prof-overlay wl-force-pw';
+    var card = document.createElement('div');
+    card.className = 'wl-prof-card';
+    card.setAttribute('role', 'alertdialog'); card.setAttribute('aria-modal', 'true');
+    function field(label, auto) {
+      var wrap = document.createElement('label'); wrap.className = 'wl-prof-field';
+      var span = document.createElement('span'); span.textContent = label;
+      var input = document.createElement('input'); input.type = 'password'; input.setAttribute('autocomplete', auto);
+      wrap.append(span, input); return { wrap: wrap, input: input };
+    }
+    var h = document.createElement('h3'); h.textContent = t.title;
+    var p = document.createElement('p'); p.className = 'wl-prof-hint'; p.textContent = t.desc; p.style.margin = '0 2px 4px';
+    var fCur = field(t.cur, 'current-password'), fNew = field(t.nw, 'new-password'), fAgain = field(t.again, 'new-password');
+    var msg = document.createElement('p'); msg.className = 'wl-prof-msg'; msg.setAttribute('role', 'status');
+    var save = document.createElement('button'); save.type = 'button'; save.className = 'wl-prof-primary'; save.textContent = t.save;
+    card.append(h, p, fCur.wrap, fNew.wrap, fAgain.wrap, msg, save);
+    overlay.append(card);
+    document.body.append(overlay);
+    setTimeout(function () { fCur.input.focus(); }, 30);
+    function submit() {
+      msg.textContent = ''; msg.className = 'wl-prof-msg';
+      if (fNew.input.value !== fAgain.input.value) { msg.textContent = t.mismatch; msg.className = 'wl-prof-msg err'; return; }
+      save.disabled = true;
+      fetch('/api/hub/account-password', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: fCur.input.value, newPassword: fNew.input.value }) })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.d.error || t.fail);
+          try { sessionStorage.removeItem('wolko-hub-me:' + token.slice(-16)); } catch (e) {}
+          overlay.remove();
+        })
+        .catch(function (e) { msg.textContent = e.message || t.fail; msg.className = 'wl-prof-msg err'; save.disabled = false; });
+    }
+    save.addEventListener('click', submit);
+    card.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+  }
+
   // 우측 상단: 지금 로그인한 계정(이름 · 이메일)을 모든 도구 페이지 헤더에 보여준다
   var ROLE = { master: ['마스터', 'Master'], admin: ['관리자', 'Admin'], counselor: ['일반 멤버', 'Member'] };
   function mountUserChip() {
@@ -195,6 +249,7 @@
 
   function init() {
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
+    checkPasswordReset();
     if (path === '/portal') return; // 포탈 런처 자체 사이드바와 중복 방지
     mountUserChip();
     mountLogout();

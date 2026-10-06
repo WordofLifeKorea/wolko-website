@@ -27,6 +27,7 @@ const view = (email, account, session) => ({
   role: session.role,
   phone: account?.phone || '',
   campus: CAMPUS_OVERRIDES[email] || account?.campus || 'wolko',
+  mustChangePassword: !!account?.mustChangePassword,
 });
 
 export async function onRequestGet({ env, request }) {

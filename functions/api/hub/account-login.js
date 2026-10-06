@@ -58,7 +58,7 @@ export async function onRequestPost(context) {
     }
 
     const hubToken = await createHubSessionToken(env.ADMIN_PASSWORD, email, account.role);
-    return Response.json({ hubToken, email, role: effectiveRole(email, account.role) }, { headers: CORS });
+    return Response.json({ hubToken, email, role: effectiveRole(email, account.role), mustChangePassword: !!account.mustChangePassword }, { headers: CORS });
   } catch (error) {
     console.error('hub account-login error:', error);
     return Response.json({ error: '처리 중 오류가 발생했습니다.' }, { status: 500, headers: CORS });
