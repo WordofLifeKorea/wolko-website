@@ -20,14 +20,25 @@ export const parseDate = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(Strin
 export const todayKst = (now = Date.now()) => fromUtc(now + 9 * 3600000);
 export const weekdayOf = s => new Date(parseDate(s)).getUTCDay(); // 0=일 … 6=토
 export const isDriveDay = s => { const d = weekdayOf(s); return d >= 1 && d <= 5; }; // 월~금
+/** 월·토·일은 기본으로 닫혀 있다 — 운행 스케줄 관리자가 열어야 신청할 수 있다 (화~금은 기본 열림) */
+export const isDefaultClosedDay = s => { const d = weekdayOf(s); return d === 0 || d === 1 || d === 6; };
+/**
+ * 칸이 닫혀 있는지. map[date:slot] 에 관리자가 정한 값이 있으면 그것이 우선(open:true 면 열림, 그 밖에는 닫힘),
+ * 없으면 기본값(월·토·일 닫힘). 기본 닫힘이어도 이미 신청이 있는 칸(예전에 받은 토요일 신청 등)은 닫지 않는다.
+ */
+export function isSlotClosed(map, date, slot, hasRecord = false) {
+  const e = map?.[`${date}:${slot}`];
+  if (e) return !e.open;
+  return isDefaultClosedDay(date) && !hasRecord;
+}
 
-/** 어떤 날짜가 속한 2주 구간 { start, end, days[] } — days는 월~금 × 2주 = 10일 */
+/** 어떤 날짜가 속한 2주 구간 { start, end, days[] } — days는 월~일 × 2주 = 14일 */
 export function periodFor(dateStr) {
   const ms = parseDate(dateStr);
   if (ms === null) return null;
   const startMs = ANCHOR + Math.floor((ms - ANCHOR) / (14 * DAY)) * 14 * DAY;
   const days = [];
-  for (let w = 0; w < 2; w++) for (let d = 0; d < 5; d++) days.push(fromUtc(startMs + (w * 7 + d) * DAY));
+  for (let w = 0; w < 2; w++) for (let d = 0; d < 7; d++) days.push(fromUtc(startMs + (w * 7 + d) * DAY));
   return { start: fromUtc(startMs), end: fromUtc(startMs + 13 * DAY), days };
 }
 export const shiftPeriod = (start, n) => fromUtc(parseDate(start) + n * 14 * DAY);

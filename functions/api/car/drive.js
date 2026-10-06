@@ -8,7 +8,7 @@
  * KV: drive:slot:{date}:{slot} — 목록 조회 없이 정해진 키만 읽는다(KV list 한도 절약).
  */
 import { isValidPhone } from '../../lib/hubAccounts.js';
-import { MAX_AHEAD_DAYS, SLOTS, closedKey, driveSession, shownName, isDriveDay, parseDate, periodFor, shiftPeriod, slotKey, todayKst } from '../../lib/carDrive.js';
+import { MAX_AHEAD_DAYS, SLOTS, closedKey, driveSession, shownName, isDefaultClosedDay, isSlotClosed, parseDate, periodFor, shiftPeriod, slotKey, todayKst } from '../../lib/carDrive.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
@@ -34,7 +34,7 @@ export async function onRequestGet({ env, request }) {
     me: { name: session.name, phone: session.phone, isAdmin: session.isAdmin, isManager: session.isManager },
     today, period: { start: period.start, end: period.end, days: period.days, prev: shiftPeriod(period.start, -1), next: shiftPeriod(period.start, 1) },
     slots,
-    closed: Object.fromEntries(Object.keys(closedMap || {}).map(k => [k, true])),
+    closed: Object.fromEntries(keys.filter(([d, s], i) => isSlotClosed(closedMap, d, s, !!values[i])).map(([d, s]) => [`${d}:${s}`, true])),
   }, { headers: H });
 }
 
@@ -46,7 +46,6 @@ export async function onRequestPost({ env, request }) {
   const date = String(body?.date || ''), slot = String(body?.slot || '');
   const ms = parseDate(date);
   if (ms === null || !SLOTS.includes(slot)) return fail('날짜와 시간대를 확인해 주세요.');
-  if (!isDriveDay(date)) return fail('월요일~금요일만 신청할 수 있습니다.');
   const today = todayKst();
   if (date < today) return fail('지난 날짜는 신청할 수 없습니다.');
   if (ms - parseDate(today) > MAX_AHEAD_DAYS * DAY) return fail('너무 먼 날짜는 아직 신청할 수 없습니다.');
@@ -54,7 +53,7 @@ export async function onRequestPost({ env, request }) {
   if (slot === 'pickup' && !isValidPhone(phone)) return fail('오전 픽업 알림 문자를 받을 휴대폰 번호를 입력해 주세요.');
 
   const closedMap = (await env.CAMP_KV.get(closedKey(periodFor(date).start), 'json')) || {};
-  if (closedMap[`${date}:${slot}`]) return fail('라이드가 필요 없어 닫힌 칸입니다.', 409);
+  if (isSlotClosed(closedMap, date, slot)) return fail('닫힌 칸입니다. (월·토·일은 관리자가 열어야 신청할 수 있어요.)', 409);
   const key = slotKey(date, slot);
   const existing = await env.CAMP_KV.get(key, 'json');
   if (existing) return fail(existing.email === session.email ? '이미 신청한 칸입니다.' : `${shownName(existing)} 님이 먼저 신청했습니다.`, 409);
@@ -88,7 +87,7 @@ export async function onRequestPut({ env, request }) {
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
   const date = String(body?.date || ''), slot = String(body?.slot || '');
-  if (parseDate(date) === null || !isDriveDay(date) || !(SLOTS.includes(slot) || slot === 'all')) return fail('날짜와 시간대를 확인해 주세요.');
+  if (parseDate(date) === null || !(SLOTS.includes(slot) || slot === 'all')) return fail('날짜와 시간대를 확인해 주세요.');
   if (date < todayKst()) return fail('지난 날짜는 바꿀 수 없습니다.', 409);
   const closed = body?.closed !== false;
   const targets = slot === 'all' ? SLOTS : [slot];
@@ -98,10 +97,12 @@ export async function onRequestPut({ env, request }) {
   for (const s of targets) {
     const id = `${date}:${s}`;
     if (closed) {
-      map[id] = { by: session.email, at: new Date().toISOString() };
       const existing = await env.CAMP_KV.get(slotKey(date, s), 'json');
+      if (isDefaultClosedDay(date)) delete map[id];                       // 기본이 닫힘인 날은 기록을 지워 기본값(닫힘)으로 돌린다
+      else map[id] = { by: session.email, at: new Date().toISOString() };
       if (existing) { await env.CAMP_KV.delete(slotKey(date, s)); cancelled.push({ slot: s, name: shownName(existing) }); }
-    } else delete map[id];
+    } else if (isDefaultClosedDay(date)) map[id] = { open: true, by: session.email, at: new Date().toISOString() }; // 월·토·일을 연다
+    else delete map[id];
   }
   await env.CAMP_KV.put(key, JSON.stringify(map), { expirationTtl: 60 * 60 * 24 * 120 });
   return Response.json({ ok: true, closed, cancelled }, { headers: H });

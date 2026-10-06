@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHubSessionToken } from '../functions/lib/hubAccounts.js';
-import { periodFor, shiftPeriod, todayKst, isDriveDay } from '../functions/lib/carDrive.js';
+import { periodFor, shiftPeriod, todayKst, isDefaultClosedDay } from '../functions/lib/carDrive.js';
 import * as D from '../functions/api/car/drive.js';
 import * as RM from '../functions/api/car/drive-reminders.js';
 
@@ -30,17 +30,19 @@ const nextWeekday = () => { // 오늘 이후 가장 가까운 화요일
   return d.toISOString().slice(0, 10);
 };
 
-test('2주 구간: 월요일 시작, 월~금 × 2주 = 10일, 앞뒤로 14일씩 이동', () => {
+test('2주 구간: 월요일 시작, 월~일 × 2주 = 14일, 앞뒤로 14일씩 이동', () => {
   const p = periodFor('2026-10-08');
   assert.equal(p.start, '2026-10-05');
   assert.equal(p.end, '2026-10-18');
-  assert.equal(p.days.length, 10);
-  assert.deepEqual([p.days[0], p.days[4], p.days[5], p.days[9]], ['2026-10-05', '2026-10-09', '2026-10-12', '2026-10-16']);
+  assert.equal(p.days.length, 14);
+  assert.deepEqual([p.days[0], p.days[6], p.days[7], p.days[13]], ['2026-10-05', '2026-10-11', '2026-10-12', '2026-10-18']);
   assert.equal(periodFor('2026-10-19').start, '2026-10-19');
   assert.equal(periodFor('2026-10-04').start, '2026-09-21', '기준일 이전도 14일 단위');
   assert.equal(shiftPeriod('2026-10-05', 1), '2026-10-19');
-  assert.equal(isDriveDay('2026-10-11'), false, '일요일은 제외');
-  assert.equal(isDriveDay('2026-10-10'), false, '토요일도 제외');
+  assert.equal(isDefaultClosedDay('2026-10-11'), true, '일요일은 기본 닫힘');
+  assert.equal(isDefaultClosedDay('2026-10-10'), true, '토요일은 기본 닫힘');
+  assert.equal(isDefaultClosedDay('2026-10-12'), true, '월요일은 기본 닫힘');
+  assert.equal(isDefaultClosedDay('2026-10-13'), false, '화요일은 기본 열림');
 });
 
 test('평택센터 멤버만 신청할 수 있고, 제주 소속은 거절된다', async () => {
@@ -66,8 +68,8 @@ test('칸 신청 · 중복 거절 · 본인만 취소 · 휴대폰 번호 필요
   assert.equal((await post(b, { date, slot: 'pickup' })).status, 400, '번호가 없으면 오전 픽업 신청 불가');
   assert.equal((await post(b, { date, slot: 'dropoff' })).status, 201, '드롭오프는 번호 없이도 가능');
   assert.equal((await post(a, { date: '2020-01-06', slot: 'pickup' })).status, 400, '지난 날짜');
-  assert.equal((await post(a, { date: '2026-10-11', slot: 'pickup' })).status, 400, '일요일');
-  assert.equal((await post(a, { date: '2026-10-10', slot: 'pickup' })).status, 400, '토요일');
+  assert.equal((await post(a, { date: '2026-10-11', slot: 'pickup' })).status, 409, '일요일은 기본 닫힘');
+  assert.equal((await post(a, { date: '2026-10-10', slot: 'pickup' })).status, 409, '토요일은 기본 닫힘');
   const get = async token => (await D.onRequestGet({ env, request: req('GET', `/api/car/drive?start=${date}`, token) })).json();
   const view = await get(b);
   assert.deepEqual(view.slots[`${date}:pickup`], { name: '가나다', mine: false });
@@ -187,8 +189,46 @@ test('운행 스케줄 관리자는 라이드가 필요 없는 칸을 닫고 열
   assert.equal((await all.json()).cancelled.length, 2, '하루 전체를 닫으면 두 칸의 신청이 모두 취소된다');
   const day = await get(a);
   assert.ok(day.closed[`${date}:pickup`] && day.closed[`${date}:dropoff`]);
-  assert.equal((await put(estelle, { date: '2026-10-10', slot: 'pickup', closed: true })).status, 400, '주말은 칸이 없다');
   assert.equal((await put(estelle, { date: '2020-01-06', slot: 'pickup', closed: true })).status, 409, '지난 날짜는 바꿀 수 없다');
+});
+
+test('월·토·일은 기본으로 닫혀 있고, 관리자가 열면 신청할 수 있다 (예전 신청이 있는 칸은 그대로)', async () => {
+  const env = memoryEnv();
+  const estelle = await addAccount(env, 'esooy@wol.org', 'Estelle Sooy');
+  const a = await addAccount(env, 'a@x.com', '가나다');
+  const future = (weekday) => { const d = new Date(todayKst() + 'T00:00:00Z'); do { d.setUTCDate(d.getUTCDate() + 1); } while (d.getUTCDay() !== weekday); return d.toISOString().slice(0, 10); };
+  const [mon, sat, sun, wed] = [future(1), future(6), future(0), future(3)];
+  const get = async (token, d) => (await D.onRequestGet({ env, request: req('GET', `/api/car/drive?start=${d}`, token) })).json();
+  const post = (token, body) => D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, body) });
+  const put = (token, body) => D.onRequestPut({ env, request: req('PUT', '/api/car/drive', token, body) });
+
+  const v = await get(a, mon);
+  for (const d of [mon, sat, sun]) assert.ok(v.closed[`${d}:pickup`] && v.closed[`${d}:dropoff`], `${d} 기본 닫힘`);
+  assert.ok(!v.closed[`${wed}:pickup`], '수요일은 열림');
+  assert.equal((await post(a, { date: sat, slot: 'pickup' })).status, 409);
+  assert.equal((await put(a, { date: sat, slot: 'pickup', closed: false })).status, 403, '일반 멤버는 열 수 없다');
+
+  assert.equal((await put(estelle, { date: sat, slot: 'all', closed: false })).status, 200, '관리자가 토요일을 연다');
+  const opened = await get(a, sat);
+  assert.ok(!opened.closed[`${sat}:pickup`] && !opened.closed[`${sat}:dropoff`]);
+  assert.equal((await post(a, { date: sat, slot: 'pickup' })).status, 201, '열린 날은 신청된다');
+
+  // 다시 닫으면 신청은 취소되고 기본(닫힘)으로 돌아간다
+  const closed = await put(estelle, { date: sat, slot: 'pickup', closed: true });
+  assert.deepEqual((await closed.json()).cancelled, [{ slot: 'pickup', name: '가나다' }]);
+  assert.ok((await get(a, sat)).closed[`${sat}:pickup`]);
+
+  // 화~금의 닫기·열기는 그대로
+  assert.equal((await put(estelle, { date: wed, slot: 'dropoff', closed: true })).status, 200);
+  assert.ok((await get(a, wed)).closed[`${wed}:dropoff`]);
+  assert.equal((await put(estelle, { date: wed, slot: 'dropoff', closed: false })).status, 200);
+  assert.ok(!(await get(a, wed)).closed[`${wed}:dropoff`]);
+
+  // 예전에 받은 신청이 있는 기본 닫힘 칸은 닫히지 않는다
+  await env.CAMP_KV.put(`drive:slot:${sun}:pickup`, JSON.stringify({ date: sun, slot: 'pickup', email: 'a@x.com', name: '가나다', phone: '010-1234-5678' }));
+  const withRecord = await get(a, sun);
+  assert.ok(!withRecord.closed[`${sun}:pickup`], '신청이 있는 칸은 열려 있다');
+  assert.ok(withRecord.closed[`${sun}:dropoff`], '비어 있는 다른 칸은 닫힘');
 });
 
 // ── 운행 알림 (카카오 알림톡 우선 · 문자 대체 · 시각 설정) ──
@@ -266,7 +306,7 @@ test('발송 시각 설정: 관리자만 보고 바꾸고, 바꾼 시각대로 �
   assert.equal((await call(S.onRequestPut, a, { pickup: '09:00', dropoff: {} })).status, 403);
   const got = await (await call(S.onRequestGet, estelle)).json();
   assert.equal(got.settings.pickup, '08:00');
-  assert.deepEqual(got.settings.dropoff, { 1: null, 2: '17:00', 3: '17:00', 4: '17:00', 5: '12:00' });
+  assert.deepEqual(got.settings.dropoff, { 0: null, 1: null, 2: '17:00', 3: '17:00', 4: '17:00', 5: '12:00', 6: null });
   assert.equal((await call(S.onRequestPut, estelle, { pickup: '08:15', dropoff: {} })).status, 400, '30분 단위만');
   assert.equal((await call(S.onRequestPut, estelle, { pickup: '09:00', dropoff: { 1: '16:00', 2: '18:30', 3: null, 4: '17:00', 5: '12:00' } })).status, 200);
   await seedSlot(env, MON, 'pickup', 'a@x.com', '가나다', '010-1111-2222');
