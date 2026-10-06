@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=62">
+  <link rel="stylesheet" href="/expense.css?v=63">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=15">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -421,13 +421,12 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
       : `${esc(srcShow(r.source || ''))}<div class="ex-meta">${esc(t('catUnset'))}</div>`;
     const catKey = r => r.account || t('catUnset');
     // 노트: 신청자(노랑) · 승인자(파랑) · 회계(초록). 평소엔 작은 아이콘만 보이고, 마우스를 올리거나(모바일은 탭) 하면 말풍선으로 펼쳐진다.
-    // 승인 대기 중에는 승인자가 놓치지 않도록 신청자 노트를 그대로 펼쳐서 보여준다(full).
+    // 승인 대기 중(need)에는 승인자가 확인해야 하는 신청자 노트 아이콘을 눈에 띄게 강조한다.
     const NOTE_ICON = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>';
     const noteIco = (cls, label, text) => `<span class="ex-nico ${cls}" tabindex="0" role="note" aria-label="${esc(label)}: ${esc(text)}">${NOTE_ICON}<span class="ex-ntip"><b>${esc(label)}</b>${esc(text)}</span></span>`;
-    const memoHtml = (r, full) => (r.memo ? (full ? `<div class="ex-memo">${esc(r.memo)}</div>` : '') : '');
-    const noteIcons = (r, full) => {
+    const noteIcons = (r, need) => {
       const a = [];
-      if (r.memo && !full) a.push(noteIco('sub', t('sMemoLbl'), r.memo));
+      if (r.memo) a.push(noteIco('sub' + (need ? ' need' : ''), t('sMemoLbl'), r.memo));
       if (r.approverMemo) a.push(noteIco('ap', t('apNoteLbl'), r.approverMemo));
       if (r.accountantMemo) a.push(noteIco('ac', t('acNoteLbl'), r.accountantMemo));
       return a.length ? `<span class="ex-notes">${a.join('')}</span>` : '';
@@ -503,7 +502,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         <tr>
           <td>${esc(r.when || '')}</td>
           <td>${approving ? catCell(rep, r, i, st) : catView(r)}${rowProject(rep, r) ? `<div class="ex-meta">${esc(rowProject(rep, r))}</div>` : ''}</td>
-          <td>${itemWrap(rep, r, `${r.item ? `<b>${esc(r.item)}</b>${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${memoHtml(r, approving)}`)}</td>
+          <td>${itemWrap(rep, r, `${r.item ? `<b>${esc(r.item)}</b>${noteIcons(r, approving)}${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${r.item ? '' : noteIcons(r, approving)}`)}</td>
           <td class="r">${krw(r.amountKrw)}${isFx(r.currency) ? `<div class="ex-meta">${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)}</div>` : ''}</td>
         </tr>`).join('');
 
