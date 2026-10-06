@@ -1,0 +1,68 @@
+/* 소개 페이지 '화면에서 바로 고치기' — 실제 소개 페이지와 비슷한 구성 위에서 글을 바로 쓴다 */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --blue: #004f68; --mid: #007ea1; --light: #73d1f5; --ink: #0d1b24; --sub: #3d5a6a; --muted: #7a9aaa; --line: #dce8ee; --bg: #f5f8fa; }
+body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background: var(--bg); color: var(--ink); }
+[hidden] { display: none !important; }
+
+.tv-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; background: rgba(255,255,255,.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.tv-seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+.tv-seg button { border: 0; background: transparent; padding: 8px 14px; font: 700 13px 'Noto Sans KR', sans-serif; color: var(--sub); cursor: pointer; }
+.tv-seg button.on { background: var(--blue); color: #fff; }
+.tv-hint { flex: 1; min-width: 180px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.tv-status { font-size: 12px; font-weight: 700; color: var(--sub); }
+.tv-status.ok { color: #168a52; } .tv-status.err { color: #c42a36; } .tv-status.warn { color: #b8741a; }
+.tv-save { border: 0; border-radius: 10px; background: var(--blue); color: #fff; font: 800 14px 'Noto Sans KR', sans-serif; padding: 10px 24px; cursor: pointer; }
+.tv-save:disabled { opacity: .4; cursor: default; }
+
+.tv-gate { padding: 60px 20px; text-align: center; color: var(--sub); line-height: 1.8; }
+.tv-gate a { display: inline-block; margin-top: 14px; padding: 11px 24px; border-radius: 10px; background: var(--blue); color: #fff; text-decoration: none; font-weight: 700; }
+
+.tv-page { max-width: 980px; margin: 0 auto; background: #fff; }
+.tv-label { font-size: 11px; font-weight: 800; letter-spacing: .2em; color: var(--mid); text-transform: uppercase; margin-bottom: 10px; }
+.tv-note { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+
+/* 글 입력 칸: 평소엔 글자처럼 보이고, 올리면/누르면 입력 칸처럼 보인다 */
+.tv-in { display: block; width: 100%; border: 1.5px dashed transparent; background: transparent; border-radius: 10px; padding: 6px 10px; margin: 0 -10px; width: calc(100% + 20px); font: inherit; color: inherit; resize: none; overflow: hidden; outline: none; transition: border-color .15s, background .15s; }
+.tv-in:hover { border-color: rgba(0, 126, 161, .45); }
+.tv-in:focus { border-color: var(--mid); background: rgba(255,255,255,.08); }
+.tv-in::placeholder { opacity: .5; }
+
+/* 히어로 */
+.tv-hero { position: relative; min-height: 340px; color: #fff; overflow: hidden; display: flex; align-items: flex-end; }
+.tv-hero-bg { position: absolute; inset: 0; background: #004f68 center 20% / cover no-repeat; }
+.tv-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,35,48,.25) 0%, rgba(0,55,75,.82) 100%); }
+.tv-hero-in { position: relative; z-index: 2; width: 100%; padding: 70px 36px 32px; }
+.tv-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .18em; color: rgba(255,255,255,.7); margin-bottom: 8px; }
+.tv-h1 { font: 800 clamp(26px, 5vw, 42px)/1.2 'Noto Sans KR', sans-serif; }
+.tv-h1em { font: italic 800 clamp(26px, 5vw, 42px)/1.2 'Noto Serif KR', Georgia, serif; color: var(--light); }
+.tv-sub { margin-top: 8px; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.88); max-width: 640px; }
+.tv-hero .tv-in:hover, .tv-hero .tv-in:focus { border-color: rgba(255,255,255,.7); background: rgba(255,255,255,.1); }
+.tv-photo-btn { position: absolute; top: 14px; right: 14px; z-index: 3; border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(0,0,0,.55); color: #fff; font: 700 12px 'Noto Sans KR', sans-serif; cursor: pointer; backdrop-filter: blur(4px); }
+.tv-photo-btn:hover { background: rgba(0,0,0,.75); }
+
+/* 말씀 */
+.tv-verse { padding: 44px 36px; background: linear-gradient(180deg, #f1f7fa, #fff); text-align: center; }
+.tv-verse-text { text-align: center; font: 600 clamp(18px, 3vw, 24px)/1.7 'Noto Serif KR', Georgia, serif; color: var(--blue); }
+.tv-verse-ref { display: flex; justify-content: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.tv-ref { width: 240px; max-width: 100%; text-align: center; padding: 9px 12px; border: 1.5px solid var(--line); border-radius: 10px; font: 700 14px 'Noto Sans KR', sans-serif; color: var(--sub); background: #fff; }
+.tv-ref:focus { outline: none; border-color: var(--mid); }
+.tv-btn { border: 1.5px solid var(--mid); background: #fff; color: var(--mid); border-radius: 10px; padding: 9px 16px; font: 700 13px 'Noto Sans KR', sans-serif; cursor: pointer; }
+.tv-btn:hover { background: var(--mid); color: #fff; }
+
+/* 소개글 */
+.tv-story { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 36px; padding: 44px 36px; align-items: start; }
+.tv-story-photo { position: relative; border-radius: 16px; overflow: hidden; background: #e8f0f4; min-height: 240px; }
+.tv-story-photo img { display: block; width: 100%; height: auto; }
+.tv-story2 { background: var(--bg); }
+.tv-bio { font-size: 16px; line-height: 1.9; color: var(--sub); min-height: 200px; }
+.tv-bio:hover, .tv-bio:focus, .tv-prayer-text:hover, .tv-prayer-text:focus, .tv-verse-text:hover, .tv-verse-text:focus { border-color: var(--mid); }
+
+/* 기도제목 */
+.tv-prayer { padding: 44px 36px 80px; background: var(--bg); }
+.tv-prayer-text { font-size: 16px; line-height: 2; color: var(--sub); background: #fff; border-color: var(--line); padding: 14px 16px; min-height: 140px; }
+
+@media (max-width: 720px) {
+  .tv-story { grid-template-columns: 1fr; gap: 20px; padding: 28px 18px; }
+  .tv-hero-in { padding: 70px 18px 24px; } .tv-verse, .tv-prayer { padding: 32px 18px; }
+  .tv-hint { display: none; }
+}

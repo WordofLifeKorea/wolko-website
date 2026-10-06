@@ -85,8 +85,8 @@ test('화면: 소개 페이지 편집 화면은 포탈 로그인으로 자동 �
   assert.match(team, /\/api\/newsletter\/profile\?slug=/);
   assert.doesNotMatch(team, /mpSubForm|\/api\/newsletter\/subscribe/);
   const page = readFileSync(new URL('../src/pages/mypage/index.astro', import.meta.url), 'utf8');
-  assert.match(page, /\/team-edit\/.*\?embed=1/);
-  assert.match(edit, /embed=1/);
+  assert.match(page, /\/team-visual\//);
+  assert.doesNotMatch(page, /title="\$\{esc\(t\('tabEdit'\)\)\}"><\/iframe>/, 'iframe title 툴팁 제거');
   assert.match(page, /\/api\/newsletter\/profile/);
   assert.match(page, /\/api\/team\/upload/);
   assert.match(page, /field', 'report_url'/);
@@ -121,4 +121,15 @@ test('다른 사람 소개 페이지는 마스터만 바꿀 수 있다 — 관�
   assert.equal((await call(PLogin, 'POST', '/api/team/portal-login', t.master, { slug: 'aiden' })).status, 200);
   assert.equal((await call(PLogin, 'POST', '/api/team/portal-login', t.master, { slug: 'kim' })).status, 200);
   assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile?slug=aiden', t.master, { url: 'https://m.com' })).status, 200);
+});
+
+test('소개 페이지 화면 편집기: 실제 페이지 구성 위에서 쓰고, 바뀐 언어의 반대편은 자동 번역해서 저장한다', () => {
+  const src = readFileSync(new URL('../src/pages/team-visual/[slug].astro', import.meta.url), 'utf8');
+  for (const f of ['hero_tagline', 'hero_tagline2', 'hero_subtitle', 'verse', 'bio', 'bio_2', 'prayer']) assert.match(src, new RegExp(`data-base="${f}"`));
+  assert.match(src, /\/api\/team\/portal-login/);
+  assert.match(src, /\/api\/team\/translate/);
+  assert.match(src, /\/api\/team\/update/);
+  assert.match(src, /verse_lookup/);
+  assert.match(src, /if \(koCh === enCh\) continue;/, '양쪽을 모두 직접 고쳤거나 둘 다 안 바뀌면 번역하지 않는다');
+  assert.doesNotMatch(src, /\/api\/team\/login|loginPw/);
 });

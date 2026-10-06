@@ -1,0 +1,251 @@
+---
+import { getCollection } from 'astro:content';
+// 소개 페이지 "화면에서 바로 고치기" — 실제 소개 페이지와 같은 구성(히어로 · 말씀 · 소개글 · 기도제목) 위에서 글을 바로 쓴다.
+// 한글로 쓰면 영어가, 영어로 쓰면 한글이 저장할 때 자동으로 번역된다. 포탈 '내 페이지'에 끼워 넣어 쓴다.
+export async function getStaticPaths() {
+  const team = await getCollection('team');
+  return team.filter(p => !p.slug.startsWith('map-order') && p.data.active !== false).map(p => ({ params: { slug: p.slug }, props: { person: p } }));
+}
+const { person } = Astro.props;
+const d = person.data as any;
+const FIELDS = ['hero_tagline_ko', 'hero_tagline_en', 'hero_tagline2_ko', 'hero_tagline2_en', 'hero_subtitle_ko', 'hero_subtitle_en',
+  'verse_ref', 'verse_ko', 'verse_en', 'bio_ko', 'bio_en', 'bio_ko_2', 'bio_en_2', 'prayer_ko', 'prayer_en', 'photo_url', 'photo_story', 'photo_url_2'];
+const initial: Record<string, string> = {};
+for (const k of FIELDS) initial[k] = (d[k] ?? '') as string;
+const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_ko: d.title_ko || '', title_en: d.title_en || '', spouse: !!(d.show_spouse || d.bio_ko_2 || d.bio_en_2 || d.photo_url_2) };
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>소개 페이지 고치기 — {d.name_ko}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/team-visual.css?v=1">
+</head>
+<body>
+  <div class="tv-bar" id="tvBar">
+    <div class="tv-seg" role="group" aria-label="Language">
+      <button type="button" id="tvKo" class="on">한국어로 쓰기</button>
+      <button type="button" id="tvEn">Write in English</button>
+    </div>
+    <span class="tv-hint" id="tvHint">한글로 쓰면 영어가, 영어로 쓰면 한글이 저장할 때 자동 번역돼요.</span>
+    <span class="tv-status" id="tvStatus"></span>
+    <button type="button" class="tv-save" id="tvSave" disabled>저장</button>
+  </div>
+
+  <div class="tv-gate" id="tvGate"><p id="tvGateMsg">확인하는 중…</p><a href="/portal" id="tvGateBtn" hidden>포탈로 로그인</a></div>
+
+  <main class="tv-page" id="tvPage" hidden>
+    <!-- 히어로 -->
+    <section class="tv-hero" id="tvHero">
+      <div class="tv-hero-bg" id="tvHeroBg"></div>
+      <button type="button" class="tv-photo-btn" data-photo="photo_url">📷 <span data-t="photo">사진 바꾸기</span></button>
+      <div class="tv-hero-in">
+        <div class="tv-eyebrow" data-t="heroLabel">히어로 · 맨 위 큰 문구</div>
+        <textarea class="tv-in tv-h1" data-base="hero_tagline" rows="1" maxlength="60"></textarea>
+        <textarea class="tv-in tv-h1em" data-base="hero_tagline2" rows="1" maxlength="60"></textarea>
+        <textarea class="tv-in tv-sub" data-base="hero_subtitle" rows="2" maxlength="300"></textarea>
+      </div>
+    </section>
+
+    <!-- 말씀 -->
+    <section class="tv-verse">
+      <div class="tv-label" data-t="verseLabel">말씀</div>
+      <textarea class="tv-in tv-verse-text" data-base="verse" rows="2" maxlength="600"></textarea>
+      <div class="tv-verse-ref">
+        <input class="tv-ref" id="tvRef" data-single="verse_ref" maxlength="60" placeholder="예: 디모데후서 2:22 · John 3:16">
+        <button type="button" class="tv-btn" id="tvLookup"><span data-t="lookup">구절 불러오기</span></button>
+      </div>
+      <p class="tv-note" data-t="lookupNote">구절 주소를 쓰고 "구절 불러오기"를 누르면 한글(개역개정)과 영어 본문이 함께 채워져요.</p>
+    </section>
+
+    <!-- 소개글 -->
+    <section class="tv-story">
+      <div class="tv-story-photo"><img id="tvStoryImg" alt=""><button type="button" class="tv-photo-btn" data-photo="photo_story">📷 <span data-t="photo">사진 바꾸기</span></button></div>
+      <div class="tv-story-body">
+        <div class="tv-label" data-t="bioLabel">소개글</div>
+        <textarea class="tv-in tv-bio" data-base="bio" rows="8" maxlength="8000"></textarea>
+        <p class="tv-note" data-t="paraNote">빈 줄을 넣으면 문단이 나뉘어요.</p>
+      </div>
+    </section>
+
+    <section class="tv-story tv-story2" id="tvStory2" hidden>
+      <div class="tv-story-photo"><img id="tvStory2Img" alt=""><button type="button" class="tv-photo-btn" data-photo="photo_url_2">📷 <span data-t="photo">사진 바꾸기</span></button></div>
+      <div class="tv-story-body">
+        <div class="tv-label" data-t="bio2Label">함께하는 분 소개글</div>
+        <textarea class="tv-in tv-bio" data-base="bio_2" rows="8" maxlength="8000"></textarea>
+      </div>
+    </section>
+
+    <!-- 기도제목 -->
+    <section class="tv-prayer">
+      <div class="tv-label" data-t="prayerLabel">중보기도 · 기도제목</div>
+      <textarea class="tv-in tv-prayer-text" data-base="prayer" rows="5" maxlength="3000"></textarea>
+      <p class="tv-note" data-t="prayerNote">한 줄에 기도제목 하나씩 쓰면 목록으로 보여요.</p>
+    </section>
+  </main>
+  <input type="file" id="tvFile" accept="image/*" hidden>
+
+  <script type="application/json" id="tvInit" set:html={JSON.stringify({ initial, meta })}></script>
+  <script is:inline>
+    const { initial, meta } = JSON.parse(document.getElementById('tvInit').textContent);
+    const SLUG = meta.slug;
+    const UI = {
+      ko: { photo: '사진 바꾸기', heroLabel: '히어로 · 맨 위 큰 문구', verseLabel: '말씀', lookup: '구절 불러오기', lookupNote: '구절 주소를 쓰고 "구절 불러오기"를 누르면 한글(개역개정)과 영어 본문이 함께 채워져요.', bioLabel: '소개글', paraNote: '빈 줄을 넣으면 문단이 나뉘어요.', bio2Label: '함께하는 분 소개글', prayerLabel: '중보기도 · 기도제목', prayerNote: '한 줄에 기도제목 하나씩 쓰면 목록으로 보여요.',
+        hint: '한글로 쓰면 영어가, 영어로 쓰면 한글이 저장할 때 자동 번역돼요.', save: '저장', saving: '저장 중…', translating: '번역 중…', saved: '저장했어요. 사이트에는 1~2분 뒤 반영돼요.', savedTr: n => '저장했어요 (' + n + '개 항목 자동 번역). 사이트에는 1~2분 뒤 반영돼요.', nochange: '바뀐 내용이 없어요.', unsaved: '저장하지 않은 변경이 있어요',
+        uploading: '사진 올리는 중…', uploaded: '사진을 바꿨어요.', lookingUp: '구절 찾는 중…', looked: '구절을 채웠어요.', needRef: '구절 주소를 먼저 써 주세요.',
+        gateLogin: '먼저 포탈에 로그인해 주세요.', gateDenied: '이 소개 페이지를 고칠 권한이 없어요. 마스터에게 연결을 요청해 주세요.', gateFail: '연결에 실패했어요. 잠시 후 다시 시도해 주세요.', fail: '요청에 실패했어요.',
+        ph: { hero_tagline: n => n, hero_tagline2: n => n, hero_subtitle: () => '이 사역자를 소개하는 한두 문장', verse: () => '말씀 본문', bio: () => '소개글(간증, 사역 이야기)을 자유롭게 써 주세요.', bio_2: () => '함께하는 분의 소개글', prayer: () => '기도제목을 한 줄에 하나씩 적어 주세요.' } },
+      en: { photo: 'Change photo', heroLabel: 'Hero · big headline', verseLabel: 'Verse', lookup: 'Look up verse', lookupNote: 'Type the reference and press "Look up verse" to fill both the Korean (KRV) and English text.', bioLabel: 'About', paraNote: 'A blank line starts a new paragraph.', bio2Label: 'About (partner)', prayerLabel: 'Prayer requests', prayerNote: 'One request per line shows as a list.',
+        hint: 'Write in Korean and English is translated on save — write in English and Korean is.', save: 'Save', saving: 'Saving…', translating: 'Translating…', saved: 'Saved. The site updates in 1–2 minutes.', savedTr: n => 'Saved (' + n + ' item' + (n === 1 ? '' : 's') + ' auto-translated). The site updates in 1–2 minutes.', nochange: 'Nothing changed.', unsaved: 'You have unsaved changes',
+        uploading: 'Uploading photo…', uploaded: 'Photo updated.', lookingUp: 'Looking up…', looked: 'Verse filled in.', needRef: 'Type a verse reference first.',
+        gateLogin: 'Please sign in to the portal first.', gateDenied: 'You are not linked to this profile page. Ask the master admin to link you.', gateFail: 'Could not connect. Please try again.', fail: 'Request failed.',
+        ph: { hero_tagline: n => n, hero_tagline2: n => n, hero_subtitle: () => 'One or two sentences introducing this person', verse: () => 'Verse text', bio: () => 'Write your story and ministry here.', bio_2: () => 'About your partner', prayer: () => 'One prayer request per line.' } },
+    };
+    let uiLang = (() => { try { return localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko'; } catch { return 'ko'; } })();
+    const u = (k, ...a) => { const v = UI[uiLang][k]; return typeof v === 'function' ? v(...a) : v; };
+    let lang = 'ko';                 // 지금 쓰고 있는 언어
+    const orig = { ...initial };     // 마지막으로 저장된 값
+    const cur = { ...initial };      // 화면의 값
+    const $ = id => document.getElementById(id);
+    const PAIR_CTX = { hero_tagline: 'tagline', hero_tagline2: 'tagline', hero_subtitle: 'subtitle', verse: 'verse', bio: 'bio', bio_2: 'bio', prayer: 'prayer' };
+    const keyOf = (base, l) => base === 'bio_2' ? 'bio_' + l + '_2' : base + '_' + l;
+    const BASES = Object.keys(PAIR_CTX);
+    let teamToken = '';
+
+    /* ─── 화면 채우기 ─── */
+    function autosize(ta) { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; }
+    function paint() {
+      document.documentElement.lang = uiLang;
+      document.querySelectorAll('[data-t]').forEach(el => { el.textContent = u(el.dataset.t); });
+      $('tvHint').textContent = u('hint'); $('tvSave').textContent = u('save');
+      document.querySelectorAll('textarea[data-base]').forEach(ta => {
+        const b = ta.dataset.base;
+        ta.value = cur[keyOf(b, lang)] || '';
+        const nm = lang === 'ko' ? meta.name_ko : meta.name_en;
+        ta.placeholder = u('ph')[b](b === 'hero_tagline' ? nm : (lang === 'ko' ? meta.title_ko : meta.title_en));
+        autosize(ta);
+      });
+      $('tvRef').value = cur.verse_ref || '';
+      $('tvHeroBg').style.backgroundImage = cur.photo_url ? `url("${cur.photo_url}")` : '';
+      $('tvStoryImg').src = cur.photo_story || cur.photo_url || ''; $('tvStoryImg').style.display = (cur.photo_story || cur.photo_url) ? 'block' : 'none';
+      $('tvStory2Img').src = cur.photo_url_2 || ''; $('tvStory2Img').style.display = cur.photo_url_2 ? 'block' : 'none';
+      $('tvStory2').hidden = !meta.spouse;
+      $('tvKo').classList.toggle('on', lang === 'ko'); $('tvEn').classList.toggle('on', lang === 'en');
+    }
+    const dirtyKeys = () => Object.keys(cur).filter(k => (cur[k] || '') !== (orig[k] || ''));
+    function refreshDirty() {
+      const n = dirtyKeys().length; $('tvSave').disabled = !n;
+      if (n) { $('tvStatus').textContent = u('unsaved'); $('tvStatus').className = 'tv-status warn'; }
+      else if ($('tvStatus').className.includes('warn')) { $('tvStatus').textContent = ''; $('tvStatus').className = 'tv-status'; }
+    }
+    function say(msg, kind) { $('tvStatus').textContent = msg; $('tvStatus').className = 'tv-status ' + (kind || ''); }
+
+    /* ─── 입력 ─── */
+    document.addEventListener('input', e => {
+      const ta = e.target;
+      if (ta.dataset.base) { cur[keyOf(ta.dataset.base, lang)] = ta.value; autosize(ta); refreshDirty(); }
+      else if (ta.dataset.single) { cur[ta.dataset.single] = ta.value; refreshDirty(); }
+    });
+    $('tvKo').addEventListener('click', () => { lang = 'ko'; paint(); });
+    $('tvEn').addEventListener('click', () => { lang = 'en'; paint(); });
+
+    /* ─── 포탈 로그인 → 편집 토큰 ─── */
+    function gate(msg, btn) { $('tvGate').hidden = false; $('tvGateMsg').textContent = msg; $('tvGateBtn').hidden = !btn; $('tvPage').hidden = true; $('tvBar').style.display = 'none'; }
+    async function getToken(force) {
+      if (teamToken && !force) return teamToken;
+      const hub = sessionStorage.getItem('wolko-hub-token');
+      if (!hub) { gate(u('gateLogin'), true); throw new Error(u('gateLogin')); }
+      const r = await fetch('/api/team/portal-login', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + hub }, body: JSON.stringify({ slug: SLUG }) });
+      if (r.status === 401) { sessionStorage.removeItem('wolko-hub-token'); gate(u('gateLogin'), true); throw new Error(u('gateLogin')); }
+      if (r.status === 403) { gate(u('gateDenied'), false); throw new Error(u('gateDenied')); }
+      if (!r.ok) throw new Error(u('gateFail'));
+      teamToken = (await r.json()).token; return teamToken;
+    }
+    async function api(path, body, isForm) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const tok = await getToken(attempt > 0);
+        const res = await fetch(path, { method: 'POST', headers: { Authorization: 'Bearer ' + tok, ...(isForm ? {} : { 'Content-Type': 'application/json' }) }, body: isForm ? body : JSON.stringify(body) });
+        if (res.status === 401 && attempt === 0) continue;
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || u('fail'));
+        return data;
+      }
+    }
+
+    /* ─── 저장: 바뀐 언어의 반대편은 자동 번역 ─── */
+    $('tvSave').addEventListener('click', save);
+    async function save() {
+      const changed = new Set(dirtyKeys());
+      if (!changed.size) return say(u('nochange'));
+      $('tvSave').disabled = true;
+      try {
+        const tasks = [];
+        for (const b of BASES) {
+          const kk = keyOf(b, 'ko'), ke = keyOf(b, 'en');
+          const koCh = changed.has(kk), enCh = changed.has(ke);
+          if (koCh === enCh) continue;                               // 변화 없음, 또는 양쪽을 직접 고쳤으면 그대로 둔다
+          const from = koCh ? 'ko' : 'en', src = cur[koCh ? kk : ke] || '', dst = koCh ? ke : kk;
+          if (!src.trim()) { cur[dst] = ''; changed.add(dst); continue; }
+          tasks.push({ b, from, src, dst });
+        }
+        if (tasks.length) say(u('translating'));
+        let n = 0;
+        // 한 번에 3개씩 번역
+        for (let i = 0; i < tasks.length; i += 3) {
+          await Promise.all(tasks.slice(i, i + 3).map(async t => {
+            const d = await api('/api/team/translate', { text: t.src, from: t.from, context: PAIR_CTX[t.b] });
+            cur[t.dst] = (d.translated || '').trim(); changed.add(t.dst); n++;
+          }));
+        }
+        say(u('saving'));
+        const fields = {}; changed.forEach(k => { fields[k] = cur[k] || ''; });
+        await api('/api/team/update', { fields });
+        Object.assign(orig, fields);
+        paint(); refreshDirty();
+        say(n ? u('savedTr', n) : u('saved'), 'ok');
+      } catch (e) { say(e.message, 'err'); }
+      finally { refreshDirty(); }
+    }
+
+    /* ─── 구절 불러오기 (구절 주소 → 개역개정 + 영어 본문) ─── */
+    $('tvLookup').addEventListener('click', async () => {
+      const ref = ($('tvRef').value || '').trim();
+      if (!ref) return say(u('needRef'), 'err');
+      say(u('lookingUp'));
+      try {
+        const d = await api('/api/team/translate', { text: ref, context: 'verse_lookup' });
+        cur.verse_ref = ref; cur.verse_ko = d.ko || ''; cur.verse_en = d.en || '';
+        paint(); refreshDirty(); say(u('looked'), 'ok');
+      } catch (e) { say(e.message, 'err'); }
+    });
+
+    /* ─── 사진 바꾸기 (바로 올라간다) ─── */
+    let photoField = '';
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-photo]'); if (!b) return;
+      photoField = b.dataset.photo; $('tvFile').value = ''; $('tvFile').click();
+    });
+    $('tvFile').addEventListener('change', async () => {
+      const f = $('tvFile').files[0]; if (!f) return;
+      if (f.size > 24 * 1024 * 1024) return say('24MB 이하만 올릴 수 있어요.', 'err');
+      say(u('uploading'));
+      try {
+        const fd = new FormData(); fd.append('file', f); fd.append('field', photoField);
+        const d = await api('/api/team/upload', fd, true);
+        cur[photoField] = d.url; orig[photoField] = d.url; paint(); refreshDirty(); say(u('uploaded'), 'ok');
+      } catch (e) { say(e.message, 'err'); }
+    });
+
+    window.addEventListener('beforeunload', e => { if (dirtyKeys().length) { e.preventDefault(); e.returnValue = ''; } });
+    (async function init() {
+      try { await getToken(); } catch (e) { return; }
+      $('tvGate').hidden = true; $('tvPage').hidden = false; paint(); refreshDirty();
+    })();
+  </script>
+</body>
+</html>
