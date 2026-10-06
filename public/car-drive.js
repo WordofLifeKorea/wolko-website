@@ -8,7 +8,7 @@
       h1: '운행 스케줄', intro: '오전 픽업과 드롭오프를 신청하세요. 픽업 당일 아침 8시에 문자로 알려드려요.',
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: '평택센터 멤버의 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
       deniedTitle: '평택센터 멤버 전용이에요', deniedHelp: '이 스케줄은 평택센터 멤버만 사용할 수 있어요. 소속이 맞는데 이 안내가 보이면 관리자에게 문의해 주세요.',
-      thisPeriod: '오늘로', manage: '칸 관리', manageDone: '관리 끝내기', manageHint: '라이드가 필요 없는 칸을 눌러 닫아 주세요. 닫힌 칸을 누르면 다시 열려요. 신청이 있는 칸을 닫으면 그 신청은 취소돼요.', closedLabel: '닫힘', closeDay: '하루 닫기', openDay: '하루 열기', closeConfirm: n => `${n} 님의 신청이 취소돼요. 이 칸을 닫을까요?`, closeDayConfirm: n => `이 날의 신청 ${n}건이 취소돼요. 하루를 닫을까요?`, note: '빈 칸을 누르면 바로 신청돼요 · 내 칸을 다시 누르면 취소돼요',
+      thisPeriod: '오늘로', timesBtn: '알림 시간', timesTitle: '알림 보내는 시간', timesHelp: '신청한 사람에게 카카오 알림톡(실패하면 문자)으로 보내요. 30분 단위로 고를 수 있어요.', timesPickup: '오전 픽업 — 신청이 있는 날 매일', timesDropoff: '오후 드롭오프 — 요일별', timesOff: '보내지 않음', timesSaved: '저장했어요.', save: '저장', manage: '칸 관리', manageDone: '관리 끝내기', manageHint: '라이드가 필요 없는 칸을 눌러 닫아 주세요. 닫힌 칸을 누르면 다시 열려요. 신청이 있는 칸을 닫으면 그 신청은 취소돼요.', closedLabel: '닫힘', closeDay: '하루 닫기', openDay: '하루 열기', closeConfirm: n => `${n} 님의 신청이 취소돼요. 이 칸을 닫을까요?`, closeDayConfirm: n => `이 날의 신청 ${n}건이 취소돼요. 하루를 닫을까요?`, note: '빈 칸을 누르면 바로 신청돼요 · 내 칸을 다시 누르면 취소돼요',
       week: n => n + '주차', pickup: '오전 픽업', dropoff: '드롭오프', signUp: '+ 신청', mineLabel: '내가 신청', today: '오늘',
       phoneTitle: '오전 픽업 알림 문자', phoneHelp: '픽업 당일 아침 8시에 이 번호로 문자를 보내드려요.', phoneLabel: '휴대폰 번호', phoneBad: '올바른 휴대폰 번호를 입력해 주세요.', cancel: '취소', signUpDo: '신청하기',
       cancelConfirm: '이 신청을 취소할까요?', cancelAdmin: '(관리자) 이 신청을 취소할까요?', failLoad: '스케줄을 불러오지 못했습니다.', failAct: '처리하지 못했습니다.',
@@ -20,7 +20,7 @@
       h1: 'Driving Schedule', intro: 'Sign up for morning pick-up and drop-off. The pick-up person gets a text at 8 AM that day.',
       loading: 'Loading…', loginTitle: 'Portal Login', loginHelp: 'Log in with your Pyeongtaek Center portal account.', email: 'Email', password: 'Password', loginBtn: 'Log in and continue', loginFail: 'Could not log in.',
       deniedTitle: 'Pyeongtaek Center members only', deniedHelp: 'This schedule is for Pyeongtaek Center members. If you belong here and still see this, please contact an admin.',
-      thisPeriod: 'Today', manage: 'Manage slots', manageDone: 'Done', manageHint: 'Tap a slot that needs no ride to close it. Tap a closed slot to open it again. Closing a slot with a sign-up cancels that sign-up.', closedLabel: 'Closed', closeDay: 'Close day', openDay: 'Open day', closeConfirm: n => `${n}'s sign-up will be cancelled. Close this slot?`, closeDayConfirm: n => `${n} sign-up(s) on this day will be cancelled. Close the whole day?`, note: 'Tap an empty slot to sign up · tap your own slot again to cancel',
+      thisPeriod: 'Today', timesBtn: 'Reminder times', timesTitle: 'When reminders are sent', timesHelp: 'Sent to the person signed up by KakaoTalk (text message if it fails). Pick times in 30-minute steps.', timesPickup: 'Morning pick-up — every day with a sign-up', timesDropoff: 'Afternoon drop-off — by weekday', timesOff: 'Do not send', timesSaved: 'Saved.', save: 'Save', manage: 'Manage slots', manageDone: 'Done', manageHint: 'Tap a slot that needs no ride to close it. Tap a closed slot to open it again. Closing a slot with a sign-up cancels that sign-up.', closedLabel: 'Closed', closeDay: 'Close day', openDay: 'Open day', closeConfirm: n => `${n}'s sign-up will be cancelled. Close this slot?`, closeDayConfirm: n => `${n} sign-up(s) on this day will be cancelled. Close the whole day?`, note: 'Tap an empty slot to sign up · tap your own slot again to cancel',
       week: n => 'Week ' + n, pickup: 'Pick up', dropoff: 'Drop off', signUp: '+ Sign up', mineLabel: 'Mine', today: 'Today',
       phoneTitle: 'Morning pick-up text', phoneHelp: 'We will text this number at 8 AM on the pick-up day.', phoneLabel: 'Mobile number', phoneBad: 'Please enter a valid mobile number.', cancel: 'Cancel', signUpDo: 'Sign up',
       cancelConfirm: 'Cancel this sign-up?', cancelAdmin: '(Admin) Cancel this sign-up?', failLoad: 'Could not load the schedule.', failAct: 'Could not complete that.',
@@ -131,6 +131,7 @@
     $('thisPeriod').hidden = state.today >= p.start && state.today <= p.end;
     const mgr = !!state.me.isManager;
     $('manageBtn').hidden = !mgr;
+    $('timesBtn').hidden = !mgr;
     $('manageBtn').textContent = manage && mgr ? t('manageDone') : t('manage');
     $('manageBtn').classList.toggle('on', manage && mgr);
     $('manageHint').hidden = !(manage && mgr);
@@ -213,6 +214,41 @@
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('phoneModal').hidden) { $('phoneModal').hidden = true; pending = null; } if (e.key === 'Enter' && !$('phoneModal').hidden && e.target === $('phoneInput')) $('phoneOk').click(); });
 
+  // ── 알림 시간 설정 (운행 스케줄 관리자) ──
+  const TIME_OPTIONS = (() => { const out = []; for (let m = 5 * 60; m <= 21 * 60; m += 30) out.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0')); return out; })();
+  const timeLabel = v => { const [h, m] = v.split(':').map(Number); return lang === 'en' ? `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}` : `${h < 12 ? '오전' : '오후'} ${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')}`; };
+  const fillSelect = (sel, value, allowOff) => {
+    sel.innerHTML = (allowOff ? `<option value="">${t('timesOff')}</option>` : '') + TIME_OPTIONS.map(v => `<option value="${v}">${timeLabel(v)}</option>`).join('');
+    sel.value = value || '';
+  };
+  async function openTimes() {
+    $('timesError').textContent = '';
+    const res = await fetch('/api/car/drive-settings', { headers: headers() });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { $('driveError').textContent = data.error || t('failLoad'); return; }
+    fillSelect($('timePickup'), data.settings.pickup, true);
+    const box = $('timesDropoff'); box.replaceChildren();
+    [1, 2, 3, 4, 5].forEach(d => {
+      const label = document.createElement('label');
+      const span = document.createElement('span'); span.textContent = t('days')[d];
+      const sel = document.createElement('select'); sel.dataset.day = d;
+      fillSelect(sel, data.settings.dropoff[d], true);
+      label.append(span, sel); box.append(label);
+    });
+    $('timesModal').hidden = false;
+  }
+  async function saveTimes() {
+    const dropoff = {};
+    document.querySelectorAll('#timesDropoff select').forEach(s => { dropoff[s.dataset.day] = s.value || null; });
+    const res = await fetch('/api/car/drive-settings', { method: 'PUT', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ pickup: $('timePickup').value || null, dropoff }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { $('timesError').textContent = data.error || t('failAct'); return; }
+    $('timesModal').hidden = true;
+  }
+  $('timesBtn').addEventListener('click', openTimes);
+  $('timesCancel').addEventListener('click', () => { $('timesModal').hidden = true; });
+  $('timesModal').addEventListener('click', e => { if (e.target === $('timesModal')) $('timesModal').hidden = true; });
+  $('timesSave').addEventListener('click', saveTimes);
   $('manageBtn').addEventListener('click', () => { manage = !manage; render(); });
   $('prevPeriod').addEventListener('click', () => load(state.period.prev));
   $('nextPeriod').addEventListener('click', () => load(state.period.next));

@@ -79,31 +79,6 @@ test('칸 신청 · 중복 거절 · 본인만 취소 · 휴대폰 번호 필요
   assert.equal((await del(admin, 'pickup')).status, 200, '마스터는 누구든 취소');
 });
 
-test('8시 알림: 오늘 픽업 담당자에게 한 번만 문자를 보낸다', async () => {
-  const env = memoryEnv({ DRIVE_REMINDER_SECRET: 'cron-secret', SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '02-123-4567' });
-  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
-  const date = nextWeekday();
-  await D.onRequestPost({ env, request: req('POST', '/api/car/drive', a, { date, slot: 'pickup' }) });
-  const sent = [];
-  globalThis.fetch = async (url, o) => { sent.push({ url: String(url), body: JSON.parse(o.body) }); return { ok: true, json: async () => ({}) }; };
-  const run = (query, secret = 'cron-secret') => RM.onRequestPost({ env, request: new Request('https://t.co/api/car/drive-reminders' + query, { method: 'POST', headers: { Authorization: `Bearer ${secret}` } }) });
-  assert.equal((await run(`?date=${date}`, 'wrong')).status, 401);
-  const dry = await (await run(`?date=${date}&dryRun=1`)).json();
-  assert.equal(dry.pickup.name, '가나다');
-  assert.equal(dry.pickup.phone, '010-****-**22', '번호는 가려서 보여준다');
-  assert.equal(sent.length, 0, 'dry run은 보내지 않는다');
-  const first = await (await run(`?date=${date}`)).json();
-  assert.equal(first.sent, 1);
-  assert.equal(sent[0].body.message.to, '01011112222');
-  assert.match(sent[0].body.message.text, /가나다님.*오전 픽업/);
-  assert.ok(sent[0].body.message.text.endsWith(`/car-drive/#${date}`), '링크에 날짜 앵커가 붙는다');
-  const second = await (await run(`?date=${date}`)).json();
-  assert.equal(second.sent, 0);
-  assert.equal(second.alreadySent, true);
-  assert.equal(sent.length, 1, '같은 날 두 번 보내지 않는다');
-  assert.equal((await (await run('?date=2026-10-11')).json()).skipped, 'weekend');
-});
-
 test('/api/hub/me 는 로그인한 계정의 이름과 이메일을 돌려준다', async () => {
   const { onRequestGet } = await import('../functions/api/hub/me.js');
   const env = memoryEnv();
@@ -216,63 +191,91 @@ test('운행 스케줄 관리자는 라이드가 필요 없는 칸을 닫고 열
   assert.equal((await put(estelle, { date: '2020-01-06', slot: 'pickup', closed: true })).status, 409, '지난 날짜는 바꿀 수 없다');
 });
 
-test('오전 픽업 알림은 카카오 알림톡을 먼저 보내고 같은 요청에 대체 문자를 실어 보낸다', async () => {
-  const env = memoryEnv({ DRIVE_REMINDER_SECRET: 'cron-secret', SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '010-0000-1111', KAKAO_PF_ID: 'KA01PF', KAKAO_TEMPLATE_DRIVE_PICKUP: 'KA01TP-pickup' });
-  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
-  const date = nextWeekday();
-  await D.onRequestPost({ env, request: req('POST', '/api/car/drive', a, { date, slot: 'pickup' }) });
-  const sent = [];
-  globalThis.fetch = async (url, o) => { sent.push(JSON.parse(o.body)); return { ok: true, json: async () => ({}) }; };
-  const run = () => RM.onRequestPost({ env, request: new Request(`https://t.co/api/car/drive-reminders?date=${date}`, { method: 'POST', headers: { Authorization: 'Bearer cron-secret' } }) });
-  const res = await (await run()).json();
-  assert.equal(res.sent, 1);
-  assert.equal(res.firstChannel, 'kakao');
-  assert.equal(res.channel, 'kakao+sms');
-  assert.equal(sent.length, 1, '한 번의 요청에 알림톡과 대체 문자가 함께 들어간다');
-  const m = sent[0].message;
+// ── 운행 알림 (카카오 알림톡 우선 · 문자 대체 · 시각 설정) ──
+const seedSlot = (env, date, slot, email, name, phone, at = '2026-01-01T00:00:00Z') =>
+  env.CAMP_KV.put(`drive:slot:${date}:${slot}`, JSON.stringify({ date, slot, email, name, phone, at }));
+const remEnv = (extra = {}) => memoryEnv({ DRIVE_REMINDER_SECRET: 'cron-secret', SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '010-0000-1111', KAKAO_PF_ID: 'KA01PF', KAKAO_TEMPLATE_DRIVE_PICKUP: 'tp-am', KAKAO_TEMPLATE_DRIVE_DROPOFF: 'tp-pm', ...extra });
+const remRun = (env, query, secret = 'cron-secret') => RM.onRequestPost({ env, request: new Request('https://t.co/api/car/drive-reminders?' + query, { method: 'POST', headers: { Authorization: `Bearer ${secret}` } }) });
+const captureSolapi = (okFor = () => true) => { const sent = []; globalThis.fetch = async (url, o) => { const m = JSON.parse(o.body).message; sent.push(m); return okFor(m) ? { ok: true, json: async () => ({}) } : { ok: false, text: async () => 'template error' }; }; return sent; };
+const MON = '2026-10-12', TUE = '2026-10-13', FRI = '2026-10-16', SAT = '2026-10-17';
+
+test('오전 알림: 요일과 상관없이 신청이 있는 날 오전 8시에 알림톡(+문자 대체)으로 한 번만', async () => {
+  const env = remEnv();
+  const sent = captureSolapi();
+  for (const d of [MON, SAT]) await seedSlot(env, d, 'pickup', 'a@x.com', '가나다', '010-1111-2222');
+  assert.equal((await remRun(env, `date=${MON}&time=07:30&slot=pickup`, 'wrong')).status, 401);
+  const early = await (await remRun(env, `date=${MON}&time=07:30&slot=pickup`)).json();
+  assert.equal(early.results[0].skipped, 'not-yet');
+  assert.equal(sent.length, 0, '8시 전에는 보내지 않는다');
+  for (const d of [MON, SAT]) {   // 토요일에 신청이 남아 있어도 보낸다
+    const res = await (await remRun(env, `date=${d}&time=08:00&slot=pickup`)).json();
+    assert.equal(res.sent, 1, d);
+  }
+  const m = sent[0];
   assert.equal(m.to, '01011112222');
+  assert.equal(m.kakaoOptions.templateId, 'tp-am');
   assert.equal(m.kakaoOptions.pfId, 'KA01PF');
-  assert.equal(m.kakaoOptions.templateId, 'KA01TP-pickup');
   assert.equal(m.kakaoOptions.disableSms, false);
   assert.equal(m.kakaoOptions.variables['#{이름}'], '가나다');
-  assert.match(m.kakaoOptions.variables['#{날짜}'], /^\d+\/\d+ [월화수목금]$/);
+  assert.match(m.kakaoOptions.variables['#{날짜}'], /^10\/12 월$/);
   assert.equal(m.from, '01000001111');
   assert.match(m.text, /가나다님.*오전 픽업/);
-});
-
-test('알림톡 요청이 거절되면 문자로 다시 보낸다', async () => {
-  const env = memoryEnv({ DRIVE_REMINDER_SECRET: 'cron-secret', SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '010-0000-1111', KAKAO_PF_ID: 'KA01PF', KAKAO_TEMPLATE_DRIVE_PICKUP: 'bad' });
-  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
-  const date = nextWeekday();
-  await D.onRequestPost({ env, request: req('POST', '/api/car/drive', a, { date, slot: 'pickup' }) });
-  const sent = [];
-  globalThis.fetch = async (url, o) => { const body = JSON.parse(o.body); sent.push(body); return body.message.kakaoOptions ? { ok: false, text: async () => 'template error' } : { ok: true, json: async () => ({}) }; };
-  const res = await (await RM.onRequestPost({ env, request: new Request(`https://t.co/api/car/drive-reminders?date=${date}`, { method: 'POST', headers: { Authorization: 'Bearer cron-secret' } }) })).json();
-  assert.equal(res.firstChannel, 'sms');
+  assert.equal((await (await remRun(env, `date=${MON}&time=08:30&slot=pickup`)).json()).results[0].alreadySent, true, '같은 날 두 번 보내지 않는다');
   assert.equal(sent.length, 2);
-  assert.ok(!sent[1].message.kakaoOptions && sent[1].message.text);
+  assert.equal((await (await remRun(env, `date=${MON}&time=15:00&slot=pickup`)).json()).results[0].skipped, 'too-late', '시각이 한참 지난 뒤에는 보내지 않는다');
 });
 
-test('오후 드롭오프 알림: 드롭오프 신청자에게 오후 템플릿으로, 오전 알림과 별개로 하루 한 번', async () => {
-  const env = memoryEnv({ DRIVE_REMINDER_SECRET: 'cron-secret', SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '010-0000-1111', KAKAO_PF_ID: 'KA01PF', KAKAO_TEMPLATE_DRIVE_PICKUP: 'tp-am', KAKAO_TEMPLATE_DRIVE_DROPOFF: 'tp-pm' });
-  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
-  const b = await addAccount(env, 'b@x.com', '라마바', { phone: '010-3333-4444' });
-  const date = nextWeekday();
-  await D.onRequestPost({ env, request: req('POST', '/api/car/drive', a, { date, slot: 'pickup' }) });
-  await D.onRequestPost({ env, request: req('POST', '/api/car/drive', b, { date, slot: 'dropoff' }) });
-  const sent = [];
-  globalThis.fetch = async (url, o) => { sent.push(JSON.parse(o.body).message); return { ok: true, json: async () => ({}) }; };
-  const run = slot => RM.onRequestPost({ env, request: new Request(`https://t.co/api/car/drive-reminders?date=${date}&slot=${slot}`, { method: 'POST', headers: { Authorization: 'Bearer cron-secret' } }) });
-  const pm = await (await run('dropoff')).json();
-  assert.equal(pm.sent, 1);
-  assert.equal(pm.slot, 'dropoff');
-  assert.equal(sent[0].to, '01033334444', '드롭오프 신청자에게 간다');
+test('오후 알림: 화~목 17:00, 금 12:00, 월요일은 보내지 않는다 (기본값)', async () => {
+  const env = remEnv();
+  const sent = captureSolapi();
+  for (const d of [MON, TUE, FRI]) await seedSlot(env, d, 'dropoff', 'b@x.com', '라마바', '010-3333-4444');
+  const at = async (date, time) => (await (await remRun(env, `date=${date}&time=${time}&slot=dropoff`)).json()).results[0];
+  assert.equal((await at(TUE, '16:30')).skipped, 'not-yet');
+  assert.equal((await at(TUE, '17:00')).sent, 1);
+  assert.equal((await at(FRI, '11:30')).skipped, 'not-yet');
+  assert.equal((await at(FRI, '12:00')).sent, 1);
+  assert.equal((await at(MON, '17:00')).skipped, 'no-time-set', '월요일은 시간이 없어 보내지 않는다');
+  assert.equal(sent.length, 2);
   assert.equal(sent[0].kakaoOptions.templateId, 'tp-pm');
-  assert.equal(sent[0].kakaoOptions.variables['#{이름}'], '라마바');
   assert.match(sent[0].text, /라마바님.*권사님 오후 라이드 담당입니다\. 감사합니다!/);
-  assert.equal((await (await run('dropoff')).json()).alreadySent, true, '오후는 하루 한 번');
-  const am = await (await run('pickup')).json();
-  assert.equal(am.sent, 1, '오전 알림은 오후와 별개로 나간다');
-  assert.equal(sent[1].kakaoOptions.templateId, 'tp-am');
-  assert.equal(sent[1].to, '01011112222');
+  assert.equal((await at(TUE, '17:30')).alreadySent, true);
+});
+
+test('알림 시각 이후에 신청한 사람에게는 보내지 않고, 알림톡 요청이 거절되면 문자로 다시 보낸다', async () => {
+  const env = remEnv();
+  const sent = captureSolapi(m => !m.kakaoOptions);   // 알림톡 요청은 거절
+  await seedSlot(env, TUE, 'pickup', 'a@x.com', '가나다', '010-1111-2222', '2026-10-12T22:30:00Z'); // 한국 시간 10/13 07:30 신청
+  await seedSlot(env, TUE, 'dropoff', 'b@x.com', '라마바', '010-3333-4444', '2026-10-13T08:30:00Z'); // 한국 시간 17:30 신청 (17:00 이후)
+  const am = (await (await remRun(env, `date=${TUE}&time=08:00&slot=pickup`)).json()).results[0];
+  assert.equal(am.firstChannel, 'sms');
+  assert.equal(sent.length, 2, '알림톡 거절 → 문자 재발송');
+  assert.ok(!sent[1].kakaoOptions && sent[1].text);
+  const pm = (await (await remRun(env, `date=${TUE}&time=17:00&slot=dropoff`)).json()).results[0];
+  assert.equal(pm.skipped, 'signed-up-after');
+  assert.equal(sent.length, 2);
+});
+
+test('발송 시각 설정: 관리자만 보고 바꾸고, 바꾼 시각대로 보낸다', async () => {
+  const S = await import('../functions/api/car/drive-settings.js');
+  const env = remEnv();
+  const sent = captureSolapi();
+  const estelle = await addAccount(env, 'esooy@wol.org', 'Estelle Sooy');
+  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
+  const call = (fn, token, body) => fn({ env, request: req(body ? 'PUT' : 'GET', '/api/car/drive-settings', token, body) });
+  assert.equal((await call(S.onRequestGet, a)).status, 403, '일반 멤버는 볼 수 없다');
+  assert.equal((await call(S.onRequestPut, a, { pickup: '09:00', dropoff: {} })).status, 403);
+  const got = await (await call(S.onRequestGet, estelle)).json();
+  assert.equal(got.settings.pickup, '08:00');
+  assert.deepEqual(got.settings.dropoff, { 1: null, 2: '17:00', 3: '17:00', 4: '17:00', 5: '12:00' });
+  assert.equal((await call(S.onRequestPut, estelle, { pickup: '08:15', dropoff: {} })).status, 400, '30분 단위만');
+  assert.equal((await call(S.onRequestPut, estelle, { pickup: '09:00', dropoff: { 1: '16:00', 2: '18:30', 3: null, 4: '17:00', 5: '12:00' } })).status, 200);
+  await seedSlot(env, MON, 'pickup', 'a@x.com', '가나다', '010-1111-2222');
+  await seedSlot(env, MON, 'dropoff', 'a@x.com', '가나다', '010-1111-2222');
+  await seedSlot(env, TUE, 'dropoff', 'a@x.com', '가나다', '010-1111-2222');
+  const r = async (date, time, slot) => (await (await remRun(env, `date=${date}&time=${time}&slot=${slot}`)).json()).results[0];
+  assert.equal((await r(MON, '08:00', 'pickup')).skipped, 'not-yet', '오전은 9시로 바뀜');
+  assert.equal((await r(MON, '09:00', 'pickup')).sent, 1);
+  assert.equal((await r(MON, '16:00', 'dropoff')).sent, 1, '월요일 오후 알림을 새로 켬');
+  assert.equal((await r(TUE, '17:00', 'dropoff')).skipped, 'not-yet', '화요일은 18:30으로 바뀜');
+  assert.equal((await r(TUE, '18:30', 'dropoff')).sent, 1);
 });
