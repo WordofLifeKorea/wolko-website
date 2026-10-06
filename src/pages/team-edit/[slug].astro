@@ -854,6 +854,15 @@ const hasSpouse = d.show_spouse && (d.bio_ko_2 || d.bio_en_2);
     if (authToken) {
       // Quick verify by attempting a harmless call (just show the page)
       showEditPage();
+    } else {
+      // 포탈에 로그인한 상태이고 이 소개 페이지에 연결된 계정(또는 마스터/관리자)이면 공용 비밀번호 없이 바로 입장
+      const hubToken = sessionStorage.getItem('wolko-hub-token');
+      if (hubToken) {
+        fetch('/api/team/portal-login', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + hubToken }, body: JSON.stringify({ slug }) })
+          .then(r => r.ok ? r.json() : null)
+          .then(d => { if (d && d.token) { authToken = d.token; sessionStorage.setItem(TOKEN_KEY, d.token); showEditPage(); } })
+          .catch(() => {});
+      }
     }
 
     loginEye.addEventListener('click', () => {

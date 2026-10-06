@@ -782,7 +782,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 }
 </style>
 
-<div class="mp-wrap">
+<div class="mp-wrap" data-team-slug={person.slug}>
 
   <!-- Back bar -->
   <div class="mp-back">
@@ -1073,94 +1073,21 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     </div>
   </div>
 
-  <!-- 소식(개인 뉴스레터) — 연결된 작성자가 있을 때만 보인다 -->
-  <section class="mp-letters" id="mpLetters" data-slug={person.slug} hidden>
-    <div class="mp-letters-inner">
-      <div class="mp-letters-label"><span class="wl-ko">소식</span><span class="wl-en">Updates</span></div>
-      <h2 class="mp-letters-title"><span class="wl-ko">{name1Ko}님의 소식</span><span class="wl-en">News from {name1En}</span></h2>
-      <ul class="mp-letters-list" id="mpLettersList"></ul>
-      <p class="mp-letters-empty" id="mpLettersEmpty" hidden><span class="wl-ko">아직 올라온 소식이 없어요.</span><span class="wl-en">No updates yet.</span></p>
-      <form class="mp-letters-form" id="mpSubForm" novalidate>
-        <div class="mp-letters-form-title"><span class="wl-ko">이메일로 소식 받기</span><span class="wl-en">Get updates by email</span></div>
-        <div class="mp-letters-row">
-          <input type="text" name="name" id="mpSubName" maxlength="60" autocomplete="name" placeholder="이름 · Name">
-          <input type="email" name="email" id="mpSubEmail" required autocomplete="email" placeholder="이메일 · Email">
-          <input type="text" name="website" id="mpSubWeb" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;">
-          <button type="submit" id="mpSubBtn"><span class="wl-ko">구독하기</span><span class="wl-en">Subscribe</span></button>
-        </div>
-        <p class="mp-letters-msg" id="mpSubMsg" role="status"></p>
-      </form>
-    </div>
-  </section>
-
 </div>
 
-<style is:global>
-.mp-letters { background: #f5f8fa; padding: 56px 5% 64px; }
-.mp-letters-inner { max-width: 760px; margin: 0 auto; }
-.mp-letters-label { font-size: 11px; font-weight: 800; letter-spacing: .22em; color: #007ea1; text-transform: uppercase; margin-bottom: 8px; }
-.mp-letters-title { margin: 0 0 22px; font-size: 26px; line-height: 1.3; color: #0d1b24; }
-.mp-letters-list { list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 10px; }
-.mp-letters-list a { display: block; padding: 16px 18px; border: 1px solid #dce8ee; background: #fff; border-radius: 14px; text-decoration: none; color: inherit; transition: border-color .15s, transform .15s; }
-.mp-letters-list a:hover { border-color: #73d1f5; transform: translateY(-1px); }
-.mp-letters-list b { display: block; font-size: 16px; color: #0d1b24; }
-.mp-letters-list small { display: block; margin-top: 3px; font-size: 12px; color: #7a9aaa; }
-.mp-letters-list p { margin: 6px 0 0; font-size: 13.5px; line-height: 1.6; color: #3d5a6a; }
-.mp-letters-empty { color: #7a9aaa; font-size: 14px; margin: 0 0 28px; }
-.mp-letters-form { background: #fff; border: 1px solid #dce8ee; border-radius: 16px; padding: 20px; position: relative; }
-.mp-letters-form-title { font-weight: 800; font-size: 15px; color: #004f68; margin-bottom: 12px; }
-.mp-letters-row { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 8px; }
-.mp-letters-row input { min-width: 0; padding: 12px 14px; border: 1.5px solid #cfdde4; border-radius: 10px; font-size: 15px; background: #fff; }
-.mp-letters-row input:focus { outline: none; border-color: #007ea1; }
-.mp-letters-row button { padding: 0 22px; min-height: 46px; border: 0; border-radius: 10px; background: #004f68; color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; }
-.mp-letters-row button:disabled { opacity: .6; cursor: default; }
-.mp-letters-msg { min-height: 20px; margin: 10px 0 0; font-size: 13px; color: #3d5a6a; }
-.mp-letters-msg.err { color: #c42a36; }
-.mp-letters-msg.ok { color: #168a52; font-weight: 700; }
-@media (max-width: 640px) { .mp-letters-row { grid-template-columns: 1fr; } .mp-letters { padding: 40px 5% 48px; } }
-</style>
-
 <script is:inline>
+// 포탈에서 연결된 계정이 정한 "최근 뉴스레터" 링크가 있으면, 파일에 적어 둔 기존 링크 대신 그것을 쓴다
 (function () {
-  var box = document.getElementById('mpLetters'); if (!box) return;
-  var slug = box.dataset.slug, en = function () { return document.documentElement.lang === 'en'; };
-  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
-  // 포탈에서 연결된 계정이 정한 "최근 뉴스레터" 링크가 있으면, 파일에 적어 둔 기존 링크 대신 그것을 쓴다
-  function applyNewsletterLink(url) {
+  var slug = document.querySelector('[data-team-slug]') && document.querySelector('[data-team-slug]').dataset.teamSlug;
+  if (!slug) return;
+  fetch('/api/newsletter/profile?slug=' + encodeURIComponent(slug)).then(function (r) { return r.json(); }).then(function (d) {
+    if (!d || !d.enabled || !d.url) return;
     var old = document.getElementById('openReportBtn'), a = document.createElement('a');
-    a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.id = 'openReportBtn'; a.className = 'mp-btn mp-btn-secondary';
+    a.href = d.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.id = 'openReportBtn'; a.className = 'mp-btn mp-btn-secondary';
     a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span class="wl-ko">최근 뉴스레터</span><span class="wl-en">Newsletter</span>';
     if (old) old.replaceWith(a);
     else { var anchor = document.querySelector('a.mp-btn-primary.wl-en'); if (anchor && anchor.parentNode) anchor.parentNode.appendChild(a); }
-  }
-  fetch('/api/newsletter/posts?slug=' + encodeURIComponent(slug)).then(function (r) { return r.json(); }).then(function (d) {
-    if (!d || !d.enabled) return;
-    box.hidden = false;
-    if (d.newsletterUrl) applyNewsletterLink(d.newsletterUrl);
-    var list = document.getElementById('mpLettersList');
-    if (!d.posts.length) document.getElementById('mpLettersEmpty').hidden = false;
-    list.innerHTML = d.posts.map(function (p) {
-      var date = p.publishedAt ? new Date(p.publishedAt).toLocaleDateString(en() ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
-      return '<li><a href="/letters/?s=' + encodeURIComponent(slug) + '&p=' + encodeURIComponent(p.id) + '"><b>' + esc(p.title) + '</b><small>' + esc(date) + '</small>' + (p.excerpt ? '<p>' + esc(p.excerpt) + '</p>' : '') + '</a></li>';
-    }).join('');
   }).catch(function () {});
-  var form = document.getElementById('mpSubForm'), msg = document.getElementById('mpSubMsg'), btn = document.getElementById('mpSubBtn');
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var email = document.getElementById('mpSubEmail').value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msg.className = 'mp-letters-msg err'; msg.textContent = en() ? 'Please check your email address.' : '이메일 주소를 확인해 주세요.'; return; }
-    btn.disabled = true; msg.className = 'mp-letters-msg'; msg.textContent = '…';
-    fetch('/api/newsletter/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: slug, email: email, name: document.getElementById('mpSubName').value, website: document.getElementById('mpSubWeb').value, lang: en() ? 'en' : 'ko' }) })
-      .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, b: b }; }); })
-      .then(function (x) {
-        if (!x.ok) throw new Error(x.b.error || 'error');
-        msg.className = 'mp-letters-msg ok';
-        msg.textContent = x.b.already ? (en() ? 'You are already subscribed.' : '이미 구독 중이에요.') : (en() ? 'Almost done! Please check your email and confirm.' : '확인 메일을 보냈어요. 메일의 버튼을 눌러 구독을 완료해 주세요.');
-        form.reset();
-      })
-      .catch(function (err) { msg.className = 'mp-letters-msg err'; msg.textContent = err.message; })
-      .then(function () { btn.disabled = false; });
-  });
 })();
 </script>
 

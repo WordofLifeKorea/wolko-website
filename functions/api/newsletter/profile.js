@@ -1,11 +1,11 @@
 /**
  * 소개 페이지의 "최근 뉴스레터" 링크 (연결된 계정이 포탈에서 직접 관리)
- * GET /api/newsletter/profile[?slug=]            (작성자) → { url }
- * PUT /api/newsletter/profile[?slug=] { url }    (작성자) 저장 (빈 값이면 포탈 설정을 지우고 기본 링크로 되돌림)
- * 공개 소개 페이지는 /api/newsletter/posts?slug= 응답의 newsletterUrl 로 이 값을 받아 버튼을 바꾼다.
+ * GET /api/newsletter/profile?slug=            (로그인 없이) → { enabled, url }  공개 소개 페이지가 버튼을 바꾸는 데 쓴다
+ * GET /api/newsletter/profile[?slug=]          (로그인) → { slug, url }  내 설정
+ * PUT /api/newsletter/profile[?slug=] { url }  (로그인한 연결 계정) 저장 (빈 값이면 포탈 설정을 지우고 기본 링크로 되돌림)
  */
 import { portalSession } from '../../lib/hubAccounts.js';
-import { authorFor, profileKey, safeUrl, err, ok } from '../../lib/newsletter.js';
+import { SLUG_RE, authorFor, isLinked, profileKey, safeUrl, err, ok } from '../../lib/newsletter.js';
 
 async function who(env, request) {
   const s = await portalSession(request, env);
@@ -16,6 +16,12 @@ async function who(env, request) {
 }
 
 export async function onRequestGet({ env, request }) {
+  if (!(request.headers.get('Authorization') || '')) {
+    const slug = new URL(request.url).searchParams.get('slug') || '';
+    if (!SLUG_RE.test(slug)) return err('slug 가 필요합니다.');
+    const p = await env.CAMP_KV.get(profileKey(slug), 'json');
+    return Response.json({ enabled: await isLinked(env, slug), url: p?.newsletterUrl || '' }, { headers: { 'Cache-Control': 'public, max-age=60', 'Content-Type': 'application/json' } });
+  }
   const w = await who(env, request); if (w.res) return w.res;
   const p = await env.CAMP_KV.get(profileKey(w.a.slug), 'json');
   return ok({ slug: w.a.slug, url: p?.newsletterUrl || '' });
