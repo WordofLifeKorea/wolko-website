@@ -257,7 +257,8 @@ test('오전 알림: 요일과 상관없이 신청이 있는 날 오전 8시에 
   assert.equal(m.kakaoOptions.templateId, 'tp-am');
   assert.equal(m.kakaoOptions.pfId, 'KA01PF');
   assert.equal(m.kakaoOptions.disableSms, false);
-  assert.equal(m.kakaoOptions.variables['#{이름}'], undefined, '템플릿에는 이름 변수가 없다(담당자님으로 안내)');
+  assert.equal(m.kakaoOptions.variables['#{담당자}'], '가나다');
+  assert.equal(m.kakaoOptions.variables['#{이름}'], undefined);
   assert.match(m.kakaoOptions.variables['#{날짜}'], /^10\/12 월$/);
   assert.equal(m.from, '01000001111');
   assert.match(m.text, /가나다님.*오전 픽업/);

@@ -15,11 +15,11 @@ const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const LATE_WINDOW_MIN = 5 * 60;
 const mask = p => String(p || '').replace(/[^0-9]/g, '').replace(/^(\d{3})\d+(\d{2})$/, '$1-****-**$2');
 
-/** 알림톡 템플릿 변수 — 솔라피 템플릿에는 #{날짜}(예: 10/6 화) 하나만 있다.
- *  (검수에서 '수신 대상이 불명확'으로 반려돼, 이름 대신 '담당자님'으로 받는 사람을 밝히는 문구로 바꿨다) */
-export function reminderVariables(_name, date) {
+/** 알림톡 템플릿 변수 — 솔라피 템플릿의 #{담당자}(신청한 사람 이름), #{날짜}(예: 10/6 화).
+ *  기존에 승인된 템플릿들이 모두 #{담당자} 변수를 쓰므로 같은 이름을 쓴다(예전 #{이름}은 검수에서 수신 대상이 불명확하다고 반려됨). */
+export function reminderVariables(name, date) {
   const [, m, d] = date.split('-');
-  return { '#{날짜}': `${+m}/${+d} ${DAYS[weekdayOf(date)]}` };
+  return { '#{담당자}': name, '#{날짜}': `${+m}/${+d} ${DAYS[weekdayOf(date)]}` };
 }
 
 export function reminderText(name, date, slot = 'pickup') {
