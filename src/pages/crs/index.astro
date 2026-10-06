@@ -622,6 +622,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       border-color:var(--crs-brand); background:var(--crs-brand); color:#fff;
       box-shadow:0 1px 3px rgba(0,86,108,.22);
     }
+    /* 상세 상단: 목록 버튼 · 언어 토글을 같은 높이(40px)·같은 모양으로 맞춘다.
+       (공용 모바일 규칙이 안쪽 글자 칸을 44×44로 키우고 토글을 44px로 늘려서 서로 높이가 달랐다) */
+    :root:root .detail-panel-head { align-items:center; }
+    :root:root .detail-panel-head .detail-panel-close { height:40px !important; min-height:0 !important; width:auto !important; padding:0 12px !important; border-radius:10px; flex:0 0 auto; aspect-ratio:auto !important; }
+    :root:root .detail-panel-head .detail-panel-close-mobile { width:auto !important; height:auto !important; white-space:nowrap; flex-direction:row; gap:.3rem; font-size:.8rem; }
+    :root:root .detail-panel-head .detail-lang-toggle { height:40px !important; padding:3px; border-radius:10px; box-sizing:border-box; box-shadow:none; }
+    :root:root .detail-panel-head .detail-lang-toggle .wl-lang-btn { width:34px; min-width:34px; height:100%; padding:0; border-radius:7px; }
     .detail-panel-body { padding:1rem .9rem .8rem; }
     .detail-map-preview { height:176px; margin-bottom:.82rem; }
     .detail-panel-progress-meta { padding:.52rem 1rem; }
