@@ -92,3 +92,19 @@ test('master deletes a portal account after typing the email; protected accounts
   assert.ok(store.has('__deleted__hub:account:estelle@wol.org'));
   assert.ok(store.has('hub:account-trash:estelle@wol.org'), '복구용 사본');
 });
+
+test('a portal master can open the counselor-page admin mode without the shared password; others cannot', async () => {
+  const { onRequestPost: campAuth, } = await import('../functions/api/camp-progress/auth.js');
+  const { onRequestGet: campAccounts } = await import('../functions/api/camp-progress/accounts.js');
+  const { env, master, admin } = await setup();
+  env.CAMP_KV.list = async () => ({ keys: [], list_complete: true });
+  const open = (token) => campAuth({ env, request: new Request('https://wolko.org/api/camp-progress/auth', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ mode: 'masterLogin' }) }) });
+  assert.equal((await open(null)).status, 403);
+  assert.equal((await open(admin)).status, 403);
+  const ok = await open(master);
+  assert.equal(ok.status, 200);
+  const { token, role } = await ok.json();
+  assert.equal(role, 'admin');
+  const list = await campAccounts({ env, request: new Request('https://wolko.org/api/camp-progress/accounts', { headers: { Authorization: `Bearer ${token}` } }) });
+  assert.equal(list.status, 200, '발급된 관리자 토큰으로 계정 관리 API를 쓸 수 있다');
+});

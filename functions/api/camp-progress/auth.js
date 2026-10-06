@@ -1,3 +1,5 @@
+import { parseHubSessionToken } from '../../lib/hubAccounts.js';
+
 const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
@@ -79,6 +81,18 @@ export async function onRequestPost(context) {
   const password = String(body.password || '');
 
   try {
+    if (mode === 'masterLogin') {
+      // 포탈 마스터 계정으로 로그인해 있으면 공용 관리자 비밀번호 없이 카운슬러 페이지 관리자 모드를 연다
+      const auth = request.headers.get('Authorization') || '';
+      const hubToken = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+      const session = hubToken ? await parseHubSessionToken(env.ADMIN_PASSWORD, hubToken) : null;
+      if (!session || session.role !== 'master') {
+        return Response.json({ error: '포탈 마스터 계정으로 로그인해 주세요.' }, { status: 403, headers: CORS });
+      }
+      const token = await generateToken({ role: 'admin' }, env.ADMIN_PASSWORD);
+      return Response.json({ token, role: 'admin' }, { headers: CORS });
+    }
+
     if (mode === 'adminLogin') {
       if (password !== env.ADMIN_PASSWORD) {
         return Response.json({ error: '관리자 비밀번호가 올바르지 않습니다.' }, { status: 401, headers: CORS });
