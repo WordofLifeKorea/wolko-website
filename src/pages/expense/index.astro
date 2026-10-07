@@ -684,14 +684,12 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, CAMPUSES a
       const people = [...byPerson.values()].sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
 
       const cards = people.map(p => {
-        const total = p.reports.reduce((s, r) => s + r.total, 0);
         const todo = p.reports.filter(r => r.status === 'approved').length;
         return `
         <section class="ex-person">
           <header class="ex-person-head">
             <span class="ex-avatar">${esc(String(p.name).trim().charAt(0).toUpperCase())}</span>
             <div class="ex-person-name"><b>${esc(p.name)}</b><div class="ex-meta">${esc(t('gN', p.reports.length))}${todo ? ' · ' + esc(t('st_approved')) + ' ' + todo : ''}</div></div>
-            ${p.reports.length > 1 ? `<div class="ex-person-total">${krw(total)}</div>` : ''}
           </header>
           <ul class="ex-subs">
             ${p.reports.map(r => `
