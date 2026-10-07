@@ -286,7 +286,7 @@ test('승인 시 모든 항목의 카테고리를 확정해야 하고, 확정값
   await acc('acct@x.com', 'Ann', 'counselor');
   const row = (item, account) => ({ account, currency: 'KRW', amount: 1000, item, ministryPurpose: 'camp', when: '2026-09-29' });
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, {
-    description: 'cat', rows: [row('휘발유', 'Car Gas (8400)'), row('간식', 'Office (5201)')],
+    description: 'cat', rows: [row('휘발유', 'Car Gas (8400)'), row('간식', 'Furniture & Fixtures (8395)')],
   });
   const id = sub.report.id;
   assert.equal(sub.report.campus, 'jeju');
@@ -297,11 +297,11 @@ test('승인 시 모든 항목의 카테고리를 확정해야 하고, 확정값
   assert.equal((await approve(['Car Gas (8400)', 'Made Up (1)'])).status, 400, '목록에 없는 카테고리 불가');
 
   sent.length = 0;
-  const ok = await approve(['Car Gas (8400)', 'Food Supplies (5251)'].map((c, i) => i === 1 ? 'SYME Food (8968)' : c));
+  const ok = await approve(['Car Gas (8400)', 'Food (8968)']);
   assert.equal(ok.status, 200);
   assert.equal(ok.report.rows[0].account, 'Car Gas (8400)');
-  assert.equal(ok.report.rows[1].account, 'SYME Food (8968)', '승인자가 확정한 카테고리로 교체');
-  assert.equal(ok.report.rows[1].submittedAccount, 'Office (5201)', '제출자가 고른 원래 값은 보존');
+  assert.equal(ok.report.rows[1].account, 'Food (8968)', '승인자가 확정한 카테고리로 교체');
+  assert.equal(ok.report.rows[1].submittedAccount, 'Furniture & Fixtures (8395)', '제출자가 고른 원래 값은 보존');
   assert.equal(ok.report.categoriesConfirmedBy, 'boss@wol.org');
   assert.ok(sent.some(m => m.to.includes('acct@x.com')), '회계 담당에게 송금 요청 알림');
 
@@ -556,7 +556,7 @@ test('승인자는 출금 계좌(별칭)를 확정하고, 계정과목(코드)�
   assert.equal(JSON.stringify(ok.report).includes('301-'), false, '승인자에게는 계좌번호가 내려가지 않는다');
   assert.equal((await patch(ann, { action: 'process' })).status, 409, '코드가 빈 항목이 있으면 송금 처리 불가');
   assert.equal((await patch(ann, { action: 'recategorize', categories: ['Missionary Account (8025)', 'Junior Camp (8040)', 'Nope'] })).status, 400);
-  const done = await patch(ann, { action: 'recategorize', categories: ['Missionary Account (8025)', 'Junior Camp (8040)', 'SYME Program Event (8974)'] });
+  const done = await patch(ann, { action: 'recategorize', categories: ['Missionary Account (8025)', 'Junior Camp (8040)', 'Food (8968)'] });
   assert.equal(done.status, 200);
   assert.equal(done.report.categoriesConfirmedBy, 'acct@x.com');
   assert.equal(done.report.rows.some(r => r.accountSuggested), false, '회계가 확인하면 추천 표시가 사라진다');
@@ -582,14 +582,78 @@ test('계좌번호는 회계 담당 화면에만: 작성자·승인자 목록에
   assert.ok((await list(ann, 'all')).includes('301-0278-8159-81'), '회계 담당의 전체 보기');
 });
 
-test('출금 계좌 목록: 맨 위가 개인 사역계좌, 노란 칸 12개, 번호는 서버에만 있고 화면 설정에는 없다', async () => {
+test('출금 계좌 목록: 맨 위가 개인 사역계좌, 에쌈·트리하우스·장학금은 빠지고 Others 가 들어간다, 번호는 서버에만 있고 화면 설정에는 없다', async () => {
   const { WITHDRAW_ACCOUNTS } = await import('../src/lib/expense-config.js');
-  const { WITHDRAW_NUMBERS } = await import('../functions/lib/expenseAccounts.js');
+  const { WITHDRAW_NUMBERS, WITHDRAW_IDS } = await import('../functions/lib/expenseAccounts.js');
   assert.equal(WITHDRAW_ACCOUNTS[0].id, 'personal');
-  assert.equal(WITHDRAW_ACCOUNTS.length, 13);
-  assert.equal(new Set(WITHDRAW_ACCOUNTS.map(a => a.id)).size, 13);
-  assert.deepEqual(Object.keys(WITHDRAW_NUMBERS).sort(), WITHDRAW_ACCOUNTS.slice(1).map(a => a.id).sort(), '개인 사역계좌를 뺀 모든 계좌에 번호가 있다');
+  assert.deepEqual(WITHDRAW_IDS, ['personal', 'wolko', 'syme', 'new-missionary-support', 'project', 'sm-ministry', 'teachers', 's-mart', 'ministry-center', 'junior-camp', 'others'], '새로 고를 수 있는 계좌');
+  assert.deepEqual(WITHDRAW_ACCOUNTS.filter(a => a.retired).map(a => a.id).sort(), ['essam', 'syme-scholarship', 'treehouse'], '빠진 계좌는 옛 리포트를 읽기 위해 retired 로만 남는다');
+  assert.equal(new Set(WITHDRAW_ACCOUNTS.map(a => a.id)).size, WITHDRAW_ACCOUNTS.length);
+  assert.deepEqual(Object.keys(WITHDRAW_NUMBERS).sort(), WITHDRAW_ACCOUNTS.map(a => a.id).filter(id => id !== 'personal' && id !== 'others').sort(), '개인 사역계좌와 Others 를 뺀 모든 계좌에 번호가 있다');
   assert.ok(!JSON.stringify(WITHDRAW_ACCOUNTS).match(/\d{3}-\d{4}/), '화면 설정에는 계좌번호가 없다');
+});
+
+test('카테고리 정리: Car Tax · SYME Program Event · Pyeongtaek EM 은 빠지고, SYME Food → Food, SYME Equipment → Furniture & Fixtures', async () => {
+  const C = await import('../src/lib/expense-config.js');
+  for (const gone of ['Car Tax (8320)', 'SYME Program Event (8974)', 'Pyeongtaek EM (8067)']) assert.ok(!C.ACCOUNTS.includes(gone), gone);
+  assert.deepEqual(C.RETIRED_ACCOUNTS, ['Car Tax (8320)', 'SYME Program Event (8974)', 'Pyeongtaek EM (8067)']);
+  assert.ok(C.ACCOUNTS.includes('Food (8968)') && C.ACCOUNTS.includes('Furniture & Fixtures (8395)'));
+  assert.ok(!C.ACCOUNTS.some(a => /SYME/.test(a)), 'SYME 가 붙은 카테고리는 없다');
+  assert.equal(C.canonAccount('SYME Food (8968)'), 'Food (8968)');
+  assert.equal(C.canonAccount('SYME Equipment (8395)'), 'Furniture & Fixtures (8395)');
+  assert.equal(C.canonAccount('Car Tax (8320)'), '', '쓰지 않는 카테고리는 비운다');
+  assert.equal(C.canonAccount('Nope'), '');
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'c', rows: [{ source: '월코', account: 'SYME Food (8968)', currency: 'KRW', amount: 1000, item: 'a', when: '2026-10-01' }, { source: '월코', account: 'Car Tax (8320)', currency: 'KRW', amount: 1000, item: 'b', when: '2026-10-01' }] });
+  assert.deepEqual(sub.report.rows.map(r => r.account), ['Food (8968)', ''], '예전 이름은 새 이름으로 저장되고, 쓰지 않는 카테고리는 비워진다');
+});
+
+test('카테고리 → 추천 출금 계좌 규칙이 정해진 대로이고, Others 는 승인자 메모가 꼭 필요하다', async () => {
+  const C = await import('../src/lib/expense-config.js');
+  assert.deepEqual(C.WITHDRAW_FOR_CATEGORY, {
+    'Missionary Account (8025)': 'personal', 'WOLKO (8021)': 'wolko', 'Car Gas (8400)': 'teachers', 'Car Maintenance (8500)': 'teachers',
+    'Junior Camp (8040)': 'junior-camp', 'Student Ministries (8042)': 'sm-ministry', 'Furniture & Fixtures (8395)': 'others',
+  });
+  assert.deepEqual(C.WITHDRAW_NOTE_REQUIRED, ['others']);
+  assert.ok(Object.values(C.WITHDRAW_FOR_CATEGORY).every(id => C.WITHDRAW_ACCOUNTS.some(a => a.id === id && !a.retired)), '추천 계좌는 모두 지금 고를 수 있는 계좌');
+  assert.ok(Object.keys(C.WITHDRAW_FOR_CATEGORY).every(k => C.ACCOUNTS.includes(k)), '추천 규칙의 카테고리는 모두 지금 있는 카테고리');
+  const { acc, call } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'o', rows: [{ source: '월코', account: 'Furniture & Fixtures (8395)', currency: 'KRW', amount: 1000, item: '의자', when: '2026-10-01' }] });
+  const id = sub.report.id;
+  const approve = body => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', ...body });
+  const noNote = await approve({ withdrawals: ['others'] });
+  assert.equal(noNote.status, 400);
+  assert.match(noNote.error, /Others/);
+  assert.equal((await approve({ withdrawals: ['others'], approverMemos: ['  '] })).status, 400, '공백만 있는 메모는 안 된다');
+  assert.equal((await approve({ withdrawals: ['essam'], approverMemos: ['x'] })).status, 400, '빠진 계좌로는 승인할 수 없다');
+  const ok = await approve({ withdrawals: ['others'], approverMemos: ['교실 의자 구입, 후원금 외 지출'] });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.report.rows[0].withdrawAccount, 'others');
+  assert.equal(ok.report.rows[0].approverMemo, '교실 의자 구입, 후원금 외 지출');
+  assert.equal(ok.report.rows[0].account, 'Furniture & Fixtures (8395)', '작성자가 고른 카테고리는 그대로 회계가 확인한다');
+});
+
+test('옛 이름·쓰지 않는 카테고리로 저장된 리포트: 이름은 새로 보이고, 쓰지 않는 값은 회계가 새 값으로 골라야 송금할 수 있다', async () => {
+  const { acc, call, kv } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('acct@x.com', 'Ann', 'counselor');
+  const report = { id: 'exp-old-1', status: 'approved', submitterEmail: 'cyn@x.com', submitterName: 'Cynthia', description: 'old', project: '', campus: 'wolko', total: 3000, submittedAt: '2026-10-01T00:00:00Z', log: [],
+    rows: [{ source: '월코', account: 'SYME Food (8968)', currency: 'KRW', amount: 1000, amountKrw: 1000, item: 'a', withdrawAccount: 'treehouse' }, { source: '월코', account: 'Car Tax (8320)', currency: 'KRW', amount: 2000, amountKrw: 2000, item: 'b', withdrawAccount: 'wolko' }] };
+  await kv.put('expense:report:exp-old-1', JSON.stringify(report));
+  const list = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=accounting', ann);
+  assert.equal(list.reports[0].rows[0].account, 'Food (8968)', '옛 이름은 새 이름으로 보인다');
+  const patch = body => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id: 'exp-old-1', ...body });
+  assert.equal((await patch({ action: 'process' })).status, 409, '쓰지 않는 카테고리가 남아 있으면 송금 처리 불가');
+  assert.equal((await patch({ action: 'recategorize', categories: ['Food (8968)', 'Car Tax (8320)'] })).status, 400, '쓰지 않는 카테고리로는 다시 고를 수 없다');
+  const done = await patch({ action: 'recategorize', categories: ['Food (8968)', 'Car Gas (8400)'] });
+  assert.equal(done.status, 200);
+  assert.equal(done.report.rows[0].categoryChanged, undefined, '이름만 바뀐 것은 변경 기록이 아니다');
+  assert.equal(done.report.rows[1].categoryChanged, true);
+  assert.equal(done.report.rows[0].withdrawNumber, '301-0278-8175-21', '이미 이 계좌로 승인된 옛 리포트는 번호까지 읽힌다');
+  assert.equal((await patch({ action: 'process' })).status, 200);
 });
 
 test('KV 조회 절약: 목록은 잠깐 재사용하고, 쓰기 직후에는 바로 새로 읽는다', async () => {

@@ -13,7 +13,7 @@
  * 인증: Authorization: Bearer <포탈 세션 토큰>  (권한 규칙은 lib/expenses.js 참고)
  */
 import { sendEmail, listAccounts } from '../../lib/hubAccounts.js';
-import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS, CAMPUS_OVERRIDES, FOREIGN_CURRENCIES } from '../../../src/lib/expense-config.js';
+import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS, CAMPUS_OVERRIDES, FOREIGN_CURRENCIES, WITHDRAW_NOTE_REQUIRED, canonAccount } from '../../../src/lib/expense-config.js';
 import { DEFAULT_CODE_FOR, isWithdrawId, withAccountNumbers } from '../../lib/expenseAccounts.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
@@ -34,12 +34,13 @@ function cleanRows(rawRows) {
     const fx = FOREIGN_CURRENCIES[currency];
     const amount = Math.round(Number(r?.amount) * 100) / 100; // 입력한 통화 기준 원금액
     const source = clip(r?.source, 160); // 작성자가 직접 적은 '어떤 선교 항목/계좌인지' (카테고리는 승인자가 확정)
-    const account = clip(r?.account, 120); // 승인 전에는 비어 있다(예전 화면에서 온 값이 있으면 유지)
+    const rawAccount = clip(r?.account, 120);
+    const account = canonAccount(rawAccount); // 작성자가 고른 카테고리 — 예전 이름은 새 이름으로 읽고, 목록에 없는 값은 비운다(예전 화면에서 온 값은 '작성자 입력'으로만 쓴다)
     const item = clip(r?.item, 120); // 구매 품목명
     const ministryPurpose = clip(r?.ministryPurpose, 500); // 구매 목적
     const memo = clip(r?.memo, 300); // 모든 카테고리에서 쓸 수 있는 메모(부가 설명)
     if (!Number.isFinite(amount) || amount <= 0 || amount > 1e10) return { error: `${n}번째 줄의 금액을 확인해 주세요.` };
-    if (!source && !account) return { error: `${n}번째 줄에 어떤 선교 항목·계좌의 지출인지 적어 주세요.` };
+    if (!source && !rawAccount) return { error: `${n}번째 줄에 어떤 선교 항목·계좌의 지출인지 적어 주세요.` };
     if (!item) return { error: `${n}번째 줄의 구매 품목명을 입력해 주세요.` };
 
     // USD 항목: 영수 날짜 기준 환율(KRW per USD)로 원화 환산. 환율은 화면에서 자동 조회 후 수정 가능.
@@ -55,7 +56,7 @@ function cleanRows(rawRows) {
 
     rows.push({
       project: clip(r?.project, 160), // 비어 있으면 리포트 상단 Project를 따른다
-      source: source || account, account, currency, amount, amountKrw,
+      source: source || rawAccount, account, currency, amount, amountKrw,
       rate: fx ? Math.round(rate * 10 ** fx.dp) / 10 ** fx.dp : null,
       item,
       ministryPurpose,
@@ -262,21 +263,23 @@ async function handlePatch(context) {
       }
       // 예전 화면이 보낸 계정과목은 선택 사항 — 값이 있으면 유효해야 하고, 비어 있으면 건너뛴다
       const given = Array.isArray(body.categories) ? body.categories : [];
-      if (given.length && (given.length !== report.rows.length || given.some(c => c && !ACCOUNTS.includes(c)))) {
+      if (given.length && (given.length !== report.rows.length || given.some(c => c && !canonAccount(c)))) {
         return err('계정과목을 확인해 주세요.');
       }
-      const cats = given.length ? given : report.rows.map(() => '');
+      const cats = given.length ? given.map(c => canonAccount(c)) : report.rows.map(() => '');
       // 제출자가 메모를 남긴 항목은 승인자가 하나씩 확인(체크)해야 한다
       // 위임하면 확인하지 않은 항목은 자동으로 확인 처리된다(autoChecks) — 기록에는 자동 확인으로 남긴다.
       const checks = Array.isArray(body.checks) ? body.checks : [];
       if (report.rows.some((row, i) => row.memo && checks[i] !== true)) return err('메모가 있는 항목을 모두 확인해 주세요.');
       const aMemos = Array.isArray(body.approverMemos) ? body.approverMemos : [];
+      // 'Others' 출금 계좌는 어디에 쓰는 돈인지 승인자의 메모가 꼭 있어야 한다
+      if (withdrawals.some((w, i) => WITHDRAW_NOTE_REQUIRED.includes(w) && !clip(aMemos[i], 300))) return err('“Others” 출금 계좌를 고른 항목은 승인 메모가 꼭 필요합니다.');
       report.rows.forEach((row, i) => {
         row.withdrawAccount = withdrawals[i];
         if (cats[i]) {
           if (row.account && row.account !== cats[i]) { row.submittedAccount = row.account; row.categoryChanged = true; }
           row.account = cats[i];
-        } else if (!ACCOUNTS.includes(row.account) && DEFAULT_CODE_FOR[withdrawals[i]]) {
+        } else if (!canonAccount(row.account) && DEFAULT_CODE_FOR[withdrawals[i]]) {
           row.account = DEFAULT_CODE_FOR[withdrawals[i]];   // 출금 계좌로 짐작되는 코드를 미리 채워 두고, 회계가 마지막에 확인한다
           row.accountSuggested = true;
         }
@@ -291,7 +294,7 @@ async function handlePatch(context) {
       report.withdrawConfirmedAt = now;
       // 승인자가 계정과목까지 직접 정한 경우(예전 화면)에만 승인자 확정으로 남긴다. 그 밖에는 회계 담당자가 확인한다.
       delete report.categoryDelegated; delete report.categoryDelegatedBy; delete report.categoryDelegatedAt;
-      if (given.length && report.rows.every(r => ACCOUNTS.includes(r.account))) { report.categoriesConfirmedBy = session.email; report.categoriesConfirmedAt = now; }
+      if (given.length && report.rows.every(r => canonAccount(r.account))) { report.categoriesConfirmedBy = session.email; report.categoriesConfirmedAt = now; }
       else { delete report.categoriesConfirmedBy; delete report.categoriesConfirmedAt; }
     }
 
@@ -333,17 +336,19 @@ async function handlePatch(context) {
     if (!session.isAccountant) return err('회계 담당자만 카테고리를 수정할 수 있습니다.', 403);
     if (report.status !== 'approved' && report.status !== 'processed') return err('승인된 리포트만 카테고리를 수정할 수 있습니다.', 409);
     const cats = Array.isArray(body.categories) ? body.categories : [];
-    if (cats.length !== report.rows.length || cats.some(c => !ACCOUNTS.includes(c))) return err('모든 항목의 카테고리(계정과목)를 선택해 주세요.');
+    if (cats.length !== report.rows.length || cats.some(c => !canonAccount(c))) return err('모든 항목의 카테고리(계정과목)를 선택해 주세요.');
     let changed = 0;
     report.rows.forEach((row, i) => {
-      if (row.account === cats[i]) return;
-      row.categoryHistory = [...(row.categoryHistory || []), { from: row.account || '', to: cats[i], by: session.email, at: now }];
+      const next = canonAccount(cats[i]);
+      if (row.account === next) return;
+      if (canonAccount(row.account) === next) { row.account = next; return; }   // 예전 이름을 새 이름으로 읽는 것뿐이면 변경 기록을 남기지 않는다
+      row.categoryHistory = [...(row.categoryHistory || []), { from: row.account || '', to: next, by: session.email, at: now }];
       if (row.account) row.categoryChanged = true;
-      row.account = cats[i];
+      row.account = next;
       changed++;
     });
     let confirmedNow = false;
-    if (report.rows.every(r => ACCOUNTS.includes(r.account))) {
+    if (report.rows.every(r => canonAccount(r.account))) {
       confirmedNow = report.categoriesConfirmedBy !== session.email || report.rows.some(r => r.accountSuggested);
       report.categoryDelegated = false;
       report.categoriesConfirmedBy = session.email;
@@ -369,7 +374,7 @@ async function handlePatch(context) {
   if (action === 'process') {
     if (!session.isAccountant) return err('회계 담당자만 처리할 수 있습니다.', 403);
     if (report.status !== 'approved') return err('승인된 리포트만 송금 처리할 수 있습니다.', 409);
-    if (report.rows.some(r => !ACCOUNTS.includes(r.account))) {
+    if (report.rows.some(r => !canonAccount(r.account))) {
       return err('모든 항목의 계정과목(코드)을 선택·저장한 뒤 송금 처리할 수 있습니다.', 409);
     }
     report.status = 'processed';
