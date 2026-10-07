@@ -682,3 +682,9 @@ test('작성 중(제출 전) 임시 영수증은 본인만 다시 열어볼 수 
   assert.equal((await get(['bob@x.com', 'counselor'], up.id)).status, 404, '다른 사람의 임시 파일은 못 본다');
   assert.equal((await get(cyn, 'missing')).status, 404);
 });
+
+test('회계 화면의 카테고리 선택칸과 노트칸은 34px 로 낮게 고정된다 (공용 44px 최소 높이를 덮는다)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /:root:root \.ex-d-edit \.ex-select-plain,[\s\S]*?:root:root \.ex-anote \{\s*min-height: 0 !important; height: 34px !important;/);
+});
