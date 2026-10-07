@@ -235,7 +235,26 @@
     .camp-default-badge { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:5px 9px; font-size:10.5px; font-weight:800; white-space:nowrap; }
     .camp-manage-row button { min-height:var(--btn-h-xs); min-width:52px; border:1px solid #d7e4e9; border-radius:8px; background:#fff; color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; padding:0 10px; }
     .camp-manage-row button.danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
-    .camp-manage-add-row { display:grid; margin-bottom:6px; }
+    .camp-manage-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; padding:10px 12px; }
+    .camp-manage-row-main { min-width:0; display:grid; gap:2px; }
+    .camp-manage-row-name { font-size:13.5px; font-weight:700; color:var(--text); overflow-wrap:anywhere; line-height:1.35; }
+    .camp-manage-row-meta { font-size:11.5px; color:var(--muted); }
+    .camp-manage-actions { flex-wrap:nowrap; }
+    .camp-manage-row button, .camp-manage-row .camp-default-badge { min-width:64px; height:30px; display:inline-flex; align-items:center; justify-content:center; }
+    .camp-manage-row .camp-default-badge { padding:0 10px; }
+    .camp-manage-add-row { display:grid; margin-top:4px; padding-top:16px; border-top:1px solid var(--border); }
+    .camp-manage-add-title { font:800 13px/1 var(--sans); color:var(--blue); margin-bottom:12px; }
+    @media (max-width:520px) { :root:root .topbar .edit-toggle { min-width:0 !important; padding:0 10px !important; font-size:11px !important; } }
+    .camp-add-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .season-check-group { display:flex; gap:10px; }
+    .season-check { flex:1; display:flex; align-items:center; gap:8px; height:46px; padding:0 12px; border:1.5px solid #d7e2e7; border-radius:12px; background:#fff; cursor:pointer; font-size:13.5px; font-weight:700; color:var(--text); }
+    .season-check input { position:absolute; opacity:0; pointer-events:none; }
+    .season-check-box { width:20px; height:20px; border:2px solid #b8c9d1; border-radius:6px; background:#fff; display:inline-grid; place-items:center; flex:none; transition:background .15s,border-color .15s; }
+    .season-check input:checked + .season-check-box { background:var(--blue); border-color:var(--blue); }
+    .season-check input:checked + .season-check-box::after { content:''; width:5px; height:10px; border:solid #fff; border-width:0 2.5px 2.5px 0; transform:rotate(45deg) translate(-1px,-1px); }
+    .season-check:has(input:checked) { border-color:var(--blue); background:#f2f8fb; }
+    .season-check input:focus-visible + .season-check-box { outline:2px solid var(--blue); outline-offset:2px; }
+    @media (max-width:480px) { .camp-add-grid { grid-template-columns:1fr; } }
     .camp-manage-add-row .field { margin-bottom:12px; }
     .field { display:grid; gap:6px; margin-bottom:14px; }
     .field label { color:var(--muted); font-size:11.5px; font-weight:700; letter-spacing:.02em; }
@@ -389,19 +408,22 @@
       <div class="tch-dialog-title" data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</div>
       <div class="camp-manage-list" id="campManageList"></div>
       <div class="camp-manage-add-row">
-        <div class="field">
-          <label data-ko="연도" data-en="Year">연도</label>
-          <input id="newCampYear" type="text" inputmode="numeric" data-ph-ko="예: 2026" data-ph-en="e.g. 2026" placeholder="예: 2026">
-        </div>
-        <div class="field">
-          <label data-ko="계절" data-en="Season">계절</label>
-          <div class="season-toggle" id="newCampSeasonToggle">
-            <button class="season-toggle-btn active" data-season="summer" type="button" data-ko="여름" data-en="Summer">여름</button>
-            <button class="season-toggle-btn" data-season="winter" type="button" data-ko="겨울" data-en="Winter">겨울</button>
+        <div class="camp-manage-add-title" data-ko="새 캠프 추가" data-en="Add a camp">새 캠프 추가</div>
+        <div class="camp-add-grid">
+          <div class="field">
+            <label for="newCampYear" data-ko="연도" data-en="Year">연도</label>
+            <input id="newCampYear" type="text" inputmode="numeric" data-ph-ko="예: 2027" data-ph-en="e.g. 2027" placeholder="예: 2027">
+          </div>
+          <div class="field">
+            <label data-ko="계절" data-en="Season">계절</label>
+            <div class="season-check-group" role="radiogroup">
+              <label class="season-check"><input type="radio" name="newCampSeason" value="summer" checked><span class="season-check-box" aria-hidden="true"></span><span data-ko="여름" data-en="Summer">여름</span></label>
+              <label class="season-check"><input type="radio" name="newCampSeason" value="winter"><span class="season-check-box" aria-hidden="true"></span><span data-ko="겨울" data-en="Winter">겨울</span></label>
+            </div>
           </div>
         </div>
         <div class="field">
-          <label data-ko="캠프 이름" data-en="Camp Name">캠프 이름</label>
+          <label for="newCampName" data-ko="캠프 이름" data-en="Camp Name">캠프 이름</label>
           <input id="newCampName" type="text" data-ph-ko="예: A캠프" data-ph-en="e.g. Camp A" placeholder="예: A캠프">
         </div>
         <button class="primary" id="addCampBtn" type="button" data-ko="캠프 추가" data-en="Add Camp" style="width:100%">캠프 추가</button>
@@ -544,7 +566,6 @@
       campManageBackdrop: document.getElementById('campManageBackdrop'),
       campManageList: document.getElementById('campManageList'),
       newCampYear: document.getElementById('newCampYear'),
-      newCampSeasonToggle: document.getElementById('newCampSeasonToggle'),
       newCampName: document.getElementById('newCampName'),
       addCampBtn: document.getElementById('addCampBtn'),
       campManageError: document.getElementById('campManageError'),
@@ -1315,7 +1336,7 @@
         ['summer', 'winter'].flatMap(season =>
           campsForYearSeason(year, season).map(c => `
             <div class="camp-manage-row">
-              <span class="camp-manage-row-label">${escapeHtml(year)} ${escapeHtml(season === 'summer' ? tr('summer') : tr('winter'))} · ${escapeHtml(c.name)}</span>
+              <div class="camp-manage-row-main"><span class="camp-manage-row-name">${escapeHtml(c.name)}</span><span class="camp-manage-row-meta">${escapeHtml(year)} · ${escapeHtml(season === 'summer' ? tr('summer') : tr('winter'))}</span></div>
               <div class="camp-manage-actions">
                 ${c.id === defaultCampId
                   ? `<span class="camp-default-badge">${escapeHtml(tr('defaultCamp'))}</span>`
@@ -1334,15 +1355,9 @@
     });
     els.campManageCloseBtn.addEventListener('click', () => { els.campManageBackdrop.hidden = true; });
 
-    els.newCampSeasonToggle.addEventListener('click', event => {
-      const btn = event.target.closest('.season-toggle-btn');
-      if (!btn) return;
-      els.newCampSeasonToggle.querySelectorAll('.season-toggle-btn').forEach(b => b.classList.toggle('active', b === btn));
-    });
-
     els.addCampBtn.addEventListener('click', async () => {
       const year = els.newCampYear.value.trim();
-      const season = els.newCampSeasonToggle.querySelector('.season-toggle-btn.active')?.dataset.season || 'summer';
+      const season = document.querySelector('input[name="newCampSeason"]:checked')?.value || 'summer';
       const name = els.newCampName.value.trim();
       if (!year || !name) {
         els.campManageError.textContent = tr('campFieldsRequired');

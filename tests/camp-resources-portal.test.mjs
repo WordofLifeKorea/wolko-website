@@ -44,3 +44,12 @@ test('캠프 자료실 화면: 포탈 도구 페이지(공용 머리글·왼쪽 
   const portal = readFileSync(root + 'src/pages/portal.astro', 'utf8');
   assert.match(portal, /group: 'camp', href: '\/camp-resources'/);
 });
+
+test('캠프 관리 창: 계절은 하나만 고르는 체크박스(라디오) 방식이고, 목록은 이름 + 연도·계절 두 줄로 정리된다', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.match(page, /<input type="radio" name="newCampSeason" value="summer" checked>/);
+  assert.match(page, /<input type="radio" name="newCampSeason" value="winter">/);
+  assert.doesNotMatch(page, /newCampSeasonToggle/);
+  assert.match(page, /input\[name="newCampSeason"\]:checked/);
+  assert.match(page, /camp-manage-row-name/);
+});
