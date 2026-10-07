@@ -1,8 +1,8 @@
 /* 주방 보조 — 운행 스케줄(car-drive.css) 위에 하루를 아침·점심·저녁 세 묶음으로 나누고, 묶음마다 준비 | 클린업 두 칸을 둔다 */
 .kitchen-slots { display: grid; gap: 8px; }
 .kmeal { --meal: #7d98a3; --meal-bg: #f4f8fa; display: grid; gap: 5px; padding: 6px; border-radius: 12px; background: var(--meal-bg); min-width: 0; }
-.kmeal.meal-am { --meal: #d68a00; --meal-bg: #fff6e0; }
-.kmeal.meal-lunch { --meal: #0e8f7e; --meal-bg: #e6f6f3; }
+.kmeal.meal-am { --meal: #1d86c9; --meal-bg: #e4f2fc; }
+.kmeal.meal-lunch { --meal: #a87400; --meal-bg: #fff4c9; }
 .kmeal.meal-dinner { --meal: #4f62c9; --meal-bg: #eceffc; }
 .kmeal-title { display: flex; align-items: baseline; gap: 6px; padding: 0 2px; color: var(--meal); }
 .kmeal-title strong { font-size: 13px; font-weight: 800; letter-spacing: -.02em; }
@@ -14,8 +14,13 @@ button.kslot { cursor: pointer; }
 .kslot .lbl { font-size: 11.5px; font-weight: 800; color: #4a6672; }
 .kslot .cnt { font-size: 11px; font-weight: 700; color: #7d98a3; white-space: nowrap; }
 .kslot .cnt.full { color: var(--meal); }
-.kpeople { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
-.kp { box-sizing: border-box; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; min-height: 26px; padding: 0 4px; border: 1px solid transparent; border-radius: 8px; background: none; color: #1a56c4; font: 800 13.5px/1 'Noto Sans KR', sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kpeople { display: flex; flex-direction: column; align-items: stretch; gap: 0; min-width: 0; }
+/* 신청한 사람은 한 줄씩, 사이에 얇은 구분선 */
+.kpeople > .kp:not(.add) { width: 100%; justify-content: space-between; min-height: 28px; padding: 0 4px; border-radius: 0; }
+.kpeople > .kp:not(.add) + .kp:not(.add) { border-top: 1px solid #dbe5ea; }
+.kpeople > .kp.add { align-self: flex-start; margin-top: 4px; }
+.kpeople > .kp:not(.add) + .kp.add { margin-top: 6px; }
+.kp { box-sizing: border-box; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; min-height: 26px; padding: 0 4px; border: 0 solid transparent; border-radius: 8px; background: none; color: #1a56c4; font: 800 13.5px/1 'Noto Sans KR', sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kp.mine { color: #136b33; }
 button.kp.mine { cursor: pointer; }
 button.kp.mine:hover:not(:disabled) { background: #e2f5e8; }
