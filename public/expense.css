@@ -635,3 +635,29 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 }
 :root:root .ex-cat .ex-select-plain, :root:root .ex-recat-row select, :root:root .ex-d-edit .ex-select-plain { padding-left: 10px !important; padding-right: 28px !important; }
 :root:root .ex-cat-confirm .ex-amemo, :root:root .ex-d-edit .ex-anote, :root:root .ex-anote { padding-left: 10px !important; padding-right: 10px !important; }
+
+/* ══ v12 — 회계 항목: 코드 흐름(작성자 › 승인자 › 회계자 선택) + 회계 노트 말풍선 ══ */
+.ex-d-item > .ex-code-flow { grid-column: 2 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr); gap: 0; margin-top: 8px; border: 1px solid #dbe6ec; border-radius: 10px; background: #fff; }
+.ex-cf { position: relative; min-width: 0; padding: 7px 12px 8px; display: flex; flex-direction: column; gap: 3px; }
+.ex-cf + .ex-cf { border-left: 1px solid #e6eef2; }
+.ex-cf + .ex-cf::before { content: '›'; position: absolute; left: -6px; top: 50%; transform: translateY(-50%); width: 11px; height: 18px; line-height: 16px; text-align: center; background: #fff; color: #8fa8b5; font-size: 15px; }
+.ex-cf i { font-style: normal; font-size: 10.5px; font-weight: 700; color: var(--light); letter-spacing: .01em; }
+.ex-cf b { font-size: 12.5px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; line-height: 1.35; }
+.ex-cf .ex-cf-none { color: var(--light); font-weight: 500; }
+.ex-cf-sel { background: #f3f9fc; border-radius: 0 10px 10px 0; }
+.ex-cf-sel .ex-select-plain { width: 100%; max-width: none; }
+@media (max-width: 720px) {
+  .ex-d-item > .ex-code-flow { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr); }
+  .ex-cf + .ex-cf { border-left: 0; border-top: 1px solid #e6eef2; }
+  .ex-cf + .ex-cf::before { content: '↓'; left: 12px; top: -9px; transform: none; width: 18px; height: 14px; line-height: 14px; font-size: 11px; }
+  .ex-cf-sel { border-radius: 0 0 10px 10px; }
+}
+/* 회계 노트 말풍선 */
+.ex-nico.ac.editable { cursor: pointer; }
+.ex-nico.ac.editable.empty { background: #fff; border-style: dashed; color: #8cb89c; }
+.ex-nico.ac.editable.open { box-shadow: 0 0 0 3px rgba(44, 122, 75, .2); }
+.ex-npop { position: absolute; left: -6px; top: calc(100% + 8px); z-index: 40; width: min(300px, 78vw); padding: 10px 12px 12px; border: 1px solid #a7d6b8; border-radius: 12px; background: #fff; box-shadow: 0 10px 28px rgba(16, 41, 54, .16); text-align: left; cursor: default; display: flex; flex-direction: column; gap: 8px; }
+.ex-npop[hidden] { display: none; }
+.ex-npop b { font-size: 11.5px; font-weight: 800; color: #2c7a4b; }
+:root:root .ex-npop .ex-anote { height: auto !important; min-height: 70px !important; padding: 8px 10px !important; line-height: 1.5; resize: vertical; }
+.ex-npop .ex-btn { align-self: flex-end; }

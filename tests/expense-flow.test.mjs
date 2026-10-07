@@ -694,3 +694,14 @@ test('회계 편집 항목: 계정 선택칸이 있으면 위쪽 줄에는 계�
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   assert.match(src, /\$\{editable && r\.account\s*\?\s*\(subText\(r\) && subText\(r\) !== r\.account \? esc\(t\('srcLbl'\) \+ ': ' \+ t\('srcSubmitted', subText\(r\)\)\) : ''\)/);
 });
+
+test('회계 항목: 코드는 작성자 입력 › 승인자 입력 › 회계자 선택 순서로, 회계 노트는 평소 닫혀 있다가 노트 버튼을 누르면 말풍선으로 연다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  assert.match(src, /srcLbl: '작성자 입력', apprLbl: '승인자 입력', acctSelLbl: '회계자 선택 \(필요시 변경\)'/);
+  assert.match(src, /const apprAccountOf = r => \(r\.categoryHistory && r\.categoryHistory\.length\) \? \(r\.categoryHistory\[0\]\.from \|\| ''\) : \(r\.account \|\| ''\)/);
+  assert.match(src, /data-act="anote-toggle"/);
+  assert.match(src, /<span class="ex-npop" hidden>/);          // 말풍선은 기본으로 숨김
+  assert.match(src, /data-anote-i="\$\{i\}"/);                   // 저장 때 모으는 입력칸은 말풍선 안에 그대로 있다
+  assert.doesNotMatch(src, /<input class="ex-input ex-anote"/, '평소에 펼쳐진 노트 입력칸은 없다');
+});
