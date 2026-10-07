@@ -1,6 +1,6 @@
 /**
  * 주방 보조(키친 듀티) 신청 — 차량 운행 스케줄과 같은 방식(2주 구간 · 신청/취소 · 관리자가 칸 닫기/열기/직접 배정)이고,
- * 하루에 6칸(아침·점심·저녁 × 준비·클린업)이 있다. 한 칸에 여러 명이 신청할 수 있다(기본 2명, 최대 4명 — 주방 관리자가 바꾼다).
+ * 하루에 6칸(아침·점심·저녁 × 준비·클린업)이 있다. 한 칸에 여러 명이 신청할 수 있다(준비 칸은 기본 1명·최대 2명, 클린업 칸은 기본 2명·최대 4명 — 주방 관리자가 바꾼다).
  * 신청 기록은 차량과 섞이지 않도록 kitchen: 키를 쓴다.
  *
  * 기본값: 화요일 점심 ~ 금요일 점심까지 열림 (화·수·목은 점심+저녁, 금은 점심만). 아침 칸 전부와 금요일 저녁 ~ 화요일 아침(금 저녁·토·일·월)은 닫힘.
@@ -67,11 +67,17 @@ export function applyOpenState(map, date, slot, open, by) {
   else map[id] = open ? { open: true, by, at: new Date().toISOString() } : { by, at: new Date().toISOString() };
 }
 
-export const isValidCapacity = n => Number.isInteger(n) && n >= 1 && n <= MAX_CAPACITY;
+/** 준비 칸은 기본 1명에 최대 2명, 클린업 칸은 기본 2명(설정으로 바꿈)에 최대 4명 */
+export const PREP_DEFAULT_CAPACITY = 1;
+export const PREP_MAX_CAPACITY = 2;
+export const isPrepSlot = slot => String(slot).endsWith('_prep');
+export const maxCapacityOf = slot => (isPrepSlot(slot) ? PREP_MAX_CAPACITY : MAX_CAPACITY);
+export const defaultCapacityOf = (slot, settings) => (isPrepSlot(slot) ? PREP_DEFAULT_CAPACITY : (settings?.capacity ?? DEFAULT_CAPACITY));
+export const isValidCapacity = (n, slot) => Number.isInteger(n) && n >= 1 && n <= (slot ? maxCapacityOf(slot) : MAX_CAPACITY);
 /** 그 칸의 정원 — 칸마다 정한 값이 있으면 그것, 없으면 기본 인원 */
 export const capacityOf = (capMap, date, slot, fallback = DEFAULT_CAPACITY) => {
   const n = capMap?.[`${date}:${slot}`];
-  return isValidCapacity(n) ? n : fallback;
+  return isValidCapacity(n, slot) ? n : fallback;
 };
 
 /** 접속자 — 차량 운행 스케줄과 같은 규칙(승인된 평택센터 멤버 또는 마스터)이고, 관리자는 주방 관리자 목록을 따른다 */

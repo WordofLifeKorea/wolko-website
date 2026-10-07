@@ -12,7 +12,7 @@
       deniedTitle: '평택센터 멤버 전용이에요', deniedHelp: '이 스케줄은 평택센터 멤버만 사용할 수 있어요. 소속이 맞는데 이 안내가 보이면 관리자에게 문의해 주세요.',
       thisPeriod: '오늘로', manage: '칸 관리', manageDone: '관리 끝내기', timesBtn: '시간·인원',
       manageHint: '칸을 눌러 닫거나 열고, 정원을 바꾸고, 사람을 직접 배정해요. 아침 칸과 금요일 저녁~화요일 아침은 기본으로 닫혀 있어서, 필요한 날만 열어 주세요.',
-      note: n => `빈 자리의 “+ 신청”을 누르면 바로 신청돼요 · 내 이름을 다시 누르면 취소돼요 · 한 칸에 기본 ${n}명 · 화요일 점심 ~ 금요일 점심만 기본으로 열려 있고, 아침과 그 밖의 시간은 관리자가 열면 신청할 수 있어요.`,
+      note: n => `빈 자리의 “+ 신청”을 누르면 바로 신청돼요 · 내 이름을 다시 누르면 취소돼요 · 준비 1명(최대 2명) · 클린업 기본 ${n}명(최대 4명) · 화요일 점심 ~ 금요일 점심만 기본으로 열려 있고, 아침과 그 밖의 시간은 관리자가 열면 신청할 수 있어요.`,
       noteMeals: m => `알림은 식사 1시간 전에 가요 (아침 ${m.am || '—'} · 점심 ${m.lunch || '—'} · 저녁 ${m.dinner || '—'})`,
       week: n => n + '주차', signUp: '+ 신청', closedLabel: '닫힘', today: '오늘', full: '마감',
       am_prep: '아침 준비', am_clean: '아침 클린업', lunch_prep: '점심 준비', lunch_clean: '점심 클린업', dinner_prep: '저녁 준비', dinner_clean: '저녁 클린업',
@@ -25,7 +25,7 @@
       closeConfirm: n => `신청한 ${n}명의 신청이 모두 취소돼요. 이 칸을 닫을까요?`, closeDayConfirm: n => `신청 ${n}건이 취소돼요. 닫을까요?`, removeConfirm: n => `${n} 님의 신청을 해제할까요?`,
       phoneTitle: '알림 받을 번호', phoneHelp: '식사 1시간 전에 이 번호로 카카오톡(안 되면 문자)을 보내드려요.', phoneLabel: '휴대폰 번호', phoneBad: '올바른 휴대폰 번호를 입력해 주세요.', cancel: '취소', close: '닫기', signUpDo: '신청하기', save: '저장',
       timesTitle: '식사 시간 · 기본 인원', timesHelp: '알림은 식사 시간 1시간 전에 신청한 분께 카카오 알림톡(실패하면 문자)으로 가요. 30분 단위로 고를 수 있어요.',
-      mealTime: m => `${m} 식사 시간`, remindAt: t => `알림 ${t}`, timesOff: '알림 없음', capDefaultLabel: '한 칸의 기본 인원', timesReset: '기본값으로 되돌리기', timesDefaultNote: '기본: 아침 8:00 · 점심 12:00 · 저녁 6:00 · 한 칸 2명 (칸마다 따로 1~4명으로 바꿀 수 있어요)',
+      mealTime: m => `${m} 식사 시간`, remindAt: t => `알림 ${t}`, timesOff: '알림 없음', capDefaultLabel: '클린업 칸의 기본 인원', timesReset: '기본값으로 되돌리기', timesDefaultNote: '기본: 아침 9:00 · 점심 12:30 · 저녁 5:00 · 준비 1명 · 클린업 2명 (칸마다 따로 바꿀 수 있어요 — 준비 최대 2명, 클린업 최대 4명)',
       cancelConfirm: '이 신청을 취소할까요?', failLoad: '스케줄을 불러오지 못했습니다.', failAct: '처리하지 못했습니다.',
       days: ['일', '월', '화', '수', '목', '금', '토'], whenText: (d, slot) => d + ' · ' + slot,
     },
@@ -36,7 +36,7 @@
       deniedTitle: 'Pyeongtaek Center members only', deniedHelp: 'This schedule is for Pyeongtaek Center members. If you belong here and still see this, please contact an admin.',
       thisPeriod: 'Today', manage: 'Manage slots', manageDone: 'Done', timesBtn: 'Times & size',
       manageHint: 'Tap a slot to close/open it, change its size, or assign people. Breakfast and Fri dinner – Tue breakfast are closed by default; open only the days you need.',
-      note: n => `Tap “+ Sign up” on an open spot · tap your own name to cancel · ${n} per slot by default · Tue lunch – Fri lunch is open by default; breakfast and other times open when a manager opens them.`,
+      note: n => `Tap “+ Sign up” on an open spot · tap your own name to cancel · prep 1 (up to 2) · clean-up ${n} by default (up to 4) · Tue lunch – Fri lunch is open by default; breakfast and other times open when a manager opens them.`,
       noteMeals: m => `Reminders go out 1 hour before the meal (breakfast ${m.am || '—'} · lunch ${m.lunch || '—'} · dinner ${m.dinner || '—'})`,
       week: n => 'Week ' + n, signUp: '+ Sign up', closedLabel: 'Closed', today: 'Today', full: 'Full',
       am_prep: 'Breakfast prep', am_clean: 'Breakfast clean-up', lunch_prep: 'Lunch prep', lunch_clean: 'Lunch clean-up', dinner_prep: 'Dinner prep', dinner_clean: 'Dinner clean-up',
@@ -49,7 +49,7 @@
       closeConfirm: n => `All ${n} sign-up(s) will be cancelled. Close this slot?`, closeDayConfirm: n => `${n} sign-up(s) will be cancelled. Close?`, removeConfirm: n => `Remove ${n}?`,
       phoneTitle: 'Number for reminders', phoneHelp: 'We will send a KakaoTalk message (or text) to this number 1 hour before the meal.', phoneLabel: 'Mobile number', phoneBad: 'Please enter a valid mobile number.', cancel: 'Cancel', close: 'Close', signUpDo: 'Sign up', save: 'Save',
       timesTitle: 'Meal times & slot size', timesHelp: 'People signed up get a KakaoTalk message (text if that fails) 1 hour before the meal. Pick times in 30-minute steps.',
-      mealTime: m => `${m} time`, remindAt: t => `Reminder ${t}`, timesOff: 'No reminder', capDefaultLabel: 'Default slot size', timesReset: 'Reset to defaults', timesDefaultNote: 'Default: breakfast 8:00 AM · lunch 12:00 PM · dinner 6:00 PM · 2 per slot (each slot can be set to 1–4 separately)',
+      mealTime: m => `${m} time`, remindAt: t => `Reminder ${t}`, timesOff: 'No reminder', capDefaultLabel: 'Default clean-up slot size', timesReset: 'Reset to defaults', timesDefaultNote: 'Default: breakfast 9:00 AM · lunch 12:30 PM · dinner 5:00 PM · prep 1 · clean-up 2 (each slot can be changed — prep up to 2, clean-up up to 4)',
       cancelConfirm: 'Cancel this sign-up?', failLoad: 'Could not load the schedule.', failAct: 'Could not complete that.',
       days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], whenText: (d, slot) => d + ' · ' + slot,
     },
@@ -115,7 +115,8 @@
   let manage = false;
   const isClosed = (date, slot) => !!(state.closed && state.closed[`${date}:${slot}`]);
   const peopleOf = (date, slot) => state.slots[`${date}:${slot}`] || [];
-  const capOf = (date, slot) => (state.caps && state.caps[`${date}:${slot}`]) || state.defaultCapacity;
+  const kindOf = slot => (slot.endsWith('_prep') ? 'prep' : 'clean');
+  const capOf = (date, slot) => (state.caps && state.caps[`${date}:${slot}`]) || state.defaultCapacity[kindOf(slot)];
 
   // 한 칸: 이름표(신청한 사람들) + 남은 자리가 있으면 "+ 신청". 관리 모드에서는 칸 전체가 버튼이다.
   function slotCell(date, slot) {
@@ -197,8 +198,8 @@
     $('assignFull').hidden = !full;
     $('assignFull').textContent = t('assignFull');
     const capSel = $('capSelect');
-    capSel.replaceChildren(new Option(t('capDefault', state.defaultCapacity), ''));
-    for (let n = 1; n <= state.maxCapacity; n++) capSel.append(new Option(t('capN', n), String(n)));
+    capSel.replaceChildren(new Option(t('capDefault', state.defaultCapacity[kindOf(slot)]), ''));
+    for (let n = 1; n <= state.maxCapacity[kindOf(slot)]; n++) capSel.append(new Option(t('capN', n), String(n)));
     capSel.value = state.caps && state.caps[`${date}:${slot}`] ? String(state.caps[`${date}:${slot}`]) : '';
     $('assignToggle').textContent = closed ? t('assignOpen') : t('assignClose');
   }
@@ -244,7 +245,7 @@
     $('manageBtn').textContent = manage && mgr ? t('manageDone') : t('manage');
     $('manageBtn').classList.toggle('on', manage && mgr);
     $('manageHint').hidden = !(manage && mgr);
-    $('note').textContent = t('note', state.defaultCapacity);
+    $('note').textContent = t('note', state.defaultCapacity.clean);
     const shown = Object.fromEntries(MEALS.map(m => [m, state.meals[m] ? timeLabel(state.meals[m]) : null]));
     $('noteMeals').textContent = t('noteMeals', shown);
     const per = p.days.length / 2;
@@ -363,7 +364,7 @@
       box.append(label);
     });
     const cap = $('timeCapacity'); cap.replaceChildren();
-    for (let n = 1; n <= (state ? state.maxCapacity : 4); n++) cap.append(new Option(t('capN', n), String(n)));
+    for (let n = 1; n <= (state ? state.maxCapacity.clean : 4); n++) cap.append(new Option(t('capN', n), String(n)));
     cap.value = String(settings.capacity);
   }
   async function openTimes() {

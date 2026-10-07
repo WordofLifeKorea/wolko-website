@@ -11,7 +11,7 @@ export { minutesOf };
 export const SETTINGS_KEY = 'kitchen:settings';
 export const REMINDER_LEAD_MIN = 60;
 export const DEFAULT_SETTINGS = Object.freeze({
-  meals: Object.freeze({ am: '08:00', lunch: '12:00', dinner: '18:00' }),
+  meals: Object.freeze({ am: '09:00', lunch: '12:30', dinner: '17:00' }),
   capacity: DEFAULT_CAPACITY,
 });
 

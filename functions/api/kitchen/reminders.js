@@ -5,14 +5,14 @@
  *   쿼리: ?dryRun=1 보내지 않고 계획만 확인 · ?meal=am|lunch|dinner 한 끼니만 · ?force=1 시각과 상관없이 지금 보냄(수동 점검)
  *         ?testPhone=010xxxxxxxx 그 번호로 시험 메시지 1건만(?meal=…, 기본 lunch · 아무것도 저장하지 않음)
  *         ?date=YYYY-MM-DD · ?time=HH:MM 그 날짜·시각 기준으로 실행(테스트용)
- * 식사 시간은 주방 보조 페이지의 '시간·인원'에서 바꾼다(기본 아침 8:00 · 점심 12:00 · 저녁 18:00).
+ * 식사 시간은 주방 보조 페이지의 '시간·인원'에서 바꾼다(기본 아침 9:00 · 점심 12:30 · 저녁 17:00).
  * 알림톡 템플릿은 하나(KAKAO_TEMPLATE_KITCHEN)이고 변수는 #{담당자}, #{날짜}, #{업무}, #{시간}. 차량 알림 템플릿과는 별개다.
  * 한 사람이 같은 끼니의 준비와 클린업을 둘 다 신청했으면 한 번만 보낸다. 같은 날 같은 사람·같은 끼니에는 한 번만 보내고,
  * 알림 시각 이후에 신청한 사람에게는 보내지 않으며, 식사 시간이 지나면 보내지 않는다(스케줄이 늦게 돌아도 식사 시작 전까지는 보냄).
  */
 import { sendKakaoWithSmsFallback } from '../../lib/solapi.js';
 import { MEALS, MEAL_TITLE, SLOT_TITLE, SLOTS, SMS_PREFIX, mealOf, parseDate, readDay, shownName, todayKst, weekdayOf } from '../../lib/kitchenDuty.js';
-import { REMINDER_LEAD_MIN, getSettings, hhmm, minutesOf } from '../../lib/kitchenSettings.js';
+import { DEFAULT_SETTINGS, REMINDER_LEAD_MIN, getSettings, hhmm, minutesOf } from '../../lib/kitchenSettings.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -35,7 +35,7 @@ export function reminderVariables(name, date, duty, mealTime) {
 }
 export function reminderText(name, date, duty, mealTime) {
   const v = reminderVariables(name, date, duty, mealTime);
-  return `[WOLKO 주방] ${name}님, ${v['#{날짜}']} ${duty} 담당입니다. 식사는 ${v['#{시간}']}이에요. 주방 보조 스케줄: https://wolko.org/kitchen/#${date}`;
+  return `[WOLKO 주방] ${name}님, ${v['#{날짜}']} ${duty} 담당입니다. 식사는 ${v['#{시간}']}입니다. 일정: wolko.org/kitchen`;
 }
 
 export async function onRequestPost({ env, request }) {
@@ -62,7 +62,7 @@ export async function onRequestPost({ env, request }) {
     if (!/^01[016789][0-9]{7,8}$/.test(testPhone)) return Response.json({ error: 'testPhone은 휴대폰 번호여야 합니다.' }, { status: 400, headers: H });
     if (!configured) return Response.json({ error: 'Solapi 설정(SOLAPI_API_KEY/SECRET/SENDER_PHONE)이 필요합니다.' }, { status: 503, headers: H });
     if (dryRun) return Response.json({ test: true, meal, to: mask(testPhone), channel, sent: 0, dryRun: true }, { headers: H });
-    const mealTime = settings.meals[meal] || '12:00';
+    const mealTime = settings.meals[meal] || DEFAULT_SETTINGS.meals[meal];
     const duty = dutyText(meal, [`${meal}_prep`]);
     const firstChannel = await sendKakaoWithSmsFallback(env, testPhone, env.KAKAO_TEMPLATE_KITCHEN, reminderVariables('테스트', date, duty, mealTime), reminderText('테스트', date, duty, mealTime));
     return Response.json({ test: true, meal, date, to: mask(testPhone), channel, firstChannel, sent: firstChannel ? 1 : 0 }, { headers: H });
@@ -105,7 +105,7 @@ export async function onRequestPost({ env, request }) {
       if (!record.phone) { results.push({ ...one, error: '담당자 휴대폰 번호가 없습니다.', sent: 0 }); continue; }
       const doneKey = `${SMS_PREFIX}${date}:${meal}:${record.email}`;
       if (await env.CAMP_KV.get(doneKey, 'json')) { results.push({ ...one, sent: 0, alreadySent: true }); continue; }
-      const shown = mealTime || '12:00';
+      const shown = mealTime || DEFAULT_SETTINGS.meals[meal];
       try {
         const firstChannel = await sendKakaoWithSmsFallback(env, record.phone, env.KAKAO_TEMPLATE_KITCHEN, reminderVariables(name, date, duty, shown), reminderText(name, date, duty, shown));
         if (!firstChannel) { results.push({ ...one, error: '발송하지 못했습니다. (번호 또는 Solapi 설정 확인)', sent: 0 }); continue; }

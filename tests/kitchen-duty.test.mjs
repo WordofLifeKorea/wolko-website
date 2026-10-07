@@ -81,23 +81,46 @@ test('평택센터 멤버만 쓸 수 있고, 제주 소속과 로그인 안 한 
   assert.equal((await w.call(K.onRequestGet, 'GET', '/api/kitchen/duty', 'bad')).status, 401);
 });
 
-test('한 칸의 기본 정원은 2명 — 둘까지 신청되고 셋째는 거절, 같은 칸 중복 신청도 거절', async () => {
+test('기본 정원: 준비 칸은 1명(최대 2명), 클린업 칸은 2명 — 정원이 차면 거절, 같은 칸 중복 신청도 거절', async () => {
   const w = await world();
   const date = nextTuesday();
-  assert.equal((await w.post(w.t.a, { date, slot: 'lunch_prep' })).status, 201);
-  assert.equal((await w.post(w.t.a, { date, slot: 'lunch_prep' })).status, 409, '같은 사람 중복');
-  assert.equal((await w.post(w.t.b, { date, slot: 'lunch_prep' })).status, 201);
-  const full = await w.post(w.t.c, { date, slot: 'lunch_prep' });
+  assert.equal((await w.post(w.t.a, { date, slot: 'lunch_clean' })).status, 201);
+  assert.equal((await w.post(w.t.a, { date, slot: 'lunch_clean' })).status, 409, '같은 사람 중복');
+  assert.equal((await w.post(w.t.b, { date, slot: 'lunch_clean' })).status, 201);
+  const full = await w.post(w.t.c, { date, slot: 'lunch_clean' });
   assert.equal(full.status, 409);
   assert.match((await full.json()).error, /정원이 찼/);
-  assert.equal((await w.post(w.t.c, { date, slot: 'lunch_clean' })).status, 201, '다른 칸은 따로 센다');
-  assert.equal((await w.post(w.t.a, { date, slot: 'lunch_clean' })).status, 201, '같은 끼니의 준비와 클린업을 둘 다 할 수 있다');
+  assert.equal((await w.post(w.t.c, { date, slot: 'lunch_prep' })).status, 201, '다른 칸은 따로 센다');
+  const prepFull = await w.post(w.t.a, { date, slot: 'lunch_prep' });
+  assert.equal(prepFull.status, 409, '준비 칸은 기본 1명');
+  assert.match((await prepFull.json()).error, /정원이 찼/);
+  assert.equal((await w.post(w.t.a, { date, slot: 'dinner_prep' })).status, 201);
+  assert.equal((await w.post(w.t.a, { date, slot: 'dinner_clean' })).status, 201, '같은 끼니의 준비와 클린업을 둘 다 할 수 있다');
   const view = await w.get(w.t.b, date);
-  assert.deepEqual(view.slots[`${date}:lunch_prep`].map(p => [p.name, p.mine]), [['가나다', false], ['라마바', true]]);
-  assert.equal(view.slots[`${date}:lunch_prep`][0].email, undefined, '일반 멤버에게는 이메일을 주지 않는다');
-  assert.equal(view.defaultCapacity, 2);
+  assert.deepEqual(view.slots[`${date}:lunch_clean`].map(p => [p.name, p.mine]), [['가나다', false], ['라마바', true]]);
+  assert.equal(view.slots[`${date}:lunch_clean`][0].email, undefined, '일반 멤버에게는 이메일을 주지 않는다');
+  assert.deepEqual(view.defaultCapacity, { prep: 1, clean: 2 });
   assert.deepEqual(view.caps, {});
-  assert.equal(view.maxCapacity, 4);
+  assert.deepEqual(view.maxCapacity, { prep: 2, clean: 4 });
+});
+
+test('준비 칸 정원: 관리자가 2명까지 늘릴 수 있고 3명 이상은 안 된다, 클린업은 4명까지', async () => {
+  const w = await world();
+  const date = nextTuesday();
+  const prep = 'lunch_prep';
+  await w.post(w.t.a, { date, slot: prep });
+  assert.equal((await w.post(w.t.b, { date, slot: prep })).status, 409, '기본 1명');
+  assert.equal((await w.put(w.t.a, { date, slot: prep, capacity: 2 })).status, 403, '일반 멤버는 못 바꾼다');
+  assert.equal((await w.put(w.t.mgr, { date, slot: prep, capacity: 3 })).status, 400, '준비 칸은 최대 2명');
+  assert.equal((await w.put(w.t.mgr, { date, slot: prep, capacity: 2 })).status, 200);
+  assert.equal((await w.post(w.t.b, { date, slot: prep })).status, 201, '2명으로 늘리면 둘째가 신청된다');
+  assert.equal((await w.post(w.t.c, { date, slot: prep })).status, 409, '둘이 최대');
+  assert.equal((await w.get(w.t.a, date)).caps[`${date}:${prep}`], 2);
+  assert.equal((await w.put(w.t.mgr, { date, slot: 'lunch_clean', capacity: 4 })).status, 200, '클린업은 4명까지');
+  assert.equal((await w.put(w.t.mgr, { date, slot: prep, capacity: 1 })).status, 409, '2명이 신청한 칸을 1명으로 줄일 수 없다');
+  await w.del(w.t.mgr, date, prep, 'b@x.com');
+  assert.equal((await w.put(w.t.mgr, { date, slot: prep, capacity: null })).status, 200, '기본(1명)으로 되돌리기');
+  assert.equal((await w.get(w.t.a, date)).caps[`${date}:${prep}`], undefined, '기본과 같아지면 따로 기록하지 않는다');
 });
 
 test('신청 조건: 닫힌 칸 · 지난 날짜 · 휴대폰 번호 · 잘못된 칸 이름', async () => {
@@ -129,10 +152,10 @@ test('취소: 본인만, 관리자는 다른 사람도 — 지난 날짜 취소�
 test('정원 변경: 주방 관리자만, 1~4명, 이미 신청한 인원보다는 줄일 수 없고, 기본 인원으로 되돌릴 수 있다', async () => {
   const w = await world();
   const date = nextTuesday();
-  const slot = 'lunch_prep';
+  const slot = 'lunch_clean';
   await w.post(w.t.a, { date, slot });
   await w.post(w.t.b, { date, slot });
-  assert.equal((await w.post(w.t.c, { date, slot })).status, 409, '기본 2명이라 셋째는 막힘');
+  assert.equal((await w.post(w.t.c, { date, slot })).status, 409, '클린업 기본 2명이라 셋째는 막힘');
   assert.equal((await w.put(w.t.a, { date, slot, capacity: 4 })).status, 403, '일반 멤버는 못 바꾼다');
   assert.equal((await w.put(w.t.mgr, { date, slot, capacity: 5 })).status, 400, '5명은 안 된다');
   assert.equal((await w.put(w.t.mgr, { date, slot, capacity: 0 })).status, 400);
@@ -151,13 +174,13 @@ test('정원 변경: 주방 관리자만, 1~4명, 이미 신청한 인원보다�
   assert.deepEqual((await w.get(w.t.a, date)).caps, {}, '기본으로 돌아가면 따로 기록하지 않는다');
 });
 
-test('기본 인원 설정: 관리자만 보고 바꾸며, 바꾸면 모든 칸에 적용된다', async () => {
+test('기본 인원 설정: 관리자만 보고 바꾸며, 바꾸면 모든 클린업 칸에 적용된다', async () => {
   const w = await world();
   const date = nextTuesday();
   const settingsReq = (method, token, body) => (method === 'GET' ? KS.onRequestGet : KS.onRequestPut)({ env: w.env, request: req(method, '/api/kitchen/settings', token, body) });
   assert.equal((await settingsReq('GET', w.t.a)).status, 403);
   const first = await (await settingsReq('GET', w.t.mgr)).json();
-  assert.deepEqual(first.settings, { meals: { am: '08:00', lunch: '12:00', dinner: '18:00' }, capacity: 2 });
+  assert.deepEqual(first.settings, { meals: { am: '09:00', lunch: '12:30', dinner: '17:00' }, capacity: 2 });
   assert.equal((await settingsReq('PUT', w.t.a, first.settings)).status, 403);
   assert.equal((await settingsReq('PUT', w.t.mgr, { ...first.settings, capacity: 5 })).status, 400);
   assert.equal((await settingsReq('PUT', w.t.mgr, { ...first.settings, meals: { ...first.settings.meals, lunch: '06:30' } })).status, 400, '7시 전 식사 시간은 거절');
@@ -166,7 +189,7 @@ test('기본 인원 설정: 관리자만 보고 바꾸며, 바꾸면 모든 칸�
   for (const key of ['a', 'b', 'c']) assert.equal((await w.post(w.t[key], { date, slot: 'dinner_clean' })).status, 201, key);
   assert.equal((await w.post(w.t.d, { date, slot: 'dinner_clean' })).status, 409, '기본 인원을 3명으로 바꿨으니 넷째는 막힘');
   const view = await w.get(w.t.a, date);
-  assert.equal(view.defaultCapacity, 3);
+  assert.deepEqual(view.defaultCapacity, { prep: 1, clean: 3 });
   assert.equal(view.meals.lunch, '12:30');
   assert.equal(view.meals.dinner, null);
 });
@@ -177,29 +200,29 @@ test('관리자 직접 배정: 닫힌 칸도 열면서 배정하고, 정원이 �
   const members = await (await w.call(KM.onRequestGet, 'GET', '/api/kitchen/members', w.t.mgr)).json();
   assert.ok(members.members.some(m => m.email === 'a@x.com') && !members.members.some(m => m.email === 'jj@x.com'), '평택센터 멤버만 목록에 나온다');
   assert.equal((await w.call(KM.onRequestGet, 'GET', '/api/kitchen/members', w.t.a)).status, 403);
-  assert.equal((await w.patch(w.t.a, { date, slot: 'am_prep', email: 'b@x.com' })).status, 403, '일반 멤버는 배정 못 함');
-  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_prep', email: 'b@x.com' })).status, 200, '닫힌 아침 칸도 열면서 배정');
-  assert.equal((await w.get(w.t.a, date)).closed[`${date}:am_prep`], undefined, '배정하면서 열렸다');
-  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_prep', email: 'b@x.com' })).status, 409, '같은 사람 중복');
-  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_prep', email: 'jj@x.com' })).status, 400, '제주 멤버는 배정 불가');
-  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_prep', email: 'nobody@x.com' })).status, 404);
-  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_prep', email: 'c@x.com' })).status, 200);
-  const full = await w.patch(w.t.mgr, { date, slot: 'am_prep', email: 'd@x.com' });
+  assert.equal((await w.patch(w.t.a, { date, slot: 'am_clean', email: 'b@x.com' })).status, 403, '일반 멤버는 배정 못 함');
+  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_clean', email: 'b@x.com' })).status, 200, '닫힌 아침 칸도 열면서 배정');
+  assert.equal((await w.get(w.t.a, date)).closed[`${date}:am_clean`], undefined, '배정하면서 열렸다');
+  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_clean', email: 'b@x.com' })).status, 409, '같은 사람 중복');
+  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_clean', email: 'jj@x.com' })).status, 400, '제주 멤버는 배정 불가');
+  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_clean', email: 'nobody@x.com' })).status, 404);
+  assert.equal((await w.patch(w.t.mgr, { date, slot: 'am_clean', email: 'c@x.com' })).status, 200);
+  const full = await w.patch(w.t.mgr, { date, slot: 'am_clean', email: 'd@x.com' });
   assert.equal(full.status, 409);
   assert.match((await full.json()).error, /정원이 찼/);
   const view = await w.get(w.t.mgr, date);
-  assert.deepEqual(view.slots[`${date}:am_prep`].map(p => p.email), ['b@x.com', 'c@x.com'], '관리자에게는 이메일이 함께 간다');
+  assert.deepEqual(view.slots[`${date}:am_clean`].map(p => p.email), ['b@x.com', 'c@x.com'], '관리자에게는 이메일이 함께 간다');
 });
 
 test('칸 닫기: 신청한 사람이 모두 취소되고, 아침 두 칸/하루 전체 한 번에 닫고 열 수 있다', async () => {
   const w = await world();
   const date = nextTuesday();
-  await w.post(w.t.a, { date, slot: 'lunch_prep' });
-  await w.post(w.t.b, { date, slot: 'lunch_prep' });
-  assert.equal((await w.put(w.t.a, { date, slot: 'lunch_prep', closed: true })).status, 403);
-  const closed = await (await w.put(w.t.mgr, { date, slot: 'lunch_prep', closed: true })).json();
+  await w.post(w.t.a, { date, slot: 'lunch_clean' });
+  await w.post(w.t.b, { date, slot: 'lunch_clean' });
+  assert.equal((await w.put(w.t.a, { date, slot: 'lunch_clean', closed: true })).status, 403);
+  const closed = await (await w.put(w.t.mgr, { date, slot: 'lunch_clean', closed: true })).json();
   assert.deepEqual(closed.cancelled.map(c => c.name), ['가나다', '라마바']);
-  assert.equal((await w.post(w.t.c, { date, slot: 'lunch_prep' })).status, 409, '닫힌 칸');
+  assert.equal((await w.post(w.t.c, { date, slot: 'lunch_clean' })).status, 409, '닫힌 칸');
   assert.equal((await w.put(w.t.mgr, { date, slot: 'am', closed: false })).status, 200, '아침 두 칸 열기');
   assert.equal((await w.post(w.t.c, { date, slot: 'am_clean' })).status, 201);
   let view = await w.get(w.t.a, date);
@@ -228,31 +251,30 @@ test('알림 시각은 식사 시간 1시간 전', () => {
   assert.deepEqual(normalizeSettings({ meals: { am: '08:00', lunch: '12:00', dinner: '18:00' } }), { meals: { am: '08:00', lunch: '12:00', dinner: '18:00' }, capacity: 2 });
 });
 
-test('점심(기본 12:00)은 11:00에 알림톡으로, 시각 전에는 안 가고, 한 번만 간다', async () => {
+test('점심(기본 12:30)은 11:30에 알림톡으로, 시각 전에는 안 가고, 한 번만 간다', async () => {
   const env = remEnv();
   const sent = captureSolapi();
   await seedDay(env, TUE, { lunch_prep: [person('a@x.com', '가나다', '010-1111-2222'), person('b@x.com', '라마바', '010-3333-4444')], lunch_clean: [person('c@x.com', '사아자', '010-5555-6666')] });
-  assert.equal((await remRun(env, `date=${TUE}&time=11:00`, 'wrong')).status, 401);
-  const early = await remJson(env, `date=${TUE}&time=10:30&meal=lunch`);
+  assert.equal((await remRun(env, `date=${TUE}&time=11:30`, 'wrong')).status, 401);
+  const early = await remJson(env, `date=${TUE}&time=11:00&meal=lunch`);
   assert.equal(early.results[0].skipped, 'not-yet');
-  assert.equal(early.results[0].sendAt, '11:00');
-  assert.equal(sent.length, 0, '11시 전에는 보내지 않는다');
-  const res = await remJson(env, `date=${TUE}&time=11:00&meal=lunch`);
+  assert.equal(early.results[0].sendAt, '11:30');
+  assert.equal(sent.length, 0, '11시 반 전에는 보내지 않는다');
+  const res = await remJson(env, `date=${TUE}&time=11:30&meal=lunch`);
   assert.equal(res.sent, 3, '준비 2명 + 클린업 1명 모두에게');
   const m = sent.find(x => x.to === '01011112222');
   assert.equal(m.kakaoOptions.templateId, 'tp-kitchen');
   assert.equal(m.kakaoOptions.pfId, 'KA01PF');
   assert.equal(m.kakaoOptions.disableSms, false, '알림톡이 안 가면 문자로 대신 간다');
   assert.equal(m.from, '01000001111');
-  assert.deepEqual(m.kakaoOptions.variables, { '#{담당자}': '가나다', '#{날짜}': '10/13 화', '#{업무}': '점심 준비', '#{시간}': '오후 12:00' });
-  assert.match(m.text, /가나다님, 10\/13 화 점심 준비 담당입니다\. 식사는 오후 12:00이에요\./);
-  assert.match(m.text, /wolko\.org\/kitchen\/#2026-10-13/);
+  assert.deepEqual(m.kakaoOptions.variables, { '#{담당자}': '가나다', '#{날짜}': '10/13 화', '#{업무}': '점심 준비', '#{시간}': '오후 12:30' });
+  assert.equal(m.text, '[WOLKO 주방] 가나다님, 10/13 화 점심 준비 담당입니다. 식사는 오후 12:30입니다. 일정: wolko.org/kitchen');
   assert.equal(sent.find(x => x.to === '01055556666').kakaoOptions.variables['#{업무}'], '점심 클린업');
   const again = await remJson(env, `date=${TUE}&time=11:30&meal=lunch`);
   assert.equal(again.sent, 0);
   assert.ok(again.results.every(r => r.alreadySent), '같은 날 두 번 보내지 않는다');
   assert.equal(sent.length, 3);
-  assert.equal((await remJson(env, `date=${TUE}&time=12:30&meal=lunch`)).results[0].skipped, 'too-late', '식사 시간이 지나면 보내지 않는다');
+  assert.equal((await remJson(env, `date=${TUE}&time=12:40&meal=lunch`)).results[0].skipped, 'too-late', '식사 시간이 지나면 보내지 않는다');
 });
 
 test('같은 끼니의 준비와 클린업을 둘 다 신청한 사람에게는 한 번만 보낸다', async () => {
@@ -260,22 +282,22 @@ test('같은 끼니의 준비와 클린업을 둘 다 신청한 사람에게는 
   const sent = captureSolapi();
   const a = person('a@x.com', '가나다', '010-1111-2222');
   await seedDay(env, TUE, { dinner_prep: [a], dinner_clean: [a, person('b@x.com', '라마바', '010-3333-4444')] });
-  const res = await remJson(env, `date=${TUE}&time=17:00&meal=dinner`);
+  const res = await remJson(env, `date=${TUE}&time=16:00&meal=dinner`);
   assert.equal(res.sent, 2);
   assert.equal(sent.length, 2);
   assert.equal(sent.find(x => x.to === '01011112222').kakaoOptions.variables['#{업무}'], '저녁 준비·클린업');
   assert.equal(sent.find(x => x.to === '01033334444').kakaoOptions.variables['#{업무}'], '저녁 클린업');
 });
 
-test('세 끼니는 각자 식사 시간 1시간 전(아침 7:00 · 점심 11:00 · 저녁 17:00)에 따로 간다', async () => {
+test('세 끼니는 각자 식사 시간 1시간 전(아침 8:00 · 점심 11:30 · 저녁 16:00)에 따로 간다', async () => {
   const env = remEnv();
   const sent = captureSolapi();
   await seedDay(env, TUE, { am_prep: [person('a@x.com', '가나다', '010-1111-2222')], lunch_prep: [person('b@x.com', '라마바', '010-3333-4444')], dinner_prep: [person('c@x.com', '사아자', '010-5555-6666')] });
   const at = async time => (await remJson(env, `date=${TUE}&time=${time}`)).results.filter(r => r.sent).map(r => r.meal);
-  assert.deepEqual(await at('06:30'), []);
-  assert.deepEqual(await at('07:00'), ['am']);
-  assert.deepEqual(await at('11:00'), ['lunch'], '아침은 이미 보냈고 점심만 새로 간다');
-  assert.deepEqual(await at('17:00'), ['dinner']);
+  assert.deepEqual(await at('07:30'), []);
+  assert.deepEqual(await at('08:00'), ['am']);
+  assert.deepEqual(await at('11:30'), ['lunch'], '아침은 이미 보냈고 점심만 새로 간다');
+  assert.deepEqual(await at('16:00'), ['dinner']);
   assert.equal(sent.length, 3);
 });
 
@@ -284,7 +306,7 @@ test('식사 시간을 바꾸면 알림 시각도 따라가고, 시간을 비우
   const sent = captureSolapi();
   await env.CAMP_KV.put('kitchen:settings', JSON.stringify({ meals: { am: null, lunch: '13:30', dinner: '19:00' }, capacity: 2 }));
   await seedDay(env, TUE, { am_prep: [person('a@x.com', '가나다', '010-1111-2222')], lunch_prep: [person('b@x.com', '라마바', '010-3333-4444')] });
-  assert.equal((await remJson(env, `date=${TUE}&time=11:00&meal=lunch`)).results[0].skipped, 'not-yet', '점심이 13:30이면 11시엔 아직');
+  assert.equal((await remJson(env, `date=${TUE}&time=11:30&meal=lunch`)).results[0].skipped, 'not-yet', '점심이 13:30이면 11시엔 아직');
   const res = await remJson(env, `date=${TUE}&time=12:30&meal=lunch`);
   assert.equal(res.sent, 1);
   assert.match(sent[0].text, /오후 1:30/);
@@ -296,7 +318,7 @@ test('알림톡 요청이 거절되면 문자로 다시 보내고, 한 명이 �
   const env = remEnv();
   const sent = captureSolapi(m => !m.kakaoOptions);   // 알림톡 요청은 거절
   await seedDay(env, TUE, { lunch_prep: [person('a@x.com', '가나다', '010-1111-2222'), person('b@x.com', '라마바', '010-3333-4444')] });
-  const res = await remJson(env, `date=${TUE}&time=11:00&meal=lunch`);
+  const res = await remJson(env, `date=${TUE}&time=11:30&meal=lunch`);
   assert.deepEqual(res.results.map(r => r.firstChannel), ['sms', 'sms']);
   assert.equal(sent.length, 4, '두 명 모두 알림톡 시도 → 문자 재발송');
   assert.ok(sent.filter(m => !m.kakaoOptions).every(m => m.text && m.from));
@@ -305,7 +327,7 @@ test('알림톡 요청이 거절되면 문자로 다시 보내고, 한 명이 �
   let calls = 0;
   globalThis.fetch = async () => { calls += 1; if (calls <= 2) return { ok: false, text: async () => 'down' }; return { ok: true, json: async () => ({}) }; }; // 첫 사람은 알림톡·문자 모두 실패
   await seedDay(env2, TUE, { lunch_prep: [person('a@x.com', '가나다', '010-1111-2222'), person('b@x.com', '라마바', '010-3333-4444')] });
-  const partial = await remJson(env2, `date=${TUE}&time=11:00&meal=lunch`);
+  const partial = await remJson(env2, `date=${TUE}&time=11:30&meal=lunch`);
   assert.equal(partial.sent, 1);
   assert.equal(partial.results.filter(r => r.error).length, 1);
   captureSolapi();
@@ -317,14 +339,14 @@ test('알림톡 템플릿이 없으면 문자로만 가고, 알림 시각 이후
   const env = remEnv({ KAKAO_TEMPLATE_KITCHEN: undefined });
   const sent = captureSolapi();
   await seedDay(env, TUE, { lunch_prep: [person('a@x.com', '가나다', '010-1111-2222', '2026-10-13T01:20:00Z'), person('b@x.com', '라마바', '010-3333-4444', '2026-10-12T22:00:00Z')] }); // a: 한국 10:20 신청, b: 7:00 신청
-  const res = await remJson(env, `date=${TUE}&time=11:00&meal=lunch`);
+  const res = await remJson(env, `date=${TUE}&time=11:30&meal=lunch`);
   assert.equal(res.channel === undefined ? res.results[0].channel : res.channel, 'sms');
   assert.equal(res.sent, 2);
   assert.ok(sent.every(m => !m.kakaoOptions && m.text), '문자만');
   const env2 = remEnv();
   const sent2 = captureSolapi();
-  await seedDay(env2, TUE, { lunch_prep: [person('a@x.com', '가나다', '010-1111-2222', '2026-10-13T02:10:00Z')] }); // 한국 11:10 신청 (11:00 알림 이후)
-  const late = await remJson(env2, `date=${TUE}&time=11:30&meal=lunch`);
+  await seedDay(env2, TUE, { lunch_prep: [person('a@x.com', '가나다', '010-1111-2222', '2026-10-13T02:40:00Z')] }); // 한국 11:40 신청 (11:30 알림 이후)
+  const late = await remJson(env2, `date=${TUE}&time=12:00&meal=lunch`);
   assert.equal(late.results[0].skipped, 'signed-up-after');
   assert.equal(sent2.length, 0);
 });
@@ -333,7 +355,7 @@ test('알림 점검용 옵션: dryRun은 보내지 않고, force는 시각과 �
   const env = remEnv();
   const sent = captureSolapi();
   await seedDay(env, TUE, { lunch_prep: [person('a@x.com', '가나다', '010-1111-2222')] });
-  const dry = await remJson(env, `date=${TUE}&time=11:00&meal=lunch&dryRun=1`);
+  const dry = await remJson(env, `date=${TUE}&time=11:30&meal=lunch&dryRun=1`);
   assert.equal(dry.results[0].dryRun, true);
   assert.equal(dry.results[0].person.phone, '010-****-**22', '번호는 가려서 보여준다');
   assert.equal(sent.length, 0);
@@ -343,8 +365,8 @@ test('알림 점검용 옵션: dryRun은 보내지 않고, force는 시각과 �
   assert.equal(sent.at(-1).to, '01077778888');
   assert.equal(sent.at(-1).kakaoOptions.variables['#{업무}'], '저녁 준비');
   assert.equal((await remRun(env, `testPhone=12345`)).status, 400);
-  assert.equal((await remRun(env, `date=${TUE}&time=11:00&meal=lunch`, 'wrong')).status, 401);
-  assert.equal((await remRun(remEnv({ KITCHEN_REMINDER_SECRET: undefined }), `time=11:00`, 'cron-secret')).status, 401, '비밀키가 없으면 열리지 않는다');
+  assert.equal((await remRun(env, `date=${TUE}&time=11:30&meal=lunch`, 'wrong')).status, 401);
+  assert.equal((await remRun(remEnv({ KITCHEN_REMINDER_SECRET: undefined }), `time=11:30`, 'cron-secret')).status, 401, '비밀키가 없으면 열리지 않는다');
 });
 
 // ── 화면·메뉴 연결 ──
