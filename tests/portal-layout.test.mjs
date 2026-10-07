@@ -103,3 +103,17 @@ test('내 정보 창의 닫기 버튼은 모바일에서도 정원으로 고정�
   const css = readFileSync(new URL('../public/wolko-rail.css', import.meta.url), 'utf8');
   assert.match(css, /\.wl-prof-close \{[^}]*width: 36px !important; height: 36px !important; min-width: 0 !important; min-height: 0 !important;[^}]*aspect-ratio: 1 \/ 1/);
 });
+
+test('공용 왼쪽 메뉴 · 머리글 스크립트/스타일은 모든 페이지가 같은 버전을 불러온다 (옛 버전이 캐시에 남아 새 메뉴가 안 보이는 일 방지)', async () => {
+  const { readdirSync, statSync, readFileSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const files = [];
+  const walk = d => { for (const n of readdirSync(d)) { const p = join(d, n); if (statSync(p).isDirectory()) walk(p); else if (p.endsWith('.astro')) files.push(p); } };
+  walk(new URL('../src', import.meta.url).pathname);
+  const seen = {};
+  for (const f of files) {
+    const src = readFileSync(f, 'utf8');
+    for (const m of src.matchAll(/(wolko-(?:rail\.js|rail\.css|header\.css|layout\.css|ui\.css))\?v=(\d+)/g)) (seen[m[1]] ||= new Set()).add(m[2]);
+  }
+  for (const [name, versions] of Object.entries(seen)) assert.equal(versions.size, 1, `${name} 버전이 페이지마다 다름: ${[...versions].join(', ')}`);
+});
