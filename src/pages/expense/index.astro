@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=78">
+  <link rel="stylesheet" href="/expense.css?v=79">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -466,7 +466,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       return `<div class="ex-code-flow ${need ? 'open' : ''}">
         <div class="ex-cf-top">
         <button type="button" class="ex-cf-head" data-act="code-change" aria-expanded="${need ? 'true' : 'false'}" title="${esc(t('codeChange'))}"><i>${esc(t('codeLbl'))}</i><b data-cf-now>${r.account ? esc(r.account) + (r.accountSuggested ? ` <span class="ex-cf-none">(${esc(t('suggestedTag'))})</span>` : '') : `<span class="ex-cf-none">${esc(t('catPick'))}</span>`}</b><span class="ex-cf-chev" aria-hidden="true">⌄</span></button>
-        ${r.withdrawAccount ? `<span class="ex-cf-wd" title="${esc(t('wdLbl'))}"><i>${esc(t('wdLbl'))}</i><b>${esc(wdName(r.withdrawAccount))}</b>${r.withdrawNumber ? `<span class="ex-wdnum">${esc(r.withdrawNumber)}</span>` : ''}</span>` : ''}
+        ${r.withdrawAccount ? `<span class="ex-cf-wd" title="${esc(t('wdLbl'))}"><i>${esc(t('wdLbl'))}</i><b>${esc(wdName(r.withdrawAccount))}</b>${r.withdrawNumber ? `<span class="ex-wdnum">${esc(r.withdrawNumber)}</span>` : ''}</span>` : `<label class="ex-cf-wd pick"><i>${esc(t('wdLbl'))}</i><select class="ex-select-plain" data-wd-i="${i}" aria-label="${esc(t('wdPick'))}"><option value="">${esc(t('wdPick'))}</option>${WITHDRAW.map(a => `<option value="${esc(a.id)}">${esc(lang === 'en' ? a.en : a.ko)}${WD_FOR[r.account] === a.id ? ' (' + esc(t('suggestedTag')) + ')' : ''}</option>`).join('')}</select></label>`}
         </div>
         <div class="ex-cf-panel" ${need ? '' : 'hidden'}>
           <div class="ex-cf-trail">
@@ -1145,7 +1145,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           const box = el.closest('[data-recat]'), id = box.dataset.recat;   // 회계 노트 말풍선의 [저장]도 같은 저장(코드 확인 + 노트)
           const cats = [...box.querySelectorAll('[data-recat-i]')].map(s => s.value);
           if (cats.some(c => !c)) { toast(t('catNeedAll'), true); return; }
-          const out = await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'recategorize', categories: cats, ...(box.querySelector('[data-anote-i]') ? { accountantMemos: [...box.querySelectorAll('[data-anote-i]')].map(x => x.value) } : {}) }) });
+          const out = await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'recategorize', categories: cats, ...(box.querySelector('[data-wd-i]') ? { withdrawals: [...box.querySelectorAll('.ex-d-item')].map(it => it.querySelector('[data-wd-i]')?.value || '') } : {}), ...(box.querySelector('[data-anote-i]') ? { accountantMemos: [...box.querySelectorAll('[data-anote-i]')].map(x => x.value) } : {}) }) });
           [data.all, data.accounting].forEach(list => { const i = list.findIndex(x => x.id === id); if (i >= 0) list[i] = { ...list[i], rows: out.report.rows }; });
           toast(out.changed || !out.noted ? t('tRecat', out.changed) : t('tNoted', out.noted)); renderGrouped(tab);
         }

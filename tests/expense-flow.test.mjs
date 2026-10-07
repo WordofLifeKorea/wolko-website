@@ -799,3 +799,26 @@ test('회계 노트 말풍선에 [저장]이 있고 눌러서 실제로 저장�
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /\.ex-cf-top \{ display: flex; align-items: center; justify-content: space-between;/);
 });
+
+test('출금 계좌가 확정되기 전에 승인된 예전 리포트: 회계 담당이 빈 항목에 한해 출금 계좌를 채울 수 있고, 승인자가 확정한 계좌는 바뀌지 않는다', async () => {
+  const { acc, call, kv } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('acct@x.com', 'Ann', 'counselor');
+  await acc('boss@wol.org', 'Boss', 'admin');
+  const row = (item, extra = {}) => ({ source: '월코', account: 'Car Gas (8400)', currency: 'KRW', amount: 1000, amountKrw: 1000, item, ...extra });
+  await kv.put('expense:report:exp-legacy-1', JSON.stringify({ id: 'exp-legacy-1', status: 'approved', submitterEmail: 'cyn@x.com', submitterName: 'Cynthia', description: 'legacy', project: '', campus: 'wolko', total: 2000, submittedAt: '2026-10-01T00:00:00Z', log: [], rows: [row('a'), row('b', { withdrawAccount: 'wolko' })] }));
+  const patch = (who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id: 'exp-legacy-1', action: 'recategorize', categories: ['Car Gas (8400)', 'Car Gas (8400)'], ...body });
+  assert.equal((await patch(boss, { withdrawals: ['teachers', ''] })).status, 403, '승인자는 회계 화면의 이 기능을 쓸 수 없다');
+  assert.equal((await patch(ann, { withdrawals: ['nope', ''] })).status, 400, '목록에 없는 계좌');
+  assert.equal((await patch(ann, { withdrawals: ['essam', ''] })).status, 400, '빠진 계좌는 고를 수 없다');
+  const ok = await patch(ann, { withdrawals: ['teachers', 'junior-camp'] });
+  assert.equal(ok.status, 200);
+  assert.deepEqual(ok.report.rows.map(r => r.withdrawAccount), ['teachers', 'wolko'], '비어 있던 항목만 채워지고, 이미 확정된 항목은 그대로');
+  assert.equal(ok.report.rows[0].withdrawSetBy, 'acct@x.com');
+  assert.equal(ok.report.rows[0].withdrawNumber, '301-0278-8185-71');
+  assert.equal(ok.withdrawSet, 1);
+  assert.match(ok.report.log.at(-1).note, /출금 계좌 1개/);
+  const again = await patch(ann, { withdrawals: ['syme', 'syme'] });
+  assert.equal(again.withdrawSet, 0, '이미 채워진 뒤에는 바꾸지 않는다');
+  assert.deepEqual(again.report.rows.map(r => r.withdrawAccount), ['teachers', 'wolko']);
+});

@@ -337,6 +337,9 @@ async function handlePatch(context) {
     if (report.status !== 'approved' && report.status !== 'processed') return err('승인된 리포트만 카테고리를 수정할 수 있습니다.', 409);
     const cats = Array.isArray(body.categories) ? body.categories : [];
     if (cats.length !== report.rows.length || cats.some(c => !canonAccount(c))) return err('모든 항목의 카테고리(계정과목)를 선택해 주세요.');
+    // 출금 계좌가 확정되기 전에 승인된 예전 리포트는 회계 담당자가 빈 항목에 한해 채울 수 있다 (승인자가 확정한 계좌는 바꾸지 않는다)
+    const wds = Array.isArray(body.withdrawals) && body.withdrawals.length === report.rows.length ? body.withdrawals : [];
+    if (wds.some(w => w && !isWithdrawId(w))) return err('출금 계좌를 확인해 주세요.');
     let changed = 0;
     report.rows.forEach((row, i) => {
       const next = canonAccount(cats[i]);
@@ -346,6 +349,11 @@ async function handlePatch(context) {
       if (row.account) row.categoryChanged = true;
       row.account = next;
       changed++;
+    });
+    let wdSet = 0;
+    report.rows.forEach((row, i) => {
+      if (!wds[i] || row.withdrawAccount) return;
+      row.withdrawAccount = wds[i]; row.withdrawSetBy = session.email; wdSet++;
     });
     let confirmedNow = false;
     if (report.rows.every(r => canonAccount(r.account))) {
@@ -365,10 +373,10 @@ async function handlePatch(context) {
         noted++;
       });
     }
-    if (!changed && !noted && !confirmedNow) return Response.json({ ok: true, report: withAccountNumbers(report, session), changed, noted }, { headers: CORS });
-    report.log.push({ at: now, by: session.email, action: 'recategorize', note: `${changed}개 항목` + (noted ? `, 노트 ${noted}개` : '') });
+    if (!changed && !noted && !confirmedNow && !wdSet) return Response.json({ ok: true, report: withAccountNumbers(report, session), changed, noted, withdrawSet: 0 }, { headers: CORS });
+    report.log.push({ at: now, by: session.email, action: 'recategorize', note: `${changed}개 항목` + (noted ? `, 노트 ${noted}개` : '') + (wdSet ? `, 출금 계좌 ${wdSet}개` : '') });
     await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
-    return Response.json({ ok: true, report: withAccountNumbers(report, session), changed, noted }, { headers: CORS });
+    return Response.json({ ok: true, report: withAccountNumbers(report, session), changed, noted, withdrawSet: wdSet }, { headers: CORS });
   }
 
   if (action === 'process') {
