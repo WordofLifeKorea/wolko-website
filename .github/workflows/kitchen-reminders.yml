@@ -1,8 +1,8 @@
 name: Kitchen reminders
 
-# 30분마다(한국 시간 06:00~21:30) 깨어나서, 주방 관리자가 정해 둔 발송 시각이 된 알림만 보낸다.
-#   칸(오전·점심·저녁 × 준비·클린업)마다 정해 둔 시각에, 신청이 있는 날 담당자에게 보낸다(기본 7:00 · 9:00 · 10:00 · 13:00 · 15:00 · 18:30).
-# 시각은 주방 보조 페이지의 '알림 시간'에서 바꾼다. GitHub 스케줄은 몇 분 늦을 수 있어, 발송 시각 뒤 5시간 안이면 보낸다.
+# 30분마다(한국 시간 06:00~21:30) 깨어나서, 식사 시간 1시간 전이 된 끼니의 주방 보조 담당자에게 알림을 보낸다(카카오 알림톡, 안 되면 문자).
+#   식사 시간은 주방 보조 페이지의 '시간·인원'에서 바꾼다(기본 아침 8:00 · 점심 12:00 · 저녁 18:00 → 알림 7:00 · 11:00 · 17:00).
+# GitHub 스케줄은 몇 분 늦을 수 있어서, 식사 시간 전까지는 늦게 돌아도 보낸다.
 on:
   schedule:
     - cron: '0,30 21-23,0-12 * * *'
@@ -12,17 +12,17 @@ on:
         description: 'Only show the plan (nothing is sent)'
         type: boolean
         default: true
-      slot:
-        description: 'Which reminder'
+      meal:
+        description: 'Which meal'
         type: choice
-        options: [all, am_prep, am_clean, lunch_prep, lunch_clean, dinner_prep, dinner_clean]
+        options: [all, am, lunch, dinner]
         default: all
       force:
         description: 'Send right now, ignoring the set time (manual test)'
         type: boolean
         default: false
       test_phone:
-        description: 'Send ONE test message to this phone number only (e.g. 01012345678; uses the chosen slot, lunch_prep if all). Nobody else is messaged.'
+        description: 'Send ONE test message to this phone number only (e.g. 01012345678; uses the chosen meal, lunch if all). Nobody else is messaged.'
         type: string
         default: ''
 
@@ -43,7 +43,7 @@ jobs:
         env:
           KITCHEN_REMINDER_SECRET: ${{ secrets.KITCHEN_REMINDER_SECRET || secrets.DRIVE_REMINDER_SECRET || secrets.CRS_REMINDER_SECRET }}
           DRY_RUN: ${{ inputs.dry_run }}
-          INPUT_SLOT: ${{ inputs.slot }}
+          INPUT_MEAL: ${{ inputs.meal }}
           FORCE: ${{ inputs.force }}
           TEST_PHONE: ${{ inputs.test_phone }}
         shell: bash
@@ -53,7 +53,7 @@ jobs:
           query=''
           if [ "$DRY_RUN" = 'true' ]; then query="$query&dryRun=1"; fi
           if [ "$FORCE" = 'true' ]; then query="$query&force=1"; fi
-          if [ -n "$INPUT_SLOT" ] && [ "$INPUT_SLOT" != 'all' ]; then query="$query&slot=$INPUT_SLOT"; fi
+          if [ "$INPUT_MEAL" = 'am' ] || [ "$INPUT_MEAL" = 'lunch' ] || [ "$INPUT_MEAL" = 'dinner' ]; then query="$query&meal=$INPUT_MEAL"; fi
           if [ -n "$TEST_PHONE" ]; then query="$query&testPhone=$(printf '%s' "$TEST_PHONE" | tr -cd '0-9')"; fi
           url="https://wolko.org/api/kitchen/reminders?${query#&}"
           for attempt in 1 2 3; do

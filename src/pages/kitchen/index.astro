@@ -1,5 +1,5 @@
 ---
-// 주방 보조: 평택센터 멤버가 2주 단위로 오전·점심·저녁 준비 / 클린업을 신청한다. 신청한 사람에게는 정해 둔 시각에 알림톡(실패하면 문자)이 간다.
+// 주방 보조: 평택센터 멤버가 2주 단위로 오전·점심·저녁 준비 / 클린업을 신청한다. 한 칸에 여러 명이 신청할 수 있고, 신청한 사람에게는 식사 1시간 전에 알림톡(실패하면 문자)이 간다.
 ---
 <!DOCTYPE html>
 <html lang="ko">
@@ -17,13 +17,13 @@
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/car-log.css?v=7">
   <link rel="stylesheet" href="/car-drive.css?v=17">
-  <link rel="stylesheet" href="/kitchen.css?v=1">
+  <link rel="stylesheet" href="/kitchen.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-ui.css?v=4">
   <link rel="stylesheet" href="/wolko-layout.css?v=15">
   <script src="/wolko-rail.js?v=30" defer></script>
-  <script src="/kitchen.js?v=1" defer></script>
+  <script src="/kitchen.js?v=3" defer></script>
   <meta name="theme-color" content="#004f68">
 </head>
 <body>
@@ -41,7 +41,7 @@
   </header>
 
   <main class="log-wrap drive-wrap">
-    <p class="wl-lead" data-t="intro">주방 준비와 클린업 담당을 신청하세요. 정해진 시각에 카카오톡(안 되면 문자)으로 알려드려요.</p>
+    <p class="wl-lead" data-t="intro">주방 준비와 클린업을 신청하세요. 식사 1시간 전에 카카오톡(안 되면 문자)으로 알려드려요.</p>
 
     <p class="log-loading" id="loadStatus" data-t="loading">불러오는 중…</p>
 
@@ -68,11 +68,12 @@
         <button type="button" class="drive-nav" id="nextPeriod" aria-label="next">›</button>
         <button type="button" class="drive-today" id="thisPeriod" data-t="thisPeriod">오늘로</button>
         <button type="button" class="drive-manage" id="manageBtn" data-t="manage" hidden>칸 관리</button>
-        <button type="button" class="drive-manage" id="timesBtn" data-t="timesBtn" hidden>알림 시간</button>
+        <button type="button" class="drive-manage" id="timesBtn" data-t="timesBtn" hidden>시간·인원</button>
       </div>
-      <p class="drive-manage-hint" id="manageHint" data-t="manageHint" hidden>칸을 눌러 닫거나 열고 사람을 직접 배정해요. 오전 칸과 금요일 저녁~화요일 아침은 기본으로 닫혀 있어서, 필요한 날만 열어 주세요.</p>
+      <p class="drive-manage-hint" id="manageHint" data-t="manageHint" hidden>칸을 눌러 닫거나 열고, 정원을 바꾸고, 사람을 직접 배정해요. 아침 칸과 금요일 저녁~화요일 아침은 기본으로 닫혀 있어서, 필요한 날만 열어 주세요.</p>
       <div id="weeks"></div>
-      <p class="drive-note" data-t="note">빈 칸을 누르면 바로 신청돼요 · 내 칸을 다시 누르면 취소돼요 · 화요일 점심 ~ 금요일 점심만 기본으로 열려 있고, 오전과 그 밖의 시간은 관리자가 열면 신청할 수 있어요.</p>
+      <p class="drive-note" id="note"></p>
+      <p class="drive-note" id="noteMeals"></p>
       <p class="log-error" id="driveError" role="alert"></p>
     </div>
   </main>
@@ -81,25 +82,28 @@
     <div class="drive-modal-card">
       <h3 id="assignTitle"></h3>
       <p class="drive-modal-when" id="assignState"></p>
+      <div class="kitchen-people-list" id="assignPeople"></div>
       <label><span data-t="assignPick">담당자 직접 배정</span><select id="assignSelect"></select></label>
+      <p class="drive-times-default" id="assignFull" hidden></p>
+      <button type="button" class="log-primary" id="assignDo" data-t="assignDo">배정하기</button>
+      <label><span data-t="capLabel">이 칸 정원</span><select id="capSelect"></select></label>
       <p class="log-error" id="assignError" role="alert"></p>
       <div class="drive-assign-actions">
-        <button type="button" class="log-primary" id="assignDo" data-t="assignDo">배정하기</button>
-        <button type="button" class="log-secondary" id="assignClear" data-t="assignClear">배정 해제</button>
         <button type="button" class="log-secondary" id="assignToggle"></button>
+        <button type="button" class="log-secondary" id="assignCancel" data-t="close">닫기</button>
       </div>
-      <button type="button" class="drive-times-reset" id="assignCancel" data-t="cancel">취소</button>
     </div>
   </div>
 
   <div class="drive-modal" id="timesModal" hidden role="dialog" aria-modal="true" aria-labelledby="timesTitle">
     <div class="drive-modal-card">
-      <h3 id="timesTitle" data-t="timesTitle">알림 보내는 시간</h3>
-      <p class="log-help" data-t="timesHelp">신청한 사람에게 카카오 알림톡(실패하면 문자)으로 보내요. 30분 단위로 고를 수 있어요.</p>
-      <div class="drive-times-grid" id="timesGrid"></div>
+      <h3 id="timesTitle" data-t="timesTitle">식사 시간 · 기본 인원</h3>
+      <p class="log-help" data-t="timesHelp">알림은 식사 시간 1시간 전에 신청한 분께 카카오 알림톡(실패하면 문자)으로 가요. 30분 단위로 고를 수 있어요.</p>
+      <div class="drive-times-grid kitchen-times-grid" id="timesGrid"></div>
+      <label><span data-t="capDefaultLabel">한 칸의 기본 인원</span><select id="timeCapacity"></select></label>
       <p class="log-error" id="timesError" role="alert"></p>
-      <button type="button" class="drive-times-reset" id="timesReset" data-t="timesReset">기본 시간으로 되돌리기</button>
-      <p class="drive-times-default" data-t="timesDefaultNote">기본: 오전 7:00·9:00 · 점심 10:00·1:00 · 저녁 3:00·6:30</p>
+      <button type="button" class="drive-times-reset" id="timesReset" data-t="timesReset">기본값으로 되돌리기</button>
+      <p class="drive-times-default" data-t="timesDefaultNote">기본: 아침 8:00 · 점심 12:00 · 저녁 6:00 · 한 칸 2명 (칸마다 따로 1~4명으로 바꿀 수 있어요)</p>
       <div class="drive-modal-actions">
         <button type="button" class="log-secondary" id="timesCancel" data-t="cancel">취소</button>
         <button type="button" class="log-primary" id="timesSave" data-t="save">저장</button>
@@ -110,7 +114,7 @@
   <div class="drive-modal" id="phoneModal" hidden role="dialog" aria-modal="true" aria-labelledby="phoneTitle">
     <div class="drive-modal-card">
       <h3 id="phoneTitle" data-t="phoneTitle">알림 받을 번호</h3>
-      <p class="log-help" data-t="phoneHelp">담당 시간 전에 이 번호로 카카오톡(안 되면 문자)을 보내드려요.</p>
+      <p class="log-help" data-t="phoneHelp">식사 1시간 전에 이 번호로 카카오톡(안 되면 문자)을 보내드려요.</p>
       <p class="drive-modal-when" id="phoneWhen"></p>
       <label><span data-t="phoneLabel">휴대폰 번호</span><input id="phoneInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-1234-5678"></label>
       <p class="log-error" id="phoneError" role="alert"></p>

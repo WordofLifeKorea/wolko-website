@@ -1,10 +1,10 @@
 /**
- * 주방 보조 알림 발송 시간 — 주방 관리자(와 마스터)만 보고 바꾼다.
+ * 주방 보조 설정 — 식사 시간(알림은 1시간 전)과 한 칸의 기본 인원. 주방 관리자(와 마스터)만 보고 바꾼다.
  *   GET /api/kitchen/settings            → { settings, defaults }
- *   PUT /api/kitchen/settings  { am_prep, am_clean, lunch_prep, ... } → 저장 (칸마다 'HH:MM' 또는 null)
+ *   PUT /api/kitchen/settings  { meals: { am, lunch, dinner }, capacity } → 저장 (식사 시간은 'HH:MM' 또는 null, 기본 인원은 1~4)
  */
 import { kitchenSession } from '../../lib/kitchenDuty.js';
-import { DEFAULT_TIMES, SETTINGS_KEY, getTimes, normalizeTimes } from '../../lib/kitchenSettings.js';
+import { DEFAULT_SETTINGS, SETTINGS_KEY, getSettings, normalizeSettings } from '../../lib/kitchenSettings.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
@@ -19,7 +19,7 @@ async function managerOnly(request, env) {
 export async function onRequestGet({ env, request }) {
   const g = await managerOnly(request, env);
   if (g.res) return g.res;
-  return Response.json({ settings: await getTimes(env), defaults: DEFAULT_TIMES }, { headers: H });
+  return Response.json({ settings: await getSettings(env), defaults: DEFAULT_SETTINGS }, { headers: H });
 }
 
 export async function onRequestPut({ env, request }) {
@@ -27,8 +27,8 @@ export async function onRequestPut({ env, request }) {
   if (g.res) return g.res;
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
-  const settings = normalizeTimes(body);
-  if (!settings) return fail('시간은 오전 5시~오후 9시 사이, 30분 단위로 골라 주세요.');
+  const settings = normalizeSettings(body);
+  if (!settings) return fail('식사 시간은 오전 7시~오후 9시 사이 30분 단위로, 기본 인원은 1~4명으로 정해 주세요.');
   await env.CAMP_KV.put(SETTINGS_KEY, JSON.stringify({ ...settings, updatedBy: g.session.email, updatedAt: new Date().toISOString() }));
   return Response.json({ ok: true, settings }, { headers: H });
 }

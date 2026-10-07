@@ -14,6 +14,7 @@ const TOOL_PAGES = [
   'src/pages/car-drive/index.astro',
   'src/pages/car-log/index.astro',
   'src/pages/car/index.astro',
+  'src/pages/kitchen/index.astro',
   'src/pages/wolkoadmin.astro',
   'src/pages/campstaff/index.astro',
 ];

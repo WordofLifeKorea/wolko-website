@@ -1,10 +1,47 @@
-/* 주방 보조 — 운행 스케줄(car-drive.css) 위에 하루 6칸(오전·점심·저녁 × 준비·클린업)을 얹는다 */
-.kitchen-slots { gap: 5px; }
-.kitchen-slot { min-height: 44px; padding: 5px 10px; }
+/* 주방 보조 — 운행 스케줄(car-drive.css) 위에 하루를 아침·점심·저녁 세 묶음으로 나누고, 묶음마다 준비 | 클린업 두 칸을 둔다 */
+.kitchen-slots { display: grid; gap: 8px; }
+.kmeal { --meal: #7d98a3; --meal-bg: #f4f8fa; display: grid; gap: 5px; padding: 6px; border-radius: 12px; background: var(--meal-bg); min-width: 0; }
+.kmeal.meal-am { --meal: #d68a00; --meal-bg: #fff6e0; }
+.kmeal.meal-lunch { --meal: #0e8f7e; --meal-bg: #e6f6f3; }
+.kmeal.meal-dinner { --meal: #4f62c9; --meal-bg: #eceffc; }
+.kmeal-title { display: flex; align-items: baseline; gap: 6px; padding: 0 2px; color: var(--meal); }
+.kmeal-title strong { font-size: 13px; font-weight: 800; letter-spacing: -.02em; }
+.kmeal-title small { font-size: 11px; font-weight: 700; opacity: .8; }
+.kmeal-slots { display: grid; gap: 5px; min-width: 0; }
+.kslot { box-sizing: border-box; display: grid; gap: 4px; width: 100%; min-width: 0; padding: 6px 8px; border: 1px solid #fff; border-radius: 9px; background: #fff; font: inherit; text-align: left; }
+button.kslot { cursor: pointer; }
+.khead { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+.kslot .lbl { font-size: 11.5px; font-weight: 800; color: #4a6672; }
+.kslot .cnt { font-size: 11px; font-weight: 700; color: #7d98a3; white-space: nowrap; }
+.kslot .cnt.full { color: var(--meal); }
+.kpeople { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.kp { box-sizing: border-box; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; min-height: 26px; padding: 0 8px; border: 1px solid #7fb0e8; border-radius: 8px; background: #d6e7fb; color: #17458a; font: 700 12.5px/1 'Noto Sans KR', sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kp.mine { border-color: #4fb76b; background: #e2f5e8; color: #136b33; }
+button.kp.mine { cursor: pointer; }
+button.kp.mine:hover:not(:disabled) { background: #d2efdb; }
+button.kp:disabled { cursor: default; }
+.kp .x { font-style: normal; font-size: 11px; opacity: .55; }
+.kp.add { border: 1px dashed #bcd3dc; background: #fff; color: var(--blue); }
+button.kp.add { cursor: pointer; }
+button.kp.add:hover { background: #f3f9fb; border-color: var(--blue); }
+.kclosed { color: #8da0a9; font-size: 12px; font-weight: 700; }
+.kslot.closed { background: repeating-linear-gradient(135deg, #f1f4f6, #f1f4f6 6px, #e8edf0 6px, #e8edf0 12px); }
+.kslot.managing { outline: 2px dashed rgba(176, 48, 55, .35); outline-offset: -2px; }
+.kslot.managing:hover:not(:disabled) { background: #fdecee; }
+.kslot:disabled { cursor: default; }
 .kitchen-toggle-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
 .kitchen-toggle-row .day-toggle { padding: 0 4px; }
+/* 관리 창 */
+.kitchen-people-list { display: grid; gap: 6px; }
+.kperson { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: 10px; background: #eef6f7; }
+.kperson .kname { font-weight: 750; font-size: 14px; }
+.kremove { min-height: 0 !important; height: 28px; padding: 0 10px; border: 1px solid #e3c4c7; border-radius: 8px; background: #fff; color: #b03037; font-size: 12px; font-weight: 800; cursor: pointer; }
+.kempty { margin: 0; color: #7d98a3; font-size: 13px; }
+.kitchen-times-grid { grid-template-columns: 1fr; }
+.kitchen-times-grid .remind { color: #7d98a3; font-weight: 600; min-height: 14px; }
 @media (max-width: 1360px) {
-  /* 좁은 화면: 하루가 한 줄 — 왼쪽에 날짜, 오른쪽에 준비 | 클린업 두 칸씩 오전·점심·저녁 세 줄 */
-  .kitchen-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* 좁은 화면: 하루가 한 줄 — 왼쪽에 날짜, 오른쪽에 아침·점심·저녁 세 묶음(묶음마다 준비 | 클린업 두 칸) */
+  .kitchen-slots { grid-template-columns: minmax(0, 1fr); }
+  .kmeal-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kitchen-toggle-row { grid-template-columns: 1fr; }
 }

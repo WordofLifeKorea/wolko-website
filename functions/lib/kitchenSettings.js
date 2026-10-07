@@ -1,30 +1,41 @@
 /**
- * 주방 보조 알림 발송 시간 — KV 'kitchen:settings'
- *   { am_prep: 'HH:MM' | null, am_clean, lunch_prep, lunch_clean, dinner_prep, dinner_clean } — 칸마다 하나, 요일과 상관없이 신청이 있는 날 그 시각에 보낸다. null 이면 그 칸은 보내지 않는다.
- * 시각은 30분 단위(05:00~21:00). 알림을 확인하는 GitHub Actions가 30분마다 돌기 때문이다.
+ * 주방 보조 설정 — KV 'kitchen:settings'
+ *   meals   : { am, lunch, dinner } 식사 시간 'HH:MM' | null — 알림은 식사 1시간 전에 간다(null 이면 그 끼니는 알림 없음)
+ *   capacity: 한 칸의 기본 인원 (1~4, 기본 2) — 칸마다 따로 바꾼 값이 있으면 그것이 우선
+ * 식사 시간은 30분 단위(07:00~21:00). 알림을 확인하는 GitHub Actions가 한국 시간 06:00~21:30에 30분마다 돌기 때문이다.
  */
 import { isValidTime, minutesOf } from './driveSettings.js';
-import { SLOTS } from './kitchenDuty.js';
+import { DEFAULT_CAPACITY, MEALS, isValidCapacity } from './kitchenDuty.js';
 
 export { minutesOf };
 export const SETTINGS_KEY = 'kitchen:settings';
-export const DEFAULT_TIMES = Object.freeze({
-  am_prep: '07:00', am_clean: '09:00', lunch_prep: '10:00', lunch_clean: '13:00', dinner_prep: '15:00', dinner_clean: '18:30',
+export const REMINDER_LEAD_MIN = 60;
+export const DEFAULT_SETTINGS = Object.freeze({
+  meals: Object.freeze({ am: '08:00', lunch: '12:00', dinner: '18:00' }),
+  capacity: DEFAULT_CAPACITY,
 });
 
-/** 저장된 값(또는 요청 본문)을 정리한다. 잘못된 칸이 있으면 null — 호출한 쪽이 거절할 수 있게 */
-export function normalizeTimes(input) {
-  const out = {};
-  for (const s of SLOTS) {
-    const v = input?.[s];
-    if (v === null || v === undefined || v === '') out[s] = null;
-    else if (isValidTime(v)) out[s] = v;
+/** 식사 시간으로 쓸 수 있는 값인지 — 30분 단위이고, 1시간 전 알림이 첫 확인(06:00) 이후가 되도록 07:00부터 */
+export const isValidMealTime = v => isValidTime(v) && minutesOf(v) >= 7 * 60;
+export const hhmm = min => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+/** 식사 시간 → 알림 시각 ('12:00' → '11:00') */
+export const reminderTime = meal => (meal ? hhmm(minutesOf(meal) - REMINDER_LEAD_MIN) : null);
+
+/** 저장된 값(또는 요청 본문)을 정리한다. 잘못된 값이 있으면 null — 호출한 쪽이 거절할 수 있게 */
+export function normalizeSettings(input) {
+  const meals = {};
+  for (const m of MEALS) {
+    const v = input?.meals?.[m];
+    if (v === null || v === undefined || v === '') meals[m] = null;
+    else if (isValidMealTime(v)) meals[m] = v;
     else return null;
   }
-  return out;
+  const capacity = input?.capacity === undefined ? DEFAULT_CAPACITY : input.capacity;
+  if (!isValidCapacity(capacity)) return null;
+  return { meals, capacity };
 }
 
-export async function getTimes(env) {
+export async function getSettings(env) {
   const stored = await env.CAMP_KV.get(SETTINGS_KEY, 'json');
-  return (stored && normalizeTimes(stored)) || { ...DEFAULT_TIMES };
+  return (stored && normalizeSettings(stored)) || { meals: { ...DEFAULT_SETTINGS.meals }, capacity: DEFAULT_SETTINGS.capacity };
 }
