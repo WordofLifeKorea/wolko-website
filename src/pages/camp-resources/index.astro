@@ -1,25 +1,28 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-
-const pageTitle = 'WOLKO Camp Resources';
+// 캠프 자료실 — 포탈 도구 페이지(왼쪽 메뉴·공용 머리글). 포탈 로그인으로 들어오고, 편집은 '편집 모드'에서 한다.
 ---
 
-<BaseLayout
-  title={pageTitle}
-  description="WOLKO 캠프 자료실입니다."
-  activeNav="resources"
-  whiteNav={true}
->
-  <Fragment slot="head">
-    <script is:inline src="/wolko-session.js?v=1"></script>
-    <meta name="robots" content="noindex,nofollow">
-    <meta name="theme-color" content="#004f68">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/wolko-auth.css?v=1">
-  </Fragment>
-
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>캠프 자료실 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/wolko-rail.css?v=15">
+  <link rel="stylesheet" href="/wolko-header.css?v=14">
+  <link rel="stylesheet" href="/wolko-ui.css?v=2">
+  <link rel="stylesheet" href="/wolko-layout.css?v=15">
+  <script src="/wolko-rail.js?v=27" defer></script>
+  <meta name="theme-color" content="#004f68">
+  <script is:inline src="/wolko-session.js?v=1"></script>
   <style is:global>
     :root {
       --blue:#004f68;
@@ -99,6 +102,7 @@ const pageTitle = 'WOLKO Camp Resources';
     .toolbar { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; min-width:0; }
     .toolbar button { min-height:var(--btn-h-md); border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:0 16px; background:rgba(255,255,255,.15); color:#fff; font-size:12px; font-weight:600; }
     .toolbar .edit-toggle { min-width:104px; transition:background .18s,color .18s,border-color .18s,box-shadow .18s; }
+    .topbar .edit-toggle.is-active { background:#fff !important; color:var(--blue) !important; border-color:#fff !important; }
     .toolbar .edit-toggle.is-active { background:#fff; color:var(--blue); border-color:#fff; box-shadow:0 4px 14px rgba(0,0,0,.18); }
     .camp-lang-toggle {
       display:flex; align-items:center; position:relative; width:64px; height:26px;
@@ -270,21 +274,8 @@ const pageTitle = 'WOLKO Camp Resources';
       .camp-filter-wrap .camp-manage-btn { grid-column:1 / -1; margin-left:0; }
     }
   </style>
-
-  <div class="login-screen" id="loginScreen">
-    <div class="login-card">
-      <div class="login-logo">
-        <img src="/images/WOLKO Circle.png" alt="WOLKO">
-        <div class="login-logo-text">
-          <span class="login-logo-name">WOLKO 월코</span>
-        </div>
-      </div>
-      <p class="login-title" id="loginTitle" data-ko="자료실 로그인" data-en="Resource Login">자료실 로그인</p>
-      <input class="login-input" id="passwordInput" name="resource-access-code" type="password" data-ph-ko="공유 비밀번호" data-ph-en="Shared password" placeholder="공유 비밀번호" autocomplete="off">
-      <p class="login-error" id="loginError"></p>
-      <button class="login-btn" id="loginBtn" type="button" data-ko="확인" data-en="Confirm">확인</button>
-    </div>
-  </div>
+</head>
+<body>
 
   <header class="topbar">
     <div class="brand">
@@ -294,14 +285,11 @@ const pageTitle = 'WOLKO Camp Resources';
         <p data-ko="캠프 자료 모음" data-en="Camp Resource Hub">캠프 자료 모음</p>
       </div>
     </div>
-    <div class="toolbar">
-      <div class="camp-lang-toggle" id="campLangToggle" aria-label="Language toggle" role="button" tabindex="0">
-        <div class="camp-lang-slider" id="campLangSlider"></div>
-        <div class="camp-lang-side is-active" id="campLangKo"><img src="https://flagcdn.com/w40/kr.png" alt="KR"><span>한국어</span></div>
-        <div class="camp-lang-side is-inactive" id="campLangEn"><img src="https://flagcdn.com/w40/us.png" alt="US"><span>English</span></div>
-      </div>
-      <button class="edit-toggle" id="editModeBtn" type="button" aria-pressed="false">Staff 로그인</button>
+    <div class="wl-lang-toggle" role="group" aria-label="Language">
+      <button type="button" class="wl-lang-btn" id="langKoBtn" data-lang="ko" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+      <button type="button" class="wl-lang-btn" id="langEnBtn" data-lang="en" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
     </div>
+    <button class="edit-toggle" id="editModeBtn" type="button" aria-pressed="false">편집 모드</button>
   </header>
 
   <main class="page">
@@ -428,7 +416,7 @@ const pageTitle = 'WOLKO Camp Resources';
 
   <script>
     const TOKEN_KEY = 'wolko_camp_resources_token';
-    const LANG_KEY = 'wolko_camp_resources_lang';
+    const LANG_KEY = 'wolko-lang'; // 포탈 전체와 같은 언어 설정
     const TAB_KEY = 'wolko_camp_resources_tab';
     const TEAM_WOLKO = 'WOLKO';
     const TEAM_SF = 'Student Fusion Team Projects';
@@ -448,7 +436,6 @@ const pageTitle = 'WOLKO Camp Resources';
     ];
     const TAB_KEYS = TABS.map(t => t.key);
     const DEFAULT_TAB = 'teacher';
-    try { localStorage.removeItem(TOKEN_KEY); } catch(e) {}
 
     const COPY = {
       ko: {
@@ -490,7 +477,7 @@ const pageTitle = 'WOLKO Camp Resources';
         defaultCampSaveFailed: '기본 캠프를 저장하지 못했습니다.',
         editModeEnter: '편집 모드',
         editModeExit: '편집 중 · 나가기',
-        staffLogin: 'Staff 로그인',
+        staffLogin: '편집 모드',
       },
       en: {
         noItems: 'No resources yet.',
@@ -531,7 +518,7 @@ const pageTitle = 'WOLKO Camp Resources';
         defaultCampSaveFailed: 'Could not save the default camp.',
         editModeEnter: 'Edit Mode',
         editModeExit: 'Editing · Exit',
-        staffLogin: 'Staff Login',
+        staffLogin: 'Edit Mode',
       },
     };
 
@@ -545,15 +532,6 @@ const pageTitle = 'WOLKO Camp Resources';
     }
 
     const els = {
-      loginScreen: document.getElementById('loginScreen'),
-      loginTitle: document.getElementById('loginTitle'),
-      passwordInput: document.getElementById('passwordInput'),
-      loginBtn: document.getElementById('loginBtn'),
-      loginError: document.getElementById('loginError'),
-      langToggle: document.getElementById('campLangToggle'),
-      langSlider: document.getElementById('campLangSlider'),
-      langKo: document.getElementById('campLangKo'),
-      langEn: document.getElementById('campLangEn'),
       editModeBtn: document.getElementById('editModeBtn'),
       mainTabs: document.getElementById('mainTabs'),
       subjectGroups: document.getElementById('subjectGroups'),
@@ -645,42 +623,30 @@ const pageTitle = 'WOLKO Camp Resources';
       return err;
     }
 
-    function updateLoginUI() {
-      if (!els.loginTitle) return;
-      const isEdit = loginMode === 'edit';
-      const isStaff = loginMode === 'staff';
-      els.loginTitle.textContent = isEdit
-        ? (currentLang === 'en' ? 'Edit Mode Login' : '편집 모드 로그인')
-        : isStaff
-          ? (currentLang === 'en' ? 'Staff Login' : 'Staff 로그인')
-        : (currentLang === 'en' ? 'Resource Login' : '자료실 로그인');
-    }
+    function updateLoginUI() {}
 
-    function showLogin(mode = 'access', message = '') {
-      loginMode = mode;
-      updateLoginUI();
-      els.loginError.textContent = message;
-      els.passwordInput.value = '';
-      els.loginScreen.hidden = false;
-      setTimeout(() => els.passwordInput.focus(), 20);
-    }
-
-    function requireAccess(message = '') {
+    // 포탈 로그인이 없거나 만료되면 포탈 로그인 화면으로 보낸다
+    function requireAccess() {
       token = '';
-      localStorage.removeItem(TOKEN_KEY);
-      editMode = false;
-      if (!isTabVisible(currentTab)) currentTab = DEFAULT_TAB;
+      try { sessionStorage.removeItem('wolko-hub-token'); } catch (e) {}
+      location.replace('/portal');
+    }
+
+    // 포탈 세션 → 자료실 토큰 (승인된 포탈 멤버 누구나)
+    async function portalAuth() {
+      const hub = sessionStorage.getItem('wolko-hub-token');
+      if (!hub) return requireAccess();
+      const res = await fetch('/api/teach/portal-login', { method: 'POST', headers: { Authorization: `Bearer ${hub}` } });
+      if (res.status === 401) return requireAccess();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.token) throw new Error(data.error || tr('loginFailed'));
+      token = data.token;
       updateEditModeUI();
-      render();
-      showLogin('staff', message);
     }
 
     function updateLangToggleUI() {
-      const isEn = currentLang === 'en';
-      els.langKo.className = isEn ? 'camp-lang-side is-inactive' : 'camp-lang-side is-active';
-      els.langEn.className = isEn ? 'camp-lang-side is-active' : 'camp-lang-side is-inactive';
-      const sliderW = els.langSlider.offsetWidth || 30;
-      els.langSlider.style.left = isEn ? `${els.langToggle.offsetWidth - sliderW - 2}px` : '2px';
+      document.getElementById('langKoBtn').classList.toggle('is-active', currentLang === 'ko');
+      document.getElementById('langEnBtn').classList.toggle('is-active', currentLang === 'en');
     }
 
     let loadErrorIsStandard = false;
@@ -698,43 +664,6 @@ const pageTitle = 'WOLKO Camp Resources';
       render();
     }
 
-    const PASSWORD_ALLOWED_RE = /^[\x21-\x7E]*$/;
-    function cleanPasswordValue(value) {
-      return String(value || '').replace(/[^\x21-\x7E]/g, '');
-    }
-    function warnPasswordLanguage() {
-      els.loginError.textContent = tr('passwordLanguageWarning');
-    }
-    function enforceAsciiPasswordInput(input) {
-      input.setAttribute('inputmode', 'latin');
-      input.setAttribute('pattern', '[\\x21-\\x7E]*');
-      input.addEventListener('beforeinput', event => {
-        if (event.data && !PASSWORD_ALLOWED_RE.test(event.data)) {
-          event.preventDefault();
-          warnPasswordLanguage();
-        }
-      });
-      input.addEventListener('paste', event => {
-        const text = event.clipboardData?.getData('text') || '';
-        const clean = cleanPasswordValue(text);
-        if (text !== clean) {
-          event.preventDefault();
-          const start = input.selectionStart ?? input.value.length;
-          const end = input.selectionEnd ?? start;
-          input.setRangeText(clean, start, end, 'end');
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          warnPasswordLanguage();
-        }
-      });
-      input.addEventListener('input', () => {
-        const clean = cleanPasswordValue(input.value);
-        if (input.value !== clean) {
-          input.value = clean;
-          warnPasswordLanguage();
-        }
-      });
-    }
-    enforceAsciiPasswordInput(els.passwordInput);
 
     function campById(id) {
       return camps.find(c => c.id === id) || null;
@@ -1173,40 +1102,7 @@ const pageTitle = 'WOLKO Camp Resources';
 
     els.editModeBtn.addEventListener('click', () => {
       if (editMode) { exitEditMode(); return; }
-      if (token) { enterEditMode(); return; }
-      showLogin('staff');
-    });
-
-    async function login() {
-      els.loginBtn.disabled = true;
-      els.loginError.textContent = '';
-      try {
-        const res = await fetch('/api/teach/auth', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: els.passwordInput.value.trim() }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || tr('loginFailed'));
-        token = data.token;
-        els.loginScreen.hidden = true;
-        await bootstrapData();
-        if (loginMode === 'edit') {
-          enterEditMode();
-        } else {
-          editMode = false;
-          updateEditModeUI();
-          render();
-        }
-      } catch (error) {
-        els.loginError.textContent = error.message;
-      } finally {
-        els.loginBtn.disabled = false;
-      }
-    }
-    els.loginBtn.addEventListener('click', login);
-    els.passwordInput.addEventListener('keydown', event => {
-      if (event.key === 'Enter') login();
+      portalAuth().then(enterEditMode).catch(e => alert(e.message));
     });
 
     function updatePersonFieldVisibility() {
@@ -1386,12 +1282,8 @@ const pageTitle = 'WOLKO Camp Resources';
       }
     }
 
-    els.langToggle.addEventListener('click', () => setLanguage(currentLang === 'ko' ? 'en' : 'ko'));
-    els.langToggle.addEventListener('keydown', event => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      setLanguage(currentLang === 'ko' ? 'en' : 'ko');
-    });
+    document.getElementById('langKoBtn').addEventListener('click', () => setLanguage('ko'));
+    document.getElementById('langEnBtn').addEventListener('click', () => setLanguage('en'));
     async function loadCamps() {
       const res = await fetch('/api/teach/camps', { headers: authHeaders() });
       const data = await res.json().catch(() => ({}));
@@ -1537,10 +1429,11 @@ const pageTitle = 'WOLKO Camp Resources';
 
     applyLanguage();
     render();
-    bootstrapData();
+    portalAuth().then(bootstrapData).catch(error => { els.loadErrorBanner.textContent = error.message || tr('loadFailed'); els.loadErrorBanner.hidden = false; });
     if ('serviceWorker' in navigator) {
       // 설치형 앱 기능은 포탈 첫 화면에서만 쓴다 — 예전에 등록된 이 페이지의 서비스워커는 정리한다
       navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => { if (/\/(admin|crs|campstaff|camp-resources)-sw\.js$/.test((r.active || r.waiting || r.installing || {}).scriptURL || '')) r.unregister(); })).catch(() => {});
     }
   </script>
-</BaseLayout>
+</body>
+</html>

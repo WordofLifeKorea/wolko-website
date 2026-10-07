@@ -28,7 +28,9 @@ test('successful login gives password managers a credential update signal', () =
 });
 
 test('shared resource passwords are excluded from account autofill', () => {
-  for (const source of [campResources, qtBook]) {
+  for (const source of [qtBook]) {
     assert.match(source, /id="passwordInput"[^>]+name="resource-access-code"[^>]+autocomplete="off"/);
   }
+  // 캠프 자료실은 포탈 로그인으로 바뀌어 공유 비밀번호 칸 자체가 없다
+  assert.doesNotMatch(campResources, /id="passwordInput"/);
 });
