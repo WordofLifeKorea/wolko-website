@@ -60,3 +60,8 @@ test('캠프 관리 창 추가 폼: Safari 에서 입력 칸 기본 폭 때문�
   assert.match(page, /\.field \{ display:grid; grid-template-columns:minmax\(0,1fr\);/);
   assert.match(page, /\.season-check \{ position:relative;/);
 });
+
+test('캠프 관리 목록의 작은 버튼(기본 설정·삭제)은 모바일 공용 44px 규칙에 늘어나지 않고 낮게 고정된다', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.match(page, /:root:root \.camp-manage-row button[^{]*\{[^}]*min-height:0 !important; height:28px !important;/);
+});

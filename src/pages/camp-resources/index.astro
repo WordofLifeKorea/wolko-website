@@ -240,8 +240,9 @@
     .camp-manage-row-name { font-size:13.5px; font-weight:700; color:var(--text); overflow-wrap:anywhere; line-height:1.35; }
     .camp-manage-row-meta { font-size:11.5px; color:var(--muted); }
     .camp-manage-actions { flex-wrap:nowrap; }
-    .camp-manage-row button, .camp-manage-row .camp-default-badge { min-width:64px; height:30px; display:inline-flex; align-items:center; justify-content:center; }
-    .camp-manage-row .camp-default-badge { padding:0 10px; }
+    /* 행 안의 작은 버튼: 공용 모바일 규칙(버튼 최소 44px)에 늘어나지 않게 낮게 고정 */
+    :root:root .camp-manage-row button, :root:root .camp-manage-row .camp-default-badge { min-width:58px; min-height:0 !important; height:28px !important; padding:0 12px !important; display:inline-flex; align-items:center; justify-content:center; font-size:11.5px; line-height:1; border-radius:8px; }
+    :root:root .camp-manage-row .camp-default-badge { border-radius:999px; }
     .camp-manage-add-row { display:grid; grid-template-columns:minmax(0,1fr); min-width:0; margin-top:4px; padding-top:16px; border-top:1px solid var(--border); }
     .camp-manage-add-title { font:800 13px/1 var(--sans); color:var(--blue); margin-bottom:12px; }
     @media (max-width:520px) { :root:root .topbar .edit-toggle { min-width:0 !important; padding:0 10px !important; font-size:11px !important; } }
