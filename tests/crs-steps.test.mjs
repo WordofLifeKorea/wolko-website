@@ -56,3 +56,9 @@ test('저장할 때 새 형식 표시(stepsVersion)를 함께 남기고, 새 교
   assert.match(src, /data\.steps = \{\};\s*data\.stepsVersion = STEPS_VERSION;/);
   assert.match(src, /migrateChurchSteps\(\{ id, \.\.\.val \}\)/);
 });
+
+test('교회 카드는 위쪽(이름·담임·단계)만 접어 두고, 선택(활성)된 카드만 펼친다', () => {
+  assert.match(src, /\.church-card:not\(\.selected\) \.church-card-body \{ display:none; \}/);
+  assert.match(src, /selectedCard\?\.classList\.add\('selected'\)/);
+  assert.match(src, /selectedCard\?\.scrollIntoView\(\{ block: 'nearest' \}\)/);
+});

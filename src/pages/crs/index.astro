@@ -453,6 +453,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .church-card.selected .church-card-header { background:#f4fafb; }
   .app-body.split .list-panel { flex:0 0 400px; }
   .app-body.split .church-card { border-radius:8px; }
+  /* 교회 카드는 위쪽(이름·담임·단계)만 보이게 접어 두고, 눌러서 선택(활성)된 카드만 펼친다 */
+  .church-card:not(.selected) .church-card-body { display:none; }
+  .church-card:not(.selected) .church-card-header { border-bottom-color:transparent; }
+  .church-card.selected .church-card-body { animation:crsCardOpen .18s ease-out; }
+  @keyframes crsCardOpen { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
   .detail-panel { background:#f7f9f9; }
   .app-body.split .detail-panel { border-left:1px solid #ccdadd; box-shadow:-12px 0 32px rgba(20,52,64,.06); }
   .detail-panel-head {
@@ -1967,7 +1972,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     renderDetailBody(church);
     document.body.classList.add('crs-detail-open');
     document.querySelectorAll('.church-card').forEach(c => c.classList.remove('selected'));
-    document.querySelector(`.church-card[data-id="${esc(church.id)}"]`)?.classList.add('selected');
+    const selectedCard = document.querySelector(`.church-card[data-id="${esc(church.id)}"]`);
+    selectedCard?.classList.add('selected');
+    selectedCard?.scrollIntoView({ block: 'nearest' });   // 펼쳐진 카드가 목록 밖으로 밀리지 않게
     if (updateHistory) {
       const state = { ...(history.state || {}), crsDetail: true, crsChurchId: church.id };
       if (history.state?.crsDetail) history.replaceState(state, '', location.href);
