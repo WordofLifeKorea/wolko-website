@@ -736,3 +736,29 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-cf-top > .ex-cf-wd { flex: 0 1 auto; min-width: 0; margin-left: auto; }
 :root:root .ex-cf-wd.pick select { min-width: 150px; max-width: 240px; width: 100%; }
 @media (max-width: 520px) { .ex-cf-top { flex-wrap: wrap; } .ex-cf-top > .ex-cf-wd { margin-left: 0; } }
+
+/* ══ v81 — 회계 항목: 카테고리 · 출금 계좌를 읽기만 하는 두 줄(연한 구분선)로 보이고, 오른쪽 [펼치기]로 바꾼다 ══ */
+.ex-d-item > .ex-d-purpose { padding-bottom: 8px; }
+.ex-cf-rows { position: relative; display: block; }
+.ex-cf-row { display: flex; align-items: baseline; gap: 10px; padding: 7px 84px 7px 0; border-top: 1px solid #e6edf1; min-width: 0; }
+.ex-cf-row > i { flex: 0 0 66px; font-style: normal; font-size: 11px; font-weight: 700; color: var(--light); }
+.ex-cf-row > b { font-size: 13px; font-weight: 400; color: var(--text); overflow-wrap: anywhere; min-width: 0; }
+.ex-cf-row .ex-wdnum { margin-left: 8px; color: var(--mid); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.ex-cf-row .ex-cf-none { color: var(--light); font-weight: 500; }
+.ex-cf-toggle { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 4px; min-height: 0 !important; height: 26px; padding: 0 9px; border: 1px solid #d3e0e7; border-radius: 8px; background: #fff; color: var(--blue); font-size: 11.5px; font-weight: 700; cursor: pointer; }
+.ex-cf-toggle > i { font-style: normal; font-size: 13px; line-height: 1; transition: transform .15s; }
+.ex-cf-toggle[aria-expanded="true"] > i { transform: rotate(180deg); }
+.ex-cf-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ex-cf-pair .ex-cf-sel { max-width: none; }
+.ex-code-flow .ex-cf-panel { margin-top: 2px; }
+@media (max-width: 640px) { .ex-cf-pair { grid-template-columns: 1fr; } .ex-cf-row { padding-right: 76px; } .ex-cf-row > i { flex-basis: 58px; } }
+:root:root .ex-cf-pair select { min-height: 0 !important; height: 34px !important; padding: 0 28px 0 10px !important; font-size: 13px !important; min-width: 0; width: 100%; max-width: none; border-radius: 9px; }
+
+/* ══ v82 — 승인 대기도 같은 방식: 읽기만 하는 두 줄 + [확인] [펼치기] ══ */
+.ex-wd-pick .ex-cf-rows .ex-cf-row { padding-right: 0; }
+.ex-wd-pick .ex-cf-row:first-child { border-top: 0; padding-top: 0; }
+.ex-cf-actions { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.ex-cf-toggle.inline { position: static; transform: none; }
+:root:root .ex-wd-pick .ex-cf-actions .ex-confirm { height: 30px !important; min-width: 64px; padding: 0 12px; }
+.ex-wd-pick .ex-cf-panel { margin-top: 6px; }
+.ex-wd-pick .ex-cf-panel .ex-select-plain { width: 100%; max-width: none; }

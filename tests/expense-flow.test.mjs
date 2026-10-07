@@ -753,15 +753,17 @@ test('회계 항목: 코드는 작성자 입력 › 승인자가 확정한 출�
   assert.doesNotMatch(src, /<input class="ex-input ex-anote"/, '평소에 펼쳐진 노트 입력칸은 없다');
 });
 
-test('회계 항목 코드: 평소엔 코드만 보이고 코드를 눌러야 작성자 › 출금 계좌 기록과 선택박스가 펼쳐진다 (코드가 비어 있으면 처음부터 펼침)', async () => {
+test('회계 항목: 카테고리·출금 계좌는 읽기만 하는 두 줄로 보이고, 오른쪽 [펼치기]를 눌러야 선택박스가 열린다 (비어 있는 것이 있으면 처음부터 펼침)', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
-  assert.match(src, /<button type="button" class="ex-cf-head" data-act="code-change"/);   // 별도 [변경] 버튼 없이 코드 자체를 눌러 연다
+  const flow = src.slice(src.indexOf('const codeFlow = '), src.indexOf('// 보기 화면: 영수증은'));
+  assert.match(flow, /class="ex-cf-toggle" data-act="code-change"/);
+  assert.match(flow, /const need = !codeOk \|\| !r\.withdrawAccount/, '코드나 출금 계좌가 비어 있으면 처음부터 펼친다');
+  assert.match(flow, /<div class="ex-cf-panel" \$\{need \? '' : 'hidden'\}>/);
+  assert.match(flow, /data-recat-i="\$\{i\}"/);   // 접혀 있어도 선택박스는 DOM 에 있어 저장 때 그대로 모인다
+  assert.match(flow, /data-wd-i="\$\{i\}"/);
+  assert.equal((flow.match(/class="ex-cf-row"/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
   assert.doesNotMatch(src, /ex-cf-btn/);
-  assert.match(src, /<div class="ex-cf-panel" \$\{need \? '' : 'hidden'\}>/);
-  assert.match(src, /const need = !APPROVAL_ACCOUNTS\.includes\(r\.account\)/);
-  assert.match(src, /codeLbl: '코드', codeChange: '변경'/);
-  assert.match(src, /data-recat-i="\$\{i\}"/);   // 접혀 있어도 선택박스는 DOM 에 있어 저장 때 그대로 모인다
 });
 
 test('회계 코드 글자는 굵게 하지 않는다', async () => {
@@ -771,14 +773,15 @@ test('회계 코드 글자는 굵게 하지 않는다', async () => {
   assert.match(css, /\.ex-cf b \{[^}]*font-weight: 400;/);
 });
 
-test('승인 대기: 출금 계좌 드롭박스와 [확인]이 한 줄(펼치는 카드 없음), 승인 메모는 항목 오른쪽 빈 공간, 모두 34px', async () => {
+test('승인 대기: 카테고리·출금 계좌를 읽기만 하는 두 줄로 보여주고 [확인]·[펼치기]로 확정·변경한다, 승인 메모는 항목 오른쪽 빈 공간, 입력칸은 34px', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
-  const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 카드 머리 한 줄:'));
-  assert.match(cell, /class="ex-cat-confirm ex-wd-row"/);
-  assert.match(cell, /data-cat="\$\{i\}"/);
+  const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 승인 메모:'));
+  assert.equal((cell.match(/class="ex-cf-row"/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
   assert.match(cell, /data-act="confirm-cat"/);
-  assert.doesNotMatch(cell, /ex-cf-panel|ex-code-flow/, '펼쳐지는 카드는 없다');
+  assert.match(cell, /class="ex-cf-toggle inline" data-act="code-change"/);
+  assert.match(cell, /data-cat="\$\{i\}"/);
+  assert.match(cell, /const open = !cur/, '아직 고르지 않았으면 처음부터 펼친다');
   assert.match(src, /<div class="ex-item-split">/);
   assert.match(src, /apprMemoInput\(rep, i, st\)/);
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
@@ -786,7 +789,7 @@ test('승인 대기: 출금 계좌 드롭박스와 [확인]이 한 줄(펼치는
   assert.match(css, /:root:root \.ex-item-split > \.ex-item-memo \{[^}]*height: 34px !important/);
 });
 
-test('회계 노트 말풍선에 [저장]이 있고 눌러서 실제로 저장된다 (말풍선 안 클릭을 막는 규칙에서 저장 버튼은 제외), 코드 오른쪽에 출금 계좌가 보인다', async () => {
+test('회계 노트 말풍선에 [저장]이 있고 눌러서 실제로 저장된다 (말풍선 안 클릭을 막는 규칙에서 저장 버튼은 제외), 카테고리와 출금 계좌가 두 줄로 보인다', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   assert.match(src, /data-act="anote-save"/);
@@ -794,13 +797,14 @@ test('회계 노트 말풍선에 [저장]이 있고 눌러서 실제로 저장�
   assert.match(src, /acNoteSave: 'Save'/);
   assert.match(src, /act === 'recat-save' \|\| act === 'anote-save'/);
   assert.match(src, /!e\.target\.closest\('\[data-act="anote-close"\], \[data-act="anote-save"\]'\)/, '말풍선 안을 누르면 무시하는 규칙에서 [저장]은 빠져야 한다');
-  assert.match(src, /<div class="ex-cf-top">/);
-  assert.match(src, /class="ex-cf-wd"/);
+  assert.match(src, /<div class="ex-cf-rows">/);
+  assert.match(src, /class="ex-cf-toggle" data-act="code-change"/, '카테고리·출금 계좌를 읽기만 하는 줄과 오른쪽 [펼치기]');
+  assert.match(src, /cfOpen: '펼치기'/);
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
-  assert.match(css, /\.ex-cf-top \{ display: flex; align-items: center; justify-content: space-between;/);
+  assert.match(css, /\.ex-cf-row \{[^}]*border-top: 1px solid #e6edf1/, '줄마다 연한 구분선');
 });
 
-test('출금 계좌가 확정되기 전에 승인된 예전 리포트: 회계 담당이 빈 항목에 한해 출금 계좌를 채울 수 있고, 승인자가 확정한 계좌는 바뀌지 않는다', async () => {
+test('출금 계좌: 회계 담당이 마지막에 확인하며 채우거나 바꿀 수 있고(예전 승인 리포트의 빈 항목 포함), 바꾼 기록이 남는다', async () => {
   const { acc, call, kv } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');
   await acc('acct@x.com', 'Ann', 'counselor');
@@ -813,12 +817,16 @@ test('출금 계좌가 확정되기 전에 승인된 예전 리포트: 회계 �
   assert.equal((await patch(ann, { withdrawals: ['essam', ''] })).status, 400, '빠진 계좌는 고를 수 없다');
   const ok = await patch(ann, { withdrawals: ['teachers', 'junior-camp'] });
   assert.equal(ok.status, 200);
-  assert.deepEqual(ok.report.rows.map(r => r.withdrawAccount), ['teachers', 'wolko'], '비어 있던 항목만 채워지고, 이미 확정된 항목은 그대로');
-  assert.equal(ok.report.rows[0].withdrawSetBy, 'acct@x.com');
+  assert.deepEqual(ok.report.rows.map(r => r.withdrawAccount), ['teachers', 'junior-camp']);
+  assert.equal(ok.report.rows[0].withdrawSetBy, 'acct@x.com', '비어 있던 항목은 채운 사람이 남는다');
+  assert.equal(ok.report.rows[0].withdrawChanged, undefined);
+  assert.equal(ok.report.rows[1].withdrawChanged, true, '이미 있던 계좌를 바꾸면 변경 표시');
+  assert.deepEqual(ok.report.rows[1].withdrawHistory.map(h => [h.from, h.to, h.by]), [['wolko', 'junior-camp', 'acct@x.com']]);
   assert.equal(ok.report.rows[0].withdrawNumber, '301-0278-8185-71');
-  assert.equal(ok.withdrawSet, 1);
-  assert.match(ok.report.log.at(-1).note, /출금 계좌 1개/);
-  const again = await patch(ann, { withdrawals: ['syme', 'syme'] });
-  assert.equal(again.withdrawSet, 0, '이미 채워진 뒤에는 바꾸지 않는다');
-  assert.deepEqual(again.report.rows.map(r => r.withdrawAccount), ['teachers', 'wolko']);
+  assert.equal(ok.withdrawSet, 2);
+  assert.match(ok.report.log.at(-1).note, /출금 계좌 2개/);
+  const same = await patch(ann, { withdrawals: ['teachers', 'junior-camp'] });
+  assert.equal(same.withdrawSet, 0, '같은 값이면 아무것도 바뀌지 않는다');
+  const blank = await patch(ann, { withdrawals: ['', ''] });
+  assert.deepEqual(blank.report.rows.map(r => r.withdrawAccount), ['teachers', 'junior-camp'], '비워 보내면 그대로');
 });

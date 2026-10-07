@@ -337,7 +337,7 @@ async function handlePatch(context) {
     if (report.status !== 'approved' && report.status !== 'processed') return err('승인된 리포트만 카테고리를 수정할 수 있습니다.', 409);
     const cats = Array.isArray(body.categories) ? body.categories : [];
     if (cats.length !== report.rows.length || cats.some(c => !canonAccount(c))) return err('모든 항목의 카테고리(계정과목)를 선택해 주세요.');
-    // 출금 계좌가 확정되기 전에 승인된 예전 리포트는 회계 담당자가 빈 항목에 한해 채울 수 있다 (승인자가 확정한 계좌는 바꾸지 않는다)
+    // 출금 계좌: 회계 담당자가 마지막에 확인하면서 바꿀 수 있다(예전에 승인되어 비어 있던 항목은 채운다). 바꾼 기록은 항목에 남는다.
     const wds = Array.isArray(body.withdrawals) && body.withdrawals.length === report.rows.length ? body.withdrawals : [];
     if (wds.some(w => w && !isWithdrawId(w))) return err('출금 계좌를 확인해 주세요.');
     let changed = 0;
@@ -352,8 +352,12 @@ async function handlePatch(context) {
     });
     let wdSet = 0;
     report.rows.forEach((row, i) => {
-      if (!wds[i] || row.withdrawAccount) return;
-      row.withdrawAccount = wds[i]; row.withdrawSetBy = session.email; wdSet++;
+      if (!wds[i] || row.withdrawAccount === wds[i]) return;
+      if (row.withdrawAccount) {
+        row.withdrawHistory = [...(row.withdrawHistory || []), { from: row.withdrawAccount, to: wds[i], by: session.email, at: now }];
+        row.withdrawChanged = true;
+      } else row.withdrawSetBy = session.email;
+      row.withdrawAccount = wds[i]; wdSet++;
     });
     let confirmedNow = false;
     if (report.rows.every(r => canonAccount(r.account))) {
