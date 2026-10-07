@@ -1,7 +1,7 @@
 /* WOLKO shared control sizing
-   Standard: compact controls 36px, form/action controls 44px, mobile touch targets 44px. */
+   Standard: compact controls 36px, form fields / dialog actions 34px (한눈에 얇고 정돈되게 — 데스크톱·모바일 동일). */
 :root {
-  --wl-control-height: 44px;
+  --wl-control-height: 34px;
   --wl-control-height-compact: 36px;
   --wl-control-radius: 10px;
   --wl-control-gap: 10px;
@@ -235,7 +235,7 @@
 
 @media (max-width: 640px) {
   :root {
-    --wl-control-height-compact: 44px;
+    --wl-control-height-compact: 36px; /* 모바일에서도 같은 높이 — 예전엔 44px 로 늘어나 두꺼워 보였다 */
   }
 
   /* Keep mobile modal close buttons easy to hit without changing their icon size. */
@@ -263,4 +263,20 @@
   .table-section:not(.staff-section) .btn-print {
     min-height: var(--wl-control-height) !important;
   }
+}
+
+/* ── 입력칸 · 선택박스 높이를 사이트 전체(홈페이지 + 포탈)에서 34px 로 통일 ──
+   각 페이지가 따로 정한 높이(40~52px)가 제각각이라, 페이지 스타일보다 우선하게 고정한다.
+   로그인 칸(.login-input)과 여러 줄 입력(textarea) · 체크박스 · 색 · 파일 · 범위 입력은 그대로 둔다. 큰 칸이 꼭 필요하면 .wl-tall 을 붙인다. */
+:root:root :is(
+  input:not([type]),
+  input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="url"],
+  input[type="search"], input[type="number"], input[type="date"], input[type="time"], input[type="datetime-local"],
+  input[data-datepick], select
+):not(.login-input, .wl-tall) {
+  box-sizing: border-box;
+  height: var(--wl-control-height) !important;
+  min-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }

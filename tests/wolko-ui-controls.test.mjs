@@ -8,7 +8,7 @@ const read = (path) => readFile(new URL(path, root), 'utf8');
 test('shared control stylesheet defines the WOLKO sizing system', async () => {
   const css = await read('public/wolko-ui.css');
 
-  assert.match(css, /--wl-control-height:\s*44px/);
+  assert.match(css, /--wl-control-height:\s*34px/);
   assert.match(css, /--wl-control-height-compact:\s*36px/);
   assert.match(css, /\.btn-edit-mode/);
   assert.match(css, /\.btn-print/);
@@ -73,4 +73,10 @@ test('contact navigation follows the selected language everywhere', async () => 
   ) || [];
 
   assert.equal(localizedContactLinks.length, 3);
+});
+
+test('입력칸·선택박스는 사이트 전체에서 34px 로 고정된다 (로그인 칸·textarea 제외)', async () => {
+  const css = await read('public/wolko-ui.css');
+  assert.match(css, /:root:root :is\([\s\S]*?\):not\(\.login-input, \.wl-tall\) \{[^}]*height: var\(--wl-control-height\) !important;[^}]*min-height: 0 !important;/);
+  assert.doesNotMatch(css.slice(css.indexOf(':root:root :is(')), /textarea/);
 });
