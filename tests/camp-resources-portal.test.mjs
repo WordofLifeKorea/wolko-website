@@ -74,7 +74,63 @@ test('캠프 추가 폼의 계절 체크박스와 입력 칸은 같은 낮은 �
 
 test('캠프 관리 창: 이름이 한 줄에 들어오게 넓히되(540px) 좁은 화면(480px 이하, 340px 이하)은 따로 정리한다', () => {
   const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
-  assert.match(page, /#campManageBackdrop \.tch-dialog \{ max-width:540px; \}/);
+  assert.match(page, /#campManageBackdrop \.tch-dialog, #managersBackdrop \.tch-dialog \{ max-width:540px; \}/);
   assert.match(page, /@media \(max-width:480px\) \{\s*#campManageBackdrop \{ padding:12px; \}/);
   assert.match(page, /@media \(max-width:340px\)/);
+});
+
+import * as Camps from '../functions/api/teach/camps.js';
+import * as Managers from '../functions/api/teach/managers.js';
+import * as Upload from '../functions/api/teach/upload.js';
+
+test('캠프 자료실 권한: 일반 멤버는 보기·추가만, 마스터가 지정한 관리자(와 마스터)만 수정·삭제·캠프 관리', async () => {
+  const env = setup();
+  await putAccount(env, { email: 'm@x.com', name: 'Member', role: 'counselor', status: 'approved' });
+  await putAccount(env, { email: 'ella@wol.org', name: 'Ella', role: 'counselor', status: 'approved' });
+  const sess = (e, r = 'counselor') => createHubSessionToken(env.ADMIN_PASSWORD, e, r);
+  const master = await sess('wolkorea1@gmail.com', 'master'), member = await sess('m@x.com'), ella = await sess('ella@wol.org');
+  const req = (path, method, token, body) => new Request('https://wolko.org' + path, { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const login = async t => (await (await PLogin.onRequestPost({ env, request: req('/api/teach/portal-login', 'POST', t) })).json());
+  const item = { tab: 'general', title: '자료', url: 'https://example.com/a', campIds: ['camp-1'] };
+
+  // 관리자 지정은 마스터만, 지정 전에는 Ella 도 일반 멤버
+  let m = await login(member); let e = await login(ella);
+  assert.deepEqual([m.role, m.isManager, e.role], ['member', false, 'member']);
+  assert.equal((await Managers.onRequestPut({ env, request: req('/api/teach/managers', 'PUT', member, { emails: ['m@x.com'] }) })).status, 403);
+  assert.equal((await Managers.onRequestPut({ env, request: req('/api/teach/managers', 'PUT', master, { emails: ['Ella@wol.org', 'bad', 'ella@wol.org'] }) })).status, 200);
+  const list = await (await Managers.onRequestGet({ env, request: req('/api/teach/managers', 'GET', master) })).json();
+  assert.deepEqual(list.managers.map(x => x.email), ['ella@wol.org']);
+  assert.ok(list.accounts.some(a => a.email === 'm@x.com'));
+  assert.equal((await (await Managers.onRequestGet({ env, request: req('/api/teach/managers', 'GET', member) })).json()).managers, undefined, '일반 멤버에게는 명단을 주지 않는다');
+
+  m = await login(member); e = await login(ella); const ms = await login(master);
+  assert.deepEqual([m.role, e.role, e.isManager, ms.role, ms.isMaster], ['member', 'admin', true, 'admin', true]);
+
+  // 일반 멤버: 읽기 · 추가 O, 수정 · 삭제 · 순서 · 캠프 관리 X
+  assert.equal((await Data.onRequestGet({ env, request: req('/api/teach/data', 'GET', m.token) })).status, 200);
+  const added = await Data.onRequestPost({ env, request: req('/api/teach/data', 'POST', m.token, { item }) });
+  assert.equal(added.status, 200);
+  const id = (await added.json()).items[0].id;
+  assert.equal((await Data.onRequestPut({ env, request: req('/api/teach/data', 'PUT', m.token, { item: { ...item, id, title: '바꿈' } }) })).status, 403);
+  assert.equal((await Data.onRequestPatch({ env, request: req('/api/teach/data', 'PATCH', m.token, { ids: [id] }) })).status, 403);
+  assert.equal((await Data.onRequestDelete({ env, request: req(`/api/teach/data?id=${id}`, 'DELETE', m.token) })).status, 403);
+  assert.equal((await Camps.onRequestGet({ env, request: req('/api/teach/camps', 'GET', m.token) })).status, 200);
+  assert.equal((await Camps.onRequestPost({ env, request: req('/api/teach/camps', 'POST', m.token, { year: '2027', season: 'summer', name: 'A' }) })).status, 403);
+
+  // 관리자(Ella)와 마스터: 수정 · 삭제 · 캠프 관리 O
+  assert.equal((await Data.onRequestPut({ env, request: req('/api/teach/data', 'PUT', e.token, { item: { ...item, id, title: '바꿈' } }) })).status, 200);
+  assert.equal((await Camps.onRequestPost({ env, request: req('/api/teach/camps', 'POST', e.token, { year: '2027', season: 'summer', name: 'A' }) })).status, 200);
+  assert.equal((await Data.onRequestDelete({ env, request: req(`/api/teach/data?id=${id}`, 'DELETE', ms.token) })).status, 200);
+  // 로그인 없이는 아무것도 안 된다
+  assert.equal((await Data.onRequestPost({ env, request: new Request('https://wolko.org/api/teach/data', { method: 'POST', body: '{}' }) })).status, 401);
+});
+
+test('캠프 자료실 화면: 수정·삭제·순서·캠프 관리는 관리자에게만 보이고, 관리자 지정은 마스터에게만 보인다', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.match(page, /isManager = !!data\.isManager;/);
+  assert.match(page, /\$\{editMode && isManager \? `<button class="drag-handle"/);
+  assert.match(page, /\$\{editMode && isManager \? `\s*<div class="present-card-actions" data-stop>/);
+  assert.match(page, /els\.campManageBtn\.hidden = !editMode \|\| !isManager;/);
+  assert.match(page, /els\.managersBtn\.hidden = !editMode \|\| !isMaster;/);
+  assert.match(page, /\/api\/teach\/managers/);
 });

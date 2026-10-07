@@ -241,7 +241,11 @@
     .camp-manage-row-meta { font-size:11.5px; color:var(--muted); }
     .camp-manage-actions { flex-wrap:nowrap; }
     /* 캠프 관리 창은 이름이 한 줄에 들어오도록 조금 넓게 (다른 대화상자는 그대로 400px) */
-    #campManageBackdrop .tch-dialog { max-width:540px; }
+    #campManageBackdrop .tch-dialog, #managersBackdrop .tch-dialog { max-width:540px; }
+    .managers-hint { margin:0 0 12px; font-size:12.5px; line-height:1.6; color:var(--muted); }
+    .managers-add { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; }
+    .managers-add select { min-width:0; }
+    :root:root .managers-add button { height:34px !important; min-height:0 !important; padding:0 16px; }
     @media (max-width:480px) {
       #campManageBackdrop { padding:12px; }
       #campManageBackdrop .tch-dialog { padding:20px 16px; max-height:92vh; }
@@ -360,6 +364,7 @@
           </div>
           <select id="campSelect"></select>
           <button class="secondary camp-rename-btn" id="campRenameBtn" type="button" hidden data-ko="이름 수정" data-en="Rename">이름 수정</button>
+          <button class="ghost camp-manage-btn" id="managersBtn" type="button" hidden data-ko="관리자 지정" data-en="Set Managers">관리자 지정</button>
           <button class="ghost camp-manage-btn" id="campManageBtn" type="button" hidden data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</button>
         </div>
       </div>
@@ -416,6 +421,20 @@
         <button class="secondary" id="itemDialogCancelBtn" type="button" data-ko="취소" data-en="Cancel">취소</button>
         <button class="primary" id="itemDialogSaveBtn" type="button" data-ko="저장" data-en="Save">저장</button>
       </div>
+    </div>
+  </div>
+
+  <div class="tch-dialog-backdrop" id="managersBackdrop" hidden>
+    <div class="tch-dialog">
+      <div class="tch-dialog-title" data-ko="자료실 관리자 지정" data-en="Resource Managers">자료실 관리자 지정</div>
+      <p class="managers-hint" data-ko="관리자는 자료 수정·삭제·순서 변경과 캠프 관리를 할 수 있어요. 그 밖의 멤버는 자료 추가만 할 수 있어요. (마스터는 항상 관리자)" data-en="Managers can edit, delete and reorder files and manage camps. Everyone else can only add files. (The master is always a manager.)">관리자는 자료 수정·삭제·순서 변경과 캠프 관리를 할 수 있어요. 그 밖의 멤버는 자료 추가만 할 수 있어요. (마스터는 항상 관리자)</p>
+      <div class="camp-manage-list" id="managersList"></div>
+      <div class="field">
+        <label for="managersPick" data-ko="멤버 추가" data-en="Add a member">멤버 추가</label>
+        <div class="managers-add"><select id="managersPick"></select><button class="primary" id="managersAddBtn" type="button" data-ko="추가" data-en="Add">추가</button></div>
+      </div>
+      <p class="tch-dialog-error" id="managersError"></p>
+      <div class="tch-dialog-btns"><button class="secondary" id="managersCloseBtn" type="button" data-ko="닫기" data-en="Close">닫기</button></div>
     </div>
   </div>
 
@@ -513,7 +532,7 @@
         setDefaultCamp: '기본 설정',
         defaultCamp: '기본',
         defaultCampSaveFailed: '기본 캠프를 저장하지 못했습니다.',
-        editModeEnter: '편집 모드',
+        editModeEnter: '편집 모드', managerRemove: '해제', managersNone: '지정된 관리자가 아직 없어요.', managerPick: '멤버 고르기',
         editModeExit: '편집 중 · 나가기',
         staffLogin: '편집 모드',
       },
@@ -554,7 +573,7 @@
         setDefaultCamp: 'Set Default',
         defaultCamp: 'Default',
         defaultCampSaveFailed: 'Could not save the default camp.',
-        editModeEnter: 'Edit Mode',
+        editModeEnter: 'Edit Mode', managerRemove: 'Remove', managersNone: 'No managers yet.', managerPick: 'Choose a member',
         editModeExit: 'Editing · Exit',
         staffLogin: 'Edit Mode',
       },
@@ -578,6 +597,13 @@
       seasonToggle: document.getElementById('seasonToggle'),
       campSelect: document.getElementById('campSelect'),
       campRenameBtn: document.getElementById('campRenameBtn'),
+      managersBtn: document.getElementById('managersBtn'),
+      managersBackdrop: document.getElementById('managersBackdrop'),
+      managersList: document.getElementById('managersList'),
+      managersPick: document.getElementById('managersPick'),
+      managersAddBtn: document.getElementById('managersAddBtn'),
+      managersCloseBtn: document.getElementById('managersCloseBtn'),
+      managersError: document.getElementById('managersError'),
       campManageBtn: document.getElementById('campManageBtn'),
       campManageBackdrop: document.getElementById('campManageBackdrop'),
       campManageList: document.getElementById('campManageList'),
@@ -618,6 +644,8 @@
     let currentTab = DEFAULT_TAB;
     let dialogTab = DEFAULT_TAB;
     let editMode = false;
+    let isManager = false;   // 수정 · 삭제 · 순서 · 캠프 관리 가능 (마스터 + 마스터가 지정한 관리자)
+    let isMaster = false;    // 관리자 지정 가능
     let token = '';
     let loginMode = 'access';
     let editingItemId = '';
@@ -678,7 +706,10 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.token) throw new Error(data.error || tr('loginFailed'));
       token = data.token;
+      isManager = !!data.isManager;
+      isMaster = !!data.isMaster;
       updateEditModeUI();
+      if (isManager) render();   // 관리 버튼(수정·삭제·순서)은 관리자에게만 그려진다
     }
 
     function updateLangToggleUI() {
@@ -789,9 +820,9 @@
           ? `<span class="resource-chip is-missing">${currentLang === 'en' ? 'Needs archive' : '보관 필요'}</span>`
           : '';
       return `
-        <div class="present-card${editMode ? ' is-editable' : ''}" data-open-url="${escapeHtml(openUrl)}" data-item-id="${escapeHtml(item.id)}">
+        <div class="present-card${editMode && isManager ? ' is-editable' : ''}" data-open-url="${escapeHtml(openUrl)}" data-item-id="${escapeHtml(item.id)}">
           ${cardPreviewHtml(item)}
-          ${editMode ? `<button class="drag-handle" type="button" draggable="true" data-stop title="${escapeHtml(tr('dragHint'))}" aria-label="${escapeHtml(tr('dragHint'))}">
+          ${editMode && isManager ? `<button class="drag-handle" type="button" draggable="true" data-stop title="${escapeHtml(tr('dragHint'))}" aria-label="${escapeHtml(tr('dragHint'))}">
             <svg viewBox="0 0 16 24" aria-hidden="true">
               <circle cx="5" cy="5" r="1.8" fill="currentColor"></circle>
               <circle cx="11" cy="5" r="1.8" fill="currentColor"></circle>
@@ -805,7 +836,7 @@
             <div class="present-card-title">${escapeHtml(item.title)}</div>
             <div class="present-card-meta">${escapeHtml(campNamesFor(item.campIds))}</div>
             ${(archiveChip || item.bgmUrl) ? `<div class="resource-chip-row">${archiveChip}${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}</div>` : ''}
-            ${editMode ? `
+            ${editMode && isManager ? `
               <div class="present-card-actions" data-stop>
                 <button type="button" data-edit-item="${escapeHtml(item.id)}">${escapeHtml(tr('edit'))}</button>
                 <button type="button" class="danger" data-delete-item="${escapeHtml(item.id)}">${escapeHtml(tr('delete'))}</button>
@@ -1133,8 +1164,9 @@
       els.editModeBtn.textContent = hasStaffAccess()
         ? (editMode ? tr('editModeExit') : tr('editModeEnter'))
         : tr('staffLogin');
-      if (els.campManageBtn) els.campManageBtn.hidden = !editMode;
-      if (els.campRenameBtn) els.campRenameBtn.hidden = !editMode || !selectedCampId;
+      if (els.campManageBtn) els.campManageBtn.hidden = !editMode || !isManager;
+      if (els.campRenameBtn) els.campRenameBtn.hidden = !editMode || !isManager || !selectedCampId;
+      if (els.managersBtn) els.managersBtn.hidden = !editMode || !isMaster;
     }
 
     els.editModeBtn.addEventListener('click', () => {
@@ -1369,6 +1401,43 @@
       renderCampManageList();
       els.campManageBackdrop.hidden = false;
     });
+
+    /* ─── 관리자 지정 (마스터만) ─── */
+    let managerState = { managers: [], accounts: [] };
+    function renderManagers() {
+      const nm = e => { const a = managerState.accounts.find(x => x.email === e); return a && a.name ? `${a.name} · ${e}` : e; };
+      els.managersList.innerHTML = managerState.managers.length
+        ? managerState.managers.map(m => `<div class="camp-manage-row"><div class="camp-manage-row-main"><span class="camp-manage-row-name">${escapeHtml(nm(m.email))}</span></div><div class="camp-manage-actions"><button class="danger" type="button" data-manager-del="${escapeHtml(m.email)}">${escapeHtml(tr('managerRemove'))}</button></div></div>`).join('')
+        : `<div class="empty" style="grid-column:auto;">${escapeHtml(tr('managersNone'))}</div>`;
+      const taken = new Set(managerState.managers.map(m => m.email));
+      els.managersPick.innerHTML = `<option value="">${escapeHtml(tr('managerPick'))}</option>` + managerState.accounts.filter(a => !taken.has(a.email)).map(a => `<option value="${escapeHtml(a.email)}">${escapeHtml(a.name ? `${a.name} · ${a.email}` : a.email)}</option>`).join('');
+    }
+    async function loadManagers() {
+      const res = await fetch('/api/teach/managers', { headers: { Authorization: `Bearer ${sessionStorage.getItem('wolko-hub-token') || ''}` } });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || tr('loginFailed'));
+      managerState = { managers: data.managers || [], accounts: data.accounts || [] };
+    }
+    async function saveManagers(emails) {
+      const res = await fetch('/api/teach/managers', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionStorage.getItem('wolko-hub-token') || ''}` }, body: JSON.stringify({ emails }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || tr('campSaveFailed'));
+      await loadManagers(); renderManagers();
+    }
+    els.managersBtn.addEventListener('click', async () => {
+      els.managersError.textContent = '';
+      try { await loadManagers(); renderManagers(); els.managersBackdrop.hidden = false; } catch (e) { alert(e.message); }
+    });
+    els.managersCloseBtn.addEventListener('click', () => { els.managersBackdrop.hidden = true; });
+    els.managersAddBtn.addEventListener('click', async () => {
+      const email = els.managersPick.value; if (!email) return;
+      try { await saveManagers([...managerState.managers.map(m => m.email), email]); els.managersError.textContent = ''; } catch (e) { els.managersError.textContent = e.message; }
+    });
+    els.managersList.addEventListener('click', async event => {
+      const b = event.target.closest('[data-manager-del]'); if (!b) return;
+      try { await saveManagers(managerState.managers.map(m => m.email).filter(e => e !== b.dataset.managerDel)); els.managersError.textContent = ''; } catch (e) { els.managersError.textContent = e.message; }
+    });
+
     els.campManageCloseBtn.addEventListener('click', () => { els.campManageBackdrop.hidden = true; });
 
     els.addCampBtn.addEventListener('click', async () => {

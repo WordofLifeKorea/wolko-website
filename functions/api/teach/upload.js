@@ -1,3 +1,5 @@
+import { teachRole } from '../../lib/teachAuth.js';
+
 const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
@@ -34,32 +36,6 @@ function getTeachFileStore(env) {
   return null;
 }
 
-async function verifyToken(request, env) {
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  if (!token || !env.ADMIN_PASSWORD) return false;
-  try {
-    const decoded = atob(token);
-    const lastColon = decoded.lastIndexOf(':');
-    const sigHex = decoded.slice(lastColon + 1);
-    const data = decoded.slice(0, lastColon);
-    const parts = data.split(':');
-    if (parts[0] !== 'wolko-teach' || parts[1] !== 'admin') return false;
-    const expires = parseInt(parts[2], 10);
-    if (!expires || Date.now() > expires) return false;
-    const key = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(env.ADMIN_PASSWORD),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['verify']
-    );
-    const sig = new Uint8Array(sigHex.match(/.{2}/g).map(part => parseInt(part, 16)));
-    return crypto.subtle.verify('HMAC', key, sig, new TextEncoder().encode(data));
-  } catch {
-    return false;
-  }
-}
 
 function extOf(filename, kind) {
   const match = String(filename || '').match(ALLOWED_EXT[kind]);
@@ -68,11 +44,12 @@ function extOf(filename, kind) {
 
 export async function onRequestPost(context) {
   const { env, request } = context;
+  const role = await teachRole(request, env);
   const store = getTeachFileStore(env);
   if (!env.ADMIN_PASSWORD || !store) {
     return Response.json({ error: '서버 설정이 필요합니다. (파일 저장소 미연결)' }, { status: 500, headers: CORS });
   }
-  if (!(await verifyToken(request, env))) {
+  if (!role) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
 

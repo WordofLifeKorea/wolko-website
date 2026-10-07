@@ -1,3 +1,5 @@
+import { teachRole, deniedManage } from '../../lib/teachAuth.js';
+
 const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
@@ -8,36 +10,6 @@ const MAX_ITEMS = 2000;
 const THUMBNAIL_BACKFILL_LIMIT = 8;
 const TAB_SET = new Set(['teacher', 'program', 'counselor', 'preacher', 'general']);
 
-function toHex(bytes) {
-  return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
-}
-
-async function verifyToken(request, env) {
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  if (!token || !env.ADMIN_PASSWORD) return false;
-  try {
-    const decoded = atob(token);
-    const lastColon = decoded.lastIndexOf(':');
-    const sigHex = decoded.slice(lastColon + 1);
-    const data = decoded.slice(0, lastColon);
-    const parts = data.split(':');
-    if (parts[0] !== 'wolko-teach' || parts[1] !== 'admin') return false;
-    const expires = parseInt(parts[2], 10);
-    if (!expires || Date.now() > expires) return false;
-    const key = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(env.ADMIN_PASSWORD),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['verify']
-    );
-    const sig = new Uint8Array(sigHex.match(/.{2}/g).map(part => parseInt(part, 16)));
-    return crypto.subtle.verify('HMAC', key, sig, new TextEncoder().encode(data));
-  } catch {
-    return false;
-  }
-}
 
 function text(value, max = 240) {
   return String(value || '').trim().slice(0, max);
@@ -207,10 +179,11 @@ function normalizeItem(item) {
 
 export async function onRequestGet(context) {
   const { env, request } = context;
+  const role = await teachRole(request, env);
   if (!env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
-  if (!env.ADMIN_PASSWORD || !(await verifyToken(request, env))) {
+  if (!env.ADMIN_PASSWORD || !role) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
   const data = await readData(env);
@@ -222,10 +195,11 @@ export async function onRequestGet(context) {
 
 export async function onRequestPost(context) {
   const { env, request } = context;
+  const role = await teachRole(request, env);
   if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
-  if (!(await verifyToken(request, env))) {
+  if (!role) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
   try {
@@ -246,12 +220,14 @@ export async function onRequestPost(context) {
 
 export async function onRequestPut(context) {
   const { env, request } = context;
+  const role = await teachRole(request, env);
   if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
-  if (!(await verifyToken(request, env))) {
+  if (!role) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
+  if (role !== 'admin') return deniedManage(CORS);
   try {
     const body = await request.json();
     const id = text(body.item?.id, 80);
@@ -275,12 +251,14 @@ export async function onRequestPut(context) {
 
 export async function onRequestPatch(context) {
   const { env, request } = context;
+  const role = await teachRole(request, env);
   if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
-  if (!(await verifyToken(request, env))) {
+  if (!role) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
+  if (role !== 'admin') return deniedManage(CORS);
   try {
     const body = await request.json();
     const orderedIds = Array.isArray(body.ids) ? body.ids.map(id => text(id, 80)).filter(Boolean) : [];
@@ -312,12 +290,14 @@ export async function onRequestPatch(context) {
 
 export async function onRequestDelete(context) {
   const { env, request } = context;
+  const role = await teachRole(request, env);
   if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
-  if (!(await verifyToken(request, env))) {
+  if (!role) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
+  if (role !== 'admin') return deniedManage(CORS);
   const url = new URL(request.url);
   const id = text(url.searchParams.get('id'), 80);
   if (!id) {
