@@ -1,5 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+// 제주 캠퍼스 데이 안내 팝업: 일정 파일의 접수(status: open)가 열려 있을 때만 만든다 (시작일이 지나면 화면에서 자동으로 숨긴다)
+const campusDayEntry = (await getCollection('camp_schedules')).find((c) => String(c.id).startsWith('2026-jeju-campus-day'));
+const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? campusDayEntry.data : null;
 ---
 
 <BaseLayout
@@ -594,6 +598,42 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </div>
 </div>
 
+<!-- ══ 제주 캠퍼스 데이 안내 팝업 (감사의 밤 팝업을 닫은 뒤 이어서 뜬다) ══ -->
+{campusDay && (
+  <div class="wh-promo-overlay" id="campusDayPromo" data-start={campusDay.start_date ?? ''} hidden>
+    <div class="wh-promo-card">
+      <button type="button" class="wh-promo-close" id="campusDayPromoClose" aria-label="닫기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <img class="wh-promo-image" src="/images/wolbi-jeju/hero-campus-spring-2026.jpeg" alt="Jeju Campus Day" loading="lazy">
+      <div class="wh-promo-body">
+        <div class="wh-promo-eyebrow">
+          <span class="wl-ko">학생들을 초대합니다</span>
+          <span class="wl-en">Students Welcome</span>
+        </div>
+        <h2 class="wh-promo-title">
+          <span class="wl-ko">제주 캠퍼스 데이</span>
+          <span class="wl-en">Jeju Campus Day</span>
+        </h2>
+        <p class="wh-promo-meta">
+          <span class="wl-ko">{campusDay.date_ko} · 월비연수원</span>
+          <span class="wl-en">{campusDay.date_en} · WOLBI Center</span>
+        </p>
+        <div class="wh-promo-actions">
+          <a class="wh-promo-btn" href={campusDay.registration_url || '/camp-register/'} target={campusDay.registration_url ? '_blank' : undefined} rel="noopener" id="campusDayPromoCta">
+            <span class="wl-ko">신청하기</span>
+            <span class="wl-en">Apply Now</span>
+          </a>
+          <button type="button" class="wh-promo-dismiss" id="campusDayPromoDismiss">
+            <span class="wl-ko">다시 보지 않기</span>
+            <span class="wl-en">Don't show again</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 <div class="wh-home-combined">
 
   <!-- ══ HERO ══ -->
@@ -930,47 +970,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     });
   })();
 
-  // ── 감사의 밤 안내 팝업 ──────────────────────────────────
+  // ── 홈 안내 팝업 (감사의 밤 → 제주 캠퍼스 데이 순서로 하나씩) ──────────────────
   // "다시 보지 않기"는 localStorage(영구), 그냥 닫기/배경 클릭/신청 이동은
   // sessionStorage(이번 방문 동안만)로 구분해서 과하게 반복 노출되지 않게 한다.
   (function () {
-    var PERMA_KEY = 'wolko-promo-thanksgiving-2026-11-26-hide';
-    var SESSION_KEY = 'wolko-promo-thanksgiving-2026-11-26-seen';
-    var overlay = document.getElementById('thanksgivingPromo');
-    if (!overlay) return;
-
-    try {
-      if (localStorage.getItem(PERMA_KEY) === '1') return;
-      if (sessionStorage.getItem(SESSION_KEY) === '1') return;
-    } catch (e) {}
-
-    function markSeen() {
-      try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (e) {}
+    function setup(cfg) {
+      var overlay = document.getElementById(cfg.overlay);
+      if (!overlay) return null;
+      var todayKst = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+      var start = (overlay.dataset.start || '').slice(0, 10);
+      if (start && todayKst >= start) return null;                // 행사가 시작되면 더 띄우지 않는다
+      try {
+        if (localStorage.getItem(cfg.perma) === '1') return null;
+        if (sessionStorage.getItem(cfg.session) === '1') return null;
+      } catch (e) {}
+      function markSeen() { try { sessionStorage.setItem(cfg.session, '1'); } catch (e) {} }
+      var afterClose = null;
+      function closePromo() {
+        overlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+        markSeen();
+        setTimeout(function () { overlay.hidden = true; }, 350);
+        var cb = afterClose; afterClose = null;
+        if (cb) setTimeout(cb, 450);
+      }
+      document.getElementById(cfg.close).addEventListener('click', closePromo);
+      document.getElementById(cfg.cta).addEventListener('click', markSeen);
+      document.getElementById(cfg.dismiss).addEventListener('click', function () {
+        try { localStorage.setItem(cfg.perma, '1'); } catch (e) {}
+        closePromo();
+      });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) closePromo(); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePromo();
+      });
+      return {
+        open: function (cb) {
+          afterClose = cb || null;
+          overlay.hidden = false;
+          requestAnimationFrame(function () { overlay.classList.add('is-open'); });
+          document.body.style.overflow = 'hidden';
+        },
+      };
     }
-    function openPromo() {
-      overlay.hidden = false;
-      requestAnimationFrame(function () { overlay.classList.add('is-open'); });
-      document.body.style.overflow = 'hidden';
-    }
-    function closePromo() {
-      overlay.classList.remove('is-open');
-      document.body.style.overflow = '';
-      markSeen();
-      setTimeout(function () { overlay.hidden = true; }, 350);
-    }
 
-    document.getElementById('thanksgivingPromoClose').addEventListener('click', closePromo);
-    document.getElementById('thanksgivingPromoCta').addEventListener('click', markSeen);
-    document.getElementById('thanksgivingPromoDismiss').addEventListener('click', function () {
-      try { localStorage.setItem(PERMA_KEY, '1'); } catch (e) {}
-      closePromo();
-    });
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) closePromo(); });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePromo();
-    });
-
-    setTimeout(openPromo, 700);
+    var queue = [
+      setup({ overlay: 'thanksgivingPromo', close: 'thanksgivingPromoClose', cta: 'thanksgivingPromoCta', dismiss: 'thanksgivingPromoDismiss',
+              perma: 'wolko-promo-thanksgiving-2026-11-26-hide', session: 'wolko-promo-thanksgiving-2026-11-26-seen' }),
+      setup({ overlay: 'campusDayPromo', close: 'campusDayPromoClose', cta: 'campusDayPromoCta', dismiss: 'campusDayPromoDismiss',
+              perma: 'wolko-promo-jeju-campus-day-2026-hide', session: 'wolko-promo-jeju-campus-day-2026-seen' }),
+    ].filter(Boolean);
+    function next() { var p = queue.shift(); if (p) p.open(next); }
+    setTimeout(next, 700);
   })();
 </script>
 
