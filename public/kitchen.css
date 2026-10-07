@@ -39,6 +39,13 @@ button.kp.add:hover { background: #f3f9fb; border-color: var(--blue); }
 .kempty { margin: 0; color: #7d98a3; font-size: 13px; }
 .kitchen-times-grid { grid-template-columns: 1fr; }
 .kitchen-times-grid .remind { color: #7d98a3; font-weight: 600; min-height: 14px; }
+/* 넓은 화면: 하루 카드들이 같은 행(날짜 · 아침 · 점심 · 저녁)을 나눠 써서, 칸 높이가 달라도 같은 끼니는 항상 같은 높이에서 시작한다 */
+@media (min-width: 1361px) {
+  .drive-days { grid-template-rows: auto repeat(3, auto); }
+  .drive-day { grid-row: span 4; grid-template-rows: subgrid; gap: 0 10px; row-gap: 8px; }
+  .kitchen-slots { display: contents; }
+  .kmeal { align-content: start; }
+}
 @media (max-width: 1360px) {
   /* 좁은 화면: 하루가 한 줄 — 왼쪽에 날짜, 오른쪽에 아침·점심·저녁 세 묶음(묶음마다 준비 | 클린업 두 칸) */
   .kitchen-slots { grid-template-columns: minmax(0, 1fr); }
