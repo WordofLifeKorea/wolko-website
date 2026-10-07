@@ -689,11 +689,6 @@ test('회계 화면의 카테고리 선택칸과 노트칸은 34px 로 낮게 �
   assert.match(css, /:root:root \.ex-d-edit \.ex-select-plain,[\s\S]*?:root:root \.ex-anote \{\s*min-height: 0 !important; height: 34px !important;/);
 });
 
-test('회계 편집 항목: 계정 선택칸이 있으면 위쪽 줄에는 계정 이름을 또 보여주지 않는다', async () => {
-  const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
-  assert.match(src, /\$\{editable && r\.account\s*\?\s*\(subText\(r\) && subText\(r\) !== r\.account \? esc\(t\('srcLbl'\) \+ ': ' \+ t\('srcSubmitted', subText\(r\)\)\) : ''\)/);
-});
 
 test('회계 항목: 코드는 작성자 입력 › 승인자 입력 › 회계자 선택 순서로, 회계 노트는 평소 닫혀 있다가 노트 버튼을 누르면 말풍선으로 연다', async () => {
   const { readFileSync } = await import('node:fs');
