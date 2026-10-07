@@ -23,6 +23,8 @@
       icon: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>' },
     { group: 'personal', href: '/car-drive', color: '#d155e6', label: '차량', label_en: 'Vehicle',
       icon: '<path d="M14 16H9m10 0h2v-3.15a1 1 0 0 0-.84-.99L18 11.5l-2.35-3.13a1 1 0 0 0-.8-.4H6.5a2 2 0 0 0-1.79 1.11L3.6 11.5A5 5 0 0 0 3 14v2h2"/><circle cx="6.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16.5" r="2.5" fill="currentColor" stroke="none"/>' },
+    { group: 'personal', href: '/kitchen', color: '#d4a373', label: '주방 보조', label_en: 'Kitchen Duty',
+      icon: '<path d="M5 3v6a3 3 0 0 0 3 3v9M8 3v6M11 3v6a3 3 0 0 1-3 3"/><path d="M18 21V3c-2.5 1.5-3.5 4-3.5 7.5 0 1.5.8 2.5 3.5 2.5"/>' },
     { group: 'personal', href: '/mypage', color: '#2fcfa3', label: '내 페이지', label_en: 'My Page',
       icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M19 8v6M16 11h6"/>' },
   ];

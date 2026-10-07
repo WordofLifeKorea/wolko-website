@@ -123,8 +123,8 @@ test('왼쪽 메뉴 아이콘 색은 메뉴마다 달라서 겹치지 않고, �
   const grab = (file, re) => Object.fromEntries([...readFileSync(new URL(file, import.meta.url), 'utf8').matchAll(re)].map(m => [m[1], m[2].toLowerCase()]));
   const rail = grab('../public/wolko-rail.js', /href: '(\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
   const home = grab('../src/pages/portal.astro', /href: '(\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
-  assert.equal(Object.keys(rail).length, 10);
-  assert.equal(new Set(Object.values(rail)).size, 10, '색이 겹친다');
+  assert.equal(Object.keys(rail).length, 11);
+  assert.equal(new Set(Object.values(rail)).size, 11, '색이 겹친다');
   assert.deepEqual(home, rail);
   const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
   const lum = h => { const [r, g, b] = rgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };

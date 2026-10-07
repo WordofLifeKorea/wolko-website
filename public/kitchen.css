@@ -1,0 +1,10 @@
+/* 주방 보조 — 운행 스케줄(car-drive.css) 위에 하루 6칸(오전·점심·저녁 × 준비·클린업)을 얹는다 */
+.kitchen-slots { gap: 5px; }
+.kitchen-slot { min-height: 44px; padding: 5px 10px; }
+.kitchen-toggle-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.kitchen-toggle-row .day-toggle { padding: 0 4px; }
+@media (max-width: 1360px) {
+  /* 좁은 화면: 하루가 한 줄 — 왼쪽에 날짜, 오른쪽에 준비 | 클린업 두 칸씩 오전·점심·저녁 세 줄 */
+  .kitchen-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kitchen-toggle-row { grid-template-columns: 1fr; }
+}
