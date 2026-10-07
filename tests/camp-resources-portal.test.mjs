@@ -33,14 +33,14 @@ test('캠프 자료실: 승인된 포탈 멤버만 자료실 토큰을 받고, �
   assert.equal(existsSync(root + 'functions/api/teach/auth.js'), false, '공유 비밀번호 로그인은 없앴다');
 });
 
-test('캠프 자료실 화면: 포탈 도구 페이지(공용 머리글·왼쪽 메뉴), 비밀번호 칸 없음, 월코 그룹 메뉴에 들어 있다', () => {
+test('캠프 자료실 화면: 포탈 도구 페이지(공용 머리글·왼쪽 메뉴), 비밀번호 칸 없음, 캠프 그룹 메뉴에 들어 있다', () => {
   const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
   assert.doesNotMatch(page, /BaseLayout|passwordInput|loginScreen|api\/teach\/auth/);
   assert.match(page, /wolko-rail\.js/);
   assert.match(page, /\/api\/teach\/portal-login/);
   assert.match(page, /const LANG_KEY = 'wolko-lang'/);
   const rail = readFileSync(root + 'public/wolko-rail.js', 'utf8');
-  assert.match(rail, /group: 'wolko', href: '\/camp-resources'/);
+  assert.match(rail, /group: 'camp', href: '\/camp-resources'/);
   const portal = readFileSync(root + 'src/pages/portal.astro', 'utf8');
-  assert.match(portal, /group: 'wolko', href: '\/camp-resources'/);
+  assert.match(portal, /group: 'camp', href: '\/camp-resources'/);
 });
