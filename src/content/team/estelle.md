@@ -33,17 +33,15 @@ verse_ko: 우리는 그가 만드신 바라 그리스도 예수 안에서 선한
 verse_en: For we are God’s handiwork, created in Christ Jesus to do good works, which God prepared in advance for us to do.
 prayer_en: |-
   Praise for all the opportunities the Lord is preparing for us to do! (Eph. 2:10) 
-  Please be praying for our summer camps and mission trips in July and August 2026. 
-  Pray for the for the youth who will be attending these camps: that their hearts will be encouraged and that they will take their next step with Jesus!
-  Also, please be praying for me to continue to be able to learn Korean and for opportunities to do so and to do it well. :)
+  Praise for a wonderful Summer camp season and Jr. SYME during July-September 2026!
+  Please be praying for the rest of 2026 and the events planned, for everything to bring God glory! 
+  Please be praying for me to continue to be able to learn Korean and for opportunities to do so and to do it well. :)
 prayer_ko: |-
-  우리가 행하도록 주께서 예비하신 모든 기회를 위해 찬양합니다! (에베소서 2:10)
-  
-  2026년 7월과 8월의 여름 캠프와 선교 여행을 위해 기도해 주시기 바랍니다.
-  
-  이 캠프에 참석할 청년들을 위해 기도해 주세요. 그들의 마음이 격려받고 예수님과 함께 다음 단계로 나아가기를 원합니다!
-  
-  또한 제가 계속해서 한국어를 배울 수 있도록, 그리고 배울 수 있는 기회가 주어지며 잘 배울 수 있도록 기도해 주시기 바랍니다. :)
+  주님께서 우리를 위해 예비해 주신 모든 기회들을 위해 찬양합니다! (에베소서 2:10)
+  2026년 7월부터 9월까지의 멋진 여름 캠프 시즌과 주니어 SYME을 위해 찬양합니다!
+  2026년 남은 기간과 계획된 모든 행사들이 하나님께 영광을 돌리기를 기도해 주세요!
+  제가 계속해서 한국어를 배울 수 있도록, 그리고 그럴 기회들이 주어지고 잘 배울 수 있도록 기도해 주세요. :)
 report_url: "https://mailchi.mp/1392d14df57c/special-news-estelles-newsletter-10288321"
 photo_url_2: "/images/uploads/estelle-photo_url_2-1791355392473.jpg"
+
 ---
