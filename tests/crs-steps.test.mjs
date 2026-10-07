@@ -62,3 +62,8 @@ test('교회 카드는 위쪽(이름·담임·단계)만 접어 두고, 선택(�
   assert.match(src, /selectedCard\?\.classList\.add\('selected'\)/);
   assert.match(src, /selectedCard\?\.scrollIntoView\(\{ block: 'nearest' \}\)/);
 });
+
+test('교회 목록은 번호 순으로 정렬되고, 번호 뱃지는 정원이다', () => {
+  assert.match(src, /\.sort\(\(a, b\) => \(a\.number \|\| Infinity\) - \(b\.number \|\| Infinity\)/);
+  assert.match(src, /:root:root \.rank-badge \{ width:24px; height:24px; min-width:24px; min-height:0; padding:0;[^}]*aspect-ratio:1 \/ 1; border-radius:50%;/);
+});

@@ -425,6 +425,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
   .church-card:hover { border-color:#b8ced5; box-shadow:0 8px 20px rgba(19,52,64,.1); transform:translateY(-1px); }
   .church-card:hover::before { background:var(--card-accent, var(--crs-cyan)); }
+  :root:root .rank-badge { width:24px; height:24px; min-width:24px; min-height:0; padding:0; box-sizing:border-box; aspect-ratio:1 / 1; border-radius:50%; line-height:1; }
   .rank-badge { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; border-radius:50%; font-size:.68rem; font-weight:900; flex-shrink:0; margin-top:2px; padding:0 3px; }
   .church-card-header { padding:.9rem 1.05rem .74rem; background:#fff; border-bottom:1px solid #edf2f3; }
   .church-card-body { padding:.8rem 1.05rem .92rem; }
@@ -1674,7 +1675,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         (!activeMissionaryFilter || c.assignedMissionary === activeMissionaryFilter) &&
         (!activeDenominationFilter || denominationFamily(c.denomination) === activeDenominationFilter)
       )
-      .sort((a, b) => (visitDays(b) ?? -Infinity) - (visitDays(a) ?? -Infinity));
+      .sort((a, b) => (a.number || Infinity) - (b.number || Infinity) || (a.createdAt || 0) - (b.createdAt || 0));   // 교회 번호 순
 
     if (filtered.length === 0) {
       listEl.innerHTML = `
@@ -1721,7 +1722,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         <div class="church-card" data-id="${esc(c.id)}" style="--card-accent:${cm.accent};background:${cm.bg};">
           <div class="church-card-header">
             <div style="display:flex;align-items:flex-start;gap:.55rem;min-width:0;flex:1">
-              <span class="rank-badge" style="background:${cm.accent};color:#fff;">${cm.rank}</span>
+              <span class="rank-badge" style="background:${cm.accent};color:#fff;font-size:${cm.rank >= 100 ? '.52rem' : cm.rank >= 10 ? '.64rem' : '.74rem'};">${cm.rank}</span>
               <div style="min-width:0">
                 <p class="church-name">${esc(c.churchName)}</p>
                 <p class="pastor-name">${t('pastor_prefix')} ${esc(c.pastorName || t('not_entered'))}</p>
