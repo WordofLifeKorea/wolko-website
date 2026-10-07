@@ -693,10 +693,22 @@ test('회계 화면의 카테고리 선택칸과 노트칸은 34px 로 낮게 �
 test('회계 항목: 코드는 작성자 입력 › 승인자 입력 › 회계자 선택 순서로, 회계 노트는 평소 닫혀 있다가 노트 버튼을 누르면 말풍선으로 연다', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
-  assert.match(src, /srcLbl: '작성자 입력', apprLbl: '승인자 입력', acctSelLbl: '회계자 선택 \(필요시 변경\)'/);
+  assert.match(src, /srcLbl: '작성자 입력'/);
+  assert.match(src, /apprLbl: '승인자 입력'/);
+  assert.match(src, /acctSelLbl: '회계자 선택 \(필요시 변경\)'/);
   assert.match(src, /const apprAccountOf = r => \(r\.categoryHistory && r\.categoryHistory\.length\) \? \(r\.categoryHistory\[0\]\.from \|\| ''\) : \(r\.account \|\| ''\)/);
   assert.match(src, /data-act="anote-toggle"/);
   assert.match(src, /<span class="ex-npop" hidden>/);          // 말풍선은 기본으로 숨김
   assert.match(src, /data-anote-i="\$\{i\}"/);                   // 저장 때 모으는 입력칸은 말풍선 안에 그대로 있다
   assert.doesNotMatch(src, /<input class="ex-input ex-anote"/, '평소에 펼쳐진 노트 입력칸은 없다');
+});
+
+test('회계 항목 코드: 평소엔 승인자가 넘긴 코드만 보이고 [변경]을 눌러야 작성자 › 승인자 기록과 선택박스가 펼쳐진다 (위임돼 코드가 없으면 처음부터 펼침)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  assert.match(src, /data-act="code-change"/);
+  assert.match(src, /<div class="ex-cf-panel" \$\{need \? '' : 'hidden'\}>/);
+  assert.match(src, /const need = !APPROVAL_ACCOUNTS\.includes\(r\.account\)/);
+  assert.match(src, /codeLbl: '코드', codeChange: '변경'/);
+  assert.match(src, /data-recat-i="\$\{i\}"/);   // 접혀 있어도 선택박스는 DOM 에 있어 저장 때 그대로 모인다
 });
