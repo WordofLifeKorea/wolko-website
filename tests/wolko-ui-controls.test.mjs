@@ -80,3 +80,8 @@ test('입력칸·선택박스는 사이트 전체에서 34px 로 고정된다 (�
   assert.match(css, /:root:root :is\([\s\S]*?\):not\(\.login-input, \.wl-tall\) \{[^}]*height: var\(--wl-control-height\) !important;[^}]*min-height: 0 !important;/);
   assert.doesNotMatch(css.slice(css.indexOf(':root:root :is(')), /textarea/);
 });
+
+test('CRS 교회 추가 · 방문 추가 버튼은 옆 입력칸과 같은 34px 로 맞춘다', async () => {
+  const src = await read('src/pages/crs/index.astro');
+  assert.match(src, /:root:root \.btn-add, :root:root \.btn-add-visit \{ height:34px !important; min-height:0 !important;/);
+});
