@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=66">
+  <link rel="stylesheet" href="/expense.css?v=67">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=16">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -438,10 +438,14 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
     const apprAccountOf = r => (r.categoryHistory && r.categoryHistory.length) ? (r.categoryHistory[0].from || '') : (r.account || '');
     const codeFlow = (r, i) => {
       const appr = apprAccountOf(r);
+      // 위 줄: 작성자가 쓴 값 › 승인자가 정한 값 (읽기만) · 아래 줄: 회계자가 고르는 값 (필요할 때만 바꾼다)
       return `<div class="ex-code-flow">
-        <div class="ex-cf"><i>${esc(t('srcLbl'))}</i><b>${esc(subText(r) || srcShow(r.source || '') || '—')}</b></div>
-        <div class="ex-cf"><i>${esc(t('apprLbl'))}</i><b>${appr ? esc(appr) : `<span class="ex-cf-none">${esc(t('apprDelegated'))}</span>`}</b></div>
-        <div class="ex-cf ex-cf-sel"><i>${esc(t('acctSelLbl'))}</i><select class="ex-select-plain" data-recat-i="${i}" aria-label="${esc(t('thCat'))}">${APPROVAL_ACCOUNTS.includes(r.account) ? '' : `<option value="" selected>${esc(t('catPick'))}</option>`}${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${r.account === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</select></div>
+        <div class="ex-cf-trail">
+          <span class="ex-cf"><i>${esc(t('srcLbl'))}</i><b>${esc(subText(r) || srcShow(r.source || '') || '—')}</b></span>
+          <span class="ex-cf-arrow" aria-hidden="true">›</span>
+          <span class="ex-cf"><i>${esc(t('apprLbl'))}</i><b>${appr ? esc(appr) : `<span class="ex-cf-none">${esc(t('apprDelegated'))}</span>`}</b></span>
+        </div>
+        <label class="ex-cf-sel"><i>${esc(t('acctSelLbl'))}</i><select class="ex-select-plain" data-recat-i="${i}" aria-label="${esc(t('thCat'))}">${APPROVAL_ACCOUNTS.includes(r.account) ? '' : `<option value="" selected>${esc(t('catPick'))}</option>`}${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${r.account === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</select></label>
       </div>`;
     };
     // 보기 화면: 영수증은 왼쪽 썸네일 타일로 (이미지는 불러와서 채우고, PDF 등은 아이콘)
