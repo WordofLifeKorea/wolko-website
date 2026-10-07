@@ -3,7 +3,8 @@
  * POST   /api/expense/reports                     — 새 경비 리포트 제출
  * PATCH  /api/expense/reports                     — body: { id, action, note? }
  *          action: 'approve' | 'reject'  (승인자)   submitted → approved | rejected
- *                    approve 는 body.categories(항목별 계정과목, rows와 같은 길이)로 카테고리를 확정해야 한다
+ *                    approve 는 body.withdrawals(항목별 출금 계좌 id, rows와 같은 길이)로 출금 계좌를 확정해야 한다.
+ *                    계정과목(코드)은 승인자가 바꿀 필요 없이 회계 담당자가 마지막에 확인한다(body.categories 는 선택). 계좌번호는 회계 담당자에게만 내려간다.
  *                  'process'             (회계담당) approved → processed (송금 처리 완료)
  *                  'trash'               (회계담당) 어떤 상태의 리포트든 삭제 — 영수증 포함 통째로 백업되어 복구 가능
  *                  'restore'             (회계담당) 삭제(백업)된 리포트를 원래대로 복구
@@ -13,6 +14,7 @@
  */
 import { sendEmail, listAccounts } from '../../lib/hubAccounts.js';
 import { ACCOUNTS, CAMPUSES, DEFAULT_CAMPUS, CAMPUS_OVERRIDES, FOREIGN_CURRENCIES } from '../../../src/lib/expense-config.js';
+import { DEFAULT_CODE_FOR, isWithdrawId, withAccountNumbers } from '../../lib/expenseAccounts.js';
 import {
   CORS, REPORT_PREFIX, RECEIPT_PREFIX, MAX_ROWS, MAX_RECEIPTS_PER_ROW,
   EXPENSE_REPLY_TO, EXPENSE_EMAIL_ENABLED, NEW_REPORT_EMAIL_ENABLED, SUBMITTER_EMAIL_ENABLED, err, clip, expenseSession, approverEmails, accountantEmails, listReports,
@@ -103,6 +105,7 @@ export async function onRequestGet(context) {
   const campusMap = await getCampusMap(env);
   const all = applyCampus(await listReports(env), campusMap);
 
+  const view = list => list.map(r => withAccountNumbers(r, session));
   const mine = all.filter(r => r.submitterEmail === session.email);
   const toApprove = session.isApprover
     ? all.filter(r => r.status === 'submitted' && r.submitterEmail !== session.email)
@@ -127,12 +130,12 @@ export async function onRequestGet(context) {
     if (!session.isApprover) return err('승인 권한이 없습니다.', 403);
     // 승인 화면에서는 대기 건과 함께 최근 처리 이력도 보여준다
     const history = all.filter(r => r.status !== 'submitted' && r.reviewedBy === session.email).slice(0, 30);
-    return Response.json({ reports: [...toApprove, ...history] }, { headers: CORS });
+    return Response.json({ reports: view([...toApprove, ...history]) }, { headers: CORS });
   }
   if (scope === 'all') {
     if (!canViewAll) return err('전체 리포트는 관리자와 회계 담당자만 볼 수 있습니다.', 403);
     // 승인 권한이 없는 회계 담당자에게는 승인 대기(submitted) 상태의 리포트를 보여주지 않는다
-    return Response.json({ reports: session.isApprover ? all : all.filter(r => r.status !== 'submitted') }, { headers: CORS });
+    return Response.json({ reports: view(session.isApprover ? all : all.filter(r => r.status !== 'submitted')) }, { headers: CORS });
   }
   if (scope === 'trash') {
     if (!session.isAccountant) return err('회계 담당자만 볼 수 있습니다.', 403);
@@ -140,9 +143,9 @@ export async function onRequestGet(context) {
   }
   if (scope === 'accounting') {
     if (!session.isAccountant) return err('회계 담당자만 볼 수 있습니다.', 403);
-    return Response.json({ reports: accounting }, { headers: CORS });
+    return Response.json({ reports: view(accounting) }, { headers: CORS });
   }
-  return Response.json({ reports: mine }, { headers: CORS });
+  return Response.json({ reports: view(mine) }, { headers: CORS });
 }
 
 async function handlePost(context) {
@@ -252,43 +255,44 @@ async function handlePatch(context) {
     if (action === 'reject' && !note) return err('반려 사유를 입력해 주세요.');
 
     if (action === 'approve') {
-      // 승인자가 모든 항목의 카테고리를 확정해야 승인된다. 단, '회계 담당에게 위임'하면 카테고리 없이 승인하고
-      // 회계 담당이 전부 선택해야 송금 처리를 할 수 있다.
-      // 위임하면 승인자가 확인한 항목의 카테고리만 확정되고, 확인하지 않은 항목(빈 값)만 회계 담당에게 위임된다.
-      const delegate = body.delegate === true;
-      const given = Array.isArray(body.categories) ? body.categories : [];
-      const cats = delegate && !given.length ? report.rows.map(() => '') : given;
-      if (cats.length !== report.rows.length || cats.some(c => !(ACCOUNTS.includes(c) || (delegate && c === '')))) {
-        return err('승인하려면 모든 항목의 카테고리(계정과목)를 확인해 주세요.');
+      // 승인자는 모든 항목의 출금 계좌(별칭)를 확정해야 승인된다. 계정과목(코드)은 승인자가 바꿀 필요 없이 회계 담당자가 마지막에 확인한다.
+      const withdrawals = Array.isArray(body.withdrawals) ? body.withdrawals : [];
+      if (withdrawals.length !== report.rows.length || withdrawals.some(w => !isWithdrawId(w))) {
+        return err('승인하려면 모든 항목의 출금 계좌를 확인해 주세요.');
       }
+      // 예전 화면이 보낸 계정과목은 선택 사항 — 값이 있으면 유효해야 하고, 비어 있으면 건너뛴다
+      const given = Array.isArray(body.categories) ? body.categories : [];
+      if (given.length && (given.length !== report.rows.length || given.some(c => c && !ACCOUNTS.includes(c)))) {
+        return err('계정과목을 확인해 주세요.');
+      }
+      const cats = given.length ? given : report.rows.map(() => '');
       // 제출자가 메모를 남긴 항목은 승인자가 하나씩 확인(체크)해야 한다
       // 위임하면 확인하지 않은 항목은 자동으로 확인 처리된다(autoChecks) — 기록에는 자동 확인으로 남긴다.
       const checks = Array.isArray(body.checks) ? body.checks : [];
-      const autoChecks = delegate && Array.isArray(body.autoChecks) ? body.autoChecks : [];
-      if (report.rows.some((row, i) => row.memo && checks[i] !== true && autoChecks[i] !== true)) return err('메모가 있는 항목을 모두 확인해 주세요.');
+      if (report.rows.some((row, i) => row.memo && checks[i] !== true)) return err('메모가 있는 항목을 모두 확인해 주세요.');
       const aMemos = Array.isArray(body.approverMemos) ? body.approverMemos : [];
       report.rows.forEach((row, i) => {
+        row.withdrawAccount = withdrawals[i];
         if (cats[i]) {
           if (row.account && row.account !== cats[i]) { row.submittedAccount = row.account; row.categoryChanged = true; }
           row.account = cats[i];
+        } else if (!ACCOUNTS.includes(row.account) && DEFAULT_CODE_FOR[withdrawals[i]]) {
+          row.account = DEFAULT_CODE_FOR[withdrawals[i]];   // 출금 계좌로 짐작되는 코드를 미리 채워 두고, 회계가 마지막에 확인한다
+          row.accountSuggested = true;
         }
         const am = clip(aMemos[i], 300);
         if (am) row.approverMemo = am; else delete row.approverMemo;
         if (row.memo) {
-          if (autoChecks[i] === true) row.memoAutoChecked = true; else delete row.memoAutoChecked;
+          delete row.memoAutoChecked;
           row.memoCheckedBy = session.email;
         }
       });
-      if (delegate && report.rows.some(r => !ACCOUNTS.includes(r.account))) {
-        report.categoryDelegated = true;
-        report.categoryDelegatedBy = session.email;
-        report.categoryDelegatedAt = now;
-        delete report.categoriesConfirmedBy; delete report.categoriesConfirmedAt;
-      } else {
-        delete report.categoryDelegated; delete report.categoryDelegatedBy; delete report.categoryDelegatedAt;
-        report.categoriesConfirmedBy = session.email;
-        report.categoriesConfirmedAt = now;
-      }
+      report.withdrawConfirmedBy = session.email;
+      report.withdrawConfirmedAt = now;
+      // 승인자가 계정과목까지 직접 정한 경우(예전 화면)에만 승인자 확정으로 남긴다. 그 밖에는 회계 담당자가 확인한다.
+      delete report.categoryDelegated; delete report.categoryDelegatedBy; delete report.categoryDelegatedAt;
+      if (given.length && report.rows.every(r => ACCOUNTS.includes(r.account))) { report.categoriesConfirmedBy = session.email; report.categoriesConfirmedAt = now; }
+      else { delete report.categoriesConfirmedBy; delete report.categoriesConfirmedAt; }
     }
 
     report.status = action === 'approve' ? 'approved' : 'rejected';
@@ -306,7 +310,7 @@ async function handlePatch(context) {
         `[경비 송금 처리 요청] ${report.submitterName} · ${formatKrw(report.total)}`,
         reportEmailHtml({
           heading: '승인된 경비 리포트 — 송금 처리 요청',
-          intro: `<strong>${report.reviewedByName}</strong> 님이 승인한 경비 리포트입니다. 카테고리는 승인자가 확정했습니다. 송금을 마친 뒤 포탈에서 "송금 처리 완료"로 처리해 주세요.`,
+          intro: `<strong>${report.reviewedByName}</strong> 님이 승인한 경비 리포트입니다. 출금 계좌는 승인자가 확정했고, 계정과목(코드)은 회계 담당자가 확인합니다. 송금을 마친 뒤 포탈에서 "송금 처리 완료"로 처리해 주세요.`,
           report, url: `${origin}/expense`, ctaLabel: '회계 업무 열기',
         }));
       await notify(context, [report.submitterEmail],
@@ -321,7 +325,7 @@ async function handlePatch(context) {
           report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기',
         }), { toSubmitter: true });
     }
-    return Response.json({ ok: true, report }, { headers: CORS });
+    return Response.json({ ok: true, report: withAccountNumbers(report, session) }, { headers: CORS });
   }
 
   // 회계 담당: 승인·송금 단계의 리포트에서 카테고리(코드)만 마지막으로 고칠 수 있다. 금액·품목 등 내용은 고정.
@@ -338,10 +342,13 @@ async function handlePatch(context) {
       row.account = cats[i];
       changed++;
     });
-    if (report.categoryDelegated && report.rows.every(r => ACCOUNTS.includes(r.account))) {
+    let confirmedNow = false;
+    if (report.rows.every(r => ACCOUNTS.includes(r.account))) {
+      confirmedNow = report.categoriesConfirmedBy !== session.email || report.rows.some(r => r.accountSuggested);
       report.categoryDelegated = false;
       report.categoriesConfirmedBy = session.email;
       report.categoriesConfirmedAt = now;
+      report.rows.forEach(r => { delete r.accountSuggested; });
     }
     // 회계 노트(항목별) — 송금 처리 전(승인 상태)에만 남기거나 고칠 수 있다
     let noted = 0;
@@ -353,17 +360,17 @@ async function handlePatch(context) {
         noted++;
       });
     }
-    if (!changed && !noted) return Response.json({ ok: true, report, changed, noted }, { headers: CORS });
+    if (!changed && !noted && !confirmedNow) return Response.json({ ok: true, report: withAccountNumbers(report, session), changed, noted }, { headers: CORS });
     report.log.push({ at: now, by: session.email, action: 'recategorize', note: `${changed}개 항목` + (noted ? `, 노트 ${noted}개` : '') });
     await env.CAMP_KV.put(reportKey(id), JSON.stringify(report));
-    return Response.json({ ok: true, report, changed, noted }, { headers: CORS });
+    return Response.json({ ok: true, report: withAccountNumbers(report, session), changed, noted }, { headers: CORS });
   }
 
   if (action === 'process') {
     if (!session.isAccountant) return err('회계 담당자만 처리할 수 있습니다.', 403);
     if (report.status !== 'approved') return err('승인된 리포트만 송금 처리할 수 있습니다.', 409);
-    if (report.categoryDelegated && report.rows.some(r => !ACCOUNTS.includes(r.account))) {
-      return err('승인자가 위임한 카테고리를 모든 항목에 선택·저장한 뒤 송금 처리할 수 있습니다.', 409);
+    if (report.rows.some(r => !ACCOUNTS.includes(r.account))) {
+      return err('모든 항목의 계정과목(코드)을 선택·저장한 뒤 송금 처리할 수 있습니다.', 409);
     }
     report.status = 'processed';
     report.processedBy = session.email;
@@ -375,7 +382,7 @@ async function handlePatch(context) {
     await notify(context, [report.submitterEmail],
       `[경비 송금 처리 완료] ${formatKrw(report.total)}`,
       reportEmailHtml({ heading: '경비 송금 처리가 완료되었습니다', intro: '승인된 경비 리포트의 송금이 완료되었습니다.', report, url: `${origin}/expense`, ctaLabel: '내 리포트 보기' }), { toSubmitter: true });
-    return Response.json({ ok: true, report }, { headers: CORS });
+    return Response.json({ ok: true, report: withAccountNumbers(report, session) }, { headers: CORS });
   }
 
   if (action === 'trash') {

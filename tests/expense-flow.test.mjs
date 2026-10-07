@@ -75,7 +75,7 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
   assert.ok(store.has(`expense:receipt:${id}:${fid}`), '영수증이 영구 키로 이동');
   assert.ok(![...store.keys()].some(k => k.includes(':tmp:')), '임시 키 정리됨');
 
-  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', cyn, { id, action: 'approve', categories: ['Car Gas (8400)'] })).status, 403, '본인 승인 불가');
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', cyn, { id, action: 'approve', categories: ['Car Gas (8400)'], withdrawals: ['wolko'] })).status, 403, '본인 승인 불가');
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=approve', cyn)).status, 403);
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', boss)).approve, 1);
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=accounting', ann)).reports.length, 0, '승인 전에는 회계에 안 보임');
@@ -90,7 +90,7 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
   assert.equal(re.report.rows[0].receipts.length, 1, '재제출해도 영수증 유지');
 
   sent.length = 0;
-  const ok = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Car Gas (8400)'] });
+  const ok = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Car Gas (8400)'], withdrawals: ['wolko'] });
   assert.equal(ok.report.status, 'approved');
   assert.ok(sent.some(m => m.to.includes('acct@x.com')), '승인 시 회계 담당자에게 알림');
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=accounting', ann)).reports.length, 1);
@@ -206,7 +206,7 @@ test('경비 권한은 "관리자" 등급만: master/포탈 admin이어도 목�
   for (const who of [dev, estelle]) {
     assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', who)).status, 403, '전체 조회 불가');
     assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=approve', who)).status, 403, '승인 목록 불가');
-    assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, action: 'approve', categories: ['Car Gas (8400)'] })).status, 403, '승인 불가');
+    assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, action: 'approve', categories: ['Car Gas (8400)'], withdrawals: ['wolko'] })).status, 403, '승인 불가');
     const me = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', who);
     assert.equal(me.me.isApprover, false);
     assert.equal(me.me.canViewAll, false);
@@ -216,7 +216,7 @@ test('경비 권한은 "관리자" 등급만: master/포탈 admin이어도 목�
   assert.equal(own.status, 200);
   assert.deepEqual((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=mine', dev)).reports.map(x => x.description), ['dev']);
   // 관리자 등급은 승인 가능
-  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ['boss@wol.org', 'admin'], { id, action: 'approve', categories: ['Car Gas (8400)'] })).report.status, 'approved');
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ['boss@wol.org', 'admin'], { id, action: 'approve', categories: ['Car Gas (8400)'], withdrawals: ['wolko'] })).report.status, 'approved');
 });
 
 test('경비 관리자 등급 목록 확인', () => {
@@ -235,7 +235,7 @@ test('Owner(wolkorea1@gmail.com)는 홈페이지 개발이 끝날 때까지 임�
   const me = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', owner);
   assert.equal(me.me.isApprover, true);
   assert.equal(me.me.isAccountant, true);
-  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', owner, { id: sub.report.id, action: 'approve', categories: ['Car Gas (8400)'] })).report.status, 'approved');
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', owner, { id: sub.report.id, action: 'approve', categories: ['Car Gas (8400)'], withdrawals: ['wolko'] })).report.status, 'approved');
 });
 
 test('회계 담당은 리포트를 삭제해도 영수증까지 백업되어 복구할 수 있다', async () => {
@@ -247,7 +247,7 @@ test('회계 담당은 리포트를 삭제해도 영수증까지 백업되어 �
   const up = await call(F.onRequestPost, 'POST', '/api/expense/receipt', cyn, { name: 'r.png', type: 'image/png', data: 'data:image/png;base64,' + btoa('img') });
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'Del', rows: [{ ...row, receipts: [{ id: up.id, name: 'r.png', type: 'image/png' }] }] });
   const id = sub.report.id;
-  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ['boss@wol.org', 'admin'], { id, action: 'approve', categories: ['Car Gas (8400)'] });
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ['boss@wol.org', 'admin'], { id, action: 'approve', categories: ['Car Gas (8400)'], withdrawals: ['wolko'] });
   await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'process' });
   assert.ok(store.has(`expense:receipt:${id}:${up.id}`));
 
@@ -291,8 +291,8 @@ test('승인 시 모든 항목의 카테고리를 확정해야 하고, 확정값
   const id = sub.report.id;
   assert.equal(sub.report.campus, 'jeju');
 
-  const approve = categories => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories });
-  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve' })).status, 400, '카테고리 없이 승인 불가');
+  const approve = categories => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories, withdrawals: ['wolko', 'wolko'] });
+  assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve' })).status, 400, '출금 계좌 없이 승인 불가');
   assert.equal((await approve(['Car Gas (8400)'])).status, 400, '일부 항목만 확정 불가');
   assert.equal((await approve(['Car Gas (8400)', 'Made Up (1)'])).status, 400, '목록에 없는 카테고리 불가');
 
@@ -358,7 +358,7 @@ test('메모: 모든 항목에서 입력 가능, 메모 항목은 승인자가 �
   assert.equal(sub.status, 200);
   assert.equal(sub.report.rows[0].memo, '주유소 영수증 2장 합산');
   const id = sub.report.id, cats = ['Car Gas (8400)', 'Teacher (8052)'];
-  const approve = body => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: cats, ...body });
+  const approve = body => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: cats, withdrawals: ['wolko', 'wolko'], ...body });
   assert.equal((await approve({ checks: [false, true] })).status, 400, '메모 항목 확인 없이는 승인 불가');
   const ok = await approve({ checks: [true, true], approverMemos: ['확인함, 합산 맞음', ''] });
   assert.equal(ok.status, 200);
@@ -367,7 +367,7 @@ test('메모: 모든 항목에서 입력 가능, 메모 항목은 승인자가 �
   assert.equal(ok.report.rows[1].approverMemo, undefined);
 });
 
-test('작성자는 선교 항목·계좌를 직접 적고, 카테고리(코드)는 승인자가 확정한다', async () => {
+test('작성자는 선교 항목·계좌를 직접 적고, 출금 계좌는 승인자가 확정한다', async () => {
   const { acc, call } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
@@ -375,13 +375,13 @@ test('작성자는 선교 항목·계좌를 직접 적고, 카테고리(코드)�
   assert.equal((await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'x', rows: [row('')] })).status, 400, '선교 항목·계좌는 필수');
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 's', rows: [row('월코캠프', { memo: '카드 아님' }), row('개인 사역계좌')] });
   assert.equal(sub.status, 200, '구매 목적은 비워도 된다');
-  assert.deepEqual(sub.report.rows.map(r => [r.source, r.account]), [['월코캠프', ''], ['개인 사역계좌', '']]);
+  assert.deepEqual(sub.report.rows.map(r => [r.source, r.account, r.withdrawAccount]), [['월코캠프', '', undefined], ['개인 사역계좌', '', undefined]], '작성자는 출금 계좌를 정할 수 없다');
   const id = sub.report.id;
   const approve = body => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', ...body });
-  assert.equal((await approve({ categories: ['', 'Teacher (8052)'], checks: [true, true] })).status, 400, '카테고리를 모두 골라야 승인');
-  const ok = await approve({ categories: ['Junior Camp (8040)', 'Teacher (8052)'], checks: [true, true] });
+  assert.equal((await approve({ withdrawals: ['wolko', ''], checks: [true, true] })).status, 400, '출금 계좌를 모두 골라야 승인');
+  const ok = await approve({ withdrawals: ['junior-camp', 'personal'], checks: [true, true] });
   assert.equal(ok.status, 200);
-  assert.deepEqual(ok.report.rows.map(r => [r.source, r.account, !!r.categoryChanged]), [['월코캠프', 'Junior Camp (8040)', false], ['개인 사역계좌', 'Teacher (8052)', false]]);
+  assert.deepEqual(ok.report.rows.map(r => [r.source, r.withdrawAccount]), [['월코캠프', 'junior-camp'], ['개인 사역계좌', 'personal']]);
 });
 
 test('외화: 캐나다 달러·베트남 동도 영수 날짜 환율로 원화 환산, 환율 범위를 검증한다', async () => {
@@ -436,7 +436,7 @@ test('회계 담당(승인 권한 없음)은 전체 리포트에서 승인 대�
   const s1 = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'pending', rows: [row] });
   const j = await call(R.onRequestPost, 'POST', '/api/expense/reports', ['jeremyrodgers@wol.org', 'admin'], { description: 'jeremy', rows: [row] });
   assert.equal(j.report.campus, 'jeju');
-  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id: s1.report.id, action: 'approve', categories: ['Teacher (8052)'], checks: [true] });
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id: s1.report.id, action: 'approve', categories: ['Teacher (8052)'], withdrawals: ['wolko'], checks: [true] });
   const s2 = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'still pending', rows: [row] });
   const rose = ['ylee7@wol.org', 'counselor'];
   const asRose = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', rose);
@@ -455,7 +455,7 @@ test('승인된 리포트는 내용 고정: 작성자 수정·철회 불가, 카
   const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29' };
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'lock', rows: [row] });
   const id = sub.report.id;
-  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Junior Camp (8040)'], checks: [true] });
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Junior Camp (8040)'], withdrawals: ['wolko'], checks: [true] });
   assert.equal((await call(R.onRequestPut, 'PUT', '/api/expense/reports', cyn, { id, description: 'x', rows: [{ ...row, amount: 9 }] })).status, 409, '승인 후 작성자 수정 불가');
   assert.equal((await call(R.onRequestDelete, 'DELETE', '/api/expense/reports?id=' + id, cyn)).status, 409, '승인 후 철회 불가');
   assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'reject', note: 'x' })).status, 409, '승인 후 반려 불가');
@@ -477,7 +477,7 @@ test('회계 담당은 송금 처리 전에 항목별 회계 노트를 남길 �
   const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29', memo: '신청자 노트' };
   const id = (await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'n', rows: [row] })).report.id;
   const patch = (who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, ...body });
-  await patch(boss, { action: 'approve', categories: ['Junior Camp (8040)'], checks: [true], approverMemos: ['승인자 노트'] });
+  await patch(boss, { action: 'approve', categories: ['Junior Camp (8040)'], withdrawals: ['wolko'], checks: [true], approverMemos: ['승인자 노트'] });
   assert.equal((await patch(boss, { action: 'recategorize', categories: ['Junior Camp (8040)'], accountantMemos: ['x'] })).status, 403, '승인자는 회계 노트 불가');
   const ok = await patch(ann, { action: 'recategorize', categories: ['Junior Camp (8040)'], accountantMemos: ['송금 전 확인 요망'] });
   assert.equal(ok.status, 200);
@@ -502,7 +502,7 @@ test('회계 담당이 승인된 리포트를 반려하면 승인자에게 되�
   const id = sub.report.id;
   const patch = (who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, ...body });
   assert.equal((await patch(ann, { action: 'return', note: 'x' })).status, 409, '승인 전에는 되돌릴 수 없음');
-  await patch(boss, { action: 'approve', categories: ['Junior Camp (8040)'], checks: [true] });
+  await patch(boss, { action: 'approve', categories: ['Junior Camp (8040)'], withdrawals: ['wolko'], checks: [true] });
   assert.equal((await patch(boss, { action: 'return', note: 'x' })).status, 403, '승인자는 회계 반려 불가');
   assert.equal((await patch(ann, { action: 'return', note: '' })).status, 400, '사유 필수');
   const back = await patch(ann, { action: 'return', note: '영수증 금액이 달라요' });
@@ -515,7 +515,7 @@ test('회계 담당이 승인된 리포트를 반려하면 승인자에게 되�
   assert.ok(approveList.reports.some(r => r.id === id), '승인자의 승인 대기에 다시 나타남');
   const asAnn = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', ann);
   assert.ok(!asAnn.reports.some(r => r.id === id), '회계 담당에게는 승인 대기가 보이지 않음');
-  const again = await patch(boss, { action: 'approve', categories: ['Teacher (8052)'], checks: [true] });
+  const again = await patch(boss, { action: 'approve', categories: ['Teacher (8052)'], withdrawals: ['wolko'], checks: [true] });
   assert.equal(again.status, 200);
   assert.equal(again.report.status, 'approved');
   assert.equal(again.report.returnNote, undefined, '다시 승인하면 되돌림 메모는 기록으로만 남음');
@@ -534,76 +534,62 @@ test('내 소속 캠퍼스가 counts 응답에 담겨 전체 리포트에서 먼
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['jeremyrodgers@wol.org', 'admin'])).me.campus, 'jeju');
 });
 
-test('카테고리를 회계 담당에게 위임하면 회계 담당이 모든 항목을 선택해야 송금 처리할 수 있다', async () => {
+test('승인자는 출금 계좌(별칭)를 확정하고, 계정과목(코드)은 회계가 마지막에 확인한다', async () => {
   const { acc, call } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   await acc('acct@x.com', 'Ann', 'counselor');
   const row = (item, extra = {}) => ({ source: '월코캠프', currency: 'KRW', amount: 1000, item, when: '2026-09-29', ...extra });
-  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'del', rows: [row('a'), row('b', { memo: '확인 필요' })] });
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'w', rows: [row('a'), row('b', { memo: '확인 필요' }), row('c')] });
   const id = sub.report.id;
   const patch = (who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, ...body });
-  assert.equal((await patch(boss, { action: 'approve', delegate: true, checks: [false, false] })).status, 400, '메모 항목은 위임해도 승인자가 확인해야 함');
-  const ok = await patch(boss, { action: 'approve', delegate: true, checks: [false, true] });
+  assert.equal((await patch(boss, { action: 'approve', checks: [true, true, true] })).status, 400, '출금 계좌 없이 승인 불가');
+  assert.equal((await patch(boss, { action: 'approve', withdrawals: ['personal', 'wolko'], checks: [true, true, true] })).status, 400, '모든 항목의 출금 계좌가 필요');
+  assert.equal((await patch(boss, { action: 'approve', withdrawals: ['personal', 'nope', 'syme'], checks: [true, true, true] })).status, 400, '목록에 없는 계좌');
+  assert.equal((await patch(boss, { action: 'approve', withdrawals: ['personal', 'junior-camp', 'syme'], checks: [true, false, true] })).status, 400, '메모 항목은 확인해야 승인');
+  const ok = await patch(boss, { action: 'approve', withdrawals: ['personal', 'junior-camp', 'syme'], checks: [true, true, true] });
   assert.equal(ok.status, 200);
-  assert.equal(ok.report.status, 'approved');
-  assert.equal(ok.report.categoryDelegated, true);
-  assert.deepEqual(ok.report.rows.map(r => r.account), ['', '']);
-  assert.equal((await patch(ann, { action: 'process' })).status, 409, '카테고리 선택 전에는 송금 처리 불가');
-  assert.equal((await patch(ann, { action: 'recategorize', categories: ['Junior Camp (8040)', 'Nope'] })).status, 400, '전부 선택해야 함');
-  assert.equal((await patch(ann, { action: 'process' })).status, 409);
-  const done = await patch(ann, { action: 'recategorize', categories: ['Junior Camp (8040)', 'Teacher (8052)'] });
+  assert.deepEqual(ok.report.rows.map(r => r.withdrawAccount), ['personal', 'junior-camp', 'syme']);
+  assert.equal(ok.report.withdrawConfirmedBy, 'boss@wol.org');
+  assert.deepEqual(ok.report.rows.map(r => r.account), ['Missionary Account (8025)', 'Junior Camp (8040)', ''], '아는 계좌는 코드를 미리 채우고, 나머지는 비워 둔다');
+  assert.equal(ok.report.categoriesConfirmedBy, undefined, '코드는 승인자가 아니라 회계 담당이 확인한다');
+  assert.equal(JSON.stringify(ok.report).includes('301-'), false, '승인자에게는 계좌번호가 내려가지 않는다');
+  assert.equal((await patch(ann, { action: 'process' })).status, 409, '코드가 빈 항목이 있으면 송금 처리 불가');
+  assert.equal((await patch(ann, { action: 'recategorize', categories: ['Missionary Account (8025)', 'Junior Camp (8040)', 'Nope'] })).status, 400);
+  const done = await patch(ann, { action: 'recategorize', categories: ['Missionary Account (8025)', 'Junior Camp (8040)', 'SYME Program Event (8974)'] });
   assert.equal(done.status, 200);
-  assert.equal(done.report.categoryDelegated, false);
   assert.equal(done.report.categoriesConfirmedBy, 'acct@x.com');
-  assert.equal(done.report.rows[0].categoryChanged, undefined, '처음 선택은 변경이 아님');
-  assert.equal((await patch(ann, { action: 'process' })).status, 200, '모두 선택하면 송금 처리 가능');
+  assert.equal(done.report.rows.some(r => r.accountSuggested), false, '회계가 확인하면 추천 표시가 사라진다');
+  assert.equal(done.report.rows[1].withdrawNumber, '301-0343-5409-21', '회계 담당에게는 계좌번호가 보인다');
+  assert.equal(done.report.rows[0].withdrawNumber, undefined, '개인 사역계좌는 번호가 없다');
+  assert.equal((await patch(ann, { action: 'process' })).status, 200);
 });
 
-test('위임은 확인하지 않은 항목만: 확인한 항목의 코드는 확정되고 나머지만 회계 담당이 선택한다', async () => {
+test('계좌번호는 회계 담당 화면에만: 작성자·승인자 목록에는 별칭 id 만 내려간다', async () => {
   const { acc, call } = setup();
   await acc('cyn@x.com', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   await acc('acct@x.com', 'Ann', 'counselor');
-  const row = item => ({ source: '월코캠프', currency: 'KRW', amount: 1000, item, when: '2026-09-29' });
-  const mk = async () => (await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'p', rows: [row('a'), row('b')] })).report.id;
-  const patch = (id, who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, ...body });
-
-  const id = await mk();
-  assert.equal((await patch(id, boss, { action: 'approve', delegate: false, categories: ['Junior Camp (8040)', ''] })).status, 400, '위임 없이는 모든 항목을 확정해야 함');
-  assert.equal((await patch(id, boss, { action: 'approve', delegate: true, categories: ['Junior Camp (8040)', 'Bad'] })).status, 400);
-  const ok = await patch(id, boss, { action: 'approve', delegate: true, categories: ['Junior Camp (8040)', ''], checks: [true, false] });
-  assert.equal(ok.status, 200);
-  assert.deepEqual(ok.report.rows.map(r => r.account), ['Junior Camp (8040)', '']);
-  assert.equal(ok.report.categoryDelegated, true);
-  assert.equal((await patch(id, ann, { action: 'process' })).status, 409);
-  const done = await patch(id, ann, { action: 'recategorize', categories: ['Junior Camp (8040)', 'Teacher (8052)'] });
-  assert.equal(done.status, 200);
-  assert.equal(done.report.categoryDelegated, false);
-  assert.equal(done.report.rows[0].categoryChanged, undefined);
-  assert.equal((await patch(id, ann, { action: 'process' })).status, 200);
-
-  // 위임 버튼을 눌렀어도 모든 항목을 확인했다면 위임 없이 확정으로 처리
-  const id2 = await mk();
-  const all = await patch(id2, boss, { action: 'approve', delegate: true, categories: ['Junior Camp (8040)', 'Teacher (8052)'], checks: [true, true] });
-  assert.equal(all.status, 200);
-  assert.equal(all.report.categoryDelegated, undefined);
-  assert.equal(all.report.categoriesConfirmedBy, 'boss@wol.org');
-  assert.equal((await patch(id2, ann, { action: 'process' })).status, 200);
+  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'n', rows: [{ source: '월코', currency: 'KRW', amount: 1000, item: 'a', when: '2026-09-29' }] });
+  const id = sub.report.id;
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', withdrawals: ['wolko'] });
+  const list = async (who, scope) => JSON.stringify(await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=' + scope, who));
+  assert.equal((await list(cyn, 'mine')).includes('301-'), false, '작성자');
+  assert.equal((await list(boss, 'approve')).includes('301-'), false, '승인자');
+  assert.equal((await list(boss, 'all')).includes('301-'), false, '승인자의 전체 보기');
+  assert.ok((await list(boss, 'all')).includes('"withdrawAccount":"wolko"'), '별칭 id 는 보인다');
+  assert.ok((await list(ann, 'accounting')).includes('301-0278-8159-81'), '회계 담당');
+  assert.ok((await list(ann, 'all')).includes('301-0278-8159-81'), '회계 담당의 전체 보기');
 });
 
-test('위임하면 확인하지 않은 항목(메모 포함)은 자동 확인으로 기록된다', async () => {
-  const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
-  await acc('boss@wol.org', 'Boss', 'admin');
-  const row = (item, extra = {}) => ({ source: '월코캠프', currency: 'KRW', amount: 1000, item, when: '2026-09-29', ...extra });
-  const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'auto', rows: [row('a', { memo: '메모 있음' }), row('b')] });
-  const id = sub.report.id;
-  const patch = body => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, ...body });
-  assert.equal((await patch({ action: 'approve', delegate: true, categories: ['', ''], checks: [false, false] })).status, 400, '자동 확인 표시 없이 메모 항목 미확인은 거절');
-  const ok = await patch({ action: 'approve', delegate: true, categories: ['', ''], checks: [true, true], autoChecks: [true, true] });
-  assert.equal(ok.status, 200);
-  assert.equal(ok.report.rows[0].memoAutoChecked, true);
+test('출금 계좌 목록: 맨 위가 개인 사역계좌, 노란 칸 12개, 번호는 서버에만 있고 화면 설정에는 없다', async () => {
+  const { WITHDRAW_ACCOUNTS } = await import('../src/lib/expense-config.js');
+  const { WITHDRAW_NUMBERS } = await import('../functions/lib/expenseAccounts.js');
+  assert.equal(WITHDRAW_ACCOUNTS[0].id, 'personal');
+  assert.equal(WITHDRAW_ACCOUNTS.length, 13);
+  assert.equal(new Set(WITHDRAW_ACCOUNTS.map(a => a.id)).size, 13);
+  assert.deepEqual(Object.keys(WITHDRAW_NUMBERS).sort(), WITHDRAW_ACCOUNTS.slice(1).map(a => a.id).sort(), '개인 사역계좌를 뺀 모든 계좌에 번호가 있다');
+  assert.ok(!JSON.stringify(WITHDRAW_ACCOUNTS).match(/\d{3}-\d{4}/), '화면 설정에는 계좌번호가 없다');
 });
 
 test('KV 조회 절약: 목록은 잠깐 재사용하고, 쓰기 직후에는 바로 새로 읽는다', async () => {
@@ -656,7 +642,7 @@ test('이메일 전체 스위치가 꺼져 있어도 새 리포트·재제출은
   assert.ok(sent[2].to.includes('jacobmorse@wol.org'));
 
   // 승인 → 제출자에게만 (회계 담당자에게 가는 송금 요청 메일은 꺼져 있다)
-  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Car Gas (8400)'] });
+  await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Car Gas (8400)'], withdrawals: ['wolko'] });
   assert.equal(sent.length, 4, '승인 피드백 한 통만');
   assert.deepEqual(sent[3].to, ['cyn@x.com']);
   assert.match(sent[3].subject, /승인됨/);
@@ -690,20 +676,20 @@ test('회계 화면의 카테고리 선택칸과 노트칸은 34px 로 낮게 �
 });
 
 
-test('회계 항목: 코드는 작성자 입력 › 승인자 입력 › 회계자 선택 순서로, 회계 노트는 평소 닫혀 있다가 노트 버튼을 누르면 말풍선으로 연다', async () => {
+test('회계 항목: 코드는 작성자 입력 › 승인자가 확정한 출금 계좌 › 회계 확인 순서로, 회계 노트는 평소 닫혀 있다가 노트 버튼을 누르면 말풍선으로 연다', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   assert.match(src, /srcLbl: '작성자 입력'/);
-  assert.match(src, /apprLbl: '승인자 입력'/);
-  assert.match(src, /acctSelLbl: '회계자 선택 \(필요시 변경\)'/);
-  assert.match(src, /const apprAccountOf = r => \(r\.categoryHistory && r\.categoryHistory\.length\) \? \(r\.categoryHistory\[0\]\.from \|\| ''\) : \(r\.account \|\| ''\)/);
+  assert.match(src, /wdLbl: '출금 계좌'/);
+  assert.match(src, /acctSelLbl: '회계 확인 \(필요시 변경\)'/);
+  assert.doesNotMatch(src, /apprAccountOf/, '승인자가 코드를 정하는 흐름은 없다');
   assert.match(src, /data-act="anote-toggle"/);
   assert.match(src, /<span class="ex-npop" hidden>/);          // 말풍선은 기본으로 숨김
   assert.match(src, /data-anote-i="\$\{i\}"/);                   // 저장 때 모으는 입력칸은 말풍선 안에 그대로 있다
   assert.doesNotMatch(src, /<input class="ex-input ex-anote"/, '평소에 펼쳐진 노트 입력칸은 없다');
 });
 
-test('회계 항목 코드: 평소엔 승인자가 넘긴 코드만 보이고 [변경]을 눌러야 작성자 › 승인자 기록과 선택박스가 펼쳐진다 (위임돼 코드가 없으면 처음부터 펼침)', async () => {
+test('회계 항목 코드: 평소엔 코드만 보이고 코드를 눌러야 작성자 › 출금 계좌 기록과 선택박스가 펼쳐진다 (코드가 비어 있으면 처음부터 펼침)', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   assert.match(src, /<button type="button" class="ex-cf-head" data-act="code-change"/);   // 별도 [변경] 버튼 없이 코드 자체를 눌러 연다
@@ -721,13 +707,13 @@ test('회계 코드 글자는 굵게 하지 않는다', async () => {
   assert.match(css, /\.ex-cf b \{[^}]*font-weight: 400;/);
 });
 
-test('승인 대기도 같은 방식: 코드만 한 줄로 보이고 눌러서 작성자 입력 · 선택박스 · 메모 · 확인을 펼친다 (골라야 하는 항목은 처음부터 펼침), 항목 줄 사이를 넓힌다', async () => {
+test('승인 대기도 같은 방식: 출금 계좌만 한 줄로 보이고 눌러서 작성자 입력 · 선택박스 · 메모 · 확인을 펼친다 (골라야 하는 항목은 처음부터 펼침), 항목 줄 사이를 넓힌다', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 카드 머리 한 줄:'));
   assert.match(cell, /class="ex-cat ex-code-flow/);
   assert.match(cell, /class="ex-cf-head" data-act="code-change"/);
-  assert.match(cell, /const attention = !cur/);
+  assert.match(cell, /const attention = !st\.confirmed\[i\]/);
   assert.match(cell, /data-cat="\$\{i\}"/);
   assert.match(cell, /data-act="confirm-cat"/);
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
