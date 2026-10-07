@@ -65,3 +65,9 @@ test('캠프 관리 목록의 작은 버튼(기본 설정·삭제)은 모바일 
   const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
   assert.match(page, /:root:root \.camp-manage-row button[^{]*\{[^}]*min-height:0 !important; height:28px !important;/);
 });
+
+test('캠프 추가 폼의 계절 체크박스와 입력 칸은 같은 낮은 높이(38px)로 맞춰진다', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.match(page, /\.season-check \{[^}]*height:38px;/);
+  assert.match(page, /\.camp-manage-add-row input\[type=text\] \{[^}]*height:38px !important;/);
+});
