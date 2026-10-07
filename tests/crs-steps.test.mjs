@@ -82,6 +82,14 @@ test('교회 카드는 위쪽(이름·담임·단계)만 접어 두고, 선택(�
 });
 
 test('교회 목록은 번호 순으로 정렬되고, 번호 뱃지는 정원이다', () => {
-  assert.match(src, /\.sort\(\(a, b\) => \(a\.number \|\| Infinity\) - \(b\.number \|\| Infinity\)/);
+  assert.match(src, /: \(a, b\) => \(a\.number \|\| Infinity\) - \(b\.number \|\| Infinity\) \|\| \(a\.createdAt \|\| 0\) - \(b\.createdAt \|\| 0\)\)/);   // 기본 정렬 = 번호순
   assert.match(src, /:root:root \.rank-badge \{ width:24px; height:24px; min-width:24px; min-height:0; padding:0;[^}]*aspect-ratio:1 \/ 1; border-radius:50%;/);
+});
+
+test('교회 목록 정렬 선택: 번호순(기본) / 방문 오래된 순, 선택은 기억한다', () => {
+  assert.match(src, /id="sortSelect"/);
+  assert.match(src, /sort_number: '번호순', sort_visit: '방문 오래된 순'/);
+  assert.match(src, /sort_number: 'By number', sort_visit: 'Longest since visit'/);
+  assert.match(src, /activeSort === 'visit'\s*\? \(a, b\) => \(visitDays\(b\) \?\? -Infinity\) - \(visitDays\(a\) \?\? -Infinity\)/);
+  assert.match(src, /localStorage\.setItem\('wolko-crs-sort', activeSort\)/);
 });
