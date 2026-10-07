@@ -720,3 +720,16 @@ test('회계 코드 글자는 굵게 하지 않는다', async () => {
   assert.match(css, /\.ex-cf-head > b \{[^}]*font-weight: 400;/);
   assert.match(css, /\.ex-cf b \{[^}]*font-weight: 400;/);
 });
+
+test('승인 대기도 같은 방식: 코드만 한 줄로 보이고 눌러서 작성자 입력 · 선택박스 · 메모 · 확인을 펼친다 (골라야 하는 항목은 처음부터 펼침), 항목 줄 사이를 넓힌다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 카드 머리 한 줄:'));
+  assert.match(cell, /class="ex-cat ex-code-flow/);
+  assert.match(cell, /class="ex-cf-head" data-act="code-change"/);
+  assert.match(cell, /const attention = !cur/);
+  assert.match(cell, /data-cat="\$\{i\}"/);
+  assert.match(cell, /data-act="confirm-cat"/);
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-itembody \{ line-height: 1\.6; \}/);
+});
