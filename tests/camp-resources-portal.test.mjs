@@ -71,3 +71,10 @@ test('캠프 추가 폼의 계절 체크박스와 입력 칸은 같은 낮은 �
   assert.match(page, /\.season-check \{[^}]*height:38px;/);
   assert.match(page, /\.camp-manage-add-row input\[type=text\] \{[^}]*height:38px !important;/);
 });
+
+test('캠프 관리 창: 이름이 한 줄에 들어오게 넓히되(540px) 좁은 화면(480px 이하, 340px 이하)은 따로 정리한다', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.match(page, /#campManageBackdrop \.tch-dialog \{ max-width:540px; \}/);
+  assert.match(page, /@media \(max-width:480px\) \{\s*#campManageBackdrop \{ padding:12px; \}/);
+  assert.match(page, /@media \(max-width:340px\)/);
+});
