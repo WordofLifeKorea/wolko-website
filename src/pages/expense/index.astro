@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=82">
+  <link rel="stylesheet" href="/expense.css?v=83">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -468,8 +468,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       return `<div class="ex-code-flow ${need ? 'open' : ''}">
         <div class="ex-cf-rows">
           <div class="ex-cf-row"><i>${esc(t('catLbl'))}</i><b data-cf-now>${codeOk ? esc(r.account) + (r.accountSuggested ? ` <span class="ex-cf-none">(${esc(t('suggestedTag'))})</span>` : '') : `<span class="ex-cf-none">${esc(t('catPick'))}</span>`}</b></div>
-          <div class="ex-cf-row"><i>${esc(t('wdLbl'))}</i><b data-wd-now>${wdText}</b></div>
-          <button type="button" class="ex-cf-toggle" data-act="code-change" aria-expanded="${need ? 'true' : 'false'}"><span>${esc(t(need ? 'cfClose' : 'cfOpen'))}</span><i aria-hidden="true">⌄</i></button>
+          <div class="ex-cf-row has-actions"><i>${esc(t('wdLbl'))}</i><b data-wd-now>${wdText}</b>
+            <span class="ex-cf-actions"><button type="button" class="ex-cf-toggle" data-act="code-change" aria-expanded="${need ? 'true' : 'false'}"><span>${esc(t(need ? 'cfClose' : 'cfOpen'))}</span><i aria-hidden="true">⌄</i></button></span>
+          </div>
         </div>
         <div class="ex-cf-panel" ${need ? '' : 'hidden'}>
           <div class="ex-cf-trail"><span class="ex-cf"><i>${esc(t('srcLbl'))}</i><b>${esc(subText(r) || srcShow(r.source || '') || '—')}</b></span></div>
@@ -523,11 +524,12 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       return `<div class="ex-cat ex-wd-pick ex-code-flow ${open ? 'open' : ''}" data-ci="${i}">
           <div class="ex-cf-rows">
             <div class="ex-cf-row"><i>${esc(t('catLbl'))}</i><b>${r.account ? esc(r.account) : '—'}</b></div>
-            <div class="ex-cf-row"><i>${esc(t('wdLbl'))}</i><b data-wd-now>${cur ? esc(wdName(cur)) + sug : `<span class="ex-cf-none">${esc(t('wdPick'))}</span>`}</b></div>
-          </div>
-          <div class="ex-cf-actions">
-            <button class="ex-btn sm ex-confirm ${done ? 'done' : ''}" data-act="confirm-cat" data-id="${esc(rep.id)}" data-i="${i}">${done ? t('catDone') : t('catConfirm')}</button>
-            <button type="button" class="ex-cf-toggle inline" data-act="code-change" aria-expanded="${open ? 'true' : 'false'}"><span>${esc(t(open ? 'cfClose' : 'cfOpen'))}</span><i aria-hidden="true">⌄</i></button>
+            <div class="ex-cf-row has-actions"><i>${esc(t('wdLbl'))}</i><b data-wd-now>${cur ? esc(wdName(cur)) + sug : `<span class="ex-cf-none">${esc(t('wdPick'))}</span>`}</b>
+              <span class="ex-cf-actions">
+                <button class="ex-btn sm ex-confirm ${done ? 'done' : ''}" data-act="confirm-cat" data-id="${esc(rep.id)}" data-i="${i}">${done ? t('catDone') : t('catConfirm')}</button>
+                <button type="button" class="ex-cf-toggle inline" data-act="code-change" aria-expanded="${open ? 'true' : 'false'}"><span>${esc(t(open ? 'cfClose' : 'cfOpen'))}</span><i aria-hidden="true">⌄</i></button>
+              </span>
+            </div>
           </div>
           <div class="ex-cf-panel" ${open ? '' : 'hidden'}>
             <div class="ex-cf-trail"><span class="ex-cf"><i>${esc(t('srcLbl'))}</i><b>${esc(srcShow(r.source || r.submittedAccount || '') || '—')}</b></span></div>

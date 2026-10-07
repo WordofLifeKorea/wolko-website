@@ -762,7 +762,7 @@ test('회계 항목: 카테고리·출금 계좌는 읽기만 하는 두 줄로 
   assert.match(flow, /<div class="ex-cf-panel" \$\{need \? '' : 'hidden'\}>/);
   assert.match(flow, /data-recat-i="\$\{i\}"/);   // 접혀 있어도 선택박스는 DOM 에 있어 저장 때 그대로 모인다
   assert.match(flow, /data-wd-i="\$\{i\}"/);
-  assert.equal((flow.match(/class="ex-cf-row"/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
+  assert.equal((flow.match(/class="ex-cf-row[ "]/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
   assert.doesNotMatch(src, /ex-cf-btn/);
 });
 
@@ -777,7 +777,7 @@ test('승인 대기: 카테고리·출금 계좌를 읽기만 하는 두 줄로 
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 승인 메모:'));
-  assert.equal((cell.match(/class="ex-cf-row"/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
+  assert.equal((cell.match(/class="ex-cf-row[ "]/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
   assert.match(cell, /data-act="confirm-cat"/);
   assert.match(cell, /class="ex-cf-toggle inline" data-act="code-change"/);
   assert.match(cell, /data-cat="\$\{i\}"/);
