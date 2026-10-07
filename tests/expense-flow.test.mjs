@@ -688,3 +688,9 @@ test('회계 화면의 카테고리 선택칸과 노트칸은 34px 로 낮게 �
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /:root:root \.ex-d-edit \.ex-select-plain,[\s\S]*?:root:root \.ex-anote \{\s*min-height: 0 !important; height: 34px !important;/);
 });
+
+test('회계 편집 항목: 계정 선택칸이 있으면 위쪽 줄에는 계정 이름을 또 보여주지 않는다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  assert.match(src, /\$\{editable && r\.account\s*\?\s*\(subText\(r\) && subText\(r\) !== r\.account \? esc\(t\('srcLbl'\) \+ ': ' \+ t\('srcSubmitted', subText\(r\)\)\) : ''\)/);
+});
