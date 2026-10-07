@@ -722,6 +722,38 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   };
 
   const STEPS = [
+    "Called pastor or talked to pastor",
+    "Visited pastor",
+    "Gave pastor ministry presentation",
+    "Gave pastor \u201cGod Ask\u201d support presentation",
+    "Gave gift / thank you",
+    "Gospel Conversation Training",
+    "Youth participate in camp or event",
+    "Core Training",
+    "Church uses WOLKO curriculum",
+    "WOLKO Missionary speaks at church service",
+    "Church supports WOLKO",
+    "Pastor introduces WOLKO to other churches"
+  ];
+
+  const STEPS_KO = [
+    "목사님께 전화 또는 대화",
+    "목사님 방문",
+    "목사님께 사역 소개 프레젠테이션",
+    "목사님께 후원 요청(God Ask) 프레젠테이션",
+    "선물 전달 · 감사 표현",
+    "복음 대화 훈련 (Gospel Conversation Training)",
+    "청소년 캠프 또는 이벤트 참여",
+    "리더 훈련 (Core Training)",
+    "교회의 WOLKO 커리큘럼 사용",
+    "WOLKO 선교사 교회 예배 설교",
+    "교회의 WOLKO 후원",
+    "목사님의 타 교회 WOLKO 소개"
+  ];
+
+  // ── 예전 10단계 → 새 12단계 (기존 기록을 그대로 옮긴다) ──
+  // 1 → 2·3 (방문 + 사역 소개), 2·5 → 6 (복음 대화 훈련으로 통합), 6·7 → 9 (WOLKO 커리큘럼으로 통합), 나머지는 번호만 이동
+  const OLD_STEPS = [
     "Meet pastor & give presentation",
     "WOLKO Day (Training for gospel conversation)",
     "Youth participate in camp or event",
@@ -733,19 +765,29 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     "Church supports WOLKO",
     "Pastor introduces WOLKO to other churches"
   ];
-
-  const STEPS_KO = [
-    "목사님 방문 및 사역 소개",
-    "WOLKO Day (복음 대화 훈련)",
-    "청소년 캠프 또는 이벤트 참여",
-    "리더 훈련 (Core Training)",
-    "교회 청소년 복음 훈련",
-    "교회의 G.O.S.P.E.L 커리큘럼 사용",
-    "교회의 Q.T. 커리큘럼 사용",
-    "WOLKO 선교사 교회 예배 설교",
-    "교회의 WOLKO 후원",
-    "목사님의 타 교회 WOLKO 소개"
-  ];
+  const STEP_DATA_MAP = { 1: [2, 3], 2: [6], 3: [7], 4: [8], 5: [6], 6: [9], 7: [9], 8: [10], 9: [11], 10: [12] };
+  const STEP_PURPOSE_MAP = { 1: 2, 2: 6, 3: 7, 4: 8, 5: 6, 6: 9, 7: 9, 8: 10, 9: 11, 10: 12 };
+  const STEPS_VERSION = 2;
+  const entriesOfStep = v => Array.isArray(v) ? v : (v ? [{ legacy: true }] : []);
+  // 교회 한 곳의 단계 기록 · 방문 목적을 새 단계로 바꾼다 (이미 바뀐 것은 건드리지 않는다)
+  function migrateChurchSteps(church) {
+    if (!church || church.stepsVersion === STEPS_VERSION) return church;
+    const out = {};
+    Object.entries(church.steps || {}).forEach(([k, v]) => {
+      const entries = entriesOfStep(v);
+      if (!entries.length) return;                     // 빈 기록은 만들지 않는다
+      (STEP_DATA_MAP[+k] || []).forEach(n => { out[n] = [...(out[n] || []), ...entries]; });
+    });
+    church.steps = out;
+    church.stepsVersion = STEPS_VERSION;
+    if (church.visits) {
+      Object.values(church.visits).forEach(v => {
+        const m = /^Step (\d+): (.*)$/.exec(v && v.purpose || '');
+        if (m && OLD_STEPS[+m[1] - 1] === m[2] && STEP_PURPOSE_MAP[+m[1]]) v.purpose = `Step ${STEP_PURPOSE_MAP[+m[1]]}: ${STEPS[STEP_PURPOSE_MAP[+m[1]] - 1]}`;
+      });
+    }
+    return church;
+  }
 
   // ── 지역 데이터 ──
   const REGIONS = {
@@ -1535,7 +1577,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       if (snap.exists()) {
         const data = snap.val();
         churches = Object.entries(data)
-          .map(([id, val]) => ({ id, ...val }))
+          .map(([id, val]) => migrateChurchSteps({ id, ...val }))
           .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       } else {
         churches = [];
@@ -1885,6 +1927,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         await update(ref(db, `churches/${editingChurch.id}`), data);
       } else {
         data.steps = {};
+        data.stepsVersion = STEPS_VERSION;
         data.createdAt = now;
         data.createdBy = currentUser.uid;
         data.number = churches.reduce((max, c) => Math.max(max, c.number || 0), 0) + 1;
@@ -2158,9 +2201,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     if (newValue === null) delete steps[stepModalNum];
     else steps[stepModalNum] = newValue;
     const updatedAt = Date.now();
-    await update(ref(db, `churches/${church.id}`), { steps, updatedAt });
+    await update(ref(db, `churches/${church.id}`), { steps, stepsVersion: STEPS_VERSION, updatedAt });
     church.updatedAt = updatedAt;
     church.steps = steps;
+    church.stepsVersion = STEPS_VERSION;
     const idx = churches.findIndex(c => c.id === church.id);
     if (idx !== -1) Object.assign(churches[idx], { steps, updatedAt });
   }
