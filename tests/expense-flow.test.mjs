@@ -706,9 +706,17 @@ test('회계 항목: 코드는 작성자 입력 › 승인자 입력 › 회계�
 test('회계 항목 코드: 평소엔 승인자가 넘긴 코드만 보이고 [변경]을 눌러야 작성자 › 승인자 기록과 선택박스가 펼쳐진다 (위임돼 코드가 없으면 처음부터 펼침)', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
-  assert.match(src, /data-act="code-change"/);
+  assert.match(src, /<button type="button" class="ex-cf-head" data-act="code-change"/);   // 별도 [변경] 버튼 없이 코드 자체를 눌러 연다
+  assert.doesNotMatch(src, /ex-cf-btn/);
   assert.match(src, /<div class="ex-cf-panel" \$\{need \? '' : 'hidden'\}>/);
   assert.match(src, /const need = !APPROVAL_ACCOUNTS\.includes\(r\.account\)/);
   assert.match(src, /codeLbl: '코드', codeChange: '변경'/);
   assert.match(src, /data-recat-i="\$\{i\}"/);   // 접혀 있어도 선택박스는 DOM 에 있어 저장 때 그대로 모인다
+});
+
+test('회계 코드 글자는 굵게 하지 않는다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-cf-head > b \{[^}]*font-weight: 400;/);
+  assert.match(css, /\.ex-cf b \{[^}]*font-weight: 400;/);
 });

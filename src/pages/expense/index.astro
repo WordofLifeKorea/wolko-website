@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=68">
+  <link rel="stylesheet" href="/expense.css?v=71">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=16">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -441,7 +441,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
       const need = !APPROVAL_ACCOUNTS.includes(r.account);   // 승인자가 위임해서 아직 코드가 없으면 바로 고르게 펼쳐 둔다
       // 평소에는 승인자가 확인해 넘긴 코드만 보여주고, [변경]을 누르면 작성자 › 승인자 기록과 선택박스가 펼쳐진다
       return `<div class="ex-code-flow ${need ? 'open' : ''}">
-        <div class="ex-cf-head"><i>${esc(t('codeLbl'))}</i><b data-cf-now>${r.account ? esc(r.account) : `<span class="ex-cf-none">${esc(t('catPick'))}</span>`}</b><button type="button" class="ex-btn sm ex-cf-btn" data-act="code-change" aria-expanded="${need ? 'true' : 'false'}">${esc(t(need ? 'codeHide' : 'codeChange'))}</button></div>
+        <button type="button" class="ex-cf-head" data-act="code-change" aria-expanded="${need ? 'true' : 'false'}" title="${esc(t('codeChange'))}"><i>${esc(t('codeLbl'))}</i><b data-cf-now>${r.account ? esc(r.account) : `<span class="ex-cf-none">${esc(t('catPick'))}</span>`}</b><span class="ex-cf-chev" aria-hidden="true">⌄</span></button>
         <div class="ex-cf-panel" ${need ? '' : 'hidden'}>
           <div class="ex-cf-trail">
             <span class="ex-cf"><i>${esc(t('srcLbl'))}</i><b>${esc(subText(r) || srcShow(r.source || '') || '—')}</b></span>
@@ -1119,7 +1119,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, CAMPUSES as CFG_CAMPUSES, FOREIGN_CURRENCIES 
         else if (act === 'code-change') {
           const box = el.closest('.ex-code-flow'), open = !box.classList.contains('open');
           box.classList.toggle('open', open); box.querySelector('.ex-cf-panel').hidden = !open;
-          el.setAttribute('aria-expanded', open ? 'true' : 'false'); el.textContent = t(open ? 'codeHide' : 'codeChange');
+          el.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
         else if (act === 'anote-toggle') {
           const open = !el.classList.contains('open'); el.classList.toggle('open', open); el.setAttribute('aria-expanded', open ? 'true' : 'false');
