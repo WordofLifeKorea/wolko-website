@@ -97,3 +97,9 @@ test('the resource page header no longer carries a duplicate portal button', asy
   const source = await read('src/pages/resource.astro');
   assert.ok(!source.includes('class="back-link"'));
 });
+
+test('내 정보 창의 닫기 버튼은 모바일에서도 정원으로 고정된다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/wolko-rail.css', import.meta.url), 'utf8');
+  assert.match(css, /\.wl-prof-close \{[^}]*width: 36px !important; height: 36px !important; min-width: 0 !important; min-height: 0 !important;[^}]*aspect-ratio: 1 \/ 1/);
+});
