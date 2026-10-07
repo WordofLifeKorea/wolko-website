@@ -12,7 +12,7 @@ role_badge: Intern
 campus: pyeongtaek
 category: stw
 order: 3
-photo_url: "/images/uploads/estelle-photo_url-1791355374417.jpg"
+photo_url: "/images/uploads/estelle-photo_url-1791356117219.jpg"
 hero_tagline_ko: 주님의 인도하심을
 hero_tagline_en: "Following the Lord's Leading"
 hero_tagline2_ko: 따라 한국으로
@@ -43,5 +43,6 @@ prayer_ko: |-
   제가 계속해서 한국어를 배울 수 있도록, 그리고 그럴 기회들이 주어지고 잘 배울 수 있도록 기도해 주세요. :)
 report_url: "https://mailchi.mp/1392d14df57c/special-news-estelles-newsletter-10288321"
 photo_url_2: "/images/uploads/estelle-photo_url_2-1791355392473.jpg"
+
 
 ---
