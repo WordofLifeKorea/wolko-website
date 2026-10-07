@@ -4,7 +4,7 @@ bio_en: |-
   I have been a believer all my life, but the Holy Spirit brought me to the end of myself in March 2021. I could no longer do this life in my own strength and asked the Lord Jesus to reign in my life, to be the King of my heart for I could not do this life alone. It is only by His love and grace that I can come to the Father and say, "Look - I am Yours, look what your Holy Spirit has done in me."
   In the years since then, the Lord has been teaching me to depend on Him and not on my own strength and to lean into His blessings, His timing, and His plan for my life. I am learning to surrender my fears (of everything) to Him and completely trust Him through the journey to come to South Korea in Fall of 2025 for 2 years. I am so excited to be able to see what He is doing in the hearts of the youth in South Korea and in the churches around the country!
 gender: female
-name_ko: 수이 에스텔
+name_ko: 에스텔 소이
 name_en: Estelle Sooy
 title_ko: Cross Cultural Internship · 청소년 사역
 title_en: Cross Cultural Internship · Youth Ministry
@@ -12,7 +12,7 @@ role_badge: Intern
 campus: pyeongtaek
 category: stw
 order: 3
-photo_url: "/images/uploads/estelle-photo_url-1791356117219.jpg"
+photo_url: /images/uploads/estelle.jpg
 hero_tagline_ko: 주님의 인도하심을
 hero_tagline_en: "Following the Lord's Leading"
 hero_tagline2_ko: 따라 한국으로
@@ -42,7 +42,6 @@ prayer_ko: |-
   2026년 남은 기간과 계획된 모든 행사들이 하나님께 영광을 돌리기를 기도해 주세요!
   제가 계속해서 한국어를 배울 수 있도록, 그리고 그럴 기회들이 주어지고 잘 배울 수 있도록 기도해 주세요. :)
 report_url: "https://mailchi.mp/1392d14df57c/special-news-estelles-newsletter-10288321"
-photo_url_2: "/images/uploads/estelle-photo_url_2-1791355392473.jpg"
 
 
 ---

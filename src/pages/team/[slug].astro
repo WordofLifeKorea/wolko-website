@@ -1084,7 +1084,11 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     if (!d || !d.enabled || !d.url) return;
     var old = document.getElementById('openReportBtn'), a = document.createElement('a');
     a.href = d.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.id = 'openReportBtn'; a.className = 'mp-btn mp-btn-secondary';
+    // 이 페이지의 스타일은 요소마다 붙는 data-astro-cid 표시가 있어야 적용된다 — 스크립트로 새로 만든 버튼에도 같은 표시를 달아 줘야 다른 버튼과 똑같이 보인다
+    var sample = document.querySelector('.mp-btn'), cids = [];
+    if (sample) for (var i = 0; i < sample.attributes.length; i++) if (sample.attributes[i].name.indexOf('data-astro-cid') === 0) cids.push(sample.attributes[i].name);
     a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span class="wl-ko">최근 뉴스레터</span><span class="wl-en">Newsletter</span>';
+    [a].concat([].slice.call(a.querySelectorAll('*'))).forEach(function (el) { cids.forEach(function (n) { el.setAttribute(n, ''); }); });
     if (old) old.replaceWith(a);
     else { var anchor = document.querySelector('a.mp-btn-primary.wl-en'); if (anchor && anchor.parentNode) anchor.parentNode.appendChild(a); }
   }).catch(function () {});
