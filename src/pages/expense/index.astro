@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, CAMPUSES a
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=72">
+  <link rel="stylesheet" href="/expense.css?v=74">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -482,31 +482,25 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, CAMPUSES a
       st.accounts.forEach((a, i) => {
         const btn = art.querySelector('[data-act="confirm-cat"][data-i="' + i + '"]');
         if (btn) { btn.classList.toggle('done', st.confirmed[i]); btn.textContent = st.confirmed[i] ? t('catDone') : t('catConfirm'); }
-        const flow = art.querySelector('.ex-code-flow[data-ci="' + i + '"]');
-        if (flow) { const now = flow.querySelector('[data-cf-now]'); if (now) now.textContent = a ? wdName(a) : t('wdPick'); const ok = flow.querySelector('.ex-cf-ok'); if (ok) ok.hidden = !st.confirmed[i]; }
       });
       const ab = art.querySelector('[data-act="approve"]'); if (ab) ab.disabled = !approvalReady(st);
     }
     function catCell(rep, r, i, st) {
-      const cur = st.accounts[i];
-      const attention = !st.confirmed[i];   // 아직 확인하지 않은 항목은 처음부터 펼쳐 둔다 (출금 계좌는 승인자가 하나씩 확실히 확인한다)
-      const done = st.confirmed[i];
-      // 승인 대기: 평소엔 출금 계좌 별칭만 한 줄로 보이고, 누르면 작성자 입력 · 선택박스 · 승인 메모 · 확인 버튼이 펼쳐진다
-      return `<div class="ex-cat ex-code-flow ${attention ? 'open' : ''}" data-ci="${i}">
-          <button type="button" class="ex-cf-head" data-act="code-change" aria-expanded="${attention ? 'true' : 'false'}" title="${esc(t('codeChange'))}"><i>${esc(t('wdLbl'))}</i><b data-cf-now>${cur ? esc(wdName(cur)) : `<span class="ex-cf-none">${esc(t('wdPick'))}</span>`}</b><span class="ex-cf-ok" ${done ? '' : 'hidden'} title="${esc(t('catDone'))}">✓</span><span class="ex-cf-chev" aria-hidden="true">⌄</span></button>
-          <div class="ex-cf-panel" ${attention ? '' : 'hidden'}>
-            <div class="ex-cf-trail"><span class="ex-cf"><i>${esc(t('srcLbl'))}</i><b>${esc(srcShow(r.source || r.submittedAccount || '') || '—')}</b></span></div>
-            <select class="ex-select-plain" data-cat="${i}" data-repid="${esc(rep.id)}" aria-label="${esc(t('wdPick'))}">
+      const cur = st.accounts[i], done = st.confirmed[i];
+      // 승인 대기: 출금 계좌 드롭박스로 바로 고르고 옆의 [확인]으로 확정한다 (작성자가 적은 내용은 아래 한 줄)
+      return `<div class="ex-cat ex-wd-pick" data-ci="${i}">
+          <div class="ex-cat-confirm ex-wd-row">
+            <select class="ex-select-plain" data-cat="${i}" data-repid="${esc(rep.id)}" aria-label="${esc(t('wdLbl'))}">
               <option value="">${esc(t('wdPick'))}</option>
               ${WITHDRAW.map(a => `<option value="${esc(a.id)}" ${cur === a.id ? 'selected' : ''}>${esc(lang === 'en' ? a.en : a.ko)}</option>`).join('')}
             </select>
-            <div class="ex-cat-confirm">
-              <input class="ex-input ex-amemo" data-amemo="${i}" data-repid="${esc(rep.id)}" placeholder="${esc(t('aMemoPh'))}" value="${esc(st.memos[i])}" maxlength="300">
-              <button class="ex-btn sm ex-confirm ${done ? 'done' : ''}" data-act="confirm-cat" data-id="${esc(rep.id)}" data-i="${i}">${done ? t('catDone') : t('catConfirm')}</button>
-            </div>
+            <button class="ex-btn sm ex-confirm ${done ? 'done' : ''}" data-act="confirm-cat" data-id="${esc(rep.id)}" data-i="${i}">${done ? t('catDone') : t('catConfirm')}</button>
           </div>
+          <div class="ex-meta ex-wd-src">${esc(t('srcLbl'))}: ${esc(srcShow(r.source || r.submittedAccount || '') || '—')}</div>
         </div>`;
     }
+    // 승인 메모: 항목 오른쪽 빈 공간(제출자 메모 옆)에 둔다
+    const apprMemoInput = (rep, i, st) => `<input class="ex-input ex-amemo ex-item-memo" data-amemo="${i}" data-repid="${esc(rep.id)}" placeholder="${esc(t('aMemoPh'))}" aria-label="${esc(t('aMemoPh'))}" value="${esc(st.memos[i])}" maxlength="300">`;
 
     // 카드 머리 한 줄: 제출자 · 캠퍼스 · 제출일 · 프로젝트 — 제목/제출자와 같은 말은 반복하지 않는다
     function metaParts(rep, mode) {
@@ -528,7 +522,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, CAMPUSES a
         <tr>
           <td>${esc(r.when || '')}</td>
           <td>${approving ? catCell(rep, r, i, st) : catView(r)}${rowProject(rep, r) ? `<div class="ex-meta">${esc(rowProject(rep, r))}</div>` : ''}</td>
-          <td>${itemWrap(rep, r, `${r.item ? `<b>${esc(r.item)}</b>${noteIcons(r, approving)}${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${r.item ? '' : noteIcons(r, approving)}`)}</td>
+          <td>${approving ? '<div class="ex-item-split">' : ''}${itemWrap(rep, r, `${r.item ? `<b>${esc(r.item)}</b>${noteIcons(r, approving)}${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${r.item ? '' : noteIcons(r, approving)}`)}${approving ? apprMemoInput(rep, i, st) + '</div>' : ''}</td>
           <td class="r">${krw(r.amountKrw)}${isFx(r.currency) ? `<div class="ex-meta">${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)}</div>` : ''}</td>
         </tr>`).join('');
 
@@ -568,7 +562,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, CAMPUSES a
           </div>
         </div>
         <div class="ex-table-wrap"><table class="ex-table">
-          <thead><tr><th>${t('thWhen')}</th><th>${t('thCat')}</th><th>${t('thItem')}</th><th style="text-align:right">${t('thAmt')}</th></tr></thead>
+          <thead><tr><th>${t('thWhen')}</th><th>${approving ? t('wdLbl') : t('thCat')}</th><th>${t('thItem')}</th><th style="text-align:right">${t('thAmt')}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table></div>
         ${approving ? `<p class="ex-sub" style="margin:12px 0 0">${esc(t('catHint'))}</p>` : ''}

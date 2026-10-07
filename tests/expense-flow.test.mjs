@@ -707,15 +707,17 @@ test('회계 코드 글자는 굵게 하지 않는다', async () => {
   assert.match(css, /\.ex-cf b \{[^}]*font-weight: 400;/);
 });
 
-test('승인 대기도 같은 방식: 출금 계좌만 한 줄로 보이고 눌러서 작성자 입력 · 선택박스 · 메모 · 확인을 펼친다 (골라야 하는 항목은 처음부터 펼침), 항목 줄 사이를 넓힌다', async () => {
+test('승인 대기: 출금 계좌 드롭박스와 [확인]이 한 줄(펼치는 카드 없음), 승인 메모는 항목 오른쪽 빈 공간, 모두 34px', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 카드 머리 한 줄:'));
-  assert.match(cell, /class="ex-cat ex-code-flow/);
-  assert.match(cell, /class="ex-cf-head" data-act="code-change"/);
-  assert.match(cell, /const attention = !st\.confirmed\[i\]/);
+  assert.match(cell, /class="ex-cat-confirm ex-wd-row"/);
   assert.match(cell, /data-cat="\$\{i\}"/);
   assert.match(cell, /data-act="confirm-cat"/);
+  assert.doesNotMatch(cell, /ex-cf-panel|ex-code-flow/, '펼쳐지는 카드는 없다');
+  assert.match(src, /<div class="ex-item-split">/);
+  assert.match(src, /apprMemoInput\(rep, i, st\)/);
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /\.ex-itembody \{ line-height: 1\.6; \}/);
+  assert.match(css, /:root:root \.ex-item-split > \.ex-item-memo \{[^}]*height: 34px !important/);
 });

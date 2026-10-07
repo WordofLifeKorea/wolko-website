@@ -681,3 +681,15 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-itembody > .ex-meta { margin-top: 5px; }
 .ex-itembody > .ex-notes { vertical-align: middle; }
 .ex-itembody .ex-memo { margin-top: 8px; }
+
+/* ══ v73 — 승인 화면: 출금 계좌는 드롭박스 + [확인] 한 줄, 승인 메모는 항목 오른쪽 빈 공간 (모두 다른 페이지와 같은 34px) ══ */
+.ex-wd-row { display: flex; gap: 6px; align-items: center; width: 100%; }
+.ex-wd-row .ex-select-plain { flex: 1 1 auto; min-width: 0; width: auto; }
+.ex-cat-confirm.ex-wd-row .ex-confirm { flex: 0 0 76px; width: 76px; }
+.ex-wd-src { margin: 0; }
+.ex-item-split { display: flex; gap: 12px; align-items: flex-start; }
+.ex-item-split > .ex-itemrow { flex: 1 1 0; min-width: 0; }
+.ex-item-split > .ex-item-memo { flex: 0 1 230px; min-width: 150px; margin: 0; box-sizing: border-box; }
+:root:root .ex-item-split > .ex-item-memo { min-height: 0 !important; height: 34px !important; padding: 0 10px !important; font-size: 13px !important; line-height: 1.2; border-radius: 9px; }
+@media (max-width: 900px) { .ex-item-split { flex-direction: column; gap: 8px; min-width: 0; } .ex-item-split > .ex-item-memo { flex: none; width: 100%; min-width: 0; max-width: 100%; } }
+.ex-table td { min-width: 0; }
