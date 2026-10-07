@@ -53,3 +53,10 @@ test('캠프 관리 창: 계절은 하나만 고르는 체크박스(라디오) �
   assert.match(page, /input\[name="newCampSeason"\]:checked/);
   assert.match(page, /camp-manage-row-name/);
 });
+
+test('캠프 관리 창 추가 폼: Safari 에서 입력 칸 기본 폭 때문에 오른쪽이 잘리지 않도록 격자 칸이 minmax(0,1fr) 이다', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.match(page, /\.camp-add-grid \{ display:grid; grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\);/);
+  assert.match(page, /\.field \{ display:grid; grid-template-columns:minmax\(0,1fr\);/);
+  assert.match(page, /\.season-check \{ position:relative;/);
+});
