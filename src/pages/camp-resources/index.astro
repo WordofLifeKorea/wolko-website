@@ -928,7 +928,8 @@
       const years = sortedYears();
       els.campFilterWrap.hidden = years.length === 0;
       if (!years.length) return;
-      if (!selectedCampId && applyDefaultCampSelection()) {
+      // 기본 캠프는 첫 화면에서만 적용한다. 연도·시즌을 바꾸면 선택한 캠프를 비우는데, 그때마다 기본 캠프로 되돌리면 다른 연도를 고를 수 없다.
+      if (!selectedCampId && !selectedYear && applyDefaultCampSelection()) {
         // 기본 캠프가 있으면 첫 화면 선택에 우선 적용한다.
       }
       if (!years.includes(selectedYear)) selectedYear = years[0];

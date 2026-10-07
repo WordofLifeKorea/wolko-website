@@ -148,3 +148,15 @@ test('숨긴(hidden) 버튼은 실제로 안 보인다 — 관리자 지정은 �
   assert.match(page, /id="managersBtn" type="button" hidden/);
   assert.match(page, /els\.managersBtn\.hidden = !editMode \|\| !isMaster;/);
 });
+
+test('연도·시즌을 바꿀 때 기본 캠프로 되돌아가지 않는다 — 기본 캠프는 첫 화면에서만 적용', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/camp-resources/index.astro', import.meta.url), 'utf8');
+  // 연도 선택은 selectedCampId 를 비운 채 다시 그리므로, 이미 연도가 정해진 뒤에는 기본 캠프를 다시 적용하면 안 된다
+  assert.match(page, /if \(!selectedCampId && !selectedYear && applyDefaultCampSelection\(\)\)/);
+  assert.doesNotMatch(page, /if \(!selectedCampId && applyDefaultCampSelection\(\)\)/);
+  const handler = page.slice(page.indexOf("els.yearSelect.addEventListener('change'"), page.indexOf("els.seasonToggle.addEventListener('click'"));
+  assert.match(handler, /selectedYear = els\.yearSelect\.value;/);
+  assert.match(handler, /selectedSeason = '';/);
+  assert.match(handler, /selectedCampId = '';/);
+});
