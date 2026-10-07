@@ -117,3 +117,16 @@ test('공용 왼쪽 메뉴 · 머리글 스크립트/스타일은 모든 페이�
   }
   for (const [name, versions] of Object.entries(seen)) assert.equal(versions.size, 1, `${name} 버전이 페이지마다 다름: ${[...versions].join(', ')}`);
 });
+
+test('왼쪽 메뉴 아이콘 색은 메뉴마다 달라서 겹치지 않고, 포탈 첫 화면과 같은 색을 쓴다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const grab = (file, re) => Object.fromEntries([...readFileSync(new URL(file, import.meta.url), 'utf8').matchAll(re)].map(m => [m[1], m[2].toLowerCase()]));
+  const rail = grab('../public/wolko-rail.js', /href: '(\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
+  const home = grab('../src/pages/portal.astro', /href: '(\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
+  assert.equal(Object.keys(rail).length, 10);
+  assert.equal(new Set(Object.values(rail)).size, 10, '색이 겹친다');
+  assert.deepEqual(home, rail);
+  const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const lum = h => { const [r, g, b] = rgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
+  for (const [href, c] of Object.entries(rail)) assert.ok(lum(c) > 0.12, `${href} ${c} 가 어두운 메뉴 배경에서 잘 안 보인다`);
+});

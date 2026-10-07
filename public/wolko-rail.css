@@ -93,11 +93,13 @@
     transition: background .15s, color .15s;
   }
   .wolko-rail-item-icon svg { width: 15px; height: 15px; }
+  /* 메뉴마다 겹치지 않는 색: 평소에도 아이콘이 자기 색으로 보이게 (배경은 연한 색 틴트, 아이콘은 밝은 같은 색) */
+  .wolko-rail-item:not(.wolko-rail-hub) .wolko-rail-item-icon { background: color-mix(in srgb, var(--rail-color) 46%, rgba(255,255,255,.04)); color: #fff; }
   .wolko-rail-item-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .wolko-rail-item:hover { background: rgba(255,255,255,.1); color: #fff; }
-  .wolko-rail-item:hover .wolko-rail-item-icon { background: var(--rail-color, #fff); color: #06232f; }
+  .wolko-rail-item:hover .wolko-rail-item-icon, .wolko-rail-item:hover:not(.wolko-rail-hub) .wolko-rail-item-icon { background: var(--rail-color, #fff); color: #06232f; }
   .wolko-rail-item.is-active { background: rgba(255,255,255,.14); color: #fff; }
-  .wolko-rail-item.is-active .wolko-rail-item-icon { background: var(--rail-color, #fff); color: #fff; }
+  .wolko-rail-item.is-active .wolko-rail-item-icon, .wolko-rail-item.is-active:not(.wolko-rail-hub) .wolko-rail-item-icon { background: var(--rail-color, #fff); color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.28); }
 
   .wolko-rail-hub {
     margin-top: auto;
