@@ -729,3 +729,10 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 /* ══ v79 — 출금 계좌가 아직 없는 예전 승인 리포트: 회계가 코드 오른쪽에서 바로 고른다 (34px) ══ */
 .ex-cf-wd.pick { align-items: center; }
 :root:root .ex-cf-wd select { min-height: 0 !important; height: 34px !important; padding-top: 0 !important; padding-bottom: 0 !important; padding-left: 10px !important; padding-right: 28px !important; font-size: 13px !important; min-width: 170px; max-width: 220px; border-radius: 9px; }
+
+/* ══ v80 — 코드와 출금 계좌는 한 줄로 (좁은 폰 화면에서만 아래로 내려간다). 선택칸은 안내 문구가 곧 이름이라 따로 라벨을 두지 않는다 ══ */
+.ex-cf-top { flex-wrap: nowrap; gap: 6px 14px; }
+.ex-cf-top > .ex-cf-head { flex: 0 1 auto; min-width: 0; }
+.ex-cf-top > .ex-cf-wd { flex: 0 1 auto; min-width: 0; margin-left: auto; }
+:root:root .ex-cf-wd.pick select { min-width: 150px; max-width: 240px; width: 100%; }
+@media (max-width: 520px) { .ex-cf-top { flex-wrap: wrap; } .ex-cf-top > .ex-cf-wd { margin-left: 0; } }
