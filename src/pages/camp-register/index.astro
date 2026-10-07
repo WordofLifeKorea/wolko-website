@@ -1840,7 +1840,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           </div>
         )}
         <ul id="staffCampOptions" hidden>
-          {[...inlandCamps, ...jejuCamps].map((s) => (
+          {[...inlandCamps, ...jejuCamps].filter((s) => !s.data.staff_application_hidden).map((s) => (
             <li
               data-camp-id={s.id}
               data-region={s.data.camp_type === 'jeju' ? 'jeju' : 'inland'}

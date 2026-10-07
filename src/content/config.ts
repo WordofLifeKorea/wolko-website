@@ -107,6 +107,7 @@ const camp_schedule = defineCollection({
     open_date: z.string().optional(),
     start_date: z.string().optional(),
     staff_registration_open: z.boolean().optional(),
+    staff_application_hidden: z.boolean().optional(), // true 면 '캠프 스태프 지원'의 섬길 수 있는 캠프 목록에 표시하지 않는다
     staff_training_ko: z.string().optional(),
     staff_commitment_required: z.boolean().optional(),
     staff_training_en: z.string().optional(),
