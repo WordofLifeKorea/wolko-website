@@ -523,6 +523,17 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
   transition: opacity .35s ease, visibility 0s linear .35s;
 }
 .wh-promo-overlay.is-open { opacity: 1; visibility: visible; transition: opacity .35s ease; }
+/* 팝업: 카드가 두 장이면 한 장씩 3초마다 교체되고, 아래 점(네비게이터)으로 직접 넘길 수 있다 */
+.wh-promo-row { width: 100%; max-width: 400px; max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; margin: auto; }
+.wh-promo-stage { width: 100%; display: grid; }
+.wh-promo-stage > .wh-promo-card { grid-area: 1 / 1; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .45s ease, visibility 0s linear .45s, transform .4s cubic-bezier(.2,.8,.3,1.1); }
+.wh-promo-stage > .wh-promo-card.is-active { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .45s ease; }
+.wh-promo-stage > .wh-promo-card[hidden] { display: none; }
+.wh-promo-dots { display: flex; gap: 10px; align-items: center; justify-content: center; }
+.wh-promo-dots[hidden] { display: none; }
+:root:root .wh-promo-dots :global(button) { width: 12px !important; height: 12px !important; flex: 0 0 12px; min-width: 0 !important; min-height: 0 !important; padding: 0 !important; aspect-ratio: 1 / 1; border: 0; border-radius: 50%; background: rgba(255,255,255,.45); cursor: pointer; transition: background .2s, transform .2s; }
+:root:root .wh-promo-dots :global(button.is-on) { background: #fff; transform: scale(1.25); }
+:root:root .wh-promo-dots :global(button:focus-visible) { outline: 2px solid #fff; outline-offset: 3px; }
 .wh-promo-card {
   position: relative; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto;
   background: #fff; border-radius: 20px; overflow-x: hidden;
@@ -564,9 +575,11 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
 }
 </style>
 
-<!-- ══ 감사의 밤 안내 팝업 ══ -->
-<div class="wh-promo-overlay" id="thanksgivingPromo" hidden>
-  <div class="wh-promo-card">
+<!-- ══ 홈 안내 팝업: 감사의 밤 · 제주 캠퍼스 데이 (한 장씩 3초마다 교체 + 아래 점으로 이동, "다시 보지 않기"는 카드별) ══ -->
+<div class="wh-promo-overlay" id="homePromos" hidden>
+  <div class="wh-promo-row">
+  <div class="wh-promo-stage" id="homePromoStage">
+  <div class="wh-promo-card" id="thanksgivingPromo">
     <button type="button" class="wh-promo-close" id="thanksgivingPromoClose" aria-label="닫기">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
@@ -596,43 +609,42 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
       </div>
     </div>
   </div>
-</div>
-
-<!-- ══ 제주 캠퍼스 데이 안내 팝업 (감사의 밤 팝업을 닫은 뒤 이어서 뜬다) ══ -->
-{campusDay && (
-  <div class="wh-promo-overlay" id="campusDayPromo" data-start={campusDay.start_date ?? ''} hidden>
-    <div class="wh-promo-card">
-      <button type="button" class="wh-promo-close" id="campusDayPromoClose" aria-label="닫기">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-      </button>
-      <img class="wh-promo-image" src="/images/wolbi-jeju/hero-campus-spring-2026.jpeg" alt="Jeju Campus Day" loading="lazy">
-      <div class="wh-promo-body">
-        <div class="wh-promo-eyebrow">
-          <span class="wl-ko">학생들을 초대합니다</span>
-          <span class="wl-en">Students Welcome</span>
-        </div>
-        <h2 class="wh-promo-title">
-          <span class="wl-ko">제주 캠퍼스 데이</span>
-          <span class="wl-en">Jeju Campus Day</span>
-        </h2>
-        <p class="wh-promo-meta">
-          <span class="wl-ko">{campusDay.date_ko} · 월비연수원</span>
-          <span class="wl-en">{campusDay.date_en} · WOLBI Center</span>
-        </p>
-        <div class="wh-promo-actions">
-          <a class="wh-promo-btn" href={campusDay.registration_url || '/camp-register/'} target={campusDay.registration_url ? '_blank' : undefined} rel="noopener" id="campusDayPromoCta">
-            <span class="wl-ko">신청하기</span>
-            <span class="wl-en">Apply Now</span>
-          </a>
-          <button type="button" class="wh-promo-dismiss" id="campusDayPromoDismiss">
-            <span class="wl-ko">다시 보지 않기</span>
-            <span class="wl-en">Don't show again</span>
-          </button>
-        </div>
-      </div>
-    </div>
+    {campusDay && (
+      <div class="wh-promo-card" id="campusDayPromo" data-start={campusDay.start_date ?? ''}>
+            <button type="button" class="wh-promo-close" id="campusDayPromoClose" aria-label="닫기">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+            <img class="wh-promo-image" src="/images/wolbi-jeju/hero-campus-spring-2026.jpeg" alt="Jeju Campus Day" loading="lazy">
+            <div class="wh-promo-body">
+              <div class="wh-promo-eyebrow">
+                <span class="wl-ko">학생들을 초대합니다</span>
+                <span class="wl-en">Students Welcome</span>
+              </div>
+              <h2 class="wh-promo-title">
+                <span class="wl-ko">제주 캠퍼스 데이</span>
+                <span class="wl-en">Jeju Campus Day</span>
+              </h2>
+              <p class="wh-promo-meta">
+                <span class="wl-ko">{campusDay.date_ko} · 월비연수원</span>
+                <span class="wl-en">{campusDay.date_en} · WOLBI Center</span>
+              </p>
+              <div class="wh-promo-actions">
+                <a class="wh-promo-btn" href={campusDay.registration_url || '/camp-register/'} target={campusDay.registration_url ? '_blank' : undefined} rel="noopener" id="campusDayPromoCta">
+                  <span class="wl-ko">신청하기</span>
+                  <span class="wl-en">Apply Now</span>
+                </a>
+                <button type="button" class="wh-promo-dismiss" id="campusDayPromoDismiss">
+                  <span class="wl-ko">다시 보지 않기</span>
+                  <span class="wl-en">Don't show again</span>
+                </button>
+              </div>
+            </div>
+          </div>
+    )}
   </div>
-)}
+  <div class="wh-promo-dots" id="homePromoDots" role="tablist" aria-label="Announcements" hidden></div>
+  </div>
+</div>
 
 <div class="wh-home-combined">
 
@@ -970,58 +982,94 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
     });
   })();
 
-  // ── 홈 안내 팝업 (감사의 밤 → 제주 캠퍼스 데이 순서로 하나씩) ──────────────────
-  // "다시 보지 않기"는 localStorage(영구), 그냥 닫기/배경 클릭/신청 이동은
+  // ── 홈 안내 팝업: 감사의 밤 · 제주 캠퍼스 데이 — 한 팝업 안에서 3초마다 한 장씩 교체되고, 아래 점으로 직접 넘긴다 ──
+  // "다시 보지 않기"는 카드마다 localStorage(영구), 그냥 닫기/배경 클릭/신청 이동은
   // sessionStorage(이번 방문 동안만)로 구분해서 과하게 반복 노출되지 않게 한다.
   (function () {
+    var overlay = document.getElementById('homePromos');
+    if (!overlay) return;
+    var dotsEl = document.getElementById('homePromoDots');
+    var todayKst = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    var ROTATE_MS = 3000;
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var timer = null, current = 0;
+
     function setup(cfg) {
-      var overlay = document.getElementById(cfg.overlay);
-      if (!overlay) return null;
-      var todayKst = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
-      var start = (overlay.dataset.start || '').slice(0, 10);
-      if (start && todayKst >= start) return null;                // 행사가 시작되면 더 띄우지 않는다
+      var card = document.getElementById(cfg.card);
+      if (!card) return null;
+      var start = (card.dataset.start || '').slice(0, 10);
+      var skip = start && todayKst >= start;                       // 행사가 시작되면 더 띄우지 않는다
       try {
-        if (localStorage.getItem(cfg.perma) === '1') return null;
-        if (sessionStorage.getItem(cfg.session) === '1') return null;
+        if (localStorage.getItem(cfg.perma) === '1' || sessionStorage.getItem(cfg.session) === '1') skip = true;
       } catch (e) {}
-      function markSeen() { try { sessionStorage.setItem(cfg.session, '1'); } catch (e) {} }
-      var afterClose = null;
-      function closePromo() {
-        overlay.classList.remove('is-open');
-        document.body.style.overflow = '';
-        markSeen();
-        setTimeout(function () { overlay.hidden = true; }, 350);
-        var cb = afterClose; afterClose = null;
-        if (cb) setTimeout(cb, 450);
-      }
-      document.getElementById(cfg.close).addEventListener('click', closePromo);
-      document.getElementById(cfg.cta).addEventListener('click', markSeen);
+      if (skip) { card.hidden = true; return null; }
+      var item = { card: card, cfg: cfg, gone: false };
+      document.getElementById(cfg.close).addEventListener('click', closeAll);
+      document.getElementById(cfg.cta).addEventListener('click', function () { markSeen(item); });
       document.getElementById(cfg.dismiss).addEventListener('click', function () {
         try { localStorage.setItem(cfg.perma, '1'); } catch (e) {}
-        closePromo();
+        item.gone = true; card.hidden = true; markSeen(item);
+        render(0);                                                  // 남은 카드로 넘어간다 (없으면 팝업을 닫는다)
       });
-      overlay.addEventListener('click', function (e) { if (e.target === overlay) closePromo(); });
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePromo();
-      });
-      return {
-        open: function (cb) {
-          afterClose = cb || null;
-          overlay.hidden = false;
-          requestAnimationFrame(function () { overlay.classList.add('is-open'); });
-          document.body.style.overflow = 'hidden';
-        },
-      };
+      return item;
     }
+    function markSeen(item) { try { sessionStorage.setItem(item.cfg.session, '1'); } catch (e) {} }
 
-    var queue = [
-      setup({ overlay: 'thanksgivingPromo', close: 'thanksgivingPromoClose', cta: 'thanksgivingPromoCta', dismiss: 'thanksgivingPromoDismiss',
+    var items = [
+      setup({ card: 'thanksgivingPromo', close: 'thanksgivingPromoClose', cta: 'thanksgivingPromoCta', dismiss: 'thanksgivingPromoDismiss',
               perma: 'wolko-promo-thanksgiving-2026-11-26-hide', session: 'wolko-promo-thanksgiving-2026-11-26-seen' }),
-      setup({ overlay: 'campusDayPromo', close: 'campusDayPromoClose', cta: 'campusDayPromoCta', dismiss: 'campusDayPromoDismiss',
+      setup({ card: 'campusDayPromo', close: 'campusDayPromoClose', cta: 'campusDayPromoCta', dismiss: 'campusDayPromoDismiss',
               perma: 'wolko-promo-jeju-campus-day-2026-hide', session: 'wolko-promo-jeju-campus-day-2026-seen' }),
     ].filter(Boolean);
-    function next() { var p = queue.shift(); if (p) p.open(next); }
-    setTimeout(next, 700);
+    if (!items.length) return;
+
+    function live() { return items.filter(function (i) { return !i.gone; }); }
+    function closeOverlay() {
+      clearInterval(timer); timer = null;
+      overlay.classList.remove('is-open');
+      document.body.style.overflow = '';
+      setTimeout(function () { overlay.hidden = true; }, 350);
+    }
+    function closeAll() { live().forEach(markSeen); closeOverlay(); }
+
+    // 점(네비게이터)과 현재 카드 표시
+    function render(idx) {
+      var l = live();
+      if (!l.length) { closeOverlay(); return; }
+      current = (idx + l.length) % l.length;
+      items.forEach(function (i) { i.card.classList.remove('is-active'); });
+      l[current].card.classList.add('is-active');
+      dotsEl.hidden = l.length < 2;
+      dotsEl.innerHTML = l.map(function (_, n) {
+        return '<button type="button" role="tab" aria-label="' + (n + 1) + '/' + l.length + '" aria-selected="' + (n === current) + '" class="' + (n === current ? 'is-on' : '') + '" data-n="' + n + '"></button>';
+      }).join('');
+      restart();
+    }
+    function restart() {
+      clearInterval(timer); timer = null;
+      if (reduceMotion || live().length < 2 || paused) return;
+      timer = setInterval(function () { render(current + 1); }, ROTATE_MS);
+    }
+    var paused = false;
+    dotsEl.addEventListener('click', function (e) { var b = e.target.closest('[data-n]'); if (b) render(+b.dataset.n); });
+    // 읽는 중에는 넘어가지 않게: 마우스를 올리거나 손가락을 대고 있거나 키보드 포커스가 있는 동안 멈춘다
+    var row = overlay.querySelector('.wh-promo-row');
+    ['mouseenter', 'focusin', 'touchstart'].forEach(function (ev) { row.addEventListener(ev, function () { paused = true; clearInterval(timer); timer = null; }, { passive: true }); });
+    ['mouseleave', 'focusout', 'touchend'].forEach(function (ev) { row.addEventListener(ev, function () { paused = false; restart(); }, { passive: true }); });
+    overlay.addEventListener('click', function (e) { if (e.target === overlay || e.target === row) closeAll(); });
+    document.addEventListener('keydown', function (e) {
+      if (!overlay.classList.contains('is-open')) return;
+      if (e.key === 'Escape') closeAll();
+      else if (e.key === 'ArrowRight') render(current + 1);
+      else if (e.key === 'ArrowLeft') render(current - 1);
+    });
+
+    setTimeout(function () {
+      overlay.hidden = false;
+      render(0);
+      requestAnimationFrame(function () { overlay.classList.add('is-open'); });
+      document.body.style.overflow = 'hidden';
+    }, 700);
   })();
 </script>
 
