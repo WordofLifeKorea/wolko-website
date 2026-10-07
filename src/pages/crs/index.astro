@@ -522,6 +522,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .steps-toggle:hover { background:#e2f0f2; }
   .steps-list {
     display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:max-content;
+    grid-auto-flow:column; grid-template-rows:repeat(var(--step-rows, 6), max-content);   /* 1~6 왼쪽 · 7~12 오른쪽으로 세로로 채운다 */
     align-content:start; align-items:start; gap:.46rem;
   }
   .step-item {
@@ -596,7 +597,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .form-group input, .form-group textarea, .form-group select { border-color:#d7e2e5; border-radius:7px; background:#fbfcfc; }
   @media(max-width:980px) {
     .app-body.split .list-panel { flex:0 0 340px; }
-    .steps-list { grid-template-columns:1fr; }
+    .steps-list { grid-template-columns:1fr; grid-auto-flow:row; grid-template-rows:none; }
   }
   @media(max-width:768px) {
     body.crs-detail-open { overflow:hidden; }
@@ -646,7 +647,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     .visit-section { padding:.82rem; }
     .visit-section-head { align-items:flex-start; }
     .relationship-section { min-height:0; margin-top:1rem; }
-    .steps-list { grid-auto-rows:max-content; align-content:start; gap:.5rem; }
+    .steps-list { grid-auto-rows:max-content; align-content:start; gap:.5rem; grid-auto-flow:row; grid-template-rows:none; }
     .step-item { min-height:0; padding:.7rem; }
     .step-desc { overflow-wrap:anywhere; }
   }
@@ -734,13 +735,13 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     "Called pastor or talked to pastor",
     "Visited pastor",
     "Gave pastor ministry presentation",
-    "Gave pastor \u201cGod Ask\u201d support presentation",
-    "Gave gift / thank you",
     "Gospel Conversation Training",
     "Youth participate in camp or event",
     "Core Training",
     "Church uses WOLKO curriculum",
     "WOLKO Missionary speaks at church service",
+    "Gave pastor \u201cGod Ask\u201d support presentation",
+    "Gave gift / thank you",
     "Church supports WOLKO",
     "Pastor introduces WOLKO to other churches"
   ];
@@ -749,20 +750,20 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     "목사님께 전화 또는 대화",
     "목사님 방문",
     "목사님께 사역 소개 프레젠테이션",
-    "목사님께 후원 요청(God Ask) 프레젠테이션",
-    "선물 전달 · 감사 표현",
     "복음 대화 훈련 (Gospel Conversation Training)",
     "청소년 캠프 또는 이벤트 참여",
     "리더 훈련 (Core Training)",
     "교회의 WOLKO 커리큘럼 사용",
     "WOLKO 선교사 교회 예배 설교",
+    "목사님께 후원 요청(God Ask) 프레젠테이션",
+    "선물 전달 · 감사 표현",
     "교회의 WOLKO 후원",
     "목사님의 타 교회 WOLKO 소개"
   ];
 
-  // ── 예전 10단계 → 새 12단계 (기존 기록을 그대로 옮긴다) ──
-  // 1 → 2·3 (방문 + 사역 소개), 2·5 → 6 (복음 대화 훈련으로 통합), 6·7 → 9 (WOLKO 커리큘럼으로 통합), 나머지는 번호만 이동
-  const OLD_STEPS = [
+  // ── 단계가 바뀔 때마다 기존 기록을 새 번호로 옮긴다 (교회마다 stepsVersion 으로 어느 버전인지 표시) ──
+  // v1: 처음의 10단계 / v2: 12단계(1단계 세분화) / v3: 지금 순서(God Ask · 선물 단계를 "선교사 설교" 뒤로)
+  const V1_STEPS = [
     "Meet pastor & give presentation",
     "WOLKO Day (Training for gospel conversation)",
     "Youth participate in camp or event",
@@ -774,25 +775,59 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     "Church supports WOLKO",
     "Pastor introduces WOLKO to other churches"
   ];
-  const STEP_DATA_MAP = { 1: [2, 3], 2: [6], 3: [7], 4: [8], 5: [6], 6: [9], 7: [9], 8: [10], 9: [11], 10: [12] };
-  const STEP_PURPOSE_MAP = { 1: 2, 2: 6, 3: 7, 4: 8, 5: 6, 6: 9, 7: 9, 8: 10, 9: 11, 10: 12 };
-  const STEPS_VERSION = 2;
+  const V2_STEPS = [
+    "Called pastor or talked to pastor",
+    "Visited pastor",
+    "Gave pastor ministry presentation",
+    "Gave pastor \u201cGod Ask\u201d support presentation",
+    "Gave gift / thank you",
+    "Gospel Conversation Training",
+    "Youth participate in camp or event",
+    "Core Training",
+    "Church uses WOLKO curriculum",
+    "WOLKO Missionary speaks at church service",
+    "Church supports WOLKO",
+    "Pastor introduces WOLKO to other churches"
+  ];
+  // 단계 기록: 옛 번호 → 새 번호들 (1→2·3 처럼 나뉘거나, 2·5→6 처럼 합쳐질 수 있다)
+  const DATA_MAPS = {
+    1: { 1: [2, 3], 2: [6], 3: [7], 4: [8], 5: [6], 6: [9], 7: [9], 8: [10], 9: [11], 10: [12] },
+    2: { 1: [1], 2: [2], 3: [3], 4: [9], 5: [10], 6: [4], 7: [5], 8: [6], 9: [7], 10: [8], 11: [11], 12: [12] },
+  };
+  // 방문 목적(문장)은 한 단계로만 옮긴다
+  const PURPOSE_MAPS = {
+    1: { 1: 2, 2: 6, 3: 7, 4: 8, 5: 6, 6: 9, 7: 9, 8: 10, 9: 11, 10: 12 },
+    2: { 1: 1, 2: 2, 3: 3, 4: 9, 5: 10, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11: 11, 12: 12 },
+  };
+  const STEPS_VERSION = 3;
   const entriesOfStep = v => Array.isArray(v) ? v : (v ? [{ legacy: true }] : []);
-  // 교회 한 곳의 단계 기록 · 방문 목적을 새 단계로 바꾼다 (이미 바뀐 것은 건드리지 않는다)
-  function migrateChurchSteps(church) {
-    if (!church || church.stepsVersion === STEPS_VERSION) return church;
+  function remapSteps(steps, map) {
     const out = {};
-    Object.entries(church.steps || {}).forEach(([k, v]) => {
+    Object.entries(steps || {}).forEach(([k, v]) => {
       const entries = entriesOfStep(v);
       if (!entries.length) return;                     // 빈 기록은 만들지 않는다
-      (STEP_DATA_MAP[+k] || []).forEach(n => { out[n] = [...(out[n] || []), ...entries]; });
+      (map[+k] || []).forEach(n => { out[n] = [...(out[n] || []), ...entries]; });
     });
-    church.steps = out;
+    return out;
+  }
+  // 교회 한 곳의 단계 기록 · 방문 목적을 지금 단계로 바꾼다 (이미 바뀐 것은 건드리지 않는다)
+  function migrateChurchSteps(church) {
+    if (!church || church.stepsVersion === STEPS_VERSION) return church;
+    const from = church.stepsVersion === 2 ? 2 : 1;
+    let steps = church.steps || {};
+    for (let v = from; v < STEPS_VERSION; v++) steps = remapSteps(steps, DATA_MAPS[v]);
+    church.steps = steps;
     church.stepsVersion = STEPS_VERSION;
     if (church.visits) {
       Object.values(church.visits).forEach(v => {
         const m = /^Step (\d+): (.*)$/.exec(v && v.purpose || '');
-        if (m && OLD_STEPS[+m[1] - 1] === m[2] && STEP_PURPOSE_MAP[+m[1]]) v.purpose = `Step ${STEP_PURPOSE_MAP[+m[1]]}: ${STEPS[STEP_PURPOSE_MAP[+m[1]] - 1]}`;
+        if (!m) return;
+        let n = +m[1];
+        // 방문 기록은 그때그때 저장돼서 버전이 섞여 있을 수 있다 — 글자가 맞는 버전부터 새 단계까지 옮긴다
+        let ver = V1_STEPS[n - 1] === m[2] ? 1 : (V2_STEPS[n - 1] === m[2] ? 2 : 0);
+        if (!ver) return;
+        for (; ver < STEPS_VERSION; ver++) n = PURPOSE_MAPS[ver][n];
+        v.purpose = `Step ${n}: ${STEPS[n - 1]}`;
       });
     }
     return church;
@@ -2103,7 +2138,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <span class="steps-title">${t('steps_title')}</span>
           <button class="steps-toggle" id="stepsToggle">${t('steps_collapse')}</button>
         </div>
-        <div class="steps-list" id="stepsList">${stepsHtml}</div>
+        <div class="steps-list" id="stepsList" style="--step-rows:${Math.ceil(stepsArr.length / 2)}">${stepsHtml}</div>
       </section>
 
       <div class="detail-actions">
