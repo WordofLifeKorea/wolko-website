@@ -87,7 +87,10 @@ test('교회 목록은 번호 순으로 정렬되고, 번호 뱃지는 정원이
 });
 
 test('교회 목록 정렬 선택: 번호순(기본) / 방문 오래된 순, 선택은 기억한다', () => {
-  assert.match(src, /id="sortSelect"/);
+  assert.match(src, /id="sortSeg"/);
+  assert.match(src, /data-sort="number"/);
+  assert.match(src, /data-sort="visit"/);
+  assert.doesNotMatch(src, /id="sortSelect"/);
   assert.match(src, /sort_number: '번호순', sort_visit: '방문 오래된 순'/);
   assert.match(src, /sort_number: 'By number', sort_visit: 'Longest since visit'/);
   assert.match(src, /activeSort === 'visit'\s*\? \(a, b\) => \(visitDays\(b\) \?\? -Infinity\) - \(visitDays\(a\) \?\? -Infinity\)/);

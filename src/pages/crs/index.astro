@@ -125,6 +125,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     background-repeat:no-repeat; background-position:right .5rem center;
   }
   .filter-select[hidden] { display:none; }
+  .sort-seg { flex:0 0 auto; display:inline-flex; height:34px; border:1px solid #cedcdf; border-radius:9px; overflow:hidden; background:#fff; }
+  :root:root .sort-seg button { min-height:0 !important; height:100%; border:0; border-radius:0; padding:0 .8rem; background:transparent; color:#4d6872; font-size:.78rem; font-weight:700; white-space:nowrap; cursor:pointer; }
+  :root:root .sort-seg button + button { border-left:1px solid #dde7ea; }
+  :root:root .sort-seg button.on { background:#004f68; color:#fff; }
   .filter-select:focus { border-color:#004f68; box-shadow:0 0 0 3px rgba(0,79,104,.09); }
   .filter-select.is-active { border-color:#004f68; background-color:#f2f8fa; color:#004f68; font-weight:700; }
 
@@ -872,7 +876,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       pastor_phone: '목사님 연락처', pastor_phone_ph: '예: 010-1234-5678',
       denomination_label: '교단', denomination_ph: '교단 선택 또는 입력',
       missionary_label: '담당 선교사', missionary_ph: '담당 선교사 선택 또는 입력',
-      filter_all: '전체', sort_label: '정렬', sort_number: '번호순', sort_visit: '방문 오래된 순',
+      filter_all: '전체', sort_label: '정렬', sort_number: '번호순', sort_visit: '방문 오래된 순', sort_visit_short: '오래된 방문순',
       visit_date: '방문 날짜', location: '시 / 도', region_ph: '-- 시/도 선택 --',
       district: '시 / 군 / 구', district_ph: '-- 시/도를 먼저 선택하세요 --', district_ph_select: '-- 시/군/구 선택 --',
       purpose: '방문 목적', purpose_ph: '-- 방문 목적 선택 --',
@@ -929,7 +933,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       pastor_phone: 'Pastor\'s Phone', pastor_phone_ph: 'e.g. 010-1234-5678',
       denomination_label: 'Denomination', denomination_ph: 'Select or type a denomination',
       missionary_label: 'Assigned Missionary', missionary_ph: 'Select or type a missionary',
-      filter_all: 'All', sort_label: 'Sort', sort_number: 'By number', sort_visit: 'Longest since visit',
+      filter_all: 'All', sort_label: 'Sort', sort_number: 'By number', sort_visit: 'Longest since visit', sort_visit_short: 'Oldest visit',
       visit_date: 'Visit Date', location: 'Province / City', region_ph: '-- Select Province --',
       district: 'City / District', district_ph: '-- Select province first --', district_ph_select: '-- Select district --',
       purpose: 'Visit Purpose', purpose_ph: '-- Select Visit Purpose --',
@@ -1139,11 +1143,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       denominationEl.value = activeDenominationFilter || '';
       denominationEl.classList.toggle('is-active', !!activeDenominationFilter);
     }
-    const sortEl = document.getElementById('sortSelect');
-    if (sortEl) {
-      sortEl.innerHTML = `<option value="number">${esc(t('sort_label'))}: ${esc(t('sort_number'))}</option><option value="visit">${esc(t('sort_label'))}: ${esc(t('sort_visit'))}</option>`;
-      sortEl.value = activeSort;
-    }
+  }
   }
 
   // ── 자동 로그아웃 (20분 비활동) ──
@@ -1379,7 +1379,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
             <input class="search-input" id="searchInput" placeholder="${t('search_ph')}">
             <select class="filter-select" id="missionaryFilterSelect" hidden></select>
             <select class="filter-select" id="denominationFilterSelect" hidden></select>
-            <select class="filter-select" id="sortSelect" aria-label="${t('sort_label')}"></select>
+            <div class="sort-seg" id="sortSeg" role="group" aria-label="${t('sort_label')}">
+              <button type="button" data-sort="number" class="${activeSort === 'number' ? 'on' : ''}" aria-pressed="${activeSort === 'number'}">${t('sort_number')}</button>
+              <button type="button" data-sort="visit" class="${activeSort === 'visit' ? 'on' : ''}" aria-pressed="${activeSort === 'visit'}" title="${t('sort_visit')}">${t('sort_visit_short')}</button>
+            </div>
             <button class="btn-add" id="addChurchBtn">${t('add_church')}</button>
           </div>
           <div class="list-panel-inner">
@@ -1582,9 +1585,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       e.target.classList.toggle('is-active', !!activeMissionaryFilter);
       renderChurchList();
     });
-    document.getElementById('sortSelect').addEventListener('change', e => {
-      activeSort = e.target.value === 'visit' ? 'visit' : 'number';
+    document.getElementById('sortSeg').addEventListener('click', e => {
+      const btn = e.target.closest('[data-sort]'); if (!btn) return;
+      activeSort = btn.dataset.sort === 'visit' ? 'visit' : 'number';
       try { localStorage.setItem('wolko-crs-sort', activeSort); } catch (err) {}
+      document.querySelectorAll('#sortSeg [data-sort]').forEach(b => { const on = b.dataset.sort === activeSort; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
       renderChurchList();
     });
     document.getElementById('denominationFilterSelect').addEventListener('change', e => {
