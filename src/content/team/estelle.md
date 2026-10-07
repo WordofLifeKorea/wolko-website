@@ -17,8 +17,8 @@ hero_tagline_ko: 주님의 인도하심을
 hero_tagline_en: "Following the Lord's Leading"
 hero_tagline2_ko: 따라 한국으로
 hero_tagline2_en: to Korea
-hero_subtitle_ko: 에스텔은 월코의 론칭(Launch) 프로그램을 통해 한국에 왔습니다. 2024년 가을과 겨울의 단기선교를 마친 후, 2025년 가을에 다시 돌아와 그리스도 안에서 발견한 소망을 한국 청년들과 나누고 있습니다.
-hero_subtitle_en: Estelle came to Korea through the Launch program with Word of Life. Following a short-term mission in the fall and winter of 2024, she returned again in the fall of 2025 to share the hope found in Christ with Korean youth.
+hero_subtitle_ko: 에스텔은 Word of Life의 런치(단기 선교 프로그램)를 통해 한국에 왔습니다. 2024년 가을과 겨울의 단기선교를 마친 후, 2025년 가을에 다시 돌아와 그리스도 안에서 발견한 소망을 한국 청년들과 나누고 있습니다.
+hero_subtitle_en: Estelle came to Korea through Word of Life's Launch (a short-term mission program). Following a short-term mission in the fall and winter of 2024, she returned again in the fall of 2025 to share the hope found in Christ with Korean youth.
 verse_ref: "Ephesians 2:10"
 show_spouse: false
 bio_ko: |-

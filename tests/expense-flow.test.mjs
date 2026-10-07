@@ -785,3 +785,17 @@ test('승인 대기: 출금 계좌 드롭박스와 [확인]이 한 줄(펼치는
   assert.match(css, /\.ex-itembody \{ line-height: 1\.6; \}/);
   assert.match(css, /:root:root \.ex-item-split > \.ex-item-memo \{[^}]*height: 34px !important/);
 });
+
+test('회계 노트 말풍선에 [저장]이 있고 눌러서 실제로 저장된다 (말풍선 안 클릭을 막는 규칙에서 저장 버튼은 제외), 코드 오른쪽에 출금 계좌가 보인다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  assert.match(src, /data-act="anote-save"/);
+  assert.match(src, /acNoteSave: '저장'/);
+  assert.match(src, /acNoteSave: 'Save'/);
+  assert.match(src, /act === 'recat-save' \|\| act === 'anote-save'/);
+  assert.match(src, /!e\.target\.closest\('\[data-act="anote-close"\], \[data-act="anote-save"\]'\)/, '말풍선 안을 누르면 무시하는 규칙에서 [저장]은 빠져야 한다');
+  assert.match(src, /<div class="ex-cf-top">/);
+  assert.match(src, /class="ex-cf-wd"/);
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-cf-top \{ display: flex; align-items: center; justify-content: space-between;/);
+});
