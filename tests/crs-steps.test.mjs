@@ -58,7 +58,7 @@ test('저장할 때 새 형식 표시(stepsVersion)를 함께 남기고, 새 교
 });
 
 test('교회 카드는 위쪽(이름·담임·단계)만 접어 두고, 선택(활성)된 카드만 펼친다', () => {
-  assert.match(src, /\.church-card:not\(\.selected\) \.church-card-body \{ display:none; \}/);
+  assert.match(src, /\.church-card:not\(\.selected\) \.church-card-body > :not\(\.step-bar-wrap\) \{ display:none; \}/);   \/\/ 접힌 카드에도 진행 막대는 남는다
   assert.match(src, /selectedCard\?\.classList\.add\('selected'\)/);
   assert.match(src, /selectedCard\?\.scrollIntoView\(\{ block: 'nearest' \}\)/);
 });
