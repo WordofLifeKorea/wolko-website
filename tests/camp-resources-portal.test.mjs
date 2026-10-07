@@ -134,3 +134,17 @@ test('캠프 자료실 화면: 수정·삭제·순서·캠프 관리는 관리�
   assert.match(page, /els\.managersBtn\.hidden = !editMode \|\| !isMaster;/);
   assert.match(page, /\/api\/teach\/managers/);
 });
+
+test('캠프 자료실: 연도 · 계절 · 캠프 선택 줄이 수업자료 / 프로그램팀 / 상담자… 탭 위에 있다', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const filter = page.indexOf('id="campFilterWrap"');
+  const tabs = page.indexOf('id="mainTabs"');
+  assert.ok(filter > 0 && tabs > 0 && filter < tabs, '캠프 선택 줄이 탭보다 먼저 나온다');
+});
+
+test('숨긴(hidden) 버튼은 실제로 안 보인다 — 관리자 지정은 마스터에게만, 캠프 관리·이름 수정은 관리자에게만', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.match(page, /\[hidden\] \{ display:none !important; \}/);
+  assert.match(page, /id="managersBtn" type="button" hidden/);
+  assert.match(page, /els\.managersBtn\.hidden = !editMode \|\| !isMaster;/);
+});

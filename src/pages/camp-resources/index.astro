@@ -59,6 +59,8 @@
     #mobileMenu,
     #menuBackdrop { display:none !important; }
     button,input,select,textarea { font:500 13px/1.35 var(--body); }
+    /* 버튼의 display:inline-flex 가 hidden 속성을 덮어써서, 숨긴 버튼(관리자 지정 · 캠프 관리 · 이름 수정)이 모두에게 보이던 것을 막는다 */
+    [hidden] { display:none !important; }
     button { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
     .login-screen {
       position:fixed; inset:0; z-index:900; display:flex; align-items:center; justify-content:center; padding:20px;
@@ -214,7 +216,7 @@
     .present-card-add { grid-column:1 / -1; align-items:center; justify-content:center; color:var(--muted); border-style:dashed; font-weight:700; cursor:pointer; box-shadow:none; }
     .present-card-add:hover { color:var(--blue); border-color:var(--blue); background:#f4fbfd; }
     .empty { padding:24px; border:1px dashed #ccdce3; border-radius:var(--radius-md); color:var(--light); text-align:center; font-weight:400; background:#fff; grid-column:1/-1; }
-    .camp-filter-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0; padding-top:12px; border-top:1px solid #e7eef2; }
+    .camp-filter-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0; padding-bottom:12px; border-bottom:1px solid #e7eef2; }
     .camp-filter-wrap[hidden] { display:none; }
     .camp-filter-wrap select { min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0 12px; background:#fff; color:var(--text); font:600 13px/1 var(--body); box-shadow:var(--shadow-soft); cursor:pointer; }
     .camp-rename-btn { min-height:38px; padding:0 14px; white-space:nowrap; }
@@ -347,15 +349,6 @@
         <span class="resource-control-status" data-ko="자료실 전용 메뉴" data-en="Resources Only">자료실 전용 메뉴</span>
       </div>
       <div class="resource-control-body">
-        <div class="main-tabs" id="mainTabs" role="tablist">
-          <button class="main-tab-btn" data-tab="teacher" type="button" data-ko="수업자료" data-en="Class Materials">수업자료</button>
-          <button class="main-tab-btn" data-tab="program" type="button" data-ko="프로그램팀" data-en="Program Team">프로그램팀</button>
-          <button class="main-tab-btn" data-tab="counselor" type="button" data-ko="상담자" data-en="Counselors">상담자</button>
-          <button class="main-tab-btn" data-tab="preacher" type="button" data-ko="설교자" data-en="Preachers">설교자</button>
-          <button class="main-tab-btn" data-tab="general" type="button" data-ko="일반 자료" data-en="General Files">일반 자료</button>
-          <button class="main-tab-btn" data-tab="schedule" type="button" data-ko="스케줄" data-en="Schedule" hidden>스케줄</button>
-        </div>
-
         <div class="camp-filter-wrap" id="campFilterWrap" hidden>
           <select id="yearSelect"></select>
           <div class="season-toggle" id="seasonToggle">
@@ -366,6 +359,15 @@
           <button class="secondary camp-rename-btn" id="campRenameBtn" type="button" hidden data-ko="이름 수정" data-en="Rename">이름 수정</button>
           <button class="ghost camp-manage-btn" id="managersBtn" type="button" hidden data-ko="관리자 지정" data-en="Set Managers">관리자 지정</button>
           <button class="ghost camp-manage-btn" id="campManageBtn" type="button" hidden data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</button>
+        </div>
+
+        <div class="main-tabs" id="mainTabs" role="tablist">
+          <button class="main-tab-btn" data-tab="teacher" type="button" data-ko="수업자료" data-en="Class Materials">수업자료</button>
+          <button class="main-tab-btn" data-tab="program" type="button" data-ko="프로그램팀" data-en="Program Team">프로그램팀</button>
+          <button class="main-tab-btn" data-tab="counselor" type="button" data-ko="상담자" data-en="Counselors">상담자</button>
+          <button class="main-tab-btn" data-tab="preacher" type="button" data-ko="설교자" data-en="Preachers">설교자</button>
+          <button class="main-tab-btn" data-tab="general" type="button" data-ko="일반 자료" data-en="General Files">일반 자료</button>
+          <button class="main-tab-btn" data-tab="schedule" type="button" data-ko="스케줄" data-en="Schedule" hidden>스케줄</button>
         </div>
       </div>
     </section>
