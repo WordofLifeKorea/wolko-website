@@ -753,13 +753,13 @@ test('회계 항목: 코드는 작성자 입력 › 승인자가 확정한 출�
   assert.doesNotMatch(src, /<input class="ex-input ex-anote"/, '평소에 펼쳐진 노트 입력칸은 없다');
 });
 
-test('회계 항목: 카테고리·출금 계좌는 읽기만 하는 두 줄로 보이고, 오른쪽 [펼치기]를 눌러야 선택박스가 열린다 (비어 있는 것이 있으면 처음부터 펼침)', async () => {
+test('회계 항목: 카테고리·출금 계좌 텍스트를 직접 선택하고 출금 줄 오른쪽에 금액을 표시한다', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   const flow = src.slice(src.indexOf('const codeFlow = '), src.indexOf('// 보기 화면: 영수증은'));
-  assert.match(flow, /class="ex-cf-toggle" data-act="code-change"/);
-  assert.match(flow, /const need = !codeOk \|\| !r\.withdrawAccount/, '코드나 출금 계좌가 비어 있으면 처음부터 펼친다');
-  assert.match(flow, /<div class="ex-cf-panel" \$\{need \? '' : 'hidden'\}>/);
+  assert.doesNotMatch(flow, /ex-cf-toggle|code-change|ex-cf-panel/);
+  assert.match(flow, /ex-inline-select/);
+  assert.match(flow, /ex-inline-amount/);
   assert.match(flow, /data-recat-i="\$\{i\}"/);   // 접혀 있어도 선택박스는 DOM 에 있어 저장 때 그대로 모인다
   assert.match(flow, /data-wd-i="\$\{i\}"/);
   assert.equal((flow.match(/class="ex-cf-row[ "]/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
@@ -800,7 +800,7 @@ test('회계 노트 말풍선에 [저장]이 있고 눌러서 실제로 저장�
   assert.match(src, /act === 'recat-save' \|\| act === 'anote-save'/);
   assert.match(src, /!e\.target\.closest\('\[data-act="anote-close"\], \[data-act="anote-save"\]'\)/, '말풍선 안을 누르면 무시하는 규칙에서 [저장]은 빠져야 한다');
   assert.match(src, /<div class="ex-cf-rows">/);
-  assert.match(src, /class="ex-cf-toggle" data-act="code-change"/, '카테고리·출금 계좌를 읽기만 하는 줄과 오른쪽 [펼치기]');
+  assert.match(src, /class="ex-select-plain ex-inline-select" data-recat-i=/, '카테고리 텍스트 선택창');
   assert.match(src, /cfOpen: '펼치기'/);
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /\.ex-cf-row \{[^}]*border-top: 1px solid #e6edf1/, '줄마다 연한 구분선');

@@ -39,6 +39,22 @@ test('desktop and accounting detail item amounts align at the bottom', () => {
   assert.match(css, /\.ex-d-item > \.ex-d-amt \{\s*grid-column: 2 \/ -1; grid-row: auto;/);
 });
 
+test('editable accounting fields open native selects directly and show the amount only in the withdrawal row', () => {
+  const flow = src.slice(src.indexOf('const codeFlow ='), src.indexOf('// 보기 화면: 영수증은'));
+  const render = runInNewContext(flow + '\ncodeFlow;', {
+    APPROVAL_ACCOUNTS: ['Missionary Account (8025)'],
+    WITHDRAW: [{ id: 'personal', ko: '개인 사역계좌', en: 'Personal Ministry' }], WITHDRAW_ALL: [],
+    lang: 'ko', esc: String, t: key => key, krw: n => `KRW ${n}`, isFx: () => false,
+  });
+  const html = render({ account: 'Missionary Account (8025)', withdrawAccount: 'personal', amountKrw: 31850 }, 0);
+  assert.equal((html.match(/<select /g) || []).length, 2);
+  assert.match(html, /data-recat-i="0"/);
+  assert.match(html, /data-wd-i="0"/);
+  assert.doesNotMatch(html, /hidden|code-change|ex-cf-toggle/);
+  assert.equal((html.match(/KRW 31850/g) || []).length, 1);
+  assert.ok(html.indexOf('ex-inline-amount') > html.indexOf('data-wd-i'));
+});
+
 test('report containers and long text fit the viewport without hiding content', () => {
   assert.match(css, /\.ex-report-head > div \{ min-width: 0; max-width: 100%; \}/);
   assert.match(css, /\.ex-card \{ overflow-wrap: anywhere; \}/);
