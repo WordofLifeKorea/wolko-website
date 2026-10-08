@@ -1,4 +1,4 @@
-import { teachRole, deniedManage } from '../../lib/teachAuth.js';
+import { teachRole, teachSession, deniedManage } from '../../lib/teachAuth.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -114,6 +114,8 @@ async function cleanItem(input, existing) {
       tab,
       team: tab === 'teacher' ? team : '',
       person: tab === 'teacher' ? person : '',
+      uploaderName: existing?.uploaderName || '',
+      uploaderEmail: existing?.uploaderEmail || '',
       campIds,
       title,
       url,
@@ -195,7 +197,8 @@ export async function onRequestGet(context) {
 
 export async function onRequestPost(context) {
   const { env, request } = context;
-  const role = await teachRole(request, env);
+  const session = await teachSession(request, env);
+  const role = session?.role;
   if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
@@ -208,6 +211,9 @@ export async function onRequestPost(context) {
     if (!result.item) {
       return Response.json({ error: result.error || '입력값을 확인해주세요.' }, { status: 400, headers: CORS });
     }
+    result.item.uploaderName = text(session.name || session.email, 80);
+    result.item.uploaderEmail = session.email;
+    if (result.item.team === 'WOLKO' && result.item.uploaderName) result.item.person = result.item.uploaderName;
     const data = await readData(env);
     data.items.push(result.item);
     const saved = await writeData(env, data.items);

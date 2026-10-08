@@ -390,7 +390,7 @@
       </div>
       <div class="field" id="personFieldWrap">
         <label data-ko="이름" data-en="Name">이름</label>
-        <input id="itemPerson" type="text" list="personDatalist" data-ph-ko="예: Zach" data-ph-en="e.g. Zach" placeholder="예: Zach">
+        <input id="itemPerson" type="text" readonly>
         <datalist id="personDatalist"></datalist>
       </div>
       <div class="field">
@@ -485,7 +485,7 @@
     function teamLabel(team) {
       return currentLang === 'en' ? (TEAM_LABELS_EN[team] || team) : team;
     }
-    const WOLKO_PINNED_PEOPLE = ['Zach', 'Niki', 'Molly', 'Debbie', 'Shannon'];
+    let uploaderName = '';
     const TABS = [
       { key: 'teacher', ko: '수업자료', en: 'Class Materials' },
       { key: 'program', ko: '프로그램팀', en: 'Program Team' },
@@ -708,6 +708,7 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.token) throw new Error(data.error || tr('loginFailed'));
       token = data.token;
+      uploaderName = data.uploaderName || '';
       isManager = !!data.isManager;
       isMaster = !!data.isMaster;
       updateEditModeUI();
@@ -870,18 +871,18 @@
     }
 
     function groupByPerson(list) {
-      const groups = {};
+      const groups = Object.create(null);
       list.forEach(item => {
-        const p = item.person || '';
+        const p = item.uploaderName || item.person || (currentLang === 'en' ? 'Unknown uploader' : '업로더 미확인');
         (groups[p] || (groups[p] = [])).push(item);
       });
       return groups;
     }
 
-    function wolkoTeamHtml(teamItems, { pinPeople }) {
+    function wolkoTeamHtml(teamItems) {
+      if (!teamItems.length) return flatListHtml(TEAM_WOLKO, [], { tab: 'teacher', team: TEAM_WOLKO }, 'theme-wolko');
       const byPerson = groupByPerson(teamItems);
-      const extra = Object.keys(byPerson).filter(p => p && !WOLKO_PINNED_PEOPLE.includes(p)).sort((a, b) => a.localeCompare(b, 'ko'));
-      const names = pinPeople ? [...WOLKO_PINNED_PEOPLE, ...extra] : Object.keys(byPerson).filter(Boolean).sort((a, b) => a.localeCompare(b, 'ko'));
+      const names = Object.keys(byPerson).sort((a, b) => a.localeCompare(b, 'ko'));
       return `
         <div class="subject-group theme-wolko">
           <div class="tab-head theme-wolko">
@@ -961,7 +962,7 @@
       if (currentTab === 'teacher') {
         const byTeam = groupByTeam(campItems);
         els.subjectGroups.innerHTML = TEAMS_ORDER.map(team => {
-          if (team === TEAM_WOLKO) return wolkoTeamHtml(byTeam[team] || [], { pinPeople: true });
+          if (team === TEAM_WOLKO) return wolkoTeamHtml(byTeam[team] || []);
           const theme = team === TEAM_SF ? 'theme-sf' : 'theme-lesson';
           return flatListHtml(teamLabel(team), byTeam[team] || [], { tab: 'teacher', team }, theme);
         }).join('');
@@ -972,7 +973,7 @@
 
     function renderPersonDatalist() {
       const existing = new Set(items.filter(i => i.team === TEAM_WOLKO && i.person).map(i => i.person));
-      const names = [...new Set([...WOLKO_PINNED_PEOPLE, ...existing])];
+      const names = [...existing];
       els.personDatalist.innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
     }
 
@@ -1218,7 +1219,7 @@
       els.itemDialogTitle.textContent = itemId ? tr('editTitle') : tr('addTitle');
       els.itemTeam.value = (item && item.team) || defaults.team || TEAM_WOLKO;
       updateDialogFieldsForTab();
-      els.itemPerson.value = (item && item.person) || defaults.person || '';
+      els.itemPerson.value = item ? (item.uploaderName || item.person || '') : uploaderName;
       renderCampCheckboxes((item && item.campIds) || (selectedCampId ? [selectedCampId] : []));
       els.itemTitle.value = (item && item.title) || '';
       els.itemUrl.value = (item && item.url) || '';

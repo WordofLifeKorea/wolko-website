@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync, existsSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import * as PLogin from '../functions/api/teach/portal-login.js';
 import * as Data from '../functions/api/teach/data.js';
 import { createHubSessionToken, putAccount } from '../functions/lib/hubAccounts.js';
+import { generateTeachToken, teachSession } from '../functions/lib/teachAuth.js';
 
 const root = new URL('..', import.meta.url).pathname;
 function setup() {
@@ -15,6 +17,54 @@ function setup() {
   } };
 }
 const post = (env, token) => PLogin.onRequestPost({ env, request: new Request('https://wolko.org/api/teach/portal-login', { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }) });
+
+test('자료실 업로더 신원은 서명으로 보호하고 기존 토큰도 인식한다', async () => {
+  const env = setup();
+  const req = token => new Request('https://wolko.org', { headers: { Authorization: `Bearer ${token}` } });
+  const legacy = await generateTeachToken(env.ADMIN_PASSWORD);
+  assert.equal((await teachSession(req(legacy), env)).role, 'member');
+  const signed = await generateTeachToken(env.ADMIN_PASSWORD, 'member', { name: '김', email: 'u@x.com' });
+  const forged = btoa(atob(signed).replace(encodeURIComponent('김'), encodeURIComponent('박')));
+  assert.equal(await teachSession(req(forged), env), null);
+});
+
+test('자료 업로더 이름은 로그인 계정에서 정하고 수정 후에도 보존한다', async () => {
+  const env = setup();
+  await putAccount(env, { email: 'u@x.com', name: '김업로드', role: 'counselor', status: 'approved' });
+  await putAccount(env, { email: 'a@x.com', name: '관리자', role: 'counselor', status: 'approved' });
+  await env.CAMP_KV.put('teach:managers', JSON.stringify(['a@x.com']));
+  const login = async email => (await (await post(env, await createHubSessionToken(env.ADMIN_PASSWORD, email, 'counselor'))).json());
+  const user = await login('u@x.com'), admin = await login('a@x.com');
+  const request = (method, token, item) => new Request('https://wolko.org/api/teach/data', { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ item }) });
+  const item = { tab: 'teacher', team: 'WOLKO', person: '다른사람', uploaderName: '위조', campIds: ['camp-1'], title: '자료', url: 'https://example.com/a.pdf' };
+  const added = await Data.onRequestPost({ env, request: request('POST', user.token, item) });
+  assert.equal(added.status, 200);
+  const saved = (await added.json()).items[0];
+  assert.equal(saved.uploaderName, '김업로드');
+  assert.equal(saved.person, '김업로드');
+  const updated = await Data.onRequestPut({ env, request: request('PUT', admin.token, { ...saved, title: '수정', uploaderName: '위조' }) });
+  assert.equal((await updated.json()).items[0].uploaderName, '김업로드');
+});
+
+test('업로드한 사람만 카드를 만들고 빈 목록은 안내 한 칸만 표시한다', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.doesNotMatch(page, /WOLKO_PINNED_PEOPLE/);
+  const start = page.indexOf('function groupByPerson(');
+  const end = page.indexOf('function groupByTeam(', start);
+  const render = runInNewContext(page.slice(start, end) + '\nwolkoTeamHtml;', {
+    currentLang: 'ko', TEAM_WOLKO: 'WOLKO', editMode: false,
+    escapeHtml: value => String(value), tr: () => '등록된 자료가 없습니다.',
+    personGroupHtml: (name, items) => `<person>${name}:${items.length}</person>`,
+    presentCardHtml: () => '<card>',
+  });
+  const empty = render([]);
+  assert.equal(empty.match(/등록된 자료가 없습니다\./g).length, 1);
+  assert.doesNotMatch(empty, /person-columns|<person>/);
+  const grouped = render([{ uploaderName: '홍길동', person: 'Zach' }, { uploaderName: '홍길동' }, { person: '기존 이름' }]);
+  assert.match(grouped, /홍길동:2/);
+  assert.match(grouped, /기존 이름:1/);
+  assert.doesNotMatch(grouped, /Zach/);
+});
 
 test('캠프 자료실: 승인된 포탈 멤버만 자료실 토큰을 받고, 그 토큰을 기존 자료 API가 인식한다', async () => {
   const env = setup();

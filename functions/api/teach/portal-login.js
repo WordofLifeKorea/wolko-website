@@ -14,7 +14,7 @@ export async function onRequestPost({ env, request }) {
   const s = await portalSession(request, env);
   if (!s) return Response.json({ error: '포탈 로그인이 필요합니다.' }, { status: 401, headers: CORS });
   const isManager = await isTeachManager(env, s);
-  return Response.json({ token: await generateTeachToken(env.ADMIN_PASSWORD, isManager ? 'admin' : 'member'), role: isManager ? 'admin' : 'member', isManager, isMaster: s.role === 'master' }, { headers: CORS });
+  return Response.json({ token: await generateTeachToken(env.ADMIN_PASSWORD, isManager ? 'admin' : 'member', s), uploaderName: s.name || s.email, role: isManager ? 'admin' : 'member', isManager, isMaster: s.role === 'master' }, { headers: CORS });
 }
 
 export async function onRequestOptions() {

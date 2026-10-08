@@ -2,7 +2,7 @@
  * 캠프 자료실 권한
  *  - member : 승인된 포탈 멤버 누구나 — 자료 보기 · 추가(업로드 포함)
  *  - admin  : 마스터 + 마스터가 지정한 자료실 관리자 — 수정 · 삭제 · 순서 변경 · 캠프 관리
- * 토큰: wolko-teach:{admin|member}:{expires}:{sig}  (예전 토큰은 모두 admin 이었다)
+ * 토큰: wolko-teach:{admin|member}:{expires}[:{encoded identity}]:{sig}
  * 관리자 명단은 KV `teach:managers` (이메일 배열)에 두고 마스터가 자료실 화면에서 지정한다.
  */
 import { normalizeEmail } from './hubAccounts.js';
@@ -12,14 +12,15 @@ export const MANAGERS_KEY = 'teach:managers';
 const hex = bytes => Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 const hmacKey = (secret, usage) => crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, usage);
 
-export async function generateTeachToken(secret, role = 'member') {
-  const data = `wolko-teach:${role === 'admin' ? 'admin' : 'member'}:${Date.now() + 24 * 60 * 60 * 1000}`;
+export async function generateTeachToken(secret, role = 'member', identity = null) {
+  const owner = identity ? ':' + encodeURIComponent(JSON.stringify({ name: identity.name || '', email: normalizeEmail(identity.email) })) : '';
+  const data = `wolko-teach:${role === 'admin' ? 'admin' : 'member'}:${Date.now() + 24 * 60 * 60 * 1000}${owner}`;
   const sig = await crypto.subtle.sign('HMAC', await hmacKey(secret, ['sign']), new TextEncoder().encode(data));
   return btoa(`${data}:${hex(new Uint8Array(sig))}`);
 }
 
-/** 요청의 자료실 토큰 → 'admin' | 'member' | null */
-export async function teachRole(request, env) {
+/** 서명을 검증한 자료실 세션. 이름 없는 기존 토큰도 지원한다. */
+export async function teachSession(request, env) {
   const auth = request.headers.get('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   if (!token || !env.ADMIN_PASSWORD) return null;
@@ -33,10 +34,16 @@ export async function teachRole(request, env) {
     if (!expires || Date.now() > expires) return null;
     const sig = new Uint8Array(decoded.slice(i + 1).match(/.{2}/g).map(p => parseInt(p, 16)));
     const ok = await crypto.subtle.verify('HMAC', await hmacKey(env.ADMIN_PASSWORD, ['verify']), sig, new TextEncoder().encode(data));
-    return ok ? parts[1] : null;
+    if (!ok) return null;
+    const identity = parts[3] ? JSON.parse(decodeURIComponent(parts[3])) : {};
+    return { role: parts[1], name: identity.name || '', email: identity.email || '' };
   } catch {
     return null;
   }
+}
+
+export async function teachRole(request, env) {
+  return (await teachSession(request, env))?.role || null;
 }
 
 export async function managerEmails(env) {
