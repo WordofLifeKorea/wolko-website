@@ -154,3 +154,37 @@ button:disabled { opacity:.48; cursor:not-allowed; }
 /* 사진 보기: 화면 크기에 맞춰 통째로 보이게 자동 축소 (가로·세로 모두 화면 안에 맞춘다) */
 .log-photo-dialog { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); padding:56px 12px 16px; }
 .log-photo-dialog img { width:auto; height:auto; max-width:100%; max-height:calc(100vh - 72px); max-height:calc(100dvh - 72px); object-fit:contain; justify-self:center; align-self:center; }
+
+/* 차량별 카드 → 기록 한 줄씩 → 한 줄을 누르면 사진·마일리지 */
+.log-entries { display:grid; gap:12px; }
+.log-vehicle { border:1px solid var(--line); border-radius:14px; background:#fff; overflow:hidden; }
+.log-vehicle-head { width:100%; display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:10px 14px; padding:14px 16px; border:0; background:#fff; text-align:left; cursor:pointer; color:var(--ink); }
+.log-vehicle-name { font-size:16px; font-weight:800; }
+.log-vehicle-sub { color:var(--muted); font-size:12px; line-height:1.4; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.log-chev { color:#8fa8b5; transition:transform .15s; }
+.log-vehicle.is-open > .log-vehicle-head .log-chev, .log-line.is-open .log-line-toggle .log-chev { transform:rotate(180deg); }
+.log-vehicle.is-open > .log-vehicle-head { background:#f5f9fb; }
+.log-vehicle-body { border-top:1px solid var(--line); }
+.log-line { border-top:1px solid #edf2f5; }
+.log-line:first-child { border-top:0; }
+.log-line-head { display:flex; align-items:center; gap:10px; padding:0 12px 0 16px; }
+.log-line.is-selected { background:#f4fafc; }
+.log-line-toggle { flex:1; min-width:0; display:grid; grid-template-columns:minmax(78px,auto) minmax(0,1fr) auto auto auto; align-items:center; gap:10px; min-height:44px; padding:0; border:0; background:none; text-align:left; cursor:pointer; color:var(--ink); font-size:13px; }
+.log-line-time { color:var(--muted); font-size:12px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.log-line-who { font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.log-line-use { padding:2px 8px; border-radius:999px; font-size:11px; font-weight:800; white-space:nowrap; }
+.log-line-use.is-ministry { background:#e3f1ee; color:#1b6b5a; }
+.log-line-use.is-personal { background:#f1ecf8; color:#5b3f95; }
+.log-line-km { color:var(--muted); font-size:12px; white-space:nowrap; min-width:56px; text-align:right; }
+.log-line-body { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; padding:6px 16px 14px; }
+.log-line-info { flex:1 1 100%; color:var(--muted); font-size:11.5px; }
+.log-photo-btn { padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--blue); cursor:pointer; font-size:12px; font-weight:800; }
+.log-line-body .log-mileage { grid-column:auto; flex:1 1 240px; border-top:0; padding-top:0; }
+@media (max-width:520px) {
+  .log-vehicle-head { grid-template-columns:minmax(0,1fr) auto; } .log-vehicle-sub { grid-column:1 / -1; grid-row:2; white-space:normal; }
+  .log-line-toggle { grid-template-columns:minmax(0,1fr) auto auto; row-gap:2px; } .log-line-time { grid-column:1; font-size:11.5px; } .log-line-who { grid-column:1; grid-row:2; font-size:12.5px; } .log-line-use { grid-column:2; grid-row:1 / span 2; } .log-chev { grid-column:3; grid-row:1 / span 2; } .log-line-km { display:none; }
+  .log-line-head { padding:4px 10px 4px 12px; }
+}
+.log-line-body .log-mileage { flex:1 1 100%; flex-wrap:nowrap; }
+.log-line-body .log-mileage input { flex:1; min-width:0; }
+.log-line-body .log-mileage button:not(.log-link) { flex:none; }

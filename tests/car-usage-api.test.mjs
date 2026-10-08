@@ -196,3 +196,13 @@ test('usage log page: master-only "관리" button with checkbox selection, and p
   assert.match(page, /id="delSelBtn"[^>]*>선택 삭제</);
   assert.match(css, /\.log-photo-dialog img \{[^}]*max-height:calc\(100dvh - 72px\)/, '사진은 화면 높이 안에 맞춰 축소');
 });
+
+test('usage log page: one card per vehicle, one line per record, click to expand', async () => {
+  const { readFileSync } = await import('node:fs');
+  const js = readFileSync(new URL('../public/car-log.js', import.meta.url), 'utf8');
+  assert.match(js, /log-vehicle-head/);
+  assert.match(js, /openVehicles/);
+  assert.match(js, /log-line-toggle/);
+  assert.match(js, /openEntries/);
+  assert.match(js, /log-line-body/);
+});

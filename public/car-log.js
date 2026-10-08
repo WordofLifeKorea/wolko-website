@@ -17,7 +17,7 @@
       qrTitle: '차량에 부착할 QR 코드', qrHelp: '고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.', qrPrint: 'QR 코드 인쇄',
       photoDialog: '차량 사진', closePhoto: '사진 닫기',
       pickVehicle: '차량을 선택해 주세요', noEntries: '아직 등록된 사용 기록이 없습니다.', viewPhoto: '사진 보기',
-      manage: '관리', manageDone: '완료', selectAll: '전체 선택', selectedN: n => n ? `${n}건 선택` : '기록을 골라 주세요', editSel: '선택 수정', delSel: '선택 삭제', delSelConfirm: n => `선택한 ${n}건의 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n삭제할까요?`, editTitle: '선택한 기록 수정', editHelp: n => `선택한 ${n}건에 적용돼요. 바꾸지 않을 항목은 “변경 안 함”으로 두세요.`, editVehicle: '차량', editUse: '사용 목적', keepAsIs: '변경 안 함', cancelBtn: '취소', editSaveBtn: '저장', editNothing: '바꿀 내용을 골라 주세요.', deleted: n => `${n}건을 삭제했습니다.`, edited: n => `${n}건을 수정했습니다.`, clearConfirm: '지금 있는 모든 사용 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n계속하려면 "삭제"라고 입력하세요.', cleared: n => n + '건을 삭제했어요.',
+      nRecords: n => `${n}건`, latest: '최근', noVehicleRecords: '아직 기록이 없습니다.', manage: '관리', manageDone: '완료', selectAll: '전체 선택', selectedN: n => n ? `${n}건 선택` : '기록을 골라 주세요', editSel: '선택 수정', delSel: '선택 삭제', delSelConfirm: n => `선택한 ${n}건의 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n삭제할까요?`, editTitle: '선택한 기록 수정', editHelp: n => `선택한 ${n}건에 적용돼요. 바꾸지 않을 항목은 “변경 안 함”으로 두세요.`, editVehicle: '차량', editUse: '사용 목적', keepAsIs: '변경 안 함', cancelBtn: '취소', editSaveBtn: '저장', editNothing: '바꿀 내용을 골라 주세요.', deleted: n => `${n}건을 삭제했습니다.`, edited: n => `${n}건을 수정했습니다.`, clearConfirm: '지금 있는 모든 사용 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n계속하려면 "삭제"라고 입력하세요.', cleared: n => n + '건을 삭제했어요.',
       mileageAfter: '사용 후 마일리지', mileagePh: '사용 후 계기판 km', mileageSave: '저장', mileageEdit: '수정', mileageSaved: '마일리지를 저장했습니다.', mileageFail: '마일리지를 숫자(km)로 입력해 주세요.',
       useMinistry: '사역용', usePersonal: '개인용', timeExif: '사진 촬영 시각', timeSaved: '기록 시각',
       connectFail: '일지 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', loadFail: '일지를 불러오지 못했습니다.',
@@ -40,7 +40,7 @@
       qrTitle: 'QR codes for the vehicles', qrHelp: 'Print the code for each fixed vehicle and attach it. Scanning selects that vehicle automatically.', qrPrint: 'Print QR codes',
       photoDialog: 'Vehicle photo', closePhoto: 'Close photo',
       pickVehicle: 'Select a vehicle', noEntries: 'No usage records yet.', viewPhoto: 'View photo',
-      manage: 'Manage', manageDone: 'Done', selectAll: 'Select all', selectedN: n => n ? `${n} selected` : 'Select records', editSel: 'Edit selected', delSel: 'Delete selected', delSelConfirm: n => `This deletes the ${n} selected record(s) and their photos.\n(They are kept in a deleted-items backup)\n\nDelete them?`, editTitle: 'Edit selected records', editHelp: n => `Applies to the ${n} selected record(s). Leave anything you do not want to change as “No change”.`, editVehicle: 'Vehicle', editUse: 'Purpose of use', keepAsIs: 'No change', cancelBtn: 'Cancel', editSaveBtn: 'Save', editNothing: 'Choose what to change.', deleted: n => `Deleted ${n} record(s).`, edited: n => `Updated ${n} record(s).`, clearConfirm: 'This deletes ALL current usage records and photos.\n(They are kept in a deleted-items backup)\n\nType DELETE to continue.', cleared: n => n + ' record(s) deleted.',
+      nRecords: n => `${n} record${n === 1 ? '' : 's'}`, latest: 'Latest', noVehicleRecords: 'No records yet.', manage: 'Manage', manageDone: 'Done', selectAll: 'Select all', selectedN: n => n ? `${n} selected` : 'Select records', editSel: 'Edit selected', delSel: 'Delete selected', delSelConfirm: n => `This deletes the ${n} selected record(s) and their photos.\n(They are kept in a deleted-items backup)\n\nDelete them?`, editTitle: 'Edit selected records', editHelp: n => `Applies to the ${n} selected record(s). Leave anything you do not want to change as “No change”.`, editVehicle: 'Vehicle', editUse: 'Purpose of use', keepAsIs: 'No change', cancelBtn: 'Cancel', editSaveBtn: 'Save', editNothing: 'Choose what to change.', deleted: n => `Deleted ${n} record(s).`, edited: n => `Updated ${n} record(s).`, clearConfirm: 'This deletes ALL current usage records and photos.\n(They are kept in a deleted-items backup)\n\nType DELETE to continue.', cleared: n => n + ' record(s) deleted.',
       mileageAfter: 'Mileage after use', mileagePh: 'Odometer after use (km)', mileageSave: 'Save', mileageEdit: 'Edit', mileageSaved: 'Mileage saved.', mileageFail: 'Enter the mileage as a number (km).',
       useMinistry: 'Ministry', usePersonal: 'Personal', timeExif: 'photo taken', timeSaved: 'recorded',
       connectFail: 'Could not reach the log service. Please try again shortly.', loadFail: 'Could not load the log.',
@@ -115,6 +115,7 @@
     updateReady();
   }
 
+  const openVehicles = new Set(), openEntries = new Set();
   let manageMode = false;
   const selected = new Set();
   function syncManage() {
@@ -142,29 +143,70 @@
       list.append(empty);
       return;
     }
-    entries.forEach(entry => {
-      const row = document.createElement('article');
-      row.className = 'log-entry' + (manageMode ? ' has-check' : '') + (manageMode && selected.has(entry.id) ? ' is-selected' : '');
-      if (manageMode) {
-        const check = document.createElement('input');
-        check.type = 'checkbox'; check.className = 'log-entry-check'; check.checked = selected.has(entry.id);
-        check.setAttribute('aria-label', `${entry.vehicleName} ${formatTime(entry.photoTakenAt)}`);
-        check.addEventListener('change', () => { if (check.checked) selected.add(entry.id); else selected.delete(entry.id); row.classList.toggle('is-selected', check.checked); syncManage(); });
-        row.append(check);
+    // 차량마다 카드 하나 — 카드를 누르면 그 차량의 기록이 한 줄씩 펼쳐지고, 한 줄을 누르면 사진 · 마일리지가 열린다
+    const vehicles = [...$('vehicleSelect').options].filter(o => o.value).map(o => ({ id: o.value, name: o.text }));
+    entries.forEach(e => { if (!vehicles.some(v => v.id === e.vehicleId)) vehicles.push({ id: e.vehicleId, name: e.vehicleName }); });
+    const kmText = e => e.mileageAfter != null ? `${Number(e.mileageAfter).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR')} km` : '';
+    const shortTime = value => new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
+    vehicles.forEach(vehicle => {
+      const mine = entries.filter(e => e.vehicleId === vehicle.id);
+      const open = openVehicles.has(vehicle.id);
+      const card = document.createElement('section');
+      card.className = 'log-vehicle' + (open ? ' is-open' : '');
+      const head = document.createElement('button');
+      head.type = 'button'; head.className = 'log-vehicle-head'; head.setAttribute('aria-expanded', String(open));
+      const latest = mine[0];
+      head.innerHTML = '<span class="log-vehicle-name"></span><span class="log-vehicle-sub"></span><svg class="log-chev" width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      head.querySelector('.log-vehicle-name').textContent = vehicle.name;
+      head.querySelector('.log-vehicle-sub').textContent = latest ? `${t('nRecords', mine.length)} · ${t('latest')} ${shortTime(latest.photoTakenAt)} · ${shownName(latest.userName)}` : t('noVehicleRecords');
+      head.addEventListener('click', () => { if (openVehicles.has(vehicle.id)) openVehicles.delete(vehicle.id); else openVehicles.add(vehicle.id); renderEntries(); });
+      card.append(head);
+      if (open) {
+        const body = document.createElement('div');
+        body.className = 'log-vehicle-body';
+        if (!mine.length) { const p = document.createElement('p'); p.className = 'log-empty'; p.textContent = t('noVehicleRecords'); body.append(p); }
+        mine.forEach(entry => {
+          const row = document.createElement('article');
+          const expanded = openEntries.has(entry.id);
+          row.className = 'log-line' + (expanded ? ' is-open' : '') + (manageMode ? ' has-check' : '') + (manageMode && selected.has(entry.id) ? ' is-selected' : '');
+          const line = document.createElement('div');
+          line.className = 'log-line-head';
+          if (manageMode) {
+            const check = document.createElement('input');
+            check.type = 'checkbox'; check.className = 'log-entry-check'; check.checked = selected.has(entry.id);
+            check.setAttribute('aria-label', `${entry.vehicleName} ${formatTime(entry.photoTakenAt)}`);
+            check.addEventListener('change', () => { if (check.checked) selected.add(entry.id); else selected.delete(entry.id); row.classList.toggle('is-selected', check.checked); syncManage(); });
+            line.append(check);
+          }
+          const toggle = document.createElement('button');
+          toggle.type = 'button'; toggle.className = 'log-line-toggle'; toggle.setAttribute('aria-expanded', String(expanded));
+          toggle.innerHTML = '<span class="log-line-time"></span><span class="log-line-who"></span><span class="log-line-use"></span><span class="log-line-km"></span><svg class="log-chev" width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+          toggle.querySelector('.log-line-time').textContent = shortTime(entry.photoTakenAt);
+          toggle.querySelector('.log-line-who').textContent = shownName(entry.userName);
+          const use = toggle.querySelector('.log-line-use');
+          use.textContent = entry.useType === 'ministry' ? t('useMinistry') : t('usePersonal');
+          use.classList.add(entry.useType === 'ministry' ? 'is-ministry' : 'is-personal');
+          toggle.querySelector('.log-line-km').textContent = kmText(entry);
+          toggle.addEventListener('click', () => { if (openEntries.has(entry.id)) openEntries.delete(entry.id); else openEntries.add(entry.id); renderEntries(); });
+          line.append(toggle);
+          row.append(line);
+          if (expanded) {
+            const detail = document.createElement('div');
+            detail.className = 'log-line-body';
+            const info = document.createElement('span');
+            info.className = 'log-line-info';
+            info.textContent = `${formatTime(entry.photoTakenAt)} · ${entry.timeSource === 'exif' ? t('timeExif') : t('timeSaved')}`;
+            const button = document.createElement('button');
+            button.type = 'button'; button.className = 'log-photo-btn'; button.textContent = t('viewPhoto');
+            button.addEventListener('click', () => openPhoto(entry.id));
+            detail.append(info, button, mileageBlock(entry));
+            row.append(detail);
+          }
+          body.append(row);
+        });
+        card.append(body);
       }
-      const body = document.createElement('div');
-      const title = document.createElement('strong');
-      title.textContent = `${entry.vehicleName} · ${entry.useType === 'ministry' ? t('useMinistry') : t('usePersonal')}`;
-      const details = document.createElement('span');
-      details.textContent = `${formatTime(entry.photoTakenAt)} · ${shownName(entry.userName)} · ${entry.timeSource === 'exif' ? t('timeExif') : t('timeSaved')}`;
-      body.append(title, details);
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = t('viewPhoto');
-      button.addEventListener('click', () => openPhoto(entry.id));
-      row.append(body, button);
-      row.append(mileageBlock(entry));
-      list.append(row);
+      list.append(card);
     });
   }
 
