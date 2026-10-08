@@ -879,3 +879,35 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 /* v103 — 작성 폼: 사역명·계좌 칸 없이 카테고리만(그 자리에 들어간다). 드롭박스 화살표는 마우스를 올려도 제자리에 고정 */
 .ex-row .ex-catsel { width: 100%; max-width: none; }
 :root:root .ex-row .ex-select { background-repeat: no-repeat !important; background-position: right 8px center !important; background-size: 10px 6px !important; }
+
+/* ══ v104 — 작성 폼 새 배치: 1줄 날짜 | 카테고리 | 구매 품목 | 구매 목적 · 2줄 메모 | 금액 | 화폐 단위 | 영수증 ⋯ — 칸은 필요한 만큼만 ══ */
+.ex-r1, .ex-r2 { display: grid; align-items: center; column-gap: 12px; row-gap: 8px; }
+.ex-r1 { grid-template-columns: 24px 128px minmax(150px, max-content) minmax(110px, 1fr) minmax(150px, 1.6fr) 28px; }
+.ex-r2 { grid-template-columns: 24px minmax(0, 1fr) 118px 92px auto auto 28px; margin-top: 8px; }
+.ex-r2 > .ex-memo-in { grid-column: 2; }
+.ex-r1 .ex-w-date { width: 100%; }
+.ex-r1 .ex-catsel { width: auto; max-width: 240px; min-width: 150px; field-sizing: content; }
+.ex-r2 .ex-amt { width: 100%; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ex-r2 .ex-cur { width: 100%; color: var(--blue); font-weight: 700; text-align: center; padding-left: 10px; }
+.ex-r1 .ex-item { font-weight: 600; }
+.ex-r1 .ex-x, .ex-r1 .ex-x-space { justify-self: end; margin: 0; }
+@media (max-width: 640px) {
+  .ex-r1 { grid-template-columns: 24px minmax(0, 1fr) 28px; }
+  .ex-r1 .ex-num { grid-column: 1; grid-row: 1; }
+  .ex-r1 .ex-w-date { grid-column: 2; grid-row: 1; }
+  .ex-r1 .ex-x, .ex-r1 .ex-x-space { grid-column: 3; grid-row: 1; }
+  .ex-r1 .ex-catsel, .ex-r1 .ex-item, .ex-r1 .ex-purpose { grid-column: 1 / -1; width: 100%; max-width: none; }
+  .ex-r2 { grid-template-columns: minmax(0, 1fr) 96px; }
+  .ex-r2 > .ex-memo-in { grid-column: 1 / -1; }
+  .ex-r2 .ex-amt { grid-column: 1; font-size: 16px; }
+  .ex-r2 .ex-cur { grid-column: 2; }
+  .ex-r2 .ex-attach, .ex-r2 .ex-more-btn { justify-self: start; }
+}
+
+/* v105 — 승인 대기 표 · 회계 상세: 한 줄짜리 칸(날짜·금액·메모·글자)도 항목 높이의 세로 가운데에 */
+@media (min-width: 641px) {
+  .ex-table td { vertical-align: middle; }
+  .ex-item-split { align-items: center; }
+  .ex-itemrow { align-items: center; }
+}
+:root:root .ex-d-item { align-items: center; }

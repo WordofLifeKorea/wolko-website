@@ -851,8 +851,13 @@ test('회계 항목: 목적 · 카테고리 · 출금 계좌 줄은 높이도 �
 test('작성 폼: 사역명·계좌 칸 없이 카테고리만 고르고, 드롭박스 화살표는 제자리에 고정된다', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
-  const row = src.slice(src.indexOf('<div class="ex-row" data-i="${i}">'), src.indexOf('<div class="ex-lmemo">'));
+  const row = src.slice(src.indexOf('<div class="ex-row" data-i="${i}">'), src.indexOf('<div class="ex-r2">'));
   assert.doesNotMatch(row, /data-f="srcSel"|data-f="source"/, '사역명·계좌 칸은 없다');
+  const order = ['data-f="when"', 'data-f="account"', 'data-f="item"', 'data-f="ministryPurpose"'].map(k => row.indexOf(k));
+  assert.ok(order.every((v, i) => v > -1 && (i === 0 || v > order[i - 1])), '1줄: 날짜 → 카테고리 → 구매 품목 → 구매 목적');
+  const r2 = src.slice(src.indexOf('<div class="ex-r2">'), src.indexOf('<div class="ex-r2">') + 2500);
+  const order2 = ['data-f="memo"', 'data-f="amount"', 'data-f="currency"', 'data-f="receipt"'].map(k => r2.indexOf(k));
+  assert.ok(order2.every((v, i) => v > -1 && (i === 0 || v > order2[i - 1])), '2줄: 메모 → 금액 → 화폐 단위 → 영수증');
   assert.equal((row.match(/data-f="account"/g) || []).length, 1, '카테고리 선택칸 하나');
   assert.doesNotMatch(row, /class="ex-lcat"/);
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
@@ -865,4 +870,12 @@ test('엑셀로 내보내기 버튼은 리포트 줄 머리에는 없고, 펼친
   assert.doesNotMatch(src, /class="ex-sub-dl"[^>]*data-act="xlsx-rep"/, '줄 머리의 버튼은 없다');
   const detail = src.slice(src.indexOf('function detailHtml('), src.indexOf('function detailHtml(') + 6000);
   assert.match(detail, /data-act="xlsx-rep"/, '상세 안의 버튼');
+});
+
+test('승인 대기 표·회계 상세: 한 줄짜리 칸도 세로 가운데 정렬', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-table td \{ vertical-align: middle; \}/);
+  assert.match(css, /\.ex-item-split \{ align-items: center; \}/);
+  assert.match(css, /\.ex-d-item \{ align-items: center; \}/);
 });

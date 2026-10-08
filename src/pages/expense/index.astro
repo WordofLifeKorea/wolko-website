@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=103">
+  <link rel="stylesheet" href="/expense.css?v=105">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -320,25 +320,21 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
     function rowHtml(r, i) {
       return `
       <div class="ex-row" data-i="${i}">
-        <div class="ex-line ex-l1">
+        <div class="ex-r1">
           <span class="ex-num">${i + 1}</span>
           <input class="ex-input ex-w-date" data-f="when" data-datepick type="text" readonly inputmode="none" autocomplete="off" value="${esc(r.when)}" aria-label="When">
-          <div class="ex-srcwrap">
-            <select class="ex-select ex-catsel ${r.account ? '' : 'is-empty'}" data-f="account" aria-label="${esc(t('catLbl'))}">
-              <option value="" disabled hidden ${r.account ? '' : 'selected'}>${esc(t('catPick'))}</option>
-              ${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${r.account === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
-            </select>
-          </div>
-          <div class="ex-amount">
-            <input class="ex-input" data-f="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="${t('amountPh')}" value="${esc(r.amount)}" aria-label="Amount">
-            <select class="ex-select" data-f="currency" aria-label="${t('currency')}"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩ KRW</option>${Object.keys(FX).map(c => `<option value="${c}" ${r.currency === c ? 'selected' : ''}>${FX[c].symbol} ${c}</option>`).join('')}</select>
-          </div>
+          <select class="ex-select ex-catsel ${r.account ? '' : 'is-empty'}" data-f="account" aria-label="${esc(t('catLbl'))}">
+            <option value="" disabled hidden ${r.account ? '' : 'selected'}>${esc(t('catPick'))}</option>
+            ${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${r.account === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
+          </select>
+          <input class="ex-input ex-item" data-f="item" placeholder="${t('itemPh')}" value="${esc(r.item)}" maxlength="120">
+          <input class="ex-input ex-purpose" data-f="ministryPurpose" placeholder="${t('purposePh')}" value="${esc(r.ministryPurpose)}" maxlength="500">
           ${form.rows.length > 1 ? `<button class="ex-x" data-act="del-row" data-i="${i}" aria-label="${t('delRow')}">×</button>` : '<span class="ex-x-space"></span>'}
         </div>
-        <div class="ex-lmemo"><input class="ex-input" data-f="memo" placeholder="${t('memoPh')}" value="${esc(r.memo)}" maxlength="300" aria-label="${t('memoLbl')}"></div>
-        <div class="ex-line ex-l2">
-          <input class="ex-input ex-grow ex-item" data-f="item" placeholder="${t('itemPh')}" value="${esc(r.item)}" maxlength="120">
-          <input class="ex-input ex-grow" data-f="ministryPurpose" placeholder="${t('purposePh')}" value="${esc(r.ministryPurpose)}" maxlength="500">
+        <div class="ex-r2">
+          <input class="ex-input ex-memo-in" data-f="memo" placeholder="${t('memoPh')}" value="${esc(r.memo)}" maxlength="300" aria-label="${t('memoLbl')}">
+          <input class="ex-input ex-amt" data-f="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="${t('amountPh')}" value="${esc(r.amount)}" aria-label="Amount">
+          <select class="ex-select ex-cur" data-f="currency" aria-label="${t('currency')}"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩ KRW</option>${Object.keys(FX).map(c => `<option value="${c}" ${r.currency === c ? 'selected' : ''}>${FX[c].symbol} ${c}</option>`).join('')}</select>
           <label class="ex-btn sm ex-attach" title="${t('attachTitle')}">📎 ${t('attach')}${r.receipts.length ? ' ' + r.receipts.length : ''}<input type="file" data-f="receipt" accept="image/*,application/pdf" multiple hidden></label>
           <button class="ex-btn sm ex-more-btn" data-act="toggle-more" data-i="${i}" aria-expanded="${r.more}">${r.more ? t('less') : '⋯'}</button>
         </div>
