@@ -217,3 +217,11 @@ test('연도·시즌을 바꿀 때 기본 캠프로 되돌아가지 않는다 �
   assert.match(handler, /selectedSeason = '';/);
   assert.match(handler, /selectedCampId = '';/);
 });
+
+test('resource dialog accepts dropped files and routes audio to BGM', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.match(page, /setupDialogFileDrop/);
+  assert.match(page, /uploadFile\(file, 'bgm'/);
+  assert.match(page, /uploadFile\(file, 'presentation'/);
+  assert.match(page, /\.tch-dialog\.is-drop-target/);
+});
