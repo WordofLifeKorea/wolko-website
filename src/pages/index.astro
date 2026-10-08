@@ -525,7 +525,7 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
 .wh-promo-overlay.is-open { opacity: 1; visibility: visible; transition: opacity .35s ease; }
 /* 팝업: 카드가 두 장이면 한 장씩 3초마다 교체되고, 아래 점(네비게이터)으로 직접 넘길 수 있다 */
 .wh-promo-row { width: 100%; max-width: 400px; max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; margin: auto; }
-.wh-promo-stage { width: 100%; display: grid; }
+.wh-promo-stage { width: 100%; display: grid; touch-action: pan-y pinch-zoom; }
 .wh-promo-stage > .wh-promo-card { grid-area: 1 / 1; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .45s ease, visibility 0s linear .45s, transform .4s cubic-bezier(.2,.8,.3,1.1); }
 .wh-promo-stage > .wh-promo-card.is-active { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .45s ease; }
 .wh-promo-stage > .wh-promo-card[hidden] { display: none; }
@@ -982,7 +982,7 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
     });
   })();
 
-  // ── 홈 안내 팝업: 감사의 밤 · 제주 캠퍼스 데이 — 한 팝업 안에서 3초마다 한 장씩 교체되고, 아래 점으로 직접 넘긴다 ──
+  // ── 홈 안내 팝업: 5초 자동 교체, 아래 점과 모바일 좌우 스와이프로 넘긴다 ──
   // "다시 보지 않기"는 카드마다 localStorage(영구), 그냥 닫기/배경 클릭/신청 이동은
   // sessionStorage(이번 방문 동안만)로 구분해서 과하게 반복 노출되지 않게 한다.
   (function () {
@@ -990,7 +990,7 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
     if (!overlay) return;
     var dotsEl = document.getElementById('homePromoDots');
     var todayKst = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
-    var ROTATE_MS = 3000;
+    var ROTATE_MS = 5000;
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var timer = null, current = 0;
 
@@ -1056,6 +1056,31 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
     var row = overlay.querySelector('.wh-promo-row');
     ['mouseenter', 'focusin', 'touchstart'].forEach(function (ev) { row.addEventListener(ev, function () { paused = true; clearInterval(timer); timer = null; }, { passive: true }); });
     ['mouseleave', 'focusout', 'touchend'].forEach(function (ev) { row.addEventListener(ev, function () { paused = false; restart(); }, { passive: true }); });
+    var stage = document.getElementById('homePromoStage');
+    var touchOrigin = null, suppressClickUntil = 0;
+    function swipeDirection(start, end) {
+      var dx = end.clientX - start.clientX;
+      var dy = end.clientY - start.clientY;
+      return Math.abs(dx) >= 45 && Math.abs(dx) > Math.abs(dy) * 1.25 ? (dx < 0 ? 1 : -1) : 0;
+    }
+    stage.addEventListener('touchstart', function (e) {
+      touchOrigin = e.touches.length === 1 ? { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY } : null;
+    }, { passive: true });
+    stage.addEventListener('touchend', function (e) {
+      if (touchOrigin && e.changedTouches.length === 1 && !e.touches.length) {
+        var direction = swipeDirection(touchOrigin, e.changedTouches[0]);
+        if (direction && live().length > 1) {
+          suppressClickUntil = Date.now() + 500;
+          render(current + direction);
+        }
+      }
+      touchOrigin = null;
+    }, { passive: true });
+    stage.addEventListener('touchcancel', function () { touchOrigin = null; paused = false; restart(); }, { passive: true });
+    // 스와이프를 마친 손가락이 신청/닫기 버튼의 클릭으로 이어지지 않게 한다.
+    stage.addEventListener('click', function (e) {
+      if (Date.now() < suppressClickUntil) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
     overlay.addEventListener('click', function (e) { if (e.target === overlay || e.target === row) closeAll(); });
     document.addEventListener('keydown', function (e) {
       if (!overlay.classList.contains('is-open')) return;
