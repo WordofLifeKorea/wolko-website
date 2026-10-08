@@ -61,3 +61,8 @@ test('report containers and long text fit the viewport without hiding content', 
   assert.match(css, /:root:root \{ --wl-page-x: 12px; --wl-card-pad: 14px; \}/);
   assert.match(css, /minmax\(min\(210px, 100%\), 1fr\)/);
 });
+
+test('note position stays fixed regardless of the amount length', () => {
+  assert.match(css, /\.ex-inline-amount \{ flex: 0 0 128px; width: 128px;/);
+  assert.match(css, /\.ex-code-inline \.ex-cf-row \.ex-cf-actions \{ gap: 24px; \}/);
+});
