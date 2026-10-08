@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=106">
+  <link rel="stylesheet" href="/expense.css?v=107">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -507,7 +507,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
     function catCell(rep, r, i, st) {
       const cur = st.accounts[i], done = st.confirmed[i];
       const sug = WD_FOR[r.account] && WD_FOR[r.account] === cur ? ` <span class="ex-cf-none">(${esc(t('suggestedTag'))})</span>` : '';
-      const src = srcShow(r.source || r.submittedAccount || '');
+      const src0 = srcShow(r.source || r.submittedAccount || '');
+      const src = src0 && src0 !== r.account ? src0 : '';   // 작성자가 따로 적은 내용이 없으면(카테고리와 같으면) 반복해서 보이지 않는다
       // 승인 대기: 기본은 최소화 — 카테고리와 출금 계좌를 한 줄씩 읽기만 하고, 출금 계좌 글자를 누르면 그 자리에 드롭박스가 나타난다. 오른쪽 [확인]으로 확정한다.
       return `<div class="ex-cat ex-wd-pick" data-ci="${i}">
           <div class="ex-cf-rows">
@@ -544,8 +545,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       const rows = rep.rows.map((r, i) => `
         <tr>
           <td>${esc(r.when || '')}</td>
-          <td>${approving ? catCell(rep, r, i, st) : catView(r)}${rowProject(rep, r) ? `<div class="ex-meta">${esc(rowProject(rep, r))}</div>` : ''}</td>
           <td>${approving ? '<div class="ex-item-split">' : ''}${itemWrap(rep, r, `${r.item ? `<b>${esc(r.item)}</b>${noteIcons(r, approving)}${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${r.item ? '' : noteIcons(r, approving)}`)}${approving ? apprMemoInput(rep, i, st) + '</div>' : ''}</td>
+          <td>${approving ? catCell(rep, r, i, st) : catView(r)}${rowProject(rep, r) ? `<div class="ex-meta">${esc(rowProject(rep, r))}</div>` : ''}</td>
           <td class="r">${krw(r.amountKrw)}${isFx(r.currency) ? `<div class="ex-meta">${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)}</div>` : ''}</td>
         </tr>`).join('');
 
@@ -585,7 +586,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           </div>
         </div>
         <div class="ex-table-wrap"><table class="ex-table">
-          <thead><tr><th>${t('thWhen')}</th><th>${approving ? t('wdLbl') : t('thCat')}</th><th>${t('thItem')}</th><th style="text-align:right">${t('thAmt')}</th></tr></thead>
+          <thead><tr><th>${t('thWhen')}</th><th>${t('thItem')}</th><th>${approving ? t('wdLbl') : t('thCat')}</th><th style="text-align:right">${t('thAmt')}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table></div>
         ${approving ? `<p class="ex-sub" style="margin:12px 0 0">${esc(t('catHint'))}</p>` : ''}

@@ -886,3 +886,12 @@ test('작성 폼: 영수증 버튼 말고는 글자가 굵지 않다', async () 
   assert.match(css, /\.ex-row \.ex-r2 \.ex-amt[^{]*\{ font-weight: 400 !important; \}/);
   assert.match(css, /\.ex-row \.ex-btn\.ex-attach \{ font-weight: 700 !important; \}/);
 });
+
+test('표 열 순서: 날짜 | 품목·목적 | 출금 계좌(카테고리) | 금액', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  assert.match(src, /<th>\$\{t\('thWhen'\)\}<\/th><th>\$\{t\('thItem'\)\}<\/th><th>\$\{approving \? t\('wdLbl'\) : t\('thCat'\)\}<\/th><th style="text-align:right">/);
+  const rows = src.slice(src.indexOf("const rows = rep.rows.map((r, i) => `"), src.indexOf("let notes = ''"));
+  const pos = [rows.indexOf("esc(r.when || '')"), rows.indexOf('ex-item-split'), rows.indexOf('catCell(rep, r, i, st)'), rows.indexOf('krw(r.amountKrw)')];
+  assert.ok(pos.every((v, i) => v > -1 && (i === 0 || v > pos[i - 1])), '날짜 → 품목·목적 → 출금 계좌 → 금액');
+});
