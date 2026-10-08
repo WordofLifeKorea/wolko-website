@@ -22,6 +22,7 @@ export async function onRequestGet(context) {
   const rawKey = String(params.key || '');
   const key = decodeKey(rawKey);
   const headers = new Headers();
+  headers.set('X-Content-Type-Options', 'nosniff');
   if (store.type === 'r2') {
     const obj = await store.storage.get(key) || (key === rawKey ? null : await store.storage.get(rawKey));
     if (!obj) {

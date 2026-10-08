@@ -28,6 +28,7 @@ const file = name => new File(['test'], name);
 
 test('file picker and drop pass every selected file to the batch queue', () => {
   assert.match(page, /id="uploadFileInput"[^>]*multiple/);
+  assert.doesNotMatch(page, /id="uploadFileInput"[^>]*accept=/);
   assert.match(page, /Array\.from\(event\.dataTransfer\.files \|\| \[\]\)/);
   assert.match(page, /await handleFiles\(files\)/);
   assert.match(page, /await receivePresentationFiles\(files\)/);
@@ -70,13 +71,13 @@ test('retry skips saved files and reuses the uploaded URL after a save failure',
   assert.equal(els.itemDialogBackdrop.hidden, true);
 });
 
-test('unsupported or oversized files fail individually without blocking valid files', async () => {
+test('all formats are accepted while oversized files fail individually', async () => {
   let requests = 0;
   const { api } = setup(async () => { requests++; return { ok:true, json:async () => ({ url:'/good.pdf', items:[] }) }; });
   await api.receivePresentationFiles([file('bad.exe'), { name:'huge.pdf', size:21 * 1024 * 1024 }, file('good.pdf')]);
   await api.saveBatchFiles();
-  assert.equal(requests, 2);
-  assert.deepEqual(Array.from(api.entries(), e => e.status), ['failed', 'failed', 'saved']);
+  assert.equal(requests, 4);
+  assert.deepEqual(Array.from(api.entries(), e => e.status), ['saved', 'failed', 'saved']);
 });
 
 test('single-file behavior remains intact and editing rejects multiple replacements', async () => {

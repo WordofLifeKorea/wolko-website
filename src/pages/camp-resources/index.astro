@@ -441,8 +441,8 @@
         <label data-ko="보관 파일 (선택)" data-en="Archive File (optional)">보관 파일 (선택)</label>
         <input id="itemArchiveUrl" type="url" data-ph-ko="업로드하면 자동 입력됩니다" data-ph-en="Auto-filled after upload" placeholder="업로드하면 자동 입력됩니다">
       </div>
-      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="파일 선택 / 여러 파일 끌어다 놓기 (PDF·PPTX·이미지)" data-en="Select or drop multiple files (PDF/PPTX/Images)">파일 선택 / 여러 파일 끌어다 놓기 (PDF·PPTX·이미지)</button>
-      <input id="uploadFileInput" type="file" accept=".pdf,.pptx,.png,.jpg,.jpeg,.webp,.gif,.heic,.heif" multiple hidden>
+      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="파일 선택 / 여러 파일 끌어다 놓기 (모든 형식)" data-en="Select or drop multiple files (all formats)">파일 선택 / 여러 파일 끌어다 놓기 (모든 형식)</button>
+      <input id="uploadFileInput" type="file" multiple hidden>
       <div id="batchUpload" class="batch-upload" hidden>
         <p data-ko="저장을 누르면 파일 이름을 제목으로 각각 등록합니다. 폴더와 캠프는 공통 적용되며 파일당 최대 20MB입니다. 실패한 파일은 저장을 다시 눌러 재시도할 수 있습니다." data-en="Save creates one resource per file, using its filename as the title. Folder and camps apply to all files. Maximum 20MB per file. Press Save again to retry failed files.">저장을 누르면 파일 이름을 제목으로 각각 등록합니다. 폴더와 캠프는 공통 적용되며 파일당 최대 20MB입니다. 실패한 파일은 저장을 다시 눌러 재시도할 수 있습니다.</p>
         <progress id="batchUploadProgress" value="0" max="1" aria-label="Upload progress"></progress>
@@ -558,7 +558,6 @@
         uploading: '업로드 중...',
         uploadFailed: '업로드하지 못했습니다.',
         uploadTooBig: '파일이 너무 큽니다. (최대 20MB)',
-        uploadBadType: 'PDF, PPTX 또는 이미지 파일만 업로드할 수 있습니다.',
         uploadBadTypeBgm: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.',
         dragHint: '끌어서 순서 변경',
         reorderFailed: '순서를 저장하지 못했습니다.',
@@ -599,7 +598,6 @@
         uploading: 'Uploading...',
         uploadFailed: 'Upload failed.',
         uploadTooBig: 'File is too large. (max 20MB)',
-        uploadBadType: 'Only PDF, PPTX, or image files can be uploaded.',
         uploadBadTypeBgm: 'Only MP3, WAV, or M4A files can be uploaded.',
         dragHint: 'Drag to reorder',
         reorderFailed: 'Could not save the new order.',
@@ -1400,7 +1398,7 @@
     let batchFiles = [];
     let batchBusy = false;
     let batchPayload = null;
-    const presentationExtensions = /\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i;
+    const filenameExtension = /\.[^.]+$/;
 
     function renderBatchFiles() {
       const active = batchFiles.length > 0;
@@ -1426,7 +1424,7 @@
         return;
       }
       if (files.length === 1 && !batchFiles.length) {
-        await uploadFile(files[0], 'presentation', presentationExtensions, els.itemArchiveUrl, els.uploadFileBtn);
+        await uploadFile(files[0], 'presentation', null, els.itemArchiveUrl, els.uploadFileBtn);
         return;
       }
       if (batchPayload) {
@@ -1472,7 +1470,6 @@
           if (entry.status === 'saved') continue;
           entry.error = '';
           try {
-            if (!presentationExtensions.test(entry.file.name)) throw new Error(tr('uploadBadType'));
             if (entry.file.size > 20 * 1024 * 1024) throw new Error(tr('uploadTooBig'));
             if (!entry.url) {
               entry.status = 'uploading'; renderBatchFiles();
@@ -1482,7 +1479,7 @@
             const res = await fetch('/api/teach/data', {
               method:'POST', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
               body:JSON.stringify({ item:{ ...batchPayload,
-                title:entry.file.name.replace(presentationExtensions, '') || entry.file.name, archiveUrl:entry.url } }),
+                title:entry.file.name.replace(filenameExtension, '') || entry.file.name, archiveUrl:entry.url } }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || tr('saveFailed'));
@@ -1508,8 +1505,8 @@
 
     async function uploadFile(file, kind, extRegex, targetInput, btnEl) {
       const MAX_SIZE = 20 * 1024 * 1024;
-      if (!extRegex.test(file.name)) {
-        els.itemDialogError.textContent = tr(kind === 'bgm' ? 'uploadBadTypeBgm' : 'uploadBadType');
+      if (extRegex && !extRegex.test(file.name)) {
+        els.itemDialogError.textContent = tr('uploadBadTypeBgm');
         return;
       }
       if (file.size > MAX_SIZE) {
@@ -1524,7 +1521,7 @@
       try {
         targetInput.value = await uploadResourceFile(file, kind);
         if (kind === 'presentation' && !els.itemTitle.value.trim()) {
-          els.itemTitle.value = file.name.replace(/\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i, '');
+          els.itemTitle.value = file.name.replace(filenameExtension, '') || file.name;
         }
       } catch (error) {
         els.itemDialogError.textContent = error.message;
