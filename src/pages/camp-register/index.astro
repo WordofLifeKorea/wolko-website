@@ -880,6 +880,9 @@ body.lang-en .crp-countdown-notice {
 #crpBestCamperConfirmation { margin: 10px 0 4px; }
 #crpBestCamperConfirmation[hidden] { display: none; }
 
+#staff-recruit { scroll-margin-top: 120px; }
+@media (max-width: 640px) { #staff-recruit { scroll-margin-top: 96px; } }
+
 @media (max-width: 640px) {
   .crp-reg-modal {
     padding: 12px 12px max(12px, env(safe-area-inset-bottom));
@@ -1711,7 +1714,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 );
               })}
             </div>
-            <div class="crp-staff-card crp-staff-card--group" data-region="inland">
+            <div class="crp-staff-card crp-staff-card--group" id="staff-recruit" data-region="inland">
               <div class="crp-staff-card-icon">
                 <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
@@ -3956,6 +3959,16 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
   }
   openStaffFromHash();
   window.addEventListener('hashchange', openStaffFromHash);
+  // 카드 이미지·레이아웃이 자리잡은 뒤에도 #staff-recruit 위치가 어긋나지 않도록 한 번 더 맞춘다.
+  function scrollToStaffBanner() {
+    if (location.hash !== '#staff-recruit') return;
+    var el = document.getElementById('staff-recruit');
+    if (el) el.scrollIntoView({ block: 'start', behavior: 'instant' });
+  }
+  scrollToStaffBanner();
+  [150, 700].forEach(function(ms) { setTimeout(scrollToStaffBanner, ms); });
+  window.addEventListener('load', function() { setTimeout(scrollToStaffBanner, 150); });
+  window.addEventListener('hashchange', scrollToStaffBanner);
 
   // 모달 닫기 — 저장 안 한 입력이 있으면 한 번 묻는다(긴 폼이 실수로 날아가지 않게).
   function closeStaffModal(force) {

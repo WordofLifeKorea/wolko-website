@@ -20,3 +20,9 @@ test('staff application modal opens from the #staff-apply anchor', () => {
   assert.match(page, /location\.hash !== '#staff-apply'/);
   assert.match(page, /addEventListener\('hashchange', openStaffFromHash\)/);
 });
+
+test('staff recruitment banner has a scroll anchor that clears the fixed header', () => {
+  assert.match(page, /id="staff-recruit"/);
+  assert.match(page, /#staff-recruit \{ scroll-margin-top: 120px; \}/);
+  assert.match(page, /location\.hash !== '#staff-recruit'/);
+});
