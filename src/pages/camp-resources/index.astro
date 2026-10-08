@@ -298,6 +298,7 @@
     .tch-dialog-btns { display:flex; gap:8px; justify-content:flex-end; margin:16px -26px -26px; padding:14px 26px; position:sticky; bottom:-26px; background:#fff; border-top:1px solid var(--border); border-radius:0 0 16px 16px; }
     .tch-dialog-btns button { border-radius:100px; padding:0 20px; font:600 13px/1 var(--sans); cursor:pointer; }
     .upload-placeholder-btn { width:100%; margin-bottom:14px; }
+    .is-drop-target:not(.tch-dialog) { outline:2px dashed #0d9488; outline-offset:2px; }
     .tch-dialog.is-drop-target { outline:2px dashed #0d9488; outline-offset:-6px; background:rgba(13,148,136,.05); }
     .tch-dialog.is-drop-target .upload-placeholder-btn { border-color:#0d9488; color:#0d9488; }
     .upload-placeholder-btn[disabled] { opacity:.55; cursor:not-allowed; }
@@ -1428,33 +1429,20 @@
       await uploadFile(file, 'bgm', /\.(mp3|wav|m4a)$/i, els.itemBgmUrl, els.uploadBgmBtn);
     });
 
-    /* 파일 끌어다 놓기: 다이얼로그 어디에 놓아도 확장자에 따라 보관 파일/BGM으로 업로드 */
-    (function setupDialogFileDrop() {
-      const dialog = els.itemDialogBackdrop.querySelector('.tch-dialog');
-      const hasFiles = event => [...(event.dataTransfer?.types || [])].includes('Files');
+    /* 파일 끌어다 놓기: 다이얼로그(배경 포함) 어디에 놓아도 업로드, 다이얼로그가 닫혀 있으면 페이지에 놓을 때 자료 추가 창을 열고 업로드 */
+    (function setupFileDrop() {
+      const backdrop = els.itemDialogBackdrop;
+      const dialog = backdrop.querySelector('.tch-dialog');
+      const hasFiles = event => Array.from(event.dataTransfer?.types || []).indexOf('Files') !== -1;
+      const dialogOpen = () => !backdrop.hidden;
       let depth = 0;
-      const clear = () => { depth = 0; dialog.classList.remove('is-drop-target'); };
-      dialog.addEventListener('dragenter', event => {
-        if (!hasFiles(event)) return;
-        event.preventDefault();
-        depth++;
-        dialog.classList.add('is-drop-target');
-      });
-      dialog.addEventListener('dragover', event => {
-        if (!hasFiles(event)) return;
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'copy';
-      });
-      dialog.addEventListener('dragleave', event => {
-        if (!hasFiles(event)) return;
-        depth = Math.max(0, depth - 1);
-        if (!depth) dialog.classList.remove('is-drop-target');
-      });
-      dialog.addEventListener('drop', async event => {
-        if (!hasFiles(event)) return;
-        event.preventDefault();
-        clear();
-        const file = event.dataTransfer.files?.[0];
+      let pageHint = null;
+      const clearHints = () => {
+        depth = 0;
+        dialog.classList.remove('is-drop-target');
+        if (pageHint) { pageHint.classList.remove('is-drop-target'); pageHint = null; }
+      };
+      async function handleFile(file) {
         if (!file || els.uploadFileBtn.disabled || els.uploadBgmBtn.disabled) return;
         const isAudio = /\.(mp3|wav|m4a)$/i.test(file.name);
         const bgmVisible = els.uploadBgmBtn.offsetParent !== null;
@@ -1463,11 +1451,50 @@
         } else {
           await uploadFile(file, 'presentation', /\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i, els.itemArchiveUrl, els.uploadFileBtn);
         }
+      }
+      document.addEventListener('dragenter', event => {
+        if (!hasFiles(event)) return;
+        if (dialogOpen()) { event.preventDefault(); depth++; dialog.classList.add('is-drop-target'); }
+        else if (hasStaffAccess()) event.preventDefault();
       });
-      // 다이얼로그 밖에 놓아 브라우저가 파일을 열어버리는 것을 방지
-      ['dragover', 'drop'].forEach(type => els.itemDialogBackdrop.addEventListener(type, event => {
-        if (hasFiles(event) && !dialog.contains(event.target)) event.preventDefault();
-      }));
+      document.addEventListener('dragover', event => {
+        if (!hasFiles(event)) return;
+        if (dialogOpen() || hasStaffAccess()) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'copy';
+        }
+        if (!dialogOpen() && hasStaffAccess()) {
+          const target = event.target.closest && event.target.closest('[data-add-tab]');
+          if (target !== pageHint) {
+            if (pageHint) pageHint.classList.remove('is-drop-target');
+            pageHint = target;
+            if (pageHint) pageHint.classList.add('is-drop-target');
+          }
+        }
+      });
+      document.addEventListener('dragleave', event => {
+        if (!hasFiles(event) || !dialogOpen()) return;
+        depth = Math.max(0, depth - 1);
+        if (!depth) dialog.classList.remove('is-drop-target');
+      });
+      document.addEventListener('drop', async event => {
+        if (!hasFiles(event)) return;
+        const open = dialogOpen();
+        if (!open && !hasStaffAccess()) return;
+        event.preventDefault();
+        const file = event.dataTransfer.files?.[0];
+        const addBtn = !open && event.target.closest ? event.target.closest('[data-add-tab]') : null;
+        clearHints();
+        if (!open) {
+          openItemDialog('', addBtn ? {
+            tab: addBtn.dataset.addTab,
+            team: addBtn.dataset.addTeam || '',
+            person: addBtn.dataset.addPerson || '',
+          } : {});
+          if (backdrop.hidden) return;
+        }
+        await handleFile(file);
+      });
     })();
 
     async function confirmDeleteItem(itemId) {
