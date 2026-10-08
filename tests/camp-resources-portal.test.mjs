@@ -18,6 +18,12 @@ function setup() {
 }
 const post = (env, token) => PLogin.onRequestPost({ env, request: new Request('https://wolko.org/api/teach/portal-login', { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }) });
 
+test('자료실 언어 토글은 PC와 모바일 모두 좌우 공간을 조금 넓힌다', () => {
+  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  assert.match(page, /@media \(min-width:641px\)\s*\{\s*:root:root body > \.topbar \.wl-lang-toggle \{ width:132px !important;/);
+  assert.match(page, /@media \(max-width:640px\)\s*\{\s*:root:root body > \.topbar \.wl-lang-btn \{ width:34px !important;/);
+});
+
 test('자료실 업로더 신원은 서명으로 보호하고 기존 토큰도 인식한다', async () => {
   const env = setup();
   const req = token => new Request('https://wolko.org', { headers: { Authorization: `Bearer ${token}` } });
