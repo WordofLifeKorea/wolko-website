@@ -921,8 +921,9 @@ test('회계 상세: 날짜는 영수증 사진 위, 품목 | 목적은 한 줄�
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   const detail = src.slice(src.indexOf('function detailHtml('), src.indexOf('function detailHtml(') + 4000);
   assert.ok(detail.indexOf('ex-d-date') < detail.indexOf('receiptChips(rep, r)'), '날짜가 사진 앞(위)');
-  assert.match(detail, /class="ex-d-purpose-inline" title="\$\{esc\(r\.ministryPurpose\)\}"/, '목적에 툴팁');
+  assert.match(detail, /class="ex-d-text ex-d-purpose-inline"[^>]*aria-label="\$\{esc\(r\.ministryPurpose\)\}"/, '목적 전체 내용');
+  assert.match(detail, /class="ex-d-text-tip" aria-hidden="true">\$\{esc\(r\.ministryPurpose\)\}/, '목적에 툴팁');
   assert.doesNotMatch(detail, /<div class="ex-d-purpose">/, '목적 별도 줄은 없다');
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
-  assert.match(css, /\.ex-d-purpose-inline \{[^}]*text-overflow: ellipsis; white-space: nowrap;/);
+  assert.match(css, /\.ex-d-text-label \{[^}]*text-overflow: ellipsis; white-space: nowrap;/);
 });

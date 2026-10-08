@@ -866,7 +866,7 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 :root:root .ex-row .ex-catsel, :root:root .ex-row .ex-catsel option { font-weight: 400 !important; }
 
 /* v101 — 회계 항목: 품목명·금액은 다른 글자와 같은 크기(13px)로, 굵기(볼드)만 유지 */
-:root:root .ex-d-item .ex-d-main > b, :root:root .ex-d-item .ex-d-amt { font-size: 13px; font-weight: 700; line-height: 1.4; }
+:root:root .ex-d-item .ex-d-item-text b, :root:root .ex-d-item .ex-d-amt { font-size: 13px; font-weight: 700; line-height: 1.4; }
 :root:root .ex-d-item .ex-d-amt .ex-meta { font-size: 11.5px; font-weight: 500; }
 
 /* v102 — (시안) 작성 폼의 입력칸 박스를 모두 빼고 글자만: 평소엔 테두리·배경 없이 연한 아래 선만, 마우스를 올리면 연한 배경, 선택하면 파란 아래 선 */
@@ -958,14 +958,22 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-subs > li.is-selected { background: #f4fafc; }
 
 /* v110 — 회계 상세 항목: 날짜는 영수증 사진 위(왼쪽 끝)로, 품목 | 목적은 한 줄 — 넘치면 … 으로 줄이고 마우스를 올리면 툴팁으로 전체 */
-:root:root .ex-d-item { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 16px; }
-:root:root .ex-d-item > .ex-d-date { grid-column: 1; grid-row: 1; align-self: center; margin-bottom: 6px; white-space: nowrap; }
+:root:root .ex-d-item { position: relative; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 16px; }
+:root:root .ex-d-item > .ex-d-date { grid-column: 1; grid-row: 1; display: flex; align-items: center; min-height: 36px; margin-bottom: 0; white-space: nowrap; }
 :root:root .ex-d-item > .ex-rcol { grid-column: 1; grid-row: 2 / span 3; align-self: start; }
-:root:root .ex-d-item > .ex-d-main { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
-:root:root .ex-d-item > .ex-d-amt { grid-column: 3; grid-row: 1; align-self: center; }
+:root:root .ex-d-item > .ex-d-main { grid-column: 2; grid-row: 1; display: flex; align-items: center; height: 36px; gap: 8px; min-width: 0; }
+:root:root .ex-d-item > .ex-d-amt { grid-column: 3; grid-row: 1; display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 0 4px; min-height: 36px; }
 :root:root .ex-d-item > .ex-code-flow, :root:root .ex-d-item > .ex-d-sub { grid-column: 2 / -1; grid-row: auto; }
-.ex-d-main > b { flex: 0 1 auto; min-width: 0; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ex-d-main > .ex-notes { flex: none; }
+.ex-d-item-text { flex: 0 1 auto; min-width: 0; max-width: 60%; }
 .ex-d-sep { flex: none; color: #b7c8d2; }
-.ex-d-purpose-inline { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mid); font-size: 13px; }
-@media (max-width: 640px) { :root:root .ex-d-item { column-gap: 12px; } .ex-d-main > b { max-width: 55%; } }
+.ex-d-purpose-inline { flex: 1 1 0; min-width: 0; color: var(--mid); font-size: 13px; }
+.ex-d-text-label { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+.ex-d-text-tip { position: absolute; top: 48px; left: 12px; z-index: 35; width: max-content; max-width: min(560px, calc(100% - 24px)); box-sizing: border-box; padding: 9px 12px; border: 1px solid #cbdce5; border-radius: 10px; background: #fff; color: var(--text); font: 400 13px/1.6 var(--f-body); white-space: pre-wrap; overflow-wrap: anywhere; box-shadow: 0 6px 18px rgba(20,50,64,.14); opacity: 0; visibility: hidden; pointer-events: none; }
+.ex-d-text.is-truncated:hover .ex-d-text-tip, .ex-d-text.is-truncated:focus .ex-d-text-tip { opacity: 1; visibility: visible; }
+.ex-d-text:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 3px; }
+.ex-d-item .ex-cf-actions > .ex-notes { margin: 0; }
+.ex-d-item .ex-cf-actions .ex-nico { position: static; }
+.ex-d-item .ex-cf-actions .ex-npop, .ex-d-item .ex-cf-actions .ex-ntip { left: auto; right: 0; }
+.ex-d-item .ex-cf-actions .ex-npop { width: min(300px, calc(100vw - 48px)); box-sizing: border-box; }
+.ex-d-sub > .ex-notes { float: right; margin-left: 8px; }
+@media (max-width: 640px) { :root:root .ex-d-item { column-gap: 12px; } .ex-d-item-text { max-width: 55%; } }
