@@ -147,7 +147,7 @@
     const vehicles = [...$('vehicleSelect').options].filter(o => o.value).map(o => ({ id: o.value, name: o.text }));
     entries.forEach(e => { if (!vehicles.some(v => v.id === e.vehicleId)) vehicles.push({ id: e.vehicleId, name: e.vehicleName }); });
     const kmText = e => e.mileageAfter != null ? `${Number(e.mileageAfter).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR')} km` : '';
-    const shortTime = value => new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
+    const shortTime = value => new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
     vehicles.forEach(vehicle => {
       const mine = entries.filter(e => e.vehicleId === vehicle.id);
       const open = openVehicles.has(vehicle.id);
