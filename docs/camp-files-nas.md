@@ -1,7 +1,7 @@
 # Camp resource storage on Synology
 
-Status: integration code is ready, but NAS deployment, DNS/TLS, storage permissions
-and Cloudflare production secrets must be configured before enabling it.
+Status: NAS gateway deployed; authenticated PUT/GET and unauthorized 401 verified
+on 2026-10-08. Cloudflare Pages production activation must follow gateway validation.
 No existing file has been migrated or deleted.
 
 User-confirmed target: Synology DS423+, volume1, 28.4TB free reported on
@@ -22,11 +22,11 @@ User-confirmed target: Synology DS423+, volume1, 28.4TB free reported on
 ## DSM setup
 
 1. Confirm the data volume and free space in Storage Manager. Create a dedicated
-   folder, for example /volume1/docker/wolko-camp-files. The volume1 path is only
-   an example, not an assumed deployment target.
+   folder /volume1/docker/wolko-camp-files, including its data subdirectory.
 2. Copy nas/camp-files/server.mjs, Dockerfile and compose.yaml into that folder.
    The one-shot storage-init container sets only the dedicated data directory's
-   owner to UID/GID 1000, then exits. The running file service uses the non-root
+   owner to UID/GID 1000 and mode 700, then exits. Synology-created directories
+   can otherwise retain read-only permissions. The running file service uses the non-root
    node user with all Linux capabilities dropped. Do not grant broad write
    permissions to the volume or use the DSM admin password.
 3. Create a local .env containing TEACH_NAS_TOKEN=<random secret of at least 32
@@ -34,11 +34,14 @@ User-confirmed target: Synology DS423+, volume1, 28.4TB free reported on
    Keep the file private and outside version control.
 4. In Container Manager, create a Project using compose.yaml and build/start it.
    The gateway listens only on NAS loopback port 8088; do not forward that port.
-5. Configure DSM reverse proxy: HTTPS files.wolko.org:443 to HTTP localhost:8088.
-   The user approved this hostname. Keep docs.wolko.org for ONLYOFFICE.
-   Set a valid TLS certificate and allow at least 20MiB bodies and 120s upload time.
-   Expose only HTTPS through the router; do not expose DSM administration or WebDAV
-   for this feature. Ensure the existing docs reverse proxy is unchanged.
+5. Reuse the existing wolko-docs-nas Cloudflare Tunnel. Its container and
+   ONLYOFFICE are on the observed wolko-docs_default Docker network. The compose
+   file joins the gateway to that external network. Publish files.wolko.org to
+   http://wolko-camp-files-camp-files-1:8080. Keep the docs.wolko.org route unchanged.
+   TLS terminates at Cloudflare; no new router port, DSM exposure or WebDAV is needed.
+   Do not rotate the existing tunnel token. CPU quotas are omitted because this
+   NAS kernel rejects NanoCPUs; memory remains capped at 256MiB. This kernel also
+   reports PIDs limits unsupported, so do not rely on that optional limit.
 6. Set encrypted Cloudflare Pages production variables TEACH_NAS_URL to the HTTPS
    origin and TEACH_NAS_TOKEN to the same dedicated secret; then deploy Pages.
    Do this only after the gateway is reachable and authenticated round trips pass.
@@ -61,4 +64,4 @@ User-confirmed target: Synology DS423+, volume1, 28.4TB free reported on
 ## Official references
 
 - Container Manager projects: https://kb.synology.com/en-uk/DSM/help/ContainerManager/docker_project?version=7
-- DSM reverse proxy: https://kb.synology.com/DSM/tutorial/Quick_Start_Synology_SSO
+- Cloudflare Tunnel: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/

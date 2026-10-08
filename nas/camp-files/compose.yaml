@@ -2,7 +2,7 @@ services:
   storage-init:
     image: node:24-alpine
     user: "0:0"
-    command: ["chown", "1000:1000", "/data"]
+    command: ["sh", "-c", "chown 1000:1000 /data && chmod 700 /data"]
     volumes:
       - ./data:/data
     read_only: true
@@ -10,6 +10,7 @@ services:
       - ALL
     cap_add:
       - CHOWN
+      - FOWNER
     security_opt:
       - no-new-privileges:true
     restart: "no"
@@ -31,5 +32,11 @@ services:
     security_opt:
       - no-new-privileges:true
     mem_limit: 256m
-    cpus: 1
     pids_limit: 64
+    networks:
+      - default
+      - docs-tunnel
+networks:
+  docs-tunnel:
+    external: true
+    name: wolko-docs_default
