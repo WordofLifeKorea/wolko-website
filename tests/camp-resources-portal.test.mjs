@@ -53,6 +53,7 @@ test('업로드한 사람만 카드를 만들고 빈 목록은 안내 한 칸만
   const end = page.indexOf('function groupByTeam(', start);
   const render = runInNewContext(page.slice(start, end) + '\nwolkoTeamHtml;', {
     currentLang: 'ko', TEAM_WOLKO: 'WOLKO', editMode: false,
+    hasStaffAccess: () => false,
     escapeHtml: value => String(value), tr: () => '등록된 자료가 없습니다.',
     personGroupHtml: (name, items) => `<person>${name}:${items.length}</person>`,
     presentCardHtml: () => '<card>',
@@ -133,7 +134,7 @@ import * as Camps from '../functions/api/teach/camps.js';
 import * as Managers from '../functions/api/teach/managers.js';
 import * as Upload from '../functions/api/teach/upload.js';
 
-test('캠프 자료실 권한: 일반 멤버는 보기·추가만, 마스터가 지정한 관리자(와 마스터)만 수정·삭제·캠프 관리', async () => {
+test('캠프 자료실 권한: 멤버는 본인 수정, 지정 관리자는 수정·캠프 관리, 타인 삭제는 마스터만', async () => {
   const env = setup();
   await putAccount(env, { email: 'm@x.com', name: 'Member', role: 'counselor', status: 'approved' });
   await putAccount(env, { email: 'ella@wol.org', name: 'Ella', role: 'counselor', status: 'approved' });
@@ -156,18 +157,18 @@ test('캠프 자료실 권한: 일반 멤버는 보기·추가만, 마스터가 
   m = await login(member); e = await login(ella); const ms = await login(master);
   assert.deepEqual([m.role, e.role, e.isManager, ms.role, ms.isMaster], ['member', 'admin', true, 'admin', true]);
 
-  // 일반 멤버: 읽기 · 추가 O, 수정 · 삭제 · 순서 · 캠프 관리 X
+  // 일반 멤버: 읽기 · 추가 · 본인 수정 O, 순서 · 캠프 관리 X
   assert.equal((await Data.onRequestGet({ env, request: req('/api/teach/data', 'GET', m.token) })).status, 200);
   const added = await Data.onRequestPost({ env, request: req('/api/teach/data', 'POST', m.token, { item }) });
   assert.equal(added.status, 200);
   const id = (await added.json()).items[0].id;
-  assert.equal((await Data.onRequestPut({ env, request: req('/api/teach/data', 'PUT', m.token, { item: { ...item, id, title: '바꿈' } }) })).status, 403);
+  assert.equal((await Data.onRequestPut({ env, request: req('/api/teach/data', 'PUT', m.token, { item: { ...item, id, title: '바꿈' } }) })).status, 200);
   assert.equal((await Data.onRequestPatch({ env, request: req('/api/teach/data', 'PATCH', m.token, { ids: [id] }) })).status, 403);
-  assert.equal((await Data.onRequestDelete({ env, request: req(`/api/teach/data?id=${id}`, 'DELETE', m.token) })).status, 403);
+  assert.equal((await Data.onRequestDelete({ env, request: req(`/api/teach/data?id=${id}`, 'DELETE', e.token) })).status, 403, '지정 관리자라도 다른 사람 자료 삭제 불가');
   assert.equal((await Camps.onRequestGet({ env, request: req('/api/teach/camps', 'GET', m.token) })).status, 200);
   assert.equal((await Camps.onRequestPost({ env, request: req('/api/teach/camps', 'POST', m.token, { year: '2027', season: 'summer', name: 'A' }) })).status, 403);
 
-  // 관리자(Ella)와 마스터: 수정 · 삭제 · 캠프 관리 O
+  // 관리자(Ella): 수정 · 캠프 관리 O, 마스터: 타인 삭제 O
   assert.equal((await Data.onRequestPut({ env, request: req('/api/teach/data', 'PUT', e.token, { item: { ...item, id, title: '바꿈' } }) })).status, 200);
   assert.equal((await Camps.onRequestPost({ env, request: req('/api/teach/camps', 'POST', e.token, { year: '2027', season: 'summer', name: 'A' }) })).status, 200);
   assert.equal((await Data.onRequestDelete({ env, request: req(`/api/teach/data?id=${id}`, 'DELETE', ms.token) })).status, 200);
@@ -175,11 +176,11 @@ test('캠프 자료실 권한: 일반 멤버는 보기·추가만, 마스터가 
   assert.equal((await Data.onRequestPost({ env, request: new Request('https://wolko.org/api/teach/data', { method: 'POST', body: '{}' }) })).status, 401);
 });
 
-test('캠프 자료실 화면: 수정·삭제·순서·캠프 관리는 관리자에게만 보이고, 관리자 지정은 마스터에게만 보인다', () => {
+test('캠프 자료실 화면: 본인 삭제와 관리자 수정·순서·캠프 관리 권한을 분리한다', () => {
   const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
   assert.match(page, /isManager = !!data\.isManager;/);
   assert.match(page, /\$\{editMode && isManager \? `<button class="drag-handle"/);
-  assert.match(page, /\$\{editMode && isManager \? `\s*<div class="present-card-actions" data-stop>/);
+  assert.match(page, /\$\{canDeleteItem\(item\) \? `<button type="button" class="danger" data-delete-item=/);
   assert.match(page, /els\.campManageBtn\.hidden = !editMode \|\| !isManager;/);
   assert.match(page, /els\.managersBtn\.hidden = !editMode \|\| !isMaster;/);
   assert.match(page, /\/api\/teach\/managers/);

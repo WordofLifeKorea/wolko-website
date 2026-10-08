@@ -1,4 +1,5 @@
-import { teachRole, teachSession, deniedManage } from '../../lib/teachAuth.js';
+import { teachRole, teachSession, deniedManage, canDeleteTeachItem } from '../../lib/teachAuth.js';
+import { readTeachFolders, foldersForCamp } from '../../lib/teachFolders.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -207,14 +208,23 @@ export async function onRequestPost(context) {
   }
   try {
     const body = await request.json();
+    if (!session.email) return Response.json({ error: '포탈에서 다시 로그인해주세요.' }, { status: 401, headers: CORS });
     const result = await cleanItem(body.item, null);
     if (!result.item) {
       return Response.json({ error: result.error || '입력값을 확인해주세요.' }, { status: 400, headers: CORS });
     }
     result.item.uploaderName = text(session.name || session.email, 80);
+    result.item.id = crypto.randomUUID();
     result.item.uploaderEmail = session.email;
     if (result.item.team === 'WOLKO' && result.item.uploaderName) result.item.person = result.item.uploaderName;
     const data = await readData(env);
+    if (data.items.length >= MAX_ITEMS) return Response.json({ error: '자료 수 제한에 도달했습니다.' }, { status: 409, headers: CORS });
+    if (result.item.tab === 'teacher') {
+      const folders = await readTeachFolders(env);
+      if (result.item.campIds.some(campId => !foldersForCamp(folders, campId, data.items).some(f => f.name === result.item.team))) {
+        return Response.json({ error: '선택한 캠프에 해당 폴더가 없습니다. 폴더를 먼저 만들어주세요.' }, { status: 400, headers: CORS });
+      }
+    }
     data.items.push(result.item);
     const saved = await writeData(env, data.items);
     return Response.json({ items: saved.items }, { headers: CORS });
@@ -226,14 +236,14 @@ export async function onRequestPost(context) {
 
 export async function onRequestPut(context) {
   const { env, request } = context;
-  const role = await teachRole(request, env);
+  const session = await teachSession(request, env);
+  const role = session?.role;
   if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
   if (!role) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
-  if (role !== 'admin') return deniedManage(CORS);
   try {
     const body = await request.json();
     const id = text(body.item?.id, 80);
@@ -242,9 +252,16 @@ export async function onRequestPut(context) {
     if (idx === -1) {
       return Response.json({ error: '항목을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
     }
+    if (role !== 'admin' && !canDeleteTeachItem(session, data.items[idx])) return deniedManage(CORS);
     const result = await cleanItem(body.item, data.items[idx]);
     if (!result.item) {
       return Response.json({ error: result.error || '입력값을 확인해주세요.' }, { status: 400, headers: CORS });
+    }
+    if (result.item.tab === 'teacher') {
+      const folders = await readTeachFolders(env);
+      if (result.item.campIds.some(campId => !foldersForCamp(folders, campId, data.items).some(f => f.name === result.item.team))) {
+        return Response.json({ error: '선택한 캠프에 해당 폴더가 없습니다. 폴더를 먼저 만들어주세요.' }, { status: 400, headers: CORS });
+      }
     }
     data.items[idx] = result.item;
     const saved = await writeData(env, data.items);
@@ -296,20 +313,23 @@ export async function onRequestPatch(context) {
 
 export async function onRequestDelete(context) {
   const { env, request } = context;
-  const role = await teachRole(request, env);
+  const session = await teachSession(request, env);
+  const role = session?.role;
   if (!env.ADMIN_PASSWORD || !env.CAMP_KV) {
     return Response.json({ error: '서버 설정이 필요합니다.' }, { status: 500, headers: CORS });
   }
   if (!role) {
     return Response.json({ error: '로그인이 필요합니다.' }, { status: 401, headers: CORS });
   }
-  if (role !== 'admin') return deniedManage(CORS);
   const url = new URL(request.url);
   const id = text(url.searchParams.get('id'), 80);
   if (!id) {
     return Response.json({ error: '삭제할 항목이 없습니다.' }, { status: 400, headers: CORS });
   }
   const data = await readData(env);
+  const item = data.items.find(item => item.id === id);
+  if (!item) return Response.json({ error: '항목을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
+  if (!canDeleteTeachItem(session, item)) return Response.json({ error: '마스터 또는 등록한 본인만 삭제할 수 있습니다.' }, { status: 403, headers: CORS });
   const filtered = data.items.filter(item => item.id !== id);
   const saved = await writeData(env, filtered);
   return Response.json({ items: saved.items }, { headers: CORS });

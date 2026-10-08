@@ -1,7 +1,8 @@
 /**
  * 캠프 자료실 권한
- *  - member : 승인된 포탈 멤버 누구나 — 자료 보기 · 추가(업로드 포함)
- *  - admin  : 마스터 + 마스터가 지정한 자료실 관리자 — 수정 · 삭제 · 순서 변경 · 캠프 관리
+ *  - member : 승인된 포탈 멤버 누구나 — 보기 · 추가(업로드 포함) · 본인 자료 수정/삭제
+ *  - admin  : 마스터 + 지정 관리자 — 수정 · 순서 변경 · 캠프 관리
+ * 타인 자료 삭제는 서명된 마스터 신원만 허용한다.
  * 토큰: wolko-teach:{admin|member}:{expires}[:{encoded identity}]:{sig}
  * 관리자 명단은 KV `teach:managers` (이메일 배열)에 두고 마스터가 자료실 화면에서 지정한다.
  */
@@ -13,7 +14,7 @@ const hex = bytes => Array.from(bytes).map(b => b.toString(16).padStart(2, '0'))
 const hmacKey = (secret, usage) => crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, usage);
 
 export async function generateTeachToken(secret, role = 'member', identity = null) {
-  const owner = identity ? ':' + encodeURIComponent(JSON.stringify({ name: identity.name || '', email: normalizeEmail(identity.email) })) : '';
+  const owner = identity ? ':' + encodeURIComponent(JSON.stringify({ name: identity.name || '', email: normalizeEmail(identity.email), isMaster: identity.role === 'master' })) : '';
   const data = `wolko-teach:${role === 'admin' ? 'admin' : 'member'}:${Date.now() + 24 * 60 * 60 * 1000}${owner}`;
   const sig = await crypto.subtle.sign('HMAC', await hmacKey(secret, ['sign']), new TextEncoder().encode(data));
   return btoa(`${data}:${hex(new Uint8Array(sig))}`);
@@ -36,7 +37,7 @@ export async function teachSession(request, env) {
     const ok = await crypto.subtle.verify('HMAC', await hmacKey(env.ADMIN_PASSWORD, ['verify']), sig, new TextEncoder().encode(data));
     if (!ok) return null;
     const identity = parts[3] ? JSON.parse(decodeURIComponent(parts[3])) : {};
-    return { role: parts[1], name: identity.name || '', email: identity.email || '' };
+    return { role: parts[1], name: identity.name || '', email: normalizeEmail(identity.email), isMaster: identity.isMaster === true };
   } catch {
     return null;
   }
@@ -44,6 +45,10 @@ export async function teachSession(request, env) {
 
 export async function teachRole(request, env) {
   return (await teachSession(request, env))?.role || null;
+}
+
+export function canDeleteTeachItem(session, item) {
+  return Boolean(session?.isMaster || (session?.email && item?.uploaderEmail && normalizeEmail(item.uploaderEmail) === session.email));
 }
 
 export async function managerEmails(env) {

@@ -1,5 +1,5 @@
 ---
-// 캠프 자료실 — 포탈 도구 페이지(왼쪽 메뉴·공용 머리글). 포탈 로그인으로 들어오고, 편집은 '편집 모드'에서 한다.
+// 캠프 자료실 — 포탈 멤버는 바로 자료를 추가하고 본인 자료를 관리한다.
 ---
 
 <!DOCTYPE html>
@@ -153,6 +153,7 @@
     .main-tab-btn[hidden] { display:none; }
     .subject-group { margin-bottom:18px; }
     .tab-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border:1px solid #dbe7ec; border-radius:var(--radius-lg) var(--radius-lg) 0 0; background:linear-gradient(135deg,#fff,#f4fbfd); padding:15px 17px; box-shadow:var(--shadow-soft); }
+    .folder-head-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
     .tab-head.theme-wolko { border-color:#bfdcf7; background:linear-gradient(135deg,#fff,#eaf3fd); }
     .tab-head.theme-wolko .tab-title { color:#0b5fa5; }
     .tab-head.theme-wolko .tab-count { background:#dcedfc; color:#0b5fa5; }
@@ -346,7 +347,7 @@
           <h3 class="resource-control-title" data-ko="분류와 캠프를 여기서 선택하세요" data-en="Choose category and camp here">분류와 캠프를 여기서 선택하세요</h3>
           <p class="resource-control-note" data-ko="탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다." data-en="Choose a tab and click a card to open its resource in a new tab.">탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다.</p>
         </div>
-        <span class="resource-control-status" data-ko="자료실 전용 메뉴" data-en="Resources Only">자료실 전용 메뉴</span>
+        <button class="secondary" id="folderManageBtn" type="button" hidden data-ko="폴더 관리" data-en="Manage Folders">폴더 관리</button>
       </div>
       <div class="resource-control-body">
         <div class="camp-filter-wrap" id="campFilterWrap" hidden>
@@ -376,6 +377,20 @@
 
     <section id="subjectGroups"></section>
   </main>
+
+  <div class="tch-dialog-backdrop" id="folderManageBackdrop" hidden>
+    <div class="tch-dialog" role="dialog" aria-modal="true" aria-labelledby="folderManageTitle">
+      <div class="tch-dialog-title" id="folderManageTitle" data-ko="폴더 관리" data-en="Manage Folders">폴더 관리</div>
+      <p data-ko="현재 캠프의 수업자료 폴더입니다. 빈 폴더만 삭제할 수 있으며, 삭제는 마스터 또는 만든 본인만 가능합니다." data-en="Class-material folders for this camp. Only the master or creator can delete an empty folder.">현재 캠프의 수업자료 폴더입니다. 빈 폴더만 삭제할 수 있으며, 삭제는 마스터 또는 만든 본인만 가능합니다.</p>
+      <div id="folderManageList"></div>
+      <form id="folderCreateForm">
+        <div class="field"><label for="folderNameInput" data-ko="새 폴더 이름" data-en="New Folder Name">새 폴더 이름</label><input id="folderNameInput" type="text" maxlength="60" required></div>
+        <button class="primary" type="submit" id="folderCreateBtn" data-ko="폴더 추가" data-en="Add Folder">폴더 추가</button>
+      </form>
+      <p id="folderManageError" class="tch-dialog-error" role="alert"></p>
+      <div class="tch-dialog-actions"><button class="ghost" type="button" id="folderManageClose" data-ko="닫기" data-en="Close">닫기</button></div>
+    </div>
+  </div>
 
   <div class="tch-dialog-backdrop" id="itemDialogBackdrop" hidden>
     <div class="tch-dialog">
@@ -474,6 +489,7 @@
 
 
   <script>
+    import { foldersForCamp } from '../../../functions/lib/teachFolders.js';
     const TOKEN_KEY = 'wolko_camp_resources_token';
     const LANG_KEY = 'wolko-lang'; // 포탈 전체와 같은 언어 설정
     const TAB_KEY = 'wolko_camp_resources_tab';
@@ -486,6 +502,10 @@
       return currentLang === 'en' ? (TEAM_LABELS_EN[team] || team) : team;
     }
     let uploaderName = '';
+    let uploaderEmail = '';
+    let folderState = { folders: [], removedDefaults: [] };
+    function activeFolders() { return foldersForCamp(folderState, selectedCampId, items); }
+    function canDeleteItem(item) { return isMaster || Boolean(uploaderEmail && item.uploaderEmail && item.uploaderEmail.toLowerCase() === uploaderEmail); }
     const TABS = [
       { key: 'teacher', ko: '수업자료', en: 'Class Materials' },
       { key: 'program', ko: '프로그램팀', en: 'Program Team' },
@@ -709,6 +729,7 @@
       if (!res.ok || !data.token) throw new Error(data.error || tr('loginFailed'));
       token = data.token;
       uploaderName = data.uploaderName || '';
+      uploaderEmail = (data.uploaderEmail || '').toLowerCase();
       isManager = !!data.isManager;
       isMaster = !!data.isMaster;
       updateEditModeUI();
@@ -839,21 +860,21 @@
             <div class="present-card-title">${escapeHtml(item.title)}</div>
             <div class="present-card-meta">${escapeHtml(campNamesFor(item.campIds))}</div>
             ${(archiveChip || item.bgmUrl) ? `<div class="resource-chip-row">${archiveChip}${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}</div>` : ''}
-            ${editMode && isManager ? `
+            ${((editMode && isManager) || canDeleteItem(item)) ? `
               <div class="present-card-actions" data-stop>
                 <button type="button" data-edit-item="${escapeHtml(item.id)}">${escapeHtml(tr('edit'))}</button>
-                <button type="button" class="danger" data-delete-item="${escapeHtml(item.id)}">${escapeHtml(tr('delete'))}</button>
+                ${canDeleteItem(item) ? `<button type="button" class="danger" data-delete-item="${escapeHtml(item.id)}">${escapeHtml(tr('delete'))}</button>` : ''}
               </div>` : ''}
           </div>
         </div>`;
     }
 
-    function addButtonHtml(defaults) {
+    function addButtonHtml(defaults, compact = false) {
       const attrs = Object.entries(defaults)
         .filter(([, v]) => v)
         .map(([k, v]) => `data-add-${k}="${escapeHtml(v)}"`)
         .join(' ');
-      return `<button class="present-card present-card-add" ${attrs} type="button">+ ${escapeHtml(tr('addItem'))}</button>`;
+      return `<button class="${compact ? 'secondary' : 'present-card present-card-add'}" ${attrs} type="button">+ ${escapeHtml(currentLang === 'en' ? 'Add Resource' : '자료 추가')}</button>`;
     }
 
     function personGroupHtml(person, personItems) {
@@ -865,7 +886,6 @@
           </div>
           <div class="subject-grid">
             ${personItems.length ? personItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
-            ${editMode ? addButtonHtml({ tab: 'teacher', team: TEAM_WOLKO, person }) : ''}
           </div>
         </div>`;
     }
@@ -887,7 +907,8 @@
         <div class="subject-group theme-wolko">
           <div class="tab-head theme-wolko">
             <div class="tab-title">${escapeHtml(TEAM_WOLKO)}</div>
-            <div class="tab-count">${teamItems.length}</div>
+            <div class="folder-head-actions"><div class="tab-count">${teamItems.length}</div>
+            ${hasStaffAccess() && selectedCampId ? addButtonHtml({ tab: 'teacher', team: TEAM_WOLKO }, true) : ''}</div>
           </div>
           <div class="person-columns">
             ${names.map(name => personGroupHtml(name, byPerson[name] || [])).join('')}
@@ -900,17 +921,17 @@
         <div class="subject-group${themeClass ? ` ${themeClass}` : ''}">
           <div class="tab-head${themeClass ? ` ${themeClass}` : ''}">
             <div class="tab-title">${escapeHtml(headerLabel)}</div>
-            <div class="tab-count">${listItems.length}</div>
+            <div class="folder-head-actions"><div class="tab-count">${listItems.length}</div>
+            ${hasStaffAccess() && selectedCampId ? addButtonHtml(addDefaults, true) : ''}</div>
           </div>
           <div class="subject-grid">
             ${listItems.length ? listItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
-            ${editMode ? addButtonHtml(addDefaults) : ''}
           </div>
         </div>`;
     }
 
     function groupByTeam(list) {
-      const groups = {};
+      const groups = Object.create(null);
       list.forEach(item => {
         (groups[item.team] || (groups[item.team] = [])).push(item);
       });
@@ -961,9 +982,10 @@
       const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && itemTab(i) === currentTab);
       if (currentTab === 'teacher') {
         const byTeam = groupByTeam(campItems);
-        els.subjectGroups.innerHTML = TEAMS_ORDER.map(team => {
+        els.subjectGroups.innerHTML = activeFolders().map(folder => {
+          const team = folder.name;
           if (team === TEAM_WOLKO) return wolkoTeamHtml(byTeam[team] || []);
-          const theme = team === TEAM_SF ? 'theme-sf' : 'theme-lesson';
+          const theme = team === TEAM_SF ? 'theme-sf' : team === TEAM_LESSON_PLAN ? 'theme-lesson' : '';
           return flatListHtml(teamLabel(team), byTeam[team] || [], { tab: 'teacher', team }, theme);
         }).join('');
       } else {
@@ -983,6 +1005,62 @@
       renderCategoryGroups();
       renderPersonDatalist();
     }
+
+    function renderFolderManageList() {
+      document.getElementById('folderManageList').innerHTML = activeFolders().map(folder => {
+        const canDelete = isMaster || Boolean(uploaderEmail && folder.ownerEmail === uploaderEmail);
+        const count = items.filter(i => i.team === folder.name && i.campIds?.includes(selectedCampId)).length;
+        return `<div class="camp-manage-row"><div class="camp-manage-row-main"><span class="camp-manage-row-name">${escapeHtml(teamLabel(folder.name))}</span><span class="camp-manage-row-meta">${count} ${currentLang === 'en' ? 'resources' : '개 자료'}${folder.ownerName ? ' · ' + escapeHtml(folder.ownerName) : ''}</span></div>${canDelete ? `<button type="button" class="danger" data-delete-folder="${escapeHtml(folder.id)}" ${count ? 'disabled' : ''}>${escapeHtml(tr('delete'))}</button>` : ''}</div>`;
+      }).join('') || `<p>${escapeHtml(tr('noItems'))}</p>`;
+    }
+
+    async function changeFolders(method, body, id = '') {
+      const query = method === 'DELETE' ? `?campId=${encodeURIComponent(selectedCampId)}&id=${encodeURIComponent(id)}` : '';
+      const res = await fetch('/api/teach/folders' + query, { method, headers: authHeaders({ 'Content-Type': 'application/json' }), ...(body ? { body: JSON.stringify(body) } : {}) });
+      const data = await res.json();
+      if (res.status === 401) { requireAccess(); return; }
+      if (!res.ok) throw new Error(data.error || tr('saveFailed'));
+      folderState = data;
+      render();
+      renderFolderManageList();
+    }
+
+    document.getElementById('folderManageBtn').addEventListener('click', () => {
+      renderFolderManageList();
+      document.getElementById('folderManageError').textContent = '';
+      document.getElementById('folderManageBackdrop').hidden = false;
+      document.getElementById('folderNameInput').focus();
+    });
+    function closeFolderManage() {
+      document.getElementById('folderManageBackdrop').hidden = true;
+      document.getElementById('folderManageBtn').focus();
+    }
+    document.getElementById('folderManageClose').addEventListener('click', closeFolderManage);
+    document.getElementById('folderManageBackdrop').addEventListener('click', event => {
+      if (event.target.id === 'folderManageBackdrop') closeFolderManage();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !document.getElementById('folderManageBackdrop').hidden) closeFolderManage();
+    });
+    document.getElementById('folderCreateForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = document.getElementById('folderCreateBtn');
+      button.disabled = true;
+      document.getElementById('folderManageError').textContent = '';
+      try {
+        await changeFolders('POST', { campId: selectedCampId, name: document.getElementById('folderNameInput').value.trim() });
+        document.getElementById('folderNameInput').value = '';
+      } catch (error) { document.getElementById('folderManageError').textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+    document.getElementById('folderManageList').addEventListener('click', async event => {
+      const button = event.target.closest('[data-delete-folder]');
+      if (!button || !confirm(tr('deleteConfirm'))) return;
+      button.disabled = true;
+      document.getElementById('folderManageError').textContent = '';
+      try { await changeFolders('DELETE', null, button.dataset.deleteFolder); }
+      catch (error) { document.getElementById('folderManageError').textContent = error.message; button.disabled = false; }
+    });
 
     document.querySelector('main.page').addEventListener('click', event => {
       if (event.target.closest('[data-stop]')) {
@@ -1171,6 +1249,7 @@
       if (els.campManageBtn) els.campManageBtn.hidden = !editMode || !isManager;
       if (els.campRenameBtn) els.campRenameBtn.hidden = !editMode || !isManager || !selectedCampId;
       if (els.managersBtn) els.managersBtn.hidden = !editMode || !isMaster;
+      document.getElementById('folderManageBtn').hidden = !hasStaffAccess() || !selectedCampId || currentTab !== 'teacher';
     }
 
     els.editModeBtn.addEventListener('click', () => {
@@ -1215,8 +1294,12 @@
       defaults = defaults || {};
       editingItemId = itemId || '';
       const item = itemId ? items.find(i => i.id === itemId) : null;
+      if (!hasStaffAccess() || (itemId && (!item || (!isManager && !canDeleteItem(item))))) return;
       dialogTab = (item && item.tab) || defaults.tab || currentTab;
       els.itemDialogTitle.textContent = itemId ? tr('editTitle') : tr('addTitle');
+      const folderNames = activeFolders().map(f => f.name);
+      if (item?.team && !folderNames.includes(item.team)) folderNames.push(item.team);
+      els.itemTeam.innerHTML = folderNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(teamLabel(name))}</option>`).join('');
       els.itemTeam.value = (item && item.team) || defaults.team || TEAM_WOLKO;
       updateDialogFieldsForTab();
       els.itemPerson.value = item ? (item.uploaderName || item.person || '') : uploaderName;
@@ -1295,6 +1378,7 @@
       els.itemDialogError.textContent = '';
       const originalLabel = btnEl.textContent;
       btnEl.disabled = true;
+      els.itemDialogSaveBtn.disabled = true;
       btnEl.textContent = tr('uploading');
       try {
         const form = new FormData();
@@ -1315,6 +1399,7 @@
         els.itemDialogError.textContent = error.message;
       } finally {
         btnEl.disabled = false;
+        els.itemDialogSaveBtn.disabled = els.uploadFileBtn.disabled || els.uploadBgmBtn.disabled;
         btnEl.textContent = originalLabel;
       }
     }
@@ -1336,6 +1421,7 @@
     });
 
     async function confirmDeleteItem(itemId) {
+      if (!canDeleteItem(items.find(i => i.id === itemId) || {})) return;
       if (!confirm(tr('deleteConfirm'))) return;
       try {
         const res = await fetch(`/api/teach/data?id=${encodeURIComponent(itemId)}`, {
@@ -1518,6 +1604,10 @@
     async function bootstrapData() {
       try {
         await loadCamps();
+        const folderRes = await fetch('/api/teach/folders', { headers: authHeaders() });
+        const folders = await folderRes.json();
+        if (!folderRes.ok) throw new Error(folders.error || tr('loadFailed'));
+        folderState = folders;
         render();
         await loadItems();
       } catch (error) {
