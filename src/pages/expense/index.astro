@@ -523,7 +523,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       // 승인 대기: 기본은 최소화 — 카테고리와 출금 계좌를 한 줄씩 읽기만 하고, 출금 계좌 글자를 누르면 그 자리에 드롭박스가 나타난다. 오른쪽 [확인]으로 확정한다.
       return `<div class="ex-cat ex-wd-pick" data-ci="${i}">
           <div class="ex-cf-rows">
-            <div class="ex-cf-row"><i>${esc(t('catLbl'))}</i><b title="${esc((r.account || '') + (src ? ' · ' + src : ''))}">${r.account ? esc(r.account) : '—'}${src ? ` <span class="ex-cf-src" title="${esc(t('srcLbl'))}">· ${esc(src)}</span>` : ''}</b></div>
+            <div class="ex-cf-row"><i>${esc(t('catLbl'))}</i><b title="${esc((r.account || '') + (r.account && src ? ' · ' : '') + src)}">${r.account ? esc(r.account) + (src ? ` <span class="ex-cf-src" title="${esc(t('srcLbl'))}">· ${esc(src)}</span>` : '') : (src ? esc(src) : '—')}</b></div>
             <div class="ex-cf-row has-actions"><i>${esc(t('wdLbl'))}</i>
               <select class="ex-select-plain ex-wd-select" data-cat="${i}" data-repid="${esc(rep.id)}" aria-label="${esc(t('wdLbl'))}">
                 <option value="">${esc(t('wdPick'))}</option>
