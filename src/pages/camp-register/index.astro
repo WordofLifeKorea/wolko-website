@@ -1435,14 +1435,21 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 #staffForm .crp-field input:not([type="checkbox"]):not([type="radio"]):hover,
 #staffForm .crp-field select:hover { border-bottom-color: #9bb6c3; }
 #staffForm .crp-field input:not([type="checkbox"]):not([type="radio"]):focus,
-#staffForm .crp-field select:focus { border-bottom: 2px solid var(--c-mid); background: transparent; box-shadow: none; }
+#staffForm .crp-field select:focus { border-bottom: 2px solid var(--c-mid); background-color: transparent; box-shadow: none; }
 #staffForm .crp-field select { background-position: right 2px center; }
-#staffForm #staffGender { width: 72px; max-width: 100%; align-self: flex-start; }
-#staffForm .staff-birth-grid { width: 204px; max-width: 100%; grid-template-columns: minmax(0, 1.36fr) repeat(2, minmax(0, 1fr)); }
+#staffForm #staffName { padding-right: 2px; }
+#staffForm #staffGender { width: 64px; max-width: 100%; align-self: flex-start; padding-right: 18px; }
+#staffForm .staff-birth-grid { width: 144px; max-width: 100%; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); gap: 4px; }
+#staffForm #staffGender,
+#staffForm .staff-birth-grid select {
+  appearance: none; -webkit-appearance: none; padding-right: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='m1 1 4 4 4-4' fill='none' stroke='%23334e5c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 1px center;
+}
 #staffForm .staff-applicant-grid { container-type: inline-size; }
-.staff-applicant-top { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 180px) 72px 204px; gap: 14px; }
-@container (max-width: 483px) {
-  .staff-applicant-top { grid-template-columns: minmax(0, 180px) 72px; }
+.staff-applicant-top { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(60px, 112px) 64px 144px; gap: 6px; }
+@container (max-width: 279px) {
+  .staff-applicant-top { grid-template-columns: minmax(0, 112px) 64px; }
   .staff-applicant-birth { grid-column: 1 / -1; }
 }
 #staffForm .crp-field textarea { background: #fff; }
@@ -2518,10 +2525,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <select id="staffBirthYear" name="birthYear" data-opt-ko="년도" data-opt-en="Year">
                 <option value="" disabled selected>년도</option>
               </select>
-              <select id="staffBirthMonth" name="birthMonth" data-opt-ko="월" data-opt-en="Month">
+              <select id="staffBirthMonth" name="birthMonth" data-opt-ko="월" data-opt-en="MM">
                 <option value="" disabled selected>월</option>
               </select>
-              <select id="staffBirthDay" name="birthDay" data-opt-ko="일" data-opt-en="Day">
+              <select id="staffBirthDay" name="birthDay" data-opt-ko="일" data-opt-en="DD">
                 <option value="" disabled selected>일</option>
               </select>
             </div>
