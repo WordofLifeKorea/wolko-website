@@ -222,6 +222,6 @@ test('resource dialog accepts dropped files and routes audio to BGM', () => {
   const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
   assert.match(page, /setupFileDrop/);
   assert.match(page, /uploadFile\(file, 'bgm'/);
-  assert.match(page, /uploadFile\(file, 'presentation'/);
+  assert.match(page, /receivePresentationFiles\(files\)/);
   assert.match(page, /\.tch-dialog\.is-drop-target/);
 });

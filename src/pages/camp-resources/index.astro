@@ -301,6 +301,14 @@
     .is-drop-target:not(.tch-dialog) { outline:2px dashed #0d9488; outline-offset:2px; }
     .tch-dialog.is-drop-target { outline:2px dashed #0d9488; outline-offset:-6px; background:rgba(13,148,136,.05); }
     .tch-dialog.is-drop-target .upload-placeholder-btn { border-color:#0d9488; color:#0d9488; }
+    .batch-upload { margin-bottom:16px; padding:12px; border:1px solid var(--border); border-radius:12px; background:#f5fafb; }
+    .batch-upload p { margin:0 0 10px; font-size:12px; line-height:1.6; }
+    .batch-upload progress { width:100%; accent-color:#0d9488; }
+    .batch-upload ul { list-style:none; padding:0; margin:8px 0 0; max-height:200px; overflow:auto; }
+    .batch-upload li { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); font-size:12px; }
+    .batch-upload li span:first-child { min-width:0; overflow-wrap:anywhere; }
+    .batch-upload li span:last-child { flex-shrink:0; }
+    .batch-upload li[data-status="failed"] { color:var(--red); }
     .upload-placeholder-btn[disabled] { opacity:.55; cursor:not-allowed; }
     .load-error-banner { margin-bottom:16px; padding:12px 16px; border:1px solid #f1c9cf; border-radius:var(--radius-md); background:#fff8f9; color:var(--red); font-size:12.5px; }
     .load-error-banner[hidden] { display:none; }
@@ -433,8 +441,13 @@
         <label data-ko="보관 파일 (선택)" data-en="Archive File (optional)">보관 파일 (선택)</label>
         <input id="itemArchiveUrl" type="url" data-ph-ko="업로드하면 자동 입력됩니다" data-ph-en="Auto-filled after upload" placeholder="업로드하면 자동 입력됩니다">
       </div>
-      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="보관 파일 업로드 또는 끌어다 놓기 (PDF·PPTX·이미지)" data-en="Upload or drop archive file (PDF/PPTX/Image)">보관 파일 업로드 또는 끌어다 놓기 (PDF·PPTX·이미지)</button>
-      <input id="uploadFileInput" type="file" accept=".pdf,.pptx,.png,.jpg,.jpeg,.webp,.gif,.heic,.heif" hidden>
+      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="파일 선택 / 여러 파일 끌어다 놓기 (PDF·PPTX·이미지)" data-en="Select or drop multiple files (PDF/PPTX/Images)">파일 선택 / 여러 파일 끌어다 놓기 (PDF·PPTX·이미지)</button>
+      <input id="uploadFileInput" type="file" accept=".pdf,.pptx,.png,.jpg,.jpeg,.webp,.gif,.heic,.heif" multiple hidden>
+      <div id="batchUpload" class="batch-upload" hidden>
+        <p data-ko="저장을 누르면 파일 이름을 제목으로 각각 등록합니다. 폴더와 캠프는 공통 적용되며 파일당 최대 20MB입니다. 실패한 파일은 저장을 다시 눌러 재시도할 수 있습니다." data-en="Save creates one resource per file, using its filename as the title. Folder and camps apply to all files. Maximum 20MB per file. Press Save again to retry failed files.">저장을 누르면 파일 이름을 제목으로 각각 등록합니다. 폴더와 캠프는 공통 적용되며 파일당 최대 20MB입니다. 실패한 파일은 저장을 다시 눌러 재시도할 수 있습니다.</p>
+        <progress id="batchUploadProgress" value="0" max="1" aria-label="Upload progress"></progress>
+        <ul id="batchUploadList" aria-live="polite"></ul>
+      </div>
       <div class="field" id="bgmFieldWrap">
         <div class="field-divider"></div>
         <label data-ko="BGM 링크 / 파일 (선택)" data-en="BGM Link / File (optional)">BGM 링크 / 파일 (선택)</label>
@@ -1300,6 +1313,11 @@
     }
 
     function openItemDialog(itemId, defaults) {
+      if (batchBusy || els.uploadFileBtn.disabled || (els.uploadBgmBtn.disabled && !batchFiles.length)) return;
+      batchFiles = [];
+      batchPayload = null;
+      els.itemTeam.disabled = false;
+      renderBatchFiles();
       defaults = defaults || {};
       editingItemId = itemId || '';
       const item = itemId ? items.find(i => i.id === itemId) : null;
@@ -1320,9 +1338,14 @@
       els.itemDialogError.textContent = '';
       els.itemDialogBackdrop.hidden = false;
     }
-    els.itemDialogCancelBtn.addEventListener('click', () => { els.itemDialogBackdrop.hidden = true; });
+    els.itemDialogCancelBtn.addEventListener('click', () => {
+      if (!batchBusy && !els.uploadFileBtn.disabled && !els.uploadBgmBtn.disabled) els.itemDialogBackdrop.hidden = true;
+      else if (!batchBusy && batchFiles.length) els.itemDialogBackdrop.hidden = true;
+    });
 
     async function saveItemFromDialog() {
+      if (batchBusy) return;
+      if (batchFiles.length) { await saveBatchFiles(); return; }
       const isTeacher = dialogTab === 'teacher';
       const hasBgm = dialogTab === 'program' || dialogTab === 'counselor';
       const campIds = [...els.campCheckboxList.querySelectorAll('input[type="checkbox"]:checked')].map(el => el.value);
@@ -1374,6 +1397,115 @@
     }
     els.itemDialogSaveBtn.addEventListener('click', saveItemFromDialog);
 
+    let batchFiles = [];
+    let batchBusy = false;
+    let batchPayload = null;
+    const presentationExtensions = /\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i;
+
+    function renderBatchFiles() {
+      const active = batchFiles.length > 0;
+      document.getElementById('batchUpload').hidden = !active;
+      const labels = currentLang === 'en'
+        ? { pending:'Ready', uploading:'Uploading', saving:'Saving', saved:'Saved', failed:'Failed' }
+        : { pending:'대기', uploading:'업로드 중', saving:'등록 중', saved:'완료', failed:'실패' };
+      document.getElementById('batchUploadList').innerHTML = batchFiles.map(entry =>
+        `<li data-status="${entry.status}" title="${escapeHtml(entry.error || entry.file.name)}"><span>${escapeHtml(entry.file.name)}${entry.error ? `<br>${escapeHtml(entry.error)}` : ''}</span><span>${labels[entry.status]}</span></li>`
+      ).join('');
+      const progress = document.getElementById('batchUploadProgress');
+      progress.max = batchFiles.length || 1;
+      progress.value = batchFiles.filter(entry => entry.status === 'saved').length;
+      [els.itemTitle, els.itemUrl, els.itemArchiveUrl, els.itemBgmUrl].forEach(input => { input.disabled = active; });
+      els.uploadBgmBtn.disabled = active;
+    }
+
+    async function receivePresentationFiles(files) {
+      files = Array.from(files || []);
+      if (!files.length || batchBusy || els.uploadFileBtn.disabled) return;
+      if (editingItemId && files.length > 1) {
+        els.itemDialogError.textContent = currentLang === 'en' ? 'Multiple files can only be added as new resources.' : '여러 파일은 새 자료 추가에서 등록해 주세요. 기존 자료 수정은 파일 하나만 가능합니다.';
+        return;
+      }
+      if (files.length === 1 && !batchFiles.length) {
+        await uploadFile(files[0], 'presentation', presentationExtensions, els.itemArchiveUrl, els.uploadFileBtn);
+        return;
+      }
+      if (batchPayload) {
+        els.itemDialogError.textContent = currentLang === 'en' ? 'Finish this batch before adding more files.' : '현재 목록을 등록한 후 새 자료 추가에서 파일을 추가해 주세요.';
+        return;
+      }
+      batchFiles.push(...files.map(file => ({ file, status:'pending', url:'', error:'' })));
+      els.itemDialogError.textContent = '';
+      renderBatchFiles();
+    }
+
+    async function uploadResourceFile(file, kind) {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('kind', kind);
+      const res = await fetch('/api/teach/upload', {
+        method:'POST', headers:{ Authorization:`Bearer ${token}` }, body:form,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || tr('uploadFailed'));
+      if (!data.url) throw new Error(tr('uploadFailed'));
+      return data.url;
+    }
+
+    async function saveBatchFiles() {
+      if (batchBusy) return;
+      const campIds = [...els.campCheckboxList.querySelectorAll('input[type="checkbox"]:checked')].map(el => el.value);
+      if (!campIds.length) { els.itemDialogError.textContent = tr('validationError'); return; }
+      if (dialogTab === 'teacher' && !els.itemTeam.value) { els.itemDialogError.textContent = tr('validationErrorTeam'); return; }
+      batchPayload = batchPayload || {
+        tab:dialogTab, team:dialogTab === 'teacher' ? els.itemTeam.value : '',
+        person:dialogTab === 'teacher' && els.itemTeam.value === TEAM_WOLKO ? els.itemPerson.value.trim() : '',
+        campIds, url:'', bgmUrl:'',
+      };
+      batchBusy = true;
+      els.itemDialogError.textContent = '';
+      const controls = [els.itemDialogSaveBtn, els.itemDialogCancelBtn, els.uploadFileBtn, els.itemTeam,
+        ...els.campCheckboxList.querySelectorAll('input')];
+      controls.forEach(control => { control.disabled = true; });
+      try {
+        // Keep writes sequential: the API updates a shared resource list.
+        for (const entry of batchFiles) {
+          if (entry.status === 'saved') continue;
+          entry.error = '';
+          try {
+            if (!presentationExtensions.test(entry.file.name)) throw new Error(tr('uploadBadType'));
+            if (entry.file.size > 20 * 1024 * 1024) throw new Error(tr('uploadTooBig'));
+            if (!entry.url) {
+              entry.status = 'uploading'; renderBatchFiles();
+              entry.url = await uploadResourceFile(entry.file, 'presentation');
+            }
+            entry.status = 'saving'; renderBatchFiles();
+            const res = await fetch('/api/teach/data', {
+              method:'POST', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+              body:JSON.stringify({ item:{ ...batchPayload,
+                title:entry.file.name.replace(presentationExtensions, '') || entry.file.name, archiveUrl:entry.url } }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || tr('saveFailed'));
+            items = data.items;
+            entry.status = 'saved';
+          } catch (error) { entry.status = 'failed'; entry.error = error.message; }
+          renderBatchFiles();
+        }
+        render();
+        const failed = batchFiles.filter(entry => entry.status !== 'saved').length;
+        if (failed) els.itemDialogError.textContent = currentLang === 'en'
+          ? `${failed} file(s) failed. Saved files will not be submitted again.`
+          : `${failed}개 파일이 실패했습니다. 저장을 다시 누르면 실패한 파일만 재시도합니다.`;
+        else els.itemDialogBackdrop.hidden = true;
+      } finally {
+        batchBusy = false;
+        controls.forEach(control => { control.disabled = false; });
+        // A retry must use the original folder and camps for the entire batch.
+        els.itemTeam.disabled = true;
+        els.campCheckboxList.querySelectorAll('input').forEach(control => { control.disabled = true; });
+      }
+    }
+
     async function uploadFile(file, kind, extRegex, targetInput, btnEl) {
       const MAX_SIZE = 20 * 1024 * 1024;
       if (!extRegex.test(file.name)) {
@@ -1390,17 +1522,7 @@
       els.itemDialogSaveBtn.disabled = true;
       btnEl.textContent = tr('uploading');
       try {
-        const form = new FormData();
-        form.append('file', file);
-        form.append('kind', kind);
-        const res = await fetch('/api/teach/upload', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: form,
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || tr('uploadFailed'));
-        targetInput.value = data.url;
+        targetInput.value = await uploadResourceFile(file, kind);
         if (kind === 'presentation' && !els.itemTitle.value.trim()) {
           els.itemTitle.value = file.name.replace(/\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i, '');
         }
@@ -1415,10 +1537,9 @@
 
     els.uploadFileBtn.addEventListener('click', () => els.uploadFileInput.click());
     els.uploadFileInput.addEventListener('change', async () => {
-      const file = els.uploadFileInput.files?.[0];
+      const files = Array.from(els.uploadFileInput.files || []);
       els.uploadFileInput.value = '';
-      if (!file) return;
-      await uploadFile(file, 'presentation', /\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i, els.itemArchiveUrl, els.uploadFileBtn);
+      await receivePresentationFiles(files);
     });
 
     els.uploadBgmBtn.addEventListener('click', () => els.uploadBgmInput.click());
@@ -1442,14 +1563,15 @@
         dialog.classList.remove('is-drop-target');
         if (pageHint) { pageHint.classList.remove('is-drop-target'); pageHint = null; }
       };
-      async function handleFile(file) {
-        if (!file || els.uploadFileBtn.disabled || els.uploadBgmBtn.disabled) return;
+      async function handleFiles(files) {
+        if (!files.length || batchBusy || els.uploadFileBtn.disabled) return;
+        const file = files[0];
         const isAudio = /\.(mp3|wav|m4a)$/i.test(file.name);
         const bgmVisible = els.uploadBgmBtn.offsetParent !== null;
-        if (isAudio && bgmVisible) {
+        if (files.length === 1 && !batchFiles.length && isAudio && bgmVisible) {
           await uploadFile(file, 'bgm', /\.(mp3|wav|m4a)$/i, els.itemBgmUrl, els.uploadBgmBtn);
         } else {
-          await uploadFile(file, 'presentation', /\.(pdf|pptx|png|jpe?g|webp|gif|heic|heif)$/i, els.itemArchiveUrl, els.uploadFileBtn);
+          await receivePresentationFiles(files);
         }
       }
       document.addEventListener('dragenter', event => {
@@ -1482,7 +1604,7 @@
         const open = dialogOpen();
         if (!open && !hasStaffAccess()) return;
         event.preventDefault();
-        const file = event.dataTransfer.files?.[0];
+        const files = Array.from(event.dataTransfer.files || []);
         const addBtn = !open && event.target.closest ? event.target.closest('[data-add-tab]') : null;
         clearHints();
         if (!open) {
@@ -1493,7 +1615,7 @@
           } : {});
           if (backdrop.hidden) return;
         }
-        await handleFile(file);
+        await handleFiles(files);
       });
     })();
 
