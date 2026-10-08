@@ -889,7 +889,7 @@ body.lang-en .crp-countdown-notice {
 .crp-scholarship-option { padding: 14px 16px; background: #fff; border-color: rgba(0,79,104,0.14); transition: border-color .15s, background .15s, box-shadow .15s; }
 .crp-scholarship-option:hover { border-color: rgba(13,148,136,0.45); }
 .crp-scholarship-option:has(input:checked) { border-color: #0d9488; background: rgba(13,148,136,0.06); box-shadow: 0 0 0 3px rgba(13,148,136,0.10); }
-.crp-scholarship-option:has(input:disabled) { opacity: .55; cursor: not-allowed; }
+.crp-scholarship-option:has(input[type="checkbox"]:disabled) { opacity: .55; cursor: not-allowed; }
 .crp-scholarship-option > span { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
 .crp-scholarship-option .crp-sch-note { margin: 0; font-size: 11.5px; line-height: 1.55; color: var(--c-muted); }
 .crp-sch-chip { display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(0,79,104,0.07); color: var(--c-deep); font-style: normal; font-size: 11.5px; font-weight: 800; }
@@ -2950,7 +2950,7 @@ function setWinterScholarshipMode() {
       var noteEn = item.note_en ? '<small class="crp-sch-note wl-en">' + item.note_en + '</small>' : '';
       var chipKo = item.reward ? '선차감 없음 · 암송 확인 후 지급' : item.amount.toLocaleString('ko-KR') + '원 할인';
       var chipEn = item.reward ? 'No upfront discount' : 'KRW ' + item.amount.toLocaleString('en-US') + ' off';
-      return '<label class="crp-scholarship-option' + (index ? ' crp-scholarship-option--count' : '') + '">' + (index ? '' : control) + '<span><strong class="wl-ko">' + item.ko + '</strong><strong class="wl-en">' + item.en + '</strong>' + noteKo + noteEn + '<em class="crp-sch-chip' + (item.reward ? ' is-reward' : '') + '"><b class="wl-ko">' + chipKo + (expired ? ' · 신청 기한 종료' : '') + '</b><b class="wl-en">' + chipEn + (expired ? ' · Closed' : '') + '</b></em></span>' + (key === 'sibling' ? '<input type="text" class="crp-sch-names" data-sibling-names maxlength="200" disabled placeholder="함께 참여하는 분 이름 (여러 명이면 쉼표로)" data-ph-ko="함께 참여하는 분 이름 (여러 명이면 쉼표로)" data-ph-en="Names of those attending with you (comma-separated)">' : '') + (index ? control : '') + '</label>';
+      return '<label class="crp-scholarship-option' + (index ? ' crp-scholarship-option--count' : '') + '">' + (index ? '' : control) + '<span><strong class="wl-ko">' + item.ko + '</strong><strong class="wl-en">' + item.en + '</strong>' + noteKo + noteEn + '<em class="crp-sch-chip' + (item.reward ? ' is-reward' : '') + '"><b class="wl-ko">' + chipKo + (expired ? ' · 신청 기한 종료' : '') + '</b><b class="wl-en">' + chipEn + (expired ? ' · Closed' : '') + '</b></em></span>' + (key === 'sibling' ? '<input type="text" class="crp-sch-names" data-sibling-names maxlength="200" disabled placeholder="함께 참여하는 캠퍼 이름" data-ph-ko="함께 참여하는 캠퍼 이름" data-ph-en="Name of the camper attending with you">' : '') + (index ? control : '') + '</label>';
     }).join('') : legacyScholarshipOptions[index];
   });
   document.getElementById('crpWinterScholarshipNotice').hidden = !winter;
@@ -3184,7 +3184,7 @@ function validateScholarshipDiscountDetails(counts) {
       return null;
     }
     if (!details.sibling.camperName) {
-      crpShowError(errorMsg, '함께 참여하는 분의 이름을 입력해 주세요.', 'Please enter the name of the person attending with you.');
+      crpShowError(errorMsg, '함께 참여하는 캠퍼 이름을 입력해 주세요.', 'Please enter the name of the camper attending with you.');
       if (winter) {
         var inlineName = document.querySelector('#' + (regTypeInput.value === 'group' ? 'crpScholarshipGroup' : 'crpScholarshipIndividual') + ' [data-sibling-names]');
         if (inlineName) { inlineName.scrollIntoView({ block: 'center', behavior: 'smooth' }); inlineName.focus(); }
