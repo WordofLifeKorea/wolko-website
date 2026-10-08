@@ -2176,7 +2176,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <span class="wl-en">Select applicable discounts</span>
             </label>
             <p id="crpWinterScholarshipNotice" hidden><span class="wl-ko">최대 두 항목 선택 가능 · 단체도 동일 적용 · 암송 장학금은 종료 후 확인하여 지급하며 참가비에서 미리 차감하지 않습니다.</span><span class="wl-en">Choose up to two options, including group registrations. The memorization award is verified after camp and is not deducted upfront.</span></p>
-            <label id="crpBestCamperConfirmation" class="crp-consent" hidden><input id="crpBestCamperEligible" type="checkbox"><span><strong class="wl-ko">Best Camper 적용 대상자는 지난 캠프 수상자이며, 누적 수상 횟수가 1회임을 확인합니다.</strong><strong class="wl-en">I confirm all Best Camper recipients won at the previous camp and have exactly one award in total.</strong></span></label>
+            <label id="crpBestCamperConfirmation" class="crp-consent" hidden><input id="crpBestCamperEligible" type="checkbox"><span><strong class="wl-ko">바로 지난 캠프의 Best Camper 수상자이며, 누적 수상 횟수가 1회임을 확인합니다. 그 이전 캠프 수상자는 해당하지 않습니다.</strong><strong class="wl-en">I confirm all recipients won Best Camper at the immediately preceding camp and have exactly one lifetime award. Winners from earlier camps are not eligible.</strong></span></label>
             <div class="crp-scholarship-options" id="crpScholarshipIndividual">
               <label class="crp-scholarship-option">
                 <input type="checkbox" name="scholarshipDiscount" value="wolbi_syme">
@@ -2916,6 +2916,7 @@ var legacyScholarshipOptions = ['crpScholarshipIndividual', 'crpScholarshipGroup
 function setWinterScholarshipMode() {
   var winter = usesWinterCampPolicy(campIdInput.value);
   CAMP_BASE_FEE = winter ? WINTER_CAMP_POLICY.fee : 499000;
+  if (winter) campDepositInput.value = String(WINTER_CAMP_POLICY.deposit);
   SCHOLARSHIP_DISCOUNTS = winter ? WINTER_CAMP_POLICY.discounts : legacyScholarshipDiscounts;
   ['crpScholarshipIndividual', 'crpScholarshipGroup'].forEach(function(id, index) {
     var container = document.getElementById(id);
@@ -3570,7 +3571,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       var paymentBalanceLabel = isEn ? 'KRW 0' : '0원';
 
       // 예약금 금액 표시 (단체는 인원 × 1인 예약금)
-      var depositAmt = parseInt(campDepositInput.value) || 0;
+      var depositAmt = usesWinterCampPolicy(payload.campId) ? WINTER_CAMP_POLICY.deposit : (parseInt(campDepositInput.value) || 0);
       var groupCnt = currentType === 'group' ? (payload.groupCount || 1) : 1;
       var totalDeposit = depositAmt * groupCnt;
       var depositEl = document.getElementById('crpDepositAmount');

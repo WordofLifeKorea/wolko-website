@@ -568,7 +568,7 @@ export async function onRequestPost(context) {
       try {
         winterQuote = winterCampQuote(scholarshipDiscounts, spotsNeeded);
         if (winterQuote.scholarshipDiscounts.excellent_camper && scholarshipDiscountDetails?.bestCamperEligible !== true) {
-          throw new Error('지난 캠프 Best Camper 수상 횟수가 1회인지 확인해주세요.');
+          throw new Error('바로 지난 캠프의 Best Camper 수상자이며 누적 수상 횟수가 1회인지 확인해주세요. 그 이전 캠프 수상자는 제외됩니다.');
         }
       } catch (error) {
         return Response.json({ error: error.message }, { status: 400, headers: CORS });

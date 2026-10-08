@@ -8,6 +8,16 @@ import { onRequestPost } from '../functions/api/register.js';
 
 const beforeDeadline = '2026-11-05T23:59:59.999+09:00';
 
+test('content schema retains deposits and the modal uses policy deposits after reset', () => {
+  const config = readFileSync(new URL('../src/content/config.ts', import.meta.url), 'utf8');
+  assert.match(config, /deposit_amount: z\.number\(\)\.int\(\)\.nonnegative\(\)\.optional\(\)/);
+  const page = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /if \(winter\) campDepositInput\.value = String\(WINTER_CAMP_POLICY\.deposit\)/);
+  assert.match(page, /getElementById\('crpForm'\)\.reset\(\);\s*setWinterScholarshipMode\(\)/);
+  assert.match(page, /바로 지난 캠프의 Best Camper 수상자/);
+  assert.match(policy.discounts.excellent_camper.ko, /그 이전 캠프 수상자는 제외/);
+});
+
 test('winter union camp uses the same policy in the card, form and API', async () => {
   assert.equal(usesWinterCampPolicy('2027-unity-winter'), true);
   assert.equal(usesWinterCampPolicy('2026-inland-union'), false);

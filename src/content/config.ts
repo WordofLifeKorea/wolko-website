@@ -96,6 +96,7 @@ const camp_schedule = defineCollection({
     deadline_en: z.string().optional(),
     price_ko: z.string().optional(),
     price_en: z.string().optional(),
+    deposit_amount: z.number().int().nonnegative().optional(),
     contact_phone: z.string().optional(),
     contact_email: z.string().optional(),
     notes_ko: z.string().optional(),
