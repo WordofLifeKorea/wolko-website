@@ -813,3 +813,12 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 :root:root .ex-wd-pick .ex-wd-select { border-color: transparent !important; background-color: transparent !important; box-shadow: none !important; height: 28px !important; min-height: 0 !important; padding-left: 0 !important; font-size: 13px !important; cursor: pointer; }
 :root:root .ex-wd-pick .ex-wd-select:hover { background-color: #f1f6f8 !important; }
 :root:root .ex-wd-pick .ex-wd-select:focus { background-color: #f1f6f8 !important; border-color: #cfe0e7 !important; outline: none; }
+
+/* v90 — 긴 출금 계좌 이름이 잘리지 않게: 카테고리·출금 계좌 칸을 넓히고, 글자는 조금 줄이고, 그래도 모자라면 확인 버튼을 아래로 내린다 */
+@media (min-width: 641px) {
+  .ex-table th:nth-child(2), .ex-table td:nth-child(2) { width: 36%; min-width: 270px; }
+  .ex-table td:nth-child(2) .ex-wd-pick { padding-right: 12px; }
+}
+:root:root .ex-wd-pick .ex-wd-select { font-size: 12.5px !important; padding-right: 22px !important; text-overflow: clip; }
+.ex-wd-pick .ex-cf-row.has-actions { flex-wrap: wrap; height: auto; min-height: 36px; row-gap: 2px; }
+.ex-wd-pick .ex-cf-row.has-actions .ex-wd-select { flex: 1 1 150px; }
