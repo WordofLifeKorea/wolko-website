@@ -6,7 +6,10 @@ const DATABASE = 'https://wolko-crs-default-rtdb.asia-southeast1.firebasedatabas
 const headers = { 'Cache-Control': 'no-store' };
 
 export async function onRequestPost({ request, env }) {
-  if (!env.CRS_REMINDER_SECRET || request.headers.get('Authorization') !== `Bearer ${env.CRS_REMINDER_SECRET}`) {
+  const authorization = request.headers.get('Authorization');
+  const authorized = [env.CRS_REMINDER_SECRET, env.KITCHEN_SCHEDULER_SECRET]
+    .filter(Boolean).some(secret => authorization === `Bearer ${secret}`);
+  if (!authorized) {
     return Response.json({ error: 'Unauthorized' }, { status: 401, headers });
   }
   if (!env.CAMP_KV || !env.FIREBASE_CRS_SERVICE_ACCOUNT || !env.RESEND_API_KEY) {

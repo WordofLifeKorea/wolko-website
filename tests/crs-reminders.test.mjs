@@ -119,6 +119,10 @@ test('endpoint dry run, delivery and subsequent run use real ledger flow without
   const request=(query='')=>new Request(`https://example.com/api/crs-reminders${query}`,{method:'POST',headers:{Authorization:'Bearer secret'}});
   const dry=await onRequestPost({request:request('?dryRun=1'),env});
   assert.equal(dry.status,200); assert.equal((await dry.json()).dryRun,true); assert.equal(sends,0); assert.equal(Object.keys(state).length,0);
+  const schedulerEnv = { ...env, CRS_REMINDER_SECRET:undefined, KITCHEN_SCHEDULER_SECRET:'scheduler' };
+  const schedulerRequest = new Request('https://example.com/api/crs-reminders?dryRun=1', {method:'POST',headers:{Authorization:'Bearer scheduler'}});
+  const schedulerDry = await onRequestPost({request:schedulerRequest,env:schedulerEnv});
+  assert.equal(schedulerDry.status,200); assert.equal(sends,0);
   const first=await onRequestPost({request:request(),env});
   assert.equal(first.status,200); assert.equal((await first.json()).sent,1);
   const second=await onRequestPost({request:request(),env});

@@ -18,6 +18,16 @@ function setup() {
 }
 const kst = value => Date.parse(value + '+09:00');
 
+test('CRS uses the existing scheduler credential when its legacy secret is absent', async () => {
+  const s = setup();
+  delete s.env.CRS_REMINDER_SECRET;
+  s.services.crs = async ({request}) => {
+    assert.equal(request.headers.get('Authorization'), 'Bearer scheduler');
+    return Response.json({sent:0});
+  };
+  assert.equal((await runReminderJobs(s.env, {services:s.services,dryRun:true})).failed, 0);
+});
+
 test('one scheduler runs every due job, preserving the independent credentials and ledgers', async () => {
   const s = setup(), options = { services:s.services, now:kst('2026-10-12T09:30:00') };
   const result = await runReminderJobs(s.env, options);

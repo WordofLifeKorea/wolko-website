@@ -13,7 +13,7 @@ export async function runReminderJobs(env, { dryRun = false, now = Date.now(), s
     { name:'kitchen', path:'/api/kitchen/reminders', secret:env.KITCHEN_REMINDER_SECRET || env.DRIVE_REMINDER_SECRET || env.CRS_REMINDER_SECRET || env.KITCHEN_SCHEDULER_SECRET, due:minutes >= 360 && minutes < 1320 },
     { name:'drive', path:'/api/car/drive-reminders', secret:env.DRIVE_REMINDER_SECRET || env.CRS_REMINDER_SECRET, due:minutes >= 360 && minutes < 1320 },
     { name:'staffing', path:'/api/staffing/weekly-reminder', secret:env.STAFFING_REMINDER_SECRET || env.KITCHEN_REMINDER_SECRET || env.DRIVE_REMINDER_SECRET || env.CRS_REMINDER_SECRET, due:kst.getUTCDay() === 1 && minutes >= 570 && minutes < 1320 },
-    { name:'crs', path:'/api/crs-reminders', secret:env.CRS_REMINDER_SECRET, due:minutes >= 557 && minutes < 1320, daily:true },
+    { name:'crs', path:'/api/crs-reminders', secret:env.CRS_REMINDER_SECRET || env.KITCHEN_SCHEDULER_SECRET, due:minutes >= 557 && minutes < 1320, daily:true },
   ];
   for (const job of definitions) {
     const base = { name:job.name, sent:0, failed:0 };

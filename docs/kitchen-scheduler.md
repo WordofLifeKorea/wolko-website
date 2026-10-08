@@ -36,6 +36,8 @@ From `workers/kitchen-scheduler`, authenticated Wrangler can run `npx wrangler d
 Set the same encrypted `KITCHEN_SCHEDULER_SECRET` on the production Pages project
 `wolko-website` and on this Worker. Redeploy Pages after changing its secret.
 Never commit the key. Existing reminder secrets are left unchanged.
+CRS also accepts this scheduler credential when no legacy `CRS_REMINDER_SECRET`
+is configured; Firebase and mail credentials stay solely in Pages.
 
 ## Verification
 
