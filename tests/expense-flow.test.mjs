@@ -927,3 +927,10 @@ test('회계 상세: 날짜는 영수증 사진 위, 품목 | 목적은 한 줄�
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /\.ex-d-text-label \{[^}]*text-overflow: ellipsis; white-space: nowrap;/);
 });
+
+test('폰 화면 카드: 금액이 카테고리·출금 줄 오른쪽 끝(같은 줄)에 온다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /td:nth-child\(3\) \{ grid-column: 1; grid-row: 4; \}/);
+  assert.match(css, /td:nth-child\(4\) \{ grid-column: 2; grid-row: 4; align-self: end;/);
+});
