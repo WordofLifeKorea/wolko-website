@@ -34,8 +34,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
    HERO
 ────────────────────────────── */
 .jr-hero {
-  background: #03334a;
-  padding: 148px 40px 80px;
+  background:
+    linear-gradient(90deg, rgba(3,51,74,0.95) 0%, rgba(3,51,74,0.84) 42%, rgba(3,51,74,0.4) 100%),
+    linear-gradient(180deg, rgba(3,51,74,0.35) 0%, rgba(3,51,74,0.7) 100%),
+    url('/images/syme-community.jpg') center 42% / cover no-repeat,
+    #03334a;
+  padding: 148px 40px 96px;
   position: relative;
   overflow: hidden;
 }
@@ -74,7 +78,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 .jr-hero-sub {
   font-size: clamp(15px, 1.8vw, 17px);
   line-height: 1.9;
-  color: rgba(255,255,255,0.62);
+  color: rgba(255,255,255,0.82);
   max-width: 500px;
 }
 
@@ -300,7 +304,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 /* ── 반응형 ── */
 @media (max-width: 700px) {
-  .jr-hero { padding: 120px 24px 64px; }
+  .jr-hero { padding: 120px 24px 72px; background-position: center, center, 62% center, center; }
   .jr-statsbar-inner { grid-template-columns: 1fr; }
   .jr-sbar { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
   .jr-sbar:last-child { border-bottom: none; }
