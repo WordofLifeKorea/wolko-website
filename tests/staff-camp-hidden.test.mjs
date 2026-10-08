@@ -46,3 +46,10 @@ test('스태프 지원서: 섹션마다 옅은 배경, 한 줄 입력칸은 아�
   assert.match(reg, /#staffForm \.crp-field select\s*\{\s*border: 0; border-bottom: 1\.5px solid #d3e0e7;/);
   assert.match(reg, /#staffForm \.crp-field textarea \{ background: #fff; \}/);
 });
+
+test('스태프 지원서 첫 섹션: 이름 | 성별 / 생년월일 전체 / 전화번호 | 이메일, 칸은 열 폭을 채운다', () => {
+  const reg = read('src/pages/camp-register/index.astro');
+  assert.match(reg, /#staffForm \.crp-form-grid \{ display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/);
+  assert.match(reg, /#staffForm \.crp-form-grid > \.crp-field--full \{ grid-column: 1 \/ -1; \}/);
+  assert.match(reg, /width: 100% !important; field-sizing: fixed;/);
+});
