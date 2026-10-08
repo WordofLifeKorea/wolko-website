@@ -1,4 +1,5 @@
 import { NAS_FILE_KEY, nasStorageConfig, nasFileRequest } from '../../../lib/teachNasStorage.js';
+import { LEGACY_TEACH_KEY, migrationMapKey } from '../../../lib/teachNasMigration.js';
 
 function getTeachFileStore(env) {
   const bucket = env.TEACH_FILES || env.CAMP_RESOURCES_FILES || env.CAMP_FILES || env.R2_BUCKET || env.BUCKET;
@@ -17,7 +18,11 @@ function decodeKey(value) {
 
 export async function onRequestGet(context) {
   const { env, params } = context;
-  const nasKey = decodeKey(String(params.key || ''));
+  let nasKey = decodeKey(String(params.key || ''));
+  if (LEGACY_TEACH_KEY.test(nasKey) && env.CAMP_KV?.get) {
+    const migrated = await env.CAMP_KV.get(migrationMapKey(nasKey), 'json');
+    if (migrated?.nasKey && NAS_FILE_KEY.test(migrated.nasKey)) nasKey = migrated.nasKey;
+  }
   if (nasKey.startsWith('nas-')) {
     if (!NAS_FILE_KEY.test(nasKey)) return new Response('Not found', { status:404 });
     try {

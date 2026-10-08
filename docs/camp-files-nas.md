@@ -48,6 +48,23 @@ User-confirmed target: Synology DS423+, volume1, 28.4TB free reported on
 
 ## Verification and operations
 
+### Existing files
+
+`scripts/migrate-teach-nas.mjs` copies legacy resource uploads sequentially through
+the server-only maintenance endpoint. Load TEACH_NAS_TOKEN from the private NAS
+setup environment, never from client JavaScript. Each file is SHA-256 verified
+before a CAMP_KV mapping switches its original URL to NAS. Retries use deterministic
+destinations and verify existing NAS bytes rather than overwriting them. Source
+files remain intact. The local JSON report records keys, hashes, sizes and failures.
+External links and unrelated website assets are not downloaded or migrated.
+
+Physical files live under `/volume1/docker/wolko-camp-files/data/nas-UUID.ext/`:
+`data` contains the original bytes; `metadata.json` contains type and download name.
+Year/camp/category/uploader organization remains in resource-card metadata in
+CAMP_KV, not separate disk folders. Do not rename these directories manually.
+Deleting a resource card does not purge its physical upload. No automatic storage
+purge or backup cleanup is part of this migration.
+
 - Unauthorized requests must return 401. A valid token must allow PUT and GET of
   a nas-UUID.ext key. Verify an uploaded PDF, DOCX and ZIP through the portal.
 - Test existing Cloudflare file URLs after activation. No mass migration is automatic.
