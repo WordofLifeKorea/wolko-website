@@ -53,3 +53,8 @@ test('스태프 지원서 첫 섹션: 이름 | 성별 / 생년월일 전체 / �
   assert.match(reg, /#staffForm \.crp-form-grid > \.crp-field--full \{ grid-column: 1 \/ -1; \}/);
   assert.match(reg, /width: 100% !important; field-sizing: fixed;/);
 });
+
+test('폰에서도 청록색 제출 버튼의 그림자는 청록색 (빨간 그림자가 겹치지 않는다)', () => {
+  const reg = read('src/pages/camp-register/index.astro');
+  assert.match(reg, /\.crp-submit--teal \{ box-shadow: 0 10px 30px rgba\(13,148,136,0\.34\); \}/);
+});
