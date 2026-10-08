@@ -895,3 +895,10 @@ test('표 열 순서: 날짜 | 품목·목적 | 출금 계좌(카테고리) | �
   const pos = [rows.indexOf("esc(r.when || '')"), rows.indexOf('ex-item-split'), rows.indexOf('catCell(rep, r, i, st)'), rows.indexOf('krw(r.amountKrw)')];
   assert.ok(pos.every((v, i) => v > -1 && (i === 0 || v > pos[i - 1])), '날짜 → 품목·목적 → 출금 계좌 → 금액');
 });
+
+test('승인 대기·회계 업무: 항목마다 아주 옅은 배경', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-card \.ex-table tbody td \{ background: #f7fafc;/);
+  assert.match(css, /\.ex-d-item \{ background: #f7fafc; border-radius: 10px;/);
+});
