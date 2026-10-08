@@ -174,7 +174,6 @@ html, body {
 .car-tab-add svg { flex-shrink: 0; }
 
 /* ── CALENDAR ── */
-.cal-flanking-row { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
 .car-calendar {
   flex: 1; min-width: 0;
   margin-bottom: 0;
@@ -184,31 +183,8 @@ html, body {
   background: var(--card);
 }
 
-/* ── 이전/다음 달 미리보기(넓은 화면에서만, 캘린더 양옆) ── */
-.cal-mini {
-  display: none; flex-direction: column; flex: 0 0 220px; width: 220px; padding: 12px;
-  border-radius: 14px; border: 1px solid var(--border); background: #fafcfd;
-}
-.cal-mini-header {
-  margin: 0 0 8px; padding: 4px 6px; border: none; background: none; border-radius: 6px;
-  font: 800 11.5px/1 var(--f-body); color: var(--mid); text-align: center; cursor: pointer;
-}
-.cal-mini-header:hover { background: var(--bg); color: var(--blue); }
-.cal-mini-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; min-width: 0; }
-.cal-mini-cell {
-  width: 100%; min-width: 0; min-height: 0 !important; padding: 0;
-  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
-  border: none; border-radius: 6px; background: transparent; color: var(--mid); font: 600 9.5px/1 var(--f-body); cursor: pointer;
-}
-.cal-mini-cell:hover:not(:disabled) { background: var(--bg); }
-.cal-mini-cell:disabled { cursor: default; }
-.cal-mini-cell.is-outside { visibility: hidden; }
-.cal-mini-cell.is-today { background: var(--blue); color: #fff; font-weight: 800; }
-.cal-mini-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--blue); }
-.cal-mini-cell.is-today .cal-mini-dot { background: #fff; }
 @media (min-width: 1500px) {
   .car-wrap { max-width: 1680px; }
-  .cal-mini { display: flex; }
 }
 .cal-header {
   display: flex;
@@ -662,3 +638,16 @@ html, body {
 .cal-daynum-cell { min-height: 132px !important; }
 @media (max-width: 640px) { .cal-daynum-cell { min-height: 104px !important; } }
 @media (max-width: 640px) { .car-view-tabs-4 .car-view-tab { padding: 10px 2px; font-size: 11.5px; } .car-view-tabs-4 .car-view-tab svg { display: none; } }
+
+/* ══ 예약현황 — 좌우 이전/다음 달 미리보기는 없애고, 달력을 조금 낮춰 선택한 날의 세부 예약이 바로 보이게 한다.
+   넓은 화면: 달력은 왼쪽, 그날의 세부 예약은 오른쪽(스크롤해도 따라온다) · 좁은 화면: 달력 바로 아래 ══ */
+#reservationsView.res-layout:not(.hidden) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); gap: 16px; align-items: start; }
+#reservationsView.res-layout > .car-calendar { margin-bottom: 0; }
+.car-day-panel { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; min-width: 0; }
+.car-day-panel .car-selected-date-bar { margin-top: 0; }
+@media (max-width: 1100px) {
+  #reservationsView.res-layout:not(.hidden) { grid-template-columns: minmax(0, 1fr); }
+  .car-day-panel { position: static; max-height: none; overflow: visible; }
+}
+.cal-daynum-cell { min-height: 96px !important; }
+@media (max-width: 640px) { .cal-daynum-cell { min-height: 78px !important; } }
