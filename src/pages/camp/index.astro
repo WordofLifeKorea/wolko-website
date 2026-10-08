@@ -6,6 +6,7 @@ import { isCampVisibleOnPublicSite } from '../../utils/campVisibility';
 const allSchedules = await getCollection('camp_schedules');
 const schedules = allSchedules
   .filter(isCampVisibleOnPublicSite)
+  .filter(s => !s.data.public_card_hidden)
   .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
 
 const jejuCamps  = schedules.filter(s => s.data.camp_type === 'jeju');

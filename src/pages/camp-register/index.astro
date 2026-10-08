@@ -4,12 +4,16 @@ import { getCollection } from 'astro:content';
 import { isCampVisibleOnPublicSite } from '../../utils/campVisibility';
 
 const allSchedules = await getCollection('camp_schedules');
-const schedules = allSchedules
+const visibleAll = allSchedules
   .filter(isCampVisibleOnPublicSite)
   .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
+const schedules = visibleAll.filter(s => !s.data.public_card_hidden); // 공개 캠프 카드
 
 const jejuCamps   = schedules.filter(s => s.data.camp_type === 'jeju');
 const inlandCamps = schedules.filter(s => s.data.camp_type !== 'jeju');
+// 스태프 지원의 체크박스 목록은 카드에서 숨긴 캠프(예: 우리학교 캠프)도 포함한다
+const staffInland = visibleAll.filter(s => s.data.camp_type !== 'jeju');
+const staffJeju = visibleAll.filter(s => s.data.camp_type === 'jeju');
 
 const typeLabel: Record<string, { ko: string; en: string }> = {
   english: { ko: '영어캠프', en: 'English Camp' },
@@ -1840,7 +1844,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           </div>
         )}
         <ul id="staffCampOptions" hidden>
-          {[...inlandCamps, ...jejuCamps].filter((s) => !s.data.staff_application_hidden).map((s) => (
+          {[...staffInland, ...staffJeju].filter((s) => !s.data.staff_application_hidden).map((s) => (
             <li
               data-camp-id={s.id}
               data-region={s.data.camp_type === 'jeju' ? 'jeju' : 'inland'}
