@@ -879,3 +879,10 @@ test('승인 대기 표·회계 상세: 한 줄짜리 칸도 세로 가운데 �
   assert.match(css, /\.ex-item-split \{ align-items: center; \}/);
   assert.match(css, /\.ex-d-item \{ align-items: center; \}/);
 });
+
+test('작성 폼: 영수증 버튼 말고는 글자가 굵지 않다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-row \.ex-r2 \.ex-amt[^{]*\{ font-weight: 400 !important; \}/);
+  assert.match(css, /\.ex-row \.ex-btn\.ex-attach \{ font-weight: 700 !important; \}/);
+});
