@@ -1,0 +1,116 @@
+---
+// 마스터 전용 알림톡 점검 — 설정 여부 확인과 시험 발송(본인 번호로 1건).
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>알림톡 점검 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <style is:global>
+    :root { --ink:#132c37; --muted:#607681; --line:#dbe7eb; --deep:#004f68; --ok:#15803d; --bad:#b91c1c; --bg:#f6fafc; }
+    @media (prefers-color-scheme: dark) { :root { --ink:#e6f0f4; --muted:#9db3bd; --line:#2a4350; --deep:#73d1f5; --ok:#4ade80; --bad:#f87171; --bg:#0f2029; } }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 16px 64px; background:var(--bg); color:var(--ink); font:15px/1.6 'Noto Sans KR', system-ui, sans-serif; }
+    main { max-width:760px; margin:0 auto; display:grid; gap:18px; }
+    h1 { font-size:22px; margin:0; }
+    p.sub { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    section { background:color-mix(in srgb, var(--bg) 40%, #fff 0%); border:1px solid var(--line); border-radius:14px; padding:18px; }
+    input { width:100%; height:44px; padding:0 12px; border:1px solid var(--line); border-radius:10px; background:transparent; color:inherit; font:inherit; }
+    button { height:40px; padding:0 16px; border:0; border-radius:10px; background:var(--deep); color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+    @media (prefers-color-scheme: dark) { button { color:#00303f; } }
+    button:disabled { opacity:.5; cursor:default; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .grid { display:grid; gap:10px; }
+    .item { display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:center; padding:12px 0; border-top:1px solid var(--line); }
+    .item:first-child { border-top:0; }
+    .item small { grid-column:1 / -1; color:var(--muted); }
+    .tag { display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:800; }
+    .tag.ok { color:var(--ok); background:color-mix(in srgb, var(--ok) 14%, transparent); }
+    .tag.bad { color:var(--bad); background:color-mix(in srgb, var(--bad) 14%, transparent); }
+    .msg { font-size:13px; min-height:1.2em; }
+    .msg.ok { color:var(--ok); } .msg.bad { color:var(--bad); }
+    [hidden] { display:none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <div>
+      <h1>알림톡 점검</h1>
+      <p class="sub">마스터 계정 전용. 설정 값은 보여주지 않고 있음/없음만 표시합니다. 시험 발송은 입력한 번호 1건에게만, 알림톡으로만 갑니다(문자 대체 없음).</p>
+    </div>
+
+    <section id="loginBox">
+      <div class="grid">
+        <input id="email" type="email" placeholder="이메일" autocomplete="username">
+        <input id="password" type="password" placeholder="비밀번호" autocomplete="current-password">
+        <div class="row"><button id="loginBtn" type="button">로그인</button><span id="loginMsg" class="msg bad"></span></div>
+      </div>
+    </section>
+
+    <div id="app" hidden class="grid">
+      <section>
+        <strong>공통 설정</strong>
+        <div id="common" class="row" style="margin-top:10px"></div>
+      </section>
+      <section>
+        <strong>시험 발송 받을 번호</strong>
+        <div class="row" style="margin-top:10px"><input id="phone" inputmode="tel" placeholder="01012345678" style="max-width:220px"><span id="sendMsg" class="msg"></span></div>
+      </section>
+      <section><div id="flows"></div></section>
+      <p class="sub">"접수"는 솔라피가 요청을 받았다는 뜻입니다. 폰에 도착했는지는 솔라피 콘솔의 발송 내역에서 확인하세요.</p>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function () {
+      var KEY = 'wolko-hub-token';
+      var $ = function (id) { return document.getElementById(id); };
+      function headers(json) { var h = { Authorization: 'Bearer ' + (sessionStorage.getItem(KEY) || '') }; if (json) h['Content-Type'] = 'application/json'; return h; }
+      function tag(ok, yes, no) { return '<span class="tag ' + (ok ? 'ok' : 'bad') + '">' + (ok ? yes : no) + '</span>'; }
+      var COMMON = { solapiKey: '솔라피 키', solapiSecret: '솔라피 시크릿', senderPhone: '발신번호', kakaoChannel: '카카오 채널', adminNotifyPhone: '관리자 알림 번호', schedulerSecret: '스케줄러 비밀키' };
+      async function load() {
+        var res = await fetch('/api/portal/notify-check', { headers: headers() });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { $('app').hidden = true; $('loginBox').hidden = false; $('loginMsg').textContent = data.error || '확인하지 못했습니다.'; return; }
+        $('loginBox').hidden = true; $('app').hidden = false;
+        $('common').innerHTML = Object.keys(COMMON).map(function (k) { return '<span>' + COMMON[k] + ' ' + tag(data.common[k], '있음', '없음') + '</span>'; }).join('');
+        $('flows').innerHTML = data.flows.map(function (f) {
+          return '<div class="item"><span><strong>' + f.label + '</strong> ' + tag(f.templateSet, '템플릿 설정됨', '템플릿 없음') + '</span>' +
+            '<button type="button" data-flow="' + f.id + '"' + (f.templateSet ? '' : ' disabled') + '>시험 발송</button>' +
+            '<small>' + f.template + '</small><small class="msg" id="r-' + f.id + '"></small></div>';
+        }).join('');
+      }
+      $('flows').addEventListener('click', async function (e) {
+        var btn = e.target.closest('button[data-flow]'); if (!btn) return;
+        var phone = $('phone').value.trim();
+        var out = $('r-' + btn.dataset.flow);
+        if (!phone) { $('sendMsg').textContent = '받을 번호를 먼저 입력해 주세요.'; $('sendMsg').className = 'msg bad'; return; }
+        $('sendMsg').textContent = '';
+        btn.disabled = true; out.className = 'msg'; out.textContent = '보내는 중…';
+        try {
+          var res = await fetch('/api/portal/notify-check', { method: 'POST', headers: headers(true), body: JSON.stringify({ flow: btn.dataset.flow, phone: phone }) });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok || !data.ok) throw new Error(data.error || '발송하지 못했습니다.');
+          out.className = 'msg ok'; out.textContent = '접수됨' + (data.solapiGroupId ? ' (그룹 ' + data.solapiGroupId + ')' : '') + ' — 솔라피 발송 내역에서 도착 여부를 확인하세요.';
+        } catch (err) { out.className = 'msg bad'; out.textContent = err.message; }
+        finally { btn.disabled = false; }
+      });
+      $('loginBtn').addEventListener('click', async function () {
+        $('loginMsg').textContent = '';
+        try {
+          var res = await fetch('/api/hub/account-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('email').value, password: $('password').value }) });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok) throw new Error(data.error || '로그인하지 못했습니다.');
+          sessionStorage.setItem(KEY, data.hubToken); $('password').value = '';
+          await load();
+        } catch (err) { $('loginMsg').textContent = err.message; }
+      });
+      if (sessionStorage.getItem(KEY)) load();
+    })();
+  </script>
+</body>
+</html>
