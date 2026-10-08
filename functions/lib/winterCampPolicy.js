@@ -6,10 +6,10 @@ export const WINTER_CAMP_POLICY = {
   deposit: 50000,
   earlyBirdUntil: '2026-11-05T23:59:59.999+09:00',
   discounts: {
-    early_bird: { amount: 50000, ko: 'Early Bird · 2026년 11월 5일까지 신청', en: 'Early Bird · Apply by November 5, 2026' },
-    sibling: { amount: 50000, ko: '친구 · 지인 · 가족과 함께 참여', en: 'Attend with a friend, acquaintance, or family member' },
-    james_memory: { amount: 0, reward: 100000, ko: '야고보서 1–5장 전체 암송', en: 'Memorize James 1–5', note_ko: '성경 암송 테스트 통과시 10만원 환급 또는 10만원 상당 선물', note_en: 'Pass the Bible memorization test for a KRW 100,000 refund or equivalent gift' },
-    excellent_camper: { amount: 200000, ko: '베스트 캠퍼', en: 'Best Camper', note_ko: '바로 직전 캠프의 베스트 캠퍼만 해당됩니다.', note_en: 'Applies only to the Best Camper of the immediately preceding camp.' },
+    early_bird: { amount: 50000, ko: 'Early Bird · 2026년 11월 5일까지 신청', en: 'Early Bird · Sign up by November 5, 2026' },
+    sibling: { amount: 50000, ko: '친구 · 지인 · 가족과 함께 참여', en: 'Joining with a friend or family member' },
+    james_memory: { amount: 0, reward: 100000, ko: '야고보서 1–5장 전체 암송', en: 'Memorize James 1–5', note_ko: '성경 암송 테스트 통과시 10만원 환급 또는 10만원 상당 선물', note_en: 'Pass the Bible memorization test and get KRW 100,000 back (or a gift worth the same!)' },
+    excellent_camper: { amount: 200000, ko: '베스트 캠퍼', en: 'Best Camper', note_ko: '바로 직전 캠프의 베스트 캠퍼만 해당됩니다.', note_en: 'Just for the Best Camper of the camp right before this one.' },
   },
 };
 

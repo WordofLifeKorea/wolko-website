@@ -2202,7 +2202,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <span class="wl-ko">해당되는 할인 항목 선택</span>
               <span class="wl-en">Select applicable discounts</span>
             </label>
-            <p id="crpWinterScholarshipNotice" hidden><span class="wl-ko">최대 두 항목 선택 가능 (베스트 캠퍼는 별도, 중복 선택 가능) · 단체도 동일 적용 · 암송 장학금은 종료 후 확인하여 지급하며 참가비에서 미리 차감하지 않습니다.</span><span class="wl-en">Choose up to two options (Best Camper does not count toward this limit), including group registrations. The memorization award is verified after camp and is not deducted upfront.</span></p>
+            <p id="crpWinterScholarshipNotice" hidden><span class="wl-ko">최대 두 항목 선택 가능 (베스트 캠퍼는 별도, 중복 선택 가능) · 단체도 동일 적용 · 암송 장학금은 종료 후 확인하여 지급하며 참가비에서 미리 차감하지 않습니다.</span><span class="wl-en">Pick up to two options, and it works for groups too! Best Camper is a bonus and doesn't count toward the limit. The memorization reward is given after camp once we've checked, so it isn't taken off your fee upfront.</span></p>
             <div class="crp-scholarship-options" id="crpScholarshipIndividual">
               <label class="crp-scholarship-option">
                 <input type="checkbox" name="scholarshipDiscount" value="wolbi_syme">
@@ -2261,7 +2261,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <select class="crp-scholarship-count" name="scholarshipDiscountCount" data-discount="excellent_camper"></select>
               </label>
             </div>
-            <label id="crpBestCamperConfirmation" class="crp-consent" hidden><input id="crpBestCamperEligible" type="checkbox"><span><strong class="wl-ko">바로 지난 캠프의 Best Camper 수상자임을 확인합니다. 그 이전 캠프 수상자는 해당하지 않습니다.</strong><strong class="wl-en">I confirm all recipients won Best Camper at the immediately preceding camp. Winners from earlier camps are not eligible.</strong></span></label>
+            <label id="crpBestCamperConfirmation" class="crp-consent" hidden><input id="crpBestCamperEligible" type="checkbox"><span><strong class="wl-ko">바로 지난 캠프의 Best Camper 수상자임을 확인합니다. 그 이전 캠프 수상자는 해당하지 않습니다.</strong><strong class="wl-en">Yes, everyone claiming this was Best Camper at the camp right before this one. (Winners from earlier camps don't qualify.)</strong></span></label>
             <div class="crp-scholarship-details" id="crpScholarshipDetails" hidden>
               <div class="crp-scholarship-detail" id="crpWolbiSymeDetail" hidden>
                 <strong class="crp-scholarship-detail-title">
@@ -2955,8 +2955,8 @@ function setWinterScholarshipMode() {
       var noteKo = item.note_ko ? '<small class="crp-sch-note wl-ko">' + item.note_ko + '</small>' : '';
       var noteEn = item.note_en ? '<small class="crp-sch-note wl-en">' + item.note_en + '</small>' : '';
       var chipKo = item.reward ? '선차감 없음 · 암송 확인 후 지급' : item.amount.toLocaleString('ko-KR') + '원 할인';
-      var chipEn = item.reward ? 'No upfront discount' : 'KRW ' + item.amount.toLocaleString('en-US') + ' off';
-      return '<label class="crp-scholarship-option' + (index ? ' crp-scholarship-option--count' : '') + '">' + (index ? '' : control) + '<span><strong class="wl-ko">' + item.ko + '</strong><strong class="wl-en">' + item.en + '</strong>' + noteKo + noteEn + '<em class="crp-sch-chip' + (item.reward ? ' is-reward' : '') + '"><b class="wl-ko">' + chipKo + (expired ? ' · 신청 기한 종료' : '') + '</b><b class="wl-en">' + chipEn + (expired ? ' · Closed' : '') + '</b></em></span>' + (key === 'sibling' ? '<input type="text" class="crp-sch-names" data-sibling-names maxlength="200" disabled placeholder="함께 참여하는 캠퍼 이름" data-ph-ko="함께 참여하는 캠퍼 이름" data-ph-en="Name of the camper attending with you">' : '') + (index ? control : '') + '</label>';
+      var chipEn = item.reward ? 'Reward after camp' : 'KRW ' + item.amount.toLocaleString('en-US') + ' off';
+      return '<label class="crp-scholarship-option' + (index ? ' crp-scholarship-option--count' : '') + '">' + (index ? '' : control) + '<span><strong class="wl-ko">' + item.ko + '</strong><strong class="wl-en">' + item.en + '</strong>' + noteKo + noteEn + '<em class="crp-sch-chip' + (item.reward ? ' is-reward' : '') + '"><b class="wl-ko">' + chipKo + (expired ? ' · 신청 기한 종료' : '') + '</b><b class="wl-en">' + chipEn + (expired ? ' · Closed' : '') + '</b></em></span>' + (key === 'sibling' ? '<input type="text" class="crp-sch-names" data-sibling-names maxlength="200" disabled placeholder="함께 참여하는 캠퍼 이름" data-ph-ko="함께 참여하는 캠퍼 이름" data-ph-en="Name of the camper joining you">' : '') + (index ? control : '') + '</label>';
     }).join('') : legacyScholarshipOptions[index];
   });
   document.getElementById('crpWinterScholarshipNotice').hidden = !winter;
@@ -3167,7 +3167,7 @@ function validateScholarshipDiscountDetails(counts) {
     try { winterCampQuote(counts, Math.max(1, scholarshipParticipantCount())); }
     catch (error) { crpShowError(errorMsg, error.message, 'Please check the scholarship options and Early Bird deadline.'); return null; }
     if (counts.excellent_camper && !document.getElementById('crpBestCamperEligible').checked) {
-      crpShowError(errorMsg, 'Best Camper 수상 조건을 확인해주세요.', 'Please confirm Best Camper eligibility.');
+      crpShowError(errorMsg, 'Best Camper 수상 조건을 확인해주세요.', 'Please tick the box to confirm Best Camper eligibility.');
       return null;
     }
   }
@@ -3190,7 +3190,7 @@ function validateScholarshipDiscountDetails(counts) {
       return null;
     }
     if (!details.sibling.camperName) {
-      crpShowError(errorMsg, '함께 참여하는 캠퍼 이름을 입력해 주세요.', 'Please enter the name of the camper attending with you.');
+      crpShowError(errorMsg, '함께 참여하는 캠퍼 이름을 입력해 주세요.', 'Please enter the name of the camper joining you.');
       if (winter) {
         var inlineName = document.querySelector('#' + (regTypeInput.value === 'group' ? 'crpScholarshipGroup' : 'crpScholarshipIndividual') + ' [data-sibling-names]');
         if (inlineName) { inlineName.scrollIntoView({ block: 'center', behavior: 'smooth' }); inlineName.focus(); }
