@@ -1,9 +1,9 @@
 /**
- * GET    /api/car/vehicles      — list missionary vehicles (Silver Van/Santa Fe are built into the frontend, not stored here)
+ * GET    /api/car/vehicles      — list missionary vehicles (Silver Carnival/Santa Fe are built into the frontend, not stored here)
  * POST   /api/car/vehicles      — add a missionary vehicle { name }
  * DELETE /api/car/vehicles?id=  — remove a missionary vehicle
  *
- * 메인랜드 선교사 차량 목록. WOLKO 소유 차량(Silver Van/Santa Fe)과 달리 선교사는
+ * 메인랜드 선교사 차량 목록. WOLKO 소유 차량(Silver Carnival/Santa Fe)과 달리 선교사는
  * 계속 늘거나 바뀌므로 하드코딩하지 않고 KV에 배열로 저장해 관리자가 직접 추가/삭제한다.
  * KV key: car:vehicles:missionary → [{ id, name, addedAt }]
  */

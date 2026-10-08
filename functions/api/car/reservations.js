@@ -18,7 +18,7 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
 };
 
-const BUILTIN_VEHICLE_LABELS = { 'silver-van': 'Silver Van', 'santa-fe': 'Santa Fe' };
+const BUILTIN_VEHICLE_LABELS = { 'silver-van': 'Silver Carnival', 'santa-fe': 'Santa Fe' };
 const KV_PREFIX = 'car:res:';
 const VEHICLES_KV_KEY = 'car:vehicles:missionary';
 

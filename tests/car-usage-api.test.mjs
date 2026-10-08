@@ -101,7 +101,7 @@ test('a rejected account cannot use an existing signed session', async () => {
   assert.equal((await saveUsage({ env, request: postRequest(token) })).status, 401);
 });
 
-test('usage log offers only Silver Van and Santa Fe, even if missionary vehicles exist', async () => {
+test('usage log offers only Silver Carnival and Santa Fe, even if missionary vehicles exist', async () => {
   const env = memoryEnv();
   const email = 'driver@wol.org';
   await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: '운전자', status: 'approved' }));

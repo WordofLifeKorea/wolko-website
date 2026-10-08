@@ -6,7 +6,7 @@ export const PHOTO_PREFIX = 'car:usage:photo:';
 export const TRASH_ENTRY_PREFIX = 'car:usage:trash:entry:';
 export const TRASH_PHOTO_PREFIX = 'car:usage:trash:photo:';
 const VEHICLES_KEY = 'car:vehicles:missionary';
-const BUILTIN_VEHICLES = { 'silver-van': 'Silver Van', 'santa-fe': 'Santa Fe' };
+const BUILTIN_VEHICLES = { 'silver-van': 'Silver Carnival', 'santa-fe': 'Santa Fe' };
 
 export function fail(message, status = 400) {
   return Response.json({ error: message }, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -26,7 +26,7 @@ export async function usageSession(request, env) {
   return { email, name: pickName(email, account?.name), role: signed.role };
 }
 
-/** 사용 일지에서 고를 수 있는 차량: 고정 차량(Silver Van · Santa Fe)만. 선교사 개인 차량은 예약 캘린더에서만 쓴다. */
+/** 사용 일지에서 고를 수 있는 차량: 고정 차량(Silver Carnival · Santa Fe)만. 선교사 개인 차량은 예약 캘린더에서만 쓴다. */
 export const selectableVehicles = () => new Map(Object.entries(BUILTIN_VEHICLES));
 
 export async function vehicleLabels(env) {
