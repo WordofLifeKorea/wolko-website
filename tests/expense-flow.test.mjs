@@ -938,5 +938,5 @@ test('폰 화면 카드: 금액이 카테고리·출금 줄 오른쪽 끝(같은
 test('회계 상세: 구분선은 금액 칸 앞에서 끊긴다 (항목 끝까지 뻗지 않는다)', async () => {
   const { readFileSync } = await import('node:fs');
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
-  assert.match(css, /\.ex-d-item \.ex-code-inline \.ex-cf-row::before \{ content: ''; position: absolute; top: 0; left: 0; right: 168px; height: 1px;/);
+  assert.match(css, /\.ex-d-item \.ex-code-inline \.ex-cf-row::before \{ content: ''; position: absolute; top: 0; left: 0; right: 104px; height: 1px;/);
 });
