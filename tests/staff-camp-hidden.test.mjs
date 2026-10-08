@@ -36,6 +36,6 @@ test('시흥중앙성결교회 초등영어캠프는 스태프 선택지에만 �
   assert.equal(camp.public_card_hidden, true);
   assert.notEqual(camp.staff_application_hidden, true);
   const reg = read('src/pages/camp-register/index.astro');
-  assert.match(reg, /data-group=\{s\.id === '2027-siheung-jungang-elementary-english' \? 'partner'/);
-  assert.match(reg, /partner: \['협력교회 캠프 · 시흥'/);
+  assert.match(reg, /data-group=\{\['2027-siheung-jungang-elementary-english', '2027-our-school-winter'\]\.includes\(s\.id\) \? 'partner'/);
+  assert.match(reg, /partner: \['교회 및 학교 캠프'/);
 });

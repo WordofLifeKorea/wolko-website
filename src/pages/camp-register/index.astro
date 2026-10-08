@@ -14,6 +14,12 @@ const inlandCamps = schedules.filter(s => s.data.camp_type !== 'jeju');
 // 스태프 지원의 체크박스 목록은 카드에서 숨긴 캠프(예: 우리학교 캠프)도 포함한다
 const staffInland = visibleAll.filter(s => s.data.camp_type !== 'jeju');
 const staffJeju = visibleAll.filter(s => s.data.camp_type === 'jeju');
+const staffCampNames: Record<string, { ko: string; en: string }> = {
+  '2027-wolko-winter': { ko: '겨울 월코 영어 캠프', en: 'Winter WOLKO English Camp' },
+  '2027-unity-winter': { ko: '겨울 연합 캠프', en: 'Winter Union Camp' },
+  '2027-siheung-jungang-elementary-english': { ko: '시흥중앙성결교회 초등영어 캠프', en: 'Siheung Jungang Holiness Church Elementary English Camp' },
+  '2027-our-school-winter': { ko: '우리학교 캠프', en: 'Our School Camp' },
+};
 
 const typeLabel: Record<string, { ko: string; en: string }> = {
   english: { ko: '영어캠프', en: 'English Camp' },
@@ -1848,9 +1854,9 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
             <li
               data-camp-id={s.id}
               data-region={s.data.camp_type === 'jeju' ? 'jeju' : 'inland'}
-              data-group={s.id === '2027-siheung-jungang-elementary-english' ? 'partner' : s.data.camp_type === 'jeju' ? 'jeju' : 'inland'}
-              data-name-ko={s.data.title_ko}
-              data-name-en={s.data.title_en}
+              data-group={['2027-siheung-jungang-elementary-english', '2027-our-school-winter'].includes(s.id) ? 'partner' : s.data.camp_type === 'jeju' ? 'jeju' : 'inland'}
+              data-name-ko={staffCampNames[s.id]?.ko ?? s.data.title_ko}
+              data-name-en={staffCampNames[s.id]?.en ?? s.data.title_en}
               data-date-ko={s.data.date_ko}
               data-date-en={s.data.date_en}
               data-training-ko={s.data.staff_training_ko ?? ''}
@@ -3707,7 +3713,7 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
   });
 
   // "섬길 수 있는 캠프" — 열려 있는 캠프를 지역별로 묶어 날짜와 함께 보여준다.
-  var REGION_LABEL = { inland: ['월코캠프 · 평택', 'WOLKO Camp · Pyeongtaek'], partner: ['협력교회 캠프 · 시흥', 'Partner Church Camp · Siheung'], jeju: ['제주캠프 · 월비캠퍼스', 'Jeju Camp · WOLBI Campus'] };
+  var REGION_LABEL = { inland: ['월코 센터 캠프', 'WOLKO Center Camps'], partner: ['교회 및 학교 캠프', 'Church and School Camps'], jeju: ['제주캠프 · 월비캠퍼스', 'Jeju Camp · WOLBI Campus'] };
   function renderCampChips(checkedIds) {
     var options = staffCampOptions();
     var html = '';
