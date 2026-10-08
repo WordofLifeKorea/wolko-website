@@ -42,7 +42,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <span><small>03</small><strong class="wl-ko">청소년 사역</strong><strong class="wl-en">Youth</strong></span>
           </a>
           <a class="mh-mosaic-item mh-mosaic-syme" href="#syme-ministry">
-            <img src="/images/syme-community.png" alt="SYME 공동체 모임" loading="lazy">
+            <img src="/images/syme-community.jpg" alt="SYME 공동체 모임" loading="lazy">
             <span><small>04</small><strong>SYME</strong></span>
           </a>
         </div>
@@ -60,6 +60,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <span class="wl-en">Every ministry shares one purpose: helping young people hear the Gospel, grow in God's Word, and live as disciples of Christ in their churches and communities.</span>
         </p>
       </div>
+        <nav class="mh-jump" aria-label="사역 바로가기">
+          <a href="#camp-ministry"><span class="wl-ko">캠프</span><span class="wl-en">Camp</span></a>
+          <a href="#wolbi-ministry"><span class="wl-ko">제주월비</span><span class="wl-en">Jeju WOLBI</span></a>
+          <a href="#youth-ministry"><span class="wl-ko">청소년 사역</span><span class="wl-en">Youth</span></a>
+          <a href="#syme-ministry">SYME</a>
+        </nav>
     </section>
 
     <section class="mh-programs" aria-label="월코 사역 목록">
@@ -138,7 +144,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
         <article class="mh-card" id="syme-ministry">
           <a class="mh-card-media" href="/jr-syme" aria-label="SYME 제자훈련 자세히 보기">
-            <img src="/images/syme-community.png" alt="SYME 공동체 단체 사진" loading="lazy">
+            <img src="/images/syme-community.jpg" alt="SYME 학생들과 스태프 단체 사진" width="1800" height="1200" loading="lazy">
             <span class="mh-card-number">04</span>
           </a>
           <div class="mh-card-body">
@@ -314,6 +320,29 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       .mh-closing-card { width: 100%; border-radius: 0; padding: 44px 24px; }
       .mh-closing-actions { flex-direction: column; }
       .mh-btn { width: 100%; }
+    }
+
+    /* polish */
+    .mh-intro-inner { padding-bottom: 36px; border-bottom: 1px solid var(--mh-line); }
+    .mh-jump { width: min(1180px, calc(100% - 48px)); margin: 28px auto 0; display: flex; flex-wrap: wrap; gap: 10px; }
+    .mh-jump a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 18px; border: 1px solid var(--mh-line); border-radius: 999px; color: var(--mh-deep); background: #fff; font-size: 13px; font-weight: 800; text-decoration: none; transition: background .2s, border-color .2s, color .2s, transform .2s; }
+    .mh-jump a:hover { background: var(--mh-deep); border-color: var(--mh-deep); color: #fff; transform: translateY(-2px); }
+    .mh-card-media { height: auto; aspect-ratio: 16 / 9; }
+    .mh-card:nth-child(4) .mh-card-media img { object-position: center 58%; }
+    .mh-mosaic-syme img { object-position: center 60%; }
+    .mh-card-body { padding: 30px 34px 30px; }
+    .mh-card-label { display: inline-block; width: fit-content; padding: 5px 10px; border-radius: 999px; background: rgba(0,126,161,.08); letter-spacing: .1em; }
+    .mh-card-desc { flex: 1 0 auto; }
+    .mh-card-link { margin-top: 24px; padding-top: 20px; width: 100%; border-top: 1px solid var(--mh-line); justify-content: space-between; }
+    .mh-card-link svg { width: 30px; height: 30px; padding: 6px; border-radius: 50%; background: var(--mh-soft); transition: transform .2s, background .2s, color .2s; }
+    .mh-card:hover .mh-card-link svg { background: var(--mh-deep); color: #fff; transform: translateX(3px); }
+    .mh-card-link:hover svg { transform: translateX(4px); }
+    @media (max-width: 740px) {
+      .mh-jump { width: min(100% - 36px, 1180px); flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+      .mh-jump::-webkit-scrollbar { display: none; }
+      .mh-jump a { flex: none; }
+      .mh-card-media { aspect-ratio: 16 / 10; }
+      .mh-card-body { padding: 24px 22px 22px; }
     }
 
     @media (hover: none) {
