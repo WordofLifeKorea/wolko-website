@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=110">
+  <link rel="stylesheet" href="/expense.css?v=111">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -523,7 +523,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           </div>
         </div>`;
     }
-    // 승인 메모: 항목 오른쪽 빈 공간(제출자 메모 옆)에 둔다
+    // 승인 메모: 출금 계좌 오른쪽의 별도 열에 둔다
     const apprMemoInput = (rep, i, st) => `<input class="ex-input ex-amemo ex-item-memo" data-amemo="${i}" data-repid="${esc(rep.id)}" placeholder="${esc(t('aMemoPh'))}" aria-label="${esc(t('aMemoPh'))}" value="${esc(st.memos[i])}" maxlength="300">`;
 
     // 카드 머리 한 줄: 제출자 · 캠퍼스 · 제출일 · 프로젝트 — 제목/제출자와 같은 말은 반복하지 않는다
@@ -545,8 +545,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       const rows = rep.rows.map((r, i) => `
         <tr>
           <td>${esc(r.when || '')}</td>
-          <td>${approving ? '<div class="ex-item-split">' : ''}${itemWrap(rep, r, `${r.item ? `<b>${esc(r.item)}</b>${noteIcons(r, approving)}${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${r.item ? '' : noteIcons(r, approving)}`)}${approving ? apprMemoInput(rep, i, st) + '</div>' : ''}</td>
-          <td>${approving ? catCell(rep, r, i, st) : catView(r)}${rowProject(rep, r) ? `<div class="ex-meta">${esc(rowProject(rep, r))}</div>` : ''}</td>
+          <td>${approving ? '<div class="ex-item-split">' : ''}${itemWrap(rep, r, `${r.item ? `<b>${esc(r.item)}</b>${noteIcons(r, approving)}${r.ministryPurpose ? `<div class="ex-meta">${esc(r.ministryPurpose)}</div>` : ''}` : esc(r.ministryPurpose)}${r.where ? `<div class="ex-meta">📍 ${esc(r.where)}</div>` : ''}${r.item ? '' : noteIcons(r, approving)}`)}${approving ? `<div class="ex-item-account">${catCell(rep, r, i, st)}${rowProject(rep, r) ? `<div class="ex-meta">${esc(rowProject(rep, r))}</div>` : ''}</div></div>` : ''}</td>
+          <td>${approving ? apprMemoInput(rep, i, st) : catView(r) + (rowProject(rep, r) ? `<div class="ex-meta">${esc(rowProject(rep, r))}</div>` : '')}</td>
           <td class="r">${krw(r.amountKrw)}${isFx(r.currency) ? `<div class="ex-meta">${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)}</div>` : ''}</td>
         </tr>`).join('');
 
@@ -585,8 +585,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
             <span class="ex-status ${rep.status}">${t('st_' + rep.status)}</span>
           </div>
         </div>
-        <div class="ex-table-wrap"><table class="ex-table">
-          <thead><tr><th>${t('thWhen')}</th><th>${t('thItem')}</th><th>${approving ? t('wdLbl') : t('thCat')}</th><th style="text-align:right">${t('thAmt')}</th></tr></thead>
+        <div class="ex-table-wrap"><table class="ex-table${approving ? ' ex-table--approve' : ''}">
+          <thead><tr><th>${t('thWhen')}</th><th>${t('thItem')}${approving ? ' · ' + t('wdLbl') : ''}</th><th>${approving ? t('aMemoLbl') : t('thCat')}</th><th style="text-align:right">${t('thAmt')}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table></div>
         ${approving ? `<p class="ex-sub" style="margin:12px 0 0">${esc(t('catHint'))}</p>` : ''}

@@ -773,7 +773,7 @@ test('회계 코드 글자는 굵게 하지 않는다', async () => {
   assert.match(css, /\.ex-cf b \{[^}]*font-weight: 400;/);
 });
 
-test('승인 대기: 카테고리·출금 계좌 두 줄, 출금 계좌 드롭박스는 늘 보이는 한 가지 모양(첫 번째 모양)으로 고정, [펼치기]는 없다 — 승인 메모는 항목 오른쪽 빈 공간, 입력칸은 34px', async () => {
+test('승인 대기: 카테고리·출금 계좌 두 줄, 출금 계좌 드롭박스는 늘 보이고 [펼치기]는 없다 — 승인 메모 입력칸은 34px', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 승인 메모:'));
@@ -786,7 +786,7 @@ test('승인 대기: 카테고리·출금 계좌 두 줄, 출금 계좌 드롭�
   assert.match(src, /apprMemoInput\(rep, i, st\)/);
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /\.ex-itembody \{ line-height: 1\.6; \}/);
-  assert.match(css, /:root:root \.ex-item-split > \.ex-item-memo \{[^}]*height: 34px !important/);
+  assert.match(css, /:root:root \.ex-table--approve \.ex-item-memo \{[^}]*height: 34px !important/);
   assert.match(css, /\.ex-cf-row \{ min-height: 36px;/, '카테고리 줄과 출금 계좌 줄 높이가 같다');
   assert.match(css, /\.ex-cf-toggle\[aria-expanded="true"\] \.ex-chev \{ transform: rotate\(180deg\); \}/, '회계의 펼치기 화살표는 svg 로 글자와 가운데 정렬');
 });
@@ -887,13 +887,13 @@ test('작성 폼: 영수증 버튼 말고는 글자가 굵지 않다', async () 
   assert.match(css, /\.ex-row \.ex-btn\.ex-attach \{ font-weight: 700 !important; \}/);
 });
 
-test('표 열 순서: 날짜 | 품목·목적 | 출금 계좌(카테고리) | 금액', async () => {
+test('승인 표 열 순서: 날짜 | 품목·목적과 출금 계좌 | 승인 메모 | 금액', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
-  assert.match(src, /<th>\$\{t\('thWhen'\)\}<\/th><th>\$\{t\('thItem'\)\}<\/th><th>\$\{approving \? t\('wdLbl'\) : t\('thCat'\)\}<\/th><th style="text-align:right">/);
+  assert.match(src, /<th>\$\{t\('thWhen'\)\}<\/th><th>\$\{t\('thItem'\)\}\$\{approving \? ' · ' \+ t\('wdLbl'\) : ''\}<\/th><th>\$\{approving \? t\('aMemoLbl'\) : t\('thCat'\)\}<\/th><th style="text-align:right">/);
   const rows = src.slice(src.indexOf("const rows = rep.rows.map((r, i) => `"), src.indexOf("let notes = ''"));
-  const pos = [rows.indexOf("esc(r.when || '')"), rows.indexOf('ex-item-split'), rows.indexOf('catCell(rep, r, i, st)'), rows.indexOf('krw(r.amountKrw)')];
-  assert.ok(pos.every((v, i) => v > -1 && (i === 0 || v > pos[i - 1])), '날짜 → 품목·목적 → 출금 계좌 → 금액');
+  const pos = [rows.indexOf("esc(r.when || '')"), rows.indexOf('ex-item-split'), rows.indexOf('catCell(rep, r, i, st)'), rows.indexOf('apprMemoInput(rep, i, st)'), rows.indexOf('krw(r.amountKrw)')];
+  assert.ok(pos.every((v, i) => v > -1 && (i === 0 || v > pos[i - 1])), '날짜 → 품목·목적 → 출금 계좌 → 승인 메모 → 금액');
 });
 
 test('승인 대기·회계 업무: 항목마다 아주 옅은 배경', async () => {
