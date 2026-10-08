@@ -22,7 +22,7 @@ test('winter union camp uses the same policy in the card, form and API', async (
   assert.equal(usesWinterCampPolicy('2027-unity-winter'), true);
   assert.equal(usesWinterCampPolicy('2026-inland-union'), false);
   const card = JSON.parse(readFileSync(new URL('../src/content/camp_schedules/2027-unity-winter.json', import.meta.url), 'utf8'));
-  assert.equal(card.price_ko, '550,000원');
+  assert.equal(card.price_ko, '추후 공지');
   assert.equal(card.deposit_amount, 50000);
   const { response, store } = await register({ campId: '2027-unity-winter', scholarshipDiscounts: { james_memory: 1, excellent_camper: 1 }, scholarshipDiscountDetails: { bestCamperEligible: true } });
   assert.equal(response.status, 200);
