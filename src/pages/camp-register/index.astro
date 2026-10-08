@@ -2175,6 +2175,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <span class="wl-ko">해당되는 할인 항목 선택</span>
               <span class="wl-en">Select applicable discounts</span>
             </label>
+            <p id="crpWinterScholarshipNotice" hidden><span class="wl-ko">최대 두 항목 선택 가능 · 단체도 동일 적용 · 암송 장학금은 종료 후 확인하여 지급하며 참가비에서 미리 차감하지 않습니다.</span><span class="wl-en">Choose up to two options, including group registrations. The memorization award is verified after camp and is not deducted upfront.</span></p>
+            <label id="crpBestCamperConfirmation" class="crp-consent" hidden><input id="crpBestCamperEligible" type="checkbox"><span><strong class="wl-ko">Best Camper 적용 대상자는 지난 캠프 수상자이며, 누적 수상 횟수가 1회임을 확인합니다.</strong><strong class="wl-en">I confirm all Best Camper recipients won at the previous camp and have exactly one award in total.</strong></span></label>
             <div class="crp-scholarship-options" id="crpScholarshipIndividual">
               <label class="crp-scholarship-option">
                 <input type="checkbox" name="scholarshipDiscount" value="wolbi_syme">
@@ -2769,6 +2771,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 </div>
 
 <script>
+import { WINTER_CAMP_POLICY, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
 /* ── Reveal 애니메이션 ── */
 var obs = new IntersectionObserver(function(entries) {
   entries.forEach(function(e) {
@@ -2907,6 +2910,26 @@ var SCHOLARSHIP_DISCOUNTS = {
     en: 'Previous outstanding camper',
   },
 };
+var legacyScholarshipDiscounts = SCHOLARSHIP_DISCOUNTS;
+var legacyScholarshipOptions = ['crpScholarshipIndividual', 'crpScholarshipGroup'].map(function(id) { return document.getElementById(id).innerHTML; });
+
+function setWinterScholarshipMode() {
+  var winter = campIdInput.value === WINTER_CAMP_POLICY.campId;
+  CAMP_BASE_FEE = winter ? WINTER_CAMP_POLICY.fee : 499000;
+  SCHOLARSHIP_DISCOUNTS = winter ? WINTER_CAMP_POLICY.discounts : legacyScholarshipDiscounts;
+  ['crpScholarshipIndividual', 'crpScholarshipGroup'].forEach(function(id, index) {
+    var container = document.getElementById(id);
+    container.innerHTML = winter ? Object.keys(SCHOLARSHIP_DISCOUNTS).map(function(key) {
+      var item = SCHOLARSHIP_DISCOUNTS[key];
+      var control = index ? '<select class="crp-scholarship-count" name="scholarshipDiscountCount" data-discount="' + key + '"></select>' : '<input type="checkbox" name="scholarshipDiscount" value="' + key + '">';
+      var expired = key === 'early_bird' && Date.now() > Date.parse(WINTER_CAMP_POLICY.earlyBirdUntil);
+      if (expired && !index) control = control.replace('type="checkbox"', 'type="checkbox" disabled');
+      return '<label class="crp-scholarship-option' + (index ? ' crp-scholarship-option--count' : '') + '">' + (index ? '' : control) + '<span><strong class="wl-ko">' + item.ko + '</strong><strong class="wl-en">' + item.en + '</strong><small class="wl-ko">' + (item.reward ? '선차감 없음 · 암송 확인 후 지급' : item.amount.toLocaleString('ko-KR') + '원 할인') + (expired ? ' · 신청 기한 종료' : '') + '</small><small class="wl-en">' + (item.reward ? 'No upfront discount · Subject to verification' : 'KRW ' + item.amount.toLocaleString('en-US') + ' discount') + '</small></span>' + (index ? control : '') + '</label>';
+    }).join('') : legacyScholarshipOptions[index];
+  });
+  document.getElementById('crpWinterScholarshipNotice').hidden = !winter;
+  document.getElementById('crpBestCamperConfirmation').hidden = true;
+}
 
 function crpIsUnionCampId(campId) {
   return campId === '2026-inland-union';
@@ -3000,7 +3023,7 @@ function scholarshipDiscountSummaryHtml(counts, english) {
       ? label + (english ? ' × ' + count : ' × ' + count + '명')
       : label;
     var amount = item.amount * count;
-    return '<span class="crp-discount-line"><span>' + crpEscHtml(displayLabel) + '</span><strong>-' + crpFormatWon(amount, english) + '</strong></span>';
+    return '<span class="crp-discount-line"><span>' + crpEscHtml(displayLabel) + '</span><strong>' + (item.reward ? (english ? 'After camp' : '종료 후 지급') : '-' + crpFormatWon(amount, english)) + '</strong></span>';
   }).join('');
   var totalLabel = english ? 'Total discount' : '할인 총 합계';
   var totalRow = parts.length > 1
@@ -3099,6 +3122,15 @@ function crpFocusScholarshipField(id) {
 
 function validateScholarshipDiscountDetails(counts) {
   var details = getScholarshipDiscountDetails();
+  var winter = campIdInput.value === WINTER_CAMP_POLICY.campId;
+  if (winter) {
+    try { winterCampQuote(counts, Math.max(1, scholarshipParticipantCount())); }
+    catch (error) { crpShowError(errorMsg, error.message, 'Please check the scholarship options and Early Bird deadline.'); return null; }
+    if (counts.excellent_camper && !document.getElementById('crpBestCamperEligible').checked) {
+      crpShowError(errorMsg, 'Best Camper 수상 조건을 확인해주세요.', 'Please confirm Best Camper eligibility.');
+      return null;
+    }
+  }
   if (scholarshipDiscountActive(counts, 'wolbi_syme')) {
     if (!details.wolbi_syme.year) {
       crpShowError(errorMsg, '월비 또는 SYME 참여 연도를 선택해 주세요.', 'Please select the WOLBI/SYME participation year.');
@@ -3126,6 +3158,7 @@ function validateScholarshipDiscountDetails(counts) {
   return {
     wolbi_syme: scholarshipDiscountActive(counts, 'wolbi_syme') ? details.wolbi_syme : null,
     sibling: scholarshipDiscountActive(counts, 'sibling') ? details.sibling : null,
+    ...(winter ? { bestCamperEligible: document.getElementById('crpBestCamperEligible').checked } : {}),
   };
 }
 
@@ -3135,6 +3168,16 @@ function updateScholarshipSummary() {
   var baseFee = CAMP_BASE_FEE * participantCount;
   var deposit = (parseInt(campDepositInput.value, 10) || 0) * participantCount;
   var scholarshipCounts = getScholarshipCounts();
+  if (campIdInput.value === WINTER_CAMP_POLICY.campId) {
+    var keys = Object.keys(scholarshipCounts);
+    document.querySelectorAll('input[name="scholarshipDiscount"]').forEach(function(input) {
+      input.disabled = (!input.checked && keys.length >= 2) || (input.value === 'early_bird' && Date.now() > Date.parse(WINTER_CAMP_POLICY.earlyBirdUntil));
+    });
+    document.querySelectorAll('select[name="scholarshipDiscountCount"]').forEach(function(select) {
+      select.disabled = (!(scholarshipCounts[select.dataset.discount] > 0) && keys.length >= 2) || (select.dataset.discount === 'early_bird' && Date.now() > Date.parse(WINTER_CAMP_POLICY.earlyBirdUntil));
+    });
+    document.getElementById('crpBestCamperConfirmation').hidden = !scholarshipCounts.excellent_camper;
+  }
   var discount = scholarshipDiscountAmount(scholarshipCounts);
   var finalFee = Math.max(0, baseFee - discount);
   var isEn = crpIsEn();
@@ -3147,17 +3190,14 @@ function updateScholarshipSummary() {
   if (baseEl) baseEl.textContent = crpFormatWon(deposit, isEn);
   if (discountLabelEl) discountLabelEl.innerHTML = scholarshipDiscountSummaryHtml(scholarshipCounts, isEn);
   if (discountEl) discountEl.textContent = discount > 0 ? '-' + crpFormatWon(discount, isEn) : crpFormatWon(0, isEn);
-  if (discountRowEl) discountRowEl.hidden = discount <= 0;
+  if (discountRowEl) discountRowEl.hidden = Object.keys(scholarshipCounts).length === 0;
   if (finalEl) finalEl.textContent = crpFormatWon(finalFee, isEn);
   if (balanceEl) balanceEl.textContent = crpFormatWon(Math.max(0, finalFee - deposit), isEn);
   updateScholarshipDetails();
 }
 
-document.querySelectorAll('input[name="scholarshipDiscount"]').forEach(function(input) {
-  input.addEventListener('change', updateScholarshipSummary);
-});
-document.querySelectorAll('select[name="scholarshipDiscountCount"]').forEach(function(select) {
-  select.addEventListener('change', updateScholarshipSummary);
+['crpScholarshipIndividual', 'crpScholarshipGroup'].forEach(function(id) {
+  document.getElementById(id).addEventListener('change', updateScholarshipSummary);
 });
 
 // 현재 모달의 성별 cap 값 (런타임)
@@ -3275,6 +3315,7 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     modalTitle.textContent = crpIsEn() ? nameEn : nameKo;
 
     document.getElementById('crpForm').reset();
+    setWinterScholarshipMode();
     var isUnionCamp = crpIsUnionCampId(campId);
     setCrpUnionCampMode(isUnionCamp);
     updateScholarshipSummary();
@@ -3513,6 +3554,12 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var data = await res.json();
 
     if (res.ok && data.success) {
+      if (data.pricing) {
+        payload.campFeeBase = data.pricing.campFeeBase;
+        payload.campFeeFinal = data.pricing.campFeeFinal;
+        payload.scholarshipDiscountTotal = data.pricing.scholarshipDiscountAmount;
+        payload.scholarshipDiscounts = data.pricing.scholarshipDiscounts;
+      }
       formWrap.hidden = true;
       successWrap.hidden = false;
 
@@ -3550,7 +3597,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
         document.getElementById('crpSuccessBaseFee').textContent = crpFormatWon(totalDeposit, isEn);
         document.getElementById('crpSuccessDiscountLabel').innerHTML = scholarshipDiscountSummaryHtml(payload.scholarshipDiscounts || {}, isEn);
         document.getElementById('crpSuccessDiscount').textContent = discountTotal > 0 ? '-' + crpFormatWon(discountTotal, isEn) : crpFormatWon(0, isEn);
-        document.getElementById('crpSuccessDiscountRow').hidden = discountTotal <= 0;
+        document.getElementById('crpSuccessDiscountRow').hidden = Object.keys(payload.scholarshipDiscounts || {}).length === 0;
         document.getElementById('crpSuccessFinalFee').textContent = crpFormatWon(finalFee, isEn);
         document.getElementById('crpSuccessBalanceFee').textContent = paymentBalanceLabel;
         feeSummaryEl.hidden = false;

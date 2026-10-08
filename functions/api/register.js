@@ -13,6 +13,7 @@
  */
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
+import { WINTER_CAMP_POLICY, winterCampQuote } from '../lib/winterCampPolicy.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -562,6 +563,17 @@ export async function onRequestPost(context) {
     const waitlistNumber = isWaitlist ? (currentSubs - campCapacity + 1) : null;
 
     const regId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    let winterQuote;
+    if (campId === WINTER_CAMP_POLICY.campId) {
+      try {
+        winterQuote = winterCampQuote(scholarshipDiscounts, spotsNeeded);
+        if (winterQuote.scholarshipDiscounts.excellent_camper && scholarshipDiscountDetails?.bestCamperEligible !== true) {
+          throw new Error('지난 캠프 Best Camper 수상 횟수가 1회인지 확인해주세요.');
+        }
+      } catch (error) {
+        return Response.json({ error: error.message }, { status: 400, headers: CORS });
+      }
+    }
     const normalizedScholarshipDiscounts = normalizeScholarshipDiscounts(
       scholarshipDiscounts,
       registrationType === 'group' ? spotsNeeded : 1
@@ -631,6 +643,11 @@ export async function onRequestPost(context) {
           isWaitlist, waitlistNumber,
         };
 
+    if (winterQuote) {
+      Object.assign(reg, winterQuote);
+      reg.scholarshipDiscountDetails.bestCamperEligible = scholarshipDiscountDetails?.bestCamperEligible === true;
+    }
+
     // submissions 카운터 증가 (신청 접수 즉시)
     const [curSubsM, curSubsF] = await Promise.all([
       env.CAMP_KV.get(subKeyM).then(v => parseInt(v || '0')),
@@ -653,7 +670,7 @@ export async function onRequestPost(context) {
       ])
     );
 
-    return Response.json({ success: true, pending: true, isWaitlist, waitlistNumber }, { headers: CORS });
+    return Response.json({ success: true, pending: true, isWaitlist, waitlistNumber, ...(winterQuote ? { pricing: winterQuote } : {}) }, { headers: CORS });
 
   } catch (e) {
     console.error('register error:', e);

@@ -1,4 +1,5 @@
 ---
+import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
 // Admin page — 별도 관리자 비밀번호 없이 포탈(/portal) 세션 토큰(포탈 멤버 누구나)으로 접속한다.
 // No BaseLayout; standalone page
 ---
@@ -332,6 +333,7 @@
   <!-- 인쇄용 명단 (화면에서는 숨김, 인쇄 시에만 표시) -->
   <div id="printRoster" aria-hidden="true"></div>
 
+  <script define:vars={{ winterCampPolicy: WINTER_CAMP_POLICY }}></script>
   <script is:inline>
     // ── Language System ──
     let adminLang = localStorage.getItem('wolkoAdminLang') || 'ko';
@@ -2481,11 +2483,11 @@
       return 1;
     }
 
-    function normalizeScholarshipDiscountsAdmin(values, maxCount = 1) {
+    function normalizeScholarshipDiscountsAdmin(values, maxCount = 1, discounts = SCHOLARSHIP_DISCOUNTS) {
       const limit = Math.max(1, parseInt(maxCount, 10) || 1);
       if (!values || typeof values !== 'object' || Array.isArray(values)) return {};
       return Object.entries(values).reduce((acc, [key, rawCount]) => {
-        if (!SCHOLARSHIP_DISCOUNTS[key]) return acc;
+        if (!discounts[key]) return acc;
         const count = Math.min(Math.max(parseInt(rawCount, 10) || 0, 0), limit);
         if (count > 0) acc[key] = count;
         return acc;
@@ -2510,8 +2512,10 @@
 
     function renderScholarshipEditor(reg, detailItem, baseFee, discountAmount, finalFee) {
       const limit = registrationScholarshipLimit(reg);
-      const counts = normalizeScholarshipDiscountsAdmin(reg.scholarshipDiscounts, limit);
-      const discountText = scholarshipDiscountTextAdmin(counts) || reg.scholarshipDiscountText || t('scholarshipNoDiscount');
+      const winter = reg.scholarshipPolicyVersion === winterCampPolicy.version;
+      const discounts = winter ? winterCampPolicy.discounts : SCHOLARSHIP_DISCOUNTS;
+      const counts = normalizeScholarshipDiscountsAdmin(reg.scholarshipDiscounts, limit, discounts);
+      const discountText = (winter ? reg.scholarshipDiscountText : scholarshipDiscountTextAdmin(counts)) || reg.scholarshipDiscountText || t('scholarshipNoDiscount');
 
       if (!camperEditMode) {
         return `<div class="registration-detail-section">
@@ -2525,10 +2529,10 @@
         </div>`;
       }
 
-      const controls = SCHOLARSHIP_KEYS.map(key => {
-        const item = SCHOLARSHIP_DISCOUNTS[key];
+      const controls = Object.keys(discounts).map(key => {
+        const item = discounts[key];
         const value = counts[key] || 0;
-        const amountLabel = formatAdminWon(item.amount);
+        const amountLabel = item.reward ? (adminLang === 'en' ? 'After camp · ' : '종료 후 지급 · ') + formatAdminWon(item.reward) : formatAdminWon(item.amount);
         const control = limit <= 1
           ? `<input class="scholarship-edit-input" type="checkbox" data-regid="${esc(reg.regId)}" data-campid="${esc(reg.campId)}" data-discount-key="${key}" onchange="updateScholarshipDiscount(this)"${value > 0 ? ' checked' : ''}>`
           : `<select class="scholarship-edit-count scholarship-edit-input" data-regid="${esc(reg.regId)}" data-campid="${esc(reg.campId)}" data-discount-key="${key}" onchange="updateScholarshipDiscount(this)">
@@ -2537,7 +2541,7 @@
         return `<label class="scholarship-edit-option">
           <span class="scholarship-edit-control">${control}</span>
           <span class="scholarship-edit-copy">
-            <strong>${t(item.labelKey)}</strong>
+            <strong>${winter ? esc(item[adminLang === 'en' ? 'en' : 'ko']) : t(item.labelKey)}</strong>
             <small>${limit <= 1 ? amountLabel : `${t('scholarshipUnit')} · ${amountLabel}`}</small>
           </span>
         </label>`;
@@ -2882,9 +2886,10 @@
       const panel = inputEl.closest('.scholarship-edit-panel');
       const controls = panel ? Array.from(panel.querySelectorAll('.scholarship-edit-input')) : [inputEl];
       const limit = registrationScholarshipLimit(reg);
+      const discounts = reg.scholarshipPolicyVersion === winterCampPolicy.version ? winterCampPolicy.discounts : SCHOLARSHIP_DISCOUNTS;
       const value = controls.reduce((acc, control) => {
         const key = control.dataset.discountKey;
-        if (!SCHOLARSHIP_DISCOUNTS[key]) return acc;
+        if (!discounts[key]) return acc;
         const count = control.type === 'checkbox'
           ? (control.checked ? 1 : 0)
           : Math.min(Math.max(parseInt(control.value, 10) || 0, 0), limit);
@@ -2892,8 +2897,17 @@
         return acc;
       }, {});
 
-      const original = JSON.stringify(normalizeScholarshipDiscountsAdmin(reg.scholarshipDiscounts, limit));
+      const original = JSON.stringify(normalizeScholarshipDiscountsAdmin(reg.scholarshipDiscounts, limit, discounts));
       if (JSON.stringify(value) === original) return;
+      if (reg.scholarshipPolicyVersion === winterCampPolicy.version && Object.keys(value).length > 2) {
+        showToast(adminLang === 'en' ? 'Choose up to two scholarship options.' : '장학금은 최대 두 항목만 선택할 수 있습니다.', 'error');
+        renderCampTable();
+        return;
+      }
+      if (reg.scholarshipPolicyVersion === winterCampPolicy.version && value.excellent_camper && !reg.scholarshipDiscounts?.excellent_camper && !confirm(adminLang === 'en' ? 'Confirm: all recipients won Best Camper at the previous camp and have exactly one award?' : '지난 캠프 Best Camper 수상자이며 누적 수상 횟수가 1회인 대상자만 적용했나요?')) {
+        renderCampTable();
+        return;
+      }
 
       controls.forEach(control => control.classList.add('saving'));
       try {

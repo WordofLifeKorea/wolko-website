@@ -20,6 +20,23 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
 };
 
+import { WINTER_CAMP_POLICY, winterCampQuote } from '../../lib/winterCampPolicy.js';
+
+function winterQuoteForRegistration(reg, values, spots) {
+  if (reg.scholarshipPolicyVersion !== WINTER_CAMP_POLICY.version) return null;
+  const quote = winterCampQuote(values, spots, reg.registeredAt);
+  return {
+    ...quote,
+    scholarshipDiscountDetails: {
+      sibling: quote.scholarshipDiscounts.sibling ? reg.scholarshipDiscountDetails?.sibling || null : null,
+      bestCamperEligible: Boolean(quote.scholarshipDiscounts.excellent_camper),
+    },
+    scholarshipDeferredRewardStatus: quote.scholarshipDeferredReward === reg.scholarshipDeferredReward
+      ? reg.scholarshipDeferredRewardStatus || quote.scholarshipDeferredRewardStatus
+      : quote.scholarshipDeferredRewardStatus,
+  };
+}
+
 const CAMP_BASE_FEE = 499000;
 const SCHOLARSHIP_DISCOUNTS = {
   wolbi_syme: { amount: 50000, label: '월비 또는 SYME 졸업자 및 프로그램 참여자의 자녀 또는 추천·소개' },
@@ -514,6 +531,8 @@ export async function onRequestPut(context) {
 
       // 정원(슬롯) 감소 → 예약금/잔금 재계산 및 장학금 한도 재정규화
       const spots = Math.max(1, nextGroupCount);
+      const resizedDiscounts = Object.fromEntries(Object.entries(reg.scholarshipDiscounts || {}).map(([key, count]) => [key, Math.min(count, spots)]));
+      const winterQuote = winterQuoteForRegistration(reg, resizedDiscounts, spots);
       const normalizedScholarshipDiscounts = normalizeScholarshipDiscounts(reg.scholarshipDiscounts, spots);
       const normalizedScholarshipDiscountAmount = scholarshipDiscountAmount(normalizedScholarshipDiscounts);
       const normalizedScholarshipDiscountDetails = normalizeScholarshipDiscountDetailsForAdmin(
@@ -535,6 +554,7 @@ export async function onRequestPut(context) {
         scholarshipDiscountAmount: normalizedScholarshipDiscountAmount,
         campFeeBase,
         campFeeFinal: Math.max(0, campFeeBase - normalizedScholarshipDiscountAmount),
+        ...(winterQuote || {}),
       };
 
       await env.CAMP_KV.put(regKey, JSON.stringify(updatedReg));
@@ -588,6 +608,12 @@ export async function onRequestPut(context) {
         return Response.json({ error: '스태프 신청에는 장학금을 적용할 수 없습니다.' }, { status: 400, headers: CORS });
       }
       const spots = Math.max(1, registrationSpots(reg).total || 1);
+      let winterQuote;
+      try {
+        winterQuote = winterQuoteForRegistration(reg, value, spots);
+      } catch (error) {
+        return Response.json({ error: error.message }, { status: 400, headers: CORS });
+      }
       const normalizedScholarshipDiscounts = normalizeScholarshipDiscounts(value, spots);
       const normalizedScholarshipDiscountAmount = scholarshipDiscountAmount(normalizedScholarshipDiscounts);
       const normalizedScholarshipDiscountDetails = normalizeScholarshipDiscountDetailsForAdmin(
@@ -604,6 +630,7 @@ export async function onRequestPut(context) {
         scholarshipDiscountAmount: normalizedScholarshipDiscountAmount,
         campFeeBase,
         campFeeFinal: Math.max(0, campFeeBase - normalizedScholarshipDiscountAmount),
+        ...(winterQuote || {}),
       };
     } else if (participantIndex !== undefined) {
       if (reg.registrationType !== 'group') {
