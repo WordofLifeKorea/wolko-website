@@ -104,6 +104,7 @@ export async function onRequestPost({ env, request }) {
   const labels = selectableVehicles();
   if (!labels.has(vehicleId)) return fail('차량을 선택해 주세요.');
   if (!['ministry', 'personal'].includes(useType)) return fail('사역용 또는 개인용을 선택해 주세요.');
+  const purpose = useType === 'ministry' ? String(form.get('purpose') || '').replace(/\s+/g, ' ').trim().slice(0, 60) : '';
   if (!(photo instanceof File) || photo.type !== 'image/jpeg' || photo.size < 100 || photo.size > MAX_PHOTO_BYTES) {
     return fail('JPG 사진은 4MB 이하로 올려주세요.');
   }
@@ -120,7 +121,7 @@ export async function onRequestPost({ env, request }) {
     && candidate.getTime() >= Date.now() - 24 * 60 * 60_000;
   const id = crypto.randomUUID();
   const entry = {
-    id, vehicleId, vehicleName: labels.get(vehicleId), useType,
+    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}),
     photoTakenAt: isRecentExif ? candidate.toISOString() : recordedAt,
     timeSource: isRecentExif ? 'exif' : 'recorded',
     recordedAt, userEmail: session.email, userName: session.name,

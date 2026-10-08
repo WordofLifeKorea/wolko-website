@@ -10,6 +10,7 @@
       h1: '차량 사용 일지', intro: '운행 전 사진 한 장으로 사용 시각과 목적을 남깁니다.', loading: '일지를 불러오는 중…',
       loginTitle: '포탈 로그인', loginHelp: '차량 QR을 새 탭에서 열었다면 다시 로그인해야 할 수 있습니다. 기록자는 로그인 계정으로 자동 저장됩니다.',
       email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기',
+      purposeNoteLabel: '어떤 운행인가요? (간단히)', purposeNotePh: '예: 평택 캠프 장보기, 교회 방문', purposeLabel: '운행 목적', purposeNoteNeeded: '사역용 운행 목적을 간단히 적어 주세요.',
       recordTitle: '운행 전 기록', recorder: '기록자', vehicleLabel: '차량 선택', purposeLegend: '사용 목적', ministry: '사역용', personal: '개인용',
       photoTitle: '운행 전 사진', photoHelp: '계기판이나 차량 상태가 보이도록 찍어 주세요. 사용 목적을 고르면 카메라를 열 수 있습니다.',
       photoBtn: '카메라 열기 · 사진 선택', save: '사용 일지 저장', saving: '저장 중…',
@@ -33,6 +34,7 @@
       h1: 'Vehicle Usage Log', intro: 'Leave the time and purpose of use with a single pre-drive photo.', loading: 'Loading the log…',
       loginTitle: 'Portal Login', loginHelp: 'If you opened the vehicle QR in a new tab you may need to log in again. The recorder is saved automatically from your account.',
       email: 'Email', password: 'Password', loginBtn: 'Log in and continue',
+      purposeNoteLabel: 'What is this trip for? (briefly)', purposeNotePh: 'e.g. Camp grocery run, church visit', purposeLabel: 'Trip purpose', purposeNoteNeeded: 'Please briefly describe the ministry trip.',
       recordTitle: 'Pre-drive record', recorder: 'Recorder', vehicleLabel: 'Vehicle', purposeLegend: 'Purpose of use', ministry: 'Ministry', personal: 'Personal',
       photoTitle: 'Pre-drive photo', photoHelp: 'Take a photo that shows the dashboard or the vehicle condition. Choose the purpose first to open the camera.',
       photoBtn: 'Open camera · choose photo', save: 'Save usage log', saving: 'Saving…',
@@ -89,8 +91,13 @@
   }
   function updateReady() {
     const purpose = document.querySelector('input[name="useType"]:checked');
+    const ministry = purpose && purpose.value === 'ministry';
+    $('purposeNoteWrap').hidden = !ministry;
+    $('purposeNote').required = !!ministry;
+    $('purposeNote').placeholder = t('purposeNotePh');
+    if (!ministry) $('purposeNote').value = '';
     $('photoButton').disabled = !purpose;
-    $('saveButton').disabled = !purpose || !photoBlob || !$('vehicleSelect').value;
+    $('saveButton').disabled = !purpose || !photoBlob || !$('vehicleSelect').value || (ministry && !$('purposeNote').value.trim());
   }
 
   async function loadData() {
@@ -182,7 +189,15 @@
           toggle.type = 'button'; toggle.className = 'log-line-toggle'; toggle.setAttribute('aria-expanded', String(expanded));
           toggle.innerHTML = '<span class="log-line-time"></span><span class="log-line-who"></span><span class="log-line-use"></span><span class="log-line-km"></span><svg class="log-chev" width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
           toggle.querySelector('.log-line-time').textContent = shortTime(entry.photoTakenAt);
-          toggle.querySelector('.log-line-who').textContent = shownName(entry.userName);
+          const who = toggle.querySelector('.log-line-who');
+          const whoName = document.createElement('span');
+          whoName.className = 'log-line-name'; whoName.textContent = shownName(entry.userName);
+          who.append(whoName);
+          if (entry.purpose) {
+            const note = document.createElement('span');
+            note.className = 'log-line-note'; note.textContent = entry.purpose; note.title = entry.purpose;
+            who.append(note);
+          }
           const use = toggle.querySelector('.log-line-use');
           use.textContent = entry.useType === 'ministry' ? t('useMinistry') : t('usePersonal');
           use.classList.add(entry.useType === 'ministry' ? 'is-ministry' : 'is-personal');
@@ -201,6 +216,12 @@
             const button = document.createElement('button');
             button.type = 'button'; button.className = 'log-photo-btn'; button.textContent = t('viewPhoto');
             button.addEventListener('click', () => openPhoto(entry.id));
+            if (entry.purpose) {
+              const purpose = document.createElement('span');
+              purpose.className = 'log-line-purpose';
+              purpose.textContent = `${t('purposeLabel')}: ${entry.purpose}`;
+              detail.append(purpose);
+            }
             detail.append(info, button, mileageBlock(entry));
             row.append(detail);
           }
@@ -368,7 +389,11 @@
     finally { button.disabled = false; }
   });
 
-  document.querySelectorAll('input[name="useType"]').forEach(input => input.addEventListener('change', updateReady));
+  document.querySelectorAll('input[name="useType"]').forEach(input => input.addEventListener('change', () => {
+    updateReady();
+    if (input.checked && input.value === 'ministry') $('purposeNote').focus({ preventScroll: false });
+  }));
+  $('purposeNote').addEventListener('input', updateReady);
   $('vehicleSelect').addEventListener('change', updateReady);
   $('photoButton').addEventListener('click', () => $('photoInput').click());
   $('photoInput').addEventListener('change', async () => {
@@ -411,6 +436,7 @@
       const form = new FormData();
       form.append('vehicleId', $('vehicleSelect').value);
       form.append('useType', document.querySelector('input[name="useType"]:checked').value);
+      form.append('purpose', $('purposeNote').value.trim());
       form.append('photo', photoBlob, 'vehicle-before.jpg');
       if (photoTakenAt) { form.append('photoTakenAt', photoTakenAt); form.append('timeSource', 'exif'); }
       const response = await fetch('/api/car/usage', { method: 'POST', headers: headers(), body: form });

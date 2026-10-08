@@ -41,6 +41,7 @@ function postRequest(token, fields = {}) {
   const form = new FormData();
   form.set('vehicleId', fields.vehicleId || 'silver-van');
   form.set('useType', fields.useType || 'ministry');
+  if (fields.purpose !== undefined) form.set('purpose', fields.purpose);
   form.set('photo', fields.photo || jpeg());
   if (fields.photoTakenAt) {
     form.set('photoTakenAt', fields.photoTakenAt);
@@ -205,4 +206,17 @@ test('usage log page: one card per vehicle, one line per record, click to expand
   assert.match(js, /log-line-toggle/);
   assert.match(js, /openEntries/);
   assert.match(js, /log-line-body/);
+});
+
+test('ministry trips store a short trimmed purpose; personal trips never keep one', async () => {
+  const env = memoryEnv();
+  const email = 'driver@wol.org';
+  await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: '운전자', status: 'approved' }));
+  const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'admin');
+  const ministry = await (await saveUsage({ env, request: postRequest(token, { purpose: '  평택   캠프 장보기 ' }) })).json();
+  assert.equal(ministry.entry.purpose, '평택 캠프 장보기');
+  const long = await (await saveUsage({ env, request: postRequest(token, { purpose: 'a'.repeat(200) }) })).json();
+  assert.equal(long.entry.purpose.length, 60);
+  const personal = await (await saveUsage({ env, request: postRequest(token, { useType: 'personal', purpose: '개인 일정' }) })).json();
+  assert.equal(personal.entry.purpose, undefined);
 });
