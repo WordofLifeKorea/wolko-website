@@ -902,3 +902,16 @@ test('승인 대기·회계 업무: 항목마다 아주 옅은 배경', async ()
   assert.match(css, /\.ex-card \.ex-table tbody td \{ background: #f7fafc;/);
   assert.match(css, /\.ex-d-item \{ background: #f7fafc; border-radius: 10px;/);
 });
+
+test('회계 업무: 코드 확인·노트 저장 버튼과 리포트별 삭제 버튼은 없고, 바꾸면 자동 저장 · 카드 머리 [관리]로 선택 삭제', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const detail = src.slice(src.indexOf('function detailHtml('), src.indexOf('function detailHtml(') + 6000);
+  assert.doesNotMatch(detail, /data-act="recat-save"|data-act="trash"/);
+  assert.match(src, /async function saveRecat\(box, id, silent\)/);
+  assert.match(src, /autoTimer = setTimeout\(\(\) => saveRecat\(box, box\.dataset\.recat, true\)/, '바꾸면 자동 저장');
+  assert.match(src, /clearTimeout\(autoTimer\); await saveRecat\([^)]*, id, true\);/, '송금 처리 전에도 저장');
+  assert.match(src, /data-act="manage-toggle"/);
+  assert.match(src, /data-act="del-sel"/);
+  assert.match(src, /type="checkbox" data-sel=/);
+});

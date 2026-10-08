@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=108">
+  <link rel="stylesheet" href="/expense.css?v=109">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -102,7 +102,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         cTrash: '이 리포트를 삭제할까요?\n영수증까지 통째로 백업되어 "삭제됨"에서 언제든 복구할 수 있어요.', tTrashed: '삭제했습니다. "삭제됨"에서 복구할 수 있어요.',
         cRestore: '이 리포트를 복구할까요?', tRestored: '복구했습니다.',
         noteTrashed: (n, d) => '삭제됨 — ' + n + ' · ' + d,
-        campus_wolko: '평택', campus_jeju: '제주', btnTrashAll: '전체 비우기', cTrashAll: '지금 있는 모든 리포트를 삭제합니다.\n(백업되어 "삭제됨"에서 하나씩 복구할 수 있어요)\n\n계속하려면 "삭제"라고 입력하세요.', tTrashAll: n => n + '건을 삭제했어요.',
+        campus_wolko: '평택', campus_jeju: '제주', mng: '관리', mngDone: '완료', delSel: n => `선택 삭제 (${n})`, delSelConfirm: n => `선택한 리포트 ${n}건을 삭제합니다. (삭제 보관함에 백업돼 복구할 수 있어요)`, autoSaved: '저장됨', btnTrashAll: '전체 비우기', cTrashAll: '지금 있는 모든 리포트를 삭제합니다.\n(백업되어 "삭제됨"에서 하나씩 복구할 수 있어요)\n\n계속하려면 "삭제"라고 입력하세요.', tTrashAll: n => n + '건을 삭제했어요.',
         catConfirm: '확인', catDone: '✓ 확인됨', catConfirmAll: '카테고리 모두 확인', catPick: '카테고리 선택', cfOpen: '펼치기', cfClose: '접기', wdLbl: '출금 계좌', wdPick: '출금 계좌 선택', catLbl: '카테고리', wdRecommend: '추천 출금 계좌', aMemoNeedPh: '승인 메모 (필수) — 어디에 쓰는 돈인지', wdNoteNeed: '“Others”는 승인 메모를 꼭 적어야 확인할 수 있어요.', wdShort: n => `출금: ${n}`, suggestedTag: '추천',
         catNeed: '모든 항목의 출금 계좌를 확인해야 승인할 수 있어요.', catDelegate: '카테고리 | 코드 회계 담당자에게 위임하기', catAuto: '✓ 위임됨', catDelegated: '✓ 카테고리 | 코드 회계 담당자에게 위임됨 (취소)', catDelegateNote: '“확인”하지 않은 항목은 자동으로 확인 처리되고, 그 항목의 카테고리 | 코드만 회계 담당자에게 위임돼요.', delegatedWait: '모든 항목의 코드를 선택하고 저장해야 송금 처리할 수 있어요.', catNeedAll: '모든 항목의 카테고리를 선택해 주세요.',
         catHint: '항목마다 출금 계좌를 고르고 “확인”을 눌러야 승인할 수 있어요. 메모가 있는 항목은 꼭 확인해 주세요. 코드(계정과목)는 회계 담당자가 마지막에 확인해요.',
@@ -150,7 +150,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         cTrash: 'Delete this report?\nIt is backed up with its receipts and can be restored from "Deleted" anytime.', tTrashed: 'Deleted. You can restore it from "Deleted".',
         cRestore: 'Restore this report?', tRestored: 'Restored.',
         noteTrashed: (n, d) => 'Deleted — ' + n + ' · ' + d,
-        campus_wolko: 'Pyeongtaek', campus_jeju: 'Jeju', btnTrashAll: 'Delete all', cTrashAll: 'This deletes ALL current reports.\n(They are backed up and can be restored one by one from "Deleted")\n\nType DELETE to continue.', tTrashAll: n => n + ' report(s) deleted.',
+        campus_wolko: 'Pyeongtaek', campus_jeju: 'Jeju', mng: 'Manage', mngDone: 'Done', delSel: n => `Delete selected (${n})`, delSelConfirm: n => `Delete the ${n} selected report(s)? (They go to the deleted-items backup and can be restored.)`, autoSaved: 'Saved', btnTrashAll: 'Delete all', cTrashAll: 'This deletes ALL current reports.\n(They are backed up and can be restored one by one from "Deleted")\n\nType DELETE to continue.', tTrashAll: n => n + ' report(s) deleted.',
         catConfirm: 'Confirm', catDone: '✓ Confirmed', catConfirmAll: 'Confirm all categories', catPick: 'Select category', cfOpen: 'Expand', cfClose: 'Collapse', wdLbl: 'Withdrawal account', wdPick: 'Select withdrawal account', catLbl: 'Category', wdRecommend: 'Suggested account', aMemoNeedPh: 'Approver note (required) — what is it for?', wdNoteNeed: 'A note is required before you can confirm “Others”.', wdShort: n => `From: ${n}`, suggestedTag: 'suggested',
         catNeed: 'Confirm the withdrawal account of every item before approving.', catDelegate: 'Delegate categories to accounting', catAuto: '✓ Delegated', catDelegated: '✓ Delegated to accounting (cancel)', catDelegateNote: 'Items you have not confirmed are confirmed automatically, and only their category | code is delegated to accounting.', delegatedWait: 'Pick and save the code for every item before marking payment done.', catNeedAll: 'Pick a category for every item.',
         catHint: 'Pick the withdrawal account for every item and press Confirm before approving. Items with a memo must be confirmed. Accounting confirms the code (category) at the end.',
@@ -634,7 +634,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
 
     /* ─── 회계 업무(회계 담당) / 전체 리포트(관리자·회계): 캠퍼스 → 사람별 카드 → 제출 건 한 줄씩 ─── */
     let allStatus = 'all';
-    const G = { campus: 'wolko', open: new Set() };
+    const G = { campus: 'wolko', open: new Set(), manage: false, sel: new Set() };
     const myCampus = () => (me?.campus === 'jeju' ? 'jeju' : 'wolko');
     const campusOf = r => (r.campus === 'jeju' ? 'jeju' : 'wolko');
     const modeStatus = mode => (mode === 'accounting' ? acctFilter : allStatus);
@@ -666,14 +666,12 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       if (rep.status === 'rejected') note = `<div class="ex-note reject"><b>${t('noteRejected')}</b> — ${esc(rep.reviewNote)}</div>`;
       else if (rep.status === 'approved') note = `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName || '', fmtDate(rep.reviewedAt)))}</div>`;
       else if (rep.status === 'processed') note = (rep.reviewedByName ? `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName, fmtDate(rep.reviewedAt)))}</div>` : '') + `<div class="ex-note ok">${esc(t('noteProcessed', fmtDate(rep.processedAt), rep.processedByName || ''))}</div>`;
-      const recat = editable ? `${waiting ? `<p class="ex-recat-wait">${esc(t('delegatedWait'))}</p>` : ''}<div class="ex-recat-save"><button class="ex-btn sm" data-act="recat-save" data-id="${esc(rep.id)}">${esc(t('recatSave'))}</button></div>` : '';
+      const recat = editable && waiting ? `<p class="ex-recat-wait">${esc(t('delegatedWait'))}</p>` : '';   // 코드·출금 계좌·노트는 바꾸는 즉시 자동 저장된다
       const lockNote = locked ? `<div class="ex-meta ex-locked">${esc(t('lockedNote'))}</div>` : '';
       let action = '<div class="ex-actions">';
       action += `<button class="ex-btn sm" data-act="xlsx-rep" data-id="${esc(rep.id)}">${t('xlsxForm')}</button><span style="flex:1"></span>`;
       if (me?.isAccountant && (mode === 'accounting' || mode === 'all') && rep.status === 'approved') action += `<button class="ex-btn danger sm" data-act="acct-return" data-id="${esc(rep.id)}">${t('btnReturn')}</button>`;
       if (mode === 'accounting' && rep.status === 'approved') action += `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}" ${waiting ? 'disabled title="' + esc(t('delegatedWait')) + '"' : ''}>${t('btnProcess')}</button>`;
-      // 삭제(백업 후 이동)는 회계 담당자만 — 회계 업무와 전체 리포트 모두에서
-      if (me?.isAccountant && (mode === 'accounting' || mode === 'all')) action += `<button class="ex-btn danger sm" data-act="trash" data-id="${esc(rep.id)}">${t('btnTrash')}</button>`;
       action += '</div>';
       const body = items + subtotal + note + lockNote + recat + action;
       return editable ? `<div data-recat="${esc(rep.id)}">${body}</div>` : body;
@@ -700,6 +698,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       list.forEach(r => { if (!byPerson.has(r.submitterEmail)) byPerson.set(r.submitterEmail, { email: r.submitterEmail, name: r.submitterName, reports: [] }); byPerson.get(r.submitterEmail).reports.push(r); });
       const people = [...byPerson.values()].sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
 
+      const canManage = !!me?.isAccountant && (mode === 'accounting' || mode === 'all');
       const cards = people.map(p => {
         const todo = p.reports.filter(r => r.status === 'approved').length;
         return `
@@ -707,16 +706,20 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           <header class="ex-person-head">
             <span class="ex-avatar">${esc(String(p.name).trim().charAt(0).toUpperCase())}</span>
             <div class="ex-person-name"><b>${esc(p.name)}</b><div class="ex-meta">${esc(t('gN', p.reports.length))}${todo ? ' · ' + esc(t('st_approved')) + ' ' + todo : ''}</div></div>
+            ${canManage ? `<div class="ex-person-manage">${G.manage ? `<button type="button" class="ex-btn sm danger" data-act="del-sel" ${G.sel.size ? '' : 'disabled'}>${esc(t('delSel', G.sel.size))}</button>` : ''}<button type="button" class="ex-btn sm ${G.manage ? 'on' : ''}" data-act="manage-toggle">${esc(t(G.manage ? 'mngDone' : 'mng'))}</button></div>` : ''}
           </header>
           <ul class="ex-subs">
             ${p.reports.map(r => `
-            <li>
+            <li class="${G.manage && G.sel.has(r.id) ? 'is-selected' : ''}">
+              <div class="ex-sub-line">
+              ${canManage && G.manage ? `<label class="ex-sub-check"><input type="checkbox" data-sel="${esc(r.id)}" ${G.sel.has(r.id) ? 'checked' : ''} aria-label="${esc(r.description || '')}"></label>` : ''}
               <button type="button" class="ex-sub-row" data-toggle="${esc(r.id)}" aria-expanded="${G.open.has(r.id)}">
                 <span class="ex-sub-date">${esc(shortDate(r.submittedAt))}</span>
                 <span class="ex-sub-desc">${esc(r.description || t('noDesc'))}<span class="ex-meta"> · ${esc(t('gItems', r.rows.length))}${r.reviewedByName ? ' · ' + esc(t('approvedBy', r.reviewedByName)) : ''}</span></span>
                 <span class="ex-sub-amt">${krw(r.total)}</span>
                 <span class="ex-status mini ${r.status}">${t('st_' + r.status)}</span>
               </button>
+              </div>
               <div class="ex-detail" id="d-${esc(r.id)}" ${G.open.has(r.id) ? '' : 'hidden'}>${detailHtml(r, mode)}</div>
             </li>`).join('')}
           </ul>
@@ -1102,12 +1105,19 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         }
         else if (act === 'process') {
           if (!confirm(t('cProcess'))) return;
+          clearTimeout(autoTimer); await saveRecat(document.querySelector('[data-recat="' + id + '"]'), id, true);   // 마지막으로 바꾼 코드·출금 계좌·노트도 함께 저장
           await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'process' }) }); toast(t('tProcessed')); await show('accounting');
         }
         else if (act === 'acct-return') {
           const note = prompt(t('pReturn')); if (note === null || !note.trim()) return;
           await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'return', note: note.trim() }) });
           toast(t('tReturned')); await show(tab === 'all' ? 'all' : 'accounting');
+        }
+        else if (act === 'manage-toggle') { G.manage = !G.manage; G.sel.clear(); renderGrouped(tab); }
+        else if (act === 'del-sel') {
+          const ids = [...G.sel]; if (!ids.length || !confirm(t('delSelConfirm', ids.length))) return;
+          for (const rid of ids) await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id: rid, action: 'trash' }) });
+          G.sel.clear(); G.manage = false; toast(t('tTrashed')); await show(tab === 'all' ? 'all' : 'accounting');
         }
         else if (act === 'trash') {
           if (!confirm(t('cTrash'))) return;
@@ -1141,12 +1151,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           const pop = el.querySelector('.ex-npop'); pop.hidden = !open; if (open) pop.querySelector('textarea').focus();
         }
         else if (act === 'recat-save' || act === 'anote-save') {
-          const box = el.closest('[data-recat]'), id = box.dataset.recat;   // 회계 노트 말풍선의 [저장]도 같은 저장(코드 확인 + 노트)
-          const cats = [...box.querySelectorAll('[data-recat-i]')].map(s => s.value);
-          if (cats.some(c => !c)) { toast(t('catNeedAll'), true); return; }
-          const out = await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'recategorize', categories: cats, ...(box.querySelector('[data-wd-i]') ? { withdrawals: [...box.querySelectorAll('.ex-d-item')].map(it => it.querySelector('[data-wd-i]')?.value || '') } : {}), ...(box.querySelector('[data-anote-i]') ? { accountantMemos: [...box.querySelectorAll('[data-anote-i]')].map(x => x.value) } : {}) }) });
-          [data.all, data.accounting].forEach(list => { const i = list.findIndex(x => x.id === id); if (i >= 0) list[i] = { ...list[i], rows: out.report.rows }; });
-          toast(out.changed || !out.noted ? t('tRecat', out.changed) : t('tNoted', out.noted)); renderGrouped(tab);
+          const box = el.closest('[data-recat]');   // 회계 노트 말풍선의 [저장]
+          if (await saveRecat(box, box.dataset.recat, false)) renderGrouped(tab);
         }
         else if (act === 'csv-g') exportCsv(gFiltered(tab, G.campus));
         else if (act === 'confirm-cat') {
@@ -1164,9 +1170,28 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       scheduleDraft();
     });
 
+    // 회계 항목: 코드·출금 계좌·노트 저장 (바꾸는 즉시 자동 저장, 노트 말풍선의 [저장], 송금 처리 직전에도 호출)
+    async function saveRecat(box, id, silent) {
+      if (!box) return true;
+      const cats = [...box.querySelectorAll('[data-recat-i]')].map(s => s.value);
+      if (cats.some(c => !c)) { if (!silent) toast(t('catNeedAll'), true); return false; }
+      const out = await api('/api/expense/reports', { method: 'PATCH', body: JSON.stringify({ id, action: 'recategorize', categories: cats, ...(box.querySelector('[data-wd-i]') ? { withdrawals: [...box.querySelectorAll('.ex-d-item')].map(it => it.querySelector('[data-wd-i]')?.value || '') } : {}), ...(box.querySelector('[data-anote-i]') ? { accountantMemos: [...box.querySelectorAll('[data-anote-i]')].map(x => x.value) } : {}) }) });
+      [data.all, data.accounting].forEach(list => { const i = list.findIndex(x => x.id === id); if (i >= 0) list[i] = { ...list[i], rows: out.report.rows }; });
+      toast(silent ? t('autoSaved') : (out.changed || !out.noted ? t('tRecat', out.changed) : t('tNoted', out.noted)));
+      return true;
+    }
+    let autoTimer = 0;
+    document.addEventListener('change', e => {
+      const sel = e.target.closest?.('[data-recat-i], [data-wd-i]'); if (!sel) return;
+      const box = sel.closest('[data-recat]'); if (!box) return;
+      clearTimeout(autoTimer);
+      autoTimer = setTimeout(() => saveRecat(box, box.dataset.recat, true).catch(err => toast(err.message, true)), 500);
+    });
     const rerenderStats = () => (tab === 'all' ? renderAll() : renderList('accounting'));
     document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.ex-sub-dl')) { e.preventDefault(); e.target.click(); } });
     document.addEventListener('change', e => {
+      const pick = e.target.closest?.('[data-sel]');
+      if (pick) { if (pick.checked) G.sel.add(pick.dataset.sel); else G.sel.delete(pick.dataset.sel); renderGrouped(tab); return; }
       const sel = e.target.closest('[data-cat]');
       if (sel) { const st = catState[sel.dataset.repid]; if (st) { st.accounts[+sel.dataset.cat] = sel.value; st.confirmed[+sel.dataset.cat] = false; paintApproval(sel.dataset.repid); } }
       else if (e.target.id === 'pFrom' || e.target.id === 'pTo') { period[e.target.id === 'pFrom' ? 'from' : 'to'] = e.target.value; rerenderStats(); }
