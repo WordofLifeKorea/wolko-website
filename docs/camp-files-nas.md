@@ -19,6 +19,9 @@ User-confirmed target: Synology DS423+, volume1, 28.4TB free reported on
   files over 20MiB use a raw streaming request rather than multipart buffering.
   Cloudflare request-body limits still apply (100MB on Free/Pro); this is not
   unlimited end-to-end transfer. Legacy non-NAS storage keeps its 20MiB cap.
+  Resource & Media also removes its 24MiB cap when NAS is configured. It sends
+  raw file bytes; non-Word uploads and binary downloads stream without Base64.
+  Word uploads keep original/version preservation. Legacy KV retains its cap.
   Other upload modules retain their existing limits. Four concurrent gateway
   uploads are allowed. Total capacity is the
   available NAS volume capacity, shared with other NAS services. RAID is not a backup.

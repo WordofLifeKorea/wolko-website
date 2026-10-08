@@ -1,4 +1,5 @@
 import { fileKV } from '../../lib/nasFileKV.js';
+import { nasStorageConfig } from '../../lib/teachNasStorage.js';
 /**
  * 작업 항목(Resource & Media)에 딸린 파일 첨부 — 예전엔 "작업 파일"/"원본 파일"
  * 두 칸이 고정이었지만, 지금은 필요한 만큼 자유롭게 추가하는 파일 목록이다.
@@ -65,8 +66,15 @@ export async function onRequestGet({ env, request }) {
   const fileId = text(url.searchParams.get('fileId'), 80);
   if (!id || !fileId) return error('잘못된 요청입니다.', 400);
 
-  const { value, metadata } = await fileKV(env).getWithMetadata(fileKvKey(id, fileId), 'arrayBuffer');
+  const binary = url.searchParams.get('binary') === '1';
+  const { value, metadata } = await fileKV(env).getWithMetadata(fileKvKey(id, fileId), binary ? 'stream' : 'arrayBuffer');
   if (!value) return error('파일을 찾을 수 없습니다.', 404);
+
+  if (binary && metadata?.fileName) {
+    return new Response(value, { headers:{ 'Content-Type':metadata.fileType || 'application/octet-stream',
+      'Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent(metadata.fileName)}`,
+      'X-Content-Type-Options':'nosniff', 'Cache-Control':'private, no-store' } });
+  }
 
   let file;
   if (metadata?.fileName) {
@@ -74,8 +82,12 @@ export async function onRequestGet({ env, request }) {
     file = { fileName: metadata.fileName, fileType: metadata.fileType, fileData: `data:${metadata.fileType || 'application/octet-stream'};base64,${bytesToBase64(new Uint8Array(value))}` };
   } else {
     // 예전 형식: 값 자체가 {fileName,fileType,fileData} JSON 문자열.
-    try { file = JSON.parse(new TextDecoder().decode(value)); } catch { return error('파일을 불러오지 못했습니다.', 500); }
+    try { file = binary ? await new Response(value).json() : JSON.parse(new TextDecoder().decode(value)); } catch { return error('파일을 불러오지 못했습니다.', 500); }
   }
+  if (binary) return new Response(base64ToBytes(file.fileData), { headers:{
+    'Content-Type':file.fileType || 'application/octet-stream', 'X-Content-Type-Options':'nosniff',
+    'Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
+    'Cache-Control':'private, no-store' } });
   const data = await readData(env);
   const item = data.items.find(entry => entry.id === id);
   const currentFile = item && filesOf(item).find(entry => entry.id === fileId);
@@ -90,7 +102,8 @@ export async function onRequestPost({ env, request }) {
   // 새 파일 추가는 로그인한 멤버 누구나 — 기존 파일 교체·수정·삭제는 관리자만
 
   let body;
-  try { body = await request.json(); } catch { return error('잘못된 요청입니다.', 400); }
+  const raw = request.headers.get('X-Wolko-Upload');
+  try { body = raw ? JSON.parse(decodeURIComponent(raw)) : await request.json(); } catch { return error('잘못된 요청입니다.', 400); }
 
   const id = text(body.id, 80);
   const existingFileId = text(body.fileId, 80);
@@ -101,12 +114,19 @@ export async function onRequestPost({ env, request }) {
   const fileData = String(body.fileData || '');
   if (existingFileId && !canWrite(session)) return error('파일 교체는 관리자만 할 수 있습니다.', 403);
   if (!id) return error('잘못된 요청입니다.', 400);
-  if (!fileName || !fileData) return error('파일을 선택해 주세요.', 400);
-  if (!/^data:[\w.+-]+\/[\w.+-]+;base64,/i.test(fileData)) return error('파일 형식이 올바르지 않습니다.', 400);
+  if (!fileName || (raw ? !request.body : !fileData)) return error('파일을 선택해 주세요.', 400);
+  if (!raw && !/^data:[\w.+-]+\/[\w.+-]+;base64,/i.test(fileData)) return error('파일 형식이 올바르지 않습니다.', 400);
 
-  let bytes;
-  try { bytes = base64ToBytes(fileData); } catch { return error('파일을 처리하지 못했습니다.', 400); }
-  if (bytes.length > MAX_FILE_BYTES) {
+  let bytes, fileSize = 0;
+  const nas = nasStorageConfig(env);
+  const streaming = raw && nas && !isDocx(fileName, fileType);
+  try {
+    if (streaming) bytes = request.body.pipeThrough(new TransformStream({ transform(chunk, controller) {
+      fileSize += chunk.byteLength; controller.enqueue(chunk);
+    } }));
+    else { bytes = raw ? new Uint8Array(await request.arrayBuffer()) : base64ToBytes(fileData); fileSize = bytes.length; }
+  } catch { return error('파일을 처리하지 못했습니다.', 400); }
+  if (!nas && fileSize > MAX_FILE_BYTES) {
     return error(`파일 용량이 너무 큽니다(최대 ${Math.round(MAX_FILE_BYTES / (1024 * 1024))}MB).`, 400);
   }
 
@@ -150,7 +170,7 @@ export async function onRequestPost({ env, request }) {
   await fileKV(env).put(fileKvKey(id, fileId), bytes, { metadata: { fileName, fileType } });
 
   let meta = {
-    id: fileId, folderId, category, fileName, fileType, fileSize: bytes.length,
+    id: fileId, folderId, category, fileName, fileType, fileSize,
     uploadedBy: session.email, uploadedByName, uploadedAt: now,
     documentRevision: replacedFile ? Number(replacedFile.documentRevision || 0) + 1 : 0,
   };
@@ -261,5 +281,5 @@ export async function onRequestDelete({ env, request }) {
 }
 
 export async function onRequestOptions() {
-  return new Response(null, { headers: { ...CORS, 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
+  return new Response(null, { headers: { ...CORS, 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Wolko-Upload' } });
 }

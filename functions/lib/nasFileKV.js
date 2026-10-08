@@ -62,8 +62,7 @@ export function fileKV(env) {
     getWithMetadata:read,
     put:async (key, value, options = {}) => {
       if (!isNasBackedKey(key)) return kv.put(key, value, options);
-      const bytes = await convert(value, 'arrayBuffer');
-      if (bytes.byteLength > 40 * 1024 * 1024) throw new Error('File too large');
+      const bytes = await convert(value, 'stream');
       const nasKey = `private-${crypto.randomUUID()}.bin`;
       const response = await nasFileRequest(config, nasKey, { method:'PUT', body:bytes,
         headers:{ 'Content-Type':'application/octet-stream', 'X-Wolko-Group':nasFileGroup(key),

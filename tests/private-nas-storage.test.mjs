@@ -25,7 +25,7 @@ function setup(t) {
     assert.equal(options.headers.get('Authorization'), `Bearer ${config.token}`);
     if (options.method === 'PUT') {
       if (files.has(url)) return new Response('', { status:409 });
-      files.set(url, options.body); return new Response('', { status:201 });
+      files.set(url, await new Response(options.body).arrayBuffer()); return new Response('', { status:201 });
     }
     return files.has(url) ? new Response(files.get(url)) : new Response('', { status:404 });
   });
