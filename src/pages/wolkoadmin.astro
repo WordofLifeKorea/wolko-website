@@ -2899,7 +2899,7 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
 
       const original = JSON.stringify(normalizeScholarshipDiscountsAdmin(reg.scholarshipDiscounts, limit, discounts));
       if (JSON.stringify(value) === original) return;
-      if (reg.scholarshipPolicyVersion === winterCampPolicy.version && Object.keys(value).length > 2) {
+      if (reg.scholarshipPolicyVersion === winterCampPolicy.version && Object.keys(value).filter(key => key !== 'excellent_camper').length > 2) {
         showToast(adminLang === 'en' ? 'Choose up to two scholarship options.' : '장학금은 최대 두 항목만 선택할 수 있습니다.', 'error');
         renderCampTable();
         return;

@@ -2199,7 +2199,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <span class="wl-ko">해당되는 할인 항목 선택</span>
               <span class="wl-en">Select applicable discounts</span>
             </label>
-            <p id="crpWinterScholarshipNotice" hidden><span class="wl-ko">최대 두 항목 선택 가능 · 단체도 동일 적용 · 암송 장학금은 종료 후 확인하여 지급하며 참가비에서 미리 차감하지 않습니다.</span><span class="wl-en">Choose up to two options, including group registrations. The memorization award is verified after camp and is not deducted upfront.</span></p>
+            <p id="crpWinterScholarshipNotice" hidden><span class="wl-ko">최대 두 항목 선택 가능 (베스트 캠퍼는 별도, 중복 선택 가능) · 단체도 동일 적용 · 암송 장학금은 종료 후 확인하여 지급하며 참가비에서 미리 차감하지 않습니다.</span><span class="wl-en">Choose up to two options (Best Camper does not count toward this limit), including group registrations. The memorization award is verified after camp and is not deducted upfront.</span></p>
             <label id="crpBestCamperConfirmation" class="crp-consent" hidden><input id="crpBestCamperEligible" type="checkbox"><span><strong class="wl-ko">바로 지난 캠프의 Best Camper 수상자이며, 누적 수상 횟수가 1회임을 확인합니다. 그 이전 캠프 수상자는 해당하지 않습니다.</strong><strong class="wl-en">I confirm all recipients won Best Camper at the immediately preceding camp and have exactly one lifetime award. Winners from earlier camps are not eligible.</strong></span></label>
             <div class="crp-scholarship-options" id="crpScholarshipIndividual">
               <label class="crp-scholarship-option">
@@ -3209,12 +3209,12 @@ function updateScholarshipSummary() {
   var deposit = (parseInt(campDepositInput.value, 10) || 0) * participantCount;
   var scholarshipCounts = getScholarshipCounts();
   if (usesWinterCampPolicy(campIdInput.value)) {
-    var keys = Object.keys(scholarshipCounts);
+    var keys = Object.keys(scholarshipCounts).filter(function(key) { return key !== 'excellent_camper'; });
     document.querySelectorAll('input[name="scholarshipDiscount"]').forEach(function(input) {
-      input.disabled = (!input.checked && keys.length >= 2) || (input.value === 'early_bird' && Date.now() > Date.parse(WINTER_CAMP_POLICY.earlyBirdUntil));
+      input.disabled = (input.value !== 'excellent_camper' && !input.checked && keys.length >= 2) || (input.value === 'early_bird' && Date.now() > Date.parse(WINTER_CAMP_POLICY.earlyBirdUntil));
     });
     document.querySelectorAll('select[name="scholarshipDiscountCount"]').forEach(function(select) {
-      select.disabled = (!(scholarshipCounts[select.dataset.discount] > 0) && keys.length >= 2) || (select.dataset.discount === 'early_bird' && Date.now() > Date.parse(WINTER_CAMP_POLICY.earlyBirdUntil));
+      select.disabled = (select.dataset.discount !== 'excellent_camper' && !(scholarshipCounts[select.dataset.discount] > 0) && keys.length >= 2) || (select.dataset.discount === 'early_bird' && Date.now() > Date.parse(WINTER_CAMP_POLICY.earlyBirdUntil));
     });
     document.getElementById('crpBestCamperConfirmation').hidden = !scholarshipCounts.excellent_camper;
   }

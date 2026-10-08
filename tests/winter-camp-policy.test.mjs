@@ -55,6 +55,11 @@ test('memorization reward is deferred, never subtracted from payment', () => {
   assert.equal(winterCampQuote({ james_memory: 2 }, 2).campFeeFinal, 1100000);
 });
 
+test('Best Camper does not count toward the two-option limit', () => {
+  assert.equal(winterCampQuote({ early_bird: 1, sibling: 1, excellent_camper: 1 }, 1, beforeDeadline).scholarshipDiscountAmount, 300000);
+  assert.throws(() => winterCampQuote({ early_bird: 1, sibling: 1, james_memory: 1, excellent_camper: 1 }, 1, beforeDeadline), /두 항목/);
+});
+
 test('no more than two categories, including deferred rewards', () => {
   assert.throws(() => winterCampQuote({ early_bird: 1, sibling: 1, james_memory: 1 }, 1, beforeDeadline), /두 항목/);
   assert.throws(() => winterCampQuote({ sibling: 2 }, 1), /인원/);

@@ -28,7 +28,7 @@ export function winterCampQuote(values, spots = 1, appliedAt = Date.now()) {
     if (!Object.hasOwn(policy.discounts, key)) throw new Error('지원하지 않는 장학금 항목입니다.');
     counts[key] = count;
   }
-  if (Object.keys(counts).length > 2) throw new Error('장학금은 최대 두 항목만 선택할 수 있습니다.');
+  if (Object.keys(counts).filter(key => key !== 'excellent_camper').length > 2) throw new Error('장학금은 최대 두 항목만 선택할 수 있습니다.');
   if (counts.early_bird && (!Number.isFinite(new Date(appliedAt).getTime()) || new Date(appliedAt).getTime() > Date.parse(policy.earlyBirdUntil))) {
     throw new Error('Early Bird 신청 기한은 2026년 11월 5일까지입니다.');
   }
