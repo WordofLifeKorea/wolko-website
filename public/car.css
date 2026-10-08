@@ -651,3 +651,22 @@ html, body {
 }
 .cal-daynum-cell { min-height: 96px !important; }
 @media (max-width: 640px) { .cal-daynum-cell { min-height: 78px !important; } }
+
+/* ══ 폰(≤640px): 한 주만 보이는 달력 — 칸을 넉넉히, 글자는 줄여서 줄바꿈 없이 한 줄로 ══ */
+@media (max-width: 640px) {
+  .car-calendar { padding: 10px; border-radius: 14px; }
+  .cal-month-label { font-size: 15px; white-space: nowrap; }
+  .cal-today-btn { white-space: nowrap; }
+  .cal-weekdays span { font-size: 10.5px; padding: 6px 0; white-space: nowrap; }
+  .cal-daynum-cell { min-height: 104px !important; }
+  .cal-timed, .cal-bar { font-size: 9.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-timed-time { font-size: 9px; }
+  .car-day-panel .car-card, .car-day-panel .car-card * { overflow-wrap: anywhere; }
+  .car-selected-date-bar { font-size: 13px; }
+}
+@media (max-width: 640px) {
+  .car-tabs { scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 2px; }
+  .car-tabs::-webkit-scrollbar { display: none; }
+  /* 좁은 칸에서는 제목이 잘려 알아보기 어려우니 시간만 보이고, 제목은 아래 세부 예약에서 본다 */
+  .cal-timed > span:last-child:not(.cal-timed-time) { display: none; }
+}

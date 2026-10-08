@@ -44,3 +44,14 @@ test('예약현황: 좌우 이전/다음 달 미리보기는 없고, 달력 옆(
   assert.match(css, /@media \(max-width: 1100px\) \{\s*#reservationsView\.res-layout:not\(\.hidden\) \{ grid-template-columns: minmax\(0, 1fr\); \}/, '좁은 화면에서는 달력 아래로');
   assert.match(css, /\.cal-daynum-cell \{ min-height: 96px !important; \}/, '달력 세로 길이를 줄인다');
 });
+
+test('예약현황 폰 화면: 한 주만 보이고 한 주씩 이동하며, 좁은 칸의 글자는 줄여서 줄바꿈 없이 한 줄로', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/car/index.astro', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../public/car.css', import.meta.url), 'utf8');
+  assert.match(page, /const isMobileWeek = \(\) => window\.innerWidth <= 640;/);
+  assert.match(page, /const totalWeeks = mobileWeek \? 1 : totalCells \/ 7;/, '폰에서는 한 주만 그린다');
+  assert.match(page, /if \(isMobileWeek\(\)\) \{\s*const a = anchorDate\(\); a\.setDate\(a\.getDate\(\) \+ delta \* 7\);/, '이전/다음은 한 주씩');
+  assert.match(css, /\.cal-timed, \.cal-bar \{ font-size: 9\.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; \}/);
+  assert.match(css, /\.car-tabs::-webkit-scrollbar \{ display: none; \}/);
+});
