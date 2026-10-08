@@ -5,11 +5,11 @@ import { onRequestPost } from '../functions/api/kitchen/reminders.js';
 
 test('scheduler calls only the fixed production endpoint, with no force override', async () => {
   const summary = await checkReminders({ KITCHEN_SCHEDULER_SECRET: 'test' }, false, async (url, options) => {
-    assert.equal(url, 'https://wolko.org/api/kitchen/reminders');
+    assert.equal(url, 'https://wolko.org/api/reminders/run');
     assert.equal(options.method, 'POST');
     assert.equal(options.headers.Authorization, 'Bearer test');
     assert.equal(options.redirect, 'manual');
-    return Response.json({ date: '2026-10-08', time: '11:30', configured: true, sent: 1, results: [{ sent: 1, person: { name: 'private', phone: 'private' } }] });
+    return Response.json({ date: '2026-10-08', time: '11:30', sent: 1, failed:0, jobs: [{ name:'kitchen', sent: 1, failed:0, person: { name: 'private', phone: 'private' } }] });
   });
   assert.equal(summary.sent, 1);
   assert.ok(!JSON.stringify(summary).includes('private'));
@@ -18,7 +18,7 @@ test('scheduler calls only the fixed production endpoint, with no force override
 test('API errors fail the scheduled execution', async () => {
   await assert.rejects(checkReminders({}, false), /Missing/);
   await assert.rejects(checkReminders({ KITCHEN_SCHEDULER_SECRET: 'test' }, false, async () => new Response('', { status: 503 })), /503/);
-  await assert.rejects(checkReminders({ KITCHEN_SCHEDULER_SECRET: 'test' }, false, async () => Response.json({ results: [{ error: 'private' }], sent: 1 })), /1 recipient/);
+  await assert.rejects(checkReminders({ KITCHEN_SCHEDULER_SECRET: 'test' }, false, async () => Response.json({ jobs: [{ name:'drive', failed:1 }], sent: 1, failed:1 })), /failed: 1/);
 });
 
 test('manual check is authenticated and always dry run', async () => {
@@ -26,8 +26,8 @@ test('manual check is authenticated and always dry run', async () => {
   assert.equal((await worker.fetch(new Request('https://worker/check', { method: 'POST' }), env)).status, 401);
   const original = globalThis.fetch;
   globalThis.fetch = async url => {
-    assert.equal(url, 'https://wolko.org/api/kitchen/reminders?dryRun=1');
-    return Response.json({ results: [], sent: 0 });
+    assert.equal(url, 'https://wolko.org/api/reminders/run?dryRun=1');
+    return Response.json({ jobs: [], sent: 0, failed:0 });
   };
   try {
     assert.equal((await worker.fetch(new Request('https://worker/check?force=1', { method: 'POST', headers: { Authorization: 'Bearer test' } }), env)).status, 200);

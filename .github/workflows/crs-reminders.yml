@@ -1,8 +1,6 @@
 name: CRS Contact Reminders
 
 on:
-  schedule:
-    - cron: '17 0 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -19,7 +17,6 @@ concurrency:
 
 jobs:
   remind:
-    if: vars.CRS_REMINDERS_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

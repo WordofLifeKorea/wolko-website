@@ -120,11 +120,11 @@ test('비어 있는 자리가 없으면 메일을 보내지 않고, 메일 설�
   assert.match((await res.json()).error, /RESEND_API_KEY/);
 });
 
-test('주간 알림 워크플로: 월요일 UTC 00:30 = 한국 9:30, 한 시간 뒤 예비 실행, 켜는 스위치', async () => {
+test('주간 알림 워크플로: Cloudflare 정기 실행과 별도로 수동 실행 유지', async () => {
   const { readFileSync } = await import('node:fs');
   const wf = readFileSync(new URL('../.github/workflows/staffing-reminders.yml', import.meta.url), 'utf8');
-  assert.match(wf, /cron: '30 0 \* \* 1'/);
-  assert.match(wf, /cron: '30 1 \* \* 1'/);
-  assert.match(wf, /STAFFING_REMINDERS_ENABLED/);
+  assert.doesNotMatch(wf, /^\s+schedule:/m);
+  assert.match(wf, /workflow_dispatch:/);
+  assert.doesNotMatch(wf, /STAFFING_REMINDERS_ENABLED/);
   assert.match(wf, /api\/staffing\/weekly-reminder/);
 });
