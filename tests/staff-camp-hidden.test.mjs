@@ -46,3 +46,8 @@ test('스태프 지원서: 섹션마다 옅은 배경, 한 줄 입력칸은 아�
   assert.match(reg, /#staffForm \.crp-field select\s*\{\s*border: 0; border-bottom: 1\.5px solid #d3e0e7;/);
   assert.match(reg, /#staffForm \.crp-field textarea \{ background: #fff; \}/);
 });
+
+test('스태프 지원서 섬길 수 있는 캠프 목록: 카드 박스 없이 줄 사이 옅은 선만', () => {
+  const reg = read('src/pages/camp-register/index.astro');
+  assert.match(reg, /\.staff-camp-option \{ border: 0 !important; border-bottom: 1px solid #e3ebf0 !important; border-radius: 0; background: transparent;/);
+});
