@@ -1437,8 +1437,14 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 #staffForm .crp-field input:not([type="checkbox"]):not([type="radio"]):focus,
 #staffForm .crp-field select:focus { border-bottom: 2px solid var(--c-mid); background: transparent; box-shadow: none; }
 #staffForm .crp-field select { background-position: right 2px center; }
-#staffForm #staffGender { width: 120px; max-width: 100%; align-self: flex-start; }
-#staffForm .staff-birth-grid { width: 320px; max-width: 100%; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); }
+#staffForm #staffGender { width: 72px; max-width: 100%; align-self: flex-start; }
+#staffForm .staff-birth-grid { width: 204px; max-width: 100%; grid-template-columns: minmax(0, 1.36fr) repeat(2, minmax(0, 1fr)); }
+#staffForm .staff-applicant-grid { container-type: inline-size; }
+.staff-applicant-top { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 180px) 72px 204px; gap: 14px; }
+@container (max-width: 483px) {
+  .staff-applicant-top { grid-template-columns: minmax(0, 180px) 72px; }
+  .staff-applicant-birth { grid-column: 1 / -1; }
+}
 #staffForm .crp-field textarea { background: #fff; }
 
 </style>
@@ -2492,7 +2498,8 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
           <hr class="crp-form-section-line">
         </div>
 
-        <div class="crp-form-grid">
+        <div class="crp-form-grid staff-applicant-grid">
+          <div class="staff-applicant-top">
           <div class="crp-field">
             <label><span class="wl-ko">이름</span><span class="wl-en">Name</span> <span class="req">*</span></label>
             <input id="staffName" name="name" maxlength="60" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
@@ -2505,7 +2512,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <option value="female" data-ko="여" data-en="Female">여</option>
             </select>
           </div>
-          <div class="crp-field crp-field--full">
+          <div class="crp-field staff-applicant-birth">
             <label><span class="wl-ko">생년월일</span><span class="wl-en">Date of Birth</span> <span class="req">*</span></label>
             <div class="staff-birth-grid">
               <select id="staffBirthYear" name="birthYear" data-opt-ko="년도" data-opt-en="Year">
@@ -2518,6 +2525,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <option value="" disabled selected>일</option>
               </select>
             </div>
+          </div>
           </div>
           <div class="crp-field">
             <label><span class="wl-ko">연락 가능한 전화번호</span><span class="wl-en">Phone Number</span> <span class="req">*</span></label>
