@@ -15,7 +15,7 @@ test('content schema retains deposits and the modal uses policy deposits after r
   assert.match(page, /if \(winter\) campDepositInput\.value = String\(WINTER_CAMP_POLICY\.deposit\)/);
   assert.match(page, /getElementById\('crpForm'\)\.reset\(\);\s*setWinterScholarshipMode\(\)/);
   assert.match(page, /바로 지난 캠프의 Best Camper 수상자/);
-  assert.match(policy.discounts.excellent_camper.ko, /그 이전 캠프 수상자는 제외/);
+  assert.match(policy.discounts.excellent_camper.note_ko, /그 이전 캠프 수상자.*제외/);
 });
 
 test('winter union camp uses the same policy in the card, form and API', async () => {
