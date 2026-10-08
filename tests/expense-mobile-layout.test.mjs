@@ -21,14 +21,22 @@ test('read-only category shows code first and does not duplicate the submitted w
   assert.match(render({ source: '월코' }), /월코/);
 });
 
-test('mobile date and amount share one divider and receipts have spacing before the category', () => {
+test('mobile amount sits below the category at the lower right and receipts have spacing', () => {
   const mobile = css.slice(css.indexOf('/* Mobile report cards:'));
   assert.match(mobile, /tr::before[^}]*grid-column: 1 \/ -1; grid-row: 2;/);
-  assert.match(mobile, /td:nth-child\(4\)[^}]*grid-row: 1;/);
+  assert.match(mobile, /td:nth-child\(4\)[^}]*grid-column: 1 \/ -1; grid-row: 5;/);
   assert.match(mobile, /td:nth-child\(2\)[^}]*grid-row: 3;/);
   assert.match(mobile, /td:nth-child\(3\)[^}]*padding-top: 10px; border-top:/);
   assert.match(mobile, /gap: 10px 12px/);
   assert.match(mobile, /border: 0 !important/);
+});
+
+test('desktop and accounting detail item amounts align at the bottom', () => {
+  assert.match(css, /td\.r \{ vertical-align: bottom; \}/);
+  const start = src.indexOf('function detailHtml(');
+  const detail = src.slice(start, start + 4000);
+  assert.ok(detail.indexOf('class="ex-d-amt"') > detail.indexOf('codeFlow(r, i,'));
+  assert.match(css, /\.ex-d-item > \.ex-d-amt \{\s*grid-column: 2 \/ -1; grid-row: auto;/);
 });
 
 test('report containers and long text fit the viewport without hiding content', () => {

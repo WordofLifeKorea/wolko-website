@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=114">
+  <link rel="stylesheet" href="/expense.css?v=115">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -660,9 +660,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           <span class="ex-d-date">${esc(r.when || '')}</span>
           ${receiptChips(rep, r)}
           <div class="ex-d-main"><span class="ex-d-text ex-d-item-text" tabindex="0" aria-label="${esc(r.item || r.ministryPurpose)}"><b class="ex-d-text-label">${esc(r.item || r.ministryPurpose)}</b><span class="ex-d-text-tip" aria-hidden="true">${esc(r.item || r.ministryPurpose)}</span></span>${r.item && r.ministryPurpose ? `<span class="ex-d-sep" aria-hidden="true">|</span><span class="ex-d-text ex-d-purpose-inline" tabindex="0" aria-label="${esc(r.ministryPurpose)}"><span class="ex-d-text-label">${esc(r.ministryPurpose)}</span><span class="ex-d-text-tip" aria-hidden="true">${esc(r.ministryPurpose)}</span></span>` : ''}</div>
-          <div class="ex-d-amt">${krw(r.amountKrw)}${isFx(r.currency) ? `<span class="ex-meta"> (${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)})</span>` : ''}</div>
           ${editable ? codeFlow(r, i, `<span class="ex-notes">${noteIconList(r, false, true)}${rep.status === 'approved' ? acNoteEdit(r, i) : (r.accountantMemo ? noteIco('ac', t('acNoteLbl'), r.accountantMemo) : '')}</span>`) : `<div class="ex-d-sub ex-meta">${(r.account ? esc(r.account) : esc(srcShow(r.source || '')) + ' (' + esc(t('catUnset')) + ')') + (r.account && subText(r) && subText(r) !== r.account ? ' (' + esc(t('srcSubmitted', subText(r))) + ')' : '')}${r.withdrawAccount ? ' · ' + esc(t('wdShort', wdName(r.withdrawAccount))) + (r.withdrawNumber ? ' · ' + esc(r.withdrawNumber) : '') : ''}${r.where ? ' · 📍 ' + esc(r.where) : ''}${noteIcons(r)}</div>`}
           ${editable && r.where ? `<div class="ex-d-sub ex-meta">📍 ${esc(r.where)}</div>` : ''}
+          <div class="ex-d-amt">${krw(r.amountKrw)}${isFx(r.currency) ? `<span class="ex-meta"> (${fxFmt(r.currency, r.amount)} × ${rateFmt(r.rate)})</span>` : ''}</div>
         </div>`).join('');
       // 출금 계좌가 둘 이상일 때만 계좌별 소계를 보인다 (하나뿐이면 위 합계와 같은 숫자의 반복)
       const subtotal = wdTotals(rep.rows).length > 1 ? wdChips(rep.rows, 'margin:10px 0 4px') : '';

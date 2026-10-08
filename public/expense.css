@@ -1003,7 +1003,7 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
     display: flex; align-items: center;
   }
   :root:root .ex-card .ex-table tbody td:nth-child(4) {
-    grid-column: 2; grid-row: 1; min-height: 24px;
+    grid-column: 1 / -1; grid-row: 5; min-height: 24px;
     display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
   }
   :root:root .ex-card .ex-table tbody td:nth-child(2) { grid-column: 1 / -1; grid-row: 3; }
@@ -1013,4 +1013,14 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
   }
   .ex-card .ex-table .ex-receipts { margin-top: 0; }
   .ex-category-text { overflow-wrap: anywhere; }
+}
+
+/* Item amounts stay at the lower right; report totals remain in the header. */
+@media (min-width: 641px) {
+  :root:root .ex-card .ex-table tbody td.r { vertical-align: bottom; }
+}
+:root:root .ex-d-item > .ex-d-main { grid-column: 2 / -1; }
+:root:root .ex-d-item > .ex-d-amt {
+  grid-column: 2 / -1; grid-row: auto;
+  justify-self: end; align-self: end; margin-top: 8px;
 }
