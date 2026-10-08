@@ -977,3 +977,36 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-d-item .ex-cf-actions .ex-npop { width: min(300px, calc(100vw - 48px)); box-sizing: border-box; }
 .ex-d-sub > .ex-notes { float: right; margin-left: 8px; }
 @media (max-width: 640px) { :root:root .ex-d-item { column-gap: 12px; } .ex-d-item-text { max-width: 55%; } }
+
+/* Mobile report cards: shared date/amount divider and room below receipt thumbnails. */
+@container (max-width: 860px) {
+  .ex-card .ex-table, .ex-card .ex-table tbody { display: block; width: 100%; }
+  :root:root .ex-card .ex-table tbody tr {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 12px; padding: 12px; margin-bottom: 8px;
+    background: #f7fafc; border: 0; border-radius: 10px;
+  }
+  .ex-card .ex-table tbody tr::before {
+    content: ''; grid-column: 1 / -1; grid-row: 2;
+    height: 1px; background: #d3e0e7;
+  }
+  :root:root .ex-card .ex-table tbody td {
+    min-width: 0; width: auto; margin: 0; padding: 0;
+    border: 0 !important; border-radius: 0; background: transparent;
+  }
+  :root:root .ex-card .ex-table tbody td:nth-child(1) {
+    grid-column: 1; grid-row: 1; min-height: 24px;
+    display: flex; align-items: center;
+  }
+  :root:root .ex-card .ex-table tbody td:nth-child(4) {
+    grid-column: 2; grid-row: 1; min-height: 24px;
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
+  }
+  :root:root .ex-card .ex-table tbody td:nth-child(2) { grid-column: 1 / -1; grid-row: 3; }
+  :root:root .ex-card .ex-table tbody td:nth-child(3) {
+    grid-column: 1 / -1; grid-row: 4;
+    padding-top: 10px; border-top: 1px solid #d3e0e7 !important;
+  }
+  .ex-card .ex-table .ex-receipts { margin-top: 0; }
+  .ex-category-text { overflow-wrap: anywhere; }
+}

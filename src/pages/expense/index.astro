@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=112">
+  <link rel="stylesheet" href="/expense.css?v=113">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -413,10 +413,14 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
     /* ─────────── 렌더링: 리포트 카드 ─────────── */
     function projectOf(rep, row) { return row.project || rep.project || ''; }
 
-    // 승인 전에는 작성자가 적은 내용(source)을, 승인 후에는 확정된 카테고리를 보여주고 서로 다르면 작성자 입력도 함께 보여준다
+    // 보기 화면은 확정된 코드·카테고리와 출금 계좌만 표시한다. 작성자 입력은 편집 흐름에 보존한다.
     const subText = r => srcShow(r.source || r.submittedAccount || '');
+    function categoryText(account) {
+      const match = account.match(/^(.*?)\s*\((\d+)\)$/);
+      return match ? `${match[2]} | ${match[1].trim()}` : account;
+    }
     const catView = r => r.account
-      ? esc(r.account) + (subText(r) && subText(r) !== r.account ? `<div class="ex-meta">${esc(t('srcSubmitted', subText(r)))}</div>` : '') + wdLine(r)
+      ? `<div class="ex-category-text">${esc(categoryText(r.account))}</div>` + wdLine(r)
       : `${esc(srcShow(r.source || ''))}<div class="ex-meta">${esc(t('catUnset'))}</div>${wdLine(r)}`;
     // 출금 계좌(별칭) — 계좌번호는 서버가 회계 담당자에게만 내려주므로 withdrawNumber 가 있을 때만 함께 보인다
     const wdLine = r => r.withdrawAccount ? `<div class="ex-meta ex-wd">${esc(t('wdShort', wdName(r.withdrawAccount)))}${r.withdrawNumber ? ` · <span class="ex-wdnum">${esc(r.withdrawNumber)}</span>` : ''}</div>` : '';
