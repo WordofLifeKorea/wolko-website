@@ -57,3 +57,18 @@ test('POST validates the phone and missing template, and sends one alimtalk to t
     assert.ok(Object.keys(FLOWS).length >= 9);
   } finally { globalThis.fetch = realFetch; }
 });
+
+test('sms check sends a plain SMS from the sender number and needs no Kakao channel', async () => {
+  const sent = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => { sent.push(JSON.parse(init.body)); return new Response(JSON.stringify({ groupInfo: { _id: 'S1' } }), { status: 200 }); };
+  try {
+    const env = envWith({ SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '010-1111-2222' });
+    const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+    const response = await onRequestPost({ env, request: req(master, { flow: 'sms', phone: '01099998888' }) });
+    assert.equal(response.status, 200);
+    assert.equal(sent[0].message.from, '01011112222');
+    assert.equal(sent[0].message.to, '01099998888');
+    assert.equal(sent[0].message.kakaoOptions, undefined);
+  } finally { globalThis.fetch = realFetch; }
+});
