@@ -25,8 +25,10 @@ User-confirmed target: Synology DS423+, volume1, 28.4TB free reported on
    folder, for example /volume1/docker/wolko-camp-files. The volume1 path is only
    an example, not an assumed deployment target.
 2. Copy nas/camp-files/server.mjs, Dockerfile and compose.yaml into that folder.
-   Create its data directory and grant only the container UID/GID 1000 write access.
-   Do not grant broad write permissions to the volume or use the DSM admin password.
+   The one-shot storage-init container sets only the dedicated data directory's
+   owner to UID/GID 1000, then exits. The running file service uses the non-root
+   node user with all Linux capabilities dropped. Do not grant broad write
+   permissions to the volume or use the DSM admin password.
 3. Create a local .env containing TEACH_NAS_TOKEN=<random secret of at least 32
    characters>. Generate a new dedicated random token; do not reuse other credentials.
    Keep the file private and outside version control.
