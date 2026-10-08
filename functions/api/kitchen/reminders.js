@@ -1,6 +1,6 @@
 /**
  * 주방 보조 알림 — 식사 시간 1시간 전에, 그 끼니(준비·클린업)를 신청한 사람에게 카카오 알림톡으로 보낸다. 알림톡이 안 되면 문자로 대신 간다.
- * GitHub Actions가 30분마다 호출하고, 알림 시각(식사 시간 − 1시간)이 된 끼니만 보낸다.
+ * Cloudflare Cron Worker가 5분마다 호출하고, 알림 시각(식사 시간 − 1시간)이 된 끼니만 보낸다.
  *   POST /api/kitchen/reminders            (Authorization: Bearer <KITCHEN_REMINDER_SECRET · DRIVE_REMINDER_SECRET · CRS_REMINDER_SECRET 중 먼저 있는 것>)
  *   쿼리: ?dryRun=1 보내지 않고 계획만 확인 · ?meal=am|lunch|dinner 한 끼니만 · ?force=1 시각과 상관없이 지금 보냄(수동 점검)
  *         ?testPhone=010xxxxxxxx 그 번호로 시험 메시지 1건만(?meal=…, 기본 lunch · 아무것도 저장하지 않음)
@@ -40,7 +40,9 @@ export function reminderText(name, date, duty, mealTime) {
 
 export async function onRequestPost({ env, request }) {
   const secret = env.KITCHEN_REMINDER_SECRET || env.DRIVE_REMINDER_SECRET || env.CRS_REMINDER_SECRET;
-  if (!secret || request.headers.get('Authorization') !== `Bearer ${secret}`) return Response.json({ error: 'Unauthorized' }, { status: 401, headers: H });
+  const authorization = request.headers.get('Authorization');
+  const authorized = [secret, env.KITCHEN_SCHEDULER_SECRET].filter(Boolean).some(value => authorization === `Bearer ${value}`);
+  if (!authorized) return Response.json({ error: 'Unauthorized' }, { status: 401, headers: H });
   if (!env.CAMP_KV) return Response.json({ error: 'Missing KV' }, { status: 503, headers: H });
   const params = new URL(request.url).searchParams;
   const dryRun = params.get('dryRun') === '1';
