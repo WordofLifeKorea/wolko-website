@@ -770,3 +770,31 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-cf-row .ex-cf-toggle, .ex-cf-row .ex-cf-toggle.inline { position: static; transform: none; height: 26px; }
 :root:root .ex-cf-row .ex-cf-actions .ex-confirm { height: 26px !important; min-height: 0 !important; min-width: 0; padding: 0 10px; font-size: 11.5px !important; }
 .ex-wd-pick > .ex-cf-actions { display: none; }
+
+/* ══ v84 — 승인 대기는 최소화가 기본: 출금 계좌 글자를 누르면 드롭박스. 회계 업무는 [펼치기] 유지, 두 줄 높이를 같게, 화살표는 글자와 가운데 정렬 ══ */
+.ex-cf-row { min-height: 36px; align-items: center; padding-top: 4px; padding-bottom: 4px; box-sizing: border-box; }
+.ex-cf-row > i { align-self: center; }
+.ex-cf-row .ex-cf-src { color: var(--mid); font-size: 12px; }
+.ex-wd-pick .ex-cf-row:first-child { border-top: 0; }
+.ex-chev { flex: none; display: block; transition: transform .15s; }
+.ex-cf-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 24px; padding: 0 9px; line-height: 1; }
+.ex-cf-toggle > span { display: block; line-height: 1; }
+.ex-cf-toggle[aria-expanded="true"] .ex-chev { transform: rotate(180deg); }
+.ex-wd-text { display: inline-flex; align-items: center; gap: 5px; min-height: 0; padding: 2px 6px; margin-left: -6px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.ex-wd-text:hover { background: #f1f6f8; }
+.ex-wd-text.is-empty { color: var(--blue); font-weight: 700; }
+.ex-wd-text[hidden] { display: none; }
+.ex-wd-text .ex-chev { color: #8fa8b5; }
+:root:root .ex-wd-pick .ex-wd-select { flex: 1 1 auto; min-width: 0; width: auto; max-width: none; }
+:root:root .ex-cf-row .ex-cf-actions .ex-confirm { height: 24px !important; }
+:root:root .ex-cf-row .ex-cf-toggle { height: 24px; }
+
+/* v84b — 승인 대기: 두 줄 높이를 같게 고정하고, 좁은 칸에서는 줄바꿈 대신 말줄임으로 */
+.ex-wd-pick .ex-cf-row { height: 36px; padding-top: 0 !important; padding-bottom: 0 !important; }
+.ex-wd-pick .ex-cf-row > b { min-width: 0; flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ex-wd-pick .ex-wd-text { flex: 1 1 auto; min-width: 0; justify-content: flex-start; }
+.ex-wd-pick .ex-wd-text > span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ex-wd-pick .ex-cf-row.has-actions { flex-wrap: nowrap; }
+
+/* v84c — 회계 업무: 카테고리 줄과 출금 계좌 줄 높이를 정확히 같게 (좁은 폰 화면에서만 줄바꿈 허용) */
+@media (min-width: 641px) { .ex-code-flow .ex-cf-row { height: 36px; padding-top: 0; padding-bottom: 0; } .ex-code-flow .ex-cf-row > b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }

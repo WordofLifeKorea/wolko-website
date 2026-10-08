@@ -773,20 +773,24 @@ test('회계 코드 글자는 굵게 하지 않는다', async () => {
   assert.match(css, /\.ex-cf b \{[^}]*font-weight: 400;/);
 });
 
-test('승인 대기: 카테고리·출금 계좌를 읽기만 하는 두 줄로 보여주고 [확인]·[펼치기]로 확정·변경한다, 승인 메모는 항목 오른쪽 빈 공간, 입력칸은 34px', async () => {
+test('승인 대기: 기본은 최소화(카테고리·출금 계좌 두 줄), 출금 계좌 글자를 누르면 드롭박스, [펼치기]는 없다 — 승인 메모는 항목 오른쪽 빈 공간, 입력칸은 34px', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 승인 메모:'));
   assert.equal((cell.match(/class="ex-cf-row[ "]/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
+  assert.match(cell, /class="ex-wd-text[^"]*" data-act="wd-edit"/, '출금 계좌 글자를 누르면');
+  assert.match(cell, /<select class="ex-select-plain ex-wd-select" data-cat="\$\{i\}"[^>]* hidden>/, '드롭박스는 처음엔 숨겨져 있다');
   assert.match(cell, /data-act="confirm-cat"/);
-  assert.match(cell, /class="ex-cf-toggle inline" data-act="code-change"/);
-  assert.match(cell, /data-cat="\$\{i\}"/);
-  assert.match(cell, /const open = !cur/, '아직 고르지 않았으면 처음부터 펼친다');
+  assert.doesNotMatch(cell, /ex-cf-toggle|ex-cf-panel|code-change/, '승인 화면에는 [펼치기]가 없다');
+  assert.match(src, /act === 'wd-edit'/);
+  assert.match(src, /function collapseWdSelect\(/, '고르거나 포커스를 잃으면 다시 글자로');
   assert.match(src, /<div class="ex-item-split">/);
   assert.match(src, /apprMemoInput\(rep, i, st\)/);
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /\.ex-itembody \{ line-height: 1\.6; \}/);
   assert.match(css, /:root:root \.ex-item-split > \.ex-item-memo \{[^}]*height: 34px !important/);
+  assert.match(css, /\.ex-cf-row \{ min-height: 36px;/, '카테고리 줄과 출금 계좌 줄 높이가 같다');
+  assert.match(css, /\.ex-cf-toggle\[aria-expanded="true"\] \.ex-chev \{ transform: rotate\(180deg\); \}/, '회계의 펼치기 화살표는 svg 로 글자와 가운데 정렬');
 });
 
 test('회계 노트 말풍선에 [저장]이 있고 눌러서 실제로 저장된다 (말풍선 안 클릭을 막는 규칙에서 저장 버튼은 제외), 카테고리와 출금 계좌가 두 줄로 보인다', async () => {
