@@ -39,3 +39,10 @@ test('시흥중앙성결교회 초등영어캠프는 스태프 선택지에만 �
   assert.match(reg, /data-group=\{\['2027-siheung-jungang-elementary-english', '2027-our-school-winter'\]\.includes\(s\.id\) \? 'partner'/);
   assert.match(reg, /partner: \['교회 및 학교 캠프'/);
 });
+
+test('스태프 지원서: 섹션마다 옅은 배경, 한 줄 입력칸은 아래 선만, 서술형(textarea)만 박스', () => {
+  const reg = read('src/pages/camp-register/index.astro');
+  assert.match(reg, /#staffForm \.crp-form-grid \{ background: #f6f9fb; border-radius: 14px;/);
+  assert.match(reg, /#staffForm \.crp-field select\s*\{\s*border: 0; border-bottom: 1\.5px solid #d3e0e7;/);
+  assert.match(reg, /#staffForm \.crp-field textarea \{ background: #fff; \}/);
+});
