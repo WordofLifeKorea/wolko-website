@@ -847,3 +847,14 @@ test('회계 항목: 목적 · 카테고리 · 출금 계좌 줄은 높이도 �
   assert.match(css, /\.ex-d-item \.ex-cf-row \{ height: 36px;/);
   assert.match(css, /\.ex-d-item > \.ex-code-flow \{ margin-top: 0; gap: 0; \}/, '목적 줄과 카테고리 줄 사이에 틈이 없다');
 });
+
+test('작성 폼: 사역명·계좌 칸 없이 카테고리만 고르고, 드롭박스 화살표는 제자리에 고정된다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const row = src.slice(src.indexOf('<div class="ex-row" data-i="${i}">'), src.indexOf('<div class="ex-lmemo">'));
+  assert.doesNotMatch(row, /data-f="srcSel"|data-f="source"/, '사역명·계좌 칸은 없다');
+  assert.equal((row.match(/data-f="account"/g) || []).length, 1, '카테고리 선택칸 하나');
+  assert.doesNotMatch(row, /class="ex-lcat"/);
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-row \.ex-select \{ background-repeat: no-repeat !important; background-position: right 8px center !important; background-size: 10px 6px !important; \}/);
+});

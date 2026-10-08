@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=102">
+  <link rel="stylesheet" href="/expense.css?v=103">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -323,25 +323,17 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         <div class="ex-line ex-l1">
           <span class="ex-num">${i + 1}</span>
           <input class="ex-input ex-w-date" data-f="when" data-datepick type="text" readonly inputmode="none" autocomplete="off" value="${esc(r.when)}" aria-label="When">
-          <div class="ex-srcwrap ${srcIsCustom(r) ? 'is-custom' : ''}">
-            <select class="ex-select ex-srcsel ${!srcIsCustom(r) && !r.source ? 'is-empty' : ''}" data-f="srcSel" aria-label="${esc(t('srcLbl'))}">
-              <option value="" disabled hidden ${!srcIsCustom(r) && !r.source ? 'selected' : ''}>${esc(t('srcSelPh'))}</option>
-              ${SRC_PRESETS.map(v => `<option value="${esc(v)}" ${!srcIsCustom(r) && r.source === v ? 'selected' : ''}>${esc(srcShow(v))}</option>`).join('')}
-              <option value="${SRC_CUSTOM}" ${srcIsCustom(r) ? 'selected' : ''}>${esc(t('srcCustomOpt'))}</option>
+          <div class="ex-srcwrap">
+            <select class="ex-select ex-catsel ${r.account ? '' : 'is-empty'}" data-f="account" aria-label="${esc(t('catLbl'))}">
+              <option value="" disabled hidden ${r.account ? '' : 'selected'}>${esc(t('catPick'))}</option>
+              ${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${r.account === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
             </select>
-            <input class="ex-input ex-source" data-f="source" list="fSrcList" placeholder="${esc(t('srcPh'))}" value="${esc(srcIsCustom(r) ? r.source : '')}" maxlength="160" aria-label="${esc(t('srcLbl'))}" ${srcIsCustom(r) ? '' : 'hidden'}>
           </div>
           <div class="ex-amount">
             <input class="ex-input" data-f="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="${t('amountPh')}" value="${esc(r.amount)}" aria-label="Amount">
             <select class="ex-select" data-f="currency" aria-label="${t('currency')}"><option value="KRW" ${r.currency === 'KRW' ? 'selected' : ''}>₩ KRW</option>${Object.keys(FX).map(c => `<option value="${c}" ${r.currency === c ? 'selected' : ''}>${FX[c].symbol} ${c}</option>`).join('')}</select>
           </div>
           ${form.rows.length > 1 ? `<button class="ex-x" data-act="del-row" data-i="${i}" aria-label="${t('delRow')}">×</button>` : '<span class="ex-x-space"></span>'}
-        </div>
-        <div class="ex-lcat">
-          <select class="ex-select ex-catsel ${r.account ? '' : 'is-empty'}" data-f="account" aria-label="${esc(t('catLbl'))}">
-            <option value="" disabled hidden ${r.account ? '' : 'selected'}>${esc(t('catPick'))}</option>
-            ${APPROVAL_ACCOUNTS.map(a => `<option value="${esc(a)}" ${r.account === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}
-          </select>
         </div>
         <div class="ex-lmemo"><input class="ex-input" data-f="memo" placeholder="${t('memoPh')}" value="${esc(r.memo)}" maxlength="300" aria-label="${t('memoLbl')}"></div>
         <div class="ex-line ex-l2">
