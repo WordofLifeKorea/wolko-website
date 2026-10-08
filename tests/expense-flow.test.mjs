@@ -773,17 +773,15 @@ test('회계 코드 글자는 굵게 하지 않는다', async () => {
   assert.match(css, /\.ex-cf b \{[^}]*font-weight: 400;/);
 });
 
-test('승인 대기: 기본은 최소화(카테고리·출금 계좌 두 줄), 출금 계좌 글자를 누르면 드롭박스, [펼치기]는 없다 — 승인 메모는 항목 오른쪽 빈 공간, 입력칸은 34px', async () => {
+test('승인 대기: 카테고리·출금 계좌 두 줄, 출금 계좌 드롭박스는 늘 보이는 한 가지 모양(첫 번째 모양)으로 고정, [펼치기]는 없다 — 승인 메모는 항목 오른쪽 빈 공간, 입력칸은 34px', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
   const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 승인 메모:'));
   assert.equal((cell.match(/class="ex-cf-row[ "]/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
-  assert.match(cell, /class="ex-wd-text[^"]*" data-act="wd-edit"/, '출금 계좌 글자를 누르면');
-  assert.match(cell, /<select class="ex-select-plain ex-wd-select" data-cat="\$\{i\}"[^>]* hidden>/, '드롭박스는 처음엔 숨겨져 있다');
+  assert.doesNotMatch(cell, /ex-wd-text|wd-edit/, '글자↔드롭박스로 모양이 바뀌지 않는다');
+  assert.match(cell, /<select class="ex-select-plain ex-wd-select" data-cat="\$\{i\}"(?![^>]*hidden)[^>]*>/, '드롭박스는 처음부터 보인다');
   assert.match(cell, /data-act="confirm-cat"/);
   assert.doesNotMatch(cell, /ex-cf-toggle|ex-cf-panel|code-change/, '승인 화면에는 [펼치기]가 없다');
-  assert.match(src, /act === 'wd-edit'/);
-  assert.match(src, /function collapseWdSelect\(/, '고르거나 포커스를 잃으면 다시 글자로');
   assert.match(src, /<div class="ex-item-split">/);
   assert.match(src, /apprMemoInput\(rep, i, st\)/);
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');

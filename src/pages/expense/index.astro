@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=86">
+  <link rel="stylesheet" href="/expense.css?v=87">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -511,7 +511,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         const btn = art.querySelector('[data-act="confirm-cat"][data-i="' + i + '"]');
         if (btn) { btn.classList.toggle('done', st.confirmed[i]); btn.textContent = st.confirmed[i] ? t('catDone') : t('catConfirm'); }
         const now = art.querySelector('.ex-wd-pick[data-ci="' + i + '"] [data-wd-now]');
-        if (now) { now.textContent = a ? wdName(a) : t('wdPick'); now.closest('.ex-wd-text')?.classList.toggle('is-empty', !a); }
+        if (now) { now.textContent = a ? wdName(a) : t('wdPick'); }
       });
       st.accounts.forEach((a, i) => { const m = art.querySelector('[data-amemo="' + i + '"]'); if (m) { m.placeholder = needNote(st, i) ? t('aMemoNeedPh') : t('aMemoPh'); m.classList.toggle('need', needNote(st, i) && !m.value.trim()); } });
       const ab = art.querySelector('[data-act="approve"]'); if (ab) ab.disabled = !approvalReady(st);
@@ -525,8 +525,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           <div class="ex-cf-rows">
             <div class="ex-cf-row"><i>${esc(t('catLbl'))}</i><b title="${esc((r.account || '') + (src ? ' · ' + src : ''))}">${r.account ? esc(r.account) : '—'}${src ? ` <span class="ex-cf-src" title="${esc(t('srcLbl'))}">· ${esc(src)}</span>` : ''}</b></div>
             <div class="ex-cf-row has-actions"><i>${esc(t('wdLbl'))}</i>
-              <button type="button" class="ex-wd-text ${cur ? '' : 'is-empty'}" data-act="wd-edit" title="${esc(t('wdPick'))}"><span data-wd-now>${cur ? esc(wdName(cur)) + sug : esc(t('wdPick'))}</span><svg class="ex-chev" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-              <select class="ex-select-plain ex-wd-select" data-cat="${i}" data-repid="${esc(rep.id)}" aria-label="${esc(t('wdLbl'))}" hidden>
+              <select class="ex-select-plain ex-wd-select" data-cat="${i}" data-repid="${esc(rep.id)}" aria-label="${esc(t('wdLbl'))}">
                 <option value="">${esc(t('wdPick'))}</option>
                 ${WITHDRAW.map(a => `<option value="${esc(a.id)}" ${cur === a.id ? 'selected' : ''}>${esc(lang === 'en' ? a.en : a.ko)}${WD_FOR[r.account] === a.id ? ' (' + esc(t('suggestedTag')) + ')' : ''}</option>`).join('')}
               </select>
@@ -1142,11 +1141,6 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           data.trash = []; await show('accounting');
         }
         else if (act === 'anote-close') { const n = el.closest('.ex-nico'); n.classList.remove('open'); n.setAttribute('aria-expanded', 'false'); n.querySelector('.ex-npop').hidden = true; }
-        else if (act === 'wd-edit') {
-          const row = el.closest('.ex-cf-row'), sel = row.querySelector('select[data-cat]');
-          el.hidden = true; sel.hidden = false; sel.focus();
-          try { if (sel.showPicker) sel.showPicker(); } catch (er) { /* 일부 브라우저는 포커스만 */ }
-        }
         else if (act === 'code-change') {
           const box = el.closest('.ex-code-flow'), open = !box.classList.contains('open');
           box.classList.toggle('open', open); box.querySelector('.ex-cf-panel').hidden = !open;
@@ -1181,14 +1175,11 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       scheduleDraft();
     });
 
-    // 출금 계좌 드롭박스는 고르거나 포커스를 잃으면 다시 글자로 접힌다
-    function collapseWdSelect(sel) { const row = sel.closest('.ex-cf-row'), txt = row?.querySelector('.ex-wd-text'); if (!txt) return; sel.hidden = true; txt.hidden = false; }
-    document.addEventListener('focusout', e => { const sel = e.target.closest?.('select[data-cat]'); if (sel && !sel.hidden) setTimeout(() => { if (document.activeElement !== sel) collapseWdSelect(sel); }, 120); });
     const rerenderStats = () => (tab === 'all' ? renderAll() : renderList('accounting'));
     document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.ex-sub-dl')) { e.preventDefault(); e.target.click(); } });
     document.addEventListener('change', e => {
       const sel = e.target.closest('[data-cat]');
-      if (sel) { const st = catState[sel.dataset.repid]; if (st) { st.accounts[+sel.dataset.cat] = sel.value; st.confirmed[+sel.dataset.cat] = false; paintApproval(sel.dataset.repid); } collapseWdSelect(sel); }
+      if (sel) { const st = catState[sel.dataset.repid]; if (st) { st.accounts[+sel.dataset.cat] = sel.value; st.confirmed[+sel.dataset.cat] = false; paintApproval(sel.dataset.repid); } }
       else if (e.target.id === 'pFrom' || e.target.id === 'pTo') { period[e.target.id === 'pFrom' ? 'from' : 'to'] = e.target.value; rerenderStats(); }
     });
 

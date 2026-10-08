@@ -798,3 +798,9 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 
 /* v84c — 회계 업무: 카테고리 줄과 출금 계좌 줄 높이를 정확히 같게 (좁은 폰 화면에서만 줄바꿈 허용) */
 @media (min-width: 641px) { .ex-code-flow .ex-cf-row { height: 36px; padding-top: 0; padding-bottom: 0; } .ex-code-flow .ex-cf-row > b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+
+/* v87 — 승인 대기: 출금 계좌 드롭박스는 늘 보이는 한 가지 모양으로 고정, 카테고리·출금 계좌 칸과 품목·목적 칸 사이 여백 */
+:root:root .ex-wd-pick .ex-wd-select { display: block; flex: 1 1 auto; min-width: 0; width: auto; max-width: none; }
+.ex-table td:nth-child(2) .ex-wd-pick { padding-right: 24px; }
+.ex-table td:nth-child(3) { padding-left: 18px; }
+@media (max-width: 640px) { .ex-table td:nth-child(2) .ex-wd-pick { padding-right: 0; } .ex-table td:nth-child(3) { padding-left: 0; } }
