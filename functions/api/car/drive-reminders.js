@@ -88,9 +88,17 @@ export async function onRequestPost({ env, request }) {
     if (done && done.email === record.email) { results.push({ ...base, person, sent: 0, alreadySent: true }); continue; }
     const name = shownName(record);
     const templateId = slotName === 'dropoff' ? env.KAKAO_TEMPLATE_DRIVE_DROPOFF : env.KAKAO_TEMPLATE_DRIVE_PICKUP;
-    const firstChannel = await sendKakaoWithSmsFallback(env, record.phone, templateId, reminderVariables(name, date), reminderText(name, date, slotName));
-    await env.CAMP_KV.put(doneKey, JSON.stringify({ email: record.email, at: new Date().toISOString() }), { expirationTtl: 60 * 60 * 24 * 14 });
-    results.push({ ...base, person, sent: 1, firstChannel });
+    try {
+      const firstChannel = await sendKakaoWithSmsFallback(env, record.phone, templateId, reminderVariables(name, date), reminderText(name, date, slotName));
+      if (!firstChannel) {
+        results.push({ ...base, person, error:'발송하지 못했습니다. (번호 또는 Solapi 설정 확인)', sent:0 });
+        continue;
+      }
+      await env.CAMP_KV.put(doneKey, JSON.stringify({ email: record.email, at: new Date().toISOString() }), { expirationTtl: 60 * 60 * 24 * 14 });
+      results.push({ ...base, person, sent: 1, firstChannel });
+    } catch (error) {
+      results.push({ ...base, person, error:String(error?.message || error).slice(0, 200), sent:0 });
+    }
   }
   const failed = results.some(r => r.error);
   const sent = results.reduce((n, r) => n + r.sent, 0);

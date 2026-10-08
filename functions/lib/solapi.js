@@ -105,8 +105,8 @@ export async function sendKakaoWithSmsFallback(env, phone, templateId, variables
   const to = String(phone || '').replace(/[^0-9]/g, '');
   if (!to || to.length < 10) return null;
   if (!env.KAKAO_PF_ID || !templateId) {
-    await sendSms(env, phone, fallbackText);
-    return env.SOLAPI_SENDER_PHONE ? 'sms' : null;
+    const submitted = await sendSms(env, phone, fallbackText);
+    return submitted ? 'sms' : null;
   }
   const message = { to, text: fallbackText, kakaoOptions: { pfId: env.KAKAO_PF_ID, templateId, variables, disableSms: false } };
   if (env.SOLAPI_SENDER_PHONE) message.from = env.SOLAPI_SENDER_PHONE.replace(/[^0-9]/g, '');
@@ -118,8 +118,8 @@ export async function sendKakaoWithSmsFallback(env, phone, templateId, variables
   });
   if (!res.ok) {
     // 알림톡 요청이 거절되면(템플릿 불일치 등) 문자로 한 번 더 시도한다
-    await sendSms(env, phone, fallbackText);
-    return 'sms';
+    const submitted = await sendSms(env, phone, fallbackText);
+    return submitted ? 'sms' : null;
   }
   return 'kakao';
 }

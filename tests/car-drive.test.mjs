@@ -240,6 +240,37 @@ const remRun = (env, query, secret = 'cron-secret') => RM.onRequestPost({ env, r
 const captureSolapi = (okFor = () => true) => { const sent = []; globalThis.fetch = async (url, o) => { const m = JSON.parse(o.body).message; sent.push(m); return okFor(m) ? { ok: true, json: async () => ({}) } : { ok: false, text: async () => 'template error' }; }; return sent; };
 const MON = '2026-10-12', TUE = '2026-10-13', FRI = '2026-10-16', SAT = '2026-10-17';
 
+test('unsubmitted reminders are not marked done, and another slot can still send', async () => {
+  const env = remEnv();
+  const sent = captureSolapi();
+  await seedSlot(env, TUE, 'pickup', 'a@x.com', 'Invalid', '123');
+  await seedSlot(env, TUE, 'dropoff', 'b@x.com', 'Valid', '010-3333-4444');
+  const result = await (await remRun(env, `date=${TUE}&force=1`)).json();
+  assert.equal(result.results[0].sent, 0);
+  assert.ok(result.results[0].error);
+  assert.equal(result.results[1].sent, 1);
+  assert.equal(sent.length, 1);
+  assert.equal(await env.CAMP_KV.get(`drive:sms:${TUE}`, 'json'), null);
+  await seedSlot(env, TUE, 'pickup', 'a@x.com', 'Corrected', '010-1111-2222');
+  const retried = await (await remRun(env, `date=${TUE}&force=1&slot=pickup`)).json();
+  assert.equal(retried.sent, 1);
+  assert.equal(sent.length, 2);
+});
+
+test('provider failures retain retry eligibility and do not stop other slots', async () => {
+  const env = remEnv();
+  captureSolapi(m => m.to !== '01011112222');
+  await seedSlot(env, TUE, 'pickup', 'a@x.com', 'Fails', '010-1111-2222');
+  await seedSlot(env, TUE, 'dropoff', 'b@x.com', 'Succeeds', '010-3333-4444');
+  const result = await (await remRun(env, `date=${TUE}&force=1`)).json();
+  assert.equal(result.results[0].sent, 0);
+  assert.ok(result.results[0].error);
+  assert.equal(result.results[1].sent, 1);
+  assert.equal(await env.CAMP_KV.get(`drive:sms:${TUE}`, 'json'), null);
+  captureSolapi();
+  assert.equal((await (await remRun(env, `date=${TUE}&force=1&slot=pickup`)).json()).sent, 1);
+});
+
 test('오전 알림: 요일과 상관없이 신청이 있는 날 오전 8시에 알림톡(+문자 대체)으로 한 번만', async () => {
   const env = remEnv();
   const sent = captureSolapi();
