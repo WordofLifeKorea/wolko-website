@@ -15,3 +15,8 @@ test('camp registration header no longer carries the cafe banner', () => {
   assert.doesNotMatch(page, /crp-reg-header-aside/);
   assert.doesNotMatch(page, /네이버 카페에서도/);
 });
+
+test('staff application modal opens from the #staff-apply anchor', () => {
+  assert.match(page, /location\.hash !== '#staff-apply'/);
+  assert.match(page, /addEventListener\('hashchange', openStaffFromHash\)/);
+});

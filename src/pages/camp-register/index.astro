@@ -3948,6 +3948,15 @@ document.querySelectorAll('.crp-countdown[data-open-date]').forEach(function(cd)
     });
   });
 
+  // QR·링크용 앵커: /camp-register/#staff-apply 로 들어오면 스태프 지원서 모달을 바로 연다.
+  function openStaffFromHash() {
+    if (location.hash !== '#staff-apply') return;
+    var openBtn = document.querySelector('.crp-staff-open-btn:not([disabled])');
+    if (openBtn && staffModal.hidden) openBtn.click();
+  }
+  openStaffFromHash();
+  window.addEventListener('hashchange', openStaffFromHash);
+
   // 모달 닫기 — 저장 안 한 입력이 있으면 한 번 묻는다(긴 폼이 실수로 날아가지 않게).
   function closeStaffModal(force) {
     if (!force && formDirty && !staffFormWrap.hidden &&
