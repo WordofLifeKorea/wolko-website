@@ -832,3 +832,10 @@ test('출금 계좌: 회계 담당이 마지막에 확인하며 채우거나 바
   const blank = await patch(ann, { withdrawals: ['', ''] });
   assert.deepEqual(blank.report.rows.map(r => r.withdrawAccount), ['teachers', 'junior-camp'], '비워 보내면 그대로');
 });
+
+test('회계 항목: 품목과 목적 사이에 줄이 있고 목적은 카테고리·출금 계좌 값과 같은 위치로 들여쓴다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-d-item > \.ex-d-purpose \{ border-top: 1px solid #e6edf1;[^}]*padding: 8px 0 8px 76px;/);
+  assert.match(css, /\.ex-cf-row > i \{[^}]*flex: 0 0 66px/, '라벨 66px + 간격 10px = 76px 와 같은 값');
+});
