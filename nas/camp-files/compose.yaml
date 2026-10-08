@@ -1,0 +1,18 @@
+services:
+  camp-files:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8088:8080"
+    environment:
+      TEACH_NAS_TOKEN: ${TEACH_NAS_TOKEN:?Set TEACH_NAS_TOKEN in .env}
+    volumes:
+      - ./data:/data
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    cpus: 1
+    pids_limit: 64

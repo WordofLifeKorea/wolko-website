@@ -1,3 +1,5 @@
+import { NAS_FILE_KEY, nasStorageConfig, nasFileRequest } from '../../../lib/teachNasStorage.js';
+
 function getTeachFileStore(env) {
   const bucket = env.TEACH_FILES || env.CAMP_RESOURCES_FILES || env.CAMP_FILES || env.R2_BUCKET || env.BUCKET;
   if (bucket) return { type: 'r2', storage: bucket };
@@ -15,6 +17,25 @@ function decodeKey(value) {
 
 export async function onRequestGet(context) {
   const { env, params } = context;
+  const nasKey = decodeKey(String(params.key || ''));
+  if (nasKey.startsWith('nas-')) {
+    if (!NAS_FILE_KEY.test(nasKey)) return new Response('Not found', { status:404 });
+    try {
+      const config = nasStorageConfig(env);
+      if (!config) return new Response('NAS not configured', { status:503 });
+      const response = await nasFileRequest(config, nasKey);
+      if (response.status === 404) return new Response('Not found', { status:404 });
+      if (response.status !== 200) return new Response('NAS unavailable', { status:503 });
+      const headers = new Headers({
+        'Content-Type':response.headers.get('Content-Type') || 'application/octet-stream',
+        'Content-Disposition':response.headers.get('Content-Disposition') || 'attachment',
+        'X-Content-Type-Options':'nosniff', 'Cache-Control':'public, max-age=31536000, immutable',
+        'Access-Control-Allow-Origin':'*',
+      });
+      if (response.headers.has('Content-Length')) headers.set('Content-Length', response.headers.get('Content-Length'));
+      return new Response(response.body, { headers });
+    } catch { return new Response('NAS unavailable', { status:503 }); }
+  }
   const store = getTeachFileStore(env);
   if (!store) {
     return new Response('Not configured', { status: 500 });
