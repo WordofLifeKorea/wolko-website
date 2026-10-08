@@ -13,7 +13,7 @@
  */
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
-import { WINTER_CAMP_POLICY, winterCampQuote } from '../lib/winterCampPolicy.js';
+import { usesWinterCampPolicy, winterCampQuote } from '../lib/winterCampPolicy.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -564,7 +564,7 @@ export async function onRequestPost(context) {
 
     const regId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     let winterQuote;
-    if (campId === WINTER_CAMP_POLICY.campId) {
+    if (usesWinterCampPolicy(campId)) {
       try {
         winterQuote = winterCampQuote(scholarshipDiscounts, spotsNeeded);
         if (winterQuote.scholarshipDiscounts.excellent_camper && scholarshipDiscountDetails?.bestCamperEligible !== true) {

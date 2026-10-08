@@ -1,5 +1,6 @@
 export const WINTER_CAMP_POLICY = {
   campId: '2027-wolko-winter',
+  campIds: ['2027-wolko-winter', '2027-unity-winter'],
   version: 'winter-2027-v1',
   fee: 550000,
   deposit: 50000,
@@ -11,6 +12,10 @@ export const WINTER_CAMP_POLICY = {
     excellent_camper: { amount: 200000, ko: '지난 캠프 Best Camper · 수상 1회만 해당, 2회 이상 비적용', en: 'Previous Best Camper · One award only; two or more awards excluded' },
   },
 };
+
+export function usesWinterCampPolicy(campId) {
+  return WINTER_CAMP_POLICY.campIds.includes(campId);
+}
 
 export function winterCampQuote(values, spots = 1, appliedAt = Date.now()) {
   const policy = WINTER_CAMP_POLICY;

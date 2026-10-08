@@ -3,10 +3,26 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { runInNewContext } from 'node:vm';
-import { WINTER_CAMP_POLICY as policy, winterCampQuote } from '../functions/lib/winterCampPolicy.js';
+import { WINTER_CAMP_POLICY as policy, usesWinterCampPolicy, winterCampQuote } from '../functions/lib/winterCampPolicy.js';
 import { onRequestPost } from '../functions/api/register.js';
 
 const beforeDeadline = '2026-11-05T23:59:59.999+09:00';
+
+test('winter union camp uses the same policy in the card, form and API', async () => {
+  assert.equal(usesWinterCampPolicy('2027-unity-winter'), true);
+  assert.equal(usesWinterCampPolicy('2026-inland-union'), false);
+  const card = JSON.parse(readFileSync(new URL('../src/content/camp_schedules/2027-unity-winter.json', import.meta.url), 'utf8'));
+  assert.equal(card.price_ko, '550,000원');
+  assert.equal(card.deposit_amount, 50000);
+  const { response, store } = await register({ campId: '2027-unity-winter', scholarshipDiscounts: { james_memory: 1, excellent_camper: 1 }, scholarshipDiscountDetails: { bestCamperEligible: true } });
+  assert.equal(response.status, 200);
+  const reg = JSON.parse([...store.entries()].find(([key]) => key.includes(':reg:'))[1]);
+  assert.equal(reg.campFeeBase, 550000);
+  assert.equal(reg.depositAmount, 50000);
+  assert.equal(reg.campFeeFinal, 350000);
+  assert.equal(reg.scholarshipDeferredReward, 100000);
+  assert.equal(reg.scholarshipPolicyVersion, policy.version);
+});
 
 test('winter fee, deposit and balance match the new policy', () => {
   const q = winterCampQuote({}, 1, beforeDeadline);

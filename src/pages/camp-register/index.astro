@@ -2771,7 +2771,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 </div>
 
 <script>
-import { WINTER_CAMP_POLICY, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
+import { WINTER_CAMP_POLICY, usesWinterCampPolicy, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
 /* ── Reveal 애니메이션 ── */
 var obs = new IntersectionObserver(function(entries) {
   entries.forEach(function(e) {
@@ -2914,7 +2914,7 @@ var legacyScholarshipDiscounts = SCHOLARSHIP_DISCOUNTS;
 var legacyScholarshipOptions = ['crpScholarshipIndividual', 'crpScholarshipGroup'].map(function(id) { return document.getElementById(id).innerHTML; });
 
 function setWinterScholarshipMode() {
-  var winter = campIdInput.value === WINTER_CAMP_POLICY.campId;
+  var winter = usesWinterCampPolicy(campIdInput.value);
   CAMP_BASE_FEE = winter ? WINTER_CAMP_POLICY.fee : 499000;
   SCHOLARSHIP_DISCOUNTS = winter ? WINTER_CAMP_POLICY.discounts : legacyScholarshipDiscounts;
   ['crpScholarshipIndividual', 'crpScholarshipGroup'].forEach(function(id, index) {
@@ -3122,7 +3122,7 @@ function crpFocusScholarshipField(id) {
 
 function validateScholarshipDiscountDetails(counts) {
   var details = getScholarshipDiscountDetails();
-  var winter = campIdInput.value === WINTER_CAMP_POLICY.campId;
+  var winter = usesWinterCampPolicy(campIdInput.value);
   if (winter) {
     try { winterCampQuote(counts, Math.max(1, scholarshipParticipantCount())); }
     catch (error) { crpShowError(errorMsg, error.message, 'Please check the scholarship options and Early Bird deadline.'); return null; }
@@ -3168,7 +3168,7 @@ function updateScholarshipSummary() {
   var baseFee = CAMP_BASE_FEE * participantCount;
   var deposit = (parseInt(campDepositInput.value, 10) || 0) * participantCount;
   var scholarshipCounts = getScholarshipCounts();
-  if (campIdInput.value === WINTER_CAMP_POLICY.campId) {
+  if (usesWinterCampPolicy(campIdInput.value)) {
     var keys = Object.keys(scholarshipCounts);
     document.querySelectorAll('input[name="scholarshipDiscount"]').forEach(function(input) {
       input.disabled = (!input.checked && keys.length >= 2) || (input.value === 'early_bird' && Date.now() > Date.parse(WINTER_CAMP_POLICY.earlyBirdUntil));
