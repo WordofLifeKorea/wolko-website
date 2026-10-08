@@ -30,3 +30,10 @@ test('mobile date and amount share one divider and receipts have spacing before 
   assert.match(mobile, /gap: 10px 12px/);
   assert.match(mobile, /border: 0 !important/);
 });
+
+test('report containers and long text fit the viewport without hiding content', () => {
+  assert.match(css, /\.ex-report-head > div \{ min-width: 0; max-width: 100%; \}/);
+  assert.match(css, /\.ex-card \{ overflow-wrap: anywhere; \}/);
+  assert.match(css, /:root:root \{ --wl-page-x: 12px; --wl-card-pad: 14px; \}/);
+  assert.match(css, /minmax\(min\(210px, 100%\), 1fr\)/);
+});

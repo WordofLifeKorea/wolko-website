@@ -16,6 +16,8 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
 .ex-user { font-size: 12px; color: rgba(255,255,255,.75); }
 
 .ex-wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 100px; }
+.ex-wrap, #exView, .ex-card, .ex-report-head > div { min-width: 0; max-width: 100%; }
+.ex-card { overflow-wrap: anywhere; }
 .ex-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
 .ex-tab { border: 1.5px solid var(--border); background: var(--card); border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 13px; color: var(--mid); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 .ex-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
@@ -95,9 +97,11 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
 .ex-toast.error { background: var(--red); }
 
 @media (max-width: 640px) {
+  :root:root { --wl-page-x: 12px; --wl-card-pad: 14px; }
   .ex-header { padding: 0 14px; }
   .ex-card { padding: 16px; }
   .ex-user { display: none; }
+  .ex-grid { grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); }
 }
 
 /* ── 컴팩트 항목 행 (v2) ── */
