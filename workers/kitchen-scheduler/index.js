@@ -5,7 +5,7 @@ export async function checkReminders(env, dryRun = false, fetcher = fetch) {
   const response = await fetcher(ENDPOINT + (dryRun ? '?dryRun=1' : ''), {
     method: 'POST',
     headers: { Authorization: `Bearer ${env.KITCHEN_SCHEDULER_SECRET}` },
-    redirect: 'error',
+    redirect: 'manual',
     signal: AbortSignal.timeout(60000),
   });
   if (!response.ok) throw new Error(`Kitchen reminder API returned ${response.status}`);

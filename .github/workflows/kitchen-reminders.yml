@@ -1,11 +1,10 @@
 name: Kitchen reminders
 
-# 30분마다(한국 시간 06:00~21:30) 깨어나서, 식사 시간 1시간 전이 된 끼니의 주방 보조 담당자에게 알림을 보낸다(카카오 알림톡, 안 되면 문자).
+# 정기 발송은 workers/kitchen-scheduler의 Cloudflare Cron Trigger가 담당한다.
+# 이 워크플로는 수동 점검과 비상 발송 전용이다. 두 스케줄러를 동시에 켜지 않는다.
 #   식사 시간은 주방 보조 페이지의 '시간·인원'에서 바꾼다(기본 아침 9:00 · 점심 12:30 · 저녁 17:00 → 알림 8:00 · 11:30 · 16:00).
 # GitHub 스케줄은 몇 분 늦을 수 있어서, 식사 시간 전까지는 늦게 돌아도 보낸다.
 on:
-  schedule:
-    - cron: '0,30 21-23,0-12 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -35,7 +34,6 @@ concurrency:
 
 jobs:
   remind:
-    if: vars.KITCHEN_REMINDERS_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

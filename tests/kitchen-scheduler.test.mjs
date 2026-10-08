@@ -8,7 +8,7 @@ test('scheduler calls only the fixed production endpoint, with no force override
     assert.equal(url, 'https://wolko.org/api/kitchen/reminders');
     assert.equal(options.method, 'POST');
     assert.equal(options.headers.Authorization, 'Bearer test');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     return Response.json({ date: '2026-10-08', time: '11:30', configured: true, sent: 1, results: [{ sent: 1, person: { name: 'private', phone: 'private' } }] });
   });
   assert.equal(summary.sent, 1);
