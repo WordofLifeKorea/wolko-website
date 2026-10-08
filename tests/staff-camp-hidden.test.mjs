@@ -26,3 +26,16 @@ test('우리학교 캠프는 공개 캠프 카드에서는 숨기고, 스태프 
   assert.match(reg, /const schedules = visibleAll\.filter\(s => !s\.data\.public_card_hidden\)/);
   assert.match(reg, /\{\[\.\.\.staffInland, \.\.\.staffJeju\]\.filter\(\(s\) => !s\.data\.staff_application_hidden\)/);
 });
+
+test('시흥중앙성결교회 초등영어캠프는 스태프 선택지에만 표시한다', () => {
+  const id = '2027-siheung-jungang-elementary-english';
+  const camp = JSON.parse(read(`src/content/camp_schedules/${id}.json`));
+  assert.equal(camp.title_ko, '시흥중앙성결교회 초등영어캠프');
+  assert.equal(camp.start_date, '2027-01-19T00:00:00.000Z');
+  assert.match(camp.date_ko, /1월 19일\(화\).*22일\(금\)/);
+  assert.equal(camp.public_card_hidden, true);
+  assert.notEqual(camp.staff_application_hidden, true);
+  const reg = read('src/pages/camp-register/index.astro');
+  assert.match(reg, /data-group=\{s\.id === '2027-siheung-jungang-elementary-english' \? 'partner'/);
+  assert.match(reg, /partner: \['협력교회 캠프 · 시흥'/);
+});
