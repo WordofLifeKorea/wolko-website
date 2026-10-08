@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createFileServer } from '../nas/camp-files/server.mjs';
 
-test('NAS gateway authenticates, persists, safely serves and rejects duplicate or oversized uploads', async t => {
+test('NAS gateway authenticates, persists, safely serves and accepts files over the old size limit', async t => {
   const directory = await mkdtemp(join(tmpdir(), 'teach-nas-test-'));
   const token = 'a'.repeat(64);
   const server = createFileServer({ directory, token });
@@ -26,7 +26,9 @@ test('NAS gateway authenticates, persists, safely serves and rejects duplicate o
   assert.equal((await fetch(origin + path, { method:'DELETE', headers })).status, 405);
   assert.equal((await fetch(origin + '/files/bad-key', { headers })).status, 404);
   assert.equal((await fetch(origin + path.replace('.html', '.zip'), { method:'PUT', headers,
-    body:new Uint8Array(20 * 1024 * 1024 + 1) })).status, 413);
+    body:new Uint8Array(40 * 1024 * 1024 + 1) })).status, 201);
+  const large = await fetch(origin + path.replace('.html', '.zip'), { headers });
+  assert.equal((await large.arrayBuffer()).byteLength, 40 * 1024 * 1024 + 1);
   assert.equal((await readdir(directory)).filter(name => name.startsWith('.upload-')).length, 0);
   assert.equal(await (await fetch(origin + path, { headers })).text(), '<h1>test</h1>');
 });

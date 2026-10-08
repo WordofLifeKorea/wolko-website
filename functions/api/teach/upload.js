@@ -49,9 +49,13 @@ export async function onRequestPost(context) {
     return Response.json({ error: '서버 설정이 필요합니다. (파일 저장소 미연결)' }, { status: 500, headers: CORS });
   }
   try {
-    const form = await request.formData();
-    const file = form.get('file');
-    const kind = form.get('kind') === 'bgm' ? 'bgm' : 'presentation';
+    const rawName = request.headers.get('X-Wolko-Filename');
+    const form = rawName ? null : await request.formData();
+    const file = rawName ? {
+      name:decodeURIComponent(rawName), size:Number(request.headers.get('Content-Length') || 0),
+      stream:() => request.body,
+    } : form.get('file');
+    const kind = (rawName ? request.headers.get('X-Wolko-Kind') : form.get('kind')) === 'bgm' ? 'bgm' : 'presentation';
     if (!file || typeof file === 'string') {
       return Response.json({ error: '파일을 선택해주세요.' }, { status: 400, headers: CORS });
     }
@@ -59,7 +63,7 @@ export async function onRequestPost(context) {
     if (kind === 'bgm' && !BGM_EXT.test(file.name)) {
       return Response.json({ error: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.' }, { status: 400, headers: CORS });
     }
-    if (file.size > MAX_SIZE) {
+    if (store.type !== 'nas' && (rawName || file.size > MAX_SIZE)) {
       return Response.json({ error: '파일이 너무 큽니다. (최대 20MB)' }, { status: 400, headers: CORS });
     }
 
@@ -102,7 +106,7 @@ export async function onRequestOptions() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Wolko-Filename, X-Wolko-Kind',
     },
   });
 }

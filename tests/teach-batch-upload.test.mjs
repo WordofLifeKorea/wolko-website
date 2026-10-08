@@ -71,13 +71,13 @@ test('retry skips saved files and reuses the uploaded URL after a save failure',
   assert.equal(els.itemDialogBackdrop.hidden, true);
 });
 
-test('all formats are accepted while oversized files fail individually', async () => {
+test('all formats and files over the former limit reach the upload service', async () => {
   let requests = 0;
   const { api } = setup(async () => { requests++; return { ok:true, json:async () => ({ url:'/good.pdf', items:[] }) }; });
   await api.receivePresentationFiles([file('bad.exe'), { name:'huge.pdf', size:21 * 1024 * 1024 }, file('good.pdf')]);
   await api.saveBatchFiles();
-  assert.equal(requests, 4);
-  assert.deepEqual(Array.from(api.entries(), e => e.status), ['saved', 'failed', 'saved']);
+  assert.equal(requests, 6);
+  assert.deepEqual(Array.from(api.entries(), e => e.status), ['saved', 'saved', 'saved']);
 });
 
 test('single-file behavior remains intact and editing rejects multiple replacements', async () => {

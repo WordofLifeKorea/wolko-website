@@ -8,6 +8,25 @@ import { generateTeachToken } from '../functions/lib/teachAuth.js';
 const configEnv = { TEACH_NAS_URL:'https://files.example.com', TEACH_NAS_TOKEN:'a'.repeat(64) };
 const key = 'nas-12345678-1234-1234-1234-123456789abc.zip';
 
+test('large NAS uploads forward a raw stream without buffering multipart data', async t => {
+  const token = await generateTeachToken('secret', 'member', { email:'member@example.com' });
+  const env = { ADMIN_PASSWORD:'secret', ...configEnv };
+  let size = 0;
+  t.mock.method(globalThis, 'fetch', async (url, options) => {
+    const reader = options.body.getReader();
+    while (true) { const chunk = await reader.read(); if (chunk.done) break; size += chunk.value.byteLength; }
+    return new Response('', { status:201 });
+  });
+  const request = new Request('https://wolko.org/api/teach/upload', { method:'POST',
+    headers:{ Authorization:`Bearer ${token}`, 'X-Wolko-Filename':encodeURIComponent('큰자료.zip') },
+    body:new Uint8Array(40 * 1024 * 1024 + 1) });
+  request.formData = () => assert.fail('large uploads must not buffer multipart data');
+  const response = await onRequestPost({ env, request });
+  assert.equal(response.status, 200);
+  assert.equal(size, 40 * 1024 * 1024 + 1);
+  assert.equal((await response.json()).filename, '큰자료.zip');
+});
+
 test('NAS configuration is optional but partial, non-HTTPS and credential URLs fail closed', () => {
   assert.equal(nasStorageConfig({}), null);
   assert.equal(nasStorageConfig(configEnv).origin, 'https://files.example.com');

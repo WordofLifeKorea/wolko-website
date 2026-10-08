@@ -3,11 +3,9 @@ import { timingSafeEqual } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
 import { mkdir, mkdtemp, readFile, writeFile, rename, rm, stat, link, open } from 'node:fs/promises';
 import { join, extname } from 'node:path';
-import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { pathToFileURL } from 'node:url';
 
-const MAX_BYTES = 20 * 1024 * 1024;
 const KEY = /^(?:nas|private)-[a-f0-9-]{36}\.[a-z0-9]{1,16}$/;
 const GROUPS = { camp:'캠프 자료실', documents:'포탈 문서', versions:'문서 수정 이력',
   receipts:'영수증', 'receipt-trash':'영수증/휴지통', 'receipt-temp':'영수증/임시',
@@ -71,7 +69,6 @@ export function createFileServer({ directory, token }) {
     const match = /^\/files\/([^/]+)$/.exec(req.url || '');
     if (!match || !KEY.test(match[1])) { res.writeHead(404).end('Not found'); return; }
     const key = match[1];
-    const maxBytes = key.startsWith('private-') ? 40 * 1024 * 1024 : MAX_BYTES;
     const target = join(storage, key);
     if (req.method === 'GET') {
       try {
@@ -104,7 +101,6 @@ export function createFileServer({ directory, token }) {
     }
     if (req.method !== 'PUT') { res.writeHead(405, { Allow:'GET, PUT, POST' }).end(); return; }
     if (uploads >= 4) { res.writeHead(503).end('Busy'); return; }
-    if (Number(req.headers['content-length']) > maxBytes) { res.writeHead(413).end('File too large'); return; }
     uploads++;
     let temporary;
     try {
@@ -112,13 +108,7 @@ export function createFileServer({ directory, token }) {
       try { await stat(await locate(key)); res.writeHead(409).end('Already stored'); return; }
       catch (error) { if (error.code !== 'ENOENT') throw error; }
       temporary = await mkdtemp(join(directory, '.upload-'));
-      let size = 0;
-      const limit = new Transform({ transform(chunk, encoding, callback) {
-        size += chunk.length;
-        if (size > maxBytes) { const error = new Error('File too large'); error.status = 413; callback(error); }
-        else callback(null, chunk);
-      } });
-      await pipeline(req, limit, createWriteStream(join(temporary, 'data'), { flags:'wx' }));
+      await pipeline(req, createWriteStream(join(temporary, 'data'), { flags:'wx' }));
       const type = req.headers['content-type'];
       const inline = INLINE_TYPES.has(type);
       const filename = /filename\*=UTF-8''([^;\r\n]*)/i.exec(req.headers['content-disposition'] || '')?.[1] || key;

@@ -15,7 +15,12 @@ User-confirmed target: Synology DS423+, volume1, 28.4TB free reported on
 - Browser uploads: existing authenticated /api/teach/upload endpoint.
 - Browser downloads: existing /api/teach/file/<key> endpoint; NAS token stays server-side.
 - New NAS files have nas- prefixed keys. Existing KV/R2 URLs keep working.
-- Limits: 20MiB per file, four concurrent gateway uploads. Total capacity is the
+- Camp resource uploads to NAS have no application-level per-file size cap;
+  files over 20MiB use a raw streaming request rather than multipart buffering.
+  Cloudflare request-body limits still apply (100MB on Free/Pro); this is not
+  unlimited end-to-end transfer. Legacy non-NAS storage keeps its 20MiB cap.
+  Other upload modules retain their existing limits. Four concurrent gateway
+  uploads are allowed. Total capacity is the
   available NAS volume capacity, shared with other NAS services. RAID is not a backup.
 - Download links retain the existing capability-link behavior: anyone who knows a
   file URL can download it. The gateway itself requires a token for all operations.
