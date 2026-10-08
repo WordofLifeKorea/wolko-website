@@ -7,6 +7,17 @@ export const PRIVATE_FILE_PREFIXES = [
 ];
 export const isNasBackedKey = key => PRIVATE_FILE_PREFIXES.some(prefix => String(key).startsWith(prefix));
 export const privateMigrationKey = key => `nas:migrated:${key}`;
+export function nasFileGroup(key) {
+  if (key.startsWith('portal:resource-file-version:')) return 'versions';
+  if (key.startsWith('portal:resource-file:')) return 'documents';
+  if (key.startsWith('expense:trashfile:')) return 'receipt-trash';
+  if (key.startsWith('expense:receipt:tmp:')) return 'receipt-temp';
+  if (key.startsWith('expense:receipt:')) return 'receipts';
+  if (key.startsWith('car:usage:trash:photo:')) return 'photo-trash';
+  if (key.startsWith('car:usage:photo:')) return 'photos';
+  if (key.startsWith('qt-book-file-')) return 'qt';
+  throw new Error('Invalid file namespace');
+}
 export async function fileHash(bytes) {
   return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), n => n.toString(16).padStart(2, '0')).join('');
 }
@@ -55,7 +66,8 @@ export function fileKV(env) {
       if (bytes.byteLength > 40 * 1024 * 1024) throw new Error('File too large');
       const nasKey = `private-${crypto.randomUUID()}.bin`;
       const response = await nasFileRequest(config, nasKey, { method:'PUT', body:bytes,
-        headers:{ 'Content-Type':'application/octet-stream' } });
+        headers:{ 'Content-Type':'application/octet-stream', 'X-Wolko-Group':nasFileGroup(key),
+          'X-Wolko-Filename':encodeURIComponent(options.metadata?.fileName || options.metadata?.name || options.metadata?.filename || '자료.bin') } });
       if (response.status !== 201) throw new Error('NAS upload unavailable');
       // One KV write publishes a reference; expiration and original metadata stay unchanged.
       return kv.put(key, JSON.stringify({ nasKey }), { ...options, metadata:{ ...options.metadata, nasFileReference:1 } });

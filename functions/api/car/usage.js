@@ -127,7 +127,8 @@ export async function onRequestPost({ env, request }) {
   };
 
   try {
-    await fileKV(env).put(`${PHOTO_PREFIX}${id}`, bytes, { metadata: { type: 'image/jpeg' } });
+    await fileKV(env).put(`${PHOTO_PREFIX}${id}`, bytes, { metadata: { type: 'image/jpeg',
+      filename:`${entry.photoTakenAt.slice(0, 10)}_${entry.vehicleName}_${entry.userName}.jpg` } });
     await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
   } catch (error) {
     await fileKV(env).delete(`${PHOTO_PREFIX}${id}`).catch(() => {});

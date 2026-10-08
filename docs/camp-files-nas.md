@@ -88,7 +88,7 @@ purge or backup cleanup is part of this migration.
 Portal documents and saved versions, expense receipts (including recoverable trash),
 vehicle photos (including recoverable trash), and QT PDFs now use the same NAS gateway.
 Their existing application permissions and download URLs remain unchanged.
-Private bytes are stored as `data/private-UUID.bin/data`; original filename and type
+Private bytes are stored as `data/.storage/private-UUID.bin/data`; original filename and type
 remain in application metadata. The binary payload can also be a legacy JSON envelope.
 Do not manually rename these folders or edit payloads through File Station.
 
@@ -101,3 +101,21 @@ folder structure, receipt ownership, and vehicle-use records remain in KV.
 Deletion and temporary-upload expiry remove application access, not physical NAS
 bytes. Physical cleanup requires a separate reviewed retention policy. Keep both
 the NAS `data` directory and KV metadata backed up; either alone is incomplete.
+
+## Readable folders
+
+Browse `/volume1/docker/wolko-camp-files/data/자료` in File Station. Its folders are
+`캠프 자료실`, `포탈 문서`, `문서 수정 이력`, `영수증`, `차량 사진`, and `QT`.
+Recoverable receipt/photo backups are in each category's `휴지통` subfolder; temporary
+receipts use `임시`. Original filenames receive an eight-character suffix to avoid
+overwriting files with the same name. Vehicle photos include date, vehicle and user.
+
+The immutable gateway objects remain in the hidden `.storage` directory. Ordinary
+readable files are hard links (not duplicate byte storage). Legacy JSON-wrapped Word
+uploads require a decoded readable copy; the gateway's original payload stays intact.
+These folders are a browsing/archive view, not a new edit or permission interface.
+Do not edit the linked contents manually: doing so also changes the gateway object.
+Use the website for edits/deletion and keep the entire `data` tree backed up.
+
+New uploads create readable paths automatically. `scripts/organize-nas-files.mjs`
+organizes existing migrated files and rechecks each original SHA-256 after the move.

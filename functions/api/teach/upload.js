@@ -72,6 +72,7 @@ export async function onRequestPost(context) {
       const response = await nasFileRequest(store.storage, key, {
         method:'PUT', body:file.stream(), headers:{
           'Content-Type':contentType, 'Content-Disposition':contentDisposition,
+          'X-Wolko-Group':'camp', 'X-Wolko-Filename':encodeURIComponent(file.name),
         },
       });
       if (response.status !== 201) {
