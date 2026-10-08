@@ -948,3 +948,16 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-sub-check { flex: none; padding: 0 0 0 16px; display: inline-flex; align-items: center; }
 .ex-sub-check input { width: 18px; height: 18px; accent-color: var(--blue); cursor: pointer; }
 .ex-subs > li.is-selected { background: #f4fafc; }
+
+/* v110 — 회계 상세 항목: 날짜는 영수증 사진 위(왼쪽 끝)로, 품목 | 목적은 한 줄 — 넘치면 … 으로 줄이고 마우스를 올리면 툴팁으로 전체 */
+:root:root .ex-d-item { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 16px; }
+:root:root .ex-d-item > .ex-d-date { grid-column: 1; grid-row: 1; align-self: center; margin-bottom: 6px; white-space: nowrap; }
+:root:root .ex-d-item > .ex-rcol { grid-column: 1; grid-row: 2 / span 3; align-self: start; }
+:root:root .ex-d-item > .ex-d-main { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+:root:root .ex-d-item > .ex-d-amt { grid-column: 3; grid-row: 1; align-self: center; }
+:root:root .ex-d-item > .ex-code-flow, :root:root .ex-d-item > .ex-d-sub { grid-column: 2 / -1; grid-row: auto; }
+.ex-d-main > b { flex: 0 1 auto; min-width: 0; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ex-d-main > .ex-notes { flex: none; }
+.ex-d-sep { flex: none; color: #b7c8d2; }
+.ex-d-purpose-inline { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mid); font-size: 13px; }
+@media (max-width: 640px) { :root:root .ex-d-item { column-gap: 12px; } .ex-d-main > b { max-width: 55%; } }

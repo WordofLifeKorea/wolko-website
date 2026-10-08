@@ -910,8 +910,19 @@ test('회계 업무: 코드 확인·노트 저장 버튼과 리포트별 삭제 
   assert.doesNotMatch(detail, /data-act="recat-save"|data-act="trash"/);
   assert.match(src, /async function saveRecat\(box, id, silent\)/);
   assert.match(src, /autoTimer = setTimeout\(\(\) => saveRecat\(box, box\.dataset\.recat, true\)/, '바꾸면 자동 저장');
-  assert.match(src, /clearTimeout\(autoTimer\); await saveRecat\([^)]*, id, true\);/, '송금 처리 전에도 저장');
+  assert.match(src, /clearTimeout\(autoTimer\); await saveRecat\(.*, id, true\);/, '송금 처리 전에도 저장');
   assert.match(src, /data-act="manage-toggle"/);
   assert.match(src, /data-act="del-sel"/);
   assert.match(src, /type="checkbox" data-sel=/);
+});
+
+test('회계 상세: 날짜는 영수증 사진 위, 품목 | 목적은 한 줄이고 잘리면 툴팁으로 전체', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const detail = src.slice(src.indexOf('function detailHtml('), src.indexOf('function detailHtml(') + 4000);
+  assert.ok(detail.indexOf('ex-d-date') < detail.indexOf('receiptChips(rep, r)'), '날짜가 사진 앞(위)');
+  assert.match(detail, /class="ex-d-purpose-inline" title="\$\{esc\(r\.ministryPurpose\)\}"/, '목적에 툴팁');
+  assert.doesNotMatch(detail, /<div class="ex-d-purpose">/, '목적 별도 줄은 없다');
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-d-purpose-inline \{[^}]*text-overflow: ellipsis; white-space: nowrap;/);
 });
