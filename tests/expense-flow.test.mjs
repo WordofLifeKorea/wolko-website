@@ -858,3 +858,11 @@ test('작성 폼: 사역명·계좌 칸 없이 카테고리만 고르고, 드롭
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /\.ex-row \.ex-select \{ background-repeat: no-repeat !important; background-position: right 8px center !important; background-size: 10px 6px !important; \}/);
 });
+
+test('엑셀로 내보내기 버튼은 리포트 줄 머리에는 없고, 펼친 상세 안에서만 보인다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /class="ex-sub-dl"[^>]*data-act="xlsx-rep"/, '줄 머리의 버튼은 없다');
+  const detail = src.slice(src.indexOf('function detailHtml('), src.indexOf('function detailHtml(') + 6000);
+  assert.match(detail, /data-act="xlsx-rep"/, '상세 안의 버튼');
+});

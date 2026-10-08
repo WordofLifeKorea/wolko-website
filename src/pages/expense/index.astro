@@ -672,6 +672,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       const recat = editable ? `${waiting ? `<p class="ex-recat-wait">${esc(t('delegatedWait'))}</p>` : ''}<div class="ex-recat-save"><button class="ex-btn sm" data-act="recat-save" data-id="${esc(rep.id)}">${esc(t('recatSave'))}</button></div>` : '';
       const lockNote = locked ? `<div class="ex-meta ex-locked">${esc(t('lockedNote'))}</div>` : '';
       let action = '<div class="ex-actions">';
+      action += `<button class="ex-btn sm" data-act="xlsx-rep" data-id="${esc(rep.id)}">${t('xlsxForm')}</button><span style="flex:1"></span>`;
       if (me?.isAccountant && (mode === 'accounting' || mode === 'all') && rep.status === 'approved') action += `<button class="ex-btn danger sm" data-act="acct-return" data-id="${esc(rep.id)}">${t('btnReturn')}</button>`;
       if (mode === 'accounting' && rep.status === 'approved') action += `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}" ${waiting ? 'disabled title="' + esc(t('delegatedWait')) + '"' : ''}>${t('btnProcess')}</button>`;
       // 삭제(백업 후 이동)는 회계 담당자만 — 회계 업무와 전체 리포트 모두에서
@@ -716,7 +717,6 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
               <button type="button" class="ex-sub-row" data-toggle="${esc(r.id)}" aria-expanded="${G.open.has(r.id)}">
                 <span class="ex-sub-date">${esc(shortDate(r.submittedAt))}</span>
                 <span class="ex-sub-desc">${esc(r.description || t('noDesc'))}<span class="ex-meta"> · ${esc(t('gItems', r.rows.length))}${r.reviewedByName ? ' · ' + esc(t('approvedBy', r.reviewedByName)) : ''}</span></span>
-                <span class="ex-sub-dl" role="button" tabindex="0" data-act="xlsx-rep" data-id="${esc(r.id)}">${t('xlsxForm')}</span>
                 <span class="ex-sub-amt">${krw(r.total)}</span>
                 <span class="ex-status mini ${r.status}">${t('st_' + r.status)}</span>
               </button>
