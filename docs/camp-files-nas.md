@@ -1,8 +1,9 @@
 # Camp resource storage on Synology
 
 Status: NAS gateway deployed; authenticated PUT/GET and unauthorized 401 verified
-on 2026-10-08. Cloudflare Pages production activation must follow gateway validation.
-No existing file has been migrated or deleted.
+on 2026-10-08. Camp resource migration verified 33 files (100,614,927 bytes).
+Original Cloudflare payloads are retained. Private file migration uses the separate
+script and mode-600 report described below; no physical source purge is performed.
 
 User-confirmed target: Synology DS423+, volume1, 28.4TB free reported on
 2026-10-08. Hostname: files.wolko.org. Free space is shared, not a dedicated quota.
@@ -82,3 +83,21 @@ purge or backup cleanup is part of this migration.
 
 - Container Manager projects: https://kb.synology.com/en-uk/DSM/help/ContainerManager/docker_project?version=7
 - Cloudflare Tunnel: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/
+# Private Portal Files
+
+Portal documents and saved versions, expense receipts (including recoverable trash),
+vehicle photos (including recoverable trash), and QT PDFs now use the same NAS gateway.
+Their existing application permissions and download URLs remain unchanged.
+Private bytes are stored as `data/private-UUID.bin/data`; original filename and type
+remain in application metadata. The binary payload can also be a legacy JSON envelope.
+Do not manually rename these folders or edit payloads through File Station.
+
+`scripts/migrate-private-nas.mjs` uses only the server credential, checks SHA-256 of
+each copied payload before publishing its mapping, and keeps original KV bytes.
+Its mode-600 report defaults to `/private/tmp/wolko-private-nas-migration.json`.
+New uploads store bytes on NAS and only a small pointer in KV. Account records,
+folder structure, receipt ownership, and vehicle-use records remain in KV.
+
+Deletion and temporary-upload expiry remove application access, not physical NAS
+bytes. Physical cleanup requires a separate reviewed retention policy. Keep both
+the NAS `data` directory and KV metadata backed up; either alone is incomplete.

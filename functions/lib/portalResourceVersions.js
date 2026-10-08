@@ -1,3 +1,4 @@
+import { fileKV } from './nasFileKV.js';
 const MAX_EDIT_VERSIONS = 10;
 
 export const resourceFileKey = (id, fileId) => `portal:resource-file:${id}:${fileId}`;
@@ -11,7 +12,7 @@ function base64ToBytes(dataUrl) {
 }
 
 export async function readStoredResourceFile(env, id, fileId) {
-  const stored = await env.CAMP_KV.getWithMetadata(resourceFileKey(id, fileId), 'arrayBuffer');
+  const stored = await fileKV(env).getWithMetadata(resourceFileKey(id, fileId), 'arrayBuffer');
   if (!stored.value) return null;
   if (stored.metadata?.fileName) {
     return { bytes: new Uint8Array(stored.value), metadata: stored.metadata };
@@ -28,7 +29,7 @@ export async function readStoredResourceFile(env, id, fileId) {
 }
 
 export async function readStoredResourceVersion(env, id, fileId, versionId) {
-  const stored = await env.CAMP_KV.getWithMetadata(resourceVersionKey(id, fileId, versionId), 'arrayBuffer');
+  const stored = await fileKV(env).getWithMetadata(resourceVersionKey(id, fileId, versionId), 'arrayBuffer');
   if (!stored.value) return null;
   return { bytes: new Uint8Array(stored.value), metadata: stored.metadata || {} };
 }
@@ -53,7 +54,7 @@ export async function ensureOriginalVersion(env, { id, file, bytes }) {
   if (currentVersions.some(version => version.isOriginal)) {
     const { kept, removed } = trimVersions(currentVersions);
     if (!removed.length) return { file, created: false, pruned: false };
-    await Promise.all(removed.map(version => env.CAMP_KV.delete(resourceVersionKey(id, file.id, version.id))));
+    await Promise.all(removed.map(version => fileKV(env).delete(resourceVersionKey(id, file.id, version.id))));
     return { file: { ...file, versions: kept }, created: false, pruned: true };
   }
   const versionId = 'original';
@@ -69,11 +70,11 @@ export async function ensureOriginalVersion(env, { id, file, bytes }) {
     isOriginal: true,
     hash: await sha256Hex(bytes),
   };
-  await env.CAMP_KV.put(resourceVersionKey(id, file.id, versionId), bytes, {
+  await fileKV(env).put(resourceVersionKey(id, file.id, versionId), bytes, {
     metadata: { fileName: record.fileName, fileType: record.fileType },
   });
   const { kept, removed } = trimVersions([...currentVersions, record]);
-  await Promise.all(removed.map(version => env.CAMP_KV.delete(resourceVersionKey(id, file.id, version.id))));
+  await Promise.all(removed.map(version => fileKV(env).delete(resourceVersionKey(id, file.id, version.id))));
   return { file: { ...file, versions: kept }, created: true, pruned: removed.length > 0 };
 }
 
@@ -97,11 +98,11 @@ export async function archiveCurrentFile(env, { id, file, bytes, actorEmail, act
     isOriginal: currentVersions.length === 0,
     hash: currentHash,
   };
-  await env.CAMP_KV.put(resourceVersionKey(id, file.id, versionId), bytes, {
+  await fileKV(env).put(resourceVersionKey(id, file.id, versionId), bytes, {
     metadata: { fileName: record.fileName, fileType: record.fileType },
   });
   const { kept, removed } = trimVersions([record, ...currentVersions]);
-  await Promise.all(removed.map(version => env.CAMP_KV.delete(resourceVersionKey(id, file.id, version.id))));
+  await Promise.all(removed.map(version => fileKV(env).delete(resourceVersionKey(id, file.id, version.id))));
   return kept;
 }
 
@@ -134,12 +135,12 @@ export async function replaceWithEditedFile(env, { id, file, currentBytes, edite
     lastOnlyOfficeSaveId: saveId || '',
     versions,
   };
-  await env.CAMP_KV.put(resourceFileKey(id, file.id), editedBytes, {
+  await fileKV(env).put(resourceFileKey(id, file.id), editedBytes, {
     metadata: { fileName: file.fileName, fileType: file.fileType },
   });
   return { file: nextFile, changed: true, finalized: finalSave };
 }
 
 export async function deleteFileVersions(env, id, file) {
-  await Promise.all(versionsOf(file).map(version => env.CAMP_KV.delete(resourceVersionKey(id, file.id, version.id))));
+  await Promise.all(versionsOf(file).map(version => fileKV(env).delete(resourceVersionKey(id, file.id, version.id))));
 }

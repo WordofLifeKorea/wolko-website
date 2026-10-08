@@ -57,7 +57,7 @@ test('NAS upload and download round trip keeps existing portal URLs and legacy K
   assert.equal(await download.text(), 'archive');
   assert.equal(download.headers.get('Authorization'), null);
   assert.match(download.headers.get('Content-Disposition'), /^attachment;/);
-  const legacy = await onRequestGet({ env, params:{ key:'teach-file-old.pdf' } });
+  const legacy = await onRequestGet({ env, params:{ key:'teach-file-12345678-1234-1234-1234-123456789abc.pdf' } });
   assert.equal(await legacy.text(), 'legacy');
 });
 

@@ -1,3 +1,4 @@
+import { fileKV } from './nasFileKV.js';
 /**
  * 경비 리포트(Expense Report) 공용 헬퍼.
  *
@@ -134,8 +135,8 @@ async function loadReports(env) {
   const items = [];
   let cursor;
   do {
-    const result = await env.CAMP_KV.list({ prefix: REPORT_PREFIX, ...(cursor ? { cursor } : {}), limit: 1000 });
-    const values = await Promise.all(result.keys.map(k => env.CAMP_KV.get(k.name, 'json')));
+    const result = await fileKV(env).list({ prefix: REPORT_PREFIX, ...(cursor ? { cursor } : {}), limit: 1000 });
+    const values = await Promise.all(result.keys.map(k => fileKV(env).get(k.name, 'json')));
     items.push(...values.filter(Boolean));
     cursor = result.list_complete ? null : result.cursor;
   } while (cursor);
@@ -188,12 +189,12 @@ export async function finalizeReceipts(env, report) {
     for (const f of row.receipts) {
       const finalKey = `${RECEIPT_PREFIX}${report.id}:${f.id}`;
       const tmpKey = `${RECEIPT_PREFIX}tmp:${report.submitterEmail}:${f.id}`;
-      const already = await env.CAMP_KV.getWithMetadata(finalKey, 'arrayBuffer');
+      const already = await fileKV(env).getWithMetadata(finalKey, 'arrayBuffer');
       if (already.value) { kept.push(f); continue; }
-      const tmp = await env.CAMP_KV.getWithMetadata(tmpKey, 'arrayBuffer');
+      const tmp = await fileKV(env).getWithMetadata(tmpKey, 'arrayBuffer');
       if (!tmp.value) continue;
-      await env.CAMP_KV.put(finalKey, tmp.value, { metadata: tmp.metadata });
-      await env.CAMP_KV.delete(tmpKey);
+      await fileKV(env).put(finalKey, tmp.value, { metadata: tmp.metadata });
+      await fileKV(env).delete(tmpKey);
       kept.push(f);
     }
     row.receipts = kept;
@@ -208,34 +209,34 @@ export async function trashReport(env, report, by) {
   const files = [];
   for (const row of report.rows) {
     for (const f of row.receipts || []) {
-      const src = await env.CAMP_KV.getWithMetadata(`${RECEIPT_PREFIX}${report.id}:${f.id}`, 'arrayBuffer');
+      const src = await fileKV(env).getWithMetadata(`${RECEIPT_PREFIX}${report.id}:${f.id}`, 'arrayBuffer');
       if (!src.value) continue;
-      await env.CAMP_KV.put(`${TRASH_FILE_PREFIX}${report.id}:${f.id}`, src.value, { metadata: src.metadata });
+      await fileKV(env).put(`${TRASH_FILE_PREFIX}${report.id}:${f.id}`, src.value, { metadata: src.metadata });
       files.push(f.id);
     }
   }
   const record = { report, files, deletedAt: new Date().toISOString(), deletedBy: by.email, deletedByName: by.name };
-  await env.CAMP_KV.put(`${TRASH_PREFIX}${report.id}`, JSON.stringify(record));
-  await Promise.all(files.map(fid => env.CAMP_KV.delete(`${RECEIPT_PREFIX}${report.id}:${fid}`)));
-  await env.CAMP_KV.delete(`${REPORT_PREFIX}${report.id}`);
+  await fileKV(env).put(`${TRASH_PREFIX}${report.id}`, JSON.stringify(record));
+  await Promise.all(files.map(fid => fileKV(env).delete(`${RECEIPT_PREFIX}${report.id}:${fid}`)));
+  await fileKV(env).delete(`${REPORT_PREFIX}${report.id}`);
   return record;
 }
 
 /** 삭제된 리포트를 원래대로 되살린다(영수증 포함). 이미 같은 ID의 리포트가 있으면 null. */
 export async function restoreReport(env, id, by) {
-  const record = await env.CAMP_KV.get(`${TRASH_PREFIX}${id}`, 'json');
+  const record = await fileKV(env).get(`${TRASH_PREFIX}${id}`, 'json');
   if (!record) return { error: 'notfound' };
-  if (await env.CAMP_KV.get(`${REPORT_PREFIX}${id}`)) return { error: 'exists' };
+  if (await fileKV(env).get(`${REPORT_PREFIX}${id}`)) return { error: 'exists' };
   for (const fid of record.files || []) {
-    const src = await env.CAMP_KV.getWithMetadata(`${TRASH_FILE_PREFIX}${id}:${fid}`, 'arrayBuffer');
-    if (src.value) await env.CAMP_KV.put(`${RECEIPT_PREFIX}${id}:${fid}`, src.value, { metadata: src.metadata });
+    const src = await fileKV(env).getWithMetadata(`${TRASH_FILE_PREFIX}${id}:${fid}`, 'arrayBuffer');
+    if (src.value) await fileKV(env).put(`${RECEIPT_PREFIX}${id}:${fid}`, src.value, { metadata: src.metadata });
   }
   const report = record.report;
   report.log = [...(report.log || []), { at: new Date().toISOString(), by: by.email, action: 'restore' }];
-  await env.CAMP_KV.put(`${REPORT_PREFIX}${id}`, JSON.stringify(report));
+  await fileKV(env).put(`${REPORT_PREFIX}${id}`, JSON.stringify(report));
   await Promise.all([
-    env.CAMP_KV.delete(`${TRASH_PREFIX}${id}`),
-    ...(record.files || []).map(fid => env.CAMP_KV.delete(`${TRASH_FILE_PREFIX}${id}:${fid}`)),
+    fileKV(env).delete(`${TRASH_PREFIX}${id}`),
+    ...(record.files || []).map(fid => fileKV(env).delete(`${TRASH_FILE_PREFIX}${id}:${fid}`)),
   ]);
   return { report };
 }
@@ -244,8 +245,8 @@ export async function listTrash(env) {
   const items = [];
   let cursor;
   do {
-    const result = await env.CAMP_KV.list({ prefix: TRASH_PREFIX, ...(cursor ? { cursor } : {}), limit: 1000 });
-    const values = await Promise.all(result.keys.map(k => env.CAMP_KV.get(k.name, 'json')));
+    const result = await fileKV(env).list({ prefix: TRASH_PREFIX, ...(cursor ? { cursor } : {}), limit: 1000 });
+    const values = await Promise.all(result.keys.map(k => fileKV(env).get(k.name, 'json')));
     items.push(...values.filter(Boolean));
     cursor = result.list_complete ? null : result.cursor;
   } while (cursor);

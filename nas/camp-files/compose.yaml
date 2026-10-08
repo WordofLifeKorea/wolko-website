@@ -26,6 +26,7 @@ services:
       TEACH_NAS_TOKEN: ${TEACH_NAS_TOKEN:?Set TEACH_NAS_TOKEN in .env}
     volumes:
       - ./data:/data
+      - ./server.mjs:/app/server.mjs:ro
     read_only: true
     cap_drop:
       - ALL

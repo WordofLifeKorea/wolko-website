@@ -1,3 +1,4 @@
+import { fileKV } from '../../lib/nasFileKV.js';
 import { sessionFor, canWrite, text, readData, saveData, error, filesOf } from '../../lib/portalResources.js';
 import { getAccount } from '../../lib/hubAccounts.js';
 import { archiveCurrentFile, readStoredResourceFile, resourceFileKey, resourceVersionKey, versionsOf } from '../../lib/portalResourceVersions.js';
@@ -41,7 +42,7 @@ export async function onRequestGet({ env, request }) {
   }
   const version = versionsOf(found.file).find(entry => entry.id === versionId);
   if (!version) return error('버전을 찾을 수 없습니다.', 404);
-  const stored = await env.CAMP_KV.getWithMetadata(resourceVersionKey(id, fileId, versionId), 'arrayBuffer');
+  const stored = await fileKV(env).getWithMetadata(resourceVersionKey(id, fileId, versionId), 'arrayBuffer');
   if (!stored.value) return error('버전 파일을 찾을 수 없습니다.', 404);
   const type = stored.metadata?.fileType || version.fileType || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   return Response.json({
@@ -67,7 +68,7 @@ export async function onRequestPost({ env, request }) {
   if (!found.file || !version) return error('버전을 찾을 수 없습니다.', 404);
   const [current, selected] = await Promise.all([
     readStoredResourceFile(env, id, fileId),
-    env.CAMP_KV.getWithMetadata(resourceVersionKey(id, fileId, versionId), 'arrayBuffer'),
+    fileKV(env).getWithMetadata(resourceVersionKey(id, fileId, versionId), 'arrayBuffer'),
   ]);
   if (!current || !selected.value) return error('버전 파일을 불러오지 못했습니다.', 404);
   const account = await getAccount(env, session.email);
@@ -89,7 +90,7 @@ export async function onRequestPost({ env, request }) {
     restoredFromVersionId: versionId,
     versions,
   };
-  await env.CAMP_KV.put(resourceFileKey(id, fileId), restoredBytes, {
+  await fileKV(env).put(resourceFileKey(id, fileId), restoredBytes, {
     metadata: { fileName: found.file.fileName, fileType: found.file.fileType },
   });
   found.item.files = found.files.map((file, index) => index === found.fileIndex ? nextFile : file);

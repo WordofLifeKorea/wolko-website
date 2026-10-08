@@ -1,7 +1,8 @@
+import { fileKV } from '../../../lib/nasFileKV.js';
 function getFileStore(env) {
   const bucket = env.QT_BOOK_FILES || env.TEACH_FILES || env.CAMP_RESOURCES_FILES || env.R2_BUCKET || env.BUCKET;
   if (bucket) return { type: 'r2', storage: bucket };
-  if (env.CAMP_KV) return { type: 'kv', storage: env.CAMP_KV };
+  if (env.CAMP_KV) return { type: 'kv', storage: fileKV(env) };
   return null;
 }
 
@@ -17,7 +18,7 @@ export async function onRequestGet(context) {
   const { env, params } = context;
   const store = getFileStore(env);
   const key = safeKey(params.key);
-  if (!store || !key) return new Response('Not found', { status: 404 });
+  if (!store || !/^(?:qt-book-file-|qt-book\/)[a-f0-9-]{36}\.pdf$/.test(key)) return new Response('Not found', { status: 404 });
 
   if (store.type === 'r2') {
     const object = await store.storage.get(key);

@@ -1,5 +1,6 @@
 import { nasStorageConfig } from '../../lib/teachNasStorage.js';
 import { LEGACY_TEACH_KEY, legacyTeachStore, migrateTeachFile } from '../../lib/teachNasMigration.js';
+import { PRIVATE_FILE_PREFIXES, isNasBackedKey, migratePrivateFile } from '../../lib/nasFileKV.js';
 
 export async function onRequestPost({ env, request }) {
   let config;
@@ -13,6 +14,16 @@ export async function onRequestPost({ env, request }) {
   if (difference) return new Response('Unauthorized', { status:401 });
   try {
     const input = await request.json();
+    if (input.action === 'private-list') {
+      if (!PRIVATE_FILE_PREFIXES.includes(input.prefix)) return new Response('Invalid namespace', { status:400 });
+      const page = await env.CAMP_KV.list({ prefix:input.prefix, limit:100,
+        ...(input.cursor ? { cursor:String(input.cursor) } : {}) });
+      return Response.json({ keys:page.keys.map(x => x.name), cursor:page.cursor || '', complete:page.list_complete });
+    }
+    if (input.action === 'private-copy') {
+      if (!isNasBackedKey(input.key)) return new Response('Invalid namespace', { status:400 });
+      return Response.json(await migratePrivateFile(env, config, input.key));
+    }
     if (input.action === 'list') {
       const store = legacyTeachStore(env);
       const page = await store.storage.list({ ...(store.type === 'kv' ? { prefix:'teach-file-' } : {}),

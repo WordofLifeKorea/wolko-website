@@ -1,3 +1,4 @@
+import { fileKV } from '../../lib/nasFileKV.js';
 /**
  * POST /api/expense/receipt   body: { name, type, data(base64 dataURL) }
  *      → 영수증을 KV에 임시 저장하고 { id } 반환. 리포트 제출 시 rows[].receipts 에 이 id를 담는다.
@@ -40,7 +41,7 @@ export async function onRequestPost({ env, request }) {
   if (bytes.length > MAX_RECEIPT_BYTES) return err('영수증 파일은 8MB 이하만 첨부할 수 있습니다.');
 
   const id = crypto.randomUUID();
-  await env.CAMP_KV.put(tempKey(session.email, id), bytes, {
+  await fileKV(env).put(tempKey(session.email, id), bytes, {
     expirationTtl: TEMP_TTL,
     metadata: { name, type, owner: session.email },
   });
@@ -52,14 +53,14 @@ export async function onRequestPost({ env, request }) {
  * 리포트가 생성된 뒤 처음 열람할 때 임시 키(업로더 소유)에 있으면 확정 키로 복사한다.
  */
 async function loadReceipt(env, report, fileId) {
-  const final = await env.CAMP_KV.getWithMetadata(finalKey(report.id, fileId), 'arrayBuffer');
+  const final = await fileKV(env).getWithMetadata(finalKey(report.id, fileId), 'arrayBuffer');
   if (final.value) return final;
 
-  const tmp = await env.CAMP_KV.getWithMetadata(tempKey(report.submitterEmail, fileId), 'arrayBuffer');
+  const tmp = await fileKV(env).getWithMetadata(tempKey(report.submitterEmail, fileId), 'arrayBuffer');
   if (!tmp.value) return null;
   // 확정 키로 이동(영구 보관)
-  await env.CAMP_KV.put(finalKey(report.id, fileId), tmp.value, { metadata: tmp.metadata });
-  await env.CAMP_KV.delete(tempKey(report.submitterEmail, fileId));
+  await fileKV(env).put(finalKey(report.id, fileId), tmp.value, { metadata: tmp.metadata });
+  await fileKV(env).delete(tempKey(report.submitterEmail, fileId));
   return tmp;
 }
 
@@ -73,7 +74,7 @@ export async function onRequestGet({ env, request }) {
 
   if (url.searchParams.get('draft') === '1') {
     // 내가 올린 임시 파일만 — 키에 내 이메일이 들어 있어 남의 것은 읽을 수 없다
-    const tmp = fileId ? await env.CAMP_KV.getWithMetadata(tempKey(session.email, fileId), 'arrayBuffer') : { value: null };
+    const tmp = fileId ? await fileKV(env).getWithMetadata(tempKey(session.email, fileId), 'arrayBuffer') : { value: null };
     if (!tmp.value) return err('임시 저장 기간(3일)이 지나 파일이 사라졌습니다. 다시 첨부해 주세요.', 404);
     const meta = tmp.metadata || {};
     return new Response(tmp.value, { headers: {
@@ -83,7 +84,7 @@ export async function onRequestGet({ env, request }) {
     } });
   }
 
-  const report = reportId ? await env.CAMP_KV.get(`${REPORT_PREFIX}${reportId}`, 'json') : null;
+  const report = reportId ? await fileKV(env).get(`${REPORT_PREFIX}${reportId}`, 'json') : null;
   if (!report) return err('리포트를 찾을 수 없습니다.', 404);
 
   const isOwner = report.submitterEmail === session.email;

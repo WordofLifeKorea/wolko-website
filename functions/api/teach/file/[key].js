@@ -41,6 +41,7 @@ export async function onRequestGet(context) {
       return new Response(response.body, { headers });
     } catch { return new Response('NAS unavailable', { status:503 }); }
   }
+  if (!LEGACY_TEACH_KEY.test(nasKey)) return new Response('Not found', { status:404 });
   const store = getTeachFileStore(env);
   if (!store) {
     return new Response('Not configured', { status: 500 });

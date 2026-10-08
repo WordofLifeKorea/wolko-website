@@ -1,3 +1,4 @@
+import { fileKV } from '../../lib/nasFileKV.js';
 import { ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
 
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
@@ -13,11 +14,11 @@ export async function onRequestGet({ env, request }) {
 
 // 기록과 사진을 삭제 보관함 키로 옮긴다(백업) — 되돌릴 수 있게 지우지는 않는다.
 async function moveToTrash(env, entry, session) {
-  const photo = await env.CAMP_KV.getWithMetadata(`${PHOTO_PREFIX}${entry.id}`, 'arrayBuffer');
-  if (photo.value) await env.CAMP_KV.put(`${TRASH_PHOTO_PREFIX}${entry.id}`, photo.value, { metadata: photo.metadata ?? undefined });
-  await env.CAMP_KV.put(`${TRASH_ENTRY_PREFIX}${entry.id}`, JSON.stringify({ ...entry, deletedAt: new Date().toISOString(), deletedBy: session.email }));
-  await env.CAMP_KV.delete(`${PHOTO_PREFIX}${entry.id}`);
-  await env.CAMP_KV.delete(`${ENTRY_PREFIX}${entry.id}`);
+  const photo = await fileKV(env).getWithMetadata(`${PHOTO_PREFIX}${entry.id}`, 'arrayBuffer');
+  if (photo.value) await fileKV(env).put(`${TRASH_PHOTO_PREFIX}${entry.id}`, photo.value, { metadata: photo.metadata ?? undefined });
+  await fileKV(env).put(`${TRASH_ENTRY_PREFIX}${entry.id}`, JSON.stringify({ ...entry, deletedAt: new Date().toISOString(), deletedBy: session.email }));
+  await fileKV(env).delete(`${PHOTO_PREFIX}${entry.id}`);
+  await fileKV(env).delete(`${ENTRY_PREFIX}${entry.id}`);
 }
 
 export const MAX_BULK = 50;
@@ -35,7 +36,7 @@ export async function onRequestDelete({ env, request }) {
     if (ids.length > MAX_BULK) return fail(`한 번에 ${MAX_BULK}건까지 삭제할 수 있습니다.`);
     const removed = [];
     for (const id of ids) {
-      const entry = await env.CAMP_KV.get(`${ENTRY_PREFIX}${id}`, 'json');
+      const entry = await fileKV(env).get(`${ENTRY_PREFIX}${id}`, 'json');
       if (!entry) continue;
       await moveToTrash(env, entry, session);
       removed.push(id);
@@ -69,25 +70,25 @@ export async function onRequestPatch({ env, request }) {
     if (!vehicleId && !useType) return fail('바꿀 내용을 골라 주세요.');
     const updated = [];
     for (const id of ids) {
-      const entry = await env.CAMP_KV.get(`${ENTRY_PREFIX}${id}`, 'json');
+      const entry = await fileKV(env).get(`${ENTRY_PREFIX}${id}`, 'json');
       if (!entry) continue;
       if (vehicleId) { entry.vehicleId = vehicleId; entry.vehicleName = labels.get(vehicleId); }
       if (useType) entry.useType = useType;
       entry.editedBy = session.email; entry.editedAt = new Date().toISOString();
-      await env.CAMP_KV.put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
+      await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
       updated.push(entry);
     }
     return Response.json({ ok: true, count: updated.length, entries: updated }, { headers: { 'Cache-Control': 'no-store' } });
   }
   const id = String(body?.id || '');
-  const entry = id ? await env.CAMP_KV.get(`${ENTRY_PREFIX}${id}`, 'json') : null;
+  const entry = id ? await fileKV(env).get(`${ENTRY_PREFIX}${id}`, 'json') : null;
   if (!entry) return fail('기록을 찾을 수 없습니다.', 404);
   if (entry.userEmail !== session.email && session.role !== 'master') return fail('본인이 기록한 일지만 수정할 수 있습니다.', 403);
   const km = Number(body?.mileageAfter);
   if (!Number.isInteger(km) || km < 0 || km > 2_000_000) return fail('마일리지는 0 이상의 숫자(km)로 입력해 주세요.');
   entry.mileageAfter = km;
   entry.mileageAfterAt = new Date().toISOString();
-  await env.CAMP_KV.put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
+  await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
   return Response.json({ entry }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
@@ -126,10 +127,10 @@ export async function onRequestPost({ env, request }) {
   };
 
   try {
-    await env.CAMP_KV.put(`${PHOTO_PREFIX}${id}`, bytes, { metadata: { type: 'image/jpeg' } });
-    await env.CAMP_KV.put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
+    await fileKV(env).put(`${PHOTO_PREFIX}${id}`, bytes, { metadata: { type: 'image/jpeg' } });
+    await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
   } catch (error) {
-    await env.CAMP_KV.delete(`${PHOTO_PREFIX}${id}`).catch(() => {});
+    await fileKV(env).delete(`${PHOTO_PREFIX}${id}`).catch(() => {});
     console.error('car usage save failed:', error);
     return fail('저장하지 못했습니다. 잠시 후 다시 시도해 주세요.', 500);
   }

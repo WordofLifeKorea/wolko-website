@@ -1,3 +1,4 @@
+import { fileKV } from '../../lib/nasFileKV.js';
 /**
  * 작업 항목(Resource & Media)에 딸린 파일 첨부 — 예전엔 "작업 파일"/"원본 파일"
  * 두 칸이 고정이었지만, 지금은 필요한 만큼 자유롭게 추가하는 파일 목록이다.
@@ -64,7 +65,7 @@ export async function onRequestGet({ env, request }) {
   const fileId = text(url.searchParams.get('fileId'), 80);
   if (!id || !fileId) return error('잘못된 요청입니다.', 400);
 
-  const { value, metadata } = await env.CAMP_KV.getWithMetadata(fileKvKey(id, fileId), 'arrayBuffer');
+  const { value, metadata } = await fileKV(env).getWithMetadata(fileKvKey(id, fileId), 'arrayBuffer');
   if (!value) return error('파일을 찾을 수 없습니다.', 404);
 
   let file;
@@ -146,7 +147,7 @@ export async function onRequestPost({ env, request }) {
     await deleteFileVersions(env, id, replacedFile);
   }
 
-  await env.CAMP_KV.put(fileKvKey(id, fileId), bytes, { metadata: { fileName, fileType } });
+  await fileKV(env).put(fileKvKey(id, fileId), bytes, { metadata: { fileName, fileType } });
 
   let meta = {
     id: fileId, folderId, category, fileName, fileType, fileSize: bytes.length,
@@ -246,7 +247,7 @@ export async function onRequestDelete({ env, request }) {
 
   const item = { ...data.items[index] };
   const deletedFile = filesOf(item).find(f => f.id === fileId);
-  await env.CAMP_KV.delete(fileKvKey(id, fileId));
+  await fileKV(env).delete(fileKvKey(id, fileId));
   if (deletedFile) await deleteFileVersions(env, id, deletedFile);
   item.files = filesOf(item).filter(f => f.id !== fileId);
   item.annotations = annotationsOf(item).filter(a => a.fileId !== fileId);

@@ -1,3 +1,4 @@
+import { fileKV } from '../../lib/nasFileKV.js';
 const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
@@ -36,7 +37,7 @@ async function verifyToken(request, env) {
 function getFileStore(env) {
   const bucket = env.QT_BOOK_FILES || env.TEACH_FILES || env.CAMP_RESOURCES_FILES || env.R2_BUCKET || env.BUCKET;
   if (bucket) return { type: 'r2', storage: bucket };
-  if (env.CAMP_KV) return { type: 'kv', storage: env.CAMP_KV };
+  if (env.CAMP_KV) return { type: 'kv', storage: fileKV(env) };
   return null;
 }
 
