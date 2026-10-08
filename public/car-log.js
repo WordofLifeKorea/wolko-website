@@ -17,7 +17,7 @@
       qrTitle: '차량에 부착할 QR 코드', qrHelp: '고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.', qrPrint: 'QR 코드 인쇄',
       photoDialog: '차량 사진', closePhoto: '사진 닫기',
       pickVehicle: '차량을 선택해 주세요', noEntries: '아직 등록된 사용 기록이 없습니다.', viewPhoto: '사진 보기',
-      clearAll: '전체 비우기', clearConfirm: '지금 있는 모든 사용 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n계속하려면 "삭제"라고 입력하세요.', cleared: n => n + '건을 삭제했어요.',
+      manage: '관리', manageDone: '완료', selectAll: '전체 선택', selectedN: n => n ? `${n}건 선택` : '기록을 골라 주세요', editSel: '선택 수정', delSel: '선택 삭제', delSelConfirm: n => `선택한 ${n}건의 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n삭제할까요?`, editTitle: '선택한 기록 수정', editHelp: n => `선택한 ${n}건에 적용돼요. 바꾸지 않을 항목은 “변경 안 함”으로 두세요.`, editVehicle: '차량', editUse: '사용 목적', keepAsIs: '변경 안 함', cancelBtn: '취소', editSaveBtn: '저장', editNothing: '바꿀 내용을 골라 주세요.', deleted: n => `${n}건을 삭제했습니다.`, edited: n => `${n}건을 수정했습니다.`, clearConfirm: '지금 있는 모든 사용 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n계속하려면 "삭제"라고 입력하세요.', cleared: n => n + '건을 삭제했어요.',
       mileageAfter: '사용 후 마일리지', mileagePh: '사용 후 계기판 km', mileageSave: '저장', mileageEdit: '수정', mileageSaved: '마일리지를 저장했습니다.', mileageFail: '마일리지를 숫자(km)로 입력해 주세요.',
       useMinistry: '사역용', usePersonal: '개인용', timeExif: '사진 촬영 시각', timeSaved: '기록 시각',
       connectFail: '일지 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', loadFail: '일지를 불러오지 못했습니다.',
@@ -40,7 +40,7 @@
       qrTitle: 'QR codes for the vehicles', qrHelp: 'Print the code for each fixed vehicle and attach it. Scanning selects that vehicle automatically.', qrPrint: 'Print QR codes',
       photoDialog: 'Vehicle photo', closePhoto: 'Close photo',
       pickVehicle: 'Select a vehicle', noEntries: 'No usage records yet.', viewPhoto: 'View photo',
-      clearAll: 'Clear all', clearConfirm: 'This deletes ALL current usage records and photos.\n(They are kept in a deleted-items backup)\n\nType DELETE to continue.', cleared: n => n + ' record(s) deleted.',
+      manage: 'Manage', manageDone: 'Done', selectAll: 'Select all', selectedN: n => n ? `${n} selected` : 'Select records', editSel: 'Edit selected', delSel: 'Delete selected', delSelConfirm: n => `This deletes the ${n} selected record(s) and their photos.\n(They are kept in a deleted-items backup)\n\nDelete them?`, editTitle: 'Edit selected records', editHelp: n => `Applies to the ${n} selected record(s). Leave anything you do not want to change as “No change”.`, editVehicle: 'Vehicle', editUse: 'Purpose of use', keepAsIs: 'No change', cancelBtn: 'Cancel', editSaveBtn: 'Save', editNothing: 'Choose what to change.', deleted: n => `Deleted ${n} record(s).`, edited: n => `Updated ${n} record(s).`, clearConfirm: 'This deletes ALL current usage records and photos.\n(They are kept in a deleted-items backup)\n\nType DELETE to continue.', cleared: n => n + ' record(s) deleted.',
       mileageAfter: 'Mileage after use', mileagePh: 'Odometer after use (km)', mileageSave: 'Save', mileageEdit: 'Edit', mileageSaved: 'Mileage saved.', mileageFail: 'Enter the mileage as a number (km).',
       useMinistry: 'Ministry', usePersonal: 'Personal', timeExif: 'photo taken', timeSaved: 'recorded',
       connectFail: 'Could not reach the log service. Please try again shortly.', loadFail: 'Could not load the log.',
@@ -104,7 +104,7 @@
     $('loginPanel').hidden = true;
     $('logApp').hidden = false;
     me = data.user;
-    $('clearAllBtn').hidden = me.role !== 'master';
+    $('manageBtn').hidden = me.role !== 'master';   // 관리(선택 수정·삭제)는 마스터 계정만
     $('currentUser').textContent = shownName(data.user.name);
     const select = $('vehicleSelect');
     select.replaceChildren(new Option(t('pickVehicle'), ''));
@@ -115,8 +115,25 @@
     updateReady();
   }
 
+  let manageMode = false;
+  const selected = new Set();
+  function syncManage() {
+    const master = me && me.role === 'master';
+    if (!master) { manageMode = false; selected.clear(); }
+    $('manageBtn').textContent = manageMode ? t('manageDone') : t('manage');
+    $('manageBtn').classList.toggle('on', manageMode);
+    $('manageBar').hidden = !manageMode;
+    const n = selected.size;
+    $('selectedCount').textContent = t('selectedN', n);
+    $('editSelBtn').disabled = !n; $('delSelBtn').disabled = !n;
+    $('selectAll').checked = entries.length > 0 && n === entries.length;
+    $('selectAll').indeterminate = n > 0 && n < entries.length;
+  }
+
   function renderEntries() {
     const list = $('entryList');
+    [...selected].forEach(id => { if (!entries.some(e => e.id === id)) selected.delete(id); });
+    syncManage();
     list.replaceChildren();
     if (!entries.length) {
       const empty = document.createElement('p');
@@ -127,7 +144,14 @@
     }
     entries.forEach(entry => {
       const row = document.createElement('article');
-      row.className = 'log-entry';
+      row.className = 'log-entry' + (manageMode ? ' has-check' : '') + (manageMode && selected.has(entry.id) ? ' is-selected' : '');
+      if (manageMode) {
+        const check = document.createElement('input');
+        check.type = 'checkbox'; check.className = 'log-entry-check'; check.checked = selected.has(entry.id);
+        check.setAttribute('aria-label', `${entry.vehicleName} ${formatTime(entry.photoTakenAt)}`);
+        check.addEventListener('change', () => { if (check.checked) selected.add(entry.id); else selected.delete(entry.id); row.classList.toggle('is-selected', check.checked); syncManage(); });
+        row.append(check);
+      }
       const body = document.createElement('div');
       const title = document.createElement('strong');
       title.textContent = `${entry.vehicleName} · ${entry.useType === 'ministry' ? t('useMinistry') : t('usePersonal')}`;
@@ -361,26 +385,54 @@
     finally { $('saveButton').textContent = t('save'); updateReady(); }
   });
 
-  $('clearAllBtn').addEventListener('click', async () => {
-    const typed = prompt(t('clearConfirm'));
-    if (!typed || !['삭제', 'DELETE'].includes(typed.trim())) return;
+  // ── 관리: 체크한 기록만 수정 · 삭제 (마스터 전용) ──
+  $('manageBtn').addEventListener('click', () => { manageMode = !manageMode; selected.clear(); renderEntries(); });
+  $('selectAll').addEventListener('change', () => { if ($('selectAll').checked) entries.forEach(e => selected.add(e.id)); else selected.clear(); renderEntries(); });
+  async function bulk(method, body) {
+    const response = await fetch('/api/car/usage', { method, headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || t('saveFail'));
+    return data;
+  }
+  $('delSelBtn').addEventListener('click', async () => {
+    const ids = [...selected];
+    if (!ids.length || !confirm(t('delSelConfirm', ids.length))) return;
     $('formError').textContent = '';
-    let total = 0, remaining = 1;
     try {
-      while (remaining > 0) {
-        const response = await fetch('/api/car/usage', { method: 'DELETE', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: 'DELETE-ALL' }) });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || t('saveFail'));
-        total += data.count; remaining = data.count ? data.remaining : 0;
-      }
-      entries = [];
+      let total = 0;
+      for (let i = 0; i < ids.length; i += 50) { const data = await bulk('DELETE', { ids: ids.slice(i, i + 50) }); total += data.count; }
+      entries = entries.filter(e => !selected.has(e.id));
+      selected.clear();
       renderEntries();
-      $('photoTime').textContent = t('cleared', total);
+      $('photoTime').textContent = t('deleted', total);
     } catch (error) { $('formError').textContent = error.message; }
+  });
+  $('editSelBtn').addEventListener('click', () => {
+    if (!selected.size) return;
+    const v = $('editVehicle'); v.replaceChildren(new Option(t('keepAsIs'), ''));
+    [...$('vehicleSelect').options].filter(o => o.value).forEach(o => v.add(new Option(o.text, o.value)));
+    $('editUse').value = ''; $('editError').textContent = '';
+    $('editHelp').textContent = t('editHelp', selected.size);
+    $('editDialog').hidden = false;
+  });
+  $('editCancel').addEventListener('click', () => { $('editDialog').hidden = true; });
+  $('editDialog').addEventListener('click', event => { if (event.target === $('editDialog')) $('editDialog').hidden = true; });
+  $('editSave').addEventListener('click', async () => {
+    const vehicleId = $('editVehicle').value, useType = $('editUse').value;
+    if (!vehicleId && !useType) { $('editError').textContent = t('editNothing'); return; }
+    $('editSave').disabled = true;
+    try {
+      const data = await bulk('PATCH', { ids: [...selected], ...(vehicleId ? { vehicleId } : {}), ...(useType ? { useType } : {}) });
+      data.entries.forEach(updated => { const i = entries.findIndex(e => e.id === updated.id); if (i >= 0) entries[i] = { ...entries[i], ...updated }; });
+      $('editDialog').hidden = true;
+      renderEntries();
+      $('photoTime').textContent = t('edited', data.count);
+    } catch (error) { $('editError').textContent = error.message; }
+    finally { $('editSave').disabled = false; }
   });
   $('closePhoto').addEventListener('click', closePhoto);
   $('photoDialog').addEventListener('click', event => { if (event.target === $('photoDialog')) closePhoto(); });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !$('photoDialog').hidden) closePhoto(); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') { if (!$('photoDialog').hidden) closePhoto(); else if (!$('editDialog').hidden) $('editDialog').hidden = true; } });
   $('printQrButton').addEventListener('click', () => window.print());
   $('langKoBtn').addEventListener('click', () => setLang('ko'));
   $('langEnBtn').addEventListener('click', () => setLang('en'));

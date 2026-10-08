@@ -151,3 +151,48 @@ test('clearing the usage log is master-only, needs confirmation, runs in batches
   const trashed = await env.CAMP_KV.list({ prefix: 'car:usage:trash:entry:' });
   assert.equal(trashed.keys.length, 7, '삭제 보관함에 백업');
 });
+
+test('selected records: master can edit vehicle/purpose of chosen entries only, and delete only the chosen ones (with backup)', async () => {
+  const env = memoryEnv();
+  await env.CAMP_KV.put('hub:account:driver@wol.org', JSON.stringify({ email: 'driver@wol.org', name: '운전자', status: 'approved' }));
+  const user = await createHubSessionToken(env.ADMIN_PASSWORD, 'driver@wol.org', 'counselor');
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  const ids = [];
+  for (let i = 0; i < 4; i++) ids.push((await (await saveUsage({ env, request: postRequest(user) })).json()).entry.id);
+  const call = (fn, method, token, body) => fn({ env, request: new Request('https://example.com/api/car/usage', { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
+  const list = async () => (await (await listUsage({ env, request: new Request('https://example.com/api/car/usage', { headers: { Authorization: `Bearer ${master}` } }) })).json()).entries;
+  // 수정: 마스터만, 바꿀 내용이 있어야 하고, 고른 기록만 바뀐다
+  assert.equal((await call(patchUsage, 'PATCH', user, { ids, useType: 'personal' })).status, 403);
+  assert.equal((await call(patchUsage, 'PATCH', master, { ids: [], useType: 'personal' })).status, 400);
+  assert.equal((await call(patchUsage, 'PATCH', master, { ids })).status, 400, '바꿀 내용이 없으면 거절');
+  assert.equal((await call(patchUsage, 'PATCH', master, { ids, vehicleId: 'nope' })).status, 400);
+  assert.equal((await call(patchUsage, 'PATCH', master, { ids, useType: 'x' })).status, 400);
+  const edited = await (await call(patchUsage, 'PATCH', master, { ids: [ids[0], ids[1]], useType: 'personal', vehicleId: 'santa-fe' })).json();
+  assert.equal(edited.count, 2);
+  const after = await list();
+  const byId = Object.fromEntries(after.map(e => [e.id, e]));
+  assert.deepEqual([byId[ids[0]].useType, byId[ids[0]].vehicleId, byId[ids[0]].vehicleName, byId[ids[0]].editedBy], ['personal', 'santa-fe', 'Santa Fe', 'wolkorea1@gmail.com']);
+  assert.notEqual(byId[ids[2]].useType, 'x');
+  assert.equal(byId[ids[2]].editedBy, undefined, '고르지 않은 기록은 그대로');
+  // 삭제: 마스터만, 고른 것만, 백업이 남는다
+  assert.equal((await call(clearUsage, 'DELETE', user, { ids: [ids[2]] })).status, 403);
+  assert.equal((await call(clearUsage, 'DELETE', master, { ids: [] })).status, 400);
+  assert.equal((await call(clearUsage, 'DELETE', master, { ids: Array.from({ length: 51 }, (_, i) => 'x' + i) })).status, 400, '한 번에 50건까지');
+  const gone = await (await call(clearUsage, 'DELETE', master, { ids: [ids[2], ids[3], 'missing-id'] })).json();
+  assert.deepEqual([gone.count, gone.removed.sort()], [2, [ids[2], ids[3]].sort()]);
+  assert.deepEqual((await list()).map(e => e.id).sort(), [ids[0], ids[1]].sort(), '고르지 않은 기록은 남는다');
+  assert.equal((await env.CAMP_KV.list({ prefix: 'car:usage:trash:entry:' })).keys.length, 2, '삭제 보관함에 백업');
+});
+
+test('usage log page: master-only "관리" button with checkbox selection, and photos auto-fit the screen', async () => {
+  const { readFileSync } = await import('node:fs');
+  const read = f => readFileSync(new URL(f, import.meta.url), 'utf8');
+  const page = read('../src/pages/car-log/index.astro'), js = read('../public/car-log.js'), css = read('../public/car-log.css');
+  assert.match(page, /id="manageBtn"[^>]*hidden[^>]*>관리</, '기본은 숨김, 이름은 관리');
+  assert.doesNotMatch(page + js, /전체 비우기|clearAllBtn/, '전체 비우기 버튼은 없다');
+  assert.match(js, /\$\('manageBtn'\)\.hidden = me\.role !== 'master'/);
+  assert.match(js, /check\.type = 'checkbox'/);
+  assert.match(page, /id="editSelBtn"[^>]*>선택 수정</);
+  assert.match(page, /id="delSelBtn"[^>]*>선택 삭제</);
+  assert.match(css, /\.log-photo-dialog img \{[^}]*max-height:calc\(100dvh - 72px\)/, '사진은 화면 높이 안에 맞춰 축소');
+});

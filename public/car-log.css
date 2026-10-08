@@ -126,5 +126,31 @@ button:disabled { opacity:.48; cursor:not-allowed; }
 .log-mileage input[type=number]::-webkit-outer-spin-button,.log-mileage input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
 .log-mileage input[type=number] { -moz-appearance:textfield; appearance:textfield; }
 
-.log-clear { margin-left:auto; height:34px; padding:0 12px; border:1px solid #f0ccd0; border-radius:9px; background:#fff8f8; color:#b03037; font-size:12px; font-weight:800; cursor:pointer; }
-.log-clear[hidden] { display:none; }
+
+/* 관리(마스터): 선택 수정 · 삭제 */
+.log-manage { margin-left:auto; height:34px; padding:0 14px; border:1px solid #aacbd4; border-radius:9px; background:#fff; color:var(--blue); font-size:12.5px; font-weight:800; cursor:pointer; }
+.log-manage.on { background:var(--blue); border-color:var(--blue); color:#fff; }
+.log-manage[hidden], .log-manage-bar[hidden] { display:none; }
+.log-manage-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 12px; padding:10px 12px; border:1px solid var(--line); border-radius:11px; background:#f5f9fb; }
+.log-check { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--ink); cursor:pointer; }
+.log-check input, .log-entry-check { width:18px; height:18px; accent-color:var(--blue); cursor:pointer; flex:none; }
+.log-sel-count { color:var(--muted); font-size:12.5px; font-weight:600; }
+.log-manage-actions { margin-left:auto; display:inline-flex; gap:8px; }
+.log-manage-actions button { height:34px; padding:0 14px; border:1px solid #aacbd4; border-radius:9px; background:#fff; color:var(--blue); font-size:12.5px; font-weight:800; cursor:pointer; }
+.log-manage-actions button.danger { border-color:#f0ccd0; background:#fff8f8; color:#b03037; }
+.log-manage-actions button:disabled { opacity:.45; cursor:not-allowed; }
+.log-entry.has-check { grid-template-columns:auto minmax(0,1fr) auto; }
+.log-entry.has-check > .log-mileage { grid-column:2 / -1; }
+.log-entry.is-selected { border-color:var(--blue); background:#f4fafc; }
+@media (max-width:620px) { .log-entry.has-check { grid-template-columns:auto 1fr; } .log-entry.has-check > button { grid-column:2; } .log-manage-actions { margin-left:0; width:100%; } .log-manage-actions button { flex:1; } }
+.log-edit-dialog { position:fixed; inset:0; z-index:110; display:grid; place-items:center; padding:20px; background:rgba(9,28,36,.55); }
+.log-edit-dialog[hidden] { display:none; }
+.log-edit-card { width:min(400px,100%); padding:22px; border-radius:20px; background:#fff; box-shadow:0 24px 60px rgba(0,0,0,.25); display:grid; gap:12px; }
+.log-edit-card h3 { margin:0; font-size:17px; color:var(--ink); }
+.log-edit-card label { display:grid; gap:6px; font-size:13px; font-weight:750; color:var(--ink); }
+.log-edit-card select { height:44px; padding:0 12px; border:1px solid #bfd5de; border-radius:10px; background:#fff; font-size:14px; }
+.log-edit-actions { display:grid; grid-template-columns:1fr 1.4fr; gap:10px; }
+.log-edit-actions .log-primary { width:auto; }
+/* 사진 보기: 화면 크기에 맞춰 통째로 보이게 자동 축소 (가로·세로 모두 화면 안에 맞춘다) */
+.log-photo-dialog { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); padding:56px 12px 16px; }
+.log-photo-dialog img { width:auto; height:auto; max-width:100%; max-height:calc(100vh - 72px); max-height:calc(100dvh - 72px); object-fit:contain; justify-self:center; align-self:center; }
