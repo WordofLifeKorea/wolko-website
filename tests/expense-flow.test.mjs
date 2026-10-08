@@ -839,3 +839,11 @@ test('회계 항목: 품목과 목적 사이에 줄이 있고 목적은 카테�
   assert.match(css, /\.ex-d-item > \.ex-d-purpose \{ border-top: 1px solid #e6edf1;[^}]*padding: 8px 0 8px 76px;/);
   assert.match(css, /\.ex-cf-row > i \{[^}]*flex: 0 0 66px/, '라벨 66px + 간격 10px = 76px 와 같은 값');
 });
+
+test('회계 항목: 목적 · 카테고리 · 출금 계좌 줄은 높이도 간격도 36px 로 같다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ex-d-item > \.ex-d-purpose \{ margin: 6px 0 0; height: 36px;/);
+  assert.match(css, /\.ex-d-item \.ex-cf-row \{ height: 36px;/);
+  assert.match(css, /\.ex-d-item > \.ex-code-flow \{ margin-top: 0; gap: 0; \}/, '목적 줄과 카테고리 줄 사이에 틈이 없다');
+});
