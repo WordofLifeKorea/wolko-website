@@ -182,9 +182,15 @@ button:disabled { opacity:.48; cursor:not-allowed; }
 .log-line-body .log-mileage { grid-column:auto; flex:1 1 240px; border-top:0; padding-top:0; }
 @container (max-width:540px) {
   .log-vehicle-head { grid-template-columns:minmax(0,1fr) auto; } .log-vehicle-sub { grid-column:1 / -1; grid-row:2; white-space:normal; }
-  .log-line-toggle { grid-template-columns:minmax(0,1fr) 86px 12px; gap:6px 12px; } .log-line-time { grid-column:1; font-size:11.5px; white-space:normal; padding-right:0; } .log-line-who { grid-column:1; grid-row:2; font-size:12.5px; } .log-line-use { grid-column:2; grid-row:1; } .log-chev { grid-column:3; grid-row:1 / span 2; } .log-line-km { grid-column:2; grid-row:2; display:block; }
+  .log-line-toggle { grid-template-columns:minmax(0,1fr) 86px 12px; gap:6px 12px; } .log-line-time { grid-column:1; font-size:11.5px; white-space:normal; padding-right:0; } .log-line-who { grid-column:1; grid-row:2; font-size:12.5px; } .log-line-use { grid-column:2; grid-row:1 / span 2; align-self:center; } .log-chev { grid-column:3; grid-row:1 / span 2; } .log-line-km { grid-column:2; grid-row:2; display:block; }
+  .log-line-toggle.has-km .log-line-use { grid-row:1; align-self:end; } .log-line-toggle.has-km .log-line-km { align-self:start; text-align:right; min-width:0; }
   .log-line-head { padding:4px 10px 4px 12px; }
 }
-.log-line-body .log-mileage { flex:1 1 100%; flex-wrap:nowrap; }
-.log-line-body .log-mileage input { flex:1; min-width:0; }
-.log-line-body .log-mileage button:not(.log-link) { flex:none; }
+.log-line-body .log-mileage { flex:1 1 100%; flex-wrap:wrap; }
+.log-line-body .log-mileage input { flex:1 1 100%; min-width:0; font-size:14px; }
+.log-line-body .log-mileage button:not(.log-link) { flex:1 1 100%; }
+@container (min-width:541px) {
+  .log-line-body .log-mileage { flex-wrap:nowrap; }
+  .log-line-body .log-mileage input { flex:1 1 auto; }
+  .log-line-body .log-mileage button:not(.log-link) { flex:none; }
+}

@@ -186,7 +186,9 @@
           const use = toggle.querySelector('.log-line-use');
           use.textContent = entry.useType === 'ministry' ? t('useMinistry') : t('usePersonal');
           use.classList.add(entry.useType === 'ministry' ? 'is-ministry' : 'is-personal');
-          toggle.querySelector('.log-line-km').textContent = kmText(entry);
+          const kmLabel = kmText(entry);
+          toggle.querySelector('.log-line-km').textContent = kmLabel;
+          if (kmLabel) toggle.classList.add('has-km');
           toggle.addEventListener('click', () => { if (openEntries.has(entry.id)) openEntries.delete(entry.id); else openEntries.add(entry.id); renderEntries(); });
           line.append(toggle);
           row.append(line);
