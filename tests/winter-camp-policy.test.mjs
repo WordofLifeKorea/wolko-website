@@ -132,3 +132,11 @@ test('registration and admin scripts parse, and admin retains the new policy', (
   const admin = readFileSync(new URL('../functions/api/admin/registrations.js', import.meta.url), 'utf8');
   assert.equal((admin.match(/\.\.\.\(winterQuote \|\| \{\}\)/g) || []).length, 2);
 });
+
+test('winter sibling discount collects names inline and does not require a camp choice', () => {
+  const page = readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
+  const api = readFileSync(new URL('../functions/api/register.js', import.meta.url), 'utf8');
+  assert.match(page, /data-sibling-names/);
+  assert.match(page, /!winter && !details\.sibling\.camp/);
+  assert.match(api, /campOptional: usesWinterCampPolicy\(campId\)/);
+});

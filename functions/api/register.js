@@ -82,7 +82,7 @@ function scholarshipDiscountText(values) {
   }).join(', ');
 }
 
-function normalizeScholarshipDiscountDetails(details, discounts) {
+function normalizeScholarshipDiscountDetails(details, discounts, { campOptional = false } = {}) {
   const source = details && typeof details === 'object' ? details : {};
   const normalized = {};
 
@@ -100,10 +100,13 @@ function normalizeScholarshipDiscountDetails(details, discounts) {
     const siblingSource = source.sibling && typeof source.sibling === 'object' ? source.sibling : {};
     const camperName = String(siblingSource.camperName ?? '').trim();
     const camp = String(siblingSource.camp ?? '').trim();
-    if (!camperName || !SIBLING_CAMP_LABELS[camp]) {
+    if (campOptional) {
+      if (!camperName) return { error: '함께 참여하는 분의 이름을 입력해주세요.' };
+      if (camperName.length > 200) return { error: '함께 참여하는 분의 이름이 너무 깁니다.' };
+    } else if (!camperName || !SIBLING_CAMP_LABELS[camp]) {
       return { error: '함께 참여하는 형제·자매 또는 친구 캠퍼 이름과 참여 캠프를 입력해주세요.' };
     }
-    normalized.sibling = { camperName, camp };
+    normalized.sibling = { camperName, camp: SIBLING_CAMP_LABELS[camp] ? camp : '' };
   }
 
   return { value: normalized };
@@ -115,7 +118,7 @@ function scholarshipDiscountDetailText(details) {
     parts.push(`월비/SYME 졸업자 및 참여자: ${details.wolbi_syme.participantName} (${details.wolbi_syme.year})`);
   }
   if (details?.sibling) {
-    parts.push(`형제·자매 또는 친구: ${details.sibling.camperName} / ${SIBLING_CAMP_LABELS[details.sibling.camp] || details.sibling.camp}`);
+    parts.push(`함께 참여: ${details.sibling.camperName}${details.sibling.camp ? ' / ' + (SIBLING_CAMP_LABELS[details.sibling.camp] || details.sibling.camp) : ''}`);
   }
   return parts.join(', ');
 }
@@ -582,7 +585,8 @@ export async function onRequestPost(context) {
     const scholarshipText = scholarshipDiscountText(normalizedScholarshipDiscounts);
     const normalizedScholarshipDetailsResult = normalizeScholarshipDiscountDetails(
       scholarshipDiscountDetails,
-      normalizedScholarshipDiscounts
+      normalizedScholarshipDiscounts,
+      { campOptional: usesWinterCampPolicy(campId) }
     );
     if (normalizedScholarshipDetailsResult.error) {
       return Response.json({ error: normalizedScholarshipDetailsResult.error }, { status: 400, headers: CORS });
