@@ -8,6 +8,7 @@
  * KAKAO_TEMPLATE_CONTACT
  */
 import { sendAlimtalk } from '../lib/solapi.js';
+import { normalizePhone } from '../lib/phone.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -93,7 +94,8 @@ export async function onRequestPost(context) {
     return Response.json({ error: '잘못된 요청 형식입니다.' }, { status: 400, headers: CORS });
   }
 
-  const { name, email, phone = '', type = 'general', message } = body;
+  const { name, email, type = 'general', message } = body;
+  const phone = normalizePhone(body.phone);
 
   if (!name || !email || !message) {
     return Response.json({ error: '이름, 이메일, 내용은 필수입니다.' }, { status: 400, headers: CORS });

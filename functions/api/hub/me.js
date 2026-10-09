@@ -6,6 +6,7 @@
 import { getAccount, isMasterEmail, isValidPhone, normalizeEmail, parseHubSessionToken, putAccount } from '../../lib/hubAccounts.js';
 import { ACCOUNTANT_EMAILS, pickName } from '../../lib/expenses.js';
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
+import { normalizePhone } from '../../lib/phone.js';
 
 const H = { 'Cache-Control': 'no-store', 'Content-Type': 'application/json' };
 const fail = (error, status) => Response.json({ error }, { status, headers: H });
@@ -44,7 +45,7 @@ export async function onRequestPatch({ env, request }) {
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.', 400); }
   const name = String(body?.name ?? w.account.name ?? '').trim();
-  const phone = String(body?.phone ?? w.account.phone ?? '').trim();
+  const phone = normalizePhone(body?.phone ?? w.account.phone ?? '');
   if (!name || name.length > 40) return fail('이름을 40자 이내로 입력해 주세요.', 400);
   if (name.includes('@')) return fail('이름에는 이메일 주소를 쓸 수 없어요.', 400);
   if (phone && !isValidPhone(phone)) return fail('올바른 휴대폰 번호를 입력해 주세요.', 400);

@@ -1,3 +1,5 @@
+import { toSolapiNumber } from './phone.js';
+
 /**
  * Solapi 알림톡 발송 헬퍼
  * HMAC-SHA256 인증 → POST /messages/v4/send
@@ -27,7 +29,7 @@ async function buildSolapiAuth(apiKey, apiSecret) {
 export async function sendAlimtalk(env, phone, templateId, variables) {
   if (!env.SOLAPI_API_KEY || !env.SOLAPI_API_SECRET || !env.KAKAO_PF_ID || !templateId) return;
 
-  const to = phone.replace(/[^0-9]/g, '');
+  const to = toSolapiNumber(phone);
   if (!to || to.length < 10) return;
 
   const authorization = await buildSolapiAuth(env.SOLAPI_API_KEY, env.SOLAPI_API_SECRET);
@@ -67,7 +69,7 @@ export async function sendAlimtalk(env, phone, templateId, variables) {
 export async function sendSms(env, phone, text) {
   if (!env.SOLAPI_API_KEY || !env.SOLAPI_API_SECRET || !env.SOLAPI_SENDER_PHONE) return;
 
-  const to = phone.replace(/[^0-9]/g, '');
+  const to = toSolapiNumber(phone);
   const from = env.SOLAPI_SENDER_PHONE.replace(/[^0-9]/g, '');
   if (!to || to.length < 10) return;
 
@@ -102,7 +104,7 @@ export async function sendSms(env, phone, text) {
  */
 export async function sendKakaoWithSmsFallback(env, phone, templateId, variables, fallbackText) {
   if (!env.SOLAPI_API_KEY || !env.SOLAPI_API_SECRET) return null;
-  const to = String(phone || '').replace(/[^0-9]/g, '');
+  const to = toSolapiNumber(phone);
   if (!to || to.length < 10) return null;
   if (!env.KAKAO_PF_ID || !templateId) {
     const submitted = await sendSms(env, phone, fallbackText);

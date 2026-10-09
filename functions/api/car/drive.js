@@ -12,6 +12,7 @@ import { isValidPhone, getAccount, isMasterEmail, normalizeEmail } from '../../l
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 import { pickName } from '../../lib/expenses.js';
 import { MAX_AHEAD_DAYS, SLOTS, closedKey, driveSession, shownName, isDefaultClosedDay, isSlotClosed, parseDate, periodFor, shiftPeriod, slotKey, todayKst } from '../../lib/carDrive.js';
+import { normalizePhone } from '../../lib/phone.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
@@ -52,7 +53,7 @@ export async function onRequestPost({ env, request }) {
   const today = todayKst();
   if (date < today) return fail('지난 날짜는 신청할 수 없습니다.');
   if (ms - parseDate(today) > MAX_AHEAD_DAYS * DAY) return fail('너무 먼 날짜는 아직 신청할 수 없습니다.');
-  const phone = String(body?.phone || session.phone || '').trim();
+  const phone = normalizePhone(body?.phone || session.phone || '');
   if (slot === 'pickup' && !isValidPhone(phone)) return fail('오전 픽업 알림 문자를 받을 휴대폰 번호를 입력해 주세요.');
 
   const closedMap = (await env.CAMP_KV.get(closedKey(periodFor(date).start), 'json')) || {};
@@ -144,7 +145,7 @@ export async function onRequestPatch({ env, request }) {
     else delete map[`${date}:${slot}`];
     await env.CAMP_KV.put(mapKey, JSON.stringify(map), { expirationTtl: 60 * 60 * 24 * 120 });
   }
-  const phone = String(account?.phone || '').trim();
+  const phone = normalizePhone(account?.phone || '');
   const record = { date, slot, email, name: pickName(email, account?.name), phone: isValidPhone(phone) ? phone : '', at: new Date().toISOString(), assignedBy: session.email };
   await env.CAMP_KV.put(key, JSON.stringify(record), { expirationTtl: 60 * 60 * 24 * 120 });
   return Response.json({ ok: true, assigned: { name: shownName(record) }, replaced: existing && existing.email !== email ? shownName(existing) : null, noPhone: !record.phone }, { headers: H });

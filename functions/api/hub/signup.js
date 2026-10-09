@@ -18,6 +18,7 @@ import {
   getAccount, putAccount, hashPassword, sendEmail,
   pendingRequestEmailHtml, MASTER_EMAILS, isWolDomain,
 } from '../../lib/hubAccounts.js';
+import { normalizePhone } from '../../lib/phone.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -38,7 +39,7 @@ export async function onRequestPost(context) {
   }
 
   const name = String(body.name || '').trim();
-  const phone = String(body.phone || '').trim();
+  const phone = normalizePhone(body.phone);
   const email = normalizeEmail(body.email);
   const password = String(body.password || '');
   const campus = body.campus === 'jeju' ? 'jeju' : 'wolko'; // 평택(wolko) | 제주

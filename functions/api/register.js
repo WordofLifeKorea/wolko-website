@@ -14,6 +14,7 @@
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
 import { usesWinterCampPolicy, winterCampQuote } from '../lib/winterCampPolicy.js';
+import { normalizePhone } from '../lib/phone.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -600,7 +601,7 @@ export async function onRequestPost(context) {
       ? {
           regId, campId,
           registrationType: 'group',
-          name: name.trim(), phone: phone.trim(), email: emailNorm,
+          name: name.trim(), phone: normalizePhone(phone), email: emailNorm,
           maleCount: spotsM, femaleCount: spotsF, groupCount: spotsNeeded,
           participants: normalizedParticipants,
           participantDetailsDeferred: deferParticipantDetails,
@@ -625,7 +626,7 @@ export async function onRequestPost(context) {
       : {
           regId, campId,
           registrationType: 'individual',
-          name: name.trim(), phone: phone.trim(), email: emailNorm,
+          name: name.trim(), phone: normalizePhone(phone), email: emailNorm,
           grade, gender,
           church: church?.trim() || '',
           school: school?.trim() || '',

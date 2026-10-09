@@ -7,6 +7,7 @@
  *     rsvp:{eventId}:email:{email}     같은 이메일 중복 신청 방지
  */
 import { parseHubSessionToken, portalSession } from '../lib/hubAccounts.js';
+import { normalizePhone } from '../lib/phone.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ export async function onRequestPost(context) {
     const eventId = clean(data.eventId, 60);
     const event = EVENTS[eventId];
     const name = clean(data.name, 60);
-    const phone = clean(data.phone, 30);
+    const phone = normalizePhone(clean(data.phone, 30));
     const email = clean(data.email, 120).toLowerCase();
     const partySize = Number(data.partySize);
     const notes = clean(data.notes, 1000);

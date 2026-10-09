@@ -12,6 +12,7 @@
 import { createCalendarEvent, deleteCalendarEventById, legacyDeterministicEventId } from '../../lib/googleCalendar.js';
 import { isPortalMember, portalSession } from '../../lib/hubAccounts.js';
 import { pickName } from '../../lib/expenses.js';
+import { normalizePhone } from '../../lib/phone.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -131,7 +132,7 @@ function parseReservationInput(body, vehicleLabels) {
   const endDate = String(body.endDate || '').trim();
   const endTime = String(body.endTime || '18:00').trim();
   const reserverName = String(body.reserverName || '').trim().slice(0, 60);
-  const phone = String(body.phone || '').trim().slice(0, 30);
+  const phone = normalizePhone(body.phone).slice(0, 30);
   const purpose = String(body.purpose || '').trim().slice(0, 200);
   const notes = String(body.notes || '').trim().slice(0, 1000);
   const actualHours = parseOptionalNonNegNumber(body.actualHours, 1000, '실제 운행 시간');

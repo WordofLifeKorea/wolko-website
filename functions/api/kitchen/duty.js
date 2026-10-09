@@ -14,6 +14,7 @@ import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 import { pickName } from '../../lib/expenses.js';
 import { MAX_AHEAD_DAYS, MAX_CAPACITY, MORNING_SLOTS, SLOTS, SLOT_TITLE, TTL, applyOpenState, capacityKey, capacityOf, defaultCapacityOf, maxCapacityOf, closedKey, isSlotClosed, isValidCapacity, kitchenSession, parseDate, periodFor, readDay, shiftPeriod, shownName, todayKst, writeDay } from '../../lib/kitchenDuty.js';
 import { getSettings } from '../../lib/kitchenSettings.js';
+import { normalizePhone } from '../../lib/phone.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
@@ -59,7 +60,7 @@ export async function onRequestPost({ env, request }) {
   const today = todayKst();
   if (date < today) return fail('지난 날짜는 신청할 수 없습니다.');
   if (ms - parseDate(today) > MAX_AHEAD_DAYS * DAY) return fail('너무 먼 날짜는 아직 신청할 수 없습니다.');
-  const phone = String(body?.phone || session.phone || '').trim();
+  const phone = normalizePhone(body?.phone || session.phone || '');
   if (!isValidPhone(phone)) return fail('알림을 받을 휴대폰 번호를 입력해 주세요.');
 
   const period = periodFor(date).start;
@@ -163,7 +164,7 @@ export async function onRequestPatch({ env, request }) {
     applyOpenState(map, date, slot, true, session.email);
     await env.CAMP_KV.put(closedKey(period), JSON.stringify(map), { expirationTtl: TTL });
   }
-  const phone = String(account?.phone || '').trim();
+  const phone = normalizePhone(account?.phone || '');
   const record = { email, name: pickName(email, account?.name), phone: isValidPhone(phone) ? phone : '', at: new Date().toISOString(), assignedBy: session.email };
   day[slot] = [...people, record];
   await writeDay(env, date, day);

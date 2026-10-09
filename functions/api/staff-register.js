@@ -5,6 +5,7 @@
  */
 import { appendRow } from '../lib/googleSheets.js';
 import { sendAlimtalk } from '../lib/solapi.js';
+import { normalizePhone } from '../lib/phone.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -168,7 +169,7 @@ export async function onRequestPost(context) {
   try {
     const data = await request.json();
     const name = clean(data.name, 60);
-    const phone = clean(data.phone, 30);
+    const phone = normalizePhone(clean(data.phone, 30));
     const email = clean(data.email, 120).toLowerCase();
     const gender = ['male', 'female'].includes(data.gender) ? data.gender : '';
     const birthDate = clean(data.birthDate, 10);
