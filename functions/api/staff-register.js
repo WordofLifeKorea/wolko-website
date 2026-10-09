@@ -33,10 +33,13 @@ function buildStaffEmailHtml(reg) {
     hour: '2-digit', minute: '2-digit',
   });
   const divider = '<tr><td colspan="2"><div style="border-top:1px solid rgba(0,79,104,0.1);margin:4px 0;"></div></td></tr>';
+  // 메일 앱(특히 모바일)이 좁은 라벨 칸을 무시하고 글자를 세로로 쪼개는 일이 있어, 라벨 위·값 아래로 쌓는 한 칸 구성으로 보낸다
   const row = (label, value) => `
         <tr>
-          <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:150px;vertical-align:top;">${label}</td>
-          <td style="padding:8px 0;font-size:14px;font-weight:600;">${value}</td>
+          <td colspan="2" style="padding:10px 0 0;color:#5a6f79;font-size:12px;line-height:1.4;white-space:normal;word-break:keep-all;">${label}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:2px 0 8px;font-size:15px;font-weight:600;line-height:1.5;word-break:break-word;">${value}</td>
         </tr>`;
   const block = (label, value) => value ? `
         <tr>
@@ -57,7 +60,7 @@ function buildStaffEmailHtml(reg) {
       <div style="font-size:22px;font-weight:700;color:#fff;">새 스태프 지원이 접수되었습니다</div>
     </div>
     <div style="padding:32px 36px;">
-      <table style="width:100%;border-collapse:collapse;">
+      <table role="presentation" width="100%" style="width:100%;border-collapse:collapse;table-layout:auto;">
         ${row('지원한 캠프', escHtml(reg.campTitleKo || reg.campId))}
         ${row('2주 참여 동의', reg.commitment ? '예' : '—')}
         ${reg.trainingException ? row('캠프 트레이닝', '<span style="color:#c2410c;">개인 사정으로 불참 (참고 사항 확인)</span>') : ''}
