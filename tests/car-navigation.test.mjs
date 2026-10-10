@@ -55,3 +55,12 @@ test('예약현황 폰 화면: 한 주만 보이고 한 주씩 이동하며, 좁
   assert.match(css, /\.cal-timed, \.cal-bar \{ font-size: 9\.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; \}/);
   assert.match(css, /\.car-tabs::-webkit-scrollbar \{ display: none; \}/);
 });
+
+test('staff calendar shows one large month with the selected day on the right, no side mini calendars', async () => {
+  const { readFileSync } = await import('node:fs');
+  const schedule = readFileSync(new URL('../src/pages/schedule/index.astro', import.meta.url), 'utf8');
+  assert.doesNotMatch(schedule, /miniPrev|miniNext|renderMiniMonth|jumpMiniMonth|\.cal-mini/);
+  assert.match(schedule, /class="sc-layout"/);
+  assert.match(schedule, /<aside class="sc-day-panel" id="dayPanel"/);
+  assert.match(schedule, /\.sc-layout \{ display:grid; grid-template-columns:minmax\(0,1fr\) 360px/);
+});

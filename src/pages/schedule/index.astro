@@ -65,38 +65,22 @@
     .sc-notice-card .sc-btn { margin-top:14px; display:inline-flex; }
 
     /* ── 캘린더(구글 캘린더 월간 뷰 스타일 — 여러 날짜에 걸친 일정은 막대로, 시간 지정 일정은 한 줄로) ── */
-    .cal-flanking-row { display:flex; align-items:flex-start; gap:16px; margin-bottom:16px; }
-    .sc-calendar { flex:1; min-width:0; margin-bottom:0; border-radius:16px; border:1px solid var(--border); background:var(--card); overflow:hidden; }
+        .sc-calendar { flex:1; min-width:0; margin-bottom:0; border-radius:16px; border:1px solid var(--border); background:var(--card); overflow:hidden; }
 
-    /* ── 이전/다음 달 미리보기(넓은 화면에서만, 캘린더 양옆) ── */
-    .cal-mini {
-      display:none; flex-direction:column; flex:0 0 220px; width:220px; padding:12px;
-      border-radius:14px; border:1px solid var(--border); background:#fafcfd;
-    }
-    .cal-mini-header {
-      margin:0 0 8px; padding:4px 6px; border:none; background:none; border-radius:6px;
-      font:800 11.5px/1 var(--body); color:var(--mid); text-align:center; cursor:pointer;
-    }
-    .cal-mini-header:hover { background:var(--bg); color:var(--blue); }
-    .cal-mini-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
-    .cal-mini-cell {
-      aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
-      border:none; border-radius:6px; background:transparent; color:var(--mid); font:600 9.5px/1 var(--body); cursor:pointer;
-    }
-    .cal-mini-cell:hover:not(:disabled) { background:var(--bg); }
-    .cal-mini-cell:disabled { cursor:default; }
-    .cal-mini-cell.is-outside { visibility:hidden; }
-    .cal-mini-cell.is-today { background:var(--blue); color:#fff; font-weight:800; }
-    .cal-mini-dot { width:3px; height:3px; border-radius:50%; background:var(--blue); }
-    .cal-mini-cell.is-today .cal-mini-dot { background:#fff; }
-    @media (min-width:1500px) {
-      .sc-wrap { max-width:1680px; }
-      .cal-mini { display:flex; }
+    /* ── 왼쪽 월간 캘린더 + 오른쪽 선택한 날짜의 상세 일정 ── */
+    .sc-layout { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:18px; align-items:start; margin-bottom:16px; }
+    .sc-day-panel { position:sticky; top:84px; min-width:0; padding:14px; border-radius:16px; border:1px solid var(--border); background:#fff; max-height:calc(100vh - 108px); overflow:auto; }
+    .sc-day-panel .sc-selected-date-bar { margin-bottom:12px; }
+    .sc-day-panel .sc-selected-date-bar button { display:none; }
+    .sc-day-panel .sc-empty { padding:36px 12px; }
+    @media (max-width:1100px) {
+      .sc-layout { grid-template-columns:1fr; }
+      .sc-day-panel { position:static; max-height:none; overflow:visible; }
     }
     /* 전역 컨트롤 규격(wolko-ui.css)이 모든 button에 min-height:44px !important를 걸어서 캘린더 안의
        작은 버튼(날짜 칸·미니 달력 칸)이 커지며 레이아웃이 깨졌다 — 캘린더 전용 칸은 원래 크기로 되돌린다. */
     .cal-daynum-cell { min-height:150px !important; }
-    .cal-mini-cell, .cal-mini-header, .cal-more-cell { min-height:0 !important; }
+    .cal-more-cell { min-height:0 !important; }
     .cal-week { --cal-num-row:26px; }
     .cal-header { display:flex; align-items:center; gap:8px; padding:14px 14px 10px; }
     .cal-nav-btn {
@@ -318,8 +302,7 @@
 
     <!-- 캘린더 본체 -->
     <div id="calendarBody" class="hidden">
-      <div class="cal-flanking-row">
-        <div class="cal-mini" id="miniPrev"></div>
+      <div class="sc-layout">
         <div class="sc-calendar">
           <div class="cal-header">
             <button type="button" class="cal-nav-btn" onclick="shiftMonth(-1)" aria-label="prev">‹</button>
@@ -334,16 +317,17 @@
           </div>
           <div id="calGrid"></div>
         </div>
-        <div class="cal-mini" id="miniNext"></div>
-      </div>
 
-      <div class="sc-selected-date-bar hidden" id="selectedDateBar">
-        <span id="selectedDateLabel"></span>
-        <button type="button" onclick="clearSelectedDate()" data-t="clearDate">닫기</button>
+        <aside class="sc-day-panel" id="dayPanel" aria-live="polite">
+          <div class="sc-selected-date-bar hidden" id="selectedDateBar">
+            <span id="selectedDateLabel"></span>
+            <button type="button" onclick="clearSelectedDate()" data-t="clearDate">닫기</button>
+          </div>
+          <div id="agendaContainer"></div>
+        </aside>
       </div>
 
       <div id="loadingIndicator" class="sc-loading hidden" data-t="loading">불러오는 중…</div>
-      <div id="agendaContainer"></div>
     </div>
   </div>
 
@@ -726,46 +710,6 @@
         <div class="cal-weekdays">${wk.map(w => `<span>${esc(w)}</span>`).join('')}</div>
         ${weeksHtml}`;
 
-      // 넓은 화면(≥1500px)에서만 CSS로 보이는 이전/다음 달 미리보기 — 좁으면 그냥 빈 채로 둔다.
-      renderMiniMonth($('miniPrev'), new Date(year, month - 1, 1));
-      renderMiniMonth($('miniNext'), new Date(year, month + 1, 1));
-    }
-
-    /** 이전/다음 달 미리보기 미니 캘린더 — 점 하나로 "그날 뭔가 있다"만 표시, 클릭하면 그 달로 이동. */
-    function renderMiniMonth(container, monthDate) {
-      const year = monthDate.getFullYear();
-      const month = monthDate.getMonth();
-      const firstOfMonth = new Date(year, month, 1);
-      const startOffset = firstOfMonth.getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
-      const todayStr_ = todayStr();
-
-      let cellsHtml = '';
-      for (let i = 0; i < totalCells; i++) {
-        const cellDate = new Date(year, month, i - startOffset + 1);
-        const cellStr = toDateStr(cellDate);
-        const inMonth = cellDate.getMonth() === month;
-        const isToday = cellStr === todayStr_;
-        const hasItems = inMonth && events.some(ev => { const r = eventDateRange(ev); return cellStr >= r.startDate && cellStr <= r.endDate; });
-        cellsHtml += `
-          <button type="button" class="cal-mini-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}"
-            ${inMonth ? `onclick="jumpMiniMonth(${year},${month},'${cellStr}')"` : 'disabled'}>
-            ${cellDate.getDate()}${hasItems ? '<span class="cal-mini-dot"></span>' : ''}
-          </button>`;
-      }
-      const monthLabel = scLang === 'en'
-        ? monthDate.toLocaleString('en-US', { month: 'short', year: 'numeric' })
-        : `${year}년 ${month + 1}월`;
-      container.innerHTML = `
-        <button type="button" class="cal-mini-header" onclick="jumpMiniMonth(${year},${month})">${esc(monthLabel)}</button>
-        <div class="cal-mini-grid">${cellsHtml}</div>`;
-    }
-    function jumpMiniMonth(year, month, dateStr) {
-      calendarMonth = new Date(year, month, 1);
-      selectedDate = dateStr || null;
-      $('monthPicker').classList.add('hidden');
-      loadEvents();
     }
 
     /* 날짜를 선택했을 때만 그날 일정을 보여준다 — 그리드 자체가 이미 한눈에 보기용이라
@@ -819,9 +763,15 @@
         </div>`).join('');
     }
 
+    /* 오른쪽 상세 패널이 비지 않도록, 달을 옮기면 이번 달은 오늘을, 다른 달은 1일을 골라 둔다. */
+    function defaultSelectedFor(monthDate) {
+      const now = new Date();
+      return (monthDate.getFullYear() === now.getFullYear() && monthDate.getMonth() === now.getMonth())
+        ? todayStr() : toDateStr(new Date(monthDate.getFullYear(), monthDate.getMonth(), 1));
+    }
     function shiftMonth(delta) {
       calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + delta, 1);
-      selectedDate = null;
+      selectedDate = defaultSelectedFor(calendarMonth);
       $('monthPicker').classList.add('hidden');
       loadEvents();
     }
@@ -857,12 +807,12 @@
       const month = parseInt($('pickerMonth').value, 10);
       if (!Number.isFinite(year) || !Number.isFinite(month)) return;
       calendarMonth = new Date(year, month, 1);
-      selectedDate = null;
+      selectedDate = defaultSelectedFor(calendarMonth);
       $('monthPicker').classList.add('hidden');
       loadEvents();
     }
     function selectDate(dateStr_) {
-      selectedDate = (selectedDate === dateStr_) ? null : dateStr_;
+      selectedDate = dateStr_;
       renderCalendar();
       renderAgenda();
     }
