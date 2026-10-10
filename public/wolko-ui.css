@@ -166,6 +166,13 @@
   min-height: var(--wl-control-height) !important;
 }
 
+/* 작은 동그라미 삭제·색상 버튼이 전역 최소 높이 때문에 세로로 늘어나 타원이 되지 않도록 1:1로 고정한다. */
+:where(.step-entry-remove, .custom-team-del, .group-participant-delete, .cl-color-opt) {
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 /* Dense table editing remains compact but no longer varies from row to row. */
 :where(
   .edit-input,
@@ -219,6 +226,10 @@
   .step-count-btn,
   .cl-color-btn,
   .sc-color-swatch,
+  .step-entry-remove,
+  .custom-team-del,
+  .group-participant-delete,
+  .cl-color-opt,
   .drag-handle,
   .viewer-page-nav button,
   .viewer-zoom-nav button,
