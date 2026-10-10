@@ -185,7 +185,7 @@
       <div class="hub-sidebar-foot">
         <button class="hub-sidebar-lang" id="pendingBtn" onclick="openPendingPanel()" hidden>
           <span data-t="pendingLabel">승인 대기</span>
-          <span class="hub-pending-badge" id="pendingCount"></span>
+          <span class="hub-pending-badge hidden" id="pendingCount"></span>
         </button>
         <button class="hub-sidebar-lang hub-install-button" id="installAppBtn" type="button" onclick="installPortalApp()" data-t-title="installApp" data-t-aria="installApp" title="앱 설치" aria-label="앱 설치">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11"/><path d="m8 10 4 4 4-4"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>
@@ -770,14 +770,15 @@
     }
     async function refreshPendingCount() {
       try {
+        // 확인되기 전과 실패했을 때는 빨간 점을 숨겨 둔다 — 대기 건수가 실제로 1건 이상일 때만 숫자와 함께 보인다.
+        const badge = $('pendingCount');
         const res = await fetch('/api/hub/pending', { headers: authHeaders() });
-        if (!res.ok) return;
+        if (!res.ok) { badge.textContent = ''; badge.classList.add('hidden'); return; }
         const data = await res.json();
         const pendingCount = (data.accounts || []).filter(a => a.status === 'pending').length;
-        const badge = $('pendingCount');
         badge.textContent = pendingCount || '';
         badge.classList.toggle('hidden', !pendingCount);
-      } catch (e) {}
+      } catch (e) { const badge = $('pendingCount'); if (badge) { badge.textContent = ''; badge.classList.add('hidden'); } }
     }
     function renderPendingItem(a, rejected) {
       if (rejected && !a.requestedRole && a.role) a = { ...a, requestedRole: a.role }; // 다시 활성화할 때 기존 등급을 미리 골라 둔다
