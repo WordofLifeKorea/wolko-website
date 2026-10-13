@@ -53,10 +53,10 @@ async function verifyToken(request, env) {
   return !!(await portalSession(request, env));
 }
 
-/** 예약금 수납 · 최종 확정 · 되돌리기는 관리자/마스터 또는 회계 담당자만 (일반 멤버는 보기·그 밖의 편집만). */
+/** 대기중 → 예약금 확인 → 최종확정(그리고 되돌리기)은 회계 담당자만 처리한다 — 관리자·마스터도 회계 담당 목록에 없으면 처리할 수 없다. */
 async function verifyProcessor(request, env) {
   const s = await portalSession(request, env);
-  return !!s && (s.role === 'admin' || s.role === 'master' || ACCOUNTANT_EMAILS.includes(s.email));
+  return !!s && ACCOUNTANT_EMAILS.includes(s.email);
 }
 
 /** 신청 삭제는 관리자/마스터만. */
@@ -334,7 +334,8 @@ export async function onRequestDelete(context) {
 export async function onRequestPatch(context) {
   const { env, request } = context;
   if (!await verifyProcessor(request, env)) {
-    return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
+    const signedIn = await verifyToken(request, env);
+    return Response.json({ error: signedIn ? '예약금 확인과 최종 확정은 회계 담당자만 처리할 수 있습니다.' : '인증이 필요합니다.' }, { status: signedIn ? 403 : 401, headers: CORS });
   }
 
   try {

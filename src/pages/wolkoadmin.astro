@@ -3057,7 +3057,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const res = await fetch('/api/hub/me', { headers: authHeaders() });
         if (!res.ok) return;
         const me = await res.json();
-        setCanProcess(me.role === 'admin' || me.role === 'master' || !!me.isAccountant);
+        setCanProcess(!!me.isAccountant);
       } catch (e) {}
     }
     async function depositReg(regId, campId) {
@@ -3314,7 +3314,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
     const hubSession = hubToken ? parseHubToken(hubToken) : null;
     if (hubSession) {
-      canProcess = hubSession.role === 'admin' || hubSession.role === 'master';
+      canProcess = false; // 회계 담당자만 처리 — loadMe()가 계정 정보를 받으면 켜진다
       document.getElementById('loginScreen').classList.add('hidden');
       setTimeout(() => { document.getElementById('loginScreen').style.display = 'none'; }, 0);
       loadMe();
