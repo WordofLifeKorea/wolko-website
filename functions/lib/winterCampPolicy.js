@@ -13,6 +13,33 @@ export const WINTER_CAMP_POLICY = {
   },
 };
 
+/**
+ * 신청창(접수 가능 시간) — 캠프별로 열리는 구간. 구간 밖에는 신청 버튼을 숨기고 서버도 접수하지 않는다. 시각은 모두 한국 시간.
+ * to 가 null 이면 캠프 시작 전 또는 접수 마감(정원 · 캠프 상태)까지 계속 열려 있다.
+ * 2027 겨울 월코 영어캠프: 1차(얼리버드) 10/15 오전 10시 – 11/4, 공백 기간(11/5 – 11/17)은 닫고, 2차(일반) 11/18 오전 10시부터.
+ */
+export const REGISTRATION_WINDOWS = {
+  '2027-wolko-winter': [
+    { round: 1, from: '2026-10-15T10:00:00+09:00', to: '2026-11-04T23:59:59.999+09:00' },
+    { round: 2, from: '2026-11-18T10:00:00+09:00', to: null },
+  ],
+  // 2026 제주 캠퍼스데이: 접수 중이다가 10월 21일 오후 2시에 마감 (외부 신청서이므로 버튼만 닫는다)
+  '2026-jeju-campus-day': [
+    { round: 1, from: null, to: '2026-10-21T14:00:00+09:00' },
+  ],
+};
+
+/** 지금 접수 상태: { state: 'none'|'open'|'before'|'gap', nextOpenAt } — none 은 신청창이 따로 없는 캠프 */
+export function registrationState(campId, now = Date.now()) {
+  const windows = REGISTRATION_WINDOWS[campId];
+  if (!windows) return { state: 'none', nextOpenAt: null };
+  const times = windows.map(w => ({ from: w.from ? Date.parse(w.from) : -Infinity, to: w.to ? Date.parse(w.to) : Infinity }));
+  if (times.some(w => now >= w.from && now <= w.to)) return { state: 'open', nextOpenAt: null };
+  const next = times.filter(w => w.from > now).sort((a, b) => a.from - b.from)[0];
+  if (!next) return { state: 'gap', nextOpenAt: null };
+  return { state: now < times[0].from ? 'before' : 'gap', nextOpenAt: new Date(next.from).toISOString() };
+}
+
 export function usesWinterCampPolicy(campId) {
   return WINTER_CAMP_POLICY.campIds.includes(campId);
 }

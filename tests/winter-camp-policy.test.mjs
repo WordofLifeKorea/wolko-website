@@ -76,7 +76,12 @@ async function register(overrides = {}) {
   } };
   const background = [];
   const payload = { campId: policy.campId, name: 'Test Camper', phone: '01000000000', email: 'test@example.com', grade: '6', gender: 'male', refundBank: 'test', refundAccount: '123', refundHolder: 'Test', ...overrides };
-  const response = await onRequestPost({ env, request: new Request('https://example.com/api/register', { method: 'POST', body: JSON.stringify(payload) }), waitUntil: task => background.push(task) });
+  const realNow = Date.now;
+  Date.now = () => Date.parse(overrides.__now || '2026-10-20T12:00:00+09:00'); // 기본은 1차 신청창 안
+  let response;
+  try {
+    response = await onRequestPost({ env, request: new Request('https://example.com/api/register', { method: 'POST', body: JSON.stringify(payload) }), waitUntil: task => background.push(task) });
+  } finally { Date.now = realNow; }
   await Promise.all(background);
   return { response, store };
 }
@@ -144,4 +149,40 @@ test('winter sibling discount collects names inline and does not require a camp 
   assert.match(page, /data-sibling-names/);
   assert.match(page, /!winter && !details\.sibling\.camp/);
   assert.match(api, /campOptional: usesWinterCampPolicy\(campId\)/);
+});
+
+import { registrationState, REGISTRATION_WINDOWS } from '../functions/lib/winterCampPolicy.js';
+
+test('winter English camp registration windows: round 1, closed gap, round 2 (all KST)', () => {
+  const at = iso => Date.parse(iso);
+  const id = '2027-wolko-winter';
+  assert.equal(registrationState(id, at('2026-10-15T09:59:59+09:00')).state, 'before');
+  assert.equal(registrationState(id, at('2026-10-15T10:00:00+09:00')).state, 'open');
+  assert.equal(registrationState(id, at('2026-11-04T23:59:59+09:00')).state, 'open');
+  const gap = registrationState(id, at('2026-11-05T00:00:00+09:00'));
+  assert.equal(gap.state, 'gap');
+  assert.equal(gap.nextOpenAt, new Date(at('2026-11-18T10:00:00+09:00')).toISOString());
+  assert.equal(registrationState(id, at('2026-11-17T23:59:59+09:00')).state, 'gap');
+  assert.equal(registrationState(id, at('2026-11-18T09:59:59+09:00')).state, 'gap');
+  assert.equal(registrationState(id, at('2026-11-18T10:00:00+09:00')).state, 'open');
+  assert.equal(registrationState(id, at('2027-01-10T12:00:00+09:00')).state, 'open', '2차는 마감 시각이 없다');
+  assert.equal(registrationState('2026-jeju-english', at('2026-11-10T00:00:00+09:00')).state, 'none');
+});
+
+test('Jeju Campus Day closes on Oct 21 at 2 PM KST', () => {
+  const id = '2026-jeju-campus-day';
+  assert.ok(REGISTRATION_WINDOWS[id]);
+  assert.equal(registrationState(id, Date.parse('2026-10-21T13:59:59+09:00')).state, 'open');
+  const closed = registrationState(id, Date.parse('2026-10-21T14:00:01+09:00'));
+  assert.equal(closed.state, 'gap');
+  assert.equal(closed.nextOpenAt, null);
+});
+
+test('API refuses to register outside the winter English camp registration window', async () => {
+  const { response } = await register({ campId: '2027-wolko-winter', __now: '2026-11-10T12:00:00+09:00' });
+  assert.equal(response.status, 403);
+  const early = await register({ campId: '2027-wolko-winter', __now: '2026-10-14T12:00:00+09:00' });
+  assert.equal(early.response.status, 403);
+  const open = await register({ campId: '2027-wolko-winter', __now: '2026-11-18T10:00:01+09:00' });
+  assert.equal(open.response.status, 200);
 });

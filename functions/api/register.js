@@ -13,7 +13,7 @@
  */
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
-import { usesWinterCampPolicy, winterCampQuote } from '../lib/winterCampPolicy.js';
+import { registrationState, usesWinterCampPolicy, winterCampQuote } from '../lib/winterCampPolicy.js';
 import { normalizePhone } from '../lib/phone.js';
 
 const CORS = {
@@ -566,6 +566,10 @@ export async function onRequestPost(context) {
     const isWaitlist = currentSubs >= campCapacity;
     const waitlistNumber = isWaitlist ? (currentSubs - campCapacity + 1) : null;
 
+    const windowState = registrationState(campId);
+    if (windowState.state !== 'none' && windowState.state !== 'open') {
+      return Response.json({ error: windowState.state === 'before' ? '아직 신청이 시작되지 않았습니다. 신청은 안내된 시작 시각부터 가능합니다.' : '지금은 신청 기간이 아닙니다. 다음 신청 일정을 확인해 주세요.' }, { status: 403, headers: CORS });
+    }
     const regId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     let winterQuote;
     if (usesWinterCampPolicy(campId)) {

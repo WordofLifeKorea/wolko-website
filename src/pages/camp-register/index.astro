@@ -32,6 +32,7 @@ const statusLabel: Record<string, { ko: string; en: string; cls: string }> = {
   upcoming: { ko: '준비 중',   en: 'Upcoming',           cls: 'status-upcoming' },
   full:     { ko: '정원 마감', en: 'Full',               cls: 'status-full' },
 };
+import { REGISTRATION_WINDOWS } from '../../../functions/lib/winterCampPolicy.js';
 ---
 
 <BaseLayout
@@ -886,6 +887,10 @@ body.lang-en .crp-countdown-notice {
 #staff-recruit { scroll-margin-top: 120px; }
 @media (max-width: 640px) { #staff-recruit { scroll-margin-top: 96px; } }
 
+[data-has-windows]:not([data-window-open]) { display: none !important; }
+.crp-window-notice { margin-top: 4px; padding: 14px 16px; border-radius: 12px; background: #f1f4f6; color: #55707d; font-size: 13.5px; font-weight: 700; line-height: 1.6; text-align: center; word-break: keep-all; }
+.crp-window-notice[hidden] { display: none; }
+
 @media (max-width: 640px) {
   .crp-reg-modal {
     padding: 12px 12px max(12px, env(safe-area-inset-bottom));
@@ -1647,8 +1652,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                         <span class="wl-en">Register →</span>
                       </a>
                     ) : canRegister ? (
+                      <>
                       <button
                         class="crp-reg-btn crp-reg-btn-primary crp-open-btn"
+                        data-has-windows={REGISTRATION_WINDOWS[s.id] ? 'true' : undefined}
                         data-camp-id={s.id}
                         data-camp-name-ko={d.title_ko}
                         data-camp-name-en={d.title_en}
@@ -1661,6 +1668,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                         <span class="wl-ko">신청하기 →</span>
                         <span class="wl-en">Register Now →</span>
                       </button>
+                      {REGISTRATION_WINDOWS[s.id] && (
+                        <div class="crp-window-notice" data-window-notice={s.id} hidden></div>
+                      )}
+                      </>
                     ) : d.status === 'upcoming' && d.registration_url ? (
                       <a href={d.registration_url} target="_blank" rel="noopener" class="crp-reg-btn crp-reg-btn-outline">
                         <span class="wl-ko">카페에서 소식 받기 →</span>
@@ -1815,10 +1826,16 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                       </div>
                     </div>
                     {canRegister ? (
-                      <a href={d.registration_url} target="_blank" rel="noopener" class="crp-reg-btn crp-reg-btn-primary">
+                      <>
+                      <a href={d.registration_url} target="_blank" rel="noopener" class="crp-reg-btn crp-reg-btn-primary"
+                         data-has-windows={REGISTRATION_WINDOWS[s.id] ? 'true' : undefined} data-camp-id={s.id}>
                         <span class="wl-ko">신청서 작성하기 →</span>
                         <span class="wl-en">Register →</span>
                       </a>
+                      {REGISTRATION_WINDOWS[s.id] && (
+                        <div class="crp-window-notice" data-window-notice={s.id} hidden></div>
+                      )}
+                      </>
                     ) : d.status === 'upcoming' && d.open_date ? (
                       <div class="crp-countdown" data-open-date={d.open_date}>
                         <div class="crp-countdown-label">
@@ -2757,7 +2774,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 </div>
 
 <script>
-import { WINTER_CAMP_POLICY, usesWinterCampPolicy, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
+import { WINTER_CAMP_POLICY, registrationState, usesWinterCampPolicy, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
 /* ── Reveal 애니메이션 ── */
 var obs = new IntersectionObserver(function(entries) {
   entries.forEach(function(e) {
@@ -2856,6 +2873,47 @@ function scheduleCrpCapacityLoad() {
   }
 }
 scheduleCrpCapacityLoad();
+
+/* ── 신청창: 열리는 구간(1차·2차)에만 신청 버튼을 보여주고, 구간 사이(공백 기간)에는 닫는다 ── */
+function crpFormatOpenAt(iso) {
+  var d = new Date(new Date(iso).getTime() + 9 * 3600000); // 한국 시간
+  var month = d.getUTCMonth() + 1, day = d.getUTCDate(), hour = d.getUTCHours();
+  var ampm = hour < 12 ? '오전' : '오후', h12 = ((hour + 11) % 12) + 1;
+  var enHour = h12 + ':' + String(d.getUTCMinutes()).padStart(2, '0') + (hour < 12 ? ' AM' : ' PM');
+  var enMonth = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month - 1];
+  return { ko: month + '월 ' + day + '일 ' + ampm + ' ' + h12 + '시' + (d.getUTCMinutes() ? ' ' + d.getUTCMinutes() + '분' : ''), en: enMonth + ' ' + day + ', ' + enHour + ' KST' };
+}
+function applyRegistrationWindows() {
+  document.querySelectorAll('[data-has-windows]').forEach(function(btn) {
+    var campId = btn.dataset.campId;
+    var info = registrationState(campId);
+    var open = info.state === 'open';
+    if (open) btn.setAttribute('data-window-open', 'true'); else btn.removeAttribute('data-window-open');
+    var card = btn.closest('.crp-reg-card');
+    var notice = document.querySelector('[data-window-notice="' + campId + '"]');
+    if (notice) {
+      notice.hidden = open;
+      if (!open) {
+        var when = info.nextOpenAt ? crpFormatOpenAt(info.nextOpenAt) : null;
+        var ko = info.state === 'before'
+          ? (when ? '신청은 ' + when.ko + '에 시작됩니다.' : '신청 시작 전입니다.')
+          : (when ? '1차 신청이 마감되었습니다. 2차 신청은 ' + when.ko + '에 시작됩니다.' : '신청이 마감되었습니다.');
+        var en = info.state === 'before'
+          ? (when ? 'Registration opens ' + when.en + '.' : 'Registration has not started yet.')
+          : (when ? 'Round 1 is closed. Round 2 opens ' + when.en + '.' : 'Registration is closed.');
+        notice.innerHTML = '<span class="wl-ko">' + ko + '</span><span class="wl-en">' + en + '</span>';
+      }
+    }
+    var badge = card && card.querySelector('.crp-status-badge');
+    if (badge) {
+      var label = open ? ['신청 중', 'Open'] : info.state === 'before' ? ['오픈 예정', 'Opens soon'] : info.nextOpenAt ? ['신청 일시 마감', 'Closed for now'] : ['마감', 'Closed'];
+      badge.innerHTML = '<span class="wl-ko">' + label[0] + '</span><span class="wl-en">' + label[1] + '</span>';
+      badge.className = 'crp-status-badge ' + (open ? 'crp-status-open' : info.state === 'before' ? 'crp-status-upcoming' : 'crp-status-closed');
+    }
+  });
+}
+applyRegistrationWindows();
+setInterval(applyRegistrationWindows, 15000);
 
 /* ── 모달 DOM 참조 ── */
 var modal = document.getElementById('crpModal');
