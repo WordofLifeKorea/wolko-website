@@ -2,7 +2,7 @@
 import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
 import { getCollection } from 'astro:content';
 const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }) => ({
-  id, title: data.title_ko, titleEn: data.title_en, dateKo: data.date_ko,
+  id, title: data.title_ko, titleEn: data.title_en, dateKo: data.date_ko, dateEn: data.date_en,
   capacity: data.capacity ?? null, startDate: data.start_date,
 }));
 // Admin page — 별도 관리자 비밀번호 없이 포탈(/portal) 세션 토큰(포탈 멤버 누구나)으로 접속한다.
@@ -20,7 +20,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=87">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=88">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -592,7 +592,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     // 공개 모집 상태와 무관하게 일정 및 실제 신청 캠프를 모두 관리한다.
     const scheduledCamps = JSON.parse(document.getElementById('adminCampSchedules').textContent);
     const defaultCamps = [{ id: '2027-winter-camp-1', title: '2027 겨울 캠프 (준비중)', dateKo: '일정 미정', capacity: null }];
-    let SEASONS, CAMP_GROUPS, ADMIN_CAMP_GROUPS, ADMIN_CAMP_IDS, CAMP_LABELS, CAMP_CAP, CAMP_DATES, CAMP_EN_LABELS;
+    let SEASONS, CAMP_GROUPS, ADMIN_CAMP_GROUPS, ADMIN_CAMP_IDS, CAMP_LABELS, CAMP_CAP, CAMP_DATES, CAMP_DATES_EN, CAMP_EN_LABELS;
     function refreshCampCatalog(registrations = []) {
       const legacyCamps = defaultCamps.filter(c => registrations.some(r => r.campId === c.id));
       SEASONS = WolkoCampCatalog.build(scheduledCamps, registrations, legacyCamps);
@@ -604,6 +604,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       CAMP_EN_LABELS = Object.fromEntries(camps.map(c => [c.id, c.titleEn]));
       CAMP_CAP = Object.fromEntries(camps.map(c => [c.id, c.capacity]));
       CAMP_DATES = Object.fromEntries(camps.map(c => [c.id, c.dateKo || '']));
+      CAMP_DATES_EN = Object.fromEntries(camps.map(c => [c.id, c.dateEn || '']));
     }
     function visibleSeasonGroups(seasonId) {
       return seasonId === 'all' ? CAMP_GROUPS : (SEASONS.find(s => s.id === seasonId)?.groups || []);
@@ -1046,6 +1047,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
           <span class="camp-card-badge">${t('selected')}</span>
         </div>
         <div class="camp-card-title">${esc(title)}</div>
+        ${(() => { const d = (adminLang === 'en' && CAMP_DATES_EN[id]) || CAMP_DATES[id] || ''; return d ? `<div class="camp-card-date">${esc(d)}</div>` : ''; })()}
         <div class="camp-card-stats">
           <div class="camp-card-stat">
             <div class="camp-card-stat-val" id="card-${esc(id)}-reg">—</div>
