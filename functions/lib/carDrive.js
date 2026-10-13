@@ -42,6 +42,31 @@ export function periodFor(dateStr) {
   return { start: fromUtc(startMs), end: fromUtc(startMs + 13 * DAY), days };
 }
 export const shiftPeriod = (start, n) => fromUtc(parseDate(start) + n * 14 * DAY);
+
+/** 날짜가 속한 주의 월요일 */
+const mondayOf = dateStr => { const ms = parseDate(dateStr); const dow = new Date(ms).getUTCDay(); return fromUtc(ms - ((dow + 6) % 7) * DAY); };
+const addDays = (dateStr, n) => fromUtc(parseDate(dateStr) + n * DAY);
+/**
+ * 화면 맨 위에 올라올 주의 월요일 — 새 주는 일요일에 시작한다. 일요일이 되면 곧 시작하는 다음 주(월요일~)가 맨 위로 올라오고,
+ * 지난 주는 화면에서 빠진다. (월~토에는 그 주 월요일)
+ */
+export const currentWeekStart = today => mondayOf(addDays(today, 1));
+/**
+ * 지금부터 보여줄 두 주짜리 창 { start, end, days[14], prev, next, isCurrent } — 2주 고정 구간과 별개로 한 주씩 밀리며 움직인다.
+ * 지난 주로는 돌아갈 수 없고(prev=null), MAX_AHEAD_DAYS 안쪽까지만 넘길 수 있다. 신청·닫힘·정원 데이터는 그대로 2주 구간 키(periodFor)에 저장된다.
+ */
+export function rollingWindow(wanted, today) {
+  const min = currentWeekStart(today);
+  const max = mondayOf(addDays(today, MAX_AHEAD_DAYS));
+  let start = parseDate(wanted) === null ? min : mondayOf(wanted);
+  if (start < min) start = min;
+  if (start > max) start = max;
+  const startMs = parseDate(start);
+  const days = Array.from({ length: 14 }, (_, i) => fromUtc(startMs + i * DAY));
+  return { start, end: days[13], days, prev: start > min ? addDays(start, -7) : null, next: start < max ? addDays(start, 7) : null, isCurrent: start === min };
+}
+/** 창에 걸친 2주 구간들의 시작일(중복 없이) — 구간별로 저장된 닫힘·정원 맵을 모아 읽을 때 쓴다 */
+export const periodStartsOf = days => [...new Set(days.map(d => periodFor(d).start))];
 /** 화면에 보일 이름: 지정된 표시 이름이 있으면 그것, 없으면 신청 때 저장된 이름 */
 export const shownName = (record) => pickName(record?.email, record?.name);
 export const slotKey = (date, slot) => `${SLOT_PREFIX}${date}:${slot}`;

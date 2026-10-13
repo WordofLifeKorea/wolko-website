@@ -25,6 +25,7 @@ async function addAccount(env, email, name, extra = {}) {
 const req = (method, path, token, body) => new Request('https://t.co' + path, {
   method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined,
 });
+const plusDays = (dateStr, n) => { const d = new Date(dateStr + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const nextWeekday = () => { // 오늘 이후 가장 가까운 화요일
   const d = new Date(todayKst() + 'T00:00:00Z');
   do { d.setUTCDate(d.getUTCDate() + 1); } while (d.getUTCDay() !== 2);
@@ -69,8 +70,8 @@ test('칸 신청 · 중복 거절 · 본인만 취소 · 휴대폰 번호 필요
   assert.equal((await post(b, { date, slot: 'pickup' })).status, 400, '번호가 없으면 오전 픽업 신청 불가');
   assert.equal((await post(b, { date, slot: 'dropoff' })).status, 201, '드롭오프는 번호 없이도 가능');
   assert.equal((await post(a, { date: '2020-01-06', slot: 'pickup' })).status, 400, '지난 날짜');
-  assert.equal((await post(a, { date: '2026-10-11', slot: 'pickup' })).status, 409, '일요일은 기본 닫힘');
-  assert.equal((await post(a, { date: '2026-10-10', slot: 'pickup' })).status, 409, '토요일은 기본 닫힘');
+  assert.equal((await post(a, { date: plusDays(date, 5), slot: 'pickup' })).status, 409, '일요일은 기본 닫힘');
+  assert.equal((await post(a, { date: plusDays(date, 4), slot: 'pickup' })).status, 409, '토요일은 기본 닫힘');
   const get = async token => (await D.onRequestGet({ env, request: req('GET', `/api/car/drive?start=${date}`, token) })).json();
   const view = await get(b);
   assert.deepEqual(view.slots[`${date}:pickup`], { name: '가나다', mine: false });
@@ -198,7 +199,8 @@ test('월·토·일은 기본으로 닫혀 있고, 관리자가 열면 신청할
   const estelle = await addAccount(env, 'esooy@wol.org', 'Estelle Sooy');
   const a = await addAccount(env, 'a@x.com', '가나다');
   const future = (weekday) => { const d = new Date(todayKst() + 'T00:00:00Z'); do { d.setUTCDate(d.getUTCDate() + 1); } while (d.getUTCDay() !== weekday); return d.toISOString().slice(0, 10); };
-  const [mon, sat, sun, wed] = [future(1), future(6), future(0), future(3)];
+  const mon = future(1); // 다음 월요일 — 보이는 두 주 창이 그 월요일부터 시작하므로 같은 주의 토·일·수를 쓴다
+  const [sat, sun, wed] = [plusDays(mon, 5), plusDays(mon, 6), plusDays(mon, 2)];
   const get = async (token, d) => (await D.onRequestGet({ env, request: req('GET', `/api/car/drive?start=${d}`, token) })).json();
   const post = (token, body) => D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, body) });
   const put = (token, body) => D.onRequestPut({ env, request: req('PUT', '/api/car/drive', token, body) });
@@ -390,4 +392,30 @@ test('관리자(Estelle·마스터)는 사람을 직접 배정하고 해제할 �
   assert.equal((await patch(estelle, { date: sat, slot: 'pickup', email: null })).status, 200, '배정 해제');
   assert.equal((await view(a)).slots[`${sat}:pickup`], undefined);
   assert.equal((await patch(estelle, { date: '2020-01-06', slot: 'pickup', email: 'a@x.com' })).status, 409, '지난 날짜는 안 된다');
+});
+
+import { currentWeekStart, rollingWindow } from '../functions/lib/carDrive.js';
+
+test('새 주는 일요일에 시작한다: 일요일이 되면 다음 주가 맨 위로 올라오고 지난 주는 빠진다', () => {
+  assert.equal(currentWeekStart('2026-10-12'), '2026-10-12', '월요일');
+  assert.equal(currentWeekStart('2026-10-13'), '2026-10-12', '화요일');
+  assert.equal(currentWeekStart('2026-10-17'), '2026-10-12', '토요일은 아직 그 주');
+  assert.equal(currentWeekStart('2026-10-18'), '2026-10-19', '일요일부터 다음 주');
+  const sunday = rollingWindow(undefined, '2026-10-18');
+  assert.equal(sunday.start, '2026-10-19');
+  assert.equal(sunday.days.length, 14);
+  assert.equal(sunday.days[0], '2026-10-19');
+  assert.ok(!sunday.days.includes('2026-10-18'), '지난 주 일요일은 보이지 않는다');
+  assert.equal(sunday.prev, null, '지난 주로는 돌아갈 수 없다');
+  assert.equal(sunday.next, '2026-10-26');
+  assert.equal(sunday.isCurrent, true);
+});
+
+test('지난 주를 요청해도 이번 주로 맞춰지고, 너무 먼 주는 마지막 주로 맞춰진다', () => {
+  assert.equal(rollingWindow('2026-09-01', '2026-10-13').start, '2026-10-12');
+  const far = rollingWindow('2027-12-01', '2026-10-13');
+  assert.equal(far.next, null);
+  const mid = rollingWindow('2026-10-26', '2026-10-13');
+  assert.equal(mid.prev, '2026-10-19');
+  assert.equal(mid.isCurrent, false);
 });

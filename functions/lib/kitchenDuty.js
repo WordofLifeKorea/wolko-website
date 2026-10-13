@@ -8,7 +8,7 @@
  */
 import { driveSession, parseDate, weekdayOf } from './carDrive.js';
 
-export { MAX_AHEAD_DAYS, parseDate, periodFor, shiftPeriod, todayKst, weekdayOf, shownName } from './carDrive.js';
+export { MAX_AHEAD_DAYS, parseDate, periodFor, periodStartsOf, rollingWindow, shiftPeriod, todayKst, weekdayOf, shownName } from './carDrive.js';
 
 export const SLOTS = ['am_prep', 'am_clean', 'lunch_prep', 'lunch_clean', 'dinner_prep', 'dinner_clean'];
 export const MORNING_SLOTS = ['am_prep', 'am_clean'];

@@ -11,7 +11,7 @@
 import { isValidPhone, getAccount, isMasterEmail, normalizeEmail } from '../../lib/hubAccounts.js';
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 import { pickName } from '../../lib/expenses.js';
-import { MAX_AHEAD_DAYS, SLOTS, closedKey, driveSession, shownName, isDefaultClosedDay, isSlotClosed, parseDate, periodFor, shiftPeriod, slotKey, todayKst } from '../../lib/carDrive.js';
+import { MAX_AHEAD_DAYS, SLOTS, closedKey, driveSession, shownName, isDefaultClosedDay, isSlotClosed, parseDate, periodFor, periodStartsOf, rollingWindow, shiftPeriod, slotKey, todayKst } from '../../lib/carDrive.js';
 import { normalizePhone } from '../../lib/phone.js';
 
 const H = { 'Cache-Control': 'no-store' };
@@ -23,12 +23,13 @@ export async function onRequestGet({ env, request }) {
   if (session.error) return fail(session.error, session.status);
   const today = todayKst();
   const wanted = new URL(request.url).searchParams.get('start') || today;
-  const period = periodFor(parseDate(wanted) === null ? today : wanted);
+  const period = rollingWindow(wanted, today);
   const keys = period.days.flatMap(date => SLOTS.map(slot => [date, slot]));
-  const [values, closedMap] = await Promise.all([
+  const [values, closedLists] = await Promise.all([
     Promise.all(keys.map(([d, s]) => env.CAMP_KV.get(slotKey(d, s), 'json'))),
-    env.CAMP_KV.get(closedKey(period.start), 'json'),
+    Promise.all(periodStartsOf(period.days).map(start => env.CAMP_KV.get(closedKey(start), 'json'))),
   ]);
+  const closedMap = Object.assign({}, ...closedLists.map(m => m || {}));
   const slots = {};
   keys.forEach(([d, s], i) => {
     const v = values[i];
@@ -36,7 +37,7 @@ export async function onRequestGet({ env, request }) {
   });
   return Response.json({
     me: { name: session.name, phone: session.phone, isAdmin: session.isAdmin, isManager: session.isManager },
-    today, period: { start: period.start, end: period.end, days: period.days, prev: shiftPeriod(period.start, -1), next: shiftPeriod(period.start, 1) },
+    today, period: { start: period.start, end: period.end, days: period.days, prev: period.prev, next: period.next, isCurrent: period.isCurrent },
     slots,
     closed: Object.fromEntries(keys.filter(([d, s], i) => isSlotClosed(closedMap, d, s, !!values[i])).map(([d, s]) => [`${d}:${s}`, true])),
   }, { headers: H });

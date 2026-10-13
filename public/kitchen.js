@@ -238,7 +238,9 @@
     const p = state.period;
     const lastDay = p.days[p.days.length - 1];
     $('periodLabel').textContent = `${md(p.start)} (${wk(p.start)}) – ${md(lastDay)} (${wk(lastDay)})`;
-    $('thisPeriod').hidden = state.today >= p.start && state.today <= p.end;
+    $('thisPeriod').hidden = !!p.isCurrent;
+    $('prevPeriod').disabled = !p.prev;
+    $('nextPeriod').disabled = !p.next;
     const mgr = !!state.me.isManager;
     $('manageBtn').hidden = !mgr;
     $('timesBtn').hidden = !mgr;
@@ -389,8 +391,8 @@
   $('timesSave').addEventListener('click', saveTimes);
   $('timesReset').addEventListener('click', () => { if (defaultSettings) showTimes(defaultSettings); }); // 저장 전까지는 화면에서만 되돌린다
   $('manageBtn').addEventListener('click', () => { manage = !manage; render(); });
-  $('prevPeriod').addEventListener('click', () => load(state.period.prev));
-  $('nextPeriod').addEventListener('click', () => load(state.period.next));
+  $('prevPeriod').addEventListener('click', () => { if (state.period.prev) load(state.period.prev); });
+  $('nextPeriod').addEventListener('click', () => { if (state.period.next) load(state.period.next); });
   $('thisPeriod').addEventListener('click', () => load(state.today));
   $('langKoBtn').addEventListener('click', () => setLang('ko'));
   $('langEnBtn').addEventListener('click', () => setLang('en'));
