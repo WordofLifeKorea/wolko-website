@@ -206,6 +206,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .crp-reg-meta-row {
   display: grid; grid-template-columns: 72px 1fr; gap: 8px; align-items: baseline;
 }
+.crp-reg-meta-label { min-width: 0; overflow-wrap: anywhere; }
 .crp-reg-meta-label {
   font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--c-muted);
@@ -358,10 +359,15 @@ body.lang-en .crp-reg-title {
   font-size: clamp(21px, 1.7vw, 25px);
   line-height: 1.18;
 }
+/* 영어 라벨(REGISTRATION 등)은 한글보다 길어서 64px 칸에 다 안 들어가 값과 겹쳤다 — 가장 긴 라벨이 들어가도록 칸을 넓힌다 */
 #lang-root.lang-en .crp-reg-meta-row,
 body.lang-en .crp-reg-meta-row {
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: 104px minmax(0, 1fr);
   gap: 8px;
+}
+@media (max-width: 380px) {
+  #lang-root.lang-en .crp-reg-meta-row,
+  body.lang-en .crp-reg-meta-row { grid-template-columns: 92px minmax(0, 1fr); }
 }
 #lang-root.lang-en .crp-reg-meta-value,
 #lang-root.lang-en .crp-reg-notes,
