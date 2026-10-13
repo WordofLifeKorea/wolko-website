@@ -410,6 +410,39 @@ body.account-modal-open { overflow:hidden; }
 }
 .camp-card-sep { width: 1px; height: 28px; background: var(--border); }
 
+/* ── 캠프 카드 정리: 시즌 선택이 맨 위 한 줄(1순위), 아래 캠프 카드는 같은 크기의 격자로 ── */
+.camp-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 12px; align-items: stretch; }
+.camp-cards .camp-card { flex: none; min-width: 0; display: flex; flex-direction: column; padding: 18px 20px; }
+.camp-cards .camp-card .camp-card-stats { margin-top: auto; }
+.camp-cards .camp-card-title { margin-bottom: 16px; }
+
+.camp-cards .camp-season-card {
+  grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px 26px;
+  padding: 16px 22px; background: #fff; border: 2px solid var(--blue); box-shadow: 0 4px 18px rgba(0,79,104,0.08);
+}
+.camp-cards .camp-season-card .camp-card-top { margin: 0; }
+.camp-cards .camp-season-card .camp-card-badge { display: none !important; }
+.camp-cards .camp-season-card .camp-card-kicker { font-size: 12px; font-weight: 800; color: var(--blue); letter-spacing: .06em; }
+.camp-cards .camp-season-card .season-card-nav { margin: 0; flex: 0 1 300px; min-width: 180px; }
+.camp-cards .camp-season-card .season-select { height: 44px; padding: 0 14px; font-size: 16px; font-weight: 800; background: #fff; border-color: rgba(0,79,104,.3); }
+.camp-cards .camp-season-card .camp-card-stats { margin: 0 0 0 auto; }
+.camp-cards .camp-season-card:not(.active) { border-color: var(--border); box-shadow: none; }
+
+/* 캠프 카드는 흰 바탕으로 차분하게, 캠프 색은 작은 점으로만 구분하고 선택된 카드만 옅게 물들인다 */
+.camp-cards .camp-card:not(.camp-season-card) { background: var(--card); }
+.camp-cards .camp-card:not(.camp-season-card).active { background: var(--card-camp-bg, var(--card)); }
+.camp-cards .camp-card:not(.camp-season-card) .camp-card-kicker::before {
+  content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%;
+  background: var(--card-camp-border, var(--blue)); vertical-align: 1px;
+}
+@media (max-width: 680px) {
+  .camp-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .camp-cards .camp-card { padding: 14px 14px; }
+  .camp-cards .camp-season-card { padding: 14px; gap: 10px 16px; }
+  .camp-cards .camp-season-card .season-card-nav { flex: 1 1 100%; }
+  .camp-cards .camp-season-card .camp-card-stats { margin-left: 0; }
+}
+
 /* ── STATS TABLE ── */
 .stats-wrap {
   background: var(--card);
