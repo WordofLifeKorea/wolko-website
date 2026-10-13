@@ -1,5 +1,10 @@
 ---
 import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
+import { getCollection } from 'astro:content';
+const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }) => ({
+  id, title: data.title_ko, titleEn: data.title_en, dateKo: data.date_ko,
+  capacity: data.capacity ?? null, startDate: data.start_date,
+}));
 // Admin page — 별도 관리자 비밀번호 없이 포탈(/portal) 세션 토큰(포탈 멤버 누구나)으로 접속한다.
 // No BaseLayout; standalone page
 ---
@@ -334,6 +339,8 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
   <div id="printRoster" aria-hidden="true"></div>
 
   <script define:vars={{ winterCampPolicy: WINTER_CAMP_POLICY }}></script>
+  <script type="application/json" id="adminCampSchedules" set:html={JSON.stringify(adminSchedules).replace(/</g, '\\u003c')} />
+  <script is:inline src="/wolko-camp-catalog.js?v=1"></script>
   <script is:inline>
     // ── Language System ──
     let adminLang = localStorage.getItem('wolkoAdminLang') || 'ko';
@@ -582,72 +589,26 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
     }
     applyLangToDOM();
 
-    // ── 시즌 데이터 ──────────────────────────────────────────────────────────────
-    // 새 시즌 추가 시 SEASONS 배열에 항목 추가 (최신 시즌이 마지막에 위치)
-    const SEASONS = [
-      {
-        id: '2026-summer',
-        label: '2026 여름',
-        groups: [
-          {
-            group: 'wolko',
-            label: 'WOLKO 캠프',
-            camps: [
-              { id: '2026-inland-english-junior', title: '2026 여름 주니어 영어 캠프', dateKo: '7월 27일 – 8월 1일', capacity: 40 },
-            ],
-          },
-          {
-            group: 'union',
-            label: '연합캠프',
-            camps: [
-              { id: '2026-inland-union',          title: '2026 교회 연합캠프',          dateKo: '8월 6일 – 8일',    capacity: 40, status: 'closed' },
-            ],
-          },
-        ],
-      },
-      {
-        id: '2027-winter',
-        label: '2027 겨울',
-        groups: [
-          {
-            group: 'wolko',
-            label: 'WOLKO 캠프',
-            camps: [
-              // 세부 일정/정원 확정 전 — 확정되면 title/dateKo/capacity만 갱신하면 됨
-              { id: '2027-winter-camp-1', title: '2027 겨울 캠프 (준비중)', dateKo: '일정 미정', capacity: 40 },
-            ],
-          },
-        ],
-      },
-    ];
-
-    // 하위 호환: CAMP_GROUPS는 전체 시즌 통합 목록
-    const CAMP_GROUPS = SEASONS.flatMap(s =>
-      s.groups.map(g => ({ ...g, seasonId: s.id }))
-    );
-    const isAdminVisibleCamp = camp => camp?.status !== 'closed';
-    function visibleSeasonGroups(seasonId) {
-      const season = SEASONS.find(s => s.id === seasonId);
-      if (!season) return [];
-      return season.groups
-        .map(group => ({ ...group, camps: group.camps.filter(isAdminVisibleCamp) }))
-        .filter(group => group.camps.length > 0);
+    // 공개 모집 상태와 무관하게 일정 및 실제 신청 캠프를 모두 관리한다.
+    const scheduledCamps = JSON.parse(document.getElementById('adminCampSchedules').textContent);
+    const defaultCamps = [{ id: '2027-winter-camp-1', title: '2027 겨울 캠프 (준비중)', dateKo: '일정 미정', capacity: null }];
+    let SEASONS, CAMP_GROUPS, ADMIN_CAMP_GROUPS, ADMIN_CAMP_IDS, CAMP_LABELS, CAMP_CAP, CAMP_DATES, CAMP_EN_LABELS;
+    function refreshCampCatalog(registrations = []) {
+      const legacyCamps = defaultCamps.filter(c => registrations.some(r => r.campId === c.id));
+      SEASONS = WolkoCampCatalog.build(scheduledCamps, registrations, legacyCamps);
+      CAMP_GROUPS = SEASONS.flatMap(s => s.groups.map(g => ({ ...g, seasonId: s.id })));
+      ADMIN_CAMP_GROUPS = CAMP_GROUPS;
+      const camps = CAMP_GROUPS.flatMap(g => g.camps);
+      ADMIN_CAMP_IDS = new Set(camps.map(c => c.id));
+      CAMP_LABELS = Object.fromEntries(camps.map(c => [c.id, c.title]));
+      CAMP_EN_LABELS = Object.fromEntries(camps.map(c => [c.id, c.titleEn]));
+      CAMP_CAP = Object.fromEntries(camps.map(c => [c.id, c.capacity]));
+      CAMP_DATES = Object.fromEntries(camps.map(c => [c.id, c.dateKo || '']));
     }
-    const ADMIN_CAMP_GROUPS = CAMP_GROUPS
-      .map(group => ({ ...group, camps: group.camps.filter(isAdminVisibleCamp) }))
-      .filter(group => group.camps.length > 0);
-    const ADMIN_CAMP_IDS = new Set(ADMIN_CAMP_GROUPS.flatMap(g => g.camps.map(c => c.id)));
-    const CAMPS_ALL = [{ id: 'all', title: '전체 캠프', capacity: 9999 }]
-      .concat(CAMP_GROUPS.flatMap(g => g.camps));
-    const CAMP_LABELS = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.title]));
-    const CAMP_CAP    = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.capacity]));
-    const CAMP_DATES  = Object.fromEntries(CAMPS_ALL.map(c => [c.id, c.dateKo || '']));
-    const CAMP_TITLE_KEYS = {
-      all: 'campAll',
-      '2026-inland-english-junior': 'campJunior2026',
-      '2026-inland-union': 'campUnion2026',
-      '2027-winter-camp-1': 'campWinter2027',
-    };
+    function visibleSeasonGroups(seasonId) {
+      return seasonId === 'all' ? CAMP_GROUPS : (SEASONS.find(s => s.id === seasonId)?.groups || []);
+    }
+    refreshCampCatalog();
     const SEASON_LABEL_KEYS = {
       '2026-summer': 'season2026Summer',
       '2027-winter': 'season2027Winter',
@@ -664,7 +625,8 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
       return CAMP_GROUP_LABEL_KEYS[group.group] ? t(CAMP_GROUP_LABEL_KEYS[group.group]) : group.label;
     }
     function campDisplayName(campId) {
-      return CAMP_TITLE_KEYS[campId] ? t(CAMP_TITLE_KEYS[campId]) : (CAMP_LABELS[campId] || campId || t('unset'));
+      if (campId === 'all') return t('campAll');
+      return (adminLang === 'en' && CAMP_EN_LABELS[campId]) || CAMP_LABELS[campId] || campId || t('unset');
     }
     const CAMP_ROW_STYLES = {
       '2026-inland-english-junior': { bg: '#e6f5ff', border: '#3797c7' },
@@ -777,7 +739,7 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
 
     let allRegs = [];
     let activeCamp = 'all';
-    let activeSeason = SEASONS[SEASONS.length - 1].id; // 최신 시즌 기본 선택
+    let activeSeason = '2027-winter';
     let sortState = { key: 'registeredAt', direction: 'desc' }; // 상태별 그룹은 3개 카드로 물리적 분리되어 있음
     let activeTeamFilter = 'all';
     let staffEditMode = false;
@@ -1078,18 +1040,18 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
       card.style.setProperty('--card-camp-border', campStyle.border);
       card.innerHTML = `
         <div class="camp-card-top">
-          <span class="camp-card-kicker">${kicker}</span>
+          <span class="camp-card-kicker">${esc(kicker)}</span>
           <span class="camp-card-badge">${t('selected')}</span>
         </div>
-        <div class="camp-card-title">${title}</div>
+        <div class="camp-card-title">${esc(title)}</div>
         <div class="camp-card-stats">
           <div class="camp-card-stat">
-            <div class="camp-card-stat-val" id="card-${id}-reg">—</div>
+            <div class="camp-card-stat-val" id="card-${esc(id)}-reg">—</div>
             <div class="camp-card-stat-lbl">${t('applicationShort')}</div>
           </div>
           <div class="camp-card-sep"></div>
           <div class="camp-card-stat">
-            <div class="camp-card-stat-val green" id="card-${id}-cap">—</div>
+            <div class="camp-card-stat-val green" id="card-${esc(id)}-cap">—</div>
             <div class="camp-card-stat-lbl">${t('remainingShort')}</div>
           </div>
         </div>
@@ -1103,6 +1065,7 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
       activeCamp = 'all';
       loadTeamOverviewConfig(activeCamp);
       buildCampCards();
+      updateCardStats();
       renderTable();
       renderDash();
     }
@@ -1122,12 +1085,13 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
       const idx = SEASONS.findIndex(s => s.id === activeSeason);
       const hasPrev = idx > 0;
       const hasNext = idx < SEASONS.length - 1;
-      const navHtml = SEASONS.length > 1 ? `
+      const navHtml = `
         <div class="season-card-nav">
           <select class="season-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();selectSeason(this.value)">
-            ${SEASONS.map(s => `<option value="${s.id}"${s.id === activeSeason ? ' selected' : ''}>${seasonDisplayName(s)}</option>`).join('')}
+            <option value="all"${activeSeason === 'all' ? ' selected' : ''}>${adminLang === 'en' ? 'All seasons' : '전체 시즌'}</option>
+            ${SEASONS.map(s => `<option value="${esc(s.id)}"${s.id === activeSeason ? ' selected' : ''}>${esc(seasonDisplayName(s))}</option>`).join('')}
           </select>
-        </div>` : `<div class="camp-card-title">${label}</div>`;
+        </div>`;
       card.innerHTML = `
         <div class="camp-card-top">
           <span class="camp-card-kicker">${t('season')}</span>
@@ -1155,7 +1119,7 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
       wrap.appendChild(makeSeasonCard());
       const currentSeasonGroups = visibleSeasonGroups(activeSeason);
       currentSeasonGroups.forEach(group => group.camps.forEach(c => {
-        wrap.appendChild(makeCard(c.id, `${campGroupDisplayName(group)} · ${tt('capacityFn', c.capacity)}`, campDisplayName(c.id), c.capacity));
+        wrap.appendChild(makeCard(c.id, `${campGroupDisplayName(group)} · ${c.capacity == null ? (adminLang === 'en' ? 'Capacity unset' : '정원 미정') : tt('capacityFn', c.capacity)}`, campDisplayName(c.id), c.capacity));
       }));
     }
 
@@ -1171,7 +1135,7 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
       const seasonRegs = allRegs.filter(r => ids.has(r.campId) && r.registrationType !== 'staff');
       const seasonTotal = seasonRegs.reduce((s, r) => s + regHeadcount(r), 0);
       const seasonConfirmed = seasonRegs.filter(isConfirmedReg).reduce((s, r) => s + regHeadcount(r), 0);
-      const seasonRemain = Math.max(0, seasonCap - seasonConfirmed);
+      const seasonRemain = seasonCamps.some(c => c.capacity == null) ? '—' : Math.max(0, seasonCap - seasonConfirmed);
       const allRegEl = document.getElementById('card-all-reg');
       const allCapEl = document.getElementById('card-all-cap');
       if (allRegEl) allRegEl.textContent = seasonTotal;
@@ -1182,7 +1146,7 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
         const regs = allRegs.filter(r => r.campId === c.id && r.registrationType !== 'staff');
         const total = regs.reduce((s, r) => s + regHeadcount(r), 0);
         const confirmed = regs.filter(isConfirmedReg).reduce((s, r) => s + regHeadcount(r), 0);
-        const remain = Math.max(0, c.capacity - confirmed);
+        const remain = c.capacity == null ? '—' : Math.max(0, c.capacity - confirmed);
         const regEl = document.getElementById(`card-${c.id}-reg`);
         const capEl = document.getElementById(`card-${c.id}-cap`);
         if (regEl) regEl.textContent = total;
@@ -1214,6 +1178,8 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         allRegs = data.registrations || [];
+        refreshCampCatalog(allRegs);
+        buildCampCards();
         await loadTeamOverviewConfig(activeCamp);
         updateCardStats();
         renderTable();
@@ -1347,11 +1313,10 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
     function renderDash() {
       const regs = filteredRegs();
       // activeCamp === 'all' 이면 현재 시즌 전체 캠프 정원 합산
-      const cap = activeCamp === 'all'
-        ? ADMIN_CAMP_GROUPS.flatMap(g => g.camps)
-            .filter(c => seasonCampIds(activeSeason).has(c.id))
-            .reduce((s, c) => s + c.capacity, 0) || 80
-        : (CAMP_CAP[activeCamp] || 40);
+      const selectedCamps = ADMIN_CAMP_GROUPS.flatMap(g => g.camps)
+        .filter(c => activeCamp === 'all' ? seasonCampIds(activeSeason).has(c.id) : c.id === activeCamp);
+      const cap = selectedCamps.some(c => c.capacity == null)
+        ? null : selectedCamps.reduce((s, c) => s + c.capacity, 0);
 
       // 스태프 신청은 정원 집계에서 제외
       const campRegs = regs.filter(r => r.registrationType !== 'staff');
@@ -1363,7 +1328,7 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
       const total     = campRegs.reduce((s, r) => s + regHeadcount(r), 0);
       const confirmed = confirmedRegs.reduce((s, r) => s + regHeadcount(r), 0);
       const pending   = pendingRegs.reduce((s, r) => s + regHeadcount(r), 0);
-      const remain    = Math.max(0, cap - confirmed);
+      const remain    = cap == null ? '—' : Math.max(0, cap - confirmed);
       const pct       = cap > 0 ? Math.round((confirmed / cap) * 100) : 0;
 
       // 성별 (확정 기준, 단체는 이름이 입력된 참가자의 실제 성별)
@@ -1383,15 +1348,19 @@ import { WINTER_CAMP_POLICY } from '../../functions/lib/winterCampPolicy.js';
       document.getElementById('dStaff').textContent = staffCount;
       document.getElementById('dStaffSub').textContent = staffCount > 0 ? tt('staffCountFn2', staffCount) : t('noData');
       document.getElementById('dRemain').textContent = remain;
-      document.getElementById('dRemainSub').textContent = tt('capacityBasisFn', cap);
+      document.getElementById('dRemainSub').textContent = cap == null
+        ? (adminLang === 'en' ? 'Capacity unset' : '정원 미정') : tt('capacityBasisFn', cap);
 
       const campName = activeCamp === 'all' ? t('campAll') : campDisplayName(activeCamp);
       document.getElementById('progressLabel').textContent = tt('capacityProgressFn', campName);
-      document.getElementById('progressPct').textContent = pct + '%';
+      document.getElementById('progressPct').textContent = cap == null ? '—' : pct + '%';
 
       const fillM = document.getElementById('progressFillM');
       const fillF = document.getElementById('progressFillF');
-      if (maleTotal > 0 || femaleTotal > 0) {
+      if (!(cap > 0)) {
+        fillM.style.width = '0%';
+        fillF.style.width = '0%';
+      } else if (maleTotal > 0 || femaleTotal > 0) {
         fillM.style.width = Math.min((maleTotal / cap) * 100, 100) + '%';
         fillF.style.width = Math.min((femaleTotal / cap) * 100, 100) + '%';
       } else if (confirmed > 0) {
