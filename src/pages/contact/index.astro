@@ -10,6 +10,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 <link rel="stylesheet" href="/phone-input.css?v=1">
 <script is:inline src="/phone-input.js?v=1" defer></script>
+<script is:inline>
+  // 캠프 신청 화면에서 "문의 남기기"로 넘어오면 이 탭의 임시 저장소에 담긴 내용으로 문의 양식을 미리 채운다(한 번만 쓰고 지운다).
+  window.addEventListener('DOMContentLoaded', function () {
+    var data = null;
+    try { data = JSON.parse(sessionStorage.getItem('wolko-contact-prefill') || 'null'); sessionStorage.removeItem('wolko-contact-prefill'); } catch (e) {}
+    if (!data) return;
+    var set = function (id, value) { var el = document.getElementById(id); if (el && value) el.value = value; };
+    set('ct-type-select', data.type); set('ct-name', data.name); set('ct-email', data.email); set('ct-phone', data.phone); set('ct-msg', data.message);
+    var msg = document.getElementById('ct-msg'); if (msg) { try { msg.focus(); msg.setSelectionRange(msg.value.length, msg.value.length); } catch (e) {} }
+  });
+</script>
+
 <style>
   :root {
     --d:#004f68; --m:#007ea1; --l:#73d1f5;

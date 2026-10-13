@@ -29,6 +29,27 @@ export const REGISTRATION_WINDOWS = {
   ],
 };
 
+/**
+ * 개인 신청 지원 연령(출생연도 기준, 양 끝 포함). 범위가 있는 캠프는 생년월일을 받아 범위 밖이면 신청을 막고 문의로 안내한다.
+ * 2027 겨울 월코 영어캠프: 예비 초6(2015년생) – 예비 고1(2011년생).
+ */
+export const BIRTH_YEAR_RANGES = {
+  '2027-wolko-winter': { min: 2011, max: 2015 },
+};
+
+/** 생년월일(YYYY-MM-DD) 검사: { ok, reason: 'none'|'missing'|'invalid'|'out-of-range', range } */
+export function birthYearCheck(campId, birthDate) {
+  const range = BIRTH_YEAR_RANGES[campId];
+  if (!range) return { ok: true, reason: 'none', range: null };
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(birthDate || '').trim());
+  if (!m) return { ok: false, reason: birthDate ? 'invalid' : 'missing', range };
+  const [year, month, day] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const real = new Date(Date.UTC(year, month - 1, day));
+  if (real.getUTCFullYear() !== year || real.getUTCMonth() !== month - 1 || real.getUTCDate() !== day) return { ok: false, reason: 'invalid', range };
+  if (year < range.min || year > range.max) return { ok: false, reason: 'out-of-range', range };
+  return { ok: true, reason: 'ok', range };
+}
+
 /** 지금 접수 상태: { state: 'none'|'open'|'before'|'gap', nextOpenAt } — none 은 신청창이 따로 없는 캠프 */
 export function registrationState(campId, now = Date.now()) {
   const windows = REGISTRATION_WINDOWS[campId];

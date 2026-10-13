@@ -897,6 +897,15 @@ body.lang-en .crp-countdown-notice {
 .crp-window-notice { margin-top: 4px; padding: 14px 16px; border-radius: 12px; background: #f1f4f6; color: #55707d; font-size: 13.5px; font-weight: 700; line-height: 1.6; text-align: center; word-break: keep-all; }
 .crp-window-notice[hidden] { display: none; }
 
+#crpBirthField .crp-birth-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
+.crp-birth-hint { margin-top: 6px; font-size: 12px; color: var(--c-muted); }
+.crp-age-warn { margin-top: 10px; padding: 12px 14px; border: 1.5px solid #f0b9bd; border-radius: 12px; background: #fff3f3; }
+.crp-age-warn[hidden] { display: none; }
+.crp-age-warn p { margin: 0 0 10px; color: #a3262f; font-size: 13px; font-weight: 700; line-height: 1.6; word-break: keep-all; }
+#crpAgeWarn .crp-age-contact, #crpAgeWarn .crp-age-contact:visited { color: #fff !important; }
+.crp-age-contact { display: inline-flex; align-items: center; min-height: 38px; padding: 0 16px; border-radius: 10px; background: #b93a42; color: #fff; font-size: 13px; font-weight: 800; text-decoration: none; }
+.crp-age-contact:hover { background: #a3262f; }
+
 @media (max-width: 640px) {
   .crp-reg-modal {
     padding: 12px 12px max(12px, env(safe-area-inset-bottom));
@@ -2055,6 +2064,21 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                   <option value="female" data-ko="여학생" data-en="Female">여학생</option>
                 </select>
               </div>
+              <div class="crp-field crp-field--full" id="crpBirthField" hidden>
+                <label><span class="wl-ko">생년월일</span><span class="wl-en">Date of Birth</span> <span class="req">*</span></label>
+                <div class="crp-birth-grid">
+                  <select id="crpBirthYear" name="birthYear" data-opt-ko="년도" data-opt-en="Year"><option value="">년도</option></select>
+                  <select id="crpBirthMonth" name="birthMonth" data-opt-ko="월" data-opt-en="Month"><option value="">월</option></select>
+                  <select id="crpBirthDay" name="birthDay" data-opt-ko="일" data-opt-en="Day"><option value="">일</option></select>
+                </div>
+                <p class="crp-birth-hint" id="crpBirthHint"></p>
+                <div class="crp-age-warn" id="crpAgeWarn" role="alert" hidden>
+                  <p id="crpAgeWarnText"></p>
+                  <a class="crp-age-contact" id="crpAgeContact" href="/contact/">
+                    <span class="wl-ko">문의 남기기 →</span><span class="wl-en">Leave an inquiry →</span>
+                  </a>
+                </div>
+              </div>
               <div class="crp-field">
                 <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
                 <input id="crpEmail" name="email" type="email" placeholder="email@example.com">
@@ -2780,7 +2804,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 </div>
 
 <script>
-import { WINTER_CAMP_POLICY, registrationState, usesWinterCampPolicy, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
+import { BIRTH_YEAR_RANGES, WINTER_CAMP_POLICY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
 /* ── Reveal 애니메이션 ── */
 var obs = new IntersectionObserver(function(entries) {
   entries.forEach(function(e) {
@@ -3363,6 +3387,68 @@ document.getElementById('crpGCount').addEventListener('change', function() {
   updateScholarshipSummary();
 });
 
+/* ── 개인 신청: 생년월일로 지원 연령을 확인하고, 범위 밖이면 경고와 함께 문의 남기기로 안내 ── */
+function currentBirthDate() {
+  var y = document.getElementById('crpBirthYear').value, m = document.getElementById('crpBirthMonth').value, d = document.getElementById('crpBirthDay').value;
+  return y && m && d ? y + '-' + m + '-' + d : '';
+}
+function fillBirthOptions(select, from, to, pad, placeholder) {
+  var html = '<option value="">' + placeholder + '</option>';
+  for (var i = from; i <= to; i++) { var v = pad ? String(i).padStart(2, '0') : String(i); html += '<option value="' + v + '">' + i + '</option>'; }
+  select.innerHTML = html;
+}
+function setupBirthCheck(campId) {
+  var field = document.getElementById('crpBirthField');
+  var range = BIRTH_YEAR_RANGES[campId];
+  field.hidden = !range;
+  document.getElementById('crpAgeWarn').hidden = true;
+  if (!range) return;
+  var en = crpIsEn();
+  var yearSel = document.getElementById('crpBirthYear');
+  var html = '<option value="">' + (en ? 'Year' : '년도') + '</option>';
+  for (var y = range.max + 6; y >= range.min - 8; y--) html += '<option value="' + y + '">' + y + (en ? '' : '년') + '</option>';
+  yearSel.innerHTML = html;
+  fillBirthOptions(document.getElementById('crpBirthMonth'), 1, 12, true, en ? 'Month' : '월');
+  fillBirthOptions(document.getElementById('crpBirthDay'), 1, 31, true, en ? 'Day' : '일');
+  document.getElementById('crpBirthHint').textContent = en
+    ? 'Eligible: born ' + range.min + ' – ' + range.max + '.'
+    : '지원 연령: ' + range.min + '년생 ~ ' + range.max + '년생';
+}
+function updateBirthCheck() {
+  var campId = campIdInput.value;
+  var range = BIRTH_YEAR_RANGES[campId];
+  var warn = document.getElementById('crpAgeWarn');
+  if (!range) { warn.hidden = true; return; }
+  var year = parseInt(document.getElementById('crpBirthYear').value, 10);
+  var out = Number.isFinite(year) && (year < range.min || year > range.max);
+  warn.hidden = !out;
+  if (!out) return;
+  var en = crpIsEn();
+  document.getElementById('crpAgeWarnText').textContent = en
+    ? 'The birth year you selected (' + year + ') is outside this camp\'s age range (born ' + range.min + ' – ' + range.max + '). If you would still like to join, please leave us an inquiry.'
+    : '선택하신 출생연도(' + year + '년생)는 이 캠프의 지원 연령(' + range.min + '년생 ~ ' + range.max + '년생)에 해당하지 않습니다. 그래도 참가를 원하시면 문의를 남겨 주세요.';
+}
+['crpBirthYear', 'crpBirthMonth', 'crpBirthDay'].forEach(function(id) {
+  document.getElementById(id).addEventListener('change', updateBirthCheck);
+});
+// 문의 페이지로 넘어갈 때 입력한 정보는 주소창이 아니라 이 탭의 임시 저장소로 넘긴다(개인정보가 주소에 남지 않게)
+document.getElementById('crpAgeContact').addEventListener('click', function() {
+  var campName = modalTitle.textContent.trim();
+  var birth = currentBirthDate() || document.getElementById('crpBirthYear').value;
+  var range = BIRTH_YEAR_RANGES[campIdInput.value];
+  var msg = crpIsEn()
+    ? '[Camp registration inquiry] ' + campName + '\nBirth date: ' + birth + '\nThis is outside the age range' + (range ? ' (born ' + range.min + ' – ' + range.max + ')' : '') + '. I would like to ask whether I can still participate.\n'
+    : '[캠프 신청 문의] ' + campName + '\n생년월일: ' + birth + '\n지원 연령' + (range ? '(' + range.min + '년생 ~ ' + range.max + '년생)' : '') + '에 해당하지 않지만 참가가 가능한지 문의드립니다.\n';
+  try {
+    sessionStorage.setItem('wolko-contact-prefill', JSON.stringify({
+      type: 'camp', message: msg,
+      name: document.getElementById('crpName').value.trim(),
+      email: document.getElementById('crpEmail').value.trim(),
+      phone: document.getElementById('crpPhone').value.trim(),
+    }));
+  } catch (e) {}
+});
+
 /* ── 모달 열기 ── */
 document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
   btn.addEventListener('click', async function() {
@@ -3382,6 +3468,7 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
 
     document.getElementById('crpForm').reset();
     setWinterScholarshipMode();
+    setupBirthCheck(campId);
     var isUnionCamp = crpIsUnionCampId(campId);
     setCrpUnionCampMode(isUnionCamp);
     updateScholarshipSummary();
@@ -3582,6 +3669,19 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       crpShowError(errorMsg, '성별을 선택해 주세요.', 'Please select gender.');
       return;
     }
+    var birthDate = currentBirthDate();
+    var birthCheck = birthYearCheck(campIdInput.value, birthDate);
+    if (!birthCheck.ok) {
+      if (birthCheck.reason === 'out-of-range') {
+        updateBirthCheck();
+        crpShowError(errorMsg, '입력하신 출생연도는 이 캠프의 지원 연령에 해당하지 않습니다. 아래 "문의 남기기"로 문의해 주세요.', 'The birth year you entered is outside this camp\'s age range. Please use "Leave an inquiry".');
+        document.getElementById('crpBirthField').scrollIntoView({ block: 'center', behavior: 'smooth' });
+      } else {
+        crpShowError(errorMsg, '생년월일을 정확히 선택해 주세요.', 'Please select your date of birth.');
+        document.getElementById('crpBirthYear').focus();
+      }
+      return;
+    }
     var scholarshipDiscounts = getScholarshipCounts();
     var scholarshipDiscountDetails = validateScholarshipDiscountDetails(scholarshipDiscounts);
     if (!scholarshipDiscountDetails) return;
@@ -3593,6 +3693,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       capacityMale: currentCapMale || undefined,
       capacityFemale: currentCapFemale || undefined,
       name, phone, email, grade, gender,
+      ...(birthDate ? { birthDate: birthDate } : {}),
       church: document.getElementById('crpChurch').value.trim(),
       school: document.getElementById('crpSchool').value.trim(),
       emergency: document.getElementById('crpEmergency').value.trim(),

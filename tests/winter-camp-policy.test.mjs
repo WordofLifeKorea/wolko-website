@@ -75,7 +75,7 @@ async function register(overrides = {}) {
     put: async (key, value) => store.set(key, value),
   } };
   const background = [];
-  const payload = { campId: policy.campId, name: 'Test Camper', phone: '01000000000', email: 'test@example.com', grade: '6', gender: 'male', refundBank: 'test', refundAccount: '123', refundHolder: 'Test', ...overrides };
+  const payload = { campId: policy.campId, name: 'Test Camper', phone: '01000000000', email: 'test@example.com', grade: '6', gender: 'male', birthDate: '2013-05-05', refundBank: 'test', refundAccount: '123', refundHolder: 'Test', ...overrides };
   const realNow = Date.now;
   Date.now = () => Date.parse(overrides.__now || '2026-10-20T12:00:00+09:00'); // 기본은 1차 신청창 안
   let response;
@@ -185,4 +185,29 @@ test('API refuses to register outside the winter English camp registration windo
   assert.equal(early.response.status, 403);
   const open = await register({ campId: '2027-wolko-winter', __now: '2026-11-18T10:00:01+09:00' });
   assert.equal(open.response.status, 200);
+});
+
+test('individual registration for the winter English camp checks the birth year range', async () => {
+  const ok = await register({ campId: '2027-wolko-winter', birthDate: '2015-12-31' });
+  assert.equal(ok.response.status, 200);
+  const stored = JSON.parse([...ok.store.entries()].find(([key]) => key.includes(':reg:'))[1]);
+  assert.equal(stored.birthDate, '2015-12-31');
+  assert.equal((await register({ campId: '2027-wolko-winter', birthDate: '2011-01-01' })).response.status, 200);
+  const young = await register({ campId: '2027-wolko-winter', birthDate: '2016-01-01' });
+  assert.equal(young.response.status, 400);
+  assert.equal((await young.response.json()).code, 'age-out-of-range');
+  const old = await register({ campId: '2027-wolko-winter', birthDate: '2010-12-31' });
+  assert.equal(old.response.status, 400);
+  const missing = await register({ campId: '2027-wolko-winter', birthDate: '' });
+  assert.equal(missing.response.status, 400);
+  assert.equal((await missing.response.json()).code, 'birth-required');
+  assert.equal((await register({ campId: '2027-wolko-winter', birthDate: '2013-02-30' })).response.status, 400, '없는 날짜');
+});
+
+import { birthYearCheck } from '../functions/lib/winterCampPolicy.js';
+test('birthYearCheck only applies to camps with an age range', () => {
+  assert.equal(birthYearCheck('2026-jeju-english', '1990-01-01').ok, true);
+  assert.equal(birthYearCheck('2027-wolko-winter', '2013-06-15').ok, true);
+  assert.equal(birthYearCheck('2027-wolko-winter', '2009-06-15').reason, 'out-of-range');
+  assert.equal(birthYearCheck('2027-wolko-winter', 'abc').reason, 'invalid');
 });

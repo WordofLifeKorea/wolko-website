@@ -13,7 +13,7 @@
  */
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
-import { registrationState, usesWinterCampPolicy, winterCampQuote } from '../lib/winterCampPolicy.js';
+import { birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote } from '../lib/winterCampPolicy.js';
 import { normalizePhone } from '../lib/phone.js';
 
 const CORS = {
@@ -458,7 +458,7 @@ export async function onRequestPost(context) {
       campId,
       name, phone, email,
       grade, church, school, emergency,
-      gender,
+      gender, birthDate,
       maleCount, femaleCount,
       groupCount, participants,
       participantDetailsDeferred,
@@ -482,6 +482,14 @@ export async function onRequestPost(context) {
     const emailNorm = email.trim().toLowerCase();
 
     if (registrationType === 'individual') {
+      const birthCheck = birthYearCheck(campId, birthDate);
+      if (!birthCheck.ok) {
+        const range = birthCheck.range;
+        const msg = birthCheck.reason === 'out-of-range'
+          ? `이 캠프의 지원 연령(${range.min}년생 ~ ${range.max}년생)에 해당하지 않습니다. 문의를 남겨 주세요.`
+          : '생년월일을 정확히 입력해 주세요.';
+        return Response.json({ error: msg, code: birthCheck.reason === 'out-of-range' ? 'age-out-of-range' : 'birth-required' }, { status: 400, headers: CORS });
+      }
       if (!grade) {
         return Response.json({ error: '학년을 선택해주세요.' }, { status: 400, headers: CORS });
       }
@@ -632,6 +640,7 @@ export async function onRequestPost(context) {
           registrationType: 'individual',
           name: name.trim(), phone: normalizePhone(phone), email: emailNorm,
           grade, gender,
+          ...(birthDate ? { birthDate: String(birthDate).trim() } : {}),
           church: church?.trim() || '',
           school: school?.trim() || '',
           emergency: emergency?.trim() || '',
