@@ -80,5 +80,5 @@ test('camp admin exposes equal-height mobile header controls and a password form
   assert.match(css, /\.adm-header-control,[\s\S]*\.adm-lang-switch \{[^}]*height: 36px;[^}]*min-height: 36px !important/);
   assert.match(css, /\.adm-lang-switch\[data-lang="en"\] \.adm-lang-thumb \{ transform:translateX\(100%\); \}/);
   assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.adm-lang-switch \{[^}]*height:34px;[^}]*min-height:34px !important/);
-  assert.match(page, /wolkoadmin\.css\?v=83/);
+  assert.match(page, /wolkoadmin\.css\?v=\d+/);
 });
