@@ -79,3 +79,29 @@ test('start date provides a year for partner camps whose titles contain no year'
   const ctx = contextFor([], []);
   assert.equal(vm.runInContext('WolkoCampCatalog.seasonFor({id:"partner",title:"교회 영어캠프",startDate:"2027-01-19"})', ctx), '2027-winter');
 });
+
+test('winter policy is in the same script scope as scholarship rendering', () => {
+  assert.doesNotMatch(page, /define:vars=\{\{ winterCampPolicy/);
+  assert.match(page, /id="adminWinterCampPolicy"/);
+  const script = page.slice(page.indexOf('    const winterCampPolicy = JSON.parse'));
+  const declarationEnd = script.indexOf('\n');
+  const rendererStart = page.indexOf('    function renderScholarshipEditor(');
+  const rendererEnd = page.indexOf('\n    function ', rendererStart + 1);
+  const ctx = vm.createContext({
+    document: { getElementById: () => ({ textContent: JSON.stringify({ version: 'winter-test', discounts: {} }) }) },
+    registrationScholarshipLimit: () => 1,
+    SCHOLARSHIP_DISCOUNTS: {},
+    normalizeScholarshipDiscountsAdmin: () => ({}),
+    scholarshipDiscountTextAdmin: () => '',
+    camperEditMode: false,
+    t: key => key,
+    esc: String,
+    formatAdminWon: String,
+  });
+  vm.runInContext(script.slice(0, declarationEnd), ctx);
+  vm.runInContext(page.slice(rendererStart, rendererEnd), ctx);
+  for (const version of ['', 'winter-test']) {
+    ctx.reg = { scholarshipPolicyVersion: version };
+    assert.match(vm.runInContext('renderScholarshipEditor(reg, () => "detail", 550000, 0, 550000)', ctx), /registration-detail-section/);
+  }
+});

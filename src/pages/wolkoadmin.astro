@@ -338,10 +338,11 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <!-- 인쇄용 명단 (화면에서는 숨김, 인쇄 시에만 표시) -->
   <div id="printRoster" aria-hidden="true"></div>
 
-  <script define:vars={{ winterCampPolicy: WINTER_CAMP_POLICY }}></script>
+  <script type="application/json" id="adminWinterCampPolicy" set:html={JSON.stringify(WINTER_CAMP_POLICY).replace(/</g, '\\u003c')} />
   <script type="application/json" id="adminCampSchedules" set:html={JSON.stringify(adminSchedules).replace(/</g, '\\u003c')} />
   <script is:inline src="/wolko-camp-catalog.js?v=1"></script>
   <script is:inline>
+    const winterCampPolicy = JSON.parse(document.getElementById('adminWinterCampPolicy').textContent);
     // ── Language System ──
     let adminLang = localStorage.getItem('wolkoAdminLang') || 'ko';
     const STAFF_TEAMS_EN = { '프로그램':'Program','티칭':'Teaching','상담자':'Counseling','테크':'Tech','찬양팀':'Worship' };
