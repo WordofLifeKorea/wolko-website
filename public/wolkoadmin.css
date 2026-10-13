@@ -768,8 +768,9 @@ table th:nth-child(4), table td:nth-child(4) { min-width: 64px; }
 }
 .person-team-popover,
 .staff-memo-popover {
-  position: absolute;
-  z-index: 30;
+  /* fixed + 스크립트가 위치를 잡는다 — 표의 overflow 에 잘리지 않고, 화면 아래쪽이면 위로 뒤집힌다 */
+  position: fixed;
+  z-index: 300;
   display: none;
   background: #fff;
   border: 1px solid rgba(0,79,104,0.16);
@@ -2625,6 +2626,10 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .camp-counseling-summary .group-notes-toggle {
   font-size: 12.5px;
 }
+/* 스태프 간증문 모아보기: 위에 숫자 칩이 없어서 토글의 위쪽 간격(8px)이 글자를 아래로 밀고 박스만 키웠다 — 간격을 없애고 위아래를 같게 맞춘다 */
+#staffTestimonySummary .camp-counseling-summary { padding: 6px 14px; }
+#staffTestimonySummary .group-notes-toggle { margin-top: 0; min-height: 36px; padding: 0 2px; font-size: 13px; line-height: 1; }
+#staffTestimonySummary .group-notes-panel { margin-top: 4px; padding-bottom: 8px; }
 
 /* ── 단체 신청 상담 요약(구원/헌신 카운트 + 메모·간증문 모아보기) ── */
 .group-counseling-summary {
