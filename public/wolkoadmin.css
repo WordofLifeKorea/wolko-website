@@ -3668,3 +3668,9 @@ tbody tr.camp-tint.is-dedicated:hover td {
 .hover-popover-float.is-team { align-items: center; gap: 5px; width: max-content; max-width: 260px; padding: 8px; }
 .hover-popover-float.is-team .person-team-badge { position: static; flex: none; }
 .hover-popover-float.is-memo { width: max-content; max-width: min(420px, 72vw); padding: 10px 12px; color: var(--text); font-size: 12px; font-weight: 500; line-height: 1.65; white-space: pre-wrap; }
+
+/* 캠프 카드 꾹 눌러 순서 바꾸기 */
+.camp-cards .camp-card:not(.camp-season-card) { touch-action: manipulation; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+.camp-cards .camp-card.is-dragging { position: relative; z-index: 40; cursor: grabbing; box-shadow: 0 16px 38px rgba(0,79,104,0.22); opacity: .96; transition: none; pointer-events: none; }
+.camp-cards.is-reordering .camp-card:not(.is-dragging) { transition: none; }
+.camp-cards.is-reordering { cursor: grabbing; }

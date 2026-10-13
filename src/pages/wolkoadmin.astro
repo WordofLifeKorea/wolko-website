@@ -20,7 +20,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=86">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=87">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -617,6 +617,8 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       wolko: 'campGroupWolko',
       union: 'campGroupUnion',
     };
+    // '2026 기타'처럼 여름·겨울로 나뉘지 않는 시즌은 선택 목록에서 뺀다(전체 시즌에는 그대로 포함된다)
+    const isOtherSeason = season => /(^|-)other$/.test(String(season?.id || ''));
     function seasonDisplayName(season) {
       if (!season) return t('allFilter');
       return SEASON_LABEL_KEYS[season.id] ? t(SEASON_LABEL_KEYS[season.id]) : season.label;
@@ -1130,7 +1132,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         <div class="season-card-nav">
           <select class="season-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();selectSeason(this.value)">
             <option value="all"${activeSeason === 'all' ? ' selected' : ''}>${adminLang === 'en' ? 'All seasons' : '전체 시즌'}</option>
-            ${SEASONS.map(s => `<option value="${esc(s.id)}"${s.id === activeSeason ? ' selected' : ''}>${esc(seasonDisplayName(s))}</option>`).join('')}
+            ${SEASONS.filter(s => !isOtherSeason(s)).map(s => `<option value="${esc(s.id)}"${s.id === activeSeason ? ' selected' : ''}>${esc(seasonDisplayName(s))}</option>`).join('')}
           </select>
         </div>`;
       card.innerHTML = `
@@ -1162,7 +1164,93 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       currentSeasonGroups.forEach(group => group.camps.forEach(c => {
         wrap.appendChild(makeCard(c.id, `${campGroupDisplayName(group)} · ${c.capacity == null ? (adminLang === 'en' ? 'Capacity unset' : '정원 미정') : tt('capacityFn', c.capacity)}`, campDisplayName(c.id), c.capacity));
       }));
+      applySavedCardOrder(wrap);
     }
+
+    /* ── 캠프 카드 순서: 카드를 꾹 눌러 끌어 옮기면 이 브라우저에 시즌별로 저장된다 ── */
+    const CARD_ORDER_KEY = season => 'wolko-admin-card-order:' + season;
+    function readCardOrder() {
+      try { const v = JSON.parse(localStorage.getItem(CARD_ORDER_KEY(activeSeason)) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+    }
+    function applySavedCardOrder(wrap) {
+      const saved = readCardOrder();
+      if (!saved.length) return;
+      const cards = [...wrap.querySelectorAll('.camp-card:not(.camp-season-card)')];
+      // 저장된 순서대로 먼저, 새로 생긴 캠프는 원래 순서대로 뒤에
+      const rank = id => { const i = saved.indexOf(id); return i === -1 ? saved.length + cards.findIndex(c => c.dataset.id === id) : i; };
+      cards.sort((a, b) => rank(a.dataset.id) - rank(b.dataset.id)).forEach(card => wrap.appendChild(card));
+    }
+    function saveCardOrder(wrap) {
+      const ids = [...wrap.querySelectorAll('.camp-card:not(.camp-season-card)')].map(c => c.dataset.id);
+      try { localStorage.setItem(CARD_ORDER_KEY(activeSeason), JSON.stringify(ids)); } catch (e) {}
+    }
+    (function setupCardReorder() {
+      const wrap = document.getElementById('campCards');
+      if (!wrap) return;
+      const HOLD_MS = 320, MOVE_CANCEL = 9;
+      let st = null; // { card, id, startX, startY, timer, active, grabX, grabY }
+      let suppressClick = false;
+
+      function cancelPending() { if (st && st.timer) clearTimeout(st.timer); }
+      function startDrag() {
+        if (!st) return;
+        st.active = true;
+        const r = st.card.getBoundingClientRect();
+        st.grabX = st.startX - r.left; st.grabY = st.startY - r.top;
+        st.card.classList.add('is-dragging');
+        wrap.classList.add('is-reordering');
+        try { st.card.setPointerCapture(st.id); } catch (e) {}
+        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+      }
+      function follow(x, y) {
+        const card = st.card;
+        // 1) 포인터 아래에 있는 다른 카드를 찾아 순서를 바꾼다
+        card.style.transform = 'none';
+        const others = [...wrap.querySelectorAll('.camp-card:not(.camp-season-card)')].filter(c => c !== card);
+        const over = others.find(c => { const r = c.getBoundingClientRect(); return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; });
+        if (over) {
+          const r = over.getBoundingClientRect();
+          const before = (y < r.top + r.height / 2 && x < r.left + r.width / 2) || y < r.top + r.height * 0.3 || (Math.abs(y - (r.top + r.height / 2)) < r.height * 0.4 && x < r.left + r.width / 2);
+          wrap.insertBefore(card, before ? over : over.nextSibling);
+        }
+        // 2) 카드는 손가락·커서를 따라가도록 현재 자리에서의 차이만큼 이동시킨다
+        const r = card.getBoundingClientRect();
+        card.style.transform = `translate(${x - st.grabX - r.left}px, ${y - st.grabY - r.top}px) scale(1.03)`;
+      }
+      function finish(save) {
+        cancelPending();
+        if (st && st.active) {
+          st.card.classList.remove('is-dragging');
+          st.card.style.transform = '';
+          wrap.classList.remove('is-reordering');
+          try { st.card.releasePointerCapture(st.id); } catch (e) {}
+          if (save) { saveCardOrder(wrap); suppressClick = true; setTimeout(() => { suppressClick = false; }, 350); }
+        }
+        st = null;
+      }
+
+      wrap.addEventListener('pointerdown', e => {
+        const card = e.target.closest && e.target.closest('.camp-card:not(.camp-season-card)');
+        if (!card || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        st = { card, id: e.pointerId, startX: e.clientX, startY: e.clientY, active: false, timer: null };
+        st.timer = setTimeout(startDrag, HOLD_MS);
+      });
+      wrap.addEventListener('pointermove', e => {
+        if (!st || e.pointerId !== st.id) return;
+        if (!st.active) {
+          if (Math.hypot(e.clientX - st.startX, e.clientY - st.startY) > MOVE_CANCEL) { cancelPending(); st = null; } // 그냥 스크롤·클릭 동작
+          return;
+        }
+        e.preventDefault();
+        follow(e.clientX, e.clientY);
+      });
+      ['pointerup', 'pointercancel'].forEach(type => wrap.addEventListener(type, e => { if (st && e.pointerId === st.id) finish(type === 'pointerup'); }));
+      // 꾹 누른 뒤 끌고 있는 동안에는 터치 스크롤과 길게 누르기 메뉴를 막는다
+      document.addEventListener('touchmove', e => { if (st && st.active) e.preventDefault(); }, { passive: false });
+      wrap.addEventListener('contextmenu', e => { if (st) e.preventDefault(); });
+      // 끌기를 끝낸 직후의 클릭이 캠프 선택으로 이어지지 않게 한다
+      wrap.addEventListener('click', e => { if (suppressClick) { e.stopPropagation(); e.preventDefault(); } }, true);
+    })();
 
     function isConfirmedReg(r) {
       return r.status === 'confirmed' || (r.status === undefined && r.confirmed === true);

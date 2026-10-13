@@ -112,3 +112,12 @@ test('winter policy is in the same script scope as scholarship rendering', () =>
     assert.match(vm.runInContext('renderScholarshipEditor(reg, () => "detail", 550000, 0, 550000)', ctx), /registration-detail-section/);
   }
 });
+
+test('admin camp cards can be reordered by long-press drag and the order is saved per season', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/wolkoadmin.astro', import.meta.url), 'utf8');
+  assert.match(page, /setupCardReorder/);
+  assert.match(page, /CARD_ORDER_KEY = season => 'wolko-admin-card-order:' \+ season/);
+  assert.match(page, /applySavedCardOrder\(wrap\);/);
+  assert.match(page, /\.filter\(s => !isOtherSeason\(s\)\)/, "'기타' 시즌은 선택 목록에서 뺀다");
+});
