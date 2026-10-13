@@ -340,6 +340,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <script type="application/json" id="adminWinterCampPolicy" set:html={JSON.stringify(WINTER_CAMP_POLICY).replace(/</g, '\\u003c')} />
   <script type="application/json" id="adminCampSchedules" set:html={JSON.stringify(adminSchedules).replace(/</g, '\\u003c')} />
   <script is:inline src="/wolko-camp-catalog.js?v=1"></script>
+  <script is:inline src="/wolko-waitlist.js?v=1"></script>
   <script is:inline>
     const winterCampPolicy = JSON.parse(document.getElementById('adminWinterCampPolicy').textContent);
     // ── Language System ──
@@ -1611,8 +1612,9 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
 
         // 상태 셀: 3단계 (대기중 → 예약금수납 → 최종확정)
         const regStatus = r.status || (r.confirmed === true ? 'confirmed' : 'pending');
+        const waitlistRank = r.isWaitlist ? (WolkoWaitlist.rankFor(r, allRegs) || r.waitlistNumber) : null;
         const waitlistBadge = r.isWaitlist
-          ? `<span style="display:inline-block;padding:2px 7px;border-radius:100px;background:rgba(217,119,6,0.15);color:#b45309;font-size:10px;font-weight:700;margin-left:3px;">${tt('waitlistFn', r.waitlistNumber)}</span>`
+          ? `<span title="${adminLang === 'en' ? 'Waitlist order follows deposit confirmation' : '예비 순위는 예약금 확인 순서입니다'}" style="display:inline-block;padding:2px 7px;border-radius:100px;background:rgba(217,119,6,0.15);color:#b45309;font-size:10px;font-weight:700;margin-left:3px;">${tt('waitlistFn', waitlistRank)}</span>`
           : '';
         let statusCell;
         if (regStatus === 'confirmed') {

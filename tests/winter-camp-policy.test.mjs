@@ -69,7 +69,7 @@ test('no more than two categories, including deferred rewards', () => {
 });
 
 async function register(overrides = {}) {
-  const store = new Map();
+  const store = new Map(Object.entries(overrides.__seed || {}));
   const env = { CAMP_KV: {
     get: async key => store.get(key) || null,
     put: async (key, value) => store.set(key, value),
@@ -210,4 +210,46 @@ test('birthYearCheck only applies to camps with an age range', () => {
   assert.equal(birthYearCheck('2027-wolko-winter', '2013-06-15').ok, true);
   assert.equal(birthYearCheck('2027-wolko-winter', '2009-06-15').reason, 'out-of-range');
   assert.equal(birthYearCheck('2027-wolko-winter', 'abc').reason, 'invalid');
+});
+
+const WINTER = '2027-wolko-winter';
+const seed = (male, female) => ({
+  [`camp:${WINTER}:submissions`]: String(male + female),
+  [`camp:${WINTER}:submissions:male`]: String(male),
+  [`camp:${WINTER}:submissions:female`]: String(female),
+});
+const regOf = store => JSON.parse([...store.entries()].find(([key]) => key.includes(':reg:'))[1]);
+
+test('gender capacity: 25 + 25 confirmed, then 5 + 5 waitlist per gender, then that gender is closed', async () => {
+  const open = await register({ campId: WINTER, gender: 'male', __seed: seed(24, 25) });
+  assert.equal(open.response.status, 200);
+  assert.equal(regOf(open.store).isWaitlist, false, '남학생 25번째까지는 정상 접수');
+
+  const first = await register({ campId: WINTER, gender: 'male', __seed: seed(25, 10) });
+  assert.equal(first.response.status, 200);
+  assert.equal(regOf(first.store).isWaitlist, true);
+  assert.equal(regOf(first.store).waitlistNumber, 1, '남학생 예비 1번');
+
+  const fifth = await register({ campId: WINTER, gender: 'male', __seed: seed(29, 10) });
+  assert.equal(regOf(fifth.store).waitlistNumber, 5);
+
+  const closed = await register({ campId: WINTER, gender: 'male', __seed: seed(30, 10) });
+  assert.equal(closed.response.status, 409);
+  assert.equal((await closed.response.json()).code, 'male-full');
+
+  const girlStillOpen = await register({ campId: WINTER, gender: 'female', __seed: seed(30, 10) });
+  assert.equal(girlStillOpen.response.status, 200, '남학생이 마감돼도 여학생은 계속 접수');
+  assert.equal(regOf(girlStillOpen.store).isWaitlist, false);
+
+  const girlClosed = await register({ campId: WINTER, gender: 'female', __seed: seed(10, 30) });
+  assert.equal(girlClosed.response.status, 409);
+  assert.equal((await girlClosed.response.json()).code, 'female-full');
+});
+
+import { GENDER_CAPACITY } from '../functions/lib/winterCampPolicy.js';
+test('camp card data matches the server-side gender capacity', () => {
+  const card = JSON.parse(readFileSync(new URL('../src/content/camp_schedules/2027-wolko-winter.json', import.meta.url), 'utf8'));
+  assert.equal(card.capacity_male, GENDER_CAPACITY[WINTER].male);
+  assert.equal(card.capacity_female, GENDER_CAPACITY[WINTER].female);
+  assert.equal(card.capacity, GENDER_CAPACITY[WINTER].male + GENDER_CAPACITY[WINTER].female);
 });

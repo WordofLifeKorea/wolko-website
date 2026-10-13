@@ -37,6 +37,15 @@ export const BIRTH_YEAR_RANGES = {
   '2027-wolko-winter': { min: 2011, max: 2015 },
 };
 
+/**
+ * 성별 정원(남·여 따로) — 확정 정원과 예비 인원을 성별마다 따로 센다.
+ * 2027 겨울 월코 영어캠프: 남 25 + 여 25 (전체 50), 예비는 남 5 + 여 5.
+ * 정원이 차면 그 성별의 다음 신청은 예비로 접수되고, 예비까지 차면 그 성별 접수가 마감된다. 예비 순위는 예약금 확인 순서로 관리한다(관리자 화면).
+ */
+export const GENDER_CAPACITY = {
+  '2027-wolko-winter': { male: 25, female: 25, waitlist: 5 },
+};
+
 /** 생년월일(YYYY-MM-DD) 검사: { ok, reason: 'none'|'missing'|'invalid'|'out-of-range', range } */
 export function birthYearCheck(campId, birthDate) {
   const range = BIRTH_YEAR_RANGES[campId];

@@ -13,7 +13,7 @@
  */
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
-import { birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote } from '../lib/winterCampPolicy.js';
+import { GENDER_CAPACITY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote } from '../lib/winterCampPolicy.js';
 import { normalizePhone } from '../lib/phone.js';
 
 const CORS = {
@@ -571,8 +571,36 @@ export async function onRequestPost(context) {
       }, { status: 409, headers: CORS });
     }
 
-    const isWaitlist = currentSubs >= campCapacity;
-    const waitlistNumber = isWaitlist ? (currentSubs - campCapacity + 1) : null;
+    // 성별 정원이 있는 캠프: 남·여를 따로 세어 정원이 차면 그 성별은 예비로, 예비까지 차면 그 성별은 마감
+    const genderCap = GENDER_CAPACITY[campId];
+    const curSubsMale = genderCap ? (parseInt(await env.CAMP_KV.get(subKeyM) || '0')) : 0;
+    const curSubsFemale = genderCap ? (parseInt(await env.CAMP_KV.get(subKeyF) || '0')) : 0;
+    if (genderCap) {
+      const maleOver = spotsMForCapacity > 0 && curSubsMale + spotsMForCapacity > genderCap.male + genderCap.waitlist;
+      const femaleOver = spotsFForCapacity > 0 && curSubsFemale + spotsFForCapacity > genderCap.female + genderCap.waitlist;
+      if (maleOver || femaleOver) {
+        return Response.json({
+          error: `${maleOver ? '남학생' : '여학생'} 정원과 예비 인원이 모두 찼습니다. 문의를 남겨 주세요.`,
+          code: maleOver ? 'male-full' : 'female-full',
+        }, { status: 409, headers: CORS });
+      }
+      if (registrationType === 'group') {
+        const maleLeft = Math.max(0, genderCap.male - curSubsMale), femaleLeft = Math.max(0, genderCap.female - curSubsFemale);
+        if (spotsMForCapacity > maleLeft || spotsFForCapacity > femaleLeft) {
+          return Response.json({
+            error: `단체 신청은 정원 안에서만 가능합니다. 현재 잔여 정원은 남학생 ${maleLeft}명, 여학생 ${femaleLeft}명입니다.`,
+            code: 'group-over-gender-capacity',
+          }, { status: 409, headers: CORS });
+        }
+      }
+    }
+    const isWaitlist = genderCap
+      ? ((spotsMForCapacity > 0 && curSubsMale >= genderCap.male) || (spotsFForCapacity > 0 && curSubsFemale >= genderCap.female))
+      : currentSubs >= campCapacity;
+    const waitlistNumber = !isWaitlist ? null
+      : genderCap
+        ? (spotsMForCapacity > 0 ? curSubsMale - genderCap.male + 1 : curSubsFemale - genderCap.female + 1)
+        : (currentSubs - campCapacity + 1);
 
     const windowState = registrationState(campId);
     if (windowState.state !== 'none' && windowState.state !== 'open') {

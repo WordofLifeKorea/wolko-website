@@ -2804,7 +2804,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 </div>
 
 <script>
-import { BIRTH_YEAR_RANGES, WINTER_CAMP_POLICY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
+import { BIRTH_YEAR_RANGES, GENDER_CAPACITY, WINTER_CAMP_POLICY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote } from '../../../functions/lib/winterCampPolicy.js';
 /* ── Reveal 애니메이션 ── */
 var obs = new IntersectionObserver(function(entries) {
   entries.forEach(function(e) {
@@ -3294,6 +3294,7 @@ function updateScholarshipSummary() {
 var currentCapMale = 0;
 var currentCapFemale = 0;
 var currentRegisteredCount = null;
+var currentGenderSubs = { male: 0, female: 0 };
 var modalCapacityRequestId = 0;
 var currentModalCapData = null;
 var currentModalCapacity = 0;
@@ -3340,6 +3341,7 @@ function crpSwitchTab(type) {
   updateScholarshipMode();
   updateScholarshipSummary();
   errorMsg.hidden = true;
+  if (GENDER_CAPACITY[campIdInput.value]) updateGenderWaitlistNotice();
 }
 tabIndividual.addEventListener('click', function() { crpSwitchTab('individual'); });
 tabGroup.addEventListener('click', function() { crpSwitchTab('group'); });
@@ -3386,6 +3388,36 @@ document.getElementById('crpGCount').addEventListener('change', function() {
   updateScholarshipCountOptions();
   updateScholarshipSummary();
 });
+
+/* ── 성별 정원: 선택한 성별의 정원이 찼으면 예비 안내, 예비까지 찼으면 그 성별 접수 마감 ── */
+function updateGenderWaitlistNotice() {
+  var gc = GENDER_CAPACITY[campIdInput.value];
+  if (!gc) return;
+  var notice = document.getElementById('crpWaitlistNotice');
+  var label = submitBtn.querySelector('.crp-submit-label');
+  var normal = '<span class="wl-ko">신청 완료하기</span><span class="wl-en">Submit Registration</span>';
+  var gender = document.getElementById('crpGender').value;
+  var individual = regTypeInput.value === 'individual';
+  submitBtn.disabled = false;
+  label.innerHTML = normal;
+  if (notice) notice.hidden = true;
+  if (!individual || !gender) return;
+  var taken = currentGenderSubs[gender] || 0;
+  var cap = gender === 'male' ? gc.male : gc.female;
+  if (taken >= cap + gc.waitlist) {
+    submitBtn.disabled = true;
+    label.innerHTML = gender === 'male'
+      ? '<span class="wl-ko">남학생 접수가 마감되었습니다</span><span class="wl-en">Boys\' registration is closed</span>'
+      : '<span class="wl-ko">여학생 접수가 마감되었습니다</span><span class="wl-en">Girls\' registration is closed</span>';
+  } else if (taken >= cap) {
+    if (notice) {
+      notice.querySelectorAll('.crp-waitlist-num').forEach(function(el) { el.textContent = taken - cap + 1; });
+      notice.hidden = false;
+    }
+    label.innerHTML = '<span class="wl-ko">예비 신청하기 →</span><span class="wl-en">Join Waitlist →</span>';
+  }
+}
+document.getElementById('crpGender').addEventListener('change', updateGenderWaitlistNotice);
 
 /* ── 개인 신청: 생년월일로 지원 연령을 확인하고, 범위 밖이면 경고와 함께 문의 남기기로 안내 ── */
 function currentBirthDate() {
@@ -3497,8 +3529,11 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
         if (requestId !== modalCapacityRequestId || modal.hidden) return;
         var subs = data.count ?? 0;
         currentRegisteredCount = data.submissions ?? subs;
+        currentGenderSubs = { male: data.subsMale ?? 0, female: data.subsFemale ?? 0 };
         updateCrpModalCap({ count: subs, countMale: data.countMale ?? 0, countFemale: data.countFemale ?? 0 }, capacity);
-        if (subs >= capacity + WAITLIST_SIZE) {
+        if (GENDER_CAPACITY[campId]) {
+          updateGenderWaitlistNotice(); // 성별 정원이 있는 캠프는 남·여를 따로 보고 예비 안내를 한다
+        } else if (subs >= capacity + WAITLIST_SIZE) {
           submitBtn.disabled = true;
           submitBtn.querySelector('.crp-submit-label').innerHTML =
             '<span class="wl-ko">신청이 마감되었습니다</span><span class="wl-en">Registration Closed</span>';

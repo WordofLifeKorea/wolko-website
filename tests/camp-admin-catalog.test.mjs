@@ -121,3 +121,26 @@ test('admin camp cards can be reordered by long-press drag and the order is save
   assert.match(page, /applySavedCardOrder\(wrap\);/);
   assert.match(page, /\.filter\(s => !isOtherSeason\(s\)\)/, "'기타' 시즌은 선택 목록에서 뺀다");
 });
+
+test('waitlist rank follows deposit confirmation order, then application order, per camp and gender', async () => {
+  const vm = await import('node:vm');
+  const { readFileSync } = await import('node:fs');
+  const ctx = vm.createContext({});
+  vm.runInContext(readFileSync(new URL('../public/wolko-waitlist.js', import.meta.url), 'utf8'), ctx);
+  const regs = [
+    { regId: 'a', campId: 'c', gender: 'male', isWaitlist: true, registeredAt: '2026-10-15T10:01:00Z' },
+    { regId: 'b', campId: 'c', gender: 'male', isWaitlist: true, registeredAt: '2026-10-15T10:02:00Z', status: 'deposit', depositConfirmedAt: '2026-10-16T09:00:00Z' },
+    { regId: 'c', campId: 'c', gender: 'male', isWaitlist: true, registeredAt: '2026-10-15T10:03:00Z', status: 'deposit', depositConfirmedAt: '2026-10-15T12:00:00Z' },
+    { regId: 'd', campId: 'c', gender: 'female', isWaitlist: true, registeredAt: '2026-10-15T10:04:00Z' },
+    { regId: 'e', campId: 'c', gender: 'male', isWaitlist: false, registeredAt: '2026-10-15T09:00:00Z' },
+    { regId: 'f', campId: 'c', gender: 'male', isWaitlist: true, registeredAt: '2026-10-15T10:05:00Z', status: 'confirmed' },
+  ];
+  ctx.regs = regs;
+  const rank = id => vm.runInContext(`WolkoWaitlist.rankFor(regs.find(r => r.regId === '${id}'), regs)`, ctx);
+  assert.equal(rank('c'), 1, '예약금을 먼저 확인받은 사람이 1번');
+  assert.equal(rank('b'), 2);
+  assert.equal(rank('a'), 3, '예약금 확인 전은 신청 순서로 뒤에');
+  assert.equal(rank('d'), 1, '여학생은 따로 센다');
+  assert.equal(rank('e'), null, '예비가 아니면 순위 없음');
+  assert.equal(rank('f'), null, '최종확정되면 예비에서 빠진다');
+});
