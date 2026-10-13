@@ -6,6 +6,13 @@ import test from 'node:test';
 
 const page = await readFile(new URL('../src/pages/wolkoadmin.astro', import.meta.url), 'utf8');
 const catalogScript = await readFile(new URL('../public/wolko-camp-catalog.js', import.meta.url), 'utf8');
+test('team operations panel follows staff applications and backup links at the bottom', () => {
+  const panel = page.indexOf('id="campTeamPanel"');
+  assert.ok(panel > page.indexOf('id="staffRegBody"'));
+  assert.ok(panel > page.indexOf('<!-- ── CMS / SHEETS LINKS ── -->'));
+  assert.match(page.slice(panel), /^id="campTeamPanel" hidden><\/div>\s*<\/div>\s*<!-- ── ACCOUNT/);
+  assert.equal((page.match(/id="campTeamPanel"/g) || []).length, 1);
+});
 function contextFor(schedules, registrations) {
   const context = vm.createContext({
     document: { getElementById: () => ({ textContent: JSON.stringify(schedules) }) },
