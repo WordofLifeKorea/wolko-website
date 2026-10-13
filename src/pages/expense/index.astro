@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=116">
+  <link rel="stylesheet" href="/expense.css?v=117">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -624,7 +624,18 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         return;
       }
       if (mode === 'accounting') return renderGrouped('accounting');
-      $('exView').innerHTML = list.length ? list.map(r => reportCard(r, mode)).join('') : `<div class="ex-empty">${t('emptyMine')}</div>`;
+      // 내 리포트: 간단한 한 줄 목록 — 눌러서 펼치면 항목·영수증·노트가 크게 보인다
+      $('exView').innerHTML = list.length ? `
+        <section class="ex-person"><ul class="ex-subs">${list.map(r => `
+          <li>
+            <button type="button" class="ex-sub-row" data-toggle="${esc(r.id)}" aria-expanded="${G.open.has(r.id)}">
+              <span class="ex-sub-date">${esc(shortDate(r.submittedAt))}</span>
+              <span class="ex-sub-desc">${esc(r.description || t('noDesc'))}<span class="ex-meta"> · ${esc(t('gItems', r.rows.length))}${r.reviewedByName ? ' · ' + esc(t('approvedBy', r.reviewedByName)) : ''}</span></span>
+              <span class="ex-sub-amt">${krw(r.total)}</span>
+              <span class="ex-status mini ${r.status}">${t('st_' + r.status)}</span>
+            </button>
+            <div class="ex-detail" id="d-${esc(r.id)}" ${G.open.has(r.id) ? '' : 'hidden'}>${detailHtml(r, 'mine')}</div>
+          </li>`).join('')}</ul></section>` : `<div class="ex-empty">${t('emptyMine')}</div>`;
     }
 
     /* ─── 회계 업무(회계 담당) / 전체 리포트(관리자·회계): 캠퍼스 → 사람별 카드 → 제출 건 한 줄씩 ─── */
@@ -658,7 +669,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       // 출금 계좌가 둘 이상일 때만 계좌별 소계를 보인다 (하나뿐이면 위 합계와 같은 숫자의 반복)
       const subtotal = wdTotals(rep.rows).length > 1 ? wdChips(rep.rows, 'margin:10px 0 4px') : '';
       let note = '';
-      if (rep.status === 'rejected') note = `<div class="ex-note reject"><b>${t('noteRejected')}</b> — ${esc(rep.reviewNote)}</div>`;
+      if (rep.status === 'submitted' && rep.returnNote) note = `<div class="ex-note reject">${esc(t('noteReturned', rep.returnedByName || '', rep.returnNote))} <span class="ex-meta">(${fmtDate(rep.returnedAt)})</span></div>`;
+      else if (rep.status === 'rejected') note = `<div class="ex-note reject"><b>${t('noteRejected')}</b> — ${esc(rep.reviewNote)}</div>`;
       else if (rep.status === 'approved') note = `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName || '', fmtDate(rep.reviewedAt)))}</div>`;
       else if (rep.status === 'processed') note = (rep.reviewedByName ? `<div class="ex-note ok">${esc(t('noteApproved', rep.reviewedByName, fmtDate(rep.reviewedAt)))}</div>` : '') + `<div class="ex-note ok">${esc(t('noteProcessed', fmtDate(rep.processedAt), rep.processedByName || ''))}</div>`;
       const recat = editable && waiting ? `<p class="ex-recat-wait">${esc(t('delegatedWait'))}</p>` : '';   // 코드·출금 계좌·노트는 바꾸는 즉시 자동 저장된다
@@ -667,6 +679,12 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       action += `<button class="ex-btn sm" data-act="xlsx-rep" data-id="${esc(rep.id)}">${t('xlsxForm')}</button><span style="flex:1"></span>`;
       if (me?.isAccountant && (mode === 'accounting' || mode === 'all') && rep.status === 'approved') action += `<button class="ex-btn danger sm" data-act="acct-return" data-id="${esc(rep.id)}">${t('btnReturn')}</button>`;
       if (mode === 'accounting' && rep.status === 'approved') action += `<button class="ex-btn green sm" data-act="process" data-id="${esc(rep.id)}" ${waiting ? 'disabled title="' + esc(t('delegatedWait')) + '"' : ''}>${t('btnProcess')}</button>`;
+      if (mode === 'mine') {
+        if (rep.status === 'rejected') action += `<button class="ex-btn primary sm" data-act="edit" data-id="${esc(rep.id)}">${t('btnResubmit')}</button>`;
+        if (rep.status === 'submitted') action += `<button class="ex-btn sm" data-act="edit" data-id="${esc(rep.id)}">${t('btnEdit')}</button>`;
+        if (rep.status === 'submitted' || rep.status === 'rejected') action += `<button class="ex-btn sm danger" data-act="withdraw" data-id="${esc(rep.id)}">${t('btnWithdraw')}</button>`;
+        action += `<button class="ex-btn sm" data-act="copy" data-id="${esc(rep.id)}">${t('btnCopy')}</button>`;
+      }
       action += '</div>';
       const body = items + subtotal + note + lockNote + recat + action;
       return editable ? `<div data-recat="${esc(rep.id)}">${body}</div>` : body;
