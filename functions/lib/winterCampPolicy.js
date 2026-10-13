@@ -4,9 +4,9 @@ export const WINTER_CAMP_POLICY = {
   version: 'winter-2027-v1',
   fee: 550000,
   deposit: 50000,
-  earlyBirdUntil: '2026-11-05T23:59:59.999+09:00',
+  earlyBirdUntil: '2026-11-04T23:59:59.999+09:00',
   discounts: {
-    early_bird: { amount: 50000, ko: 'Early Bird · 2026년 11월 5일까지 신청', en: 'Early Bird · Sign up by November 5, 2026' },
+    early_bird: { amount: 50000, ko: 'Early Bird · 1차 신청기간(10월 15일 – 11월 4일)에만 적용', en: 'Early Bird · Round 1 only (Oct 15 – Nov 4)' },
     sibling: { amount: 50000, ko: '친구 · 지인 · 가족과 함께 참여', en: 'Joining with a friend or family member' },
     james_memory: { amount: 0, reward: 100000, ko: '야고보서 1–5장 전체 암송', en: 'Memorize James 1–5', note_ko: '성경 암송 테스트 통과시 10만원 환급 또는 10만원 상당 선물', note_en: 'Pass the Bible memorization test and get KRW 100,000 back (or a gift worth the same!)' },
     excellent_camper: { amount: 200000, ko: '베스트 캠퍼', en: 'Best Camper', note_ko: '바로 직전 캠프의 베스트 캠퍼만 해당됩니다.', note_en: 'Just for the Best Camper of the camp right before this one.' },
@@ -30,7 +30,7 @@ export function winterCampQuote(values, spots = 1, appliedAt = Date.now()) {
   }
   if (Object.keys(counts).filter(key => key !== 'excellent_camper').length > 2) throw new Error('장학금은 최대 두 항목만 선택할 수 있습니다.');
   if (counts.early_bird && (!Number.isFinite(new Date(appliedAt).getTime()) || new Date(appliedAt).getTime() > Date.parse(policy.earlyBirdUntil))) {
-    throw new Error('Early Bird 신청 기한은 2026년 11월 5일까지입니다.');
+    throw new Error('Early Bird 신청 기한은 1차 신청기간(2026년 11월 4일)까지입니다.');
   }
   const discount = Object.entries(counts).reduce((sum, [key, count]) => sum + policy.discounts[key].amount * count, 0);
   return {

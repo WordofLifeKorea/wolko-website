@@ -6,7 +6,7 @@ import { runInNewContext } from 'node:vm';
 import { WINTER_CAMP_POLICY as policy, usesWinterCampPolicy, winterCampQuote } from '../functions/lib/winterCampPolicy.js';
 import { onRequestPost } from '../functions/api/register.js';
 
-const beforeDeadline = '2026-11-05T23:59:59.999+09:00';
+const beforeDeadline = '2026-11-04T23:59:59.999+09:00';
 
 test('content schema retains deposits and the modal uses policy deposits after reset', () => {
   const config = readFileSync(new URL('../src/content/config.ts', import.meta.url), 'utf8');
@@ -43,7 +43,7 @@ test('winter fee, deposit and balance match the new policy', () => {
 
 test('Early Bird ends at Korean midnight and applies equally to groups', () => {
   assert.equal(winterCampQuote({ early_bird: 3 }, 3, beforeDeadline).scholarshipDiscountAmount, 150000);
-  assert.throws(() => winterCampQuote({ early_bird: 1 }, 1, '2026-11-06T00:00:00+09:00'), /기한/);
+  assert.throws(() => winterCampQuote({ early_bird: 1 }, 1, '2026-11-05T00:00:00+09:00'), /기한/);
 });
 
 test('memorization reward is deferred, never subtracted from payment', () => {
@@ -120,7 +120,7 @@ test('admin uses original application date for Early Bird and preserves old poli
   const quoteFor = runInNewContext(`${fn}\nwinterQuoteForRegistration`, { WINTER_CAMP_POLICY: policy, winterCampQuote });
   const reg = { scholarshipPolicyVersion: policy.version, registeredAt: beforeDeadline };
   assert.equal(quoteFor(reg, { early_bird: 1 }, 1).campFeeFinal, 500000);
-  assert.throws(() => quoteFor({ ...reg, registeredAt: '2026-11-06T00:00:00+09:00' }, { early_bird: 1 }, 1), /기한/);
+  assert.throws(() => quoteFor({ ...reg, registeredAt: '2026-11-05T00:00:00+09:00' }, { early_bird: 1 }, 1), /기한/);
   assert.equal(quoteFor({}, {}, 1), null);
   assert.equal(quoteFor(reg, { james_memory: 1 }, 1).scholarshipDeferredReward, 100000);
 });
