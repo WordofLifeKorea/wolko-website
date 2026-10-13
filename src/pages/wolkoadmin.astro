@@ -20,7 +20,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=85">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=86">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -1060,36 +1060,45 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       return card;
     }
 
-    /* 팀·메모 호버 팝오버: 표 안에서 잘리지 않도록 화면 기준으로 위치를 잡고, 아래 공간이 모자라면 위로 띄운다 */
+    /* 팀·메모 호버 팝오버: 표를 감싼 스크롤 영역(overflow)에 잘리지 않도록, 내용을 body 에 붙은 하나의 떠 있는 상자로 옮겨 보여준다.
+       화면 아래가 모자라면 위로, 좌우는 화면 안으로 맞춘다. (표 안의 원래 팝오버는 CSS 로 숨긴다) */
     (function setupHoverPopovers() {
       const HOSTS = '.person-team-badge.has-extra, .staff-memo-wrap.has-overflow';
+      const floating = document.createElement('div');
+      floating.className = 'hover-popover-float';
+      floating.setAttribute('role', 'tooltip');
+      document.body.appendChild(floating);
       let activeHost = null;
-      function place(host) {
-        const pop = host.querySelector('.person-team-popover, .staff-memo-popover');
-        if (!pop) return;
-        pop.style.display = 'flex';
-        pop.style.visibility = 'hidden';
-        const hr = host.getBoundingClientRect();
-        const pr = pop.getBoundingClientRect();
-        pop.style.display = '';
-        pop.style.visibility = '';
-        let top = hr.bottom + 6;
-        if (top + pr.height > window.innerHeight - 8) top = Math.max(8, hr.top - pr.height - 6);
-        const left = Math.min(Math.max(8, hr.left), Math.max(8, window.innerWidth - pr.width - 8));
-        pop.style.left = left + 'px';
-        pop.style.top = top + 'px';
-      }
-      const onEnter = event => {
-        const host = event.target.closest && event.target.closest(HOSTS);
-        if (!host || host === activeHost) return;
+      function hide() { floating.style.display = 'none'; activeHost = null; }
+      function show(host) {
+        const source = host.querySelector('.person-team-popover, .staff-memo-popover');
+        if (!source) return;
+        const isTeam = source.classList.contains('person-team-popover');
+        if (!isTeam && window.matchMedia('(max-width: 760px)').matches) return; // 모바일에서는 메모 팝오버를 쓰지 않는다
         activeHost = host;
-        place(host);
-      };
-      document.addEventListener('mouseover', onEnter);
-      document.addEventListener('focusin', onEnter);
-      document.addEventListener('mouseout', event => { if (activeHost && !activeHost.contains(event.relatedTarget)) activeHost = null; });
-      document.addEventListener('focusout', () => { activeHost = null; });
-      window.addEventListener('scroll', () => { if (activeHost) place(activeHost); }, true);
+        floating.className = 'hover-popover-float ' + (isTeam ? 'is-team' : 'is-memo');
+        floating.innerHTML = source.innerHTML;
+        floating.style.visibility = 'hidden';
+        floating.style.display = isTeam ? 'flex' : 'block';
+        floating.style.left = '0px'; floating.style.top = '0px';
+        const hr = host.getBoundingClientRect();
+        const fr = floating.getBoundingClientRect();
+        let top = hr.bottom + 6;
+        if (top + fr.height > window.innerHeight - 8) top = Math.max(8, hr.top - fr.height - 6);
+        const left = Math.min(Math.max(8, hr.left), Math.max(8, window.innerWidth - fr.width - 8));
+        floating.style.left = left + 'px';
+        floating.style.top = top + 'px';
+        floating.style.visibility = '';
+      }
+      document.addEventListener('mouseover', event => {
+        const host = event.target.closest && event.target.closest(HOSTS);
+        if (host && host !== activeHost) show(host);
+        else if (!host && activeHost) hide();
+      });
+      document.addEventListener('focusin', event => { const host = event.target.closest && event.target.closest(HOSTS); if (host) show(host); });
+      document.addEventListener('focusout', hide);
+      window.addEventListener('scroll', hide, true);
+      window.addEventListener('resize', hide);
     })();
 
     function selectSeason(id) {
