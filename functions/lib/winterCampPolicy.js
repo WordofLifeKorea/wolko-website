@@ -76,7 +76,7 @@ export function usesWinterCampPolicy(campId) {
   return WINTER_CAMP_POLICY.campIds.includes(campId);
 }
 
-export function winterCampQuote(values, spots = 1, appliedAt = Date.now()) {
+export function winterCampQuote(values, spots = 1, appliedAt = Date.now(), { perCamper = false } = {}) {
   const policy = WINTER_CAMP_POLICY;
   const counts = {};
   const entries = Array.isArray(values) ? values.map(key => [key, 1]) : Object.entries(values || {});
@@ -87,7 +87,8 @@ export function winterCampQuote(values, spots = 1, appliedAt = Date.now()) {
     if (!Object.hasOwn(policy.discounts, key)) throw new Error('지원하지 않는 장학금 항목입니다.');
     counts[key] = count;
   }
-  if (Object.keys(counts).filter(key => key !== 'excellent_camper').length > 2) throw new Error('장학금은 최대 두 항목만 선택할 수 있습니다.');
+  // perCamper: 단체 신청에서 학생마다 장학금을 고른 경우 — 두 개 제한은 학생별로 따로 검사한다(winterCamperScholarships).
+  if (!perCamper && Object.keys(counts).filter(key => key !== 'excellent_camper').length > 2) throw new Error('장학금은 최대 두 항목만 선택할 수 있습니다.');
   if (counts.early_bird && (!Number.isFinite(new Date(appliedAt).getTime()) || new Date(appliedAt).getTime() > Date.parse(policy.earlyBirdUntil))) {
     throw new Error('Early Bird 신청 기한은 1차 신청기간(2026년 11월 4일)까지입니다.');
   }
@@ -107,4 +108,27 @@ export function winterCampQuote(values, spots = 1, appliedAt = Date.now()) {
     campFeeFinal: Math.max(0, policy.fee * spots - discount),
     depositAmount: policy.deposit * spots,
   };
+}
+
+/**
+ * 단체 신청: 학생별 장학금 선택을 검사하고 항목별 인원수로 합산한다.
+ * 각 캠퍼는 베스트 캠퍼를 제외하고 최대 2개까지 선택할 수 있다.
+ * @param {Array<{scholarships?: string[]}>} participants
+ * @returns {Record<string, number>} 항목별 적용 인원
+ */
+export function winterCamperScholarships(participants) {
+  const counts = {};
+  (participants || []).forEach((participant, index) => {
+    const keys = Array.isArray(participant?.scholarships) ? participant.scholarships : [];
+    const unique = [...new Set(keys)];
+    if (unique.length !== keys.length) throw new Error(`학생 ${index + 1}: 같은 장학금을 중복해서 선택할 수 없습니다.`);
+    for (const key of unique) {
+      if (!Object.hasOwn(WINTER_CAMP_POLICY.discounts, key)) throw new Error('지원하지 않는 장학금 항목입니다.');
+      counts[key] = (counts[key] || 0) + 1;
+    }
+    if (unique.filter(key => key !== 'excellent_camper').length > 2) {
+      throw new Error(`학생 ${index + 1}: 장학금은 한 명당 최대 두 개까지 선택할 수 있습니다. (베스트 캠퍼는 별도)`);
+    }
+  });
+  return counts;
 }

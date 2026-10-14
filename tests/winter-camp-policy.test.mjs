@@ -103,7 +103,7 @@ test('API rejects unconfirmed Best Camper eligibility and excessive selections',
 });
 
 test('group registration stores rewards and charges per eligible participant', async () => {
-  const { response, store } = await register({ registrationType: 'group', groupCount: 2, participants: [{ name: 'A', gender: 'male' }, { name: 'B', gender: 'female' }], scholarshipDiscounts: { james_memory: 2 } });
+  const { response, store } = await register({ registrationType: 'group', groupCount: 2, participants: [{ name: 'A', gender: 'male', scholarships: ['james_memory'] }, { name: 'B', gender: 'female', scholarships: ['james_memory'] }] });
   assert.equal(response.status, 200);
   const reg = JSON.parse([...store.entries()].find(([key]) => key.includes(':reg:'))[1]);
   assert.equal(reg.campFeeFinal, 1100000);
@@ -264,14 +264,27 @@ test('registration requires an explicit photo/video sharing choice and stores it
   assert.match(page, /crpMediaWarning/);
 });
 
-test('group registration can defer the participant list only when explicitly requested', async () => {
-  const base = { registrationType: 'group', groupCount: 5, organization: 'Test Church', birthDate: undefined, gender: undefined };
-  const refused = await register({ ...base });
-  assert.equal(refused.response.status, 400);
-  const accepted = await register({ ...base, participantDetailsDeferred: true, participants: [] });
-  assert.equal(accepted.response.status, 200);
-  const reg = JSON.parse([...accepted.store.entries()].find(([key]) => key.includes(':reg:'))[1]);
-  assert.equal(reg.participantDetailsDeferred, true);
-  assert.equal(reg.groupCount, 5);
-  assert.deepEqual(reg.participants, []);
+test('winter wolko group: scholarships are chosen per camper (max two each, Best Camper extra); no deferral', async () => {
+  const base = { registrationType: 'group', groupCount: 3, organization: 'Test Church', gender: undefined, birthDate: undefined };
+  const p = (name, gender, scholarships, extra = {}) => ({ name, gender, scholarships, ...extra });
+  // 정상: 학생마다 다른 조합. 2명이 early_bird, 1명이 sibling+james, 1명이 베스트 캠퍼 추가
+  const ok = await register({ ...base, groupCount: 3, participants: [
+    p('A', 'male', ['early_bird', 'sibling'], { siblingName: 'Friend' }),
+    p('B', 'female', ['early_bird', 'james_memory', 'excellent_camper']),
+    p('C', 'male', []),
+  ], scholarshipDiscountDetails: { bestCamperEligible: true } });
+  assert.equal(ok.response.status, 200);
+  const reg = JSON.parse([...ok.store.entries()].find(([key]) => key.includes(':reg:'))[1]);
+  assert.deepEqual(reg.scholarshipDiscounts, { early_bird: 2, sibling: 1, james_memory: 1, excellent_camper: 1 });
+  assert.equal(reg.scholarshipDiscountAmount, 2 * 50000 + 50000 + 200000);
+  assert.equal(reg.campFeeFinal, 3 * 550000 - 350000);
+  // 학생 한 명에게 세 개: 거절
+  const three = await register({ ...base, groupCount: 2, participants: [p('A', 'male', ['early_bird', 'sibling', 'james_memory'], { siblingName: 'F' }), p('B', 'female', [])] });
+  assert.equal(three.response.status, 400);
+  // 두 명이 서로 다른 항목 세 종류를 나눠 가져도 학생별로 2개 이하이면 허용
+  const spread = await register({ ...base, groupCount: 3, participants: [p('A', 'male', ['early_bird']), p('B', 'female', ['sibling'], { siblingName: 'F' }), p('C', 'male', ['james_memory'])] });
+  assert.equal(spread.response.status, 200);
+  // 추후 명단 제출은 월코 캠프에서 불가
+  const deferred = await register({ ...base, groupCount: 3, participantDetailsDeferred: true, participants: [] });
+  assert.equal(deferred.response.status, 400);
 });

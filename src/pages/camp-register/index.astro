@@ -892,7 +892,7 @@ body.lang-en .crp-countdown-notice {
 .crp-sch-chip b { font-weight: 800; }
 .crp-sch-chip.is-reward { background: rgba(217,119,6,0.10); color: #92580a; }
 .crp-scholarship-option:has(input:checked) .crp-sch-chip:not(.is-reward) { background: #0d9488; color: #fff; }
-#crpWinterScholarshipNotice { margin: 2px 0 12px; padding: 10px 12px; border-left: 3px solid #0d9488; border-radius: 0 8px 8px 0; background: rgba(13,148,136,0.06); color: var(--c-sub); font-size: 12px; line-height: 1.65; }
+#crpWinterScholarshipNotice { margin: 2px 0 12px; padding: 10px 12px; border: 1px solid rgba(13,148,136,0.25); border-radius: 8px; background: rgba(13,148,136,0.06); color: var(--c-sub); font-size: 12px; line-height: 1.65; }
 #crpWinterScholarshipNotice[hidden] { display: none; }
 
 .crp-sch-names { flex: 1 1 200px; align-self: center; min-width: 0; height: 40px; padding: 8px 12px; border: 1.5px solid rgba(0,79,104,0.18); border-radius: 8px; background: #fff; font: inherit; font-size: 13px; color: var(--c-deep); }
@@ -1453,6 +1453,18 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
   background: #fff; color: var(--c-deep); font: inherit; font-size: 13px;
 }
 
+.crp-group-participant { align-items: start; }
+.crp-group-participant-sch { grid-column: 2 / -1; display: grid; gap: 6px; }
+.crp-group-participant-sch[hidden] { display: none; }
+.crp-gsch-title { font-size: 11.5px; color: var(--c-muted); }
+.crp-gsch-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.crp-gsch-opt { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1.5px solid rgba(0,79,104,0.14); border-radius: 999px; background: #fff; font-size: 12.5px; line-height: 1.3; color: var(--c-deep); cursor: pointer; transition: border-color .15s, background .15s; }
+.crp-gsch-opt input { width: 15px; height: 15px; min-height: 0 !important; padding: 0; margin: 0; accent-color: #0d9488; flex-shrink: 0; }
+.crp-gsch-opt:has(input:checked) { border-color: #0d9488; border-width: 2px; padding: 6px 9px; background: rgba(13,148,136,0.14); color: #0b6f66; font-weight: 700; }
+.crp-gsch-opt:has(input:disabled) { opacity: .45; cursor: not-allowed; }
+.crp-group-participant-sch .crp-gsch-sibling { width: 100%; box-sizing: border-box; padding: 9px 11px; border: 1.5px solid rgba(0,79,104,0.13); border-radius: 8px; background: #fff; font: inherit; font-size: 13px; }
+.crp-group-participant:has(input[type="checkbox"]:checked) { background: rgba(13,148,136,0.05); border-radius: 10px; }
+
 /* Mobile modal */
 @media (max-width: 600px) {
   .crp-reg-modal { padding: 12px 12px max(12px, env(safe-area-inset-bottom)); }
@@ -1466,6 +1478,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
   .crp-form-wrap { padding: 20px 24px calc(44px + env(safe-area-inset-bottom)); }
   .crp-form-grid { grid-template-columns: 1fr; }
   .crp-group-participant { grid-template-columns: 28px minmax(0,1fr) 96px; gap: 6px; }
+  .crp-group-participant-sch { grid-column: 1 / -1; }
   .crp-success-wrap { padding: 40px 24px; }
 }
 
@@ -3081,6 +3094,12 @@ function getSelectedScholarshipDiscounts() {
 }
 
 function getScholarshipCounts() {
+  if (crpPerCamperMode()) {
+    return Array.from(document.querySelectorAll('#crpGParticipants .crp-group-participant')).reduce(function(acc, row) {
+      crpCamperScholarshipKeys(row).forEach(function(key) { acc[key] = (acc[key] || 0) + 1; });
+      return acc;
+    }, {});
+  }
   if (regTypeInput.value === 'group') {
     return Array.from(document.querySelectorAll('select[name="scholarshipDiscountCount"]')).reduce(function(acc, select) {
       var key = select.dataset.discount;
@@ -3172,6 +3191,7 @@ function updateScholarshipMode() {
   if (individualWrap) individualWrap.hidden = isGroup;
   if (groupWrap) groupWrap.hidden = !isGroup;
   updateScholarshipCountOptions();
+  crpSyncPerCamperUi();
 }
 
 function updateScholarshipDetails() {
@@ -3209,6 +3229,12 @@ function getScholarshipDiscountDetails() {
     sibling: {
       camperName: (function() {
         if (usesWinterCampPolicy(campIdInput.value)) {
+          if (crpPerCamperMode()) {
+            return Array.from(document.querySelectorAll('#crpGParticipants .crp-group-participant')).map(function(row, index) {
+              var input = row.querySelector('.crp-gsch-sibling');
+              return input && !input.hidden && input.value.trim() ? '학생' + (index + 1) + ': ' + input.value.trim() : '';
+            }).filter(Boolean).join(', ');
+          }
           var inline = document.querySelector('#' + (regTypeInput.value === 'group' ? 'crpScholarshipGroup' : 'crpScholarshipIndividual') + ' [data-sibling-names]');
           return inline ? inline.value.trim() : '';
         }
@@ -3230,7 +3256,18 @@ function validateScholarshipDiscountDetails(counts) {
   var details = getScholarshipDiscountDetails();
   var winter = usesWinterCampPolicy(campIdInput.value);
   if (winter) {
-    try { winterCampQuote(counts, Math.max(1, scholarshipParticipantCount())); }
+    if (crpPerCamperMode()) {
+      var rows = Array.from(document.querySelectorAll('#crpGParticipants .crp-group-participant'));
+      for (var i = 0; i < rows.length; i++) {
+        var sib = rows[i].querySelector('.crp-gsch-sibling');
+        if (crpCamperScholarshipKeys(rows[i]).indexOf('sibling') >= 0 && sib && !sib.value.trim()) {
+          crpShowError(errorMsg, '학생' + (i + 1) + '의 함께 참여하는 친구·지인·가족 이름을 입력해 주세요.', 'Please enter the name of the friend/family joining student ' + (i + 1) + '.');
+          sib.scrollIntoView({ block: 'center', behavior: 'smooth' }); sib.focus();
+          return null;
+        }
+      }
+    }
+    try { winterCampQuote(counts, Math.max(1, scholarshipParticipantCount()), Date.now(), { perCamper: crpPerCamperMode() }); }
     catch (error) { crpShowError(errorMsg, error.message, 'Please check the scholarship options and Early Bird deadline.'); return null; }
     if (counts.excellent_camper && !document.getElementById('crpBestCamperEligible').checked) {
       crpShowError(errorMsg, 'Best Camper 수상 조건을 확인해주세요.', 'Please tick the box to confirm Best Camper eligibility.');
@@ -3362,6 +3399,7 @@ function crpSwitchTab(type) {
     sectionIndividual.hidden = true;
   }
   updateScholarshipMode();
+  renderGroupParticipants();
   updateScholarshipSummary();
   errorMsg.hidden = true;
   if (GENDER_CAPACITY[campIdInput.value]) updateGenderWaitlistNotice();
@@ -3370,6 +3408,49 @@ tabIndividual.addEventListener('click', function() { crpSwitchTab('individual');
 tabGroup.addEventListener('click', function() { crpSwitchTab('group'); });
 
 /* ── 단체 참가 학생 입력칸 ── */
+function crpPerCamperMode() {
+  return campIdInput.value === WINTER_CAMP_POLICY.campId && regTypeInput.value === 'group' && !crpIsUnionCampMode();
+}
+function crpSyncPerCamperUi() {
+  var winterWolko = campIdInput.value === WINTER_CAMP_POLICY.campId;
+  var deferLabel = document.querySelector('label.crp-defer-list');
+  var deferBox = document.getElementById('crpGDeferList');
+  if (deferLabel) deferLabel.hidden = winterWolko;
+  if (winterWolko && deferBox) { deferBox.checked = false; document.getElementById('crpGParticipants').hidden = false; }
+  var groupWrap = document.getElementById('crpScholarshipGroup');
+  if (groupWrap && regTypeInput.value === 'group') groupWrap.hidden = crpPerCamperMode();
+  document.getElementById('crpWinterScholarshipNotice').innerHTML = crpPerCamperMode()
+    ? '<span class="wl-ko">각 캠퍼당 장학금은 최대 두 개까지 선택할 수 있습니다 (베스트 캠퍼는 별도, 중복 선택 가능). 위 참가 학생 명단에서 학생별로 해당하는 장학금을 선택해 주세요. 암송 장학금은 종료 후 확인하여 지급하며 참가비에서 미리 차감하지 않습니다.</span><span class="wl-en">Each camper can have up to two scholarships (Best Camper is a bonus and does not count toward the limit). Select the applicable scholarships for each student in the participant list above. The memorization reward is given after camp once verified and is not deducted upfront.</span>'
+    : '<span class="wl-ko">최대 두 항목 선택 가능 (베스트 캠퍼는 별도, 중복 선택 가능) · 암송 장학금은 종료 후 확인하여 지급하며 참가비에서 미리 차감하지 않습니다.</span><span class="wl-en">Pick up to two options. Best Camper is a bonus and doesn\'t count toward the limit. The memorization reward is given after camp once we\'ve checked, so it isn\'t taken off your fee upfront.</span>';
+}
+function crpCamperScholarshipKeys(row) {
+  return Array.from(row.querySelectorAll('input[data-camper-sch]:checked')).map(function(input) { return input.value; });
+}
+function crpEnforceCamperLimits(row) {
+  var checked = crpCamperScholarshipKeys(row);
+  var normal = checked.filter(function(key) { return key !== 'excellent_camper'; });
+  row.querySelectorAll('input[data-camper-sch]').forEach(function(input) {
+    var expired = input.value === 'early_bird' && Date.now() > Date.parse(WINTER_CAMP_POLICY.earlyBirdUntil);
+    input.disabled = expired || (input.value !== 'excellent_camper' && !input.checked && normal.length >= 2);
+  });
+  var sibling = row.querySelector('.crp-gsch-sibling');
+  if (sibling) { var on = checked.indexOf('sibling') >= 0; sibling.hidden = !on; if (!on) sibling.value = ''; }
+}
+function crpCamperScholarshipHtml() {
+  var en = crpIsEn();
+  var keys = Object.keys(WINTER_CAMP_POLICY.discounts);
+  return '<div class="crp-group-participant-sch">' +
+    '<div class="crp-gsch-title">' + (en ? 'Scholarships for this camper (up to 2; Best Camper is extra)' : '이 학생의 장학금 (최대 2개 · 베스트 캠퍼는 별도)') + '</div>' +
+    '<div class="crp-gsch-options">' + keys.map(function(key) {
+      var item = WINTER_CAMP_POLICY.discounts[key];
+      var label = (en ? item.en : item.ko).split(' · ')[0];
+      var extra = item.reward ? (en ? ' (reward after camp)' : ' (종료 후 지급)') : (en ? ' (−' : ' (−') + (item.amount || 0).toLocaleString('ko-KR') + (en ? ' KRW)' : '원)');
+      if (item.reward) extra = en ? ' (reward after camp)' : ' (종료 후 지급)';
+      return '<label class="crp-gsch-opt"><input type="checkbox" data-camper-sch value="' + key + '"><span>' + crpEscHtml(label + extra) + '</span></label>';
+    }).join('') + '</div>' +
+    '<input type="text" class="crp-gsch-sibling" hidden maxlength="100" data-camper-sibling placeholder="' + crpEscAttr(en ? 'Name of the friend/family joining' : '함께 참여하는 친구·지인·가족 이름') + '">' +
+  '</div>';
+}
 function renderGroupParticipants() {
   var count = parseInt(document.getElementById('crpGCount').value) || 0;
   var wrap = document.getElementById('crpGParticipants');
@@ -3381,8 +3462,11 @@ function renderGroupParticipants() {
     return {
       name: row.querySelector('.crp-g-participant-name')?.value || '',
       gender: row.querySelector('.crp-g-participant-gender')?.value || '',
+      scholarships: crpCamperScholarshipKeys(row),
+      sibling: row.querySelector('.crp-gsch-sibling')?.value || '',
     };
   });
+  var perCamper = crpPerCamperMode();
   var namePlaceholder = crpText('학생 이름', 'Participant name');
   var genderPlaceholder = crpText('성별', 'Gender');
   var maleLabel = crpText('남', 'Male');
@@ -3397,9 +3481,27 @@ function renderGroupParticipants() {
         '<option value="male"' + (participant.gender === 'male' ? ' selected' : '') + '>' + maleLabel + '</option>' +
         '<option value="female"' + (participant.gender === 'female' ? ' selected' : '') + '>' + femaleLabel + '</option>' +
       '</select>' +
+      (perCamper ? crpCamperScholarshipHtml() : '') +
     '</div>';
   }).join('');
+  if (perCamper) {
+    wrap.querySelectorAll('.crp-group-participant').forEach(function(row, index) {
+      var prev = previous[index] || {};
+      (prev.scholarships || []).forEach(function(key) {
+        var input = row.querySelector('input[data-camper-sch][value="' + key + '"]');
+        if (input) input.checked = true;
+      });
+      var sibling = row.querySelector('.crp-gsch-sibling');
+      if (sibling && prev.sibling) sibling.value = prev.sibling;
+      crpEnforceCamperLimits(row);
+    });
+  }
 }
+document.getElementById('crpGParticipants').addEventListener('change', function(e) {
+  if (!e.target.matches || !e.target.matches('input[data-camper-sch]')) return;
+  crpEnforceCamperLimits(e.target.closest('.crp-group-participant'));
+  updateScholarshipSummary();
+});
 function crpEscAttr(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -3529,6 +3631,7 @@ document.querySelectorAll('.crp-open-btn').forEach(function(btn) {
     setupBirthCheck(campId);
     var isUnionCamp = crpIsUnionCampId(campId);
     setCrpUnionCampMode(isUnionCamp);
+    crpSyncPerCamperUi();
     updateScholarshipSummary();
     // 단체 학생 명단 초기화
     renderGroupParticipants();
@@ -3679,10 +3782,16 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var isUnionCamp = crpIsUnionCampMode();
     var deferNames = isUnionCamp || document.getElementById('crpGDeferList').checked;
     var participants = deferNames ? [] : Array.from(document.querySelectorAll('.crp-group-participant')).map(function(row) {
-      return {
+      var entry = {
         name: row.querySelector('.crp-g-participant-name').value.trim(),
         gender: row.querySelector('.crp-g-participant-gender').value,
       };
+      if (crpPerCamperMode()) {
+        entry.scholarships = crpCamperScholarshipKeys(row);
+        var sibInput = row.querySelector('.crp-gsch-sibling');
+        if (sibInput && !sibInput.hidden && sibInput.value.trim()) entry.siblingName = sibInput.value.trim();
+      }
+      return entry;
     });
     var gMaleCount = deferNames ? 0 : participants.filter(function(p) { return p.gender === 'male'; }).length;
     var gFemCount  = deferNames ? 0 : participants.filter(function(p) { return p.gender === 'female'; }).length;

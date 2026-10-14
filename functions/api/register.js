@@ -13,7 +13,7 @@
  */
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
-import { GENDER_CAPACITY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote } from '../lib/winterCampPolicy.js';
+import { GENDER_CAPACITY, WINTER_CAMP_POLICY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote, winterCamperScholarships } from '../lib/winterCampPolicy.js';
 import { normalizePhone } from '../lib/phone.js';
 
 const CORS = {
@@ -472,10 +472,12 @@ export async function onRequestPost(context) {
       refundBank, refundAccount, refundHolder,
       mediaConsent,
       referralSource,
-      scholarshipDiscounts,
-      scholarshipDiscountDetails,
+      scholarshipDiscounts: scholarshipDiscountsInput,
+      scholarshipDiscountDetails: scholarshipDiscountDetailsInput,
       notes,
     } = data;
+    let scholarshipDiscounts = scholarshipDiscountsInput;
+    let scholarshipDiscountDetails = scholarshipDiscountDetailsInput;
 
     if (!campId || !name?.trim() || !phone?.trim()) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
@@ -516,7 +518,7 @@ export async function onRequestPost(context) {
       // 연합캠프는 항상 명단 추후 제출 가능, 그 외 캠프는 신청자가 '추후 제출'을 명시적으로 체크한 경우에만 허용한다.
       const shouldDeferParticipantDetails = isUnionDefer
         ? (!Array.isArray(participants) || participants.length === 0 || participantDetailsDeferred)
-        : participantDetailsDeferred === true;
+        : (participantDetailsDeferred === true && campId !== WINTER_CAMP_POLICY.campId);
 
       if (shouldDeferParticipantDetails) {
         deferParticipantDetails = true;
@@ -530,9 +532,14 @@ export async function onRequestPost(context) {
         if (!Array.isArray(participants)) {
           return Response.json({ error: '참가 학생 명단을 입력해주세요.' }, { status: 400, headers: CORS });
         }
+        const perCamperScholarships = campId === WINTER_CAMP_POLICY.campId;
         normalizedParticipants = participants.map(participant => ({
           name: String(participant?.name || '').trim(),
           gender: participant?.gender,
+          ...(perCamperScholarships ? {
+            scholarships: Array.isArray(participant?.scholarships) ? participant.scholarships.map(String) : [],
+            ...(participant?.siblingName ? { siblingName: String(participant.siblingName).trim().slice(0, 100) } : {}),
+          } : {}),
         }));
         if (normalizedParticipants.some(participant => !participant.name || !['male', 'female'].includes(participant.gender))) {
           return Response.json({ error: '모든 참가 학생의 이름과 성별을 입력해주세요.' }, { status: 400, headers: CORS });
@@ -622,7 +629,16 @@ export async function onRequestPost(context) {
     let winterQuote;
     if (usesWinterCampPolicy(campId)) {
       try {
-        winterQuote = winterCampQuote(scholarshipDiscounts, spotsNeeded);
+        const perCamper = registrationType === 'group' && campId === WINTER_CAMP_POLICY.campId;
+        if (perCamper) {
+          // 학생별 선택이 기준이다. 각 학생은 베스트 캠퍼를 제외하고 최대 2개.
+          scholarshipDiscounts = winterCamperScholarships(normalizedParticipants);
+          const siblingMissing = normalizedParticipants.findIndex(p => p.scholarships.includes('sibling') && !p.siblingName);
+          if (siblingMissing >= 0) throw new Error(`학생 ${siblingMissing + 1}의 함께 참여하는 친구·지인·가족 이름을 입력해주세요.`);
+          const siblingNames = normalizedParticipants.map((p, i) => p.siblingName ? `학생${i + 1}: ${p.siblingName}` : '').filter(Boolean).join(', ');
+          if (siblingNames) scholarshipDiscountDetails = { ...(scholarshipDiscountDetails || {}), sibling: { camperName: siblingNames, camp: '' } };
+        }
+        winterQuote = winterCampQuote(scholarshipDiscounts, spotsNeeded, Date.now(), { perCamper });
         if (winterQuote.scholarshipDiscounts.excellent_camper && scholarshipDiscountDetails?.bestCamperEligible !== true) {
           throw new Error('바로 지난 캠프의 Best Camper 수상자인지 확인해주세요. 그 이전 캠프 수상자는 제외됩니다.');
         }
