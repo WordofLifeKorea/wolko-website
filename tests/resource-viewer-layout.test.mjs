@@ -95,7 +95,8 @@ test('hovering a highlight shows an "author: note" tooltip above it instead of a
   const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
   assert.match(page, /function showHighlightTooltip\(box, annotation\)/);
   assert.match(page, /box\.addEventListener\('mouseenter', \(\) => showHighlightTooltip\(box, a\)\)/);
-  assert.match(page, /box\.addEventListener\('mouseleave', hideHighlightTooltip\)/);
+  assert.match(page, /box\.addEventListener\('mouseleave', scheduleHideHighlightTooltip\)/);
+  assert.match(page, /hlTooltipNoteId === annotation\.id/, '같은 노트의 다른 줄로 옮겨도 말풍선을 새로 띄우지 않는다');
   assert.doesNotMatch(page, /box\.title = `\$\{a\.createdByName\}: \$\{a\.text\}`/);
   assert.match(css, /\.hl-tooltip\s*\{[^}]*position:fixed/);
 });

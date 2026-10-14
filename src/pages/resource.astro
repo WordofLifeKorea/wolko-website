@@ -1870,24 +1870,44 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       document.body.appendChild(hlTooltipEl);
       return hlTooltipEl;
     }
+    let hlTooltipNoteId = null, hlTooltipHideTimer = null;
     function showHighlightTooltip(box, annotation) {
+      clearTimeout(hlTooltipHideTimer);
+      // 여러 줄로 이어진 한 노트(뭉탱이)는 줄을 옮겨 다녀도 말풍선을 새로 띄우지 않고 그대로 둔다.
+      if (hlTooltipNoteId === annotation.id && hlTooltipEl && hlTooltipEl.style.display !== 'none') return;
       const tip = ensureHighlightTooltip();
+      hlTooltipNoteId = annotation.id;
       const color = highlightColorFor(annotation.createdBy);
       const replies = Array.isArray(annotation.comments) ? annotation.comments.length : 0;
       tip.innerHTML = `<span class="hl-tooltip-dot" style="background:${color}"></span><span class="hl-tooltip-body"><b>${esc(annotation.createdByName || annotation.createdBy || '')}</b>: ${esc(annotation.text || '')}${replies ? `<em>${esc(lang === 'ko' ? `추가 의견 ${replies}개` : `${replies} more comment${replies > 1 ? 's' : ''}`)}</em>` : ''}</span>`;
       tip.style.display = 'flex';
       tip.style.visibility = 'hidden';
       tip.style.left = '0px'; tip.style.top = '0px'; // 위치를 먼저 맞춰 두어야 실제 폭·높이를 정확히 잴 수 있다
-      const r = box.getBoundingClientRect();
+      // 같은 노트의 모든 줄(같은 쪽)을 묶은 영역을 기준으로 잡는다 — 맨 윗줄 위, 묶음 가운데에 뜬다.
+      const group = [...(box.parentElement ? box.parentElement.querySelectorAll('.highlight-box') : [box])].filter(el => el.dataset.noteId === annotation.id);
+      const rects = (group.length ? group : [box]).map(el => el.getBoundingClientRect());
+      const r = {
+        left: Math.min(...rects.map(x => x.left)), right: Math.max(...rects.map(x => x.right)),
+        top: Math.min(...rects.map(x => x.top)), bottom: Math.max(...rects.map(x => x.bottom)),
+      };
       const tr = tip.getBoundingClientRect();
       let top = r.top - tr.height - 8;
       if (top < 4) top = Math.min(window.innerHeight - tr.height - 8, r.bottom + 8); // 화면 위로 잘릴 정도로 위쪽 공간이 없을 때만 아래로
-      const left = Math.min(Math.max(8, r.left + r.width / 2 - tr.width / 2), Math.max(8, window.innerWidth - tr.width - 8));
+      const left = Math.min(Math.max(8, (r.left + r.right) / 2 - tr.width / 2), Math.max(8, window.innerWidth - tr.width - 8));
       tip.style.left = left + 'px';
       tip.style.top = top + 'px';
       tip.style.visibility = '';
     }
-    function hideHighlightTooltip() { if (hlTooltipEl) hlTooltipEl.style.display = 'none'; }
+    function hideHighlightTooltip() {
+      clearTimeout(hlTooltipHideTimer);
+      hlTooltipNoteId = null;
+      if (hlTooltipEl) hlTooltipEl.style.display = 'none';
+    }
+    // 줄 사이 빈틈을 지나가는 동안 깜빡이지 않도록 잠깐 기다렸다가 닫는다 — 같은 노트의 다른 줄로 들어가면 취소된다.
+    function scheduleHideHighlightTooltip() {
+      clearTimeout(hlTooltipHideTimer);
+      hlTooltipHideTimer = setTimeout(hideHighlightTooltip, 140);
+    }
     window.addEventListener('scroll', hideHighlightTooltip, true);
 
     function renderHighlights(surface = null, pageNumber = viewerPage) {
@@ -1914,7 +1934,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
           box.style.left = (r.x * 100) + '%'; box.style.top = (r.y * 100) + '%'; box.style.width = (r.w * 100) + '%'; box.style.height = (r.h * 100) + '%';
           box.dataset.noteId = a.id;
           box.addEventListener('mouseenter', () => showHighlightTooltip(box, a));
-          box.addEventListener('mouseleave', hideHighlightTooltip);
+          box.addEventListener('mouseleave', scheduleHideHighlightTooltip);
           box.addEventListener('click', () => { hideHighlightTooltip(); jumpToNoteListItem(a.id); });
           surface.appendChild(box);
         });
