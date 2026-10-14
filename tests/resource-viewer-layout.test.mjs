@@ -81,7 +81,7 @@ test('shared notes expose threaded comments and automatic refresh', () => {
 });
 
 test('PDF text selection is clipped to the actual pointer gesture', () => {
-  assert.match(page, /captureTextSelectionRects\(surfaceEl, textLayerEl, completedGesture, precise\)/);
+  assert.match(page, /captureTextSelectionRects\(surfaceEl, textLayerEl, null, range\)/);
   assert.match(page, /document\.createTreeWalker\(textLayerEl, NodeFilter\.SHOW_TEXT\)/);
   assert.match(page, /selectionRectTouchesGesture\(rect, gestureBounds\)/);
   assert.match(page, /renderPendingTextSelection\(surfaceEl, captured\.rects\)/);
@@ -119,7 +119,16 @@ test('text highlight uses caret-exact boundaries, resolves gaps to the nearest g
   const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
   assert.match(page, /function nearestTextBoundary\(textLayerEl, x, y\)/);
   assert.match(page, /function textBoundaryAt\(textLayerEl, x, y\)/);
-  assert.match(page, /textLayerEl\.addEventListener\('pointermove'/);
-  assert.match(page, /renderPendingTextSelection\(surfaceEl, captured\.rects\);\s*else surfaceEl/);
+  assert.match(page, /document\.addEventListener\('pointermove', onMove\)/);
+  assert.match(page, /if \(captured\) renderPendingTextSelection\(surfaceEl, captured\.rects\); else clearPreview\(\);/);
   assert.match(css, /@media \(hover:hover\) and \(pointer:fine\) \{ \.textLayer ::selection \{ background:transparent; \} \}/);
+});
+
+test('mouse highlight anchors its start boundary on pointerdown, follows scroll, and stops at the page end', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+  assert.match(page, /const start = textBoundaryAt\(textLayerEl, event\.clientX, event\.clientY\);/);
+  assert.match(page, /scroller\(\)\?\.addEventListener\('scroll', onScroll\)/);
+  assert.match(page, /function layerEdgeBoundary\(textLayerEl, x, y\)/);
+  assert.match(page, /document\.addEventListener\('pointerup', onUp\)/);
 });

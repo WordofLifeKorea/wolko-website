@@ -1365,42 +1365,95 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     // 막아주므로 서로 부딪히지 않는다.
     function attachTextSelectionNote(textLayerEl, surfaceEl) {
       if (!textLayerEl) return;
-      let selectionGesture = null;
+      // 터치: 기기의 선택 핸들로 고른 글자를 그대로 쓴다(예전 방식).
+      let touchGesture = null;
+      // 마우스·펜: 누른 순간의 글자 경계를 문서(DOM)에 고정해 두고, 이후에는 끝점만 현재 포인터 위치로 다시 계산한다.
+      // 그래서 드래그 도중 스크롤해서 화면이 움직여도 시작 지점이 바뀌지 않는다.
+      let drag = null;
+      let previewFrame = 0;
+      const clearPreview = () => surfaceEl.querySelectorAll('.viewer-selection-pending').forEach(el => el.remove());
+      const scroller = () => $('viewerSurface');
+
+      function currentRange(x, y) {
+        if (!drag || !drag.start) return null;
+        const end = textBoundaryAt(textLayerEl, x, y);
+        if (!end) return null;
+        const a = document.createRange(), b = document.createRange();
+        a.setStart(drag.start.node, drag.start.offset); a.collapse(true);
+        b.setStart(end.node, end.offset); b.collapse(true);
+        const forward = a.compareBoundaryPoints(Range.START_TO_START, b) <= 0;
+        const range = document.createRange();
+        if (forward) { range.setStart(drag.start.node, drag.start.offset); range.setEnd(end.node, end.offset); }
+        else { range.setStart(end.node, end.offset); range.setEnd(drag.start.node, drag.start.offset); }
+        return range.collapsed ? null : range;
+      }
+      function updatePreview() {
+        previewFrame = 0;
+        if (!drag) return;
+        const range = currentRange(drag.curX, drag.curY);
+        const captured = range ? captureTextSelectionRects(surfaceEl, textLayerEl, null, range) : null;
+        if (captured) renderPendingTextSelection(surfaceEl, captured.rects); else clearPreview();
+      }
+      const schedulePreview = () => { if (!previewFrame) previewFrame = requestAnimationFrame(updatePreview); };
+      const onScroll = () => { if (drag) { drag.scrolled = true; schedulePreview(); } };
+      function onMove(event) {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        drag.curX = event.clientX; drag.curY = event.clientY;
+        schedulePreview();
+      }
+      function endDrag() {
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        document.removeEventListener('pointercancel', onCancel);
+        scroller()?.removeEventListener('scroll', onScroll);
+        if (previewFrame) { cancelAnimationFrame(previewFrame); previewFrame = 0; }
+        const finished = drag;
+        drag = null;
+        return finished;
+      }
+      function onCancel(event) {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        endDrag(); clearPreview();
+      }
+      function onUp(event) {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        drag.curX = event.clientX; drag.curY = event.clientY;
+        const range = currentRange(event.clientX, event.clientY); // 놓은 순간의 위치로 마지막 끝점을 다시 계산한다
+        const moved = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) >= 4 || drag.scrolled;
+        endDrag();
+        window.getSelection()?.removeAllRanges();
+        const captured = moved && range ? captureTextSelectionRects(surfaceEl, textLayerEl, null, range) : null;
+        if (!captured) { clearPreview(); return; }
+        renderPendingTextSelection(surfaceEl, captured.rects);
+        if (event.clientY > textLayerEl.getBoundingClientRect().bottom + 6) toast(lang === 'ko' ? '하이라이트는 한 쪽 안에서만 칠할 수 있어요. 다음 쪽은 이어서 따로 표시해 주세요.' : 'A highlight stays within one page. Mark the next page separately.');
+        openNoteComposer({ kind: 'area', x: captured.x, y: captured.y, w: captured.w, h: captured.h, rects: captured.rects, page: Number(surfaceEl.dataset.pdfPage), quote: captured.text });
+      }
+
       textLayerEl.addEventListener('pointerdown', event => {
         if (drawModeOn || event.button !== 0) return;
-        selectionGesture = { pointerId: event.pointerId, pointerType: event.pointerType, startX: event.clientX, startY: event.clientY };
+        if (event.pointerType === 'touch') {
+          touchGesture = { pointerId: event.pointerId, pointerType: event.pointerType, startX: event.clientX, startY: event.clientY };
+          return;
+        }
+        const start = textBoundaryAt(textLayerEl, event.clientX, event.clientY);
+        drag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, curX: event.clientX, curY: event.clientY, start, hinted: false, scrolled: false };
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onCancel);
+        scroller()?.addEventListener('scroll', onScroll);
       });
-      textLayerEl.addEventListener('pointercancel', () => { selectionGesture = null; surfaceEl.querySelectorAll('.viewer-selection-pending').forEach(el => el.remove()); });
-      // 드래그하는 동안에도 최종 결과와 똑같은 계산으로 하이라이트 미리보기를 칠한다 — 보이는 대로 저장된다.
-      let previewFrame = 0;
-      textLayerEl.addEventListener('pointermove', event => {
-        if (!selectionGesture || event.pointerId !== selectionGesture.pointerId || selectionGesture.pointerType === 'touch' || drawModeOn) return;
-        selectionGesture.curX = event.clientX; selectionGesture.curY = event.clientY;
-        if (previewFrame) return;
-        previewFrame = requestAnimationFrame(() => {
-          previewFrame = 0;
-          if (!selectionGesture) return;
-          const live = { ...selectionGesture, endX: selectionGesture.curX, endY: selectionGesture.curY };
-          const precise = preciseRangeFromGesture(textLayerEl, live);
-          const captured = precise ? captureTextSelectionRects(surfaceEl, textLayerEl, live, precise) : null;
-          if (captured) renderPendingTextSelection(surfaceEl, captured.rects);
-          else surfaceEl.querySelectorAll('.viewer-selection-pending').forEach(el => el.remove());
-        });
-      });
+      textLayerEl.addEventListener('pointercancel', () => { touchGesture = null; });
       textLayerEl.addEventListener('pointerup', event => {
-        if (drawModeOn) { selectionGesture = null; return; }
-        const completedGesture = selectionGesture?.pointerId === event.pointerId
-          ? { ...selectionGesture, endX: event.clientX, endY: event.clientY }
+        if (drawModeOn) { touchGesture = null; return; }
+        if (event.pointerType !== 'touch') return; // 마우스는 위의 문서 단위 처리가 맡는다
+        const completedGesture = touchGesture?.pointerId === event.pointerId
+          ? { ...touchGesture, endX: event.clientX, endY: event.clientY }
           : null;
-        selectionGesture = null;
-        // mouseup 시점엔 아직 브라우저 선택 영역이 확정되지 않을 수 있어 한 틱 늦춘다.
+        touchGesture = null;
+        // 손가락을 뗀 시점엔 아직 기기 선택 영역이 확정되지 않을 수 있어 한 틱 늦춘다.
         setTimeout(() => {
-          // 마우스는 포인터를 누른 글자 경계부터 뗀 글자 경계까지를 정확히 잡는다(드래그 중 브라우저 선택이 단어·줄 단위로 번지는 것을 무시). 손가락은 기기 선택 핸들을 그대로 쓴다.
-          const precise = completedGesture && completedGesture.pointerType !== 'touch' ? preciseRangeFromGesture(textLayerEl, completedGesture) : null;
-          const captured = captureTextSelectionRects(surfaceEl, textLayerEl, completedGesture, precise);
+          const captured = captureTextSelectionRects(surfaceEl, textLayerEl, completedGesture, null);
           if (!captured) return;
-          // Safari가 DOM 순서상 같은 행의 좌우 열까지 기본 선택색으로 칠하더라도,
-          // 실제 포인터가 지나간 글자만 계산한 임시 하이라이트로 즉시 교체한다.
           renderPendingTextSelection(surfaceEl, captured.rects);
           window.getSelection()?.removeAllRanges();
           openNoteComposer({ kind: 'area', x: captured.x, y: captured.y, w: captured.w, h: captured.h, rects: captured.rects, page: Number(surfaceEl.dataset.pdfPage), quote: captured.text });
@@ -1449,7 +1502,23 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       }
       return { node: best.node, offset: bestOffset };
     }
+    // 텍스트 레이어의 위·아래 바깥(다른 쪽 위나 여백)으로 나가면 이 쪽의 처음 / 끝 글자 경계에서 멈춘다.
+    function layerEdgeBoundary(textLayerEl, x, y) {
+      const bounds = textLayerEl.getBoundingClientRect();
+      if (y >= bounds.top && y <= bounds.bottom) return null;
+      const walker = document.createTreeWalker(textLayerEl, NodeFilter.SHOW_TEXT);
+      let first = null, last = null;
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (!node.data || !node.data.trim()) continue;
+        if (!first) first = node;
+        last = node;
+      }
+      if (!first) return null;
+      return y < bounds.top ? { node: first, offset: 0 } : { node: last, offset: last.data.length };
+    }
     function textBoundaryAt(textLayerEl, x, y) {
+      const edge = layerEdgeBoundary(textLayerEl, x, y);
+      if (edge) return edge;
       const caret = caretRangeAt(x, y);
       if (caret && caret.startContainer.nodeType === Node.TEXT_NODE && textLayerEl.contains(caret.startContainer)) {
         return { node: caret.startContainer, offset: caret.startOffset };
