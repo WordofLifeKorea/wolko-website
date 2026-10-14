@@ -235,7 +235,7 @@ function buildRegistrationEmailHtml(reg) {
         </tr>
         <tr>
           <td style="padding:8px 0;color:#5a6f79;font-size:13px;">이메일</td>
-          <td style="padding:8px 0;font-size:14px;"><a href="mailto:${reg.email}" style="color:#007ea1;text-decoration:none;">${reg.email}</a></td>
+          <td style="padding:8px 0;font-size:14px;">${reg.email ? `<a href="mailto:${reg.email}" style="color:#007ea1;text-decoration:none;">${reg.email}</a>` : '—'}</td>
         </tr>
         <tr>
           <td style="padding:8px 0;color:#5a6f79;font-size:13px;">연락처</td>
@@ -291,7 +291,7 @@ async function sendRegistrationEmail(env, reg) {
     body: JSON.stringify({
       from: 'WOLKO Camp <contact@wolko.org>',
       to: ['wolkorea1@gmail.com'],
-      reply_to: reg.email,
+      ...(reg.email ? { reply_to: reg.email } : {}),
       subject,
       html: buildRegistrationEmailHtml(reg),
     }),
@@ -477,7 +477,7 @@ export async function onRequestPost(context) {
       notes,
     } = data;
 
-    if (!campId || !name?.trim() || !phone?.trim() || !email?.trim()) {
+    if (!campId || !name?.trim() || !phone?.trim()) {
       return Response.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400, headers: CORS });
     }
     const refundBankNorm = String(refundBank ?? '').trim();
@@ -491,7 +491,7 @@ export async function onRequestPost(context) {
       return Response.json({ error: '사진·영상 공유 동의 여부를 선택해주세요.' }, { status: 400, headers: CORS });
     }
 
-    const emailNorm = email.trim().toLowerCase();
+    const emailNorm = String(email ?? '').trim().toLowerCase();
 
     if (registrationType === 'individual') {
       const birthCheck = birthYearCheck(campId, birthDate);
@@ -555,8 +555,9 @@ export async function onRequestPost(context) {
     const spotsMForCapacity = deferParticipantDetails ? 0 : spotsM;
     const spotsFForCapacity = deferParticipantDetails ? 0 : spotsF;
 
-    const dupeKey = `camp:${campId}:email:${emailNorm}`;
-    if (await env.CAMP_KV.get(dupeKey)) {
+    // 이메일은 선택 항목: 입력한 경우에만 같은 이메일 중복 신청을 막는다.
+    const dupeKey = emailNorm ? `camp:${campId}:email:${emailNorm}` : null;
+    if (dupeKey && await env.CAMP_KV.get(dupeKey)) {
       return Response.json({ error: '이미 신청된 이메일 주소입니다.' }, { status: 409, headers: CORS });
     }
 
@@ -712,7 +713,7 @@ export async function onRequestPost(context) {
     ]);
     await Promise.all([
       env.CAMP_KV.put(`camp:${campId}:reg:${regId}`, JSON.stringify(reg)),
-      env.CAMP_KV.put(dupeKey, regId),
+      dupeKey ? env.CAMP_KV.put(dupeKey, regId) : Promise.resolve(),
       env.CAMP_KV.put(subKey, String(currentSubs + spotsForCapacity)),
       spotsMForCapacity > 0 ? env.CAMP_KV.put(subKeyM, String(curSubsM + spotsMForCapacity)) : Promise.resolve(),
       spotsFForCapacity > 0 ? env.CAMP_KV.put(subKeyF, String(curSubsF + spotsFForCapacity)) : Promise.resolve(),

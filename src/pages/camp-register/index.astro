@@ -2064,7 +2064,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <input id="crpName" name="name" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
               </div>
               <div class="crp-field">
-                <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
+                <label><span class="wl-ko">연락 받을 번호</span><span class="wl-en">Phone number to reach you</span> <span class="req">*</span></label>
                 <input id="crpPhone" name="phone" data-intl-phone placeholder="010-0000-0000">
               </div>
               <div class="crp-field">
@@ -2091,7 +2091,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 </div>
               </div>
               <div class="crp-field">
-                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
+                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
                 <input id="crpEmail" name="email" type="email" placeholder="email@example.com">
               </div>
             </div>
@@ -2131,7 +2131,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <input id="crpGName" name="gName" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
               </div>
               <div class="crp-field">
-                <label><span class="wl-ko">연락처</span><span class="wl-en">Phone</span> <span class="req">*</span></label>
+                <label><span class="wl-ko">연락 받을 번호</span><span class="wl-en">Phone number to reach you</span> <span class="req">*</span></label>
                 <input id="crpGPhone" name="gPhone" data-intl-phone placeholder="010-0000-0000">
               </div>
               <div class="crp-field crp-field--full">
@@ -2148,7 +2148,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <div class="crp-group-participants" id="crpGParticipants"></div>
               </div>
               <div class="crp-field crp-field--full">
-                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
+                <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
                 <input id="crpGEmail" name="gEmail" type="email" placeholder="email@example.com">
               </div>
               <div class="crp-field crp-field--full">
@@ -3666,8 +3666,8 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var gMaleCount = isUnionCamp ? 0 : participants.filter(function(p) { return p.gender === 'male'; }).length;
     var gFemCount  = isUnionCamp ? 0 : participants.filter(function(p) { return p.gender === 'female'; }).length;
 
-    if (!gName || !gPhone || !gEmail || !gOrg) {
-      crpShowError(errorMsg, '담당자 이름, 연락처, 이메일, 소속은 필수 항목입니다.', 'Contact name, phone, email, and organization are required.');
+    if (!gName || !gPhone || !gOrg) {
+      crpShowError(errorMsg, '담당자 이름, 연락 받을 번호, 소속은 필수 항목입니다.', 'Contact name, phone number, and organization are required.');
       return;
     }
     if (gTotal < 2) {
@@ -3717,8 +3717,8 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var email  = document.getElementById('crpEmail').value.trim();
     var gender = document.getElementById('crpGender').value;
 
-    if (!name || !phone || !email) {
-      crpShowError(errorMsg, '이름, 연락처, 이메일은 필수 항목입니다.', 'Name, phone, and email are required.');
+    if (!name || !phone) {
+      crpShowError(errorMsg, '이름, 연락 받을 번호는 필수 항목입니다.', 'Name and phone number are required.');
       return;
     }
     if (!gender) {

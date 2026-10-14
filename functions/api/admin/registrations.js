@@ -310,7 +310,7 @@ export async function onRequestDelete(context) {
     const dupeKey = `camp:${campId}:email:${reg.email}`;
     const campRegs = await listCampRegistrations(env, campId);
 
-    await Promise.all([env.CAMP_KV.delete(regKey), env.CAMP_KV.delete(dupeKey)]);
+    await Promise.all([env.CAMP_KV.delete(regKey), reg.email ? env.CAMP_KV.delete(dupeKey) : Promise.resolve()]);
 
     const remainingRegs = campRegs.filter(item => item.regId !== regId);
     const [counts] = await Promise.all([
