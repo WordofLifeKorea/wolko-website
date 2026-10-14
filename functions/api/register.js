@@ -181,6 +181,11 @@ function buildRegistrationEmailHtml(reg) {
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">환불 계좌</td>
       <td style="padding:8px 0;font-size:14px;">${escapeHtml(reg.refundBank || '—')} · ${escapeHtml(reg.refundAccount || '—')} · 예금주 ${escapeHtml(reg.refundHolder || '—')}</td>
     </tr>`;
+  const mediaRow = `
+    <tr>
+      <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">사진·영상 공유</td>
+      <td style="padding:8px 0;font-size:14px;">${reg.mediaConsent === 'yes' ? '동의' : reg.mediaConsent === 'no' ? '동의 안 함' : '—'}</td>
+    </tr>`;
   const scholarshipRows = `
     <tr>
       <td style="padding:8px 0;color:#5a6f79;font-size:13px;width:120px;">장학금/할인</td>
@@ -243,6 +248,7 @@ function buildRegistrationEmailHtml(reg) {
         ${individualRows}
         ${groupRows}
         ${refundRows}
+        ${mediaRow}
         ${scholarshipRows}
         <tr><td colspan="2"><div style="border-top:1px solid rgba(0,79,104,0.1);margin:4px 0;"></div></td></tr>
         ${reg.notes ? `
@@ -360,6 +366,7 @@ function regToSheetRow(reg) {
   const notes = [
     participantNote,
     reg.refundAccount ? `환불 계좌: ${reg.refundBank || ''} ${reg.refundAccount} (예금주: ${reg.refundHolder || ''})`.trim() : '',
+    `사진·영상 공유(네이버 카페·유튜브): ${reg.mediaConsent === 'yes' ? '동의' : reg.mediaConsent === 'no' ? '동의 안 함' : '—'}`,
     reg.scholarshipDiscountText ? `장학금/할인: ${reg.scholarshipDiscountText}` : '',
     reg.scholarshipDiscountDetailText ? `할인 상세: ${reg.scholarshipDiscountDetailText}` : '',
     `총 납입금: ${formatWon(reg.campFeeFinal ?? CAMP_BASE_FEE)} (기본 ${formatWon(reg.campFeeBase ?? CAMP_BASE_FEE)} / 할인 ${formatWon(reg.scholarshipDiscountAmount || 0)})`,
@@ -463,6 +470,7 @@ export async function onRequestPost(context) {
       groupCount, participants,
       participantDetailsDeferred,
       refundBank, refundAccount, refundHolder,
+      mediaConsent,
       referralSource,
       scholarshipDiscounts,
       scholarshipDiscountDetails,
@@ -477,6 +485,10 @@ export async function onRequestPost(context) {
     const refundHolderNorm = String(refundHolder ?? '').trim();
     if (!refundBankNorm || !refundAccountNorm || !refundHolderNorm) {
       return Response.json({ error: '환불을 위한 은행명, 계좌번호, 예금주를 모두 입력해주세요.' }, { status: 400, headers: CORS });
+    }
+
+    if (mediaConsent !== 'yes' && mediaConsent !== 'no') {
+      return Response.json({ error: '사진·영상 공유 동의 여부를 선택해주세요.' }, { status: 400, headers: CORS });
     }
 
     const emailNorm = email.trim().toLowerCase();
@@ -645,6 +657,7 @@ export async function onRequestPost(context) {
           maleCount: spotsM, femaleCount: spotsF, groupCount: spotsNeeded,
           participants: normalizedParticipants,
           participantDetailsDeferred: deferParticipantDetails,
+          mediaConsent,
           refundBank: refundBankNorm,
           refundAccount: refundAccountNorm,
           refundHolder: refundHolderNorm,
@@ -672,6 +685,7 @@ export async function onRequestPost(context) {
           church: church?.trim() || '',
           school: school?.trim() || '',
           emergency: emergency?.trim() || '',
+          mediaConsent,
           refundBank: refundBankNorm,
           refundAccount: refundAccountNorm,
           refundHolder: refundHolderNorm,

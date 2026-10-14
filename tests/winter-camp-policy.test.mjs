@@ -75,7 +75,7 @@ async function register(overrides = {}) {
     put: async (key, value) => store.set(key, value),
   } };
   const background = [];
-  const payload = { campId: policy.campId, name: 'Test Camper', phone: '01000000000', email: 'test@example.com', grade: '6', gender: 'male', birthDate: '2013-05-05', refundBank: 'test', refundAccount: '123', refundHolder: 'Test', ...overrides };
+  const payload = { campId: policy.campId, name: 'Test Camper', phone: '01000000000', email: 'test@example.com', grade: '6', gender: 'male', birthDate: '2013-05-05', refundBank: 'test', refundAccount: '123', refundHolder: 'Test', mediaConsent: 'yes', ...overrides };
   const realNow = Date.now;
   Date.now = () => Date.parse(overrides.__now || '2026-10-20T12:00:00+09:00'); // 기본은 1차 신청창 안
   let response;
@@ -252,4 +252,14 @@ test('camp card data matches the server-side gender capacity', () => {
   assert.equal(card.capacity_male, GENDER_CAPACITY[WINTER].male);
   assert.equal(card.capacity_female, GENDER_CAPACITY[WINTER].female);
   assert.equal(card.capacity, GENDER_CAPACITY[WINTER].male + GENDER_CAPACITY[WINTER].female);
+});
+
+test('registration requires an explicit photo/video sharing choice and stores it', async () => {
+  const mod = await import('../functions/api/register.js');
+  const src = (await import('node:fs')).readFileSync(new URL('../functions/api/register.js', import.meta.url), 'utf8');
+  assert.ok(mod.onRequestPost);
+  assert.match(src, /mediaConsent !== 'yes' && mediaConsent !== 'no'/);
+  const page = (await import('node:fs')).readFileSync(new URL('../src/pages/camp-register/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /name="mediaConsent"/);
+  assert.match(page, /crpMediaWarning/);
 });
