@@ -39,7 +39,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=63">
+  <link rel="stylesheet" href="/portal.css?v=64">
   <script is:inline src="/pdf-continuous.js?v=3"></script>
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
@@ -233,6 +233,17 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     </div>
   </div>
 
+  <!-- 하이라이트를 친 줄 바로 아래에 뜨는 노트 작성창과, 하이라이트를 눌러 고정해 보는 노트 상자 -->
+  <div class="inline-note-composer" id="inlineComposer" role="dialog" aria-label="note" hidden>
+    <blockquote class="note-composer-quote" id="inlineComposerQuote" hidden></blockquote>
+    <textarea id="inlineComposerText" maxlength="500" data-t-ph="notePlaceholder"></textarea>
+    <div class="note-composer-actions">
+      <button type="button" onclick="cancelNoteComposer()" data-t="noteCancel">취소</button>
+      <button type="button" class="is-primary" onclick="submitNoteComposer()" data-t="noteSave">저장</button>
+    </div>
+  </div>
+  <div class="note-pin" id="notePin" role="dialog" hidden></div>
+
   <dialog class="docx-version-dialog" id="docxVersionDialog">
     <div class="docx-version-head">
       <div><b data-t="docxVersions">문서 버전</b><small data-t="docxVersionsHint">편집 전 파일을 자동으로 보관합니다</small></div>
@@ -288,6 +299,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         addNoteAreaPdf: '이미지·표 영역 표시', addNoteHintPdf: '글자는 그냥 마우스로 드래그해서 선택하면 메모 창이 바로 떠요. 이미지·표처럼 글자가 없는 부분은 이 버튼을 눌러 사각형으로 표시하세요.',
         addGeneralNote: '+ 노트 남기기', addTimeNote: '+ 이 시점에 노트',
         notesLabel: '노트', notesShared: '모든 포탈 사용자와 자동 동기화', notesEmpty: '아직 노트가 없습니다. 문서 위의 글자를 드래그하거나, 위 버튼을 눌러 영역을 표시해보세요.', notePlaceholder: '어떤 부분을 어떻게 고치면 좋을지 적어주세요',
+        notePinOpenList: '노트 목록에서 보기', notePinClose: '닫기', notePinMore: n => `추가 의견 ${n}개`,
         noteCancel: '취소', noteSave: '저장', noteResolve: '해결', noteReopen: '재열기', noteDelete: '삭제',
         statusOpen: '미해결', statusResolved: '해결됨',
         noteDeleteConfirm: '이 노트를 삭제할까요? (휴지통에서 10일간 복원할 수 있습니다)', noteSaveFailed: '노트를 저장하지 못했습니다.', noteDeleteFailed: '노트를 삭제하지 못했습니다.', noteUpdateFailed: '노트를 수정하지 못했습니다.',
@@ -347,6 +359,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         addNoteAreaPdf: 'Mark an Image/Table Area', addNoteHintPdf: 'Just drag over any text to select it — a note box pops up automatically. Use this button only for non-text parts like images or tables.',
         addGeneralNote: '+ Add Note', addTimeNote: '+ Note at This Time',
         notesLabel: 'Notes', notesShared: 'Auto-synced with every portal user', notesEmpty: 'No notes yet. Drag over text in the document, or click the button above to mark an area.', notePlaceholder: 'Describe what needs fixing here',
+        notePinOpenList: 'Open in notes list', notePinClose: 'Close', notePinMore: n => `${n} more comment${n > 1 ? 's' : ''}`,
         noteCancel: 'Cancel', noteSave: 'Save', noteResolve: 'Resolve', noteReopen: 'Reopen', noteDelete: 'Delete',
         statusOpen: 'Open', statusResolved: 'Resolved',
         noteDeleteConfirm: 'Delete this note? (Recoverable from Trash for 10 days)', noteSaveFailed: 'Could not save the note.', noteDeleteFailed: 'Could not delete the note.', noteUpdateFailed: 'Could not update the note.',
@@ -879,6 +892,8 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     }
     function closeViewer() {
       releaseHistoryLayer('viewer');
+      closePinnedNote();
+      if (pendingNote) cancelNoteComposer();
       try { onlyOfficeEditor?.destroyEditor(); } catch {}
       onlyOfficeEditor = null;
       closeDocxVersions();
@@ -1364,7 +1379,9 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         selectionGesture = null;
         // mouseup 시점엔 아직 브라우저 선택 영역이 확정되지 않을 수 있어 한 틱 늦춘다.
         setTimeout(() => {
-          const captured = captureTextSelectionRects(surfaceEl, textLayerEl, completedGesture);
+          // 마우스는 포인터를 누른 글자 경계부터 뗀 글자 경계까지를 정확히 잡는다(드래그 중 브라우저 선택이 단어·줄 단위로 번지는 것을 무시). 손가락은 기기 선택 핸들을 그대로 쓴다.
+          const precise = completedGesture && completedGesture.pointerType !== 'touch' ? preciseRangeFromGesture(textLayerEl, completedGesture) : null;
+          const captured = captureTextSelectionRects(surfaceEl, textLayerEl, completedGesture, precise);
           if (!captured) return;
           // Safari가 DOM 순서상 같은 행의 좌우 열까지 기본 선택색으로 칠하더라도,
           // 실제 포인터가 지나간 글자만 계산한 임시 하이라이트로 즉시 교체한다.
@@ -1374,13 +1391,37 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         }, 0);
       });
     }
-    function selectionGestureBounds(gesture) {
+    // 화면 좌표 → 글자 경계(Range). 브라우저마다 API 이름이 다르다.
+    function caretRangeAt(x, y) {
+      if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+      if (document.caretPositionFromPoint) {
+        const pos = document.caretPositionFromPoint(x, y);
+        if (!pos) return null;
+        const range = document.createRange();
+        range.setStart(pos.offsetNode, pos.offset);
+        range.collapse(true);
+        return range;
+      }
+      return null;
+    }
+    function preciseRangeFromGesture(textLayerEl, gesture) {
+      if (Math.hypot(gesture.endX - gesture.startX, gesture.endY - gesture.startY) < 4) return null;
+      const a = caretRangeAt(gesture.startX, gesture.startY);
+      const b = caretRangeAt(gesture.endX, gesture.endY);
+      if (!a || !b || !textLayerEl.contains(a.startContainer) || !textLayerEl.contains(b.startContainer)) return null;
+      const range = document.createRange();
+      const forward = a.compareBoundaryPoints(Range.START_TO_START, b) <= 0;
+      const [from, to] = forward ? [a, b] : [b, a];
+      range.setStart(from.startContainer, from.startOffset);
+      range.setEnd(to.startContainer, to.startOffset);
+      return range.collapsed ? null : range;
+    }
+    function selectionGestureBounds(gesture, padding = 5) {
       if (!gesture || gesture.pointerType === 'touch') return null;
       const dx = Math.abs(gesture.startX - gesture.endX);
       const dy = Math.abs(gesture.startY - gesture.endY);
       // Click-based word selection has no meaningful drag rectangle.
       if (Math.hypot(dx, dy) < 4) return null;
-      const padding = 5;
       return {
         verticalTravel: dy,
         left: Math.min(gesture.startX, gesture.endX) - padding,
@@ -1478,18 +1519,25 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     }
     // 글자 단위로 보정한 선택 영역을 줄 단위 사각형으로 합친 뒤 0~1 비율로
     // 저장한다. 확대율이나 기기 폭이 달라져도 같은 글자 위치를 가리킨다.
-    function captureTextSelectionRects(surfaceEl, textLayerEl, gesture = null) {
-      const sel = window.getSelection();
-      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
-      const range = sel.getRangeAt(0);
+    function captureTextSelectionRects(surfaceEl, textLayerEl, gesture = null, preciseRange = null) {
+      let range = preciseRange;
+      if (!range) {
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+        range = sel.getRangeAt(0);
+      }
       if (!textLayerEl.contains(range.commonAncestorContainer)) return null;
-      const gestureBounds = selectionGestureBounds(gesture);
-      const characters = selectedCharactersInGesture(range, textLayerEl, gestureBounds);
+      const gestureBounds = selectionGestureBounds(gesture, preciseRange ? 0 : 5);
+      let characters = selectedCharactersInGesture(range, textLayerEl, gestureBounds);
+      // 앞뒤의 공백은 하이라이트에 포함하지 않는다 — 딱 글자가 있는 곳만 칠한다.
+      while (characters.length && /^\s+$/.test(characters[0].text)) characters.shift();
+      while (characters.length && /^\s+$/.test(characters[characters.length - 1].text)) characters.pop();
       const quote = quoteFromSelectedCharacters(characters);
       if (!quote) return null;
       const rect = surfaceEl.getBoundingClientRect();
       if (!rect.width || !rect.height) return null;
       const rects = mergeCharacterRects(characters)
+        .map(r => preciseRange ? { ...r, top: r.top + r.height * 0.08, bottom: r.bottom - r.height * 0.08 } : r) // 줄 높이 전체가 아니라 글자 크기에 맞게 살짝 줄인다
         .map(r => {
           const left = Math.max(rect.left, r.left), top = Math.max(rect.top, r.top);
           const right = Math.min(rect.right, r.right), bottom = Math.min(rect.bottom, r.bottom);
@@ -1525,31 +1573,50 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     function openNoteComposer(pending) {
       // 작성 창 하나 = requestId 하나. 저장이 두 번 날아가도 서버가 같은 요청으로 알아보고 한 번만 만든다.
       pendingNote = { ...pending, requestId: crypto.randomUUID() };
-      toggleNotesPanel(true);
-      $('noteComposer').hidden = false;
-      const quoteEl = $('noteComposerQuote');
+      // 문서 위에 표시한 영역(글자 선택·사각형)은 그 줄 바로 아래에 작성창을 띄우고, 시점 노트(영상·음성)만 오른쪽 노트 패널에서 쓴다.
+      const inline = pending.kind === 'area';
+      noteComposerInline = inline;
+      const quoteEl = inline ? $('inlineComposerQuote') : $('noteComposerQuote');
+      const textEl = inline ? $('inlineComposerText') : $('noteComposerText');
+      if (inline) {
+        closePinnedNote();
+        $('noteComposer').hidden = true;
+        const composer = $('inlineComposer');
+        delete composer.dataset.scrolled;
+        composer.hidden = false;
+      } else {
+        toggleNotesPanel(true);
+        $('inlineComposer').hidden = true;
+        $('noteComposer').hidden = false;
+      }
       if (quoteEl) {
         if (pending.quote) { quoteEl.hidden = false; quoteEl.textContent = '“' + (pending.quote.length > 140 ? pending.quote.slice(0, 140) + '…' : pending.quote) + '”'; }
         else quoteEl.hidden = true;
       }
-      $('noteComposerText').value = '';
-      $('noteComposerText').focus();
+      textEl.value = '';
+      if (inline) { placeFloaters(); textEl.focus({ preventScroll: true }); placeFloaters(); }
+      else textEl.focus();
     }
+    let noteComposerInline = false;
+    const activeComposerTextEl = () => $(noteComposerInline ? 'inlineComposerText' : 'noteComposerText');
     function cancelNoteComposer() {
       pendingNote = null;
       const composer = $('noteComposer');
       if (composer) composer.hidden = true;
+      const inlineComposer = $('inlineComposer');
+      if (inlineComposer) inlineComposer.hidden = true;
       window.getSelection()?.removeAllRanges();
       $('viewerDragBox')?.remove();
       document.querySelectorAll('.viewer-selection-pending').forEach(el => el.remove());
     }
     function handleNoteComposerKeydown(event) {
-      if ($('noteComposer').hidden || event.isComposing || event.keyCode === 229) return;
+      const composerOpen = !$('noteComposer').hidden || !$('inlineComposer').hidden;
+      if (!composerOpen || event.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopImmediatePropagation();
         cancelNoteComposer();
-      } else if (event.key === 'Enter' && event.target === $('noteComposerText')) {
+      } else if (event.key === 'Enter' && (event.target === $('noteComposerText') || event.target === $('inlineComposerText'))) {
         event.preventDefault();
         event.stopImmediatePropagation();
         if (event.shiftKey || event.altKey) {
@@ -1567,7 +1634,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     document.addEventListener('keydown', handleNoteComposerKeydown, true);
     let noteComposerSaving = false;
     async function submitNoteComposer() {
-      const textVal = $('noteComposerText').value.trim();
+      const textVal = activeComposerTextEl().value.trim();
       if (!textVal || !pendingNote || noteComposerSaving) return;
       noteComposerSaving = true;
       const submittedNote = pendingNote;
@@ -1874,6 +1941,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     function showHighlightTooltip(box, annotation) {
       clearTimeout(hlTooltipHideTimer);
       // 여러 줄로 이어진 한 노트(뭉탱이)는 줄을 옮겨 다녀도 말풍선을 새로 띄우지 않고 그대로 둔다.
+      if (pinnedNoteId === annotation.id) return; // 이미 고정해서 보고 있는 노트는 말풍선을 또 띄우지 않는다
       if (hlTooltipNoteId === annotation.id && hlTooltipEl && hlTooltipEl.style.display !== 'none') return;
       const tip = ensureHighlightTooltip();
       hlTooltipNoteId = annotation.id;
@@ -1910,6 +1978,88 @@ const pyeongtaekMissionaries = (await getCollection('team'))
     }
     window.addEventListener('scroll', hideHighlightTooltip, true);
 
+    /* ── 하이라이트를 누르면 노트를 그 자리에 고정해서 보여주고, ×를 눌러야 닫힌다(마우스 올리기 말풍선은 그대로). 오른쪽 노트 목록은 보조 기능으로 남는다. ── */
+    let pinnedNoteId = null;
+    function pinNote(annotation) {
+      pinnedNoteId = annotation.id;
+      hideHighlightTooltip();
+      renderPinnedNote();
+      placeFloaters();
+    }
+    function closePinnedNote() {
+      pinnedNoteId = null;
+      const el = $('notePin');
+      if (el) el.hidden = true;
+    }
+    function renderPinnedNote() {
+      const el = $('notePin');
+      if (!el) return;
+      const a = pinnedNoteId ? annotationsForViewerFile().find(x => x.id === pinnedNoteId) : null;
+      if (!a) { closePinnedNote(); return; }
+      const color = highlightColorFor(a.createdBy);
+      const comments = Array.isArray(a.comments) ? a.comments : [];
+      el.innerHTML = `
+        <div class="note-pin-head">
+          <span class="note-pin-who"><span class="note-pin-dot" style="background:${color}"></span><b>${esc(a.createdByName || a.createdBy || '')}</b><time>${esc(formatLogTime(a.createdAt))}</time></span>
+          <button type="button" class="note-pin-close" aria-label="${esc(t('notePinClose'))}" onclick="closePinnedNote()">×</button>
+        </div>
+        ${a.quote ? `<blockquote class="note-pin-quote">“${esc(a.quote.length > 140 ? a.quote.slice(0, 140) + '…' : a.quote)}”</blockquote>` : ''}
+        <p class="note-pin-text">${esc(a.text || '')}</p>
+        ${comments.length ? `<div class="note-pin-comments"><small>${esc(t('notePinMore')(comments.length))}</small>${comments.map(c => `<p><b>${esc(c.createdByName || c.createdBy || '')}</b>: ${esc(c.text || '')}</p>`).join('')}</div>` : ''}
+        <button type="button" class="note-pin-list" onclick="jumpToNoteListItem('${esc(a.id)}')">${esc(t('notePinOpenList'))}</button>`;
+      el.hidden = false;
+    }
+    function boxesOfNote(id) { return [...document.querySelectorAll('.highlight-box')].filter(b => b.dataset.noteId === id); }
+    function unionRect(elements) {
+      const rects = elements.map(e => e.getBoundingClientRect()).filter(r => r.width || r.height);
+      if (!rects.length) return null;
+      return { left: Math.min(...rects.map(r => r.left)), right: Math.max(...rects.map(r => r.right)), top: Math.min(...rects.map(r => r.top)), bottom: Math.max(...rects.map(r => r.bottom)) };
+    }
+    function insideViewerSurface(rect) {
+      const area = $('viewerSurface')?.getBoundingClientRect();
+      return !area || (rect.bottom > area.top + 4 && rect.top < area.bottom - 4);
+    }
+    // 고정 노트 상자와 작성창을 각각의 기준 줄에 붙여 둔다(스크롤·확대·창 크기가 바뀔 때마다 다시 맞춘다).
+    function placeFloaters() {
+      const pin = $('notePin');
+      if (pin && !pin.hidden && pinnedNoteId) {
+        const anchor = unionRect(boxesOfNote(pinnedNoteId));
+        if (!anchor || !insideViewerSurface(anchor)) pin.style.visibility = 'hidden';
+        else {
+          pin.style.visibility = 'hidden'; pin.style.left = '0px'; pin.style.top = '0px';
+          const pr = pin.getBoundingClientRect();
+          let top = anchor.top - pr.height - 8;
+          if (top < 4) top = Math.min(window.innerHeight - pr.height - 8, anchor.bottom + 8);
+          const left = Math.min(Math.max(8, (anchor.left + anchor.right) / 2 - pr.width / 2), Math.max(8, window.innerWidth - pr.width - 8));
+          pin.style.left = left + 'px'; pin.style.top = top + 'px'; pin.style.visibility = '';
+        }
+      }
+      const composer = $('inlineComposer');
+      if (composer && !composer.hidden && pendingNote) {
+        const anchor = unionRect([...document.querySelectorAll('.viewer-selection-pending, #viewerDragBox.is-pending')]);
+        if (!anchor) return;
+        composer.style.left = '0px'; composer.style.top = '0px';
+        const cr = composer.getBoundingClientRect();
+        // 하이라이트를 친 마지막 줄 바로 아래에 둔다. 화면 아래가 모자라면 PDF를 그만큼 밀어 올려 자리를 만든다.
+        let top = anchor.bottom + 6;
+        const overflow = top + cr.height - (window.innerHeight - 8);
+        const scroller = $('viewerSurface');
+        if (overflow > 0 && scroller && !composer.dataset.scrolled) {
+          composer.dataset.scrolled = '1';
+          scroller.scrollTop += overflow + 8;
+          requestAnimationFrame(placeFloaters);
+        }
+        top = Math.min(top, window.innerHeight - cr.height - 8);
+        const left = Math.min(Math.max(8, anchor.left), Math.max(8, window.innerWidth - cr.width - 8));
+        composer.style.left = left + 'px'; composer.style.top = Math.max(8, top) + 'px';
+      }
+    }
+    let floaterFrame = 0;
+    const scheduleFloaters = () => { if (!floaterFrame) floaterFrame = requestAnimationFrame(() => { floaterFrame = 0; placeFloaters(); }); };
+    window.addEventListener('scroll', scheduleFloaters, true);
+    window.addEventListener('resize', scheduleFloaters);
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && pinnedNoteId && (!pendingNote || $('inlineComposer')?.hidden)) closePinnedNote(); });
+
     function renderHighlights(surface = null, pageNumber = viewerPage) {
       if (!surface && viewerKind === 'pdf') {
         document.querySelectorAll('.pdf-scroll-page').forEach(page => renderHighlights(page, Number(page.dataset.pdfPage)));
@@ -1935,10 +2085,12 @@ const pyeongtaekMissionaries = (await getCollection('team'))
           box.dataset.noteId = a.id;
           box.addEventListener('mouseenter', () => showHighlightTooltip(box, a));
           box.addEventListener('mouseleave', scheduleHideHighlightTooltip);
-          box.addEventListener('click', () => { hideHighlightTooltip(); jumpToNoteListItem(a.id); });
+          box.addEventListener('click', event => { event.stopPropagation(); pinNote(a); });
           surface.appendChild(box);
         });
       });
+      renderPinnedNote();
+      scheduleFloaters();
     }
     function jumpToNoteListItem(annotationId) {
       expandedNotes.add(annotationId);

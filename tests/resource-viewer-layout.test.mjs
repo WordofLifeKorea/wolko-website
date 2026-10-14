@@ -81,7 +81,7 @@ test('shared notes expose threaded comments and automatic refresh', () => {
 });
 
 test('PDF text selection is clipped to the actual pointer gesture', () => {
-  assert.match(page, /captureTextSelectionRects\(surfaceEl, textLayerEl, completedGesture\)/);
+  assert.match(page, /captureTextSelectionRects\(surfaceEl, textLayerEl, completedGesture, precise\)/);
   assert.match(page, /document\.createTreeWalker\(textLayerEl, NodeFilter\.SHOW_TEXT\)/);
   assert.match(page, /selectionRectTouchesGesture\(rect, gestureBounds\)/);
   assert.match(page, /renderPendingTextSelection\(surfaceEl, captured\.rects\)/);
@@ -99,4 +99,16 @@ test('hovering a highlight shows an "author: note" tooltip above it instead of a
   assert.match(page, /hlTooltipNoteId === annotation\.id/, '같은 노트의 다른 줄로 옮겨도 말풍선을 새로 띄우지 않는다');
   assert.doesNotMatch(page, /box\.title = `\$\{a\.createdByName\}: \$\{a\.text\}`/);
   assert.match(css, /\.hl-tooltip\s*\{[^}]*position:fixed/);
+});
+
+test('clicking a highlight pins its note with a close button; area notes are written in an inline composer under the highlight', async () => {
+  assert.match(page, /box\.addEventListener\('click', event => \{ event\.stopPropagation\(\); pinNote\(a\); \}\)/);
+  assert.match(page, /function closePinnedNote\(\)/);
+  assert.match(page, /class="note-pin-close"[^>]*onclick="closePinnedNote\(\)"/);
+  assert.match(page, /id="inlineComposer"/);
+  assert.match(page, /const inline = pending\.kind === 'area'/);
+  // 문서 위에 표시한 영역은 오른쪽 패널을 열지 않는다
+  assert.match(page, /if \(inline\) \{\s*closePinnedNote\(\);/);
+  assert.match(page, /function preciseRangeFromGesture\(textLayerEl, gesture\)/);
+  assert.match(page, /caretRangeFromPoint/);
 });

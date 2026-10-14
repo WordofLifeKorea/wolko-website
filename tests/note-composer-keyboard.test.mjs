@@ -8,12 +8,12 @@ const end = source.indexOf("    document.addEventListener('keydown', handleNoteC
 function setup() {
   const input = { value: 'abc', selectionStart: 1, selectionEnd: 2, maxLength: 500,
     setRangeText(text, start, end) { this.value = this.value.slice(0, start) + text + this.value.slice(end); },
-    dispatchEvent() {} }, composer = { hidden: false };
+    dispatchEvent() {} }, composer = { hidden: false }, inlineComposer = { hidden: true };
   let saved = 0, cancelled = 0;
-  const context = vm.createContext({ Event, $: id => id === 'noteComposer' ? composer : input,
+  const context = vm.createContext({ Event, $: id => id === 'noteComposer' ? composer : id === 'inlineComposer' ? inlineComposer : input,
     submitNoteComposer: () => saved++, cancelNoteComposer: () => cancelled++ });
   vm.runInContext(source.slice(start, end), context);
-  return { input, composer, fire: options => context.handleNoteComposerKeydown({ target: input, preventDefault() {}, stopImmediatePropagation() {}, ...options }), counts: () => [saved, cancelled] };
+  return { input, composer, inlineComposer, fire: options => context.handleNoteComposerKeydown({ target: input, preventDefault() {}, stopImmediatePropagation() {}, ...options }), counts: () => [saved, cancelled] };
 }
 test('Enter saves and Escape cancels', () => {
   const s = setup(); s.fire({ key: 'Enter' }); s.fire({ key: 'Escape' });
@@ -33,4 +33,13 @@ test('Shift and Alt Enter insert a newline at the selection without saving', () 
     assert.equal(s.input.value, 'a\nc');
     assert.deepEqual(s.counts(), [0, 0]);
   }
+});
+
+test('the inline composer under a highlight saves on Enter and cancels on Escape too', () => {
+  const s = setup();
+  s.composer.hidden = true; s.inlineComposer.hidden = false;
+  s.fire({ key: 'Enter' }); s.fire({ key: 'Escape' });
+  assert.deepEqual(s.counts(), [1, 1]);
+  s.inlineComposer.hidden = true; s.fire({ key: 'Enter' });
+  assert.deepEqual(s.counts(), [1, 1], '두 작성창이 모두 닫혀 있으면 아무것도 하지 않는다');
 });

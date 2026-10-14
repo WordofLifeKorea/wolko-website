@@ -363,3 +363,26 @@ body.modal-open { overflow:hidden; }
 .hl-tooltip-body b { font-weight:800; }
 .hl-tooltip-body em { display:block; margin-top:4px; color:#9fd7e4; font-size:13px; font-style:normal; }
 @media (hover: none) { .hl-tooltip { display:none !important; } }
+
+/* 하이라이트를 누르면 고정되는 노트 상자 · 하이라이트 줄 바로 아래에 뜨는 작성창 */
+.note-pin, .inline-note-composer { position:fixed; z-index:5100; width:min(380px, calc(100vw - 16px)); border-radius:12px; background:#fff; box-shadow:0 14px 36px rgba(0,30,40,.28), 0 0 0 1px rgba(16,48,60,.12); color:var(--ink); }
+.note-pin[hidden], .inline-note-composer[hidden] { display:none; }
+.note-pin { padding:12px 14px 12px; font-size:14px; line-height:1.6; }
+.note-pin-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.note-pin-who { display:flex; align-items:center; gap:7px; min-width:0; font-size:13px; }
+.note-pin-who b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.note-pin-who time { color:var(--muted); font-size:11.5px; white-space:nowrap; }
+.note-pin-dot { flex:none; width:10px; height:10px; border-radius:50%; }
+.note-pin-close { flex:none; width:28px; height:28px; min-height:0 !important; padding:0; border:0; border-radius:50%; background:#eef5f8; color:#4b6672; font-size:20px; line-height:1; cursor:pointer; aspect-ratio:1 / 1; display:inline-flex; align-items:center; justify-content:center; }
+.note-pin-close:hover { background:#dcebf1; }
+.note-pin-quote { margin:8px 0 0; padding:8px 10px; border-radius:8px; background:#edf5f7; color:#294956; font:600 12px/1.6 var(--body); font-style:normal; }
+.note-pin-text { margin:8px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; font-weight:600; }
+.note-pin-comments { margin-top:10px; padding-top:8px; border-top:1px solid var(--line); font-size:13px; }
+.note-pin-comments small { display:block; color:var(--muted); font-size:11.5px; }
+.note-pin-comments p { margin:4px 0 0; overflow-wrap:anywhere; }
+.note-pin-list { margin-top:10px; padding:0; border:0; background:none; color:var(--teal); font:700 12px/1 var(--body); text-decoration:underline; cursor:pointer; min-height:0 !important; }
+.inline-note-composer { padding:12px; }
+.inline-note-composer textarea { width:100%; min-height:76px; border:1px solid #d7e4e8; border-radius:9px; padding:9px 10px; color:var(--ink); font:600 13.5px/1.55 var(--body); resize:vertical; outline:none; }
+.inline-note-composer textarea:focus { border-color:var(--teal); }
+.inline-note-composer .note-composer-quote { margin:0 0 8px; }
+.inline-note-composer .note-composer-actions { margin-top:8px; }
