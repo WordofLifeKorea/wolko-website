@@ -42,7 +42,9 @@ function postRequest(token, fields = {}) {
   form.set('vehicleId', fields.vehicleId || 'silver-van');
   form.set('useType', fields.useType || 'ministry');
   if (fields.purpose !== undefined) form.set('purpose', fields.purpose);
-  form.set('photo', fields.photo || jpeg());
+  if (fields.photo !== null) form.set('photo', fields.photo || jpeg());
+  if (fields.photoAfter) form.set('photoAfter', fields.photoAfter);
+  if (fields.tripKm !== null) form.set('tripKm', fields.tripKm ?? '12.5');
   if (fields.photoTakenAt) {
     form.set('photoTakenAt', fields.photoTakenAt);
     form.set('timeSource', 'exif');
@@ -219,4 +221,35 @@ test('ministry trips store a short trimmed purpose; personal trips never keep on
   assert.equal(long.entry.purpose.length, 60);
   const personal = await (await saveUsage({ env, request: postRequest(token, { useType: 'personal', purpose: '개인 일정' }) })).json();
   assert.equal(personal.entry.purpose, undefined);
+});
+
+test('trip distance is required, photos are optional, and the after photo is stored and served separately', async () => {
+  const env = memoryEnv();
+  const email = 'driver@wol.org';
+  await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: '운전자', status: 'approved' }));
+  const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'admin');
+  const missing = await saveUsage({ env, request: postRequest(token, { tripKm: null }) });
+  assert.equal(missing.status, 400);
+  assert.match((await missing.json()).error, /총 운행 거리/);
+  for (const bad of ['-3', 'abc', '99999']) assert.equal((await saveUsage({ env, request: postRequest(token, { tripKm: bad }) })).status, 400, bad);
+
+  const noPhoto = await saveUsage({ env, request: postRequest(token, { photo: null, tripKm: '23.46' }) });
+  assert.equal(noPhoto.status, 201);
+  const entry = (await noPhoto.json()).entry;
+  assert.equal(entry.tripKm, 23.5, '소수 한 자리로 저장');
+  assert.equal(entry.hasPhoto, false);
+  assert.equal(entry.hasPhotoAfter, false);
+  assert.equal((await getPhoto({ env, request: new Request(`https://example.com/api/car/usage-photo?id=${entry.id}`, { headers: { Authorization: `Bearer ${token}` } }) })).status, 404);
+
+  const both = await (await saveUsage({ env, request: postRequest(token, { photoAfter: jpeg(), tripKm: '5' }) })).json();
+  assert.equal(both.entry.hasPhoto, true);
+  assert.equal(both.entry.hasPhotoAfter, true);
+  const get = which => getPhoto({ env, request: new Request(`https://example.com/api/car/usage-photo?id=${both.entry.id}${which}`, { headers: { Authorization: `Bearer ${token}` } }) });
+  assert.equal((await get('')).status, 200);
+  assert.equal((await get('&which=after')).status, 200);
+  assert.equal((await get('')).headers.get('Content-Type'), 'image/jpeg');
+
+  const afterOnly = await (await saveUsage({ env, request: postRequest(token, { photo: null, photoAfter: jpeg(), tripKm: '1' }) })).json();
+  assert.equal(afterOnly.entry.hasPhoto, false);
+  assert.equal(afterOnly.entry.hasPhotoAfter, true);
 });

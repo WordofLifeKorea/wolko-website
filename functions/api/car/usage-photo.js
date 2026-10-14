@@ -1,5 +1,5 @@
 import { fileKV } from '../../lib/nasFileKV.js';
-import { ENTRY_PREFIX, PHOTO_PREFIX, fail, usageSession } from '../../lib/carUsage.js';
+import { AFTER_SUFFIX, ENTRY_PREFIX, PHOTO_PREFIX, fail, usageSession } from '../../lib/carUsage.js';
 
 export async function onRequestGet({ env, request }) {
   const session = await usageSession(request, env);
@@ -8,7 +8,8 @@ export async function onRequestGet({ env, request }) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return fail('사진 ID가 올바르지 않습니다.');
   const entry = await fileKV(env).get(`${ENTRY_PREFIX}${id}`, 'json');
   if (!entry) return fail('기록을 찾을 수 없습니다.', 404);
-  const photo = await fileKV(env).get(`${PHOTO_PREFIX}${id}`, 'arrayBuffer');
+  const which = new URL(request.url).searchParams.get('which') === 'after' ? AFTER_SUFFIX : '';
+  const photo = await fileKV(env).get(`${PHOTO_PREFIX}${id}${which}`, 'arrayBuffer');
   if (!photo) return fail('사진을 찾을 수 없습니다.', 404);
   return new Response(photo, {
     headers: {

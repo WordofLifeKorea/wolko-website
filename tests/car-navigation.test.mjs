@@ -29,8 +29,10 @@ test('vehicle menu is the last WOLKO tool; reservations, maintenance and usage l
   assert.match(car, /\/car\.css\?v=\d+/);
   assert.match(log, /id="usageForm"/);
   assert.match(log, /capture="environment"/);
-  assert.match(log, /car-qr-silver-van\.svg/);
-  assert.match(log, /car-qr-santa-fe\.svg/);
+  assert.doesNotMatch(log, /car-qr-silver-van\.svg|car-qr-santa-fe\.svg|log-qr/, '홈페이지 사용 일지 화면에는 QR 코드를 더 이상 보여주지 않는다');
+  assert.match(log, /id="tripKm"[^>]*required/, '총 운행 거리(km)는 필수');
+  assert.match(log, /id="photoAfterInput"/, '운행 후 사진 칸이 있다');
+  assert.doesNotMatch(log, /id="photoInput"[^>]*required/, '사진은 선택');
 });
 
 test('예약현황: 좌우 이전/다음 달 미리보기는 없고, 달력 옆(넓은 화면)·아래(좁은 화면)에 선택한 날의 세부 예약이 보인다', async () => {

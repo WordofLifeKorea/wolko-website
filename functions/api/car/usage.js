@@ -1,5 +1,5 @@
 import { fileKV } from '../../lib/nasFileKV.js';
-import { ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
+import { AFTER_SUFFIX, ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
 
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
 
@@ -18,6 +18,11 @@ async function moveToTrash(env, entry, session) {
   if (photo.value) await fileKV(env).put(`${TRASH_PHOTO_PREFIX}${entry.id}`, photo.value, { metadata: photo.metadata ?? undefined });
   await fileKV(env).put(`${TRASH_ENTRY_PREFIX}${entry.id}`, JSON.stringify({ ...entry, deletedAt: new Date().toISOString(), deletedBy: session.email }));
   await fileKV(env).delete(`${PHOTO_PREFIX}${entry.id}`);
+  const after = await fileKV(env).getWithMetadata(`${PHOTO_PREFIX}${entry.id}${AFTER_SUFFIX}`, 'arrayBuffer');
+  if (after.value) {
+    await fileKV(env).put(`${TRASH_PHOTO_PREFIX}${entry.id}${AFTER_SUFFIX}`, after.value, { metadata: after.metadata ?? undefined });
+    await fileKV(env).delete(`${PHOTO_PREFIX}${entry.id}${AFTER_SUFFIX}`);
+  }
   await fileKV(env).delete(`${ENTRY_PREFIX}${entry.id}`);
 }
 
@@ -84,6 +89,14 @@ export async function onRequestPatch({ env, request }) {
   const entry = id ? await fileKV(env).get(`${ENTRY_PREFIX}${id}`, 'json') : null;
   if (!entry) return fail('기록을 찾을 수 없습니다.', 404);
   if (entry.userEmail !== session.email && session.role !== 'master') return fail('본인이 기록한 일지만 수정할 수 있습니다.', 403);
+  if (body?.tripKm !== undefined) {
+    const trip = Math.round(Number(body.tripKm) * 10) / 10;
+    if (!Number.isFinite(trip) || trip < 0 || trip > 5000) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
+    entry.tripKm = trip;
+    entry.editedBy = session.email; entry.editedAt = new Date().toISOString();
+    await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
+    return Response.json({ entry }, { headers: { 'Cache-Control': 'no-store' } });
+  }
   const km = Number(body?.mileageAfter);
   if (!Number.isInteger(km) || km < 0 || km > 2_000_000) return fail('마일리지는 0 이상의 숫자(km)로 입력해 주세요.');
   entry.mileageAfter = km;
@@ -100,39 +113,49 @@ export async function onRequestPost({ env, request }) {
   try { form = await request.formData(); } catch { return fail('사진을 읽지 못했습니다.'); }
   const vehicleId = String(form.get('vehicleId') || '');
   const useType = String(form.get('useType') || '');
-  const photo = form.get('photo');
   const labels = selectableVehicles();
   if (!labels.has(vehicleId)) return fail('차량을 선택해 주세요.');
   if (!['ministry', 'personal'].includes(useType)) return fail('사역용 또는 개인용을 선택해 주세요.');
   const purpose = useType === 'ministry' ? String(form.get('purpose') || '').replace(/\s+/g, ' ').trim().slice(0, 60) : '';
-  if (!(photo instanceof File) || photo.type !== 'image/jpeg' || photo.size < 100 || photo.size > MAX_PHOTO_BYTES) {
-    return fail('JPG 사진은 4MB 이하로 올려주세요.');
-  }
+  // 총 운행 거리(km)는 꼭 받는다. 사진(운행 전·후)은 있으면 받는 선택 항목이다.
+  const tripKmRaw = String(form.get('tripKm') ?? '').trim();
+  const tripKm = Math.round(Number(tripKmRaw) * 10) / 10;
+  if (!tripKmRaw || !Number.isFinite(tripKm) || tripKm < 0 || tripKm > 5000) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
 
-  const bytes = new Uint8Array(await photo.arrayBuffer());
-  if (bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[bytes.length - 2] !== 0xff || bytes[bytes.length - 1] !== 0xd9) {
-    return fail('올바른 JPG 사진이 아닙니다.');
+  async function readJpeg(file) {
+    if (!(file instanceof File) || file.size === 0) return { none: true };
+    if (file.type !== 'image/jpeg' || file.size < 100 || file.size > MAX_PHOTO_BYTES) return { error: 'JPG 사진은 4MB 이하로 올려주세요.' };
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[bytes.length - 2] !== 0xff || bytes[bytes.length - 1] !== 0xd9) return { error: '올바른 JPG 사진이 아닙니다.' };
+    return { bytes };
   }
+  const before = await readJpeg(form.get('photo'));
+  if (before.error) return fail(before.error);
+  const afterPhoto = await readJpeg(form.get('photoAfter'));
+  if (afterPhoto.error) return fail(afterPhoto.error);
 
   const recordedAt = new Date().toISOString();
   const candidate = new Date(String(form.get('photoTakenAt') || ''));
-  const isRecentExif = form.get('timeSource') === 'exif' && Number.isFinite(candidate.getTime())
+  const isRecentExif = !before.none && form.get('timeSource') === 'exif' && Number.isFinite(candidate.getTime())
     && candidate.getTime() <= Date.now() + 5 * 60_000
     && candidate.getTime() >= Date.now() - 24 * 60 * 60_000;
   const id = crypto.randomUUID();
   const entry = {
-    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}),
+    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), tripKm,
+    hasPhoto: !before.none, hasPhotoAfter: !afterPhoto.none,
     photoTakenAt: isRecentExif ? candidate.toISOString() : recordedAt,
     timeSource: isRecentExif ? 'exif' : 'recorded',
     recordedAt, userEmail: session.email, userName: session.name,
   };
 
   try {
-    await fileKV(env).put(`${PHOTO_PREFIX}${id}`, bytes, { metadata: { type: 'image/jpeg',
-      filename:`${entry.photoTakenAt.slice(0, 10)}_${entry.vehicleName}_${entry.userName}.jpg` } });
+    const filename = suffix => `${entry.photoTakenAt.slice(0, 10)}_${entry.vehicleName}_${entry.userName}${suffix}.jpg`;
+    if (!before.none) await fileKV(env).put(`${PHOTO_PREFIX}${id}`, before.bytes, { metadata: { type: 'image/jpeg', filename: filename('') } });
+    if (!afterPhoto.none) await fileKV(env).put(`${PHOTO_PREFIX}${id}${AFTER_SUFFIX}`, afterPhoto.bytes, { metadata: { type: 'image/jpeg', filename: filename('_after') } });
     await fileKV(env).put(`${ENTRY_PREFIX}${id}`, JSON.stringify(entry));
   } catch (error) {
     await fileKV(env).delete(`${PHOTO_PREFIX}${id}`).catch(() => {});
+    await fileKV(env).delete(`${PHOTO_PREFIX}${id}${AFTER_SUFFIX}`).catch(() => {});
     console.error('car usage save failed:', error);
     return fail('저장하지 못했습니다. 잠시 후 다시 시도해 주세요.', 500);
   }

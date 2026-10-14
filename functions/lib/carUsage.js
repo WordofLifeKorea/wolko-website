@@ -3,6 +3,8 @@ import { pickName } from './expenses.js';
 
 export const ENTRY_PREFIX = 'car:usage:entry:';
 export const PHOTO_PREFIX = 'car:usage:photo:';
+/** 운행 후 사진은 같은 기록 ID 뒤에 :after 를 붙인 키에 둔다 */
+export const AFTER_SUFFIX = ':after';
 export const TRASH_ENTRY_PREFIX = 'car:usage:trash:entry:';
 export const TRASH_PHOTO_PREFIX = 'car:usage:trash:photo:';
 const VEHICLES_KEY = 'car:vehicles:missionary';

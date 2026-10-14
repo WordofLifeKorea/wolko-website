@@ -12,6 +12,7 @@
       email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기',
       purposeNoteLabel: '어떤 운행인가요? (간단히)', purposeNotePh: '예: 평택 캠프 장보기, 교회 방문', purposeLabel: '운행 목적', purposeNoteNeeded: '사역용 운행 목적을 간단히 적어 주세요.',
       recordTitle: '운행 전 기록', recorder: '기록자', vehicleLabel: '차량 선택', purposeLegend: '사용 목적', ministry: '사역용', personal: '개인용',
+      tripKmLabel: '총 운행 거리 (km) *', tripKmNeeded: '총 운행 거리(km)를 입력해 주세요.', photosTitle: '사진 (선택)', photosHelp: '계기판이나 차량 상태가 보이도록 찍어 두면 나중에 확인하기 좋아요. 없어도 저장할 수 있습니다.', photoBeforeTitle: '운행 전 사진', photoAfterTitle: '운행 후 사진', viewPhotoBefore: '운행 전 사진 보기', viewPhotoAfter: '운행 후 사진 보기', tripKmRow: '총 운행',
       photoTitle: '운행 전 사진', photoHelp: '계기판이나 차량 상태가 보이도록 찍어 주세요. 사용 목적을 고르면 카메라를 열 수 있습니다.',
       photoBtn: '카메라 열기 · 사진 선택', save: '사용 일지 저장', saving: '저장 중…',
       historyTitle: '최근 사용 내역', historyHelp: '기록은 로그인 계정과 함께 저장됩니다. 사진은 포탈 사용자만 볼 수 있습니다.',
@@ -36,6 +37,7 @@
       email: 'Email', password: 'Password', loginBtn: 'Log in and continue',
       purposeNoteLabel: 'What is this trip for? (briefly)', purposeNotePh: 'e.g. Camp grocery run, church visit', purposeLabel: 'Trip purpose', purposeNoteNeeded: 'Please briefly describe the ministry trip.',
       recordTitle: 'Pre-drive record', recorder: 'Recorder', vehicleLabel: 'Vehicle', purposeLegend: 'Purpose of use', ministry: 'Ministry', personal: 'Personal',
+      tripKmLabel: 'Total distance driven (km) *', tripKmNeeded: 'Please enter the total distance driven (km).', photosTitle: 'Photos (optional)', photosHelp: 'A photo of the dashboard or the vehicle helps later, but you can save without one.', photoBeforeTitle: 'Before-drive photo', photoAfterTitle: 'After-drive photo', viewPhotoBefore: 'View before photo', viewPhotoAfter: 'View after photo', tripKmRow: 'Trip',
       photoTitle: 'Pre-drive photo', photoHelp: 'Take a photo that shows the dashboard or the vehicle condition. Choose the purpose first to open the camera.',
       photoBtn: 'Open camera · choose photo', save: 'Save usage log', saving: 'Saving…',
       historyTitle: 'Recent usage', historyHelp: 'Records are saved with your account. Photos are visible only to portal users.',
@@ -78,6 +80,8 @@
   let photoBlob = null;
   let photoTakenAt = null;
   let previewUrl = null;
+  let photoAfterBlob = null;
+  let previewAfterUrl = null;
   let fullPhotoUrl = null;
 
   // 예전 기록에 이메일이 이름 자리에 저장돼 있어도 이름처럼 보이게 한다
@@ -96,8 +100,10 @@
     $('purposeNote').required = !!ministry;
     $('purposeNote').placeholder = t('purposeNotePh');
     if (!ministry) $('purposeNote').value = '';
-    $('photoButton').disabled = !purpose;
-    $('saveButton').disabled = !purpose || !photoBlob || !$('vehicleSelect').value || (ministry && !$('purposeNote').value.trim());
+    const tripKm = Number($('tripKm').value);
+    const tripOk = $('tripKm').value.trim() !== '' && Number.isFinite(tripKm) && tripKm >= 0 && tripKm <= 5000;
+    // 사진은 선택이고, 차량 · 사용 목적 · 총 운행 거리(km)는 꼭 있어야 저장할 수 있다.
+    $('saveButton').disabled = !purpose || !$('vehicleSelect').value || !tripOk || (ministry && !$('purposeNote').value.trim());
   }
 
   async function loadData() {
@@ -153,7 +159,9 @@
     // 차량마다 카드 하나 — 카드를 누르면 그 차량의 기록이 한 줄씩 펼쳐지고, 한 줄을 누르면 사진 · 마일리지가 열린다
     const vehicles = [...$('vehicleSelect').options].filter(o => o.value).map(o => ({ id: o.value, name: o.text }));
     entries.forEach(e => { if (!vehicles.some(v => v.id === e.vehicleId)) vehicles.push({ id: e.vehicleId, name: e.vehicleName }); });
-    const kmText = e => e.mileageAfter != null ? `${Number(e.mileageAfter).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR')} km` : '';
+    const fmtKm = v => `${Number(v).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR', { maximumFractionDigits: 1 })} km`;
+    // 한 줄에는 이번에 달린 거리(총 운행 km)를 먼저 보여주고, 예전 기록은 사용 후 마일리지를 보여준다.
+    const kmText = e => e.tripKm != null ? fmtKm(e.tripKm) : e.mileageAfter != null ? fmtKm(e.mileageAfter) : '';
     const shortTime = value => new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
     vehicles.forEach(vehicle => {
       const mine = entries.filter(e => e.vehicleId === vehicle.id);
@@ -213,16 +221,26 @@
             const info = document.createElement('span');
             info.className = 'log-line-info';
             info.textContent = `${formatTime(entry.photoTakenAt)} · ${entry.timeSource === 'exif' ? t('timeExif') : t('timeSaved')}`;
-            const button = document.createElement('button');
-            button.type = 'button'; button.className = 'log-photo-btn'; button.textContent = t('viewPhoto');
-            button.addEventListener('click', () => openPhoto(entry.id));
+            const photoButtons = [];
+            if (entry.hasPhoto !== false) {
+              const before = document.createElement('button');
+              before.type = 'button'; before.className = 'log-photo-btn'; before.textContent = entry.hasPhotoAfter ? t('viewPhotoBefore') : t('viewPhoto');
+              before.addEventListener('click', () => openPhoto(entry.id));
+              photoButtons.push(before);
+            }
+            if (entry.hasPhotoAfter) {
+              const after = document.createElement('button');
+              after.type = 'button'; after.className = 'log-photo-btn'; after.textContent = t('viewPhotoAfter');
+              after.addEventListener('click', () => openPhoto(entry.id, 'after'));
+              photoButtons.push(after);
+            }
             if (entry.purpose) {
               const purpose = document.createElement('span');
               purpose.className = 'log-line-purpose';
               purpose.textContent = `${t('purposeLabel')}: ${entry.purpose}`;
               detail.append(purpose);
             }
-            detail.append(info, button, mileageBlock(entry));
+            detail.append(info, ...photoButtons, mileageBlock(entry));
             row.append(detail);
           }
           body.append(row);
@@ -279,8 +297,8 @@
     return box;
   }
 
-  async function openPhoto(id) {
-    const response = await fetch(`/api/car/usage-photo?id=${encodeURIComponent(id)}`, { headers: headers() });
+  async function openPhoto(id, which = '') {
+    const response = await fetch(`/api/car/usage-photo?id=${encodeURIComponent(id)}${which ? '&which=' + which : ''}`, { headers: headers() });
     if (!response.ok) { $('formError').textContent = t('photoOpenFail'); return; }
     if (fullPhotoUrl) URL.revokeObjectURL(fullPhotoUrl);
     fullPhotoUrl = URL.createObjectURL(await response.blob());
@@ -395,40 +413,50 @@
   }));
   $('purposeNote').addEventListener('input', updateReady);
   $('vehicleSelect').addEventListener('change', updateReady);
-  $('photoButton').addEventListener('click', () => $('photoInput').click());
-  $('photoInput').addEventListener('change', async () => {
-    const file = $('photoInput').files?.[0];
-    if (!file) return;
-    $('formError').textContent = '';
-    $('photoButton').disabled = true;
-    photoBlob = null;
-    updateReady();
-    try {
-      const exifDate = await readExifDate(file);
-      if (exifDate && (exifDate.getTime() < Date.now() - 24 * 60 * 60_000 || exifDate.getTime() > Date.now() + 5 * 60_000)) {
-        throw new Error(t('photoDiff'));
+  // 운행 전·후 사진 칸 — 둘 다 선택 사항이라 없어도 저장된다.
+  const photoSlots = {
+    before: { input: 'photoInput', button: 'photoButton', preview: 'photoPreview', time: 'photoTime', get blob() { return photoBlob; }, set blob(v) { photoBlob = v; }, get url() { return previewUrl; }, set url(v) { previewUrl = v; }, trackTime: true },
+    after: { input: 'photoAfterInput', button: 'photoAfterButton', preview: 'photoAfterPreview', time: 'photoAfterTime', get blob() { return photoAfterBlob; }, set blob(v) { photoAfterBlob = v; }, get url() { return previewAfterUrl; }, set url(v) { previewAfterUrl = v; }, trackTime: false },
+  };
+  Object.values(photoSlots).forEach(slot => {
+    $(slot.button).addEventListener('click', () => $(slot.input).click());
+    $(slot.input).addEventListener('change', async () => {
+      const file = $(slot.input).files?.[0];
+      if (!file) return;
+      $('formError').textContent = '';
+      $(slot.button).disabled = true;
+      slot.blob = null;
+      try {
+        const exifDate = await readExifDate(file);
+        if (exifDate && (exifDate.getTime() < Date.now() - 24 * 60 * 60_000 || exifDate.getTime() > Date.now() + 5 * 60_000)) {
+          throw new Error(t('photoDiff'));
+        }
+        if (!exifDate && file.lastModified && file.lastModified < Date.now() - 24 * 60 * 60_000) {
+          throw new Error(t('photoOld'));
+        }
+        slot.blob = await toJpeg(file);
+        if (slot.trackTime) photoTakenAt = exifDate?.toISOString() || null;
+        if (slot.url) URL.revokeObjectURL(slot.url);
+        slot.url = URL.createObjectURL(slot.blob);
+        $(slot.preview).src = slot.url;
+        $(slot.preview).hidden = false;
+        $(slot.time).textContent = exifDate ? t('photoTaken', formatTime(exifDate)) : t('photoNoTime');
+      } catch (error) {
+        $('formError').textContent = error.message || t('photoReadFail');
+        $(slot.preview).hidden = true;
+        $(slot.time).textContent = '';
+        $(slot.input).value = '';
+      } finally {
+        $(slot.button).disabled = false;
       }
-      if (!exifDate && file.lastModified && file.lastModified < Date.now() - 24 * 60 * 60_000) {
-        throw new Error(t('photoOld'));
-      }
-      photoBlob = await toJpeg(file);
-      photoTakenAt = exifDate?.toISOString() || null;
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      previewUrl = URL.createObjectURL(photoBlob);
-      $('photoPreview').src = previewUrl;
-      $('photoPreview').hidden = false;
-      $('photoTime').textContent = exifDate ? t('photoTaken', formatTime(exifDate)) : t('photoNoTime');
-    } catch (error) {
-      $('formError').textContent = error.message || t('photoReadFail');
-      $('photoPreview').hidden = true;
-      $('photoTime').textContent = '';
-    }
-    updateReady();
+      updateReady();
+    });
   });
+  $('tripKm').addEventListener('input', updateReady);
 
   $('usageForm').addEventListener('submit', async event => {
     event.preventDefault();
-    if (!photoBlob) return;
+    if ($('saveButton').disabled) { $('formError').textContent = t('tripKmNeeded'); return; }
     $('formError').textContent = '';
     $('saveButton').disabled = true;
     $('saveButton').textContent = t('saving');
@@ -437,8 +465,12 @@
       form.append('vehicleId', $('vehicleSelect').value);
       form.append('useType', document.querySelector('input[name="useType"]:checked').value);
       form.append('purpose', $('purposeNote').value.trim());
-      form.append('photo', photoBlob, 'vehicle-before.jpg');
-      if (photoTakenAt) { form.append('photoTakenAt', photoTakenAt); form.append('timeSource', 'exif'); }
+      form.append('tripKm', $('tripKm').value.trim());
+      if (photoBlob) {
+        form.append('photo', photoBlob, 'vehicle-before.jpg');
+        if (photoTakenAt) { form.append('photoTakenAt', photoTakenAt); form.append('timeSource', 'exif'); }
+      }
+      if (photoAfterBlob) form.append('photoAfter', photoAfterBlob, 'vehicle-after.jpg');
       const response = await fetch('/api/car/usage', { method: 'POST', headers: headers(), body: form });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t('saveFail'));
@@ -446,11 +478,18 @@
       renderEntries();
       photoBlob = null;
       photoTakenAt = null;
+      photoAfterBlob = null;
       $('photoInput').value = '';
+      $('photoAfterInput').value = '';
       $('photoPreview').hidden = true;
+      $('photoAfterPreview').hidden = true;
+      $('photoAfterTime').textContent = '';
       $('photoTime').textContent = t('saved');
+      $('tripKm').value = '';
       if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (previewAfterUrl) URL.revokeObjectURL(previewAfterUrl);
       previewUrl = null;
+      previewAfterUrl = null;
     } catch (error) { $('formError').textContent = error.message; }
     finally { $('saveButton').textContent = t('save'); updateReady(); }
   });
@@ -503,7 +542,7 @@
   $('closePhoto').addEventListener('click', closePhoto);
   $('photoDialog').addEventListener('click', event => { if (event.target === $('photoDialog')) closePhoto(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape') { if (!$('photoDialog').hidden) closePhoto(); else if (!$('editDialog').hidden) $('editDialog').hidden = true; } });
-  $('printQrButton').addEventListener('click', () => window.print());
+  $('printQrButton')?.addEventListener('click', () => window.print());
   $('langKoBtn').addEventListener('click', () => setLang('ko'));
   $('langEnBtn').addEventListener('click', () => setLang('en'));
   applyLang();
