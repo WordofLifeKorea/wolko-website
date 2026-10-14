@@ -263,3 +263,15 @@ test('registration requires an explicit photo/video sharing choice and stores it
   assert.match(page, /name="mediaConsent"/);
   assert.match(page, /crpMediaWarning/);
 });
+
+test('group registration can defer the participant list only when explicitly requested', async () => {
+  const base = { registrationType: 'group', groupCount: 5, organization: 'Test Church', birthDate: undefined, gender: undefined };
+  const refused = await register({ ...base });
+  assert.equal(refused.response.status, 400);
+  const accepted = await register({ ...base, participantDetailsDeferred: true, participants: [] });
+  assert.equal(accepted.response.status, 200);
+  const reg = JSON.parse([...accepted.store.entries()].find(([key]) => key.includes(':reg:'))[1]);
+  assert.equal(reg.participantDetailsDeferred, true);
+  assert.equal(reg.groupCount, 5);
+  assert.deepEqual(reg.participants, []);
+});

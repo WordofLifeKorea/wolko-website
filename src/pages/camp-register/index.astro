@@ -860,6 +860,8 @@ body.lang-en .crp-countdown-notice {
 .crp-media-options input { width: 16px; height: 16px; accent-color: var(--c-deep); cursor: pointer; }
 .crp-media-warning { margin-top: 10px; padding: 10px 12px; border: 1px solid #f0c987; background: #fff7e6; border-radius: 10px; font-size: 12.5px; line-height: 1.65; color: #8a5a00; }
 .crp-media-consent.is-invalid { border-color: #c0392b; }
+.crp-defer-list { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 13px; line-height: 1.6; color: var(--c-sub); cursor: pointer; word-break: keep-all; }
+.crp-defer-list input { width: 16px; height: 16px; min-height: 0; margin-top: 3px; flex-shrink: 0; accent-color: var(--c-deep); cursor: pointer; }
 /* Consent */
 .crp-consent {
   display: flex; align-items: flex-start; gap: 10px;
@@ -878,6 +880,11 @@ body.lang-en .crp-countdown-notice {
 .crp-scholarship-option { padding: 14px 16px; background: #fff; border-color: rgba(0,79,104,0.14); transition: border-color .15s, background .15s, box-shadow .15s; }
 .crp-scholarship-option:hover { border-color: rgba(13,148,136,0.45); }
 .crp-scholarship-option:has(input:checked) { border-color: #0d9488; background: rgba(13,148,136,0.06); box-shadow: 0 0 0 3px rgba(13,148,136,0.10); }
+.crp-scholarship-option:has(input:checked),
+.crp-scholarship-option.is-selected { border-color: #0d9488; border-width: 2px; background: rgba(13,148,136,0.12); box-shadow: 0 0 0 3px rgba(13,148,136,0.18); }
+.crp-scholarship-option.is-selected strong { color: #0b6f66; }
+.crp-scholarship-option.is-selected .crp-sch-chip:not(.is-reward) { background: #0d9488; color: #fff; }
+.crp-scholarship-option.is-selected select { border-color: #0d9488; background-color: #fff; color: #0b6f66; font-weight: 700; }
 .crp-scholarship-option:has(input[type="checkbox"]:disabled) { opacity: .55; cursor: not-allowed; }
 .crp-scholarship-option > span { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
 .crp-scholarship-option .crp-sch-note { margin: 0; font-size: 11.5px; line-height: 1.55; color: var(--c-muted); }
@@ -2148,6 +2155,10 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <div class="crp-field crp-field--full" id="crpGroupParticipantsField">
                 <label><span class="wl-ko">참가 학생 명단</span><span class="wl-en">Participant List</span> <span class="req">*</span></label>
                 <div class="crp-group-participants" id="crpGParticipants"></div>
+                <label class="crp-defer-list" for="crpGDeferList">
+                  <input type="checkbox" id="crpGDeferList">
+                  <span><span class="wl-ko">추후 명단 제출하겠습니다. (체크하면 지금 명단을 입력하지 않아도 신청할 수 있습니다)</span><span class="wl-en">I will submit the participant list later. (If checked, you can register now without entering names.)</span></span>
+                </label>
               </div>
               <div class="crp-field crp-field--full">
                 <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
@@ -3266,6 +3277,10 @@ function updateScholarshipSummary() {
   var baseFee = CAMP_BASE_FEE * participantCount;
   var deposit = (parseInt(campDepositInput.value, 10) || 0) * participantCount;
   var scholarshipCounts = getScholarshipCounts();
+  document.querySelectorAll('select[name="scholarshipDiscountCount"]').forEach(function(select) {
+    var option = select.closest('.crp-scholarship-option');
+    if (option) option.classList.toggle('is-selected', (parseInt(select.value, 10) || 0) > 0);
+  });
   if (usesWinterCampPolicy(campIdInput.value)) {
     var keys = Object.keys(scholarshipCounts).filter(function(key) { return key !== 'excellent_camper'; });
     document.querySelectorAll('input[name="scholarshipDiscount"]').forEach(function(input) {
@@ -3391,6 +3406,9 @@ function crpEscAttr(value) {
 function crpEscHtml(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+document.getElementById('crpGDeferList').addEventListener('change', function() {
+  document.getElementById('crpGParticipants').hidden = this.checked;
+});
 document.getElementById('crpGCount').addEventListener('change', function() {
   renderGroupParticipants();
   updateScholarshipCountOptions();
@@ -3659,14 +3677,15 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var gTotal     = parseInt(document.getElementById('crpGCount').value) || 0;
     var gOrg       = document.getElementById('crpGOrg').value.trim();
     var isUnionCamp = crpIsUnionCampMode();
-    var participants = isUnionCamp ? [] : Array.from(document.querySelectorAll('.crp-group-participant')).map(function(row) {
+    var deferNames = isUnionCamp || document.getElementById('crpGDeferList').checked;
+    var participants = deferNames ? [] : Array.from(document.querySelectorAll('.crp-group-participant')).map(function(row) {
       return {
         name: row.querySelector('.crp-g-participant-name').value.trim(),
         gender: row.querySelector('.crp-g-participant-gender').value,
       };
     });
-    var gMaleCount = isUnionCamp ? 0 : participants.filter(function(p) { return p.gender === 'male'; }).length;
-    var gFemCount  = isUnionCamp ? 0 : participants.filter(function(p) { return p.gender === 'female'; }).length;
+    var gMaleCount = deferNames ? 0 : participants.filter(function(p) { return p.gender === 'male'; }).length;
+    var gFemCount  = deferNames ? 0 : participants.filter(function(p) { return p.gender === 'female'; }).length;
 
     if (!gName || !gPhone || !gOrg) {
       crpShowError(errorMsg, '담당자 이름, 연락 받을 번호, 소속은 필수 항목입니다.', 'Contact name, phone number, and organization are required.');
@@ -3681,7 +3700,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       crpShowError(errorMsg, '현재 잔여 정원은 ' + gRemaining + '명입니다. 참여 인원을 줄여 주세요.', 'Only ' + gRemaining + ' spots remain. Please reduce the number of participants.');
       return;
     }
-    if (!isUnionCamp && (participants.length !== gTotal || participants.some(function(p) { return !p.name || !p.gender; }))) {
+    if (!deferNames && (participants.length !== gTotal || participants.some(function(p) { return !p.name || !p.gender; }))) {
       crpShowError(errorMsg, '모든 참가 학생의 이름과 성별을 입력해 주세요.', 'Please enter every participant name and gender.');
       return;
     }
@@ -3699,7 +3718,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       maleCount: gMaleCount, femaleCount: gFemCount,
       groupCount: gTotal,
       participants: participants,
-      participantDetailsDeferred: isUnionCamp,
+      participantDetailsDeferred: deferNames,
       mediaConsent: mediaConsent,
       refundBank: refundBank,
       refundAccount: refundAccount,
@@ -3835,9 +3854,11 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       if (currentType === 'group') {
         var gm = payload.maleCount, gf = payload.femaleCount, gc = payload.groupCount;
         successMsg.innerHTML = payload.participantDetailsDeferred
-          ? (isEn
+          ? (!crpIsUnionCampMode() ? (isEn
+              ? 'Your group registration for <strong>' + gc + ' participants</strong> has been received. The participant list can be submitted later.<br>Please transfer the deposit below.'
+              : '<strong>총 ' + gc + '명</strong>의 단체 신청이 접수되었습니다. 참가 학생 명단은 추후 제출해 주세요.<br>아래 계좌로 예약금을 입금해 주세요.') : (isEn
               ? 'Your union camp registration for <strong>' + gc + ' participants</strong> has been received.<br>Please transfer the deposit below.'
-              : '<strong>총 ' + gc + '명</strong>의 연합캠프 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.')
+              : '<strong>총 ' + gc + '명</strong>의 연합캠프 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.'))
           : (isEn
               ? 'Your group registration for <strong>' + gc + ' participants</strong> (Male ' + gm + ' / Female ' + gf + ') has been received.<br>Please transfer the deposit below.'
               : '<strong>남학생 ' + gm + '명 · 여학생 ' + gf + '명 (총 ' + gc + '명)</strong>의 단체 신청이 접수되었습니다.<br>아래 계좌로 예약금을 입금해 주세요.');

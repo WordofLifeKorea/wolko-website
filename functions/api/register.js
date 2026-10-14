@@ -511,10 +511,12 @@ export async function onRequestPost(context) {
     let normalizedParticipants = [];
     let deferParticipantDetails = false;
     if (registrationType === 'group') {
-      const canDeferParticipantDetails = campId === '2026-inland-union';
+      const isUnionDefer = campId === '2026-inland-union';
       const requestedGroupCount = parseInt(groupCount, 10) || 0;
-      const shouldDeferParticipantDetails =
-        canDeferParticipantDetails && (!Array.isArray(participants) || participants.length === 0 || participantDetailsDeferred);
+      // 연합캠프는 항상 명단 추후 제출 가능, 그 외 캠프는 신청자가 '추후 제출'을 명시적으로 체크한 경우에만 허용한다.
+      const shouldDeferParticipantDetails = isUnionDefer
+        ? (!Array.isArray(participants) || participants.length === 0 || participantDetailsDeferred)
+        : participantDetailsDeferred === true;
 
       if (shouldDeferParticipantDetails) {
         deferParticipantDetails = true;
