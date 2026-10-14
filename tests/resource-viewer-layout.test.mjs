@@ -55,7 +55,7 @@ test('note composer keeps its action buttons visible when the list is full', () 
   assert.match(css, /\.notes-panel > \.note-composer\[hidden\] \{[^}]*display:none/);
   assert.match(css, /\.note-composer-fields \{[^}]*overflow-y:auto/);
   assert.match(css, /\.note-composer-actions \{[^}]*flex-shrink:0/);
-  assert.match(page, /portal\.css\?v=61/);
+  assert.match(page, /portal\.css\?v=\d+/);
 });
 
 test('closing the notes panel clears a pending note composer', () => {
@@ -87,4 +87,15 @@ test('PDF text selection is clipped to the actual pointer gesture', () => {
   assert.match(page, /renderPendingTextSelection\(surfaceEl, captured\.rects\)/);
   assert.match(page, /window\.getSelection\(\)\?\.removeAllRanges\(\)/);
   assert.match(css, /\.textLayer \{[^}]*-webkit-text-size-adjust:none;[^}]*-webkit-user-select:text;/);
+});
+
+test('hovering a highlight shows an "author: note" tooltip above it instead of a native title', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
+  assert.match(page, /function showHighlightTooltip\(box, annotation\)/);
+  assert.match(page, /box\.addEventListener\('mouseenter', \(\) => showHighlightTooltip\(box, a\)\)/);
+  assert.match(page, /box\.addEventListener\('mouseleave', hideHighlightTooltip\)/);
+  assert.doesNotMatch(page, /box\.title = `\$\{a\.createdByName\}: \$\{a\.text\}`/);
+  assert.match(css, /\.hl-tooltip\s*\{[^}]*position:fixed/);
 });

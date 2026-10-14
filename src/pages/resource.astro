@@ -39,7 +39,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=61">
+  <link rel="stylesheet" href="/portal.css?v=62">
   <script is:inline src="/pdf-continuous.js?v=3"></script>
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
@@ -1860,6 +1860,36 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         toast(t('commentDeletedToast'));
       } catch (error) { toast(error.message || t('commentDeleteFailed'), true); }
     }
+    /* 하이라이트 위에 마우스를 올리면 "수정자 이름: 수정 내용"을 그 위에 말풍선으로 보여준다 — 오른쪽 노트 목록을 열지 않고도 바로 읽을 수 있게. */
+    let hlTooltipEl = null;
+    function ensureHighlightTooltip() {
+      if (hlTooltipEl && hlTooltipEl.isConnected) return hlTooltipEl;
+      hlTooltipEl = document.createElement('div');
+      hlTooltipEl.className = 'hl-tooltip';
+      hlTooltipEl.setAttribute('role', 'tooltip');
+      document.body.appendChild(hlTooltipEl);
+      return hlTooltipEl;
+    }
+    function showHighlightTooltip(box, annotation) {
+      const tip = ensureHighlightTooltip();
+      const color = highlightColorFor(annotation.createdBy);
+      const replies = Array.isArray(annotation.comments) ? annotation.comments.length : 0;
+      tip.innerHTML = `<span class="hl-tooltip-dot" style="background:${color}"></span><span class="hl-tooltip-body"><b>${esc(annotation.createdByName || annotation.createdBy || '')}</b>: ${esc(annotation.text || '')}${replies ? `<em>${esc(lang === 'ko' ? `추가 의견 ${replies}개` : `${replies} more comment${replies > 1 ? 's' : ''}`)}</em>` : ''}</span>`;
+      tip.style.display = 'flex';
+      tip.style.visibility = 'hidden';
+      tip.style.left = '0px'; tip.style.top = '0px'; // 위치를 먼저 맞춰 두어야 실제 폭·높이를 정확히 잴 수 있다
+      const r = box.getBoundingClientRect();
+      const tr = tip.getBoundingClientRect();
+      let top = r.top - tr.height - 8;
+      if (top < 4) top = Math.min(window.innerHeight - tr.height - 8, r.bottom + 8); // 화면 위로 잘릴 정도로 위쪽 공간이 없을 때만 아래로
+      const left = Math.min(Math.max(8, r.left + r.width / 2 - tr.width / 2), Math.max(8, window.innerWidth - tr.width - 8));
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+      tip.style.visibility = '';
+    }
+    function hideHighlightTooltip() { if (hlTooltipEl) hlTooltipEl.style.display = 'none'; }
+    window.addEventListener('scroll', hideHighlightTooltip, true);
+
     function renderHighlights(surface = null, pageNumber = viewerPage) {
       if (!surface && viewerKind === 'pdf') {
         document.querySelectorAll('.pdf-scroll-page').forEach(page => renderHighlights(page, Number(page.dataset.pdfPage)));
@@ -1882,8 +1912,10 @@ const pyeongtaekMissionaries = (await getCollection('team'))
           box.style.borderColor = color;
           box.style.background = color + '2e';
           box.style.left = (r.x * 100) + '%'; box.style.top = (r.y * 100) + '%'; box.style.width = (r.w * 100) + '%'; box.style.height = (r.h * 100) + '%';
-          box.title = `${a.createdByName}: ${a.text}`;
-          box.addEventListener('click', () => jumpToNoteListItem(a.id));
+          box.dataset.noteId = a.id;
+          box.addEventListener('mouseenter', () => showHighlightTooltip(box, a));
+          box.addEventListener('mouseleave', hideHighlightTooltip);
+          box.addEventListener('click', () => { hideHighlightTooltip(); jumpToNoteListItem(a.id); });
           surface.appendChild(box);
         });
       });

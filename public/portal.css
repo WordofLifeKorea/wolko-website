@@ -355,3 +355,11 @@ body.modal-open { overflow:hidden; }
   .docx-version-item > div:last-child { width:100%; }
   .docx-version-item button { flex:1; }
 }
+
+/* 하이라이트 위로 뜨는 "수정자: 내용" 말풍선 */
+.hl-tooltip { position:fixed; z-index:5000; display:none; align-items:flex-start; gap:8px; max-width:min(440px, calc(100vw - 16px)); padding:10px 12px; border-radius:10px; background:#10303c; color:#fff; box-shadow:0 10px 28px rgba(0,30,40,.28); font-size:13px; line-height:1.55; pointer-events:none; }
+.hl-tooltip-dot { flex:none; width:9px; height:9px; margin-top:6px; border-radius:50%; }
+.hl-tooltip-body { min-width:0; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; overflow:hidden; white-space:pre-wrap; }
+.hl-tooltip-body b { font-weight:800; }
+.hl-tooltip-body em { display:block; margin-top:4px; color:#9fd7e4; font-size:11.5px; font-style:normal; }
+@media (hover: none) { .hl-tooltip { display:none !important; } }
