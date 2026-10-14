@@ -2094,27 +2094,6 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                 <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span> <span class="req">*</span></label>
                 <input id="crpEmail" name="email" type="email" placeholder="email@example.com">
               </div>
-              <div class="crp-field">
-                <label><span class="wl-ko">학년</span><span class="wl-en">Grade</span> <span class="req">*</span></label>
-                <select id="crpGrade" name="grade" data-opt-ko="— 선택 —" data-opt-en="— Select —">
-                  <option value="">— 선택 —</option>
-                  <optgroup label="초등" data-ko="초등" data-en="Elementary">
-                    <option value="초4" data-ko="초4" data-en="4th Grade">초4</option>
-                    <option value="초5" data-ko="초5" data-en="5th Grade">초5</option>
-                    <option value="초6" data-ko="초6" data-en="6th Grade">초6</option>
-                  </optgroup>
-                  <optgroup label="중학" data-ko="중학" data-en="Middle School">
-                    <option value="중1" data-ko="중1" data-en="7th Grade">중1</option>
-                    <option value="중2" data-ko="중2" data-en="8th Grade">중2</option>
-                    <option value="중3" data-ko="중3" data-en="9th Grade">중3</option>
-                  </optgroup>
-                  <optgroup label="고등" data-ko="고등" data-en="High School">
-                    <option value="고1" data-ko="고1" data-en="10th Grade">고1</option>
-                    <option value="고2" data-ko="고2" data-en="11th Grade">고2</option>
-                    <option value="고3" data-ko="고3" data-en="12th Grade">고3</option>
-                  </optgroup>
-                </select>
-              </div>
             </div>
             <div class="crp-form-section">
               <span class="crp-form-section-label"><span class="wl-ko">선택 정보</span><span class="wl-en">Optional</span></span>
@@ -3736,11 +3715,10 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     var name   = document.getElementById('crpName').value.trim();
     var phone  = document.getElementById('crpPhone').value.trim();
     var email  = document.getElementById('crpEmail').value.trim();
-    var grade  = document.getElementById('crpGrade').value;
     var gender = document.getElementById('crpGender').value;
 
-    if (!name || !phone || !email || !grade) {
-      crpShowError(errorMsg, '이름, 연락처, 이메일, 학년은 필수 항목입니다.', 'Name, phone, email, and grade are required.');
+    if (!name || !phone || !email) {
+      crpShowError(errorMsg, '이름, 연락처, 이메일은 필수 항목입니다.', 'Name, phone, and email are required.');
       return;
     }
     if (!gender) {
@@ -3770,7 +3748,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       capacity: parseInt(campCapInput.value) || 40,
       capacityMale: currentCapMale || undefined,
       capacityFemale: currentCapFemale || undefined,
-      name, phone, email, grade, gender,
+      name, phone, email, gender,
       ...(birthDate ? { birthDate: birthDate } : {}),
       church: document.getElementById('crpChurch').value.trim(),
       school: document.getElementById('crpSchool').value.trim(),

@@ -280,7 +280,7 @@ async function sendRegistrationEmail(env, reg) {
   const waitlistTag = reg.isWaitlist ? `[예비${reg.waitlistNumber}순위] ` : '';
   const subject = isGroup
     ? `${waitlistTag}[캠프 신청] 단체 — ${reg.name} (${reg.groupCount}명) · ${reg.campId}`
-    : `${waitlistTag}[캠프 신청] 개인 — ${reg.name} (${reg.grade} / ${genderLabel}) · ${reg.campId}`;
+    : `${waitlistTag}[캠프 신청] 개인 — ${reg.name} (${reg.grade || (reg.birthDate ? String(reg.birthDate).slice(0, 4) + '년생' : '—')} / ${genderLabel}) · ${reg.campId}`;
 
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -501,9 +501,6 @@ export async function onRequestPost(context) {
           ? `이 캠프의 지원 연령(${range.min}년생 ~ ${range.max}년생)에 해당하지 않습니다. 문의를 남겨 주세요.`
           : '생년월일을 정확히 입력해 주세요.';
         return Response.json({ error: msg, code: birthCheck.reason === 'out-of-range' ? 'age-out-of-range' : 'birth-required' }, { status: 400, headers: CORS });
-      }
-      if (!grade) {
-        return Response.json({ error: '학년을 선택해주세요.' }, { status: 400, headers: CORS });
       }
       if (!gender || !['male', 'female'].includes(gender)) {
         return Response.json({ error: '성별을 선택해주세요.' }, { status: 400, headers: CORS });
