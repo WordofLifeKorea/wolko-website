@@ -112,3 +112,14 @@ test('clicking a highlight pins its note with a close button; area notes are wri
   assert.match(page, /function preciseRangeFromGesture\(textLayerEl, gesture\)/);
   assert.match(page, /caretRangeFromPoint/);
 });
+
+test('text highlight uses caret-exact boundaries, resolves gaps to the nearest glyph, and paints a live preview while dragging', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
+  assert.match(page, /function nearestTextBoundary\(textLayerEl, x, y\)/);
+  assert.match(page, /function textBoundaryAt\(textLayerEl, x, y\)/);
+  assert.match(page, /textLayerEl\.addEventListener\('pointermove'/);
+  assert.match(page, /renderPendingTextSelection\(surfaceEl, captured\.rects\);\s*else surfaceEl/);
+  assert.match(css, /@media \(hover:hover\) and \(pointer:fine\) \{ \.textLayer ::selection \{ background:transparent; \} \}/);
+});

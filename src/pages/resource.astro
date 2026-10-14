@@ -39,7 +39,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=64">
+  <link rel="stylesheet" href="/portal.css?v=65">
   <script is:inline src="/pdf-continuous.js?v=3"></script>
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
@@ -1370,7 +1370,23 @@ const pyeongtaekMissionaries = (await getCollection('team'))
         if (drawModeOn || event.button !== 0) return;
         selectionGesture = { pointerId: event.pointerId, pointerType: event.pointerType, startX: event.clientX, startY: event.clientY };
       });
-      textLayerEl.addEventListener('pointercancel', () => { selectionGesture = null; });
+      textLayerEl.addEventListener('pointercancel', () => { selectionGesture = null; surfaceEl.querySelectorAll('.viewer-selection-pending').forEach(el => el.remove()); });
+      // 드래그하는 동안에도 최종 결과와 똑같은 계산으로 하이라이트 미리보기를 칠한다 — 보이는 대로 저장된다.
+      let previewFrame = 0;
+      textLayerEl.addEventListener('pointermove', event => {
+        if (!selectionGesture || event.pointerId !== selectionGesture.pointerId || selectionGesture.pointerType === 'touch' || drawModeOn) return;
+        selectionGesture.curX = event.clientX; selectionGesture.curY = event.clientY;
+        if (previewFrame) return;
+        previewFrame = requestAnimationFrame(() => {
+          previewFrame = 0;
+          if (!selectionGesture) return;
+          const live = { ...selectionGesture, endX: selectionGesture.curX, endY: selectionGesture.curY };
+          const precise = preciseRangeFromGesture(textLayerEl, live);
+          const captured = precise ? captureTextSelectionRects(surfaceEl, textLayerEl, live, precise) : null;
+          if (captured) renderPendingTextSelection(surfaceEl, captured.rects);
+          else surfaceEl.querySelectorAll('.viewer-selection-pending').forEach(el => el.remove());
+        });
+      });
       textLayerEl.addEventListener('pointerup', event => {
         if (drawModeOn) { selectionGesture = null; return; }
         const completedGesture = selectionGesture?.pointerId === event.pointerId
@@ -1404,16 +1420,55 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       }
       return null;
     }
+    // 포인터가 글자 사이 빈틈(줄 사이·조각 사이)에 있으면 브라우저는 텍스트 레이어 자체를 돌려주어 범위가 통째로 번진다.
+    // 그럴 때는 화면 거리가 가장 가까운 글자를 찾고, 그 글자 안에서 포인터와 가장 가까운 글자 경계를 쓴다.
+    function nearestTextBoundary(textLayerEl, x, y) {
+      const walker = document.createTreeWalker(textLayerEl, NodeFilter.SHOW_TEXT);
+      const probe = document.createRange();
+      let best = null;
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (!node.data || !node.data.trim()) continue;
+        probe.selectNodeContents(node);
+        for (const rect of probe.getClientRects()) {
+          if (!rect.width || !rect.height) continue;
+          const dx = x < rect.left ? rect.left - x : x > rect.right ? x - rect.right : 0;
+          const dy = y < rect.top ? rect.top - y : y > rect.bottom ? y - rect.bottom : 0;
+          const distance = dy * 3 + dx; // 위아래 어긋남을 더 크게 본다 — 같은 줄의 글자가 우선
+          if (!best || distance < best.distance) best = { node, distance };
+        }
+      }
+      if (!best) return null;
+      let bestOffset = 0, bestGap = Infinity;
+      for (let i = 0; i < best.node.data.length; i++) {
+        probe.setStart(best.node, i); probe.setEnd(best.node, i + 1);
+        const rect = Array.from(probe.getClientRects()).find(r => r.width > 0 && r.height > 0);
+        if (!rect) continue;
+        const left = Math.abs(rect.left - x), right = Math.abs(rect.right - x);
+        if (left < bestGap) { bestGap = left; bestOffset = i; }
+        if (right < bestGap) { bestGap = right; bestOffset = i + 1; }
+      }
+      return { node: best.node, offset: bestOffset };
+    }
+    function textBoundaryAt(textLayerEl, x, y) {
+      const caret = caretRangeAt(x, y);
+      if (caret && caret.startContainer.nodeType === Node.TEXT_NODE && textLayerEl.contains(caret.startContainer)) {
+        return { node: caret.startContainer, offset: caret.startOffset };
+      }
+      return nearestTextBoundary(textLayerEl, x, y);
+    }
     function preciseRangeFromGesture(textLayerEl, gesture) {
       if (Math.hypot(gesture.endX - gesture.startX, gesture.endY - gesture.startY) < 4) return null;
-      const a = caretRangeAt(gesture.startX, gesture.startY);
-      const b = caretRangeAt(gesture.endX, gesture.endY);
-      if (!a || !b || !textLayerEl.contains(a.startContainer) || !textLayerEl.contains(b.startContainer)) return null;
-      const range = document.createRange();
-      const forward = a.compareBoundaryPoints(Range.START_TO_START, b) <= 0;
+      const a = textBoundaryAt(textLayerEl, gesture.startX, gesture.startY);
+      const b = textBoundaryAt(textLayerEl, gesture.endX, gesture.endY);
+      if (!a || !b) return null;
+      const ra = document.createRange(), rb = document.createRange();
+      ra.setStart(a.node, a.offset); ra.collapse(true);
+      rb.setStart(b.node, b.offset); rb.collapse(true);
+      const forward = ra.compareBoundaryPoints(Range.START_TO_START, rb) <= 0;
       const [from, to] = forward ? [a, b] : [b, a];
-      range.setStart(from.startContainer, from.startOffset);
-      range.setEnd(to.startContainer, to.startOffset);
+      const range = document.createRange();
+      range.setStart(from.node, from.offset);
+      range.setEnd(to.node, to.offset);
       return range.collapsed ? null : range;
     }
     function selectionGestureBounds(gesture, padding = 5) {

@@ -197,6 +197,8 @@ body.modal-open { overflow:hidden; }
 .textLayer > :not(.markedContent), .textLayer .markedContent span:not(.markedContent) { --font-height:0;font-size:calc(var(--text-scale-factor) * var(--font-height));--scale-x:1;--rotate:0deg;transform:rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv)); }
 .textLayer .markedContent { display:contents; }
 .textLayer ::selection { background:rgba(0,92,118,.32); }
+/* 마우스로 드래그할 때는 우리가 직접 계산해 칠하는 미리보기만 보이게 하고, 브라우저 기본 선택색은 숨긴다(단어 단위로 번져 보이는 것을 막는다). 터치는 기기 선택 핸들을 그대로 쓴다. */
+@media (hover:hover) and (pointer:fine) { .textLayer ::selection { background:transparent; } }
 /* 영역 표시(자유 사각형) 모드로 드래그하는 동안은 밑에 깔린 글자 레이어가
    먼저 이벤트를 가로채 텍스트 선택이 시작되지 않도록 꺼둔다. */
 .viewer-surface-inner.is-drawing .textLayer { pointer-events:none; }
