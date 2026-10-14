@@ -940,3 +940,15 @@ test('회계 상세: 구분선은 금액 칸 앞에서 끊긴다 (항목 끝까�
   const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
   assert.match(css, /\.ex-d-item \.ex-code-inline \.ex-cf-row::before \{ content: ''; position: absolute; top: 0; left: 0; right: 104px; height: 1px;/);
 });
+
+test('expense form labels: Description and Expense Report Title each carry an (i) tooltip in both languages', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /\$\{t\('lblDesc'\)\}\$\{infoIcon\('tipDesc'\)\}/);
+  assert.match(page, /\$\{t\('lblProject'\)\}\$\{infoIcon\('tipTitle'\)\}/);
+  assert.match(page, /lblProject: 'Expense Report Title<span class="ko">경비 리포트 제목/);
+  assert.match(page, /lblProject: 'Expense Report Title<span class="ko">remembers last value/);
+  assert.match(page, /tipDesc: 'Name of the person this expense report is for\. Normally this is the person filling out this report\.'/);
+  assert.match(page, /tipTitle: 'This is what you would like to name this particular expense report\./);
+  assert.match(page, /tipDesc: '이 경비 리포트의 대상이 되는 사람의 이름입니다/);
+});

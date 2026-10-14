@@ -16,12 +16,12 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=117">
+  <link rel="stylesheet" href="/expense.css?v=118">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=1">
-  <link rel="stylesheet" href="/wolko-ui.css?v=5">
+  <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-layout.css?v=15">
   <script src="/wolko-datepicker.js?v=2" defer></script>
   <script src="/wolko-rail.js?v=30" defer></script>
@@ -76,7 +76,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         titleNew: '새 경비 리포트', titleEdit: '경비 리포트 수정',
         subNew: n => n + ' 님 명의로 제출됩니다.', fxBase: '기준 통화', fxBaseVal: '₩ 원화', fxAuto: '외화는 영수 날짜 환율로 자동 환산돼요',
         lblDesc: 'Description<span class="ko">설명</span>', descPh: '예: 9월 캠프 준비 경비',
-        lblProject: 'Project<span class="ko">프로젝트 (마지막 값 기억)</span>', projPh: '예: 1552044602 - Kim, Hwan Kyu',
+        lblProject: 'Expense Report Title<span class="ko">경비 리포트 제목 (마지막 값 기억)</span>', projPh: '예: 10월 전도 사역 (October evangelism)',
+        tipInfo: '설명', tipDesc: '이 경비 리포트의 대상이 되는 사람의 이름입니다. 보통은 리포트를 작성하는 본인의 이름을 적습니다.',
+        tipTitle: '이 경비 리포트에 붙일 이름입니다. 예를 들어 10월 전도 사역의 주유 영수증을 제출한다면 "October evangelism"(10월 전도 사역)처럼 이름을 붙일 수 있습니다.',
         addRow: '＋ 항목 추가', resetDraft: '작성 내용 지우기', cResetDraft: '작성 중인 내용을 모두 지울까요?', tDraftRestored: '작성 중이던 내용을 불러왔어요.', cancelEdit: '수정 취소', submitEdit: '수정 후 다시 제출', submit: '경비 리포트 제출', totalKrw: '합계 (KRW)',
         rateSaved: '저장된 환율', rateLoading: '환율 조회 중…', rateLatest: '최신 환율',
         rateAsOf: d => d + ' 기준', rateBiz: d => d + ' 기준(영업일)', rateFail: '자동 조회 실패 — 직접 입력', rateManual: '직접 입력', rateAria: '환율',
@@ -124,7 +126,9 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         titleNew: 'New expense report', titleEdit: 'Edit expense report',
         subNew: n => 'Submitted under ' + n + '.', fxBase: 'Base currency', fxBaseVal: '₩ KRW', fxAuto: 'Foreign amounts are converted at the receipt-date rate',
         lblDesc: 'Description', descPh: 'e.g. September camp supplies',
-        lblProject: 'Project<span class="ko">remembers last value</span>', projPh: 'e.g. 1552044602 - Kim, Hwan Kyu',
+        lblProject: 'Expense Report Title<span class="ko">remembers last value</span>', projPh: 'e.g. October evangelism',
+        tipInfo: 'More info', tipDesc: 'Name of the person this expense report is for. Normally this is the person filling out this report.',
+        tipTitle: 'This is what you would like to name this particular expense report. For example, if you are turning in gas receipts for October evangelism ministry, you can call it "October evangelism".',
         addRow: '+ Add item', resetDraft: 'Clear draft', cResetDraft: 'Clear everything you have entered?', tDraftRestored: 'Restored your unsent draft.', cancelEdit: 'Cancel edit', submitEdit: 'Save & resubmit', submit: 'Submit expense report', totalKrw: 'Total (KRW)',
         rateSaved: 'Saved rate', rateLoading: 'Fetching rate…', rateLatest: 'Latest rate',
         rateAsOf: d => 'as of ' + d, rateBiz: d => 'as of ' + d + ' (prev. business day)', rateFail: 'Auto lookup failed — enter manually', rateManual: 'Entered manually', rateAria: 'Exchange rate',
@@ -360,11 +364,11 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         </div>
         <div class="ex-grid">
           <div class="ex-field">
-            <label>${t('lblDesc')}</label>
+            <label>${t('lblDesc')}${infoIcon('tipDesc')}</label>
             <input class="ex-input" id="fDesc" value="${esc(form.description)}" placeholder="${t('descPh')}">
           </div>
           <div class="ex-field">
-            <label>${t('lblProject')}</label>
+            <label>${t('lblProject')}${infoIcon('tipTitle')}</label>
             <input class="ex-input" id="fProject" list="fProjectList" value="${esc(form.project)}" placeholder="${t('projPh')}">
             <datalist id="fProjectList">${projectOptions()}</datalist>
           </div>
@@ -1032,6 +1036,38 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       if (st.tab === 'new' && !form) form = newForm();
       await show(st.tab);
     });
+
+    /* 라벨 옆 (i) 아이콘: 마우스를 올리거나 포커스·터치하면 설명 말풍선이 뜬다 */
+    function infoIcon(key) {
+      return `<button type="button" class="ex-info" data-tip="${key}" aria-label="${esc(t('tipInfo'))}" aria-describedby="exInfoTip">i</button>`;
+    }
+    let infoTipEl = null, infoTipFor = null;
+    function placeInfoTip() {
+      if (!infoTipEl || !infoTipFor || infoTipEl.hidden) return;
+      const r = infoTipFor.getBoundingClientRect(), tip = infoTipEl;
+      tip.style.maxWidth = Math.min(380, innerWidth - 24) + 'px';
+      const h = tip.offsetHeight, above = r.top > h + 16;
+      tip.style.left = Math.max(12, Math.min(r.left + r.width / 2 - tip.offsetWidth / 2, innerWidth - tip.offsetWidth - 12)) + 'px';
+      tip.style.top = (above ? r.top - h - 10 : r.bottom + 10) + 'px';
+      tip.dataset.pos = above ? 'above' : 'below';
+    }
+    function showInfoTip(btn) {
+      if (!infoTipEl) { infoTipEl = document.createElement('div'); infoTipEl.className = 'ex-tip ex-info-tip'; infoTipEl.id = 'exInfoTip'; infoTipEl.setAttribute('role', 'tooltip'); document.body.appendChild(infoTipEl); }
+      infoTipFor = btn; infoTipEl.innerHTML = `<p>${esc(t(btn.dataset.tip))}</p>`; infoTipEl.hidden = false; placeInfoTip();
+    }
+    function hideInfoTip() { if (infoTipEl) infoTipEl.hidden = true; infoTipFor = null; }
+    document.addEventListener('mouseover', e => { const b = e.target.closest?.('.ex-info'); if (b) showInfoTip(b); });
+    document.addEventListener('mouseout', e => { if (e.target.closest?.('.ex-info')) hideInfoTip(); });
+    document.addEventListener('focusin', e => { const b = e.target.closest?.('.ex-info'); if (b) showInfoTip(b); });
+    document.addEventListener('focusout', e => { if (e.target.closest?.('.ex-info')) hideInfoTip(); });
+    document.addEventListener('click', e => {
+      const b = e.target.closest?.('.ex-info');
+      if (b) { e.preventDefault(); e.stopPropagation(); if (infoTipFor === b && !infoTipEl.hidden) hideInfoTip(); else showInfoTip(b); }
+      else hideInfoTip();
+    }, true);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideInfoTip(); });
+    addEventListener('scroll', () => hideInfoTip(), { passive: true });
+    addEventListener('resize', placeInfoTip);
 
     /* 선교 항목·계좌 칸에 포커스가 가면 작성 안내를 말풍선으로 보여준다 (자동완성 목록과 겹치지 않게 칸 위쪽에) */
     let srcTipEl = null, srcTipFor = null;
