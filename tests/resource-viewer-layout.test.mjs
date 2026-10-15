@@ -93,16 +93,19 @@ test('hovering a highlight shows an "author: note" tooltip above it instead of a
   const { readFileSync } = await import('node:fs');
   const page = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
-  assert.match(page, /function showHighlightTooltip\(box, annotation\)/);
-  assert.match(page, /box\.addEventListener\('mouseenter', \(\) => showHighlightTooltip\(box, a\)\)/);
+  assert.match(page, /function showHighlightTooltip\(box, annotation, event\)/);
+  assert.match(page, /box\.addEventListener\('mouseenter', event => showHighlightTooltip\(box, a, event\)\)/);
   assert.match(page, /box\.addEventListener\('mouseleave', scheduleHideHighlightTooltip\)/);
-  assert.match(page, /hlTooltipNoteId === annotation\.id/, '같은 노트의 다른 줄로 옮겨도 말풍선을 새로 띄우지 않는다');
+  assert.match(page, /hlTooltipKey === key/, '같은 노트(들)의 다른 줄로 옮겨도 말풍선을 새로 띄우지 않는다');
+  assert.match(page, /function notesAtPoint\(x, y, fallbackId\)/, '겹친 하이라이트는 그 지점의 노트를 모두 모아 보여준다');
+  assert.match(page, /function renderOverlapBadges\(surface, notes\)/);
+  assert.match(css, /\.hl-overlap-badge\s*\{[^}]*pointer-events:none/);
   assert.doesNotMatch(page, /box\.title = `\$\{a\.createdByName\}: \$\{a\.text\}`/);
   assert.match(css, /\.hl-tooltip\s*\{[^}]*position:fixed/);
 });
 
 test('clicking a highlight pins its note with a close button; area notes are written in an inline composer under the highlight', async () => {
-  assert.match(page, /box\.addEventListener\('click', event => \{ event\.stopPropagation\(\); pinNote\(a\); \}\)/);
+  assert.match(page, /box\.addEventListener\('click', event => \{ event\.stopPropagation\(\); pinNotes\(notesAtPoint\(event\.clientX, event\.clientY, a\.id\)\); \}\)/);
   assert.match(page, /function closePinnedNote\(\)/);
   assert.match(page, /class="note-pin-close"[^>]*onclick="closePinnedNote\(\)"/);
   assert.match(page, /id="inlineComposer"/);
