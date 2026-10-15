@@ -13,6 +13,7 @@
  */
 import { appendRow, appendRowsToTab } from '../lib/googleSheets.js';
 import { sendSms, sendAlimtalk } from '../lib/solapi.js';
+import { sendApplicantNotice } from '../lib/applicantNotice.js';
 import { GENDER_CAPACITY, WINTER_CAMP_POLICY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote, winterCamperScholarships } from '../lib/winterCampPolicy.js';
 import { normalizePhone } from '../lib/phone.js';
 
@@ -743,6 +744,8 @@ export async function onRequestPost(context) {
         sendRegistrationEmail(env, reg).catch(e => console.error('registration email failed:', e)),
         syncToSheet(env, reg).catch(e => console.error('sheets sync failed:', e)),
         notifyAdmin(env, reg).catch(e => console.error('admin notify failed:', e)),
+        // 신청자에게 접수 안내(알림톡 → 실패 시 LMS). 예비 대기자는 예약금 안내 대상이 아니라 보내지 않는다.
+        (reg.isWaitlist ? Promise.resolve(false) : sendApplicantNotice(env, reg, 'receipt')).catch(e => console.error('receipt notice failed:', e)),
       ])
     );
 

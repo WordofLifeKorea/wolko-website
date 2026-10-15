@@ -12,6 +12,7 @@
  * 구 데이터 호환: status 없는 데이터는 confirmed 필드로 판단
  */
 import { sendAlimtalk } from '../../lib/solapi.js';
+import { sendApplicantNotice } from '../../lib/applicantNotice.js';
 import { parseHubSessionToken, portalSession } from '../../lib/hubAccounts.js';
 import { ACCOUNTANT_EMAILS } from '../../lib/expenses.js';
 
@@ -375,8 +376,9 @@ export async function onRequestPatch(context) {
         syncSubmissionCounters(env, campId, nextRegs),
       ]);
 
-      // 예약금 수납 알림톡
+      // 예약금 수납 알림톡 — 새 템플릿(얼리버드형/일반형)이 설정돼 있으면 그것으로, 아니면 예전 템플릿으로 보낸다.
       context.waitUntil((async () => {
+        if (await sendApplicantNotice(env, updatedReg, 'deposit')) return;
         if (isGroup) {
           await sendAlimtalk(env, reg.phone, env.KAKAO_TEMPLATE_DEPOSIT_GROUP, {
             '#{담당자}': reg.name,
@@ -422,8 +424,9 @@ export async function onRequestPatch(context) {
         syncSubmissionCounters(env, campId, nextRegs),
       ]);
 
-      // 최종 확정 알림톡
+      // 최종 확정 알림톡 — 새 템플릿(얼리버드형/일반형)이 설정돼 있으면 그것으로, 아니면 예전 템플릿으로 보낸다.
       context.waitUntil((async () => {
+        if (await sendApplicantNotice(env, updatedReg, 'confirm')) return;
         if (isGroup) {
           await sendAlimtalk(env, reg.phone, env.KAKAO_TEMPLATE_GROUP, {
             '#{담당자}': reg.name,
