@@ -809,6 +809,8 @@ body.lang-en .crp-countdown-notice {
 }
 .crp-field { display: flex; flex-direction: column; gap: 6px; }
 .crp-field--full { grid-column: 1 / -1; }
+/* 이름 칸은 조금 넓게, 연락처(국가코드+번호)는 조금 좁게 — 컬럼이 연락처 입력칸의 내용 폭에 끌려가지 않도록 minmax(0,…)로 고정 */
+@media (min-width: 641px) { .crp-form-grid.crp-form-grid--contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr); } }
 .crp-field label {
   font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
   text-transform: uppercase; color: var(--c-mid);
@@ -2089,7 +2091,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <span class="crp-form-section-label"><span class="wl-ko">필수 정보</span><span class="wl-en">Required</span></span>
               <hr class="crp-form-section-line">
             </div>
-            <div class="crp-form-grid">
+            <div class="crp-form-grid crp-form-grid--contact">
               <div class="crp-field">
                 <label><span class="wl-ko">캠퍼 이름</span><span class="wl-en">Camper Name</span> <span class="req">*</span></label>
                 <input id="crpName" name="name" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
@@ -2121,7 +2123,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
                   </a>
                 </div>
               </div>
-              <div class="crp-field">
+              <div class="crp-field crp-field--full">
                 <label><span class="wl-ko">이메일</span><span class="wl-en">Email</span></label>
                 <input id="crpEmail" name="email" type="email" placeholder="email@example.com">
               </div>
@@ -2156,7 +2158,7 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
               <span class="crp-form-section-label"><span class="wl-ko">담당자 정보</span><span class="wl-en">Contact Person</span></span>
               <hr class="crp-form-section-line">
             </div>
-            <div class="crp-form-grid">
+            <div class="crp-form-grid crp-form-grid--contact">
               <div class="crp-field">
                 <label><span class="wl-ko">담당자 이름</span><span class="wl-en">Contact Name</span> <span class="req">*</span></label>
                 <input id="crpGName" name="gName" data-ph-ko="홍길동" data-ph-en="Full name" placeholder="홍길동">
