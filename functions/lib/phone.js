@@ -19,7 +19,7 @@ export function normalizePhone(input) {
   const plus = raw.startsWith('+') || raw.startsWith('00');
   let digits = raw.replace(/\(0\)/g, '').replace(/\D/g, '');
   if (raw.startsWith('00')) digits = digits.slice(2);
-  if (plus || /^82(10|1[016789])/.test(digits) && digits.length >= 11 && !digits.startsWith('01')) {
+  if (plus || /^820?1[016789]/.test(digits) && digits.length >= 11 && !digits.startsWith('01')) {
     if (digits.startsWith('82')) {
       const national = digits.slice(2).replace(/^0+/, '');
       const kr = formatKoreanMobile('0' + national);
@@ -27,7 +27,8 @@ export function normalizePhone(input) {
     }
     return plus && digits ? `+${digits}` : raw;
   }
-  return formatKoreanMobile(digits) || raw;
+  // 국가코드를 한국(+82)으로 두고 맨 앞 0 없이 '10 1234 5678' 처럼 입력한 경우도 010-1234-5678 로 맞춘다.
+  return formatKoreanMobile(digits) || formatKoreanMobile('0' + digits) || raw;
 }
 
 /** 솔라피에 보낼 숫자만 — 한국 번호는 01012345678, 해외 번호는 국가번호 포함 숫자 */

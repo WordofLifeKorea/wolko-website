@@ -288,3 +288,12 @@ test('winter wolko group: scholarships are chosen per camper (max two each, Best
   const deferred = await register({ ...base, groupCount: 3, participantDetailsDeferred: true, participants: [] });
   assert.equal(deferred.response.status, 400);
 });
+
+test('Korean phone numbers with the +82 country code are stored and sent as 010-0000-0000', async () => {
+  const { normalizePhone, toSolapiNumber } = await import('../functions/lib/phone.js');
+  for (const input of ['+82 10 1234 5678', '+82 10-1234-5678', '+82 (0)10-1234-5678', '8210 1234 5678', '82 010 1234 5678', '10 1234 5678', '01012345678']) {
+    assert.equal(normalizePhone(input), '010-1234-5678', input);
+    assert.equal(toSolapiNumber(input), '01012345678', input);
+  }
+  assert.equal(normalizePhone('+1 5551234567'), '+15551234567');
+});
