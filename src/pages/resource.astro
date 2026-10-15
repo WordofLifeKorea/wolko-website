@@ -39,7 +39,7 @@ const pyeongtaekMissionaries = (await getCollection('team'))
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/portal.css?v=65">
+  <link rel="stylesheet" href="/portal.css?v=66">
   <script is:inline src="/pdf-continuous.js?v=3"></script>
   <link rel="stylesheet" href="/resource-login.css?v=1">
   <link rel="stylesheet" href="/resource-modal.css?v=2">
@@ -2122,15 +2122,11 @@ const pyeongtaekMissionaries = (await getCollection('team'))
       if (!a) { closePinnedNote(); return; }
       const color = highlightColorFor(a.createdBy);
       const comments = Array.isArray(a.comments) ? a.comments : [];
-      el.innerHTML = `
-        <div class="note-pin-head">
-          <span class="note-pin-who"><span class="note-pin-dot" style="background:${color}"></span><b>${esc(a.createdByName || a.createdBy || '')}</b><time>${esc(formatLogTime(a.createdAt))}</time></span>
-          <button type="button" class="note-pin-close" aria-label="${esc(t('notePinClose'))}" onclick="closePinnedNote()">×</button>
-        </div>
-        ${a.quote ? `<blockquote class="note-pin-quote">“${esc(a.quote.length > 140 ? a.quote.slice(0, 140) + '…' : a.quote)}”</blockquote>` : ''}
-        <p class="note-pin-text">${esc(a.text || '')}</p>
-        ${comments.length ? `<div class="note-pin-comments"><small>${esc(t('notePinMore')(comments.length))}</small>${comments.map(c => `<p><b>${esc(c.createdByName || c.createdBy || '')}</b>: ${esc(c.text || '')}</p>`).join('')}</div>` : ''}
-        <button type="button" class="note-pin-list" onclick="jumpToNoteListItem('${esc(a.id)}')">${esc(t('notePinOpenList'))}</button>`;
+      const more = comments.length
+        ? `<button type="button" class="note-pin-more" onclick="jumpToNoteListItem('${esc(a.id)}')">${esc(lang === 'ko' ? `추가 의견 ${comments.length}개 · 노트 목록에서 보기` : `${comments.length} more comment${comments.length > 1 ? 's' : ''} · open in notes`)}</button>`
+        : '';
+      // 마우스를 올렸을 때 뜨는 말풍선과 같은 모양 그대로 — 닫기(×)만 추가해 그 자리에 고정한다.
+      el.innerHTML = `<span class="note-pin-dot" style="background:${color}"></span><span class="note-pin-body"><b>${esc(a.createdByName || a.createdBy || '')}</b>: ${esc(a.text || '')}${more}</span><button type="button" class="note-pin-close" aria-label="${esc(t('notePinClose'))}" onclick="closePinnedNote()">×</button>`;
       el.hidden = false;
     }
     function boxesOfNote(id) { return [...document.querySelectorAll('.highlight-box')].filter(b => b.dataset.noteId === id); }
