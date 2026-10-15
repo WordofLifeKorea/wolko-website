@@ -6,10 +6,23 @@
  */
 import { portalSession } from '../../lib/hubAccounts.js';
 import { sendAlimtalk, sendSms } from '../../lib/solapi.js';
+import { noticeVariables } from '../../lib/applicantNotice.js';
+import { APPLICANT_NOTICE_INFO } from '../../lib/winterCampPolicy.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
 const SAMPLE = { name: '테스트', camp: '알림톡 점검', date: '10/8 목', schedule: '2027년 1월 · 점검용' };
+
+// 새 신청자 안내(얼리버드형/일반형) — 실제 발송과 같은 변수 계산 함수로 시험 변수를 만든다.
+const NOTICE_INFO = APPLICANT_NOTICE_INFO['2027-wolko-winter'];
+const noticeSample = early => ({
+  campId: '2027-wolko-winter', name: SAMPLE.name, registrationType: 'individual', depositAmount: 50000, campFeeFinal: early ? 500000 : 550000,
+  scholarshipDiscounts: early ? { early_bird: 1 } : {},
+});
+const noticeFlow = (kind, early, label) => ({
+  label, template: `KAKAO_TEMPLATE_${kind.toUpperCase()}_${early ? 'EARLY' : 'GENERAL'}`,
+  variables: () => noticeVariables(noticeSample(early), kind, NOTICE_INFO),
+});
 
 /** 흐름별: 라벨, 템플릿 환경변수, 시험 변수 */
 export const FLOWS = {
@@ -19,6 +32,12 @@ export const FLOWS = {
   deposit_group: { label: '캠프 신청자 · 예약금 안내(단체)', template: 'KAKAO_TEMPLATE_DEPOSIT_GROUP', variables: () => ({ '#{담당자}': SAMPLE.name, '#{캠프명}': SAMPLE.camp, '#{일정}': SAMPLE.schedule, '#{인원}': '점검용', '#{교회명}': '—' }) },
   confirm_individual: { label: '캠프 신청자 · 확정 안내(개인)', template: 'KAKAO_TEMPLATE_INDIVIDUAL', variables: () => ({ '#{이름}': SAMPLE.name, '#{캠프명}': SAMPLE.camp, '#{일정}': SAMPLE.schedule }) },
   confirm_group: { label: '캠프 신청자 · 확정 안내(단체)', template: 'KAKAO_TEMPLATE_GROUP', variables: () => ({ '#{담당자}': SAMPLE.name, '#{캠프명}': SAMPLE.camp, '#{일정}': SAMPLE.schedule, '#{인원}': '점검용', '#{교회명}': '—' }) },
+  receipt_early: noticeFlow('receipt', true, '캠프 신청자 · 신청 접수 안내(얼리버드형)'),
+  receipt_general: noticeFlow('receipt', false, '캠프 신청자 · 신청 접수 안내(일반형)'),
+  deposit_early: noticeFlow('deposit', true, '캠프 신청자 · 예약금 확인 안내(얼리버드형)'),
+  deposit_general: noticeFlow('deposit', false, '캠프 신청자 · 예약금 확인 안내(일반형)'),
+  confirm_early: noticeFlow('confirm', true, '캠프 신청자 · 최종 확정 안내(얼리버드형)'),
+  confirm_general: noticeFlow('confirm', false, '캠프 신청자 · 최종 확정 안내(일반형)'),
   staff: { label: '스태프 지원 접수', template: 'KAKAO_TEMPLATE_STAFF', variables: () => ({ '#{이름}': SAMPLE.name, '#{캠프명}': SAMPLE.camp }) },
   contact: { label: '문의 접수', template: 'KAKAO_TEMPLATE_CONTACT', variables: () => ({ '#{이름}': SAMPLE.name, '#{문의유형}': '점검' }) },
   kitchen: { label: '키친듀티 리마인더', template: 'KAKAO_TEMPLATE_KITCHEN', variables: () => ({ '#{담당자}': SAMPLE.name, '#{날짜}': SAMPLE.date, '#{업무}': '점심 준비', '#{시간}': '오후 12:30' }) },
