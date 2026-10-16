@@ -392,6 +392,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
         thBirthDate:'생년월일', thPreviousCamp:'캠프 경험', thTestimony:'자기소개·간증',
         thChurchWebsite:'교회 홈페이지', thPastorName:'담임 목사님 성함', thTraining:'캠프 트레이닝', trainingExceptionLabel:'개인 사정으로 불참 (메모 확인)', trainingCommitLabel:'2주 참여 동의', thPastorContact:'목사님·교회 연락처', thCultHistory:'하나님의 교회·신천지 참여', thEnglish:'일상 생활 영어', thMediaTech:'미디어·테크', thInstruments:'악기', thAvailableCamps:'섬길 수 있는 캠프', thIntroduction:'자기소개', thPreviousCampDetail:'캠프 봉사 경험 상세', thFaithStory:'예수님을 믿게 된 이야기',
+        thPayMethod:'결제 방식', payOnSiteLabel:'현금·현장 결제 (환불 계좌 없음)',
         deleteConfirm:'이 신청을 휴지통으로 이동하시겠습니까?\n30일 동안 보관되며 관리자가 복원할 수 있습니다.',
         trashBtn:'휴지통', trashTitle:'휴지통', trashDesc:'삭제한 신청은 30일 동안 보관되며, 관리자만 복원할 수 있습니다.',
         trashEmpty:'휴지통이 비어 있습니다.', trashDeletedAt:'삭제일', trashRestore:'복원', trashPurge:'영구 삭제',
@@ -497,6 +498,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
         thBirthDate:'Birth Date', thPreviousCamp:'Camp Exp.', thTestimony:'Intro/Testimony',
         thChurchWebsite:'Church Website', thPastorName:'Senior Pastor', thTraining:'Camp Training', trainingExceptionLabel:'Cannot attend (see notes)', trainingCommitLabel:'Agreed to 2 weeks', thPastorContact:'Pastor/Church Contact', thCultHistory:'WMSCOG/Shincheonji', thEnglish:'Everyday English', thMediaTech:'Media/Tech', thInstruments:'Instruments', thAvailableCamps:'Available Camps', thIntroduction:'Introduction', thPreviousCampDetail:'Camp Service Details', thFaithStory:'Faith Story',
+        thPayMethod:'Payment', payOnSiteLabel:'Cash / on-site (no refund account)',
         deleteConfirm:'Move this registration to the trash?\nIt is kept for 30 days and an admin can restore it.',
         trashBtn:'Trash', trashTitle:'Trash', trashDesc:'Deleted registrations are kept for 30 days. Only admins can restore them.',
         trashEmpty:'The trash is empty.', trashDeletedAt:'Deleted', trashRestore:'Restore', trashPurge:'Delete forever',
@@ -1746,6 +1748,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const refundDetailSection = `<div class="registration-detail-section">
           <div class="registration-detail-section-title">${t('detailRefundInfo')}</div>
           <div class="registration-detail-grid">
+            ${r.payOnSite ? detailItem(t('thPayMethod'), esc(t('payOnSiteLabel'))) : ''}
             ${detailItem(t('thRefundBank'), esc(r.refundBank || '—'))}
             ${detailItem(t('thRefundAccount'), esc(r.refundAccount || '—'))}
             ${detailItem(t('thRefundHolder'), esc(r.refundHolder || '—'))}

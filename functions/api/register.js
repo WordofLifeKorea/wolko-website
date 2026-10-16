@@ -472,6 +472,7 @@ export async function onRequestPost(context) {
       groupCount, participants,
       participantDetailsDeferred,
       refundBank, refundAccount, refundHolder,
+      payOnSite,
       mediaConsent,
       referralSource,
       scholarshipDiscounts: scholarshipDiscountsInput,
@@ -487,7 +488,9 @@ export async function onRequestPost(context) {
     const refundBankNorm = String(refundBank ?? '').trim();
     const refundAccountNorm = String(refundAccount ?? '').trim();
     const refundHolderNorm = String(refundHolder ?? '').trim();
-    if (!refundBankNorm || !refundAccountNorm || !refundHolderNorm) {
+    // 현금·현장 결제를 고르면 환불 계좌 없이도 신청할 수 있다(해외 거주자 등 한국 계좌가 없는 경우).
+    const payOnSiteNorm = payOnSite === true;
+    if (!payOnSiteNorm && (!refundBankNorm || !refundAccountNorm || !refundHolderNorm)) {
       return Response.json({ error: '환불을 위한 은행명, 계좌번호, 예금주를 모두 입력해주세요.' }, { status: 400, headers: CORS });
     }
 
@@ -680,6 +683,7 @@ export async function onRequestPost(context) {
           refundBank: refundBankNorm,
           refundAccount: refundAccountNorm,
           refundHolder: refundHolderNorm,
+          payOnSite: payOnSiteNorm,
           referralSource: referralSource?.trim() || '',
           scholarshipDiscounts: normalizedScholarshipDiscounts,
           scholarshipDiscountDetails: normalizedScholarshipDiscountDetails,
@@ -708,6 +712,7 @@ export async function onRequestPost(context) {
           refundBank: refundBankNorm,
           refundAccount: refundAccountNorm,
           refundHolder: refundHolderNorm,
+          payOnSite: payOnSiteNorm,
           scholarshipDiscounts: normalizedScholarshipDiscounts,
           scholarshipDiscountDetails: normalizedScholarshipDiscountDetails,
           scholarshipDiscountText: scholarshipText,
