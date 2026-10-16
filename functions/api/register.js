@@ -4,7 +4,7 @@
  * then fires email notification (Resend) + Google Sheets sync + admin notice in background.
  *
  * Registration is saved with confirmed: false.
- * Admin must confirm after verifying payment → then KV count increments.
+ * Admin verifies the deposit → then the homepage gauge (KV count) fills (deposit or confirmed).
  *
  * Admin notice requires env vars: SOLAPI_API_KEY, SOLAPI_API_SECRET,
  * SOLAPI_SENDER_PHONE (등록된 발신번호), ADMIN_NOTIFY_PHONE (수신번호).

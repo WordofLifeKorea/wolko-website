@@ -10,7 +10,8 @@
  *
  * Status 흐름:
  *   pending → deposit (예약금 수납, 알림톡 ①)
- *           → confirmed (최종 확정, KV 카운트 증가, 알림톡 ②)
+ *           → confirmed (최종 확정, 알림톡 ②)
+ *   홈페이지 신청 현황 게이지(KV count)는 예약금 수납(deposit) 이상인 신청부터 채워진다.
  *
  * 구 데이터 호환: status 없는 데이터는 confirmed 필드로 판단
  */
@@ -82,6 +83,11 @@ async function verifyAdmin(request, env) {
 function isFinalConfirmed(reg) {
   if (reg.status === 'confirmed') return true;
   return reg.status === undefined && reg.confirmed === true;
+}
+
+/** 홈페이지 신청 현황 게이지에 반영되는 신청인지 여부 — 예약금이 확인된 신청(예약금 수납 · 최종 확정) */
+function countsTowardGauge(reg) {
+  return reg.status === 'deposit' || isFinalConfirmed(reg);
 }
 
 // 단체 신청은 참가자 명단에 이름이 실제로 입력된 인원만 정원에 반영한다.
@@ -198,7 +204,7 @@ function replaceRegistration(registrations, updatedReg) {
 /** 공개 정원 그래프용 KV 카운터를 최종확정 신청 기준으로 동기화 */
 async function syncConfirmedCounters(env, campId, registrations) {
   const counts = registrations.reduce((acc, reg) => {
-    if (!isFinalConfirmed(reg)) return acc;
+    if (!countsTowardGauge(reg)) return acc;
     const spots = registrationSpots(reg);
     acc.count += spots.total;
     acc.countMale += spots.male;
