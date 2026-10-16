@@ -815,9 +815,9 @@ body.lang-en .crp-countdown-notice {
 /* ── FORM STYLES ── */
 .crp-form-wrap { padding: 28px 44px 44px; }
 .crp-form-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-bottom: 0;
 }
-.crp-field { display: flex; flex-direction: column; gap: 6px; }
+.crp-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .crp-field--full { grid-column: 1 / -1; }
 /* 이름 칸은 조금 넓게, 연락처(국가코드+번호)는 조금 좁게 — 컬럼이 연락처 입력칸의 내용 폭에 끌려가지 않도록 minmax(0,…)로 고정 */
 @media (min-width: 641px) { .crp-form-grid.crp-form-grid--contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr); } }
@@ -931,7 +931,7 @@ body.lang-en .crp-countdown-notice {
 .crp-window-notice { margin-top: 4px; padding: 14px 16px; border-radius: 12px; background: #f1f4f6; color: #55707d; font-size: 13.5px; font-weight: 700; line-height: 1.6; text-align: center; word-break: keep-all; }
 .crp-window-notice[hidden] { display: none; }
 
-#crpBirthField .crp-birth-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
+#crpBirthField .crp-birth-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .crp-birth-hint { margin-top: 6px; font-size: 12px; color: var(--c-muted); }
 .crp-age-warn { margin-top: 10px; padding: 12px 14px; border: 1.5px solid #f0b9bd; border-radius: 12px; background: #fff3f3; }
 .crp-age-warn[hidden] { display: none; }
@@ -952,7 +952,7 @@ body.lang-en .crp-countdown-notice {
   .crp-modal-head,
   .crp-staff-modal-head { padding: 28px 24px 22px; border-radius: 16px 16px 0 0; }
   .crp-form-wrap { padding: 22px 20px calc(36px + env(safe-area-inset-bottom)); }
-  .crp-form-grid { grid-template-columns: 1fr; }
+  .crp-form-grid { grid-template-columns: minmax(0, 1fr); } /* 1fr 은 안쪽 내용 최소폭만큼 늘어나 모바일에서 가로로 넘쳤다 */
   .crp-modal-close { top: 12px; right: 12px; }
   #staffModal .crp-modal-close { top:12px;right:12px; }
   .crp-consent { padding: 13px 14px; }
