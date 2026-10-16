@@ -1730,7 +1730,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const isExpanded = expandedRegistrationDetails.has(r.regId);
         const typeMeta = r.registrationType === 'group'
           ? `${esc(gradeOrCount)}${groupGenderCell ? ' · ' + groupGenderCell : ''}`
-          : `${esc(gradeOrCount)} · ${genderCell}`;
+          : (r.grade ? `${esc(r.grade)} · ${genderCell}` : genderCell);
         const typeText = `${typeBadge}<span class="registration-type-meta">${typeMeta}</span>`;
         const contactCell = `<div class="summary-stack"><strong>${esc(r.phone || '—')}</strong><span>${esc(r.email || '—')}</span></div>`;
         const counselorName = r.registrationType === 'group'
