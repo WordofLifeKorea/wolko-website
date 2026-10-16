@@ -406,7 +406,8 @@ export async function onRequestPost(context) {
     if (personKey) await env.CAMP_KV.put(personKey, regId);
     await env.CAMP_KV.delete(tKey);
 
-    const campRegs = await listCampRegistrations(env, campId);
+    // KV 목록은 방금 쓴 값이 바로 안 보일 수 있어, 복원한 신청을 직접 넣어 집계한다.
+    const campRegs = replaceRegistration(await listCampRegistrations(env, campId), reg);
     await Promise.all([
       syncConfirmedCounters(env, campId, campRegs),
       syncSubmissionCounters(env, campId, campRegs),

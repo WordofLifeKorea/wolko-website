@@ -3144,7 +3144,13 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || t('deleteFail'));
         showToast(t(action === 'restore' ? 'trashRestored' : 'trashPurged'), 'success');
-        if (action === 'restore') await loadRegs();
+        if (action === 'restore') {
+          // 방금 복원한 신청은 서버 목록(KV)에 바로 안 보일 수 있으므로 다시 불러오지 않고 목록에 직접 넣는다.
+          if (data.reg && !allRegs.some(r => r.regId === data.reg.regId)) allRegs.push(data.reg);
+          updateCardStats();
+          renderTable();
+          renderDash();
+        }
         await loadTrash();
       } catch (e) {
         showToast(t('trashErr') + e.message, 'error');
