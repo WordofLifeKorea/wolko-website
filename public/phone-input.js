@@ -20,7 +20,7 @@
     var select = document.createElement('select');
     select.className = 'ip-cc';
     select.setAttribute('aria-label', 'Country code');
-    select.innerHTML = COUNTRIES.map(function (c) { return '<option value="' + c[0] + '">' + c[1] + ' ' + c[0] + ' +' + c[2] + '</option>'; }).join('');
+    select.innerHTML = COUNTRIES.map(function (c) { return '<option value="' + c[0] + '">' + c[0] + ' +' + c[2] + '</option>'; }).join('');
     input.parentNode.insertBefore(wrap, input);
     wrap.append(select, input);
 
