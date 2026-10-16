@@ -16,6 +16,7 @@ import { sendSms, sendAlimtalk } from '../lib/solapi.js';
 import { sendApplicantNotice } from '../lib/applicantNotice.js';
 import { GENDER_CAPACITY, WINTER_CAMP_POLICY, birthYearCheck, registrationState, usesWinterCampPolicy, winterCampQuote, winterCamperScholarships } from '../lib/winterCampPolicy.js';
 import { normalizePhone } from '../lib/phone.js';
+import { personDupeKey } from '../lib/personDupe.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -565,10 +566,11 @@ export async function onRequestPost(context) {
     const spotsMForCapacity = deferParticipantDetails ? 0 : spotsM;
     const spotsFForCapacity = deferParticipantDetails ? 0 : spotsF;
 
-    // 이메일은 선택 항목: 입력한 경우에만 같은 이메일 중복 신청을 막는다.
-    const dupeKey = emailNorm ? `camp:${campId}:email:${emailNorm}` : null;
+    // 한 학부모가 같은 이메일로 자녀 여럿을 신청할 수 있으므로 이메일만으로는 막지 않는다.
+    // 개인 신청은 이름과 전화번호가 모두 같을 때만 중복으로 본다.
+    const dupeKey = personDupeKey(campId, { registrationType, name, phone });
     if (dupeKey && await env.CAMP_KV.get(dupeKey)) {
-      return Response.json({ error: '이미 신청된 이메일 주소입니다.' }, { status: 409, headers: CORS });
+      return Response.json({ error: '같은 이름과 전화번호로 이미 신청되어 있습니다. 수정이 필요하면 문의해 주세요.' }, { status: 409, headers: CORS });
     }
 
     // 정원 및 예비 인원 체크

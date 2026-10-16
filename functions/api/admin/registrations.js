@@ -1,7 +1,10 @@
 /**
  * GET  /api/admin/registrations        — list all registrations
  * GET  /api/admin/registrations?campId — filter by camp
- * DELETE /api/admin/registrations?regId=&campId= — delete one registration
+ * DELETE /api/admin/registrations?regId=&campId= — 신청을 휴지통으로 이동 (30일 보관 후 자동 삭제)
+ * GET  /api/admin/registrations?trash=1 — 휴지통 목록 (관리자/마스터)
+ * POST /api/admin/registrations         — 휴지통 복원 / 영구 삭제 (관리자/마스터)
+ *   body: { action: 'restore'|'purge', regId, campId }
  * PATCH /api/admin/registrations       — 예약금 수납 or 최종 확정
  *   body: { regId, campId, action: 'deposit'|'confirm', campTitleKo, campDateKo }
  *
@@ -20,6 +23,11 @@ const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
 };
+
+import { personDupeKey } from '../../lib/personDupe.js';
+
+const TRASH_TTL_SECONDS = 30 * 24 * 60 * 60;
+const trashKey = (campId, regId) => `trash:camp:${campId}:reg:${regId}`;
 
 import { WINTER_CAMP_POLICY, winterCampQuote } from '../../lib/winterCampPolicy.js';
 
@@ -238,6 +246,27 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   const campId = url.searchParams.get('campId');
 
+  if (url.searchParams.get('trash')) {
+    if (!await verifyAdmin(request, env)) {
+      return Response.json({ error: '휴지통은 관리자만 볼 수 있습니다.' }, { status: 403, headers: CORS });
+    }
+    try {
+      const items = [];
+      let cursor;
+      do {
+        const result = await env.CAMP_KV.list({ prefix: 'trash:camp:', ...(cursor ? { cursor } : {}), limit: 1000 });
+        const entries = await Promise.all(result.keys.map(k => env.CAMP_KV.get(k.name, 'json')));
+        items.push(...entries.filter(e => e && e.reg));
+        cursor = result.list_complete ? null : result.cursor;
+      } while (cursor);
+      items.sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt));
+      return Response.json({ trash: items, retentionDays: 30 }, { headers: CORS });
+    } catch (e) {
+      console.error('admin trash list error:', e);
+      return Response.json({ error: '서버 오류가 발생했습니다.' }, { status: 500, headers: CORS });
+    }
+  }
+
   try {
     let allRegs = [];
     if (campId) {
@@ -311,7 +340,14 @@ export async function onRequestDelete(context) {
     const dupeKey = `camp:${campId}:email:${reg.email}`;
     const campRegs = await listCampRegistrations(env, campId);
 
-    await Promise.all([env.CAMP_KV.delete(regKey), reg.email ? env.CAMP_KV.delete(dupeKey) : Promise.resolve()]);
+    // 완전 삭제하지 않고 휴지통으로 옮긴다 — 30일 뒤 KV 만료로 자동 삭제.
+    const personKey = personDupeKey(campId, reg);
+    await env.CAMP_KV.put(trashKey(campId, regId), JSON.stringify({ campId, regId, deletedAt: new Date().toISOString(), reg }), { expirationTtl: TRASH_TTL_SECONDS });
+    await Promise.all([
+      env.CAMP_KV.delete(regKey),
+      reg.email ? env.CAMP_KV.delete(dupeKey) : Promise.resolve(),
+      personKey ? env.CAMP_KV.delete(personKey) : Promise.resolve(),
+    ]);
 
     const remainingRegs = campRegs.filter(item => item.regId !== regId);
     const [counts] = await Promise.all([
@@ -321,6 +357,57 @@ export async function onRequestDelete(context) {
     return Response.json({ success: true, newCount: counts.count }, { headers: CORS });
   } catch (e) {
     console.error('admin delete error:', e);
+    return Response.json({ error: '서버 오류가 발생했습니다.' }, { status: 500, headers: CORS });
+  }
+}
+
+/**
+ * POST /api/admin/registrations
+ * Body: { action: 'restore'|'purge', regId, campId }
+ *
+ * restore — 휴지통에서 신청을 되살린다 (같은 이름·전화번호로 새 신청이 이미 있으면 409)
+ * purge   — 휴지통에서 즉시 영구 삭제
+ */
+export async function onRequestPost(context) {
+  const { env, request } = context;
+  if (!await verifyAdmin(request, env)) {
+    return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
+  }
+
+  try {
+    const { action, regId, campId } = await request.json();
+    if (!regId || !campId || !['restore', 'purge'].includes(action)) {
+      return Response.json({ error: 'action, regId, campId가 필요합니다.' }, { status: 400, headers: CORS });
+    }
+    const tKey = trashKey(campId, regId);
+    const trashed = await env.CAMP_KV.get(tKey, 'json');
+    if (!trashed?.reg) {
+      return Response.json({ error: '휴지통에서 해당 신청을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
+    }
+
+    if (action === 'purge') {
+      await env.CAMP_KV.delete(tKey);
+      return Response.json({ success: true }, { headers: CORS });
+    }
+
+    const reg = trashed.reg;
+    const personKey = personDupeKey(campId, reg);
+    if (personKey && await env.CAMP_KV.get(personKey)) {
+      return Response.json({ error: '같은 이름·전화번호로 이미 새 신청이 있어 복원할 수 없습니다.' }, { status: 409, headers: CORS });
+    }
+
+    await env.CAMP_KV.put(`camp:${campId}:reg:${regId}`, JSON.stringify(reg));
+    if (personKey) await env.CAMP_KV.put(personKey, regId);
+    await env.CAMP_KV.delete(tKey);
+
+    const campRegs = await listCampRegistrations(env, campId);
+    await Promise.all([
+      syncConfirmedCounters(env, campId, campRegs),
+      syncSubmissionCounters(env, campId, campRegs),
+    ]);
+    return Response.json({ success: true, reg }, { headers: CORS });
+  } catch (e) {
+    console.error('admin trash action error:', e);
     return Response.json({ error: '서버 오류가 발생했습니다.' }, { status: 500, headers: CORS });
   }
 }
@@ -682,7 +769,7 @@ export async function onRequestOptions() {
   return new Response(null, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, DELETE, PATCH, PUT, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, PATCH, PUT, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });

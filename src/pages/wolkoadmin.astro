@@ -151,6 +151,12 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
             </svg>
             <span data-t="csvDownload">CSV 다운로드</span>
           </button>
+          <button class="btn-print" onclick="openTrashModal()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2.5 3.5h9M5.5 3.5V2h3v1.5M3.5 3.5l.5 8h6l.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-t="trashBtn">휴지통</span>
+          </button>
         </div>
       </div>
       <div id="campCounselingSummary"></div>
@@ -331,6 +337,20 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     </section>
   </div>
 
+  <!-- ── TRASH (삭제한 신청 30일 보관) ── -->
+  <div class="account-modal" id="trashModal" hidden role="dialog" aria-modal="true" aria-labelledby="trashModalTitle">
+    <section class="account-dialog trash-dialog">
+      <header class="account-dialog-head">
+        <div>
+          <h2 id="trashModalTitle" data-t="trashTitle">휴지통</h2>
+          <p data-t="trashDesc">삭제한 신청은 30일 동안 보관되며, 관리자만 복원할 수 있습니다.</p>
+        </div>
+        <button type="button" class="account-dialog-close" onclick="closeTrashModal()" data-t-aria="cancel" aria-label="닫기"><span aria-hidden="true">×</span></button>
+      </header>
+      <div class="trash-list" id="trashList"></div>
+    </section>
+  </div>
+
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
@@ -372,7 +392,11 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
         thBirthDate:'생년월일', thPreviousCamp:'캠프 경험', thTestimony:'자기소개·간증',
         thChurchWebsite:'교회 홈페이지', thPastorName:'담임 목사님 성함', thTraining:'캠프 트레이닝', trainingExceptionLabel:'개인 사정으로 불참 (메모 확인)', trainingCommitLabel:'2주 참여 동의', thPastorContact:'목사님·교회 연락처', thCultHistory:'하나님의 교회·신천지 참여', thEnglish:'일상 생활 영어', thMediaTech:'미디어·테크', thInstruments:'악기', thAvailableCamps:'섬길 수 있는 캠프', thIntroduction:'자기소개', thPreviousCampDetail:'캠프 봉사 경험 상세', thFaithStory:'예수님을 믿게 된 이야기',
-        deleteConfirm:'정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
+        deleteConfirm:'이 신청을 휴지통으로 이동하시겠습니까?\n30일 동안 보관되며 관리자가 복원할 수 있습니다.',
+        trashBtn:'휴지통', trashTitle:'휴지통', trashDesc:'삭제한 신청은 30일 동안 보관되며, 관리자만 복원할 수 있습니다.',
+        trashEmpty:'휴지통이 비어 있습니다.', trashDeletedAt:'삭제일', trashRestore:'복원', trashPurge:'영구 삭제',
+        trashPurgeConfirm:'영구 삭제하면 복구할 수 없습니다. 삭제하시겠습니까?', trashRestored:'신청이 복원되었습니다.', trashPurged:'영구 삭제되었습니다.',
+        trashErr:'휴지통 오류: ',
         loginFirst:'로그인 후 자동으로 불러옵니다.', totalCapacity:'전체 정원 현황', statLoading:'불러오는 중…',
         statTotal:'총 신청', statRemain:'잔여 정원', statWaitlist:'예비 신청', statStaff:'스태프 지원',
         statCapBasis:'정원 기준', statWaitlistCount:'예비 대기 인원', statApplyStatus:'지원 현황',
@@ -390,7 +414,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         noApplicant:'이 팀을 선택한 지원자가 없습니다.',
         teamLeaderSection:'팀 리더', memberSection:'멤버', applicantSection:'지원 스태프',
         teamSaved:'팀 정보가 저장되었습니다.', teamSaveErr:'팀 저장 오류: ',
-        deleted:'신청이 삭제되었습니다.', deleteErr:'삭제 오류: ',
+        deleted:'신청이 휴지통으로 이동되었습니다.', deleteErr:'삭제 오류: ',
         deleteStudent:'학생 삭제', studentDeleteConfirm:'이 학생을 명단에서 삭제하시겠습니까?\n뒤 순번의 학생들이 앞으로 당겨집니다.', studentDeleted:'학생이 삭제되었습니다.',
         csvDone:'CSV 다운로드 완료!', csvStaffDone:'스태프 CSV 다운로드 완료!',
         fieldSaved:'저장되었습니다.', fieldErr:'저장 오류: ',
@@ -473,7 +497,11 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
         thBirthDate:'Birth Date', thPreviousCamp:'Camp Exp.', thTestimony:'Intro/Testimony',
         thChurchWebsite:'Church Website', thPastorName:'Senior Pastor', thTraining:'Camp Training', trainingExceptionLabel:'Cannot attend (see notes)', trainingCommitLabel:'Agreed to 2 weeks', thPastorContact:'Pastor/Church Contact', thCultHistory:'WMSCOG/Shincheonji', thEnglish:'Everyday English', thMediaTech:'Media/Tech', thInstruments:'Instruments', thAvailableCamps:'Available Camps', thIntroduction:'Introduction', thPreviousCampDetail:'Camp Service Details', thFaithStory:'Faith Story',
-        deleteConfirm:'Delete this registration?\nThis action cannot be undone.',
+        deleteConfirm:'Move this registration to the trash?\nIt is kept for 30 days and an admin can restore it.',
+        trashBtn:'Trash', trashTitle:'Trash', trashDesc:'Deleted registrations are kept for 30 days. Only admins can restore them.',
+        trashEmpty:'The trash is empty.', trashDeletedAt:'Deleted', trashRestore:'Restore', trashPurge:'Delete forever',
+        trashPurgeConfirm:'This cannot be undone. Delete permanently?', trashRestored:'Registration restored.', trashPurged:'Deleted permanently.',
+        trashErr:'Trash error: ',
         loginFirst:'Data will load after login.', totalCapacity:'Overall Capacity', statLoading:'Loading…',
         statTotal:'Total Reg.', statRemain:'Remaining', statWaitlist:'Waitlist', statStaff:'Staff Applied',
         statCapBasis:'of capacity', statWaitlistCount:'on waitlist', statApplyStatus:'applications',
@@ -493,7 +521,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         noApplicant:'No applicants for this team.',
         teamLeaderSection:'Team Leaders', memberSection:'Members', applicantSection:'Applied Staff',
         teamSaved:'Team info saved.', teamSaveErr:'Team save error: ',
-        deleted:'Registration deleted.', deleteErr:'Delete error: ',
+        deleted:'Registration moved to the trash.', deleteErr:'Delete error: ',
         deleteStudent:'Remove', studentDeleteConfirm:'Remove this student from the roster?\nStudents after this slot will shift up.', studentDeleted:'Student removed.',
         csvDone:'CSV download complete!', csvStaffDone:'Staff CSV download complete!',
         fieldSaved:'Saved.', fieldErr:'Save error: ',
@@ -3047,6 +3075,58 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         showToast(t('deleted'), 'success');
       } catch (e) {
         showToast(t('deleteErr') + e.message, 'error');
+      }
+    }
+
+    // ── 휴지통 (삭제한 신청 30일 보관 · 복원/영구삭제는 관리자만) ──
+    function closeTrashModal() {
+      document.getElementById('trashModal').hidden = true;
+      document.body.classList.remove('account-modal-open');
+    }
+    async function openTrashModal() {
+      document.getElementById('trashModal').hidden = false;
+      document.body.classList.add('account-modal-open');
+      await loadTrash();
+    }
+    async function loadTrash() {
+      const box = document.getElementById('trashList');
+      box.innerHTML = '<p class="trash-empty">…</p>';
+      try {
+        const res = await fetch('/api/admin/registrations?trash=1', { headers: authHeaders() });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('deleteFail'));
+        const items = data.trash || [];
+        if (!items.length) { box.innerHTML = '<p class="trash-empty">' + esc(t('trashEmpty')) + '</p>'; return; }
+        box.innerHTML = items.map(it => {
+          const r = it.reg || {};
+          const when = new Date(it.deletedAt).toLocaleString(adminLang === 'en' ? 'en-US' : 'ko-KR');
+          const args = esc(JSON.stringify([it.regId, it.campId]));
+          return '<div class="trash-item">'
+            + '<div class="trash-info"><strong>' + esc(r.name || '') + '</strong>'
+            + '<span>' + esc(r.phone || '') + (r.email ? ' · ' + esc(r.email) : '') + '</span>'
+            + '<span>' + esc(it.campId) + ' · ' + esc(t('trashDeletedAt')) + ' ' + esc(when) + '</span></div>'
+            + '<div class="trash-actions">'
+            + '<button type="button" class="trash-restore" onclick="trashAction(\'restore\', ...' + args + ')">' + esc(t('trashRestore')) + '</button>'
+            + '<button type="button" class="trash-purge" onclick="trashAction(\'purge\', ...' + args + ')">' + esc(t('trashPurge')) + '</button>'
+            + '</div></div>';
+        }).join('');
+      } catch (e) {
+        box.innerHTML = '<p class="trash-empty">' + esc(t('trashErr') + e.message) + '</p>';
+      }
+    }
+    async function trashAction(action, regId, campId) {
+      if (action === 'purge' && !confirm(t('trashPurgeConfirm'))) return;
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'POST', headers: authHeaders(), body: JSON.stringify({ action, regId, campId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('deleteFail'));
+        showToast(t(action === 'restore' ? 'trashRestored' : 'trashPurged'), 'success');
+        if (action === 'restore') await loadRegs();
+        await loadTrash();
+      } catch (e) {
+        showToast(t('trashErr') + e.message, 'error');
       }
     }
 
