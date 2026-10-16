@@ -1670,17 +1670,17 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
             ? `<button class="btn-revert" onclick="revertReg('${r.regId}','${r.campId}')" title="예약금확인 상태로 되돌리기"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg><span>예약금</span></button>`
             : '';
           statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
-            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,0.12);color:#16a34a;font-size:11px;font-weight:700;">${t('confirmed')}</span>${waitlistBadge}</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;"><span class="reg-status-badge" style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(22,163,74,0.12);color:#16a34a;font-size:11px;font-weight:700;">${t('confirmed')}</span>${waitlistBadge}</span>
             ${revertBtn}
           </span>`;
         } else if (regStatus === 'deposit') {
           statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
-            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">${t('depositConfirmed')}</span>${waitlistBadge}</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;"><span class="reg-status-badge" style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,0.12);color:#2563eb;font-size:11px;font-weight:700;">${t('depositConfirmed')}</span>${waitlistBadge}</span>
             ${canProcess ? `<button class="btn-confirm" onclick="confirmReg('${r.regId}','${r.campId}')">${t('finalConfirmBtn')}</button>` : ''}
           </span>`;
         } else {
           statusCell = `<span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;white-space:nowrap;">
-            <span style="display:inline-flex;align-items:center;gap:2px;"><span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">${t('pending')}</span>${waitlistBadge}</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;"><span class="reg-status-badge" style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(217,119,6,0.12);color:#d97706;font-size:11px;font-weight:700;">${t('pending')}</span>${waitlistBadge}</span>
             ${canProcess ? `<button class="btn-confirm btn-deposit" onclick="depositReg('${r.regId}','${r.campId}')">${t('depositBtn')}</button>` : ''}
           </span>`;
         }
