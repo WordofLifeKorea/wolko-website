@@ -44,6 +44,8 @@ import { REGISTRATION_WINDOWS } from '../../../functions/lib/winterCampPolicy.js
 
 <link rel="stylesheet" href="/phone-input.css?v=2">
 <script is:inline src="/phone-input.js?v=2" defer></script>
+<link rel="stylesheet" href="/wolko-datepicker.css?v=2">
+<script is:inline src="/wolko-datepicker.js?v=3" defer></script>
 <style is:global>
 @import url('https://cdn.jsdelivr.net/npm/pretendard@latest/dist/web/variable/pretendardvariable-dynamic-subset.css');
 
@@ -1448,7 +1450,11 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
 }
 .crp-group-participants:empty { display: none; }
 .crp-group-participant {
-  display: grid; grid-template-columns: 34px minmax(0,1fr) 120px; gap: 8px; align-items: center;
+  display: grid; grid-template-columns: 34px minmax(0,1fr) 150px 120px; gap: 8px; align-items: center;
+}
+@media (max-width: 560px) {
+  .crp-group-participant { grid-template-columns: 28px minmax(0,1fr) 110px; }
+  .crp-group-participant .crp-g-participant-birth { grid-column: 2 / -1; }
 }
 .crp-group-participant-num { color: var(--c-muted); font-size: 12px; font-weight: 700; text-align: center; }
 .crp-group-participant input, .crp-group-participant select {
@@ -3528,8 +3534,14 @@ function renderGroupParticipants() {
     return {
       name: row.querySelector('.crp-g-participant-name')?.value || '',
       gender: row.querySelector('.crp-g-participant-gender')?.value || '',
+      birthDate: row.querySelector('.crp-g-participant-birth')?.value || '',
     };
   });
+  var birthRange = BIRTH_YEAR_RANGES[campIdInput.value];
+  var thisYear = new Date().getFullYear();
+  var birthYears = birthRange ? (birthRange.min - 5) + ',' + (birthRange.max + 5) : (thisYear - 30) + ',' + thisYear;
+  var birthStart = birthRange ? Math.round((birthRange.min + birthRange.max) / 2) : thisYear - 13;
+  var birthPlaceholder = crpText('생년월일', 'Date of birth');
   var namePlaceholder = crpText('학생 이름', 'Participant name');
   var genderPlaceholder = crpText('성별', 'Gender');
   var maleLabel = crpText('남', 'Male');
@@ -3539,6 +3551,7 @@ function renderGroupParticipants() {
     return '<div class="crp-group-participant">' +
       '<span class="crp-group-participant-num">' + (index + 1) + '</span>' +
       '<input class="crp-g-participant-name" type="text" value="' + crpEscAttr(participant.name) + '" placeholder="' + crpEscAttr(namePlaceholder) + '">' +
+      '<input class="crp-g-participant-birth" type="date" data-cal-jump data-cal-years="' + birthYears + '" data-cal-start="' + birthStart + '" value="' + crpEscAttr(participant.birthDate) + '" placeholder="' + crpEscAttr(birthPlaceholder) + '" aria-label="' + crpEscAttr(birthPlaceholder) + '">' +
       '<select class="crp-g-participant-gender">' +
         '<option value="">' + genderPlaceholder + '</option>' +
         '<option value="male"' + (participant.gender === 'male' ? ' selected' : '') + '>' + maleLabel + '</option>' +
@@ -3845,6 +3858,7 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
       var entry = {
         name: row.querySelector('.crp-g-participant-name').value.trim(),
         gender: row.querySelector('.crp-g-participant-gender').value,
+        birthDate: row.querySelector('.crp-g-participant-birth').value,
       };
       if (crpPerCamperMode()) {
         var schRow = crpCamperRows()[rowIndex];
@@ -3873,6 +3887,20 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
     if (!deferNames && (participants.length !== gTotal || participants.some(function(p) { return !p.name || !p.gender; }))) {
       crpShowError(errorMsg, '모든 참가 학생의 이름과 성별을 입력해 주세요.', 'Please enter every participant name and gender.');
       return;
+    }
+    // 지원 연령이 정해진 캠프는 학생마다 생년월일이 꼭 필요하고 연령 범위 안이어야 한다.
+    if (!deferNames) {
+      for (var bi = 0; bi < participants.length; bi++) {
+        var bc = birthYearCheck(campIdInput.value, participants[bi].birthDate);
+        if (bc.ok) continue;
+        var who = (bi + 1) + (participants[bi].name ? ' (' + participants[bi].name + ')' : '');
+        if (bc.reason === 'out-of-range') {
+          crpShowError(errorMsg, '학생 ' + who + '의 출생연도가 이 캠프의 지원 연령(' + bc.range.min + '년생 ~ ' + bc.range.max + '년생)에 해당하지 않습니다. 문의를 남겨 주세요.', 'Participant ' + who + ' is outside this camp\'s age range (born ' + bc.range.min + ' – ' + bc.range.max + '). Please leave us an inquiry.');
+        } else {
+          crpShowError(errorMsg, '학생 ' + who + '의 생년월일을 선택해 주세요.', 'Please select the date of birth for participant ' + who + '.');
+        }
+        return;
+      }
     }
     var groupScholarshipCounts = getScholarshipCounts();
     var groupScholarshipDetails = validateScholarshipDiscountDetails(groupScholarshipCounts);

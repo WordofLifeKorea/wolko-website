@@ -103,7 +103,7 @@ test('API rejects unconfirmed Best Camper eligibility and excessive selections',
 });
 
 test('group registration stores rewards and charges per eligible participant', async () => {
-  const { response, store } = await register({ registrationType: 'group', groupCount: 2, participants: [{ name: 'A', gender: 'male', scholarships: ['james_memory'] }, { name: 'B', gender: 'female', scholarships: ['james_memory'] }] });
+  const { response, store } = await register({ registrationType: 'group', groupCount: 2, participants: [{ name: 'A', gender: 'male', birthDate: '2013-03-02', scholarships: ['james_memory'] }, { name: 'B', gender: 'female', birthDate: '2012-07-15', scholarships: ['james_memory'] }] });
   assert.equal(response.status, 200);
   const reg = JSON.parse([...store.entries()].find(([key]) => key.includes(':reg:'))[1]);
   assert.equal(reg.campFeeFinal, 1100000);
@@ -266,7 +266,7 @@ test('registration requires an explicit photo/video sharing choice and stores it
 
 test('winter wolko group: scholarships are chosen per camper (max two each, Best Camper extra); no deferral', async () => {
   const base = { registrationType: 'group', groupCount: 3, organization: 'Test Church', gender: undefined, birthDate: undefined };
-  const p = (name, gender, scholarships, extra = {}) => ({ name, gender, scholarships, ...extra });
+  const p = (name, gender, scholarships, extra = {}) => ({ name, gender, birthDate: '2013-05-05', scholarships, ...extra });
   // 정상: 학생마다 다른 조합. 2명이 early_bird, 1명이 sibling+james, 1명이 베스트 캠퍼 추가
   const ok = await register({ ...base, groupCount: 3, participants: [
     p('A', 'male', ['early_bird', 'sibling'], { siblingName: 'Friend' }),
@@ -284,6 +284,11 @@ test('winter wolko group: scholarships are chosen per camper (max two each, Best
   // 두 명이 서로 다른 항목 세 종류를 나눠 가져도 학생별로 2개 이하이면 허용
   const spread = await register({ ...base, groupCount: 3, participants: [p('A', 'male', ['early_bird']), p('B', 'female', ['sibling'], { siblingName: 'F' }), p('C', 'male', ['james_memory'])] });
   assert.equal(spread.response.status, 200);
+  // 지원 연령이 정해진 캠프: 학생마다 생년월일 필수, 범위 밖이면 거절
+  const noBirth = await register({ ...base, groupCount: 2, participants: [p('A', 'male', [], { birthDate: '' }), p('B', 'female', [])] });
+  assert.equal(noBirth.response.status, 400);
+  const tooOld = await register({ ...base, groupCount: 2, participants: [p('A', 'male', [], { birthDate: '2005-01-01' }), p('B', 'female', [])] });
+  assert.equal(tooOld.response.status, 400);
   // 추후 명단 제출은 월코 캠프에서 불가
   const deferred = await register({ ...base, groupCount: 3, participantDetailsDeferred: true, participants: [] });
   assert.equal(deferred.response.status, 400);

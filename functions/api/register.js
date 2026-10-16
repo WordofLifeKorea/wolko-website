@@ -541,6 +541,7 @@ export async function onRequestPost(context) {
         normalizedParticipants = participants.map(participant => ({
           name: String(participant?.name || '').trim(),
           gender: participant?.gender,
+          birthDate: /^\d{4}-\d{2}-\d{2}$/.test(String(participant?.birthDate || '').trim()) ? String(participant.birthDate).trim() : '',
           ...(perCamperScholarships ? {
             scholarships: Array.isArray(participant?.scholarships) ? participant.scholarships.map(String) : [],
             ...(participant?.siblingName ? { siblingName: String(participant.siblingName).trim().slice(0, 100) } : {}),
@@ -548,6 +549,16 @@ export async function onRequestPost(context) {
         }));
         if (normalizedParticipants.some(participant => !participant.name || !['male', 'female'].includes(participant.gender))) {
           return Response.json({ error: '모든 참가 학생의 이름과 성별을 입력해주세요.' }, { status: 400, headers: CORS });
+        }
+        // 지원 연령이 정해진 캠프는 학생마다 생년월일이 연령 범위 안이어야 한다.
+        for (let i = 0; i < normalizedParticipants.length; i++) {
+          const check = birthYearCheck(campId, normalizedParticipants[i].birthDate);
+          if (check.ok) continue;
+          const range = check.range;
+          const msg = check.reason === 'out-of-range'
+            ? `학생 ${i + 1}의 출생연도가 이 캠프의 지원 연령(${range.min}년생 ~ ${range.max}년생)에 해당하지 않습니다. 문의를 남겨 주세요.`
+            : `학생 ${i + 1}의 생년월일을 정확히 입력해 주세요.`;
+          return Response.json({ error: msg, code: check.reason === 'out-of-range' ? 'age-out-of-range' : 'birth-required' }, { status: 400, headers: CORS });
         }
         spotsNeeded = normalizedParticipants.length;
         spotsM = normalizedParticipants.filter(participant => participant.gender === 'male').length;

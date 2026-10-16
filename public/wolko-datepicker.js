@@ -2,6 +2,8 @@
  * WOLKO 공용 날짜 선택 달력 — 브라우저 기본 달력 대신 둥근 모양의 직접 만든 팝업을 쓴다.
  * - 페이지의 모든 <input type="date">를 읽기 전용 텍스트(YYYY-MM-DD)로 바꿔 이 달력과 연결한다. 값은 기존과 같은 ISO 문자열이다.
  * - 날짜를 고르면 input · change 이벤트를 보내므로 페이지의 기존 코드는 그대로 동작한다.
+ * - 생년월일처럼 먼 과거를 고르는 입력칸은 data-cal-jump 를 달면 머리글에 연·월 선택칸이 생긴다.
+ *   data-cal-years="최소연도,최대연도" 로 연도 범위를, data-cal-start="YYYY" 로 빈 칸일 때 처음 보여줄 연도를 정한다.
  * - 언어는 <html lang>을 따른다(ko/en). 키보드: Enter/Space/↓ 열기, 방향키 이동, Enter 선택, Esc 닫기.
  */
 (function () {
@@ -52,13 +54,26 @@
       const cls = ['wl-cal-day', d.getMonth() !== first.getMonth() ? 'out' : '', d.getDay() === 0 ? 'sun' : '', v === tIso ? 'today' : '', sel && v === iso(sel) ? 'sel' : '', cursor && v === iso(cursor) ? 'cur' : ''].filter(Boolean).join(' ');
       days += `<button type="button" class="${cls}" data-cal-day="${v}" tabindex="-1">${d.getDate()}</button>`;
     }
-    el.innerHTML = `<div class="wl-cal-head"><button type="button" class="wl-cal-nav" data-cal-nav="-1" aria-label="prev">‹</button><div class="wl-cal-title">${title}</div><button type="button" class="wl-cal-nav" data-cal-nav="1" aria-label="next">›</button></div>
+    let titleHtml = title;
+    if (forInput.dataset.calJump !== undefined) {
+      const cy = new Date().getFullYear();
+      const [lo, hi] = (forInput.dataset.calYears || '').split(',').map(Number);
+      const minY = Math.min(Number.isFinite(lo) ? lo : cy - 40, view.getFullYear());
+      const maxY = Math.max(Number.isFinite(hi) ? hi : cy, view.getFullYear());
+      let yo = '';
+      for (let y = maxY; y >= minY; y--) yo += `<option value="${y}"${y === view.getFullYear() ? ' selected' : ''}>${y}${en ? '' : '년'}</option>`;
+      let mo = '';
+      for (let m = 0; m < 12; m++) mo += `<option value="${m}"${m === view.getMonth() ? ' selected' : ''}>${en ? new Date(2000, m, 1).toLocaleDateString('en-US', { month: 'short' }) : (m + 1) + '월'}</option>`;
+      titleHtml = `<select class="wl-cal-sel" data-cal-year aria-label="year">${yo}</select><select class="wl-cal-sel" data-cal-month aria-label="month">${mo}</select>`;
+    }
+    el.innerHTML = `<div class="wl-cal-head"><button type="button" class="wl-cal-nav" data-cal-nav="-1" aria-label="prev">‹</button><div class="wl-cal-title">${titleHtml}</div><button type="button" class="wl-cal-nav" data-cal-nav="1" aria-label="next">›</button></div>
       <div class="wl-cal-week">${names.map(n => `<span>${n}</span>`).join('')}</div><div class="wl-cal-days">${days}</div>
       <div class="wl-cal-foot"><button type="button" data-cal-today>${en ? 'Today' : '오늘'}</button><button type="button" data-cal-close>${en ? 'Close' : '닫기'}</button></div>`;
   }
   function open(input) {
     ensure(); forInput = input;
-    const cur = parseIso(input.value) || new Date();
+    const startYear = parseInt(input.dataset.calStart, 10);
+    const cur = parseIso(input.value) || (Number.isFinite(startYear) ? new Date(startYear, 5, 1) : new Date());
     cursor = cur; view = new Date(cur.getFullYear(), cur.getMonth(), 1);
     draw(); el.hidden = false; place();
   }
@@ -83,7 +98,15 @@
     if (e.target.closest('[data-cal-today]')) return pick(todayIso());
     if (e.target.closest('[data-cal-close]')) close();
   });
+  document.addEventListener('change', e => {
+    const sel = e.target.closest?.('.wl-cal-sel');
+    if (!sel || !el || el.hidden || !forInput) return;
+    e.stopPropagation();
+    const y = +el.querySelector('[data-cal-year]').value, m = +el.querySelector('[data-cal-month]').value;
+    view = new Date(y, m, 1); cursor = new Date(y, m, Math.min(cursor.getDate(), 28)); draw();
+  }, true);
   document.addEventListener('keydown', e => {
+    if (e.target.closest?.('.wl-cal-sel')) { if (e.key === 'Escape') close(); return; }
     const inp = e.target.matches?.('input[data-datepick]') ? e.target : null;
     if (inp && (!el || el.hidden) && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown')) { e.preventDefault(); open(inp); return; }
     if (!el || el.hidden || !forInput) return;
