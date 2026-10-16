@@ -387,6 +387,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         thStatus:'상태', thCamp:'캠프', thType:'유형', thName:'이름',
         thCounselor:'담당 카운슬러', thSalvation:'구원', thDedication:'헌신',
         thCounselorMemo:'상담자 메모', thCamperTestimony:'간증문', thPhone:'연락처', thEmail:'이메일',
+        gradeFromBirthSuffix:'(생년월일 기준)', gradePreschool:'미취학', gradeGraduated:'고등학교 졸업 이후',
         thGrade:'학년 / 인원', thGender:'성별', thChurch:'교회', thSchool:'학교',
         thEmergency:'비상연락처', thNotes:'메모', thDate:'신청일시', thDelete:'삭제',
         staffRegTitle:'스태프 · 봉사자 지원 목록', thTeam:'팀', thApplicantMemo:'신청자 메모',
@@ -493,6 +494,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         thStatus:'Status', thCamp:'Camp', thType:'Type', thName:'Name',
         thCounselor:'Counselor', thSalvation:'Saved', thDedication:'Dedicated',
         thCounselorMemo:'Counselor Note', thCamperTestimony:'Testimony', thPhone:'Phone', thEmail:'Email',
+        gradeFromBirthSuffix:'(from date of birth)', gradePreschool:'Preschool', gradeGraduated:'Past high school',
         thGrade:'Grade / Count', thGender:'Gender', thChurch:'Church', thSchool:'School',
         thEmergency:'Emergency', thNotes:'Notes', thDate:'Registered', thDelete:'Delete',
         staffRegTitle:'Staff & Volunteer Applications', thTeam:'Team', thApplicantMemo:'Applicant Note',
@@ -584,6 +586,22 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       }
     };
     function t(key) { return ADMIN_T[adminLang]?.[key] ?? ADMIN_T.ko?.[key] ?? key; }
+    // 생년월일로 지금 학년을 계산한다 — 한국 학제(3월 새 학년): 학년 = 올해 − 출생연도 − 6 (1~6 초, 7~9 중, 10~12 고). 1·2월은 아직 이전 학년도.
+    function gradeFromBirth(birthDate) {
+      const m = /^(d{4})-(d{2})-(d{2})$/.exec(String(birthDate || '').trim());
+      if (!m) return '';
+      const now = new Date();
+      const schoolYear = now.getMonth() < 2 ? now.getFullYear() - 1 : now.getFullYear();
+      const n = schoolYear - Number(m[1]) - 6;
+      const en = adminLang === 'en';
+      let label;
+      if (n < 1) label = t('gradePreschool');
+      else if (n > 12) label = t('gradeGraduated');
+      else if (n <= 6) label = en ? 'Elementary ' + n : '초' + n;
+      else if (n <= 9) label = en ? 'Middle ' + (n - 6) : '중' + (n - 6);
+      else label = en ? 'High ' + (n - 9) : '고' + (n - 9);
+      return label + ' ' + t('gradeFromBirthSuffix');
+    }
     function tt(key, ...args) {
       const v = t(key);
       return typeof v === 'function' ? v(...args) : v;
@@ -1908,7 +1926,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
               <div class="registration-detail-section-title">${t('detailApplicationInfo')}</div>
               <div class="registration-detail-grid">
                 ${detailItem(t('thType'), typeBadge)}
-                ${detailItem(t('thGrade'), esc(gradeOrCount))}
+                ${detailItem(t('thGrade'), esc(r.registrationType !== 'group' && !r.grade && r.birthDate ? gradeFromBirth(r.birthDate) || gradeOrCount : gradeOrCount))}
                 ${detailItem(t('thGender'), genderCell)}
                 ${detailItem(t('thChurch'), esc(r.church || '—'))}
                 ${detailItem(t('thSchool'), esc(r.school || '—'))}
