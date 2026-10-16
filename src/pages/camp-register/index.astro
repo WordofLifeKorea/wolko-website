@@ -1464,8 +1464,14 @@ body.lang-en .crp-modal-card .wl-en { display: block !important; }
   display: grid; grid-template-columns: 34px minmax(0,1fr) 150px 120px; gap: 8px; align-items: center;
 }
 @media (max-width: 560px) {
-  .crp-group-participant { grid-template-columns: 28px minmax(0,1fr) 110px; }
-  .crp-group-participant .crp-g-participant-birth { grid-column: 2 / -1; }
+  /* 모바일: 1줄 번호·이름, 2줄 생년월일·성별 (자동 배치에 맡기면 성별 칸이 번호 칸으로 밀려 좁아진다) */
+  .crp-group-participant { grid-template-columns: 28px minmax(0,1fr) 112px; }
+  .crp-group-participant .crp-group-participant-num { grid-column: 1; grid-row: 1; }
+  .crp-group-participant .crp-g-participant-name { grid-column: 2 / -1; grid-row: 1; }
+  .crp-group-participant .crp-g-participant-birth { grid-column: 2; grid-row: 2; }
+  .crp-group-participant .crp-g-participant-gender { grid-column: 3; grid-row: 2; }
+  .crp-group-participant { row-gap: 6px; padding-bottom: 8px; border-bottom: 1px dashed rgba(0,79,104,0.14); }
+  .crp-group-participant:last-child { border-bottom: 0; padding-bottom: 0; }
 }
 .crp-group-participant-num { color: var(--c-muted); font-size: 12px; font-weight: 700; text-align: center; }
 .crp-group-participant input, .crp-group-participant select {
@@ -3906,6 +3912,10 @@ document.getElementById('crpForm').addEventListener('submit', async function(e) 
         var bc = birthYearCheck(campIdInput.value, participants[bi].birthDate);
         if (bc.ok) continue;
         var who = (bi + 1) + (participants[bi].name ? ' (' + participants[bi].name + ')' : '');
+        var birthInput = document.querySelectorAll('.crp-group-participant')[bi].querySelector('.crp-g-participant-birth');
+        birthInput.style.borderColor = '#c42a36';
+        birthInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        birthInput.addEventListener('change', function clearBirthErr() { birthInput.style.borderColor = ''; birthInput.removeEventListener('change', clearBirthErr); });
         if (bc.reason === 'out-of-range') {
           crpShowError(errorMsg, '학생 ' + who + '의 출생연도가 이 캠프의 지원 연령(' + bc.range.min + '년생 ~ ' + bc.range.max + '년생)에 해당하지 않습니다. 문의를 남겨 주세요.', 'Participant ' + who + ' is outside this camp\'s age range (born ' + bc.range.min + ' – ' + bc.range.max + '). Please leave us an inquiry.');
         } else {
