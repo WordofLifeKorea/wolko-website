@@ -46,3 +46,8 @@ input[data-datepick] {
 .wl-cal button:focus-visible { outline: 2px solid var(--blue, #004f68); outline-offset: 2px; }
 .wl-cal-title .wl-cal-sel { height: 32px; margin: 0 2px; padding: 0 6px; border: 1px solid #dbe6ec; border-radius: 10px; background: #fff; color: #102936; font: 800 14px/1 'Noto Sans KR', sans-serif; cursor: pointer; }
 .wl-cal-title .wl-cal-sel:focus { outline: 2px solid #0d9488; outline-offset: 1px; }
+.wl-cal-backdrop { position: fixed; inset: 0; z-index: 9999; background: rgba(5, 18, 28, .45); animation: wlCalFade .18s ease-out; }
+.wl-cal-backdrop[hidden] { display: none; }
+@keyframes wlCalFade { from { opacity: 0; } to { opacity: 1; } }
+/* 가운데 달력은 위치를 JS 가 정확히 잡으므로 이동·확대 애니메이션 없이 부드럽게 나타나기만 한다 */
+.wl-cal.wl-cal-center { animation: wlCalFade .18s ease-out; }

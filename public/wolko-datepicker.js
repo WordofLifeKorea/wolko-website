@@ -4,6 +4,7 @@
  * - 날짜를 고르면 input · change 이벤트를 보내므로 페이지의 기존 코드는 그대로 동작한다.
  * - 생년월일처럼 먼 과거를 고르는 입력칸은 data-cal-jump 를 달면 머리글에 연·월 선택칸이 생긴다.
  *   data-cal-years="최소연도,최대연도" 로 연도 범위를, data-cal-start="YYYY" 로 빈 칸일 때 처음 보여줄 연도를 정한다.
+ * - 좁은 화면(640px 이하)이나 data-cal-center 입력칸은 달력을 화면 가운데에 띄우고 뒤를 살짝 어둡게 한다(스크롤해도 따라다니지 않는다).
  * - 언어는 <html lang>을 따른다(ko/en). 키보드: Enter/Space/↓ 열기, 방향키 이동, Enter 선택, Esc 닫기.
  */
 (function () {
@@ -25,16 +26,24 @@
   }
   function enhanceAll(root) { (root || document).querySelectorAll('input[type="date"]').forEach(enhance); }
 
-  let el, forInput = null, view = null, cursor = null;
+  let el, backdrop, forInput = null, view = null, cursor = null;
+  const isCenter = () => !!forInput && (innerWidth <= 640 || forInput.dataset.calCenter !== undefined);
   function ensure() {
     if (el) return;
     el = document.createElement('div');
     el.className = 'wl-cal'; el.hidden = true; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'calendar');
-    document.body.appendChild(el);
+    backdrop = document.createElement('div');
+    backdrop.className = 'wl-cal-backdrop'; backdrop.hidden = true;
+    document.body.append(backdrop, el);
   }
   function place() {
     if (!forInput || !el || el.hidden) return;
     const r = forInput.getBoundingClientRect(), h = el.offsetHeight, w = el.offsetWidth;
+    if (el.classList.contains('wl-cal-center')) {
+      el.style.top = Math.max(8, (innerHeight - h) / 2) + 'px';
+      el.style.left = Math.max(8, (innerWidth - w) / 2) + 'px';
+      return;
+    }
     const spaceBelow = innerHeight - r.bottom, spaceAbove = r.top;
     const below = spaceBelow >= h + 12 || spaceBelow >= spaceAbove;
     const top = below ? r.bottom + 8 : r.top - h - 8;
@@ -75,9 +84,11 @@
     const startYear = parseInt(input.dataset.calStart, 10);
     const cur = parseIso(input.value) || (Number.isFinite(startYear) ? new Date(startYear, 5, 1) : new Date());
     cursor = cur; view = new Date(cur.getFullYear(), cur.getMonth(), 1);
+    const center = isCenter();
+    el.classList.toggle('wl-cal-center', center); backdrop.hidden = !center;
     draw(); el.hidden = false; place();
   }
-  function close() { if (el) el.hidden = true; forInput = null; }
+  function close() { if (el) { el.hidden = true; backdrop.hidden = true; } forInput = null; }
   function pick(v) {
     if (!forInput) return;
     const input = forInput;
@@ -115,7 +126,8 @@
     if (move) { e.preventDefault(); cursor = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + move); view = new Date(cursor.getFullYear(), cursor.getMonth(), 1); draw(); }
     else if (e.key === 'Enter') { e.preventDefault(); pick(iso(cursor)); }
   });
-  addEventListener('scroll', place, { passive: true, capture: true });
+  // 가운데 달력은 스크롤해도 제자리에 둔다(입력칸 옆에 붙는 달력만 따라간다)
+  addEventListener('scroll', () => { if (!el || !el.classList.contains('wl-cal-center')) place(); }, { passive: true, capture: true });
   addEventListener('resize', place);
 
   function init() {
