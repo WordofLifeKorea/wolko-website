@@ -1567,6 +1567,11 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     });
     document.getElementById('stepModalClose').addEventListener('click', closeStepModal);
     document.getElementById('stepEntryAddBtn').addEventListener('click', addStepEntry);
+    // 모듈 스크립트 안의 함수는 인라인 onclick 에서 보이지 않으므로, 삭제(×) 버튼은 목록에서 클릭을 받아 처리한다.
+    document.getElementById('stepEntriesList').addEventListener('click', event => {
+      const button = event.target.closest('[data-remove-entry]');
+      if (button) removeStepEntry(parseInt(button.dataset.removeEntry, 10));
+    });
     document.getElementById('editModalClose').addEventListener('click', closeEditModal);
     document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
     document.getElementById('editSaveBtn').addEventListener('click', saveChurch);
@@ -2263,7 +2268,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <span class="step-entry-date">${esc(entry.date || (getLang() === 'ko' ? '날짜 미상' : 'Unknown date'))}</span>
           <span class="step-entry-person">${esc(entry.person || (entry.legacy ? (getLang() === 'ko' ? '이전 기록' : 'Legacy record') : (getLang() === 'ko' ? '이름 미상' : 'Unknown')))}</span>
         </div>
-        <button type="button" class="step-entry-remove" onclick="removeStepEntry(${idx})" aria-label="delete">×</button>
+        <button type="button" class="step-entry-remove" data-remove-entry="${idx}" aria-label="delete">×</button>
       </div>`).join('');
   }
   async function saveStepValue(newValue) {
