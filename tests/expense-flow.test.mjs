@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import * as H from '../functions/lib/hubAccounts.js';
 import * as R from '../functions/api/expense/reports.js';
 import * as F from '../functions/api/expense/receipt.js';
+import * as D from '../functions/api/expense/draft.js';
 import { ACCOUNTANT_EMAILS, EXPENSE_ADMIN_EMAILS, NEW_REPORT_NOTIFY_EMAILS, bustReportCache } from '../functions/lib/expenses.js';
 
 function setup(emailOn = true) {
@@ -951,4 +952,46 @@ test('expense form labels: Description and Expense Report Title each carry an (i
   assert.match(page, /tipDesc: 'Name of the person this expense report is for\. Normally this is the person filling out this report\.'/);
   assert.match(page, /tipTitle: 'This is what you would like to name this particular expense report\./);
   assert.match(page, /tipDesc: '이 경비 리포트의 대상이 되는 사람의 이름입니다/);
+});
+
+test('경비 리포트 임시저장: 계정에 귀속(서버) · 본인만 읽기 · 저장/수정/삭제 · 크기·줄 수 제한', async () => {
+  const { acc, call, store } = setup();
+  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('other@x.com', 'Other', 'counselor');
+  const draftCall = (method, who, body) => call(method === 'GET' ? D.onRequestGet : method === 'PUT' ? D.onRequestPut : D.onRequestDelete, method, '/api/expense/draft', who, body);
+
+  assert.equal((await draftCall('GET', cyn)).draft, null);
+  const form = { editingId: 'x', description: '출장비', project: 'WOLKO', rows: [{ memo: 'taxi', amount: 12000, receipts: [{ id: 'r1', name: 'a.jpg', type: 'image/jpeg' }] }] };
+  const put = await draftCall('PUT', cyn, { form });
+  assert.equal(put.status, 200);
+  const got = await draftCall('GET', cyn);
+  assert.equal(got.draft.form.description, '출장비');
+  assert.equal(got.draft.form.editingId, null, '수정 중인 리포트 표시는 저장하지 않는다');
+  assert.equal(got.draft.form.rows[0].receipts[0].id, 'r1');
+  // 다른 계정은 내 초안을 볼 수 없다(계정마다 따로 저장)
+  assert.equal((await draftCall('GET', ['other@x.com', 'counselor'])).draft, null);
+  assert.ok([...store.keys()].some(k => k === 'expense:draft:cyn@x.com'));
+  // 덮어쓰기(마지막 저장이 이긴다)
+  await draftCall('PUT', cyn, { form: { ...form, description: '출장비 수정' } });
+  assert.equal((await draftCall('GET', cyn)).draft.form.description, '출장비 수정');
+  // 잘못된 내용 · 너무 많은 줄 · 너무 큰 내용
+  assert.equal((await draftCall('PUT', cyn, { form: { rows: [] } })).status, 400);
+  const many = await draftCall('PUT', cyn, { form: { rows: Array.from({ length: 80 }, () => ({ memo: 'x' })) } });
+  assert.equal(many.status, 200);
+  assert.equal((await draftCall('GET', cyn)).draft.form.rows.length, 30);
+  assert.equal((await draftCall('PUT', cyn, { form: { rows: [{ memo: 'x'.repeat(250000) }] } })).status, 413);
+  // 삭제(제출 완료 · 작성 내용 지우기)
+  assert.equal((await draftCall('DELETE', cyn)).status, 200);
+  assert.equal((await draftCall('GET', cyn)).draft, null);
+});
+
+test('경비 리포트 임시저장: 화면은 서버 초안과 이 브라우저 복사본 중 최신을 쓰고, 제출하면 둘 다 지운다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  assert.match(page, /async function pickDraft\(\)/);
+  assert.match(page, /const draft = await pickDraft\(\)/);
+  assert.match(page, /fetch\('\/api\/expense\/draft'/);
+  assert.match(page, /if \(!form\.editingId\) await clearDraft\(\)/);
+  assert.match(page, /id="exDraftStatus"/);
+  assert.match(page, /syncDraftToServer\(true\)/, '창을 닫을 때도 서버에 올린다(keepalive)');
 });

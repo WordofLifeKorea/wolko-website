@@ -15,7 +15,7 @@ import {
 
 const tempKey = (email, id) => `${RECEIPT_PREFIX}tmp:${email}:${id}`;
 const finalKey = (reportId, id) => `${RECEIPT_PREFIX}${reportId}:${id}`;
-const TEMP_TTL = 60 * 60 * 24 * 3; // 제출되지 못한 임시 파일은 3일 뒤 자동 삭제
+const TEMP_TTL = 60 * 60 * 24 * 30; // 제출되지 못한 임시 파일은 30일 뒤 자동 삭제 (임시저장 초안 보관 기간과 같다)
 
 function base64ToBytes(dataUrl) {
   const binary = atob(dataUrl.slice(dataUrl.indexOf(',') + 1));
@@ -75,7 +75,7 @@ export async function onRequestGet({ env, request }) {
   if (url.searchParams.get('draft') === '1') {
     // 내가 올린 임시 파일만 — 키에 내 이메일이 들어 있어 남의 것은 읽을 수 없다
     const tmp = fileId ? await fileKV(env).getWithMetadata(tempKey(session.email, fileId), 'arrayBuffer') : { value: null };
-    if (!tmp.value) return err('임시 저장 기간(3일)이 지나 파일이 사라졌습니다. 다시 첨부해 주세요.', 404);
+    if (!tmp.value) return err('임시 저장 기간(30일)이 지나 파일이 사라졌습니다. 다시 첨부해 주세요.', 404);
     const meta = tmp.metadata || {};
     return new Response(tmp.value, { headers: {
       'Content-Type': meta.type || 'application/octet-stream',

@@ -16,7 +16,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/expense.css?v=118">
+  <link rel="stylesheet" href="/expense.css?v=119">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -79,7 +79,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         lblProject: 'Expense Report Title<span class="ko">경비 리포트 제목 (마지막 값 기억)</span>', projPh: '예: 10월 전도 사역 (October evangelism)',
         tipInfo: '설명', tipDesc: '이 경비 리포트의 대상이 되는 사람의 이름입니다. 보통은 리포트를 작성하는 본인의 이름을 적습니다.',
         tipTitle: '이 경비 리포트에 붙일 이름입니다. 예를 들어 10월 전도 사역의 주유 영수증을 제출한다면 "October evangelism"(10월 전도 사역)처럼 이름을 붙일 수 있습니다.',
-        addRow: '＋ 항목 추가', resetDraft: '작성 내용 지우기', cResetDraft: '작성 중인 내용을 모두 지울까요?', tDraftRestored: '작성 중이던 내용을 불러왔어요.', cancelEdit: '수정 취소', submitEdit: '수정 후 다시 제출', submit: '경비 리포트 제출', totalKrw: '합계 (KRW)',
+        addRow: '＋ 항목 추가', resetDraft: '작성 내용 지우기', cResetDraft: '작성 중인 내용을 모두 지울까요?', tDraftRestored: '작성 중이던 내용을 불러왔어요.', draftSaving: '저장 중…', draftSaved: '계정에 자동 저장됨', draftFailed: '자동 저장 실패 — 연결을 확인해 주세요', cancelEdit: '수정 취소', submitEdit: '수정 후 다시 제출', submit: '경비 리포트 제출', totalKrw: '합계 (KRW)',
         rateSaved: '저장된 환율', rateLoading: '환율 조회 중…', rateLatest: '최신 환율',
         rateAsOf: d => d + ' 기준', rateBiz: d => d + ' 기준(영업일)', rateFail: '자동 조회 실패 — 직접 입력', rateManual: '직접 입력', rateAria: '환율',
         noteRejected: '반려 사유',
@@ -129,7 +129,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         lblProject: 'Expense Report Title<span class="ko">remembers last value</span>', projPh: 'e.g. October evangelism',
         tipInfo: 'More info', tipDesc: 'Name of the person this expense report is for. Normally this is the person filling out this report.',
         tipTitle: 'This is what you would like to name this particular expense report. For example, if you are turning in gas receipts for October evangelism ministry, you can call it "October evangelism".',
-        addRow: '+ Add item', resetDraft: 'Clear draft', cResetDraft: 'Clear everything you have entered?', tDraftRestored: 'Restored your unsent draft.', cancelEdit: 'Cancel edit', submitEdit: 'Save & resubmit', submit: 'Submit expense report', totalKrw: 'Total (KRW)',
+        addRow: '+ Add item', resetDraft: 'Clear draft', cResetDraft: 'Clear everything you have entered?', tDraftRestored: 'Restored your unsent draft.', draftSaving: 'Saving…', draftSaved: 'Auto-saved to your account', draftFailed: 'Auto-save failed — check your connection', cancelEdit: 'Cancel edit', submitEdit: 'Save & resubmit', submit: 'Submit expense report', totalKrw: 'Total (KRW)',
         rateSaved: 'Saved rate', rateLoading: 'Fetching rate…', rateLatest: 'Latest rate',
         rateAsOf: d => 'as of ' + d, rateBiz: d => 'as of ' + d + ' (prev. business day)', rateFail: 'Auto lookup failed — enter manually', rateManual: 'Entered manually', rateAria: 'Exchange rate',
         noteRejected: 'Reason for rejection',
@@ -231,28 +231,79 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       // 마지막으로 쓴 값이 있으면 그걸, 없으면 로그인한 어카운트 홀더 이름을 기본값으로 채운다
       return { editingId: null, description: myName() ? myName() + ' ' : '', project: myName() || lsGet(LS.project), rows: [blankRow()] };
     }
-    /* ─────────── 작성 중 자동 저장 (새로고침·뒤로가기·브라우저 종료 후에도 복원) ─────────── */
-    // 서버의 임시 영수증이 3일 뒤 삭제되므로 초안도 같은 기간만 보관한다. 수정 중인 리포트는 저장하지 않는다.
-    const DRAFT_TTL = 3 * 24 * 3600 * 1000;
+    /* ─────────── 작성 중 자동 저장 — 로그인한 계정에 저장(서버)하고, 이 브라우저에도 복사본을 둔다 ─────────── */
+    // 서버 초안은 어느 기기·브라우저에서 로그인해도 이어 쓸 수 있고, 임시 영수증 파일과 같은 30일 동안 보관한다. 수정 중인 리포트는 저장하지 않는다.
+    const DRAFT_TTL = 30 * 24 * 3600 * 1000;
     const draftKey = () => LS.draft + (me?.email || '');
     let uploadsBusy = 0;
+    const draftIsBlank = () => JSON.stringify(form) === JSON.stringify(newForm());
+    // 저장 상태 표시 (작성 화면 아래쪽)
+    let draftStatus = { state: '', at: 0 };
+    function paintDraftStatus() {
+      const el = $('exDraftStatus'); if (!el) return;
+      const st = draftStatus;
+      el.textContent = st.state === 'saving' ? t('draftSaving')
+        : st.state === 'saved' ? t('draftSaved') + ' · ' + new Date(st.at).toLocaleTimeString(lang === 'en' ? 'en-US' : 'ko-KR', { hour: '2-digit', minute: '2-digit' })
+        : st.state === 'failed' ? t('draftFailed') : '';
+      el.classList.toggle('is-fail', st.state === 'failed');
+    }
+    let serverTimer = 0;
+    async function syncDraftToServer(keepalive = false) {
+      clearTimeout(serverTimer);
+      if (!form || !me || form.editingId) return;
+      const blank = draftIsBlank();
+      const body = blank ? undefined : JSON.stringify({ form });
+      draftStatus = { state: blank ? '' : 'saving', at: 0 }; paintDraftStatus();
+      try {
+        // keepalive 요청은 본문이 64KB 이하여야 한다 — 넘으면 일반 요청으로 보낸다
+        const res = await fetch('/api/expense/draft', { method: blank ? 'DELETE' : 'PUT', headers: hdr(), body, keepalive: keepalive && (!body || body.length < 60000) });
+        if (!res.ok) throw new Error('draft ' + res.status);
+        draftStatus = blank ? { state: '', at: 0 } : { state: 'saved', at: Date.now() };
+      } catch { draftStatus = { state: 'failed', at: 0 }; }
+      paintDraftStatus();
+    }
     function saveDraft() {
       if (!form || !me || form.editingId) return;
-      if (JSON.stringify(form) === JSON.stringify(newForm())) { try { localStorage.removeItem(draftKey()); } catch {} return; }
-      lsSet(draftKey(), JSON.stringify({ t: Date.now(), form }));
+      if (draftIsBlank()) { try { localStorage.removeItem(draftKey()); } catch {} }
+      else lsSet(draftKey(), JSON.stringify({ t: Date.now(), form }));
+      clearTimeout(serverTimer); serverTimer = setTimeout(syncDraftToServer, 1200);
     }
     let draftTimer = 0;
     function scheduleDraft() { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 400); }
-    function loadDraft() {
+    // 제출을 마쳤을 때: 이 브라우저와 서버의 초안을 모두 지운다
+    async function clearDraft() {
+      clearTimeout(draftTimer); clearTimeout(serverTimer);
+      try { localStorage.removeItem(draftKey()); } catch {}
+      try { await fetch('/api/expense/draft', { method: 'DELETE', headers: hdr() }); } catch {}
+      draftStatus = { state: '', at: 0 };
+    }
+    function normalizeDraft(f) {
+      if (!f || !Array.isArray(f.rows) || !f.rows.length) return null;
+      return { ...f, editingId: null, rows: f.rows.map(r => { const o = { ...blankRow(), ...r, receipts: Array.isArray(r.receipts) ? r.receipts : [] }; o.source = legacySource(o); if (!APPROVAL_ACCOUNTS.includes(o.account)) o.account = ''; delete o.otherSel; return o; }) };
+    }
+    function readLocalDraft() {
       try {
         const d = JSON.parse(lsGet(draftKey(), 'null'));
-        if (!d || !d.form || Date.now() - d.t > DRAFT_TTL || !Array.isArray(d.form.rows) || !d.form.rows.length) return null;
-        return { ...d.form, editingId: null, rows: d.form.rows.map(r => { const o = { ...blankRow(), ...r, receipts: Array.isArray(r.receipts) ? r.receipts : [] }; o.source = legacySource(o); if (!APPROVAL_ACCOUNTS.includes(o.account)) o.account = ''; delete o.otherSel; return o; }) };
+        if (!d || !d.form || Date.now() - d.t > DRAFT_TTL) return null;
+        return { t: d.t, form: d.form };
       } catch { return null; }
     }
-    addEventListener('pagehide', () => { clearTimeout(draftTimer); saveDraft(); });
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { clearTimeout(draftTimer); saveDraft(); } });
-    addEventListener('beforeunload', e => { if (uploadsBusy) { clearTimeout(draftTimer); saveDraft(); e.preventDefault(); e.returnValue = ''; } });
+    // 서버에 있는 내 초안과 이 브라우저의 복사본 중 더 최근 것을 쓴다
+    async function pickDraft() {
+      const local = readLocalDraft();
+      let server = null;
+      try {
+        const res = await fetch('/api/expense/draft', { headers: hdr() });
+        if (res.ok) server = (await res.json()).draft || null;
+      } catch {}
+      const best = server && (!local || server.updatedAt >= local.t) ? { form: server.form, fromServer: true } : (local ? { form: local.form, fromServer: false } : null);
+      const draft = best ? normalizeDraft(best.form) : null;
+      if (draft && !best.fromServer) setTimeout(() => syncDraftToServer(), 500); // 서버에 아직 없는 복사본이면 올려 둔다
+      return draft;
+    }
+    addEventListener('pagehide', () => { clearTimeout(draftTimer); saveDraft(); syncDraftToServer(true); });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { clearTimeout(draftTimer); saveDraft(); syncDraftToServer(true); } });
+    addEventListener('beforeunload', e => { if (uploadsBusy) { clearTimeout(draftTimer); saveDraft(); syncDraftToServer(true); e.preventDefault(); e.returnValue = ''; } });
 
     function formFromReport(r, asCopy) {
       return {
@@ -379,13 +430,14 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
         <div class="ex-total-bar">
           <div class="ex-total" id="fTotal"></div>
           <div class="ex-actions" style="margin:0">
+            ${editing ? '' : '<span class="ex-draft-status" id="exDraftStatus" role="status"></span>'}
             ${editing ? `<button class="ex-btn" data-act="cancel-edit">${t('cancelEdit')}</button>` : `<button class="ex-btn" data-act="reset-draft">${t('resetDraft')}</button>`}
             <button class="ex-btn primary" id="fSubmit" data-act="submit">${editing ? t('submitEdit') : t('submit')}</button>
           </div>
         </div>
       </div>`;
       form.rows.forEach(r => { if (isFx(r.currency) && !Number(r.rate)) scheduleRate(r, true); });
-      paintRates(); refreshComputed();
+      paintRates(); refreshComputed(); paintDraftStatus();
     }
 
     /* USD 줄의 환율 안내줄: "$25.00 × [1355.05] = ₩33,876 · 09-25 기준" */
@@ -964,6 +1016,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
           lsSet(LS.sources, JSON.stringify([...new Set([...add, ...used])].slice(0, 12)));
         } catch {}
         toast(form.editingId ? t('tResubmitted') : t('tSubmitted'));
+        if (!form.editingId) await clearDraft();
         form = newForm();
         await show('mine');
       } catch (e) { toast(e.message, true); btn.disabled = false; }
@@ -1288,7 +1341,7 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       try {
         await refreshCounts();
         form = newForm();
-        const draft = loadDraft();
+        const draft = await pickDraft();
         if (draft) { form = draft; await show('new'); history.replaceState(navState(), ''); toast(t('tDraftRestored')); return; }
         await show(counts.approve > 0 && me.isApprover ? 'approve' : (counts.accounting > 0 && me.isAccountant ? 'accounting' : 'new'));
         history.replaceState(navState(), '');
