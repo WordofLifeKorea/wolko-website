@@ -72,9 +72,6 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   </header>
 
   <div class="adm-wrap">
-    <!-- CAMPUS TABS (월코 평택 / 월비 제주) -->
-    <div class="campus-tabs" id="campusTabs" role="tablist"></div>
-
     <!-- CAMP CARDS -->
     <div class="camp-cards" id="campCards"></div>
 
@@ -1224,6 +1221,10 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
             <div class="camp-card-stat-val green" id="card-all-cap">—</div>
             <div class="camp-card-stat-lbl">${t('remainingShort')}</div>
           </div>
+        </div>
+        <div class="campus-row" onclick="event.stopPropagation()">
+          <span class="camp-card-kicker">${adminLang === 'en' ? 'Campus' : '캠퍼스'}</span>
+          <div class="campus-tabs" id="campusTabs" role="tablist"></div>
         </div>`;
       card.onclick = () => selectCamp('all');
       return card;
