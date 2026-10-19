@@ -3,12 +3,12 @@
  *   GET    /api/expense/draft   → { draft: { form, updatedAt } | null }
  *   PUT    /api/expense/draft   body: { form }  → { ok, updatedAt }   (계정마다 1개, 마지막 저장이 이긴다)
  *   DELETE /api/expense/draft   → { ok }        (제출 완료 · "작성 내용 지우기")
- * 다른 기기·다른 브라우저에서 로그인해도 같은 초안을 이어서 쓸 수 있다. 임시 영수증 파일(receipt.js)과 같은 30일 동안 보관한다.
+ * 다른 기기·다른 브라우저에서 로그인해도 같은 초안을 이어서 쓸 수 있다. 임시 영수증 파일(receipt.js)과 같은 60일 동안 보관한다.
  */
 import { MAX_ROWS, MAX_RECEIPTS_PER_ROW, err, clip, expenseSession } from '../../lib/expenses.js';
 
 export const DRAFT_PREFIX = 'expense:draft:';
-export const DRAFT_TTL = 60 * 60 * 24 * 30;
+export const DRAFT_TTL = 60 * 60 * 24 * 60;
 const MAX_DRAFT_BYTES = 200 * 1024;
 const JSON_HEADERS = { 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' };
 const draftKey = email => `${DRAFT_PREFIX}${email}`;

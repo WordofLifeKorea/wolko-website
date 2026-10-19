@@ -232,8 +232,8 @@ import { ACCOUNTS as CFG_ACCOUNTS, WITHDRAW_ACCOUNTS as CFG_WITHDRAW, WITHDRAW_F
       return { editingId: null, description: myName() ? myName() + ' ' : '', project: myName() || lsGet(LS.project), rows: [blankRow()] };
     }
     /* ─────────── 작성 중 자동 저장 — 로그인한 계정에 저장(서버)하고, 이 브라우저에도 복사본을 둔다 ─────────── */
-    // 서버 초안은 어느 기기·브라우저에서 로그인해도 이어 쓸 수 있고, 임시 영수증 파일과 같은 30일 동안 보관한다. 수정 중인 리포트는 저장하지 않는다.
-    const DRAFT_TTL = 30 * 24 * 3600 * 1000;
+    // 서버 초안은 어느 기기·브라우저에서 로그인해도 이어 쓸 수 있고, 임시 영수증 파일과 같은 60일 동안 보관한다. 수정 중인 리포트는 저장하지 않는다.
+    const DRAFT_TTL = 60 * 24 * 3600 * 1000;
     const draftKey = () => LS.draft + (me?.email || '');
     let uploadsBusy = 0;
     const draftIsBlank = () => JSON.stringify(form) === JSON.stringify(newForm());
