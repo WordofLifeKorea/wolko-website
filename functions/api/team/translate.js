@@ -11,6 +11,8 @@
  *   ANTHROPIC_API_KEY  — Anthropic API key
  */
 
+import { lookupVerse } from '../../lib/bibleLookup.js';
+
 const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
@@ -62,13 +64,6 @@ export async function onRequestPost(context) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
   }
 
-  if (!env.ANTHROPIC_API_KEY) {
-    return Response.json(
-      { error: 'ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다.' },
-      { status: 500, headers: CORS }
-    );
-  }
-
   let text, from, ctx;
   try {
     ({ text, from, context: ctx } = await request.json());
@@ -76,10 +71,27 @@ export async function onRequestPost(context) {
     return Response.json({ error: '잘못된 요청 형식입니다.' }, { status: 400, headers: CORS });
   }
 
+  // 구절 불러오기는 AI를 쓰지 않는다 — 실제 성경 데이터(개역한글 · ESV/NIV)에서 본문을 가져온다. (functions/lib/bibleLookup.js)
+  if (ctx === 'verse_lookup') {
+    try {
+      return Response.json(await lookupVerse(env, text), { headers: CORS });
+    } catch (error) {
+      return Response.json({ error: error.message || '구절을 불러오지 못했어요.' }, { status: 400, headers: CORS });
+    }
+  }
+
+  if (!env.ANTHROPIC_API_KEY) {
+    return Response.json(
+      { error: 'ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다.' },
+      { status: 500, headers: CORS }
+    );
+  }
+
+
   if (!text || !text.trim()) {
     return Response.json({ error: '번역할 텍스트가 없습니다.' }, { status: 400, headers: CORS });
   }
-  if (ctx !== 'verse_lookup' && from !== 'ko' && from !== 'en') {
+  if (from !== 'ko' && from !== 'en') {
     return Response.json({ error: 'from 값은 "ko" 또는 "en"이어야 합니다.' }, { status: 400, headers: CORS });
   }
 
@@ -110,80 +122,6 @@ export async function onRequestPost(context) {
     };
     if (env.CF_AIG_TOKEN) {
       headers['cf-aig-authorization'] = `Bearer ${env.CF_AIG_TOKEN}`;
-    }
-
-    // ── verse_lookup: reference → 개역개정4판(Sonnet) + NIV(api.bible) 병렬 반환 ──
-    if (ctx === 'verse_lookup') {
-      const BIBLE_API_KEY = env.BIBLE_API_KEY;
-      const NIV_BIBLE_ID  = env.NIV_BIBLE_ID;
-
-      if (!BIBLE_API_KEY || !NIV_BIBLE_ID) {
-        return Response.json({ error: 'BIBLE_API_KEY 또는 NIV_BIBLE_ID 환경변수가 설정되지 않았습니다.' }, { status: 500, headers: CORS });
-      }
-
-      // Step 1: verse_ref → USFM passage ID (Haiku로 빠르게 변환)
-      const usfmRes = await fetch(gatewayUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 50,
-          system: `Convert a Bible verse reference to a USFM passage ID. Output only the ID, nothing else.
-Examples:
-"John 3:16" → JHN.3.16
-"Psalm 96:2-3" → PSA.96.2-PSA.96.3
-"시편 96:2-3" → PSA.96.2-PSA.96.3
-"요한복음 3:16" → JHN.3.16
-"Romans 8:28" → ROM.8.28
-"창세기 1:1" → GEN.1.1`,
-          messages: [{ role: 'user', content: text.trim() }],
-        }),
-      });
-      const usfmData = await usfmRes.json();
-      const passageId = usfmData.content?.[0]?.text?.trim();
-
-      if (!passageId) {
-        return Response.json({ error: '구절 참조를 인식하지 못했습니다.' }, { status: 400, headers: CORS });
-      }
-
-      // Step 2: NIV(api.bible) + 개역개정4판(Sonnet) 병렬 호출
-      // NIV 먼저 가져오고, 그 본문을 참고해서 개역개정4판 생성
-      const nivResponse = await fetch(
-        `https://rest.api.bible/v1/bibles/${NIV_BIBLE_ID}/passages/${encodeURIComponent(passageId)}?content-type=text&include-verse-numbers=false&include-titles=false`,
-        { headers: { 'api-key': BIBLE_API_KEY } }
-      );
-
-      let en = '';
-      if (nivResponse.ok) {
-        const nivData = await nivResponse.json();
-        en = (nivData.data?.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-      } else {
-        console.error('NIV API error:', nivResponse.status, await nivResponse.text());
-      }
-
-      const koPrompt = en
-        ? `다음 NIV 영어 본문에 해당하는 개역개정4판 한국어 본문을 정확히 출력해주세요. 절 번호 없이 본문만, 설명 없이.\n\n${en}`
-        : `개역개정4판 ${text.trim()} 본문을 절 번호 없이 출력해주세요.`;
-
-      const koResponse = await fetch(gatewayUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 512,
-          system: '개역개정4판 한국어 성경 본문을 정확히 출력합니다. 절 번호 없이 본문만 출력하세요. 설명이나 부연 없이.',
-          messages: [{ role: 'user', content: koPrompt }],
-        }),
-      });
-
-      const koData = await koResponse.json();
-      const ko = koData.content?.[0]?.text?.trim() || '';
-
-      if (!ko && !en) {
-        return Response.json({ error: '성경 구절을 찾지 못했습니다. 구절 참조를 확인해 주세요.' }, { status: 500, headers: CORS });
-      }
-
-      return Response.json({ ko, en }, { headers: CORS });
     }
 
     const res = await fetch(gatewayUrl, {

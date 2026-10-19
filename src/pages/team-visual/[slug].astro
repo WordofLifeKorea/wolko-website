@@ -61,7 +61,7 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
         <input class="tv-ref" id="tvRef" data-single="verse_ref" maxlength="60" placeholder="예: 디모데후서 2:22 · John 3:16">
         <button type="button" class="tv-btn" id="tvLookup"><span data-t="lookup">구절 불러오기</span></button>
       </div>
-      <p class="tv-note" data-t="lookupNote">구절 주소를 쓰고 "구절 불러오기"를 누르면 한글(개역개정)과 영어 본문이 함께 채워져요.</p>
+      <p class="tv-note" data-t="lookupNote">구절 주소를 쓰고 "구절 불러오기"를 누르면 한글(개역한글)과 영어 성경 본문이 함께 채워져요.</p>
     </section>
 
     <!-- 소개글 -->
@@ -96,7 +96,7 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
     const { initial, meta } = JSON.parse(document.getElementById('tvInit').textContent);
     const SLUG = meta.slug;
     const UI = {
-      ko: { photo: '사진 바꾸기', heroLabel: '히어로 · 맨 위 큰 문구', verseLabel: '말씀', lookup: '구절 불러오기', lookupNote: '구절 주소를 쓰고 "구절 불러오기"를 누르면 한글(개역개정)과 영어 본문이 함께 채워져요.', bioLabel: '소개글', paraNote: '빈 줄을 넣으면 문단이 나뉘어요.', bio2Label: '함께하는 분 소개글', prayerLabel: '중보기도 · 기도제목', prayerNote: '한 줄에 기도제목 하나씩 쓰면 목록으로 보여요.',
+      ko: { photo: '사진 바꾸기', heroLabel: '히어로 · 맨 위 큰 문구', verseLabel: '말씀', lookup: '구절 불러오기', lookupNote: '구절 주소를 쓰고 "구절 불러오기"를 누르면 한글(개역한글)과 영어 성경 본문이 함께 채워져요.', bioLabel: '소개글', paraNote: '빈 줄을 넣으면 문단이 나뉘어요.', bio2Label: '함께하는 분 소개글', prayerLabel: '중보기도 · 기도제목', prayerNote: '한 줄에 기도제목 하나씩 쓰면 목록으로 보여요.',
         hint: '한글로 쓰면 영어가, 영어로 쓰면 한글이 저장할 때 자동 번역돼요.', save: '저장', saving: '저장 중…', translating: '번역 중…', saved: '저장했어요. 사이트에는 1~2분 뒤 반영돼요.', savedTr: n => '저장했어요 (' + n + '개 항목 자동 번역). 사이트에는 1~2분 뒤 반영돼요.', nochange: '바뀐 내용이 없어요.', unsaved: '저장하지 않은 변경이 있어요',
         uploading: '사진 올리는 중…', uploaded: '사진을 바꿨어요.', lookingUp: '구절 찾는 중…', looked: '구절을 채웠어요.', needRef: '구절 주소를 먼저 써 주세요.',
         gateLogin: '먼저 포탈에 로그인해 주세요.', gateDenied: '이 소개 페이지를 고칠 권한이 없어요. 마스터에게 연결을 요청해 주세요.', gateFail: '연결에 실패했어요. 잠시 후 다시 시도해 주세요.', fail: '요청에 실패했어요.',
@@ -213,14 +213,14 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
       finally { refreshDirty(); }
     }
 
-    /* ─── 구절 불러오기 (구절 주소 → 개역개정 + 영어 본문) ─── */
+    /* ─── 구절 불러오기 (구절 주소 → 개역한글 + 영어 본문, 실제 성경 데이터) ─── */
     $('tvLookup').addEventListener('click', async () => {
       const ref = ($('tvRef').value || '').trim();
       if (!ref) return say(u('needRef'), 'err');
       say(u('lookingUp'));
       try {
         const d = await api('/api/team/translate', { text: ref, context: 'verse_lookup' });
-        cur.verse_ref = ref; cur.verse_ko = d.ko || ''; cur.verse_en = d.en || '';
+        cur.verse_ref = d.ref || ref; cur.verse_ko = d.ko || ''; cur.verse_en = d.en || '';
         paint(); refreshDirty(); say(u('looked'), 'ok');
       } catch (e) { say(e.message, 'err'); }
     });
