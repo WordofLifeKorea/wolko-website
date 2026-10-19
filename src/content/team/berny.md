@@ -19,7 +19,7 @@ hero_tagline2_en: Building Up Students
 hero_subtitle_ko: Berny는 WOLBI 제주에서 카운슬러와 찬양 인도자로 섬기며, 학생들이 그리스도를 진정으로 알고 복음을 더 깊이 이해하여 세상으로 나아갈 수 있도록 돕고 있습니다.
 hero_subtitle_en: Berny serves at WOLBI Jeju as a counselor and worship leader, helping students come to truly know Christ, grow deeper in their understanding of the Gospel, and go out into the world.
 verse_ref: "고린도후서 12:9"
-verse_ko: 나에게 이르시기를 내 은혜가 네게 족하도다 이는 내 능력이 약한 데서 온전하여짐이라 하신지라 그러므로 도리어 크게 기뻐함으로 나의 여러 약한 것들에 대하여 자랑하리니 이는 그리스도의 능력이 내게 머물게 하려 함이라
+verse_ko: "내게 이르시기를 내 은혜가 네게 족하도다 이는 내 능력이 약한데서 온전하여짐이라 하신지라 이러므로 도리어 크게 기뻐함으로 나의 여러 약한 것들에 대하여 자랑하리니 이는 그리스도의 능력으로 내게 머물게 하려함이라"
 verse_en: "And he said to me, \"My grace is sufficient for you, for my power is made perfect in weakness.\" Therefore I will boast all the more gladly about my weaknesses, so that Christ's power may rest on me."
 show_spouse: false
 bio_ko: |-

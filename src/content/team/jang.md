@@ -29,7 +29,7 @@ hero_tagline2_en: Changed by the Gospel
 hero_subtitle_ko: 장성남과 김미정 선교사는 제주 월비에서 섬기며, 복음으로 변화된 삶을 통해 다음 세대를 그리스도께로 인도하고 있습니다.
 hero_subtitle_en: Seongnam Jang and Mijeong Kim serve at WOLBI Jeju, leading the next generation to Christ through lives transformed by the gospel.
 verse_ref: "누가복음 19 : 10"
-verse_ko: 인자가 온 것은 잃어버린 자를 찾아 구원하려 함이니라
+verse_ko: "인자의 온 것은 잃어버린 자를 찾아 구원하려 함이니라"
 verse_en: For the Son of Man came to seek and to save the lost.”
 spouse_ko: 김미정
 spouse_en: Mijeong Kim

@@ -47,7 +47,7 @@ bio_en_2: |-
   After graduating from high school, I served at the KCCG, helping with youth ministry, and came to recognize that this was the vision God had given me. I met my husband, who shared that same vision, and together we committed to building the kingdom of God. We then joined Word of Life Korea, which reaches teenagers with the gospel through camps, and have continued serving the Lord together to this day. Our deepest longing is to see many young people in South Korea hear the gospel through the lives and testimonies of their Christian friends.
 prayer_ko: 더 많은 교회와 협력하여 복음배가운동이 확장될 수 있도록 기도해주세요.
 support_url: https://online.mrm.or.kr/HxSMjVD
-verse_ko: 만일 우리가 우리 죄를 자백하면 그는 미쁘시고 의로우사 우리 죄를 사하시며 우리를 모든 불의에서 깨끗하게 하실 것이요
+verse_ko: "만일 우리가 우리 죄를 자백하면 저는 미쁘시고 의로우사 우리 죄를 사하시며 모든 불의에서 우리를 깨끗케 하실 것이요"
 verse_en: If we confess our sins, he is faithful and just and will forgive us our sins and purify us from all unrighteousness.
 support_url_en: https://missions.wol.org/missionaries/114383/
 ---

@@ -15,7 +15,7 @@ support_url_en: https://missions.wol.org/missionaries/989052
 hero_tagline_ko: Niki Florica
 hero_subtitle_en: "Niki serves in Word of Life Korea's camp and outreach ministries, seeking to inspire, equip, and mobilize South Korean youth with the gospel through English-based camp ministries and community events. "
 verse_ref: "2 Corinthians 12:10"
-verse_ko: 그러므로 내가 그리스도를 위하여 약한 것들과 능욕과 궁핍과 박해와 곤고를 기뻐하노니 이는 내가 약한 그 때에 강함이라
+verse_ko: "그러므로 내가 그리스도를 위하여 약한 것들과 능욕과 궁핍과 핍박과 곤란을 기뻐하노니 이는 내가 약할 그 때에 곧 강함이니라"
 verse_en: That is why, for Christ’s sake, I delight in weaknesses, in insults, in hardships, in persecutions, in difficulties. For when I am weak, then I am strong.
 bio_ko: |-
   저는 기독교 가정에서 자라났고 예수님이 구원의 유일한 길이라는 것을 의심한 적이 없습니다. 하지만 십 대 때 제 인생을 예수님께 헌신한 후에도, 저는 항상 하나님이 제가 실수하기를 기다리고 계신다는 두려움과 싸워야 했습니다. 그 두려움이 제가 하나님의 은혜에서 제외될 것 같다는 공포로 변했고, 시간이 흐르면서 그 두려움은 제 삶의 여러 방면에 스며들어 저를 병들게 하고, 외롭게 하고, 열정을 빼앗았으며, 신자임에도 불구하고 목적 없게 만들었습니다. 하지만 늘 그래오듯이, 하나님은 다른 계획을 가지고 계셨습니다. 하나님은 저를 활기찬 기독교 공동체로 감싸주셨고, 그곳에서 저는 그리스도와의 삶이 얼마나 목적으로 가득 차고 기쁨으로 넘쳐야 하는지를 깨닫게 되었습니다. 그리고 하나님은 그 새로운 환경을 통해 제가 복음을 이해하는 방식을 완전히 바꾸어 주셨습니다. 갑자기 저는 이것이 제 자신의 완벽함에 관한 것이 아니라 그리스도의 완벽함에 관한 것임을 깨달았고, 복음은 정말로 좋은 소식이라는 것을 알게 되었습니다!

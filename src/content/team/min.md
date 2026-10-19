@@ -47,7 +47,7 @@ bio_en_2: |-
   
   The Lord brought us together in marriage in 2007, and our son Asol was born in 2009. From 2008 to 2009 we attended the Word of Life Bible Institute in Hudson, Florida together, and we have been serving the Lord as WOLKO missionaries ever since.
 support_url: https://online.mrm.or.kr/HRcruRJ
-verse_ko: 이 생명이 나타내신 바 된지라 이 영원한 생명을 우리가 보았고 증언하여 너희에게 전하노니 이는 아버지와 함께 계시다가 우리에게 나타내신 바 된 이시니라
+verse_ko: "이 생명이 나타내신바 된지라 이 영원한 생명을 우리가 보았고 증거하여 너희에게 전하노니 이는 아버지와 함께 계시다가 우리에게 나타내신바 된 자니라"
 verse_en: The life appeared; we have seen it and testify to it, and we proclaim to you the eternal life, which was with the Father and has appeared to us.
 support_url_en: https://missions.wol.org/missionaries/198496/
 report_url: /reports/min-newsletter-1779177134012.pdf

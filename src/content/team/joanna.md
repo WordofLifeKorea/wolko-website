@@ -16,7 +16,7 @@ hero_tagline_en: "\"With Every Breath We Take\""
 hero_tagline2_ko: "\"하나님의 사랑 안에 거하는 삶\""
 hero_tagline2_en: "\"Abiding in God's Love\""
 verse_ref: "고린도후서 4:6-7"
-verse_ko: "어두운 데에 빛이 비치라 말씀하셨던 그 하나님께서 예수 그리스도의 얼굴에 있는 하나님의 영광을 아는 빛을 우리 마음에 비추셨느니라 우리가 이 보배를 질그릇에 가졌으니 이는 심히 큰 능력은 하나님께 있고 우리에게 있지 아니함을 알게 하려 함이라"
+verse_ko: "어두운데서 빛이 비취리라 하시던 그 하나님께서 예수 그리스도의 얼굴에 있는 하나님의 영광을 아는 빛을 우리 마음에 비취셨느니라 우리가 이 보배를 질그릇에 가졌으니 이는 능력의 심히 큰 것이 하나님께 있고 우리에게 있지 아니함을 알게 하려 함이라"
 verse_en: "For God, who said, “Let light shine out of darkness,” made his light shine in our hearts to give us the light of the knowledge of God’s glory displayed in the face of Christ. But we have this treasure in jars of clay to show that this all-surpassing power is from God and not from us."
 show_spouse: false
 bio_ko: "복음은 하나님의 능력입니다. 저는 참 연약하고 교만한 사람이지만, 예수님의 십자가와 부활을 통해 '그리스도인' 이라는 새로운 이름을 얻었습니다. 하나님께서는 그의 크신 은혜 속에 저를 이 세상의 소금과 빛으로 불러주셨습니다. 저를 구원하시고 하나님의 영광을 위해 사용하시는 주님의 겸손과 사랑, 은혜와 긍휼을 생각할 때마다 놀라움과 감사가 가득합니다. 어제는 지나갔고, 내일은 어떻게 될지 알 수 없기에, 오늘 하루 하나님을 그 무엇보다 사랑하고 제 주변의 사람들을 마음 다해 사랑하며 살아갈 수 있기를 기도합니다."

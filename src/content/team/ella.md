@@ -41,7 +41,7 @@ bio_ko_2: |-
   이 열망은 사역의 소명 의식으로 발전했습니다. "어떻게 내 삶을 통해 복음을 전할 수 있을까?"라고 스스로 묻기 시작했습니다. 제주와 뉴욕의 월비(Word of Life Bible Institute)에서 공부하면서 죄에 대한 인식이 깊어졌고, 그와 함께 하나님의 사랑과 자비에 대한 경험도 깊어졌습니다.
   
   이제 저는 예수님의 기쁜 소식을 다른 사람들과 나누고 싶고, 그래서 처음 예수님을 따르기 시작한 월코로 돌아왔습니다. 이곳에서 제 삶을 변화시킨 소망을 제 주변 사람들과 계속해서 나누고 싶습니다. 비록 저는 여전히 연약하고 자주 실패하지만, 매번 저를 붙들어 일으켜 세우시는 하나님의 은혜를 기억합니다. 하나님이 저를 부르신 그 자리에서, 저는 이제 복음을 선포하고 예수님의 사랑을 반영하는 삶을 살아가고 있습니다.
-verse_ko: 나에게 이르시기를 내 은혜가 네게 족하도다 이는 내 능력이 약한 데서 온전하여짐이라 하신지라 그러므로 도리어 크게 기뻐함으로 나의 여러 약한 것들에 대하여 자랑하리니 이는 그리스도의 능력이 내게 머물게 하려 함이라 그러므로 내가 그리스도를 위하여 약한 것들과 능욕과 궁핍과 박해와 곤고를 기뻐하노니 이는 내가 약한 그 때에 강함이라
+verse_ko: "내게 이르시기를 내 은혜가 네게 족하도다 이는 내 능력이 약한데서 온전하여짐이라 하신지라 이러므로 도리어 크게 기뻐함으로 나의 여러 약한 것들에 대하여 자랑하리니 이는 그리스도의 능력으로 내게 머물게 하려함이라 그러므로 내가 그리스도를 위하여 약한 것들과 능욕과 궁핍과 핍박과 곤란을 기뻐하노니 이는 내가 약할 그 때에 곧 강함이니라"
 verse_en: But he said to me, “My grace is sufficient for you, for my power is made perfect in weakness.” Therefore I will boast all the more gladly about my weaknesses, so that Christ’s power may rest on me. That is why, for Christ’s sake, I delight in weaknesses, in insults, in hardships, in persecutions, in difficulties. For when I am weak, then I am strong.
 
 ---

@@ -22,7 +22,7 @@ hero_tagline2_en: "\"to the World\""
 hero_subtitle_ko: "Grace는 WOLBI 제주에서 팟캐스트 채널 촬영·편집·업로드 전반을 담당하며 하나님의 말씀을 전 세계로 전하고 있습니다. 동시에 Liberty University Online에서 상업음악제작 학위 과정을 마치고 있습니다."
 hero_subtitle_en: "Grace serves at WOLBI Jeju managing the full podcast pipeline — filming, editing, and uploading — to bring God's Word to people around the world. She is also completing her commercial music production degree through Liberty University Online."
 verse_ref: "Colossians 3:23"
-verse_ko: "무슨 일을 하든지 마음을 다하여 주께 하듯 하고 사람에게 하듯 하지 말라"
+verse_ko: "무슨 일을 하든지 마음을 다하여 주께 하듯하고 사람에게 하듯하지 말라"
 verse_en: "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters,"
 show_spouse: false
 bio_ko: |-

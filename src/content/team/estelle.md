@@ -29,7 +29,7 @@ support_url: https://online.mrm.or.kr/42hmPtJ
 support_url_en: https://missions.wol.org/missionaries/975231
 bio_en_2: "Since May/June 2023, I have found just how exciting and fun actually living life can be and, in the months of 2024 and now into 2025, I have found just how much I can learn to depend on the Lord to guide me one step at a time. That's how I headed to South Korea in Fall/Winter of 2024 for a short term mission's trip and how I am headed back in the fall of 2025! I returned right before Christmas 2024 and by the beginning of February, was already considering returning to South Korea for a longer period of time. I don't have any idea what the Lord is doing or how I will be used by the Lord in South Korea during these next 2 years, but I am excited to return to South Korea and the center there as we work to reach young people with the message of hope in Christ!"
 bio_ko_2: 2023년 5월/6월부터 실제로 삶을 살아가는 것이 얼마나 신나고 즐거울 수 있는지 발견하게 되었고, 2024년의 달들과 이제 2025년에 접어들면서 주님을 의지하여 한 번에 한 걸음씩 인도받는 것을 얼마나 더 배울 수 있는지 알아가고 있습니다. 바로 그렇게 해서 2024년 가을/겨울에 단기 선교 여행으로 한국에 가게 되었고, 2025년 가을에 다시 돌아오게 되었습니다! 2024년 크리스마스 직전에 귀국하여 2월 초가 되었을 때, 이미 더 오랜 기간 동안 한국으로 돌아가는 것을 고려하고 있었습니다. 앞으로 2년 동안 주님이 무엇을 하고 계신지, 한국에서 어떻게 쓰임받게 될지 전혀 알 수 없지만, 한국과 그곳의 센터로 돌아가 그리스도 안의 소망의 메시지로 청소년들에게 다가가는 일을 함께하게 되어 기쁩니다!
-verse_ko: 우리는 그가 만드신 바라 그리스도 예수 안에서 선한 일을 위하여 지으심을 받은 자니 이 일은 하나님이 전에 예비하사 우리로 그 가운데서 행하게 하려 하심이니라
+verse_ko: "우리는 그의 만드신바라 그리스도 예수 안에서 선한 일을 위하여 지으심을 받은 자니 이 일은 하나님이 전에 예비하사 우리로 그 가운데서 행하게 하려 하심이니라"
 verse_en: For we are God’s handiwork, created in Christ Jesus to do good works, which God prepared in advance for us to do.
 prayer_en: |-
   Praise for all the opportunities the Lord is preparing for us to do! (Eph. 2:10) 

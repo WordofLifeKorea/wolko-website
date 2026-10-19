@@ -32,7 +32,7 @@ bio_ko: |-
   
   그러던 어느 날 밤, 어머니가 건네준 단순한 진리 하나가 모든 것을 바꿔놓았습니다. 예수님은 나의 과거, 현재, 미래의 모든 죄를 이미 치르셨다. 나의 구원은 내가 무엇을 했느냐 또는 하지 않았느냐에 달린 것이 아니라, 예수님이 무엇을 하셨느냐에 달려 있다. 언젠가 하나님 앞에 설 때 "제가 이런저런 일을 했으니 들어가게 해 주세요"라고 말하는 것이 아니라, "당신이 약속하셨고 저는 그것을 믿습니다"라고 말할 수 있다는 것이었습니다. 그날 이후 Abby는 단 한 번도 자신의 구원을 의심한 적이 없습니다.
 support_url: https://online.mrm.or.kr/CqhPqml
-verse_ko: 또한 너는 청년의 정욕을 피하고 주를 깨끗한 마음으로 부르는 자들과 함께 의와 믿음과 사랑과 화평을 따르라
+verse_ko: "또한 네가 청년의 정욕을 피하고 주를 깨끗한 마음으로 부르는 자들과 함께 의와 믿음과 사랑과 화평을 좇으라"
 verse_en: Flee the evil desires of youth and pursue righteousness, faith, love and peace, along with those who call on the Lord out of a pure heart.
 support_url_en: https://missions.wol.org/missionaries/163998
 ---

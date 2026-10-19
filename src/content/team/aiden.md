@@ -41,7 +41,7 @@ bio_ko_2: |-
   연극과 뮤지컬을 사랑하는 사람으로서, 이야기가 언어를 넘어 얼마나 강력하게 전달될 수 있는지에 감탄했습니다. 말을 이해하지 못할 때에도 여전히 메시지를 파악할 수 있었습니다. 문화예술을 복음을 효과적으로 전하는 도구로 사용하는 꿈을 꾸기 시작했습니다.
   
   나중에 신학교 진학을 위해 기도할 때, 부모님은 저의 과거 미성숙함 때문에 걱정하셨습니다. 하지만 대학 원서 마지막 날 아침, 가정 큐티 시간에 하나님은 예레미야 1장 5-9절 말씀을 통해 소명을 확인해 주셨습니다. 그 말씀은 하나님이 부르시는 자를 또한 준비시키신다는 것을 상기시켜 주었습니다. 그 확신을 가지고 순종하며 나아가 사역 훈련의 여정을 시작했습니다.
-verse_ko: "내가 너를 모태에 짓기 전에 너를 알았고 네가 배에서 나오기 전에 너를 성별하였고 너를 여러 나라의 선지자로 세웠노라 하시기로 내가 이르되 슬프도소이다 주 여호와여 보소서 나는 아이라 말할 줄을 알지 못하나이다 하니 여호와께서 내게 이르시되 너는 아이라 하지 말고 내가 너를 누구에게 보내든지 너는 가며 내가 네게 무엇을 명령하든지 너는 말할지니라 너는 그들 때문에 두려워하지 말라 내가 너와 함께 하여 너를 구원하리라 나 여호와의 말이니라 하시고 여호와께서 그의 손을 내밀어 내 입에 대시며 여호와께서 내게 이르시되 보라 내가 내 말을 네 입에 두었노라"
+verse_ko: "내가 너를 복중에 짓기 전에 너를 알았고 네가 태에서 나오기 전에 너를 구별하였고 너를 열방의 선지자로 세웠노라 하시기로 내가 가로되 슬프도소이다 주 여호와여 보소서 나는 아이라 말할 줄을 알지 못하나이다 여호와께서 내게 이르시되 너는 아이라 하지 말고 내가 너를 누구에게 보내든지 너는 가며 내가 네게 무엇을 명하든지 너는 말할찌니라 너는 그들을 인하여 두려워 말라 내가 너와 함께하여 너를 구원하리라 나 여호와의 말이니라 하시고 여호와께서 그 손을 내밀어 내 입에 대시며 내게 이르시되 보라 내가 내 말을 네 입에 두었노라"
 verse_en: "“Before I formed you in the womb I knew you, before you were born I set you apart; I appointed you as a prophet to the nations.” “Alas, Sovereign Lord,” I said, “I do not know how to speak; I am too young.” But the Lord said to me, “Do not say, ‘I am too young.’ You must go to everyone I send you to and say whatever I command you. Do not be afraid of them, for I am with you and will rescue you,” declares the Lord. Then the Lord reached out his hand and touched my mouth and said to me, “I have put my words in your mouth."
 prayer_ko: |-
   신학 공부를 계속해서 진행하기 위해 준비하는 중인데 학비와 체력, 지혜를 위해 기도해주세요.
