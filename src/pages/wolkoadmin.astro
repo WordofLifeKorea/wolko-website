@@ -20,7 +20,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=89">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=90">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -688,7 +688,19 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       '2026-jeju-momentum-2': { bg: '#ffe6ef', border: '#d86491' },
       '2026-test-camp': { bg: '#edf4f7', border: '#7899a9' },
       '2027-winter-camp-1': { bg: '#e7ecfb', border: '#5b6fd6' },
+      // 2027 겨울 캠프들 — 서로 확실히 구분되는 색을 직접 지정한다(새 캠프는 아래 자동 색이 붙는다)
+      '2027-wolko-winter': { bg: '#e1f1fb', border: '#2f8fc9' },
+      '2027-siheung-jungang-elementary-english': { bg: '#e4f6e0', border: '#4aa23a' },
+      '2027-unity-winter': { bg: '#fff1c9', border: '#d49a18' },
+      '2027-our-school-winter': { bg: '#f0e8ff', border: '#8364d8' },
     };
+    // 지정된 색이 없는 캠프는 캠프 id 로 색을 자동 배정한다 — 같은 캠프는 어디서나(카드·목록) 늘 같은 색이다.
+    function autoCampStyle(campId) {
+      let h = 0;
+      for (const ch of String(campId)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+      const hue = (h * 137) % 360;
+      return { bg: `hsl(${hue} 72% 92%)`, border: `hsl(${hue} 48% 46%)` };
+    }
     const CAMP_ROW_FALLBACK = { bg: '#eef4f7', border: '#7f9bab' };
 
     function getCampRowStyle(reg) {
@@ -700,7 +712,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       if (label.includes('momentum') || label.includes('모멘텀 1') || label.includes('1차')) return CAMP_ROW_STYLES['2026-jeju-momentum-1'];
       if (label.includes('모멘텀 2') || label.includes('2차')) return CAMP_ROW_STYLES['2026-jeju-momentum-2'];
       if (label.includes('jeju') || label.includes('제주')) return CAMP_ROW_STYLES['2026-jeju-english'];
-      return CAMP_ROW_FALLBACK;
+      return reg.campId && reg.campId !== 'all' ? autoCampStyle(reg.campId) : CAMP_ROW_FALLBACK;
     }
 
     const STAFF_TEAMS = ['프로그램', '티칭', '상담자', '테크', '찬양팀'];
@@ -1084,7 +1096,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
 
     // ── Camp cards ──
     function makeCard(id, kicker, title, capacity) {
-      const campStyle = CAMP_ROW_STYLES[id] || CAMP_ROW_FALLBACK;
+      const campStyle = getCampRowStyle({ campId: id });
       const card = document.createElement('div');
       card.className = 'camp-card' + (id === 'all' ? ' active' : '');
       card.dataset.id = id;
