@@ -80,6 +80,11 @@ export async function onRequestPost(context) {
     }
   }
 
+  // 성경 본문(ESV 등)은 AI에 보내지 않는다 — 구절은 "구절 불러오기"(실제 성경 데이터)로만 채운다.
+  if (ctx === 'verse') {
+    return Response.json({ error: '성경 구절 본문은 자동 번역하지 않습니다. "구절 불러오기"를 사용해 주세요.' }, { status: 400, headers: CORS });
+  }
+
   if (!env.ANTHROPIC_API_KEY) {
     return Response.json(
       { error: 'ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다.' },

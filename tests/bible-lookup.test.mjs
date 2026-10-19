@@ -82,3 +82,24 @@ test('개역한글 본문은 KV 에 보관해 같은 구절은 다시 부르지 
   await fetchKrv(env, ref, mockFetch(calls));
   assert.equal(calls.filter(c => c.url.includes('bolls.life')).length, 1);
 });
+
+test('성경 구절 본문은 AI 번역으로 보내지 않는다(편집기 저장 · 번역 API 양쪽)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/team-visual/[slug].astro', import.meta.url), 'utf8');
+  assert.match(page, /if \(b === 'verse'\) continue;/);
+  const { onRequestPost } = await import('../functions/api/team/translate.js');
+  // 토큰이 없으면 401 이라 구절 차단 확인을 위해 서명된 토큰을 만든다
+  const secret = 'test-secret';
+  const data = `wolko-team:someone:${Date.now() + 60000}`;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = Array.from(new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data))), b => b.toString(16).padStart(2, '0')).join('');
+  const token = btoa(`${data}:${sig}`);
+  let aiCalled = false;
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => { aiCalled = true; return new Response('{}'); };
+  try {
+    const res = await onRequestPost({ env: { ADMIN_PASSWORD: secret, ANTHROPIC_API_KEY: 'x' }, request: new Request('https://t.co/api/team/translate', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: JSON.stringify({ text: 'Sing to the LORD', from: 'en', context: 'verse' }) }) });
+    assert.equal(res.status, 400);
+  } finally { globalThis.fetch = realFetch; }
+  assert.equal(aiCalled, false);
+});

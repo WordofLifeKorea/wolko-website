@@ -187,6 +187,7 @@ const meta = { slug: person.slug, name_ko: d.name_ko, name_en: d.name_en, title_
       try {
         const tasks = [];
         for (const b of BASES) {
+          if (b === 'verse') continue;                               // 성경 구절 본문은 AI로 번역하지 않는다(ESV 이용 조건) — 구절 불러오기로만 채운다
           const kk = keyOf(b, 'ko'), ke = keyOf(b, 'en');
           const koCh = changed.has(kk), enCh = changed.has(ke);
           if (koCh === enCh) continue;                               // 변화 없음, 또는 양쪽을 직접 고쳤으면 그대로 둔다
