@@ -20,7 +20,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/wolkoadmin.css?v=90">
+  <link rel="stylesheet" href="/wolkoadmin.css?v=91">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
@@ -72,6 +72,9 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
   </header>
 
   <div class="adm-wrap">
+    <!-- CAMPUS TABS (월코 평택 / 월비 제주) -->
+    <div class="campus-tabs" id="campusTabs" role="tablist"></div>
+
     <!-- CAMP CARDS -->
     <div class="camp-cards" id="campCards"></div>
 
@@ -472,7 +475,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         csvNoStaff:'다운로드할 스태프 데이터가 없습니다.', csvNoCamp:'다운로드할 신청 데이터가 없습니다.',
         csvStaffFile:'스태프지원', csvCampFile:'신청목록',
         season2026Summer:'2026 여름', campGroupWolko:'WOLKO 캠프', campGroupUnion:'연합캠프',
-        campAll:'전체 캠프', campJunior2026:'2026 여름 주니어 영어 캠프', campUnion2026:'2026 교회 연합캠프',
+        campAll:'전체 캠프', campusAll:'전체', campusWolko:'월코 (평택)', campusWolbi:'월비 (제주)', campusEmpty:'이 캠퍼스에 등록된 캠프가 없습니다. 캠프가 만들어지면 여기에 표시됩니다.', campJunior2026:'2026 여름 주니어 영어 캠프', campUnion2026:'2026 교회 연합캠프',
         season2027Winter:'2027 겨울', campWinter2027:'2027 겨울 캠프 (준비중)',
       },
       en: {
@@ -581,7 +584,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         csvNoStaff:'No staff data to download.', csvNoCamp:'No camp registration data to download.',
         csvStaffFile:'StaffApplications', csvCampFile:'CampRegistrations',
         season2026Summer:'Summer 2026', campGroupWolko:'WOLKO Camps', campGroupUnion:'Union Camps',
-        campAll:'All Camps', campJunior2026:'2026 Summer Junior English Camp', campUnion2026:'2026 Church Union Camp',
+        campAll:'All Camps', campusAll:'All', campusWolko:'WOLKO (Pyeongtaek)', campusWolbi:'WOLBI (Jeju)', campusEmpty:'No camps for this campus yet. They will appear here once created.', campJunior2026:'2026 Summer Junior English Camp', campUnion2026:'2026 Church Union Camp',
         season2027Winter:'Winter 2027', campWinter2027:'2027 Winter Camp (Preparing)',
       }
     };
@@ -655,8 +658,15 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       CAMP_DATES = Object.fromEntries(camps.map(c => [c.id, c.dateKo || '']));
       CAMP_DATES_EN = Object.fromEntries(camps.map(c => [c.id, c.dateEn || '']));
     }
+    // 월코(평택) / 월비(제주) — 캠프 id 에 jeju·wolbi 가 들어 있으면 월비(제주), 나머지는 월코(평택)
+    function campusOf(campId) {
+      return /jeju|wolbi/i.test(String(campId || '')) ? 'wolbi' : 'wolko';
+    }
+    let activeCampus = (() => { try { const v = localStorage.getItem('wolko-admin-campus'); return ['wolko', 'wolbi'].includes(v) ? v : 'all'; } catch (e) { return 'all'; } })();
     function visibleSeasonGroups(seasonId) {
-      return seasonId === 'all' ? CAMP_GROUPS : (SEASONS.find(s => s.id === seasonId)?.groups || []);
+      const groups = seasonId === 'all' ? CAMP_GROUPS : (SEASONS.find(s => s.id === seasonId)?.groups || []);
+      if (activeCampus === 'all') return groups;
+      return groups.map(g => ({ ...g, camps: g.camps.filter(c => campusOf(c.id) === activeCampus) })).filter(g => g.camps.length);
     }
     refreshCampCatalog();
     const SEASON_LABEL_KEYS = {
@@ -1219,14 +1229,40 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
       return card;
     }
 
+    function renderCampusTabs() {
+      const wrap = document.getElementById('campusTabs');
+      if (!wrap) return;
+      const countFor = campus => allRegs.filter(r => ADMIN_CAMP_IDS.has(r.campId) && r.registrationType !== 'staff' && (campus === 'all' || campusOf(r.campId) === campus)).reduce((sum, r) => sum + regHeadcount(r), 0);
+      wrap.innerHTML = [['all', t('campusAll')], ['wolko', t('campusWolko')], ['wolbi', t('campusWolbi')]].map(([id, label]) =>
+        `<button type="button" role="tab" class="campus-tab${id === activeCampus ? ' active' : ''}" data-campus="${id}" aria-selected="${id === activeCampus}" onclick="selectCampus('${id}')">${esc(label)}<span class="campus-tab-count">${countFor(id)}</span></button>`).join('');
+    }
+    function selectCampus(campus) {
+      if (!['all', 'wolko', 'wolbi'].includes(campus) || campus === activeCampus) return;
+      activeCampus = campus;
+      try { localStorage.setItem('wolko-admin-campus', campus); } catch (e) {}
+      if (activeCamp !== 'all' && campus !== 'all' && campusOf(activeCamp) !== campus) activeCamp = 'all';
+      loadTeamOverviewConfig(activeCamp);
+      buildCampCards();
+      updateCardStats();
+      renderTable();
+      renderDash();
+    }
+
     function buildCampCards() {
       const wrap = document.getElementById('campCards');
       wrap.innerHTML = '';
       wrap.appendChild(makeSeasonCard());
+      renderCampusTabs();
       const currentSeasonGroups = visibleSeasonGroups(activeSeason);
       currentSeasonGroups.forEach(group => group.camps.forEach(c => {
         wrap.appendChild(makeCard(c.id, `${campGroupDisplayName(group)} · ${c.capacity == null ? (adminLang === 'en' ? 'Capacity unset' : '정원 미정') : tt('capacityFn', c.capacity)}`, campDisplayName(c.id), c.capacity));
       }));
+      if (!currentSeasonGroups.length) {
+        const empty = document.createElement('div');
+        empty.className = 'campus-empty';
+        empty.textContent = t('campusEmpty');
+        wrap.appendChild(empty);
+      }
       applySavedCardOrder(wrap);
     }
 
@@ -1320,6 +1356,7 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
     }
 
     function updateCardStats() {
+      renderCampusTabs();
       // 시즌 카드 (all): 현재 시즌 전체 통계
       const ids = seasonCampIds(activeSeason);
       const seasonCamps = ADMIN_CAMP_GROUPS.flatMap(g => g.camps).filter(c => ids.has(c.id));
@@ -1397,6 +1434,8 @@ const adminSchedules = (await getCollection('camp_schedules')).map(({ id, data }
         const ids = seasonCampIds(activeSeason);
         regs = regs.filter(r => ids.has(r.campId));
       }
+      // 캠퍼스 필터 (월코/월비)
+      if (activeCampus !== 'all') regs = regs.filter(r => campusOf(r.campId) === activeCampus);
       // 캠프 필터
       if (activeCamp !== 'all') regs = regs.filter(r => r.campId === activeCamp);
       return regs;
