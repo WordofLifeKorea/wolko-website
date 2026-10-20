@@ -15,13 +15,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/car-log.css?v=16">
+  <link rel="stylesheet" href="/car-log.css?v=15">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-layout.css?v=15">
   <script src="/wolko-rail.js?v=30" defer></script>
-  <script src="/car-log.js?v=13" defer></script>
+  <script src="/car-log.js?v=12" defer></script>
   <meta name="theme-color" content="#004f68">
 </head>
 <body>
@@ -57,7 +57,7 @@
         <span data-t="tabMaintenance">정비 관리</span>
       </a>
     </nav>
-    <p class="wl-lead" data-t="intro">개인적으로 차량을 사용한 경우에만 기록해요. 사역용 운행은 기록하지 않습니다.</p>
+    <p class="wl-lead" data-t="intro">운행 전 사진 한 장으로 사용 시각과 목적을 남깁니다.</p>
 
     <p class="log-loading" id="loadStatus" data-t="loading">일지를 불러오는 중…</p>
 
@@ -80,6 +80,16 @@
         <form id="usageForm" class="log-form">
           <label><span data-t="vehicleLabel">차량 선택</span>
             <select id="vehicleSelect" name="vehicleId" required></select>
+          </label>
+          <fieldset class="log-purpose">
+            <legend data-t="purposeLegend">사용 목적</legend>
+            <div class="log-purpose-options">
+              <label><input type="radio" name="useType" value="ministry" required><span data-t="ministry">사역용</span></label>
+              <label><input type="radio" name="useType" value="personal" required><span data-t="personal">개인용</span></label>
+            </div>
+          </fieldset>
+          <label id="purposeNoteWrap" class="log-purpose-note" hidden><span data-t="purposeNoteLabel">어떤 운행인가요? (간단히)</span>
+            <input id="purposeNote" name="purpose" type="text" maxlength="60" autocomplete="off">
           </label>
           <label class="log-trip-km"><span data-t="tripKmLabel">총 운행 거리 (km) *</span>
             <input id="tripKm" name="tripKm" type="number" inputmode="decimal" min="0" max="5000" step="0.1" required autocomplete="off">
