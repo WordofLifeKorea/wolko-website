@@ -236,13 +236,18 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     padding: 10px 20px; gap: 6px; min-height: 38px; flex-wrap: wrap;
     background: rgba(0,0,0,0.025); border-top: 1px solid rgba(0,0,0,0.06);
   }
+  /* 전역 버튼 규격(wolko-ui.css: min-height/min-width 44px !important)에 눌려 점이 세로로 길쭉해지던 것을 !important로 확보.
+     터치 영역은 ::after로 넓힌다. */
   :global(.fb-dot) {
-    width: 8px; height: 8px; border-radius: 50%; border: none;
-    background: rgba(0,0,0,0.15); cursor: pointer; padding: 0; flex-shrink: 0;
+    position: relative; box-sizing: border-box;
+    width: 8px !important; height: 8px !important; min-width: 0 !important; min-height: 0 !important;
+    border-radius: 50%; border: none; background: rgba(0,0,0,0.15);
+    cursor: pointer; padding: 0 !important; margin: 0; flex: 0 0 auto;
     transition: background 0.18s, width 0.22s;
   }
+  :global(.fb-dot::after) { content: ''; position: absolute; inset: -12px -5px; }
   :global(.fb-dot.active) {
-    background: var(--c-deep); width: 22px; border-radius: 999px;
+    background: var(--c-deep); width: 22px !important; border-radius: 999px;
   }
   :global(.fb-dot:hover:not(.active)) { background: rgba(0,79,104,0.38); }
   :global(.fb-dots-text) {
