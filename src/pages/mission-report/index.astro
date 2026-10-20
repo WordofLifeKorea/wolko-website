@@ -383,6 +383,22 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     .fb-controls { padding: 10px 14px; }
     .fb-zoom-btns { display: none; }
   }
+
+  /* 폰 가로보기: 세로가 짧으니 컨트롤을 줄이고 페이지를 화면 높이에 맞춰 최대한 키운다 */
+  @media (orientation: landscape) and (max-height: 520px) {
+    :global(#flipbook-container .spread-img) { max-height: calc(100vh - 150px) !important; max-height: calc(100svh - 150px) !important; }
+    :global(#flipbook-container #mob-page-img) { max-height: calc(100vh - 150px) !important; max-height: calc(100svh - 150px) !important; width: auto !important; }
+    :global(#flipbook-container.fb-full) { display: flex; }
+    :global(#flipbook-container.fb-full .fb-controls) {
+      padding: calc(4px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 4px calc(12px + env(safe-area-inset-left));
+    }
+    :global(#flipbook-container.fb-full .fb-btn),
+    :global(#flipbook-container.fb-full .fb-fullscreen-btn) { width: 30px; height: 30px; }
+    :global(#flipbook-container.fb-full #spread-viewport) { padding: 4px; }
+    :global(#flipbook-container.fb-full .fb-dots-bar) { min-height: 0; padding: 4px 12px calc(4px + env(safe-area-inset-bottom)); }
+    :global(#flipbook-container.fb-full .spread-img),
+    :global(#flipbook-container.fb-full #mob-page-img) { max-height: calc(100vh - 80px) !important; max-height: calc(100dvh - 80px) !important; }
+  }
 </style>
 
 <!-- HERO -->
@@ -740,6 +756,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   var slideToken = 0;
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function slideSwap(dir, swap) {
+    if (window.__fbResetZoom) window.__fbResetZoom();
     if (reduceMotion) { swap(); return; }
     var el = flipBookEl, token = ++slideToken;
     el.style.transition = 'transform .16s ease-in, opacity .16s ease-in';
@@ -1030,6 +1047,32 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+    /* 패닝 범위 제한: 확대된 페이지 이미지가 뷰포트 가장자리를 넘어 밀려나지 않게 한다.
+       - 확대본이 뷰포트보다 크면: 이미지 가장자리가 뷰포트 가장자리까지만 이동
+       - 뷰포트보다 작으면: 가운데 고정
+       oldZ/oldTx/oldTy = 현재 DOM에 적용돼 있는 값 (rect 측정 기준) */
+    function fitAxis(t, origin, pMin, pMax, z, vMin, vMax) {
+      var cs = (pMax - pMin) * z, vs = vMax - vMin;
+      if (cs <= vs) return vMin + (vs - cs) / 2 - origin - pMin * z;
+      return clamp(t, vMax - origin - pMax * z, vMin - origin - pMin * z);
+    }
+    function clampPan(z, oldZ, oldTx, oldTy) {
+      var ir = inner.getBoundingClientRect(), vr = vp.getBoundingClientRect();
+      var pl = 1e9, pr = -1e9, pt = 1e9, pb = -1e9, any = false;
+      inner.querySelectorAll('img').forEach(function (im) {
+        if (!im.offsetWidth) return;
+        var r = im.getBoundingClientRect();
+        pl = Math.min(pl, (r.left   - ir.left) / oldZ);  pr = Math.max(pr, (r.right  - ir.left) / oldZ);
+        pt = Math.min(pt, (r.top    - ir.top)  / oldZ);  pb = Math.max(pb, (r.bottom - ir.top)  / oldZ);
+        any = true;
+      });
+      if (!any) return;
+      var ox = ir.left - oldTx, oy = ir.top - oldTy;
+      tx = fitAxis(tx, ox, pl, pr, z, vr.left,  vr.right);
+      ty = fitAxis(ty, oy, pt, pb, z, vr.top,   vr.bottom);
+    }
+    window.__fbResetZoom = function () { if (czoom !== 1 || tx || ty) resetTransform(); };
+
     function applyTransform() {
       inner.style.transformOrigin = '0 0';
       inner.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + czoom + ')';
@@ -1076,6 +1119,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         e.preventDefault();
         var d = dist(e.touches);
         var newZoom = clamp(gStartZoom * (d / startDist), 1, 5);
+        var oTx = tx, oTy = ty;
 
         /* 앵커 포인트(anchorElX)가 화면에서 고정되도록 translate 계산.
            tx = gStartTx - anchorElX * (newZoom - gStartZoom)
@@ -1085,22 +1129,18 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
         tx = gStartTx - anchorElX * (newZoom - gStartZoom);
         ty = gStartTy - anchorElY * (newZoom - gStartZoom);
 
-        /* 패닝 범위 제한: 콘텐츠가 완전히 화면 밖으로 나가지 않도록 넉넉한 범위 설정 */
-        var clampX = vp.clientWidth  * newZoom;
-        var clampY = vp.clientHeight * newZoom;
-        tx = clamp(tx, -clampX, clampX);
-        ty = clamp(ty, -clampY, clampY);
+        clampPan(newZoom, czoom, oTx, oTy);
 
         czoom = newZoom;
         applyTransform();
       } else if (e.touches.length === 1 && czoom > 1.05 && !isPinching) {
         e.preventDefault();
-        var newTx = e.touches[0].clientX - panStart.x;
-        var newTy = e.touches[0].clientY - panStart.y;
-        var maxPanX = vp.clientWidth  * czoom;
-        var maxPanY = vp.clientHeight * czoom;
-        tx = clamp(newTx, -maxPanX, maxPanX);
-        ty = clamp(newTy, -maxPanY, maxPanY);
+        var oTx1 = tx, oTy1 = ty;
+        tx = e.touches[0].clientX - panStart.x;
+        ty = e.touches[0].clientY - panStart.y;
+        clampPan(czoom, czoom, oTx1, oTy1);
+        panStart.x = e.touches[0].clientX - tx;   /* 한계에 닿은 만큼은 손가락 이동을 버려서 되돌아올 때 딜레이가 없게 */
+        panStart.y = e.touches[0].clientY - ty;
         applyTransform();
       }
     }, { passive: false });
