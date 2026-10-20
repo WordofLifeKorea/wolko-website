@@ -113,11 +113,12 @@ export async function onRequestPost({ env, request }) {
   let form;
   try { form = await request.formData(); } catch { return fail('사진을 읽지 못했습니다.'); }
   const vehicleId = String(form.get('vehicleId') || '');
-  const useType = String(form.get('useType') || '');
+  // 개인적으로 쓴 운행만 기록한다. 사역용 운행은 일지에 남기지 않는다.
+  const useType = String(form.get('useType') || 'personal');
   const labels = selectableVehicles();
   if (!labels.has(vehicleId)) return fail('차량을 선택해 주세요.');
-  if (!['ministry', 'personal'].includes(useType)) return fail('사역용 또는 개인용을 선택해 주세요.');
-  const purpose = useType === 'ministry' ? String(form.get('purpose') || '').replace(/\s+/g, ' ').trim().slice(0, 60) : '';
+  if (useType === 'ministry') return fail('사역용 운행은 기록하지 않습니다. 개인적으로 사용한 경우만 기록해 주세요.');
+  if (useType !== 'personal') return fail('올바르지 않은 사용 목적입니다.');
   // 총 운행 거리(km)는 꼭 받는다. 사진(운행 전·후)은 있으면 받는 선택 항목이다.
   const tripKmRaw = String(form.get('tripKm') ?? '').trim();
   const tripKm = Math.round(Number(tripKmRaw) * 10) / 10;
@@ -142,7 +143,7 @@ export async function onRequestPost({ env, request }) {
     && candidate.getTime() >= Date.now() - 24 * 60 * 60_000;
   const id = crypto.randomUUID();
   const entry = {
-    id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), tripKm,
+    id, vehicleId, vehicleName: labels.get(vehicleId), useType: 'personal', tripKm,
     hasPhoto: !before.none, hasPhotoAfter: !afterPhoto.none,
     photoTakenAt: isRecentExif ? candidate.toISOString() : recordedAt,
     timeSource: isRecentExif ? 'exif' : 'recorded',

@@ -40,7 +40,7 @@ function jpeg() {
 function postRequest(token, fields = {}) {
   const form = new FormData();
   form.set('vehicleId', fields.vehicleId || 'silver-van');
-  form.set('useType', fields.useType || 'ministry');
+  form.set('useType', fields.useType || 'personal');
   if (fields.purpose !== undefined) form.set('purpose', fields.purpose);
   if (fields.photo !== null) form.set('photo', fields.photo || jpeg());
   if (fields.photoAfter) form.set('photoAfter', fields.photoAfter);
@@ -70,7 +70,7 @@ test('usage entries require login and bind the author to the verified account', 
   const { entry } = await saved.json();
   assert.equal(entry.userEmail, email);
   assert.equal(entry.userName, '운전자');
-  assert.equal(entry.useType, 'ministry');
+  assert.equal(entry.useType, 'personal');
   assert.equal(entry.timeSource, 'exif');
   assert.equal(entry.photoTakenAt, photoTakenAt);
   assert.ok(entry.recordedAt);
@@ -210,17 +210,21 @@ test('usage log page: one card per vehicle, one line per record, click to expand
   assert.match(js, /log-line-body/);
 });
 
-test('ministry trips store a short trimmed purpose; personal trips never keep one', async () => {
+test('사역용 운행은 기록하지 않고, 개인 사용만 저장한다 (운행 목적 메모도 저장하지 않는다)', async () => {
   const env = memoryEnv();
   const email = 'driver@wol.org';
   await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: '운전자', status: 'approved' }));
   const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'admin');
-  const ministry = await (await saveUsage({ env, request: postRequest(token, { purpose: '  평택   캠프 장보기 ' }) })).json();
-  assert.equal(ministry.entry.purpose, '평택 캠프 장보기');
-  const long = await (await saveUsage({ env, request: postRequest(token, { purpose: 'a'.repeat(200) }) })).json();
-  assert.equal(long.entry.purpose.length, 60);
-  const personal = await (await saveUsage({ env, request: postRequest(token, { useType: 'personal', purpose: '개인 일정' }) })).json();
+  const ministry = await saveUsage({ env, request: postRequest(token, { useType: 'ministry', purpose: '캠프 장보기' }) });
+  assert.equal(ministry.status, 400, '사역용은 거절');
+  const personal = await (await saveUsage({ env, request: postRequest(token, { purpose: '개인 일정' }) })).json();
+  assert.equal(personal.entry.useType, 'personal');
   assert.equal(personal.entry.purpose, undefined);
+  const noType = new FormData(); noType.set('vehicleId', 'silver-van'); noType.set('tripKm', '3');
+  const implied = await saveUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: noType }) });
+  assert.equal(implied.status, 201, '사용 목적을 안 보내도 개인용으로 저장');
+  assert.equal((await implied.json()).entry.useType, 'personal');
+  assert.equal((await listUsage({ env, request: new Request('https://example.com/api/car/usage', { headers: { Authorization: `Bearer ${token}` } }) }).then(r => r.json())).entries.length, 2, '거절된 사역용은 저장되지 않았다');
 });
 
 test('trip distance is required, photos are optional, and the after photo is stored and served separately', async () => {
@@ -271,14 +275,15 @@ test('임시 저장: 본인 계정에만 30일 동안 보관하고, 정식 저�
   assert.equal((await (await call(D.onRequestGet, a)).json()).draft, null);
 
   const saved = await (await call(D.onRequestPut, a, { method: 'PUT', body: JSON.stringify({ vehicleId: 'silver-van', useType: 'ministry', purpose: ' 장보기 ', tripKm: '12.5' }) })).json();
-  assert.equal(saved.draft.purpose, '장보기');
+  assert.equal(saved.draft.purpose, undefined, '사용 목적·운행 목적은 임시 저장하지 않는다');
+  assert.equal(saved.draft.useType, undefined);
   assert.equal(saved.draft.vehicleId, 'silver-van');
   assert.ok(Math.abs(Date.parse(saved.draft.expiresAt) - Date.parse(saved.draft.savedAt) - 30 * 86400_000) < 1000, '만료는 저장 시각 30일 뒤');
   assert.ok(ttls.every(t => t === 30 * 86400), 'KV 만료(TTL)도 30일');
 
   // 알 수 없는 차량·목적은 비운다
   const dirty = await (await call(D.onRequestPut, a, { method: 'PUT', body: JSON.stringify({ vehicleId: 'x', useType: 'y', tripKm: '3' }) })).json();
-  assert.deepEqual([dirty.draft.vehicleId, dirty.draft.useType, dirty.draft.tripKm], ['', '', '3']);
+  assert.deepEqual([dirty.draft.vehicleId, dirty.draft.tripKm], ['', '3']);
 
   // 사진: JPG만, 입력 칸을 다시 저장해도 사진 표시는 유지
   const bytes = new Uint8Array(120); bytes.set([0xff, 0xd8], 0); bytes.set([0xff, 0xd9], 118);

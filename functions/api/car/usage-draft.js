@@ -33,8 +33,6 @@ export async function clearDraft(env, email) {
 
 const cleanFields = body => ({
   vehicleId: selectableVehicles().has(String(body?.vehicleId || '')) ? String(body.vehicleId) : '',
-  useType: ['ministry', 'personal'].includes(body?.useType) ? body.useType : '',
-  purpose: String(body?.purpose || '').replace(/\s+/g, ' ').trim().slice(0, 60),
   tripKm: String(body?.tripKm ?? '').trim().slice(0, 12),
 });
 
@@ -82,7 +80,7 @@ export async function onRequestPut({ env, request }) {
 
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
-  const previous = (await loadDraft(env, session.email)) || {};
+  const { useType: _u, purpose: _p, ...previous } = (await loadDraft(env, session.email)) || {};   // 예전 임시본의 사용 목적·운행 목적은 버린다
   // 입력 칸만 바꾼다: 사진 표시(hasPhoto…)는 서버에 있는 값을 그대로 둔다
   const draft = await saveDraft(env, session.email, { ...previous, ...cleanFields(body) });
   return Response.json({ draft }, { headers: NO_STORE });

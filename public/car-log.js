@@ -7,7 +7,7 @@
     ko: {
       pageTitle: '차량 스케줄', docTitle: '차량 사용 일지 — WOLKO', menuLabel: '차량 메뉴',
       tabReservations: '예약현황', tabMaintenance: '정비 관리', tabLog: '사용 일지', tabDrive: '운행 스케줄',
-      h1: '차량 사용 일지', intro: '운행 전 사진 한 장으로 사용 시각과 목적을 남깁니다.', loading: '일지를 불러오는 중…',
+      h1: '차량 사용 일지', intro: '개인적으로 차량을 사용한 경우에만 기록해요. 사역용 운행은 기록하지 않습니다.', loading: '일지를 불러오는 중…',
       loginTitle: '포탈 로그인', loginHelp: '차량 QR을 새 탭에서 열었다면 다시 로그인해야 할 수 있습니다. 기록자는 로그인 계정으로 자동 저장됩니다.',
       email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기',
       purposeNoteLabel: '어떤 운행인가요? (간단히)', purposeNotePh: '예: 평택 캠프 장보기, 교회 방문', purposeLabel: '운행 목적', purposeNoteNeeded: '사역용 운행 목적을 간단히 적어 주세요.',
@@ -33,7 +33,7 @@
     en: {
       pageTitle: 'Vehicle Schedule', docTitle: 'Vehicle Usage Log — WOLKO', menuLabel: 'Vehicle menu',
       tabReservations: 'Reservations', tabMaintenance: 'Maintenance', tabLog: 'Usage Log', tabDrive: 'Driving',
-      h1: 'Vehicle Usage Log', intro: 'Leave the time and purpose of use with a single pre-drive photo.', loading: 'Loading the log…',
+      h1: 'Vehicle Usage Log', intro: 'Log only personal use of the vehicle. Ministry trips are not recorded.', loading: 'Loading the log…',
       loginTitle: 'Portal Login', loginHelp: 'If you opened the vehicle QR in a new tab you may need to log in again. The recorder is saved automatically from your account.',
       email: 'Email', password: 'Password', loginBtn: 'Log in and continue',
       purposeNoteLabel: 'What is this trip for? (briefly)', purposeNotePh: 'e.g. Camp grocery run, church visit', purposeLabel: 'Trip purpose', purposeNoteNeeded: 'Please briefly describe the ministry trip.',
@@ -95,11 +95,11 @@
     if (draft) $('draftText').textContent = t('draftSaved', draftDate(draft.expiresAt));
   }
   function draftFields() {
-    return { vehicleId: $('vehicleSelect').value, useType: document.querySelector('input[name="useType"]:checked')?.value || '', purpose: $('purposeNote').value, tripKm: $('tripKm').value };
+    return { vehicleId: $('vehicleSelect').value, tripKm: $('tripKm').value };
   }
   async function saveDraftNow() {
     const f = draftFields();
-    const empty = !f.useType && !f.purpose.trim() && !f.tripKm.trim() && !photoBlob && !photoAfterBlob;
+    const empty = !f.tripKm.trim() && !photoBlob && !photoAfterBlob;
     try {
       if (empty) { await fetch('/api/car/usage-draft', { method: 'DELETE', headers: headers() }); showDraftNote(null); return; }
       const response = await fetch('/api/car/usage-draft', { method: 'PUT', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify(f) });
@@ -129,8 +129,6 @@
   }
   function resetForm() {
     $('vehicleSelect').value = requestedVehicle && [...$('vehicleSelect').options].some(o => o.value === requestedVehicle) ? requestedVehicle : '';
-    document.querySelectorAll('input[name="useType"]').forEach(r => { r.checked = false; });
-    $('purposeNote').value = '';
     $('tripKm').value = '';
     photoTakenAt = null;
     Object.values(photoSlots).forEach(slot => {
@@ -153,9 +151,6 @@
       const select = $('vehicleSelect');
       // 차량 QR로 들어왔다면 QR의 차량이 우선
       if (!(requestedVehicle && select.value === requestedVehicle) && [...select.options].some(o => o.value === draft.vehicleId)) select.value = draft.vehicleId;
-      const radio = document.querySelector(`input[name="useType"][value="${draft.useType}"]`);
-      if (radio) { radio.checked = true; updateReady(); }
-      $('purposeNote').value = draft.purpose || '';
       $('tripKm').value = draft.tripKm || '';
       if (draft.hasPhoto) {
         const photo = await fetch('/api/car/usage-draft?photo=before', { headers: headers() });
@@ -182,16 +177,10 @@
     $('loginError').textContent = message;
   }
   function updateReady() {
-    const purpose = document.querySelector('input[name="useType"]:checked');
-    const ministry = purpose && purpose.value === 'ministry';
-    $('purposeNoteWrap').hidden = !ministry;
-    $('purposeNote').required = !!ministry;
-    $('purposeNote').placeholder = t('purposeNotePh');
-    if (!ministry) $('purposeNote').value = '';
     const tripKm = Number($('tripKm').value);
     const tripOk = $('tripKm').value.trim() !== '' && Number.isFinite(tripKm) && tripKm >= 0 && tripKm <= 5000;
-    // 사진은 선택이고, 차량 · 사용 목적 · 총 운행 거리(km)는 꼭 있어야 저장할 수 있다.
-    $('saveButton').disabled = !purpose || !$('vehicleSelect').value || !tripOk || (ministry && !$('purposeNote').value.trim());
+    // 사진은 선택이고, 차량 · 총 운행 거리(km)는 꼭 있어야 저장할 수 있다.
+    $('saveButton').disabled = !$('vehicleSelect').value || !tripOk;
   }
 
   async function loadData() {
@@ -496,13 +485,7 @@
     finally { button.disabled = false; }
   });
 
-  document.querySelectorAll('input[name="useType"]').forEach(input => input.addEventListener('change', () => {
-    updateReady();
-    if (input.checked && input.value === 'ministry') $('purposeNote').focus({ preventScroll: false });
-  }));
-  $('purposeNote').addEventListener('input', () => { updateReady(); scheduleDraftSave(); });
   $('vehicleSelect').addEventListener('change', () => { updateReady(); scheduleDraftSave(); });
-  document.querySelectorAll('input[name="useType"]').forEach(input => input.addEventListener('change', scheduleDraftSave));
   // 운행 전·후 사진 칸 — 둘 다 선택 사항이라 없어도 저장된다.
   const photoSlots = {
     before: { input: 'photoInput', button: 'photoButton', preview: 'photoPreview', time: 'photoTime', get blob() { return photoBlob; }, set blob(v) { photoBlob = v; }, get url() { return previewUrl; }, set url(v) { previewUrl = v; }, trackTime: true },
@@ -561,8 +544,7 @@
     try {
       const form = new FormData();
       form.append('vehicleId', $('vehicleSelect').value);
-      form.append('useType', document.querySelector('input[name="useType"]:checked').value);
-      form.append('purpose', $('purposeNote').value.trim());
+      form.append('useType', 'personal');
       form.append('tripKm', $('tripKm').value.trim());
       if (photoBlob) {
         form.append('photo', photoBlob, 'vehicle-before.jpg');
