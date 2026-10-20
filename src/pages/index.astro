@@ -1089,12 +1089,18 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
       else if (e.key === 'ArrowLeft') render(current - 1);
     });
 
-    setTimeout(function () {
+    // 팝업이 모바일 메뉴(z-index 998)보다 위(1000)라서, 메뉴를 열어 둔 채 팝업이 뜨면 하위 메뉴를 눌러도 팝업이 터치를 받는다.
+    // 그래서 메뉴가 열려 있으면 메뉴가 닫힐 때까지 팝업을 미룬다.
+    function showPromos() {
+      var menu = document.getElementById('mobileMenu');
+      // 메뉴는 열리는 즉시 display:block 이 되고 open 클래스는 두 프레임 뒤에 붙으므로 둘 다 본다
+      if (menu && (menu.classList.contains('open') || menu.style.display === 'block')) { setTimeout(showPromos, 600); return; }
       overlay.hidden = false;
       render(0);
       requestAnimationFrame(function () { overlay.classList.add('is-open'); });
       document.body.style.overflow = 'hidden';
-    }, 700);
+    }
+    setTimeout(showPromos, 700);
   })();
 </script>
 
