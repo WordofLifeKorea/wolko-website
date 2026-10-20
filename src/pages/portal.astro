@@ -138,7 +138,7 @@
         <label class="signup-campus-opt"><input type="radio" name="signupRole" value="member" checked><span data-t="roleMemberOpt">일반 멤버</span></label>
         <label class="signup-campus-opt"><input type="radio" name="signupRole" value="admin"><span data-t="roleAdminOpt">관리자</span></label>
       </div>
-      <p class="signup-role-hint" data-t="roleHint">관리자는 포탈 전체를 유지보수하는 역할이에요 (wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.</p>
+      <p class="signup-role-hint" data-t="roleHint">관리자는 포탈 전체를 유지보수하는 역할이에요 (wolko.org·wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.</p>
       <div class="login-input-wrap">
         <input class="login-input" type="tel" id="signupPhoneInput" data-intl-phone placeholder="휴대폰 번호" autocomplete="tel">
       </div>
@@ -316,7 +316,7 @@
         namePlaceholder: '이름',
         phonePlaceholder: '휴대폰 번호',
         campusPyeongtaek: '평택', campusJeju: '제주',
-        roleMemberOpt: '일반 멤버', roleAdminOpt: '관리자', adminNotListed: '관리자 목록에 없음 — 개발자에게 등록 요청', roleHint: '관리자는 포탈 전체를 유지보수하는 역할이에요 (wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.', requestedLabel: '신청 등급',
+        roleMemberOpt: '일반 멤버', roleAdminOpt: '관리자', adminNotListed: '관리자 목록에 없음 — 개발자에게 등록 요청', roleHint: '관리자는 포탈 전체를 유지보수하는 역할이에요 (wolko.org·wol.org 이메일 · 마스터 승인 필요). 페이지별 세부 권한은 따로 정해요.', requestedLabel: '신청 등급',
         signupPwPlaceholder: '8자 이상',
         signupBtn: '가입 요청',
         signupSending: '요청 중…',
@@ -786,7 +786,7 @@
       if (rejected && !a.requestedRole && a.role) a = { ...a, requestedRole: a.role }; // 다시 활성화할 때 기존 등급을 미리 골라 둔다
       // admin 역할은 @wol.org 이메일에만 부여 가능(approve.js가 다시 검증) —
       // 드롭다운에서도 애초에 고를 수 없게 옵션 자체를 숨긴다.
-      const isWol = /@wol\.org$/i.test(a.email);
+      const isWol = /@(wol|wolko)\.org$/i.test(a.email);
       const adminOption = a.adminAllowed ? `<option value="admin">${t('roleAdmin')}</option>` : '';
       const counselorOption = `<option value="counselor">${t('roleCounselor')}</option>`;
       const nameLine = a.name ? `${esc(a.name)}${a.phone ? ' · ' + esc(a.phone) : ''}` : '';

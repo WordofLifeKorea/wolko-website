@@ -125,7 +125,7 @@ test('내 정보 수정: 이름과 휴대폰만 바꿀 수 있고, 바꾼 이름
   assert.equal(slot.slot.name, 'Hwankyu Kim');
 });
 
-test('가입 때 등급(관리자/일반 멤버)을 고르고, 관리자는 wol.org 이메일만 신청할 수 있다', async () => {
+test('가입 때 등급(관리자/일반 멤버)을 고르고, 관리자는 wolko.org·wol.org 이메일만 신청할 수 있다', async () => {
   const S = await import('../functions/api/hub/signup.js');
   const env = memoryEnv({ RESEND_API_KEY: 'x' });
   globalThis.fetch = async () => ({ ok: true, json: async () => ({}), text: async () => '' });
@@ -133,7 +133,7 @@ test('가입 때 등급(관리자/일반 멤버)을 고르고, 관리자는 wol.
   const bad = await signup({ name: '가', email: 'a@gmail.com', requestedRole: 'admin' });
   assert.equal(bad.status, 403, 'wolko.org / wol.org 이메일만 가입할 수 있다');
   assert.equal((await signup({ name: '가', email: 'a@wolko.org.evil.com' })).status, 403, '도메인은 끝까지 정확히 일치해야 한다');
-  assert.equal((await signup({ name: '가', email: 'a@wolko.org', requestedRole: 'admin' })).status, 400, '관리자는 wol.org만');
+  assert.equal((await signup({ name: '가', email: 'a@wolko.org', requestedRole: 'admin' })).status, 200, 'wolko.org도 관리자 신청 가능');
   const admin = await signup({ name: '나', email: 'b@wol.org', requestedRole: 'admin' });
   assert.equal(admin.status, 200);
   assert.equal((await signup({ name: '다', email: 'c@gmail.com' })).status, 403, '외부 도메인 일반 가입도 거절');

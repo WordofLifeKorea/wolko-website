@@ -58,8 +58,10 @@ export function isMasterEmail(email) {
   return MASTER_EMAILS.includes(normalizeEmail(email));
 }
 
+/** 관리자 신청·지정이 가능한 조직 도메인 (실제 권한은 코드의 MASTER/ADMIN 목록이 결정) */
 export function isWolDomain(email) {
-  return normalizeEmail(email).endsWith('@wol.org');
+  const e = normalizeEmail(email);
+  return e.endsWith('@wol.org') || e.endsWith('@wolko.org');
 }
 
 /** 포탈은 wolko.org / wol.org 계정만 쓸 수 있다 (마스터 계정만 예외) */

@@ -58,7 +58,7 @@ export async function onRequestPost(context) {
     return Response.json({ error: '포탈은 wolko.org 또는 wol.org 이메일로만 가입할 수 있어요.' }, { status: 403, headers: CORS });
   }
   if (requestedRole === 'admin' && !isWolDomain(email)) {
-    return Response.json({ error: '관리자는 wol.org 이메일로만 신청할 수 있어요. 일반 멤버로 가입해 주세요.' }, { status: 400, headers: CORS });
+    return Response.json({ error: '관리자는 wolko.org 또는 wol.org 이메일로만 신청할 수 있어요. 일반 멤버로 가입해 주세요.' }, { status: 400, headers: CORS });
   }
   if (!isValidPassword(password)) {
     return Response.json({ error: '비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.' }, { status: 400, headers: CORS });
