@@ -1,4 +1,5 @@
 import { fileKV } from '../../lib/nasFileKV.js';
+import { clearDraft } from './usage-draft.js';
 import { AFTER_SUFFIX, ENTRY_PREFIX, PHOTO_PREFIX, TRASH_ENTRY_PREFIX, TRASH_PHOTO_PREFIX, fail, listEntries, usageSession, selectableVehicles } from '../../lib/carUsage.js';
 
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
@@ -159,5 +160,7 @@ export async function onRequestPost({ env, request }) {
     console.error('car usage save failed:', error);
     return fail('저장하지 못했습니다. 잠시 후 다시 시도해 주세요.', 500);
   }
+  // 정식으로 저장됐으니 임시 저장해 둔 내용과 사진은 지운다 (실패해도 저장 결과에는 영향 없음)
+  await clearDraft(env, session.email).catch(() => {});
   return Response.json({ entry }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
 }

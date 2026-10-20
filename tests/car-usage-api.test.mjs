@@ -253,3 +253,55 @@ test('trip distance is required, photos are optional, and the after photo is sto
   assert.equal(afterOnly.entry.hasPhoto, false);
   assert.equal(afterOnly.entry.hasPhotoAfter, true);
 });
+
+test('임시 저장: 본인 계정에만 30일 동안 보관하고, 정식 저장하면 지운다', async () => {
+  const D = await import('../functions/api/car/usage-draft.js');
+  const env = memoryEnv();
+  const ttls = [];
+  const put = env.CAMP_KV.put;
+  env.CAMP_KV.put = async (key, value, options) => { if (options?.expirationTtl) ttls.push(options.expirationTtl); return put(key, value, options); };
+  const mk = async (email, name) => {
+    await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name, status: 'approved' }));
+    return createHubSessionToken(env.ADMIN_PASSWORD, email, 'counselor');
+  };
+  const a = await mk('a@wol.org', 'A'), b = await mk('b@wol.org', 'B');
+  const call = (fn, token, { method = 'GET', query = '', body, headers = {} } = {}) => fn({ env, request: new Request(`https://example.com/api/car/usage-draft${query}`, { method, headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...headers }, body }) });
+
+  assert.equal((await call(D.onRequestGet, null)).status, 401);
+  assert.equal((await (await call(D.onRequestGet, a)).json()).draft, null);
+
+  const saved = await (await call(D.onRequestPut, a, { method: 'PUT', body: JSON.stringify({ vehicleId: 'silver-van', useType: 'ministry', purpose: ' 장보기 ', tripKm: '12.5' }) })).json();
+  assert.equal(saved.draft.purpose, '장보기');
+  assert.equal(saved.draft.vehicleId, 'silver-van');
+  assert.ok(Math.abs(Date.parse(saved.draft.expiresAt) - Date.parse(saved.draft.savedAt) - 30 * 86400_000) < 1000, '만료는 저장 시각 30일 뒤');
+  assert.ok(ttls.every(t => t === 30 * 86400), 'KV 만료(TTL)도 30일');
+
+  // 알 수 없는 차량·목적은 비운다
+  const dirty = await (await call(D.onRequestPut, a, { method: 'PUT', body: JSON.stringify({ vehicleId: 'x', useType: 'y', tripKm: '3' }) })).json();
+  assert.deepEqual([dirty.draft.vehicleId, dirty.draft.useType, dirty.draft.tripKm], ['', '', '3']);
+
+  // 사진: JPG만, 입력 칸을 다시 저장해도 사진 표시는 유지
+  const bytes = new Uint8Array(120); bytes.set([0xff, 0xd8], 0); bytes.set([0xff, 0xd9], 118);
+  assert.equal((await call(D.onRequestPut, a, { method: 'PUT', query: '?photo=before', body: new Uint8Array(150) })).status, 400, 'JPG가 아니면 거절');
+  const withPhoto = await (await call(D.onRequestPut, a, { method: 'PUT', query: '?photo=before', body: bytes, headers: { 'X-Photo-Taken-At': '2026-10-20T01:00:00.000Z' } })).json();
+  assert.equal(withPhoto.draft.hasPhoto, true);
+  assert.equal(withPhoto.draft.photoTakenAt, '2026-10-20T01:00:00.000Z');
+  const again = await (await call(D.onRequestPut, a, { method: 'PUT', body: JSON.stringify({ vehicleId: 'santa-fe', useType: 'personal', tripKm: '5' }) })).json();
+  assert.equal(again.draft.hasPhoto, true);
+  assert.equal(again.draft.vehicleId, 'santa-fe');
+  const image = await call(D.onRequestGet, a, { query: '?photo=before' });
+  assert.equal(image.status, 200);
+  assert.equal(image.headers.get('Content-Type'), 'image/jpeg');
+
+  // 다른 계정은 볼 수 없다
+  assert.equal((await (await call(D.onRequestGet, b)).json()).draft, null);
+  assert.equal((await call(D.onRequestGet, b, { query: '?photo=before' })).status, 404);
+
+  // 사진만 지우기, 그리고 정식 저장하면 임시본 전체가 사라진다
+  assert.equal((await (await call(D.onRequestDelete, a, { method: 'DELETE', query: '?photo=before' })).json()).draft.hasPhoto, false);
+  assert.equal((await call(D.onRequestGet, a, { query: '?photo=before' })).status, 404);
+  await call(D.onRequestPut, a, { method: 'PUT', query: '?photo=after', body: bytes });
+  assert.equal((await saveUsage({ env, request: postRequest(a, { tripKm: '5' }) })).status, 201);
+  assert.equal((await (await call(D.onRequestGet, a)).json()).draft, null);
+  assert.equal((await call(D.onRequestGet, a, { query: '?photo=after' })).status, 404);
+});

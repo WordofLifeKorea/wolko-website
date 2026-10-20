@@ -28,6 +28,7 @@
       photoOld: '오래된 사진입니다. 운행 전 사진을 새로 찍어 주세요.', photoReadFail: '사진을 읽지 못했습니다.',
       photoTaken: t => `사진 촬영: ${t} (사진 정보 기준)`, photoNoTime: '사진에 촬영 시각 정보가 없어 저장 시각으로 기록됩니다.',
       saved: '사용 일지가 저장됐습니다.', saveFail: '저장하지 못했습니다.',
+      draftSaved: d => `작성 중인 내용이 임시 저장됐어요 · ${d}까지 보관돼요`, draftClear: '임시 저장 지우기', draftClearAsk: '임시 저장한 내용과 사진을 지울까요?',
     },
     en: {
       pageTitle: 'Vehicle Schedule', docTitle: 'Vehicle Usage Log — WOLKO', menuLabel: 'Vehicle menu',
@@ -53,6 +54,7 @@
       photoOld: 'This photo is old. Please take a new pre-drive photo.', photoReadFail: 'Could not read the photo.',
       photoTaken: t => `Photo taken: ${t} (from photo data)`, photoNoTime: 'The photo has no capture time, so the save time will be recorded.',
       saved: 'Usage log saved.', saveFail: 'Could not save.',
+      draftSaved: d => `Draft saved to your account · kept until ${d}`, draftClear: 'Delete draft', draftClearAsk: 'Delete the saved draft and photos?',
     },
   };
   let lang = (() => { try { return localStorage.getItem('wolkoCarLang') === 'en' ? 'en' : 'ko'; } catch { return 'ko'; } })();
@@ -85,6 +87,92 @@
   let fullPhotoUrl = null;
 
   // 예전 기록에 이메일이 이름 자리에 저장돼 있어도 이름처럼 보이게 한다
+  /* ── 임시 저장: 작성 중인 내용·사진을 로그인 계정에 30일 보관 (서버 /api/car/usage-draft) ── */
+  let draftTimer = null, draftReady = false, draftChecked = false;
+  const draftDate = iso => new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ko-KR', { dateStyle: 'medium' }).format(new Date(iso));
+  function showDraftNote(draft) {
+    $('draftNote').hidden = !draft;
+    if (draft) $('draftText').textContent = t('draftSaved', draftDate(draft.expiresAt));
+  }
+  function draftFields() {
+    return { vehicleId: $('vehicleSelect').value, useType: document.querySelector('input[name="useType"]:checked')?.value || '', purpose: $('purposeNote').value, tripKm: $('tripKm').value };
+  }
+  async function saveDraftNow() {
+    const f = draftFields();
+    const empty = !f.useType && !f.purpose.trim() && !f.tripKm.trim() && !photoBlob && !photoAfterBlob;
+    try {
+      if (empty) { await fetch('/api/car/usage-draft', { method: 'DELETE', headers: headers() }); showDraftNote(null); return; }
+      const response = await fetch('/api/car/usage-draft', { method: 'PUT', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify(f) });
+      if (response.ok) showDraftNote((await response.json()).draft);
+    } catch { /* 임시 저장은 부가 기능이라 실패해도 작성은 계속된다 */ }
+  }
+  function scheduleDraftSave() {
+    if (!draftReady) return;
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(saveDraftNow, 800);
+  }
+  async function uploadDraftPhoto(which, blob) {
+    if (!draftReady) return;
+    try {
+      const extra = which === 'before' && photoTakenAt ? { 'X-Photo-Taken-At': photoTakenAt } : {};
+      const response = await fetch(`/api/car/usage-draft?photo=${which}`, { method: 'PUT', headers: { ...headers(), ...extra }, body: blob });
+      if (response.ok) { showDraftNote((await response.json()).draft); scheduleDraftSave(); }
+    } catch { /* 위와 같음 */ }
+  }
+  function showSlotPhoto(slot, blob, timeText) {
+    slot.blob = blob;
+    if (slot.url) URL.revokeObjectURL(slot.url);
+    slot.url = URL.createObjectURL(blob);
+    $(slot.preview).src = slot.url;
+    $(slot.preview).hidden = false;
+    $(slot.time).textContent = timeText;
+  }
+  function resetForm() {
+    $('vehicleSelect').value = requestedVehicle && [...$('vehicleSelect').options].some(o => o.value === requestedVehicle) ? requestedVehicle : '';
+    document.querySelectorAll('input[name="useType"]').forEach(r => { r.checked = false; });
+    $('purposeNote').value = '';
+    $('tripKm').value = '';
+    photoTakenAt = null;
+    Object.values(photoSlots).forEach(slot => {
+      slot.blob = null;
+      if (slot.url) URL.revokeObjectURL(slot.url);
+      slot.url = null;
+      $(slot.input).value = '';
+      $(slot.preview).hidden = true;
+      $(slot.time).textContent = '';
+    });
+    updateReady();
+  }
+  async function restoreDraft() {
+    if (draftChecked) { draftReady = true; return; }
+    draftChecked = true;
+    try {
+      const response = await fetch('/api/car/usage-draft', { headers: headers() });
+      const draft = response.ok ? (await response.json()).draft : null;
+      if (!draft) return;
+      const select = $('vehicleSelect');
+      // 차량 QR로 들어왔다면 QR의 차량이 우선
+      if (!(requestedVehicle && select.value === requestedVehicle) && [...select.options].some(o => o.value === draft.vehicleId)) select.value = draft.vehicleId;
+      const radio = document.querySelector(`input[name="useType"][value="${draft.useType}"]`);
+      if (radio) { radio.checked = true; updateReady(); }
+      $('purposeNote').value = draft.purpose || '';
+      $('tripKm').value = draft.tripKm || '';
+      if (draft.hasPhoto) {
+        const photo = await fetch('/api/car/usage-draft?photo=before', { headers: headers() });
+        if (photo.ok) {
+          photoTakenAt = draft.photoTakenAt || null;
+          showSlotPhoto(photoSlots.before, await photo.blob(), photoTakenAt ? t('photoTaken', formatTime(photoTakenAt)) : t('photoNoTime'));
+        }
+      }
+      if (draft.hasPhotoAfter) {
+        const photo = await fetch('/api/car/usage-draft?photo=after', { headers: headers() });
+        if (photo.ok) showSlotPhoto(photoSlots.after, await photo.blob(), '');
+      }
+      updateReady();
+      showDraftNote(draft);
+    } catch { /* 불러오지 못해도 새로 작성할 수 있다 */ }
+    finally { draftReady = true; }
+  }
   const shownName = name => String(name || '').includes('@') ? String(name).split('@')[0] : String(name || '');
   function headers() { return { Authorization: `Bearer ${sessionStorage.getItem(tokenKey) || ''}` }; }
   function showLogin(message = '') {
@@ -126,6 +214,7 @@
     entries = data.entries || [];
     renderEntries();
     updateReady();
+    await restoreDraft();
   }
 
   const openVehicles = new Set(), openEntries = new Set();
@@ -411,14 +500,15 @@
     updateReady();
     if (input.checked && input.value === 'ministry') $('purposeNote').focus({ preventScroll: false });
   }));
-  $('purposeNote').addEventListener('input', updateReady);
-  $('vehicleSelect').addEventListener('change', updateReady);
+  $('purposeNote').addEventListener('input', () => { updateReady(); scheduleDraftSave(); });
+  $('vehicleSelect').addEventListener('change', () => { updateReady(); scheduleDraftSave(); });
+  document.querySelectorAll('input[name="useType"]').forEach(input => input.addEventListener('change', scheduleDraftSave));
   // 운행 전·후 사진 칸 — 둘 다 선택 사항이라 없어도 저장된다.
   const photoSlots = {
     before: { input: 'photoInput', button: 'photoButton', preview: 'photoPreview', time: 'photoTime', get blob() { return photoBlob; }, set blob(v) { photoBlob = v; }, get url() { return previewUrl; }, set url(v) { previewUrl = v; }, trackTime: true },
     after: { input: 'photoAfterInput', button: 'photoAfterButton', preview: 'photoAfterPreview', time: 'photoAfterTime', get blob() { return photoAfterBlob; }, set blob(v) { photoAfterBlob = v; }, get url() { return previewAfterUrl; }, set url(v) { previewAfterUrl = v; }, trackTime: false },
   };
-  Object.values(photoSlots).forEach(slot => {
+  Object.entries(photoSlots).forEach(([which, slot]) => {
     $(slot.button).addEventListener('click', () => $(slot.input).click());
     $(slot.input).addEventListener('change', async () => {
       const file = $(slot.input).files?.[0];
@@ -441,6 +531,7 @@
         $(slot.preview).src = slot.url;
         $(slot.preview).hidden = false;
         $(slot.time).textContent = exifDate ? t('photoTaken', formatTime(exifDate)) : t('photoNoTime');
+        uploadDraftPhoto(which, slot.blob);
       } catch (error) {
         $('formError').textContent = error.message || t('photoReadFail');
         $(slot.preview).hidden = true;
@@ -452,7 +543,14 @@
       updateReady();
     });
   });
-  $('tripKm').addEventListener('input', updateReady);
+  $('tripKm').addEventListener('input', () => { updateReady(); scheduleDraftSave(); });
+  $('draftClear').addEventListener('click', async () => {
+    if (!confirm(t('draftClearAsk'))) return;
+    clearTimeout(draftTimer);
+    try { await fetch('/api/car/usage-draft', { method: 'DELETE', headers: headers() }); } catch { /* 아래에서 화면은 비운다 */ }
+    showDraftNote(null);
+    resetForm();
+  });
 
   $('usageForm').addEventListener('submit', async event => {
     event.preventDefault();
@@ -475,6 +573,8 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t('saveFail'));
       entries.unshift(data.entry);
+      clearTimeout(draftTimer);
+      showDraftNote(null);   // 서버가 임시본을 지웠다
       renderEntries();
       photoBlob = null;
       photoTakenAt = null;
