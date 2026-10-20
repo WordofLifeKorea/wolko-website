@@ -200,10 +200,8 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 
   /* Spread viewer */
   #flip-book {
-    width:100%; height:100%;
-    transition: opacity 0.18s ease;
+    width:100%; height:100%; will-change: transform, opacity;
   }
-  :global(#flip-book.spread-fade-out) { opacity: 0; }
 
   /* JS-created elements → must use :global() */
   :global(.spread-img) {
@@ -726,12 +724,36 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
     updateDots(mobilePage, tot);
   }
 
+  /* 페이지 전환: 현재 면이 이동 방향으로 밀려 사라지고, 다음 면이 반대편에서 들어온다 (이미지 화질은 그대로) */
+  var slideToken = 0;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function slideSwap(dir, swap) {
+    if (reduceMotion) { swap(); return; }
+    var el = flipBookEl, token = ++slideToken;
+    el.style.transition = 'transform .16s ease-in, opacity .16s ease-in';
+    el.style.transform  = 'translateX(' + (-dir * 48) + 'px)';
+    el.style.opacity    = '0';
+    setTimeout(function () {
+      if (token !== slideToken) return;
+      swap();
+      el.style.transition = 'none';
+      el.style.transform  = 'translateX(' + (dir * 48) + 'px)';
+      void el.offsetWidth;
+      el.style.transition = 'transform .28s cubic-bezier(.22,.68,0,1), opacity .22s ease-out';
+      el.style.transform  = 'translateX(0)';
+      el.style.opacity    = '1';
+    }, 160);
+  }
+
   function goMobilePage(i) {
-    if (i < 0 || i >= mobilePages.length) return;
+    if (i < 0 || i >= mobilePages.length || i === mobilePage) return;
+    var dir = i > mobilePage ? 1 : -1;
     mobilePage = i;
-    var img = document.getElementById('mob-page-img');
-    if (img) img.src = mobilePages[i].url;
-    updateMobileNav();
+    slideSwap(dir, function () {
+      var img = document.getElementById('mob-page-img');
+      if (img) img.src = mobilePages[mobilePage].url;
+      updateMobileNav();
+    });
   }
 
   /* ── Desktop: two-page spread viewer ── */
@@ -798,12 +820,9 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 
   function goDesktopSpread(idx) {
     if (idx < 0 || idx >= totalSpreads || idx === spreadIdx) return;
+    var dir = idx > spreadIdx ? 1 : -1;
     spreadIdx = idx;
-    flipBookEl.classList.add('spread-fade-out');
-    setTimeout(function () {
-      applySpreadImages();
-      flipBookEl.classList.remove('spread-fade-out');
-    }, 160);
+    slideSwap(dir, applySpreadImages);
   }
 
   /* ── Unified build & navigation ── */
