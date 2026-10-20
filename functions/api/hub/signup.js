@@ -16,7 +16,7 @@
 import {
   normalizeEmail, isValidEmail, isValidPassword, isValidPhone, isMasterEmail,
   getAccount, putAccount, hashPassword, sendEmail,
-  pendingRequestEmailHtml, MASTER_EMAILS, isWolDomain,
+  pendingRequestEmailHtml, MASTER_EMAILS, isWolDomain, isAllowedPortalEmail,
 } from '../../lib/hubAccounts.js';
 import { normalizePhone } from '../../lib/phone.js';
 
@@ -53,6 +53,9 @@ export async function onRequestPost(context) {
   }
   if (!isValidEmail(email)) {
     return Response.json({ error: '올바른 이메일 주소를 입력해 주세요.' }, { status: 400, headers: CORS });
+  }
+  if (!isAllowedPortalEmail(email)) {
+    return Response.json({ error: '포탈은 wolko.org 또는 wol.org 이메일로만 가입할 수 있어요.' }, { status: 403, headers: CORS });
   }
   if (requestedRole === 'admin' && !isWolDomain(email)) {
     return Response.json({ error: '관리자는 wol.org 이메일로만 신청할 수 있어요. 일반 멤버로 가입해 주세요.' }, { status: 400, headers: CORS });

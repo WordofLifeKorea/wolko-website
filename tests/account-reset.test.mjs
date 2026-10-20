@@ -24,8 +24,8 @@ async function setup() {
   const env = { CAMP_KV: memoryKv(), ADMIN_PASSWORD: 'secret' };
   const old = await hashPassword('Forgotten!99');
   await putAccount(env, { email: 'estelle@wol.org', name: 'Estelle', role: 'counselor', status: 'approved', passwordHash: old.hash, passwordSalt: old.salt });
-  await putAccount(env, { email: 'wolkorea1@gmail.com', name: 'Master', role: 'master', status: 'approved', passwordHash: old.hash, passwordSalt: old.salt });
-  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  await putAccount(env, { email: 'admin@wolko.org', name: 'Master', role: 'master', status: 'approved', passwordHash: old.hash, passwordSalt: old.salt });
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master');
   const admin = await createHubSessionToken(env.ADMIN_PASSWORD, 'hkim3@wol.org', 'admin');
   return { env, master, admin };
 }
@@ -36,7 +36,7 @@ test('only the master can reset a password, and the temporary password may be sh
   assert.equal((await post(reset, env, '/api/hub/reset-password', null, { email: 'estelle@wol.org', tempPassword: '1234' })).status, 403);
   assert.equal((await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '123' })).status, 400);
   assert.equal((await post(reset, env, '/api/hub/reset-password', master, { email: 'nobody@wol.org', tempPassword: '1234' })).status, 404);
-  assert.equal((await post(reset, env, '/api/hub/reset-password', master, { email: 'wolkorea1@gmail.com', tempPassword: '1234' })).status, 400, '마스터 계정은 제외');
+  assert.equal((await post(reset, env, '/api/hub/reset-password', master, { email: 'admin@wolko.org', tempPassword: '1234' })).status, 400, '마스터 계정은 제외');
   const ok = await post(reset, env, '/api/hub/reset-password', master, { email: 'estelle@wol.org', tempPassword: '1234' });
   assert.equal(ok.status, 200);
   const a = await getAccount(env, 'estelle@wol.org');
@@ -86,7 +86,7 @@ test('master deletes a portal account after typing the email; protected accounts
   await putAccount(env, { email: 'estelle@wol.org', name: 'Estelle', role: 'counselor', status: 'approved' });
   assert.equal((await post(del, env, '/api/hub/delete-account', admin, { email: 'estelle@wol.org', confirm: 'estelle@wol.org' })).status, 403);
   assert.equal((await post(del, env, '/api/hub/delete-account', master, { email: 'estelle@wol.org', confirm: 'wrong@wol.org' })).status, 400);
-  assert.equal((await post(del, env, '/api/hub/delete-account', master, { email: 'wolkorea1@gmail.com', confirm: 'wolkorea1@gmail.com' })).status, 400);
+  assert.equal((await post(del, env, '/api/hub/delete-account', master, { email: 'admin@wolko.org', confirm: 'admin@wolko.org' })).status, 400);
   const ok = await post(del, env, '/api/hub/delete-account', master, { email: 'estelle@wol.org', confirm: 'Estelle@wol.org' });
   assert.equal(ok.status, 200);
   assert.ok(store.has('__deleted__hub:account:estelle@wol.org'));

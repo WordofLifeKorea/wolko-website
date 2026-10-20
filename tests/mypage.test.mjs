@@ -27,7 +27,7 @@ async function people(env) {
   await putAccount(env, { email: 'aiden@wol.org', name: 'Aiden', role: 'counselor', status: 'approved' });
   await putAccount(env, { email: 'other@wol.org', name: 'Other', role: 'counselor', status: 'approved' });
   const t = e => createHubSessionToken(env.ADMIN_PASSWORD, e, 'counselor');
-  return { me: await t('aiden@wol.org'), other: await t('other@wol.org'), master: await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master') };
+  return { me: await t('aiden@wol.org'), other: await t('other@wol.org'), master: await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master') };
 }
 
 test('마스터만 계정↔소개 페이지를 연결하고, 연결 계정 목록(드롭다운용)은 마스터/관리자에게만 내려간다', async () => {
@@ -50,7 +50,7 @@ test('뉴스레터 링크: 연결된 계정만 바꾸고, http(s)만 받으며, 
   await call(Links, 'PUT', '/api/newsletter/links', t.master, { email: 'aiden@wol.org', slug: 'aiden' });
   assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', t.other, { url: 'https://x.com' })).status, 403);
   assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', t.me, { url: 'javascript:alert(1)' })).status, 400);
-  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', t.me, { url: 'mailto:a@b.com' })).status, 400);
+  assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', t.me, { url: 'mailto:a@wol.org' })).status, 400);
   assert.equal((await call(Prof, 'PUT', '/api/newsletter/profile', t.me, { url: 'https://mailchi.mp/abc/letter' })).status, 200);
   assert.equal((await (await call(Prof, 'GET', '/api/newsletter/profile', t.me)).json()).url, 'https://mailchi.mp/abc/letter');
   const pub = await (await call(Prof, 'GET', '/api/newsletter/profile?slug=aiden')).json();

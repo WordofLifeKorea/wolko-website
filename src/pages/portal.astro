@@ -143,7 +143,7 @@
         <input class="login-input" type="tel" id="signupPhoneInput" data-intl-phone placeholder="휴대폰 번호" autocomplete="tel">
       </div>
       <div class="login-input-wrap">
-        <input class="login-input" type="email" id="signupEmailInput" placeholder="you@example.com" autocomplete="email">
+        <input class="login-input" type="email" id="signupEmailInput" placeholder="you@wolko.org" autocomplete="email">
       </div>
       <div class="login-input-wrap">
         <input class="login-input" type="password" id="signupPwInput" placeholder="8자 이상" autocomplete="new-password">
@@ -326,6 +326,7 @@
         phoneInvalid: '올바른 휴대폰 번호를 입력해 주세요.',
         emailRequired: '이메일을 입력해 주세요.',
         emailInvalid: '올바른 이메일 주소를 입력해 주세요.',
+        emailDomainOnly: '포탈은 wolko.org 또는 wol.org 이메일로만 가입할 수 있어요.',
         passwordRequired: '비밀번호를 입력해 주세요.',
         passwordInvalid: '비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.',
         backBtn: '뒤로',
@@ -387,6 +388,7 @@
         phoneInvalid: 'Please enter a valid phone number.',
         emailRequired: 'Please enter your email.',
         emailInvalid: 'Please enter a valid email address.',
+        emailDomainOnly: 'Only wolko.org or wol.org email addresses can sign up for the portal.',
         passwordRequired: 'Please enter a password.',
         passwordInvalid: 'Password must be at least 8 characters (letters/numbers/symbols).',
         backBtn: 'Back',
@@ -684,6 +686,7 @@
       if (!PHONE_RE.test(phone)) { errEl.textContent = t('phoneInvalid'); return; }
       if (!email) { errEl.textContent = t('emailRequired'); return; }
       if (!EMAIL_RE.test(email)) { errEl.textContent = t('emailInvalid'); return; }
+      if (!/@(wolko\.org|wol\.org)$/.test(email)) { errEl.textContent = t('emailDomainOnly'); return; }
       if (!password) { errEl.textContent = t('passwordRequired'); return; }
 
       const btn = $('signupBtn');

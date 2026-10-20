@@ -49,8 +49,8 @@ test('2주 구간: 월요일 시작, 월~일 × 2주 = 14일, 앞뒤로 14일씩
 
 test('평택센터 멤버만 신청할 수 있고, 제주 소속은 거절된다', async () => {
   const env = memoryEnv();
-  const pt = await addAccount(env, 'pt@x.com', '평택 멤버');
-  const jj = await addAccount(env, 'jj@x.com', '제주 멤버', { campus: 'jeju' });
+  const pt = await addAccount(env, 'pt@wol.org', '평택 멤버');
+  const jj = await addAccount(env, 'jj@wol.org', '제주 멤버', { campus: 'jeju' });
   const jeremy = await addAccount(env, 'jeremyrodgers@wol.org', 'Jeremy');
   assert.equal((await D.onRequestGet({ env, request: req('GET', '/api/car/drive', pt) })).status, 200);
   assert.equal((await D.onRequestGet({ env, request: req('GET', '/api/car/drive', jj) })).status, 403);
@@ -60,9 +60,9 @@ test('평택센터 멤버만 신청할 수 있고, 제주 소속은 거절된다
 
 test('칸 신청 · 중복 거절 · 본인만 취소 · 휴대폰 번호 필요', async () => {
   const env = memoryEnv();
-  const a = await addAccount(env, 'a@x.com', '가나다');
-  const b = await addAccount(env, 'b@x.com', '라마바', { phone: '' });
-  const admin = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  const a = await addAccount(env, 'a@wol.org', '가나다');
+  const b = await addAccount(env, 'b@wol.org', '라마바', { phone: '' });
+  const admin = await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master');
   const date = nextWeekday();
   const post = (token, body) => D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, body) });
   assert.equal((await post(a, { date, slot: 'pickup' })).status, 201);
@@ -86,10 +86,10 @@ test('칸 신청 · 중복 거절 · 본인만 취소 · 휴대폰 번호 필요
 test('/api/hub/me 는 로그인한 계정의 이름과 이메일을 돌려준다', async () => {
   const { onRequestGet } = await import('../functions/api/hub/me.js');
   const env = memoryEnv();
-  const token = await addAccount(env, 'a@x.com', '김환규');
+  const token = await addAccount(env, 'a@wol.org', '김환규');
   const ok = await onRequestGet({ env, request: req('GET', '/api/hub/me', token) });
   assert.equal(ok.status, 200);
-  assert.deepEqual(await ok.json(), { name: '김환규', email: 'a@x.com', role: 'counselor', phone: '010-1234-5678', campus: 'wolko', mustChangePassword: false, isAccountant: false });
+  assert.deepEqual(await ok.json(), { name: '김환규', email: 'a@wol.org', role: 'counselor', phone: '010-1234-5678', campus: 'wolko', mustChangePassword: false, isAccountant: false });
   assert.equal((await onRequestGet({ env, request: req('GET', '/api/hub/me', 'bad') })).status, 401);
 });
 
@@ -131,28 +131,31 @@ test('가입 때 등급(관리자/일반 멤버)을 고르고, 관리자는 wol.
   globalThis.fetch = async () => ({ ok: true, json: async () => ({}), text: async () => '' });
   const signup = body => S.onRequestPost({ env, request: new Request('https://t.co/api/hub/signup', { method: 'POST', body: JSON.stringify({ phone: '010-1111-2222', password: 'Passw0rd!x', campus: 'wolko', ...body }) }) });
   const bad = await signup({ name: '가', email: 'a@gmail.com', requestedRole: 'admin' });
-  assert.equal(bad.status, 400, '관리자는 wol.org만');
+  assert.equal(bad.status, 403, 'wolko.org / wol.org 이메일만 가입할 수 있다');
+  assert.equal((await signup({ name: '가', email: 'a@wolko.org.evil.com' })).status, 403, '도메인은 끝까지 정확히 일치해야 한다');
+  assert.equal((await signup({ name: '가', email: 'a@wolko.org', requestedRole: 'admin' })).status, 400, '관리자는 wol.org만');
   const admin = await signup({ name: '나', email: 'b@wol.org', requestedRole: 'admin' });
   assert.equal(admin.status, 200);
-  const member = await signup({ name: '다', email: 'c@gmail.com' });
+  assert.equal((await signup({ name: '다', email: 'c@gmail.com' })).status, 403, '외부 도메인 일반 가입도 거절');
+  const member = await signup({ name: '다', email: 'c@wolko.org' });
   assert.equal(member.status, 200);
   const get = async email => JSON.parse(await env.CAMP_KV.get(`hub:account:${email}`));
   assert.deepEqual([(await get('b@wol.org')).requestedRole, (await get('b@wol.org')).role, (await get('b@wol.org')).status], ['admin', null, 'pending'], '신청일 뿐 승인 전에는 권한이 없다');
-  assert.equal((await get('c@gmail.com')).requestedRole, 'member');
+  assert.equal((await get('c@wolko.org')).requestedRole, 'member');
 });
 
-test('등급은 코드의 목록이 기준: 마스터 wolkorea1 · 관리자 4명 · 나머지는 일반 멤버, 승인에서도 목록 밖은 관리자로 못 올린다', async () => {
+test('등급은 코드의 목록이 기준: 마스터 admin@wolko.org · 관리자 4명 · 나머지는 일반 멤버, 승인에서도 목록 밖은 관리자로 못 올린다', async () => {
   const H = await import('../functions/lib/hubAccounts.js');
-  assert.deepEqual(H.MASTER_EMAILS, ['wolkorea1@gmail.com']);
+  assert.deepEqual(H.MASTER_EMAILS, ['admin@wolko.org']);
   for (const e of ['hkim3@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org', 'jeremyrodgers@wol.org']) assert.equal(H.effectiveRole(e, 'counselor'), 'admin', e);
-  assert.equal(H.effectiveRole('wolkorea1@gmail.com', 'counselor'), 'master');
+  assert.equal(H.effectiveRole('admin@wolko.org', 'counselor'), 'master');
   assert.equal(H.effectiveRole('someone@wol.org', 'admin'), 'counselor', '예전에 admin이던 계정도 목록에 없으면 일반 멤버');
   assert.equal(H.effectiveRole('someone@wol.org', 'master'), 'counselor');
   const env = memoryEnv();
   const token = await H.createHubSessionToken(env.ADMIN_PASSWORD, 'someone@wol.org', 'admin');
   assert.equal((await H.parseHubSessionToken(env.ADMIN_PASSWORD, token)).role, 'counselor');
   const { onRequestPost: approve } = await import('../functions/api/hub/approve.js');
-  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master');
   await env.CAMP_KV.put('hub:account:someone@wol.org', JSON.stringify({ email: 'someone@wol.org', name: 's', status: 'pending', requestedRole: 'admin' }));
   const post = body => approve({ env, request: new Request('https://t.co/api/hub/approve', { method: 'POST', headers: { Authorization: `Bearer ${master}` }, body: JSON.stringify(body) }) });
   assert.equal((await post({ email: 'someone@wol.org', action: 'approve', role: 'admin' })).status, 400, '목록 밖 관리자 승인 거절');
@@ -164,7 +167,7 @@ test('등급은 코드의 목록이 기준: 마스터 wolkorea1 · 관리자 4�
 test('운행 스케줄 관리자는 라이드가 필요 없는 칸을 닫고 열 수 있다', async () => {
   const env = memoryEnv();
   const estelle = await addAccount(env, 'esooy@wol.org', 'Estelle Sooy');
-  const a = await addAccount(env, 'a@x.com', '가나다');
+  const a = await addAccount(env, 'a@wol.org', '가나다');
   const date = nextWeekday();
   const put = (token, body) => D.onRequestPut({ env, request: req('PUT', '/api/car/drive', token, body) });
   const post = (token, body) => D.onRequestPost({ env, request: req('POST', '/api/car/drive', token, body) });
@@ -197,7 +200,7 @@ test('운행 스케줄 관리자는 라이드가 필요 없는 칸을 닫고 열
 test('월·토·일은 기본으로 닫혀 있고, 관리자가 열면 신청할 수 있다 (예전 신청이 있는 칸은 그대로)', async () => {
   const env = memoryEnv();
   const estelle = await addAccount(env, 'esooy@wol.org', 'Estelle Sooy');
-  const a = await addAccount(env, 'a@x.com', '가나다');
+  const a = await addAccount(env, 'a@wol.org', '가나다');
   const future = (weekday) => { const d = new Date(todayKst() + 'T00:00:00Z'); do { d.setUTCDate(d.getUTCDate() + 1); } while (d.getUTCDay() !== weekday); return d.toISOString().slice(0, 10); };
   const mon = future(1); // 다음 월요일 — 보이는 두 주 창이 그 월요일부터 시작하므로 같은 주의 토·일·수를 쓴다
   const [sat, sun, wed] = [plusDays(mon, 5), plusDays(mon, 6), plusDays(mon, 2)];
@@ -228,7 +231,7 @@ test('월·토·일은 기본으로 닫혀 있고, 관리자가 열면 신청할
   assert.ok(!(await get(a, wed)).closed[`${wed}:dropoff`]);
 
   // 예전에 받은 신청이 있는 기본 닫힘 칸은 닫히지 않는다
-  await env.CAMP_KV.put(`drive:slot:${sun}:pickup`, JSON.stringify({ date: sun, slot: 'pickup', email: 'a@x.com', name: '가나다', phone: '010-1234-5678' }));
+  await env.CAMP_KV.put(`drive:slot:${sun}:pickup`, JSON.stringify({ date: sun, slot: 'pickup', email: 'a@wol.org', name: '가나다', phone: '010-1234-5678' }));
   const withRecord = await get(a, sun);
   assert.ok(!withRecord.closed[`${sun}:pickup`], '신청이 있는 칸은 열려 있다');
   assert.ok(withRecord.closed[`${sun}:dropoff`], '비어 있는 다른 칸은 닫힘');
@@ -245,15 +248,15 @@ const MON = '2026-10-12', TUE = '2026-10-13', FRI = '2026-10-16', SAT = '2026-10
 test('unsubmitted reminders are not marked done, and another slot can still send', async () => {
   const env = remEnv();
   const sent = captureSolapi();
-  await seedSlot(env, TUE, 'pickup', 'a@x.com', 'Invalid', '123');
-  await seedSlot(env, TUE, 'dropoff', 'b@x.com', 'Valid', '010-3333-4444');
+  await seedSlot(env, TUE, 'pickup', 'a@wol.org', 'Invalid', '123');
+  await seedSlot(env, TUE, 'dropoff', 'b@wol.org', 'Valid', '010-3333-4444');
   const result = await (await remRun(env, `date=${TUE}&force=1`)).json();
   assert.equal(result.results[0].sent, 0);
   assert.ok(result.results[0].error);
   assert.equal(result.results[1].sent, 1);
   assert.equal(sent.length, 1);
   assert.equal(await env.CAMP_KV.get(`drive:sms:${TUE}`, 'json'), null);
-  await seedSlot(env, TUE, 'pickup', 'a@x.com', 'Corrected', '010-1111-2222');
+  await seedSlot(env, TUE, 'pickup', 'a@wol.org', 'Corrected', '010-1111-2222');
   const retried = await (await remRun(env, `date=${TUE}&force=1&slot=pickup`)).json();
   assert.equal(retried.sent, 1);
   assert.equal(sent.length, 2);
@@ -262,8 +265,8 @@ test('unsubmitted reminders are not marked done, and another slot can still send
 test('provider failures retain retry eligibility and do not stop other slots', async () => {
   const env = remEnv();
   captureSolapi(m => m.to !== '01011112222');
-  await seedSlot(env, TUE, 'pickup', 'a@x.com', 'Fails', '010-1111-2222');
-  await seedSlot(env, TUE, 'dropoff', 'b@x.com', 'Succeeds', '010-3333-4444');
+  await seedSlot(env, TUE, 'pickup', 'a@wol.org', 'Fails', '010-1111-2222');
+  await seedSlot(env, TUE, 'dropoff', 'b@wol.org', 'Succeeds', '010-3333-4444');
   const result = await (await remRun(env, `date=${TUE}&force=1`)).json();
   assert.equal(result.results[0].sent, 0);
   assert.ok(result.results[0].error);
@@ -276,7 +279,7 @@ test('provider failures retain retry eligibility and do not stop other slots', a
 test('오전 알림: 요일과 상관없이 신청이 있는 날 오전 8시에 알림톡(+문자 대체)으로 한 번만', async () => {
   const env = remEnv();
   const sent = captureSolapi();
-  for (const d of [MON, SAT]) await seedSlot(env, d, 'pickup', 'a@x.com', '가나다', '010-1111-2222');
+  for (const d of [MON, SAT]) await seedSlot(env, d, 'pickup', 'a@wol.org', '가나다', '010-1111-2222');
   assert.equal((await remRun(env, `date=${MON}&time=07:30&slot=pickup`, 'wrong')).status, 401);
   const early = await (await remRun(env, `date=${MON}&time=07:30&slot=pickup`)).json();
   assert.equal(early.results[0].skipped, 'not-yet');
@@ -303,7 +306,7 @@ test('오전 알림: 요일과 상관없이 신청이 있는 날 오전 8시에 
 test('오후 알림: 화~목 17:00, 금 12:00, 월요일은 보내지 않는다 (기본값)', async () => {
   const env = remEnv();
   const sent = captureSolapi();
-  for (const d of [MON, TUE, FRI]) await seedSlot(env, d, 'dropoff', 'b@x.com', '라마바', '010-3333-4444');
+  for (const d of [MON, TUE, FRI]) await seedSlot(env, d, 'dropoff', 'b@wol.org', '라마바', '010-3333-4444');
   const at = async (date, time) => (await (await remRun(env, `date=${date}&time=${time}&slot=dropoff`)).json()).results[0];
   assert.equal((await at(TUE, '16:30')).skipped, 'not-yet');
   assert.equal((await at(TUE, '17:00')).sent, 1);
@@ -319,8 +322,8 @@ test('오후 알림: 화~목 17:00, 금 12:00, 월요일은 보내지 않는다 
 test('알림 시각 이후에 신청한 사람에게는 보내지 않고, 알림톡 요청이 거절되면 문자로 다시 보낸다', async () => {
   const env = remEnv();
   const sent = captureSolapi(m => !m.kakaoOptions);   // 알림톡 요청은 거절
-  await seedSlot(env, TUE, 'pickup', 'a@x.com', '가나다', '010-1111-2222', '2026-10-12T22:30:00Z'); // 한국 시간 10/13 07:30 신청
-  await seedSlot(env, TUE, 'dropoff', 'b@x.com', '라마바', '010-3333-4444', '2026-10-13T08:30:00Z'); // 한국 시간 17:30 신청 (17:00 이후)
+  await seedSlot(env, TUE, 'pickup', 'a@wol.org', '가나다', '010-1111-2222', '2026-10-12T22:30:00Z'); // 한국 시간 10/13 07:30 신청
+  await seedSlot(env, TUE, 'dropoff', 'b@wol.org', '라마바', '010-3333-4444', '2026-10-13T08:30:00Z'); // 한국 시간 17:30 신청 (17:00 이후)
   const am = (await (await remRun(env, `date=${TUE}&time=08:00&slot=pickup`)).json()).results[0];
   assert.equal(am.firstChannel, 'sms');
   assert.equal(sent.length, 2, '알림톡 거절 → 문자 재발송');
@@ -335,7 +338,7 @@ test('발송 시각 설정: 관리자만 보고 바꾸고, 바꾼 시각대로 �
   const env = remEnv();
   const sent = captureSolapi();
   const estelle = await addAccount(env, 'esooy@wol.org', 'Estelle Sooy');
-  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
+  const a = await addAccount(env, 'a@wol.org', '가나다', { phone: '010-1111-2222' });
   const call = (fn, token, body) => fn({ env, request: req(body ? 'PUT' : 'GET', '/api/car/drive-settings', token, body) });
   assert.equal((await call(S.onRequestGet, a)).status, 403, '일반 멤버는 볼 수 없다');
   assert.equal((await call(S.onRequestPut, a, { pickup: '09:00', dropoff: {} })).status, 403);
@@ -344,9 +347,9 @@ test('발송 시각 설정: 관리자만 보고 바꾸고, 바꾼 시각대로 �
   assert.deepEqual(got.settings.dropoff, { 0: null, 1: null, 2: '17:00', 3: '17:00', 4: '17:00', 5: '12:00', 6: null });
   assert.equal((await call(S.onRequestPut, estelle, { pickup: '08:15', dropoff: {} })).status, 400, '30분 단위만');
   assert.equal((await call(S.onRequestPut, estelle, { pickup: '09:00', dropoff: { 1: '16:00', 2: '18:30', 3: null, 4: '17:00', 5: '12:00' } })).status, 200);
-  await seedSlot(env, MON, 'pickup', 'a@x.com', '가나다', '010-1111-2222');
-  await seedSlot(env, MON, 'dropoff', 'a@x.com', '가나다', '010-1111-2222');
-  await seedSlot(env, TUE, 'dropoff', 'a@x.com', '가나다', '010-1111-2222');
+  await seedSlot(env, MON, 'pickup', 'a@wol.org', '가나다', '010-1111-2222');
+  await seedSlot(env, MON, 'dropoff', 'a@wol.org', '가나다', '010-1111-2222');
+  await seedSlot(env, TUE, 'dropoff', 'a@wol.org', '가나다', '010-1111-2222');
   const r = async (date, time, slot) => (await (await remRun(env, `date=${date}&time=${time}&slot=${slot}`)).json()).results[0];
   assert.equal((await r(MON, '08:00', 'pickup')).skipped, 'not-yet', '오전은 9시로 바뀜');
   assert.equal((await r(MON, '09:00', 'pickup')).sent, 1);
@@ -359,22 +362,22 @@ test('관리자(Estelle·마스터)는 사람을 직접 배정하고 해제할 �
   const M = await import('../functions/api/car/drive-members.js');
   const env = memoryEnv();
   const estelle = await addAccount(env, 'esooy@wol.org', 'Estelle Sooy');
-  const a = await addAccount(env, 'a@x.com', '가나다', { phone: '010-1111-2222' });
-  await addAccount(env, 'nophone@x.com', '번호없음', { phone: '' });
-  await addAccount(env, 'jeju@x.com', '제주', { campus: 'jeju' });
-  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  const a = await addAccount(env, 'a@wol.org', '가나다', { phone: '010-1111-2222' });
+  await addAccount(env, 'nophone@wol.org', '번호없음', { phone: '' });
+  await addAccount(env, 'jeju@wol.org', '제주', { campus: 'jeju' });
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master');
   const sat = (() => { const d = new Date(todayKst() + 'T00:00:00Z'); do { d.setUTCDate(d.getUTCDate() + 1); } while (d.getUTCDay() !== 6); return d.toISOString().slice(0, 10); })();
   const patch = (token, body) => D.onRequestPatch({ env, request: req('PATCH', '/api/car/drive', token, body) });
   const view = async token => (await D.onRequestGet({ env, request: req('GET', `/api/car/drive?start=${sat}`, token) })).json();
 
-  assert.equal((await patch(a, { date: sat, slot: 'pickup', email: 'a@x.com' })).status, 403, '일반 멤버는 배정할 수 없다');
+  assert.equal((await patch(a, { date: sat, slot: 'pickup', email: 'a@wol.org' })).status, 403, '일반 멤버는 배정할 수 없다');
   assert.equal((await M.onRequestGet({ env, request: req('GET', '/api/car/drive-members', a) })).status, 403);
   const members = (await (await M.onRequestGet({ env, request: req('GET', '/api/car/drive-members', estelle) })).json()).members;
-  assert.ok(members.some(m => m.email === 'a@x.com'));
-  assert.ok(!members.some(m => m.email === 'jeju@x.com'), '제주 소속은 목록에 없다');
+  assert.ok(members.some(m => m.email === 'a@wol.org'));
+  assert.ok(!members.some(m => m.email === 'jeju@wol.org'), '제주 소속은 목록에 없다');
   assert.ok(!JSON.stringify(members).includes('010-1111'), '전화번호는 내려가지 않는다');
 
-  const ok = await patch(estelle, { date: sat, slot: 'pickup', email: 'a@x.com' }); // 토요일(기본 닫힘)에 배정 → 열리면서 배정
+  const ok = await patch(estelle, { date: sat, slot: 'pickup', email: 'a@wol.org' }); // 토요일(기본 닫힘)에 배정 → 열리면서 배정
   assert.equal(ok.status, 200);
   const v = await view(a);
   assert.equal(v.slots[`${sat}:pickup`].name, '가나다');
@@ -384,14 +387,14 @@ test('관리자(Estelle·마스터)는 사람을 직접 배정하고 해제할 �
   assert.equal(saved.phone, '010-1111-2222', '계정의 번호가 알림용으로 저장된다');
   assert.equal(saved.assignedBy, 'esooy@wol.org');
 
-  const swap = await (await patch(master, { date: sat, slot: 'pickup', email: 'nophone@x.com' })).json();
+  const swap = await (await patch(master, { date: sat, slot: 'pickup', email: 'nophone@wol.org' })).json();
   assert.equal(swap.replaced, '가나다');
   assert.equal(swap.noPhone, true);
-  assert.equal((await patch(master, { date: sat, slot: 'pickup', email: 'ghost@x.com' })).status, 404);
-  assert.equal((await patch(master, { date: sat, slot: 'pickup', email: 'jeju@x.com' })).status, 400);
+  assert.equal((await patch(master, { date: sat, slot: 'pickup', email: 'ghost@wol.org' })).status, 404);
+  assert.equal((await patch(master, { date: sat, slot: 'pickup', email: 'jeju@wol.org' })).status, 400);
   assert.equal((await patch(estelle, { date: sat, slot: 'pickup', email: null })).status, 200, '배정 해제');
   assert.equal((await view(a)).slots[`${sat}:pickup`], undefined);
-  assert.equal((await patch(estelle, { date: '2020-01-06', slot: 'pickup', email: 'a@x.com' })).status, 409, '지난 날짜는 안 된다');
+  assert.equal((await patch(estelle, { date: '2020-01-06', slot: 'pickup', email: 'a@wol.org' })).status, 409, '지난 날짜는 안 된다');
 });
 
 import { currentWeekStart, rollingWindow } from '../functions/lib/carDrive.js';

@@ -15,7 +15,7 @@ async function setup() {
   const env = { CAMP_KV: memoryKv(), ADMIN_PASSWORD: 'secret', RESEND_API_KEY: 'rk' };
   const old = await hashPassword('Forgotten!99');
   await putAccount(env, { email: 'estelle@wol.org', name: 'Estelle', role: 'counselor', status: 'approved', passwordHash: old.hash, passwordSalt: old.salt, mustChangePassword: true });
-  await putAccount(env, { email: 'wait@x.com', name: 'W', role: 'counselor', status: 'pending' });
+  await putAccount(env, { email: 'wait@wol.org', name: 'W', role: 'counselor', status: 'pending' });
   return env;
 }
 const post = (env, body, sent) => reset({ env, waitUntil: p => p, request: new Request('https://wolko.org/api/hub/password-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
@@ -37,8 +37,8 @@ test('forgot password: link by e-mail, new password once, old password stops wor
   assert.equal((await post(env, { action: 'request', email: 'estelle@wol.org' })).status, 200);
   assert.equal(mails.length, 1);
   // 없는 계정·승인 대기 계정도 같은 응답, 메일은 없음
-  assert.deepEqual(await (await post(env, { action: 'request', email: 'ghost@x.com' })).json(), { ok: true });
-  assert.deepEqual(await (await post(env, { action: 'request', email: 'wait@x.com' })).json(), { ok: true });
+  assert.deepEqual(await (await post(env, { action: 'request', email: 'ghost@wol.org' })).json(), { ok: true });
+  assert.deepEqual(await (await post(env, { action: 'request', email: 'wait@wol.org' })).json(), { ok: true });
   assert.equal(mails.length, 1);
 
   assert.equal((await post(env, { action: 'confirm', token: 'bad', newPassword: 'NewPass#2026' })).status, 400);

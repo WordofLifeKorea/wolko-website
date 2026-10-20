@@ -20,7 +20,7 @@
  * 비밀번호 계정으로 로그인한다.
  */
 
-export const MASTER_EMAILS = ['wolkorea1@gmail.com'];
+export const MASTER_EMAILS = ['admin@wolko.org'];
 /** 포탈 전체를 유지보수하는 관리자 — 이 목록이 기준이다. 목록에 없는 계정은 모두 일반 멤버(counselor). */
 export const ADMIN_EMAILS = ['hkim3@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org', 'jeremyrodgers@wol.org'];
 
@@ -60,6 +60,15 @@ export function isMasterEmail(email) {
 
 export function isWolDomain(email) {
   return normalizeEmail(email).endsWith('@wol.org');
+}
+
+/** 포탈은 wolko.org / wol.org 계정만 쓸 수 있다 (마스터 계정만 예외) */
+export const PORTAL_EMAIL_DOMAINS = ['wolko.org', 'wol.org'];
+export function isAllowedPortalEmail(email) {
+  const e = normalizeEmail(email);
+  if (MASTER_EMAILS.includes(e)) return true;
+  const at = e.lastIndexOf('@');
+  return at > 0 && PORTAL_EMAIL_DOMAINS.includes(e.slice(at + 1));
 }
 
 function b64url(buf) {
@@ -154,6 +163,7 @@ export async function parseHubSessionToken(secret, token) {
   const [, email, role, expiresStr] = parts;
   const expires = parseInt(expiresStr, 10);
   if (!expires || Date.now() > expires) return null;
+  if (!isAllowedPortalEmail(email)) return null;
   return { email, role: effectiveRole(email, role) };
 }
 

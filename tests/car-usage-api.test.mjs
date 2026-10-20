@@ -140,7 +140,7 @@ test('clearing the usage log is master-only, needs confirmation, runs in batches
   const env = memoryEnv();
   await env.CAMP_KV.put('hub:account:driver@wol.org', JSON.stringify({ email: 'driver@wol.org', name: '운전자', status: 'approved' }));
   const user = await createHubSessionToken(env.ADMIN_PASSWORD, 'driver@wol.org', 'counselor');
-  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master');
   for (let i = 0; i < 7; i++) await saveUsage({ env, request: postRequest(user) });
   const del = (token, body) => clearUsage({ env, request: new Request('https://example.com/api/car/usage', { method: 'DELETE', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
   assert.equal((await del(user, { confirm: 'DELETE-ALL' })).status, 403);
@@ -159,7 +159,7 @@ test('selected records: master can edit vehicle/purpose of chosen entries only, 
   const env = memoryEnv();
   await env.CAMP_KV.put('hub:account:driver@wol.org', JSON.stringify({ email: 'driver@wol.org', name: '운전자', status: 'approved' }));
   const user = await createHubSessionToken(env.ADMIN_PASSWORD, 'driver@wol.org', 'counselor');
-  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master');
   const ids = [];
   for (let i = 0; i < 4; i++) ids.push((await (await saveUsage({ env, request: postRequest(user) })).json()).entry.id);
   const call = (fn, method, token, body) => fn({ env, request: new Request('https://example.com/api/car/usage', { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
@@ -174,7 +174,7 @@ test('selected records: master can edit vehicle/purpose of chosen entries only, 
   assert.equal(edited.count, 2);
   const after = await list();
   const byId = Object.fromEntries(after.map(e => [e.id, e]));
-  assert.deepEqual([byId[ids[0]].useType, byId[ids[0]].vehicleId, byId[ids[0]].vehicleName, byId[ids[0]].editedBy], ['personal', 'santa-fe', 'Santa Fe', 'wolkorea1@gmail.com']);
+  assert.deepEqual([byId[ids[0]].useType, byId[ids[0]].vehicleId, byId[ids[0]].vehicleName, byId[ids[0]].editedBy], ['personal', 'santa-fe', 'Santa Fe', 'admin@wolko.org']);
   assert.notEqual(byId[ids[2]].useType, 'x');
   assert.equal(byId[ids[2]].editedBy, undefined, '고르지 않은 기록은 그대로');
   // 삭제: 마스터만, 고른 것만, 백업이 남는다

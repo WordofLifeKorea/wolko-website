@@ -17,7 +17,7 @@ function makeEnv({ staleList = false } = {}) {
 
 async function setup(opts) {
   const { store, env } = makeEnv(opts);
-  const token = await createHubSessionToken('secret', 'wolkorea1@gmail.com', 'master');
+  const token = await createHubSessionToken('secret', 'admin@wolko.org', 'master');
   const call = async (fn, url, init = {}) => {
     const res = await fn({ env, request: new Request(url, { headers: { Authorization: `Bearer ${token}` }, ...init }) });
     return { status: res.status, body: await res.json() };
@@ -26,12 +26,12 @@ async function setup(opts) {
 }
 
 const campId = '2027-wolko-winter';
-const reg = { regId: 'r1', campId, registrationType: 'individual', name: 'Kim', phone: '010-1111-2222', email: 'a@b.com', gender: 'male', status: 'deposit', registeredAt: '2026-10-16T00:00:00.000Z' };
+const reg = { regId: 'r1', campId, registrationType: 'individual', name: 'Kim', phone: '010-1111-2222', email: 'a@wol.org', gender: 'male', status: 'deposit', registeredAt: '2026-10-16T00:00:00.000Z' };
 
 test('deleting moves the registration to the trash and restoring brings it back to the list and counters', async () => {
   const { store, call } = await setup();
   store.set(`camp:${campId}:reg:r1`, JSON.stringify(reg));
-  store.set(`camp:${campId}:email:a@b.com`, 'r1');
+  store.set(`camp:${campId}:email:a@wol.org`, 'r1');
 
   assert.equal((await call(admin.onRequestDelete, `https://x/api/admin/registrations?regId=r1&campId=${campId}`, { method: 'DELETE' })).status, 200);
   assert.equal(store.has(`camp:${campId}:reg:r1`), false);

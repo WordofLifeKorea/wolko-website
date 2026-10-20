@@ -9,7 +9,7 @@
  * 도구 API가 거부한다 — 상담사 전용 도구는 이것과 완전히 별개의 계정 체계)
  */
 import {
-  normalizeEmail, isValidEmail, getAccount, verifyPassword, effectiveRole,
+  normalizeEmail, isValidEmail, isAllowedPortalEmail, getAccount, verifyPassword, effectiveRole,
   createHubSessionToken,
 } from '../../lib/hubAccounts.js';
 
@@ -35,6 +35,11 @@ export async function onRequestPost(context) {
   const password = String(body.password || '');
   if (!isValidEmail(email) || !password) {
     return Response.json({ error: '이메일과 비밀번호를 입력해 주세요.' }, { status: 400, headers: CORS });
+  }
+
+  // wolko.org / wol.org 가 아니면 포탈 계정이 없는 것으로 취급 (카운슬러 로그인은 별개 계정 체계라 화면에서 그쪽으로 넘어간다)
+  if (!isAllowedPortalEmail(email)) {
+    return Response.json({ error: '가입되지 않은 이메일입니다. 포탈은 wolko.org 또는 wol.org 계정만 사용할 수 있어요.' }, { status: 404, headers: CORS });
   }
 
   try {

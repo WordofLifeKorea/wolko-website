@@ -29,18 +29,18 @@ test('자료실 업로더 신원은 서명으로 보호하고 기존 토큰도 �
   const req = token => new Request('https://wolko.org', { headers: { Authorization: `Bearer ${token}` } });
   const legacy = await generateTeachToken(env.ADMIN_PASSWORD);
   assert.equal((await teachSession(req(legacy), env)).role, 'member');
-  const signed = await generateTeachToken(env.ADMIN_PASSWORD, 'member', { name: '김', email: 'u@x.com' });
+  const signed = await generateTeachToken(env.ADMIN_PASSWORD, 'member', { name: '김', email: 'u@wol.org' });
   const forged = btoa(atob(signed).replace(encodeURIComponent('김'), encodeURIComponent('박')));
   assert.equal(await teachSession(req(forged), env), null);
 });
 
 test('자료 업로더 이름은 로그인 계정에서 정하고 수정 후에도 보존한다', async () => {
   const env = setup();
-  await putAccount(env, { email: 'u@x.com', name: '김업로드', role: 'counselor', status: 'approved' });
-  await putAccount(env, { email: 'a@x.com', name: '관리자', role: 'counselor', status: 'approved' });
-  await env.CAMP_KV.put('teach:managers', JSON.stringify(['a@x.com']));
+  await putAccount(env, { email: 'u@wol.org', name: '김업로드', role: 'counselor', status: 'approved' });
+  await putAccount(env, { email: 'a@wol.org', name: '관리자', role: 'counselor', status: 'approved' });
+  await env.CAMP_KV.put('teach:managers', JSON.stringify(['a@wol.org']));
   const login = async email => (await (await post(env, await createHubSessionToken(env.ADMIN_PASSWORD, email, 'counselor'))).json());
-  const user = await login('u@x.com'), admin = await login('a@x.com');
+  const user = await login('u@wol.org'), admin = await login('a@wol.org');
   const request = (method, token, item) => new Request('https://wolko.org/api/teach/data', { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ item }) });
   const item = { tab: 'teacher', team: 'WOLKO', person: '다른사람', uploaderName: '위조', campIds: ['camp-1'], title: '자료', url: 'https://example.com/a.pdf' };
   const added = await Data.onRequestPost({ env, request: request('POST', user.token, item) });
@@ -75,12 +75,12 @@ test('업로드한 사람만 카드를 만들고 빈 목록은 안내 한 칸만
 
 test('캠프 자료실: 승인된 포탈 멤버만 자료실 토큰을 받고, 그 토큰을 기존 자료 API가 인식한다', async () => {
   const env = setup();
-  await putAccount(env, { email: 'm@x.com', name: 'M', role: 'counselor', status: 'approved' });
-  await putAccount(env, { email: 'w@x.com', name: 'W', role: 'counselor', status: 'pending' });
+  await putAccount(env, { email: 'm@wol.org', name: 'M', role: 'counselor', status: 'approved' });
+  await putAccount(env, { email: 'w@wol.org', name: 'W', role: 'counselor', status: 'pending' });
   const tok = e => createHubSessionToken(env.ADMIN_PASSWORD, e, 'counselor');
   assert.equal((await post(env, null)).status, 401);
-  assert.equal((await post(env, await tok('w@x.com'))).status, 401, '승인 대기');
-  const ok = await post(env, await tok('m@x.com'));
+  assert.equal((await post(env, await tok('w@wol.org'))).status, 401, '승인 대기');
+  const ok = await post(env, await tok('m@wol.org'));
   assert.equal(ok.status, 200);
   const { token } = await ok.json();
   const noAuth = await Data.onRequestGet({ env, request: new Request('https://wolko.org/api/teach/data') });
@@ -142,10 +142,10 @@ import * as Upload from '../functions/api/teach/upload.js';
 
 test('캠프 자료실 권한: 멤버는 본인 수정, 지정 관리자는 수정·캠프 관리, 타인 삭제는 마스터만', async () => {
   const env = setup();
-  await putAccount(env, { email: 'm@x.com', name: 'Member', role: 'counselor', status: 'approved' });
+  await putAccount(env, { email: 'm@wol.org', name: 'Member', role: 'counselor', status: 'approved' });
   await putAccount(env, { email: 'ella@wol.org', name: 'Ella', role: 'counselor', status: 'approved' });
   const sess = (e, r = 'counselor') => createHubSessionToken(env.ADMIN_PASSWORD, e, r);
-  const master = await sess('wolkorea1@gmail.com', 'master'), member = await sess('m@x.com'), ella = await sess('ella@wol.org');
+  const master = await sess('admin@wolko.org', 'master'), member = await sess('m@wol.org'), ella = await sess('ella@wol.org');
   const req = (path, method, token, body) => new Request('https://wolko.org' + path, { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
   const login = async t => (await (await PLogin.onRequestPost({ env, request: req('/api/teach/portal-login', 'POST', t) })).json());
   const item = { tab: 'general', title: '자료', url: 'https://example.com/a', campIds: ['camp-1'] };
@@ -153,11 +153,11 @@ test('캠프 자료실 권한: 멤버는 본인 수정, 지정 관리자는 수�
   // 관리자 지정은 마스터만, 지정 전에는 Ella 도 일반 멤버
   let m = await login(member); let e = await login(ella);
   assert.deepEqual([m.role, m.isManager, e.role], ['member', false, 'member']);
-  assert.equal((await Managers.onRequestPut({ env, request: req('/api/teach/managers', 'PUT', member, { emails: ['m@x.com'] }) })).status, 403);
+  assert.equal((await Managers.onRequestPut({ env, request: req('/api/teach/managers', 'PUT', member, { emails: ['m@wol.org'] }) })).status, 403);
   assert.equal((await Managers.onRequestPut({ env, request: req('/api/teach/managers', 'PUT', master, { emails: ['Ella@wol.org', 'bad', 'ella@wol.org'] }) })).status, 200);
   const list = await (await Managers.onRequestGet({ env, request: req('/api/teach/managers', 'GET', master) })).json();
   assert.deepEqual(list.managers.map(x => x.email), ['ella@wol.org']);
-  assert.ok(list.accounts.some(a => a.email === 'm@x.com'));
+  assert.ok(list.accounts.some(a => a.email === 'm@wol.org'));
   assert.equal((await (await Managers.onRequestGet({ env, request: req('/api/teach/managers', 'GET', member) })).json()).managers, undefined, '일반 멤버에게는 명단을 주지 않는다');
 
   m = await login(member); e = await login(ella); const ms = await login(master);

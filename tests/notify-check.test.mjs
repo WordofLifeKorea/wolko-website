@@ -26,7 +26,7 @@ test('only the master account can see settings or send test messages', async () 
 
 test('GET reports presence only and never leaks configuration values', async () => {
   const env = envWith({ SOLAPI_API_KEY: 'SECRET-KEY-VALUE', KAKAO_PF_ID: 'pf-value', KAKAO_TEMPLATE_STAFF: 'TPL-VALUE' });
-  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+  const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master');
   const response = await onRequestGet({ env, request: req(master) });
   const text = await response.text();
   assert.equal(response.status, 200);
@@ -44,7 +44,7 @@ test('POST validates the phone and missing template, and sends one alimtalk to t
   globalThis.fetch = async (url, init) => { sent.push({ url, body: JSON.parse(init.body) }); return new Response(JSON.stringify({ groupInfo: { _id: 'G1' } }), { status: 200 }); };
   try {
     const env = envWith({ SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', KAKAO_PF_ID: 'pf', KAKAO_TEMPLATE_STAFF: 'TPL' });
-    const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+    const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master');
     assert.equal((await onRequestPost({ env, request: req(master, { flow: 'nope', phone: '01012345678' }) })).status, 400);
     assert.equal((await onRequestPost({ env, request: req(master, { flow: 'staff', phone: '123' }) })).status, 400);
     assert.equal((await onRequestPost({ env, request: req(master, { flow: 'kitchen', phone: '01012345678' }) })).status, 503);
@@ -64,7 +64,7 @@ test('sms check sends a plain SMS from the sender number and needs no Kakao chan
   globalThis.fetch = async (url, init) => { sent.push(JSON.parse(init.body)); return new Response(JSON.stringify({ groupInfo: { _id: 'S1' } }), { status: 200 }); };
   try {
     const env = envWith({ SOLAPI_API_KEY: 'k', SOLAPI_API_SECRET: 's', SOLAPI_SENDER_PHONE: '010-1111-2222' });
-    const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'wolkorea1@gmail.com', 'master');
+    const master = await createHubSessionToken(env.ADMIN_PASSWORD, 'admin@wolko.org', 'master');
     const response = await onRequestPost({ env, request: req(master, { flow: 'sms', phone: '01099998888' }) });
     assert.equal(response.status, 200);
     assert.equal(sent[0].message.from, '01011112222');

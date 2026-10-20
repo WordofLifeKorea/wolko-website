@@ -36,20 +36,20 @@ function setup(emailOn = true) {
   return { store, sent, acc, call, kv };
 }
 
-const cyn = ['cyn@x.com', 'counselor'];
+const cyn = ['cyn@wol.org', 'counselor'];
 const boss = ['boss@wol.org', 'admin'];
-const ann = ['acct@x.com', 'counselor'];
-const master = ['wolkorea1@gmail.com', 'master'];
-if (!ACCOUNTANT_EMAILS.includes('acct@x.com')) ACCOUNTANT_EMAILS.push('acct@x.com');
+const ann = ['acct@wol.org', 'counselor'];
+const master = ['admin@wolko.org', 'master'];
+if (!ACCOUNTANT_EMAILS.includes('acct@wol.org')) ACCOUNTANT_EMAILS.push('acct@wol.org');
 if (!EXPENSE_ADMIN_EMAILS.includes('boss@wol.org')) EXPENSE_ADMIN_EMAILS.push('boss@wol.org'); // 테스트용 '관리자' 등급
 const DEFAULT_NOTIFY = [...NEW_REPORT_NOTIFY_EMAILS];
 if (!NEW_REPORT_NOTIFY_EMAILS.includes('boss@wol.org')) NEW_REPORT_NOTIFY_EMAILS.push('boss@wol.org');
 
 test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 반영', async () => {
   const { store, sent, acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor', { isAccountant: true });
+  await acc('acct@wol.org', 'Ann', 'counselor', { isAccountant: true });
 
   const up = await call(F.onRequestPost, 'POST', '/api/expense/receipt', cyn,
     { name: 'r.jpg', type: 'image/jpeg', data: 'data:image/jpeg;base64,' + btoa('hello') });
@@ -68,7 +68,7 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
   assert.equal(sub.report.total, 138000, '$100 × 1,380 = ₩138,000');
   assert.equal(sub.report.rows[0].amountKrw, 138000);
   const id = sub.report.id;
-  assert.ok(sent[0].to.includes('boss@wol.org') && !sent[0].to.includes('cyn@x.com'), '승인자에게만 알림');
+  assert.ok(sent[0].to.includes('boss@wol.org') && !sent[0].to.includes('cyn@wol.org'), '승인자에게만 알림');
   for (const e of ['jeremyrodgers@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org']) assert.ok(sent[0].to.includes(e), e + ' 알림');
   assert.ok(!sent[0].to.includes('jennyson@wol.org') && !sent[0].to.includes('wolkorea1@gmail.com'), '새 리포트 알림은 세 명에게만');
   assert.equal(sent[0].reply_to, 'wolkorea1@gmail.com', '답장은 wolkorea1로');
@@ -93,7 +93,7 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
   sent.length = 0;
   const ok = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Car Gas (8400)'], withdrawals: ['wolko'] });
   assert.equal(ok.report.status, 'approved');
-  assert.ok(sent.some(m => m.to.includes('acct@x.com')), '승인 시 회계 담당자에게 알림');
+  assert.ok(sent.some(m => m.to.includes('acct@wol.org')), '승인 시 회계 담당자에게 알림');
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=accounting', ann)).reports.length, 1);
 
   assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'process' })).status, 403, '회계 담당만 처리');
@@ -103,17 +103,17 @@ test('경비 리포트: 제출 → 반려 → 재제출 → 승인 → 장부 �
   const view = await call(F.onRequestGet, 'GET', `/api/expense/receipt?reportId=${id}&fileId=${fid}`, ann);
   assert.equal(view.status, 200);
   assert.equal(await view.res.text(), 'hello');
-  await acc('other@x.com', 'Other', 'counselor');
-  assert.equal((await call(F.onRequestGet, 'GET', `/api/expense/receipt?reportId=${id}&fileId=${fid}`, ['other@x.com', 'counselor'])).status, 403, '제3자는 영수증 열람 불가');
+  await acc('other@wol.org', 'Other', 'counselor');
+  assert.equal((await call(F.onRequestGet, 'GET', `/api/expense/receipt?reportId=${id}&fileId=${fid}`, ['other@wol.org', 'counselor'])).status, 403, '제3자는 영수증 열람 불가');
 });
 
 test('전체 리포트 조회는 관리자·회계 담당만, 일반 계정은 본인 것만', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
-  await acc('bob@x.com', 'Bob', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
+  await acc('bob@wol.org', 'Bob', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor');
-  const bob = ['bob@x.com', 'counselor'];
+  await acc('acct@wol.org', 'Ann', 'counselor');
+  const bob = ['bob@wol.org', 'counselor'];
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });
   await call(R.onRequestPost, 'POST', '/api/expense/reports', bob, { description: 'B', rows: [row] });
@@ -149,7 +149,7 @@ test('회계 담당은 코드 목록의 계정(jennyson@wol.org 포함)', async 
 
 test('KRW 항목은 환율 없이 원화 그대로, 합계는 KRW', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   const r = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'mix', rows: [
     { account: 'Office (5201)', currency: 'KRW', amount: 12500, item: 'Pens', ministryPurpose: 'pens', when: '2026-09-29' },
     { account: 'Office (5201)', currency: 'USD', amount: 10.5, rate: 1355.05, item: 'Books', ministryPurpose: 'online', when: '2026-09-29' },
@@ -163,7 +163,7 @@ test('KRW 항목은 환율 없이 원화 그대로, 합계는 KRW', async () => 
 
 test('환율 조회: 날짜 기준으로 가져오고 캐시한다', async () => {
   const { store, acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   let calls = 0;
   globalThis.fetch = async url => {
     calls++;
@@ -183,7 +183,7 @@ test('환율 조회: 날짜 기준으로 가져오고 캐시한다', async () =>
 
 test('구매 품목명은 필수', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   const base = { account: 'Office (5201)', currency: 'KRW', amount: 1000, ministryPurpose: '캠프', when: '2026-09-29' };
   const miss = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'x', rows: [base] });
   assert.equal(miss.status, 400);
@@ -194,7 +194,7 @@ test('구매 품목명은 필수', async () => {
 
 test('경비 권한은 "관리자" 등급만: master/포탈 admin이어도 목록에 없으면 승인·전체 조회 불가', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   await acc('esooy@wol.org', 'Estelle', 'admin'); // 포탈 role은 admin이지만 경비 관리자 등급 아님
   await acc('hkim3@wol.org', 'Dev', 'admin');
@@ -225,12 +225,12 @@ test('경비 관리자 등급 목록 확인', () => {
   for (const e of ['hkim3@wol.org', 'ychae@wol.org', 'joemin@wol.org', 'peterchae@wol.org']) assert.ok(!EXPENSE_ADMIN_EMAILS.includes(e), e);
 });
 
-test('Owner(wolkorea1@gmail.com)는 홈페이지 개발이 끝날 때까지 임시 회계 관리자', async () => {
-  assert.ok(EXPENSE_ADMIN_EMAILS.includes('wolkorea1@gmail.com'));
-  assert.ok(ACCOUNTANT_EMAILS.includes('wolkorea1@gmail.com'));
+test('Owner(admin@wolko.org)는 홈페이지 개발이 끝날 때까지 임시 회계 관리자', async () => {
+  assert.ok(EXPENSE_ADMIN_EMAILS.includes('admin@wolko.org'));
+  assert.ok(ACCOUNTANT_EMAILS.includes('admin@wolko.org'));
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
-  const owner = ['wolkorea1@gmail.com', 'master'];
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
+  const owner = ['admin@wolko.org', 'master'];
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });
   const me = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', owner);
@@ -241,9 +241,9 @@ test('Owner(wolkorea1@gmail.com)는 홈페이지 개발이 끝날 때까지 임�
 
 test('회계 담당은 리포트를 삭제해도 영수증까지 백업되어 복구할 수 있다', async () => {
   const { store, acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor');
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   const up = await call(F.onRequestPost, 'POST', '/api/expense/receipt', cyn, { name: 'r.png', type: 'image/png', data: 'data:image/png;base64,' + btoa('img') });
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'Del', rows: [{ ...row, receipts: [{ id: up.id, name: 'r.png', type: 'image/png' }] }] });
@@ -266,7 +266,7 @@ test('회계 담당은 리포트를 삭제해도 영수증까지 백업되어 �
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', ann)).reports.length, 0);
   const trash = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=trash', ann);
   assert.deepEqual(trash.trash.map(x => x.report.id), [id]);
-  assert.equal(trash.trash[0].deletedBy, 'acct@x.com');
+  assert.equal(trash.trash[0].deletedBy, 'acct@wol.org');
 
   // 복구: 리포트와 영수증이 그대로 돌아온다
   assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', cyn, { id, action: 'restore' })).status, 403);
@@ -282,9 +282,9 @@ test('회계 담당은 리포트를 삭제해도 영수증까지 백업되어 �
 
 test('승인 시 모든 항목의 카테고리를 확정해야 하고, 확정값이 회계로 넘어간다', async () => {
   const { acc, sent, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor', { campus: 'jeju' });
+  await acc('cyn@wol.org', 'Cynthia', 'counselor', { campus: 'jeju' });
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor');
   const row = (item, account) => ({ account, currency: 'KRW', amount: 1000, item, ministryPurpose: 'camp', when: '2026-09-29' });
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, {
     description: 'cat', rows: [row('휘발유', 'Car Gas (8400)'), row('간식', 'Furniture & Fixtures (8395)')],
@@ -304,24 +304,24 @@ test('승인 시 모든 항목의 카테고리를 확정해야 하고, 확정값
   assert.equal(ok.report.rows[1].account, 'Food (8968)', '승인자가 확정한 카테고리로 교체');
   assert.equal(ok.report.rows[1].submittedAccount, 'Furniture & Fixtures (8395)', '제출자가 고른 원래 값은 보존');
   assert.equal(ok.report.categoriesConfirmedBy, 'boss@wol.org');
-  assert.ok(sent.some(m => m.to.includes('acct@x.com')), '회계 담당에게 송금 요청 알림');
+  assert.ok(sent.some(m => m.to.includes('acct@wol.org')), '회계 담당에게 송금 요청 알림');
 
   // 송금 완료 → 제출자에게 알림
   sent.length = 0;
   const paid = await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'process' });
   assert.equal(paid.report.status, 'processed');
-  assert.ok(sent.some(m => m.to.includes('cyn@x.com') && /송금/.test(m.subject)), '제출자에게 송금 완료 알림');
+  assert.ok(sent.some(m => m.to.includes('cyn@wol.org') && /송금/.test(m.subject)), '제출자에게 송금 완료 알림');
 });
 
 test('캠퍼스(평택|제주)는 포탈 가입 때 정한 계정 값 기준, 값이 없는 기존 계정은 평택', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
-  await acc('jj@x.com', 'Jeju', 'counselor', { campus: 'jeju' });
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
+  await acc('jj@wol.org', 'Jeju', 'counselor', { campus: 'jeju' });
   await acc('boss@wol.org', 'Boss', 'admin');
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   const a = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'a', campus: 'jeju', rows: [row] });
   assert.equal(a.report.campus, 'wolko', '요청 값은 무시, 기존 계정은 평택');
-  const b = await call(R.onRequestPost, 'POST', '/api/expense/reports', ['jj@x.com', 'counselor'], { description: 'b', rows: [row] });
+  const b = await call(R.onRequestPost, 'POST', '/api/expense/reports', ['jj@wol.org', 'counselor'], { description: 'b', rows: [row] });
   assert.equal(b.report.campus, 'jeju');
   const all = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=all', boss);
   assert.deepEqual(all.reports.map(r => [r.description, r.campus]).sort(), [['a', 'wolko'], ['b', 'jeju']]);
@@ -329,8 +329,8 @@ test('캠퍼스(평택|제주)는 포탈 가입 때 정한 계정 값 기준, �
 
 test('전체 비우기: 회계 담당만, 확인 값 필요, 백업되어 복구 가능', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
-  await acc('acct@x.com', 'Ann', 'counselor', { isAccountant: true });
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor', { isAccountant: true });
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   const a = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'a', rows: [row] });
   assert.equal((await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', cyn, { action: 'trash-all', confirm: 'DELETE-ALL' })).status, 403);
@@ -352,7 +352,7 @@ test('전체 비우기: 회계 담당만, 확인 값 필요, 백업되어 복구
 
 test('메모: 모든 항목에서 입력 가능, 메모 항목은 승인자가 확인해야 하고 승인 메모가 남는다', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   const row = (account, memo) => ({ account, currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29', memo });
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'm', rows: [row('Car Gas (8400)', '주유소 영수증 2장 합산'), row('Teacher (8052)', '')] });
@@ -370,7 +370,7 @@ test('메모: 모든 항목에서 입력 가능, 메모 항목은 승인자가 �
 
 test('작성자는 선교 항목·계좌를 직접 적고, 출금 계좌는 승인자가 확정한다', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   const row = (source, extra = {}) => ({ source, currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29', ...extra });
   assert.equal((await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'x', rows: [row('')] })).status, 400, '선교 항목·계좌는 필수');
@@ -387,7 +387,7 @@ test('작성자는 선교 항목·계좌를 직접 적고, 출금 계좌는 승�
 
 test('외화: 캐나다 달러·베트남 동도 영수 날짜 환율로 원화 환산, 환율 범위를 검증한다', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   const row = extra => ({ source: '월코캠프', amount: 100, item: 'x', when: '2026-09-29', ...extra });
   const ok = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'fx', rows: [
     row({ currency: 'CAD', amount: 10, rate: 955.55 }),
@@ -404,7 +404,7 @@ test('외화: 캐나다 달러·베트남 동도 영수 날짜 환율로 원화 
 
 test('환율 조회: CAD는 frankfurter, VND는 별도 일별 환율 데이터, 지원하지 않는 통화는 거절', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   const urls = [];
   globalThis.fetch = async url => {
     urls.push(String(url));
@@ -429,7 +429,7 @@ test('이예영(ylee7@wol.org)은 회계 담당이지만 경비 승인 권한은
 
 test('회계 담당(승인 권한 없음)은 전체 리포트에서 승인 대기 건을 볼 수 없고, Jeremy는 제주로 분류된다', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   await acc('ylee7@wol.org', 'Rose', 'counselor');
   await acc('jeremyrodgers@wol.org', 'Jeremy', 'admin');
@@ -450,9 +450,9 @@ test('회계 담당(승인 권한 없음)은 전체 리포트에서 승인 대�
 
 test('승인된 리포트는 내용 고정: 작성자 수정·철회 불가, 카테고리(코드)만 회계 담당이 수정 가능', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor');
   const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29' };
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'lock', rows: [row] });
   const id = sub.report.id;
@@ -467,14 +467,14 @@ test('승인된 리포트는 내용 고정: 작성자 수정·철회 불가, 카
   assert.equal(ok.report.rows[0].account, 'Teacher (8052)');
   assert.equal(ok.report.rows[0].amountKrw, 1000, '금액 등 내용은 그대로');
   assert.equal(ok.report.rows[0].categoryHistory[0].from, 'Junior Camp (8040)');
-  assert.ok(ok.report.log.some(l => l.action === 'recategorize' && l.by === 'acct@x.com'));
+  assert.ok(ok.report.log.some(l => l.action === 'recategorize' && l.by === 'acct@wol.org'));
 });
 
 test('회계 담당은 송금 처리 전에 항목별 회계 노트를 남길 수 있고, 처리 후에는 바꿀 수 없다', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor');
   const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29', memo: '신청자 노트' };
   const id = (await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'n', rows: [row] })).report.id;
   const patch = (who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id, ...body });
@@ -495,9 +495,9 @@ test('회계 담당은 송금 처리 전에 항목별 회계 노트를 남길 �
 
 test('회계 담당이 승인된 리포트를 반려하면 승인자에게 되돌아가 다시 승인해야 한다', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor');
   const row = { source: '월코캠프', currency: 'KRW', amount: 1000, item: 'Pen', when: '2026-09-29' };
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'ret', rows: [row] });
   const id = sub.report.id;
@@ -527,19 +527,19 @@ test('회계 담당이 승인된 리포트를 반려하면 승인자에게 되�
 
 test('내 소속 캠퍼스가 counts 응답에 담겨 전체 리포트에서 먼저 보인다 (Jeremy는 제주)', async () => {
   const { acc, call } = setup();
-  await acc('jj@x.com', 'Jeju person', 'counselor', { campus: 'jeju' });
-  await acc('pt@x.com', 'Pyeongtaek person', 'counselor');
+  await acc('jj@wol.org', 'Jeju person', 'counselor', { campus: 'jeju' });
+  await acc('pt@wol.org', 'Pyeongtaek person', 'counselor');
   await acc('jeremyrodgers@wol.org', 'Jeremy', 'admin');
-  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['jj@x.com', 'counselor'])).me.campus, 'jeju');
-  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['pt@x.com', 'counselor'])).me.campus, 'wolko');
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['jj@wol.org', 'counselor'])).me.campus, 'jeju');
+  assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['pt@wol.org', 'counselor'])).me.campus, 'wolko');
   assert.equal((await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=counts', ['jeremyrodgers@wol.org', 'admin'])).me.campus, 'jeju');
 });
 
 test('승인자는 출금 계좌(별칭)를 확정하고, 계정과목(코드)은 회계가 마지막에 확인한다', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor');
   const row = (item, extra = {}) => ({ source: '월코캠프', currency: 'KRW', amount: 1000, item, when: '2026-09-29', ...extra });
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'w', rows: [row('a'), row('b', { memo: '확인 필요' }), row('c')] });
   const id = sub.report.id;
@@ -559,7 +559,7 @@ test('승인자는 출금 계좌(별칭)를 확정하고, 계정과목(코드)�
   assert.equal((await patch(ann, { action: 'recategorize', categories: ['Missionary Account (8025)', 'Junior Camp (8040)', 'Nope'] })).status, 400);
   const done = await patch(ann, { action: 'recategorize', categories: ['Missionary Account (8025)', 'Junior Camp (8040)', 'Food (8968)'] });
   assert.equal(done.status, 200);
-  assert.equal(done.report.categoriesConfirmedBy, 'acct@x.com');
+  assert.equal(done.report.categoriesConfirmedBy, 'acct@wol.org');
   assert.equal(done.report.rows.some(r => r.accountSuggested), false, '회계가 확인하면 추천 표시가 사라진다');
   assert.equal(done.report.rows[1].withdrawNumber, '301-0343-5409-21', '회계 담당에게는 계좌번호가 보인다');
   assert.equal(done.report.rows[0].withdrawNumber, undefined, '개인 사역계좌는 번호가 없다');
@@ -568,9 +568,9 @@ test('승인자는 출금 계좌(별칭)를 확정하고, 계정과목(코드)�
 
 test('계좌번호는 회계 담당 화면에만: 작성자·승인자 목록에는 별칭 id 만 내려간다', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor');
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'n', rows: [{ source: '월코', currency: 'KRW', amount: 1000, item: 'a', when: '2026-09-29' }] });
   const id = sub.report.id;
   await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', withdrawals: ['wolko'] });
@@ -605,7 +605,7 @@ test('카테고리 정리: Car Tax · SYME Program Event · Pyeongtaek EM 은 �
   assert.equal(C.canonAccount('Car Tax (8320)'), '', '쓰지 않는 카테고리는 비운다');
   assert.equal(C.canonAccount('Nope'), '');
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'c', rows: [{ source: '월코', account: 'SYME Food (8968)', currency: 'KRW', amount: 1000, item: 'a', when: '2026-10-01' }, { source: '월코', account: 'Car Tax (8320)', currency: 'KRW', amount: 1000, item: 'b', when: '2026-10-01' }] });
   assert.deepEqual(sub.report.rows.map(r => r.account), ['Food (8968)', ''], '예전 이름은 새 이름으로 저장되고, 쓰지 않는 카테고리는 비워진다');
 });
@@ -620,7 +620,7 @@ test('카테고리 → 추천 출금 계좌 규칙이 정해진 대로이고, Ot
   assert.ok(Object.values(C.WITHDRAW_FOR_CATEGORY).every(id => C.WITHDRAW_ACCOUNTS.some(a => a.id === id && !a.retired)), '추천 계좌는 모두 지금 고를 수 있는 계좌');
   assert.ok(Object.keys(C.WITHDRAW_FOR_CATEGORY).every(k => C.ACCOUNTS.includes(k)), '추천 규칙의 카테고리는 모두 지금 있는 카테고리');
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'o', rows: [{ source: '월코', account: 'Furniture & Fixtures (8395)', currency: 'KRW', amount: 1000, item: '의자', when: '2026-10-01' }] });
   const id = sub.report.id;
@@ -639,9 +639,9 @@ test('카테고리 → 추천 출금 계좌 규칙이 정해진 대로이고, Ot
 
 test('옛 이름·쓰지 않는 카테고리로 저장된 리포트: 이름은 새로 보이고, 쓰지 않는 값은 회계가 새 값으로 골라야 송금할 수 있다', async () => {
   const { acc, call, kv } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
-  await acc('acct@x.com', 'Ann', 'counselor');
-  const report = { id: 'exp-old-1', status: 'approved', submitterEmail: 'cyn@x.com', submitterName: 'Cynthia', description: 'old', project: '', campus: 'wolko', total: 3000, submittedAt: '2026-10-01T00:00:00Z', log: [],
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor');
+  const report = { id: 'exp-old-1', status: 'approved', submitterEmail: 'cyn@wol.org', submitterName: 'Cynthia', description: 'old', project: '', campus: 'wolko', total: 3000, submittedAt: '2026-10-01T00:00:00Z', log: [],
     rows: [{ source: '월코', account: 'SYME Food (8968)', currency: 'KRW', amount: 1000, amountKrw: 1000, item: 'a', withdrawAccount: 'treehouse' }, { source: '월코', account: 'Car Tax (8320)', currency: 'KRW', amount: 2000, amountKrw: 2000, item: 'b', withdrawAccount: 'wolko' }] };
   await kv.put('expense:report:exp-old-1', JSON.stringify(report));
   const list = await call(R.onRequestGet, 'GET', '/api/expense/reports?scope=accounting', ann);
@@ -659,7 +659,7 @@ test('옛 이름·쓰지 않는 카테고리로 저장된 리포트: 이름은 �
 
 test('KV 조회 절약: 목록은 잠깐 재사용하고, 쓰기 직후에는 바로 새로 읽는다', async () => {
   const { acc, call, kv } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   let lists = 0;
   const origList = kv.list.bind(kv);
   kv.list = async o => { if (o.prefix === 'expense:report:') lists++; return origList(o); };
@@ -684,9 +684,9 @@ test('참석 인원 조회는 KV가 실패해도 500을 내지 않는다', async
 
 test('이메일 전체 스위치가 꺼져 있어도 새 리포트·재제출은 세 명에게, 승인/반려/송금 완료는 제출자에게 가고, 회계 담당자 요청은 가지 않는다', async () => {
   const { sent, acc, call } = setup(false);
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
-  await acc('acct@x.com', 'Ann', 'counselor', { isAccountant: true });
+  await acc('acct@wol.org', 'Ann', 'counselor', { isAccountant: true });
   const row = { account: 'Office (5201)', currency: 'KRW', amount: 1000, item: 'Pen', ministryPurpose: 'camp', when: '2026-09-29' };
   const sub = await call(R.onRequestPost, 'POST', '/api/expense/reports', cyn, { description: 'A', rows: [row] });
   assert.equal(sub.status, 200);
@@ -697,7 +697,7 @@ test('이메일 전체 스위치가 꺼져 있어도 새 리포트·재제출은
   // 반려 → 제출자에게
   await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'reject', note: '영수증 흐림' });
   assert.equal(sent.length, 2, '반려 피드백');
-  assert.deepEqual(sent[1].to, ['cyn@x.com']);
+  assert.deepEqual(sent[1].to, ['cyn@wol.org']);
   assert.match(sent[1].subject, /반려/);
 
   // 수정해서 재제출 → 다시 세 명에게
@@ -709,20 +709,20 @@ test('이메일 전체 스위치가 꺼져 있어도 새 리포트·재제출은
   // 승인 → 제출자에게만 (회계 담당자에게 가는 송금 요청 메일은 꺼져 있다)
   await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', boss, { id, action: 'approve', categories: ['Car Gas (8400)'], withdrawals: ['wolko'] });
   assert.equal(sent.length, 4, '승인 피드백 한 통만');
-  assert.deepEqual(sent[3].to, ['cyn@x.com']);
+  assert.deepEqual(sent[3].to, ['cyn@wol.org']);
   assert.match(sent[3].subject, /승인됨/);
 
   // 송금 처리 완료 → 제출자에게
   await call(R.onRequestPatch, 'PATCH', '/api/expense/reports', ann, { id, action: 'process' });
   assert.equal(sent.length, 5);
-  assert.deepEqual(sent[4].to, ['cyn@x.com']);
+  assert.deepEqual(sent[4].to, ['cyn@wol.org']);
   assert.match(sent[4].subject, /송금 처리 완료/);
 });
 
 test('작성 중(제출 전) 임시 영수증은 본인만 다시 열어볼 수 있다', async () => {
   const { acc, call } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
-  await acc('bob@x.com', 'Bob', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
+  await acc('bob@wol.org', 'Bob', 'counselor');
   const up = await call(F.onRequestPost, 'POST', '/api/expense/receipt', cyn, { name: 'shot.png', type: 'image/png', data: 'data:image/png;base64,' + btoa('img') });
   assert.equal(up.status, 200);
   const get = (who, fileId) => call(F.onRequestGet, 'GET', `/api/expense/receipt?draft=1&fileId=${fileId}`, who);
@@ -730,7 +730,7 @@ test('작성 중(제출 전) 임시 영수증은 본인만 다시 열어볼 수 
   assert.equal(mine.status, 200);
   assert.equal(mine.res.headers.get('Content-Type'), 'image/png');
   assert.equal(await mine.res.text(), 'img');
-  assert.equal((await get(['bob@x.com', 'counselor'], up.id)).status, 404, '다른 사람의 임시 파일은 못 본다');
+  assert.equal((await get(['bob@wol.org', 'counselor'], up.id)).status, 404, '다른 사람의 임시 파일은 못 본다');
   assert.equal((await get(cyn, 'missing')).status, 404);
 });
 
@@ -809,11 +809,11 @@ test('회계 노트 말풍선에 [저장]이 있고 눌러서 실제로 저장�
 
 test('출금 계좌: 회계 담당이 마지막에 확인하며 채우거나 바꿀 수 있고(예전 승인 리포트의 빈 항목 포함), 바꾼 기록이 남는다', async () => {
   const { acc, call, kv } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
-  await acc('acct@x.com', 'Ann', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
+  await acc('acct@wol.org', 'Ann', 'counselor');
   await acc('boss@wol.org', 'Boss', 'admin');
   const row = (item, extra = {}) => ({ source: '월코', account: 'Car Gas (8400)', currency: 'KRW', amount: 1000, amountKrw: 1000, item, ...extra });
-  await kv.put('expense:report:exp-legacy-1', JSON.stringify({ id: 'exp-legacy-1', status: 'approved', submitterEmail: 'cyn@x.com', submitterName: 'Cynthia', description: 'legacy', project: '', campus: 'wolko', total: 2000, submittedAt: '2026-10-01T00:00:00Z', log: [], rows: [row('a'), row('b', { withdrawAccount: 'wolko' })] }));
+  await kv.put('expense:report:exp-legacy-1', JSON.stringify({ id: 'exp-legacy-1', status: 'approved', submitterEmail: 'cyn@wol.org', submitterName: 'Cynthia', description: 'legacy', project: '', campus: 'wolko', total: 2000, submittedAt: '2026-10-01T00:00:00Z', log: [], rows: [row('a'), row('b', { withdrawAccount: 'wolko' })] }));
   const patch = (who, body) => call(R.onRequestPatch, 'PATCH', '/api/expense/reports', who, { id: 'exp-legacy-1', action: 'recategorize', categories: ['Car Gas (8400)', 'Car Gas (8400)'], ...body });
   assert.equal((await patch(boss, { withdrawals: ['teachers', ''] })).status, 403, '승인자는 회계 화면의 이 기능을 쓸 수 없다');
   assert.equal((await patch(ann, { withdrawals: ['nope', ''] })).status, 400, '목록에 없는 계좌');
@@ -821,10 +821,10 @@ test('출금 계좌: 회계 담당이 마지막에 확인하며 채우거나 바
   const ok = await patch(ann, { withdrawals: ['teachers', 'junior-camp'] });
   assert.equal(ok.status, 200);
   assert.deepEqual(ok.report.rows.map(r => r.withdrawAccount), ['teachers', 'junior-camp']);
-  assert.equal(ok.report.rows[0].withdrawSetBy, 'acct@x.com', '비어 있던 항목은 채운 사람이 남는다');
+  assert.equal(ok.report.rows[0].withdrawSetBy, 'acct@wol.org', '비어 있던 항목은 채운 사람이 남는다');
   assert.equal(ok.report.rows[0].withdrawChanged, undefined);
   assert.equal(ok.report.rows[1].withdrawChanged, true, '이미 있던 계좌를 바꾸면 변경 표시');
-  assert.deepEqual(ok.report.rows[1].withdrawHistory.map(h => [h.from, h.to, h.by]), [['wolko', 'junior-camp', 'acct@x.com']]);
+  assert.deepEqual(ok.report.rows[1].withdrawHistory.map(h => [h.from, h.to, h.by]), [['wolko', 'junior-camp', 'acct@wol.org']]);
   assert.equal(ok.report.rows[0].withdrawNumber, '301-0278-8185-71');
   assert.equal(ok.withdrawSet, 2);
   assert.match(ok.report.log.at(-1).note, /출금 계좌 2개/);
@@ -956,8 +956,8 @@ test('expense form labels: Description and Expense Report Title each carry an (i
 
 test('경비 리포트 임시저장: 계정에 귀속(서버) · 본인만 읽기 · 저장/수정/삭제 · 크기·줄 수 제한', async () => {
   const { acc, call, store } = setup();
-  await acc('cyn@x.com', 'Cynthia', 'counselor');
-  await acc('other@x.com', 'Other', 'counselor');
+  await acc('cyn@wol.org', 'Cynthia', 'counselor');
+  await acc('other@wol.org', 'Other', 'counselor');
   const draftCall = (method, who, body) => call(method === 'GET' ? D.onRequestGet : method === 'PUT' ? D.onRequestPut : D.onRequestDelete, method, '/api/expense/draft', who, body);
 
   assert.equal((await draftCall('GET', cyn)).draft, null);
@@ -969,8 +969,8 @@ test('경비 리포트 임시저장: 계정에 귀속(서버) · 본인만 읽�
   assert.equal(got.draft.form.editingId, null, '수정 중인 리포트 표시는 저장하지 않는다');
   assert.equal(got.draft.form.rows[0].receipts[0].id, 'r1');
   // 다른 계정은 내 초안을 볼 수 없다(계정마다 따로 저장)
-  assert.equal((await draftCall('GET', ['other@x.com', 'counselor'])).draft, null);
-  assert.ok([...store.keys()].some(k => k === 'expense:draft:cyn@x.com'));
+  assert.equal((await draftCall('GET', ['other@wol.org', 'counselor'])).draft, null);
+  assert.ok([...store.keys()].some(k => k === 'expense:draft:cyn@wol.org'));
   // 덮어쓰기(마지막 저장이 이긴다)
   await draftCall('PUT', cyn, { form: { ...form, description: '출장비 수정' } });
   assert.equal((await draftCall('GET', cyn)).draft.form.description, '출장비 수정');

@@ -8,7 +8,7 @@ import { KV_KEY } from '../functions/lib/portalResources.js';
 function env() {
   const store = new Map(), metadata = new Map();
   store.set(KV_KEY, JSON.stringify({ items: [{ id: 'r1', title: 'Lesson', files: [{ id: 'f1', fileName: 'old.pdf', fileType: 'application/pdf' }] }], updatedAt: 'x' }));
-  store.set('hub:account:member@x.com', JSON.stringify({ email: 'member@x.com', name: 'Member', status: 'approved' }));
+  store.set('hub:account:member@wol.org', JSON.stringify({ email: 'member@wol.org', name: 'Member', status: 'approved' }));
   return {
     ADMIN_PASSWORD: 'secret',
     CAMP_KV: {
@@ -27,7 +27,7 @@ const upload = { id: 'r1', fileName: 'new.txt', fileType: 'text/plain', fileData
 
 test('NAS resource uploads above 40MB stream, retain identity and download as binary', async t => {
   const e = { ...env(), TEACH_NAS_URL:'https://files.example.com', TEACH_NAS_TOKEN:'a'.repeat(64) };
-  const member = await createHubSessionToken(e.ADMIN_PASSWORD, 'member@x.com', 'counselor');
+  const member = await createHubSessionToken(e.ADMIN_PASSWORD, 'member@wol.org', 'counselor');
   let stored;
   t.mock.method(globalThis, 'fetch', async (url, options) => {
     assert.equal(options.headers.get('Authorization'), 'Bearer ' + e.TEACH_NAS_TOKEN);
@@ -61,7 +61,7 @@ test('NAS resource uploads above 40MB stream, retain identity and download as bi
 
 test('raw Word uploads retain their original and legacy binary downloads remain readable', async () => {
   const e = env();
-  const member = await createHubSessionToken(e.ADMIN_PASSWORD, 'member@x.com', 'counselor');
+  const member = await createHubSessionToken(e.ADMIN_PASSWORD, 'member@wol.org', 'counselor');
   const response = await uploadFile({ env:e, request:new Request('https://wolko.org/api/portal/resource-file', {
     method:'POST', headers:{ Authorization:`Bearer ${member}`,
       'X-Wolko-Upload':encodeURIComponent(JSON.stringify({ id:'r1', fileName:'lesson.docx', fileType:'application/docx' })) },
@@ -77,7 +77,7 @@ test('raw Word uploads retain their original and legacy binary downloads remain 
 
 test('a general member can add a new file to a resource, but cannot replace, edit or delete files or create items', async () => {
   const e = env();
-  const member = await createHubSessionToken(e.ADMIN_PASSWORD, 'member@x.com', 'counselor');
+  const member = await createHubSessionToken(e.ADMIN_PASSWORD, 'member@wol.org', 'counselor');
   const admin = await createHubSessionToken(e.ADMIN_PASSWORD, 'hkim3@wol.org', 'admin');
 
   const list = await (await call(listResources, e, member, { method: 'GET' })).json();
@@ -88,7 +88,7 @@ test('a general member can add a new file to a resource, but cannot replace, edi
   assert.equal(added.status, 200, '새 파일 추가');
   const item = (await added.json()).item;
   assert.equal(item.files.length, 2);
-  assert.equal(item.files[1].uploadedBy, 'member@x.com');
+  assert.equal(item.files[1].uploadedBy, 'member@wol.org');
 
   assert.equal((await call(uploadFile, e, member, { body: { ...upload, fileId: 'f1' } })).status, 403, '기존 파일 교체는 관리자만');
   assert.equal((await call(editFile, e, member, { method: 'PUT', body: { id: 'r1', fileId: 'f1', reviewerSlug: 'x' } })).status, 403);
