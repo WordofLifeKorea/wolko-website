@@ -32,7 +32,7 @@ export function effectiveRole(email, _claimed) {
   return 'counselor';
 }
 const ACCOUNT_PREFIX = 'hub:account:';
-const SESSION_LIFETIME_MS = 24 * 60 * 60 * 1000; // 24시간
+const SESSION_LIFETIME_MS = 90 * 24 * 60 * 60 * 1000; // 90일 (포탈 로그인 유지)
 const PBKDF2_ITERATIONS = 100000;
 
 export function normalizeEmail(email) {

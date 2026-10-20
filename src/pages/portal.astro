@@ -32,7 +32,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="WOLKO">
   <link rel="apple-touch-icon" href="/images/WOLKO Circle.png">
-  <script is:inline src="/wolko-session.js?v=1"></script>
+  <script is:inline src="/wolko-session.js?v=2"></script>
 <link rel="stylesheet" href="/phone-input.css?v=3">
 <script is:inline src="/phone-input.js?v=2" defer></script>
 </head>
@@ -58,6 +58,7 @@
           <input class="login-input" type="password" id="loginPwInput" name="password" placeholder="••••••••" autocomplete="current-password">
         </div>
         <label class="remember-email"><input type="checkbox" id="rememberEmail"><span data-t="rememberEmail">아이디 저장</span></label>
+        <label class="remember-email"><input type="checkbox" id="keepLogin" checked><span data-t="keepLogin">로그인 유지 (90일)</span></label>
         <p class="login-error" id="emailError"></p>
         <button class="login-btn" id="emailBtn" type="submit" data-t="loginBtn">로그인</button>
       </form>
@@ -307,6 +308,7 @@
         recentBadge: '최근 사용',
         emailLoginTitle: '포탈 로그인',
         rememberEmail: '아이디 저장',
+        keepLogin: '로그인 유지 (90일)',
         emailLoginDesc: '가입하신 이메일과 비밀번호로 로그인하세요.',
         goSignupBtn: '계정이 없으신가요? 가입하기',
         signupHint: '계정이 없으신가요?', signupGoLabel: '가입하기',
@@ -369,6 +371,7 @@
         recentBadge: 'Recent',
         emailLoginTitle: 'Portal Login',
         rememberEmail: 'Remember email',
+        keepLogin: 'Keep me signed in (90 days)',
         emailLoginDesc: 'Log in with the email and password you signed up with.',
         goSignupBtn: "Don't have an account? Sign up",
         signupHint: "Don't have an account?", signupGoLabel: 'Sign up',
@@ -731,13 +734,12 @@
       sessionStorage.setItem('wolko-hub-token', data.hubToken);
       sessionStorage.setItem('wolko-hub-email', data.email || '');
       sessionStorage.setItem('wolko-hub-role', data.role || '');
+      window.WolkoSession.persistLogin(!!($('keepLogin') && $('keepLogin').checked));
     }
 
     function doLogout() {
-      sessionStorage.removeItem('wolko-hub-token');
-      sessionStorage.removeItem('wolko-hub-email');
-      sessionStorage.removeItem('wolko-hub-role');
-      location.reload();
+      /* 이 기기에 저장된 로그인 유지 정보까지 함께 지운다 */
+      window.WolkoSession.logoutAll();
     }
 
     function showHub() {
