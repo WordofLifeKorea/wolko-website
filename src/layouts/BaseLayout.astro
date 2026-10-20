@@ -369,7 +369,8 @@ const {
       const backdrop = document.getElementById('menuBackdrop');
       menu.classList.remove('open');
       backdrop.classList.remove('open');
-      setTimeout(function() {
+      clearTimeout(window.__mobileMenuHideTimer);
+      window.__mobileMenuHideTimer = setTimeout(function() {
         if (!menu.classList.contains('open')) {
           menu.style.display = 'none';
           backdrop.style.display = 'none';
@@ -384,14 +385,15 @@ const {
       if (menu.classList.contains('open')) {
         closeMobileMenu();
       } else {
+        clearTimeout(window.__mobileMenuHideTimer);
         menu.style.display = 'block';
         backdrop.style.display = 'block';
-        requestAnimationFrame(function() {
-          requestAnimationFrame(function() {
-            menu.classList.add('open');
-            backdrop.classList.add('open');
-          });
-        });
+        // 화면 갱신(requestAnimationFrame)을 기다리지 않는다 — 영상·큰 이미지로 화면이 바쁜 폰에서는 갱신이 늦어져
+        // 메뉴가 안 보이는 동안 터치가 뒤의 딤 배경으로 가서 메뉴가 안 눌리거나 바로 닫히곤 했다.
+        // 강제로 레이아웃을 한 번 계산(offsetWidth)한 뒤 바로 클래스를 붙이면 열림 애니메이션은 그대로 재생된다.
+        void menu.offsetWidth;
+        menu.classList.add('open');
+        backdrop.classList.add('open');
       }
     };
     window.toggleMobileSub = function(btn) {
