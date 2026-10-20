@@ -1094,7 +1094,7 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
     function showPromos() {
       var menu = document.getElementById('mobileMenu');
       // 메뉴는 열리는 즉시 display:block 이 되고 open 클래스는 두 프레임 뒤에 붙으므로 둘 다 본다
-      if (menu && (menu.classList.contains('open') || menu.style.display === 'block')) { setTimeout(showPromos, 600); return; }
+      if (menu && (menu.classList.contains('open') || (menu.style && menu.style.display === 'block'))) { setTimeout(showPromos, 600); return; }
       overlay.hidden = false;
       render(0);
       requestAnimationFrame(function () { overlay.classList.add('is-open'); });
