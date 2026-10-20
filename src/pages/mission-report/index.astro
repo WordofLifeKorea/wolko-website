@@ -150,6 +150,18 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   .fb-fullscreen-btn:hover { background:#fff; border-color:rgba(0,0,0,0.18); }
   .fb-fullscreen-btn svg, .fb-zoom-btn svg { display:block; }
 
+  /* 전체화면: iOS Safari는 요소 Fullscreen API가 없어서, 화면을 덮는 오버레이로 통일한다.
+     (Android/데스크톱은 가능하면 브라우저 전체화면도 함께 요청) */
+  :global(#flipbook-container.fb-full) {
+    position: fixed; inset: 0; z-index: 10000; width: 100%; height: 100vh; height: 100dvh;
+    min-height: 0; border-radius: 0; border: 0; box-shadow: none;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  :global(#flipbook-container.fb-full .fb-controls) { padding-top: calc(10px + env(safe-area-inset-top)); }
+  :global(#flipbook-container.fb-full #spread-viewport) { min-height: 0; padding: 8px 8px 4px; }
+  :global(#flipbook-container.fb-full .spread-img) { max-height: calc(100vh - 150px) !important; max-height: calc(100dvh - 150px) !important; }
+  :global(#flipbook-container.fb-full #mob-page-img) { max-height: calc(100vh - 140px) !important; max-height: calc(100dvh - 140px) !important; width: auto !important; max-width: calc(100% - 20px) !important; }
+
   /* Flipbook viewport */
   #spread-viewport {
     flex:1; display:flex; align-items:center; justify-content:center;
@@ -369,7 +381,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
 
   @media (max-width: 768px) {
     .fb-controls { padding: 10px 14px; }
-    .fb-fullscreen-btn, .fb-zoom-btns { display: none; }
+    .fb-zoom-btns { display: none; }
   }
 </style>
 
@@ -892,9 +904,30 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   document.getElementById('fb-arrow-prev').addEventListener('click', navigatePrev);
   document.getElementById('fb-arrow-next').addEventListener('click', navigateNext);
 
-  document.getElementById('fb-fullscreen').addEventListener('click', function () {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else if (container.requestFullscreen) container.requestFullscreen();
+  var fsBtn = document.getElementById('fb-fullscreen');
+  var FS_ENTER = fsBtn.innerHTML;
+  var FS_EXIT  = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2v3H2M12 5H9V2M9 12V9h3M2 9h3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function isFull() { return container.classList.contains('fb-full'); }
+  function setFull(on) {
+    container.classList.toggle('fb-full', on);
+    document.documentElement.style.overflow = on ? 'hidden' : '';
+    fsBtn.innerHTML = on ? FS_EXIT : FS_ENTER;
+    fsBtn.title = on ? '전체화면 닫기' : '전체화면';
+    fsBtn.setAttribute('aria-label', fsBtn.title);
+    var nativeOn = document.fullscreenElement === container;
+    try {
+      if (on && !nativeOn && container.requestFullscreen) {
+        var p = container.requestFullscreen();
+        if (p && p.catch) p.catch(function () {});
+      } else if (!on && nativeOn && document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    } catch (e) {}
+  }
+  fsBtn.addEventListener('click', function () { setFull(!isFull()); });
+  /* 브라우저가 자체 제스처/ESC로 전체화면을 닫으면 오버레이도 함께 닫는다 */
+  document.addEventListener('fullscreenchange', function () {
+    if (!document.fullscreenElement && isFull()) setFull(false);
   });
 
   /* Zoom = CSS display size only, SCALE(품질)은 고정 */
@@ -913,6 +946,7 @@ const QUARTERS: { key: string; ko: string; en: string }[] = [
   });
 
   document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isFull()) { setFull(false); return; }
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigateNext();
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigatePrev();
   });
