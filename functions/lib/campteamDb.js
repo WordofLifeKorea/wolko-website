@@ -24,3 +24,11 @@ export function addDays(date, days) {
   return d.toISOString().slice(0, 10);
 }
 export const TASK_PRIORITIES = ['High', 'Medium', 'Low'];
+
+/** 태그 문자열 정리: "Camp Crew, 예산" → ",camp crew,예산," (쉼표로 감싸 두면 정확한 태그만 찾을 수 있다) */
+export function normTags(v) {
+  const list = [...new Set(String(v ?? '').split(/[,\n]/).map(t => t.trim().toLowerCase().slice(0, 40)).filter(Boolean))].slice(0, 12);
+  return list.length ? `,${list.join(',')},` : '';
+}
+export const tagList = (s) => String(s || '').split(',').filter(Boolean);
+export const likeOf = (q) => `%${String(q).replace(/[%_\\]/g, m => '\\' + m)}%`;

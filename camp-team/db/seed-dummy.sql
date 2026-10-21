@@ -103,3 +103,24 @@ INSERT INTO checklist_items (id,templateId,title,offsetDays,ownerSuggestion,prio
  ('ui4','tpl-unity','Collect church rosters and emergency contacts',-30,'','High',4,'3. Registration',1,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
  ('ui5','tpl-unity','Prepare first-aid kits and share allergy information',-14,'','High',5,'4. Safety',1,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
  ('ui6','tpl-unity','Collect feedback forms and finalize accounts',14,'Leader A','Medium',6,'5. Post-camp',1,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);
+
+-- 5단계(회의록) 더미 자료 — 모두 가상 내용입니다.
+UPDATE meetings SET titleEn='Team meeting (test)', attendees='Leader A, Leader B, Leader C', recordNote='약 40분 (가상)', sourcesNote='전사 텍스트 1건, 화이트보드 사진 1장 (가상)', status='final',
+  purposeEn='Discuss Unity Camp fee and breakout themes (sample)', summaryKo='참가비 안과 분반 주제 후보를 논의했다. 최종 결정은 다음 회의로 넘긴다. (가상 내용)', summaryEn='The team discussed fee options and breakout theme candidates. Final decisions move to the next meeting. (sample)' WHERE id='m1';
+UPDATE meetings SET titleEn='Winter Camp planning (test)', attendees='Leader A, Leader C', status='final', purposeEn='Theme and speakers (sample)' WHERE id='m2';
+INSERT INTO agenda_items (id,meetingId,campId,topic,titleEn,bodyKo,bodyEn,kind,sectionNo,status,nextMeeting,sortOrder,tags,createdAt,updatedAt,createdBy,isTest) VALUES
+ ('s1','m1','camp-u26','핵심 요약','Summary','참가비와 분반 주제를 논의했고 최종 결정은 다음 회의로 넘겼다.','Fee options and breakout themes were discussed; final decisions move to the next meeting.','summary',1,'discussed',0,1,'','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z','seed',1),
+ ('s2','m1','camp-u26','배경 설명 (결정 아님)','Background (not a decision)','지난해 참가비를 참고 자료로 공유했다. 이 내용은 이번 회의에서 새로 결정한 것이 아니다.','Last year''s fee was shared as reference. This was not newly decided at this meeting.','context',2,'discussed',0,2,',예산,','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z','seed',1),
+ ('s3','m1','camp-u26','참가비','Camp fee','얼리버드와 일반 두 가지 금액을 제안했다. 팀은 방향에는 공감했지만 금액은 아직 확정하지 않았다.','Early and regular prices were proposed. The team agreed on the direction but not on amounts yet.','discussion',3,'discussed',0,3,',예산,unity camp,','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z','seed',1),
+ ('s4','m1','camp-u26','분반 주제','Breakout themes','주제 후보 세 가지가 나왔다. 외부 강사 섭외가 필요하다.','Three theme candidates came up. External speakers are needed.','discussion',4,'discussed',0,4,',강사,','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z','seed',1),
+ ('s5','m2','camp-w27','주제와 강사','Theme and speakers','주제 후보 두 가지를 검토했다.','Two theme candidates were reviewed.','discussion',1,'discussed',0,1,',강사,','2026-10-13T00:00:00Z','2026-10-13T00:00:00Z','seed',1);
+INSERT INTO decisions (id,meetingId,agendaItemId,campId,kind,textKo,textEn,decidedDate,supersedesId,state,tags,createdAt,updatedAt,createdBy,isTest) VALUES
+ ('d1','m1','s3','camp-u26','proposal','얼리버드 70,000원 / 일반 85,000원 (가상 금액)','Early 70,000 / Regular 85,000 (sample amounts)','2026-10-20',NULL,'superseded',',예산,unity camp,','2026-10-20T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('d2','m1','s3','camp-u26','direction','참가비는 얼리버드와 일반 두 단계로 나누는 방향으로 한다.','Use two price tiers: early and regular.','2026-10-20',NULL,'active',',예산,unity camp,','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z','seed',1),
+ ('d3','m2','s5','camp-w27','final','Winter Camp 주제는 샘플 주제 A로 한다. (가상)','The Winter Camp theme is Sample Theme A. (sample)','2026-10-13',NULL,'superseded',',주제,','2026-10-13T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('d4','m1','s4','camp-w27','changed','Winter Camp 주제를 샘플 주제 B로 바꾼다. (가상)','The Winter Camp theme changes to Sample Theme B. (sample)','2026-10-20','d3','active',',주제,','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z','seed',1),
+ ('d5','m1','s3','camp-u26','hold','분반 강사 비용 지급 방식은 보류한다.','Speaker payment method is on hold.','2026-10-20',NULL,'active',',예산,강사,','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z','seed',1);
+UPDATE decisions SET supersedesId = NULL WHERE id = 'd1';
+INSERT INTO decisions (id,meetingId,agendaItemId,campId,kind,textKo,textEn,decidedDate,supersedesId,state,tags,createdAt,updatedAt,createdBy,isTest) VALUES
+ ('d6','m1','s3','camp-u26','final','얼리버드 70,000원 / 일반 80,000원으로 확정한다. (가상 금액)','Early 70,000 / Regular 80,000 confirmed. (sample amounts)','2026-10-20','d1','active',',예산,unity camp,','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z','seed',1);
+UPDATE tasks SET meetingId='m1', agendaItemId='s4' WHERE id='t06';
