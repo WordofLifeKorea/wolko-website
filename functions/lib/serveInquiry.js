@@ -16,12 +16,11 @@ export const SERVE_PAGE_URL = 'https://wolko.org/serve-inquiries/';
 /**
  * 섬김 문의를 처리하는 담당자(포탈 로그인 이메일, 소문자). 문의 언어로 나뉜다. 마스터는 모든 문의를 본다.
  *   en — Estelle Sooy (영어로 들어온 문의)
- *   ko — Ella(임현지) (한글로 들어온 문의) — 포탈 로그인 이메일을 확인한 뒤 여기에 추가한다.
- *        (비어 있는 동안 한글 문의는 마스터만 볼 수 있다.)
+ *   ko — Ella (Hyunji Lim, 임현지) (한글로 들어온 문의)
  */
 export const SERVE_REVIEWER_EMAILS = {
   en: ['esooy@wol.org'],
-  ko: [],
+  ko: ['hlim@wol.org'],
 };
 
 const HANGUL = /[ㄱ-ㆎ가-힣]/g;

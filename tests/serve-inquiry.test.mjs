@@ -88,7 +88,9 @@ test('받은함: 마스터는 전체, 영어 담당자는 영어 문의만, 다�
     assert.equal(mine.inquiries[0].lang, 'en');
     assert.equal((await t.portal('GET', stranger)).status, 403);
     assert.equal(canViewServeInquiry({ role: 'counselor', email: 'esooy@wol.org' }, { lang: 'ko' }), false);
-    assert.deepEqual(SERVE_REVIEWER_EMAILS.ko, [], '한글 담당자(Ella)는 이메일 확인 후 추가');
+    assert.deepEqual(SERVE_REVIEWER_EMAILS.ko, ['hlim@wol.org'], '한글 문의 담당자는 Ella');
+    assert.equal(canViewServeInquiry({ role: 'counselor', email: 'hlim@wol.org' }, { lang: 'ko' }), true);
+    assert.equal(canViewServeInquiry({ role: 'counselor', email: 'hlim@wol.org' }, { lang: 'en' }), false);
   } finally { t.restore(); }
 });
 
