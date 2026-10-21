@@ -1,0 +1,35 @@
+---
+import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="설정 · 팀 명단" active="settings">
+  <div class="top"><div><h1 data-t="setTitle"></h1><div class="sub" data-t="setSub"></div></div></div>
+  <section class="card" style="margin-bottom:16px">
+    <table>
+      <thead><tr><th data-t="colEmail"></th><th data-t="colName"></th><th data-t="colRole"></th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </section>
+  <div class="grid">
+    <section class="card">
+      <h2 data-t="addMember"></h2>
+      <form id="addForm" class="form">
+        <label><span data-t="fEmail"></span><input id="fEmail" type="email" required placeholder="name@wolko.org"></label>
+        <label><span data-t="fName"></span><input id="fName" maxlength="60"></label>
+        <label><span data-t="fRole"></span><select id="roleSel"></select></label>
+        <div class="err" id="addErr" hidden></div>
+        <div><button class="btn pri" type="submit" data-t="save"></button></div>
+      </form>
+    </section>
+    <section class="card">
+      <h2 data-t="rolesTitle"></h2>
+      <div class="hintbox"><p data-t="permAdmin"></p><p data-t="permFinance"></p><p data-t="permMember"></p><p data-t="permViewer" style="margin-bottom:0"></p></div>
+    </section>
+  </div>
+  <section class="card" style="margin-top:16px">
+    <h2 data-t="shTitle"></h2>
+    <div class="hintbox" data-t="shHelp" style="margin-bottom:10px"></div>
+    <div class="actions"><button class="btn" id="shPreview" data-t="shPreview"></button></div>
+    <div id="shOut" style="margin-top:12px"></div>
+  </section>
+  <script is:inline slot="scripts" src="/campteam/settings.js?v=1"></script>
+</CampTeamLayout>

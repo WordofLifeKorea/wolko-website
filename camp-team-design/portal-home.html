@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>캠프팀 홈 — 디자인 시안 (더미 데이터)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* 기존 포털(hub.css)과 같은 색·폰트 토큰 */
+:root{
+  --blue:#004f68; --blue-lt:#0077a3; --accent:#c42a36; --teal:#008e92;
+  --bg:#f4f6f8; --card:#fff; --border:#e4eaee; --text:#1a2d38; --mid:#5a7585; --light:#8fa8b5;
+  --f-sans:'Montserrat',sans-serif; --f-body:'Noto Sans KR',sans-serif;
+  --ok:#1f9d6b; --warn:#d9822b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--f-body)}
+.app{display:grid;grid-template-columns:252px 1fr;min-height:100vh}
+/* 사이드바 */
+aside{background:#fff;border-right:1px solid var(--border);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
+.logo{font:800 20px var(--f-sans);color:var(--blue);padding:4px 10px 14px;letter-spacing:.02em}
+.logo small{display:block;font:600 10px var(--f-sans);color:var(--light);letter-spacing:.16em;margin-top:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--mid);text-decoration:none;font-weight:500;font-size:14px}
+.nav a.on{background:#eaf4f7;color:var(--blue);font-weight:700}
+.nav .dot{width:8px;height:8px;border-radius:50%;background:var(--light)}
+.nav a.on .dot{background:var(--blue)}
+.nav .lock{margin-left:auto;font-size:11px;color:var(--light)}
+.nav h6{margin:14px 12px 4px;font:700 10px var(--f-sans);letter-spacing:.14em;color:var(--light)}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.lang{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:3px}
+.lang button{flex:1;border:0;background:transparent;padding:7px;border-radius:8px;font:600 12px var(--f-sans);color:var(--mid)}
+.lang .on{background:#fff;color:var(--blue);box-shadow:0 1px 3px #0001}
+.who{font-size:12px;color:var(--mid);padding:0 6px}
+.chip{display:inline-block;padding:3px 9px;border-radius:99px;font:700 11px var(--f-sans);background:#eaf4f7;color:var(--blue)}
+/* 본문 */
+main{padding:28px 32px 60px;max-width:1280px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+h1{margin:0;font:800 26px var(--f-sans);letter-spacing:-.01em}
+.sub{color:var(--mid);font-size:13px;margin-top:4px}
+.test{background:#fff4e5;color:#9a5a00;border:1px solid #f3d6a6;border-radius:99px;padding:4px 12px;font-size:12px;font-weight:700}
+.btn{border:0;background:var(--blue);color:#fff;padding:0 16px;height:36px;border-radius:10px;font:600 13px var(--f-body)}
+.btn.ghost{background:#fff;color:var(--blue);border:1px solid var(--border)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+.stat label{font-size:12px;color:var(--mid)}
+.stat strong{display:block;font:800 30px var(--f-sans);margin-top:4px;color:var(--blue)}
+.stat.late strong{color:var(--accent)}
+.grid{display:grid;grid-template-columns:1.25fr 1fr;gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.card h2{margin:0 0 12px;font:700 15px var(--f-body);display:flex;justify-content:space-between;align-items:center}
+.card h2 a{font-size:12px;font-weight:500;color:var(--blue-lt);text-decoration:none}
+.camp{padding:12px 0;border-top:1px solid var(--border)}
+.camp:first-of-type{border-top:0;padding-top:0}
+.camp b{font-size:14px}
+.meta{font-size:12px;color:var(--mid);margin:2px 0 8px}
+.bar{height:8px;background:#e8eff2;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--blue-lt));border-radius:99px}
+.pct{float:right;font:700 12px var(--f-sans);color:var(--blue)}
+.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--border);font-size:13px}
+.row:first-of-type{border-top:0;padding-top:0}
+.row small{display:block;color:var(--mid);font-size:11.5px;margin-top:2px}
+.tag{font:700 11px var(--f-sans);padding:3px 8px;border-radius:7px;white-space:nowrap;align-self:flex-start}
+.t-late{background:#fde8ea;color:var(--accent)} .t-soon{background:#fff0dd;color:var(--warn)} .t-none{background:#eef2f4;color:var(--mid)} .t-ok{background:#e3f5ec;color:var(--ok)}
+.full{grid-column:1/-1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.file{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:13px}
+.file:first-of-type{border-top:0;padding-top:0}
+.ext{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font:800 10px var(--f-sans);color:#fff}
+.pdf{background:#d9534f}.xls{background:#1f9d6b}.doc{background:#2f6fd0}.img{background:#8a6fd0}
+.money{background:repeating-linear-gradient(45deg,#f4f6f8,#f4f6f8 8px,#eef2f4 8px,#eef2f4 16px);color:var(--mid);text-align:center;padding:22px;border-radius:10px;font-size:13px}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr} aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--border)}
+  .nav{display:flex;flex-wrap:wrap}.side-foot{margin:0}
+  main{padding:18px 16px 40px}.stats{grid-template-columns:1fr 1fr}.grid,.two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="logo">WOLKO<small>CAMP TEAM</small></div>
+    <nav class="nav">
+      <a class="on" href="#"><span class="dot"></span>캠프팀 홈</a>
+      <a href="#"><span class="dot"></span>캠프별 공간</a>
+      <a href="#"><span class="dot"></span>일정 · 업무</a>
+      <a href="#"><span class="dot"></span>회의록 · 결정</a>
+      <a href="#"><span class="dot"></span>자료실</a>
+      <h6>재정</h6>
+      <a href="#"><span class="dot"></span>캠프 예산<span class="lock">권한 있음</span></a>
+    </nav>
+    <div class="side-foot">
+      <div class="lang"><button class="on">한국어</button><button>English</button></div>
+      <div class="who">김○○ <span class="chip">캠프팀 팀원</span></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="top">
+      <div>
+        <h1>캠프팀 홈</h1>
+        <div class="sub">2026년 10월 21일 (수) · 진행 중 캠프 2개</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="test">시안 · 더미 데이터</span>
+        <button class="btn ghost">회의록 작성</button>
+        <button class="btn">+ 업무 추가</button>
+      </div>
+    </div>
+
+    <section class="stats">
+      <div class="stat"><label>진행 중 업무</label><strong>18</strong></div>
+      <div class="stat late"><label>마감 지남</label><strong>1</strong></div>
+      <div class="stat"><label>담당자 미정</label><strong>5</strong></div>
+      <div class="stat"><label>전체 완료율</label><strong>10%</strong></div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2>진행 중 · 예정 캠프 <a href="#">전체 보기</a></h2>
+        <div class="camp">
+          <b>2027 Winter Camp</b>
+          <div class="meta">Winter Camp · 1월 · 준비 업무 21개 중 2개 완료</div>
+          <div class="bar"><i style="width:18%"></i></div>
+        </div>
+        <div class="camp">
+          <b>Unity Camp</b>
+          <div class="meta">Unity Camp · 날짜 확정 필요 · 준비 업무 8개</div>
+          <div class="bar"><i style="width:12%"></i></div>
+        </div>
+        <div class="camp">
+          <b>Partner Camp</b>
+          <div class="meta">협력 교회 · 일정 조율 중</div>
+          <div class="bar"><i style="width:5%"></i></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>가까운 일정 · 마감 <a href="#">달력 보기</a></h2>
+        <div class="row"><div>Unity Camp 날짜·참가비·분반 확정<small>담당: 전체 · Unity Camp</small></div><span class="tag t-soon">10/23</span></div>
+        <div class="row"><div>Outreach at Sample Church<small>일정 · 금요일</small></div><span class="tag t-none">10/23</span></div>
+        <div class="row"><div>Camp &amp; Outreach Huddle<small>팀 회의 · 10:00</small></div><span class="tag t-none">10/27</span></div>
+        <div class="row"><div>강사·분반 주제·시간표 확정<small>담당: Leader C · Winter Camp</small></div><span class="tag t-none">11/30</span></div>
+      </section>
+
+      <section class="card">
+        <h2>확인이 필요한 업무 <a href="#">전체 업무</a></h2>
+        <div class="row"><div>스태프 모집·명단 확정<small>담당: Leader B · 기한 미정</small></div><span class="tag t-none">기한 미정</span></div>
+        <div class="row"><div>캠프 인쇄물·명찰·의류 준비<small>담당자 확인 필요</small></div><span class="tag t-late">담당 미정</span></div>
+        <div class="row"><div>Unity 안전·훈련·운송 준비<small>주 담당자 지정 필요</small></div><span class="tag t-late">담당 미정</span></div>
+      </section>
+
+      <section class="card">
+        <h2>다음 회의 안건 <a href="#">회의록</a></h2>
+        <div class="row"><div>Unity Camp 참가비 확정<small>제안: 얼리버드 70,000 / 일반 85,000</small></div><span class="tag t-soon">보류</span></div>
+        <div class="row"><div>분반(breakout) 주제 결정<small>Winter Camp</small></div><span class="tag t-none">논의 필요</span></div>
+        <div class="row"><div>Camp Crew 운영 방향<small>후속 양육 포함</small></div><span class="tag t-ok">방향 합의</span></div>
+      </section>
+
+      <section class="card full">
+        <div class="two">
+          <div>
+            <h2>최근 회의록 <a href="#">더 보기</a></h2>
+            <div class="row"><div>10/20 캠프팀 회의 (KO·EN)<small>결정 2 · 업무 4 · 오디오 1</small></div><span class="tag t-ok">최종 결정</span></div>
+            <div class="row"><div>10/13 Winter Camp 준비<small>결정 1 · 업무 3</small></div><span class="tag t-none">기록</span></div>
+          </div>
+          <div>
+            <h2>최근 업로드 파일 <a href="#">자료실</a></h2>
+            <div class="file"><span class="ext pdf">PDF</span><div>Winter Camp 시간표 v3<small style="display:block;color:var(--mid);font-size:11.5px">Leader C · 어제 · 적용 중</small></div></div>
+            <div class="file"><span class="ext xls">XLS</span><div>스태프 배정표<small style="display:block;color:var(--mid);font-size:11.5px">Leader B · 10/18</small></div></div>
+            <div class="file"><span class="ext img">IMG</span><div>Unity Camp 포스터 시안<small style="display:block;color:var(--mid);font-size:11.5px">Leader D · 10/17</small></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card full">
+        <h2>캠프 예산 요약 <span class="chip">금액 권한이 있는 사용자에게만 표시</span></h2>
+        <div class="money">🔒 이 영역은 권한이 없으면 서버에서 데이터 자체를 내려주지 않습니다. (시안에서는 가려진 상태로 표시)</div>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

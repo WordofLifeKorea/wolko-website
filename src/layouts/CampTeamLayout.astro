@@ -1,0 +1,59 @@
+---
+// 캠프팀 포털 공통 틀 (사이드바 + 언어 전환 + 로그인 안내). 내용은 각 페이지가 채운다.
+export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'files' | 'settings'; }
+const { title, active } = Astro.props;
+const nav = [
+  { key: 'home', href: '/campteam/', t: 'navHome' },
+  { key: 'camps', href: '/campteam/camps/', t: 'navCamps' },
+  { key: 'tasks', href: '/campteam/tasks/', t: 'navTasks' },
+  { key: 'meetings', soon: true, t: 'navMeetings' },
+  { key: 'files', href: '/campteam/files/', t: 'navFiles' },
+];
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <title>{title} — WOLKO Camp Team</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/campteam/campteam.css?v=1">
+  <script is:inline src="/wolko-session.js?v=2"></script>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <a class="logo" href="/campteam/">WOLKO<small>CAMP TEAM</small></a>
+    <nav class="nav">
+      {nav.map(n => n.soon
+        ? <span class="soon"><i class="dot"></i><span data-t={n.t}></span><em data-t="soon"></em></span>
+        : <a href={n.href} class={active === n.key ? 'on' : ''}><i class="dot"></i><span data-t={n.t}></span></a>)}
+      <h6 id="moneyHead" hidden data-t="navFinance"></h6>
+      <span class="soon" id="moneyNav" hidden><i class="dot"></i><span data-t="navBudget"></span><em data-t="soon"></em></span>
+      <h6 id="adminHead" hidden data-t="navAdmin"></h6>
+      <a id="settingsNav" href="/campteam/settings/" class={active === 'settings' ? 'on' : ''} hidden><i class="dot"></i><span data-t="navSettings"></span></a>
+    </nav>
+    <div class="side-foot">
+      <a class="back" href="/portal/" data-t="backPortal"></a>
+      <div class="lang"><button id="langKo" type="button">한국어</button><button id="langEn" type="button">English</button></div>
+      <div class="who" id="who"></div>
+    </div>
+  </aside>
+  <main id="main"><slot /></main>
+</div>
+<div class="gate" id="gate" hidden>
+  <div class="gate-card">
+    <h2 data-t="gateTitle"></h2>
+    <p data-t="gateBody"></p>
+    <a class="btn pri" href="/portal/" data-t="gateBtn"></a>
+  </div>
+</div>
+<script is:inline src="/campteam/campteam.js?v=1"></script>
+<slot name="scripts" />
+</body>
+</html>

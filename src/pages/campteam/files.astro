@@ -1,0 +1,32 @@
+---
+import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="자료실" active="files">
+  <div class="top">
+    <div><h1 data-t="filesTitle"></h1><div class="sub" data-t="filesSub"></div></div>
+    <div class="actions"><button class="btn" id="addLink" hidden data-t="addLink"></button><button class="btn pri" id="addFile" hidden data-t="addFile"></button></div>
+  </div>
+  <div class="filters">
+    <input id="fq" type="search" maxlength="80" data-t-ph="searchPh">
+    <select id="fcamp"></select>
+    <select id="fcat"></select>
+    <select id="fstatus"></select>
+    <select id="fkind"></select>
+    <select id="fsort"></select>
+  </div>
+  <div class="count-line" id="countLine"></div>
+  <div id="list"></div>
+
+  <dialog id="detail" class="wide"><div id="detailBody"></div></dialog>
+
+  <dialog id="formDlg">
+    <h3 id="formTitle"></h3>
+    <form id="form" class="form" method="dialog">
+      <div id="formFields" class="form"></div>
+      <div class="progress" id="prog" hidden><i></i></div>
+      <div class="err" id="formErr" hidden></div>
+      <div class="dlg-actions"><button type="button" class="btn" id="formCancel" data-t="cancel"></button><button type="submit" class="btn pri" id="formSave" data-t="save"></button></div>
+    </form>
+  </dialog>
+  <script is:inline slot="scripts" src="/campteam/files.js?v=1"></script>
+</CampTeamLayout>
