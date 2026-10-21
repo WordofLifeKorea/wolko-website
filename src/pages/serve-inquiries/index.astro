@@ -92,7 +92,7 @@
             '<div class="msgbox">' + esc(i.message) + '</div>' + dup +
             '<textarea placeholder="메모(선택) — 보류·거절 사유나 인터뷰 일정 등" data-note></textarea>' +
             '<div class="row">' +
-              (i.status !== 'interview' ? '<button type="button" class="primary" data-act="interview">인터뷰 진행 승인</button>' : '') +
+              (i.status !== 'interview' ? '<button type="button" class="primary" data-act="interview">인터뷰 진행 승인</button>' : '<button type="button" class="primary" data-app="' + esc(i.id) + '">' + (i.applicationId ? '신청서 열기' : '신청서 작성 시작') + '</button>') +
               (i.status !== 'hold' ? '<button type="button" data-act="hold">보류</button>' : '') +
               (i.status !== 'rejected' ? '<button type="button" data-act="reject">거절</button>' : '') +
               (i.status !== 'new' ? '<button type="button" data-act="reopen">다시 열기</button>' : '') +
@@ -110,6 +110,17 @@
       }
       $('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; filter = b.dataset.tab; renderList(); });
       $('list').addEventListener('click', async function (e) {
+        var appBtn = e.target.closest('button[data-app]');
+        if (appBtn) {
+          appBtn.disabled = true;
+          try {
+            var r = await fetch('/api/portal/serve-applications', { method: 'POST', headers: headers(true), body: JSON.stringify({ inquiryId: appBtn.dataset.app }) });
+            var b = await r.json().catch(function () { return {}; });
+            if (!r.ok) throw new Error(b.error || '신청서를 만들지 못했습니다.');
+            location.href = '/serve-applications/#' + encodeURIComponent(b.application.id);
+          } catch (err) { alert(err.message); appBtn.disabled = false; }
+          return;
+        }
         var btn = e.target.closest('button[data-act]'); if (!btn) return;
         var card = btn.closest('.card'), id = card.dataset.id, act = btn.dataset.act;
         if (act === 'reject' && !confirm('이 문의를 거절 처리할까요?')) return;
