@@ -1,13 +1,24 @@
 import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, isDate, CAMP_STATUSES, audit } from '../../lib/campteamDb.js';
 
+/** 캠프 주제(TV 표시용), 정원, 기존 신청 시스템의 캠프 ID(신청 인원 숫자만 읽어 오는 용도) — 모두 선택 */
+function extras(b, base = {}) {
+  const has = k => k in b;
+  const theme = has('theme') ? text(b.theme, 200) : base.theme ?? '';
+  let capacity = has('capacity') ? (b.capacity === '' || b.capacity == null ? null : Number(b.capacity)) : base.capacity ?? null;
+  if (capacity != null && (!Number.isInteger(capacity) || capacity < 1 || capacity > 100000)) return { error: '정원은 1 이상의 정수로 입력해주세요.' };
+  const registrationCampId = has('registrationCampId') ? text(b.registrationCampId, 60) : base.registrationCampId ?? '';
+  if (registrationCampId && !/^[A-Za-z0-9_-]{1,60}$/.test(registrationCampId)) return { error: '신청 시스템 캠프 ID 는 영문·숫자·-·_ 만 쓸 수 있어요.' };
+  return { theme, capacity, registrationCampId };
+}
+
 /** 캠프 유형(Unity Camp …)과 개별 행사(2027 Winter Camp …) 목록 */
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
   const types = (await env.DB.prepare('SELECT id, nameKo, nameEn, description, sortOrder, isTest FROM camp_types WHERE deletedAt IS NULL ORDER BY sortOrder, nameKo').all()).results;
-  const camps = (await env.DB.prepare(`SELECT c.id, c.typeId, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.location, c.notes, c.isTest,
+  const camps = (await env.DB.prepare(`SELECT c.id, c.typeId, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.location, c.notes, c.theme, c.capacity, c.registrationCampId, c.isTest,
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status <> 'Not Applicable') AS taskTotal,
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status = 'Completed') AS taskDone
     FROM camps c WHERE c.deletedAt IS NULL ORDER BY c.startDate IS NULL, c.startDate DESC, c.nameKo`).all()).results;
@@ -37,9 +48,10 @@ export async function onRequestPost({ env, request }) {
     if ((start && !isDate(start)) || (end && !isDate(end))) return badRequest('날짜 형식이 올바르지 않습니다.');
     if (start && end && end < start) return badRequest('종료일이 시작일보다 빠릅니다.');
     const status = CAMP_STATUSES.includes(b.status) ? b.status : 'planning';
-    await env.DB.prepare(`INSERT INTO camps (id,typeId,nameKo,nameEn,startDate,endDate,status,location,notes,createdAt,updatedAt,createdBy)
-      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10,?11)`)
-      .bind(id, type.id, nameKo, text(b.nameEn, 80), start, end, status, text(b.location, 120), text(b.notes, 1000), now, s.email).run();
+    const ex = extras(b); if (ex.error) return badRequest(ex.error);
+    await env.DB.prepare(`INSERT INTO camps (id,typeId,nameKo,nameEn,startDate,endDate,status,location,notes,theme,capacity,registrationCampId,createdAt,updatedAt,createdBy)
+      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?12,?13,?14,?10,?10,?11)`)
+      .bind(id, type.id, nameKo, text(b.nameEn, 80), start, end, status, text(b.location, 120), text(b.notes, 1000), now, s.email, ex.theme, ex.capacity, ex.registrationCampId).run();
     await audit(env, s.email, 'create', 'camp', id, nameKo);
     return json({ id }, 201);
   }
@@ -75,9 +87,10 @@ export async function onRequestPatch({ env, request }) {
     if ((start && !isDate(start)) || (end && !isDate(end))) return badRequest('날짜 형식이 올바르지 않습니다.');
     if (start && end && end < start) return badRequest('종료일이 시작일보다 빠릅니다.');
     const status = 'status' in b ? (CAMP_STATUSES.includes(b.status) ? b.status : row.status) : row.status;
-    await env.DB.prepare('UPDATE camps SET nameKo=?2,nameEn=?3,startDate=?4,endDate=?5,status=?6,location=?7,notes=?8,updatedAt=?9 WHERE id=?1')
+    const ex = extras(b, row); if (ex.error) return badRequest(ex.error);
+    await env.DB.prepare('UPDATE camps SET nameKo=?2,nameEn=?3,startDate=?4,endDate=?5,status=?6,location=?7,notes=?8,theme=?10,capacity=?11,registrationCampId=?12,updatedAt=?9 WHERE id=?1')
       .bind(id, nameKo, 'nameEn' in b ? text(b.nameEn, 80) : row.nameEn, start, end, status,
-        'location' in b ? text(b.location, 120) : row.location, 'notes' in b ? text(b.notes, 1000) : row.notes, now).run();
+        'location' in b ? text(b.location, 120) : row.location, 'notes' in b ? text(b.notes, 1000) : row.notes, now, ex.theme, ex.capacity, ex.registrationCampId).run();
     await audit(env, s.email, 'update', 'camp', id, nameKo);
     return json({ ok: true });
   }

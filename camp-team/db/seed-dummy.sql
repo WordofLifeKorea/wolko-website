@@ -146,3 +146,11 @@ INSERT INTO budget_targets (id,campId,currency,amountMinor,notes,createdAt,updat
  ('bt1','camp-w27','KRW',15000000,'가상 총 예산','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
  ('bt2','camp-w27','USD',200000,'가상: $2,000.00','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
  ('bt3','camp-u26','KRW',1500000,'가상 총 예산','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);
+
+-- 7단계(TV) 더미 자료: 로컬 테스트용 TV 열쇠, 공지, 캠프 주제/정원
+INSERT INTO tv_settings (key,value,updatedAt) VALUES ('token','testtoken1','2026-10-21T00:00:00Z');
+INSERT INTO notices (id,message,messageEn,active,sortOrder,createdAt,updatedAt,createdBy,isTest) VALUES
+ ('n1','캠프 회의: 참가비와 분반 주제는 결정이 필요해요. (가상)','Camp meetings: fees and breakout themes need decisions. (sample)',1,1,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('n2','회의가 끝나면 포털에 회의록을 올려 주세요. (가상)','Please upload meeting notes to the portal after each meeting. (sample)',1,2,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('n3','(숨김 처리된 공지 예시)','(hidden notice example)',0,3,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);
+UPDATE camps SET theme='2027 Sample Theme / Sample verse 1:1', capacity=40, registrationCampId='sample-winter' WHERE id='camp-w27';
