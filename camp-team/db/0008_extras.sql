@@ -21,3 +21,6 @@ CREATE TABLE IF NOT EXISTS ai_drafts (
   createdAt TEXT NOT NULL, createdBy TEXT, appliedAt TEXT, deletedAt TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_ai_meeting ON ai_drafts(meetingId);
+
+-- Google Calendar 연동 준비: 포털 일정이 마지막으로 구글 달력에 반영된 시각 (구글 쪽 일정 번호는 events.googleEventId)
+ALTER TABLE events ADD COLUMN googleSyncedAt TEXT;

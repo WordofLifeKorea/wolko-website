@@ -11,6 +11,7 @@
  *  (명단 없음) 조회만                             조회 불가
  */
 import { parseHubSessionToken, portalSession, normalizeEmail } from './hubAccounts.js';
+import { parseCampToken } from './campteamGoogleAuth.js';
 
 export const CAMP_ROLES = ['admin', 'finance', 'member'];
 // 코드에 고정된 캠프팀 관리자 2명. 설정 화면에서 빼거나 역할을 바꿀 수 없다. 기존 포털 계정/관리자 목록과는 무관하고 캠프팀 안에서만 적용된다.
@@ -44,6 +45,9 @@ function bearer(request) {
 
 async function hubSession(request, env) {
   if (!env.ADMIN_PASSWORD) return null;
+  // Google 로그인으로 받은 캠프팀 전용 출입증 (wolko.org 계정 → 조회만, 권한은 팀 명단이 정함). 기존 포털에서는 효력 없음.
+  const camp = bearer(request) ? await parseCampToken(env.ADMIN_PASSWORD, bearer(request)) : null;
+  if (camp) return { email: camp.email, role: 'google' };
   if (env.CAMPTEAM_DEV_AUTH === '1' && LOCAL_HOST.test(new URL(request.url).hostname)) {
     const token = bearer(request);
     return token ? parseHubSessionToken(env.ADMIN_PASSWORD, token) : null;
