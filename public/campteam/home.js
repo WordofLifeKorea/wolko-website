@@ -32,7 +32,7 @@
     $('camps').innerHTML = d.camps.length ? d.camps.map(function (c) {
       var pc = c.taskTotal ? Math.round(c.taskDone / c.taskTotal * 100) : 0;
       var dates = c.startDate ? esc(CT.fmtDate(c.startDate)) + (c.endDate ? ' – ' + esc(CT.fmtDate(c.endDate)) : '') : esc(CT.t('dateTbd'));
-      return '<div class="camp"><b>' + esc(CT.pick(c, 'name')) + '</b>' + testChip(c) +
+      return '<div class="camp"><b><a href="/campteam/space/?id=' + esc(c.id) + '" style="color:inherit;text-decoration:none">' + esc(CT.pick(c, 'name')) + '</a></b>' + testChip(c) +
         '<div class="meta">' + esc(CT.pick({ nameKo: c.typeKo, nameEn: c.typeEn }, 'name')) + ' · ' + dates + ' · ' + esc(CT.t(c.status)) + ' · ' + c.taskDone + '/' + c.taskTotal + ' ' + esc(CT.t('doneOf')) + '</div>' +
         '<div class="bar"><i style="width:' + pc + '%"></i></div></div>';
     }).join('') : empty();

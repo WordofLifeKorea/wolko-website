@@ -226,6 +226,7 @@
   CT.boot(async function () {
     try { S.types = (await CT.api('/api/campteam/camps')).types; fillFilters(); await loadTasks(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     CT.applyI18n(); fillFilters();
+    var up = new URLSearchParams(location.search); if (up.get('campId')) { $('tcamp').value = up.get('campId'); S.flag = ''; await loadTasks(); }
     var timer; $('tq').oninput = function () { clearTimeout(timer); timer = setTimeout(loadTasks, 250); };
     ['tcamp', 'tstatus', 'tpri', 'towner', 'tsort'].forEach(function (id) { $(id).onchange = loadTasks; });
     $('tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); };

@@ -274,7 +274,7 @@
   CT.boot(async function () {
     try { S.types = (await CT.api('/api/campteam/camps')).types; fillSelects(); await loadMeetings(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     CT.applyI18n(); fillSelects(); renderMeetings();
-    var open = new URLSearchParams(location.search).get('open'); if (open) showDetail(open);
+    var up = new URLSearchParams(location.search), open = up.get('open'); if (up.get('campId')) { $('mcamp').value = up.get('campId'); await loadMeetings(); } if (open) showDetail(open);
     var timer; $('mq').oninput = function () { clearTimeout(timer); timer = setTimeout(loadMeetings, 250); }; ['mcamp', 'mstatus', 'mfrom'].forEach(function (id) { $(id).onchange = loadMeetings; }); $('mgroup').onchange = renderMeetings;
     ['dcamp', 'dmode', 'dkind'].forEach(function (id) { $(id).onchange = loadDecisions; }); var t2; $('dq').oninput = function () { clearTimeout(t2); t2 = setTimeout(loadDecisions, 250); }; $('ncamp').onchange = loadNext;
     $('tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); };

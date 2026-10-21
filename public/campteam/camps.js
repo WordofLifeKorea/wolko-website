@@ -16,12 +16,12 @@
       var rows = t.camps.length ? t.camps.map(function (c) {
         var pc = c.taskTotal ? Math.round(c.taskDone / c.taskTotal * 100) : 0;
         var dates = c.startDate ? esc(c.startDate) + (c.endDate ? ' ~ ' + esc(c.endDate) : '') : esc(CT.t('dateTbd'));
-        return '<div class="camp-row"><div class="nm"><b>' + esc(CT.pick(c, 'name')) + '</b>' + (c.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '<span class="meta">' + esc(c.location || '') + '</span></div>' +
+        return '<div class="camp-row"><div class="nm"><b><a href="/campteam/space/?id=' + esc(c.id) + '">' + esc(CT.pick(c, 'name')) + '</a></b>' + (c.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '<span class="meta">' + esc(c.location || '') + '</span></div>' +
           '<div>' + dates + '<br><span class="status ' + esc(c.status) + '">' + esc(CT.t(c.status)) + '</span></div>' +
           '<div><div class="bar"><i style="width:' + pc + '%"></i></div><span class="meta">' + c.taskDone + '/' + c.taskTotal + ' ' + esc(CT.t('tasksDone')) + '</span></div>' +
           '<div class="actions">' + (canWrite ? '<button class="btn sm" data-edit-camp="' + esc(c.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="camp:' + esc(c.id) + '">' + esc(CT.t('del')) + '</button>' : '') + '</div></div>';
       }).join('') : '<div class="empty">' + esc(CT.t('noCamps')) + '</div>';
-      return '<section class="card type-card"><div class="type-head"><div><h2>' + esc(CT.pick(t, 'name')) + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</h2><div class="meta">' + esc(t.description || '') + '</div></div>' +
+      return '<section class="card type-card"><div class="type-head"><div><h2><a href="/campteam/space/?typeId=' + esc(t.id) + '">' + esc(CT.pick(t, 'name')) + '</a>' + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</h2><div class="meta">' + esc(t.description || '') + '</div></div>' +
         (canWrite ? '<div class="actions"><button class="btn sm" data-edit-type="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="type:' + esc(t.id) + '">' + esc(CT.t('del')) + '</button></div>' : '') + '</div>' + rows + '</section>';
     }).join('');
   }
