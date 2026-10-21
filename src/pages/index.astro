@@ -542,6 +542,11 @@ const campusDay = campusDayEntry && campusDayEntry.data.status === 'open' ? camp
   transition: transform .4s cubic-bezier(.2,.8,.3,1.1);
 }
 .wh-promo-overlay.is-open .wh-promo-card { transform: translateY(0) scale(1); }
+/* 모바일: 상단 메뉴가 팝업 위에 떠 있으므로(메뉴 버튼이 눌리도록) 팝업 카드는 메뉴 줄 아래에서 시작해 닫기 버튼이 가려지지 않게 한다 */
+@media (max-width: 900px) {
+  .wh-promo-overlay { padding-top: calc(var(--nav-h) + 20px); }
+  .wh-promo-card { max-height: calc(100vh - var(--nav-h) - 120px); max-height: calc(100dvh - var(--nav-h) - 120px); }
+}
 .wh-promo-close {
   position: absolute; top: 12px; right: 12px; z-index: 2;
   width: 30px; height: 30px; border-radius: 50%; border: none;
