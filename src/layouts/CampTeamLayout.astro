@@ -1,6 +1,6 @@
 ---
 // 캠프팀 포털 공통 틀 (사이드바 + 언어 전환 + 로그인 안내). 내용은 각 페이지가 채운다.
-export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'search' | 'budget' | 'settings'; }
+export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'search' | 'budget' | 'tv' | 'settings'; }
 const { title, active } = Astro.props;
 const nav = [
   { key: 'home', href: '/campteam/', t: 'navHome' },
@@ -8,6 +8,7 @@ const nav = [
   { key: 'tasks', href: '/campteam/tasks/', t: 'navTasks' },
   { key: 'meetings', href: '/campteam/meetings/', t: 'navMeetings' },
   { key: 'files', href: '/campteam/files/', t: 'navFiles' },
+  { key: 'tv', href: '/campteam/tv/', t: 'navTv' },
 ];
 ---
 <!DOCTYPE html>
@@ -23,6 +24,7 @@ const nav = [
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/campteam/campteam.css?v=1">
+  <link rel="stylesheet" href="/campteam/tv.css?v=1">
   <script is:inline src="/wolko-session.js?v=2"></script>
 </head>
 <body>
