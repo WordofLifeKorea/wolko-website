@@ -1,0 +1,40 @@
+---
+import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="회의록 · 결정" active="meetings">
+  <div class="top">
+    <div><h1 data-t="mtTitle"></h1><div class="sub" data-t="mtSub"></div></div>
+    <div class="actions"><button class="btn" id="impMin" hidden data-t="impMin"></button><button class="btn pri" id="addMeeting" hidden data-t="addMeeting"></button></div>
+  </div>
+  <div class="hintbox" id="viewOnly" data-t="viewOnly" hidden style="margin-bottom:14px"></div>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-tab="list" data-t="tabList"></button>
+    <button class="tab" data-tab="topic" data-t="tabTopic"></button>
+    <button class="tab" data-tab="dec" data-t="tabDec"></button>
+    <button class="tab" data-tab="next" data-t="tabNext"></button>
+  </div>
+
+  <section id="paneList">
+    <div class="filters t" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr">
+      <input id="mq" type="search" maxlength="80" data-t-ph="mtSearch"><select id="mcamp"></select><select id="mgroup"></select><select id="mstatus"></select><input id="mfrom" type="date" aria-label="from">
+    </div>
+    <div id="tagFilter" style="margin-bottom:8px"></div>
+    <div id="mlist"></div>
+  </section>
+  <section id="paneTopic" hidden><div class="card"><h2 data-t="topicsTitle"></h2><div class="hintbox" data-t="topicsHelp" style="margin-bottom:10px"></div><div id="tags"></div></div></section>
+  <section id="paneDec" hidden>
+    <div class="filters t" style="grid-template-columns:1fr 1fr 1fr 1fr auto"><select id="dcamp"></select><select id="dmode"></select><select id="dkind"></select><input id="dq" type="search" data-t-ph="decSearch"><button class="btn" id="addDec" hidden data-t="addDec"></button></div>
+    <div id="dlist"></div>
+  </section>
+  <section id="paneNext" hidden>
+    <div class="actions" style="margin-bottom:10px"><select id="ncamp" class="btn"></select><button class="btn" id="addNext" hidden data-t="addNext"></button></div>
+    <div id="nlist"></div>
+  </section>
+
+  <dialog id="detail" class="wide"><div id="detailBody"></div></dialog>
+  <dialog id="dlg" class="wide">
+    <h3 id="dlgTitle"></h3>
+    <form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form>
+  </dialog>
+  <script is:inline slot="scripts" src="/campteam/meetings.js?v=1"></script>
+</CampTeamLayout>

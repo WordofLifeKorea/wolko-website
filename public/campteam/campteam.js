@@ -4,10 +4,10 @@
 
   CT.addDict = function (d) { ['ko', 'en'].forEach(function (l) { Object.assign(CT.dict[l], d[l] || {}); }); };
   CT.addDict({
-    ko: { navHome: '캠프팀 홈', navCamps: '캠프별 공간', navTasks: '일정 · 업무', navMeetings: '회의록 · 결정', navFiles: '자료실', navFinance: '재정', navBudget: '캠프 예산', navAdmin: '관리', navSettings: '설정 · 팀 명단', soon: '준비 중', backPortal: '← 포털로 돌아가기',
+    ko: { navHome: '캠프팀 홈', navCamps: '캠프별 공간', navTasks: '일정 · 업무', navMeetings: '회의록 · 결정', navFiles: '자료실', searchAll: '전체 검색 (업무·회의·결정·파일)', navFinance: '재정', navBudget: '캠프 예산', navAdmin: '관리', navSettings: '설정 · 팀 명단', soon: '준비 중', backPortal: '← 포털로 돌아가기',
       gateTitle: '포털 로그인이 필요해요', gateBody: '포털에서 로그인한 뒤 이 페이지로 다시 들어와 주세요.', gateBtn: '포털로 이동', test: '테스트', testData: '테스트 자료 포함',
       roleadmin: '관리자', rolefinance: '재정 담당', rolemember: '캠프팀 팀원', roleviewer: '조회만', loadFail: '불러오지 못했어요', save: '저장', cancel: '취소', edit: '수정', del: '삭제', add: '추가', confirmDel: '삭제할까요? (삭제 표시만 되며 복구할 수 있어요)' },
-    en: { navHome: 'Camp Team Home', navCamps: 'Camp Spaces', navTasks: 'Schedule · Tasks', navMeetings: 'Meetings · Decisions', navFiles: 'Files', navFinance: 'FINANCE', navBudget: 'Camp Budget', navAdmin: 'ADMIN', navSettings: 'Settings · Team', soon: 'Soon', backPortal: '← Back to Portal',
+    en: { navHome: 'Camp Team Home', navCamps: 'Camp Spaces', navTasks: 'Schedule · Tasks', navMeetings: 'Meetings · Decisions', navFiles: 'Files', searchAll: 'Search all (tasks, meetings, decisions, files)', navFinance: 'FINANCE', navBudget: 'Camp Budget', navAdmin: 'ADMIN', navSettings: 'Settings · Team', soon: 'Soon', backPortal: '← Back to Portal',
       gateTitle: 'Portal login required', gateBody: 'Please log in to the portal, then come back to this page.', gateBtn: 'Go to Portal', test: 'TEST', testData: 'Includes test data',
       roleadmin: 'Admin', rolefinance: 'Finance', rolemember: 'Camp Team', roleviewer: 'View only', loadFail: 'Could not load', save: 'Save', cancel: 'Cancel', edit: 'Edit', del: 'Delete', add: 'Add', confirmDel: 'Delete this? (It is only marked deleted and can be restored.)' }
   });
@@ -38,6 +38,16 @@
     if (res.status === 401) { CT.showGate(); }
     if (!res.ok) { var err = new Error((data && data.error) || CT.t('loadFail')); err.status = res.status; throw err; }
     return data;
+  };
+
+  /** 공통 대화상자: 페이지에 #dlg(#dlgTitle #dlgFields #dlgErr #dlgActions #dlgForm)가 있어야 한다. 저장 중 오류는 대화상자 안에 보여준다. */
+  CT.ask = function (title, fields, onSubmit, opts) {
+    opts = opts || {}; var $ = function (id) { return document.getElementById(id); };
+    $('dlgTitle').textContent = title; $('dlgFields').innerHTML = fields; $('dlgErr').hidden = true;
+    $('dlgActions').innerHTML = (opts.extra || '') + '<button type="button" class="btn" id="dlgCancel">' + CT.esc(CT.t('cancel')) + '</button>' + (opts.noSave ? '' : '<button type="submit" class="btn pri">' + CT.esc(opts.saveLabel || CT.t('save')) + '</button>');
+    $('dlgCancel').onclick = function () { $('dlg').close(); };
+    $('dlgForm').onsubmit = async function (e) { e.preventDefault(); var fd = Object.fromEntries(new FormData($('dlgForm')).entries()); try { await onSubmit(fd); $('dlg').close(); } catch (err) { $('dlgErr').textContent = err.message; $('dlgErr').hidden = false; } };
+    if (!$('dlg').open) $('dlg').showModal();
   };
 
   CT.roleLabel = function (r) { return CT.t('role' + (r || 'viewer')); };
