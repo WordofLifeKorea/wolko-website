@@ -16,7 +16,7 @@
         section(CT.t('srSections'), g.sections, function (s) { return '<div class="row"><div><a href="/campteam/meetings/?open=' + esc(s.meetingId) + '">' + esc(CT.lang() === 'en' && s.titleEn ? s.titleEn : s.topic) + '</a><small>' + esc(s.meetDate) + ' · ' + esc(s.meetingTitle) + '</small></div></div>'; }) +
         section(CT.t('srDecisions'), g.decisions, function (d) { return '<div class="row"><div><span class="kindchip kc-' + esc(d.kind) + '">' + esc(d.kind) + '</span> <a href="/campteam/meetings/?open=' + esc(d.meetingId) + '">' + esc(CT.lang() === 'en' && d.textEn ? d.textEn : (d.textKo || d.textEn)) + '</a><small>' + esc(d.decidedDate || '') + ' · ' + esc(d.state) + '</small></div></div>'; }) +
         section(CT.t('srFiles'), g.files, function (f) { return '<div class="row"><div><a href="/campteam/files/">' + esc(f.title) + '</a>' + (f.restricted ? ' <span class="chip lock">🔒 ' + esc(CT.t('srLocked')) + '</span>' : '') + '<small>' + esc(f.fileName || f.kind) + '</small></div></div>'; }) +
-        section(CT.t('srBudget'), g.budget, function (b) { return '<div class="row"><div><a href="/campteam/budget/">' + esc(b.label) + '</a><small>' + esc(b.category) + ' · ' + esc(Number(b.plannedAmount).toLocaleString()) + ' ' + esc(b.currency) + '</small></div></div>'; });
+        section(CT.t('srBudget'), g.budget, function (b) { return '<div class="row"><div><a href="/campteam/budget/">' + esc(b.label) + '</a><small>' + esc(b.category) + ' · ' + esc(CT.money(b.plannedAmount, b.currency)) + '</small></div></div>'; });
       $('srOut').innerHTML = h || '<div class="empty">' + esc(CT.t('srNone')) + '</div>';
     } catch (e) { $('srOut').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
   }

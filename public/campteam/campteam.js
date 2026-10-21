@@ -53,6 +53,14 @@
   CT.roleLabel = function (r) { return CT.t('role' + (r || 'viewer')); };
   CT.fmtDate = function (d) { return d ? d.slice(5).replace('-', '/') : ''; };
   CT.won = function (n) { return '₩' + Number(n || 0).toLocaleString('ko-KR'); };
+  CT.DEC = { KRW: 0, USD: 2 };
+  /** 최소 단위 정수(KRW=원, USD=센트) → 화면용 문자열 */
+  CT.money = function (minor, cur) {
+    var d = CT.DEC[cur] || 0, n = Number(minor || 0), sign = n < 0 ? '-' : '', a = Math.abs(n), whole = Math.floor(a / Math.pow(10, d)), frac = d ? String(a % Math.pow(10, d)).padStart(d, '0') : '';
+    return sign + (cur === 'KRW' ? '₩' : cur === 'USD' ? '$' : cur + ' ') + whole.toLocaleString('en-US') + (d ? '.' + frac : '');
+  };
+  /** 입력칸용: 최소 단위 정수 → 소수 포함 숫자 문자열 (콤마 없음) */
+  CT.moneyInput = function (minor, cur) { if (minor == null) return ''; var d = CT.DEC[cur] || 0; return (Number(minor) / Math.pow(10, d)).toFixed(d); };
 
   /** 페이지 시작: 내 권한을 읽고 메뉴를 정리한 뒤 init(me) 호출 */
   CT.boot = async function (init) {

@@ -124,3 +124,25 @@ UPDATE decisions SET supersedesId = NULL WHERE id = 'd1';
 INSERT INTO decisions (id,meetingId,agendaItemId,campId,kind,textKo,textEn,decidedDate,supersedesId,state,tags,createdAt,updatedAt,createdBy,isTest) VALUES
  ('d6','m1','s3','camp-u26','final','얼리버드 70,000원 / 일반 80,000원으로 확정한다. (가상 금액)','Early 70,000 / Regular 80,000 confirmed. (sample amounts)','2026-10-20','d1','active',',예산,unity camp,','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z','seed',1);
 UPDATE tasks SET meetingId='m1', agendaItemId='s4' WHERE id='t06';
+
+-- 6단계(예산) 더미 자료 — 모두 가상 금액입니다. KRW 는 원, USD 는 센트(최소 단위 정수)로 저장.
+DELETE FROM budget_lines;
+INSERT INTO budget_lines (id,campId,category,label,plannedAmount,expectedAmount,actualAmount,currency,vendor,paidAt,status,notes,createdAt,updatedAt,createdBy,isTest) VALUES
+ ('b01','camp-w27','venue','장소 대관 (체육관·강당)',3000000,3000000,1500000,'KRW','샘플 센터','2026-10-10','ordered','계약금 50% 지급, 잔금 남음 (가상)','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b02','camp-w27','food','캠프 식사 (참가자·스태프)',4200000,4400000,NULL,'KRW','샘플 식당','','ordered','인원 변동 가능 (가상)','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b03','camp-w27','transport','차량 임대·유류',900000,900000,NULL,'KRW','','','planned','','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b04','camp-w27','print','교재 인쇄·이름표',650000,700000,NULL,'KRW','샘플 인쇄소','','planned','','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b05','camp-w27','print','캠프 티셔츠',1800000,1800000,NULL,'KRW','샘플 업체','','ordered','','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b06','camp-w27','speaker','강사 사례비',1500000,1500000,NULL,'KRW','','','planned','','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b07','camp-w27','snacks','간식·음료',500000,500000,NULL,'KRW','','','planned','','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b08','camp-w27','insurance','단체 보험',300000,300000,320000,'KRW','샘플 보험','2026-10-15','paid','계획보다 20,000원 초과 (가상)','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b09','camp-w27','promo','홍보물·SNS 광고',400000,400000,NULL,'KRW','','','planned','','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b10','camp-w27','scholarship','장학금·시상',1100000,1100000,NULL,'KRW','','','planned','','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b11','camp-w27','misc','예비비',800000,800000,NULL,'KRW','','','planned','','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b12','camp-w27','speaker','해외 게스트 강사 항공권 (USD 예시)',80000,85000,NULL,'USD','Sample Airline','','planned','USD 예시 줄: $800.00 계획 (가상)','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b13','camp-u26','print','포스터·안내문 인쇄',400000,400000,150000,'KRW','샘플 인쇄소','2026-10-12','ordered','일부 지급 (가상)','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('b14','camp-u26','venue','교회 장소 사례',600000,600000,NULL,'KRW','','','planned','','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);
+INSERT INTO budget_targets (id,campId,currency,amountMinor,notes,createdAt,updatedAt,createdBy,isTest) VALUES
+ ('bt1','camp-w27','KRW',15000000,'가상 총 예산','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('bt2','camp-w27','USD',200000,'가상: $2,000.00','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('bt3','camp-u26','KRW',1500000,'가상 총 예산','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);

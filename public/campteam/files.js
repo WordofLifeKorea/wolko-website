@@ -212,6 +212,8 @@
   CT.boot(async function () {
     try { S.types = (await CT.api('/api/campteam/camps')).types; await loadList(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     filterOptions(); CT.applyI18n(); filterOptions(); renderList();
+    var up = new URLSearchParams(location.search); // 다른 화면에서 /campteam/files/?category=budget 처럼 열 수 있다
+    if (up.get('category')) $('fcat').value = up.get('category'); if (up.get('campId')) $('fcamp').value = 'camp:' + up.get('campId'); if (up.get('category') || up.get('campId')) await loadList();
     ['fcamp', 'fcat', 'fstatus', 'fkind', 'fsort'].forEach(function (id) { $(id).onchange = loadList; });
     $('fq').oninput = function () { clearTimeout(timer); timer = setTimeout(loadList, 250); };
     $('addFile').onclick = function () { openForm('file'); }; $('addLink').onclick = function () { openForm('link'); };

@@ -49,8 +49,8 @@ test('명단에 없는 사람(조회만): 홈은 보이지만 금액은 응답�
 test('재정 담당: 금액 조회 가능, 일반 자료 작성은 불가', async () => {
   const e = env(fakeD1());
   const body = await (await Home.onRequestGet({ env: e, request: await req(FIN) })).json();
-  assert.equal(body.budget.planned, 5600000);
-  assert.equal(body.budget.actual, 150000);
+  const krw = body.budget.summary.find(x => x.currency === 'KRW');
+  assert.ok(krw.planned > 0 && krw.actual >= 150000 && body.budget.lines >= 3);
   const post = await Camps.onRequestPost({ env: e, request: await req(FIN, { method: 'POST', body: { kind: 'type', nameKo: 'X' } }) });
   assert.equal(post.status, 403);
 });

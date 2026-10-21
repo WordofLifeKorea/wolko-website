@@ -1,6 +1,6 @@
 ---
 // 캠프팀 포털 공통 틀 (사이드바 + 언어 전환 + 로그인 안내). 내용은 각 페이지가 채운다.
-export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'search' | 'settings'; }
+export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'search' | 'budget' | 'settings'; }
 const { title, active } = Astro.props;
 const nav = [
   { key: 'home', href: '/campteam/', t: 'navHome' },
@@ -35,7 +35,7 @@ const nav = [
         ? <span class="soon"><i class="dot"></i><span data-t={n.t}></span><em data-t="soon"></em></span>
         : <a href={n.href} class={active === n.key ? 'on' : ''}><i class="dot"></i><span data-t={n.t}></span></a>)}
       <h6 id="moneyHead" hidden data-t="navFinance"></h6>
-      <span class="soon" id="moneyNav" hidden><i class="dot"></i><span data-t="navBudget"></span><em data-t="soon"></em></span>
+      <a id="moneyNav" href="/campteam/budget/" class={active === 'budget' ? 'on' : ''} hidden><i class="dot"></i><span data-t="navBudget"></span></a>
       <h6 id="adminHead" hidden data-t="navAdmin"></h6>
       <a id="settingsNav" href="/campteam/settings/" class={active === 'settings' ? 'on' : ''} hidden><i class="dot"></i><span data-t="navSettings"></span></a>
     </nav>

@@ -1,0 +1,22 @@
+---
+import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="캠프 예산" active="budget">
+  <div class="top">
+    <div><h1 data-t="bdTitle"></h1><div class="sub" data-t="bdSub"></div></div>
+    <div class="actions"><button class="btn" id="bdCsv" data-t="bdCsv"></button><button class="btn" id="bdCopy" data-t="bdCopy"></button><button class="btn" id="bdTarget" data-t="bdTarget"></button><button class="btn pri" id="bdAdd" data-t="bdAdd"></button></div>
+  </div>
+  <div class="locked" id="bdLocked" hidden data-t="budgetLocked"></div>
+  <div id="bdMain">
+    <div class="filters t" style="grid-template-columns:1.2fr 1fr 1fr 1.4fr"><select id="bcamp"></select><select id="bcat"></select><select id="bcur"></select><input id="bq" type="search" data-t-ph="bdSearch"></div>
+    <div id="bdSummary"></div>
+    <div id="bdPerCamp"></div>
+    <section class="card" style="margin-bottom:14px"><h2><span data-t="bdLines"></span><a href="/campteam/files/?category=budget" data-t="bdFiles"></a></h2><div style="overflow:auto"><table class="vtable" id="bdTable"></table></div></section>
+    <section class="card"><h2 data-t="bdReport"></h2><div id="bdFlags"></div></section>
+  </div>
+  <dialog id="dlg" class="wide">
+    <h3 id="dlgTitle"></h3>
+    <form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form>
+  </dialog>
+  <script is:inline slot="scripts" src="/campteam/budget.js?v=1"></script>
+</CampTeamLayout>

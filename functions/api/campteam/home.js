@@ -1,5 +1,6 @@
 import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
 import { todayKST, OPEN_STATUS_SQL } from '../../lib/campteamDb.js';
+import { summarize } from '../../lib/campteamMoney.js';
 
 /** 캠프팀 홈에 필요한 요약을 한 번에 돌려준다. 금액(budget)은 권한이 있을 때만 DB에서 읽는다. */
 export async function onRequestGet({ env, request }) {
@@ -43,9 +44,9 @@ export async function onRequestGet({ env, request }) {
   // 금액: 권한이 없으면 이 표는 아예 읽지 않는다 (응답에도 budget 키가 없다)
   let budget;
   if (s.perms.moneyRead) {
-    const row = await db.prepare(`SELECT COALESCE(SUM(plannedAmount),0) AS planned, COALESCE(SUM(actualAmount),0) AS actual, COUNT(*) AS lines
-      FROM budget_lines WHERE deletedAt IS NULL`).first();
-    budget = { planned: row.planned, actual: row.actual, lines: row.lines, currency: 'KRW' };
+    const lines = (await db.prepare(`SELECT category, plannedAmount, expectedAmount, actualAmount, currency, status FROM budget_lines WHERE deletedAt IS NULL`).all()).results;
+    const targets = (await db.prepare(`SELECT campId, currency, amountMinor FROM budget_targets WHERE deletedAt IS NULL`).all()).results;
+    budget = { summary: summarize(lines).map(({ byCategory, ...x }) => x), lines: lines.length, targets: targets.length };
   }
 
   const body = {
