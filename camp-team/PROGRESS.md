@@ -13,3 +13,5 @@
 - [6단계] TV 대시보드: 서버(열쇠·배치·설정·공지·TV 데이터 — 금액/이메일/메모 없음, 신청 인원은 숫자만 읽기 전용) + TV 화면(/tv/?t=열쇠, 자동 새로고침·오프라인 표시·화면/목록 슬라이드쇼) + 포털 편집기(끌기·크기·위젯 설정·미리보기·저장). 브라우저에서 확인.
 - [환경] Documents 폴더가 iCloud 동기화 중이라 빌드가 멈춰서, 프로젝트 실제 위치를 ~/wolko-camp-team-work/wolko-website 로 옮기고 Documents/wolko-camp-team/wolko-website 는 바로가기(링크)로 남김.
 - [7단계] 휴지통(복구)·전체 백업/CSV 내보내기·변경 기록·용어집, AI 회의록 초안(전사 텍스트→Claude→검토→선택 적용, 키 없으면 꺼짐, 로컬 가짜 AI 로 화면 확인), Google 로그인(wolko.org 조회 전용, 꺼짐 기본), Google 달력 미리보기(쓰기 꺼짐 기본). 테스트 85개 통과.
+- [캠프 공간] 캠프별 운영 공간 페이지(일정·업무·회의·결정·파일·예산을 한 화면에) + 업무/회의/자료 화면의 `?campId=`·`?typeId=` 바로가기.
+- [마무리] 포털 메뉴 카드 패치(`deploy/portal-menu.patch`, 미적용 · 임시 사본에 적용해 기존 테스트 영향 없음 확인), 배포 전 자동 점검(`dev/predeploy-check.mjs`), 문서 3종(ARCHITECTURE / MORNING-REVIEW / DEPLOY-CHECKLIST). 새 레이아웃·TV 페이지에 기존 포털 공통 스크롤 잠금 스크립트를 넣어 기존 테스트(`scroll-lock`)와 맞춤. 캠프팀 테스트 85개 통과, 기존 테스트 결과는 원본과 동일.
