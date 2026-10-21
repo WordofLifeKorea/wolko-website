@@ -7,7 +7,7 @@ test('seven broad categories with English labels', () => {
   assert.ok(DENOMINATION_FILTERS.every(g => g.en && /^[a-z-]+$/.test(g.id)));
 });
 test('detailed Presbyterian and Baptist values match their broad filter', () => {
-  for (const value of ['기장 (기독교 장로회)', '예장고신 (예수교 장로회)', '예장합동', '예장합신', '예장백석', '예장통합', '장로회 / 장로교']) {
+  for (const value of ['기장 (기독교 장로회)', '예장고신 (예수교 장로회)', '예장합동', '예장합신', '예장백석', '예장통합', '예장대신 (예수교 장로회)', '예장대신', '장로회 / 장로교']) {
     assert.equal(denominationFamily(value), 'presbyterian');
   }
   for (const value of ['기침 (침례)', '성침 (침례)', '침례교', ' 침례 ']) assert.equal(denominationFamily(value), 'baptist');
