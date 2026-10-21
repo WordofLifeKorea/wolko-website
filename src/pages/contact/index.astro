@@ -515,6 +515,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 <option value="general">일반 문의 / General Inquiry</option>
                 <option value="ministry">사역 협력 / Ministry Partnership</option>
                 <option value="mission">선교팀 / Mission Team</option>
+                <option value="serve">섬기고 싶어요 / Serve with WOLKO</option>
               </optgroup>
               <optgroup label="─────────────────────────">
                 <option value="wolbi">제주월비 입학 / WOLBI Admission</option>
@@ -567,6 +568,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
 
         <div class="ct-form-footer">
+          <input type="text" id="ct-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
           <button type="submit" class="ct-form-btn">
             <span class="wl-ko">문의 보내기</span><span class="wl-en">Send Message</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -632,7 +634,8 @@ async function handleSubmit(e) {
     var res = await fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, email: email, phone: phone, type: type, message: message }),
+      // website: 사람에게는 보이지 않는 칸(자동 입력 방지) / lang: 지금 보고 있는 사이트 언어(문의 담당자 배정에 참고)
+      body: JSON.stringify({ name: name, email: email, phone: phone, type: type, message: message, website: (form.querySelector('#ct-website') || {}).value || '', lang: (document.documentElement.classList.contains('lang-en') || document.body.classList.contains('lang-en')) ? 'en' : 'ko' }),
     });
 
     if (!res.ok) {

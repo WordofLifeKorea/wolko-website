@@ -9,6 +9,7 @@
  */
 import { sendAlimtalk } from '../lib/solapi.js';
 import { normalizePhone } from '../lib/phone.js';
+import { createServeInquiry, notifyServeReviewers, confirmServeInquiry, serveRateLimited } from '../lib/serveInquiry.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -21,6 +22,7 @@ const TYPE_LABELS = {
   wolbi:    '제주월비 입학 / WOLBI Admission',
   camp:     '캠프 신청 / Camp',
   mission:  '선교팀 / Mission',
+  serve:    '섬기고 싶어요 / Serve with WOLKO',
   give:     '후원 / Giving',
   prayer:   '기도 제목 / Prayer',
   other:    '기타 / Other',
@@ -97,8 +99,16 @@ export async function onRequestPost(context) {
   const { name, email, type = 'general', message } = body;
   const phone = normalizePhone(body.phone);
 
+  // 자동 입력 방지: 사람 눈에는 안 보이는 칸(website)이 채워져 있으면 조용히 성공으로 돌려보내고 아무것도 하지 않는다.
+  if (body.website) return Response.json({ ok: true }, { headers: CORS });
+
   if (!name || !email || !message) {
     return Response.json({ error: '이름, 이메일, 내용은 필수입니다.' }, { status: 400, headers: CORS });
+  }
+
+  // "섬기고 싶어요" 문의는 연달아 보내는 것을 제한한다(공개 폼이라 스팸 방지)
+  if (type === 'serve' && env.CAMP_KV && await serveRateLimited(env, { email, ip: request.headers.get('CF-Connecting-IP') || '' })) {
+    return Response.json({ error: '짧은 시간에 너무 많이 보내셨습니다. 잠시 후 다시 시도해 주세요. / Too many messages. Please try again later.' }, { status: 429, headers: CORS });
   }
 
   const typeLabel = TYPE_LABELS[type] || type;
@@ -128,6 +138,15 @@ export async function onRequestPost(context) {
     const err = await resendRes.text();
     console.error('Resend error:', err);
     return Response.json({ error: '이메일 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 502, headers: CORS });
+  }
+
+  // 섬김 문의는 포탈 받은함에서 처리할 수 있게 저장하고, 담당자·마스터에게 알린다(내용 없이). 접수 확인 메일은 문의 언어로 보낸다.
+  if (type === 'serve' && env.CAMP_KV) {
+    const inquiry = await createServeInquiry(env, { name, email, phone, message, hint: body.lang });
+    context.waitUntil(Promise.allSettled([
+      notifyServeReviewers(env, inquiry).catch(e => console.error('serve notify failed:', e)),
+      confirmServeInquiry(env, inquiry).catch(e => console.error('serve confirm failed:', e)),
+    ]));
   }
 
   if (phone && env.KAKAO_TEMPLATE_CONTACT) {
