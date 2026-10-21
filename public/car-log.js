@@ -24,6 +24,8 @@
       useMinistry: '사역용', usePersonal: '개인용', timeExif: '사진 촬영 시각', timeSaved: '기록 시각',
       connectFail: '일지 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', loadFail: '일지를 불러오지 못했습니다.',
       photoOpenFail: '사진을 열지 못했습니다.', resizeFail: '사진 크기를 줄이지 못했습니다. 다른 사진을 선택해 주세요.',
+      odoBeforeLabel: '운행 전 계기판 (km)', odoAfterLabel: '운행 후 계기판 (km)', odoReading: '계기판 숫자를 읽는 중…', odoFail: '자동으로 읽지 못했습니다. 직접 입력해 주세요.',
+      odoAuto: n => `자동 인식: ${n} km — 사진과 다르면 고쳐 주세요.`, odoOrder: '운행 후 값이 운행 전 값보다 작습니다. 숫자를 확인해 주세요.', tripAuto: n => `운행 전·후 계기판으로 총 거리를 계산했습니다: ${n} km (고칠 수 있어요)`,
       loginFail: '로그인하지 못했습니다.', photoDiff: '사진 촬영 시각이 오늘과 다릅니다. 운행 전 사진을 새로 찍어 주세요.',
       photoOld: '오래된 사진입니다. 운행 전 사진을 새로 찍어 주세요.', photoReadFail: '사진을 읽지 못했습니다.',
       photoTaken: t => `사진 촬영: ${t} (사진 정보 기준)`, photoNoTime: '사진에 촬영 시각 정보가 없어 저장 시각으로 기록됩니다.',
@@ -50,6 +52,8 @@
       useMinistry: 'Ministry', usePersonal: 'Personal', timeExif: 'photo taken', timeSaved: 'recorded',
       connectFail: 'Could not reach the log service. Please try again shortly.', loadFail: 'Could not load the log.',
       photoOpenFail: 'Could not open the photo.', resizeFail: 'Could not shrink the photo. Please choose another one.',
+      odoBeforeLabel: 'Odometer before (km)', odoAfterLabel: 'Odometer after (km)', odoReading: 'Reading the odometer…', odoFail: 'Could not read it automatically. Please enter it.',
+      odoAuto: n => `Auto-read: ${n} km — please correct it if it differs from the photo.`, odoOrder: 'The after reading is lower than the before reading. Please check the numbers.', tripAuto: n => `Total distance calculated from the odometers: ${n} km (you can edit it)`,
       loginFail: 'Could not log in.', photoDiff: 'The photo was not taken today. Please take a new pre-drive photo.',
       photoOld: 'This photo is old. Please take a new pre-drive photo.', photoReadFail: 'Could not read the photo.',
       photoTaken: t => `Photo taken: ${t} (from photo data)`, photoNoTime: 'The photo has no capture time, so the save time will be recorded.',
@@ -132,6 +136,7 @@
     document.querySelectorAll('input[name="useType"]').forEach(r => { r.checked = false; });
     $('purposeNote').value = '';
     $('tripKm').value = '';
+    ['odoBefore', 'odoAfter'].forEach(id => { $(id).value = ''; }); ['odoBeforeHint', 'odoAfterHint', 'tripAutoHint'].forEach(id => { $(id).textContent = ''; });
     photoTakenAt = null;
     Object.values(photoSlots).forEach(slot => {
       slot.blob = null;
@@ -503,6 +508,37 @@
   $('purposeNote').addEventListener('input', () => { updateReady(); scheduleDraftSave(); });
   $('vehicleSelect').addEventListener('change', () => { updateReady(); scheduleDraftSave(); });
   document.querySelectorAll('input[name="useType"]').forEach(input => input.addEventListener('change', scheduleDraftSave));
+  /* ── 계기판 숫자 자동 인식: 사진을 고르면 서버(Claude 이미지 인식)가 주행거리를 읽어 칸에 제안한다. 항상 수정 가능하고, 읽지 못하면 직접 입력한다. ── */
+  let tripAuto = null; // 자동 계산으로 채운 총 거리 — 사용자가 직접 고쳤으면 덮어쓰지 않는다
+  const odoField = which => $(which === 'before' ? 'odoBefore' : 'odoAfter');
+  const odoHint = which => $(which === 'before' ? 'odoBeforeHint' : 'odoAfterHint');
+  const odoValue = which => { const v = odoField(which).value.trim(); const n = Number(v); return v !== '' && Number.isInteger(n) && n >= 0 && n <= 2000000 ? n : null; };
+  function syncTripFromOdometers() {
+    const before = odoValue('before'), after = odoValue('after');
+    if (before === null || after === null) return;
+    if (after < before) { $('tripAutoHint').textContent = t('odoOrder'); return; }
+    const km = after - before;
+    const current = $('tripKm').value.trim();
+    if (km <= 5000 && (current === '' || current === tripAuto)) {
+      $('tripKm').value = String(km); tripAuto = String(km);
+      $('tripAutoHint').textContent = t('tripAuto', km.toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR'));
+      updateReady(); scheduleDraftSave();
+    }
+  }
+  async function recognizeOdometer(which, blob) {
+    const hint = odoHint(which);
+    hint.textContent = t('odoReading');
+    try {
+      const response = await fetch('/api/car/odometer', { method: 'POST', headers: { ...headers(), 'Content-Type': 'image/jpeg' }, body: blob });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.odometer == null) { hint.textContent = data.note || t('odoFail'); return; }
+      if (!odoField(which).value.trim()) odoField(which).value = String(data.odometer);
+      hint.textContent = t('odoAuto', Number(data.odometer).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR'));
+      syncTripFromOdometers();
+    } catch (error) { hint.textContent = t('odoFail'); }
+  }
+  ['before', 'after'].forEach(which => odoField(which).addEventListener('input', () => { odoHint(which).textContent = ''; syncTripFromOdometers(); }));
+
   // 운행 전·후 사진 칸 — 둘 다 선택 사항이라 없어도 저장된다.
   const photoSlots = {
     before: { input: 'photoInput', button: 'photoButton', preview: 'photoPreview', time: 'photoTime', get blob() { return photoBlob; }, set blob(v) { photoBlob = v; }, get url() { return previewUrl; }, set url(v) { previewUrl = v; }, trackTime: true },
@@ -532,6 +568,7 @@
         $(slot.preview).hidden = false;
         $(slot.time).textContent = exifDate ? t('photoTaken', formatTime(exifDate)) : t('photoNoTime');
         uploadDraftPhoto(which, slot.blob);
+        recognizeOdometer(which, slot.blob);
       } catch (error) {
         $('formError').textContent = error.message || t('photoReadFail');
         $(slot.preview).hidden = true;
@@ -564,6 +601,8 @@
       form.append('useType', document.querySelector('input[name="useType"]:checked').value);
       form.append('purpose', $('purposeNote').value.trim());
       form.append('tripKm', $('tripKm').value.trim());
+      if (odoValue('before') !== null) form.append('odometerBefore', String(odoValue('before')));
+      if (odoValue('after') !== null) form.append('odometerAfter', String(odoValue('after')));
       if (photoBlob) {
         form.append('photo', photoBlob, 'vehicle-before.jpg');
         if (photoTakenAt) { form.append('photoTakenAt', photoTakenAt); form.append('timeSource', 'exif'); }
@@ -586,6 +625,7 @@
       $('photoAfterTime').textContent = '';
       $('photoTime').textContent = t('saved');
       $('tripKm').value = '';
+      ['odoBefore', 'odoAfter'].forEach(id => { $(id).value = ''; }); ['odoBeforeHint', 'odoAfterHint', 'tripAutoHint'].forEach(id => { $(id).textContent = ''; });
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       if (previewAfterUrl) URL.revokeObjectURL(previewAfterUrl);
       previewUrl = null;

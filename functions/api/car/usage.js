@@ -123,6 +123,10 @@ export async function onRequestPost({ env, request }) {
   const tripKm = Math.round(Number(tripKmRaw) * 10) / 10;
   if (!tripKmRaw || !Number.isFinite(tripKm) || tripKm < 0 || tripKm > 5000) return fail('총 운행 거리(km)를 0 이상의 숫자로 입력해 주세요.');
 
+  // 계기판 숫자(자동 인식 후 사용자가 확인한 값, 선택): 정수 0~2,000,000 만 받는다. 운행 후 값은 '사용 후 마일리지'로도 쓴다.
+  const odo = name => { const raw = String(form.get(name) ?? '').trim(); const n = Number(raw); return raw !== '' && Number.isInteger(n) && n >= 0 && n <= 2_000_000 ? n : null; };
+  const odometerBefore = odo('odometerBefore'), odometerAfter = odo('odometerAfter');
+
   async function readJpeg(file) {
     if (!(file instanceof File) || file.size === 0) return { none: true };
     if (file.type !== 'image/jpeg' || file.size < 100 || file.size > MAX_PHOTO_BYTES) return { error: 'JPG 사진은 4MB 이하로 올려주세요.' };
@@ -143,6 +147,7 @@ export async function onRequestPost({ env, request }) {
   const id = crypto.randomUUID();
   const entry = {
     id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), tripKm,
+    ...(odometerBefore !== null ? { odometerBefore } : {}), ...(odometerAfter !== null ? { odometerAfter, mileageAfter: odometerAfter } : {}),
     hasPhoto: !before.none, hasPhotoAfter: !afterPhoto.none,
     photoTakenAt: isRecentExif ? candidate.toISOString() : recordedAt,
     timeSource: isRecentExif ? 'exif' : 'recorded',

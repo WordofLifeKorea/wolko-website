@@ -45,6 +45,8 @@ function postRequest(token, fields = {}) {
   if (fields.photo !== null) form.set('photo', fields.photo || jpeg());
   if (fields.photoAfter) form.set('photoAfter', fields.photoAfter);
   if (fields.tripKm !== null) form.set('tripKm', fields.tripKm ?? '12.5');
+  if (fields.odometerBefore !== undefined) form.set('odometerBefore', fields.odometerBefore);
+  if (fields.odometerAfter !== undefined) form.set('odometerAfter', fields.odometerAfter);
   if (fields.photoTakenAt) {
     form.set('photoTakenAt', fields.photoTakenAt);
     form.set('timeSource', 'exif');
@@ -304,4 +306,19 @@ test('임시 저장: 본인 계정에만 30일 동안 보관하고, 정식 저�
   assert.equal((await saveUsage({ env, request: postRequest(a, { tripKm: '5' }) })).status, 201);
   assert.equal((await (await call(D.onRequestGet, a)).json()).draft, null);
   assert.equal((await call(D.onRequestGet, a, { query: '?photo=after' })).status, 404);
+});
+
+test('계기판 숫자(자동 인식 후 확인한 값)는 정수만 저장하고, 운행 후 값은 사용 후 마일리지로도 쓴다', async () => {
+  const env = memoryEnv();
+  const email = 'driver@wol.org';
+  await env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: '운전자', status: 'approved' }));
+  const token = await createHubSessionToken(env.ADMIN_PASSWORD, email, 'admin');
+  const ok = (await (await saveUsage({ env, request: postRequest(token, { photo: null, tripKm: '32', odometerBefore: '52310', odometerAfter: '52342' }) })).json()).entry;
+  assert.equal(ok.odometerBefore, 52310);
+  assert.equal(ok.odometerAfter, 52342);
+  assert.equal(ok.mileageAfter, 52342);
+  const bad = (await (await saveUsage({ env, request: postRequest(token, { photo: null, tripKm: '5', odometerBefore: 'abc', odometerAfter: '9999999' }) })).json()).entry;
+  assert.equal(bad.odometerBefore, undefined);
+  assert.equal(bad.odometerAfter, undefined);
+  assert.equal(bad.mileageAfter, undefined);
 });

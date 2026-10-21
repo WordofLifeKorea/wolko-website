@@ -15,13 +15,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/car-log.css?v=15">
+  <link rel="stylesheet" href="/car-log.css?v=16">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-layout.css?v=15">
   <script src="/wolko-rail.js?v=30" defer></script>
-  <script src="/car-log.js?v=12" defer></script>
+  <script src="/car-log.js?v=13" defer></script>
   <meta name="theme-color" content="#004f68">
 </head>
 <body>
@@ -94,6 +94,7 @@
           <label class="log-trip-km"><span data-t="tripKmLabel">총 운행 거리 (km) *</span>
             <input id="tripKm" name="tripKm" type="number" inputmode="decimal" min="0" max="5000" step="0.1" required autocomplete="off">
           </label>
+          <p class="log-time" id="tripAutoHint" aria-live="polite"></p>
           <div class="log-photos">
             <strong class="log-photos-title" data-t="photosTitle">사진 (선택)</strong>
             <p data-t="photosHelp">계기판이나 차량 상태가 보이도록 찍어 두면 나중에 확인하기 좋아요. 없어도 저장할 수 있습니다.</p>
@@ -103,6 +104,10 @@
               <button id="photoButton" class="log-secondary" type="button" data-t="photoBtn">카메라 열기 · 사진 선택</button>
               <img id="photoPreview" class="log-preview" alt="" hidden>
               <p class="log-time" id="photoTime" aria-live="polite"></p>
+              <label class="log-odo"><span data-t="odoBeforeLabel">운행 전 계기판 (km)</span>
+                <input id="odoBefore" type="number" inputmode="numeric" min="0" max="2000000" step="1" autocomplete="off">
+              </label>
+              <p class="log-time" id="odoBeforeHint" aria-live="polite"></p>
             </div>
             <div class="log-photo-step">
               <strong data-t="photoAfterTitle">운행 후 사진</strong>
@@ -110,6 +115,10 @@
               <button id="photoAfterButton" class="log-secondary" type="button" data-t="photoBtn">카메라 열기 · 사진 선택</button>
               <img id="photoAfterPreview" class="log-preview" alt="" hidden>
               <p class="log-time" id="photoAfterTime" aria-live="polite"></p>
+              <label class="log-odo"><span data-t="odoAfterLabel">운행 후 계기판 (km)</span>
+                <input id="odoAfter" type="number" inputmode="numeric" min="0" max="2000000" step="1" autocomplete="off">
+              </label>
+              <p class="log-time" id="odoAfterHint" aria-live="polite"></p>
             </div>
           </div>
           <button id="saveButton" class="log-primary" type="submit" disabled data-t="save">사용 일지 저장</button>
