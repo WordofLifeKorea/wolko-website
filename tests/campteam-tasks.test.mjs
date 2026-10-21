@@ -216,12 +216,12 @@ test('기존 포털 계정·관리자는 건드리지 않는다: 캠프팀 새 �
   const env = mk();
   for (const f of readdirSync(root + 'functions/api/campteam')) {
     const src = readFileSync(root + 'functions/api/campteam/' + f, 'utf8');
-    assert.doesNotMatch(src, /putAccount|MASTER_EMAILS|ADMIN_EMAILS|listAccounts|hub:account|CAMP_KV\.(put|delete)/, f);
+    assert.doesNotMatch(src, /putAccount|MASTER_EMAILS|(?<!FIXED_)ADMIN_EMAILS|listAccounts|hub:account|CAMP_KV\.(put|delete)/, f);
   }
   const libs = ['campteamAuth.js', 'campteamDb.js', 'campteamFiles.js', 'campteamStorage.js', 'campteamCsv.js', 'campteamSheets.js'];
   for (const f of libs) assert.doesNotMatch(readFileSync(root + 'functions/lib/' + f, 'utf8'), /putAccount|hub:account|CAMP_KV\.(put|delete)/, f);
-  // 기존 포털 관리자(hkim3@wol.org, 코드의 ADMIN_EMAILS)와 마스터는 캠프팀 명단에 없으면 "조회만"
-  for (const [email, role] of [['hkim3@wol.org', 'admin'], ['admin@wolko.org', 'master']]) {
+  // 기존 포털 관리자(코드의 ADMIN_EMAILS 중 hkim3 를 뺀 나머지)와 마스터는 캠프팀 명단에 없으면 "조회만"
+  for (const [email, role] of [['samuelsong@wol.org', 'admin'], ['jacobmorse@wol.org', 'admin'], ['admin@wolko.org', 'master']]) {
     const r = new Request('http://localhost/api/campteam/me', { headers: { Authorization: 'Bearer ' + await createHubSessionToken(SECRET, email, role) } });
     const me = await (await Me.onRequestGet({ env, request: r })).json();
     assert.equal(me.campRole, null, email); assert.equal(me.perms.write, false); assert.equal(me.perms.manageMembers, false); assert.equal(me.perms.moneyRead, false);

@@ -24,14 +24,14 @@ export async function onRequestPost({ env, request }) {
   const plan = items.map(i => {
     const sourceKey = `tpl:${tpl.id}:${i.id}`;
     return { itemId: i.id, title: i.title, priority: i.priority, offsetDays: i.offsetDays, dueDate: camp.startDate && i.offsetDays != null ? addDays(camp.startDate, i.offsetDays) : null,
-      ownerSuggestion: i.ownerSuggestion, ownerName: text(owners[i.id], 60), notes: i.notes, sourceKey, skip: existing.has(sourceKey) };
+      ownerSuggestion: i.ownerSuggestion, ownerName: text(owners[i.id], 100), notes: i.notes, section: i.section || '', provisional: !!i.provisional, sourceKey, skip: existing.has(sourceKey) };
   });
   const summary = { campHasDate: !!camp.startDate, toCreate: plan.filter(p => !p.skip).length, skipped: plan.filter(p => p.skip).length };
   if (b.preview) return json({ preview: true, summary, plan });
   const now = nowIso();
   for (const p of plan.filter(x => !x.skip)) {
-    await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerSuggestion,dueDate,status,priority,notes,sourceKey,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6,'Not Started',?7,?8,?9,?10,?10,?11)`)
-      .bind(uuid(), camp.id, p.title, p.ownerName, p.ownerSuggestion, p.dueDate, p.priority, p.notes, p.sourceKey, now, s.email).run();
+    await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerSuggestion,dueDate,status,priority,notes,sourceKey,section,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6,'Not Started',?7,?8,?9,?12,?10,?10,?11)`)
+      .bind(uuid(), camp.id, p.title, p.ownerName, p.ownerSuggestion, p.dueDate, p.priority, p.notes, p.sourceKey, now, s.email, p.section).run();
   }
   await audit(env, s.email, 'apply_template', 'camp', camp.id, `${tpl.nameKo}: +${summary.toCreate} skip ${summary.skipped}`);
   return json({ created: summary.toCreate, skipped: summary.skipped, summary }, 201);

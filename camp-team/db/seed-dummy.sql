@@ -87,3 +87,19 @@ INSERT INTO checklist_items (id,templateId,title,offsetDays,ownerSuggestion,prio
  ('ci6','tpl-winter','Prepare camp printed materials, name tags and clothing',-14,'Leader C','Medium',6,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
  ('ci7','tpl-winter','Plan camp vehicle transportation and cleanup',-14,'Leader C','High',7,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
  ('ci8','tpl-winter','Complete camp evaluation, finance and follow-up',14,'Leader A','Medium',8,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);
+
+-- 4단계 더미 자료: 템플릿 구역과 임시 기준일 표시, Unity 샘플 템플릿(가상 항목)
+UPDATE checklist_items SET section='1. 기획·운영', provisional=CASE WHEN offsetDays IS NULL THEN 0 ELSE 1 END WHERE id IN ('ci1','ci2');
+UPDATE checklist_items SET section='2. 모집·홍보', provisional=1 WHERE id IN ('ci3','ci5');
+UPDATE checklist_items SET section='3. 강사·일정', provisional=1 WHERE id='ci4';
+UPDATE checklist_items SET section='4. 본 캠프 준비', provisional=1 WHERE id IN ('ci6','ci7');
+UPDATE checklist_items SET section='5. 사후 정리', provisional=1 WHERE id='ci8';
+INSERT INTO checklist_templates (id,nameKo,nameEn,typeId,description,createdAt,updatedAt,createdBy,isTest) VALUES
+ ('tpl-unity','Unity Camp 샘플 체크리스트 (테스트)','Unity Camp sample checklist (test)','type-unity','가상 항목입니다. 실제 체크리스트는 설정 후 "붙여넣어 가져오기"로 넣으세요.','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);
+INSERT INTO checklist_items (id,templateId,title,offsetDays,ownerSuggestion,priority,sortOrder,section,provisional,createdAt,updatedAt,createdBy,isTest) VALUES
+ ('ui1','tpl-unity','Set camp theme and dates',NULL,'All Together','High',1,'1. Planning',0,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('ui2','tpl-unity','Confirm location and participant limit',-80,'','High',2,'1. Planning',1,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('ui3','tpl-unity','Send registration invitations and fee notices',-60,'Leader B','High',3,'2. Recruitment',1,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('ui4','tpl-unity','Collect church rosters and emergency contacts',-30,'','High',4,'3. Registration',1,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('ui5','tpl-unity','Prepare first-aid kits and share allergy information',-14,'','High',5,'4. Safety',1,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('ui6','tpl-unity','Collect feedback forms and finalize accounts',14,'Leader A','Medium',6,'5. Post-camp',1,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);

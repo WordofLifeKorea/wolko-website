@@ -2,7 +2,7 @@ import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../
 import { uuid, nowIso, text, isDate, todayKST, audit, TASK_STATUSES, TASK_PRIORITIES } from '../../lib/campteamDb.js';
 
 const CLOSED = `('Completed','Not Applicable')`;
-const SELECT = `SELECT k.id, k.campId, k.title, k.ownerName, k.ownerEmail, k.ownerSuggestion, k.dueDate, k.status, k.priority, k.notes, k.sourceKey, k.meetingId, k.createdAt, k.updatedAt, k.isTest,
+const SELECT = `SELECT k.id, k.campId, k.title, k.ownerName, k.ownerEmail, k.ownerSuggestion, k.dueDate, k.status, k.priority, k.notes, k.sourceKey, k.section, k.meetingId, k.createdAt, k.updatedAt, k.isTest,
     c.nameKo AS campKo, c.nameEn AS campEn
   FROM tasks k LEFT JOIN camps c ON c.id = k.campId`;
 const SORTS = {

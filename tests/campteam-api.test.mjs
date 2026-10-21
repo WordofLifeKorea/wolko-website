@@ -92,31 +92,36 @@ test('홈 요약: 진행 중·마감 지남·담당 미정 숫자가 맞다', as
   assert.equal(body.agenda.length, 3);
 });
 
-test('명단 관리는 관리자만, 관리자는 항상 한 명', async () => {
+test('명단 관리는 관리자만, 관리자는 여러 명 가능, 코드에 고정된 관리자 2명은 바꾸거나 뺄 수 없다', async () => {
   const e = env(fakeD1());
   assert.equal((await Members.onRequestGet({ env: e, request: await req(MEM) })).status, 403);
-  assert.equal((await Members.onRequestGet({ env: e, request: await req(ADMIN) })).status, 200);
-  const second = await Members.onRequestPost({ env: e, request: await req(ADMIN, { method: 'POST', body: { email: 'new@wolko.org', role: 'admin' } }) });
-  assert.equal(second.status, 400);
-  const add = await Members.onRequestPost({ env: e, request: await req(ADMIN, { method: 'POST', body: { email: 'new@wolko.org', name: '새 팀원', role: 'member' } }) });
-  assert.equal(add.status, 200);
-  const outside = await Members.onRequestPost({ env: e, request: await req(ADMIN, { method: 'POST', body: { email: 'x@gmail.com', role: 'member' } }) });
-  assert.equal(outside.status, 400);
-  const demote = await Members.onRequestPost({ env: e, request: await req(ADMIN, { method: 'POST', body: { email: ADMIN, role: 'member' } }) });
-  assert.equal(demote.status, 400, '마지막 관리자를 바꿀 수 없다');
-  const rm = await Members.onRequestDelete({ env: e, request: await req(ADMIN, { method: 'DELETE', url: 'http://localhost/api/campteam/members?email=new@wolko.org' }) });
-  assert.equal(rm.status, 200);
-  const rmAdmin = await Members.onRequestDelete({ env: e, request: await req(ADMIN, { method: 'DELETE', url: `http://localhost/api/campteam/members?email=${ADMIN}` }) });
-  assert.equal(rmAdmin.status, 400);
+  const list = await (await Members.onRequestGet({ env: e, request: await req(ADMIN) })).json();
+  assert.deepEqual(list.members.filter(m => m.fixed).map(m => m.email), ['aidenpark@wolko.org', 'hkim3@wol.org']);
+  const post = async (body, who = ADMIN) => Members.onRequestPost({ env: e, request: await req(who, { method: 'POST', body }) });
+  assert.equal((await post({ email: 'new@wolko.org', name: '새 관리자', role: 'admin' })).status, 200, '관리자 수 제한 없음');
+  assert.equal((await post({ email: 'new2@wolko.org', name: '새 팀원', role: 'member' })).status, 200);
+  assert.equal((await post({ email: 'x@gmail.com', role: 'member' })).status, 400);
+  assert.equal((await post({ email: 'new2@wolko.org', role: 'boss' })).status, 400);
+  assert.equal((await post({ email: 'hkim3@wol.org', role: 'member' })).status, 400, '고정 관리자 역할 변경 불가');
+  assert.equal((await post({ email: 'aidenpark@wolko.org', role: 'finance' })).status, 400);
+  const del = async (email) => Members.onRequestDelete({ env: e, request: await req(ADMIN, { method: 'DELETE', url: `http://localhost/api/campteam/members?email=${email}` }) });
+  assert.equal((await del('new2@wolko.org')).status, 200);
+  assert.equal((await del('hkim3@wol.org')).status, 400); assert.equal((await del('aidenpark@wolko.org')).status, 400);
+  assert.equal((await del('nobody@wolko.org')).status, 404);
+  // 새로 추가한 관리자도 명단 관리 가능
+  assert.equal((await Members.onRequestGet({ env: e, request: await req('new@wolko.org') })).status, 200);
 });
 
-test('처음 설정할 때만 지정된 계정(aidenpark@wolko.org)이 임시 관리자', async () => {
+test('고정 관리자(aidenpark@wolko.org, hkim3@wol.org)는 명단이 비어 있어도 항상 관리자, 포털 마스터/그 밖의 포털 관리자는 아니다', async () => {
   const empty = env(fakeD1({ seed: false }));
   const as = async (email, role) => new Request('http://localhost/api/campteam/me', { headers: { Authorization: 'Bearer ' + await createHubSessionToken(SECRET, email, role) } });
-  assert.equal((await (await Me.onRequestGet({ env: empty, request: await as('aidenpark@wolko.org', 'counselor') })).json()).campRole, 'admin');
-  assert.equal((await (await Me.onRequestGet({ env: empty, request: await as('admin@wolko.org', 'master') })).json()).campRole, null, '포털 마스터라도 자동 관리자가 아니다');
-  const seeded = env(fakeD1());
-  assert.equal((await (await Me.onRequestGet({ env: seeded, request: await as('aidenpark@wolko.org', 'counselor') })).json()).campRole, null, '관리자가 이미 있으면 임시 관리자는 일반 사용자와 같다');
+  for (const [email, hub] of [['aidenpark@wolko.org', 'counselor'], ['hkim3@wol.org', 'admin']]) {
+    const me = await (await Me.onRequestGet({ env: empty, request: await as(email, hub) })).json();
+    assert.equal(me.campRole, 'admin', email); assert.equal(me.perms.manageMembers, true);
+  }
+  for (const [email, hub] of [['admin@wolko.org', 'master'], ['samuelsong@wol.org', 'admin']]) {
+    assert.equal((await (await Me.onRequestGet({ env: empty, request: await as(email, hub) })).json()).campRole, null, email + ' 는 캠프팀에서는 명단이 있어야 한다');
+  }
 });
 
 test('새 코드는 기존 데이터 저장소(CAMP_KV)에 쓰지 않는다', () => {

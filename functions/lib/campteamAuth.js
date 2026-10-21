@@ -13,8 +13,10 @@
 import { parseHubSessionToken, portalSession, normalizeEmail } from './hubAccounts.js';
 
 export const CAMP_ROLES = ['admin', 'finance', 'member'];
-// 활성 관리자가 한 명도 없을 때만 임시 관리자로 인정하는 계정 (관리자를 지정하면 더 이상 특별 취급하지 않는다)
-export const BOOTSTRAP_ADMIN_EMAILS = ['aidenpark@wolko.org'];
+// 코드에 고정된 캠프팀 관리자 2명. 설정 화면에서 빼거나 역할을 바꿀 수 없다. 기존 포털 계정/관리자 목록과는 무관하고 캠프팀 안에서만 적용된다.
+// 그 밖의 관리자·재정 담당·팀원은 모두 설정 화면(팀 명단)에서 추가한다.
+export const FIXED_ADMIN_EMAILS = ['aidenpark@wolko.org', 'hkim3@wol.org'];
+export const isFixedAdmin = (email) => FIXED_ADMIN_EMAILS.includes(String(email || '').trim().toLowerCase());
 
 export function permsFor(campRole) {
   const r = campRole;
@@ -55,12 +57,11 @@ export async function campSession(request, env) {
   const hub = await hubSession(request, env);
   if (!hub) return null;
   const email = normalizeEmail(hub.email);
-  const row = await env.DB.prepare('SELECT role FROM camp_members WHERE email = ?1 AND active = 1').bind(email).first();
-  let campRole = row ? row.role : null;
-  // 처음 설정할 때만: 활성 관리자가 한 명도 없으면 지정된 임시 관리자 계정이 관리자 역할을 한다
-  if (!campRole && BOOTSTRAP_ADMIN_EMAILS.includes(email)) {
-    const anyAdmin = await env.DB.prepare("SELECT 1 AS x FROM camp_members WHERE role = 'admin' AND active = 1 LIMIT 1").first();
-    if (!anyAdmin) campRole = 'admin';
+  let campRole = null;
+  if (isFixedAdmin(email)) campRole = 'admin';
+  else {
+    const row = await env.DB.prepare('SELECT role FROM camp_members WHERE email = ?1 AND active = 1').bind(email).first();
+    campRole = row ? row.role : null;
   }
   return { email, hubRole: hub.role, campRole, perms: permsFor(campRole) };
 }

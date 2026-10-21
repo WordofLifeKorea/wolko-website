@@ -1,18 +1,18 @@
 (function () {
   CT.addDict({
     ko: { setTitle: '설정 · 팀 명단', setSub: '캠프팀 역할을 정해요. 명단에 없는 포털 사용자는 조회만 할 수 있어요.', colEmail: '이메일', colName: '이름', colRole: '역할', addMember: '팀원 추가 · 역할 변경', fEmail: '포털 이메일 (wolko.org / wol.org)', fName: '이름', fRole: '역할', remove: '명단에서 빼기', rolesTitle: '역할별 권한',
-      permAdmin: '관리자 (한 명): 모든 자료 조회·작성·수정, 금액 조회·작성, 팀 명단 관리', permFinance: '재정 담당: 일반 자료는 조회만, 금액 조회·작성·수정', permMember: '캠프팀 팀원: 일반 자료 조회·작성·수정, 금액 조회·작성·수정', permViewer: '그 외 포털 사용자: 일반 자료 조회만, 금액은 볼 수 없음', done: '저장했어요', you: '(나)',
+      permAdmin: '관리자: 모든 자료 조회·작성·수정, 금액 조회·작성, 팀 명단 관리', permFinance: '재정 담당: 일반 자료는 조회만, 금액 조회·작성·수정', permMember: '캠프팀 팀원: 일반 자료 조회·작성·수정, 금액 조회·작성·수정', permViewer: '그 외 포털 사용자: 일반 자료 조회만, 금액은 볼 수 없음', done: '저장했어요', you: '(나)', fixedAdmin: '고정 관리자',
       shTitle: 'Google Sheets 연동 (미리보기)', shHelp: '포털의 업무를 기존 시트(Tasks 탭)에 반영할 때 "어느 칸에 무엇을 쓰게 되는지"만 보여줘요. 이 버튼은 시트에 아무것도 쓰지 않아요. 실제 쓰기는 서버 설정이 켜져 있고 관리자가 따로 확인할 때만 가능해요.', shPreview: '미리보기', shNotConnected: '시트가 아직 연결되지 않았어요. 연결 전이라 "전부 새로 쓰게 될 것"으로 계산한 모의 계획이에요.', shConnected: '시트에 연결되어 있어요.', shWriteOff: '쓰기: 꺼짐 (미리보기만 가능)', shWriteOn: '쓰기: 켜짐', shNew: '새 줄', shChange: '바뀌는 칸', shAdopt: '기존 줄에 ID 연결', shRetire: '삭제 표시(Not Applicable)로 바뀜', shSame: '변경 없음', shLegacy: '손대지 않는 기존 줄' },
     en: { setTitle: 'Settings · Team Roster', setSub: 'Set camp team roles. Portal users not on the list can only view.', colEmail: 'Email', colName: 'Name', colRole: 'Role', addMember: 'Add member · change role', fEmail: 'Portal email (wolko.org / wol.org)', fName: 'Name', fRole: 'Role', remove: 'Remove', rolesTitle: 'Role permissions',
-      permAdmin: 'Admin (one person): view/write/edit all materials, view/write amounts, manage roster', permFinance: 'Finance: view-only for general materials, view/write/edit amounts', permMember: 'Camp team: view/write/edit general materials and amounts', permViewer: 'Other portal users: view general materials only, no amounts', done: 'Saved', you: '(you)',
+      permAdmin: 'Admin: view/write/edit all materials, view/write amounts, manage roster', permFinance: 'Finance: view-only for general materials, view/write/edit amounts', permMember: 'Camp team: view/write/edit general materials and amounts', permViewer: 'Other portal users: view general materials only, no amounts', done: 'Saved', you: '(you)', fixedAdmin: 'Fixed admin',
       shTitle: 'Google Sheets sync (preview)', shHelp: 'Shows which cells would be written when portal tasks are mirrored to the existing sheet (Tasks tab). This button writes nothing. Actual writing needs the server setting turned on and a separate admin confirmation.', shPreview: 'Preview', shNotConnected: 'The sheet is not connected yet. This is a mock plan that assumes everything would be newly written.', shConnected: 'Connected to the sheet.', shWriteOff: 'Writing: off (preview only)', shWriteOn: 'Writing: on', shNew: 'New rows', shChange: 'Cells to change', shAdopt: 'Existing rows to link by ID', shRetire: 'Marked Not Applicable (deleted in portal)', shSame: 'Unchanged', shLegacy: 'Existing rows left untouched' }
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc, data = null;
 
   function render() {
-    $('rows').innerHTML = data.members.filter(function (m) { return m.active; }).map(function (m) {
+    $('rows').innerHTML = data.members.map(function (m) {
       return '<tr><td>' + esc(m.email) + (m.email === data.me ? ' ' + esc(CT.t('you')) : '') + (m.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</td><td>' + esc(m.name) + '</td><td><span class="chip">' + esc(CT.roleLabel(m.role)) + '</span></td>' +
-        '<td style="text-align:right"><button class="btn sm" data-edit="' + esc(m.email) + '">' + esc(CT.t('edit')) + '</button> ' + (m.role === 'admin' ? '' : '<button class="btn sm danger" data-rm="' + esc(m.email) + '">' + esc(CT.t('remove')) + '</button>') + '</td></tr>';
+        '<td style="text-align:right">' + (m.fixed ? '<span class="chip gray">' + esc(CT.t('fixedAdmin')) + '</span>' : '<button class="btn sm" data-edit="' + esc(m.email) + '">' + esc(CT.t('edit')) + '</button> <button class="btn sm danger" data-rm="' + esc(m.email) + '">' + esc(CT.t('remove')) + '</button>') + '</td></tr>';
     }).join('');
     $('roleSel').innerHTML = data.roles.map(function (r) { return '<option value="' + r + '">' + esc(CT.roleLabel(r)) + '</option>'; }).join('');
   }

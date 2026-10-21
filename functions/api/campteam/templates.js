@@ -7,7 +7,7 @@ export async function onRequestGet({ env, request }) {
   const s = await campSession(request, env);
   if (!s) return needLogin();
   const templates = (await env.DB.prepare('SELECT id, nameKo, nameEn, typeId, description, isTest FROM checklist_templates WHERE deletedAt IS NULL ORDER BY nameKo').all()).results;
-  const items = (await env.DB.prepare('SELECT id, templateId, title, offsetDays, ownerSuggestion, priority, notes, sortOrder FROM checklist_items WHERE deletedAt IS NULL ORDER BY sortOrder, createdAt').all()).results;
+  const items = (await env.DB.prepare('SELECT id, templateId, title, offsetDays, ownerSuggestion, priority, notes, sortOrder, section, provisional FROM checklist_items WHERE deletedAt IS NULL ORDER BY sortOrder, createdAt').all()).results;
   return json({ templates: templates.map(t => ({ ...t, items: items.filter(i => i.templateId === t.id) })), perms: s.perms });
 }
 
@@ -36,8 +36,8 @@ export async function onRequestPost({ env, request }) {
     const offset = intOrNull(b.offsetDays); if (Number.isNaN(offset)) return badRequest('기준일(며칠 전/후)은 정수로 입력해주세요.');
     const priority = TASK_PRIORITIES.includes(b.priority) ? b.priority : 'Medium';
     const order = ((await env.DB.prepare('SELECT MAX(sortOrder) AS n FROM checklist_items WHERE templateId = ?1').bind(tpl.id).first()).n || 0) + 1;
-    await env.DB.prepare('INSERT INTO checklist_items (id,templateId,title,offsetDays,ownerSuggestion,priority,notes,sortOrder,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?9,?10)')
-      .bind(id, tpl.id, title, offset, text(b.ownerSuggestion, 60), priority, text(b.notes, 300), order, now, s.email).run();
+    await env.DB.prepare('INSERT INTO checklist_items (id,templateId,title,offsetDays,ownerSuggestion,priority,notes,sortOrder,section,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?11,?9,?9,?10)')
+      .bind(id, tpl.id, title, offset, text(b.ownerSuggestion, 100), priority, text(b.notes, 300), order, now, s.email, text(b.section, 80)).run();
     await audit(env, s.email, 'create', 'checklist_item', id, title);
     return json({ id }, 201);
   }
@@ -68,8 +68,8 @@ export async function onRequestPatch({ env, request }) {
     const title = 'title' in b ? text(b.title, 200) : row.title; if (!title) return badRequest('항목 이름을 입력해주세요.');
     const offset = 'offsetDays' in b ? intOrNull(b.offsetDays) : row.offsetDays; if (Number.isNaN(offset)) return badRequest('기준일(며칠 전/후)은 정수로 입력해주세요.');
     const priority = 'priority' in b ? (TASK_PRIORITIES.includes(b.priority) ? b.priority : row.priority) : row.priority;
-    await env.DB.prepare('UPDATE checklist_items SET title=?2,offsetDays=?3,ownerSuggestion=?4,priority=?5,notes=?6,updatedAt=?7 WHERE id=?1')
-      .bind(id, title, offset, 'ownerSuggestion' in b ? text(b.ownerSuggestion, 60) : row.ownerSuggestion, priority, 'notes' in b ? text(b.notes, 300) : row.notes, now).run();
+    await env.DB.prepare('UPDATE checklist_items SET title=?2,offsetDays=?3,ownerSuggestion=?4,priority=?5,notes=?6,section=?8,provisional=?9,updatedAt=?7 WHERE id=?1')
+      .bind(id, title, offset, 'ownerSuggestion' in b ? text(b.ownerSuggestion, 100) : row.ownerSuggestion, priority, 'notes' in b ? text(b.notes, 300) : row.notes, now, 'section' in b ? text(b.section, 80) : row.section, 'offsetDays' in b ? 0 : row.provisional).run();
     await audit(env, s.email, 'update', 'checklist_item', id, title);
     return json({ ok: true });
   }

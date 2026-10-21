@@ -7,7 +7,7 @@
       owner: '담당', noOwner: '담당자 미정', noDue: '기한 미정', due: '기한', overdue: '마감 지남', suggested: '제안', confirm: '확정', noTasks: '조건에 맞는 업무가 없어요.', edit: '수정', del: '삭제', save: '저장', cancel: '취소',
       fTitle: '업무 이름', fOwner: '담당자 (비워 둘 수 있어요)', fDue: '기한 (비워 둘 수 있어요)', fStatus: '상태', fPriority: '우선순위', fCamp: '관련 캠프', fNotes: '메모', fDate: '날짜', fEnd: '종료일 (선택)', fStart: '시작 시간', fEndT: '종료 시간', fKind: '종류', fLoc: '장소', kTeam: '팀 일정', kCamp: '캠프 일정', kOut: '부재', evTitle: '일정', taskTitle: '업무', newTask: '업무 추가', editTask: '업무 수정', newEvent: '일정 추가', editEvent: '일정 수정',
       lgEvent: '팀 일정', lgCamp: '캠프 기간', lgTask: '업무 마감', lgLate: '마감 지남', lgMeet: '회의', noItems: '이 달에는 표시할 항목이 없어요.',
-      addTpl: '+ 템플릿', tplItems: '항목', tplOffset: '기준일', tplOffsetHelp: '캠프 시작일 기준 (예: -30 = 30일 전)', tplOwner: '제안 담당자', tplNone: '(없음 · 마감일 없이 만듦)', addItem: '+ 항목', applyTo: '캠프에 적용', tplName: '템플릿 이름', tplNameEn: '이름 (English)', tplDesc: '설명', itemTitle: '항목 이름', itemOffset: '기준일 (캠프 시작일 기준 며칠 전/후, 비워도 돼요)', itemOwner: '제안 담당자', chooseCamp: '적용할 캠프', preview: '미리보기', applyNow: '이대로 적용', willCreate: '만들어질 업무', skipExists: '이미 있어서 건너뜀', campNoDate: '이 캠프에는 시작일이 없어서 마감일 없이 만들어져요.', confirmOwner: '제안 담당자를 확정', done: '적용했어요',
+      addTpl: '+ 템플릿', impTplBtn: '체크리스트 붙여넣어 가져오기', impTplTitle: '체크리스트 가져오기', impTplHelp: 'Word나 엑셀의 체크리스트 표를 그대로 복사해서 붙여넣으세요. 구역(1. 기획…)과 우선순위(1 필수·2 중요·3 일반), 담당자가 자동으로 정리돼요. 담당자는 "제안"으로만 들어가고, 기한은 비워 둡니다.', suggestOff: '구역 이름으로 마감 기준일을 임시로 정하기 (나중에 직접 고칠 수 있어요)', provisional: '임시', itemSection: '구역', previewBtn: '미리보기', impTplDone: '템플릿을 만들었어요', sections: '구역', withOwner: '담당 제안 있음', withOffset: '임시 기준일 있음', tplItems: '항목', tplOffset: '기준일', tplOffsetHelp: '캠프 시작일 기준 (예: -30 = 30일 전)', tplOwner: '제안 담당자', tplNone: '(없음 · 마감일 없이 만듦)', addItem: '+ 항목', applyTo: '캠프에 적용', tplName: '템플릿 이름', tplNameEn: '이름 (English)', tplDesc: '설명', itemTitle: '항목 이름', itemOffset: '기준일 (캠프 시작일 기준 며칠 전/후, 비워도 돼요)', itemOwner: '제안 담당자', chooseCamp: '적용할 캠프', preview: '미리보기', applyNow: '이대로 적용', willCreate: '만들어질 업무', skipExists: '이미 있어서 건너뜀', campNoDate: '이 캠프에는 시작일이 없어서 마감일 없이 만들어져요.', confirmOwner: '제안 담당자를 확정', done: '적용했어요',
       impTitle: '기존 Google 시트의 업무를 한 번 가져오기', impHelp: '시트에서 업무 칸 전체(맨 윗줄 머리글 포함)를 복사해서 아래에 붙여넣으세요. (파일 → 다운로드 → .csv 내용도 가능해요) 담당자·기한은 시트에 적힌 그대로만 가져오고, 같은 캠프에 같은 이름의 업무가 이미 있으면 건너뛰어요. Google에는 접속하지 않아요.', impPreview: '미리보기', impRun: '이대로 가져오기', impSummary: '개', impCreate: '새로 만듦', impSkip: '건너뜀(이미 있음)', impUnmatched: '캠프를 연결하지 못한 이름', impWarn: '확인', impDone: '가져왔어요', delConfirm: '삭제할까요? (삭제 표시만 되며 복구할 수 있어요)' },
     en: { tasksTitle: 'Schedule · Tasks', tasksSub: 'See and manage camp schedules and preparation tasks in one place', addTask: '+ Task', addEvent: '+ Event', viewOnly: 'View-only account. Camp team members can edit.', searchPh: 'Search task, owner, notes',
       tabList: 'Task list', tabCal: 'Calendar', tabTpl: 'Checklist templates', tabImp: 'Import from sheet', today: 'Today', viewGrid: 'Calendar', viewAgenda: 'List',
@@ -16,7 +16,7 @@
       owner: 'Owner', noOwner: 'No owner', noDue: 'No due date', due: 'Due', overdue: 'Overdue', suggested: 'Suggested', confirm: 'Confirm', noTasks: 'No tasks match.', edit: 'Edit', del: 'Delete', save: 'Save', cancel: 'Cancel',
       fTitle: 'Task name', fOwner: 'Owner (can be left blank)', fDue: 'Due date (can be left blank)', fStatus: 'Status', fPriority: 'Priority', fCamp: 'Camp', fNotes: 'Notes', fDate: 'Date', fEnd: 'End date (optional)', fStart: 'Start time', fEndT: 'End time', fKind: 'Type', fLoc: 'Location', kTeam: 'Team event', kCamp: 'Camp event', kOut: 'Out of office', evTitle: 'Event', taskTitle: 'Task', newTask: 'Add task', editTask: 'Edit task', newEvent: 'Add event', editEvent: 'Edit event',
       lgEvent: 'Team event', lgCamp: 'Camp dates', lgTask: 'Task due', lgLate: 'Overdue', lgMeet: 'Meeting', noItems: 'Nothing to show this month.',
-      addTpl: '+ Template', tplItems: 'Items', tplOffset: 'Offset', tplOffsetHelp: 'Relative to camp start (e.g. -30 = 30 days before)', tplOwner: 'Suggested owner', tplNone: '(none · created without due date)', addItem: '+ Item', applyTo: 'Apply to camp', tplName: 'Template name', tplNameEn: 'Name (English)', tplDesc: 'Description', itemTitle: 'Item name', itemOffset: 'Offset (days before/after camp start, optional)', itemOwner: 'Suggested owner', chooseCamp: 'Camp to apply to', preview: 'Preview', applyNow: 'Apply as shown', willCreate: 'Tasks to be created', skipExists: 'Already exists — skipped', campNoDate: 'This camp has no start date, so tasks are created without due dates.', confirmOwner: 'Confirm suggested owner', done: 'Applied',
+      addTpl: '+ Template', impTplBtn: 'Import checklist by pasting', impTplTitle: 'Import checklist', impTplHelp: 'Copy the checklist table from Word or Excel and paste it here. Sections, priorities (1 Required · 2 Important · 3 General) and owners are organized automatically. Owners are only suggestions and due dates stay empty.', suggestOff: 'Set provisional due offsets from section names (you can edit them later)', provisional: 'provisional', itemSection: 'Section', previewBtn: 'Preview', impTplDone: 'Template created', sections: 'Sections', withOwner: 'With owner suggestion', withOffset: 'With provisional offset', tplItems: 'Items', tplOffset: 'Offset', tplOffsetHelp: 'Relative to camp start (e.g. -30 = 30 days before)', tplOwner: 'Suggested owner', tplNone: '(none · created without due date)', addItem: '+ Item', applyTo: 'Apply to camp', tplName: 'Template name', tplNameEn: 'Name (English)', tplDesc: 'Description', itemTitle: 'Item name', itemOffset: 'Offset (days before/after camp start, optional)', itemOwner: 'Suggested owner', chooseCamp: 'Camp to apply to', preview: 'Preview', applyNow: 'Apply as shown', willCreate: 'Tasks to be created', skipExists: 'Already exists — skipped', campNoDate: 'This camp has no start date, so tasks are created without due dates.', confirmOwner: 'Confirm suggested owner', done: 'Applied',
       impTitle: 'One-time import of tasks from the existing Google Sheet', impHelp: 'In the sheet, select all task cells (including the header row), copy, and paste below. (Content of a downloaded .csv also works.) Owners and due dates are imported exactly as written; tasks that already exist in the same camp are skipped. Nothing connects to Google.', impPreview: 'Preview', impRun: 'Import as shown', impSummary: ' rows', impCreate: 'to create', impSkip: 'skipped (already exist)', impUnmatched: 'Camps that could not be matched', impWarn: 'Check', impDone: 'Imported', delConfirm: 'Delete this? (It is only marked deleted and can be restored.)' }
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
@@ -61,7 +61,7 @@
   }
   function renderTasks() {
     var c = S.tasks.counts, today = S.tasks.today;
-    $('addTask').hidden = $('addEvent').hidden = !canWrite(); $('viewOnly').hidden = canWrite(); $('impTab').hidden = !canWrite(); $('addTpl').hidden = !canWrite();
+    $('addTask').hidden = $('addEvent').hidden = !canWrite(); $('viewOnly').hidden = canWrite(); $('impTab').hidden = !canWrite(); $('addTpl').hidden = !canWrite(); $('impTpl').hidden = !canWrite();
     $('pills').innerHTML = [['open', 'pOpen', c.open, ''], ['overdue', 'pOverdue', c.overdue, 'red'], ['noowner', 'pNoOwner', c.noOwner, 'red'], ['nodue', 'pNoDue', c.noDue, ''], ['', 'pAll', '', '']].map(function (p) {
       return '<button class="pill ' + p[3] + (S.flag === p[0] ? ' on' : '') + '" data-flag="' + p[0] + '">' + esc(CT.t(p[1])) + (p[2] !== '' ? '<b>' + p[2] + '</b>' : '') + '</button>'; }).join('');
     $('tlist').innerHTML = S.tasks.items.length ? S.tasks.items.map(function (t) {
@@ -142,13 +142,34 @@
   async function loadTpl() { S.tpls = (await CT.api('/api/campteam/templates')).templates; renderTpl(); }
   function renderTpl() {
     $('tplList').innerHTML = S.tpls.length ? S.tpls.map(function (t) {
-      return '<section class="card tpl"><div class="type-head"><div><h2 style="margin:0">' + esc(CT.pick(t, 'name')) + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</h2><div class="meta">' + esc(t.description || '') + '</div></div>' +
+      var last = null;
+      var rows = t.items.map(function (i) {
+        var head = (i.section && i.section !== last) ? '<tr><td colspan="5" style="background:#f4f6f8;font-weight:700">' + esc(i.section) + '</td></tr>' : ''; if (i.section) last = i.section;
+        return head + '<tr><td>' + esc(i.title) + '</td><td>' + (i.offsetDays == null ? '<span class="meta">' + esc(CT.t('tplNone')) + '</span>' : (i.offsetDays > 0 ? '+' : '') + i.offsetDays + 'd' + (i.provisional ? ' <span class="chip warn">' + esc(CT.t('provisional')) + '</span>' : '')) + '</td><td>' + esc(i.ownerSuggestion || '—') + '</td><td><span class="tag p-' + i.priority + '">' + esc(priLabel(i.priority)) + '</span></td><td style="text-align:right;white-space:nowrap">' +
+          (canWrite() ? '<button class="btn sm" data-iedit="' + esc(i.id) + '" data-tpl="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button> <button class="btn sm danger" data-idel="' + esc(i.id) + '">' + esc(CT.t('del')) + '</button>' : '') + '</td></tr>'; }).join('');
+      return '<section class="card tpl"><div class="type-head"><div><h2 style="margin:0">' + esc(CT.pick(t, 'name')) + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</h2><div class="meta">' + esc(t.description || '') + ' · ' + t.items.length + '</div></div>' +
         '<div class="actions">' + (canWrite() ? '<button class="btn sm pri" data-apply="' + esc(t.id) + '">' + esc(CT.t('applyTo')) + '</button><button class="btn sm" data-tedit="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-tdel="' + esc(t.id) + '">' + esc(CT.t('del')) + '</button>' : '') + '</div></div>' +
-        '<table class="vtable"><thead><tr><th>' + esc(CT.t('tplItems')) + '</th><th>' + esc(CT.t('tplOffset')) + '</th><th>' + esc(CT.t('tplOwner')) + '</th><th>' + esc(CT.t('fPriority')) + '</th><th></th></tr></thead><tbody>' +
-        t.items.map(function (i) { return '<tr><td>' + esc(i.title) + '</td><td>' + (i.offsetDays == null ? '<span class="meta">' + esc(CT.t('tplNone')) + '</span>' : (i.offsetDays > 0 ? '+' : '') + i.offsetDays + 'd') + '</td><td>' + esc(i.ownerSuggestion || '—') + '</td><td><span class="tag p-' + i.priority + '">' + esc(priLabel(i.priority)) + '</span></td><td style="text-align:right;white-space:nowrap">' +
-          (canWrite() ? '<button class="btn sm" data-iedit="' + esc(i.id) + '" data-tpl="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button> <button class="btn sm danger" data-idel="' + esc(i.id) + '">' + esc(CT.t('del')) + '</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table>' +
+        '<table class="vtable"><thead><tr><th>' + esc(CT.t('tplItems')) + '</th><th>' + esc(CT.t('tplOffset')) + '</th><th>' + esc(CT.t('tplOwner')) + '</th><th>' + esc(CT.t('fPriority')) + '</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>' +
         (canWrite() ? '<div style="margin-top:8px"><button class="btn sm" data-iadd="' + esc(t.id) + '">' + esc(CT.t('addItem')) + '</button></div>' : '') + '</section>';
     }).join('') : '<div class="empty">' + esc(CT.t('noTasks')) + '</div>';
+  }
+  function tplImportForm() {
+    var h = '<div class="hintbox">' + esc(CT.t('impTplHelp')) + '</div><label>' + esc(CT.t('tplName')) + '<input name="nameKo" required maxlength="80"></label>' +
+      '<label>' + esc(CT.t('fCamp')) + ' (' + esc(CT.t('fKind')) + ')<select name="typeId"><option value="">—</option>' + S.types.map(function (t) { return '<option value="' + esc(t.id) + '">' + esc(CT.pick(t, 'name')) + '</option>'; }).join('') + '</select></label>' +
+      '<textarea class="big" name="text" required placeholder="OK\tTask\tOwner\tDue Date\tPriority"></textarea>' +
+      '<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="suggestOffsets" value="1" style="width:auto;height:auto"> ' + esc(CT.t('suggestOff')) + '</label><div id="tplPv"></div>';
+    var extra = '<button type="button" class="btn" id="tplPvBtn">' + esc(CT.t('previewBtn')) + '</button>';
+    ask(CT.t('impTplTitle'), h, async function (fd) {
+      var r = await CT.api('/api/campteam/import-template', { method: 'POST', body: { text: fd.text, nameKo: fd.nameKo, typeId: fd.typeId || null, suggestOffsets: !!fd.suggestOffsets } });
+      alert(CT.t('impTplDone') + ': ' + r.summary.itemCount); await loadTpl();
+    }, { extra: extra });
+    $('tplPvBtn').onclick = async function () {
+      var f = $('dlgForm'); $('dlgErr').hidden = true;
+      try {
+        var r = await CT.api('/api/campteam/import-template', { method: 'POST', body: { text: f.text.value, preview: true, suggestOffsets: f.suggestOffsets.checked } }), s = r.summary;
+        $('tplPv').innerHTML = '<div class="hintbox"><b>' + s.itemCount + '</b> · ' + esc(CT.t('withOwner')) + ' ' + s.withOwner + ' · ' + esc(CT.t('withOffset')) + ' ' + s.withOffset + '<br>' + s.sections.map(function (x) { return esc(x.name) + ' (' + x.count + ')'; }).join('<br>') + '</div>';
+      } catch (e) { $('dlgErr').textContent = e.message; $('dlgErr').hidden = false; }
+    };
   }
   function tplForm(t) {
     ask(CT.t('addTpl'), '<label>' + esc(CT.t('tplName')) + '<input name="nameKo" required maxlength="80" value="' + esc(t ? t.nameKo : '') + '"></label><label>' + esc(CT.t('tplNameEn')) + '<input name="nameEn" maxlength="80" value="' + esc(t ? t.nameEn : '') + '"></label><label>' + esc(CT.t('tplDesc')) + '<input name="description" maxlength="300" value="' + esc(t ? t.description : '') + '"></label>',
@@ -209,7 +230,7 @@
     ['tcamp', 'tstatus', 'tpri', 'towner', 'tsort'].forEach(function (id) { $(id).onchange = loadTasks; });
     $('tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); };
     $('pills').onclick = function (e) { var b = e.target.closest('[data-flag]'); if (b) { S.flag = b.dataset.flag; loadTasks(); } };
-    $('addTask').onclick = function () { taskForm(); }; $('addEvent').onclick = function () { eventForm(); }; $('addTpl').onclick = function () { tplForm(); };
+    $('addTask').onclick = function () { taskForm(); }; $('addEvent').onclick = function () { eventForm(); }; $('addTpl').onclick = function () { tplForm(); }; $('impTpl').onclick = tplImportForm;
     $('tlist').addEventListener('click', async function (e) {
       var b = e.target.closest('button'); if (!b) return; var id = b.dataset.edit || b.dataset.del || b.dataset.confirm, t = S.tasks.items.filter(function (x) { return x.id === id; })[0];
       try {

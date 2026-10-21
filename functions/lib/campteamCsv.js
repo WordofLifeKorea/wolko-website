@@ -21,12 +21,23 @@ export function parseCsv(input) {
 }
 
 const norm = v => String(v ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+const singular = v => norm(v).replace(/s$/, ''); // Partner Camps = Partner Camp
+
+/** 시트의 담당자 칸 해석: "TBD", "TBD – Program Team" 은 담당자 미정(팀 이름은 제안으로만), 그 밖에는 적힌 그대로 */
+export function parseOwner(raw) {
+  const t = String(raw ?? '').trim();
+  const m = /^tbd\b[\s\-–—:]*(.*)$/i.exec(t);
+  if (m) return { ownerName: '', ownerSuggestion: m[1].trim().slice(0, 60) };
+  return { ownerName: t.slice(0, 60), ownerSuggestion: '' };
+}
 const byLower = (list) => new Map(list.map(v => [norm(v), v]));
 const STATUS_MAP = byLower(TASK_STATUSES), PRIORITY_MAP = byLower(TASK_PRIORITIES);
 
 export function parseLooseDate(v) {
   const t = String(v ?? '').trim(); if (!t) return { date: null };
   let m;
+  // 엑셀이 날짜를 숫자(1900년 기준 일수)로 저장한 경우 예: 46356 → 2026-11-30
+  if (/^\d{5}(\.0+)?$/.test(t)) { const n = Math.floor(Number(t)); if (n >= 30000 && n <= 80000) return { date: new Date(Date.UTC(1899, 11, 30) + n * 86400000).toISOString().slice(0, 10) }; }
   if ((m = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/.exec(t))) return fix(m[1], m[2], m[3], t);
   if ((m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(t))) return fix(m[3], m[1], m[2], t); // M/D/YYYY (미국식)
   return { date: null, warn: `날짜를 읽지 못했어요: ${t}` };
@@ -39,9 +50,10 @@ function fix(y, mo, d, raw) {
 /** 캠프 이름 글자를 기존 캠프와 맞춰 본다. 확실할 때만 연결하고, 애매하면 연결하지 않고 알려준다. */
 export function matchCamp(text, camps, types) {
   const t = norm(text); if (!t) return { campId: null };
-  const exact = camps.filter(c => norm(c.nameKo) === t || norm(c.nameEn) === t);
+  const st = singular(text);
+  const exact = camps.filter(c => singular(c.nameKo) === st || singular(c.nameEn) === st);
   if (exact.length === 1) return { campId: exact[0].id };
-  const type = types.filter(x => norm(x.nameKo) === t || norm(x.nameEn) === t);
+  const type = types.filter(x => singular(x.nameKo) === st || singular(x.nameEn) === st);
   if (type.length === 1) {
     const inType = camps.filter(c => c.typeId === type[0].id);
     const live = inType.filter(c => c.status === 'planning' || c.status === 'active');
@@ -68,7 +80,8 @@ export function planCsvImport(csv, { camps, types, existing }) {
     const d = parseLooseDate(g('due')); if (d.warn) warn.push(d.warn);
     const campText = g('camp'), m = matchCamp(campText, camps, types); if (m.unmatched) unmatched.add(m.unmatched);
     const key = `${m.campId || ''}|${norm(title)}`, skip = seen.has(key); seen.add(key);
-    rows.push({ title: title.slice(0, 200), ownerName: g('owner').slice(0, 60), dueDate: d.date, status, priority, notes: g('notes').slice(0, 1000), campText, campId: m.campId,
+    const own = parseOwner(g('owner'));
+    rows.push({ title: title.slice(0, 200), ownerName: own.ownerName, ownerSuggestion: own.ownerSuggestion, dueDate: d.date, status, priority, notes: g('notes').slice(0, 1000), campText, campId: m.campId,
       sourceKey: `csv:${norm(title)}|${norm(campText)}`, warn, skip });
     if (rows.length > 500) return { error: '한 번에 500개까지만 가져올 수 있어요.' };
   }

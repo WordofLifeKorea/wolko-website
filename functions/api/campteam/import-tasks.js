@@ -22,8 +22,8 @@ export async function onRequestPost({ env, request }) {
   if (b.preview) return json({ preview: true, summary, rows: plan.rows });
   const now = nowIso();
   for (const r of plan.rows.filter(x => !x.skip)) {
-    await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,dueDate,status,priority,notes,sourceKey,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10,?11)`)
-      .bind(uuid(), r.campId, r.title, r.ownerName, r.dueDate, r.status, r.priority, r.notes, r.sourceKey, now, s.email).run();
+    await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerSuggestion,dueDate,status,priority,notes,sourceKey,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?12,?5,?6,?7,?8,?9,?10,?10,?11)`)
+      .bind(uuid(), r.campId, r.title, r.ownerName, r.dueDate, r.status, r.priority, r.notes, r.sourceKey, now, s.email, r.ownerSuggestion || '').run();
   }
   await audit(env, s.email, 'import_csv', 'task', 'bulk', `+${summary.toCreate} skip ${summary.skipped}`);
   return json({ created: summary.toCreate, skipped: summary.skipped, summary }, 201);
