@@ -154,3 +154,10 @@ INSERT INTO notices (id,message,messageEn,active,sortOrder,createdAt,updatedAt,c
  ('n2','회의가 끝나면 포털에 회의록을 올려 주세요. (가상)','Please upload meeting notes to the portal after each meeting. (sample)',1,2,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
  ('n3','(숨김 처리된 공지 예시)','(hidden notice example)',0,3,'2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);
 UPDATE camps SET theme='2027 Sample Theme / Sample verse 1:1', capacity=40, registrationCampId='sample-winter' WHERE id='camp-w27';
+
+-- 8단계 더미: 용어집 (가상 예시)
+INSERT INTO glossary (id,termKo,termEn,keep,notes,createdAt,updatedAt,createdBy,isTest) VALUES
+ ('g1','Camp Crew','Camp Crew',1,'고등학생 섬김·제자훈련 프로그램 이름 — 번역하지 않음','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('g2','Unity Camp','Unity Camp',1,'캠프 이름','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('g3','Cause Circle','Cause Circle',1,'후속 양육 모임 이름','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
+ ('g4','캠프 크루 리더','Camp Crew Leader',0,'직책 번역 고정','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);
