@@ -53,7 +53,7 @@
     }).join('') : empty();
 
     $('meetings').innerHTML = d.meetings.length ? d.meetings.map(function (m) {
-      return '<div class="row"><div>' + esc(m.title) + testChip(m) + '<small>' + esc(m.meetDate) + (m.meetTime ? ' ' + esc(m.meetTime) : '') + (m.purpose ? ' · ' + esc(m.purpose) : '') + '</small></div></div>';
+      return '<div class="row"><div><a href="/campteam/meetings/?open=' + esc(m.id) + '">' + esc(m.title) + '</a>' + testChip(m) + '<small>' + esc(m.meetDate) + (m.meetTime ? ' ' + esc(m.meetTime) : '') + (m.purpose ? ' · ' + esc(m.purpose) : '') + '</small></div></div>';
     }).join('') : empty();
 
     $('files').innerHTML = d.files.length ? d.files.map(function (f) {

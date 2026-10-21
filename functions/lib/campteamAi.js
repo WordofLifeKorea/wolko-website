@@ -43,8 +43,8 @@ export function normalizeDraft(raw) {
 }
 
 /** Anthropic Messages API 를 스트리밍으로 호출해 글자를 모은다. onChunk(총글자수) 로 진행 상황을 알린다. */
-export async function callClaude({ apiKey, model, system, user, onChunk, fetchImpl = fetch, maxTokens = 8000 }) {
-  const res = await fetchImpl('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+export async function callClaude({ apiKey, model, system, user, onChunk, fetchImpl = fetch, maxTokens = 8000, url = 'https://api.anthropic.com/v1/messages' }) {
+  const res = await fetchImpl(url, { method: 'POST', headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({ model, max_tokens: maxTokens, stream: true, system, messages: [{ role: 'user', content: user }] }) });
   if (!res.ok) { let m = ''; try { m = (await res.json())?.error?.message || ''; } catch { /* 본문 없음 */ } const e = new Error(m || `AI service error (${res.status})`); e.status = res.status; throw e; }
   const reader = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = '';

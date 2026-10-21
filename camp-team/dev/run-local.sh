@@ -14,4 +14,4 @@ if [ ! -d "$STATE" ]; then
   npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/db/seed-dummy.sql
 fi
 exec npx wrangler@4 pages dev dist --d1 DB=00000000-0000-0000-0000-000000000000 --r2 CAMPTEAM_FILES --persist-to $STATE --port 8788 --ip 0.0.0.0 \
-  --binding ADMIN_PASSWORD=local-dev-secret --binding CAMPTEAM_DEV_AUTH=1
+  --binding ADMIN_PASSWORD=local-dev-secret --binding CAMPTEAM_DEV_AUTH=1 ${=WRANGLER_EXTRA}

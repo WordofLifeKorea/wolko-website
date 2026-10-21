@@ -1,6 +1,6 @@
 ---
 // 캠프팀 포털 공통 틀 (사이드바 + 언어 전환 + 로그인 안내). 내용은 각 페이지가 채운다.
-export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'search' | 'budget' | 'tv' | 'settings'; }
+export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'search' | 'budget' | 'tv' | 'trash' | 'settings'; }
 const { title, active } = Astro.props;
 const nav = [
   { key: 'home', href: '/campteam/', t: 'navHome' },
@@ -38,6 +38,7 @@ const nav = [
         : <a href={n.href} class={active === n.key ? 'on' : ''}><i class="dot"></i><span data-t={n.t}></span></a>)}
       <h6 id="moneyHead" hidden data-t="navFinance"></h6>
       <a id="moneyNav" href="/campteam/budget/" class={active === 'budget' ? 'on' : ''} hidden><i class="dot"></i><span data-t="navBudget"></span></a>
+      <a id="trashNav" href="/campteam/trash/" class={active === 'trash' ? 'on' : ''} hidden><i class="dot"></i><span data-t="navTrash"></span></a>
       <h6 id="adminHead" hidden data-t="navAdmin"></h6>
       <a id="settingsNav" href="/campteam/settings/" class={active === 'settings' ? 'on' : ''} hidden><i class="dot"></i><span data-t="navSettings"></span></a>
     </nav>
@@ -54,6 +55,8 @@ const nav = [
     <h2 data-t="gateTitle"></h2>
     <p data-t="gateBody"></p>
     <a class="btn pri" href="/portal/" data-t="gateBtn"></a>
+    <div id="gbtn" hidden style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px"><p class="meta" data-t="gateGoogle" style="margin:0 0 8px"></p><div id="gbtnInner" style="display:flex;justify-content:center"></div></div>
+    <p class="meta" id="gnote" style="color:var(--accent);margin:10px 0 0"></p>
   </div>
 </div>
 <script is:inline src="/campteam/campteam.js?v=1"></script>
