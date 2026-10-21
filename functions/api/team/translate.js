@@ -148,7 +148,12 @@ export async function onRequestPost(context) {
     if (!res.ok) {
       const errText = await res.text();
       console.error('Anthropic error response:', res.status, JSON.stringify(Object.fromEntries(res.headers)), errText);
-      return Response.json({ error: `${res.status}: ${errText}` }, { status: 500, headers: CORS });
+      let detail = ''; try { detail = JSON.parse(errText)?.error?.message || ''; } catch {}
+      const hint = res.status === 401 || res.status === 403 ? '번역 서비스(ANTHROPIC_API_KEY)가 거절됐어요 — 키가 바뀌었거나 만료됐을 수 있어요'
+        : res.status === 429 ? '번역 서비스 사용 한도에 걸렸어요 — 잠시 뒤 다시 시도해 주세요'
+        : /credit|billing|balance/i.test(detail) ? '번역 서비스 크레딧이 부족해요'
+        : '번역 서비스 오류';
+      return Response.json({ error: `${hint} (${res.status})` }, { status: 502, headers: CORS });
     }
 
     const data = await res.json();

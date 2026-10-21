@@ -220,23 +220,31 @@ export async function onRequestPost(context) {
 
   try {
     const filePath = `src/content/team/${slug}.md`;
-    const ghFile = await ghGet(filePath, env);
-    const raw = decodeURIComponent(escape(atob(ghFile.content.replace(/\n/g, ''))));
-
-    const updated = updateFrontmatter(raw, safeFields);
-
-    await ghPut(
-      filePath,
-      updated,
-      ghFile.sha,
-      `content: update team profile (${slug})`,
-      env
-    );
+    // 다른 커밋과 겹쳐(409/422) 실패하면 최신 파일을 다시 받아 한 번 더 시도한다
+    for (let attempt = 0; ; attempt++) {
+      const ghFile = await ghGet(filePath, env);
+      const raw = decodeURIComponent(escape(atob(ghFile.content.replace(/\n/g, ''))));
+      const updated = updateFrontmatter(raw, safeFields);
+      try {
+        await ghPut(filePath, updated, ghFile.sha, `content: update team profile (${slug})`, env);
+        break;
+      } catch (e) {
+        if (attempt === 0 && /GitHub PUT failed: (409|422)/.test(e.message)) continue;
+        throw e;
+      }
+    }
 
     return Response.json({ ok: true, slug }, { headers: CORS });
   } catch (e) {
     console.error('team/update error:', e);
-    return Response.json({ error: e.message || '서버 오류가 발생했습니다.' }, { status: 500, headers: CORS });
+    const m = String(e.message || '');
+    const status = (m.match(/GitHub (?:GET|PUT) failed: (\d{3})/) || [])[1];
+    const error = status === '401' || status === '403' ? '저장소 연결(GITHUB_TOKEN)이 거절됐어요 — 토큰이 만료됐거나 권한이 없을 수 있어요 (' + status + ')'
+      : status === '404' ? '저장소에서 이 소개 파일을 찾지 못했어요 (404)'
+      : status === '409' || status === '422' ? '다른 저장과 겹쳤어요. 잠시 뒤 다시 저장해 주세요 (' + status + ')'
+      : status ? 'GitHub 저장 오류 (' + status + ')'
+      : m || '서버 오류가 발생했습니다.';
+    return Response.json({ error }, { status: 500, headers: CORS });
   }
 }
 
