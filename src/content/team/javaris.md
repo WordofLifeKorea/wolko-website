@@ -4,7 +4,7 @@ bio_en: "Javaris was saved in November 2017 during his senior year of high schoo
 gender: male
 name_ko: 자바리스
 name_en: Javaris Richardson
-title_ko: 국제 입학 코디네이터 · WOLBI 제주
+title_ko: 국제 입학 코디네이터 · 제주 월비
 title_en: International Admissions Coordinator · WOLBI Jeju
 role_badge: Staff
 campus: jeju

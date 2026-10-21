@@ -14,7 +14,7 @@ gender: male
 name_ko: 김환규 & 김씬띠아
 name_en: HwanKyu Kim & Cynthia Kim
 title_ko: 미디어 및 교육자료 개발 코디네이터
-title_en: Media & Resources Development Cordinator
+title_en: Media & Resources Development Coordinator
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary

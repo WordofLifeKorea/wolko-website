@@ -7,7 +7,7 @@ bio_en: |-
 gender: female
 name_ko: 웹스터 그레이스
 name_en: Grace Webster
-title_ko: 팟캐스트 미디어 사역 · WOLBI 제주
+title_ko: 팟캐스트 미디어 사역 · 제주 월비
 title_en: Podcast Media Ministry · WOLBI Jeju
 role_badge: Staff
 campus: jeju

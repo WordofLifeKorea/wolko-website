@@ -7,7 +7,7 @@ bio_en: |-
 gender: male
 name_ko: 제이콥 & 크리스탈 몰스
 name_en: Jacob & Crystal Morse
-title_ko: 월코 대표 · Field Director
+title_ko: 월코 대표 · 필드 디렉터
 title_en: WOLKO Director · Field Director
 role_badge: Field Director
 campus: pyeongtaek

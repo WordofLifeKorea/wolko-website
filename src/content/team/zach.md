@@ -9,7 +9,7 @@ bio_en: |-
 gender: male
 name_ko: 프래지어 잭
 name_en: Zach Frazier
-title_ko: Launch Internship · 제자훈련 & 영어 교육 사역
+title_ko: 런치 인턴십 · 제자훈련 & 영어 교육 사역
 title_en: Launch Internship · Discipleship & English Education
 role_badge: Intern
 campus: pyeongtaek

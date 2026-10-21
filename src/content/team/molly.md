@@ -9,7 +9,7 @@ bio_en: |-
 gender: female
 name_ko: 그램 몰리
 name_en: Molly Graham
-title_ko: Cross Cultural Internship · 지역 교회 & 청소년 캠프 사역
+title_ko: 타문화 인턴십 · 지역 교회 & 청소년 캠프 사역
 title_en: Cross Cultural Internship · Local Church & Youth Camp Ministry
 role_badge: Intern
 campus: pyeongtaek

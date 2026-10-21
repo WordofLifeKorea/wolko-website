@@ -12,7 +12,7 @@ gender: male
 name_ko: 민경찬 & 김유진
 name_en: Gyeongchan Min & Yujin Kim
 title_ko: 코어트레이닝 코디네이터
-title_en: Core Training Cordinator
+title_en: Core Training Coordinator
 role_badge: Missionaries
 campus: pyeongtaek
 category: missionary

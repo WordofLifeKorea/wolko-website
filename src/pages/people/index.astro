@@ -17,6 +17,10 @@ const jejuMissionary = allTeam
 const jejuStw = allTeam
   .filter(p => p.data.campus === 'jeju' && p.data.category === 'stw')
   .sort((a, b) => a.data.order - b.data.order);
+
+// 카드 위 직책 배지 — 한글 화면에서는 한글, 영어 화면에서는 영어로만 보이게 한다(role_badge 는 영어 값).
+const ROLE_BADGE_KO = { Staff: '스태프', Intern: '인턴', Missionaries: '선교사', Missionary: '선교사', 'Field Director': '필드 디렉터', 'Jeju Director': '제주 디렉터' };
+const roleBadgeKo = (value) => ROLE_BADGE_KO[value] || value;
 ---
 
 <BaseLayout title="섬기는이 — WOLKO 월코" activeNav="about" whiteNav={true}>
@@ -111,7 +115,7 @@ const jejuStw = allTeam
 
     <!-- Hero -->
     <section class="wp-hero">
-      <div class="wp-hero-label">Our Team · Word of Life Korea</div>
+      <div class="wp-hero-label"><span class="wl-ko">섬기는이 · 월코</span><span class="wl-en">Our Team · Word of Life Korea</span></div>
       <h1 class="wp-hero-title">
         <span class="wl-ko">함께 <em>사역하는</em> 이들</span>
         <span class="wl-en">Meet Our <em>Ministry Team</em></span>
@@ -128,9 +132,9 @@ const jejuStw = allTeam
       <!-- 평택 -->
       <div class="wp-acc-item wp-acc-open" id="wp-pyeongtaek">
         <button class="wp-acc-trigger" aria-expanded="true">
-          <div class="wp-loc-badge">P</div>
+          <div class="wp-loc-badge"><span class="wl-ko">평</span><span class="wl-en">P</span></div>
           <div class="wp-acc-label">
-            <div class="wp-loc-text-en">Pyeongtaek · Main Campus</div>
+            <div class="wp-loc-text-en"><span class="wl-ko">평택 · 본 캠퍼스</span><span class="wl-en">Pyeongtaek · Main Campus</span></div>
             <div class="wp-loc-text-ko">
               <span class="wl-ko">평택 월코센터</span>
               <span class="wl-en">Pyeongtaek WOLKO Center</span>
@@ -164,7 +168,7 @@ const jejuStw = allTeam
                       <div class="wp-card-photo-wrap">
                         <img src={person.data.photo_url} alt={person.data.name_ko} loading="lazy" style={person.data.photo_position ? `object-position: ${person.data.photo_position}` : undefined} />
                         <span class={`wp-card-role-badge${person.data.role_badge.includes('Director') ? ' wp-badge-director' : ''}`}>
-                          {person.data.role_badge}
+                          <span class="wl-ko">{roleBadgeKo(person.data.role_badge)}</span><span class="wl-en">{person.data.role_badge}</span>
                         </span>
                       </div>
                     )}
@@ -201,7 +205,7 @@ const jejuStw = allTeam
                     {person.data.photo_url && (
                       <div class="wp-card-photo-wrap">
                         <img src={person.data.photo_url} alt={person.data.name_ko} loading="lazy" style={person.data.photo_position ? `object-position: ${person.data.photo_position}` : undefined} />
-                        <span class="wp-card-role-badge">{person.data.role_badge}</span>
+                        <span class="wp-card-role-badge"><span class="wl-ko">{roleBadgeKo(person.data.role_badge)}</span><span class="wl-en">{person.data.role_badge}</span></span>
                       </div>
                     )}
                     <div class="wp-card-info">
@@ -230,9 +234,9 @@ const jejuStw = allTeam
       <!-- 제주 -->
       <div class="wp-acc-item wp-acc-jeju wp-acc-open" id="wp-jeju">
         <button class="wp-acc-trigger" aria-expanded="true">
-          <div class="wp-loc-badge">J</div>
+          <div class="wp-loc-badge"><span class="wl-ko">제</span><span class="wl-en">J</span></div>
           <div class="wp-acc-label">
-            <div class="wp-loc-text-en">Jeju · Wolbi Campus</div>
+            <div class="wp-loc-text-en"><span class="wl-ko">제주 · 월비 캠퍼스</span><span class="wl-en">Jeju · Wolbi Campus</span></div>
             <div class="wp-loc-text-ko">
               <span class="wl-ko">제주 월비</span>
               <span class="wl-en">Jeju WOLBI</span>
@@ -266,7 +270,7 @@ const jejuStw = allTeam
                       <div class="wp-card-photo-wrap">
                         <img src={person.data.photo_url} alt={person.data.name_ko} loading="lazy" style={person.data.photo_position ? `object-position: ${person.data.photo_position}` : undefined} />
                         <span class={`wp-card-role-badge${person.data.role_badge.includes('Director') ? ' wp-badge-director' : ''}`}>
-                          {person.data.role_badge}
+                          <span class="wl-ko">{roleBadgeKo(person.data.role_badge)}</span><span class="wl-en">{person.data.role_badge}</span>
                         </span>
                       </div>
                     )}
@@ -303,7 +307,7 @@ const jejuStw = allTeam
                     {person.data.photo_url && (
                       <div class="wp-card-photo-wrap">
                         <img src={person.data.photo_url} alt={person.data.name_ko} loading="lazy" style={person.data.photo_position ? `object-position: ${person.data.photo_position}` : undefined} />
-                        <span class="wp-card-role-badge">{person.data.role_badge}</span>
+                        <span class="wp-card-role-badge"><span class="wl-ko">{roleBadgeKo(person.data.role_badge)}</span><span class="wl-en">{person.data.role_badge}</span></span>
                       </div>
                     )}
                     <div class="wp-card-info">

@@ -2,7 +2,7 @@
 name_ko: 손진영
 name_en: Jinyoung Son
 title_ko: 회계 | 캠프 어시스턴트
-title_en: Account | Camp Derector  Assistant
+title_en: Account | Camp Director Assistant
 role_badge: Staff
 campus: pyeongtaek
 category: stw

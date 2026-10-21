@@ -1,7 +1,7 @@
 ---
 name_ko: 정은주
 name_en: Julia Jung
-title_ko: 여학생 총괄 담당자 · WOLBI 제주
+title_ko: 여학생 총괄 담당자 · 제주 월비
 title_en: Dean of Women · WOLBI Jeju
 role_badge: Staff
 campus: jeju

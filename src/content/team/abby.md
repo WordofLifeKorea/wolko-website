@@ -9,7 +9,7 @@ bio_en: |-
 gender: female
 name_ko: 애비 니콜스
 name_en: Abby Nicholes
-title_ko: 행정 보조 · WOLBI 제주
+title_ko: 행정 보조 · 제주 월비
 title_en: Administrative Assistant · WOLBI Jeju
 role_badge: Staff
 campus: jeju

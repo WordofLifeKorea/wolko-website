@@ -6,7 +6,7 @@ bio_en: |-
 gender: female
 name_ko: 에스텔 소이
 name_en: Estelle Sooy
-title_ko: Cross Cultural Internship · 청소년 사역
+title_ko: 타문화 인턴십 · 청소년 사역
 title_en: Cross Cultural Internship · Youth Ministry
 role_badge: Intern
 campus: pyeongtaek
