@@ -13,6 +13,7 @@ import * as Portal from '../functions/api/campteam/camp-portal.js';
 import * as Search from '../functions/api/campteam/search.js';
 import * as Cal from '../functions/api/campteam/calendar.js';
 import * as Home from '../functions/api/campteam/home.js';
+import * as Notices from '../functions/api/campteam/notices.js';
 import * as Alerts from '../functions/api/campteam/alerts.js';
 import * as Trash from '../functions/api/campteam/trash.js';
 import * as Cats from '../functions/api/campteam/ledger-categories.js';
@@ -123,6 +124,9 @@ test('명단 밖 월코 팀원: 캠프 목록·공개로 표시한 파일만, �
   assert.equal((await call(Tasks, 'onRequestGet', env, U.out)).status, 403); assert.equal((await call(Meetings, 'onRequestGet', env, U.out)).status, 403); assert.equal((await call(Summary, 'onRequestGet', env, U.out, { qs: '?periodId=lp-2027h1' })).status, 403);
   assert.equal((await call(Camps, 'onRequestGet', env, U.out)).status, 200, '캠프 목록은 볼 수 있다');
   const cl = await J(await call(Camps, 'onRequestGet', env, U.out)); assert.ok(cl.types.flatMap((t) => t.camps).every((c) => c.taskTotal === null && c.taskDone === null), '업무 개수도 가린다');
+  assert.ok(cl.types.flatMap((t) => t.camps).every((c) => !c.notes && c.registrationCampId == null), '내부 메모·연결 정보도 가린다');
+  assert.equal((await call(Notices, 'onRequestGet', env, U.out)).status, 403, '팀 공지는 명단 계정만');
+  assert.deepEqual((await J(await call(Home, 'onRequestGet', env, U.out))).notices, []);
   const hm = await J(await call(Home, 'onRequestGet', env, U.out)); assert.ok(hm.camps.every((c) => c.taskTotal === null), '홈 캠프 카드에도 업무 개수가 없다');
   const sp = await J(await call(Space, 'onRequestGet', env, U.out, { qs: '?id=camp-w27' })); assert.deepEqual([sp.tasks.length, sp.meetings.length, sp.decisions.length, sp.events.length, sp.stats.open], [0, 0, 0, 0, 0]); assert.deepEqual(sp.files.map((f) => f.id), [fid]); assert.equal('budget' in sp, false);
   assert.equal((await call(Search, 'onRequestGet', env, U.out, { qs: '?q=' + encodeURIComponent('Camp') })).status, 200);

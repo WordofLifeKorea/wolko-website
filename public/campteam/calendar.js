@@ -45,7 +45,7 @@
     S.perms = S.cal.perms; render();
   }
   function itemsByDay() {
-    var map = {}, add = function (d, o) { (map[d] = map[d] || []).push(o); }, span = function (a, b, o) { var d = new Date(a + 'T00:00:00'), end = new Date((b || a) + 'T00:00:00'); for (var i = 0; d <= end && i < 62; i++, d.setDate(d.getDate() + 1)) add(ymd(d), o); };
+    var map = {}, add = function (d, o) { (map[d] = map[d] || []).push(o); }, span = function (a, b, o) { var d = new Date(a + 'T00:00:00'), end = new Date((b || a) + 'T00:00:00'); for (var i = 0; d <= end && i < 400; i++, d.setDate(d.getDate() + 1)) add(ymd(d), o); };
     var today = todayStr();
     S.cal.camps.forEach(function (c) { span(c.startDate, c.endDate, { cls: 'camp', text: CT.pick(c, 'name'), sort: 0, kindLabel: 'dayCamp', camp: c }); });
     S.cal.events.forEach(function (e) { span(e.startDate, e.endDate, { cls: e.kind === 'out' ? 'out' : 'ev', text: (e.startTime ? e.startTime + ' ' : '') + e.title, title: e.title, time: e.startTime ? e.startTime + (e.endTime ? ' ~ ' + e.endTime : '') : '', sort: 1, kindLabel: 'dayEvent', ev: e }); });

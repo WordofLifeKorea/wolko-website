@@ -17,7 +17,9 @@ export async function onRequestGet({ env, request }) {
   let camp = null, type = null, campIds = [];
   if (campId) {
     camp = await db.prepare(`SELECT c.*, t.nameKo AS typeKo, t.nameEn AS typeEn FROM camps c JOIN camp_types t ON t.id = c.typeId WHERE c.id = ?1 AND c.deletedAt IS NULL`).bind(campId).first();
-    if (!camp) return json({ error: '찾을 수 없습니다.' }, 404); campIds = [camp.id]; type = { id: camp.typeId, nameKo: camp.typeKo, nameEn: camp.typeEn };
+    if (!camp) return json({ error: '찾을 수 없습니다.' }, 404);
+    if (!s.campRole) { camp.notes = ''; camp.registrationCampId = null; } // 명단 밖: 내부 메모·연결 정보는 가린다
+    campIds = [camp.id]; type = { id: camp.typeId, nameKo: camp.typeKo, nameEn: camp.typeEn };
   } else {
     type = await db.prepare('SELECT id, nameKo, nameEn, description FROM camp_types WHERE id = ?1 AND deletedAt IS NULL').bind(typeId).first();
     if (!type) return json({ error: '찾을 수 없습니다.' }, 404);

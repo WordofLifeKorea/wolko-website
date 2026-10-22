@@ -171,6 +171,10 @@
       if (mode === 'link' || (mode === 'edit' && f.storage === 'link')) h += '<label>' + esc(CT.t('fUrl')) + '<input type="url" name="externalUrl" required maxlength="500" placeholder="https://docs.google.com/…" value="' + esc(f ? f.externalUrl : '') + '"></label>';
     }
     $('formFields').innerHTML = h; $('formErr').hidden = true; $('prog').hidden = true; $('formSave').disabled = false;
+    (function () { // 금액 자료(예산 분류)는 월코 팀 전체 공개로 할 수 없다
+      var cat = $('formFields').querySelector('[name=category]'), pub = $('formFields').querySelector('[name=publicToAll]'); if (!cat || !pub) return;
+      var sync = function () { var lock = cat.value === 'budget'; if (lock) pub.checked = false; pub.disabled = lock; }; cat.onchange = sync; sync();
+    })();
     $('detail').close(); dlg.showModal();
   }
   function parseTarget(v) { return v.indexOf('camp:') === 0 ? { campId: v.slice(5), typeId: '' } : v.indexOf('type:') === 0 ? { campId: '', typeId: v.slice(5) } : { campId: '', typeId: '' }; }
@@ -227,11 +231,12 @@
   function wireDropzone() {
     var dz = $('dz'), depth = 0, show = function (on) { document.documentElement.classList.toggle('dz-active', on); dz.classList.toggle('over', on); };
     $('dzPick').onclick = function () { $('dzInput').click(); }; $('dzInput').onchange = function () { uploadMany(this.files); this.value = ''; };
+    var dialogOpen = function () { var d = $('formDlg'); return !!(d && d.open); };
     var hasFiles = function (e) { return e.dataTransfer && [].indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; };
-    window.addEventListener('dragenter', function (e) { if (!hasFiles(e) || !canUpload()) return; e.preventDefault(); depth++; show(true); });
-    window.addEventListener('dragover', function (e) { if (!hasFiles(e) || !canUpload()) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+    window.addEventListener('dragenter', function (e) { if (!hasFiles(e) || !canUpload() || dialogOpen()) return; e.preventDefault(); depth++; show(true); });
+    window.addEventListener('dragover', function (e) { if (!hasFiles(e) || !canUpload() || dialogOpen()) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
     window.addEventListener('dragleave', function (e) { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) show(false); });
-    window.addEventListener('drop', function (e) { if (!hasFiles(e)) return; e.preventDefault(); depth = 0; show(false); if (canUpload()) uploadMany(e.dataTransfer.files); });
+    window.addEventListener('drop', function (e) { if (!hasFiles(e) || dialogOpen()) { depth = 0; show(false); return; } e.preventDefault(); depth = 0; show(false); if (canUpload()) uploadMany(e.dataTransfer.files); });
   }
   var timer = null;
   CT.boot(async function () {

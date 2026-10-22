@@ -7,6 +7,7 @@ export async function onRequestGet({ env, request }) {
   const s = await campSession(request, env);
   if (!s) return needLogin();
   { const dv = denyView(s.perms, 'camps', '공지'); if (dv) return dv; }
+  if (!s.campRole) return needPerm('팀 공지는 캠프팀 명단에 있는 계정만 볼 수 있어요.');
   const rows = (await env.DB.prepare('SELECT id, message, messageEn, active, sortOrder, isTest FROM notices WHERE deletedAt IS NULL ORDER BY sortOrder, createdAt').all()).results;
   return json({ items: rows, perms: s.perms });
 }

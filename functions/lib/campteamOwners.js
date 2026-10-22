@@ -36,6 +36,7 @@ export async function resolveOwnerEmail(env, ownerName) {
   try { als = (await env.DB.prepare('SELECT email, aliases FROM member_aliases').all()).results; } catch { als = []; }
   const hit = new Set();
   for (const r of rows) if (clean(r.name) === toks[0]) hit.add(r.email.toLowerCase());
-  for (const a of als) if (aliasList(a.aliases).includes(toks[0])) hit.add(a.email.toLowerCase());
+  const activeSet = new Set(rows.map((r) => r.email.toLowerCase()));
+  for (const a of als) if (activeSet.has(a.email.toLowerCase()) && aliasList(a.aliases).includes(toks[0])) hit.add(a.email.toLowerCase());
   return hit.size === 1 ? [...hit][0] : '';
 }

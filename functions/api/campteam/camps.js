@@ -25,6 +25,7 @@ export async function onRequestGet({ env, request }) {
     FROM camps c WHERE c.deletedAt IS NULL ORDER BY c.startDate IS NULL, c.startDate DESC, c.nameKo`).all()).results;
   // 업무 영역을 볼 수 없는 계정(명단 밖 월코 팀 등)에게는 업무 개수도 알려주지 않는다
   if (!canView(s.perms, 'tasks')) for (const c of camps) { c.taskTotal = null; c.taskDone = null; }
+  if (!s.campRole) for (const c of camps) { c.notes = ''; c.registrationCampId = null; } // 명단 밖: 내부 메모·연결 정보는 가린다
   return json({ types: types.map(t => ({ ...t, camps: camps.filter(c => c.typeId === t.id) })), perms: s.perms });
 }
 

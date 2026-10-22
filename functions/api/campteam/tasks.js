@@ -62,7 +62,7 @@ async function clean(env, b, base = {}) {
   let ownerEmail = has('ownerEmail') ? text(b.ownerEmail, 120) : base.ownerEmail ?? '';
   if (has('ownerName') && !has('ownerEmail') && ownerName !== (base.ownerName ?? '')) ownerEmail = '';
   if (ownerName && !ownerEmail) ownerEmail = await resolveOwnerEmail(env, ownerName);
-  if (!ownerName && !has('ownerEmail')) ownerEmail = '';
+  if (!ownerName && has('ownerName') && !has('ownerEmail')) ownerEmail = '';
   return { v: {
     title, dueDate, status, priority, campId,
     ownerName,

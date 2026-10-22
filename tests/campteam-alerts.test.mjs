@@ -127,6 +127,16 @@ test('AI 요약: 키가 없으면 꺼짐, 할 일 없으면 호출 안 함, 하�
   } finally { globalThis.fetch = realFetch; }
 });
 
+test('이메일만 있는 담당자는 상태만 바꿔도 유지되고, 명단에서 빠진 사람의 별칭은 새 업무에 연결되지 않는다', async () => {
+  const { env, q } = mk();
+  q.prepare(`INSERT INTO tasks (id,title,ownerName,ownerEmail,status,priority,createdAt,updatedAt,createdBy) VALUES ('e1','이메일만','',?, 'In Progress','Medium','x','x','t')`).run(U.mem);
+  await call(Tasks, 'onRequestPatch', env, U.dir, { qs: '?id=e1', body: { status: 'Completed' } });
+  assert.equal(q.prepare(`SELECT ownerEmail FROM tasks WHERE id = 'e1'`).get().ownerEmail, U.mem);
+  q.prepare(`INSERT INTO member_aliases (email, aliases, updatedAt) VALUES (?, 'Sora', 'x')`).run(U.mem); q.prepare(`UPDATE camp_members SET active = 0 WHERE email = ?`).run(U.mem);
+  await call(Tasks, 'onRequestPost', env, U.dir, { body: { title: '나간 사람', ownerName: 'Sora', status: 'Not Started', priority: 'Medium' } });
+  assert.equal(q.prepare(`SELECT ownerEmail FROM tasks WHERE title = '나간 사람'`).get().ownerEmail, '');
+});
+
 test('담당자 이름만 적힌 업무도 명단의 이름·별칭과 같으면 내 업무: 알림·오늘 할 일·홈에 나온다, 저장하면 이메일이 자동으로 채워진다', async () => {
   const { env, q } = mk(), Home = await import('../functions/api/campteam/home.js');
   const ins = (id, owner, due) => q.prepare(`INSERT INTO tasks (id,title,ownerName,ownerEmail,dueDate,status,priority,createdAt,updatedAt,createdBy) VALUES (?,?,?,'',?, 'In Progress','Medium','x','x','t')`).run(id, '이름업무 ' + id, owner, due);

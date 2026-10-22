@@ -49,7 +49,10 @@ export async function onRequestGet({ env, request }) {
   const order = SORTS[p.get('sort')] || SORTS.newest;
   const limit = Math.min(Math.max(parseInt(p.get('limit'), 10) || 100, 1), 200), offset = Math.max(parseInt(p.get('offset'), 10) || 0, 0);
   const clause = where.join(' AND ');
-  const rows = (await env.DB.prepare(`${SELECT} WHERE ${clause} ORDER BY ${order}, f.id LIMIT ? OFFSET ?`).bind(...args, limit, offset).all()).results;
+  const run = (sel) => env.DB.prepare(`${sel} WHERE ${clause} ORDER BY ${order}, f.id LIMIT ? OFFSET ?`).bind(...args, limit, offset).all();
+  let rows;
+  try { rows = (await run(SELECT)).results; }
+  catch (e) { if (!/file_public/.test(String(e && e.message))) throw e; rows = (await run(SELECT.replace('(SELECT COUNT(*) FROM file_public pb WHERE pb.fileId = f.id) AS isPublic', '0 AS isPublic'))).results; } // 0018 적용 전에도 목록은 열린다
   const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM files f LEFT JOIN camps c ON c.id = f.campId LEFT JOIN file_versions v ON v.id = f.currentVersionId WHERE ${clause}`).bind(...args).first()).n;
   return json({
     items: rows.map(r => ({ ...r, linkedCampIds: r.linkedCampIds ? r.linkedCampIds.split(',') : [] })),

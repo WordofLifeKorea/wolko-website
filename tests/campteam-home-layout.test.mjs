@@ -174,7 +174,7 @@ test('접근 권한 표: 역할(비로그인·조회만·재정·팀원·관리�
     ['업무 목록', Tasks, 'onRequestGet', {}, [401, 403, 200, 200, 200]],
     ['자료 목록', Files, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
     ['회의 목록', Meetings, 'onRequestGet', {}, [401, 403, 200, 200, 200]],
-    ['공지 읽기', Notices, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
+    ['공지 읽기', Notices, 'onRequestGet', {}, [401, 403, 200, 200, 200]],
     ['용어집 읽기', Glossary, 'onRequestGet', {}, [401, 403, 200, 200, 200]],
     ['예산 읽기(금액)', Budget, 'onRequestGet', { qs: '?campId=camp-u26' }, [401, 403, 200, 200, 200]],
     ['업무 만들기', Tasks, 'onRequestPost', { body: {} }, [401, 403, '!403', '!403', '!403']],

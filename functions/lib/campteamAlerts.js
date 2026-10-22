@@ -57,7 +57,7 @@ export async function buildAlerts(env, email, { today, settings, perms }) {
   const none = Promise.resolve({ results: [] }), tv = allow(perms, 'tasks'), mv = allow(perms, 'meetings'), keys = await loadOwnerKeys(env, me);
   const [tasks, meetings, events, decisions, states] = await Promise.all([
     !tv ? none : db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, k.ownerName, k.ownerEmail, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
-      WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND (k.ownerEmail <> '' OR k.ownerName <> '') AND k.dueDate IS NOT NULL ORDER BY k.dueDate LIMIT 800`).all(),
+      WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND (k.ownerEmail <> '' OR k.ownerName <> '') AND k.dueDate IS NOT NULL ORDER BY k.dueDate LIMIT 3000`).all(),
     !mv ? none : db.prepare(`SELECT id, meetDate, meetTime, title FROM meetings WHERE deletedAt IS NULL AND meetDate >= ?1 AND meetDate <= ?2 ORDER BY meetDate, meetTime LIMIT 20`).bind(today, addDays(today, Math.max(maxEvent, 2))).all(),
     !tv ? none : db.prepare(`SELECT id, title, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND COALESCE(endDate, startDate) >= ?1 AND startDate <= ?2 ORDER BY startDate LIMIT 20`).bind(today, addDays(today, Math.max(maxEvent, 2))).all(),
     !mv ? none : db.prepare(`SELECT d.id, d.textKo, d.textEn, d.kind, d.decidedDate, d.createdAt, d.meetingId FROM decisions d WHERE d.deletedAt IS NULL AND d.state = 'active' AND d.kind IN ('direction','final','changed')
@@ -84,7 +84,7 @@ export async function buildAlerts(env, email, { today, settings, perms }) {
   for (const e of events.results) {
     const start = e.startDate < today ? today : e.startDate, left = dayDiff(start, today), stage = stageOf(left, settings.eventDays); if (!stage || stage === 'over') continue;
     const base = { type: 'event', title: e.title, date: e.startDate, time: e.startTime || '', daysLeft: left, href: '/campteam/calendar/' };
-    push({ ...base, key: `event:${e.id}:${stage}:${e.startDate.replace(/-/g, '')}`, level: left === 0 ? 'today' : 'soon' }); team.events.push(base);
+    push({ ...base, key: `event:${e.id}:${stage}:${start.replace(/-/g, '')}`, level: left === 0 ? 'today' : 'soon' }); team.events.push(base);
   }
   const newDecisions = [];
   for (const d of decisions.results) {
@@ -149,7 +149,7 @@ export async function buildWeek(env, email, today, perms) {
   const db = env.DB, me = String(email).toLowerCase(), start = mondayOf(today), end = addDays(start, 6);
   const [tasks, meetings, events] = await Promise.all([
     !tv ? none : db.prepare(`SELECT k.id, k.title, k.dueDate, k.priority, k.ownerName, k.ownerEmail, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
-      WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND (k.ownerEmail <> '' OR k.ownerName <> '') AND k.dueDate IS NOT NULL AND k.dueDate <= ?1 ORDER BY k.dueDate LIMIT 800`).bind(end).all(),
+      WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND (k.ownerEmail <> '' OR k.ownerName <> '') AND k.dueDate IS NOT NULL AND k.dueDate <= ?1 ORDER BY k.dueDate LIMIT 3000`).bind(end).all(),
     !mv ? none : db.prepare(`SELECT id, meetDate, meetTime, title FROM meetings WHERE deletedAt IS NULL AND meetDate >= ?1 AND meetDate <= ?2 ORDER BY meetDate, meetTime LIMIT 30`).bind(today > start ? today : start, end).all(),
     !tv ? none : db.prepare(`SELECT id, title, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND COALESCE(endDate, startDate) >= ?1 AND startDate <= ?2 ORDER BY startDate LIMIT 30`).bind(today > start ? today : start, end).all(),
   ]);

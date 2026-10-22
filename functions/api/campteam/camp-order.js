@@ -38,6 +38,12 @@ export async function onRequestPut({ env, request }) {
   const which = b.scope === 'default' ? 'default' : 'mine';
   if (which === 'default' && !s.perms.manageMembers) return needPerm('모두의 기본 순서는 관리자만 바꿀 수 있어요.');
   const r = sanitizeOrder(b); if (r.error) return badRequest(r.error);
+  // 실제 있는 유형·캠프만 저장하고, 개수는 제한한다 (엉뚱한 값·과도한 요청 방지)
+  const knownTypes = new Set((await env.DB.prepare('SELECT id FROM camp_types WHERE deletedAt IS NULL').all()).results.map((x) => x.id));
+  const knownCamps = new Set((await env.DB.prepare('SELECT id FROM camps WHERE deletedAt IS NULL').all()).results.map((x) => x.id));
+  r.order.types = r.order.types.filter((id) => knownTypes.has(id));
+  for (const t of Object.keys(r.order.camps)) { if (!knownTypes.has(t)) delete r.order.camps[t]; else r.order.camps[t] = r.order.camps[t].filter((id) => knownCamps.has(id)); }
+  if (r.order.types.length + Object.values(r.order.camps).reduce((n, l) => n + l.length, 0) > 400) return badRequest('항목이 너무 많아요.');
   const scope = scopeOf(s, which), stmts = [env.DB.prepare('DELETE FROM camp_order WHERE scope = ?1').bind(scope)];
   r.order.types.forEach((id, i) => stmts.push(env.DB.prepare(`INSERT INTO camp_order (scope,kind,itemId,pos) VALUES (?1,'type',?2,?3)`).bind(scope, id, i)));
   for (const [t, list] of Object.entries(r.order.camps)) list.forEach((id, i) => stmts.push(env.DB.prepare(`INSERT INTO camp_order (scope,kind,itemId,pos) VALUES (?1,'camp',?2,?3)`).bind(scope, t + '|' + id, i)));

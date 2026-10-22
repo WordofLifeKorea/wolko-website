@@ -114,6 +114,7 @@ async function postAlerts({ env, request }) {
     const row = await env.DB.prepare('SELECT * FROM announcements WHERE id = ?1 AND deletedAt IS NULL').bind(String(b.id || '')).first();
     if (!row) return json({ error: '찾을 수 없습니다.' }, 404);
     if (String(row.createdBy).toLowerCase() !== me && !s.perms.manageMembers) return needPerm('올린 사람이나 관리자만 고치거나 지울 수 있어요.');
+    if (!s.perms.manageMembers && !canWrite(s.perms, 'notices')) return needPerm('팀 공지를 고치거나 지울 권한이 없어요. 관리자에게 요청해 주세요.');
     if (a === 'delete') { await env.DB.prepare('UPDATE announcements SET deletedAt = ?2, updatedAt = ?2 WHERE id = ?1').bind(row.id, now).run(); await audit(env, me, 'delete', 'announcement', row.id, row.title); return json({ ok: true }); }
     const cur = (await env.DB.prepare('SELECT email FROM announcement_recipients WHERE announcementId = ?1').bind(row.id).all()).results.map((x) => x.email);
     const r = await validateAnnounce(env, b, s, { ...row, recipients: cur }); if (r.error) return badRequest(r.error);

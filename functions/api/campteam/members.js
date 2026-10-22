@@ -53,6 +53,7 @@ export async function onRequestDelete({ env, request }) {
   if (!row) return json({ error: '찾을 수 없습니다.' }, 404);
   await env.DB.prepare('UPDATE camp_members SET active = 0, updatedAt = ?2 WHERE email = ?1').bind(email, nowIso()).run();
   try { await env.DB.prepare('DELETE FROM member_perms WHERE email = ?1').bind(email).run(); } catch { /* 표가 없는 DB */ }
+  try { await env.DB.prepare('DELETE FROM member_aliases WHERE email = ?1').bind(email).run(); } catch { /* 표가 없는 DB */ } // 나간 사람 이름으로 새 업무가 연결되지 않게
   await audit(env, s.email, 'deactivate', 'camp_member', email);
   return json({ ok: true });
 }

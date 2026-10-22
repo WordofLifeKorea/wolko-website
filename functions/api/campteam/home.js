@@ -46,7 +46,7 @@ export async function onRequestGet({ env, request }) {
     // 내 담당 업무: 담당자 이메일이 내 이메일이거나, 이름이 내 이름·별칭과 같은 업무 (아래에서 걸러낸다)
     db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, k.ownerName, k.ownerEmail, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
       FROM tasks k LEFT JOIN camps c ON c.id = k.campId
-      WHERE ${open} AND (k.ownerEmail <> '' OR k.ownerName <> '') ORDER BY k.dueDate IS NULL, k.dueDate LIMIT 800`).all(),
+      WHERE ${open} AND (k.ownerEmail <> '' OR k.ownerName <> '') ORDER BY k.dueDate IS NULL, k.dueDate LIMIT 3000`).all(),
     // D-day 위젯에서 고를 캠프 목록 (날짜가 있는 진행 예정 캠프)
     db.prepare(`SELECT id, nameKo, nameEn, startDate, endDate, status FROM camps WHERE deletedAt IS NULL AND status IN ('planning','active') ORDER BY startDate IS NULL, startDate, nameKo LIMIT 30`).all(),
     // 마감 지난 업무 (진행 중인 것만, 오래된 순)
@@ -89,7 +89,7 @@ export async function onRequestGet({ env, request }) {
     stats: T ? { open: stats?.open || 0, overdue: stats?.overdue || 0, noOwner: stats?.noOwner || 0, completed: stats?.completed || 0, total: stats?.total || 0 } : { open: 0, overdue: 0, noOwner: 0, completed: 0, total: 0 },
     camps: V('camps', T ? camps.results : camps.results.map((c) => ({ ...c, taskTotal: null, taskDone: null }))), deadlines: V('tasks', deadlines.results), attention: V('tasks', attention.results),
     agenda: V('meetings', agenda.results), meetings: V('meetings', meetings.results), files: V('files', files.results),
-    notices: V('camps', notices.results), myTasks: V('tasks', myTasks.results.filter((x) => isMine(x, s.email, ownerKeys)).slice(0, 8).map(({ ownerName, ownerEmail, ...rest }) => rest)), campChoices: V('camps', campChoices.results),
+    notices: s.campRole ? V('camps', notices.results) : [], myTasks: V('tasks', myTasks.results.filter((x) => isMine(x, s.email, ownerKeys)).slice(0, 8).map(({ ownerName, ownerEmail, ...rest }) => rest)), campChoices: V('camps', campChoices.results),
     overdue: V('tasks', overdue.results), decisions: V('meetings', decisions.results), statusCounts: V('tasks', statusRows.results),
   };
   if (budget) body.budget = budget;
