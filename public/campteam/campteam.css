@@ -10,6 +10,8 @@ html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--f-bo
 [hidden]{display:none !important}
 .app{display:grid;grid-template-columns:252px 1fr;min-height:100vh}
 /* 왼쪽 메뉴: 기존 포털(hub.css)의 사이드바와 같은 색·모양 */
+.menu-btn,.drawer-x,.scrim{display:none}
+.drawer{display:flex;flex-direction:column;flex:1;min-height:0}
 aside{background:radial-gradient(circle at 15% 0%,rgba(255,255,255,.08),transparent 45%),linear-gradient(175deg,#003548 0%,#004f68 45%,#00668a 100%);color:#fff;padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0;overflow-y:auto;scrollbar-width:none}
 aside::-webkit-scrollbar{display:none}
 .logo{display:flex;align-items:center;gap:10px;padding:4px 6px 18px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.12);text-decoration:none;color:#fff}
@@ -109,10 +111,20 @@ dialog h3{margin:0 0 14px;font:700 16px var(--f-body)}
 .gate-card h2{margin:0 0 8px;font:700 18px var(--f-body)}.gate-card p{color:var(--mid);font-size:13px;line-height:1.6;margin:0 0 16px}
 @media(max-width:900px){
   .app{grid-template-columns:1fr}
-  aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px;padding:12px;overflow:visible}
-  .logo{border:0;margin:0;padding:0 8px 0 0}.logo small{display:none}
-  .nav{flex-direction:row;flex-wrap:wrap;flex:1 1 100%;order:3}.nav h6{display:none}.nav a{padding:6px 10px 6px 8px;gap:8px}.nav .ic{width:26px;height:26px}.nav a::before{display:none}
-  .gsearch{flex:1 1 140px;padding:0;order:2}.side-foot{margin:0;padding:0;border:0;flex-direction:row;align-items:center;flex-wrap:wrap;order:1;margin-left:auto}.back{padding:8px 10px}
+  /* 폰: 위에는 로고 + 오른쪽 위 햄버거만, 메뉴는 오른쪽에서 열리는 서랍 */
+  aside{position:sticky;top:0;z-index:40;height:auto;flex-direction:column;padding:10px 14px;overflow:visible;box-shadow:0 2px 10px #00000026}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .logo{border:0;margin:0;padding:0}.logo small{display:none}
+  .menu-btn{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;padding:0}
+  .menu-btn:active{background:rgba(255,255,255,.2)}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(310px,86vw);z-index:60;padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px));overflow-y:auto;
+    background:radial-gradient(circle at 15% 0%,rgba(255,255,255,.08),transparent 45%),linear-gradient(175deg,#003548 0%,#004f68 45%,#00668a 100%);
+    transform:translateX(105%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s;box-shadow:-12px 0 40px #00000055;flex:none;min-height:0}
+  .drawer.open{transform:none;visibility:visible;transition:transform .22s ease}
+  .drawer-x{display:grid;place-items:center;align-self:flex-end;width:36px;height:36px;margin:0 0 8px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font:700 14px var(--f-sans);cursor:pointer;padding:0}
+  .scrim{display:block;position:fixed;inset:0;z-index:35;background:#061f288c;opacity:0;pointer-events:none;transition:opacity .2s}
+  .scrim.open{opacity:1;pointer-events:auto}
+  html.menu-open,html.menu-open body{overflow:hidden}
   main{padding:18px 16px 40px}
   .stats{grid-template-columns:1fr 1fr}.grid,.two{grid-template-columns:1fr}
   .camp-row{grid-template-columns:1fr 1fr}

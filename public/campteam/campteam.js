@@ -130,8 +130,19 @@
     d.addEventListener('mousedown', function (e) { d._downOut = e.target === d && outside(d, e); });
     d.addEventListener('click', function (e) { if (e.target === d && d._downOut && outside(d, e)) CT.tryClose(d); d._downOut = false; }); // 바깥 배경
   }
+  // ── 폰 메뉴(햄버거 서랍) ──
+  function initMenu() {
+    var btn = document.getElementById('menuBtn'), dr = document.getElementById('drawer'), sc = document.getElementById('scrim'), x = document.getElementById('drawerX');
+    if (!btn || !dr) return;
+    var set = function (open) { dr.classList.toggle('open', open); sc.classList.toggle('open', open); document.documentElement.classList.toggle('menu-open', open); btn.setAttribute('aria-expanded', open ? 'true' : 'false'); if (open && x) x.focus(); };
+    btn.onclick = function () { set(!dr.classList.contains('open')); };
+    sc.onclick = x.onclick = function () { set(false); };
+    dr.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('a')) set(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && dr.classList.contains('open')) { set(false); btn.focus(); } });
+    window.addEventListener('resize', function () { if (window.innerWidth > 900) set(false); });
+  }
   function initDialogs() { [].forEach.call(document.querySelectorAll('dialog'), enhance); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDialogs); else initDialogs();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { initDialogs(); initMenu(); }); else { initDialogs(); initMenu(); }
 
   /** 페이지 시작: 내 권한을 읽고 메뉴를 정리한 뒤 init(me) 호출 */
   CT.boot = async function (init) {
