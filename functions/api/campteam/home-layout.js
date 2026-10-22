@@ -1,6 +1,6 @@
 import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
 import { nowIso, audit } from '../../lib/campteamDb.js';
-import { sanitizeHomeLayout, loadHomeLayouts, userScope, SECTION_IDS } from '../../lib/campteamHomeLayout.js';
+import { sanitizeHomeLayout, loadHomeLayouts, userScope, catalogList, COLS } from '../../lib/campteamHomeLayout.js';
 
 /**
  * 캠프팀 홈 배치.
@@ -13,7 +13,7 @@ async function who(env, request) {
   const s = await campSession(request, env);
   return s ? { s } : { res: needLogin() };
 }
-const view = async (env, s) => ({ ...(await loadHomeLayouts(env, s.email)), canEditDefault: !!s.perms.manageMembers, sectionIds: SECTION_IDS });
+const view = async (env, s) => ({ ...(await loadHomeLayouts(env, s.email)), canEditDefault: !!s.perms.manageMembers, catalog: catalogList().filter((c) => !c.adminOnly || s.perms.manageMembers), cols: COLS });
 
 export async function onRequestGet({ env, request }) {
   const { s, res } = await who(env, request); if (res) return res;
@@ -28,9 +28,10 @@ export async function onRequestPut({ env, request }) {
   if (b.scope === 'default' && !s.perms.manageMembers) return needPerm('모두의 기본 홈은 관리자만 바꿀 수 있습니다.');
   const r = sanitizeHomeLayout(b.layout); if (r.error) return badRequest(r.error);
   const scope = b.scope === 'default' ? 'default' : userScope(s.email);
+  if (r.layout.items.some((w) => w.type === 'activity') && !s.perms.manageMembers && b.scope === 'mine') r.layout.items = r.layout.items.filter((w) => w.type !== 'activity'); // 관리자 전용 위젯은 관리자가 아니면 저장하지 않는다
   await env.DB.prepare(`INSERT INTO home_layout (scope,json,updatedAt,updatedBy) VALUES (?1,?2,?3,?4) ON CONFLICT(scope) DO UPDATE SET json=?2, updatedAt=?3, updatedBy=?4`)
     .bind(scope, JSON.stringify(r.layout), nowIso(), s.email).run();
-  if (b.scope === 'default') await audit(env, s.email, 'save', 'home_layout', 'default', `${r.layout.sections.filter((x) => x.show).length} visible`);
+  if (b.scope === 'default') await audit(env, s.email, 'save', 'home_layout', 'default', `${r.layout.items.filter((x) => x.show).length} visible widgets`);
   return json(await view(env, s));
 }
 

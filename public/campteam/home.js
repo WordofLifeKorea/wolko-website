@@ -1,9 +1,9 @@
 (function () {
   CT.addDict({
     ko: { homeTitle: '캠프팀 홈', openTasks: '진행 중 업무', overdue: '마감 지남', noOwner: '담당자 미정', completion: '전체 완료율', activeCamps: '진행 중 · 예정 캠프', allCamps: '전체 보기', upcoming: '가까운 업무 마감', attention: '확인이 필요한 업무', agenda: '다음 회의 안건', recentMeetings: '최근 회의록', recentFiles: '최근 업로드 파일', budget: '캠프 예산 요약', budgetLocked: '🔒 예산·금액은 권한이 있는 팀원에게만 보입니다.', planned: '예산 계획', actual: '실제 지출', forecast: '예상 최종', remaining: '총 예산 대비 남음', openBudget: '예산 자세히 보기', lines: '항목 수',
-      none: '표시할 내용이 없어요.', editHome: '✏️ 홈 꾸미기', editDone: '편집 끝내기', statsTitle: '핵심 숫자', scopeMine: '내 홈', scopeDefault: '모두의 기본 홈', hintMine: '나에게만 적용돼요. 저장하면 관리자가 정한 기본 홈보다 내 설정이 우선해요.', hintDefault: '개인 설정을 따로 저장하지 않은 모든 팀원에게 적용돼요.', resetMine: '기본 홈으로 되돌리기', resetDefault: '처음 모양으로 되돌리기', saved: '저장했어요.', reset: '되돌렸어요.', secShow: '보이기', secHide: '숨기기', secWide: '넓게', secHalf: '반쪽', secUp: '앞으로', secDown: '뒤로', secDrag: '끌어서 순서 바꾸기', secHiddenTag: '숨김', leaveDirty: '저장하지 않은 변경이 있어요. 버리고 계속할까요?', needOne: '보이는 섹션이 하나는 있어야 해요.', mineOverrides: '내 설정이 적용되어 있어요', noOwnerTag: '담당 미정', noDueTag: '기한 미정', overdueTag: '마감 지남', tasksOf: '업무', doneOf: '완료', owner: '담당', campsCount: '진행 중 캠프', today: '오늘', pending: '논의 필요', discussed: '논의함', decided: '결정됨', planning: '준비 중', active: '진행 중', done: '종료', canceled: '취소', dateTbd: '날짜 미정' },
+      none: '표시할 내용이 없어요.', editHome: '홈 꾸미기', editDone: '편집 끝내기', statsTitle: '핵심 숫자', scopeMine: '내 홈', scopeDefault: '모두의 기본 홈', hintMine: '나에게만 적용돼요. 저장하면 관리자가 정한 기본 홈보다 내 설정이 우선해요.', hintDefault: '개인 설정을 따로 저장하지 않은 모든 팀원에게 적용돼요.', resetMine: '기본 홈으로 되돌리기', resetDefault: '처음 모양으로 되돌리기', saved: '저장했어요.', reset: '되돌렸어요.', secShow: '보이기', secHide: '숨기기', secWide: '넓게', secHalf: '반쪽', secUp: '앞으로', secDown: '뒤로', secDrag: '끌어서 순서 바꾸기', secHiddenTag: '숨김', leaveDirty: '저장하지 않은 변경이 있어요. 버리고 계속할까요?', needOne: '보이는 섹션이 하나는 있어야 해요.', mineOverrides: '내 설정이 적용되어 있어요', noOwnerTag: '담당 미정', noDueTag: '기한 미정', overdueTag: '마감 지남', tasksOf: '업무', doneOf: '완료', owner: '담당', campsCount: '진행 중 캠프', today: '오늘', pending: '논의 필요', discussed: '논의함', decided: '결정됨', planning: '준비 중', active: '진행 중', done: '종료', canceled: '취소', dateTbd: '날짜 미정' },
     en: { homeTitle: 'Camp Team Home', openTasks: 'Open tasks', overdue: 'Overdue', noOwner: 'No owner', completion: 'Completion', activeCamps: 'Active & upcoming camps', allCamps: 'View all', upcoming: 'Upcoming deadlines', attention: 'Needs attention', agenda: 'Next meeting agenda', recentMeetings: 'Recent meetings', recentFiles: 'Recently uploaded files', budget: 'Camp budget summary', budgetLocked: '🔒 Budget and amounts are visible only to authorized team members.', planned: 'Planned', actual: 'Actual', forecast: 'Forecast', remaining: 'Remaining vs target', openBudget: 'Open budget', lines: 'Line items',
-      none: 'Nothing to show.', editHome: '✏️ Customize home', editDone: 'Done editing', statsTitle: 'Key numbers', scopeMine: 'My home', scopeDefault: 'Default home for everyone', hintMine: 'Applies only to you. Once saved, your layout takes priority over the admin default.', hintDefault: 'Applies to every team member who has not saved a personal layout.', resetMine: 'Back to default home', resetDefault: 'Restore original layout', saved: 'Saved.', reset: 'Restored.', secShow: 'Show', secHide: 'Hide', secWide: 'Wide', secHalf: 'Half', secUp: 'Move earlier', secDown: 'Move later', secDrag: 'Drag to reorder', secHiddenTag: 'Hidden', leaveDirty: 'You have unsaved changes. Discard and continue?', needOne: 'At least one section must stay visible.', mineOverrides: 'Your personal layout is applied', noOwnerTag: 'No owner', noDueTag: 'No due date', overdueTag: 'Overdue', tasksOf: 'tasks', doneOf: 'done', owner: 'Owner', campsCount: 'Active camps', today: 'Today', pending: 'To discuss', discussed: 'Discussed', decided: 'Decided', planning: 'Planning', active: 'Active', done: 'Done', canceled: 'Canceled', dateTbd: 'Date TBD' }
+      none: 'Nothing to show.', editHome: 'Customize home', editDone: 'Done editing', statsTitle: 'Key numbers', scopeMine: 'My home', scopeDefault: 'Default home for everyone', hintMine: 'Applies only to you. Once saved, your layout takes priority over the admin default.', hintDefault: 'Applies to every team member who has not saved a personal layout.', resetMine: 'Back to default home', resetDefault: 'Restore original layout', saved: 'Saved.', reset: 'Restored.', secShow: 'Show', secHide: 'Hide', secWide: 'Wide', secHalf: 'Half', secUp: 'Move earlier', secDown: 'Move later', secDrag: 'Drag to reorder', secHiddenTag: 'Hidden', leaveDirty: 'You have unsaved changes. Discard and continue?', needOne: 'At least one section must stay visible.', mineOverrides: 'Your personal layout is applied', noOwnerTag: 'No owner', noDueTag: 'No due date', overdueTag: 'Overdue', tasksOf: 'tasks', doneOf: 'done', owner: 'Owner', campsCount: 'Active camps', today: 'Today', pending: 'To discuss', discussed: 'Discussed', decided: 'Decided', planning: 'Planning', active: 'Active', done: 'Done', canceled: 'Canceled', dateTbd: 'Date TBD' }
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   var data = null;
@@ -18,18 +18,6 @@
   }
   function empty() { return '<div class="empty">' + esc(CT.t('none')) + '</div>'; }
   function campName(r) { return CT.lang() === 'en' ? (r.campEn || r.campKo || '') : (r.campKo || r.campEn || ''); }
-
-  var SECS = {
-    stats: { t: 'statsTitle', nocard: true },
-    camps: { t: 'activeCamps', link: '/campteam/camps/' },
-    deadlines: { t: 'upcoming', link: '/campteam/tasks/' },
-    attention: { t: 'attention', link: '/campteam/tasks/' },
-    agenda: { t: 'agenda', link: '/campteam/meetings/' },
-    meetings: { t: 'recentMeetings', link: '/campteam/meetings/' },
-    files: { t: 'recentFiles', link: '/campteam/files/' },
-    budget: { t: 'budget' }
-  };
-  var L = null, editing = false, scope = 'mine', work = null, base = '';
 
   function body(id) {
     var d = data, s = d.stats, pct = s.total ? Math.round(s.completed / s.total * 100) : 0;
@@ -73,31 +61,180 @@
     return '';
   }
 
-  function tools(sec, i, n) {
-    var b = function (a, label, ico, dis) { return '<button type="button" class="hs-b" data-a="' + a + '" data-i="' + i + '" title="' + esc(CT.t(label)) + '" aria-label="' + esc(CT.t(label)) + '"' + (dis ? ' disabled' : '') + '>' + ico + '</button>'; };
-    return '<div class="hs-tools"><span class="hs-grip" title="' + esc(CT.t('secDrag')) + '">⠿</span><span class="hs-name">' + esc(CT.t(SECS[sec.id].t)) + (sec.show ? '' : ' · ' + esc(CT.t('secHiddenTag'))) + '</span><span class="sp"></span>' +
-      b('up', 'secUp', '▲', i === 0) + b('down', 'secDown', '▼', i === n - 1) + b('size', sec.size === 'full' ? 'secHalf' : 'secWide', sec.size === 'full' ? '◧' : '▭') + b('show', sec.show ? 'secHide' : 'secShow', sec.show ? '🙈' : '👁') + '</div>';
+  CT.addDict({
+    ko: { noticesTitle: '공지', linksTitle: '바로가기', myTasksTitle: '내 담당 업무', calTitle: '캠프팀 달력', ddayTitle: '캠프 D-day', activityTitle: '최근 변경 기록',
+      wNoticesD: '팀 공지를 홈에서 바로 봐요', wLinksD: '자주 가는 화면으로 가는 버튼', wMyTasksD: '담당자 이메일이 내 이메일인 업무', wCalendarD: '일정·업무 마감·회의를 월 달력으로', wDdayD: '고른 캠프까지 남은 날짜 (여러 개 가능)', wActivityD: '누가 무엇을 바꿨는지 (관리자만)',
+      wStatsD: '핵심 숫자 4개', wCampsD: '진행 중·예정 캠프', wDeadlinesD: '가까운 업무 마감', wAttentionD: '담당 미정·마감 지남 업무', wAgendaD: '다음 회의 안건', wMeetingsD: '최근 회의록', wFilesD: '최근 올린 파일', wBudgetD: '예산 요약 (금액 권한자만)',
+      addWidget: '위젯 추가', tidy: '빈틈 정리', allAdded: '더 추가할 위젯이 없어요.', noRoom: '자리가 없어서 맨 아래에 놓았어요.', overlapMsg: '옆 위젯과 겹쳐서 바꿀 수 없어요.', tidyDone: '빈 공간을 위로 모았어요.', remove: '홈에서 빼기', widthToggle: '너비 전체/반쪽', resize: '크기 조절',
+      editNarrow: '위젯 편집은 넓은 화면에서 할 수 있어요.', myTasksNone: '내 이메일이 담당자로 지정된 업무가 없어요.', noticesNone: '등록된 공지가 없어요.', pickCamp: '캠프 고르기', ddayNone: '날짜가 있는 캠프를 골라 주세요', ddayDay: 'D-DAY', ddayLive: '진행 중', dateTbdLong: '날짜 미정',
+      activityNone: '기록이 없어요.', linkResources: '캠프 자료실', linkFiles: '자료실', linkTasks: '일정 · 업무', linkMeetings: '회의록 · 결정', linkCamps: '캠프별 공간', linkTv: 'TV 대시보드', linkBudget: '캠프 예산', linkSearch: '전체 검색',
+      calToday: '오늘', calMore: '개 더', dow: '일,월,화,수,목,금,토', evTeam: '일정', evTask: '업무 마감', evMeeting: '회의', evCamp: '캠프', calMonthFmt: 'Y년 M월' },
+    en: { noticesTitle: 'Announcements', linksTitle: 'Quick links', myTasksTitle: 'My tasks', calTitle: 'Camp team calendar', ddayTitle: 'Camp D-day', activityTitle: 'Recent changes',
+      wNoticesD: 'Team announcements right on Home', wLinksD: 'Buttons to your most-used pages', wMyTasksD: 'Tasks whose owner email is yours', wCalendarD: 'Events, due dates and meetings in a month view', wDdayD: 'Days left until a chosen camp (add several)', wActivityD: 'Who changed what (admins only)',
+      wStatsD: 'Four key numbers', wCampsD: 'Active & upcoming camps', wDeadlinesD: 'Upcoming task deadlines', wAttentionD: 'Tasks without owner or overdue', wAgendaD: 'Next meeting agenda', wMeetingsD: 'Recent meetings', wFilesD: 'Recently uploaded files', wBudgetD: 'Budget summary (authorized only)',
+      addWidget: 'Add widget', tidy: 'Tidy gaps', allAdded: 'No more widgets to add.', noRoom: 'No free spot, placed at the bottom.', overlapMsg: 'It would overlap a neighbor widget.', tidyDone: 'Moved widgets up to fill gaps.', remove: 'Remove from Home', widthToggle: 'Full / half width', resize: 'Resize',
+      editNarrow: 'Widgets can be edited on a wider screen.', myTasksNone: 'No tasks list your email as owner.', noticesNone: 'No announcements.', pickCamp: 'Choose camp', ddayNone: 'Choose a camp that has a date', ddayDay: 'D-DAY', ddayLive: 'In progress', dateTbdLong: 'Date TBD',
+      activityNone: 'No records.', linkResources: 'Camp Resources', linkFiles: 'Files', linkTasks: 'Schedule · Tasks', linkMeetings: 'Meetings · Decisions', linkCamps: 'Camp Spaces', linkTv: 'TV Dashboard', linkBudget: 'Camp Budget', linkSearch: 'Search all',
+      calToday: 'Today', calMore: ' more', dow: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat', evTeam: 'Event', evTask: 'Task due', evMeeting: 'Meeting', evCamp: 'Camp', calMonthFmt: 'M Y' }
+  });
+
+  // ── 선 아이콘 (포털 메뉴와 같은 규격) ──
+  var IC = {
+    eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    eyeOff: '<path d="M17.9 17.9A10.4 10.4 0 0 1 12 19c-6.4 0-10-7-10-7a17.6 17.6 0 0 1 4.1-4.9M9.9 5.2A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-2.2 3.2"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/><path d="M2 2l20 20"/>',
+    width: '<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/>',
+    x: '<path d="M6 6l12 12M18 6 6 18"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    tidy: '<path d="M12 3v5M9.5 6 12 8.5 14.5 6M12 21v-5M9.5 18 12 15.5 14.5 18M4 12h16"/>',
+    prev: '<path d="m15 6-6 6 6 6"/>', next: '<path d="m9 6 6 6-6 6"/>',
+    grip: '<circle cx="9" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1.4" fill="currentColor" stroke="none"/>',
+    camps: '<path d="M3 20 12 4l9 16"/><path d="M9.5 20 12 15.5l2.5 4.5"/><path d="M2 20h20"/>',
+    tasks: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>',
+    meetings: '<path d="M5 4h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-9l-4 3.5V17H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 9h8M8 12.5h5"/>',
+    files: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+    resources: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 11h18"/>',
+    tv: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="m10.5 8.5 4 2-4 2z" fill="currentColor" stroke="none"/>',
+    budget: '<path d="M4 8V6a2 2 0 0 1 2-2h11v4"/><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M16 14h2"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'
+  };
+  function ico(n, size) { size = size || 15; return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IC[n] + '</svg>'; }
+
+  // ── 위젯 정의 ──
+  var COLS = 12, ROW = 40, GAP = 12;
+  var TITLES = { stats: ['statsTitle', 'wStatsD'], camps: ['activeCamps', 'wCampsD'], deadlines: ['upcoming', 'wDeadlinesD'], attention: ['attention', 'wAttentionD'], agenda: ['agenda', 'wAgendaD'], meetings: ['recentMeetings', 'wMeetingsD'], files: ['recentFiles', 'wFilesD'], budget: ['budget', 'wBudgetD'],
+    notices: ['noticesTitle', 'wNoticesD'], links: ['linksTitle', 'wLinksD'], mytasks: ['myTasksTitle', 'wMyTasksD'], calendar: ['calTitle', 'wCalendarD'], dday: ['ddayTitle', 'wDdayD'], activity: ['activityTitle', 'wActivityD'] };
+  var LINK = { camps: '/campteam/camps/', deadlines: '/campteam/tasks/', attention: '/campteam/tasks/', agenda: '/campteam/meetings/', meetings: '/campteam/meetings/', files: '/campteam/files/', mytasks: '/campteam/tasks/' };
+  var NOCARD = { stats: 1 };
+
+  var L = null, editing = false, scope = 'mine', work = null, base = '', calMonth = null, calCache = {}, auditCache = null;
+  var isAdmin = function () { return !!(data && data.user.perms.manageMembers); };
+  var wide = function () { return window.matchMedia('(min-width: 901px)').matches; };
+  var clone = function (x) { return JSON.parse(JSON.stringify(x)); };
+  var tt = function (type) { return CT.t(TITLES[type][0]); };
+
+  function rowTasks(list, withCamp) {
+    return list.length ? list.map(function (t) {
+      return '<div class="row"><div>' + esc(t.title) + testChip(t) + '<small>' + (withCamp && campName(t) ? esc(campName(t)) : '') + '</small></div>' + dueTag(t.dueDate, data.today) + '</div>';
+    }).join('') : '';
+  }
+  function ddayHtml(it) {
+    var d = data, cid = it.opts && it.opts.campId, c = (d.campChoices || []).filter(function (x) { return x.id === cid; })[0];
+    var sel = '';
+    if (editing) sel = '<select class="dd-sel" data-uid="' + esc(it.uid) + '" aria-label="' + esc(CT.t('pickCamp')) + '"><option value="">' + esc(CT.t('pickCamp')) + '</option>' + (d.campChoices || []).map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === cid ? ' selected' : '') + '>' + esc(CT.pick(x, 'name')) + '</option>'; }).join('') + '</select>';
+    if (!c || !c.startDate) return sel + '<div class="dday"><div class="dd-n">—</div><div class="dd-t">' + esc(c ? CT.pick(c, 'name') : CT.t('ddayNone')) + '</div><div class="dd-s">' + esc(c ? CT.t('dateTbdLong') : '') + '</div></div>';
+    var diff = daysBetween(d.today, c.startDate), end = c.endDate || c.startDate, live = d.today >= c.startDate && d.today <= end, past = d.today > end;
+    var n = live ? CT.t('ddayLive') : diff === 0 ? CT.t('ddayDay') : diff > 0 ? 'D-' + diff : 'D+' + (-diff);
+    return sel + '<div class="dday' + (past ? ' past' : live ? ' live' : '') + '"><div class="dd-n">' + esc(n) + '</div><div class="dd-t"><a href="/campteam/space/?id=' + esc(c.id) + '">' + esc(CT.pick(c, 'name')) + '</a></div><div class="dd-s">' + esc(CT.fmtDate(c.startDate)) + (c.endDate ? ' – ' + esc(CT.fmtDate(c.endDate)) : '') + '</div></div>';
+  }
+  function linksHtml() {
+    var p = data.user.perms, L2 = [['resources', '/campteam/resources/', 'linkResources', '#ec5fa0'], ['files', '/campteam/files/', 'linkFiles', '#f0a020'], ['tasks', '/campteam/tasks/', 'linkTasks', '#22b573'], ['meetings', '/campteam/meetings/', 'linkMeetings', '#8b6cf0'], ['camps', '/campteam/camps/', 'linkCamps', '#9bbf1f'], ['tv', '/campteam/tv/', 'linkTv', '#14b8c4']];
+    if (p.moneyRead) L2.push(['budget', '/campteam/budget/', 'linkBudget', '#d4a373']);
+    L2.push(['search', '/campteam/search/', 'linkSearch', '#3b8ff0']);
+    return '<div class="quick">' + L2.map(function (l) { return '<a href="' + l[1] + '" style="--c:' + l[3] + '"><span class="qi">' + ico(l[0], 16) + '</span><span>' + esc(CT.t(l[2])) + '</span></a>'; }).join('') + '</div>';
+  }
+  function noticesHtml() {
+    var n = data.notices || [];
+    return n.length ? n.map(function (x) { return '<div class="notice">' + esc(CT.lang() === 'en' && x.messageEn ? x.messageEn : x.message) + testChip(x) + '</div>'; }).join('') : '<div class="empty">' + esc(CT.t('noticesNone')) + '</div>';
+  }
+  function widgetBody(it) {
+    var t = it.type;
+    if (t === 'notices') return noticesHtml();
+    if (t === 'links') return linksHtml();
+    if (t === 'mytasks') return rowTasks(data.myTasks || [], true) || '<div class="empty">' + esc(CT.t('myTasksNone')) + '</div>';
+    if (t === 'dday') return ddayHtml(it);
+    if (t === 'calendar') return '<div class="mcal-wrap" data-cal>' + calHtml() + '</div>';
+    if (t === 'activity') return '<div data-activity>' + activityHtml() + '</div>';
+    return body(t);
   }
 
+  // ── 달력 위젯 ──
+  function ymd(y, m, d) { return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
+  function calHtml() {
+    if (!calMonth) { var t = data.today.split('-'); calMonth = { y: +t[0], m: +t[1] - 1 }; }
+    var y = calMonth.y, m = calMonth.m, first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), key = y + '-' + m, c = calCache[key];
+    var title = CT.t('calMonthFmt').replace('Y', y).replace('M', CT.lang() === 'en' ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m] : m + 1);
+    var dow = CT.t('dow').split(',');
+    var byDay = {};
+    var put = function (day, kind, text) { (byDay[day] = byDay[day] || []).push({ k: kind, t: text }); };
+    if (c) {
+      c.events.forEach(function (e) { for (var d = Math.max(e.startDate, ymd(y, m, 1)); d <= Math.min(e.endDate || e.startDate, ymd(y, m, days)); d = nextDay(d)) put(d, 'ev', e.title); });
+      c.tasks.forEach(function (k) { put(k.dueDate, 'tk', k.title); });
+      c.meetings.forEach(function (k) { put(k.meetDate, 'mt', k.title); });
+      c.camps.forEach(function (k) { for (var d = Math.max(k.startDate, ymd(y, m, 1)); d <= Math.min(k.endDate || k.startDate, ymd(y, m, days)); d = nextDay(d)) put(d, 'cp', CT.pick(k, 'name')); });
+    }
+    var cells = '', n = Math.ceil((first + days) / 7) * 7;
+    for (var i = 0; i < n; i++) {
+      var day = i - first + 1;
+      if (day < 1 || day > days) { cells += '<div class="mc off"></div>'; continue; }
+      var ds = ymd(y, m, day), list = byDay[ds] || [], shown = list.slice(0, 3);
+      cells += '<div class="mc' + (ds === data.today ? ' today' : '') + '"><b>' + day + '</b>' + shown.map(function (e) { return '<i class="mk ' + e.k + '" title="' + esc(e.t) + '">' + esc(e.t) + '</i>'; }).join('') + (list.length > 3 ? '<em>+' + (list.length - 3) + esc(CT.t('calMore')) + '</em>' : '') + '</div>';
+    }
+    return '<div class="mcal-head"><button type="button" class="hs-b" data-cal="-1" aria-label="prev">' + ico('prev') + '</button><b>' + esc(title) + '</b><button type="button" class="hs-b" data-cal="1" aria-label="next">' + ico('next') + '</button><button type="button" class="btn sm" data-cal="0">' + esc(CT.t('calToday')) + '</button></div>' +
+      '<div class="mcal">' + dow.map(function (d) { return '<div class="mw">' + esc(d) + '</div>'; }).join('') + cells + '</div>' +
+      '<div class="mlegend"><span class="mk ev">' + esc(CT.t('evTeam')) + '</span><span class="mk tk">' + esc(CT.t('evTask')) + '</span><span class="mk mt">' + esc(CT.t('evMeeting')) + '</span><span class="mk cp">' + esc(CT.t('evCamp')) + '</span></div>';
+  }
+  function nextDay(d) { var t = new Date(Date.parse(d + 'T00:00:00Z') + 86400000); return t.toISOString().slice(0, 10); }
+  async function loadCal() {
+    if (!calMonth) return; var y = calMonth.y, m = calMonth.m, key = y + '-' + m; if (calCache[key]) return;
+    try { calCache[key] = await CT.api('/api/campteam/calendar?from=' + ymd(y, m, 1) + '&to=' + ymd(y, m, new Date(y, m + 1, 0).getDate())); } catch (e) { calCache[key] = { events: [], tasks: [], meetings: [], camps: [] }; }
+  }
+  function activityHtml() {
+    if (!auditCache) return '<div class="empty">…</div>';
+    var rows = auditCache.slice(0, 12);
+    return rows.length ? rows.map(function (a) { var d = new Date(a.at); return '<div class="row"><div>' + esc(a.action + ' · ' + a.entity) + '<small>' + esc(a.actor) + (a.detail ? ' · ' + esc(a.detail) : '') + '</small></div><span class="tag t-none">' + esc((d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')) + '</span></div>'; }).join('') : '<div class="empty">' + esc(CT.t('activityNone')) + '</div>';
+  }
+  async function loadLate(items) {
+    var need = false;
+    if (items.some(function (w) { return w.type === 'calendar' && w.show; })) { var k = calMonth ? calMonth.y + '-' + calMonth.m : null; if (!calMonth || !calCache[k]) { calHtml(); await loadCal(); need = true; } }
+    if (isAdmin() && items.some(function (w) { return w.type === 'activity' && w.show; }) && !auditCache) { try { auditCache = (await CT.api('/api/campteam/audit')).items; } catch (e) { auditCache = []; } need = true; }
+    if (need) paintLate();
+  }
+  function paintLate() {
+    var c = document.querySelector('[data-cal]'); if (c && c.classList.contains('mcal-wrap')) c.innerHTML = calHtml();
+    var a = document.querySelector('[data-activity]'); if (a) a.innerHTML = activityHtml();
+  }
+
+  // ── 배치 계산 ──
+  function hit(a, b) { return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h; }
+  function collides(items, r, skipUid) { return items.some(function (o) { return o.uid !== skipUid && hit(r, o); }); }
+  function firstFree(items, w, h) {
+    for (var y = 0; y < 100; y++) for (var x = 0; x + w <= COLS; x++) if (!collides(items, { x: x, y: y, w: w, h: h })) return { x: x, y: y, found: true };
+    return { x: 0, y: items.reduce(function (m, o) { return Math.max(m, o.y + o.h); }, 0), found: false };
+  }
+  function tidy(items) {
+    var placed = []; items.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; }).forEach(function (it) { var y = 0; while (y < it.y && collides(placed, { x: it.x, y: y, w: it.w, h: it.h })) y++; it.y = y; placed.push(it); });
+  }
+  function visibleItems(items) { return items.filter(function (w) { return (editing || w.show) && (w.type !== 'activity' || isAdmin()); }); }
+
+  // ── 그리기 ──
   function render() {
     var d = data, hasTest = [].concat(d.camps, d.deadlines, d.attention, d.agenda, d.meetings, d.files).some(function (r) { return r.isTest; });
-    $('homeSub').innerHTML = esc(d.today) + ' · ' + esc(CT.t('campsCount')) + ' ' + d.camps.length + (hasTest ? ' <span class="chip test">' + esc(CT.t('testData')) + '</span>' : '') +
-      (!editing && L.mine ? ' <span class="chip">' + esc(CT.t('mineOverrides')) + '</span>' : '');
-    var list = editing ? work.sections : L.effective.sections;
-    $('homeGrid').className = 'hgrid' + (editing ? ' editing' : '');
-    $('homeGrid').innerHTML = list.map(function (sec, i) {
-      if (!editing && !sec.show) return '';
-      var def = SECS[sec.id], head = def.nocard ? '' : '<h2><span>' + esc(CT.t(def.t)) + '</span>' + (def.link ? '<a href="' + def.link + '">' + esc(CT.t('allCamps')) + '</a>' : '') + '</h2>';
-      return '<section class="hs ' + (def.nocard ? 'nocard' : 'card') + (sec.size === 'full' ? ' full' : '') + (sec.show ? '' : ' off') + '" data-id="' + sec.id + '" data-i="' + i + '"' + (editing ? ' draggable="true"' : '') + '>' +
-        (editing ? tools(sec, i, list.length) : '') + head + '<div class="hs-body">' + body(sec.id) + '</div></section>';
+    $('homeSub').innerHTML = esc(d.today) + ' · ' + esc(CT.t('campsCount')) + ' ' + d.camps.length + (hasTest ? ' <span class="chip test">' + esc(CT.t('testData')) + '</span>' : '') + (!editing && L.mine ? ' <span class="chip">' + esc(CT.t('mineOverrides')) + '</span>' : '');
+    var items = visibleItems(editing ? work.items : L.effective.items), isWide = wide();
+    var rows = Math.max(6, items.reduce(function (m, o) { return Math.max(m, o.y + o.h); }, 0) + (editing ? 8 : 0));
+    var grid = $('homeGrid'); grid.className = 'dash' + (editing ? ' editing' : '');
+    if (isWide) grid.style.gridTemplateRows = 'repeat(' + rows + ', ' + ROW + 'px)'; else grid.style.gridTemplateRows = '';
+    var cells = '';
+    if (editing && isWide) { var n = rows * COLS, c = ''; for (var i = 0; i < n; i++) c += '<i></i>'; cells = '<div class="cells" style="grid-template-rows:repeat(' + rows + ',' + ROW + 'px)" aria-hidden="true">' + c + '</div>'; }
+    var ordered = items.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; });
+    grid.innerHTML = cells + ordered.map(function (it) {
+      var card = !NOCARD[it.type], link = LINK[it.type];
+      var head = card ? '<h2><span>' + esc(tt(it.type)) + '</span>' + (link ? '<a href="' + link + '">' + esc(CT.t('allCamps')) + '</a>' : '') + '</h2>' : '';
+      var tools = editing && isWide ? '<div class="hs-tools" data-move><span class="hs-grip">' + ico('grip', 16) + '</span><span class="hs-name">' + esc(tt(it.type)) + (it.show ? '' : ' · ' + esc(CT.t('secHiddenTag'))) + '</span><span class="sp"></span>' +
+        '<button type="button" class="hs-b" data-a="show" title="' + esc(CT.t(it.show ? 'secHide' : 'secShow')) + '" aria-label="' + esc(CT.t(it.show ? 'secHide' : 'secShow')) + '">' + ico(it.show ? 'eye' : 'eyeOff') + '</button>' +
+        '<button type="button" class="hs-b" data-a="width" title="' + esc(CT.t('widthToggle')) + '" aria-label="' + esc(CT.t('widthToggle')) + '">' + ico('width') + '</button>' +
+        '<button type="button" class="hs-b" data-a="remove" title="' + esc(CT.t('remove')) + '" aria-label="' + esc(CT.t('remove')) + '">' + ico('x') + '</button></div>' : '';
+      var place = isWide ? ' style="grid-column:' + (it.x + 1) + ' / span ' + it.w + ';grid-row:' + (it.y + 1) + ' / span ' + it.h + '"' : '';
+      return '<section class="hs ' + (card ? 'card' : 'nocard') + (it.show ? '' : ' off') + '" data-uid="' + esc(it.uid) + '" data-type="' + it.type + '"' + place + '>' + tools + head + '<div class="hs-body">' + widgetBody(it) + '</div>' + (editing && isWide ? '<span class="hs-rs" data-resize title="' + esc(CT.t('resize')) + '"></span>' : '') + '</section>';
     }).join('');
-    renderBar();
+    renderBar(); loadLate(items);
   }
 
   // ── 편집 모드 ──
-  function clone(x) { return JSON.parse(JSON.stringify(x)); }
   function startScope(sc) {
-    scope = sc; work = clone(sc === 'default' ? (L.default || L.builtIn) : L.effective); base = JSON.stringify(work);
+    scope = sc; work = clone(sc === 'default' ? (L.default || L.builtIn) : L.effective);
+    if (!isAdmin()) work.items = work.items.filter(function (w) { return w.type !== 'activity'; });
+    base = JSON.stringify(work);
   }
   function changed() { return editing && JSON.stringify(work) !== base; }
   function renderBar() {
@@ -106,12 +243,14 @@
     bar.hidden = !editing; if (!editing) return;
     bar.innerHTML = (L.canEditDefault ? '<div class="seg"><button type="button" data-sc="mine" class="' + (scope === 'mine' ? 'on' : '') + '">' + esc(CT.t('scopeMine')) + '</button><button type="button" data-sc="default" class="' + (scope === 'default' ? 'on' : '') + '">' + esc(CT.t('scopeDefault')) + '</button></div>' : '<b>' + esc(CT.t('scopeMine')) + '</b>') +
       '<span class="hint">' + esc(CT.t(scope === 'default' ? 'hintDefault' : 'hintMine')) + '</span><span class="sp"></span><span class="hint" id="barMsg"></span>' +
+      '<span class="addwrap"><button type="button" class="btn sm" id="barAdd">' + ico('plus', 14) + '&nbsp;' + esc(CT.t('addWidget')) + '</button><div class="palette" id="palette" hidden></div></span>' +
+      '<button type="button" class="btn sm" id="barTidy">' + ico('tidy', 14) + '&nbsp;' + esc(CT.t('tidy')) + '</button>' +
       '<button type="button" class="btn sm" id="barReset"' + ((scope === 'mine' && !L.mine) || (scope === 'default' && !L.default) ? ' disabled' : '') + '>' + esc(CT.t(scope === 'default' ? 'resetDefault' : 'resetMine')) + '</button>' +
       '<button type="button" class="btn sm pri" id="barSave">' + esc(CT.t('save')) + '</button>';
   }
   function msg(t, bad) { var m = $('barMsg'); if (m) { m.textContent = t; m.style.color = bad ? 'var(--accent)' : 'var(--ok)'; } }
   async function put() {
-    if (!work.sections.some(function (s) { return s.show; })) { msg(CT.t('needOne'), true); return; }
+    if (!work.items.some(function (s) { return s.show; })) { msg(CT.t('needOne'), true); return; }
     try { L = Object.assign(L, await CT.api('/api/campteam/home-layout', { method: 'PUT', body: { scope: scope, layout: work } })); base = JSON.stringify(work); render(); msg(CT.t('saved')); }
     catch (e) { msg(e.message, true); }
   }
@@ -119,28 +258,83 @@
     try { L = Object.assign(L, await CT.api('/api/campteam/home-layout?scope=' + scope, { method: 'DELETE' })); startScope(scope); render(); msg(CT.t('reset')); }
     catch (e) { msg(e.message, true); }
   }
-  function move(from, to) { if (to < 0 || to >= work.sections.length || from === to) return; var x = work.sections.splice(from, 1)[0]; work.sections.splice(to, 0, x); render(); }
   function leave() { if (changed() && !confirm(CT.t('leaveDirty'))) return false; editing = false; work = null; render(); return true; }
+  function findItem(uid) { return work.items.filter(function (w) { return w.uid === uid; })[0]; }
+  function countOf(type) { return work.items.filter(function (w) { return w.type === type; }).length; }
+  function openPalette() {
+    var pal = $('palette'), cat = (L.catalog || []).filter(function (c) { return countOf(c.type) < c.max; });
+    if (!cat.length) { msg(CT.t('allAdded'), true); return; }
+    pal.innerHTML = cat.map(function (c) { return '<button type="button" data-add="' + c.type + '"><b>' + esc(tt(c.type)) + '</b><small>' + esc(CT.t(TITLES[c.type][1])) + '</small></button>'; }).join('');
+    pal.hidden = !pal.hidden;
+  }
+  function addWidget(type) {
+    var c = (L.catalog || []).filter(function (x) { return x.type === type; })[0]; if (!c) return;
+    var spot = firstFree(work.items, c.w, c.h), uid = countOf(type) === 0 && !findItem(type) ? type : type + Math.random().toString(36).slice(2, 6);
+    var it = { uid: uid, type: type, x: spot.x, y: spot.y, w: c.w, h: c.h, show: true, opts: {} };
+    if (type === 'dday') { var next = (data.campChoices || []).filter(function (x) { return x.startDate && x.startDate >= data.today; })[0] || (data.campChoices || [])[0]; if (next) it.opts.campId = next.id; }
+    work.items.push(it); $('palette').hidden = true; render(); if (!spot.found) msg(CT.t('noRoom'), true);
+    var el = document.querySelector('[data-uid="' + uid + '"]'); if (el) { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); el.classList.add('flash'); }
+  }
+
+  // 끌어서 옮기기 / 모서리로 크기 조절 (TV 편집기와 같은 방식: 칸에 맞춰지고, 겹치면 원래대로)
+  function startDrag(e, el, mode) {
+    var it = findItem(el.dataset.uid), grid = $('homeGrid'); if (!it) return;
+    e.preventDefault();
+    var rect = grid.getBoundingClientRect(), colW = (rect.width - GAP * (COLS - 1)) / COLS, sx = colW + GAP, sy = ROW + GAP, x0 = e.clientX, y0 = e.clientY, r0 = { x: it.x, y: it.y, w: it.w, h: it.h };
+    var cat = (L.catalog || []).filter(function (c) { return c.type === it.type; })[0] || { minW: 2, minH: 2 };
+    var ghost = document.createElement('div'); ghost.className = 'ghost'; grid.appendChild(ghost);
+    var cur = Object.assign({}, r0), ok = true;
+    var place = function (r) { ghost.style.gridColumn = (r.x + 1) + ' / span ' + r.w; ghost.style.gridRow = (r.y + 1) + ' / span ' + r.h; };
+    place(cur); el.classList.add('drag');
+    var move = function (ev) {
+      var dx = (ev.clientX - x0) / sx, dy = (ev.clientY - y0) / sy;
+      if (mode === 'move') { cur = { x: Math.max(0, Math.min(COLS - r0.w, Math.round(r0.x + dx))), y: Math.max(0, Math.round(r0.y + dy)), w: r0.w, h: r0.h }; el.style.transform = 'translate(' + (ev.clientX - x0) + 'px,' + (ev.clientY - y0) + 'px)'; }
+      else { cur = { x: r0.x, y: r0.y, w: Math.max(cat.minW, Math.min(COLS - r0.x, Math.round(r0.w + dx))), h: Math.max(cat.minH, Math.round(r0.h + dy)) }; el.style.gridColumn = (cur.x + 1) + ' / span ' + cur.w; el.style.gridRow = (cur.y + 1) + ' / span ' + cur.h; }
+      ok = !collides(work.items, cur, it.uid); ghost.classList.toggle('bad', !ok); place(cur);
+    };
+    var up = function () {
+      document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up);
+      ghost.remove(); el.style.transform = '';
+      if (ok && (cur.x !== r0.x || cur.y !== r0.y || cur.w !== r0.w || cur.h !== r0.h)) { it.x = cur.x; it.y = cur.y; it.w = cur.w; it.h = cur.h; }
+      render();
+    };
+    document.addEventListener('pointermove', move); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
+  }
 
   function wire() {
-    $('editHome').onclick = function () { if (editing) { leave(); } else { editing = true; startScope('mine'); render(); } };
+    $('editHome').onclick = function () { if (editing) { leave(); } else { if (!wide()) { alert(CT.t('editNarrow')); return; } editing = true; startScope('mine'); render(); } };
     $('editBar').onclick = function (e) {
       var t = e.target.closest('button'); if (!t) return;
       if (t.dataset.sc && t.dataset.sc !== scope) { if (changed() && !confirm(CT.t('leaveDirty'))) return; startScope(t.dataset.sc); render(); }
       else if (t.id === 'barSave') put(); else if (t.id === 'barReset') reset();
+      else if (t.id === 'barAdd') openPalette();
+      else if (t.id === 'barTidy') { tidy(work.items); render(); msg(CT.t('tidyDone')); }
+      else if (t.dataset.add) addWidget(t.dataset.add);
     };
-    var grid = $('homeGrid'), dragFrom = -1;
+    document.addEventListener('click', function (e) { var p = $('palette'); if (p && !p.hidden && !e.target.closest('.addwrap')) p.hidden = true; });
+    var grid = $('homeGrid');
     grid.addEventListener('click', function (e) {
-      var b = e.target.closest('.hs-b'); if (!b || !editing) return; var i = +b.dataset.i, sec = work.sections[i];
-      if (b.dataset.a === 'up') move(i, i - 1); else if (b.dataset.a === 'down') move(i, i + 1);
-      else if (b.dataset.a === 'size') { sec.size = sec.size === 'full' ? 'half' : 'full'; render(); }
-      else if (b.dataset.a === 'show') { sec.show = !sec.show; render(); }
+      var cal = e.target.closest('[data-cal]'); if (cal && cal.tagName === 'BUTTON') { var step = +cal.dataset.cal; if (!calMonth) calHtml(); if (step === 0) { var t = data.today.split('-'); calMonth = { y: +t[0], m: +t[1] - 1 }; } else { var mm = calMonth.m + step; calMonth = { y: calMonth.y + Math.floor(mm / 12), m: ((mm % 12) + 12) % 12 }; } paintLate(); loadCal().then(paintLate); return; }
+      var b = e.target.closest('.hs-b'); if (!b || !editing) return; var sec = b.closest('.hs'), it = findItem(sec.dataset.uid); if (!it) return;
+      if (b.dataset.a === 'show') { it.show = !it.show; render(); }
+      else if (b.dataset.a === 'remove') { work.items = work.items.filter(function (w) { return w !== it; }); render(); }
+      else if (b.dataset.a === 'width') {
+        var next = it.w === COLS ? { x: it.x > COLS / 2 ? COLS / 2 : it.x, w: COLS / 2 } : { x: 0, w: COLS };
+        if (it.w !== COLS && it.w >= COLS / 2 && it.w < COLS) next = { x: 0, w: COLS };
+        var r = { x: next.x, y: it.y, w: next.w, h: it.h };
+        if (collides(work.items, r, it.uid)) { msg(CT.t('overlapMsg'), true); return; }
+        it.x = r.x; it.w = r.w; render();
+      }
     });
-    grid.addEventListener('dragstart', function (e) { var h = e.target.closest && e.target.closest('.hs'); if (!editing || !h) return; dragFrom = +h.dataset.i; h.classList.add('drag'); try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', h.dataset.id); } catch (x) {} });
-    grid.addEventListener('dragover', function (e) { if (!editing || dragFrom < 0) return; e.preventDefault(); var h = e.target.closest('.hs'); [].forEach.call(grid.querySelectorAll('.over'), function (n) { if (n !== h) n.classList.remove('over'); }); if (h && +h.dataset.i !== dragFrom) h.classList.add('over'); });
-    grid.addEventListener('drop', function (e) { if (!editing || dragFrom < 0) return; e.preventDefault(); var h = e.target.closest('.hs'), from = dragFrom; dragFrom = -1; if (h) move(from, +h.dataset.i); else render(); });
-    grid.addEventListener('dragend', function () { dragFrom = -1; [].forEach.call(grid.querySelectorAll('.drag,.over'), function (n) { n.classList.remove('drag', 'over'); }); });
+    grid.addEventListener('change', function (e) { var s = e.target.closest('.dd-sel'); if (!s || !editing) return; var it = findItem(s.dataset.uid); if (it) { it.opts = s.value ? { campId: s.value } : {}; render(); } });
+    grid.addEventListener('pointerdown', function (e) {
+      if (!editing || e.button > 0) return;
+      var rs = e.target.closest('[data-resize]'), mv = e.target.closest('[data-move]');
+      if (e.target.closest('button,select,a')) return;
+      if (rs) startDrag(e, rs.closest('.hs'), 'resize'); else if (mv) startDrag(e, mv.closest('.hs'), 'move');
+    });
     window.addEventListener('beforeunload', function (e) { if (changed()) { e.preventDefault(); e.returnValue = ''; } });
+    var mq = window.matchMedia('(min-width: 901px)'); (mq.addEventListener ? mq.addEventListener('change', function () { if (editing && !mq.matches) { editing = false; work = null; } render(); }) : mq.addListener(function () { render(); }));
   }
 
   CT.boot(async function () {
@@ -149,6 +343,6 @@
       data = r[0]; L = r[1];
     } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     CT.applyI18n(); wire(); render();
-    document.addEventListener('ct-lang', render);
+    document.addEventListener('ct-lang', function () { calCache = calCache; render(); });
   });
 })();
