@@ -76,4 +76,12 @@ export async function applyCarry(env, from, to, balance, actor) {
   return id;
 }
 
+/** 여러 문장을 묶음으로 실행한다. (Cloudflare D1 은 요청 한 번에 보낼 수 있는 질의 수가 제한돼 있어서, 50개씩 한 번에 보낸다) */
+export async function batchRun(env, stmts) {
+  for (let i = 0; i < stmts.length; i += 50) {
+    const chunk = stmts.slice(i, i + 50);
+    if (typeof env.DB.batch === 'function') await env.DB.batch(chunk); else for (const st of chunk) await st.run();
+  }
+}
+
 export { json, badRequest };

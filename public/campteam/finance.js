@@ -2,7 +2,7 @@
 (function () {
   CT.addDict({
     ko: { fnTitle: '캠프 예산 · 회계 장부', fnSub: '예산안과 실제 수입·지출을 한곳에서 보고, 기간별로 마감해 남은 금액을 다음 기간으로 넘겨요.', fnPeriod: '기간',
-      tabSummary: '요약', tabLedger: '장부', tabPlan: '기간 예산', tabCats: '항목 목록', tabPeriods: '기간 · 마감', tabCampBudget: '캠프별 예산안 ↗',
+      tabSummary: '요약', tabLedger: '장부', tabImport: '엑셀 가져오기', tabPlan: '기간 예산', tabCats: '항목 목록', tabPeriods: '기간 · 마감', tabCampBudget: '캠프별 예산안 ↗',
       viewOnlyTre: '월코 재정 담당 계정은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', viewOnlyMem: '일반 캠프팀 팀원은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', closedNote: '마감된 기간이에요. 고치려면 「기간 · 마감」에서 먼저 다시 열어 주세요.',
       opening: '이월금', income: '수입', expense: '지출', balance: '현재 잔액', planned: '예산', actual: '실제', remaining: '남은 예산', achieved: '목표 대비', expectedEnd: '예산대로면 기간 끝 잔액',
       expenseByCat: '지출 항목별 (예산 대비 실제)', incomeByCat: '수입 항목별 (목표 대비 실제)', monthly: '월별 흐름', noData: '아직 거래가 없어요.', cat: '항목', needReview: '분류를 확인해야 하는 거래가', needReviewTail: '건 있어요. 장부에서 확인해 주세요.',
@@ -14,7 +14,7 @@
       closeTitle: '기간 마감', closeBody: '마감하면 이 기간은 잠기고(보관), 남은 금액이 다음 기간의 「이월금」으로 넘어가요. 다시 열면 넘어간 이월금은 거둬져요.', closeBal: '마감 시 잔액', closeNext: '남은 금액을 넘길 곳', closeNew: '새 기간 만들어서 넘기기', closeNone: '넘기지 않고 마감', closeConfirm: '마감하기', reopenConfirm: '이 기간을 다시 열까요? 다음 기간으로 넘어간 이월금이 거둬져요.', perDeleteConfirm: '이 기간을 지울까요?', noNextOpen: '(넘길 수 있는 열린 기간이 없어요)',
       loadFail: '불러오지 못했어요', fromLabel: '이월 적자' },
     en: { fnTitle: 'Camp Budget · Ledger', fnSub: 'See the budget plan and actual income/expenses together, close each period and carry the balance forward.', fnPeriod: 'Period',
-      tabSummary: 'Summary', tabLedger: 'Ledger', tabPlan: 'Period budget', tabCats: 'Categories', tabPeriods: 'Periods · Close', tabCampBudget: 'Per-camp plan ↗',
+      tabSummary: 'Summary', tabLedger: 'Ledger', tabImport: 'Excel import', tabPlan: 'Period budget', tabCats: 'Categories', tabPeriods: 'Periods · Close', tabCampBudget: 'Per-camp plan ↗',
       viewOnlyTre: 'WOLKO finance accounts are view-only. Camp finance and the director make changes.', viewOnlyMem: 'Camp team members are view-only here. Camp finance and the director make changes.', closedNote: 'This period is closed. Reopen it under "Periods · Close" to edit.',
       opening: 'Carried over', income: 'Income', expense: 'Expenses', balance: 'Balance', planned: 'Budget', actual: 'Actual', remaining: 'Remaining', achieved: 'vs target', expectedEnd: 'Balance at period end if on budget',
       expenseByCat: 'Expenses by category (actual vs budget)', incomeByCat: 'Income by category (actual vs target)', monthly: 'Monthly flow', noData: 'No entries yet.', cat: 'Category', needReview: 'Entries needing classification:', needReviewTail: '. Please check them in the ledger.',
@@ -28,7 +28,8 @@
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc, KRW = function (n) { return CT.money(n, 'KRW'); };
   var S = { periods: [], pid: null, tab: 'summary', sum: null, entries: null, cats: null, plan: null, filter: { kind: '', category: '', q: '', month: '' }, perms: null, qa: { date: '', kind: 'expense' } };
-  var TABS = ['summary', 'ledger', 'plan', 'cats', 'periods'];
+  var TABS_ALL = ['summary', 'ledger', 'import', 'plan', 'cats', 'periods'];
+  var tabs = function () { return TABS_ALL.filter(function (t) { return t !== 'import' || !!(S.perms && S.perms.moneyWrite); }); };
   var today = function () { var d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); };
   var cur = function () { return S.periods.filter(function (p) { return p.id === S.pid; })[0]; };
   var canEdit = function () { return !!(S.perms && S.perms.moneyWrite && cur() && cur().status === 'open'); };
@@ -60,6 +61,7 @@
     S.sum = await api('ledger-summary?periodId=' + encodeURIComponent(S.pid));
     if (S.tab === 'ledger') { var q = new URLSearchParams({ periodId: S.pid }); ['kind', 'category', 'q', 'month'].forEach(function (k) { if (S.filter[k]) q.set(k, S.filter[k]); }); S.entries = await api('ledger?' + q); }
     if (S.tab === 'plan') S.plan = (await api('ledger-plan?periodId=' + encodeURIComponent(S.pid))).items;
+    if (S.tab === 'import' && window.FinImport) await FinImport.load();
     if (S.tab === 'ledger' || S.tab === 'plan' || S.tab === 'cats' || S.tab === 'summary') S.cats = await api('ledger-categories');
   }
   async function refresh() { await loadPeriods(); await loadTab(); render(); }
@@ -70,13 +72,15 @@
     var vo = $('fnViewOnly'), role = CT.me && CT.me.campRole; vo.hidden = !!(S.perms && S.perms.moneyWrite);
     if (!vo.hidden) vo.textContent = CT.t(role === 'treasurer' ? 'viewOnlyTre' : 'viewOnlyMem');
     if (S.pid && cur() && cur().status === 'closed' && S.perms && S.perms.moneyWrite) { vo.hidden = false; vo.textContent = CT.t('closedNote'); }
-    $('fnTabs').innerHTML = TABS.map(function (t) { return '<button class="tab' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(CT.t('tab' + t.charAt(0).toUpperCase() + t.slice(1))) + '</button>'; }).join('') + '<a class="tab" href="/campteam/budget/" style="text-decoration:none">' + esc(CT.t('tabCampBudget')) + '</a>';
+    $('fnTabs').innerHTML = tabs().map(function (t) { return '<button class="tab' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(CT.t('tab' + t.charAt(0).toUpperCase() + t.slice(1))) + '</button>'; }).join('') + '<a class="tab" href="/campteam/budget/" style="text-decoration:none">' + esc(CT.t('tabCampBudget')) + '</a>';
     var body = $('fnBody');
-    if (S.tab === 'cats') body.innerHTML = catsHtml();
+    if (S.tab === 'import' && window.FinImport) body.innerHTML = FinImport.html();
+    else if (S.tab === 'cats') body.innerHTML = catsHtml();
     else if (S.tab === 'periods') body.innerHTML = periodsHtml();
     else if (!S.pid || !S.sum) body.innerHTML = '<div class="hintbox">' + esc(CT.t('noData')) + (canAdmin() ? ' <button class="btn sm pri" data-a="newPeriod">' + esc(CT.t('perNew')) + '</button>' : '') + '</div>';
     else body.innerHTML = S.tab === 'summary' ? summaryHtml() : S.tab === 'ledger' ? ledgerHtml() : planHtml();
     if (S.tab === 'ledger') bindQuick();
+    if (S.tab === 'import' && window.FinImport) FinImport.bind();
   }
 
   function bar(pct, over) { return '<div class="bar"><i style="width:' + Math.min(100, Math.max(0, pct)) + '%;' + (over ? 'background:var(--accent)' : '') + '"></i></div>'; }
@@ -112,7 +116,7 @@
     h += '<div class="filters t" style="grid-template-columns:1fr 1fr 1.6fr 1fr"><select id="lfKind"><option value="">' + esc(CT.t('kind') + ': ' + CT.t('all')) + '</option><option value="income"' + (S.filter.kind === 'income' ? ' selected' : '') + '>' + esc(CT.t('income')) + '</option><option value="expense"' + (S.filter.kind === 'expense' ? ' selected' : '') + '>' + esc(CT.t('expense')) + '</option></select>' +
       '<select id="lfCat"><option value="">' + esc(CT.t('cat') + ': ' + CT.t('all')) + '</option>' + ['income', 'expense'].map(function (k) { return ((S.cats && S.cats[k]) || []).map(function (c) { return '<option' + (S.filter.category === c.name ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join(''); }).join('') + '</select>' +
       '<input id="lfQ" type="search" value="' + esc(S.filter.q) + '" placeholder="' + esc(CT.t('search')) + '"><input id="lfMonth" type="month" value="' + esc(S.filter.month) + '" aria-label="' + esc(CT.t('month')) + '"></div>';
-    h += '<div class="count-line">' + e.count + esc(CT.t('entryCount')) + '</div>';
+    h += '<div class="count-line" style="display:flex;justify-content:space-between;align-items:center"><span>' + e.count + esc(CT.t('entryCount')) + '</span><button class="btn sm" data-a="exportXlsx">' + esc(CT.t('exportXlsx')) + '</button></div>';
     h += '<section class="card" style="padding:6px 8px"><div style="overflow:auto"><table class="vtab"><thead><tr><th>' + esc(CT.t('date')) + '</th><th>' + esc(CT.t('kind')) + '</th><th>' + esc(CT.t('cat')) + '</th><th>' + esc(CT.t('desc')) + '</th><th style="text-align:right">' + esc(CT.t('amount')) + '</th><th style="text-align:right">' + esc(CT.t('bal')) + '</th><th>' + esc(CT.t('source')) + '</th><th></th></tr></thead><tbody>';
     h += e.items.length ? e.items.map(function (r) {
       var inc = r.kind === 'income', canRow = canEdit() && r.source !== 'carry';
@@ -251,6 +255,7 @@
         else if (a === 'editEntry') entryForm(S.entries.items.filter(function (r) { return r.id === id; })[0]);
         else if (a === 'delEntry') { if (confirm(CT.t('confirmDel'))) { await api('ledger?id=' + encodeURIComponent(id), { method: 'DELETE' }); await loadPeriods(); await loadTab(); render(); } }
         else if (a === 'savePlan') savePlan();
+        else if (a === 'exportXlsx' && window.FinImport) await FinImport.exportXlsx();
         else if (a === 'copyPlan') { await api('ledger-plan', { method: 'POST', body: { periodId: S.pid, fromPeriodId: $('planFrom').value } }); await loadTab(); render(); }
         else if (a === 'catRename') CT.ask(CT.t('catRename'), '<label>' + esc(CT.t('catName')) + '<input name="name" maxlength="40" value="' + esc(b.dataset.n) + '" required></label>', async function (fd) { await api('ledger-categories?id=' + encodeURIComponent(id), { method: 'PATCH', body: { name: fd.name } }); S.cats = await api('ledger-categories'); render(); });
         else if (a === 'catToggle') { await api('ledger-categories?id=' + encodeURIComponent(id), { method: 'PATCH', body: { active: b.dataset.on === '1' } }); S.cats = await api('ledger-categories'); render(); }
@@ -264,7 +269,7 @@
       } catch (er) { alert(er.message); }
     });
   }
-  // 기간 만들기 버튼이 "새 기간" 말고 헤더에서도 눌릴 수 있게 (요약 화면의 안내)
+  window.FIN = { S: S, api: api, KRW: KRW, esc: esc, render: render, loadTab: loadTab, loadPeriods: loadPeriods, canEdit: canEdit, cur: cur, today: today };
   CT.boot(async function (me) {
     S.perms = me.perms;
     if (!me.perms.moneyRead) { $('fnLocked').hidden = false; return; }

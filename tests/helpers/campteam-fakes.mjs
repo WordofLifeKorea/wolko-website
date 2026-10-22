@@ -24,6 +24,8 @@ export function fakeD1({ seed = true, spy } = {}) {
       });
       return { ...bound([]), bind: (...a) => bound(a) };
     },
+    // D1 의 batch(): 한 묶음은 한 번의 트랜잭션
+    async batch(list) { const out = []; sqlite.exec('BEGIN'); try { for (const st of list) out.push(await st.run()); sqlite.exec('COMMIT'); } catch (e) { sqlite.exec('ROLLBACK'); throw e; } return out; },
   };
 }
 

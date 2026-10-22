@@ -51,7 +51,7 @@ export async function onRequestPatch({ env, request }) {
   }
   const f = await entryFields(env, body, e, period); if (f.error) return badRequest(f.error);
   const v = f.v;
-  await env.DB.prepare(`UPDATE ledger_entries SET entryDate=?2, kind=?3, amount=?4, category=?5, description=?6, note=?7, campId=?8, editedLocal=CASE WHEN source='excel' THEN 1 ELSE editedLocal END, needsReview=0, updatedAt=?9, updatedBy=?10 WHERE id=?1`)
+  await env.DB.prepare(`UPDATE ledger_entries SET entryDate=?2, kind=?3, amount=?4, category=?5, description=?6, note=?7, campId=?8, editedLocal=1, needsReview=0, updatedAt=?9, updatedBy=?10 WHERE id=?1`)
     .bind(id, v.entryDate, v.kind, v.amount, v.category, v.description, v.note, v.campId, nowIso(), s.email).run();
   await audit(env, s.email, 'update', 'ledger_entry', id, `${v.kind} ${v.category} ${v.amount}`);
   return json({ ok: true });
