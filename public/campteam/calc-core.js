@@ -7,21 +7,33 @@
  *   contingencyPct: 0~50,                                       // 예비비(지출의 몇 %)
  *   includeOpening: boolean                                     // 이전 기간에서 넘어온 이월금도 더할지
  * }
- * Row = { label, category, kind: 'fixed' | 'unit', amount, unit, basis, qty, mult }
- *   fixed: amount                         (예: 강사비 400,000)
- *   unit : unit × 수량(basis) × mult      (예: 식비 = 1끼 10,000원 × 전체 인원×일수 × 하루 3끼)
+ * Row = { label, category, kind, amount, unit, who, qty, per, mult }
+ *   kind  'fixed'  : 고정 금액 (amount)                                   예) 강사비 400,000원
+ *         'unit'   : 1인 단가(unit) × 인원 × (일수 또는 숙박수) × 하루 횟수  예) 식비 = 10,000원 × 전체 인원 × 4일 × 하루 3끼
+ *   who   'direct' : 인원을 직접 입력(qty명)  | 'campers' 캠퍼 전체 | 'staff' 스태프 전체 | 'all' 전체(캠퍼+스태프)
+ *   per   'none'   : 한 번만(인원 × 단가)     | 'days' 일수만큼 반복(+ mult = 하루 횟수) | 'nights' 숙박 수만큼 반복
+ * 계산식은 화면의 줄마다 그대로 보여 준다: parts(row, vars) → { unit, people, times, mult, total }
  */
-export const BASES = ['qty', 'campers', 'campersPct', 'staff', 'all', 'camperDays', 'staffDays', 'allDays', 'camperNights', 'staffNights', 'allNights'];
+export const WHO = ['direct', 'campers', 'staff', 'all'];
+export const PER = ['none', 'days', 'nights'];
 export const KINDS = ['fixed', 'unit'];
 export const LIMITS = { rows: 60, label: 60, category: 60, max: 1e10 };
 
-const num = (v, lo = -LIMITS.max, hi = LIMITS.max) => { const n = Number(String(v ?? '').replace(/[,\s₩원]/g, '')); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : 0; };
+const num = (v, lo = -LIMITS.max, hi = LIMITS.max) => { const n = Number(String(v ?? '').replace(/[,\s₩원명]/g, '')); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : 0; };
 const int = (v, lo, hi) => Math.round(num(v, lo, hi));
 
 export function emptyModel() {
   return { vars: { campers: 0, staff: 0, days: 1, nights: 0 }, income: [], expense: [], contingencyPct: 0, includeOpening: false };
 }
-export const newRow = (kind = 'fixed') => ({ label: '', category: '', kind, amount: 0, unit: 0, basis: 'qty', qty: 0, mult: 1 });
+export const newRow = (kind = 'fixed') => ({ label: '', category: '', kind, amount: 0, unit: 0, who: 'direct', qty: 0, per: 'none', mult: 1 });
+
+/** 예전 저장 형식(basis 한 칸에 인원·일수 기준을 섞어 둔 것)을 새 형식으로 바꾼다 */
+const LEGACY = { qty: ['direct', 'none'], campers: ['campers', 'none'], staff: ['staff', 'none'], all: ['all', 'none'], camperDays: ['campers', 'days'], staffDays: ['staff', 'days'], allDays: ['all', 'days'], camperNights: ['campers', 'nights'], staffNights: ['staff', 'nights'], allNights: ['all', 'nights'] };
+function modernize(r, vars) {
+  if (r.who || !r.basis) return r;
+  if (r.basis === 'campersPct') return { ...r, who: 'direct', per: 'none', qty: Math.round((vars.campers || 0) * num(r.qty, 0, 100) / 100) };
+  const m = LEGACY[r.basis]; return m ? { ...r, who: m[0], per: m[1] } : r;
+}
 
 /** 받은 값을 검사·정리한다. { model } 또는 { error } */
 export function sanitizeModel(input) {
@@ -32,32 +44,41 @@ export function sanitizeModel(input) {
     const list = input[side];
     if (list != null && !Array.isArray(list)) return { error: '항목 목록 형식이 올바르지 않아요.' };
     if ((list || []).length > LIMITS.rows) return { error: `${side === 'income' ? '수입' : '지출'} 항목은 ${LIMITS.rows}개까지예요.` };
-    for (const r of list || []) {
-      if (!r || typeof r !== 'object') return { error: '항목 형식이 올바르지 않아요.' };
+    for (const raw of list || []) {
+      if (!raw || typeof raw !== 'object') return { error: '항목 형식이 올바르지 않아요.' };
+      const r = modernize(raw, out.vars), mult = num(r.mult, 0, 1e3);
       out[side].push({
         label: String(r.label ?? '').trim().slice(0, LIMITS.label), category: String(r.category ?? '').trim().slice(0, LIMITS.category),
         kind: KINDS.includes(r.kind) ? r.kind : 'fixed', amount: Math.round(num(r.amount)), unit: Math.round(num(r.unit)),
-        basis: BASES.includes(r.basis) ? r.basis : 'qty', qty: num(r.qty, 0, 1e7), mult: num(r.mult, 0, 1e4),
+        who: WHO.includes(r.who) ? r.who : 'direct', qty: Math.round(num(r.qty, 0, 1e6)), per: PER.includes(r.per) ? r.per : 'none', mult: r.mult == null || r.mult === '' ? 1 : mult,
       });
     }
   }
   return { model: out };
 }
 
-/** 수량 기준 → 숫자 */
-export function qtyOf(row, vars) {
-  const c = vars.campers || 0, s = vars.staff || 0, d = vars.days || 0, n = vars.nights || 0, all = c + s;
-  switch (row.basis) {
-    case 'campers': return c; case 'campersPct': return c * (row.qty || 0) / 100; case 'staff': return s; case 'all': return all;
-    case 'camperDays': return c * d; case 'staffDays': return s * d; case 'allDays': return all * d;
-    case 'camperNights': return c * n; case 'staffNights': return s * n; case 'allNights': return all * n;
-    default: return row.qty || 0;
-  }
+/** 계산에 쓰는 인원수 */
+export function peopleOf(row, vars) {
+  const c = vars.campers || 0, s = vars.staff || 0;
+  switch (row.who) { case 'campers': return c; case 'staff': return s; case 'all': return c + s; default: return row.qty || 0; }
 }
-export function rowAmount(row, vars) {
-  if (row.kind === 'unit') return Math.round((row.unit || 0) * qtyOf(row, vars) * (row.mult == null ? 1 : row.mult));
-  return Math.round(row.amount || 0);
+/** 반복 횟수: 일수 또는 숙박 수 (한 번만이면 1) */
+export function timesOf(row, vars) { return row.per === 'days' ? vars.days || 0 : row.per === 'nights' ? vars.nights || 0 : 1; }
+/** 하루 횟수(끼니 등)는 "일수만큼 반복"일 때만 쓴다 */
+export const multOf = (row) => (row.per === 'days' ? (row.mult == null ? 1 : row.mult) : 1);
+
+/** 한 줄의 계산식 조각과 결과 */
+export function parts(row, vars) {
+  if (row.kind !== 'unit') return { fixed: true, total: Math.round(row.amount || 0) };
+  const people = peopleOf(row, vars), times = timesOf(row, vars), mult = multOf(row);
+  return { fixed: false, unit: row.unit || 0, people, times, mult, per: row.per, total: Math.round((row.unit || 0) * people * times * mult) };
 }
+export const rowAmount = (row, vars) => parts(row, vars).total;
+
+/** 캠프비(참가비) 줄: 1인 단가 × 인원(한 번만) 형태의 수입 중 이름이 캠프비·참가비·등록이거나 캠퍼 전체 인원에 곱하는 것 */
+export const isFeeRow = (r) => r.kind === 'unit' && r.per === 'none' && (r.who === 'campers' || /캠프비|참가비|등록/.test((r.label || '') + (r.category || '')));
+/** 캠프비 줄에 직접 입력한 인원의 합 (얼리버드 + 일반 등) — 캠퍼 수와 맞는지 확인하는 데 쓴다 */
+export function feeHeadcount(model) { const rows = model.income.filter((r) => isFeeRow(r) && r.who === 'direct'); return { rows: rows.length, total: rows.reduce((n, r) => n + (r.qty || 0), 0) }; }
 
 /** 계산. ctx.opening: 이전 기간에서 넘어온 이월금(원) — includeOpening 일 때만 더한다 */
 export function evaluate(model, ctx = {}) {
@@ -68,23 +89,22 @@ export function evaluate(model, ctx = {}) {
   const byCategory = (l) => { const m = {}; for (const r of l) { const k = r.category || r.label || '(미분류)'; m[k] = (m[k] || 0) + r.amount; } return m; };
   const campers = vars.campers || 0, feeIncome = model.income.filter(isFeeRow).reduce((n, r) => n + rowAmount(r, vars), 0);
   return { income, expense, contingency, opening, net, incomeRows: inc, expenseRows: exp, byCategory: { income: byCategory(inc), expense: byCategory(exp) },
-    costPerCamper: campers ? Math.round((expense + contingency) / campers) : null, feePerCamper: campers ? Math.round(feeIncome / campers) : null };
+    costPerCamper: campers ? Math.round((expense + contingency) / campers) : null, feePerCamper: campers ? Math.round(feeIncome / campers) : null, feeIncome };
 }
-/** 캠프비(참가비) 줄: 단가 × 캠퍼 수 기준(또는 캠퍼×일수 등)인 수입 */
-const CAMPER_LINKED = /^(campers|campersPct|camperDays|camperNights)$/;
-export const isFeeRow = (r) => r.kind === 'unit' && (CAMPER_LINKED.test(r.basis) || (r.basis === 'qty' && /캠프비|참가비|등록/.test(r.label + r.category)));
 
 /**
- * 손익분기: 
- *  - campers: 캠프비 등 나머지는 그대로 두고 캠퍼 수가 몇 명이어야 남는 금액이 0 이상이 되는지(0~maxCampers 중 처음으로)
- *  - feeScale: 캠프비 줄의 단가를 같은 비율로 올려야 0 이 되는 배율과, 그 단가
+ * 손익분기:
+ *  - avgNeeded : 남는 금액이 0이 되려면 캠퍼 1인당 평균 캠프비가 얼마여야 하는지 (지금 평균 avgNow 와 비교)
+ *  - feeScale/fees : 캠프비 단가를 같은 비율로 올려야 0이 되는 배율과 그 단가
+ *  - campers : 캠프비가 "캠퍼 전체 인원"에 곱해지는 줄이 있을 때만, 캠퍼가 몇 명 이상이어야 남는 금액이 0 이상이 되는지
  */
 export function breakEven(model, ctx = {}, maxCampers = 2000) {
-  const base = evaluate(model, ctx), out = { net: base.net, campers: null, camperLinked: false, feeScale: null, fees: [] };
-  // 캠프비 수입이 캠퍼 수에 따라 늘어나는 줄이 있을 때만 "몇 명이어야 하는지"를 계산한다
-  out.camperLinked = model.income.some((r) => r.kind === 'unit' && CAMPER_LINKED.test(r.basis) && r.unit > 0);
-  if (out.camperLinked) for (let n = 0; n <= maxCampers; n++) { const m = { ...model, vars: { ...model.vars, campers: n } }; if (evaluate(m, ctx).net >= 0) { out.campers = n; break; } }
-  const feeRows = model.income.filter((r) => isFeeRow(r) && r.unit > 0), B = feeRows.reduce((n, r) => n + rowAmount(r, model.vars), 0);
+  const base = evaluate(model, ctx), vars = model.vars, campers = vars.campers || 0;
+  const out = { net: base.net, avgNeeded: null, avgNow: null, campers: null, camperLinked: false, feeScale: null, fees: [] };
+  const feeRows = model.income.filter((r) => isFeeRow(r) && r.unit > 0), B = feeRows.reduce((n, r) => n + rowAmount(r, vars), 0), others = base.income - base.feeIncome;
+  if (campers > 0) { out.avgNow = Math.round(base.feeIncome / campers); out.avgNeeded = Math.max(0, Math.ceil((base.expense + base.contingency - others - base.opening) / campers)); }
+  out.camperLinked = model.income.some((r) => r.kind === 'unit' && r.per === 'none' && r.who === 'campers' && r.unit > 0);
+  if (out.camperLinked) for (let n = 0; n <= maxCampers; n++) { const m = { ...model, vars: { ...vars, campers: n } }; if (evaluate(m, ctx).net >= 0) { out.campers = n; break; } }
   if (B > 0) { const A = base.net - B, t = -A / B; out.feeScale = t; out.fees = feeRows.map((r) => ({ label: r.label, unit: r.unit, needed: Math.max(0, Math.ceil(r.unit * t)), neededRounded: Math.max(0, Math.ceil(r.unit * t / 1000) * 1000) })); }
   return out;
 }
@@ -100,11 +120,11 @@ export function toPlan(model, ctx = {}) {
 export function template() {
   const m = emptyModel(); m.vars = { campers: 0, staff: 0, days: 3, nights: 2 };
   const R = (o) => ({ ...newRow(o.kind || 'unit'), ...o });
-  m.income = [R({ label: '캠프비 (얼리버드, 캠퍼 중 비율 %)', category: '캠프비', basis: 'campersPct' }), R({ label: '캠프비 (일반, 캠퍼 중 비율 %)', category: '캠프비', basis: 'campersPct' }), R({ label: '후원금', category: '후원금', kind: 'fixed' })];
-  m.expense = [R({ label: '식비 (1끼 단가 × 인원 × 일수 × 끼니)', category: '식비', basis: 'allDays', mult: 3 }), R({ label: '간식비', category: '간식비', basis: 'allDays' }), R({ label: '숙박시설비 (1박 단가)', category: '숙박시설비', basis: 'allNights' }),
+  m.income = [R({ label: '캠프비 (얼리버드)', category: '캠프비' }), R({ label: '캠프비 (일반)', category: '캠프비' }), R({ label: '후원금', category: '후원금', kind: 'fixed' })];
+  m.expense = [R({ label: '식비', category: '식비', who: 'all', per: 'days', mult: 3 }), R({ label: '간식비', category: '간식비', who: 'all', per: 'days' }), R({ label: '숙박시설비', category: '숙박시설비', who: 'all', per: 'nights' }),
     R({ label: '프로그램활동비', category: '프로그램활동비', kind: 'fixed' }), R({ label: '영어활동비', category: '영어활동비', kind: 'fixed' }), R({ label: '물품구입비', category: '물품구입비', kind: 'fixed' }), R({ label: '스텝관리비', category: '스텝관리비', kind: 'fixed' }), R({ label: '강사비', category: '강사비', kind: 'fixed' })];
   m.contingencyPct = 5;
   return m;
 }
 
-if (typeof globalThis !== 'undefined') globalThis.CampCalc = { BASES, KINDS, LIMITS, emptyModel, newRow, sanitizeModel, qtyOf, rowAmount, evaluate, breakEven, toPlan, isFeeRow, template };
+if (typeof globalThis !== 'undefined') globalThis.CampCalc = { WHO, PER, KINDS, LIMITS, emptyModel, newRow, sanitizeModel, peopleOf, timesOf, multOf, parts, rowAmount, evaluate, breakEven, feeHeadcount, toPlan, isFeeRow, template };

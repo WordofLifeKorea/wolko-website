@@ -2,25 +2,25 @@
 (function () {
   CT.addDict({
     ko: { fnTitle: '캠프 예산 · 회계 장부', fnSub: '예산안과 실제 수입·지출을 한곳에서 보고, 기간별로 마감해 남은 금액을 다음 기간으로 넘겨요.', fnPeriod: '기간',
-      tabSummary: '요약', tabLedger: '장부', tabImport: '엑셀 가져오기', tabExpense: '경비 연동', tabRecon: '잔액 대조', tabPlan: '기간 예산', tabCats: '항목 목록', tabPeriods: '기간 · 마감', tabCampBudget: '캠프별 예산안 ↗',
-      lastRecon: '최근 잔액 대조', reconOk: '통장과 장부가 일치해요', reconDiff: '통장과 장부 차이', viewOnlyTre: '월코 재정 담당 계정은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', viewOnlyMem: '일반 캠프팀 팀원은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', closedNote: '마감된 기간이에요. 고치려면 「기간 · 마감」에서 먼저 다시 열어 주세요.',
+      tabSummary: '요약', tabLedger: '장부', tabImport: '엑셀 가져오기', tabExpense: '경비 연동', tabRecon: '잔액 대조', tabPlan: '기간 예산 (계획)', tabCats: '항목 목록', tabPeriods: '기간 · 마감', tabCampBudget: '캠프별 예산안 ↗',
+      lastRecon: '최근 잔액 대조', reconOk: '통장과 장부가 일치해요', reconDiff: '통장과 장부 차이', balTitle: '캠프 통장 잔액 (장부 기준)', balAsOf: '기준', balIn: '수입', balOut: '지출', balCheck: '통장과 맞는지 확인하기', balChecked: '마지막 통장 확인', balMatch: '일치', balDiff: '차이', balNever: '아직 통장 확인 기록이 없어요', balHelp: '장부 입력에 맞춰 잔액이 바로 바뀌어요. 첫 기간의 이월금(또는 엑셀 첫 줄)을 통장의 실제 잔액으로 맞춰 두면, 이 숫자가 곧 통장 잔액이에요. 「잔액 대조」로 가끔 확인해 주세요.', viewOnlyTre: '월코 재정 담당 계정은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', viewOnlyMem: '일반 캠프팀 팀원은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', closedNote: '마감된 기간이에요. 고치려면 「기간 · 마감」에서 먼저 다시 열어 주세요.',
       opening: '이월금', income: '수입', expense: '지출', balance: '현재 잔액', planned: '예산', actual: '실제', remaining: '남은 예산', achieved: '목표 대비', expectedEnd: '예산대로면 기간 끝 잔액',
       expenseByCat: '지출 항목별 (예산 대비 실제)', incomeByCat: '수입 항목별 (목표 대비 실제)', monthly: '월별 흐름', noData: '아직 거래가 없어요.', cat: '항목', needReview: '분류를 확인해야 하는 거래가', needReviewTail: '건 있어요. 장부에서 확인해 주세요.',
       date: '날짜', kind: '구분', desc: '내용', note: '비고', amount: '금액', bal: '잔액', source: '출처', act: '', add: '추가', edit: '수정', del: '삭제', all: '전체', search: '내용·비고 검색', month: '월', carryLabel: '이월', srcmanual: '직접', srcexcel: '엑셀', srcexpense: '경비 리포트', srccarry: '이월',
       quickAdd: '빠른 입력', addEntry: '+ 거래 추가', newEntry: '거래 추가', editEntry: '거래 수정', confirmDel: '이 거래를 지울까요? (삭제 표시만 되며 변경 기록에 남아요)', noEntries: '조건에 맞는 거래가 없어요.', entryCount: '건',
-      planTitle: '기간 예산 (항목별로 쓰기·받기로 한 금액)', planSave: '저장', planCopy: '지난 기간에서 가져오기', planCopyPick: '가져올 기간', planSaved: '저장했어요.', planTotalIn: '예산 수입 합계', planTotalOut: '예산 지출 합계', planExpected: '예산대로면 기간 끝 잔액(이월금 포함)',
+      planTitle: '기간 예산은 "이 기간에 항목별로 얼마를 쓰기로(받기로) 계획했는지"예요(엑셀의 「예산」 탭). 요약 화면의 「예산 대비 실제」가 이 숫자와 실제 거래를 비교해요. 직접 적거나, 계산기의 「기간 예산에 적용」으로 채울 수 있어요. 실제 돈(장부)은 바뀌지 않아요.', planSave: '저장', planCopy: '지난 기간에서 가져오기', planCopyPick: '가져올 기간', planSaved: '저장했어요.', planTotalIn: '예산 수입 합계', planTotalOut: '예산 지출 합계', planExpected: '예산대로면 기간 끝 잔액(이월금 포함)',
       catTitleIn: '수입 항목', catTitleOut: '지출 항목', catAdd: '항목 추가', catName: '항목 이름', catRename: '이름 바꾸기', catUsed: '건 사용', catOff: '사용 안 함', catOn: '다시 사용', catHelp: '엑셀의 "목록" 탭과 같아요. 쓰던 항목은 지우지 않고 "사용 안 함"으로 바꿔요. 이름을 바꾸면 이미 쓴 거래의 이름도 함께 바뀌어요.', catInactive: '사용 안 함', up: '위로', down: '아래로',
       perTitle: '기간 · 마감 · 보관', perNew: '+ 새 기간', perName: '기간 이름', perStart: '시작일', perEnd: '끝나는 날', perStatus: '상태', perOpen: '진행 중', perClosed: '마감됨', perCarry: '넘긴 곳', perClose: '마감하기', perReopen: '다시 열기', perView: '보기', perPreset: '기간 길이', perPresetCustom: '직접 정함', per6: '6개월', per3: '3개월 (분기)', perNote: '메모',
       closeTitle: '기간 마감', closeBody: '마감하면 이 기간은 잠기고(보관), 남은 금액이 다음 기간의 「이월금」으로 넘어가요. 다시 열면 넘어간 이월금은 거둬져요.', closeBal: '마감 시 잔액', closeNext: '남은 금액을 넘길 곳', closeNew: '새 기간 만들어서 넘기기', closeNone: '넘기지 않고 마감', closeConfirm: '마감하기', reopenConfirm: '이 기간을 다시 열까요? 다음 기간으로 넘어간 이월금이 거둬져요.', perDeleteConfirm: '이 기간을 지울까요?', noNextOpen: '(넘길 수 있는 열린 기간이 없어요)',
       loadFail: '불러오지 못했어요', fromLabel: '이월 적자' },
-    en: { lastRecon: 'Last reconciliation', reconOk: 'Bank and ledger match', reconDiff: 'Bank vs ledger difference', fnTitle: 'Camp Budget · Ledger', fnSub: 'See the budget plan and actual income/expenses together, close each period and carry the balance forward.', fnPeriod: 'Period',
-      tabSummary: 'Summary', tabLedger: 'Ledger', tabImport: 'Excel import', tabExpense: 'Expense reports', tabRecon: 'Reconcile', tabPlan: 'Period budget', tabCats: 'Categories', tabPeriods: 'Periods · Close', tabCampBudget: 'Per-camp plan ↗',
+    en: { balTitle: 'Camp bank balance (per ledger)', balAsOf: 'as of', balIn: 'Income', balOut: 'Expenses', balCheck: 'Check against the bank', balChecked: 'Last bank check', balMatch: 'matched', balDiff: 'difference', balNever: 'No bank check recorded yet', balHelp: 'The balance changes right as you enter transactions. If the first period’s carry-over (or the first Excel row) matches the real bank balance, this number is the bank balance. Check it now and then in Reconcile.', lastRecon: 'Last reconciliation', reconOk: 'Bank and ledger match', reconDiff: 'Bank vs ledger difference', fnTitle: 'Camp Budget · Ledger', fnSub: 'See the budget plan and actual income/expenses together, close each period and carry the balance forward.', fnPeriod: 'Period',
+      tabSummary: 'Summary', tabLedger: 'Ledger', tabImport: 'Excel import', tabExpense: 'Expense reports', tabRecon: 'Reconcile', tabPlan: 'Period budget (plan)', tabCats: 'Categories', tabPeriods: 'Periods · Close', tabCampBudget: 'Per-camp plan ↗',
       viewOnlyTre: 'WOLKO finance accounts are view-only. Camp finance and the director make changes.', viewOnlyMem: 'Camp team members are view-only here. Camp finance and the director make changes.', closedNote: 'This period is closed. Reopen it under "Periods · Close" to edit.',
       opening: 'Carried over', income: 'Income', expense: 'Expenses', balance: 'Balance', planned: 'Budget', actual: 'Actual', remaining: 'Remaining', achieved: 'vs target', expectedEnd: 'Balance at period end if on budget',
       expenseByCat: 'Expenses by category (actual vs budget)', incomeByCat: 'Income by category (actual vs target)', monthly: 'Monthly flow', noData: 'No entries yet.', cat: 'Category', needReview: 'Entries needing classification:', needReviewTail: '. Please check them in the ledger.',
       date: 'Date', kind: 'Type', desc: 'Description', note: 'Note', amount: 'Amount', bal: 'Balance', source: 'Source', act: '', add: 'Add', edit: 'Edit', del: 'Delete', all: 'All', search: 'Search description/note', month: 'Month', carryLabel: 'Carry', srcmanual: 'Manual', srcexcel: 'Excel', srcexpense: 'Expense report', srccarry: 'Carry-over',
       quickAdd: 'Quick entry', addEntry: '+ Add entry', newEntry: 'Add entry', editEntry: 'Edit entry', confirmDel: 'Delete this entry? (It is only marked deleted and kept in the change log.)', noEntries: 'No entries match.', entryCount: '',
-      planTitle: 'Period budget (planned amounts per category)', planSave: 'Save', planCopy: 'Copy from a previous period', planCopyPick: 'Period to copy', planSaved: 'Saved.', planTotalIn: 'Planned income', planTotalOut: 'Planned expenses', planExpected: 'Balance at period end if on budget (incl. carry-over)',
+      planTitle: 'The period budget is what you planned to spend (or receive) per category in this period (the Excel "예산" tab). The summary compares actual transactions with it ("actual vs budget"). Type it in, or fill it from the calculator\'s "Apply to period budget". The ledger (real money) does not change.', planSave: 'Save', planCopy: 'Copy from a previous period', planCopyPick: 'Period to copy', planSaved: 'Saved.', planTotalIn: 'Planned income', planTotalOut: 'Planned expenses', planExpected: 'Balance at period end if on budget (incl. carry-over)',
       catTitleIn: 'Income categories', catTitleOut: 'Expense categories', catAdd: 'Add category', catName: 'Category name', catRename: 'Rename', catUsed: ' used', catOff: 'Disable', catOn: 'Enable', catHelp: 'Same as the "목록" tab in Excel. Categories you used are never deleted — disable them. Renaming also renames them on existing entries.', catInactive: 'disabled', up: 'Up', down: 'Down',
       perTitle: 'Periods · Close · Archive', perNew: '+ New period', perName: 'Period name', perStart: 'Start', perEnd: 'End', perStatus: 'Status', perOpen: 'Open', perClosed: 'Closed', perCarry: 'Carried to', perClose: 'Close', perReopen: 'Reopen', perView: 'View', perPreset: 'Length', perPresetCustom: 'Custom', per6: '6 months', per3: '3 months (quarter)', perNote: 'Note',
       closeTitle: 'Close period', closeBody: 'Closing locks this period (archive) and carries the remaining balance into the next period as "Carried over". Reopening takes it back.', closeBal: 'Balance at close', closeNext: 'Carry the balance to', closeNew: 'Create a new period and carry to it', closeNone: 'Close without carrying', closeConfirm: 'Close', reopenConfirm: 'Reopen this period? The carried-over amount in the next period is removed.', perDeleteConfirm: 'Delete this period?', noNextOpen: '(no open period to carry to)',
@@ -49,6 +49,7 @@
   }
 
   // ── 불러오기 ──
+  var wantTab = new URLSearchParams(location.search).get('tab'); // 다른 화면(캠프별 예산안 등)에서 특정 탭으로 바로 들어올 수 있다
   async function loadPeriods() {
     S.periods = (await api('ledger-periods')).periods;
     var want = new URLSearchParams(location.search).get('period');
@@ -74,6 +75,7 @@
     if (!vo.hidden) vo.textContent = CT.t(role === 'treasurer' ? 'viewOnlyTre' : 'viewOnlyMem');
     if (S.pid && cur() && cur().status === 'closed' && S.perms && S.perms.moneyWrite) { vo.hidden = false; vo.textContent = CT.t('closedNote'); }
     $('fnTabs').innerHTML = tabs().map(function (t) { return '<button class="tab' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(CT.t('tab' + t.charAt(0).toUpperCase() + t.slice(1))) + '</button>'; }).join('') + '<a class="tab" href="/campteam/budget/" style="text-decoration:none">' + esc(CT.t('tabCampBudget')) + '</a>';
+    $('fnBanner').innerHTML = bannerHtml();
     var body = $('fnBody');
     if (ext()) body.innerHTML = ext().html();
     else if (S.tab === 'cats') body.innerHTML = catsHtml();
@@ -85,6 +87,12 @@
   }
 
   function bar(pct, over) { return '<div class="bar"><i style="width:' + Math.min(100, Math.max(0, pct)) + '%;' + (over ? 'background:var(--accent)' : '') + '"></i></div>'; }
+  /** 모든 탭 맨 위: 지금 캠프 통장 잔액(장부 기준) — 거래를 넣으면 바로 바뀐다 */
+  function bannerHtml() {
+    var s = S.sum; if (!s || !S.pid) return '';
+    var r = s.lastReconcile, rec = r ? (r.diff === 0 ? '<b style="color:var(--ok)">' + esc(CT.t('balMatch')) + '</b>' : '<b style="color:var(--accent)">' + esc(CT.t('balDiff')) + ' ' + esc(KRW(r.diff)) + '</b>') + ' · ' + esc(r.asOfDate) : esc(CT.t('balNever'));
+    return '<div class="balbar" title="' + esc(CT.t('balHelp')) + '"><div class="bb1"><label>' + esc(CT.t('balTitle')) + '</label><strong style="color:' + (s.balanceAsOf < 0 ? 'var(--accent)' : 'var(--blue)') + '">' + esc(KRW(s.balanceAsOf)) + '</strong><small>' + esc(s.asOf) + ' ' + esc(CT.t('balAsOf')) + ' · ' + esc(CT.t('balIn')) + ' ' + esc(KRW(s.totals.income)) + ' · ' + esc(CT.t('balOut')) + ' ' + esc(KRW(s.totals.expense)) + '</small></div><div class="bb2"><small>' + esc(CT.t('balChecked')) + ': ' + rec + '</small> <a href="#" data-tab="recon">' + esc(CT.t('balCheck')) + '</a><small class="bbh">' + esc(CT.t('balHelp')) + '</small></div></div>';
+  }
   function summaryHtml() {
     var s = S.sum, t = s.totals, openAmt = s.opening ? (s.opening.kind === 'income' ? s.opening.amount : -s.opening.amount) : 0;
     var h = '<div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">' +
@@ -274,7 +282,7 @@
   }
   window.FIN = { S: S, api: api, KRW: KRW, esc: esc, render: render, loadTab: loadTab, loadPeriods: loadPeriods, canEdit: canEdit, cur: cur, today: today };
   CT.boot(async function (me) {
-    S.perms = me.perms;
+    S.perms = me.perms; if (wantTab && tabs().indexOf(wantTab) >= 0) S.tab = wantTab;
     if (!me.perms.moneyRead) { $('fnLocked').hidden = false; return; }
     $('fnMain').hidden = false; wire();
     if (me.perms.moneyWrite) { try { var a = await api('ledger-expense', { method: 'POST', body: { action: 'autoSync' } }); S.syncInfo = a; } catch (e) { /* 연동이 없거나 실패해도 장부는 그대로 연다 */ } }

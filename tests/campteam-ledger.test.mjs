@@ -197,6 +197,7 @@ test('요약: 수입·지출·잔액, 항목별 예산 대비 실제(지출은 �
   assert.equal(s.plan.expense, 1800000 + 4000000 + 500000 + 400000); assert.equal(s.plan.income, 6000000); assert.equal(s.plan.expectedBalance, 6000000 - 6700000);
   assert.deepEqual(s.monthly.map((m) => m.month), ['2027-01', '2027-02']); assert.equal(s.monthly[0].expense, 245000 + 3000000 + 600000);
   assert.equal(s.canEdit, true); assert.equal(s.canAdmin, true);
+  assert.equal(s.asOf, '2027-06-30', '오늘이 기간 전이면 기간 끝 기준'); assert.equal(s.balanceAsOf, s.totals.balance);
   const t = await J(await call(Summary, 'onRequestGet', env, U.tre, { qs: `?periodId=${P1}` })); assert.equal(t.canEdit, false); assert.equal(t.canAdmin, false);
   const old = await J(await call(Summary, 'onRequestGet', env, U.dir, { qs: `?periodId=${P0}` })); assert.equal(old.canEdit, false, '마감된 기간은 편집 불가'); assert.equal(old.period.closingBalance, 1200000);
   assert.equal((await call(Summary, 'onRequestGet', env, U.dir, { qs: '?periodId=nope' })).status, 404);
@@ -255,4 +256,16 @@ test('홈 요약의 장부 현황: 금액 조회 권한자에게만(명단 밖�
   const get = async (who) => J(await call(Home, 'onRequestGet', env, who));
   for (const who of [U.mem, U.tre, U.fin, U.dir, U.admin]) { const h = await get(who); assert.equal(h.ledger.periodId, P1, who); assert.equal(h.ledger.balance, 1200000 + 2400000 + 500000 - 245000 - 3000000 - 600000); assert.equal(h.ledger.pendingExpense, 1); }
   const v = await get(U.view); assert.equal('ledger' in v, false); assert.equal('budget' in v, false);
+});
+
+test('요약의 "오늘까지 잔액": 오늘이 기간 안이면 오늘 날짜까지만, 지난 기간이면 기간 끝까지', async () => {
+  const env = mk(), kst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), yr = +kst.slice(0, 4);
+  env.DB.sqlite.exec("UPDATE ledger_periods SET deletedAt = '2000-01-01' WHERE id IN ('lp-2026h2','lp-2027h1')"); // 시험용 더미 기간이 오늘 날짜와 겹치지 않게 치운다
+  const p = await J(await call(Periods, 'onRequestPost', env, U.dir, { body: { name: '지금 기간', startDate: `${yr}-01-01`, endDate: `${yr}-12-31` } }));
+  const add2 = (date, amount, kind = 'income', category = '캠프비') => call(Ledger, 'onRequestPost', env, U.fin, { body: { periodId: p.id, entryDate: date, kind, amount, category } });
+  await add2(`${yr}-01-02`, '1,000,000'); await add2(kst, '300,000', 'expense', '식비'); const future = kst < `${yr}-12-31` ? `${yr}-12-31` : null; if (future) await add2(future, '5,000,000');
+  const s = await J(await call(Summary, 'onRequestGet', env, U.tre, { qs: `?periodId=${p.id}` }));
+  assert.equal(s.asOf, kst); assert.equal(s.balanceAsOf, 700000, '오늘 이후 날짜의 거래는 잔액에 넣지 않는다'); if (future) assert.equal(s.totals.balance, 5700000);
+  const done = await J(await call(Periods, 'onRequestPost', env, U.dir, { body: { name: '지난 기간', startDate: `${yr - 3}-01-01`, endDate: `${yr - 3}-06-30` } }));
+  assert.equal((await J(await call(Summary, 'onRequestGet', env, U.tre, { qs: `?periodId=${done.id}` }))).asOf, `${yr - 3}-06-30`, '지난 기간은 기간 끝까지');
 });
