@@ -98,6 +98,7 @@ test('회의·자료·캠프 공간·금액·개인정보·공지: 항목마다 
 test('휴지통 복구: 그 항목을 고칠 수 있어야 복구할 수 있고, 볼 수 없는 종류는 목록에도 없다', async () => {
   const env = makeEnv(fakeD1()), q = env.DB.sqlite;
   q.prepare(`UPDATE tasks SET deletedAt = 'x' WHERE id = (SELECT id FROM tasks LIMIT 1)`).run(); const id = q.prepare(`SELECT id FROM tasks WHERE deletedAt = 'x'`).get().id;
+  q.prepare(`INSERT INTO audit_log (id, at, actor, action, entity, entityId, detail) VALUES ('au-x', '2026-10-22T00:00:00Z', ?, 'delete', 'task', ?, '')`).run(U.mem, id); // 팀원이 지운 것으로 기록
   await set(env, U.mem, { tasks: 'view' }); assert.equal((await J(await call(Trash, 'onRequestGet', env, U.mem))).counts.tasks, 1); assert.equal((await call(Trash, 'onRequestPost', env, U.mem, { body: { kind: 'tasks', id } })).status, 403);
   await set(env, U.mem, { tasks: 'none' }); assert.equal('tasks' in (await J(await call(Trash, 'onRequestGet', env, U.mem))).counts, false);
   await set(env, U.mem, { tasks: 'edit' }); assert.equal((await call(Trash, 'onRequestPost', env, U.mem, { body: { kind: 'tasks', id } })).status, 200);

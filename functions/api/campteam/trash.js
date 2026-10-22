@@ -31,6 +31,14 @@ async function gate(env, request) {
   return { s };
 }
 
+/**
+ * 휴지통 보기·복구 범위: 관리자는 전부, 그 밖의 사람은 "내가 지운 것"만 (실수로 지운 걸 되살릴 수 있게).
+ * 누가 지웠는지는 변경 기록(audit_log)의 가장 최근 delete 기록으로 판단한다.
+ */
+const lastDeleter = (alias) => `LOWER(COALESCE((SELECT a.actor FROM audit_log a WHERE a.entityId = ${alias}.id AND a.action = 'delete' ORDER BY a.at DESC LIMIT 1), ''))`;
+const mine = (s, alias) => (s.perms.manageMembers ? '' : ` AND ${lastDeleter(alias)} = ?`);
+const mineArgs = (s) => (s.perms.manageMembers ? [] : [s.email.toLowerCase()]);
+
 /** 목록: ?kind= (없으면 모든 종류의 개수만) */
 export async function onRequestGet({ env, request }) {
   const { s, res } = await gate(env, request); if (res) return res;
@@ -38,13 +46,13 @@ export async function onRequestGet({ env, request }) {
   const allowed = Object.entries(KINDS).filter(([name, k]) => (k.money ? s.perms.moneyRead : canView(s.perms, AREA[name])));
   if (!kind) {
     const counts = {};
-    for (const [name, k] of allowed) counts[name] = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${k.table} WHERE deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND ${k.restricted} = 0` : ''} ${k.where ? 'AND ' + k.where : ''}`).first()).n;
+    for (const [name, k] of allowed) counts[name] = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ${k.where ? 'AND t.' + k.where : ''}${mine(s, 't')}`).bind(...mineArgs(s)).first()).n;
     return json({ counts });
   }
   const k = KINDS[kind]; if (!k || (k.money ? !s.perms.moneyRead : !canView(s.perms, AREA[kind]))) return badRequest('종류가 올바르지 않습니다.');
   const rows = (await env.DB.prepare(`SELECT t.id, ${k.label} AS label, ${k.sub} AS sub, t.deletedAt,
       (SELECT a.actor FROM audit_log a WHERE a.entityId = t.id AND a.action = 'delete' ORDER BY a.at DESC LIMIT 1) AS deletedBy
-    FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ${k.where ? 'AND t.' + k.where : ''} ORDER BY t.deletedAt DESC LIMIT 200`).all()).results;
+    FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ${k.where ? 'AND t.' + k.where : ''}${mine(s, 't')} ORDER BY t.deletedAt DESC LIMIT 200`).bind(...mineArgs(s)).all()).results;
   return json({ kind, items: rows });
 }
 
@@ -56,6 +64,7 @@ export async function onRequestPost({ env, request }) {
   if (k.money ? !s.perms.moneyWrite : !canWrite(s.perms, AREA[b.kind])) return needPerm('복구 권한이 없습니다.');
   const row = await env.DB.prepare(`SELECT * FROM ${k.table} WHERE id = ?1 AND deletedAt IS NOT NULL`).bind(String(b.id || '')).first();
   if (!row || (k.restricted && row[k.restricted] && !s.perms.moneyWrite)) return json({ error: '찾을 수 없습니다.' }, 404);
+  if (!s.perms.manageMembers && !(await env.DB.prepare(`SELECT 1 AS x FROM ${k.table} t WHERE t.id = ?1${mine(s, 't')}`).bind(row.id, ...mineArgs(s)).first())) return json({ error: '내가 지운 항목만 복구할 수 있어요. 다른 사람이 지운 건 관리자에게 요청해 주세요.' }, 404);
   // 연결된 상위 항목이 아직 삭제 상태면 복구해도 보이지 않으므로 먼저 알려준다
   const parent = { tasks: ['camps', 'campId'], sections: ['meetings', 'meetingId'], decisions: ['meetings', 'meetingId'], template_items: ['checklist_templates', 'templateId'], camps: ['camp_types', 'typeId'], files: ['camps', 'campId'], budget: ['camps', 'campId'] }[b.kind];
   if (parent && row[parent[1]]) {

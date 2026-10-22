@@ -20,7 +20,10 @@ test('휴지통: 삭제한 것을 보고 복구하며, 영구 삭제 기능은 �
   const env = mk();
   assert.equal((await call(Trash, 'onRequestGet', env, U.view)).status, 403); assert.equal((await call(Trash, 'onRequestGet', env, null)).status, 401);
   await call(Tasks, 'onRequestDelete', env, U.mem, { qs: '?id=t05' }); await call(Meetings, 'onRequestDelete', env, U.mem, { qs: '?id=m2' });
-  const counts = (await J(await call(Trash, 'onRequestGet', env, U.dir))).counts; assert.equal(counts.tasks, 1); assert.equal(counts.meetings, 1); assert.ok('budget' in counts);
+  const counts = (await J(await call(Trash, 'onRequestGet', env, U.admin))).counts; assert.equal(counts.tasks, 1); assert.equal(counts.meetings, 1); assert.ok('budget' in counts, '관리자는 모든 삭제 항목을 본다');
+  assert.equal((await J(await call(Trash, 'onRequestGet', env, U.dir))).counts.tasks, 0, '다른 사람이 지운 건 팀원에게 안 보인다 (내가 지운 것만)'); assert.equal((await J(await call(Trash, 'onRequestGet', env, U.mem))).counts.tasks, 1, '내가 지운 건 보인다');
+  assert.equal((await J(await call(Trash, 'onRequestGet', env, U.dir, { qs: '?kind=tasks' }))).items.length, 0);
+  assert.equal((await call(Trash, 'onRequestPost', env, U.dir, { body: { kind: 'tasks', id: 't05' } })).status, 404, '남이 지운 항목은 복구할 수 없다'); assert.equal((await J(await call(Trash, 'onRequestGet', env, U.admin, { qs: '?kind=tasks' }))).items.length, 1);
   const list = await J(await call(Trash, 'onRequestGet', env, U.mem, { qs: '?kind=tasks' })); assert.equal(list.items[0].id, 't05'); assert.equal(list.items[0].deletedBy, 'test-member@wolko.org');
   assert.equal((await call(Trash, 'onRequestPost', env, U.view, { body: { kind: 'tasks', id: 't05' } })).status, 403);
   assert.equal((await call(Trash, 'onRequestPost', env, U.mem, { body: { kind: 'tasks', id: 't05' } })).status, 200);
@@ -43,7 +46,7 @@ test('휴지통: 상위 항목이 삭제 상태면 복구를 막고, 금액 자�
   env.DB.sqlite.exec(`UPDATE camps SET deletedAt='2026-10-21T00:00:00Z' WHERE id='camp-p26'`);
   await call(Tasks, 'onRequestDelete', env, U.mem, { qs: '?id=t20' });
   const r = await call(Trash, 'onRequestPost', env, U.mem, { body: { kind: 'tasks', id: 't20' } }); assert.equal(r.status, 409); assert.equal((await J(r)).code, 'parent_deleted');
-  assert.equal((await call(Trash, 'onRequestPost', env, U.mem, { body: { kind: 'camps', id: 'camp-p26' } })).status, 200);
+  assert.equal((await call(Trash, 'onRequestPost', env, U.admin, { body: { kind: 'camps', id: 'camp-p26' } })).status, 200, '기록 없이 지워진 항목은 관리자가 복구');
   assert.equal((await call(Trash, 'onRequestPost', env, U.mem, { body: { kind: 'tasks', id: 't20' } })).status, 200);
 });
 

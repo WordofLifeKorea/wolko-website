@@ -93,8 +93,9 @@ test('팀 공지: 전체/선택한 사람, 올린 사람·관리자만 고치고
   assert.equal((await t(U.fin)).find((a) => a.id === some.id).link, '/campteam/finance/'); assert.equal((await post(env, U.fin, { action: 'edit', id: some.id, link: 'https://evil.example/x' })).status, 200); assert.equal((await t(U.fin)).find((a) => a.id === some.id).link, '', '바깥 주소는 버려요');
   q.prepare(`UPDATE announcements SET createdAt = ? WHERE id = ?`).run(d(-40) + 'T00:00:00Z', some.id); const old = (await t(U.fin)).find((a) => a.id === some.id); assert.equal(old.folded, true); assert.equal((await J(await get(env, U.dir))).unreadAnn, 1, '접힌 공지는 안 읽음 숫자에서 빠져요');
   assert.equal((await post(env, U.admin, { action: 'delete', id: all.id })).status, 200); assert.equal((await t(U.dir)).some((a) => a.id === all.id), false);
-  const trash = await J(await call(Trash, 'onRequestGet', env, U.mem, { qs: '?kind=announcements' })); assert.equal(trash.items.length, 1);
-  assert.equal((await call(Trash, 'onRequestPost', env, U.mem, { body: { kind: 'announcements', id: all.id } })).status, 200); assert.equal((await t(U.dir)).some((a) => a.id === all.id), true, '복구하면 다시 보여요');
+  assert.equal((await J(await call(Trash, 'onRequestGet', env, U.mem, { qs: '?kind=announcements' }))).items.length, 0, '관리자가 지운 공지는 올린 팀원의 휴지통에 안 보인다');
+  const trash = await J(await call(Trash, 'onRequestGet', env, U.admin, { qs: '?kind=announcements' })); assert.equal(trash.items.length, 1);
+  assert.equal((await call(Trash, 'onRequestPost', env, U.admin, { body: { kind: 'announcements', id: all.id } })).status, 200); assert.equal((await t(U.dir)).some((a) => a.id === all.id), true, '복구하면 다시 보여요');
 });
 
 test('주간 이메일 받기 켜기·끄기는 내 설정만, 새 알림 단계 변경은 내 업무 완료 처리와 연결', async () => {

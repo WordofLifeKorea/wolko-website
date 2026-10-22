@@ -198,14 +198,14 @@ textarea.big{width:100%;min-height:180px;border:1px solid var(--border);border-r
 .tagchip{display:inline-block;background:#eaf4f7;color:var(--blue);border-radius:99px;padding:3px 10px;font:600 12px var(--f-body);margin:3px 4px 3px 0;cursor:pointer;border:0}
 .langonly{font-size:10.5px;color:var(--light)}
 /* TV 편집기 */
-.tvstage{background:#e8eef1;border-radius:14px;padding:12px;display:flex;justify-content:center}
+.tvstage{background:#e8eef1;border-radius:14px;padding:12px;display:flex;justify-content:center;min-width:0;overflow:hidden}
 .tvedit.editing .tvc{box-shadow:0 8px 30px #0a1e2833;background-image:linear-gradient(#ffffff14 1px,transparent 1px),linear-gradient(90deg,#ffffff14 1px,transparent 1px);background-size:6.25% 11.111%}
 .tvedit.editing.tv-light .tvc{background-image:linear-gradient(#00000012 1px,transparent 1px),linear-gradient(90deg,#00000012 1px,transparent 1px)}
 .tvedit.editing .tvw{cursor:grab;touch-action:none}.tvedit.editing .tvw.drag{z-index:9;opacity:.92;cursor:grabbing}.tvedit.editing .tvw.bad .tvw-in{outline:3px solid #ff5a67}.tvedit.editing .tvw.sel .tvw-in{outline:3px solid #ffb347}.tvedit.editing .tvw:hover .tvw-in{outline:2px dashed var(--teal)}
 .tvedit .tvtool{position:absolute;top:-1px;right:calc(var(--u)*.35);z-index:5}.tvedit .tvtool button{width:max(18px,calc(var(--u)*1.7));height:max(18px,calc(var(--u)*1.7));border:0;border-radius:50%;background:#c42a36;color:#fff;font:700 max(10px,calc(var(--u)*.9))/1 Montserrat,sans-serif;cursor:pointer;padding:0}
 .tvedit .tvlbl{position:absolute;left:calc(var(--u)*.35);top:-1px;font:700 max(9px,calc(var(--u)*.7)) 'Noto Sans KR',sans-serif;color:#fff;background:#007ea1;padding:1px calc(var(--u)*.6);border-radius:0 0 6px 6px;z-index:5;white-space:nowrap;max-width:75%;overflow:hidden;text-overflow:ellipsis}
 .tvedit .tvrs{position:absolute;right:calc(var(--u)*.2);bottom:calc(var(--u)*.2);width:max(16px,calc(var(--u)*1.6));height:max(16px,calc(var(--u)*1.6));cursor:nwse-resize;z-index:5;border-right:3px solid #73d1f5;border-bottom:3px solid #73d1f5;border-radius:0 0 8px 0}
-.tvgrid{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}@media(max-width:1100px){.tvgrid{grid-template-columns:1fr}}
+.tvgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}.tvgrid>*{min-width:0}@media(max-width:1100px){.tvgrid{grid-template-columns:minmax(0,1fr)}}
 .urlbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font:600 12.5px ui-monospace,Menlo,monospace;word-break:break-all}
 .menu{display:none;position:absolute;z-index:30;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 30px #0a1e2833;padding:8px;width:300px;max-height:60vh;overflow:auto}.menu.open{display:block}.menu .mi{display:flex;gap:8px;padding:8px;border-radius:8px;cursor:pointer;font-size:13px}.menu .mi:hover{background:var(--bg)}.menu .mi small{margin-left:auto;color:var(--mid)}.menu .mi.has{opacity:.6}
 /* 팝업 공통: ✕ 버튼과 "저장하지 않은 변경" 확인창 */
@@ -383,3 +383,12 @@ html.al-open{overflow:hidden}
 .pmtable{width:100%;border-collapse:collapse;margin-top:6px}.pmtable th{font:700 12px var(--f-body);color:var(--mid);padding:8px;text-align:center;border-bottom:2px solid var(--border)}.pmtable th:first-child{text-align:left}.pmtable td{padding:9px 8px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}.pmtable td:first-child{text-align:left}.pmtable td small{display:block;color:var(--mid);font-size:11.5px;line-height:1.5;margin-top:2px}.pmtable td.def{background:#f3f8fb}.pmtable td.off{color:var(--border)}.pmtable em{display:block;font-style:normal;font-size:10px;color:var(--mid)}.pmtable input[type=radio]{width:18px;height:18px;accent-color:var(--blue)}.pmtable label{display:grid;place-items:center;cursor:pointer}
 .h1row{display:flex;align-items:center;gap:2px;flex-wrap:wrap}.h1row h1{margin:0}
 .tdr .btn,.ali .btn{white-space:nowrap;flex:none}
+
+/* 알림공지 입력 양식: 체크 칸은 작게 */
+.alform input[type=checkbox],.alform input[type=radio]{width:16px;height:16px;padding:0;margin:0;border-radius:4px;flex:none;accent-color:var(--blue)}
+.alform .pickgrid label{display:flex;align-items:center;gap:8px;color:var(--text);font-size:13px;padding:6px 10px;min-height:0}
+.alform label.chk{display:flex;align-items:center;gap:8px;color:var(--text);font-size:13px}
+/* 홈 「오늘 내가 할 일」: 위아래를 조금 줄임 */
+.tdbox{padding:12px 16px;margin-bottom:12px}.tdhd h2{font-size:17px}.tdai{margin-top:8px;padding:8px 12px;font-size:14px}
+.tds{margin-top:8px}.tds h3{margin-bottom:4px;font-size:13px}.tdr{padding:6px 10px;margin-bottom:4px;border-radius:8px}.tdr b{font-size:14.5px;line-height:1.35}.tdr small{font-size:12px}.tdr .btn{padding:4px 10px;min-height:0}
+.tdnone{margin-top:8px;padding:10px;font-size:14px}.tdweek{margin-top:8px;padding-top:8px;gap:3px}
