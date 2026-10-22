@@ -49,6 +49,7 @@ export async function onRequestPost({ env, request }) {
     if (start && end && end < start) return badRequest('종료일이 시작일보다 빠릅니다.');
     const status = CAMP_STATUSES.includes(b.status) ? b.status : 'planning';
     const ex = extras(b); if (ex.error) return badRequest(ex.error);
+    if (ex.registrationCampId && !s.perms.moneyWrite) return needPerm('포털 캠프 연결은 디렉터·캠프 재정 담당·관리자만 설정할 수 있어요.');
     await env.DB.prepare(`INSERT INTO camps (id,typeId,nameKo,nameEn,startDate,endDate,status,location,notes,theme,capacity,registrationCampId,createdAt,updatedAt,createdBy)
       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?12,?13,?14,?10,?10,?11)`)
       .bind(id, type.id, nameKo, text(b.nameEn, 80), start, end, status, text(b.location, 120), text(b.notes, 1000), now, s.email, ex.theme, ex.capacity, ex.registrationCampId).run();
@@ -88,6 +89,7 @@ export async function onRequestPatch({ env, request }) {
     if (start && end && end < start) return badRequest('종료일이 시작일보다 빠릅니다.');
     const status = 'status' in b ? (CAMP_STATUSES.includes(b.status) ? b.status : row.status) : row.status;
     const ex = extras(b, row); if (ex.error) return badRequest(ex.error);
+    if (ex.registrationCampId !== (row.registrationCampId ?? '') && !s.perms.moneyWrite) return needPerm('포털 캠프 연결은 디렉터·캠프 재정 담당·관리자만 바꿀 수 있어요.');
     await env.DB.prepare('UPDATE camps SET nameKo=?2,nameEn=?3,startDate=?4,endDate=?5,status=?6,location=?7,notes=?8,theme=?10,capacity=?11,registrationCampId=?12,updatedAt=?9 WHERE id=?1')
       .bind(id, nameKo, 'nameEn' in b ? text(b.nameEn, 80) : row.nameEn, start, end, status,
         'location' in b ? text(b.location, 120) : row.location, 'notes' in b ? text(b.notes, 1000) : row.notes, now, ex.theme, ex.capacity, ex.registrationCampId).run();

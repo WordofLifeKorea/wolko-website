@@ -92,7 +92,7 @@ test('공지: 조회는 로그인한 모두, 작성·수정·삭제는 팀원 �
 });
 
 test('캠프의 주제·정원·신청 시스템 ID 입력 검사', async () => {
-  const env = makeEnv(fakeD1()); const patch = (body) => call(Camps, 'onRequestPatch', env, U.mem, { qs: '?kind=camp&id=camp-u26', body });
+  const env = makeEnv(fakeD1()); const patch = (body) => call(Camps, 'onRequestPatch', env, U.fin, { qs: '?kind=camp&id=camp-u26', body });
   assert.equal((await patch({ theme: '주제 샘플', capacity: '60', registrationCampId: 'unity-2027' })).status, 200);
   assert.deepEqual({ ...env.DB.sqlite.prepare('SELECT theme, capacity, registrationCampId FROM camps WHERE id=?').get('camp-u26') }, { theme: '주제 샘플', capacity: 60, registrationCampId: 'unity-2027' });
   for (const bad of [{ capacity: 'abc' }, { capacity: 0 }, { capacity: 1.5 }, { registrationCampId: 'a:b' }, { registrationCampId: 'x y' }]) assert.equal((await patch(bad)).status, 400, JSON.stringify(bad));

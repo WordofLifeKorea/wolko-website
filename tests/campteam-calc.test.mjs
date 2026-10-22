@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { emptyModel, newRow, sanitizeModel, peopleOf, timesOf, parts, rowAmount, evaluate, breakEven, feeHeadcount, toPlan, template, WHO, PER } from '../public/campteam/calc-core.js';
+import { emptyModel, newRow, sanitizeModel, peopleOf, timesOf, parts, rowAmount, evaluate, breakEven, feeHeadcount, toPlan, template, WHO, PER, mealPlan, mealCounts } from '../public/campteam/calc-core.js';
 import * as Calc from '../functions/api/campteam/ledger-calc.js';
 import { fakeD1, makeEnv, req, U } from './helpers/campteam-fakes.mjs';
 
@@ -12,13 +12,13 @@ const model = () => ({ vars: { campers: 70, staff: 30, days: 4, nights: 3 }, con
 
 test('질문하신 계산: 얼리버드 80,000원 × 60명 = 4,800,000원 (인원은 직접 입력한 60명만 곱해진다)', () => {
   const v = model().vars, early = model().income[0];
-  assert.equal(rowAmount(early, v), 4800000); assert.deepEqual(parts(early, v), { fixed: false, unit: 80000, people: 60, times: 1, mult: 1, per: 'none', total: 4800000 });
+  assert.equal(rowAmount(early, v), 4800000); assert.deepEqual(parts(early, v), { fixed: false, unit: 80000, people: 60, times: 1, mult: 1, per: 'none', meal: null, total: 4800000 });
   assert.equal(rowAmount(model().income[1], v), 900000);
   assert.equal(evaluate(model()).income, 4800000 + 900000 + 1000000);
 });
 test('인원·반복 기준: 직접·캠퍼·스태프·전체, 한 번만·일수·숙박 수, 하루 횟수는 일수 반복일 때만', () => {
   const v = { campers: 70, staff: 30, days: 4, nights: 3 };
-  assert.deepEqual(WHO.map((who) => peopleOf({ who, qty: 7 }, v)), [7, 70, 30, 100]); assert.deepEqual(PER.map((per) => timesOf({ per }, v)), [1, 4, 3]);
+  assert.deepEqual(WHO.map((who) => peopleOf({ who, qty: 7 }, v)), [7, 70, 30, 100]); assert.deepEqual(PER.map((per) => timesOf({ per }, v)), [1, 4, 3, 10], '끼니: 4일, 첫날 점심부터 마지막 날 점심까지 = 10끼');
   assert.equal(rowAmount(R({ kind: 'unit', unit: 10000, who: 'all', per: 'days', mult: 3 }), v), 10000 * 100 * 4 * 3, '식비: 1끼 단가 × 전체 × 일수 × 하루 끼니');
   assert.equal(rowAmount(R({ kind: 'unit', unit: 30000, who: 'all', per: 'nights', mult: 9 }), v), 30000 * 100 * 3, '숙박에는 하루 횟수를 곱하지 않는다(mult 무시)');
   assert.equal(rowAmount(R({ kind: 'unit', unit: 5000, who: 'staff', per: 'none', mult: 9 }), v), 150000);
@@ -51,7 +51,7 @@ test('기간 예산으로 변환: 분류가 있는 줄만 항목별 합계로', 
 });
 test('입력 정리: 이상한 값은 안전한 값으로, 형식이 틀리면 거부, 뼈대는 통과, 예전 저장 형식(basis)도 새 형식으로 읽는다', () => {
   const s = sanitizeModel({ vars: { campers: '60', staff: -5, days: 999, nights: 'x' }, contingencyPct: 99, income: [{ label: '<b>x</b>'.repeat(30), kind: 'weird', who: 'nope', per: '??', amount: '1,000,000원', unit: 'abc', qty: -3, mult: 1e9, evil: 1 }], expense: [] }).model;
-  assert.deepEqual(s.vars, { campers: 60, staff: 0, days: 60, nights: 0 }); assert.equal(s.contingencyPct, 50); const r = s.income[0];
+  assert.deepEqual(s.vars, { campers: 60, staff: 0, days: 60, nights: 0, startMeal: 'lunch', endMeal: 'lunch', edits: {} }); assert.equal(s.contingencyPct, 50); const r = s.income[0];
   assert.deepEqual([r.kind, r.who, r.per, r.unit, r.qty, r.mult, 'evil' in r], ['fixed', 'direct', 'none', 0, 0, 1000, false]); assert.equal(r.label.length, 60); assert.equal(r.amount, 1000000);
   for (const bad of [null, [], 'x', { income: 'x' }, { income: [null] }, { expense: new Array(61).fill({}) }]) assert.ok(sanitizeModel(bad).error, JSON.stringify(bad)?.slice(0, 30));
   const t = sanitizeModel(template()); assert.ok(t.model && t.model.income.length === 3 && t.model.expense.length === 8); assert.equal(evaluate(t.model).net, 0, '뼈대는 금액이 모두 0');
@@ -77,4 +77,31 @@ test('시나리오 저장 API: 조회는 금액 조회 권한자, 저장·수정
   assert.equal((await (await call('onRequestGet', env, U.fin)).json()).items.some((x) => x.id === id), false);
   for (let i = 0; i < 70; i++) { const r = await call('onRequestPost', env, U.fin, { body }); if (r.status === 409) { assert.ok(i >= 50, '60개 제한'); return; } }
   assert.fail('개수 제한이 동작하지 않음');
+});
+
+test('끼니 일정: 2박 3일 첫날 점심부터 마지막 날 점심까지 = 7끼 (아침 2·점심 3·저녁 2)', () => {
+  const v = { campers: 70, staff: 30, days: 3, nights: 2, startMeal: 'lunch', endMeal: 'lunch', edits: {} };
+  assert.deepEqual(mealPlan(v), [{ day: 1, b: 0, l: 1, d: 1, s: 1 }, { day: 2, b: 1, l: 1, d: 1, s: 1 }, { day: 3, b: 1, l: 1, d: 0, s: 1 }]);
+  assert.deepEqual(mealCounts(v), { breakfast: 2, lunch: 3, dinner: 2, snack: 3, main: 7 });
+  const food = R({ kind: 'unit', unit: 10000, who: 'all', per: 'meals', meal: 'main' });
+  assert.equal(timesOf(food, v), 7); assert.equal(rowAmount(food, v), 10000 * 100 * 7); assert.equal(parts(food, v).meal, 'main');
+  assert.equal(rowAmount(R({ kind: 'unit', unit: 5000, who: 'campers', per: 'meals', meal: 'lunch' }), v), 5000 * 70 * 3);
+  assert.equal(rowAmount(R({ kind: 'unit', unit: 2000, who: 'all', per: 'meals', meal: 'snack' }), v), 2000 * 100 * 3);
+  assert.equal(rowAmount(R({ kind: 'unit', unit: 10000, who: 'all', per: 'days', mult: 3 }), v), 10000 * 100 * 3 * 3, '예전 방식(일수 × 하루 3끼)은 그대로 계산돼요');
+});
+test('끼니 일정: 다른 시작·끝, 하루짜리 캠프, 칸을 사람이 고치면 자동 계산보다 우선', () => {
+  assert.equal(mealCounts({ days: 3, startMeal: 'breakfast', endMeal: 'dinner', edits: {} }).main, 9);
+  assert.equal(mealCounts({ days: 3, startMeal: 'dinner', endMeal: 'breakfast', edits: {} }).main, 1 + 3 + 1);
+  assert.deepEqual(mealCounts({ days: 1, startMeal: 'lunch', endMeal: 'dinner', edits: {} }), { breakfast: 0, lunch: 1, dinner: 1, snack: 1, main: 2 });
+  assert.equal(mealCounts({ days: 0, startMeal: 'lunch', endMeal: 'lunch', edits: {} }).main, 0);
+  const v = { days: 3, startMeal: 'lunch', endMeal: 'lunch', edits: { '1d': 0, '3b': 0, '2s': 0, '3d': 1 } };
+  assert.deepEqual(mealCounts(v), { breakfast: 1, lunch: 3, dinner: 2, snack: 2, main: 6 }, '첫날 저녁 빼고(−1), 마지막 날 아침 빼고(−1), 마지막 날 저녁 넣고(+1), 둘째 날 간식 뺌');
+});
+test('끼니 일정 저장 검사: 잘못된 값은 기본으로, 고친 칸 형식만 통과, 예전 저장본은 그대로 열림', () => {
+  const ok = sanitizeModel({ vars: { days: 3, startMeal: 'dinner', endMeal: 'nope', edits: { '1d': 0, '2l': '1', bad: 1, '3x': 1, '9b': 2 } }, income: [], expense: [{ label: '식', kind: 'unit', unit: 100, who: 'all', per: 'meals', meal: 'snack' }, { label: '이상', kind: 'unit', per: 'meals', meal: 'weird' }] }).model;
+  assert.equal(ok.vars.startMeal, 'dinner'); assert.equal(ok.vars.endMeal, 'lunch'); assert.deepEqual(ok.vars.edits, { '1d': 0, '2l': 1 });
+  assert.equal(ok.expense[0].per, 'meals'); assert.equal(ok.expense[0].meal, 'snack'); assert.equal(ok.expense[1].meal, 'main');
+  const legacy = sanitizeModel({ vars: { campers: 10, days: 2, nights: 1 }, income: [], expense: [{ label: '식비', kind: 'unit', unit: 1000, who: 'all', per: 'days', mult: 3 }] }).model;
+  assert.equal(legacy.vars.startMeal, 'lunch'); assert.deepEqual(legacy.vars.edits, {}); assert.equal(legacy.expense[0].per, 'days');
+  const t = template(); assert.equal(t.expense.find((r) => r.category === '식비').per, 'meals'); assert.equal(t.expense.find((r) => r.category === '간식비').meal, 'snack');
 });

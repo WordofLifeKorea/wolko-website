@@ -12,10 +12,18 @@
  *         'unit'   : 1인 단가(unit) × 인원 × (일수 또는 숙박수) × 하루 횟수  예) 식비 = 10,000원 × 전체 인원 × 4일 × 하루 3끼
  *   who   'direct' : 인원을 직접 입력(qty명)  | 'campers' 캠퍼 전체 | 'staff' 스태프 전체 | 'all' 전체(캠퍼+스태프)
  *   per   'none'   : 한 번만(인원 × 단가)     | 'days' 일수만큼 반복(+ mult = 하루 횟수) | 'nights' 숙박 수만큼 반복
+ *         'meals'  : 끼니 수만큼 반복 — meal 로 어떤 끼니인지 고른다('main' 아침+점심+저녁 | breakfast | lunch | dinner | snack)
+ *
+ * 끼니(일정): vars.startMeal(첫날 처음 주는 끼니)·vars.endMeal(마지막 날 마지막으로 주는 끼니)·일수로 날짜별 끼니 표(mealPlan)를 자동으로 만든다.
+ *   예) 2박 3일, 첫날 점심부터 마지막 날 점심까지 → 첫날 점심·저녁 / 둘째 날 3끼 / 마지막 날 아침·점심 = 7끼.
+ *   vars.edits = { "2l": 0, "3d": 1 } 처럼 (날짜+끼니글자 b·l·d·s) 칸을 사람이 따로 고친 것은 자동 계산보다 우선한다.
  * 계산식은 화면의 줄마다 그대로 보여 준다: parts(row, vars) → { unit, people, times, mult, total }
  */
 export const WHO = ['direct', 'campers', 'staff', 'all'];
-export const PER = ['none', 'days', 'nights'];
+export const PER = ['none', 'days', 'nights', 'meals'];
+export const MEAL_START = ['breakfast', 'lunch', 'dinner'];
+export const MEAL_SET = ['main', 'breakfast', 'lunch', 'dinner', 'snack'];
+const MEAL_KEY = { breakfast: 'b', lunch: 'l', dinner: 'd', snack: 's' };
 export const KINDS = ['fixed', 'unit'];
 export const LIMITS = { rows: 60, label: 60, category: 60, max: 1e10 };
 
@@ -23,9 +31,9 @@ const num = (v, lo = -LIMITS.max, hi = LIMITS.max) => { const n = Number(String(
 const int = (v, lo, hi) => Math.round(num(v, lo, hi));
 
 export function emptyModel() {
-  return { vars: { campers: 0, staff: 0, days: 1, nights: 0 }, income: [], expense: [], contingencyPct: 0, includeOpening: false };
+  return { vars: { campers: 0, staff: 0, days: 1, nights: 0, startMeal: 'lunch', endMeal: 'lunch', edits: {} }, income: [], expense: [], contingencyPct: 0, includeOpening: false };
 }
-export const newRow = (kind = 'fixed') => ({ label: '', category: '', kind, amount: 0, unit: 0, who: 'direct', qty: 0, per: 'none', mult: 1 });
+export const newRow = (kind = 'fixed') => ({ label: '', category: '', kind, amount: 0, unit: 0, who: 'direct', qty: 0, per: 'none', mult: 1, meal: 'main' });
 
 /** 예전 저장 형식(basis 한 칸에 인원·일수 기준을 섞어 둔 것)을 새 형식으로 바꾼다 */
 const LEGACY = { qty: ['direct', 'none'], campers: ['campers', 'none'], staff: ['staff', 'none'], all: ['all', 'none'], camperDays: ['campers', 'days'], staffDays: ['staff', 'days'], allDays: ['all', 'days'], camperNights: ['campers', 'nights'], staffNights: ['staff', 'nights'], allNights: ['all', 'nights'] };
@@ -39,7 +47,9 @@ function modernize(r, vars) {
 export function sanitizeModel(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return { error: '계산 내용 형식이 올바르지 않아요.' };
   const v = input.vars || {};
-  const out = { vars: { campers: int(v.campers, 0, 5000), staff: int(v.staff, 0, 1000), days: int(v.days, 0, 60), nights: int(v.nights, 0, 60) }, income: [], expense: [], contingencyPct: Math.round(num(input.contingencyPct, 0, 50) * 10) / 10, includeOpening: !!input.includeOpening };
+  const edits = {};
+  if (v.edits && typeof v.edits === 'object' && !Array.isArray(v.edits)) for (const [k, val] of Object.entries(v.edits).slice(0, 400)) if (/^\d{1,2}[blds]$/.test(k) && (val === 0 || val === 1 || val === '0' || val === '1' || val === true || val === false)) edits[k] = Number(val);
+  const out = { vars: { campers: int(v.campers, 0, 5000), staff: int(v.staff, 0, 1000), days: int(v.days, 0, 60), nights: int(v.nights, 0, 60), startMeal: MEAL_START.includes(v.startMeal) ? v.startMeal : 'lunch', endMeal: MEAL_START.includes(v.endMeal) ? v.endMeal : 'lunch', edits }, income: [], expense: [], contingencyPct: Math.round(num(input.contingencyPct, 0, 50) * 10) / 10, includeOpening: !!input.includeOpening };
   for (const side of ['income', 'expense']) {
     const list = input[side];
     if (list != null && !Array.isArray(list)) return { error: '항목 목록 형식이 올바르지 않아요.' };
@@ -50,7 +60,7 @@ export function sanitizeModel(input) {
       out[side].push({
         label: String(r.label ?? '').trim().slice(0, LIMITS.label), category: String(r.category ?? '').trim().slice(0, LIMITS.category),
         kind: KINDS.includes(r.kind) ? r.kind : 'fixed', amount: Math.round(num(r.amount)), unit: Math.round(num(r.unit)),
-        who: WHO.includes(r.who) ? r.who : 'direct', qty: Math.round(num(r.qty, 0, 1e6)), per: PER.includes(r.per) ? r.per : 'none', mult: r.mult == null || r.mult === '' ? 1 : mult,
+        who: WHO.includes(r.who) ? r.who : 'direct', qty: Math.round(num(r.qty, 0, 1e6)), per: PER.includes(r.per) ? r.per : 'none', meal: MEAL_SET.includes(r.meal) ? r.meal : 'main', mult: r.mult == null || r.mult === '' ? 1 : mult,
       });
     }
   }
@@ -62,8 +72,27 @@ export function peopleOf(row, vars) {
   const c = vars.campers || 0, s = vars.staff || 0;
   switch (row.who) { case 'campers': return c; case 'staff': return s; case 'all': return c + s; default: return row.qty || 0; }
 }
-/** 반복 횟수: 일수 또는 숙박 수 (한 번만이면 1) */
-export function timesOf(row, vars) { return row.per === 'days' ? vars.days || 0 : row.per === 'nights' ? vars.nights || 0 : 1; }
+/**
+ * 날짜별 끼니 표: [{ day, b, l, d, s }] (1 = 그 끼니를 준다). 자동 계산 + 사람이 고친 칸(vars.edits).
+ * 첫날은 startMeal 이전 끼니를, 마지막 날은 endMeal 이후 끼니를 주지 않는다. 간식은 자동으로 매일 1번.
+ */
+export function mealPlan(vars) {
+  const days = Math.max(0, Math.min(60, vars.days || 0)), order = { breakfast: 0, lunch: 1, dinner: 2 }, start = order[vars.startMeal] ?? 1, end = order[vars.endMeal] ?? 1, edits = vars.edits || {}, out = [];
+  for (let day = 1; day <= days; day++) {
+    const row = { day };
+    for (const m of MEAL_START) { const k = MEAL_KEY[m], auto = (day > 1 || order[m] >= start) && (day < days || order[m] <= end) ? 1 : 0; row[k] = edits[day + k] != null ? edits[day + k] : auto; }
+    row.s = edits[day + 's'] != null ? edits[day + 's'] : 1; out.push(row);
+  }
+  return out;
+}
+/** 끼니 수: { breakfast, lunch, dinner, snack, main(아침+점심+저녁) } */
+export function mealCounts(vars) {
+  const c = { breakfast: 0, lunch: 0, dinner: 0, snack: 0, main: 0 };
+  for (const r of mealPlan(vars)) { c.breakfast += r.b; c.lunch += r.l; c.dinner += r.d; c.snack += r.s; }
+  c.main = c.breakfast + c.lunch + c.dinner; return c;
+}
+/** 반복 횟수: 일수·숙박 수·끼니 수 (한 번만이면 1) */
+export function timesOf(row, vars) { return row.per === 'days' ? vars.days || 0 : row.per === 'nights' ? vars.nights || 0 : row.per === 'meals' ? mealCounts(vars)[MEAL_SET.includes(row.meal) ? row.meal : 'main'] : 1; }
 /** 하루 횟수(끼니 등)는 "일수만큼 반복"일 때만 쓴다 */
 export const multOf = (row) => (row.per === 'days' ? (row.mult == null ? 1 : row.mult) : 1);
 
@@ -71,7 +100,7 @@ export const multOf = (row) => (row.per === 'days' ? (row.mult == null ? 1 : row
 export function parts(row, vars) {
   if (row.kind !== 'unit') return { fixed: true, total: Math.round(row.amount || 0) };
   const people = peopleOf(row, vars), times = timesOf(row, vars), mult = multOf(row);
-  return { fixed: false, unit: row.unit || 0, people, times, mult, per: row.per, total: Math.round((row.unit || 0) * people * times * mult) };
+  return { fixed: false, unit: row.unit || 0, people, times, mult, per: row.per, meal: row.per === 'meals' ? (MEAL_SET.includes(row.meal) ? row.meal : 'main') : null, total: Math.round((row.unit || 0) * people * times * mult) };
 }
 export const rowAmount = (row, vars) => parts(row, vars).total;
 
@@ -121,10 +150,10 @@ export function template() {
   const m = emptyModel(); m.vars = { campers: 0, staff: 0, days: 3, nights: 2 };
   const R = (o) => ({ ...newRow(o.kind || 'unit'), ...o });
   m.income = [R({ label: '캠프비 (얼리버드)', category: '캠프비' }), R({ label: '캠프비 (일반)', category: '캠프비' }), R({ label: '후원금', category: '후원금', kind: 'fixed' })];
-  m.expense = [R({ label: '식비', category: '식비', who: 'all', per: 'days', mult: 3 }), R({ label: '간식비', category: '간식비', who: 'all', per: 'days' }), R({ label: '숙박시설비', category: '숙박시설비', who: 'all', per: 'nights' }),
+  m.expense = [R({ label: '식비 (1끼 단가)', category: '식비', who: 'all', per: 'meals', meal: 'main' }), R({ label: '간식비 (1회 단가)', category: '간식비', who: 'all', per: 'meals', meal: 'snack' }), R({ label: '숙박시설비', category: '숙박시설비', who: 'all', per: 'nights' }),
     R({ label: '프로그램활동비', category: '프로그램활동비', kind: 'fixed' }), R({ label: '영어활동비', category: '영어활동비', kind: 'fixed' }), R({ label: '물품구입비', category: '물품구입비', kind: 'fixed' }), R({ label: '스텝관리비', category: '스텝관리비', kind: 'fixed' }), R({ label: '강사비', category: '강사비', kind: 'fixed' })];
   m.contingencyPct = 5;
   return m;
 }
 
-if (typeof globalThis !== 'undefined') globalThis.CampCalc = { WHO, PER, KINDS, LIMITS, emptyModel, newRow, sanitizeModel, peopleOf, timesOf, multOf, parts, rowAmount, evaluate, breakEven, feeHeadcount, toPlan, isFeeRow, template };
+if (typeof globalThis !== 'undefined') globalThis.CampCalc = { WHO, PER, MEAL_START, MEAL_SET, mealPlan, mealCounts, KINDS, LIMITS, emptyModel, newRow, sanitizeModel, peopleOf, timesOf, multOf, parts, rowAmount, evaluate, breakEven, feeHeadcount, toPlan, isFeeRow, template };

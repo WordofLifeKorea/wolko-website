@@ -35,5 +35,13 @@ if [ ! -e "$STATE/applied/_kvseed" ]; then
   done
   touch "$STATE/applied/_kvseed"
 fi
+# 로컬 가짜 포털 신청 자료(한 번만) — 캠프별 공간의 "신청 현황" 화면을 시험하기 위한 가짜 이름·번호. 실제 신청 자료와 무관하다.
+if [ ! -e "$STATE/applied/_kvseed_portal" ]; then
+  for f in camp-team/dev/dummy-portal/*.json; do
+    b=$(basename $f .json)
+    npx wrangler@4 kv key put "camp:${b%%__*}:reg:${b##*__}" --path "$f" --binding CAMP_KV --local --config $CFG --persist-to $STATE
+  done
+  touch "$STATE/applied/_kvseed_portal"
+fi
 exec npx wrangler@4 pages dev dist --d1 DB=00000000-0000-0000-0000-000000000000 --r2 CAMPTEAM_FILES --kv CAMP_KV --persist-to $STATE --port 8788 --ip 0.0.0.0 \
   --binding ADMIN_PASSWORD=local-dev-secret --binding CAMPTEAM_DEV_AUTH=1 ${=WRANGLER_EXTRA}
