@@ -107,7 +107,7 @@ head('4. 실제 이름·내부 문구·비밀값 검사 (추적 파일 전체, �
     : ok('새로 추가한 파일에서 실제 인명·내부 문구·비밀값 의심 문자열 없음');
   // 재정/팀원 이메일이 코드에 박혀 있지 않은지: 고정 관리자 2명 외 이메일 주소
   const mail = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
-  const allowed = new Set(['aidenpark@wolko.org', 'hkim3@wol.org']);
+  const allowed = new Set(['aidenpark@wolko.org', 'hkim3@wol.org', 'hub@wolko.org']); // hub@ 는 기존 포털이 이미 코드에 쓰는 시스템 발신 주소(개인 주소 아님)
   const extra = [];
   for (const f of files) {
     if (!added.has(f) || f.startsWith('tests/') || f.startsWith('camp-team/db/seed')) continue;
