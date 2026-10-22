@@ -18,6 +18,7 @@ const KINDS = {
   template_items: { table: 'checklist_items', label: 'title', sub: `COALESCE(section,'')` },
   notices: { table: 'notices', label: 'message', sub: `COALESCE(messageEn,'')` },
   budget: { table: 'budget_lines', label: 'label', sub: 'currency', money: true },
+  ledger: { table: 'ledger_entries', label: `CASE WHEN description <> '' THEN description ELSE category END`, sub: `entryDate || ' · ' || amount`, money: true, where: `source <> 'carry'` }, // 장부 거래(이월금 줄은 시스템이 관리하므로 제외)
 };
 async function gate(env, request) {
   if (!env.DB) return { res: noDb() };
@@ -34,13 +35,13 @@ export async function onRequestGet({ env, request }) {
   const allowed = Object.entries(KINDS).filter(([, k]) => (k.money ? s.perms.moneyRead : true));
   if (!kind) {
     const counts = {};
-    for (const [name, k] of allowed) counts[name] = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${k.table} WHERE deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND ${k.restricted} = 0` : ''}`).first()).n;
+    for (const [name, k] of allowed) counts[name] = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${k.table} WHERE deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND ${k.restricted} = 0` : ''} ${k.where ? 'AND ' + k.where : ''}`).first()).n;
     return json({ counts });
   }
   const k = KINDS[kind]; if (!k || (k.money && !s.perms.moneyRead)) return badRequest('종류가 올바르지 않습니다.');
   const rows = (await env.DB.prepare(`SELECT t.id, ${k.label} AS label, ${k.sub} AS sub, t.deletedAt,
       (SELECT a.actor FROM audit_log a WHERE a.entityId = t.id AND a.action = 'delete' ORDER BY a.at DESC LIMIT 1) AS deletedBy
-    FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ORDER BY t.deletedAt DESC LIMIT 200`).all()).results;
+    FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ${k.where ? 'AND t.' + k.where : ''} ORDER BY t.deletedAt DESC LIMIT 200`).all()).results;
   return json({ kind, items: rows });
 }
 
@@ -58,8 +59,16 @@ export async function onRequestPost({ env, request }) {
     const p = await env.DB.prepare(`SELECT deletedAt FROM ${parent[0]} WHERE id = ?1`).bind(row[parent[1]]).first();
     if (p && p.deletedAt) return json({ error: '이 항목이 속한 상위 항목(캠프·회의·템플릿)이 삭제 상태예요. 상위 항목을 먼저 복구해주세요.', code: 'parent_deleted' }, 409);
   }
+  if (b.kind === 'ledger') { // 장부 거래: 기간이 열려 있어야 하고, 같은 열쇠(연동·이월)의 줄이 이미 있으면 안 된다
+    if (row.source === 'carry') return json({ error: '이월금 줄은 복구할 수 없어요.' }, 409);
+    const per = await env.DB.prepare('SELECT name, status, deletedAt FROM ledger_periods WHERE id = ?1').bind(row.periodId).first();
+    if (!per || per.deletedAt) return json({ error: '이 거래가 속한 기간이 지워졌어요.', code: 'parent_deleted' }, 409);
+    if (per.status === 'closed') return json({ error: `「${per.name}」은 마감된 기간이에요. 다시 연 뒤에 복구해 주세요.`, code: 'closed' }, 409);
+    if (row.externalKey && await env.DB.prepare('SELECT 1 AS x FROM ledger_entries WHERE periodId = ?1 AND externalKey = ?2 AND deletedAt IS NULL').bind(row.periodId, row.externalKey).first()) return json({ error: '같은 거래가 이미 있어요.' }, 409);
+  }
   const now = nowIso();
   await env.DB.prepare(`UPDATE ${k.table} SET deletedAt = NULL, updatedAt = ?2 WHERE id = ?1`).bind(row.id, now).run();
+  if (b.kind === 'ledger' && row.source === 'expense') await env.DB.prepare("UPDATE ledger_expense_rows SET state = 'linked', reason = '', updatedAt = ?2 WHERE entryId = ?1 AND state = 'ignored'").bind(row.id, now).run();
   // 결정을 복구하면, 삭제 때 되살아났던 이전 결정을 다시 "대체됨"으로 돌려놓는다
   if (b.kind === 'decisions' && row.supersedesId) await env.DB.prepare(`UPDATE decisions SET state = 'superseded', updatedAt = ?2 WHERE id = ?1 AND state = 'active' AND deletedAt IS NULL`).bind(row.supersedesId, now).run();
   await audit(env, s.email, 'restore', k.table, row.id);

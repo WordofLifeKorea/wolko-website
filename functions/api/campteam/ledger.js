@@ -66,6 +66,7 @@ export async function onRequestDelete({ env, request }) {
   if (period.status === 'closed') return json({ error: closedMsg(period) }, 409);
   if (e.source === 'carry') return json({ error: '이월금 줄은 지울 수 없어요.' }, 409);
   await env.DB.prepare('UPDATE ledger_entries SET deletedAt = ?2, updatedBy = ?3 WHERE id = ?1').bind(id, nowIso(), s.email).run();
+  if (e.source === 'expense') await env.DB.prepare("UPDATE ledger_expense_rows SET state = 'ignored', updatedAt = ?2, updatedBy = ?3 WHERE entryId = ?1 AND state = 'linked'").bind(id, nowIso(), s.email).run(); // 자동 반영된 줄을 지우면 "제외"로 남겨 다시 들어오지 않게 한다 (연동함에서 되돌릴 수 있다)
   await audit(env, s.email, 'delete', 'ledger_entry', id, `${e.kind} ${e.category} ${e.amount} ${e.description}`);
   return json({ ok: true });
 }

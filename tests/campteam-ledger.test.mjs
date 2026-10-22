@@ -222,3 +222,37 @@ test('기간 예산: 저장은 통째로 바뀌고, 0원·빈 칸은 빠지며, 
   assert.equal((await copy(a.id, P1)).status, 200); assert.equal(env.DB.sqlite.prepare('SELECT amount FROM ledger_plan WHERE periodId=?').get(a.id).amount, 5);
   assert.equal((await copy(a.id, P1)).status, 409, '이미 있으면 덮어쓰지 않는다');
 });
+
+test('휴지통: 지운 장부 거래를 복구할 수 있고(열린 기간만), 이월금 줄은 목록에 없으며, 자동 반영 줄을 지우면 연동함에서 제외로 남는다', async () => {
+  const Trash = await import('../functions/api/campteam/trash.js');
+  const env = mk(), now = new Date().toISOString();
+  const t = (fn, who, o = {}) => call(Trash, fn, env, who, o);
+  await call(Ledger, 'onRequestDelete', env, U.fin, { qs: '?id=le-03' });                       // 직접 입력 줄 삭제
+  env.DB.sqlite.prepare(`INSERT INTO ledger_expense_rows (reportId,rowIdx,state,entryDate,amount,item,entryId,createdAt,updatedAt) VALUES ('rX',0,'linked','2027-02-01',9000,'x','le-exp',?1,?1)`).run(now);
+  env.DB.sqlite.prepare(`INSERT INTO ledger_entries (id,periodId,entryDate,kind,amount,category,description,source,externalKey,createdAt,updatedAt) VALUES ('le-exp',?1,'2027-02-01','expense',9000,'기타','연동 줄','expense','exp:rX:0',?2,?2)`).run(P1, now);
+  await call(Ledger, 'onRequestDelete', env, U.fin, { qs: '?id=le-exp' });
+  assert.equal(env.DB.sqlite.prepare("SELECT state FROM ledger_expense_rows WHERE reportId='rX'").get().state, 'ignored', '지운 자동 반영 줄은 제외로 남는다(다시 들어오지 않는다)');
+  assert.equal((await J(await t('onRequestGet', U.fin))).counts.ledger, 2);
+  assert.equal((await J(await t('onRequestGet', U.fin, { qs: '?kind=ledger' }))).items.length, 2);
+  assert.equal((await t('onRequestGet', U.mem, { qs: '?kind=ledger' })).status, 200, '일반 팀원도 휴지통은 보지만');
+  assert.equal((await t('onRequestPost', U.mem, { body: { kind: 'ledger', id: 'le-03' } })).status, 403, '복구는 금액 쓰기 권한자만');
+  assert.equal((await t('onRequestPost', U.tre, { body: { kind: 'ledger', id: 'le-03' } })).status, 403);
+  assert.equal((await t('onRequestPost', U.fin, { body: { kind: 'ledger', id: 'le-03' } })).status, 200);
+  assert.equal(env.DB.sqlite.prepare("SELECT deletedAt FROM ledger_entries WHERE id='le-03'").get().deletedAt, null);
+  assert.equal((await t('onRequestPost', U.fin, { body: { kind: 'ledger', id: 'le-exp' } })).status, 200);
+  assert.equal(env.DB.sqlite.prepare("SELECT state FROM ledger_expense_rows WHERE reportId='rX'").get().state, 'linked', '복구하면 다시 연동됨');
+  // 마감된 기간의 거래는 먼저 기간을 다시 열어야 복구
+  await call(Ledger, 'onRequestDelete', env, U.fin, { qs: '?id=le-04' });
+  await call(Periods, 'onRequestPost', env, U.dir, { body: { action: 'close', id: P1, noCarry: true } });
+  const closed = await t('onRequestPost', U.fin, { body: { kind: 'ledger', id: 'le-04' } }); assert.equal(closed.status, 409); assert.equal((await J(closed)).code, 'closed');
+  await call(Periods, 'onRequestPost', env, U.dir, { body: { action: 'reopen', id: P1 } });
+  assert.equal((await t('onRequestPost', U.fin, { body: { kind: 'ledger', id: 'le-04' } })).status, 200);
+});
+
+test('홈 요약의 장부 현황: 금액 조회 권한자에게만(명단 밖은 응답에 없음), 열린 기간 합계와 확인할 경비 건수', async () => {
+  const Home = await import('../functions/api/campteam/home.js');
+  const env = mk(); env.DB.sqlite.prepare(`INSERT INTO ledger_expense_rows (reportId,rowIdx,state,reason,entryDate,amount,createdAt,updatedAt) VALUES ('rp',0,'pending','dup','2027-02-01',1,'x','x')`).run();
+  const get = async (who) => J(await call(Home, 'onRequestGet', env, who));
+  for (const who of [U.mem, U.tre, U.fin, U.dir, U.admin]) { const h = await get(who); assert.equal(h.ledger.periodId, P1, who); assert.equal(h.ledger.balance, 1200000 + 2400000 + 500000 - 245000 - 3000000 - 600000); assert.equal(h.ledger.pendingExpense, 1); }
+  const v = await get(U.view); assert.equal('ledger' in v, false); assert.equal('budget' in v, false);
+});

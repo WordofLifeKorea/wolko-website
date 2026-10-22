@@ -9,7 +9,7 @@ export async function onRequestGet({ env, request }) {
 }
 
 export async function summarize(env, period, s) {
-  const [totals, cats, actual, plan, monthly, carry, review] = await Promise.all([
+  const [totals, cats, actual, plan, monthly, carry, review, recon] = await Promise.all([
     periodTotals(env, period.id),
     env.DB.prepare('SELECT kind, name, active, sortOrder FROM ledger_categories ORDER BY kind DESC, sortOrder, name').all(),
     env.DB.prepare(`SELECT kind, category, SUM(amount) AS amount, COUNT(*) AS n FROM ledger_entries WHERE periodId = ?1 AND deletedAt IS NULL GROUP BY kind, category`).bind(period.id).all(),
@@ -17,6 +17,7 @@ export async function summarize(env, period, s) {
     env.DB.prepare(`SELECT substr(entryDate,1,7) AS month, kind, SUM(amount) AS amount FROM ledger_entries WHERE periodId = ?1 AND deletedAt IS NULL AND source <> 'carry' GROUP BY month, kind ORDER BY month`).bind(period.id).all(),
     env.DB.prepare(`SELECT kind, amount FROM ledger_entries WHERE periodId = ?1 AND source = 'carry' AND deletedAt IS NULL`).bind(period.id).first(),
     env.DB.prepare(`SELECT COUNT(*) AS n FROM ledger_entries WHERE periodId = ?1 AND deletedAt IS NULL AND needsReview = 1`).bind(period.id).first(),
+    env.DB.prepare('SELECT asOfDate, bankBalance, ledgerBalance, diff, createdAt FROM ledger_reconcile WHERE periodId = ?1 ORDER BY asOfDate DESC, createdAt DESC LIMIT 1').bind(period.id).first(),
   ]);
   const act = new Map(actual.results.map((r) => [r.kind + '|' + r.category, r])), pl = new Map(plan.results.map((r) => [r.kind + '|' + r.category, r.amount]));
   const known = new Set(), byCategory = [];
@@ -35,7 +36,7 @@ export async function summarize(env, period, s) {
     period: { id: period.id, name: period.name, status: period.status, startDate: period.startDate, endDate: period.endDate, closingBalance: period.closingBalance, carryPeriodId: period.carryPeriodId, note: period.note },
     totals, plan: { income: planIncome, expense: planExpense, expectedBalance: planIncome - planExpense },
     opening: carry ? { kind: carry.kind, amount: carry.amount } : null,
-    byCategory, monthly: Object.values(months), needsReview: review.n,
+    byCategory, monthly: Object.values(months), needsReview: review.n, lastReconcile: recon || null,
     canEdit: !!(s && s.perms.moneyWrite) && period.status === 'open', canAdmin: !!(s && s.perms.moneyAdmin),
   };
 }

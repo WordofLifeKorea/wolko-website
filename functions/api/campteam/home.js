@@ -1,6 +1,7 @@
 import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
 import { todayKST, OPEN_STATUS_SQL } from '../../lib/campteamDb.js';
 import { summarize } from '../../lib/campteamMoney.js';
+import { periodTotals } from '../../lib/campteamLedger.js';
 
 /** 캠프팀 홈에 필요한 요약을 한 번에 돌려준다. 금액(budget)은 권한이 있을 때만 DB에서 읽는다. */
 export async function onRequestGet({ env, request }) {
@@ -66,6 +67,18 @@ export async function onRequestGet({ env, request }) {
     budget = { summary: summarize(lines).map(({ byCategory, ...x }) => x), lines: lines.length, targets: targets.length };
   }
 
+  // 장부 현황: 오늘이 속한 열린 기간(없으면 가장 가까운 열린 기간). 금액 조회 권한이 있을 때만 읽는다.
+  let ledger;
+  if (s.perms.moneyRead) {
+    const per = await db.prepare(`SELECT id, name, startDate, endDate FROM ledger_periods WHERE deletedAt IS NULL AND status = 'open' ORDER BY (startDate <= ?1 AND endDate >= ?1) DESC, startDate DESC LIMIT 1`).bind(today).first();
+    if (per) {
+      const t = await periodTotals(env, per.id);
+      const pend = await db.prepare(`SELECT COUNT(*) AS n FROM ledger_expense_rows WHERE state = 'pending'`).first();
+      const rec = await db.prepare('SELECT asOfDate, diff FROM ledger_reconcile WHERE periodId = ?1 ORDER BY asOfDate DESC, createdAt DESC LIMIT 1').bind(per.id).first();
+      ledger = { periodId: per.id, name: per.name, income: t.income, expense: t.expense, balance: t.balance, pendingExpense: pend.n, lastReconcile: rec || null };
+    }
+  }
+
   const body = {
     user: { email: s.email, campRole: s.campRole, perms: s.perms },
     today,
@@ -79,5 +92,6 @@ export async function onRequestGet({ env, request }) {
     overdue: overdue.results, decisions: decisions.results, statusCounts: statusRows.results,
   };
   if (budget) body.budget = budget;
+  if (ledger) body.ledger = ledger;
   return json(body);
 }

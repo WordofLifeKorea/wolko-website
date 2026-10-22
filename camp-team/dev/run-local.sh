@@ -28,5 +28,12 @@ if [ "$FRESH" = "1" ]; then
   npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/db/seed-dummy.sql
   npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/db/seed-dummy-ledger.sql
 fi
-exec npx wrangler@4 pages dev dist --d1 DB=00000000-0000-0000-0000-000000000000 --r2 CAMPTEAM_FILES --persist-to $STATE --port 8788 --ip 0.0.0.0 \
+# 로컬 가짜 경비 리포트(한 번만 넣는다) — 경비 연동 화면을 시험하기 위한 것. 실제 경비 자료와 무관하다.
+if [ ! -e "$STATE/applied/_kvseed" ]; then
+  for f in camp-team/dev/dummy-expense/*.json; do
+    npx wrangler@4 kv key put "expense:report:$(basename $f .json)" --path "$f" --binding CAMP_KV --local --config $CFG --persist-to $STATE
+  done
+  touch "$STATE/applied/_kvseed"
+fi
+exec npx wrangler@4 pages dev dist --d1 DB=00000000-0000-0000-0000-000000000000 --r2 CAMPTEAM_FILES --kv CAMP_KV --persist-to $STATE --port 8788 --ip 0.0.0.0 \
   --binding ADMIN_PASSWORD=local-dev-secret --binding CAMPTEAM_DEV_AUTH=1 ${=WRANGLER_EXTRA}

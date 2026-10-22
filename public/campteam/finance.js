@@ -2,8 +2,8 @@
 (function () {
   CT.addDict({
     ko: { fnTitle: '캠프 예산 · 회계 장부', fnSub: '예산안과 실제 수입·지출을 한곳에서 보고, 기간별로 마감해 남은 금액을 다음 기간으로 넘겨요.', fnPeriod: '기간',
-      tabSummary: '요약', tabLedger: '장부', tabImport: '엑셀 가져오기', tabPlan: '기간 예산', tabCats: '항목 목록', tabPeriods: '기간 · 마감', tabCampBudget: '캠프별 예산안 ↗',
-      viewOnlyTre: '월코 재정 담당 계정은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', viewOnlyMem: '일반 캠프팀 팀원은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', closedNote: '마감된 기간이에요. 고치려면 「기간 · 마감」에서 먼저 다시 열어 주세요.',
+      tabSummary: '요약', tabLedger: '장부', tabImport: '엑셀 가져오기', tabExpense: '경비 연동', tabRecon: '잔액 대조', tabPlan: '기간 예산', tabCats: '항목 목록', tabPeriods: '기간 · 마감', tabCampBudget: '캠프별 예산안 ↗',
+      lastRecon: '최근 잔액 대조', reconOk: '통장과 장부가 일치해요', reconDiff: '통장과 장부 차이', viewOnlyTre: '월코 재정 담당 계정은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', viewOnlyMem: '일반 캠프팀 팀원은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', closedNote: '마감된 기간이에요. 고치려면 「기간 · 마감」에서 먼저 다시 열어 주세요.',
       opening: '이월금', income: '수입', expense: '지출', balance: '현재 잔액', planned: '예산', actual: '실제', remaining: '남은 예산', achieved: '목표 대비', expectedEnd: '예산대로면 기간 끝 잔액',
       expenseByCat: '지출 항목별 (예산 대비 실제)', incomeByCat: '수입 항목별 (목표 대비 실제)', monthly: '월별 흐름', noData: '아직 거래가 없어요.', cat: '항목', needReview: '분류를 확인해야 하는 거래가', needReviewTail: '건 있어요. 장부에서 확인해 주세요.',
       date: '날짜', kind: '구분', desc: '내용', note: '비고', amount: '금액', bal: '잔액', source: '출처', act: '', add: '추가', edit: '수정', del: '삭제', all: '전체', search: '내용·비고 검색', month: '월', carryLabel: '이월', srcmanual: '직접', srcexcel: '엑셀', srcexpense: '경비 리포트', srccarry: '이월',
@@ -13,8 +13,8 @@
       perTitle: '기간 · 마감 · 보관', perNew: '+ 새 기간', perName: '기간 이름', perStart: '시작일', perEnd: '끝나는 날', perStatus: '상태', perOpen: '진행 중', perClosed: '마감됨', perCarry: '넘긴 곳', perClose: '마감하기', perReopen: '다시 열기', perView: '보기', perPreset: '기간 길이', perPresetCustom: '직접 정함', per6: '6개월', per3: '3개월 (분기)', perNote: '메모',
       closeTitle: '기간 마감', closeBody: '마감하면 이 기간은 잠기고(보관), 남은 금액이 다음 기간의 「이월금」으로 넘어가요. 다시 열면 넘어간 이월금은 거둬져요.', closeBal: '마감 시 잔액', closeNext: '남은 금액을 넘길 곳', closeNew: '새 기간 만들어서 넘기기', closeNone: '넘기지 않고 마감', closeConfirm: '마감하기', reopenConfirm: '이 기간을 다시 열까요? 다음 기간으로 넘어간 이월금이 거둬져요.', perDeleteConfirm: '이 기간을 지울까요?', noNextOpen: '(넘길 수 있는 열린 기간이 없어요)',
       loadFail: '불러오지 못했어요', fromLabel: '이월 적자' },
-    en: { fnTitle: 'Camp Budget · Ledger', fnSub: 'See the budget plan and actual income/expenses together, close each period and carry the balance forward.', fnPeriod: 'Period',
-      tabSummary: 'Summary', tabLedger: 'Ledger', tabImport: 'Excel import', tabPlan: 'Period budget', tabCats: 'Categories', tabPeriods: 'Periods · Close', tabCampBudget: 'Per-camp plan ↗',
+    en: { lastRecon: 'Last reconciliation', reconOk: 'Bank and ledger match', reconDiff: 'Bank vs ledger difference', fnTitle: 'Camp Budget · Ledger', fnSub: 'See the budget plan and actual income/expenses together, close each period and carry the balance forward.', fnPeriod: 'Period',
+      tabSummary: 'Summary', tabLedger: 'Ledger', tabImport: 'Excel import', tabExpense: 'Expense reports', tabRecon: 'Reconcile', tabPlan: 'Period budget', tabCats: 'Categories', tabPeriods: 'Periods · Close', tabCampBudget: 'Per-camp plan ↗',
       viewOnlyTre: 'WOLKO finance accounts are view-only. Camp finance and the director make changes.', viewOnlyMem: 'Camp team members are view-only here. Camp finance and the director make changes.', closedNote: 'This period is closed. Reopen it under "Periods · Close" to edit.',
       opening: 'Carried over', income: 'Income', expense: 'Expenses', balance: 'Balance', planned: 'Budget', actual: 'Actual', remaining: 'Remaining', achieved: 'vs target', expectedEnd: 'Balance at period end if on budget',
       expenseByCat: 'Expenses by category (actual vs budget)', incomeByCat: 'Income by category (actual vs target)', monthly: 'Monthly flow', noData: 'No entries yet.', cat: 'Category', needReview: 'Entries needing classification:', needReviewTail: '. Please check them in the ledger.',
@@ -28,8 +28,9 @@
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc, KRW = function (n) { return CT.money(n, 'KRW'); };
   var S = { periods: [], pid: null, tab: 'summary', sum: null, entries: null, cats: null, plan: null, filter: { kind: '', category: '', q: '', month: '' }, perms: null, qa: { date: '', kind: 'expense' } };
-  var TABS_ALL = ['summary', 'ledger', 'import', 'plan', 'cats', 'periods'];
+  var TABS_ALL = ['summary', 'ledger', 'import', 'expense', 'recon', 'calc', 'plan', 'cats', 'periods'];
   var tabs = function () { return TABS_ALL.filter(function (t) { return t !== 'import' || !!(S.perms && S.perms.moneyWrite); }); };
+  var ext = function () { return window.FinTabs && window.FinTabs[S.tab]; }; // 엑셀 가져오기·경비 연동·잔액 대조 등은 별도 파일이 FinTabs 에 등록한다
   var today = function () { var d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); };
   var cur = function () { return S.periods.filter(function (p) { return p.id === S.pid; })[0]; };
   var canEdit = function () { return !!(S.perms && S.perms.moneyWrite && cur() && cur().status === 'open'); };
@@ -61,7 +62,7 @@
     S.sum = await api('ledger-summary?periodId=' + encodeURIComponent(S.pid));
     if (S.tab === 'ledger') { var q = new URLSearchParams({ periodId: S.pid }); ['kind', 'category', 'q', 'month'].forEach(function (k) { if (S.filter[k]) q.set(k, S.filter[k]); }); S.entries = await api('ledger?' + q); }
     if (S.tab === 'plan') S.plan = (await api('ledger-plan?periodId=' + encodeURIComponent(S.pid))).items;
-    if (S.tab === 'import' && window.FinImport) await FinImport.load();
+    if (ext() && ext().load) await ext().load();
     if (S.tab === 'ledger' || S.tab === 'plan' || S.tab === 'cats' || S.tab === 'summary') S.cats = await api('ledger-categories');
   }
   async function refresh() { await loadPeriods(); await loadTab(); render(); }
@@ -74,13 +75,13 @@
     if (S.pid && cur() && cur().status === 'closed' && S.perms && S.perms.moneyWrite) { vo.hidden = false; vo.textContent = CT.t('closedNote'); }
     $('fnTabs').innerHTML = tabs().map(function (t) { return '<button class="tab' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(CT.t('tab' + t.charAt(0).toUpperCase() + t.slice(1))) + '</button>'; }).join('') + '<a class="tab" href="/campteam/budget/" style="text-decoration:none">' + esc(CT.t('tabCampBudget')) + '</a>';
     var body = $('fnBody');
-    if (S.tab === 'import' && window.FinImport) body.innerHTML = FinImport.html();
+    if (ext()) body.innerHTML = ext().html();
     else if (S.tab === 'cats') body.innerHTML = catsHtml();
     else if (S.tab === 'periods') body.innerHTML = periodsHtml();
     else if (!S.pid || !S.sum) body.innerHTML = '<div class="hintbox">' + esc(CT.t('noData')) + (canAdmin() ? ' <button class="btn sm pri" data-a="newPeriod">' + esc(CT.t('perNew')) + '</button>' : '') + '</div>';
     else body.innerHTML = S.tab === 'summary' ? summaryHtml() : S.tab === 'ledger' ? ledgerHtml() : planHtml();
     if (S.tab === 'ledger') bindQuick();
-    if (S.tab === 'import' && window.FinImport) FinImport.bind();
+    if (ext()) ext().bind();
   }
 
   function bar(pct, over) { return '<div class="bar"><i style="width:' + Math.min(100, Math.max(0, pct)) + '%;' + (over ? 'background:var(--accent)' : '') + '"></i></div>'; }
@@ -90,6 +91,7 @@
       stat(CT.t('opening'), KRW(openAmt)) + stat(CT.t('income'), KRW(t.income), 'ok') + stat(CT.t('expense'), KRW(t.expense), 'late') + stat(CT.t('balance'), KRW(t.balance), t.balance < 0 ? 'late' : '') +
       (s.plan.income || s.plan.expense ? stat(CT.t('expectedEnd'), KRW(openAmt + s.plan.income - s.plan.expense), '') : '') + '</div>';
     if (s.needsReview) h += '<div class="hintbox" style="margin-bottom:12px;color:var(--accent)">' + esc(CT.t('needReview')) + ' ' + s.needsReview + esc(CT.t('needReviewTail')) + '</div>';
+    if (s.lastReconcile) h += '<div class="hintbox" style="margin-bottom:12px">' + esc(CT.t('lastRecon')) + ': ' + esc(s.lastReconcile.asOfDate) + ' · ' + (s.lastReconcile.diff === 0 ? '<b style="color:var(--ok)">' + esc(CT.t('reconOk')) + '</b>' : '<b style="color:var(--accent)">' + esc(CT.t('reconDiff')) + ' ' + esc(KRW(s.lastReconcile.diff)) + '</b>') + ' <a href="#" data-tab="recon">' + esc(CT.t('tabRecon')) + '</a></div>';
     var out = s.byCategory.filter(function (c) { return c.kind === 'expense'; }), inc = s.byCategory.filter(function (c) { return c.kind === 'income' && c.category !== '이월금'; });
     h += '<div class="fgrid">' + catCard(CT.t('expenseByCat'), out, 'expense') + catCard(CT.t('incomeByCat'), inc, 'income') + '</div>';
     if (s.monthly.length) { var max = Math.max.apply(null, s.monthly.map(function (m) { return Math.max(m.income, m.expense); })) || 1;
@@ -237,7 +239,8 @@
   // ── 이벤트 ──
   function wire() {
     $('fnPeriodSel').onchange = async function () { S.pid = this.value; S.entries = null; await loadTab(); render(); };
-    $('fnTabs').onclick = async function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; S.tab = b.dataset.tab; await loadTab(); render(); };
+    var goTab = async function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; e.preventDefault(); S.tab = b.dataset.tab; await loadTab(); render(); };
+    $('fnTabs').onclick = goTab; $('fnBody').addEventListener('click', function (e) { if (e.target.closest('a[data-tab]')) goTab(e); });
     $('fnBody').addEventListener('input', function (e) { if (e.target.classList.contains('plin')) updatePlanTotals(); });
     var timer; $('fnBody').addEventListener('change', async function (e) {
       var id = e.target.id; if (id === 'lfKind') S.filter.kind = e.target.value; else if (id === 'lfCat') S.filter.category = e.target.value; else if (id === 'lfMonth') S.filter.month = e.target.value; else return;
@@ -274,6 +277,7 @@
     S.perms = me.perms;
     if (!me.perms.moneyRead) { $('fnLocked').hidden = false; return; }
     $('fnMain').hidden = false; wire();
+    if (me.perms.moneyWrite) { try { var a = await api('ledger-expense', { method: 'POST', body: { action: 'autoSync' } }); S.syncInfo = a; } catch (e) { /* 연동이 없거나 실패해도 장부는 그대로 연다 */ } }
     try { await loadPeriods(); await loadTab(); } catch (e) { $('fnBody').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; return; }
     CT.applyI18n(); render();
     document.addEventListener('ct-lang', render);

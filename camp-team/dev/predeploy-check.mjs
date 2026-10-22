@@ -70,6 +70,19 @@ head('3. 개발용 로그인 우회가 배포 소스에 없음');
   void dl;
 }
 
+// ── 3b) 기존 저장소(CAMP_KV)에는 쓰지 않는다 ──────────────────
+head('3b. 기존 저장소(CAMP_KV·경비 리포트)에 쓰기·삭제 코드가 없음');
+{
+  const files = sh('git', ['ls-files', 'functions/lib', 'functions/api/campteam']).split('\n').filter((f) => /campteam/.test(f) && f.endsWith('.js'));
+  const hits = [];
+  for (const f of files) {
+    const t = readFileSync(join(root, f), 'utf8');
+    if (!/CAMP_KV|\bkv\b/.test(t)) continue;
+    if (/(CAMP_KV|\bkv)\s*\.\s*(put|delete)\s*\(/.test(t)) hits.push(f + ' (put/delete)');
+  }
+  hits.length ? bad('쓰기·삭제가 의심되는 코드:\n      ' + hits.join('\n      ')) : ok('캠프팀 코드에서 CAMP_KV 를 읽기(get/list)만 함 (' + files.length + '개 파일 검사)');
+}
+
 // ── 4) 금지 문구·비밀값 ─────────────────────────────────────
 head('4. 실제 이름·내부 문구·비밀값 검사 (추적 파일 전체, 테스트·검사 스크립트 제외)');
 {

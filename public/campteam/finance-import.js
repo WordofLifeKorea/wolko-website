@@ -161,4 +161,5 @@
   }
 
   window.FinImport = { html: html, bind: bind, load: load, exportXlsx: exportXlsx, buildBook: buildBook };
+  (window.FinTabs = window.FinTabs || {}).import = window.FinImport;
 })();
