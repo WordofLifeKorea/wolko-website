@@ -1,14 +1,15 @@
 ---
 // 캠프팀 포털 공통 틀 (사이드바 + 언어 전환 + 로그인 안내). 내용은 각 페이지가 채운다.
-export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'search' | 'budget' | 'tv' | 'trash' | 'settings'; }
+export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'resources' | 'search' | 'budget' | 'tv' | 'trash' | 'settings'; }
 const { title, active } = Astro.props;
 const nav = [
-  { key: 'home', href: '/campteam/', t: 'navHome' },
-  { key: 'camps', href: '/campteam/camps/', t: 'navCamps' },
-  { key: 'tasks', href: '/campteam/tasks/', t: 'navTasks' },
-  { key: 'meetings', href: '/campteam/meetings/', t: 'navMeetings' },
-  { key: 'files', href: '/campteam/files/', t: 'navFiles' },
-  { key: 'tv', href: '/campteam/tv/', t: 'navTv' },
+  { key: 'home', href: '/campteam/', t: 'navHome', e: '🏠', c: '#3b8ff0' },
+  { key: 'camps', href: '/campteam/camps/', t: 'navCamps', e: '🏕️', c: '#9bbf1f' },
+  { key: 'tasks', href: '/campteam/tasks/', t: 'navTasks', e: '✅', c: '#22b573' },
+  { key: 'meetings', href: '/campteam/meetings/', t: 'navMeetings', e: '📝', c: '#8b6cf0' },
+  { key: 'files', href: '/campteam/files/', t: 'navFiles', e: '📁', c: '#f0a020' },
+  { key: 'resources', href: '/campteam/resources/', t: 'navResources', e: '📚', c: '#ec5fa0' },
+  { key: 'tv', href: '/campteam/tv/', t: 'navTv', e: '📺', c: '#14b8c4' },
 ];
 ---
 <!DOCTYPE html>
@@ -24,27 +25,26 @@ const nav = [
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/campteam/campteam.css?v=1">
+  <link rel="stylesheet" href="/campteam/campteam.css?v=3">
   <link rel="stylesheet" href="/campteam/tv.css?v=1">
   <script is:inline src="/wolko-session.js?v=2"></script>
 </head>
 <body>
 <div class="app">
   <aside>
-    <a class="logo" href="/campteam/">WOLKO<small>CAMP TEAM</small></a>
+    <a class="logo" href="/campteam/"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span><b>WOLKO Camp Team</b><small>Word of Life Korea</small></span></a>
     <form class="gsearch" action="/campteam/search/" method="get" role="search"><input type="search" name="q" minlength="2" maxlength="80" data-t-ph="searchAll" aria-label="search"></form>
     <nav class="nav">
-      {nav.map(n => n.soon
-        ? <span class="soon"><i class="dot"></i><span data-t={n.t}></span><em data-t="soon"></em></span>
-        : <a href={n.href} class={active === n.key ? 'on' : ''}><i class="dot"></i><span data-t={n.t}></span></a>)}
+      <h6 data-t="navGroupTeam"></h6>
+      {nav.map(n => <a href={n.href} class={active === n.key ? 'on' : ''} style={`--c:${n.c}`}><span class="ic">{n.e}</span><span data-t={n.t}></span></a>)}
       <h6 id="moneyHead" hidden data-t="navFinance"></h6>
-      <a id="moneyNav" href="/campteam/budget/" class={active === 'budget' ? 'on' : ''} hidden><i class="dot"></i><span data-t="navBudget"></span></a>
-      <a id="trashNav" href="/campteam/trash/" class={active === 'trash' ? 'on' : ''} hidden><i class="dot"></i><span data-t="navTrash"></span></a>
+      <a id="moneyNav" href="/campteam/budget/" class={active === 'budget' ? 'on' : ''} style="--c:#d4a373" hidden><span class="ic">💰</span><span data-t="navBudget"></span></a>
+      <a id="trashNav" href="/campteam/trash/" class={active === 'trash' ? 'on' : ''} style="--c:#9fb4c0" hidden><span class="ic">🗑️</span><span data-t="navTrash"></span></a>
       <h6 id="adminHead" hidden data-t="navAdmin"></h6>
-      <a id="settingsNav" href="/campteam/settings/" class={active === 'settings' ? 'on' : ''} hidden><i class="dot"></i><span data-t="navSettings"></span></a>
+      <a id="settingsNav" href="/campteam/settings/" class={active === 'settings' ? 'on' : ''} style="--c:#d155e6" hidden><span class="ic">⚙️</span><span data-t="navSettings"></span></a>
     </nav>
     <div class="side-foot">
-      <a class="back" href="/portal/" data-t="backPortal"></a>
+      <a class="back" href="/portal/"><span data-t="backPortal"></span></a>
       <div class="lang"><button id="langKo" type="button">한국어</button><button id="langEn" type="button">English</button></div>
       <div class="who" id="who"></div>
     </div>
@@ -60,7 +60,7 @@ const nav = [
     <p class="meta" id="gnote" style="color:var(--accent);margin:10px 0 0"></p>
   </div>
 </div>
-<script is:inline src="/campteam/campteam.js?v=1"></script>
+<script is:inline src="/campteam/campteam.js?v=2"></script>
 <slot name="scripts" />
 </body>
 </html>

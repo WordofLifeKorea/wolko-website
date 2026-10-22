@@ -43,7 +43,7 @@ camp-team/                설명서·DB 설계·로컬 도구 (배포물에 포�
   MORNING-REVIEW.md      5분 확인 가이드
   DEPLOY-CHECKLIST.md    나중에 배포할 때 순서
   PROGRESS.md            작업 기록
-  db/0001~0008_*.sql     DB 표 만들기(순서대로). seed-dummy.sql = 가짜 데이터(운영에는 실행하지 않음)
+  db/0001~0009_*.sql     DB 표 만들기(순서대로). seed-dummy.sql = 가짜 데이터(운영에는 실행하지 않음)
   dev/                   로컬 실행·테스트 로그인·가짜 AI·배포 전 점검 스크립트
   deploy/portal-menu.patch  포털 메뉴 카드 추가(미적용)
 camp-team-design/         설계 문서와 화면 시안(HTML)
@@ -53,7 +53,7 @@ src/layouts/CampTeamLayout.astro   캠프팀 공통 틀(왼쪽 메뉴·로그인
 src/pages/campteam/*.astro    캠프팀 화면 (홈, 캠프, 업무, 회의, 자료, 검색, 예산, TV 편집, 휴지통, 설정, 캠프 공간)
 src/pages/tv.astro            사무실 TV 화면
 public/campteam/*.js·css      화면 동작(자바스크립트)과 모양(CSS)
-tests/campteam-*.test.mjs     자동 테스트 85개
+tests/campteam-*.test.mjs     자동 테스트 91개
 ```
 
 ## 4. 기능 지도 (요청 → 구현)
@@ -61,6 +61,10 @@ tests/campteam-*.test.mjs     자동 테스트 85개
 | 요청 | 화면 | 핵심 파일 |
 |---|---|---|
 | 캠프팀 홈 (진행 업무·마감 지남·담당 미정·다가오는 일정·최근 결정·공지) | `/campteam/` | `api/campteam/home.js`, `public/campteam/home.js` |
+| **홈 꾸미기**: 섹션을 끌어서 순서 변경·숨기기·너비(반쪽/전체). 관리자는 "모두의 기본 홈", 각자는 "내 홈"(개인 설정이 우선) | 홈의 "✏️ 홈 꾸미기" | `api/campteam/home-layout.js`, `campteamHomeLayout.js`, 표 `home_layout` |
+| **캠프 자료실 탭**: 기존 포털 캠프 자료실을 수정 없이 그대로 불러옴. 캠프팀에서 들어오면 위에 "← 캠프팀으로 돌아가기" 막대 | `/campteam/resources/` | `src/pages/campteam/resources.astro` |
+| **팝업 공통 동작**: 모든 팝업에 ✕, 바깥 배경·Esc로 닫기, 고친 내용이 있으면 "저장하고 닫기/저장 안 하고 닫기/계속 편집" 확인 | 모든 화면 | `public/campteam/campteam.js` (한 곳) |
+| **포털과 같은 왼쪽 메뉴**(짙은 청록 바탕·색 아이콘 칸·구역 제목)와 메뉴별 이모티콘 | 모든 화면 | `CampTeamLayout.astro`, `campteam.css` |
 | 캠프 유형(Winter 등) / 개별 행사 + 캠프별 공간 | `/campteam/camps/`, `/campteam/space/` | `camps.js`, `camp-space.js` |
 | 자료실: 업로드·분류·검색·미리보기·버전·외부 링크·여러 캠프에 연결 | `/campteam/files/` | `files.js`, `file.js`, `upload.js`, `file-url.js`, `campteamFiles.js` |
 | 일정·업무: 달력/목록, 담당·기한 비어도 저장, 상태 변경 | `/campteam/tasks/` | `tasks.js`, `events.js`, `calendar.js` |
@@ -100,6 +104,26 @@ tests/campteam-*.test.mjs     자동 테스트 85개
 - 재정 담당·팀원 이메일은 **코드에 없습니다.** 배포 후 설정 화면에서 입력합니다.
 - 기존 포털의 master/admin 권한은 캠프팀 안에서 자동으로 관리자가 되지 않습니다(테스트로 확인).
 
+### 5-2b. 누가 어디까지 접근하나 (한눈에)
+
+| 위치 | 비로그인 | 포털 로그인(명단 없음 = 조회만) | 재정 담당 | 캠프팀 팀원 | 관리자 |
+|---|---|---|---|---|---|
+| 포털의 "캠프팀" 카드 | 안 보임 | **보임**(카드는 로그인한 모두에게) | 보임 | 보임 | 보임 |
+| 캠프팀 페이지 열기 | 로그인 안내창 | 열림(조회) | 열림 | 열림 | 열림 |
+| 홈·캠프·업무·회의·자료 **보기** | ✕ | ✅ | ✅ | ✅ | ✅ |
+| 위 항목 **작성·수정·삭제** | ✕ | ✕ | ✕(금액 자료만) | ✅ | ✅ |
+| 예산·금액(메뉴·API·TV 제외) | ✕ | ✕ (메뉴 없음, API 403) | ✅ 조회·작성 | ✅ 조회·작성 | ✅ |
+| 휴지통 복구 | ✕ | ✕ | 금액 항목만 | ✅ | ✅ |
+| **내 홈 꾸미기** | ✕ | ✅ (내 것만) | ✅ | ✅ | ✅ |
+| **모두의 기본 홈 꾸미기** | ✕ | ✕ | ✕ | ✕ | ✅ |
+| 설정·팀 명단·변경 기록·내보내기·TV 설정(열쇠) | ✕ | ✕ | ✕ | ✕ | ✅ |
+| **캠프 자료실 탭** | 기존 자료실의 로그인 | 아래 설명 | 아래 설명 | 아래 설명 | 아래 설명 |
+| TV 화면(`/tv/?t=열쇠`) | 열쇠가 맞으면 열림(금액·이메일 없음) | — | — | — | — |
+
+- **캠프 자료실 탭의 접근은 캠프팀 명단과 무관합니다.** 탭은 기존 `/camp-resources` 페이지를 그대로 불러오기만 하므로, 누가 보고 올리고 관리하는지는 **기존 캠프 자료실의 규칙**(승인된 포털 멤버는 보기·올리기, 마스터가 정한 관리자는 폴더 관리 등)이 그대로 정합니다. 즉 "선생님 담당 리더"는 **포털에서 승인된 멤버이기만 하면** 자료를 볼 수 있고, 캠프팀 명단에 넣을 필요가 없습니다(넣으면 캠프팀 안의 권한이 추가될 뿐). 캠프팀 쪽 권한은 이 페이지에 영향을 주지 않습니다.
+- 포털의 master/admin 권한은 캠프팀 안에서 **자동으로 관리자가 되지 않습니다**(자동 테스트로 확인). 캠프팀 관리자는 코드에 고정된 2명 + 설정에서 추가한 사람입니다.
+- 이 표 전체를 `tests/campteam-home-layout.test.mjs`의 "접근 권한 표" 테스트가 21개 요청 × 5개 역할(105칸)로 자동 검증합니다.
+
 ### 5-3. 기존 데이터를 읽는 유일한 두 곳
 | 읽는 것 | 방법 | 쓰기? |
 |---|---|---|
@@ -109,8 +133,8 @@ tests/campteam-*.test.mjs     자동 테스트 85개
 그 밖의 기존 KV 키, NAS 운영 파일, 운영 Google Sheet·Calendar는 읽지도 쓰지도 않습니다.
 
 ### 5-4. 캠프팀 데이터가 저장되는 곳
-D1 표 23개(모든 행에 고유 번호·만든 사람·삭제 표시):
-`camp_members`(명단) · `camp_types`/`camps`(캠프) · `tasks`/`events`(업무·일정) · `checklist_templates`/`checklist_items` · `meetings`/`agenda_items`/`decisions`/`meeting_files`/`meeting_texts`(회의) · `files`/`file_versions`/`file_links`(자료) · `budget_lines`/`budget_targets`(예산) · `tv_layout`/`tv_settings`/`notices`(TV) · `glossary` · `ai_drafts` · `audit_log`.
+D1 표 24개(대부분 행에 고유 번호·만든 사람·삭제 표시. `home_layout`은 보기 설정이라 삭제 표시 대신 초기화하면 행을 지움):
+`camp_members`(명단) · `camp_types`/`camps`(캠프) · `tasks`/`events`(업무·일정) · `checklist_templates`/`checklist_items` · `meetings`/`agenda_items`/`decisions`/`meeting_files`/`meeting_texts`(회의) · `files`/`file_versions`/`file_links`(자료) · `budget_lines`/`budget_targets`(예산) · `tv_layout`/`tv_settings`/`notices`(TV) · `home_layout`(홈 배치) · `glossary` · `ai_drafts` · `audit_log`.
 
 - **삭제는 휴지통 방식**(`deletedAt`) — 복구 가능, 영구 삭제 기능은 없음.
 - **금액은 정수로 저장**(원=원, 달러=센트): 소수 오차 방지, USD 확장 대비.
@@ -128,7 +152,7 @@ D1 표 23개(모든 행에 고유 번호·만든 사람·삭제 표시):
 ## 7. 확인한 것 / 확인하지 못한 것
 
 ### ✅ 확인함
-- 자동 테스트 **85개 통과** (권한·파일·업무·체크리스트·회의·예산·TV·관리·AI·구글·캠프 공간).
+- 자동 테스트 **91개 통과** (권한·파일·업무·체크리스트·회의·예산·TV·관리·AI·구글·캠프 공간·홈 배치·역할별 접근 표).
 - 실제 브라우저로 로컬 서버에서 역할별(관리자/재정/팀원/조회만) 화면 확인, 폰(375px)·아이패드(768px) 폭에서 가로 넘침 없음.
 - TV 화면: 렌더링, 슬라이드 넘김, 오프라인 표시, 편집기에서 끌어서 저장 → TV에 반영.
 - AI 초안: **가짜 AI 서버**로 요청 모양·검토·선택 적용 흐름 확인.
@@ -191,6 +215,8 @@ D1 표 23개(모든 행에 고유 번호·만든 사람·삭제 표시):
 녹음 전사 텍스트를 회의에 붙여넣기(보관) → "AI 초안 만들기" → Claude가 안건·결정·할 일 후보를 **초안으로만** 생성 → 사람이 항목을 골라 적용. 초안은 `ai_drafts`에 `draft` 상태로 저장되고, **담당자는 비워 두며 결정은 자동 확정하지 않습니다.** 키가 없으면 버튼이 비활성(503 안내).
 
 ## 12. 더 개선할 수 있는 점 (선택)
-- 예산 화면 오류 문구 다듬기, 모바일 상단 메뉴 간소화, TV 편집기 위젯 이름표.
+- 예산 화면 오류 문구 다듬기, TV 편집기 위젯 이름표.
+- 홈 꾸미기는 "순서·숨김·너비"까지입니다(TV 편집기처럼 칸 단위 자유 배치는 아님). 더 필요하면 확장 가능.
+- 캠프 자료실을 캠프팀 디자인으로 다시 그린 읽기 전용 목록은 만들지 않았습니다(기존 자료 저장소를 읽는 새 코드가 필요해서).
 - Office 문서 미리보기(기존 OnlyOffice 연동) — 서버 위치 확인 후.
 - 번역 연결(Claude API) — 용어집은 준비됨.

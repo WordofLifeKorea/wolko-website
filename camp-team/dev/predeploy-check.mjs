@@ -135,7 +135,7 @@ else {
   if (r.status !== 0) bad('빌드 실패\n' + ((r.stdout || '') + (r.stderr || '')).split('\n').slice(-25).join('\n'));
   else {
     const need = ['campteam/index.html', 'campteam/camps/index.html', 'campteam/tasks/index.html', 'campteam/meetings/index.html',
-      'campteam/files/index.html', 'campteam/budget/index.html', 'campteam/tv/index.html', 'campteam/space/index.html', 'tv/index.html'];
+      'campteam/files/index.html', 'campteam/resources/index.html', 'campteam/budget/index.html', 'campteam/tv/index.html', 'campteam/space/index.html', 'tv/index.html'];
     const miss = need.filter((p) => !existsSync(join(out, p)));
     miss.length ? bad('빌드 결과에 없음: ' + miss.join(', ')) : ok('캠프팀 페이지 ' + need.length + '개 생성 확인');
     if (existsSync(join(out, 'dev-login'))) bad('빌드 결과에 dev-login 이 들어 있음');

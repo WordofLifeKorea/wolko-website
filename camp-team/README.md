@@ -28,10 +28,10 @@ node --test tests/campteam-*.test.mjs
 
 ## 현재 상태
 - 구현 완료: 홈 · 캠프/캠프 공간 · 자료실 · 일정·업무·체크리스트 · 회의록·결정 이력 · 통합 검색 · 캠프 예산 · TV 대시보드 · 휴지통·내보내기·변경 기록·용어집 · (꺼짐 기본) Sheets/Calendar 미러링 · Google 로그인 · AI 초안
-- 자동 테스트: `node --test tests/campteam-*.test.mjs` (85개 통과)
+- 자동 테스트: `node --test tests/campteam-*.test.mjs` (91개 통과)
 - 파일 본문: `CAMPTEAM_FILES`(R2) 가 있으면 R2, 없으면 기존 NAS 게이트웨이(`TEACH_NAS_URL/TOKEN`, 그룹 `camp`), 둘 다 없으면 링크 등록만
 - 파일 열기/받기는 로그인한 사람에게만 5분짜리 서명 주소로 제공
 - Sheets/Calendar 쓰기·Google 로그인·AI 는 기본 꺼짐이며 실제 Google/Claude 로는 아직 시험하지 못했습니다(가짜 서버·계산 검증만). 자세히는 `ARCHITECTURE.md` 7장.
 
 ## 배포 (아직 하지 않음)
-`DEPLOY-CHECKLIST.md` 를 보세요. 요약: 새 D1 만들기 → `DB` 로 연결 → `db/0001~0008` 순서 실행(시드 제외) → Preview 확인 → 명단 입력 → (마지막에) 포털 메뉴 패치.
+`DEPLOY-CHECKLIST.md` 를 보세요. 요약: 새 D1 만들기 → `DB` 로 연결 → `db/0001~0009` 순서 실행(시드 제외) → Preview 확인 → 명단 입력 → (마지막에) 포털 메뉴 패치.

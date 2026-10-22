@@ -7,7 +7,7 @@ import { nowIso } from '../../lib/campteamDb.js';
  * TV 열쇠(token)는 내보내지 않는다.
  */
 const TABLES = ['camp_members', 'camp_types', 'camps', 'tasks', 'events', 'checklist_templates', 'checklist_items', 'meetings', 'agenda_items', 'decisions', 'meeting_files', 'meeting_texts',
-  'files', 'file_versions', 'file_links', 'budget_lines', 'budget_targets', 'notices', 'tv_layout', 'glossary', 'ai_drafts', 'audit_log'];
+  'files', 'file_versions', 'file_links', 'budget_lines', 'budget_targets', 'notices', 'tv_layout', 'home_layout', 'glossary', 'ai_drafts', 'audit_log'];
 const csvCell = (v) => { let t = v == null ? '' : String(v); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return /[",\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
 
 async function dump(env, table) {
