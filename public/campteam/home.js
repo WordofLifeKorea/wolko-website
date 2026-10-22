@@ -51,7 +51,7 @@
     if (id === 'files') return d.files.length ? d.files.map(function (f) {
       var k = ['pdf', 'xls', 'doc', 'img', 'ppt', 'audio'].indexOf(f.kind) >= 0 ? f.kind : '';
       return '<div class="file"><span class="ext ' + k + '">' + esc((f.kind || 'file').slice(0, 3).toUpperCase()) + '</span><div>' + esc(f.title) + testChip(f) +
-        '<small>' + esc(f.uploadedBy) + ' · ' + esc((f.createdAt || '').slice(5, 10).replace('-', '/')) + (f.statusLabel ? ' · ' + esc(f.statusLabel) : '') + '</small></div></div>';
+        '<small>' + esc(String(f.uploadedBy || '').split('@')[0]) + ' · ' + esc(relTime(f.updatedAt || f.createdAt)) + (f.updatedAt && f.updatedAt > f.createdAt ? ' · ' + esc(CT.t('fileUpdated')) : '') + (f.statusLabel ? ' · ' + esc(f.statusLabel) : '') + '</small></div></div>';
     }).join('') : empty();
     if (id === 'budget') return d.budget
       ? (d.budget.summary.length ? d.budget.summary.map(function (b) {
@@ -63,19 +63,19 @@
 
   CT.addDict({
     ko: { noticesTitle: '공지', linksTitle: '바로가기', myTasksTitle: '내 담당 업무', calTitle: '캠프팀 달력', ddayTitle: '캠프 D-day', activityTitle: '최근 변경 기록',
-      wNoticesD: '팀 공지를 홈에서 바로 봐요', wLinksD: '자주 가는 화면으로 가는 버튼', wMyTasksD: '담당자 이메일이 내 이메일인 업무', wCalendarD: '일정·업무 마감·회의를 월 달력으로', wDdayD: '고른 캠프까지 남은 날짜 (여러 개 가능)', wActivityD: '누가 무엇을 바꿨는지 (관리자만)',
+      wNoticesD: '팀 공지를 홈에서 바로 봐요', wLinksD: '자주 가는 화면으로 가는 버튼', wMyTasksD: '담당자 이메일이 내 이메일인 업무', wCalendarD: '일정·업무 마감·회의를 월 달력으로', wDdayD: '고른 캠프까지 남은 날짜 (여러 개 가능)', wActivityD: '팀원들이 방금 올리고 바꾼 것 (캠프팀 팀원만)',
       wStatsD: '핵심 숫자 4개', wCampsD: '진행 중·예정 캠프', wDeadlinesD: '가까운 업무 마감', wAttentionD: '담당 미정·마감 지남 업무', wAgendaD: '다음 회의 안건', wMeetingsD: '최근 회의록', wFilesD: '최근 올린 파일', wBudgetD: '예산 요약 (금액 권한자만)',
       addWidget: '위젯 추가', tidy: '빈틈 정리', allAdded: '더 추가할 위젯이 없어요.', noRoom: '자리가 없어서 맨 아래에 놓았어요.', overlapMsg: '옆 위젯과 겹쳐서 바꿀 수 없어요.', tidyDone: '빈 공간을 위로 모았어요.', remove: '홈에서 빼기', widthToggle: '너비 전체/반쪽', resize: '크기 조절',
       editNarrow: '위젯 편집은 넓은 화면에서 할 수 있어요.', myTasksNone: '내 이메일이 담당자로 지정된 업무가 없어요.', noticesNone: '등록된 공지가 없어요.', pickCamp: '캠프 고르기', ddayNone: '날짜가 있는 캠프를 골라 주세요', ddayDay: 'D-DAY', ddayLive: '진행 중', dateTbdLong: '날짜 미정',
       activityNone: '기록이 없어요.', linkResources: '캠프 자료실', linkFiles: '자료실', linkTasks: '일정 · 업무', linkMeetings: '회의록 · 결정', linkCamps: '캠프별 공간', linkTv: 'TV 대시보드', linkBudget: '캠프 예산', linkSearch: '전체 검색',
-      calToday: '오늘', calMore: '개 더', dow: '일,월,화,수,목,금,토', evTeam: '일정', evTask: '업무 마감', evMeeting: '회의', evCamp: '캠프', calMonthFmt: 'Y년 M월' },
+      actCreate: '만듦', actUpdate: '수정', actDelete: '삭제', actUpload: '파일 올림', actNew_version: '새 버전 올림', actLink_file: '파일 연결', actUnlink_file: '파일 연결 해제', actImport_csv: '시트 가져오기', actImport_minutes: '회의록 가져오기', actImport_template: '체크리스트 가져오기', actCopy_budget: '예산 복사', actUpsert: '수정', entTask: '업무', entEvent: '일정', entMeeting: '회의', entAgenda_item: '안건', entDecision: '결정', entFile: '파일', entCamp: '캠프', entCamp_type: '캠프 유형', entNotice: '공지', entGlossary: '용어집', entChecklist_template: '체크리스트', entChecklist_item: '체크리스트 항목', entBudget_line: '예산', entBudget_target: '예산', justNow: '방금', minAgo: '분 전', hrAgo: '시간 전', fileUpdated: '업데이트', actNone: '아직 기록이 없어요.', teamOnlyNote: '캠프팀 팀원에게만 보여요.', calToday: '오늘', calViewMonth: '달력', calViewList: '목록', calListEmpty: '이 기간에 일정이 없어요.', thisweekTitle: '이번 주 일정', overdueTitle: '마감 지난 업무', decisionsTitle: '최근 결정', statusTitle: '업무 상태별 현황', wThisweekD: '오늘부터 7일간 일정·업무 마감·회의', wOverdueD: '마감이 지났는데 아직 안 끝난 업무', wDecisionsD: '최근 방향 합의·최종 결정', wStatusD: '업무가 어떤 상태인지 막대로 보기', decNone: '아직 결정 기록이 없어요.', overdueNone: '마감 지난 업무가 없어요 👍', weekNone: '이번 주 일정이 없어요.', moveUp: '위로', moveDown: '아래로', dKindproposal: '제안', dKinddirection: '방향 합의', dKindfinal: '최종 결정', dKindhold: '보류', dKindchanged: '변경', stNot_Started: '시작 전', stIn_Progress: '진행 중', stWaiting_for_Confirmation: '확인 대기', stDelayed: '지연', stCompleted: '완료', stNot_Applicable: '해당 없음', tasksUnit: '건', dow: '일,월,화,수,목,금,토', evTeam: '일정', evTask: '업무 마감', evMeeting: '회의', evCamp: '캠프', calMonthFmt: 'Y년 M월' },
     en: { noticesTitle: 'Announcements', linksTitle: 'Quick links', myTasksTitle: 'My tasks', calTitle: 'Camp team calendar', ddayTitle: 'Camp D-day', activityTitle: 'Recent changes',
-      wNoticesD: 'Team announcements right on Home', wLinksD: 'Buttons to your most-used pages', wMyTasksD: 'Tasks whose owner email is yours', wCalendarD: 'Events, due dates and meetings in a month view', wDdayD: 'Days left until a chosen camp (add several)', wActivityD: 'Who changed what (admins only)',
+      wNoticesD: 'Team announcements right on Home', wLinksD: 'Buttons to your most-used pages', wMyTasksD: 'Tasks whose owner email is yours', wCalendarD: 'Events, due dates and meetings in a month view', wDdayD: 'Days left until a chosen camp (add several)', wActivityD: 'What teammates just uploaded or changed (team members only)',
       wStatsD: 'Four key numbers', wCampsD: 'Active & upcoming camps', wDeadlinesD: 'Upcoming task deadlines', wAttentionD: 'Tasks without owner or overdue', wAgendaD: 'Next meeting agenda', wMeetingsD: 'Recent meetings', wFilesD: 'Recently uploaded files', wBudgetD: 'Budget summary (authorized only)',
       addWidget: 'Add widget', tidy: 'Tidy gaps', allAdded: 'No more widgets to add.', noRoom: 'No free spot, placed at the bottom.', overlapMsg: 'It would overlap a neighbor widget.', tidyDone: 'Moved widgets up to fill gaps.', remove: 'Remove from Home', widthToggle: 'Full / half width', resize: 'Resize',
       editNarrow: 'Widgets can be edited on a wider screen.', myTasksNone: 'No tasks list your email as owner.', noticesNone: 'No announcements.', pickCamp: 'Choose camp', ddayNone: 'Choose a camp that has a date', ddayDay: 'D-DAY', ddayLive: 'In progress', dateTbdLong: 'Date TBD',
       activityNone: 'No records.', linkResources: 'Camp Resources', linkFiles: 'Files', linkTasks: 'Schedule · Tasks', linkMeetings: 'Meetings · Decisions', linkCamps: 'Camp Spaces', linkTv: 'TV Dashboard', linkBudget: 'Camp Budget', linkSearch: 'Search all',
-      calToday: 'Today', calMore: ' more', dow: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat', evTeam: 'Event', evTask: 'Task due', evMeeting: 'Meeting', evCamp: 'Camp', calMonthFmt: 'M Y' }
+      actCreate: 'created', actUpdate: 'updated', actDelete: 'deleted', actUpload: 'uploaded a file', actNew_version: 'uploaded a new version', actLink_file: 'linked a file', actUnlink_file: 'unlinked a file', actImport_csv: 'imported from sheet', actImport_minutes: 'imported minutes', actImport_template: 'imported checklist', actCopy_budget: 'copied budget', actUpsert: 'updated', entTask: 'Task', entEvent: 'Event', entMeeting: 'Meeting', entAgenda_item: 'Agenda', entDecision: 'Decision', entFile: 'File', entCamp: 'Camp', entCamp_type: 'Camp type', entNotice: 'Notice', entGlossary: 'Glossary', entChecklist_template: 'Checklist', entChecklist_item: 'Checklist item', entBudget_line: 'Budget', entBudget_target: 'Budget', justNow: 'just now', minAgo: ' min ago', hrAgo: ' h ago', fileUpdated: 'updated', actNone: 'No activity yet.', teamOnlyNote: 'Visible to camp team members only.', calToday: 'Today', calViewMonth: 'Calendar', calViewList: 'List', calListEmpty: 'Nothing scheduled in this period.', thisweekTitle: 'This week', overdueTitle: 'Overdue tasks', decisionsTitle: 'Recent decisions', statusTitle: 'Tasks by status', wThisweekD: 'Next 7 days of events, due dates and meetings', wOverdueD: 'Past-due tasks that are not finished', wDecisionsD: 'Latest direction and final decisions', wStatusD: 'Task status as bars', decNone: 'No decisions recorded yet.', overdueNone: 'No overdue tasks', weekNone: 'Nothing scheduled this week.', moveUp: 'Move up', moveDown: 'Move down', dKindproposal: 'Proposal', dKinddirection: 'Direction', dKindfinal: 'Final', dKindhold: 'On hold', dKindchanged: 'Changed', stNot_Started: 'Not started', stIn_Progress: 'In progress', stWaiting_for_Confirmation: 'Waiting', stDelayed: 'Delayed', stCompleted: 'Completed', stNot_Applicable: 'N/A', tasksUnit: '', dow: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat', evTeam: 'Event', evTask: 'Task due', evMeeting: 'Meeting', evCamp: 'Camp', calMonthFmt: 'M Y' }
   });
 
   // ── 선 아이콘 (포털 메뉴와 같은 규격) ──
@@ -86,7 +86,7 @@
     x: '<path d="M6 6l12 12M18 6 6 18"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     tidy: '<path d="M12 3v5M9.5 6 12 8.5 14.5 6M12 21v-5M9.5 18 12 15.5 14.5 18M4 12h16"/>',
-    prev: '<path d="m15 6-6 6 6 6"/>', next: '<path d="m9 6 6 6-6 6"/>',
+    up: '<path d="m6 15 6-6 6 6"/>', down: '<path d="m6 9 6 6 6-6"/>', prev: '<path d="m15 6-6 6 6 6"/>', next: '<path d="m9 6 6 6-6 6"/>',
     grip: '<circle cx="9" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1.4" fill="currentColor" stroke="none"/>',
     camps: '<path d="M3 20 12 4l9 16"/><path d="M9.5 20 12 15.5l2.5 4.5"/><path d="M2 20h20"/>',
     tasks: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>',
@@ -102,12 +102,19 @@
   // ── 위젯 정의 ──
   var COLS = 12, ROW = 40, GAP = 12;
   var TITLES = { stats: ['statsTitle', 'wStatsD'], camps: ['activeCamps', 'wCampsD'], deadlines: ['upcoming', 'wDeadlinesD'], attention: ['attention', 'wAttentionD'], agenda: ['agenda', 'wAgendaD'], meetings: ['recentMeetings', 'wMeetingsD'], files: ['recentFiles', 'wFilesD'], budget: ['budget', 'wBudgetD'],
-    notices: ['noticesTitle', 'wNoticesD'], links: ['linksTitle', 'wLinksD'], mytasks: ['myTasksTitle', 'wMyTasksD'], calendar: ['calTitle', 'wCalendarD'], dday: ['ddayTitle', 'wDdayD'], activity: ['activityTitle', 'wActivityD'] };
-  var LINK = { camps: '/campteam/camps/', deadlines: '/campteam/tasks/', attention: '/campteam/tasks/', agenda: '/campteam/meetings/', meetings: '/campteam/meetings/', files: '/campteam/files/', mytasks: '/campteam/tasks/' };
+    notices: ['noticesTitle', 'wNoticesD'], links: ['linksTitle', 'wLinksD'], mytasks: ['myTasksTitle', 'wMyTasksD'], calendar: ['calTitle', 'wCalendarD'], dday: ['ddayTitle', 'wDdayD'], activity: ['activityTitle', 'wActivityD'], thisweek: ['thisweekTitle', 'wThisweekD'], overdue: ['overdueTitle', 'wOverdueD'], decisions: ['decisionsTitle', 'wDecisionsD'], status: ['statusTitle', 'wStatusD'] };
+  var LINK = { overdue: '/campteam/tasks/', decisions: '/campteam/meetings/', status: '/campteam/tasks/', thisweek: '/campteam/tasks/', camps: '/campteam/camps/', deadlines: '/campteam/tasks/', attention: '/campteam/tasks/', agenda: '/campteam/meetings/', meetings: '/campteam/meetings/', files: '/campteam/files/', mytasks: '/campteam/tasks/' };
   var NOCARD = { stats: 1 };
 
   var L = null, editing = false, scope = 'mine', work = null, base = '', calMonth = null, calCache = {}, auditCache = null;
+  var calView = (function () { try { return localStorage.getItem('ct-cal-view') === 'list' ? 'list' : 'month'; } catch (e) { return 'month'; } })();
   var isAdmin = function () { return !!(data && data.user.perms.manageMembers); };
+  var isTeam = function () { return !!(data && ['admin', 'finance', 'member'].indexOf(data.user.campRole) >= 0); };
+  function relTime(iso) {
+    var t = Date.parse(iso); if (!t) return ''; var min = Math.round((Date.now() - t) / 60000);
+    if (min < 1) return CT.t('justNow'); if (min < 60) return min + CT.t('minAgo'); if (min < 1440) return Math.floor(min / 60) + CT.t('hrAgo');
+    var d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
   var wide = function () { return window.matchMedia('(min-width: 901px)').matches; };
   var clone = function (x) { return JSON.parse(JSON.stringify(x)); };
   var tt = function (type) { return CT.t(TITLES[type][0]); };
@@ -144,6 +151,10 @@
     if (t === 'dday') return ddayHtml(it);
     if (t === 'calendar') return '<div class="mcal-wrap" data-cal>' + calHtml() + '</div>';
     if (t === 'activity') return '<div data-activity>' + activityHtml() + '</div>';
+    if (t === 'thisweek') return '<div data-week>' + weekHtml() + '</div>';
+    if (t === 'overdue') return rowTasks(data.overdue || [], true) || '<div class="empty">' + esc(CT.t('overdueNone')) + '</div>';
+    if (t === 'decisions') return decisionsHtml();
+    if (t === 'status') return statusHtml();
     return body(t);
   }
 
@@ -151,17 +162,13 @@
   function ymd(y, m, d) { return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
   function calHtml() {
     if (!calMonth) { var t = data.today.split('-'); calMonth = { y: +t[0], m: +t[1] - 1 }; }
-    var y = calMonth.y, m = calMonth.m, first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), key = y + '-' + m, c = calCache[key];
+    var y = calMonth.y, m = calMonth.m, days = new Date(y, m + 1, 0).getDate(), key = y + '-' + m, c = calCache[key];
     var title = CT.t('calMonthFmt').replace('Y', y).replace('M', CT.lang() === 'en' ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m] : m + 1);
-    var dow = CT.t('dow').split(',');
-    var byDay = {};
-    var put = function (day, kind, text) { (byDay[day] = byDay[day] || []).push({ k: kind, t: text }); };
-    if (c) {
-      c.events.forEach(function (e) { for (var d = Math.max(e.startDate, ymd(y, m, 1)); d <= Math.min(e.endDate || e.startDate, ymd(y, m, days)); d = nextDay(d)) put(d, 'ev', e.title); });
-      c.tasks.forEach(function (k) { put(k.dueDate, 'tk', k.title); });
-      c.meetings.forEach(function (k) { put(k.meetDate, 'mt', k.title); });
-      c.camps.forEach(function (k) { for (var d = Math.max(k.startDate, ymd(y, m, 1)); d <= Math.min(k.endDate || k.startDate, ymd(y, m, days)); d = nextDay(d)) put(d, 'cp', CT.pick(k, 'name')); });
-    }
+    var head = '<div class="mcal-head"><button type="button" class="hs-b" data-cal="-1" aria-label="prev">' + ico('prev') + '</button><b>' + esc(title) + '</b><button type="button" class="hs-b" data-cal="1" aria-label="next">' + ico('next') + '</button><button type="button" class="btn sm" data-cal="0">' + esc(CT.t('calToday')) + '</button>' +
+      '<span class="seg sm"><button type="button" data-calview="month" class="' + (calView === 'month' ? 'on' : '') + '">' + esc(CT.t('calViewMonth')) + '</button><button type="button" data-calview="list" class="' + (calView === 'list' ? 'on' : '') + '">' + esc(CT.t('calViewList')) + '</button></span></div>';
+    var legend = '<div class="mlegend"><span class="mk ev">' + esc(CT.t('evTeam')) + '</span><span class="mk tk">' + esc(CT.t('evTask')) + '</span><span class="mk mt">' + esc(CT.t('evMeeting')) + '</span><span class="mk cp">' + esc(CT.t('evCamp')) + '</span></div>';
+    if (calView === 'list') return head + '<div class="aglist">' + (c ? agendaHtml(agendaMap(c, ymd(y, m, 1), ymd(y, m, days)), CT.t('calListEmpty')) : '<div class="empty">…</div>') + '</div>' + legend;
+    var first = new Date(y, m, 1).getDay(), dow = CT.t('dow').split(','), byDay = agendaMap(c, ymd(y, m, 1), ymd(y, m, days), true);
     var cells = '', n = Math.ceil((first + days) / 7) * 7;
     for (var i = 0; i < n; i++) {
       var day = i - first + 1;
@@ -169,29 +176,67 @@
       var ds = ymd(y, m, day), list = byDay[ds] || [], shown = list.slice(0, 3);
       cells += '<div class="mc' + (ds === data.today ? ' today' : '') + '"><b>' + day + '</b>' + shown.map(function (e) { return '<i class="mk ' + e.k + '" title="' + esc(e.t) + '">' + esc(e.t) + '</i>'; }).join('') + (list.length > 3 ? '<em>+' + (list.length - 3) + esc(CT.t('calMore')) + '</em>' : '') + '</div>';
     }
-    return '<div class="mcal-head"><button type="button" class="hs-b" data-cal="-1" aria-label="prev">' + ico('prev') + '</button><b>' + esc(title) + '</b><button type="button" class="hs-b" data-cal="1" aria-label="next">' + ico('next') + '</button><button type="button" class="btn sm" data-cal="0">' + esc(CT.t('calToday')) + '</button></div>' +
-      '<div class="mcal">' + dow.map(function (d) { return '<div class="mw">' + esc(d) + '</div>'; }).join('') + cells + '</div>' +
-      '<div class="mlegend"><span class="mk ev">' + esc(CT.t('evTeam')) + '</span><span class="mk tk">' + esc(CT.t('evTask')) + '</span><span class="mk mt">' + esc(CT.t('evMeeting')) + '</span><span class="mk cp">' + esc(CT.t('evCamp')) + '</span></div>';
+    return head + '<div class="mcal">' + dow.map(function (d) { return '<div class="mw">' + esc(d) + '</div>'; }).join('') + cells + '</div>' + legend;
   }
   function nextDay(d) { var t = new Date(Date.parse(d + 'T00:00:00Z') + 86400000); return t.toISOString().slice(0, 10); }
-  async function loadCal() {
-    if (!calMonth) return; var y = calMonth.y, m = calMonth.m, key = y + '-' + m; if (calCache[key]) return;
-    try { calCache[key] = await CT.api('/api/campteam/calendar?from=' + ymd(y, m, 1) + '&to=' + ymd(y, m, new Date(y, m + 1, 0).getDate())); } catch (e) { calCache[key] = { events: [], tasks: [], meetings: [], camps: [] }; }
+  /** 날짜별 일정 모음: { 'YYYY-MM-DD': [{k, t, time}] }. spanCamps=true 면 캠프 기간 전체에 표시(달력), 아니면 시작일에만(목록) */
+  function agendaMap(c, from, to, spanCamps) {
+    var map = {}; if (!c) return map;
+    var put = function (day, k, t, time) { if (day >= from && day <= to) (map[day] = map[day] || []).push({ k: k, t: t, time: time || '' }); };
+    var span = function (a, b, k, t, time) { for (var d = a < from ? from : a, end = (b || a) > to ? to : (b || a); d <= end; d = nextDay(d)) put(d, k, t, d === a ? time : ''); };
+    (c.events || []).forEach(function (e) { span(e.startDate, e.endDate, 'ev', e.title, e.startTime); });
+    (c.tasks || []).forEach(function (k) { put(k.dueDate, 'tk', k.title); });
+    (c.meetings || []).forEach(function (k) { put(k.meetDate, 'mt', k.title, k.meetTime); });
+    (c.camps || []).forEach(function (k) { if (spanCamps) span(k.startDate, k.endDate, 'cp', CT.pick(k, 'name')); else put(k.startDate, 'cp', CT.pick(k, 'name') + ' · ' + CT.t('evCamp')); });
+    return map;
   }
+  function agendaHtml(map, emptyText) {
+    var days = Object.keys(map).sort(); if (!days.length) return '<div class="empty">' + esc(emptyText) + '</div>';
+    var dow = CT.t('dow').split(',');
+    return days.map(function (d) {
+      var dt = new Date(d + 'T00:00:00'), isToday = d === data.today;
+      return '<div class="agday' + (isToday ? ' today' : '') + '"><div class="agd"><b>' + esc(CT.fmtDate(d)) + '</b><small>' + esc(dow[dt.getDay()]) + (isToday ? ' · ' + esc(CT.t('calToday')) : '') + '</small></div><div class="agi">' +
+        map[d].map(function (e) { return '<div class="ag"><span class="mk ' + e.k + '">' + esc(CT.t({ ev: 'evTeam', tk: 'evTask', mt: 'evMeeting', cp: 'evCamp' }[e.k])) + '</span><span class="agt">' + esc(e.t) + '</span>' + (e.time ? '<small>' + esc(e.time) + '</small>' : '') + '</div>'; }).join('') + '</div></div>';
+    }).join('');
+  }
+  function weekRange() { return [data.today, nextDay(nextDay(nextDay(nextDay(nextDay(nextDay(data.today))))))]; }
+  function weekHtml() { var r = weekRange(), c = calCache.w; return c ? agendaHtml(agendaMap(c, r[0], r[1], false), CT.t('weekNone')) : '<div class="empty">…</div>'; }
+  function decisionsHtml() {
+    var d = data.decisions || []; if (!d.length) return '<div class="empty">' + esc(CT.t('decNone')) + '</div>';
+    return d.map(function (x) { var txt = CT.lang() === 'en' ? (x.textEn || x.textKo) : (x.textKo || x.textEn);
+      return '<div class="row"><div>' + esc(txt) + testChip(x) + '<small>' + esc(campName(x)) + (x.decidedDate ? (campName(x) ? ' · ' : '') + esc(CT.fmtDate(x.decidedDate)) : '') + '</small></div><span class="kindchip kc-' + esc(x.kind) + '">' + esc(CT.t('dKind' + x.kind)) + '</span></div>'; }).join('');
+  }
+  var ST = [['Not Started', '#9fb4c0'], ['In Progress', '#3b8ff0'], ['Waiting for Confirmation', '#f0a020'], ['Delayed', '#c42a36'], ['Completed', '#22b573'], ['Not Applicable', '#cfd8dd']];
+  function statusHtml() {
+    var by = {}, total = 0; (data.statusCounts || []).forEach(function (r) { by[r.status] = r.n; total += r.n; });
+    if (!total) return '<div class="empty">' + esc(CT.t('none')) + '</div>';
+    var max = Math.max.apply(null, ST.map(function (s) { return by[s[0]] || 0; }));
+    return '<div class="stbars">' + ST.map(function (s) { var n = by[s[0]] || 0; return '<div class="stb"><span>' + esc(CT.t('st' + s[0].replace(/ /g, '_'))) + '</span><div class="bar"><i style="width:' + (max ? Math.round(n / max * 100) : 0) + '%;background:' + s[1] + '"></i></div><b>' + n + esc(CT.t('tasksUnit')) + '</b></div>'; }).join('') + '</div>';
+  }
+  async function loadRange(key, from, to) {
+    if (calCache[key]) return;
+    try { calCache[key] = await CT.api('/api/campteam/calendar?from=' + from + '&to=' + to); } catch (e) { calCache[key] = { events: [], tasks: [], meetings: [], camps: [] }; }
+  }
+  async function loadCal() { if (!calMonth) return; await loadRange(calMonth.y + '-' + calMonth.m, ymd(calMonth.y, calMonth.m, 1), ymd(calMonth.y, calMonth.m, new Date(calMonth.y, calMonth.m + 1, 0).getDate())); }
   function activityHtml() {
     if (!auditCache) return '<div class="empty">…</div>';
-    var rows = auditCache.slice(0, 12);
-    return rows.length ? rows.map(function (a) { var d = new Date(a.at); return '<div class="row"><div>' + esc(a.action + ' · ' + a.entity) + '<small>' + esc(a.actor) + (a.detail ? ' · ' + esc(a.detail) : '') + '</small></div><span class="tag t-none">' + esc((d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')) + '</span></div>'; }).join('') : '<div class="empty">' + esc(CT.t('activityNone')) + '</div>';
+    if (!auditCache.length) return '<div class="empty">' + esc(CT.t('actNone')) + '</div>';
+    return auditCache.slice(0, 20).map(function (a) {
+      var ent = CT.t('ent' + a.entity.charAt(0).toUpperCase() + a.entity.slice(1)), act = CT.t('act' + a.action.charAt(0).toUpperCase() + a.action.slice(1)), who = String(a.actor || '').split('@')[0];
+      return '<div class="row"><div><b class="act-t">' + (a.title ? esc(a.title) : esc(ent)) + '</b><small>' + esc(who) + ' · ' + (a.title ? '<span class="kindchip">' + esc(ent) + '</span> ' : '') + esc(act) + '</small></div><span class="tag t-none">' + esc(relTime(a.at)) + '</span></div>';
+    }).join('');
   }
   async function loadLate(items) {
-    var need = false;
-    if (items.some(function (w) { return w.type === 'calendar' && w.show; })) { var k = calMonth ? calMonth.y + '-' + calMonth.m : null; if (!calMonth || !calCache[k]) { calHtml(); await loadCal(); need = true; } }
-    if (isAdmin() && items.some(function (w) { return w.type === 'activity' && w.show; }) && !auditCache) { try { auditCache = (await CT.api('/api/campteam/audit')).items; } catch (e) { auditCache = []; } need = true; }
-    if (need) paintLate();
+    var shown = function (t) { return items.some(function (w) { return w.type === t && (w.show || editing); }); }, jobs = [];
+    if (shown('calendar')) { calHtml(); jobs.push(loadCal()); }
+    if (shown('thisweek')) { var r = weekRange(); jobs.push(loadRange('w', r[0], r[1])); }
+    if (isTeam() && shown('activity') && !auditCache) jobs.push(CT.api('/api/campteam/activity').then(function (a) { auditCache = a.items; }).catch(function () { auditCache = []; }));
+    if (jobs.length) { await Promise.all(jobs); paintLate(); }
   }
   function paintLate() {
-    var c = document.querySelector('[data-cal]'); if (c && c.classList.contains('mcal-wrap')) c.innerHTML = calHtml();
+    var c = document.querySelector('.mcal-wrap'); if (c) c.innerHTML = calHtml();
     var a = document.querySelector('[data-activity]'); if (a) a.innerHTML = activityHtml();
+    var w = document.querySelector('[data-week]'); if (w) w.innerHTML = weekHtml();
   }
 
   // ── 배치 계산 ──
@@ -204,26 +249,33 @@
   function tidy(items) {
     var placed = []; items.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; }).forEach(function (it) { var y = 0; while (y < it.y && collides(placed, { x: it.x, y: y, w: it.w, h: it.h })) y++; it.y = y; placed.push(it); });
   }
-  function visibleItems(items) { return items.filter(function (w) { return (editing || w.show) && (w.type !== 'activity' || isAdmin()); }); }
+  function visibleItems(items) { return items.filter(function (w) { return (editing || w.show) && (w.type !== 'activity' || isTeam()); }); }
 
   // ── 그리기 ──
+  /** 폰에서 보이는 순서: 저장된 폰 순서(m)가 먼저, 나머지는 위치(위→아래, 왼→오) 순 */
+  function mobileOrder(items, m) {
+    var byPos = items.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; }), out = [];
+    (m || []).forEach(function (u) { var f = byPos.filter(function (i) { return i.uid === u; })[0]; if (f) out.push(f); });
+    return out.concat(byPos.filter(function (i) { return out.indexOf(i) < 0; }));
+  }
   function render() {
     var d = data, hasTest = [].concat(d.camps, d.deadlines, d.attention, d.agenda, d.meetings, d.files).some(function (r) { return r.isTest; });
     $('homeSub').innerHTML = esc(d.today) + ' · ' + esc(CT.t('campsCount')) + ' ' + d.camps.length + (hasTest ? ' <span class="chip test">' + esc(CT.t('testData')) + '</span>' : '') + (!editing && L.mine ? ' <span class="chip">' + esc(CT.t('mineOverrides')) + '</span>' : '');
-    var items = visibleItems(editing ? work.items : L.effective.items), isWide = wide();
+    var src = editing ? work : L.effective, items = visibleItems(src.items), isWide = wide();
     var rows = Math.max(6, items.reduce(function (m, o) { return Math.max(m, o.y + o.h); }, 0) + (editing ? 8 : 0));
     var grid = $('homeGrid'); grid.className = 'dash' + (editing ? ' editing' : '');
     if (isWide) grid.style.gridTemplateRows = 'repeat(' + rows + ', ' + ROW + 'px)'; else grid.style.gridTemplateRows = '';
     var cells = '';
     if (editing && isWide) { var n = rows * COLS, c = ''; for (var i = 0; i < n; i++) c += '<i></i>'; cells = '<div class="cells" style="grid-template-rows:repeat(' + rows + ',' + ROW + 'px)" aria-hidden="true">' + c + '</div>'; }
-    var ordered = items.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; });
-    grid.innerHTML = cells + ordered.map(function (it) {
+    var ordered = isWide ? items.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; }) : mobileOrder(items, src.m);
+    var btn = function (a, label, icon, dis) { return '<button type="button" class="hs-b" data-a="' + a + '" title="' + esc(label) + '" aria-label="' + esc(label) + '"' + (dis ? ' disabled' : '') + '>' + ico(icon) + '</button>'; };
+    grid.innerHTML = cells + ordered.map(function (it, idx) {
       var card = !NOCARD[it.type], link = LINK[it.type];
       var head = card ? '<h2><span>' + esc(tt(it.type)) + '</span>' + (link ? '<a href="' + link + '">' + esc(CT.t('allCamps')) + '</a>' : '') + '</h2>' : '';
-      var tools = editing && isWide ? '<div class="hs-tools" data-move><span class="hs-grip">' + ico('grip', 16) + '</span><span class="hs-name">' + esc(tt(it.type)) + (it.show ? '' : ' · ' + esc(CT.t('secHiddenTag'))) + '</span><span class="sp"></span>' +
-        '<button type="button" class="hs-b" data-a="show" title="' + esc(CT.t(it.show ? 'secHide' : 'secShow')) + '" aria-label="' + esc(CT.t(it.show ? 'secHide' : 'secShow')) + '">' + ico(it.show ? 'eye' : 'eyeOff') + '</button>' +
-        '<button type="button" class="hs-b" data-a="width" title="' + esc(CT.t('widthToggle')) + '" aria-label="' + esc(CT.t('widthToggle')) + '">' + ico('width') + '</button>' +
-        '<button type="button" class="hs-b" data-a="remove" title="' + esc(CT.t('remove')) + '" aria-label="' + esc(CT.t('remove')) + '">' + ico('x') + '</button></div>' : '';
+      var name = '<span class="hs-name">' + esc(tt(it.type)) + (it.show ? '' : ' · ' + esc(CT.t('secHiddenTag'))) + '</span><span class="sp"></span>';
+      var eye = btn('show', CT.t(it.show ? 'secHide' : 'secShow'), it.show ? 'eye' : 'eyeOff'), del = btn('remove', CT.t('remove'), 'x'), tools = '';
+      if (editing && isWide) tools = '<div class="hs-tools" data-move><span class="hs-grip">' + ico('grip', 16) + '</span>' + name + eye + btn('width', CT.t('widthToggle'), 'width') + del + '</div>';
+      else if (editing) tools = '<div class="hs-tools mob">' + name + btn('up', CT.t('moveUp'), 'up', idx === 0) + btn('down', CT.t('moveDown'), 'down', idx === ordered.length - 1) + eye + del + '</div>';
       var place = isWide ? ' style="grid-column:' + (it.x + 1) + ' / span ' + it.w + ';grid-row:' + (it.y + 1) + ' / span ' + it.h + '"' : '';
       return '<section class="hs ' + (card ? 'card' : 'nocard') + (it.show ? '' : ' off') + '" data-uid="' + esc(it.uid) + '" data-type="' + it.type + '"' + place + '>' + tools + head + '<div class="hs-body">' + widgetBody(it) + '</div>' + (editing && isWide ? '<span class="hs-rs" data-resize title="' + esc(CT.t('resize')) + '"></span>' : '') + '</section>';
     }).join('');
@@ -233,7 +285,7 @@
   // ── 편집 모드 ──
   function startScope(sc) {
     scope = sc; work = clone(sc === 'default' ? (L.default || L.builtIn) : L.effective);
-    if (!isAdmin()) work.items = work.items.filter(function (w) { return w.type !== 'activity'; });
+    if (!isTeam()) work.items = work.items.filter(function (w) { return w.type !== 'activity'; });
     base = JSON.stringify(work);
   }
   function changed() { return editing && JSON.stringify(work) !== base; }
@@ -244,7 +296,7 @@
     bar.innerHTML = (L.canEditDefault ? '<div class="seg"><button type="button" data-sc="mine" class="' + (scope === 'mine' ? 'on' : '') + '">' + esc(CT.t('scopeMine')) + '</button><button type="button" data-sc="default" class="' + (scope === 'default' ? 'on' : '') + '">' + esc(CT.t('scopeDefault')) + '</button></div>' : '<b>' + esc(CT.t('scopeMine')) + '</b>') +
       '<span class="hint">' + esc(CT.t(scope === 'default' ? 'hintDefault' : 'hintMine')) + '</span><span class="sp"></span><span class="hint" id="barMsg"></span>' +
       '<span class="addwrap"><button type="button" class="btn sm" id="barAdd">' + ico('plus', 14) + '&nbsp;' + esc(CT.t('addWidget')) + '</button><div class="palette" id="palette" hidden></div></span>' +
-      '<button type="button" class="btn sm" id="barTidy">' + ico('tidy', 14) + '&nbsp;' + esc(CT.t('tidy')) + '</button>' +
+      (wide() ? '<button type="button" class="btn sm" id="barTidy">' + ico('tidy', 14) + '&nbsp;' + esc(CT.t('tidy')) + '</button>' : '') +
       '<button type="button" class="btn sm" id="barReset"' + ((scope === 'mine' && !L.mine) || (scope === 'default' && !L.default) ? ' disabled' : '') + '>' + esc(CT.t(scope === 'default' ? 'resetDefault' : 'resetMine')) + '</button>' +
       '<button type="button" class="btn sm pri" id="barSave">' + esc(CT.t('save')) + '</button>';
   }
@@ -272,37 +324,48 @@
     var spot = firstFree(work.items, c.w, c.h), uid = countOf(type) === 0 && !findItem(type) ? type : type + Math.random().toString(36).slice(2, 6);
     var it = { uid: uid, type: type, x: spot.x, y: spot.y, w: c.w, h: c.h, show: true, opts: {} };
     if (type === 'dday') { var next = (data.campChoices || []).filter(function (x) { return x.startDate && x.startDate >= data.today; })[0] || (data.campChoices || [])[0]; if (next) it.opts.campId = next.id; }
-    work.items.push(it); $('palette').hidden = true; render(); if (!spot.found) msg(CT.t('noRoom'), true);
+    work.items.push(it); if (work.m) work.m.push(uid); $('palette').hidden = true; render(); if (!spot.found) msg(CT.t('noRoom'), true);
     var el = document.querySelector('[data-uid="' + uid + '"]'); if (el) { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); el.classList.add('flash'); }
   }
 
   // 끌어서 옮기기 / 모서리로 크기 조절 (TV 편집기와 같은 방식: 칸에 맞춰지고, 겹치면 원래대로)
+  // 끄는 동안 화면 위·아래 가장자리에 가면 자동으로 스크롤되고, 마우스 휠로 스크롤해도 위젯이 커서를 따라간다.
   function startDrag(e, el, mode) {
     var it = findItem(el.dataset.uid), grid = $('homeGrid'); if (!it) return;
     e.preventDefault();
-    var rect = grid.getBoundingClientRect(), colW = (rect.width - GAP * (COLS - 1)) / COLS, sx = colW + GAP, sy = ROW + GAP, x0 = e.clientX, y0 = e.clientY, r0 = { x: it.x, y: it.y, w: it.w, h: it.h };
+    var rect = grid.getBoundingClientRect(), colW = (rect.width - GAP * (COLS - 1)) / COLS, sx = colW + GAP, sy = ROW + GAP, x0 = e.clientX, y0 = e.clientY, scroll0 = window.scrollY, r0 = { x: it.x, y: it.y, w: it.w, h: it.h };
     var cat = (L.catalog || []).filter(function (c) { return c.type === it.type; })[0] || { minW: 2, minH: 2 };
     var ghost = document.createElement('div'); ghost.className = 'ghost'; grid.appendChild(ghost);
-    var cur = Object.assign({}, r0), ok = true;
+    var cur = Object.assign({}, r0), ok = true, last = { x: x0, y: y0 }, raf = 0, alive = true;
     var place = function (r) { ghost.style.gridColumn = (r.x + 1) + ' / span ' + r.w; ghost.style.gridRow = (r.y + 1) + ' / span ' + r.h; };
     place(cur); el.classList.add('drag');
-    var move = function (ev) {
-      var dx = (ev.clientX - x0) / sx, dy = (ev.clientY - y0) / sy;
-      if (mode === 'move') { cur = { x: Math.max(0, Math.min(COLS - r0.w, Math.round(r0.x + dx))), y: Math.max(0, Math.round(r0.y + dy)), w: r0.w, h: r0.h }; el.style.transform = 'translate(' + (ev.clientX - x0) + 'px,' + (ev.clientY - y0) + 'px)'; }
+    var apply = function () {
+      var px = last.x - x0, py = last.y - y0 + (window.scrollY - scroll0), dx = px / sx, dy = py / sy; // 스크롤한 만큼도 움직인 것으로 계산
+      if (mode === 'move') { cur = { x: Math.max(0, Math.min(COLS - r0.w, Math.round(r0.x + dx))), y: Math.max(0, Math.round(r0.y + dy)), w: r0.w, h: r0.h }; el.style.transform = 'translate(' + px + 'px,' + py + 'px)'; }
       else { cur = { x: r0.x, y: r0.y, w: Math.max(cat.minW, Math.min(COLS - r0.x, Math.round(r0.w + dx))), h: Math.max(cat.minH, Math.round(r0.h + dy)) }; el.style.gridColumn = (cur.x + 1) + ' / span ' + cur.w; el.style.gridRow = (cur.y + 1) + ' / span ' + cur.h; }
       ok = !collides(work.items, cur, it.uid); ghost.classList.toggle('bad', !ok); place(cur);
     };
+    var move = function (ev) { last = { x: ev.clientX, y: ev.clientY }; apply(); };
+    var onScroll = function () { apply(); };
+    var loop = function () { // 화면 가장자리 근처면 자동 스크롤 (가까울수록 빠르게). 스크롤로 바뀐 위치도 매번 다시 계산한다.
+      if (!alive) return; var vh = window.innerHeight, edge = Math.min(110, vh * 0.2), v = 0;
+      if (last.y < edge) v = -Math.ceil((edge - Math.max(0, last.y)) / edge * 15) - 2; else if (last.y > vh - edge) v = Math.ceil((Math.min(vh, last.y) - (vh - edge)) / edge * 15) + 2;
+      if (v) window.scrollBy(0, v);
+      apply();
+    };
     var up = function () {
-      document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up);
+      alive = false; clearInterval(raf);
+      document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up); window.removeEventListener('scroll', onScroll);
       ghost.remove(); el.style.transform = '';
       if (ok && (cur.x !== r0.x || cur.y !== r0.y || cur.w !== r0.w || cur.h !== r0.h)) { it.x = cur.x; it.y = cur.y; it.w = cur.w; it.h = cur.h; }
       render();
     };
-    document.addEventListener('pointermove', move); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
+    document.addEventListener('pointermove', move); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up); window.addEventListener('scroll', onScroll, { passive: true });
+    raf = setInterval(loop, 16);
   }
 
   function wire() {
-    $('editHome').onclick = function () { if (editing) { leave(); } else { if (!wide()) { alert(CT.t('editNarrow')); return; } editing = true; startScope('mine'); render(); } };
+    $('editHome').onclick = function () { if (editing) { leave(); } else { editing = true; startScope('mine'); render(); } };
     $('editBar').onclick = function (e) {
       var t = e.target.closest('button'); if (!t) return;
       if (t.dataset.sc && t.dataset.sc !== scope) { if (changed() && !confirm(CT.t('leaveDirty'))) return; startScope(t.dataset.sc); render(); }
@@ -314,10 +377,15 @@
     document.addEventListener('click', function (e) { var p = $('palette'); if (p && !p.hidden && !e.target.closest('.addwrap')) p.hidden = true; });
     var grid = $('homeGrid');
     grid.addEventListener('click', function (e) {
+      var cv = e.target.closest('[data-calview]'); if (cv) { calView = cv.dataset.calview; try { localStorage.setItem('ct-cal-view', calView); } catch (x) {} paintLate(); return; }
       var cal = e.target.closest('[data-cal]'); if (cal && cal.tagName === 'BUTTON') { var step = +cal.dataset.cal; if (!calMonth) calHtml(); if (step === 0) { var t = data.today.split('-'); calMonth = { y: +t[0], m: +t[1] - 1 }; } else { var mm = calMonth.m + step; calMonth = { y: calMonth.y + Math.floor(mm / 12), m: ((mm % 12) + 12) % 12 }; } paintLate(); loadCal().then(paintLate); return; }
       var b = e.target.closest('.hs-b'); if (!b || !editing) return; var sec = b.closest('.hs'), it = findItem(sec.dataset.uid); if (!it) return;
       if (b.dataset.a === 'show') { it.show = !it.show; render(); }
-      else if (b.dataset.a === 'remove') { work.items = work.items.filter(function (w) { return w !== it; }); render(); }
+      else if (b.dataset.a === 'remove') { work.items = work.items.filter(function (w) { return w !== it; }); if (work.m) work.m = work.m.filter(function (u) { return u !== it.uid; }); render(); }
+      else if (b.dataset.a === 'up' || b.dataset.a === 'down') { // 폰: 순서만 바꾼다 (넓은 화면의 위치·크기는 그대로)
+        var ord = mobileOrder(work.items, work.m).map(function (w) { return w.uid; }), i = ord.indexOf(it.uid), j = i + (b.dataset.a === 'up' ? -1 : 1);
+        if (j >= 0 && j < ord.length) { ord.splice(i, 1); ord.splice(j, 0, it.uid); work.m = ord; render(); var moved = document.querySelector('[data-uid="' + it.uid + '"]'); if (moved) moved.scrollIntoView({ block: 'nearest' }); }
+      }
       else if (b.dataset.a === 'width') {
         var next = it.w === COLS ? { x: it.x > COLS / 2 ? COLS / 2 : it.x, w: COLS / 2 } : { x: 0, w: COLS };
         if (it.w !== COLS && it.w >= COLS / 2 && it.w < COLS) next = { x: 0, w: COLS };
@@ -328,13 +396,13 @@
     });
     grid.addEventListener('change', function (e) { var s = e.target.closest('.dd-sel'); if (!s || !editing) return; var it = findItem(s.dataset.uid); if (it) { it.opts = s.value ? { campId: s.value } : {}; render(); } });
     grid.addEventListener('pointerdown', function (e) {
-      if (!editing || e.button > 0) return;
+      if (!editing || e.button > 0 || !wide()) return;
       var rs = e.target.closest('[data-resize]'), mv = e.target.closest('[data-move]');
       if (e.target.closest('button,select,a')) return;
       if (rs) startDrag(e, rs.closest('.hs'), 'resize'); else if (mv) startDrag(e, mv.closest('.hs'), 'move');
     });
     window.addEventListener('beforeunload', function (e) { if (changed()) { e.preventDefault(); e.returnValue = ''; } });
-    var mq = window.matchMedia('(min-width: 901px)'); (mq.addEventListener ? mq.addEventListener('change', function () { if (editing && !mq.matches) { editing = false; work = null; } render(); }) : mq.addListener(function () { render(); }));
+    var mq = window.matchMedia('(min-width: 901px)'); (mq.addEventListener ? mq.addEventListener('change', function () { render(); }) : mq.addListener(function () { render(); }));
   }
 
   CT.boot(async function () {

@@ -12,7 +12,7 @@ export async function onRequestGet({ env, request }) {
   // 업무 표(별칭 k)의 열만 쓰도록 접두어를 붙인다 — camps 표에도 status 열이 있어서 접두어가 없으면 모호해진다
   const open = `k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable')`;
 
-  const [stats, camps, deadlines, attention, agenda, meetings, files, notices, myTasks, campChoices] = await Promise.all([
+  const [stats, camps, deadlines, attention, agenda, meetings, files, notices, myTasks, campChoices, overdue, decisions, statusRows] = await Promise.all([
     db.prepare(`SELECT
         SUM(CASE WHEN ${OPEN_STATUS_SQL} THEN 1 ELSE 0 END) AS open,
         SUM(CASE WHEN ${OPEN_STATUS_SQL} AND dueDate IS NOT NULL AND dueDate < ?1 THEN 1 ELSE 0 END) AS overdue,
@@ -38,7 +38,8 @@ export async function onRequestGet({ env, request }) {
       FROM agenda_items a LEFT JOIN camps c ON c.id = a.campId
       WHERE a.deletedAt IS NULL AND a.nextMeeting = 1 AND a.status <> 'decided' ORDER BY a.sortOrder LIMIT 6`).all(),
     db.prepare(`SELECT id, meetDate, meetTime, title, purpose, isTest FROM meetings WHERE deletedAt IS NULL ORDER BY meetDate DESC LIMIT 3`).all(),
-    db.prepare(`SELECT id, title, kind, uploadedBy, statusLabel, createdAt, isTest FROM files WHERE deletedAt IS NULL ORDER BY createdAt DESC LIMIT 4`).all(),
+    // 최근 올리거나 새 버전이 올라온 파일. 금액 자료는 금액 권한이 있을 때만
+    db.prepare(`SELECT id, title, kind, uploadedBy, statusLabel, createdAt, updatedAt, isTest FROM files WHERE deletedAt IS NULL ${s.perms.moneyRead ? '' : 'AND restricted = 0'} ORDER BY COALESCE(updatedAt, createdAt) DESC LIMIT 8`).all(),
     db.prepare(`SELECT id, message, messageEn, isTest FROM notices WHERE deletedAt IS NULL AND active = 1 ORDER BY sortOrder, createdAt LIMIT 8`).all(),
     // 내 담당 업무: 담당자 "이메일"이 내 이메일과 같은 업무만 (이름으로 추측하지 않는다)
     db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
@@ -46,6 +47,15 @@ export async function onRequestGet({ env, request }) {
       WHERE ${open} AND k.ownerEmail <> '' AND LOWER(k.ownerEmail) = ?1 ORDER BY k.dueDate IS NULL, k.dueDate LIMIT 8`).bind(s.email.toLowerCase()).all(),
     // D-day 위젯에서 고를 캠프 목록 (날짜가 있는 진행 예정 캠프)
     db.prepare(`SELECT id, nameKo, nameEn, startDate, endDate, status FROM camps WHERE deletedAt IS NULL AND status IN ('planning','active') ORDER BY startDate IS NULL, startDate, nameKo LIMIT 30`).all(),
+    // 마감 지난 업무 (진행 중인 것만, 오래된 순)
+    db.prepare(`SELECT k.id, k.title, k.ownerName, k.dueDate, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
+      FROM tasks k LEFT JOIN camps c ON c.id = k.campId
+      WHERE ${open} AND k.dueDate IS NOT NULL AND k.dueDate < ?1 ORDER BY k.dueDate LIMIT 8`).bind(today).all(),
+    // 최근 결정 (지금 유효한 방향 합의·최종 결정만)
+    db.prepare(`SELECT d.id, d.kind, d.textKo, d.textEn, d.decidedDate, d.isTest, c.nameKo AS campKo, c.nameEn AS campEn
+      FROM decisions d LEFT JOIN camps c ON c.id = d.campId
+      WHERE d.deletedAt IS NULL AND d.state = 'active' AND d.kind IN ('direction','final') ORDER BY d.decidedDate IS NULL, d.decidedDate DESC, d.createdAt DESC LIMIT 6`).all(),
+    db.prepare(`SELECT status, COUNT(*) AS n FROM tasks WHERE deletedAt IS NULL GROUP BY status`).all(),
   ]);
 
   // 금액: 권한이 없으면 이 표는 아예 읽지 않는다 (응답에도 budget 키가 없다)
@@ -66,6 +76,7 @@ export async function onRequestGet({ env, request }) {
     camps: camps.results, deadlines: deadlines.results, attention: attention.results,
     agenda: agenda.results, meetings: meetings.results, files: files.results,
     notices: notices.results, myTasks: myTasks.results, campChoices: campChoices.results,
+    overdue: overdue.results, decisions: decisions.results, statusCounts: statusRows.results,
   };
   if (budget) body.budget = budget;
   return json(body);

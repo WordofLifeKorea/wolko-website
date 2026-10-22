@@ -7,6 +7,7 @@ import * as Exp from '../functions/api/campteam/export.js';
 import * as Camps from '../functions/api/campteam/camps.js';
 import * as Tasks from '../functions/api/campteam/tasks.js';
 import * as Files from '../functions/api/campteam/files.js';
+import * as Activity from '../functions/api/campteam/activity.js';
 import * as Meetings from '../functions/api/campteam/meetings.js';
 import * as Budget from '../functions/api/campteam/budget.js';
 import * as Members from '../functions/api/campteam/members.js';
@@ -60,8 +61,9 @@ test('홈 배치 API: 로그인 필요, 내 배치는 누구나·내 것만, 모
   assert.equal((await call(HL, 'onRequestPut', env, null, { body: { scope: 'mine', layout: base() } })).status, 401);
   const first = await J(await call(HL, 'onRequestGet', env, U.view));
   assert.equal(first.mine, null); assert.equal(first.default, null); assert.deepEqual(first.effective, base()); assert.equal(first.canEditDefault, false); assert.equal(first.cols, 12);
-  assert.ok(first.catalog.some((c) => c.type === 'calendar')); assert.ok(!first.catalog.some((c) => c.type === 'activity'), '관리자 전용 위젯은 일반 사용자 목록에 없다');
+  assert.ok(first.catalog.some((c) => c.type === 'calendar')); assert.ok(!first.catalog.some((c) => c.type === 'activity'), '팀 전용 위젯은 명단에 없는 사용자 목록에 없다');
   const adminGet = await J(await call(HL, 'onRequestGet', env, U.admin)); assert.equal(adminGet.canEditDefault, true); assert.ok(adminGet.catalog.some((c) => c.type === 'activity'));
+  assert.ok((await J(await call(HL, 'onRequestGet', env, U.mem))).catalog.some((c) => c.type === 'activity'), '팀원도 변경 기록 위젯을 쓸 수 있다');
 
   // 조회만 사용자도 "내 홈"은 저장할 수 있지만, 기본 홈은 못 바꾼다
   const mine = withItem(without('meetings'), { type: 'notices', x: 0, y: 19 });
@@ -69,8 +71,10 @@ test('홈 배치 API: 로그인 필요, 내 배치는 누구나·내 것만, 모
   assert.ok((await J(r)).effective.items.some((w) => w.type === 'notices'));
   for (const who of [U.view, U.fin, U.mem]) assert.equal((await call(HL, 'onRequestPut', env, who, { body: { scope: 'default', layout: base() } })).status, 403, who);
   assert.equal((await call(HL, 'onRequestDelete', env, U.mem, { qs: '?scope=default' })).status, 403);
-  // 관리자 전용 위젯(변경 기록)은 일반 사용자의 "내 홈"에 저장되지 않는다
-  const sneaky = await J(await call(HL, 'onRequestPut', env, U.mem, { body: { scope: 'mine', layout: withItem(base(), { type: 'activity', x: 0, y: 40 }) } }));
+  // 팀 전용 위젯(변경 기록): 팀원은 "내 홈"에 저장되지만, 명단에 없는 사용자는 저장되지 않는다
+  const team = await J(await call(HL, 'onRequestPut', env, U.mem, { body: { scope: 'mine', layout: withItem(base(), { type: 'activity', x: 0, y: 40 }) } }));
+  assert.ok(team.effective.items.some((w) => w.type === 'activity'));
+  const sneaky = await J(await call(HL, 'onRequestPut', env, 'someone-else@wolko.org', { body: { scope: 'mine', layout: withItem(base(), { type: 'activity', x: 0, y: 40 }) } }));
   assert.ok(!sneaky.effective.items.some((w) => w.type === 'activity'));
 
   // 다른 사람의 배치에는 영향이 없다
@@ -113,13 +117,51 @@ test('홈 배치가 깨져 있거나 예전 형식이어도 홈은 기본 모양
   assert.equal(v.default, null); assert.equal(v.mine, null); assert.deepEqual(v.effective, base());
 });
 
+test('폰 순서(m): 배치에 있는 번호만 남기고 중복·낯선 값은 버리며, 없으면 필드 자체가 없다', () => {
+  const l = base(); assert.equal('m' in sanitizeHomeLayout(l).layout, false);
+  const ok = sanitizeHomeLayout({ ...l, m: ['files', 'camps', 'files', 'ghost', 7, 'stats'] }).layout;
+  assert.deepEqual(ok.m, ['files', 'camps', 'stats']);
+  assert.equal('m' in sanitizeHomeLayout({ ...l, m: 'x' }).layout, false);
+  assert.equal('m' in sanitizeHomeLayout({ ...l, m: ['ghost'] }).layout, false);
+  // 새 위젯 종류도 격자 규칙을 따른다
+  for (const t of ['thisweek', 'overdue', 'decisions', 'status']) assert.ok(CATALOG[t], t);
+});
+
 test('홈 요약 API: 공지·내 담당 업무·D-day 후보가 오고, 내 담당 업무는 담당자 이메일이 내 것일 때만', async () => {
   const env = makeEnv(fakeD1(), {});
   await env.DB.prepare(`UPDATE tasks SET ownerEmail = 'test-member@wolko.org' WHERE id = 't05'`).run();
   const mem = await J(await call(Home, 'onRequestGet', env, U.mem)), adm = await J(await call(Home, 'onRequestGet', env, U.admin));
   assert.ok(Array.isArray(mem.notices) && Array.isArray(mem.campChoices) && mem.campChoices.length > 0);
   assert.deepEqual(mem.myTasks.map((t) => t.id), ['t05']); assert.deepEqual(adm.myTasks, []);
+  assert.ok(Array.isArray(mem.overdue) && mem.overdue.every((t) => t.dueDate < mem.today), '마감 지난 업무만');
+  assert.ok(Array.isArray(mem.decisions) && mem.decisions.every((d) => ['direction', 'final'].includes(d.kind)));
+  assert.ok(mem.statusCounts.reduce((n, r) => n + r.n, 0) > 0);
   assert.ok(mem.campChoices.every((c) => !('budget' in c)), '캠프 후보에 금액 정보는 없다');
+});
+
+test('팀 활동 피드: 팀원은 보고, 명단에 없는 사람은 못 보며, 관리 기록·금액 파일은 걸러진다', async () => {
+  const env = makeEnv(fakeD1());
+  const up = async (who, title, restricted) => { await env.DB.prepare(`INSERT INTO files (id,title,category,restricted,createdAt,updatedAt,uploadedBy) VALUES (?1,?2,'etc',?3,?4,?4,?5)`).bind('f-' + title, title, restricted ? 1 : 0, new Date().toISOString(), who).run(); await env.DB.prepare(`INSERT INTO audit_log (id,at,actor,action,entity,entityId,detail) VALUES (?1,?2,?3,'upload','file',?4,?5)`).bind('a-' + title, new Date().toISOString(), who, 'f-' + title, title + '.pdf v1').run(); };
+  await up(U.mem, 'Camp flyer', false); await up(U.fin, 'Budget draft', true);
+  await env.DB.prepare(`INSERT INTO audit_log (id,at,actor,action,entity,entityId,detail) VALUES ('a-tv',?1,?2,'rotate','tv_token','main','')`).bind(new Date().toISOString(), U.admin).run();
+  await env.DB.prepare(`INSERT INTO audit_log (id,at,actor,action,entity,entityId,detail) VALUES ('a-mem',?1,?2,'upsert','camp_member','x@y','role=admin')`).bind(new Date().toISOString(), U.admin).run();
+  assert.equal((await call(Activity, 'onRequestGet', env, null)).status, 401);
+  assert.equal((await call(Activity, 'onRequestGet', env, U.view)).status, 403, '조회만 사용자는 못 본다');
+  assert.equal((await call(Activity, 'onRequestGet', env, 'someone-else@wolko.org')).status, 403, '명단에 없는 사람도 못 본다');
+  for (const who of [U.mem, U.fin, U.admin]) {
+    const items = (await J(await call(Activity, 'onRequestGet', env, who))).items;
+    const flyer = items.find((i) => i.entityId === 'f-Camp flyer'); assert.ok(flyer, who); assert.equal(flyer.title, 'Camp flyer'); assert.equal(flyer.actor, U.mem); assert.equal(flyer.action, 'upload');
+    assert.ok(!items.some((i) => ['tv_token', 'camp_member'].includes(i.entity)), '명단·TV 열쇠 기록은 피드에 없다');
+  }
+  assert.ok((await J(await call(Activity, 'onRequestGet', env, U.fin))).items.some((i) => i.title === 'Budget draft'), '금액 권한이 있으면 금액 파일도 보인다');
+});
+
+test('홈 요약: 금액 파일은 금액 권한이 없으면 최근 파일 목록에도 나오지 않는다', async () => {
+  const env = makeEnv(fakeD1()), now = new Date().toISOString();
+  await env.DB.prepare(`INSERT INTO files (id,title,category,restricted,createdAt,updatedAt,uploadedBy) VALUES ('fr','Secret budget sheet','budget',1,?1,?1,'x')`).bind(now).run();
+  const titles = async (who) => (await J(await call(Home, 'onRequestGet', env, who))).files.map((f) => f.title);
+  assert.ok(!(await titles(U.view)).includes('Secret budget sheet'), '조회만 사용자에게는 숨김');
+  assert.ok((await titles(U.mem)).includes('Secret budget sheet'), '금액 권한자에게는 보임');
 });
 
 test('접근 권한 표: 역할(비로그인·조회만·재정·팀원·관리자)별로 같은 요청이 어떻게 달라지는지 한 번에 확인', async () => {
@@ -143,7 +185,8 @@ test('접근 권한 표: 역할(비로그인·조회만·재정·팀원·관리�
     ['내 홈 저장', HL, 'onRequestPut', { body: { scope: 'mine', layout: layoutOf() } }, [401, 200, 200, 200, 200]],
     ['모두의 기본 홈 저장', HL, 'onRequestPut', { body: { scope: 'default', layout: layoutOf() } }, [401, 403, 403, 403, 200]],
     ['팀 명단 보기', Members, 'onRequestGet', {}, [401, 403, 403, 403, 200]],
-    ['변경 기록', Audit, 'onRequestGet', {}, [401, 403, 403, 403, 200]],
+    ['변경 기록(관리자 화면)', Audit, 'onRequestGet', {}, [401, 403, 403, 403, 200]],
+    ['팀 활동 피드', Activity, 'onRequestGet', {}, [401, 403, 200, 200, 200]],
     ['전체 내보내기', Exp, 'onRequestGet', {}, [401, 403, 403, 403, 200]],
     ['TV 설정(열쇠 포함)', TvConfig, 'onRequestGet', {}, [401, 403, 403, 403, 200]],
   ];
