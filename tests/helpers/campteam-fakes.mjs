@@ -12,6 +12,9 @@ export function fakeD1({ seed = true, spy } = {}) {
   const dir = root + 'camp-team/db/';
   for (const f of readdirSync(dir).filter(n => /^\d{4}_.*\.sql$/.test(n)).sort()) sqlite.exec(readFileSync(dir + f, 'utf8'));
   if (seed) for (const f of readdirSync(dir).filter(n => /^seed-dummy.*\.sql$/.test(n)).sort()) sqlite.exec(readFileSync(dir + f, 'utf8')); // seed-dummy.sql 다음에 seed-dummy-ledger.sql
+  // U.view: 명단에 있지만 모든 영역을 "보기만", 금액은 안 보이는 계정 (예전 "조회만" 시험용). 명단 밖 계정은 U.out
+  if (seed) sqlite.exec(`INSERT OR IGNORE INTO camp_members (email,name,role,active,createdAt,updatedAt,isTest) VALUES ('test-viewer@wolko.org','테스트 조회','member',1,'x','x',1);
+    INSERT OR IGNORE INTO member_perms (email,area,level,updatedAt) VALUES ('test-viewer@wolko.org','tasks','view','x'),('test-viewer@wolko.org','meetings','view','x'),('test-viewer@wolko.org','files','view','x'),('test-viewer@wolko.org','camps','view','x'),('test-viewer@wolko.org','money','none','x'),('test-viewer@wolko.org','notices','view','x');`);
   return {
     sqlite,
     prepare(sql) {
@@ -46,4 +49,4 @@ export async function req(email, { method = 'GET', body, url = 'http://localhost
   if (body && typeof body === 'object' && !(body instanceof Uint8Array)) { h['Content-Type'] = 'application/json'; body = JSON.stringify(body); }
   return new Request(url, { method, headers: h, body });
 }
-export const U = { admin: 'test-admin@wolko.org', dir: 'test-director@wolko.org', fin: 'test-finance@wolko.org', tre: 'test-treasurer@wolko.org', mem: 'test-member@wolko.org', view: 'test-viewer@wolko.org' };
+export const U = { admin: 'test-admin@wolko.org', dir: 'test-director@wolko.org', fin: 'test-finance@wolko.org', tre: 'test-treasurer@wolko.org', mem: 'test-member@wolko.org', view: 'test-viewer@wolko.org', out: 'test-outsider@wolko.org' };

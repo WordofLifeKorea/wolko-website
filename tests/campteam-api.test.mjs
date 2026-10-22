@@ -12,7 +12,7 @@ import { permsFor as permsForFull } from '../functions/lib/campteamAuth.js';
 const env = makeEnv;
 const fakeD1 = (o) => fakeD1Base(o);
 async function req(email, opts) { return reqBase(email, opts); }
-const ADMIN = U.admin, FIN = U.fin, MEM = U.mem, VIEW = U.view;
+const ADMIN = U.admin, FIN = U.fin, MEM = U.mem, VIEW = U.out; // VIEW: 명단에 없는 포털 사용자
 
 test('권한표: 역할별 조회·작성·금액 권한', () => {
   const flags = (f) => { const { areas, personal, ...rest } = f; return rest; }; // 항목별 수준(areas)·개인정보는 아래 항목별 권한 시험에서 따로 확인
@@ -88,7 +88,7 @@ test('캠프팀 팀원: 캠프 유형·행사 만들고 수정하고 삭제 표�
 
 test('홈 요약: 진행 중·마감 지남·담당 미정 숫자가 맞다', async () => {
   const e = env(fakeD1());
-  const body = await (await Home.onRequestGet({ env: e, request: await req(VIEW) })).json();
+  const body = await (await Home.onRequestGet({ env: e, request: await req(U.view) })).json();
   assert.equal(body.stats.total, 21);
   assert.equal(body.stats.completed, 2);
   assert.equal(body.stats.open, 19);
@@ -136,4 +136,20 @@ test('새 코드는 기존 데이터 저장소(CAMP_KV)에 쓰지 않는다', ()
     const src = readFileSync(root + `functions/api/campteam/${f}.js`, 'utf8');
     assert.doesNotMatch(src, /CAMP_KV|CAMP_FILES|TEACH_FILES|QT_BOOK_FILES|\.put\(|R2_BUCKET/);
   }
+});
+
+test('명단: 고정 관리자도 이름·별칭은 고칠 수 있고, 별칭 저장, 역할이 바뀌면 사람별 권한은 지워진다, 명단 사람 목록(people)은 명단 안에서만', async () => {
+  const e = env(fakeD1());
+  const post = async (body, who = ADMIN) => Members.onRequestPost({ env: e, request: await req(who, { method: 'POST', body }) });
+  assert.equal((await post({ email: 'aidenpark@wolko.org', name: '관리자 이름', aliases: 'Alex, 알렉스, alex' })).status, 200);
+  const list = await (await Members.onRequestGet({ env: e, request: await req(ADMIN) })).json(), fx = list.members.find((m) => m.email === 'aidenpark@wolko.org');
+  assert.equal(fx.name, '관리자 이름'); assert.equal(fx.aliases, 'Alex, 알렉스'); assert.equal(fx.role, 'admin'); assert.equal(fx.fixed, true);
+  assert.equal((await post({ email: 'aidenpark@wolko.org', role: 'member' })).status, 400, '역할은 그대로 못 바꿈');
+  assert.equal((await post({ email: 'w1@wolko.org', name: '월', role: 'member', aliases: 'Wol' })).status, 200);
+  e.DB.sqlite.prepare(`INSERT INTO member_perms (email,area,level,updatedAt) VALUES ('w1@wolko.org','tasks','view','x')`).run();
+  assert.equal((await post({ email: 'w1@wolko.org', name: '월 새이름', role: 'member' })).status, 200); assert.equal(e.DB.sqlite.prepare(`SELECT COUNT(*) AS n FROM member_perms WHERE email='w1@wolko.org'`).get().n, 1, '역할이 그대로면 유지');
+  assert.equal((await post({ email: 'w1@wolko.org', name: '월', role: 'finance' })).status, 200); assert.equal(e.DB.sqlite.prepare(`SELECT COUNT(*) AS n FROM member_perms WHERE email='w1@wolko.org'`).get().n, 0, '역할이 바뀌면 사람별 권한을 지운다');
+  const People = await import('../functions/api/campteam/people.js'), get = async (who) => People.onRequestGet({ env: e, request: await req(who) });
+  assert.equal((await get('test-outsider@wolko.org')).status, 403); assert.equal((await get(null)).status, 401);
+  const ppl = (await (await get(MEM)).json()).people; assert.ok(ppl.some((p) => p.email === 'w1@wolko.org' && p.name === '월' && p.aliases === 'Wol')); assert.ok(ppl.some((p) => p.email === 'hkim3@wol.org'));
 });

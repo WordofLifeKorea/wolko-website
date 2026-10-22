@@ -23,7 +23,7 @@ export async function onRequestPost({ env, request }) {
   if (only && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(only)) return badRequest('시험 발송 주소가 올바르지 않습니다.');
   if (!dryRun && !env.RESEND_API_KEY) return json({ error: '메일 서비스 키(RESEND_API_KEY)가 설정되지 않았어요.' }, 503);
   const today = todayKST(), isTue = new Date(today + 'T00:00:00Z').getUTCDay() === 2, weekKey = mondayOf(today);
-  if (!isTue && !force && !only) return json({ skipped: 'not-tuesday', today });
+  if (!isTue && !force && !only) return json({ skipped: 'not-tuesday', today }); // 스케줄 작업은 이 결과를 보고 실패로 표시한다(화요일을 놓친 걸 알 수 있게)
   const rows = (await env.DB.prepare('SELECT email, name, role FROM camp_members WHERE active = 1').all()).results, seen = new Set(), members = [];
   let ov = {}; try { for (const r of (await env.DB.prepare('SELECT email, area, level FROM member_perms').all()).results) (ov[r.email.toLowerCase()] ||= {})[r.area] = r.level; } catch { ov = {}; }
   for (const r of rows) { const e = r.email.toLowerCase(); if (!seen.has(e)) { seen.add(e); members.push({ email: e, name: r.name || '', perms: applyOverrides(r.role, ov[e]) }); } }
@@ -48,7 +48,8 @@ export async function onRequestPost({ env, request }) {
           if (summary) await env.DB.prepare(`INSERT INTO daily_summaries (email,kind,forDate,text,model,createdAt) VALUES (?1,'weekly',?2,?3,?4,?5) ON CONFLICT(email,kind,forDate) DO UPDATE SET text=?3, model=?4, createdAt=?5`).bind(m.email, forDate, summary, model, nowIso()).run(); } catch { summary = null; /* 요약이 실패해도 메일은 보낸다 */ } }
       }
       const mail = buildWeeklyEmail({ name: m.name, week, summary, base });
-      await sendCampMail(env, { to: m.email, ...mail });
+      await sendCampMail(env, { to: m.email, ...mail, retryMs: Number(env.CAMPTEAM_MAIL_RETRY_MS) || 1200 });
+      if (!only && members.length > 1) await new Promise((r) => setTimeout(r, Number(env.CAMPTEAM_MAIL_GAP_MS ?? 350))); // 메일 서비스의 초당 요청 제한을 넘지 않게 간격을 둔다
       out.sent++;
       if (!only) await env.DB.prepare(`INSERT INTO mail_log (email,kind,weekKey,status,detail,createdAt) VALUES (?1,'weekly',?2,'sent','',?3) ON CONFLICT(email,kind,weekKey) DO UPDATE SET status='sent', detail='', createdAt=?3`).bind(m.email, weekKey, nowIso()).run();
     } catch (e) {
@@ -56,5 +57,6 @@ export async function onRequestPost({ env, request }) {
       if (!only) await env.DB.prepare(`INSERT INTO mail_log (email,kind,weekKey,status,detail,createdAt) VALUES (?1,'weekly',?2,'failed',?3,?4) ON CONFLICT(email,kind,weekKey) DO UPDATE SET status='failed', detail=?3, createdAt=?4`).bind(m.email, weekKey, String(e.message || e).slice(0, 200), nowIso()).run();
     }
   }
-  return json(out);
+  // 실패한 사람이 있으면 502 로 알려서 스케줄러(GitHub 작업)가 실패로 표시하고 다시 시도하게 한다 (이미 보낸 사람은 발송 기록으로 건너뛴다)
+  return json(out, out.failed.length ? 502 : 200);
 }

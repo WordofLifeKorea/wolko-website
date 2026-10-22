@@ -2,6 +2,7 @@ import { campSession, json, needLogin, noDb, canView } from '../../lib/campteamA
 import { todayKST, OPEN_STATUS_SQL } from '../../lib/campteamDb.js';
 import { summarize } from '../../lib/campteamMoney.js';
 import { periodTotals } from '../../lib/campteamLedger.js';
+import { loadOwnerKeys, isMine } from '../../lib/campteamOwners.js';
 
 /** 캠프팀 홈에 필요한 요약을 한 번에 돌려준다. 금액(budget)은 권한이 있을 때만 DB에서 읽는다. */
 export async function onRequestGet({ env, request }) {
@@ -9,7 +10,7 @@ export async function onRequestGet({ env, request }) {
   const s = await campSession(request, env);
   if (!s) return needLogin();
   const today = todayKST();
-  const db = env.DB;
+  const db = env.DB, ownerKeys = await loadOwnerKeys(env, s.email);
   // 업무 표(별칭 k)의 열만 쓰도록 접두어를 붙인다 — camps 표에도 status 열이 있어서 접두어가 없으면 모호해진다
   const open = `k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable')`;
 
@@ -40,12 +41,12 @@ export async function onRequestGet({ env, request }) {
       WHERE a.deletedAt IS NULL AND a.nextMeeting = 1 AND a.status <> 'decided' ORDER BY a.sortOrder LIMIT 6`).all(),
     db.prepare(`SELECT id, meetDate, meetTime, title, purpose, isTest FROM meetings WHERE deletedAt IS NULL ORDER BY meetDate DESC LIMIT 3`).all(),
     // 최근 올리거나 새 버전이 올라온 파일. 금액 자료는 금액 권한이 있을 때만
-    db.prepare(`SELECT id, title, kind, uploadedBy, statusLabel, createdAt, updatedAt, isTest FROM files WHERE deletedAt IS NULL ${s.perms.moneyRead ? '' : 'AND restricted = 0'} ORDER BY COALESCE(updatedAt, createdAt) DESC LIMIT 8`).all(),
+    db.prepare(`SELECT id, title, kind, uploadedBy, statusLabel, createdAt, updatedAt, isTest FROM files WHERE deletedAt IS NULL ${s.perms.moneyRead ? '' : 'AND restricted = 0'} ${s.campRole ? '' : 'AND id IN (SELECT fileId FROM file_public)'} ORDER BY COALESCE(updatedAt, createdAt) DESC LIMIT 8`).all(),
     db.prepare(`SELECT id, message, messageEn, isTest FROM notices WHERE deletedAt IS NULL AND active = 1 ORDER BY sortOrder, createdAt LIMIT 8`).all(),
-    // 내 담당 업무: 담당자 "이메일"이 내 이메일과 같은 업무만 (이름으로 추측하지 않는다)
-    db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
+    // 내 담당 업무: 담당자 이메일이 내 이메일이거나, 이름이 내 이름·별칭과 같은 업무 (아래에서 걸러낸다)
+    db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, k.ownerName, k.ownerEmail, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
       FROM tasks k LEFT JOIN camps c ON c.id = k.campId
-      WHERE ${open} AND k.ownerEmail <> '' AND LOWER(k.ownerEmail) = ?1 ORDER BY k.dueDate IS NULL, k.dueDate LIMIT 8`).bind(s.email.toLowerCase()).all(),
+      WHERE ${open} AND (k.ownerEmail <> '' OR k.ownerName <> '') ORDER BY k.dueDate IS NULL, k.dueDate LIMIT 800`).all(),
     // D-day 위젯에서 고를 캠프 목록 (날짜가 있는 진행 예정 캠프)
     db.prepare(`SELECT id, nameKo, nameEn, startDate, endDate, status FROM camps WHERE deletedAt IS NULL AND status IN ('planning','active') ORDER BY startDate IS NULL, startDate, nameKo LIMIT 30`).all(),
     // 마감 지난 업무 (진행 중인 것만, 오래된 순)
@@ -86,9 +87,9 @@ export async function onRequestGet({ env, request }) {
     user: { email: s.email, campRole: s.campRole, perms: s.perms },
     today,
     stats: T ? { open: stats?.open || 0, overdue: stats?.overdue || 0, noOwner: stats?.noOwner || 0, completed: stats?.completed || 0, total: stats?.total || 0 } : { open: 0, overdue: 0, noOwner: 0, completed: 0, total: 0 },
-    camps: V('camps', camps.results), deadlines: V('tasks', deadlines.results), attention: V('tasks', attention.results),
+    camps: V('camps', T ? camps.results : camps.results.map((c) => ({ ...c, taskTotal: null, taskDone: null }))), deadlines: V('tasks', deadlines.results), attention: V('tasks', attention.results),
     agenda: V('meetings', agenda.results), meetings: V('meetings', meetings.results), files: V('files', files.results),
-    notices: V('camps', notices.results), myTasks: V('tasks', myTasks.results), campChoices: V('camps', campChoices.results),
+    notices: V('camps', notices.results), myTasks: V('tasks', myTasks.results.filter((x) => isMine(x, s.email, ownerKeys)).slice(0, 8).map(({ ownerName, ownerEmail, ...rest }) => rest)), campChoices: V('camps', campChoices.results),
     overdue: V('tasks', overdue.results), decisions: V('meetings', decisions.results), statusCounts: V('tasks', statusRows.results),
   };
   if (budget) body.budget = budget;

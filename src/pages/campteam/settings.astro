@@ -5,7 +5,7 @@ import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
   <div class="top"><div><div class="h1row"><h1 data-t="setTitle"></h1><span class="qh" data-h="pageSettings"></span></div><div class="sub" data-t="setSub"></div></div></div>
   <section class="card" style="margin-bottom:16px">
     <table>
-      <thead><tr><th data-t="colEmail"></th><th data-t="colName"></th><th><span data-t="colRole"></span><span class="qh" data-h="role"></span></th><th></th></tr></thead>
+      <thead><tr><th data-t="colEmail"></th><th data-t="colName"></th><th data-t="colAliases"></th><th><span data-t="colRole"></span><span class="qh" data-h="role"></span></th><th></th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </section>
@@ -15,6 +15,7 @@ import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
       <form id="addForm" class="form">
         <label><span data-t="fEmail"></span><input id="fEmail" type="email" required placeholder="name@wolko.org"></label>
         <label><span data-t="fName"></span><input id="fName" maxlength="60"></label>
+        <label><span data-t="fAliases"></span><input id="fAliases" maxlength="200"></label>
         <label><span data-t="fRole"></span><select id="roleSel"></select></label>
         <div class="err" id="addErr" hidden></div>
         <div><button class="btn pri" type="submit" data-t="save"></button></div>
@@ -48,6 +49,6 @@ import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
     <div style="overflow:auto"><table id="auTable"></table></div>
   </section>
   <dialog id="dlg" class="wide"><h3 id="dlgTitle"></h3><form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form></dialog>
-  <script is:inline slot="scripts" src="/campteam/settings.js?v=2"></script>
-  <script is:inline slot="scripts" src="/campteam/settings-extra.js?v=1"></script>
+  <script is:inline slot="scripts" src="/campteam/settings.js?v=3"></script>
+  <script is:inline slot="scripts" src="/campteam/settings-extra.js?v=2"></script>
 </CampTeamLayout>

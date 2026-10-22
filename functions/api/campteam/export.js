@@ -7,7 +7,7 @@ import { nowIso } from '../../lib/campteamDb.js';
  * TV 열쇠(token)는 내보내지 않는다.
  */
 const TABLES = ['camp_members', 'camp_types', 'camps', 'tasks', 'events', 'checklist_templates', 'checklist_items', 'meetings', 'agenda_items', 'decisions', 'meeting_files', 'meeting_texts',
-  'files', 'file_versions', 'file_links', 'budget_lines', 'budget_targets', 'notices', 'tv_layout', 'home_layout', 'glossary', 'ai_drafts', 'audit_log'];
+  'files', 'file_versions', 'file_links', 'budget_lines', 'budget_targets', 'notices', 'tv_layout', 'home_layout', 'glossary', 'ai_drafts', 'ledger_periods', 'ledger_categories', 'ledger_entries', 'ledger_plan', 'ledger_imports', 'ledger_reconcile', 'ledger_expense_rules', 'ledger_expense_rows', 'calc_scenarios', 'announcements', 'announcement_recipients', 'member_perms', 'member_aliases', 'file_public', 'camp_order', 'space_layout', 'notify_settings', 'notify_prefs', 'mail_log', 'audit_log'];
 const csvCell = (v) => { let t = v == null ? '' : String(v); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return /[",\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
 
 async function dump(env, table) {

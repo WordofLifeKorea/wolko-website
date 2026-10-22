@@ -3,9 +3,9 @@
 (function () {
   var CT = window.CT; if (!CT) return;
   CT.addDict({
-    ko: { alTitle: '알림공지', alMine: '내 알림', alTeam: '팀 공지', alSeenAll: '모두 확인', alAll: '전체 보기 · 공지 쓰기', alNone: '새 알림이 없어요.', alNoneTeam: '팀 공지가 없어요.', alDismiss: '끄기', alUndo: '되돌리기', alDone: '완료', alDoneAsk: '이 업무를 완료로 바꿀까요?', alOpen: '열기', alOlder: '지난 공지', alPinned: '고정', alAllMembers: '팀 전체', alSelected: '선택한 사람', alNew: '새 공지', alOver: '마감 지남', alToday: '오늘 마감', alTodayMeet: '오늘 회의', alTodayEvent: '오늘 일정', alTomorrowMeet: '내일 회의', alTomorrowEvent: '내일 일정', alDecision: '새 결정', alDayUnit: '일', alLeft: '일 남음', alByPrefix: '올린 사람', alMore: '더 보기', alMarkRead: '확인', alFailed: '처리하지 못했어요',
+    ko: { alTitle: '알림공지', alMine: '내 알림', alTeam: '팀 공지', alSeenAll: '모두 확인', alAll: '전체 보기 · 공지 쓰기', alNone: '새 알림이 없어요.', alNoneTeam: '팀 공지가 없어요.', alDismiss: '끄기', alUndo: '되돌리기', alDone: '완료', alDoneAsk: '이 업무를 완료로 바꿀까요?', alOpen: '열기', alOlder: '지난 공지', alPinned: '고정', alAllMembers: '팀 전체', alSelected: '선택한 사람', alNew: '새 공지', alOver: '마감 지남', alToday: '오늘 마감', alTodayMeet: '오늘 회의', alTodayEvent: '오늘 일정', alTomorrowMeet: '내일 회의', alTomorrowEvent: '내일 일정', alMeetShort: '회의', alEventShort: '일정', alDecision: '새 결정', alDayUnit: '일', alLeft: '일 남음', alByPrefix: '올린 사람', alMore: '더 보기', alMarkRead: '확인', alFailed: '처리하지 못했어요',
       tdTitle: '오늘 내가 할 일', tdOver: '마감이 지났어요', tdToday: '오늘 마감', tdSoon: '곧 마감', tdMeet: '오늘·내일 회의와 일정', tdDec: '새 결정', tdNone: '오늘 할 일이 없어요.', tdAi: 'AI 요약', tdWeek: '이번 주', tdWeekLine: '이번 주에 할 일', tdWeekTasks: '업무', tdWeekMeet: '회의·일정', tdWeekOver: '지난 마감', tdItems: '건', tdAllLink: '모두 보기', tdHide: '숨기기', tdShow: '오늘 할 일 보기', tdNoOwner: '내가 담당자로 지정된 업무가 없으면 여기에 나오지 않아요. 업무 화면에서 담당자를 내 이메일로 지정해 주세요.' },
-    en: { alTitle: 'Alerts & Notices', alMine: 'My alerts', alTeam: 'Team notices', alSeenAll: 'Mark all read', alAll: 'View all · post a notice', alNone: 'No new alerts.', alNoneTeam: 'No team notices.', alDismiss: 'Dismiss', alUndo: 'Undo', alDone: 'Done', alDoneAsk: 'Mark this task as completed?', alOpen: 'Open', alOlder: 'Older notices', alPinned: 'Pinned', alAllMembers: 'Whole team', alSelected: 'Selected people', alNew: 'New notice', alOver: 'Overdue', alToday: 'Due today', alTodayMeet: 'Meeting today', alTodayEvent: 'Event today', alTomorrowMeet: 'Meeting tomorrow', alTomorrowEvent: 'Event tomorrow', alDecision: 'New decision', alDayUnit: ' days', alLeft: ' days left', alByPrefix: 'By', alMore: 'More', alMarkRead: 'Mark read', alFailed: 'Could not do that',
+    en: { alTitle: 'Alerts & Notices', alMine: 'My alerts', alTeam: 'Team notices', alSeenAll: 'Mark all read', alAll: 'View all · post a notice', alNone: 'No new alerts.', alNoneTeam: 'No team notices.', alDismiss: 'Dismiss', alUndo: 'Undo', alDone: 'Done', alDoneAsk: 'Mark this task as completed?', alOpen: 'Open', alOlder: 'Older notices', alPinned: 'Pinned', alAllMembers: 'Whole team', alSelected: 'Selected people', alNew: 'New notice', alOver: 'Overdue', alToday: 'Due today', alTodayMeet: 'Meeting today', alTodayEvent: 'Event today', alTomorrowMeet: 'Meeting tomorrow', alTomorrowEvent: 'Event tomorrow', alMeetShort: 'Meeting', alEventShort: 'Event', alDecision: 'New decision', alDayUnit: ' days', alLeft: ' days left', alByPrefix: 'By', alMore: 'More', alMarkRead: 'Mark read', alFailed: 'Could not do that',
       tdTitle: 'What I do today', tdOver: 'Overdue', tdToday: 'Due today', tdSoon: 'Due soon', tdMeet: 'Meetings and events today & tomorrow', tdDec: 'New decisions', tdNone: 'Nothing to do today.', tdAi: 'AI summary', tdWeek: 'This week', tdWeekLine: 'This week', tdWeekTasks: 'tasks', tdWeekMeet: 'meetings/events', tdWeekOver: 'overdue', tdItems: '', tdAllLink: 'View all', tdHide: 'Hide', tdShow: 'Show today’s to-do', tdNoOwner: 'Tasks only appear here when you are set as the owner. Assign your email as the owner on the Tasks page.' }
   });
   var esc = CT.esc, st = { data: null, panelTab: 'mine', open: false, today: null, todayHidden: lsGet('ct-today-hidden') === '1', busy: false };
@@ -19,8 +19,10 @@
     if (it.type === 'decision') return CT.t('alDecision');
     if (it.level === 'over') return CT.t('alOver') + ' ' + (-it.daysLeft) + CT.t('alDayUnit');
     if (it.type === 'task') return it.daysLeft === 0 ? CT.t('alToday') : 'D-' + it.daysLeft;
-    var tomorrow = it.daysLeft === 1; if (it.type === 'meeting') return CT.t(tomorrow ? 'alTomorrowMeet' : it.daysLeft === 0 ? 'alTodayMeet' : 'alTomorrowMeet');
-    return CT.t(tomorrow ? 'alTomorrowEvent' : it.daysLeft === 0 ? 'alTodayEvent' : 'alTomorrowEvent');
+    var meet = it.type === 'meeting';
+    if (it.daysLeft === 0) return CT.t(meet ? 'alTodayMeet' : 'alTodayEvent');
+    if (it.daysLeft === 1) return CT.t(meet ? 'alTomorrowMeet' : 'alTomorrowEvent');
+    return CT.t(meet ? 'alMeetShort' : 'alEventShort') + ' D-' + it.daysLeft;
   }
   var dateShort = function (d) { return d ? d.slice(5).replace('-', '/') : ''; };
 

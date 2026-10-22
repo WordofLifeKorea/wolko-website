@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, noDb, denyView } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, noDb, denyView, canView } from '../../lib/campteamAuth.js';
 
 /** 회의 하나의 전체 보기: 구역(안건별 논의), 결정, 이 회의에서 나온 업무, 연결된 파일, 전사문 목록 */
 export async function onRequestGet({ env, request }) {
@@ -17,6 +17,7 @@ export async function onRequestGet({ env, request }) {
     db.prepare(`SELECT mf.id AS linkId, mf.role, f.id, f.title, f.kind, f.storage, f.externalUrl, f.restricted FROM meeting_files mf JOIN files f ON f.id = mf.fileId WHERE mf.meetingId = ?1 AND mf.deletedAt IS NULL AND f.deletedAt IS NULL ORDER BY mf.createdAt`).bind(id).all(),
     db.prepare(`SELECT id, kind, lang, LENGTH(body) AS chars, createdAt, createdBy FROM meeting_texts WHERE meetingId = ?1 AND deletedAt IS NULL ORDER BY createdAt`).bind(id).all(),
   ]);
-  return json({ meeting, sections: sections.results, decisions: decisions.results, tasks: tasks.results,
-    files: files.results.filter(f => !f.restricted || s.perms.moneyRead), texts: texts.results, perms: s.perms });
+  // 회의를 볼 수 있어도, 업무·자료 영역을 볼 수 없으면 그 내용은 내려주지 않는다
+  return json({ meeting, sections: sections.results, decisions: decisions.results, tasks: canView(s.perms, 'tasks') ? tasks.results : [],
+    files: canView(s.perms, 'files') ? files.results.filter(f => !f.restricted || s.perms.moneyRead) : [], texts: texts.results, perms: s.perms });
 }

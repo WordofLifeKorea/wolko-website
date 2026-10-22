@@ -31,14 +31,14 @@ const get = (env, who, extra = '') => call(Portal, 'onRequestGet', env, who, { q
 
 test('연결 전: 명단에 있는 사람은 "연결 안 됨"을 보고, 명단 밖·로그인 전은 못 본다', async () => {
   const { env } = mk();
-  assert.equal((await get(env, null)).status, 401); assert.equal((await get(env, U.view)).status, 403);
+  assert.equal((await get(env, null)).status, 401); assert.equal((await J(await get(env, U.out))).linked, false, '명단 밖의 월코 팀원도 연결 여부는 본다(숫자·이름은 연결 후에도 인원 숫자만)');
   for (const who of [U.mem, U.tre, U.fin, U.dir, U.admin]) { const b = await J(await get(env, who)); assert.equal(b.linked, false, who); assert.equal(b.portalCampId, ''); }
   assert.equal((await call(Portal, 'onRequestGet', env, U.fin, { qs: '' })).status, 400); assert.equal((await call(Portal, 'onRequestGet', env, U.fin, { qs: '?campId=nope' })).status, 404);
 });
 
 test('연결 설정은 디렉터·캠프 재정·관리자만 (월코 재정·일반 팀원·명단 밖은 불가), 형식 검사와 해제', async () => {
   const { env } = mk();
-  for (const who of [U.mem, U.tre, U.view]) assert.equal((await link(env, who)).status, 403, who);
+  for (const who of [U.mem, U.tre, U.view, U.out]) assert.equal((await link(env, who)).status, 403, who);
   assert.equal((await link(env, U.fin, 'bad id!')).status, 400); assert.equal((await link(env, U.fin, '../x')).status, 400);
   assert.equal((await call(Portal, 'onRequestPost', env, U.fin, { qs: '?campId=nope', body: { portalCampId: P } })).status, 404);
   for (const who of [U.fin, U.dir, U.admin]) assert.equal((await link(env, who)).status, 200, who);
@@ -75,12 +75,12 @@ test('개인정보 두 단계: 팀원·월코 재정은 이름·학년·특이�
   for (const who of [U.mem, U.tre]) {
     const text = JSON.stringify(await J(await get(env, who)));
     for (const secret of ['010-0000-0001', 'a@example.test', '000-000-000001', '가상은행', '가상예금주', '010-0000-0100', '가상보호자', '상담 비공개 메모', '가상목사', '010-0000-0070', '비공개 간증', 'g@example.test']) assert.equal(text.includes(secret), false, `${who} 에게 ${secret} 노출`);
-    assert.ok(text.includes('가상캠퍼A') && text.includes('견과류 알레르기') && text.includes('가상스태프G') && text.includes('상담자'));
+    assert.ok(text.includes('가상캠퍼A') && text.includes('가상스태프G') && text.includes('상담자')); assert.equal(text.includes('견과류 알레르기'), false, '특이사항(건강·알레르기 등)은 개인정보 권한이 있는 사람만');
   }
   assert.equal(env.DB.sqlite.prepare("SELECT COUNT(*) AS n FROM audit_log WHERE entity = 'camp_portal'").get().n, 0, '일반 조회는 기록하지 않는다');
   for (const who of [U.fin, U.dir, U.admin]) {
     const b = await J(await get(env, who)), a = b.campers.find((c) => c.name === '가상캠퍼A');
-    assert.equal(a.private.phone, '010-0000-0001'); assert.equal(a.private.refundAccount, '000-000-000001'); assert.equal(a.private.counselorMemo, '상담 비공개 메모');
+    assert.equal(a.private.phone, '010-0000-0001'); assert.equal(a.private.notes, '견과류 알레르기'); assert.equal(a.private.refundAccount, '000-000-000001'); assert.equal(a.private.counselorMemo, '상담 비공개 메모');
     assert.equal(b.campers.find((c) => c.name === '가상학생D').private.parentInfo.includes('가상보호자'), true);
     assert.equal(b.staff.items[0].private.pastorContact, '010-0000-0070'); assert.equal(JSON.stringify(b).includes('비공개 간증'), false, '간증·이단 이력은 누구에게도 내려가지 않는다');
   }

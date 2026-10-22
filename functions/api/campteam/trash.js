@@ -27,7 +27,7 @@ async function gate(env, request) {
   if (!env.DB) return { res: noDb() };
   const s = await campSession(request, env);
   if (!s) return { res: needLogin() };
-  if (!s.perms.write && !s.perms.moneyWrite) return { res: needPerm('복구 권한이 없습니다.') };
+  if (!s.campRole) return { res: needPerm('캠프팀 명단에 있는 계정만 쓸 수 있어요.') }; // 보이는 범위와 복구 권한은 종류별 영역 권한으로 다시 걸러진다
   return { s };
 }
 
@@ -46,13 +46,16 @@ export async function onRequestGet({ env, request }) {
   const allowed = Object.entries(KINDS).filter(([name, k]) => (k.money ? s.perms.moneyRead : canView(s.perms, AREA[name])));
   if (!kind) {
     const counts = {};
-    for (const [name, k] of allowed) counts[name] = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ${k.where ? 'AND t.' + k.where : ''}${mine(s, 't')}`).bind(...mineArgs(s)).first()).n;
+    for (const [name, k] of allowed) try { counts[name] = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ${k.where ? 'AND t.' + k.where : ''}${mine(s, 't')}`).bind(...mineArgs(s)).first()).n; } catch { counts[name] = 0; /* 아직 이 표가 없는 DB 는 0개로 본다 */ }
     return json({ counts });
   }
   const k = KINDS[kind]; if (!k || (k.money ? !s.perms.moneyRead : !canView(s.perms, AREA[kind]))) return badRequest('종류가 올바르지 않습니다.');
-  const rows = (await env.DB.prepare(`SELECT t.id, ${k.label} AS label, ${k.sub} AS sub, t.deletedAt,
+  let rows = [];
+  try {
+  rows = (await env.DB.prepare(`SELECT t.id, ${k.label} AS label, ${k.sub} AS sub, t.deletedAt,
       (SELECT a.actor FROM audit_log a WHERE a.entityId = t.id AND a.action = 'delete' ORDER BY a.at DESC LIMIT 1) AS deletedBy
     FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ${k.where ? 'AND t.' + k.where : ''}${mine(s, 't')} ORDER BY t.deletedAt DESC LIMIT 200`).bind(...mineArgs(s)).all()).results;
+  } catch { rows = []; /* 아직 이 표가 없는 DB */ }
   return json({ kind, items: rows });
 }
 

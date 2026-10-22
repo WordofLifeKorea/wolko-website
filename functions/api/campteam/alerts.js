@@ -17,8 +17,11 @@ import { loadSettings, saveSettings, sanitizeSettings, buildAlerts, buildWeek, w
  *   settings { dueDays, eventDays, expireDays }                  알림 기준 일수 (관리자만)
  *   summary  { kind: 'daily'|'weekly' }                          AI 요약 한 번 만들기 (하루/그 주 한 번만)
  */
-const KEY = /^(task|meet|event|dec|ann):[A-Za-z0-9_-]{1,64}(:[a-z0-9]{1,4})?$/;
+const KEY = /^(task|meet|event|dec|ann):[A-Za-z0-9_-]{1,64}(:[a-z0-9]{1,4})?(:\d{8})?$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** 한 번에 50개씩 묶어서 실행 (D1 은 요청 하나에 보낼 수 있는 질의 수가 제한되어 있다) */
+async function runBatch(env, stmts) { for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50)); }
 
 async function roster(env) {
   const rows = (await env.DB.prepare('SELECT email, name, role FROM camp_members WHERE active = 1 ORDER BY name, email').all()).results, seen = new Set(rows.map((r) => r.email.toLowerCase()));
@@ -46,7 +49,11 @@ async function validateAnnounce(env, b, s, base = {}) {
   return { v: { title, body, audience, recipients, pinned, link } };
 }
 
-export async function onRequestGet({ env, request }) {
+export async function onRequestGet(ctx) {
+  try { return await getAlerts(ctx); } catch (e) { return tableMissing(e) || Promise.reject(e); }
+}
+const tableMissing = (e) => (/no such (table|column)/i.test(String(e && e.message)) ? json({ error: '알림공지 DB 표가 아직 없어요. 관리자가 0015_alerts.sql 마이그레이션을 먼저 실행해야 해요.', code: 'migration' }, 503) : null);
+async function getAlerts({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
@@ -67,7 +74,10 @@ export async function onRequestGet({ env, request }) {
     week: week ? { start: week.start, end: week.end, overdue: week.overdue.length, tasks: week.tasks.length, meetings: week.meetings.length, events: week.events.length } : null });
 }
 
-export async function onRequestPost({ env, request }) {
+export async function onRequestPost(ctx) {
+  try { return await postAlerts(ctx); } catch (e) { return tableMissing(e) || Promise.reject(e); }
+}
+async function postAlerts({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
@@ -78,15 +88,15 @@ export async function onRequestPost({ env, request }) {
   if (a === 'state') {
     const keys = [...new Set(Array.isArray(b.keys) ? b.keys.map(String) : [])].slice(0, 60);
     if (!keys.length || keys.some((k) => !KEY.test(k) && !/^weekly:\d{4}-\d{2}-\d{2}$/.test(k))) return badRequest('알림 번호가 올바르지 않습니다.');
-    if (b.state === 'clear') { for (const k of keys) await env.DB.prepare('DELETE FROM alert_state WHERE email = ?1 AND alertKey = ?2').bind(me, k).run(); return json({ ok: true }); }
+    if (b.state === 'clear') { await runBatch(env, keys.map((k) => env.DB.prepare('DELETE FROM alert_state WHERE email = ?1 AND alertKey = ?2').bind(me, k))); return json({ ok: true }); }
     if (!['seen', 'dismissed'].includes(b.state)) return badRequest('상태가 올바르지 않습니다.');
-    for (const k of keys) await env.DB.prepare('INSERT INTO alert_state (email,alertKey,state,updatedAt) VALUES (?1,?2,?3,?4) ON CONFLICT(email,alertKey) DO UPDATE SET state=?3, updatedAt=?4').bind(me, k, b.state, now).run();
+    await runBatch(env, keys.map((k) => env.DB.prepare('INSERT INTO alert_state (email,alertKey,state,updatedAt) VALUES (?1,?2,?3,?4) ON CONFLICT(email,alertKey) DO UPDATE SET state=?3, updatedAt=?4').bind(me, k, b.state, now)));
     return json({ ok: true });
   }
   if (a === 'seenAll') {
     const settings = await loadSettings(env), { items } = await buildAlerts(env, s.email, { today, settings, perms: s.perms }), anns = await listAnnouncements(env, s.email, { today, settings, isAdmin: false, perms: s.perms });
     const keys = [...items.filter((x) => !x.state).map((x) => x.key), ...anns.filter((x) => x.unread).map((x) => 'ann:' + x.id)];
-    for (const k of keys) await env.DB.prepare(`INSERT OR IGNORE INTO alert_state (email,alertKey,state,updatedAt) VALUES (?1,?2,'seen',?3)`).bind(me, k, now).run();
+    await runBatch(env, keys.map((k) => env.DB.prepare(`INSERT OR IGNORE INTO alert_state (email,alertKey,state,updatedAt) VALUES (?1,?2,'seen',?3)`).bind(me, k, now)));
     return json({ ok: true, count: keys.length });
   }
   if (a === 'announce') {
@@ -108,6 +118,7 @@ export async function onRequestPost({ env, request }) {
     const cur = (await env.DB.prepare('SELECT email FROM announcement_recipients WHERE announcementId = ?1').bind(row.id).all()).results.map((x) => x.email);
     const r = await validateAnnounce(env, b, s, { ...row, recipients: cur }); if (r.error) return badRequest(r.error);
     const v = r.v;
+    if ('pinned' in b && !s.perms.write && !s.perms.manageMembers) v.pinned = row.pinned; // 고정은 일반 영역을 고칠 수 있는 사람과 관리자만 바꿀 수 있다
     await env.DB.prepare('UPDATE announcements SET title=?2, body=?3, audience=?4, pinned=?5, link=?6, updatedAt=?7 WHERE id=?1').bind(row.id, v.title, v.body, v.audience, v.pinned, v.link, now).run();
     await env.DB.prepare('DELETE FROM announcement_recipients WHERE announcementId = ?1').bind(row.id).run();
     for (const e of v.recipients) await env.DB.prepare('INSERT OR IGNORE INTO announcement_recipients (announcementId,email) VALUES (?1,?2)').bind(row.id, e).run();

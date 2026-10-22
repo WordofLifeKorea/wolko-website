@@ -29,7 +29,7 @@ test('단계 계산: 3일 전·1일 전·당일·지남, 설정에 없는 먼 �
 
 test('알림공지는 캠프팀 명단에 있는 사람만 (명단 밖·로그인 전은 거부)', async () => {
   const { env } = mk();
-  assert.equal((await get(env, null)).status, 401); assert.equal((await get(env, U.view)).status, 403); assert.equal((await post(env, U.view, { action: 'seenAll' })).status, 403);
+  assert.equal((await get(env, null)).status, 401); assert.equal((await get(env, U.out)).status, 403); assert.equal((await post(env, U.out, { action: 'seenAll' })).status, 403);
   for (const who of [U.mem, U.tre, U.fin, U.dir, U.admin]) assert.equal((await get(env, who)).status, 200, who);
 });
 
@@ -44,15 +44,17 @@ test('내 알림: 내가 맡은 업무만, 마감 3일 전·1일 전·당일·�
 
 test('알림 끄기·확인과 단계가 바뀌면 다시 올라오는 규칙', async () => {
   const { env, q, task } = mk(); task('a', d(3));
-  let b = await J(await get(env, U.mem)); assert.equal(b.unread, 1); const key = b.items[0].key; assert.equal(key, 'task:a:d3');
+  let b = await J(await get(env, U.mem)); assert.equal(b.unread, 1); const key = b.items[0].key; assert.equal(key, 'task:a:d3:' + d(3).replace(/-/g, ''));
   assert.equal((await post(env, U.mem, { action: 'state', keys: [key], state: 'seen' })).status, 200);
   b = await J(await get(env, U.mem)); assert.equal(b.unread, 0); assert.equal(b.items.length, 1, '확인만 하면 목록에는 남아요');
   assert.equal((await post(env, U.mem, { action: 'state', keys: [key], state: 'dismissed' })).status, 200);
   b = await J(await get(env, U.mem)); assert.equal(b.items.length, 0, '끄면 목록에서 사라져요'); assert.equal(b.today.soon.length, 1, '오늘 할 일에는 계속 보여요');
   q.prepare('UPDATE tasks SET dueDate = ? WHERE id = ?').run(d(1), 'a');
-  b = await J(await get(env, U.mem)); assert.equal(b.items[0].key, 'task:a:d1'); assert.equal(b.unread, 1, '1일 전 단계가 되면 다시 알려요');
-  assert.equal((await post(env, U.mem, { action: 'state', keys: ['task:a:d1'], state: 'dismissed' })).status, 200);
-  assert.equal((await post(env, U.mem, { action: 'state', keys: ['task:a:d1'], state: 'clear' })).status, 200); assert.equal((await J(await get(env, U.mem))).items.length, 1, '되돌리기');
+  b = await J(await get(env, U.mem)); assert.equal(b.items[0].key, 'task:a:d1:' + d(1).replace(/-/g, '')); assert.equal(b.unread, 1, '1일 전 단계가 되면 다시 알려요');
+  assert.equal((await post(env, U.mem, { action: 'state', keys: ['task:a:d1:' + d(1).replace(/-/g, '')], state: 'dismissed' })).status, 200);
+  assert.equal((await post(env, U.mem, { action: 'state', keys: ['task:a:d1:' + d(1).replace(/-/g, '')], state: 'clear' })).status, 200); assert.equal((await J(await get(env, U.mem))).items.length, 1, '되돌리기');
+  q.prepare('UPDATE tasks SET dueDate = ? WHERE id = ?').run(d(3), 'a'); await post(env, U.mem, { action: 'state', keys: ['task:a:d3:' + d(3).replace(/-/g, '')], state: 'dismissed' }); q.prepare('UPDATE tasks SET dueDate = ? WHERE id = ?').run(d(2), 'a');
+  assert.equal((await J(await get(env, U.mem))).items.some((x) => x.key === 'task:a:d3:' + d(2).replace(/-/g, '')), true, '마감일을 바꾸면 같은 단계라도 새 알림으로 다시 올라온다');
   for (const bad of [[], ['x'], ['task:a:d1; DROP TABLE tasks'], new Array(2).fill('task:' + 'a'.repeat(70))]) assert.equal((await post(env, U.mem, { action: 'state', keys: bad, state: 'seen' })).status, 400);
   assert.equal((await post(env, U.mem, { action: 'state', keys: [key], state: 'zzz' })).status, 400);
   assert.equal((await post(env, U.fin, { action: 'seenAll' })).status, 200);
@@ -64,11 +66,11 @@ test('회의·일정은 팀 전체에게 하루 전·당일에 알림, 일수는
   q.prepare(`INSERT INTO meetings (id,meetDate,meetTime,title,createdAt,updatedAt,createdBy) VALUES ('tm1',?, '10:00','주간 회의','x','x','t')`).run(d(1));
   q.prepare(`INSERT INTO meetings (id,meetDate,title,createdAt,updatedAt,createdBy) VALUES ('tm2',?, '먼 회의','x','x','t')`).run(d(2));
   q.prepare(`INSERT INTO events (id,title,kind,startDate,endDate,createdAt,updatedAt,createdBy) VALUES ('te1','행사','team',?,?,'x','x','t')`).run(d(0), d(2));
-  let b = await J(await get(env, U.tre)); assert.deepEqual(ids(b.items.filter((x) => x.type !== 'task')).sort(), ['event:te1:d0', 'meet:tm1:d1']);
+  let b = await J(await get(env, U.tre)); assert.deepEqual(ids(b.items.filter((x) => x.type !== 'task')).sort(), ['event:te1:d0:' + d(0).replace(/-/g, ''), 'meet:tm1:d1:' + d(1).replace(/-/g, '')]);
   assert.equal((await post(env, U.mem, { action: 'settings', eventDays: '2' })).status, 403, '일반 팀원은 설정을 못 바꿔요');
   assert.equal((await post(env, U.dir, { action: 'settings', eventDays: '2' })).status, 403, '디렉터도 설정은 관리자만');
   assert.equal((await post(env, U.admin, { action: 'settings', eventDays: '2,1', dueDays: '5, 2', expireDays: 10 })).status, 200);
-  b = await J(await get(env, U.mem)); assert.deepEqual(b.settings, { dueDays: [5, 2], eventDays: [2, 1], expireDays: 10 }); assert.ok(ids(b.items).includes('meet:tm2:d2'));
+  b = await J(await get(env, U.mem)); assert.deepEqual(b.settings, { dueDays: [5, 2], eventDays: [2, 1], expireDays: 10 }); assert.ok(ids(b.items).includes('meet:tm2:d2:' + d(2).replace(/-/g, '')));
   assert.equal((await post(env, U.admin, { action: 'settings', expireDays: 0 })).status, 400);
   assert.deepEqual(sanitizeSettings({ dueDays: 'x, -1, 99' }).settings.dueDays, DEFAULT_SETTINGS.dueDays, '잘못된 값은 기본값');
 });
@@ -123,4 +125,18 @@ test('AI 요약: 키가 없으면 꺼짐, 할 일 없으면 호출 안 함, 하�
     globalThis.fetch = async () => { calls.push(1); return new Response('{}', { status: 500 }); }; assert.equal((await J(await post(env, U.mem, { action: 'summary', kind: 'daily' }))).reason, 'retry-later'); assert.equal(calls.length, 0, '직전에 실패했으면 바로 다시 부르지 않아요');
     const unaffected = await J(await get(env, U.mem)); assert.ok(unaffected.items.length >= 2, 'AI 가 실패해도 목록은 그대로');
   } finally { globalThis.fetch = realFetch; }
+});
+
+test('담당자 이름만 적힌 업무도 명단의 이름·별칭과 같으면 내 업무: 알림·오늘 할 일·홈에 나온다, 저장하면 이메일이 자동으로 채워진다', async () => {
+  const { env, q } = mk(), Home = await import('../functions/api/campteam/home.js');
+  const ins = (id, owner, due) => q.prepare(`INSERT INTO tasks (id,title,ownerName,ownerEmail,dueDate,status,priority,createdAt,updatedAt,createdBy) VALUES (?,?,?,'',?, 'In Progress','Medium','x','x','t')`).run(id, '이름업무 ' + id, owner, due);
+  q.prepare(`UPDATE camp_members SET name = 'Joon Kim' WHERE email = ?`).run(U.mem); q.prepare(`INSERT INTO member_aliases (email, aliases, updatedAt) VALUES (?, 'Joon, 준', 'x')`).run(U.mem);
+  ins('n1', 'Joon', d(0)); ins('n2', 'mina / 준', d(1)); ins('n3', 'Joon (in charge)', d(3)); ins('n4', 'Mina', d(0)); ins('n5', 'All Together', d(0)); ins('n6', 'Joon Kim', d(-1));
+  const b = await J(await get(env, U.mem)); assert.deepEqual(b.items.filter((x) => x.type === 'task').map((x) => x.taskId).sort(), ['n1', 'n2', 'n3', 'n6'], '별칭·전체 이름·여러 명·괄호 설명 모두 인식, 다른 사람 이름은 제외');
+  assert.equal((await J(await get(env, U.fin))).items.some((x) => x.type === 'task'), false, '다른 사람에게는 안 나온다');
+  const home = await J(await call(Home, 'onRequestGet', env, U.mem)); assert.ok(home.myTasks.length >= 4); assert.equal(home.myTasks.every((t) => !('ownerEmail' in t)), true);
+  const created = await call(Tasks, 'onRequestPost', env, U.dir, { body: { title: '자동 연결', ownerName: '준', status: 'Not Started', priority: 'Medium' } }); assert.equal(created.status, 201);
+  assert.equal(q.prepare(`SELECT ownerEmail FROM tasks WHERE title = '자동 연결'`).get().ownerEmail, U.mem, '명단과 정확히 한 사람이 맞으면 이메일을 채운다');
+  await call(Tasks, 'onRequestPost', env, U.dir, { body: { title: '모호', ownerName: 'Mina', status: 'Not Started', priority: 'Medium' } }); assert.equal(q.prepare(`SELECT ownerEmail FROM tasks WHERE title = '모호'`).get().ownerEmail, '', '명단에 없는 이름은 이메일을 채우지 않는다');
+  const id = q.prepare(`SELECT id FROM tasks WHERE title = '자동 연결'`).get().id; await call(Tasks, 'onRequestPatch', env, U.dir, { qs: `?id=${id}`, body: { ownerName: 'Mina' } }); assert.equal(q.prepare(`SELECT ownerEmail FROM tasks WHERE id = ?`).get(id).ownerEmail, '', '담당자 이름을 바꾸면 이전 담당자의 이메일은 지운다');
 });

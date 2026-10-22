@@ -43,7 +43,7 @@ camp-team/                설명서·DB 설계·로컬 도구 (배포물에 포�
   MORNING-REVIEW.md      5분 확인 가이드
   DEPLOY-CHECKLIST.md    나중에 배포할 때 순서
   PROGRESS.md            작업 기록
-  db/0001~0014_*.sql     DB 표 만들기(순서대로). seed-dummy*.sql = 가짜 데이터(운영에는 실행하지 않음)
+  db/0001~0018_*.sql     DB 표 만들기(순서대로). seed-dummy*.sql = 가짜 데이터(운영에는 실행하지 않음)
   dev/                   로컬 실행·테스트 로그인·가짜 AI·가짜 경비 리포트(dummy-expense/)·배포 전 점검 스크립트
   deploy/portal-menu.patch  포털 메뉴 카드 추가(미적용)
 camp-team-design/         설계 문서와 화면 시안(HTML)
@@ -53,7 +53,7 @@ src/layouts/CampTeamLayout.astro   캠프팀 공통 틀(왼쪽 메뉴·로그인
 src/pages/campteam/*.astro    캠프팀 화면 (홈, 캠프, 업무, 회의, 자료, 검색, 예산, TV 편집, 휴지통, 설정, 캠프 공간)
 src/pages/tv.astro            사무실 TV 화면
 public/campteam/*.js·css      화면 동작(자바스크립트)과 모양(CSS)
-tests/campteam-*.test.mjs     자동 테스트 172개
+tests/campteam-*.test.mjs     자동 테스트 177개
 ```
 
 ## 4. 기능 지도 (요청 → 구현)
@@ -153,7 +153,7 @@ tests/campteam-*.test.mjs     자동 테스트 172개
 
 ### 5-4. 캠프팀 데이터가 저장되는 곳
 D1 표 33개(대부분 행에 고유 번호·만든 사람·삭제 표시. `home_layout`은 보기 설정이라 삭제 표시 대신 초기화하면 행을 지움):
-`camp_members`(명단) · `camp_types`/`camps`(캠프) · `tasks`/`events`(업무·일정) · `checklist_templates`/`checklist_items` · `meetings`/`agenda_items`/`decisions`/`meeting_files`/`meeting_texts`(회의) · `files`/`file_versions`/`file_links`(자료) · `budget_lines`/`budget_targets`(예산) · **알림공지**: `announcements`/`announcement_recipients`/`alert_state`/`daily_summaries`/`notify_settings`/`notify_prefs`/`mail_log` · `space_layout` · `member_perms` · `tv_layout`/`tv_settings`/`notices`(TV) · `home_layout`(홈 배치) · **장부**: `ledger_categories`(항목 목록) · `ledger_periods`(기간) · `ledger_entries`(거래) · `ledger_plan`(기간 예산) · `ledger_imports`(엑셀 가져오기 기록) · `ledger_reconcile`(잔액 대조) · `ledger_expense_rules/_rows/_seen`(경비 연동) · `calc_scenarios`(계산기) · `glossary` · `ai_drafts` · `audit_log`.
+`camp_members`(명단) · `camp_types`/`camps`(캠프) · `tasks`/`events`(업무·일정) · `checklist_templates`/`checklist_items` · `meetings`/`agenda_items`/`decisions`/`meeting_files`/`meeting_texts`(회의) · `files`/`file_versions`/`file_links`(자료) · `budget_lines`/`budget_targets`(예산) · **알림공지**: `announcements`/`announcement_recipients`/`alert_state`/`daily_summaries`/`notify_settings`/`notify_prefs`/`mail_log` · `space_layout` · `member_perms` · `tv_layout`/`tv_settings`/`notices`(TV) · `home_layout`(홈 배치) · **장부**: `ledger_categories`(항목 목록) · `ledger_periods`(기간) · `ledger_entries`(거래) · `ledger_plan`(기간 예산) · `ledger_imports`(엑셀 가져오기 기록) · `ledger_reconcile`(잔액 대조) · `ledger_expense_rules/_rows/_seen`(경비 연동) · `calc_scenarios`(계산기) · `glossary` · `ai_drafts` · `audit_log`. · `member_aliases`(업무에 적는 이름) · `file_public`(월코 팀 전체 공개 파일) · `camp_order`(캠프 카드 순서: 기본 `default` / 개인 `u:이메일`) — 0018
 
 - **삭제는 휴지통 방식**(`deletedAt`) — 복구 가능, 영구 삭제 기능은 없음.
 - **금액은 정수로 저장**(원=원, 달러=센트): 소수 오차 방지, USD 확장 대비.
@@ -173,7 +173,7 @@ D1 표 33개(대부분 행에 고유 번호·만든 사람·삭제 표시. `home
 ### ✅ 확인함
 - **회계 장부 흐름 전체**를 자동 테스트와 브라우저로 확인: 권한(월코 재정·일반 팀원·캠프 재정·디렉터·관리자), 기간 만들기·마감·이월·다시 열기, 거래 입력·수정·삭제·복구, 항목 목록 이름 변경이 거래에 반영, 엑셀 가져오기(처음 → 같은 파일 다시 → 바뀐 것만, 충돌, ID 열 왕복, 이월금 이중 계산 방지, 150줄 묶음 처리), 경비 연동(캠프 계좌만, 외화, 중복 의심, 기간 없음·마감 후 재시도, 읽기 전용), 잔액 대조, 계산기(손익분기·시나리오 저장·기간 예산 적용)
 - **실제 회계 엑셀 파일의 구조**(4개 탭, 날짜가 없는 첫 이월금 줄, 숫자 날짜, 수식만 있는 빈 줄)를 같은 모양의 가짜 파일로 가져오기·다시 가져오기·고쳐서 가져오기까지 시험 (실제 파일은 구조만 읽었고 저장소에 넣지 않음)
-- 자동 테스트 **172개 통과** (권한·파일·업무·체크리스트·회의·예산·TV·관리·AI·구글·캠프 공간·홈 배치·역할별 접근 표).
+- 자동 테스트 **177개 통과** (권한·파일·업무·체크리스트·회의·예산·TV·관리·AI·구글·캠프 공간·홈 배치·역할별 접근 표).
 - 실제 브라우저로 로컬 서버에서 역할별(관리자/재정/팀원/조회만) 화면 확인, 폰(375px)·아이패드(768px) 폭에서 가로 넘침 없음.
 - TV 화면: 렌더링, 슬라이드 넘김, 오프라인 표시, 편집기에서 끌어서 저장 → TV에 반영.
 - AI 초안: **가짜 AI 서버**로 요청 모양·검토·선택 적용 흐름 확인.
@@ -244,3 +244,11 @@ D1 표 33개(대부분 행에 고유 번호·만든 사람·삭제 표시. `home
 - 캠프 자료실을 캠프팀 디자인으로 다시 그린 읽기 전용 목록은 만들지 않았습니다(기존 자료 저장소를 읽는 새 코드가 필요해서).
 - Office 문서 미리보기(기존 OnlyOffice 연동) — 서버 위치 확인 후.
 - 번역 연결(Claude API) — 용어집은 준비됨.
+
+## 이번 묶음에서 바뀐 구조 (요약)
+- **담당자 인식**: `functions/lib/campteamOwners.js` — 업무의 담당자 이메일이 있으면 그것, 없으면 `ownerName` 을 `/ , ; & + · and 및` 로 쪼개 명단 이름·별칭과 맞춰 본다. 알림·오늘 할 일·주간 메일·홈이 모두 이 규칙을 써요. 업무 저장 때 명단과 맞으면 이메일을 자동으로 채워요.
+- **명단 밖 월코 팀**(`roleAreas(null)`): 업무·회의 없음, 자료실·캠프는 보기만(자료는 `file_public` 표시된 것만), 나머지 없음. 캠프 공간 API 는 영역별로 가려서 내려보내고, 신청 현황은 숫자만(`camp-portal.js` lite). 업무 개수도 안 내려가요.
+- **화면 분리**: `업무`(tasks.astro) / `달력`(calendar.astro, calendar.js). 달력의 일정·업무 칸은 `?open=` 로 업무 화면을 열어요.
+- **캠프 카드 순서**: `camp-order.js` GET/PUT/DELETE, scope `mine`/`default`(관리자만). 드래그는 포인터 이벤트(`camps.js`).
+- **알림 번호**: 키 끝에 날짜(`:YYYYMMDD`)가 붙어 같은 업무가 날짜가 바뀌면 다시 알려요. 쓰기는 `env.DB.batch` 50개씩.
+- **주간 메일**: 429 재시도, 실패가 있으면 HTTP 502(워크플로가 실패로 표시).

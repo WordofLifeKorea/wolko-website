@@ -32,7 +32,8 @@ const GENERAL = ['tasks', 'meetings', 'files', 'camps'];
 /** 역할 기본값 */
 export function roleAreas(campRole) {
   const r = campRole, money = r === 'admin' || r === 'director' || r === 'finance', editor = money || r === 'member', g = editor ? 'edit' : 'view';
-  return { tasks: g, meetings: g, files: g, camps: g, money: money ? 'edit' : (r === 'treasurer' || r === 'member') ? 'view' : 'none', personal: money ? 'view' : 'none', notices: r ? 'edit' : 'none' };
+  // 캠프팀 명단 밖의 월코 팀원: 캠프 목록과 "월코 팀 전체 공개" 파일만 (업무·회의는 캠프팀 내부용)
+  return { tasks: r ? g : 'none', meetings: r ? g : 'none', files: g, camps: g, money: money ? 'edit' : (r === 'treasurer' || r === 'member') ? 'view' : 'none', personal: money ? 'view' : 'none', notices: r ? 'edit' : 'none' };
 }
 /** 항목별 수준 → 코드 곳곳에서 쓰는 권한 묶음 */
 export function permsFromAreas(areas, campRole) {

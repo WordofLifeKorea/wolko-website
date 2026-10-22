@@ -19,6 +19,7 @@ import * as Cats from '../functions/api/campteam/ledger-categories.js';
 import * as Summary from '../functions/api/campteam/ledger-summary.js';
 import * as Budget from '../functions/api/campteam/budget.js';
 import * as Me from '../functions/api/campteam/me.js';
+import * as Meeting from '../functions/api/campteam/meeting.js';
 import { permsFor, applyOverrides, roleAreas, canView, canWrite, AREAS } from '../functions/lib/campteamAuth.js';
 import { todayKST, addDays } from '../functions/lib/campteamDb.js';
 import { fakeD1, makeEnv, req, U } from './helpers/campteam-fakes.mjs';
@@ -31,7 +32,7 @@ const set = (env, email, overrides) => call(MP, 'onRequestPut', env, U.admin, { 
 test('역할 기본값은 그대로: 항목별 수준과 기존 권한 묶음이 같다', () => {
   assert.deepEqual(roleAreas('member'), { tasks: 'edit', meetings: 'edit', files: 'edit', camps: 'edit', money: 'view', personal: 'none', notices: 'edit' });
   assert.deepEqual(roleAreas('treasurer'), { tasks: 'view', meetings: 'view', files: 'view', camps: 'view', money: 'view', personal: 'none', notices: 'edit' });
-  assert.deepEqual(roleAreas('director'), roleAreas('finance')); assert.equal(roleAreas('director').personal, 'view'); assert.deepEqual(roleAreas(null), { tasks: 'view', meetings: 'view', files: 'view', camps: 'view', money: 'none', personal: 'none', notices: 'none' });
+  assert.deepEqual(roleAreas('director'), roleAreas('finance')); assert.equal(roleAreas('director').personal, 'view'); assert.deepEqual(roleAreas(null), { tasks: 'none', meetings: 'none', files: 'view', camps: 'view', money: 'none', personal: 'none', notices: 'none' }, '명단 밖: 캠프 목록과 공개 파일만');
   assert.equal(permsFor('member').write, true); assert.equal(permsFor('treasurer').write, false); assert.equal(permsFor('member').personal, false);
 });
 
@@ -45,17 +46,17 @@ test('맞춤 권한 적용: 관리자 역할은 못 바꿈, 허용되지 않는 
 
 test('권한 설정 API: 관리자만, 형식·명단·고정 관리자 검사, 기본값과 같은 칸은 저장하지 않음, 변경 기록, 되돌리기', async () => {
   const env = makeEnv(fakeD1());
-  for (const who of [null, U.view]) assert.ok([401, 403].includes((await call(MP, 'onRequestGet', env, who)).status));
+  for (const who of [null, U.out]) assert.ok([401, 403].includes((await call(MP, 'onRequestGet', env, who)).status));
   for (const who of [U.mem, U.dir, U.fin, U.tre]) { assert.equal((await call(MP, 'onRequestGet', env, who)).status, 403, who); assert.equal((await call(MP, 'onRequestPut', env, who, { body: { email: U.mem, overrides: { tasks: 'none' } } })).status, 403, who); }
-  assert.deepEqual((await J(await call(MP, 'onRequestGet', env, U.admin))).list, [], '권한 없는 사람의 시도는 아무것도 바꾸지 않았다');
+  assert.deepEqual((await J(await call(MP, 'onRequestGet', env, U.admin))).list.filter((x) => x.email !== U.view), [], '권한 없는 사람의 시도는 아무것도 바꾸지 않았다');
   assert.equal((await set(env, 'nobody@example.com', { tasks: 'view' })).status, 404); assert.equal((await set(env, U.admin, { tasks: 'view' })).status, 400, '관리자는 바꿀 수 없다'); assert.equal((await set(env, 'aidenpark@wolko.org', { tasks: 'view' })).status, 400, '고정 관리자도');
   assert.equal((await set(env, U.mem, { bogus: 'view' })).status, 400); assert.equal((await set(env, U.mem, { personal: 'edit' })).status, 400, '개인정보에는 수정이 없다'); assert.equal((await set(env, U.mem, { tasks: 'maybe' })).status, 400); assert.equal((await call(MP, 'onRequestPut', env, U.admin, { body: { email: U.mem, overrides: 'x' } })).status, 400);
   const ok = await J(await set(env, U.mem, { tasks: 'view', meetings: 'edit', money: 'none', personal: 'view', files: null })); assert.deepEqual(ok.overrides, { tasks: 'view', money: 'none', personal: 'view' }, '기본값(meetings edit)과 같은 칸은 저장하지 않는다');
   const g = await J(await call(MP, 'onRequestGet', env, U.admin, { qs: '?email=' + encodeURIComponent(U.mem) })); assert.equal(g.role, 'member'); assert.equal(g.effective.tasks, 'view'); assert.equal(g.defaults.tasks, 'edit'); assert.deepEqual(g.areas, AREAS);
-  assert.deepEqual((await J(await call(MP, 'onRequestGet', env, U.admin))).list, [{ email: U.mem, custom: 3 }]);
+  assert.deepEqual((await J(await call(MP, 'onRequestGet', env, U.admin))).list.filter((x) => x.email !== U.view), [{ email: U.mem, custom: 3 }]);
   assert.equal(env.DB.sqlite.prepare(`SELECT COUNT(*) AS n FROM audit_log WHERE entity = 'member_perms'`).get().n, 1, '변경은 기록에 남는다');
   assert.equal((await call(MP, 'onRequestDelete', env, U.mem, {})).status, 403); assert.equal((await call(MP, 'onRequestDelete', env, U.admin, { qs: '?email=' + encodeURIComponent(U.mem) })).status, 200);
-  assert.deepEqual((await J(await call(MP, 'onRequestGet', env, U.admin))).list, [], '되돌리면 기본값');
+  assert.deepEqual((await J(await call(MP, 'onRequestGet', env, U.admin))).list.filter((x) => x.email !== U.view), [], '되돌리면 기본값');
   const me = await J(await call(Me, 'onRequestGet', env, U.mem)); assert.equal(me.perms.areas.tasks, 'edit');
 });
 
@@ -107,4 +108,29 @@ test('휴지통 복구: 그 항목을 고칠 수 있어야 복구할 수 있고,
 test('맞춤 권한이 저장된 표가 아직 없는 DB 에서도 기존 역할 권한으로 동작한다', async () => {
   const env = makeEnv(fakeD1()); env.DB.sqlite.exec('DROP TABLE member_perms');
   assert.equal((await call(Tasks, 'onRequestPost', env, U.mem, { body: { title: '표 없이도', status: 'Not Started', priority: 'Medium' } })).status, 201);
+});
+
+test('명단 밖 월코 팀원: 캠프 목록·공개로 표시한 파일만, 업무·회의·결정·장부·개인정보는 없음 / 캠프 공간은 영역별로 가려서 내려간다', async () => {
+  const kv = { async list({ prefix }) { return { keys: [{ name: prefix + 'r1' }], list_complete: true }; }, async get() { return { regId: 'r1', registrationType: 'individual', name: '가상', phone: '010-0000-0001', refundAccount: '000-1', notes: '땅콩 알레르기', status: 'confirmed', campFeeFinal: 100000 }; } };
+  const env = makeEnv(fakeD1(), { CAMP_KV: kv }), q = env.DB.sqlite; q.prepare(`UPDATE camps SET registrationCampId = 'x-camp' WHERE id = 'camp-w27'`).run();
+  const fl = await J(await call(Files, 'onRequestGet', env, U.out)); assert.equal(fl.items.length, 0, '공개로 표시한 파일이 없으면 아무것도 안 보인다');
+  const fid = (await J(await call(Files, 'onRequestGet', env, U.mem))).items.find((f) => !f.restricted).id;
+  assert.equal((await call(Files, 'onRequestPatch', env, U.mem, { qs: `?id=${fid}`, body: { publicToAll: true } })).status, 200);
+  assert.deepEqual((await J(await call(Files, 'onRequestGet', env, U.out))).items.map((f) => f.id), [fid], '월코 팀 전체 공개로 표시한 파일만');
+  assert.equal((await call(Files, 'onRequestGet', env, U.mem)).status, 200); assert.equal((await J(await call(Files, 'onRequestGet', env, U.mem))).items.find((f) => f.id === fid).isPublic, 1);
+  const restricted = (await J(await call(Files, 'onRequestGet', env, U.fin))).items.find((f) => f.restricted);
+  if (restricted) { await call(Files, 'onRequestPatch', env, U.fin, { qs: `?id=${restricted.id}`, body: { publicToAll: true } }); assert.equal((await J(await call(Files, 'onRequestGet', env, U.out))).items.some((f) => f.id === restricted.id), false, '금액 자료는 공개로 못 한다'); }
+  assert.equal((await call(Tasks, 'onRequestGet', env, U.out)).status, 403); assert.equal((await call(Meetings, 'onRequestGet', env, U.out)).status, 403); assert.equal((await call(Summary, 'onRequestGet', env, U.out, { qs: '?periodId=lp-2027h1' })).status, 403);
+  assert.equal((await call(Camps, 'onRequestGet', env, U.out)).status, 200, '캠프 목록은 볼 수 있다');
+  const cl = await J(await call(Camps, 'onRequestGet', env, U.out)); assert.ok(cl.types.flatMap((t) => t.camps).every((c) => c.taskTotal === null && c.taskDone === null), '업무 개수도 가린다');
+  const hm = await J(await call(Home, 'onRequestGet', env, U.out)); assert.ok(hm.camps.every((c) => c.taskTotal === null), '홈 캠프 카드에도 업무 개수가 없다');
+  const sp = await J(await call(Space, 'onRequestGet', env, U.out, { qs: '?id=camp-w27' })); assert.deepEqual([sp.tasks.length, sp.meetings.length, sp.decisions.length, sp.events.length, sp.stats.open], [0, 0, 0, 0, 0]); assert.deepEqual(sp.files.map((f) => f.id), [fid]); assert.equal('budget' in sp, false);
+  assert.equal((await call(Search, 'onRequestGet', env, U.out, { qs: '?q=' + encodeURIComponent('Camp') })).status, 200);
+  const sr = await J(await call(Search, 'onRequestGet', env, U.out, { qs: '?q=Camp' })); assert.deepEqual([sr.groups.tasks.length, sr.groups.meetings.length, sr.groups.decisions.length], [0, 0, 0]); assert.ok(sr.groups.files.every((f) => f.id === fid));
+  const home = await J(await call(Home, 'onRequestGet', env, U.out)); assert.equal(home.stats.open, 0); assert.ok(home.files.every((f) => f.id === fid)); assert.equal('budget' in home, false);
+  const pt = await call(Portal, 'onRequestGet', env, U.out, { qs: '?campId=camp-w27' }); assert.equal(pt.status, 200, '신청 인원 숫자는 볼 수 있다'); const pb = await J(pt); assert.equal(pb.campers, undefined); assert.equal(pb.staff, undefined); assert.equal(JSON.stringify(pb).includes('땅콩') || JSON.stringify(pb).includes('010-0000'), false); assert.ok(pb.byStatus);
+  // 캠프 공간: 업무를 안 보이게 한 팀원은 업무가 아예 안 내려온다
+  await set(env, U.mem, { tasks: 'none' }); const sm = await J(await call(Space, 'onRequestGet', env, U.mem, { qs: '?id=camp-w27' })); assert.deepEqual([sm.tasks.length, sm.stats.open, sm.events.length], [0, 0, 0]); assert.ok(sm.meetings.length > 0);
+  // 회의 상세: 업무·자료 영역이 안 보이면 그 내용은 빠진다
+  const mt = (await J(await call(Meetings, 'onRequestGet', env, U.dir))).items[0].id; const withTasks = await J(await call(Meeting, 'onRequestGet', env, U.dir, { qs: `?id=${mt}` })); await set(env, U.mem, { tasks: 'none', files: 'none' }); const md = await J(await call(Meeting, 'onRequestGet', env, U.mem, { qs: `?id=${mt}` })); assert.deepEqual([md.tasks.length, md.files.length], [0, 0]); assert.ok(withTasks.meeting);
 });

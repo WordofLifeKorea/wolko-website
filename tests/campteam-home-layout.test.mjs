@@ -59,7 +59,7 @@ test('홈 배치 API: 로그인 필요, 내 배치는 누구나·내 것만, 모
   const env = makeEnv(fakeD1());
   assert.equal((await call(HL, 'onRequestGet', env, null)).status, 401);
   assert.equal((await call(HL, 'onRequestPut', env, null, { body: { scope: 'mine', layout: base() } })).status, 401);
-  const first = await J(await call(HL, 'onRequestGet', env, U.view));
+  const first = await J(await call(HL, 'onRequestGet', env, U.out));
   assert.equal(first.mine, null); assert.equal(first.default, null); assert.deepEqual(first.effective, base()); assert.equal(first.canEditDefault, false); assert.equal(first.cols, 12);
   assert.ok(first.catalog.some((c) => c.type === 'calendar')); assert.ok(!first.catalog.some((c) => c.type === 'activity'), '팀 전용 위젯은 명단에 없는 사용자 목록에 없다');
   const adminGet = await J(await call(HL, 'onRequestGet', env, U.admin)); assert.equal(adminGet.canEditDefault, true); assert.ok(adminGet.catalog.some((c) => c.type === 'activity'));
@@ -146,7 +146,7 @@ test('팀 활동 피드: 팀원은 보고, 명단에 없는 사람은 못 보며
   await env.DB.prepare(`INSERT INTO audit_log (id,at,actor,action,entity,entityId,detail) VALUES ('a-tv',?1,?2,'rotate','tv_token','main','')`).bind(new Date().toISOString(), U.admin).run();
   await env.DB.prepare(`INSERT INTO audit_log (id,at,actor,action,entity,entityId,detail) VALUES ('a-mem',?1,?2,'upsert','camp_member','x@y','role=admin')`).bind(new Date().toISOString(), U.admin).run();
   assert.equal((await call(Activity, 'onRequestGet', env, null)).status, 401);
-  assert.equal((await call(Activity, 'onRequestGet', env, U.view)).status, 403, '조회만 사용자는 못 본다');
+  assert.equal((await call(Activity, 'onRequestGet', env, U.out)).status, 403, '명단에 없는 사용자는 못 본다');
   assert.equal((await call(Activity, 'onRequestGet', env, 'someone-else@wolko.org')).status, 403, '명단에 없는 사람도 못 본다');
   for (const who of [U.mem, U.fin, U.admin]) {
     const items = (await J(await call(Activity, 'onRequestGet', env, who))).items;
@@ -171,11 +171,11 @@ test('접근 권한 표: 역할(비로그인·조회만·재정·팀원·관리�
     ['홈 요약', Home, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
     ['홈 배치 읽기', HL, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
     ['캠프 목록', Camps, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
-    ['업무 목록', Tasks, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
+    ['업무 목록', Tasks, 'onRequestGet', {}, [401, 403, 200, 200, 200]],
     ['자료 목록', Files, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
-    ['회의 목록', Meetings, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
+    ['회의 목록', Meetings, 'onRequestGet', {}, [401, 403, 200, 200, 200]],
     ['공지 읽기', Notices, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
-    ['용어집 읽기', Glossary, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
+    ['용어집 읽기', Glossary, 'onRequestGet', {}, [401, 403, 200, 200, 200]],
     ['예산 읽기(금액)', Budget, 'onRequestGet', { qs: '?campId=camp-u26' }, [401, 403, 200, 200, 200]],
     ['업무 만들기', Tasks, 'onRequestPost', { body: {} }, [401, 403, '!403', '!403', '!403']],
     ['캠프 만들기', Camps, 'onRequestPost', { body: {} }, [401, 403, '!403', '!403', '!403']],
@@ -191,7 +191,7 @@ test('접근 권한 표: 역할(비로그인·조회만·재정·팀원·관리�
     ['전체 내보내기', Exp, 'onRequestGet', {}, [401, 403, 403, 403, 200]],
     ['TV 설정(열쇠 포함)', TvConfig, 'onRequestGet', {}, [401, 403, 403, 403, 200]],
   ];
-  const roles = [null, U.view, U.fin, U.mem, U.admin], names = ['비로그인', '조회만', '재정', '팀원', '관리자'];
+  const roles = [null, U.out, U.fin, U.mem, U.admin], names = ['비로그인', '명단 밖', '재정', '팀원', '관리자'];
   const bad = [];
   for (const [label, mod, fn, opts, expect] of rows) {
     for (let i = 0; i < roles.length; i++) {

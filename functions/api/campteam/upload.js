@@ -1,6 +1,6 @@
 import { campSession, canWriteFile, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, audit } from '../../lib/campteamDb.js';
-import { CATEGORIES, FILE_STATUSES, DEFAULT_MAX_UPLOAD_BYTES, restrictedFor, cleanFileName, kindFor, mimeFor } from '../../lib/campteamFiles.js';
+import { CATEGORIES, FILE_STATUSES, DEFAULT_MAX_UPLOAD_BYTES, restrictedFor, cleanFileName, kindFor, mimeFor, setFilePublic } from '../../lib/campteamFiles.js';
 import { storageFor } from '../../lib/campteamStorage.js';
 import { checkRefs } from './files.js';
 
@@ -43,6 +43,7 @@ export async function onRequestPost({ env, request }) {
       VALUES (?1,?2,?3,?4,?5,?6,'nas',?7,?8,?9,?10,?11,?12,?12,?7)`)
       .bind(fileId, p.get('campId') || null, p.get('typeId') || null, title, text(p.get('description'), 500), kind, s.email,
         FILE_STATUSES.includes(status) ? status : '', category, text(p.get('topic'), 60), restricted, now).run();
+    if (p.get('publicToAll') === '1' && !restricted) await setFilePublic(env, fileId, true, s.email);
     file = { id: fileId };
   }
 

@@ -392,3 +392,68 @@ html.al-open{overflow:hidden}
 .tdbox{padding:12px 16px;margin-bottom:12px}.tdhd h2{font-size:17px}.tdai{margin-top:8px;padding:8px 12px;font-size:14px}
 .tds{margin-top:8px}.tds h3{margin-bottom:4px;font-size:13px}.tdr{padding:6px 10px;margin-bottom:4px;border-radius:8px}.tdr b{font-size:14.5px;line-height:1.35}.tdr small{font-size:12px}.tdr .btn{padding:4px 10px;min-height:0}
 .tdnone{margin-top:8px;padding:10px;font-size:14px}.tdweek{margin-top:8px;padding-top:8px;gap:3px}
+/* 달력 페이지: 선택한 날 + 폰에서는 점으로 표시 */
+.calpage .cal .day{position:relative}.calpage .cal .day.sel{box-shadow:inset 0 0 0 2px var(--blue)}.calpage .cal .day.today .dn{color:var(--blue)}.calpage .dots{display:none;gap:3px;flex-wrap:wrap;margin-top:4px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blue)}.dot.camp{background:#008e92}.dot.task{background:#d9822b}.dot.late{background:#c42a36}.dot.meet{background:#8b6cf0}.dot.out{background:#8fa8b5}
+.daylist{margin-top:14px}.dayhd{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}.dayhd h3{margin:0;font:700 16px var(--f-body)}
+.dayrow{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--bg);margin-bottom:6px;border-left:4px solid var(--blue)}.dayrow.camp{border-left-color:#008e92}.dayrow.task{border-left-color:#d9822b}.dayrow.late{border-left-color:#c42a36}.dayrow.meet{border-left-color:#8b6cf0}.dayrow.out{border-left-color:#8fa8b5}
+.dayrow[data-day-ev],.dayrow[data-day-task],.dayrow[data-day-meet]{cursor:pointer}.dayrow[data-day-ev]:hover,.dayrow[data-day-task]:hover,.dayrow[data-day-meet]:hover{background:#e9f1f5}
+.dayt{min-width:70px;font:600 12.5px var(--f-body);color:var(--mid)}.dayb{flex:1;min-width:0;display:grid;gap:2px}.dayb b{font-size:14.5px;line-height:1.4;word-break:break-word}.dayb small{color:var(--mid);font-size:12px}.dayrow .chev{color:var(--light);font-size:20px}
+@media (max-width:700px){.calpage .cal .day{min-height:58px;padding:3px}.calpage .cal .chips{display:none}.calpage .dots{display:flex}.calpage .cal .dn{font-size:12px}.dayt{min-width:56px}}
+/* 폰 헤더: 한국어/영어 전환을 햄버거 밖으로 (월코 포털과 같은 모양) */
+.langmini{display:none}
+@media (max-width:900px){.langmini{display:inline-flex;gap:2px;padding:3px;border-radius:11px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);margin-left:auto;flex:none}.langmini button{border:0;background:transparent;border-radius:8px;width:34px;height:32px;font-size:18px;line-height:1;cursor:pointer;opacity:.55;padding:0}.langmini button.on{background:rgba(255,255,255,.9);opacity:1}.langmini+.bell{margin-left:8px}.topbar .logo span small{display:none}}
+/* ── 링크 모양 통일: 밑줄·방문 후 보라색 없음, 올리면 파란색 ── */
+main a,.apanel a,dialog a{color:inherit;text-decoration:none}
+main a:hover,.apanel a:hover,dialog a:hover{color:var(--blue-lt)}
+main a:focus-visible,.apanel a:focus-visible,dialog a:focus-visible{outline:2px solid var(--blue-lt);outline-offset:2px;border-radius:4px}
+.hintbox a,.hint a,.annb a,.err a{color:var(--blue-lt);text-decoration:underline}
+main a.btn,main a.tab,.apanel a.btn{color:inherit}.btn.pri,a.btn.pri{color:#fff}.btn.pri:hover,a.btn.pri:hover{color:#fff}
+/* ── 팝업이 열리면 왼쪽 메뉴는 선명하게 두고 나머지 화면만 흐리게 (월코 포털과 같은 느낌) ── */
+dialog::backdrop{background:transparent}
+html.dlg-open main,html.al-open main{filter:blur(5px) brightness(.84);transition:filter .15s ease;pointer-events:none}
+.apanel-scrim{background:transparent}
+/* ── 표: 폰에서는 카드로 (JS 가 칸 이름을 data-l 로 붙여 준다) ── */
+@media (max-width:700px){
+  table.rt,table.rt thead,table.rt tbody,table.rt tfoot,table.rt tr,table.rt td{display:block;width:100%}
+  table.rt thead{display:none}
+  table.rt tr{background:#fff;border:1px solid var(--border);border-radius:12px;margin:0 0 10px;padding:8px 12px}
+  table.rt td{display:flex;justify-content:space-between;align-items:center;gap:14px;border:0;padding:6px 0;text-align:right;min-height:0;white-space:normal}
+  table.rt td::before{content:attr(data-l);color:var(--mid);font:600 12px var(--f-body);text-align:left;flex:none;max-width:42%}
+  table.rt td[data-l=""]::before,table.rt td:not([data-l])::before{content:none}
+  table.rt td:empty{display:none}
+  table.rt td[colspan]{display:block;text-align:left;font-weight:700;background:var(--bg);border-radius:8px;padding:6px 10px;margin:-2px 0 4px}
+  table.rt td.act{justify-content:flex-end;flex-wrap:wrap}
+  table.rt td.act::before{content:none}
+  table.rt td button,table.rt td .btn{white-space:nowrap}
+}
+/* 캠프별 공간: 카드형 목록 + 끌어서 순서 바꾸기 */
+.ordhint{margin:-4px 0 6px}.ordtools{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:10px;min-height:20px}.linkbtn{border:0;background:transparent;color:var(--blue-lt);font:600 12.5px var(--f-body);cursor:pointer;padding:2px 0}.linkbtn:hover{text-decoration:underline}
+.type-card{cursor:grab;transition:box-shadow .15s}.type-card:hover{box-shadow:0 6px 22px rgba(20,60,80,.1)}
+.camps-in{display:grid;gap:8px;margin-top:10px}
+.camp-row{display:grid;grid-template-columns:1.5fr 1fr 1fr auto;gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:#fff;cursor:pointer;font-size:13px;transition:background .12s,box-shadow .12s,border-color .12s}
+.camp-row:hover{background:#f4f9fc;border-color:#cfe3ee;box-shadow:0 3px 12px rgba(20,60,80,.08)}
+.camp-row .nm b{font:700 15.5px var(--f-body);color:var(--text)}.camp-row .cdate{color:var(--mid);line-height:1.8}
+html.dragging,html.dragging *{cursor:grabbing !important;user-select:none}
+.drag-ph{border:2px dashed #9cc4ee;border-radius:14px;background:rgba(59,143,240,.06);margin:0 0 8px}
+.drag-ghost{position:fixed !important;z-index:2000;opacity:.92;pointer-events:none;box-shadow:0 16px 40px rgba(20,40,60,.28);transform:rotate(.6deg);margin:0 !important;background:#fff}
+@media (max-width:900px){.camp-row{grid-template-columns:1fr auto;grid-template-areas:"nm act" "dt dt" "pg pg"}.camp-row .nm{grid-area:nm}.camp-row .cdate{grid-area:dt}.camp-row .cprog{grid-area:pg}.camp-row .actions{grid-area:act}}
+/* 자료실: 넓은 업로드 영역 (끌어다 놓기 + 파일 열기 버튼) */
+.dropzone{position:relative;border:2px dashed #b9d4e2;border-radius:16px;background:#f7fbfd;padding:22px 20px;margin-bottom:16px;transition:border-color .15s,background .15s}
+.dz-in{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.dz-ic{width:52px;height:52px;border-radius:14px;background:#e3f2f8;color:var(--blue);display:grid;place-items:center;font-size:24px;flex:none}
+.dz-tx{display:grid;gap:6px;min-width:0}.dz-tx b{font:700 16px var(--f-body)}.dz-tx small{max-width:560px}
+.dropzone.over{border-color:var(--blue);background:#e8f4fa}.dz-over{position:absolute;inset:0;display:none;place-items:center;font:700 18px var(--f-body);color:var(--blue);background:rgba(232,244,250,.94);border-radius:14px}.dropzone.over .dz-over{display:grid}
+html.dz-active .dropzone{outline:3px solid rgba(0,119,163,.35);outline-offset:4px}
+.dz-bar{height:6px;border-radius:99px;background:#e1ebf0;margin-top:12px;overflow:hidden;display:none}.dropzone.busy .dz-bar{display:block}.dz-bar i{display:block;height:100%;width:0;background:var(--blue-lt);transition:width .15s}.dz-msg{font-size:12.5px;margin-top:8px;color:var(--mid);min-height:0}.dz-msg:empty{display:none}
+@media (max-width:700px){.dropzone{padding:16px 14px}.dz-ic{display:none}}
+/* 자료실: 넓은 업로드 영역 (끌어다 놓기 + 파일 열기 버튼) */
+.dropzone{position:relative;border:2px dashed #b9d4e2;border-radius:16px;background:#f7fbfd;padding:22px 20px;margin-bottom:16px;transition:border-color .15s,background .15s}
+.dz-in{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.dz-ic{width:52px;height:52px;border-radius:14px;background:#e3f2f8;color:var(--blue);display:grid;place-items:center;font-size:24px;flex:none}
+.dz-tx{display:grid;gap:6px;min-width:0}.dz-tx b{font:700 16px var(--f-body)}.dz-tx small{max-width:560px}
+.dropzone.over{border-color:var(--blue);background:#e8f4fa}.dz-over{position:absolute;inset:0;display:none;place-items:center;font:700 18px var(--f-body);color:var(--blue);background:rgba(232,244,250,.94);border-radius:14px}.dropzone.over .dz-over{display:grid}
+html.dz-active .dropzone{outline:3px solid rgba(0,119,163,.35);outline-offset:4px}
+.dz-bar{height:6px;border-radius:99px;background:#e1ebf0;margin-top:12px;overflow:hidden;display:none}.dropzone.busy .dz-bar{display:block}.dz-bar i{display:block;height:100%;width:0;background:var(--blue-lt);transition:width .15s}.dz-msg{font-size:12.5px;margin-top:8px;color:var(--mid);min-height:0}.dz-msg:empty{display:none}
+@media (max-width:700px){.dropzone{padding:16px 14px}.dz-ic{display:none}}
+
+/* 폰: 선택 상자가 카드 밖으로 삐져나오지 않게 */
+@media (max-width: 760px) { .card select, .card input:not([type=checkbox]):not([type=radio]), .card textarea { max-width: 100%; min-width: 0; box-sizing: border-box; } .card label { min-width: 0; } }

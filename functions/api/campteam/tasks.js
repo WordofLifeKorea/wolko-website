@@ -1,3 +1,4 @@
+import { resolveOwnerEmail } from '../../lib/campteamOwners.js';
 import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, isDate, todayKST, audit, TASK_STATUSES, TASK_PRIORITIES } from '../../lib/campteamDb.js';
 
@@ -20,6 +21,7 @@ export async function onRequestGet({ env, request }) {
   const where = ['k.deletedAt IS NULL'], args = [];
   const campId = p.get('campId');
   if (campId === 'none') where.push('k.campId IS NULL'); else if (campId) { where.push('k.campId = ?'); args.push(campId); }
+  if (p.get('id')) { where.push('k.id = ?'); args.push(String(p.get('id'))); }
   if (TASK_STATUSES.includes(p.get('status'))) { where.push('k.status = ?'); args.push(p.get('status')); }
   if (TASK_PRIORITIES.includes(p.get('priority'))) { where.push('k.priority = ?'); args.push(p.get('priority')); }
   const owner = text(p.get('owner'), 60);
@@ -55,10 +57,16 @@ async function clean(env, b, base = {}) {
   if (!TASK_PRIORITIES.includes(priority)) return { error: '우선순위가 올바르지 않습니다.' };
   const campId = has('campId') ? (b.campId || null) : base.campId ?? null;
   if (campId && !(await env.DB.prepare('SELECT 1 AS x FROM camps WHERE id = ?1 AND deletedAt IS NULL').bind(String(campId)).first())) return { error: '캠프를 찾을 수 없습니다.' };
+  // 담당자: 이름만 적었거나 바꾼 경우, 팀 명단의 이름·별칭과 정확히 한 사람이 맞으면 이메일을 자동으로 채운다(이전 담당자의 이메일은 지운다)
+  const ownerName = has('ownerName') ? text(b.ownerName, 60) : base.ownerName ?? '';
+  let ownerEmail = has('ownerEmail') ? text(b.ownerEmail, 120) : base.ownerEmail ?? '';
+  if (has('ownerName') && !has('ownerEmail') && ownerName !== (base.ownerName ?? '')) ownerEmail = '';
+  if (ownerName && !ownerEmail) ownerEmail = await resolveOwnerEmail(env, ownerName);
+  if (!ownerName && !has('ownerEmail')) ownerEmail = '';
   return { v: {
     title, dueDate, status, priority, campId,
-    ownerName: has('ownerName') ? text(b.ownerName, 60) : base.ownerName ?? '',
-    ownerEmail: has('ownerEmail') ? text(b.ownerEmail, 120) : base.ownerEmail ?? '',
+    ownerName,
+    ownerEmail,
     notes: has('notes') ? text(b.notes, 1000) : base.notes ?? '',
   } };
 }

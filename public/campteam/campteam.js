@@ -4,10 +4,10 @@
 
   CT.addDict = function (d) { ['ko', 'en'].forEach(function (l) { Object.assign(CT.dict[l], d[l] || {}); }); };
   CT.addDict({
-    ko: { navHome: '캠프팀 홈', navAlerts: '알림공지', navResources: '캠프 자료실', navGroupTeam: '캠프팀', navCamps: '캠프별 공간', navTasks: '일정 · 업무', navMeetings: '회의록 · 결정', navFiles: '자료실', navTv: 'TV 대시보드', searchAll: '전체 검색 (업무·회의·결정·파일)', navFinance: '재정', navBudget: '캠프 예산', navAdmin: '관리', navSettings: '설정 · 팀 명단', soon: '준비 중', backPortal: '← 포털로 돌아가기',
+    ko: { navHome: '캠프팀 홈', navAlerts: '알림공지', budgetLocked: '🔒 예산·금액은 권한이 있는 팀원에게만 보입니다.', navResources: '캠프 자료실', navGroupTeam: '캠프팀', navCamps: '캠프별 공간', navTasks: '업무', navCalendar: '달력', navMeetings: '회의록 · 결정', navFiles: '자료실', navTv: 'TV 대시보드', searchAll: '전체 검색 (업무·회의·결정·파일)', navFinance: '재정', navBudget: '캠프 예산', navAdmin: '관리', navSettings: '설정 · 팀 명단', soon: '준비 중', backPortal: '← 포털로 돌아가기',
       gateTitle: '포털 로그인이 필요해요', gateBody: '포털에서 로그인한 뒤 이 페이지로 다시 들어와 주세요.', gateBtn: '포털로 이동', logout: '로그아웃', gateGoogle: '또는 wolko.org Google 계정으로 로그인 (조회 전용)', navTrash: '휴지통', test: '테스트', testData: '테스트 자료 포함',
       roleadmin: '관리자', roledirector: '캠프팀 디렉터', rolefinance: '캠프 재정 담당', roletreasurer: '월코 재정 (조회 전용)', rolemember: '캠프팀 팀원', roleviewer: '조회만', loadFail: '불러오지 못했어요', save: '저장', cancel: '취소', edit: '수정', del: '삭제', add: '추가', confirmDel: '삭제할까요? (삭제 표시만 되며 복구할 수 있어요)' },
-    en: { navHome: 'Camp Team Home', navAlerts: 'Alerts & Notices', navResources: 'Camp Resources', navGroupTeam: 'CAMP TEAM', navCamps: 'Camp Spaces', navTasks: 'Schedule · Tasks', navMeetings: 'Meetings · Decisions', navFiles: 'Files', navTv: 'TV Dashboard', searchAll: 'Search all (tasks, meetings, decisions, files)', navFinance: 'FINANCE', navBudget: 'Camp Budget', navAdmin: 'ADMIN', navSettings: 'Settings · Team', soon: 'Soon', backPortal: '← Back to Portal',
+    en: { navHome: 'Camp Team Home', navAlerts: 'Alerts & Notices', budgetLocked: '🔒 Budget and amounts are visible only to authorized team members.', navResources: 'Camp Resources', navGroupTeam: 'CAMP TEAM', navCamps: 'Camp Spaces', navTasks: 'Tasks', navCalendar: 'Calendar', navMeetings: 'Meetings · Decisions', navFiles: 'Files', navTv: 'TV Dashboard', searchAll: 'Search all (tasks, meetings, decisions, files)', navFinance: 'FINANCE', navBudget: 'Camp Budget', navAdmin: 'ADMIN', navSettings: 'Settings · Team', soon: 'Soon', backPortal: '← Back to Portal',
       gateTitle: 'Portal login required', gateBody: 'Please log in to the portal, then come back to this page.', gateBtn: 'Go to Portal', logout: 'Log out', gateGoogle: 'Or sign in with your wolko.org Google account (view only)', navTrash: 'Trash', test: 'TEST', testData: 'Includes test data',
       roleadmin: 'Admin', roledirector: 'Camp Team Director', rolefinance: 'Camp Finance', roletreasurer: 'WOLKO Finance (view only)', rolemember: 'Camp Team', roleviewer: 'View only', loadFail: 'Could not load', save: 'Save', cancel: 'Cancel', edit: 'Edit', del: 'Delete', add: 'Add', confirmDel: 'Delete this? (It is only marked deleted and can be restored.)' }
   });
@@ -21,8 +21,8 @@
   CT.applyI18n = function (root) {
     (root || document).querySelectorAll('[data-t]').forEach(function (el) { el.textContent = CT.t(el.getAttribute('data-t')); });
     (root || document).querySelectorAll('[data-t-ph]').forEach(function (el) { el.setAttribute('placeholder', CT.t(el.getAttribute('data-t-ph'))); });
-    document.getElementById('langKo').classList.toggle('on', CT.lang() === 'ko');
-    document.getElementById('langEn').classList.toggle('on', CT.lang() === 'en');
+    ['langKo', 'langKoM'].forEach(function (id) { var el = document.getElementById(id); if (el) el.classList.toggle('on', CT.lang() === 'ko'); });
+    ['langEn', 'langEnM'].forEach(function (id) { var el = document.getElementById(id); if (el) el.classList.toggle('on', CT.lang() === 'en'); });
     document.documentElement.lang = CT.lang();
   };
   CT.setLang = function (l) { try { localStorage.setItem('wolko-lang', l); } catch (e) {} CT.applyI18n(); document.dispatchEvent(new Event('ct-lang')); };
@@ -136,6 +136,29 @@
     d.addEventListener('mousedown', function (e) { d._downOut = e.target === d && outside(d, e); });
     d.addEventListener('click', function (e) { if (e.target === d && d._downOut && outside(d, e)) CT.tryClose(d); d._downOut = false; }); // 바깥 배경
   }
+
+  // ── 표 → 폰에서 카드로: 머리글 글자를 각 칸의 data-l 로 붙인다 (CSS 가 700px 이하에서 카드로 바꿔 보여 준다) ──
+  function cardify(root) {
+    [].forEach.call((root || document).querySelectorAll('main table:not(.no-rt):not(.pmtable)'), function (t) {
+      var heads = [].map.call(t.querySelectorAll('thead th'), function (th) { return th.textContent.trim(); });
+      if (!heads.length) { var fr = t.querySelector('tr'); if (fr && fr.querySelector('th')) heads = [].map.call(fr.children, function (th) { return th.textContent.trim(); }); }
+      [].forEach.call(t.querySelectorAll('tbody tr, tfoot tr'), function (tr) {
+        if (tr.querySelector('th') && !tr.querySelector('td')) return;
+        [].forEach.call(tr.children, function (td, i) { if (td.tagName === 'TD' && !td.hasAttribute('data-l')) td.setAttribute('data-l', td.hasAttribute('colspan') ? '' : (heads[i] || '')); });
+      });
+      t.classList.add('rt');
+    });
+  }
+  var cardTimer = null;
+  function watchTables() { new MutationObserver(function () { clearTimeout(cardTimer); cardTimer = setTimeout(function () { cardify(); }, 60); }).observe(document.getElementById('main') || document.body, { childList: true, subtree: true }); cardify(); }
+  // ── 팝업이 열려 있는 동안 html 에 표시를 달아 CSS 가 뒤 화면을 흐리게 한다 ──
+  (function () {
+    var open = HTMLDialogElement.prototype.showModal, count = 0;
+    HTMLDialogElement.prototype.showModal = function () {
+      var d = this; open.call(d); document.documentElement.classList.add('dlg-open');
+      if (!d._blurWatch) { d._blurWatch = true; d.addEventListener('close', function () { setTimeout(function () { if (![].some.call(document.querySelectorAll('dialog'), function (x) { return x.open; })) document.documentElement.classList.remove('dlg-open'); }, 0); }); }
+    };
+  })();
   // ── 폰 메뉴(햄버거 서랍) ──
   function initMenu() {
     var btn = document.getElementById('menuBtn'), dr = document.getElementById('drawer'), sc = document.getElementById('scrim'), x = document.getElementById('drawerX');
@@ -154,18 +177,20 @@
   CT.boot = async function (init) {
     document.getElementById('langKo').onclick = function () { CT.setLang('ko'); };
     document.getElementById('langEn').onclick = function () { CT.setLang('en'); };
+    ['langKoM', 'langEnM'].forEach(function (id) { var el = document.getElementById(id); if (el) el.onclick = function () { CT.setLang(id === 'langKoM' ? 'ko' : 'en'); }; });
     CT.applyI18n();
     if (!CT.token()) { CT.showGate(); return; }
     try { CT.me = await CT.api('/api/campteam/me'); } catch (e) { if (e.status !== 401) { document.getElementById('main').insertAdjacentHTML('afterbegin', '<div class="err">' + CT.esc(e.message) + '</div>'); } return; }
     var p = CT.me.perms;
     document.getElementById('moneyHead').hidden = document.getElementById('moneyNav').hidden = !p.moneyRead;
     document.getElementById('adminHead').hidden = document.getElementById('settingsNav').hidden = !p.manageMembers;
-    document.getElementById('trashNav').hidden = !(p.write || p.moneyWrite);
+    document.getElementById('trashNav').hidden = !CT.me.campRole;
     // 항목별 권한: 볼 수 없는 영역의 메뉴는 숨긴다 (서버도 같은 기준으로 막는다)
-    var NAVAREA = { '/campteam/tasks/': 'tasks', '/campteam/meetings/': 'meetings', '/campteam/files/': 'files', '/campteam/resources/': 'files', '/campteam/camps/': 'camps', '/campteam/tv/': 'camps' };
+    var NAVAREA = { '/campteam/tasks/': 'tasks', '/campteam/calendar/': 'tasks', '/campteam/meetings/': 'meetings', '/campteam/files/': 'files', '/campteam/resources/': 'files', '/campteam/camps/': 'camps', '/campteam/tv/': 'camps' };
     [].forEach.call(document.querySelectorAll('.nav a[href]'), function (a) { var area = NAVAREA[a.getAttribute('href')]; if (area && !CT.can(area, 'view')) a.hidden = true; });
     var renderWho = function () { document.getElementById('who').innerHTML = CT.esc(CT.me.email) + '<br><span class="chip">' + CT.esc(CT.roleLabel(CT.me.campRole)) + '</span>' + (CT.usingGoogle() ? ' <a href="#" id="gout">' + CT.esc(CT.t('logout')) + '</a>' : ''); var o = document.getElementById('gout'); if (o) o.onclick = function (e) { e.preventDefault(); CT.googleLogout(); }; };
     renderWho(); document.addEventListener('ct-lang', renderWho);
+    watchTables();
     await init(CT.me);
     document.dispatchEvent(new Event('ct-ready'));
   };

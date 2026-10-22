@@ -97,7 +97,7 @@
   function bannerHtml() {
     var s = S.sum; if (!s || !S.pid) return '';
     var r = s.lastReconcile, rec = r ? (r.diff === 0 ? '<b style="color:var(--ok)">' + esc(CT.t('balMatch')) + '</b>' : '<b style="color:var(--accent)">' + esc(CT.t('balDiff')) + ' ' + esc(KRW(r.diff)) + '</b>') + ' · ' + esc(r.asOfDate) : esc(CT.t('balNever'));
-    return '<div class="balbar"><div class="bb1"><label>' + esc(CT.t('balTitle')) + '</label>' + CT.help('balance') + '<strong style="color:' + (s.balanceAsOf < 0 ? 'var(--accent)' : 'var(--blue)') + '">' + esc(KRW(s.balanceAsOf)) + '</strong><small>' + esc(s.asOf) + ' ' + esc(CT.t('balAsOf')) + ' · ' + esc(CT.t('balIn')) + ' ' + esc(KRW(s.totals.income)) + ' · ' + esc(CT.t('balOut')) + ' ' + esc(KRW(s.totals.expense)) + '</small></div><div class="bb2"><small>' + esc(CT.t('balChecked')) + ': ' + rec + '</small> <a href="#" data-tab="recon">' + esc(CT.t('balCheck')) + '</a></div></div>';
+    return '<div class="balbar"><div class="bb1"><label>' + esc(CT.t('balTitle')) + CT.help('balance') + '</label><strong style="color:' + (s.balanceAsOf < 0 ? 'var(--accent)' : 'var(--blue)') + '">' + esc(KRW(s.balanceAsOf)) + '</strong><small>' + esc(s.asOf) + ' ' + esc(CT.t('balAsOf')) + ' · ' + esc(CT.t('balIn')) + ' ' + esc(KRW(s.totals.income)) + ' · ' + esc(CT.t('balOut')) + ' ' + esc(KRW(s.totals.expense)) + '</small></div><div class="bb2"><small>' + esc(CT.t('balChecked')) + ': ' + rec + '</small> <a href="#" data-tab="recon">' + esc(CT.t('balCheck')) + '</a></div></div>';
   }
   function summaryHtml() {
     var s = S.sum, t = s.totals, openAmt = s.opening ? (s.opening.kind === 'income' ? s.opening.amount : -s.opening.amount) : 0;

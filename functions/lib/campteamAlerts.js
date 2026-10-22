@@ -8,10 +8,11 @@
  *   - 내가 맡은 업무(담당자 이메일이 내 이메일): 마감 3일 전·1일 전·당일, 마감이 지난 뒤(기본 dueDays = [3,1])
  *   - 팀 전체: 회의·일정 하루 전·당일(기본 eventDays = [1])
  *   - 새 결정(최근 7일)
- * 같은 업무라도 단계(3일 전 → 1일 전 → 당일 → 지남)가 바뀌면 새 알림으로 다시 올라온다. 이전 단계에서 껐어도 다시 알려 주기 위해서다.
+ * 같은 업무라도 단계(3일 전 → 1일 전 → 당일 → 지남)가 바뀌거나 날짜가 바뀌면 새 알림으로 다시 올라온다. 이전 단계에서 껐어도 다시 알려 주기 위해서다. (알림 번호 끝에 날짜가 붙는다)
  */
 import { addDays } from './campteamDb.js';
 import { canView } from './campteamAuth.js';
+import { loadOwnerKeys, isMine } from './campteamOwners.js';
 
 // perms 를 넘기면 항목별 권한(업무·회의)이 없는 영역의 알림은 만들지 않는다. 넘기지 않으면 모두 허용(예: 테스트).
 const allow = (perms, area) => !perms || canView(perms, area);
@@ -53,10 +54,10 @@ const s = (v, n) => String(v ?? '').trim().slice(0, n);
 /** 내 알림과 오늘 할 일을 계산한다. 반환: { items, today } — items 의 state 는 'seen' | 'dismissed' | null */
 export async function buildAlerts(env, email, { today, settings, perms }) {
   const db = env.DB, me = String(email).toLowerCase(), maxDue = Math.max(...settings.dueDays), maxEvent = Math.max(...settings.eventDays);
-  const none = Promise.resolve({ results: [] }), tv = allow(perms, 'tasks'), mv = allow(perms, 'meetings');
+  const none = Promise.resolve({ results: [] }), tv = allow(perms, 'tasks'), mv = allow(perms, 'meetings'), keys = await loadOwnerKeys(env, me);
   const [tasks, meetings, events, decisions, states] = await Promise.all([
-    !tv ? none : db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
-      WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND k.ownerEmail <> '' AND LOWER(k.ownerEmail) = ?1 ORDER BY k.dueDate IS NULL, k.dueDate LIMIT 200`).bind(me).all(),
+    !tv ? none : db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, k.ownerName, k.ownerEmail, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
+      WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND (k.ownerEmail <> '' OR k.ownerName <> '') AND k.dueDate IS NOT NULL ORDER BY k.dueDate LIMIT 800`).all(),
     !mv ? none : db.prepare(`SELECT id, meetDate, meetTime, title FROM meetings WHERE deletedAt IS NULL AND meetDate >= ?1 AND meetDate <= ?2 ORDER BY meetDate, meetTime LIMIT 20`).bind(today, addDays(today, Math.max(maxEvent, 2))).all(),
     !tv ? none : db.prepare(`SELECT id, title, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND COALESCE(endDate, startDate) >= ?1 AND startDate <= ?2 ORDER BY startDate LIMIT 20`).bind(today, addDays(today, Math.max(maxEvent, 2))).all(),
     !mv ? none : db.prepare(`SELECT d.id, d.textKo, d.textEn, d.kind, d.decidedDate, d.createdAt, d.meetingId FROM decisions d WHERE d.deletedAt IS NULL AND d.state = 'active' AND d.kind IN ('direction','final','changed')
@@ -67,23 +68,23 @@ export async function buildAlerts(env, email, { today, settings, perms }) {
   const push = (it) => items.push({ ...it, state: st.get(it.key) || null });
 
   const mine = { overdue: [], today: [], soon: [] };
-  for (const t of tasks.results) {
+  for (const t of tasks.results.filter((x) => isMine(x, me, keys))) {
     if (!t.dueDate) continue;
     const left = dayDiff(t.dueDate, today), stage = stageOf(left, settings.dueDays); if (!stage) { if (left <= maxDue) { /* 설정에 없는 일수 사이 */ } continue; }
     const base = { type: 'task', taskId: t.id, title: t.title, camp: t.campKo || '', campEn: t.campEn || '', date: t.dueDate, daysLeft: left, href: '/campteam/tasks/?open=' + encodeURIComponent(t.id), priority: t.priority };
-    push({ ...base, key: `task:${t.id}:${stage}`, level: stage === 'over' ? 'over' : left === 0 ? 'today' : 'soon' });
+    push({ ...base, key: `task:${t.id}:${stage}:${t.dueDate.replace(/-/g, '')}`, level: stage === 'over' ? 'over' : left === 0 ? 'today' : 'soon' });
     (left < 0 ? mine.overdue : left === 0 ? mine.today : mine.soon).push(base);
   }
   const team = { meetings: [], events: [] };
   for (const m of meetings.results) {
     const left = dayDiff(m.meetDate, today), stage = stageOf(left, settings.eventDays); if (!stage || stage === 'over') continue;
     const base = { type: 'meeting', title: m.title, date: m.meetDate, time: m.meetTime || '', daysLeft: left, href: '/campteam/meetings/?open=' + encodeURIComponent(m.id) };
-    push({ ...base, key: `meet:${m.id}:${stage}`, level: left === 0 ? 'today' : 'soon' }); team.meetings.push(base);
+    push({ ...base, key: `meet:${m.id}:${stage}:${m.meetDate.replace(/-/g, '')}`, level: left === 0 ? 'today' : 'soon' }); team.meetings.push(base);
   }
   for (const e of events.results) {
     const start = e.startDate < today ? today : e.startDate, left = dayDiff(start, today), stage = stageOf(left, settings.eventDays); if (!stage || stage === 'over') continue;
-    const base = { type: 'event', title: e.title, date: e.startDate, time: e.startTime || '', daysLeft: left, href: '/campteam/tasks/' };
-    push({ ...base, key: `event:${e.id}:${stage}`, level: left === 0 ? 'today' : 'soon' }); team.events.push(base);
+    const base = { type: 'event', title: e.title, date: e.startDate, time: e.startTime || '', daysLeft: left, href: '/campteam/calendar/' };
+    push({ ...base, key: `event:${e.id}:${stage}:${e.startDate.replace(/-/g, '')}`, level: left === 0 ? 'today' : 'soon' }); team.events.push(base);
   }
   const newDecisions = [];
   for (const d of decisions.results) {
@@ -104,8 +105,9 @@ export async function listAnnouncements(env, email, { today, settings, isAdmin, 
     WHERE a.deletedAt IS NULL AND (a.audience = 'all' OR LOWER(a.createdBy) = ?1 OR EXISTS (SELECT 1 FROM announcement_recipients r WHERE r.announcementId = a.id AND r.email = ?1))
     ORDER BY a.pinned DESC, a.createdAt DESC LIMIT 200`).bind(me).all()).results;
   const states = new Map((await env.DB.prepare(`SELECT alertKey, state FROM alert_state WHERE email = ?1 AND alertKey LIKE 'ann:%'`).bind(me).all()).results.map((r) => [r.alertKey, r.state]));
-  const recip = new Map();
-  for (const r of (await env.DB.prepare('SELECT announcementId, email FROM announcement_recipients').all()).results) { if (!recip.has(r.announcementId)) recip.set(r.announcementId, []); recip.get(r.announcementId).push(r.email); }
+  // 받는 사람 목록은 올린 사람과 관리자에게만 내려가므로, 그 공지들 것만 읽는다
+  const recip = new Map(), wantIds = rows.filter((a) => a.audience === 'people' && (isAdmin || String(a.createdBy).toLowerCase() === me)).map((a) => a.id);
+  if (wantIds.length) for (const r of (await env.DB.prepare(`SELECT announcementId, email FROM announcement_recipients WHERE announcementId IN (${wantIds.map(() => '?').join(',')})`).bind(...wantIds).all()).results) { if (!recip.has(r.announcementId)) recip.set(r.announcementId, []); recip.get(r.announcementId).push(r.email); }
   const cutoff = addDays(today, -settings.expireDays);
   return rows.map((a) => {
     const mineAuthor = String(a.createdBy).toLowerCase() === me, state = states.get('ann:' + a.id) || null;
@@ -143,15 +145,15 @@ export const nowIso = () => new Date().toISOString();
 
 /** 이번 주(월~일)에 해야 할 일: 마감이 지난 업무 + 이번 주 마감 업무 + 이번 주 회의·일정. 주간 요약과 주간 이메일이 쓴다. */
 export async function buildWeek(env, email, today, perms) {
-  const none = Promise.resolve({ results: [] }), tv = allow(perms, 'tasks'), mv = allow(perms, 'meetings');
+  const none = Promise.resolve({ results: [] }), tv = allow(perms, 'tasks'), mv = allow(perms, 'meetings'), keys = await loadOwnerKeys(env, String(email).toLowerCase());
   const db = env.DB, me = String(email).toLowerCase(), start = mondayOf(today), end = addDays(start, 6);
   const [tasks, meetings, events] = await Promise.all([
-    !tv ? none : db.prepare(`SELECT k.id, k.title, k.dueDate, k.priority, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
-      WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND k.ownerEmail <> '' AND LOWER(k.ownerEmail) = ?1 AND k.dueDate IS NOT NULL AND k.dueDate <= ?2 ORDER BY k.dueDate LIMIT 100`).bind(me, end).all(),
+    !tv ? none : db.prepare(`SELECT k.id, k.title, k.dueDate, k.priority, k.ownerName, k.ownerEmail, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
+      WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND (k.ownerEmail <> '' OR k.ownerName <> '') AND k.dueDate IS NOT NULL AND k.dueDate <= ?1 ORDER BY k.dueDate LIMIT 800`).bind(end).all(),
     !mv ? none : db.prepare(`SELECT id, meetDate, meetTime, title FROM meetings WHERE deletedAt IS NULL AND meetDate >= ?1 AND meetDate <= ?2 ORDER BY meetDate, meetTime LIMIT 30`).bind(today > start ? today : start, end).all(),
     !tv ? none : db.prepare(`SELECT id, title, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND COALESCE(endDate, startDate) >= ?1 AND startDate <= ?2 ORDER BY startDate LIMIT 30`).bind(today > start ? today : start, end).all(),
   ]);
-  const t = tasks.results.map((x) => ({ type: 'task', title: x.title, date: x.dueDate, camp: x.campKo || '', priority: x.priority, daysLeft: dayDiff(x.dueDate, today), href: '/campteam/tasks/?open=' + encodeURIComponent(x.id) }));
+  const t = tasks.results.filter((x) => isMine(x, me, keys)).slice(0, 100).map((x) => ({ type: 'task', title: x.title, date: x.dueDate, camp: x.campKo || '', priority: x.priority, daysLeft: dayDiff(x.dueDate, today), href: '/campteam/tasks/?open=' + encodeURIComponent(x.id) }));
   return { start, end, overdue: t.filter((x) => x.daysLeft < 0), tasks: t.filter((x) => x.daysLeft >= 0),
     meetings: meetings.results.map((m) => ({ type: 'meeting', title: m.title, date: m.meetDate, time: m.meetTime || '' })), events: events.results.map((e) => ({ type: 'event', title: e.title, date: e.startDate, time: e.startTime || '' })) };
 }

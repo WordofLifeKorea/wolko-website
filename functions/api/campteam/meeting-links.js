@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, canView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, audit, normTags } from '../../lib/campteamDb.js';
 
 const ROLES = ['minutes', 'transcript', 'notes', 'photo', 'audio', 'reference'];
@@ -13,7 +13,7 @@ export async function onRequestPost({ env, request }) {
   const m = await env.DB.prepare('SELECT id FROM meetings WHERE id = ?1 AND deletedAt IS NULL').bind(String(b.meetingId || '')).first();
   if (!m) return badRequest('회의를 찾을 수 없습니다.');
   const f = await env.DB.prepare('SELECT id, restricted FROM files WHERE id = ?1 AND deletedAt IS NULL').bind(String(b.fileId || '')).first();
-  if (!f || (f.restricted && !s.perms.moneyRead)) return badRequest('파일을 찾을 수 없습니다.');
+  if (!f || (f.restricted && !s.perms.moneyRead) || !canView(s.perms, 'files')) return badRequest('파일을 찾을 수 없습니다.');
   const role = ROLES.includes(b.role) ? b.role : 'reference';
   await env.DB.prepare(`INSERT INTO meeting_files (id,meetingId,fileId,role,createdAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6)
     ON CONFLICT(meetingId, fileId) DO UPDATE SET role = ?4, deletedAt = NULL`).bind(uuid(), m.id, f.id, role, nowIso(), s.email).run();

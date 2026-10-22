@@ -5,8 +5,8 @@
  * 읽은 내용을 캠프팀 DB 에 복사해 저장하지도 않는다(화면을 열 때마다 읽어서 요약만 돌려준다).
  *
  * 개인정보는 두 단계로 나눈다.
- *  - 캠프팀 명단에 있는 사람: 이름·성별·학년·교회·학교·특이사항·신청 상태·낸 금액·장학/할인
- *  - sensitive(디렉터·캠프 재정·관리자)만 추가: 연락처·이메일·비상연락처·생년월일·보호자 정보·환불 은행/계좌/예금주·상담 메모·신앙 상태
+ *  - 캠프팀 명단에 있는 사람: 이름·성별·학년·교회·학교·신청 상태·낸 금액·장학/할인
+ *  - sensitive(디렉터·캠프 재정·관리자)만 추가: 연락처·이메일·비상연락처·생년월일·보호자 정보·환불 은행/계좌/예금주·특이사항(건강·알레르기 등)·상담 메모·신앙 상태
  *
  * 인원·금액 시나리오 (대기 명단은 따로 센다)
  *  - min      최종 확정(잔금까지 확인)된 신청만
@@ -73,11 +73,11 @@ function camperRow(reg, p, sensitive) {
     regId: reg.regId, type: reg.registrationType === 'group' ? 'group' : 'individual', status: statusOf(reg), waitlist: !!reg.isWaitlist,
     name: str(src.name, 60), gender: src.gender === 'male' || src.gender === 'female' ? src.gender : '', grade: str(src.grade, 30),
     church: str(reg.church, 80), school: str(reg.school, 80), groupName: group ? str(reg.name, 60) : '',
-    notes: str(reg.notes, 500), scholarship: str(reg.scholarshipDiscountText || reg.scholarshipDiscountDetailText, 300),
+    scholarship: str(reg.scholarshipDiscountText || reg.scholarshipDiscountDetailText, 300),
     payOnSite: !!reg.payOnSite, refundRegistered: !!(str(reg.refundAccount) || str(src.refundAccount)), registeredAt: str(reg.registeredAt, 30),
   };
   if (sensitive) row.private = {
-    saved: src.saved === true, dedicated: src.dedicated === true, counselorMemo: str(src.counselorMemo || (!group ? reg.counselorMemo : ''), 500),
+    notes: str(reg.notes, 500), saved: src.saved === true, dedicated: src.dedicated === true, counselorMemo: str(src.counselorMemo || (!group ? reg.counselorMemo : ''), 500),
     phone: str(reg.phone, 30), email: str(reg.email, 100), emergency: str(reg.emergency, 100), birthDate: str(src.birthDate, 20), parentInfo: str(p?.parentInfo, 100),
     refundBank: str(reg.refundBank, 40), refundAccount: str(src.refundAccount || reg.refundAccount, 60), refundHolder: str(reg.refundHolder, 40),
   };

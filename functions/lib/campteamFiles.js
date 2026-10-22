@@ -56,3 +56,16 @@ export function linkKindFor(url) {
   return 'other';
 }
 export const kindForLink = (linkKind) => ({ 'google-doc': 'doc', 'google-sheet': 'xls', 'google-slide': 'ppt' })[linkKind] || 'etc';
+
+// ── 월코 팀 전체 공개 ──────────────────────────────────────────────────────
+// 캠프팀 명단 밖의 월코 팀원은 "월코 팀 전체 공개"로 표시한 파일(포스터 등)만 볼 수 있다. 금액 자료는 공개로 표시할 수 없다.
+export const PUBLIC_SQL = 'f.id IN (SELECT fileId FROM file_public)';
+export async function setFilePublic(env, fileId, on, actor) {
+  try {
+    if (on) await env.DB.prepare('INSERT INTO file_public (fileId,setBy,updatedAt) VALUES (?1,?2,?3) ON CONFLICT(fileId) DO UPDATE SET setBy=?2, updatedAt=?3').bind(fileId, String(actor || ''), new Date().toISOString()).run();
+    else await env.DB.prepare('DELETE FROM file_public WHERE fileId = ?1').bind(fileId).run();
+  } catch { /* 공개 표시 표가 아직 없는 DB */ }
+}
+export async function isFilePublic(env, fileId) {
+  try { return !!(await env.DB.prepare('SELECT 1 AS x FROM file_public WHERE fileId = ?1').bind(fileId).first()); } catch { return false; }
+}

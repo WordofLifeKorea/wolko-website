@@ -52,6 +52,10 @@ jobs:
           for attempt in 1 2 3; do
             if result=$(curl --fail-with-body --silent --show-error --max-time 120 -X POST -H "Authorization: Bearer $MAIL_SECRET" "$url"); then
               echo "$result" | jq '.'
+              # 스케줄 실행인데 화요일이 아니라서 건너뛰었다면(예: GitHub 지연으로 수요일에 실행) 작업을 실패로 표시해 알린다
+              if [ "${{ github.event_name }}" = 'schedule' ] && [ "$(echo "$result" | jq -r '.skipped // empty')" = 'not-tuesday' ]; then
+                echo '::error::이번 주 화요일 메일이 발송되지 않았어요 (화요일이 아닐 때 실행됨). Actions 에서 Run workflow 로 force 발송을 해 주세요.'; exit 1
+              fi
               exit 0
             fi
             echo "Server said: ${result:-(no body)}"

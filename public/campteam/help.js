@@ -34,7 +34,7 @@
       h_myAlerts: '내가 맡은 업무의 마감과 곧 있을 회의·일정이 자동으로 모여요. 업무를 완료하면 사라져요.',
       h_teamNotice: '팀원이 올린 공지예요. 팀 전체에게 보내거나, 받을 사람을 골라서 보낼 수 있어요.',
       h_pin: '고정하면 목록 맨 위에 계속 보여요.',
-      h_aiSummary: 'AI가 오늘 할 일을 한두 줄로 요약해 줘요. 목록은 규칙으로 만든 정확한 값이고, AI는 요약 문장만 써요. 업무 제목·마감일만 AI에게 보내요.',
+      h_aiSummary: 'AI가 오늘 할 일을 한두 줄로 요약해 줘요. 목록은 규칙으로 만든 정확한 값이고, AI는 요약 문장만 써요. 업무 제목·마감일·캠프 이름만 AI에게 보내요.',
       h_weeklyMail: '매주 화요일 아침에 이번 주 내 할 일을 이메일로 보내 드려요. 여기서 끌 수 있어요.',
       h_notifyDays: '마감이나 일정이 몇 일 남았을 때 알림에 올릴지 정해요. 예: 3, 1 이면 3일 전과 1일 전에 알려요.',
       h_expireDays: '지난 공지는 이 일수가 지나면 목록에서 접혀요. 삭제되지는 않아요.',
@@ -45,8 +45,9 @@
       h_role: '역할은 기본 권한 묶음이에요. 아래 권한 표에서 사람마다 항목별로 더 세밀하게 바꿀 수 있어요.',
       h_permTable: '「안 보임 / 보기만 / 수정 가능」을 항목별로 골라요. 역할의 기본값과 다르게 바꾼 칸은 표시돼요. 이 설정은 관리자만 할 수 있어요.',
       h_tvKey: 'TV 화면 주소의 열쇠예요. 이 주소를 아는 사람은 로그인 없이 TV 화면을 볼 수 있으니 공유에 주의하세요.',
-      h_trash: '지운 항목은 바로 사라지지 않고 여기에 보관돼요. 복구하거나 영구 삭제할 수 있어요.',
+      h_trash: '지운 항목은 바로 사라지지 않고 여기에 보관돼요. 「복구」를 누르면 원래 자리로 돌아가요. 영구 삭제는 하지 않아요.',
       h_campSpace: '캠프 하나에 연결된 업무·일정·회의·결정·자료·예산을 한 화면에서 보는 곳이에요.',
+      h_pageCalendar: '팀 일정, 캠프 기간, 업무 마감, 회의를 한 달력에서 봐요. 날짜를 누르면 그날 일정이 아래에 나와요. 일정은 여기서만 고쳐요.',
       h_pageTasks: '캠프 준비 업무와 일정을 한곳에서 관리해요. 담당자를 내 이메일로 지정한 업무는 홈의 "오늘 내가 할 일"과 알림에 나와요.',
       h_pageMeetings: '회의록과 결정을 모아 둬요. 회의에서 정한 결정은 "현재 유효한 결정"으로 캠프 공간과 홈에 보여요.',
       h_pageFiles: '캠프 자료를 한곳에 모아요. 파일을 올리면 새 버전으로 쌓이고, 금액이 들어 있는 자료는 🔒로 표시돼 금액 권한이 있는 사람에게만 보여요.',
@@ -97,7 +98,7 @@
       h_myAlerts: 'Automatically collects deadlines of tasks assigned to me and upcoming meetings/events. Completing a task removes it.',
       h_teamNotice: 'Notices posted by team members, sent to the whole team or to selected people.',
       h_pin: 'Pinned notices stay at the top of the list.',
-      h_aiSummary: 'AI summarizes today’s work in a line or two. The list itself is exact (made by rules); AI only writes the sentence and only receives task titles and due dates.',
+      h_aiSummary: 'AI summarizes today’s work in a line or two. The list itself is exact (made by rules); AI only writes the sentence and only receives task titles, due dates and camp names.',
       h_weeklyMail: 'Every Tuesday morning you get this week’s tasks by email. You can turn it off here.',
       h_notifyDays: 'How many days before a deadline or event it appears in alerts. e.g. 3, 1 = 3 days and 1 day before.',
       h_expireDays: 'Old notices fold away from the list after this many days. They are not deleted.',
@@ -108,8 +109,9 @@
       h_role: 'A role is a default bundle of permissions. In the table below you can fine-tune each person per item.',
       h_permTable: 'Choose "Hidden / View / Edit" per item. Cells that differ from the role default are marked. Only admins can change this.',
       h_tvKey: 'The key in the TV screen address. Anyone with the address can view the TV screen without logging in, so share with care.',
-      h_trash: 'Deleted items are kept here for a while. Restore or delete them permanently.',
+      h_trash: 'Deleted items are kept here for a while. Press "Restore" to put them back. Nothing is deleted permanently.',
       h_campSpace: 'Shows tasks, events, meetings, decisions, files and budget linked to one camp on a single screen.',
+      h_pageCalendar: 'See team events, camp dates, task deadlines and meetings in one calendar. Tap a date to see that day below. Edit events here only.',
       h_pageTasks: 'Manage camp preparation tasks and the schedule in one place. Tasks that list your email as owner show up in "What I do today" and in alerts.',
       h_pageMeetings: 'Keeps minutes and decisions. Decisions made in meetings appear as "current decisions" in camp spaces and on the home page.',
       h_pageFiles: 'Gathers camp files in one place. Uploads stack as new versions; files containing amounts are marked 🔒 and shown only to people with amount access.',
@@ -146,11 +148,13 @@
   function show(el) {
     var key = el.getAttribute('data-h'), text = CT.t('h_' + key); if (!text || text === 'h_' + key) return;
     if (!tip) { tip = document.createElement('div'); tip.id = 'qhTip'; tip.setAttribute('role', 'tooltip'); document.body.appendChild(tip); }
-    tip.textContent = text; tip.style.display = 'block'; owner = el;
-    var r = el.getBoundingClientRect(), w = Math.min(280, window.innerWidth - 24); tip.style.maxWidth = w + 'px';
-    var th = tip.offsetHeight, tw = tip.offsetWidth, left = Math.max(12, Math.min(window.innerWidth - tw - 12, r.left + r.width / 2 - tw / 2));
+    tip.textContent = text; owner = el;
+    // 이전 위치의 영향을 받지 않게 왼쪽 위 모서리에서 크기를 잰 다음, 아이콘 바로 아래(공간이 없으면 바로 위)에 놓는다
+    tip.style.visibility = 'hidden'; tip.style.left = '0px'; tip.style.top = '0px'; tip.style.maxWidth = Math.min(280, window.innerWidth - 24) + 'px'; tip.style.display = 'block';
+    var r = el.getBoundingClientRect(), th = tip.offsetHeight, tw = tip.offsetWidth, vw = document.documentElement.clientWidth || window.innerWidth;
+    var left = Math.max(12, Math.min(vw - tw - 12, r.left + r.width / 2 - tw / 2));
     var top = r.bottom + 8; if (top + th > window.innerHeight - 8) top = Math.max(8, r.top - th - 8);
-    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+    tip.style.left = left + 'px'; tip.style.top = top + 'px'; tip.style.visibility = 'visible';
   }
   function hide() { if (tip) tip.style.display = 'none'; owner = null; }
   var qh = function (e) { return e.target && e.target.closest ? e.target.closest('.qh[data-h]') : null; };
@@ -160,7 +164,8 @@
   document.addEventListener('focusout', function (e) { if (qh(e)) hide(); });
   document.addEventListener('click', function (e) { var el = qh(e); if (el) { e.preventDefault(); e.stopPropagation(); if (owner === el && tip && tip.style.display === 'block' && el._tapped) { hide(); el._tapped = false; } else { show(el); el._tapped = true; } } else hide(); }, true);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hide(); });
-  window.addEventListener('scroll', hide, true);
+  window.addEventListener('scroll', function (e) { if (tip && tip.style.display === 'block' && !(e.target && e.target.id === 'qhTip')) hide(); }, true);
+  window.addEventListener('resize', hide);
 
   var apply = CT.applyI18n; CT.applyI18n = function (root) { apply.call(CT, root); fill(root); };
   document.addEventListener('ct-lang', function () { fill(); if (owner) show(owner); });

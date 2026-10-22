@@ -11,7 +11,7 @@
       auTitle: 'Change log', auActor: 'Person (email)', auSearch: 'Search details', auAll: 'All types', edit: 'Edit', del: 'Delete', save: 'Save', cancel: 'Cancel', confirmDel: 'Delete this? (It is only marked deleted and can be restored.)' }
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
-  var TABLES = ['camp_members', 'camp_types', 'camps', 'tasks', 'events', 'checklist_templates', 'checklist_items', 'meetings', 'agenda_items', 'decisions', 'meeting_files', 'meeting_texts', 'files', 'file_versions', 'file_links', 'budget_lines', 'budget_targets', 'notices', 'tv_layout', 'glossary', 'ai_drafts', 'audit_log'];
+  var TABLES = ['camp_members', 'camp_types', 'camps', 'tasks', 'events', 'checklist_templates', 'checklist_items', 'meetings', 'agenda_items', 'decisions', 'meeting_files', 'meeting_texts', 'files', 'file_versions', 'file_links', 'budget_lines', 'budget_targets', 'notices', 'tv_layout', 'glossary', 'ai_drafts', 'ledger_periods', 'ledger_categories', 'ledger_entries', 'ledger_plan', 'ledger_imports', 'ledger_reconcile', 'ledger_expense_rules', 'ledger_expense_rows', 'calc_scenarios', 'announcements', 'announcement_recipients', 'member_perms', 'member_aliases', 'file_public', 'camp_order', 'space_layout', 'notify_settings', 'notify_prefs', 'mail_log', 'audit_log'];
   var gl = [];
 
   async function download(path, name) {

@@ -1,12 +1,13 @@
 import { campSession, canWriteFile, json, needLogin, needPerm, badRequest, noDb, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, audit } from '../../lib/campteamDb.js';
-import { CATEGORIES, FILE_STATUSES, restrictedFor, validExternalUrl, linkKindFor, kindForLink } from '../../lib/campteamFiles.js';
+import { CATEGORIES, FILE_STATUSES, restrictedFor, validExternalUrl, linkKindFor, kindForLink, PUBLIC_SQL, setFilePublic, isFilePublic } from '../../lib/campteamFiles.js';
 
 const SORTS = {
   newest: 'f.createdAt DESC', oldest: 'f.createdAt ASC', updated: 'f.updatedAt DESC', name: 'f.title COLLATE NOCASE ASC',
 };
 const SELECT = `SELECT f.id, f.campId, f.typeId, f.title, f.description, f.category, f.topic, f.kind, f.storage, f.linkKind, f.externalUrl,
     f.uploadedBy, f.statusLabel, f.restricted, f.createdAt, f.updatedAt, f.isTest,
+    (SELECT COUNT(*) FROM file_public pb WHERE pb.fileId = f.id) AS isPublic,
     c.nameKo AS campKo, c.nameEn AS campEn, t.nameKo AS typeKo, t.nameEn AS typeEn,
     v.id AS versionId, v.versionNo, v.fileName, v.sizeBytes, v.mime,
     (SELECT COUNT(*) FROM file_versions x WHERE x.fileId = f.id AND x.deletedAt IS NULL) AS versionCount,
@@ -25,6 +26,7 @@ export async function onRequestGet({ env, request }) {
   const p = new URL(request.url).searchParams;
   const where = ['f.deletedAt IS NULL'], args = [];
   if (!s.perms.moneyRead) where.push('f.restricted = 0'); // 금액 자료는 권한이 없으면 목록에도 나오지 않는다
+  if (!s.campRole) where.push(PUBLIC_SQL);               // 캠프팀 명단 밖의 월코 팀원은 "월코 팀 전체 공개" 파일만
   const q = text(p.get('q'), 80);
   if (q) {
     const like = `%${q.replace(/[%_\\]/g, m => '\\' + m)}%`;
@@ -74,6 +76,7 @@ export async function onRequestPost({ env, request }) {
     VALUES (?1,?2,?3,?4,?5,?6,'link',?7,?8,?9,?10,?11,?12,?13,?14,?14,?8)`)
     .bind(id, b.campId || null, b.typeId || null, title, text(b.description, 500), kindForLink(linkKind), url, s.email,
       FILE_STATUSES.includes(b.status) ? b.status : '', category, text(b.topic, 60), restricted, linkKind, now).run();
+  if ('publicToAll' in b && !restricted) await setFilePublic(env, id, !!b.publicToAll, s.email);
   await audit(env, s.email, 'create', 'file', id, `link:${title}`);
   return json({ id }, 201);
 }
@@ -117,6 +120,8 @@ export async function onRequestPatch({ env, request }) {
       ON CONFLICT(fileId, campId) DO UPDATE SET deletedAt = NULL`).bind(uuid(), id, camp.id, now, s.email).run();
   }
   if (b.removeCampId) await env.DB.prepare('UPDATE file_links SET deletedAt = ?3 WHERE fileId = ?1 AND campId = ?2 AND deletedAt IS NULL').bind(id, String(b.removeCampId), now).run();
+  if ('publicToAll' in b) await setFilePublic(env, id, !!b.publicToAll && !restricted, s.email);
+  else if (restricted) await setFilePublic(env, id, false, s.email); // 금액 자료로 바뀌면 공개를 거둔다
   await audit(env, s.email, 'update', 'file', id, title);
   return json({ ok: true });
 }

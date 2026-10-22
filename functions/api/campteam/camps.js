@@ -23,6 +23,8 @@ export async function onRequestGet({ env, request }) {
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status <> 'Not Applicable') AS taskTotal,
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status = 'Completed') AS taskDone
     FROM camps c WHERE c.deletedAt IS NULL ORDER BY c.startDate IS NULL, c.startDate DESC, c.nameKo`).all()).results;
+  // 업무 영역을 볼 수 없는 계정(명단 밖 월코 팀 등)에게는 업무 개수도 알려주지 않는다
+  if (!canView(s.perms, 'tasks')) for (const c of camps) { c.taskTotal = null; c.taskDone = null; }
   return json({ types: types.map(t => ({ ...t, camps: camps.filter(c => c.typeId === t.id) })), perms: s.perms });
 }
 

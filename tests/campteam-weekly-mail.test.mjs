@@ -69,3 +69,14 @@ test('발송 실패는 기록하고 나머지에게는 계속 보낸다 / AI 요
     assert.equal(q.prepare(`SELECT COUNT(*) AS n FROM daily_summaries WHERE kind='weekly'`).get().n, 2, '포털의 주간 요약과 같은 문장을 쓴다');
   } finally { restore(); }
 });
+
+test('속도 제한(429)은 쉬었다 다시 시도해서 보내고, 끝내 실패한 사람이 있으면 502 로 알린다', async () => {
+  const { env, task, restore } = mk({ CAMPTEAM_MAIL_RETRY_MS: '1', CAMPTEAM_MAIL_GAP_MS: '0' }); try {
+    task('a', d(2), U.mem); task('b', d(3), U.dir);
+    const real = globalThis.fetch; const tries = {};
+    globalThis.fetch = async (url, opts) => { if (!String(url).includes('resend')) return real(url, opts); const to = JSON.parse(opts.body).to[0]; tries[to] = (tries[to] || 0) + 1; if (to === U.mem && tries[to] < 3) return new Response('rate', { status: 429 }); if (to === U.dir) return new Response('bad', { status: 422 }); return new Response('{}', { status: 200 }); };
+    const res = await call(env, '?force=1'), body = await J(res);
+    assert.equal(tries[U.mem], 3, '429 는 두 번 쉬었다 다시 시도해서 성공'); assert.equal(tries[U.dir], 1, '주소 오류(422)는 다시 시도하지 않는다');
+    assert.equal(body.sent, 1); assert.equal(body.failed.length, 1); assert.equal(res.status, 502, '실패한 사람이 있으면 502');
+  } finally { restore(); }
+});

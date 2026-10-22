@@ -1,15 +1,14 @@
 ---
 import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
 ---
-<CampTeamLayout title="일정 · 업무" active="tasks">
+<CampTeamLayout title="업무" active="tasks">
   <div class="top">
     <div><div class="h1row"><h1 data-t="tasksTitle"></h1><span class="qh" data-h="pageTasks"></span></div><div class="sub" data-t="tasksSub"></div></div>
-    <div class="actions"><button class="btn" id="addEvent" hidden data-t="addEvent"></button><button class="btn pri" id="addTask" hidden data-t="addTask"></button></div>
+    <div class="actions"><button class="btn pri" id="addTask" hidden data-t="addTask"></button></div>
   </div>
   <div class="hintbox" id="viewOnly" data-t="viewOnly" hidden style="margin-bottom:14px"></div>
   <div class="tabs" id="tabs">
     <button class="tab on" data-tab="list" data-t="tabList"></button>
-    <button class="tab" data-tab="cal" data-t="tabCal"></button>
     <button class="tab" data-tab="tpl" data-t="tabTpl"></button>
     <button class="tab" data-tab="imp" data-t="tabImp" id="impTab" hidden></button>
   </div>
@@ -21,13 +20,6 @@ import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
       <select id="tcamp"></select><select id="tstatus"></select><select id="tpri"></select><select id="towner"></select><select id="tsort"></select>
     </div>
     <div id="tlist"></div>
-  </section>
-
-  <section id="paneCal" hidden>
-    <div class="cal-head"><button class="btn sm" id="calPrev">‹</button><h2 id="calTitle"></h2><button class="btn sm" id="calNext">›</button><button class="btn sm" id="calToday" data-t="today"></button>
-      <span style="margin-left:auto" class="seg"><button class="btn sm" id="viewGrid" data-t="viewGrid"></button> <button class="btn sm" id="viewAgenda" data-t="viewAgenda"></button></span></div>
-    <div id="calBody"></div>
-    <div class="legend" id="legend"></div>
   </section>
 
   <section id="paneTpl" hidden>
@@ -50,5 +42,5 @@ import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
     <form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div>
       <div class="dlg-actions" id="dlgActions"></div></form>
   </dialog>
-  <script is:inline slot="scripts" src="/campteam/tasks.js?v=2"></script>
+  <script is:inline slot="scripts" src="/campteam/tasks.js?v=3"></script>
 </CampTeamLayout>

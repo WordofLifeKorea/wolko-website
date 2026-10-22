@@ -1,6 +1,6 @@
 ---
 // 캠프팀 포털 공통 틀 (사이드바 + 언어 전환 + 로그인 안내). 내용은 각 페이지가 채운다.
-export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'resources' | 'search' | 'budget' | 'tv' | 'trash' | 'settings' | 'alerts'; }
+export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'resources' | 'search' | 'budget' | 'tv' | 'trash' | 'settings' | 'alerts' | 'calendar'; }
 const { title, active } = Astro.props;
 const ICON = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5a2 2 0 0 1 4 0v5"/>',
@@ -12,6 +12,7 @@ const ICON = {
   tv: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="m10.5 8.5 4 2-4 2z" fill="currentColor" stroke="none"/>',
   budget: '<path d="M4 8V6a2 2 0 0 1 2-2h11v4"/><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M16 14h2"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h2M12 14h2M16 14h.01M8 17.5h2"/>',
   alerts: '<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9z"/><path d="M10 19a2 2 0 0 0 4 0"/>',
   settings: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
 };
@@ -19,6 +20,7 @@ const nav = [
   { key: 'home', href: '/campteam/', t: 'navHome', c: '#3b8ff0' },
   { key: 'camps', href: '/campteam/camps/', t: 'navCamps', c: '#9bbf1f' },
   { key: 'tasks', href: '/campteam/tasks/', t: 'navTasks', c: '#22b573' },
+  { key: 'calendar', href: '/campteam/calendar/', t: 'navCalendar', c: '#3bb3a6' },
   { key: 'meetings', href: '/campteam/meetings/', t: 'navMeetings', c: '#8b6cf0' },
   { key: 'files', href: '/campteam/files/', t: 'navFiles', c: '#f0a020' },
   { key: 'resources', href: '/campteam/resources/', t: 'navResources', c: '#ec5fa0' },
@@ -38,7 +40,7 @@ const nav = [
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/campteam/campteam.css?v=27">
+  <link rel="stylesheet" href="/campteam/campteam.css?v=31">
   <link rel="stylesheet" href="/campteam/tv.css?v=1">
   <script is:inline src="/wolko-session.js?v=2"></script>
 </head>
@@ -47,6 +49,7 @@ const nav = [
   <aside>
     <div class="topbar">
       <a class="logo" href="/campteam/"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span><b>WOLKO Camp Team</b><small>Word of Life Korea</small></span></a>
+      <div class="langmini" role="group" aria-label="Language"><button type="button" id="langKoM" aria-label="한국어" title="한국어">🇰🇷</button><button type="button" id="langEnM" aria-label="English" title="English">🇺🇸</button></div>
       <button class="bell" id="bellBtn" type="button" aria-label="알림공지" aria-controls="aPanel" hidden><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.alerts}></svg><b class="bellbadge" id="bellBadge" hidden></b></button>
       <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </div>
@@ -89,9 +92,9 @@ const nav = [
     <p class="meta" id="gnote" style="color:var(--accent);margin:10px 0 0"></p>
   </div>
 </div>
-<script is:inline src="/campteam/campteam.js?v=8"></script>
-<script is:inline src="/campteam/help.js?v=2"></script>
-<script is:inline src="/campteam/alerts.js?v=3"></script>
+<script is:inline src="/campteam/campteam.js?v=9"></script>
+<script is:inline src="/campteam/help.js?v=4"></script>
+<script is:inline src="/campteam/alerts.js?v=4"></script>
 <slot name="scripts" />
 </body>
 </html>

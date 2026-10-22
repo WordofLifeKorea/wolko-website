@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, badRequest, noDb, denyView } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, badRequest, noDb, denyView, canView } from '../../lib/campteamAuth.js';
 import { todayKST } from '../../lib/campteamDb.js';
 import { summarize } from '../../lib/campteamMoney.js';
 
@@ -24,7 +24,7 @@ export async function onRequestGet({ env, request }) {
     campIds = (await db.prepare('SELECT id FROM camps WHERE typeId = ?1 AND deletedAt IS NULL').bind(typeId).all()).results.map(r => r.id);
   }
   const inList = campIds.length ? campIds.map(() => '?').join(',') : `''`, args = campIds;
-  const restrict = s.perms.moneyRead ? '' : 'AND f.restricted = 0';
+  const restrict = (s.perms.moneyRead ? '' : 'AND f.restricted = 0') + (s.campRole ? '' : ' AND f.id IN (SELECT fileId FROM file_public)'); // 명단 밖은 공개 파일만
   const [events, tasks, taskStats, meetings, decisions, files, fileCount, nextAgenda, camps] = await Promise.all([
     db.prepare(`SELECT id, title, kind, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND campId IN (${inList}) AND COALESCE(endDate, startDate) >= ? ORDER BY startDate LIMIT 8`).bind(...args, today).all(),
     db.prepare(`SELECT id, title, ownerName, ownerSuggestion, dueDate, status, priority, section FROM tasks WHERE deletedAt IS NULL AND campId IN (${inList}) AND status NOT IN ('Completed','Not Applicable') ORDER BY (dueDate IS NULL), dueDate, CASE priority WHEN 'High' THEN 0 WHEN 'Medium' THEN 1 ELSE 2 END LIMIT 10`).bind(...args).all(),
@@ -38,8 +38,11 @@ export async function onRequestGet({ env, request }) {
     db.prepare(`SELECT a.id, a.topic, a.titleEn, a.meetingId FROM agenda_items a WHERE a.deletedAt IS NULL AND a.nextMeeting = 1 AND a.status <> 'decided' AND a.campId IN (${inList}) LIMIT 6`).bind(...args).all(),
     typeId ? db.prepare(`SELECT id, nameKo, nameEn, startDate, endDate, status FROM camps WHERE typeId = ?1 AND deletedAt IS NULL ORDER BY startDate IS NULL, startDate DESC`).bind(typeId).all() : Promise.resolve({ results: [] }),
   ]);
-  const out = { camp, type, camps: camps.results, stats: { open: taskStats.open || 0, overdue: taskStats.overdue || 0, noOwner: taskStats.noOwner || 0, completed: taskStats.completed || 0, total: taskStats.total || 0, files: fileCount.n },
-    events: events.results, tasks: tasks.results, meetings: meetings.results, decisions: decisions.results, files: files.results, nextAgenda: nextAgenda.results, perms: s.perms };
+  // 항목별 권한: 캠프별 공간을 볼 수 있어도, 업무·회의·자료 영역을 볼 수 없으면 그 내용은 내려주지 않는다 (숫자도 0으로)
+  const T = canView(s.perms, 'tasks'), M = canView(s.perms, 'meetings'), F = canView(s.perms, 'files');
+  const out = { camp, type, camps: camps.results, stats: T ? { open: taskStats.open || 0, overdue: taskStats.overdue || 0, noOwner: taskStats.noOwner || 0, completed: taskStats.completed || 0, total: taskStats.total || 0, files: F ? fileCount.n : 0 } : { open: 0, overdue: 0, noOwner: 0, completed: 0, total: 0, files: F ? fileCount.n : 0 },
+    events: T ? events.results : [], tasks: T ? tasks.results : [], meetings: M ? meetings.results : [], decisions: M ? decisions.results : [], files: F ? files.results : [], nextAgenda: M ? nextAgenda.results : [], perms: s.perms,
+    visible: { tasks: T, meetings: M, files: F } };
   if (s.perms.moneyRead && campIds.length) {
     const lines = (await db.prepare(`SELECT category, plannedAmount, expectedAmount, actualAmount, currency, status FROM budget_lines WHERE deletedAt IS NULL AND campId IN (${inList})`).bind(...args).all()).results;
     const targets = (await db.prepare(`SELECT currency, amountMinor FROM budget_targets WHERE deletedAt IS NULL AND campId IN (${inList})`).bind(...args).all()).results;

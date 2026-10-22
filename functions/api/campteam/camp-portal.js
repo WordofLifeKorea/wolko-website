@@ -24,17 +24,20 @@ export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.campRole) return needPerm('캠프팀 명단에 있는 계정만 신청 정보를 볼 수 있어요.');
   if (!canView(s.perms, 'camps')) return needPerm('캠프별 공간을 볼 권한이 없어요. 관리자에게 요청해 주세요.');
   const p = new URL(request.url).searchParams, campId = p.get('campId');
   if (!campId) return badRequest('campId 가 필요합니다.');
   const camp = await env.DB.prepare('SELECT id, nameKo, nameEn, startDate, endDate, capacity, registrationCampId FROM camps WHERE id = ?1 AND deletedAt IS NULL').bind(campId).first();
   if (!camp) return json({ error: '찾을 수 없습니다.' }, 404);
-  const perms = { moneyRead: s.perms.moneyRead, sensitive: !!s.perms.personal, canLink: s.perms.moneyWrite };
+  const perms = { moneyRead: s.perms.moneyRead, sensitive: !!s.perms.personal, canLink: s.perms.moneyWrite, roster: !!s.campRole };
   const base = { camp: { id: camp.id, nameKo: camp.nameKo, nameEn: camp.nameEn, startDate: camp.startDate, endDate: camp.endDate, capacity: camp.capacity }, portalCampId: camp.registrationCampId || '', perms };
   if (!camp.registrationCampId) return json({ ...base, linked: false });
   let regs; try { regs = await listRegs(env, camp.registrationCampId); } catch (e) { console.error('camp-portal read failed:', e); return json({ ...base, linked: true, unavailable: true }); }
   if (regs == null) return json({ ...base, linked: true, unavailable: true });
+  if (!s.campRole) { // 캠프팀 명단 밖의 월코 팀원: 신청 인원 숫자만 (이름·금액·개인정보는 없다)
+    const lite = summarize(regs, { includeCampers: false });
+    return json({ ...base, linked: true, lite: true, byStatus: { pending: lite.byStatus.pending.heads, deposit: lite.byStatus.deposit.heads, confirmed: lite.byStatus.confirmed.heads, waitlist: lite.byStatus.waitlist.heads }, counts: { applications: lite.counts.applications, waitlist: lite.counts.waitlist } });
+  }
   const policy = policyFor(camp.registrationCampId), depositPerHead = Math.min(10_000_000, Math.max(0, parseInt(p.get('deposit'), 10) || policy?.deposit || 0));
   const out = summarize(regs, { sensitive: perms.sensitive, depositPerHead });
   if (!perms.moneyRead) { delete out.scenarios; delete out.feeRows; delete out.discounts; for (const c of out.campers) delete c.scholarship; }

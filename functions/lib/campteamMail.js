@@ -28,8 +28,18 @@ export function buildWeeklyEmail({ name, week, summary, base = 'https://wolko.or
   return { subject: `[WOLKO 캠프팀] 이번 주 할 일 (${md(week.start)}~${md(week.end)})`, html, text };
 }
 
-export async function sendCampMail(env, { to, subject, html, text, fetchImpl = fetch }) {
-  const rt = replyTo(env), res = await fetchImpl('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: fromAddress(env), to: [to], subject, html, text, ...(rt ? { reply_to: rt } : {}) }) });
-  if (!res.ok) { let m = ''; try { m = (await res.text()).slice(0, 200); } catch { /* 본문 없음 */ } throw new Error(`Resend ${res.status} ${m}`); }
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+/** 메일 한 통 보내기. 속도 제한(429)이나 서버 오류(5xx)면 잠깐 쉬었다가 최대 3번까지 다시 시도한다 */
+export async function sendCampMail(env, { to, subject, html, text, fetchImpl = fetch, retryMs = 1200 }) {
+  const rt = replyTo(env), body = JSON.stringify({ from: fromAddress(env), to: [to], subject, html, text, ...(rt ? { reply_to: rt } : {}) });
+  let last = '';
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await fetchImpl('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' }, body });
+    if (res.ok) return;
+    let m = ''; try { m = (await res.text()).slice(0, 200); } catch { /* 본문 없음 */ }
+    last = `Resend ${res.status} ${m}`;
+    if (res.status !== 429 && res.status < 500) break;       // 주소 오류 등은 다시 해도 소용없다
+    if (attempt < 3) await sleep(retryMs * attempt);
+  }
+  throw new Error(last);
 }

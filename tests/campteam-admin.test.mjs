@@ -18,7 +18,7 @@ const J = r => r.json();
 
 test('휴지통: 삭제한 것을 보고 복구하며, 영구 삭제 기능은 없다', async () => {
   const env = mk();
-  assert.equal((await call(Trash, 'onRequestGet', env, U.view)).status, 403); assert.equal((await call(Trash, 'onRequestGet', env, null)).status, 401);
+  assert.equal((await call(Trash, 'onRequestGet', env, U.out)).status, 403); assert.equal((await call(Trash, 'onRequestGet', env, null)).status, 401);
   await call(Tasks, 'onRequestDelete', env, U.mem, { qs: '?id=t05' }); await call(Meetings, 'onRequestDelete', env, U.mem, { qs: '?id=m2' });
   const counts = (await J(await call(Trash, 'onRequestGet', env, U.admin))).counts; assert.equal(counts.tasks, 1); assert.equal(counts.meetings, 1); assert.ok('budget' in counts, '관리자는 모든 삭제 항목을 본다');
   assert.equal((await J(await call(Trash, 'onRequestGet', env, U.dir))).counts.tasks, 0, '다른 사람이 지운 건 팀원에게 안 보인다 (내가 지운 것만)'); assert.equal((await J(await call(Trash, 'onRequestGet', env, U.mem))).counts.tasks, 1, '내가 지운 건 보인다');

@@ -1,6 +1,6 @@
 (function () {
   CT.addDict({
-    ko: { filesTitle: '자료실', filesSub: '캠프 자료를 올리고, 찾고, 열어 보세요. 파일 보관과 편집은 구분해서 보여드려요.', addFile: '+ 파일 올리기', addLink: '+ 링크 등록', searchPh: '제목·설명·주제·파일 이름 검색',
+    ko: { dzTitle: '파일을 여기로 끌어다 놓으세요', dzOr: '또는', dzPick: '파일 열기', dzHint: '다른 창에서 끌어다 놓아도 돼요. 여러 개를 한 번에 놓으면 하나씩 올라가요. 올린 뒤에 이름과 분류를 고칠 수 있어요.', dzDrop: '여기에 놓으면 올라가요', dzUp: '올리는 중', dzDone: '개 올렸어요', dzFail: '올리지 못한 파일', fPublic: '월코 팀 전체에게 공개 (포스터 등)', fPublicHint: '캠프팀 명단에 없는 월코 팀원도 이 파일을 볼 수 있어요. 금액이 들어 있는 자료는 공개할 수 없어요.', publicChip: '공개', filesTitle: '자료실', filesSub: '캠프 자료를 올리고, 찾고, 열어 보세요. 파일 보관과 편집은 구분해서 보여드려요.', addFile: '+ 파일 올리기', addLink: '+ 링크 등록', searchPh: '제목·설명·주제·파일 이름 검색',
       fAllCamps: '모든 캠프', fNoCamp: '공통 자료 (캠프 미지정)', fAllCat: '모든 종류', fAllStatus: '모든 상태', fAllKind: '모든 형식', sortNew: '최신 올린 순', sortOld: '오래된 순', sortUpd: '최근 수정 순', sortName: '이름 순',
       statusAny: '(상태 없음)', statusdraft: '초안', statusactive: '적용 중', statusarchived: '보관(이전 자료)',
       catprogram: '프로그램·설교자·시간표', catstaff: '스태프·Volunteer·Crew 배정', cattransport: '차량·운송', catsupplies: '재고·준비물·구매', catbudget: '예산·지출 (금액 자료)', catchurch: '교회 연락·협력', catmeeting: '회의 자료', catevaluation: '평가·결과 보고', catpromo: '홍보·디자인', catphoto: '사진', cataudio: '녹음', catetc: '기타',
@@ -11,7 +11,7 @@
       kvCamp: '관련 캠프', kvCategory: '자료 종류', kvTopic: '주제', kvStatus: '적용 상태', kvUploader: '등록한 사람', kvCreated: '올린 날짜', kvUpdated: '수정일', kvSource: '원본', kvLinked: '함께 연결된 캠프', kvFile: '파일',
       versions: '버전 이력 (이전 파일도 그대로 보관돼요)', current: '적용 중', apply: '이 버전 적용', newVersion: '새 버전 올리기', edit: '수정', del: '삭제', addLinkCamp: '다른 캠프에 연결', link: '연결', externalNote: '외부 문서예요. 포털에서 편집하지 않고 해당 편집기(Google 등)에서 열어요.', googledoc: 'Google 문서', googlesheet: 'Google 스프레드시트', googleslide: 'Google 슬라이드', googleform: 'Google 설문', drive: 'Google Drive', other: '외부 링크',
       locked: '금액 자료', noStorage: '파일 보관소 설정 전이라 지금은 링크 등록만 가능해요.', close: '닫기', confirmApply: '이 버전을 적용할까요? (다른 버전은 그대로 남아요)', versionNote: '메모' },
-    en: { filesTitle: 'Files', filesSub: 'Upload, find and open camp materials. Storing files and editing documents are shown separately.', addFile: '+ Upload file', addLink: '+ Add link', searchPh: 'Search title, description, topic, file name',
+    en: { dzTitle: 'Drop files here', dzOr: 'or', dzPick: 'Choose files', dzHint: 'You can also drag files in from another window. Several at once are uploaded one by one. You can edit the title and category afterwards.', dzDrop: 'Drop to upload', dzUp: 'Uploading', dzDone: ' uploaded', dzFail: 'Could not upload', fPublic: 'Share with the whole WOLKO team (posters etc.)', fPublicHint: 'WOLKO team members who are not on the camp team roster can also see this file. Files containing amounts cannot be shared.', publicChip: 'Public', filesTitle: 'Files', filesSub: 'Upload, find and open camp materials. Storing files and editing documents are shown separately.', addFile: '+ Upload file', addLink: '+ Add link', searchPh: 'Search title, description, topic, file name',
       fAllCamps: 'All camps', fNoCamp: 'Shared (no camp)', fAllCat: 'All types', fAllStatus: 'All statuses', fAllKind: 'All formats', sortNew: 'Newest', sortOld: 'Oldest', sortUpd: 'Recently updated', sortName: 'Name',
       statusAny: '(none)', statusdraft: 'Draft', statusactive: 'Active', statusarchived: 'Archived',
       catprogram: 'Program · Speakers · Schedule', catstaff: 'Staff · Volunteer · Crew', cattransport: 'Vehicles · Transport', catsupplies: 'Inventory · Supplies', catbudget: 'Budget · Expenses (amounts)', catchurch: 'Church contact · Partners', catmeeting: 'Meeting materials', catevaluation: 'Evaluation · Reports', catpromo: 'Promo · Design', catphoto: 'Photos', cataudio: 'Audio', catetc: 'Other',
@@ -68,7 +68,7 @@
     $('addFile').hidden = !canAdd(); $('addLink').hidden = !canAdd();
     $('countLine').textContent = S.total + CT.t('count');
     $('list').innerHTML = S.items.length ? S.items.map(function (f) {
-      var meta = [where(f), CT.t('cat' + f.category), f.topic, f.uploadedBy, day(f.createdAt)].filter(Boolean).map(esc).join(' · ');
+      var meta = [where(f), CT.t('cat' + f.category), f.topic, f.uploadedBy, day(f.createdAt), f.isPublic ? '🌐 ' + CT.t('publicChip') : ''].filter(Boolean).map(esc).join(' · ');
       if (f.storage !== 'link' && f.versionNo) meta += ' · v' + f.versionNo + (f.sizeBytes ? ' · ' + fmtSize(f.sizeBytes) : '');
       if (f.storage === 'link') meta += ' · ' + esc(linkLabel(f.linkKind));
       return '<div class="file-row" data-id="' + esc(f.id) + '">' + kindChip(f) +
@@ -166,6 +166,7 @@
         '<div class="two"><label>' + esc(CT.t('fCategory')) + '<select name="category">' + cats.map(function (c) { return '<option value="' + c + '"' + ((f ? f.category : 'etc') === c ? ' selected' : '') + '>' + esc(CT.t('cat' + c)) + '</option>'; }).join('') + '</select></label>' +
         '<label>' + esc(CT.t('fStatus')) + '<select name="status"><option value="">' + esc(CT.t('statusAny')) + '</option>' + STATUS.map(function (c) { return '<option value="' + c + '"' + (f && f.statusLabel === c ? ' selected' : '') + '>' + esc(CT.t('status' + c)) + '</option>'; }).join('') + '</select></label></div>' +
         '<label>' + esc(CT.t('fTopic')) + '<input name="topic" maxlength="60" value="' + esc(f ? f.topic : '') + '"></label>';
+      h += '<label class="chk" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" name="publicToAll"' + (f && f.isPublic ? ' checked' : '') + '><span>' + esc(CT.t('fPublic')) + '<small class="hint" style="display:block">' + esc(CT.t('fPublicHint')) + '</small></span></label>';
       if (mode === 'file') h += '<label>' + esc(CT.t('fFile')) + '<input type="file" name="file" required></label>';
       if (mode === 'link' || (mode === 'edit' && f.storage === 'link')) h += '<label>' + esc(CT.t('fUrl')) + '<input type="url" name="externalUrl" required maxlength="500" placeholder="https://docs.google.com/…" value="' + esc(f ? f.externalUrl : '') + '"></label>';
     }
@@ -190,16 +191,16 @@
     try {
       var t = parseTarget(v('target'));
       if (mode === 'link') {
-        await CT.api('/api/campteam/files', { method: 'POST', body: { title: v('title'), description: v('description'), externalUrl: v('externalUrl'), campId: t.campId || null, typeId: t.typeId || null, category: v('category'), topic: v('topic'), status: v('status') } });
+        await CT.api('/api/campteam/files', { method: 'POST', body: { title: v('title'), description: v('description'), externalUrl: v('externalUrl'), campId: t.campId || null, typeId: t.typeId || null, category: v('category'), topic: v('topic'), status: v('status'), publicToAll: !!fd.get('publicToAll') } });
       } else if (mode === 'edit') {
-        var body = { title: v('title'), description: v('description'), campId: t.campId || null, typeId: t.typeId || null, category: v('category'), topic: v('topic'), status: v('status') };
+        var body = { title: v('title'), description: v('description'), campId: t.campId || null, typeId: t.typeId || null, category: v('category'), topic: v('topic'), status: v('status'), publicToAll: !!fd.get('publicToAll') };
         if ('externalUrl' in Object.fromEntries(fd.entries())) body.externalUrl = v('externalUrl');
         await CT.api('/api/campteam/files?id=' + encodeURIComponent(id), { method: 'PATCH', body: body });
       } else {
         var file = fd.get('file'); if (!file || !file.size) throw new Error(CT.t('needFile'));
         var q = new URLSearchParams();
         if (mode === 'version') { q.set('fileId', id); if (v('note')) q.set('note', v('note')); }
-        else { ['title', 'description', 'category', 'topic', 'status'].forEach(function (k) { if (v(k)) q.set(k, v(k)); }); if (t.campId) q.set('campId', t.campId); if (t.typeId) q.set('typeId', t.typeId); }
+        else { ['title', 'description', 'category', 'topic', 'status'].forEach(function (k) { if (v(k)) q.set(k, v(k)); }); if (t.campId) q.set('campId', t.campId); if (t.typeId) q.set('typeId', t.typeId); if (fd.get('publicToAll')) q.set('publicToAll', '1'); }
         $('prog').hidden = false; $('formSave').textContent = CT.t('uploading');
         await xhrUpload(file, q, function (r) { $('prog').firstElementChild.style.width = Math.round(r * 100) + '%'; });
       }
@@ -208,6 +209,30 @@
     $('formSave').disabled = false; $('formSave').textContent = CT.t('save');
   }
 
+  // ── 끌어다 놓기 업로드: 넓은 영역 + 화면 어디에 놓아도 됨 (「파일 열기」 버튼은 그대로) ──
+  function canUpload() { return canAdd() && !!$('addFile') && !$('addFile').hidden; }
+  function dzMsg(t, bad) { var m = $('dzMsg'); if (m) { m.textContent = t; m.style.color = bad ? 'var(--accent)' : 'var(--mid)'; } }
+  async function uploadMany(files) {
+    files = [].slice.call(files).filter(function (f) { return f && f.size > 0; }); if (!files.length) return;
+    var sel = $('fcamp').value, t = parseTarget(sel.indexOf(':') > 0 ? sel : ''), ok = 0, fails = [];
+    $('dz').classList.add('busy');
+    for (var i = 0; i < files.length; i++) {
+      dzMsg(CT.t('dzUp') + ' ' + (i + 1) + '/' + files.length + ' — ' + files[i].name);
+      var q = new URLSearchParams(); if (t.campId) q.set('campId', t.campId); if (t.typeId) q.set('typeId', t.typeId);
+      try { await xhrUpload(files[i], q, function (r) { $('dzBar').style.width = Math.round(r * 100) + '%'; }); ok++; } catch (e) { fails.push(files[i].name + ' — ' + e.message); }
+    }
+    $('dz').classList.remove('busy'); $('dzBar').style.width = '0';
+    dzMsg(ok + CT.t('dzDone') + (fails.length ? ' · ' + CT.t('dzFail') + ': ' + fails.join(', ') : ''), fails.length > 0); await loadList();
+  }
+  function wireDropzone() {
+    var dz = $('dz'), depth = 0, show = function (on) { document.documentElement.classList.toggle('dz-active', on); dz.classList.toggle('over', on); };
+    $('dzPick').onclick = function () { $('dzInput').click(); }; $('dzInput').onchange = function () { uploadMany(this.files); this.value = ''; };
+    var hasFiles = function (e) { return e.dataTransfer && [].indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; };
+    window.addEventListener('dragenter', function (e) { if (!hasFiles(e) || !canUpload()) return; e.preventDefault(); depth++; show(true); });
+    window.addEventListener('dragover', function (e) { if (!hasFiles(e) || !canUpload()) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+    window.addEventListener('dragleave', function (e) { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) show(false); });
+    window.addEventListener('drop', function (e) { if (!hasFiles(e)) return; e.preventDefault(); depth = 0; show(false); if (canUpload()) uploadMany(e.dataTransfer.files); });
+  }
   var timer = null;
   CT.boot(async function () {
     try { S.types = (await CT.api('/api/campteam/camps')).types; await loadList(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
@@ -217,6 +242,7 @@
     ['fcamp', 'fcat', 'fstatus', 'fkind', 'fsort'].forEach(function (id) { $(id).onchange = loadList; });
     $('fq').oninput = function () { clearTimeout(timer); timer = setTimeout(loadList, 250); };
     $('addFile').onclick = function () { openForm('file'); }; $('addLink').onclick = function () { openForm('link'); };
+    $('dz').hidden = !canAdd(); wireDropzone();
     $('formCancel').onclick = function () { $('formDlg').close(); };
     $('form').onsubmit = submitForm;
     $('list').addEventListener('click', function (e) {
