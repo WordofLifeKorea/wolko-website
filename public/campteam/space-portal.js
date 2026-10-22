@@ -3,18 +3,20 @@
 // 연락처·환불 계좌 같은 개인정보는 서버가 권한 있는 사람(디렉터·캠프 재정·관리자)에게만 내려 준다.
 (function () {
   CT.addDict({
-    ko: { ptTitle: '신청 현황 · 참가자 · 예산', ptFrom: '월코 포털 「캠프 관리자」에서 읽어 온 정보예요. 여기서 고쳐도 포털은 바뀌지 않아요 (수정은 캠프 관리자에서).', ptLinkTitle: '포털 캠프 연결', ptLinkBtn: '연결 변경', ptLinkSet: '포털 캠프와 연결하기', ptNotLinked: '아직 월코 포털 캠프와 연결되지 않았어요. 포털 「캠프 관리자」에 아직 올라오지 않은 앞으로의 캠프는 연결 없이 두면 돼요 — 모집이 시작되면 그때 연결하세요.', ptNotLinkedView: '연결 설정은 디렉터·캠프 재정 담당·관리자가 할 수 있어요.', ptPick: '포털 캠프 고르기', ptPickNone: '(연결 안 함)', ptCustom: '목록에 없으면 직접 입력 (포털 캠프 ID)', ptLinkSaved: '연결을 저장했어요.', ptUnavailable: '포털 신청 정보를 읽지 못했어요. 잠시 뒤 다시 시도해 주세요.', ptLoading: '불러오는 중…',
+    ko: { ptTitle: '신청 현황 · 예산', ptMetHeads: '신청 인원', ptMetIn: '예상 수입', ptMetOut: '계획 지출', ptMetLeft: '남을 돈', ptMore: '자세히 보기', ptLess: '접기', ptNoPlan: '지출 계획 없음', ptEnterPlan: '캠프별 예산안에 입력하기', ptUsdSkip: '달러 항목 제외', ptCapShort: '정원',  ptFrom: '월코 포털 「캠프 관리자」에서 읽어 온 정보예요. 여기서 고쳐도 포털은 바뀌지 않아요 (수정은 캠프 관리자에서).', ptLinkTitle: '포털 캠프 연결', ptLinkBtn: '연결 변경', ptLinkSet: '포털 캠프와 연결하기', ptNotLinked: '아직 월코 포털 캠프와 연결되지 않았어요. 포털 「캠프 관리자」에 아직 올라오지 않은 앞으로의 캠프는 연결 없이 두면 돼요 — 모집이 시작되면 그때 연결하세요.', ptNotLinkedView: '연결 설정은 디렉터·캠프 재정 담당·관리자가 할 수 있어요.', ptPick: '포털 캠프 고르기', ptPickNone: '(연결 안 함)', ptCustom: '목록에 없으면 직접 입력 (포털 캠프 ID)', ptLinkSaved: '연결을 저장했어요.', ptUnavailable: '포털 신청 정보를 읽지 못했어요. 잠시 뒤 다시 시도해 주세요.', ptLoading: '불러오는 중…',
       ptConnected: '연결된 포털 캠프', ptOpenAdmin: '캠프 관리자 열기', ptOpenRefund: '환불 규정 보기',
       ptScMin: '확정만', ptScMinSub: '잔금까지 확인된 사람', ptScExp: '예약금 수납 이상', ptScExpSub: '홈페이지 신청 게이지와 같은 기준', ptScMax: '신청한 사람 전부', ptScMaxSub: '마감까지 모두 온다면 (접수 대기 포함)', ptHeads: '명', ptIncome: '예상 캠프비 수입', ptPaidFull: '완납', ptDepOnly: '예약금만', ptBalDue: '남은 잔금', ptPendingN: '접수 대기', ptReceived: '지금까지 받은 돈 (예상)', ptReceivedHint: '예약금 수납자는 예약금만, 확정자는 전액으로 계산한 값이에요 (현금 확인은 월코 재정 담당 장부 기준).', ptWait: '예비 명단', ptWaitNote: '(위 숫자에 포함 안 됨)', ptUnknownFee: '금액 정보가 없는 신청', ptCap: '정원', ptCapOf: '명 중 ', ptStatus: '신청 상태', ptStPending: '접수 대기', ptStDeposit: '예약금 수납', ptStConfirmed: '최종 확정', ptStWait: '예비',
       ptMix: '구성', ptMale: '남', ptFemale: '여', ptUnknownG: '미입력', ptGrades: '학년', ptDiscounts: '장학 · 할인 사용', ptPayOnSite: '현장 결제 희망', ptFees: '캠프비 · 장학 제도', ptFee: '캠프비', ptDeposit: '예약금', ptEarly: 'Early Bird 기한', ptBalanceDue: '얼리버드 잔금 기한', ptRounds: '신청 일정', ptRound: '차', ptCapGender: '성별 정원', ptCapMale: '남', ptCapFemale: '여', ptCapWait: '예비', ptOff: '원 할인', ptReward: '원 환급·선물', ptSchedInfo: '포털 일정 정보', ptPrice: '안내 캠프비', ptDeadline: '신청 일정', ptTarget: '대상', ptOpenCalc: '이 인원으로 예산 계산하기', ptCalcHint: '계산기에서 이 캠프의 신청 인원·캠프비를 불러와 지출과 함께 남는 금액을 볼 수 있어요.',
       ptCampers: '캠퍼 명단', ptStaff: '스태프 지원 현황', ptSearch: '이름·교회로 찾기', ptAll: '전체', ptNone: '표시할 사람이 없어요.', ptName: '이름', ptGender: '성별', ptGrade: '학년', ptChurch: '교회 · 학교', ptNotes: '특이사항', ptGroup: '단체', ptUnnamed: '(이름 미입력)', ptRefundYes: '환불 계좌 등록', ptRefundNo: '환불 계좌 없음', ptPriv: '개인정보 (디렉터·캠프 재정·관리자만)', ptPhone: '연락처', ptEmail: '이메일', ptEmergency: '비상연락처', ptBirth: '생년월일', ptParent: '보호자 정보', ptBank: '환불 은행', ptAcct: '환불 계좌', ptHolder: '예금주', ptCounsel: '상담 메모', ptSaved: '구원', ptDedicated: '헌신', ptPastor: '담임목사', ptPastorTel: '목사 연락처', ptPrivNote: '개인정보를 열면 조회 기록이 남아요.', ptTeams: '지원 팀', ptEnglish: '영어', ptPrevCamp: '이전 캠프', ptConfirmed: '확정', ptTeamCount: '팀별 지원', ptNoStaff: '아직 스태프 지원서가 없어요.', ptGroupOf: '단체', ptRegAt: '신청일', ptOnSite: '현장결제' },
-    en: { ptTitle: 'Registrations · Participants · Budget', ptFrom: 'Read from the WOLKO portal "Camp Manager". Editing here does not change the portal (edit in Camp Manager).', ptLinkTitle: 'Link portal camp', ptLinkBtn: 'Change link', ptLinkSet: 'Link to a portal camp', ptNotLinked: 'Not linked to a WOLKO portal camp yet. Future camps that are not in the portal "Camp Manager" can stay unlinked — link it when registration opens.', ptNotLinkedView: 'Directors, camp finance and admins can set the link.', ptPick: 'Choose portal camp', ptPickNone: '(no link)', ptCustom: 'Not in the list? Type the portal camp ID', ptLinkSaved: 'Link saved.', ptUnavailable: 'Could not read portal registrations. Please try again shortly.', ptLoading: 'Loading…',
+    en: { ptTitle: 'Registrations · Budget', ptMetHeads: 'Registered', ptMetIn: 'Expected income', ptMetOut: 'Planned expenses', ptMetLeft: 'Left over', ptMore: 'Details', ptLess: 'Collapse', ptNoPlan: 'No expense plan', ptEnterPlan: 'Enter it in the camp budget', ptUsdSkip: 'USD items excluded', ptCapShort: 'Capacity',  ptFrom: 'Read from the WOLKO portal "Camp Manager". Editing here does not change the portal (edit in Camp Manager).', ptLinkTitle: 'Link portal camp', ptLinkBtn: 'Change link', ptLinkSet: 'Link to a portal camp', ptNotLinked: 'Not linked to a WOLKO portal camp yet. Future camps that are not in the portal "Camp Manager" can stay unlinked — link it when registration opens.', ptNotLinkedView: 'Directors, camp finance and admins can set the link.', ptPick: 'Choose portal camp', ptPickNone: '(no link)', ptCustom: 'Not in the list? Type the portal camp ID', ptLinkSaved: 'Link saved.', ptUnavailable: 'Could not read portal registrations. Please try again shortly.', ptLoading: 'Loading…',
       ptConnected: 'Linked portal camp', ptOpenAdmin: 'Open Camp Manager', ptOpenRefund: 'Refund policy',
       ptScMin: 'Confirmed only', ptScMinSub: 'Fully paid & confirmed', ptScExp: 'Deposit paid or more', ptScExpSub: 'Same rule as the homepage gauge', ptScMax: 'Everyone who applied', ptScMaxSub: 'If all come (incl. pending)', ptHeads: ' people', ptIncome: 'Expected camp-fee income', ptPaidFull: 'Paid in full', ptDepOnly: 'Deposit only', ptBalDue: 'Balance due', ptPendingN: 'Pending', ptReceived: 'Received so far (estimate)', ptReceivedHint: 'Deposit holders count only the deposit, confirmed count in full (cash check is by the finance ledger).', ptWait: 'Waitlist', ptWaitNote: '(not included above)', ptUnknownFee: 'Registrations without fee info', ptCap: 'Capacity', ptCapOf: ' of ', ptStatus: 'Status', ptStPending: 'Pending', ptStDeposit: 'Deposit paid', ptStConfirmed: 'Confirmed', ptStWait: 'Waitlist',
       ptMix: 'Makeup', ptMale: 'M', ptFemale: 'F', ptUnknownG: 'Unknown', ptGrades: 'Grades', ptDiscounts: 'Scholarships · discounts used', ptPayOnSite: 'Pay on site', ptFees: 'Fees · scholarships', ptFee: 'Camp fee', ptDeposit: 'Deposit', ptEarly: 'Early Bird until', ptBalanceDue: 'Early-bird balance due', ptRounds: 'Registration rounds', ptRound: 'Round ', ptCapGender: 'Capacity by gender', ptCapMale: 'M', ptCapFemale: 'F', ptCapWait: 'Waitlist', ptOff: ' won off', ptReward: ' won back/gift', ptSchedInfo: 'Portal schedule info', ptPrice: 'Listed fee', ptDeadline: 'Registration', ptTarget: 'Target', ptOpenCalc: 'Budget with these numbers', ptCalcHint: 'The calculator can pull this camp’s headcount and fees and show what is left after expenses.',
       ptCampers: 'Campers', ptStaff: 'Staff applications', ptSearch: 'Search name or church', ptAll: 'All', ptNone: 'Nobody to show.', ptName: 'Name', ptGender: 'Gender', ptGrade: 'Grade', ptChurch: 'Church · school', ptNotes: 'Notes', ptGroup: 'Group', ptUnnamed: '(name not entered)', ptRefundYes: 'Refund account on file', ptRefundNo: 'No refund account', ptPriv: 'Personal details (directors, camp finance, admins only)', ptPhone: 'Phone', ptEmail: 'Email', ptEmergency: 'Emergency contact', ptBirth: 'Birth date', ptParent: 'Parent info', ptBank: 'Refund bank', ptAcct: 'Refund account', ptHolder: 'Account holder', ptCounsel: 'Counseling note', ptSaved: 'Saved', ptDedicated: 'Dedicated', ptPastor: 'Pastor', ptPastorTel: 'Pastor contact', ptPrivNote: 'Opening personal details is logged.', ptTeams: 'Teams', ptEnglish: 'English', ptPrevCamp: 'Past camp', ptConfirmed: 'Confirmed', ptTeamCount: 'By team', ptNoStaff: 'No staff applications yet.', ptGroupOf: 'Group', ptRegAt: 'Applied', ptOnSite: 'On-site pay' }
   });
-  var esc = CT.esc, KRW = function (n) { return CT.money(n, 'KRW'); }, st = { camp: null, data: null, list: null, filter: { q: '', status: '' }, busy: false };
+  var esc = CT.esc, KRW = function (n) { return CT.money(n, 'KRW'); }, st = { camp: null, data: null, list: null, budget: null, filter: { q: '', status: '' }, busy: false, scen: lsGet('ct-pt-scen') || 'expected', more: lsGet('ct-pt-open') === '1' };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* 저장이 막혀 있어도 화면은 그대로 동작 */ } }
   var $ = function (id) { return document.getElementById(id); };
   var DISC = { early_bird: 'Early Bird', sibling: '함께 참여 (친구·지인·가족)', excellent_camper: '베스트 캠퍼', james_memory: '야고보서 암송 (환급)', wolbi_syme: '월비·SYME 관련' };
   var STL = { pending: 'ptStPending', deposit: 'ptStDeposit', confirmed: 'ptStConfirmed' };
@@ -94,15 +96,40 @@
     var info = st.list && st.list.filter(function (x) { return x.id === d.portalCampId; })[0], title = info ? (CT.lang() === 'en' && info.titleEn ? info.titleEn : info.titleKo) : d.portalCampId;
     return '<div class="ptconn"><div>' + esc(CT.t('ptConnected')) + ': <b>' + esc(title) + '</b>' + (info && info.dateKo ? ' <small class="hint">' + esc(info.dateKo) + '</small>' : '') + '</div><div class="ptbtns"><a class="btn sm" href="/wolkoadmin/" target="_blank" rel="noopener">' + esc(CT.t('ptOpenAdmin')) + '</a> <a class="btn sm" href="/camp-register/" target="_blank" rel="noopener">' + esc(CT.t('ptOpenRefund')) + '</a>' + (d.perms.canLink ? ' <button class="btn sm" id="ptLink">' + esc(CT.t('ptLinkBtn')) + '</button>' : '') + '</div></div>';
   }
+  /** 캠프별 예산안의 원화(KRW) 지출 계획: 예상 최종 금액. 달러 등 다른 통화는 합치지 않고 따로 알린다 */
+  function plannedOut() {
+    var b = st.budget; if (!b) return { has: false, usd: false };
+    var k = b.filter(function (x) { return x.currency === 'KRW'; })[0];
+    return { has: !!(k && k.lines), amount: k ? k.forecast : 0, usd: b.some(function (x) { return x.currency !== 'KRW' && x.lines; }) };
+  }
+  function bandHtml(d) {
+    var S = d.scenarios, sc = S && S[st.scen] ? st.scen : 'expected', cur = S && S[sc], cap = d.camp.capacity || (d.policy && d.policy.capacity ? (d.policy.capacity.male || 0) + (d.policy.capacity.female || 0) : 0);
+    var seg = [['min', 'ptScMin'], ['expected', 'ptScExp'], ['max', 'ptScMax']].map(function (x) { return '<button type="button" class="ptseg' + (sc === x[0] ? ' on' : '') + '" data-scen="' + x[0] + '">' + esc(CT.t(x[1])) + '</button>'; }).join('');
+    var help = CT.help(sc === 'min' ? 'scMin' : sc === 'max' ? 'scMax' : 'scExp');
+    var m = function (label, value, sub, cls) { return '<div class="ptm ' + (cls || '') + '"><label>' + label + '</label><strong>' + value + '</strong>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>'; };
+    var out = plannedOut(), h = '<div class="ptseggrp"><div class="ptsegs">' + seg + '</div>' + help + '</div>';
+    if (!cur) return h;
+    var inc = cur.income, left = out.has ? inc - out.amount : null;
+    var capSub = cap ? esc(CT.t('ptCapShort')) + ' ' + cap + esc(CT.t('ptHeads')) + ' (' + Math.min(999, Math.round(cur.heads / cap * 100)) + '%)' : '';
+    var inSub = cur.paidInFull.heads || cur.depositOnly.heads ? esc(CT.t('ptPaidFull')) + ' ' + cur.paidInFull.heads + ' · ' + esc(CT.t('ptDepOnly')) + ' ' + cur.depositOnly.heads : '';
+    var outVal = out.has ? esc(KRW(out.amount)) : '<span class="ptdim">' + esc(CT.t('ptNoPlan')) + '</span>';
+    var outSub = out.has ? (out.usd ? esc(CT.t('ptUsdSkip')) : '') : '<a href="/campteam/budget/?campId=' + encodeURIComponent(st.camp.id) + '">' + esc(CT.t('ptEnterPlan')) + '</a>';
+    h += '<div class="ptms">' + m(esc(CT.t('ptMetHeads')), cur.heads + esc(CT.t('ptHeads')), capSub) + m(esc(CT.t('ptMetIn')), esc(KRW(inc)), inSub) + m(esc(CT.t('ptMetOut')), outVal, outSub) +
+      m(esc(CT.t('ptMetLeft')) + CT.help('leftover'), left == null ? '<span class="ptdim">—</span>' : esc(KRW(left)), '', left != null && left < 0 ? 'neg' : left != null ? 'pos' : '') + '</div>';
+    return h;
+  }
   function render() {
-    var host = $('spPortal'); if (!host) return; var d = st.data, h = '<section class="card full"><h2><span>' + esc(CT.t('ptTitle')) + '</span></h2>';
-    if (!d) { host.innerHTML = h + '<div class="hint">' + esc(CT.t('ptLoading')) + '</div></section>'; return; }
+    var host = $('spPortal'); if (!host) return; var d = st.data;
+    var head = function (extra) { return '<div class="pthd"><h2>' + esc(CT.t('ptTitle')) + CT.help('portalCard') + '</h2><div class="ptbtns">' + (extra || '') + '</div></div>'; };
+    var h = '<section class="card full ptband">';
+    if (!d) { host.innerHTML = h + head() + '<div class="hint">' + esc(CT.t('ptLoading')) + '</div></section>'; return; }
     if (!d.linked) {
-      h += '<div class="hintbox">' + esc(CT.t('ptNotLinked')) + '</div><div style="margin-top:10px">' + (d.perms.canLink ? '<button class="btn pri" id="ptLink">' + esc(CT.t('ptLinkSet')) + '</button>' : '<span class="hint">' + esc(CT.t('ptNotLinkedView')) + '</span>') + '</div>';
+      h += head() + '<div class="hintbox">' + esc(CT.t('ptNotLinked')) + '</div><div style="margin-top:10px">' + (d.perms.canLink ? '<button class="btn pri" id="ptLink">' + esc(CT.t('ptLinkSet')) + '</button>' : '<span class="hint">' + esc(CT.t('ptNotLinkedView')) + '</span>') + '</div>';
     } else if (d.unavailable) {
-      h += headHtml(d) + '<div class="err" style="margin-top:8px">' + esc(CT.t('ptUnavailable')) + '</div>';
+      h += head() + headHtml(d) + '<div class="err" style="margin-top:8px">' + esc(CT.t('ptUnavailable')) + '</div>';
     } else {
-      h += headHtml(d) + scenariosHtml(d) + mixHtml(d) + feesHtml(d) + (d.perms.moneyRead ? '<div class="ptcalc"><a class="btn pri" href="/campteam/finance/?tab=calc&camp=' + encodeURIComponent(st.camp.id) + '">' + esc(CT.t('ptOpenCalc')) + '</a><span class="hint">' + esc(CT.t('ptCalcHint')) + '</span></div>' : '') + campersHtml(d) + staffHtml(d) + '<div class="hint" style="margin-top:10px">' + esc(CT.t('ptFrom')) + '</div>';
+      h += head('<button type="button" class="btn sm" id="ptMore" aria-expanded="' + (st.more ? 'true' : 'false') + '">' + esc(CT.t(st.more ? 'ptLess' : 'ptMore')) + (st.more ? ' ▴' : ' ▾') + '</button>') + (d.scenarios ? bandHtml(d) : '');
+      if (st.more) h += '<div class="ptdetail">' + headHtml(d) + scenariosHtml(d) + mixHtml(d) + feesHtml(d) + campersHtml(d) + staffHtml(d) + '<div class="hint" style="margin-top:10px">' + esc(CT.t('ptFrom')) + '</div></div>';
     }
     host.innerHTML = h + '</section>';
   }
@@ -123,10 +150,15 @@
       await load();
     });
   }
-  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('#ptLink'); if (b) linkDialog(); });
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target : null; if (!t) return;
+    if (t.closest('#ptLink')) { linkDialog(); return; }
+    if (t.closest('#ptMore')) { st.more = !st.more; lsSet('ct-pt-open', st.more ? '1' : '0'); render(); return; }
+    var sg = t.closest('[data-scen]'); if (sg) { st.scen = sg.dataset.scen; lsSet('ct-pt-scen', st.scen); render(); }
+  });
   document.addEventListener('input', function (e) { if (e.target && e.target.id === 'ptQ') { st.filter.q = e.target.value; var l = $('ptCList'); if (l) l.innerHTML = camperRows(); } });
   document.addEventListener('change', function (e) { if (e.target && e.target.id === 'ptStat') { st.filter.status = e.target.value; var l = $('ptCList'); if (l) l.innerHTML = camperRows(); } });
   document.addEventListener('toggle', function (e) { var d = e.target; if (d && d.id === 'ptCampers') st.open = d.open ? 'campers' : (st.open === 'campers' ? '' : st.open); }, true);
 
-  window.SpacePortal = { mount: function (camp) { var first = !st.camp || st.camp.id !== camp.id; st.camp = camp; if (first) { st.data = null; render(); load(); } else render(); } };
+  window.SpacePortal = { mount: function (camp, budget) { var first = !st.camp || st.camp.id !== camp.id; st.camp = camp; st.budget = budget || null; if (first) { st.data = null; render(); load(); } else render(); } };
 })();

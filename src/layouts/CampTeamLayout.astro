@@ -1,6 +1,6 @@
 ---
 // 캠프팀 포털 공통 틀 (사이드바 + 언어 전환 + 로그인 안내). 내용은 각 페이지가 채운다.
-export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'resources' | 'search' | 'budget' | 'tv' | 'trash' | 'settings'; }
+export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'resources' | 'search' | 'budget' | 'tv' | 'trash' | 'settings' | 'alerts'; }
 const { title, active } = Astro.props;
 const ICON = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5a2 2 0 0 1 4 0v5"/>',
@@ -12,6 +12,7 @@ const ICON = {
   tv: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="m10.5 8.5 4 2-4 2z" fill="currentColor" stroke="none"/>',
   budget: '<path d="M4 8V6a2 2 0 0 1 2-2h11v4"/><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M16 14h2"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/>',
+  alerts: '<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9z"/><path d="M10 19a2 2 0 0 0 4 0"/>',
   settings: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
 };
 const nav = [
@@ -37,7 +38,7 @@ const nav = [
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/campteam/campteam.css?v=19">
+  <link rel="stylesheet" href="/campteam/campteam.css?v=23">
   <link rel="stylesheet" href="/campteam/tv.css?v=1">
   <script is:inline src="/wolko-session.js?v=2"></script>
 </head>
@@ -46,6 +47,7 @@ const nav = [
   <aside>
     <div class="topbar">
       <a class="logo" href="/campteam/"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span><b>WOLKO Camp Team</b><small>Word of Life Korea</small></span></a>
+      <button class="bell" id="bellBtn" type="button" aria-label="알림공지" aria-controls="aPanel" hidden><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.alerts}></svg><b class="bellbadge" id="bellBadge" hidden></b></button>
       <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </div>
     <div class="drawer" id="drawer">
@@ -54,6 +56,7 @@ const nav = [
     <nav class="nav">
       <h6 data-t="navGroupTeam"></h6>
       {nav.map(n => <a href={n.href} class={active === n.key ? 'on' : ''} style={`--c:${n.c}`}><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON[n.key]} /></span><span data-t={n.t}></span></a>)}
+      <a id="alertsNav" href="/campteam/alerts/" class={active === 'alerts' ? 'on' : ''} style="--c:#e5534b" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.alerts}></svg></span><span data-t="navAlerts"></span><b class="navbadge" id="navBadge" hidden></b></a>
       <h6 id="moneyHead" hidden data-t="navFinance"></h6>
       <a id="moneyNav" href="/campteam/finance/" class={active === 'budget' ? 'on' : ''} style="--c:#d4a373" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.budget} /></span><span data-t="navBudget"></span></a>
       <a id="trashNav" href="/campteam/trash/" class={active === 'trash' ? 'on' : ''} style="--c:#9fb4c0" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.trash} /></span><span data-t="navTrash"></span></a>
@@ -68,6 +71,13 @@ const nav = [
     </div>
   </aside>
   <div class="scrim" id="scrim"></div>
+<div class="apanel-scrim" id="aScrim"></div>
+<aside class="apanel" id="aPanel" aria-hidden="true" role="dialog" aria-labelledby="aTitle">
+  <div class="aph"><b id="aTitle" data-t="alTitle"></b><span class="qh" data-h="alerts"></span><span class="sp"></span><button type="button" class="btn sm" id="aSeenAll" data-t="alSeenAll"></button><button type="button" class="alclose big" id="aClose" aria-label="close">✕</button></div>
+  <div class="apt"><button type="button" data-pt="mine" class="on"><span data-t="alMine"></span><i hidden></i></button><button type="button" data-pt="team"><span data-t="alTeam"></span><i hidden></i></button></div>
+  <div class="apb" id="aBody"></div>
+  <div class="apf"><a href="/campteam/alerts/" data-t="alAll"></a></div>
+</aside>
   <main id="main"><slot /></main>
 </div>
 <div class="gate" id="gate" hidden>
@@ -79,7 +89,9 @@ const nav = [
     <p class="meta" id="gnote" style="color:var(--accent);margin:10px 0 0"></p>
   </div>
 </div>
-<script is:inline src="/campteam/campteam.js?v=5"></script>
+<script is:inline src="/campteam/campteam.js?v=7"></script>
+<script is:inline src="/campteam/help.js?v=1"></script>
+<script is:inline src="/campteam/alerts.js?v=3"></script>
 <slot name="scripts" />
 </body>
 </html>

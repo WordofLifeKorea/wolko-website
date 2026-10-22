@@ -35,6 +35,11 @@ if [ ! -e "$STATE/applied/_kvseed" ]; then
   done
   touch "$STATE/applied/_kvseed"
 fi
+# 로컬 가짜 알림 자료(한 번만): 오늘 기준 마감/회의/공지 샘플
+if [ ! -e "$STATE/applied/_alertseed" ]; then
+  npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/dev/dummy-alerts.sql
+  touch "$STATE/applied/_alertseed"
+fi
 # 로컬 가짜 포털 신청 자료(한 번만) — 캠프별 공간의 "신청 현황" 화면을 시험하기 위한 가짜 이름·번호. 실제 신청 자료와 무관하다.
 if [ ! -e "$STATE/applied/_kvseed_portal" ]; then
   for f in camp-team/dev/dummy-portal/*.json; do

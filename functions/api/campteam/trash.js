@@ -16,6 +16,7 @@ const KINDS = {
   camp_types: { table: 'camp_types', label: 'nameKo', sub: `COALESCE(nameEn,'')` },
   templates: { table: 'checklist_templates', label: 'nameKo', sub: `COALESCE(nameEn,'')` },
   template_items: { table: 'checklist_items', label: 'title', sub: `COALESCE(section,'')` },
+  announcements: { table: 'announcements', label: 'title', sub: 'createdBy' },
   notices: { table: 'notices', label: 'message', sub: `COALESCE(messageEn,'')` },
   budget: { table: 'budget_lines', label: 'label', sub: 'currency', money: true },
   ledger: { table: 'ledger_entries', label: `CASE WHEN description <> '' THEN description ELSE category END`, sub: `entryDate || ' · ' || amount`, money: true, where: `source <> 'carry'` }, // 장부 거래(이월금 줄은 시스템이 관리하므로 제외)

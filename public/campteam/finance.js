@@ -2,7 +2,7 @@
 (function () {
   CT.addDict({
     ko: { fnTitle: '캠프 예산 · 회계 장부', fnSub: '예산안과 실제 수입·지출을 한곳에서 보고, 기간별로 마감해 남은 금액을 다음 기간으로 넘겨요.', fnPeriod: '기간',
-      tabSummary: '요약', tabLedger: '장부', tabImport: '엑셀 가져오기', tabExpense: '경비 연동', tabRecon: '잔액 대조', tabPlan: '기간 예산 (계획)', tabCats: '항목 목록', tabPeriods: '기간 · 마감', tabCampBudget: '캠프별 예산안 ↗',
+      tabSummary: '요약', tabLedger: '장부', tabImport: '엑셀 가져오기', tabExpense: '경비 연동', tabRecon: '잔액 대조', tabPlan: '기간 예산', tabMore: '⋯ 더보기', perNowLabel: '지금 보는 기간', perManage: '기간 관리 · 마감', tabCats: '항목 목록', tabPeriods: '기간 · 마감', tabCampBudget: '캠프별 예산안',
       lastRecon: '최근 잔액 대조', reconOk: '통장과 장부가 일치해요', reconDiff: '통장과 장부 차이', balTitle: '캠프 통장 잔액 (장부 기준)', balAsOf: '기준', balIn: '수입', balOut: '지출', balCheck: '통장과 맞는지 확인하기', balChecked: '마지막 통장 확인', balMatch: '일치', balDiff: '차이', balNever: '아직 통장 확인 기록이 없어요', balHelp: '장부 입력에 맞춰 잔액이 바로 바뀌어요. 첫 기간의 이월금(또는 엑셀 첫 줄)을 통장의 실제 잔액으로 맞춰 두면, 이 숫자가 곧 통장 잔액이에요. 「잔액 대조」로 가끔 확인해 주세요.', viewOnlyTre: '월코 재정 담당 계정은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', viewOnlyMem: '일반 캠프팀 팀원은 조회만 할 수 있어요. 수정은 캠프 재정 담당과 디렉터가 해요.', closedNote: '마감된 기간이에요. 고치려면 「기간 · 마감」에서 먼저 다시 열어 주세요.',
       opening: '이월금', income: '수입', expense: '지출', balance: '현재 잔액', planned: '예산', actual: '실제', remaining: '남은 예산', achieved: '목표 대비', expectedEnd: '예산대로면 기간 끝 잔액',
       expenseByCat: '지출 항목별 (예산 대비 실제)', incomeByCat: '수입 항목별 (목표 대비 실제)', monthly: '월별 흐름', noData: '아직 거래가 없어요.', cat: '항목', needReview: '분류를 확인해야 하는 거래가', needReviewTail: '건 있어요. 장부에서 확인해 주세요.',
@@ -14,7 +14,7 @@
       closeTitle: '기간 마감', closeBody: '마감하면 이 기간은 잠기고(보관), 남은 금액이 다음 기간의 「이월금」으로 넘어가요. 다시 열면 넘어간 이월금은 거둬져요.', closeBal: '마감 시 잔액', closeNext: '남은 금액을 넘길 곳', closeNew: '새 기간 만들어서 넘기기', closeNone: '넘기지 않고 마감', closeConfirm: '마감하기', reopenConfirm: '이 기간을 다시 열까요? 다음 기간으로 넘어간 이월금이 거둬져요.', perDeleteConfirm: '이 기간을 지울까요?', noNextOpen: '(넘길 수 있는 열린 기간이 없어요)',
       loadFail: '불러오지 못했어요', fromLabel: '이월 적자' },
     en: { balTitle: 'Camp bank balance (per ledger)', balAsOf: 'as of', balIn: 'Income', balOut: 'Expenses', balCheck: 'Check against the bank', balChecked: 'Last bank check', balMatch: 'matched', balDiff: 'difference', balNever: 'No bank check recorded yet', balHelp: 'The balance changes right as you enter transactions. If the first period’s carry-over (or the first Excel row) matches the real bank balance, this number is the bank balance. Check it now and then in Reconcile.', lastRecon: 'Last reconciliation', reconOk: 'Bank and ledger match', reconDiff: 'Bank vs ledger difference', fnTitle: 'Camp Budget · Ledger', fnSub: 'See the budget plan and actual income/expenses together, close each period and carry the balance forward.', fnPeriod: 'Period',
-      tabSummary: 'Summary', tabLedger: 'Ledger', tabImport: 'Excel import', tabExpense: 'Expense reports', tabRecon: 'Reconcile', tabPlan: 'Period budget (plan)', tabCats: 'Categories', tabPeriods: 'Periods · Close', tabCampBudget: 'Per-camp plan ↗',
+      tabSummary: 'Summary', tabLedger: 'Ledger', tabImport: 'Excel import', tabExpense: 'Expense reports', tabRecon: 'Reconcile', tabPlan: 'Period budget', tabMore: '⋯ More', perNowLabel: 'Viewing period', perManage: 'Manage periods · close', tabCats: 'Categories', tabPeriods: 'Periods · Close', tabCampBudget: 'Per-camp plan',
       viewOnlyTre: 'WOLKO finance accounts are view-only. Camp finance and the director make changes.', viewOnlyMem: 'Camp team members are view-only here. Camp finance and the director make changes.', closedNote: 'This period is closed. Reopen it under "Periods · Close" to edit.',
       opening: 'Carried over', income: 'Income', expense: 'Expenses', balance: 'Balance', planned: 'Budget', actual: 'Actual', remaining: 'Remaining', achieved: 'vs target', expectedEnd: 'Balance at period end if on budget',
       expenseByCat: 'Expenses by category (actual vs budget)', incomeByCat: 'Income by category (actual vs target)', monthly: 'Monthly flow', noData: 'No entries yet.', cat: 'Category', needReview: 'Entries needing classification:', needReviewTail: '. Please check them in the ledger.',
@@ -28,8 +28,9 @@
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc, KRW = function (n) { return CT.money(n, 'KRW'); };
   var S = { periods: [], pid: null, tab: 'summary', sum: null, entries: null, cats: null, plan: null, filter: { kind: '', category: '', q: '', month: '' }, perms: null, qa: { date: '', kind: 'expense' } };
-  var TABS_ALL = ['summary', 'ledger', 'import', 'expense', 'recon', 'calc', 'plan', 'cats', 'periods'];
-  var tabs = function () { return TABS_ALL.filter(function (t) { return t !== 'import' || !!(S.perms && S.perms.moneyWrite); }); };
+  var TABS_PRIMARY = ['summary', 'ledger', 'periods', 'plan'], TABS_MORE = ['import', 'expense', 'recon', 'calc', 'cats'], TABS_ALL = TABS_PRIMARY.concat(TABS_MORE);
+  var allow = function (t) { return t !== 'import' || !!(S.perms && S.perms.moneyWrite); }, tabs = function () { return TABS_ALL.filter(allow); };
+  var tabLabel = function (t) { return CT.t('tab' + t.charAt(0).toUpperCase() + t.slice(1)); };
   var ext = function () { return window.FinTabs && window.FinTabs[S.tab]; }; // 엑셀 가져오기·경비 연동·잔액 대조 등은 별도 파일이 FinTabs 에 등록한다
   var today = function () { var d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); };
   var cur = function () { return S.periods.filter(function (p) { return p.id === S.pid; })[0]; };
@@ -74,7 +75,12 @@
     var vo = $('fnViewOnly'), role = CT.me && CT.me.campRole; vo.hidden = !!(S.perms && S.perms.moneyWrite);
     if (!vo.hidden) vo.textContent = CT.t(role === 'treasurer' ? 'viewOnlyTre' : 'viewOnlyMem');
     if (S.pid && cur() && cur().status === 'closed' && S.perms && S.perms.moneyWrite) { vo.hidden = false; vo.textContent = CT.t('closedNote'); }
-    $('fnTabs').innerHTML = tabs().map(function (t) { return '<button class="tab' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(CT.t('tab' + t.charAt(0).toUpperCase() + t.slice(1))) + '</button>'; }).join('') + '<a class="tab" href="/campteam/budget/" style="text-decoration:none">' + esc(CT.t('tabCampBudget')) + '</a>';
+    var more = TABS_MORE.filter(allow), inMore = more.indexOf(S.tab) >= 0;
+    $('fnTabs').innerHTML = TABS_PRIMARY.map(function (t) { return '<button class="tab' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(tabLabel(t)) + '</button>'; }).join('') +
+      '<div class="tabmore"><button class="tab' + (inMore ? ' on' : '') + '" id="fnMoreBtn" aria-haspopup="true" aria-expanded="false">' + esc(inMore ? '⋯ ' + tabLabel(S.tab) : CT.t('tabMore')) + '</button><div class="moremenu" id="fnMoreMenu" hidden>' +
+      more.map(function (t) { return '<button class="mi' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(tabLabel(t)) + '</button>'; }).join('') + '<a class="mi" href="/campteam/budget/">' + esc(CT.t('tabCampBudget')) + '</a></div></div>' + CT.help('tab' + S.tab.charAt(0).toUpperCase() + S.tab.slice(1));
+    $('fnPerHelp').innerHTML = CT.help('period');
+    $('fnPerManage').hidden = !(S.perms && S.perms.moneyRead); $('fnPerNew').hidden = !canAdmin();
     $('fnBanner').innerHTML = bannerHtml();
     var body = $('fnBody');
     if (ext()) body.innerHTML = ext().html();
@@ -91,12 +97,12 @@
   function bannerHtml() {
     var s = S.sum; if (!s || !S.pid) return '';
     var r = s.lastReconcile, rec = r ? (r.diff === 0 ? '<b style="color:var(--ok)">' + esc(CT.t('balMatch')) + '</b>' : '<b style="color:var(--accent)">' + esc(CT.t('balDiff')) + ' ' + esc(KRW(r.diff)) + '</b>') + ' · ' + esc(r.asOfDate) : esc(CT.t('balNever'));
-    return '<div class="balbar" title="' + esc(CT.t('balHelp')) + '"><div class="bb1"><label>' + esc(CT.t('balTitle')) + '</label><strong style="color:' + (s.balanceAsOf < 0 ? 'var(--accent)' : 'var(--blue)') + '">' + esc(KRW(s.balanceAsOf)) + '</strong><small>' + esc(s.asOf) + ' ' + esc(CT.t('balAsOf')) + ' · ' + esc(CT.t('balIn')) + ' ' + esc(KRW(s.totals.income)) + ' · ' + esc(CT.t('balOut')) + ' ' + esc(KRW(s.totals.expense)) + '</small></div><div class="bb2"><small>' + esc(CT.t('balChecked')) + ': ' + rec + '</small> <a href="#" data-tab="recon">' + esc(CT.t('balCheck')) + '</a><small class="bbh">' + esc(CT.t('balHelp')) + '</small></div></div>';
+    return '<div class="balbar"><div class="bb1"><label>' + esc(CT.t('balTitle')) + '</label>' + CT.help('balance') + '<strong style="color:' + (s.balanceAsOf < 0 ? 'var(--accent)' : 'var(--blue)') + '">' + esc(KRW(s.balanceAsOf)) + '</strong><small>' + esc(s.asOf) + ' ' + esc(CT.t('balAsOf')) + ' · ' + esc(CT.t('balIn')) + ' ' + esc(KRW(s.totals.income)) + ' · ' + esc(CT.t('balOut')) + ' ' + esc(KRW(s.totals.expense)) + '</small></div><div class="bb2"><small>' + esc(CT.t('balChecked')) + ': ' + rec + '</small> <a href="#" data-tab="recon">' + esc(CT.t('balCheck')) + '</a></div></div>';
   }
   function summaryHtml() {
     var s = S.sum, t = s.totals, openAmt = s.opening ? (s.opening.kind === 'income' ? s.opening.amount : -s.opening.amount) : 0;
     var h = '<div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">' +
-      stat(CT.t('opening'), KRW(openAmt)) + stat(CT.t('income'), KRW(t.income), 'ok') + stat(CT.t('expense'), KRW(t.expense), 'late') + stat(CT.t('balance'), KRW(t.balance), t.balance < 0 ? 'late' : '') +
+      stat({ html: esc(CT.t('opening')) + CT.help('carry') }, KRW(openAmt)) + stat(CT.t('income'), KRW(t.income), 'ok') + stat(CT.t('expense'), KRW(t.expense), 'late') + stat(CT.t('balance'), KRW(t.balance), t.balance < 0 ? 'late' : '') +
       (s.plan.income || s.plan.expense ? stat(CT.t('expectedEnd'), KRW(openAmt + s.plan.income - s.plan.expense), '') : '') + '</div>';
     if (s.needsReview) h += '<div class="hintbox" style="margin-bottom:12px;color:var(--accent)">' + esc(CT.t('needReview')) + ' ' + s.needsReview + esc(CT.t('needReviewTail')) + '</div>';
     if (s.lastReconcile) h += '<div class="hintbox" style="margin-bottom:12px">' + esc(CT.t('lastRecon')) + ': ' + esc(s.lastReconcile.asOfDate) + ' · ' + (s.lastReconcile.diff === 0 ? '<b style="color:var(--ok)">' + esc(CT.t('reconOk')) + '</b>' : '<b style="color:var(--accent)">' + esc(CT.t('reconDiff')) + ' ' + esc(KRW(s.lastReconcile.diff)) + '</b>') + ' <a href="#" data-tab="recon">' + esc(CT.t('tabRecon')) + '</a></div>';
@@ -106,7 +112,7 @@
       h += '<section class="card" style="margin-top:14px"><h2>' + esc(CT.t('monthly')) + '</h2><div class="mflow">' + s.monthly.map(function (m) { return '<div class="mf"><div class="mfb"><i class="in" style="height:' + Math.round(m.income / max * 100) + '%" title="' + esc(KRW(m.income)) + '"></i><i class="out" style="height:' + Math.round(m.expense / max * 100) + '%" title="' + esc(KRW(m.expense)) + '"></i></div><b>' + esc(m.month.slice(5)) + '</b><small class="mfi">' + esc(KRW(m.income)) + '</small><small class="mfo">' + esc(KRW(m.expense)) + '</small></div>'; }).join('') + '</div></section>'; }
     return h;
   }
-  function stat(label, value, cls) { return '<div class="stat ' + (cls || '') + '"><label>' + esc(label) + '</label><strong' + (cls === 'ok' ? ' style="color:var(--ok)"' : '') + '>' + esc(value) + '</strong></div>'; }
+  function stat(label, value, cls) { return '<div class="stat ' + (cls || '') + '"><label>' + (label && label.html ? label.html : esc(label)) + '</label><strong' + (cls === 'ok' ? ' style="color:var(--ok)"' : '') + '>' + esc(value) + '</strong></div>'; }
   function catCard(title, rows, kind) {
     var tp = rows.reduce(function (n, r) { return n + r.plan; }, 0), ta = rows.reduce(function (n, r) { return n + r.actual; }, 0);
     return '<section class="card"><h2>' + esc(title) + '</h2><div style="overflow:auto"><table><thead><tr><th>' + esc(CT.t('cat')) + '</th><th style="text-align:right">' + esc(CT.t('planned')) + '</th><th style="text-align:right">' + esc(CT.t('actual')) + '</th><th style="text-align:right">' + esc(CT.t(kind === 'expense' ? 'remaining' : 'achieved')) + '</th></tr></thead><tbody>' +
@@ -248,6 +254,10 @@
   function wire() {
     $('fnPeriodSel').onchange = async function () { S.pid = this.value; S.entries = null; await loadTab(); render(); };
     var goTab = async function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; e.preventDefault(); S.tab = b.dataset.tab; await loadTab(); render(); };
+    var closeMore = function () { var m = $('fnMoreMenu'); if (m) { m.hidden = true; $('fnMoreBtn').setAttribute('aria-expanded', 'false'); } };
+    $('fnTabs').addEventListener('click', function (e) { var b = e.target.closest('#fnMoreBtn'); if (!b) return; e.stopPropagation(); var m = $('fnMoreMenu'); m.hidden = !m.hidden; b.setAttribute('aria-expanded', m.hidden ? 'false' : 'true'); });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.tabmore')) closeMore(); }); document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMore(); });
+    $('fnPerManage').onclick = async function () { S.tab = 'periods'; await loadTab(); render(); }; $('fnPerNew').onclick = function () { newPeriod(); };
     $('fnTabs').onclick = goTab; $('fnBody').addEventListener('click', function (e) { if (e.target.closest('a[data-tab]')) goTab(e); });
     $('fnBody').addEventListener('input', function (e) { if (e.target.classList.contains('plin')) updatePlanTotals(); });
     var timer; $('fnBody').addEventListener('change', async function (e) {
