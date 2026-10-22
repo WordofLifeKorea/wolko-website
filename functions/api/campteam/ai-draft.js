@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, audit, normTags } from '../../lib/campteamDb.js';
 
 /** AI 초안 목록/상세: ?meetingId= | ?id= */
@@ -6,6 +6,7 @@ export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
+  { const dv = denyView(s.perms, 'meetings', 'AI 초안'); if (dv) return dv; }
   const p = new URL(request.url).searchParams;
   if (p.get('id')) {
     const r = await env.DB.prepare('SELECT * FROM ai_drafts WHERE id = ?1 AND deletedAt IS NULL').bind(p.get('id')).first();
@@ -23,7 +24,7 @@ export async function onRequestPost({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('작성 권한이 없습니다.');
+  if (!canWrite(s.perms, 'meetings')) return needPerm('작성 권한이 없습니다.');
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const row = await env.DB.prepare(`SELECT * FROM ai_drafts WHERE id = ?1 AND deletedAt IS NULL`).bind(String(b.id || '')).first();
   if (!row) return json({ error: '찾을 수 없습니다.' }, 404);

@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb, FIXED_ADMIN_EMAILS } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, FIXED_ADMIN_EMAILS, canWrite } from '../../lib/campteamAuth.js';
 import { todayKST, uuid, text, audit } from '../../lib/campteamDb.js';
 import { loadSettings, saveSettings, sanitizeSettings, buildAlerts, buildWeek, weekEmpty, listAnnouncements, summaryPrompt, callSummary, summaryItems, SUMMARY_MODEL, tuesdayOf, nowIso } from '../../lib/campteamAlerts.js';
 
@@ -52,15 +52,15 @@ export async function onRequestGet({ env, request }) {
   if (!s) return needLogin();
   if (!s.campRole) return needPerm('캠프팀 명단에 있는 계정만 알림공지를 쓸 수 있어요.');
   const lite = new URL(request.url).searchParams.get('lite') === '1', today = todayKST(), settings = await loadSettings(env);
-  const [{ items: all, today: box }, announcements] = await Promise.all([buildAlerts(env, s.email, { today, settings }), listAnnouncements(env, s.email, { today, settings, isAdmin: s.perms.manageMembers })]);
+  const [{ items: all, today: box }, announcements] = await Promise.all([buildAlerts(env, s.email, { today, settings, perms: s.perms }), listAnnouncements(env, s.email, { today, settings, isAdmin: s.perms.manageMembers, perms: s.perms })]);
   const items = all.filter((x) => x.state !== 'dismissed'), unreadAuto = items.filter((x) => !x.state).length, unreadAnn = announcements.filter((a) => a.unread && !a.folded).length;
-  const out = { date: today, unread: unreadAuto + unreadAnn, unreadAuto, unreadAnn, perms: { write: s.perms.write, manageMembers: s.perms.manageMembers } };
+  const out = { date: today, unread: unreadAuto + unreadAnn, unreadAuto, unreadAnn, perms: { write: canWrite(s.perms, 'tasks'), notices: canWrite(s.perms, 'notices'), manageMembers: s.perms.manageMembers } };
   if (lite) return json({ ...out, items: items.slice(0, 8), announcements: announcements.filter((a) => !a.folded).slice(0, 5) });
   const me = s.email.toLowerCase(), prefRow = await env.DB.prepare('SELECT weeklyEmail FROM notify_prefs WHERE email = ?1').bind(me).first();
   const forWeek = tuesdayOf(today), dow = new Date(today + 'T00:00:00Z').getUTCDay();
   const sums = (await env.DB.prepare(`SELECT kind, forDate, text FROM daily_summaries WHERE email = ?1 AND ((kind = 'daily' AND forDate = ?2) OR (kind = 'weekly' AND forDate = ?3))`).bind(me, today, forWeek).all()).results;
   const get = (k) => { const r = sums.find((x) => x.kind === k); return r && r.text ? r.text : null; };
-  const week = dow === 1 ? null : await buildWeek(env, s.email, today), wk = await env.DB.prepare(`SELECT state FROM alert_state WHERE email = ?1 AND alertKey = ?2`).bind(me, 'weekly:' + forWeek).first();
+  const week = dow === 1 ? null : await buildWeek(env, s.email, today, s.perms), wk = await env.DB.prepare(`SELECT state FROM alert_state WHERE email = ?1 AND alertKey = ?2`).bind(me, 'weekly:' + forWeek).first();
   const people = await roster(env);
   return json({ ...out, today: box, items, announcements, people, settings, prefs: { weeklyEmail: prefRow ? !!prefRow.weeklyEmail : true },
     ai: !!env.ANTHROPIC_API_KEY, summary: { daily: get('daily'), weekly: get('weekly'), weeklyAvailable: !!week && !weekEmpty(week), weeklyDate: forWeek, dailyCanMake: !box.empty && !get('daily'), weeklyCanMake: !!week && !weekEmpty(week) && !get('weekly'), dismissedWeekly: !!(wk && wk.state === 'dismissed') },
@@ -84,12 +84,13 @@ export async function onRequestPost({ env, request }) {
     return json({ ok: true });
   }
   if (a === 'seenAll') {
-    const settings = await loadSettings(env), { items } = await buildAlerts(env, s.email, { today, settings }), anns = await listAnnouncements(env, s.email, { today, settings, isAdmin: false });
+    const settings = await loadSettings(env), { items } = await buildAlerts(env, s.email, { today, settings, perms: s.perms }), anns = await listAnnouncements(env, s.email, { today, settings, isAdmin: false, perms: s.perms });
     const keys = [...items.filter((x) => !x.state).map((x) => x.key), ...anns.filter((x) => x.unread).map((x) => 'ann:' + x.id)];
     for (const k of keys) await env.DB.prepare(`INSERT OR IGNORE INTO alert_state (email,alertKey,state,updatedAt) VALUES (?1,?2,'seen',?3)`).bind(me, k, now).run();
     return json({ ok: true, count: keys.length });
   }
   if (a === 'announce') {
+    if (!canWrite(s.perms, 'notices')) return needPerm('팀 공지를 올릴 권한이 없어요. 관리자에게 요청해 주세요.');
     const r = await validateAnnounce(env, b, s); if (r.error) return badRequest(r.error);
     const v = r.v, id = uuid(), name = (await env.DB.prepare('SELECT name FROM camp_members WHERE email = ?1').bind(me).first())?.name || '';
     if (v.pinned && !s.perms.write && !s.perms.manageMembers) v.pinned = 0;
@@ -134,8 +135,8 @@ export async function onRequestPost({ env, request }) {
     if (old && Date.now() - Date.parse(old.createdAt) < 30 * 60000) return json({ text: null, reason: 'retry-later' }); // 직전에 실패했으면 30분은 다시 부르지 않는다
     const settings = await loadSettings(env);
     let list;
-    if (kind === 'daily') { const { today: box } = await buildAlerts(env, s.email, { today, settings }); if (box.empty) return json({ text: null, reason: 'empty' }); list = summaryItems(box); }
-    else { const w = await buildWeek(env, s.email, today); if (weekEmpty(w)) return json({ text: null, reason: 'empty' }); list = summaryItems({ overdue: w.overdue, today: [], soon: w.tasks, meetings: w.meetings, events: w.events }); }
+    if (kind === 'daily') { const { today: box } = await buildAlerts(env, s.email, { today, settings, perms: s.perms }); if (box.empty) return json({ text: null, reason: 'empty' }); list = summaryItems(box); }
+    else { const w = await buildWeek(env, s.email, today, s.perms); if (weekEmpty(w)) return json({ text: null, reason: 'empty' }); list = summaryItems({ overdue: w.overdue, today: [], soon: w.tasks, meetings: w.meetings, events: w.events }); }
     const model = env.CAMPTEAM_SUMMARY_MODEL || SUMMARY_MODEL, { system, user } = summaryPrompt(kind, today, list);
     let out = '';
     try { out = await callSummary({ apiKey: env.ANTHROPIC_API_KEY, model, system, user, url: env.CAMPTEAM_AI_URL || undefined }); } catch (e) { console.error('summary failed:', e.message); }

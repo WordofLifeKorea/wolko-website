@@ -1,10 +1,11 @@
-import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, noDb, denyView } from '../../lib/campteamAuth.js';
 
 /** 회의 하나의 전체 보기: 구역(안건별 논의), 결정, 이 회의에서 나온 업무, 연결된 파일, 전사문 목록 */
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
+  { const dv = denyView(s.perms, 'meetings', '회의록'); if (dv) return dv; }
   const id = new URL(request.url).searchParams.get('id');
   const meeting = await env.DB.prepare(`SELECT m.*, c.nameKo AS campKo, c.nameEn AS campEn FROM meetings m LEFT JOIN camps c ON c.id = m.campId WHERE m.id = ?1 AND m.deletedAt IS NULL`).bind(id).first();
   if (!meeting) return json({ error: '찾을 수 없습니다.' }, 404);

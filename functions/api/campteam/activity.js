@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, noDb, canView } from '../../lib/campteamAuth.js';
 
 /**
  * 팀 활동 피드: 캠프팀 팀원(관리자·재정 담당·팀원)이 서로 "방금 올린 파일 확인해줘" 같은 소통을 할 수 있게
@@ -14,7 +14,8 @@ const TITLE = {
   decision: ['decisions', 'textKo', 'textEn'], file: ['files', 'title', null], camp: ['camps', 'nameKo', 'nameEn'], camp_type: ['camp_types', 'nameKo', 'nameEn'],
   notice: ['notices', 'message', null], glossary: ['glossary', 'termKo', 'termEn'],
 };
-export const isTeamMember = (s) => !!s && ['admin', 'finance', 'member'].includes(s.campRole);
+export const isTeamMember = (s) => !!s && ['admin', 'director', 'finance', 'member'].includes(s.campRole);
+const AREA = { task: 'tasks', event: 'tasks', checklist_template: 'tasks', checklist_item: 'tasks', meeting: 'meetings', agenda_item: 'meetings', decision: 'meetings', glossary: 'meetings', file: 'files', camp: 'camps', camp_type: 'camps', notice: 'camps' };
 
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
@@ -22,7 +23,7 @@ export async function onRequestGet({ env, request }) {
   if (!s) return needLogin();
   if (!isTeamMember(s)) return needPerm('캠프팀 팀원만 볼 수 있습니다.');
   const raw = (await env.DB.prepare(`SELECT at, actor, action, entity, entityId, detail FROM audit_log ORDER BY at DESC LIMIT 120`).all()).results;
-  const rows = raw.filter((r) => FEED.has(r.entity) || (MONEY.has(r.entity) && s.perms.moneyRead)).slice(0, 40);
+  const rows = raw.filter((r) => (FEED.has(r.entity) && canView(s.perms, AREA[r.entity])) || (MONEY.has(r.entity) && s.perms.moneyRead)).slice(0, 40);
   const titles = {};
   for (const [entity, [table, c1, c2]] of Object.entries(TITLE)) {
     const ids = [...new Set(rows.filter((r) => r.entity === entity).map((r) => r.entityId))].slice(0, 40);

@@ -53,7 +53,7 @@ src/layouts/CampTeamLayout.astro   캠프팀 공통 틀(왼쪽 메뉴·로그인
 src/pages/campteam/*.astro    캠프팀 화면 (홈, 캠프, 업무, 회의, 자료, 검색, 예산, TV 편집, 휴지통, 설정, 캠프 공간)
 src/pages/tv.astro            사무실 TV 화면
 public/campteam/*.js·css      화면 동작(자바스크립트)과 모양(CSS)
-tests/campteam-*.test.mjs     자동 테스트 151개
+tests/campteam-*.test.mjs     자동 테스트 172개
 ```
 
 ## 4. 기능 지도 (요청 → 구현)
@@ -68,6 +68,11 @@ tests/campteam-*.test.mjs     자동 테스트 151개
 | **팝업 공통 동작**: 모든 팝업에 ✕, 바깥 배경·Esc로 닫기, 고친 내용이 있으면 "저장하고 닫기/저장 안 하고 닫기/계속 편집" 확인 | 모든 화면 | `public/campteam/campteam.js` (한 곳) |
 | **포털과 같은 왼쪽 메뉴**(짙은 청록 바탕·색 아이콘 칸·구역 제목)와 메뉴별 선 아이콘(포털과 같은 SVG) | 모든 화면 | `CampTeamLayout.astro`, `campteam.css` |
 | 캠프 유형(Winter 등) / 개별 행사 + 캠프별 공간 | `/campteam/camps/`, `/campteam/space/` | `camps.js`, `camp-space.js` |
+| **알림공지**: 내 알림(업무·회의·일정은 열 때 계산, 단계가 바뀌면 다시 알림), 팀 공지(전체/선택, 휴지통 복구), 홈 「오늘 내가 할 일」, AI 한두 줄 요약(없어도 목록 정상), 종 아이콘+슬라이드 패널 | 홈 상단, 메뉴 `알림공지`, `/campteam/alerts/` | `alerts.js`(API), `campteamAlerts.js`, `alerts.js`·`alerts-page.js` |
+| **주간 이메일**: 매주 화요일 오전, 사람마다 끌 수 있음, 같은 주 중복 방지, 비밀값으로만 호출 | GitHub 스케줄 `campteam-weekly-mail.yml` | `weekly-mail.js`, `campteamMail.js` |
+| **항목별 권한**: 역할 기본값 위에 사람별 「안 보임/보기만/수정 가능」(관리자만 설정) | 설정 → 팀 명단 → 권한 | `member-perms.js`, `campteamAuth.js`(`areas`) |
+| **캠프 공간 내 화면**: 카드 순서·숨김(내 화면만) | 캠프별 공간 → 화면 편집 | `space-layout.js`, `space.js` |
+| **「?」 도움말**: 마우스 올리면(폰은 누르면) 안내, 한/영 | 곳곳 | `help.js` |
 | **포털 신청 현황 연동**(읽기 전용): 연결한 포털 캠프의 인원·상태·금액 시나리오·할인·캠퍼 명단·스태프 지원. 개인정보는 두 단계(팀원 / 디렉터·캠프 재정·관리자), 연결 설정은 디렉터·캠프 재정·관리자만 | 캠프별 공간 맨 위 카드, 계산기 「신청 현황으로 채우기」 | `camp-portal.js`, `campteamPortal.js`, `space-portal.js`, 목록은 빌드 때 만드는 `/campteam/portal-camps.json` |
 | 자료실: 업로드·분류·검색·미리보기·버전·외부 링크·여러 캠프에 연결 | `/campteam/files/` | `files.js`, `file.js`, `upload.js`, `file-url.js`, `campteamFiles.js` |
 | 일정·업무: 달력/목록, 담당·기한 비어도 저장, 상태 변경 | `/campteam/tasks/` | `tasks.js`, `events.js`, `calendar.js` |
@@ -148,7 +153,7 @@ tests/campteam-*.test.mjs     자동 테스트 151개
 
 ### 5-4. 캠프팀 데이터가 저장되는 곳
 D1 표 33개(대부분 행에 고유 번호·만든 사람·삭제 표시. `home_layout`은 보기 설정이라 삭제 표시 대신 초기화하면 행을 지움):
-`camp_members`(명단) · `camp_types`/`camps`(캠프) · `tasks`/`events`(업무·일정) · `checklist_templates`/`checklist_items` · `meetings`/`agenda_items`/`decisions`/`meeting_files`/`meeting_texts`(회의) · `files`/`file_versions`/`file_links`(자료) · `budget_lines`/`budget_targets`(예산) · `tv_layout`/`tv_settings`/`notices`(TV) · `home_layout`(홈 배치) · **장부**: `ledger_categories`(항목 목록) · `ledger_periods`(기간) · `ledger_entries`(거래) · `ledger_plan`(기간 예산) · `ledger_imports`(엑셀 가져오기 기록) · `ledger_reconcile`(잔액 대조) · `ledger_expense_rules/_rows/_seen`(경비 연동) · `calc_scenarios`(계산기) · `glossary` · `ai_drafts` · `audit_log`.
+`camp_members`(명단) · `camp_types`/`camps`(캠프) · `tasks`/`events`(업무·일정) · `checklist_templates`/`checklist_items` · `meetings`/`agenda_items`/`decisions`/`meeting_files`/`meeting_texts`(회의) · `files`/`file_versions`/`file_links`(자료) · `budget_lines`/`budget_targets`(예산) · **알림공지**: `announcements`/`announcement_recipients`/`alert_state`/`daily_summaries`/`notify_settings`/`notify_prefs`/`mail_log` · `space_layout` · `member_perms` · `tv_layout`/`tv_settings`/`notices`(TV) · `home_layout`(홈 배치) · **장부**: `ledger_categories`(항목 목록) · `ledger_periods`(기간) · `ledger_entries`(거래) · `ledger_plan`(기간 예산) · `ledger_imports`(엑셀 가져오기 기록) · `ledger_reconcile`(잔액 대조) · `ledger_expense_rules/_rows/_seen`(경비 연동) · `calc_scenarios`(계산기) · `glossary` · `ai_drafts` · `audit_log`.
 
 - **삭제는 휴지통 방식**(`deletedAt`) — 복구 가능, 영구 삭제 기능은 없음.
 - **금액은 정수로 저장**(원=원, 달러=센트): 소수 오차 방지, USD 확장 대비.
@@ -168,7 +173,7 @@ D1 표 33개(대부분 행에 고유 번호·만든 사람·삭제 표시. `home
 ### ✅ 확인함
 - **회계 장부 흐름 전체**를 자동 테스트와 브라우저로 확인: 권한(월코 재정·일반 팀원·캠프 재정·디렉터·관리자), 기간 만들기·마감·이월·다시 열기, 거래 입력·수정·삭제·복구, 항목 목록 이름 변경이 거래에 반영, 엑셀 가져오기(처음 → 같은 파일 다시 → 바뀐 것만, 충돌, ID 열 왕복, 이월금 이중 계산 방지, 150줄 묶음 처리), 경비 연동(캠프 계좌만, 외화, 중복 의심, 기간 없음·마감 후 재시도, 읽기 전용), 잔액 대조, 계산기(손익분기·시나리오 저장·기간 예산 적용)
 - **실제 회계 엑셀 파일의 구조**(4개 탭, 날짜가 없는 첫 이월금 줄, 숫자 날짜, 수식만 있는 빈 줄)를 같은 모양의 가짜 파일로 가져오기·다시 가져오기·고쳐서 가져오기까지 시험 (실제 파일은 구조만 읽었고 저장소에 넣지 않음)
-- 자동 테스트 **151개 통과** (권한·파일·업무·체크리스트·회의·예산·TV·관리·AI·구글·캠프 공간·홈 배치·역할별 접근 표).
+- 자동 테스트 **172개 통과** (권한·파일·업무·체크리스트·회의·예산·TV·관리·AI·구글·캠프 공간·홈 배치·역할별 접근 표).
 - 실제 브라우저로 로컬 서버에서 역할별(관리자/재정/팀원/조회만) 화면 확인, 폰(375px)·아이패드(768px) 폭에서 가로 넘침 없음.
 - TV 화면: 렌더링, 슬라이드 넘김, 오프라인 표시, 편집기에서 끌어서 저장 → TV에 반영.
 - AI 초안: **가짜 AI 서버**로 요청 모양·검토·선택 적용 흐름 확인.

@@ -1,10 +1,11 @@
-import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, noDb, denyView } from '../../lib/campteamAuth.js';
 
 /** 파일 하나의 자세한 정보: 버전 이력과 연결된 캠프 포함 */
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
+  { const dv = denyView(s.perms, 'files', '자료'); if (dv) return dv; }
   const id = new URL(request.url).searchParams.get('id');
   const f = await env.DB.prepare(`SELECT f.*, c.nameKo AS campKo, c.nameEn AS campEn, t.nameKo AS typeKo, t.nameEn AS typeEn
     FROM files f LEFT JOIN camps c ON c.id = f.campId LEFT JOIN camp_types t ON t.id = f.typeId WHERE f.id = ?1 AND f.deletedAt IS NULL`).bind(id).first();

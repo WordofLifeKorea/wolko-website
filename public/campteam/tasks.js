@@ -23,7 +23,7 @@
   var STATUS = [['Not Started', 'stNot'], ['In Progress', 'stIn'], ['Waiting for Confirmation', 'stWait'], ['Delayed', 'stDelayed'], ['Completed', 'stDone'], ['Not Applicable', 'stNA']];
   var PRI = [['High', 'priHigh'], ['Medium', 'priMedium'], ['Low', 'priLow']];
   var S = { tasks: null, types: [], flag: 'open', tab: 'list', month: null, calView: 'grid', cal: null, tpls: [], perms: null };
-  var canWrite = function () { return S.perms && S.perms.write; };
+  var canWrite = function () { return !!(S.perms && S.perms.areas && S.perms.areas.tasks === 'edit'); };
   var stLabel = function (v) { return CT.t((STATUS.filter(function (s) { return s[0] === v; })[0] || [0, 'stNot'])[1]); };
   var priLabel = function (v) { return CT.t('pri' + v); };
   var campLabel = function (r) { return CT.lang() === 'en' ? (r.campEn || r.campKo || '') : (r.campKo || r.campEn || ''); };
@@ -66,7 +66,7 @@
       return '<button class="pill ' + p[3] + (S.flag === p[0] ? ' on' : '') + '" data-flag="' + p[0] + '">' + esc(CT.t(p[1])) + (p[2] !== '' ? '<b>' + p[2] + '</b>' : '') + '</button>'; }).join('');
     $('tlist').innerHTML = S.tasks.items.length ? S.tasks.items.map(function (t) {
       var late = t.dueDate && t.dueDate < today && t.status !== 'Completed' && t.status !== 'Not Applicable';
-      var ownerHtml = t.ownerName ? esc(CT.t('owner')) + ': ' + esc(t.ownerName) : '<span class="tag t-late">' + esc(CT.t('noOwner')) + '</span>' + (t.ownerSuggestion ? ' <span class="sugg">' + esc(CT.t('suggested')) + ': ' + esc(t.ownerSuggestion) + (canWrite() ? '<button data-confirm="' + esc(t.id) + '">' + esc(CT.t('confirm')) + '</button>' : '') + '</span>' : '');
+      var ownerHtml = t.ownerName ? esc(CT.t('owner')) + ': ' + esc(t.ownerName) : '<span class="tag t-late">' + esc(CT.t('noOwner')) + '</span>' + CT.help('ownerSuggest') + (t.ownerSuggestion ? ' <span class="sugg">' + esc(CT.t('suggested')) + ': ' + esc(t.ownerSuggestion) + (canWrite() ? '<button data-confirm="' + esc(t.id) + '">' + esc(CT.t('confirm')) + '</button>' : '') + '</span>' : '');
       var dueHtml = t.dueDate ? '<span class="tag ' + (late ? 't-late' : daysFrom(today, t.dueDate) <= 3 ? 't-soon' : 't-none') + '">' + esc(CT.t('due')) + ' ' + esc(md(t.dueDate)) + (late ? ' · ' + esc(CT.t('overdue')) : '') + '</span>' : '<span class="tag t-none">' + esc(CT.t('noDue')) + '</span>';
       return '<div class="task ' + (t.status === 'Completed' ? 'done' : '') + '"><div><div class="tt">' + esc(t.title) + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</div>' +
         '<small>' + ownerHtml + ' · ' + dueHtml + ' <span class="tag p-' + t.priority + '">' + esc(priLabel(t.priority)) + '</span>' + (campLabel(t) ? ' · ' + esc(campLabel(t)) : '') + (t.notes ? '<br>' + esc(t.notes) : '') + '</small></div>' +

@@ -1,4 +1,4 @@
-import { campSession, canWriteFile, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
+import { campSession, canWriteFile, json, needLogin, needPerm, badRequest, noDb, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, audit } from '../../lib/campteamDb.js';
 import { CATEGORIES, FILE_STATUSES, restrictedFor, validExternalUrl, linkKindFor, kindForLink } from '../../lib/campteamFiles.js';
 
@@ -21,6 +21,7 @@ export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
+  { const dv = denyView(s.perms, 'files', '자료실'); if (dv) return dv; }
   const p = new URL(request.url).searchParams;
   const where = ['f.deletedAt IS NULL'], args = [];
   if (!s.perms.moneyRead) where.push('f.restricted = 0'); // 금액 자료는 권한이 없으면 목록에도 나오지 않는다

@@ -134,7 +134,7 @@
 
   /* ---------- 팀 공지 ---------- */
   var notices = [], canWrite = false;
-  async function loadNotices() { var r = await CT.api('/api/campteam/notices'); notices = r.items; canWrite = r.perms.write; $('ntAdd').hidden = !canWrite; renderNotices(); }
+  async function loadNotices() { var r = await CT.api('/api/campteam/notices'); notices = r.items; canWrite = !!(r.perms.areas && r.perms.areas.camps === 'edit'); $('ntAdd').hidden = !canWrite; renderNotices(); }
   function renderNotices() {
     $('ntList').innerHTML = notices.length ? notices.map(function (n) { var t = CT.lang() === 'en' ? (n.messageEn || n.message) : (n.message || n.messageEn);
       return '<div class="row"><div>' + esc(t) + (n.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '<small>' + (n.active ? '' : '(hidden) ') + esc(n.messageEn && CT.lang() !== 'en' ? n.messageEn : '') + '</small></div><div class="actions"><span class="chip ' + (n.active ? 'ok' : 'gray') + '">' + esc(n.active ? 'ON' : 'OFF') + '</span>' +

@@ -38,7 +38,7 @@
   function campName(r) { return CT.lang() === 'en' ? (r.campEn || r.campKo || '') : (r.campKo || r.campEn || ''); }
   function typeName(r) { return CT.lang() === 'en' ? (r.typeEn || r.typeKo || '') : (r.typeKo || r.typeEn || ''); }
   function where(f) { return f.campKo || f.campEn ? campName(f) : (f.typeKo || f.typeEn ? typeName(f) + ' (' + CT.t('targetType').replace(' — ', '') + ')' : CT.t('targetNone')); }
-  function perms() { return S.perms || { write: false, moneyWrite: false }; }
+  function perms() { var p = S.perms || { moneyWrite: false }; return { write: !!(p.areas && p.areas.files === 'edit'), moneyWrite: !!p.moneyWrite }; } // 일반 자료는 "자료실" 항목 권한, 금액 자료는 "예산·장부" 수정 권한
   function canAdd() { var p = perms(); return p.write || p.moneyWrite; }
   function canEdit(f) { var p = perms(); return f.restricted ? p.moneyWrite : p.write; }
   function allowedCats() { var p = perms(); return CATS.filter(function (c) { return c === 'budget' ? p.moneyWrite : p.write; }); }
@@ -72,7 +72,7 @@
       if (f.storage !== 'link' && f.versionNo) meta += ' · v' + f.versionNo + (f.sizeBytes ? ' · ' + fmtSize(f.sizeBytes) : '');
       if (f.storage === 'link') meta += ' · ' + esc(linkLabel(f.linkKind));
       return '<div class="file-row" data-id="' + esc(f.id) + '">' + kindChip(f) +
-        '<div class="fm"><b data-open="' + esc(f.id) + '">' + esc(f.title) + '</b>' + (f.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + statusChip(f) + (f.restricted ? '<span class="chip lock">🔒 ' + esc(CT.t('locked')) + '</span>' : '') +
+        '<div class="fm"><b data-open="' + esc(f.id) + '">' + esc(f.title) + '</b>' + (f.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + statusChip(f) + (f.restricted ? '<span class="chip lock">🔒 ' + esc(CT.t('locked')) + '</span>' + CT.help('restricted') : '') +
         '<small>' + meta + '</small></div>' +
         '<div class="actions"><button class="btn sm" data-open="' + esc(f.id) + '">' + esc(CT.t('details')) + '</button>' +
         (f.storage === 'link' ? '<a class="btn sm pri" href="' + esc(f.externalUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(CT.t('openExternal')) + '</a>' : '<button class="btn sm pri" data-dl="' + esc(f.id) + '">' + esc(CT.t('download')) + '</button>') + '</div></div>';
@@ -101,7 +101,7 @@
     var d;
     try { d = await CT.api('/api/campteam/file?id=' + encodeURIComponent(id)); } catch (e) { alert(e.message); return; }
     var f = d.file, cur = d.versions.filter(function (v) { return v.id === f.currentVersionId; })[0], edit = canEdit(f);
-    var h = '<h3>' + esc(f.title) + (f.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + statusChip(f) + (f.restricted ? '<span class="chip lock">🔒 ' + esc(CT.t('locked')) + '</span>' : '') + '</h3>';
+    var h = '<h3>' + esc(f.title) + (f.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + statusChip(f) + (f.restricted ? '<span class="chip lock">🔒 ' + esc(CT.t('locked')) + '</span>' + CT.help('restricted') : '') + '</h3>';
     h += f.description ? '<p class="meta">' + esc(f.description) + '</p>' : '';
     h += '<div class="pv" id="pv"></div>';
     h += '<dl class="kv"><dt>' + esc(CT.t('kvCamp')) + '</dt><dd>' + esc(where(f)) + '</dd>' +

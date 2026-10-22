@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, canView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, isDate, CAMP_STATUSES, audit } from '../../lib/campteamDb.js';
 
 /** 캠프 주제(TV 표시용), 정원, 기존 신청 시스템의 캠프 ID(신청 인원 숫자만 읽어 오는 용도) — 모두 선택 */
@@ -17,6 +17,7 @@ export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
+  if (!['tasks', 'meetings', 'files', 'camps'].some((a) => canView(s.perms, a))) return needPerm('캠프 목록을 볼 권한이 없어요. 관리자에게 요청해 주세요.');
   const types = (await env.DB.prepare('SELECT id, nameKo, nameEn, description, sortOrder, isTest FROM camp_types WHERE deletedAt IS NULL ORDER BY sortOrder, nameKo').all()).results;
   const camps = (await env.DB.prepare(`SELECT c.id, c.typeId, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.location, c.notes, c.theme, c.capacity, c.registrationCampId, c.isTest,
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status <> 'Not Applicable') AS taskTotal,
@@ -30,7 +31,7 @@ export async function onRequestPost({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('작성 권한이 없습니다.');
+  if (!canWrite(s.perms, 'camps')) return needPerm('작성 권한이 없습니다.');
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const id = uuid(), now = nowIso();
   const nameKo = text(b.nameKo, 80);
@@ -64,7 +65,7 @@ export async function onRequestPatch({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('수정 권한이 없습니다.');
+  if (!canWrite(s.perms, 'camps')) return needPerm('수정 권한이 없습니다.');
   const url = new URL(request.url), id = url.searchParams.get('id'), kind = url.searchParams.get('kind');
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const now = nowIso();
@@ -104,7 +105,7 @@ export async function onRequestDelete({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('삭제 권한이 없습니다.');
+  if (!canWrite(s.perms, 'camps')) return needPerm('삭제 권한이 없습니다.');
   const url = new URL(request.url), id = url.searchParams.get('id'), kind = url.searchParams.get('kind');
   const table = kind === 'type' ? 'camp_types' : kind === 'camp' ? 'camps' : '';
   if (!table) return badRequest('종류(kind)가 올바르지 않습니다.');

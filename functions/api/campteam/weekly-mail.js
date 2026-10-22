@@ -1,4 +1,4 @@
-import { json, badRequest, noDb, FIXED_ADMIN_EMAILS } from '../../lib/campteamAuth.js';
+import { json, badRequest, noDb, FIXED_ADMIN_EMAILS, applyOverrides } from '../../lib/campteamAuth.js';
 import { todayKST } from '../../lib/campteamDb.js';
 import { buildWeek, weekEmpty, summaryPrompt, callSummary, summaryItems, SUMMARY_MODEL, tuesdayOf, mondayOf, nowIso } from '../../lib/campteamAlerts.js';
 import { buildWeeklyEmail, sendCampMail, fromAddress } from '../../lib/campteamMail.js';
@@ -24,9 +24,10 @@ export async function onRequestPost({ env, request }) {
   if (!dryRun && !env.RESEND_API_KEY) return json({ error: '메일 서비스 키(RESEND_API_KEY)가 설정되지 않았어요.' }, 503);
   const today = todayKST(), isTue = new Date(today + 'T00:00:00Z').getUTCDay() === 2, weekKey = mondayOf(today);
   if (!isTue && !force && !only) return json({ skipped: 'not-tuesday', today });
-  const rows = (await env.DB.prepare('SELECT email, name FROM camp_members WHERE active = 1').all()).results, seen = new Set(), members = [];
-  for (const r of rows) { const e = r.email.toLowerCase(); if (!seen.has(e)) { seen.add(e); members.push({ email: e, name: r.name || '' }); } }
-  for (const e of FIXED_ADMIN_EMAILS) if (!seen.has(e)) { seen.add(e); members.push({ email: e, name: '' }); }
+  const rows = (await env.DB.prepare('SELECT email, name, role FROM camp_members WHERE active = 1').all()).results, seen = new Set(), members = [];
+  let ov = {}; try { for (const r of (await env.DB.prepare('SELECT email, area, level FROM member_perms').all()).results) (ov[r.email.toLowerCase()] ||= {})[r.area] = r.level; } catch { ov = {}; }
+  for (const r of rows) { const e = r.email.toLowerCase(); if (!seen.has(e)) { seen.add(e); members.push({ email: e, name: r.name || '', perms: applyOverrides(r.role, ov[e]) }); } }
+  for (const e of FIXED_ADMIN_EMAILS) if (!seen.has(e)) { seen.add(e); members.push({ email: e, name: '', perms: applyOverrides('admin', null) }); }
   const prefs = new Map((await env.DB.prepare('SELECT email, weeklyEmail FROM notify_prefs').all()).results.map((r) => [r.email.toLowerCase(), r.weeklyEmail]));
   const sent = new Set((await env.DB.prepare(`SELECT email FROM mail_log WHERE kind = 'weekly' AND weekKey = ?1 AND status = 'sent'`).bind(weekKey).all()).results.map((r) => r.email.toLowerCase()));
   const out = { today, weekKey, from: fromAddress(env), dryRun, planned: [], sent: 0, skipped: [], failed: [] }, base = env.CAMPTEAM_BASE_URL || 'https://wolko.org';
@@ -34,7 +35,7 @@ export async function onRequestPost({ env, request }) {
     if (only && m.email !== only) continue;
     if (!only && prefs.get(m.email) === 0) { out.skipped.push({ email: m.email, why: 'opted-out' }); continue; }
     if (!only && !force && sent.has(m.email)) { out.skipped.push({ email: m.email, why: 'already-sent' }); continue; }
-    const week = await buildWeek(env, m.email, today);
+    const week = await buildWeek(env, m.email, today, m.perms);
     if (weekEmpty(week)) { out.skipped.push({ email: m.email, why: 'nothing-this-week' }); continue; }
     out.planned.push({ email: m.email, tasks: week.tasks.length, overdue: week.overdue.length, meetings: week.meetings.length, events: week.events.length });
     if (dryRun) continue;

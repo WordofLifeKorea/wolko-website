@@ -7,16 +7,39 @@
       permAdmin: 'Admin: view/write/edit all materials, view/write amounts, manage roster', permFinance: 'Finance: view-only for general materials, view/write/edit amounts', permMember: 'Camp team: view/write/edit general materials and amounts', permViewer: 'Other portal users: view general materials only, no amounts', done: 'Saved', you: '(you)', fixedAdmin: 'Fixed admin',
       shTitle: 'Google Sheets sync (preview)', shHelp: 'Shows which cells would be written when portal tasks are mirrored to the existing sheet (Tasks tab). This button writes nothing. Actual writing needs the server setting turned on and a separate admin confirmation.', shPreview: 'Preview', shNotConnected: 'The sheet is not connected yet. This is a mock plan that assumes everything would be newly written.', shConnected: 'Connected to the sheet.', shWriteOff: 'Writing: off (preview only)', shWriteOn: 'Writing: on', shNew: 'New rows', shChange: 'Cells to change', shAdopt: 'Existing rows to link by ID', shRetire: 'Marked Not Applicable (deleted in portal)', shSame: 'Unchanged', shLegacy: 'Existing rows left untouched' }
   });
-  var $ = function (id) { return document.getElementById(id); }, esc = CT.esc, data = null;
+  CT.addDict({
+    ko: { pmBtn: '권한', pmCustom: '맞춤', pmTitle: '항목별 권한', pmFor: '대상', pmRoleBase: '역할 기본값', pmNone: '안 보임', pmView: '보기만', pmEdit: '수정 가능', pmDefaultTag: '기본', pmChanged: '기본과 달라요', pmReset: '역할 기본값으로 되돌리기', pmSave: '저장', pmSaved: '저장했어요.', pmLocked: '관리자의 권한은 바꿀 수 없어요.', pmHint: '역할은 기본값이고, 여기서 고른 칸만 그 사람에게 따로 적용돼요. 이 설정은 관리자만 볼 수 있고 바꿀 수 있어요.',
+      pm_tasks: '일정 · 업무', pmd_tasks: '업무, 일정, 체크리스트 템플릿', pm_meetings: '회의록 · 결정', pmd_meetings: '회의록, 결정, AI 회의록 초안, 용어집', pm_files: '자료실', pmd_files: '파일 보기·올리기 (금액이 들어 있는 자료는 아래 「예산 · 장부」 권한도 필요)', pm_camps: '캠프별 공간 · 공지', pmd_camps: '캠프 행사, 캠프별 공간, TV 화면의 공지', pm_money: '예산 · 장부', pmd_money: '장부, 캠프별 예산안, 금액 자료 (수정 가능 = 거래 입력·기간 마감까지)', pm_personal: '신청자 개인정보', pmd_personal: '연락처, 환불 계좌 등 (볼 때마다 조회 기록이 남아요)', pm_notices: '팀 공지 쓰기', pmd_notices: '알림공지에 팀 공지 올리기·보기' },
+    en: { pmBtn: 'Permissions', pmCustom: 'Custom', pmTitle: 'Permissions by area', pmFor: 'For', pmRoleBase: 'Role default', pmNone: 'Hidden', pmView: 'View only', pmEdit: 'Can edit', pmDefaultTag: 'default', pmChanged: 'Differs from default', pmReset: 'Reset to role default', pmSave: 'Save', pmSaved: 'Saved.', pmLocked: 'An admin’s permissions cannot be changed.', pmHint: 'The role is the default; only the cells you choose here apply to this person. Only admins can see and change this.',
+      pm_tasks: 'Schedule · Tasks', pmd_tasks: 'Tasks, events, checklist templates', pm_meetings: 'Meetings · Decisions', pmd_meetings: 'Minutes, decisions, AI minutes drafts, glossary', pm_files: 'Files', pmd_files: 'View and upload files (files containing amounts also need the "Budget · Ledger" permission)', pm_camps: 'Camp spaces · Notices', pmd_camps: 'Camp events, camp spaces, TV screen notices', pm_money: 'Budget · Ledger', pmd_money: 'Ledger, per-camp budgets, amount files (Edit = enter transactions and close periods)', pm_personal: 'Registrant personal data', pmd_personal: 'Phone numbers, refund accounts, etc. (each view is logged)', pm_notices: 'Team notices', pmd_notices: 'Post and read team notices in Alerts & Notices' }
+  });
+  var $ = function (id) { return document.getElementById(id); }, esc = CT.esc, data = null, custom = {};
 
   function render() {
     $('rows').innerHTML = data.members.map(function (m) {
       return '<tr><td>' + esc(m.email) + (m.email === data.me ? ' ' + esc(CT.t('you')) : '') + (m.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</td><td>' + esc(m.name) + '</td><td><span class="chip">' + esc(CT.roleLabel(m.role)) + '</span></td>' +
-        '<td style="text-align:right">' + (m.fixed ? '<span class="chip gray">' + esc(CT.t('fixedAdmin')) + '</span>' : '<button class="btn sm" data-edit="' + esc(m.email) + '">' + esc(CT.t('edit')) + '</button> <button class="btn sm danger" data-rm="' + esc(m.email) + '">' + esc(CT.t('remove')) + '</button>') + '</td></tr>';
+        '<td style="text-align:right">' + (m.fixed ? '<span class="chip gray">' + esc(CT.t('fixedAdmin')) + '</span>' : (m.role === 'admin' ? '' : '<button class="btn sm" data-perm="' + esc(m.email) + '">' + esc(CT.t('pmBtn')) + (custom[m.email.toLowerCase()] ? ' <span class="chip" style="background:#fff2dc;color:#8a5a00">' + esc(CT.t('pmCustom')) + ' ' + custom[m.email.toLowerCase()] + '</span>' : '') + '</button> ') + '<button class="btn sm" data-edit="' + esc(m.email) + '">' + esc(CT.t('edit')) + '</button> <button class="btn sm danger" data-rm="' + esc(m.email) + '">' + esc(CT.t('remove')) + '</button>') + '</td></tr>';
     }).join('');
     $('roleSel').innerHTML = data.roles.map(function (r) { return '<option value="' + r + '">' + esc(CT.roleLabel(r)) + '</option>'; }).join('');
   }
-  async function load() { data = await CT.api('/api/campteam/members'); render(); }
+  async function load() { data = await CT.api('/api/campteam/members'); try { custom = Object.fromEntries((await CT.api('/api/campteam/member-perms')).list.map(function (x) { return [x.email.toLowerCase(), x.custom]; })); } catch (e) { custom = {}; } render(); }
+  async function permDialog(email) {
+    var d; try { d = await CT.api('/api/campteam/member-perms?email=' + encodeURIComponent(email)); } catch (e) { alert(e.message); return; }
+    if (d.locked) { alert(CT.t('pmLocked')); return; }
+    var lv = { none: 'pmNone', view: 'pmView', edit: 'pmEdit' }, f = '<div class="hintbox">' + esc(CT.t('pmHint')) + '</div><div style="margin:8px 0"><b>' + esc(d.name || d.email) + '</b> <span class="chip">' + esc(CT.roleLabel(d.role)) + '</span> ' + CT.help('role') + '</div><table class="pmtable"><thead><tr><th>' + esc(CT.t('pmTitle')) + CT.help('permTable') + '</th>' + ['none', 'view', 'edit'].map(function (l) { return '<th>' + esc(CT.t(lv[l])) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      d.areas.map(function (a) {
+        var cur = d.effective[a], def = d.defaults[a], opts = d.levels[a];
+        return '<tr data-area="' + a + '"><td><b>' + esc(CT.t('pm_' + a)) + '</b><small>' + esc(CT.t('pmd_' + a)) + '</small></td>' + ['none', 'view', 'edit'].map(function (l) {
+          if (opts.indexOf(l) < 0) return '<td class="off">—</td>';
+          return '<td class="' + (def === l ? 'def' : '') + '"><label><input type="radio" name="pm_' + a + '" value="' + l + '"' + (cur === l ? ' checked' : '') + '>' + (def === l ? '<em>' + esc(CT.t('pmDefaultTag')) + '</em>' : '') + '</label></td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table>';
+    CT.ask(CT.t('pmTitle'), f, async function () {
+      var ov = {}; d.areas.forEach(function (a) { var c = document.querySelector('#dlgForm input[name=pm_' + a + ']:checked'); if (c) ov[a] = c.value; });
+      await CT.api('/api/campteam/member-perms', { method: 'PUT', body: { email: d.email, overrides: ov } }); await load();
+    }, { saveLabel: CT.t('pmSave'), extra: '<button type="button" class="btn" id="pmReset" style="margin-right:auto">' + esc(CT.t('pmReset')) + '</button>' });
+    var rs = $('pmReset'); if (rs) rs.onclick = function () { d.areas.forEach(function (a) { var r = document.querySelector('#dlgForm input[name=pm_' + a + '][value=' + d.defaults[a] + ']'); if (r) r.checked = true; }); };
+  }
 
   CT.boot(async function (me) {
     if (!me.perms.manageMembers) { $('main').innerHTML = '<div class="err">' + esc(CT.t('loadFail')) + ' (403)</div>'; return; }
@@ -24,6 +47,7 @@
     CT.applyI18n();
     $('rows').addEventListener('click', async function (e) {
       var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.perm) { permDialog(b.dataset.perm); return; }
       if (b.dataset.edit) { var m = data.members.filter(function (x) { return x.email === b.dataset.edit; })[0]; $('fEmail').value = m.email; $('fName').value = m.name; $('roleSel').value = m.role; window.scrollTo(0, document.body.scrollHeight); }
       else if (b.dataset.rm) { if (!confirm(CT.t('remove') + '?')) return; try { await CT.api('/api/campteam/members?email=' + encodeURIComponent(b.dataset.rm), { method: 'DELETE' }); await load(); } catch (err) { alert(err.message); } }
     });

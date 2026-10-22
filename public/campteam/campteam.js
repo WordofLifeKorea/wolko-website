@@ -12,6 +12,8 @@
       roleadmin: 'Admin', roledirector: 'Camp Team Director', rolefinance: 'Camp Finance', roletreasurer: 'WOLKO Finance (view only)', rolemember: 'Camp Team', roleviewer: 'View only', loadFail: 'Could not load', save: 'Save', cancel: 'Cancel', edit: 'Edit', del: 'Delete', add: 'Add', confirmDel: 'Delete this? (It is only marked deleted and can be restored.)' }
   });
 
+  /** 내 항목별 권한: CT.can('tasks', 'edit') — 수준은 view(보기) / edit(수정). 안 보임이면 둘 다 false */
+  CT.can = function (area, level) { var a = CT.me && CT.me.perms && CT.me.perms.areas; if (!a) return false; var l = a[area] || 'none'; return level === 'edit' ? l === 'edit' : l === 'edit' || l === 'view'; };
   CT.lang = function () { try { return localStorage.getItem('wolko-lang') === 'en' ? 'en' : 'ko'; } catch (e) { return 'ko'; } };
   CT.t = function (k) { var d = CT.dict[CT.lang()]; return (k in d) ? d[k] : (CT.dict.ko[k] || k); };
   CT.esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
@@ -159,6 +161,9 @@
     document.getElementById('moneyHead').hidden = document.getElementById('moneyNav').hidden = !p.moneyRead;
     document.getElementById('adminHead').hidden = document.getElementById('settingsNav').hidden = !p.manageMembers;
     document.getElementById('trashNav').hidden = !(p.write || p.moneyWrite);
+    // 항목별 권한: 볼 수 없는 영역의 메뉴는 숨긴다 (서버도 같은 기준으로 막는다)
+    var NAVAREA = { '/campteam/tasks/': 'tasks', '/campteam/meetings/': 'meetings', '/campteam/files/': 'files', '/campteam/resources/': 'files', '/campteam/camps/': 'camps', '/campteam/tv/': 'camps' };
+    [].forEach.call(document.querySelectorAll('.nav a[href]'), function (a) { var area = NAVAREA[a.getAttribute('href')]; if (area && !CT.can(area, 'view')) a.hidden = true; });
     var renderWho = function () { document.getElementById('who').innerHTML = CT.esc(CT.me.email) + '<br><span class="chip">' + CT.esc(CT.roleLabel(CT.me.campRole)) + '</span>' + (CT.usingGoogle() ? ' <a href="#" id="gout">' + CT.esc(CT.t('logout')) + '</a>' : ''); var o = document.getElementById('gout'); if (o) o.onclick = function (e) { e.preventDefault(); CT.googleLogout(); }; };
     renderWho(); document.addEventListener('ct-lang', renderWho);
     await init(CT.me);

@@ -26,7 +26,7 @@
 
   // ── 내 알림 한 줄 ──
   function itemHtml(it) {
-    var canDone = it.type === 'task' && CT.me && CT.me.perms && CT.me.perms.write;
+    var canDone = it.type === 'task' && CT.can('tasks', 'edit');
     return '<div class="ali ' + esc(it.level) + (it.state ? ' seen' : '') + '" data-key="' + esc(it.key) + '"><div class="alm"><span class="alt">' + esc(label(it)) + (!it.state ? '<i class="aldot" aria-hidden="true"></i>' : '') + '</span>' +
       '<a class="alx" href="' + esc(it.href || '#') + '" data-a="seen" data-key="' + esc(it.key) + '">' + esc(it.title) + '</a><small>' + esc([CT.lang() === 'en' && it.campEn ? it.campEn : it.camp, it.date ? dateShort(it.date) : '', it.time || ''].filter(Boolean).join(' · ')) + '</small></div>' +
       '<div class="alb">' + (canDone ? '<button type="button" class="btn sm" data-a="done" data-id="' + esc(it.taskId) + '">' + esc(CT.t('alDone')) + '</button>' : '') + '<button type="button" class="alclose" data-a="dismiss" data-key="' + esc(it.key) + '" aria-label="' + esc(CT.t('alDismiss')) + '" title="' + esc(CT.t('alDismiss')) + '">✕</button></div></div>';
@@ -86,7 +86,7 @@
 
   // ── 홈: 오늘 내가 할 일 ──
   function todayRow(t, cls) {
-    var canDone = t.type === 'task' && CT.me.perms.write;
+    var canDone = t.type === 'task' && CT.can('tasks', 'edit');
     return '<div class="tdr td-' + cls + '"><a href="' + esc(t.href || '#') + '"><b>' + esc(t.title) + '</b><small>' + esc([CT.lang() === 'en' && t.campEn ? t.campEn : t.camp, t.date ? dateShort(t.date) : '', t.time || '', t.type === 'task' && t.daysLeft < 0 ? CT.t('alOver') + ' ' + (-t.daysLeft) + CT.t('alDayUnit') : ''].filter(Boolean).join(' · ')) + '</small></a>' +
       (canDone ? '<button type="button" class="btn sm" data-a="done" data-id="' + esc(t.taskId || '') + '">' + esc(CT.t('alDone')) + '</button>' : '') + '</div>';
   }

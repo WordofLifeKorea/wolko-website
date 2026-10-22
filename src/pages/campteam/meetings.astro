@@ -3,7 +3,7 @@ import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
 ---
 <CampTeamLayout title="회의록 · 결정" active="meetings">
   <div class="top">
-    <div><h1 data-t="mtTitle"></h1><div class="sub" data-t="mtSub"></div></div>
+    <div><div class="h1row"><h1 data-t="mtTitle"></h1><span class="qh" data-h="pageMeetings"></span></div><div class="sub" data-t="mtSub"></div></div>
     <div class="actions"><button class="btn" id="impMin" hidden data-t="impMin"></button><button class="btn pri" id="addMeeting" hidden data-t="addMeeting"></button></div>
   </div>
   <div class="hintbox" id="viewOnly" data-t="viewOnly" hidden style="margin-bottom:14px"></div>
@@ -23,7 +23,7 @@ import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
   </section>
   <section id="paneTopic" hidden><div class="card"><h2 data-t="topicsTitle"></h2><div class="hintbox" data-t="topicsHelp" style="margin-bottom:10px"></div><div id="tags"></div></div></section>
   <section id="paneDec" hidden>
-    <div class="filters t" style="grid-template-columns:1fr 1fr 1fr 1fr auto"><select id="dcamp"></select><select id="dmode"></select><select id="dkind"></select><input id="dq" type="search" data-t-ph="decSearch"><button class="btn" id="addDec" hidden data-t="addDec"></button></div>
+    <div class="filters t" style="grid-template-columns:1fr 1fr 1fr 1fr auto"><select id="dcamp"></select><select id="dmode"></select><select id="dkind"></select><span class="qh" data-h="decision"></span><input id="dq" type="search" data-t-ph="decSearch"><button class="btn" id="addDec" hidden data-t="addDec"></button></div>
     <div id="dlist"></div>
   </section>
   <section id="paneNext" hidden>
@@ -36,5 +36,5 @@ import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
     <h3 id="dlgTitle"></h3>
     <form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form>
   </dialog>
-  <script is:inline slot="scripts" src="/campteam/meetings.js?v=1"></script>
+  <script is:inline slot="scripts" src="/campteam/meetings.js?v=2"></script>
 </CampTeamLayout>

@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, noDb, canView } from '../../lib/campteamAuth.js';
 import { isDate } from '../../lib/campteamDb.js';
 
 /** 달력용 한 번에 보기: ?from=&to= — 팀 일정, 캠프 기간, 업무 마감, 회의 */
@@ -17,5 +17,6 @@ export async function onRequestGet({ env, request }) {
       WHERE k.deletedAt IS NULL AND k.dueDate BETWEEN ?1 AND ?2 AND k.status <> 'Not Applicable' ORDER BY k.dueDate`).bind(from, to).all(),
     db.prepare(`SELECT id, title, meetDate, meetTime, isTest FROM meetings WHERE deletedAt IS NULL AND meetDate BETWEEN ?1 AND ?2 ORDER BY meetDate, meetTime`).bind(from, to).all(),
   ]);
-  return json({ events: events.results, camps: camps.results, tasks: tasks.results, meetings: meetings.results, perms: s.perms });
+  const V = (a, list) => (canView(s.perms, a) ? list : []);
+  return json({ events: V('tasks', events.results), camps: V('camps', camps.results), tasks: V('tasks', tasks.results), meetings: V('meetings', meetings.results), perms: s.perms });
 }

@@ -116,7 +116,7 @@
   var L = null, editing = false, scope = 'mine', work = null, base = '', calMonth = null, calCache = {}, auditCache = null;
   var calView = (function () { try { return localStorage.getItem('ct-cal-view') === 'list' ? 'list' : 'month'; } catch (e) { return 'month'; } })();
   var isAdmin = function () { return !!(data && data.user.perms.manageMembers); };
-  var isTeam = function () { return !!(data && ['admin', 'finance', 'member'].indexOf(data.user.campRole) >= 0); };
+  var isTeam = function () { return !!(data && ['admin', 'director', 'finance', 'member'].indexOf(data.user.campRole) >= 0); };
   function relTime(iso) {
     var t = Date.parse(iso); if (!t) return ''; var min = Math.round((Date.now() - t) / 60000);
     if (min < 1) return CT.t('justNow'); if (min < 60) return min + CT.t('minAgo'); if (min < 1440) return Math.floor(min / 60) + CT.t('hrAgo');

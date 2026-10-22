@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, canView } from '../../lib/campteamAuth.js';
 import { audit } from '../../lib/campteamDb.js';
 import { listRegs, summarize, PORTAL_ID } from '../../lib/campteamPortal.js';
 import { WINTER_CAMP_POLICY, REGISTRATION_WINDOWS, GENDER_CAPACITY, APPLICANT_NOTICE_INFO, usesWinterCampPolicy } from '../../lib/winterCampPolicy.js';
@@ -25,11 +25,12 @@ export async function onRequestGet({ env, request }) {
   const s = await campSession(request, env);
   if (!s) return needLogin();
   if (!s.campRole) return needPerm('캠프팀 명단에 있는 계정만 신청 정보를 볼 수 있어요.');
+  if (!canView(s.perms, 'camps')) return needPerm('캠프별 공간을 볼 권한이 없어요. 관리자에게 요청해 주세요.');
   const p = new URL(request.url).searchParams, campId = p.get('campId');
   if (!campId) return badRequest('campId 가 필요합니다.');
   const camp = await env.DB.prepare('SELECT id, nameKo, nameEn, startDate, endDate, capacity, registrationCampId FROM camps WHERE id = ?1 AND deletedAt IS NULL').bind(campId).first();
   if (!camp) return json({ error: '찾을 수 없습니다.' }, 404);
-  const perms = { moneyRead: s.perms.moneyRead, sensitive: s.perms.moneyWrite, canLink: s.perms.moneyWrite };
+  const perms = { moneyRead: s.perms.moneyRead, sensitive: !!s.perms.personal, canLink: s.perms.moneyWrite };
   const base = { camp: { id: camp.id, nameKo: camp.nameKo, nameEn: camp.nameEn, startDate: camp.startDate, endDate: camp.endDate, capacity: camp.capacity }, portalCampId: camp.registrationCampId || '', perms };
   if (!camp.registrationCampId) return json({ ...base, linked: false });
   let regs; try { regs = await listRegs(env, camp.registrationCampId); } catch (e) { console.error('camp-portal read failed:', e); return json({ ...base, linked: true, unavailable: true }); }

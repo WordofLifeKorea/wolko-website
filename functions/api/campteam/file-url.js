@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, noDb, denyView } from '../../lib/campteamAuth.js';
 import { signToken } from '../../lib/hubAccounts.js';
 import { canPreview } from '../../lib/campteamFiles.js';
 
@@ -13,6 +13,7 @@ export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
+  { const dv = denyView(s.perms, 'files', '자료'); if (dv) return dv; }
   const p = new URL(request.url).searchParams, id = p.get('id');
   const f = await env.DB.prepare('SELECT id, restricted, currentVersionId, storage FROM files WHERE id = ?1 AND deletedAt IS NULL').bind(id).first();
   if (!f || (f.restricted && !s.perms.moneyRead) || f.storage === 'link') return json({ error: '찾을 수 없습니다.' }, 404);

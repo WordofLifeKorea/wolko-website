@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, noDb, canView } from '../../lib/campteamAuth.js';
 import { text, likeOf } from '../../lib/campteamDb.js';
 
 /** 통합 검색: ?q=  업무 · 회의 · 회의 구역(안건별 논의) · 결정 · 파일 (금액 권한이 있으면 예산 항목도). 금액 자료 파일은 권한이 없으면 나오지 않는다. */
@@ -16,7 +16,8 @@ export async function onRequestGet({ env, request }) {
     db.prepare(`SELECT d.id, d.meetingId, d.kind, d.state, d.textKo, d.textEn, d.decidedDate FROM decisions d WHERE d.deletedAt IS NULL AND (d.textKo LIKE ?1 ${E} OR d.textEn LIKE ?1 ${E}) ORDER BY d.decidedDate DESC LIMIT 8`).bind(l).all(),
     db.prepare(`SELECT f.id, f.title, f.kind, f.storage, f.restricted, v.fileName FROM files f LEFT JOIN file_versions v ON v.id = f.currentVersionId WHERE f.deletedAt IS NULL ${s.perms.moneyRead ? '' : 'AND f.restricted = 0'} AND (f.title LIKE ?1 ${E} OR f.description LIKE ?1 ${E} OR f.topic LIKE ?1 ${E} OR v.fileName LIKE ?1 ${E}) ORDER BY f.updatedAt DESC LIMIT 8`).bind(l).all(),
   ]);
-  const groups = { tasks: tasks.results, meetings: meetings.results, sections: sections.results, decisions: decisions.results, files: files.results };
+  const V = (a, list) => (canView(s.perms, a) ? list : []); // 볼 권한이 없는 영역은 결과에서 뺀다
+  const groups = { tasks: V('tasks', tasks.results), meetings: V('meetings', meetings.results), sections: V('meetings', sections.results), decisions: V('meetings', decisions.results), files: V('files', files.results) };
   if (s.perms.moneyRead) { // 금액 권한이 있을 때만 예산 항목도 검색 (아니면 이 표는 읽지도 않는다)
     groups.budget = (await db.prepare(`SELECT id, label, category, plannedAmount, currency FROM budget_lines WHERE deletedAt IS NULL AND (label LIKE ?1 ${E} OR notes LIKE ?1 ${E} OR category LIKE ?1 ${E}) LIMIT 8`).bind(l).all()).results;
   }

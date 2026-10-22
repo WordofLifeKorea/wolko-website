@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, audit, normTags } from '../../lib/campteamDb.js';
 
 const KINDS = ['summary', 'context', 'discussion', 'other'], STATUSES = ['pending', 'discussed', 'decided'];
@@ -8,6 +8,7 @@ export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
+  { const dv = denyView(s.perms, 'meetings', '회의 구역'); if (dv) return dv; }
   const p = new URL(request.url).searchParams, where = [`a.deletedAt IS NULL`, `a.nextMeeting = 1`, `a.status <> 'decided'`, `(m.id IS NULL OR m.deletedAt IS NULL)`], args = [];
   if (p.get('campId') === 'none') where.push('a.campId IS NULL'); else if (p.get('campId')) { where.push('a.campId = ?'); args.push(p.get('campId')); }
   const rows = (await env.DB.prepare(`SELECT a.id, a.meetingId, a.campId, a.topic, a.titleEn, a.bodyKo, a.bodyEn, a.status, a.note, a.tags, a.isTest, m.meetDate, m.title AS meetingTitle, m.titleEn AS meetingTitleEn, c.nameKo AS campKo, c.nameEn AS campEn
@@ -31,7 +32,7 @@ export async function onRequestPost({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('작성 권한이 없습니다.');
+  if (!canWrite(s.perms, 'meetings')) return needPerm('작성 권한이 없습니다.');
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const { v, error } = clean(b); if (error) return badRequest(error);
   let campId = b.campId || null;
@@ -53,7 +54,7 @@ export async function onRequestPatch({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('수정 권한이 없습니다.');
+  if (!canWrite(s.perms, 'meetings')) return needPerm('수정 권한이 없습니다.');
   const id = new URL(request.url).searchParams.get('id');
   const row = await env.DB.prepare('SELECT * FROM agenda_items WHERE id = ?1 AND deletedAt IS NULL').bind(id).first();
   if (!row) return json({ error: '찾을 수 없습니다.' }, 404);
@@ -69,7 +70,7 @@ export async function onRequestDelete({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('삭제 권한이 없습니다.');
+  if (!canWrite(s.perms, 'meetings')) return needPerm('삭제 권한이 없습니다.');
   const id = new URL(request.url).searchParams.get('id');
   const res = await env.DB.prepare('UPDATE agenda_items SET deletedAt = ?2, updatedAt = ?2 WHERE id = ?1 AND deletedAt IS NULL').bind(id, nowIso()).run();
   if (!res.meta?.changes) return json({ error: '찾을 수 없습니다.' }, 404);

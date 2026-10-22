@@ -2,12 +2,12 @@
 import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
 ---
 <CampTeamLayout title="TV 대시보드" active="tv">
-  <div class="top"><div><h1 data-t="tvTitle"></h1><div class="sub" data-t="tvSub"></div></div></div>
+  <div class="top"><div><div class="h1row"><h1 data-t="tvTitle"></h1><span class="qh" data-h="pageTv"></span></div><div class="sub" data-t="tvSub"></div></div></div>
   <div id="adminPart" hidden>
     <section class="card" style="margin-bottom:14px">
       <h2 data-t="tvLink"></h2>
       <div class="hintbox" data-t="tvLinkHelp" style="margin-bottom:10px"></div>
-      <div class="urlbox" id="tvUrl">—</div>
+      <div class="urlbox" id="tvUrl">—</div><span class="qh" data-h="tvKey"></span>
       <div class="actions" style="margin-top:10px"><button class="btn" id="tvCopy" data-t="tvCopy"></button><a class="btn" id="tvOpen" target="_blank" rel="noopener" data-t="tvOpen"></a><button class="btn danger" id="tvRotate" data-t="tvRotate"></button></div>
     </section>
     <section class="card" style="margin-bottom:14px">
@@ -36,5 +36,5 @@ import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
     <form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form>
   </dialog>
   <script is:inline slot="scripts" src="/campteam/tv-core.js?v=1"></script>
-  <script is:inline slot="scripts" src="/campteam/tv-editor.js?v=1"></script>
+  <script is:inline slot="scripts" src="/campteam/tv-editor.js?v=2"></script>
 </CampTeamLayout>

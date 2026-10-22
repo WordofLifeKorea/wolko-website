@@ -11,6 +11,10 @@
  * 같은 업무라도 단계(3일 전 → 1일 전 → 당일 → 지남)가 바뀌면 새 알림으로 다시 올라온다. 이전 단계에서 껐어도 다시 알려 주기 위해서다.
  */
 import { addDays } from './campteamDb.js';
+import { canView } from './campteamAuth.js';
+
+// perms 를 넘기면 항목별 권한(업무·회의)이 없는 영역의 알림은 만들지 않는다. 넘기지 않으면 모두 허용(예: 테스트).
+const allow = (perms, area) => !perms || canView(perms, area);
 
 export const DEFAULT_SETTINGS = { dueDays: [3, 1], eventDays: [1], expireDays: 30 };
 const clampList = (v, fallback, max = 30) => {
@@ -47,14 +51,15 @@ export const tuesdayOf = (date) => addDays(mondayOf(date), 1);
 const s = (v, n) => String(v ?? '').trim().slice(0, n);
 
 /** 내 알림과 오늘 할 일을 계산한다. 반환: { items, today } — items 의 state 는 'seen' | 'dismissed' | null */
-export async function buildAlerts(env, email, { today, settings }) {
+export async function buildAlerts(env, email, { today, settings, perms }) {
   const db = env.DB, me = String(email).toLowerCase(), maxDue = Math.max(...settings.dueDays), maxEvent = Math.max(...settings.eventDays);
+  const none = Promise.resolve({ results: [] }), tv = allow(perms, 'tasks'), mv = allow(perms, 'meetings');
   const [tasks, meetings, events, decisions, states] = await Promise.all([
-    db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
+    !tv ? none : db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
       WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND k.ownerEmail <> '' AND LOWER(k.ownerEmail) = ?1 ORDER BY k.dueDate IS NULL, k.dueDate LIMIT 200`).bind(me).all(),
-    db.prepare(`SELECT id, meetDate, meetTime, title FROM meetings WHERE deletedAt IS NULL AND meetDate >= ?1 AND meetDate <= ?2 ORDER BY meetDate, meetTime LIMIT 20`).bind(today, addDays(today, Math.max(maxEvent, 2))).all(),
-    db.prepare(`SELECT id, title, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND COALESCE(endDate, startDate) >= ?1 AND startDate <= ?2 ORDER BY startDate LIMIT 20`).bind(today, addDays(today, Math.max(maxEvent, 2))).all(),
-    db.prepare(`SELECT d.id, d.textKo, d.textEn, d.kind, d.decidedDate, d.createdAt, d.meetingId FROM decisions d WHERE d.deletedAt IS NULL AND d.state = 'active' AND d.kind IN ('direction','final','changed')
+    !mv ? none : db.prepare(`SELECT id, meetDate, meetTime, title FROM meetings WHERE deletedAt IS NULL AND meetDate >= ?1 AND meetDate <= ?2 ORDER BY meetDate, meetTime LIMIT 20`).bind(today, addDays(today, Math.max(maxEvent, 2))).all(),
+    !tv ? none : db.prepare(`SELECT id, title, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND COALESCE(endDate, startDate) >= ?1 AND startDate <= ?2 ORDER BY startDate LIMIT 20`).bind(today, addDays(today, Math.max(maxEvent, 2))).all(),
+    !mv ? none : db.prepare(`SELECT d.id, d.textKo, d.textEn, d.kind, d.decidedDate, d.createdAt, d.meetingId FROM decisions d WHERE d.deletedAt IS NULL AND d.state = 'active' AND d.kind IN ('direction','final','changed')
       AND COALESCE(d.decidedDate, substr(d.createdAt, 1, 10)) >= ?1 ORDER BY COALESCE(d.decidedDate, substr(d.createdAt, 1, 10)) DESC LIMIT 10`).bind(addDays(today, -7)).all(),
     db.prepare('SELECT alertKey, state FROM alert_state WHERE email = ?1').bind(me).all(),
   ]);
@@ -92,7 +97,8 @@ export async function buildAlerts(env, email, { today, settings }) {
 }
 
 /** 팀 공지 목록(내가 볼 수 있는 것만) + 안 읽음 표시 + 오래된 것 접힘 */
-export async function listAnnouncements(env, email, { today, settings, isAdmin }) {
+export async function listAnnouncements(env, email, { today, settings, isAdmin, perms }) {
+  if (perms && !canView(perms, 'notices')) return [];
   const me = String(email).toLowerCase();
   const rows = (await env.DB.prepare(`SELECT a.id, a.title, a.body, a.audience, a.pinned, a.link, a.createdAt, a.updatedAt, a.createdBy, a.createdByName, a.isTest FROM announcements a
     WHERE a.deletedAt IS NULL AND (a.audience = 'all' OR LOWER(a.createdBy) = ?1 OR EXISTS (SELECT 1 FROM announcement_recipients r WHERE r.announcementId = a.id AND r.email = ?1))
@@ -136,13 +142,14 @@ export function summaryItems(today) {
 export const nowIso = () => new Date().toISOString();
 
 /** 이번 주(월~일)에 해야 할 일: 마감이 지난 업무 + 이번 주 마감 업무 + 이번 주 회의·일정. 주간 요약과 주간 이메일이 쓴다. */
-export async function buildWeek(env, email, today) {
+export async function buildWeek(env, email, today, perms) {
+  const none = Promise.resolve({ results: [] }), tv = allow(perms, 'tasks'), mv = allow(perms, 'meetings');
   const db = env.DB, me = String(email).toLowerCase(), start = mondayOf(today), end = addDays(start, 6);
   const [tasks, meetings, events] = await Promise.all([
-    db.prepare(`SELECT k.id, k.title, k.dueDate, k.priority, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
+    !tv ? none : db.prepare(`SELECT k.id, k.title, k.dueDate, k.priority, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
       WHERE k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable') AND k.ownerEmail <> '' AND LOWER(k.ownerEmail) = ?1 AND k.dueDate IS NOT NULL AND k.dueDate <= ?2 ORDER BY k.dueDate LIMIT 100`).bind(me, end).all(),
-    db.prepare(`SELECT id, meetDate, meetTime, title FROM meetings WHERE deletedAt IS NULL AND meetDate >= ?1 AND meetDate <= ?2 ORDER BY meetDate, meetTime LIMIT 30`).bind(today > start ? today : start, end).all(),
-    db.prepare(`SELECT id, title, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND COALESCE(endDate, startDate) >= ?1 AND startDate <= ?2 ORDER BY startDate LIMIT 30`).bind(today > start ? today : start, end).all(),
+    !mv ? none : db.prepare(`SELECT id, meetDate, meetTime, title FROM meetings WHERE deletedAt IS NULL AND meetDate >= ?1 AND meetDate <= ?2 ORDER BY meetDate, meetTime LIMIT 30`).bind(today > start ? today : start, end).all(),
+    !tv ? none : db.prepare(`SELECT id, title, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND COALESCE(endDate, startDate) >= ?1 AND startDate <= ?2 ORDER BY startDate LIMIT 30`).bind(today > start ? today : start, end).all(),
   ]);
   const t = tasks.results.map((x) => ({ type: 'task', title: x.title, date: x.dueDate, camp: x.campKo || '', priority: x.priority, daysLeft: dayDiff(x.dueDate, today), href: '/campteam/tasks/?open=' + encodeURIComponent(x.id) }));
   return { start, end, overdue: t.filter((x) => x.daysLeft < 0), tasks: t.filter((x) => x.daysLeft >= 0),

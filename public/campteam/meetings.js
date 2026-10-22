@@ -32,7 +32,7 @@
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   var S = { tab: 'list', types: [], perms: null, tag: '', detailId: null, both: false };
   var KIND_DEC = ['proposal', 'direction', 'final', 'hold', 'changed'], KIND_SEC = ['summary', 'context', 'discussion', 'other'];
-  var canWrite = function () { return S.perms && S.perms.write; };
+  var canWrite = function () { return !!(S.perms && S.perms.areas && S.perms.areas.meetings === 'edit'); };
   var camps = function () { var o = []; S.types.forEach(function (t) { t.camps.forEach(function (c) { o.push(c); }); }); return o; };
   var campOpts = function (sel, blank) { return '<option value="">' + esc(blank) + '</option>' + camps().map(function (c) { return '<option value="' + esc(c.id) + '"' + (sel === c.id ? ' selected' : '') + '>' + esc(CT.pick(c, 'name')) + '</option>'; }).join(''); };
   var campName = function (r) { return CT.lang() === 'en' ? (r.campEn || r.campKo || '') : (r.campKo || r.campEn || ''); };

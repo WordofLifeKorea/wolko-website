@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, addDays, audit } from '../../lib/campteamDb.js';
 
 /**
@@ -12,7 +12,7 @@ export async function onRequestPost({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('작성 권한이 없습니다.');
+  if (!canWrite(s.perms, 'tasks')) return needPerm('작성 권한이 없습니다.');
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const camp = await env.DB.prepare('SELECT id, startDate FROM camps WHERE id = ?1 AND deletedAt IS NULL').bind(String(b.campId || '')).first();
   if (!camp) return badRequest('캠프를 찾을 수 없습니다.');

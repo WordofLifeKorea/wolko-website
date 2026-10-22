@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, noDb, canView } from '../../lib/campteamAuth.js';
 import { todayKST, OPEN_STATUS_SQL } from '../../lib/campteamDb.js';
 import { summarize } from '../../lib/campteamMoney.js';
 import { periodTotals } from '../../lib/campteamLedger.js';
@@ -79,17 +79,17 @@ export async function onRequestGet({ env, request }) {
     }
   }
 
+  // 항목별 권한: 볼 수 없는 영역의 위젯 자료는 비워서 내려준다 (자료 자체를 응답에 싣지 않는다)
+  const V = (a, list) => (canView(s.perms, a) ? list : []);
+  const T = canView(s.perms, 'tasks');
   const body = {
     user: { email: s.email, campRole: s.campRole, perms: s.perms },
     today,
-    stats: {
-      open: stats?.open || 0, overdue: stats?.overdue || 0, noOwner: stats?.noOwner || 0,
-      completed: stats?.completed || 0, total: stats?.total || 0,
-    },
-    camps: camps.results, deadlines: deadlines.results, attention: attention.results,
-    agenda: agenda.results, meetings: meetings.results, files: files.results,
-    notices: notices.results, myTasks: myTasks.results, campChoices: campChoices.results,
-    overdue: overdue.results, decisions: decisions.results, statusCounts: statusRows.results,
+    stats: T ? { open: stats?.open || 0, overdue: stats?.overdue || 0, noOwner: stats?.noOwner || 0, completed: stats?.completed || 0, total: stats?.total || 0 } : { open: 0, overdue: 0, noOwner: 0, completed: 0, total: 0 },
+    camps: V('camps', camps.results), deadlines: V('tasks', deadlines.results), attention: V('tasks', attention.results),
+    agenda: V('meetings', agenda.results), meetings: V('meetings', meetings.results), files: V('files', files.results),
+    notices: V('camps', notices.results), myTasks: V('tasks', myTasks.results), campChoices: V('camps', campChoices.results),
+    overdue: V('tasks', overdue.results), decisions: V('meetings', decisions.results), statusCounts: V('tasks', statusRows.results),
   };
   if (budget) body.budget = budget;
   if (ledger) body.ledger = ledger;

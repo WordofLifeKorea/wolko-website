@@ -21,21 +21,48 @@ export const CAMP_ROLES = ['admin', 'director', 'finance', 'treasurer', 'member'
 export const FIXED_ADMIN_EMAILS = ['aidenpark@wolko.org', 'hkim3@wol.org'];
 export const isFixedAdmin = (email) => FIXED_ADMIN_EMAILS.includes(String(email || '').trim().toLowerCase());
 
-export function permsFor(campRole) {
-  const r = campRole;
-  const money = r === 'admin' || r === 'director' || r === 'finance';       // 디렉터와 캠프 재정 담당은 같은 권한
+// ── 항목별 권한 ──
+// 항목(area): tasks 업무·일정 / meetings 회의·결정 / files 자료실 / camps 캠프별 공간(·TV 공지) / money 예산·장부 / personal 신청자 개인정보 / notices 팀 공지 쓰기
+// 수준(level): none 안 보임 / view 보기만 / edit 수정 가능 (personal 은 none/view, 개인정보에는 "수정"이 없음)
+// 역할은 기본값 묶음이고, 관리자가 사람마다 달리 정한 칸(member_perms)이 그 위에 덮어쓴다. 관리자 역할은 덮어쓸 수 없다(잠겨 버리는 사고 방지).
+export const AREAS = ['tasks', 'meetings', 'files', 'camps', 'money', 'personal', 'notices'];
+export const AREA_LEVELS = { tasks: ['none', 'view', 'edit'], meetings: ['none', 'view', 'edit'], files: ['none', 'view', 'edit'], camps: ['none', 'view', 'edit'], money: ['none', 'view', 'edit'], personal: ['none', 'view'], notices: ['none', 'view', 'edit'] };
+const GENERAL = ['tasks', 'meetings', 'files', 'camps'];
+
+/** 역할 기본값 */
+export function roleAreas(campRole) {
+  const r = campRole, money = r === 'admin' || r === 'director' || r === 'finance', editor = money || r === 'member', g = editor ? 'edit' : 'view';
+  return { tasks: g, meetings: g, files: g, camps: g, money: money ? 'edit' : (r === 'treasurer' || r === 'member') ? 'view' : 'none', personal: money ? 'view' : 'none', notices: r ? 'edit' : 'none' };
+}
+/** 항목별 수준 → 코드 곳곳에서 쓰는 권한 묶음 */
+export function permsFromAreas(areas, campRole) {
   return {
     read: true,
-    write: r === 'admin' || r === 'director' || r === 'finance' || r === 'member',
-    moneyRead: money || r === 'treasurer' || r === 'member',                // 장부·예산안·금액 자료를 볼 수 있다 (명단에 없으면 못 봄)
-    moneyWrite: money,                                                      // 장부·예산안·항목 목록을 고칠 수 있다
-    moneyAdmin: money,                                                      // 기간 만들기·마감·다시 열기, 경비 연동 규칙
-    manageMembers: r === 'admin',
+    write: GENERAL.some((a) => areas[a] === 'edit'),            // 일반 자료를 하나라도 고칠 수 있음 (항목별 확인은 canWrite/canView)
+    moneyRead: areas.money !== 'none',                           // 장부·예산안·금액 자료를 볼 수 있다
+    moneyWrite: areas.money === 'edit',                          // 장부·예산안·항목 목록을 고칠 수 있다
+    moneyAdmin: areas.money === 'edit',                          // 기간 만들기·마감·다시 열기, 경비 연동 규칙
+    manageMembers: campRole === 'admin',
+    personal: areas.personal === 'view',                         // 신청자 연락처·환불 계좌 등 개인정보
+    areas,
   };
 }
+export function permsFor(campRole) { return permsFromAreas(roleAreas(campRole), campRole); }
+/** 기본값 위에 사람별 설정(overrides: { area: level })을 얹는다. 모르는 값·허용되지 않는 값은 무시. 관리자 역할은 그대로. */
+export function applyOverrides(campRole, overrides) {
+  const areas = roleAreas(campRole);
+  if (campRole && campRole !== 'admin') for (const [a, l] of Object.entries(overrides || {})) if (AREA_LEVELS[a] && AREA_LEVELS[a].includes(l)) areas[a] = l;
+  return permsFromAreas(areas, campRole);
+}
+const RANK = { none: 0, view: 1, edit: 2 };
+const levelOf = (perms, area) => (perms && perms.areas && perms.areas[area]) || 'none';
+export const canView = (perms, area) => RANK[levelOf(perms, area)] >= 1;
+export const canWrite = (perms, area) => levelOf(perms, area) === 'edit';
+/** 이 항목을 못 보면 돌려줄 403 응답(볼 수 있으면 null) */
+export const denyView = (perms, area, what = '이 내용') => (canView(perms, area) ? null : json({ error: `${what}을(를) 볼 권한이 없어요. 관리자에게 요청해 주세요.`, code: 'forbidden' }, 403));
 
 /** 파일을 만들고 고칠 수 있는지: 금액 자료(restricted)는 금액 권한, 그 밖에는 일반 작성 권한 */
-export const canWriteFile = (perms, restricted) => restricted ? perms.moneyWrite : perms.write;
+export const canWriteFile = (perms, restricted) => restricted ? perms.moneyWrite : canWrite(perms, 'files');
 
 // 내 컴퓨터/같은 와이파이(개발용)에서만 켤 수 있는 테스트 로그인.
 // 운영 서버에서는 CAMPTEAM_DEV_AUTH 값이 없고, 주소도 localhost 계열이 아니라서 절대 켜지지 않는다.
@@ -70,7 +97,11 @@ export async function campSession(request, env) {
     const row = await env.DB.prepare('SELECT role FROM camp_members WHERE email = ?1 AND active = 1').bind(email).first();
     campRole = row ? row.role : null;
   }
-  return { email, hubRole: hub.role, campRole, perms: permsFor(campRole) };
+  let overrides = null;
+  if (campRole && campRole !== 'admin') {
+    try { overrides = Object.fromEntries((await env.DB.prepare('SELECT area, level FROM member_perms WHERE email = ?1').bind(email).all()).results.map((r) => [r.area, r.level])); } catch { overrides = null; /* 아직 이 표가 없는 DB 에서도 기존 역할 권한으로 동작 */ }
+  }
+  return { email, hubRole: hub.role, campRole, perms: applyOverrides(campRole, overrides), custom: !!(overrides && Object.keys(overrides).length) };
 }
 
 const HEADERS = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };

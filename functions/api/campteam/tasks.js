@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, isDate, todayKST, audit, TASK_STATUSES, TASK_PRIORITIES } from '../../lib/campteamDb.js';
 
 const CLOSED = `('Completed','Not Applicable')`;
@@ -15,6 +15,7 @@ export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
+  { const dv = denyView(s.perms, 'tasks', '업무'); if (dv) return dv; }
   const p = new URL(request.url).searchParams, today = todayKST();
   const where = ['k.deletedAt IS NULL'], args = [];
   const campId = p.get('campId');
@@ -66,7 +67,7 @@ export async function onRequestPost({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('작성 권한이 없습니다.');
+  if (!canWrite(s.perms, 'tasks')) return needPerm('작성 권한이 없습니다.');
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const { v, error } = await clean(env, b); if (error) return badRequest(error);
   const id = uuid(), now = nowIso();
@@ -80,7 +81,7 @@ export async function onRequestPatch({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('수정 권한이 없습니다.');
+  if (!canWrite(s.perms, 'tasks')) return needPerm('수정 권한이 없습니다.');
   const id = new URL(request.url).searchParams.get('id');
   const row = await env.DB.prepare('SELECT * FROM tasks WHERE id = ?1 AND deletedAt IS NULL').bind(id).first();
   if (!row) return json({ error: '찾을 수 없습니다.' }, 404);
@@ -96,7 +97,7 @@ export async function onRequestDelete({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!s.perms.write) return needPerm('삭제 권한이 없습니다.');
+  if (!canWrite(s.perms, 'tasks')) return needPerm('삭제 권한이 없습니다.');
   const id = new URL(request.url).searchParams.get('id');
   const res = await env.DB.prepare('UPDATE tasks SET deletedAt = ?2, updatedAt = ?2 WHERE id = ?1 AND deletedAt IS NULL').bind(id, nowIso()).run();
   if (!res.meta?.changes) return json({ error: '찾을 수 없습니다.' }, 404);

@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, canView, canWrite } from '../../lib/campteamAuth.js';
 import { nowIso, audit } from '../../lib/campteamDb.js';
 
 /**
@@ -21,6 +21,8 @@ const KINDS = {
   budget: { table: 'budget_lines', label: 'label', sub: 'currency', money: true },
   ledger: { table: 'ledger_entries', label: `CASE WHEN description <> '' THEN description ELSE category END`, sub: `entryDate || ' · ' || amount`, money: true, where: `source <> 'carry'` }, // 장부 거래(이월금 줄은 시스템이 관리하므로 제외)
 };
+// 항목별 권한: 종류마다 어느 영역인지 (그 영역을 볼 수 있어야 목록에 나오고, 수정할 수 있어야 복구할 수 있다)
+const AREA = { tasks: 'tasks', events: 'tasks', templates: 'tasks', template_items: 'tasks', meetings: 'meetings', sections: 'meetings', decisions: 'meetings', files: 'files', camps: 'camps', camp_types: 'camps', notices: 'camps', announcements: 'notices' };
 async function gate(env, request) {
   if (!env.DB) return { res: noDb() };
   const s = await campSession(request, env);
@@ -33,13 +35,13 @@ async function gate(env, request) {
 export async function onRequestGet({ env, request }) {
   const { s, res } = await gate(env, request); if (res) return res;
   const kind = new URL(request.url).searchParams.get('kind');
-  const allowed = Object.entries(KINDS).filter(([, k]) => (k.money ? s.perms.moneyRead : true));
+  const allowed = Object.entries(KINDS).filter(([name, k]) => (k.money ? s.perms.moneyRead : canView(s.perms, AREA[name])));
   if (!kind) {
     const counts = {};
     for (const [name, k] of allowed) counts[name] = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${k.table} WHERE deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND ${k.restricted} = 0` : ''} ${k.where ? 'AND ' + k.where : ''}`).first()).n;
     return json({ counts });
   }
-  const k = KINDS[kind]; if (!k || (k.money && !s.perms.moneyRead)) return badRequest('종류가 올바르지 않습니다.');
+  const k = KINDS[kind]; if (!k || (k.money ? !s.perms.moneyRead : !canView(s.perms, AREA[kind]))) return badRequest('종류가 올바르지 않습니다.');
   const rows = (await env.DB.prepare(`SELECT t.id, ${k.label} AS label, ${k.sub} AS sub, t.deletedAt,
       (SELECT a.actor FROM audit_log a WHERE a.entityId = t.id AND a.action = 'delete' ORDER BY a.at DESC LIMIT 1) AS deletedBy
     FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ${k.where ? 'AND t.' + k.where : ''} ORDER BY t.deletedAt DESC LIMIT 200`).all()).results;
@@ -51,7 +53,7 @@ export async function onRequestPost({ env, request }) {
   const { s, res } = await gate(env, request); if (res) return res;
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const k = KINDS[b.kind]; if (!k) return badRequest('종류가 올바르지 않습니다.');
-  if (k.money ? !s.perms.moneyWrite : !s.perms.write) return needPerm('복구 권한이 없습니다.');
+  if (k.money ? !s.perms.moneyWrite : !canWrite(s.perms, AREA[b.kind])) return needPerm('복구 권한이 없습니다.');
   const row = await env.DB.prepare(`SELECT * FROM ${k.table} WHERE id = ?1 AND deletedAt IS NOT NULL`).bind(String(b.id || '')).first();
   if (!row || (k.restricted && row[k.restricted] && !s.perms.moneyWrite)) return json({ error: '찾을 수 없습니다.' }, 404);
   // 연결된 상위 항목이 아직 삭제 상태면 복구해도 보이지 않으므로 먼저 알려준다

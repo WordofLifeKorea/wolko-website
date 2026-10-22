@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, badRequest, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, badRequest, noDb, denyView } from '../../lib/campteamAuth.js';
 import { todayKST } from '../../lib/campteamDb.js';
 import { summarize } from '../../lib/campteamMoney.js';
 
@@ -10,6 +10,7 @@ export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
+  { const dv = denyView(s.perms, 'camps', '캠프별 공간'); if (dv) return dv; }
   const p = new URL(request.url).searchParams, db = env.DB, today = todayKST();
   const campId = p.get('id'), typeId = p.get('typeId');
   if (!campId && !typeId) return badRequest('id 또는 typeId 가 필요합니다.');
