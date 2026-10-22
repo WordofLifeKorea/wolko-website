@@ -2,14 +2,26 @@
 // 캠프팀 포털 공통 틀 (사이드바 + 언어 전환 + 로그인 안내). 내용은 각 페이지가 채운다.
 export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'resources' | 'search' | 'budget' | 'tv' | 'trash' | 'settings'; }
 const { title, active } = Astro.props;
+const ICON = {
+  home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5a2 2 0 0 1 4 0v5"/>',
+  camps: '<path d="M3 20 12 4l9 16"/><path d="M9.5 20 12 15.5l2.5 4.5"/><path d="M2 20h20"/>',
+  tasks: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>',
+  meetings: '<path d="M5 4h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-9l-4 3.5V17H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 9h8M8 12.5h5"/>',
+  files: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+  resources: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 11h18"/>',
+  tv: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="m10.5 8.5 4 2-4 2z" fill="currentColor" stroke="none"/>',
+  budget: '<path d="M4 8V6a2 2 0 0 1 2-2h11v4"/><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M16 14h2"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/>',
+  settings: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+};
 const nav = [
-  { key: 'home', href: '/campteam/', t: 'navHome', e: '🏠', c: '#3b8ff0' },
-  { key: 'camps', href: '/campteam/camps/', t: 'navCamps', e: '🏕️', c: '#9bbf1f' },
-  { key: 'tasks', href: '/campteam/tasks/', t: 'navTasks', e: '✅', c: '#22b573' },
-  { key: 'meetings', href: '/campteam/meetings/', t: 'navMeetings', e: '📝', c: '#8b6cf0' },
-  { key: 'files', href: '/campteam/files/', t: 'navFiles', e: '📁', c: '#f0a020' },
-  { key: 'resources', href: '/campteam/resources/', t: 'navResources', e: '📚', c: '#ec5fa0' },
-  { key: 'tv', href: '/campteam/tv/', t: 'navTv', e: '📺', c: '#14b8c4' },
+  { key: 'home', href: '/campteam/', t: 'navHome', c: '#3b8ff0' },
+  { key: 'camps', href: '/campteam/camps/', t: 'navCamps', c: '#9bbf1f' },
+  { key: 'tasks', href: '/campteam/tasks/', t: 'navTasks', c: '#22b573' },
+  { key: 'meetings', href: '/campteam/meetings/', t: 'navMeetings', c: '#8b6cf0' },
+  { key: 'files', href: '/campteam/files/', t: 'navFiles', c: '#f0a020' },
+  { key: 'resources', href: '/campteam/resources/', t: 'navResources', c: '#ec5fa0' },
+  { key: 'tv', href: '/campteam/tv/', t: 'navTv', c: '#14b8c4' },
 ];
 ---
 <!DOCTYPE html>
@@ -25,7 +37,7 @@ const nav = [
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/campteam/campteam.css?v=3">
+  <link rel="stylesheet" href="/campteam/campteam.css?v=4">
   <link rel="stylesheet" href="/campteam/tv.css?v=1">
   <script is:inline src="/wolko-session.js?v=2"></script>
 </head>
@@ -36,12 +48,12 @@ const nav = [
     <form class="gsearch" action="/campteam/search/" method="get" role="search"><input type="search" name="q" minlength="2" maxlength="80" data-t-ph="searchAll" aria-label="search"></form>
     <nav class="nav">
       <h6 data-t="navGroupTeam"></h6>
-      {nav.map(n => <a href={n.href} class={active === n.key ? 'on' : ''} style={`--c:${n.c}`}><span class="ic">{n.e}</span><span data-t={n.t}></span></a>)}
+      {nav.map(n => <a href={n.href} class={active === n.key ? 'on' : ''} style={`--c:${n.c}`}><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON[n.key]} /></span><span data-t={n.t}></span></a>)}
       <h6 id="moneyHead" hidden data-t="navFinance"></h6>
-      <a id="moneyNav" href="/campteam/budget/" class={active === 'budget' ? 'on' : ''} style="--c:#d4a373" hidden><span class="ic">💰</span><span data-t="navBudget"></span></a>
-      <a id="trashNav" href="/campteam/trash/" class={active === 'trash' ? 'on' : ''} style="--c:#9fb4c0" hidden><span class="ic">🗑️</span><span data-t="navTrash"></span></a>
+      <a id="moneyNav" href="/campteam/budget/" class={active === 'budget' ? 'on' : ''} style="--c:#d4a373" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.budget} /></span><span data-t="navBudget"></span></a>
+      <a id="trashNav" href="/campteam/trash/" class={active === 'trash' ? 'on' : ''} style="--c:#9fb4c0" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.trash} /></span><span data-t="navTrash"></span></a>
       <h6 id="adminHead" hidden data-t="navAdmin"></h6>
-      <a id="settingsNav" href="/campteam/settings/" class={active === 'settings' ? 'on' : ''} style="--c:#d155e6" hidden><span class="ic">⚙️</span><span data-t="navSettings"></span></a>
+      <a id="settingsNav" href="/campteam/settings/" class={active === 'settings' ? 'on' : ''} style="--c:#d155e6" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.settings} /></span><span data-t="navSettings"></span></a>
     </nav>
     <div class="side-foot">
       <a class="back" href="/portal/"><span data-t="backPortal"></span></a>

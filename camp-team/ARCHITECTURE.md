@@ -64,7 +64,7 @@ tests/campteam-*.test.mjs     자동 테스트 91개
 | **홈 꾸미기**: 섹션을 끌어서 순서 변경·숨기기·너비(반쪽/전체). 관리자는 "모두의 기본 홈", 각자는 "내 홈"(개인 설정이 우선) | 홈의 "✏️ 홈 꾸미기" | `api/campteam/home-layout.js`, `campteamHomeLayout.js`, 표 `home_layout` |
 | **캠프 자료실 탭**: 기존 포털 캠프 자료실을 수정 없이 그대로 불러옴. 캠프팀에서 들어오면 위에 "← 캠프팀으로 돌아가기" 막대 | `/campteam/resources/` | `src/pages/campteam/resources.astro` |
 | **팝업 공통 동작**: 모든 팝업에 ✕, 바깥 배경·Esc로 닫기, 고친 내용이 있으면 "저장하고 닫기/저장 안 하고 닫기/계속 편집" 확인 | 모든 화면 | `public/campteam/campteam.js` (한 곳) |
-| **포털과 같은 왼쪽 메뉴**(짙은 청록 바탕·색 아이콘 칸·구역 제목)와 메뉴별 이모티콘 | 모든 화면 | `CampTeamLayout.astro`, `campteam.css` |
+| **포털과 같은 왼쪽 메뉴**(짙은 청록 바탕·색 아이콘 칸·구역 제목)와 메뉴별 선 아이콘(포털과 같은 SVG) | 모든 화면 | `CampTeamLayout.astro`, `campteam.css` |
 | 캠프 유형(Winter 등) / 개별 행사 + 캠프별 공간 | `/campteam/camps/`, `/campteam/space/` | `camps.js`, `camp-space.js` |
 | 자료실: 업로드·분류·검색·미리보기·버전·외부 링크·여러 캠프에 연결 | `/campteam/files/` | `files.js`, `file.js`, `upload.js`, `file-url.js`, `campteamFiles.js` |
 | 일정·업무: 달력/목록, 담당·기한 비어도 저장, 상태 변경 | `/campteam/tasks/` | `tasks.js`, `events.js`, `calendar.js` |
