@@ -56,7 +56,9 @@ head('3. 개발용 로그인 우회가 배포 소스에 없음');
     if (!/\.(js|mjs|astro|html|ts)$/.test(f)) continue;
     const t = readFileSync(join(root, f), 'utf8');
     if (/CAMPTEAM_DEV_AUTH/.test(t) && f !== 'functions/lib/campteamAuth.js') hits.push(f + ' (CAMPTEAM_DEV_AUTH)');
-    if (/dev-login/.test(t) && !f.startsWith('public/dev-login')) hits.push(f + ' (dev-login)');
+    // 로그인 안내창의 "시험용 로그인" 링크는 로컬/내부망 주소에서만 보이도록 막혀 있으므로 이 파일 한 곳만 허용
+    if (/dev-login/.test(t) && !f.startsWith('public/dev-login') && f !== 'public/campteam/campteam.js') hits.push(f + ' (dev-login)');
+    if (f === 'public/campteam/campteam.js' && /dev-login/.test(t) && !/location\.hostname/.test(t)) hits.push(f + ' (dev-login 링크에 로컬 주소 제한이 없음)');
   }
   const auth = readFileSync(join(root, 'functions/lib/campteamAuth.js'), 'utf8');
   if (!/localhost|127\.0\.0\.1/.test(auth)) hits.push('campteamAuth.js: 로컬 호스트 제한 코드가 안 보임');

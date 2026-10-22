@@ -31,6 +31,10 @@
   CT.googleLogout = function () { try { localStorage.removeItem('wolko-camp-token'); } catch (e) {} location.reload(); };
   CT.showGate = function () {
     var g = document.getElementById('gate'); if (!g) return; g.hidden = false; if (CT._gateInit) return; CT._gateInit = true;
+    // 내 컴퓨터(로컬 시험 서버)에서만: 실제 포털 계정이 없으므로 시험용 로그인 페이지로 안내한다. 운영 주소에서는 보이지 않는다.
+    if (/^(localhost|127\.0\.0\.1|\[::1\]|(10|192\.168)\.\d+\.\d+(\.\d+)?)$/.test(location.hostname) || /^172\.(1[6-9]|2\d|3[01])\./.test(location.hostname)) {
+      var gn = document.getElementById('gnote'); if (gn && !document.getElementById('devHint')) gn.insertAdjacentHTML('beforebegin', '<p class="meta" id="devHint" style="margin:14px 0 0;color:var(--text)">개발용 시험 서버예요. 실제 포털 계정이 없어서 <a href="/dev-login/" style="color:var(--blue-lt);font-weight:700">시험용 로그인</a>으로 들어가세요.</p>');
+    }
     fetch('/api/campteam/config', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (c) {
       if (!c.googleClientId) return; var box = document.getElementById('gbtn'); box.hidden = false;
       var sc = document.createElement('script'); sc.src = 'https://accounts.google.com/gsi/client'; sc.async = true;
