@@ -31,7 +31,8 @@ test('날짜 더하기', () => {
 test('업무: 팀원은 만들고 고칠 수 있고, 담당자·기한이 비어 있어도 저장된다', async () => {
   const env = mk();
   assert.equal((await call(T, 'onRequestPost', env, U.view, { body: { title: 'x' } })).status, 403);
-  assert.equal((await call(T, 'onRequestPost', env, U.fin, { body: { title: 'x' } })).status, 403, '재정 담당은 일반 업무 작성 불가');
+  assert.equal((await call(T, 'onRequestPost', env, U.fin, { body: { title: 'x' } })).status, 201, '캠프 재정 담당은 디렉터와 같은 권한');
+  assert.equal((await call(T, 'onRequestPost', env, U.tre, { body: { title: 'x' } })).status, 403, '월코 재정(조회)은 일반 업무도 못 만든다');
   const res = await call(T, 'onRequestPost', env, U.mem, { body: { title: '담당·기한 미정 업무' } });
   assert.equal(res.status, 201); const { id } = await res.json();
   const row = env.DB.sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(id);

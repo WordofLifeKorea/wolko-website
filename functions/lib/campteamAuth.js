@@ -4,16 +4,18 @@
  * 로그인은 기존 포털 로그인(portalSession)을 그대로 쓴다 — 기존 계정 목록은 읽기만 하고 절대 쓰지 않는다.
  * 캠프팀 권한은 별도 명단(camp_members, 새 DB)으로만 정한다. 명단에 없는 로그인 사용자는 "조회만".
  *
- *  역할      일반 자료(업무·일정·회의록·파일)   예산·금액
- *  admin     조회·작성·수정                       조회·작성·수정  (명단·설정 관리)
- *  finance   조회만                               조회·작성·수정
- *  member    조회·작성·수정                       조회·작성·수정
- *  (명단 없음) 조회만                             조회 불가
+ *  역할        일반 자료(업무·일정·회의록·파일)   예산·금액(장부·예산안)
+ *  admin       조회·작성·수정                       조회·작성·수정·기간 마감  (명단·설정 관리, 코드에 고정된 2명 포함)
+ *  director    조회·작성·수정                       조회·작성·수정·기간 마감  (캠프팀 디렉터)
+ *  finance     조회·작성·수정                       조회·작성·수정·기간 마감  (캠프 재정 담당 — 디렉터와 같은 권한. 송금·승인은 이 포털에 없음)
+ *  treasurer   조회만                               조회만                    (월코 전체 재정 담당 — 확인용)
+ *  member      조회·작성·수정                       조회만                    (일반 캠프팀 팀원)
+ *  (명단 없음) 조회만                               조회 불가                 (월코팀의 다른 사람에게는 금액이 아예 안 보인다)
  */
 import { parseHubSessionToken, portalSession, normalizeEmail } from './hubAccounts.js';
 import { parseCampToken } from './campteamGoogleAuth.js';
 
-export const CAMP_ROLES = ['admin', 'finance', 'member'];
+export const CAMP_ROLES = ['admin', 'director', 'finance', 'treasurer', 'member'];
 // 코드에 고정된 캠프팀 관리자 2명. 설정 화면에서 빼거나 역할을 바꿀 수 없다. 기존 포털 계정/관리자 목록과는 무관하고 캠프팀 안에서만 적용된다.
 // 그 밖의 관리자·재정 담당·팀원은 모두 설정 화면(팀 명단)에서 추가한다.
 export const FIXED_ADMIN_EMAILS = ['aidenpark@wolko.org', 'hkim3@wol.org'];
@@ -21,12 +23,13 @@ export const isFixedAdmin = (email) => FIXED_ADMIN_EMAILS.includes(String(email 
 
 export function permsFor(campRole) {
   const r = campRole;
-  const money = r === 'admin' || r === 'finance' || r === 'member';
+  const money = r === 'admin' || r === 'director' || r === 'finance';       // 디렉터와 캠프 재정 담당은 같은 권한
   return {
     read: true,
-    write: r === 'admin' || r === 'member',
-    moneyRead: money,
-    moneyWrite: money,
+    write: r === 'admin' || r === 'director' || r === 'finance' || r === 'member',
+    moneyRead: money || r === 'treasurer' || r === 'member',                // 장부·예산안·금액 자료를 볼 수 있다 (명단에 없으면 못 봄)
+    moneyWrite: money,                                                      // 장부·예산안·항목 목록을 고칠 수 있다
+    moneyAdmin: money,                                                      // 기간 만들기·마감·다시 열기, 경비 연동 규칙
     manageMembers: r === 'admin',
   };
 }

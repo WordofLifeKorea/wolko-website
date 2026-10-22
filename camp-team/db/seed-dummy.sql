@@ -161,3 +161,4 @@ INSERT INTO glossary (id,termKo,termEn,keep,notes,createdAt,updatedAt,createdBy,
  ('g2','Unity Camp','Unity Camp',1,'캠프 이름','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
  ('g3','Cause Circle','Cause Circle',1,'후속 양육 모임 이름','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1),
  ('g4','캠프 크루 리더','Camp Crew Leader',0,'직책 번역 고정','2026-10-21T00:00:00Z','2026-10-21T00:00:00Z','seed',1);
+

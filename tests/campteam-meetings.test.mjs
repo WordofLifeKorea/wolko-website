@@ -144,7 +144,7 @@ test('회의에 파일 연결(중복 업로드 없이)과 전사 텍스트 붙�
   assert.equal((await call(MLinks, 'onRequestPost', env, U.mem, { body: { meetingId: 'm1', fileId: 'f1', role: 'photo' } })).status, 201, '두 번 연결해도 한 줄');
   assert.equal(env.DB.sqlite.prepare('SELECT COUNT(*) n, MAX(role) r FROM meeting_files').get().n, 1);
   assert.equal((await call(MLinks, 'onRequestPost', env, U.mem, { body: { meetingId: 'm1', fileId: 'nope' } })).status, 400);
-  assert.equal((await call(MLinks, 'onRequestPost', env, U.mem, { body: { meetingId: 'm1', fileId: 'f4' } })).status, 201, '금액 권한이 있는 팀원은 금액 자료도 연결 가능');
+  assert.equal((await call(MLinks, 'onRequestPost', env, U.mem, { body: { meetingId: 'm1', fileId: 'f4' } })).status, 201, '금액 자료를 볼 수 있는 팀원은 연결 가능');
   const view = await J(await call(Meeting, 'onRequestGet', env, U.view, { qs: '?id=m1' })); assert.deepEqual(view.files.map(f => f.id), ['f1'], '조회만 계정에는 금액 자료가 보이지 않는다');
   assert.equal((await J(await call(Meeting, 'onRequestGet', env, U.mem, { qs: '?id=m1' }))).files.length, 2);
   assert.equal((await call(MLinks, 'onRequestPost', env, U.view, { body: { meetingId: 'm1', fileId: 'f4' } })).status, 403);
@@ -163,7 +163,7 @@ test('통합 검색: 업무·회의·구역·결정·파일, 권한 없는 금�
   assert.ok((await J(await search('breakout', U.view))).groups.sections.some(s => s.meetingId === 'm1'), '회의 구역 본문');
   assert.ok((await J(await search('Sample Theme B', U.view))).groups.decisions.length, '결정 본문');
   const v = await J(await search('예산', U.view)); assert.equal('budget' in v.groups, false); assert.ok(!v.groups.files.some(f => f.restricted), '금액 파일은 조회만 계정 검색에서 제외');
-  const m = await J(await search('예산', U.mem)); assert.ok(m.groups.files.some(f => f.restricted)); assert.ok(Array.isArray(m.groups.budget));
+  const m = await J(await search('예산', U.dir)); assert.ok(m.groups.files.some(f => f.restricted)); assert.ok(Array.isArray(m.groups.budget));
   assert.equal((await J(await search('%%', U.view))).total, 0);
 });
 

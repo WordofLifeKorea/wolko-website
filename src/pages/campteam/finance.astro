@@ -1,0 +1,20 @@
+---
+import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="캠프 예산 · 회계 장부" active="budget">
+  <div class="top">
+    <div><h1 data-t="fnTitle"></h1><div class="sub" data-t="fnSub"></div></div>
+    <div class="actions"><label class="perlbl"><span data-t="fnPeriod"></span><select id="fnPeriodSel"></select></label></div>
+  </div>
+  <div class="locked" id="fnLocked" hidden data-t="budgetLocked"></div>
+  <div id="fnMain" hidden>
+    <div class="hintbox" id="fnViewOnly" hidden style="margin-bottom:12px"></div>
+    <div class="tabs" id="fnTabs"></div>
+    <div id="fnBody"></div>
+  </div>
+  <dialog id="dlg" class="wide">
+    <h3 id="dlgTitle"></h3>
+    <form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form>
+  </dialog>
+  <script is:inline slot="scripts" src="/campteam/finance.js?v=2"></script>
+</CampTeamLayout>

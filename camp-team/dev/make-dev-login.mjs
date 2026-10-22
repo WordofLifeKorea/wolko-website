@@ -4,8 +4,10 @@ import { createHubSessionToken } from '../../functions/lib/hubAccounts.js';
 const SECRET = process.env.LOCAL_ADMIN_PASSWORD || 'local-dev-secret';
 const users = [
   ['admin', 'test-admin@wolko.org', '관리자 (admin)', '모든 것 + 팀 명단 관리'],
-  ['finance', 'test-finance@wolko.org', '재정 담당', '일반 자료는 조회만 · 금액 조회/작성'],
-  ['member', 'test-member@wolko.org', '캠프팀 팀원', '일반 자료 작성 · 금액 조회/작성'],
+  ['director', 'test-director@wolko.org', '캠프팀 디렉터', '일반 자료 작성 · 금액 조회/작성 · 기간 마감'],
+  ['finance', 'test-finance@wolko.org', '캠프 재정 담당', '일반 자료는 조회만 · 금액 조회/작성'],
+  ['treasurer', 'test-treasurer@wolko.org', '월코 재정 담당(조회)', '금액 조회만 · 수정 불가'],
+  ['member', 'test-member@wolko.org', '캠프팀 팀원', '일반 자료 작성 · 금액은 남은 예산 요약만'],
   ['viewer', 'test-viewer@wolko.org', '그 외 포털 사용자', '조회만 · 금액은 안 보임'],
 ];
 const list = [];

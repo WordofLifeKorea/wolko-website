@@ -19,9 +19,14 @@ for f in camp-team/db/0*.sql; do
   [ -e "$STATE/applied/$(basename $f)" ] && continue
   npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file "$f"
   touch "$STATE/applied/$(basename $f)"
+  # 이미 만들어 둔 로컬 DB에 장부 마이그레이션을 이어서 적용한 경우, 장부 더미 자료도 한 번 넣는다
+  if [ "$FRESH" = "0" ] && [ "$(basename $f)" = "0010_ledger.sql" ]; then
+    npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/db/seed-dummy-ledger.sql
+  fi
 done
 if [ "$FRESH" = "1" ]; then
   npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/db/seed-dummy.sql
+  npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/db/seed-dummy-ledger.sql
 fi
 exec npx wrangler@4 pages dev dist --d1 DB=00000000-0000-0000-0000-000000000000 --r2 CAMPTEAM_FILES --persist-to $STATE --port 8788 --ip 0.0.0.0 \
   --binding ADMIN_PASSWORD=local-dev-secret --binding CAMPTEAM_DEV_AUTH=1 ${=WRANGLER_EXTRA}

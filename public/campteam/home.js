@@ -56,7 +56,7 @@
     if (id === 'budget') return d.budget
       ? (d.budget.summary.length ? d.budget.summary.map(function (b) {
           return '<div class="money" style="margin-bottom:10px"><div><label>' + esc(b.currency) + ' · ' + esc(CT.t('planned')) + '</label><strong>' + esc(CT.money(b.planned, b.currency)) + '</strong></div><div><label>' + esc(CT.t('forecast')) + '</label><strong>' + esc(CT.money(b.forecast, b.currency)) + '</strong></div><div><label>' + esc(CT.t('actual')) + '</label><strong>' + esc(CT.money(b.actual, b.currency)) + '</strong></div>' +
-            (b.remaining != null ? '<div><label>' + esc(CT.t('remaining')) + '</label><strong style="color:' + (b.remaining < 0 ? 'var(--accent)' : 'var(--blue)') + '">' + esc(CT.money(b.remaining, b.currency)) + '</strong></div>' : '') + '</div>'; }).join('') + '<a href="/campteam/budget/" class="btn sm">' + esc(CT.t('openBudget')) + '</a>' : '<div class="empty">' + esc(CT.t('none')) + '</div>')
+            (b.remaining != null ? '<div><label>' + esc(CT.t('remaining')) + '</label><strong style="color:' + (b.remaining < 0 ? 'var(--accent)' : 'var(--blue)') + '">' + esc(CT.money(b.remaining, b.currency)) + '</strong></div>' : '') + '</div>'; }).join('') + '<a href="/campteam/finance/" class="btn sm">' + esc(CT.t('openBudget')) + '</a>' : '<div class="empty">' + esc(CT.t('none')) + '</div>')
       : '<div class="locked">' + esc(CT.t('budgetLocked')) + '</div>';
     return '';
   }

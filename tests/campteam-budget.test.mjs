@@ -33,20 +33,22 @@ test('권한: 금액 권한이 없으면 예산 표를 읽지도 않는다', asy
   assert.equal((await call(Budget, 'onRequestGet', env, null)).status, 401);
   assert.equal(seen.some(q => /budget_lines|budget_targets/.test(q)), false);
   assert.equal((await call(Budget, 'onRequestGet', env, U.fin)).status, 200); assert.equal((await call(Budget, 'onRequestPost', env, U.fin, { body: line() })).status, 201, '재정 담당은 금액 작성 가능');
-  assert.equal((await call(Budget, 'onRequestGet', env, U.mem)).status, 200); assert.equal((await call(Budget, 'onRequestGet', env, U.admin)).status, 200);
+  assert.equal((await call(Budget, 'onRequestGet', env, U.dir)).status, 200); assert.equal((await call(Budget, 'onRequestGet', env, U.admin)).status, 200);
+  assert.equal((await call(Budget, 'onRequestGet', env, U.mem)).status, 200, '일반 팀원은 예산을 볼 수 있다'); assert.equal((await call(Budget, 'onRequestPost', env, U.mem, { body: line() })).status, 403, '일반 팀원은 수정할 수 없다'); assert.equal((await call(Budget, 'onRequestGet', env, U.view)).status, 403, '명단에 없는 사람은 못 본다');
+  assert.equal((await call(Budget, 'onRequestGet', env, U.tre)).status, 200, '월코 재정 담당은 조회 가능'); assert.equal((await call(Budget, 'onRequestPost', env, U.tre, { body: line() })).status, 403, '월코 재정 담당은 수정 불가');
 });
 
 test('줄 만들기·검사: 통화별 소수, 음수/형식 오류, 필수 항목', async () => {
-  const env = mk(); const post = (o) => call(Budget, 'onRequestPost', env, U.mem, { body: line(o) });
+  const env = mk(); const post = (o) => call(Budget, 'onRequestPost', env, U.fin, { body: line(o) });
   const ok = await post({ plannedAmount: '1,250,000', expectedAmount: '1,300,000' }); assert.equal(ok.status, 201);
   assert.deepEqual({ ...env.DB.sqlite.prepare('SELECT plannedAmount, expectedAmount, actualAmount FROM budget_lines WHERE id=?').get((await J(ok)).id) }, { plannedAmount: 1250000, expectedAmount: 1300000, actualAmount: null });
   const usd = await post({ currency: 'USD', plannedAmount: '800.50' }); assert.equal(env.DB.sqlite.prepare('SELECT plannedAmount FROM budget_lines WHERE id=?').get((await J(usd)).id).plannedAmount, 80050);
   for (const bad of [{ plannedAmount: '12.5' }, { currency: 'USD', plannedAmount: '1.234' }, { plannedAmount: '-5' }, { plannedAmount: 'x' }, { plannedAmount: '' }, { currency: 'EUR' }, { category: 'weird' }, { label: ' ' }, { campId: '' }, { campId: 'nope' }, { status: 'x' }, { paidAt: 'bad' }, { actualAmount: '-1' }]) assert.equal((await post(bad)).status, 400, JSON.stringify(bad));
-  assert.equal((await call(Budget, 'onRequestPost', env, U.mem, { body: { kind: 'weird' } })).status, 400);
+  assert.equal((await call(Budget, 'onRequestPost', env, U.fin, { body: { kind: 'weird' } })).status, 400);
 });
 
 test('수정·삭제(복구 가능), 통화를 바꾸면 금액도 다시 받는다', async () => {
-  const env = mk(); const patch = (id, body) => call(Budget, 'onRequestPatch', env, U.mem, { qs: `?id=${id}`, body });
+  const env = mk(); const patch = (id, body) => call(Budget, 'onRequestPatch', env, U.fin, { qs: `?id=${id}`, body });
   assert.equal((await patch('b02', { actualAmount: '4,350,000', status: 'paid', paidAt: '2026-11-05' })).status, 200);
   assert.deepEqual({ ...env.DB.sqlite.prepare('SELECT actualAmount,status,paidAt FROM budget_lines WHERE id=?').get('b02') }, { actualAmount: 4350000, status: 'paid', paidAt: '2026-11-05' });
   assert.equal((await patch('b02', { actualAmount: '' })).status, 200); assert.equal(env.DB.sqlite.prepare('SELECT actualAmount FROM budget_lines WHERE id=?').get('b02').actualAmount, null, '비우면 실제 지출 없음');
@@ -55,12 +57,12 @@ test('수정·삭제(복구 가능), 통화를 바꾸면 금액도 다시 받는
   assert.equal(env.DB.sqlite.prepare('SELECT plannedAmount, currency FROM budget_lines WHERE id=?').get('b02').plannedAmount, 300000);
   assert.equal((await patch('nope', { label: 'x' })).status, 404);
   assert.equal((await call(Budget, 'onRequestDelete', env, U.view, { qs: '?id=b03' })).status, 403);
-  assert.equal((await call(Budget, 'onRequestDelete', env, U.mem, { qs: '?id=b03' })).status, 200);
-  assert.ok(!(await J(await call(Budget, 'onRequestGet', env, U.mem))).lines.some(l => l.id === 'b03')); assert.equal(env.DB.sqlite.prepare('SELECT COUNT(*) n FROM budget_lines WHERE id=? AND deletedAt IS NOT NULL').get('b03').n, 1);
+  assert.equal((await call(Budget, 'onRequestDelete', env, U.fin, { qs: '?id=b03' })).status, 200);
+  assert.ok(!(await J(await call(Budget, 'onRequestGet', env, U.fin))).lines.some(l => l.id === 'b03')); assert.equal(env.DB.sqlite.prepare('SELECT COUNT(*) n FROM budget_lines WHERE id=? AND deletedAt IS NOT NULL').get('b03').n, 1);
 });
 
 test('목록 합계(캠프별·통화별)와 총 예산: 한 통화는 한 줄, 두 번 저장하면 갱신', async () => {
-  const env = mk(); const g = async (qs = '') => J(await call(Budget, 'onRequestGet', env, U.mem, { qs }));
+  const env = mk(); const g = async (qs = '') => J(await call(Budget, 'onRequestGet', env, U.fin, { qs }));
   const all = await g('?campId=camp-w27'); const krw = all.summary.find(x => x.currency === 'KRW'), usd = all.summary.find(x => x.currency === 'USD');
   assert.equal(krw.planned, 15150000); assert.equal(krw.forecast, 15420000, '계약금만 낸 항목은 잔금까지, 보험은 실제 초과분 반영'); assert.equal(krw.target, 15000000); assert.equal(krw.overTarget, true, '예상 최종이 총 예산을 넘으면 표시'); assert.equal(krw.remaining, -420000);
   assert.equal(usd.planned, 80000); assert.equal(usd.target, 200000); assert.equal(usd.remaining, 200000 - 85000);
@@ -68,14 +70,14 @@ test('목록 합계(캠프별·통화별)와 총 예산: 한 통화는 한 줄, 
   assert.ok(Array.isArray((await g()).perCamp) && (await g()).perCamp.length >= 2);
   assert.deepEqual((await g('?campId=camp-w27&currency=USD')).lines.map(l => l.id), ['b12']);
   assert.deepEqual((await g('?campId=camp-w27&q=티셔츠')).lines.map(l => l.id), ['b05']);
-  const t = (o) => call(Budget, 'onRequestPost', env, U.mem, { body: { kind: 'target', campId: 'camp-w27', currency: 'KRW', amount: '20,000,000', ...o } });
+  const t = (o) => call(Budget, 'onRequestPost', env, U.fin, { body: { kind: 'target', campId: 'camp-w27', currency: 'KRW', amount: '20,000,000', ...o } });
   assert.equal((await t({})).status, 200); assert.equal(env.DB.sqlite.prepare("SELECT COUNT(*) n FROM budget_targets WHERE campId='camp-w27' AND currency='KRW' AND deletedAt IS NULL").get().n, 1);
   assert.equal((await t({ amount: 'x' })).status, 400); assert.equal((await t({ currency: 'EUR' })).status, 400); assert.equal((await t({ campId: 'nope' })).status, 400);
   assert.equal((await g('?campId=camp-w27')).summary.find(x => x.currency === 'KRW').overTarget, false);
 });
 
 test('지난 캠프 예산 복사: 계획만 복사하고 실제 지출·지급은 비움, 이미 있으면 확인 요구', async () => {
-  const env = mk(); const cp = (body) => call(Budget, 'onRequestPost', env, U.mem, { body: { kind: 'copy', ...body } });
+  const env = mk(); const cp = (body) => call(Budget, 'onRequestPost', env, U.fin, { body: { kind: 'copy', ...body } });
   assert.equal((await cp({ fromCampId: 'camp-w27', toCampId: 'camp-w27' })).status, 400); assert.equal((await cp({ fromCampId: 'nope', toCampId: 'camp-u26' })).status, 400);
   assert.equal((await cp({ fromCampId: 'camp-w27', toCampId: 'camp-u26' })).status, 409);
   const r = await cp({ fromCampId: 'camp-w27', toCampId: 'camp-p26' }); assert.equal(r.status, 201); assert.equal((await J(r)).copied, 12);
@@ -85,9 +87,9 @@ test('지난 캠프 예산 복사: 계획만 복사하고 실제 지출·지급�
 });
 
 test('예상 리포트: 계획 초과 항목, 미지급 수, CSV(엑셀용 BOM, 수식 주입 방지, 통화별 소수)', async () => {
-  const env = mk(); const rep = async (qs, who = U.mem) => call(Report, 'onRequestGet', env, who, { qs });
+  const env = mk(); const rep = async (qs, who = U.fin) => call(Report, 'onRequestGet', env, who, { qs });
   const r = await J(await rep('?campId=camp-w27')); assert.ok(r.overLines.some(l => l.id === 'b08' && l.over === 20000)); assert.ok(r.unpaidCount >= 8); assert.equal(r.formatted.find(f => f.currency === 'USD').planned, '$800.00');
-  await call(Budget, 'onRequestPatch', env, U.mem, { qs: '?id=b03', body: { label: '=HYPERLINK("http://evil","x")', vendor: '+cmd', notes: 'a,b "c"' } });
+  await call(Budget, 'onRequestPatch', env, U.fin, { qs: '?id=b03', body: { label: '=HYPERLINK("http://evil","x")', vendor: '+cmd', notes: 'a,b "c"' } });
   const csvRes = await rep('?campId=camp-w27&format=csv'); assert.equal(csvRes.status, 200); assert.match(csvRes.headers.get('content-type'), /text\/csv/); assert.match(csvRes.headers.get('content-disposition'), /attachment/);
   const bytes = new Uint8Array(await csvRes.clone().arrayBuffer()); assert.deepEqual([...bytes.slice(0, 3)], [0xEF, 0xBB, 0xBF], '엑셀이 한글을 읽도록 BOM 포함');
   const csv = await csvRes.text(); assert.ok(csv.includes("'=HYPERLINK"), '수식으로 시작하는 칸은 막는다'); assert.ok(csv.includes("'+cmd")); assert.ok(csv.includes('"a,b ""c"""'));
@@ -97,6 +99,6 @@ test('예상 리포트: 계획 초과 항목, 미지급 수, CSV(엑셀용 BOM, 
 
 test('홈 요약의 금액은 통화별로 나오고 금액 권한이 없으면 아예 없다', async () => {
   const env = mk(); const home = async (who) => J(await Home.onRequestGet({ env, request: await req(who, { url: 'http://localhost/api/campteam/home' }) }));
-  const m = await home(U.mem); assert.deepEqual(m.budget.summary.map(x => x.currency).sort(), ['KRW', 'USD']); assert.equal('byCategory' in m.budget.summary[0], false);
+  const m = await home(U.fin); assert.deepEqual(m.budget.summary.map(x => x.currency).sort(), ['KRW', 'USD']); assert.equal('byCategory' in m.budget.summary[0], false);
   assert.equal('budget' in (await home(U.view)), false);
 });

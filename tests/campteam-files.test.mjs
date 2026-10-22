@@ -99,7 +99,7 @@ test('새 버전을 올려도 이전 버전이 남고, 되돌릴 수 있다', as
 test('금액 자료(예산): 권한 없는 사람은 목록·상세·열기 모두 막힌다', async () => {
   const { env } = setup();
   assert.equal((await upload(env, U.view, bytes('x'), { query: '?category=budget' })).status, 403);
-  const ok = await upload(env, U.mem, bytes('budget!'), { name: 'budget.xlsx', query: '?category=budget&title=예산표&campId=camp-w27' });
+  const ok = await upload(env, U.fin, bytes('budget!'), { name: 'budget.xlsx', query: '?category=budget&title=예산표&campId=camp-w27' });
   assert.equal(ok.status, 201); const { id } = await ok.json();
   assert.equal(env.DB.sqlite.prepare('SELECT restricted FROM files WHERE id=?').get(id).restricted, 1);
   const viewerList = await list(env, U.view);
@@ -113,10 +113,12 @@ test('금액 자료(예산): 권한 없는 사람은 목록·상세·열기 모�
   assert.equal((await Files.onRequestPatch({ env, request: await req(U.view, { method: 'PATCH', url: `http://localhost/api/campteam/files?id=${gid}`, body: { category: 'budget' } }) })).status, 403);
 });
 
-test('재정 담당: 금액 자료는 올릴 수 있지만 일반 자료는 올릴 수 없다', async () => {
+test('캠프 재정 담당: 금액 자료도 일반 자료도 올릴 수 있고, 월코 재정(조회)과 일반 팀원은 금액 자료를 올릴 수 없다', async () => {
   const { env } = setup();
   assert.equal((await upload(env, U.fin, bytes('x'), { query: '?category=budget' })).status, 201);
-  assert.equal((await upload(env, U.fin, bytes('x'), { query: '?category=program' })).status, 403);
+  assert.equal((await upload(env, U.fin, bytes('x'), { query: '?category=program' })).status, 201);
+  assert.equal((await upload(env, U.tre, bytes('x'), { query: '?category=budget' })).status, 403, '월코 재정(조회)은 못 올린다');
+  assert.equal((await upload(env, U.mem, bytes('x'), { query: '?category=budget' })).status, 403, '일반 팀원은 금액 자료를 못 올린다');
 });
 
 test('외부 링크 등록: https 만, 구글 문서 종류 자동 판별', async () => {

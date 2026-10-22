@@ -20,7 +20,7 @@ test('휴지통: 삭제한 것을 보고 복구하며, 영구 삭제 기능은 �
   const env = mk();
   assert.equal((await call(Trash, 'onRequestGet', env, U.view)).status, 403); assert.equal((await call(Trash, 'onRequestGet', env, null)).status, 401);
   await call(Tasks, 'onRequestDelete', env, U.mem, { qs: '?id=t05' }); await call(Meetings, 'onRequestDelete', env, U.mem, { qs: '?id=m2' });
-  const counts = (await J(await call(Trash, 'onRequestGet', env, U.mem))).counts; assert.equal(counts.tasks, 1); assert.equal(counts.meetings, 1); assert.ok('budget' in counts);
+  const counts = (await J(await call(Trash, 'onRequestGet', env, U.dir))).counts; assert.equal(counts.tasks, 1); assert.equal(counts.meetings, 1); assert.ok('budget' in counts);
   const list = await J(await call(Trash, 'onRequestGet', env, U.mem, { qs: '?kind=tasks' })); assert.equal(list.items[0].id, 't05'); assert.equal(list.items[0].deletedBy, 'test-member@wolko.org');
   assert.equal((await call(Trash, 'onRequestPost', env, U.view, { body: { kind: 'tasks', id: 't05' } })).status, 403);
   assert.equal((await call(Trash, 'onRequestPost', env, U.mem, { body: { kind: 'tasks', id: 't05' } })).status, 200);
@@ -32,11 +32,11 @@ test('휴지통: 삭제한 것을 보고 복구하며, 영구 삭제 기능은 �
 
 test('휴지통: 상위 항목이 삭제 상태면 복구를 막고, 금액 자료는 금액 권한이 있어야 한다', async () => {
   const env = mk();
-  await call(Budget, 'onRequestDelete', env, U.mem, { qs: '?id=b01' });
-  await call(Files, 'onRequestDelete', env, U.mem, { qs: '?id=f4' });
-  // 재정 담당(일반 권한 없음, 금액 권한 있음)도 금액 항목은 복구 가능, 일반 항목은 불가
+  await call(Budget, 'onRequestDelete', env, U.fin, { qs: '?id=b01' });
+  await call(Files, 'onRequestDelete', env, U.fin, { qs: '?id=f4' });
+  // 캠프 재정 담당은 금액 항목을 복구할 수 있고, 월코 재정(조회 전용)은 아무것도 복구할 수 없다
   assert.equal((await call(Trash, 'onRequestPost', env, U.fin, { body: { kind: 'budget', id: 'b01' } })).status, 200);
-  assert.equal((await call(Trash, 'onRequestPost', env, U.fin, { body: { kind: 'tasks', id: 'x' } })).status, 403);
+  assert.equal((await call(Trash, 'onRequestPost', env, U.tre, { body: { kind: 'tasks', id: 'x' } })).status, 403);
   assert.equal((await J(await call(Trash, 'onRequestGet', env, U.fin))).counts.files, 1, '금액 파일은 재정 담당에게 보인다');
   // 일반 팀원은 금액 권한도 있어 보인다. 조회만 계정은 아예 접근 불가(403)
   // 상위(캠프) 삭제 → 하위 복구 거부

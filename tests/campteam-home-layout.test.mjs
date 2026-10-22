@@ -161,7 +161,8 @@ test('홈 요약: 금액 파일은 금액 권한이 없으면 최근 파일 목�
   await env.DB.prepare(`INSERT INTO files (id,title,category,restricted,createdAt,updatedAt,uploadedBy) VALUES ('fr','Secret budget sheet','budget',1,?1,?1,'x')`).bind(now).run();
   const titles = async (who) => (await J(await call(Home, 'onRequestGet', env, who))).files.map((f) => f.title);
   assert.ok(!(await titles(U.view)).includes('Secret budget sheet'), '조회만 사용자에게는 숨김');
-  assert.ok((await titles(U.mem)).includes('Secret budget sheet'), '금액 권한자에게는 보임');
+  assert.ok((await titles(U.mem)).includes('Secret budget sheet'), '일반 팀원은 조회 가능');
+  assert.ok((await titles(U.dir)).includes('Secret budget sheet'), '금액 권한자에게는 보임');
 });
 
 test('접근 권한 표: 역할(비로그인·조회만·재정·팀원·관리자)별로 같은 요청이 어떻게 달라지는지 한 번에 확인', async () => {
@@ -176,11 +177,11 @@ test('접근 권한 표: 역할(비로그인·조회만·재정·팀원·관리�
     ['공지 읽기', Notices, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
     ['용어집 읽기', Glossary, 'onRequestGet', {}, [401, 200, 200, 200, 200]],
     ['예산 읽기(금액)', Budget, 'onRequestGet', { qs: '?campId=camp-u26' }, [401, 403, 200, 200, 200]],
-    ['업무 만들기', Tasks, 'onRequestPost', { body: {} }, [401, 403, 403, '!403', '!403']],
-    ['캠프 만들기', Camps, 'onRequestPost', { body: {} }, [401, 403, 403, '!403', '!403']],
-    ['공지 만들기', Notices, 'onRequestPost', { body: {} }, [401, 403, 403, '!403', '!403']],
-    ['회의 만들기', Meetings, 'onRequestPost', { body: {} }, [401, 403, 403, '!403', '!403']],
-    ['예산 항목 만들기(금액 쓰기)', Budget, 'onRequestPost', { body: {} }, [401, 403, '!403', '!403', '!403']],
+    ['업무 만들기', Tasks, 'onRequestPost', { body: {} }, [401, 403, '!403', '!403', '!403']],
+    ['캠프 만들기', Camps, 'onRequestPost', { body: {} }, [401, 403, '!403', '!403', '!403']],
+    ['공지 만들기', Notices, 'onRequestPost', { body: {} }, [401, 403, '!403', '!403', '!403']],
+    ['회의 만들기', Meetings, 'onRequestPost', { body: {} }, [401, 403, '!403', '!403', '!403']],
+    ['예산 항목 만들기(금액 쓰기)', Budget, 'onRequestPost', { body: {} }, [401, 403, '!403', 403, '!403']],
     ['휴지통 목록', Trash, 'onRequestGet', {}, [401, 403, '!403', '!403', '!403']],
     ['내 홈 저장', HL, 'onRequestPut', { body: { scope: 'mine', layout: layoutOf() } }, [401, 200, 200, 200, 200]],
     ['모두의 기본 홈 저장', HL, 'onRequestPut', { body: { scope: 'default', layout: layoutOf() } }, [401, 403, 403, 403, 200]],
@@ -212,7 +213,7 @@ test('명단에 없는 사람은 조회만이고, 기존 포털 관리자·마�
     const r = await me.onRequestGet({ env, request: new Request('http://localhost:8788/api/campteam/me', { headers: { Authorization: 'Bearer ' + token } }) });
     const who = await J(r);
     assert.ok(!who.campRole || who.campRole === 'viewer', hubRole);
-    assert.deepEqual(who.perms, { read: true, write: false, moneyRead: false, moneyWrite: false, manageMembers: false }, hubRole);
+    assert.deepEqual(who.perms, { read: true, write: false, moneyRead: false, moneyWrite: false, moneyAdmin: false, manageMembers: false }, hubRole);
     const b = await Budget.onRequestGet({ env, request: new Request('http://localhost:8788/api/campteam/budget?campId=camp-u26', { headers: { Authorization: 'Bearer ' + token } }) });
     assert.equal(b.status, 403, hubRole + ' 는 금액을 볼 수 없다');
     const d = await HL.onRequestPut({ env, request: new Request('http://localhost:8788/api/campteam/home-layout', { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ scope: 'default', layout: layoutOf() }) }) });

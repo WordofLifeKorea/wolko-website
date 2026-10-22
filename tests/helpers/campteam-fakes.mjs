@@ -11,7 +11,7 @@ export function fakeD1({ seed = true, spy } = {}) {
   const sqlite = new DatabaseSync(':memory:');
   const dir = root + 'camp-team/db/';
   for (const f of readdirSync(dir).filter(n => /^\d{4}_.*\.sql$/.test(n)).sort()) sqlite.exec(readFileSync(dir + f, 'utf8'));
-  if (seed) sqlite.exec(readFileSync(dir + 'seed-dummy.sql', 'utf8'));
+  if (seed) for (const f of readdirSync(dir).filter(n => /^seed-dummy.*\.sql$/.test(n)).sort()) sqlite.exec(readFileSync(dir + f, 'utf8')); // seed-dummy.sql 다음에 seed-dummy-ledger.sql
   return {
     sqlite,
     prepare(sql) {
@@ -44,4 +44,4 @@ export async function req(email, { method = 'GET', body, url = 'http://localhost
   if (body && typeof body === 'object' && !(body instanceof Uint8Array)) { h['Content-Type'] = 'application/json'; body = JSON.stringify(body); }
   return new Request(url, { method, headers: h, body });
 }
-export const U = { admin: 'test-admin@wolko.org', fin: 'test-finance@wolko.org', mem: 'test-member@wolko.org', view: 'test-viewer@wolko.org' };
+export const U = { admin: 'test-admin@wolko.org', dir: 'test-director@wolko.org', fin: 'test-finance@wolko.org', tre: 'test-treasurer@wolko.org', mem: 'test-member@wolko.org', view: 'test-viewer@wolko.org' };
