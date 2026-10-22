@@ -259,7 +259,14 @@
   function tidy(items) {
     var placed = []; items.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; }).forEach(function (it) { var y = 0; while (y < it.y && collides(placed, { x: it.x, y: y, w: it.w, h: it.h })) y++; it.y = y; placed.push(it); });
   }
-  function visibleItems(items) { return items.filter(function (w) { return (editing || w.show) && (w.type !== 'activity' || isTeam()); }); }
+  // 볼 수 없는 영역의 위젯은 아예 그리지 않는다 (명단 밖 월코 팀은 캠프·공개 자료실만)
+  var WAREA = { stats: 'tasks', deadlines: 'tasks', attention: 'tasks', mytasks: 'tasks', calendar: 'tasks', thisweek: 'tasks', overdue: 'tasks', status: 'tasks', agenda: 'meetings', meetings: 'meetings', decisions: 'meetings', camps: 'camps', notices: 'camps', dday: 'camps', files: 'files' };
+  function widgetOk(type) {
+    if (type === 'activity') return isTeam();
+    if (type === 'budget') return !!(data && data.user.campRole);
+    return !WAREA[type] || CT.can(WAREA[type], 'view');
+  }
+  function visibleItems(items) { return items.filter(function (w) { return (editing || w.show) && widgetOk(w.type); }); }
 
   // ── 그리기 ──
   /** 폰에서 보이는 순서: 저장된 폰 순서(m)가 먼저, 나머지는 위치(위→아래, 왼→오) 순 */
@@ -272,6 +279,7 @@
     var d = data, hasTest = [].concat(d.camps, d.deadlines, d.attention, d.agenda, d.meetings, d.files).some(function (r) { return r.isTest; });
     $('homeSub').innerHTML = esc(d.today) + ' · ' + esc(CT.t('campsCount')) + ' ' + d.camps.length + (hasTest ? ' <span class="chip test">' + esc(CT.t('testData')) + '</span>' : '') + (!editing && L.mine ? ' <span class="chip">' + esc(CT.t('mineOverrides')) + '</span>' : '');
     var src = editing ? work : L.effective, items = visibleItems(src.items), isWide = wide();
+    if (!editing && items.length !== src.items.filter(function (w) { return w.show; }).length) { items = clone(items); tidy(items); } // 가려진 위젯 자리는 메운다
     var rows = Math.max(6, items.reduce(function (m, o) { return Math.max(m, o.y + o.h); }, 0) + (editing ? 8 : 0));
     var grid = $('homeGrid'); grid.className = 'dash' + (editing ? ' editing' : '');
     if (isWide) grid.style.gridTemplateRows = 'repeat(' + rows + ', ' + ROW + 'px)'; else grid.style.gridTemplateRows = '';
@@ -324,7 +332,7 @@
   function findItem(uid) { return work.items.filter(function (w) { return w.uid === uid; })[0]; }
   function countOf(type) { return work.items.filter(function (w) { return w.type === type; }).length; }
   function openPalette() {
-    var pal = $('palette'), cat = (L.catalog || []).filter(function (c) { return countOf(c.type) < c.max; });
+    var pal = $('palette'), cat = (L.catalog || []).filter(function (c) { return countOf(c.type) < c.max && widgetOk(c.type); });
     if (!cat.length) { msg(CT.t('allAdded'), true); return; }
     pal.innerHTML = cat.map(function (c) { return '<button type="button" data-add="' + c.type + '"><b>' + esc(tt(c.type)) + '</b><small>' + esc(CT.t(TITLES[c.type][1])) + '</small></button>'; }).join('');
     pal.hidden = !pal.hidden;
