@@ -562,7 +562,7 @@
       const response = await fetch('/api/car/odometer', { method: 'POST', headers: { ...headers(), 'Content-Type': 'image/jpeg' }, body: blob });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.odometer == null) {
-        const why = data.reason ? ` (${data.reason}${data.detail ? ' · ' + data.detail : ''})` : (!response.ok ? ` (${response.status})` : '');
+        const why = data.reason ? ` (${data.reason}${data.detail ? ' · ' + data.detail : ''}${data.colo ? ' · ' + data.colo : ''})` : (!response.ok ? ` (${response.status})` : '');
         hint.textContent = data.note || (data.error ? data.error + why : t('odoFail') + why);
         return;
       }

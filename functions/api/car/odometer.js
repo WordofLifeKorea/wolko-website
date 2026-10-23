@@ -34,6 +34,6 @@ export async function onRequestPost({ env, request, fetchImpl }) {
     // 화면에 이유를 보여 줄 수 있게 분류 코드만 내려 준다(키·내용은 포함하지 않는다)
     const reason = error.code === 'upstream' ? `upstream-${error.status || 0}` : (error.code || 'error');
     // 502·504 로 응답하면 Cloudflare 가 본문을 자기 오류 페이지로 바꿔 버려 이유가 화면에 닿지 않는다 — 500 을 쓴다
-    return fail('계기판 숫자를 읽지 못했습니다. 직접 입력해 주세요.', 500, { manual: true, reason, ...(error.detail ? { detail: error.detail } : {}) });
+    return fail('계기판 숫자를 읽지 못했습니다. 직접 입력해 주세요.', 500, { manual: true, reason, ...(error.detail ? { detail: error.detail } : {}), ...(request.cf?.colo ? { colo: request.cf.colo } : {}) });
   }
 }
