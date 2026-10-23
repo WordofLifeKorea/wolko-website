@@ -121,11 +121,23 @@ function churchSheet(reports) {
   });
   return { name: '교회별 기록', cols: head.map(h => h[2]), rows, rowHeights: { 1: 40 }, freezeRow: 1, filter: `A1:J${Math.max(rows.length, 2)}`, landscape: true };
 }
+function campAutoSheet(camps) {
+  const head = [['캠프', 'Camp', 40], ['위치', 'Place', 9], ['확정 캠퍼', 'Confirmed campers', 14], ['스태프', 'Staff', 10], ['참석 합계', 'Attendance', 12], ['구원', 'Salvations', 10], ['헌신', 'Dedications', 10]];
+  const rows = [head.map(([ko, en]) => ({ v: `${ko}\n${en}`, s: S.head }))];
+  camps.forEach((c, i) => {
+    const alt = i % 2 === 1, text = alt ? S.cellAlt : S.cell, num = alt ? S.numRowAlt : S.numRow;
+    rows.push([{ v: c.titleKo, s: text }, { v: c.location === 'jeju' ? '제주' : '평택', s: text }, { v: c.campers, s: num }, { v: c.staff, s: num }, { v: c.campers + c.staff, s: num }, { v: c.salvations, s: num }, { v: c.dedications, s: num }]);
+  });
+  rows.push([]);
+  rows.push([{ v: '※ 잔금까지 마쳐 최종 확정된 캠퍼만 센 자동 집계입니다. 구원은 "캠프 후 구원" 기준이고, 스태프 인원은 관리자가 입력한 숫자입니다.', s: S.note }]);
+  return { name: '캠프 자동 집계', cols: head.map(h => h[2]), rows, rowHeights: { 1: 40, [rows.length]: 34 }, merges: [`A${rows.length}:G${rows.length}`], freezeRow: 1, landscape: true };
+}
 const colName = i => { let n = i + 1, s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - m) / 26); } return s; };
 
 /** month: 'YYYY-MM' · summary: summarize() 결과 · trend: [{ month, ...summarize }] · reports: 보고 원본 목록 */
-export function buildGospelXlsx({ month, summary, trend = [], reports = [] }) {
+export function buildGospelXlsx({ month, summary, trend = [], reports = [], camps = [] }) {
   const sheets = [summarySheet(month, summary)];
+  if (camps.length) sheets.push(campAutoSheet(camps));
   if (trend.length) sheets.push(trendSheet(trend));
   if (reports.length) sheets.push(reportsSheet(reports));
   if (reports.some(r => (r.churchEntries || []).length)) sheets.push(churchSheet(reports.map(r => ({ ...r, month }))));

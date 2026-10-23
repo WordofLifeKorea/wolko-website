@@ -9,6 +9,7 @@
  * 인증: Authorization: Bearer <포탈 세션 토큰>. 숫자 합계는 포탈 계정 모두가 보고, 이름·이메일이 있는 보고별 목록은 마스터·관리자만 본다.
  */
 import { buildGospelXlsx } from '../../lib/gospelReport.js';
+import { monthCamps, addCampsToSummary } from '../../lib/gospelCamps.js';
 import { portalSession } from '../../lib/hubAccounts.js';
 import {
   GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, shiftMonth, reportableMonth,
@@ -36,11 +37,13 @@ export async function onRequestGet({ env, request }) {
 
   // 최근 6개월(선택한 달 기준) 추이 — 숫자 합계만
   const trendMonths = Array.from({ length: 6 }, (_, i) => shiftMonth(month, i - 5));
-  const trend = await Promise.all(trendMonths.map(async m => ({ month: m, ...(m === month ? summarize(reports) : summarize(await loadMonth(env, m))) })));
+  const camps = await monthCamps(env, request, month);
+  const withCamps = async (m, list, monthCampList) => addCampsToSummary(summarize(list), monthCampList ?? await monthCamps(env, request, m));
+  const trend = await Promise.all(trendMonths.map(async m => ({ month: m, ...(m === month ? await withCamps(m, reports, camps) : await withCamps(m, await loadMonth(env, m))) })));
 
   if (url.searchParams.get('format') === 'xlsx') {
     if (!canReview(session)) return fail('내려받을 권한이 없습니다.', 403);
-    const bytes = buildGospelXlsx({ month, summary: summarize(reports), trend, reports });
+    const bytes = buildGospelXlsx({ month, summary: addCampsToSummary(summarize(reports), camps), trend, reports, camps });
     return new Response(bytes, { headers: { ...H, 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': `attachment; filename="WOLKO-Gospel-Report-${month}.xlsx"` } });
   }
 
@@ -49,7 +52,9 @@ export async function onRequestGet({ env, request }) {
     me: { email: session.email, name: displayName(session), role: session.role, canReview: review },
     month, current, earliest: shiftMonth(current, -MONTHS_BACK),
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
-    summary: summarize(reports),
+    summary: addCampsToSummary(summarize(reports), camps),
+    campAuto: camps,
+    canEditStaff: review,
     churchEvents: churchEvents(reports),
     trend,
     mine: reports.filter(r => r.email === session.email),
