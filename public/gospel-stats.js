@@ -109,8 +109,10 @@
     $('nextMonth').disabled = data.month >= data.current;
     $('csvBtn').hidden = !data.me.canReview;
     $('xlsxBtn').hidden = !data.me.canReview;
-    renderTabs(); renderKpis(); renderTable(); renderTrend(); renderRows(); renderMine();
+    renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderRows(); renderMine();
   }
+
+  function renderCharts() { if (window.GospelCharts && $('charts')) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); }
 
   function renderTabs() {
     var c = data.summary.counts;
@@ -279,7 +281,7 @@
   $('nextMonth').addEventListener('click', function () { shift(1); });
   $('thisMonth').addEventListener('click', function () { load(data.current); });
   $('writeBtn').addEventListener('click', function () { openForm(null); });
-  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderTabs(); renderKpis(); renderTable(); renderTrend(); renderRows(); });
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderRows(); });
   $('mine').addEventListener('click', async function (e) {
     var edit = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]');
     if (edit) { openForm(data.mine.filter(function (r) { return r.id === edit.dataset.edit; })[0]); return; }

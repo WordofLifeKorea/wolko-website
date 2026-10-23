@@ -13,9 +13,9 @@ export const GOSPEL_SECTIONS = [
   {
     id: 'personal', title: L('개인 전도', 'Personal Evangelism'),
     fields: [
-      { id: 'preEvangelism', label: L('프리 에반젤리즘 — 복음 대화로 이어지길 바라며 의도적으로 영적 대화를 나눈 사람', 'Pre-Evangelism (Till the Soil) — people you had intentional spiritual conversations with, hoping to lead to a Gospel conversation'), short: L('영적 대화', 'Spiritual conversations') },
-      { id: 'evangelism', label: L('전도 — 일대일 또는 소그룹에서 직접 복음을 전한 사람 (고전 15:1–4)', 'Evangelism (Plant the Seed) — people you personally shared the Gospel with, one-on-one or in a small group (1CO 15:1–4)'), short: L('복음 전한 사람', 'Gospel shared') },
-      { id: 'salvation', label: L('구원 — 이 복음 대화를 통해 예수님을 믿는다고 고백한 사람', 'Salvation (Reap the Harvest) — people who indicated they believed in Jesus Christ for salvation through these Gospel conversations'), short: L('구원', 'Salvations') },
+      { id: 'preEvangelism', label: L('영적 대화 (마음 밭 갈기) — 복음 이야기로 이어지길 바라며, 일부러 믿음과 영적인 주제로 대화를 나눈 사람', 'Pre-Evangelism (Till the Soil) — people you had intentional spiritual conversations with, hoping to lead to a Gospel conversation'), short: L('영적 대화', 'Spiritual conversations') },
+      { id: 'evangelism', label: L('복음 전하기 (씨 뿌리기) — 일대일이나 소그룹에서 직접 복음을 전한 사람 (고전 15:1–4)', 'Evangelism (Plant the Seed) — people you personally shared the Gospel with, one-on-one or in a small group (1CO 15:1–4)'), short: L('복음 전한 사람', 'Gospel shared') },
+      { id: 'salvation', label: L('구원 (추수) — 이 복음 대화를 통해 예수님을 믿는다고 고백한 사람', 'Salvation (Reap the Harvest) — people who indicated they believed in Jesus Christ for salvation through these Gospel conversations'), short: L('구원', 'Salvations') },
       { id: 'literature', label: L('복음 전도지 — 복음 대화 없이 나눠 준 전도지 등 자료의 수', 'Gospel Literature — tracts or similar literature distributed without a Gospel conversation'), short: L('전도지', 'Literature') },
       { id: 'social', label: L('SNS 전도 — 위에서 세지 않은 전도 게시물·릴스·영상 등으로 도달한 사람', 'Evangelistic Social Media — people reached through evangelistic posts, reels, videos or other content not counted above'), short: L('SNS 도달', 'Social media reach') },
     ],
