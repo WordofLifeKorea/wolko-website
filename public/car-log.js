@@ -411,7 +411,7 @@
   }
 
   function readExifDate(file) {
-    return file.slice(0, 512 * 1024).arrayBuffer().then(buffer => {
+    return readAllBytes(file, 512 * 1024).then(buffer => {
       const view = new DataView(buffer);
       if (view.byteLength < 12 || view.getUint16(0) !== 0xffd8) return null;
       let offset = 2;
@@ -464,19 +464,35 @@
     }).catch(() => null);
   }
 
+  // 파일 내용을 읽는 방법을 차례로 시도한다(브라우저마다 되는 방법이 다르다). 모두 실패하면 방법별 오류 이름을 담아 던진다.
+  async function readAllBytes(file, limit) {
+    const part = limit ? file.slice(0, limit) : file;
+    const errors = [];
+    const attempts = [
+      ['blob', () => part.arrayBuffer()],
+      ['reader', () => new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(r.error); r.readAsArrayBuffer(part); })],
+      ['response', () => new Response(part).arrayBuffer()],
+      ['fetch', async () => { const u = URL.createObjectURL(part); try { return await (await fetch(u)).arrayBuffer(); } finally { URL.revokeObjectURL(u); } }],
+    ];
+    for (const [name, run] of attempts) {
+      try { if (typeof part.arrayBuffer !== 'function' && name === 'blob') throw new Error('unsupported'); const buffer = await run(); if (buffer && buffer.byteLength > 0) return buffer; errors.push(`${name}:empty`); }
+      catch (error) { errors.push(`${name}:${error?.name || 'error'}`); }
+    }
+    throw Object.assign(new Error('unreadable'), { detail: errors.join(',') });
+  }
+
   // 열리지 않는 사진의 진단용 설명 — 이름 속 형식이 아니라 파일 앞부분(시그니처)으로 실제 형식을 알려 준다
   async function describeFile(file) {
     let actual = '?';
     try {
-      const head = file.slice(0, 16);
-      const b = new Uint8Array(await (head.arrayBuffer ? head.arrayBuffer() : new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(r.error); r.readAsArrayBuffer(head); })));
+      const b = new Uint8Array(await readAllBytes(file, 16));
       const ascii = Array.from(b, c => String.fromCharCode(c)).join('');
       if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) actual = 'JPEG';
       else if (b[0] === 0x89 && ascii.slice(1, 4) === 'PNG') actual = 'PNG';
       else if (ascii.slice(4, 8) === 'ftyp') actual = /hei|mif1|msf1|hevc/i.test(ascii.slice(8, 12)) ? 'HEIC' : /avif|avis/i.test(ascii.slice(8, 12)) ? 'AVIF' : 'ftyp:' + ascii.slice(8, 12);
       else if (ascii.slice(0, 4) === 'RIFF' && ascii.slice(8, 12) === 'WEBP') actual = 'WebP';
       else actual = Array.from(b.slice(0, 4), c => c.toString(16).padStart(2, '0')).join('');
-    } catch (error) { actual = 'unreadable'; }
+    } catch (error) { actual = `unreadable[${error.detail || error.name || '?'}]`; }
     return `${file.type || '?'} / ${lang === 'en' ? 'actual' : '실제'}: ${actual} / ${(file.size / 1048576).toFixed(1)}MB`;
   }
   async function toJpeg(file) {
@@ -500,6 +516,10 @@
             await viaData.decode();
             image = viaData;
           } catch { image = null; }
+        }
+        if (!image) {
+          // 마지막 방법: 내용을 메모리로 복사한 뒤 그 복사본에서 읽는다
+          try { image = await createImageBitmap(new Blob([await readAllBytes(file)], { type: file.type || 'image/jpeg' })); } catch { image = null; }
         }
       }
       if (!image) {
