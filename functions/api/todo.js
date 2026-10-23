@@ -11,7 +11,8 @@
  * Required env vars (Cloudflare Pages → Settings → Environment variables):
  *   TODO_DISPLAY_KEY            — 16자 이상의 긴 무작위 문자열(화면에 한 번 입력해 기기에 저장)
  *   GOOGLE_TASKS_USER           — 할 일을 가져올 Workspace 계정(예: hkim@wolko.org)
- *   GOOGLE_SERVICE_ACCOUNT_JSON — 기존 서비스 계정. 도메인 전체 위임에 tasks scope 등록 필요
+ *   GOOGLE_TASKS_SERVICE_ACCOUNT_JSON — Tasks 전용 서비스 계정 키(JSON 전체). 도메인 전체 위임에
+ *                                 tasks scope 등록 필요. 없으면 기존 GOOGLE_SERVICE_ACCOUNT_JSON을 쓴다.
  */
 import { listTaskBoard, addTask, setTaskCompleted } from '../lib/googleTasks.js';
 
@@ -42,10 +43,14 @@ async function authorize(request, env) {
   return diff === 0 ? null : json({ error: 'unauthorized' }, 401);
 }
 
+/** Tasks 전용 서비스 계정을 우선 쓰고, 없으면 기존(캘린더/시트용) 서비스 계정으로 넘어간다. */
 function googleConfig(env) {
-  const missing = ['GOOGLE_SERVICE_ACCOUNT_JSON', 'GOOGLE_TASKS_USER'].filter(name => !env[name]);
+  const serviceAccountJson = env.GOOGLE_TASKS_SERVICE_ACCOUNT_JSON || env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  const missing = [];
+  if (!serviceAccountJson) missing.push('GOOGLE_TASKS_SERVICE_ACCOUNT_JSON');
+  if (!env.GOOGLE_TASKS_USER) missing.push('GOOGLE_TASKS_USER');
   if (missing.length) return { missing };
-  return { serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON, delegatedUser: env.GOOGLE_TASKS_USER };
+  return { serviceAccountJson, delegatedUser: env.GOOGLE_TASKS_USER };
 }
 
 function googleError(err) {

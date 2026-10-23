@@ -130,7 +130,20 @@ test('api refuses requests with a wrong or missing key and an unconfigured key',
 test('api reports which google settings are missing only after the key checks out', async () => {
   const res = await onRequestGet({ request: request('GET'), env: { TODO_DISPLAY_KEY: KEY } });
   assert.equal(res.status, 503);
-  assert.deepEqual(await res.json(), { error: 'not_configured', missing: ['GOOGLE_SERVICE_ACCOUNT_JSON', 'GOOGLE_TASKS_USER'] });
+  assert.deepEqual(await res.json(), { error: 'not_configured', missing: ['GOOGLE_TASKS_SERVICE_ACCOUNT_JSON', 'GOOGLE_TASKS_USER'] });
+});
+
+test('api prefers the Tasks-specific service account and falls back to the shared one', async () => {
+  const iss = [];
+  await withFakeGoogle(() => jsonResponse({ items: [] }), async (calls) => {
+    const tasksOnly = JSON.stringify({ client_email: 'tasks-only@example.iam.gserviceaccount.com', private_key: privateKey });
+    const shared = JSON.stringify({ client_email: 'shared@example.iam.gserviceaccount.com', private_key: privateKey });
+    const base = { TODO_DISPLAY_KEY: KEY, GOOGLE_TASKS_USER: 'me@wolko.org' };
+    await onRequestGet({ request: request('GET'), env: { ...base, GOOGLE_TASKS_SERVICE_ACCOUNT_JSON: tasksOnly, GOOGLE_SERVICE_ACCOUNT_JSON: shared } });
+    await onRequestGet({ request: request('GET'), env: { ...base, GOOGLE_SERVICE_ACCOUNT_JSON: shared } });
+    for (const call of calls.filter(c => c.url === 'https://oauth2.googleapis.com/token')) iss.push(tokenClaims(call).iss);
+  });
+  assert.deepEqual(iss, ['tasks-only@example.iam.gserviceaccount.com', 'shared@example.iam.gserviceaccount.com']);
 });
 
 test('api GET returns the board without caching', async () => {
