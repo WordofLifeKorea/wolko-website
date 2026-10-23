@@ -1,0 +1,106 @@
+---
+// 복음 통계: 월간 복음 전도 보고(WOLKO Monthly Gospel Outreach Report). 포탈 계정이 있으면 누구나 자기(또는 팀) 보고를 쓰고,
+// 월코(본토) · 제주 · 통합 합계를 한눈에 본다. 보고자 이름이 있는 목록과 CSV 는 마스터·관리자만. (API: /api/portal/gospel-stats)
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>복음 통계 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/car-log.css?v=20">
+  <link rel="stylesheet" href="/gospel-stats.css?v=2">
+  <link rel="stylesheet" href="/wolko-rail.css?v=18">
+  <link rel="stylesheet" href="/wolko-header.css?v=14">
+  <link rel="stylesheet" href="/wolko-ui.css?v=6">
+  <link rel="stylesheet" href="/wolko-layout.css?v=15">
+  <script src="/wolko-rail.js?v=31" defer></script>
+  <script src="/gospel-stats.js?v=1" defer></script>
+  <meta name="theme-color" content="#004f68">
+</head>
+<body>
+  <header class="car-header">
+    <a class="car-header-logo" href="/portal" title="WOLKO 포탈로 돌아가기">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <span data-t="pageTitle">복음 통계</span>
+    </a>
+    <div class="car-header-right">
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="log-wrap gs-wrap">
+    <p class="wl-lead" data-t="intro">매달 복음을 전한 기록을 보고하고, 월코(본토)와 제주의 통계를 함께 확인합니다.</p>
+    <p class="log-loading" id="loadStatus" data-t="loading">불러오는 중…</p>
+
+    <section class="log-panel" id="loginPanel" hidden>
+      <div class="log-panel-head"><span class="log-step">01</span><h2 data-t="loginTitle">포탈 로그인</h2></div>
+      <p class="log-help" data-t="loginHelp">WOLKO 포탈 계정으로 로그인해 주세요.</p>
+      <form id="loginForm" class="log-form">
+        <label><span data-t="email">이메일</span><input id="loginEmail" type="email" autocomplete="username" required></label>
+        <label><span data-t="password">비밀번호</span><input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button class="log-primary" type="submit" data-t="loginBtn">로그인하고 계속하기</button>
+      </form>
+      <p class="log-error" id="loginError" role="alert"></p>
+    </section>
+
+    <div id="app" hidden>
+      <div class="gs-bar">
+        <div class="gs-month">
+          <button type="button" class="gs-nav" id="prevMonth" aria-label="prev">‹</button>
+          <strong id="monthLabel"></strong>
+          <button type="button" class="gs-nav" id="nextMonth" aria-label="next">›</button>
+          <button type="button" class="gs-small" id="thisMonth" data-t="thisMonth">이번 달</button>
+        </div>
+        <div class="gs-actions">
+          <button type="button" class="gs-small" id="csvBtn" data-t="csv" hidden>CSV 내려받기</button>
+          <button type="button" class="gs-primary" id="writeBtn" data-t="write">내 보고 쓰기</button>
+        </div>
+      </div>
+
+      <div class="gs-tabs" id="tabs" role="tablist"></div>
+      <div class="gs-kpis" id="kpis"></div>
+      <p class="gs-count" id="countLine"></p>
+
+      <section class="log-panel" id="formPanel" hidden>
+        <div class="log-panel-head"><span class="log-step">+</span><h2 id="formTitle" data-t="formTitle">월간 복음 전도 보고</h2></div>
+        <form id="reportForm" class="gs-form" novalidate></form>
+        <p class="log-error" id="formError" role="alert"></p>
+      </section>
+
+      <section class="log-panel" id="mineWrap" hidden>
+        <div class="log-panel-head"><span class="log-step">✎</span><h2 data-t="mineTitle">내가 낸 보고</h2></div>
+        <div id="mine"></div>
+      </section>
+
+      <section class="log-panel">
+        <div class="log-panel-head"><span class="log-step">▤</span><h2 data-t="tableTitle">항목별 통계</h2></div>
+        <div class="gs-tablewrap"><table class="gs-table" id="statsTable"></table></div>
+      </section>
+
+      <section class="log-panel">
+        <div class="log-panel-head"><span class="log-step">↗</span><h2 data-t="trendTitle">최근 6개월 추이</h2></div>
+        <div class="gs-tablewrap"><table class="gs-table" id="trendTable"></table></div>
+      </section>
+
+      <section class="log-panel" id="rowsWrap" hidden>
+        <div class="log-panel-head"><span class="log-step">☰</span><h2 data-t="rowsTitle">보고별 목록</h2></div>
+        <p class="log-help" data-t="rowsHelp">마스터와 관리자에게만 보여요. 팀으로 낸 보고는 팀원이 따로 내지 않는 것을 전제로 합계에 그대로 더해요.</p>
+        <div class="gs-tablewrap"><table class="gs-table gs-rows" id="rowsTable"></table></div>
+      </section>
+    </div>
+    <p class="gs-note" id="note"></p>
+  </main>
+</body>
+</html>

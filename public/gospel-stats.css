@@ -1,0 +1,83 @@
+/* 복음 통계 — 월간 복음 전도 보고. 카드·입력창 틀은 car-log.css(log-panel · log-form) 와 wolko-layout.css 를 그대로 쓴다. */
+.gs-wrap [hidden] { display: none !important; }
+
+/* 같은 줄에 놓이는 버튼은 높이·모서리를 맞춘다 */
+.gs-primary, .gs-small, .gs-nav {
+  display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+  height: 40px !important; min-height: 40px !important; max-height: 40px !important; padding: 0 16px !important;
+  border: 1px solid #aacbd4; border-radius: 11px; background: #fff; color: var(--blue); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap;
+}
+.gs-small:hover, .gs-nav:hover { background: #eaf6f7; }
+.gs-primary { border-color: var(--blue); background: var(--blue); color: #fff; }
+.gs-primary:hover { background: #006582; }
+.gs-nav { width: 40px; padding: 0 !important; font-size: 20px; line-height: 1; }
+.gs-primary:disabled, .gs-small:disabled { opacity: .55; cursor: default; }
+
+.gs-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; }
+.gs-month { display: flex; align-items: center; gap: 8px; }
+.gs-month strong { min-width: 116px; text-align: center; color: var(--ink); font-size: 19px; letter-spacing: -.03em; }
+.gs-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.gs-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.gs-tab { display: inline-flex; align-items: center; gap: 8px; box-sizing: border-box; height: 40px !important; min-height: 40px !important; max-height: 40px !important; padding: 0 16px !important; border: 1px solid #c9d9e0; border-radius: 999px; background: #fff; color: var(--muted); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.gs-tab span { color: var(--muted); font-size: 12px; font-weight: 700; }
+.gs-tab.is-active { border-color: var(--blue); background: #e8f3f5; color: var(--blue); }
+
+.gs-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 0 8px; }
+.gs-kpi { padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.gs-kpi strong { display: block; color: var(--blue); font: 800 32px/1.1 'Montserrat', var(--sans); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.gs-kpi span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.gs-count { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+
+.gs-tablewrap { overflow-x: auto; }
+.gs-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.gs-table th, .gs-table td { padding: 10px 12px; border-bottom: 1px solid #edf3f5; text-align: right; vertical-align: top; }
+.gs-table th:first-child, .gs-table td:first-child { text-align: left; }
+.gs-table thead th { color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; }
+.gs-table tr.gs-section td { padding-top: 18px; background: #f6fafb; color: var(--blue); font-size: 12px; font-weight: 800; letter-spacing: .02em; text-align: left; }
+.gs-table td.is-col, .gs-table th.is-col { background: #f1f8f9; }
+.gs-table td.gs-total { color: var(--ink); font-weight: 800; }
+.gs-table .gs-bar-cell { min-width: 90px; }
+.gs-meter { display: block; height: 6px; margin-top: 6px; border-radius: 99px; background: #e8f3f5; overflow: hidden; }
+.gs-meter i { display: block; height: 100%; border-radius: 99px; background: var(--teal); }
+.gs-rows td:first-child { min-width: 150px; }
+.gs-rows .gs-sub { display: block; color: var(--muted); font-size: 12px; font-weight: 500; }
+
+.gs-pill { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border: 1px solid #c9d9e0; border-radius: 999px; background: #fff; color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; }
+.gs-pill.mainland { border-color: #9fd3c0; background: #eefaf5; color: #17775a; }
+.gs-pill.jeju { border-color: #f0c79c; background: #fff6ec; color: #a15a0e; }
+
+.gs-form { display: grid; gap: 20px; }
+.gs-fieldset { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.gs-fieldset > legend { padding: 0; margin-bottom: 4px; color: var(--ink); font-size: 13px; font-weight: 800; }
+.gs-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.gs-choice { display: inline-flex; align-items: center; gap: 8px; box-sizing: border-box; height: 44px; padding: 0 16px; border: 1px solid #bfd5de; border-radius: 11px; background: #fff; color: var(--ink); font-size: 14px; font-weight: 700; cursor: pointer; }
+.gs-choice:has(input:checked) { border-color: var(--blue); background: #e8f3f5; color: var(--blue); }
+.gs-choice input { accent-color: var(--blue); }
+.gs-form .gs-text, .gs-form select { min-width: 0; width: 100%; max-width: 420px; height: 47px; padding: 0 13px; border: 1px solid #bfd5de; border-radius: 11px; background: #fff; color: var(--ink); font: inherit; font-size: 15px; }
+.gs-sechead { margin: 6px 0 -6px; color: var(--blue); font-size: 14px; font-weight: 800; }
+.gs-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+.gs-field { display: grid; grid-template-rows: 1fr auto; gap: 7px; align-content: end; }
+.gs-field > span { color: var(--ink); font-size: 13px; font-weight: 700; line-height: 1.5; }
+.gs-field input { width: 100%; height: 47px; box-sizing: border-box; padding: 0 13px; border: 1px solid #bfd5de; border-radius: 11px; background: #fff; color: var(--ink); font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; }
+.gs-field input:focus, .gs-form .gs-text:focus { border-color: var(--teal); box-shadow: 0 0 0 3px #e5f4f3; outline: none; }
+.gs-warn { margin: 0; padding: 10px 14px; border: 1px solid #f0d49a; border-radius: 11px; background: #fff9ec; color: #8a5a00; font-size: 13px; line-height: 1.6; }
+.gs-formbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+.gs-formbtns .gs-primary { min-width: 140px; }
+
+.gs-minecard { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid #edf3f5; }
+.gs-minecard:last-child { border-bottom: 0; }
+.gs-minecard strong { color: var(--ink); font-size: 14px; }
+.gs-minecard small { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+.gs-minebtns { display: flex; gap: 8px; }
+.gs-note { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 760px) {
+  .gs-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gs-kpi strong { font-size: 26px; }
+  .gs-fields { grid-template-columns: minmax(0, 1fr); }
+  .gs-actions { width: 100%; }
+  .gs-actions .gs-primary { flex: 1; }
+  .gs-table { font-size: 13px; }
+  .gs-table th, .gs-table td { padding: 9px 8px; }
+}
