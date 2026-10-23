@@ -464,6 +464,20 @@
     }).catch(() => null);
   }
 
+  // 열리지 않는 사진의 진단용 설명 — 이름 속 형식이 아니라 파일 앞부분(시그니처)으로 실제 형식을 알려 준다
+  async function describeFile(file) {
+    let actual = '?';
+    try {
+      const b = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+      const ascii = Array.from(b, c => String.fromCharCode(c)).join('');
+      if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) actual = 'JPEG';
+      else if (b[0] === 0x89 && ascii.slice(1, 4) === 'PNG') actual = 'PNG';
+      else if (ascii.slice(4, 8) === 'ftyp') actual = /hei|mif1|msf1|hevc/i.test(ascii.slice(8, 12)) ? 'HEIC' : /avif|avis/i.test(ascii.slice(8, 12)) ? 'AVIF' : 'ftyp:' + ascii.slice(8, 12);
+      else if (ascii.slice(0, 4) === 'RIFF' && ascii.slice(8, 12) === 'WEBP') actual = 'WebP';
+      else actual = Array.from(b.slice(0, 4), c => c.toString(16).padStart(2, '0')).join('');
+    } catch { /* 읽지 못하면 ? */ }
+    return `${file.type || '?'} / ${lang === 'en' ? 'actual' : '실제'}: ${actual} / ${(file.size / 1048576).toFixed(1)}MB`;
+  }
   async function toJpeg(file) {
     const url = URL.createObjectURL(file);
     try {
@@ -477,7 +491,7 @@
         image = null;
         try { image = await createImageBitmap(file); } catch { image = null; }
       }
-      if (!image) throw new Error(t('photoDecodeFail', file.type || (file.name.split('.').pop() || '').toLowerCase() || '?'));
+      if (!image) throw new Error(t('photoDecodeFail', await describeFile(file)));
       const srcW = image.naturalWidth || image.width, srcH = image.naturalHeight || image.height;
       const maxSide = 1600;
       const scale = Math.min(1, maxSide / Math.max(srcW, srcH));
