@@ -134,3 +134,16 @@ test('CSV: 엑셀 수식으로 읽히는 글자는 막고, 쉼표·따옴표는 
   assert.ok(csv.includes("\"'=HYPERLINK(\"\"x\"\")\""), '수식 시작 글자 앞에 작은따옴표');
   assert.ok(csv.includes('"A, B"'));
 });
+
+test('모든 숫자가 0(또는 비어 있어도) 보고를 낼 수 있다', async () => {
+  const { acc, call } = setup();
+  await acc(anna[0]);
+  const month = currentMonthKst();
+  const zeros = Object.fromEntries(GOSPEL_FIELD_IDS.map(id => [id, '0']));
+  const a = await call('POST', anna, { body: { month, scope: 'individual', location: 'mainland', values: zeros } });
+  assert.equal(a.status, 200);
+  assert.ok(Object.values(a.report.values).every(v => v === 0));
+  const b = await call('POST', anna, { body: { month, scope: 'individual', location: 'mainland', values: {} } });
+  assert.equal(b.status, 200, '값을 하나도 보내지 않아도 0 으로 저장');
+  assert.equal(b.updated, true, '같은 단위는 고쳐 쓴다');
+});

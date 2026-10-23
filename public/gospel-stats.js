@@ -10,7 +10,7 @@
       pageTitle: '복음 통계', docTitle: '복음 통계 — WOLKO',
       intro: '매달 복음을 전한 기록을 보고하고, 평택과 제주의 통계를 함께 확인합니다.',
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: 'WOLKO 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
-      thisMonth: '이번 달', write: '내 보고 쓰기', xlsx: '엑셀 보고서 내려받기', csv: '원본 CSV',
+      minus: '1 줄이기', plus: '1 늘리기', thisMonth: '이번 달', write: '내 보고 쓰기', xlsx: '엑셀 보고서 내려받기', csv: '원본 CSV',
       tabAll: '통합', tabMainland: '평택', tabJeju: '제주',
       kGospel: '복음을 전한 사람', kSalv: '구원 고백 (전체)', kDed: '헌신 (전체)', kReach: '캠프·행사 참석',
       count: function (n, ind, team, all) { return n + '건 보고' + (all ? ' (개인 ' + ind + ' · 팀 ' + team + ')' : ''); }, countNone: '아직 이 달에 보고가 없어요.',
@@ -31,7 +31,7 @@
       pageTitle: 'Gospel Stats', docTitle: 'Gospel Stats — WOLKO',
       intro: 'Report your monthly Gospel outreach and see Pyeongtaek and Jeju statistics together.',
       loading: 'Loading…', loginTitle: 'Portal login', loginHelp: 'Please sign in with your WOLKO portal account.', email: 'Email', password: 'Password', loginBtn: 'Sign in and continue', loginFail: 'Could not sign in.',
-      thisMonth: 'This month', write: 'Write my report', xlsx: 'Download Excel report', csv: 'Raw CSV',
+      minus: 'Decrease by 1', plus: 'Increase by 1', thisMonth: 'This month', write: 'Write my report', xlsx: 'Download Excel report', csv: 'Raw CSV',
       tabAll: 'Combined', tabMainland: 'Pyeongtaek', tabJeju: 'Jeju',
       kGospel: 'People shared the Gospel with', kSalv: 'Salvations (total)', kDed: 'Dedications (total)', kReach: 'Camp & event attendance',
       count: function (n, ind, team, all) { return n + ' report' + (n === 1 ? '' : 's') + (all ? ' (' + ind + ' individual · ' + team + ' team)' : ''); }, countNone: 'No reports for this month yet.',
@@ -185,18 +185,22 @@
     var scope = report ? report.scope : 'individual';
     var place = report ? report.location : lastPlace();
     var v = (report && report.values) || {};
-    var html = '<div class="gs-fieldset"><legend>' + esc(t('formMonth')) + '</legend><select id="fMonth" class="gs-select">' + monthOptions().map(function (m) { return '<option value="' + m + '"' + (m === month ? ' selected' : '') + '>' + esc(t('monthLabel', m)) + '</option>'; }).join('') + '</select></div>' +
+    var html = '<div class="gs-meta"><div class="gs-fieldset"><legend>' + esc(t('formMonth')) + '</legend><select id="fMonth" class="gs-select">' + monthOptions().map(function (m) { return '<option value="' + m + '"' + (m === month ? ' selected' : '') + '>' + esc(t('monthLabel', m)) + '</option>'; }).join('') + '</select></div>' +
       '<fieldset class="gs-fieldset"><legend>' + esc(t('formWho')) + '</legend><div class="gs-choices">' +
         '<label class="gs-choice"><input type="radio" name="fScope" value="individual"' + (scope === 'individual' ? ' checked' : '') + '> ' + esc(t('individual')) + '</label>' +
         '<label class="gs-choice"><input type="radio" name="fScope" value="team"' + (scope === 'team' ? ' checked' : '') + '> ' + esc(t('team')) + '</label></div>' +
         '<input id="fTeam" class="gs-text" type="text" maxlength="60" placeholder="' + esc(t('formTeamPh')) + '" aria-label="' + esc(t('formTeam')) + '" value="' + esc(report ? report.teamName : '') + '"' + (scope === 'team' ? '' : ' hidden') + '></fieldset>' +
       '<fieldset class="gs-fieldset"><legend>' + esc(t('formPlace')) + '</legend><div class="gs-choices">' +
         '<label class="gs-choice"><input type="radio" name="fPlace" value="mainland"' + (place === 'mainland' ? ' checked' : '') + '> ' + esc(t('placeMainland')) + '</label>' +
-        '<label class="gs-choice"><input type="radio" name="fPlace" value="jeju"' + (place === 'jeju' ? ' checked' : '') + '> ' + esc(t('placeJeju')) + '</label></div></fieldset>';
+        '<label class="gs-choice"><input type="radio" name="fPlace" value="jeju"' + (place === 'jeju' ? ' checked' : '') + '> ' + esc(t('placeJeju')) + '</label></div></fieldset></div>';
     data.schema.sections.forEach(function (section) {
-      html += '<div class="gs-sechead">' + esc(tx(section.title)) + '</div><div class="gs-fields">' + section.fields.map(function (f) {
-        return '<label class="gs-field"><span>' + esc(tx(f.label)) + '</span><input type="text" inputmode="numeric" autocomplete="off" data-field="' + f.id + '" value="' + (v[f.id] ? v[f.id] : '') + '" placeholder="0"></label>';
-      }).join('') + '</div>';
+      html += '<section class="gs-sec"><h4 class="gs-sec-head">' + esc(tx(section.title)) + '</h4>' + section.fields.map(function (f) {
+        var parts = tx(f.label).split(' — '), title = parts[0], desc = parts.slice(1).join(' — ');
+        return '<div class="gs-row"><label class="gs-row-text" for="f_' + f.id + '"><strong>' + esc(title) + '</strong>' + (desc ? '<small>' + esc(desc) + '</small>' : '') + '</label>'
+          + '<div class="gs-step"><button type="button" class="gs-stepbtn" data-step="-1" data-for="' + f.id + '" aria-label="' + esc(t('minus')) + '">−</button>'
+          + '<input id="f_' + f.id + '" type="text" inputmode="numeric" autocomplete="off" data-field="' + f.id + '" value="' + (v[f.id] ? v[f.id] : 0) + '" placeholder="0" aria-label="' + esc(title) + '">'
+          + '<button type="button" class="gs-stepbtn" data-step="1" data-for="' + f.id + '" aria-label="' + esc(t('plus')) + '">+</button></div></div>';
+      }).join('') + '</section>';
     });
     html += '<p class="gs-warn" id="fWarn" hidden></p><div class="gs-formbtns"><button type="submit" class="gs-primary" id="fSave">' + esc(t('save')) + '</button><button type="button" class="gs-small" id="fCancel">' + esc(t('cancel')) + '</button></div>';
     $('reportForm').innerHTML = html;
@@ -229,7 +233,7 @@
     try { info = cache[month] || await fetchMonth(month); } catch (e) { return; }
     var match = info.mine.filter(function (r) { return r.scope === scope && (scope === 'individual' || String(r.teamName).toLowerCase() === team); })[0];
     if (!match) { $('formError').textContent = ''; return; }
-    document.querySelectorAll('#reportForm [data-field]').forEach(function (i) { i.value = match.values[i.dataset.field] ? match.values[i.dataset.field] : ''; });
+    document.querySelectorAll('#reportForm [data-field]').forEach(function (i) { i.value = match.values[i.dataset.field] ? match.values[i.dataset.field] : 0; });
     var radio = document.querySelector('input[name="fPlace"][value="' + match.location + '"]'); if (radio) radio.checked = true;
     updateWarn();
     $('formError').textContent = t('formLoaded');
@@ -298,12 +302,21 @@
   });
   $('reportForm').addEventListener('submit', save);
   $('reportForm').addEventListener('input', function (e) { if (e.target.matches('[data-field]')) updateWarn(); });
+  $('reportForm').addEventListener('focusin', function (e) { if (e.target.matches('[data-field]')) setTimeout(function () { e.target.select(); }, 0); });
   $('reportForm').addEventListener('change', function (e) {
     if (e.target.name === 'fScope') $('fTeam').hidden = e.target.value !== 'team';
     if (e.target.id === 'fMonth' || e.target.name === 'fScope') syncExisting();
   });
   $('reportForm').addEventListener('focusout', function (e) { if (e.target.id === 'fTeam') syncExisting(); });
-  $('reportForm').addEventListener('click', function (e) { if (e.target.id === 'fCancel') $('formPanel').hidden = true; });
+  $('reportForm').addEventListener('click', function (e) {
+    if (e.target.id === 'fCancel') { $('formPanel').hidden = true; return; }
+    var step = e.target.closest('[data-step]');
+    if (step) {
+      var input = $('f_' + step.dataset.for), next = Math.max(0, n(input.value) + Number(step.dataset.step));
+      input.value = String(next);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
 
   function download(format, filename) {
     return async function () {
