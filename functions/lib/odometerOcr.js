@@ -5,6 +5,7 @@
  * 환경변수
  *   CAR_OCR_API_KEY  — 이 기능 전용 Anthropic API 키(있으면 우선). 없으면 ANTHROPIC_API_KEY 를 쓴다.
  *   ODOMETER_MODEL   — 모델 이름 덮어쓰기(선택)
+ *   ANTHROPIC_WORKSPACE_ID — 워크스페이스에 한정되지 않은 키를 쓸 때 워크스페이스 ID(wrkspc_…)(선택)
  *   AI_GATEWAY_URL · CF_AIG_TOKEN — Cloudflare AI Gateway(소개글 번역과 같은 방식, 선택)
  */
 export const DEFAULT_ODOMETER_MODEL = 'claude-haiku-4-5-20251001';
@@ -46,6 +47,8 @@ export async function readOdometer(env, bytes, fetchImpl = fetch) {
   const url = env.AI_GATEWAY_URL ? `${env.AI_GATEWAY_URL}/anthropic/v1/messages` : 'https://api.anthropic.com/v1/messages';
   const headers = { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
   if (env.CF_AIG_TOKEN) headers['cf-aig-authorization'] = `Bearer ${env.CF_AIG_TOKEN}`;
+  // 워크스페이스에 한정되지 않은 키(개인·서비스 계정 키)는 워크스페이스 ID(wrkspc_…)를 헤더로 보내야 한다
+  if (env.ANTHROPIC_WORKSPACE_ID) headers['anthropic-workspace-id'] = String(env.ANTHROPIC_WORKSPACE_ID).trim();
   const res = await fetchImpl(url, {
     method: 'POST', headers,
     body: JSON.stringify({

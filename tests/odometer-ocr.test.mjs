@@ -30,6 +30,10 @@ test('인식 요청: 설정된 키·모델·게이트웨이로 사진(base64)을
   assert.equal(calls[1].init.headers['x-api-key'], 'old-key');
   assert.equal(calls[1].url, 'https://gw.example/anthropic/v1/messages');
   assert.equal(calls[1].body.model, 'custom-model');
+  await readOdometer({ ANTHROPIC_API_KEY: 'k', ANTHROPIC_WORKSPACE_ID: ' wrkspc_abc ' }, JPEG, fetchImpl);
+  assert.equal(calls[2].init.headers['anthropic-workspace-id'], 'wrkspc_abc', '워크스페이스 ID 가 있으면 헤더로 보낸다');
+  await readOdometer({ ANTHROPIC_API_KEY: 'k' }, JPEG, fetchImpl);
+  assert.equal(calls[3].init.headers['anthropic-workspace-id'], undefined, '없으면 보내지 않는다');
   await assert.rejects(() => readOdometer({}, JPEG, fetchImpl), /설정되지/);
 });
 

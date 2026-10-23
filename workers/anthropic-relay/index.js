@@ -12,7 +12,7 @@
  * Anthropic API 키는 이 Worker 에 저장하지 않는다 — 홈페이지가 보내는 x-api-key 를 그대로 전달만 한다.
  */
 const UPSTREAM = 'https://api.anthropic.com/v1/messages';
-const FORWARD_HEADERS = ['x-api-key', 'anthropic-version', 'anthropic-beta', 'content-type'];
+const FORWARD_HEADERS = ['x-api-key', 'anthropic-version', 'anthropic-beta', 'anthropic-workspace-id', 'content-type'];
 
 export default {
   async fetch(request, env) {

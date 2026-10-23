@@ -128,6 +128,8 @@ export async function onRequestPost(context) {
     if (env.CF_AIG_TOKEN) {
       headers['cf-aig-authorization'] = `Bearer ${env.CF_AIG_TOKEN}`;
     }
+    // 워크스페이스에 한정되지 않은 키(개인·서비스 계정 키)는 워크스페이스 ID(wrkspc_…)를 헤더로 보내야 한다
+    if (env.ANTHROPIC_WORKSPACE_ID) headers['anthropic-workspace-id'] = String(env.ANTHROPIC_WORKSPACE_ID).trim();
 
     const res = await fetch(gatewayUrl, {
       method: 'POST',
