@@ -30,7 +30,8 @@ export async function onRequestGet(context) {
     return Response.json({ error: '마스터 관리자만 접근할 수 있습니다.' }, { status: 403, headers: CORS });
   }
 
-  const accounts = await listAccounts(env);
+  // 메일 인증을 아직 안 한 계정('unverified')은 승인 대상이 아니라서 목록에 올리지 않는다
+  const accounts = (await listAccounts(env)).filter(a => a.status !== 'unverified');
   accounts.sort((a, b) => new Date(b.requestedAt || 0) - new Date(a.requestedAt || 0));
   // adminAllowed: 코드의 관리자 목록에 있는 계정인지(승인 때 관리자로 지정할 수 있는지)
   const safeAccounts = accounts.map(({ passwordHash, passwordSalt, ...rest }) => ({ ...rest, adminAllowed: ADMIN_EMAILS.includes(String(rest.email || '').toLowerCase()), effectiveRole: effectiveRole(rest.email) }));

@@ -9,7 +9,7 @@
  * 도구 API가 거부한다 — 상담사 전용 도구는 이것과 완전히 별개의 계정 체계)
  */
 import {
-  normalizeEmail, isValidEmail, isAllowedPortalEmail, getAccount, verifyPassword, effectiveRole,
+  normalizeEmail, isValidEmail, getAccount, verifyPassword, effectiveRole,
   createHubSessionToken,
 } from '../../lib/hubAccounts.js';
 
@@ -37,15 +37,13 @@ export async function onRequestPost(context) {
     return Response.json({ error: '이메일과 비밀번호를 입력해 주세요.' }, { status: 400, headers: CORS });
   }
 
-  // wolko.org / wol.org 가 아니면 포탈 계정이 없는 것으로 취급 (카운슬러 로그인은 별개 계정 체계라 화면에서 그쪽으로 넘어간다)
-  if (!isAllowedPortalEmail(email)) {
-    return Response.json({ error: '가입되지 않은 이메일입니다. 포탈은 wolko.org 또는 wol.org 계정만 사용할 수 있어요.' }, { status: 404, headers: CORS });
-  }
-
   try {
     const account = await getAccount(env, email);
     if (!account) {
       return Response.json({ error: '가입되지 않은 이메일입니다.' }, { status: 404, headers: CORS });
+    }
+    if (account.status === 'unverified') {
+      return Response.json({ status: 'unverified', error: '이메일 인증이 아직 끝나지 않았어요. 가입 확인 메일의 링크에서 비밀번호를 정해 주세요. 메일이 없으면 가입하기에서 같은 이메일로 다시 요청해 주세요.' }, { status: 403, headers: CORS });
     }
     if (account.status === 'pending') {
       return Response.json({ status: 'pending', error: '아직 승인 대기 중인 계정입니다.' }, { status: 403, headers: CORS });

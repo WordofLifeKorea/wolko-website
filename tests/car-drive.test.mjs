@@ -130,18 +130,22 @@ test('가입 때 등급(관리자/일반 멤버)을 고르고, 관리자는 wolk
   const env = memoryEnv({ RESEND_API_KEY: 'x' });
   globalThis.fetch = async () => ({ ok: true, json: async () => ({}), text: async () => '' });
   const signup = body => S.onRequestPost({ env, request: new Request('https://t.co/api/hub/signup', { method: 'POST', body: JSON.stringify({ phone: '010-1111-2222', password: 'Passw0rd!x', campus: 'wolko', ...body }) }) });
+  const get = async email => JSON.parse(await env.CAMP_KV.get(`hub:account:${email}`));
   const bad = await signup({ name: '가', email: 'a@gmail.com', requestedRole: 'admin' });
-  assert.equal(bad.status, 403, 'wolko.org / wol.org 이메일만 가입할 수 있다');
-  assert.equal((await signup({ name: '가', email: 'a@wolko.org.evil.com' })).status, 403, '도메인은 끝까지 정확히 일치해야 한다');
+  assert.equal(bad.status, 400, '관리자 신청은 wolko.org / wol.org 이메일만');
+  // 다른 도메인은 이제 가입할 수 있지만 마스터 승인이 필요하다(도메인은 끝까지 정확히 일치해야 자동 가입 대상)
+  assert.equal((await signup({ name: '가', email: 'a@wolko.org.evil.com' })).status, 200);
+  assert.equal((await get('a@wolko.org.evil.com')).status, 'pending', '비슷한 도메인은 자동 가입 대상이 아니다');
   assert.equal((await signup({ name: '가', email: 'a@wolko.org', requestedRole: 'admin' })).status, 200, 'wolko.org도 관리자 신청 가능');
   const admin = await signup({ name: '나', email: 'b@wol.org', requestedRole: 'admin' });
   assert.equal(admin.status, 200);
-  assert.equal((await signup({ name: '다', email: 'c@gmail.com' })).status, 403, '외부 도메인 일반 가입도 거절');
+  assert.equal((await signup({ name: '다', email: 'c@gmail.com' })).status, 200, '외부 도메인 일반 가입은 승인 대기');
+  assert.equal((await get('c@gmail.com')).status, 'pending');
   const member = await signup({ name: '다', email: 'c@wolko.org' });
   assert.equal(member.status, 200);
-  const get = async email => JSON.parse(await env.CAMP_KV.get(`hub:account:${email}`));
   assert.deepEqual([(await get('b@wol.org')).requestedRole, (await get('b@wol.org')).role, (await get('b@wol.org')).status], ['admin', null, 'pending'], '신청일 뿐 승인 전에는 권한이 없다');
   assert.equal((await get('c@wolko.org')).requestedRole, 'member');
+  assert.equal((await get('c@wolko.org')).status, 'unverified', 'wolko.org 일반 멤버는 메일 인증 후 바로 가입(승인 대기가 아니다)');
 });
 
 test('등급은 코드의 목록이 기준: 마스터 admin@wolko.org · 관리자 4명 · 나머지는 일반 멤버, 승인에서도 목록 밖은 관리자로 못 올린다', async () => {

@@ -64,6 +64,9 @@ export async function onRequestPost(context) {
     return Response.json({ error: '요청을 찾을 수 없습니다.' }, { status: 404, headers: CORS });
   }
 
+  if (account.status === 'unverified') {
+    return Response.json({ error: '아직 이메일 인증 전인 계정이에요. 본인이 메일의 링크로 인증하면 자동으로 가입돼요.' }, { status: 409, headers: CORS });
+  }
   account.status = action === 'approve' ? 'approved' : 'rejected';
   if (action === 'approve') account.role = role;
   account.approvedAt = new Date().toISOString();

@@ -64,7 +64,7 @@ export function isWolDomain(email) {
   return e.endsWith('@wol.org') || e.endsWith('@wolko.org');
 }
 
-/** 포탈은 wolko.org / wol.org 계정만 쓸 수 있다 (마스터 계정만 예외) */
+/** wolko.org / wol.org 계정 확인용(캠프팀 멤버 추가 등). 포탈 가입 자체는 다른 도메인도 받되 마스터 승인이 필요하다. */
 export const PORTAL_EMAIL_DOMAINS = ['wolko.org', 'wol.org'];
 export function isAllowedPortalEmail(email) {
   const e = normalizeEmail(email);
@@ -165,7 +165,7 @@ export async function parseHubSessionToken(secret, token) {
   const [, email, role, expiresStr] = parts;
   const expires = parseInt(expiresStr, 10);
   if (!expires || Date.now() > expires) return null;
-  if (!isAllowedPortalEmail(email)) return null;
+  // 다른 도메인 계정도 마스터가 승인하면 쓸 수 있다 — 토큰은 로그인에 성공한 계정에게만 발급되고, 계정 상태는 portalSession 이 다시 확인한다
   return { email, role: effectiveRole(email, role) };
 }
 

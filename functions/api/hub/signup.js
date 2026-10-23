@@ -6,7 +6,10 @@
  *  - master 계정(하드코딩)이면 승인 없이 즉시 계정을 만들거나 비밀번호를 갱신하고 로그인 가능.
  *  - 이미 승인됐지만 아직 비밀번호가 없는 계정(과거 승인분)이면 이 요청으로 비밀번호를 최초 설정.
  *  - 이미 비밀번호가 설정된 승인 계정이면 "로그인해주세요" 안내.
- *  - 처음 보는 이메일이면 pending 계정을 새로 만들고 master들에게 알림 메일.
+ *  - wolko.org / wol.org 이메일의 일반 멤버 가입: 마스터 승인 없이 이메일 인증(메일의 링크에서 비밀번호를 정하면 승인)으로 끝난다.
+ *    아직 비밀번호가 없는 'unverified' 계정이 만들어지고 인증 메일이 간다(functions/lib/hubVerify.js). 도메인만 보고 승인하면
+ *    남의 주소로도 가입할 수 있어서 메일 인증을 거친다.
+ *  - 그 밖의 이메일(다른 도메인) 또는 관리자 신청: pending 계정을 만들고 master들에게 알림 메일 → master 승인이 필요하다.
  *  - 이미 pending이면 그대로 대기 안내(중복 알림 메일은 안 보냄).
  *  - 거부된 계정이면 에러.
  *
@@ -16,8 +19,9 @@
 import {
   normalizeEmail, isValidEmail, isValidPassword, isValidPhone, isMasterEmail,
   getAccount, putAccount, hashPassword, sendEmail,
-  pendingRequestEmailHtml, MASTER_EMAILS, isWolDomain, isAllowedPortalEmail,
+  pendingRequestEmailHtml, MASTER_EMAILS, isWolDomain,
 } from '../../lib/hubAccounts.js';
+import { issueVerification } from '../../lib/hubVerify.js';
 import { normalizePhone } from '../../lib/phone.js';
 
 const CORS = {
@@ -54,18 +58,17 @@ export async function onRequestPost(context) {
   if (!isValidEmail(email)) {
     return Response.json({ error: '올바른 이메일 주소를 입력해 주세요.' }, { status: 400, headers: CORS });
   }
-  if (!isAllowedPortalEmail(email)) {
-    return Response.json({ error: '포탈은 wolko.org 또는 wol.org 이메일로만 가입할 수 있어요.' }, { status: 403, headers: CORS });
-  }
   if (requestedRole === 'admin' && !isWolDomain(email)) {
     return Response.json({ error: '관리자는 wolko.org 또는 wol.org 이메일로만 신청할 수 있어요. 일반 멤버로 가입해 주세요.' }, { status: 400, headers: CORS });
   }
-  if (!isValidPassword(password)) {
+  // 메일 인증으로 끝나는 가입(wolko.org·wol.org 일반 멤버)은 비밀번호를 메일의 링크에서 정한다
+  const autoMember = requestedRole === 'member' && isWolDomain(email) && !isMasterEmail(email);
+  if (!autoMember && !isValidPassword(password)) {
     return Response.json({ error: '비밀번호는 8자 이상의 영문/숫자/특수문자로 입력해 주세요.' }, { status: 400, headers: CORS });
   }
 
   try {
-    const { hash, salt } = await hashPassword(password);
+    const { hash, salt } = autoMember ? { hash: null, salt: null } : await hashPassword(password);
 
     if (isMasterEmail(email)) {
       const existing = await getAccount(env, email);
@@ -78,6 +81,19 @@ export async function onRequestPost(context) {
     }
 
     let account = await getAccount(env, email);
+
+    // 예전에 승인됐지만 비밀번호가 아직 없는 계정도 메일 인증으로 비밀번호를 정하게 한다(주소 주인만 정할 수 있다)
+    if (autoMember && account && account.status === 'approved' && !account.passwordHash) {
+      await issueVerification(env, new URL(request.url).origin, { email, name: account.name || name }, context.waitUntil ? p => context.waitUntil(p) : null);
+      return Response.json({ status: 'verify' }, { headers: CORS });
+    }
+
+    if (autoMember && (!account || account.status === 'unverified')) {
+      const base = { email, name, phone, campus, requestedRole: 'member', role: null, status: 'unverified', requestedAt: account?.requestedAt || new Date().toISOString() };
+      await putAccount(env, { ...(account || {}), ...base });
+      await issueVerification(env, new URL(request.url).origin, { email, name }, context.waitUntil ? p => context.waitUntil(p) : null);
+      return Response.json({ status: 'verify' }, { headers: CORS });
+    }
 
     if (!account) {
       account = {
@@ -99,6 +115,17 @@ export async function onRequestPost(context) {
     }
 
     if (account.status === 'pending') {
+      return Response.json({ status: 'pending' }, { headers: CORS });
+    }
+    if (account.status === 'unverified') {
+      // 관리자 신청이나 다른 도메인으로 다시 들어온 경우 — 인증 전 계정은 새 신청으로 바꿔 준다(승인 전이라 권한이 없다)
+      account = { ...account, name, phone, campus, requestedRole, status: 'pending', passwordHash: hash, passwordSalt: salt, requestedAt: new Date().toISOString() };
+      await putAccount(env, account);
+      try {
+        await sendEmail(env, { to: MASTER_EMAILS, subject: `[WOLKO 포탈] 새 가입 요청: ${email}`, html: pendingRequestEmailHtml({ email, name, phone }) });
+      } catch (e) {
+        console.error('pending notification email failed:', e);
+      }
       return Response.json({ status: 'pending' }, { headers: CORS });
     }
     if (account.status === 'rejected') {
