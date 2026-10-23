@@ -4,6 +4,7 @@
       tabList: '업무 목록', tabCal: '달력', tabTpl: '체크리스트 템플릿', tabImp: '시트에서 가져오기', today: '오늘', viewGrid: '달력', viewAgenda: '목록',
       pOpen: '진행 중', pOverdue: '마감 지남', pNoOwner: '담당자 미정', pNoDue: '기한 미정', pAll: '전체', fAllCamps: '모든 캠프', fNoCamp: '캠프 없음', fAllStatus: '모든 상태', fAllPri: '모든 우선순위', fAllOwner: '모든 담당자', sortDue: '기한 빠른 순', sortPri: '우선순위 순', sortNew: '최신 순', sortTitle: '이름 순',
       stNot: '미시작', stIn: '진행 중', stWait: '확인 대기', stDelayed: '지연', stDone: '완료', stNA: '해당 없음', priHigh: '높음', priMedium: '보통', priLow: '낮음',
+      pgPrev: '이전', pgNext: '다음', pgRange: '전체', pgUnit: '건 중', pgTo: '–',
       owner: '담당', noOwner: '담당자 미정', noDue: '기한 미정', due: '기한', overdue: '마감 지남', suggested: '제안', confirm: '확정', noTasks: '조건에 맞는 업무가 없어요.', edit: '수정', del: '삭제', save: '저장', cancel: '취소',
       fTitle: '업무 이름', fOwner: '담당자 (명단에서 고르거나 직접 적어요 · 비워 둘 수 있어요)', fDue: '기한 (비워 둘 수 있어요)', fStatus: '상태', fPriority: '우선순위', fCamp: '관련 캠프', fNotes: '메모', fDate: '날짜', fEnd: '종료일 (선택)', fStart: '시작 시간', fEndT: '종료 시간', fKind: '종류', fLoc: '장소', kTeam: '팀 일정', kCamp: '캠프 일정', kOut: '부재', evTitle: '일정', taskTitle: '업무', newTask: '업무 추가', editTask: '업무 수정', newEvent: '일정 추가', editEvent: '일정 수정',
       lgEvent: '팀 일정', lgCamp: '캠프 기간', lgTask: '업무 마감', lgLate: '마감 지남', lgMeet: '회의', noItems: '이 달에는 표시할 항목이 없어요.',
@@ -13,6 +14,7 @@
       tabList: 'Task list', tabCal: 'Calendar', tabTpl: 'Checklist templates', tabImp: 'Import from sheet', today: 'Today', viewGrid: 'Calendar', viewAgenda: 'List',
       pOpen: 'Open', pOverdue: 'Overdue', pNoOwner: 'No owner', pNoDue: 'No due date', pAll: 'All', fAllCamps: 'All camps', fNoCamp: 'No camp', fAllStatus: 'All statuses', fAllPri: 'All priorities', fAllOwner: 'All owners', sortDue: 'Due date', sortPri: 'Priority', sortNew: 'Newest', sortTitle: 'Name',
       stNot: 'Not Started', stIn: 'In Progress', stWait: 'Waiting for Confirmation', stDelayed: 'Delayed', stDone: 'Completed', stNA: 'Not Applicable', priHigh: 'High', priMedium: 'Medium', priLow: 'Low',
+      pgPrev: 'Prev', pgNext: 'Next', pgRange: 'of', pgUnit: '', pgTo: '–',
       owner: 'Owner', noOwner: 'No owner', noDue: 'No due date', due: 'Due', overdue: 'Overdue', suggested: 'Suggested', confirm: 'Confirm', noTasks: 'No tasks match.', edit: 'Edit', del: 'Delete', save: 'Save', cancel: 'Cancel',
       fTitle: 'Task name', fOwner: 'Owner (pick from the roster or type · can be blank)', fDue: 'Due date (can be left blank)', fStatus: 'Status', fPriority: 'Priority', fCamp: 'Camp', fNotes: 'Notes', fDate: 'Date', fEnd: 'End date (optional)', fStart: 'Start time', fEndT: 'End time', fKind: 'Type', fLoc: 'Location', kTeam: 'Team event', kCamp: 'Camp event', kOut: 'Out of office', evTitle: 'Event', taskTitle: 'Task', newTask: 'Add task', editTask: 'Edit task', newEvent: 'Add event', editEvent: 'Edit event',
       lgEvent: 'Team event', lgCamp: 'Camp dates', lgTask: 'Task due', lgLate: 'Overdue', lgMeet: 'Meeting', noItems: 'Nothing to show this month.',
@@ -22,7 +24,7 @@
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   var STATUS = [['Not Started', 'stNot'], ['In Progress', 'stIn'], ['Waiting for Confirmation', 'stWait'], ['Delayed', 'stDelayed'], ['Completed', 'stDone'], ['Not Applicable', 'stNA']];
   var PRI = [['High', 'priHigh'], ['Medium', 'priMedium'], ['Low', 'priLow']];
-  var S = { tasks: null, types: [], flag: 'open', tab: 'list', month: null, calView: 'grid', cal: null, tpls: [], perms: null };
+  var PAGE = 20, S = { page: 1, tasks: null, types: [], flag: 'open', tab: 'list', month: null, calView: 'grid', cal: null, tpls: [], perms: null };
   var canWrite = function () { return !!(S.perms && S.perms.areas && S.perms.areas.tasks === 'edit'); };
   var stLabel = function (v) { return CT.t((STATUS.filter(function (s) { return s[0] === v; })[0] || [0, 'stNot'])[1]); };
   var priLabel = function (v) { return CT.t('pri' + v); };
@@ -64,7 +66,9 @@
     $('addTask').hidden = !canWrite(); $('viewOnly').hidden = canWrite(); $('impTab').hidden = !canWrite(); $('addTpl').hidden = !canWrite(); $('impTpl').hidden = !canWrite();
     $('pills').innerHTML = [['open', 'pOpen', c.open, ''], ['overdue', 'pOverdue', c.overdue, 'red'], ['noowner', 'pNoOwner', c.noOwner, 'red'], ['nodue', 'pNoDue', c.noDue, ''], ['', 'pAll', '', '']].map(function (p) {
       return '<button class="pill ' + p[3] + (S.flag === p[0] ? ' on' : '') + '" data-flag="' + p[0] + '">' + esc(CT.t(p[1])) + (p[2] !== '' ? '<b>' + p[2] + '</b>' : '') + '</button>'; }).join('');
-    $('tlist').innerHTML = S.tasks.items.length ? S.tasks.items.map(function (t) {
+    var all = S.tasks.items, pages = Math.max(1, Math.ceil(all.length / PAGE)); if (S.page > pages) S.page = pages; if (S.page < 1) S.page = 1;
+    var shown = all.slice((S.page - 1) * PAGE, S.page * PAGE);
+    $('tlist').innerHTML = shown.length ? shown.map(function (t) {
       var late = t.dueDate && t.dueDate < today && t.status !== 'Completed' && t.status !== 'Not Applicable';
       var ownerHtml = t.ownerName ? esc(CT.t('owner')) + ': ' + esc(t.ownerName) : '<span class="tag t-late">' + esc(CT.t('noOwner')) + '</span>' + CT.help('ownerSuggest') + (t.ownerSuggestion ? ' <span class="sugg">' + esc(CT.t('suggested')) + ': ' + esc(t.ownerSuggestion) + (canWrite() ? '<button data-confirm="' + esc(t.id) + '">' + esc(CT.t('confirm')) + '</button>' : '') + '</span>' : '');
       var dueHtml = t.dueDate ? '<span class="tag ' + (late ? 't-late' : daysFrom(today, t.dueDate) <= 3 ? 't-soon' : 't-none') + '">' + esc(CT.t('due')) + ' ' + esc(md(t.dueDate)) + (late ? ' · ' + esc(CT.t('overdue')) : '') + '</span>' : '<span class="tag t-none">' + esc(CT.t('noDue')) + '</span>';
@@ -72,6 +76,15 @@
         '<small>' + ownerHtml + ' · ' + dueHtml + ' <span class="tag p-' + t.priority + '">' + esc(priLabel(t.priority)) + '</span>' + (campLabel(t) ? ' · ' + esc(campLabel(t)) : '') + (t.notes ? '<br>' + esc(t.notes) : '') + '</small></div>' +
         '<div class="actions">' + (canWrite() ? '<select data-status="' + esc(t.id) + '">' + STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (t.status === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select><button class="btn sm" data-edit="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="' + esc(t.id) + '">' + esc(CT.t('del')) + '</button>' : '<span class="status">' + esc(stLabel(t.status)) + '</span>') + '</div></div>';
     }).join('') : '<div class="empty">' + esc(CT.t('noTasks')) + '</div>';
+    renderPager(all.length, pages);
+  }
+  function renderPager(total, pages) {
+    var el = $('tpager'); if (!el) return;
+    if (total <= PAGE) { el.innerHTML = ''; return; }
+    var from = (S.page - 1) * PAGE + 1, to = Math.min(total, S.page * PAGE), nums = [];
+    for (var i = 1; i <= pages; i++) if (i === 1 || i === pages || Math.abs(i - S.page) <= 2) nums.push(i);
+    var out = [], prev = 0; nums.forEach(function (n) { if (prev && n - prev > 1) out.push('<span class="pg-gap">…</span>'); out.push('<button type="button" class="pg' + (n === S.page ? ' on' : '') + '" data-pg="' + n + '"' + (n === S.page ? ' aria-current="page"' : '') + '>' + n + '</button>'); prev = n; });
+    el.innerHTML = '<span class="pg-info">' + from + CT.t('pgTo') + to + ' / ' + total + '</span><button type="button" class="pg" data-pg="' + (S.page - 1) + '"' + (S.page === 1 ? ' disabled' : '') + '>‹ ' + esc(CT.t('pgPrev')) + '</button>' + out.join('') + '<button type="button" class="pg" data-pg="' + (S.page + 1) + '"' + (S.page === pages ? ' disabled' : '') + '>' + esc(CT.t('pgNext')) + ' ›</button>';
   }
   // 담당자 입력칸 제안: 팀 명단의 사람(이름 · 업무에 적는 이름). 고르면 이름이 채워지고, 저장할 때 서버가 이메일을 연결한다. 직접 써도 이름·별칭이 맞으면 같은 사람으로 인식한다.
   var PEOPLE = null;
@@ -181,7 +194,8 @@
   async function refresh() { S.types = (await CT.api('/api/campteam/camps')).types; fillFilters(); if (S.tab === 'tpl') await loadTpl(); await loadTasks(); }
   function showTab(t) {
     S.tab = t; document.querySelectorAll('#tabs .tab').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === t); });
-    ['List', 'Cal', 'Tpl', 'Imp'].forEach(function (n) { $('pane' + n).hidden = ('pane' + n) !== ('pane' + { list: 'List', cal: 'Cal', tpl: 'Tpl', imp: 'Imp' }[t]); });
+    var want = { list: 'List', tpl: 'Tpl', imp: 'Imp' }[t] || 'List';
+    ['List', 'Tpl', 'Imp'].forEach(function (n) { var el = $('pane' + n); if (el) el.hidden = n !== want; });
     if (t === 'tpl') loadTpl();
   }
 
@@ -190,10 +204,11 @@
     try { S.types = (await CT.api('/api/campteam/camps')).types; fillFilters(); await loadTasks(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     CT.applyI18n(); fillFilters();
     var up = new URLSearchParams(location.search); if (up.get('open')) { openById(up.get('open')); } if (up.get('campId')) { $('tcamp').value = up.get('campId'); S.flag = ''; await loadTasks(); }
-    var timer; $('tq').oninput = function () { clearTimeout(timer); timer = setTimeout(loadTasks, 250); };
-    ['tcamp', 'tstatus', 'tpri', 'towner', 'tsort'].forEach(function (id) { $(id).onchange = loadTasks; });
+    var timer; $('tq').oninput = function () { clearTimeout(timer); timer = setTimeout(function () { S.page = 1; loadTasks(); }, 250); };
+    ['tcamp', 'tstatus', 'tpri', 'towner', 'tsort'].forEach(function (id) { $(id).onchange = function () { S.page = 1; loadTasks(); }; });
     $('tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); };
-    $('pills').onclick = function (e) { var b = e.target.closest('[data-flag]'); if (b) { S.flag = b.dataset.flag; loadTasks(); } };
+    $('pills').onclick = function (e) { var b = e.target.closest('[data-flag]'); if (b) { S.flag = b.dataset.flag; S.page = 1; loadTasks(); } };
+    $('tpager').onclick = function (e) { var b = e.target.closest('[data-pg]'); if (!b || b.disabled) return; S.page = Number(b.dataset.pg) || 1; renderTasks(); var l = $('tlist'); if (l && l.scrollIntoView) l.scrollIntoView({ block: 'start' }); };
     $('addTask').onclick = function () { taskForm(); }; $('addTpl').onclick = function () { tplForm(); }; $('impTpl').onclick = tplImportForm;
     $('tlist').addEventListener('click', async function (e) {
       var b = e.target.closest('button'); if (!b) return; var id = b.dataset.edit || b.dataset.del || b.dataset.confirm, t = S.tasks.items.filter(function (x) { return x.id === id; })[0];

@@ -457,3 +457,14 @@ html.dz-active .dropzone{outline:3px solid rgba(0,119,163,.35);outline-offset:4p
 
 /* 폰: 선택 상자가 카드 밖으로 삐져나오지 않게 */
 @media (max-width: 760px) { .card select, .card input:not([type=checkbox]):not([type=radio]), .card textarea { max-width: 100%; min-width: 0; box-sizing: border-box; } .card label { min-width: 0; } }
+
+/* 팝업이 main 안에 있어도 클릭되게 (흐림용 pointer-events:none 이 팝업까지 물려받지 않도록) */
+html.dlg-open main dialog, html.al-open main dialog, dialog { pointer-events: auto; }
+
+/* 쪽 넘김 (업무 목록 등 20개씩) */
+.pager{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;margin:16px 0 8px}
+.pager .pg{min-width:36px;height:36px;padding:0 10px;border:1px solid var(--line,#d9e0e6);background:#fff;color:inherit;border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.pager .pg:hover:not(:disabled){border-color:var(--blue,#2b6e8f);color:var(--blue,#2b6e8f)}
+.pager .pg.on{background:var(--blue,#1f4e68);border-color:var(--blue,#1f4e68);color:#fff}
+.pager .pg:disabled{opacity:.4;cursor:default}
+.pager .pg-info,.pager .pg-gap{color:var(--muted,#6b7a86);font-size:.9em;padding:0 6px}
