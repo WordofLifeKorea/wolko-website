@@ -8,7 +8,7 @@
  *   ANTHROPIC_WORKSPACE_ID — 워크스페이스에 한정되지 않은 키를 쓸 때 워크스페이스 ID(wrkspc_…)(선택)
  *   AI_GATEWAY_URL · CF_AIG_TOKEN — Cloudflare AI Gateway(소개글 번역과 같은 방식, 선택)
  */
-export const DEFAULT_ODOMETER_MODEL = 'claude-haiku-4-5-20251001';
+export const DEFAULT_ODOMETER_MODEL = 'claude-sonnet-5-5';
 export const MAX_ODOMETER_KM = 2_000_000;
 
 const SYSTEM = `You read a vehicle dashboard photo and report the TOTAL odometer (cumulative mileage).

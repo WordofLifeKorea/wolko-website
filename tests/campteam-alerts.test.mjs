@@ -117,7 +117,7 @@ test('AI 요약: 키가 없으면 꺼짐, 할 일 없으면 호출 안 함, 하�
     globalThis.fetch = async (url, opts) => { calls.push({ url, body: JSON.parse(opts.body) }); return new Response(JSON.stringify({ content: [{ type: 'text', text: '오늘은 **업무 b** 마감이 지났어요.' }] }), { status: 200 }); };
     const r = await J(await post(env, U.mem, { action: 'summary', kind: 'daily' })); assert.equal(r.text, '오늘은 업무 b 마감이 지났어요.', '마크다운 기호는 지워요');
     assert.equal(calls.length, 1); const sent = JSON.stringify(calls[0].body); assert.ok(sent.includes('업무 a') && sent.includes('업무 b')); for (const secret of [U.mem, '이름', '@']) assert.equal(sent.includes(secret), false, '이메일·담당자 이름은 보내지 않아요: ' + secret);
-    assert.equal(calls[0].body.model, 'claude-haiku-5-5');
+    assert.equal(calls[0].body.model, 'claude-sonnet-5-5');
     assert.equal((await J(await post(env, U.mem, { action: 'summary', kind: 'daily' }))).text, r.text); assert.equal(calls.length, 1, '하루 한 번만 호출');
     assert.equal((await J(await get(env, U.mem))).summary.daily, r.text);
     globalThis.fetch = async () => new Response('{}', { status: 500 }); calls = [];
