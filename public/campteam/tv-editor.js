@@ -111,7 +111,7 @@
   function urlUpdate() { var u = location.origin + '/tv/?t=' + (S.settings.token || ''); $('tvUrl').textContent = u; $('tvOpen').href = u; }
   async function loadAdmin() {
     var cfg = await CT.api('/api/campteam/tv-config'); S.layout = cfg.layout; S.saved = clone(cfg.layout); S.settings = cfg.settings; urlUpdate();
-    S.res = await (await fetch('/api/campteam/tv-data?t=' + encodeURIComponent(cfg.settings.token), { cache: 'no-store' })).json();
+    try { var rr = await fetch('/api/campteam/tv-data?t=' + encodeURIComponent(cfg.settings.token), { cache: 'no-store' }); S.res = rr.ok ? await rr.json() : null; } catch (e) { S.res = null; } // 미리보기 자료를 못 가져와도 편집 화면은 열린다
     var f = $('tvSetForm'); f.theme.innerHTML = '<option value="dark">' + esc(CT.t('themeDark')) + '</option><option value="light">' + esc(CT.t('themeLight')) + '</option>'; f.language.innerHTML = '<option value="en">' + esc(CT.t('langEn')) + '</option><option value="ko">' + esc(CT.t('langKo')) + '</option><option value="both">' + esc(CT.t('langBoth')) + '</option>';
     ['theme', 'language', 'refreshSec', 'reloadHours', 'weatherLabel', 'weatherLat', 'weatherLon'].forEach(function (k) { f[k].value = cfg.settings[k] || ''; });
     draw();

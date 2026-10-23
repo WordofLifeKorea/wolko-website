@@ -23,8 +23,10 @@ const setKV = (env, key, value, now) => env.DB.prepare(`INSERT INTO tv_settings 
 
 /** 관리자 전용: 지금 저장된 배치·설정·TV 주소용 열쇠(token) */
 export async function onRequestGet({ env, request }) {
-  const { res } = await admin(env, request); if (res) return res;
+  const { s, res } = await admin(env, request); if (res) return res;
   const [{ layout, updatedAt, isDefault }, settings] = await Promise.all([loadLayout(env), loadSettings(env)]);
+  // 새 DB 에는 TV 주소용 열쇠가 아직 없다 → 관리자가 처음 열 때 한 번 만들어 둔다
+  if (!settings.token) { settings.token = newToken(10); await setKV(env, 'token', settings.token, nowIso()); await audit(env, s.email, 'create', 'tv_token', 'main'); }
   return json({ layout, updatedAt, isDefault, settings, appVersion: TV_APP_VERSION });
 }
 /** 저장: { layout?, settings? } */

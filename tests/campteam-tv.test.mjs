@@ -98,3 +98,14 @@ test('캠프의 주제·정원·신청 시스템 ID 입력 검사', async () => 
   for (const bad of [{ capacity: 'abc' }, { capacity: 0 }, { capacity: 1.5 }, { registrationCampId: 'a:b' }, { registrationCampId: 'x y' }]) assert.equal((await patch(bad)).status, 400, JSON.stringify(bad));
   assert.equal((await patch({ capacity: '', registrationCampId: '' })).status, 200); assert.equal(env.DB.sqlite.prepare('SELECT capacity FROM camps WHERE id=?').get('camp-u26').capacity, null);
 });
+
+test('새 DB(가짜 자료 없음)에서도 관리자가 TV 화면을 처음 열면 TV 주소용 열쇠가 만들어지고, 그 열쇠로 TV 자료가 열린다', async () => {
+  const env = makeEnv(fakeD1({ seed: false }));
+  env.DB.sqlite.exec(`INSERT INTO camp_members (email,name,role,active,createdAt,updatedAt) VALUES ('${U.admin}','','admin',1,'x','x')`);
+  const first = await J(await call(TvConfig, 'onRequestGet', env, U.admin));
+  assert.match(first.settings.token, /^[A-Za-z0-9_-]{8,}$/, '열쇠가 비어 있으면 안 된다');
+  const again = await J(await call(TvConfig, 'onRequestGet', env, U.admin));
+  assert.equal(again.settings.token, first.settings.token, '다시 열어도 같은 열쇠');
+  const tv = await TvData.onRequestGet({ env, request: new Request('http://localhost/api/campteam/tv-data?t=' + first.settings.token) });
+  assert.equal(tv.status, 200);
+});
