@@ -42,7 +42,9 @@ function base64(bytes) {
 export function ocrConfigured(env) { return !!(env.CAR_OCR_API_KEY || env.ANTHROPIC_API_KEY); }
 
 export async function readOdometer(env, bytes, fetchImpl = fetch) {
-  const key = env.CAR_OCR_API_KEY || env.ANTHROPIC_API_KEY;
+  const keySource = env.CAR_OCR_API_KEY ? 'CAR_OCR_API_KEY' : 'ANTHROPIC_API_KEY';
+  const rawKey = String(env.CAR_OCR_API_KEY || env.ANTHROPIC_API_KEY || '');
+  const key = rawKey.trim();   // 붙여넣을 때 섞이기 쉬운 앞뒤 공백·줄바꿈은 지운다
   if (!key) throw Object.assign(new Error('자동 인식이 설정되지 않았습니다.'), { code: 'not-configured' });
   const url = env.AI_GATEWAY_URL ? `${env.AI_GATEWAY_URL}/anthropic/v1/messages` : 'https://api.anthropic.com/v1/messages';
   const headers = { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
@@ -63,7 +65,9 @@ export async function readOdometer(env, bytes, fetchImpl = fetch) {
     // 서비스가 알려 주는 오류 종류·메시지(키·요청 내용은 들어 있지 않다)를 화면 진단용으로 함께 넘긴다
     const body = await res.json().catch(() => ({}));
     const relayColo = res.headers.get?.('x-relay-colo');   // 중계 Worker 를 거쳤다면 그쪽 데이터센터
-    const detail = [[body?.error?.type, String(body?.error?.message || '').slice(0, 120)].filter(Boolean).join(': '), relayColo ? `relay:${relayColo}` : ''].filter(Boolean).join(' · ');
+    // 키 값은 보내지 않고, 어떤 환경변수의 어떤 모양의 키였는지만 알려 준다(길이·앞 10글자는 공개된 형식 정보)
+    const keyShape = `key:${keySource} len=${rawKey.length}${rawKey !== key ? ' (공백 제거됨)' : ''} ${key.slice(0, 10)}…`;
+    const detail = [[body?.error?.type, String(body?.error?.message || '').slice(0, 120)].filter(Boolean).join(': '), relayColo ? `relay:${relayColo}` : '', res.status === 401 ? keyShape : ''].filter(Boolean).join(' · ');
     throw Object.assign(new Error('계기판 인식 서비스에 연결하지 못했습니다.'), { code: 'upstream', status: res.status, detail });
   }
   const data = await res.json();
