@@ -42,7 +42,9 @@ test('contact form anchor and query preset use the selected value for submission
   assert.match(contact, /<select id="ct-type-select" name="type">/);
   assert.match(contact, /var type\s+= document\.getElementById\('ct-type-select'\)\.value/);
   assert.doesNotMatch(contact, /id="ct-type-val"/);
-  assert.match(contact, /<option value="camp">캠프 신청 \/ Camp Registration<\/option>/);
+  // 선택 목록은 한/영을 한 줄에 섞지 않고 지금 언어 하나만 보여준다(data-ko / data-en 으로 전환)
+  assert.match(contact, /<option value="camp" data-ko="캠프 신청" data-en="Camp Registration">캠프 신청<\/option>/);
+  assert.doesNotMatch(contact, /<option[^>]*>[^<]*\/[^<]*<\/option>/);
 });
 
 test('response guidance uses a balanced card highlight instead of a side stripe', () => {
