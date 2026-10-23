@@ -253,6 +253,10 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   font-size: 12px; font-weight: 700;
   letter-spacing: 2px; color: var(--c-light); text-transform: uppercase;
 }
+.mp-verse-copy {
+  max-width: 640px; margin: 14px auto 0; font-size: 10.5px; line-height: 1.5;
+  color: var(--c-light); opacity: .75;
+}
 
 /* STORY */
 .mp-story {
@@ -905,6 +909,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
         </>
       )}
     </div>
+    {/\(ESV\)\s*$/.test(String(d.verse_en || '')) && (
+      <p class="mp-verse-copy wl-en-block">Scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</p>
+    )}
   </section>
 
 
