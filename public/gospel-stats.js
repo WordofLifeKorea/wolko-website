@@ -10,7 +10,7 @@
       pageTitle: '복음 통계', docTitle: '복음 통계 — WOLKO',
       intro: '매달 복음을 전한 기록을 보고하고, 평택과 제주의 통계를 함께 확인합니다.',
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: 'WOLKO 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
-      thisMonth: '이번 달', write: '내 보고 쓰기', csv: 'CSV 내려받기',
+      thisMonth: '이번 달', write: '내 보고 쓰기', xlsx: '엑셀 보고서 내려받기', csv: '원본 CSV',
       tabAll: '통합', tabMainland: '평택', tabJeju: '제주',
       kGospel: '복음을 전한 사람', kSalv: '구원 고백 (전체)', kDed: '헌신 (전체)', kReach: '캠프·행사 참석',
       count: function (n, ind, team, all) { return n + '건 보고' + (all ? ' (개인 ' + ind + ' · 팀 ' + team + ')' : ''); }, countNone: '아직 이 달에 보고가 없어요.',
@@ -31,7 +31,7 @@
       pageTitle: 'Gospel Stats', docTitle: 'Gospel Stats — WOLKO',
       intro: 'Report your monthly Gospel outreach and see Pyeongtaek and Jeju statistics together.',
       loading: 'Loading…', loginTitle: 'Portal login', loginHelp: 'Please sign in with your WOLKO portal account.', email: 'Email', password: 'Password', loginBtn: 'Sign in and continue', loginFail: 'Could not sign in.',
-      thisMonth: 'This month', write: 'Write my report', csv: 'Download CSV',
+      thisMonth: 'This month', write: 'Write my report', xlsx: 'Download Excel report', csv: 'Raw CSV',
       tabAll: 'Combined', tabMainland: 'Pyeongtaek', tabJeju: 'Jeju',
       kGospel: 'People shared the Gospel with', kSalv: 'Salvations (total)', kDed: 'Dedications (total)', kReach: 'Camp & event attendance',
       count: function (n, ind, team, all) { return n + ' report' + (n === 1 ? '' : 's') + (all ? ' (' + ind + ' individual · ' + team + ' team)' : ''); }, countNone: 'No reports for this month yet.',
@@ -104,6 +104,7 @@
     $('prevMonth').disabled = data.month <= data.earliest;
     $('nextMonth').disabled = data.month >= data.current;
     $('csvBtn').hidden = !data.me.canReview;
+    $('xlsxBtn').hidden = !data.me.canReview;
     renderTabs(); renderKpis(); renderTable(); renderTrend(); renderRows(); renderMine();
   }
 
@@ -290,15 +291,19 @@
   $('reportForm').addEventListener('focusout', function (e) { if (e.target.id === 'fTeam') syncExisting(); });
   $('reportForm').addEventListener('click', function (e) { if (e.target.id === 'fCancel') $('formPanel').hidden = true; });
 
-  $('csvBtn').addEventListener('click', async function () {
-    try {
-      var res = await fetch(API + '?month=' + encodeURIComponent(data.month) + '&format=csv', { headers: headers() });
-      if (!res.ok) throw new Error(t('denied'));
-      var url = URL.createObjectURL(await res.blob()), a = document.createElement('a');
-      a.href = url; a.download = 'gospel-stats-' + data.month + '.csv'; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-    } catch (error) { say(error.message); }
-  });
+  function download(format, filename) {
+    return async function () {
+      try {
+        var res = await fetch(API + '?month=' + encodeURIComponent(data.month) + '&format=' + format, { headers: headers() });
+        if (!res.ok) throw new Error(t('denied'));
+        var url = URL.createObjectURL(await res.blob()), a = document.createElement('a');
+        a.href = url; a.download = filename(data.month); document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      } catch (error) { say(error.message); }
+    };
+  }
+  $('csvBtn').addEventListener('click', download('csv', function (m) { return 'gospel-stats-' + m + '.csv'; }));
+  $('xlsxBtn').addEventListener('click', download('xlsx', function (m) { return 'WOLKO-Gospel-Report-' + m + '.xlsx'; }));
 
   function setLang(next) { if (next === lang) return; lang = next; try { localStorage.setItem('wolkoCarLang', lang); } catch (e) { /* 저장 못 해도 이 화면은 바뀐다 */ } render(); if (!$('formPanel').hidden) { var keep = { v: formValues() }; buildForm(editing); document.querySelectorAll('#reportForm [data-field]').forEach(function (i) { if (keep.v[i.dataset.field]) i.value = keep.v[i.dataset.field]; }); updateWarn(); } }
   $('langKoBtn').addEventListener('click', function () { setLang('ko'); });
