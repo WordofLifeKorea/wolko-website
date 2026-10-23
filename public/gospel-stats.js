@@ -10,7 +10,7 @@
       pageTitle: '복음 통계', docTitle: '복음 통계 — WOLKO',
       intro: '매달 복음을 전한 기록을 보고하고, 평택과 제주의 통계를 함께 확인합니다.',
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: 'WOLKO 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
-      minus: '1 줄이기', plus: '1 늘리기', thisMonth: '이번 달', write: '내 보고 쓰기', xlsx: '엑셀 보고서 내려받기', csv: '원본 CSV',
+      minus: '1 줄이기', plus: '1 늘리기', infoLabel: function (name) { return name + ' 설명 보기'; }, thisMonth: '이번 달', write: '내 보고 쓰기', xlsx: '엑셀 보고서 내려받기', csv: '원본 CSV',
       tabAll: '통합', tabMainland: '평택', tabJeju: '제주',
       kGospel: '복음을 전한 사람', kSalv: '구원 고백 (전체)', kDed: '헌신 (전체)', kReach: '캠프·행사 참석',
       count: function (n, ind, team, all) { return n + '건 보고' + (all ? ' (개인 ' + ind + ' · 팀 ' + team + ')' : ''); }, countNone: '아직 이 달에 보고가 없어요.',
@@ -31,7 +31,7 @@
       pageTitle: 'Gospel Stats', docTitle: 'Gospel Stats — WOLKO',
       intro: 'Report your monthly Gospel outreach and see Pyeongtaek and Jeju statistics together.',
       loading: 'Loading…', loginTitle: 'Portal login', loginHelp: 'Please sign in with your WOLKO portal account.', email: 'Email', password: 'Password', loginBtn: 'Sign in and continue', loginFail: 'Could not sign in.',
-      minus: 'Decrease by 1', plus: 'Increase by 1', thisMonth: 'This month', write: 'Write my report', xlsx: 'Download Excel report', csv: 'Raw CSV',
+      minus: 'Decrease by 1', plus: 'Increase by 1', infoLabel: function (name) { return 'What is “' + name + '”?'; }, thisMonth: 'This month', write: 'Write my report', xlsx: 'Download Excel report', csv: 'Raw CSV',
       tabAll: 'Combined', tabMainland: 'Pyeongtaek', tabJeju: 'Jeju',
       kGospel: 'People shared the Gospel with', kSalv: 'Salvations (total)', kDed: 'Dedications (total)', kReach: 'Camp & event attendance',
       count: function (n, ind, team, all) { return n + ' report' + (n === 1 ? '' : 's') + (all ? ' (' + ind + ' individual · ' + team + ' team)' : ''); }, countNone: 'No reports for this month yet.',
@@ -196,7 +196,8 @@
     data.schema.sections.forEach(function (section) {
       html += '<section class="gs-sec"><h4 class="gs-sec-head">' + esc(tx(section.title)) + '</h4>' + section.fields.map(function (f) {
         var parts = tx(f.label).split(' — '), title = parts[0], desc = parts.slice(1).join(' — ');
-        return '<div class="gs-row"><label class="gs-row-text" for="f_' + f.id + '"><strong>' + esc(title) + '</strong>' + (desc ? '<small>' + esc(desc) + '</small>' : '') + '</label>'
+        return '<div class="gs-row"><div class="gs-row-text"><label for="f_' + f.id + '"><strong>' + esc(title) + '</strong></label>'
+          + (desc ? '<button type="button" class="gs-info" data-tip="' + esc(desc) + '" aria-label="' + esc(t('infoLabel', title)) + '">i</button>' : '') + '</div>'
           + '<div class="gs-step"><button type="button" class="gs-stepbtn" data-step="-1" data-for="' + f.id + '" aria-label="' + esc(t('minus')) + '">−</button>'
           + '<input id="f_' + f.id + '" type="text" inputmode="numeric" autocomplete="off" data-field="' + f.id + '" value="' + (v[f.id] ? v[f.id] : 0) + '" placeholder="0" aria-label="' + esc(title) + '">'
           + '<button type="button" class="gs-stepbtn" data-step="1" data-for="' + f.id + '" aria-label="' + esc(t('plus')) + '">+</button></div></div>';
@@ -300,6 +301,29 @@
       } catch (error) { say(error.message); del.disabled = false; }
     }
   });
+  /* ───────── (i) 설명 말풍선 ───────── */
+  var tip = document.createElement('div'); tip.className = 'gs-tip'; tip.id = 'gsTip'; tip.setAttribute('role', 'tooltip'); tip.hidden = true; document.body.appendChild(tip);
+  var tipFor = null;
+  function hideTip() { if (tipFor) tipFor.removeAttribute('aria-describedby'); tipFor = null; tip.hidden = true; }
+  function showTip(btn) {
+    if (tipFor && tipFor !== btn) tipFor.removeAttribute('aria-describedby');
+    tipFor = btn; btn.setAttribute('aria-describedby', 'gsTip');
+    tip.textContent = btn.dataset.tip; tip.style.left = '0px'; tip.style.top = '0px'; tip.hidden = false;
+    var r = btn.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight, vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    var left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), vw - w - 8);
+    var top = r.bottom + 8; if (top + h > vh - 8) top = Math.max(8, r.top - h - 8);
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  var form = $('reportForm');
+  form.addEventListener('mouseover', function (e) { var b = e.target.closest('.gs-info'); if (b) showTip(b); });
+  form.addEventListener('mouseout', function (e) { if (e.target.closest('.gs-info') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.gs-info'))) hideTip(); });
+  form.addEventListener('focusin', function (e) { var b = e.target.closest('.gs-info'); if (b) showTip(b); });
+  form.addEventListener('focusout', function (e) { if (e.target.closest('.gs-info')) hideTip(); });
+  form.addEventListener('click', function (e) { var b = e.target.closest('.gs-info'); if (!b) return; if (tipFor === b && !tip.hidden && e.detail !== 0 && b.dataset.touched) { hideTip(); delete b.dataset.touched; } else { showTip(b); b.dataset.touched = '1'; } });
+  document.addEventListener('click', function (e) { if (!e.target.closest('.gs-info')) hideTip(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideTip(); });
+  window.addEventListener('scroll', hideTip, true); window.addEventListener('resize', hideTip);
+
   $('reportForm').addEventListener('submit', save);
   $('reportForm').addEventListener('input', function (e) { if (e.target.matches('[data-field]')) updateWarn(); });
   $('reportForm').addEventListener('focusin', function (e) { if (e.target.matches('[data-field]')) setTimeout(function () { e.target.select(); }, 0); });
