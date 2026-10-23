@@ -17,7 +17,7 @@
       photoBtn: '카메라 열기 · 사진 선택', photoCamBtn: '카메라로 찍기', photoUploadBtn: '사진 올리기', save: '사용 일지 저장', saving: '저장 중…',
       historyTitle: '최근 사용 내역', historyHelp: '기록은 로그인 계정과 함께 저장됩니다. 사진은 포탈 사용자만 볼 수 있습니다.',
       qrTitle: '차량에 부착할 QR 코드', qrHelp: '고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.', qrPrint: 'QR 코드 인쇄',
-      photoDialog: '차량 사진', closePhoto: '사진 닫기', photoRemove: '사진 지우기',
+      photoDialog: '차량 사진', closePhoto: '사진 닫기', photoRemove: '사진 지우기', photoDecodeFail: type => `이 브라우저에서 열 수 없는 사진 형식입니다 (${type}). JPG 또는 PNG 사진으로 올려 주세요. iPhone 사진(HEIC)이면 카메라로 찍기를 쓰거나 JPG로 내보내 주세요.`,
       pickVehicle: '차량을 선택해 주세요', noEntries: '아직 등록된 사용 기록이 없습니다.', viewPhoto: '사진 보기',
       nRecords: n => `${n}건`, latest: '최근', noVehicleRecords: '아직 기록이 없습니다.', manage: '관리', manageDone: '완료', selectAll: '전체 선택', selectedN: n => n ? `${n}건 선택` : '기록을 골라 주세요', editSel: '선택 수정', delSel: '선택 삭제', delSelConfirm: n => `선택한 ${n}건의 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n삭제할까요?`, editTitle: '선택한 기록 수정', editHelp: n => `선택한 ${n}건에 적용돼요. 바꾸지 않을 항목은 “변경 안 함”으로 두세요.`, editVehicle: '차량', editUse: '사용 목적', keepAsIs: '변경 안 함', cancelBtn: '취소', editSaveBtn: '저장', editNothing: '바꿀 내용을 골라 주세요.', deleted: n => `${n}건을 삭제했습니다.`, edited: n => `${n}건을 수정했습니다.`, clearConfirm: '지금 있는 모든 사용 기록과 사진을 삭제합니다.\n(삭제 보관함에 백업돼요)\n\n계속하려면 "삭제"라고 입력하세요.', cleared: n => n + '건을 삭제했어요.',
       mileageAfter: '사용 후 마일리지', mileagePh: '사용 후 계기판 km', mileageSave: '저장', mileageEdit: '수정', mileageSaved: '마일리지를 저장했습니다.', mileageFail: '마일리지를 숫자(km)로 입력해 주세요.',
@@ -45,7 +45,7 @@
       photoBtn: 'Open camera · choose photo', photoCamBtn: 'Take photo', photoUploadBtn: 'Upload photo', save: 'Save usage log', saving: 'Saving…',
       historyTitle: 'Recent usage', historyHelp: 'Records are saved with your account. Photos are visible only to portal users.',
       qrTitle: 'QR codes for the vehicles', qrHelp: 'Print the code for each fixed vehicle and attach it. Scanning selects that vehicle automatically.', qrPrint: 'Print QR codes',
-      photoDialog: 'Vehicle photo', closePhoto: 'Close photo', photoRemove: 'Remove photo',
+      photoDialog: 'Vehicle photo', closePhoto: 'Close photo', photoRemove: 'Remove photo', photoDecodeFail: type => `This browser cannot open this photo format (${type}). Please use a JPG or PNG. For iPhone photos (HEIC), use Take photo or export as JPG.`,
       pickVehicle: 'Select a vehicle', noEntries: 'No usage records yet.', viewPhoto: 'View photo',
       nRecords: n => `${n} record${n === 1 ? '' : 's'}`, latest: 'Latest', noVehicleRecords: 'No records yet.', manage: 'Manage', manageDone: 'Done', selectAll: 'Select all', selectedN: n => n ? `${n} selected` : 'Select records', editSel: 'Edit selected', delSel: 'Delete selected', delSelConfirm: n => `This deletes the ${n} selected record(s) and their photos.\n(They are kept in a deleted-items backup)\n\nDelete them?`, editTitle: 'Edit selected records', editHelp: n => `Applies to the ${n} selected record(s). Leave anything you do not want to change as “No change”.`, editVehicle: 'Vehicle', editUse: 'Purpose of use', keepAsIs: 'No change', cancelBtn: 'Cancel', editSaveBtn: 'Save', editNothing: 'Choose what to change.', deleted: n => `Deleted ${n} record(s).`, edited: n => `Updated ${n} record(s).`, clearConfirm: 'This deletes ALL current usage records and photos.\n(They are kept in a deleted-items backup)\n\nType DELETE to continue.', cleared: n => n + ' record(s) deleted.',
       mileageAfter: 'Mileage after use', mileagePh: 'Odometer after use (km)', mileageSave: 'Save', mileageEdit: 'Edit', mileageSaved: 'Mileage saved.', mileageFail: 'Enter the mileage as a number (km).',
@@ -467,14 +467,23 @@
   async function toJpeg(file) {
     const url = URL.createObjectURL(file);
     try {
-      const image = new Image();
-      image.src = url;
-      await image.decode();
+      // 먼저 <img> 로 읽고, 안 되면 createImageBitmap 으로 한 번 더 시도한다. 둘 다 안 되면 브라우저가 못 여는 형식(HEIC 등)이다.
+      let image = null;
+      try {
+        image = new Image();
+        image.src = url;
+        await image.decode();
+      } catch {
+        image = null;
+        try { image = await createImageBitmap(file); } catch { image = null; }
+      }
+      if (!image) throw new Error(t('photoDecodeFail', file.type || (file.name.split('.').pop() || '').toLowerCase() || '?'));
+      const srcW = image.naturalWidth || image.width, srcH = image.naturalHeight || image.height;
       const maxSide = 1600;
-      const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+      const scale = Math.min(1, maxSide / Math.max(srcW, srcH));
       const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      canvas.width = Math.max(1, Math.round(srcW * scale));
+      canvas.height = Math.max(1, Math.round(srcH * scale));
       canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
       const encode = quality => new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
       let blob = await encode(.82);
