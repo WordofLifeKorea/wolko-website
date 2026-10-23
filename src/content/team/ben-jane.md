@@ -18,7 +18,7 @@ hero_subtitle_ko: "벤과 제인은 제주 월비 캠퍼스에서 시설 관리�
 hero_subtitle_en: "Ben and Jane serve at WOLBI Jeju in facility maintenance and ministry support, creating a distraction-free environment so students and campers can focus fully on the Word of God."
 verse_ref: "마태복음 5 : 14-16"
 verse_ko: "너희는 세상의 빛이라 산위에 있는 동네가 숨기우지 못할 것이요 사람이 등불을 켜서 말 아래 두지 아니하고 등경 위에 두나니 이러므로 집안 모든 사람에게 비취느니라 이같이 너희 빛을 사람 앞에 비취게 하여 저희로 너희 착한 행실을 보고 하늘에 계신 너희 아버지께 영광을 돌리게 하라"
-verse_en: "You are the light of the world. A city set on a hill cannot be hidden. Nor do people light a lamp and put it under a basket, but on a stand, and it gives light to all in the house. In the same way, let your light shine before others, so that they may see your good works and give glory to your Father who is in heaven. (Matthew 5:14–16)"
+verse_en: "“You are the light of the world. A city set on a hill cannot be hidden. Nor do people light a lamp and put it under a basket, but on a stand, and it gives light to all in the house. In the same way, let your light shine before others, so that they may see your good works and give glory to your Father who is in heaven. (ESV)"
 spouse_ko: 제인 코흘러
 spouse_en: Jane Koehler
 show_spouse: true

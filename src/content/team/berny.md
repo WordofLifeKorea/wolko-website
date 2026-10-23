@@ -20,7 +20,7 @@ hero_subtitle_ko: Berny는 WOLBI 제주에서 카운슬러와 찬양 인도자�
 hero_subtitle_en: Berny serves at WOLBI Jeju as a counselor and worship leader, helping students come to truly know Christ, grow deeper in their understanding of the Gospel, and go out into the world.
 verse_ref: "고린도후서 12:9"
 verse_ko: "내게 이르시기를 내 은혜가 네게 족하도다 이는 내 능력이 약한데서 온전하여짐이라 하신지라 이러므로 도리어 크게 기뻐함으로 나의 여러 약한 것들에 대하여 자랑하리니 이는 그리스도의 능력으로 내게 머물게 하려함이라"
-verse_en: "And he said to me, \"My grace is sufficient for you, for my power is made perfect in weakness.\" Therefore I will boast all the more gladly about my weaknesses, so that Christ's power may rest on me."
+verse_en: "But he said to me, “My grace is sufficient for you, for my power is made perfect in weakness.” Therefore I will boast all the more gladly of my weaknesses, so that the power of Christ may rest upon me. (ESV)"
 show_spouse: false
 bio_ko: |-
   2011년 3월 11일, Berny는 예수 그리스도를 개인의 구주로 영접하기로 결단했습니다. 기독교 가정 출신은 아니었지만 하나님의 존재를 믿는 가정에서 자랐습니다. 아무도 자신을 소중히 여기지 않는다는 느낌 속에서 살던 중, 요한복음 3장 16절을 통해 세상이 자신을 받아들이지 않더라도 하늘 아버지께서 독생자를 보내실 만큼 자신을 사랑하신다는 사실을 깨달았습니다. 오직 예수 그리스도만이 마음을 진정으로 채우실 수 있음을 알게 된 순간이었습니다.

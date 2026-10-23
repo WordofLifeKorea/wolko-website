@@ -23,7 +23,7 @@ hero_subtitle_ko: "Grace는 WOLBI 제주에서 팟캐스트 채널 촬영·편�
 hero_subtitle_en: "Grace serves at WOLBI Jeju managing the full podcast pipeline — filming, editing, and uploading — to bring God's Word to people around the world. She is also completing her commercial music production degree through Liberty University Online."
 verse_ref: "Colossians 3:23"
 verse_ko: "무슨 일을 하든지 마음을 다하여 주께 하듯하고 사람에게 하듯하지 말라"
-verse_en: "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters,"
+verse_en: "Whatever you do, work heartily, as for the Lord and not for men, (ESV)"
 show_spouse: false
 bio_ko: |-
   Grace는 2022년 가을부터 1년간 제주 WOLBI에서 하나님의 말씀을 배우며 사역했고, 이후 뉴욕 Pottersville Bible Institute에서 2학년 과정을 마쳤습니다. 2019년 우크라이나로 첫 선교 여행을 떠난 이후 선교지에서 주님을 섬기는 일을 사랑하게 되었고, 하나님이 이끄시는 곳마다 기꺼이 따랐습니다. 그리고 이제 주님께서 다시 제주로 이끄셔서 풀타임 사역자로 섬기며 대학 학위도 마치게 되었습니다.

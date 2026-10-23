@@ -29,6 +29,6 @@ bio_ko_2: 목회자 가정에서 태어난 조안나는 어릴 때부터 하나�
 bio_en_2: "Anna was born into a pastor's family, and from an early age God felt real and tangible to her — believing in the death and resurrection of Jesus came naturally. Yet carrying many responsibilities alone in a small church wore her down, and when she experienced the pain of a community falling apart, she began to resent God. Yet through this she came to understand God's deep love and forgiveness, and experienced Jesus as the healer of all that pain. She now serves as a missionary in Korea alongside her husband David."
 support_url: https://online.mrm.or.kr/d3SwoiY
 verse_ko: "생각건대 현재의 고난은 장차 우리에게 나타날 영광과 족히 비교할 수 없도다"
-verse_en: I consider that our present sufferings are not worth comparing with the glory that will be revealed in us.
+verse_en: "For I consider that the sufferings of this present time are not worth comparing with the glory that is to be revealed to us. (ESV)"
 support_url_en: https://missions.wol.org/missionaries/216294
 ---

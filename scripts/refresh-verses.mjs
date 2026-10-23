@@ -13,6 +13,7 @@ import { parseReference, fetchKrv, fetchEsv } from '../functions/lib/bibleLookup
 const DIR = new URL('../src/content/team/', import.meta.url);
 const WRITE = process.argv.includes('--write');
 const ENGLISH = process.argv.includes('--english');
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const kvStore = new Map();
 const env = { ...process.env, CAMP_KV: { get: async k => kvStore.get(k) ?? null, put: async (k, v) => kvStore.set(k, v) } };
 
@@ -45,8 +46,10 @@ for (const name of readdirSync(DIR).filter(f => f.endsWith('.md')).sort()) {
   if (String(data.verse_ko || '').trim() !== ko) { next = replaceField(next, 'verse_ko', ko); updates.verse_ko = ko; }
   if (ENGLISH && env.ESV_API_KEY) {
     const en = await fetchEsv(env, ref);
+    await sleep(3500);                                          // ESV API 는 짧은 시간에 많이 부르면 막는다(분당 약 20회) — 간격을 둔다
     if (en && String(data.verse_en || '').trim() !== en) { next = replaceField(next, 'verse_en', en); updates.verse_en = en; }
   }
+  if (ENGLISH && env.ESV_API_KEY && !updates.verse_en && !/\(ESV\)\s*$/.test(String(data.verse_en || '').trim())) report.push(`- ${person} (${data.verse_ref}): ESV 본문을 받지 못함(요청 한도·오류) → 영어는 그대로, 다시 실행해 주세요`);
   if (!Object.keys(updates).length) { report.push(`- ${person} (${data.verse_ref}): 이미 같음`); continue; }
   // 바꾼 뒤에도 파일이 올바르게 읽히고, 말씀 말고는 아무것도 달라지지 않았는지 확인한다
   const after = matter(next).data;

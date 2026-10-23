@@ -63,7 +63,7 @@ bio_en_2: |-
   There are many churches in South Korea, but very few young people inside them. My heart is to share the gospel with those who grew up in church or call themselves Christians, but have never truly understood it — so that they will then share it with those around them. I pray that God will use our international family and our children as a tool for His ministry. My testimony will never stop until I meet Him again, for He is still working in my life every single day.
 support_url: https://online.mrm.or.kr/1CiXq2b
 verse_ko: "그러나 내게는 우리 주 예수 그리스도의 십자가 외에 결코 자랑할 것이 없으니 그리스도로 말미암아 세상이 나를 대하여 십자가에 못 박히고 내가 또한 세상을 대하여 그러하니라"
-verse_en: "May I never boast except in the cross of our Lord Jesus Christ, through which the world has been crucified to me, and I to the world. (Galatians 6:14)"
+verse_en: "But far be it from me to boast except in the cross of our Lord Jesus Christ, by which the world has been crucified to me, and I to the world. (ESV)"
 support_url_en: https://missions.wol.org/missionaries/799061/
 prayer_en: |-
   - Pray for the Church in Korea to have a burden to reach the next generation for Christ
