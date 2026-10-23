@@ -153,7 +153,8 @@ export async function onRequestPost(context) {
         : res.status === 429 ? '번역 서비스 사용 한도에 걸렸어요 — 잠시 뒤 다시 시도해 주세요'
         : /credit|billing|balance/i.test(detail) ? '번역 서비스 크레딧이 부족해요'
         : '번역 서비스 오류';
-      return Response.json({ error: `${hint} (${res.status})` }, { status: 502, headers: CORS });
+      // 502 는 Cloudflare 가 본문을 자기 오류 페이지로 바꿔 버리므로 500 으로 돌려 준다
+      return Response.json({ error: `${hint} (${res.status})` }, { status: 500, headers: CORS });
     }
 
     const data = await res.json();

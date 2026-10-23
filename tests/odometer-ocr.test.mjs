@@ -60,5 +60,5 @@ test('계기판 API: 로그인 필요 · 키 없으면 수동 안내 · 사진 �
   assert.equal((await limited.post()).status, 429);
   const upstream = endpoint({ ANTHROPIC_API_KEY: 'k' }, new Response('boom', { status: 500 }));
   const u = await upstream.post();
-  assert.equal(u.status, 502); assert.equal(u.manual, true);
+  assert.equal(u.status, 500); assert.equal(u.manual, true);
 });
