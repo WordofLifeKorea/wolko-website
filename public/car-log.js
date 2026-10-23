@@ -26,8 +26,8 @@
       photoOpenFail: '사진을 열지 못했습니다.', resizeFail: '사진 크기를 줄이지 못했습니다. 다른 사진을 선택해 주세요.',
       odoBeforeLabel: '운행 전 계기판 (km)', odoAfterLabel: '운행 후 계기판 (km)', odoReading: '계기판 숫자를 읽는 중…', odoFail: '자동으로 읽지 못했습니다. 직접 입력해 주세요.',
       odoAuto: n => `자동 인식: ${n} km — 사진과 다르면 고쳐 주세요.`, odoOrder: '운행 후 값이 운행 전 값보다 작습니다. 숫자를 확인해 주세요.', tripAuto: n => `운행 전·후 계기판으로 총 거리를 계산했습니다: ${n} km (고칠 수 있어요)`,
-      loginFail: '로그인하지 못했습니다.', photoDiff: '사진 촬영 시각이 오늘과 다릅니다. 오늘 찍은 사진(24시간 이내)만 사용할 수 있어요.',
-      photoOld: '오래된 사진입니다. 24시간 안에 찍은 사진만 올릴 수 있어요.', photoReadFail: '사진을 읽지 못했습니다.',
+      loginFail: '로그인하지 못했습니다.', photoDiff: '사진 촬영 시각이 오늘과 다릅니다. 72시간 안에 찍은 사진만 사용할 수 있어요.',
+      photoOld: '오래된 사진입니다. 72시간 안에 찍은 사진만 올릴 수 있어요.', photoReadFail: '사진을 읽지 못했습니다.',
       photoTaken: t => `사진 촬영: ${t} (사진 정보 기준)`, photoNoTime: '사진에 촬영 시각 정보가 없어 저장 시각으로 기록됩니다.',
       saved: '사용 일지가 저장됐습니다.', saveFail: '저장하지 못했습니다.',
       draftSaved: d => `작성 중인 내용이 임시 저장됐어요 · ${d}까지 보관돼요`, draftClear: '임시 저장 지우기', draftClearAsk: '임시 저장한 내용과 사진을 지울까요?',
@@ -54,8 +54,8 @@
       photoOpenFail: 'Could not open the photo.', resizeFail: 'Could not shrink the photo. Please choose another one.',
       odoBeforeLabel: 'Odometer before (km)', odoAfterLabel: 'Odometer after (km)', odoReading: 'Reading the odometer…', odoFail: 'Could not read it automatically. Please enter it.',
       odoAuto: n => `Auto-read: ${n} km — please correct it if it differs from the photo.`, odoOrder: 'The after reading is lower than the before reading. Please check the numbers.', tripAuto: n => `Total distance calculated from the odometers: ${n} km (you can edit it)`,
-      loginFail: 'Could not log in.', photoDiff: 'The photo was not taken today. Only photos taken within the last 24 hours can be used.',
-      photoOld: 'This photo is old. Only photos taken within the last 24 hours can be used.', photoReadFail: 'Could not read the photo.',
+      loginFail: 'Could not log in.', photoDiff: 'The photo was not taken today. Only photos taken within the last 72 hours can be used.',
+      photoOld: 'This photo is old. Only photos taken within the last 72 hours can be used.', photoReadFail: 'Could not read the photo.',
       photoTaken: t => `Photo taken: ${t} (from photo data)`, photoNoTime: 'The photo has no capture time, so the save time will be recorded.',
       saved: 'Usage log saved.', saveFail: 'Could not save.',
       draftSaved: d => `Draft saved to your account · kept until ${d}`, draftClear: 'Delete draft', draftClearAsk: 'Delete the saved draft and photos?',
@@ -84,6 +84,9 @@
   let entries = [];
   let me = null;
   let photoBlob = null;
+  // 사진은 이 시간(72시간) 안에 찍은 것만 쓴다. 테스트 동안은 검사를 꺼 둔다 — 다시 켜려면 true 로 바꾼다.
+  const PHOTO_MAX_AGE_MS = 72 * 60 * 60_000;
+  const PHOTO_AGE_CHECK = false;
   let photoTakenAt = null;
   let previewUrl = null;
   let photoAfterBlob = null;
@@ -557,11 +560,13 @@
       slot.blob = null;
       try {
         const exifDate = await readExifDate(file);
-        if (exifDate && (exifDate.getTime() < Date.now() - 24 * 60 * 60_000 || exifDate.getTime() > Date.now() + 5 * 60_000)) {
-          throw new Error(t('photoDiff'));
-        }
-        if (!exifDate && file.lastModified && file.lastModified < Date.now() - 24 * 60 * 60_000) {
-          throw new Error(t('photoOld'));
+        if (PHOTO_AGE_CHECK) {
+          if (exifDate && (exifDate.getTime() < Date.now() - PHOTO_MAX_AGE_MS || exifDate.getTime() > Date.now() + 5 * 60_000)) {
+            throw new Error(t('photoDiff'));
+          }
+          if (!exifDate && file.lastModified && file.lastModified < Date.now() - PHOTO_MAX_AGE_MS) {
+            throw new Error(t('photoOld'));
+          }
         }
         slot.blob = await toJpeg(file);
         if (slot.trackTime) photoTakenAt = exifDate?.toISOString() || null;

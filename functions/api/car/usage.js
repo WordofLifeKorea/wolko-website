@@ -143,7 +143,7 @@ export async function onRequestPost({ env, request }) {
   const candidate = new Date(String(form.get('photoTakenAt') || ''));
   const isRecentExif = !before.none && form.get('timeSource') === 'exif' && Number.isFinite(candidate.getTime())
     && candidate.getTime() <= Date.now() + 5 * 60_000
-    && candidate.getTime() >= Date.now() - 24 * 60 * 60_000;
+    && candidate.getTime() >= Date.now() - 72 * 60 * 60_000;
   const id = crypto.randomUUID();
   const entry = {
     id, vehicleId, vehicleName: labels.get(vehicleId), useType, ...(purpose ? { purpose } : {}), tripKm,
