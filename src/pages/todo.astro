@@ -1,0 +1,46 @@
+---
+// 세 번째 모니터에 띄워두는 할 일 화면 — Google Tasks(To Do)와 양방향 연동.
+// No BaseLayout; standalone page. 인증은 포탈 세션이 아니라 화면 전용 키(TODO_DISPLAY_KEY)다.
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>할 일 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/todo.css?v=1">
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+</head>
+<body>
+  <header class="todo-bar">
+    <div class="todo-clock">
+      <strong id="clock">--:--</strong>
+      <span id="date"></span>
+    </div>
+    <div class="todo-bar-right">
+      <span class="todo-status" id="status" role="status"></span>
+      <button type="button" class="todo-btn" id="refreshBtn">새로고침</button>
+      <button type="button" class="todo-btn" id="keyBtn">키 변경</button>
+    </div>
+  </header>
+
+  <p class="todo-notice" id="notice" role="alert" hidden></p>
+  <main class="todo-board" id="board"></main>
+
+  <div class="todo-gate" id="gate" hidden>
+    <form class="todo-gate-card" id="gateForm">
+      <h1>할 일 화면 키</h1>
+      <p id="gateMsg">이 기기에 한 번만 입력하면 저장됩니다.</p>
+      <input type="password" id="gateKey" autocomplete="off" aria-label="할 일 화면 키" required>
+      <button type="submit" class="todo-btn todo-btn-primary">연결</button>
+    </form>
+  </div>
+
+  <script is:inline src="/todo.js?v=1"></script>
+</body>
+</html>
