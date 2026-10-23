@@ -30,9 +30,9 @@ export async function onRequestPost({ env, request, fetchImpl }) {
     const result = await readOdometer(env, bytes, fetchImpl || fetch);
     return Response.json(result, { headers: H });
   } catch (error) {
-    console.error('odometer read failed:', error.code || error.message);
+    console.error('odometer read failed:', error.code || error.message, error.status || '', error.detail || '');
     // 화면에 이유를 보여 줄 수 있게 분류 코드만 내려 준다(키·내용은 포함하지 않는다)
     const reason = error.code === 'upstream' ? `upstream-${error.status || 0}` : (error.code || 'error');
-    return fail('계기판 숫자를 읽지 못했습니다. 직접 입력해 주세요.', 502, { manual: true, reason });
+    return fail('계기판 숫자를 읽지 못했습니다. 직접 입력해 주세요.', 502, { manual: true, reason, ...(error.detail ? { detail: error.detail } : {}) });
   }
 }

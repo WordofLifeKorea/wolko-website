@@ -56,7 +56,12 @@ export async function readOdometer(env, bytes, fetchImpl = fetch) {
       ] }],
     }),
   });
-  if (!res.ok) throw Object.assign(new Error('계기판 인식 서비스에 연결하지 못했습니다.'), { code: 'upstream', status: res.status });
+  if (!res.ok) {
+    // 서비스가 알려 주는 오류 종류·메시지(키·요청 내용은 들어 있지 않다)를 화면 진단용으로 함께 넘긴다
+    const body = await res.json().catch(() => ({}));
+    const detail = [body?.error?.type, String(body?.error?.message || '').slice(0, 120)].filter(Boolean).join(': ');
+    throw Object.assign(new Error('계기판 인식 서비스에 연결하지 못했습니다.'), { code: 'upstream', status: res.status, detail });
+  }
   const data = await res.json();
   return parseOdometerReply((data.content || []).map(part => part.text || '').join(''));
 }
