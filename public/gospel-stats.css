@@ -132,3 +132,28 @@
 
 .gs-meta select.gs-select { box-sizing: border-box; height: 34px !important; min-height: 34px !important; max-height: 34px !important; padding: 0 30px 0 12px; border-radius: 10px; font-size: 14px; line-height: 1.2; }
 .gs-meta .gs-text { box-sizing: border-box; height: 34px !important; min-height: 34px !important; border-radius: 10px; font-size: 14px; }
+
+/* ───────── 교회 행사 기록 (보고 작성) · 교회별 행사 (보기) ───────── */
+.gs-ce-body { display: grid; gap: 12px; padding: 14px 18px 16px; }
+.gs-ce-hint { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+#churchRows { display: grid; gap: 10px; }
+.gs-ce { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid #dbe8ec; border-radius: 12px; background: #f9fcfd; }
+.gs-ce-top { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.3fr) 150px 34px; gap: 8px; align-items: center; }
+.gs-ce input:not([data-ce]) { box-sizing: border-box; width: 100%; min-width: 0; height: 34px !important; min-height: 34px !important; padding: 0 10px; border: 1px solid #bfd5de; border-radius: 10px; background: #fff; color: var(--ink); font: inherit; font-size: 14px; }
+.gs-ce input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px #e5f4f3; outline: none; }
+.gs-ce-del { box-sizing: border-box; width: 34px !important; min-width: 34px !important; height: 34px !important; min-height: 34px !important; padding: 0 !important; border: 1px solid #e0cfd1; border-radius: 10px; background: #fff; color: #a8484f; font: inherit; font-size: 18px; line-height: 1; cursor: pointer; }
+.gs-ce-del:hover { background: #fdf0f0; }
+.gs-ce-nums { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.gs-ce-num { display: inline-flex; align-items: center; gap: 8px; }
+.gs-ce-num > span { color: var(--muted); font-size: 12.5px; font-weight: 700; }
+.gs-ce-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.gs-ce-total { color: var(--muted); font-size: 12.5px; font-weight: 700; }
+.gs-empty { margin: 8px 0; color: var(--muted); font-size: 14px; text-align: center; }
+.gs-ctable td:first-child { min-width: 220px; }
+.gs-ccount { color: var(--muted); font-size: 12px; font-weight: 700; }
+.gs-celist { display: grid; gap: 2px; margin: 8px 0 0; padding: 0; list-style: none; }
+.gs-celist li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; color: var(--ink); font-size: 12.5px; }
+.gs-celist li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gs-celist li em { color: var(--muted); font-style: normal; }
+.gs-celist li b { min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .gs-ce-top { grid-template-columns: minmax(0, 1fr) 34px; } .gs-ce-top .gs-ce-event, .gs-ce-top .gs-ce-date { grid-column: 1 / -1; } }

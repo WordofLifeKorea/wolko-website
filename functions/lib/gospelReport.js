@@ -13,10 +13,10 @@ const sumSalv = x => (x.salvation || 0) + (x.campSalvations || 0) + (x.eeSalvati
 const sumDed = x => (x.campDedications || 0) + (x.eeDedications || 0);
 const sumReach = x => (x.campAttendance || 0) + (x.eeAttendance || 0);
 const METRICS = [
-  { ko: '복음을 전한 사람', en: 'People who heard the Gospel', get: x => x.evangelism || 0 },
+  { ko: '복음을 들은 인원', en: 'People who heard the Gospel', get: x => x.evangelism || 0 },
   { ko: '구원 고백(전체)', en: 'Salvations (all)', get: sumSalv },
   { ko: '헌신(전체)', en: 'Dedications (all)', get: sumDed },
-  { ko: '캠프·행사 참석', en: 'Camp & event attendance', get: sumReach },
+  { ko: '캠프·월코 행사 참석 인원', en: 'Camp & WOLKO event attendance', get: sumReach },
 ];
 const PLACES = [['mainland', '평택', 'Pyeongtaek'], ['jeju', '제주', 'Jeju'], ['all', '통합', 'Combined']];
 
@@ -108,6 +108,19 @@ function reportsSheet(reports) {
   const lastCol = fixed.length + GOSPEL_FIELDS.length;
   return { name: '보고 목록', cols: [...fixed.map(f => f[2]), ...GOSPEL_FIELDS.map(() => 13)], rows, rowHeights: { 1: 54 }, freezeRow: 1, filter: `A1:${colName(lastCol - 1)}${Math.max(rows.length, 2)}`, landscape: true };
 }
+function churchSheet(reports) {
+  const head = [['월', 'Month', 10], ['위치', 'Place', 9], ['교회', 'Church', 26], ['행사', 'Event', 26], ['날짜', 'Date', 12], ['학생', 'Students', 10], ['구원', 'Salvations', 10], ['헌신', 'Dedications', 10], ['보고자 / 팀', 'Reporter / Team', 22], ['메모', 'Note', 36]];
+  const rows = [head.map(([ko, en]) => ({ v: `${ko}\n${en}`, s: S.head }))];
+  const items = [];
+  reports.forEach(r => (r.churchEntries || []).forEach(e => items.push({ r, e })));
+  items.sort((a, b) => String(a.e.churchName).localeCompare(String(b.e.churchName), 'ko') || String(a.e.date).localeCompare(String(b.e.date)));
+  items.forEach(({ r, e }, i) => {
+    const alt = i % 2 === 1, text = alt ? S.cellAlt : S.cell, num = alt ? S.numRowAlt : S.numRow;
+    rows.push([{ v: r.month || '', s: text }, { v: r.location === 'jeju' ? '제주' : '평택', s: text }, { v: e.churchName, s: text }, { v: e.event || '', s: text }, { v: e.date || '', s: text },
+      { v: e.students || 0, s: num }, { v: e.salvations || 0, s: num }, { v: e.dedications || 0, s: num }, { v: r.scope === 'team' ? (r.teamName || r.name || '') : (r.name || ''), s: text }, { v: e.note || '', s: text }]);
+  });
+  return { name: '교회별 기록', cols: head.map(h => h[2]), rows, rowHeights: { 1: 40 }, freezeRow: 1, filter: `A1:J${Math.max(rows.length, 2)}`, landscape: true };
+}
 const colName = i => { let n = i + 1, s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - m) / 26); } return s; };
 
 /** month: 'YYYY-MM' · summary: summarize() 결과 · trend: [{ month, ...summarize }] · reports: 보고 원본 목록 */
@@ -115,5 +128,6 @@ export function buildGospelXlsx({ month, summary, trend = [], reports = [] }) {
   const sheets = [summarySheet(month, summary)];
   if (trend.length) sheets.push(trendSheet(trend));
   if (reports.length) sheets.push(reportsSheet(reports));
+  if (reports.some(r => (r.churchEntries || []).length)) sheets.push(churchSheet(reports.map(r => ({ ...r, month }))));
   return buildXlsx({ sheets, title: `WOLKO Monthly Gospel Outreach Report ${month}`, creator: 'WOLKO' });
 }

@@ -8,17 +8,17 @@
   var STR = {
     ko: {
       regionTitle: '평택 · 제주 비율', regionSub: '고른 지표를 지역별로 나눈 비율',
-      heardTitle: '복음을 들은 사람', heardSub: '복음을 전한 사람 + 캠프 참석 + 행사 참석', savedTitle: '구원 고백', savedSub: function (heard, saved, pct) { return pct !== null ? '복음을 들은 ' + heard + '명 중 ' + saved + '명 (' + pct + '%)' : '개인 전도 · 캠프 · 전도 행사'; },
+      heardTitle: '복음을 들은 인원', heardSub: '개인 전도로 복음을 들은 인원 + 캠프 참석 인원 + 월코 행사 참석 인원', savedTitle: '구원 고백', savedSub: function (heard, saved, pct) { return pct !== null ? '복음을 들은 ' + heard + '명 중 ' + saved + '명 (' + pct + '%)' : '개인 전도 · 캠프 · 전도 행사'; },
       total: '합계', empty: '아직 보고된 숫자가 없어요.',
-      metrics: { gospel: '복음을 전한 사람', salv: '구원 고백', ded: '헌신', reach: '캠프·행사 참석' },
-      places: { mainland: '평택', jeju: '제주' }, sources: ['개인 전도', '캠프', '전도 행사'],
+      metrics: { gospel: '복음을 들은 인원', salv: '구원 고백', ded: '헌신', reach: '캠프·월코 행사 참석 인원' },
+      places: { mainland: '평택', jeju: '제주' }, sources: ['개인 전도', '캠프', '월코 행사'],
     },
     en: {
       regionTitle: 'Pyeongtaek · Jeju share', regionSub: 'The chosen figure split by location',
-      heardTitle: 'People who heard the Gospel', heardSub: 'Gospel shared + camp attendance + event attendance', savedTitle: 'Salvations', savedSub: function (heard, saved, pct) { return pct !== null ? saved + ' of the ' + heard + ' who heard (' + pct + '%)' : 'Personal · Camps · Events'; },
+      heardTitle: 'People who heard the Gospel', heardSub: 'Heard through personal evangelism + camp attendance + WOLKO event attendance', savedTitle: 'Salvations', savedSub: function (heard, saved, pct) { return pct !== null ? saved + ' of the ' + heard + ' who heard (' + pct + '%)' : 'Personal · Camps · Events'; },
       total: 'Total', empty: 'No numbers reported yet.',
-      metrics: { gospel: 'Heard the Gospel', salv: 'Salvations', ded: 'Dedications', reach: 'Camp & event attendance' },
-      places: { mainland: 'Pyeongtaek', jeju: 'Jeju' }, sources: ['Personal', 'Camps', 'Events'],
+      metrics: { gospel: 'Heard the Gospel', salv: 'Salvations', ded: 'Dedications', reach: 'Camp & WOLKO event attendance' },
+      places: { mainland: 'Pyeongtaek', jeju: 'Jeju' }, sources: ['Personal', 'Camps', 'WOLKO events'],
     },
   };
   var METRIC = {

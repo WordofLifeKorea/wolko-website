@@ -14,7 +14,7 @@ export const GOSPEL_SECTIONS = [
     id: 'personal', title: L('개인 전도', 'Personal Evangelism'),
     fields: [
       { id: 'preEvangelism', label: L('영적 대화 (마음 밭 갈기) — 복음 이야기로 이어지길 바라며, 일부러 믿음과 영적인 주제로 대화를 나눈 사람', 'Pre-Evangelism (Till the Soil) — people you had intentional spiritual conversations with, hoping to lead to a Gospel conversation'), short: L('영적 대화', 'Spiritual conversations') },
-      { id: 'evangelism', label: L('복음 전하기 (씨 뿌리기) — 일대일이나 소그룹에서 직접 복음을 전한 사람 (고전 15:1–4)', 'Evangelism (Plant the Seed) — people you personally shared the Gospel with, one-on-one or in a small group (1CO 15:1–4)'), short: L('복음 전한 사람', 'Gospel shared') },
+      { id: 'evangelism', label: L('복음 전하기 (씨 뿌리기) — 일대일이나 소그룹에서 직접 복음을 듣게 된 인원 (고전 15:1–4)', 'Evangelism (Plant the Seed) — people you personally shared the Gospel with, one-on-one or in a small group (1CO 15:1–4)'), short: L('복음 들은 인원', 'Heard the Gospel') },
       { id: 'salvation', label: L('구원 (추수) — 이 복음 대화를 통해 예수님을 믿는다고 고백한 사람', 'Salvation (Reap the Harvest) — people who indicated they believed in Jesus Christ for salvation through these Gospel conversations'), short: L('구원', 'Salvations') },
       { id: 'literature', label: L('복음 전도지 — 복음 대화 없이 나눠 준 전도지 등 자료의 수', 'Gospel Literature — tracts or similar literature distributed without a Gospel conversation'), short: L('전도지', 'Literature') },
       { id: 'social', label: L('SNS 전도 — 위에서 세지 않은 전도 게시물·릴스·영상 등으로 도달한 사람', 'Evangelistic Social Media — people reached through evangelistic posts, reels, videos or other content not counted above'), short: L('SNS 도달', 'Social media reach') },
@@ -24,7 +24,7 @@ export const GOSPEL_SECTIONS = [
     id: 'camps', title: L('캠프', 'Camps'),
     fields: [
       { id: 'campCount', label: L('캠프 횟수 — 이번 달에 열린 캠프 수(하루 이상)', 'Camps — how many camps were held this month (one day or longer)'), short: L('캠프 횟수', 'Camps held') },
-      { id: 'campAttendance', label: L('캠프 참석 — 이 캠프들에 참석한 캠퍼와 캠프 크루', 'Camp Attendance — campers and camp crew members who attended these camps'), short: L('캠프 참석', 'Camp attendance') },
+      { id: 'campAttendance', label: L('캠프 참석 인원 — 이 캠프들에 참석한 캠퍼와 캠프 크루', 'Camp Attendance — campers and camp crew members who attended these camps'), short: L('캠프 참석 인원', 'Camp attendance') },
       { id: 'campSalvations', label: L('구원 — 캠프에서 예수님을 믿는다고 고백한 사람', 'Salvations — people who indicated they believed in Jesus for salvation during these camps'), short: L('캠프 구원', 'Camp salvations') },
       { id: 'campDedications', label: L('헌신 — 캠프에서 삶을 예수님께 헌신한 사람', 'Dedications — people who dedicated their life to Jesus during these camps'), short: L('캠프 헌신', 'Camp dedications') },
     ],
@@ -32,7 +32,7 @@ export const GOSPEL_SECTIONS = [
   {
     id: 'events', title: L('전도 행사', 'Evangelistic Events'),
     fields: [
-      { id: 'eeAttendance', label: L('행사 참석 — 복음을 전한 전도 행사(스포츠, 수련회, 세미나, 지역 교회 사역 등)에 참석한 사람', 'EE Attendance — people who attended evangelistic events (sports, retreats, seminars, local church ministries, etc.) where you and/or your team shared the Gospel'), short: L('행사 참석', 'Event attendance') },
+      { id: 'eeAttendance', label: L('월코 행사 참석 인원 — 복음을 전한 전도 행사(스포츠, 수련회, 세미나, 지역 교회 사역 등)에 참석한 인원', 'EE Attendance — people who attended evangelistic events (sports, retreats, seminars, local church ministries, etc.) where you and/or your team shared the Gospel'), short: L('월코 행사 참석 인원', 'WOLKO event attendance') },
       { id: 'eeSalvations', label: L('구원 — 이 행사에서 예수님을 믿는다고 고백한 사람', 'Salvations — people who indicated they believed in Jesus for salvation during these events'), short: L('행사 구원', 'Event salvations') },
       { id: 'eeDedications', label: L('헌신 — 이 행사에서 삶을 예수님께 헌신한 사람', 'Dedications — people who dedicated their life to Jesus during these events'), short: L('행사 헌신', 'Event dedications') },
     ],
@@ -133,4 +133,57 @@ export function toCsv(month, reports) {
   const head = ['month', 'location', 'type', 'team', 'name', 'email', ...GOSPEL_FIELD_IDS];
   const rows = reports.map(r => [month, r.location === 'jeju' ? 'Jeju' : 'Mainland', r.scope, r.teamName || '', r.name || '', r.email, ...GOSPEL_FIELD_IDS.map(id => r.values?.[id] ?? 0)]);
   return '﻿' + [head, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+}
+
+/* ───────── 교회별 행사 기록 (CRS 교회 목록에서 고른다) ─────────
+ * 보고 한 건 안의 churchEntries: [{ id, churchId, churchName, event, date, students, salvations, dedications, note }]
+ * churchId 는 CRS(Firebase churches)의 교회 번호, CRS 에 없는 교회는 이름만 직접 적는다(churchId 는 빈 값).
+ * 메모(note)는 보고자와 마스터·관리자만 본다 — 합계 화면에는 내보내지 않는다.
+ */
+export const MAX_CHURCH_ENTRIES = 30;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const ENTRY_ID_RE = /^[a-z0-9-]{1,40}$/;
+
+export function cleanChurchEntries(raw) {
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw)) throw new Error('INVALID:churchEntries');
+  const out = [];
+  for (const e of raw.slice(0, MAX_CHURCH_ENTRIES)) {
+    const churchName = cleanText(e?.churchName, 80), event = cleanText(e?.event, 80), note = cleanText(e?.note, 300);
+    const nums = {};
+    for (const key of ['students', 'salvations', 'dedications']) {
+      const text = String(e?.[key] ?? '').replace(/[,\s]/g, '');
+      const n = text === '' ? 0 : Number(text);
+      if (!Number.isInteger(n) || n < 0 || n > MAX_VALUE) throw new Error(`INVALID:${key}`);
+      nums[key] = n;
+    }
+    const blank = !churchName && !event && !note && !nums.students && !nums.salvations && !nums.dedications;
+    if (blank) continue;                                  // 아무것도 안 쓴 줄은 건너뛴다
+    if (!churchName) throw new Error('INVALID:churchName');
+    const date = DATE_RE.test(String(e?.date || '')) ? String(e.date) : '';
+    out.push({
+      id: ENTRY_ID_RE.test(String(e?.id || '')) ? String(e.id) : crypto.randomUUID(),
+      churchId: cleanText(e?.churchId, 60), churchName, event, date, ...nums, note,
+    });
+  }
+  return out;
+}
+
+/** 합계 화면용 — 메모·보고자 없이 행사 목록만(위치는 탭 거르기에 쓴다) */
+export function churchEvents(reports) {
+  const out = [];
+  for (const r of reports) {
+    for (const e of r.churchEntries || []) {
+      out.push({ churchId: e.churchId || '', churchName: e.churchName, event: e.event || '', date: e.date || '', students: e.students || 0, salvations: e.salvations || 0, dedications: e.dedications || 0, location: r.location === 'jeju' ? 'jeju' : 'mainland' });
+    }
+  }
+  return out;
+}
+
+/** CRS churches 레코드 → [{ id, name }] (연락처 등 다른 정보는 꺼내지 않는다) */
+export function parseCrsChurches(records) {
+  return Object.entries(records || {})
+    .map(([id, value]) => ({ id, name: cleanText(value?.churchName, 80) }))
+    .filter(c => c.name)
+    .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }

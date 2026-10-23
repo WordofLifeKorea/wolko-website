@@ -147,3 +147,59 @@ test('모든 숫자가 0(또는 비어 있어도) 보고를 낼 수 있다', asy
   assert.equal(b.status, 200, '값을 하나도 보내지 않아도 0 으로 저장');
   assert.equal(b.updated, true, '같은 단위는 고쳐 쓴다');
 });
+
+/* ───────── 교회 행사 기록 ───────── */
+import * as GC from '../functions/api/portal/gospel-churches.js';
+import { cleanChurchEntries, parseCrsChurches } from '../functions/lib/gospelStats.js';
+
+test('교회 행사 정리: 빈 줄은 건너뛰고, 숫자·날짜·길이를 검증한다', () => {
+  assert.deepEqual(cleanChurchEntries(undefined), []);
+  assert.deepEqual(cleanChurchEntries([{}, { churchName: '  ' }]), [], '아무것도 안 쓴 줄은 건너뛴다');
+  const [e] = cleanChurchEntries([{ churchName: '평택중앙교회', churchId: 'c1', event: '겨울 집회', date: '2026-10-12', students: '1,200', salvations: '8', note: '메모' }]);
+  assert.equal(e.students, 1200); assert.equal(e.salvations, 8); assert.equal(e.dedications, 0); assert.equal(e.date, '2026-10-12');
+  assert.match(e.id, /^[a-z0-9-]+$/);
+  assert.equal(cleanChurchEntries([{ churchName: 'A', date: '10/12' }])[0].date, '', '날짜 형식이 아니면 비운다');
+  assert.throws(() => cleanChurchEntries([{ event: '이름 없음', students: 3 }]), /churchName/);
+  assert.throws(() => cleanChurchEntries([{ churchName: 'A', students: -1 }]), /students/);
+  assert.throws(() => cleanChurchEntries([{ churchName: 'A', salvations: '1.5' }]), /salvations/);
+  assert.throws(() => cleanChurchEntries('x'), /churchEntries/);
+  assert.equal(cleanChurchEntries(Array.from({ length: 50 }, () => ({ churchName: 'A' }))).length, 30, '한 보고에 최대 30건');
+});
+
+test('CRS 교회 목록은 이름만 꺼내고, 이름 없는 레코드는 뺀다', () => {
+  const list = parseCrsChurches({ b: { churchName: '나교회', phone: '010-0000-0000', pastor: '비밀' }, a: { churchName: '가교회' }, c: { note: '이름 없음' } });
+  assert.deepEqual(list, [{ id: 'a', name: '가교회' }, { id: 'b', name: '나교회' }]);
+});
+
+test('교회 행사 저장: 합계 화면에는 행사·숫자만, 메모는 보고자·관리자에게만', async () => {
+  const { acc, call } = setup();
+  await acc(anna[0]); await acc(admin[0], 'admin'); await acc('bob@wol.org');
+  const month = currentMonthKst();
+  const values = Object.fromEntries(GOSPEL_FIELD_IDS.map(id => [id, 0]));
+  const entries = [{ churchName: '평택중앙교회', churchId: 'c1', event: '겨울 집회', date: `${month}-12`, students: 40, salvations: 6, dedications: 2, note: '비공개 메모' }];
+  assert.equal((await call('POST', anna, { body: { month, scope: 'individual', location: 'mainland', values, churchEntries: entries } })).status, 200);
+  const bad = await call('POST', anna, { body: { month, scope: 'individual', location: 'mainland', values, churchEntries: [{ event: '교회 없음', students: 1 }] } });
+  assert.equal(bad.status, 400); assert.match(bad.error, /교회 이름/);
+  const other = await call('GET', ['bob@wol.org', 'counselor'], { query: `?month=${month}` });
+  assert.equal(other.churchEvents.length, 1);
+  assert.deepEqual(Object.keys(other.churchEvents[0]).sort(), ['churchId', 'churchName', 'date', 'dedications', 'event', 'location', 'salvations', 'students']);
+  assert.equal(JSON.stringify(other).includes('비공개 메모'), false, '다른 사람 화면에는 메모가 없다');
+  const mine = await call('GET', anna, { query: `?month=${month}` });
+  assert.equal(mine.mine[0].churchEntries[0].note, '비공개 메모');
+  const adm = await call('GET', admin, { query: `?month=${month}` });
+  assert.equal(adm.rows[0].churchEntries[0].note, '비공개 메모');
+});
+
+test('교회 목록 API: 로그인 필요, 설정이 없으면 빈 목록, 캐시가 있으면 Firebase 를 부르지 않는다', async () => {
+  const { store, acc } = setup();
+  const kv = { async get(k, t) { const v = store.get(k); return v == null ? null : (t === 'json' ? JSON.parse(v) : v); }, async put(k, v) { store.set(k, v); } };
+  const env = { CAMP_KV: kv, ADMIN_PASSWORD: 'secret' };
+  await acc(anna[0]);
+  const req = async who => new Request('https://t.co/api/portal/gospel-churches', { headers: who ? { Authorization: 'Bearer ' + await H.createHubSessionToken('secret', who[0], who[1]) } : {} });
+  assert.equal((await GC.onRequestGet({ env, request: await req(null) })).status, 401);
+  const none = await (await GC.onRequestGet({ env, request: await req(anna) })).json();
+  assert.deepEqual(none, { churches: [], configured: false });
+  await kv.put(GC.CHURCH_CACHE_KEY, JSON.stringify({ list: [{ id: 'c1', name: '평택중앙교회' }] }));
+  const cached = await (await GC.onRequestGet({ env: { ...env, FIREBASE_CRS_SERVICE_ACCOUNT: '{"broken":true}' }, request: await req(anna) })).json();
+  assert.deepEqual(cached, { churches: [{ id: 'c1', name: '평택중앙교회' }], configured: true });
+});

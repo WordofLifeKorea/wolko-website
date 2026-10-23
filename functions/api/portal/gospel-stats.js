@@ -12,7 +12,7 @@ import { buildGospelXlsx } from '../../lib/gospelReport.js';
 import { portalSession } from '../../lib/hubAccounts.js';
 import {
   GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, shiftMonth, reportableMonth,
-  cleanValues, cleanText, unitId, reportKey, loadMonth, summarize, toCsv,
+  cleanValues, cleanChurchEntries, churchEvents, cleanText, unitId, reportKey, loadMonth, summarize, toCsv,
 } from '../../lib/gospelStats.js';
 
 const H = { 'Cache-Control': 'no-store' };
@@ -50,6 +50,7 @@ export async function onRequestGet({ env, request }) {
     month, current, earliest: shiftMonth(current, -MONTHS_BACK),
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
     summary: summarize(reports),
+    churchEvents: churchEvents(reports),
     trend,
     mine: reports.filter(r => r.email === session.email),
     // 보고별 목록(이름·이메일 포함)은 마스터·관리자만. 그 밖의 계정에는 합계만 준다 — 사람별 숫자는 익명이어도 누구의 것인지 알아낼 수 있다
@@ -72,13 +73,15 @@ export async function onRequestPost({ env, request }) {
   if (scope === 'team' && !teamName) return fail('팀 이름을 입력해 주세요.');
   let values;
   try { values = cleanValues(body?.values); } catch { return fail('숫자는 0 이상의 정수로 입력해 주세요.'); }
+  let churchEntries;
+  try { churchEntries = cleanChurchEntries(body?.churchEntries); } catch (error) { return fail(String(error.message).includes('churchName') ? '교회 행사 기록에는 교회 이름이 필요합니다.' : '교회 행사 기록의 숫자는 0 이상의 정수로 입력해 주세요.'); }
 
   const id = await unitId(session.email, scope, teamName);
   const key = reportKey(month, id);
   const previous = await env.CAMP_KV.get(key, 'json');
   const now = new Date().toISOString();
   const report = {
-    id, month, email: session.email, name: displayName(session), scope, teamName, location, values,
+    id, month, email: session.email, name: displayName(session), scope, teamName, location, values, churchEntries,
     createdAt: previous?.createdAt || now, updatedAt: now,
   };
   await env.CAMP_KV.put(key, JSON.stringify(report));

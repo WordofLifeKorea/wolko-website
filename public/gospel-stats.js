@@ -10,9 +10,9 @@
       pageTitle: '복음 통계', docTitle: '복음 통계 — WOLKO',
       intro: '매달 복음을 전한 기록을 보고하고, 평택과 제주의 통계를 함께 확인합니다.',
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: 'WOLKO 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
-      minus: '1 줄이기', plus: '1 늘리기', infoLabel: function (name) { return name + ' 설명 보기'; }, thisMonth: '이번 달', write: '내 보고 쓰기', xlsx: '엑셀 보고서 내려받기', csv: '원본 CSV',
+      churchStatTitle: '교회별 행사', churchStatEmpty: '이 달에는 교회 행사 기록이 없어요.', cCol: '교회', cEvents: '행사', cStudents: '참석', cSalv: '구원', cDed: '헌신', cEventCount: function (k) { return k + '건'; }, churchTitle: '교회 행사 기록 (선택)', churchHint: 'CRS에 등록된 교회에서 열린 행사를 적으면, 교회별 통계로 모아 볼 수 있어요.', churchAdd: '교회 행사 추가', churchName: '교회 (CRS에서 고르거나 직접 입력)', churchEvent: '행사 이름 (예: 겨울 전도 집회)', churchDate: '날짜', churchNote: '메모 (선택, 보고자와 관리자만 봐요)', churchStudents: '참석 학생', churchSalv: '구원', churchDed: '헌신', churchDel: '이 행사 지우기', churchTotal: function (a, b, c) { return '합계 · 참석 ' + a + ' · 구원 ' + b + ' · 헌신 ' + c; }, churchApply: '월코 행사 칸에 합계 넣기', churchApplied: '월코 행사 참석·구원·헌신 칸에 합계를 넣었어요.', churchOnlyName: '교회 이름을 적어 주세요.', minus: '1 줄이기', plus: '1 늘리기', infoLabel: function (name) { return name + ' 설명 보기'; }, thisMonth: '이번 달', write: '내 보고 쓰기', xlsx: '엑셀 보고서 내려받기', csv: '원본 CSV',
       tabAll: '통합', tabMainland: '평택', tabJeju: '제주',
-      kGospel: '복음을 전한 사람', kSalv: '구원 고백 (전체)', kDed: '헌신 (전체)', kReach: '캠프·행사 참석',
+      kGospel: '복음을 들은 인원', kSalv: '구원 고백 (전체)', kDed: '헌신 (전체)', kReach: '캠프·월코 행사 참석 인원',
       count: function (n, ind, team, all) { return n + '건 보고' + (all ? ' (개인 ' + ind + ' · 팀 ' + team + ')' : ''); }, countNone: '아직 이 달에 보고가 없어요.',
       tableTitle: '항목별 통계', trendTitle: '최근 6개월 추이', rowsTitle: '보고별 목록',
       rowsHelp: '마스터와 관리자에게만 보여요. 팀으로 낸 보고는 팀원이 따로 내지 않는 것을 전제로 합계에 그대로 더해요.',
@@ -23,7 +23,7 @@
       placeMainland: '평택', placeJeju: '제주', save: '저장하기', saving: '저장 중…', cancel: '닫기',
       formLoaded: '이미 낸 보고를 불러왔어요. 고쳐서 저장하면 덮어써요.', saved: '저장했어요.', savedUpdated: '고쳐서 저장했어요.',
       needPlace: '위치(평택 또는 제주)를 선택해 주세요.', needTeam: '팀 이름을 입력해 주세요.',
-      warnSalv: '구원 고백이 복음을 전한 사람보다 많아요. 맞는지 한 번 더 확인해 주세요.', warnCamp: '캠프의 구원·헌신이 캠프 참석자보다 많아요. 맞는지 확인해 주세요.', warnEvent: '행사의 구원·헌신이 행사 참석자보다 많아요. 맞는지 확인해 주세요.',
+      warnSalv: '구원 고백이 복음을 들은 인원보다 많아요. 맞는지 한 번 더 확인해 주세요.', warnCamp: '캠프의 구원·헌신이 캠프 참석자보다 많아요. 맞는지 확인해 주세요.', warnEvent: '행사의 구원·헌신이 행사 참석자보다 많아요. 맞는지 확인해 주세요.',
       denied: '불러오지 못했어요. 잠시 후 다시 시도해 주세요.', sessionEnd: '로그인이 필요해요.',
       monthLabel: function (m) { var p = m.split('-'); return p[0] + '년 ' + Number(p[1]) + '월'; },
     },
@@ -31,9 +31,9 @@
       pageTitle: 'Gospel Stats', docTitle: 'Gospel Stats — WOLKO',
       intro: 'Report your monthly Gospel outreach and see Pyeongtaek and Jeju statistics together.',
       loading: 'Loading…', loginTitle: 'Portal login', loginHelp: 'Please sign in with your WOLKO portal account.', email: 'Email', password: 'Password', loginBtn: 'Sign in and continue', loginFail: 'Could not sign in.',
-      minus: 'Decrease by 1', plus: 'Increase by 1', infoLabel: function (name) { return 'What is “' + name + '”?'; }, thisMonth: 'This month', write: 'Write my report', xlsx: 'Download Excel report', csv: 'Raw CSV',
+      churchStatTitle: 'Events by church', churchStatEmpty: 'No church events recorded this month.', cCol: 'Church', cEvents: 'Events', cStudents: 'Attended', cSalv: 'Salvations', cDed: 'Dedications', cEventCount: function (k) { return k + (k === 1 ? ' event' : ' events'); }, churchTitle: 'Church events (optional)', churchHint: 'Record events held at churches from the CRS to see statistics by church.', churchAdd: 'Add a church event', churchName: 'Church (pick from the CRS or type)', churchEvent: 'Event name (e.g. Winter outreach)', churchDate: 'Date', churchNote: 'Note (optional, visible to you and admins only)', churchStudents: 'Attended', churchSalv: 'Salvations', churchDed: 'Dedications', churchDel: 'Remove this event', churchTotal: function (a, b, c) { return 'Total · attended ' + a + ' · salvations ' + b + ' · dedications ' + c; }, churchApply: 'Put the totals into WOLKO events', churchApplied: 'Totals were put into the WOLKO event fields.', churchOnlyName: 'Please enter the church name.', minus: 'Decrease by 1', plus: 'Increase by 1', infoLabel: function (name) { return 'What is “' + name + '”?'; }, thisMonth: 'This month', write: 'Write my report', xlsx: 'Download Excel report', csv: 'Raw CSV',
       tabAll: 'Combined', tabMainland: 'Pyeongtaek', tabJeju: 'Jeju',
-      kGospel: 'People shared the Gospel with', kSalv: 'Salvations (total)', kDed: 'Dedications (total)', kReach: 'Camp & event attendance',
+      kGospel: 'People who heard the Gospel', kSalv: 'Salvations (total)', kDed: 'Dedications (total)', kReach: 'Camp & WOLKO event attendance',
       count: function (n, ind, team, all) { return n + ' report' + (n === 1 ? '' : 's') + (all ? ' (' + ind + ' individual · ' + team + ' team)' : ''); }, countNone: 'No reports for this month yet.',
       tableTitle: 'Statistics by item', trendTitle: 'Last 6 months', rowsTitle: 'Reports',
       rowsHelp: 'Visible to the master and admins only. Team reports are added to the totals as they are, assuming team members do not report separately.',
@@ -44,7 +44,7 @@
       placeMainland: 'Pyeongtaek', placeJeju: 'Jeju', save: 'Save', saving: 'Saving…', cancel: 'Close',
       formLoaded: 'Loaded the report you already submitted. Saving will overwrite it.', saved: 'Saved.', savedUpdated: 'Updated.',
       needPlace: 'Please choose a location (Pyeongtaek or Jeju).', needTeam: 'Please enter a team name.',
-      warnSalv: 'Salvations are higher than the number of people you shared the Gospel with. Please double-check.', warnCamp: 'Camp salvations/dedications are higher than camp attendance. Please double-check.', warnEvent: 'Event salvations/dedications are higher than event attendance. Please double-check.',
+      warnSalv: 'Salvations are higher than the number of people who heard the Gospel. Please double-check.', warnCamp: 'Camp salvations/dedications are higher than camp attendance. Please double-check.', warnEvent: 'Event salvations/dedications are higher than event attendance. Please double-check.',
       denied: 'Could not load. Please try again shortly.', sessionEnd: 'Please sign in.',
       monthLabel: function (m) { var p = m.split('-'); return new Date(Date.UTC(Number(p[0]), Number(p[1]) - 1, 1)).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }); },
     },
@@ -112,7 +112,27 @@
     renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderRows(); renderMine();
   }
 
-  function renderCharts() { if (window.GospelCharts && $('charts')) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); }
+  /** 교회별 행사 — 같은 교회(CRS 번호, 없으면 이름)의 행사를 모아 참석·구원·헌신을 더한다 */
+  function renderChurchStats() {
+    var box = $('churchStats'); if (!box) return;
+    var events = (data.churchEvents || []).filter(function (e) { return tab === 'all' || e.location === tab; });
+    if (!events.length) { box.innerHTML = '<p class="gs-empty">' + esc(t('churchStatEmpty')) + '</p>'; return; }
+    var map = {}, order = [];
+    events.forEach(function (e) {
+      var key = e.churchId || ('n:' + e.churchName.trim().toLowerCase());
+      if (!map[key]) { map[key] = { name: e.churchName, events: [], students: 0, salv: 0, ded: 0 }; order.push(key); }
+      var g = map[key]; g.events.push(e); g.students += e.students; g.salv += e.salvations; g.ded += e.dedications;
+    });
+    var groups = order.map(function (k) { return map[k]; }).sort(function (a, b) { return b.students - a.students || a.name.localeCompare(b.name, 'ko'); });
+    var max = Math.max.apply(null, groups.map(function (g) { return g.students; }).concat([1]));
+    box.innerHTML = '<div class="gs-tablewrap"><table class="gs-table gs-ctable"><thead><tr><th>' + esc(t('cCol')) + '</th><th>' + esc(t('cStudents')) + '</th><th>' + esc(t('cSalv')) + '</th><th>' + esc(t('cDed')) + '</th></tr></thead><tbody>'
+      + groups.map(function (g) {
+        var list = g.events.map(function (e) { return '<li><span>' + esc(e.event || '—') + '</span><em>' + esc(e.date || '') + '</em><b>' + num(e.students) + '</b></li>'; }).join('');
+        return '<tr><td><strong>' + esc(g.name) + '</strong> <span class="gs-ccount">' + esc(t('cEventCount', g.events.length)) + '</span><span class="gs-meter"><i style="width:' + Math.round(g.students / max * 100) + '%"></i></span><ul class="gs-celist">' + list + '</ul></td>'
+          + '<td class="gs-total">' + num(g.students) + '</td><td>' + num(g.salv) + '</td><td>' + num(g.ded) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  function renderCharts() { renderChurchStats(); if (window.GospelCharts && $('charts')) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); }
 
   function renderTabs() {
     var c = data.summary.counts;
@@ -180,6 +200,52 @@
   }
   function lastPlace() { try { var v = localStorage.getItem('gsLocation'); return v === 'jeju' || v === 'mainland' ? v : ''; } catch (e) { return ''; } }
 
+  /* ───────── 교회 행사 기록 ───────── */
+  var churches = null;            // CRS 교회 목록 [{ id, name }] — 폼을 처음 열 때 한 번 불러온다
+  function newEntryId() { return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function stepper(id, key, value, label) {
+    return '<div class="gs-ce-num"><span>' + esc(label) + '</span><div class="gs-step"><button type="button" class="gs-stepbtn" data-step="-1" data-target="ce_' + id + '_' + key + '" aria-label="' + esc(t('minus')) + '">−</button>'
+      + '<input id="ce_' + id + '_' + key + '" type="text" inputmode="numeric" autocomplete="off" data-ce="' + key + '" value="' + (value || 0) + '" aria-label="' + esc(label) + '">'
+      + '<button type="button" class="gs-stepbtn" data-step="1" data-target="ce_' + id + '_' + key + '" aria-label="' + esc(t('plus')) + '">+</button></div></div>';
+  }
+  function churchRowHtml(e) {
+    e = e || {};
+    var id = e.id || newEntryId();
+    return '<div class="gs-ce" data-id="' + esc(id) + '"><div class="gs-ce-top">'
+      + '<input class="gs-ce-church" list="gsChurchList" maxlength="80" autocomplete="off" data-church-id="' + esc(e.churchId || '') + '" placeholder="' + esc(t('churchName')) + '" aria-label="' + esc(t('churchName')) + '" value="' + esc(e.churchName || '') + '">'
+      + '<input class="gs-ce-event" maxlength="80" placeholder="' + esc(t('churchEvent')) + '" aria-label="' + esc(t('churchEvent')) + '" value="' + esc(e.event || '') + '">'
+      + '<input class="gs-ce-date" type="date" aria-label="' + esc(t('churchDate')) + '" value="' + esc(e.date || '') + '">'
+      + '<button type="button" class="gs-ce-del" aria-label="' + esc(t('churchDel')) + '">×</button></div>'
+      + '<div class="gs-ce-nums">' + stepper(id, 'students', e.students, t('churchStudents')) + stepper(id, 'salvations', e.salvations, t('churchSalv')) + stepper(id, 'dedications', e.dedications, t('churchDed')) + '</div>'
+      + '<input class="gs-ce-note" maxlength="300" placeholder="' + esc(t('churchNote')) + '" aria-label="' + esc(t('churchNote')) + '" value="' + esc(e.note || '') + '"></div>';
+  }
+  function churchEntriesFromForm() {
+    return [].map.call(document.querySelectorAll('#churchRows .gs-ce'), function (row) {
+      var q = function (sel) { return row.querySelector(sel); }, num = function (key) { return q('[data-ce="' + key + '"]').value; };
+      return { id: row.dataset.id, churchId: q('.gs-ce-church').dataset.churchId || '', churchName: q('.gs-ce-church').value.trim(), event: q('.gs-ce-event').value.trim(), date: q('.gs-ce-date').value || '', students: num('students'), salvations: num('salvations'), dedications: num('dedications'), note: q('.gs-ce-note').value.trim() };
+    });
+  }
+  function updateChurchTotal() {
+    var rows = churchEntriesFromForm(), sum = { students: 0, salvations: 0, dedications: 0 };
+    rows.forEach(function (r) { sum.students += n(r.students); sum.salvations += n(r.salvations); sum.dedications += n(r.dedications); });
+    var el = $('churchTotal'), apply = $('churchApply'); if (!el) return;
+    el.textContent = rows.length ? t('churchTotal', sum.students, sum.salvations, sum.dedications) : '';
+    apply.hidden = !rows.length;
+  }
+  function fillChurchList() {
+    var list = $('gsChurchList'); if (!list || !churches) return;
+    list.innerHTML = churches.map(function (c) { return '<option value="' + esc(c.name) + '"></option>'; }).join('');
+  }
+  async function loadChurches() {
+    if (churches) { fillChurchList(); return; }
+    try {
+      var res = await fetch('/api/portal/gospel-churches', { headers: headers() });
+      var body = await res.json().catch(function () { return {}; });
+      churches = res.ok && Array.isArray(body.churches) ? body.churches : [];
+    } catch (e) { churches = []; }
+    fillChurchList();
+  }
+
   function buildForm(report) {
     var month = report ? report.month : (viewMonth >= data.earliest && viewMonth <= data.current ? viewMonth : data.current);
     var scope = report ? report.scope : 'individual';
@@ -203,9 +269,11 @@
           + '<button type="button" class="gs-stepbtn" data-step="1" data-for="' + f.id + '" aria-label="' + esc(t('plus')) + '">+</button></div></div>';
       }).join('') + '</section>';
     });
+    html += '<section class="gs-sec" id="churchSec"><h4 class="gs-sec-head">' + esc(t('churchTitle')) + '</h4><div class="gs-ce-body"><p class="gs-ce-hint">' + esc(t('churchHint')) + '</p><div id="churchRows">' + ((report && report.churchEntries) || []).map(churchRowHtml).join('') + '</div>'
+      + '<div class="gs-ce-foot"><button type="button" class="gs-small" id="churchAdd">＋ ' + esc(t('churchAdd')) + '</button><span class="gs-ce-total" id="churchTotal"></span><button type="button" class="gs-small" id="churchApply" hidden>' + esc(t('churchApply')) + '</button></div></div></section><datalist id="gsChurchList"></datalist>';
     html += '<p class="gs-warn" id="fWarn" hidden></p><div class="gs-formbtns"><button type="submit" class="gs-primary" id="fSave">' + esc(t('save')) + '</button><button type="button" class="gs-small" id="fCancel">' + esc(t('cancel')) + '</button></div>';
     $('reportForm').innerHTML = html;
-    updateWarn();
+    updateWarn(); updateChurchTotal(); loadChurches();
   }
 
   function formValues() { var out = {}; document.querySelectorAll('#reportForm [data-field]').forEach(function (i) { out[i.dataset.field] = i.value; }); return out; }
@@ -236,7 +304,8 @@
     if (!match) { $('formError').textContent = ''; return; }
     document.querySelectorAll('#reportForm [data-field]').forEach(function (i) { i.value = match.values[i.dataset.field] ? match.values[i.dataset.field] : 0; });
     var radio = document.querySelector('input[name="fPlace"][value="' + match.location + '"]'); if (radio) radio.checked = true;
-    updateWarn();
+    $('churchRows').innerHTML = (match.churchEntries || []).map(churchRowHtml).join('');
+    updateWarn(); updateChurchTotal();
     $('formError').textContent = t('formLoaded');
   }
 
@@ -250,7 +319,7 @@
     $('fSave').disabled = true; $('fSave').textContent = t('saving'); $('formError').textContent = '';
     try {
       var month = $('fMonth').value;
-      var res = await fetch(API, { method: 'POST', headers: headers(true), body: JSON.stringify({ month: month, scope: scope, teamName: team, location: placeEl.value, values: formValues() }) });
+      var res = await fetch(API, { method: 'POST', headers: headers(true), body: JSON.stringify({ month: month, scope: scope, teamName: team, location: placeEl.value, values: formValues(), churchEntries: churchEntriesFromForm() }) });
       var body = await res.json().catch(function () { return {}; });
       if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); show('login'); return; }
       if (!res.ok) throw new Error(body.error || t('denied'));
@@ -325,7 +394,12 @@
   window.addEventListener('scroll', hideTip, true); window.addEventListener('resize', hideTip);
 
   $('reportForm').addEventListener('submit', save);
-  $('reportForm').addEventListener('input', function (e) { if (e.target.matches('[data-field]')) updateWarn(); });
+  $('reportForm').addEventListener('input', function (e) { if (e.target.matches('[data-field]')) updateWarn(); if (e.target.matches('[data-ce]')) updateChurchTotal(); });
+  $('reportForm').addEventListener('change', function (e) {
+    if (!e.target.matches('.gs-ce-church')) return;
+    var hit = (churches || []).filter(function (c) { return c.name.toLowerCase() === e.target.value.trim().toLowerCase(); })[0];
+    e.target.dataset.churchId = hit ? hit.id : '';
+  });
   $('reportForm').addEventListener('focusin', function (e) { if (e.target.matches('[data-field]')) setTimeout(function () { e.target.select(); }, 0); });
   $('reportForm').addEventListener('change', function (e) {
     if (e.target.name === 'fScope') $('fTeam').hidden = e.target.value !== 'team';
@@ -334,9 +408,18 @@
   $('reportForm').addEventListener('focusout', function (e) { if (e.target.id === 'fTeam') syncExisting(); });
   $('reportForm').addEventListener('click', function (e) {
     if (e.target.id === 'fCancel') { $('formPanel').hidden = true; return; }
+    if (e.target.id === 'churchAdd') { $('churchRows').insertAdjacentHTML('beforeend', churchRowHtml()); updateChurchTotal(); var last = $('churchRows').lastElementChild; if (last) last.querySelector('.gs-ce-church').focus(); return; }
+    if (e.target.closest('.gs-ce-del')) { e.target.closest('.gs-ce').remove(); updateChurchTotal(); return; }
+    if (e.target.id === 'churchApply') {
+      var sums = { eeAttendance: 0, eeSalvations: 0, eeDedications: 0 };
+      churchEntriesFromForm().forEach(function (r) { sums.eeAttendance += n(r.students); sums.eeSalvations += n(r.salvations); sums.eeDedications += n(r.dedications); });
+      Object.keys(sums).forEach(function (id) { var el = $('f_' + id); if (el) { el.value = String(sums[id]); el.dispatchEvent(new Event('input', { bubbles: true })); } });
+      $('formError').textContent = t('churchApplied');
+      return;
+    }
     var step = e.target.closest('[data-step]');
     if (step) {
-      var input = $('f_' + step.dataset.for), next = Math.max(0, n(input.value) + Number(step.dataset.step));
+      var input = $(step.dataset.target || ('f_' + step.dataset.for)), next = Math.max(0, n(input.value) + Number(step.dataset.step));
       input.value = String(next);
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
