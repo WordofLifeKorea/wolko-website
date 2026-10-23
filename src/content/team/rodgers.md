@@ -26,7 +26,7 @@ hero_subtitle_ko: "제레미는 현재 월드오브라이프 코리아의 재정
 hero_subtitle_en: "Jeremy is currently serving as the CFO for Word of Life Korea . He teaches as a resident professor at the Bible Institute. He is also on the pastoral leadership council at our local church, preaching and teaching. Elsbeth is active in our WOLBI community, counseling, mentoring, and leading the women's ministry at our church. Hospitality is a special ministry that we do as a family, providing a welcoming and homey environment at the heart of our campus. This is so important for many people who come to live and work on Jeju, and gives us many opportunities to encourage others. It is a privilege to frequently share the Gospel and to aid in helping teach the next generation to share that same hope of the Gospel with others. Praise God for the good He is doing in and through our lives. His fruit is the best kind!"
 verse_ref: "다니엘 12:2-3"
 verse_ko: "땅의 티끌 가운데서 자는 자 중에 많이 깨어 영생을 얻는 자도 있겠고 수욕을 받아서 무궁히 부끄러움을 입을 자도 있을 것이며 지혜 있는 자는 궁창의 빛과 같이 빛날 것이요 많은 사람을 옳은데로 돌아오게 한 자는 별과 같이 영원토록 비취리라"
-verse_en: "Multitudes who sleep in the dust of the earth will awake: some to everlasting life, others to shame and everlasting contempt. Those who are wise will shine like the brightness of the heavens, and those who lead many to righteousness, like the stars for ever and ever."
+verse_en: "And many of those who sleep in the dust of the earth shall awake, some to everlasting life, and some to shame and everlasting contempt. And those who are wise shall shine like the brightness of the sky above; and those who turn many to righteousness, like the stars forever and ever. (ESV)"
 spouse_ko: 엘스벳 라저스
 spouse_en: Elsbeth Rodgers
 show_spouse: true

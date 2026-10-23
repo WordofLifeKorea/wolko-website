@@ -13,7 +13,7 @@ photo_position: "center 35%"
 show_spouse: false
 verse_ref: "디모데후서 3:16-17"
 verse_ko: "모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니 이는 하나님의 사람으로 온전케 하며 모든 선한 일을 행하기에 온전케 하려 함이니라"
-verse_en: "All Scripture is breathed out by God and profitable for teaching, for reproof, for correction, and for training in righteousness, that the man of God may be complete, equipped for every good work."
+verse_en: "All Scripture is breathed out by God and profitable for teaching, for reproof, for correction, and for training in righteousness, that the man of God may be complete, equipped for every good work. (ESV)"
 hero_subtitle_ko: "WOLBI 제주에서 여학생 총괄 담당자(Dean of Women)로 섬기며, 말씀을 공부하는 여학생들의 생활과 신앙을 돌보고 있습니다."
 hero_subtitle_en: "Serves as the Dean of Women at WOLBI Jeju, caring for the daily lives and spiritual growth of the female students who study God's Word there."
 bio_ko: |-

@@ -30,7 +30,7 @@ hero_subtitle_ko: "김환규 선교사는 지역 교회와 기독 학교를 위�
 hero_subtitle_en: "Hwan-Kyu focuses on translating and developing gospel curriculum for local churches and Christian schools. Together with Cynthia, they serve the next generation in Korea through camp ministry, youth counseling, and English classes."
 verse_ref: "시편 96:2-3"
 verse_ko: "여호와께 노래하여 그 이름을 송축하며 그 구원을 날마다 선파할찌어다 그 영광을 열방 중에, 그 기이한 행적을 만민 중에 선포할찌어다"
-verse_en: "Sing to the Lord, praise his name; proclaim his salvation day after day. Declare his glory among the nations, his marvelous deeds among all peoples."
+verse_en: "Sing to the LORD, bless his name; tell of his salvation from day to day. Declare his glory among the nations, his marvelous works among all the peoples! (ESV)"
 spouse_ko: 김 씬띠아
 spouse_en: Cynthia Kim
 show_spouse: true

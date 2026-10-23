@@ -39,7 +39,8 @@ for (const name of readdirSync(DIR).filter(f => f.endsWith('.md')).sort()) {
   if (!String(data.verse_ko || '').trim() && !String(data.verse_en || '').trim()) { report.push(`- ${person} (${data.verse_ref}): 주소만 있고 본문이 비어 있음 → 건드리지 않음`); continue; }
   let ref;
   try { ref = parseReference(data.verse_ref); } catch (e) { report.push(`- ${person} (${data.verse_ref}): 주소를 해석하지 못함 → 건드리지 않음`); continue; }
-  const ko = await fetchKrv(env, ref);
+  let ko = '';
+  try { ko = await fetchKrv(env, ref); } catch (e) { await sleep(2000); try { ko = await fetchKrv(env, ref); } catch (e2) { report.push(`- ${person} (${data.verse_ref}): ${e2.message} → 건드리지 않음, 다시 실행해 주세요`); continue; } }
   if (!ko) { report.push(`- ${person} (${data.verse_ref}): 개역한글 본문을 찾지 못함 → 건드리지 않음`); continue; }
   let next = source;
   const updates = {};

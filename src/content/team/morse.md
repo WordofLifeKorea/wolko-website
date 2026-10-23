@@ -42,6 +42,6 @@ support_url: https://online.mrm.or.kr/XXLJGid
 support_url_en: https://missions.wol.org/missionaries/122512/
 report_url: "https://us4.campaign-archive.com/home/?u=201383574defb2126c6ad675c&id=94c47d766a"
 verse_ko: "무리를 보시고 민망히 여기시니 이는 저희가 목자 없는 양과 같이 고생하며 유리함이라 이에 제자들에게 이르시되 추수할 것은 많되 일군은 적으니 그러므로 추수하는 주인에게 청하여 추수할 일군들을 보내어 주소서 하라 하시니라"
-verse_en: When he saw the crowds, he had compassion on them, because they were harassed and helpless, like sheep without a shepherd. Then he said to his disciples, “The harvest is plentiful but the workers are few. Ask the Lord of the harvest, therefore, to send out workers into his harvest field.”
+verse_en: "When he saw the crowds, he had compassion for them, because they were harassed and helpless, like sheep without a shepherd. Then he said to his disciples, “The harvest is plentiful, but the laborers are few; therefore pray earnestly to the Lord of the harvest to send out laborers into his harvest.” (ESV)"
 
 ---

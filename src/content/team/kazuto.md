@@ -19,9 +19,7 @@ hero_subtitle_ko: "카즈토는 하우스키핑 코디네이터로서 월비 제
 hero_subtitle_en: "Kazuto serves as a Housekeeping Coordinator at WOLBI Jeju, managing the operational environment to ensure that ministry activities run smoothly. He also supports the programs of camps and Momentum events, helping students at WOLBI Jeju to build them up as the leaders. Serving as a bridge between Korea and Japan, he prays and works alongside the next generation of youth and young adults, hoping they will discover true and eternal values in God."
 verse_ref: "요한복음 3 : 16"
 verse_ko: "하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니 이는 저를 믿는 자마다 멸망치 않고 영생을 얻게 하려 하심이니라"
-verse_en: |-
-  "For God so loved the world that he gave his one and only Son,
-  that whoever believes in him shall not perish but have eternal life."
+verse_en: "“For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life. (ESV)"
 bio_ko: "카즈토는 늘 변하는 이 세상 속에서 자신의 가치를 찾으려 했습니다. 하지만 그 어디에도 흔들리지 않는 답은 없었습니다. 그러던 중 그는 한 가지 진리와 마주했습니다. 예수님은 자신의 죄를 위해 십자가에서 죽으셨고, 구원의 길을 여셨다는 것. 그 사실은 세상의 어떤 것과도 달리 결코 변하지 않는다는 것을. 카즈토는 예수님을 구주로 믿기로 했고, 그 믿음 안에서 비로소 변하지 않는 가치를 발견했습니다."
 bio_en: "Kazuto had been searching for his value in a world that is always changing — and finding that nothing lasted. Then he came face to face with a truth that was different from anything else — Jesus had died on the cross for his sins, opening the way to salvation. Unlike everything else in this world, that would never change. Kazuto believed in Jesus as his Savior, and in that faith he finally found a value that would never be taken away."
 support_url: https://online.mrm.or.kr/m2pCN1g

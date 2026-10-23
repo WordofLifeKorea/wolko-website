@@ -23,7 +23,7 @@ show_spouse: false
 bio_ko: Javaris는 2017년 11월 고등학교 3학년 때 예수님을 영접했습니다. 그 전해에 국제 기독교 학교로 전학한 것이 하나님께서 그를 신앙으로 이끄신 첫 번째 발걸음이었습니다. 고등학교 2학년 때 참가한 필리핀 선교 여행은 그리스도인이 어떻게 살아야 하는지, 다른 이들을 어떻게 섬겨야 하는지를 두 눈으로 확인한 귀한 경험이었습니다. 고등학교 3학년 가을, Voice of the Martyrs 강사들이 전한 메시지에서 목사님이 학생들에게 결단을 초청했을 때 Javaris는 손을 들었습니다. 그 순간부터 하나님을 더 깊이 알고, 그분의 계획대로 살기를 원했습니다. WOLBI와 Moody Bible Institute를 거쳐 한국 WOLBI 제주 팀에 합류하게 되었습니다. 많은 젊은이들이 주님을 개인적으로 만나고, 말씀 안에서 자라나 강한 제자 삼는 자가 되기를 소망하고 있습니다.
 support_url: https://online.mrm.or.kr/8iTCvX3
 verse_ko: "하나님이 우리를 세우심은 노하심에 이르게 하심이 아니요 오직 우리 주 예수 그리스도로 말미암아 구원을 얻게 하신 것이라 예수께서 우리를 위하여 죽으사 우리로 하여금 깨든지 자든지 자기와 함께 살게 하려 하셨느니라 그러므로 피차 권면하고 피차 덕을 세우기를 너희가 하는것 같이 하라"
-verse_en: For God did not appoint us to suffer wrath but to receive salvation through our Lord Jesus Christ. He died for us so that, whether we are awake or asleep, we may live together with him. Therefore encourage one another and build each other up, just as in fact you are doing.
+verse_en: "For God has not destined us for wrath, but to obtain salvation through our Lord Jesus Christ, who died for us so that whether we are awake or asleep we might live with him. Therefore encourage one another and build one another up, just as you are doing. (ESV)"
 support_url_en: https://missions.wol.org/missionaries/852529
 report_url: "https://mailchi.mp/63c9ff484315/a-cup-of-java-fillingup-pt1"
 

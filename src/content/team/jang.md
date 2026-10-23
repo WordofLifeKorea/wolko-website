@@ -30,7 +30,7 @@ hero_subtitle_ko: 장성남과 김미정 선교사는 제주 월비에서 섬기
 hero_subtitle_en: Seongnam Jang and Mijeong Kim serve at WOLBI Jeju, leading the next generation to Christ through lives transformed by the gospel.
 verse_ref: "누가복음 19 : 10"
 verse_ko: "인자의 온 것은 잃어버린 자를 찾아 구원하려 함이니라"
-verse_en: For the Son of Man came to seek and to save the lost.”
+verse_en: "For the Son of Man came to seek and to save the lost.” (ESV)"
 spouse_ko: 김미정
 spouse_en: Mijeong Kim
 show_spouse: true
