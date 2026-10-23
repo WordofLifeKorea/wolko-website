@@ -534,11 +534,15 @@
     try {
       const response = await fetch('/api/car/odometer', { method: 'POST', headers: { ...headers(), 'Content-Type': 'image/jpeg' }, body: blob });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok || data.odometer == null) { hint.textContent = data.note || t('odoFail'); return; }
+      if (!response.ok || data.odometer == null) {
+        const why = data.reason ? ` (${data.reason})` : (!response.ok ? ` (${response.status})` : '');
+        hint.textContent = data.note || (data.error ? data.error + why : t('odoFail') + why);
+        return;
+      }
       if (!odoField(which).value.trim()) odoField(which).value = String(data.odometer);
       hint.textContent = t('odoAuto', Number(data.odometer).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR'));
       syncTripFromOdometers();
-    } catch (error) { hint.textContent = t('odoFail'); }
+    } catch (error) { hint.textContent = t('odoFail') + ' (network)'; }
   }
   ['before', 'after'].forEach(which => odoField(which).addEventListener('input', () => { odoHint(which).textContent = ''; syncTripFromOdometers(); }));
 
