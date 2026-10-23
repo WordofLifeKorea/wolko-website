@@ -127,8 +127,8 @@ export function summaryPrompt(kind, today, list) {
   const user = `Date: ${today}\nKind: ${kind}\nItems (JSON):\n${JSON.stringify(list.slice(0, 30))}`;
   return { system, user };
 }
-export async function callSummary({ apiKey, model, system, user, fetchImpl = fetch, url = 'https://api.anthropic.com/v1/messages' }) {
-  const res = await fetchImpl(url, { method: 'POST', headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' }, body: JSON.stringify({ model, max_tokens: 400, system, messages: [{ role: 'user', content: user }] }) });
+export async function callSummary({ apiKey, model, system, user, fetchImpl = fetch, url = 'https://api.anthropic.com/v1/messages', extraHeaders = {} }) {
+  const res = await fetchImpl(url, { method: 'POST', headers: { 'x-api-key': String(apiKey).trim(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json', ...extraHeaders }, body: JSON.stringify({ model, max_tokens: 400, system, messages: [{ role: 'user', content: user }] }) });
   if (!res.ok) throw new Error(`AI service error (${res.status})`);
   const j = await res.json(); const text = (j.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('').trim();
   return s(text.replace(/[`*#]/g, ''), 400);

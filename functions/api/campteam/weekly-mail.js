@@ -1,4 +1,5 @@
 import { json, badRequest, noDb, FIXED_ADMIN_EMAILS, applyOverrides } from '../../lib/campteamAuth.js';
+import { anthropicRoute } from '../../lib/anthropicRoute.js';
 import { todayKST } from '../../lib/campteamDb.js';
 import { buildWeek, weekEmpty, summaryPrompt, callSummary, summaryItems, SUMMARY_MODEL, tuesdayOf, mondayOf, nowIso } from '../../lib/campteamAlerts.js';
 import { buildWeeklyEmail, sendCampMail, fromAddress } from '../../lib/campteamMail.js';
@@ -44,7 +45,7 @@ export async function onRequestPost({ env, request }) {
       if (env.ANTHROPIC_API_KEY) {
         const forDate = tuesdayOf(today), cached = await env.DB.prepare(`SELECT text FROM daily_summaries WHERE email = ?1 AND kind = 'weekly' AND forDate = ?2`).bind(m.email, forDate).first();
         if (cached && cached.text) summary = cached.text;
-        else { try { const { system, user } = summaryPrompt('weekly', today, summaryItems({ overdue: week.overdue, today: [], soon: week.tasks, meetings: week.meetings, events: week.events })); const model = env.CAMPTEAM_SUMMARY_MODEL || SUMMARY_MODEL; summary = await callSummary({ apiKey: env.ANTHROPIC_API_KEY, model, system, user, url: env.CAMPTEAM_AI_URL || undefined }) || null;
+        else { try { const { system, user } = summaryPrompt('weekly', today, summaryItems({ overdue: week.overdue, today: [], soon: week.tasks, meetings: week.meetings, events: week.events })); const model = env.CAMPTEAM_SUMMARY_MODEL || SUMMARY_MODEL; summary = await callSummary({ apiKey: env.ANTHROPIC_API_KEY, model, system, user, ...anthropicRoute(env, env.CAMPTEAM_AI_URL || undefined) }) || null;
           if (summary) await env.DB.prepare(`INSERT INTO daily_summaries (email,kind,forDate,text,model,createdAt) VALUES (?1,'weekly',?2,?3,?4,?5) ON CONFLICT(email,kind,forDate) DO UPDATE SET text=?3, model=?4, createdAt=?5`).bind(m.email, forDate, summary, model, nowIso()).run(); } catch { summary = null; /* 요약이 실패해도 메일은 보낸다 */ } }
       }
       const mail = buildWeeklyEmail({ name: m.name, week, summary, base });

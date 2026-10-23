@@ -1,4 +1,5 @@
 import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite } from '../../lib/campteamAuth.js';
+import { anthropicRoute } from '../../lib/anthropicRoute.js';
 import { uuid, nowIso, text, audit } from '../../lib/campteamDb.js';
 import { buildPrompt, normalizeDraft, callClaude, DEFAULT_MODEL, MAX_TRANSCRIPT_CHARS } from '../../lib/campteamAi.js';
 
@@ -36,7 +37,7 @@ export async function onRequestPost(context) {
   const task = (async () => {
     try {
       await send({ t: 'start', model, chars: transcript.length }); let last = 0;
-      const out = await callClaude({ apiKey: env.ANTHROPIC_API_KEY, model, system, user, url: env.CAMPTEAM_AI_URL || undefined, onChunk: (n) => { if (n - last >= 400) { last = n; send({ t: 'p', n }); } } });
+      const out = await callClaude({ apiKey: env.ANTHROPIC_API_KEY, model, system, user, ...anthropicRoute(env, env.CAMPTEAM_AI_URL || undefined), onChunk: (n) => { if (n - last >= 400) { last = n; send({ t: 'p', n }); } } });
       const r = normalizeDraft(out); if (r.error) { await send({ t: 'error', message: r.error }); return; }
       const id = uuid();
       await env.DB.prepare(`INSERT INTO ai_drafts (id,meetingId,kind,status,model,sourceChars,sourceNote,resultJson,createdAt,createdBy) VALUES (?1,?2,'minutes','draft',?3,?4,?5,?6,?7,?8)`)

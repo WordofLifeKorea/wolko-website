@@ -1,4 +1,5 @@
 import { campSession, json, needLogin, needPerm, badRequest, noDb, FIXED_ADMIN_EMAILS, canWrite } from '../../lib/campteamAuth.js';
+import { anthropicRoute } from '../../lib/anthropicRoute.js';
 import { todayKST, uuid, text, audit } from '../../lib/campteamDb.js';
 import { loadSettings, saveSettings, sanitizeSettings, buildAlerts, buildWeek, weekEmpty, listAnnouncements, summaryPrompt, callSummary, summaryItems, SUMMARY_MODEL, tuesdayOf, nowIso } from '../../lib/campteamAlerts.js';
 
@@ -151,7 +152,7 @@ async function postAlerts({ env, request }) {
     else { const w = await buildWeek(env, s.email, today, s.perms); if (weekEmpty(w)) return json({ text: null, reason: 'empty' }); list = summaryItems({ overdue: w.overdue, today: [], soon: w.tasks, meetings: w.meetings, events: w.events }); }
     const model = env.CAMPTEAM_SUMMARY_MODEL || SUMMARY_MODEL, { system, user } = summaryPrompt(kind, today, list);
     let out = '';
-    try { out = await callSummary({ apiKey: env.ANTHROPIC_API_KEY, model, system, user, url: env.CAMPTEAM_AI_URL || undefined }); } catch (e) { console.error('summary failed:', e.message); }
+    try { out = await callSummary({ apiKey: env.ANTHROPIC_API_KEY, model, system, user, ...anthropicRoute(env, env.CAMPTEAM_AI_URL || undefined) }); } catch (e) { console.error('summary failed:', e.message); }
     await env.DB.prepare('INSERT INTO daily_summaries (email,kind,forDate,text,model,createdAt) VALUES (?1,?2,?3,?4,?5,?6) ON CONFLICT(email,kind,forDate) DO UPDATE SET text=?4, model=?5, createdAt=?6').bind(me, kind, forDate, out, model, now).run();
     return json({ text: out || null });
   }

@@ -9,6 +9,7 @@
  * Required env vars:
  *   ADMIN_PASSWORD     — token signing secret
  *   ANTHROPIC_API_KEY  — Anthropic API key
+ *   TRANSLATE_MODEL    — (선택) 번역 모델 이름. 없으면 claude-haiku-4-5-20251001
  */
 
 import { lookupVerse } from '../../lib/bibleLookup.js';
@@ -135,7 +136,7 @@ export async function onRequestPost(context) {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: env.TRANSLATE_MODEL || 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
         system: systemPrompt,
         messages: [
