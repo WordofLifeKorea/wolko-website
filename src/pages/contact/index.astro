@@ -372,7 +372,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <!-- HERO -->
 <section class="ct-hero">
   <div class="ct-hero-inner">
-    <div class="ct-eyebrow">Contact</div>
+    <div class="ct-eyebrow"><span class="wl-ko">문의</span><span class="wl-en">Contact</span></div>
     <h1>
       <span class="wl-ko">궁금한 점이<br><em>있으신가요?</em></span>
       <span class="wl-en">Reach Out.<br><em>We're Listening.</em></span>
@@ -512,19 +512,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <div class="ct-select-wrap">
             <select id="ct-type-select" name="type">
               <optgroup label="─────────────────────────">
-                <option value="general">일반 문의 / General Inquiry</option>
-                <option value="ministry">사역 협력 / Ministry Partnership</option>
-                <option value="mission">선교팀 / Mission Team</option>
-                <option value="serve">섬기고 싶어요 / Serve with WOLKO</option>
+                <option value="general" data-ko="일반 문의" data-en="General Inquiry">일반 문의</option>
+                <option value="ministry" data-ko="사역 협력" data-en="Ministry Partnership">사역 협력</option>
+                <option value="mission" data-ko="선교팀" data-en="Mission Team">선교팀</option>
+                <option value="serve" data-ko="섬기고 싶어요" data-en="Serve with WOLKO">섬기고 싶어요</option>
               </optgroup>
               <optgroup label="─────────────────────────">
-                <option value="wolbi">제주월비 입학 / WOLBI Admission</option>
-                <option value="camp">캠프 신청 / Camp Registration</option>
+                <option value="wolbi" data-ko="제주월비 입학" data-en="WOLBI Admission">제주월비 입학</option>
+                <option value="camp" data-ko="캠프 신청" data-en="Camp Registration">캠프 신청</option>
               </optgroup>
               <optgroup label="─────────────────────────">
-                <option value="give">후원 / Giving</option>
-                <option value="prayer">기도 제목 / Prayer Request</option>
-                <option value="other">기타 / Other</option>
+                <option value="give" data-ko="후원" data-en="Giving">후원</option>
+                <option value="prayer" data-ko="기도 제목" data-en="Prayer Request">기도 제목</option>
+                <option value="other" data-ko="기타" data-en="Other">기타</option>
               </optgroup>
             </select>
             <div class="ct-select-chevron">
@@ -542,7 +542,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <span class="wl-ko">이름 *</span><span class="wl-en">Name *</span>
             </label>
             <input type="text" id="ct-name" name="name" required
-              placeholder="홍길동 / John Smith" />
+              placeholder="홍길동" data-ph-ko="홍길동" data-ph-en="John Smith" />
           </div>
           <div class="ct-field">
             <label for="ct-email">
@@ -563,7 +563,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <span class="wl-ko">내용 *</span><span class="wl-en">Message *</span>
             </label>
             <textarea id="ct-msg" name="message" required
-              placeholder="문의 내용을 자유롭게 작성해 주세요. / Please write your message freely."></textarea>
+              placeholder="문의 내용을 자유롭게 작성해 주세요." data-ph-ko="문의 내용을 자유롭게 작성해 주세요." data-ph-en="Please write your message freely."></textarea>
           </div>
         </div>
 
@@ -616,13 +616,37 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   typeSelect.value = requestedType;
 })();
 
+function ctIsEn() { return document.documentElement.classList.contains('lang-en'); }
+function ctT(ko, en) { return ctIsEn() ? en : ko; }
+
+// 선택 목록·입력 안내문·브라우저 입력 확인 메시지도 지금 언어 하나만 보이게 맞춘다
+function ctSyncLang() {
+  var en = ctIsEn();
+  document.querySelectorAll('#ct-type-select option[data-ko]').forEach(function(o) { o.textContent = en ? o.dataset.en : o.dataset.ko; });
+  document.querySelectorAll('[data-ph-ko]').forEach(function(el) { el.setAttribute('placeholder', en ? el.dataset.phEn : el.dataset.phKo); });
+}
+ctSyncLang();
+new MutationObserver(ctSyncLang).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+document.addEventListener('DOMContentLoaded', ctSyncLang);
+(function localizeValidation() {
+  var form = document.querySelector('.ct-form-wrap form');
+  if (!form) return;
+  form.addEventListener('invalid', function(ev) {
+    var el = ev.target;
+    el.setCustomValidity('');
+    if (el.validity.valueMissing) el.setCustomValidity(ctT('이 항목을 입력해 주세요.', 'Please fill out this field.'));
+    else if (el.validity.typeMismatch) el.setCustomValidity(ctT('올바른 이메일 주소를 입력해 주세요.', 'Please enter a valid email address.'));
+  }, true);
+  form.addEventListener('input', function(ev) { ev.target.setCustomValidity && ev.target.setCustomValidity(''); });
+})();
+
 async function handleSubmit(e) {
   e.preventDefault();
   var form = e.target;
   var btn  = form.querySelector('.ct-form-btn');
   var btnOriginal = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<span style="opacity:.7">전송 중...</span>';
+  btn.innerHTML = '<span style="opacity:.7">' + ctT('전송 중...', 'Sending...') + '</span>';
 
   var name    = form.querySelector('#ct-name').value.trim();
   var email   = form.querySelector('#ct-email').value.trim();
@@ -640,7 +664,7 @@ async function handleSubmit(e) {
 
     if (!res.ok) {
       var errData = await res.json().catch(function() { return {}; });
-      throw new Error(errData.error || '전송 실패');
+      throw new Error(errData.error || ctT('전송 실패', 'Send failed'));
     }
 
     var d = document.createElement('div');
@@ -665,7 +689,7 @@ async function handleSubmit(e) {
   } catch (err) {
     btn.disabled = false;
     btn.innerHTML = btnOriginal;
-    alert('전송 중 오류가 발생했습니다. 이메일로 직접 연락해 주세요 - wolkorea1@gmail.com\n\nAn error occurred. Please email us at wolkorea1@gmail.com');
+    alert(ctT('전송 중 오류가 발생했습니다. 이메일로 직접 연락해 주세요 - wolkorea1@gmail.com', 'An error occurred. Please email us at wolkorea1@gmail.com'));
   }
 }
 </script>
