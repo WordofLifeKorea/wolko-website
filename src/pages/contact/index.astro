@@ -125,7 +125,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   /* Two location columns */
   .ct-qc-cols {
-    display:grid; grid-template-columns:1fr 1fr;
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   }
   .ct-qc-col {
     border-right:1px solid var(--line);
@@ -177,7 +177,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   /* ── OFFICE CARDS ── */
   .ct-offices {
-    display:grid; grid-template-columns:1fr 1fr;
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
     gap:20px; margin-bottom:56px;
   }
   .ct-office {
@@ -266,9 +266,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   /* Form grid */
   .ct-form-grid {
-    display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; margin-bottom:20px;
   }
-  .ct-field { display:flex; flex-direction:column; gap:8px; }
+  .ct-field { display:flex; flex-direction:column; gap:8px; min-width:0; }
   .ct-field.full { grid-column:1/-1; }
   .ct-field label {
     font-size:11px; font-weight:700; color:var(--d); letter-spacing:0.08em; text-transform:uppercase;
@@ -345,7 +345,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   /* ── RESPONSIVE ── */
   @media(max-width:860px) {
-    .ct-offices { grid-template-columns:1fr; }
+    .ct-offices { grid-template-columns:minmax(0,1fr); }
   }
   @media(max-width:640px) {
     .ct-privacy-tooltip {
@@ -353,7 +353,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       white-space:normal; width:max-content; max-width:min(78vw, 260px);
     }
     .ct-privacy-tooltip::after { left:8px; transform:none; }
-    .ct-qc-cols { grid-template-columns:1fr; }
+    .ct-qc-cols { grid-template-columns:minmax(0,1fr); }
     .ct-qc-col { border-right:none; border-bottom:1px solid var(--line); }
     .ct-qc-col:last-child { border-bottom:none; }
     .ct-qc-row { padding:13px 20px; }
@@ -361,7 +361,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .ct-qc-kakao { padding:14px 20px; }
     .ct-qc-kakao-badge { display:none; }
     .ct-form-wrap { padding:28px 20px; }
-    .ct-form-grid { grid-template-columns:1fr; }
+    .ct-form-grid { grid-template-columns:minmax(0,1fr); } /* 1fr 은 안쪽(전화번호 칸 등) 최소폭만큼 늘어나 모바일에서 화면 밖으로 넘쳤다 */
     .ct-office-body { padding:8px 20px 20px; }
     .ct-office-head { padding:22px 20px 18px; }
   }
