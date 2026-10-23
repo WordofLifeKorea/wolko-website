@@ -14,7 +14,7 @@
       recordTitle: '운행 전 기록', recorder: '기록자', vehicleLabel: '차량 선택', purposeLegend: '사용 목적', ministry: '사역용', personal: '개인용',
       tripKmLabel: '총 운행 거리 (km) *', tripKmNeeded: '총 운행 거리(km)를 입력해 주세요.', photosTitle: '사진 (선택)', photosHelp: '계기판이나 차량 상태가 보이도록 찍어 두면 나중에 확인하기 좋아요. 없어도 저장할 수 있습니다.', photoBeforeTitle: '운행 전 사진', photoAfterTitle: '운행 후 사진', viewPhotoBefore: '운행 전 사진 보기', viewPhotoAfter: '운행 후 사진 보기', tripKmRow: '총 운행',
       photoTitle: '운행 전 사진', photoHelp: '계기판이나 차량 상태가 보이도록 찍어 주세요. 사용 목적을 고르면 카메라를 열 수 있습니다.',
-      photoBtn: '카메라 열기 · 사진 선택', save: '사용 일지 저장', saving: '저장 중…',
+      photoBtn: '카메라 열기 · 사진 선택', photoCamBtn: '카메라로 찍기', photoUploadBtn: '사진 올리기', save: '사용 일지 저장', saving: '저장 중…',
       historyTitle: '최근 사용 내역', historyHelp: '기록은 로그인 계정과 함께 저장됩니다. 사진은 포탈 사용자만 볼 수 있습니다.',
       qrTitle: '차량에 부착할 QR 코드', qrHelp: '고정 차량의 코드를 인쇄해 각 차량에 부착하세요. 스캔하면 해당 차량이 자동 선택됩니다.', qrPrint: 'QR 코드 인쇄',
       photoDialog: '차량 사진', closePhoto: '사진 닫기',
@@ -26,8 +26,8 @@
       photoOpenFail: '사진을 열지 못했습니다.', resizeFail: '사진 크기를 줄이지 못했습니다. 다른 사진을 선택해 주세요.',
       odoBeforeLabel: '운행 전 계기판 (km)', odoAfterLabel: '운행 후 계기판 (km)', odoReading: '계기판 숫자를 읽는 중…', odoFail: '자동으로 읽지 못했습니다. 직접 입력해 주세요.',
       odoAuto: n => `자동 인식: ${n} km — 사진과 다르면 고쳐 주세요.`, odoOrder: '운행 후 값이 운행 전 값보다 작습니다. 숫자를 확인해 주세요.', tripAuto: n => `운행 전·후 계기판으로 총 거리를 계산했습니다: ${n} km (고칠 수 있어요)`,
-      loginFail: '로그인하지 못했습니다.', photoDiff: '사진 촬영 시각이 오늘과 다릅니다. 운행 전 사진을 새로 찍어 주세요.',
-      photoOld: '오래된 사진입니다. 운행 전 사진을 새로 찍어 주세요.', photoReadFail: '사진을 읽지 못했습니다.',
+      loginFail: '로그인하지 못했습니다.', photoDiff: '사진 촬영 시각이 오늘과 다릅니다. 오늘 찍은 사진(24시간 이내)만 사용할 수 있어요.',
+      photoOld: '오래된 사진입니다. 24시간 안에 찍은 사진만 올릴 수 있어요.', photoReadFail: '사진을 읽지 못했습니다.',
       photoTaken: t => `사진 촬영: ${t} (사진 정보 기준)`, photoNoTime: '사진에 촬영 시각 정보가 없어 저장 시각으로 기록됩니다.',
       saved: '사용 일지가 저장됐습니다.', saveFail: '저장하지 못했습니다.',
       draftSaved: d => `작성 중인 내용이 임시 저장됐어요 · ${d}까지 보관돼요`, draftClear: '임시 저장 지우기', draftClearAsk: '임시 저장한 내용과 사진을 지울까요?',
@@ -42,7 +42,7 @@
       recordTitle: 'Pre-drive record', recorder: 'Recorder', vehicleLabel: 'Vehicle', purposeLegend: 'Purpose of use', ministry: 'Ministry', personal: 'Personal',
       tripKmLabel: 'Total distance driven (km) *', tripKmNeeded: 'Please enter the total distance driven (km).', photosTitle: 'Photos (optional)', photosHelp: 'A photo of the dashboard or the vehicle helps later, but you can save without one.', photoBeforeTitle: 'Before-drive photo', photoAfterTitle: 'After-drive photo', viewPhotoBefore: 'View before photo', viewPhotoAfter: 'View after photo', tripKmRow: 'Trip',
       photoTitle: 'Pre-drive photo', photoHelp: 'Take a photo that shows the dashboard or the vehicle condition. Choose the purpose first to open the camera.',
-      photoBtn: 'Open camera · choose photo', save: 'Save usage log', saving: 'Saving…',
+      photoBtn: 'Open camera · choose photo', photoCamBtn: 'Take photo', photoUploadBtn: 'Upload photo', save: 'Save usage log', saving: 'Saving…',
       historyTitle: 'Recent usage', historyHelp: 'Records are saved with your account. Photos are visible only to portal users.',
       qrTitle: 'QR codes for the vehicles', qrHelp: 'Print the code for each fixed vehicle and attach it. Scanning selects that vehicle automatically.', qrPrint: 'Print QR codes',
       photoDialog: 'Vehicle photo', closePhoto: 'Close photo',
@@ -54,8 +54,8 @@
       photoOpenFail: 'Could not open the photo.', resizeFail: 'Could not shrink the photo. Please choose another one.',
       odoBeforeLabel: 'Odometer before (km)', odoAfterLabel: 'Odometer after (km)', odoReading: 'Reading the odometer…', odoFail: 'Could not read it automatically. Please enter it.',
       odoAuto: n => `Auto-read: ${n} km — please correct it if it differs from the photo.`, odoOrder: 'The after reading is lower than the before reading. Please check the numbers.', tripAuto: n => `Total distance calculated from the odometers: ${n} km (you can edit it)`,
-      loginFail: 'Could not log in.', photoDiff: 'The photo was not taken today. Please take a new pre-drive photo.',
-      photoOld: 'This photo is old. Please take a new pre-drive photo.', photoReadFail: 'Could not read the photo.',
+      loginFail: 'Could not log in.', photoDiff: 'The photo was not taken today. Only photos taken within the last 24 hours can be used.',
+      photoOld: 'This photo is old. Only photos taken within the last 24 hours can be used.', photoReadFail: 'Could not read the photo.',
       photoTaken: t => `Photo taken: ${t} (from photo data)`, photoNoTime: 'The photo has no capture time, so the save time will be recorded.',
       saved: 'Usage log saved.', saveFail: 'Could not save.',
       draftSaved: d => `Draft saved to your account · kept until ${d}`, draftClear: 'Delete draft', draftClearAsk: 'Delete the saved draft and photos?',
@@ -541,16 +541,19 @@
 
   // 운행 전·후 사진 칸 — 둘 다 선택 사항이라 없어도 저장된다.
   const photoSlots = {
-    before: { input: 'photoInput', button: 'photoButton', preview: 'photoPreview', time: 'photoTime', get blob() { return photoBlob; }, set blob(v) { photoBlob = v; }, get url() { return previewUrl; }, set url(v) { previewUrl = v; }, trackTime: true },
-    after: { input: 'photoAfterInput', button: 'photoAfterButton', preview: 'photoAfterPreview', time: 'photoAfterTime', get blob() { return photoAfterBlob; }, set blob(v) { photoAfterBlob = v; }, get url() { return previewAfterUrl; }, set url(v) { previewAfterUrl = v; }, trackTime: false },
+    before: { input: 'photoInput', button: 'photoButton', uploadInput: 'photoUploadInput', uploadButton: 'photoUploadButton', preview: 'photoPreview', time: 'photoTime', get blob() { return photoBlob; }, set blob(v) { photoBlob = v; }, get url() { return previewUrl; }, set url(v) { previewUrl = v; }, trackTime: true },
+    after: { input: 'photoAfterInput', button: 'photoAfterButton', uploadInput: 'photoAfterUploadInput', uploadButton: 'photoAfterUploadButton', preview: 'photoAfterPreview', time: 'photoAfterTime', get blob() { return photoAfterBlob; }, set blob(v) { photoAfterBlob = v; }, get url() { return previewAfterUrl; }, set url(v) { previewAfterUrl = v; }, trackTime: false },
   };
   Object.entries(photoSlots).forEach(([which, slot]) => {
+    // 카메라로 찍기(capture)와 사진 올리기(갤러리·파일)는 같은 처리를 거친다
     $(slot.button).addEventListener('click', () => $(slot.input).click());
-    $(slot.input).addEventListener('change', async () => {
-      const file = $(slot.input).files?.[0];
+    $(slot.uploadButton).addEventListener('click', () => $(slot.uploadInput).click());
+    [slot.input, slot.uploadInput].forEach(id => $(id).addEventListener('change', async () => {
+      const file = $(id).files?.[0];
       if (!file) return;
       $('formError').textContent = '';
       $(slot.button).disabled = true;
+      $(slot.uploadButton).disabled = true;
       slot.blob = null;
       try {
         const exifDate = await readExifDate(file);
@@ -574,11 +577,13 @@
         $(slot.preview).hidden = true;
         $(slot.time).textContent = '';
         $(slot.input).value = '';
+        $(slot.uploadInput).value = '';
       } finally {
         $(slot.button).disabled = false;
+        $(slot.uploadButton).disabled = false;
       }
       updateReady();
-    });
+    }));
   });
   $('tripKm').addEventListener('input', () => { updateReady(); scheduleDraftSave(); });
   $('draftClear').addEventListener('click', async () => {
@@ -620,6 +625,8 @@
       photoAfterBlob = null;
       $('photoInput').value = '';
       $('photoAfterInput').value = '';
+      $('photoUploadInput').value = '';
+      $('photoAfterUploadInput').value = '';
       $('photoPreview').hidden = true;
       $('photoAfterPreview').hidden = true;
       $('photoAfterTime').textContent = '';

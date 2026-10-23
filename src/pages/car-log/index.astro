@@ -15,13 +15,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
-  <link rel="stylesheet" href="/car-log.css?v=16">
+  <link rel="stylesheet" href="/car-log.css?v=17">
   <link rel="stylesheet" href="/wolko-rail.css?v=18">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-layout.css?v=15">
   <script src="/wolko-rail.js?v=30" defer></script>
-  <script src="/car-log.js?v=13" defer></script>
+  <script src="/car-log.js?v=14" defer></script>
   <meta name="theme-color" content="#004f68">
 </head>
 <body>
@@ -101,7 +101,11 @@
             <div class="log-photo-step">
               <strong data-t="photoBeforeTitle">운행 전 사진</strong>
               <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
-              <button id="photoButton" class="log-secondary" type="button" data-t="photoBtn">카메라 열기 · 사진 선택</button>
+              <input id="photoUploadInput" type="file" accept="image/*" hidden>
+              <div class="log-photo-actions">
+                <button id="photoButton" class="log-secondary" type="button" data-t="photoCamBtn">카메라로 찍기</button>
+                <button id="photoUploadButton" class="log-secondary" type="button" data-t="photoUploadBtn">사진 올리기</button>
+              </div>
               <img id="photoPreview" class="log-preview" alt="" hidden>
               <p class="log-time" id="photoTime" aria-live="polite"></p>
               <label class="log-odo"><span data-t="odoBeforeLabel">운행 전 계기판 (km)</span>
@@ -112,7 +116,11 @@
             <div class="log-photo-step">
               <strong data-t="photoAfterTitle">운행 후 사진</strong>
               <input id="photoAfterInput" type="file" accept="image/*" capture="environment" hidden>
-              <button id="photoAfterButton" class="log-secondary" type="button" data-t="photoBtn">카메라 열기 · 사진 선택</button>
+              <input id="photoAfterUploadInput" type="file" accept="image/*" hidden>
+              <div class="log-photo-actions">
+                <button id="photoAfterButton" class="log-secondary" type="button" data-t="photoCamBtn">카메라로 찍기</button>
+                <button id="photoAfterUploadButton" class="log-secondary" type="button" data-t="photoUploadBtn">사진 올리기</button>
+              </div>
               <img id="photoAfterPreview" class="log-preview" alt="" hidden>
               <p class="log-time" id="photoAfterTime" aria-live="polite"></p>
               <label class="log-odo"><span data-t="odoAfterLabel">운행 후 계기판 (km)</span>
