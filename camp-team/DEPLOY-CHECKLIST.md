@@ -11,6 +11,7 @@
 ## B. Cloudflare 대시보드 (사용자가 직접 · 기존 설정은 그대로 둠)
 1. **D1 새로 만들기**: Storage & Databases → D1 → 새 데이터베이스(예: `wolko-camp-team`)
 2. **마이그레이션 실행**(D1 → Console 또는 `wrangler d1 execute`): `camp-team/db/0001_init.sql` → `0002` → … → `0018_polish.sql` **순서대로**(이미 앞 번호까지 적용했다면 **빠진 번호만** 이어서: `0015_alerts` → `0016_space_layout` → `0017_member_perms` → `0018_polish`). `seed-dummy*.sql` 은 **절대 실행하지 않음**(가짜 데이터). ※ `0010_ledger.sql` 은 팀 명단 표를 새 역할(디렉터·월코 재정)을 받도록 다시 만들며 기존 명단은 그대로 옮겨요 — 중간에 끊지 말고 한 번에 실행하세요
+   - 터미널로 하고 싶다면: `npx wrangler@4 login` → `npx wrangler@4 whoami` 로 계정 확인 → `camp-team/deploy/wrangler.migrate.example.toml` 을 저장소 밖에 복사해 `database_id` 를 채운 뒤 `./camp-team/deploy/migrate-remote.sh <설정파일> <시작번호> [끝번호]` (먼저 `DRY_RUN=1` 로 목록만 확인). 이미 적용한 번호는 다시 실행하지 말 것.
 3. **Pages 프로젝트 → 설정 → 바인딩**: D1 바인딩을 **이름 `DB`** 로 추가(Production). 기존 바인딩은 건드리지 않음
 4. (선택) **R2 버킷** 새로 만들어 이름 **`CAMPTEAM_FILES`** 로 바인딩. 안 하면 기존 NAS 사용, 둘 다 없으면 링크 등록만 가능
 5. **`CAMPTEAM_DEV_AUTH` 는 만들지 않음**(로컬 전용)
