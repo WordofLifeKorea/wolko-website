@@ -84,9 +84,9 @@
   let entries = [];
   let me = null;
   let photoBlob = null;
-  // 사진은 이 시간(72시간) 안에 찍은 것만 쓴다. 테스트 동안은 검사를 꺼 둔다 — 다시 켜려면 true 로 바꾼다.
+  // 사진은 이 시간(72시간) 안에 찍은 것만 쓴다.
   const PHOTO_MAX_AGE_MS = 72 * 60 * 60_000;
-  const PHOTO_AGE_CHECK = false;
+  const PHOTO_AGE_CHECK = true;
   let photoTakenAt = null;
   let previewUrl = null;
   let photoAfterBlob = null;
