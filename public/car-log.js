@@ -468,7 +468,8 @@
   async function describeFile(file) {
     let actual = '?';
     try {
-      const b = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+      const head = file.slice(0, 16);
+      const b = new Uint8Array(await (head.arrayBuffer ? head.arrayBuffer() : new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(r.error); r.readAsArrayBuffer(head); })));
       const ascii = Array.from(b, c => String.fromCharCode(c)).join('');
       if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) actual = 'JPEG';
       else if (b[0] === 0x89 && ascii.slice(1, 4) === 'PNG') actual = 'PNG';
@@ -490,6 +491,16 @@
       } catch {
         image = null;
         try { image = await createImageBitmap(file); } catch { image = null; }
+        if (!image) {
+          // Safari 에서 Blob 주소로 읽기가 안 되는 경우를 위해 FileReader(data 주소)로 한 번 더 시도한다
+          try {
+            const dataUrl = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(r.error); r.readAsDataURL(file); });
+            const viaData = new Image();
+            viaData.src = dataUrl;
+            await viaData.decode();
+            image = viaData;
+          } catch { image = null; }
+        }
       }
       if (!image) {
         const info = await describeFile(file);
