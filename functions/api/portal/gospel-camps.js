@@ -1,12 +1,19 @@
 /**
+ * GET  /api/portal/gospel-camps  — 지난 캠프까지 모두의 자동 집계(최근 시작일 순). 포탈 로그인한 계정 누구나, 숫자만.
  * POST /api/portal/gospel-camps  { campId, staff }  — 월코 캠프의 스태프 인원을 직접 입력한다(마스터·관리자만).
  * 캠퍼 인원·구원·헌신은 신청 기록에서 자동으로 세고(functions/lib/gospelCamps.js), 스태프는 신청 기록에 없으니 이렇게 더한다.
  */
 import { portalSession } from '../../lib/hubAccounts.js';
-import { CAMP_ID_RE, MAX_STAFF, STAFF_KEY, loadSchedules } from '../../lib/gospelCamps.js';
+import { CAMP_ID_RE, MAX_STAFF, STAFF_KEY, loadSchedules, allCamps } from '../../lib/gospelCamps.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
+
+export async function onRequestGet({ env, request }) {
+  const session = await portalSession(request, env);
+  if (!session) return fail('포탈 로그인이 필요합니다.', 401);
+  return Response.json({ camps: await allCamps(env, request), canEditStaff: session.role === 'master' || session.role === 'admin' }, { headers: H });
+}
 
 export async function onRequestPost({ env, request }) {
   const session = await portalSession(request, env);

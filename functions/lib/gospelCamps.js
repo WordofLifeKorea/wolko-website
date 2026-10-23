@@ -87,6 +87,19 @@ export async function monthCamps(env, request, month) {
   return out;
 }
 
+/** 지난 캠프까지 모두 — 일정 파일에 있는 모든 캠프의 집계(최근 시작일 순). 캠퍼도 스태프도 없는 캠프는 뺀다 */
+export async function allCamps(env, request) {
+  const schedules = (await loadSchedules(env, request)).slice().sort((a, b) => String(b.startDate).localeCompare(String(a.startDate)));
+  const out = [];
+  for (const s of schedules) {
+    const auto = await campAuto(env, s.id);
+    const staff = await loadStaff(env, s.id);
+    if (!auto.campers && !staff) continue;
+    out.push({ id: s.id, month: monthOfSchedule(s), titleKo: s.titleKo || s.id, titleEn: s.titleEn || s.titleKo || s.id, dateKo: s.dateKo || '', location: campLocation(s.id), campers: auto.campers, staff, salvations: auto.salvations, dedications: auto.dedications });
+  }
+  return out;
+}
+
 /** 자동 집계를 월 합계(summarize 결과)에 더한다 — 참석 = 캠퍼 + 스태프 */
 export function addCampsToSummary(summary, camps) {
   for (const c of camps) {

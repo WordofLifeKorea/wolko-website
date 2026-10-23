@@ -104,3 +104,17 @@ test('월 요약에 캠프 자동 집계(캠퍼 + 스태프)가 평택·제주�
   const julyMonth = (await (await G.onRequestGet({ env, request: await req('/api/portal/gospel-stats?month=2026-07', anna) })).json());
   assert.equal(julyMonth.campAuto.length, 0, '7월 캠프는 확정 캠퍼가 없어 목록에 없다');
 });
+
+test('지난 캠프까지 모두: 달이 달라도 모든 캠프가 최근 시작일 순으로 나온다', async () => {
+  const { env, put, acc, req } = setup();
+  await acc(anna[0], anna[1]);
+  await put('2026-inland-english-junior', 'a', { registrationType: 'individual', status: 'confirmed', savedTiming: 'after', saved: true });
+  await put('2026-inland-union', 'b', { registrationType: 'individual', status: 'confirmed' });
+  await put('2026-jeju-english', 'c', { registrationType: 'individual', status: 'deposit' });
+  const none = await GCamps.onRequestGet({ env, request: await req('/api/portal/gospel-camps', null) });
+  assert.equal(none.status, 401);
+  const res = await (await GCamps.onRequestGet({ env, request: await req('/api/portal/gospel-camps', anna) })).json();
+  assert.deepEqual(res.camps.map(c => [c.id, c.month]), [['2026-inland-union', '2026-10'], ['2026-inland-english-junior', '2026-07']], '확정 캠퍼가 없는 캠프(제주)는 뺀다');
+  assert.equal(res.camps[1].salvations, 1);
+  assert.equal(res.canEditStaff, false);
+});
