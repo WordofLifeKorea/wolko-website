@@ -15,7 +15,12 @@
 
 .gs-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; }
 .gs-month { display: flex; align-items: center; gap: 8px; }
-.gs-month strong { min-width: 116px; text-align: center; color: var(--ink); font-size: 19px; letter-spacing: -.03em; }
+.gs-month strong, .gs-monthbtn { min-width: 116px; text-align: center; color: var(--ink); font-size: 19px; letter-spacing: -.03em; }
+.gs-monthpick-wrap { position: relative; display: inline-flex; }
+.gs-monthbtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 40px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; font-weight: 800; cursor: pointer; }
+.gs-monthbtn::after { content: '▾'; color: var(--muted); font-size: 12px; }
+.gs-monthbtn:hover, .gs-monthpick-wrap:hover .gs-monthbtn { background: #eaf6f7; }
+.gs-monthpick { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; }
 .gs-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .gs-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }

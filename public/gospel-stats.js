@@ -101,6 +101,10 @@
     $('langEnBtn').classList.toggle('is-active', lang === 'en');
     if (!data) return;
     $('monthLabel').textContent = t('monthLabel', data.month);
+    // 달 이름을 누르면 포탈 공용 달력이 열린다 — 아무 날짜나 고르면 그 날짜가 속한 달로 이동한다(허용 범위 밖이면 가장 가까운 달)
+    var pick = $('monthPick');
+    pick.dataset.calYears = data.earliest.slice(0, 4) + ',' + data.current.slice(0, 4);
+    pick.value = data.month + '-' + (data.month === data.current ? String(new Date().getDate()).padStart(2, '0') : '01');
     $('prevMonth').disabled = data.month <= data.earliest;
     $('nextMonth').disabled = data.month >= data.current;
     $('csvBtn').hidden = !data.me.canReview;
@@ -263,6 +267,14 @@
     if (next < data.earliest || next > data.current) return;
     load(next);
   }
+  $('monthLabel').addEventListener('click', function (e) { if (e.detail === 0) { $('monthPick').focus(); $('monthPick').click(); } });   // 키보드(Enter/Space)로 눌렀을 때
+  $('monthPick').addEventListener('change', function () {
+    var picked = String($('monthPick').value || '').slice(0, 7);
+    if (!/^\d{4}-\d{2}$/.test(picked)) return;
+    if (picked < data.earliest) picked = data.earliest;
+    if (picked > data.current) picked = data.current;
+    if (picked !== data.month) load(picked);
+  });
   $('prevMonth').addEventListener('click', function () { shift(-1); });
   $('nextMonth').addEventListener('click', function () { shift(1); });
   $('thisMonth').addEventListener('click', function () { load(data.current); });
