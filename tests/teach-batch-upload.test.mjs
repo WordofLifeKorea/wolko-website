@@ -3,7 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { runInNewContext, Script } from 'node:vm';
 
-const page = readFileSync(new URL('../src/pages/camp-resources/index.astro', import.meta.url), 'utf8');
+const page = readFileSync(new URL('../src/pages/portal/camp-resources/index.astro', import.meta.url), 'utf8');
 function setup(fetcher = async () => ({ ok:true, json:async () => ({ url:'/file.pdf', items:[] }) })) {
   const element = () => ({ value:'', disabled:false, textContent:'', hidden:false });
   const nodes = new Map();

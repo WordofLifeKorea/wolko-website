@@ -23,12 +23,12 @@ test('public layout and every standalone app load the sizing system', async () =
   const files = [
     'src/layouts/BaseLayout.astro',
     'src/pages/portal.astro',
-    'src/pages/resource.astro',
-    'src/pages/wolkoadmin.astro',
-    'src/pages/crs/index.astro',
-    'src/pages/campstaff/index.astro',
-    'src/pages/car/index.astro',
-    'src/pages/schedule/index.astro',
+    'src/pages/portal/resource.astro',
+    'src/pages/portal/wolkoadmin.astro',
+    'src/pages/portal/crs/index.astro',
+    'src/pages/portal/campstaff/index.astro',
+    'src/pages/portal/car/index.astro',
+    'src/pages/portal/schedule/index.astro',
     'src/pages/team-edit/[slug].astro',
   ];
 
@@ -82,6 +82,6 @@ test('입력칸·선택박스는 사이트 전체에서 34px 로 고정된다 (�
 });
 
 test('CRS 교회 추가 · 방문 추가 버튼은 옆 입력칸과 같은 34px 로 맞춘다', async () => {
-  const src = await read('src/pages/crs/index.astro');
+  const src = await read('src/pages/portal/crs/index.astro');
   assert.match(src, /:root:root \.btn-add, :root:root \.btn-add-visit \{ height:34px !important; min-height:0 !important;/);
 });

@@ -1,4 +1,4 @@
-/* TV 대시보드 공통 렌더러 — TV 화면(/tv/)과 포털 편집기(/campteam/tv/)가 같이 쓴다. (오래된 TV 브라우저를 위해 ES5 문법)
+/* TV 대시보드 공통 렌더러 — TV 화면(/tv/)과 포털 편집기(/portal/campteam/tv/)가 같이 쓴다. (오래된 TV 브라우저를 위해 ES5 문법)
    데이터는 /api/campteam/tv-data 의 응답과 같은 모양. 금액·이메일은 이 데이터에 없다. */
 (function (g) {
   var COLS = 16, ROWS = 9, CELL = 100 / COLS;

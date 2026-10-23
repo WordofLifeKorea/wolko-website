@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 
-const src = readFileSync(new URL('../src/pages/crs/index.astro', import.meta.url), 'utf8');
+const src = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
 const arr = name => JSON.parse(src.slice(src.indexOf(`const ${name} = [`) + `const ${name} = `.length, src.indexOf('];', src.indexOf(`const ${name} = [`)) + 1).replace(/\\u201c|\\u201d/g, '\\"'));
 const STEPS = arr('STEPS'), STEPS_KO = arr('STEPS_KO');
 const block = src.slice(src.indexOf('  const V1_STEPS = ['), src.indexOf('  // ── 지역 데이터 ──'));

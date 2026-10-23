@@ -22,9 +22,9 @@
   function ledgerHtml(l) {
     if (!l) return '';
     return '<div class="money" style="margin-bottom:12px"><div><label>' + esc(l.name) + ' · ' + esc(CT.t('ledgerIncome')) + '</label><strong style="color:var(--ok)">' + esc(CT.money(l.income, 'KRW')) + '</strong></div><div><label>' + esc(CT.t('ledgerExpense')) + '</label><strong style="color:var(--accent)">' + esc(CT.money(l.expense, 'KRW')) + '</strong></div><div><label>' + esc(CT.t('ledgerBalance')) + '</label><strong>' + esc(CT.money(l.balance, 'KRW')) + '</strong></div></div>' +
-      (l.pendingExpense ? '<div class="hintbox" style="margin-bottom:10px;color:var(--accent)">' + esc(CT.t('ledgerPending')) + ' ' + l.pendingExpense + esc(CT.t('ledgerPendingTail')) + ' <a href="/campteam/finance/">' + esc(CT.t('ledgerOpen')) + '</a></div>' : '') +
+      (l.pendingExpense ? '<div class="hintbox" style="margin-bottom:10px;color:var(--accent)">' + esc(CT.t('ledgerPending')) + ' ' + l.pendingExpense + esc(CT.t('ledgerPendingTail')) + ' <a href="/portal/campteam/finance/">' + esc(CT.t('ledgerOpen')) + '</a></div>' : '') +
       (l.lastReconcile && l.lastReconcile.diff !== 0 ? '<div class="hintbox" style="margin-bottom:10px">' + esc(CT.t('ledgerReconDiff')) + ' ' + esc(l.lastReconcile.asOfDate) + ': <b style="color:var(--accent)">' + esc(CT.money(l.lastReconcile.diff, 'KRW')) + '</b></div>' : '') +
-      (!l.pendingExpense ? '<a href="/campteam/finance/" class="btn sm" style="margin-bottom:10px">' + esc(CT.t('ledgerOpen')) + '</a>' : '');
+      (!l.pendingExpense ? '<a href="/portal/campteam/finance/" class="btn sm" style="margin-bottom:10px">' + esc(CT.t('ledgerOpen')) + '</a>' : '');
   }
   function body(id) {
     var d = data, s = d.stats, pct = s.total ? Math.round(s.completed / s.total * 100) : 0;
@@ -36,7 +36,7 @@
     if (id === 'camps') return d.camps.length ? d.camps.map(function (c) {
       var pc = c.taskTotal ? Math.round(c.taskDone / c.taskTotal * 100) : 0;
       var dates = c.startDate ? esc(CT.fmtDate(c.startDate)) + (c.endDate ? ' – ' + esc(CT.fmtDate(c.endDate)) : '') : esc(CT.t('dateTbd'));
-      return '<div class="camp"><b><a href="/campteam/space/?id=' + esc(c.id) + '" style="color:inherit;text-decoration:none">' + esc(CT.pick(c, 'name')) + '</a></b>' + testChip(c) +
+      return '<div class="camp"><b><a href="/portal/campteam/space/?id=' + esc(c.id) + '" style="color:inherit;text-decoration:none">' + esc(CT.pick(c, 'name')) + '</a></b>' + testChip(c) +
         '<div class="meta">' + esc(CT.pick({ nameKo: c.typeKo, nameEn: c.typeEn }, 'name')) + ' · ' + dates + ' · ' + esc(CT.t(c.status)) + (c.taskTotal == null ? '' : ' · ' + c.taskDone + '/' + c.taskTotal + ' ' + esc(CT.t('doneOf'))) + '</div>' +
         (c.taskTotal == null ? '' : '<div class="bar"><i style="width:' + pc + '%"></i></div>') + '</div>';
     }).join('') : empty();
@@ -53,7 +53,7 @@
       return '<div class="row"><div>' + esc(a.topic) + testChip(a) + '<small>' + esc(a.note || campName(a)) + '</small></div><span class="tag ' + cls + '">' + esc(CT.t(a.status)) + '</span></div>';
     }).join('') : empty();
     if (id === 'meetings') return d.meetings.length ? d.meetings.map(function (m) {
-      return '<div class="row"><div><a href="/campteam/meetings/?open=' + esc(m.id) + '">' + esc(m.title) + '</a>' + testChip(m) + '<small>' + esc(m.meetDate) + (m.meetTime ? ' ' + esc(m.meetTime) : '') + (m.purpose ? ' · ' + esc(m.purpose) : '') + '</small></div></div>';
+      return '<div class="row"><div><a href="/portal/campteam/meetings/?open=' + esc(m.id) + '">' + esc(m.title) + '</a>' + testChip(m) + '<small>' + esc(m.meetDate) + (m.meetTime ? ' ' + esc(m.meetTime) : '') + (m.purpose ? ' · ' + esc(m.purpose) : '') + '</small></div></div>';
     }).join('') : empty();
     if (id === 'files') return d.files.length ? d.files.map(function (f) {
       var k = ['pdf', 'xls', 'doc', 'img', 'ppt', 'audio'].indexOf(f.kind) >= 0 ? f.kind : '';
@@ -63,7 +63,7 @@
     if (id === 'budget') return ledgerHtml(d.ledger) + (d.budget
       ? (d.budget.summary.length ? d.budget.summary.map(function (b) {
           return '<div class="money" style="margin-bottom:10px"><div><label>' + esc(b.currency) + ' · ' + esc(CT.t('planned')) + '</label><strong>' + esc(CT.money(b.planned, b.currency)) + '</strong></div><div><label>' + esc(CT.t('forecast')) + '</label><strong>' + esc(CT.money(b.forecast, b.currency)) + '</strong></div><div><label>' + esc(CT.t('actual')) + '</label><strong>' + esc(CT.money(b.actual, b.currency)) + '</strong></div>' +
-            (b.remaining != null ? '<div><label>' + esc(CT.t('remaining')) + '</label><strong style="color:' + (b.remaining < 0 ? 'var(--accent)' : 'var(--blue)') + '">' + esc(CT.money(b.remaining, b.currency)) + '</strong></div>' : '') + '</div>'; }).join('') + '<a href="/campteam/finance/" class="btn sm">' + esc(CT.t('openBudget')) + '</a>' : '<div class="empty">' + esc(CT.t('none')) + '</div>')
+            (b.remaining != null ? '<div><label>' + esc(CT.t('remaining')) + '</label><strong style="color:' + (b.remaining < 0 ? 'var(--accent)' : 'var(--blue)') + '">' + esc(CT.money(b.remaining, b.currency)) + '</strong></div>' : '') + '</div>'; }).join('') + '<a href="/portal/campteam/finance/" class="btn sm">' + esc(CT.t('openBudget')) + '</a>' : '<div class="empty">' + esc(CT.t('none')) + '</div>')
       : (d.ledger ? '' : '<div class="locked">' + esc(CT.t('budgetLocked')) + '</div>'));
     return '';
   }
@@ -111,7 +111,7 @@
   var COLS = 12, ROW = 40, GAP = 12;
   var TITLES = { stats: ['statsTitle', 'wStatsD'], camps: ['activeCamps', 'wCampsD'], deadlines: ['upcoming', 'wDeadlinesD'], attention: ['attention', 'wAttentionD'], agenda: ['agenda', 'wAgendaD'], meetings: ['recentMeetings', 'wMeetingsD'], files: ['recentFiles', 'wFilesD'], budget: ['budget', 'wBudgetD'],
     notices: ['noticesTitle', 'wNoticesD'], links: ['linksTitle', 'wLinksD'], mytasks: ['myTasksTitle', 'wMyTasksD'], calendar: ['calTitle', 'wCalendarD'], dday: ['ddayTitle', 'wDdayD'], activity: ['activityTitle', 'wActivityD'], thisweek: ['thisweekTitle', 'wThisweekD'], overdue: ['overdueTitle', 'wOverdueD'], decisions: ['decisionsTitle', 'wDecisionsD'], status: ['statusTitle', 'wStatusD'] };
-  var LINK = { overdue: '/campteam/tasks/', decisions: '/campteam/meetings/', status: '/campteam/tasks/', thisweek: '/campteam/tasks/', camps: '/campteam/camps/', deadlines: '/campteam/tasks/', attention: '/campteam/tasks/', agenda: '/campteam/meetings/', meetings: '/campteam/meetings/', files: '/campteam/files/', mytasks: '/campteam/tasks/' };
+  var LINK = { overdue: '/portal/campteam/tasks/', decisions: '/portal/campteam/meetings/', status: '/portal/campteam/tasks/', thisweek: '/portal/campteam/tasks/', camps: '/portal/campteam/camps/', deadlines: '/portal/campteam/tasks/', attention: '/portal/campteam/tasks/', agenda: '/portal/campteam/meetings/', meetings: '/portal/campteam/meetings/', files: '/portal/campteam/files/', mytasks: '/portal/campteam/tasks/' };
   var NOCARD = { stats: 1 };
 
   var L = null, editing = false, scope = 'mine', work = null, base = '', calMonth = null, calCache = {}, auditCache = null;
@@ -139,12 +139,12 @@
     if (!c || !c.startDate) return sel + '<div class="dday"><div class="dd-n">—</div><div class="dd-t">' + esc(c ? CT.pick(c, 'name') : CT.t('ddayNone')) + '</div><div class="dd-s">' + esc(c ? CT.t('dateTbdLong') : '') + '</div></div>';
     var diff = daysBetween(d.today, c.startDate), end = c.endDate || c.startDate, live = d.today >= c.startDate && d.today <= end, past = d.today > end;
     var n = live ? CT.t('ddayLive') : diff === 0 ? CT.t('ddayDay') : diff > 0 ? 'D-' + diff : 'D+' + (-diff);
-    return sel + '<div class="dday' + (past ? ' past' : live ? ' live' : '') + '"><div class="dd-n">' + esc(n) + '</div><div class="dd-t"><a href="/campteam/space/?id=' + esc(c.id) + '">' + esc(CT.pick(c, 'name')) + '</a></div><div class="dd-s">' + esc(CT.fmtDate(c.startDate)) + (c.endDate ? ' – ' + esc(CT.fmtDate(c.endDate)) : '') + '</div></div>';
+    return sel + '<div class="dday' + (past ? ' past' : live ? ' live' : '') + '"><div class="dd-n">' + esc(n) + '</div><div class="dd-t"><a href="/portal/campteam/space/?id=' + esc(c.id) + '">' + esc(CT.pick(c, 'name')) + '</a></div><div class="dd-s">' + esc(CT.fmtDate(c.startDate)) + (c.endDate ? ' – ' + esc(CT.fmtDate(c.endDate)) : '') + '</div></div>';
   }
   function linksHtml() {
-    var p = data.user.perms, L2 = [['resources', '/campteam/resources/', 'linkResources', '#ec5fa0'], ['files', '/campteam/files/', 'linkFiles', '#f0a020'], ['tasks', '/campteam/tasks/', 'linkTasks', '#22b573'], ['calendar', '/campteam/calendar/', 'linkCalendar', '#3bb3a6'], ['meetings', '/campteam/meetings/', 'linkMeetings', '#8b6cf0'], ['camps', '/campteam/camps/', 'linkCamps', '#9bbf1f'], ['tv', '/campteam/tv/', 'linkTv', '#14b8c4']];
-    if (p.moneyRead) L2.push(['budget', '/campteam/budget/', 'linkBudget', '#d4a373']);
-    L2.push(['search', '/campteam/search/', 'linkSearch', '#3b8ff0']);
+    var p = data.user.perms, L2 = [['resources', '/portal/campteam/resources/', 'linkResources', '#ec5fa0'], ['files', '/portal/campteam/files/', 'linkFiles', '#f0a020'], ['tasks', '/portal/campteam/tasks/', 'linkTasks', '#22b573'], ['calendar', '/portal/campteam/calendar/', 'linkCalendar', '#3bb3a6'], ['meetings', '/portal/campteam/meetings/', 'linkMeetings', '#8b6cf0'], ['camps', '/portal/campteam/camps/', 'linkCamps', '#9bbf1f'], ['tv', '/portal/campteam/tv/', 'linkTv', '#14b8c4']];
+    if (p.moneyRead) L2.push(['budget', '/portal/campteam/budget/', 'linkBudget', '#d4a373']);
+    L2.push(['search', '/portal/campteam/search/', 'linkSearch', '#3b8ff0']);
     var AREA = { resources: 'files', files: 'files', tasks: 'tasks', calendar: 'tasks', meetings: 'meetings', camps: 'camps', tv: 'camps' }; // 볼 수 없는 영역의 바로가기는 숨긴다
     L2 = L2.filter(function (l) { return !AREA[l[0]] || CT.can(AREA[l[0]], 'view'); });
     return '<div class="quick">' + L2.map(function (l) { return '<a href="' + l[1] + '" style="--c:' + l[3] + '"><span class="qi">' + ico(l[0], 16) + '</span><span>' + esc(CT.t(l[2])) + '</span></a>'; }).join('') + '</div>';

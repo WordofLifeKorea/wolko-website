@@ -1,0 +1,40 @@
+---
+import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="TV 대시보드" active="tv">
+  <div class="top"><div><div class="h1row"><h1 data-t="tvTitle"></h1><span class="qh" data-h="pageTv"></span></div><div class="sub" data-t="tvSub"></div></div></div>
+  <div id="adminPart" hidden>
+    <section class="card" style="margin-bottom:14px">
+      <h2 data-t="tvLink"></h2>
+      <div class="hintbox" data-t="tvLinkHelp" style="margin-bottom:10px"></div>
+      <div style="display:flex;align-items:center;gap:6px"><div class="urlbox" id="tvUrl" style="flex:1;min-width:0">—</div><span class="qh" data-h="tvKey"></span></div>
+      <div class="actions" style="margin-top:10px"><button class="btn" id="tvCopy" data-t="tvCopy"></button><a class="btn" id="tvOpen" target="_blank" rel="noopener" data-t="tvOpen"></a><button class="btn danger" id="tvRotate" data-t="tvRotate"></button></div>
+    </section>
+    <section class="card" style="margin-bottom:14px">
+      <div class="tabs" id="pageTabs" style="margin-bottom:10px"></div>
+      <div class="actions" style="margin-bottom:10px;position:relative"><button class="btn pri" id="tvAdd" data-t="tvAdd"></button><div class="menu" id="tvMenu"></div>
+        <button class="btn" id="tvPreview" data-t="tvPreview"></button><button class="btn pri" id="tvSave" data-t="tvSave"></button><button class="btn" id="tvRevert" data-t="tvRevert"></button><span class="meta" id="tvDirty"></span></div>
+      <div class="tvgrid">
+        <div class="tvstage"><div class="tvedit editing" id="tvedit"><div class="tvc tv-dark" id="tvcanvas"></div></div></div>
+        <aside id="tvInspector"></aside>
+      </div>
+    </section>
+    <section class="card" style="margin-bottom:14px">
+      <h2 data-t="tvSettings"></h2>
+      <form id="tvSetForm" class="form" style="max-width:640px"><div class="two"><label><span data-t="sTheme"></span><select name="theme"></select></label><label><span data-t="sLang"></span><select name="language"></select></label></div>
+        <div class="two"><label><span data-t="sRefresh"></span><input name="refreshSec" type="number" min="30" max="600"></label><label><span data-t="sReload"></span><input name="reloadHours" type="number" min="1" max="48"></label></div>
+        <div class="two"><label><span data-t="sWeather"></span><input name="weatherLabel" maxlength="40"></label><div class="two"><label>lat<input name="weatherLat"></label><label>lon<input name="weatherLon"></label></div></div>
+        <div class="err" id="tvSetErr" hidden></div><div><button class="btn pri" type="submit" data-t="save"></button></div></form>
+    </section>
+  </div>
+  <section class="card">
+    <h2><span data-t="ntTitle"></span><button class="btn sm pri" id="ntAdd" hidden data-t="ntAdd"></button></h2>
+    <div class="hintbox" data-t="ntHelp" style="margin-bottom:10px"></div><div id="ntList"></div>
+  </section>
+  <dialog id="dlg" class="wide">
+    <h3 id="dlgTitle"></h3>
+    <form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form>
+  </dialog>
+  <script is:inline slot="scripts" src="/portal/campteam/tv-core.js?v=1"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/tv-editor.js?v=3"></script>
+</CampTeamLayout>

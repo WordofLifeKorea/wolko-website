@@ -30,7 +30,7 @@ async function roster(env) {
   for (const e of FIXED_ADMIN_EMAILS) if (!seen.has(e)) out.push({ email: e, name: '' });
   return out;
 }
-const safeLink = (v) => { const t = String(v || '').trim(); return /^\/campteam\/[A-Za-z0-9/_?=&%.-]{0,200}$/.test(t) ? t : ''; };
+const safeLink = (v) => { const t = String(v || '').trim(); const m = /^(?:\/portal)?(\/campteam\/[A-Za-z0-9/_?=&%.-]{0,200})$/.exec(t); return m ? '/portal' + m[1] : ''; };
 
 async function validateAnnounce(env, b, s, base = {}) {
   const has = (k) => k in b;

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 
-const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../public/expense.css', import.meta.url), 'utf8');
 
 test('read-only category shows code first and does not duplicate the submitted withdrawal account', () => {

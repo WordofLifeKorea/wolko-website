@@ -1,0 +1,1341 @@
+---
+// 차량 스케줄 페이지 — 비공개 주소, 관리자 비밀번호로 보호됨.
+// No BaseLayout; standalone page (wolkoadmin/campstaff와 동일한 패턴)
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>차량 스케줄 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/car.css?v=14">
+  <link rel="stylesheet" href="/wolko-auth.css?v=1">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/wolko-rail.css?v=18">
+  <link rel="stylesheet" href="/wolko-header.css?v=14">
+  <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
+  <script src="/wolko-datepicker.js?v=4" defer></script>
+  <link rel="stylesheet" href="/wolko-ui.css?v=6">
+  <link rel="stylesheet" href="/wolko-layout.css?v=15">
+  <script src="/wolko-rail.js?v=31" defer></script>
+  <meta name="theme-color" content="#004f68">
+  <script is:inline src="/wolko-session.js?v=2"></script>
+</head>
+<body>
+
+  <!-- ── 포탈 로그인 안내 화면 ── 이 페이지는 별도 비밀번호 없이 포탈 세션(관리자/마스터)만으로 접속한다 -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/images/WOLKO Circle.png" alt="WOLKO">
+        <div class="login-logo-text">
+          <span class="login-logo-name">WOLKO 월코</span>
+          <span class="login-logo-sub">Word of Life Korea</span>
+        </div>
+      </div>
+      <p class="login-title" data-t="hubLoginTitle">포탈 로그인이 필요합니다</p>
+      <p class="login-description" data-t="hubLoginDesc">차량 스케줄은 WOLKO 포탈 계정으로 접속합니다. 포탈에 로그인한 뒤 차량 카드를 눌러 다시 접속해 주세요.</p>
+      <a class="login-btn" href="/portal" style="display:block;text-align:center;text-decoration:none;" data-t="goToHubBtn">포탈로 이동</a>
+    </div>
+  </div>
+
+  <!-- ── HEADER ── -->
+  <header class="car-header">
+    <a class="car-header-logo" href="/portal" title="WOLKO 포탈로 돌아가기">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <span data-t="pageTitle">차량 스케줄</span>
+    </a>
+    <div class="car-header-right">
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" onclick="setCarLang('ko')" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" onclick="setCarLang('en')" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
+      <button class="btn-logout" onclick="doLogout()"><span data-t="logout">로그아웃</span></button>
+    </div>
+  </header>
+
+  <div class="car-wrap">
+    <div class="car-view-tabs car-view-tabs-4">
+      <a class="car-view-tab" href="/portal/car-drive/">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span data-t="viewDrive">운행 스케줄</span>
+      </a>
+      <a class="car-view-tab" href="/portal/car-log/">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
+        <span data-t="viewLog">사용 일지</span>
+      </a>
+      <button class="car-view-tab is-active" id="viewTabReservations" onclick="setView('reservations')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span data-t="viewReservations">예약현황</span>
+      </button>
+      <button class="car-view-tab" id="viewTabMaintenance" onclick="setView('maintenance')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span data-t="viewMaintenance">정비 관리</span>
+      </button>
+    </div>
+
+    <div class="car-toolbar">
+      <div class="car-tabs" id="carTabs"></div>
+      <div class="wl-page-actions">
+        <button class="car-fab" onclick="openFab()">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span id="fabLabel">새 예약</span>
+          </button>
+      </div>
+    </div>
+
+    <div id="reservationsView" class="res-layout">
+        <div class="car-calendar">
+          <div class="cal-header">
+            <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(-1)" aria-label="prev">‹</button>
+            <button type="button" class="cal-month-label" id="calMonthLabel" onclick="toggleMonthPicker()"></button>
+            <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(1)" aria-label="next">›</button>
+            <button type="button" class="cal-today-btn" onclick="goToCurrentMonth()" data-t="today">오늘</button>
+          </div>
+          <div class="cal-month-picker hidden" id="monthPicker">
+            <select id="pickerMonth" aria-label="month"></select>
+            <input type="number" id="pickerYear" aria-label="year" min="2000" max="2100">
+            <button type="button" onclick="jumpToPickedMonth()" data-t="jumpBtn">이동</button>
+          </div>
+          <div id="calGrid"></div>
+        </div>
+      <div class="car-day-panel">
+        <div class="car-selected-date-bar hidden" id="selectedDateBar">
+          <span id="selectedDateLabel"></span>
+          <button type="button" onclick="clearSelectedDate()" data-t="clearDate">닫기</button>
+        </div>
+
+        <div id="agendaContainer"></div>
+      </div>
+    </div>
+
+    <div id="maintenanceView" class="hidden">
+      <div class="car-maint-banner hidden" id="maintBanner"></div>
+      <div id="maintListContainer"></div>
+    </div>
+  </div>
+
+  <!-- ── RESERVATION MODAL ── -->
+  <div class="car-modal-overlay hidden" id="carModalOverlay">
+    <div class="car-modal">
+      <div class="car-modal-head">
+        <p class="car-modal-title" id="carModalTitle" data-t="newReservation">새 예약</p>
+        <button class="car-modal-close" onclick="closeModal()" aria-label="닫기">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 1.5l12 12M13.5 1.5l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <p class="car-modal-error" id="carModalError"></p>
+
+      <form id="carForm" onsubmit="submitForm(event)">
+        <div class="car-field">
+          <label data-t="fieldVehicle">차량</label>
+          <select id="carVehicle"></select>
+        </div>
+
+        <div class="car-field-row">
+          <div class="car-field">
+            <label data-t="fieldStartDate">시작일</label>
+            <input type="date" id="carStartDate" required>
+          </div>
+          <div class="car-field">
+            <label data-t="fieldStartTime">시작 시간</label>
+            <input type="time" id="carStartTime" required>
+          </div>
+        </div>
+
+        <div class="car-field-row">
+          <div class="car-field">
+            <label data-t="fieldEndDate">종료일</label>
+            <input type="date" id="carEndDate" required>
+          </div>
+          <div class="car-field">
+            <label data-t="fieldEndTime">종료 시간</label>
+            <input type="time" id="carEndTime" required>
+          </div>
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldReserver">예약자 이름</label>
+          <input type="text" id="carReserver" maxlength="60" required>
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldPhone">연락처 (선택)</label>
+          <input type="tel" id="carPhone" maxlength="30">
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldPurpose">목적 / 행선지</label>
+          <input type="text" id="carPurpose" maxlength="200" required>
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldNotes">메모 (선택)</label>
+          <textarea id="carNotes" maxlength="1000"></textarea>
+        </div>
+
+        <div class="car-field-row">
+          <div class="car-field">
+            <label data-t="fieldActualHours">실제 운행 시간 (시간, 선택)</label>
+            <input type="number" id="carActualHours" min="0" max="1000" step="0.5" inputmode="decimal">
+          </div>
+          <div class="car-field">
+            <label data-t="fieldActualKm">실제 운행 거리 (km, 선택)</label>
+            <input type="number" id="carActualKm" min="0" max="100000" step="1" inputmode="numeric">
+          </div>
+        </div>
+        <p class="car-field-hint" data-t="actualUsageHint">운행 후 대략적으로 입력해 주세요.</p>
+
+        <div class="car-modal-foot">
+          <button type="button" class="car-btn car-btn-secondary" onclick="closeModal()" data-t="cancel">취소</button>
+          <button type="submit" class="car-btn car-btn-primary" id="carSaveBtn" data-t="save">예약하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── MAINTENANCE MODAL ── -->
+  <div class="car-modal-overlay hidden" id="carMaintModalOverlay">
+    <div class="car-modal">
+      <div class="car-modal-head">
+        <p class="car-modal-title" id="carMaintModalTitle" data-t="newMaintenance">정비 기록 추가</p>
+        <button class="car-modal-close" onclick="closeMaintModal()" aria-label="닫기">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 1.5l12 12M13.5 1.5l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <p class="car-modal-error" id="carMaintModalError"></p>
+
+      <form id="carMaintForm" onsubmit="submitMaintForm(event)">
+        <div class="car-field">
+          <label data-t="fieldVehicle">차량</label>
+          <select id="carMaintVehicle"></select>
+        </div>
+
+        <div class="car-field-row">
+          <div class="car-field">
+            <label data-t="fieldMaintDate">정비 날짜</label>
+            <input type="date" id="carMaintDate" required>
+          </div>
+          <div class="car-field">
+            <label data-t="fieldMaintKm">교체 당시 키로수 (km)</label>
+            <input type="number" id="carMaintKm" min="0" max="2000000" step="1" required inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldServiceType">정비 종류</label>
+          <select id="carMaintType"></select>
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldTechnician">담당자 이름</label>
+          <input type="text" id="carMaintTech" maxlength="60" required>
+        </div>
+
+        <div class="car-field">
+          <label data-t="fieldMaintNotes">메모 (선택)</label>
+          <textarea id="carMaintNotes" maxlength="1000"></textarea>
+        </div>
+
+        <div class="car-modal-foot">
+          <button type="button" class="car-btn car-btn-secondary" onclick="closeMaintModal()" data-t="cancel">취소</button>
+          <button type="submit" class="car-btn car-btn-primary" id="carMaintSaveBtn" data-t="saveRecord">저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── ADD MISSIONARY VEHICLE ── -->
+  <div class="car-modal-overlay hidden" id="carVehicleModalOverlay">
+    <div class="car-modal">
+      <div class="car-modal-head">
+        <p class="car-modal-title" data-t="addVehicleTitle">선교사 차량 추가</p>
+        <button class="car-modal-close" onclick="closeVehicleModal()" aria-label="닫기">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 1.5l12 12M13.5 1.5l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <p class="car-modal-error" id="carVehicleModalError"></p>
+
+      <form id="carVehicleForm" onsubmit="submitVehicleForm(event)">
+        <div class="car-field">
+          <label data-t="fieldMissionaryName">선교사님 이름</label>
+          <input type="text" id="carVehicleName" maxlength="40" required placeholder="예: 김선교사">
+          <p class="car-field-hint" data-t="missionaryVehicleHint">"○○○ 선교사 차량"으로 목록에 표시됩니다.</p>
+        </div>
+
+        <div class="car-modal-foot">
+          <button type="button" class="car-btn car-btn-secondary" onclick="closeVehicleModal()" data-t="cancel">취소</button>
+          <button type="submit" class="car-btn car-btn-primary" id="carVehicleSaveBtn" data-t="addBtn">추가</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── DELETE CONFIRM ── -->
+  <div class="car-confirm-overlay hidden" id="confirmOverlay">
+    <div class="car-confirm-card">
+      <p id="confirmText" data-t="deleteConfirm">이 예약을 삭제할까요?</p>
+      <div class="car-confirm-actions">
+        <button class="car-btn car-btn-secondary" onclick="closeConfirm()" data-t="cancel">취소</button>
+        <button class="car-btn car-btn-primary" style="background:var(--red)" onclick="confirmDelete()" data-t="deleteConfirmYes">삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="car-toast" id="carToast"></div>
+
+  <script is:inline>
+    const BUILTIN_VEHICLES = [
+      { id: 'silver-van', color: 'var(--van)', label: 'Silver Carnival' },
+      { id: 'santa-fe',   color: 'var(--santafe)', label: 'Santa Fe' },
+    ];
+    // 메인랜드 선교사 차량 — 인원이 계속 늘거나 바뀌어서 하드코딩 대신 서버(KV)에서
+    // 받아온 목록을 빌트인 차량 뒤에 이어 붙인다. loadVehicles()가 채워 넣는다.
+    let VEHICLES = [...BUILTIN_VEHICLES];
+    const MISSIONARY_COLORS = ['#c2410c', '#0f766e', '#7c3aed', '#be185d', '#4d7c0f', '#1d4ed8'];
+    function missionaryColor(index) { return MISSIONARY_COLORS[index % MISSIONARY_COLORS.length]; }
+    // 라벨은 이름 + 언어별 접미/접두를 붙여 조합 — 언어 토글 시 refreshMissionaryLabels()로 다시 계산한다.
+    function missionaryVehicleLabel(name) { return carLang === 'en' ? `${name}'s Vehicle` : `${name} 선교사 차량`; }
+    function refreshMissionaryLabels() {
+      VEHICLES.forEach(v => { if (v.isMissionary) v.label = missionaryVehicleLabel(v.rawName); });
+    }
+
+    const SERVICE_TYPE_LABELS = {
+      oil:        { ko: '엔진오일 교체', en: 'Engine Oil Change' },
+      tire:       { ko: '타이어 교체',   en: 'Tire Change' },
+      battery:    { ko: '배터리 교체',   en: 'Battery Change' },
+      inspection: { ko: '정기 점검',     en: 'Regular Inspection' },
+      other:      { ko: '기타',          en: 'Other' },
+    };
+
+    const SERVICE_TYPE_ICON = {
+      oil:        { icon: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>', color: 'var(--blue-lt)' },
+      tire:       { icon: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>', color: '#3a4a52' },
+      battery:    { icon: '<rect x="3" y="8" width="15" height="8" rx="1.5"/><path d="M20 10.5v3"/><path d="m12 9-2.5 3.5h3L10 16"/>', color: 'var(--orange)' },
+      inspection: { icon: '<path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3z"/><path d="m9 12 2 2 4-4.5"/>', color: 'var(--green)' },
+      other:      { icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>', color: 'var(--mid)' },
+    };
+    function serviceTypeMeta(type) { return SERVICE_TYPE_ICON[type] || SERVICE_TYPE_ICON.other; }
+
+    const CAR_T = {
+      ko: {
+        pageTitle: '차량 스케줄',
+        subtitle: 'WOLKO 차량 예약 현황',
+        hubLoginTitle: '포탈 로그인이 필요합니다',
+        hubLoginDesc: '차량 스케줄은 WOLKO 포탈 계정으로 접속합니다. 포탈에 로그인한 뒤 차량 카드를 눌러 다시 접속해 주세요.',
+        goToHubBtn: '포탈로 이동',
+        logout: '로그아웃',
+        tabAll: '전체',
+        newReservation: '새 예약',
+        editReservation: '예약 수정',
+        clearDate: '닫기',
+        selectDayHint: '날짜를 클릭하면 그날의 예약이 여기에 표시됩니다.',
+        emptyDay: '이 날짜에는 예약이 없습니다.',
+        jumpBtn: '이동',
+        today: '오늘',
+        tomorrow: '내일',
+        fieldVehicle: '차량',
+        fieldStartDate: '시작일',
+        fieldStartTime: '시작 시간',
+        fieldEndDate: '종료일',
+        fieldEndTime: '종료 시간',
+        fieldReserver: '예약자 이름',
+        fieldPhone: '연락처 (선택)',
+        fieldPurpose: '목적 / 행선지',
+        fieldNotes: '메모 (선택)',
+        save: '예약하기',
+        saveEdit: '수정하기',
+        cancel: '취소',
+        deleteConfirm: '이 예약을 삭제할까요?',
+        deleteConfirmYes: '삭제',
+        savedToast: '예약이 저장되었습니다.',
+        deletedToast: '예약이 삭제되었습니다.',
+        addMissionaryVehicle: '선교사 차량 추가',
+        removeVehicle: '차량 삭제',
+        addVehicleTitle: '선교사 차량 추가',
+        fieldMissionaryName: '선교사님 이름',
+        missionaryVehicleHint: '"○○○ 선교사 차량"으로 목록에 표시됩니다.',
+        addBtn: '추가',
+        missionaryNameRequired: '선교사님 이름을 입력해 주세요.',
+        vehicleAddedToast: '차량이 추가되었습니다.',
+        vehicleDeletedToast: '차량이 삭제되었습니다.',
+        vehicleDeleteConfirm: '이 차량을 목록에서 삭제할까요? 기존 예약/정비 기록은 남아있습니다.',
+        updatedToast: '예약이 수정되었습니다.',
+        conflictPrefix: '이미 예약됨: ',
+        errGeneric: '처리 중 오류가 발생했습니다.',
+        sessionExpired: '세션이 만료되었습니다. 다시 로그인해 주세요.',
+        viewLog: '사용 일지',
+        viewDrive: '운행 스케줄',
+        viewReservations: '예약현황',
+        viewMaintenance: '정비 관리',
+        fieldActualHours: '실제 운행 시간 (시간, 선택)',
+        fieldActualKm: '실제 운행 거리 (km, 선택)',
+        actualUsageHint: '운행 후 대략적으로 입력해 주세요.',
+        newMaintenance: '정비 기록 추가',
+        editMaintenance: '정비 기록 수정',
+        fieldMaintDate: '정비 날짜',
+        fieldMaintKm: '교체 당시 키로수 (km)',
+        fieldServiceType: '정비 종류',
+        fieldTechnician: '담당자 이름',
+        fieldMaintNotes: '메모 (선택)',
+        saveRecord: '저장',
+        emptyMaintenance: '정비 기록이 없습니다.',
+        lastOilChange: '최근 엔진오일 교체',
+        noOilRecord: '엔진오일 교체 기록이 없습니다.',
+        maintSavedToast: '정비 기록이 저장되었습니다.',
+        maintUpdatedToast: '정비 기록이 수정되었습니다.',
+        maintDeletedToast: '정비 기록이 삭제되었습니다.',
+      },
+      en: {
+        pageTitle: 'Vehicle Schedule',
+        subtitle: 'WOLKO Vehicle Reservations',
+        hubLoginTitle: 'Portal login required',
+        hubLoginDesc: 'The vehicle calendar now signs in with your WOLKO Portal account. Log in at the Portal, then open the Vehicle card again.',
+        goToHubBtn: 'Go to Portal',
+        logout: 'Log out',
+        tabAll: 'All',
+        newReservation: 'New Reservation',
+        editReservation: 'Edit Reservation',
+        clearDate: 'Close',
+        selectDayHint: "Click a date to see that day's reservations here.",
+        emptyDay: 'No reservations on this date.',
+        jumpBtn: 'Go',
+        today: 'Today',
+        tomorrow: 'Tomorrow',
+        fieldVehicle: 'Vehicle',
+        fieldStartDate: 'Start date',
+        fieldStartTime: 'Start time',
+        fieldEndDate: 'End date',
+        fieldEndTime: 'End time',
+        fieldReserver: 'Reserved by',
+        fieldPhone: 'Phone (optional)',
+        fieldPurpose: 'Purpose / Destination',
+        fieldNotes: 'Notes (optional)',
+        save: 'Reserve',
+        saveEdit: 'Save changes',
+        cancel: 'Cancel',
+        deleteConfirm: 'Delete this reservation?',
+        deleteConfirmYes: 'Delete',
+        savedToast: 'Reservation saved.',
+        deletedToast: 'Reservation deleted.',
+        addMissionaryVehicle: 'Add Missionary Vehicle',
+        removeVehicle: 'Remove vehicle',
+        addVehicleTitle: 'Add Missionary Vehicle',
+        fieldMissionaryName: "Missionary's name",
+        missionaryVehicleHint: 'Will be shown in the list as "○○○\'s Vehicle."',
+        addBtn: 'Add',
+        missionaryNameRequired: "Please enter the missionary's name.",
+        vehicleAddedToast: 'Vehicle added.',
+        vehicleDeletedToast: 'Vehicle removed.',
+        vehicleDeleteConfirm: 'Remove this vehicle from the list? Existing reservations and maintenance records are kept.',
+        updatedToast: 'Reservation updated.',
+        conflictPrefix: 'Already booked: ',
+        errGeneric: 'Something went wrong.',
+        sessionExpired: 'Session expired. Please log in again.',
+        viewLog: 'Usage Log',
+        viewDrive: 'Driving',
+        viewReservations: 'Reservations',
+        viewMaintenance: 'Maintenance',
+        fieldActualHours: 'Actual drive time (hrs, optional)',
+        fieldActualKm: 'Actual distance (km, optional)',
+        actualUsageHint: 'Fill in roughly after the trip.',
+        newMaintenance: 'Add Maintenance Record',
+        editMaintenance: 'Edit Maintenance Record',
+        fieldMaintDate: 'Service date',
+        fieldMaintKm: 'Mileage at service (km)',
+        fieldServiceType: 'Service type',
+        fieldTechnician: 'Technician',
+        fieldMaintNotes: 'Notes (optional)',
+        saveRecord: 'Save',
+        emptyMaintenance: 'No maintenance records.',
+        lastOilChange: 'Last oil change',
+        noOilRecord: 'No oil change record yet.',
+        maintSavedToast: 'Maintenance record saved.',
+        maintUpdatedToast: 'Maintenance record updated.',
+        maintDeletedToast: 'Maintenance record deleted.',
+      },
+    };
+
+    let carLang = localStorage.getItem('wolkoCarLang') || 'ko';
+    let reservations = [];
+    let maintenanceRecords = [];
+    let activeVehicle = 'all';
+    let currentView = 'reservations';
+    let calendarMonth = (() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d; })();
+    let selectedDate = todayStr(); // 기본으로 오늘 날짜가 선택된 채로 시작
+    let editingId = null;
+    let editingMaintId = null;
+    let pendingDeleteId = null;
+    let pendingDeleteType = 'reservation';
+
+    const $ = id => document.getElementById(id);
+    function t(key) { return CAR_T[carLang]?.[key] ?? CAR_T.ko[key] ?? key; }
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+    function vehicleById(id) { return VEHICLES.find(v => v.id === id); }
+
+    function authHeaders() {
+      return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (sessionStorage.getItem('wolko-hub-token') || '') };
+    }
+
+    /* ── 포탈 세션 토큰 검증(portal.astro/schedule의 isHubTokenValid와 동일한 형식) ── */
+    function parseHubToken(token) {
+      try {
+        const decoded = atob(token);
+        const lastColon = decoded.lastIndexOf(':');
+        const data = decoded.slice(0, lastColon);
+        const parts = data.split(':');
+        if (parts[0] !== 'wolko-hub' || parts.length !== 4) return null;
+        const expires = parseInt(parts[3], 10);
+        if (!expires || Date.now() >= expires) return null;
+        return { email: parts[1], role: parts[2], expires };
+      } catch (e) {
+        return null;
+      }
+    }
+    function goToHub() {
+      try { sessionStorage.removeItem('wolko-hub-token'); } catch (e) {}
+      location.href = '/portal';
+    }
+
+    function showToast(msg, isError, durationMs) {
+      const el = $('carToast');
+      el.textContent = msg;
+      el.classList.toggle('is-error', !!isError);
+      el.classList.add('is-visible');
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => el.classList.remove('is-visible'), durationMs || 2600);
+    }
+    function calendarSyncSuffix(calendarSync) {
+      if (!calendarSync || calendarSync.ok || calendarSync.skipped) return '';
+      return carLang === 'en'
+        ? ` (Calendar sync failed: ${calendarSync.error})`
+        : ` (캘린더 동기화 실패: ${calendarSync.error})`;
+    }
+
+    /* ── LANG ── */
+    function applyLangToDOM() {
+      document.documentElement.lang = carLang === 'en' ? 'en' : 'ko';
+      document.title = carLang === 'en' ? 'Vehicle Schedule — WOLKO' : '차량 스케줄 — WOLKO';
+      document.querySelectorAll('[data-t]').forEach(el => {
+        const key = el.getAttribute('data-t');
+        el.textContent = t(key);
+      });
+      $('langKoBtn')?.classList.toggle('is-active', carLang === 'ko');
+      $('langEnBtn')?.classList.toggle('is-active', carLang === 'en');
+      populateMonthPicker();
+      refreshMissionaryLabels();
+      renderTabs();
+      renderVehicleSelect();
+      renderMaintVehicleSelect();
+      renderServiceTypeSelect();
+      $('fabLabel').textContent = currentView === 'reservations' ? t('newReservation') : t('newMaintenance');
+      if (currentView === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
+    }
+    function setCarLang(lang) {
+      if (carLang === lang) return;
+      carLang = lang;
+      localStorage.setItem('wolkoCarLang', carLang);
+      applyLangToDOM();
+    }
+
+    /* ── LOGIN ── */
+    function doLogout() {
+      goToHub();
+    }
+
+    function handleAuthError(res) {
+      if (res.status === 401) {
+        showToast(t('sessionExpired'), true);
+        setTimeout(goToHub, 1200);
+        return true;
+      }
+      return false;
+    }
+
+    /* ── DATA LOAD ── */
+    async function loadReservations() {
+      try {
+        const res = await fetch('/api/car/reservations', { headers: authHeaders() });
+        if (handleAuthError(res)) return;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('errGeneric'));
+        reservations = data.reservations || [];
+        if (currentView === 'reservations') { renderCalendar(); renderAgenda(); }
+      } catch (e) {
+        showToast(e.message || t('errGeneric'), true);
+      }
+    }
+    async function loadMaintenance() {
+      try {
+        const res = await fetch('/api/car/maintenance', { headers: authHeaders() });
+        if (handleAuthError(res)) return;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('errGeneric'));
+        maintenanceRecords = data.records || [];
+        if (currentView === 'maintenance') renderMaintenance();
+      } catch (e) {
+        showToast(e.message || t('errGeneric'), true);
+      }
+    }
+    async function loadAll() {
+      await loadVehicles();
+      await Promise.all([loadReservations(), loadMaintenance()]);
+    }
+
+    async function loadVehicles() {
+      try {
+        const res = await fetch('/api/car/vehicles', { headers: authHeaders() });
+        if (handleAuthError(res)) return;
+        if (!res.ok) return;
+        const data = await res.json();
+        const missionary = (data.vehicles || []).map((v, i) => ({ id: v.id, rawName: v.name, label: missionaryVehicleLabel(v.name), color: missionaryColor(i), isMissionary: true }));
+        VEHICLES = [...BUILTIN_VEHICLES, ...missionary];
+        renderTabs();
+        renderVehicleSelect();
+        renderMaintVehicleSelect();
+      } catch (e) {
+        // 실패해도 빌트인 차량 2대로는 계속 동작
+      }
+    }
+
+    /* ── VIEW SWITCH ── */
+    function setView(view) {
+      currentView = view;
+      $('viewTabReservations').classList.toggle('is-active', view === 'reservations');
+      $('viewTabMaintenance').classList.toggle('is-active', view === 'maintenance');
+      $('reservationsView').classList.toggle('hidden', view !== 'reservations');
+      $('maintenanceView').classList.toggle('hidden', view !== 'maintenance');
+      $('fabLabel').textContent = view === 'reservations' ? t('newReservation') : t('newMaintenance');
+      if (view === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
+    }
+    function openFab() {
+      if (currentView === 'reservations') openModal(); else openMaintModal();
+    }
+
+    /* ── TABS ── */
+    function renderTabs() {
+      const wrap = $('carTabs');
+      const tabs = [{ id: 'all', color: null, label: t('tabAll') }, ...VEHICLES];
+      wrap.innerHTML = tabs.map(v => `
+        <button class="car-tab${activeVehicle === v.id ? ' is-active' : ''}" onclick="setActiveVehicle('${v.id}')">
+          ${v.color ? `<span class="dot" style="background:${v.color}"></span>` : ''}
+          ${esc(v.label)}
+          ${v.isMissionary ? `<span class="car-tab-remove" onclick="event.stopPropagation();openConfirm('${v.id}','vehicle')" title="${t('removeVehicle')}" aria-label="${t('removeVehicle')}">×</span>` : ''}
+        </button>
+      `).join('') + `
+        <button class="car-tab car-tab-add" onclick="openVehicleModal()">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          ${t('addMissionaryVehicle')}
+        </button>`;
+    }
+    function setActiveVehicle(id) {
+      activeVehicle = id;
+      renderTabs();
+      if (currentView === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
+    }
+    /* ── DATE HELPERS ── */
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function todayStr() {
+      return toDateStr(new Date());
+    }
+    function toDateStr(d) {
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    }
+    function formatDateShort(dateStr) {
+      const [, m, d] = dateStr.split('-').map(Number);
+      return `${m}/${d}`;
+    }
+    function dateHeaderLabel(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const diffDays = Math.round((d - today) / 86400000);
+      const wkKo = ['일', '월', '화', '수', '목', '금', '토'];
+      const wkEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      if (carLang === 'ko') {
+        const main = diffDays === 0 ? t('today') : diffDays === 1 ? t('tomorrow') : `${d.getMonth() + 1}월 ${d.getDate()}일`;
+        return { main, sub: `(${wkKo[d.getDay()]})`, isToday: diffDays === 0 };
+      }
+      const main = diffDays === 0 ? t('today') : diffDays === 1 ? t('tomorrow') : `${wkEn[d.getDay()]}, ${d.toLocaleString('en-US', { month: 'short' })} ${d.getDate()}`;
+      return { main, sub: '', isToday: diffDays === 0 };
+    }
+    function formatTimeRange(r) {
+      if (r.startDate === r.endDate) return `${r.startTime} – ${r.endTime}`;
+      return `${formatDateShort(r.startDate)} ${r.startTime} → ${formatDateShort(r.endDate)} ${r.endTime}`;
+    }
+    function conflictSummary(c) {
+      return `${c.reserverName} · ${formatTimeRange(c)}`;
+    }
+    function formatSelectedDateLabel(ds) {
+      const { main, sub } = dateHeaderLabel(ds);
+      return sub ? `${main} ${sub}` : main;
+    }
+    function formatKm(n) {
+      return Number(n).toLocaleString(carLang === 'en' ? 'en-US' : 'ko-KR') + 'km';
+    }
+    function serviceTypeLabel(id) {
+      const s = SERVICE_TYPE_LABELS[id];
+      if (!s) return id;
+      return carLang === 'en' ? s.en : s.ko;
+    }
+
+    /* ── AGENDA ── */
+    /* 날짜를 선택했을 때만 그날 예약을 보여준다 — 그리드 자체가 이미 한눈에 보기용이라
+       선택 전 기본 상태에서까지 "예정된 예약" 전체 목록을 쌓아두면 중복이고 산만해진다. */
+    function renderAgenda() {
+      const container = $('agendaContainer');
+      const nowMs = Date.now();
+
+      if (!selectedDate) {
+        $('selectedDateBar').classList.add('hidden');
+        container.innerHTML = `
+          <div class="car-empty">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div>${esc(t('selectDayHint'))}</div>
+          </div>`;
+        return;
+      }
+
+      $('selectedDateBar').classList.remove('hidden');
+      $('selectedDateLabel').textContent = formatSelectedDateLabel(selectedDate);
+
+      const list = reservations
+        .filter(r => (activeVehicle === 'all' || r.vehicleId === activeVehicle) && selectedDate >= r.startDate && selectedDate <= r.endDate)
+        .sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
+
+      if (!list.length) {
+        container.innerHTML = `
+          <div class="car-empty">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3"/><path d="M3 12h18"/></svg>
+            <div>${esc(t('emptyDay'))}</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(r => {
+        const v = vehicleById(r.vehicleId);
+        const isPast = Date.parse(r.endAt) < nowMs;
+        return `
+          <div class="car-card${isPast ? ' is-past' : ''}" style="--card-color:${v ? v.color : 'var(--blue)'}">
+            <div class="car-card-body">
+              <div class="car-card-top">
+                <span class="car-card-vehicle"><span class="dot"></span>${esc(v ? v.label : r.vehicleId)}</span>
+                <span class="car-card-time">${esc(formatTimeRange(r))}</span>
+              </div>
+              <p class="car-card-purpose">${esc(r.purpose)}</p>
+              <p class="car-card-meta">${esc(r.reserverName)}${r.phone ? ' · ' + esc(r.phone) : ''}</p>
+              ${r.notes ? `<p class="car-card-notes">${esc(r.notes)}</p>` : ''}
+              ${(r.actualHours != null || r.actualKm != null) ? `<span class="car-card-usage">🛣️ ${[
+                r.actualHours != null ? esc(r.actualHours) + (carLang === 'en' ? 'h' : '시간') : '',
+                r.actualKm != null ? esc(formatKm(r.actualKm)) : '',
+              ].filter(Boolean).join(' · ')}</span>` : ''}
+            </div>
+            <div class="car-card-actions">
+              <button class="car-card-btn" onclick="openModal('${r.id}')" aria-label="edit">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9.5 1.5l3 3-8 8-3.5.5.5-3.5 8-8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              </button>
+              ${r.canDelete === false ? '' : `<button class="car-card-btn danger" onclick="openConfirm('${r.id}','reservation')" aria-label="delete">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3.5h8M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4 3.5l.5 9a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1l.5-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>`}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    /* ── CALENDAR ── */
+    // 좁은 화면에서는 한 주에 3줄씩 욱여넣으면 너무 빽빽해져서 2줄로 줄인다 —
+    // 넘치는 건 어차피 "+N"으로 묶이고 탭하면 아래 상세 패널에서 다 보이므로 정보 손실은 없다.
+    // 폰(≤640px)에서는 한 번에 한 주만 보여준다 — 한 주 단위로 이동하고, 그 주의 날짜를 누르면 아래에 세부 예약이 나온다
+    const isMobileWeek = () => window.innerWidth <= 640;
+    let weekAnchor = '';
+    const dateFromStr = str => { const [y, m, d] = str.split('-').map(Number); return new Date(y, m - 1, d); };
+    const anchorDate = () => dateFromStr(weekAnchor || selectedDate || todayStr());
+    function maxLanesForViewport() { return window.innerWidth <= 680 ? 2 : 3; }
+
+    /** 한 주에 표시할 항목(막대/시간지정 한 줄)을 겹치지 않게 줄(lane)에 배치. 못 들어가면 overflow로 뺀다. */
+    function layoutWeekItems(items, maxLanes) {
+      const sorted = [...items].sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'bar' ? -1 : 1; // 여러 날짜짜리 예약(막대)을 먼저 배치
+        if (a.startCol !== b.startCol) return a.startCol - b.startCol;
+        return (b.endCol - b.startCol) - (a.endCol - a.startCol);
+      });
+      const laneOccupancy = [];
+      const placed = [];
+      const overflowItems = [];
+      sorted.forEach(item => {
+        let laneIdx = -1;
+        for (let l = 0; l < maxLanes; l++) {
+          const occ = laneOccupancy[l] || [];
+          const collide = occ.some(([s, e]) => !(item.endCol < s || item.startCol > e));
+          if (!collide) { laneIdx = l; break; }
+        }
+        if (laneIdx === -1) {
+          overflowItems.push(item);
+        } else {
+          laneOccupancy[laneIdx] = laneOccupancy[laneIdx] || [];
+          laneOccupancy[laneIdx].push([item.startCol, item.endCol]);
+          placed.push({ ...item, lane: laneIdx });
+        }
+      });
+      const overflowByCol = {};
+      overflowItems.forEach(item => {
+        for (let c = item.startCol; c <= item.endCol; c++) overflowByCol[c] = (overflowByCol[c] || 0) + 1;
+      });
+      return { placed, overflowByCol };
+    }
+
+    function renderCalendar() {
+      const year = calendarMonth.getFullYear();
+      const month = calendarMonth.getMonth();
+      const firstOfMonth = new Date(year, month, 1);
+      const startOffset = firstOfMonth.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+      const mobileWeek = isMobileWeek();
+      const weekSunday = (() => { const a = anchorDate(); return new Date(a.getFullYear(), a.getMonth(), a.getDate() - a.getDay()); })();
+      const totalWeeks = mobileWeek ? 1 : totalCells / 7;
+      const maxLanes = maxLanesForViewport();
+      const todayStr_ = todayStr();
+      const wkKo = ['일', '월', '화', '수', '목', '금', '토'];
+      const wkEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const wk = carLang === 'en' ? wkEn : wkKo;
+
+      const weekSaturday = new Date(weekSunday.getFullYear(), weekSunday.getMonth(), weekSunday.getDate() + 6);
+      const short = d => carLang === 'en' ? d.toLocaleString('en-US', { month: 'short', day: 'numeric' }) : `${d.getMonth() + 1}/${d.getDate()}`;
+      $('calMonthLabel').textContent = mobileWeek
+        ? `${short(weekSunday)} – ${short(weekSaturday)}`
+        : carLang === 'en'
+          ? calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+          : `${year}년 ${month + 1}월`;
+
+      const filteredReservations = reservations.filter(r => activeVehicle === 'all' || r.vehicleId === activeVehicle);
+
+      let weeksHtml = '';
+      for (let w = 0; w < totalWeeks; w++) {
+        const weekDates = [];
+        for (let d = 0; d < 7; d++) weekDates.push(mobileWeek ? new Date(weekSunday.getFullYear(), weekSunday.getMonth(), weekSunday.getDate() + d) : new Date(year, month, w * 7 - startOffset + 1 + d));
+        const weekDateStrs = weekDates.map(toDateStr);
+        const weekStartStr = weekDateStrs[0];
+        const weekEndStr = weekDateStrs[6];
+
+        const items = [];
+        filteredReservations.forEach(r => {
+          if (r.endDate < weekStartStr || r.startDate > weekEndStr) return;
+          const clippedStart = r.startDate < weekStartStr ? weekStartStr : r.startDate;
+          const clippedEnd = r.endDate > weekEndStr ? weekEndStr : r.endDate;
+          const startCol = weekDateStrs.indexOf(clippedStart);
+          const endCol = weekDateStrs.indexOf(clippedEnd);
+          if (startCol === -1 || endCol === -1) return;
+          items.push({ startCol, endCol, type: r.startDate === r.endDate ? 'timed' : 'bar', r });
+        });
+        const { placed, overflowByCol } = layoutWeekItems(items, maxLanes);
+
+        let dayCellsHtml = '';
+        weekDates.forEach((d, col) => {
+          const cellStr = weekDateStrs[col];
+          const inMonth = mobileWeek || d.getMonth() === month;
+          const isToday = cellStr === todayStr_;
+          const isSelected = cellStr === selectedDate;
+          dayCellsHtml += `
+            <button type="button" class="cal-daynum-cell${inMonth ? '' : ' is-outside'}${isToday ? ' is-today' : ''}${isSelected ? ' is-selected' : ''}"
+              style="grid-column:${col + 1}" onclick="selectCalendarDate('${cellStr}')">
+              <span class="cal-daynum">${d.getDate()}</span>
+            </button>`;
+        });
+
+        let itemsHtml = '';
+        placed.forEach(item => {
+          const row = item.lane + 2;
+          const gridArea = `grid-column:${item.startCol + 1}/${item.endCol + 2};grid-row:${row}`;
+          const v = vehicleById(item.r.vehicleId);
+          const color = v ? v.color : 'var(--blue)';
+          const title = esc(item.r.purpose || '');
+          if (item.type === 'bar') {
+            itemsHtml += `<div class="cal-bar" style="${gridArea};--card-color:${color}" onclick="selectCalendarDate('${weekDateStrs[item.startCol]}')" title="${title}">${title}</div>`;
+          } else {
+            itemsHtml += `<div class="cal-timed" style="${gridArea};--card-color:${color}" onclick="selectCalendarDate('${weekDateStrs[item.startCol]}')" title="${title}">
+              <span class="cal-timed-dot"></span>
+              <span class="cal-timed-time">${esc(item.r.startTime)}</span><span>${title}</span>
+            </div>`;
+          }
+        });
+
+        let moreHtml = '';
+        Object.keys(overflowByCol).forEach(colStr => {
+          const col = Number(colStr);
+          const row = maxLanes + 2;
+          moreHtml += `<button type="button" class="cal-more-cell" style="grid-column:${col + 1};grid-row:${row}" onclick="selectCalendarDate('${weekDateStrs[col]}')">+${overflowByCol[col]}</button>`;
+        });
+
+        weeksHtml += `<div class="cal-week" style="grid-template-rows:auto repeat(${maxLanes}, auto) auto">${dayCellsHtml}${itemsHtml}${moreHtml}</div>`;
+      }
+
+      $('calGrid').innerHTML = `
+        <div class="cal-weekdays">${wk.map(w => `<span>${esc(w)}</span>`).join('')}</div>
+        ${weeksHtml}`;
+    }
+
+    /* ── 연/월 직접 이동 ── */
+    function populateMonthPicker() {
+      const monthNamesKo = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+      const monthNamesEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const names = carLang === 'en' ? monthNamesEn : monthNamesKo;
+      const select = $('pickerMonth');
+      if (!select) return;
+      const prevValue = select.value;
+      select.innerHTML = names.map((m, i) => `<option value="${i}">${esc(m)}</option>`).join('');
+      if (prevValue) select.value = prevValue;
+    }
+    function toggleMonthPicker() {
+      const picker = $('monthPicker');
+      const willShow = picker.classList.contains('hidden');
+      picker.classList.toggle('hidden');
+      if (willShow) {
+        $('pickerYear').value = calendarMonth.getFullYear();
+        $('pickerMonth').value = calendarMonth.getMonth();
+      }
+    }
+    function jumpToPickedMonth() {
+      const year = parseInt($('pickerYear').value, 10);
+      const month = parseInt($('pickerMonth').value, 10);
+      if (!Number.isFinite(year) || !Number.isFinite(month)) return;
+      calendarMonth = new Date(year, month, 1);
+      selectedDate = null;
+      if (isMobileWeek()) { selectedDate = toDateStr(calendarMonth); setWeekAnchor(selectedDate); }
+      $('monthPicker').classList.add('hidden');
+      renderCalendar();
+      renderAgenda();
+    }
+
+    // 폰에서는 한 주씩 이동하고 그 주의 같은 요일을 선택해 둔다 (세부 예약이 바로 보이도록)
+    function setWeekAnchor(dateStr_) {
+      weekAnchor = dateStr_;
+      const a = dateFromStr(dateStr_);
+      calendarMonth = new Date(a.getFullYear(), a.getMonth(), 1);
+    }
+    function shiftCalendarMonth(delta) {
+      if (isMobileWeek()) {
+        const a = anchorDate(); a.setDate(a.getDate() + delta * 7);
+        setWeekAnchor(toDateStr(a)); selectedDate = weekAnchor;
+      } else {
+        calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + delta, 1);
+        selectedDate = null;
+      }
+      $('monthPicker').classList.add('hidden');
+      renderCalendar();
+      renderAgenda();
+    }
+    function goToCurrentMonth() {
+      const now = new Date();
+      calendarMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      selectedDate = todayStr();
+      weekAnchor = selectedDate;
+      $('monthPicker').classList.add('hidden');
+      renderCalendar();
+      renderAgenda();
+    }
+    function selectCalendarDate(dateStr_) {
+      if (isMobileWeek()) { selectedDate = dateStr_; setWeekAnchor(dateStr_); }
+      else selectedDate = (selectedDate === dateStr_) ? null : dateStr_;
+      renderCalendar();
+      renderAgenda();
+    }
+    function clearSelectedDate() {
+      selectedDate = null;
+      renderCalendar();
+      renderAgenda();
+    }
+
+    /* ── MAINTENANCE RENDER ── */
+    function renderMaintBanner() {
+      const el = $('maintBanner');
+      if (activeVehicle === 'all') { el.innerHTML = ''; el.classList.add('hidden'); return; }
+      el.classList.remove('hidden');
+      const oilRecords = maintenanceRecords
+        .filter(m => m.vehicleId === activeVehicle && m.serviceType === 'oil')
+        .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+      const latest = oilRecords[0];
+      el.classList.toggle('is-empty', !latest);
+      el.innerHTML = `
+        <span class="car-maint-banner-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+        </span>
+        <div>
+          <p class="car-maint-banner-label">${esc(t('lastOilChange'))}</p>
+          <p class="car-maint-banner-value">${latest ? `${esc(latest.date)} · ${esc(formatKm(latest.mileageKm))} · ${esc(latest.technician)}` : esc(t('noOilRecord'))}</p>
+        </div>`;
+    }
+
+    function renderMaintenance() {
+      renderMaintBanner();
+      const container = $('maintListContainer');
+      let list = maintenanceRecords.filter(m => activeVehicle === 'all' || m.vehicleId === activeVehicle);
+      list = [...list].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+
+      if (!list.length) {
+        container.innerHTML = `
+          <div class="car-empty">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+            <div>${esc(t('emptyMaintenance'))}</div>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(m => {
+        const v = vehicleById(m.vehicleId);
+        const type = serviceTypeMeta(m.serviceType);
+        return `
+          <div class="maint-row">
+            <div class="maint-row-rail">
+              <span class="maint-card-icon" style="--type-color:${type.color}">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${type.icon}</svg>
+              </span>
+            </div>
+            <div class="car-card car-card--maint" style="--card-color:${v ? v.color : 'var(--blue)'}">
+              <div class="car-card-body">
+                <div class="car-card-top">
+                  <span class="car-card-vehicle"><span class="dot"></span>${esc(v ? v.label : m.vehicleId)}</span>
+                  <span class="car-card-time">${esc(m.date)}</span>
+                </div>
+                <p class="maint-card-title">${esc(serviceTypeLabel(m.serviceType))}</p>
+                <div class="maint-card-stats">
+                  <span class="maint-stat">${esc(formatKm(m.mileageKm))}</span>
+                  <span class="maint-stat">${esc(m.technician)}</span>
+                </div>
+                ${m.notes ? `<p class="car-card-notes">${esc(m.notes)}</p>` : ''}
+              </div>
+              <div class="car-card-actions">
+                <button class="car-card-btn" onclick="openMaintModal('${m.id}')" aria-label="edit">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9.5 1.5l3 3-8 8-3.5.5.5-3.5 8-8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="car-card-btn danger" onclick="openConfirm('${m.id}','maintenance')" aria-label="delete">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 3.5h8M5.5 3.5V2a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4 3.5l.5 9a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1l.5-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    /* ── MODAL ── */
+    function renderVehicleSelect() {
+      $('carVehicle').innerHTML = VEHICLES.map(v => `<option value="${v.id}">${esc(v.label)}</option>`).join('');
+    }
+    function renderMaintVehicleSelect() {
+      $('carMaintVehicle').innerHTML = VEHICLES.map(v => `<option value="${v.id}">${esc(v.label)}</option>`).join('');
+    }
+    function renderServiceTypeSelect() {
+      $('carMaintType').innerHTML = Object.keys(SERVICE_TYPE_LABELS)
+        .map(id => `<option value="${id}">${esc(serviceTypeLabel(id))}</option>`).join('');
+    }
+    function showFormError(msg) {
+      const el = $('carModalError');
+      el.textContent = msg;
+      el.classList.add('is-visible');
+    }
+    function clearFormError() {
+      const el = $('carModalError');
+      el.textContent = '';
+      el.classList.remove('is-visible');
+    }
+
+    function openModal(reservationId) {
+      clearFormError();
+      renderVehicleSelect();
+      const overlay = $('carModalOverlay');
+      const today = selectedDate || todayStr();
+
+      if (reservationId) {
+        const r = reservations.find(x => x.id === reservationId);
+        if (!r) return;
+        editingId = r.id;
+        $('carModalTitle').textContent = t('editReservation');
+        $('carVehicle').value = r.vehicleId;
+        $('carStartDate').value = r.startDate;
+        $('carStartTime').value = r.startTime;
+        $('carEndDate').value = r.endDate;
+        $('carEndTime').value = r.endTime;
+        $('carReserver').value = r.reserverName;
+        $('carPhone').value = r.phone || '';
+        $('carPurpose').value = r.purpose;
+        $('carNotes').value = r.notes || '';
+        $('carActualHours').value = r.actualHours ?? '';
+        $('carActualKm').value = r.actualKm ?? '';
+        $('carSaveBtn').textContent = t('saveEdit');
+      } else {
+        editingId = null;
+        $('carModalTitle').textContent = t('newReservation');
+        $('carForm').reset();
+        $('carVehicle').value = activeVehicle !== 'all' ? activeVehicle : VEHICLES[0].id;
+        $('carStartDate').value = today;
+        $('carEndDate').value = today;
+        $('carStartTime').value = '09:00';
+        $('carEndTime').value = '18:00';
+        $('carSaveBtn').textContent = t('save');
+      }
+      overlay.classList.remove('hidden');
+    }
+    function closeModal() {
+      $('carModalOverlay').classList.add('hidden');
+      editingId = null;
+    }
+
+    async function submitForm(event) {
+      event.preventDefault();
+      clearFormError();
+      const payload = {
+        vehicleId: $('carVehicle').value,
+        startDate: $('carStartDate').value,
+        startTime: $('carStartTime').value,
+        endDate: $('carEndDate').value,
+        endTime: $('carEndTime').value,
+        reserverName: $('carReserver').value.trim(),
+        phone: $('carPhone').value.trim(),
+        purpose: $('carPurpose').value.trim(),
+        notes: $('carNotes').value.trim(),
+        actualHours: $('carActualHours').value,
+        actualKm: $('carActualKm').value,
+      };
+      if (editingId) payload.id = editingId;
+
+      const btn = $('carSaveBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/car/reservations', {
+          method: editingId ? 'PUT' : 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(payload),
+        });
+        if (handleAuthError(res)) return;
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 409 && data.conflict) {
+            showFormError(t('conflictPrefix') + conflictSummary(data.conflict));
+          } else {
+            showFormError(data.error || t('errGeneric'));
+          }
+          return;
+        }
+        closeModal();
+        const syncSuffix = calendarSyncSuffix(data.calendarSync);
+        showToast(
+          (editingId ? t('updatedToast') : t('savedToast')) + syncSuffix,
+          !!syncSuffix,
+          syncSuffix ? 8000 : 2600
+        );
+        // KV는 쓰기 직후 목록 조회에 곧바로 반영되지 않을 수 있어(eventual
+        // consistency), 서버에 다시 물어보지 않고 방금 저장 응답으로 받은
+        // 예약을 그대로 화면에 반영한다.
+        const idx = reservations.findIndex(r => r.id === data.reservation.id);
+        if (idx !== -1) reservations[idx] = data.reservation; else reservations.push(data.reservation);
+        if (currentView === 'reservations') { renderCalendar(); renderAgenda(); }
+      } catch (e) {
+        showFormError(t('errGeneric'));
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    /* ── MAINTENANCE MODAL ── */
+    function showMaintFormError(msg) {
+      const el = $('carMaintModalError');
+      el.textContent = msg;
+      el.classList.add('is-visible');
+    }
+    function clearMaintFormError() {
+      const el = $('carMaintModalError');
+      el.textContent = '';
+      el.classList.remove('is-visible');
+    }
+    function openMaintModal(recordId) {
+      clearMaintFormError();
+      renderMaintVehicleSelect();
+      renderServiceTypeSelect();
+      const overlay = $('carMaintModalOverlay');
+
+      if (recordId) {
+        const m = maintenanceRecords.find(x => x.id === recordId);
+        if (!m) return;
+        editingMaintId = m.id;
+        $('carMaintModalTitle').textContent = t('editMaintenance');
+        $('carMaintVehicle').value = m.vehicleId;
+        $('carMaintDate').value = m.date;
+        $('carMaintKm').value = m.mileageKm;
+        $('carMaintType').value = m.serviceType;
+        $('carMaintTech').value = m.technician;
+        $('carMaintNotes').value = m.notes || '';
+        $('carMaintSaveBtn').textContent = t('saveEdit');
+      } else {
+        editingMaintId = null;
+        $('carMaintModalTitle').textContent = t('newMaintenance');
+        $('carMaintForm').reset();
+        $('carMaintVehicle').value = activeVehicle !== 'all' ? activeVehicle : VEHICLES[0].id;
+        $('carMaintType').value = 'oil';
+        $('carMaintDate').value = todayStr();
+        $('carMaintSaveBtn').textContent = t('saveRecord');
+      }
+      overlay.classList.remove('hidden');
+    }
+    function closeMaintModal() {
+      $('carMaintModalOverlay').classList.add('hidden');
+      editingMaintId = null;
+    }
+    async function submitMaintForm(event) {
+      event.preventDefault();
+      clearMaintFormError();
+      const payload = {
+        vehicleId: $('carMaintVehicle').value,
+        date: $('carMaintDate').value,
+        mileageKm: $('carMaintKm').value,
+        serviceType: $('carMaintType').value,
+        technician: $('carMaintTech').value.trim(),
+        notes: $('carMaintNotes').value.trim(),
+      };
+      if (editingMaintId) payload.id = editingMaintId;
+
+      const btn = $('carMaintSaveBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/car/maintenance', {
+          method: editingMaintId ? 'PUT' : 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(payload),
+        });
+        if (handleAuthError(res)) return;
+        const data = await res.json();
+        if (!res.ok) { showMaintFormError(data.error || t('errGeneric')); return; }
+        closeMaintModal();
+        showToast(editingMaintId ? t('maintUpdatedToast') : t('maintSavedToast'));
+        // 예약과 동일하게 KV 목록 조회 지연을 피하려고 저장 응답을 바로 반영.
+        const idx = maintenanceRecords.findIndex(m => m.id === data.record.id);
+        if (idx !== -1) maintenanceRecords[idx] = data.record; else maintenanceRecords.push(data.record);
+        if (currentView === 'maintenance') renderMaintenance();
+      } catch (e) {
+        showMaintFormError(t('errGeneric'));
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    /* ── 선교사 차량 추가 ── */
+    function openVehicleModal() {
+      $('carVehicleModalError').textContent = '';
+      $('carVehicleForm').reset();
+      $('carVehicleModalOverlay').classList.remove('hidden');
+      $('carVehicleName').focus();
+    }
+    function closeVehicleModal() {
+      $('carVehicleModalOverlay').classList.add('hidden');
+    }
+    async function submitVehicleForm(event) {
+      event.preventDefault();
+      const errEl = $('carVehicleModalError');
+      errEl.textContent = '';
+      const name = $('carVehicleName').value.trim();
+      if (!name) { errEl.textContent = t('missionaryNameRequired'); return; }
+
+      const btn = $('carVehicleSaveBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/car/vehicles', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ name }),
+        });
+        if (handleAuthError(res)) return;
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.error || t('errGeneric'); return; }
+        closeVehicleModal();
+        showToast(t('vehicleAddedToast'));
+        await loadVehicles();
+      } catch (e) {
+        errEl.textContent = t('errGeneric');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    /* ── DELETE ── */
+    function openConfirm(id, type) {
+      pendingDeleteId = id;
+      pendingDeleteType = type || 'reservation';
+      $('confirmText').textContent = pendingDeleteType === 'vehicle' ? t('vehicleDeleteConfirm') : t('deleteConfirm');
+      $('confirmOverlay').classList.remove('hidden');
+    }
+    function closeConfirm() {
+      pendingDeleteId = null;
+      $('confirmOverlay').classList.add('hidden');
+    }
+    async function confirmDelete() {
+      if (!pendingDeleteId) return;
+      const id = pendingDeleteId;
+      const type = pendingDeleteType;
+      closeConfirm();
+      const endpoint = type === 'maintenance' ? '/api/car/maintenance' : type === 'vehicle' ? '/api/car/vehicles' : '/api/car/reservations';
+      try {
+        const res = await fetch(endpoint + '?id=' + encodeURIComponent(id), {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        if (handleAuthError(res)) return;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('errGeneric'));
+        if (type === 'vehicle') {
+          showToast(t('vehicleDeletedToast'));
+          if (activeVehicle === id) activeVehicle = 'all';
+          await loadVehicles();
+          if (currentView === 'reservations') { renderCalendar(); renderAgenda(); } else renderMaintenance();
+          return;
+        }
+        const delSyncSuffix = type === 'reservation' ? calendarSyncSuffix(data.calendarSync) : '';
+        showToast(
+          (type === 'maintenance' ? t('maintDeletedToast') : t('deletedToast')) + delSyncSuffix,
+          !!delSyncSuffix,
+          delSyncSuffix ? 8000 : 2600
+        );
+        // 삭제도 마찬가지로 로컬 배열에서 바로 제거(재조회 없이 즉시 반영).
+        if (type === 'maintenance') {
+          maintenanceRecords = maintenanceRecords.filter(m => m.id !== id);
+          if (currentView === 'maintenance') renderMaintenance();
+        } else {
+          reservations = reservations.filter(r => r.id !== id);
+          if (currentView === 'reservations') { renderCalendar(); renderAgenda(); }
+        }
+      } catch (e) {
+        showToast(e.message || t('errGeneric'), true);
+      }
+    }
+
+    // 화면 폭이 바뀌면(창 크기 조절, 화면 회전) 줄 수/레이아웃을 다시 계산해서 그린다.
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (currentView === 'reservations') { renderCalendar(); renderAgenda(); }
+      }, 150);
+    });
+
+    /* ── INIT ── */
+    applyLangToDOM();
+    const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
+    const hubSession = hubToken ? parseHubToken(hubToken) : null;
+    if (hubSession) { // 승인된 포탈 멤버는 등급과 상관없이 사용 — 서버가 계정 상태를 다시 확인한다
+      const screen = $('loginScreen');
+      screen.classList.add('hidden');
+      screen.style.display = 'none';
+      loadAll().then(() => { if (new URLSearchParams(location.search).get('view') === 'maintenance') setView('maintenance'); });
+    }
+  </script>
+</body>
+</html>

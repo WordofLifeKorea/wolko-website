@@ -81,7 +81,7 @@ test('팀 공지: 전체/선택한 사람, 올린 사람·관리자만 고치고
   const all = await J(await post(env, U.mem, { action: 'announce', title: '전체 공지', body: '내용', audience: 'all' })); assert.ok(all.id);
   assert.equal((await post(env, U.mem, { action: 'announce', title: '선택', audience: 'people', recipients: [] })).status, 400, '받을 사람이 없으면 거부');
   assert.equal((await post(env, U.mem, { action: 'announce', title: '선택', audience: 'people', recipients: ['stranger@example.com'] })).status, 400, '명단에 없는 사람은 못 고름');
-  const some = await J(await post(env, U.fin, { action: 'announce', title: '재정팀만', audience: 'people', recipients: [U.dir, U.fin], link: '/campteam/finance/' }));
+  const some = await J(await post(env, U.fin, { action: 'announce', title: '재정팀만', audience: 'people', recipients: [U.dir, U.fin], link: '/portal/campteam/finance/' }));
   const t = async (who) => (await J(await get(env, who))).announcements;
   assert.deepEqual((await t(U.dir)).map((a) => a.title).sort(), ['재정팀만', '전체 공지']); assert.deepEqual((await t(U.mem)).map((a) => a.title), ['전체 공지'], '받는 사람이 아니면 안 보여요');
   assert.deepEqual((await t(U.tre)).map((a) => a.title), ['전체 공지']);
@@ -92,7 +92,7 @@ test('팀 공지: 전체/선택한 사람, 올린 사람·관리자만 고치고
   assert.equal((await t(U.dir))[0].title, '고친 공지', '고정한 공지가 맨 위'); assert.equal((await t(U.dir))[0].pinned, true);
   assert.equal((await post(env, U.mem, { action: 'edit', id: some.id, title: '내 공지 아님' })).status, 403);
   assert.equal((await post(env, U.admin, { action: 'edit', id: some.id, title: '관리자가 고침', audience: 'all' })).status, 200); assert.ok((await t(U.mem)).some((a) => a.title === '관리자가 고침'));
-  assert.equal((await t(U.fin)).find((a) => a.id === some.id).link, '/campteam/finance/'); assert.equal((await post(env, U.fin, { action: 'edit', id: some.id, link: 'https://evil.example/x' })).status, 200); assert.equal((await t(U.fin)).find((a) => a.id === some.id).link, '', '바깥 주소는 버려요');
+  assert.equal((await t(U.fin)).find((a) => a.id === some.id).link, '/portal/campteam/finance/'); assert.equal((await post(env, U.fin, { action: 'edit', id: some.id, link: 'https://evil.example/x' })).status, 200); assert.equal((await t(U.fin)).find((a) => a.id === some.id).link, '', '바깥 주소는 버려요');
   q.prepare(`UPDATE announcements SET createdAt = ? WHERE id = ?`).run(d(-40) + 'T00:00:00Z', some.id); const old = (await t(U.fin)).find((a) => a.id === some.id); assert.equal(old.folded, true); assert.equal((await J(await get(env, U.dir))).unreadAnn, 1, '접힌 공지는 안 읽음 숫자에서 빠져요');
   assert.equal((await post(env, U.admin, { action: 'delete', id: all.id })).status, 200); assert.equal((await t(U.dir)).some((a) => a.id === all.id), false);
   assert.equal((await J(await call(Trash, 'onRequestGet', env, U.mem, { qs: '?kind=announcements' }))).items.length, 0, '관리자가 지운 공지는 올린 팀원의 휴지통에 안 보인다');

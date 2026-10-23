@@ -71,24 +71,24 @@ export async function buildAlerts(env, email, { today, settings, perms }) {
   for (const t of tasks.results.filter((x) => isMine(x, me, keys))) {
     if (!t.dueDate) continue;
     const left = dayDiff(t.dueDate, today), stage = stageOf(left, settings.dueDays); if (!stage) { if (left <= maxDue) { /* 설정에 없는 일수 사이 */ } continue; }
-    const base = { type: 'task', taskId: t.id, title: t.title, camp: t.campKo || '', campEn: t.campEn || '', date: t.dueDate, daysLeft: left, href: '/campteam/tasks/?open=' + encodeURIComponent(t.id), priority: t.priority };
+    const base = { type: 'task', taskId: t.id, title: t.title, camp: t.campKo || '', campEn: t.campEn || '', date: t.dueDate, daysLeft: left, href: '/portal/campteam/tasks/?open=' + encodeURIComponent(t.id), priority: t.priority };
     push({ ...base, key: `task:${t.id}:${stage}:${t.dueDate.replace(/-/g, '')}`, level: stage === 'over' ? 'over' : left === 0 ? 'today' : 'soon' });
     (left < 0 ? mine.overdue : left === 0 ? mine.today : mine.soon).push(base);
   }
   const team = { meetings: [], events: [] };
   for (const m of meetings.results) {
     const left = dayDiff(m.meetDate, today), stage = stageOf(left, settings.eventDays); if (!stage || stage === 'over') continue;
-    const base = { type: 'meeting', title: m.title, date: m.meetDate, time: m.meetTime || '', daysLeft: left, href: '/campteam/meetings/?open=' + encodeURIComponent(m.id) };
+    const base = { type: 'meeting', title: m.title, date: m.meetDate, time: m.meetTime || '', daysLeft: left, href: '/portal/campteam/meetings/?open=' + encodeURIComponent(m.id) };
     push({ ...base, key: `meet:${m.id}:${stage}:${m.meetDate.replace(/-/g, '')}`, level: left === 0 ? 'today' : 'soon' }); team.meetings.push(base);
   }
   for (const e of events.results) {
     const start = e.startDate < today ? today : e.startDate, left = dayDiff(start, today), stage = stageOf(left, settings.eventDays); if (!stage || stage === 'over') continue;
-    const base = { type: 'event', title: e.title, date: e.startDate, time: e.startTime || '', daysLeft: left, href: '/campteam/calendar/' };
+    const base = { type: 'event', title: e.title, date: e.startDate, time: e.startTime || '', daysLeft: left, href: '/portal/campteam/calendar/' };
     push({ ...base, key: `event:${e.id}:${stage}:${start.replace(/-/g, '')}`, level: left === 0 ? 'today' : 'soon' }); team.events.push(base);
   }
   const newDecisions = [];
   for (const d of decisions.results) {
-    const base = { type: 'decision', title: d.textKo || d.textEn, date: d.decidedDate || d.createdAt.slice(0, 10), kind: d.kind, href: '/campteam/meetings/?open=' + encodeURIComponent(d.meetingId || '') };
+    const base = { type: 'decision', title: d.textKo || d.textEn, date: d.decidedDate || d.createdAt.slice(0, 10), kind: d.kind, href: '/portal/campteam/meetings/?open=' + encodeURIComponent(d.meetingId || '') };
     push({ ...base, key: `dec:${d.id}`, level: 'info' }); newDecisions.push(base);
   }
   const order = { over: 0, today: 1, soon: 2, info: 3 };
@@ -153,7 +153,7 @@ export async function buildWeek(env, email, today, perms) {
     !mv ? none : db.prepare(`SELECT id, meetDate, meetTime, title FROM meetings WHERE deletedAt IS NULL AND meetDate >= ?1 AND meetDate <= ?2 ORDER BY meetDate, meetTime LIMIT 30`).bind(today > start ? today : start, end).all(),
     !tv ? none : db.prepare(`SELECT id, title, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND COALESCE(endDate, startDate) >= ?1 AND startDate <= ?2 ORDER BY startDate LIMIT 30`).bind(today > start ? today : start, end).all(),
   ]);
-  const t = tasks.results.filter((x) => isMine(x, me, keys)).slice(0, 100).map((x) => ({ type: 'task', title: x.title, date: x.dueDate, camp: x.campKo || '', priority: x.priority, daysLeft: dayDiff(x.dueDate, today), href: '/campteam/tasks/?open=' + encodeURIComponent(x.id) }));
+  const t = tasks.results.filter((x) => isMine(x, me, keys)).slice(0, 100).map((x) => ({ type: 'task', title: x.title, date: x.dueDate, camp: x.campKo || '', priority: x.priority, daysLeft: dayDiff(x.dueDate, today), href: '/portal/campteam/tasks/?open=' + encodeURIComponent(x.id) }));
   return { start, end, overdue: t.filter((x) => x.daysLeft < 0), tasks: t.filter((x) => x.daysLeft >= 0),
     meetings: meetings.results.map((m) => ({ type: 'meeting', title: m.title, date: m.meetDate, time: m.meetTime || '' })), events: events.results.map((e) => ({ type: 'event', title: e.title, date: e.startDate, time: e.startTime || '' })) };
 }

@@ -1,0 +1,25 @@
+---
+import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="알림공지" active="alerts">
+  <div class="top">
+    <div><h1><span data-t="alTitle"></span><span class="qh" data-h="alerts"></span></h1><div class="sub" data-t="apSub"></div></div>
+    <div class="actions"><button class="btn pri" id="apNew" type="button" data-t="apNewBtn"></button></div>
+  </div>
+  <div class="err" id="apErr" hidden></div>
+  <div class="alpage">
+    <div class="sec">
+      <div class="tabs" id="apTabs"></div>
+      <div class="stack" id="apList"></div>
+    </div>
+    <div class="stack">
+      <section class="sec" id="apMine"></section>
+      <section class="sec" id="apAdmin" hidden></section>
+    </div>
+  </div>
+  <dialog id="dlg" class="wide">
+    <h3 id="dlgTitle"></h3>
+    <form id="dlgForm" class="form alform" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form>
+  </dialog>
+  <script is:inline slot="scripts" src="/portal/campteam/alerts-page.js?v=2"></script>
+</CampTeamLayout>

@@ -1,0 +1,150 @@
+---
+// 담당자·마스터 전용 — "월코에서 섬기고 싶어요" 문의 받은함. 인터뷰 진행 승인 / 보류 / 거절을 처리한다.
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>섬김 문의 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <style is:global>
+    :root { --ink:#132c37; --muted:#607681; --line:#dbe7eb; --deep:#004f68; --ok:#15803d; --bad:#b91c1c; --warn:#a16207; --bg:#f6fafc; --card:#fff; }
+    @media (prefers-color-scheme: dark) { :root { --ink:#e6f0f4; --muted:#9db3bd; --line:#2a4350; --deep:#73d1f5; --ok:#4ade80; --bad:#f87171; --warn:#facc15; --bg:#0f2029; --card:#142a35; } }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 16px 64px; background:var(--bg); color:var(--ink); font:15px/1.6 'Noto Sans KR', system-ui, sans-serif; }
+    main { max-width:860px; margin:0 auto; display:grid; gap:16px; }
+    h1 { font-size:22px; margin:0; }
+    p.sub { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    section, .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+    input, textarea { width:100%; padding:0 12px; border:1px solid var(--line); border-radius:10px; background:transparent; color:inherit; font:inherit; }
+    input { height:44px; } textarea { padding:10px 12px; min-height:60px; resize:vertical; }
+    button { height:38px; padding:0 14px; border:1px solid var(--line); border-radius:10px; background:transparent; color:inherit; font:inherit; font-weight:700; cursor:pointer; }
+    button.primary { background:var(--deep); border-color:var(--deep); color:#fff; }
+    @media (prefers-color-scheme: dark) { button.primary { color:#00303f; } }
+    button:disabled { opacity:.5; cursor:default; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .grid { display:grid; gap:10px; }
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; }
+    .tab { height:36px; border-radius:999px; }
+    .tab.active { background:color-mix(in srgb, var(--deep) 12%, transparent); border-color:var(--deep); color:var(--deep); }
+    .tag { display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:800; border:1px solid var(--line); }
+    .tag.new { color:var(--deep); border-color:var(--deep); } .tag.interview { color:var(--ok); border-color:var(--ok); }
+    .tag.hold { color:var(--warn); border-color:var(--warn); } .tag.rejected { color:var(--bad); border-color:var(--bad); }
+    .meta { color:var(--muted); font-size:13px; }
+    .msgbox { white-space:pre-wrap; overflow-wrap:anywhere; padding:12px 14px; border:1px solid var(--line); border-radius:10px; }
+    .dup { padding:8px 12px; border:1px solid var(--warn); border-radius:10px; color:var(--warn); font-size:13px; }
+    .hist { font-size:12px; color:var(--muted); }
+    .msg { font-size:13px; min-height:1.2em; } .msg.bad { color:var(--bad); }
+    [hidden] { display:none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <div>
+      <h1>섬김 문의</h1>
+      <p class="sub">"월코에서 섬기고 싶어요" 문의입니다. 승인하면 정식 지원 절차(인터뷰 → 신청서 → 추천인 확인)로 넘어갑니다. 한글 문의는 한글 담당자, 영어 문의는 영어 담당자가 보고, 마스터는 모두 봅니다.</p>
+    </div>
+
+    <section id="loginBox">
+      <div class="grid">
+        <input id="email" type="email" placeholder="이메일" autocomplete="username">
+        <input id="password" type="password" placeholder="비밀번호" autocomplete="current-password">
+        <div class="row"><button id="loginBtn" class="primary" type="button">로그인</button><span id="loginMsg" class="msg bad"></span></div>
+      </div>
+    </section>
+
+    <div id="app" hidden class="grid">
+      <div class="tabs" id="tabs"></div>
+      <div id="list" class="grid"></div>
+      <p id="empty" class="sub" hidden>해당하는 문의가 없습니다.</p>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function () {
+      var KEY = 'wolko-hub-token';
+      var $ = function (id) { return document.getElementById(id); };
+      var STATUS = { new: '새 문의', interview: '인터뷰 진행', hold: '보류', rejected: '거절' };
+      var ACTION_LABEL = { received: '접수', interview: '인터뷰 진행 승인', hold: '보류', reject: '거절', reopen: '다시 열기', reassign: '담당 언어 변경' };
+      var data = { inquiries: [] }, filter = 'new';
+      function headers(json) { var h = { Authorization: 'Bearer ' + (sessionStorage.getItem(KEY) || '') }; if (json) h['Content-Type'] = 'application/json'; return h; }
+      function esc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+      function when(iso) { try { return new Date(iso).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return iso; } }
+      function renderTabs() {
+        var counts = { all: data.inquiries.length };
+        Object.keys(STATUS).forEach(function (k) { counts[k] = data.inquiries.filter(function (i) { return i.status === k; }).length; });
+        var tabs = [['new', '새 문의'], ['interview', '인터뷰 진행'], ['hold', '보류'], ['rejected', '거절'], ['all', '전체']];
+        $('tabs').innerHTML = tabs.map(function (t) { return '<button type="button" class="tab' + (filter === t[0] ? ' active' : '') + '" data-tab="' + t[0] + '">' + t[1] + ' ' + (counts[t[0]] || 0) + '</button>'; }).join('');
+      }
+      function renderList() {
+        renderTabs();
+        var items = data.inquiries.filter(function (i) { return filter === 'all' || i.status === filter; });
+        $('empty').hidden = items.length > 0;
+        $('list').innerHTML = items.map(function (i) {
+          var dup = (i.duplicates || []).length ? '<div class="dup">같은 이메일 또는 연락처로 이전에 들어온 문의가 ' + i.duplicates.length + '건 있습니다.</div>' : '';
+          var hist = (i.history || []).map(function (h) { return when(h.at) + ' · ' + (ACTION_LABEL[h.action] || h.action) + (h.by && h.by !== 'applicant' ? ' (' + esc(h.by) + ')' : '') + (h.note ? ' — ' + esc(h.note) : ''); }).join('<br>');
+          return '<div class="card grid" data-id="' + esc(i.id) + '">' +
+            '<div class="row"><strong>' + esc(i.name) + '</strong><span class="tag ' + i.status + '">' + STATUS[i.status] + '</span><span class="tag">' + (i.lang === 'ko' ? '한글' : 'English') + '</span><span class="meta">' + when(i.createdAt) + '</span></div>' +
+            '<div class="meta"><a href="mailto:' + esc(i.email) + '">' + esc(i.email) + '</a>' + (i.phone ? ' · <a href="tel:' + esc(i.phone) + '">' + esc(i.phone) + '</a>' : '') + '</div>' +
+            '<div class="msgbox">' + esc(i.message) + '</div>' + dup +
+            '<textarea placeholder="메모(선택) — 보류·거절 사유나 인터뷰 일정 등" data-note></textarea>' +
+            '<div class="row">' +
+              (i.status !== 'interview' ? '<button type="button" class="primary" data-act="interview">인터뷰 진행 승인</button>' : '<button type="button" class="primary" data-app="' + esc(i.id) + '">' + (i.applicationId ? '신청서 열기' : '신청서 작성 시작') + '</button>') +
+              (i.status !== 'hold' ? '<button type="button" data-act="hold">보류</button>' : '') +
+              (i.status !== 'rejected' ? '<button type="button" data-act="reject">거절</button>' : '') +
+              (i.status !== 'new' ? '<button type="button" data-act="reopen">다시 열기</button>' : '') +
+              '<button type="button" data-act="reassign">' + (i.lang === 'ko' ? '영어 담당자에게 넘기기' : '한글 담당자에게 넘기기') + '</button>' +
+              '<span class="msg bad" data-msg></span>' +
+            '</div>' +
+            '<div class="hist">' + hist + '</div></div>';
+        }).join('');
+      }
+      async function load() {
+        var res = await fetch('/api/portal/serve-inquiries', { headers: headers() });
+        var body = await res.json().catch(function () { return {}; });
+        if (!res.ok) { $('app').hidden = true; $('loginBox').hidden = false; $('loginMsg').textContent = body.error || '확인하지 못했습니다.'; return; }
+        data = body; $('loginBox').hidden = true; $('app').hidden = false; renderList();
+      }
+      $('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; filter = b.dataset.tab; renderList(); });
+      $('list').addEventListener('click', async function (e) {
+        var appBtn = e.target.closest('button[data-app]');
+        if (appBtn) {
+          appBtn.disabled = true;
+          try {
+            var r = await fetch('/api/portal/serve-applications', { method: 'POST', headers: headers(true), body: JSON.stringify({ inquiryId: appBtn.dataset.app }) });
+            var b = await r.json().catch(function () { return {}; });
+            if (!r.ok) throw new Error(b.error || '신청서를 만들지 못했습니다.');
+            location.href = '/portal/serve-applications/#' + encodeURIComponent(b.application.id);
+          } catch (err) { alert(err.message); appBtn.disabled = false; }
+          return;
+        }
+        var btn = e.target.closest('button[data-act]'); if (!btn) return;
+        var card = btn.closest('.card'), id = card.dataset.id, act = btn.dataset.act;
+        if (act === 'reject' && !confirm('이 문의를 거절 처리할까요?')) return;
+        var msg = card.querySelector('[data-msg]'); msg.textContent = '';
+        btn.disabled = true;
+        try {
+          var res = await fetch('/api/portal/serve-inquiries', { method: 'PATCH', headers: headers(true), body: JSON.stringify({ id: id, action: act, note: card.querySelector('[data-note]').value }) });
+          var body = await res.json().catch(function () { return {}; });
+          if (!res.ok) throw new Error(body.error || '처리하지 못했습니다.');
+          await load();
+        } catch (err) { msg.textContent = err.message; btn.disabled = false; }
+      });
+      $('loginBtn').addEventListener('click', async function () {
+        $('loginMsg').textContent = '';
+        try {
+          var res = await fetch('/api/hub/account-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('email').value, password: $('password').value }) });
+          var body = await res.json().catch(function () { return {}; });
+          if (!res.ok) throw new Error(body.error || '로그인하지 못했습니다.');
+          sessionStorage.setItem(KEY, body.hubToken); $('password').value = '';
+          await load();
+        } catch (err) { $('loginMsg').textContent = err.message; }
+      });
+      if (sessionStorage.getItem(KEY)) load();
+    })();
+  </script>
+</body>
+</html>

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
-const source = readFileSync(process.env.RESOURCE_SOURCE || new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+const source = readFileSync(process.env.RESOURCE_SOURCE || new URL('../src/pages/portal/resource.astro', import.meta.url), 'utf8');
 const code = source.slice(source.indexOf('    function visibleSortedNotes('), source.indexOf('    async function deleteNoteComment('));
 function fixture(email = 'author') {
   const elements = { notesList: {}, notesPageFilter: {}, viewerNotesCount: {} };

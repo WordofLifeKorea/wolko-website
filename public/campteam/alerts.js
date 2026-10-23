@@ -94,7 +94,7 @@
   }
   function todaySection(titleKey, list, cls, max) {
     if (!list || !list.length) return ''; var more = list.length - max;
-    return '<div class="tds td-' + cls + '"><h3>' + esc(CT.t(titleKey)) + ' <em>' + list.length + esc(CT.t('tdItems')) + '</em></h3>' + list.slice(0, max).map(function (t) { return todayRow(t, cls); }).join('') + (more > 0 ? '<a class="tdmore" href="/campteam/alerts/">+' + more + ' ' + esc(CT.t('alMore')) + '</a>' : '') + '</div>';
+    return '<div class="tds td-' + cls + '"><h3>' + esc(CT.t(titleKey)) + ' <em>' + list.length + esc(CT.t('tdItems')) + '</em></h3>' + list.slice(0, max).map(function (t) { return todayRow(t, cls); }).join('') + (more > 0 ? '<a class="tdmore" href="/portal/campteam/alerts/">+' + more + ' ' + esc(CT.t('alMore')) + '</a>' : '') + '</div>';
   }
   function renderToday() {
     var host = $('todayBox'); if (!host || !st.today) return; var d = st.today, t = d.today, s = d.summary || {};

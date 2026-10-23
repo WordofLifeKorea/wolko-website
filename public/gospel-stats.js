@@ -1,4 +1,4 @@
-/* 복음 통계 — 월간 복음 전도 보고. 화면 틀은 /gospel-stats/, 데이터는 /api/portal/gospel-stats (항목 정의도 API 가 내려준다). */
+/* 복음 통계 — 월간 복음 전도 보고. 화면 틀은 /portal/gospel-stats/, 데이터는 /api/portal/gospel-stats (항목 정의도 API 가 내려준다). */
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };

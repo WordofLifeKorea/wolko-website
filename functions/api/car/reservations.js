@@ -5,7 +5,7 @@
  * DELETE /api/car/reservations?id=     — delete a reservation
  *
  * 차량 목록은 이 파일에서 검증하고, 화면 표시용 라벨/색상은
- * src/pages/car/index.astro 쪽에 동일한 id로 별도 정의되어 있다.
+ * src/pages/portal/car/index.astro 쪽에 동일한 id로 별도 정의되어 있다.
  * (차량을 추가/변경할 땐 두 곳을 함께 수정)
  */
 

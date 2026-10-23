@@ -7,16 +7,16 @@ const read = (path) => readFile(new URL(path, root), 'utf8');
 
 // 왼쪽 레일을 쓰는 포탈 도구 페이지 (CRS는 자체 2단 앱 레이아웃이라 제외)
 const TOOL_PAGES = [
-  'src/pages/schedule/index.astro',
-  'src/pages/wolkoevents.astro',
-  'src/pages/resource.astro',
-  'src/pages/expense/index.astro',
-  'src/pages/car-drive/index.astro',
-  'src/pages/car-log/index.astro',
-  'src/pages/car/index.astro',
-  'src/pages/kitchen/index.astro',
-  'src/pages/wolkoadmin.astro',
-  'src/pages/campstaff/index.astro',
+  'src/pages/portal/schedule/index.astro',
+  'src/pages/portal/wolkoevents.astro',
+  'src/pages/portal/resource.astro',
+  'src/pages/portal/expense/index.astro',
+  'src/pages/portal/car-drive/index.astro',
+  'src/pages/portal/car-log/index.astro',
+  'src/pages/portal/car/index.astro',
+  'src/pages/portal/kitchen/index.astro',
+  'src/pages/portal/wolkoadmin.astro',
+  'src/pages/portal/campstaff/index.astro',
 ];
 
 test('every portal tool page loads the shared layout, control and header stylesheets', async () => {
@@ -46,7 +46,7 @@ test('shared layout tokens define one page width, padding, card and field size',
 });
 
 test('page titles are not repeated under the header: no eyebrow labels, no duplicate title blocks', async () => {
-  for (const file of ['src/pages/expense/index.astro', 'src/pages/schedule/index.astro', 'src/pages/car/index.astro', 'src/pages/wolkoadmin.astro']) {
+  for (const file of ['src/pages/portal/expense/index.astro', 'src/pages/portal/schedule/index.astro', 'src/pages/portal/car/index.astro', 'src/pages/portal/wolkoadmin.astro']) {
     const source = await read(file);
     assert.ok(!source.includes('wl-page-head') && !source.includes('sc-title-row') && !source.includes('car-title-row'), `${file} must not repeat the header title`);
   }
@@ -57,7 +57,7 @@ test('page titles are not repeated under the header: no eyebrow labels, no dupli
 });
 
 test('vehicle pages start with the same four-tab menu followed by a one-line lead', async () => {
-  for (const file of ['src/pages/car-drive/index.astro', 'src/pages/car-log/index.astro']) {
+  for (const file of ['src/pages/portal/car-drive/index.astro', 'src/pages/portal/car-log/index.astro']) {
     const source = await read(file);
     assert.ok(!source.includes('class="log-intro"'), `${file}: no duplicated title block`);
     assert.ok(source.indexOf('class="car-view-tabs') < source.indexOf('class="wl-lead"'), `${file}: tabs first, lead line after`);
@@ -67,7 +67,7 @@ test('vehicle pages start with the same four-tab menu followed by a one-line lea
 });
 
 test('every portal page loads the language sync before anything else reads the saved language', async () => {
-  for (const file of [...TOOL_PAGES, 'src/pages/portal.astro', 'src/pages/crs/index.astro']) {
+  for (const file of [...TOOL_PAGES, 'src/pages/portal.astro', 'src/pages/portal/crs/index.astro']) {
     const source = await read(file);
     assert.match(source, /<script is:inline src="\/wolko-lang-sync\.js\?v=\d+"><\/script>/, `${file} must load wolko-lang-sync.js synchronously`);
   }
@@ -95,7 +95,7 @@ test('one header spec: 60px bar, brand left, controls right at 36px with 10px ga
 });
 
 test('the resource page header no longer carries a duplicate portal button', async () => {
-  const source = await read('src/pages/resource.astro');
+  const source = await read('src/pages/portal/resource.astro');
   assert.ok(!source.includes('class="back-link"'));
 });
 
@@ -122,8 +122,8 @@ test('공용 왼쪽 메뉴 · 머리글 스크립트/스타일은 모든 페이�
 test('왼쪽 메뉴 아이콘 색은 메뉴마다 달라서 겹치지 않고, 포탈 첫 화면과 같은 색을 쓴다', async () => {
   const { readFileSync } = await import('node:fs');
   const grab = (file, re) => Object.fromEntries([...readFileSync(new URL(file, import.meta.url), 'utf8').matchAll(re)].map(m => [m[1], m[2].toLowerCase()]));
-  const rail = grab('../public/wolko-rail.js', /href: '(\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
-  const home = grab('../src/pages/portal.astro', /href: '(\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
+  const rail = grab('../public/wolko-rail.js', /href: '(\/portal\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
+  const home = grab('../src/pages/portal.astro', /href: '(\/portal\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
   assert.equal(Object.keys(rail).length, 13);
   assert.equal(new Set(Object.values(rail)).size, 13, '색이 겹친다');
   assert.deepEqual(home, rail);

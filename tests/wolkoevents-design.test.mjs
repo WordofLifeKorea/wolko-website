@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import test from 'node:test';
 
-const page = await readFile(new URL('../src/pages/wolkoevents.astro', import.meta.url), 'utf8');
+const page = await readFile(new URL('../src/pages/portal/wolkoevents.astro', import.meta.url), 'utf8');
 const css = await readFile(new URL('../public/wolkoevents.css', import.meta.url), 'utf8');
 const script = page.match(/<script is:inline>([\s\S]*?)<\/script>/)[1];
 

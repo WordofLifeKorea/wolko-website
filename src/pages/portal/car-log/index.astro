@@ -1,0 +1,175 @@
+---
+// 차량 QR → 사용 전 사진 → 로그인 계정에 연결된 사용 일지.
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>차량 사용 일지 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/car-log.css?v=20">
+  <link rel="stylesheet" href="/wolko-rail.css?v=18">
+  <link rel="stylesheet" href="/wolko-header.css?v=14">
+  <link rel="stylesheet" href="/wolko-ui.css?v=6">
+  <link rel="stylesheet" href="/wolko-layout.css?v=15">
+  <script src="/wolko-rail.js?v=31" defer></script>
+  <script src="/car-log.js?v=25" defer></script>
+  <meta name="theme-color" content="#004f68">
+</head>
+<body>
+  <header class="car-header">
+    <a class="car-header-logo" href="/portal" title="WOLKO 포탈로 돌아가기">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <span data-t="pageTitle">차량 스케줄</span>
+    </a>
+    <div class="car-header-right">
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="log-wrap">
+    <nav class="car-view-tabs car-view-tabs-4" aria-label="차량 메뉴" data-t-aria="menuLabel">
+      <a class="car-view-tab" href="/portal/car-drive/">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span data-t="tabDrive">운행 스케줄</span>
+      </a>
+      <a class="car-view-tab is-active" href="/portal/car-log/" aria-current="page">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
+        <span data-t="tabLog">사용 일지</span>
+      </a>
+      <a class="car-view-tab" href="/portal/car/">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span data-t="tabReservations">예약현황</span>
+      </a>
+      <a class="car-view-tab" href="/portal/car/?view=maintenance">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span data-t="tabMaintenance">정비 관리</span>
+      </a>
+    </nav>
+    <p class="wl-lead" data-t="intro">운행 전 사진 한 장으로 사용 시각과 목적을 남깁니다.</p>
+
+    <p class="log-loading" id="loadStatus" data-t="loading">일지를 불러오는 중…</p>
+
+    <section class="log-panel" id="loginPanel" hidden>
+      <div class="log-panel-head"><span class="log-step">01</span><h2 data-t="loginTitle">포탈 로그인</h2></div>
+      <p class="log-help" data-t="loginHelp">차량 QR을 새 탭에서 열었다면 다시 로그인해야 할 수 있습니다. 기록자는 로그인 계정으로 자동 저장됩니다.</p>
+      <form id="loginForm" class="log-form">
+        <label><span data-t="email">이메일</span><input id="loginEmail" type="email" autocomplete="username" required></label>
+        <label><span data-t="password">비밀번호</span><input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button class="log-primary" type="submit" data-t="loginBtn">로그인하고 계속하기</button>
+      </form>
+      <p class="log-error" id="loginError" role="alert"></p>
+    </section>
+
+    <div id="logApp" hidden>
+      <section class="log-panel">
+        <div class="log-panel-head"><span class="log-step">01</span><h2 data-t="recordTitle">운행 전 기록</h2></div>
+        <p class="log-user"><span data-t="recorder">기록자</span> <strong id="currentUser"></strong></p>
+        <p class="log-draft" id="draftNote" hidden><span id="draftText"></span><button id="draftClear" type="button" data-t="draftClear">임시 저장 지우기</button></p>
+        <form id="usageForm" class="log-form">
+          <label><span data-t="vehicleLabel">차량 선택</span>
+            <select id="vehicleSelect" name="vehicleId" required></select>
+          </label>
+          <fieldset class="log-purpose">
+            <legend data-t="purposeLegend">사용 목적</legend>
+            <div class="log-purpose-options">
+              <label><input type="radio" name="useType" value="ministry" required><span data-t="ministry">사역용</span></label>
+              <label><input type="radio" name="useType" value="personal" required><span data-t="personal">개인용</span></label>
+            </div>
+          </fieldset>
+          <label id="purposeNoteWrap" class="log-purpose-note" hidden><span data-t="purposeNoteLabel">어떤 운행인가요? (간단히)</span>
+            <input id="purposeNote" name="purpose" type="text" maxlength="60" autocomplete="off">
+          </label>
+          <label class="log-trip-km"><span data-t="tripKmLabel">총 운행 거리 (km) *</span>
+            <input id="tripKm" name="tripKm" type="number" inputmode="decimal" min="0" max="5000" step="0.1" required autocomplete="off">
+          </label>
+          <p class="log-time" id="tripAutoHint" aria-live="polite"></p>
+          <div class="log-photos">
+            <strong class="log-photos-title" data-t="photosTitle">사진 (선택)</strong>
+            <p data-t="photosHelp">계기판이나 차량 상태가 보이도록 찍어 두면 나중에 확인하기 좋아요. 없어도 저장할 수 있습니다.</p>
+            <div class="log-photo-step">
+              <strong data-t="photoBeforeTitle">운행 전 사진</strong>
+              <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+              <input id="photoUploadInput" type="file" accept="image/*" hidden>
+              <div class="log-photo-actions">
+                <button id="photoButton" class="log-secondary" type="button" data-t="photoCamBtn">카메라로 찍기</button>
+                <button id="photoUploadButton" class="log-secondary" type="button" data-t="photoUploadBtn">사진 올리기</button>
+              </div>
+              <div class="log-preview-wrap"><img id="photoPreview" class="log-preview" alt="" hidden><button id="photoRemove" class="log-photo-remove" type="button" aria-label="사진 지우기" data-t-aria="photoRemove">×</button></div>
+              <p class="log-time" id="photoTime" aria-live="polite"></p>
+              <label class="log-odo"><span data-t="odoBeforeLabel">운행 전 계기판 (km)</span>
+                <input id="odoBefore" type="number" inputmode="numeric" min="0" max="2000000" step="1" autocomplete="off">
+              </label>
+              <p class="log-time" id="odoBeforeHint" aria-live="polite"></p>
+            </div>
+            <div class="log-photo-step">
+              <strong data-t="photoAfterTitle">운행 후 사진</strong>
+              <input id="photoAfterInput" type="file" accept="image/*" capture="environment" hidden>
+              <input id="photoAfterUploadInput" type="file" accept="image/*" hidden>
+              <div class="log-photo-actions">
+                <button id="photoAfterButton" class="log-secondary" type="button" data-t="photoCamBtn">카메라로 찍기</button>
+                <button id="photoAfterUploadButton" class="log-secondary" type="button" data-t="photoUploadBtn">사진 올리기</button>
+              </div>
+              <div class="log-preview-wrap"><img id="photoAfterPreview" class="log-preview" alt="" hidden><button id="photoAfterRemove" class="log-photo-remove" type="button" aria-label="사진 지우기" data-t-aria="photoRemove">×</button></div>
+              <p class="log-time" id="photoAfterTime" aria-live="polite"></p>
+              <label class="log-odo"><span data-t="odoAfterLabel">운행 후 계기판 (km)</span>
+                <input id="odoAfter" type="number" inputmode="numeric" min="0" max="2000000" step="1" autocomplete="off">
+              </label>
+              <p class="log-time" id="odoAfterHint" aria-live="polite"></p>
+            </div>
+          </div>
+          <button id="saveButton" class="log-primary" type="submit" disabled data-t="save">사용 일지 저장</button>
+        </form>
+        <p class="log-error" id="formError" role="alert"></p>
+      </section>
+
+      <section class="log-panel log-history">
+        <div class="log-panel-head"><span class="log-step">02</span><h2 data-t="historyTitle">최근 사용 내역</h2><button id="manageBtn" class="log-manage" type="button" hidden data-t="manage">관리</button></div>
+        <p class="log-help" data-t="historyHelp">기록은 로그인 계정과 함께 저장됩니다. 사진은 포탈 사용자만 볼 수 있습니다.</p>
+        <div id="manageBar" class="log-manage-bar" hidden>
+          <label class="log-check"><input type="checkbox" id="selectAll"><span data-t="selectAll">전체 선택</span></label>
+          <span id="selectedCount" class="log-sel-count" aria-live="polite"></span>
+          <span class="log-manage-actions">
+            <button id="editSelBtn" type="button" disabled data-t="editSel">선택 수정</button>
+            <button id="delSelBtn" class="danger" type="button" disabled data-t="delSel">선택 삭제</button>
+          </span>
+        </div>
+        <div id="entryList" class="log-entries"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <div id="editDialog" class="log-edit-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="log-edit-card">
+      <h3 id="editTitle" data-t="editTitle">선택한 기록 수정</h3>
+      <p class="log-help" id="editHelp"></p>
+      <label><span data-t="editVehicle">차량</span><select id="editVehicle"></select></label>
+      <label><span data-t="editUse">사용 목적</span>
+        <select id="editUse"><option value="" data-t="keepAsIs">변경 안 함</option><option value="ministry" data-t="useMinistry">사역용</option><option value="personal" data-t="usePersonal">개인용</option></select>
+      </label>
+      <p class="log-error" id="editError" role="alert"></p>
+      <div class="log-edit-actions">
+        <button id="editCancel" type="button" class="log-secondary" data-t="cancelBtn">취소</button>
+        <button id="editSave" type="button" class="log-primary" data-t="editSaveBtn">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="photoDialog" class="log-photo-dialog" hidden role="dialog" aria-modal="true" aria-label="차량 사진" data-t-aria="photoDialog">
+    <button id="closePhoto" type="button" aria-label="사진 닫기" data-t-aria="closePhoto">×</button>
+    <img id="fullPhoto" alt="차량 사용 전 사진">
+  </div>
+</body>
+</html>

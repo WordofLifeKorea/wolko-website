@@ -1,0 +1,1829 @@
+---
+// 캠프 자료실 — 포탈 멤버는 바로 자료를 추가하고 본인 자료를 관리한다.
+---
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>캠프 자료실 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/wolko-rail.css?v=18">
+  <link rel="stylesheet" href="/wolko-header.css?v=14">
+  <link rel="stylesheet" href="/wolko-ui.css?v=6">
+  <link rel="stylesheet" href="/wolko-layout.css?v=15">
+  <script src="/wolko-rail.js?v=31" defer></script>
+  <meta name="theme-color" content="#004f68">
+  <script is:inline src="/wolko-session.js?v=2"></script>
+  <style is:global>
+    :root {
+      --blue:#004f68;
+      --blue-lt:#0077a3;
+      --teal:#009b94;
+      --bg:#f4f6f8;
+      --card:#fff;
+      --border:#e4eaee;
+      --text:#1a2d38;
+      --muted:#6c8290;
+      --light:#8fa8b5;
+      --red:#c42a36;
+      --green:#239c5d;
+      --orange:#d9870d;
+      --shadow:0 2px 12px rgba(0,79,104,.05);
+      --shadow-card:0 10px 28px rgba(0,79,104,.07);
+      --shadow-soft:0 4px 14px rgba(0,79,104,.045);
+      --radius-lg:20px;
+      --radius-md:14px;
+      --radius-sm:12px;
+      --space-page:28px;
+      --space-card:20px;
+      --sans:'Montserrat',sans-serif;
+      --body:'Noto Sans KR',sans-serif;
+      --btn-h-lg:44px;
+      --btn-h-md:36px;
+      --btn-h-sm:30px;
+      --btn-h-xs:26px;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); font-family:var(--body); line-height:1.5; }
+    /* 자료실은 공통 홈페이지 내비게이션 없이 전용 도구 화면으로 사용한다. */
+    #mainNav,
+    #mobileMenu,
+    #menuBackdrop { display:none !important; }
+    button,input,select,textarea { font:500 13px/1.35 var(--body); }
+    /* 버튼의 display:inline-flex 가 hidden 속성을 덮어써서, 숨긴 버튼(관리자 지정 · 캠프 관리 · 이름 수정)이 모두에게 보이던 것을 막는다 */
+    [hidden] { display:none !important; }
+    button { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+    .login-screen {
+      position:fixed; inset:0; z-index:900; display:flex; align-items:center; justify-content:center; padding:20px;
+      background:linear-gradient(145deg,#003d52,#00627f);
+    }
+    .login-screen[hidden] { display:none; }
+    .login-card {
+      width:min(420px,100%); border-radius:24px; background:#fff; padding:42px 36px 34px; text-align:center;
+      box-shadow:0 24px 70px rgba(0,0,0,.24);
+    }
+    .login-logo { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:22px; }
+    .login-logo img { height:38px; }
+    .login-logo-name { color:var(--blue); font:800 19px/1 var(--sans); letter-spacing:.02em; }
+    .login-title { margin:0 0 26px; color:var(--muted); font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; }
+    .login-input { width:100%; height:52px; border:1.5px solid #d7e2e7; border-radius:14px; padding:0 16px; outline:none; }
+    .login-input:focus { border-color:var(--blue); }
+    .login-error { min-height:20px; margin:10px 0 14px; color:var(--red); font-size:12px; font-weight:500; }
+    .login-btn,.primary {
+      min-height:var(--btn-h-lg); border:0; border-radius:var(--radius-sm); background:var(--blue); color:#fff; padding:0 20px;
+      font-weight:700; letter-spacing:.01em; transition:background .18s ease,transform .12s ease,box-shadow .18s ease;
+    }
+    .login-btn { width:100%; height:48px; }
+    .login-btn:hover,.primary:hover { background:var(--blue-lt); }
+    .secondary,.ghost {
+      min-height:var(--btn-h-lg); border:1px solid #d7e4e9; border-radius:var(--radius-sm); background:#fff; color:var(--blue);
+      padding:0 16px; font-weight:600; letter-spacing:.01em; transition:border-color .18s ease,background .18s ease,color .18s ease;
+    }
+    .ghost { background:#f8fbfc; color:var(--muted); }
+    .secondary:hover,.ghost:hover { border-color:#b8d6df; background:#f7fbfd; color:var(--blue); }
+    .danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
+    .topbar {
+      position:relative; z-index:1; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:18px;
+      margin-top:0;
+      padding:10px 32px; background:var(--blue); color:#fff; box-shadow:0 2px 12px rgba(0,79,104,.25); flex-wrap:wrap;
+    }
+    :root:root .topbar { padding-top:calc(10px + env(safe-area-inset-top, 0px)); } /* 설치한 앱의 상태바(시계·노치) 밑으로 깔리지 않게 */
+    .brand { display:flex; align-items:center; gap:10px; min-width:0; }
+    .brand img { height:30px; flex:0 0 auto; }
+    .brand h1 { margin:0; color:rgba(255,255,255,.92); font:700 14px/1 var(--sans); letter-spacing:.04em; }
+    .brand p { margin:3px 0 0; color:rgba(255,255,255,.62); font:500 10px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
+    .toolbar { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; min-width:0; }
+    @media (min-width:641px) {
+      :root:root body > .topbar .wl-lang-toggle { width:132px !important; }
+    }
+    @media (max-width:640px) {
+      :root:root body > .topbar .wl-lang-btn { width:34px !important; }
+    }
+    .toolbar button { min-height:var(--btn-h-md); border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:0 16px; background:rgba(255,255,255,.15); color:#fff; font-size:12px; font-weight:600; }
+    .toolbar .edit-toggle { min-width:104px; transition:background .18s,color .18s,border-color .18s,box-shadow .18s; }
+    .topbar .edit-toggle.is-active { background:#fff !important; color:var(--blue) !important; border-color:#fff !important; }
+    .toolbar .edit-toggle.is-active { background:#fff; color:var(--blue); border-color:#fff; box-shadow:0 4px 14px rgba(0,0,0,.18); }
+    .camp-lang-toggle {
+      display:flex; align-items:center; position:relative; width:64px; height:26px;
+      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); border-radius:999px; padding:2px; cursor:pointer;
+    }
+    .camp-lang-slider {
+      position:absolute; left:2px; width:30px; height:22px; background:#fff; border-radius:999px;
+      transition:left .25s cubic-bezier(.4,0,.2,1); box-shadow:0 1px 8px rgba(0,0,0,.18);
+    }
+    .camp-lang-side { display:flex; align-items:center; justify-content:center; width:30px; z-index:2; transition:opacity .2s; }
+    .camp-lang-side img { width:18px; height:13px; object-fit:cover; border-radius:2px; }
+    .camp-lang-side span { display:none; }
+    .camp-lang-side.is-inactive { opacity:.6; }
+    .page { max-width:min(1100px,calc(100vw - 32px)); margin:0 auto; padding:var(--space-page) 18px 90px; }
+    .hero {
+      margin-bottom:14px; padding:24px; border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--card); box-shadow:var(--shadow-card);
+    }
+    .hero h2 { margin:0; color:var(--text); font:900 clamp(20px,3vw,26px)/1.18 var(--sans); letter-spacing:-.02em; }
+    .hero p { margin:9px 0 0; max-width:780px; color:var(--muted); font-size:13.5px; line-height:1.7; font-weight:400; }
+    .resource-control-panel {
+      display:grid; gap:14px; margin-bottom:18px; padding:16px;
+      border:1px solid var(--border); border-radius:var(--radius-lg); background:rgba(255,255,255,.92);
+      box-shadow:var(--shadow-card);
+    }
+    .resource-control-head {
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      padding-bottom:12px; border-bottom:1px solid #e7eef2;
+    }
+    .resource-control-kicker {
+      color:var(--teal); font:800 11px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase;
+    }
+    .resource-control-title {
+      margin:5px 0 0; color:var(--blue); font:800 17px/1.25 var(--sans); letter-spacing:-.01em;
+    }
+    .resource-control-note {
+      margin:4px 0 0; color:var(--muted); font-size:12.5px; font-weight:500;
+    }
+    .resource-control-status {
+      display:inline-flex; align-items:center; min-height:30px; border-radius:999px; padding:0 12px;
+      background:#e9f8fb; color:var(--blue); font:800 11.5px/1 var(--sans); white-space:nowrap;
+    }
+    .resource-control-body { display:grid; gap:12px; }
+    .main-tabs { display:flex; gap:0; border:1px solid var(--border); border-radius:999px; padding:4px; background:#fff; width:fit-content; max-width:100%; overflow-x:auto; margin-bottom:0; box-shadow:var(--shadow-soft); }
+    .main-tab-btn { flex:0 0 auto; min-height:var(--btn-h-sm); border-radius:999px; padding:0 18px; border:0; background:transparent; color:var(--muted); font:700 12.5px/1 var(--sans); white-space:nowrap; transition:background .15s,color .15s; }
+    .main-tab-btn.active { background:var(--blue); color:#fff; }
+    .main-tab-btn[hidden] { display:none; }
+    .subject-group { margin-bottom:18px; }
+    .tab-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border:1px solid #dbe7ec; border-radius:var(--radius-lg) var(--radius-lg) 0 0; background:linear-gradient(135deg,#fff,#f4fbfd); padding:15px 17px; box-shadow:var(--shadow-soft); }
+    .folder-head-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .tab-head.theme-wolko { border-color:#bfdcf7; background:linear-gradient(135deg,#fff,#eaf3fd); }
+    .tab-head.theme-wolko .tab-title { color:#0b5fa5; }
+    .tab-head.theme-wolko .tab-count { background:#dcedfc; color:#0b5fa5; }
+    .tab-head.theme-sf { border-color:#dccdf7; background:linear-gradient(135deg,#fff,#f5eefd); }
+    .tab-head.theme-sf .tab-title { color:#6d28d9; }
+    .tab-head.theme-sf .tab-count { background:#ede4fc; color:#6d28d9; }
+    .tab-head.theme-lesson { border-color:#bfe8cf; background:linear-gradient(135deg,#fff,#eafdf1); }
+    .tab-head.theme-lesson .tab-title { color:#15803d; }
+    .tab-head.theme-lesson .tab-count { background:#dcfce7; color:#15803d; }
+    .subject-group.theme-wolko,
+    .subject-group.theme-sf,
+    .subject-group.theme-lesson { border-radius:calc(var(--radius-lg) + 4px); padding:5px; margin-bottom:22px; }
+    .subject-group.theme-wolko { background:linear-gradient(135deg,#dbeafe,#eaf3fd); box-shadow:0 0 0 1px #9ec8f2; }
+    .subject-group.theme-sf { background:linear-gradient(135deg,#ede4fc,#f5eefd); box-shadow:0 0 0 1px #c3a8ee; }
+    .subject-group.theme-lesson { background:linear-gradient(135deg,#dcfce7,#eafdf1); box-shadow:0 0 0 1px #86d9a5; }
+    .tab-title { color:var(--blue); font:700 16px/1.2 var(--sans); letter-spacing:-.01em; }
+    .tab-count { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:6px 11px; font-size:11px; font-weight:500; }
+    .subject-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; padding:14px; border:1px solid #dbe7ec; border-top:0; border-radius:0 0 var(--radius-md) var(--radius-md); background:#fbfdfe; }
+    @media (max-width:520px) { .subject-grid { grid-template-columns:1fr; } }
+    .person-columns { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; padding:14px; }
+    @media (max-width:640px) { .person-columns { grid-template-columns:1fr; } }
+    .person-columns > .person-block:last-child:nth-child(odd) { grid-column:1 / -1; }
+    .person-block { border:1px solid #dbe7ec; border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--shadow-soft); }
+    .person-block .tab-head { border-radius:var(--radius-md) var(--radius-md) 0 0; }
+    .person-block .subject-grid { grid-template-columns:1fr; border-radius:0 0 var(--radius-md) var(--radius-md); }
+    @media (min-width:641px) { .person-block:last-child:nth-child(odd) .subject-grid { grid-template-columns:repeat(2,1fr); } }
+    .present-card { position:relative; display:flex; align-items:center; gap:13px; min-height:92px; border:1px solid #dbe7ec; border-radius:var(--radius-md); background:#fff; padding:13px 16px; cursor:pointer; box-shadow:var(--shadow-soft); transition:transform .12s,box-shadow .12s; overflow:hidden; }
+    .present-card.is-editable { padding-right:48px; }
+    .present-card:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,79,104,.12); }
+    .present-card-thumb { flex:0 0 76px; width:76px; height:58px; border:1px solid #d9e8ee; border-radius:13px; background:#f1f6f9; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,.6); }
+    .present-card-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .present-card-thumb.is-file { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:linear-gradient(135deg,#f8fbfc,#eaf5f8); color:var(--blue); }
+    .present-card-thumb.is-pdf { color:#c72c3b; background:linear-gradient(135deg,#fff8f9,#fdecee); }
+    .present-card-thumb.is-pptx { color:#d97706; background:linear-gradient(135deg,#fffaf0,#fef3c7); }
+    .present-card-thumb.is-link { color:#0f766e; background:linear-gradient(135deg,#f0fdfa,#dff8f4); }
+    .present-card-thumb-label { font:800 13px/1 var(--sans); letter-spacing:.04em; }
+    .present-card-thumb-sub { color:var(--muted); font-size:9.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .present-card-body { min-width:0; flex:1; display:flex; flex-direction:column; gap:6px; }
+    .present-card.dragging { opacity:.4; }
+    .present-card-title { color:var(--text); font-weight:700; font-size:13.5px; line-height:1.4; word-break:keep-all; }
+    .drag-handle {
+      position:absolute; top:50%; right:10px; transform:translateY(-50%);
+      display:inline-flex; align-items:center; justify-content:center; width:28px; height:38px;
+      border:1px solid transparent; border-radius:999px; background:transparent; color:#9fb1ba;
+      cursor:grab; padding:0; transition:background .16s,border-color .16s,color .16s,box-shadow .16s;
+    }
+    .drag-handle svg { width:16px; height:22px; display:block; }
+    .drag-handle:hover { color:var(--blue); background:#f1f7fa; border-color:#d7e6ec; box-shadow:0 4px 10px rgba(0,79,104,.08); }
+    .drag-handle:active { cursor:grabbing; }
+    .present-card-meta { color:var(--muted); font-size:11px; font-weight:500; }
+    .bgm-chip { align-self:flex-start; display:inline-flex; align-items:center; gap:4px; border-radius:999px; background:#f0fdfa; color:#0f766e; padding:4px 10px; font-size:11px; font-weight:600; text-decoration:none; }
+    .bgm-chip:hover { background:#ccfbf1; }
+    .resource-chip-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .resource-chip { align-self:flex-start; display:inline-flex; align-items:center; gap:4px; border-radius:999px; background:#eef4f7; color:#45616f; padding:4px 10px; font-size:11px; font-weight:700; text-decoration:none; }
+    .resource-chip.is-archived { background:#ecfdf5; color:#047857; }
+    .resource-chip.is-missing { background:#fff7ed; color:#c45f00; }
+    .resource-chip:hover { filter:brightness(.97); }
+    .present-card-actions { display:flex; gap:6px; margin-top:4px; }
+    .present-card-actions button { flex:1; min-height:var(--btn-h-sm); border-radius:8px; padding:0 8px; font-size:11px; font-weight:600; border:1px solid #dbe7ec; background:#f8fafc; color:var(--text); }
+    .present-card-actions button.danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
+    .present-card-add { grid-column:1 / -1; align-items:center; justify-content:center; color:var(--muted); border-style:dashed; font-weight:700; cursor:pointer; box-shadow:none; }
+    .present-card-add:hover { color:var(--blue); border-color:var(--blue); background:#f4fbfd; }
+    .empty { padding:24px; border:1px dashed #ccdce3; border-radius:var(--radius-md); color:var(--light); text-align:center; font-weight:400; background:#fff; grid-column:1/-1; }
+    .camp-filter-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0; padding-bottom:12px; border-bottom:1px solid #e7eef2; }
+    .camp-filter-wrap[hidden] { display:none; }
+    .camp-filter-wrap select { min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0 12px; background:#fff; color:var(--text); font:600 13px/1 var(--body); box-shadow:var(--shadow-soft); cursor:pointer; }
+    .camp-rename-btn { min-height:38px; padding:0 14px; white-space:nowrap; }
+    .season-toggle { display:flex; gap:0; border:1px solid var(--border); border-radius:999px; padding:4px; background:#fff; box-shadow:var(--shadow-soft); }
+    .season-toggle-btn { min-height:var(--btn-h-sm); border:0; border-radius:999px; padding:0 14px; background:transparent; color:var(--muted); font:700 12px/1 var(--sans); white-space:nowrap; cursor:pointer; }
+    .season-toggle-btn.active { background:var(--blue); color:#fff; }
+    .season-toggle-btn[disabled] { opacity:.35; cursor:not-allowed; }
+    .camp-manage-btn { margin-left:auto; min-height:38px; padding:0 14px; }
+    .camp-checkbox-list { display:grid; gap:10px; max-height:260px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; background:#fbfdfe; }
+    .camp-checkbox-group-label { color:var(--muted); font:700 11px/1 var(--sans); letter-spacing:.02em; margin:6px 0 2px; }
+    .camp-checkbox-group-label:first-child { margin-top:0; }
+    .camp-checkbox-row { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text); }
+    .camp-checkbox-row input { width:16px; height:16px; }
+    .camp-manage-list { display:grid; gap:8px; max-height:260px; overflow-y:auto; margin-bottom:16px; }
+    .camp-manage-row { display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--border); border-radius:var(--radius-sm); padding:9px 12px; background:#fbfdfe; }
+    .camp-manage-row-label { font-size:12.5px; color:var(--text); }
+    .camp-manage-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+    .camp-default-badge { border-radius:999px; background:#e9f8fb; color:var(--blue); padding:5px 9px; font-size:10.5px; font-weight:800; white-space:nowrap; }
+    .camp-manage-row button { min-height:var(--btn-h-xs); min-width:52px; border:1px solid #d7e4e9; border-radius:8px; background:#fff; color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; padding:0 10px; }
+    .camp-manage-row button.danger { color:var(--red); border-color:#f1c9cf; background:#fff8f9; }
+    .camp-manage-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; padding:10px 12px; }
+    .camp-manage-row-main { min-width:0; display:grid; gap:2px; }
+    .camp-manage-row-name { font-size:13.5px; font-weight:700; color:var(--text); overflow-wrap:anywhere; line-height:1.35; }
+    .camp-manage-row-meta { font-size:11.5px; color:var(--muted); }
+    .camp-manage-actions { flex-wrap:nowrap; }
+    /* 캠프 관리 창은 이름이 한 줄에 들어오도록 조금 넓게 (다른 대화상자는 그대로 400px) */
+    #campManageBackdrop .tch-dialog, #managersBackdrop .tch-dialog { max-width:540px; }
+    .managers-hint { margin:0 0 12px; font-size:12.5px; line-height:1.6; color:var(--muted); }
+    .managers-add { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; }
+    .managers-add select { min-width:0; }
+    :root:root .managers-add button { height:34px !important; min-height:0 !important; padding:0 16px; }
+    @media (max-width:480px) {
+      #campManageBackdrop { padding:12px; }
+      #campManageBackdrop .tch-dialog { padding:20px 16px; max-height:92vh; }
+      #campManageBackdrop .tch-dialog-btns { margin:16px -16px -20px; padding:12px 16px; bottom:-20px; }
+      :root:root .camp-manage-row button, :root:root .camp-manage-row .camp-default-badge { min-width:52px; padding:0 9px !important; }
+      .camp-manage-row { gap:8px; padding:9px 10px; }
+      .camp-manage-list { max-height:none; overflow:visible; } /* 목록 안 따로 스크롤 대신 창 전체가 스크롤되게 */
+    }
+    @media (max-width:340px) { .camp-manage-row { grid-template-columns:minmax(0,1fr); } .camp-manage-actions { justify-content:flex-start; } }
+    /* 행 안의 작은 버튼: 공용 모바일 규칙(버튼 최소 44px)에 늘어나지 않게 낮게 고정 */
+    :root:root .camp-manage-row button, :root:root .camp-manage-row .camp-default-badge { min-width:58px; min-height:0 !important; height:28px !important; padding:0 12px !important; display:inline-flex; align-items:center; justify-content:center; font-size:11.5px; line-height:1; border-radius:8px; }
+    :root:root .camp-manage-row .camp-default-badge { border-radius:999px; }
+    .camp-manage-add-row { display:grid; grid-template-columns:minmax(0,1fr); min-width:0; margin-top:4px; padding-top:16px; border-top:1px solid var(--border); }
+    .camp-manage-add-title { font:800 13px/1 var(--sans); color:var(--blue); margin-bottom:12px; }
+    @media (max-width:520px) { :root:root .topbar .edit-toggle { min-width:0 !important; padding:0 10px !important; font-size:11px !important; } }
+    /* Safari: 격자 칸의 최소 폭이 입력 칸 기본 폭으로 늘어나 오른쪽이 잘리지 않게 minmax(0,1fr) + min-width:0 */
+    .camp-add-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+    .camp-add-grid .field, .camp-manage-add-row .field { min-width:0; }
+    :root:root .camp-manage-add-row input[type=text] { width:100%; min-width:0; box-sizing:border-box; height:38px !important; min-height:0 !important; padding:0 12px; font-size:13.5px; border-radius:10px; }
+    :root:root .camp-manage-add-row .primary { height:40px !important; min-height:0 !important; font-size:13.5px; }
+    .season-check-group { display:flex; gap:10px; min-width:0; }
+    .season-check { position:relative; flex:1; min-width:0; display:flex; align-items:center; gap:7px; height:38px; padding:0 10px; border:1.5px solid #d7e2e7; border-radius:10px; background:#fff; cursor:pointer; font-size:12.5px; font-weight:700; color:var(--text); }
+    .season-check input { position:absolute; opacity:0; pointer-events:none; }
+    .season-check-box { width:17px; height:17px; border:2px solid #b8c9d1; border-radius:5px; background:#fff; display:inline-grid; place-items:center; flex:none; transition:background .15s,border-color .15s; }
+    .season-check input:checked + .season-check-box { background:var(--blue); border-color:var(--blue); }
+    .season-check input:checked + .season-check-box::after { content:''; width:4px; height:8px; border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg) translate(-1px,-1px); }
+    .season-check:has(input:checked) { border-color:var(--blue); background:#f2f8fb; }
+    .season-check input:focus-visible + .season-check-box { outline:2px solid var(--blue); outline-offset:2px; }
+    @media (max-width:480px) { .camp-add-grid { grid-template-columns:minmax(0,1fr); } }
+    .camp-manage-add-row .field { margin-bottom:12px; }
+    .field { display:grid; grid-template-columns:minmax(0,1fr); gap:6px; margin-bottom:14px; min-width:0; }
+    .field label { color:var(--muted); font-size:11.5px; font-weight:700; letter-spacing:.02em; }
+    .field input,.field select { min-height:var(--btn-h-lg); border:1px solid #d7e2e7; border-radius:10px; padding:0 12px; outline:none; background:#fff; color:var(--text); }
+    .field input:focus,.field select:focus { border-color:var(--blue); }
+    .field-divider { height:1px; background:var(--border); margin:16px 0; }
+    .tch-dialog-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .tch-dialog-backdrop[hidden] { display:none; }
+    .tch-dialog { background:#fff; border-radius:16px; padding:26px; max-width:400px; width:100%; box-shadow:0 8px 40px rgba(0,0,0,.18); max-height:90vh; overflow-y:auto; }
+    .tch-dialog-title { font:700 16px/1.3 var(--sans); color:var(--blue); margin-bottom:16px; }
+    .tch-dialog-error { min-height:18px; color:var(--red); font-size:12px; font-weight:500; margin-bottom:8px; }
+    .tch-dialog-btns { display:flex; gap:8px; justify-content:flex-end; margin:16px -26px -26px; padding:14px 26px; position:sticky; bottom:-26px; background:#fff; border-top:1px solid var(--border); border-radius:0 0 16px 16px; }
+    .tch-dialog-btns button { border-radius:100px; padding:0 20px; font:600 13px/1 var(--sans); cursor:pointer; }
+    .upload-placeholder-btn { width:100%; margin-bottom:14px; }
+    .is-drop-target:not(.tch-dialog) { outline:2px dashed #0d9488; outline-offset:2px; }
+    .tch-dialog.is-drop-target { outline:2px dashed #0d9488; outline-offset:-6px; background:rgba(13,148,136,.05); }
+    .tch-dialog.is-drop-target .upload-placeholder-btn { border-color:#0d9488; color:#0d9488; }
+    .batch-upload { margin-bottom:16px; padding:12px; border:1px solid var(--border); border-radius:12px; background:#f5fafb; }
+    .batch-upload p { margin:0 0 10px; font-size:12px; line-height:1.6; }
+    .batch-upload progress { width:100%; accent-color:#0d9488; }
+    .batch-upload ul { list-style:none; padding:0; margin:8px 0 0; max-height:200px; overflow:auto; }
+    .batch-upload li { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); font-size:12px; }
+    .batch-upload li span:first-child { min-width:0; overflow-wrap:anywhere; }
+    .batch-upload li span:last-child { flex-shrink:0; }
+    .batch-upload li[data-status="failed"] { color:var(--red); }
+    .upload-placeholder-btn[disabled] { opacity:.55; cursor:not-allowed; }
+    .load-error-banner { margin-bottom:16px; padding:12px 16px; border:1px solid #f1c9cf; border-radius:var(--radius-md); background:#fff8f9; color:var(--red); font-size:12.5px; }
+    .load-error-banner[hidden] { display:none; }
+    @media (max-width:720px) {
+      :root { --space-page:18px; }
+      .topbar { padding:10px 16px; gap:10px; }
+      .brand h1 { font-size:13px; }
+      .toolbar { width:100%; justify-content:space-between; }
+      .page { max-width:100%; padding:var(--space-page) 12px 80px; }
+      .hero { padding:18px; border-radius:18px; }
+      .resource-control-panel { padding:13px; border-radius:18px; }
+      .resource-control-head { align-items:flex-start; }
+      .resource-control-status { order:-1; }
+      .main-tabs { width:100%; }
+      .main-tab-btn { flex:1 0 auto; padding:0 14px; }
+      .camp-filter-wrap { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+      .camp-filter-wrap select,
+      .camp-filter-wrap .season-toggle,
+      .camp-filter-wrap button { width:100%; }
+      .camp-filter-wrap #campSelect,
+      .camp-filter-wrap .camp-rename-btn,
+      .camp-filter-wrap .camp-manage-btn { grid-column:1 / -1; margin-left:0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <div>
+        <h1 data-ko="캠프 자료실" data-en="Camp Resources">캠프 자료실</h1>
+        <p data-ko="캠프 자료 모음" data-en="Camp Resource Hub">캠프 자료 모음</p>
+      </div>
+    </div>
+    <div class="wl-lang-toggle" role="group" aria-label="Language">
+      <button type="button" class="wl-lang-btn" id="langKoBtn" data-lang="ko" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+      <button type="button" class="wl-lang-btn" id="langEnBtn" data-lang="en" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+    </div>
+    <button class="edit-toggle" id="editModeBtn" type="button" aria-pressed="false">편집 모드</button>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <h2 data-ko="캠프 자료를 한 곳에서 정리합니다" data-en="Organize camp resources in one place">캠프 자료를 한 곳에서 정리합니다</h2>
+      <p data-ko="상단은 페이지 이동과 편집 기능만 담당하고, 자료 분류와 캠프 선택은 아래 컨트롤 영역에서 한 번에 관리합니다." data-en="The top bar handles page actions only. Choose resource categories and camps from the control panel below.">상단은 페이지 이동과 편집 기능만 담당하고, 자료 분류와 캠프 선택은 아래 컨트롤 영역에서 한 번에 관리합니다.</p>
+    </section>
+
+    <section class="resource-control-panel" aria-label="Camp resource controls">
+      <div class="resource-control-head">
+        <div>
+          <div class="resource-control-kicker" data-ko="자료실 메뉴" data-en="Resource Menu">자료실 메뉴</div>
+          <h3 class="resource-control-title" data-ko="분류와 캠프를 여기서 선택하세요" data-en="Choose category and camp here">분류와 캠프를 여기서 선택하세요</h3>
+          <p class="resource-control-note" data-ko="탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다." data-en="Choose a tab and click a card to open its resource in a new tab.">탭을 선택하고 카드를 클릭하면 자료가 새 탭에서 열립니다.</p>
+        </div>
+        <button class="secondary" id="folderManageBtn" type="button" hidden data-ko="폴더 관리" data-en="Manage Folders">폴더 관리</button>
+      </div>
+      <div class="resource-control-body">
+        <div class="camp-filter-wrap" id="campFilterWrap" hidden>
+          <select id="yearSelect"></select>
+          <div class="season-toggle" id="seasonToggle">
+            <button class="season-toggle-btn" data-season="summer" type="button" data-ko="여름" data-en="Summer">여름</button>
+            <button class="season-toggle-btn" data-season="winter" type="button" data-ko="겨울" data-en="Winter">겨울</button>
+          </div>
+          <select id="campSelect"></select>
+          <button class="secondary camp-rename-btn" id="campRenameBtn" type="button" hidden data-ko="이름 수정" data-en="Rename">이름 수정</button>
+          <button class="ghost camp-manage-btn" id="managersBtn" type="button" hidden data-ko="관리자 지정" data-en="Set Managers">관리자 지정</button>
+          <button class="ghost camp-manage-btn" id="campManageBtn" type="button" hidden data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</button>
+        </div>
+
+        <div class="main-tabs" id="mainTabs" role="tablist">
+          <button class="main-tab-btn" data-tab="teacher" type="button" data-ko="수업자료" data-en="Class Materials">수업자료</button>
+          <button class="main-tab-btn" data-tab="program" type="button" data-ko="프로그램팀" data-en="Program Team">프로그램팀</button>
+          <button class="main-tab-btn" data-tab="counselor" type="button" data-ko="상담자" data-en="Counselors">상담자</button>
+          <button class="main-tab-btn" data-tab="preacher" type="button" data-ko="설교자" data-en="Preachers">설교자</button>
+          <button class="main-tab-btn" data-tab="general" type="button" data-ko="일반 자료" data-en="General Files">일반 자료</button>
+          <button class="main-tab-btn" data-tab="schedule" type="button" data-ko="스케줄" data-en="Schedule" hidden>스케줄</button>
+        </div>
+      </div>
+    </section>
+
+    <p class="load-error-banner" id="loadErrorBanner" hidden></p>
+
+    <section id="subjectGroups"></section>
+  </main>
+
+  <div class="tch-dialog-backdrop" id="folderManageBackdrop" hidden>
+    <div class="tch-dialog" role="dialog" aria-modal="true" aria-labelledby="folderManageTitle">
+      <div class="tch-dialog-title" id="folderManageTitle" data-ko="폴더 관리" data-en="Manage Folders">폴더 관리</div>
+      <p data-ko="현재 캠프의 수업자료 폴더입니다. 빈 폴더만 삭제할 수 있으며, 삭제는 마스터 또는 만든 본인만 가능합니다." data-en="Class-material folders for this camp. Only the master or creator can delete an empty folder.">현재 캠프의 수업자료 폴더입니다. 빈 폴더만 삭제할 수 있으며, 삭제는 마스터 또는 만든 본인만 가능합니다.</p>
+      <div id="folderManageList"></div>
+      <form id="folderCreateForm">
+        <div class="field"><label for="folderNameInput" data-ko="새 폴더 이름" data-en="New Folder Name">새 폴더 이름</label><input id="folderNameInput" type="text" maxlength="60" required></div>
+        <button class="primary" type="submit" id="folderCreateBtn" data-ko="폴더 추가" data-en="Add Folder">폴더 추가</button>
+      </form>
+      <p id="folderManageError" class="tch-dialog-error" role="alert"></p>
+      <div class="tch-dialog-actions"><button class="ghost" type="button" id="folderManageClose" data-ko="닫기" data-en="Close">닫기</button></div>
+    </div>
+  </div>
+
+  <div class="tch-dialog-backdrop" id="itemDialogBackdrop" hidden>
+    <div class="tch-dialog">
+      <div class="tch-dialog-title" id="itemDialogTitle" data-ko="자료 추가" data-en="Add Resource">자료 추가</div>
+      <div class="field" id="teamFieldWrap">
+        <label data-ko="팀" data-en="Team">팀</label>
+        <select id="itemTeam">
+          <option value="WOLKO">WOLKO</option>
+          <option value="Student Fusion Team Projects">Student Fusion Team Projects</option>
+          <option value="레슨플랜" data-ko="레슨플랜" data-en="Lesson Plans">레슨플랜</option>
+        </select>
+      </div>
+      <div class="field" id="personFieldWrap">
+        <label data-ko="이름" data-en="Name">이름</label>
+        <input id="itemPerson" type="text" readonly>
+        <datalist id="personDatalist"></datalist>
+      </div>
+      <div class="field">
+        <label data-ko="캠프 (다중 선택 가능)" data-en="Camps (select any that apply)">캠프 (다중 선택 가능)</label>
+        <div class="camp-checkbox-list" id="campCheckboxList"></div>
+      </div>
+      <div class="field">
+        <label data-ko="제목" data-en="Title">제목</label>
+        <input id="itemTitle" type="text">
+      </div>
+      <div class="field">
+        <label data-ko="우선 열 링크" data-en="Primary Link">우선 열 링크</label>
+        <input id="itemUrl" type="url" placeholder="https://www.canva.com/design/...">
+      </div>
+      <div class="field">
+        <label data-ko="보관 파일 (선택)" data-en="Archive File (optional)">보관 파일 (선택)</label>
+        <input id="itemArchiveUrl" type="url" data-ph-ko="업로드하면 자동 입력됩니다" data-ph-en="Auto-filled after upload" placeholder="업로드하면 자동 입력됩니다">
+      </div>
+      <button class="ghost upload-placeholder-btn" type="button" id="uploadFileBtn" data-ko="파일 선택 / 여러 파일 끌어다 놓기 (모든 형식)" data-en="Select or drop multiple files (all formats)">파일 선택 / 여러 파일 끌어다 놓기 (모든 형식)</button>
+      <input id="uploadFileInput" type="file" multiple hidden>
+      <div id="batchUpload" class="batch-upload" hidden>
+        <p data-ko="저장을 누르면 파일 이름을 제목으로 각각 등록합니다. 폴더와 캠프는 공통 적용됩니다. 실패한 파일은 저장을 다시 눌러 재시도할 수 있습니다." data-en="Save creates one resource per file, using its filename as the title. Folder and camps apply to all files. Press Save again to retry failed files.">저장을 누르면 파일 이름을 제목으로 각각 등록합니다. 폴더와 캠프는 공통 적용됩니다. 실패한 파일은 저장을 다시 눌러 재시도할 수 있습니다.</p>
+        <progress id="batchUploadProgress" value="0" max="1" aria-label="Upload progress"></progress>
+        <ul id="batchUploadList" aria-live="polite"></ul>
+      </div>
+      <div class="field" id="bgmFieldWrap">
+        <div class="field-divider"></div>
+        <label data-ko="BGM 링크 / 파일 (선택)" data-en="BGM Link / File (optional)">BGM 링크 / 파일 (선택)</label>
+        <input id="itemBgmUrl" type="url" placeholder="https://...">
+        <button class="ghost upload-placeholder-btn" type="button" id="uploadBgmBtn" data-ko="BGM 업로드 또는 끌어다 놓기 (MP3·WAV·M4A)" data-en="Upload or drop BGM (MP3/WAV/M4A)">BGM 업로드 또는 끌어다 놓기 (MP3·WAV·M4A)</button>
+        <input id="uploadBgmInput" type="file" accept=".mp3,.wav,.m4a" hidden>
+      </div>
+      <p class="tch-dialog-error" id="itemDialogError"></p>
+      <div class="tch-dialog-btns">
+        <button class="secondary" id="itemDialogCancelBtn" type="button" data-ko="취소" data-en="Cancel">취소</button>
+        <button class="primary" id="itemDialogSaveBtn" type="button" data-ko="저장" data-en="Save">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tch-dialog-backdrop" id="managersBackdrop" hidden>
+    <div class="tch-dialog">
+      <div class="tch-dialog-title" data-ko="자료실 관리자 지정" data-en="Resource Managers">자료실 관리자 지정</div>
+      <p class="managers-hint" data-ko="관리자는 자료 수정·삭제·순서 변경과 캠프 관리를 할 수 있어요. 그 밖의 멤버는 자료 추가만 할 수 있어요. (마스터는 항상 관리자)" data-en="Managers can edit, delete and reorder files and manage camps. Everyone else can only add files. (The master is always a manager.)">관리자는 자료 수정·삭제·순서 변경과 캠프 관리를 할 수 있어요. 그 밖의 멤버는 자료 추가만 할 수 있어요. (마스터는 항상 관리자)</p>
+      <div class="camp-manage-list" id="managersList"></div>
+      <div class="field">
+        <label for="managersPick" data-ko="멤버 추가" data-en="Add a member">멤버 추가</label>
+        <div class="managers-add"><select id="managersPick"></select><button class="primary" id="managersAddBtn" type="button" data-ko="추가" data-en="Add">추가</button></div>
+      </div>
+      <p class="tch-dialog-error" id="managersError"></p>
+      <div class="tch-dialog-btns"><button class="secondary" id="managersCloseBtn" type="button" data-ko="닫기" data-en="Close">닫기</button></div>
+    </div>
+  </div>
+
+  <div class="tch-dialog-backdrop" id="campManageBackdrop" hidden>
+    <div class="tch-dialog">
+      <div class="tch-dialog-title" data-ko="캠프 관리" data-en="Manage Camps">캠프 관리</div>
+      <div class="camp-manage-list" id="campManageList"></div>
+      <div class="camp-manage-add-row">
+        <div class="camp-manage-add-title" data-ko="새 캠프 추가" data-en="Add a camp">새 캠프 추가</div>
+        <div class="camp-add-grid">
+          <div class="field">
+            <label for="newCampYear" data-ko="연도" data-en="Year">연도</label>
+            <input id="newCampYear" type="text" inputmode="numeric" data-ph-ko="예: 2027" data-ph-en="e.g. 2027" placeholder="예: 2027">
+          </div>
+          <div class="field">
+            <label data-ko="계절" data-en="Season">계절</label>
+            <div class="season-check-group" role="radiogroup">
+              <label class="season-check"><input type="radio" name="newCampSeason" value="summer" checked><span class="season-check-box" aria-hidden="true"></span><span data-ko="여름" data-en="Summer">여름</span></label>
+              <label class="season-check"><input type="radio" name="newCampSeason" value="winter"><span class="season-check-box" aria-hidden="true"></span><span data-ko="겨울" data-en="Winter">겨울</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="newCampName" data-ko="캠프 이름" data-en="Camp Name">캠프 이름</label>
+          <input id="newCampName" type="text" data-ph-ko="예: A캠프" data-ph-en="e.g. Camp A" placeholder="예: A캠프">
+        </div>
+        <button class="primary" id="addCampBtn" type="button" data-ko="캠프 추가" data-en="Add Camp" style="width:100%">캠프 추가</button>
+      </div>
+      <p class="tch-dialog-error" id="campManageError"></p>
+      <div class="tch-dialog-btns">
+        <button class="secondary" id="campManageCloseBtn" type="button" data-ko="닫기" data-en="Close">닫기</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    import { foldersForCamp } from '../../../../functions/lib/teachFolders.js';
+    const TOKEN_KEY = 'wolko_camp_resources_token';
+    const LANG_KEY = 'wolko-lang'; // 포탈 전체와 같은 언어 설정
+    const TAB_KEY = 'wolko_camp_resources_tab';
+    const TEAM_WOLKO = 'WOLKO';
+    const TEAM_SF = 'Student Fusion Team Projects';
+    const TEAM_LESSON_PLAN = '레슨플랜';
+    const TEAMS_ORDER = [TEAM_WOLKO, TEAM_SF, TEAM_LESSON_PLAN];
+    const TEAM_LABELS_EN = { [TEAM_LESSON_PLAN]: 'Lesson Plans' };
+    function teamLabel(team) {
+      return currentLang === 'en' ? (TEAM_LABELS_EN[team] || team) : team;
+    }
+    let uploaderName = '';
+    let uploaderEmail = '';
+    let folderState = { folders: [], removedDefaults: [] };
+    function activeFolders() { return foldersForCamp(folderState, selectedCampId, items); }
+    function canDeleteItem(item) { return isMaster || Boolean(uploaderEmail && item.uploaderEmail && item.uploaderEmail.toLowerCase() === uploaderEmail); }
+    const TABS = [
+      { key: 'teacher', ko: '수업자료', en: 'Class Materials' },
+      { key: 'program', ko: '프로그램팀', en: 'Program Team' },
+      { key: 'counselor', ko: '상담자', en: 'Counselors' },
+      { key: 'preacher', ko: '설교자', en: 'Preachers' },
+      { key: 'general', ko: '일반 자료', en: 'General Files' },
+    ];
+    const TAB_KEYS = TABS.map(t => t.key);
+    const DEFAULT_TAB = 'teacher';
+
+    const COPY = {
+      ko: {
+        noItems: '등록된 자료가 없습니다.',
+        addItem: '추가',
+        edit: '수정',
+        delete: '삭제',
+        deleteConfirm: '이 자료를 삭제하시겠습니까?',
+        loginFailed: '로그인하지 못했습니다.',
+        passwordLanguageWarning: '비밀번호는 영어 입력 상태에서 입력해주세요.',
+        saveFailed: '저장하지 못했습니다.',
+        deleteFailed: '삭제하지 못했습니다.',
+        loadFailed: '목록을 불러오지 못했습니다.',
+        validationError: '캠프를 하나 이상 선택하고, 제목과 링크 또는 보관 파일을 입력해주세요.',
+        validationErrorTeam: '팀을 선택해주세요.',
+        validationErrorPerson: 'WOLKO 팀은 이름을 입력해주세요.',
+        addTitle: '자료 추가',
+        editTitle: '자료 수정',
+        uploading: '업로드 중...',
+        uploadFailed: '업로드하지 못했습니다.',
+        uploadTooBig: '파일이 너무 큽니다. (최대 20MB)',
+        uploadBadTypeBgm: 'MP3, WAV, M4A 파일만 업로드할 수 있습니다.',
+        dragHint: '끌어서 순서 변경',
+        reorderFailed: '순서를 저장하지 못했습니다.',
+        summer: '여름',
+        winter: '겨울',
+        noCamps: '등록된 캠프가 없습니다. 먼저 캠프를 추가해주세요.',
+        campLoadFailed: '캠프 목록을 불러오지 못했습니다.',
+        campSaveFailed: '캠프를 저장하지 못했습니다.',
+        campDeleteFailed: '캠프를 삭제하지 못했습니다.',
+        campRenameFailed: '캠프 이름을 수정하지 못했습니다.',
+        campFieldsRequired: '연도, 계절, 이름을 모두 입력해주세요.',
+        campDeleteConfirm: '이 캠프를 삭제하시겠습니까? (연결된 자료는 삭제되지 않습니다)',
+        campRenamePrompt: '새 캠프 이름을 입력해주세요.',
+        campRenameEmpty: '캠프 이름을 입력해주세요.',
+        setDefaultCamp: '기본 설정',
+        defaultCamp: '기본',
+        defaultCampSaveFailed: '기본 캠프를 저장하지 못했습니다.',
+        editModeEnter: '편집 모드', managerRemove: '해제', managersNone: '지정된 관리자가 아직 없어요.', managerPick: '멤버 고르기',
+        editModeExit: '편집 중 · 나가기',
+        staffLogin: '편집 모드',
+      },
+      en: {
+        noItems: 'No resources yet.',
+        addItem: 'Add',
+        edit: 'Edit',
+        delete: 'Delete',
+        deleteConfirm: 'Delete this resource?',
+        loginFailed: 'Login failed.',
+        passwordLanguageWarning: 'Please switch to English input before entering the password.',
+        saveFailed: 'Could not save.',
+        deleteFailed: 'Could not delete.',
+        loadFailed: 'Could not load the list.',
+        validationError: 'Please select at least one camp and fill in title and a link or archive file.',
+        validationErrorTeam: 'Please choose a team.',
+        validationErrorPerson: 'Please enter a name for the WOLKO team.',
+        addTitle: 'Add Resource',
+        editTitle: 'Edit Resource',
+        uploading: 'Uploading...',
+        uploadFailed: 'Upload failed.',
+        uploadTooBig: 'File is too large. (max 20MB)',
+        uploadBadTypeBgm: 'Only MP3, WAV, or M4A files can be uploaded.',
+        dragHint: 'Drag to reorder',
+        reorderFailed: 'Could not save the new order.',
+        summer: 'Summer',
+        winter: 'Winter',
+        noCamps: 'No camps registered yet. Add a camp first.',
+        campLoadFailed: 'Could not load the camp list.',
+        campSaveFailed: 'Could not save the camp.',
+        campDeleteFailed: 'Could not delete the camp.',
+        campRenameFailed: 'Could not rename the camp.',
+        campFieldsRequired: 'Please fill in year, season, and name.',
+        campDeleteConfirm: 'Delete this camp? (Linked resources will not be deleted)',
+        campRenamePrompt: 'Enter the new camp name.',
+        campRenameEmpty: 'Please enter a camp name.',
+        setDefaultCamp: 'Set Default',
+        defaultCamp: 'Default',
+        defaultCampSaveFailed: 'Could not save the default camp.',
+        editModeEnter: 'Edit Mode', managerRemove: 'Remove', managersNone: 'No managers yet.', managerPick: 'Choose a member',
+        editModeExit: 'Editing · Exit',
+        staffLogin: 'Edit Mode',
+      },
+    };
+
+    let currentLang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'ko';
+    function tr(key) {
+      return COPY[currentLang][key] ?? COPY.ko[key] ?? key;
+    }
+    function tabLabel(key) {
+      const t = TABS.find(t => t.key === key);
+      return t ? (currentLang === 'en' ? t.en : t.ko) : key;
+    }
+
+    const els = {
+      editModeBtn: document.getElementById('editModeBtn'),
+      mainTabs: document.getElementById('mainTabs'),
+      subjectGroups: document.getElementById('subjectGroups'),
+      campFilterWrap: document.getElementById('campFilterWrap'),
+      yearSelect: document.getElementById('yearSelect'),
+      seasonToggle: document.getElementById('seasonToggle'),
+      campSelect: document.getElementById('campSelect'),
+      campRenameBtn: document.getElementById('campRenameBtn'),
+      managersBtn: document.getElementById('managersBtn'),
+      managersBackdrop: document.getElementById('managersBackdrop'),
+      managersList: document.getElementById('managersList'),
+      managersPick: document.getElementById('managersPick'),
+      managersAddBtn: document.getElementById('managersAddBtn'),
+      managersCloseBtn: document.getElementById('managersCloseBtn'),
+      managersError: document.getElementById('managersError'),
+      campManageBtn: document.getElementById('campManageBtn'),
+      campManageBackdrop: document.getElementById('campManageBackdrop'),
+      campManageList: document.getElementById('campManageList'),
+      newCampYear: document.getElementById('newCampYear'),
+      newCampName: document.getElementById('newCampName'),
+      addCampBtn: document.getElementById('addCampBtn'),
+      campManageError: document.getElementById('campManageError'),
+      campManageCloseBtn: document.getElementById('campManageCloseBtn'),
+      loadErrorBanner: document.getElementById('loadErrorBanner'),
+      itemDialogBackdrop: document.getElementById('itemDialogBackdrop'),
+      itemDialogTitle: document.getElementById('itemDialogTitle'),
+      teamFieldWrap: document.getElementById('teamFieldWrap'),
+      itemTeam: document.getElementById('itemTeam'),
+      personFieldWrap: document.getElementById('personFieldWrap'),
+      itemPerson: document.getElementById('itemPerson'),
+      personDatalist: document.getElementById('personDatalist'),
+      campCheckboxList: document.getElementById('campCheckboxList'),
+      itemTitle: document.getElementById('itemTitle'),
+      itemUrl: document.getElementById('itemUrl'),
+      itemArchiveUrl: document.getElementById('itemArchiveUrl'),
+      itemDialogError: document.getElementById('itemDialogError'),
+      itemDialogCancelBtn: document.getElementById('itemDialogCancelBtn'),
+      itemDialogSaveBtn: document.getElementById('itemDialogSaveBtn'),
+      uploadFileBtn: document.getElementById('uploadFileBtn'),
+      uploadFileInput: document.getElementById('uploadFileInput'),
+      bgmFieldWrap: document.getElementById('bgmFieldWrap'),
+      itemBgmUrl: document.getElementById('itemBgmUrl'),
+      uploadBgmBtn: document.getElementById('uploadBgmBtn'),
+      uploadBgmInput: document.getElementById('uploadBgmInput'),
+    };
+
+    let items = [];
+    let camps = [];
+    let defaultCampId = '';
+    let selectedYear = '';
+    let selectedSeason = '';
+    let selectedCampId = '';
+    let currentTab = DEFAULT_TAB;
+    let dialogTab = DEFAULT_TAB;
+    let editMode = false;
+    let isManager = false;   // 수정 · 삭제 · 순서 · 캠프 관리 가능 (마스터 + 마스터가 지정한 관리자)
+    let isMaster = false;    // 관리자 지정 가능
+    let token = '';
+    let loginMode = 'access';
+    let editingItemId = '';
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.querySelectorAll('[data-ko][data-en]').forEach(el => {
+        el.textContent = el.dataset[currentLang];
+      });
+      document.querySelectorAll('[data-ph-ko][data-ph-en]').forEach(el => {
+        el.placeholder = el.dataset[`ph${currentLang === 'ko' ? 'Ko' : 'En'}`] || '';
+      });
+      document.querySelectorAll('option[data-ko][data-en]').forEach(option => {
+        option.textContent = option.dataset[currentLang];
+      });
+      updateLangToggleUI();
+      updateLoginUI();
+      updateEditModeUI();
+    }
+
+    function authHeaders(base = {}) {
+      return token ? { ...base, Authorization: `Bearer ${token}` } : base;
+    }
+
+    function hasStaffAccess() {
+      return !!token;
+    }
+
+    function isTabVisible() {
+      return hasStaffAccess();
+    }
+
+    function authError(message) {
+      const err = new Error(message || tr('loginFailed'));
+      err.isAuth = true;
+      return err;
+    }
+
+    function updateLoginUI() {}
+
+    // 포탈 로그인이 없거나 만료되면 포탈 로그인 화면으로 보낸다
+    function requireAccess() {
+      token = '';
+      try { sessionStorage.removeItem('wolko-hub-token'); } catch (e) {}
+      location.replace('/portal');
+    }
+
+    // 포탈 세션 → 자료실 토큰 (승인된 포탈 멤버 누구나)
+    async function portalAuth() {
+      const hub = sessionStorage.getItem('wolko-hub-token');
+      if (!hub) return requireAccess();
+      const res = await fetch('/api/teach/portal-login', { method: 'POST', headers: { Authorization: `Bearer ${hub}` } });
+      if (res.status === 401) return requireAccess();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.token) throw new Error(data.error || tr('loginFailed'));
+      token = data.token;
+      uploaderName = data.uploaderName || '';
+      uploaderEmail = (data.uploaderEmail || '').toLowerCase();
+      isManager = !!data.isManager;
+      isMaster = !!data.isMaster;
+      updateEditModeUI();
+      if (isManager) render();   // 관리 버튼(수정·삭제·순서)은 관리자에게만 그려진다
+    }
+
+    function updateLangToggleUI() {
+      document.getElementById('langKoBtn').classList.toggle('is-active', currentLang === 'ko');
+      document.getElementById('langEnBtn').classList.toggle('is-active', currentLang === 'en');
+    }
+
+    let loadErrorIsStandard = false;
+
+    function setLanguage(lang) {
+      currentLang = lang === 'en' ? 'en' : 'ko';
+      localStorage.setItem(LANG_KEY, currentLang);
+      applyLanguage();
+      if (loadErrorIsStandard && !els.loadErrorBanner.hidden) {
+        els.loadErrorBanner.textContent = tr('loadFailed');
+      }
+      if (editingItemId !== '' || !els.itemDialogBackdrop.hidden) {
+        els.itemDialogTitle.textContent = editingItemId ? tr('editTitle') : tr('addTitle');
+      }
+      render();
+    }
+
+
+    function campById(id) {
+      return camps.find(c => c.id === id) || null;
+    }
+
+    function campNamesFor(campIds) {
+      return (campIds || []).map(id => campById(id)?.name).filter(Boolean).join(', ');
+    }
+
+    function resourceExt(url) {
+      try {
+        const path = new URL(url).pathname.toLowerCase();
+        const match = path.match(/\.([a-z0-9]+)$/);
+        return match ? match[1] : '';
+      } catch {
+        const clean = String(url || '').split(/[?#]/)[0].toLowerCase();
+        const match = clean.match(/\.([a-z0-9]+)$/);
+        return match ? match[1] : '';
+      }
+    }
+
+    function resourceHost(url) {
+      try {
+        return new URL(url).hostname.replace(/^www\./, '');
+      } catch {
+        return '';
+      }
+    }
+
+    function previewMeta(item) {
+      const previewUrl = item.url || item.archiveUrl || '';
+      const ext = resourceExt(previewUrl);
+      if (item.thumbnailUrl) return { image: item.thumbnailUrl };
+      if (/^(png|jpe?g|webp|gif|heic|heif)$/i.test(ext)) return { image: previewUrl };
+      if (ext === 'pdf') return { label: 'PDF', sub: 'File', className: 'is-pdf' };
+      if (ext === 'pptx') return { label: 'PPT', sub: 'Slides', className: 'is-pptx' };
+      const host = resourceHost(previewUrl);
+      if (/canva\.com$/i.test(host)) return { label: 'CV', sub: 'Canva', className: 'is-link' };
+      return { label: 'URL', sub: host || 'Link', className: 'is-link' };
+    }
+
+    function cardPreviewHtml(item) {
+      const preview = previewMeta(item);
+      if (preview.image) {
+        return `<div class="present-card-thumb"><img src="${escapeHtml(preview.image)}" alt="" loading="lazy"></div>`;
+      }
+      return `
+        <div class="present-card-thumb is-file ${escapeHtml(preview.className || '')}">
+          <span class="present-card-thumb-label">${escapeHtml(preview.label)}</span>
+          <span class="present-card-thumb-sub">${escapeHtml(preview.sub)}</span>
+        </div>`;
+    }
+
+    function itemTab(item) {
+      if (item?.team || item?.person) return 'teacher';
+      return TAB_KEYS.includes(item?.tab) ? item.tab : 'general';
+    }
+
+    function sortedYears() {
+      return [...new Set(camps.map(c => c.year))].sort((a, b) => String(b).localeCompare(String(a), 'ko', { numeric: true }));
+    }
+
+    function seasonsForYear(year) {
+      const set = new Set(camps.filter(c => c.year === year).map(c => c.season));
+      return ['summer', 'winter'].filter(s => set.has(s));
+    }
+
+    function campsForYearSeason(year, season) {
+      return camps.filter(c => c.year === year && c.season === season).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    }
+
+    function applyDefaultCampSelection() {
+      const camp = campById(defaultCampId);
+      if (!camp) return false;
+      selectedYear = camp.year;
+      selectedSeason = camp.season;
+      selectedCampId = camp.id;
+      return true;
+    }
+
+    function presentCardHtml(item) {
+      const openUrl = item.url || item.archiveUrl || '';
+      const archiveChip = hasStaffAccess() && item.archiveUrl
+        ? `<a class="resource-chip is-archived" href="${escapeHtml(item.archiveUrl)}" target="_blank" rel="noopener" data-stop>${currentLang === 'en' ? 'Archived' : '보관됨'}</a>`
+        : hasStaffAccess()
+          ? `<span class="resource-chip is-missing">${currentLang === 'en' ? 'Needs archive' : '보관 필요'}</span>`
+          : '';
+      return `
+        <div class="present-card${editMode && isManager ? ' is-editable' : ''}" data-open-url="${escapeHtml(openUrl)}" data-item-id="${escapeHtml(item.id)}">
+          ${cardPreviewHtml(item)}
+          ${editMode && isManager ? `<button class="drag-handle" type="button" draggable="true" data-stop title="${escapeHtml(tr('dragHint'))}" aria-label="${escapeHtml(tr('dragHint'))}">
+            <svg viewBox="0 0 16 24" aria-hidden="true">
+              <circle cx="5" cy="5" r="1.8" fill="currentColor"></circle>
+              <circle cx="11" cy="5" r="1.8" fill="currentColor"></circle>
+              <circle cx="5" cy="12" r="1.8" fill="currentColor"></circle>
+              <circle cx="11" cy="12" r="1.8" fill="currentColor"></circle>
+              <circle cx="5" cy="19" r="1.8" fill="currentColor"></circle>
+              <circle cx="11" cy="19" r="1.8" fill="currentColor"></circle>
+            </svg>
+          </button>` : ''}
+          <div class="present-card-body">
+            <div class="present-card-title">${escapeHtml(item.title)}</div>
+            <div class="present-card-meta">${escapeHtml(campNamesFor(item.campIds))}</div>
+            ${(archiveChip || item.bgmUrl) ? `<div class="resource-chip-row">${archiveChip}${item.bgmUrl ? `<a class="bgm-chip" href="${escapeHtml(item.bgmUrl)}" target="_blank" rel="noopener" data-stop>🎵 BGM</a>` : ''}</div>` : ''}
+            ${((editMode && isManager) || canDeleteItem(item)) ? `
+              <div class="present-card-actions" data-stop>
+                <button type="button" data-edit-item="${escapeHtml(item.id)}">${escapeHtml(tr('edit'))}</button>
+                ${canDeleteItem(item) ? `<button type="button" class="danger" data-delete-item="${escapeHtml(item.id)}">${escapeHtml(tr('delete'))}</button>` : ''}
+              </div>` : ''}
+          </div>
+        </div>`;
+    }
+
+    function addButtonHtml(defaults, compact = false) {
+      const attrs = Object.entries(defaults)
+        .filter(([, v]) => v)
+        .map(([k, v]) => `data-add-${k}="${escapeHtml(v)}"`)
+        .join(' ');
+      return `<button class="${compact ? 'secondary' : 'present-card present-card-add'}" ${attrs} type="button">+ ${escapeHtml(currentLang === 'en' ? 'Add Resource' : '자료 추가')}</button>`;
+    }
+
+    function personGroupHtml(person, personItems) {
+      return `
+        <div class="person-block">
+          <div class="tab-head">
+            <div class="tab-title" style="font-size:13px;">${escapeHtml(person)}</div>
+            <div class="tab-count">${personItems.length}</div>
+          </div>
+          <div class="subject-grid">
+            ${personItems.length ? personItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
+          </div>
+        </div>`;
+    }
+
+    function groupByPerson(list) {
+      const groups = Object.create(null);
+      list.forEach(item => {
+        const p = item.uploaderName || item.person || (currentLang === 'en' ? 'Unknown uploader' : '업로더 미확인');
+        (groups[p] || (groups[p] = [])).push(item);
+      });
+      return groups;
+    }
+
+    function wolkoTeamHtml(teamItems) {
+      if (!teamItems.length) return flatListHtml(TEAM_WOLKO, [], { tab: 'teacher', team: TEAM_WOLKO }, 'theme-wolko');
+      const byPerson = groupByPerson(teamItems);
+      const names = Object.keys(byPerson).sort((a, b) => a.localeCompare(b, 'ko'));
+      return `
+        <div class="subject-group theme-wolko">
+          <div class="tab-head theme-wolko">
+            <div class="tab-title">${escapeHtml(TEAM_WOLKO)}</div>
+            <div class="folder-head-actions"><div class="tab-count">${teamItems.length}</div>
+            ${hasStaffAccess() && selectedCampId ? addButtonHtml({ tab: 'teacher', team: TEAM_WOLKO }, true) : ''}</div>
+          </div>
+          <div class="person-columns">
+            ${names.map(name => personGroupHtml(name, byPerson[name] || [])).join('')}
+          </div>
+        </div>`;
+    }
+
+    function flatListHtml(headerLabel, listItems, addDefaults, themeClass) {
+      return `
+        <div class="subject-group${themeClass ? ` ${themeClass}` : ''}">
+          <div class="tab-head${themeClass ? ` ${themeClass}` : ''}">
+            <div class="tab-title">${escapeHtml(headerLabel)}</div>
+            <div class="folder-head-actions"><div class="tab-count">${listItems.length}</div>
+            ${hasStaffAccess() && selectedCampId ? addButtonHtml(addDefaults, true) : ''}</div>
+          </div>
+          <div class="subject-grid">
+            ${listItems.length ? listItems.map(presentCardHtml).join('') : `<div class="empty">${escapeHtml(tr('noItems'))}</div>`}
+          </div>
+        </div>`;
+    }
+
+    function groupByTeam(list) {
+      const groups = Object.create(null);
+      list.forEach(item => {
+        (groups[item.team] || (groups[item.team] = [])).push(item);
+      });
+      return groups;
+    }
+
+    function renderMainTabs() {
+      if (!isTabVisible(currentTab)) currentTab = DEFAULT_TAB;
+      els.mainTabs.querySelectorAll('.main-tab-btn').forEach(btn => {
+        btn.hidden = !isTabVisible(btn.dataset.tab);
+        btn.classList.toggle('active', btn.dataset.tab === currentTab);
+      });
+    }
+
+    function renderCampFilter() {
+      const years = sortedYears();
+      els.campFilterWrap.hidden = years.length === 0;
+      if (!years.length) return;
+      // 기본 캠프는 첫 화면에서만 적용한다. 연도·시즌을 바꾸면 선택한 캠프를 비우는데, 그때마다 기본 캠프로 되돌리면 다른 연도를 고를 수 없다.
+      if (!selectedCampId && !selectedYear && applyDefaultCampSelection()) {
+        // 기본 캠프가 있으면 첫 화면 선택에 우선 적용한다.
+      }
+      if (!years.includes(selectedYear)) selectedYear = years[0];
+      els.yearSelect.innerHTML = years.map(y => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`).join('');
+      els.yearSelect.value = selectedYear;
+
+      const seasons = seasonsForYear(selectedYear);
+      if (!seasons.includes(selectedSeason)) selectedSeason = seasons[0] || 'summer';
+      els.seasonToggle.querySelectorAll('.season-toggle-btn').forEach(btn => {
+        const s = btn.dataset.season;
+        btn.classList.toggle('active', s === selectedSeason);
+        btn.disabled = !seasons.includes(s);
+      });
+
+      const campsHere = campsForYearSeason(selectedYear, selectedSeason);
+      if (!campsHere.some(c => c.id === selectedCampId)) selectedCampId = campsHere[0]?.id || '';
+      els.campSelect.innerHTML = campsHere.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
+      els.campSelect.value = selectedCampId;
+      updateEditModeUI();
+    }
+
+    function renderCategoryGroups() {
+      if (currentTab === 'general') {
+        const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && itemTab(i) === 'general');
+        els.subjectGroups.innerHTML = flatListHtml(tabLabel('general'), campItems, { tab: 'general' });
+        return;
+      }
+      const campItems = items.filter(i => (i.campIds || []).includes(selectedCampId) && itemTab(i) === currentTab);
+      if (currentTab === 'teacher') {
+        const byTeam = groupByTeam(campItems);
+        els.subjectGroups.innerHTML = activeFolders().map(folder => {
+          const team = folder.name;
+          if (team === TEAM_WOLKO) return wolkoTeamHtml(byTeam[team] || []);
+          const theme = team === TEAM_SF ? 'theme-sf' : team === TEAM_LESSON_PLAN ? 'theme-lesson' : '';
+          return flatListHtml(teamLabel(team), byTeam[team] || [], { tab: 'teacher', team }, theme);
+        }).join('');
+      } else {
+        els.subjectGroups.innerHTML = flatListHtml(tabLabel(currentTab), campItems, { tab: currentTab });
+      }
+    }
+
+    function renderPersonDatalist() {
+      const existing = new Set(items.filter(i => i.team === TEAM_WOLKO && i.person).map(i => i.person));
+      const names = [...existing];
+      els.personDatalist.innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
+    }
+
+    function render() {
+      renderMainTabs();
+      renderCampFilter();
+      renderCategoryGroups();
+      renderPersonDatalist();
+    }
+
+    function renderFolderManageList() {
+      document.getElementById('folderManageList').innerHTML = activeFolders().map(folder => {
+        const canDelete = isMaster || Boolean(uploaderEmail && folder.ownerEmail === uploaderEmail);
+        const count = items.filter(i => i.team === folder.name && i.campIds?.includes(selectedCampId)).length;
+        return `<div class="camp-manage-row"><div class="camp-manage-row-main"><span class="camp-manage-row-name">${escapeHtml(teamLabel(folder.name))}</span><span class="camp-manage-row-meta">${count} ${currentLang === 'en' ? 'resources' : '개 자료'}${folder.ownerName ? ' · ' + escapeHtml(folder.ownerName) : ''}</span></div>${canDelete ? `<button type="button" class="danger" data-delete-folder="${escapeHtml(folder.id)}" ${count ? 'disabled' : ''}>${escapeHtml(tr('delete'))}</button>` : ''}</div>`;
+      }).join('') || `<p>${escapeHtml(tr('noItems'))}</p>`;
+    }
+
+    async function changeFolders(method, body, id = '') {
+      const query = method === 'DELETE' ? `?campId=${encodeURIComponent(selectedCampId)}&id=${encodeURIComponent(id)}` : '';
+      const res = await fetch('/api/teach/folders' + query, { method, headers: authHeaders({ 'Content-Type': 'application/json' }), ...(body ? { body: JSON.stringify(body) } : {}) });
+      const data = await res.json();
+      if (res.status === 401) { requireAccess(); return; }
+      if (!res.ok) throw new Error(data.error || tr('saveFailed'));
+      folderState = data;
+      render();
+      renderFolderManageList();
+    }
+
+    document.getElementById('folderManageBtn').addEventListener('click', () => {
+      renderFolderManageList();
+      document.getElementById('folderManageError').textContent = '';
+      document.getElementById('folderManageBackdrop').hidden = false;
+      document.getElementById('folderNameInput').focus();
+    });
+    function closeFolderManage() {
+      document.getElementById('folderManageBackdrop').hidden = true;
+      document.getElementById('folderManageBtn').focus();
+    }
+    document.getElementById('folderManageClose').addEventListener('click', closeFolderManage);
+    document.getElementById('folderManageBackdrop').addEventListener('click', event => {
+      if (event.target.id === 'folderManageBackdrop') closeFolderManage();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !document.getElementById('folderManageBackdrop').hidden) closeFolderManage();
+    });
+    document.getElementById('folderCreateForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = document.getElementById('folderCreateBtn');
+      button.disabled = true;
+      document.getElementById('folderManageError').textContent = '';
+      try {
+        await changeFolders('POST', { campId: selectedCampId, name: document.getElementById('folderNameInput').value.trim() });
+        document.getElementById('folderNameInput').value = '';
+      } catch (error) { document.getElementById('folderManageError').textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+    document.getElementById('folderManageList').addEventListener('click', async event => {
+      const button = event.target.closest('[data-delete-folder]');
+      if (!button || !confirm(tr('deleteConfirm'))) return;
+      button.disabled = true;
+      document.getElementById('folderManageError').textContent = '';
+      try { await changeFolders('DELETE', null, button.dataset.deleteFolder); }
+      catch (error) { document.getElementById('folderManageError').textContent = error.message; button.disabled = false; }
+    });
+
+    document.querySelector('main.page').addEventListener('click', event => {
+      if (event.target.closest('[data-stop]')) {
+        const editBtn = event.target.closest('[data-edit-item]');
+        if (editBtn) { openItemDialog(editBtn.dataset.editItem); return; }
+        const delBtn = event.target.closest('[data-delete-item]');
+        if (delBtn) { confirmDeleteItem(delBtn.dataset.deleteItem); return; }
+        return;
+      }
+      const addBtn = event.target.closest('[data-add-tab]');
+      if (addBtn) {
+        openItemDialog('', {
+          tab: addBtn.dataset.addTab,
+          team: addBtn.dataset.addTeam || '',
+          person: addBtn.dataset.addPerson || '',
+        });
+        return;
+      }
+      const card = event.target.closest('[data-open-url]');
+      if (card && card.dataset.openUrl) window.open(card.dataset.openUrl, '_blank', 'noopener');
+    });
+
+    let draggedCard = null;
+    const mainPage = document.querySelector('main.page');
+
+    mainPage.addEventListener('dragstart', event => {
+      const handle = event.target.closest('.drag-handle');
+      if (!handle) return;
+      const card = handle.closest('.present-card');
+      if (!card) return;
+      draggedCard = card;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', card.dataset.itemId);
+      try { event.dataTransfer.setDragImage(card, 20, 20); } catch {}
+      requestAnimationFrame(() => card.classList.add('dragging'));
+    });
+
+    mainPage.addEventListener('dragend', () => {
+      if (draggedCard) draggedCard.classList.remove('dragging');
+      draggedCard = null;
+    });
+
+    function dragAfterElement(container, y) {
+      const cards = [...container.querySelectorAll('.present-card:not(.dragging)')];
+      return cards.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) return { offset, element: child };
+        return closest;
+      }, { offset: -Infinity, element: null }).element;
+    }
+
+    mainPage.addEventListener('dragover', event => {
+      if (!draggedCard) return;
+      const grid = event.target.closest('.subject-grid');
+      if (!grid || !grid.contains(draggedCard)) return;
+      event.preventDefault();
+      const afterEl = dragAfterElement(grid, event.clientY);
+      if (afterEl == null) grid.appendChild(draggedCard);
+      else grid.insertBefore(draggedCard, afterEl);
+    });
+
+    async function saveReorder(ids) {
+      try {
+        const res = await fetch('/api/teach/data', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ ids }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          requireAccess(data.error || tr('loginFailed'));
+          return;
+        }
+        if (!res.ok) throw new Error(data.error || tr('reorderFailed'));
+        items = data.items;
+        render();
+      } catch (error) {
+        alert(error.message);
+        render();
+      }
+    }
+
+    mainPage.addEventListener('drop', event => {
+      if (!draggedCard) return;
+      const grid = event.target.closest('.subject-grid');
+      if (!grid || !grid.contains(draggedCard)) return;
+      event.preventDefault();
+      const ids = [...grid.querySelectorAll('.present-card[data-item-id]')].map(c => c.dataset.itemId);
+      saveReorder(ids);
+    });
+
+    els.mainTabs.addEventListener('click', event => {
+      const btn = event.target.closest('.main-tab-btn');
+      if (!btn) return;
+      if (!isTabVisible(btn.dataset.tab)) return;
+      currentTab = btn.dataset.tab;
+      localStorage.setItem(TAB_KEY, currentTab);
+      renderMainTabs();
+      renderCampFilter();
+      renderCategoryGroups();
+      renderPersonDatalist();
+    });
+
+    els.yearSelect.addEventListener('change', () => {
+      selectedYear = els.yearSelect.value;
+      selectedSeason = '';
+      selectedCampId = '';
+      renderCampFilter();
+      renderCategoryGroups();
+      renderPersonDatalist();
+    });
+
+    els.seasonToggle.addEventListener('click', event => {
+      const btn = event.target.closest('.season-toggle-btn');
+      if (!btn || btn.disabled) return;
+      selectedSeason = btn.dataset.season;
+      selectedCampId = '';
+      renderCampFilter();
+      renderCategoryGroups();
+      renderPersonDatalist();
+    });
+
+    els.campSelect.addEventListener('change', () => {
+      selectedCampId = els.campSelect.value;
+      updateEditModeUI();
+      renderCategoryGroups();
+      renderPersonDatalist();
+    });
+
+    async function renameSelectedCamp() {
+      const camp = campById(selectedCampId);
+      if (!camp) return;
+      const nextName = prompt(tr('campRenamePrompt'), camp.name);
+      if (nextName === null) return;
+      const name = nextName.trim();
+      if (!name) {
+        alert(tr('campRenameEmpty'));
+        return;
+      }
+      if (name === camp.name) return;
+      els.campRenameBtn.disabled = true;
+      try {
+        const res = await fetch('/api/teach/camps', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ id: camp.id, name }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          requireAccess(data.error || tr('loginFailed'));
+          return;
+        }
+        if (!res.ok) throw new Error(data.error || tr('campRenameFailed'));
+        camps = data.camps;
+        selectedCampId = camp.id;
+        renderCampManageList();
+        render();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        els.campRenameBtn.disabled = false;
+      }
+    }
+    els.campRenameBtn.addEventListener('click', renameSelectedCamp);
+
+    function enterEditMode() {
+      editMode = true;
+      updateEditModeUI();
+      render();
+    }
+
+    function exitEditMode() {
+      editMode = false;
+      updateEditModeUI();
+      render();
+    }
+
+    function updateEditModeUI() {
+      if (!els.editModeBtn) return;
+      els.editModeBtn.classList.toggle('is-active', editMode);
+      els.editModeBtn.setAttribute('aria-pressed', editMode ? 'true' : 'false');
+      els.editModeBtn.textContent = hasStaffAccess()
+        ? (editMode ? tr('editModeExit') : tr('editModeEnter'))
+        : tr('staffLogin');
+      if (els.campManageBtn) els.campManageBtn.hidden = !editMode || !isManager;
+      if (els.campRenameBtn) els.campRenameBtn.hidden = !editMode || !isManager || !selectedCampId;
+      if (els.managersBtn) els.managersBtn.hidden = !editMode || !isMaster;
+      document.getElementById('folderManageBtn').hidden = !hasStaffAccess() || !selectedCampId || currentTab !== 'teacher';
+    }
+
+    els.editModeBtn.addEventListener('click', () => {
+      if (editMode) { exitEditMode(); return; }
+      portalAuth().then(enterEditMode).catch(e => alert(e.message));
+    });
+
+    function updatePersonFieldVisibility() {
+      els.personFieldWrap.hidden = dialogTab !== 'teacher' || els.itemTeam.value !== TEAM_WOLKO;
+    }
+    els.itemTeam.addEventListener('change', updatePersonFieldVisibility);
+
+    function updateDialogFieldsForTab() {
+      els.teamFieldWrap.hidden = dialogTab !== 'teacher';
+      updatePersonFieldVisibility();
+      els.bgmFieldWrap.hidden = !(dialogTab === 'program' || dialogTab === 'counselor');
+    }
+
+    function renderCampCheckboxes(checkedIds) {
+      const checked = new Set(checkedIds || []);
+      const years = sortedYears();
+      els.campCheckboxList.innerHTML = years.map(year => {
+        const seasons = seasonsForYear(year);
+        return seasons.map(season => {
+          const campsHere = campsForYearSeason(year, season);
+          if (!campsHere.length) return '';
+          const seasonLabel = season === 'summer' ? tr('summer') : tr('winter');
+          return `
+            <div class="camp-checkbox-group-label">${escapeHtml(year)} ${escapeHtml(seasonLabel)}</div>
+            ${campsHere.map(c => `
+              <label class="camp-checkbox-row">
+                <input type="checkbox" value="${escapeHtml(c.id)}" ${checked.has(c.id) ? 'checked' : ''}>
+                <span>${escapeHtml(c.name)}</span>
+              </label>
+            `).join('')}
+          `;
+        }).join('');
+      }).join('') || `<div class="empty" style="grid-column:auto;">${escapeHtml(tr('noCamps'))}</div>`;
+    }
+
+    function openItemDialog(itemId, defaults) {
+      if (batchBusy || els.uploadFileBtn.disabled || (els.uploadBgmBtn.disabled && !batchFiles.length)) return;
+      batchFiles = [];
+      batchPayload = null;
+      els.itemTeam.disabled = false;
+      renderBatchFiles();
+      defaults = defaults || {};
+      editingItemId = itemId || '';
+      const item = itemId ? items.find(i => i.id === itemId) : null;
+      if (!hasStaffAccess() || (itemId && (!item || (!isManager && !canDeleteItem(item))))) return;
+      dialogTab = (item && item.tab) || defaults.tab || currentTab;
+      els.itemDialogTitle.textContent = itemId ? tr('editTitle') : tr('addTitle');
+      const folderNames = activeFolders().map(f => f.name);
+      if (item?.team && !folderNames.includes(item.team)) folderNames.push(item.team);
+      els.itemTeam.innerHTML = folderNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(teamLabel(name))}</option>`).join('');
+      els.itemTeam.value = (item && item.team) || defaults.team || TEAM_WOLKO;
+      updateDialogFieldsForTab();
+      els.itemPerson.value = item ? (item.uploaderName || item.person || '') : uploaderName;
+      renderCampCheckboxes((item && item.campIds) || (selectedCampId ? [selectedCampId] : []));
+      els.itemTitle.value = (item && item.title) || '';
+      els.itemUrl.value = (item && item.url) || '';
+      els.itemArchiveUrl.value = (item && item.archiveUrl) || '';
+      els.itemBgmUrl.value = (item && item.bgmUrl) || '';
+      els.itemDialogError.textContent = '';
+      els.itemDialogBackdrop.hidden = false;
+    }
+    els.itemDialogCancelBtn.addEventListener('click', () => {
+      if (!batchBusy && !els.uploadFileBtn.disabled && !els.uploadBgmBtn.disabled) els.itemDialogBackdrop.hidden = true;
+      else if (!batchBusy && batchFiles.length) els.itemDialogBackdrop.hidden = true;
+    });
+
+    async function saveItemFromDialog() {
+      if (batchBusy) return;
+      if (batchFiles.length) { await saveBatchFiles(); return; }
+      const isTeacher = dialogTab === 'teacher';
+      const hasBgm = dialogTab === 'program' || dialogTab === 'counselor';
+      const campIds = [...els.campCheckboxList.querySelectorAll('input[type="checkbox"]:checked')].map(el => el.value);
+      const payload = {
+        id: editingItemId || undefined,
+        tab: dialogTab,
+        team: isTeacher ? els.itemTeam.value : '',
+        person: (isTeacher && els.itemTeam.value === TEAM_WOLKO) ? els.itemPerson.value.trim() : '',
+        campIds,
+        title: els.itemTitle.value.trim(),
+        url: els.itemUrl.value.trim(),
+        archiveUrl: els.itemArchiveUrl.value.trim(),
+        bgmUrl: hasBgm ? els.itemBgmUrl.value.trim() : '',
+      };
+      if (!payload.campIds.length || !payload.title || (!payload.url && !payload.archiveUrl)) {
+        els.itemDialogError.textContent = tr('validationError');
+        return;
+      }
+      if (isTeacher && !payload.team) {
+        els.itemDialogError.textContent = tr('validationErrorTeam');
+        return;
+      }
+      if (isTeacher && payload.team === TEAM_WOLKO && !payload.person) {
+        els.itemDialogError.textContent = tr('validationErrorPerson');
+        return;
+      }
+      els.itemDialogSaveBtn.disabled = true;
+      try {
+        const res = await fetch('/api/teach/data', {
+          method: editingItemId ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ item: payload }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          els.itemDialogBackdrop.hidden = true;
+          requireAccess(data.error || tr('loginFailed'));
+          return;
+        }
+        if (!res.ok) throw new Error(data.error || tr('saveFailed'));
+        items = data.items;
+        els.itemDialogBackdrop.hidden = true;
+        render();
+      } catch (error) {
+        els.itemDialogError.textContent = error.message;
+      } finally {
+        els.itemDialogSaveBtn.disabled = false;
+      }
+    }
+    els.itemDialogSaveBtn.addEventListener('click', saveItemFromDialog);
+
+    let batchFiles = [];
+    let batchBusy = false;
+    let batchPayload = null;
+    const filenameExtension = /\.[^.]+$/;
+
+    function renderBatchFiles() {
+      const active = batchFiles.length > 0;
+      document.getElementById('batchUpload').hidden = !active;
+      const labels = currentLang === 'en'
+        ? { pending:'Ready', uploading:'Uploading', saving:'Saving', saved:'Saved', failed:'Failed' }
+        : { pending:'대기', uploading:'업로드 중', saving:'등록 중', saved:'완료', failed:'실패' };
+      document.getElementById('batchUploadList').innerHTML = batchFiles.map(entry =>
+        `<li data-status="${entry.status}" title="${escapeHtml(entry.error || entry.file.name)}"><span>${escapeHtml(entry.file.name)}${entry.error ? `<br>${escapeHtml(entry.error)}` : ''}</span><span>${labels[entry.status]}</span></li>`
+      ).join('');
+      const progress = document.getElementById('batchUploadProgress');
+      progress.max = batchFiles.length || 1;
+      progress.value = batchFiles.filter(entry => entry.status === 'saved').length;
+      [els.itemTitle, els.itemUrl, els.itemArchiveUrl, els.itemBgmUrl].forEach(input => { input.disabled = active; });
+      els.uploadBgmBtn.disabled = active;
+    }
+
+    async function receivePresentationFiles(files) {
+      files = Array.from(files || []);
+      if (!files.length || batchBusy || els.uploadFileBtn.disabled) return;
+      if (editingItemId && files.length > 1) {
+        els.itemDialogError.textContent = currentLang === 'en' ? 'Multiple files can only be added as new resources.' : '여러 파일은 새 자료 추가에서 등록해 주세요. 기존 자료 수정은 파일 하나만 가능합니다.';
+        return;
+      }
+      if (files.length === 1 && !batchFiles.length) {
+        await uploadFile(files[0], 'presentation', null, els.itemArchiveUrl, els.uploadFileBtn);
+        return;
+      }
+      if (batchPayload) {
+        els.itemDialogError.textContent = currentLang === 'en' ? 'Finish this batch before adding more files.' : '현재 목록을 등록한 후 새 자료 추가에서 파일을 추가해 주세요.';
+        return;
+      }
+      batchFiles.push(...files.map(file => ({ file, status:'pending', url:'', error:'' })));
+      els.itemDialogError.textContent = '';
+      renderBatchFiles();
+    }
+
+    async function uploadResourceFile(file, kind) {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('kind', kind);
+      const large = file.size > 20 * 1024 * 1024;
+      const res = await fetch('/api/teach/upload', {
+        method:'POST', headers:{ Authorization:`Bearer ${token}`, ...(large ? {
+          'Content-Type':'application/octet-stream', 'X-Wolko-Filename':encodeURIComponent(file.name),
+          'X-Wolko-Kind':kind } : {}) }, body:large ? file : form,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 413) throw new Error(currentLang === 'en'
+        ? 'The transfer service rejected this file size. Please contact the administrator.'
+        : '전송 서비스의 요청 크기 제한에 걸렸습니다. 관리자에게 문의해주세요.');
+      if (!res.ok) throw new Error(data.error || tr('uploadFailed'));
+      if (!data.url) throw new Error(tr('uploadFailed'));
+      return data.url;
+    }
+
+    async function saveBatchFiles() {
+      if (batchBusy) return;
+      const campIds = [...els.campCheckboxList.querySelectorAll('input[type="checkbox"]:checked')].map(el => el.value);
+      if (!campIds.length) { els.itemDialogError.textContent = tr('validationError'); return; }
+      if (dialogTab === 'teacher' && !els.itemTeam.value) { els.itemDialogError.textContent = tr('validationErrorTeam'); return; }
+      batchPayload = batchPayload || {
+        tab:dialogTab, team:dialogTab === 'teacher' ? els.itemTeam.value : '',
+        person:dialogTab === 'teacher' && els.itemTeam.value === TEAM_WOLKO ? els.itemPerson.value.trim() : '',
+        campIds, url:'', bgmUrl:'',
+      };
+      batchBusy = true;
+      els.itemDialogError.textContent = '';
+      const controls = [els.itemDialogSaveBtn, els.itemDialogCancelBtn, els.uploadFileBtn, els.itemTeam,
+        ...els.campCheckboxList.querySelectorAll('input')];
+      controls.forEach(control => { control.disabled = true; });
+      try {
+        // Keep writes sequential: the API updates a shared resource list.
+        for (const entry of batchFiles) {
+          if (entry.status === 'saved') continue;
+          entry.error = '';
+          try {
+            if (!entry.url) {
+              entry.status = 'uploading'; renderBatchFiles();
+              entry.url = await uploadResourceFile(entry.file, 'presentation');
+            }
+            entry.status = 'saving'; renderBatchFiles();
+            const res = await fetch('/api/teach/data', {
+              method:'POST', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+              body:JSON.stringify({ item:{ ...batchPayload,
+                title:entry.file.name.replace(filenameExtension, '') || entry.file.name, archiveUrl:entry.url } }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || tr('saveFailed'));
+            items = data.items;
+            entry.status = 'saved';
+          } catch (error) { entry.status = 'failed'; entry.error = error.message; }
+          renderBatchFiles();
+        }
+        render();
+        const failed = batchFiles.filter(entry => entry.status !== 'saved').length;
+        if (failed) els.itemDialogError.textContent = currentLang === 'en'
+          ? `${failed} file(s) failed. Saved files will not be submitted again.`
+          : `${failed}개 파일이 실패했습니다. 저장을 다시 누르면 실패한 파일만 재시도합니다.`;
+        else els.itemDialogBackdrop.hidden = true;
+      } finally {
+        batchBusy = false;
+        controls.forEach(control => { control.disabled = false; });
+        // A retry must use the original folder and camps for the entire batch.
+        els.itemTeam.disabled = true;
+        els.campCheckboxList.querySelectorAll('input').forEach(control => { control.disabled = true; });
+      }
+    }
+
+    async function uploadFile(file, kind, extRegex, targetInput, btnEl) {
+      if (extRegex && !extRegex.test(file.name)) {
+        els.itemDialogError.textContent = tr('uploadBadTypeBgm');
+        return;
+      }
+      els.itemDialogError.textContent = '';
+      const originalLabel = btnEl.textContent;
+      btnEl.disabled = true;
+      els.itemDialogSaveBtn.disabled = true;
+      btnEl.textContent = tr('uploading');
+      try {
+        targetInput.value = await uploadResourceFile(file, kind);
+        if (kind === 'presentation' && !els.itemTitle.value.trim()) {
+          els.itemTitle.value = file.name.replace(filenameExtension, '') || file.name;
+        }
+      } catch (error) {
+        els.itemDialogError.textContent = error.message;
+      } finally {
+        btnEl.disabled = false;
+        els.itemDialogSaveBtn.disabled = els.uploadFileBtn.disabled || els.uploadBgmBtn.disabled;
+        btnEl.textContent = originalLabel;
+      }
+    }
+
+    els.uploadFileBtn.addEventListener('click', () => els.uploadFileInput.click());
+    els.uploadFileInput.addEventListener('change', async () => {
+      const files = Array.from(els.uploadFileInput.files || []);
+      els.uploadFileInput.value = '';
+      await receivePresentationFiles(files);
+    });
+
+    els.uploadBgmBtn.addEventListener('click', () => els.uploadBgmInput.click());
+    els.uploadBgmInput.addEventListener('change', async () => {
+      const file = els.uploadBgmInput.files?.[0];
+      els.uploadBgmInput.value = '';
+      if (!file) return;
+      await uploadFile(file, 'bgm', /\.(mp3|wav|m4a)$/i, els.itemBgmUrl, els.uploadBgmBtn);
+    });
+
+    /* 파일 끌어다 놓기: 다이얼로그(배경 포함) 어디에 놓아도 업로드, 다이얼로그가 닫혀 있으면 페이지에 놓을 때 자료 추가 창을 열고 업로드 */
+    (function setupFileDrop() {
+      const backdrop = els.itemDialogBackdrop;
+      const dialog = backdrop.querySelector('.tch-dialog');
+      const hasFiles = event => Array.from(event.dataTransfer?.types || []).indexOf('Files') !== -1;
+      const dialogOpen = () => !backdrop.hidden;
+      let depth = 0;
+      let pageHint = null;
+      const clearHints = () => {
+        depth = 0;
+        dialog.classList.remove('is-drop-target');
+        if (pageHint) { pageHint.classList.remove('is-drop-target'); pageHint = null; }
+      };
+      async function handleFiles(files) {
+        if (!files.length || batchBusy || els.uploadFileBtn.disabled) return;
+        const file = files[0];
+        const isAudio = /\.(mp3|wav|m4a)$/i.test(file.name);
+        const bgmVisible = els.uploadBgmBtn.offsetParent !== null;
+        if (files.length === 1 && !batchFiles.length && isAudio && bgmVisible) {
+          await uploadFile(file, 'bgm', /\.(mp3|wav|m4a)$/i, els.itemBgmUrl, els.uploadBgmBtn);
+        } else {
+          await receivePresentationFiles(files);
+        }
+      }
+      document.addEventListener('dragenter', event => {
+        if (!hasFiles(event)) return;
+        if (dialogOpen()) { event.preventDefault(); depth++; dialog.classList.add('is-drop-target'); }
+        else if (hasStaffAccess()) event.preventDefault();
+      });
+      document.addEventListener('dragover', event => {
+        if (!hasFiles(event)) return;
+        if (dialogOpen() || hasStaffAccess()) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'copy';
+        }
+        if (!dialogOpen() && hasStaffAccess()) {
+          const target = event.target.closest && event.target.closest('[data-add-tab]');
+          if (target !== pageHint) {
+            if (pageHint) pageHint.classList.remove('is-drop-target');
+            pageHint = target;
+            if (pageHint) pageHint.classList.add('is-drop-target');
+          }
+        }
+      });
+      document.addEventListener('dragleave', event => {
+        if (!hasFiles(event) || !dialogOpen()) return;
+        depth = Math.max(0, depth - 1);
+        if (!depth) dialog.classList.remove('is-drop-target');
+      });
+      document.addEventListener('drop', async event => {
+        if (!hasFiles(event)) return;
+        const open = dialogOpen();
+        if (!open && !hasStaffAccess()) return;
+        event.preventDefault();
+        const files = Array.from(event.dataTransfer.files || []);
+        const addBtn = !open && event.target.closest ? event.target.closest('[data-add-tab]') : null;
+        clearHints();
+        if (!open) {
+          openItemDialog('', addBtn ? {
+            tab: addBtn.dataset.addTab,
+            team: addBtn.dataset.addTeam || '',
+            person: addBtn.dataset.addPerson || '',
+          } : {});
+          if (backdrop.hidden) return;
+        }
+        await handleFiles(files);
+      });
+    })();
+
+    async function confirmDeleteItem(itemId) {
+      if (!canDeleteItem(items.find(i => i.id === itemId) || {})) return;
+      if (!confirm(tr('deleteConfirm'))) return;
+      try {
+        const res = await fetch(`/api/teach/data?id=${encodeURIComponent(itemId)}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          requireAccess(data.error || tr('loginFailed'));
+          return;
+        }
+        if (!res.ok) throw new Error(data.error || tr('deleteFailed'));
+        items = data.items;
+        render();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    document.getElementById('langKoBtn').addEventListener('click', () => setLanguage('ko'));
+    document.getElementById('langEnBtn').addEventListener('click', () => setLanguage('en'));
+    async function loadCamps() {
+      const res = await fetch('/api/teach/camps', { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) throw authError(data.error);
+      if (!res.ok) throw new Error(data.error || tr('campLoadFailed'));
+      camps = Array.isArray(data.camps) ? data.camps : [];
+      defaultCampId = data.defaultCampId || '';
+      applyDefaultCampSelection();
+    }
+
+    async function loadItems() {
+      const res = await fetch('/api/teach/data', { headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) throw authError(data.error);
+      if (!res.ok) {
+        const err = new Error(data.error || tr('loadFailed'));
+        err.isStandard = !data.error;
+        throw err;
+      }
+      if (token && data.staffAccess === false) throw authError(data.error || tr('loginFailed'));
+      items = Array.isArray(data.items) ? data.items : [];
+      render();
+      els.loadErrorBanner.hidden = true;
+    }
+
+    function renderCampManageList() {
+      const years = sortedYears();
+      els.campManageList.innerHTML = years.flatMap(year =>
+        ['summer', 'winter'].flatMap(season =>
+          campsForYearSeason(year, season).map(c => `
+            <div class="camp-manage-row">
+              <div class="camp-manage-row-main"><span class="camp-manage-row-name">${escapeHtml(c.name)}</span><span class="camp-manage-row-meta">${escapeHtml(year)} · ${escapeHtml(season === 'summer' ? tr('summer') : tr('winter'))}</span></div>
+              <div class="camp-manage-actions">
+                ${c.id === defaultCampId
+                  ? `<span class="camp-default-badge">${escapeHtml(tr('defaultCamp'))}</span>`
+                  : `<button type="button" data-default-camp="${escapeHtml(c.id)}">${escapeHtml(tr('setDefaultCamp'))}</button>`}
+                <button class="danger" type="button" data-delete-camp="${escapeHtml(c.id)}">${escapeHtml(tr('delete'))}</button>
+              </div>
+            </div>`)
+        )
+      ).join('') || `<div class="empty" style="grid-column:auto;">${escapeHtml(tr('noCamps'))}</div>`;
+    }
+
+    els.campManageBtn.addEventListener('click', () => {
+      els.campManageError.textContent = '';
+      renderCampManageList();
+      els.campManageBackdrop.hidden = false;
+    });
+
+    /* ─── 관리자 지정 (마스터만) ─── */
+    let managerState = { managers: [], accounts: [] };
+    function renderManagers() {
+      const nm = e => { const a = managerState.accounts.find(x => x.email === e); return a && a.name ? `${a.name} · ${e}` : e; };
+      els.managersList.innerHTML = managerState.managers.length
+        ? managerState.managers.map(m => `<div class="camp-manage-row"><div class="camp-manage-row-main"><span class="camp-manage-row-name">${escapeHtml(nm(m.email))}</span></div><div class="camp-manage-actions"><button class="danger" type="button" data-manager-del="${escapeHtml(m.email)}">${escapeHtml(tr('managerRemove'))}</button></div></div>`).join('')
+        : `<div class="empty" style="grid-column:auto;">${escapeHtml(tr('managersNone'))}</div>`;
+      const taken = new Set(managerState.managers.map(m => m.email));
+      els.managersPick.innerHTML = `<option value="">${escapeHtml(tr('managerPick'))}</option>` + managerState.accounts.filter(a => !taken.has(a.email)).map(a => `<option value="${escapeHtml(a.email)}">${escapeHtml(a.name ? `${a.name} · ${a.email}` : a.email)}</option>`).join('');
+    }
+    async function loadManagers() {
+      const res = await fetch('/api/teach/managers', { headers: { Authorization: `Bearer ${sessionStorage.getItem('wolko-hub-token') || ''}` } });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || tr('loginFailed'));
+      managerState = { managers: data.managers || [], accounts: data.accounts || [] };
+    }
+    async function saveManagers(emails) {
+      const res = await fetch('/api/teach/managers', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionStorage.getItem('wolko-hub-token') || ''}` }, body: JSON.stringify({ emails }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || tr('campSaveFailed'));
+      await loadManagers(); renderManagers();
+    }
+    els.managersBtn.addEventListener('click', async () => {
+      els.managersError.textContent = '';
+      try { await loadManagers(); renderManagers(); els.managersBackdrop.hidden = false; } catch (e) { alert(e.message); }
+    });
+    els.managersCloseBtn.addEventListener('click', () => { els.managersBackdrop.hidden = true; });
+    els.managersAddBtn.addEventListener('click', async () => {
+      const email = els.managersPick.value; if (!email) return;
+      try { await saveManagers([...managerState.managers.map(m => m.email), email]); els.managersError.textContent = ''; } catch (e) { els.managersError.textContent = e.message; }
+    });
+    els.managersList.addEventListener('click', async event => {
+      const b = event.target.closest('[data-manager-del]'); if (!b) return;
+      try { await saveManagers(managerState.managers.map(m => m.email).filter(e => e !== b.dataset.managerDel)); els.managersError.textContent = ''; } catch (e) { els.managersError.textContent = e.message; }
+    });
+
+    els.campManageCloseBtn.addEventListener('click', () => { els.campManageBackdrop.hidden = true; });
+
+    els.addCampBtn.addEventListener('click', async () => {
+      const year = els.newCampYear.value.trim();
+      const season = document.querySelector('input[name="newCampSeason"]:checked')?.value || 'summer';
+      const name = els.newCampName.value.trim();
+      if (!year || !name) {
+        els.campManageError.textContent = tr('campFieldsRequired');
+        return;
+      }
+      els.addCampBtn.disabled = true;
+      try {
+        const res = await fetch('/api/teach/camps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ year, season, name }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || tr('campSaveFailed'));
+        camps = data.camps;
+        defaultCampId = data.defaultCampId || defaultCampId;
+        els.newCampYear.value = '';
+        els.newCampName.value = '';
+        els.campManageError.textContent = '';
+        renderCampManageList();
+        render();
+      } catch (error) {
+        els.campManageError.textContent = error.message;
+      } finally {
+        els.addCampBtn.disabled = false;
+      }
+    });
+
+    els.campManageList.addEventListener('click', async event => {
+      const defaultBtn = event.target.closest('[data-default-camp]');
+      if (defaultBtn) {
+        try {
+          const res = await fetch('/api/teach/camps', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ action: 'setDefault', id: defaultBtn.dataset.defaultCamp }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || tr('defaultCampSaveFailed'));
+          camps = data.camps;
+          defaultCampId = data.defaultCampId || '';
+          selectedCampId = defaultCampId || selectedCampId;
+          renderCampManageList();
+          render();
+        } catch (error) {
+          alert(error.message);
+        }
+        return;
+      }
+      const btn = event.target.closest('[data-delete-camp]');
+      if (!btn) return;
+      if (!confirm(tr('campDeleteConfirm'))) return;
+      try {
+        const res = await fetch(`/api/teach/camps?id=${encodeURIComponent(btn.dataset.deleteCamp)}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || tr('campDeleteFailed'));
+        camps = data.camps;
+        if (defaultCampId && !campById(defaultCampId)) defaultCampId = data.defaultCampId || '';
+        renderCampManageList();
+        render();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    async function bootstrapData() {
+      try {
+        await loadCamps();
+        const folderRes = await fetch('/api/teach/folders', { headers: authHeaders() });
+        const folders = await folderRes.json();
+        if (!folderRes.ok) throw new Error(folders.error || tr('loadFailed'));
+        folderState = folders;
+        render();
+        await loadItems();
+      } catch (error) {
+        if (error.isAuth) {
+          requireAccess(error.message);
+          return;
+        }
+        loadErrorIsStandard = !!error.isStandard;
+        els.loadErrorBanner.textContent = error.message || tr('loadFailed');
+        els.loadErrorBanner.hidden = false;
+      }
+    }
+
+    applyLanguage();
+    render();
+    portalAuth().then(bootstrapData).catch(error => { els.loadErrorBanner.textContent = error.message || tr('loadFailed'); els.loadErrorBanner.hidden = false; });
+    if ('serviceWorker' in navigator) {
+      // 설치형 앱 기능은 포탈 첫 화면에서만 쓴다 — 예전에 등록된 이 페이지의 서비스워커는 정리한다
+      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => { if (/\/(admin|crs|campstaff|camp-resources)-sw\.js$/.test((r.active || r.waiting || r.installing || {}).scriptURL || '')) r.unregister(); })).catch(() => {});
+    }
+  </script>
+</body>
+</html>

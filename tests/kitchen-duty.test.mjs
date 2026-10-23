@@ -372,9 +372,9 @@ test('알림 점검용 옵션: dryRun은 보내지 않고, force는 시각과 �
 // ── 화면·메뉴 연결 ──
 test('주방 보조 페이지는 포탈 메뉴와 왼쪽 레일에 있고, 알림 워크플로는 실제 API 주소를 부른다', async () => {
   const read = path => readFile(new URL('../' + path, import.meta.url), 'utf8');
-  const [rail, portal, workflow, page] = await Promise.all([read('public/wolko-rail.js'), read('src/pages/portal.astro'), read('.github/workflows/kitchen-reminders.yml'), read('src/pages/kitchen/index.astro')]);
-  assert.match(rail, /href: '\/kitchen'[^\n]*label: '주방 보조'/);
-  assert.match(portal, /href: '\/kitchen'[^\n]*icon: 'utensils'/);
+  const [rail, portal, workflow, page] = await Promise.all([read('public/wolko-rail.js'), read('src/pages/portal.astro'), read('.github/workflows/kitchen-reminders.yml'), read('src/pages/portal/kitchen/index.astro')]);
+  assert.match(rail, /href: '\/portal\/kitchen'[^\n]*label: '주방 보조'/);
+  assert.match(portal, /href: '\/portal\/kitchen'[^\n]*icon: 'utensils'/);
   assert.match(workflow, /https:\/\/wolko\.org\/api\/kitchen\/reminders\?/);
   assert.match(page, /\/kitchen\.js\?v=\d+/);
   assert.match(page, /\/wolko-layout\.css\?v=\d+/);

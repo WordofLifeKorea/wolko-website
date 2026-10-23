@@ -265,7 +265,7 @@ function buildRegistrationEmailHtml(reg) {
     <div style="padding:20px 36px;background:#f4f8fb;border-top:1px solid rgba(0,79,104,0.08);font-size:12px;color:#5a6f79;line-height:1.6;">
       ${reg.isWaitlist ? `<div style="margin-bottom:8px;padding:6px 12px;background:rgba(217,119,6,0.10);border-radius:8px;color:#b45309;font-weight:700;">⚠ 예비 신청 — ${reg.waitlistNumber}순위</div>` : ''}
       신청 시각: ${kstTime} (KST) &nbsp;·&nbsp; 신청 ID: ${reg.regId}<br>
-      입금 확인 후 <a href="https://wolko.org/wolkoadmin" style="color:#007ea1;">관리자 패널</a>에서 확정해주세요.
+      입금 확인 후 <a href="https://wolko.org/portal/wolkoadmin" style="color:#007ea1;">관리자 패널</a>에서 확정해주세요.
     </div>
   </div>
 </body>
@@ -322,7 +322,7 @@ ${waitlistTag}${reg.name}님이 ${reg.campId} 캠프 신청서를 작성하였�
 연락처: ${reg.phone}
 접수일시: ${kstTime}
 
-관리자: https://wolko.org/wolkoadmin`;
+관리자: https://wolko.org/portal/wolkoadmin`;
 }
 
 function buildAdminAlimtalkVariables(reg) {

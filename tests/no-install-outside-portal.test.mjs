@@ -3,7 +3,7 @@ import test from 'node:test';
 import { existsSync, readFileSync } from 'node:fs';
 
 const root = new URL('..', import.meta.url).pathname;
-const pages = ['src/pages/car/index.astro', 'src/pages/wolkoadmin.astro', 'src/pages/camp-resources/index.astro', 'src/pages/crs/index.astro', 'src/pages/campstaff/index.astro'];
+const pages = ['src/pages/portal/car/index.astro', 'src/pages/portal/wolkoadmin.astro', 'src/pages/portal/camp-resources/index.astro', 'src/pages/portal/crs/index.astro', 'src/pages/portal/campstaff/index.astro'];
 
 test('앱 설치 기능은 포탈 첫 화면에만 있다 (다른 페이지는 manifest · 설치용 메타 · 서비스워커 등록이 없다)', () => {
   for (const p of pages) {

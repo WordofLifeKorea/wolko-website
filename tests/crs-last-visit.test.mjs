@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 
-const page = readFileSync(new URL('../src/pages/crs/index.astro', import.meta.url), 'utf8');
+const page = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
 const source = page.match(/  function latestVisitSummary\(church\) \{[\s\S]*?\n  \}/)[0];
 const summary = runInNewContext(`${source}\nlatestVisitSummary`);
 

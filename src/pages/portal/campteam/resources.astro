@@ -1,0 +1,51 @@
+---
+// 캠프 자료실 연결 페이지. 기존 "캠프 자료실"(/portal/camp-resources)을 고치지 않고 그대로 불러와 보여준다.
+// 캠프팀에서 들어온 경우에만 위쪽에 "캠프팀으로 돌아가기" 막대가 생기고, 포털에서 직접 들어가면 기존 화면 그대로다.
+// 누가 무엇을 볼 수 있는지는 기존 캠프 자료실의 로그인·권한 규칙이 그대로 정한다(캠프팀 권한은 여기에 영향을 주지 않는다).
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>캠프 자료실 — WOLKO Camp Team</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <style is:inline>
+    html,body{margin:0;height:100%;background:#f4f6f8;font-family:'Noto Sans KR',-apple-system,'Segoe UI',sans-serif}
+    .wrap{display:flex;flex-direction:column;height:100vh;height:100dvh}
+    .bar{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:8px 14px;color:#fff;background:linear-gradient(175deg,#003548 0%,#004f68 55%,#00668a 100%)}
+    .bar a{color:#fff;text-decoration:none;font:700 13px/1 'Noto Sans KR',sans-serif}
+    .back{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08)}
+    .back:hover{background:rgba(255,255,255,.18)}
+    .ttl{font:700 14px/1 'Noto Sans KR',sans-serif;opacity:.95}
+    .sp{flex:1}
+    .alt{opacity:.75;font-weight:500 !important;font-size:12px !important}.alt:hover{opacity:1;text-decoration:underline}
+    iframe{flex:1 1 auto;width:100%;border:0;background:#fff}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <a class="back" href="/portal/campteam/"><span aria-hidden="true">←</span><span id="tBack">캠프팀으로 돌아가기</span></a>
+    <span class="ttl">📚 <span id="tTitle">캠프 자료실</span></span>
+    <span class="sp"></span>
+    <a class="alt" href="/portal/camp-resources/" target="_blank" rel="noopener" id="tOpen">새 창으로 열기 ↗</a>
+  </div>
+  <iframe src="/portal/camp-resources/" title="캠프 자료실" allow="fullscreen; clipboard-write"></iframe>
+</div>
+<script is:inline>
+  (function () {
+    var en = false; try { en = localStorage.getItem('wolko-lang') === 'en'; } catch (e) {}
+    if (!en) return;
+    document.documentElement.lang = 'en';
+    document.getElementById('tBack').textContent = 'Back to Camp Team';
+    document.getElementById('tTitle').textContent = 'Camp Resources';
+    document.getElementById('tOpen').textContent = 'Open in new window ↗';
+    document.title = 'Camp Resources — WOLKO Camp Team';
+  })();
+</script>
+</body>
+</html>

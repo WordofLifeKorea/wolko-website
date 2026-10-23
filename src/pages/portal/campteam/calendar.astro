@@ -1,0 +1,25 @@
+---
+import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="달력" active="calendar">
+  <div class="top">
+    <div><div class="h1row"><h1 data-t="calTitle"></h1><span class="qh" data-h="pageCalendar"></span></div><div class="sub" data-t="calSub"></div></div>
+    <div class="actions"><button class="btn pri" id="addEvent" hidden data-t="addEvent"></button></div>
+  </div>
+  <div class="hintbox" id="viewOnly" data-t="viewOnly" hidden style="margin-bottom:14px"></div>
+  <div class="err" id="calErr" hidden></div>
+  <section class="calpage">
+    <div class="cal-head"><button class="btn sm" id="calPrev" aria-label="prev">‹</button><h2 id="calTitleMonth"></h2><button class="btn sm" id="calNext" aria-label="next">›</button><button class="btn sm" id="calToday" data-t="today"></button>
+      <span style="margin-left:auto" class="seg"><button class="btn sm" id="viewGrid" data-t="viewGrid"></button> <button class="btn sm" id="viewAgenda" data-t="viewAgenda"></button></span></div>
+    <div id="calBody"></div>
+    <div class="legend" id="legend"></div>
+    <div id="dayList" class="card daylist"></div>
+    <div class="hint" id="gNote" style="margin-top:10px"></div>
+  </section>
+  <dialog id="dlg" class="wide">
+    <h3 id="dlgTitle"></h3>
+    <form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div>
+      <div class="dlg-actions" id="dlgActions"></div></form>
+  </dialog>
+  <script is:inline slot="scripts" src="/portal/campteam/calendar.js?v=2"></script>
+</CampTeamLayout>

@@ -19,7 +19,7 @@ function setup() {
 const post = (env, token) => PLogin.onRequestPost({ env, request: new Request('https://wolko.org/api/teach/portal-login', { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }) });
 
 test('자료실 언어 토글은 PC와 모바일 모두 좌우 공간을 조금 넓힌다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.match(page, /@media \(min-width:641px\)\s*\{\s*:root:root body > \.topbar \.wl-lang-toggle \{ width:132px !important;/);
   assert.match(page, /@media \(max-width:640px\)\s*\{\s*:root:root body > \.topbar \.wl-lang-btn \{ width:34px !important;/);
 });
@@ -53,7 +53,7 @@ test('자료 업로더 이름은 로그인 계정에서 정하고 수정 후에�
 });
 
 test('업로드한 사람만 카드를 만들고 빈 목록은 안내 한 칸만 표시한다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.doesNotMatch(page, /WOLKO_PINNED_PEOPLE/);
   const start = page.indexOf('function groupByPerson(');
   const end = page.indexOf('function groupByTeam(', start);
@@ -91,19 +91,19 @@ test('캠프 자료실: 승인된 포탈 멤버만 자료실 토큰을 받고, �
 });
 
 test('캠프 자료실 화면: 포탈 도구 페이지(공용 머리글·왼쪽 메뉴), 비밀번호 칸 없음, 캠프 그룹 메뉴에 들어 있다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.doesNotMatch(page, /BaseLayout|passwordInput|loginScreen|api\/teach\/auth/);
   assert.match(page, /wolko-rail\.js/);
   assert.match(page, /\/api\/teach\/portal-login/);
   assert.match(page, /const LANG_KEY = 'wolko-lang'/);
   const rail = readFileSync(root + 'public/wolko-rail.js', 'utf8');
-  assert.match(rail, /group: 'camp', href: '\/camp-resources'/);
+  assert.match(rail, /group: 'camp', href: '\/portal\/camp-resources'/);
   const portal = readFileSync(root + 'src/pages/portal.astro', 'utf8');
-  assert.match(portal, /group: 'camp', href: '\/camp-resources'/);
+  assert.match(portal, /group: 'camp', href: '\/portal\/camp-resources'/);
 });
 
 test('캠프 관리 창: 계절은 하나만 고르는 체크박스(라디오) 방식이고, 목록은 이름 + 연도·계절 두 줄로 정리된다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.match(page, /<input type="radio" name="newCampSeason" value="summer" checked>/);
   assert.match(page, /<input type="radio" name="newCampSeason" value="winter">/);
   assert.doesNotMatch(page, /newCampSeasonToggle/);
@@ -112,25 +112,25 @@ test('캠프 관리 창: 계절은 하나만 고르는 체크박스(라디오) �
 });
 
 test('캠프 관리 창 추가 폼: Safari 에서 입력 칸 기본 폭 때문에 오른쪽이 잘리지 않도록 격자 칸이 minmax(0,1fr) 이다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.match(page, /\.camp-add-grid \{ display:grid; grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\);/);
   assert.match(page, /\.field \{ display:grid; grid-template-columns:minmax\(0,1fr\);/);
   assert.match(page, /\.season-check \{ position:relative;/);
 });
 
 test('캠프 관리 목록의 작은 버튼(기본 설정·삭제)은 모바일 공용 44px 규칙에 늘어나지 않고 낮게 고정된다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.match(page, /:root:root \.camp-manage-row button[^{]*\{[^}]*min-height:0 !important; height:28px !important;/);
 });
 
 test('캠프 추가 폼의 계절 체크박스와 입력 칸은 같은 낮은 높이(38px)로 맞춰진다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.match(page, /\.season-check \{[^}]*height:38px;/);
   assert.match(page, /\.camp-manage-add-row input\[type=text\] \{[^}]*height:38px !important;/);
 });
 
 test('캠프 관리 창: 이름이 한 줄에 들어오게 넓히되(540px) 좁은 화면(480px 이하, 340px 이하)은 따로 정리한다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.match(page, /#campManageBackdrop \.tch-dialog, #managersBackdrop \.tch-dialog \{ max-width:540px; \}/);
   assert.match(page, /@media \(max-width:480px\) \{\s*#campManageBackdrop \{ padding:12px; \}/);
   assert.match(page, /@media \(max-width:340px\)/);
@@ -183,7 +183,7 @@ test('캠프 자료실 권한: 멤버는 본인 수정, 지정 관리자는 수�
 });
 
 test('캠프 자료실 화면: 본인 삭제와 관리자 수정·순서·캠프 관리 권한을 분리한다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.match(page, /isManager = !!data\.isManager;/);
   assert.match(page, /\$\{editMode && isManager \? `<button class="drag-handle"/);
   assert.match(page, /\$\{canDeleteItem\(item\) \? `<button type="button" class="danger" data-delete-item=/);
@@ -193,14 +193,14 @@ test('캠프 자료실 화면: 본인 삭제와 관리자 수정·순서·캠프
 });
 
 test('캠프 자료실: 연도 · 계절 · 캠프 선택 줄이 수업자료 / 프로그램팀 / 상담자… 탭 위에 있다', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   const filter = page.indexOf('id="campFilterWrap"');
   const tabs = page.indexOf('id="mainTabs"');
   assert.ok(filter > 0 && tabs > 0 && filter < tabs, '캠프 선택 줄이 탭보다 먼저 나온다');
 });
 
 test('숨긴(hidden) 버튼은 실제로 안 보인다 — 관리자 지정은 마스터에게만, 캠프 관리·이름 수정은 관리자에게만', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.match(page, /\[hidden\] \{ display:none !important; \}/);
   assert.match(page, /id="managersBtn" type="button" hidden/);
   assert.match(page, /els\.managersBtn\.hidden = !editMode \|\| !isMaster;/);
@@ -208,7 +208,7 @@ test('숨긴(hidden) 버튼은 실제로 안 보인다 — 관리자 지정은 �
 
 test('연도·시즌을 바꿀 때 기본 캠프로 되돌아가지 않는다 — 기본 캠프는 첫 화면에서만 적용', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/camp-resources/index.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/camp-resources/index.astro', import.meta.url), 'utf8');
   // 연도 선택은 selectedCampId 를 비운 채 다시 그리므로, 이미 연도가 정해진 뒤에는 기본 캠프를 다시 적용하면 안 된다
   assert.match(page, /if \(!selectedCampId && !selectedYear && applyDefaultCampSelection\(\)\)/);
   assert.doesNotMatch(page, /if \(!selectedCampId && applyDefaultCampSelection\(\)\)/);
@@ -219,7 +219,7 @@ test('연도·시즌을 바꿀 때 기본 캠프로 되돌아가지 않는다 �
 });
 
 test('resource dialog accepts dropped files and routes audio to BGM', () => {
-  const page = readFileSync(root + 'src/pages/camp-resources/index.astro', 'utf8');
+  const page = readFileSync(root + 'src/pages/portal/camp-resources/index.astro', 'utf8');
   assert.match(page, /setupFileDrop/);
   assert.match(page, /uploadFile\(file, 'bgm'/);
   assert.match(page, /receivePresentationFiles\(files\)/);

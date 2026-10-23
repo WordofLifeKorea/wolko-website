@@ -2,7 +2,7 @@
  * "월코에서 섬기고 싶어요" 문의 — 1단계: 접수 · 저장 · 담당자 배정 · 알림.
  *
  * 흐름: 홈페이지 문의 폼(유형 serve) → 이 문의를 KV 에 저장(이름·연락처·내용만, 민감 정보는 받지 않는다)
- *   → 문의 언어에 맞는 담당자 + 마스터에게 알림(내용 없이 "새 문의가 왔다"만) → 포탈 받은함(/serve-inquiries/)에서
+ *   → 문의 언어에 맞는 담당자 + 마스터에게 알림(내용 없이 "새 문의가 왔다"만) → 포탈 받은함(/portal/serve-inquiries/)에서
  *   담당자가 "인터뷰 진행 승인 / 보류 / 거절" 처리. 승인하면 정식 지원 절차(신청서)가 시작된다(2단계에서 연결).
  *
  * 저장소(CAMP_KV): serve:inq:{id}  문의 JSON
@@ -11,7 +11,7 @@ import { MASTER_EMAILS, normalizeEmail, sendEmail } from './hubAccounts.js';
 
 export const SERVE_INQUIRY_PREFIX = 'serve:inq:';
 export const SERVE_STATUSES = ['new', 'interview', 'hold', 'rejected'];
-export const SERVE_PAGE_URL = 'https://wolko.org/serve-inquiries/';
+export const SERVE_PAGE_URL = 'https://wolko.org/portal/serve-inquiries/';
 
 /**
  * 섬김 문의를 처리하는 담당자(포탈 로그인 이메일, 소문자). 문의 언어로 나뉜다. 마스터는 모든 문의를 본다.

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const page = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+const page = readFileSync(new URL('../src/pages/portal/resource.astro', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
 const lateCss = readFileSync(new URL('../public/pdf-viewer-layout.css', import.meta.url), 'utf8');
 
@@ -91,7 +91,7 @@ test('PDF text selection is clipped to the actual pointer gesture', () => {
 
 test('hovering a highlight shows an "author: note" tooltip above it instead of a native title', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/resource.astro', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
   assert.match(page, /function showHighlightTooltip\(box, annotation, event\)/);
   assert.match(page, /box\.addEventListener\('mouseenter', event => showHighlightTooltip\(box, a, event\)\)/);
@@ -118,7 +118,7 @@ test('clicking a highlight pins its note with a close button; area notes are wri
 
 test('text highlight uses caret-exact boundaries, resolves gaps to the nearest glyph, and paints a live preview while dragging', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/resource.astro', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
   assert.match(page, /function nearestTextBoundary\(textLayerEl, x, y\)/);
   assert.match(page, /function textBoundaryAt\(textLayerEl, x, y\)/);
@@ -129,7 +129,7 @@ test('text highlight uses caret-exact boundaries, resolves gaps to the nearest g
 
 test('mouse highlight anchors its start boundary on pointerdown, follows scroll, and stops at the page end', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/resource.astro', import.meta.url), 'utf8');
   assert.match(page, /const start = textBoundaryAt\(textLayerEl, event\.clientX, event\.clientY\);/);
   assert.match(page, /scroller\(\)\?\.addEventListener\('scroll', onScroll\)/);
   assert.match(page, /function layerEdgeBoundary\(textLayerEl, x, y\)/);

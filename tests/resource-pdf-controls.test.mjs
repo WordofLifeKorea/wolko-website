@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 
-const source = readFileSync(process.env.RESOURCE_SOURCE || new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+const source = readFileSync(process.env.RESOURCE_SOURCE || new URL('../src/pages/portal/resource.astro', import.meta.url), 'utf8');
 const rendering = source.slice(source.indexOf('    let viewerRendering ='), source.indexOf('    // 실제 글자를 드래그로'));
 const controls = source.slice(source.indexOf('    function viewerPrevPage()'), source.indexOf('    function toggleDrawMode'));
 

@@ -1,0 +1,28 @@
+---
+import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="캠프 예산" active="budget">
+  <div class="tabs" id="bdTabs">
+    <a class="tab" href="/portal/campteam/finance/" data-t="ftBack" style="font-weight:700"></a>
+    <a class="tab" href="/portal/campteam/finance/?tab=summary" data-t="ftSummary"></a><a class="tab" href="/portal/campteam/finance/?tab=ledger" data-t="ftLedger"></a><a class="tab" href="/portal/campteam/finance/?tab=expense" data-t="ftExpense"></a><a class="tab" href="/portal/campteam/finance/?tab=recon" data-t="ftRecon"></a><a class="tab" href="/portal/campteam/finance/?tab=calc" data-t="ftCalc"></a><a class="tab" href="/portal/campteam/finance/?tab=plan" data-t="ftPlan"></a><a class="tab" href="/portal/campteam/finance/?tab=cats" data-t="ftCats"></a><a class="tab" href="/portal/campteam/finance/?tab=periods" data-t="ftPeriods"></a>
+    <span class="tab on" data-t="ftThis"></span>
+  </div>
+  <div class="hintbox" data-t="ftHint" style="margin-bottom:14px"></div>
+  <div class="top">
+    <div><div class="h1row"><h1 data-t="bdTitle"></h1><span class="qh" data-h="pageBudget"></span></div><div class="sub" data-t="bdSub"></div></div>
+    <div class="actions"><button class="btn" id="bdCsv" data-t="bdCsv"></button><button class="btn" id="bdCopy" data-t="bdCopy"></button><button class="btn" id="bdTarget" data-t="bdTarget"></button><button class="btn pri" id="bdAdd" data-t="bdAdd"></button></div>
+  </div>
+  <div class="locked" id="bdLocked" hidden data-t="budgetLocked"></div>
+  <div id="bdMain">
+    <div class="filters t" style="grid-template-columns:1.2fr 1fr 1fr 1.4fr"><select id="bcamp"></select><select id="bcat"></select><select id="bcur"></select><input id="bq" type="search" data-t-ph="bdSearch"></div>
+    <div id="bdSummary"></div>
+    <div id="bdPerCamp"></div>
+    <section class="card" style="margin-bottom:14px"><h2><span data-t="bdLines"></span><a href="/portal/campteam/files/?category=budget" data-t="bdFiles"></a></h2><div style="overflow:auto"><table class="vtable" id="bdTable"></table></div></section>
+    <section class="card"><h2 data-t="bdReport"></h2><div id="bdFlags"></div></section>
+  </div>
+  <dialog id="dlg" class="wide">
+    <h3 id="dlgTitle"></h3>
+    <form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form>
+  </dialog>
+  <script is:inline slot="scripts" src="/portal/campteam/budget.js?v=3"></script>
+</CampTeamLayout>

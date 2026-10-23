@@ -9,21 +9,21 @@ test('vehicle menu is the last WOLKO tool; reservations, maintenance and usage l
   const [portal, rail, car, log, carCss] = await Promise.all([
     read('src/pages/portal.astro'),
     read('public/wolko-rail.js'),
-    read('src/pages/car/index.astro'),
-    read('src/pages/car-log/index.astro'),
+    read('src/pages/portal/car/index.astro'),
+    read('src/pages/portal/car-log/index.astro'),
     read('public/car.css'),
   ]);
 
-  assert.match(portal, /href: '\/car-drive'[^\n]*icon: 'car'/);
-  assert.match(rail, /href: '\/car-drive'[^\n]*label: '차량'/);
-  assert.doesNotMatch(portal, /href: '\/car'[,\s]/);
-  assert.doesNotMatch(rail, /href: '\/car'[,\s]/);
-  assert.ok(portal.indexOf("href: '/resource'") < portal.indexOf("href: '/car-drive'"));
-  assert.ok(rail.indexOf("href: '/expense'") < rail.indexOf("href: '/car-drive'"));
+  assert.match(portal, /href: '\/portal\/car-drive'[^\n]*icon: 'car'/);
+  assert.match(rail, /href: '\/portal\/car-drive'[^\n]*label: '차량'/);
+  assert.doesNotMatch(portal, /href: '\/portal\/car'[,\s]/);
+  assert.doesNotMatch(rail, /href: '\/portal\/car'[,\s]/);
+  assert.ok(portal.indexOf("href: '/portal/resource'") < portal.indexOf("href: '/portal/car-drive'"));
+  assert.ok(rail.indexOf("href: '/portal/expense'") < rail.indexOf("href: '/portal/car-drive'"));
   assert.match(car, /id="viewTabReservations"/);
   assert.match(car, /id="viewTabMaintenance"/);
-  assert.match(car, /href="\/car-log\/"/);
-  assert.match(log, /href="\/car\/\?view=maintenance"/);
+  assert.match(car, /href="\/portal\/car-log\/"/);
+  assert.match(log, /href="\/portal\/car\/\?view=maintenance"/);
   assert.match(log, /class="car-header"/);
   assert.match(car, /<title>차량 스케줄 — WOLKO<\/title>/);
   assert.match(car, /\/car\.css\?v=\d+/);
@@ -37,7 +37,7 @@ test('vehicle menu is the last WOLKO tool; reservations, maintenance and usage l
 
 test('예약현황: 좌우 이전/다음 달 미리보기는 없고, 달력 옆(넓은 화면)·아래(좁은 화면)에 선택한 날의 세부 예약이 보인다', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/car/index.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/car/index.astro', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../public/car.css', import.meta.url), 'utf8');
   assert.doesNotMatch(page, /miniPrev|miniNext|renderMiniMonth|jumpMiniMonth/);
   assert.doesNotMatch(css, /\.cal-mini/);
@@ -49,7 +49,7 @@ test('예약현황: 좌우 이전/다음 달 미리보기는 없고, 달력 옆(
 
 test('예약현황 폰 화면: 한 주만 보이고 한 주씩 이동하며, 좁은 칸의 글자는 줄여서 줄바꿈 없이 한 줄로', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/car/index.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/car/index.astro', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../public/car.css', import.meta.url), 'utf8');
   assert.match(page, /const isMobileWeek = \(\) => window\.innerWidth <= 640;/);
   assert.match(page, /const totalWeeks = mobileWeek \? 1 : totalCells \/ 7;/, '폰에서는 한 주만 그린다');
@@ -60,7 +60,7 @@ test('예약현황 폰 화면: 한 주만 보이고 한 주씩 이동하며, 좁
 
 test('staff calendar shows one large month with the selected day on the right, no side mini calendars', async () => {
   const { readFileSync } = await import('node:fs');
-  const schedule = readFileSync(new URL('../src/pages/schedule/index.astro', import.meta.url), 'utf8');
+  const schedule = readFileSync(new URL('../src/pages/portal/schedule/index.astro', import.meta.url), 'utf8');
   assert.doesNotMatch(schedule, /miniPrev|miniNext|renderMiniMonth|jumpMiniMonth|\.cal-mini/);
   assert.match(schedule, /class="sc-layout"/);
   assert.match(schedule, /<aside class="sc-day-panel" id="dayPanel"/);

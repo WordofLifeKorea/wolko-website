@@ -16,7 +16,7 @@ const dow = (d) => DOW[new Date(d + 'T00:00:00Z').getUTCDay()];
 
 /** 이번 주 요약 메일 내용. week = buildWeek() 결과, summary = AI 한두 줄(없으면 null) */
 export function buildWeeklyEmail({ name, week, summary, base = 'https://wolko.org' }) {
-  const link = base.replace(/\/$/, '') + '/campteam/';
+  const link = base.replace(/\/$/, '') + '/portal/campteam/';
   const row = (t, tag) => `<tr><td style="padding:8px 10px;border-bottom:1px solid #e8eef3;font-size:15px">${esc(t.title)}${t.camp ? `<div style="color:#6b7f8e;font-size:12px">${esc(t.camp)}</div>` : ''}</td><td style="padding:8px 10px;border-bottom:1px solid #e8eef3;white-space:nowrap;color:${tag === 'over' ? '#d0443c' : '#3a4f5e'};font-size:13px;text-align:right">${esc(md(t.date))}(${dow(t.date)})${t.time ? ' ' + esc(t.time) : ''}</td></tr>`;
   const section = (title, list, tag) => list.length ? `<h3 style="margin:22px 0 6px;font-size:15px;color:${tag === 'over' ? '#d0443c' : '#1d4e6b'}">${esc(title)} <span style="color:#6b7f8e;font-weight:400;font-size:12px">${list.length}건</span></h3><table style="width:100%;border-collapse:collapse">${list.map((t) => row(t, tag)).join('')}</table>` : '';
   const text = [`${name ? name + '님, ' : ''}이번 주(${md(week.start)}~${md(week.end)}) 할 일이에요.`, summary || '',

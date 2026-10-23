@@ -27,7 +27,7 @@ export function reminderText(name, date, slot = 'pickup') {
   const [, m, d] = date.split('-');
   const when = `오늘(${+m}/${+d} ${DAYS[weekdayOf(date)]})`;
   const body = slot === 'dropoff' ? `${when} 권사님 오후 라이드 담당입니다. 감사합니다!` : `${when} 오전 픽업 담당이에요.`;
-  return `[WOLKO 운행] ${name}님, ${body} 운행 스케줄: https://wolko.org/car-drive/#${date}`;
+  return `[WOLKO 운행] ${name}님, ${body} 운행 스케줄: https://wolko.org/portal/car-drive/#${date}`;
 }
 
 const kstMinutes = (now = Date.now()) => { const d = new Date(now + 9 * 3600000); return d.getUTCHours() * 60 + d.getUTCMinutes(); };

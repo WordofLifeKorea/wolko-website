@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const portal = readFileSync(new URL('../src/pages/portal.astro', import.meta.url), 'utf8');
-const campResources = readFileSync(new URL('../src/pages/camp-resources/index.astro', import.meta.url), 'utf8');
+const campResources = readFileSync(new URL('../src/pages/portal/camp-resources/index.astro', import.meta.url), 'utf8');
 const qtBook = readFileSync(new URL('../src/pages/resources/qt-book.astro', import.meta.url), 'utf8');
 
 test('portal exposes a standard password-manager login form', () => {

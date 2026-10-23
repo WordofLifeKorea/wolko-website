@@ -78,7 +78,7 @@
     var more = TABS_MORE.filter(allow), inMore = more.indexOf(S.tab) >= 0;
     $('fnTabs').innerHTML = TABS_PRIMARY.map(function (t) { return '<button class="tab' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(tabLabel(t)) + '</button>'; }).join('') +
       '<div class="tabmore"><button class="tab' + (inMore ? ' on' : '') + '" id="fnMoreBtn" aria-haspopup="true" aria-expanded="false">' + esc(inMore ? '⋯ ' + tabLabel(S.tab) : CT.t('tabMore')) + '</button><div class="moremenu" id="fnMoreMenu" hidden>' +
-      more.map(function (t) { return '<button class="mi' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(tabLabel(t)) + '</button>'; }).join('') + '<a class="mi" href="/campteam/budget/">' + esc(CT.t('tabCampBudget')) + '</a></div></div>' + CT.help('tab' + S.tab.charAt(0).toUpperCase() + S.tab.slice(1));
+      more.map(function (t) { return '<button class="mi' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(tabLabel(t)) + '</button>'; }).join('') + '<a class="mi" href="/portal/campteam/budget/">' + esc(CT.t('tabCampBudget')) + '</a></div></div>' + CT.help('tab' + S.tab.charAt(0).toUpperCase() + S.tab.slice(1));
     $('fnPerHelp').innerHTML = CT.help('period');
     $('fnPerManage').hidden = !(S.perms && S.perms.moneyRead); $('fnPerNew').hidden = !canAdmin();
     $('fnBanner').innerHTML = bannerHtml();

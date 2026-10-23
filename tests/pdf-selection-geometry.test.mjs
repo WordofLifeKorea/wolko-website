@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
-const source = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../src/pages/portal/resource.astro', import.meta.url), 'utf8');
 const start = source.indexOf('    function selectionGestureBounds(');
 const end = source.indexOf('    function selectedCharactersInGesture(', start);
 const context = vm.createContext({});

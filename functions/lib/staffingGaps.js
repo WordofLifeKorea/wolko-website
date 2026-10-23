@@ -88,8 +88,8 @@ export function gapsEmail({ days, car, kitchen, origin = 'https://wolko.org', na
       <h2 style="margin:0 0 14px;color:#004f68;font-size:19px;">Weekly Reminder: Unfilled Slots</h2>
       <p style="margin:0 0 10px;">Dear ${esc(name)},</p>
       <p style="margin:0 0 6px;">A new week has begun, and the following open slots have not yet been filled. We kindly ask you to remind the team and encourage members to sign up so that every slot is covered.</p>
-      ${section('Driving Schedule', car, carLine, '/car-drive/', 'Open the driving schedule')}
-      ${section('Kitchen Duty', kitchen, kitchenLine, '/kitchen/', 'Open the kitchen duty schedule')}
+      ${section('Driving Schedule', car, carLine, '/portal/car-drive/', 'Open the driving schedule')}
+      ${section('Kitchen Duty', kitchen, kitchenLine, '/portal/kitchen/', 'Open the kitchen duty schedule')}
       <p style="margin:24px 0 0;">Thank you for your continued help and care for the team.</p>
       <p style="margin:14px 0 0;">Sincerely,<br>WOLKO Portal<br><span style="color:#7d98a3;font-size:12px;">This is an automated message sent every Monday at 9:30 AM (KST).</span></p>
     </div>`;

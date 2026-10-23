@@ -192,7 +192,7 @@ test('selected records: master can edit vehicle/purpose of chosen entries only, 
 test('usage log page: master-only "관리" button with checkbox selection, and photos auto-fit the screen', async () => {
   const { readFileSync } = await import('node:fs');
   const read = f => readFileSync(new URL(f, import.meta.url), 'utf8');
-  const page = read('../src/pages/car-log/index.astro'), js = read('../public/car-log.js'), css = read('../public/car-log.css');
+  const page = read('../src/pages/portal/car-log/index.astro'), js = read('../public/car-log.js'), css = read('../public/car-log.css');
   assert.match(page, /id="manageBtn"[^>]*hidden[^>]*>관리</, '기본은 숨김, 이름은 관리');
   assert.doesNotMatch(page + js, /전체 비우기|clearAllBtn/, '전체 비우기 버튼은 없다');
   assert.match(js, /\$\('manageBtn'\)\.hidden = me\.role !== 'master'/);

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const source = readFileSync(new URL('../src/pages/crs/index.astro', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../src/pages/portal/crs/index.astro', import.meta.url), 'utf8');
 
 test('CRS detail panel is laid out before relationship cards render', () => {
   assert.match(source, /\.detail-panel \{[^}]*display:none;[^}]*flex:1 1 0%/s);

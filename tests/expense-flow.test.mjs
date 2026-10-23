@@ -743,7 +743,7 @@ test('회계 화면의 카테고리 선택칸과 노트칸은 34px 로 낮게 �
 
 test('회계 항목: 코드는 작성자 입력 › 승인자가 확정한 출금 계좌 › 회계 확인 순서로, 회계 노트는 평소 닫혀 있다가 노트 버튼을 누르면 말풍선으로 연다', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   assert.match(src, /srcLbl: '작성자 입력'/);
   assert.match(src, /wdLbl: '출금 계좌'/);
   assert.match(src, /acctSelLbl: '회계 확인 \(필요시 변경\)'/);
@@ -756,7 +756,7 @@ test('회계 항목: 코드는 작성자 입력 › 승인자가 확정한 출�
 
 test('회계 항목: 카테고리·출금 계좌 텍스트를 직접 선택하고 출금 줄 오른쪽에 금액을 표시한다', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   const flow = src.slice(src.indexOf('const codeFlow = '), src.indexOf('// 보기 화면: 영수증은'));
   assert.doesNotMatch(flow, /ex-cf-toggle|code-change|ex-cf-panel/);
   assert.match(flow, /ex-inline-select/);
@@ -776,7 +776,7 @@ test('회계 코드 글자는 굵게 하지 않는다', async () => {
 
 test('승인 대기: 카테고리·출금 계좌 두 줄, 출금 계좌 드롭박스는 늘 보이고 [펼치기]는 없다 — 승인 메모 입력칸은 34px', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   const cell = src.slice(src.indexOf('function catCell('), src.indexOf('// 승인 메모:'));
   assert.equal((cell.match(/class="ex-cf-row[ "]/g) || []).length, 2, '카테고리 줄과 출금 계좌 줄');
   assert.doesNotMatch(cell, /ex-wd-text|wd-edit/, '글자↔드롭박스로 모양이 바뀌지 않는다');
@@ -794,7 +794,7 @@ test('승인 대기: 카테고리·출금 계좌 두 줄, 출금 계좌 드롭�
 
 test('회계 노트 말풍선에 [저장]이 있고 눌러서 실제로 저장된다 (말풍선 안 클릭을 막는 규칙에서 저장 버튼은 제외), 카테고리와 출금 계좌가 두 줄로 보인다', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   assert.match(src, /data-act="anote-save"/);
   assert.match(src, /acNoteSave: '저장'/);
   assert.match(src, /acNoteSave: 'Save'/);
@@ -851,7 +851,7 @@ test('회계 항목: 목적 · 카테고리 · 출금 계좌 줄은 높이도 �
 
 test('작성 폼: 사역명·계좌 칸 없이 카테고리만 고르고, 드롭박스 화살표는 제자리에 고정된다', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   const row = src.slice(src.indexOf('<div class="ex-row" data-i="${i}">'), src.indexOf('<div class="ex-r2">'));
   assert.doesNotMatch(row, /data-f="srcSel"|data-f="source"/, '사역명·계좌 칸은 없다');
   const order = ['data-f="when"', 'data-f="account"', 'data-f="item"', 'data-f="ministryPurpose"'].map(k => row.indexOf(k));
@@ -867,7 +867,7 @@ test('작성 폼: 사역명·계좌 칸 없이 카테고리만 고르고, 드롭
 
 test('엑셀로 내보내기 버튼은 리포트 줄 머리에는 없고, 펼친 상세 안에서만 보인다', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   assert.doesNotMatch(src, /class="ex-sub-dl"[^>]*data-act="xlsx-rep"/, '줄 머리의 버튼은 없다');
   const detail = src.slice(src.indexOf('function detailHtml('), src.indexOf('function detailHtml(') + 6000);
   assert.match(detail, /data-act="xlsx-rep"/, '상세 안의 버튼');
@@ -890,7 +890,7 @@ test('작성 폼: 영수증 버튼 말고는 글자가 굵지 않다', async () 
 
 test('승인 표 열 순서: 날짜 | 품목·목적과 출금 계좌 | 승인 메모 | 금액', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   assert.match(src, /<th>\$\{t\('thWhen'\)\}<\/th><th>\$\{t\('thItem'\)\}\$\{approving \? ' · ' \+ t\('wdLbl'\) : ''\}<\/th><th>\$\{approving \? t\('aMemoLbl'\) : t\('thCat'\)\}<\/th><th style="text-align:right">/);
   const rows = src.slice(src.indexOf("const rows = rep.rows.map((r, i) => `"), src.indexOf("let notes = ''"));
   const pos = [rows.indexOf("esc(r.when || '')"), rows.indexOf('ex-item-split'), rows.indexOf('catCell(rep, r, i, st)'), rows.indexOf('apprMemoInput(rep, i, st)'), rows.indexOf('krw(r.amountKrw)')];
@@ -906,7 +906,7 @@ test('승인 대기·회계 업무: 항목마다 아주 옅은 배경', async ()
 
 test('회계 업무: 코드 확인·노트 저장 버튼과 리포트별 삭제 버튼은 없고, 바꾸면 자동 저장 · 카드 머리 [관리]로 선택 삭제', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   const detail = src.slice(src.indexOf('function detailHtml('), src.indexOf('function detailHtml(') + 6000);
   assert.doesNotMatch(detail, /data-act="recat-save"|data-act="trash"/);
   assert.match(src, /async function saveRecat\(box, id, silent\)/);
@@ -919,7 +919,7 @@ test('회계 업무: 코드 확인·노트 저장 버튼과 리포트별 삭제 
 
 test('회계 상세: 날짜는 영수증 사진 위, 품목 | 목적은 한 줄이고 잘리면 툴팁으로 전체', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const src = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   const detail = src.slice(src.indexOf('function detailHtml('), src.indexOf('function detailHtml(') + 4000);
   assert.ok(detail.indexOf('ex-d-date') < detail.indexOf('receiptChips(rep, r)'), '날짜가 사진 앞(위)');
   assert.match(detail, /class="ex-d-text ex-d-purpose-inline"[^>]*aria-label="\$\{esc\(r\.ministryPurpose\)\}"/, '목적 전체 내용');
@@ -944,7 +944,7 @@ test('회계 상세: 구분선은 금액 칸 앞에서 끊긴다 (항목 끝까�
 
 test('expense form labels: Description and Expense Report Title each carry an (i) tooltip in both languages', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   assert.match(page, /\$\{t\('lblDesc'\)\}\$\{infoIcon\('tipDesc'\)\}/);
   assert.match(page, /\$\{t\('lblProject'\)\}\$\{infoIcon\('tipTitle'\)\}/);
   assert.match(page, /lblProject: 'Expense Report Title<span class="ko">경비 리포트 제목/);
@@ -987,7 +987,7 @@ test('경비 리포트 임시저장: 계정에 귀속(서버) · 본인만 읽�
 
 test('경비 리포트 임시저장: 화면은 서버 초안과 이 브라우저 복사본 중 최신을 쓰고, 제출하면 둘 다 지운다', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/expense/index.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/expense/index.astro', import.meta.url), 'utf8');
   assert.match(page, /async function pickDraft\(\)/);
   assert.match(page, /const draft = await pickDraft\(\)/);
   assert.match(page, /fetch\('\/api\/expense\/draft'/);

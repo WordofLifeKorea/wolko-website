@@ -131,7 +131,7 @@ test('admin uses original application date for Early Bird and preserves old poli
 });
 
 test('registration and admin scripts parse, and admin retains the new policy', () => {
-  for (const path of ['src/pages/camp-register/index.astro', 'src/pages/wolkoadmin.astro']) {
+  for (const path of ['src/pages/camp-register/index.astro', 'src/pages/portal/wolkoadmin.astro']) {
     const page = readFileSync(new URL('../' + path, import.meta.url), 'utf8');
     for (const [, , script] of page.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
       if (!script.trim()) continue;

@@ -29,7 +29,7 @@ test('메일 내용: 제목·본문에 이번 주 일이 들어가고 HTML 은 �
   const week = { start: '2027-01-04', end: '2027-01-10', overdue: [{ title: '지난 일', date: '2027-01-02', camp: '' }], tasks: [{ title: '<script>alert(1)</script>', date: '2027-01-06', camp: '겨울 캠프' }], meetings: [{ title: '주간 회의', date: '2027-01-05', time: '10:00' }], events: [] };
   const m = buildWeeklyEmail({ name: '팀원', week, summary: '이번 주는 <b>마감</b>이 많아요.' });
   assert.match(m.subject, /01\/04~01\/10/); assert.equal(m.html.includes('<script>'), false); assert.ok(m.html.includes('&lt;script&gt;')); assert.ok(m.html.includes('&lt;b&gt;마감&lt;/b&gt;')); assert.ok(m.text.includes('주간 회의') && m.text.includes('지난 마감'));
-  assert.ok(m.html.includes('https://wolko.org/campteam/'));
+  assert.ok(m.html.includes('https://wolko.org/portal/campteam/'));
 });
 
 test('발송 권한: 비밀값이 없거나 틀리면 거부, 서비스 키가 없으면 503, 화요일이 아니면 건너뜀', async () => {

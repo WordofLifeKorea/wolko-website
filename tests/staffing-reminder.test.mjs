@@ -69,8 +69,8 @@ test('영어 메일: 어떤 칸이 비었는지 날짜별로 나오고, 링크�
   assert.match(m.html, /Afternoon drop-off/);
   assert.match(m.html, /Lunch clean-up \(0 of 2 signed up\)/);
   assert.match(m.html, /Dinner prep \(0 of 1 signed up\)/);
-  assert.match(m.html, /https:\/\/wolko\.org\/car-drive\//);
-  assert.match(m.html, /https:\/\/wolko\.org\/kitchen\//);
+  assert.match(m.html, /https:\/\/wolko\.org\/portal\/car-drive\//);
+  assert.match(m.html, /https:\/\/wolko\.org\/portal\/kitchen\//);
   assert.match(m.text, /kindly ask you to remind the team/);
   assert.ok(!/[가-힣]/.test(m.html + m.text + m.subject), '한글이 섞이지 않는다');
 });

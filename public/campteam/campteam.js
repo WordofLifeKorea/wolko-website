@@ -186,8 +186,8 @@
     document.getElementById('adminHead').hidden = document.getElementById('settingsNav').hidden = !p.manageMembers;
     document.getElementById('trashNav').hidden = !CT.me.campRole;
     // 항목별 권한: 볼 수 없는 영역의 메뉴는 숨긴다 (서버도 같은 기준으로 막는다)
-    var NAVAREA = { '/campteam/tasks/': 'tasks', '/campteam/calendar/': 'tasks', '/campteam/meetings/': 'meetings', '/campteam/files/': 'files', '/campteam/resources/': 'files', '/campteam/camps/': 'camps', '/campteam/tv/': 'camps' };
-    [].forEach.call(document.querySelectorAll('.nav a[href]'), function (a) { var area = NAVAREA[a.getAttribute('href')]; if (area && !CT.can(area, 'view')) a.hidden = true; if (a.getAttribute('href') === '/campteam/tv/' && !(CT.me && CT.me.campRole)) a.hidden = true; });
+    var NAVAREA = { '/portal/campteam/tasks/': 'tasks', '/portal/campteam/calendar/': 'tasks', '/portal/campteam/meetings/': 'meetings', '/portal/campteam/files/': 'files', '/portal/campteam/resources/': 'files', '/portal/campteam/camps/': 'camps', '/portal/campteam/tv/': 'camps' };
+    [].forEach.call(document.querySelectorAll('.nav a[href]'), function (a) { var area = NAVAREA[a.getAttribute('href')]; if (area && !CT.can(area, 'view')) a.hidden = true; if (a.getAttribute('href') === '/portal/campteam/tv/' && !(CT.me && CT.me.campRole)) a.hidden = true; });
     var renderWho = function () { document.getElementById('who').innerHTML = CT.esc(CT.me.email) + '<br><span class="chip">' + CT.esc(CT.roleLabel(CT.me.campRole)) + '</span>' + (CT.usingGoogle() ? ' <a href="#" id="gout">' + CT.esc(CT.t('logout')) + '</a>' : ''); var o = document.getElementById('gout'); if (o) o.onclick = function (e) { e.preventDefault(); CT.googleLogout(); }; };
     renderWho(); document.addEventListener('ct-lang', renderWho);
     watchTables();

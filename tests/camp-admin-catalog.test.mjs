@@ -4,7 +4,7 @@ import { readdir } from 'node:fs/promises';
 import vm from 'node:vm';
 import test from 'node:test';
 
-const page = await readFile(new URL('../src/pages/wolkoadmin.astro', import.meta.url), 'utf8');
+const page = await readFile(new URL('../src/pages/portal/wolkoadmin.astro', import.meta.url), 'utf8');
 const catalogScript = await readFile(new URL('../public/wolko-camp-catalog.js', import.meta.url), 'utf8');
 test('team operations panel follows staff applications and backup links at the bottom', () => {
   const panel = page.indexOf('id="campTeamPanel"');
@@ -115,7 +115,7 @@ test('winter policy is in the same script scope as scholarship rendering', () =>
 
 test('admin camp cards can be reordered by long-press drag and the order is saved per season', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/wolkoadmin.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/wolkoadmin.astro', import.meta.url), 'utf8');
   assert.match(page, /setupCardReorder/);
   assert.match(page, /CARD_ORDER_KEY = season => 'wolko-admin-card-order:' \+ season/);
   assert.match(page, /applySavedCardOrder\(wrap\);/);

@@ -67,7 +67,7 @@ test('password change rejects invalid sessions, weak passwords and password reus
 
 test('camp admin exposes equal-height mobile header controls and a password form', async () => {
   const { readFile } = await import('node:fs/promises');
-  const page = await readFile(new URL('../src/pages/wolkoadmin.astro', import.meta.url), 'utf8');
+  const page = await readFile(new URL('../src/pages/portal/wolkoadmin.astro', import.meta.url), 'utf8');
   const css = await readFile(new URL('../public/wolkoadmin.css', import.meta.url), 'utf8');
   assert.match(page, /class="adm-header-control adm-account-button"[^>]+openAccountModal/);
   assert.match(page, /class="adm-account-icon"[^>]+viewBox="0 0 24 24"/);

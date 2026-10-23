@@ -65,7 +65,7 @@
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 
   let state = null; // { me, today, period, slots, closed, caps, defaultCapacity, maxCapacity, meals }
-  // 링크에 날짜가 붙어 있으면(예: /kitchen/#2026-10-07) 그 날이 속한 2주 구간을 열고 그 날 카드로 이동한다
+  // 링크에 날짜가 붙어 있으면(예: /portal/kitchen/#2026-10-07) 그 날이 속한 2주 구간을 열고 그 날 카드로 이동한다
   const hashDate = () => { const m = /^#(\d{4}-\d{2}-\d{2})$/.exec(location.hash); return m ? m[1] : null; };
   let wantedStart = hashDate();
   function focusHashDay() {

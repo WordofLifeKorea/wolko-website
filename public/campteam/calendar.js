@@ -95,8 +95,8 @@
     function open(e) {
       var it = e.target.closest('[data-day-ev],[data-day-task],[data-day-meet]');
       if (it && it.dataset.dayEv) { var ev = S.cal.events.filter(function (x) { return x.id === it.dataset.dayEv; })[0]; if (ev && canWrite()) eventForm(Object.assign({ campId: null, kind: ev.kind }, ev)); return true; }
-      if (it && it.dataset.dayTask) { location.href = '/campteam/tasks/?open=' + encodeURIComponent(it.dataset.dayTask); return true; }
-      if (it && it.dataset.dayMeet) { location.href = '/campteam/meetings/?open=' + encodeURIComponent(it.dataset.dayMeet); return true; }
+      if (it && it.dataset.dayTask) { location.href = '/portal/campteam/tasks/?open=' + encodeURIComponent(it.dataset.dayTask); return true; }
+      if (it && it.dataset.dayMeet) { location.href = '/portal/campteam/meetings/?open=' + encodeURIComponent(it.dataset.dayMeet); return true; }
       return false;
     }
     $('calBody').addEventListener('click', function (e) {

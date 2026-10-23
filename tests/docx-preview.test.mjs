@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
-const source = readFileSync(new URL('../src/pages/resource.astro', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../src/pages/portal/resource.astro', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../public/portal.css', import.meta.url), 'utf8');
 const configSource = readFileSync(new URL('../functions/api/portal/onlyoffice-config.js', import.meta.url), 'utf8');
 const compareApiSource = readFileSync(new URL('../functions/api/portal/resource-compare.js', import.meta.url), 'utf8');

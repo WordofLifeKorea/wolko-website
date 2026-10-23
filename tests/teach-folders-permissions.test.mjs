@@ -100,7 +100,7 @@ test('ordinary members can upload files into storage', async () => {
 });
 
 test('add buttons do not require edit mode and the resource script parses', () => {
-  const page = readFileSync(new URL('../src/pages/camp-resources/index.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/camp-resources/index.astro', import.meta.url), 'utf8');
   assert.match(page, /id="folderManageBtn"/);
   assert.match(page, /hasStaffAccess\(\) && selectedCampId \? addButtonHtml/);
   assert.doesNotMatch(page, /editMode \? addButtonHtml/);

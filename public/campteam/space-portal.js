@@ -94,7 +94,7 @@
   }
   function headHtml(d) {
     var info = st.list && st.list.filter(function (x) { return x.id === d.portalCampId; })[0], title = info ? (CT.lang() === 'en' && info.titleEn ? info.titleEn : info.titleKo) : d.portalCampId;
-    return '<div class="ptconn"><div>' + esc(CT.t('ptConnected')) + ': <b>' + esc(title) + '</b>' + (info && info.dateKo ? ' <small class="hint">' + esc(info.dateKo) + '</small>' : '') + '</div><div class="ptbtns"><a class="btn sm" href="/wolkoadmin/" target="_blank" rel="noopener">' + esc(CT.t('ptOpenAdmin')) + '</a> <a class="btn sm" href="/camp-register/" target="_blank" rel="noopener">' + esc(CT.t('ptOpenRefund')) + '</a>' + (d.perms.canLink ? ' <button class="btn sm" id="ptLink">' + esc(CT.t('ptLinkBtn')) + '</button>' : '') + '</div></div>';
+    return '<div class="ptconn"><div>' + esc(CT.t('ptConnected')) + ': <b>' + esc(title) + '</b>' + (info && info.dateKo ? ' <small class="hint">' + esc(info.dateKo) + '</small>' : '') + '</div><div class="ptbtns"><a class="btn sm" href="/portal/wolkoadmin/" target="_blank" rel="noopener">' + esc(CT.t('ptOpenAdmin')) + '</a> <a class="btn sm" href="/camp-register/" target="_blank" rel="noopener">' + esc(CT.t('ptOpenRefund')) + '</a>' + (d.perms.canLink ? ' <button class="btn sm" id="ptLink">' + esc(CT.t('ptLinkBtn')) + '</button>' : '') + '</div></div>';
   }
   /** 캠프별 예산안의 원화(KRW) 지출 계획: 예상 최종 금액. 달러 등 다른 통화는 합치지 않고 따로 알린다 */
   function plannedOut() {
@@ -113,7 +113,7 @@
     var capSub = cap ? esc(CT.t('ptCapShort')) + ' ' + cap + esc(CT.t('ptHeads')) + ' (' + Math.min(999, Math.round(cur.heads / cap * 100)) + '%)' : '';
     var inSub = cur.paidInFull.heads || cur.depositOnly.heads ? esc(CT.t('ptPaidFull')) + ' ' + cur.paidInFull.heads + ' · ' + esc(CT.t('ptDepOnly')) + ' ' + cur.depositOnly.heads : '';
     var outVal = out.has ? esc(KRW(out.amount)) : '<span class="ptdim">' + esc(CT.t('ptNoPlan')) + '</span>';
-    var outSub = out.has ? (out.usd ? esc(CT.t('ptUsdSkip')) : '') : '<a href="/campteam/budget/?campId=' + encodeURIComponent(st.camp.id) + '">' + esc(CT.t('ptEnterPlan')) + '</a>';
+    var outSub = out.has ? (out.usd ? esc(CT.t('ptUsdSkip')) : '') : '<a href="/portal/campteam/budget/?campId=' + encodeURIComponent(st.camp.id) + '">' + esc(CT.t('ptEnterPlan')) + '</a>';
     h += '<div class="ptms">' + m(esc(CT.t('ptMetHeads')), cur.heads + esc(CT.t('ptHeads')), capSub) + m(esc(CT.t('ptMetIn')), esc(KRW(inc)), inSub) + m(esc(CT.t('ptMetOut')), outVal, outSub) +
       m(esc(CT.t('ptMetLeft')) + CT.help('leftover'), left == null ? '<span class="ptdim">—</span>' : esc(KRW(left)), '', left != null && left < 0 ? 'neg' : left != null ? 'pos' : '') + '</div>';
     return h;
@@ -135,7 +135,7 @@
     host.innerHTML = h + '</section>';
   }
 
-  async function ensureList() { if (st.list) return; try { var r = await fetch('/campteam/portal-camps.json', { cache: 'no-cache' }); st.list = r.ok ? (await r.json()).items : []; } catch (e) { st.list = []; } }
+  async function ensureList() { if (st.list) return; try { var r = await fetch('/portal/campteam/portal-camps.json', { cache: 'no-cache' }); st.list = r.ok ? (await r.json()).items : []; } catch (e) { st.list = []; } }
   async function load() {
     try { await ensureList(); st.data = await CT.api('/api/campteam/camp-portal?campId=' + encodeURIComponent(st.camp.id)); }
     catch (e) { var host = $('spPortal'); if (host) host.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; return; }

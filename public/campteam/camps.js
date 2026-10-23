@@ -21,7 +21,7 @@
 
   function campRow(c, t) {
     var pc = c.taskTotal ? Math.round(c.taskDone / c.taskTotal * 100) : 0, dates = c.startDate ? esc(c.startDate) + (c.endDate ? ' ~ ' + esc(c.endDate) : '') : esc(CT.t('dateTbd'));
-    return '<div class="camp-row" data-drag="camp" data-camp="' + esc(c.id) + '" data-href="/campteam/space/?id=' + esc(c.id) + '"><div class="nm"><a href="/campteam/space/?id=' + esc(c.id) + '"><b>' + esc(CT.pick(c, 'name')) + '</b></a>' + (c.isTest && !t.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '<span class="meta">' + esc(c.location || '') + '</span></div>' +
+    return '<div class="camp-row" data-drag="camp" data-camp="' + esc(c.id) + '" data-href="/portal/campteam/space/?id=' + esc(c.id) + '"><div class="nm"><a href="/portal/campteam/space/?id=' + esc(c.id) + '"><b>' + esc(CT.pick(c, 'name')) + '</b></a>' + (c.isTest && !t.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '<span class="meta">' + esc(c.location || '') + '</span></div>' +
       '<div class="cdate">' + dates + '<br><span class="status ' + esc(c.status) + '">' + esc(CT.t(c.status)) + '</span></div>' +
       (c.taskTotal == null ? '<div class="cprog"></div>' : '<div class="cprog"><div class="bar"><i style="width:' + pc + '%"></i></div><span class="meta">' + c.taskDone + '/' + c.taskTotal + ' ' + esc(CT.t('tasksDone')) + '</span></div>') +
       '<div class="actions">' + (canWrite ? '<button class="btn sm" data-edit-camp="' + esc(c.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="camp:' + esc(c.id) + '">' + esc(CT.t('del')) + '</button>' : '') + '</div></div>';
@@ -33,7 +33,7 @@
     if (!hasTypes) { $('list').innerHTML = '<div class="card firstuse"><h2>' + esc(CT.t('firstTitle')) + '</h2><p>' + esc(CT.t(canWrite ? 'firstBody' : 'firstBodyView')) + '</p></div>'; $('ordTools').innerHTML = ''; return; }
     $('list').innerHTML = orderedTypes().map(function (t) {
       var rows = t.camps.length ? '<div class="camps-in" data-group="' + esc(t.id) + '">' + orderedCamps(t).map(function (c) { return campRow(c, t); }).join('') + '</div>' : '<div class="empty">' + esc(CT.t('noCamps')) + '</div>';
-      return '<section class="card type-card" data-drag="type" data-type="' + esc(t.id) + '"><div class="type-head"><div><h2><a href="/campteam/space/?typeId=' + esc(t.id) + '">' + esc(CT.pick(t, 'name')) + '</a>' + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</h2><div class="meta">' + esc(t.description || '') + '</div></div>' +
+      return '<section class="card type-card" data-drag="type" data-type="' + esc(t.id) + '"><div class="type-head"><div><h2><a href="/portal/campteam/space/?typeId=' + esc(t.id) + '">' + esc(CT.pick(t, 'name')) + '</a>' + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</h2><div class="meta">' + esc(t.description || '') + '</div></div>' +
         (canWrite ? '<div class="actions"><button class="btn sm" data-edit-type="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="type:' + esc(t.id) + '">' + esc(CT.t('del')) + '</button></div>' : '') + '</div>' + rows + '</section>';
     }).join('');
     var tools = [];

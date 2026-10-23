@@ -91,7 +91,7 @@ function buildStaffEmailHtml(reg) {
     </div>
     <div style="padding:20px 36px;background:#f0fdfa;border-top:1px solid rgba(13,148,136,0.12);font-size:12px;color:#5a6f79;line-height:1.6;">
       지원 시각: ${kstTime} (KST) &nbsp;·&nbsp; 지원 ID: ${reg.regId}<br>
-      <a href="https://wolko.org/wolkoadmin" style="color:#0d9488;">관리자 패널</a>에서 확인해주세요.
+      <a href="https://wolko.org/portal/wolkoadmin" style="color:#0d9488;">관리자 패널</a>에서 확인해주세요.
     </div>
   </div>
 </body>

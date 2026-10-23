@@ -84,7 +84,7 @@ test('화면: 소개 페이지 편집 화면은 포탈 로그인으로 자동 �
   const team = readFileSync(new URL('../src/pages/team/[slug].astro', import.meta.url), 'utf8');
   assert.match(team, /\/api\/newsletter\/profile\?slug=/);
   assert.doesNotMatch(team, /mpSubForm|\/api\/newsletter\/subscribe/);
-  const page = readFileSync(new URL('../src/pages/mypage/index.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/mypage/index.astro', import.meta.url), 'utf8');
   assert.match(page, /\/team-visual\//);
   assert.doesNotMatch(page, /title="\$\{esc\(t\('tabEdit'\)\)\}"><\/iframe>/, 'iframe title 툴팁 제거');
   assert.match(page, /\/api\/newsletter\/profile/);
@@ -97,7 +97,7 @@ test('업로드 용량: 사이트는 파일당 25MiB 가 한계라서 화면과 
   assert.match(up, /file\.size > 24 \* 1024 \* 1024/);
   const edit = readFileSync(new URL('../src/pages/team-edit/[slug].astro', import.meta.url), 'utf8');
   assert.doesNotMatch(edit, /50 \* 1024 \* 1024|30 \* 1024 \* 1024/);
-  const page = readFileSync(new URL('../src/pages/mypage/index.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/mypage/index.astro', import.meta.url), 'utf8');
   assert.match(page, /f\.size > 24 \* 1024 \* 1024/);
 });
 

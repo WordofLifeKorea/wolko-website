@@ -61,7 +61,7 @@ test('예약금 수납 · 최종 확정(PATCH)은 회계 담당자만 — 관리
 
 test('camp admin hides deposit/confirm/revert buttons unless the account is an accountant', async () => {
   const { readFileSync } = await import('node:fs');
-  const page = readFileSync(new URL('../src/pages/wolkoadmin.astro', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/pages/portal/wolkoadmin.astro', import.meta.url), 'utf8');
   assert.match(page, /setCanProcess\(!!me\.isAccountant\)/);
   assert.doesNotMatch(page, /canProcess = hubSession\.role === 'admin'/);
 });
