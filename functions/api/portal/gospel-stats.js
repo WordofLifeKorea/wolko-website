@@ -60,7 +60,7 @@ export async function onRequestPost({ env, request }) {
   const scope = SCOPES.includes(body?.scope) ? body.scope : null;
   if (!scope) return fail('개인 또는 팀을 선택해 주세요.');
   const location = LOCATIONS.includes(body?.location) ? body.location : null;
-  if (!location) return fail('위치(월코 (평택) 또는 제주월비)를 선택해 주세요.');
+  if (!location) return fail('위치(평택 또는 제주)를 선택해 주세요.');
   const teamName = scope === 'team' ? cleanText(body?.teamName, 60) : '';
   if (scope === 'team' && !teamName) return fail('팀 이름을 입력해 주세요.');
   let values;
