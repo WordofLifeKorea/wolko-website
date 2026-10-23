@@ -1,0 +1,52 @@
+#!/bin/zsh
+# 캠프팀 포털 로컬 실행: 빌드 → 임시 DB·파일 보관소 만들기(처음 한 번) → 개발 서버 (http://localhost:8788)
+# 운영 웹사이트·데이터에는 접속하지 않는다. 파일은 .state 안의 임시 보관소에 저장된다.
+set -e
+cd "$(dirname "$0")/../.."
+STATE=camp-team/dev/.state
+CFG=camp-team/dev/wrangler.local.toml
+node node_modules/astro/astro.js build
+node camp-team/dev/make-dev-login.mjs
+# 마이그레이션은 한 번만: 적용한 파일은 $STATE/applied/ 에 표시한다 (새 마이그레이션이 생겨도 기존 로컬 DB에 이어서 적용됨)
+FRESH=0
+if [ ! -d "$STATE" ]; then FRESH=1; fi
+mkdir -p "$STATE/applied"
+if [ "$FRESH" = "0" ] && [ -z "$(ls -A $STATE/applied)" ]; then
+  # 표시 기능이 생기기 전에 만든 로컬 DB: 0001~0008 은 이미 적용된 것으로 본다
+  for f in camp-team/db/000[1-8]_*.sql; do touch "$STATE/applied/$(basename $f)"; done
+fi
+for f in camp-team/db/0*.sql; do
+  [ -e "$STATE/applied/$(basename $f)" ] && continue
+  npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file "$f"
+  touch "$STATE/applied/$(basename $f)"
+  # 이미 만들어 둔 로컬 DB에 장부 마이그레이션을 이어서 적용한 경우, 장부 더미 자료도 한 번 넣는다
+  if [ "$FRESH" = "0" ] && [ "$(basename $f)" = "0010_ledger.sql" ]; then
+    npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/db/seed-dummy-ledger.sql
+  fi
+done
+if [ "$FRESH" = "1" ]; then
+  npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/db/seed-dummy.sql
+  npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/db/seed-dummy-ledger.sql
+fi
+# 로컬 가짜 경비 리포트(한 번만 넣는다) — 경비 연동 화면을 시험하기 위한 것. 실제 경비 자료와 무관하다.
+if [ ! -e "$STATE/applied/_kvseed" ]; then
+  for f in camp-team/dev/dummy-expense/*.json; do
+    npx wrangler@4 kv key put "expense:report:$(basename $f .json)" --path "$f" --binding CAMP_KV --local --config $CFG --persist-to $STATE
+  done
+  touch "$STATE/applied/_kvseed"
+fi
+# 로컬 가짜 알림 자료(한 번만): 오늘 기준 마감/회의/공지 샘플
+if [ ! -e "$STATE/applied/_alertseed" ]; then
+  npx wrangler@4 d1 execute campteam-local --local --config $CFG --persist-to $STATE --file camp-team/dev/dummy-alerts.sql
+  touch "$STATE/applied/_alertseed"
+fi
+# 로컬 가짜 포털 신청 자료(한 번만) — 캠프별 공간의 "신청 현황" 화면을 시험하기 위한 가짜 이름·번호. 실제 신청 자료와 무관하다.
+if [ ! -e "$STATE/applied/_kvseed_portal" ]; then
+  for f in camp-team/dev/dummy-portal/*.json; do
+    b=$(basename $f .json)
+    npx wrangler@4 kv key put "camp:${b%%__*}:reg:${b##*__}" --path "$f" --binding CAMP_KV --local --config $CFG --persist-to $STATE
+  done
+  touch "$STATE/applied/_kvseed_portal"
+fi
+exec npx wrangler@4 pages dev dist --d1 DB=00000000-0000-0000-0000-000000000000 --r2 CAMPTEAM_FILES --kv CAMP_KV --persist-to $STATE --port 8788 --ip 0.0.0.0 \
+  --binding ADMIN_PASSWORD=local-dev-secret --binding CAMPTEAM_DEV_AUTH=1 ${=WRANGLER_EXTRA}

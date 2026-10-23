@@ -1,0 +1,36 @@
+--- a/src/pages/portal.astro
++++ b/src/pages/portal.astro
+@@ -279,6 +279,9 @@
+       { group: 'camp', href: '/camp-resources', color: '#9bbf1f', icon: 'folder',
+         title_ko: '캠프 자료실', title_en: 'Camp Resources',
+         desc_ko: '수업자료 · 프로그램 · 상담 · 설교 자료', desc_en: 'Class, program, counseling & preaching files' },
++      { group: 'camp', href: '/campteam', color: '#e8c53a', icon: 'clipboard',
++        title_ko: '캠프팀', title_en: 'Camp Team',
++        desc_ko: '캠프 일정 · 업무 · 회의록 · 자료 · 예산 · TV 대시보드', desc_en: 'Camp schedule, tasks, meetings, files, budget & TV dashboard' },
+       { group: 'personal', href: '/expense', color: '#f0a020', icon: 'receipt',
+         title_ko: '경비 리포트', title_en: 'Expense Report',
+         desc_ko: '경비 제출 · 승인 · 회계 업무', desc_en: 'Submit, approve & pay expenses' },
+--- a/public/wolko-rail.js
++++ b/public/wolko-rail.js
+@@ -19,6 +19,8 @@
+       icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
+     { group: 'camp', href: '/camp-resources', color: '#9bbf1f', label: '캠프 자료실', label_en: 'Camp Resources',
+       icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>' },
++    { group: 'camp', href: '/campteam', color: '#e8c53a', label: '캠프팀', label_en: 'Camp Team',
++      icon: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M8 12h8M8 16h5"/>' },
+     { group: 'personal', href: '/expense', color: '#f0a020', label: '경비 리포트', label_en: 'Expense Report',
+       icon: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>' },
+     { group: 'personal', href: '/car-drive', color: '#d155e6', label: '차량', label_en: 'Vehicle',
+--- a/tests/portal-layout.test.mjs
++++ b/tests/portal-layout.test.mjs
+@@ -124,8 +124,8 @@
+   const grab = (file, re) => Object.fromEntries([...readFileSync(new URL(file, import.meta.url), 'utf8').matchAll(re)].map(m => [m[1], m[2].toLowerCase()]));
+   const rail = grab('../public/wolko-rail.js', /href: '(\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
+   const home = grab('../src/pages/portal.astro', /href: '(\/[a-z-]+)', color: '(#[0-9a-fA-F]{6})'/g);
+-  assert.equal(Object.keys(rail).length, 11);
+-  assert.equal(new Set(Object.values(rail)).size, 11, '색이 겹친다');
++  assert.equal(Object.keys(rail).length, 12);
++  assert.equal(new Set(Object.values(rail)).size, 12, '색이 겹친다');
+   assert.deepEqual(home, rail);
+   const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+   const lum = h => { const [r, g, b] = rgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };

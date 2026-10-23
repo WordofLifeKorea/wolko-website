@@ -1,0 +1,15 @@
+# 로컬 테스트 전용 설정 (배포에 쓰이지 않음 — 이름이 wrangler.toml 이 아니고 루트에 있지 않다).
+# D1 은 이 컴퓨터 안의 임시 데이터베이스이며 Cloudflare 계정에 접속하지 않는다.
+name = "campteam-local"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "../../dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "campteam-local"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# 경비 리포트 저장소(기존 CAMP_KV)의 로컬 가짜 — 가짜 경비 리포트만 들어 있다 (camp-team/dev/dummy-expense/)
+[[kv_namespaces]]
+binding = "CAMP_KV"
+id = "CAMP_KV"

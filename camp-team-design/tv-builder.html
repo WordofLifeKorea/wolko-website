@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TV 대시보드 편집기 — 디자인 시안 (더미 데이터)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* wolko.org 홈페이지 팔레트: blue-dark #004f68 / blue-mid #007ea1 / blue-light #73d1f5 / red #c42a36 / text #12303c / deep #0a1e28 */
+:root{
+  --f-sans:'Montserrat',sans-serif; --f-body:'Noto Sans KR',sans-serif;
+  --ui-bg:#f4f6f8; --ui-card:#fff; --ui-border:#e4eaee; --ui-text:#12303c; --ui-mid:#5a6f79; --blue:#004f68; --blue-mid:#007ea1; --red:#c42a36;
+}
+/* TV 테마 */
+.theme-dark{--bg:#0a1e28;--panel:#0f3445;--stat:#004f68;--line:#1f5870;--text:#fff;--muted:#a9c7d3;--accent:#73d1f5;--warn:#ffd08a;--hi-bg:#5d2a33;--hi:#ffb4ba;--md-bg:#4d4528;--md:#ffe09b;--lo-bg:#1d4a5e;--lo:#a8e0f7}
+.theme-light{--bg:#eaf2f5;--panel:#ffffff;--stat:#004f68;--line:#d7e4e8;--text:#12303c;--muted:#5a6f79;--accent:#007ea1;--warn:#b86a00;--hi-bg:#fde8ea;--hi:#c42a36;--md-bg:#fff0dd;--md:#b86a00;--lo-bg:#e3f2f8;--lo:#00708f}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--ui-bg);color:var(--ui-text);font-family:var(--f-body)}
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:#fff;border-bottom:1px solid var(--ui-border)}
+.bar h1{margin:0;font:800 16px var(--f-sans);color:var(--blue);margin-right:auto}
+.bar .badge{background:#fff4e5;color:#9a5a00;border:1px solid #f3d6a6;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700}
+.seg{display:inline-flex;background:var(--ui-bg);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:8px;font:600 13px var(--f-body);color:var(--ui-mid);cursor:pointer}
+.seg button.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px #0002}
+.btn{border:1px solid var(--ui-border);background:#fff;color:var(--blue);height:34px;padding:0 14px;border-radius:10px;font:600 13px var(--f-body);cursor:pointer}
+.btn.pri{background:var(--blue);color:#fff;border-color:var(--blue)}
+.wrap{display:flex;height:calc(100vh - 56px)}
+.palette{width:250px;flex:0 0 250px;background:#fff;border-right:1px solid var(--ui-border);padding:14px;overflow:auto}
+.palette h3{margin:0 0 4px;font:700 14px var(--f-body)}
+.palette p{margin:0 0 12px;font-size:12px;color:var(--ui-mid);line-height:1.5}
+.pw{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--ui-border);border-radius:10px;margin-bottom:8px;font-size:13px}
+.pw span{flex:1}.pw small{display:block;color:var(--ui-mid);font-size:11px}
+.pw button{border:0;background:var(--blue);color:#fff;border-radius:8px;padding:6px 10px;font:600 12px var(--f-body);cursor:pointer}
+.pw button[disabled]{background:#e4eaee;color:#8aa1ab;cursor:default}
+.stage{flex:1;display:grid;place-items:center;padding:14px;min-width:0;overflow:auto}
+.canvas{position:relative;container-type:inline-size;width:min(100%,calc((100vh - 56px - 28px)*16/9));aspect-ratio:16/9;background:var(--bg);color:var(--text);border-radius:10px;overflow:hidden;box-shadow:0 8px 30px #0a1e2833;font-family:var(--f-body)}
+.editing .canvas{background-image:linear-gradient(#ffffff14 1px,transparent 1px),linear-gradient(90deg,#ffffff14 1px,transparent 1px);background-size:calc(100%/16) calc(100%/9)}
+.theme-light.editing .canvas{background-image:linear-gradient(#00000012 1px,transparent 1px),linear-gradient(90deg,#00000012 1px,transparent 1px)}
+.widget{position:absolute;padding:.35cqw}
+.w-in{position:relative;width:100%;height:100%;background:var(--panel);border-radius:1cqw;padding:.9cqw 1.1cqw;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.theme-light .w-in{box-shadow:0 1px 4px #12303c14}
+.editing .widget{cursor:grab;touch-action:none}
+.editing .widget.drag{z-index:9;opacity:.92;cursor:grabbing}
+.editing .widget.bad .w-in{outline:.25cqw solid #ff5a67}
+.editing .widget:hover .w-in{outline:.2cqw dashed var(--accent)}
+.tools{display:none;position:absolute;top:-.1cqw;right:.35cqw;z-index:5}
+.editing .tools{display:flex;gap:.3cqw}
+.tools button{width:1.8cqw;height:1.8cqw;min-width:20px;min-height:20px;border:0;border-radius:50%;background:#c42a36;color:#fff;font:700 1cqw/1 var(--f-sans);cursor:pointer;display:grid;place-items:center}
+.tools button{font-size:max(11px,1cqw)}
+.rs{display:none;position:absolute;right:.15cqw;bottom:.15cqw;width:1.6cqw;height:1.6cqw;min-width:18px;min-height:18px;cursor:nwse-resize;z-index:5;border-right:.3cqw solid var(--accent);border-bottom:.3cqw solid var(--accent);border-radius:0 0 .8cqw 0}
+.editing .rs{display:block}
+.label{display:none;position:absolute;left:.35cqw;top:-.1cqw;font:700 max(9px,.7cqw) var(--f-body);color:#fff;background:var(--blue-mid);padding:.1cqw .6cqw;border-radius:0 0 .5cqw .5cqw;z-index:5;white-space:nowrap;max-width:80%;overflow:hidden;text-overflow:ellipsis}
+.editing .label{display:block}
+/* 위젯 내용: 글자 크기는 화면(캔버스) 너비 기준 → TV 크기에 맞춰 자동 확대 */
+.hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:.6cqw;margin-bottom:.4cqw;border-bottom:1px solid var(--line);flex:0 0 auto}
+.hd h2{margin:0;font:700 1.45cqw var(--f-body)}
+.hd span{color:var(--muted);font-size:1cqw}
+.ct{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:space-around}
+.it{display:flex;justify-content:space-between;align-items:center;gap:.8cqw;padding:.35cqw 0;border-bottom:1px solid var(--line)}
+.it:last-child{border-bottom:0}
+.it b{display:block;font:600 1.15cqw/1.25 var(--f-body)}
+.it .sub{display:block;color:var(--muted);font-size:.9cqw;margin-top:.2cqw}
+.st{text-align:right;font-size:.88cqw;color:var(--muted)}
+.pri{display:inline-block;margin-top:.25cqw;padding:.2cqw .7cqw;border-radius:.5cqw;font:700 .8cqw var(--f-sans)}
+.hi{background:var(--hi-bg);color:var(--hi)}.md{background:var(--md-bg);color:var(--md)}.lo{background:var(--lo-bg);color:var(--lo)}
+.soon{color:var(--warn);font-weight:700}
+.center{align-items:center;justify-content:center;text-align:center}
+.big{font:800 4.2cqw/1 var(--f-sans)}
+.cap{color:var(--muted);font-size:1.2cqw;margin-top:.4cqw}
+.brand small{color:var(--accent);font:700 .85cqw var(--f-sans);letter-spacing:.16em}
+.brand h1{margin:.1cqw 0;font:800 2cqw/1.1 var(--f-sans)}
+.brand div{color:var(--muted);font-size:.85cqw}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:.8cqw;height:100%}
+.tile{display:flex;align-items:center;justify-content:space-between;background:var(--stat);color:#fff;border-radius:.8cqw;padding:0 1.2cqw}
+.tile label{font-size:1.15cqw;opacity:.85}.tile strong{font:800 2.3cqw var(--f-sans)}
+.noteb{white-space:pre-line;color:var(--muted);font-size:1.05cqw;line-height:1.5;margin-top:.3cqw}
+.notice{padding:.5cqw 0;color:var(--warn);font-size:1.15cqw;line-height:1.35}
+.bars .row{margin:.35cqw 0}.bars .row div{font-size:1cqw;display:flex;justify-content:space-between}
+.bars i{display:block;height:.7cqw;border-radius:99px;background:var(--line);overflow:hidden;margin-top:.25cqw}
+.bars i u{display:block;height:100%;background:var(--accent);border-radius:99px}
+.hint{display:none;font-size:12px;color:var(--ui-mid);padding:8px 16px}
+.editing .hint{display:block}
+@media(max-width:900px){.palette{display:none}}
+</style>
+</head>
+<body class="theme-dark editing" id="root">
+<div class="bar">
+  <h1>TV 대시보드 편집기</h1>
+  <span class="badge">시안 · 더미 데이터 · 브라우저에만 저장</span>
+  <div class="seg" id="modeSeg"><button data-m="edit" class="on">편집</button><button data-m="view">TV 미리보기</button></div>
+  <div class="seg" id="themeSeg"><button data-t="dark" class="on">진한 청록</button><button data-t="light">밝은 화면</button></div>
+  <button class="btn" id="fs">전체 화면</button>
+  <button class="btn" id="reset">기본 배치로</button>
+</div>
+<div class="hint">위젯을 끌어서 옮기고, 오른쪽 아래 모서리를 끌어 크기를 바꿉니다. ✕ 로 빼고, 왼쪽 목록에서 다시 추가합니다. (실제 구현에서는 admin 본인에게만 이 화면이 보입니다)</div>
+<div class="wrap">
+  <aside class="palette" id="palette">
+    <h3>위젯 목록</h3>
+    <p>원하는 위젯을 추가하세요. 화면은 16:9 격자(16×9칸)에 맞춰 정렬됩니다.</p>
+    <div id="plist"></div>
+  </aside>
+  <div class="stage"><div class="canvas" id="canvas"></div></div>
+</div>
+
+<script>
+const COLS=16, ROWS=9;
+const $=s=>document.querySelector(s);
+const root=$('#root'), canvas=$('#canvas');
+
+/* ---- 위젯 정의 (기존 4개 + 헤더 요소 + 새 후보) ---- */
+const W={
+  brand:{name:'제목 · 로고',min:[3,1],size:[6,1],html:()=>`<div class="brand"><small>WORD OF LIFE KOREA</small><h1>Camp &amp; Outreach Operations</h1><div>CAMP TEAM · OFFICE DASHBOARD</div></div>`},
+  weather:{name:'날씨',min:[2,1],size:[4,1],html:()=>`<div class="ct center"><div style="font:600 1.5cqw var(--f-body)">Pyeongtaek · 9°C</div><div class="cap" style="margin:0">Clear</div></div>`},
+  clock:{name:'시계 · 날짜',min:[3,1],size:[6,1],html:()=>`<div class="ct center" style="align-items:flex-end;text-align:right"><div style="font:700 2.8cqw/1 var(--f-sans)">20:53</div><div class="cap" style="margin:.3cqw 0 0;font-size:1cqw">Wednesday, Oct 21, 2026</div></div>`},
+  stats:{name:'통계 (진행·마감·완료율)',min:[6,1],size:[16,1],html:()=>`<div class="tiles"><div class="tile"><label>Open Tasks</label><strong>18</strong></div><div class="tile"><label>Overdue Tasks</label><strong>0</strong></div><div class="tile"><label>Completion</label><strong>10%</strong></div></div>`,bare:true},
+  tasks:{name:'Priority Tasks · 업무',min:[4,2],size:[9,4],html:()=>`<div class="hd"><h2>Priority Tasks</h2><span>1 / 4</span></div><div class="ct">${[
+    ['Recruit staff and confirm team roster','Leader B · Winter Camp'],
+    ['Confirm speakers, breakout topics and schedule','Leader C · Winter Camp · Due 2026-11-30'],
+    ['Launch camp promotion and registration','Leader B · Winter Camp'],
+    ['Prepare English/Bible classes and classroom equipment','Leader D · Winter Camp'],
+    ['Confirm Unity Camp dates, fees and breakout plan','All Together · Unity Camp · <span class=soon>Due 2026-10-23</span>']
+  ].map(t=>`<div class="it"><div><b>${t[0]}</b><span class="sub">${t[1]}</span></div><div class="st">In Progress<br><span class="pri hi">HIGH</span></div></div>`).join('')}</div>`},
+  events:{name:'Upcoming Schedule · 스케줄',min:[3,2],size:[7,4],html:()=>`<div class="hd"><h2>Upcoming Schedule</h2><span>1 / 4</span></div><div class="ct">${[
+    ['Leader D Out of Office','Sun, Oct 18 – Wed, Oct 21'],['Outreach at Leader B\'s Church','Fri, Oct 23'],['Leader C Out of Office','Tue, Oct 27'],['Camp &amp; Outreach Huddle','Tue, Oct 27 · 10:00'],['Staff Devos','Wed, Oct 28 · 09:30']
+  ].map(e=>`<div class="it"><div><b>${e[0]}</b><span class="sub">${e[1]}</span></div></div>`).join('')}</div>`},
+  meetings:{name:'Recent Meeting Decisions · 회의 결과',min:[3,2],size:[9,3],html:()=>`<div class="hd"><h2>Recent Meeting Decisions</h2><span>2 / 2</span></div><div class="ct"><div class="it"><div><b>Unity Camp fee</b><div class="noteb">Early 70,000\nRegular 85,000</div></div></div></div>`},
+  notices:{name:'Team Announcements · 팀 안내',min:[3,2],size:[7,3],html:()=>`<div class="hd"><h2>Team Announcements</h2><span></span></div><div class="ct"><div class="notice">Camp meetings: Unity camp fee and breakout session theme need decisions.</div><div class="notice">2027 Theme (sample) / Sample verse 1:1</div></div>`},
+  /* 새로 추가할 수 있는 후보 위젯 */
+  dday:{name:'캠프 D-Day 카운트다운',min:[3,2],size:[4,2],html:()=>`<div class="hd"><h2>D-Day</h2><span>Winter Camp</span></div><div class="ct center"><div class="big">D-84</div><div class="cap">2027 Winter Camp</div></div>`},
+  progress:{name:'캠프별 준비 진행률',min:[4,2],size:[6,3],html:()=>`<div class="hd"><h2>Camp Prep Progress</h2><span></span></div><div class="ct bars">${[['Winter Camp',18],['Unity Camp',12],['Partner Camp',5]].map(c=>`<div class="row"><div><span>${c[0]}</span><b>${c[1]}%</b></div><i><u style="width:${c[1]}%"></u></i></div>`).join('')}</div>`},
+  late:{name:'마감 지남 · 담당 미정 업무',min:[3,2],size:[5,3],html:()=>`<div class="hd"><h2>Needs Attention</h2><span>5</span></div><div class="ct">${[['Prepare camp printed materials, name tags and clothing','No owner'],['Complete Unity safety, training and transport readiness','No owner'],['Recruit staff and confirm team roster','No due date']].map(t=>`<div class="it"><div><b>${t[0]}</b><span class="sub">${t[1]}</span></div></div>`).join('')}</div>`},
+  theme:{name:'캠프 주제 · 말씀',min:[3,1],size:[6,2],html:()=>`<div class="ct center"><div style="font:800 1.9cqw var(--f-sans);color:var(--accent)">2027 Sample Theme</div><div class="cap">Sample verse</div></div>`}
+};
+
+/* ---- 기본 배치: 기존 TV 대시보드와 같은 위치 ---- */
+const DEFAULT=[
+  {id:'brand',x:0,y:0,w:6,h:1},{id:'weather',x:6,y:0,w:4,h:1},{id:'clock',x:10,y:0,w:6,h:1},
+  {id:'stats',x:0,y:1,w:16,h:1},
+  {id:'tasks',x:0,y:2,w:9,h:4},{id:'events',x:9,y:2,w:7,h:4},
+  {id:'meetings',x:0,y:6,w:9,h:3},{id:'notices',x:9,y:6,w:7,h:3}
+];
+const KEY='wolko-tv-layout-mock-v1';
+let layout=load();
+function load(){try{const s=localStorage.getItem(KEY);if(s)return JSON.parse(s)}catch(e){}return JSON.parse(JSON.stringify(DEFAULT))}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(layout))}catch(e){}}
+
+const hit=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
+const free=(r,ignore)=>r.x>=0&&r.y>=0&&r.x+r.w<=COLS&&r.y+r.h<=ROWS&&!layout.some(o=>o.id!==ignore&&hit(r,o));
+
+function place(el,r){
+  el.style.left=r.x/COLS*100+'%';el.style.top=r.y/ROWS*100+'%';
+  el.style.width=r.w/COLS*100+'%';el.style.height=r.h/ROWS*100+'%';
+}
+function render(){
+  canvas.innerHTML='';
+  layout.forEach(it=>{
+    const d=W[it.id];const el=document.createElement('div');
+    el.className='widget';el.dataset.id=it.id;place(el,it);
+    el.innerHTML=`<div class="w-in" ${d.bare?'style="background:transparent;padding:0;box-shadow:none"':''}>${d.html()}</div>
+      <div class="label">${d.name}</div><div class="tools"><button title="빼기" data-x>✕</button></div><div class="rs"></div>`;
+    canvas.appendChild(el);
+  });
+  list();
+}
+function list(){
+  $('#plist').innerHTML=Object.entries(W).map(([id,d])=>{
+    const on=layout.some(l=>l.id===id);
+    return `<div class="pw"><span>${d.name}<small>${d.size[0]}×${d.size[1]}칸</small></span><button data-add="${id}" ${on?'disabled':''}>${on?'배치됨':'+ 추가'}</button></div>`;
+  }).join('');
+}
+function addWidget(id){
+  const d=W[id];let [w,h]=d.size;
+  for(const [ww,hh] of [[w,h],[d.min[0],d.min[1]]]){
+    for(let y=0;y<=ROWS-hh;y++)for(let x=0;x<=COLS-ww;x++){
+      const r={x,y,w:ww,h:hh};if(free(r,null)){layout.push({id,...r});save();render();return}
+    }
+  }
+  alert('남은 자리가 없어요. 다른 위젯 크기를 줄이거나 빼고 다시 추가하세요.');
+}
+$('#plist').addEventListener('click',e=>{const id=e.target.dataset.add;if(id)addWidget(id)});
+
+/* ---- 끌어서 이동 / 모서리로 크기 조절 ---- */
+let act=null;
+canvas.addEventListener('pointerdown',e=>{
+  if(!root.classList.contains('editing'))return;
+  const el=e.target.closest('.widget');if(!el)return;
+  if(e.target.closest('[data-x]')){
+    layout=layout.filter(l=>l.id!==el.dataset.id);save();render();return;
+  }
+  const it=layout.find(l=>l.id===el.dataset.id);
+  const rect=canvas.getBoundingClientRect();
+  act={el,it,mode:e.target.classList.contains('rs')?'resize':'move',sx:e.clientX,sy:e.clientY,cw:rect.width/COLS,ch:rect.height/ROWS,orig:{...it},cur:{...it}};
+  el.classList.add('drag');el.setPointerCapture(e.pointerId);e.preventDefault();
+});
+canvas.addEventListener('pointermove',e=>{
+  if(!act)return;
+  const dx=Math.round((e.clientX-act.sx)/act.cw),dy=Math.round((e.clientY-act.sy)/act.ch);
+  const o=act.orig;let r;
+  if(act.mode==='move'){r={...o,x:Math.max(0,Math.min(COLS-o.w,o.x+dx)),y:Math.max(0,Math.min(ROWS-o.h,o.y+dy))}}
+  else{const m=W[o.id].min;r={...o,w:Math.max(m[0],Math.min(COLS-o.x,o.w+dx)),h:Math.max(m[1],Math.min(ROWS-o.y,o.h+dy))}}
+  act.cur=r;place(act.el,r);act.el.classList.toggle('bad',!free(r,o.id));
+});
+function end(){
+  if(!act)return;
+  const ok=free(act.cur,act.orig.id);
+  if(ok)Object.assign(act.it,act.cur);else place(act.el,act.it);
+  act.el.classList.remove('drag','bad');act=null;save();
+}
+canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
+
+/* ---- 상단 버튼 ---- */
+$('#modeSeg').addEventListener('click',e=>{const m=e.target.dataset.m;if(!m)return;
+  root.classList.toggle('editing',m==='edit');
+  document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  $('#palette').style.display=m==='edit'?'':'none';
+});
+$('#themeSeg').addEventListener('click',e=>{const t=e.target.dataset.t;if(!t)return;
+  root.classList.toggle('theme-dark',t==='dark');root.classList.toggle('theme-light',t==='light');
+  document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+});
+$('#reset').addEventListener('click',()=>{layout=JSON.parse(JSON.stringify(DEFAULT));save();render()});
+$('#fs').addEventListener('click',()=>{root.classList.remove('editing');canvas.requestFullscreen&&canvas.requestFullscreen()});
+render();
+</script>
+</body>
+</html>

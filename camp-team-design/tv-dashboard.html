@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WOLKO Camp & Outreach Dashboard — 디자인 시안 (더미 데이터)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃·내용은 기존 TV 대시보드와 동일, 색·폰트만 wolko.org 기준으로 교체 */
+:root{
+  --bg:#0a1d27;        /* wolko 팔레트 #102936 계열의 더 어두운 톤 */
+  --panel:#112d3b;
+  --stat:#173b4c;
+  --line:#2a5063;
+  --text:#ffffff;
+  --muted:#9fb9c6;
+  --accent:#4cc3d0;    /* wolko teal 계열 (밝게) */
+  --warn:#ffc77c; --red:#ff9ea5;
+  --f-sans:'Montserrat',sans-serif; --f-body:'Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--f-body)}
+main{height:100vh;padding:1.3vh 1.7vw;display:flex;flex-direction:column;gap:1.2vh;overflow:hidden}
+header{flex:0 0 12%;display:grid;grid-template-columns:1.15fr .75fr .65fr;align-items:center;gap:1vw}
+.brand small{color:var(--accent);font:700 clamp(10px,1vw,18px) var(--f-sans);letter-spacing:.16em}
+h1{margin:.25vh 0;font:800 clamp(18px,2.25vw,42px)/1.08 var(--f-sans);letter-spacing:-.01em}
+.subtitle{color:var(--muted);font-size:clamp(10px,1vw,18px)}
+.weather{text-align:center;font:600 clamp(13px,1.4vw,26px)/1.3 var(--f-body)}
+.weather small{display:block;margin-top:.4vh;color:var(--muted);font-weight:400;font-size:clamp(10px,.85vw,16px)}
+.clock{text-align:right;font:700 clamp(32px,4.3vw,82px)/1 var(--f-sans)}
+.today{margin-top:.5vh;color:var(--muted);text-align:right;font-size:clamp(13px,1.45vw,27px)}
+.stats{flex:0 0 8%;display:grid;grid-template-columns:repeat(3,1fr);gap:1vw}
+.stat{display:flex;align-items:center;justify-content:space-between;padding:.45vh 1.1vw;background:var(--stat);border-radius:1vw}
+.stat label{color:var(--muted);font-size:clamp(12px,1.2vw,24px)}
+.stat strong{font:800 clamp(21px,2.25vw,45px) var(--f-sans)}
+.panels{flex:1;min-height:0;display:grid;grid-template-columns:1.25fr 1fr;grid-template-rows:minmax(0,1.8fr) minmax(0,1fr);gap:1vw}
+.panel{min-height:0;overflow:hidden;padding:1.25vh 1.2vw;display:flex;flex-direction:column;background:var(--panel);border-radius:1vw}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:.8vh;margin-bottom:.5vh;border-bottom:1px solid var(--line)}
+h2{margin:0;font:700 clamp(15px,1.55vw,28px) var(--f-body)}
+.count{color:var(--muted);font-size:clamp(11px,1vw,18px)}
+.content{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:space-around}
+.item{display:flex;align-items:center;justify-content:space-between;gap:.8vw;padding:.45vh 0;border-bottom:1px solid #1f4152}
+.item:last-child{border-bottom:0}
+.info{flex:1;min-width:0}
+.item b{display:block;font:600 clamp(12px,1.15vw,22px)/1.2 var(--f-body)}
+.sub{display:block;margin-top:.3vh;color:var(--muted);font-size:clamp(10px,.88vw,17px)}
+.badges{width:33%;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.status{font-size:clamp(10px,.87vw,16px);color:#dbeaf0}
+.status.ns{color:#7f9aa8}
+.pri{padding:4px 10px;border-radius:7px;font:700 clamp(10px,.82vw,16px) var(--f-sans);letter-spacing:.02em}
+.high{background:#5a2a33;color:#ffb0b6}.med{background:#4c4429;color:#ffe09b}.low{background:#24475a;color:#a8d8ea}
+.due-soon{color:var(--warn);font-weight:700}
+.notes{display:block;margin-top:7px;color:var(--muted);font-size:clamp(11px,.95vw,18px);line-height:1.4;white-space:pre-line}
+.notice{padding:.7vh 0;color:#ffe0a5;font-size:clamp(12px,1.1vw,21px);line-height:1.3}
+footer{flex:0 0 2%;display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:clamp(10px,.82vw,15px)}
+.test{position:fixed;right:12px;bottom:34px;background:#fff4e5;color:#9a5a00;border-radius:99px;padding:4px 12px;font:700 12px var(--f-body);opacity:.95}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand">
+      <small>WORD OF LIFE KOREA</small>
+      <h1>Camp &amp; Outreach Operations</h1>
+      <div class="subtitle">CAMP TEAM · OFFICE DASHBOARD</div>
+    </div>
+    <div class="weather">Pyeongtaek · 9°C<small>Clear</small></div>
+    <div><div class="clock">20:53</div><div class="today">Wednesday, Oct 21, 2026</div></div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><label>Open Tasks</label><strong>18</strong></div>
+    <div class="stat"><label>Overdue Tasks</label><strong>0</strong></div>
+    <div class="stat"><label>Completion</label><strong>10%</strong></div>
+  </section>
+
+  <div class="panels">
+    <section class="panel">
+      <div class="panel-head"><h2>Priority Tasks</h2><span class="count">1 / 4</span></div>
+      <div class="content">
+        <div class="item"><div class="info"><b>Recruit staff and confirm team roster</b><span class="sub">Leader B · Winter Camp</span></div><div class="badges"><span class="status">In Progress</span><span class="pri high">HIGH</span></div></div>
+        <div class="item"><div class="info"><b>Confirm speakers, breakout topics and schedule</b><span class="sub">Leader C · Winter Camp · Due 2026-11-30</span></div><div class="badges"><span class="status">In Progress</span><span class="pri high">HIGH</span></div></div>
+        <div class="item"><div class="info"><b>Launch camp promotion and registration</b><span class="sub">Leader B · Winter Camp</span></div><div class="badges"><span class="status">In Progress</span><span class="pri high">HIGH</span></div></div>
+        <div class="item"><div class="info"><b>Prepare English/Bible classes and classroom equipment</b><span class="sub">Leader D · Winter Camp</span></div><div class="badges"><span class="status">In Progress</span><span class="pri high">HIGH</span></div></div>
+        <div class="item"><div class="info"><b>Confirm Unity Camp dates, fees and breakout plan</b><span class="sub">All Together · Unity Camp · <span class="due-soon">Due 2026-10-23</span></span></div><div class="badges"><span class="status">In Progress</span><span class="pri high">HIGH</span></div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Upcoming Schedule</h2><span class="count">1 / 4</span></div>
+      <div class="content">
+        <div class="item"><div class="info"><b>Leader D Out of Office</b><span class="sub">Sun, Oct 18 – Wed, Oct 21</span></div></div>
+        <div class="item"><div class="info"><b>Outreach at Sample Church</b><span class="sub">Fri, Oct 23</span></div></div>
+        <div class="item"><div class="info"><b>Leader C Out of Office</b><span class="sub">Tue, Oct 27</span></div></div>
+        <div class="item"><div class="info"><b>Camp &amp; Outreach Huddle</b><span class="sub">Tue, Oct 27 · 10:00</span></div></div>
+        <div class="item"><div class="info"><b>Staff Devos</b><span class="sub">Wed, Oct 28 · 09:30</span></div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Recent Meeting Decisions</h2><span class="count">2 / 2</span></div>
+      <div class="content">
+        <div class="item"><div class="info"><b>Unity Camp fee</b><span class="notes">Early 70,000
+Regular 85,000</span></div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Team Announcements</h2><span class="count"></span></div>
+      <div class="content">
+        <div class="notice">Camp meetings: Unity camp fee and breakout session theme need decisions.</div>
+        <div class="notice">2027 Theme (sample) / Sample verse 1:1</div>
+      </div>
+    </section>
+  </div>
+
+  <footer><span>Last synced 8:52:55 PM</span><span>Weather: Open-Meteo</span></footer>
+</main>
+<div class="test">시안 · 더미 데이터</div>
+</body>
+</html>

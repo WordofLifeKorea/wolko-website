@@ -1,0 +1,100 @@
+---
+// 캠프팀 포털 공통 틀 (사이드바 + 언어 전환 + 로그인 안내). 내용은 각 페이지가 채운다.
+export interface Props { title: string; active: 'home' | 'camps' | 'tasks' | 'meetings' | 'files' | 'resources' | 'search' | 'budget' | 'tv' | 'trash' | 'settings' | 'alerts' | 'calendar'; }
+const { title, active } = Astro.props;
+const ICON = {
+  home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5a2 2 0 0 1 4 0v5"/>',
+  camps: '<path d="M3 20 12 4l9 16"/><path d="M9.5 20 12 15.5l2.5 4.5"/><path d="M2 20h20"/>',
+  tasks: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>',
+  meetings: '<path d="M5 4h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-9l-4 3.5V17H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 9h8M8 12.5h5"/>',
+  files: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+  resources: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 11h18"/>',
+  tv: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="m10.5 8.5 4 2-4 2z" fill="currentColor" stroke="none"/>',
+  budget: '<path d="M4 8V6a2 2 0 0 1 2-2h11v4"/><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M16 14h2"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h2M12 14h2M16 14h.01M8 17.5h2"/>',
+  alerts: '<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9z"/><path d="M10 19a2 2 0 0 0 4 0"/>',
+  settings: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+};
+const nav = [
+  { key: 'home', href: '/campteam/', t: 'navHome', c: '#3b8ff0' },
+  { key: 'camps', href: '/campteam/camps/', t: 'navCamps', c: '#9bbf1f' },
+  { key: 'tasks', href: '/campteam/tasks/', t: 'navTasks', c: '#22b573' },
+  { key: 'calendar', href: '/campteam/calendar/', t: 'navCalendar', c: '#3bb3a6' },
+  { key: 'meetings', href: '/campteam/meetings/', t: 'navMeetings', c: '#8b6cf0' },
+  { key: 'files', href: '/campteam/files/', t: 'navFiles', c: '#f0a020' },
+  { key: 'resources', href: '/campteam/resources/', t: 'navResources', c: '#ec5fa0' },
+  { key: 'tv', href: '/campteam/tv/', t: 'navTv', c: '#14b8c4' },
+];
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>{title} — WOLKO Camp Team</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/campteam/campteam.css?v=33">
+  <link rel="stylesheet" href="/campteam/tv.css?v=1">
+  <script is:inline src="/wolko-session.js?v=2"></script>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="topbar">
+      <a class="logo" href="/campteam/"><img src="/images/WOLKO Circle.png" alt="WOLKO"><span><b>WOLKO Camp Team</b><small>Word of Life Korea</small></span></a>
+      <div class="langmini" role="group" aria-label="Language"><button type="button" id="langKoM" aria-label="한국어" title="한국어">🇰🇷</button><button type="button" id="langEnM" aria-label="English" title="English">🇺🇸</button></div>
+      <button class="bell" id="bellBtn" type="button" aria-label="알림공지" aria-controls="aPanel" hidden><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.alerts}></svg><b class="bellbadge" id="bellBadge" hidden></b></button>
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+    <div class="drawer" id="drawer">
+      <button class="drawer-x" id="drawerX" type="button" aria-label="Close menu">✕</button>
+    <form class="gsearch" action="/campteam/search/" method="get" role="search"><input type="search" name="q" minlength="2" maxlength="80" data-t-ph="searchAll" aria-label="search"></form>
+    <nav class="nav">
+      <h6 data-t="navGroupTeam"></h6>
+      {nav.map(n => <a href={n.href} class={active === n.key ? 'on' : ''} style={`--c:${n.c}`}><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON[n.key]} /></span><span data-t={n.t}></span></a>)}
+      <a id="alertsNav" href="/campteam/alerts/" class={active === 'alerts' ? 'on' : ''} style="--c:#e5534b" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.alerts}></svg></span><span data-t="navAlerts"></span><b class="navbadge" id="navBadge" hidden></b></a>
+      <h6 id="moneyHead" hidden data-t="navFinance"></h6>
+      <a id="moneyNav" href="/campteam/finance/" class={active === 'budget' ? 'on' : ''} style="--c:#d4a373" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.budget} /></span><span data-t="navBudget"></span></a>
+      <a id="trashNav" href="/campteam/trash/" class={active === 'trash' ? 'on' : ''} style="--c:#9fb4c0" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.trash} /></span><span data-t="navTrash"></span></a>
+      <h6 id="adminHead" hidden data-t="navAdmin"></h6>
+      <a id="settingsNav" href="/campteam/settings/" class={active === 'settings' ? 'on' : ''} style="--c:#d155e6" hidden><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.settings} /></span><span data-t="navSettings"></span></a>
+    </nav>
+    <div class="side-foot">
+      <a class="back" href="/portal/"><span data-t="backPortal"></span></a>
+      <div class="lang"><button id="langKo" type="button">한국어</button><button id="langEn" type="button">English</button></div>
+      <div class="who" id="who"></div>
+    </div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+<div class="apanel-scrim" id="aScrim"></div>
+<aside class="apanel" id="aPanel" aria-hidden="true" role="dialog" aria-labelledby="aTitle">
+  <div class="aph"><b id="aTitle" data-t="alTitle"></b><span class="qh" data-h="alerts"></span><span class="sp"></span><button type="button" class="btn sm" id="aSeenAll" data-t="alSeenAll"></button><button type="button" class="alclose big" id="aClose" aria-label="close">✕</button></div>
+  <div class="apt"><button type="button" data-pt="mine" class="on"><span data-t="alMine"></span><i hidden></i></button><button type="button" data-pt="team"><span data-t="alTeam"></span><i hidden></i></button></div>
+  <div class="apb" id="aBody"></div>
+  <div class="apf"><a href="/campteam/alerts/" data-t="alAll"></a></div>
+</aside>
+  <main id="main"><slot /></main>
+</div>
+<div class="gate" id="gate" hidden>
+  <div class="gate-card">
+    <h2 data-t="gateTitle"></h2>
+    <p data-t="gateBody"></p>
+    <a class="btn pri" href="/portal/" data-t="gateBtn"></a>
+    <div id="gbtn" hidden style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px"><p class="meta" data-t="gateGoogle" style="margin:0 0 8px"></p><div id="gbtnInner" style="display:flex;justify-content:center"></div></div>
+    <p class="meta" id="gnote" style="color:var(--accent);margin:10px 0 0"></p>
+  </div>
+</div>
+<script is:inline src="/campteam/campteam.js?v=10"></script>
+<script is:inline src="/campteam/help.js?v=4"></script>
+<script is:inline src="/campteam/alerts.js?v=4"></script>
+<slot name="scripts" />
+</body>
+</html>

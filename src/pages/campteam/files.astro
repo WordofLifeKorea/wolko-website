@@ -1,0 +1,37 @@
+---
+import CampTeamLayout from '../../layouts/CampTeamLayout.astro';
+---
+<CampTeamLayout title="자료실" active="files">
+  <div class="top">
+    <div><div class="h1row"><h1 data-t="filesTitle"></h1><span class="qh" data-h="pageFiles"></span></div><div class="sub" data-t="filesSub"></div></div>
+    <div class="actions"><button class="btn" id="addLink" hidden data-t="addLink"></button><button class="btn pri" id="addFile" hidden data-t="addFile"></button></div>
+  </div>
+  <section class="dropzone" id="dz" hidden>
+    <div class="dz-in"><div class="dz-ic" aria-hidden="true">⬆</div><div class="dz-tx"><b data-t="dzTitle"></b><span><span data-t="dzOr"></span> <button type="button" class="btn sm" id="dzPick" data-t="dzPick"></button></span><small class="hint" data-t="dzHint"></small></div></div>
+    <div class="dz-over" data-t="dzDrop"></div><div class="dz-bar"><i id="dzBar"></i></div><div class="dz-msg" id="dzMsg"></div>
+    <input type="file" id="dzInput" multiple hidden>
+  </section>
+  <div class="filters">
+    <input id="fq" type="search" maxlength="80" data-t-ph="searchPh">
+    <select id="fcamp"></select>
+    <select id="fcat"></select>
+    <select id="fstatus"></select>
+    <select id="fkind"></select>
+    <select id="fsort"></select>
+  </div>
+  <div class="count-line" id="countLine"></div>
+  <div id="list"></div>
+
+  <dialog id="detail" class="wide"><div id="detailBody"></div></dialog>
+
+  <dialog id="formDlg">
+    <h3 id="formTitle"></h3>
+    <form id="form" class="form" method="dialog">
+      <div id="formFields" class="form"></div>
+      <div class="progress" id="prog" hidden><i></i></div>
+      <div class="err" id="formErr" hidden></div>
+      <div class="dlg-actions"><button type="button" class="btn" id="formCancel" data-t="cancel"></button><button type="submit" class="btn pri" id="formSave" data-t="save"></button></div>
+    </form>
+  </dialog>
+  <script is:inline slot="scripts" src="/campteam/files.js?v=4"></script>
+</CampTeamLayout>
