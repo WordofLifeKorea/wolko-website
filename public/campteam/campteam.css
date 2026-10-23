@@ -468,3 +468,31 @@ html.dlg-open main dialog, html.al-open main dialog, dialog { pointer-events: au
 .pager .pg.on{background:var(--blue,#1f4e68);border-color:var(--blue,#1f4e68);color:#fff}
 .pager .pg:disabled{opacity:.4;cursor:default}
 .pager .pg-info,.pager .pg-gap{color:var(--muted,#6b7a86);font-size:.9em;padding:0 6px}
+
+/* ── 왼쪽 메뉴가 낮은 화면에서도 잘리지 않게: 메뉴 목록만 스크롤되고, 아래(포털로 돌아가기·언어·계정)는 항상 보인다 ── */
+@media (min-width: 901px) {
+  aside:not(.apanel) { overflow: hidden; padding: 16px 12px 12px; }
+  aside:not(.apanel) .nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) transparent; margin-right: -4px; padding-right: 4px; }
+  aside:not(.apanel) .nav::-webkit-scrollbar { width: 6px; }
+  aside:not(.apanel) .nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 6px; }
+  .nav a { padding-top: 6px; padding-bottom: 6px; }
+  .nav .ic { width: 28px; height: 28px; }
+  .nav h6 { margin: 12px 0 6px; }
+  .side-foot { flex: none; margin-top: 8px; padding-top: 10px; gap: 5px; }
+  .back { padding: 8px; }
+  .lang button { padding: 6px; }
+  .who { padding-top: 0; line-height: 1.5; }
+}
+/* 로고 글자는 줄바꿈하지 않고 한 줄로 (종 버튼이 있어도) */
+.logo { gap: 8px; padding-left: 2px; padding-right: 2px; min-width: 0; }
+.logo > span { min-width: 0; }
+.logo b, .logo small { white-space: nowrap; }
+.logo b { font-size: 14px; }
+.logo small { font-size: 9px; letter-spacing: .07em; }
+@media (min-width: 901px) { .topbar { gap: 6px; } .bell { width: 36px; height: 36px; } }
+/* 달력 범례의 색 네모를 또렷하게 */
+.legend .ci { height: 12px; min-width: 18px !important; padding: 0; border: 1px solid currentColor; vertical-align: -1px; cursor: default; }
+.legend .ci.ev { background: #9fd3e6; } .legend .ci.camp { background: #9fdede; } .legend .ci.task { background: #ffd699; } .legend .ci.late { background: #f7b3ba; } .legend .ci.meet { background: #cdbcf0; }
+
+/* 처음 사용할 때 빈 화면 안내 */
+.firstuse{text-align:center;padding:36px 20px}.firstuse h2{margin:0 0 8px;font-size:17px}.firstuse p{margin:0 auto;max-width:520px;color:var(--mid);line-height:1.7}
