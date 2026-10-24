@@ -12,7 +12,7 @@
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: 'WOLKO 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
       campScopeMonth: '이 달', campScopeAll: '지난 캠프 포함 전체', caMonth: '달', caTotal: '합계', campAutoTitle: '월코 캠프 자동 집계', campAutoNote: '잔금까지 마쳐 최종 확정된 캠퍼만 자동으로 세요. 구원은 "캠프 후 구원", 헌신은 "헌신" 체크 기준이고, 스태프 인원은 관리자가 입력해요.', campAutoEmpty: '이 달에는 자동으로 집계된 캠프가 없어요.', caCamp: '캠프', caCampers: '확정 캠퍼', caStaff: '스태프', caSalv: '구원', caDed: '헌신', caStaffSaved: '스태프 인원을 저장했어요.', campFormHint: '월코 캠프는 신청 기록에서 자동으로 집계돼요. 아래에는 그 외 캠프만 적어 주세요.', churchStatTitle: '교회별 행사', churchStatEmpty: '이 달에는 교회 행사 기록이 없어요.', cCol: '교회', cEvents: '행사', cStudents: '참석', cSalv: '구원', cDed: '헌신', cEventCount: function (k) { return k + '건'; }, churchTitle: '교회 행사 기록 (선택)', churchHint: 'CRS에 등록된 교회에서 열린 행사를 적으면, 교회별 통계로 모아 볼 수 있어요.', churchAdd: '교회 행사 추가', churchName: '교회 (CRS에서 고르거나 직접 입력)', churchEvent: '행사 이름 (예: 겨울 전도 집회)', churchDate: '날짜', churchNote: '메모 (선택, 보고자와 관리자만 봐요)', churchStudents: '참석 학생', churchSalv: '구원', churchDed: '헌신', churchDel: '이 행사 지우기', churchTotal: function (a, b, c) { return '합계 · 참석 ' + a + ' · 구원 ' + b + ' · 헌신 ' + c; }, churchApply: '월코 행사 칸에 합계 넣기', churchApplied: '월코 행사 참석·구원·헌신 칸에 합계를 넣었어요.', churchOnlyName: '교회 이름을 적어 주세요.', minus: '1 줄이기', plus: '1 늘리기', infoLabel: function (name) { return name + ' 설명 보기'; }, thisMonth: '이번 달', write: '내 보고 쓰기', xlsx: '엑셀 보고서 내려받기', csv: '원본 CSV',
       tabAll: '통합', tabMainland: '평택', tabJeju: '제주',
-      kGospel: '복음을 들은 인원', kSalv: '구원 고백 (전체)', kDed: '헌신 (전체)', kReach: '캠프·월코 행사 참석 인원',
+      kGospel: '복음을 들은 인원 (전체)', infoShort: '설명 보기', kGospelTip: '개인 전도로 복음을 들은 인원 + 캠프 참석 인원 + 월코 행사 참석 인원', kSalvTip: '개인 전도 + 캠프 + 월코 행사에서 예수님을 믿는다고 고백한 사람', kDedTip: '캠프와 월코 행사에서 삶을 예수님께 헌신한 사람', kReachTip: '월코 캠프의 캠퍼·스태프와 월코 행사에 참석한 인원', campAutoTip: '잔금까지 마쳐 최종 확정된 캠퍼만 자동으로 세요. 구원은 "캠프 후 구원", 헌신은 "헌신" 체크 기준이고, 스태프 인원은 관리자가 입력해요.', kSalv: '구원 고백 (전체)', kDed: '헌신 (전체)', kReach: '캠프·월코 행사 참석 인원',
       count: function (n, ind, team, all) { return n + '건 보고' + (all ? ' (개인 ' + ind + ' · 팀 ' + team + ')' : ''); }, countNone: '아직 이 달에 보고가 없어요.',
       tableTitle: '항목별 통계', trendTitle: '최근 6개월 추이', rowsTitle: '보고별 목록',
       rowsHelp: '마스터와 관리자에게만 보여요. 팀으로 낸 보고는 팀원이 따로 내지 않는 것을 전제로 합계에 그대로 더해요.',
@@ -33,7 +33,7 @@
       loading: 'Loading…', loginTitle: 'Portal login', loginHelp: 'Please sign in with your WOLKO portal account.', email: 'Email', password: 'Password', loginBtn: 'Sign in and continue', loginFail: 'Could not sign in.',
       campScopeMonth: 'This month', campScopeAll: 'All camps incl. past', caMonth: 'Month', caTotal: 'Total', campAutoTitle: 'WOLKO camps (auto count)', campAutoNote: 'Only campers whose registration is fully paid and confirmed are counted. Salvations use "saved at camp", dedications use the "dedicated" check, and admins enter the staff number.', campAutoEmpty: 'No camps counted automatically this month.', caCamp: 'Camp', caCampers: 'Confirmed campers', caStaff: 'Staff', caSalv: 'Salvations', caDed: 'Dedications', caStaffSaved: 'Staff number saved.', campFormHint: 'WOLKO camps are counted automatically from registrations. Please only add other camps below.', churchStatTitle: 'Events by church', churchStatEmpty: 'No church events recorded this month.', cCol: 'Church', cEvents: 'Events', cStudents: 'Attended', cSalv: 'Salvations', cDed: 'Dedications', cEventCount: function (k) { return k + (k === 1 ? ' event' : ' events'); }, churchTitle: 'Church events (optional)', churchHint: 'Record events held at churches from the CRS to see statistics by church.', churchAdd: 'Add a church event', churchName: 'Church (pick from the CRS or type)', churchEvent: 'Event name (e.g. Winter outreach)', churchDate: 'Date', churchNote: 'Note (optional, visible to you and admins only)', churchStudents: 'Attended', churchSalv: 'Salvations', churchDed: 'Dedications', churchDel: 'Remove this event', churchTotal: function (a, b, c) { return 'Total · attended ' + a + ' · salvations ' + b + ' · dedications ' + c; }, churchApply: 'Put the totals into WOLKO events', churchApplied: 'Totals were put into the WOLKO event fields.', churchOnlyName: 'Please enter the church name.', minus: 'Decrease by 1', plus: 'Increase by 1', infoLabel: function (name) { return 'What is “' + name + '”?'; }, thisMonth: 'This month', write: 'Write my report', xlsx: 'Download Excel report', csv: 'Raw CSV',
       tabAll: 'Combined', tabMainland: 'Pyeongtaek', tabJeju: 'Jeju',
-      kGospel: 'People who heard the Gospel', kSalv: 'Salvations (total)', kDed: 'Dedications (total)', kReach: 'Camp & WOLKO event attendance',
+      kGospel: 'People who heard the Gospel (total)', infoShort: 'More info', kGospelTip: 'Heard through personal evangelism + camp attendance + WOLKO event attendance', kSalvTip: 'People who indicated they believed in Jesus through personal evangelism, camps and WOLKO events', kDedTip: 'People who dedicated their life to Jesus at camps and WOLKO events', kReachTip: 'Campers and staff at WOLKO camps plus attendees of WOLKO events', campAutoTip: 'Only campers whose registration is fully paid and confirmed are counted. Salvations use "saved at camp", dedications use the "dedicated" check, and admins enter the staff number.', kSalv: 'Salvations (total)', kDed: 'Dedications (total)', kReach: 'Camp & WOLKO event attendance',
       count: function (n, ind, team, all) { return n + ' report' + (n === 1 ? '' : 's') + (all ? ' (' + ind + ' individual · ' + team + ' team)' : ''); }, countNone: 'No reports for this month yet.',
       tableTitle: 'Statistics by item', trendTitle: 'Last 6 months', rowsTitle: 'Reports',
       rowsHelp: 'Visible to the master and admins only. Team reports are added to the totals as they are, assuming team members do not report separately.',
@@ -144,7 +144,7 @@
     var source = all ? (allCamps || []) : (data.campAuto || []);
     var camps = source.filter(function (c) { return tab === 'all' || c.location === tab; });
     var chips = '<div class="gc-chips"><button type="button" class="gc-chip' + (all ? '' : ' is-active') + '" data-camp-scope="month">' + esc(t('campScopeMonth')) + '</button><button type="button" class="gc-chip' + (all ? ' is-active' : '') + '" data-camp-scope="all">' + esc(t('campScopeAll')) + '</button></div>';
-    var note = '<p class="gs-ce-hint">' + esc(t('campAutoNote')) + '</p>';
+    var note = '';
     if (all && allCamps === null) { box.innerHTML = chips + note + '<p class="gs-empty">' + esc(t('loading')) + '</p>'; return; }
     if (!camps.length) { box.innerHTML = chips + note + '<p class="gs-empty">' + esc(t('campAutoEmpty')) + '</p>'; return; }
     var edit = !!data.canEditStaff;
@@ -167,10 +167,20 @@
     $('tabs').innerHTML = items.map(function (i) { return '<button type="button" class="gs-tab' + (tab === i[0] ? ' is-active' : '') + '" role="tab" aria-selected="' + (tab === i[0]) + '" data-tab="' + i[0] + '">' + esc(i[1]) + ' <span>' + i[2] + '</span></button>'; }).join('');
   }
 
+  /** 설명을 숨겨 둔 (i) 단추 — 마우스를 올리거나 누르면 말풍선이 뜬다 */
+  function infoBtn(text, label) { return text ? ' <button type="button" class="gs-info" data-tip="' + esc(text) + '" aria-label="' + esc(label || text) + '">i</button>' : ''; }
+  function infoKey(key) { return ' <button type="button" class="gs-info" data-tip-key="' + key + '" aria-label="' + esc(t('infoShort')) + '">i</button>'; }
+  function sumHeard(x) { return (x.evangelism || 0) + (x.campAttendance || 0) + (x.eeAttendance || 0); }
+
   function renderKpis() {
     var x = totals(data.summary, tab), c = data.summary.counts;
-    $('kpis').innerHTML = [[t('kGospel'), x.evangelism], [t('kSalv'), sumSalv(x)], [t('kDed'), sumDed(x)], [t('kReach'), sumReach(x)]]
-      .map(function (k) { return '<div class="gs-kpi"><strong>' + num(k[1]) + '</strong><span>' + esc(k[0]) + '</span></div>'; }).join('');
+    var kpis = [[t('kGospel'), sumHeard(x), 'kGospelTip'], [t('kSalv'), sumSalv(x), 'kSalvTip'], [t('kDed'), sumDed(x), 'kDedTip'], [t('kReach'), sumReach(x), 'kReachTip']];
+    var box = $('kpis');
+    if (box.dataset.lang !== lang || box.children.length !== kpis.length) {          // 처음이거나 언어가 바뀌면 카드를 새로 만든다
+      box.dataset.lang = lang;
+      box.innerHTML = kpis.map(function (k) { return '<div class="gs-kpi"><strong class="gf-num"></strong><span>' + esc(k[0]) + infoKey(k[2]) + '</span></div>'; }).join('');
+    }
+    kpis.forEach(function (k, i) { var el = box.children[i].querySelector('.gf-num'); if (window.GospelFlip) window.GospelFlip.set(el, k[1]); else el.textContent = num(k[1]); });
     var n = c[tab];
     $('countLine').textContent = n ? t('count', n, c.individual, c.team, tab === 'all') : t('countNone');
   }
@@ -181,14 +191,14 @@
     data.schema.sections.forEach(function (section) {
       html += '<tr class="gs-section"><td colspan="4">' + esc(tx(section.title)) + '</td></tr>';
       section.fields.forEach(function (f) {
-        html += '<tr><td title="' + esc(tx(f.label)) + '">' + esc(tx(f.short)) + '</td>' + cols.map(function (c) { return '<td class="' + (tab === c[0] ? 'is-col ' : '') + (c[0] === 'all' ? 'gs-total' : '') + '">' + num(s[c[0]][f.id]) + '</td>'; }).join('') + '</tr>';
+        html += '<tr><td>' + esc(tx(f.short)) + infoBtn(tx(f.label).split(' — ').slice(1).join(' — '), tx(f.short)) + '</td>' + cols.map(function (c) { return '<td class="' + (tab === c[0] ? 'is-col ' : '') + (c[0] === 'all' ? 'gs-total' : '') + '">' + num(s[c[0]][f.id]) + '</td>'; }).join('') + '</tr>';
       });
     });
     $('statsTable').innerHTML = html + '</tbody>';
   }
 
   function renderTrend() {
-    var rows = data.trend.map(function (m) { var x = totals(m, tab); return { month: m.month, gospel: x.evangelism || 0, salv: sumSalv(x), ded: sumDed(x), n: m.counts[tab] || 0 }; });
+    var rows = data.trend.map(function (m) { var x = totals(m, tab); return { month: m.month, gospel: sumHeard(x), salv: sumSalv(x), ded: sumDed(x), n: m.counts[tab] || 0 }; });
     var max = Math.max.apply(null, rows.map(function (r) { return r.gospel; }).concat([1]));
     $('trendTable').innerHTML = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('kGospel')) + '</th><th>' + esc(t('kSalv')) + '</th><th>' + esc(t('kDed')) + '</th><th>' + esc(t('reports')) + '</th></tr></thead><tbody>' +
       rows.map(function (r) {
@@ -404,15 +414,15 @@
   function showTip(btn) {
     if (tipFor && tipFor !== btn) tipFor.removeAttribute('aria-describedby');
     tipFor = btn; btn.setAttribute('aria-describedby', 'gsTip');
-    tip.textContent = btn.dataset.tip; tip.style.left = '0px'; tip.style.top = '0px'; tip.hidden = false;
+    tip.textContent = btn.dataset.tip || t(btn.dataset.tipKey || ''); tip.style.left = '0px'; tip.style.top = '0px'; tip.hidden = false;
     var r = btn.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight, vw = document.documentElement.clientWidth, vh = window.innerHeight;
     var left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), vw - w - 8);
     var top = r.bottom + 8; if (top + h > vh - 8) top = Math.max(8, r.top - h - 8);
     tip.style.left = left + 'px'; tip.style.top = top + 'px';
   }
-  var form = $('reportForm');
+  var form = document;
   form.addEventListener('mouseover', function (e) { var b = e.target.closest('.gs-info'); if (b) showTip(b); });
-  form.addEventListener('mouseout', function (e) { if (e.target.closest('.gs-info') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.gs-info'))) hideTip(); });
+  document.addEventListener('mouseout', function (e) { if (e.target.closest('.gs-info') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.gs-info'))) hideTip(); });
   form.addEventListener('focusin', function (e) { var b = e.target.closest('.gs-info'); if (b) showTip(b); });
   form.addEventListener('focusout', function (e) { if (e.target.closest('.gs-info')) hideTip(); });
   form.addEventListener('click', function (e) { var b = e.target.closest('.gs-info'); if (!b) return; if (tipFor === b && !tip.hidden && e.detail !== 0 && b.dataset.touched) { hideTip(); delete b.dataset.touched; } else { showTip(b); b.dataset.touched = '1'; } });

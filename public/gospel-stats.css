@@ -31,7 +31,7 @@
 .gs-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 0 8px; }
 .gs-kpi { padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
 .gs-kpi strong { display: block; color: var(--blue); font: 800 32px/1.1 'Montserrat', var(--sans); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
-.gs-kpi span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.gs-kpi > span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; font-weight: 700; }
 .gs-count { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 
 .gs-tablewrap { overflow-x: auto; }
@@ -166,3 +166,30 @@
 
 .gs-table tr.gs-sumrow td { border-top: 2px solid #dbe8ec; background: #f6fafb; font-weight: 800; }
 #campAuto .gc-chips { margin-bottom: 10px; }
+
+/* (i) 설명 단추를 제목·표·핵심 숫자 옆에도 쓴다 */
+.gc-card h3 .gs-info, .log-panel-head h2 .gs-info, .gs-table .gs-info, .gs-kpi > span .gs-info { margin-left: 4px; vertical-align: middle; }
+.gs-kpi > span .gs-info, .gs-table .gs-info { position: relative; top: -1px; }
+
+/* ───────── 숫자 플립 카드 (gospel-flip.js) ───────── */
+.gs-kpi strong.gf-num { display: flex; align-items: flex-end; gap: 4px; min-height: 52px; perspective: 520px; }
+.gf-d { position: relative; display: inline-block; flex: none; width: 34px; height: 50px; border-radius: 7px; background: #0e536a; color: #fff; text-align: center; box-shadow: 0 2px 6px rgba(8, 48, 62, .22); }
+.gf-half, .gf-leaf { position: absolute; left: 0; right: 0; height: 25px; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.gf-half i, .gf-leaf i { position: absolute; left: 0; right: 0; height: 50px; font: 800 36px/50px 'Montserrat', var(--sans); font-style: normal; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.gf-up, .gf-leaf-top { top: 0; border-radius: 7px 7px 0 0; background: linear-gradient(#15708b, #0f5a73); }
+.gf-low, .gf-leaf-bot { bottom: 0; border-radius: 0 0 7px 7px; background: linear-gradient(#0e536a, #0a4559); }
+.gf-up i, .gf-leaf-top i { top: 0; }
+.gf-low i, .gf-leaf-bot i { top: -25px; }
+.gf-leaf { display: none; z-index: 2; }
+.gf-leaf-top { transform-origin: 50% 100%; }
+.gf-leaf-bot { transform-origin: 50% 0; }
+.gf-d::after { content: ''; position: absolute; left: 0; right: 0; top: 24.5px; height: 1px; background: rgba(4, 28, 38, .55); z-index: 3; pointer-events: none; }
+.gf-d::before { content: ''; position: absolute; left: -2px; right: -2px; top: 22px; height: 6px; z-index: 3; pointer-events: none; background: radial-gradient(circle at 1px 3px, #06303f 1.6px, transparent 2px) left / 4px 6px no-repeat, radial-gradient(circle at 3px 3px, #06303f 1.6px, transparent 2px) right / 4px 6px no-repeat; }
+.gf-d.is-flip .gf-leaf { display: block; }
+.gf-d.is-flip .gf-leaf-top { animation: gf-top .28s ease-in forwards; }
+.gf-d.is-flip .gf-leaf-bot { animation: gf-bot .28s .28s ease-out both; }
+@keyframes gf-top { from { transform: rotateX(0deg); } to { transform: rotateX(-90deg); } }
+@keyframes gf-bot { from { transform: rotateX(90deg); } to { transform: rotateX(0deg); } }
+.gf-sep { align-self: flex-end; padding: 0 1px 4px; color: #6f8f9b; font: 800 26px/1 'Montserrat', var(--sans); }
+@media (max-width: 760px) { .gf-d { width: 28px; height: 42px; } .gf-half, .gf-leaf { height: 21px; } .gf-half i, .gf-leaf i { height: 42px; font-size: 29px; line-height: 42px; } .gf-low i, .gf-leaf-bot i { top: -21px; } .gf-d::after { top: 20.5px; } .gf-d::before { top: 18px; } .gs-kpi strong.gf-num { min-height: 42px; } }
+@media (prefers-reduced-motion: reduce) { .gf-d.is-flip .gf-leaf { display: none; } }

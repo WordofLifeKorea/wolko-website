@@ -13,7 +13,7 @@ const sumSalv = x => (x.salvation || 0) + (x.campSalvations || 0) + (x.eeSalvati
 const sumDed = x => (x.campDedications || 0) + (x.eeDedications || 0);
 const sumReach = x => (x.campAttendance || 0) + (x.eeAttendance || 0);
 const METRICS = [
-  { ko: '복음을 들은 인원', en: 'People who heard the Gospel', get: x => x.evangelism || 0 },
+  { ko: '복음을 들은 인원 (전체)', en: 'People who heard the Gospel (total)', get: x => (x.evangelism || 0) + (x.campAttendance || 0) + (x.eeAttendance || 0) },
   { ko: '구원 고백(전체)', en: 'Salvations (all)', get: sumSalv },
   { ko: '헌신(전체)', en: 'Dedications (all)', get: sumDed },
   { ko: '캠프·월코 행사 참석 인원', en: 'Camp & WOLKO event attendance', get: sumReach },
