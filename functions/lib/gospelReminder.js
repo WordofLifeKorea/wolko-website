@@ -4,9 +4,11 @@
  *  - 보고 제외: 마스터·관리자가 사람마다 켜고 끈다(KV gospel:exempt:{이메일}) — 보고할 일이 없는 계정(후원자·외부 담당자 등)용.
  *  - 메일은 사람마다 한 통씩(이름·링크), 같은 달에 같은 사람에게는 한 번만(KV gospel:mail:{달}:{이메일}).
  */
-import { listAccounts, normalizeEmail } from './hubAccounts.js';
+import { listAccounts, normalizeEmail, MASTER_EMAILS } from './hubAccounts.js';
 
 export const EXEMPT_PREFIX = 'gospel:exempt:';
+/** 늘 제외되는 계정 — 마스터(공용 관리자) 이메일과 wolkorea1 계정(이메일 앞부분이 wolkorea1). 화면에서 다시 넣을 수 없다 */
+export const alwaysExempt = email => { const e = normalizeEmail(email); return MASTER_EMAILS.map(normalizeEmail).includes(e) || e.split('@')[0] === 'wolkorea1'; };
 export const MAIL_KEY = (month, email) => `gospel:mail:${month}:${email}`;
 const MAIL_TTL = 60 * 60 * 24 * 60;
 
@@ -33,7 +35,7 @@ export async function reporterRoster(env) {
   const [accounts, exempt] = await Promise.all([listAccounts(env), exemptEmails(env)]);
   return accounts
     .filter(a => a && a.status === 'approved' && a.email)
-    .map(a => ({ email: normalizeEmail(a.email), name: String(a.name || '').trim() || String(a.email).split('@')[0], exempt: exempt.has(normalizeEmail(a.email)) }))
+    .map(a => ({ email: normalizeEmail(a.email), name: String(a.name || '').trim() || String(a.email).split('@')[0], exempt: exempt.has(normalizeEmail(a.email)) || alwaysExempt(a.email), fixed: alwaysExempt(a.email) }))
     .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }
 

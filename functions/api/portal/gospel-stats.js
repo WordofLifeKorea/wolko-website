@@ -26,7 +26,7 @@ const displayName = session => cleanText(session.name, 80) || session.email.spli
 async function submissionStatus(env, reports) {
   const roster = await reporterRoster(env), done = submittedEmails(reports);
   const expected = roster.filter(p => !p.exempt), missing = missingReporters(roster, reports);
-  return { expected: expected.length, submitted: expected.filter(p => done.has(p.email)).length, missing: missing.map(({ email, name }) => ({ email, name })), exempt: roster.filter(p => p.exempt).map(({ email, name }) => ({ email, name })) };
+  return { expected: expected.length, submitted: expected.filter(p => done.has(p.email)).length, missing: missing.map(({ email, name }) => ({ email, name })), exempt: roster.filter(p => p.exempt).map(({ email, name, fixed }) => ({ email, name, fixed })) };
 }
 
 export async function onRequestGet({ env, request }) {

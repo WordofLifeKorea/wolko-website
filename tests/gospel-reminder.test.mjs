@@ -65,7 +65,7 @@ test('알림 API: 미제출자에게만, 사람마다 한 통, 같은 달에는 
   mockResend(t);
   const { env, kv, acc } = setup();
   const month = '2026-10';
-  await acc('done@wol.org'); await acc('pending@wol.org', 'counselor', 'pending'); await acc('exempt@wol.org');
+  await acc('done@wol.org'); await acc('pending@wol.org', 'counselor', 'pending'); await acc('exempt@wol.org'); await acc('admin@wolko.org', 'master'); await acc('wolkorea1@gmail.com', 'admin');
   for (let i = 0; i < 22; i++) await acc(`p${String(i).padStart(2, '0')}@wol.org`);
   await kv.put('gospel:exempt:exempt@wol.org', '{}');
   const values = Object.fromEntries(GOSPEL_FIELD_IDS.map(id => [id, 0]));
@@ -80,7 +80,7 @@ test('알림 API: 미제출자에게만, 사람마다 한 통, 같은 달에는 
   assert.ok(sentMails.every(m => m.to.length === 1 && m.html.includes(`month=${month}`)), '한 사람에게 한 통, 링크 포함');
   const to = sentMails.map(m => m.to[0]);
   assert.equal(new Set(to).size, 20);
-  assert.equal(to.some(a => ['done@wol.org', 'pending@wol.org', 'exempt@wol.org'].includes(a)), false);
+  assert.equal(to.some(a => ['done@wol.org', 'pending@wol.org', 'exempt@wol.org', 'admin@wolko.org', 'wolkorea1@gmail.com'].includes(a)), false);
 
   const second = await (await call(env, `?force=1&month=${month}`)).json();
   assert.deepEqual([second.sent, second.remaining], [2, 0], '남은 사람에게만');
@@ -102,7 +102,7 @@ test('알림 API: ?to= 시험 메일은 그 주소로만 한 통, 기록을 남�
 
 test('제출 현황·보고 제외: 마스터·관리자만 보고, 제외하면 미제출 목록에서 빠진다', async () => {
   const { env, kv, acc } = setup();
-  await acc('admin@wolko.org', 'master'); await acc('hkim3@wol.org', 'admin'); await acc('anna@wol.org'); await acc('bob@wol.org'); await acc('cara@wol.org');
+  await acc('admin@wolko.org', 'master'); await acc('wolkorea1@gmail.com', 'admin'); await acc('hkim3@wol.org', 'admin'); await acc('anna@wol.org'); await acc('bob@wol.org'); await acc('cara@wol.org');
   const month = '2026-10';
   const values = Object.fromEntries(GOSPEL_FIELD_IDS.map(id => [id, 0]));
   await kv.put(`gospel:rep:${month}:a`, JSON.stringify({ id: 'a', month, email: 'anna@wol.org', scope: 'team', teamName: 'T', location: 'jeju', values }));
@@ -113,14 +113,16 @@ test('제출 현황·보고 제외: 마스터·관리자만 보고, 제외하면
   const member = await (await get(anna)).json();
   assert.equal('submission' in member, false, '일반 멤버에게는 제출 현황이 없다');
   const a = await (await get(admin)).json();
-  assert.equal(a.submission.expected, 5); assert.equal(a.submission.submitted, 1);
-  assert.deepEqual(a.submission.missing.map(p => p.email).sort(), ['admin@wolko.org', 'bob@wol.org', 'cara@wol.org', 'hkim3@wol.org']);
+  assert.equal(a.submission.expected, 4, 'admin@wolko.org 와 wolkorea1 계정은 늘 제외'); assert.equal(a.submission.submitted, 1);
+  assert.deepEqual(a.submission.missing.map(p => p.email).sort(), ['bob@wol.org', 'cara@wol.org', 'hkim3@wol.org']);
+  assert.deepEqual(a.submission.exempt.map(p => [p.email, p.fixed]).sort(), [['admin@wolko.org', true], ['wolkorea1@gmail.com', true]]);
+  assert.equal((await post(admin, { email: 'wolkorea1@gmail.com', exempt: false })).status, 400, '항상 제외되는 계정은 다시 넣을 수 없다');
   assert.equal((await post(anna, { email: 'bob@wol.org', exempt: true })).status, 403);
   assert.equal((await post(admin, { email: 'nope', exempt: true })).status, 400);
   assert.equal((await post(admin, { email: 'Bob@wol.org', exempt: true })).status, 200);
   const b = await (await get(admin)).json();
-  assert.equal(b.submission.expected, 4); assert.deepEqual(b.submission.exempt.map(p => p.email), ['bob@wol.org']);
+  assert.equal(b.submission.expected, 3); assert.deepEqual(b.submission.exempt.map(p => p.email).sort(), ['admin@wolko.org', 'bob@wol.org', 'wolkorea1@gmail.com']);
   assert.equal(b.submission.missing.some(p => p.email === 'bob@wol.org'), false);
   await post(admin, { email: 'bob@wol.org', exempt: false });
-  assert.equal((await (await get(admin)).json()).submission.exempt.length, 0, '다시 넣을 수 있다');
+  assert.deepEqual((await (await get(admin)).json()).submission.exempt.map(p => p.email).sort(), ['admin@wolko.org', 'wolkorea1@gmail.com'], '직접 제외한 계정은 다시 넣을 수 있다');
 });

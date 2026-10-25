@@ -3,7 +3,7 @@
  * 보고할 일이 없는 계정(후원자·외부 담당자 등)용. 이미 낸 보고는 그대로 남는다.
  */
 import { portalSession, normalizeEmail } from '../../lib/hubAccounts.js';
-import { EXEMPT_PREFIX } from '../../lib/gospelReminder.js';
+import { EXEMPT_PREFIX, alwaysExempt } from '../../lib/gospelReminder.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
@@ -16,6 +16,7 @@ export async function onRequestPost({ env, request }) {
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
   const email = normalizeEmail(body?.email);
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('이메일 주소가 올바르지 않습니다.');
+  if (alwaysExempt(email)) return fail('이 계정은 항상 제외돼요.');
   if (body?.exempt === true) await env.CAMP_KV.put(EXEMPT_PREFIX + email, JSON.stringify({ by: session.email, at: new Date().toISOString() }));
   else await env.CAMP_KV.delete(EXEMPT_PREFIX + email);
   return Response.json({ email, exempt: body?.exempt === true }, { headers: H });
