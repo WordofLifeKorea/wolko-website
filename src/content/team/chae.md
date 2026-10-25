@@ -21,7 +21,7 @@ hero_tagline_ko: 교회와 함께
 hero_tagline_en: Ministry Built 
 hero_tagline2_ko: 세워가는 사역
 hero_tagline2_en: with the Church
-hero_subtitle_ko: 채병국 선교사는 월코의 사역 진흥원에서 목회자들과 교회들을 연결하고, 건강한 네트워크를 형성하며, 교회들과 협력하여 훈련·행사·캠프를 기획하고 지속적인 동역 관계를 세워 가는 사역을 감당하고 있습니다.
+hero_subtitle_ko: "채병국 선교사는 월코의 사역 진흥원에서 교회들과 목회자들을 연결하고, 건강한 네트워크를 형성하며, 교회들과 협력하여 훈련·행사·캠프를 기획, 가르치고 지속적인 동역 관계를 세워 가는 사역을 감당하고 있습니다."
 hero_subtitle_en: "Peter serves as WOLKO's Ministry Advancement Director, connecting pastors and churches, building healthy networks, and partnering with local congregations to plan training events and camps that foster lasting ministry relationships."
 verse_ref: "요한일서 1:9"
 spouse_ko: 김미영
@@ -51,5 +51,6 @@ verse_ko: "만일 우리가 우리 죄를 자백하면 저는 미쁘시고 의�
 verse_en: "If we confess our sins, he is faithful and just to forgive us our sins and to cleanse us from all unrighteousness. (ESV)"
 support_url_en: https://missions.wol.org/missionaries/114383/
 report_url: "/reports/chae-newsletter-1792653292088.pdf"
+
 
 ---
