@@ -4,7 +4,8 @@
  *  - 캠퍼: 잔금까지 마쳐 "최종 확정"된 신청만 센다(개인 1명, 단체는 이름이 적힌 참가자 수). 스태프 신청은 세지 않는다.
  *  - 구원: 캠프 후 구원(savedTiming 'after') + 시점 없이 구원만 체크된 옛 기록. 캠프 전 구원('before')은 이 캠프의 구원이 아니라서 뺀다.
  *  - 헌신: dedicated 체크.
- *  - 스태프: 신청 기록에서 세지 않고, 마스터·관리자가 캠프마다 직접 입력한 숫자(KV gospel:campstaff:{캠프})를 더한다.
+ *  - 스태프: 최종 확정된 스태프 신청(registrationType 'staff')을 자동으로 세고, 마스터·관리자가 캠프마다 직접 입력한 "추가 스태프"
+ *    (KV gospel:campstaff:{캠프}, 신청 시스템에 없는 도우미 등)를 더한다. 화면의 스태프 = 확정 신청 + 추가 인원.
  *  숫자만 돌려주고 이름·연락처 등 개인정보는 밖으로 내지 않는다.
  */
 export const CAMP_ID_RE = /^[A-Za-z0-9_-]{1,80}$/;
@@ -33,14 +34,15 @@ export const resetScheduleCache = () => { scheduleCache = { at: 0, list: null };
 export const isFinalConfirmed = reg => reg?.status === 'confirmed' || (reg?.status === undefined && reg?.confirmed === true);
 const salvationOf = x => x?.savedTiming === 'after' || (x?.saved === true && !x?.savedTiming);
 
-/** 신청 한 건 → 확정 캠퍼 수 · 구원 · 헌신 (확정되지 않았거나 스태프 신청이면 0) */
+/** 신청 한 건 → 확정 캠퍼 수 · 확정 스태프 수 · 구원 · 헌신 (확정되지 않았으면 모두 0) */
 export function countRegistration(reg) {
-  const zero = { campers: 0, salvations: 0, dedications: 0 };
-  if (!reg || reg.registrationType === 'staff' || !isFinalConfirmed(reg)) return zero;
+  const zero = { campers: 0, staff: 0, salvations: 0, dedications: 0 };
+  if (!reg || !isFinalConfirmed(reg)) return zero;
+  if (reg.registrationType === 'staff') return { ...zero, staff: 1 };            // 확정된 스태프 신청 1명
   const people = reg.registrationType === 'group'
     ? (Array.isArray(reg.participants) ? reg.participants : []).filter(p => p && String(p.name || '').trim())
     : [reg];
-  return people.reduce((sum, p) => ({ campers: sum.campers + 1, salvations: sum.salvations + (salvationOf(p) ? 1 : 0), dedications: sum.dedications + (p.dedicated === true ? 1 : 0) }), zero);
+  return people.reduce((sum, p) => ({ ...sum, campers: sum.campers + 1, salvations: sum.salvations + (salvationOf(p) ? 1 : 0), dedications: sum.dedications + (p.dedicated === true ? 1 : 0) }), zero);
 }
 
 async function listKeys(env, prefix) {
@@ -58,11 +60,11 @@ async function listKeys(env, prefix) {
 export async function campAuto(env, campId) {
   const cached = await env.CAMP_KV.get(AUTO_KEY(campId), 'json');
   if (cached) return cached;
-  const total = { campers: 0, salvations: 0, dedications: 0 };
+  const total = { campers: 0, staff: 0, salvations: 0, dedications: 0 };
   const keys = await listKeys(env, `camp:${campId}:reg:`);
   for (let i = 0; i < keys.length; i += 40) {
     const regs = await Promise.all(keys.slice(i, i + 40).map(key => env.CAMP_KV.get(key, 'json')));
-    for (const reg of regs) { const c = countRegistration(reg); total.campers += c.campers; total.salvations += c.salvations; total.dedications += c.dedications; }
+    for (const reg of regs) { const c = countRegistration(reg); total.campers += c.campers; total.staff += c.staff; total.salvations += c.salvations; total.dedications += c.dedications; }
   }
   await env.CAMP_KV.put(AUTO_KEY(campId), JSON.stringify(total), { expirationTtl: AUTO_TTL_SECONDS });
   return total;
@@ -74,15 +76,15 @@ export async function loadStaff(env, campId) {
   return Number.isInteger(n) && n >= 0 ? n : 0;
 }
 
-/** 그 달에 시작한 캠프들의 집계 — 캠퍼도 스태프도 없는 캠프(접수 전, 외부 신청서 등)는 뺀다 */
+/** 그 달에 시작한 캠프들의 집계 — 캠퍼도 스태프도 없는 캠프(접수 전, 외부 신청서 등)는 뺀다. staff = 확정 스태프 신청 + 추가 인원 */
 export async function monthCamps(env, request, month) {
   const schedules = (await loadSchedules(env, request)).filter(s => monthOfSchedule(s) === month);
   const out = [];
   for (const s of schedules) {
     const auto = await campAuto(env, s.id);
-    const staff = await loadStaff(env, s.id);
+    const staffExtra = await loadStaff(env, s.id), staffAuto = auto.staff || 0, staff = staffAuto + staffExtra;
     if (!auto.campers && !staff) continue;
-    out.push({ id: s.id, titleKo: s.titleKo || s.id, titleEn: s.titleEn || s.titleKo || s.id, location: campLocation(s.id), campers: auto.campers, staff, salvations: auto.salvations, dedications: auto.dedications });
+    out.push({ id: s.id, titleKo: s.titleKo || s.id, titleEn: s.titleEn || s.titleKo || s.id, location: campLocation(s.id), campers: auto.campers, staff, staffAuto, staffExtra, salvations: auto.salvations, dedications: auto.dedications });
   }
   return out;
 }
@@ -93,9 +95,9 @@ export async function allCamps(env, request) {
   const out = [];
   for (const s of schedules) {
     const auto = await campAuto(env, s.id);
-    const staff = await loadStaff(env, s.id);
+    const staffExtra = await loadStaff(env, s.id), staffAuto = auto.staff || 0, staff = staffAuto + staffExtra;
     if (!auto.campers && !staff) continue;
-    out.push({ id: s.id, month: monthOfSchedule(s), titleKo: s.titleKo || s.id, titleEn: s.titleEn || s.titleKo || s.id, dateKo: s.dateKo || '', location: campLocation(s.id), campers: auto.campers, staff, salvations: auto.salvations, dedications: auto.dedications });
+    out.push({ id: s.id, month: monthOfSchedule(s), titleKo: s.titleKo || s.id, titleEn: s.titleEn || s.titleKo || s.id, dateKo: s.dateKo || '', location: campLocation(s.id), campers: auto.campers, staff, staffAuto, staffExtra, salvations: auto.salvations, dedications: auto.dedications });
   }
   return out;
 }

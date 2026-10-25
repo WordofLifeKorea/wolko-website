@@ -10,6 +10,7 @@
  */
 import { buildGospelXlsx } from '../../lib/gospelReport.js';
 import { monthCamps, addCampsToSummary } from '../../lib/gospelCamps.js';
+import { reporterRoster, missingReporters, submittedEmails } from '../../lib/gospelReminder.js';
 import { portalSession } from '../../lib/hubAccounts.js';
 import {
   GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, shiftMonth, reportableMonth,
@@ -20,6 +21,13 @@ const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
 const canReview = session => session.role === 'master' || session.role === 'admin';
 const displayName = session => cleanText(session.name, 80) || session.email.split('@')[0];
+
+/** 마스터·관리자용 — 이 달 보고를 아직 안 낸 사람과 보고 제외 목록 */
+async function submissionStatus(env, reports) {
+  const roster = await reporterRoster(env), done = submittedEmails(reports);
+  const expected = roster.filter(p => !p.exempt), missing = missingReporters(roster, reports);
+  return { expected: expected.length, submitted: expected.filter(p => done.has(p.email)).length, missing: missing.map(({ email, name }) => ({ email, name })), exempt: roster.filter(p => p.exempt).map(({ email, name }) => ({ email, name })) };
+}
 
 export async function onRequestGet({ env, request }) {
   const session = await portalSession(request, env);
@@ -59,6 +67,7 @@ export async function onRequestGet({ env, request }) {
     trend,
     mine: reports.filter(r => r.email === session.email),
     // 보고별 목록(이름·이메일 포함)은 마스터·관리자만. 그 밖의 계정에는 합계만 준다 — 사람별 숫자는 익명이어도 누구의 것인지 알아낼 수 있다
+    ...(review ? { submission: await submissionStatus(env, reports) } : {}),
     ...(review ? { rows: reports.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))) } : {}),
   }, { headers: H });
 }

@@ -2,8 +2,9 @@ import { onRequestPost as kitchen } from '../api/kitchen/reminders.js';
 import { onRequestPost as drive } from '../api/car/drive-reminders.js';
 import { onRequestPost as crs } from '../api/crs-reminders.js';
 import { onRequestPost as staffing } from '../api/staffing/weekly-reminder.js';
+import { onRequestPost as gospel } from '../api/gospel-reminders.js';
 
-const handlers = { kitchen, drive, crs, staffing };
+const handlers = { kitchen, drive, crs, staffing, gospel };
 export async function runReminderJobs(env, { dryRun = false, now = Date.now(), services = handlers } = {}) {
   const kst = new Date(now + 9 * 3600000);
   const date = kst.toISOString().slice(0, 10);
@@ -13,6 +14,7 @@ export async function runReminderJobs(env, { dryRun = false, now = Date.now(), s
     { name:'kitchen', path:'/api/kitchen/reminders', secret:env.KITCHEN_REMINDER_SECRET || env.DRIVE_REMINDER_SECRET || env.CRS_REMINDER_SECRET || env.KITCHEN_SCHEDULER_SECRET, due:minutes >= 360 && minutes < 1320 },
     { name:'drive', path:'/api/car/drive-reminders', secret:env.DRIVE_REMINDER_SECRET || env.CRS_REMINDER_SECRET, due:minutes >= 360 && minutes < 1320 },
     { name:'staffing', path:'/api/staffing/weekly-reminder', secret:env.STAFFING_REMINDER_SECRET || env.KITCHEN_REMINDER_SECRET || env.DRIVE_REMINDER_SECRET || env.CRS_REMINDER_SECRET, due:kst.getUTCDay() === 1 && minutes >= 570 && minutes < 1320 },
+    { name:'gospel', path:'/api/gospel-reminders', secret:env.GOSPEL_REMINDER_SECRET || env.KITCHEN_REMINDER_SECRET || env.DRIVE_REMINDER_SECRET || env.CRS_REMINDER_SECRET, due:minutes >= 540 && minutes < 1320, daily:true },
     { name:'crs', path:'/api/crs-reminders', secret:env.CRS_REMINDER_SECRET || env.KITCHEN_SCHEDULER_SECRET, due:minutes >= 557 && minutes < 1320, daily:true },
   ];
   for (const job of definitions) {

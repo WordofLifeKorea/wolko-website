@@ -7,9 +7,9 @@ import { onRequestPost } from '../functions/api/reminders/run.js';
 function setup() {
   const records = new Map(), called = [];
   const env = { KITCHEN_SCHEDULER_SECRET:'scheduler', KITCHEN_REMINDER_SECRET:'kitchen',
-    DRIVE_REMINDER_SECRET:'drive', CRS_REMINDER_SECRET:'crs', STAFFING_REMINDER_SECRET:'staffing',
+    DRIVE_REMINDER_SECRET:'drive', CRS_REMINDER_SECRET:'crs', STAFFING_REMINDER_SECRET:'staffing', GOSPEL_REMINDER_SECRET:'gospel',
     CAMP_KV:{ get:async key => records.get(key), put:async (key, value) => records.set(key, value) } };
-  const services = Object.fromEntries(['kitchen','drive','crs','staffing'].map(name => [name, async ({ request }) => {
+  const services = Object.fromEntries(['kitchen','drive','crs','staffing','gospel'].map(name => [name, async ({ request }) => {
     assert.equal(request.headers.get('Authorization'), 'Bearer ' + name);
     called.push({ name, url:request.url });
     return Response.json({ sent:0, remaining:0, results:[] });
@@ -31,12 +31,13 @@ test('CRS uses the existing scheduler credential when its legacy secret is absen
 test('one scheduler runs every due job, preserving the independent credentials and ledgers', async () => {
   const s = setup(), options = { services:s.services, now:kst('2026-10-12T09:30:00') };
   const result = await runReminderJobs(s.env, options);
-  assert.deepEqual(s.called.map(row => row.name), ['kitchen','drive','staffing','crs']);
+  assert.deepEqual(s.called.map(row => row.name), ['kitchen','drive','staffing','gospel','crs']);
   assert.equal(result.failed, 0);
   assert.ok(s.records.has('reminders:daily:crs:2026-10-12'));
   s.called.length = 0;
   await runReminderJobs(s.env, options);
   assert.deepEqual(s.called.map(row => row.name), ['kitchen','drive','staffing']);
+  assert.ok(s.records.has('reminders:daily:gospel:2026-10-12'));
 });
 test('time gates use Korea time and do not send weekly mail before Monday 09:30', async () => {
   const s = setup();
@@ -44,7 +45,7 @@ test('time gates use Korea time and do not send weekly mail before Monday 09:30'
   assert.deepEqual(s.called.map(row => row.name), ['kitchen','drive']);
   s.called.length = 0;
   await runReminderJobs(s.env, { services:s.services, now:kst('2026-10-12T09:20:00') });
-  assert.deepEqual(s.called.map(row => row.name), ['kitchen','drive','crs']);
+  assert.deepEqual(s.called.map(row => row.name), ['kitchen','drive','gospel','crs']);
   s.called.length = 0;
   await runReminderJobs(s.env, { services:s.services, now:kst('2026-10-12T22:00:00') });
   assert.equal(s.called.length, 0);
@@ -68,7 +69,7 @@ test('failures do not block other jobs and incomplete CRS batches resume at the 
 test('dry runs check all jobs without writing status or invoking force', async () => {
   const s = setup();
   await runReminderJobs(s.env, { services:s.services, dryRun:true, now:kst('2026-10-08T03:00:00') });
-  assert.equal(s.called.length, 4);
+  assert.equal(s.called.length, 5);
   assert.ok(s.called.every(row => row.url.endsWith('?dryRun=1')));
   assert.equal(s.records.size, 0);
 });

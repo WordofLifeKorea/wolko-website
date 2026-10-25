@@ -6,11 +6,12 @@ import * as GCamps from '../functions/api/portal/gospel-camps.js';
 import { countRegistration, monthOfSchedule, campLocation, resetScheduleCache, isFinalConfirmed } from '../functions/lib/gospelCamps.js';
 
 test('캠퍼 집계: 최종 확정된 신청만, 스태프 신청은 제외', () => {
-  assert.deepEqual(countRegistration({ registrationType: 'individual', status: 'confirmed', savedTiming: 'after', saved: true, dedicated: true }), { campers: 1, salvations: 1, dedications: 1 });
-  assert.deepEqual(countRegistration({ status: 'confirmed' }), { campers: 1, salvations: 0, dedications: 0 }, 'registrationType 이 없는 옛 개인 신청도 1명');
+  assert.deepEqual(countRegistration({ registrationType: 'individual', status: 'confirmed', savedTiming: 'after', saved: true, dedicated: true }), { campers: 1, staff: 0, salvations: 1, dedications: 1 });
+  assert.deepEqual(countRegistration({ status: 'confirmed' }), { campers: 1, staff: 0, salvations: 0, dedications: 0 }, 'registrationType 이 없는 옛 개인 신청도 1명');
   assert.equal(countRegistration({ status: 'deposit', saved: true }).campers, 0, '예약금만 낸 신청은 아직 세지 않는다');
   assert.equal(countRegistration({ status: 'pending' }).campers, 0);
-  assert.equal(countRegistration({ registrationType: 'staff', status: 'confirmed' }).campers, 0, '스태프 신청은 자동으로 세지 않는다');
+  assert.deepEqual(countRegistration({ registrationType: 'staff', status: 'confirmed' }), { campers: 0, staff: 1, salvations: 0, dedications: 0 }, '확정된 스태프 신청은 스태프 1명');
+  assert.equal(countRegistration({ registrationType: 'staff', status: 'pending' }).staff, 0, '확정 전 스태프 신청은 세지 않는다');
   assert.equal(countRegistration(null).campers, 0);
   assert.equal(isFinalConfirmed({ confirmed: true }), true, '옛 데이터: status 없이 confirmed:true');
   assert.equal(isFinalConfirmed({ status: 'deposit', confirmed: true }), false);
@@ -28,7 +29,7 @@ test('단체 신청은 이름이 적힌 참가자마다 따로 센다', () => {
   const reg = { registrationType: 'group', status: 'confirmed', participants: [
     { name: '가', saved: true, savedTiming: 'after', dedicated: true }, { name: '나', saved: true, savedTiming: 'before' }, { name: '  ' }, { name: '다', dedicated: true }, null,
   ] };
-  assert.deepEqual(countRegistration(reg), { campers: 3, salvations: 1, dedications: 2 });
+  assert.deepEqual(countRegistration(reg), { campers: 3, staff: 0, salvations: 1, dedications: 2 });
   assert.equal(countRegistration({ registrationType: 'group', status: 'deposit', participants: [{ name: '가' }] }).campers, 0);
 });
 
@@ -86,10 +87,10 @@ test('월 요약에 캠프 자동 집계(캠퍼 + 스태프)가 평택·제주�
   assert.equal(data.canEditStaff, false);
   assert.equal(data.campAuto.length, 2, '시험 캠프와 다른 달 캠프는 빠진다');
   const union = data.campAuto.find(c => c.id === '2026-inland-union');
-  assert.deepEqual([union.campers, union.staff, union.salvations, union.dedications, union.location], [2, 4, 1, 1, 'mainland']);
-  assert.equal(data.summary.mainland.campAttendance, 6, '확정 캠퍼 2 + 스태프 4');
+  assert.deepEqual([union.campers, union.staff, union.staffAuto, union.staffExtra, union.salvations, union.dedications, union.location], [2, 5, 1, 4, 1, 1, 'mainland'], '스태프 = 확정 신청 1 + 추가 4');
+  assert.equal(data.summary.mainland.campAttendance, 7, '확정 캠퍼 2 + 스태프 5(확정 신청 1 + 추가 4)');
   assert.equal(data.summary.jeju.campAttendance, 2);
-  assert.equal(data.summary.all.campAttendance, 8);
+  assert.equal(data.summary.all.campAttendance, 9);
   assert.equal(data.summary.all.campCount, 2);
   assert.equal(data.summary.all.campSalvations, 1);
   assert.equal(data.summary.all.campDedications, 2);
@@ -100,7 +101,7 @@ test('월 요약에 캠프 자동 집계(캠퍼 + 스태프)가 평택·제주�
   // 스태프를 0 으로 되돌리면 지워지고, 캠퍼도 없는 캠프는 목록에서 빠진다
   await env.CAMP_KV.delete('gospel:campauto:2026-jeju-english');
   const trendMonth = data.trend.find(t => t.month === '2026-10');
-  assert.equal(trendMonth.all.campAttendance, 8, '6개월 표에도 같은 자동 집계가 들어간다');
+  assert.equal(trendMonth.all.campAttendance, 9, '6개월 표에도 같은 자동 집계가 들어간다');
   const julyMonth = (await (await G.onRequestGet({ env, request: await req('/api/portal/gospel-stats?month=2026-07', anna) })).json());
   assert.equal(julyMonth.campAuto.length, 0, '7월 캠프는 확정 캠퍼가 없어 목록에 없다');
 });
