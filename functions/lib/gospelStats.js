@@ -187,3 +187,13 @@ export function parseCrsChurches(records) {
     .filter(c => c.name)
     .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }
+
+/** 여러 달의 summarize(+캠프) 결과를 한 해 누적으로 합친다 */
+export function mergeSummaries(list) {
+  const out = { all: emptyTotals(), mainland: emptyTotals(), jeju: emptyTotals(), counts: { all: 0, mainland: 0, jeju: 0, individual: 0, team: 0 } };
+  for (const item of list) {
+    for (const place of ['all', 'mainland', 'jeju']) for (const id of GOSPEL_FIELD_IDS) out[place][id] += Number(item?.[place]?.[id]) || 0;
+    for (const key of Object.keys(out.counts)) out.counts[key] += Number(item?.counts?.[key]) || 0;
+  }
+  return out;
+}

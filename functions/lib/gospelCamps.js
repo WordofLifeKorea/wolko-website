@@ -6,8 +6,11 @@
  *  - 헌신: dedicated 체크.
  *  - 스태프: 최종 확정된 스태프 신청(registrationType 'staff')을 자동으로 세고, 마스터·관리자가 캠프마다 직접 입력한 "추가 스태프"
  *    (KV gospel:campstaff:{캠프}, 신청 시스템에 없는 도우미 등)를 더한다. 화면의 스태프 = 확정 신청 + 추가 인원.
+ *  - 끝난 캠프만 센다: 마지막 날이 지난 다음 날부터 합계에 들어간다(시작 전·진행 중 캠프는 목록에 "종료 후 집계"로만 보인다).
  *  숫자만 돌려주고 이름·연락처 등 개인정보는 밖으로 내지 않는다.
  */
+import { campEndDate, isCampFinished, todayKst } from './campDates.js';
+
 export const CAMP_ID_RE = /^[A-Za-z0-9_-]{1,80}$/;
 export const STAFF_KEY = id => `gospel:campstaff:${id}`;
 const AUTO_KEY = id => `gospel:campauto:${id}`;
@@ -24,7 +27,7 @@ export async function loadSchedules(env, request) {
     if (!env.ASSETS?.fetch) return [];                     // Cloudflare Pages 에서는 항상 있다
     const res = await env.ASSETS.fetch(new Request(new URL('/camp-schedules.json', request.url)));
     if (!res.ok) return [];
-    const list = (await res.json()).filter(c => c && CAMP_ID_RE.test(String(c.id)) && !/test/i.test(c.id));
+    const list = (await res.json()).filter(c => c && CAMP_ID_RE.test(String(c.id)) && !/test/i.test(c.id)).map(c => ({ ...c, endDate: c.endDate || campEndDate(c.startDate, c.dateKo) }));
     scheduleCache = { at: Date.now(), list };
     return list;
   } catch { return []; }
@@ -77,34 +80,35 @@ export async function loadStaff(env, campId) {
 }
 
 /** 그 달에 시작한 캠프들의 집계 — 캠퍼도 스태프도 없는 캠프(접수 전, 외부 신청서 등)는 뺀다. staff = 확정 스태프 신청 + 추가 인원 */
-export async function monthCamps(env, request, month) {
+export async function monthCamps(env, request, month, today = todayKst()) {
   const schedules = (await loadSchedules(env, request)).filter(s => monthOfSchedule(s) === month);
   const out = [];
   for (const s of schedules) {
     const auto = await campAuto(env, s.id);
     const staffExtra = await loadStaff(env, s.id), staffAuto = auto.staff || 0, staff = staffAuto + staffExtra;
     if (!auto.campers && !staff) continue;
-    out.push({ id: s.id, titleKo: s.titleKo || s.id, titleEn: s.titleEn || s.titleKo || s.id, location: campLocation(s.id), campers: auto.campers, staff, staffAuto, staffExtra, salvations: auto.salvations, dedications: auto.dedications });
+    out.push({ id: s.id, titleKo: s.titleKo || s.id, titleEn: s.titleEn || s.titleKo || s.id, location: campLocation(s.id), campers: auto.campers, staff, staffAuto, staffExtra, salvations: auto.salvations, dedications: auto.dedications, endDate: s.endDate || '', counted: isCampFinished(s.endDate, today) });
   }
   return out;
 }
 
 /** 지난 캠프까지 모두 — 일정 파일에 있는 모든 캠프의 집계(최근 시작일 순). 캠퍼도 스태프도 없는 캠프는 뺀다 */
-export async function allCamps(env, request) {
+export async function allCamps(env, request, today = todayKst()) {
   const schedules = (await loadSchedules(env, request)).slice().sort((a, b) => String(b.startDate).localeCompare(String(a.startDate)));
   const out = [];
   for (const s of schedules) {
     const auto = await campAuto(env, s.id);
     const staffExtra = await loadStaff(env, s.id), staffAuto = auto.staff || 0, staff = staffAuto + staffExtra;
     if (!auto.campers && !staff) continue;
-    out.push({ id: s.id, month: monthOfSchedule(s), titleKo: s.titleKo || s.id, titleEn: s.titleEn || s.titleKo || s.id, dateKo: s.dateKo || '', location: campLocation(s.id), campers: auto.campers, staff, staffAuto, staffExtra, salvations: auto.salvations, dedications: auto.dedications });
+    out.push({ id: s.id, month: monthOfSchedule(s), titleKo: s.titleKo || s.id, titleEn: s.titleEn || s.titleKo || s.id, dateKo: s.dateKo || '', location: campLocation(s.id), campers: auto.campers, staff, staffAuto, staffExtra, salvations: auto.salvations, dedications: auto.dedications, endDate: s.endDate || '', counted: isCampFinished(s.endDate, today) });
   }
   return out;
 }
 
-/** 자동 집계를 월 합계(summarize 결과)에 더한다 — 참석 = 캠퍼 + 스태프 */
+/** 끝난 캠프의 자동 집계를 월 합계(summarize 결과)에 더한다 — 참석 = 캠퍼 + 스태프 */
 export function addCampsToSummary(summary, camps) {
   for (const c of camps) {
+    if (!c.counted) continue;                          // 아직 끝나지 않은 캠프는 합계에 넣지 않는다
     for (const place of [c.location, 'all']) {
       summary[place].campCount += 1;
       summary[place].campAttendance += c.campers + c.staff;

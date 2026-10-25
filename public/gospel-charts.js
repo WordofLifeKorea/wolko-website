@@ -32,7 +32,7 @@
       if (!sl.value) return;
       var frac = sl.value / total, len = shown.length > 1 ? Math.max(0.5, frac * CIRC - GAP) : CIRC;
       arcs += '<circle class="gc-arc" data-chart="' + id + '" data-i="' + i + '" cx="110" cy="110" r="' + R + '" fill="none" stroke="' + sl.color + '" stroke-width="' + W + '"'
-        + ' stroke-dasharray="0 ' + CIRC.toFixed(2) + '" data-dash="' + len.toFixed(2) + ' ' + (CIRC - len).toFixed(2) + '" stroke-dashoffset="' + (-start * CIRC).toFixed(2) + '" tabindex="0" role="img"'
+        + ' stroke-dasharray="' + len.toFixed(2) + ' ' + (CIRC - len).toFixed(2) + '" stroke-dashoffset="' + (-start * CIRC).toFixed(2) + '" tabindex="0" role="img"'
         + ' aria-label="' + esc(sl.name + ' ' + fmt(sl.value, lang) + ' (' + pct(sl.value, total) + '%)') + '"/>';
       start += frac;
     });
@@ -58,11 +58,6 @@
       + '<section class="gc-card"><h3>' + esc(s.heardTitle) + info(s.heardSub) + '</h3>' + donut('heard', heardSlices, s.heardTitle, lang, s) + '</section>'
       + '<section class="gc-card"><h3>' + esc(s.savedTitle) + info(s.savedSub(fmt(heard, lang), fmt(saved, lang), heard && saved <= heard ? pct(saved, heard) : null)) + '</h3>' + donut('saved', savedSlices, s.savedTitle, lang, s) + '</section>'
       + '</div>';
-    // 도넛이 그려지는 모션(한 번) — 사용자가 모션을 줄여 두었으면 바로 완성된 모양으로
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var arcs = el.querySelectorAll('.gc-arc');
-    if (reduce) arcs.forEach(function (a) { a.style.transition = 'none'; a.setAttribute('stroke-dasharray', a.dataset.dash); });
-    else requestAnimationFrame(function () { requestAnimationFrame(function () { arcs.forEach(function (a) { a.setAttribute('stroke-dasharray', a.dataset.dash); }); }); });
   }
 
   /* ───────── 상호작용 (한 번만 연결) ───────── */

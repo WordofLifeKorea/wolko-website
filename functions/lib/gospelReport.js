@@ -129,7 +129,7 @@ function campAutoSheet(camps) {
     rows.push([{ v: c.titleKo, s: text }, { v: c.location === 'jeju' ? '제주' : '평택', s: text }, { v: c.campers, s: num }, { v: c.staff, s: num }, { v: c.campers + c.staff, s: num }, { v: c.salvations, s: num }, { v: c.dedications, s: num }]);
   });
   rows.push([]);
-  rows.push([{ v: '※ 잔금까지 마쳐 최종 확정된 캠퍼만 센 자동 집계입니다. 구원은 "캠프 후 구원" 기준이고, 스태프 인원은 관리자가 입력한 숫자입니다.', s: S.note }]);
+  rows.push([{ v: '※ 끝난 캠프에서, 잔금까지 마쳐 최종 확정된 캠퍼만 센 자동 집계입니다. 구원은 "캠프 후 구원" 기준이고, 스태프 인원은 관리자가 입력한 숫자입니다.', s: S.note }]);
   return { name: '캠프 자동 집계', cols: head.map(h => h[2]), rows, rowHeights: { 1: 40, [rows.length]: 34 }, merges: [`A${rows.length}:G${rows.length}`], freezeRow: 1, landscape: true };
 }
 const colName = i => { let n = i + 1, s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - m) / 26); } return s; };
@@ -137,7 +137,8 @@ const colName = i => { let n = i + 1, s = ''; while (n > 0) { const m = (n - 1) 
 /** month: 'YYYY-MM' · summary: summarize() 결과 · trend: [{ month, ...summarize }] · reports: 보고 원본 목록 */
 export function buildGospelXlsx({ month, summary, trend = [], reports = [], camps = [] }) {
   const sheets = [summarySheet(month, summary)];
-  if (camps.length) sheets.push(campAutoSheet(camps));
+  const countedCamps = camps.filter(c => c.counted);
+  if (countedCamps.length) sheets.push(campAutoSheet(countedCamps));
   if (trend.length) sheets.push(trendSheet(trend));
   if (reports.length) sheets.push(reportsSheet(reports));
   if (reports.some(r => (r.churchEntries || []).length)) sheets.push(churchSheet(reports.map(r => ({ ...r, month }))));

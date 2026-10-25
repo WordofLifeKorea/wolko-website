@@ -203,3 +203,25 @@ test('교회 목록 API: 로그인 필요, 설정이 없으면 빈 목록, 캐�
   const cached = await (await GC.onRequestGet({ env: { ...env, FIREBASE_CRS_SERVICE_ACCOUNT: '{"broken":true}' }, request: await req(anna) })).json();
   assert.deepEqual(cached, { churches: [{ id: 'c1', name: '평택중앙교회' }], configured: true });
 });
+
+test('연 누적: 고른 달이 속한 해의 1월부터 그 달까지 더한다(다른 해는 섞이지 않는다)', async () => {
+  const { store, acc, call } = setup();
+  await acc(anna[0]);
+  const put = (month, id, location, evangelism, salvation) => store.set(`gospel:rep:${month}:${id}`, JSON.stringify({ id, month, email: 'x@wol.org', scope: 'individual', location, values: { ...Object.fromEntries(GOSPEL_FIELD_IDS.map(k => [k, 0])), evangelism, salvation } }));
+  put('2024-12', 'prev', 'mainland', 100, 50);        // 전해
+  put('2025-01', 'a', 'mainland', 10, 1);
+  put('2025-02', 'b', 'jeju', 20, 2);
+  put('2025-03', 'c', 'mainland', 30, 3);
+  put('2025-04', 'd', 'jeju', 40, 4);                 // 고른 달 이후
+  const mar = await call('GET', anna, { query: '?month=2025-03' });
+  assert.deepEqual([mar.ytd.year, mar.ytd.from, mar.ytd.to], ['2025', '2025-01', '2025-03']);
+  assert.equal(mar.ytd.summary.all.evangelism, 60, '1~3월 합');
+  assert.equal(mar.ytd.summary.mainland.evangelism, 40); assert.equal(mar.ytd.summary.jeju.evangelism, 20);
+  assert.equal(mar.ytd.summary.all.salvation, 6);
+  assert.equal(mar.ytd.summary.counts.all, 3);
+  assert.equal(mar.summary.all.evangelism, 30, '월 숫자는 그대로 그 달만');
+  const feb = await call('GET', anna, { query: '?month=2025-02' });
+  assert.equal(feb.ytd.summary.all.evangelism, 30, '2월까지는 1~2월');
+  const jan = await call('GET', anna, { query: '?month=2025-01' });
+  assert.equal(jan.ytd.summary.all.evangelism, 10, '1월은 1월만 — 지난해 12월은 안 섞인다');
+});

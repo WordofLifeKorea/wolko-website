@@ -113,7 +113,7 @@
 .gc-donut { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 14px; }
 .gc-donut .gc-legend { width: 100%; }
 .gc-donut-svg { width: 100%; max-width: 220px; height: auto; overflow: visible; }
-.gc-arc { transition: stroke-dasharray .9s cubic-bezier(.2, .8, .2, 1), opacity .15s, stroke-width .15s; cursor: pointer; outline: none; }
+.gc-arc { transition: opacity .15s, stroke-width .15s; cursor: pointer; outline: none; }
 .gc-donut.has-focus .gc-arc:not(.is-on) { opacity: .35; }
 .gc-arc.is-on, .gc-arc:focus-visible { stroke-width: 36; }
 .gc-center-num { fill: var(--ink); font: 800 30px 'Montserrat', var(--sans); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
@@ -214,32 +214,14 @@
 
 .gs-fixed { flex: none; color: var(--muted); font-size: 12px; font-weight: 700; }
 
-/* ───────── PC 화면: 카드를 3단으로 나눠 세로로 너무 길어지지 않게 ───────── */
-.gs-dash { display: block; }
-.gs-dash > .log-panel { margin: 0 0 12px; }
-@media (min-width: 1100px) {
-  .gs-dash { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 12px; align-items: start; margin: 0 0 12px; }
-  .gs-dash > .log-panel { margin: 0; }
-  .gs-dash > .gc-root, .gs-dash .gc-grid2 { display: contents; }
-  .gs-dash .gs-span2 { grid-column: span 2; }
-  .gs-dash .gc-card { height: 100%; box-sizing: border-box; }
-  .gs-dash-tables .gs-table th, .gs-dash-tables .gs-table td { padding: 8px 10px; }
-  .gs-dash-tables .gs-table { font-size: 13px; }
-}
-@media (min-width: 760px) and (max-width: 1099px) {
-  .gs-dash { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 12px; align-items: start; margin: 0 0 12px; }
-  .gs-dash > .log-panel { margin: 0; }
-  .gs-dash > .gc-root, .gs-dash .gc-grid2 { display: contents; }
-  .gs-dash .gs-span2 { grid-column: 1 / -1; }
-  .gs-dash .gc-card { height: 100%; box-sizing: border-box; }
-}
 
-@media (min-width: 1100px) {
-  .gs-dash .gs-ctable td:first-child { min-width: 0; }
-  .gs-dash .gs-ctable th, .gs-dash .gs-ctable td { padding: 8px 8px; }
-  .gs-dash .gs-celist li { grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; }
-  .gs-dash .gs-celist li em { font-size: 11.5px; }
-}
 
-#trendTable th, #trendTable td { white-space: nowrap; }
-#trendTable .gs-bar-cell { min-width: 70px; }
+.gs-table tr.gs-pending td { color: var(--muted); background: #fafcfd; }
+.gs-pendbadge { display: inline-flex; align-items: center; height: 22px; margin-left: 6px; padding: 0 9px; border: 1px dashed #b9cdd5; border-radius: 999px; background: #fff; color: #5b7580; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+
+/* 제출 현황: 사람 목록은 PC 에서 3단, 중간 폭 2단, 폰 1단 */
+.gs-people { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 700px) { .gs-people { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .gs-people { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.gs-kpicap { margin: 0 0 8px; color: var(--ink); font-size: 13.5px; font-weight: 800; }

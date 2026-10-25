@@ -14,7 +14,7 @@ import { reporterRoster, missingReporters, submittedEmails } from '../../lib/gos
 import { portalSession } from '../../lib/hubAccounts.js';
 import {
   GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, shiftMonth, reportableMonth,
-  cleanValues, cleanChurchEntries, churchEvents, cleanText, unitId, reportKey, loadMonth, summarize, toCsv,
+  cleanValues, cleanChurchEntries, churchEvents, cleanText, unitId, reportKey, loadMonth, summarize, mergeSummaries, toCsv,
 } from '../../lib/gospelStats.js';
 
 const H = { 'Cache-Control': 'no-store' };
@@ -46,12 +46,18 @@ export async function onRequestGet({ env, request }) {
   // 최근 6개월(선택한 달 기준) 추이 — 숫자 합계만
   const trendMonths = Array.from({ length: 6 }, (_, i) => shiftMonth(month, i - 5));
   const camps = await monthCamps(env, request, month);
-  const withCamps = async (m, list, monthCampList) => addCampsToSummary(summarize(list), monthCampList ?? await monthCamps(env, request, m));
-  const trend = await Promise.all(trendMonths.map(async m => ({ month: m, ...(m === month ? await withCamps(m, reports, camps) : await withCamps(m, await loadMonth(env, m))) })));
+  // 달마다 (보고 + 끝난 캠프) 합계를 한 번만 계산해서 6개월 추이와 연 누적이 함께 쓴다
+  const summaries = new Map([[month, addCampsToSummary(summarize(reports), camps)]]);
+  const summaryOf = async m => { if (!summaries.has(m)) summaries.set(m, addCampsToSummary(summarize(await loadMonth(env, m)), await monthCamps(env, request, m))); return summaries.get(m); };
+  const trend = await Promise.all(trendMonths.map(async m => ({ month: m, ...(await summaryOf(m)) })));
+  // 연 누적 — 고른 달이 속한 해의 1월부터 그 달까지
+  const year = month.slice(0, 4);
+  const ytdMonths = Array.from({ length: Number(month.slice(5)) }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
+  const ytd = { year, from: ytdMonths[0], to: month, summary: mergeSummaries(await Promise.all(ytdMonths.map(summaryOf))) };
 
   if (url.searchParams.get('format') === 'xlsx') {
     if (!canReview(session)) return fail('내려받을 권한이 없습니다.', 403);
-    const bytes = buildGospelXlsx({ month, summary: addCampsToSummary(summarize(reports), camps), trend, reports, camps });
+    const bytes = buildGospelXlsx({ month, summary: summaries.get(month), trend, reports, camps });
     return new Response(bytes, { headers: { ...H, 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': `attachment; filename="WOLKO-Gospel-Report-${month}.xlsx"` } });
   }
 
@@ -60,7 +66,8 @@ export async function onRequestGet({ env, request }) {
     me: { email: session.email, name: displayName(session), role: session.role, canReview: review },
     month, current, earliest: shiftMonth(current, -MONTHS_BACK),
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
-    summary: addCampsToSummary(summarize(reports), camps),
+    summary: summaries.get(month),
+    ytd,
     campAuto: camps,
     canEditStaff: review,
     churchEvents: churchEvents(reports),
