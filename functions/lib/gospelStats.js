@@ -197,3 +197,12 @@ export function mergeSummaries(list) {
   }
   return out;
 }
+
+/** 달별 집계(합계·끝난 캠프·교회 행사)를 담아 두는 KV 키 — 개인정보 없이 숫자만. 보고가 바뀌면 지운다 */
+export const AGG_KEY = month => `gospel:agg:${month}`;
+export const AGG_VERSION = 2;
+/** 지난달들은 거의 안 바뀌니 길게, 이번 달·지난달은 짧게(캠프 구원·헌신 체크가 늦게 들어올 수 있다) */
+export function aggTtlSeconds(month, current) {
+  const diff = (Number(current.slice(0, 4)) - Number(month.slice(0, 4))) * 12 + Number(current.slice(5)) - Number(month.slice(5));
+  return diff >= 2 ? 6 * 3600 : 600;
+}

@@ -12,7 +12,7 @@
       loading: '불러오는 중…', loginTitle: '포탈 로그인', loginHelp: 'WOLKO 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했습니다.',
       subTitle: '제출 현황', subDone: function (a, b) { return b + '명 중 ' + a + '명이 보고했어요'; }, subMissing: '아직 보고하지 않은 사람', subNone: '모두 보고했어요 🎉', subExempt: '보고 제외', subFixed: '항상 제외', subExemptOn: '제외 중', subRestore: '다시 넣기', subExemptList: '보고에서 제외한 계정', subSaved: '저장했어요.', subTip: '승인된 포탈 계정 중 이 달 보고(개인 또는 팀)를 낸 사람을 세어요. 보고할 일이 없는 계정은 "보고 제외"로 빼면 알림 메일과 이 목록에서 빠져요. 월말(매달 마지막 날 오전 9시 이후)에는 아직 보고하지 않은 사람에게 알림 메일이 가요.', campScopeMonth: '이 달', campScopeAll: '지난 캠프 포함 전체', caMonth: '달', caTotal: '합계', campAutoTitle: '캠프 자동 집계', campAutoEmpty: '이 달에는 자동으로 집계된 캠프가 없어요.', caCamp: '캠프', caCampers: '확정 캠퍼', caStaff: '스태프', caSalv: '구원', caDed: '헌신', caPending: function (d) { return '종료 후 집계 · ' + d; }, caPendingTip: '캠프가 완전히 끝난 다음 날부터 합계에 들어가요.', mdShort: function (iso) { var p = String(iso || '').split('-'); return Number(p[1]) + '월 ' + Number(p[2]) + '일'; }, caStaffSaved: '스태프 인원을 저장했어요.', caStaffSplit: function (a, b) { return '신청 ' + a + ' + 추가'+ (b ? ' ' + b : ''); }, campFormHint: '월코 캠프는 신청 기록에서 자동으로 집계돼요. 아래에는 그 외 캠프만 적어 주세요.', churchStatTitle: '교회별 행사', churchStatEmpty: '이 달에는 교회 행사 기록이 없어요.', cCol: '교회', cEvents: '행사', cStudents: '참석', cSalv: '구원', cDed: '헌신', cEventCount: function (k) { return k + '건'; }, churchTitle: '교회 행사 기록 (선택)', churchHint: 'CRS에 등록된 교회에서 열린 행사를 적으면, 교회별 통계로 모아 볼 수 있어요.', churchAdd: '교회 행사 추가', churchName: '교회 (CRS에서 고르거나 직접 입력)', churchEvent: '행사 이름 (예: 겨울 전도 집회)', churchDate: '날짜', churchNote: '메모 (선택, 보고자와 관리자만 봐요)', churchStudents: '참석 학생', churchSalv: '구원', churchDed: '헌신', churchDel: '이 행사 지우기', churchTotal: function (a, b, c) { return '합계 · 참석 ' + a + ' · 구원 ' + b + ' · 헌신 ' + c; }, churchApply: '월코 행사 칸에 합계 넣기', churchApplied: '월코 행사 참석·구원·헌신 칸에 합계를 넣었어요.', churchOnlyName: '교회 이름을 적어 주세요.', minus: '1 줄이기', plus: '1 늘리기', infoLabel: function (name) { return name + ' 설명 보기'; }, thisMonth: '이번 달', write: '내 보고 쓰기', xlsx: '엑셀 보고서 내려받기', csv: '원본 CSV',
       tabAll: '통합', tabMainland: '평택', tabJeju: '제주',
-      ytdCaption: function (y, a, b) { return y + '년 누적 (' + a + '월~' + b + '월)'; }, ytdTip: '고른 달이 속한 해의 1월부터 그 달까지 쌓인 숫자예요. 아래 그래프와 표는 고른 달의 숫자예요.', kGospel: '복음을 들은 인원 (전체)', infoShort: '설명 보기', kGospelTip: '개인 전도로 복음을 들은 인원 + 캠프 참석 인원 + 월코 행사 참석 인원', kSalvTip: '개인 전도 + 캠프 + 월코 행사에서 예수님을 믿는다고 고백한 사람', kDedTip: '캠프와 월코 행사에서 삶을 예수님께 헌신한 사람', kReachTip: '월코 캠프의 캠퍼·스태프와 월코 행사에 참석한 인원', campAutoTip: '캠프가 완전히 끝난 다음 날부터 합계에 넣어요(시작 전·진행 중 캠프는 "종료 후 집계"로만 보여요). 잔금까지 마쳐 최종 확정된 캠퍼만 자동으로 세요. 구원은 "캠프 후 구원", 헌신은 "헌신" 체크 기준이에요. 스태프는 최종 확정된 스태프 신청을 자동으로 세고, 신청 시스템에 없는 도우미는 관리자가 "추가"로 더해요.', kSalv: '구원 고백 (전체)', kDed: '헌신 (전체)', kReach: '캠프·월코 행사 참석 인원',
+      viewYear: '연간', viewMonth: '월별', yearLabel: function (y) { return y + '년'; }, thisYear: '올해', trendTitleYear: '월별 추이', campScopeYear: '올해', ytdCaption: function (y, a, b) { return y + '년 누적 (' + a + '월~' + b + '월)'; }, ytdTip: '그 해 1월부터 지금까지(또는 그 달까지) 쌓인 숫자예요. 연간 보기에서는 그래프·표도 모두 이 기간 기준이에요.', kGospel: '복음을 들은 인원 (전체)', infoShort: '설명 보기', kGospelTip: '개인 전도로 복음을 들은 인원 + 캠프 참석 인원 + 월코 행사 참석 인원', kSalvTip: '개인 전도 + 캠프 + 월코 행사에서 예수님을 믿는다고 고백한 사람', kDedTip: '캠프와 월코 행사에서 삶을 예수님께 헌신한 사람', kReachTip: '월코 캠프의 캠퍼·스태프와 월코 행사에 참석한 인원', campAutoTip: '캠프가 완전히 끝난 다음 날부터 합계에 넣어요(시작 전·진행 중 캠프는 "종료 후 집계"로만 보여요). 잔금까지 마쳐 최종 확정된 캠퍼만 자동으로 세요. 구원은 "캠프 후 구원", 헌신은 "헌신" 체크 기준이에요. 스태프는 최종 확정된 스태프 신청을 자동으로 세고, 신청 시스템에 없는 도우미는 관리자가 "추가"로 더해요.', kSalv: '구원 고백 (전체)', kDed: '헌신 (전체)', kReach: '캠프·월코 행사 참석 인원',
       count: function (n, ind, team, all) { return n + '건 보고' + (all ? ' (개인 ' + ind + ' · 팀 ' + team + ')' : ''); }, countNone: '아직 이 달에 보고가 없어요.',
       tableTitle: '항목별 통계', trendTitle: '최근 6개월 추이', rowsTitle: '보고별 목록',
       rowsHelp: '마스터와 관리자에게만 보여요. 팀으로 낸 보고는 팀원이 따로 내지 않는 것을 전제로 합계에 그대로 더해요.',
@@ -33,7 +33,7 @@
       loading: 'Loading…', loginTitle: 'Portal login', loginHelp: 'Please sign in with your WOLKO portal account.', email: 'Email', password: 'Password', loginBtn: 'Sign in and continue', loginFail: 'Could not sign in.',
       subTitle: 'Submission status', subDone: function (a, b) { return a + ' of ' + b + ' have reported'; }, subMissing: 'Not reported yet', subNone: 'Everyone has reported 🎉', subExempt: 'Exempt', subFixed: 'Always exempt', subExemptOn: 'Exempt', subRestore: 'Add back', subExemptList: 'Accounts exempt from reporting', subSaved: 'Saved.', subTip: 'Counts approved portal accounts that submitted this month\'s report (individual or team). Accounts with nothing to report can be marked exempt — they are left out of the reminder mail and this list. On the last day of each month (after 9 AM) people who have not reported get a reminder email.', campScopeMonth: 'This month', campScopeAll: 'All camps incl. past', caMonth: 'Month', caTotal: 'Total', campAutoTitle: 'Camps (auto count)', campAutoEmpty: 'No camps counted automatically this month.', caCamp: 'Camp', caCampers: 'Confirmed campers', caStaff: 'Staff', caSalv: 'Salvations', caDed: 'Dedications', caPending: function (d) { return 'Counted after it ends · ' + d; }, caPendingTip: 'Camps are added to the totals the day after they have fully ended.', mdShort: function (iso) { var p = String(iso || '').split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(p[1]) - 1] + ' ' + Number(p[2]); }, caStaffSaved: 'Staff number saved.', caStaffSplit: function (a, b) { return 'registered ' + a + ' + extra' + (b ? ' ' + b : ''); }, campFormHint: 'WOLKO camps are counted automatically from registrations. Please only add other camps below.', churchStatTitle: 'Events by church', churchStatEmpty: 'No church events recorded this month.', cCol: 'Church', cEvents: 'Events', cStudents: 'Attended', cSalv: 'Salvations', cDed: 'Dedications', cEventCount: function (k) { return k + (k === 1 ? ' event' : ' events'); }, churchTitle: 'Church events (optional)', churchHint: 'Record events held at churches from the CRS to see statistics by church.', churchAdd: 'Add a church event', churchName: 'Church (pick from the CRS or type)', churchEvent: 'Event name (e.g. Winter outreach)', churchDate: 'Date', churchNote: 'Note (optional, visible to you and admins only)', churchStudents: 'Attended', churchSalv: 'Salvations', churchDed: 'Dedications', churchDel: 'Remove this event', churchTotal: function (a, b, c) { return 'Total · attended ' + a + ' · salvations ' + b + ' · dedications ' + c; }, churchApply: 'Put the totals into WOLKO events', churchApplied: 'Totals were put into the WOLKO event fields.', churchOnlyName: 'Please enter the church name.', minus: 'Decrease by 1', plus: 'Increase by 1', infoLabel: function (name) { return 'What is “' + name + '”?'; }, thisMonth: 'This month', write: 'Write my report', xlsx: 'Download Excel report', csv: 'Raw CSV',
       tabAll: 'Combined', tabMainland: 'Pyeongtaek', tabJeju: 'Jeju',
-      ytdCaption: function (y, a, b) { return y + ' year to date (' + a + '–' + b + ')'; }, ytdTip: 'Totals from January to the chosen month of that year. The charts and tables below show the chosen month.', kGospel: 'People who heard the Gospel (total)', infoShort: 'More info', kGospelTip: 'Heard through personal evangelism + camp attendance + WOLKO event attendance', kSalvTip: 'People who indicated they believed in Jesus through personal evangelism, camps and WOLKO events', kDedTip: 'People who dedicated their life to Jesus at camps and WOLKO events', kReachTip: 'Campers and staff at WOLKO camps plus attendees of WOLKO events', campAutoTip: 'Camps are added to the totals the day after they have fully ended (upcoming or running camps only show as "counted after it ends"). Only campers whose registration is fully paid and confirmed are counted. Salvations use "saved at camp", dedications use the "dedicated" check. Staff are counted from confirmed staff applications, and admins can add extra people who are not in the system.', kSalv: 'Salvations (total)', kDed: 'Dedications (total)', kReach: 'Camp & WOLKO event attendance',
+      viewYear: 'Yearly', viewMonth: 'Monthly', yearLabel: function (y) { return String(y); }, thisYear: 'This year', trendTitleYear: 'Month by month', campScopeYear: 'This year', ytdCaption: function (y, a, b) { return y + ' year to date (' + a + '–' + b + ')'; }, ytdTip: 'Totals from January of that year until now. In the yearly view the charts and tables use the same period.', kGospel: 'People who heard the Gospel (total)', infoShort: 'More info', kGospelTip: 'Heard through personal evangelism + camp attendance + WOLKO event attendance', kSalvTip: 'People who indicated they believed in Jesus through personal evangelism, camps and WOLKO events', kDedTip: 'People who dedicated their life to Jesus at camps and WOLKO events', kReachTip: 'Campers and staff at WOLKO camps plus attendees of WOLKO events', campAutoTip: 'Camps are added to the totals the day after they have fully ended (upcoming or running camps only show as "counted after it ends"). Only campers whose registration is fully paid and confirmed are counted. Salvations use "saved at camp", dedications use the "dedicated" check. Staff are counted from confirmed staff applications, and admins can add extra people who are not in the system.', kSalv: 'Salvations (total)', kDed: 'Dedications (total)', kReach: 'Camp & WOLKO event attendance',
       count: function (n, ind, team, all) { return n + ' report' + (n === 1 ? '' : 's') + (all ? ' (' + ind + ' individual · ' + team + ' team)' : ''); }, countNone: 'No reports for this month yet.',
       tableTitle: 'Statistics by item', trendTitle: 'Last 6 months', rowsTitle: 'Reports',
       rowsHelp: 'Visible to the master and admins only. Team reports are added to the totals as they are, assuming team members do not report separately.',
@@ -59,6 +59,8 @@
   var cache = {};           // 달 → 응답 (보고 쓸 때 다른 달의 내 보고를 찾기 위해)
   var tab = 'all';          // all | mainland | jeju
   var viewMonth = null;
+  var view = (function () { try { return localStorage.getItem('gsView') === 'month' ? 'month' : 'year'; } catch (e) { return 'year'; } })();   // 연간이 기본
+  var lastMonth = '';
   var editing = null;       // 고치는 중인 보고(없으면 새 보고)
 
   function headers(json) { var h = { Authorization: 'Bearer ' + (sessionStorage.getItem(TOKEN_KEY) || '') }; if (json) h['Content-Type'] = 'application/json'; return h; }
@@ -74,11 +76,29 @@
     return body;
   }
 
+  var CLIENT_TTL = 5 * 60 * 1000;
+  async function fetchYear(year) {
+    var hit = cache['y' + year];
+    if (hit && Date.now() - hit.at < CLIENT_TTL) return hit.body;       // 5분 안에 같은 해를 다시 열면 바로
+    var res = await fetch(API + '?view=year' + (year ? '&year=' + encodeURIComponent(year) : ''), { headers: headers() });
+    var body = await res.json().catch(function () { return {}; });
+    if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); var e = new Error(t('sessionEnd')); e.auth = true; throw e; }
+    if (!res.ok) throw new Error(body.error || t('denied'));
+    cache['y' + body.year] = { at: Date.now(), body: body };
+    if (!year) cache['y'] = { at: Date.now(), body: body };
+    return body;
+  }
+  /** 지금 보기의 기준(연간이면 해, 월별이면 달) — 저장·삭제 뒤 다시 불러올 때 쓴다 */
+  function viewKey() { return view === 'year' ? data.year : data.month; }
+  function clearCache() { Object.keys(cache).forEach(function (k) { delete cache[k]; }); }
+
   var qs = new URLSearchParams(location.search), initMonth = /^\d{4}-\d{2}$/.test(qs.get('month') || '') ? qs.get('month') : '', pendingWrite = qs.get('write') === '1';
+  if (initMonth) view = 'month';   // 메일의 보고 링크(?month=…)는 그 달 월별 보기로 연다
   async function load(month) {
     try {
-      data = await fetchMonth(month || (data && data.current) || '');
-      viewMonth = data.month;
+      data = view === 'year' ? await fetchYear(month) : await fetchMonth(month || (data && data.current) || '');
+      viewMonth = view === 'year' ? null : data.month;
+      if (view !== 'year') lastMonth = data.month;
       show('app');
       render();
       if (pendingWrite) { pendingWrite = false; openForm((data.mine && data.mine[0]) || null); }
@@ -102,13 +122,19 @@
     $('langKoBtn').classList.toggle('is-active', lang === 'ko');
     $('langEnBtn').classList.toggle('is-active', lang === 'en');
     if (!data) return;
-    $('monthLabel').textContent = t('monthLabel', data.month);
-    // 달 이름을 누르면 포탈 공용 달력이 열린다 — 아무 날짜나 고르면 그 날짜가 속한 달로 이동한다(허용 범위 밖이면 가장 가까운 달)
+    var yearly = view === 'year';
+    $('app').dataset.view = view;
+    document.querySelectorAll('[data-view]').forEach(function (b2) { if (b2.tagName === 'BUTTON') { b2.classList.toggle('is-active', b2.dataset.view === view); b2.setAttribute('aria-selected', b2.dataset.view === view); } });
+    $('monthLabel').textContent = yearly ? t('yearLabel', data.year) : t('monthLabel', data.month);
+    $('thisMonth').textContent = t(yearly ? 'thisYear' : 'thisMonth');
+    $('trendTitleEl').textContent = t(yearly ? 'trendTitleYear' : 'trendTitle');
+    // 이름을 누르면 포탈 공용 달력이 열린다 — 아무 날짜나 고르면 그 날짜가 속한 달(연간 보기에서는 해)로 이동한다(허용 범위 밖이면 가장 가까운 쪽)
     var pick = $('monthPick');
     pick.dataset.calYears = data.earliest.slice(0, 4) + ',' + data.current.slice(0, 4);
-    pick.value = data.month + '-' + (data.month === data.current ? String(new Date().getDate()).padStart(2, '0') : '01');
-    $('prevMonth').disabled = data.month <= data.earliest;
-    $('nextMonth').disabled = data.month >= data.current;
+    var shownMonth = yearly ? (data.year === data.current.slice(0, 4) ? data.current : data.year + '-12') : data.month;
+    pick.value = shownMonth + '-' + (shownMonth === data.current ? String(new Date().getDate()).padStart(2, '0') : '01');
+    $('prevMonth').disabled = yearly ? Number(data.year) <= Number(data.earliest.slice(0, 4)) : data.month <= data.earliest;
+    $('nextMonth').disabled = yearly ? Number(data.year) >= Number(data.current.slice(0, 4)) : data.month >= data.current;
     $('csvBtn').hidden = !data.me.canReview;
     $('xlsxBtn').hidden = !data.me.canReview;
     renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderRows(); renderMine();
@@ -153,10 +179,10 @@
   }
   function renderCampAuto() {
     var box = $('campAuto'); if (!box) return;
-    var all = campScope === 'all';
+    var all = campScope === 'all', yearly = view === 'year';
     var source = all ? (allCamps || []) : (data.campAuto || []);
     var camps = source.filter(function (c) { return tab === 'all' || c.location === tab; });
-    var chips = '<div class="gc-chips"><button type="button" class="gc-chip' + (all ? '' : ' is-active') + '" data-camp-scope="month">' + esc(t('campScopeMonth')) + '</button><button type="button" class="gc-chip' + (all ? ' is-active' : '') + '" data-camp-scope="all">' + esc(t('campScopeAll')) + '</button></div>';
+    var chips = '<div class="gc-chips"><button type="button" class="gc-chip' + (all ? '' : ' is-active') + '" data-camp-scope="month">' + esc(t(yearly ? 'campScopeYear' : 'campScopeMonth')) + '</button><button type="button" class="gc-chip' + (all ? ' is-active' : '') + '" data-camp-scope="all">' + esc(t('campScopeAll')) + '</button></div>';
     var note = '';
     if (all && allCamps === null) { box.innerHTML = chips + note + '<p class="gs-empty">' + esc(t('loading')) + '</p>'; return; }
     if (!camps.length) { box.innerHTML = chips + note + '<p class="gs-empty">' + esc(t('campAutoEmpty')) + '</p>'; return; }
@@ -172,9 +198,9 @@
           : '<div class="gs-staffcell"><b class="gs-staffnum">' + num(c.staff) + '</b>' + (extra ? split : '') + '</div>';
         var pending = c.counted === false;
         var badge = pending ? ' <span class="gs-pendbadge" title="' + esc(t('caPendingTip')) + '">' + esc(t('caPending', t('mdShort', c.endDate))) + '</span>' : '';
-        return '<tr' + (pending ? ' class="gs-pending"' : '') + '><td><strong>' + esc(lang === 'en' ? c.titleEn : c.titleKo) + '</strong> <span class="gs-pill ' + c.location + '">' + esc(c.location === 'jeju' ? t('tabJeju') : t('tabMainland')) + '</span>' + badge + '</td>' + (all ? '<td>' + esc(t('monthLabel', c.month || '')) + '</td>' : '') + '<td class="gs-total">' + (pending ? '–' : num(c.campers)) + '</td><td>' + (pending ? '–' : staff) + '</td><td>' + (pending ? '–' : num(c.salvations)) + '</td><td>' + (pending ? '–' : num(c.dedications)) + '</td></tr>';
+        return '<tr' + (pending ? ' class="gs-pending"' : '') + '><td><strong>' + esc(lang === 'en' ? c.titleEn : c.titleKo) + '</strong> <span class="gs-pill ' + c.location + '">' + esc(c.location === 'jeju' ? t('tabJeju') : t('tabMainland')) + '</span>' + badge + '</td>' + (all || yearly ? '<td>' + esc(t('monthLabel', c.month || '')) + '</td>' : '') + '<td class="gs-total">' + (pending ? '–' : num(c.campers)) + '</td><td>' + (pending ? '–' : staff) + '</td><td>' + (pending ? '–' : num(c.salvations)) + '</td><td>' + (pending ? '–' : num(c.dedications)) + '</td></tr>';
       }).join('')
-      + (counted.length > 1 ? '<tr class="gs-sumrow"><td><strong>' + esc(t('caTotal')) + '</strong></td>' + (all ? '<td></td>' : '') + '<td class="gs-total">' + num(sum.campers) + '</td><td>' + num(sum.staff) + '</td><td>' + num(sum.salv) + '</td><td>' + num(sum.ded) + '</td></tr>' : '')
+      + (counted.length > 1 ? '<tr class="gs-sumrow"><td><strong>' + esc(t('caTotal')) + '</strong></td>' + (all || yearly ? '<td></td>' : '') + '<td class="gs-total">' + num(sum.campers) + '</td><td>' + num(sum.staff) + '</td><td>' + num(sum.salv) + '</td><td>' + num(sum.ded) + '</td></tr>' : '')
       + '</tbody></table></div>';
   }
   function renderCharts() { renderSubmission(); renderCampAuto(); renderChurchStats(); if (window.GospelCharts && $('charts')) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); }
@@ -191,9 +217,8 @@
   function sumHeard(x) { return (x.evangelism || 0) + (x.campAttendance || 0) + (x.eeAttendance || 0); }
 
   function renderKpis() {
-    var ytd = data.ytd || { summary: data.summary, year: String(data.month || '').slice(0, 4), from: data.month, to: data.month };
-    var x = totals(ytd.summary, tab), c = data.summary.counts;
-    $('kpiCaption').innerHTML = esc(t('ytdCaption', ytd.year, Number(String(ytd.from).slice(5)), Number(String(ytd.to).slice(5)))) + infoKey('ytdTip');
+    var x = totals(data.summary, tab), c = data.summary.counts;
+    $('kpiCaption').innerHTML = view === 'year' ? esc(t('ytdCaption', data.year, Number(String(data.ytd.from).slice(5)), Number(String(data.ytd.to).slice(5)))) + infoKey('ytdTip') : esc(t('monthLabel', data.month));
     var kpis = [[t('kGospel'), sumHeard(x), 'kGospelTip'], [t('kSalv'), sumSalv(x), 'kSalvTip'], [t('kDed'), sumDed(x), 'kDedTip'], [t('kReach'), sumReach(x), 'kReachTip']];
     var box = $('kpis');
     if (box.dataset.lang !== lang || box.children.length !== kpis.length) {          // 처음이거나 언어가 바뀌면 카드를 새로 만든다
@@ -381,9 +406,9 @@
       if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); show('login'); return; }
       if (!res.ok) throw new Error(body.error || t('denied'));
       try { localStorage.setItem('gsLocation', placeEl.value); } catch (e) { /* 저장 못 해도 괜찮다 */ }
-      delete cache[month];
+      clearCache();
       $('formPanel').hidden = true;
-      await load(month);
+      await load(view === 'year' ? (data ? data.year : '') : month);
       say(body.updated ? t('savedUpdated') : t('saved'));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
@@ -395,6 +420,11 @@
 
   /* ───────── 이벤트 ───────── */
   function shift(delta) {
+    if (view === 'year') {
+      var y = Number(data.year) + delta;
+      if (y < Number(data.earliest.slice(0, 4)) || y > Number(data.current.slice(0, 4))) return;
+      load(String(y)); return;
+    }
     var p = data.month.split('-'), d = new Date(Date.UTC(Number(p[0]), Number(p[1]) - 1 + delta, 1));
     var next = d.toISOString().slice(0, 7);
     if (next < data.earliest || next > data.current) return;
@@ -404,13 +434,25 @@
   $('monthPick').addEventListener('change', function () {
     var picked = String($('monthPick').value || '').slice(0, 7);
     if (!/^\d{4}-\d{2}$/.test(picked)) return;
+    if (view === 'year') {
+      var yr = Math.min(Math.max(Number(picked.slice(0, 4)), Number(data.earliest.slice(0, 4))), Number(data.current.slice(0, 4)));
+      if (String(yr) !== data.year) load(String(yr));
+      return;
+    }
     if (picked < data.earliest) picked = data.earliest;
     if (picked > data.current) picked = data.current;
     if (picked !== data.month) load(picked);
   });
+  /* 연간 / 월별 보기 전환 — 선택은 이 브라우저에 기억한다 */
+  document.querySelector('.gs-viewtoggle').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-view]'); if (!b || b.dataset.view === view) return;
+    view = b.dataset.view;
+    try { localStorage.setItem('gsView', view); } catch (err) { /* 저장 못 해도 이 화면은 바뀐다 */ }
+    load(view === 'year' ? (data ? data.current.slice(0, 4) : '') : (lastMonth || ''));
+  });
   $('prevMonth').addEventListener('click', function () { shift(-1); });
   $('nextMonth').addEventListener('click', function () { shift(1); });
-  $('thisMonth').addEventListener('click', function () { load(data.current); });
+  $('thisMonth').addEventListener('click', function () { load(view === 'year' ? data.current.slice(0, 4) : data.current); });
   $('writeBtn').addEventListener('click', function () { openForm(null); });
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderRows(); });
   $('mine').addEventListener('click', async function (e) {
@@ -423,7 +465,7 @@
         var res = await fetch(API + '?month=' + encodeURIComponent(data.month) + '&id=' + encodeURIComponent(del.dataset.del), { method: 'DELETE', headers: headers() });
         var body = await res.json().catch(function () { return {}; });
         if (!res.ok) throw new Error(body.error || t('denied'));
-        delete cache[data.month]; await load(data.month);
+        clearCache(); await load(viewKey());
       } catch (error) { say(error.message); del.disabled = false; }
     }
   });
@@ -458,7 +500,7 @@
       var body = await res.json().catch(function () { return {}; });
       if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); show('login'); return; }
       if (!res.ok) throw new Error(body.error || t('denied'));
-      delete cache[data.month]; await load(data.month); say(t('subSaved'));
+      clearCache(); await load(viewKey()); say(t('subSaved'));
     } catch (error) { say(error.message); b.disabled = false; }
   });
   $('campAuto').addEventListener('click', async function (e) {
@@ -473,7 +515,7 @@
       if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); show('login'); return; }
       if (!res.ok) throw new Error(body.error || t('denied'));
       if (campScope === 'all') await loadAllCamps(true);
-      await load(data.month);
+      clearCache(); await load(viewKey());
       say(t('caStaffSaved'));
     } catch (error) { say(error.message); renderCampAuto(); }
   });

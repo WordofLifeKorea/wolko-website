@@ -4,7 +4,8 @@
  * 캠퍼 인원·구원·헌신은 신청 기록에서 자동으로 세고(functions/lib/gospelCamps.js), 스태프는 신청 기록에 없으니 이렇게 더한다.
  */
 import { portalSession } from '../../lib/hubAccounts.js';
-import { CAMP_ID_RE, MAX_STAFF, STAFF_KEY, loadSchedules, allCamps } from '../../lib/gospelCamps.js';
+import { CAMP_ID_RE, MAX_STAFF, STAFF_KEY, loadSchedules, allCamps, monthOfSchedule } from '../../lib/gospelCamps.js';
+import { AGG_KEY } from '../../lib/gospelStats.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
@@ -22,11 +23,14 @@ export async function onRequestPost({ env, request }) {
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
   const campId = String(body?.campId || '');
-  if (!CAMP_ID_RE.test(campId) || !(await loadSchedules(env, request)).some(s => s.id === campId)) return fail('캠프를 찾을 수 없습니다.', 404);
+  const schedule = CAMP_ID_RE.test(campId) ? (await loadSchedules(env, request)).find(s => s.id === campId) : null;
+  if (!schedule) return fail('캠프를 찾을 수 없습니다.', 404);
   const text = String(body?.staff ?? '').replace(/[,\s]/g, '');
   const staff = text === '' ? 0 : Number(text);
   if (!Number.isInteger(staff) || staff < 0 || staff > MAX_STAFF) return fail(`스태프 인원은 0~${MAX_STAFF} 사이의 정수로 입력해 주세요.`);
   if (staff === 0) await env.CAMP_KV.delete(STAFF_KEY(campId));
   else await env.CAMP_KV.put(STAFF_KEY(campId), JSON.stringify({ count: staff, by: session.email, at: new Date().toISOString() }));
+  const month = monthOfSchedule(schedule);
+  if (month) await env.CAMP_KV.delete(AGG_KEY(month));       // 그 캠프가 속한 달의 집계 저장값은 낡았으니 지운다
   return Response.json({ campId, staff }, { headers: H });
 }

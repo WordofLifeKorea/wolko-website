@@ -14,7 +14,7 @@ import { reporterRoster, missingReporters, submittedEmails } from '../../lib/gos
 import { portalSession } from '../../lib/hubAccounts.js';
 import {
   GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, shiftMonth, reportableMonth,
-  cleanValues, cleanChurchEntries, churchEvents, cleanText, unitId, reportKey, loadMonth, summarize, mergeSummaries, toCsv,
+  cleanValues, cleanChurchEntries, churchEvents, cleanText, unitId, reportKey, loadMonth, summarize, mergeSummaries, toCsv, AGG_KEY, AGG_VERSION, aggTtlSeconds,
 } from '../../lib/gospelStats.js';
 
 const H = { 'Cache-Control': 'no-store' };
@@ -29,11 +29,49 @@ async function submissionStatus(env, reports) {
   return { expected: expected.length, submitted: expected.filter(p => done.has(p.email)).length, missing: missing.map(({ email, name }) => ({ email, name })), exempt: roster.filter(p => p.exempt).map(({ email, name, fixed }) => ({ email, name, fixed })) };
 }
 
+/** 한 달의 집계(합계 + 끝난 캠프 + 교회 행사) — 저장해 둔 값이 있으면 그것을, 없으면 새로 계산해서 저장한다. fresh 면 저장값을 쓰지 않는다 */
+async function aggregateOf(env, request, month, current, { fresh = false, reports = null, camps = null } = {}) {
+  if (!fresh) {
+    const cached = await env.CAMP_KV.get(AGG_KEY(month), 'json');
+    if (cached && cached.v === AGG_VERSION) return cached;
+  }
+  const list = reports || await loadMonth(env, month);
+  const monthCampList = camps || await monthCamps(env, request, month);
+  const agg = { v: AGG_VERSION, month, summary: addCampsToSummary(summarize(list), monthCampList), camps: monthCampList, churchEvents: churchEvents(list), at: new Date().toISOString() };
+  await env.CAMP_KV.put(AGG_KEY(month), JSON.stringify(agg), { expirationTtl: aggTtlSeconds(month, current) });
+  return agg;
+}
+
+/** 연간 보기 — 한 해(1월~그 해의 마지막으로 보고 가능한 달)의 보고·끝난 캠프를 합친 집계. ?view=year[&year=YYYY] */
+async function yearView(env, request, session, url, current) {
+  const requested = url.searchParams.get('year');
+  const year = /^\d{4}$/.test(requested || '') ? requested : current.slice(0, 4);
+  if (Number(year) > Number(current.slice(0, 4))) return fail('아직 오지 않은 해예요.');
+  const last = year === current.slice(0, 4) ? Number(current.slice(5)) : 12;
+  const months = Array.from({ length: last }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
+  const fresh = url.searchParams.get('fresh') === '1';
+  const memo = await Promise.all(months.map(m => aggregateOf(env, request, m, current, { fresh })));
+  const summary = mergeSummaries(memo.map(x => x.summary));
+  const review = canReview(session);
+  return Response.json({
+    view: 'year', year, month: months[months.length - 1], current, earliest: shiftMonth(current, -MONTHS_BACK),
+    me: { email: session.email, name: displayName(session), role: session.role, canReview: review },
+    schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
+    summary, ytd: { year, from: months[0], to: months[months.length - 1], summary },
+    campAuto: memo.flatMap(x => x.camps.map(c => ({ ...c, month: x.month }))),
+    canEditStaff: review,
+    churchEvents: memo.flatMap(x => x.churchEvents.map(e => ({ ...e, month: x.month }))),
+    trend: memo.map(x => ({ month: x.month, ...x.summary })),
+    mine: [],
+  }, { headers: H });
+}
+
 export async function onRequestGet({ env, request }) {
   const session = await portalSession(request, env);
   if (!session) return fail('포탈 로그인이 필요합니다.', 401);
   const url = new URL(request.url);
   const current = currentMonthKst();
+  if (url.searchParams.get('view') === 'year') return yearView(env, request, session, url, current);
   const month = url.searchParams.get('month') || current;
   if (!MONTH_RE.test(month)) return fail('달 형식이 올바르지 않습니다. (예: 2026-10)');
   const reports = await loadMonth(env, month);
@@ -47,13 +85,10 @@ export async function onRequestGet({ env, request }) {
   const trendMonths = Array.from({ length: 6 }, (_, i) => shiftMonth(month, i - 5));
   const camps = await monthCamps(env, request, month);
   // 달마다 (보고 + 끝난 캠프) 합계를 한 번만 계산해서 6개월 추이와 연 누적이 함께 쓴다
-  const summaries = new Map([[month, addCampsToSummary(summarize(reports), camps)]]);
-  const summaryOf = async m => { if (!summaries.has(m)) summaries.set(m, addCampsToSummary(summarize(await loadMonth(env, m)), await monthCamps(env, request, m))); return summaries.get(m); };
+  const selected = await aggregateOf(env, request, month, current, { fresh: true, reports, camps });   // 고른 달은 늘 새 보고로 계산하고 저장값도 갱신
+  const summaries = new Map([[month, selected.summary]]);
+  const summaryOf = async m => { if (!summaries.has(m)) summaries.set(m, (await aggregateOf(env, request, m, current)).summary); return summaries.get(m); };
   const trend = await Promise.all(trendMonths.map(async m => ({ month: m, ...(await summaryOf(m)) })));
-  // 연 누적 — 고른 달이 속한 해의 1월부터 그 달까지
-  const year = month.slice(0, 4);
-  const ytdMonths = Array.from({ length: Number(month.slice(5)) }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
-  const ytd = { year, from: ytdMonths[0], to: month, summary: mergeSummaries(await Promise.all(ytdMonths.map(summaryOf))) };
 
   if (url.searchParams.get('format') === 'xlsx') {
     if (!canReview(session)) return fail('내려받을 권한이 없습니다.', 403);
@@ -67,7 +102,6 @@ export async function onRequestGet({ env, request }) {
     month, current, earliest: shiftMonth(current, -MONTHS_BACK),
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
     summary: summaries.get(month),
-    ytd,
     campAuto: camps,
     canEditStaff: review,
     churchEvents: churchEvents(reports),
@@ -106,6 +140,7 @@ export async function onRequestPost({ env, request }) {
     createdAt: previous?.createdAt || now, updatedAt: now,
   };
   await env.CAMP_KV.put(key, JSON.stringify(report));
+  await env.CAMP_KV.delete(AGG_KEY(month));          // 이 달 집계 저장값은 낡았으니 지운다
   return Response.json({ report, updated: !!previous }, { headers: H });
 }
 
@@ -121,5 +156,6 @@ export async function onRequestDelete({ env, request }) {
   if (!report) return fail('삭제할 보고를 찾을 수 없습니다.', 404);
   if (report.email !== session.email && session.role !== 'master') return fail('내 보고만 지울 수 있습니다.', 403);
   await env.CAMP_KV.delete(key);
+  await env.CAMP_KV.delete(AGG_KEY(month));
   return Response.json({ ok: true }, { headers: H });
 }
