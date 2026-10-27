@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=39">
+  <link rel="stylesheet" href="/hub.css?v=40">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
@@ -547,6 +547,9 @@
         + '</li>').join('') + '</ul>';
       return dashCard('hub-dcard-notice', '#f0a020', 'bell', t('dashNotices'), body + form);
     }
+    /** 카드 오른쪽 아래 작은 그림 — 김이 나는 냄비(키친 듀티), 바퀴가 구르는 차(차량 운행). CSS 애니메이션만 쓰고 움직임 줄이기 설정이면 멈춘다 */
+    const KITCHEN_DECO = '<span class="hub-deco hub-deco-pot" aria-hidden="true"><i></i><i></i><i></i><svg width="54" height="38" viewBox="0 0 54 38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="hub-pot-lid" d="M12 9h30M27 9V6"/><path d="M9 14h36v9a10 10 0 0 1-10 10H19A10 10 0 0 1 9 23z" fill="color-mix(in srgb, currentColor 14%, #fff)"/><path d="M4 17h5M45 17h5"/></svg></span>';
+    const CAR_DECO = '<span class="hub-deco hub-deco-car" aria-hidden="true"><i></i><i></i><svg width="54" height="38" viewBox="0 0 54 38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="hub-car-body"><path d="M5 25v-6a3 3 0 0 1 2.2-2.9l6.3-1.7 5-6.4A3 3 0 0 1 21 7h12a3 3 0 0 1 2.4 1.2L40 14l5 1.6A3 3 0 0 1 47 18.5V25a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="color-mix(in srgb, currentColor 14%, #fff)"/><path d="M17.5 14.5 21 10h11l3.5 4.5z"/><g transform="translate(15 27)"><g class="hub-wheel"><circle r="4.5" fill="#fff"/><path d="M0-2.5v5M-2.5 0h5"/></g></g><g transform="translate(38 27)"><g class="hub-wheel"><circle r="4.5" fill="#fff"/><path d="M0-2.5v5M-2.5 0h5"/></g></g></g></svg></span>';
     function renderKitchen(d) {
       let body;
       if (d.kitchen === null) body = dashEmpty('utensils', t('dashLoadFail'));
@@ -554,7 +557,7 @@
       else body = '<ul class="hub-meals">' + d.kitchen.map(m => '<li><span class="hub-meal hub-meal-' + m.meal + '">' + esc(t(m.meal === 'am' ? 'mealAm' : m.meal === 'lunch' ? 'mealLunch' : 'mealDinner')) + '</span><div class="hub-meal-rows">'
         + (m.prep.length ? '<div><em>' + esc(t('slotPrep')) + '</em>' + chips(m.prep) + '</div>' : '')
         + (m.clean.length ? '<div><em>' + esc(t('slotClean')) + '</em>' + chips(m.clean) + '</div>' : '') + '</div></li>').join('') + '</ul>';
-      return dashCard('hub-dcard-kitchen hub-dcard-compact', '#e8913a', 'utensils', t('dashKitchen'), body, '/portal/kitchen');
+      return dashCard('hub-dcard-kitchen hub-dcard-compact', '#e8913a', 'utensils', t('dashKitchen'), body + KITCHEN_DECO, '/portal/kitchen');
     }
     function renderCar(d) {
       let body;
@@ -565,7 +568,7 @@
           + (who ? '<span class="hub-chip hub-chip-strong">' + esc(who) + '</span>' : '<span class="hub-unset">' + esc(t('dashUnset')) + '</span>') + '</li>';
         body = '<ul class="hub-runs">' + row('up', t('carPickup'), d.car.pickup) + row('down', t('carDropoff'), d.car.dropoff) + '</ul>';
       }
-      return dashCard('hub-dcard-car hub-dcard-compact', '#c24fd6', 'car', t('dashCar'), body, '/portal/car-drive');
+      return dashCard('hub-dcard-car hub-dcard-compact', '#c24fd6', 'car', t('dashCar'), body + CAR_DECO, '/portal/car-drive');
     }
     function renderEvents(d) {
       let body;
