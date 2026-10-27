@@ -11,7 +11,7 @@
 
   function render(d) {
     var c = d.camp, t = d.type, st = d.stats, pct = st.total ? Math.round(st.completed / st.total * 100) : 0;
-    document.title = (c ? nm(c, 'nameKo', 'nameEn') : nm(t, 'nameKo', 'nameEn')) + ' — WOLKO Camp Team';
+    document.title = (c ? nm(c, 'nameKo', 'nameEn') : nm(t, 'nameKo', 'nameEn')) + ' — Camp & Outreach Team';
     $('spTitle').innerHTML = esc(c ? nm(c, 'nameKo', 'nameEn') : nm(t, 'nameKo', 'nameEn')) + (c && c.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '');
     $('spSub').innerHTML = c ? esc(nm(t, 'nameKo', 'nameEn')) + ' · ' + esc(c.startDate ? c.startDate + (c.endDate ? ' ~ ' + c.endDate : '') : CT.t('dateTbd')) + ' · <span class="status ' + esc(c.status) + '">' + esc(CT.t(c.status)) + '</span>' + (c.location ? ' · ' + esc(c.location) : '') + (c.theme ? '<br>' + esc(c.theme) : '') : esc(CT.t('typeAll')) + (t.description ? ' · ' + esc(t.description) : '');
     $('spActions').innerHTML = '<button type="button" class="btn" id="spEdit"' + (editing ? ' hidden' : '') + '>' + esc(CT.t('lyEdit')) + '</button><a class="btn" href="/portal/campteam/camps/">' + esc(CT.t('spBack')) + '</a>' + (c ? '<a class="btn" href="/portal/campteam/tasks/?' + q + '">' + esc(CT.t('spTasks')) + '</a>' : '') + (d.perms.moneyRead && c ? '<a class="btn" href="/portal/campteam/budget/?' + q + '">' + esc(CT.t('openBudget')) + '</a>' : '');

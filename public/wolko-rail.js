@@ -21,7 +21,7 @@
       icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
     { group: 'camp', href: '/portal/camp-resources', color: '#9bbf1f', label: '캠프 자료실', label_en: 'Camp Resources',
       icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>' },
-    { group: 'camp', href: '/portal/campteam', color: '#e8c53a', label: '캠프팀', label_en: 'Camp Team',
+    { group: 'camp', href: '/portal/campteam', color: '#e8c53a', label: '캠프 & 아웃리치 팀', label_en: 'Camp & Outreach Team',
       icon: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M8 12h8M8 16h5"/>' },
     { group: 'personal', href: '/portal/expense', color: '#f0a020', label: '경비 리포트', label_en: 'Expense Report',
       icon: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>' },
