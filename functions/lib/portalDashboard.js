@@ -9,7 +9,7 @@ import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 
 export const NOTICES_KEY = 'portal:notices';
 export const MAX_NOTICES = 60;
-const DASH_CHURCH_KEY = 'portal:dash-churches-v2';
+const DASH_CHURCH_KEY = 'portal:dash-churches-v3';
 const DASH_CHURCH_SECONDS = 300;
 const CRS_DATABASE = 'https://wolko-crs-default-rtdb.asia-southeast1.firebasedatabase.app';
 const DAY = 86400000;
@@ -71,14 +71,40 @@ export async function upcomingEvents(env, today, limit = 5) {
     .slice(0, limit);
 }
 
-/** CRS 교회 레코드 → 최근 업데이트 순 [{ name, updatedAt, lastVisitDate, visitor, location, pastor, steps }] (연락처·메모는 꺼내지 않는다) */
+const STEP_COUNT = 12;
+const STEPS_VERSION = 3;
+// CRS(src/pages/portal/crs/index.astro 의 DATA_MAPS)가 단계를 바꿀 때마다 옛 번호를 새 번호로 옮긴 표 — 아직 옮기지 않은 교회 기록도 같은 번호로 읽는다
+const STEP_MAPS = {
+  1: { 1: [2, 3], 2: [6], 3: [7], 4: [8], 5: [6], 6: [9], 7: [9], 8: [10], 9: [11], 10: [12] },
+  2: { 1: [1], 2: [2], 3: [3], 4: [9], 5: [10], 6: [4], 7: [5], 8: [6], 9: [7], 10: [8], 11: [11], 12: [12] },
+};
+const hasStep = v => Array.isArray(v) ? v.length > 0 : !!v;
+
+/** 교회 한 곳의 완료한 단계 번호(1~12, 오름차순) */
+export function doneSteps(church) {
+  let steps = church?.steps && typeof church.steps === 'object' ? church.steps : {};
+  const version = Number(church?.stepsVersion);
+  if (version !== STEPS_VERSION) {
+    for (let v = version === 2 ? 2 : 1; v < STEPS_VERSION; v++) {
+      const moved = {};
+      for (const [k, val] of Object.entries(steps)) if (hasStep(val)) for (const n of STEP_MAPS[v][Number(k)] || []) moved[n] = true;
+      steps = moved;
+    }
+  }
+  return Array.from({ length: STEP_COUNT }, (_, i) => i + 1).filter(n => hasStep(steps[n]));
+}
+
+/** CRS 교회 레코드 → 최근 업데이트 순 [{ name, updatedAt, lastVisitDate, visitor, pastor, steps, done[], next }] (연락처·메모는 꺼내지 않는다) */
 export function recentChurches(records, limit = 5) {
   return Object.values(records || {})
-    .map(c => ({
-      name: clean(c?.churchName, 80), updatedAt: Number(c?.updatedAt) || 0, lastVisitDate: clean(c?.lastVisitDate, 20),
-      visitor: clean(c?.lastVisitVisitor, 40), location: clean(c?.location || [c?.region, c?.district].filter(Boolean).join(' '), 60), pastor: clean(c?.pastorName, 40),
-      steps: Math.min(12, Object.values(c?.steps || {}).filter(Boolean).length),
-    }))
+    .map(c => {
+      const done = doneSteps(c);
+      return {
+        name: clean(c?.churchName, 80), updatedAt: Number(c?.updatedAt) || 0, lastVisitDate: clean(c?.lastVisitDate, 20),
+        visitor: clean(c?.lastVisitVisitor, 40), pastor: clean(c?.pastorName, 40),
+        steps: done.length, done, next: Array.from({ length: STEP_COUNT }, (_, i) => i + 1).find(n => !done.includes(n)) || null,
+      };
+    })
     .filter(c => c.name && c.updatedAt > 0)
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, limit);

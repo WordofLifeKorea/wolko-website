@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildDashboard, noticesForWeek, parseNoticeInput, recentChurches, kitchenToday, carToday } from '../functions/lib/portalDashboard.js';
+import { buildDashboard, noticesForWeek, parseNoticeInput, recentChurches, doneSteps, kitchenToday, carToday } from '../functions/lib/portalDashboard.js';
 import * as noticeApi from '../functions/api/portal/notices.js';
 import { createHubSessionToken, MASTER_EMAILS, ADMIN_EMAILS } from '../functions/lib/hubAccounts.js';
 
@@ -55,10 +55,18 @@ test('recent churches are sorted by update time and expose only name and dates',
     d: { updatedAt: 500 },
   });
   assert.deepEqual(out.map(c => c.name), ['New', 'Old']);
-  assert.deepEqual(Object.keys(out[0]).sort(), ['lastVisitDate', 'location', 'name', 'pastor', 'steps', 'updatedAt', 'visitor']);
+  assert.deepEqual(Object.keys(out[0]).sort(), ['done', 'lastVisitDate', 'name', 'next', 'pastor', 'steps', 'updatedAt', 'visitor']);
   assert.ok(!JSON.stringify(out).includes('x@y.z') && !JSON.stringify(out).includes('010-1'));
-  const detail = recentChurches({ z: { churchName: 'Z', updatedAt: 1, region: '경기', district: '평택', pastorName: '김 목사', lastVisitVisitor: 'Amy', steps: { 1: true, 2: true, 3: false, 5: 'x' } } })[0];
-  assert.deepEqual({ ...detail }, { name: 'Z', updatedAt: 1, lastVisitDate: '', visitor: 'Amy', location: '경기 평택', pastor: '김 목사', steps: 3 });
+  const detail = recentChurches({ z: { churchName: 'Z', updatedAt: 1, region: '경기', district: '평택', pastorName: '김 목사', lastVisitVisitor: 'Amy', stepsVersion: 3, steps: { 1: true, 2: [{ date: '2026-10-01' }], 3: false, 5: 'x', 6: [] } } })[0];
+  assert.deepEqual({ ...detail }, { name: 'Z', updatedAt: 1, lastVisitDate: '', visitor: 'Amy', pastor: '김 목사', steps: 3, done: [1, 2, 5], next: 3 });
+});
+
+test('church steps recorded in an older numbering are read with the current numbers', () => {
+  // v1(10단계): 1번(목사 만남·소개) → 지금 2·3번, 8번(선교사 설교) → 지금도 8번
+  assert.deepEqual(doneSteps({ steps: { 1: true, 8: true } }), [2, 3, 8]);
+  // v2(12단계, 옛 순서): 4번(God Ask) → 지금 9번
+  assert.deepEqual(doneSteps({ stepsVersion: 2, steps: { 4: true } }), [9]);
+  assert.equal(recentChurches({ a: { churchName: 'A', updatedAt: 1, stepsVersion: 3, steps: Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, true])) } })[0].next, null);
 });
 
 test('dashboard keeps working when optional sources are not connected', async () => {

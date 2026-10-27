@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=34">
+  <link rel="stylesheet" href="/hub.css?v=38">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
@@ -322,7 +322,7 @@
         dashKitchen: '오늘 키친 듀티', dashKitchenEmpty: '오늘 신청한 사람이 없어요.', mealAm: '아침', mealLunch: '점심', mealDinner: '저녁', slotPrep: '준비', slotClean: '클린업',
         dashCar: '오늘 차량 운행', dashCarEmpty: '오늘 운행 담당이 정해지지 않았어요.', carPickup: '픽업', carDropoff: '드롭오프',
         dashEvents: '다가오는 일정', dashEventsEmpty: '앞으로 2주 안에 등록된 일정이 없어요.', dashEventsOff: '캘린더가 아직 연결되지 않았어요.', allDay: '종일',
-        dashChurches: '최근 업데이트된 교회', dashChurchesEmpty: '최근 업데이트된 교회가 없어요.', dashChurchesOff: '교회 목록(CRS)이 아직 연결되지 않았어요.', churchUpdated: '업데이트', churchVisited: '방문', churchPastor: '담임', churchLocation: '지역', churchProgress: '진행', churchStepsOf: function (n) { return n + ' / 12 단계'; }, churchLastVisit: '마지막 방문', churchNoDetail: '아직 입력된 세부 정보가 없어요.',
+        dashChurches: '최근 업데이트된 교회', dashChurchesEmpty: '최근 업데이트된 교회가 없어요.', dashChurchesOff: '교회 목록(CRS)이 아직 연결되지 않았어요.', churchUpdated: '업데이트', churchVisited: '방문', churchPastor: '담임', churchPastorTitle: '담임목사', churchDone: '완료한 단계', churchNext: '다음 추천 단계', churchMore: function (n) { return '외 ' + n + '개 더'; }, churchAllDone: '12단계를 모두 마쳤어요', churchNoneYet: '아직 완료한 단계가 없어요', churchProgress: '진행', churchStepsOf: function (n) { return n + ' / 12 단계'; }, churchLastVisit: '마지막 방문', churchNoDetail: '아직 입력된 세부 정보가 없어요.',
         dashLoadFail: '불러오지 못했어요.', dashMore: '자세히 보기',
         dashTodayChip: '오늘', dashUnset: '미정', dashWeekOf: function (a, b) { return '이번 주 ' + a + ' – ' + b; }, relToday: '오늘', relYesterday: '어제', relDaysAgo: function (n) { return n + '일 전'; }, dashNoticeHint: '관리자가 이번 주에 꼭 필요한 소식을 여기에 올려요.',
         recentBadge: '최근 사용',
@@ -401,7 +401,7 @@
         dashKitchen: "Today's Kitchen Duty", dashKitchenEmpty: 'Nobody has signed up for today.', mealAm: 'Breakfast', mealLunch: 'Lunch', mealDinner: 'Dinner', slotPrep: 'Prep', slotClean: 'Clean-up',
         dashCar: "Today's Vehicle Runs", dashCarEmpty: 'No driver is set for today.', carPickup: 'Pick-up', carDropoff: 'Drop-off',
         dashEvents: 'Upcoming Events', dashEventsEmpty: 'No events in the next two weeks.', dashEventsOff: 'The calendar is not connected yet.', allDay: 'All day',
-        dashChurches: 'Recently Updated Churches', dashChurchesEmpty: 'No recently updated churches.', dashChurchesOff: 'The church list (CRS) is not connected yet.', churchUpdated: 'Updated', churchVisited: 'Visited', churchPastor: 'Pastor', churchLocation: 'Area', churchProgress: 'Progress', churchStepsOf: function (n) { return n + ' / 12 steps'; }, churchLastVisit: 'Last visit', churchNoDetail: 'No details entered yet.',
+        dashChurches: 'Recently Updated Churches', dashChurchesEmpty: 'No recently updated churches.', dashChurchesOff: 'The church list (CRS) is not connected yet.', churchUpdated: 'Updated', churchVisited: 'Visited', churchPastor: 'Pastor', churchPastorTitle: 'Senior Pastor', churchDone: 'Completed steps', churchNext: 'Recommended next step', churchMore: function (n) { return '+' + n + ' more'; }, churchAllDone: 'All 12 steps completed', churchNoneYet: 'No steps completed yet', churchProgress: 'Progress', churchStepsOf: function (n) { return n + ' / 12 steps'; }, churchLastVisit: 'Last visit', churchNoDetail: 'No details entered yet.',
         dashLoadFail: 'Could not load.', dashMore: 'View all',
         dashTodayChip: 'Today', dashUnset: 'Not set', dashWeekOf: function (a, b) { return 'This week ' + a + ' – ' + b; }, relToday: 'today', relYesterday: 'yesterday', relDaysAgo: function (n) { return n + ' days ago'; }, dashNoticeHint: 'Admins post what everyone needs to know this week.',
         recentBadge: 'Recent',
@@ -547,6 +547,9 @@
         + '</li>').join('') + '</ul>';
       return dashCard('hub-dcard-notice', '#f0a020', 'bell', t('dashNotices'), body + form);
     }
+    /** 키친 듀티 카드 장식 — 김이 모락모락 나는 냄비 / 차량 카드 장식 — 도로 위를 달리는 차 (CSS 애니메이션만, 움직임 줄이기 설정이면 멈춤) */
+    const KITCHEN_DECO = '<span class="hub-deco-pot" aria-hidden="true"><i></i><i></i><i></i><svg width="54" height="38" viewBox="0 0 54 38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="hub-pot-lid" d="M12 9h30M27 9V6"/><path d="M9 14h36v9a10 10 0 0 1-10 10H19A10 10 0 0 1 9 23z" fill="color-mix(in srgb, currentColor 14%, #fff)"/><path d="M4 17h5M45 17h5"/></svg></span>';
+    const CAR_DECO = '<div class="hub-road" aria-hidden="true"><span class="hub-road-car">' + svgi('car', 24) + '</span></div>';
     function renderKitchen(d) {
       let body;
       if (d.kitchen === null) body = dashEmpty('utensils', t('dashLoadFail'));
@@ -554,7 +557,7 @@
       else body = '<ul class="hub-meals">' + d.kitchen.map(m => '<li><span class="hub-meal hub-meal-' + m.meal + '">' + esc(t(m.meal === 'am' ? 'mealAm' : m.meal === 'lunch' ? 'mealLunch' : 'mealDinner')) + '</span><div class="hub-meal-rows">'
         + (m.prep.length ? '<div><em>' + esc(t('slotPrep')) + '</em>' + chips(m.prep) + '</div>' : '')
         + (m.clean.length ? '<div><em>' + esc(t('slotClean')) + '</em>' + chips(m.clean) + '</div>' : '') + '</div></li>').join('') + '</ul>';
-      return dashCard('hub-dcard-kitchen hub-dcard-compact', '#e8913a', 'utensils', t('dashKitchen'), body, '/portal/kitchen');
+      return dashCard('hub-dcard-kitchen hub-dcard-compact', '#e8913a', 'utensils', t('dashKitchen'), body + KITCHEN_DECO, '/portal/kitchen');
     }
     function renderCar(d) {
       let body;
@@ -565,7 +568,7 @@
           + (who ? '<span class="hub-chip hub-chip-strong">' + esc(who) + '</span>' : '<span class="hub-unset">' + esc(t('dashUnset')) + '</span>') + '</li>';
         body = '<ul class="hub-runs">' + row('up', t('carPickup'), d.car.pickup) + row('down', t('carDropoff'), d.car.dropoff) + '</ul>';
       }
-      return dashCard('hub-dcard-car hub-dcard-compact', '#c24fd6', 'car', t('dashCar'), body, '/portal/car-drive');
+      return dashCard('hub-dcard-car hub-dcard-compact', '#c24fd6', 'car', t('dashCar'), body + CAR_DECO, '/portal/car-drive');
     }
     function renderEvents(d) {
       let body;
@@ -580,17 +583,33 @@
       }).join('') + '</ul>';
       return dashCard('hub-dcard-events', '#3b8ff0', 'calendar', t('dashEvents'), body, '/portal/schedule');
     }
-    /** 마우스를 올리거나 키보드로 들어가면 보이는 교회 세부 카드 */
+    /** CRS 12단계 이름 — src/pages/portal/crs/index.astro 의 STEPS / STEPS_KO 와 같은 순서 (카드에서 보기 좋게 줄였다) */
+    const CRS_STEPS = {
+      ko: ['목사님께 전화 또는 대화', '목사님 방문', '사역 소개 프레젠테이션', '복음 대화 훈련', '청소년 캠프 · 이벤트 참여', '리더 훈련 (Core Training)', '교회의 WOLKO 커리큘럼 사용', '선교사 교회 예배 설교', '후원 요청(God Ask) 프레젠테이션', '선물 전달 · 감사 표현', '교회의 WOLKO 후원', '타 교회에 WOLKO 소개'],
+      en: ['Called or talked to pastor', 'Visited pastor', 'Ministry presentation', 'Gospel Conversation Training', 'Youth at camp or event', 'Core Training', 'Uses WOLKO curriculum', 'Missionary speaks at service', '\u201cGod Ask\u201d presentation', 'Gift / thank you', 'Church supports WOLKO', 'Introduces WOLKO to other churches'],
+    };
+    /** 마우스를 올리거나 키보드로 들어가면 보이는 교회 세부 카드 — 담임목사, 완료한 단계, 다음 추천 단계 */
     function churchPop(c, today) {
-      const pct = Math.round((c.steps || 0) / 12 * 100);
+      const names = CRS_STEPS[hubLang] || CRS_STEPS.ko;
+      const done = c.done || [];
+      const stepRow = n => '<li><span class="hub-pop-n">' + n + '</span><span>' + esc(names[n - 1] || '') + '</span></li>';
+      const track = '<ol class="hub-pop-track" aria-hidden="true">' + names.map((_, i) => '<li style="--i:' + i + '" class="' + (done.includes(i + 1) ? 'is-done' : i + 1 === c.next ? 'is-next' : '') + '">' + (i + 1) + '</li>').join('') + '</ol>';
+      const recent = done.slice(-4).reverse();
+      const doneHtml = done.length
+        ? '<ul class="hub-pop-steps">' + recent.map(stepRow).join('') + (done.length > recent.length ? '<li class="hub-pop-more">' + esc(t('churchMore', done.length - recent.length)) + '</li>' : '') + '</ul>'
+        : '<p class="hub-pop-none">' + esc(t('churchNoneYet')) + '</p>';
+      const nextHtml = c.next
+        ? '<ul class="hub-pop-steps hub-pop-next">' + stepRow(c.next) + '</ul>'
+        : '<p class="hub-pop-none">' + esc(t('churchAllDone')) + '</p>';
+      const pastor = c.pastor ? '<span class="hub-pop-pastor">' + esc(/목사|pastor/i.test(c.pastor) ? c.pastor : c.pastor + ' (' + t('churchPastorTitle') + ')') + '</span>' : '';
       const rows = [
-        c.pastor ? [t('churchPastor'), esc(c.pastor)] : null,
-        c.location ? [t('churchLocation'), esc(c.location)] : null,
         c.lastVisitDate ? [t('churchLastVisit'), esc(c.lastVisitDate) + (c.visitor ? ' · ' + esc(c.visitor) : '')] : null,
         [t('churchUpdated'), esc(kstParts(c.updatedAt).ymd) + ' (' + esc(relDay(c.updatedAt, today)) + ')'],
       ].filter(Boolean);
-      return '<div class="hub-church-pop" role="tooltip"><b>' + esc(c.name) + '</b>'
-        + '<div class="hub-pop-progress"><span>' + esc(t('churchProgress')) + ' · ' + esc(t('churchStepsOf', c.steps || 0)) + '</span><i><em style="width:' + pct + '%"></em></i></div>'
+      return '<div class="hub-church-pop" role="tooltip"><div class="hub-pop-head"><b>' + esc(c.name) + '</b>' + (pastor ? '<span class="hub-pop-sep">|</span>' + pastor : '') + '</div>'
+        + '<p class="hub-pop-label">' + esc(t('churchProgress')) + ' · ' + esc(t('churchStepsOf', done.length)) + '</p>' + track
+        + '<p class="hub-pop-label">' + esc(t('churchDone')) + '</p>' + doneHtml
+        + '<p class="hub-pop-label hub-pop-label-next">' + esc(t('churchNext')) + '</p>' + nextHtml
         + '<dl>' + rows.map(r => '<div><dt>' + esc(r[0]) + '</dt><dd>' + r[1] + '</dd></div>').join('') + '</dl></div>';
     }
     function renderChurches(d) {
