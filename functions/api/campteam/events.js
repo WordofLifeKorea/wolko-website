@@ -75,7 +75,8 @@ export async function onRequestPatch(context) {
   return json({ ok: true });
 }
 
-export async function onRequestDelete({ env, request }) {
+export async function onRequestDelete(context) {
+  const { env, request } = context;
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
@@ -84,5 +85,6 @@ export async function onRequestDelete({ env, request }) {
   const res = await env.DB.prepare('UPDATE events SET deletedAt = ?2, updatedAt = ?2 WHERE id = ?1 AND deletedAt IS NULL').bind(id, nowIso()).run();
   if (!res.meta?.changes) return json({ error: '찾을 수 없습니다.' }, 404);
   await audit(env, s.email, 'delete', 'event', id);
+  later(context, autoSync(env, s.email)); // 구글 달력에서도 지운다(자동 반영이 켜져 있을 때)
   return json({ ok: true });
 }

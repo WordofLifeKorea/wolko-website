@@ -77,3 +77,19 @@ test('캠프 연도·시즌: 저장되고 목록에 나오며, 잘못된 연도�
   assert.equal((await call('camps', Camps, 'onRequestPatch', env, U.mem, { method: 'PATCH', qs: `?kind=camp&id=${id}`, body: { year: '' } })).status, 200);
   assert.equal((await get('camps', Camps, env)).types.flatMap(t => t.camps).find(x => x.id === id).year, null, '연도는 비워 둘 수 있다');
 });
+
+test('담당자 칸: 공동 담당("A / B")은 목록에서 사람·팀 이름으로 풀리고, 한 사람으로 걸러도 공동 업무가 같이 나온다', async () => {
+  const env = mk();
+  await mkTask(env, { title: '혼자', ownerName: 'Mina' });
+  await mkTask(env, { title: '둘이', ownerName: 'Joon / Mina' });
+  await mkTask(env, { title: '괄호', ownerName: 'Mina (communication) / Alex (scheduling)' });
+  await mkTask(env, { title: '팀', ownerName: 'All Together' });
+  await mkTask(env, { title: '다른 사람', ownerName: 'Joon' });
+  const all = await get('tasks', Tasks, env);
+  assert.deepEqual(all.owners, ['Alex', 'All Together', 'Joon', 'Mina'], '목록에는 조합 이름이 없고 각자 한 번씩');
+  const titles = async (o) => (await get('tasks', Tasks, env, `?owner=${encodeURIComponent(o)}`)).items.map(x => x.title).sort();
+  assert.deepEqual(await titles('Mina'), ['괄호', '둘이', '혼자'].sort());
+  assert.deepEqual(await titles('Alex'), ['괄호']);
+  assert.deepEqual(await titles('mina'), ['괄호', '둘이', '혼자'].sort(), '대소문자는 구분하지 않는다');
+  assert.deepEqual(await titles('All Together'), ['팀']);
+});

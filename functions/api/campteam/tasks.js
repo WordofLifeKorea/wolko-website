@@ -1,4 +1,4 @@
-import { resolveOwnerEmail } from '../../lib/campteamOwners.js';
+import { resolveOwnerEmail, ownerTokens, ownerPieces } from '../../lib/campteamOwners.js';
 import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, isDate, todayKST, audit, TASK_STATUSES, TASK_PRIORITIES } from '../../lib/campteamDb.js';
 
@@ -11,7 +11,7 @@ const SORTS = {
   newest: `k.createdAt DESC`, title: `k.title COLLATE NOCASE`,
 };
 
-/** 목록·필터: ?campId= (none=캠프 없음) &status= &priority= &owner= &flag=open|overdue|noowner|nodue|inactive &q= &sort=due|priority|newest|title */
+/** 목록·필터: ?campId= (none=캠프 없음) &status= &priority= &owner=(사람·팀 이름 한 개 — "Mina / Joon" 같은 공동 담당 업무도 각자 이름으로 걸러진다) &flag=open|overdue|noowner|nodue|inactive &q= &sort=due|priority|newest|title */
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
@@ -24,8 +24,7 @@ export async function onRequestGet({ env, request }) {
   if (p.get('id')) { where.push('k.id = ?'); args.push(String(p.get('id'))); }
   if (TASK_STATUSES.includes(p.get('status'))) { where.push('k.status = ?'); args.push(p.get('status')); }
   if (TASK_PRIORITIES.includes(p.get('priority'))) { where.push('k.priority = ?'); args.push(p.get('priority')); }
-  const owner = text(p.get('owner'), 60);
-  if (owner) { where.push('k.ownerName = ?'); args.push(owner); }
+  const owner = text(p.get('owner'), 60), ownerKey = owner.toLowerCase();
   const flag = p.get('flag');
   // 비활성 업무는 "전체"와 "비활성" 목록에서만 보이고, 진행 중·마감 지남 등 집계에서는 빠진다
   if (flag === 'inactive') where.push('k.inactive = 1');
@@ -35,7 +34,8 @@ export async function onRequestGet({ env, request }) {
   else if (flag === 'nodue') where.push(`k.inactive = 0 AND k.status NOT IN ${CLOSED} AND k.dueDate IS NULL`);
   const q = text(p.get('q'), 80);
   if (q) { const like = `%${q.replace(/[%_\\]/g, m => '\\' + m)}%`; where.push(`(k.title LIKE ? ESCAPE '\\' OR k.ownerName LIKE ? ESCAPE '\\' OR k.notes LIKE ? ESCAPE '\\')`); args.push(like, like, like); }
-  const rows = (await env.DB.prepare(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${SORTS[p.get('sort')] || SORTS.due} LIMIT 500`).bind(...args).all()).results;
+  let rows = (await env.DB.prepare(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${SORTS[p.get('sort')] || SORTS.due} LIMIT ${owner ? 5000 : 500}`).bind(...args).all()).results;
+  if (owner) rows = rows.filter(r => ownerTokens(r.ownerName).includes(ownerKey)).slice(0, 500);
   const counts = await env.DB.prepare(`SELECT
       SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} THEN 1 ELSE 0 END) AS open,
       SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} AND dueDate IS NOT NULL AND dueDate < ?1 THEN 1 ELSE 0 END) AS overdue,
@@ -43,7 +43,10 @@ export async function onRequestGet({ env, request }) {
       SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} AND dueDate IS NULL THEN 1 ELSE 0 END) AS noDue,
       SUM(CASE WHEN inactive = 1 THEN 1 ELSE 0 END) AS inactive
     FROM tasks WHERE deletedAt IS NULL`).bind(today).first();
-  const owners = (await env.DB.prepare(`SELECT DISTINCT ownerName FROM tasks WHERE deletedAt IS NULL AND TRIM(ownerName) <> '' ORDER BY ownerName`).all()).results.map(r => r.ownerName);
+  // 담당자 목록: 공동 담당("A / B")은 풀어서 사람·팀 이름만 한 번씩
+  const ownerSet = new Map();
+  for (const r of (await env.DB.prepare(`SELECT DISTINCT ownerName FROM tasks WHERE deletedAt IS NULL AND TRIM(ownerName) <> ''`).all()).results) for (const n of ownerPieces(r.ownerName)) if (!ownerSet.has(n.toLowerCase())) ownerSet.set(n.toLowerCase(), n);
+  const owners = [...ownerSet.values()].sort((a, b) => a.localeCompare(b));
   return json({ items: rows, today, owners, counts: { open: counts.open || 0, overdue: counts.overdue || 0, noOwner: counts.noOwner || 0, noDue: counts.noDue || 0, inactive: counts.inactive || 0 }, perms: s.perms });
 }
 
