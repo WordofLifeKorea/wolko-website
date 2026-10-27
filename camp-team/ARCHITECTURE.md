@@ -12,7 +12,7 @@
 
 ```
 사용자 브라우저
-   │  (화면)  src/pages/campteam/*.astro  +  public/campteam/*.js·css
+   │  (화면)  src/pages/campteam/*.astro  +  public/portal/campteam/*.js·css
    │  (데이터) /api/campteam/*   ← functions/api/campteam/*.js  (Cloudflare Pages Functions)
    ▼
  새 D1 데이터베이스 (바인딩 이름 DB)      ← 캠프팀 데이터 전부
@@ -52,7 +52,7 @@ functions/api/campteam/*.js   API (화면이 부르는 서버 주소) 40여 개
 src/layouts/CampTeamLayout.astro   캠프팀 공통 틀(왼쪽 메뉴·로그인 안내·한/영 전환)
 src/pages/campteam/*.astro    캠프팀 화면 (홈, 캠프, 업무, 회의, 자료, 검색, 예산, TV 편집, 휴지통, 설정, 캠프 공간)
 src/pages/tv.astro            사무실 TV 화면
-public/campteam/*.js·css      화면 동작(자바스크립트)과 모양(CSS)
+public/portal/campteam/*.js·css      화면 동작(자바스크립트)과 모양(CSS)
 tests/campteam-*.test.mjs     자동 테스트 178개
 ```
 
@@ -60,12 +60,12 @@ tests/campteam-*.test.mjs     자동 테스트 178개
 
 | 요청 | 화면 | 핵심 파일 |
 |---|---|---|
-| 캠프팀 홈 (진행 업무·마감 지남·담당 미정·다가오는 일정·최근 결정·공지) | `/campteam/` | `api/campteam/home.js`, `public/campteam/home.js` |
-| **홈 대시보드 꾸미기**: 12칸 격자 위에 위젯을 자유 배치(끌기·모서리 크기 조절·전체/반쪽 버튼·눈 아이콘 숨김·빼기), **위젯 추가**(공지·바로가기·내 담당 업무·캠프팀 달력(달력/목록 선택)·이번 주 일정·마감 지난 업무·최근 결정·업무 상태별 현황·캠프 D-day(여러 개)·**최근 변경 기록(캠프팀 팀원 전체)**)와 "빈틈 정리". 끌 때 화면 가장자리에서 자동 스크롤, 휠로 스크롤해도 위젯이 따라옴. 겹치면 원래 자리로 돌아감. 관리자는 "모두의 기본 홈", 각자는 "내 홈"(개인 설정이 우선) | 홈의 "홈 꾸미기" (넓은 화면) | `api/campteam/home-layout.js`, `campteamHomeLayout.js`, `public/campteam/home.js`, 표 `home_layout` |
+| 캠프팀 홈 (진행 업무·마감 지남·담당 미정·다가오는 일정·최근 결정·공지) | `/campteam/` | `api/campteam/home.js`, `public/portal/campteam/home.js` |
+| **홈 대시보드 꾸미기**: 12칸 격자 위에 위젯을 자유 배치(끌기·모서리 크기 조절·전체/반쪽 버튼·눈 아이콘 숨김·빼기), **위젯 추가**(공지·바로가기·내 담당 업무·캠프팀 달력(달력/목록 선택)·이번 주 일정·마감 지난 업무·최근 결정·업무 상태별 현황·캠프 D-day(여러 개)·**최근 변경 기록(캠프팀 팀원 전체)**)와 "빈틈 정리". 끌 때 화면 가장자리에서 자동 스크롤, 휠로 스크롤해도 위젯이 따라옴. 겹치면 원래 자리로 돌아감. 관리자는 "모두의 기본 홈", 각자는 "내 홈"(개인 설정이 우선) | 홈의 "홈 꾸미기" (넓은 화면) | `api/campteam/home-layout.js`, `campteamHomeLayout.js`, `public/portal/campteam/home.js`, 표 `home_layout` |
 | **넓은 화면 대응**: 본문이 화면 폭을 끝까지 채움(21:9 등). **폰(900px 이하)**은 위젯이 한 줄로 쌓이고, 홈 꾸미기는 ▲▼ 화살표·눈·빼기·위젯 추가로 함(폰 순서는 따로 저장되어 넓은 화면 배치는 그대로) | 모든 화면 | `campteam.css`, 배치의 `m` |
 | **팀 활동 피드**: 팀원이 "방금 올린 파일 확인해줘"처럼 소통하도록, 누가 무엇을 올리고 바꿨는지 제목과 함께 보여줌(명단·TV 열쇠·홈 배치 같은 관리 기록은 제외, 금액 자료는 금액 권한자만). 홈 "최근 올린 파일"에도 누가·몇 분 전인지 표시 | 홈 위젯 | `api/campteam/activity.js` |
 | **캠프 자료실 탭**: 기존 포털 캠프 자료실을 수정 없이 그대로 불러옴. 캠프팀에서 들어오면 위에 "← 캠프팀으로 돌아가기" 막대 | `/campteam/resources/` | `src/pages/campteam/resources.astro` |
-| **팝업 공통 동작**: 모든 팝업에 ✕, 바깥 배경·Esc로 닫기, 고친 내용이 있으면 "저장하고 닫기/저장 안 하고 닫기/계속 편집" 확인 | 모든 화면 | `public/campteam/campteam.js` (한 곳) |
+| **팝업 공통 동작**: 모든 팝업에 ✕, 바깥 배경·Esc로 닫기, 고친 내용이 있으면 "저장하고 닫기/저장 안 하고 닫기/계속 편집" 확인 | 모든 화면 | `public/portal/campteam/campteam.js` (한 곳) |
 | **포털과 같은 왼쪽 메뉴**(짙은 청록 바탕·색 아이콘 칸·구역 제목)와 메뉴별 선 아이콘(포털과 같은 SVG) | 모든 화면 | `CampTeamLayout.astro`, `campteam.css` |
 | 캠프 유형(Winter 등) / 개별 행사 + 캠프별 공간 | `/campteam/camps/`, `/campteam/space/` | `camps.js`, `camp-space.js` |
 | **알림공지**: 내 알림(업무·회의·일정은 열 때 계산, 단계가 바뀌면 다시 알림), 팀 공지(전체/선택, 휴지통 복구), 홈 「오늘 내가 할 일」, AI 한두 줄 요약(없어도 목록 정상), 종 아이콘+슬라이드 패널 | 홈 상단, 메뉴 `알림공지`, `/campteam/alerts/` | `alerts.js`(API), `campteamAlerts.js`, `alerts.js`·`alerts-page.js` |
@@ -88,7 +88,7 @@ tests/campteam-*.test.mjs     자동 테스트 178개
 | **경비 리포트 연동**: 송금 완료된 경비 중 "캠프 계좌"에서 나간 항목이 자동으로 지출로 들어옴(카테고리→장부 항목 규칙), 중복 의심·기간 없음은 「연동함」에서 사람이 확인 | 「경비 연동」 탭 | `ledger-expense.js`, `campteamExpenseLink.js`, `finance-extra.js` |
 | **잔액 대조**: 월코 재정에게 받은 통장 실제 잔액을 적으면 그 날짜까지의 장부 잔액과 비교해 차이를 기록 | 「잔액 대조」 탭 | `ledger-reconcile.js` |
 | **예산 계산기**: 줄마다 「단가 × 인원 × 일수/숙박 수 × 하루 횟수」 계산식을 그대로 보여 주고(캠프비 인원 합계 = 캠퍼 수 확인), 예상 남는 금액, 필요한 평균 캠프비·손익분기, 안 저장·비교, 「기간 예산에 적용」 (예전 저장 형식은 자동 변환) | 「계산기」 탭 | `calc-core.js`, `ledger-calc.js`, `finance-calc.js` |
-| TV 대시보드: 위젯 끌어서 배치, 여러 화면 슬라이드, 자동 새로고침, 금액 없음 | `/tv/?t=…`, 편집 `/campteam/tv/` | `tv-data.js`, `tv-config.js`, `campteamTv.js`, `public/campteam/tv*.js` |
+| TV 대시보드: 위젯 끌어서 배치, 여러 화면 슬라이드, 자동 새로고침, 금액 없음 | `/tv/?t=…`, 편집 `/campteam/tv/` | `tv-data.js`, `tv-config.js`, `campteamTv.js`, `public/portal/campteam/tv*.js` |
 | 신청 인원 위젯(읽기 전용 숫자) | TV·홈 | `campteamRegistrations.js` |
 | Google Sheets 미러링(꺼짐 기본) | 설정 | `sheets-sync.js`, `campteamSheets.js` |
 | Google Calendar 미러링(꺼짐 기본) | 설정 | `calendar-sync.js` |
@@ -161,7 +161,7 @@ D1 표 33개(대부분 행에 고유 번호·만든 사람·삭제 표시. `home
 
 ## 6. 코드 읽는 법 (초보자용)
 
-- **화면**은 `.astro` 파일(뼈대) + `public/campteam/*.js`(동작). 글자는 `data-t="키"`로 표시하고 한/영 사전(`CT.addDict`)에서 가져옵니다.
+- **화면**은 `.astro` 파일(뼈대) + `public/portal/campteam/*.js`(동작). 글자는 `data-t="키"`로 표시하고 한/영 사전(`CT.addDict`)에서 가져옵니다.
 - **API 파일 하나 = 주소 하나.** `functions/api/campteam/tasks.js` 는 `/api/campteam/tasks`. 안의 `onRequestGet/Post/Patch/Delete`가 요청 종류별 처리입니다.
 - 모든 API는 맨 앞에서 `campSession()`으로 "누구인지·무슨 권한인지" 확인하고, 권한이 없으면 바로 돌려보냅니다.
 - 공통 부품: `CT.api`(서버 부르기), `CT.ask`(입력 창), `CT.money`(금액 표시).
