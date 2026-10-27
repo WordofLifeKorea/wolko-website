@@ -133,7 +133,10 @@
     list.addEventListener('dragstart', function (e) { e.preventDefault(); });
   }
 
-  async function load() { data = await CT.api('/api/campteam/camps'); canWrite = !!(data.perms.areas && data.perms.areas.camps === 'edit'); try { ORD = await CT.api('/api/campteam/camp-order'); } catch (e) { /* 순서를 못 읽어도 원래 순서로 보여 준다 */ } render(); }
+  async function load() {
+    var r = await Promise.all([CT.api('/api/campteam/camps'), CT.api('/api/campteam/camp-order').catch(function () { return null; })]); // 순서를 못 읽어도 원래 순서로 보여 준다
+    data = r[0]; canWrite = !!(data.perms.areas && data.perms.areas.camps === 'edit'); if (r[1]) ORD = r[1]; render();
+  }
   function findCamp(id) { for (var i = 0; i < data.types.length; i++) { var c = data.types[i].camps.filter(function (x) { return x.id === id; })[0]; if (c) return c; } }
 
   function openForm(kind, row, preset) {
@@ -169,6 +172,7 @@
     } catch (e) { $('dlgErr').textContent = e.message; $('dlgErr').hidden = false; }
   }
 
+  CT.pre('/api/campteam/camps'); CT.pre('/api/campteam/camp-order');
   CT.boot(async function () {
     try { await load(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     CT.applyI18n();

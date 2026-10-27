@@ -84,6 +84,8 @@
     $('calBody').innerHTML = h + '</div>'; $('dayList').innerHTML = dayListHtml(map);
   }
 
+  // 달력 데이터도 로그인 확인과 동시에 요청한다 (이번 달 6주 범위, loadCal 과 같은 주소)
+  (function () { var m = monthStart(), first = new Date(m.getFullYear(), m.getMonth(), 1 - m.getDay()), last = new Date(first.getFullYear(), first.getMonth(), first.getDate() + 41); CT.pre('/api/campteam/camps'); CT.pre('/api/campteam/calendar?from=' + ymd(first) + '&to=' + ymd(last)); })();
   CT.boot(async function () {
     try { S.types = (await CT.api('/api/campteam/camps')).types; } catch (e) { $('calErr').hidden = false; $('calErr').textContent = e.message; return; }
     CT.applyI18n(); S.sel = todayStr(); await loadCal();

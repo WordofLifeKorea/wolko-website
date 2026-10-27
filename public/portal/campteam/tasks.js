@@ -25,10 +25,12 @@
       addTpl: '+ Template', impTplBtn: 'Import checklist by pasting', impTplTitle: 'Import checklist', impTplHelp: 'Copy the checklist table from Word or Excel and paste it here. Sections, priorities (1 Required · 2 Important · 3 General) and owners are organized automatically. Owners are only suggestions and due dates stay empty.', suggestOff: 'Set provisional due offsets from section names (you can edit them later)', provisional: 'provisional', itemSection: 'Section', previewBtn: 'Preview', impTplDone: 'Template created', sections: 'Sections', withOwner: 'With owner suggestion', withOffset: 'With provisional offset', tplItems: 'Items', tplOffset: 'Offset', tplOffsetHelp: 'Relative to camp start (e.g. -30 = 30 days before)', tplOwner: 'Suggested owner', tplNone: '(none · created without due date)', addItem: '+ Item', applyTo: 'Apply to camp', tplName: 'Template name', tplNameEn: 'Name (English)', tplDesc: 'Description', itemTitle: 'Item name', itemOffset: 'Offset (days before/after camp start, optional)', itemOwner: 'Suggested owner', chooseCamp: 'Camp to apply to', preview: 'Preview', applyNow: 'Apply as shown', willCreate: 'Tasks to be created', skipExists: 'Already exists — skipped', campNoDate: 'This camp has no start date, so tasks are created without due dates.', confirmOwner: 'Confirm suggested owner', done: 'Applied',
       impTitle: 'One-time import of tasks from the existing Google Sheet', impHelp: 'In the sheet, select all task cells (including the header row), copy, and paste below. (Content of a downloaded .csv also works.) Owners and due dates are imported exactly as written; tasks that already exist in the same camp are skipped. Nothing connects to Google.', impPreview: 'Preview', impRun: 'Import as shown', impSummary: ' rows', impCreate: 'to create', impSkip: 'skipped (already exist)', impUnmatched: 'Camps that could not be matched', impWarn: 'Check', impDone: 'Imported', delConfirm: 'Delete this? (It is only marked deleted and can be restored.)' }
   });
+  // 페이지가 열리자마자 필요한 데이터를 동시에 요청한다 (로그인 확인과 순서대로 기다리지 않는다)
+  CT.pre('/api/campteam/camps'); CT.pre('/api/campteam/tasks?sort=due&flag=open'); CT.pre('/api/campteam/people'); CT.pre('/api/campteam/owners');
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   var STATUS = [['Not Started', 'stNot'], ['In Progress', 'stIn'], ['Waiting for Confirmation', 'stWait'], ['Delayed', 'stDelayed'], ['Completed', 'stDone'], ['Not Applicable', 'stNA']];
   var PRI = [['High', 'priHigh'], ['Medium', 'priMedium'], ['Low', 'priLow']];
-  var PAGE = 20, S = { page: 1, tasks: null, types: [], flag: 'open', tab: 'list', month: null, calView: 'grid', cal: null, tpls: [], perms: null };
+  var PAGE = 15, S = { page: 1, tasks: null, types: [], flag: 'open', tab: 'list', month: null, calView: 'grid', cal: null, tpls: [], perms: null };
   var canWrite = function () { return !!(S.perms && S.perms.areas && S.perms.areas.tasks === 'edit'); };
   var stLabel = function (v) { return CT.t((STATUS.filter(function (s) { return s[0] === v; })[0] || [0, 'stNot'])[1]); };
   var priLabel = function (v) { return CT.t('pri' + v); };
@@ -63,7 +65,13 @@
     if ($('tq').value.trim()) q.set('q', $('tq').value.trim());
     [['tcamp', 'campId'], ['tstatus', 'status'], ['tpri', 'priority'], ['towner', 'owner'], ['tsort', 'sort']].forEach(function (m) { if ($(m[0]).value) q.set(m[1], $(m[0]).value); });
     if (S.flag) q.set('flag', S.flag);
-    S.tasks = await CT.api('/api/campteam/tasks?' + q.toString()); S.perms = S.tasks.perms; renderTasks();
+    // 필터를 빨리 바꿔서 요청이 여러 개 겹쳐도, 가장 마지막에 보낸 요청의 결과만 화면에 쓴다 (먼저 보낸 느린 응답이 덮어쓰지 않게)
+    var seq = S.seq = (S.seq || 0) + 1, qs = q.toString(), list = $('tlist'); list.classList.add('is-loading');
+    try {
+      var r = await CT.api('/api/campteam/tasks?' + qs); if (seq !== S.seq) return;
+      S.tasks = r; S.perms = r.perms; list.classList.remove('is-loading', 'is-stale'); renderTasks();
+      if (qs === 'sort=due&flag=open') { try { sessionStorage.setItem('ct-c-tasks', JSON.stringify({ k: CT.token().slice(-10), types: S.types, tasks: r })); } catch (e) { /* 저장 못 해도 동작에는 영향 없음 */ } }
+    } catch (e) { if (seq === S.seq) list.classList.remove('is-loading'); throw e; }
   }
   function renderTasks() {
     var c = S.tasks.counts, today = S.tasks.today;
@@ -87,12 +95,13 @@
     renderPager(all.length, pages);
   }
   function renderPager(total, pages) {
-    var el = $('tpager'); if (!el) return;
-    if (total <= PAGE) { el.innerHTML = ''; return; }
+    var els = [$('tpager'), $('tpagerTop')].filter(Boolean); if (!els.length) return;
+    if (total <= PAGE) { els.forEach(function (el) { el.innerHTML = ''; }); return; }
     var from = (S.page - 1) * PAGE + 1, to = Math.min(total, S.page * PAGE), nums = [];
     for (var i = 1; i <= pages; i++) if (i === 1 || i === pages || Math.abs(i - S.page) <= 2) nums.push(i);
     var out = [], prev = 0; nums.forEach(function (n) { if (prev && n - prev > 1) out.push('<span class="pg-gap">…</span>'); out.push('<button type="button" class="pg' + (n === S.page ? ' on' : '') + '" data-pg="' + n + '"' + (n === S.page ? ' aria-current="page"' : '') + '>' + n + '</button>'); prev = n; });
-    el.innerHTML = '<span class="pg-info">' + from + CT.t('pgTo') + to + ' / ' + total + '</span><button type="button" class="pg" data-pg="' + (S.page - 1) + '"' + (S.page === 1 ? ' disabled' : '') + '>‹ ' + esc(CT.t('pgPrev')) + '</button>' + out.join('') + '<button type="button" class="pg" data-pg="' + (S.page + 1) + '"' + (S.page === pages ? ' disabled' : '') + '>' + esc(CT.t('pgNext')) + ' ›</button>';
+    var html = '<span class="pg-info">' + from + CT.t('pgTo') + to + ' / ' + total + '</span><button type="button" class="pg" data-pg="' + (S.page - 1) + '"' + (S.page === 1 ? ' disabled' : '') + '>‹ ' + esc(CT.t('pgPrev')) + '</button>' + out.join('') + '<button type="button" class="pg" data-pg="' + (S.page + 1) + '"' + (S.page === pages ? ' disabled' : '') + '>' + esc(CT.t('pgNext')) + ' ›</button>';
+    els.forEach(function (el) { el.innerHTML = html; });
   }
   // 담당자 입력칸 제안: 팀 명단의 사람(이름 · 업무에 적는 이름). 고르면 이름이 채워지고, 저장할 때 서버가 이메일을 연결한다. 직접 써도 이름·별칭이 맞으면 같은 사람으로 인식한다.
   var PEOPLE = null;
@@ -227,6 +236,8 @@
     if (t === 'tpl') loadTpl();
   }
 
+  // 직전에 본 목록이 있으면 서버 응답을 기다리는 동안 먼저 보여 준다(흐리게). 새 응답이 오면 바로 바뀐다.
+  try { var cc = JSON.parse(sessionStorage.getItem('ct-c-tasks') || 'null'); if (cc && cc.k === CT.token().slice(-10) && cc.types && cc.tasks) { S.types = cc.types; fillFilters(); S.tasks = cc.tasks; S.perms = cc.tasks.perms; renderTasks(); $('tlist').classList.add('is-stale'); } } catch (e) { /* 무시 */ }
   CT.boot(async function () {
     loadPeople(); loadOwners();
     try { S.types = (await CT.api('/api/campteam/camps')).types; fillFilters(); await loadTasks(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
@@ -236,11 +247,11 @@
     ['tcamp', 'tstatus', 'tpri', 'towner', 'tsort'].forEach(function (id) { $(id).onchange = function () { S.page = 1; loadTasks(); }; });
     $('tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); };
     $('pills').onclick = function (e) { var b = e.target.closest('[data-flag]'); if (b) { S.flag = b.dataset.flag; S.page = 1; loadTasks(); } };
-    $('tpager').onclick = function (e) { var b = e.target.closest('[data-pg]'); if (!b || b.disabled) return; S.page = Number(b.dataset.pg) || 1; renderTasks(); var l = $('tlist'); if (l && l.scrollIntoView) l.scrollIntoView({ block: 'start' }); };
+    var onPg = function (e) { var b = e.target.closest('[data-pg]'); if (!b || b.disabled) return; S.page = Number(b.dataset.pg) || 1; renderTasks(); var l = $('tlist'); if (l && l.scrollIntoView) l.scrollIntoView({ block: 'start' }); }; $('tpager').onclick = onPg; if ($('tpagerTop')) $('tpagerTop').onclick = onPg;
     $('addTask').onclick = function () { taskForm(); }; $('addTpl').onclick = function () { tplForm(); }; $('impTpl').onclick = tplImportForm;
     var byTid = function (el) { var r = el.closest && el.closest('.task'); return r ? S.tasks.items.filter(function (x) { return x.id === r.dataset.tid; })[0] : null; };
     $('tlist').addEventListener('dblclick', function (e) { if (e.target.closest('button,select,a,input,.actions')) return; openDetail(byTid(e.target)); });
-    $('tlist').addEventListener('click', function (e) { if (window.innerWidth <= 700 && e.target.closest('.tt')) openDetail(byTid(e.target)); }); // 폰: 제목을 한 번 탭
+    $('tlist').addEventListener('click', function (e) { if (window.innerWidth <= 1000 && e.target.closest('.tt')) openDetail(byTid(e.target)); }); // 폰: 제목을 한 번 탭
     $('tlist').addEventListener('click', async function (e) {
       var b = e.target.closest('button'); if (!b) return; var id = b.dataset.edit || b.dataset.del || b.dataset.confirm || b.dataset.toggle, t = S.tasks.items.filter(function (x) { return x.id === id; })[0];
       try {

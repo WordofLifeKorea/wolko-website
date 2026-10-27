@@ -92,15 +92,16 @@ export async function campSession(request, env) {
   const hub = await hubSession(request, env);
   if (!hub) return null;
   const email = normalizeEmail(hub.email);
-  let campRole = null;
+  let campRole = null, overrides = null; // 고정 관리자는 DB 를 읽지 않아도 항상 관리자
   if (isFixedAdmin(email)) campRole = 'admin';
-  else {
-    const row = await env.DB.prepare('SELECT role FROM camp_members WHERE email = ?1 AND active = 1').bind(email).first();
+  if (!isFixedAdmin(email)) {
+    // 역할과 사람별 권한을 한 번에(동시에) 읽는다 — DB 를 두 번 차례로 다녀오지 않는다
+    const [row, perms] = await Promise.all([
+      env.DB.prepare('SELECT role FROM camp_members WHERE email = ?1 AND active = 1').bind(email).first(),
+      (async () => env.DB.prepare('SELECT area, level FROM member_perms WHERE email = ?1').bind(email).all())().catch(() => null), // 이 표가 아직 없는 DB 에서도 기존 역할 권한으로 동작
+    ]);
     campRole = row ? row.role : null;
-  }
-  let overrides = null;
-  if (campRole && campRole !== 'admin') {
-    try { overrides = Object.fromEntries((await env.DB.prepare('SELECT area, level FROM member_perms WHERE email = ?1').bind(email).all()).results.map((r) => [r.area, r.level])); } catch { overrides = null; /* 아직 이 표가 없는 DB 에서도 기존 역할 권한으로 동작 */ }
+    if (campRole && campRole !== 'admin' && perms) overrides = Object.fromEntries(perms.results.map((r) => [r.area, r.level]));
   }
   return { email, hubRole: hub.role, campRole, perms: applyOverrides(campRole, overrides), custom: !!(overrides && Object.keys(overrides).length) };
 }
