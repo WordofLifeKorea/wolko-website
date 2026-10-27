@@ -752,3 +752,23 @@ body.hub-modal-open { overflow: hidden; }
 .hub-church-pop dt { color: var(--mid); font-weight: 700; }
 .hub-church-pop dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) { .hub-church-pop { transition: none; } }
+
+/* 키친 듀티 · 차량 운행은 내용이 적으니 작게 — 데스크톱에서는 일정 카드를 오른쪽에 길게 두고, 교회는 아래 한 줄로 넓게 */
+.hub-dcard-compact { padding: 16px 18px 16px; }
+.hub-dcard-compact .hub-dcard-head { margin-bottom: 10px; }
+.hub-dcard-compact .hub-dempty { padding: 4px 4px 2px; gap: 4px; }
+.hub-dcard-compact .hub-dempty-ic { width: 34px; height: 34px; }
+.hub-dcard-compact .hub-dempty p { margin-top: 2px; font-size: 13px; }
+.hub-dcard-compact .hub-meals { gap: 10px; }
+.hub-dcard-compact .hub-runs { gap: 8px; }
+.hub-dcard-compact .hub-runs li { padding: 8px 10px; }
+@media (min-width: 1101px) {
+  .hub-dash { align-items: start; }
+  .hub-dash-date { grid-row: 1; }
+  .hub-dcard-notice { grid-column: 1 / 9; grid-row: 2; }
+  .hub-dcard-events { grid-column: 9 / 13; grid-row: 2 / span 2; align-self: stretch; }
+  .hub-dcard-kitchen { grid-column: 1 / 5; grid-row: 3; align-self: stretch; }
+  .hub-dcard-car { grid-column: 5 / 9; grid-row: 3; align-self: stretch; }
+  .hub-dcard-churches { grid-column: 1 / -1; grid-row: 4; }
+  .hub-dcard-churches .hub-churches { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px 14px; }
+}
