@@ -6,6 +6,7 @@ import * as Cal from '../functions/api/campteam/calendar-sync.js';
 import * as Tasks from '../functions/api/campteam/tasks.js';
 import { verifyGoogleIdToken, issueCampToken, parseCampToken, resetGoogleKeyCache } from '../functions/lib/campteamGoogleAuth.js';
 import { toGoogleEvent } from '../functions/api/campteam/calendar-sync.js';
+import { autoSync } from '../functions/lib/campteamCalendarSync.js';
 import { parseHubSessionToken, createHubSessionToken } from '../functions/lib/hubAccounts.js';
 import { fakeD1, makeEnv, req, U, SECRET } from './helpers/campteam-fakes.mjs';
 
@@ -91,4 +92,22 @@ test('구글 달력 연동: 미리보기만 기본, 쓰기는 설정+확인이 �
     assert.equal(seen.filter(x => x.method === 'PATCH').length, 1); assert.ok(!seen.some(x => x.method === 'DELETE'), '구글 일정을 자동으로 지우지 않는다');
   } finally { globalThis.fetch = real; }
   assert.deepEqual(toGoogleEvent({ id: 'a', title: 'T', startDate: '2026-12-31', endDate: null, startTime: '', endTime: '' }).end, { date: '2027-01-01' });
+});
+
+test('일정 자동 반영: 켜져 있을 때만 돌고, 동시에 두 번 불려도 같은 일정이 구글에 두 번 생기지 않으며, 실패해도 던지지 않는다', async () => {
+  const { privateKey } = await newKey(), der = Buffer.from(await crypto.subtle.exportKey('pkcs8', privateKey)).toString('base64');
+  const vars = { CAMPTEAM_CALENDAR_ID: 'cal@group.calendar.google.com', CAMPTEAM_CALENDAR_WRITE: '1', GOOGLE_SERVICE_ACCOUNT_JSON: JSON.stringify({ client_email: 's@x.iam.gserviceaccount.com', private_key: `-----BEGIN PRIVATE KEY-----\n${der}\n-----END PRIVATE KEY-----` }) };
+  const real = globalThis.fetch, seen = []; let n = 0;
+  globalThis.fetch = async (url, init = {}) => { seen.push({ url: String(url), method: init.method }); if (String(url).includes('oauth2')) return Response.json({ access_token: 'tok' }); await new Promise((r) => setTimeout(r, 5)); return Response.json({ id: 'g' + (++n) }); };
+  try {
+    const off = makeEnv(fakeD1(), vars); await autoSync(off, U.admin); assert.equal(seen.length, 0, 'AUTO 설정이 없으면 아무 일도 하지 않는다');
+    const on = makeEnv(fakeD1(), { ...vars, CAMPTEAM_CALENDAR_AUTO: '1' }); on.DB.sqlite.exec(`UPDATE events SET deletedAt='x' WHERE id='e5'`);
+    const live = on.DB.sqlite.prepare(`SELECT COUNT(*) n FROM events WHERE deletedAt IS NULL`).get().n;
+    await Promise.all([autoSync(on, U.admin), autoSync(on, U.admin)]);
+    assert.equal(seen.filter((x) => x.method === 'POST' && x.url.includes('/calendars/')).length, live, '일정마다 한 번만 만들어진다');
+    assert.equal(on.DB.sqlite.prepare(`SELECT COUNT(*) n FROM events WHERE googleEventId <> ''`).get().n, live);
+    globalThis.fetch = async () => { throw new Error('network down'); }; on.DB.sqlite.exec(`UPDATE events SET title='또 바뀜', updatedAt='2099-01-01T00:00:00Z' WHERE id='e2'`);
+    await autoSync(on, U.admin); // 던지지 않는다
+    assert.equal(on.DB.sqlite.prepare(`SELECT updatedAt FROM notify_settings WHERE key='gcal_lock'`).get().updatedAt, '1970-01-01T00:00:00.000Z', '실패해도 잠금은 풀린다');
+  } finally { globalThis.fetch = real; }
 });

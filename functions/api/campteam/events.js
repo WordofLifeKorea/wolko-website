@@ -1,5 +1,9 @@
 import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, isDate, audit } from '../../lib/campteamDb.js';
+import { autoSync } from '../../lib/campteamCalendarSync.js';
+
+// 저장이 끝난 뒤 구글 달력에 자동 반영(켜져 있을 때만). 응답을 기다리게 하지 않고, 실패해도 저장에는 영향이 없다.
+const later = (context, p) => { try { context.waitUntil ? context.waitUntil(p) : p; } catch { /* 무시 */ } };
 
 const KINDS = ['team', 'camp', 'out'];
 const isTime = v => !v || /^([01]\d|2[0-3]):[0-5]\d$/.test(String(v));
@@ -35,7 +39,8 @@ function clean(b, base = {}) {
 }
 async function campOk(env, campId) { return !campId || !!(await env.DB.prepare('SELECT 1 AS x FROM camps WHERE id = ?1 AND deletedAt IS NULL').bind(String(campId)).first()); }
 
-export async function onRequestPost({ env, request }) {
+export async function onRequestPost(context) {
+  const { env, request } = context;
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
@@ -47,10 +52,12 @@ export async function onRequestPost({ env, request }) {
   await env.DB.prepare(`INSERT INTO events (id,campId,title,kind,startDate,endDate,startTime,endTime,location,notes,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?11,?12)`)
     .bind(id, v.campId, v.title, v.kind, v.startDate, v.endDate, v.startTime, v.endTime, v.location, v.notes, now, s.email).run();
   await audit(env, s.email, 'create', 'event', id, v.title);
+  later(context, autoSync(env, s.email));
   return json({ id }, 201);
 }
 
-export async function onRequestPatch({ env, request }) {
+export async function onRequestPatch(context) {
+  const { env, request } = context;
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
@@ -64,6 +71,7 @@ export async function onRequestPatch({ env, request }) {
   await env.DB.prepare(`UPDATE events SET campId=?2,title=?3,kind=?4,startDate=?5,endDate=?6,startTime=?7,endTime=?8,location=?9,notes=?10,updatedAt=?11 WHERE id=?1`)
     .bind(id, v.campId, v.title, v.kind, v.startDate, v.endDate, v.startTime, v.endTime, v.location, v.notes, nowIso()).run();
   await audit(env, s.email, 'update', 'event', id, v.title);
+  later(context, autoSync(env, s.email));
   return json({ ok: true });
 }
 
