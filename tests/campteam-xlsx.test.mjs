@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import '../public/campteam/xlsx-lite.js';
-import '../public/campteam/ledger-parse.js';
+import '../public/portal/campteam/xlsx-lite.js';
+import '../public/portal/campteam/ledger-parse.js';
 
 const X = globalThis.XlsxLite, P = globalThis.LedgerParse;
 const ab = (u8) => u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);

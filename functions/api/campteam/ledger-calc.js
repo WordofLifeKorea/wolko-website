@@ -1,9 +1,9 @@
 import { moneyGate, json, badRequest } from '../../lib/campteamLedger.js';
-import { sanitizeModel } from '../../../public/campteam/calc-core.js';
+import { sanitizeModel } from '../../../public/portal/campteam/calc-core.js';
 import { uuid, nowIso, text, audit } from '../../lib/campteamDb.js';
 
 /**
- * 예산 계산기 시나리오 저장. 계산 자체는 화면에서 하고(같은 계산 코드 public/campteam/calc-core.js), 서버는 모양을 검사해 저장만 한다.
+ * 예산 계산기 시나리오 저장. 계산 자체는 화면에서 하고(같은 계산 코드 public/portal/campteam/calc-core.js), 서버는 모양을 검사해 저장만 한다.
  *  GET            목록 — 금액 조회 권한자(월코 재정·일반 팀원 포함, 보기만)
  *  POST/PATCH/DELETE  캠프 재정 담당·디렉터
  */

@@ -75,7 +75,7 @@ test('팀 일정: 만들기·수정·삭제와 기간 조회, 달력 한 번에 
   assert.ok(!(await inRange('2026-12-01', '2026-12-31')).includes('Winter Camp 답사'));
   assert.ok((await inRange('2026-10-20', '2026-10-21')).includes('Leader D Out of Office'), '여러 날 일정은 걸쳐 있으면 보인다');
   assert.equal((await call(EV, 'onRequestPatch', env, U.mem, { method: 'PATCH', qs: `?id=${id}`, body: { title: '수정됨', endDate: '2026-11-06' } })).status, 200);
-  const cal = await (await call({ name: 'calendar', mod: Calendar }, 'onRequestGet', env, U.view, { qs: '?from=2026-10-01&to=2027-01-31' })).json();
+  const cal = await (await call({ name: 'calendar', mod: Calendar }, 'onRequestGet', env, U.view, { qs: '?from=2026-10-01&to=2027-03-31' })).json();
   assert.ok(cal.events.length >= 6 && cal.camps.some(c => c.nameKo === '2027 Winter Camp') && cal.tasks.some(t => t.id === 't07') && Array.isArray(cal.meetings));
   assert.equal((await call({ name: 'calendar', mod: Calendar }, 'onRequestGet', env, U.view, { qs: '?from=x&to=y' })).status, 400);
   assert.equal((await call(EV, 'onRequestDelete', env, U.mem, { method: 'DELETE', qs: `?id=${id}` })).status, 200);

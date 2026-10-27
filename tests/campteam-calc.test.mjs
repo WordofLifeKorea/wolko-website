@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { emptyModel, newRow, sanitizeModel, peopleOf, timesOf, parts, rowAmount, evaluate, breakEven, feeHeadcount, toPlan, template, WHO, PER, mealPlan, mealCounts } from '../public/campteam/calc-core.js';
+import { emptyModel, newRow, sanitizeModel, peopleOf, timesOf, parts, rowAmount, evaluate, breakEven, feeHeadcount, toPlan, template, WHO, PER, mealPlan, mealCounts } from '../public/portal/campteam/calc-core.js';
 import * as Calc from '../functions/api/campteam/ledger-calc.js';
 import { fakeD1, makeEnv, req, U } from './helpers/campteam-fakes.mjs';
 
