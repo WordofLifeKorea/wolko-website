@@ -1,0 +1,109 @@
+/**
+ * 포탈 첫 화면(대시보드) 데이터 — 이번 주 공지, 오늘 키친 듀티·차량 운행, 다가오는 일정, 최근 업데이트된 교회.
+ * 각 조각은 따로 읽어서 하나가 실패해도(캘린더 미연결 등) 나머지는 그대로 보여 준다.
+ */
+import { SLOTS as KITCHEN_SLOTS, readDay } from './kitchenDuty.js';
+import { SLOTS as DRIVE_SLOTS, currentWeekStart, shownName, slotKey, todayKst } from './carDrive.js';
+import { listCalendarEvents } from './googleCalendar.js';
+import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
+
+export const NOTICES_KEY = 'portal:notices';
+export const MAX_NOTICES = 60;
+const DASH_CHURCH_KEY = 'portal:dash-churches';
+const DASH_CHURCH_SECONDS = 300;
+const CRS_DATABASE = 'https://wolko-crs-default-rtdb.asia-southeast1.firebasedatabase.app';
+const DAY = 86400000;
+
+const clean = (v, max) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+const cleanBlock = (v, max) => String(v ?? '').replace(/\r\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, max);
+const addDays = (date, n) => new Date(Date.parse(`${date}T00:00:00Z`) + n * DAY).toISOString().slice(0, 10);
+
+/** 공지 목록(KV) — 배열이 아니면 빈 목록 */
+export async function readNotices(env) {
+  const list = await env.CAMP_KV.get(NOTICES_KEY, 'json');
+  return Array.isArray(list) ? list.filter(n => n && n.id && n.body) : [];
+}
+
+/** 이번 주(일요일부터 새 주) 공지 — 고정(pinned) 공지는 먼저, 나머지는 최근 순 */
+export function noticesForWeek(list, weekStart) {
+  return list
+    .filter(n => n.weekStart === weekStart)
+    .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || String(b.createdAt).localeCompare(String(a.createdAt)));
+}
+
+/** 공지 입력 정리 — 제목(선택)·내용(필수)·적용 주(이번 주/다음 주)·고정 여부 */
+export function parseNoticeInput(body, today) {
+  const text = cleanBlock(body?.body, 600);
+  if (!text) return { error: '공지 내용을 입력해 주세요.' };
+  const thisWeek = currentWeekStart(today);
+  const weekStart = body?.week === 'next' ? addDays(thisWeek, 7) : thisWeek;
+  return { value: { title: clean(body?.title, 60), body: text, weekStart, pinned: body?.pinned === true } };
+}
+
+/** 오늘 키친 듀티 — 식사별 { meal, prep[], clean[] }, 신청이 있는 식사만 */
+export async function kitchenToday(env, today) {
+  const day = await readDay(env, today);
+  const names = slot => (day[slot] || []).map(p => shownName(p)).filter(Boolean);
+  return ['am', 'lunch', 'dinner']
+    .map(meal => ({ meal, prep: names(`${meal}_prep`), clean: names(`${meal}_clean`) }))
+    .filter(m => m.prep.length || m.clean.length);
+}
+
+/** 오늘 차량 운행(픽업·드롭오프) 담당 이름 — 없으면 null */
+export async function carToday(env, today) {
+  const [pickup, dropoff] = await Promise.all(DRIVE_SLOTS.map(slot => env.CAMP_KV.get(slotKey(today, slot), 'json')));
+  return { pickup: pickup ? shownName(pickup) : null, dropoff: dropoff ? shownName(dropoff) : null };
+}
+
+/** 오늘부터 14일 안의 일정 몇 개 — 캘린더가 연결되지 않았으면 null */
+export async function upcomingEvents(env, today, limit = 5) {
+  if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_STAFF_CALENDAR_ID) return null;
+  const events = await listCalendarEvents({
+    serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
+    calendarId: env.GOOGLE_STAFF_CALENDAR_ID,
+    timeMin: new Date(`${today}T00:00:00+09:00`).toISOString(),
+    timeMax: new Date(`${addDays(today, 14)}T23:59:59+09:00`).toISOString(),
+  });
+  return events
+    .map(e => ({ title: clean(e.summary, 120), allDay: !!e.allDay, start: e.start, end: e.end, location: clean(e.location, 80) }))
+    .filter(e => e.title && e.start)
+    .sort((a, b) => String(a.start).localeCompare(String(b.start)))
+    .slice(0, limit);
+}
+
+/** CRS 교회 레코드 → 최근 업데이트 순 [{ name, updatedAt, lastVisitDate }] (이름·날짜만 꺼낸다) */
+export function recentChurches(records, limit = 5) {
+  return Object.values(records || {})
+    .map(c => ({ name: clean(c?.churchName, 80), updatedAt: Number(c?.updatedAt) || 0, lastVisitDate: clean(c?.lastVisitDate, 20) }))
+    .filter(c => c.name && c.updatedAt > 0)
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .slice(0, limit);
+}
+
+/** 최근 업데이트된 교회 — CRS 연결이 없으면 null. 5분 동안 KV 에 담아 둔다 */
+export async function recentChurchList(env) {
+  if (!env.FIREBASE_CRS_SERVICE_ACCOUNT) return null;
+  const cached = await env.CAMP_KV.get(DASH_CHURCH_KEY, 'json');
+  if (cached?.list) return cached.list;
+  const token = await firebaseDatabaseToken(env.FIREBASE_CRS_SERVICE_ACCOUNT);
+  const res = await fetch(`${CRS_DATABASE}/churches.json`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error(`CRS ${res.status}`);
+  const list = recentChurches(await res.json());
+  await env.CAMP_KV.put(DASH_CHURCH_KEY, JSON.stringify({ list }), { expirationTtl: DASH_CHURCH_SECONDS });
+  return list;
+}
+
+/** 대시보드 전체 — 조각마다 실패해도 나머지는 돌려준다(실패한 조각은 null) */
+export async function buildDashboard(env, session, now = Date.now()) {
+  const today = todayKst(now);
+  const weekStart = currentWeekStart(today);
+  const settle = async fn => { try { return await fn(); } catch (error) { console.error('dashboard piece failed:', error.message); return null; } };
+  const [notices, kitchen, car, events, churches] = await Promise.all([
+    settle(async () => noticesForWeek(await readNotices(env), weekStart)),
+    settle(() => kitchenToday(env, today)),
+    settle(() => carToday(env, today)),
+    settle(() => upcomingEvents(env, today)),
+    settle(() => recentChurchList(env)),
+  ]);
+  return { today, weekStart, canEditNotices: session.role === 'admin' || session.role === 'master', notices, kitchen, car, events, churches };
+}

@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=25">
+  <link rel="stylesheet" href="/hub.css?v=26">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
@@ -208,8 +208,11 @@
     <main class="hub-main">
       <div class="hub-wrap">
         <p class="hub-kicker" data-t="kicker">WOLKO INTERNAL</p>
-        <p class="hub-title" data-t="pageTitle">내부 도구</p>
+        <p class="hub-title" data-t="pageTitle">이번 주 월코</p>
 
+        <div class="hub-dash" id="hubDash" aria-live="polite"></div>
+
+        <p class="hub-section-title" data-t="toolsHeading">도구 바로가기</p>
         <div class="hub-groups" id="hubGrid"></div>
       </div>
     </main>
@@ -286,7 +289,7 @@
         desc_ko: '수업자료 · 프로그램 · 상담 · 설교 자료', desc_en: 'Class, program, counseling & preaching files' },
       { group: 'camp', href: '/portal/campteam', color: '#e8c53a', icon: 'clipboard',
         title_ko: '캠프팀', title_en: 'Camp Team',
-        desc_ko: '캠프 일정 · 업무 · 회의록 · 자료 · 예산 · TV 대시보드', desc_en: 'Camp schedule, tasks, meetings, files, budget & TV dashboard' },
+        desc_ko: '캠프팀 전용 공간(별도 화면) · 일정 · 업무 · 회의록 · 예산', desc_en: 'Camp Team space (separate screen) · schedule, tasks, meetings, budget' },
       { group: 'personal', href: '/portal/expense', color: '#f0a020', icon: 'receipt',
         title_ko: '경비 리포트', title_en: 'Expense Report',
         desc_ko: '경비 제출 · 승인 · 회계 업무', desc_en: 'Submit, approve & pay expenses' },
@@ -312,7 +315,15 @@
         headerTitle: 'WOLKO Portal',
         navLabel: '도구',
         kicker: 'WOLKO 내부용',
-        pageTitle: '내부 도구',
+        pageTitle: '이번 주 월코',
+        toolsHeading: '도구 바로가기',
+        dashNotices: '이번 주 공지', dashNoticeEmpty: '이번 주 공지가 아직 없어요.', noticeAdd: '공지 올리기', noticeTitlePh: '제목 (선택)', noticeBodyPh: '이번 주에 꼭 알려야 할 내용',
+        noticeThisWeek: '이번 주', noticeNextWeek: '다음 주', noticePin: '맨 위에 고정', noticePost: '올리기', noticeDelete: '삭제', noticeDeleteConfirm: '이 공지를 지울까요?', noticeNeedBody: '공지 내용을 입력해 주세요.', noticePosted: '공지를 올렸어요.', noticeDeleted: '공지를 지웠어요.', noticePinned: '고정',
+        dashKitchen: '오늘 키친 듀티', dashKitchenEmpty: '오늘 신청한 사람이 없어요.', mealAm: '아침', mealLunch: '점심', mealDinner: '저녁', slotPrep: '준비', slotClean: '클린업',
+        dashCar: '오늘 차량 운행', dashCarEmpty: '오늘 운행 담당이 정해지지 않았어요.', carPickup: '픽업', carDropoff: '드롭오프',
+        dashEvents: '다가오는 일정', dashEventsEmpty: '앞으로 2주 안에 등록된 일정이 없어요.', dashEventsOff: '캘린더가 아직 연결되지 않았어요.', allDay: '종일',
+        dashChurches: '최근 업데이트된 교회', dashChurchesEmpty: '최근 업데이트된 교회가 없어요.', dashChurchesOff: '교회 목록(CRS)이 아직 연결되지 않았어요.', churchUpdated: '업데이트', churchVisited: '방문',
+        dashLoadFail: '불러오지 못했어요.', dashMore: '자세히 보기',
         recentBadge: '최근 사용',
         emailLoginTitle: '포탈 로그인',
         rememberEmail: '아이디 저장',
@@ -382,7 +393,15 @@
         headerTitle: 'WOLKO Portal',
         navLabel: 'Tools',
         kicker: 'WOLKO Internal',
-        pageTitle: 'Internal Tools',
+        pageTitle: 'This Week at WOLKO',
+        toolsHeading: 'Tools',
+        dashNotices: "This week's notices", dashNoticeEmpty: 'No notices for this week yet.', noticeAdd: 'Post a notice', noticeTitlePh: 'Title (optional)', noticeBodyPh: 'What everyone needs to know this week',
+        noticeThisWeek: 'This week', noticeNextWeek: 'Next week', noticePin: 'Pin to top', noticePost: 'Post', noticeDelete: 'Delete', noticeDeleteConfirm: 'Delete this notice?', noticeNeedBody: 'Please enter the notice.', noticePosted: 'Notice posted.', noticeDeleted: 'Notice deleted.', noticePinned: 'Pinned',
+        dashKitchen: "Today's Kitchen Duty", dashKitchenEmpty: 'Nobody has signed up for today.', mealAm: 'Breakfast', mealLunch: 'Lunch', mealDinner: 'Dinner', slotPrep: 'Prep', slotClean: 'Clean-up',
+        dashCar: "Today's Vehicle Runs", dashCarEmpty: 'No driver is set for today.', carPickup: 'Pick-up', carDropoff: 'Drop-off',
+        dashEvents: 'Upcoming Events', dashEventsEmpty: 'No events in the next two weeks.', dashEventsOff: 'The calendar is not connected yet.', allDay: 'All day',
+        dashChurches: 'Recently Updated Churches', dashChurchesEmpty: 'No recently updated churches.', dashChurchesOff: 'The church list (CRS) is not connected yet.', churchUpdated: 'Updated', churchVisited: 'Visited',
+        dashLoadFail: 'Could not load.', dashMore: 'View all',
         recentBadge: 'Recent',
         emailLoginTitle: 'Portal Login',
         rememberEmail: 'Remember email',
@@ -469,6 +488,124 @@
       try { localStorage.setItem('wolko-hub-last', href); } catch (e) {}
     }
 
+    /* ───────── 첫 화면 대시보드: 이번 주 공지 · 오늘 키친 듀티 · 오늘 차량 · 다가오는 일정 · 최근 교회 ───────── */
+    let dashData = null, dashFailed = false;
+    const KST = 'Asia/Seoul';
+    function dashLocale() { return hubLang === 'en' ? 'en-US' : 'ko-KR'; }
+    function fmtMonthDay(iso, allDay) {
+      // 종일 일정은 'YYYY-MM-DD' — 시간대 변환 없이 그 날짜 그대로, 시간 일정은 한국 시간으로
+      const d = allDay ? new Date(iso + 'T12:00:00+09:00') : new Date(iso);
+      return new Intl.DateTimeFormat(dashLocale(), { timeZone: KST, month: 'numeric', day: 'numeric', weekday: 'short' }).format(d);
+    }
+    function fmtTime(iso) {
+      return new Intl.DateTimeFormat(dashLocale(), { timeZone: KST, hour: 'numeric', minute: '2-digit', hour12: hubLang === 'en' }).format(new Date(iso));
+    }
+    function fmtShortDate(ms) {
+      return new Intl.DateTimeFormat(dashLocale(), { timeZone: KST, month: 'numeric', day: 'numeric' }).format(new Date(ms));
+    }
+    function dashCard(cls, title, bodyHtml, href) {
+      return '<section class="hub-dcard ' + cls + '"><div class="hub-dcard-head"><h2>' + esc(title) + '</h2>'
+        + (href ? '<a class="hub-dcard-more" href="' + href + '">' + esc(t('dashMore')) + ' ›</a>' : '') + '</div>' + bodyHtml + '</section>';
+    }
+    function dashMsg(text) { return '<p class="hub-dempty">' + esc(text) + '</p>'; }
+    function renderNotices(d) {
+      const list = d.notices;
+      let body;
+      if (list === null) body = dashMsg(t('dashLoadFail'));
+      else if (!list.length) body = dashMsg(t('dashNoticeEmpty'));
+      else body = '<ul class="hub-notices">' + list.map(n => '<li' + (n.pinned ? ' class="is-pinned"' : '') + '>'
+        + (n.pinned ? '<span class="hub-pin">' + esc(t('noticePinned')) + '</span>' : '')
+        + (n.title ? '<b>' + esc(n.title) + '</b>' : '')
+        + '<p>' + esc(n.body).replace(/\n/g, '<br>') + '</p>'
+        + (d.canEditNotices ? '<button type="button" class="hub-notice-del" data-del="' + esc(n.id) + '">' + esc(t('noticeDelete')) + '</button>' : '')
+        + '</li>').join('') + '</ul>';
+      const form = d.canEditNotices ? '<details class="hub-notice-form"><summary>' + esc(t('noticeAdd')) + '</summary>'
+        + '<input id="noticeTitle" type="text" maxlength="60" placeholder="' + esc(t('noticeTitlePh')) + '">'
+        + '<textarea id="noticeBody" rows="3" maxlength="600" placeholder="' + esc(t('noticeBodyPh')) + '"></textarea>'
+        + '<div class="hub-notice-opts"><select id="noticeWeek"><option value="this">' + esc(t('noticeThisWeek')) + '</option><option value="next">' + esc(t('noticeNextWeek')) + '</option></select>'
+        + '<label><input id="noticePinned" type="checkbox"> ' + esc(t('noticePin')) + '</label>'
+        + '<button type="button" id="noticePostBtn">' + esc(t('noticePost')) + '</button></div></details>' : '';
+      return dashCard('hub-dcard-notice', t('dashNotices'), body + form);
+    }
+    function renderKitchen(d) {
+      let body;
+      if (d.kitchen === null) body = dashMsg(t('dashLoadFail'));
+      else if (!d.kitchen.length) body = dashMsg(t('dashKitchenEmpty'));
+      else body = '<ul class="hub-dlist">' + d.kitchen.map(m => '<li><span class="hub-dlabel">' + esc(t(m.meal === 'am' ? 'mealAm' : m.meal === 'lunch' ? 'mealLunch' : 'mealDinner')) + '</span><span>'
+        + (m.prep.length ? '<em>' + esc(t('slotPrep')) + '</em> ' + esc(m.prep.join(', ')) : '')
+        + (m.prep.length && m.clean.length ? '<br>' : '')
+        + (m.clean.length ? '<em>' + esc(t('slotClean')) + '</em> ' + esc(m.clean.join(', ')) : '') + '</span></li>').join('') + '</ul>';
+      return dashCard('hub-dcard-kitchen', t('dashKitchen'), body, '/portal/kitchen');
+    }
+    function renderCar(d) {
+      let body;
+      if (d.car === null) body = dashMsg(t('dashLoadFail'));
+      else if (!d.car.pickup && !d.car.dropoff) body = dashMsg(t('dashCarEmpty'));
+      else body = '<ul class="hub-dlist">'
+        + '<li><span class="hub-dlabel">' + esc(t('carPickup')) + '</span><span>' + (d.car.pickup ? esc(d.car.pickup) : '—') + '</span></li>'
+        + '<li><span class="hub-dlabel">' + esc(t('carDropoff')) + '</span><span>' + (d.car.dropoff ? esc(d.car.dropoff) : '—') + '</span></li></ul>';
+      return dashCard('hub-dcard-car', t('dashCar'), body, '/portal/car-drive');
+    }
+    function renderEvents(d) {
+      let body;
+      if (d.events === null) body = dashMsg(t('dashEventsOff'));
+      else if (!d.events.length) body = dashMsg(t('dashEventsEmpty'));
+      else body = '<ul class="hub-dlist">' + d.events.map(e => '<li><span class="hub-dlabel">' + esc(fmtMonthDay(e.start, e.allDay)) + '</span><span><b>' + esc(e.title) + '</b>'
+        + '<small>' + esc(e.allDay ? t('allDay') : fmtTime(e.start)) + (e.location ? ' · ' + esc(e.location) : '') + '</small></span></li>').join('') + '</ul>';
+      return dashCard('hub-dcard-events', t('dashEvents'), body, '/portal/schedule');
+    }
+    function renderChurches(d) {
+      let body;
+      if (d.churches === null) body = dashMsg(t('dashChurchesOff'));
+      else if (!d.churches.length) body = dashMsg(t('dashChurchesEmpty'));
+      else body = '<ul class="hub-dlist">' + d.churches.map(c => '<li><span class="hub-dlabel">' + esc(fmtShortDate(c.updatedAt)) + '</span><span><b>' + esc(c.name) + '</b>'
+        + '<small>' + esc(t('churchUpdated')) + (c.lastVisitDate ? ' · ' + esc(t('churchVisited')) + ' ' + esc(c.lastVisitDate) : '') + '</small></span></li>').join('') + '</ul>';
+      return dashCard('hub-dcard-churches', t('dashChurches'), body, '/portal/crs');
+    }
+    function renderDash() {
+      const el = $('hubDash');
+      if (!el) return;
+      if (!dashData) { el.innerHTML = dashFailed ? '<p class="hub-dempty">' + esc(t('dashLoadFail')) + '</p>' : ''; return; }
+      // 공지를 쓰다가 언어를 바꿔도 입력한 내용은 남긴다
+      const keep = { title: $('noticeTitle')?.value || '', body: $('noticeBody')?.value || '', open: $('hubDash').querySelector('.hub-notice-form')?.open };
+      el.innerHTML = renderNotices(dashData) + renderEvents(dashData) + renderKitchen(dashData) + renderCar(dashData) + renderChurches(dashData);
+      if ($('noticeTitle')) { $('noticeTitle').value = keep.title; $('noticeBody').value = keep.body; if (keep.open) el.querySelector('.hub-notice-form').open = true; }
+    }
+    async function loadDashboard() {
+      const token = sessionStorage.getItem('wolko-hub-token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/portal/dashboard', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        dashData = await res.json();
+        dashFailed = false;
+      } catch (e) { dashFailed = !dashData; }
+      renderDash();
+    }
+    document.addEventListener('click', async e => {
+      const del = e.target.closest && e.target.closest('.hub-notice-del');
+      if (del) {
+        if (!confirm(t('noticeDeleteConfirm'))) return;
+        const res = await fetch('/api/portal/notices?id=' + encodeURIComponent(del.dataset.del), { method: 'DELETE', headers: authHeaders() });
+        if (res.ok) { showToast(t('noticeDeleted')); loadDashboard(); } else showToast((await res.json().catch(() => ({}))).error || t('dashLoadFail'), true);
+        return;
+      }
+      if (e.target.id === 'noticePostBtn') {
+        const body = $('noticeBody').value.trim();
+        if (!body) { showToast(t('noticeNeedBody'), true); return; }
+        const btn = e.target; btn.disabled = true;
+        try {
+          const res = await fetch('/api/portal/notices', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ title: $('noticeTitle').value, body, week: $('noticeWeek').value, pinned: $('noticePinned').checked }) });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || t('dashLoadFail'));
+          showToast(t('noticePosted'));
+          $('noticeTitle').value = ''; $('noticeBody').value = '';
+          await loadDashboard();
+        } catch (err) { showToast(err.message, true); }
+        btn.disabled = false;
+      }
+    });
+
     function renderGrid() {
       let lastHref = '';
       try { lastHref = localStorage.getItem('wolko-hub-last') || ''; } catch (e) {}
@@ -544,6 +681,7 @@
       $('langEnBtn').classList.toggle('is-active', hubLang === 'en');
       renderNav();
       renderGrid();
+      renderDash();
       loadExpenseBadge();
     }
     function setHubLang(lang) {
@@ -790,6 +928,7 @@
     function showHub() {
       SCREENS.forEach(s => { $(s).style.display = 'none'; });
       $('hubShell').hidden = false;
+      loadDashboard();
       $('pendingBtn').hidden = currentSession?.role !== 'master';
       if (currentSession?.role === 'master') refreshPendingCount();
       if (window.wolkoCheckPasswordReset) window.wolkoCheckPasswordReset(); // 임시 비밀번호로 들어왔다면 새 비밀번호 설정 창
