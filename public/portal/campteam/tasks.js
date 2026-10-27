@@ -2,7 +2,7 @@
   CT.addDict({
     ko: { tasksTitle: '업무', tasksSub: '캠프 준비 업무를 한곳에서 보고 관리해요 (일정은 「달력」에서 봐요)', addTask: '+ 업무 추가', addEvent: '+ 일정 추가', viewOnly: '조회만 가능한 계정이에요. 작성·수정은 캠프팀 팀원이 할 수 있어요.', searchPh: '업무 이름·담당자·메모 검색',
       hTask: '업무', dOwner: '담당자', dDue: '기한', dPri: '중요도', dCamp: '캠프', dStatus: '상태', dSection: '구분', dMemo: '메모', dMemoTip: '더블클릭하면 전체 내용을 볼 수 있어요', dOrig: '원래 제목', dState: '활성 여부', dActive: '활성', dUpdated: '마지막 수정', dNoMemo: '메모가 없어요', dClose: '닫기', dTitleH: '업무 자세히',
-      pInactive: '비활성', inactiveTag: '비활성', fActive: '활성 업무 (끄면 비활성: 진행 중 업무·알림·진행률·달력에서 빠져요)', actOn: '활성으로', actOff: '비활성으로', impInactive: '비활성 상태로 가져오기 (팀원이 확인한 뒤 활성으로 바꿔요)',
+      pInactive: '비활성', inactiveTag: '비활성', fActive: '활성 업무 (끄면 비활성: 진행 중 업무·알림·진행률·달력에서 빠져요)', actOn: '활성화', actOff: '비활성화', impInactive: '비활성 상태로 가져오기 (팀원이 확인한 뒤 활성으로 바꿔요)',
       tabList: '업무 목록', tabCal: '달력', tabTpl: '체크리스트 템플릿', tabImp: '시트에서 가져오기', today: '오늘', viewGrid: '달력', viewAgenda: '목록',
       pOpen: '진행 중', pOverdue: '마감 지남', pNoOwner: '담당자 미정', pNoDue: '기한 미정', pAll: '전체', fAllCamps: '모든 캠프', fNoCamp: '캠프 없음', fAllStatus: '모든 상태', fAllPri: '모든 우선순위', fAllOwner: '모든 담당자', sortDue: '기한 빠른 순', sortPri: '우선순위 순', sortNew: '최신 순', sortTitle: '이름 순',
       stNot: '미시작', stIn: '진행 중', stWait: '확인 대기', stDelayed: '지연', stDone: '완료', stNA: '해당 없음', priHigh: '높음', priMedium: '보통', priLow: '낮음',
