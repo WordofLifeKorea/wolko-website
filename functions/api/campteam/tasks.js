@@ -38,18 +38,22 @@ export async function onRequestGet({ env, request }) {
   else if (flag === 'nodue') where.push(`k.inactive = 0 AND k.status NOT IN ${CLOSED} AND k.dueDate IS NULL`);
   const q = text(p.get('q'), 80);
   if (q) { const like = `%${q.replace(/[%_\\]/g, m => '\\' + m)}%`; where.push(`(k.title LIKE ? ESCAPE '\\' OR k.ownerName LIKE ? ESCAPE '\\' OR k.notes LIKE ? ESCAPE '\\')`); args.push(like, like, like); }
-  let rows = (await env.DB.prepare(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${SORTS[p.get('sort')] || SORTS.due} LIMIT ${owner ? 5000 : 500}`).bind(...args).all()).results;
-  if (owner) rows = rows.filter(r => ownerTokens(r.ownerName).includes(ownerKey)).slice(0, 500);
-  const counts = await env.DB.prepare(`SELECT
+  // 세 조회(목록·집계·담당자 이름)를 동시에 DB 로 보낸다 — 차례로 기다리면 DB 를 세 번 다녀와야 해서 느리다
+  const rowsQ = env.DB.prepare(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${SORTS[p.get('sort')] || SORTS.due} LIMIT ${owner ? 5000 : 500}`).bind(...args).all();
+  const countsQ = env.DB.prepare(`SELECT
       SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} THEN 1 ELSE 0 END) AS open,
       SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} AND dueDate IS NOT NULL AND dueDate < ?1 THEN 1 ELSE 0 END) AS overdue,
       SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} AND TRIM(ownerName) = '' THEN 1 ELSE 0 END) AS noOwner,
       SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} AND dueDate IS NULL THEN 1 ELSE 0 END) AS noDue,
       SUM(CASE WHEN inactive = 1 THEN 1 ELSE 0 END) AS inactive
     FROM tasks WHERE deletedAt IS NULL`).bind(today).first();
+  const ownersQ = env.DB.prepare(`SELECT DISTINCT ownerName FROM tasks WHERE deletedAt IS NULL AND TRIM(ownerName) <> ''`).all();
+  const [rowsRes, counts, ownerRows] = await Promise.all([rowsQ, countsQ, ownersQ]);
+  let rows = rowsRes.results;
+  if (owner) rows = rows.filter(r => ownerTokens(r.ownerName).includes(ownerKey)).slice(0, 500);
   // 담당자 목록: 공동 담당("A / B")은 풀어서 사람·팀 이름만 한 번씩
   const ownerSet = new Map();
-  for (const r of (await env.DB.prepare(`SELECT DISTINCT ownerName FROM tasks WHERE deletedAt IS NULL AND TRIM(ownerName) <> ''`).all()).results) for (const n of ownerPieces(r.ownerName)) if (!ownerSet.has(n.toLowerCase())) ownerSet.set(n.toLowerCase(), n);
+  for (const r of ownerRows.results) for (const n of ownerPieces(r.ownerName)) if (!ownerSet.has(n.toLowerCase())) ownerSet.set(n.toLowerCase(), n);
   const owners = [...ownerSet.values()].sort((a, b) => a.localeCompare(b));
   return json({ items: rows, today, owners, counts: { open: counts.open || 0, overdue: counts.overdue || 0, noOwner: counts.noOwner || 0, noDue: counts.noDue || 0, inactive: counts.inactive || 0 }, perms: s.perms });
 }

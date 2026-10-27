@@ -22,12 +22,13 @@ export async function onRequestGet({ env, request }) {
   const s = await campSession(request, env);
   if (!s) return needLogin();
   if (!['tasks', 'meetings', 'files', 'camps'].some((a) => canView(s.perms, a))) return needPerm('캠프 목록을 볼 권한이 없어요. 관리자에게 요청해 주세요.');
-  const types = (await env.DB.prepare('SELECT id, nameKo, nameEn, description, sortOrder, isTest FROM camp_types WHERE deletedAt IS NULL ORDER BY sortOrder, nameKo').all()).results;
-  const camps = (await env.DB.prepare(`SELECT c.id, c.typeId, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.location, c.notes, c.theme, c.capacity, c.registrationCampId, c.year, c.season, c.isTest,
+  const typesQ = (env.DB.prepare('SELECT id, nameKo, nameEn, description, sortOrder, isTest FROM camp_types WHERE deletedAt IS NULL ORDER BY sortOrder, nameKo').all());
+  const campsQ = (env.DB.prepare(`SELECT c.id, c.typeId, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.location, c.notes, c.theme, c.capacity, c.registrationCampId, c.year, c.season, c.isTest,
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status <> 'Not Applicable') AS taskTotal,
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status = 'Completed') AS taskDone,
       (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 1) AS taskInactive
-    FROM camps c WHERE c.deletedAt IS NULL ORDER BY c.startDate IS NULL, c.startDate DESC, c.nameKo`).all()).results;
+    FROM camps c WHERE c.deletedAt IS NULL ORDER BY c.startDate IS NULL, c.startDate DESC, c.nameKo`).all());
+  const [types, camps] = await Promise.all([typesQ.then((r) => r.results), campsQ.then((r) => r.results)]); // 두 조회를 동시에 보낸다
   // 업무 영역을 볼 수 없는 계정(명단 밖 월코 팀 등)에게는 업무 개수도 알려주지 않는다
   if (!canView(s.perms, 'tasks')) for (const c of camps) { c.taskTotal = null; c.taskDone = null; c.taskInactive = null; }
   if (!s.campRole) for (const c of camps) { c.notes = ''; c.registrationCampId = null; } // 명단 밖: 내부 메모·연결 정보는 가린다

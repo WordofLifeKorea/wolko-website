@@ -423,6 +423,7 @@
     var mq = window.matchMedia('(min-width: 901px)'); (mq.addEventListener ? mq.addEventListener('change', function () { render(); }) : mq.addListener(function () { render(); }));
   }
 
+  CT.pre('/api/campteam/home'); CT.pre('/api/campteam/home-layout');
   CT.boot(async function () {
     try {
       var r = await Promise.all([CT.api('/api/campteam/home'), CT.api('/api/campteam/home-layout')]);

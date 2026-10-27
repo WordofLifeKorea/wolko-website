@@ -239,6 +239,7 @@
     window.addEventListener('drop', function (e) { if (!hasFiles(e) || dialogOpen()) { depth = 0; show(false); return; } e.preventDefault(); depth = 0; show(false); if (canUpload()) uploadMany(e.dataTransfer.files); });
   }
   var timer = null;
+  CT.pre('/api/campteam/camps'); CT.pre('/api/campteam/files?');
   CT.boot(async function () {
     try { S.types = (await CT.api('/api/campteam/camps')).types; await loadList(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     filterOptions(); CT.applyI18n(); filterOptions(); renderList();

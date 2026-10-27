@@ -4,10 +4,10 @@
 
   CT.addDict = function (d) { ['ko', 'en'].forEach(function (l) { Object.assign(CT.dict[l], d[l] || {}); }); };
   CT.addDict({
-    ko: { saving: '저장 중…', navHome: '홈', navAlerts: '알림공지', budgetLocked: '🔒 예산·금액은 권한이 있는 팀원에게만 보입니다.', navResources: '캠프팀 자료', navGroupTeam: '캠프 & 아웃리치 팀', navCamps: '캠프별 공간', navTasks: '업무', navCalendar: '달력', navMeetings: '회의록 · 결정', navFiles: '자료실', navTv: 'TV 대시보드', searchAll: '전체 검색 (업무·회의·결정·파일)', navFinance: '재정', navBudget: '캠프 예산', navAdmin: '관리', navSettings: '설정 · 팀 명단', soon: '준비 중', backPortal: '← 포털로 돌아가기', backPortalShort: '월코 포탈로 나가기', teamSpace: '캠프 & 아웃리치 팀 전용 페이지', teamSpace2: '포털과 별개 화면',
+    ko: { loading: '불러오는 중…', saving: '저장 중…', navHome: '홈', navAlerts: '알림공지', budgetLocked: '🔒 예산·금액은 권한이 있는 팀원에게만 보입니다.', navResources: '캠프팀 자료', navGroupTeam: '캠프 & 아웃리치 팀', navCamps: '캠프별 공간', navTasks: '업무', navCalendar: '달력', navMeetings: '회의록 · 결정', navFiles: '자료실', navTv: 'TV 대시보드', searchAll: '전체 검색 (업무·회의·결정·파일)', navFinance: '재정', navBudget: '캠프 예산', navAdmin: '관리', navSettings: '설정 · 팀 명단', soon: '준비 중', backPortal: '← 포털로 돌아가기', backPortalShort: '월코 포탈로 나가기', teamSpace: '캠프 & 아웃리치 팀 전용 페이지', teamSpace2: '포털과 별개 화면',
       gateTitle: '포털 로그인이 필요해요', gateBody: '포털에서 로그인한 뒤 이 페이지로 다시 들어와 주세요.', gateBtn: '포털로 이동', logout: '로그아웃', gateGoogle: '또는 wolko.org Google 계정으로 로그인 (조회 전용)', navTrash: '휴지통', test: '테스트', testData: '테스트 자료 포함',
       roleadmin: '관리자', roledirector: '캠프팀 디렉터', rolefinance: '캠프 재정 담당', roletreasurer: '월코 재정 (조회 전용)', rolemember: '캠프팀 팀원', roleviewer: '조회만', loadFail: '불러오지 못했어요', save: '저장', cancel: '취소', edit: '수정', del: '삭제', add: '추가', confirmDel: '삭제할까요? (삭제 표시만 되며 복구할 수 있어요)' },
-    en: { saving: 'Saving…', navHome: 'Home', navAlerts: 'Alerts & Notices', budgetLocked: '🔒 Budget and amounts are visible only to authorized team members.', navResources: 'Camp Team Docs', navGroupTeam: 'CAMP & OUTREACH TEAM', navCamps: 'Camp Spaces', navTasks: 'Tasks', navCalendar: 'Calendar', navMeetings: 'Meetings · Decisions', navFiles: 'Files', navTv: 'TV Dashboard', searchAll: 'Search all (tasks, meetings, decisions, files)', navFinance: 'FINANCE', navBudget: 'Camp Budget', navAdmin: 'ADMIN', navSettings: 'Settings · Team', soon: 'Soon', backPortal: '← Back to Portal', backPortalShort: 'To WOLKO Portal', teamSpace: 'Camp & Outreach Team only', teamSpace2: 'Separate from the Portal',
+    en: { loading: 'Loading…', saving: 'Saving…', navHome: 'Home', navAlerts: 'Alerts & Notices', budgetLocked: '🔒 Budget and amounts are visible only to authorized team members.', navResources: 'Camp Team Docs', navGroupTeam: 'CAMP & OUTREACH TEAM', navCamps: 'Camp Spaces', navTasks: 'Tasks', navCalendar: 'Calendar', navMeetings: 'Meetings · Decisions', navFiles: 'Files', navTv: 'TV Dashboard', searchAll: 'Search all (tasks, meetings, decisions, files)', navFinance: 'FINANCE', navBudget: 'Camp Budget', navAdmin: 'ADMIN', navSettings: 'Settings · Team', soon: 'Soon', backPortal: '← Back to Portal', backPortalShort: 'To WOLKO Portal', teamSpace: 'Camp & Outreach Team only', teamSpace2: 'Separate from the Portal',
       gateTitle: 'Portal login required', gateBody: 'Please log in to the portal, then come back to this page.', gateBtn: 'Go to Portal', logout: 'Log out', gateGoogle: 'Or sign in with your wolko.org Google account (view only)', navTrash: 'Trash', test: 'TEST', testData: 'Includes test data',
       roleadmin: 'Admin', roledirector: 'Camp Team Director', rolefinance: 'Camp Finance', roletreasurer: 'WOLKO Finance (view only)', rolemember: 'Camp Team', roleviewer: 'View only', loadFail: 'Could not load', save: 'Save', cancel: 'Cancel', edit: 'Edit', del: 'Delete', add: 'Add', confirmDel: 'Delete this? (It is only marked deleted and can be restored.)' }
   });
@@ -53,17 +53,37 @@
     }).catch(function () {});
   };
 
-  /** 서버에 요청. 실패하면 Error(message, status) 를 던진다 */
-  CT.api = async function (path, opts) {
-    opts = opts || {};
+  // 요청 시간 기록: 주소 뒤에 ?perf=1 을 붙여 열면 화면 오른쪽 아래에 각 요청이 몇 ms 걸렸는지 보여 준다 (느린 곳을 찾는 용도)
+  var PERF = /[?&]perf=1\b/.test(location.search), perfLog = [];
+  function perfShow() {
+    if (!PERF) return; var el = document.getElementById('perfBox');
+    if (!el) { el = document.createElement('div'); el.id = 'perfBox'; el.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:99999;max-width:360px;max-height:50vh;overflow:auto;background:#000c;color:#fff;font:11px/1.5 monospace;padding:8px 10px;border-radius:8px;pointer-events:none'; document.body.appendChild(el); }
+    var total = perfLog.reduce(function (a, x) { return Math.max(a, x.end); }, 0);
+    el.innerHTML = '<b>요청 시간 (페이지 열린 뒤 ' + Math.round(total) + 'ms 까지)</b><br>' + perfLog.map(function (x) { return Math.round(x.start) + '→' + Math.round(x.end) + 'ms (' + Math.round(x.end - x.start) + ') ' + CT.esc(x.path.slice(0, 48)) + (x.pre ? ' ⚡' : ''); }).join('<br>');
+  }
+  async function rawApi(path, opts, pre) {
+    opts = opts || {}; var t0 = performance.now();
     var headers = { Authorization: 'Bearer ' + CT.token() };
     if (opts.body) headers['Content-Type'] = 'application/json';
     var res = await fetch(path, { method: opts.method || 'GET', headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined, cache: 'no-store' });
     var data = null; try { data = await res.json(); } catch (e) {}
+    if (PERF) { perfLog.push({ path: path, start: t0, end: performance.now(), pre: !!pre }); perfShow(); }
     if (res.status === 401) { CT.showGate(); }
     if (!res.ok) { var err = new Error((data && data.error) || CT.t('loadFail')); err.status = res.status; throw err; }
     return data;
+  }
+  // 미리 요청: 페이지 스크립트가 맨 위에서 CT.pre(주소) 를 불러 두면, 로그인 확인(/me)을 기다리지 않고 데이터 요청을 동시에 보낸다.
+  // 나중에 같은 주소로 CT.api 를 부르면 이미 가는 중인(또는 도착한) 응답을 그대로 쓴다. 15초가 지나면 버린다.
+  var PRE = {};
+  // ?nopre=1 은 "미리 요청"을 끄고 속도를 비교해 볼 때 쓴다
+  CT.pre = function (path) { if (!CT.token() || PRE[path] || /[?&]nopre=1\b/.test(location.search)) return; var p = rawApi(path, {}, true); p.catch(function () {}); PRE[path] = { t: Date.now(), p: p }; };
+  /** 서버에 요청. 실패하면 Error(message, status) 를 던진다 */
+  CT.api = function (path, opts) {
+    opts = opts || {};
+    if (!opts.method && PRE[path]) { var e = PRE[path]; delete PRE[path]; if (Date.now() - e.t < 15000) return e.p; }
+    return rawApi(path, opts, false);
   };
+  CT.pre('/api/campteam/me'); CT.pre('/api/campteam/alerts?lite=1'); // 종 버튼의 안 읽은 알림 수도 같이
 
   /** 공통 대화상자: 페이지에 #dlg(#dlgTitle #dlgFields #dlgErr #dlgActions #dlgForm)가 있어야 한다. 저장 중 오류는 대화상자 안에 보여준다. */
   CT.ask = function (title, fields, onSubmit, opts) {
