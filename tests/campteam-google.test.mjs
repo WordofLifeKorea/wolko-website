@@ -66,7 +66,7 @@ test('Google 로그인 API → 캠프팀 출입증: 조회만, 명단/고정 관
   });
 });
 
-test('구글 달력 연동: 미리보기만 기본, 쓰기는 설정+확인이 있어야 하고 바뀐 것만, 지운 일정은 구글에서 자동 삭제하지 않는다', async () => {
+test('구글 달력 연동: 미리보기만 기본, 쓰기는 설정+확인이 있어야 하고 바뀐 것만, 캠프팀에서 지운 일정은 구글에서도 지운다', async () => {
   const env = makeEnv(fakeD1()); const call = async (fn, e, who, body) => Cal[fn]({ env: e, request: await req(who, { method: fn === 'onRequestGet' ? 'GET' : 'POST', body, url: 'http://localhost/x' }) });
   assert.equal((await call('onRequestGet', env, U.mem)).status, 403);
   const pv = await (await call('onRequestGet', env, U.admin)).json(); assert.equal(pv.configured, false); assert.equal(pv.writeEnabled, false); assert.equal(pv.plan.creates.length, 6); assert.equal('calendarId' in pv && pv.calendarId !== undefined, false, '달력 ID 는 응답에 없다');
@@ -89,7 +89,15 @@ test('구글 달력 연동: 미리보기만 기본, 쓰기는 설정+확인이 �
     assert.equal(on.DB.sqlite.prepare(`SELECT COUNT(*) n FROM events WHERE googleEventId <> ''`).get().n, 5);
     on.DB.sqlite.exec(`UPDATE events SET title='바뀐 제목', updatedAt='2099-01-01T00:00:00Z' WHERE id='e2'`); seen.length = 0;
     const r2 = await (await call('onRequestPost', on, U.admin, { confirm: true })).json(); assert.deepEqual([r2.created, r2.updated], [0, 1], '바뀐 것만 고친다');
-    assert.equal(seen.filter(x => x.method === 'PATCH').length, 1); assert.ok(!seen.some(x => x.method === 'DELETE'), '구글 일정을 자동으로 지우지 않는다');
+    assert.equal(seen.filter(x => x.method === 'PATCH').length, 1); assert.ok(!seen.some(x => x.method === 'DELETE'), '지우지 않은 일정은 구글에서 지우지 않는다');
+    // 캠프팀에서 지운 일정은 구글에서도 지운다 (구글에 이미 없는 일정(404)도 지운 것으로 본다). 구글에 만든 적 없는 일정은 건드리지 않는다
+    const gid = on.DB.sqlite.prepare(`SELECT googleEventId g FROM events WHERE id='e3'`).get().g; assert.ok(gid);
+    on.DB.sqlite.exec(`UPDATE events SET deletedAt='2026-10-22T00:00:00Z', updatedAt='2026-10-22T00:00:00Z' WHERE id IN ('e3','e4')`); seen.length = 0;
+    globalThis.fetch = async (url, init = {}) => { seen.push({ url: String(url), method: init.method }); if (String(url).includes('oauth2')) return Response.json({ access_token: 'tok' }); if (init.method === 'DELETE') return new Response(null, { status: String(url).includes(gid) ? 204 : 404 }); return Response.json({ id: 'gx' }); };
+    const r3 = await (await call('onRequestPost', on, U.admin, { confirm: true })).json(); assert.equal(r3.deleted, 2, JSON.stringify(r3));
+    const dels = seen.filter(x => x.method === 'DELETE'); assert.equal(dels.length, 2); assert.ok(dels.some(x => x.url.includes(encodeURIComponent(gid))));
+    assert.equal(on.DB.sqlite.prepare(`SELECT COUNT(*) n FROM events WHERE id IN ('e3','e4') AND googleEventId <> ''`).get().n, 0, '지운 뒤에는 연결 표시를 비운다');
+    seen.length = 0; const r4 = await (await call('onRequestPost', on, U.admin, { confirm: true })).json(); assert.equal(r4.deleted, 0); assert.equal(seen.filter(x => x.method === 'DELETE').length, 0, '다시 지우지 않는다');
   } finally { globalThis.fetch = real; }
   assert.deepEqual(toGoogleEvent({ id: 'a', title: 'T', startDate: '2026-12-31', endDate: null, startTime: '', endTime: '' }).end, { date: '2027-01-01' });
 });

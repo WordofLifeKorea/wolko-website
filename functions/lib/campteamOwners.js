@@ -7,6 +7,15 @@ const clean = (s) => String(s ?? '').replace(/\([^)]*\)|\[[^\]]*\]/g, ' ').repla
 export function ownerTokens(ownerName) {
   return String(ownerName ?? '').split(/\/|,|;|&|\+|·|\band\b|\s및\s/i).map(clean).filter(Boolean);
 }
+/** 담당자 칸의 글 → 사람·팀 이름 조각들 (원래 대소문자, 괄호 설명 제거, 중복 제거). 목록에서 고르는 칸에 쓴다 */
+export function ownerPieces(ownerName) {
+  const seen = new Set(), out = [];
+  for (const raw of String(ownerName ?? '').split(/\/|,|;|&|\+|·|\band\b|\s및\s/i)) {
+    const name = raw.replace(/\([^)]*\)|\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim(), k = name.toLowerCase();
+    if (name && !seen.has(k)) { seen.add(k); out.push(name); }
+  }
+  return out;
+}
 export const aliasList = (aliases) => String(aliases ?? '').split(/[,\n;/]/).map(clean).filter(Boolean);
 
 /** 한 사람(이메일)을 가리키는 이름들의 집합: 명단 이름 + 별칭 */

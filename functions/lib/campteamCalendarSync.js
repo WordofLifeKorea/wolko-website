@@ -3,7 +3,7 @@ import { getGoogleAccessToken } from './campteamGoogle.js';
 
 /**
  * 캠프팀 일정 → Google Calendar 반영 (한 방향). 캠프팀에서 만든 일정(portalId 표시)만 다루고, 구글에 있던 다른 일정은 읽거나 바꾸지 않는다.
- * 지운 일정은 구글에서 자동으로 지우지 않는다(목록으로만 알려 줌).
+ * 캠프팀에서 지운 일정은, 캠프팀이 구글에 만들어 둔 것(googleEventId 가 있는 것)에 한해 구글에서도 지운다.
  */
 export const SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 export const cfgOf = (env) => ({
@@ -28,7 +28,7 @@ export async function plan(env) {
 export async function syncNow(env, actor) {
   const c = cfgOf(env);
   const token = await getGoogleAccessToken(JSON.parse(env.GOOGLE_SERVICE_ACCOUNT_JSON), SCOPE), p = await plan(env), h = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-  const base = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.calendarId)}/events`; let created = 0, updated = 0;
+  const base = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.calendarId)}/events`; let created = 0, updated = 0, deleted = 0;
   for (const e of p.creates) {
     const r = await fetch(base, { method: 'POST', headers: h, body: JSON.stringify(toGoogleEvent(e)) }); if (!r.ok) throw new Error('create ' + r.status);
     await env.DB.prepare('UPDATE events SET googleEventId = ?2, googleSyncedAt = ?3 WHERE id = ?1').bind(e.id, (await r.json()).id, nowIso()).run(); created++;
@@ -37,8 +37,14 @@ export async function syncNow(env, actor) {
     const r = await fetch(`${base}/${encodeURIComponent(e.googleEventId)}`, { method: 'PATCH', headers: h, body: JSON.stringify(toGoogleEvent(e)) }); if (!r.ok) throw new Error('update ' + r.status);
     await env.DB.prepare('UPDATE events SET googleSyncedAt = ?2 WHERE id = ?1').bind(e.id, nowIso()).run(); updated++;
   }
-  if (created || updated) await audit(env, actor, 'calendar_sync', 'events', 'bulk', `created ${created}, updated ${updated}`);
-  return { created, updated, removedNotDeleted: p.removed.length };
+  // 캠프팀에서 지운 일정 → 구글에서도 지운다. 이미 구글에서 없어진 것(404/410)은 지운 것으로 본다. 구글에 있던 다른 일정은 건드리지 않는다
+  for (const e of p.removed) {
+    const r = await fetch(`${base}/${encodeURIComponent(e.googleEventId)}`, { method: 'DELETE', headers: h });
+    if (!r.ok && r.status !== 404 && r.status !== 410) throw new Error('delete ' + r.status);
+    await env.DB.prepare("UPDATE events SET googleEventId = '', googleSyncedAt = ?2 WHERE id = ?1").bind(e.id, nowIso()).run(); deleted++;
+  }
+  if (created || updated || deleted) await audit(env, actor, 'calendar_sync', 'events', 'bulk', `created ${created}, updated ${updated}, deleted ${deleted}`);
+  return { created, updated, deleted };
 }
 
 /**
@@ -52,7 +58,7 @@ export async function autoSync(env, actor) {
     const got = await env.DB.prepare(`INSERT INTO notify_settings (key,value,updatedAt,updatedBy) VALUES ('gcal_lock','1',?1,'') ON CONFLICT(key) DO UPDATE SET updatedAt=?1 WHERE updatedAt < ?2`).bind(now.toISOString(), stale).run();
     if (!got.meta?.changes) return; // 다른 반영이 진행 중 — 그쪽이 끝나기 전에 바뀐 것까지 확인한다
     try {
-      for (let i = 0; i < 3; i++) { const r = await syncNow(env, actor); if (!r.created && !r.updated) break; }
+      for (let i = 0; i < 3; i++) { const r = await syncNow(env, actor); if (!r.created && !r.updated && !r.deleted) break; }
     } finally {
       await env.DB.prepare(`UPDATE notify_settings SET updatedAt='1970-01-01T00:00:00.000Z' WHERE key='gcal_lock'`).run();
     }

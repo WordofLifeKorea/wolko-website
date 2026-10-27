@@ -3,7 +3,7 @@ import { cfgOf, plan, syncNow, toGoogleEvent } from '../../lib/campteamCalendarS
 
 /**
  * 포털 일정 → Google Calendar 반영 (관리자 전용). 기본은 "미리보기"만이고, 실제 쓰기는 서버 설정 CAMPTEAM_CALENDAR_WRITE=1 + CAMPTEAM_CALENDAR_ID + 관리자 확인이 모두 있을 때만.
- *  - 새 일정은 만들고, 이미 반영된 일정은 바뀐 것만 고친다. 포털에서 지운 일정은 구글 달력에서 자동으로 지우지 않는다(목록으로만 알려 줌).
+ *  - 새 일정은 만들고, 이미 반영된 일정은 바뀐 것만 고친다. 포털에서 지운 일정은 캠프팀이 구글에 만들어 둔 것에 한해 구글 달력에서도 지운다.
  *  - 구글에 있던 기존 일정은 읽거나 바꾸지 않는다 — 포털이 만든 일정(portalId 표시)만 다룬다.
  *  - 실제 반영 로직은 lib/campteamCalendarSync.js (일정을 저장할 때 자동으로 반영하는 기능과 같이 쓴다).
  */
