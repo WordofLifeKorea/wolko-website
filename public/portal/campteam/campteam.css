@@ -531,3 +531,35 @@ html.dlg-open main dialog, html.al-open main dialog, dialog { pointer-events: au
 .opick .ohint{color:var(--light);font-size:12px}
 /* 영어: 포털 나가기 버튼은 종 옆에서 한 줄로 */
 .exitrow .portal-top{font-size:12.5px;white-space:nowrap;padding-left:8px;padding-right:8px}
+
+/* 업무 카드: 칸 고정 + 같은 크기 (칸 사이는 빈 공간만, 선 없음). 제목은 두 줄까지, 내용은 위아래 가운데 */
+.task-head,.task{display:grid;grid-template-columns:minmax(0,1fr) 150px 84px 66px 124px 190px;column-gap:14px;align-items:center}
+.task-head{padding:0 16px 6px;font:700 11.5px var(--f-body);color:var(--light)}
+.task{height:96px;padding:0 16px;margin-bottom:10px;user-select:none;cursor:default}
+.task .c-title{min-width:0}
+.task .tt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:14.5px;line-height:1.4;word-break:keep-all;overflow-wrap:anywhere}
+.task .tmemo{margin-top:3px;font-size:12px;line-height:1.4;color:var(--mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task .c-owner,.task .c-camp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:12.5px;line-height:1.45;color:var(--mid);overflow-wrap:anywhere}
+.task .c-due,.task .c-pri{font-size:12.5px;white-space:nowrap}
+.task .ml{display:none}
+.task .actions{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.task .actions select{width:100%}
+.task .abtns{display:flex;gap:5px;justify-content:flex-end}.task .abtns .btn{padding:4px 8px;font-size:12px;white-space:nowrap}
+.task.done .tt{text-decoration:line-through;color:var(--light)}
+/* 업무 자세히 보기 팝업 */
+#tdetail h3{margin:0 0 6px;font-size:18px;line-height:1.4;padding-right:34px}
+.dorig{color:var(--mid);font-size:12.5px;margin-bottom:10px}
+.dgrid{display:grid;grid-template-columns:96px 1fr;gap:8px 12px;align-items:baseline}
+.dk{font:700 12px var(--f-body);color:var(--light)}.dv{font-size:14px;overflow-wrap:anywhere}
+.dmemo{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.6;max-height:40vh;overflow:auto}
+@media(max-width:1100px){.task-head,.task{grid-template-columns:minmax(0,1fr) 120px 80px 62px 100px 176px;column-gap:10px}}
+@media(max-width:700px){
+  .task-head{display:none}
+  .task{height:auto;grid-template-columns:auto auto 1fr;grid-template-areas:"t t t" "o o o" "d p c" "a a a";row-gap:8px;padding:12px 14px;cursor:pointer}
+  .task .c-title{grid-area:t}.task .c-owner{grid-area:o;-webkit-line-clamp:2}.task .c-due{grid-area:d}.task .c-pri{grid-area:p}.task .c-camp{grid-area:c;-webkit-line-clamp:2}.task .actions{grid-area:a}
+  .task .ml{display:inline}
+  /* 폰: 제목 두 줄 · 담당자/캠프 정보 각 두 줄 · 메모 한 줄, 넘치면 … (전체는 제목을 탭하면 팝업) */
+  .task .tt{-webkit-line-clamp:2}
+  .task .tmemo{white-space:nowrap}
+  .task .abtns{justify-content:flex-start}
+}

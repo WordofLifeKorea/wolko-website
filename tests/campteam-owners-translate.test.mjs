@@ -89,3 +89,13 @@ test('업무 제목 번역: 일괄 번역은 관리자만, 키가 없으면 안�
   const g = await J(await call('translate-tasks', TT, 'onRequestGet', env, U.admin)); assert.equal(g.configured, true);
   assert.equal((await call('translate-tasks', TT, 'onRequestPost', mk(), U.admin)).status, 503);
 });
+
+test('업무 저장 버튼을 두 번 눌러도 같은 업무가 두 번 생기지 않는다 (같은 사람·같은 제목·같은 캠프, 10초 안)', async () => {
+  const env = mk(); const count = () => env.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM tasks').get().n;
+  const a = await call('tasks', Tasks, 'onRequestPost', env, U.mem, { body: { title: '중복 확인' } }), b = await call('tasks', Tasks, 'onRequestPost', env, U.mem, { body: { title: '중복 확인' } });
+  assert.equal(a.status, 201); const ja = await J(a), jb = await J(b); assert.equal(jb.id, ja.id); assert.equal(jb.duplicate, true); assert.equal(count(), 1);
+  await call('tasks', Tasks, 'onRequestPost', env, U.admin, { body: { title: '중복 확인' } }); assert.equal(count(), 2, '다른 사람이 같은 제목으로 만드는 것은 막지 않는다');
+  await call('tasks', Tasks, 'onRequestPost', env, U.mem, { body: { title: '중복 확인 둘' } }); assert.equal(count(), 3, '제목이 다르면 새 업무');
+  env.DB.sqlite.exec(`UPDATE tasks SET createdAt='2020-01-01T00:00:00.000Z'`);
+  await call('tasks', Tasks, 'onRequestPost', env, U.mem, { body: { title: '중복 확인' } }); assert.equal(count(), 4, '10초가 지난 뒤에는 같은 제목도 새 업무');
+});

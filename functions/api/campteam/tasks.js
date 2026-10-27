@@ -92,6 +92,9 @@ export async function onRequestPost(context) {
   if (!canWrite(s.perms, 'tasks')) return needPerm('작성 권한이 없습니다.');
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const { v, error } = await clean(env, b, {}, { email: s.email, admin: !!s.perms.manageMembers }); if (error) return badRequest(error);
+  // 저장 버튼을 두 번 눌러 같은 업무가 두 번 생기는 것을 막는다: 같은 사람이 10초 안에 같은 제목·같은 캠프로 이미 만들었으면 그 업무를 돌려준다
+  const dup = await env.DB.prepare(`SELECT id FROM tasks WHERE title = ?1 AND IFNULL(campId,'') = IFNULL(?2,'') AND createdBy = ?3 AND createdAt > ?4 AND deletedAt IS NULL ORDER BY createdAt DESC LIMIT 1`).bind(v.title, v.campId, s.email, new Date(Date.now() - 10000).toISOString()).first();
+  if (dup) return json({ id: dup.id, duplicate: true }, 200);
   const id = uuid(), now = nowIso(), tc = titleCols(v.title);
   await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerEmail,dueDate,status,priority,notes,createdAt,updatedAt,createdBy,inactive,titleKo,titleEn) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10,?11,?12,?13,?14)`)
     .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, now, s.email, v.inactive, tc.titleKo, tc.titleEn).run();
