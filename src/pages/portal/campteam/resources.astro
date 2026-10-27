@@ -1,6 +1,7 @@
 ---
 // 캠프 자료실 연결 페이지. 기존 "캠프 자료실"(/portal/camp-resources)을 고치지 않고 그대로 불러와 보여준다.
-// 캠프팀에서 들어온 경우에만 위쪽에 "캠프팀으로 돌아가기" 막대가 생기고, 포털에서 직접 들어가면 기존 화면 그대로다.
+// 캠프팀에서 들어온 경우에만 "캠프팀으로 돌아가기" 버튼이 보인다(포털에서 직접 들어가면 기존 화면 그대로).
+// 넓은 화면에서는 포털 왼쪽 메뉴 맨 위(로고 바로 아래)에 버튼을 끼워 넣고, 메뉴가 없는 좁은 화면에서는 위쪽 막대를 쓴다.
 // 누가 무엇을 볼 수 있는지는 기존 캠프 자료실의 로그인·권한 규칙이 그대로 정한다(캠프팀 권한은 여기에 영향을 주지 않는다).
 ---
 <!DOCTYPE html>
@@ -23,6 +24,7 @@
     .ttl{font:700 14px/1 'Noto Sans KR',sans-serif;opacity:.95}
     .sp{flex:1}
     .alt{opacity:.75;font-weight:500 !important;font-size:12px !important}.alt:hover{opacity:1;text-decoration:underline}
+    @media (min-width:900px){.wrap.rail .bar{display:none}}
     iframe{flex:1 1 auto;width:100%;border:0;background:#fff}
   </style>
 </head>
@@ -34,17 +36,37 @@
     <span class="sp"></span>
     <a class="alt" href="/portal/camp-resources/" target="_blank" rel="noopener" id="tOpen">새 창으로 열기 ↗</a>
   </div>
-  <iframe src="/portal/camp-resources/" title="캠프 자료실" allow="fullscreen; clipboard-write"></iframe>
+  <iframe id="fr" src="/portal/camp-resources/" title="캠프 자료실" allow="fullscreen; clipboard-write"></iframe>
 </div>
 <script is:inline>
   (function () {
     var en = false; try { en = localStorage.getItem('wolko-lang') === 'en'; } catch (e) {}
-    if (!en) return;
-    document.documentElement.lang = 'en';
-    document.getElementById('tBack').textContent = 'Back to Camp & Outreach Team';
-    document.getElementById('tTitle').textContent = 'Camp Resources';
-    document.getElementById('tOpen').textContent = 'Open in new window ↗';
-    document.title = 'Camp Resources — Camp & Outreach Team';
+    if (en) {
+      document.documentElement.lang = 'en';
+      document.getElementById('tBack').textContent = 'Back to Camp & Outreach Team';
+      document.getElementById('tTitle').textContent = 'Camp Resources';
+      document.getElementById('tOpen').textContent = 'Open in new window ↗';
+      document.title = 'Camp Resources — Camp & Outreach Team';
+    }
+    // 포털 왼쪽 메뉴(iframe 안, 같은 사이트)의 로고 아래에 돌아가기 버튼을 끼워 넣는다. 실패하면 위쪽 막대가 그대로 남는다
+    var fr = document.getElementById('fr'), wrap = document.querySelector('.wrap'), tries = 0;
+    function label(doc) { var e = (doc.documentElement.lang || '').indexOf('en') === 0 || (function () { try { return localStorage.getItem('wolko-lang') === 'en'; } catch (x) { return false; } })(); return e ? 'To Camp & Outreach Team' : '캠프 & 아웃리치 팀으로'; }
+    function mount() {
+      try {
+        var doc = fr.contentDocument, rail = doc && doc.querySelector('.wolko-rail'), logo = rail && rail.querySelector('.wolko-rail-logo-link');
+        if (!logo) { if (++tries < 20) setTimeout(mount, 250); return; }
+        if (rail.querySelector('.ct-back-rail')) return;
+        var st = doc.createElement('style');
+        st.textContent = '.ct-back-rail{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 14px;padding:10px 12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:#fff;font:800 13px/1.3 "Noto Sans KR",sans-serif;text-decoration:none;text-align:center;text-wrap:balance}.ct-back-rail:hover{background:rgba(255,255,255,.2);border-color:#fff}';
+        doc.head.appendChild(st);
+        var a = doc.createElement('a'); a.className = 'ct-back-rail'; a.href = '/portal/campteam/'; a.target = '_top';
+        a.innerHTML = '<span aria-hidden="true">←</span><span></span>'; a.lastChild.textContent = label(doc);
+        logo.parentNode.insertBefore(a, logo.nextSibling);
+        new MutationObserver(function () { a.lastChild.textContent = label(doc); }).observe(doc.documentElement, { attributes: true, attributeFilter: ['lang'] });
+        wrap.classList.add('rail');
+      } catch (e) { /* 위쪽 막대 유지 */ }
+    }
+    fr.addEventListener('load', function () { tries = 0; wrap.classList.remove('rail'); mount(); });
   })();
 </script>
 </body>
