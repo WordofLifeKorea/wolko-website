@@ -829,8 +829,8 @@ body.hub-modal-open { overflow: hidden; }
 .hub-pop-track li { flex: 1 1 0; max-width: 22px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #eef3f5; color: #9bb0b9; font: 700 10.5px/1 var(--f-body); }
 .hub-pop-track li.is-done { background: var(--dc); color: #fff; }
 .hub-pop-track li.is-next { background: #fff; color: var(--dc); box-shadow: inset 0 0 0 2px var(--dc); }
-.hub-churches li:hover .hub-pop-track li, .hub-churches li:focus-within .hub-pop-track li { animation: hub-dot-in .35s cubic-bezier(.3,1.5,.5,1) backwards; animation-delay: calc(var(--i) * 28ms); }
-@keyframes hub-dot-in { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.hub-churches li:hover .hub-pop-track li, .hub-churches li:focus-within .hub-pop-track li { animation: hub-dot-in .3s ease-out backwards; animation-delay: calc(var(--i) * 18ms); }
+@keyframes hub-dot-in { from { opacity: 0; } to { opacity: 1; } }
 .hub-pop-steps { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
 .hub-pop-steps li { display: flex; align-items: flex-start; gap: 8px; color: var(--text); font: 600 14px/1.4 var(--f-body); }
 .hub-pop-n { flex: 0 0 auto; display: inline-flex; width: 20px; height: 20px; align-items: center; justify-content: center; border-radius: 50%; background: color-mix(in srgb, var(--dc) 14%, #fff); color: var(--dc); font: 800 11px/1 var(--f-body); }
@@ -840,50 +840,17 @@ body.hub-modal-open { overflow: hidden; }
 .hub-pop-none { margin: 0; color: var(--mid); font: 600 13.5px/1.4 var(--f-body); }
 .hub-church-pop dl { margin-top: 12px; padding-top: 10px; border-top: 1px solid #edf2f4; }
 
-/* ── 키친 듀티 · 차량 운행 꾸미기 (움직임 줄이기 설정이면 멈춤) ── */
-.hub-dcard-kitchen, .hub-dcard-car { position: relative; overflow: hidden; }
-.hub-dcard-kitchen .hub-dicon svg { transform-origin: 50% 80%; animation: hub-sway 3.2s ease-in-out infinite; }
-.hub-dcard-car .hub-dicon svg { animation: hub-drive-bump .8s ease-in-out infinite; }
-@keyframes hub-sway { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
-@keyframes hub-drive-bump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
-/* 목록 항목이 차례로 떠오르고, 이름 칩은 톡 튀어나온다 */
-.hub-meals li, .hub-runs li { animation: hub-rise .5s cubic-bezier(.2,.8,.3,1) backwards; }
-.hub-meals li:nth-child(2), .hub-runs li:nth-child(2) { animation-delay: .1s; }
-.hub-meals li:nth-child(3) { animation-delay: .2s; }
-.hub-meal-rows .hub-chip, .hub-runs .hub-chip { animation: hub-pop .5s cubic-bezier(.3,1.6,.5,1) backwards; animation-delay: .25s; }
-.hub-meal-rows .hub-chip:nth-of-type(2) { animation-delay: .33s; }
-.hub-meal-rows .hub-chip:nth-of-type(3) { animation-delay: .41s; }
-.hub-meal-rows > div:nth-child(2) .hub-chip { animation-delay: .45s; }
-@keyframes hub-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@keyframes hub-pop { from { opacity: 0; transform: scale(.5); } to { opacity: 1; transform: scale(1); } }
-.hub-runs .hub-chip-strong { animation: hub-pop .5s cubic-bezier(.3,1.6,.5,1) .25s backwards, hub-glow 2.8s ease-in-out 1s infinite; }
-@keyframes hub-glow { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--dc) 0%, transparent); } 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--dc) 16%, transparent); } }
-.hub-runs li:first-child .hub-run-ic svg { animation: hub-bob-up 1.6s ease-in-out infinite; }
-.hub-runs li:last-child .hub-run-ic svg { animation: hub-bob-down 1.6s ease-in-out infinite; }
-@keyframes hub-bob-up { 0%, 100% { transform: translateY(1.5px); } 50% { transform: translateY(-2px); } }
-@keyframes hub-bob-down { 0%, 100% { transform: translateY(-1.5px); } 50% { transform: translateY(2px); } }
-/* 냄비: 뚜껑이 달각거리고 김이 올라간다 */
-.hub-deco-pot { position: absolute; right: 18px; bottom: 14px; display: block; width: 54px; height: 38px; color: var(--dc); pointer-events: none; }
-.hub-deco-pot svg { position: relative; display: block; }
-.hub-pot-lid { transform-box: fill-box; transform-origin: 50% 100%; animation: hub-lid 2.4s ease-in-out infinite; }
-@keyframes hub-lid { 0%, 70%, 100% { transform: translateY(0) rotate(0); } 78% { transform: translateY(-2px) rotate(-4deg); } 86% { transform: translateY(-1px) rotate(3deg); } 94% { transform: translateY(-2px) rotate(-2deg); } }
-.hub-deco-pot i { position: absolute; bottom: 26px; width: 4px; height: 16px; border-radius: 4px; background: color-mix(in srgb, var(--dc) 40%, #fff); opacity: 0; animation: hub-steam 2.6s ease-in infinite; }
-.hub-deco-pot i:nth-child(1) { left: 16px; animation-delay: 0s; }
-.hub-deco-pot i:nth-child(2) { left: 25px; animation-delay: .8s; height: 20px; }
-.hub-deco-pot i:nth-child(3) { left: 34px; animation-delay: 1.6s; }
-@keyframes hub-steam { 0% { opacity: 0; transform: translateY(8px) scaleY(.6); } 25% { opacity: .85; } 100% { opacity: 0; transform: translateY(-22px) translateX(3px) scaleY(1.15); } }
-/* 도로: 점선이 뒤로 흐르고 차가 달린다 */
-.hub-road { position: relative; flex: 0 0 auto; height: 38px; margin: auto -24px -24px; overflow: hidden; }
-.hub-road::after { content: ''; position: absolute; left: 0; right: 0; bottom: 5px; height: 3px; background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--dc) 30%, #fff) 0 12px, transparent 12px 24px); animation: hub-road-flow 1s linear infinite; }
-.hub-road-car { position: absolute; left: -10%; bottom: 8px; display: inline-flex; color: var(--dc); animation: hub-drive 7s linear infinite; }
-.hub-road-car svg { animation: hub-drive-bump .5s ease-in-out infinite; }
-@keyframes hub-road-flow { to { background-position-x: -24px; } }
-@keyframes hub-drive { from { left: -10%; } to { left: 104%; } }
-@media (prefers-reduced-motion: reduce) {
-  .hub-dcard-kitchen *, .hub-dcard-car *, .hub-pop-track li { animation: none !important; }
-  .hub-road-car { left: 40%; }
-  .hub-deco-pot i { opacity: .5; }
-}
+/* ── 키친 듀티 · 차량 운행: 한 번만 부드럽게 나타나고, 마우스를 올리면 살짝 강조 (반복 움직임 없음) ── */
+.hub-meals li, .hub-runs li { animation: hub-rise .45s cubic-bezier(.2,.8,.3,1) backwards; }
+.hub-meals li:nth-child(2), .hub-runs li:nth-child(2) { animation-delay: .08s; }
+.hub-meals li:nth-child(3) { animation-delay: .16s; }
+.hub-runs li { transition: background .18s ease, box-shadow .18s ease; }
+.hub-runs li:hover { background: #f2e9f7; box-shadow: 0 1px 0 rgba(16,42,56,.04); }
+.hub-meal-rows .hub-chip, .hub-runs .hub-chip { transition: background .18s ease; }
+.hub-meal-rows .hub-chip:hover { background: color-mix(in srgb, var(--dc) 14%, #fff); }
+@keyframes hub-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .hub-meals li, .hub-runs li, .hub-pop-track li { animation: none !important; } }
+
 /* 교회 목록의 li 규칙(여백 · 호버 배경)이 세부 카드 안의 li 에 번지지 않게 */
 .hub-churches .hub-church-pop li { padding: 0; }
 .hub-churches .hub-church-pop .hub-pop-steps li, .hub-churches .hub-church-pop .hub-pop-steps li:hover { background: none; }
