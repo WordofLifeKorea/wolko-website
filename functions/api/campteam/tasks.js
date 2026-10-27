@@ -3,7 +3,7 @@ import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, den
 import { uuid, nowIso, text, isDate, todayKST, audit, TASK_STATUSES, TASK_PRIORITIES } from '../../lib/campteamDb.js';
 
 const CLOSED = `('Completed','Not Applicable')`;
-const SELECT = `SELECT k.id, k.campId, k.title, k.ownerName, k.ownerEmail, k.ownerSuggestion, k.dueDate, k.status, k.priority, k.notes, k.sourceKey, k.section, k.meetingId, k.createdAt, k.updatedAt, k.isTest,
+const SELECT = `SELECT k.id, k.campId, k.title, k.ownerName, k.ownerEmail, k.ownerSuggestion, k.dueDate, k.status, k.priority, k.notes, k.sourceKey, k.section, k.inactive, k.meetingId, k.createdAt, k.updatedAt, k.isTest,
     c.nameKo AS campKo, c.nameEn AS campEn
   FROM tasks k LEFT JOIN camps c ON c.id = k.campId`;
 const SORTS = {
@@ -11,7 +11,7 @@ const SORTS = {
   newest: `k.createdAt DESC`, title: `k.title COLLATE NOCASE`,
 };
 
-/** 목록·필터: ?campId= (none=캠프 없음) &status= &priority= &owner= &flag=open|overdue|noowner|nodue &q= &sort=due|priority|newest|title */
+/** 목록·필터: ?campId= (none=캠프 없음) &status= &priority= &owner= &flag=open|overdue|noowner|nodue|inactive &q= &sort=due|priority|newest|title */
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
@@ -27,21 +27,24 @@ export async function onRequestGet({ env, request }) {
   const owner = text(p.get('owner'), 60);
   if (owner) { where.push('k.ownerName = ?'); args.push(owner); }
   const flag = p.get('flag');
-  if (flag === 'open') where.push(`k.status NOT IN ${CLOSED}`);
-  else if (flag === 'overdue') { where.push(`k.status NOT IN ${CLOSED} AND k.dueDate IS NOT NULL AND k.dueDate < ?`); args.push(today); }
-  else if (flag === 'noowner') where.push(`k.status NOT IN ${CLOSED} AND TRIM(k.ownerName) = ''`);
-  else if (flag === 'nodue') where.push(`k.status NOT IN ${CLOSED} AND k.dueDate IS NULL`);
+  // 비활성 업무는 "전체"와 "비활성" 목록에서만 보이고, 진행 중·마감 지남 등 집계에서는 빠진다
+  if (flag === 'inactive') where.push('k.inactive = 1');
+  else if (flag === 'open') where.push(`k.inactive = 0 AND k.status NOT IN ${CLOSED}`);
+  else if (flag === 'overdue') { where.push(`k.inactive = 0 AND k.status NOT IN ${CLOSED} AND k.dueDate IS NOT NULL AND k.dueDate < ?`); args.push(today); }
+  else if (flag === 'noowner') where.push(`k.inactive = 0 AND k.status NOT IN ${CLOSED} AND TRIM(k.ownerName) = ''`);
+  else if (flag === 'nodue') where.push(`k.inactive = 0 AND k.status NOT IN ${CLOSED} AND k.dueDate IS NULL`);
   const q = text(p.get('q'), 80);
   if (q) { const like = `%${q.replace(/[%_\\]/g, m => '\\' + m)}%`; where.push(`(k.title LIKE ? ESCAPE '\\' OR k.ownerName LIKE ? ESCAPE '\\' OR k.notes LIKE ? ESCAPE '\\')`); args.push(like, like, like); }
   const rows = (await env.DB.prepare(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${SORTS[p.get('sort')] || SORTS.due} LIMIT 500`).bind(...args).all()).results;
   const counts = await env.DB.prepare(`SELECT
-      SUM(CASE WHEN status NOT IN ${CLOSED} THEN 1 ELSE 0 END) AS open,
-      SUM(CASE WHEN status NOT IN ${CLOSED} AND dueDate IS NOT NULL AND dueDate < ?1 THEN 1 ELSE 0 END) AS overdue,
-      SUM(CASE WHEN status NOT IN ${CLOSED} AND TRIM(ownerName) = '' THEN 1 ELSE 0 END) AS noOwner,
-      SUM(CASE WHEN status NOT IN ${CLOSED} AND dueDate IS NULL THEN 1 ELSE 0 END) AS noDue
+      SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} THEN 1 ELSE 0 END) AS open,
+      SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} AND dueDate IS NOT NULL AND dueDate < ?1 THEN 1 ELSE 0 END) AS overdue,
+      SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} AND TRIM(ownerName) = '' THEN 1 ELSE 0 END) AS noOwner,
+      SUM(CASE WHEN inactive = 0 AND status NOT IN ${CLOSED} AND dueDate IS NULL THEN 1 ELSE 0 END) AS noDue,
+      SUM(CASE WHEN inactive = 1 THEN 1 ELSE 0 END) AS inactive
     FROM tasks WHERE deletedAt IS NULL`).bind(today).first();
   const owners = (await env.DB.prepare(`SELECT DISTINCT ownerName FROM tasks WHERE deletedAt IS NULL AND TRIM(ownerName) <> '' ORDER BY ownerName`).all()).results.map(r => r.ownerName);
-  return json({ items: rows, today, owners, counts: { open: counts.open || 0, overdue: counts.overdue || 0, noOwner: counts.noOwner || 0, noDue: counts.noDue || 0 }, perms: s.perms });
+  return json({ items: rows, today, owners, counts: { open: counts.open || 0, overdue: counts.overdue || 0, noOwner: counts.noOwner || 0, noDue: counts.noDue || 0, inactive: counts.inactive || 0 }, perms: s.perms });
 }
 
 /** 입력 검사. 담당자·기한이 비어 있는 것은 허용하고 임의로 채우지 않는다. */
@@ -68,6 +71,7 @@ async function clean(env, b, base = {}) {
     ownerName,
     ownerEmail,
     notes: has('notes') ? text(b.notes, 1000) : base.notes ?? '',
+    inactive: has('inactive') ? (b.inactive ? 1 : 0) : base.inactive ? 1 : 0,
   } };
 }
 
@@ -79,8 +83,8 @@ export async function onRequestPost({ env, request }) {
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const { v, error } = await clean(env, b); if (error) return badRequest(error);
   const id = uuid(), now = nowIso();
-  await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerEmail,dueDate,status,priority,notes,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10,?11)`)
-    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, now, s.email).run();
+  await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerEmail,dueDate,status,priority,notes,createdAt,updatedAt,createdBy,inactive) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10,?11,?12)`)
+    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, now, s.email, v.inactive).run();
   await audit(env, s.email, 'create', 'task', id, v.title);
   return json({ id }, 201);
 }
@@ -95,9 +99,9 @@ export async function onRequestPatch({ env, request }) {
   if (!row) return json({ error: '찾을 수 없습니다.' }, 404);
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const { v, error } = await clean(env, b, row); if (error) return badRequest(error);
-  await env.DB.prepare(`UPDATE tasks SET campId=?2,title=?3,ownerName=?4,ownerEmail=?5,dueDate=?6,status=?7,priority=?8,notes=?9,updatedAt=?10 WHERE id=?1`)
-    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, nowIso()).run();
-  await audit(env, s.email, 'update', 'task', id, `${row.status}→${v.status} ${v.title}`);
+  await env.DB.prepare(`UPDATE tasks SET campId=?2,title=?3,ownerName=?4,ownerEmail=?5,dueDate=?6,status=?7,priority=?8,notes=?9,updatedAt=?10,inactive=?11 WHERE id=?1`)
+    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, nowIso(), v.inactive).run();
+  await audit(env, s.email, 'update', 'task', id, `${row.status}→${v.status} ${v.title}${(row.inactive ? 1 : 0) !== v.inactive ? (v.inactive ? ' [비활성]' : ' [활성]') : ''}`);
   return json({ ok: true });
 }
 

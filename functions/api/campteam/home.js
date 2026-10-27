@@ -12,7 +12,7 @@ export async function onRequestGet({ env, request }) {
   const today = todayKST();
   const db = env.DB, ownerKeys = await loadOwnerKeys(env, s.email);
   // 업무 표(별칭 k)의 열만 쓰도록 접두어를 붙인다 — camps 표에도 status 열이 있어서 접두어가 없으면 모호해진다
-  const open = `k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable')`;
+  const open = `k.deletedAt IS NULL AND k.inactive = 0 AND k.status NOT IN ('Completed','Not Applicable')`;
 
   const [stats, camps, deadlines, attention, agenda, meetings, files, notices, myTasks, campChoices, overdue, decisions, statusRows] = await Promise.all([
     db.prepare(`SELECT
@@ -21,11 +21,11 @@ export async function onRequestGet({ env, request }) {
         SUM(CASE WHEN ${OPEN_STATUS_SQL} AND TRIM(ownerName) = '' THEN 1 ELSE 0 END) AS noOwner,
         SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed,
         SUM(CASE WHEN status <> 'Not Applicable' THEN 1 ELSE 0 END) AS total
-      FROM tasks WHERE deletedAt IS NULL`).bind(today).first(),
+      FROM tasks WHERE deletedAt IS NULL AND inactive = 0`).bind(today).first(),
     db.prepare(`SELECT c.id, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.isTest,
         t.nameKo AS typeKo, t.nameEn AS typeEn,
-        (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status <> 'Not Applicable') AS taskTotal,
-        (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status = 'Completed') AS taskDone
+        (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status <> 'Not Applicable') AS taskTotal,
+        (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status = 'Completed') AS taskDone
       FROM camps c JOIN camp_types t ON t.id = c.typeId
       WHERE c.deletedAt IS NULL AND c.status IN ('planning','active')
       ORDER BY c.startDate IS NULL, c.startDate, c.nameKo LIMIT 8`).all(),
@@ -57,7 +57,7 @@ export async function onRequestGet({ env, request }) {
     db.prepare(`SELECT d.id, d.kind, d.textKo, d.textEn, d.decidedDate, d.isTest, c.nameKo AS campKo, c.nameEn AS campEn
       FROM decisions d LEFT JOIN camps c ON c.id = d.campId
       WHERE d.deletedAt IS NULL AND d.state = 'active' AND d.kind IN ('direction','final') ORDER BY d.decidedDate IS NULL, d.decidedDate DESC, d.createdAt DESC LIMIT 6`).all(),
-    db.prepare(`SELECT status, COUNT(*) AS n FROM tasks WHERE deletedAt IS NULL GROUP BY status`).all(),
+    db.prepare(`SELECT status, COUNT(*) AS n FROM tasks WHERE deletedAt IS NULL AND inactive = 0 GROUP BY status`).all(),
   ]);
 
   // 금액: 권한이 없으면 이 표는 아예 읽지 않는다 (응답에도 budget 키가 없다)

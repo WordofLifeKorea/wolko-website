@@ -29,10 +29,11 @@ export async function onRequestGet({ env, request }) {
   const restrict = (s.perms.moneyRead ? '' : 'AND f.restricted = 0') + (s.campRole ? '' : ' AND f.id IN (SELECT fileId FROM file_public)'); // 명단 밖은 공개 파일만
   const [events, tasks, taskStats, meetings, decisions, files, fileCount, nextAgenda, camps] = await Promise.all([
     db.prepare(`SELECT id, title, kind, startDate, endDate, startTime FROM events WHERE deletedAt IS NULL AND campId IN (${inList}) AND COALESCE(endDate, startDate) >= ? ORDER BY startDate LIMIT 8`).bind(...args, today).all(),
-    db.prepare(`SELECT id, title, ownerName, ownerSuggestion, dueDate, status, priority, section FROM tasks WHERE deletedAt IS NULL AND campId IN (${inList}) AND status NOT IN ('Completed','Not Applicable') ORDER BY (dueDate IS NULL), dueDate, CASE priority WHEN 'High' THEN 0 WHEN 'Medium' THEN 1 ELSE 2 END LIMIT 10`).bind(...args).all(),
+    db.prepare(`SELECT id, title, ownerName, ownerSuggestion, dueDate, status, priority, section FROM tasks WHERE deletedAt IS NULL AND inactive = 0 AND campId IN (${inList}) AND status NOT IN ('Completed','Not Applicable') ORDER BY (dueDate IS NULL), dueDate, CASE priority WHEN 'High' THEN 0 WHEN 'Medium' THEN 1 ELSE 2 END LIMIT 10`).bind(...args).all(),
     db.prepare(`SELECT SUM(CASE WHEN status NOT IN ('Completed','Not Applicable') THEN 1 ELSE 0 END) AS open, SUM(CASE WHEN status NOT IN ('Completed','Not Applicable') AND dueDate IS NOT NULL AND dueDate < ? THEN 1 ELSE 0 END) AS overdue,
-        SUM(CASE WHEN status NOT IN ('Completed','Not Applicable') AND TRIM(ownerName) = '' THEN 1 ELSE 0 END) AS noOwner, SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed, SUM(CASE WHEN status <> 'Not Applicable' THEN 1 ELSE 0 END) AS total
-      FROM tasks WHERE deletedAt IS NULL AND campId IN (${inList})`).bind(today, ...args).first(),
+        SUM(CASE WHEN status NOT IN ('Completed','Not Applicable') AND TRIM(ownerName) = '' THEN 1 ELSE 0 END) AS noOwner, SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed, SUM(CASE WHEN status <> 'Not Applicable' THEN 1 ELSE 0 END) AS total,
+        (SELECT COUNT(*) FROM tasks WHERE deletedAt IS NULL AND inactive = 1 AND campId IN (${inList})) AS inactive
+      FROM tasks WHERE deletedAt IS NULL AND inactive = 0 AND campId IN (${inList})`).bind(today, ...args, ...args).first(),
     db.prepare(`SELECT id, meetDate, title, titleEn, status FROM meetings WHERE deletedAt IS NULL AND campId IN (${inList}) ORDER BY meetDate DESC LIMIT 6`).bind(...args).all(),
     db.prepare(`SELECT id, meetingId, kind, textKo, textEn, decidedDate FROM decisions WHERE deletedAt IS NULL AND state = 'active' AND kind IN ('direction','final','changed') AND campId IN (${inList}) ORDER BY decidedDate DESC LIMIT 6`).bind(...args).all(),
     db.prepare(`SELECT f.id, f.title, f.kind, f.category, f.statusLabel, f.createdAt, f.restricted FROM files f WHERE f.deletedAt IS NULL ${restrict} AND (f.campId IN (${inList}) ${typeId ? 'OR f.typeId = ?' : ''} OR EXISTS (SELECT 1 FROM file_links l WHERE l.fileId = f.id AND l.deletedAt IS NULL AND l.campId IN (${inList}))) ORDER BY f.createdAt DESC LIMIT 6`).bind(...args, ...(typeId ? [typeId] : []), ...args).all(),
@@ -42,7 +43,7 @@ export async function onRequestGet({ env, request }) {
   ]);
   // 항목별 권한: 캠프별 공간을 볼 수 있어도, 업무·회의·자료 영역을 볼 수 없으면 그 내용은 내려주지 않는다 (숫자도 0으로)
   const T = canView(s.perms, 'tasks'), M = canView(s.perms, 'meetings'), F = canView(s.perms, 'files');
-  const out = { camp, type, camps: camps.results, stats: T ? { open: taskStats.open || 0, overdue: taskStats.overdue || 0, noOwner: taskStats.noOwner || 0, completed: taskStats.completed || 0, total: taskStats.total || 0, files: F ? fileCount.n : 0 } : { open: 0, overdue: 0, noOwner: 0, completed: 0, total: 0, files: F ? fileCount.n : 0 },
+  const out = { camp, type, camps: camps.results, stats: T ? { open: taskStats.open || 0, overdue: taskStats.overdue || 0, noOwner: taskStats.noOwner || 0, completed: taskStats.completed || 0, total: taskStats.total || 0, inactive: taskStats.inactive || 0, files: F ? fileCount.n : 0 } : { open: 0, overdue: 0, noOwner: 0, completed: 0, total: 0, files: F ? fileCount.n : 0 },
     events: T ? events.results : [], tasks: T ? tasks.results : [], meetings: M ? meetings.results : [], decisions: M ? decisions.results : [], files: F ? files.results : [], nextAgenda: M ? nextAgenda.results : [], perms: s.perms,
     visible: { tasks: T, meetings: M, files: F } };
   if (s.perms.moneyRead && campIds.length) {
