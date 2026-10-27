@@ -11,7 +11,7 @@
     try {
       var r = await CT.api('/api/campteam/search?q=' + encodeURIComponent(q)), g = r.groups;
       $('srSub').textContent = '"' + q + '" · ' + r.total + CT.t('srCount');
-      var h = section(CT.t('srTasks'), g.tasks, function (t) { return '<div class="row"><div><a href="/portal/campteam/tasks/">' + esc(t.title) + '</a><small>' + esc(t.ownerName || '—') + (t.dueDate ? ' · ' + esc(t.dueDate) : '') + ' · ' + esc(t.status) + '</small></div></div>'; }) +
+      var h = section(CT.t('srTasks'), g.tasks, function (t) { return '<div class="row"><div><a href="/portal/campteam/tasks/">' + esc(CT.tt(t)) + '</a><small>' + esc(t.ownerName || '—') + (t.dueDate ? ' · ' + esc(t.dueDate) : '') + ' · ' + esc(t.status) + '</small></div></div>'; }) +
         section(CT.t('srMeetings'), g.meetings, function (m) { return '<div class="row"><div><a href="/portal/campteam/meetings/?open=' + esc(m.id) + '">' + esc(CT.lang() === 'en' && m.titleEn ? m.titleEn : m.title) + '</a><small>' + esc(m.meetDate) + '</small></div></div>'; }) +
         section(CT.t('srSections'), g.sections, function (s) { return '<div class="row"><div><a href="/portal/campteam/meetings/?open=' + esc(s.meetingId) + '">' + esc(CT.lang() === 'en' && s.titleEn ? s.titleEn : s.topic) + '</a><small>' + esc(s.meetDate) + ' · ' + esc(s.meetingTitle) + '</small></div></div>'; }) +
         section(CT.t('srDecisions'), g.decisions, function (d) { return '<div class="row"><div><span class="kindchip kc-' + esc(d.kind) + '">' + esc(d.kind) + '</span> <a href="/portal/campteam/meetings/?open=' + esc(d.meetingId) + '">' + esc(CT.lang() === 'en' && d.textEn ? d.textEn : (d.textKo || d.textEn)) + '</a><small>' + esc(d.decidedDate || '') + ' · ' + esc(d.state) + '</small></div></div>'; }) +

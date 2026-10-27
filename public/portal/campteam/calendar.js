@@ -50,7 +50,7 @@
     S.cal.camps.forEach(function (c) { span(c.startDate, c.endDate, { cls: 'camp', text: CT.pick(c, 'name'), sort: 0, kindLabel: 'dayCamp', camp: c }); });
     S.cal.events.forEach(function (e) { span(e.startDate, e.endDate, { cls: e.kind === 'out' ? 'out' : 'ev', text: (e.startTime ? e.startTime + ' ' : '') + e.title, title: e.title, time: e.startTime ? e.startTime + (e.endTime ? ' ~ ' + e.endTime : '') : '', sort: 1, kindLabel: 'dayEvent', ev: e }); });
     S.cal.meetings.forEach(function (m) { add(m.meetDate, { cls: 'meet', text: (m.meetTime ? m.meetTime + ' ' : '') + m.title, title: m.title, time: m.meetTime || '', sort: 2, kindLabel: 'dayMeeting', meeting: m }); });
-    S.cal.tasks.forEach(function (t) { add(t.dueDate, { cls: t.dueDate < today && t.status !== 'Completed' ? 'late' : 'task', text: '✓ ' + t.title, title: t.title, time: '', sort: 3, kindLabel: 'dayTask', task: t }); });
+    S.cal.tasks.forEach(function (t) { add(t.dueDate, { cls: t.dueDate < today && t.status !== 'Completed' ? 'late' : 'task', text: '✓ ' + CT.tt(t), title: CT.tt(t), time: '', sort: 3, kindLabel: 'dayTask', task: t }); });
     return map;
   }
   function dayLabel(d) { var dt = new Date(d + 'T00:00:00'); return CT.lang() === 'en' ? dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 (' + dowNames()[dt.getDay()] + ')'; }
