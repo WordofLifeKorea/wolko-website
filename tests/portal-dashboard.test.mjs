@@ -55,7 +55,10 @@ test('recent churches are sorted by update time and expose only name and dates',
     d: { updatedAt: 500 },
   });
   assert.deepEqual(out.map(c => c.name), ['New', 'Old']);
-  assert.deepEqual(Object.keys(out[0]).sort(), ['lastVisitDate', 'name', 'updatedAt']);
+  assert.deepEqual(Object.keys(out[0]).sort(), ['lastVisitDate', 'location', 'name', 'pastor', 'steps', 'updatedAt', 'visitor']);
+  assert.ok(!JSON.stringify(out).includes('x@y.z') && !JSON.stringify(out).includes('010-1'));
+  const detail = recentChurches({ z: { churchName: 'Z', updatedAt: 1, region: '경기', district: '평택', pastorName: '김 목사', lastVisitVisitor: 'Amy', steps: { 1: true, 2: true, 3: false, 5: 'x' } } })[0];
+  assert.deepEqual({ ...detail }, { name: 'Z', updatedAt: 1, lastVisitDate: '', visitor: 'Amy', location: '경기 평택', pastor: '김 목사', steps: 3 });
 });
 
 test('dashboard keeps working when optional sources are not connected', async () => {

@@ -9,7 +9,7 @@ import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 
 export const NOTICES_KEY = 'portal:notices';
 export const MAX_NOTICES = 60;
-const DASH_CHURCH_KEY = 'portal:dash-churches';
+const DASH_CHURCH_KEY = 'portal:dash-churches-v2';
 const DASH_CHURCH_SECONDS = 300;
 const CRS_DATABASE = 'https://wolko-crs-default-rtdb.asia-southeast1.firebasedatabase.app';
 const DAY = 86400000;
@@ -71,10 +71,14 @@ export async function upcomingEvents(env, today, limit = 5) {
     .slice(0, limit);
 }
 
-/** CRS 교회 레코드 → 최근 업데이트 순 [{ name, updatedAt, lastVisitDate }] (이름·날짜만 꺼낸다) */
+/** CRS 교회 레코드 → 최근 업데이트 순 [{ name, updatedAt, lastVisitDate, visitor, location, pastor, steps }] (연락처·메모는 꺼내지 않는다) */
 export function recentChurches(records, limit = 5) {
   return Object.values(records || {})
-    .map(c => ({ name: clean(c?.churchName, 80), updatedAt: Number(c?.updatedAt) || 0, lastVisitDate: clean(c?.lastVisitDate, 20) }))
+    .map(c => ({
+      name: clean(c?.churchName, 80), updatedAt: Number(c?.updatedAt) || 0, lastVisitDate: clean(c?.lastVisitDate, 20),
+      visitor: clean(c?.lastVisitVisitor, 40), location: clean(c?.location || [c?.region, c?.district].filter(Boolean).join(' '), 60), pastor: clean(c?.pastorName, 40),
+      steps: Math.min(12, Object.values(c?.steps || {}).filter(Boolean).length),
+    }))
     .filter(c => c.name && c.updatedAt > 0)
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, limit);
