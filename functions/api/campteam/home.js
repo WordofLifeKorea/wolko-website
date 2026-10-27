@@ -29,10 +29,10 @@ export async function onRequestGet({ env, request }) {
       FROM camps c JOIN camp_types t ON t.id = c.typeId
       WHERE c.deletedAt IS NULL AND c.status IN ('planning','active')
       ORDER BY c.startDate IS NULL, c.startDate, c.nameKo LIMIT 8`).all(),
-    db.prepare(`SELECT k.id, k.title, k.ownerName, k.dueDate, k.status, k.priority, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
+    db.prepare(`SELECT k.id, k.title, k.titleKo, k.titleEn, k.ownerName, k.dueDate, k.status, k.priority, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
       FROM tasks k LEFT JOIN camps c ON c.id = k.campId
       WHERE ${open} AND k.dueDate IS NOT NULL ORDER BY k.dueDate LIMIT 6`).all(),
-    db.prepare(`SELECT k.id, k.title, k.ownerName, k.dueDate, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
+    db.prepare(`SELECT k.id, k.title, k.titleKo, k.titleEn, k.ownerName, k.dueDate, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
       FROM tasks k LEFT JOIN camps c ON c.id = k.campId
       WHERE ${open} AND (TRIM(k.ownerName) = '' OR (k.dueDate IS NOT NULL AND k.dueDate < ?1))
       ORDER BY (TRIM(k.ownerName) = '') DESC, k.dueDate LIMIT 6`).bind(today).all(),
@@ -44,13 +44,13 @@ export async function onRequestGet({ env, request }) {
     db.prepare(`SELECT id, title, kind, uploadedBy, statusLabel, createdAt, updatedAt, isTest FROM files WHERE deletedAt IS NULL ${s.perms.moneyRead ? '' : 'AND restricted = 0'} ${s.campRole ? '' : 'AND id IN (SELECT fileId FROM file_public)'} ORDER BY COALESCE(updatedAt, createdAt) DESC LIMIT 8`).all(),
     db.prepare(`SELECT id, message, messageEn, isTest FROM notices WHERE deletedAt IS NULL AND active = 1 ORDER BY sortOrder, createdAt LIMIT 8`).all(),
     // 내 담당 업무: 담당자 이메일이 내 이메일이거나, 이름이 내 이름·별칭과 같은 업무 (아래에서 걸러낸다)
-    db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, k.ownerName, k.ownerEmail, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
+    db.prepare(`SELECT k.id, k.title, k.titleKo, k.titleEn, k.dueDate, k.status, k.priority, k.ownerName, k.ownerEmail, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
       FROM tasks k LEFT JOIN camps c ON c.id = k.campId
       WHERE ${open} AND (k.ownerEmail <> '' OR k.ownerName <> '') ORDER BY k.dueDate IS NULL, k.dueDate LIMIT 3000`).all(),
     // D-day 위젯에서 고를 캠프 목록 (날짜가 있는 진행 예정 캠프)
     db.prepare(`SELECT id, nameKo, nameEn, startDate, endDate, status FROM camps WHERE deletedAt IS NULL AND status IN ('planning','active') ORDER BY startDate IS NULL, startDate, nameKo LIMIT 30`).all(),
     // 마감 지난 업무 (진행 중인 것만, 오래된 순)
-    db.prepare(`SELECT k.id, k.title, k.ownerName, k.dueDate, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
+    db.prepare(`SELECT k.id, k.title, k.titleKo, k.titleEn, k.ownerName, k.dueDate, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn
       FROM tasks k LEFT JOIN camps c ON c.id = k.campId
       WHERE ${open} AND k.dueDate IS NOT NULL AND k.dueDate < ?1 ORDER BY k.dueDate LIMIT 8`).bind(today).all(),
     // 최근 결정 (지금 유효한 방향 합의·최종 결정만)

@@ -13,7 +13,7 @@ export async function onRequestGet({ env, request }) {
     db.prepare(`SELECT e.id, e.title, e.kind, e.startDate, e.endDate, e.startTime, e.endTime, e.isTest, c.nameKo AS campKo, c.nameEn AS campEn FROM events e LEFT JOIN camps c ON c.id = e.campId
       WHERE e.deletedAt IS NULL AND e.startDate <= ?2 AND COALESCE(e.endDate, e.startDate) >= ?1 ORDER BY e.startDate, e.startTime`).bind(from, to).all(),
     db.prepare(`SELECT id, nameKo, nameEn, startDate, endDate, status, isTest FROM camps WHERE deletedAt IS NULL AND status <> 'canceled' AND startDate IS NOT NULL AND startDate <= ?2 AND COALESCE(endDate, startDate) >= ?1`).bind(from, to).all(),
-    db.prepare(`SELECT k.id, k.title, k.dueDate, k.status, k.priority, k.ownerName, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
+    db.prepare(`SELECT k.id, k.title, k.titleKo, k.titleEn, k.dueDate, k.status, k.priority, k.ownerName, k.isTest, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
       WHERE k.deletedAt IS NULL AND k.inactive = 0 AND k.dueDate BETWEEN ?1 AND ?2 AND k.status <> 'Not Applicable' ORDER BY k.dueDate`).bind(from, to).all(),
     db.prepare(`SELECT id, title, meetDate, meetTime, isTest FROM meetings WHERE deletedAt IS NULL AND meetDate BETWEEN ?1 AND ?2 ORDER BY meetDate, meetTime`).bind(from, to).all(),
   ]);

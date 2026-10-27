@@ -7,7 +7,7 @@
       stNot: '미시작', stIn: '진행 중', stWait: '확인 대기', stDelayed: '지연', stDone: '완료', stNA: '해당 없음', priHigh: '높음', priMedium: '보통', priLow: '낮음',
       pgPrev: '이전', pgNext: '다음', pgRange: '전체', pgUnit: '건 중', pgTo: '–',
       owner: '담당', noOwner: '담당자 미정', noDue: '기한 미정', due: '기한', overdue: '마감 지남', suggested: '제안', confirm: '확정', noTasks: '조건에 맞는 업무가 없어요.', edit: '수정', del: '삭제', save: '저장', cancel: '취소',
-      fTitle: '업무 이름', fOwner: '담당자 (명단에서 고르거나 직접 적어요 · 비워 둘 수 있어요)', fDue: '기한 (비워 둘 수 있어요)', fStatus: '상태', fPriority: '우선순위', fCamp: '관련 캠프', fNotes: '메모', fDate: '날짜', fEnd: '종료일 (선택)', fStart: '시작 시간', fEndT: '종료 시간', fKind: '종류', fLoc: '장소', kTeam: '팀 일정', kCamp: '캠프 일정', kOut: '부재', evTitle: '일정', taskTitle: '업무', newTask: '업무 추가', editTask: '업무 수정', newEvent: '일정 추가', editEvent: '일정 수정',
+      fTitle: '업무 이름', fOwner: '담당자 (목록에서 고르거나 직접 적어요 · 여러 명 가능 · 비워 둘 수 있어요)', fDue: '기한 (비워 둘 수 있어요)', fStatus: '상태', fPriority: '우선순위', fCamp: '관련 캠프', fNotes: '메모', fDate: '날짜', fEnd: '종료일 (선택)', fStart: '시작 시간', fEndT: '종료 시간', fKind: '종류', fLoc: '장소', kTeam: '팀 일정', kCamp: '캠프 일정', kOut: '부재', evTitle: '일정', taskTitle: '업무', newTask: '업무 추가', editTask: '업무 수정', newEvent: '일정 추가', editEvent: '일정 수정',
       lgEvent: '팀 일정', lgCamp: '캠프 기간', lgTask: '업무 마감', lgLate: '마감 지남', lgMeet: '회의', noItems: '이 달에는 표시할 항목이 없어요.',
       addTpl: '+ 템플릿', impTplBtn: '체크리스트 붙여넣어 가져오기', impTplTitle: '체크리스트 가져오기', impTplHelp: 'Word나 엑셀의 체크리스트 표를 그대로 복사해서 붙여넣으세요. 구역(1. 기획…)과 우선순위(1 필수·2 중요·3 일반), 담당자가 자동으로 정리돼요. 담당자는 "제안"으로만 들어가고, 기한은 비워 둡니다.', suggestOff: '구역 이름으로 마감 기준일을 임시로 정하기 (나중에 직접 고칠 수 있어요)', provisional: '임시', itemSection: '구역', previewBtn: '미리보기', impTplDone: '템플릿을 만들었어요', sections: '구역', withOwner: '담당 제안 있음', withOffset: '임시 기준일 있음', tplItems: '항목', tplOffset: '기준일', tplOffsetHelp: '캠프 시작일 기준 (예: -30 = 30일 전)', tplOwner: '제안 담당자', tplNone: '(없음 · 마감일 없이 만듦)', addItem: '+ 항목', applyTo: '캠프에 적용', tplName: '템플릿 이름', tplNameEn: '이름 (English)', tplDesc: '설명', itemTitle: '항목 이름', itemOffset: '기준일 (캠프 시작일 기준 며칠 전/후, 비워도 돼요)', itemOwner: '제안 담당자', chooseCamp: '적용할 캠프', preview: '미리보기', applyNow: '이대로 적용', willCreate: '만들어질 업무', skipExists: '이미 있어서 건너뜀', campNoDate: '이 캠프에는 시작일이 없어서 마감일 없이 만들어져요.', confirmOwner: '제안 담당자를 확정', done: '적용했어요',
       impTitle: '기존 Google 시트의 업무를 한 번 가져오기', impHelp: '시트에서 업무 칸 전체(맨 윗줄 머리글 포함)를 복사해서 아래에 붙여넣으세요. (파일 → 다운로드 → .csv 내용도 가능해요) 담당자·기한은 시트에 적힌 그대로만 가져오고, 같은 캠프에 같은 이름의 업무가 이미 있으면 건너뛰어요. Google에는 접속하지 않아요.', impPreview: '미리보기', impRun: '이대로 가져오기', impSummary: '개', impCreate: '새로 만듦', impSkip: '건너뜀(이미 있음)', impUnmatched: '캠프를 연결하지 못한 이름', impWarn: '확인', impDone: '가져왔어요', delConfirm: '삭제할까요? (삭제 표시만 되며 복구할 수 있어요)' },
@@ -18,7 +18,7 @@
       stNot: 'Not Started', stIn: 'In Progress', stWait: 'Waiting for Confirmation', stDelayed: 'Delayed', stDone: 'Completed', stNA: 'Not Applicable', priHigh: 'High', priMedium: 'Medium', priLow: 'Low',
       pgPrev: 'Prev', pgNext: 'Next', pgRange: 'of', pgUnit: '', pgTo: '–',
       owner: 'Owner', noOwner: 'No owner', noDue: 'No due date', due: 'Due', overdue: 'Overdue', suggested: 'Suggested', confirm: 'Confirm', noTasks: 'No tasks match.', edit: 'Edit', del: 'Delete', save: 'Save', cancel: 'Cancel',
-      fTitle: 'Task name', fOwner: 'Owner (pick from the roster or type · can be blank)', fDue: 'Due date (can be left blank)', fStatus: 'Status', fPriority: 'Priority', fCamp: 'Camp', fNotes: 'Notes', fDate: 'Date', fEnd: 'End date (optional)', fStart: 'Start time', fEndT: 'End time', fKind: 'Type', fLoc: 'Location', kTeam: 'Team event', kCamp: 'Camp event', kOut: 'Out of office', evTitle: 'Event', taskTitle: 'Task', newTask: 'Add task', editTask: 'Edit task', newEvent: 'Add event', editEvent: 'Edit event',
+      fTitle: 'Task name', fOwner: 'Owner (pick from the list or type · several allowed · can be blank)', fDue: 'Due date (can be left blank)', fStatus: 'Status', fPriority: 'Priority', fCamp: 'Camp', fNotes: 'Notes', fDate: 'Date', fEnd: 'End date (optional)', fStart: 'Start time', fEndT: 'End time', fKind: 'Type', fLoc: 'Location', kTeam: 'Team event', kCamp: 'Camp event', kOut: 'Out of office', evTitle: 'Event', taskTitle: 'Task', newTask: 'Add task', editTask: 'Edit task', newEvent: 'Add event', editEvent: 'Edit event',
       lgEvent: 'Team event', lgCamp: 'Camp dates', lgTask: 'Task due', lgLate: 'Overdue', lgMeet: 'Meeting', noItems: 'Nothing to show this month.',
       addTpl: '+ Template', impTplBtn: 'Import checklist by pasting', impTplTitle: 'Import checklist', impTplHelp: 'Copy the checklist table from Word or Excel and paste it here. Sections, priorities (1 Required · 2 Important · 3 General) and owners are organized automatically. Owners are only suggestions and due dates stay empty.', suggestOff: 'Set provisional due offsets from section names (you can edit them later)', provisional: 'provisional', itemSection: 'Section', previewBtn: 'Preview', impTplDone: 'Template created', sections: 'Sections', withOwner: 'With owner suggestion', withOffset: 'With provisional offset', tplItems: 'Items', tplOffset: 'Offset', tplOffsetHelp: 'Relative to camp start (e.g. -30 = 30 days before)', tplOwner: 'Suggested owner', tplNone: '(none · created without due date)', addItem: '+ Item', applyTo: 'Apply to camp', tplName: 'Template name', tplNameEn: 'Name (English)', tplDesc: 'Description', itemTitle: 'Item name', itemOffset: 'Offset (days before/after camp start, optional)', itemOwner: 'Suggested owner', chooseCamp: 'Camp to apply to', preview: 'Preview', applyNow: 'Apply as shown', willCreate: 'Tasks to be created', skipExists: 'Already exists — skipped', campNoDate: 'This camp has no start date, so tasks are created without due dates.', confirmOwner: 'Confirm suggested owner', done: 'Applied',
       impTitle: 'One-time import of tasks from the existing Google Sheet', impHelp: 'In the sheet, select all task cells (including the header row), copy, and paste below. (Content of a downloaded .csv also works.) Owners and due dates are imported exactly as written; tasks that already exist in the same camp are skipped. Nothing connects to Google.', impPreview: 'Preview', impRun: 'Import as shown', impSummary: ' rows', impCreate: 'to create', impSkip: 'skipped (already exist)', impUnmatched: 'Camps that could not be matched', impWarn: 'Check', impDone: 'Imported', delConfirm: 'Delete this? (It is only marked deleted and can be restored.)' }
@@ -74,7 +74,7 @@
       var late = t.dueDate && t.dueDate < today && t.status !== 'Completed' && t.status !== 'Not Applicable';
       var ownerHtml = t.ownerName ? esc(CT.t('owner')) + ': ' + esc(t.ownerName) : '<span class="tag t-late">' + esc(CT.t('noOwner')) + '</span>' + CT.help('ownerSuggest') + (t.ownerSuggestion ? ' <span class="sugg">' + esc(CT.t('suggested')) + ': ' + esc(t.ownerSuggestion) + (canWrite() ? '<button data-confirm="' + esc(t.id) + '">' + esc(CT.t('confirm')) + '</button>' : '') + '</span>' : '');
       var dueHtml = t.dueDate ? '<span class="tag ' + (late ? 't-late' : daysFrom(today, t.dueDate) <= 3 ? 't-soon' : 't-none') + '">' + esc(CT.t('due')) + ' ' + esc(md(t.dueDate)) + (late ? ' · ' + esc(CT.t('overdue')) : '') + '</span>' : '<span class="tag t-none">' + esc(CT.t('noDue')) + '</span>';
-      return '<div class="task ' + (t.status === 'Completed' ? 'done' : '') + (t.inactive ? ' inactive' : '') + '"><div><div class="tt">' + esc(t.title) + (t.inactive ? ' <span class="chip gray">' + esc(CT.t('inactiveTag')) + '</span>' : '') + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</div>' +
+      return '<div class="task ' + (t.status === 'Completed' ? 'done' : '') + (t.inactive ? ' inactive' : '') + '"><div><div class="tt">' + esc(CT.tt(t)) + (t.inactive ? ' <span class="chip gray">' + esc(CT.t('inactiveTag')) + '</span>' : '') + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</div>' +
         '<small>' + ownerHtml + ' · ' + dueHtml + ' <span class="tag p-' + t.priority + '">' + esc(priLabel(t.priority)) + '</span>' + (campLabel(t) ? ' · ' + esc(campLabel(t)) : '') + (t.notes ? '<br>' + esc(t.notes) : '') + '</small></div>' +
         '<div class="actions">' + (canWrite() ? '<select data-status="' + esc(t.id) + '">' + STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (t.status === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select><button class="btn sm" data-toggle="' + esc(t.id) + '">' + esc(CT.t(t.inactive ? 'actOn' : 'actOff')) + '</button><button class="btn sm" data-edit="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="' + esc(t.id) + '">' + esc(CT.t('del')) + '</button>' : '<span class="status">' + esc(stLabel(t.status)) + '</span>') + '</div></div>';
     }).join('') : '<div class="empty">' + esc(CT.t('noTasks')) + '</div>';
@@ -95,26 +95,30 @@
     var opts = []; PEOPLE.forEach(function (p) { if (p.name) opts.push(p.name); (p.aliases ? p.aliases.split(',') : []).forEach(function (a) { a = a.trim(); if (a && a !== p.name) opts.push(a); }); });
     return '<datalist id="ownerList">' + opts.map(function (o) { return '<option value="' + esc(o) + '">'; }).join('') + '</datalist>';
   }
+  // 담당자 고르기 목록(팀 명단 + 관리자가 정한 기본 이름 + 업무에 이미 쓰인 이름)
+  var OWN = null;
+  function loadOwners() { return CT.api('/api/campteam/owners').then(function (r) { OWN = (r.options || []).map(function (o) { return o.name; }); }).catch(function () { OWN = null; }); }
+  function ownerOpts() { if (OWN) return OWN; var o = []; (PEOPLE || []).forEach(function (p) { if (p.name) o.push(p.name); }); return o; }
   function loadPeople() { return CT.api('/api/campteam/people').then(function (r) { PEOPLE = r.people; }).catch(function () { PEOPLE = []; }); }
   /** 알림·달력에서 ?open=업무번호 로 들어오면 그 업무의 수정 창을 바로 연다 */
   async function openById(id) {
-    try { var r = await CT.api('/api/campteam/tasks?id=' + encodeURIComponent(id)); var t = (r.items || []).filter(function (x) { return x.id === id; })[0]; if (t) { await loadPeople(); if (canWrite()) taskForm(t); else { var f = $('tq'); f.value = t.title; await loadTasks(); } } } catch (e) { /* 업무가 없어졌으면 목록만 보여 준다 */ }
+    try { await loadOwners(); var r = await CT.api('/api/campteam/tasks?id=' + encodeURIComponent(id)); var t = (r.items || []).filter(function (x) { return x.id === id; })[0]; if (t) { await loadPeople(); if (canWrite()) taskForm(t); else { var f = $('tq'); f.value = t.title; await loadTasks(); } } } catch (e) { /* 업무가 없어졌으면 목록만 보여 준다 */ }
   }
   function taskForm(t) {
-    if (!PEOPLE) loadPeople();
+    if (!PEOPLE) loadPeople(); if (!OWN) loadOwners();
     var h = '<label>' + esc(CT.t('fTitle')) + '<input name="title" required maxlength="200" value="' + esc(t ? t.title : '') + '"></label>' +
-      '<div class="two"><label>' + esc(CT.t('fOwner')) + '<input name="ownerName" maxlength="60" list="ownerList" autocomplete="off" value="' + esc(t ? t.ownerName : '') + '"' + (t && t.ownerSuggestion && !t.ownerName ? ' placeholder="' + esc(CT.t('suggested') + ': ' + t.ownerSuggestion) + '"' : '') + '></label>' +
-      '<label>' + esc(CT.t('fDue')) + '<input type="date" name="dueDate" value="' + esc(t && t.dueDate || '') + '"></label></div>' + ownerListHtml() +
-      '<div class="two"><label>' + esc(CT.t('fStatus')) + '<select name="status">' + STATUS.map(function (s) { return '<option value="' + s[0] + '"' + ((t ? t.status : 'Not Started') === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select></label>' +
-      '<label>' + esc(CT.t('fPriority')) + '<select name="priority">' + PRI.map(function (s) { return '<option value="' + s[0] + '"' + ((t ? t.priority : 'Medium') === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select></label></div>' +
-      '<label>' + esc(CT.t('fCamp')) + '<select name="campId">' + campOptions(t && t.campId, CT.t('fNoCamp')) + '</select></label>' +
+      CT.ownerPickerHtml(CT.t('fOwner'), t ? t.ownerName : '') +
+      '<div class="two"><label>' + esc(CT.t('fDue')) + '<input type="date" name="dueDate" value="' + esc(t && t.dueDate || '') + '"></label><label>' + esc(CT.t('fStatus')) + '<select name="status">' + STATUS.map(function (s) { return '<option value="' + s[0] + '"' + ((t ? t.status : 'Not Started') === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select></label></div>' +
+      '<div class="two"><label>' + esc(CT.t('fPriority')) + '<select name="priority">' + PRI.map(function (s) { return '<option value="' + s[0] + '"' + ((t ? t.priority : 'Medium') === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select></label>' +
+      '<label>' + esc(CT.t('fCamp')) + '<select name="campId">' + campOptions(t && t.campId, CT.t('fNoCamp')) + '</select></label></div>' +
       '<label>' + esc(CT.t('fNotes')) + '<textarea name="notes" maxlength="1000">' + esc(t ? t.notes : '') + '</textarea></label>' +
       '<label class="chk"><input type="checkbox" name="active" value="1"' + (t && t.inactive ? '' : ' checked') + '> ' + esc(CT.t('fActive')) + '</label>';
     ask(CT.t(t ? 'editTask' : 'newTask'), h, async function (fd) {
       var body = { title: fd.title, ownerName: fd.ownerName, dueDate: fd.dueDate || null, status: fd.status, priority: fd.priority, campId: fd.campId || null, notes: fd.notes, inactive: fd.active ? 0 : 1 };
       if (t) await CT.api('/api/campteam/tasks?id=' + encodeURIComponent(t.id), { method: 'PATCH', body: body }); else await CT.api('/api/campteam/tasks', { method: 'POST', body: body });
-      await refresh();
+      await refresh(); loadOwners(); // 새로 쓴 이름이 목록에 반영되도록 다시 읽는다
     });
+    CT.ownerPicker($('dlgFields').querySelector('.opick'), { options: ownerOpts(), value: t ? t.ownerName : '', placeholder: t && t.ownerSuggestion && !t.ownerName ? CT.t('suggested') + ': ' + t.ownerSuggestion : '' });
   }
   /* ---------- 체크리스트 템플릿 ---------- */
   async function loadTpl() { S.tpls = (await CT.api('/api/campteam/templates')).templates; renderTpl(); }
@@ -203,7 +207,7 @@
   }
 
   CT.boot(async function () {
-    loadPeople();
+    loadPeople(); loadOwners();
     try { S.types = (await CT.api('/api/campteam/camps')).types; fillFilters(); await loadTasks(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     CT.applyI18n(); fillFilters();
     var up = new URLSearchParams(location.search); if (up.get('open')) { openById(up.get('open')); } if (up.get('campId') || up.get('flag')) { if (up.get('campId')) $('tcamp').value = up.get('campId'); S.flag = up.get('flag') || ''; await loadTasks(); }

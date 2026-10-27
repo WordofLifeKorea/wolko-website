@@ -1,9 +1,13 @@
 import { resolveOwnerEmail, ownerTokens, ownerPieces } from '../../lib/campteamOwners.js';
 import { campSession, json, needLogin, needPerm, badRequest, noDb, canWrite, denyView } from '../../lib/campteamAuth.js';
 import { uuid, nowIso, text, isDate, todayKST, audit, TASK_STATUSES, TASK_PRIORITIES } from '../../lib/campteamDb.js';
+import { normalizeOwners } from '../../lib/campteamOwnerNames.js';
+import { translateTasks, titleCols } from '../../lib/campteamTranslate.js';
+
+const later = (context, p) => { try { context.waitUntil ? context.waitUntil(p) : p; } catch { /* 무시 */ } };
 
 const CLOSED = `('Completed','Not Applicable')`;
-const SELECT = `SELECT k.id, k.campId, k.title, k.ownerName, k.ownerEmail, k.ownerSuggestion, k.dueDate, k.status, k.priority, k.notes, k.sourceKey, k.section, k.inactive, k.meetingId, k.createdAt, k.updatedAt, k.isTest,
+const SELECT = `SELECT k.id, k.campId, k.title, k.ownerName, k.ownerEmail, k.ownerSuggestion, k.dueDate, k.status, k.priority, k.notes, k.sourceKey, k.section, k.inactive, k.titleKo, k.titleEn, k.meetingId, k.createdAt, k.updatedAt, k.isTest,
     c.nameKo AS campKo, c.nameEn AS campEn
   FROM tasks k LEFT JOIN camps c ON c.id = k.campId`;
 const SORTS = {
@@ -51,7 +55,7 @@ export async function onRequestGet({ env, request }) {
 }
 
 /** 입력 검사. 담당자·기한이 비어 있는 것은 허용하고 임의로 채우지 않는다. */
-async function clean(env, b, base = {}) {
+async function clean(env, b, base = {}, actor = {}) {
   const has = k => k in b;
   const title = has('title') ? text(b.title, 200) : base.title;
   if (!title) return { error: '업무 이름을 입력해주세요.' };
@@ -64,7 +68,9 @@ async function clean(env, b, base = {}) {
   const campId = has('campId') ? (b.campId || null) : base.campId ?? null;
   if (campId && !(await env.DB.prepare('SELECT 1 AS x FROM camps WHERE id = ?1 AND deletedAt IS NULL').bind(String(campId)).first())) return { error: '캠프를 찾을 수 없습니다.' };
   // 담당자: 이름만 적었거나 바꾼 경우, 팀 명단의 이름·별칭과 정확히 한 사람이 맞으면 이메일을 자동으로 채운다(이전 담당자의 이메일은 지운다)
-  const ownerName = has('ownerName') ? text(b.ownerName, 60) : base.ownerName ?? '';
+  let ownerName = has('ownerName') ? text(b.ownerName, 200) : base.ownerName ?? '';
+  // 여러 명("A / B")이면 합치기로 정해 둔 이름은 바꾸고, 처음 보는 이름은 관리자 확인 목록에 올린다(관리자가 쓰면 바로 기본 이름)
+  if (has('ownerName') && ownerName !== (base.ownerName ?? '')) ownerName = await normalizeOwners(env, ownerName, actor);
   let ownerEmail = has('ownerEmail') ? text(b.ownerEmail, 120) : base.ownerEmail ?? '';
   if (has('ownerName') && !has('ownerEmail') && ownerName !== (base.ownerName ?? '')) ownerEmail = '';
   if (ownerName && !ownerEmail) ownerEmail = await resolveOwnerEmail(env, ownerName);
@@ -78,21 +84,24 @@ async function clean(env, b, base = {}) {
   } };
 }
 
-export async function onRequestPost({ env, request }) {
+export async function onRequestPost(context) {
+  const { env, request } = context;
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
   if (!canWrite(s.perms, 'tasks')) return needPerm('작성 권한이 없습니다.');
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
-  const { v, error } = await clean(env, b); if (error) return badRequest(error);
-  const id = uuid(), now = nowIso();
-  await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerEmail,dueDate,status,priority,notes,createdAt,updatedAt,createdBy,inactive) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10,?11,?12)`)
-    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, now, s.email, v.inactive).run();
+  const { v, error } = await clean(env, b, {}, { email: s.email, admin: !!s.perms.manageMembers }); if (error) return badRequest(error);
+  const id = uuid(), now = nowIso(), tc = titleCols(v.title);
+  await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerEmail,dueDate,status,priority,notes,createdAt,updatedAt,createdBy,inactive,titleKo,titleEn) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10,?11,?12,?13,?14)`)
+    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, now, s.email, v.inactive, tc.titleKo, tc.titleEn).run();
   await audit(env, s.email, 'create', 'task', id, v.title);
+  later(context, translateTasks(env, { ids: [id] })); // 다른 언어 제목은 저장 뒤에 채운다(저장 속도에 영향 없음)
   return json({ id }, 201);
 }
 
-export async function onRequestPatch({ env, request }) {
+export async function onRequestPatch(context) {
+  const { env, request } = context;
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
@@ -101,9 +110,11 @@ export async function onRequestPatch({ env, request }) {
   const row = await env.DB.prepare('SELECT * FROM tasks WHERE id = ?1 AND deletedAt IS NULL').bind(id).first();
   if (!row) return json({ error: '찾을 수 없습니다.' }, 404);
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
-  const { v, error } = await clean(env, b, row); if (error) return badRequest(error);
-  await env.DB.prepare(`UPDATE tasks SET campId=?2,title=?3,ownerName=?4,ownerEmail=?5,dueDate=?6,status=?7,priority=?8,notes=?9,updatedAt=?10,inactive=?11 WHERE id=?1`)
-    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, nowIso(), v.inactive).run();
+  const { v, error } = await clean(env, b, row, { email: s.email, admin: !!s.perms.manageMembers }); if (error) return badRequest(error);
+  const titleChanged = v.title !== row.title, tc = titleChanged ? titleCols(v.title) : { titleKo: row.titleKo, titleEn: row.titleEn };
+  await env.DB.prepare(`UPDATE tasks SET campId=?2,title=?3,ownerName=?4,ownerEmail=?5,dueDate=?6,status=?7,priority=?8,notes=?9,updatedAt=?10,inactive=?11,titleKo=?12,titleEn=?13 WHERE id=?1`)
+    .bind(id, v.campId, v.title, v.ownerName, v.ownerEmail, v.dueDate, v.status, v.priority, v.notes, nowIso(), v.inactive, tc.titleKo, tc.titleEn).run();
+  if (titleChanged || !tc.titleKo || !tc.titleEn) later(context, translateTasks(env, { ids: [id] }));
   await audit(env, s.email, 'update', 'task', id, `${row.status}→${v.status} ${v.title}${(row.inactive ? 1 : 0) !== v.inactive ? (v.inactive ? ' [비활성]' : ' [활성]') : ''}`);
   return json({ ok: true });
 }

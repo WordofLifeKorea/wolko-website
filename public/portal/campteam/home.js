@@ -41,12 +41,12 @@
         (c.taskTotal == null ? '' : '<div class="bar"><i style="width:' + pc + '%"></i></div>') + '</div>';
     }).join('') : empty();
     if (id === 'deadlines') return d.deadlines.length ? d.deadlines.map(function (t) {
-      return '<div class="row"><div>' + esc(t.title) + testChip(t) + '<small>' + esc(CT.t('owner')) + ': ' + esc(t.ownerName || '—') + (campName(t) ? ' · ' + esc(campName(t)) : '') + '</small></div>' + dueTag(t.dueDate, d.today) + '</div>';
+      return '<div class="row"><div>' + esc(CT.tt(t)) + testChip(t) + '<small>' + esc(CT.t('owner')) + ': ' + esc(t.ownerName || '—') + (campName(t) ? ' · ' + esc(campName(t)) : '') + '</small></div>' + dueTag(t.dueDate, d.today) + '</div>';
     }).join('') : empty();
     if (id === 'attention') return d.attention.length ? d.attention.map(function (t) {
       var late = t.dueDate && t.dueDate < d.today, noOwn = !t.ownerName;
       var tag = noOwn ? '<span class="tag t-late">' + esc(CT.t('noOwnerTag')) + '</span>' : late ? '<span class="tag t-late">' + esc(CT.t('overdueTag')) + '</span>' : '';
-      return '<div class="row"><div>' + esc(t.title) + testChip(t) + '<small>' + (campName(t) ? esc(campName(t)) : '') + (t.dueDate ? ' · ' + esc(CT.fmtDate(t.dueDate)) : '') + '</small></div>' + tag + '</div>';
+      return '<div class="row"><div>' + esc(CT.tt(t)) + testChip(t) + '<small>' + (campName(t) ? esc(campName(t)) : '') + (t.dueDate ? ' · ' + esc(CT.fmtDate(t.dueDate)) : '') + '</small></div>' + tag + '</div>';
     }).join('') : empty();
     if (id === 'agenda') return d.agenda.length ? d.agenda.map(function (a) {
       var cls = a.status === 'decided' ? 't-ok' : a.status === 'discussed' ? 't-soon' : 't-none';
@@ -129,7 +129,7 @@
 
   function rowTasks(list, withCamp) {
     return list.length ? list.map(function (t) {
-      return '<div class="row"><div>' + esc(t.title) + testChip(t) + '<small>' + (withCamp && campName(t) ? esc(campName(t)) : '') + '</small></div>' + dueTag(t.dueDate, data.today) + '</div>';
+      return '<div class="row"><div>' + esc(CT.tt(t)) + testChip(t) + '<small>' + (withCamp && campName(t) ? esc(campName(t)) : '') + '</small></div>' + dueTag(t.dueDate, data.today) + '</div>';
     }).join('') : '';
   }
   function ddayHtml(it) {
@@ -195,7 +195,7 @@
     var put = function (day, k, t, time) { if (day >= from && day <= to) (map[day] = map[day] || []).push({ k: k, t: t, time: time || '' }); };
     var span = function (a, b, k, t, time) { for (var d = a < from ? from : a, end = (b || a) > to ? to : (b || a); d <= end; d = nextDay(d)) put(d, k, t, d === a ? time : ''); };
     (c.events || []).forEach(function (e) { span(e.startDate, e.endDate, 'ev', e.title, e.startTime); });
-    (c.tasks || []).forEach(function (k) { put(k.dueDate, 'tk', k.title); });
+    (c.tasks || []).forEach(function (k) { put(k.dueDate, 'tk', CT.tt(k)); });
     (c.meetings || []).forEach(function (k) { put(k.meetDate, 'mt', k.title, k.meetTime); });
     (c.camps || []).forEach(function (k) { if (spanCamps) span(k.startDate, k.endDate, 'cp', CT.pick(k, 'name')); else put(k.startDate, 'cp', CT.pick(k, 'name') + ' · ' + CT.t('evCamp')); });
     return map;
