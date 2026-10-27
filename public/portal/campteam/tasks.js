@@ -1,7 +1,8 @@
 (function () {
   CT.addDict({
     ko: { tasksTitle: '업무', tasksSub: '캠프 준비 업무를 한곳에서 보고 관리해요 (일정은 「달력」에서 봐요)', addTask: '+ 업무 추가', addEvent: '+ 일정 추가', viewOnly: '조회만 가능한 계정이에요. 작성·수정은 캠프팀 팀원이 할 수 있어요.', searchPh: '업무 이름·담당자·메모 검색',
-      pInactive: '비활성', inactiveTag: '비활성', fActive: '활성 업무 (끄면 비활성: 진행 중 업무·알림·진행률·달력에서 빠져요)', actOn: '활성으로', actOff: '비활성으로', impInactive: '비활성 상태로 가져오기 (팀원이 확인한 뒤 활성으로 바꿔요)',
+      hTask: '업무', dOwner: '담당자', dDue: '기한', dPri: '중요도', dCamp: '캠프', dStatus: '상태', dSection: '구분', dMemo: '메모', dMemoTip: '더블클릭하면 전체 내용을 볼 수 있어요', dOrig: '원래 제목', dState: '활성 여부', dActive: '활성', dUpdated: '마지막 수정', dNoMemo: '메모가 없어요', dClose: '닫기', dTitleH: '업무 자세히',
+      pInactive: '비활성', inactiveTag: '비활성', fActive: '활성 업무 (끄면 비활성: 진행 중 업무·알림·진행률·달력에서 빠져요)', actOn: '활성화', actOff: '비활성화', impInactive: '비활성 상태로 가져오기 (팀원이 확인한 뒤 활성으로 바꿔요)',
       tabList: '업무 목록', tabCal: '달력', tabTpl: '체크리스트 템플릿', tabImp: '시트에서 가져오기', today: '오늘', viewGrid: '달력', viewAgenda: '목록',
       pOpen: '진행 중', pOverdue: '마감 지남', pNoOwner: '담당자 미정', pNoDue: '기한 미정', pAll: '전체', fAllCamps: '모든 캠프', fNoCamp: '캠프 없음', fAllStatus: '모든 상태', fAllPri: '모든 우선순위', fAllOwner: '모든 담당자', sortDue: '기한 빠른 순', sortPri: '우선순위 순', sortNew: '최신 순', sortTitle: '이름 순',
       stNot: '미시작', stIn: '진행 중', stWait: '확인 대기', stDelayed: '지연', stDone: '완료', stNA: '해당 없음', priHigh: '높음', priMedium: '보통', priLow: '낮음',
@@ -12,6 +13,7 @@
       addTpl: '+ 템플릿', impTplBtn: '체크리스트 붙여넣어 가져오기', impTplTitle: '체크리스트 가져오기', impTplHelp: 'Word나 엑셀의 체크리스트 표를 그대로 복사해서 붙여넣으세요. 구역(1. 기획…)과 우선순위(1 필수·2 중요·3 일반), 담당자가 자동으로 정리돼요. 담당자는 "제안"으로만 들어가고, 기한은 비워 둡니다.', suggestOff: '구역 이름으로 마감 기준일을 임시로 정하기 (나중에 직접 고칠 수 있어요)', provisional: '임시', itemSection: '구역', previewBtn: '미리보기', impTplDone: '템플릿을 만들었어요', sections: '구역', withOwner: '담당 제안 있음', withOffset: '임시 기준일 있음', tplItems: '항목', tplOffset: '기준일', tplOffsetHelp: '캠프 시작일 기준 (예: -30 = 30일 전)', tplOwner: '제안 담당자', tplNone: '(없음 · 마감일 없이 만듦)', addItem: '+ 항목', applyTo: '캠프에 적용', tplName: '템플릿 이름', tplNameEn: '이름 (English)', tplDesc: '설명', itemTitle: '항목 이름', itemOffset: '기준일 (캠프 시작일 기준 며칠 전/후, 비워도 돼요)', itemOwner: '제안 담당자', chooseCamp: '적용할 캠프', preview: '미리보기', applyNow: '이대로 적용', willCreate: '만들어질 업무', skipExists: '이미 있어서 건너뜀', campNoDate: '이 캠프에는 시작일이 없어서 마감일 없이 만들어져요.', confirmOwner: '제안 담당자를 확정', done: '적용했어요',
       impTitle: '기존 Google 시트의 업무를 한 번 가져오기', impHelp: '시트에서 업무 칸 전체(맨 윗줄 머리글 포함)를 복사해서 아래에 붙여넣으세요. (파일 → 다운로드 → .csv 내용도 가능해요) 담당자·기한은 시트에 적힌 그대로만 가져오고, 같은 캠프에 같은 이름의 업무가 이미 있으면 건너뛰어요. Google에는 접속하지 않아요.', impPreview: '미리보기', impRun: '이대로 가져오기', impSummary: '개', impCreate: '새로 만듦', impSkip: '건너뜀(이미 있음)', impUnmatched: '캠프를 연결하지 못한 이름', impWarn: '확인', impDone: '가져왔어요', delConfirm: '삭제할까요? (삭제 표시만 되며 복구할 수 있어요)' },
     en: { tasksTitle: 'Tasks', tasksSub: 'See and manage camp preparation tasks in one place (events are on the Calendar page)', addTask: '+ Task', addEvent: '+ Event', viewOnly: 'View-only account. Camp team members can edit.', searchPh: 'Search task, owner, notes',
+      hTask: 'Task', dOwner: 'Owner', dDue: 'Due', dPri: 'Priority', dCamp: 'Camp', dStatus: 'Status', dSection: 'Section', dMemo: 'Notes', dMemoTip: 'Double-click to see everything', dOrig: 'Original title', dState: 'Active', dActive: 'Active', dUpdated: 'Last updated', dNoMemo: 'No notes', dClose: 'Close', dTitleH: 'Task details',
       pInactive: 'Inactive', inactiveTag: 'Inactive', fActive: 'Active task (off = inactive: left out of open tasks, alerts, progress and calendar)', actOn: 'Activate', actOff: 'Deactivate', impInactive: 'Import as inactive (team members review, then activate)',
       tabList: 'Task list', tabCal: 'Calendar', tabTpl: 'Checklist templates', tabImp: 'Import from sheet', today: 'Today', viewGrid: 'Calendar', viewAgenda: 'List',
       pOpen: 'Open', pOverdue: 'Overdue', pNoOwner: 'No owner', pNoDue: 'No due date', pAll: 'All', fAllCamps: 'All camps', fNoCamp: 'No camp', fAllStatus: 'All statuses', fAllPri: 'All priorities', fAllOwner: 'All owners', sortDue: 'Due date', sortPri: 'Priority', sortNew: 'Newest', sortTitle: 'Name',
@@ -70,13 +72,17 @@
       return '<button class="pill ' + p[3] + (S.flag === p[0] ? ' on' : '') + '" data-flag="' + p[0] + '">' + esc(CT.t(p[1])) + (p[2] !== '' ? '<b>' + p[2] + '</b>' : '') + '</button>'; }).join('');
     var all = S.tasks.items, pages = Math.max(1, Math.ceil(all.length / PAGE)); if (S.page > pages) S.page = pages; if (S.page < 1) S.page = 1;
     var shown = all.slice((S.page - 1) * PAGE, S.page * PAGE);
-    $('tlist').innerHTML = shown.length ? shown.map(function (t) {
+    var head = '<div class="task-head"><div>' + esc(CT.t('hTask')) + '</div><div>' + esc(CT.t('dOwner')) + '</div><div>' + esc(CT.t('dDue')) + '</div><div>' + esc(CT.t('dPri')) + '</div><div>' + esc(CT.t('dCamp')) + '</div><div></div></div>';
+    $('tlist').innerHTML = shown.length ? head + shown.map(function (t) {
       var late = t.dueDate && t.dueDate < today && t.status !== 'Completed' && t.status !== 'Not Applicable';
-      var ownerHtml = t.ownerName ? esc(CT.t('owner')) + ': ' + esc(t.ownerName) : '<span class="tag t-late">' + esc(CT.t('noOwner')) + '</span>' + CT.help('ownerSuggest') + (t.ownerSuggestion ? ' <span class="sugg">' + esc(CT.t('suggested')) + ': ' + esc(t.ownerSuggestion) + (canWrite() ? '<button data-confirm="' + esc(t.id) + '">' + esc(CT.t('confirm')) + '</button>' : '') + '</span>' : '');
+      var ownerHtml = t.ownerName ? '<span class="ml">' + esc(CT.t('owner')) + ': </span>' + esc(t.ownerName) : '<span class="tag t-late">' + esc(CT.t('noOwner')) + '</span>' + CT.help('ownerSuggest') + (t.ownerSuggestion ? ' <span class="sugg">' + esc(CT.t('suggested')) + ': ' + esc(t.ownerSuggestion) + (canWrite() ? '<button data-confirm="' + esc(t.id) + '">' + esc(CT.t('confirm')) + '</button>' : '') + '</span>' : '');
       var dueHtml = t.dueDate ? '<span class="tag ' + (late ? 't-late' : daysFrom(today, t.dueDate) <= 3 ? 't-soon' : 't-none') + '">' + esc(CT.t('due')) + ' ' + esc(md(t.dueDate)) + (late ? ' · ' + esc(CT.t('overdue')) : '') + '</span>' : '<span class="tag t-none">' + esc(CT.t('noDue')) + '</span>';
-      return '<div class="task ' + (t.status === 'Completed' ? 'done' : '') + (t.inactive ? ' inactive' : '') + '"><div><div class="tt">' + esc(CT.tt(t)) + (t.inactive ? ' <span class="chip gray">' + esc(CT.t('inactiveTag')) + '</span>' : '') + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</div>' +
-        '<small>' + ownerHtml + ' · ' + dueHtml + ' <span class="tag p-' + t.priority + '">' + esc(priLabel(t.priority)) + '</span>' + (campLabel(t) ? ' · ' + esc(campLabel(t)) : '') + (t.notes ? '<br>' + esc(t.notes) : '') + '</small></div>' +
-        '<div class="actions">' + (canWrite() ? '<select data-status="' + esc(t.id) + '">' + STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (t.status === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select><button class="btn sm" data-toggle="' + esc(t.id) + '">' + esc(CT.t(t.inactive ? 'actOn' : 'actOff')) + '</button><button class="btn sm" data-edit="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="' + esc(t.id) + '">' + esc(CT.t('del')) + '</button>' : '<span class="status">' + esc(stLabel(t.status)) + '</span>') + '</div></div>';
+      var memo = t.notes ? String(t.notes).split(/\r?\n/).filter(function (x) { return x.trim(); })[0] || '' : '';
+      // 칸을 고정해서 담당자·기한·중요도·캠프가 모든 카드에서 같은 자리에 오게 한다 (칸 사이는 빈 공간만, 선 없음)
+      return '<div class="task ' + (t.status === 'Completed' ? 'done' : '') + (t.inactive ? ' inactive' : '') + '" data-tid="' + esc(t.id) + '">' +
+        '<div class="c-title"><div class="tt">' + (t.inactive ? '<span class="chip gray">' + esc(CT.t('inactiveTag')) + '</span> ' : '') + (t.isTest ? '<span class="chip test">' + esc(CT.t('test')) + '</span> ' : '') + esc(CT.tt(t)) + '</div>' + (memo ? '<div class="tmemo" title="' + esc(CT.t('dMemoTip')) + '">' + esc(memo) + '</div>' : '') + '</div>' +
+        '<div class="c-owner">' + ownerHtml + '</div><div class="c-due">' + dueHtml + '</div><div class="c-pri"><span class="tag p-' + t.priority + '">' + esc(priLabel(t.priority)) + '</span></div><div class="c-camp"><span class="ml">' + esc(CT.t('fCamp')) + ': </span>' + esc(campLabel(t) || '—') + '</div>' +
+        '<div class="actions">' + (canWrite() ? '<select data-status="' + esc(t.id) + '">' + STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (t.status === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select><div class="abtns"><button class="btn sm" data-toggle="' + esc(t.id) + '">' + esc(CT.t(t.inactive ? 'actOn' : 'actOff')) + '</button><button class="btn sm" data-edit="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="' + esc(t.id) + '">' + esc(CT.t('del')) + '</button></div>' : '<span class="status">' + esc(stLabel(t.status)) + '</span>') + '</div></div>';
     }).join('') : '<div class="empty">' + esc(CT.t('noTasks')) + '</div>';
     renderPager(all.length, pages);
   }
@@ -119,6 +125,21 @@
       await refresh(); loadOwners(); // 새로 쓴 이름이 목록에 반영되도록 다시 읽는다
     });
     CT.ownerPicker($('dlgFields').querySelector('.opick'), { options: ownerOpts(), value: t ? t.ownerName : '', placeholder: t && t.ownerSuggestion && !t.ownerName ? CT.t('suggested') + ': ' + t.ownerSuggestion : '' });
+  }
+  /** 업무 자세히 보기 (더블클릭 · 폰은 제목 한 번 탭) */
+  function openDetail(t) {
+    if (!t) return; var d = $('tdetail'), row = function (k, v) { return '<div class="dk">' + esc(CT.t(k)) + '</div><div class="dv">' + v + '</div>'; };
+    var shown = CT.tt(t), orig = t.title && t.title !== shown ? '<div class="dorig">' + esc(CT.t('dOrig')) + ': ' + esc(t.title) + '</div>' : '';
+    $('tdTitle').textContent = shown;
+    $('tdBody').innerHTML = (orig ? orig : '') + '<div class="dgrid">' +
+      row('dOwner', t.ownerName ? esc(t.ownerName) : '<span class="tag t-late">' + esc(CT.t('noOwner')) + '</span>') + row('dDue', t.dueDate ? esc(t.dueDate) : esc(CT.t('noDue'))) +
+      row('dStatus', esc(stLabel(t.status))) + row('dPri', '<span class="tag p-' + t.priority + '">' + esc(priLabel(t.priority)) + '</span>') + row('dCamp', esc(campLabel(t) || '—')) + (t.section ? row('dSection', esc(t.section)) : '') +
+      row('dState', esc(t.inactive ? CT.t('inactiveTag') : CT.t('dActive'))) + (t.updatedAt ? row('dUpdated', esc(String(t.updatedAt).slice(0, 16).replace('T', ' '))) : '') + '</div>' +
+      '<div class="dk" style="margin-top:12px">' + esc(CT.t('dMemo')) + '</div><div class="dmemo">' + (t.notes ? esc(t.notes) : '<span class="hint">' + esc(CT.t('dNoMemo')) + '</span>') + '</div>';
+    $('tdActions').innerHTML = (canWrite() ? '<button type="button" class="btn pri" id="tdEdit">' + esc(CT.t('edit')) + '</button>' : '') + '<button type="button" class="btn" id="tdClose">' + esc(CT.t('dClose')) + '</button>';
+    $('tdClose').onclick = function () { d.close(); };
+    if ($('tdEdit')) $('tdEdit').onclick = function () { d.close(); taskForm(t); };
+    d.showModal();
   }
   /* ---------- 체크리스트 템플릿 ---------- */
   async function loadTpl() { S.tpls = (await CT.api('/api/campteam/templates')).templates; renderTpl(); }
@@ -217,6 +238,9 @@
     $('pills').onclick = function (e) { var b = e.target.closest('[data-flag]'); if (b) { S.flag = b.dataset.flag; S.page = 1; loadTasks(); } };
     $('tpager').onclick = function (e) { var b = e.target.closest('[data-pg]'); if (!b || b.disabled) return; S.page = Number(b.dataset.pg) || 1; renderTasks(); var l = $('tlist'); if (l && l.scrollIntoView) l.scrollIntoView({ block: 'start' }); };
     $('addTask').onclick = function () { taskForm(); }; $('addTpl').onclick = function () { tplForm(); }; $('impTpl').onclick = tplImportForm;
+    var byTid = function (el) { var r = el.closest && el.closest('.task'); return r ? S.tasks.items.filter(function (x) { return x.id === r.dataset.tid; })[0] : null; };
+    $('tlist').addEventListener('dblclick', function (e) { if (e.target.closest('button,select,a,input,.actions')) return; openDetail(byTid(e.target)); });
+    $('tlist').addEventListener('click', function (e) { if (window.innerWidth <= 700 && e.target.closest('.tt')) openDetail(byTid(e.target)); }); // 폰: 제목을 한 번 탭
     $('tlist').addEventListener('click', async function (e) {
       var b = e.target.closest('button'); if (!b) return; var id = b.dataset.edit || b.dataset.del || b.dataset.confirm || b.dataset.toggle, t = S.tasks.items.filter(function (x) { return x.id === id; })[0];
       try {
