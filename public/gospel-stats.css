@@ -31,6 +31,7 @@
 .gs-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 0 8px; }
 .gs-kpi { padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
 .gs-kpi strong { display: block; color: var(--blue); font: 800 32px/1.1 'Montserrat', var(--sans); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.gs-kpi.has-break { display: flex; flex-direction: column; }
 .gs-kpi > span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; font-weight: 700; }
 .gs-count { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
 
@@ -233,3 +234,14 @@
 .gs-viewtoggle button:not(.is-active):hover { background: #eaf6f7; }
 /* 연간 보기에서는 달 단위 화면(제출 현황·내 보고·보고별 목록·엑셀/CSV)을 숨긴다 */
 #app[data-view="year"] #subWrap, #app[data-view="year"] #mineWrap, #app[data-view="year"] #rowsWrap, #app[data-view="year"] #xlsxBtn, #app[data-view="year"] #csvBtn { display: none !important; }
+
+/* 숫자 카드 안의 분류별 가로 막대 (예전의 별도 도넛 카드를 합친 것) */
+.gc-break { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.gc-break:empty { display: none; }
+.gc-track { display: flex; height: 12px; gap: 3px; overflow: hidden; border-radius: 999px; background: #eef3f5; }
+.gc-seg { min-width: 0; flex-basis: 0; border-radius: 999px; transition: flex-grow .9s cubic-bezier(.2, .8, .2, 1), opacity .15s; outline: none; cursor: pointer; }
+.gc-bar.has-focus .gc-seg:not(.is-on) { opacity: .35; }
+.gc-seg:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--blue); }
+.gc-bar .gc-legend { margin-top: 10px; }
+.gc-bar .gc-legend li { padding: 4px 6px; font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .gc-seg { transition: none; } }

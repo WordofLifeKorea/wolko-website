@@ -203,7 +203,7 @@
       + (counted.length > 1 ? '<tr class="gs-sumrow"><td><strong>' + esc(t('caTotal')) + '</strong></td>' + (all || yearly ? '<td></td>' : '') + '<td class="gs-total">' + num(sum.campers) + '</td><td>' + num(sum.staff) + '</td><td>' + num(sum.salv) + '</td><td>' + num(sum.ded) + '</td></tr>' : '')
       + '</tbody></table></div>';
   }
-  function renderCharts() { renderSubmission(); renderCampAuto(); renderChurchStats(); if (window.GospelCharts && $('charts')) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); }
+  function renderCharts() { renderSubmission(); renderCampAuto(); renderChurchStats(); if (window.GospelCharts) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); }
 
   function renderTabs() {
     var c = data.summary.counts;
@@ -219,11 +219,11 @@
   function renderKpis() {
     var x = totals(data.summary, tab), c = data.summary.counts;
     $('kpiCaption').innerHTML = view === 'year' ? esc(t('ytdCaption', data.year, Number(String(data.ytd.from).slice(5)), Number(String(data.ytd.to).slice(5)))) + infoKey('ytdTip') : esc(t('monthLabel', data.month));
-    var kpis = [[t('kGospel'), sumHeard(x), 'kGospelTip'], [t('kSalv'), sumSalv(x), 'kSalvTip'], [t('kDed'), sumDed(x), 'kDedTip'], [t('kReach'), sumReach(x), 'kReachTip']];
+    var kpis = [[t('kGospel'), sumHeard(x), 'kGospelTip', 'heard'], [t('kSalv'), sumSalv(x), 'kSalvTip', 'saved'], [t('kDed'), sumDed(x), 'kDedTip'], [t('kReach'), sumReach(x), 'kReachTip']];
     var box = $('kpis');
     if (box.dataset.lang !== lang || box.children.length !== kpis.length) {          // 처음이거나 언어가 바뀌면 카드를 새로 만든다
       box.dataset.lang = lang;
-      box.innerHTML = kpis.map(function (k) { return '<div class="gs-kpi"><strong class="gf-num"></strong><span>' + esc(k[0]) + infoKey(k[2]) + '</span></div>'; }).join('');
+      box.innerHTML = kpis.map(function (k) { return '<div class="gs-kpi' + (k[3] ? ' has-break' : '') + '"><strong class="gf-num"></strong><span>' + esc(k[0]) + infoKey(k[2]) + '</span>' + (k[3] ? '<div class="gc-break" data-break="' + k[3] + '"></div>' : '') + '</div>'; }).join('');
     }
     kpis.forEach(function (k, i) { var el = box.children[i].querySelector('.gf-num'); if (window.GospelFlip) window.GospelFlip.set(el, k[1]); else el.textContent = num(k[1]); });
     var n = c[tab];
