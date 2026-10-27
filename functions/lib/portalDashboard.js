@@ -3,7 +3,7 @@
  * 각 조각은 따로 읽어서 하나가 실패해도(캘린더 미연결 등) 나머지는 그대로 보여 준다.
  */
 import { SLOTS as KITCHEN_SLOTS, readDay } from './kitchenDuty.js';
-import { SLOTS as DRIVE_SLOTS, currentWeekStart, shownName, slotKey, todayKst } from './carDrive.js';
+import { SLOTS as DRIVE_SLOTS, closedKey as driveClosedKey, currentWeekStart, isSlotClosed as driveSlotClosed, periodFor, shownName, slotKey, todayKst } from './carDrive.js';
 import { listCalendarEvents } from './googleCalendar.js';
 import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 
@@ -49,10 +49,17 @@ export async function kitchenToday(env, today) {
     .filter(m => m.prep.length || m.clean.length);
 }
 
-/** 오늘 차량 운행(픽업·드롭오프) 담당 이름 — 없으면 null */
+/** 오늘 차량 운행(픽업·드롭오프) 담당 이름 — 없으면 null. closed 는 관리자가 닫은(또는 기본으로 닫힌) 칸 */
 export async function carToday(env, today) {
-  const [pickup, dropoff] = await Promise.all(DRIVE_SLOTS.map(slot => env.CAMP_KV.get(slotKey(today, slot), 'json')));
-  return { pickup: pickup ? shownName(pickup) : null, dropoff: dropoff ? shownName(dropoff) : null };
+  const [closedMap, pickup, dropoff] = await Promise.all([
+    env.CAMP_KV.get(driveClosedKey(periodFor(today).start), 'json'),
+    ...DRIVE_SLOTS.map(slot => env.CAMP_KV.get(slotKey(today, slot), 'json')),
+  ]);
+  return {
+    pickup: pickup ? shownName(pickup) : null,
+    dropoff: dropoff ? shownName(dropoff) : null,
+    closed: { pickup: driveSlotClosed(closedMap, today, 'pickup', !!pickup), dropoff: driveSlotClosed(closedMap, today, 'dropoff', !!dropoff) },
+  };
 }
 
 /** 오늘부터 14일 안의 일정 몇 개 — 캘린더가 연결되지 않았으면 null */

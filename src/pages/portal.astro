@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=40">
+  <link rel="stylesheet" href="/hub.css?v=41">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
@@ -324,7 +324,7 @@
         dashEvents: '다가오는 일정', dashEventsEmpty: '앞으로 2주 안에 등록된 일정이 없어요.', dashEventsOff: '캘린더가 아직 연결되지 않았어요.', allDay: '종일',
         dashChurches: '최근 업데이트된 교회', dashChurchesEmpty: '최근 업데이트된 교회가 없어요.', dashChurchesOff: '교회 목록(CRS)이 아직 연결되지 않았어요.', churchUpdated: '업데이트', churchVisited: '방문', churchPastor: '담임', churchPastorTitle: '담임목사', churchDone: '완료한 단계', churchNext: '다음 추천 단계', churchMore: function (n) { return '외 ' + n + '개 더'; }, churchAllDone: '12단계를 모두 마쳤어요', churchNoneYet: '아직 완료한 단계가 없어요', churchProgress: '진행', churchStepsOf: function (n) { return n + ' / 12 단계'; }, churchLastVisit: '마지막 방문', churchNoDetail: '아직 입력된 세부 정보가 없어요.',
         dashLoadFail: '불러오지 못했어요.', dashMore: '자세히 보기',
-        dashTodayChip: '오늘', dashUnset: '미정', dashWeekOf: function (a, b) { return '이번 주 ' + a + ' – ' + b; }, relToday: '오늘', relYesterday: '어제', relDaysAgo: function (n) { return n + '일 전'; }, dashNoticeHint: '관리자가 이번 주에 꼭 필요한 소식을 여기에 올려요.',
+        dashTodayChip: '오늘', dashUnset: '미정', dashClosed: '닫힘', dashWeekOf: function (a, b) { return '이번 주 ' + a + ' – ' + b; }, relToday: '오늘', relYesterday: '어제', relDaysAgo: function (n) { return n + '일 전'; }, dashNoticeHint: '관리자가 이번 주에 꼭 필요한 소식을 여기에 올려요.',
         recentBadge: '최근 사용',
         emailLoginTitle: '포탈 로그인',
         rememberEmail: '아이디 저장',
@@ -403,7 +403,7 @@
         dashEvents: 'Upcoming Events', dashEventsEmpty: 'No events in the next two weeks.', dashEventsOff: 'The calendar is not connected yet.', allDay: 'All day',
         dashChurches: 'Recently Updated Churches', dashChurchesEmpty: 'No recently updated churches.', dashChurchesOff: 'The church list (CRS) is not connected yet.', churchUpdated: 'Updated', churchVisited: 'Visited', churchPastor: 'Pastor', churchPastorTitle: 'Senior Pastor', churchDone: 'Completed steps', churchNext: 'Recommended next step', churchMore: function (n) { return '+' + n + ' more'; }, churchAllDone: 'All 12 steps completed', churchNoneYet: 'No steps completed yet', churchProgress: 'Progress', churchStepsOf: function (n) { return n + ' / 12 steps'; }, churchLastVisit: 'Last visit', churchNoDetail: 'No details entered yet.',
         dashLoadFail: 'Could not load.', dashMore: 'View all',
-        dashTodayChip: 'Today', dashUnset: 'Not set', dashWeekOf: function (a, b) { return 'This week ' + a + ' – ' + b; }, relToday: 'today', relYesterday: 'yesterday', relDaysAgo: function (n) { return n + ' days ago'; }, dashNoticeHint: 'Admins post what everyone needs to know this week.',
+        dashTodayChip: 'Today', dashUnset: 'Not set', dashClosed: 'CLOSED', dashWeekOf: function (a, b) { return 'This week ' + a + ' – ' + b; }, relToday: 'today', relYesterday: 'yesterday', relDaysAgo: function (n) { return n + ' days ago'; }, dashNoticeHint: 'Admins post what everyone needs to know this week.',
         recentBadge: 'Recent',
         emailLoginTitle: 'Portal Login',
         rememberEmail: 'Remember email',
@@ -562,11 +562,11 @@
     function renderCar(d) {
       let body;
       if (d.car === null) body = dashEmpty('car', t('dashLoadFail'));
-      else if (!d.car.pickup && !d.car.dropoff) body = dashEmpty('car', t('dashCarEmpty'));
+      else if (!d.car.pickup && !d.car.dropoff && !(d.car.closed && (d.car.closed.pickup || d.car.closed.dropoff))) body = dashEmpty('car', t('dashCarEmpty'));
       else {
-        const row = (icon, label, who) => '<li><span class="hub-run-ic">' + svgi(icon, 15) + '</span><span class="hub-run-label">' + esc(label) + '</span>'
-          + (who ? '<span class="hub-chip hub-chip-strong">' + esc(who) + '</span>' : '<span class="hub-unset">' + esc(t('dashUnset')) + '</span>') + '</li>';
-        body = '<ul class="hub-runs">' + row('up', t('carPickup'), d.car.pickup) + row('down', t('carDropoff'), d.car.dropoff) + '</ul>';
+        const row = (icon, label, who, closed) => '<li><span class="hub-run-ic">' + svgi(icon, 15) + '</span><span class="hub-run-label">' + esc(label) + '</span>'
+          + (who ? '<span class="hub-chip hub-chip-strong">' + esc(who) + '</span>' : closed ? '<span class="hub-unset hub-closed">' + esc(t('dashClosed')) + '</span>' : '<span class="hub-unset">' + esc(t('dashUnset')) + '</span>') + '</li>';
+        body = '<ul class="hub-runs">' + row('up', t('carPickup'), d.car.pickup, d.car.closed && d.car.closed.pickup) + row('down', t('carDropoff'), d.car.dropoff, d.car.closed && d.car.closed.dropoff) + '</ul>';
       }
       return dashCard('hub-dcard-car hub-dcard-compact', '#c24fd6', 'car', t('dashCar'), body + CAR_DECO, '/portal/car-drive');
     }

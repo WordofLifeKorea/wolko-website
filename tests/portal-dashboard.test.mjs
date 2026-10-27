@@ -45,6 +45,15 @@ test('car drivers today: pickup and drop-off, null when nobody', async () => {
   const out = await carToday(env, TODAY);
   assert.ok(out.pickup);
   assert.equal(out.dropoff, null);
+  assert.deepEqual(out.closed, { pickup: false, dropoff: false }, '수요일은 기본으로 열려 있다');
+});
+
+test('car slots closed by default (Sat) or by an admin show as closed, unless someone already signed up', async () => {
+  const SAT = '2026-10-31';
+  assert.deepEqual((await carToday(kvEnv().env, SAT)).closed, { pickup: true, dropoff: true });
+  const { env } = kvEnv({ 'drive:closed:2026-10-19': { [TODAY + ':dropoff']: { by: 'x', at: 1 } }, [`drive:slot:${SAT}:pickup`]: { email: 'a@b.c', name: 'Amy' } });
+  assert.deepEqual((await carToday(env, TODAY)).closed, { pickup: false, dropoff: true });
+  assert.deepEqual((await carToday(env, SAT)).closed, { pickup: false, dropoff: true });
 });
 
 test('recent churches are sorted by update time and expose only name and dates', () => {
