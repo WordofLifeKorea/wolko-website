@@ -9,7 +9,11 @@ function extras(b, base = {}) {
   if (capacity != null && (!Number.isInteger(capacity) || capacity < 1 || capacity > 100000)) return { error: '정원은 1 이상의 정수로 입력해주세요.' };
   const registrationCampId = has('registrationCampId') ? text(b.registrationCampId, 60) : base.registrationCampId ?? '';
   if (registrationCampId && !/^[A-Za-z0-9_-]{1,60}$/.test(registrationCampId)) return { error: '신청 시스템 캠프 ID 는 영문·숫자·-·_ 만 쓸 수 있어요.' };
-  return { theme, capacity, registrationCampId };
+  // 연도(예: 2027)와 시즌(여름·겨울·봄·가을 등 자유 입력) — 비어 있어도 된다
+  let year = has('year') ? (b.year === '' || b.year == null ? null : Number(b.year)) : base.year ?? null;
+  if (year != null && (!Number.isInteger(year) || year < 2000 || year > 2100)) return { error: '연도는 2000~2100 사이의 숫자로 입력해주세요.' };
+  const season = has('season') ? text(b.season, 20) : base.season ?? '';
+  return { theme, capacity, registrationCampId, year, season };
 }
 
 /** 캠프 유형(Unity Camp …)과 개별 행사(2027 Winter Camp …) 목록 */
@@ -19,12 +23,13 @@ export async function onRequestGet({ env, request }) {
   if (!s) return needLogin();
   if (!['tasks', 'meetings', 'files', 'camps'].some((a) => canView(s.perms, a))) return needPerm('캠프 목록을 볼 권한이 없어요. 관리자에게 요청해 주세요.');
   const types = (await env.DB.prepare('SELECT id, nameKo, nameEn, description, sortOrder, isTest FROM camp_types WHERE deletedAt IS NULL ORDER BY sortOrder, nameKo').all()).results;
-  const camps = (await env.DB.prepare(`SELECT c.id, c.typeId, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.location, c.notes, c.theme, c.capacity, c.registrationCampId, c.isTest,
-      (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status <> 'Not Applicable') AS taskTotal,
-      (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status = 'Completed') AS taskDone
+  const camps = (await env.DB.prepare(`SELECT c.id, c.typeId, c.nameKo, c.nameEn, c.startDate, c.endDate, c.status, c.location, c.notes, c.theme, c.capacity, c.registrationCampId, c.year, c.season, c.isTest,
+      (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status <> 'Not Applicable') AS taskTotal,
+      (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status = 'Completed') AS taskDone,
+      (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 1) AS taskInactive
     FROM camps c WHERE c.deletedAt IS NULL ORDER BY c.startDate IS NULL, c.startDate DESC, c.nameKo`).all()).results;
   // 업무 영역을 볼 수 없는 계정(명단 밖 월코 팀 등)에게는 업무 개수도 알려주지 않는다
-  if (!canView(s.perms, 'tasks')) for (const c of camps) { c.taskTotal = null; c.taskDone = null; }
+  if (!canView(s.perms, 'tasks')) for (const c of camps) { c.taskTotal = null; c.taskDone = null; c.taskInactive = null; }
   if (!s.campRole) for (const c of camps) { c.notes = ''; c.registrationCampId = null; } // 명단 밖: 내부 메모·연결 정보는 가린다
   return json({ types: types.map(t => ({ ...t, camps: camps.filter(c => c.typeId === t.id) })), perms: s.perms });
 }
@@ -54,9 +59,9 @@ export async function onRequestPost({ env, request }) {
     const status = CAMP_STATUSES.includes(b.status) ? b.status : 'planning';
     const ex = extras(b); if (ex.error) return badRequest(ex.error);
     if (ex.registrationCampId && !s.perms.moneyWrite) return needPerm('포털 캠프 연결은 디렉터·캠프 재정 담당·관리자만 설정할 수 있어요.');
-    await env.DB.prepare(`INSERT INTO camps (id,typeId,nameKo,nameEn,startDate,endDate,status,location,notes,theme,capacity,registrationCampId,createdAt,updatedAt,createdBy)
-      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?12,?13,?14,?10,?10,?11)`)
-      .bind(id, type.id, nameKo, text(b.nameEn, 80), start, end, status, text(b.location, 120), text(b.notes, 1000), now, s.email, ex.theme, ex.capacity, ex.registrationCampId).run();
+    await env.DB.prepare(`INSERT INTO camps (id,typeId,nameKo,nameEn,startDate,endDate,status,location,notes,theme,capacity,registrationCampId,year,season,createdAt,updatedAt,createdBy)
+      VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?12,?13,?14,?15,?16,?10,?10,?11)`)
+      .bind(id, type.id, nameKo, text(b.nameEn, 80), start, end, status, text(b.location, 120), text(b.notes, 1000), now, s.email, ex.theme, ex.capacity, ex.registrationCampId, ex.year, ex.season).run();
     await audit(env, s.email, 'create', 'camp', id, nameKo);
     return json({ id }, 201);
   }
@@ -94,9 +99,9 @@ export async function onRequestPatch({ env, request }) {
     const status = 'status' in b ? (CAMP_STATUSES.includes(b.status) ? b.status : row.status) : row.status;
     const ex = extras(b, row); if (ex.error) return badRequest(ex.error);
     if (ex.registrationCampId !== (row.registrationCampId ?? '') && !s.perms.moneyWrite) return needPerm('포털 캠프 연결은 디렉터·캠프 재정 담당·관리자만 바꿀 수 있어요.');
-    await env.DB.prepare('UPDATE camps SET nameKo=?2,nameEn=?3,startDate=?4,endDate=?5,status=?6,location=?7,notes=?8,theme=?10,capacity=?11,registrationCampId=?12,updatedAt=?9 WHERE id=?1')
+    await env.DB.prepare('UPDATE camps SET nameKo=?2,nameEn=?3,startDate=?4,endDate=?5,status=?6,location=?7,notes=?8,theme=?10,capacity=?11,registrationCampId=?12,year=?13,season=?14,updatedAt=?9 WHERE id=?1')
       .bind(id, nameKo, 'nameEn' in b ? text(b.nameEn, 80) : row.nameEn, start, end, status,
-        'location' in b ? text(b.location, 120) : row.location, 'notes' in b ? text(b.notes, 1000) : row.notes, now, ex.theme, ex.capacity, ex.registrationCampId).run();
+        'location' in b ? text(b.location, 120) : row.location, 'notes' in b ? text(b.notes, 1000) : row.notes, now, ex.theme, ex.capacity, ex.registrationCampId, ex.year, ex.season).run();
     await audit(env, s.email, 'update', 'camp', id, nameKo);
     return json({ ok: true });
   }

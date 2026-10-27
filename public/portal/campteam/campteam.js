@@ -207,6 +207,10 @@
     dr.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('a')) set(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && dr.classList.contains('open')) { set(false); btn.focus(); } });
     window.addEventListener('resize', function () { if (window.innerWidth > 900) set(false); });
+    // 넓은 화면: 알림 종을 "월코 포털 나가기" 버튼 줄(오른쪽)로, 폰: 위쪽 줄로 둔다 — 로고 이름이 길어도 서로 겹치지 않는다
+    var bell = document.getElementById('bellBtn'), row = document.getElementById('exitRow'), bar = btn.parentNode;
+    var place = function () { if (!bell || !row) return; if (window.innerWidth > 900) { if (bell.parentNode !== row) row.appendChild(bell); } else if (bell.parentNode !== bar) bar.insertBefore(bell, btn); };
+    place(); window.addEventListener('resize', place);
   }
   function initDialogs() { [].forEach.call(document.querySelectorAll('dialog'), enhance); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { initDialogs(); initMenu(); }); else { initDialogs(); initMenu(); }

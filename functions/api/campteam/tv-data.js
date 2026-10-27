@@ -15,12 +15,12 @@ export async function onRequestGet({ env, request }) {
   const tokenRow = await env.DB.prepare(`SELECT value FROM tv_settings WHERE key = 'token'`).first();
   if (!tokenRow || !safeEqual(new URL(request.url).searchParams.get('t'), tokenRow.value)) return deny('Invalid link');
   delete settings.token;
-  const today = todayKST(), db = env.DB, open = `k.deletedAt IS NULL AND k.status NOT IN ('Completed','Not Applicable')`;
+  const today = todayKST(), db = env.DB, open = `k.deletedAt IS NULL AND k.inactive = 0 AND k.status NOT IN ('Completed','Not Applicable')`;
   const [{ layout, updatedAt }, st, tasks, late, events, decisions, notices, camps] = await Promise.all([
     loadLayout(env),
     db.prepare(`SELECT SUM(CASE WHEN status NOT IN ('Completed','Not Applicable') THEN 1 ELSE 0 END) AS open,
         SUM(CASE WHEN status NOT IN ('Completed','Not Applicable') AND dueDate IS NOT NULL AND dueDate < ?1 THEN 1 ELSE 0 END) AS overdue,
-        SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed, SUM(CASE WHEN status <> 'Not Applicable' THEN 1 ELSE 0 END) AS total FROM tasks WHERE deletedAt IS NULL`).bind(today).first(),
+        SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed, SUM(CASE WHEN status <> 'Not Applicable' THEN 1 ELSE 0 END) AS total FROM tasks WHERE deletedAt IS NULL AND inactive = 0`).bind(today).first(),
     db.prepare(`SELECT k.title, k.ownerName, k.dueDate, k.status, k.priority, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId WHERE ${open}
         ORDER BY CASE k.priority WHEN 'High' THEN 0 WHEN 'Medium' THEN 1 ELSE 2 END, (k.dueDate IS NULL), k.dueDate, k.createdAt LIMIT 60`).all(),
     db.prepare(`SELECT k.title, k.ownerName, k.dueDate, c.nameKo AS campKo, c.nameEn AS campEn FROM tasks k LEFT JOIN camps c ON c.id = k.campId
@@ -30,8 +30,8 @@ export async function onRequestGet({ env, request }) {
         WHERE d.deletedAt IS NULL AND d.state = 'active' AND d.kind IN ('direction','final','changed') ORDER BY d.decidedDate DESC, d.createdAt DESC LIMIT 12`).all(),
     db.prepare(`SELECT message, messageEn FROM notices WHERE deletedAt IS NULL AND active = 1 ORDER BY sortOrder, createdAt LIMIT 20`).all(),
     db.prepare(`SELECT c.id, c.nameKo, c.nameEn, c.startDate, c.theme, c.capacity, c.registrationCampId,
-        (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status <> 'Not Applicable') AS total,
-        (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.status = 'Completed') AS done
+        (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status <> 'Not Applicable') AS total,
+        (SELECT COUNT(*) FROM tasks k WHERE k.campId = c.id AND k.deletedAt IS NULL AND k.inactive = 0 AND k.status = 'Completed') AS done
       FROM camps c WHERE c.deletedAt IS NULL AND c.status IN ('planning','active') ORDER BY c.startDate IS NULL, c.startDate LIMIT 12`).all(),
   ]);
   const upcoming = camps.results.filter(c => c.startDate && c.startDate >= today)[0] || null, dayDiff = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);

@@ -1,6 +1,7 @@
 (function () {
   CT.addDict({
     ko: { tasksTitle: '업무', tasksSub: '캠프 준비 업무를 한곳에서 보고 관리해요 (일정은 「달력」에서 봐요)', addTask: '+ 업무 추가', addEvent: '+ 일정 추가', viewOnly: '조회만 가능한 계정이에요. 작성·수정은 캠프팀 팀원이 할 수 있어요.', searchPh: '업무 이름·담당자·메모 검색',
+      pInactive: '비활성', inactiveTag: '비활성', fActive: '활성 업무 (끄면 비활성: 진행 중 업무·알림·진행률·달력에서 빠져요)', actOn: '활성으로', actOff: '비활성으로', impInactive: '비활성 상태로 가져오기 (팀원이 확인한 뒤 활성으로 바꿔요)',
       tabList: '업무 목록', tabCal: '달력', tabTpl: '체크리스트 템플릿', tabImp: '시트에서 가져오기', today: '오늘', viewGrid: '달력', viewAgenda: '목록',
       pOpen: '진행 중', pOverdue: '마감 지남', pNoOwner: '담당자 미정', pNoDue: '기한 미정', pAll: '전체', fAllCamps: '모든 캠프', fNoCamp: '캠프 없음', fAllStatus: '모든 상태', fAllPri: '모든 우선순위', fAllOwner: '모든 담당자', sortDue: '기한 빠른 순', sortPri: '우선순위 순', sortNew: '최신 순', sortTitle: '이름 순',
       stNot: '미시작', stIn: '진행 중', stWait: '확인 대기', stDelayed: '지연', stDone: '완료', stNA: '해당 없음', priHigh: '높음', priMedium: '보통', priLow: '낮음',
@@ -11,6 +12,7 @@
       addTpl: '+ 템플릿', impTplBtn: '체크리스트 붙여넣어 가져오기', impTplTitle: '체크리스트 가져오기', impTplHelp: 'Word나 엑셀의 체크리스트 표를 그대로 복사해서 붙여넣으세요. 구역(1. 기획…)과 우선순위(1 필수·2 중요·3 일반), 담당자가 자동으로 정리돼요. 담당자는 "제안"으로만 들어가고, 기한은 비워 둡니다.', suggestOff: '구역 이름으로 마감 기준일을 임시로 정하기 (나중에 직접 고칠 수 있어요)', provisional: '임시', itemSection: '구역', previewBtn: '미리보기', impTplDone: '템플릿을 만들었어요', sections: '구역', withOwner: '담당 제안 있음', withOffset: '임시 기준일 있음', tplItems: '항목', tplOffset: '기준일', tplOffsetHelp: '캠프 시작일 기준 (예: -30 = 30일 전)', tplOwner: '제안 담당자', tplNone: '(없음 · 마감일 없이 만듦)', addItem: '+ 항목', applyTo: '캠프에 적용', tplName: '템플릿 이름', tplNameEn: '이름 (English)', tplDesc: '설명', itemTitle: '항목 이름', itemOffset: '기준일 (캠프 시작일 기준 며칠 전/후, 비워도 돼요)', itemOwner: '제안 담당자', chooseCamp: '적용할 캠프', preview: '미리보기', applyNow: '이대로 적용', willCreate: '만들어질 업무', skipExists: '이미 있어서 건너뜀', campNoDate: '이 캠프에는 시작일이 없어서 마감일 없이 만들어져요.', confirmOwner: '제안 담당자를 확정', done: '적용했어요',
       impTitle: '기존 Google 시트의 업무를 한 번 가져오기', impHelp: '시트에서 업무 칸 전체(맨 윗줄 머리글 포함)를 복사해서 아래에 붙여넣으세요. (파일 → 다운로드 → .csv 내용도 가능해요) 담당자·기한은 시트에 적힌 그대로만 가져오고, 같은 캠프에 같은 이름의 업무가 이미 있으면 건너뛰어요. Google에는 접속하지 않아요.', impPreview: '미리보기', impRun: '이대로 가져오기', impSummary: '개', impCreate: '새로 만듦', impSkip: '건너뜀(이미 있음)', impUnmatched: '캠프를 연결하지 못한 이름', impWarn: '확인', impDone: '가져왔어요', delConfirm: '삭제할까요? (삭제 표시만 되며 복구할 수 있어요)' },
     en: { tasksTitle: 'Tasks', tasksSub: 'See and manage camp preparation tasks in one place (events are on the Calendar page)', addTask: '+ Task', addEvent: '+ Event', viewOnly: 'View-only account. Camp team members can edit.', searchPh: 'Search task, owner, notes',
+      pInactive: 'Inactive', inactiveTag: 'Inactive', fActive: 'Active task (off = inactive: left out of open tasks, alerts, progress and calendar)', actOn: 'Activate', actOff: 'Deactivate', impInactive: 'Import as inactive (team members review, then activate)',
       tabList: 'Task list', tabCal: 'Calendar', tabTpl: 'Checklist templates', tabImp: 'Import from sheet', today: 'Today', viewGrid: 'Calendar', viewAgenda: 'List',
       pOpen: 'Open', pOverdue: 'Overdue', pNoOwner: 'No owner', pNoDue: 'No due date', pAll: 'All', fAllCamps: 'All camps', fNoCamp: 'No camp', fAllStatus: 'All statuses', fAllPri: 'All priorities', fAllOwner: 'All owners', sortDue: 'Due date', sortPri: 'Priority', sortNew: 'Newest', sortTitle: 'Name',
       stNot: 'Not Started', stIn: 'In Progress', stWait: 'Waiting for Confirmation', stDelayed: 'Delayed', stDone: 'Completed', stNA: 'Not Applicable', priHigh: 'High', priMedium: 'Medium', priLow: 'Low',
@@ -64,7 +66,7 @@
   function renderTasks() {
     var c = S.tasks.counts, today = S.tasks.today;
     $('addTask').hidden = !canWrite(); $('viewOnly').hidden = canWrite(); $('impTab').hidden = !canWrite(); $('addTpl').hidden = !canWrite(); $('impTpl').hidden = !canWrite();
-    $('pills').innerHTML = [['open', 'pOpen', c.open, ''], ['overdue', 'pOverdue', c.overdue, 'red'], ['noowner', 'pNoOwner', c.noOwner, 'red'], ['nodue', 'pNoDue', c.noDue, ''], ['', 'pAll', '', '']].map(function (p) {
+    $('pills').innerHTML = [['open', 'pOpen', c.open, ''], ['overdue', 'pOverdue', c.overdue, 'red'], ['noowner', 'pNoOwner', c.noOwner, 'red'], ['nodue', 'pNoDue', c.noDue, ''], ['', 'pAll', '', ''], ['inactive', 'pInactive', c.inactive || 0, 'gray']].map(function (p) {
       return '<button class="pill ' + p[3] + (S.flag === p[0] ? ' on' : '') + '" data-flag="' + p[0] + '">' + esc(CT.t(p[1])) + (p[2] !== '' ? '<b>' + p[2] + '</b>' : '') + '</button>'; }).join('');
     var all = S.tasks.items, pages = Math.max(1, Math.ceil(all.length / PAGE)); if (S.page > pages) S.page = pages; if (S.page < 1) S.page = 1;
     var shown = all.slice((S.page - 1) * PAGE, S.page * PAGE);
@@ -72,9 +74,9 @@
       var late = t.dueDate && t.dueDate < today && t.status !== 'Completed' && t.status !== 'Not Applicable';
       var ownerHtml = t.ownerName ? esc(CT.t('owner')) + ': ' + esc(t.ownerName) : '<span class="tag t-late">' + esc(CT.t('noOwner')) + '</span>' + CT.help('ownerSuggest') + (t.ownerSuggestion ? ' <span class="sugg">' + esc(CT.t('suggested')) + ': ' + esc(t.ownerSuggestion) + (canWrite() ? '<button data-confirm="' + esc(t.id) + '">' + esc(CT.t('confirm')) + '</button>' : '') + '</span>' : '');
       var dueHtml = t.dueDate ? '<span class="tag ' + (late ? 't-late' : daysFrom(today, t.dueDate) <= 3 ? 't-soon' : 't-none') + '">' + esc(CT.t('due')) + ' ' + esc(md(t.dueDate)) + (late ? ' · ' + esc(CT.t('overdue')) : '') + '</span>' : '<span class="tag t-none">' + esc(CT.t('noDue')) + '</span>';
-      return '<div class="task ' + (t.status === 'Completed' ? 'done' : '') + '"><div><div class="tt">' + esc(t.title) + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</div>' +
+      return '<div class="task ' + (t.status === 'Completed' ? 'done' : '') + (t.inactive ? ' inactive' : '') + '"><div><div class="tt">' + esc(t.title) + (t.inactive ? ' <span class="chip gray">' + esc(CT.t('inactiveTag')) + '</span>' : '') + (t.isTest ? ' <span class="chip test">' + esc(CT.t('test')) + '</span>' : '') + '</div>' +
         '<small>' + ownerHtml + ' · ' + dueHtml + ' <span class="tag p-' + t.priority + '">' + esc(priLabel(t.priority)) + '</span>' + (campLabel(t) ? ' · ' + esc(campLabel(t)) : '') + (t.notes ? '<br>' + esc(t.notes) : '') + '</small></div>' +
-        '<div class="actions">' + (canWrite() ? '<select data-status="' + esc(t.id) + '">' + STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (t.status === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select><button class="btn sm" data-edit="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="' + esc(t.id) + '">' + esc(CT.t('del')) + '</button>' : '<span class="status">' + esc(stLabel(t.status)) + '</span>') + '</div></div>';
+        '<div class="actions">' + (canWrite() ? '<select data-status="' + esc(t.id) + '">' + STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (t.status === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select><button class="btn sm" data-toggle="' + esc(t.id) + '">' + esc(CT.t(t.inactive ? 'actOn' : 'actOff')) + '</button><button class="btn sm" data-edit="' + esc(t.id) + '">' + esc(CT.t('edit')) + '</button><button class="btn sm danger" data-del="' + esc(t.id) + '">' + esc(CT.t('del')) + '</button>' : '<span class="status">' + esc(stLabel(t.status)) + '</span>') + '</div></div>';
     }).join('') : '<div class="empty">' + esc(CT.t('noTasks')) + '</div>';
     renderPager(all.length, pages);
   }
@@ -106,9 +108,10 @@
       '<div class="two"><label>' + esc(CT.t('fStatus')) + '<select name="status">' + STATUS.map(function (s) { return '<option value="' + s[0] + '"' + ((t ? t.status : 'Not Started') === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select></label>' +
       '<label>' + esc(CT.t('fPriority')) + '<select name="priority">' + PRI.map(function (s) { return '<option value="' + s[0] + '"' + ((t ? t.priority : 'Medium') === s[0] ? ' selected' : '') + '>' + esc(CT.t(s[1])) + '</option>'; }).join('') + '</select></label></div>' +
       '<label>' + esc(CT.t('fCamp')) + '<select name="campId">' + campOptions(t && t.campId, CT.t('fNoCamp')) + '</select></label>' +
-      '<label>' + esc(CT.t('fNotes')) + '<textarea name="notes" maxlength="1000">' + esc(t ? t.notes : '') + '</textarea></label>';
+      '<label>' + esc(CT.t('fNotes')) + '<textarea name="notes" maxlength="1000">' + esc(t ? t.notes : '') + '</textarea></label>' +
+      '<label class="chk"><input type="checkbox" name="active" value="1"' + (t && t.inactive ? '' : ' checked') + '> ' + esc(CT.t('fActive')) + '</label>';
     ask(CT.t(t ? 'editTask' : 'newTask'), h, async function (fd) {
-      var body = { title: fd.title, ownerName: fd.ownerName, dueDate: fd.dueDate || null, status: fd.status, priority: fd.priority, campId: fd.campId || null, notes: fd.notes };
+      var body = { title: fd.title, ownerName: fd.ownerName, dueDate: fd.dueDate || null, status: fd.status, priority: fd.priority, campId: fd.campId || null, notes: fd.notes, inactive: fd.active ? 0 : 1 };
       if (t) await CT.api('/api/campteam/tasks?id=' + encodeURIComponent(t.id), { method: 'PATCH', body: body }); else await CT.api('/api/campteam/tasks', { method: 'POST', body: body });
       await refresh();
     });
@@ -174,7 +177,7 @@
   }
 
   /* ---------- 시트에서 가져오기 ---------- */
-  var impBody = function (preview) { return { csv: $('csv').value, preview: !!preview }; };
+  var impBody = function (preview) { return { csv: $('csv').value, preview: !!preview, inactive: !!($('impInactive') && $('impInactive').checked) }; };
   async function importPreview() {
     $('impOut').innerHTML = ''; $('impRun').hidden = true;
     try {
@@ -203,7 +206,7 @@
     loadPeople();
     try { S.types = (await CT.api('/api/campteam/camps')).types; fillFilters(); await loadTasks(); } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     CT.applyI18n(); fillFilters();
-    var up = new URLSearchParams(location.search); if (up.get('open')) { openById(up.get('open')); } if (up.get('campId')) { $('tcamp').value = up.get('campId'); S.flag = ''; await loadTasks(); }
+    var up = new URLSearchParams(location.search); if (up.get('open')) { openById(up.get('open')); } if (up.get('campId') || up.get('flag')) { if (up.get('campId')) $('tcamp').value = up.get('campId'); S.flag = up.get('flag') || ''; await loadTasks(); }
     var timer; $('tq').oninput = function () { clearTimeout(timer); timer = setTimeout(function () { S.page = 1; loadTasks(); }, 250); };
     ['tcamp', 'tstatus', 'tpri', 'towner', 'tsort'].forEach(function (id) { $(id).onchange = function () { S.page = 1; loadTasks(); }; });
     $('tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); };
@@ -211,9 +214,10 @@
     $('tpager').onclick = function (e) { var b = e.target.closest('[data-pg]'); if (!b || b.disabled) return; S.page = Number(b.dataset.pg) || 1; renderTasks(); var l = $('tlist'); if (l && l.scrollIntoView) l.scrollIntoView({ block: 'start' }); };
     $('addTask').onclick = function () { taskForm(); }; $('addTpl').onclick = function () { tplForm(); }; $('impTpl').onclick = tplImportForm;
     $('tlist').addEventListener('click', async function (e) {
-      var b = e.target.closest('button'); if (!b) return; var id = b.dataset.edit || b.dataset.del || b.dataset.confirm, t = S.tasks.items.filter(function (x) { return x.id === id; })[0];
+      var b = e.target.closest('button'); if (!b) return; var id = b.dataset.edit || b.dataset.del || b.dataset.confirm || b.dataset.toggle, t = S.tasks.items.filter(function (x) { return x.id === id; })[0];
       try {
         if (b.dataset.edit) taskForm(t);
+        else if (b.dataset.toggle) { await CT.api('/api/campteam/tasks?id=' + encodeURIComponent(id), { method: 'PATCH', body: { inactive: t.inactive ? 0 : 1 } }); await loadTasks(); }
         else if (b.dataset.del) { if (confirm(CT.t('delConfirm'))) { await CT.api('/api/campteam/tasks?id=' + encodeURIComponent(id), { method: 'DELETE' }); await loadTasks(); } }
         else if (b.dataset.confirm) { await CT.api('/api/campteam/tasks?id=' + encodeURIComponent(id), { method: 'PATCH', body: { ownerName: t.ownerSuggestion } }); await loadTasks(); }
       } catch (err) { alert(err.message); }

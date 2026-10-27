@@ -4,7 +4,7 @@ import { planCsvImport } from '../../lib/campteamCsv.js';
 
 /**
  * 기존 Google Sheet 의 업무를 포털로 한 번 가져오기 (시트를 CSV 로 내려받아 붙여넣는 방식 — Google 에는 접속하지 않는다).
- * { csv, preview?: true }  — 같은 캠프에 같은 이름의 업무가 이미 있으면 건너뛴다. 담당자·기한은 시트에 적힌 그대로만 넣는다.
+ * { csv, preview?: true, inactive?: true(비활성 상태로 가져오기) }  — 같은 캠프에 같은 이름의 업무가 이미 있으면 건너뛴다. 담당자·기한은 시트에 적힌 그대로만 넣는다.
  */
 export async function onRequestPost({ env, request }) {
   if (!env.DB) return noDb();
@@ -20,11 +20,11 @@ export async function onRequestPost({ env, request }) {
   if (plan.error) return badRequest(plan.error);
   const summary = { total: plan.rows.length, toCreate: plan.rows.filter(r => !r.skip).length, skipped: plan.rows.filter(r => r.skip).length, unmatchedCamps: plan.unmatched };
   if (b.preview) return json({ preview: true, summary, rows: plan.rows });
-  const now = nowIso();
+  const now = nowIso(), inactive = b.inactive ? 1 : 0;
   for (const r of plan.rows.filter(x => !x.skip)) {
-    await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerSuggestion,dueDate,status,priority,notes,sourceKey,createdAt,updatedAt,createdBy) VALUES (?1,?2,?3,?4,?12,?5,?6,?7,?8,?9,?10,?10,?11)`)
-      .bind(uuid(), r.campId, r.title, r.ownerName, r.dueDate, r.status, r.priority, r.notes, r.sourceKey, now, s.email, r.ownerSuggestion || '').run();
+    await env.DB.prepare(`INSERT INTO tasks (id,campId,title,ownerName,ownerSuggestion,dueDate,status,priority,notes,sourceKey,createdAt,updatedAt,createdBy,inactive) VALUES (?1,?2,?3,?4,?12,?5,?6,?7,?8,?9,?10,?10,?11,?13)`)
+      .bind(uuid(), r.campId, r.title, r.ownerName, r.dueDate, r.status, r.priority, r.notes, r.sourceKey, now, s.email, r.ownerSuggestion || '', inactive).run();
   }
-  await audit(env, s.email, 'import_csv', 'task', 'bulk', `+${summary.toCreate} skip ${summary.skipped}`);
+  await audit(env, s.email, 'import_csv', 'task', 'bulk', `+${summary.toCreate} skip ${summary.skipped}${inactive ? ' inactive' : ''}`);
   return json({ created: summary.toCreate, skipped: summary.skipped, summary }, 201);
 }
