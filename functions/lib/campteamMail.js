@@ -4,7 +4,7 @@
  * 없으면 기존 포털 주소(hub@wolko.org)로 보낸다. 도메인 인증이 안 된 주소로는 발송이 실패하므로, 설정 전에 Resend 의 Domains 화면에서 확인한다.
  */
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-export const DEFAULT_FROM = 'WOLKO Camp Team <hub@wolko.org>';
+export const DEFAULT_FROM = 'WOLKO Camp & Outreach Team <hub@wolko.org>';
 const FROM_RE = /^(?:[^<>@\r\n]{1,60}<)?[^\s<>@,;]+@[^\s<>@,;]+\.[^\s<>@,;]+>?$/;
 /** 설정값 검사: "이름 <주소>" 또는 "주소". 줄바꿈이나 여러 주소는 거부하고 기본값을 쓴다 */
 export function fromAddress(env) { const v = String(env.CAMPTEAM_MAIL_FROM || '').trim(); return v && FROM_RE.test(v) && (v.includes('<') === v.endsWith('>')) ? v : DEFAULT_FROM; }

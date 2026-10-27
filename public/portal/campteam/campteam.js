@@ -4,10 +4,10 @@
 
   CT.addDict = function (d) { ['ko', 'en'].forEach(function (l) { Object.assign(CT.dict[l], d[l] || {}); }); };
   CT.addDict({
-    ko: { navHome: '캠프팀 홈', navAlerts: '알림공지', budgetLocked: '🔒 예산·금액은 권한이 있는 팀원에게만 보입니다.', navResources: '캠프팀 자료', navGroupTeam: '캠프팀', navCamps: '캠프별 공간', navTasks: '업무', navCalendar: '달력', navMeetings: '회의록 · 결정', navFiles: '자료실', navTv: 'TV 대시보드', searchAll: '전체 검색 (업무·회의·결정·파일)', navFinance: '재정', navBudget: '캠프 예산', navAdmin: '관리', navSettings: '설정 · 팀 명단', soon: '준비 중', backPortal: '← 포털로 돌아가기', backPortalShort: '월코 포탈로 나가기', teamSpace: '캠프팀 전용 공간 · 포탈과 별개 화면',
+    ko: { navHome: '홈', navAlerts: '알림공지', budgetLocked: '🔒 예산·금액은 권한이 있는 팀원에게만 보입니다.', navResources: '캠프팀 자료', navGroupTeam: '캠프 & 아웃리치 팀', navCamps: '캠프별 공간', navTasks: '업무', navCalendar: '달력', navMeetings: '회의록 · 결정', navFiles: '자료실', navTv: 'TV 대시보드', searchAll: '전체 검색 (업무·회의·결정·파일)', navFinance: '재정', navBudget: '캠프 예산', navAdmin: '관리', navSettings: '설정 · 팀 명단', soon: '준비 중', backPortal: '← 포털로 돌아가기', backPortalShort: '월코 포탈로 나가기', teamSpace: '캠프 & 아웃리치 팀 전용 공간 · 포털과 별개 화면',
       gateTitle: '포털 로그인이 필요해요', gateBody: '포털에서 로그인한 뒤 이 페이지로 다시 들어와 주세요.', gateBtn: '포털로 이동', logout: '로그아웃', gateGoogle: '또는 wolko.org Google 계정으로 로그인 (조회 전용)', navTrash: '휴지통', test: '테스트', testData: '테스트 자료 포함',
       roleadmin: '관리자', roledirector: '캠프팀 디렉터', rolefinance: '캠프 재정 담당', roletreasurer: '월코 재정 (조회 전용)', rolemember: '캠프팀 팀원', roleviewer: '조회만', loadFail: '불러오지 못했어요', save: '저장', cancel: '취소', edit: '수정', del: '삭제', add: '추가', confirmDel: '삭제할까요? (삭제 표시만 되며 복구할 수 있어요)' },
-    en: { navHome: 'Camp Team Home', navAlerts: 'Alerts & Notices', budgetLocked: '🔒 Budget and amounts are visible only to authorized team members.', navResources: 'Camp Team Docs', navGroupTeam: 'CAMP TEAM', navCamps: 'Camp Spaces', navTasks: 'Tasks', navCalendar: 'Calendar', navMeetings: 'Meetings · Decisions', navFiles: 'Files', navTv: 'TV Dashboard', searchAll: 'Search all (tasks, meetings, decisions, files)', navFinance: 'FINANCE', navBudget: 'Camp Budget', navAdmin: 'ADMIN', navSettings: 'Settings · Team', soon: 'Soon', backPortal: '← Back to Portal', backPortalShort: 'Leave to WOLKO Portal', teamSpace: 'Camp Team space · separate from the Portal',
+    en: { navHome: 'Home', navAlerts: 'Alerts & Notices', budgetLocked: '🔒 Budget and amounts are visible only to authorized team members.', navResources: 'Camp Team Docs', navGroupTeam: 'CAMP & OUTREACH TEAM', navCamps: 'Camp Spaces', navTasks: 'Tasks', navCalendar: 'Calendar', navMeetings: 'Meetings · Decisions', navFiles: 'Files', navTv: 'TV Dashboard', searchAll: 'Search all (tasks, meetings, decisions, files)', navFinance: 'FINANCE', navBudget: 'Camp Budget', navAdmin: 'ADMIN', navSettings: 'Settings · Team', soon: 'Soon', backPortal: '← Back to Portal', backPortalShort: 'Leave to WOLKO Portal', teamSpace: 'Camp & Outreach Team space · separate from the Portal',
       gateTitle: 'Portal login required', gateBody: 'Please log in to the portal, then come back to this page.', gateBtn: 'Go to Portal', logout: 'Log out', gateGoogle: 'Or sign in with your wolko.org Google account (view only)', navTrash: 'Trash', test: 'TEST', testData: 'Includes test data',
       roleadmin: 'Admin', roledirector: 'Camp Team Director', rolefinance: 'Camp Finance', roletreasurer: 'WOLKO Finance (view only)', rolemember: 'Camp Team', roleviewer: 'View only', loadFail: 'Could not load', save: 'Save', cancel: 'Cancel', edit: 'Edit', del: 'Delete', add: 'Add', confirmDel: 'Delete this? (It is only marked deleted and can be restored.)' }
   });
@@ -89,8 +89,8 @@
   // 모든 팝업에 ✕ 버튼을 달고, 바깥 배경을 누르거나 Esc 를 눌러도 닫히게 한다.
   // 입력 양식이 있는 팝업에서 고친 내용이 있으면 "저장하고 닫기 / 저장 안 하고 닫기 / 계속 편집" 을 먼저 묻는다.
   CT.addDict({
-    ko: { dlgClose: '닫기', dlgDirtyTitle: '저장하지 않은 변경이 있어요', dlgDirtyBody: '고친 내용이 아직 저장되지 않았어요. 어떻게 할까요?', dlgSaveClose: '저장하고 닫기', dlgDiscard: '저장 안 하고 닫기', dlgKeep: '계속 편집' },
-    en: { dlgClose: 'Close', dlgDirtyTitle: 'You have unsaved changes', dlgDirtyBody: 'Your edits have not been saved yet. What would you like to do?', dlgSaveClose: 'Save and close', dlgDiscard: 'Close without saving', dlgKeep: 'Keep editing' }
+    ko: { dlgClose: '닫기', dlgDirtyTitle: '저장하지 않은 변경이 있어요', dlgDirtyBody: '고친 내용이 아직 저장되지 않았어요. 어떻게 할까요?', dlgSaveClose: '저장하고 닫기', dlgDiscard: '저장 안 하고 닫기', dlgKeep: '계속 편집', dlgSaveGo: '저장하고 이동', dlgDiscardGo: '저장 안 하고 이동' },
+    en: { dlgClose: 'Close', dlgDirtyTitle: 'You have unsaved changes', dlgDirtyBody: 'Your edits have not been saved yet. What would you like to do?', dlgSaveClose: 'Save and close', dlgDiscard: 'Close without saving', dlgKeep: 'Keep editing', dlgSaveGo: 'Save and leave', dlgDiscardGo: 'Leave without saving' }
   });
   var FIELDS = 'input,select,textarea';
   function snapshot(d) {
@@ -102,17 +102,21 @@
   /** 저장 버튼이 있는 양식 팝업만 "고친 내용" 검사 대상이다(읽기용 상세 팝업은 그냥 닫힘) */
   function editable(d) { return !!d.querySelector('form [type=submit], form button:not([type=button])'); }
   function dirty(d) { return editable(d) && d._base != null && snapshot(d) !== d._base; }
-  function confirmDirty(d) {
+  function confirmDirty(d, go) {
     var c = document.createElement('dialog'); c.className = 'ct-confirm'; var canSave = editable(d);
     c.innerHTML = '<h3>' + CT.esc(CT.t('dlgDirtyTitle')) + '</h3><p>' + CT.esc(CT.t('dlgDirtyBody')) + '</p><div class="actions" style="justify-content:flex-end">' +
       '<button type="button" class="btn" data-a="keep">' + CT.esc(CT.t('dlgKeep')) + '</button>' +
-      '<button type="button" class="btn danger" data-a="discard">' + CT.esc(CT.t('dlgDiscard')) + '</button>' +
-      (canSave ? '<button type="button" class="btn pri" data-a="save">' + CT.esc(CT.t('dlgSaveClose')) + '</button>' : '') + '</div>';
+      '<button type="button" class="btn danger" data-a="discard">' + CT.esc(CT.t(go ? 'dlgDiscardGo' : 'dlgDiscard')) + '</button>' +
+      (canSave ? '<button type="button" class="btn pri" data-a="save">' + CT.esc(CT.t(go ? 'dlgSaveGo' : 'dlgSaveClose')) + '</button>' : '') + '</div>';
     document.body.appendChild(c);
     var done = function (a) {
       c.close(); c.remove();
-      if (a === 'discard') d.close();
-      else if (a === 'save') { var f = d.querySelector('form'); if (f && f.requestSubmit) f.requestSubmit(); } // 저장에 성공하면 팝업이 알아서 닫히고, 실패하면 오류와 함께 열려 있다
+      if (a === 'discard') { d.close(); if (go) go(); }
+      else if (a === 'save') {
+        var f = d.querySelector('form');
+        if (go) { var t = setTimeout(function () { d.removeEventListener('close', onClose); }, 15000), onClose = function () { clearTimeout(t); go(); }; d.addEventListener('close', onClose, { once: true }); } // 저장이 성공해 팝업이 닫히면 이동한다
+        if (f && f.requestSubmit) f.requestSubmit(); // 저장에 성공하면 팝업이 알아서 닫히고, 실패하면 오류와 함께 열려 있다
+      }
     };
     c.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-a]'); if (b) done(b.getAttribute('data-a')); });
     c.addEventListener('cancel', function (e) { e.preventDefault(); done('keep'); });
@@ -120,6 +124,30 @@
     var first = c.querySelector('[data-a=save]') || c.querySelector('[data-a=keep]'); if (first) first.focus();
   }
   CT.tryClose = function (d) { if (!d || !d.open) return; if (dirty(d)) confirmDirty(d); else d.close(); };
+  function openDialogs() { return [].filter.call(document.querySelectorAll('dialog'), function (x) { return x.open && !x.classList.contains('ct-confirm'); }); }
+  function dirtyDialog() { return openDialogs().filter(dirty)[0] || null; }
+  // 팝업이 남긴 뒤로가기 표시를 정리(뒤로 한 칸)한 다음에 이동해서, 뒤로가기 기록이 어지러워지지 않게 한다
+  function leave(href) {
+    var go = function () { location.href = href; };
+    if (history.state && history.state.ctDepth) { var done = false, f = function () { if (done) return; done = true; window.removeEventListener('popstate', f); go(); }; window.addEventListener('popstate', f); setTimeout(f, 600); } else go();
+  }
+  // 팝업에서 고친 내용이 있는 채로 다른 화면으로 가려 할 때 (메뉴·링크 클릭, 새로고침, 탭 닫기) 먼저 확인한다
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]'); if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank' || a.hasAttribute('download')) return;
+    var d = dirtyDialog(); if (!d) return; var href = a.getAttribute('href'); if (!href || href.charAt(0) === '#' || /^(javascript|mailto|tel):/i.test(href)) return;
+    e.preventDefault(); e.stopPropagation(); confirmDirty(d, function () { leave(a.href); });
+  }, true);
+  window.addEventListener('beforeunload', function (e) { if (dirtyDialog()) { e.preventDefault(); e.returnValue = ''; } });
+  // 뒤로가기(폰의 뒤로 버튼 포함): 팝업이 열려 있으면 화면을 떠나지 않고 팝업만 닫는다. 고친 내용이 있으면 먼저 묻는다
+  var ctOpen = 0;
+  window.addEventListener('popstate', function (e) {
+    var depth = (e.state && e.state.ctDepth) || 0, ds = openDialogs();
+    if (!ds.length) { if (depth) history.back(); return; } // 이미 닫힌 팝업이 남긴 표시는 건너뛴다
+    if (depth >= ds.length) return;
+    var d = ds[ds.length - 1];
+    if (dirty(d)) { history.pushState({ ctDepth: d._ctDepth || ds.length }, ''); confirmDirty(d); }
+    else { d._popped = true; d.close(); }
+  });
   function outside(d, e) { var r = d.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; }
   function enhance(d) {
     if (d._ctOk || d.classList.contains('ct-confirm')) return; d._ctOk = true;
@@ -127,8 +155,12 @@
     x.onclick = function () { CT.tryClose(d); }; d.insertBefore(x, d.firstChild);
     document.addEventListener('ct-lang', function () { x.setAttribute('aria-label', CT.t('dlgClose')); x.title = CT.t('dlgClose'); });
     var base = function () { d._base = snapshot(d); d._touched = false; };
-    var open = d.showModal; d.showModal = function () { open.call(d); base(); };
-    d.addEventListener('close', function () { d._base = null; d._touched = false; });
+    var open = d.showModal; d.showModal = function () { open.call(d); base(); d._ctDepth = ++ctOpen; try { history.pushState({ ctDepth: d._ctDepth }, ''); } catch (e) { /* 무시 */ } };
+    d.addEventListener('close', function () {
+      d._base = null; d._touched = false; ctOpen = Math.max(0, ctOpen - 1);
+      var pop = !d._popped && history.state && history.state.ctDepth === d._ctDepth; d._popped = false; // 뒤로가기로 닫힌 경우는 이미 한 칸 돌아와 있다
+      if (pop) history.back();
+    });
     d.addEventListener('input', function () { d._touched = true; }, true); d.addEventListener('change', function () { d._touched = true; }, true);
     // 팝업 내용이 새로 채워지면 그 상태를 "고치기 전" 기준으로 삼는다(고치는 도중에 칸이 늘어나는 경우는 기준을 바꾸지 않는다)
     new MutationObserver(function () { if (d.open && !d._touched) base(); }).observe(d, { childList: true, subtree: true });
