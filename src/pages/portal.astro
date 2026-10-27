@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=30">
+  <link rel="stylesheet" href="/hub.css?v=34">
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
@@ -501,6 +501,7 @@
       church: '<path d="M12 2v3M10.3 3.5h3.4"/><path d="M4 10.5 12 5l8 5.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6.5a2 2 0 0 1 4 0V20"/>',
       up: '<path d="M12 19V5M6 11l6-6 6 6"/>', down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
       pin: '<path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3z"/>',
+      chev: '<path d="m9 6 6 6-6 6"/>',
     };
     const svgi = (name, size) => '<svg width="' + (size || 18) + '" height="' + (size || 18) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + DI[name] + '</svg>';
     function dashLocale() { return hubLang === 'en' ? 'en-US' : 'ko-KR'; }
@@ -522,7 +523,7 @@
     }
     function dashCard(cls, color, icon, title, bodyHtml, href) {
       return '<section class="hub-dcard ' + cls + '" style="--dc:' + color + '"><div class="hub-dcard-head"><span class="hub-dicon">' + svgi(icon, 17) + '</span><h2>' + esc(title) + '</h2>'
-        + (href ? '<a class="hub-dcard-more" href="' + href + '">' + esc(t('dashMore')) + ' ›</a>' : '') + '</div><div class="hub-dbody">' + bodyHtml + '</div></section>';
+        + (href ? '<a class="hub-dcard-more" href="' + href + '" title="' + esc(t('dashMore')) + '" aria-label="' + esc(t('dashMore')) + '">' + svgi('chev', 16) + '</a>' : '') + '</div><div class="hub-dbody">' + bodyHtml + '</div></section>';
     }
     function dashEmpty(icon, text, sub) {
       return '<div class="hub-dempty"><span class="hub-dempty-ic">' + svgi(icon, 22) + '</span><p>' + esc(text) + '</p>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
