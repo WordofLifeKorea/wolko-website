@@ -52,8 +52,8 @@
       for (var q = 0; q < (small ? 10 : 22); q++) motes.push({ x: Math.random() * W, y: Math.random() * H, r: rand(1, 2.6), vy: -rand(4, 12), p: Math.random() * 6.28 });
     }
   }
-  function newDrop(anyY) { return { x: rand(-40, W + 40), y: anyY ? rand(-H, H) : rand(-80, -10), py: 0, vy: rand(520, 780), len: rand(9, 17), a: rand(0.35, 0.7) }; }
-  function newFlake(anyY) { return { x: rand(0, W), y: anyY ? rand(-H, H) : rand(-30, -4), r: rand(1.3, 3.6), vy: rand(22, 55), ph: Math.random() * 6.28, sw: rand(10, 30) }; }
+  function newDrop(anyY) { return { x: rand(-40, W + 40), y: anyY ? rand(-H, H) : rand(-80, -10), py: 0, vy: rand(250, 390) * (kind === 'storm' ? 1.25 : 1), len: rand(8, 14), a: rand(0.35, 0.7) }; }
+  function newFlake(anyY) { return { x: rand(0, W), y: anyY ? rand(-H, H) : rand(-30, -4), r: rand(1.3, 3.6), vy: rand(13, 34), ph: Math.random() * 6.28, sw: rand(8, 22) }; }
 
   function step(dt, now) {
     measure(now);
@@ -61,7 +61,7 @@
     wind += (windTarget - wind) * Math.min(1, dt * 2.5);
     var i, p, o, j;
     for (i = 0; i < drops.length; i++) {
-      p = drops[i]; p.py = p.y; p.y += p.vy * dt; p.x += (wind * 120 + 60 * (kind === 'storm' ? 1 : 0.35)) * dt;
+      p = drops[i]; p.py = p.y; p.y += p.vy * dt; p.x += (wind * 60 + 28 * (kind === 'storm' ? 1 : 0.35)) * dt;
       var hit = false;
       for (j = 0; j < obstacles.length; j++) {
         o = obstacles[j];
@@ -70,7 +70,7 @@
       if (hit || p.y > H + 20 || p.x > W + 60) drops[i] = newDrop(false);
     }
     for (i = 0; i < flakes.length; i++) {
-      p = flakes[i]; p.ph += dt * 1.4; p.y += p.vy * dt; p.x += (Math.sin(p.ph) * p.sw * dt) + wind * 40 * dt;
+      p = flakes[i]; p.ph += dt * 1.0; p.y += p.vy * dt; p.x += (Math.sin(p.ph) * p.sw * dt) + wind * 24 * dt;
       if (pointer.x != null) { var dx = p.x - pointer.x, dy = p.y - pointer.y, d2 = dx * dx + dy * dy; if (d2 < 4900) { var d = Math.sqrt(d2) || 1; p.x += dx / d * 70 * dt; p.y += dy / d * 40 * dt; } }
       var stuck = false;
       for (j = 0; j < obstacles.length; j++) {
@@ -80,7 +80,7 @@
       if (stuck || p.y > H + 10) flakes[i] = newFlake(false);
       else if (p.x < -10) p.x = W + 10; else if (p.x > W + 10) p.x = -10;
     }
-    for (i = splashes.length - 1; i >= 0; i--) { splashes[i].age += dt; if (splashes[i].age > 0.35) splashes.splice(i, 1); }
+    for (i = splashes.length - 1; i >= 0; i--) { splashes[i].age += dt * 0.75; if (splashes[i].age > 0.35) splashes.splice(i, 1); }
     for (i = landed.length - 1; i >= 0; i--) { landed[i].age += dt; if (landed[i].age > landed[i].ttl) landed.splice(i, 1); }
     for (i = 0; i < motes.length; i++) { p = motes[i]; p.p += dt; p.y += p.vy * dt; p.x += Math.sin(p.p) * 6 * dt; if (p.y < -6) { p.y = H + 6; p.x = Math.random() * W; } }
     if (kind === 'storm') {
@@ -95,7 +95,7 @@
     var i, p, rainA = kind === 'storm' ? 0.78 : 1;
     if (drops.length) {
       ctx.lineCap = 'round'; ctx.lineWidth = 1.3;
-      for (i = 0; i < drops.length; i++) { p = drops[i]; ctx.strokeStyle = 'rgba(225,240,255,' + (p.a * rainA).toFixed(2) + ')'; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - (wind * 120 + 40) * 0.02, p.y - p.len); ctx.stroke(); }
+      for (i = 0; i < drops.length; i++) { p = drops[i]; ctx.strokeStyle = 'rgba(225,240,255,' + (p.a * rainA).toFixed(2) + ')'; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - (wind * 60 + 20) / p.vy * p.len, p.y - p.len); ctx.stroke(); }
     }
     for (i = 0; i < splashes.length; i++) {
       var s = splashes[i], t = s.age / 0.35; ctx.fillStyle = 'rgba(235,246,255,' + (0.8 * (1 - t)).toFixed(2) + ')';
