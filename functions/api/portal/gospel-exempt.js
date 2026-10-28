@@ -11,7 +11,7 @@ const fail = (error, status = 400) => Response.json({ error }, { status, headers
 export async function onRequestPost({ env, request }) {
   const session = await portalSession(request, env);
   if (!session) return fail('포탈 로그인이 필요합니다.', 401);
-  if (session.role !== 'master' && session.role !== 'admin') return fail('마스터·관리자만 바꿀 수 있어요.', 403);
+  if (session.role !== 'master') return fail('마스터만 바꿀 수 있어요.', 403);
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
   const email = normalizeEmail(body?.email);

@@ -103,7 +103,7 @@ test('알림 API: ?to= 시험 메일은 그 주소로만 한 통, 기록을 남�
   assert.equal((await call(env, '?to=not-an-email')).status, 400);
 });
 
-test('제출 현황·보고 제외: 마스터·관리자만 보고, 제외하면 미제출 목록에서 빠진다', async () => {
+test('제출 현황·보고 제외: 마스터만 보고, 제외하면 미제출 목록에서 빠진다', async () => {
   const { env, kv, acc } = setup();
   await acc('admin@wolko.org', 'master'); await acc('wolkorea1@gmail.com', 'admin'); await acc('hkim3@wol.org', 'admin'); await acc('anna@wol.org'); await acc('bob@wol.org'); await acc('cara@wol.org');
   const month = '2026-10';
@@ -111,10 +111,12 @@ test('제출 현황·보고 제외: 마스터·관리자만 보고, 제외하면
   await kv.put(`gospel:rep:${month}:a`, JSON.stringify({ id: 'a', month, email: 'anna@wol.org', scope: 'team', teamName: 'T', location: 'jeju', values }));
   const get = async who => G.onRequestGet({ env, request: new Request(`https://t.co/api/portal/gospel-stats?month=${month}`, { headers: { Authorization: 'Bearer ' + await H.createHubSessionToken('secret', who[0], who[1]) } }) });
   const post = async (who, body) => Ex.onRequestPost({ env, request: new Request('https://t.co/api/portal/gospel-exempt', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await H.createHubSessionToken('secret', who[0], who[1]) }, body: JSON.stringify(body) }) });
-  const admin = ['hkim3@wol.org', 'admin'], anna = ['anna@wol.org', 'counselor'];
+  const admin = ['admin@wolko.org', 'master'], plainAdmin = ['hkim3@wol.org', 'admin'], anna = ['anna@wol.org', 'counselor'];
 
   const member = await (await get(anna)).json();
   assert.equal('submission' in member, false, '일반 멤버에게는 제출 현황이 없다');
+  assert.equal('submission' in await (await get(plainAdmin)).json(), false, '마스터가 아닌 관리자(admin)에게도 제출 현황이 없다');
+  assert.equal((await post(plainAdmin, { email: 'bob@wol.org', exempt: true })).status, 403, '보고 제외도 마스터만');
   const a = await (await get(admin)).json();
   assert.equal(a.submission.expected, 4, 'admin@wolko.org 와 wolkorea1 계정은 늘 제외'); assert.equal(a.submission.submitted, 1);
   assert.deepEqual(a.submission.missing.map(p => p.email).sort(), ['bob@wol.org', 'cara@wol.org', 'hkim3@wol.org']);

@@ -160,7 +160,7 @@
           + '<td class="gs-total">' + num(g.students) + '</td><td>' + num(g.salv) + '</td><td>' + num(g.ded) + '</td></tr>';
       }).join('') + '</tbody></table></div>';
   }
-  /** 제출 현황(마스터·관리자) — 이 달 보고를 아직 안 낸 사람, 보고 제외 */
+  /** 제출 현황(마스터만) — 이 달 보고를 아직 안 낸 사람, 보고 제외 */
   function renderSubmission() {
     var wrap = $('subWrap'), box = $('subBox'); if (!wrap || !box) return;
     var sub = data.submission; wrap.hidden = !sub; if (!sub) return;

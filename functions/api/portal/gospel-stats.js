@@ -21,6 +21,8 @@ import {
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
 const canReview = session => session.role === 'master' || session.role === 'admin';
+/** 제출 현황(누가 아직 보고하지 않았는지)은 마스터에게만 — 보고 제외 설정도 마스터만 */
+const canSeeSubmission = session => session.role === 'master';
 /** 가입할 때 고른 소속(평택 wolko | 제주) → 보고 위치 기본값. 정보가 없으면 '' */
 async function defaultLocation(env, session) {
   const campus = CAMPUS_OVERRIDES[session.email] || (await getAccount(env, session.email).catch(() => null))?.campus;
@@ -114,7 +116,7 @@ export async function onRequestGet({ env, request }) {
     trend,
     mine: reports.filter(r => r.owner === owner).map(({ owner: _o, ...mine }) => mine),   // 내 보고만 — 표식은 내보내지 않는다
     // 보고별 목록(이름·이메일 포함)은 마스터·관리자만. 그 밖의 계정에는 합계만 준다 — 사람별 숫자는 익명이어도 누구의 것인지 알아낼 수 있다
-    ...(review ? { submission: await submissionStatus(env, reports) } : {}),
+    ...(canSeeSubmission(session) ? { submission: await submissionStatus(env, reports) } : {}),
   }, { headers: H });
 }
 
