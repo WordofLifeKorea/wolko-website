@@ -222,7 +222,7 @@
   function renderKpis() {
     var x = totals(data.summary, tab), c = data.summary.counts;
     $('kpiCaption').innerHTML = view === 'year' ? esc(t('ytdCaption', data.year, Number(String(data.ytd.from).slice(5)), Number(String(data.ytd.to).slice(5)))) + infoKey('ytdTip') : esc(t('monthLabel', data.month));
-    var kpis = [[t('kGospel'), sumHeard(x), 'kGospelTip', 'heard'], [t('kSalv'), sumSalv(x), 'kSalvTip', 'saved'], [t('kDed'), sumDed(x), 'kDedTip'], [t('kReach'), sumReach(x), 'kReachTip']];
+    var kpis = [[t('kGospel'), sumHeard(x), 'kGospelTip', 'heard'], [t('kSalv'), sumSalv(x), 'kSalvTip', 'saved'], [t('kDed'), sumDed(x), 'kDedTip', 'ded'], [t('kReach'), sumReach(x), 'kReachTip', 'reach']];   // 네 카드 모두 같은 구조(라벨 · 숫자 · 도넛)
     var box = $('kpis');
     if (box.dataset.lang !== lang || box.children.length !== kpis.length) {          // 처음이거나 언어가 바뀌면 카드를 새로 만든다
       box.dataset.lang = lang;

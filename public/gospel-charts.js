@@ -49,7 +49,9 @@
     var heardSlices = bySource(['evangelism', 'campAttendance', 'eeAttendance']), savedSlices = bySource(['salvation', 'campSalvations', 'eeSalvations']);
     var heard = heardSlices.reduce(function (n, y) { return n + y.value; }, 0), saved = savedSlices.reduce(function (n, y) { return n + y.value; }, 0);
     // 복음을 들은 인원 · 구원 고백 카드 안에 분류별 막대를 채운다(카드는 gospel-stats.js 가 만든다)
-    var slots = { heard: heardSlices, saved: savedSlices };
+    // 헌신 · 참석 인원은 캠프 / 월코 행사 두 갈래(개인 전도에는 없는 항목) — 색은 같은 분류와 같은 색
+    var two = function (keys) { return [1, 2].map(function (n, i) { return { name: s.sources[n], value: x[keys[i]] || 0, color: C.source[n] }; }); };
+    var slots = { heard: heardSlices, saved: savedSlices, ded: two(['campDedications', 'eeDedications']), reach: two(['campAttendance', 'eeAttendance']) };
     document.querySelectorAll('[data-break]').forEach(function (slot) {
       var id = slot.dataset.break;
       slot.innerHTML = slots[id] ? bar(id, slots[id], lang, s) : '';
