@@ -268,6 +268,8 @@
     var renderWho = function () { document.getElementById('who').innerHTML = CT.esc(CT.me.email) + '<br><span class="chip">' + CT.esc(CT.roleLabel(CT.me.campRole)) + '</span>' + (CT.usingGoogle() ? ' <a href="#" id="gout">' + CT.esc(CT.t('logout')) + '</a>' : ''); var o = document.getElementById('gout'); if (o) o.onclick = function (e) { e.preventDefault(); CT.googleLogout(); }; };
     renderWho(); document.addEventListener('ct-lang', renderWho);
     watchTables();
+    // 「팀 사무실」: 이 화면을 열어 두고 있다고 1분마다 알린다(탭을 보고 있을 때만). 캠프팀 DB 에만 기록된다.
+    if (!CT._beat) { var beat = function () { if (!document.hidden) CT.api('/api/campteam/office', { method: 'POST', body: {} }).catch(function () {}); }; beat(); CT._beat = setInterval(beat, 60000); document.addEventListener('visibilitychange', function () { if (!document.hidden) beat(); }); }
     await init(CT.me);
     document.dispatchEvent(new Event('ct-ready'));
   };

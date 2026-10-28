@@ -23,7 +23,7 @@
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   CT.pre('/api/campteam/portal-feed');   // 이름·날씨는 로그인 확인과 동시에 미리 불러 둔다
-  var HK = 'ct-hero-v1', feed = null, loaded = false, baseTitle = document.title, handlers = {}, lastAt = 0, lastRemaining = null;
+  var HK = 'ct-hero-v1', officeEl = null, feed = null, loaded = false, baseTitle = document.title, handlers = {}, lastAt = 0, lastRemaining = null;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var ls = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 
@@ -68,10 +68,11 @@
     if (name) setGreeting(CT.t('hello' + tod())(name));
     var wx = $('hubWx');
     if (wx) {
-      if (!w) wx.hidden = true; else {
-        wx.hidden = false;
-        wx.innerHTML = '<div class="hub-wx-card"><div class="hub-wx-temp">' + w.temp + '<sup>°</sup></div><div class="hub-wx-label">' + esc(CT.t('wxCity') + ' · ' + wxLabel(w)) + '</div><div class="hub-wx-sub">' + esc(CT.t('wxFeels') + ' ' + w.feels + '°' + (w.hi != null && w.lo != null ? ' · ' + CT.t('wxHiLo')(w.hi, w.lo) : '') + (w.rain != null ? ' · ' + CT.t('wxRain') + ' ' + w.rain + '%' : '')) + '</div></div>';
-      }
+      // 날씨 칸 안에 「팀 사무실」을 함께 넣는다 — 날씨가 없어도 칸은 사무실 때문에 보인다
+      var off = officeEl || (officeEl = $('ctOffice')); if (off && off.parentNode) off.parentNode.removeChild(off);
+      wx.hidden = false;
+      wx.innerHTML = '<div class="hub-wx-card">' + (w ? '<div class="hub-wx-temp">' + w.temp + '<sup>°</sup></div><div class="hub-wx-label">' + esc(CT.t('wxCity') + ' · ' + wxLabel(w)) + '</div><div class="hub-wx-sub">' + esc(CT.t('wxFeels') + ' ' + w.feels + '°' + (w.hi != null && w.lo != null ? ' · ' + CT.t('wxHiLo')(w.hi, w.lo) : '') + (w.rain != null ? ' · ' + CT.t('wxRain') + ' ' + w.rain + '%' : '')) + '</div>' : '') + '</div>';
+      if (off) wx.firstChild.appendChild(off);
     }
     applyWeather();
   }
@@ -206,7 +207,7 @@
     requestAnimationFrame(leafFrame);
   }
   // 단풍나무 그림 — 하늘 영역 오른쪽에 서 있고, 잎이 여기서 떨어진다
-  var TREE = '<svg class="ct-tree" viewBox="0 0 160 176" aria-hidden="true"><path d="M70 176c2-30 3-48 1-68h12c-2 22 2 40 6 68z" fill="#6b4426"/><path d="M77 118 60 92M81 124 104 94M78 108V80" stroke="#6b4426" stroke-width="5" stroke-linecap="round" fill="none"/>'
+  var TREE = '<svg class="ct-tree" viewBox="0 0 160 176" aria-hidden="true"><ellipse cx="80" cy="175" rx="30" ry="3.500" fill="rgba(0,0,0,.28)"/><path d="M70 176c2-30 3-48 1-68h12c-2 22 2 40 6 68z" fill="#6b4426"/><path d="M77 118 60 92M81 124 104 94M78 108V80" stroke="#6b4426" stroke-width="5" stroke-linecap="round" fill="none"/>'
     + '<g class="crown"><circle cx="80" cy="62" r="38" fill="#c0392b"/><circle cx="50" cy="78" r="28" fill="#d9462f"/><circle cx="110" cy="76" r="30" fill="#e8742a"/><circle cx="64" cy="42" r="26" fill="#e04f35"/><circle cx="98" cy="44" r="26" fill="#f0a030"/><circle cx="80" cy="84" r="24" fill="#b0301f"/>'
     + '<circle cx="62" cy="58" r="7" fill="#f0a030" opacity=".8"/><circle cx="98" cy="68" r="6" fill="#d9462f" opacity=".8"/><circle cx="82" cy="40" r="6" fill="#e8742a" opacity=".8"/><circle cx="44" cy="84" r="5" fill="#f0a030" opacity=".7"/></g></svg>';
   function treeSync(on) {
