@@ -39,3 +39,42 @@
 .tv-dots{position:absolute;right:calc(var(--u)*1);bottom:calc(var(--u)*.9);display:flex;gap:6px;z-index:8}
 .tv-dots b{width:calc(var(--u)*.7);height:calc(var(--u)*.7);border-radius:50%;background:var(--muted);opacity:.45}.tv-dots b.on{background:var(--accent);opacity:1}
 .tv-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:calc(var(--u)*1.6);text-align:center;padding:0 10%}
+
+/* ── 인사·날씨 위젯 ── */
+.tv-hero{display:flex;justify-content:space-between;align-items:center;gap:calc(var(--k)*1.2);height:100%}
+.tv-hero-l{min-width:0}.tv-hero-l small{display:block;color:var(--accent);font:700 calc(var(--k)*.62) Montserrat,sans-serif;letter-spacing:.16em}
+.tv-hero h1{margin:calc(var(--k)*.12) 0 calc(var(--k)*.3);font:800 calc(var(--k)*2.2)/1.12 Montserrat,'Noto Sans KR',sans-serif}
+.tv-hero-d{font:700 calc(var(--k)*1.2) 'Noto Sans KR',sans-serif}.tv-hero-t{margin-top:calc(var(--k)*.3);color:var(--muted);font-size:calc(var(--k)*.95)}
+.tv-hero-r{text-align:right;flex:0 0 auto}.tv-hero-n{font:800 calc(var(--k)*3.6)/1 Montserrat,sans-serif}.tv-hero-n sup{font-size:.5em;vertical-align:top}
+.tv-hero-w{font:700 calc(var(--k)*1.1) 'Noto Sans KR',sans-serif;margin-top:calc(var(--k)*.2)}.tv-hero-s{color:var(--muted);font-size:calc(var(--k)*.85);margin-top:calc(var(--k)*.15)}
+.tv-chip{display:inline-block;padding:calc(var(--k)*.1) calc(var(--k)*.6);border-radius:calc(var(--k)*.5);background:var(--lo-bg);color:var(--lo);font:700 calc(var(--k)*.75) 'Noto Sans KR',sans-serif}
+.tv-pn{padding:calc(var(--k)*.4) 0;border-bottom:1px solid var(--line)}.tv-pn:last-child{border-bottom:0}.tv-pn b{font:700 calc(var(--k)*1.15) 'Noto Sans KR',sans-serif;overflow-wrap:anywhere}
+.tv-pn .noteb{font-size:calc(var(--k)*1);margin-top:calc(var(--k)*.15)}
+.tv-duty{padding:calc(var(--k)*.4) 0;border-bottom:1px solid var(--line)}.tv-duty:last-child{border-bottom:0}.tv-duty b{display:block;font:700 calc(var(--k)*1) 'Noto Sans KR',sans-serif;color:var(--accent)}
+.tv-duty span{font-size:calc(var(--k)*1.15);color:var(--muted)}.tv-duty em{font-style:normal;color:var(--text);font-weight:700}
+
+/* ── 하늘 배경(날씨·낮밤): 위젯 판은 반투명, 하늘은 맨 뒤 ── */
+.tv-sky{position:absolute;left:0;top:0;right:0;bottom:0;z-index:0;overflow:hidden;background:linear-gradient(160deg,#0a1e28,#123a4e)}
+.tv-sky[data-day="1"][data-kind="clear"]{background:linear-gradient(160deg,#1f7fe2,#74c6f8)}.tv-sky[data-day="1"][data-kind="partly"]{background:linear-gradient(160deg,#3b84d8,#8ec2ea)}
+.tv-sky[data-day="1"][data-kind="cloudy"]{background:linear-gradient(160deg,#5a7690,#a2b5c6)}.tv-sky[data-day="1"][data-kind="fog"]{background:linear-gradient(160deg,#77899a,#bac5ce)}
+.tv-sky[data-day="1"][data-kind="rain"]{background:linear-gradient(160deg,#3c536c,#7d92a7)}.tv-sky[data-day="1"][data-kind="snow"]{background:linear-gradient(160deg,#667fa0,#bdd0e4)}
+.tv-sky[data-day="1"][data-kind="storm"]{background:linear-gradient(160deg,#2a3447,#5a6482)}
+.tv-sky[data-day="0"][data-kind="clear"],.tv-sky[data-day="0"][data-kind="none"]{background:linear-gradient(160deg,#0e1c3e,#2a3f78)}.tv-sky[data-day="0"][data-kind="partly"]{background:linear-gradient(160deg,#15244a,#384b80)}
+.tv-sky[data-day="0"][data-kind="cloudy"],.tv-sky[data-day="0"][data-kind="fog"]{background:linear-gradient(160deg,#27344a,#4a5b72)}.tv-sky[data-day="0"][data-kind="rain"],.tv-sky[data-day="0"][data-kind="storm"]{background:linear-gradient(160deg,#1c2a40,#3f526c)}
+.tv-sky[data-day="0"][data-kind="snow"]{background:linear-gradient(160deg,#34496a,#6d86a8)}
+.tv-sky-cv{position:absolute;left:0;top:0;width:100%;height:100%}
+.tv-sky .sk-sun{position:absolute;left:46%;top:3%;width:calc(var(--u)*8);height:calc(var(--u)*8);border-radius:50%;opacity:0;background:radial-gradient(circle,#fffbe2 0,#ffe582 38%,rgba(255,214,90,.5) 55%,transparent 72%)}
+.tv-sky[data-day="1"][data-kind="clear"] .sk-sun,.tv-sky[data-day="1"][data-kind="partly"] .sk-sun{opacity:1}
+.tv-sky .sk-moon{position:absolute;left:48%;top:5%;width:calc(var(--u)*4.4);height:calc(var(--u)*4.4);border-radius:50%;opacity:0;box-shadow:inset calc(var(--u)*-1.2) calc(var(--u)*.4) 0 0 #fff4cf,0 0 calc(var(--u)*1.6) rgba(255,244,207,.3)}
+.tv-sky[data-day="0"][data-kind="clear"] .sk-moon,.tv-sky[data-day="0"][data-kind="partly"] .sk-moon,.tv-sky[data-day="0"][data-kind="none"] .sk-moon{opacity:1}
+.tv-sky .sk-cloud{position:absolute;left:-14%;width:calc(var(--u)*10);height:calc(var(--u)*3);border-radius:calc(var(--u)*3);background:rgba(255,255,255,.85);opacity:0;-webkit-animation:tvcl 110s linear infinite;animation:tvcl 110s linear infinite}
+.tv-sky .sk-cloud.c1{top:12%}.tv-sky .sk-cloud.c2{top:46%;-webkit-animation-duration:150s;animation-duration:150s;-webkit-animation-delay:-60s;animation-delay:-60s}.tv-sky .sk-cloud.c3{top:70%;-webkit-animation-duration:190s;animation-duration:190s;-webkit-animation-delay:-120s;animation-delay:-120s}
+.tv-sky[data-kind="partly"] .c1,.tv-sky[data-kind="cloudy"] .sk-cloud,.tv-sky[data-kind="rain"] .sk-cloud,.tv-sky[data-kind="snow"] .sk-cloud,.tv-sky[data-kind="storm"] .sk-cloud,.tv-sky[data-kind="fog"] .sk-cloud{opacity:.8}
+.tv-sky[data-day="0"] .sk-cloud{background:rgba(190,204,224,.4)}
+@-webkit-keyframes tvcl{from{-webkit-transform:translateX(0)}to{-webkit-transform:translateX(150vw)}}@keyframes tvcl{from{transform:translateX(0)}to{transform:translateX(150vw)}}
+.tvc.has-sky.tv-dark .tvw-in{background:rgba(8,30,44,.74)}.tvc.has-sky.tv-dark .tvw.bare .tvw-in{background:transparent}.tvc.has-sky .tvw{z-index:1}
+.tvc.has-sky.tv-dark .tv-tile{background:rgba(0,79,104,.85)}
+
+.tvc.has-sky .tvw.bare .tv-hero h1,.tvc.has-sky .tvw.bare .tv-hero-d,.tvc.has-sky .tvw.bare .tv-hero-n,.tvc.has-sky .tvw.bare .tv-hero-w{text-shadow:0 2px 12px rgba(0,20,40,.45)}
+.tvc.has-sky .tvw.bare .tv-hero-t,.tvc.has-sky .tvw.bare .tv-hero-s{color:rgba(255,255,255,.88);text-shadow:0 1px 8px rgba(0,20,40,.4)}
+.tv-hero h1{font-size:calc(var(--k)*2)}
