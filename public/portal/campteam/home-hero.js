@@ -204,6 +204,7 @@
   function treeSync(on) {
     var art = document.querySelector('#hubSky .hub-sky-art'), has = document.querySelector('.ct-tree');
     if (on && art && !has) art.insertAdjacentHTML('beforeend', TREE); else if (!on && has) has.remove();
+    var hero = document.getElementById('hubSky'); if (hero) hero.classList.toggle('has-tree', !!on);
   }
   // 켜기·끄기
   function loops() {
