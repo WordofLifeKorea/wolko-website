@@ -19,8 +19,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=71">
-  <link rel="stylesheet" href="/hub-sky.css?v=3">
+  <link rel="stylesheet" href="/hub.css?v=73">
+  <link rel="stylesheet" href="/hub-sky.css?v=4">
   <script src="/hub-sky.js?v=4" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
@@ -333,7 +333,7 @@
         pageTitle: '이번 주 월코',
         toolsHeading: '도구 바로가기',
         dashNotices: '이번 주 공지', dashNoticeEmpty: '이번 주 공지가 아직 없어요.', noticeAdd: '공지 올리기', noticeTitlePh: '제목 (선택)', noticeBodyPh: '이번 주에 꼭 알려야 할 내용',
-        noticeThisWeek: '이번 주', noticeNextWeek: '다음 주', noticePin: '맨 위에 고정', noticePost: '올리기', noticeDelete: '삭제', noticeDeleteConfirm: '이 공지를 지울까요?', noticeNeedBody: '공지 내용을 입력해 주세요.', noticePosted: '공지를 올렸어요.', noticeDeleted: '공지를 지웠어요.', noticePinned: '고정', noticeDue: '마감일 (선택)', noticeDueHint: '날짜를 고르면 D-day가 표시돼요', dueToday: 'D-Day', dueUntil: function (md) { return md + '까지'; },
+        noticeEdit: '편집', noticeDone: '완료', noticeSave: '저장', noticeCancel: '취소', noticeEdited: '공지를 고쳤어요.', noticeThisWeek: '이번 주', noticeNextWeek: '다음 주', noticePin: '맨 위에 고정', noticePost: '올리기', noticeDelete: '삭제', noticeDeleteConfirm: '이 공지를 지울까요?', noticeNeedBody: '공지 내용을 입력해 주세요.', noticePosted: '공지를 올렸어요.', noticeDeleted: '공지를 지웠어요.', noticePinned: '고정', noticeDue: '마감일 (선택)', noticeDueHint: '날짜를 고르면 D-day가 표시돼요', dueToday: 'D-Day', dueUntil: function (md) { return md + '까지'; },
         dashKitchen: '오늘 키친 듀티', dashKitchenEmpty: '오늘 신청한 사람이 없어요.', mealAm: '아침', mealLunch: '점심', mealDinner: '저녁', slotPrep: '준비', slotClean: '클린업',
         dashCar: '오늘 차량 운행', dashCarEmpty: '오늘 운행 담당이 정해지지 않았어요.', carPickup: '픽업', carDropoff: '드롭오프',
         dashEvents: '다가오는 일정', dashEventsEmpty: '앞으로 2주 안에 등록된 일정이 없어요.', dashEventsOff: '캘린더가 아직 연결되지 않았어요.', allDay: '종일',
@@ -414,7 +414,7 @@
         pageTitle: 'This Week at WOLKO',
         toolsHeading: 'Tools',
         dashNotices: "This week's notices", dashNoticeEmpty: 'No notices for this week yet.', noticeAdd: 'Post a notice', noticeTitlePh: 'Title (optional)', noticeBodyPh: 'What everyone needs to know this week',
-        noticeThisWeek: 'This week', noticeNextWeek: 'Next week', noticePin: 'Pin to top', noticePost: 'Post', noticeDelete: 'Delete', noticeDeleteConfirm: 'Delete this notice?', noticeNeedBody: 'Please enter the notice.', noticePosted: 'Notice posted.', noticeDeleted: 'Notice deleted.', noticePinned: 'Pinned', noticeDue: 'Due date (optional)', noticeDueHint: 'A D-day countdown is shown', dueToday: 'D-Day', dueUntil: function (md) { return 'by ' + md; },
+        noticeEdit: 'Edit', noticeDone: 'Done', noticeSave: 'Save', noticeCancel: 'Cancel', noticeEdited: 'Notice updated.', noticeThisWeek: 'This week', noticeNextWeek: 'Next week', noticePin: 'Pin to top', noticePost: 'Post', noticeDelete: 'Delete', noticeDeleteConfirm: 'Delete this notice?', noticeNeedBody: 'Please enter the notice.', noticePosted: 'Notice posted.', noticeDeleted: 'Notice deleted.', noticePinned: 'Pinned', noticeDue: 'Due date (optional)', noticeDueHint: 'A D-day countdown is shown', dueToday: 'D-Day', dueUntil: function (md) { return 'by ' + md; },
         dashKitchen: "Today's Kitchen Duty", dashKitchenEmpty: 'Nobody has signed up for today.', mealAm: 'Breakfast', mealLunch: 'Lunch', mealDinner: 'Dinner', slotPrep: 'Prep', slotClean: 'Clean-up',
         dashCar: "Today's Vehicle Runs", dashCarEmpty: 'No driver is set for today.', carPickup: 'Pick-up', carDropoff: 'Drop-off',
         dashEvents: 'Upcoming Events', dashEventsEmpty: 'No events in the next two weeks.', dashEventsOff: 'The calendar is not connected yet.', allDay: 'All day',
@@ -576,6 +576,7 @@
       if (n.tr && hubLang !== orig && (n.tr.title || n.tr.text)) return { title: n.tr.title || n.title, body: n.tr.text || n.body, translated: true };
       return { title: n.title, body: n.body, translated: false };
     }
+    const noticeEditing = new Set();   // 편집 중인 공지 — 편집을 눌러야 삭제 버튼이 보인다
     function renderNotices(d) {
       const list = d.notices;
       const form = d.canEditNotices ? '<details class="hub-notice-form"><summary>+ ' + esc(t('noticeAdd')) + '</summary>'
@@ -588,11 +589,22 @@
       let body;
       if (list === null) body = dashEmpty('bell', t('dashLoadFail'));
       else if (!list.length) body = dashEmpty('bell', t('dashNoticeEmpty'), d.canEditNotices ? '' : t('dashNoticeHint'));
-      else body = '<ul class="hub-notices">' + list.map(n => { const v = noticeText(n); return '<li' + (n.pinned ? ' class="is-pinned"' : '') + '>'
-        + '<div class="hub-notice-top">' + (n.pinned ? '<span class="hub-pin">' + svgi('pin', 11) + esc(t('noticePinned')) + '</span>' : '') + (v.title ? '<b>' + esc(v.title) + '</b>' : '') + dueChip(n.dueDate, d.today) + '</div>'
-        + '<p>' + linkify(esc(v.body)).replace(/\n/g, '<br>') + '</p>' + (v.translated ? '<small class="hub-notice-tr">' + esc(t('prayerTr')) + '</small>' : '')
-        + (n.canDelete ? '<button type="button" class="hub-notice-del" data-del="' + esc(n.id) + '">' + esc(t('noticeDelete')) + '</button>' : '')
-        + '</li>'; }).join('') + '</ul>';
+      else body = '<ul class="hub-notices">' + list.map(n => {
+        const v = noticeText(n), editing = noticeEditing.has(n.id);
+        if (editing) {
+          return '<li class="is-editing' + (n.pinned ? ' is-pinned' : '') + '" data-id="' + esc(n.id) + '"><div class="hub-notice-editform">'
+            + '<input class="ne-title" type="text" maxlength="60" value="' + esc(n.title || '') + '" placeholder="' + esc(t('noticeTitlePh')) + '">'
+            + '<textarea class="ne-body" rows="4" maxlength="600" placeholder="' + esc(t('noticeBodyPh')) + '">' + esc(n.body) + '</textarea>'
+            + '<label class="hub-notice-due"><span>' + esc(t('noticeDue')) + '</span><input class="ne-due" type="date" value="' + esc(n.dueDate || '') + '"></label>'
+            + '<label class="hub-notice-pin"><input class="ne-pin" type="checkbox"' + (n.pinned ? ' checked' : '') + '> ' + esc(t('noticePin')) + '</label></div>'
+            + '<div class="hub-notice-foot"><button type="button" class="hub-notice-del" data-del="' + esc(n.id) + '">' + esc(t('noticeDelete')) + '</button><button type="button" class="hub-notice-edit" data-nedit="' + esc(n.id) + '">' + esc(t('noticeCancel')) + '</button><button type="button" class="hub-notice-edit is-on" data-nsave="' + esc(n.id) + '">' + esc(t('noticeSave')) + '</button></div></li>';
+        }
+        return '<li' + (n.pinned ? ' class="is-pinned"' : '') + '>'
+          + '<div class="hub-notice-top">' + (n.pinned ? '<span class="hub-pin">' + svgi('pin', 11) + esc(t('noticePinned')) + '</span>' : '') + (v.title ? '<b>' + esc(v.title) + '</b>' : '') + dueChip(n.dueDate, d.today) + '</div>'
+          + '<p>' + linkify(esc(v.body)).replace(/\n/g, '<br>') + '</p>' + (v.translated ? '<small class="hub-notice-tr">' + esc(t('prayerTr')) + '</small>' : '')
+          + (n.canDelete ? '<div class="hub-notice-foot"><button type="button" class="hub-notice-edit" data-nedit="' + esc(n.id) + '">' + esc(t('noticeEdit')) + '</button></div>' : '')
+          + '</li>';
+      }).join('') + '</ul>';
       return dashCard('hub-dcard-notice', '#f0a020', 'bell', t('dashNotices'), body + form);
     }
     /** 카드 맨 아래에 쭉 깔리는 작은 장면 — 키친: 도마 위에서 당근을 써는 칼 + 김이 나는 냄비, 차량: 나무와 집이 스쳐 지나가는 길 위를 달리는 차.
@@ -878,6 +890,21 @@
         btn.disabled = false;
         return;
       }
+      const nsave = e.target.closest && e.target.closest('[data-nsave]');
+      if (nsave) {
+        const li = nsave.closest('li'), body = li.querySelector('.ne-body').value.trim();
+        if (!body) { showToast(t('noticeNeedBody'), true); return; }
+        nsave.disabled = true;
+        try {
+          const res = await fetch('/api/portal/notices', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'edit', id: nsave.dataset.nsave, title: li.querySelector('.ne-title').value, body, dueDate: li.querySelector('.ne-due').value, pinned: li.querySelector('.ne-pin').checked }) });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || t('dashLoadFail'));
+          noticeEditing.delete(nsave.dataset.nsave); showToast(t('noticeEdited')); await loadDashboard();
+        } catch (err) { showToast(err.message, true); nsave.disabled = false; }
+        return;
+      }
+      const nedit = e.target.closest && e.target.closest('.hub-notice-edit');
+      if (nedit) { const id = nedit.dataset.nedit; if (noticeEditing.has(id)) noticeEditing.delete(id); else noticeEditing.add(id); renderDash(); return; }
       const del = e.target.closest && e.target.closest('.hub-notice-del');
       if (del) {
         if (!confirm(t('noticeDeleteConfirm'))) return;

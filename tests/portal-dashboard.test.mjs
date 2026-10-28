@@ -214,3 +214,29 @@ test('공지 담당 계정(esooy): 올릴 수 있고 자기가 올린 공지만 
   assert.equal((await call(noticeApi.onRequestDelete, estelle, `${url}?id=${mine.body.notice.id}`, { method: 'DELETE' })).status, 200);
   assert.equal((await call(noticeApi.onRequestDelete, anna, `${url}?id=${adminMade.body.notice.id}`, { method: 'DELETE' })).status, 403);
 });
+
+test('공지 고치기: 제목·내용·마감일·고정을 바꾸고 번역은 새로 만든다 · 지울 수 있는 사람만', async () => {
+  const { env } = kvEnv();
+  const put = (email, role) => env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: email, role, status: 'approved' }));
+  await put('esooy@wol.org', 'counselor'); await put('anna@wol.org', 'counselor'); await put(MASTER_EMAILS[0], 'master');
+  const call = async (fn, who, init = {}, url = 'https://x/api/portal/notices') => {
+    const token = await createHubSessionToken('secret', who[0], who[1]);
+    const res = await fn({ env, request: new Request(url, { headers: { Authorization: `Bearer ${token}` }, ...init }) });
+    return { status: res.status, body: await res.json() };
+  };
+  const estelle = ['esooy@wol.org', 'counselor'], anna = ['anna@wol.org', 'counselor'], master = [MASTER_EMAILS[0], 'master'];
+  const mine = (await call(noticeApi.onRequestPost, estelle, { method: 'POST', body: JSON.stringify({ title: '처음', body: '처음 내용', week: 'next' }) })).body.notice;
+  const others = (await call(noticeApi.onRequestPost, master, { method: 'POST', body: JSON.stringify({ body: '관리자 공지' }) })).body.notice;
+  const edit = (who, id, extra) => call(noticeApi.onRequestPost, who, { method: 'POST', body: JSON.stringify({ action: 'edit', id, ...extra }) });
+  assert.equal((await edit(anna, mine.id, { body: '남이 고침' })).status, 403);
+  assert.equal((await edit(estelle, others.id, { body: '남의 공지' })).status, 403, '공지 담당 계정은 남이 올린 공지를 못 고친다');
+  assert.equal((await edit(estelle, mine.id, { body: ' ' })).status, 400);
+  assert.equal((await edit(estelle, 'nope', { body: 'x' })).status, 404);
+  const ok = await edit(estelle, mine.id, { title: '바뀐 제목', body: '바뀐 내용', dueDate: '2026-11-05', pinned: true });
+  assert.equal(ok.status, 200);
+  assert.deepEqual([ok.body.notice.title, ok.body.notice.body, ok.body.notice.dueDate, ok.body.notice.pinned], ['바뀐 제목', '바뀐 내용', '2026-11-05', true]);
+  assert.equal(ok.body.notice.weekStart, mine.weekStart, '올린 주는 그대로');
+  assert.equal('byEmail' in ok.body.notice, false);
+  assert.equal((await edit(master, others.id, { body: '마스터가 고침' })).status, 200, '관리자는 모두 고칠 수 있다');
+  assert.equal(JSON.parse(await env.CAMP_KV.get('portal:notices'))?.length, 2);
+});

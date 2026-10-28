@@ -1,6 +1,7 @@
 /**
  * 포탈 첫 화면의 주간 공지 보드 — 관리자(admin)·마스터, 그리고 공지 담당 계정(NOTICE_POSTER_EMAILS)이 올린다. 지우기는 관리자는 모두, 공지 담당 계정은 자기가 올린 것만. 읽기는 /api/portal/dashboard 가 한다.
- *   POST   /api/portal/notices  { title?, body, week: 'this'|'next', pinned? }  → 공지 추가
+ *   POST   /api/portal/notices  { title?, body, week: 'this'|'next', dueDate?, pinned? }  → 공지 추가
+ *   POST   /api/portal/notices  { action:'edit', id, title?, body, dueDate?, pinned? }   → 공지 고치기 (관리자는 모두, 공지 담당 계정은 자기 것)
  *   DELETE /api/portal/notices?id=...                                            → 공지 삭제
  * KV: portal:notices (배열, 최대 60개 — 넘으면 오래된 것부터 정리)
  */
@@ -27,6 +28,17 @@ export async function onRequestPost({ env, request }) {
   const parsed = parseNoticeInput(body, todayKst());
   if (parsed.error) return fail(parsed.error);
   const list = await readNotices(env);
+  if (body?.action === 'edit') {        // 고치기 — 지울 수 있는 사람(관리자는 모두, 공지 담당 계정은 자기 것)만. 올린 주(週)는 그대로 두고, 번역은 새로 만든다
+    const target = list.find(x => x.id === String(body.id || ''));
+    if (!target) return fail('공지를 찾을 수 없습니다.', 404);
+    if (!canDeleteNotice(session, target)) return fail('내가 올린 공지만 고칠 수 있습니다.', 403);
+    const tr = await translateNotice(env, parsed.value);
+    Object.assign(target, { title: parsed.value.title, body: parsed.value.body, dueDate: parsed.value.dueDate, pinned: parsed.value.pinned, editedAt: new Date().toISOString() });
+    if (tr) target.tr = tr; else delete target.tr;
+    await env.CAMP_KV.put(NOTICES_KEY, JSON.stringify(list));
+    const { byEmail: _e, ...shownEdited } = target;
+    return Response.json({ ok: true, notice: shownEdited }, { headers: H });
+  }
   const tr = await translateNotice(env, parsed.value);          // 한↔영 번역 (키가 없거나 실패하면 원문만 저장 — 나중에 첫 화면을 열 때 다시 시도)
   const notice = { id: crypto.randomUUID(), ...parsed.value, ...(tr ? { tr } : {}), createdAt: new Date().toISOString(), by: session.name || session.email, byEmail: String(session.email || '').trim().toLowerCase() };
   const next = [notice, ...list].slice(0, MAX_NOTICES);
