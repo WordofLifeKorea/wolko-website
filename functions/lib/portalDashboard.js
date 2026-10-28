@@ -7,6 +7,8 @@ import { SLOTS as DRIVE_SLOTS, closedKey as driveClosedKey, currentWeekStart, is
 import { listCalendarEvents } from './googleCalendar.js';
 import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 import { prayerBoard } from './prayers.js';
+import { alwaysExempt } from './gospelReminder.js';
+import { currentMonthKst, loadMonth, ownerOf } from './gospelStats.js';
 
 export const NOTICES_KEY = 'portal:notices';
 export const MAX_NOTICES = 60;
@@ -136,18 +138,36 @@ export async function recentChurchList(env) {
   return list;
 }
 
+/** 지금 로그인한 사람에게 해당하는 오늘 할 일 — 주방 당번 칸, 차량 운행 칸, 이번 달 복음 통계 보고(월 후반에 아직 안 냈을 때) */
+export async function mySchedule(env, session, today) {
+  const email = String(session?.email || '').trim().toLowerCase();
+  if (!email) return null;
+  const mine = p => String(p?.email || '').trim().toLowerCase() === email;
+  const [day, pickup, dropoff] = await Promise.all([readDay(env, today), ...DRIVE_SLOTS.map(slot => env.CAMP_KV.get(slotKey(today, slot), 'json'))]);
+  const kitchen = KITCHEN_SLOTS.filter(slot => (day[slot] || []).some(mine));
+  const car = [pickup && mine(pickup) ? 'pickup' : '', dropoff && mine(dropoff) ? 'dropoff' : ''].filter(Boolean);
+  let gospelPending = false;
+  const month = currentMonthKst(Date.parse(`${today}T12:00:00+09:00`));
+  if (Number(today.slice(8, 10)) >= 15 && !alwaysExempt(email) && !(await env.CAMP_KV.get(`gospel:exempt:${email}`))) {
+    const owner = await ownerOf(env, email);
+    gospelPending = !(await loadMonth(env, month)).some(r => r.owner === owner);
+  }
+  return { name: String(session.name || '').trim() || email.split('@')[0], kitchen, car, gospelPending, gospelMonth: month };
+}
+
 /** 대시보드 전체 — 조각마다 실패해도 나머지는 돌려준다(실패한 조각은 null) */
 export async function buildDashboard(env, session, now = Date.now()) {
   const today = todayKst(now);
   const weekStart = currentWeekStart(today);
   const settle = async fn => { try { return await fn(); } catch (error) { console.error('dashboard piece failed:', error.message); return null; } };
-  const [notices, kitchen, car, events, churches, prayerData] = await Promise.all([
+  const [notices, kitchen, car, events, churches, prayerData, me] = await Promise.all([
     settle(async () => noticesForWeek(await readNotices(env), weekStart, today)),
     settle(() => kitchenToday(env, today)),
     settle(() => carToday(env, today)),
     settle(() => upcomingEvents(env, today)),
     settle(() => recentChurchList(env)),
     settle(() => prayerBoard(env, session)),
+    settle(() => mySchedule(env, session, today)),
   ]);
-  return { today, weekStart, canEditNotices: session.role === 'admin' || session.role === 'master', notices, kitchen, car, events, churches, prayers: prayerData ? prayerData.prayers : null, prayerTotal: prayerData ? prayerData.total : 0 };
+  return { today, weekStart, canEditNotices: session.role === 'admin' || session.role === 'master', notices, kitchen, car, events, churches, prayers: prayerData ? prayerData.prayers : null, prayerTotal: prayerData ? prayerData.total : 0, me };
 }

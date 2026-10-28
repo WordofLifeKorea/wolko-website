@@ -10,6 +10,7 @@ function kvEnv(initial = {}) {
     get: async (k, type) => { const v = store.get(k); if (v === undefined) return null; return type === 'json' ? JSON.parse(v) : v; },
     put: async (k, v) => { store.set(k, v); },
     delete: async k => { store.delete(k); },
+    list: async ({ prefix }) => ({ keys: [...store.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })), list_complete: true }),
   } } };
 }
 const TODAY = '2026-10-28'; // Wednesday
@@ -124,4 +125,29 @@ test('only admins can add and delete notices', async () => {
   const del = await call(noticeApi.onRequestDelete, 'master', `https://x/api/portal/notices?id=${made.body.notice.id}`, { method: 'DELETE' });
   assert.equal(del.status, 200);
   assert.equal(JSON.parse(store.get('portal:notices')).length, 0);
+});
+
+test('내 오늘 할 일: 오늘 내 주방·차량 칸, 월 후반에 아직 안 낸 복음 통계 보고(제외 계정은 빼고)', async () => {
+  const { mySchedule } = await import('../functions/lib/portalDashboard.js');
+  const { ownerOf, currentMonthKst } = await import('../functions/lib/gospelStats.js');
+  const { env, store } = kvEnv({
+    [`kitchen:day:${TODAY}`]: { lunch_prep: [{ email: 'amy@wol.org', name: 'Amy' }, { email: 'bob@wol.org', name: 'Bob' }], dinner_clean: [{ email: 'Amy@wol.org', name: 'Amy' }] },
+    [`drive:slot:${TODAY}:dropoff`]: { email: 'amy@wol.org', name: 'Amy' },
+    [`drive:slot:${TODAY}:pickup`]: { email: 'bob@wol.org', name: 'Bob' },
+  });
+  const amy = { email: 'amy@wol.org', role: 'counselor', name: 'Amy Lee' };
+  const out = await mySchedule(env, amy, TODAY);                        // TODAY 는 28일
+  assert.deepEqual(out.kitchen, ['lunch_prep', 'dinner_clean']);
+  assert.deepEqual(out.car, ['dropoff']);
+  assert.equal(out.name, 'Amy Lee');
+  assert.equal(out.gospelPending, true, '28일인데 이번 달 보고가 없으면 알린다');
+  assert.equal((await mySchedule(env, amy, '2026-10-10')).gospelPending, false, '15일 전에는 알리지 않는다');
+  const month = currentMonthKst(Date.parse(`${TODAY}T12:00:00+09:00`));
+  store.set(`gospel:rep:${month}:abc`, JSON.stringify({ id: 'abc', month, owner: await ownerOf(env, amy.email), scope: 'individual', location: 'mainland', values: {} }));
+  assert.equal((await mySchedule(env, amy, TODAY)).gospelPending, false, '보고했으면 알리지 않는다');
+  store.set('gospel:exempt:bob@wol.org', JSON.stringify({ by: 'x' }));
+  assert.equal((await mySchedule(env, { email: 'bob@wol.org', role: 'counselor' }, TODAY)).gospelPending, false, '보고 제외 계정은 알리지 않는다');
+  assert.equal((await mySchedule(env, { email: 'admin@wolko.org', role: 'master' }, TODAY)).gospelPending, false, '관리자(고정 제외)도 알리지 않는다');
+  assert.equal((await mySchedule(env, { role: 'counselor' }, TODAY)), null, '이메일이 없으면 없음');
+  assert.deepEqual((await mySchedule(env, { email: 'zed@wol.org', role: 'counselor' }, TODAY)).kitchen, []);
 });

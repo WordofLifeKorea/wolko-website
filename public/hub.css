@@ -961,3 +961,25 @@ body.hub-modal-open { overflow: hidden; }
 .hub-prayer-opts button { margin-left: auto; padding: 9px 18px; border: 0; border-radius: 999px; background: #d6567a; color: #fff; font: 800 13px/1 var(--f-body); cursor: pointer; }
 .hub-prayer-opts button:disabled { opacity: .6; cursor: default; }
 .hub-prayer-note { margin: 8px 0 0; color: var(--light); font-size: 12px; }
+
+/* ── 첫 화면 맨 위: 날짜 · 도구 찾기 · 내 오늘 ── */
+.hub-dash-top { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
+.hub-dash-top .hub-dash-date { margin: 0; grid-row: auto; }
+@media (min-width: 1280px) { .hub-dash-top { grid-row: 1; } }
+.hub-search { position: relative; width: min(340px, 100%); }
+.hub-search input { width: 100%; height: 42px; padding: 0 16px 0 40px; border: 1px solid #d6e3e9; border-radius: 999px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%237a909b' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") 14px center no-repeat; color: var(--text); font: 500 14px/1 var(--f-body); box-shadow: 0 6px 16px -14px rgba(16, 42, 56, .5); }
+.hub-search input:focus { outline: 2px solid rgba(0, 119, 163, .25); border-color: var(--blue-lt); }
+.hub-search-list { position: absolute; top: 48px; left: 0; right: 0; z-index: 40; margin: 0; padding: 6px; list-style: none; border: 1px solid #e3ecf0; border-radius: 16px; background: #fff; box-shadow: 0 18px 40px -14px rgba(16, 42, 56, .32); }
+.hub-search-list[hidden] { display: none; }
+.hub-search-list a { display: block; padding: 9px 12px; border-radius: 10px; color: var(--text); text-decoration: none; }
+.hub-search-list a:hover, .hub-search-list a:focus-visible { background: #f1f6f9; }
+.hub-search-list b { display: block; font: 800 14px/1.3 var(--f-body); color: var(--tool-color, var(--text)); }
+.hub-search-list small { display: block; margin-top: 2px; color: var(--mid); font-size: 12.5px; }
+.hub-search-list .is-none { padding: 10px 12px; color: var(--mid); font-size: 13px; }
+.hub-today-bar { flex: 0 0 100%; display: flex; flex-wrap: wrap; gap: 8px; }
+.hub-today-chip { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; font: 700 13.5px/1.3 var(--f-body); text-decoration: none; transition: transform .15s, box-shadow .15s; }
+.hub-today-chip:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -12px rgba(16, 42, 56, .5); }
+.hub-today-chip b { font-weight: 800; }
+.hub-today-chip.is-kitchen { background: #fdf1e1; color: #a85f10; }
+.hub-today-chip.is-car { background: #f6ebfa; color: #8a35a0; }
+.hub-today-chip.is-gospel { background: #fde8ee; color: #b3304c; }
