@@ -943,9 +943,10 @@
     function isPortalStandalone() {
       return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     }
+    const SHOW_INSTALL_BUTTON = false;   // 앱 설치 버튼은 일단 숨긴다 — 다시 보이려면 true 로
     function syncInstallButton() {
       const button = $('installAppBtn');
-      if (button) button.hidden = isPortalStandalone();
+      if (button) button.hidden = !SHOW_INSTALL_BUTTON || isPortalStandalone();
     }
     function installHelpMessage() {
       const ua = navigator.userAgent;
