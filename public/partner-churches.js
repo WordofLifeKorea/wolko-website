@@ -1,27 +1,54 @@
-/* 홈페이지 "월코와 함께 협력하는 교회" 띠 — /api/partner-churches 에서 교회 이름만 받아 보여 준다. 목록이 없으면 구역 전체를 숨긴 채 둔다. */
+/* 홈페이지 "월코와 함께 협력하는 교회" — /api/partner-churches 에서 교회 이름만 받아 5개씩 한 쪽으로 보여 주고, 옆으로 넘긴다.
+   5초마다 저절로 넘어가고, 마우스를 올리거나 아래 점을 누르거나 화면을 밀어도 넘어간다. 목록이 없으면 구역 전체를 숨긴 채 둔다. */
 (function () {
-  var band = document.getElementById('partnerChurches'), track = document.getElementById('pcTrack');
+  var PER_PAGE = 5, AUTO_MS = 5000;
+  var band = document.getElementById('partnerChurches'), track = document.getElementById('pcTrack'), dots = document.getElementById('pcDots');
   if (!band || !track) return;
+  var pages = 0, current = 0, timer = null, hover = false;
 
-  function chip(name, hidden) {
-    var li = document.createElement('li');
-    li.className = 'pc-chip';
-    li.textContent = name;
-    if (hidden) li.setAttribute('aria-hidden', 'true');
-    return li;
+  function go(n) {
+    current = (n + pages) % pages;
+    track.style.transform = 'translateX(' + (-100 * current) + '%)';
+    Array.prototype.forEach.call(dots.children, function (d, i) { d.classList.toggle('is-on', i === current); d.setAttribute('aria-selected', i === current ? 'true' : 'false'); });
+  }
+  function restart() {
+    clearInterval(timer);
+    if (pages < 2 || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    timer = setInterval(function () { if (!hover && !document.hidden) go(current + 1); }, AUTO_MS);
   }
 
   function show(names) {
-    names.forEach(function (n) { track.appendChild(chip(n, false)); });
+    pages = Math.ceil(names.length / PER_PAGE);
+    for (var p = 0; p < pages; p++) {
+      var page = document.createElement('div');
+      page.className = 'pc-page';
+      page.setAttribute('role', 'group');
+      page.setAttribute('aria-label', (p + 1) + ' / ' + pages);
+      names.slice(p * PER_PAGE, (p + 1) * PER_PAGE).forEach(function (name) {
+        var chip = document.createElement('span');
+        chip.className = 'pc-chip';
+        chip.textContent = name;
+        page.appendChild(chip);
+      });
+      track.appendChild(page);
+      if (pages > 1) {
+        var dot = document.createElement('button');
+        dot.type = 'button'; dot.setAttribute('role', 'tab'); dot.setAttribute('aria-label', (p + 1) + ' / ' + pages);
+        dot.addEventListener('click', (function (i) { return function () { go(i); restart(); }; })(p));
+        dots.appendChild(dot);
+      }
+    }
     band.hidden = false;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { band.classList.add('is-static'); return; }
-    var setWidth = track.getBoundingClientRect().width;             // 한 묶음(이름 전체)의 너비
-    if (!setWidth) return;
-    var need = Math.max(band.clientWidth, window.screen ? window.screen.width : 0) * 2;
-    var copies = Math.max(1, Math.ceil(need / setWidth));            // 끊기지 않도록 묶음을 이어 붙인다
-    for (var c = 0; c < copies; c++) names.forEach(function (n) { track.appendChild(chip(n, true)); });
-    track.style.setProperty('--pc-shift', setWidth + 'px');
-    track.style.setProperty('--pc-dur', Math.max(28, Math.round(setWidth / 55)) + 's');   // 초당 약 55px
+    go(0); restart();
+    band.addEventListener('mouseenter', function () { hover = true; });
+    band.addEventListener('mouseleave', function () { hover = false; });
+    var x0 = null;
+    band.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    band.addEventListener('touchend', function (e) {
+      if (x0 === null || pages < 2) return;
+      var dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 40) { go(current + (dx < 0 ? 1 : -1)); restart(); }
+    }, { passive: true });
   }
 
   fetch('/api/partner-churches', { headers: { Accept: 'application/json' } })
