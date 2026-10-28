@@ -1106,9 +1106,11 @@ body.hub-modal-open { overflow: hidden; }
 .hub-church-btn .hub-church-text { flex: 1; min-width: 0; }
 .hub-church-caret { flex: 0 0 auto; width: 8px; height: 8px; margin: -3px 4px 0 0; border-right: 2px solid #9a8fd6; border-bottom: 2px solid #9a8fd6; transform: rotate(45deg); transition: transform .22s, margin .22s; }
 .hub-church-btn.is-open .hub-church-caret { margin-top: 3px; transform: rotate(-135deg); }
-.hub-church-detail { grid-column: 1 / -1; display: grid; grid-template-rows: 0fr; opacity: 0; visibility: hidden; transition: grid-template-rows .28s ease, opacity .2s ease, visibility 0s linear .28s; }
-.hub-church-detail.is-open { grid-template-rows: 1fr; opacity: 1; visibility: visible; transition: grid-template-rows .28s ease, opacity .2s ease; }
-.hub-churches .hub-church-detail .hub-church-pop { position: static; min-width: 0; min-height: 0; overflow: hidden; margin: 2px 0 8px; padding: 0 16px; border: 0; border-radius: 16px; background: #f7f5fe; box-shadow: none; opacity: 1; visibility: visible; transform: none; transition: padding .28s ease; }
-.hub-churches .hub-church-detail.is-open .hub-church-pop { padding: 14px 16px 16px; }
-@media (prefers-reduced-motion: reduce) { .hub-church-detail, .hub-church-caret { transition: none; } }
+.hub-church-detail { grid-column: 1 / -1; display: none; max-width: 600px; }
+.hub-church-detail.is-open { display: block; animation: hub-church-in .22s ease-out; }
+@keyframes hub-church-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.hub-churches .hub-church-detail .hub-church-pop { position: static; min-width: 0; margin: 0 0 8px; padding: 14px 18px 16px; border: 0; border-radius: 16px; background: #f7f5fe; box-shadow: none; opacity: 1; visibility: visible; transform: none; }
+.hub-church-detail .hub-pop-track { justify-content: flex-start; gap: 6px; flex-wrap: wrap; }
+.hub-church-detail .hub-pop-track li { flex: 0 0 24px; max-width: none; width: 24px; }
+@media (prefers-reduced-motion: reduce) { .hub-church-detail.is-open { animation: none; } .hub-church-caret { transition: none; } }
 
