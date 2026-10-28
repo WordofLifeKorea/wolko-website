@@ -1,6 +1,6 @@
 /**
  * POST /api/rsvp-manual — 이벤트 관리 페이지에서 참석자를 직접 추가 (peterchae 등 지정 계정 · 마스터 · 관리자)
- * body: { eventId?, name, phone?, email?, partySize?, notes? } — 이름만 있으면 된다. 알림 메일은 보내지 않는다.
+ * body: { eventId? (감사의 밤 · 제주 캠퍼스데이), name, phone?, email?, partySize?, notes? } — 이름만 있으면 된다. 알림 메일은 보내지 않는다.
  * 같은 형식(rsvp:{eventId}:{rsvpId})으로 저장되어 참석 목록·CSV 에 그대로 나타나고, source: 'manual' 로 구분한다.
  */
 import { portalSession } from '../lib/hubAccounts.js';
@@ -8,7 +8,10 @@ import { normalizePhone } from '../lib/phone.js';
 import { canAddRsvp } from '../lib/rsvpAccess.js';
 
 const H = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
-const EVENTS = { 'thanksgiving-night': { ko: '감사의 밤', en: 'Night of Thanksgiving' } };
+const EVENTS = {
+  'thanksgiving-night': { ko: '감사의 밤', en: 'Night of Thanksgiving' },
+  'jeju-campus-day': { ko: '제주 캠퍼스데이', en: 'Jeju Campus Day' },   // 신청은 외부 신청서로 받았고, 참석자 명단은 이벤트 관리에서 직접 추가한다
+};
 const clean = (v, max) => String(v ?? '').trim().slice(0, max);
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
 

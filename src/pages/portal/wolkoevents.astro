@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="/wolko-rail.css?v=20">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
-  <link rel="stylesheet" href="/wolkoevents.css?v=2">
+  <link rel="stylesheet" href="/wolkoevents.css?v=3">
   <link rel="stylesheet" href="/wolko-layout.css?v=15">
   <script src="/wolko-rail.js?v=33" defer></script>
   <meta name="theme-color" content="#a5482d">
@@ -61,9 +61,10 @@
   </header>
 
   <main class="adm-wrap events-wrap">
+    <div class="events-switch" id="eventSwitch" role="tablist" aria-label="Events"></div>
     <section class="events-heading">
-      <div><h1 data-t="eventName">감사의 밤</h1><p class="events-description" data-t="eventDescription">함께할 분들을 확인하고, 감사의 저녁을 준비하세요.</p></div>
-      <a class="events-invitation" href="/rsvp/thanksgiving/" target="_blank" rel="noopener"><span data-t="viewInvitation">초대장 보기</span><span aria-hidden="true">↗</span></a>
+      <div><h1 id="eventTitle">감사의 밤</h1><p class="events-description" id="eventDesc">함께할 분들을 확인하고, 감사의 저녁을 준비하세요.</p></div>
+      <a class="events-invitation" id="eventInvite" href="/rsvp/thanksgiving/" target="_blank" rel="noopener"><span data-t="viewInvitation">초대장 보기</span><span aria-hidden="true">↗</span></a>
     </section>
     <section class="events-stats" aria-label="RSVP summary">
       <div class="events-stat"><span data-t="totalGuests">총 참석 인원</span><strong id="rsvpGuestCount">—</strong><small data-t="includingGuests">동반 참석자 포함</small></div>
@@ -141,6 +142,23 @@
   <script is:inline>
     // ── Language System ──
     let adminLang = localStorage.getItem('wolkoAdminLang') || 'ko';
+
+    // ── 행사 선택 — 감사의 밤 · 제주 캠퍼스데이 ──
+    const EVENT_LIST = [
+      { id: 'thanksgiving-night', ko: '감사의 밤', en: 'Night of Thanksgiving', descKo: '함께할 분들을 확인하고, 감사의 저녁을 준비하세요.', descEn: 'See who is joining and prepare an evening of gratitude.', invite: '/rsvp/thanksgiving/' },
+      { id: 'jeju-campus-day', ko: '제주 캠퍼스데이', en: 'Jeju Campus Day', descKo: '10월 28일(수) – 31일(토) · 3박 4일 · 제주 월비연수원 — 참석자를 직접 추가하고 명단을 확인하세요.', descEn: 'Oct 28–31 · 3 nights / 4 days · WOLBI Center, Jeju — add attendees and review the list.', invite: '' },
+    ];
+    let currentEventId = 'thanksgiving-night';
+    try { const saved = localStorage.getItem('wolkoEventsCurrent'); if (EVENT_LIST.some(e => e.id === saved)) currentEventId = saved; } catch (e) { /* 기억한 행사가 없으면 첫 행사 */ }
+    function currentEvent() { return EVENT_LIST.find(e => e.id === currentEventId) || EVENT_LIST[0]; }
+    function renderEventHeader() {
+      const ev = currentEvent(), en = adminLang === 'en';
+      document.getElementById('eventTitle').textContent = en ? ev.en : ev.ko;
+      document.getElementById('eventDesc').textContent = en ? ev.descEn : ev.descKo;
+      const invite = document.getElementById('eventInvite');
+      invite.hidden = !ev.invite; if (ev.invite) invite.href = ev.invite;
+      document.getElementById('eventSwitch').innerHTML = EVENT_LIST.map(e => `<button type="button" role="tab" class="events-tab${e.id === ev.id ? ' is-active' : ''}" aria-selected="${e.id === ev.id}" data-event="${e.id}">${esc(en ? e.en : e.ko)}</button>`).join('');
+    }
     const ADMIN_T = {
       ko: {
         pageTitle: '이벤트 관리 — WOLKO RSVP 신청 현황',
@@ -183,6 +201,7 @@
         const v = t(el.dataset.t);
         if (typeof v === 'string') el.textContent = v;
       });
+      renderEventHeader();
       const search = document.getElementById('rsvpSearch');
       search.placeholder = t('searchPlaceholder');
       search.setAttribute('aria-label', t('searchLabel'));
@@ -244,6 +263,15 @@
       return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('wolko-hub-token') || ''}` };
     }
 
+    document.getElementById('eventSwitch').addEventListener('click', e => {
+      const tab = e.target.closest ? e.target.closest('[data-event]') : null;
+      if (!tab || tab.dataset.event === currentEventId) return;
+      currentEventId = tab.dataset.event;
+      try { localStorage.setItem('wolkoEventsCurrent', currentEventId); } catch (err) { /* 저장 못 해도 이 화면에서는 바뀐다 */ }
+      rsvpEntries = []; document.getElementById('rsvpAddBtn').hidden = true;
+      renderEventHeader(); renderRsvpData(); loadRsvpData();
+    });
+
     // ── 이벤트 참석 신청(RSVP) ──
     let rsvpEntries = [];
     function renderRsvpData() {
@@ -281,7 +309,7 @@
       refresh.disabled = true;
       document.getElementById('rsvp').setAttribute('aria-busy', 'true');
       try {
-        const res = await fetch('/api/rsvp?eventId=thanksgiving-night', { headers: authHeaders() });
+        const res = await fetch('/api/rsvp?eventId=' + encodeURIComponent(currentEventId), { headers: authHeaders() });
         if (res.status === 401) { goToHub(); return; }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -312,7 +340,7 @@
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `WOLKO_${t('csvRsvpFile')}_${today}.csv`;
+      a.href = url; a.download = `WOLKO_${t('csvRsvpFile')}${currentEventId === 'thanksgiving-night' ? '' : '_' + currentEventId}_${today}.csv`;
       a.click(); URL.revokeObjectURL(url);
       showToast(t('csvRsvpDone'), 'success');
     }
@@ -336,7 +364,7 @@
       if (!name) { err.textContent = t('addNeedName'); return; }
       err.textContent = ''; save.disabled = true; save.textContent = t('addSaving');
       try {
-        const res = await fetch('/api/rsvp-manual', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ eventId: 'thanksgiving-night', name, phone: document.getElementById('addPhone').value, email: document.getElementById('addEmail').value, partySize: document.getElementById('addParty').value, notes: document.getElementById('addNotes').value }) });
+        const res = await fetch('/api/rsvp-manual', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ eventId: currentEventId, name, phone: document.getElementById('addPhone').value, email: document.getElementById('addEmail').value, partySize: document.getElementById('addParty').value, notes: document.getElementById('addNotes').value }) });
         const body = await res.json().catch(() => ({}));
         if (res.status === 401) { goToHub(); return; }
         if (!res.ok) throw new Error(body.error || t('dataLoadRetry'));

@@ -52,3 +52,15 @@ test('참석자 직접 추가: 이름만 있어도 되고, 목록에 나타나�
   assert.deepEqual(asPeter.body.rsvps.map(r => r.name).sort(), ['김 집사', '박 성도']);
   assert.equal((await list(anna)).body.canAdd, false);
 });
+
+test('제주 캠퍼스데이 명단: 감사의 밤과 따로 저장되고 따로 조회된다', async () => {
+  const t = setup(); t.acc(peter[0]); t.acc(admin[0], 'admin');
+  const post = (who, body) => t.as(who, manual.onRequestPost, { method: 'POST', body: JSON.stringify(body) });
+  const list = (who, id) => t.as(who, rsvp.onRequestGet, {}, `https://t.co/api/rsvp?eventId=${id}`);
+  assert.equal((await post(peter, { eventId: 'jeju-campus-day', name: '제주 참가자', partySize: 2 })).status, 201);
+  assert.equal((await post(peter, { eventId: 'thanksgiving-night', name: '감사 참석자' })).status, 201);
+  const camp = await list(peter, 'jeju-campus-day'), night = await list(peter, 'thanksgiving-night');
+  assert.deepEqual(camp.body.rsvps.map(r => r.name), ['제주 참가자']); assert.equal(camp.body.totalGuests, 2);
+  assert.deepEqual(night.body.rsvps.map(r => r.name), ['감사 참석자']);
+  assert.equal(camp.body.rsvps[0].eventTitleKo, '제주 캠퍼스데이');
+});
