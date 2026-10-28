@@ -1,0 +1,44 @@
+/* 팀 사무실 — 홈의 하늘 영역 아래 한 줄. 책상에 앉은 캐릭터는 숨 쉬고 · 깜빡이고 · 타이핑하고, 게스트는 걸어 들어와 구경한다. */
+.ct-office{position:relative;z-index:2;margin:12px -6px 0;padding:10px 6px 0;border-top:1px dashed rgba(255,255,255,.28);color:#fff}
+.ofc-head{display:flex;align-items:center;gap:10px;font:700 12.5px/1.2 var(--f-body,sans-serif);text-shadow:0 1px 6px rgba(0,30,60,.3)}
+.ofc-head .sp{flex:1}.ofc-hide{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;font:700 11.5px var(--f-body,sans-serif);padding:3px 10px;cursor:pointer}.ofc-hide:hover{background:rgba(255,255,255,.26)}
+.ofc-row{display:flex;align-items:flex-end;gap:4px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 8px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.35) transparent}
+.ofc-cell{flex:0 0 78px;display:grid;justify-items:center;gap:2px;position:relative}
+.ofc-svg{width:78px;height:88px;display:block;overflow:visible}
+.ofc-name{max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:1px 8px;border-radius:999px;background:rgba(255,255,255,.18);font:700 11px/1.5 var(--f-body,sans-serif)}
+.ofc-cell.you .ofc-name{background:#fff;color:#06232f}.ofc-cell.away{opacity:.6}.ofc-cell.away .ofc-name{background:rgba(255,255,255,.1)}
+.ofc-div{flex:0 0 1px;align-self:stretch;margin:6px 8px;background:rgba(255,255,255,.25)}
+.ofc-guestcell .ofc-name{background:rgba(255,255,255,.12);font-weight:600}.ofc-tag{font:600 9.5px/1 var(--f-body,sans-serif);opacity:.75}
+
+/* 앉은 캐릭터 */
+.ofc-breath{transform-origin:44px 90px;animation:ofc-breathe 3.4s ease-in-out infinite}
+.ofc-eyes{transform-box:fill-box;transform-origin:center;animation:ofc-blink 5.2s infinite}
+.ofc-hl,.ofc-hr{animation:ofc-type .46s ease-in-out infinite alternate}.ofc-hr{animation-delay:.23s}
+.ofc-steam{animation:ofc-steam 2.6s ease-in-out infinite}
+.ofc-gl{transition:opacity .4s}
+.ofc-svg[data-g="off"] .ofc-gl{opacity:0}.ofc-svg[data-g="on"] .ofc-gl-head,.ofc-svg[data-g="off"] .ofc-gl-head{opacity:0}
+.ofc-svg[data-g="head"] .ofc-gl-on{opacity:0}.ofc-svg[data-g="on"] .ofc-gl-on,.ofc-svg[data-g="head"] .ofc-gl-head{opacity:1}
+@keyframes ofc-breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.4px)}}
+@keyframes ofc-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes ofc-type{from{transform:translateY(0)}to{transform:translateY(-1.8px)}}
+@keyframes ofc-steam{0%{opacity:0;transform:translateY(2px)}50%{opacity:.7}100%{opacity:0;transform:translateY(-4px)}}
+/* 방금 도착한 팀원 — 왼쪽에서 걸어와 자리에 앉는다 */
+.ofc-cell.enter .ofc-person{animation:ofc-sit 1.5s ease-out both}
+@keyframes ofc-sit{0%{transform:translate(-70px,6px);opacity:0}15%{opacity:1}45%{transform:translate(-28px,-3px)}70%{transform:translate(-8px,3px)}100%{transform:none}}
+/* 게스트 — 걸어 들어와 서서 구경한다(앉지 않는다) */
+.ofc-guestcell.enter .ofc-gwalk{animation:ofc-gin 2.4s ease-out both}
+.ofc-ghead{transform-box:fill-box;transform-origin:50% 90%;animation:ofc-look 5s ease-in-out infinite}
+.ofc-gwalk{animation:ofc-sway 3.2s ease-in-out infinite}
+@keyframes ofc-gin{0%{transform:translateX(-130px)}20%{transform:translate(-104px,-3px)}40%{transform:translate(-78px,0)}60%{transform:translate(-52px,-3px)}80%{transform:translate(-26px,0)}100%{transform:none}}
+@keyframes ofc-look{0%,15%{transform:rotate(0)}30%,50%{transform:rotate(-9deg)}65%,85%{transform:rotate(9deg)}100%{transform:rotate(0)}}
+@keyframes ofc-sway{0%,100%{transform:translateX(0)}50%{transform:translateX(2px)}}
+@media (prefers-reduced-motion:reduce){.ofc-breath,.ofc-eyes,.ofc-hl,.ofc-hr,.ofc-steam,.ofc-ghead,.ofc-gwalk,.ofc-cell.enter .ofc-person,.ofc-guestcell.enter .ofc-gwalk{animation:none}.ofc-gl{transition:none}}
+@media (max-width:899px){.ct-office{margin-top:10px}.ofc-cell{flex-basis:70px}.ofc-svg{width:70px;height:79px}.ofc-name{max-width:70px}}
+
+/* ── 날씨 칸 안에 들어가는 작은 사무실 ── */
+.ct-office{position:static;margin:8px 0 0;padding:6px 0 0;border-top:1px dashed rgba(255,255,255,.3);text-align:left;width:100%}
+.ofc-head{font-size:10.5px;gap:6px}.ofc-hide{padding:0 8px;font-size:10px;line-height:1.6}
+.ofc-row{padding:2px 0 0;gap:2px}.ofc-cell{flex:0 0 42px;gap:0}.ofc-svg{width:42px;height:47px}
+.ofc-name{max-width:42px;padding:0 3px;font-size:8.5px;line-height:1.6;background:rgba(255,255,255,.14)}.ofc-tag{display:none}.ofc-div{margin:4px 3px}
+.hub-wx-card:has(.ct-office){min-width:236px;max-width:300px}
+@media(max-width:899px){.hub-wx-card:has(.ct-office){max-width:none}.ofc-cell{flex-basis:44px}.ofc-svg{width:44px;height:49px}.ofc-name{max-width:44px}}
