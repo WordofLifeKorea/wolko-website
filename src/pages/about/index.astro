@@ -97,21 +97,34 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
   .who-title-rule { width:64px; height:5px; margin:22px auto 0; border-radius:99px; background:linear-gradient(90deg, #004f68, #73d1f5); }
 
-  /* ── INTRO ── */
-  .intro-single-wrap { max-width:980px; margin:56px auto 0; }
+  /* ── INTRO: 초청장 같은 편지 ── */
+  .intro-single-wrap { max-width:860px; margin:76px auto 0; }
   .intro-card {
-    position:relative; background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,251,253,0.98));
-    border:1px solid rgba(0,79,104,0.12); border-radius:32px; padding:44px 42px 38px;
-    box-shadow:0 22px 56px rgba(16,32,40,0.08), 0 8px 20px rgba(16,32,40,0.04);
-    overflow:hidden; transition:transform .24s, box-shadow .24s, border-color .24s;
+    --paper:#fffdf8; --ink:#34444c; --teal:#004f68;
+    position:relative; padding:76px 64px 52px; border-radius:6px;
+    background:
+      radial-gradient(120% 90% at 0% 0%, rgba(115,209,245,0.10) 0%, transparent 55%),
+      radial-gradient(100% 80% at 100% 100%, rgba(240,200,140,0.14) 0%, transparent 55%),
+      var(--paper);
+    border:1px solid rgba(60,70,60,0.10);
+    box-shadow:0 1px 0 rgba(255,255,255,0.9) inset, 0 28px 60px -22px rgba(16,32,40,0.22), 0 6px 16px rgba(16,32,40,0.06);
+    transform:rotate(-0.35deg); transition:transform .35s ease, box-shadow .35s ease;
+    font-family:'Noto Serif KR', 'Nanum Myeongjo', serif;
   }
-  .intro-card:hover { transform:translateY(-4px); box-shadow:0 30px 70px rgba(16,32,40,0.11); border-color:rgba(0,79,104,0.18); }
-  .intro-card::before { content:""; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg, #004f68 0%, #0a5b76 55%, #73d1f5 100%); }
-  .intro-card::after { content:""; position:absolute; right:-46px; bottom:-56px; width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, rgba(0,79,104,0.10) 0%, transparent 70%); pointer-events:none; }
+  .intro-card:hover { transform:rotate(0deg) translateY(-3px); box-shadow:0 1px 0 rgba(255,255,255,0.9) inset, 0 34px 70px -22px rgba(16,32,40,0.26), 0 8px 20px rgba(16,32,40,0.07); }
+  /* 편지지의 안쪽 테두리 */
+  .intro-card::before { content:""; position:absolute; inset:14px; border:1px solid rgba(0,79,104,0.20); border-radius:2px; pointer-events:none; }
+  /* 위쪽 가운데: 밀랍 도장처럼 찍힌 월코 로고 */
+  .intro-card::after { content:""; position:absolute; top:-34px; left:50%; width:68px; height:68px; margin-left:-34px; border-radius:50%; background:#fff url('/images/WOLKO%20Circle.png') center/46px no-repeat; border:3px solid #fffdf8; box-shadow:0 10px 22px -6px rgba(0,79,104,0.45), 0 0 0 1px rgba(0,79,104,0.18); pointer-events:none; }
   .intro-card > * { position:relative; z-index:1; }
-  .intro-card p { font-size:18px; line-height:2.02; color:#3a4e58; }
-  .intro-card p + p { margin-top:16px; }
-  .intro-card-sig { margin-top:28px; padding-top:18px; border-top:1px solid rgba(0,79,104,0.10); display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; font-size:14px; font-weight:800; color:var(--primary); }
+  .intro-greet { margin:0 0 26px; font-size:21px; font-weight:600; color:var(--teal); letter-spacing:-0.01em; }
+  .intro-card p:not(.intro-greet) { font-size:17.5px; line-height:2.15; color:var(--ink); word-break:keep-all; }
+  .intro-card p + p { margin-top:18px; }
+  .intro-closing { margin-top:34px !important; font-size:16.5px !important; color:#5b6c75 !important; font-style:normal; }
+  .intro-card-sig { margin-top:10px; display:flex; flex-direction:column; align-items:flex-end; gap:4px; color:var(--teal); }
+  .intro-sign-name { font:400 32px/1.2 'Nanum Pen Script', 'Noto Serif KR', cursive; letter-spacing:.01em; color:#0a4c63; transform:rotate(-2deg); transform-origin:right bottom; }
+  .intro-sign-line { width:150px; height:2px; border-radius:2px; background:linear-gradient(90deg, transparent, rgba(0,79,104,0.45)); }
+  .intro-sign-small { font:600 11px/1 Montserrat, sans-serif; letter-spacing:.2em; color:#7b8e98; }
 
   /* ── HISTORY ── */
   .history-grid { max-width:1240px; margin:56px auto 0; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
@@ -219,8 +232,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .value-card:nth-child(5) { grid-column:auto; }
     .ministry-grid { grid-template-columns:1fr; }
     .history-card, .vismis-card { padding:34px 26px; }
-    .intro-card { padding:34px 24px; }
-    .intro-card p { font-size:15px; }
+    .intro-card { padding:64px 26px 40px; transform:none; }
+    .intro-card::before { inset:9px; }
+    .intro-card p:not(.intro-greet) { font-size:15.5px; line-height:2; }
+    .intro-greet { font-size:18px; }
+    .intro-sign-name { font-size:28px; }
     .commit-grid { grid-template-columns:1fr; }
     .commit-card { grid-template-columns:1fr; padding:28px 24px; }
     .commit-num { grid-row:auto; font-size:46px; margin-bottom:6px; }
@@ -272,16 +288,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </h2>
     <div class="who-title-rule"></div>
     <div class="intro-single-wrap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Noto+Serif+KR:wght@400;600&display=swap">
       <div class="intro-card">
+        <p class="intro-greet"><span class="wl-ko">소중한 여러분께,</span><span class="wl-en">Dear friend,</span></p>
         <p class="wl-ko">Word of Life Korea(월코) 홈페이지에 방문하신 여러분을 환영합니다.</p>
         <p class="wl-ko">월코는 캠프, 학생 사역, 지역 교회 사역, SYME (청년 제자훈련센터), 성경학교(WOLBI) 훈련과 가족 사역을 통하여 한국의 청년들에게 복음을 전하는 데 최선을 다하고 있으며, 이러한 복음전파와 제자훈련에 대한 열정을 여러분과 나누고 싶습니다.</p>
         <p class="wl-ko">잠시 시간을 내셔서 하나님께서 월코를 통해서 하시는 일이 무엇인지 자세히 봐주시기 바랍니다.</p>
         <p class="wl-en">Welcome to the Word of Life Korea(WOLKO) website.</p>
         <p class="wl-en">WOLKO is committed to reaching Korea's young people with the Gospel through camps, student ministry, local church ministry, SYME (a discipleship training center for young adults), WOLBI (Bible Institute) training, and family ministry, and we want to share this passion for evangelism and discipleship with you.</p>
         <p class="wl-en">Please take a moment to look closely at what God is doing through WOLKO.</p>
+        <p class="intro-closing"><span class="wl-ko">하나님의 은혜 안에서,</span><span class="wl-en">In Christ,</span></p>
         <div class="intro-card-sig">
-          <span class="wl-ko">Word of Life Korea (월코)</span>
-          <span class="wl-en">Word of Life Korea (WOLKO)</span>
+          <span class="intro-sign-name"><span class="wl-ko">Word of Life Korea 드림</span><span class="wl-en">Word of Life Korea</span></span>
+          <span class="intro-sign-line"></span>
+          <span class="intro-sign-small">WOLKO</span>
         </div>
       </div>
     </div>
