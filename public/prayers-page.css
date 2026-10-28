@@ -1,19 +1,19 @@
 /* 기도제목 나누기 페이지 — 제목만 한 줄씩, 누르면 내용이 열린다 */
 .pr-wrap { max-width: 860px; }
-.pr-form { display: grid; gap: 10px; }
+.pr-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .pr-form input[type="text"], .pr-form textarea, .pr-tools input[type="search"] { width: 100%; padding: 11px 14px; border: 1px solid #dfc9d1; border-radius: 12px; background: #fff; color: #102936; font: 500 15px/1.5 'Noto Sans KR', sans-serif; }
 .pr-form textarea { resize: vertical; }
 .pr-form input:focus, .pr-form textarea:focus, .pr-tools input:focus { outline: 2px solid rgba(214, 86, 122, .25); border-color: #d6567a; }
 .pr-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .pr-anon { display: inline-flex; align-items: center; gap: 8px; color: #5f7681; font-size: 14px; }
 .pr-opts .log-primary { width: auto; min-width: 120px; margin-left: auto; background: #d6567a; border-color: #d6567a; }
-.pr-tools { display: grid; gap: 10px; margin-bottom: 14px; }
+.pr-tools { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-bottom: 14px; }
 .pr-filter { display: flex; flex-wrap: wrap; gap: 8px; }
 .pr-filter button { padding: 8px 15px; border: 1px solid #ecc4d0; border-radius: 999px; background: #fff; color: #b8416a; font: 700 13px/1 'Noto Sans KR', sans-serif; cursor: pointer; }
 .pr-filter button.is-on { background: #d6567a; border-color: #d6567a; color: #fff; }
-.pr-list { display: grid; gap: 8px; }
+.pr-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }   /* 열 폭을 고정해야 긴 제목이 카드 밖으로 밀고 나가지 않는다 */
 .pr-month { margin: 14px 2px 2px; color: #5f7681; font: 800 12.5px/1 'Noto Sans KR', sans-serif; letter-spacing: .04em; }
-.pr-item { border-radius: 14px; background: #fbf4f6; transition: background .18s; }
+.pr-item { min-width: 0; max-width: 100%; border-radius: 14px; background: #fbf4f6; transition: background .18s; }
 .pr-item[open] { background: #f8e9ee; }
 .pr-item > summary { display: flex; align-items: center; gap: 10px; padding: 14px 18px; list-style: none; cursor: pointer; }
 .pr-item > summary::-webkit-details-marker { display: none; }
@@ -37,7 +37,7 @@
 .pr-edit, .pr-cancel, .pr-save { padding: 6px 12px; border: 0; border-radius: 999px; background: rgba(16, 41, 54, .07); color: #5f7681; font: 700 12.5px/1.2 'Noto Sans KR', sans-serif; cursor: pointer; }
 .pr-edit:hover, .pr-cancel:hover { background: rgba(16, 41, 54, .13); }
 .pr-save { background: #d6567a; color: #fff; }
-.pr-editform { display: grid; gap: 10px; }
+.pr-editform { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .pr-editform input[type="text"], .pr-editform textarea { width: 100%; padding: 10px 13px; border: 1px solid #dfc9d1; border-radius: 12px; background: #fff; color: #102936; font: 500 15px/1.5 'Noto Sans KR', sans-serif; }
 .pr-editform textarea { resize: vertical; }
 .pr-del { padding: 6px 11px; border: 0; border-radius: 999px; background: rgba(196, 42, 54, .08); color: #c42a36; font: 700 12.5px/1.2 'Noto Sans KR', sans-serif; cursor: pointer; }

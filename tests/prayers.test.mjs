@@ -197,3 +197,13 @@ test('기도제목 번역 보충: 번역이 없거나 언어가 잘못 저장된
   calls = 0; assert.equal(await translateMissingPrayers(t.env, { fetchImpl, now: 5000 + 600000 }), 0); assert.equal(calls, 0);
   assert.equal(await translateMissingPrayers(t.env, { fetchImpl, now: 5000 + 3700000 }), 1);
 });
+
+test('기도제목 목록 CSS: 목록·폼 열 폭을 minmax(0,1fr)로 고정해서 긴 제목이 모바일 카드 밖으로 밀려 나가지 않는다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/prayers-page.css', import.meta.url), 'utf8');
+  for (const sel of ['.pr-list', '.pr-form', '.pr-tools', '.pr-editform']) {
+    const rule = css.split('\n').find(l => l.startsWith(sel + ' {'));
+    assert.ok(rule && /grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(rule), `${sel} 열 폭이 고정돼 있다`);
+  }
+  assert.match(css, /\.pr-item \{[^}]*min-width:\s*0/);
+});
