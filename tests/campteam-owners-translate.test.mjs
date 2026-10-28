@@ -99,3 +99,22 @@ test('업무 저장 버튼을 두 번 눌러도 같은 업무가 두 번 생기�
   env.DB.sqlite.exec(`UPDATE tasks SET createdAt='2020-01-01T00:00:00.000Z'`);
   await call('tasks', Tasks, 'onRequestPost', env, U.mem, { body: { title: '중복 확인' } }); assert.equal(count(), 4, '10초가 지난 뒤에는 같은 제목도 새 업무');
 });
+
+test('번역 버튼을 여러 번 눌러도 같은 업무를 다시 번역하지 않고 끝까지 진행된다 (SQL 로 넣은 업무·예전에 한쪽만 채워진 업무 포함)', async () => {
+  const env = mk({ ANTHROPIC_API_KEY: 'k' }), db = env.DB.sqlite;
+  // SQL 로 한꺼번에 넣은 업무(제목 칸 둘 다 빔) 100개 + 예전 번역 방식으로 한쪽만 채워진 업무 2개(영어 원문→한국어만 / 한국어 원문→영어만)
+  for (let i = 0; i < 100; i++) db.prepare(`INSERT INTO tasks (id,title,createdAt,updatedAt) VALUES (?,?,?,?)`).run('t' + String(i).padStart(3, '0'), 'Task number ' + i, '2026-10-20T00:00:' + String(i % 60).padStart(2, '0'), 'x');
+  db.prepare(`INSERT INTO tasks (id,title,titleKo,titleEn,createdAt,updatedAt) VALUES ('old1','Book venue','장소 예약','', '2026-10-19T00:00:00','x')`).run();
+  db.prepare(`INSERT INTO tasks (id,title,titleKo,titleEn,createdAt,updatedAt) VALUES ('old2','캠프 장소','','Camp venue','2026-10-19T00:00:01','x')`).run();
+  const sent = [];
+  const fetchImpl = async (u, init) => { const items = JSON.parse(JSON.parse(init.body).messages[0].content); sent.push(...items.map(x => x.id)); return sse(JSON.stringify(items.map(i => ({ id: i.id, text: i.to === 'en' ? 'EN ' + i.id : 'KO ' + i.id })))); };
+  const left = [];
+  for (let k = 0; k < 4; k++) { const r = await translateTasks(env, { fetchImpl, limit: 40 }); left.push(r.remaining); if (!r.translated) break; }
+  assert.deepEqual(left, [60, 20, 0, 0], '누를 때마다 40개씩 줄어들어 끝나고, 끝난 뒤에는 더 번역하지 않는다');
+  assert.equal(new Set(sent).size, sent.length, '같은 업무를 두 번 보내지 않는다');
+  assert.ok(!sent.includes('old1') && !sent.includes('old2'), '이미 번역된 업무는 AI 로 다시 보내지 않고 빈 칸만 정리한다');
+  const row = (id) => ({ ...db.prepare('SELECT title,titleKo,titleEn FROM tasks WHERE id=?').get(id) });
+  assert.deepEqual(row('old1'), { title: 'Book venue', titleKo: '장소 예약', titleEn: 'Book venue' });
+  assert.deepEqual(row('old2'), { title: '캠프 장소', titleKo: '캠프 장소', titleEn: 'Camp venue' });
+  assert.deepEqual(row('t005'), { title: 'Task number 5', titleKo: 'KO t005', titleEn: 'Task number 5' });
+});
