@@ -229,9 +229,11 @@ body.hub-modal-open { overflow: hidden; }
     radial-gradient(ellipse 900px 320px at 15% -10%, rgba(0,119,163,.07), transparent 60%);
 }
 .hub-wrap {
-  max-width: 1280px; /* 다른 도구 페이지와 같은 폭 (wolko-layout.css 의 --wl-page-max) */
+  /* 포탈 홈은 넓은 모니터에서도 양옆이 비지 않게 화면 폭을 따라 늘어난다(아주 넓은 화면만 2400px 에서 멈춤).
+     바깥 여백도 화면이 넓을수록 조금씩 커진다. 다른 도구 페이지는 wolko-layout.css 의 --wl-page-max(1280px)를 그대로 쓴다. */
+  max-width: 2400px;
   margin: 0 auto;
-  padding: 32px 28px 88px;
+  padding: 32px clamp(28px, 2.4vw, 64px) 88px;
   position: relative;
 }
 

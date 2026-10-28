@@ -305,3 +305,12 @@
 .gs-mricbox { min-height: 20px; padding: 7px 10px; border: 1px solid #ced4da; border-radius: 8px; background: #fff; font-size: 15px; font-variant-numeric: tabular-nums; }
 .gs-mrictable td small { display: block; margin-top: 6px; color: #1d2b36; font-size: 13px; line-height: 1.45; }
 @media (max-width: 720px) { .gs-mric { overflow-x: auto; } .gs-mrictable { table-layout: auto; min-width: 640px; } .gs-mrichead { font-size: 20px; } }
+
+/* 접고 펴는 패널 — 기본은 닫힘 */
+.gs-fold > details > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; list-style: none; cursor: pointer; }
+.gs-fold > details > summary::-webkit-details-marker { display: none; }
+.gs-fold > details > summary h2 { margin: 0; }
+.gs-fold-chev { flex: none; width: 10px; height: 10px; margin-right: 6px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .2s; }
+.gs-fold > details[open] > summary .gs-fold-chev { transform: rotate(-135deg); }
+.gs-fold > details[open] > summary { margin-bottom: 12px; }
+.gs-fold > details > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; border-radius: 8px; }

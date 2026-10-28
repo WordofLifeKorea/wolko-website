@@ -174,7 +174,8 @@ test('복음 통계 화면 스크립트: render() 가 부르는 함수와 버튼
     assert.ok(html.includes(`id="${id}"`), `#${id} 가 페이지에 있다`);
   }
   assert.doesNotMatch(src + html, /hqCopyAll|data-copy|copyText/, '복사 버튼은 없다');
-  assert.match(html, /MRIC 보고 레이아웃으로 보기/);
+  assert.match(html, /MRIC 레이아웃으로 보기/);
+  assert.match(html, /id="hqWrap">\s*<details>/, 'MRIC 패널은 접힌 채로 시작한다 (details 에 open 이 없다)');
 });
 
 test('복음 통계 CSS: 중괄호가 짝이 맞는다 (하나가 빠지면 그 뒤 규칙이 전부 무시된다)', async () => {
