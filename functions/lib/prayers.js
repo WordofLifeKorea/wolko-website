@@ -32,7 +32,7 @@ export function viewPrayers(list, owner, canModerate, limit = Infinity) {
   return list.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0, limit).map(p => ({
     id: p.id, title: titleOf(p), text: p.text || '', trLang: p.tr?.lang || '', trTitle: p.tr?.title || '', trText: p.tr?.text || '', name: p.name || '', anonymous: !p.name, createdAt: p.createdAt,
     count: (p.prayedBy || []).length, prayed: !!owner && (p.prayedBy || []).includes(owner),
-    mine: !!owner && p.owner === owner, canDelete: (!!owner && p.owner === owner) || !!canModerate,
+    mine: !!owner && p.owner === owner, canEdit: !!owner && p.owner === owner, canDelete: !!owner && p.owner === owner,   // 수정·삭제는 올린 본인만 (관리자도 남의 것은 못 건드린다)
   }));
 }
 
@@ -72,13 +72,31 @@ export async function togglePrayed(env, session, id, now = Date.now()) {
   return { count: item.prayedBy.length, prayed: set.has(owner) };
 }
 
-/** 올린 사람 본인이나 마스터·관리자만 지운다 */
+/** 올린 사람 본인만 고친다 — 제목·내용·익명 여부를 바꾸고, 번역은 새로 만든다(실패하면 낡은 번역은 지운다) */
+export async function editPrayer(env, session, id, body, { fetchImpl } = {}) {
+  const parsed = parsePrayerInput(body);
+  if (parsed.error) return { error: parsed.error, status: 400 };
+  const owner = await prayerOwner(env, session.email);
+  const list = await readPrayers(env);
+  const item = list.find(p => p.id === id);
+  if (!item) return { error: '기도제목을 찾을 수 없어요.', status: 404 };
+  if (item.owner !== owner) return { error: '내가 올린 기도제목만 고칠 수 있어요.', status: 403 };
+  const tr = await translatePrayer(env, parsed.value, { fetchImpl });
+  item.title = parsed.value.title; item.text = parsed.value.text;
+  item.name = parsed.value.anonymous ? '' : clean(session.name, 40) || String(session.email || '').split('@')[0];
+  if (tr) item.tr = tr; else delete item.tr;
+  item.editedAt = new Date().toISOString().slice(0, 10);
+  await env.CAMP_KV.put(PRAYERS_KEY, JSON.stringify(list));
+  return { ok: true, translated: !!tr };
+}
+
+/** 올린 사람 본인만 지운다 */
 export async function removePrayer(env, session, id, now = Date.now()) {
   const owner = await prayerOwner(env, session.email);
   const list = await readPrayers(env);
   const item = list.find(p => p.id === id);
   if (!item) return { error: '기도제목을 찾을 수 없어요.', status: 404 };
-  if (item.owner !== owner && session.role !== 'master' && session.role !== 'admin') return { error: '내가 올린 기도제목만 지울 수 있어요.', status: 403 };
+  if (item.owner !== owner) return { error: '내가 올린 기도제목만 지울 수 있어요.', status: 403 };
   await env.CAMP_KV.put(PRAYERS_KEY, JSON.stringify(list.filter(p => p.id !== id)));
   return { ok: true };
 }

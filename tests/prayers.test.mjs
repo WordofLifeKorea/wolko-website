@@ -52,7 +52,8 @@ test('기도제목: 로그인 필요, 올리기·보기·함께 기도·지우�
   assert.equal((await t.call('POST', ben, { body: { action: 'pray', id: 'nope' } })).status, 404);
 
   assert.equal((await t.call('DELETE', ben, { query: `?id=${id}` })).status, 403, '남의 것은 못 지운다');
-  assert.equal((await t.call('GET', admin)).prayers[0].canDelete, true, '관리자는 지울 수 있다');
+  assert.equal((await t.call('GET', admin)).prayers[0].canDelete, false, '관리자도 남의 기도제목은 지울 수 없다');
+  assert.equal((await t.call('DELETE', admin, { query: `?id=${id}` })).status, 403);
   assert.equal((await t.call('DELETE', anna, { query: `?id=${id}` })).status, 200);
   assert.equal((await t.call('GET', anna)).prayers.length, 0);
   assert.equal((await t.call('DELETE', anna, { query: `?id=${id}` })).status, 404);
@@ -130,5 +131,32 @@ test('기도제목: 저장하면 번역이 함께 저장되고 화면에는 번�
     const failed = await t.call('POST', anna, { body: { title: '다른 기도제목' } });
     assert.equal(failed.status, 201); assert.equal(failed.translated, false);
     assert.equal(failed.prayers[0].trTitle, '', '번역이 없으면 비어 있다');
+  } finally { globalThis.fetch = realFetch; }
+});
+
+test('기도제목 수정: 올린 본인만, 제목·내용·익명 여부가 바뀌고 번역도 새로 만든다 (실패하면 낡은 번역을 지운다)', async () => {
+  const realFetch = globalThis.fetch;
+  const t = setup(); t.acc(anna[0], 'counselor', 'Anna Lee'); t.acc(ben[0], 'counselor', 'Ben Kim'); t.acc(admin[0], 'admin', 'Admin'); t.env.ANTHROPIC_API_KEY = 'k';
+  try {
+    globalThis.fetch = async () => sse('{"title":"Old title","text":"Old text"}');
+    const id = (await t.call('POST', anna, { body: { title: '처음 제목', text: '처음 내용' } })).prayers[0].id;
+    assert.equal((await t.call('GET', anna)).prayers[0].canEdit, true);
+    assert.equal((await t.call('GET', ben)).prayers[0].canEdit, false);
+    assert.equal((await t.call('POST', ben, { body: { action: 'edit', id, title: '남이 고침' } })).status, 403, '다른 사람은 못 고친다');
+    assert.equal((await t.call('POST', admin, { body: { action: 'edit', id, title: '관리자가 고침' } })).status, 403, '관리자도 못 고친다');
+    assert.equal((await t.call('POST', anna, { body: { action: 'edit', id, title: ' ', text: ' ' } })).status, 400);
+    assert.equal((await t.call('POST', anna, { body: { action: 'edit', id: 'nope', title: 'x' } })).status, 404);
+    globalThis.fetch = async () => sse('{"title":"New title","text":"New text"}');
+    const ok = await t.call('POST', anna, { body: { action: 'edit', id, title: '바뀐 제목', text: '바뀐 내용', anonymous: true } });
+    assert.equal(ok.status, 200); assert.equal(ok.translated, true);
+    const it = ok.prayers[0];
+    assert.equal(it.title, '바뀐 제목'); assert.equal(it.text, '바뀐 내용'); assert.equal(it.trTitle, 'New title'); assert.equal(it.anonymous, true); assert.equal(it.name, '');
+    assert.equal(ok.prayers.length, 1, '새로 생기지 않고 고쳐진다');
+    globalThis.fetch = async () => new Response('down', { status: 503 });
+    const again = await t.call('POST', anna, { body: { action: 'edit', id, title: '또 바뀐 제목', anonymous: true } });
+    assert.equal(again.prayers[0].anonymous, true);
+    assert.equal(again.prayers[0].title, '또 바뀐 제목'); assert.equal(again.prayers[0].trTitle, '', '번역이 실패하면 낡은 번역은 지운다');
+    const stored = t.store.get(PRAYERS_KEY);
+    assert.equal(/anna|Anna|@/.test(stored), false, stored);
   } finally { globalThis.fetch = realFetch; }
 });
