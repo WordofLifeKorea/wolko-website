@@ -160,22 +160,33 @@ test('팀 보고는 누가 냈는지 남고(지정 담당자·관리자·마스�
   assert.equal(stored.reporterName, undefined); assert.equal(stored.reporterEmail, undefined);
 });
 
-test('복음 통계 화면 스크립트: render() 가 부르는 함수와 버튼 핸들러가 모두 정의돼 있고, 복사 버튼은 없다 (함수가 통째로 지워져도 구문 검사는 통과하므로 따로 본다)', async () => {
+test('복음 통계 화면 스크립트: render() 가 부르는 함수와 id 가 모두 있고, 월별이 기본이며, MRIC 는 새 창 버튼이고, 캠프 집계에 별도 버튼이 없다', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../public/gospel-stats.js', import.meta.url), 'utf8');
   const html = readFileSync(new URL('../src/pages/portal/gospel-stats/index.astro', import.meta.url), 'utf8');
   const body = src.slice(src.indexOf('  function render() {'), src.indexOf('  /** 교회별 행사'));
   const called = [...body.matchAll(/\b(render[A-Z]\w*)\(\)/g)].map(m => m[1]);
-  assert.ok(called.includes('renderHq') && called.includes('renderTeamReports') && called.includes('renderReporters'));
+  assert.ok(called.includes('renderTeamReports') && called.includes('renderReporters'));
   for (const name of new Set(called)) assert.match(src, new RegExp(`function ${name}\\(`), `${name} 가 정의돼 있다`);
   // 코드가 $('id') 로 찾는 요소는 페이지에 있어야 한다(없으면 스크립트가 시작하다 멈춘다)
   for (const id of new Set([...src.matchAll(/\$\('([A-Za-z]\w*)'\)/g)].map(m => m[1]))) {
-    if (['fMonth', 'fTeam', 'fSave', 'fWarn', 'fDelete', 'crsNote', 'churchRows', 'churchTotal', 'churchApply', 'churchSec', 'gsChurchList', 'hqToMonth', 'repInput', 'fMonthSel'].includes(id) || /^(f_|ce_)/.test(id)) continue;   // 폼·표를 그릴 때 만들어지는 요소
+    if (['fMonth', 'fTeam', 'fSave', 'fWarn', 'fDelete', 'crsNote', 'churchRows', 'churchTotal', 'churchApply', 'churchSec', 'gsChurchList', 'repInput', 'fMonthSel'].includes(id) || /^(f_|ce_)/.test(id)) continue;   // 폼·표를 그릴 때 만들어지는 요소
     assert.ok(html.includes(`id="${id}"`), `#${id} 가 페이지에 있다`);
   }
-  assert.doesNotMatch(src + html, /hqCopyAll|data-copy|copyText/, '복사 버튼은 없다');
-  assert.match(html, /MRIC 레이아웃으로 보기/);
-  assert.match(html, /id="hqWrap">\s*<details>/, 'MRIC 패널은 접힌 채로 시작한다 (details 에 open 이 없다)');
+  assert.match(src, /sessionStorage\.getItem\('gsView'\) === 'year' \? 'year' : 'month'/, '월별이 기본');
+  assert.match(html, /id="mricBtn"/);
+  assert.match(src, /window\.open\('\/portal\/gospel-stats\/mric\//);
+  assert.doesNotMatch(src + html, /hqCopyAll|data-copy|copyText|id="hqWrap"|data-camp-scope|gospel-flip/);
+});
+
+test('MRIC 새 창 페이지: 월·위치(통합/평택/제주)를 받아 MRIC 입력 화면 순서로 보여 준다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const js = readFileSync(new URL('../public/gospel-mric.js', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../src/pages/portal/gospel-stats/mric/index.astro', import.meta.url), 'utf8');
+  for (const id of new Set([...js.matchAll(/\$\('([A-Za-z]\w*)'\)/g)].map(m => m[1]))) assert.ok(html.includes(`id="${id}"`), `#${id}`);
+  for (const title of ['GOSPEL REACH', 'DISCIPLESHIP', 'LOCAL CHURCH MINISTRIES']) assert.ok(js.includes(title));
+  assert.match(js, /qs\.get\('month'\)/); assert.match(js, /qs\.get\('place'\)/);
+  assert.match(html, /data-place="all"[\s\S]*data-place="mainland"[\s\S]*data-place="jeju"/);
 });
 
 test('복음 통계 CSS: 중괄호가 짝이 맞는다 (하나가 빠지면 그 뒤 규칙이 전부 무시된다)', async () => {

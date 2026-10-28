@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="/wolko-rail.css?v=23">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
-  <link rel="stylesheet" href="/wolkoevents.css?v=4">
+  <link rel="stylesheet" href="/wolkoevents.css?v=5">
   <link rel="stylesheet" href="/wolko-layout.css?v=16">
   <script src="/wolko-rail.js?v=41" defer></script>
   <meta name="theme-color" content="#a5482d">
@@ -295,7 +295,7 @@
         const date = new Date(r.createdAt);
         const submitted = Number.isNaN(date.getTime()) ? '—' : date.toLocaleString(adminLang === 'en' ? 'en-US' : 'ko-KR', { timeZone: 'Asia/Seoul', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         return `<tr>
-          <td class="events-applicant"><strong>${esc(r.name)}</strong>${r.source === 'manual' ? `<span class="events-manual">${esc(t('addBadge'))}</span>` : ''}<time>${esc(submitted)}</time></td>
+          <td class="events-applicant"><strong>${esc(r.name)}</strong><time>${esc(submitted)}</time></td>
           <td class="events-contact" data-label="${esc(t('thContact'))}">${phone ? `<a href="tel:${esc(phone)}">${esc(displayPhone)}</a>` : ''}${r.email ? `<a class="events-email" href="mailto:${esc(encodeURIComponent(r.email))}">${esc(r.email)}</a>` : ''}${!phone && !r.email ? '<span class="events-no-note">—</span>' : ''}</td>
           <td class="events-party" data-label="${esc(t('thParty'))}"><span>${Number(r.partySize) || 0}${adminLang === 'en' ? '' : '명'}</span></td>
           <td class="events-notes" data-label="${esc(t('thNotes'))}">${r.notes ? `<p>${esc(r.notes)}</p>` : '<span class="events-no-note">—</span>'}</td>

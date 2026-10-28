@@ -1,0 +1,41 @@
+---
+// MRIC 레이아웃 — 복음 통계의 "MRIC 레이아웃" 버튼이 새 창으로 여는 페이지. MRIC Statistics Report 입력 화면과 같은 순서·이름·설명으로 그 달 숫자를 보여 준다.
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>MRIC Statistics Report — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/gospel-stats.css?v=42">
+  <script src="/gospel-mric.js?v=1" defer></script>
+  <meta name="theme-color" content="#004f68">
+</head>
+<body class="gs-mricpage">
+  <header class="gs-mrichdr">
+    <a class="gs-mrichdr-brand" href="/portal/gospel-stats/" target="_blank" rel="noopener"><img src="/images/WOLKO Circle.png" alt=""><span>MRIC Statistics Report</span></a>
+    <div class="gs-mricctl">
+      <div class="gs-mricplaces" role="group" aria-label="Location">
+        <button type="button" data-place="all">통합</button><button type="button" data-place="mainland">평택</button><button type="button" data-place="jeju">제주</button>
+      </div>
+      <div class="gs-mricmonth">
+        <button type="button" id="mricPrev" aria-label="Previous month">‹</button>
+        <strong id="mricMonth">—</strong>
+        <button type="button" id="mricNext" aria-label="Next month">›</button>
+      </div>
+    </div>
+  </header>
+  <main class="gs-mricwrap">
+    <p class="gs-mricintro">MRIC에 입력할 때 옆에 두고 보세요. 화면의 순서·이름·설명이 MRIC Statistics Report 입력 화면과 같아요.</p>
+    <p class="log-loading" id="mricStatus">불러오는 중…</p>
+    <div id="mricApp" hidden><div id="mricBody"></div></div>
+  </main>
+</body>
+</html>

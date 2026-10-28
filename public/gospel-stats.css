@@ -314,3 +314,61 @@
 .gs-fold > details[open] > summary .gs-fold-chev { transform: rotate(-135deg); }
 .gs-fold > details[open] > summary { margin-bottom: 12px; }
 .gs-fold > details > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; border-radius: 8px; }
+
+/* ── MRIC 새 창 페이지 ── */
+.gs-mricpage { margin: 0; background: #f4f7fa; color: #102936; font-family: 'Noto Sans KR', sans-serif; }
+.gs-mrichdr { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; padding: 12px clamp(16px, 4vw, 40px); background: linear-gradient(120deg, #004f68, #0a6a8f); color: #fff; box-shadow: 0 8px 22px -14px rgba(0, 40, 60, .6); }
+.gs-mrichdr-brand { display: inline-flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font: 800 15px/1.2 Montserrat, 'Noto Sans KR', sans-serif; letter-spacing: .02em; }
+.gs-mrichdr-brand img { width: 30px; height: 30px; border-radius: 50%; }
+.gs-mricctl { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.gs-mricplaces, .gs-mricmonth { display: inline-flex; align-items: center; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .28); }
+:root:root .gs-mricplaces button, :root:root .gs-mricmonth button { min-width: 0 !important; min-height: 0 !important; height: 30px !important; padding: 0 14px !important; border: 0; border-radius: 999px; background: transparent; color: rgba(255, 255, 255, .9); font: 800 13px/1 'Noto Sans KR', sans-serif; cursor: pointer; }
+:root:root .gs-mricplaces button.is-on { background: #fff; color: #0a4c63; }
+:root:root .gs-mricmonth button { width: 30px !important; padding: 0 !important; font-size: 18px; }
+:root:root .gs-mricmonth button:disabled { opacity: .35; cursor: default; }
+.gs-mricmonth strong { min-width: 96px; text-align: center; font-size: 14px; font-weight: 800; }
+.gs-mricwrap { max-width: 980px; margin: 0 auto; padding: 22px clamp(16px, 4vw, 40px) 70px; }
+.gs-mricintro { margin: 0 0 14px; color: #587383; font-size: 14px; line-height: 1.6; }
+.gs-mricpage .gs-mric { padding: 22px clamp(16px, 3vw, 30px) 18px; border: 1px solid #e1e9ee; border-radius: 20px; background: #fff; box-shadow: 0 10px 28px -20px rgba(0, 40, 60, .35); }
+.gs-mrictablewrap { overflow-x: auto; }
+
+/* ── 복음 통계 개편: 도구줄 한 장 · 둥근 탭 · 색이 있는 숫자 카드 ── */
+.gs-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; margin: 0 0 16px; border: 1px solid var(--line); border-radius: 20px; background: #fff; box-shadow: 0 12px 28px -24px rgba(0, 60, 80, .45); }
+.gs-bar-top { display: contents; }
+.gs-bar .gs-viewtoggle { order: 1; }
+.gs-bar .gs-month { order: 2; padding: 0; border: 0; background: transparent; }
+.gs-bar .gs-actions { order: 3; margin-left: auto; align-items: center; }
+.gs-mricbtn { display: inline-flex; align-items: center; gap: 6px; }
+.gs-mricbtn i { font-style: normal; font-weight: 800; opacity: .75; }
+
+.gs-tabs { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; margin: 0 0 18px; border-radius: 999px; background: #e7f0f3; }
+.gs-tab { height: 36px !important; min-height: 36px !important; max-height: 36px !important; padding: 0 18px !important; border: 0 !important; background: transparent !important; color: #587383; box-shadow: none; transition: background .2s, color .2s, box-shadow .2s; }
+.gs-tab:hover { color: var(--ink); }
+.gs-tab.is-active { background: #fff !important; color: var(--blue); box-shadow: 0 6px 14px -8px rgba(0, 60, 80, .55); }
+
+.gs-kpicap { margin: 0 0 12px; color: var(--ink); font-size: 15px; font-weight: 800; letter-spacing: -.01em; }
+.gs-kpis { gap: 14px; margin: 0 0 12px; }
+.gs-kpi { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 20px 22px 18px; border: 0; border-radius: 22px; overflow: hidden; background: var(--kb, #f3f7f9); color: var(--kc, var(--blue)); }
+.gs-kpi::after { content: ''; position: absolute; right: -34px; top: -38px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--kc, #0a6a8f) 16%, transparent), transparent 70%); pointer-events: none; }
+.gs-kpi > span { order: -1; position: relative; z-index: 1; margin: 0; color: color-mix(in srgb, var(--kc, #0a6a8f) 62%, #4a6270); font-size: 13.5px; font-weight: 800; letter-spacing: -.01em; }
+.gs-kpi strong, .gs-kpi .gf-num { position: relative; z-index: 1; display: block; color: var(--kc, var(--blue)); font: 800 44px/1.05 'Montserrat', var(--sans); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.gs-kpi:nth-child(1) { --kb: #eaf5fb; --kc: #0a6a8f; }
+.gs-kpi:nth-child(2) { --kb: #e8f6ef; --kc: #14805a; }
+.gs-kpi:nth-child(3) { --kb: #fdf1e3; --kc: #b4630f; }
+.gs-kpi:nth-child(4) { --kb: #f0edfb; --kc: #5a43b8; }
+.gs-kpi .gc-break { position: relative; z-index: 1; margin-top: 4px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--kc, #0a6a8f) 16%, transparent); }
+.gs-count { display: inline-flex; align-items: center; margin: 4px 0 22px; padding: 9px 15px; border-radius: 12px; background: #eef4f7; color: #587383; font-size: 13px; font-weight: 600; }
+.gs-count:empty { display: none; }
+@media (max-width: 640px) {
+  .gs-bar { padding: 10px 12px; border-radius: 18px; }
+  .gs-bar .gs-actions { width: 100%; margin-left: 0; }
+  .gs-kpi { padding: 16px 16px 14px; border-radius: 18px; }
+  .gs-kpi strong, .gs-kpi .gf-num { font-size: 32px; }
+  .gs-kpi.has-break { grid-column: 1 / -1; }   /* 항목별 막대가 있는 카드는 한 줄을 다 써서 이름이 잘리지 않게 */
+  .gs-bar .gs-actions { flex-wrap: wrap !important; }
+  .gs-bar .gs-actions > * { white-space: nowrap; }
+  .gs-bar .gs-actions .gs-primary { flex: 1 1 100%; }
+  .gs-bar .gs-actions .gs-mricbtn { flex: 1 1 0; justify-content: center; }
+  .gs-tabs { display: flex; width: 100%; box-sizing: border-box; }
+  .gs-tab { flex: 1 1 0; justify-content: center; padding: 0 8px !important; }
+}

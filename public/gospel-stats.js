@@ -26,6 +26,7 @@
       warnSalv: '구원 고백이 복음을 들은 인원보다 많아요. 맞는지 한 번 더 확인해 주세요.', warnCamp: '캠프의 구원·헌신이 캠프 참석자보다 많아요. 맞는지 확인해 주세요.', warnEvent: '행사의 구원·헌신이 행사 참석자보다 많아요. 맞는지 확인해 주세요.',
       denied: '불러오지 못했어요. 잠시 후 다시 시도해 주세요.', sessionEnd: '로그인이 필요해요.',
       lastMonth: '지난달', formDelete: '이 보고 지우기', formDelAsk: '이 보고를 지울까요?', formDeleted: '지웠어요.',
+      mricBtn: 'MRIC 레이아웃', mricBlocked: '팝업이 막혀 있어요. 이 사이트의 팝업을 허용해 주세요.',
       scopeMinistry: '사역 현황 (제자훈련·지역교회)', formMinistryHint: '평택·제주 위치마다 한 건을 담당자들이 함께 고쳐요. 연결 교회 등급(A/B/C)과 리더십 훈련은 CRS 교회 기록에서 불러와 채워 주고, 고쳐서 저장할 수 있어요.', crsReload: 'CRS에서 다시 불러오기', crsLoading: 'CRS에서 불러오는 중…', crsNone: 'CRS 연결이 설정되지 않아 숫자를 직접 입력해 주세요.', crsFail: 'CRS에서 불러오지 못했어요. 숫자를 직접 입력해 주세요.', crsLoaded: function (place, a, b, c, l) { return 'CRS 기준 · ' + place + ': A ' + a + ' · B ' + b + ' · C ' + c + ' · 리더십 훈련 ' + l + '명 — 채워 넣었어요. 고칠 수 있어요.'; }, crsBadge: 'CRS', crsHint: 'CRS 교회 기록에서 자동으로 채워져요 (고칠 수 있어요)', ministryLabel: '사역 현황', ministrySummary: function (d, c) { return '제자훈련 ' + d + ' · 연결 교회 ' + c; }, needDesignated: '팀 · 캠프 · 전도 행사 · 제자훈련 · 지역교회 보고는 지정된 보고 담당자만 쓸 수 있어요.',
       hqTitle: 'MRIC 레이아웃으로 보기', hqIntro: 'MRIC Statistics Report 입력 화면과 같은 순서·이름·설명이에요. 이 숫자를 보면서 MRIC에 입력하세요.', hqNeedMonth: '본부 보고는 한 달 단위예요. 월별 보기에서 달을 고르면 표가 나와요.', hqToMonth: '월별로 보기', hqExcluded: '본부 보고 제외 (내부 통계)', hqScopeNote: function (place, month) { return month + ' · ' + place; }, hqSnapshotNote: '※ 교회·클럽 수와 등록 학생 수는 그 달 말 기준으로 입력된 값이에요.', hqCrsNote: '※ 연결 교회 A/B/C와 리더십 훈련은 CRS 교회 기록에서 불러온 값이에요.', hqNoMinistry: '이 달 사역 현황(제자훈련·지역교회)은 아직 입력되지 않았어요.',
       hqLocation: 'Location', hqMonth: 'Month', hqYear: 'Year',
@@ -53,6 +54,7 @@
       warnSalv: 'Salvations are higher than the number of people who heard the Gospel. Please double-check.', warnCamp: 'Camp salvations/dedications are higher than camp attendance. Please double-check.', warnEvent: 'Event salvations/dedications are higher than event attendance. Please double-check.',
       denied: 'Could not load. Please try again shortly.', sessionEnd: 'Please sign in.',
       lastMonth: 'Last month', formDelete: 'Delete this report', formDelAsk: 'Delete this report?', formDeleted: 'Deleted.',
+      mricBtn: 'MRIC layout', mricBlocked: 'Pop-ups are blocked. Please allow pop-ups for this site.',
       scopeMinistry: 'Ministry status (discipleship & local churches)', formMinistryHint: 'One report per location (Pyeongtaek / Jeju), edited together by the reporters. Church grades (A/B/C) and leadership training are filled in from the CRS church records — you can edit them before saving.', crsReload: 'Reload from CRS', crsLoading: 'Loading from CRS…', crsNone: 'CRS is not connected — please enter the numbers yourself.', crsFail: 'Could not load from CRS — please enter the numbers yourself.', crsLoaded: function (place, a, b, c, l) { return 'From CRS · ' + place + ': A ' + a + ' · B ' + b + ' · C ' + c + ' · leaders trained ' + l + ' — filled in, you can edit.'; }, crsBadge: 'CRS', crsHint: 'Filled in automatically from the CRS church records (editable)', ministryLabel: 'Ministry status', ministrySummary: function (d, c) { return 'Discipleship ' + d + ' · Churches ' + c; }, needDesignated: 'Only designated reporters can write team, camp, evangelistic event, discipleship and local church reports.',
       hqTitle: 'View in MRIC layout', hqIntro: 'Same order, names and descriptions as the MRIC Statistics Report form. Use these numbers when you enter the report in MRIC.', hqNeedMonth: 'The HQ report is monthly. Pick a month in the monthly view to see the table.', hqToMonth: 'Switch to monthly', hqExcluded: 'Not in HQ report (internal stat)', hqScopeNote: function (place, month) { return month + ' · ' + place; }, hqSnapshotNote: '* Church, club and enrolled-student counts are the values entered as of the end of that month.', hqCrsNote: '* Church grades A/B/C and leadership training come from the CRS church records.', hqNoMinistry: 'Ministry status (discipleship & local churches) has not been entered for this month yet.',
       hqLocation: 'Location', hqMonth: 'Month', hqYear: 'Year',
@@ -71,7 +73,7 @@
   var cache = {};           // 달 → 응답 (보고 쓸 때 다른 달의 내 보고를 찾기 위해)
   var tab = 'all';          // all | mainland | jeju
   var viewMonth = null;
-  var view = (function () { try { return localStorage.getItem('gsView') === 'month' ? 'month' : 'year'; } catch (e) { return 'year'; } })();   // 연간이 기본
+  var view = (function () { try { return sessionStorage.getItem('gsView') === 'year' ? 'year' : 'month'; } catch (e) { return 'month'; } })();   // 월별(지난달)이 기본 — 연간은 눌러서 본다. 이 탭에서 고른 보기만 기억한다
   var lastMonth = '';
   var editing = null;       // 고치는 중인 보고(없으면 새 보고)
 
@@ -151,7 +153,7 @@
     $('csvBtn').hidden = !data.me.canReview;
     $('xlsxBtn').hidden = !data.me.canReview;
     $('dlMenu').hidden = !data.me.canReview;
-    renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderTeamReports(); renderHq(); renderReporters();
+    renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderTeamReports(); renderReporters();
   }
 
   /** 교회별 행사 — 같은 교회(CRS 번호, 없으면 이름)의 행사를 모아 참석·구원·헌신을 더한다 */
@@ -186,24 +188,16 @@
       + (sub.exempt.length ? '<details class="gs-exempt"><summary>' + esc(t('subExemptList')) + ' (' + sub.exempt.length + ')</summary><ul class="gs-people">' + people(sub.exempt, 'off', t('subRestore')) + '</ul></details>' : '');
   }
   /** 캠프 자동 집계 — 확정 캠퍼 + (관리자가 입력한) 스태프. 마스터·관리자는 스태프 칸을 직접 고친다. "지난 캠프 포함 전체"로 바꾸면 모든 캠프를 보여 준다 */
-  var campScope = 'month', allCamps = null;
-  function loadAllCamps(force) {
-    if (allCamps && !force) return Promise.resolve();
-    return fetch('/api/portal/gospel-camps', { headers: headers() }).then(function (res) { return res.json().then(function (body) { if (res.ok) allCamps = body.camps || []; }); }).catch(function () { allCamps = allCamps || []; });
-  }
   function renderCampAuto() {
     var box = $('campAuto'); if (!box) return;
-    var all = campScope === 'all', yearly = view === 'year';
-    var source = all ? (allCamps || []) : (data.campAuto || []);
-    var camps = source.filter(function (c) { return tab === 'all' || c.location === tab; });
-    var chips = '<div class="gc-chips"><button type="button" class="gc-chip' + (all ? '' : ' is-active') + '" data-camp-scope="month">' + esc(t(yearly ? 'campScopeYear' : 'campScopeMonth')) + '</button><button type="button" class="gc-chip' + (all ? ' is-active' : '') + '" data-camp-scope="all">' + esc(t('campScopeAll')) + '</button></div>';
-    var note = '';
-    if (all && allCamps === null) { box.innerHTML = chips + note + '<p class="gs-empty">' + esc(t('loading')) + '</p>'; return; }
+    var yearly = view === 'year';   // 월별 보기면 그 달의 캠프, 연간 보기면 그 해의 캠프
+    var camps = (data.campAuto || []).filter(function (c) { return tab === 'all' || c.location === tab; });
+    var chips = '', note = '';
     if (!camps.length) { box.innerHTML = chips + note + '<p class="gs-empty">' + esc(t('campAutoEmpty')) + '</p>'; return; }
     var edit = !!data.canEditStaff;
     var counted = camps.filter(function (c) { return c.counted !== false; });
     var sum = counted.reduce(function (n, c) { n.campers += c.campers; n.staff += c.staff; n.salv += c.salvations; n.ded += c.dedications; return n; }, { campers: 0, staff: 0, salv: 0, ded: 0 });
-    box.innerHTML = chips + note + '<div class="gs-tablewrap"><table class="gs-table gs-ctable"><thead><tr><th>' + esc(t('caCamp')) + '</th>' + (all ? '<th>' + esc(t('caMonth')) + '</th>' : '') + '<th>' + esc(t('caCampers')) + '</th><th>' + esc(t('caStaff')) + '</th><th>' + esc(t('caSalv')) + '</th><th>' + esc(t('caDed')) + '</th></tr></thead><tbody>'
+    box.innerHTML = chips + note + '<div class="gs-tablewrap"><table class="gs-table gs-ctable"><thead><tr><th>' + esc(t('caCamp')) + '</th>' + (yearly ? '<th>' + esc(t('caMonth')) + '</th>' : '') + '<th>' + esc(t('caCampers')) + '</th><th>' + esc(t('caStaff')) + '</th><th>' + esc(t('caSalv')) + '</th><th>' + esc(t('caDed')) + '</th></tr></thead><tbody>'
       + camps.map(function (c) {
         var extra = c.staffExtra || 0, auto = c.staffAuto || 0;
         var split = '<small class="gs-staffsplit">' + esc(t('caStaffSplit', auto, extra)) + '</small>';
@@ -212,9 +206,9 @@
           : '<div class="gs-staffcell"><b class="gs-staffnum">' + num(c.staff) + '</b>' + (extra ? split : '') + '</div>';
         var pending = c.counted === false;
         var badge = pending ? ' <span class="gs-pendbadge" title="' + esc(t('caPendingTip')) + '">' + esc(t('caPending', t('mdShort', c.endDate))) + '</span>' : '';
-        return '<tr' + (pending ? ' class="gs-pending"' : '') + '><td><strong>' + esc(lang === 'en' ? c.titleEn : c.titleKo) + '</strong> <span class="gs-pill ' + c.location + '">' + esc(c.location === 'jeju' ? t('tabJeju') : t('tabMainland')) + '</span>' + badge + '</td>' + (all || yearly ? '<td>' + esc(t('monthLabel', c.month || '')) + '</td>' : '') + '<td class="gs-total">' + (pending ? '–' : num(c.campers)) + '</td><td>' + (pending ? '–' : staff) + '</td><td>' + (pending ? '–' : num(c.salvations)) + '</td><td>' + (pending ? '–' : num(c.dedications)) + '</td></tr>';
+        return '<tr' + (pending ? ' class="gs-pending"' : '') + '><td><strong>' + esc(lang === 'en' ? c.titleEn : c.titleKo) + '</strong> <span class="gs-pill ' + c.location + '">' + esc(c.location === 'jeju' ? t('tabJeju') : t('tabMainland')) + '</span>' + badge + '</td>' + (yearly ? '<td>' + esc(t('monthLabel', c.month || '')) + '</td>' : '') + '<td class="gs-total">' + (pending ? '–' : num(c.campers)) + '</td><td>' + (pending ? '–' : staff) + '</td><td>' + (pending ? '–' : num(c.salvations)) + '</td><td>' + (pending ? '–' : num(c.dedications)) + '</td></tr>';
       }).join('')
-      + (counted.length > 1 ? '<tr class="gs-sumrow"><td><strong>' + esc(t('caTotal')) + '</strong></td>' + (all || yearly ? '<td></td>' : '') + '<td class="gs-total">' + num(sum.campers) + '</td><td>' + num(sum.staff) + '</td><td>' + num(sum.salv) + '</td><td>' + num(sum.ded) + '</td></tr>' : '')
+      + (counted.length > 1 ? '<tr class="gs-sumrow"><td><strong>' + esc(t('caTotal')) + '</strong></td>' + (yearly ? '<td></td>' : '') + '<td class="gs-total">' + num(sum.campers) + '</td><td>' + num(sum.staff) + '</td><td>' + num(sum.salv) + '</td><td>' + num(sum.ded) + '</td></tr>' : '')
       + '</tbody></table></div>';
   }
   function renderCharts() { renderSubmission(); renderCampAuto(); renderChurchStats(); if (window.GospelCharts) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); }
@@ -239,7 +233,7 @@
       box.dataset.lang = lang;
       box.innerHTML = kpis.map(function (k) { return '<div class="gs-kpi' + (k[3] ? ' has-break' : '') + '"><strong class="gf-num"></strong><span>' + esc(k[0]) + infoKey(k[2]) + '</span>' + (k[3] ? '<div class="gc-break" data-break="' + k[3] + '"></div>' : '') + '</div>'; }).join('');
     }
-    kpis.forEach(function (k, i) { var el = box.children[i].querySelector('.gf-num'); if (window.GospelFlip) window.GospelFlip.set(el, k[1]); else el.textContent = num(k[1]); });
+    kpis.forEach(function (k, i) { box.children[i].querySelector('.gf-num').textContent = num(k[1]); });
     var n = c[tab];
     $('countLine').textContent = n ? t('count', n, c.individual, c.team, tab === 'all') : t('countNone');
   }
@@ -281,54 +275,6 @@
         var who = r.reporterName || r.reporterEmail ? '<strong>' + esc(r.reporterName || r.reporterEmail.split('@')[0]) + '</strong>' + (r.reporterEmail ? '<small class="gs-rmail">' + esc(r.reporterEmail) + '</small>' : '') : '<span class="gs-muted">' + esc(t('trUnknown')) + '</span>';
         return '<tr><td>' + esc(r.scope === 'ministry' ? t('ministryLabel') : t('teamLabel', r.teamName)) + '</td><td>' + pill(r.location) + '</td><td>' + who + '</td><td>' + esc(r.updatedAt ? when(r.updatedAt) : '') + '</td></tr>';
       }).join('') + '</tbody></table></div>';
-  }
-
-  /* ───────── MRIC 보고 레이아웃으로 보기 (MRIC Statistics Report 입력 화면과 같은 순서·이름·설명) ───────── */
-  var HQ_SECTIONS = [
-    { title: 'GOSPEL REACH', cols: ['Events', 'Audience', 'Salvation', 'Dedications'], rows: [
-      { name: 'CAMPS', cells: [['campCount', 'Number of camps this month, one-day or longer.'], ['campAttendance', 'Campers plus camp crew. Monthly total.'], ['campSalvations', 'Total salvations this month in camp ministry.'], ['campDedications', 'Total dedications this month in camp ministry.']] },
-      { name: 'EVANGELISTIC EVENTS', cells: [null, ['eeAttendance', 'Total attendance to all evangelistic events this month (sports, musical, family picnic, etc.)'], ['eeSalvations', 'Total salvations in all evangelistic events this month.'], ['eeDedications', 'Total dedications in all evangelistic events this month.']] },
-      { name: 'PERSONAL EVANGELISM', cells: [null, ['evangelism', 'Total audience in one-on-one or small group Gospel conversations not included in other categories.'], ['salvation', 'Total salvations this month from personal evangelism.'], null] },
-      { name: 'OTHER GOSPEL REACH', header: true },
-      { name: 'Literature Distribution', sub: true, cells: [null, ['literature', 'Total number of tracts (or similar) distributed. No Gospel conversations.'], null, null] },
-      { name: 'Social Media Outreach', sub: true, cells: [null, ['social', 'Total audience of evangelistic social media outreach that month (posts, reels, videos, etc.)'], null, null] },
-    ] },
-    { title: 'DISCIPLESHIP', cols: ['Enrollment'], rows: [
-      { name: 'BIBLE INSTITUTE', cells: [['bibleInstitute', 'Number of students enrolled this month.']] },
-      { name: 'DISCIPLESHIP TRAINING CENTER', note: 'Bible school, trade school, or similar.', cells: [['dtc', 'Number of students enrolled this month.']] },
-      { name: 'SYME/E4L Discipleships Training Center (ESL focus)', cells: [['symeE4l', 'Number of students enrolled this month.']] },
-      { name: 'PRIMARY/SECONDARY SCHOOL', cells: [['school', 'Number of students enrolled this month.']] },
-      { name: 'EXTENSION TRAINING', note: 'Formal Bible courses held off-property.', cells: [['extension', 'Number of students enrolled this month.']] },
-      { name: 'CONFERENCES AND OTHER BIBLE TEACHING EVENTS', cells: [['conferences', 'Total attendance to these events this month.']] },
-    ] },
-    { title: 'LOCAL CHURCH MINISTRIES', cols: ['A', 'B', 'C'], rows: [
-      { name: 'LOCAL CHURCHES CONNECTED TO:', crs: true, cells: [['churchA', 'Number of local churches with close relationship: Bible Club training, use all resources, attend most events.'], ['churchB', 'Number of local churches with good relationship: sporadic training, use some resources, attend some events.'], ['churchC', 'Number of local churches with good contact: Some use of QT, attend some events.']] },
-      { name: 'Count', header: true },
-      { name: 'CHILDREN CLUBS', cells: [['childrenClubs', 'Club Count at the end of the month.']] },
-      { name: 'YOUTH/TEEN/STUDENT CLUBS', cells: [['youthClubs', 'Club Count at the end of the month.']] },
-      { name: 'LEADERSHIP TRAINING ATTENDANCE', crs: true, cells: [['leadershipTraining', 'Number of leaders trained this month.']] },
-      { name: 'WEEKLY CLUB ATTENDANCE', cells: [['weeklyClubAttendance', 'Sum of the weekly average attendance of all club programs for this month.']] },
-    ] },
-  ];
-  function hqPlaceName() { return tab === 'jeju' ? 'Jeju' : tab === 'mainland' ? 'Mainland (Pyeongtaek)' : 'Mainland + Jeju'; }
-  function hqMonthParts() { var p = data.month.split('-'); return { name: new Date(Date.UTC(Number(p[0]), Number(p[1]) - 1, 1)).toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' }), year: p[0] }; }
-  function renderHq() {
-    var box = $('hqBox'), wrap = $('hqWrap'); if (!box || !wrap) return;
-    if (view === 'year') { box.innerHTML = '<p class="gs-empty">' + esc(t('hqNeedMonth')) + ' <button type="button" class="gs-small" id="hqToMonth">' + esc(t('hqToMonth')) + '</button></p>'; return; }
-    var x = totals(data.summary, tab), mp = hqMonthParts();
-    var html = '<div class="gs-mric"><dl class="gs-mricmeta"><div><dt>Location</dt><dd>' + esc(hqPlaceName()) + '</dd></div><div><dt>Month</dt><dd>' + esc(mp.name) + '</dd></div><div><dt>Year</dt><dd>' + esc(mp.year) + '</dd></div></dl>';
-    HQ_SECTIONS.forEach(function (sec) {
-      html += '<h3 class="gs-mrichead">' + esc(sec.title) + '</h3><table class="gs-mrictable"><thead><tr><th></th>' + sec.cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
-      sec.rows.forEach(function (row) {
-        if (row.header) { html += '<tr class="is-group"><th colspan="' + (sec.cols.length + 1) + '">' + esc(row.name) + '</th></tr>'; return; }
-        html += '<tr><th scope="row"' + (row.sub ? ' class="is-sub"' : '') + '>' + esc(row.name) + (row.note ? ' <span class="gs-mricnote">' + esc(row.note) + '</span>' : '') + (row.crs ? ' <span class="gs-crsbadge" title="' + esc(t('crsHint')) + '">' + esc(t('crsBadge')) + '</span>' : '') + '</th>'
-          + sec.cols.map(function (c, i) { var cell = row.cells[i]; return cell ? '<td><div class="gs-mricbox">' + num(x[cell[0]]) + '</div><small>' + esc(cell[1]) + '</small></td>' : '<td></td>'; }).join('') + '</tr>';
-      });
-      html += '</tbody></table>';
-    });
-    var hasMinistry = (data.summary.counts && data.summary.counts.ministry) > 0;
-    html += '</div><p class="gs-hqnote">' + esc(t('hqSnapshotNote')) + '<br>' + esc(t('hqCrsNote')) + (hasMinistry ? '' : '<br><b>' + esc(t('hqNoMinistry')) + '</b>') + '</p>';
-    box.innerHTML = html;
   }
 
   /* ───────── 보고 담당자 지정 (마스터만) ───────── */
@@ -603,14 +549,14 @@
   document.querySelector('.gs-viewtoggle').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-view]'); if (!b || b.dataset.view === view) return;
     view = b.dataset.view;
-    try { localStorage.setItem('gsView', view); } catch (err) { /* 저장 못 해도 이 화면은 바뀐다 */ }
+    try { sessionStorage.setItem('gsView', view); } catch (err) { /* 저장 못 해도 이 화면은 바뀐다 */ }
     load(view === 'year' ? (data ? data.current.slice(0, 4) : '') : (lastMonth || ''));
   });
   $('prevMonth').addEventListener('click', function () { shift(-1); });
   $('nextMonth').addEventListener('click', function () { shift(1); });
   $('thisMonth').addEventListener('click', function () { load(view === 'year' ? data.current.slice(0, 4) : data.reportMonth); });
   $('writeBtn').addEventListener('click', function () { openForm(null); });
-  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderHq(); });
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); });
   /* ───────── (i) 설명 말풍선 ───────── */
   var tip = document.createElement('div'); tip.className = 'gs-tip'; tip.id = 'gsTip'; tip.setAttribute('role', 'tooltip'); tip.hidden = true; document.body.appendChild(tip);
   var tipFor = null;
@@ -646,8 +592,6 @@
     } catch (error) { say(error.message); b.disabled = false; }
   });
   $('campAuto').addEventListener('click', async function (e) {
-    var sc = e.target.closest('[data-camp-scope]');
-    if (sc) { campScope = sc.dataset.campScope; renderCampAuto(); if (campScope === 'all') loadAllCamps().then(renderCampAuto); return; }
     var b = e.target.closest('[data-staff]'); if (!b || b.disabled) return;
     var next = Math.max(0, Number(b.dataset.cur) + Number(b.dataset.staff));
     document.querySelectorAll('#campAuto [data-staff]').forEach(function (x) { x.disabled = true; });
@@ -656,15 +600,16 @@
       var body = await res.json().catch(function () { return {}; });
       if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); show('login'); return; }
       if (!res.ok) throw new Error(body.error || t('denied'));
-      if (campScope === 'all') await loadAllCamps(true);
       clearCache(); await load(viewKey());
       say(t('caStaffSaved'));
     } catch (error) { say(error.message); renderCampAuto(); }
   });
 
-  $('hqWrap').addEventListener('click', function (e) {
-    if (!e.target.closest('#hqToMonth')) return;
-    view = 'month'; try { localStorage.setItem('gsView', 'month'); } catch (err) { /* 괜찮다 */ } load(lastMonth || data.reportMonth);
+  /** MRIC 레이아웃은 새 창으로 — 지금 보고 있는 달(연간 보기면 지난달)과 평택·제주·통합 탭을 그대로 가져간다 */
+  $('mricBtn').addEventListener('click', function () {
+    var month = view === 'year' ? (lastMonth || data.reportMonth) : data.month;
+    var win = window.open('/portal/gospel-stats/mric/?month=' + encodeURIComponent(month) + '&place=' + encodeURIComponent(tab), 'wolkoMric', 'width=1040,height=900,resizable=yes,scrollbars=yes');
+    if (!win) say(t('mricBlocked'));
   });
   $('repWrap').addEventListener('click', function (e) {
     var rm = e.target.closest('[data-rep-remove]'), add = e.target.closest('#repAdd');
