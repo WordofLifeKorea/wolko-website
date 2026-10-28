@@ -160,15 +160,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   /* ── COMMITMENTS ── */
   .commit-inner { max-width:980px; margin:56px auto 0; }
   .commit-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .commit-card { background:var(--white); border:1px solid var(--primary-line); border-radius:var(--r-lg); padding:28px 26px; display:flex; flex-direction:column; gap:10px; box-shadow:0 8px 24px rgba(16,32,40,0.05); transition:transform .22s, box-shadow .22s, border-color .22s; position:relative; overflow:hidden; }
+  .commit-card { background:var(--white); border:1px solid var(--primary-line); border-radius:var(--r-lg); padding:30px 30px 32px; display:flex; flex-direction:column; gap:10px; box-shadow:0 8px 24px rgba(16,32,40,0.05); transition:transform .22s, box-shadow .22s, border-color .22s; position:relative; overflow:hidden; }
   .commit-card::before { content:""; position:absolute; top:-72px; right:-64px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle, rgba(115,209,245,0.17) 0%, rgba(115,209,245,0) 70%); pointer-events:none; transition:transform .3s, opacity .3s; }
   .commit-card:hover { transform:translateY(-3px); border-color:rgba(0,126,161,0.23); box-shadow:0 18px 44px rgba(0,79,104,0.10); }
   .commit-card:hover::before { transform:scale(1.16); opacity:.82; }
   .commit-card > * { position:relative; z-index:1; }
-  .commit-icon { width:40px; height:40px; border-radius:12px; background:linear-gradient(145deg, var(--primary) 0%, #087998 100%); color:var(--white); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 8px 18px rgba(0,79,104,0.16); }
-  .commit-icon svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
-  .commit-card h4 { font-size:15px; font-weight:800; letter-spacing:-0.01em; color:#102028; line-height:1.35; }
-  .commit-card p { font-size:13px; line-height:1.85; color:var(--muted); }
+  .commit-num { font:800 46px/1 Montserrat,sans-serif; letter-spacing:-0.04em; background:linear-gradient(135deg, var(--primary) 0%, #4cc1e6 100%); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; padding-bottom:14px; position:relative; transition:transform .3s; transform-origin:left bottom; }
+  .commit-num::after { content:""; position:absolute; left:0; bottom:0; width:30px; height:3px; border-radius:3px; background:linear-gradient(90deg, var(--primary), #73d1f5); transition:width .3s; }
+  .commit-card:hover .commit-num { transform:scale(1.06); }
+  .commit-card:hover .commit-num::after { width:52px; }
+  .commit-card h4 { font-size:19px; font-weight:800; letter-spacing:-0.01em; color:#102028; line-height:1.35; }
+  .commit-card p { font-size:14.5px; line-height:1.85; color:var(--muted); }
 
   /* ── MINISTRIES ── */
   .ministry-inner { max-width:1240px; margin:0 auto; }
@@ -393,25 +395,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   <div class="commit-inner page-wrap">
     <div class="commit-grid">
       <div class="commit-card">
-        <div class="commit-icon"><svg viewBox="0 0 24 24"><path d="M12 1.8v4.6M10 3.8h4"/><path d="M5 21v-9.4L12 7l7 4.6V21H5Z"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/><path d="M2.5 21h19"/></svg></div>
+        <span class="commit-num" aria-hidden="true">01</span>
         <h4><span class="wl-ko">지역 교회를 섬깁니다</span><span class="wl-en">Serving the Local Church</span></h4>
         <p class="wl-ko">우리의 주요 목표는 특히 청소년들에게 복음을 전하는 일에 있어 지역 교회를 섬기고 강화하며 지원하는 것입니다.</p>
         <p class="wl-en">Our primary aim is to serve, strengthen, and support local churches, particularly in reaching young people with the gospel.</p>
       </div>
       <div class="commit-card">
-        <div class="commit-icon"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></div>
+        <span class="commit-num" aria-hidden="true">02</span>
         <h4><span class="wl-ko">교단 소속도, 개척 단체도 아닙니다</span><span class="wl-en">Not a Church-Planting Organization</span></h4>
         <p class="wl-ko">월코는 특정 교단에 속해 있지 않고, 교회 개척을 위한 단체도 아닙니다. 대신 지역 교회와 교회 개척자들과 협력하며 청소년 사역을 돕습니다.</p>
         <p class="wl-en">Word of Life's vision is not to function as a church denomination or church planting organization. Instead, we actively partner with established local churches and church planters.</p>
       </div>
       <div class="commit-card">
-        <div class="commit-icon"><svg viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.6"/><path d="M3.5 20.5v-1a6.5 6.5 0 0 1 10.6-5"/><path d="M15 18.2l2.2 2.2 4.3-4.6"/></svg></div>
+        <span class="commit-num" aria-hidden="true">03</span>
         <h4><span class="wl-ko">교회를 향한 헌신된 구성원</span><span class="wl-en">Committed Church Members</span></h4>
         <p class="wl-ko">우리는 지역 교회를 매우 존중하며, 모든 월코 팀원이 지역 교회의 헌신적이고 적극적인 구성원이 되도록 기대합니다.</p>
         <p class="wl-en">We highly esteem the local church, and we expect all Word of Life team members to be dedicated and active participants in local congregations.</p>
       </div>
       <div class="commit-card">
-        <div class="commit-icon"><svg viewBox="0 0 24 24"><circle cx="10" cy="14" r="7.2"/><path d="M2.8 14h14.4"/><path d="M10 6.8c2 2 3 4.4 3 7.2s-1 5.2-3 7.2c-2-2-3-4.4-3-7.2s1-5.2 3-7.2Z"/><path d="M15.6 8.4 21.5 2.5M16.6 2.5h4.9v4.9"/></svg></div>
+        <span class="commit-num" aria-hidden="true">04</span>
         <h4><span class="wl-ko">지역·세계 선교에 헌신합니다</span><span class="wl-en">Committed to Local & Global Missions</span></h4>
         <p class="wl-ko">우리는 교회가 지역적으로나 세계적으로 선교사를 파송하고 지원하는 데 참여해야 한다고 굳게 믿으며, 이를 위해 파트너십을 통해 교회와 협력합니다.</p>
         <p class="wl-en">We firmly believe churches must engage in sending and supporting missionaries, locally and globally. We are committed to facilitating this mission by partnering with churches to send Word of Life missionaries across the world.</p>
