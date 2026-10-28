@@ -899,10 +899,6 @@ body.hub-modal-open { overflow: hidden; }
 .hub-car-body { animation: hub-bounce .5s ease-in-out infinite alternate; }
 @keyframes hub-spin { to { transform: rotate(360deg); } }
 @keyframes hub-bounce { from { transform: translateY(0); } to { transform: translateY(-1.2px); } }
-.hub-deco-car i { position: absolute; right: 100%; height: 2px; border-radius: 2px; background: color-mix(in srgb, var(--dc) 40%, #fff); opacity: 0; animation: hub-wind 1.1s ease-out infinite; }
-.hub-deco-car i:nth-child(1) { top: 16px; width: 14px; margin-right: -6px; }
-.hub-deco-car i:nth-child(2) { top: 24px; width: 10px; margin-right: -4px; animation-delay: .5s; }
-@keyframes hub-wind { 0% { opacity: 0; transform: translateX(8px); } 30% { opacity: .8; } 100% { opacity: 0; transform: translateX(-12px); } }
 @media (prefers-reduced-motion: reduce) { .hub-meals li, .hub-runs li, .hub-pop-track li, .hub-scene *, .hub-scene::after, .hub-sc-far, .hub-sc-near, .hub-road::after { animation: none !important; } .hub-deco-pot i { opacity: .5; } .hub-slices ellipse { opacity: 1; } }
 
 /* 교회 목록의 li 규칙(여백 · 호버 배경)이 세부 카드 안의 li 에 번지지 않게 */
@@ -1121,4 +1117,10 @@ body.hub-modal-open { overflow: hidden; }
 .hub-notice-editform .hub-notice-due { margin-top: 0; }
 .hub-notice-editform .hub-notice-due input { width: 160px; margin: 0; padding: 8px 12px; border: 1px solid rgba(255,255,255,.4); border-radius: 12px; background: rgba(255,255,255,.95); color: var(--text); }
 .hub-notice-pin { display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,.9); font-size: 13px; }
+
+/* 자동차 — 뒤쪽 배기구에서 연기가 뽈뽈 나와 뒤로 흩어진다 */
+.hub-deco-car .sm { position: absolute; left: 3px; bottom: 9px; width: 9px; height: 9px; border-radius: 50%; background: rgba(206, 197, 222, .9); opacity: 0; animation: hub-smoke 1.7s ease-out infinite; }
+.hub-deco-car .sm.s2 { animation-delay: .55s; width: 7px; height: 7px; }
+.hub-deco-car .sm.s3 { animation-delay: 1.1s; width: 10px; height: 10px; }
+@keyframes hub-smoke { 0% { opacity: 0; transform: translate(0, 0) scale(.4); } 14% { opacity: .85; } 100% { opacity: 0; transform: translate(-30px, -18px) scale(1.6); } }
 
