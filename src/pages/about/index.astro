@@ -97,6 +97,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
   .who-title-rule { width:64px; height:5px; margin:22px auto 0; border-radius:99px; background:linear-gradient(90deg, #004f68, #73d1f5); }
 
+  /* ── 봉투 → 편지 (스크롤) ── */
+  .intro-single-wrap { position:relative; isolation:isolate; }
+  .letter-anim { position:relative; z-index:2; transform-origin:50% 0; will-change:transform, clip-path; }
+  .env { display:none; position:absolute; pointer-events:none; }
+  .intro-single-wrap.is-anim .env { display:block; }
+  .env-back, .env-front, .env-flap { position:absolute; opacity:var(--env-o,1); translate:0 var(--env-y,0px); }
+  .env-back { inset:0; z-index:1; border-radius:8px; background:linear-gradient(180deg,#e7d8b4,#dcc99f); box-shadow:0 30px 50px -26px rgba(70,45,10,0.5), 0 0 0 1px rgba(150,115,60,0.25); }
+  .env-front { inset:0; z-index:3; border-radius:8px; background:linear-gradient(180deg,#f6ecd5,#efe1c0); clip-path:polygon(0 0,50% 56%,100% 0,100% 100%,0 100%); }
+  .env-front svg { position:absolute; inset:0; width:100%; height:100%; }
+  .env-flap { left:0; right:0; top:0; height:56%; z-index:4; transform-origin:50% 0; transform:perspective(1100px) rotateX(calc(var(--flap,0) * -1deg)); background:linear-gradient(180deg,#f3e7ca,#e9d8b2); clip-path:polygon(0 0,100% 0,50% 100%); }
+  .env.flap-open .env-flap { z-index:0; background:linear-gradient(0deg,#d9c698,#cdb88a); }
+  .env-seal { position:absolute; z-index:5; left:50%; top:56%; width:54px; height:54px; margin:-27px 0 0 -27px; border-radius:50%; background:#fff url('/images/WOLKO%20Circle.png') center/38px no-repeat; border:3px solid #f6ecd5; box-shadow:0 8px 16px -6px rgba(0,79,104,0.5), 0 0 0 1px rgba(0,79,104,0.18); opacity:var(--seal-o,1); translate:0 var(--env-y,0px); }
+  @media (max-width:640px) { .env-seal { width:44px; height:44px; margin:-22px 0 0 -22px; background-size:30px; } }
   /* ── INTRO: 초청장 같은 편지 ── */
   .intro-single-wrap { max-width:860px; margin:76px auto 0; }
   .intro-card {
@@ -287,8 +300,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <span class="wl-en">Reaching<span class="accent">Your Generation</span></span>
     </h2>
     <div class="who-title-rule"></div>
-    <div class="intro-single-wrap">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Noto+Serif+KR:wght@400;600&display=swap">
+    <div class="intro-single-wrap" id="letterStage">
+      <!-- 봉투: 스크롤하면 봉투가 열리고 편지가 쓰윽 올라온다 (자바스크립트가 켤 때만 보인다) -->
+      <div class="env" id="env" aria-hidden="true">
+        <div class="env-back"></div>
+        <div class="env-front"><svg viewBox="0 0 100 62" preserveAspectRatio="none"><path d="M0 0 L50 34.700 L100 0" fill="none" stroke="rgba(130,100,50,.38)" stroke-width="1" vector-effect="non-scaling-stroke"/></svg></div>
+        <div class="env-flap"></div>
+        <span class="env-seal"></span>
+      </div>
+      <div class="letter-anim" id="letterAnim">
       <div class="intro-card">
         <p class="intro-greet"><span class="wl-ko">소중한 여러분께,</span><span class="wl-en">Dear friend,</span></p>
         <p class="wl-ko">Word of Life Korea(월코) 홈페이지에 방문하신 여러분을 환영합니다.</p>
@@ -303,6 +323,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <span class="intro-sign-line"></span>
           <span class="intro-sign-small">WOLKO</span>
         </div>
+      </div>
       </div>
     </div>
   </div>
@@ -482,5 +503,55 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
   </div>
 </section>
+
+
+<script is:inline>
+  // 월코소개 편지: 스크롤하면 봉투가 열리고 편지가 쓰윽 올라온다. 움직임 줄이기 설정이거나 자바스크립트가 꺼져 있으면 그냥 편지만 보인다.
+  (function () {
+    var stage = document.getElementById('letterStage'), letter = document.getElementById('letterAnim'), env = document.getElementById('env');
+    if (!stage || !letter || !env) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var m = null, raf = 0, done = false;
+    var clamp = function (v) { return Math.max(0, Math.min(1, v)); };
+    var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
+    function measure() {
+      var W = stage.clientWidth, H = letter.offsetHeight;
+      var Ew = Math.min(W * 0.72, 540), Eh = Ew * 0.62, left = (W - Ew) / 2, top = (H - Eh) / 2;
+      var s0 = Math.min(0.62, (Ew * 0.82) / W);
+      m = { W: W, H: H, Ew: Ew, Eh: Eh, ty0: top + Eh * 0.16, s0: s0, Lv0: (Eh * 0.7) / s0 };
+      env.style.left = left + 'px'; env.style.top = top + 'px'; env.style.width = Ew + 'px'; env.style.height = Eh + 'px';
+    }
+    function update() {
+      raf = 0;
+      if (!m) measure();
+      var r = stage.getBoundingClientRect(), vh = window.innerHeight || 800;
+      var p = clamp((vh * 0.92 - r.top) / (vh * 0.72));
+      var flapK = clamp(p / 0.22), riseK = ease(clamp((p - 0.16) / 0.64)), exitK = clamp((p - 0.5) / 0.4);
+      if (p >= 1) {                                   // 다 열렸다 — 편지만 남기고 봉투는 치운다
+        done = true;
+        stage.classList.remove('is-anim'); letter.style.transform = 'none'; letter.style.clipPath = 'none'; letter.style.zIndex = '';
+        return;
+      }
+      done = false;
+      stage.classList.add('is-anim');
+      stage.style.setProperty('--flap', (flapK * 180).toFixed(1));
+      stage.style.setProperty('--seal-o', (1 - clamp(flapK * 2.2)).toFixed(2));
+      stage.style.setProperty('--env-o', (1 - exitK).toFixed(2));
+      stage.style.setProperty('--env-y', (exitK * 60).toFixed(1) + 'px');
+      env.classList.toggle('flap-open', flapK > 0.5);
+      var s = m.s0 + (1 - m.s0) * riseK, ty = m.ty0 * (1 - riseK), Lv = m.Lv0 + (m.H - m.Lv0) * riseK;
+      letter.style.zIndex = riseK > 0.3 ? 6 : 2;       // 편지가 봉투 위로 올라오면 봉투 앞면보다 위에 그린다
+      letter.style.transform = 'translateY(' + ty.toFixed(1) + 'px) scale(' + s.toFixed(3) + ')';
+      letter.style.clipPath = 'inset(-70px -60px ' + Math.max(0, m.H - Lv).toFixed(1) + 'px -60px)';
+    }
+    function request() { if (!raf) raf = requestAnimationFrame(update); }
+    function relayout() { var wasDone = done; stage.classList.add('is-anim'); letter.style.transform = 'none'; letter.style.clipPath = 'none'; measure(); request(); }
+    window.addEventListener('scroll', request, { passive: true });
+    window.addEventListener('resize', relayout);
+    window.addEventListener('load', relayout);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+    relayout();
+  })();
+</script>
 
 </BaseLayout>
