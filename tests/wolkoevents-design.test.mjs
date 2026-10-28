@@ -60,3 +60,13 @@ test('event design uses its own wrapping table and mobile cards without left acc
   assert.match(css, /\.events-table thead \{ display: none; \}/);
   assert.doesNotMatch(css, /border-left/);
 });
+
+test('초대장이 없는 행사(제주 캠퍼스데이)에서는 "초대장 보기" 링크가 숨고, hidden 이 CSS 에 덮이지 않는다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../src/pages/portal/wolkoevents.astro', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../public/wolkoevents.css', import.meta.url), 'utf8');
+  const jeju = page.split('\n').find(l => l.includes("id: 'jeju-campus-day'"));
+  assert.ok(jeju && /invite:\s*''/.test(jeju), '제주 캠퍼스데이에는 초대장 주소가 비어 있다');
+  assert.match(page, /invite\.hidden = !ev\.invite/);
+  assert.match(css, /\.events-invitation\[hidden\]\s*\{\s*display:\s*none\s*!important/);
+});
