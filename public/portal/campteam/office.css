@@ -83,3 +83,10 @@
 
 /* 데스크톱: 사무실이 켜져 있으면 하늘 영역이 그림 줄 높이만큼만 커진다(끄면 원래 높이) */
 @media(min-width:900px){.ct-hero:has(.ct-office:not(.is-off)){min-height:300px}}
+
+/* 책상 위 소품: 키보드(손 아래)와 커피잔 — 책상 윗면에 얹는다 */
+.ofi-kb{position:absolute;left:calc(var(--s)*.27);top:calc(var(--s)*.93);width:calc(var(--s)*.46);height:auto;pointer-events:none}
+.ofi-mug{position:absolute;left:calc(var(--s)*.78);top:calc(var(--s)*.83);width:calc(var(--s)*.15);height:auto;pointer-events:none}
+.ofi-mug .ofi-steam{animation:ofi-steam 2.6s ease-in-out infinite}
+@keyframes ofi-steam{0%{opacity:0;transform:translateY(2px)}50%{opacity:.7}100%{opacity:0;transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){.ofi-mug .ofi-steam{animation:none}}
