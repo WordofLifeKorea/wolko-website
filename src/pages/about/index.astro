@@ -7,6 +7,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   description="복음으로 다음 세대를 세웁니다 — Word of Life Korea (월코)의 소개, 핵심 가치, 비전"
   activeNav="about"
 >
+<Fragment slot="head">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Serif+KR:wght@400;600;700&family=Playfair+Display:ital,wght@1,500&display=swap">
+</Fragment>
 
 <style>
   :root {
@@ -135,7 +140,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .intro-card p + p { margin-top:18px; }
   .intro-closing { margin-top:34px !important; font-size:16.5px !important; color:#5b6c75 !important; font-style:normal; }
   .intro-card-sig { margin-top:10px; display:flex; flex-direction:column; align-items:flex-end; gap:4px; color:var(--teal); }
-  .intro-sign-name { font:400 32px/1.2 'Nanum Pen Script', 'Noto Serif KR', cursive; letter-spacing:.01em; color:#0a4c63; transform:rotate(-2deg); transform-origin:right bottom; }
+  .intro-sign-name { font-family:'Playfair Display', 'Gowun Batang', 'Noto Serif KR', serif; font-style:italic; font-weight:500; font-synthesis:none; font-size:34px; line-height:1.25; letter-spacing:.005em; color:#0a4c63; transform:rotate(-2deg); transform-origin:right bottom; }
+  .intro-sign-name .wl-ko { font-family:'Playfair Display', 'Gowun Batang', 'Noto Serif KR', serif; }
   .intro-sign-line { width:150px; height:2px; border-radius:2px; background:linear-gradient(90deg, transparent, rgba(0,79,104,0.45)); }
   .intro-sign-small { font:600 11px/1 Montserrat, sans-serif; letter-spacing:.2em; color:#7b8e98; }
 
@@ -254,6 +260,47 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .commit-card { grid-template-columns:1fr; padding:28px 24px; }
     .commit-num { grid-row:auto; font-size:46px; margin-bottom:6px; }
     .commit-card h4, .commit-card p { grid-column:1; }
+    .intro-sign-name { font-size:28px; }
+  }
+
+  /* ── 모바일: 카드 박스를 걷어내고 구분선과 번호 위주의 한 줄기 목록으로 — 읽기 편하게 ── */
+  @media (max-width:640px) {
+    .section { padding-left:20px; padding-right:20px; }
+    .history-grid, .vismis-grid { gap:0; margin-top:30px; }
+    .history-card, .vismis-card { padding:26px 2px 28px; background:none; box-shadow:none; border-radius:0; border-top:1px solid rgba(0,79,104,.16); gap:10px; }
+    .history-card::before, .vismis-card::before { display:none; }
+    .history-year { font-size:40px; color:rgba(0,79,104,.2); }
+    .history-tag, .vismis-card-num { color:#6b8794; }
+    .history-card h3, .vismis-card h3 { color:#0a3f52; font-size:23px; }
+    .history-card p, .vismis-card p { color:#4a626d; font-size:15px; line-height:1.9; }
+
+    .values-grid, .commit-grid, .ministry-grid { display:block; margin-top:30px; }
+    .value-card, .value-card:nth-child(n+4), .value-card:nth-child(5), .commit-card {
+      display:grid; grid-template-columns:42px minmax(0,1fr); column-gap:14px; row-gap:3px; align-content:start;
+      padding:18px 2px 20px; background:none; border:0; border-top:1px solid rgba(0,79,104,.14); border-radius:0; box-shadow:none; transform:none;
+    }
+    .value-card::after, .commit-card::before { display:none; }
+    .value-num, .commit-num { grid-row:1 / span 2; margin:0; font-size:26px; line-height:1.15; transform:none; }
+    .value-title, .commit-card h4 { grid-column:2; font-size:18px; }
+    .value-desc, .commit-card p { grid-column:2; font-size:14.5px; line-height:1.75; }
+    /* 터치 뒤에 호버 색이 남지 않게 */
+    .value-card:hover, .commit-card:hover { background:none; box-shadow:none; transform:none; border-color:rgba(0,79,104,.14); }
+    .value-card:hover .value-title, .commit-card:hover h4 { color:#102028; }
+    .value-card:hover .value-desc, .commit-card:hover p { color:var(--muted); }
+    .value-card:hover .value-num { color:var(--primary); transform:none; }
+    .commit-card:hover .commit-num { -webkit-text-fill-color:transparent; background:linear-gradient(160deg, var(--primary) 0%, #4cc1e6 100%); -webkit-background-clip:text; background-clip:text; transform:none; }
+
+    /* 사역 카드: 큰 사진 카드 대신 작은 사진 + 글 */
+    .ministry-head { margin-bottom:26px; }
+    .ministry-card { display:grid; grid-template-columns:64px minmax(0,1fr); column-gap:14px; row-gap:3px; align-content:start; min-height:0; padding:16px 2px 18px; background:none; border:0; border-top:1px solid rgba(0,79,104,.14); border-radius:0; box-shadow:none; color:#102028; }
+    .ministry-card::before { content:""; position:static; grid-row:1 / span 4; width:64px; height:64px; border-radius:14px; background:var(--photo) center/cover no-repeat; transform:none; z-index:auto; }
+    .ministry-card::after { display:none; }
+    .ministry-card:hover { transform:none; box-shadow:none; }
+    .ministry-card:hover::before { transform:none; }
+    .ministry-card-tag { color:#0a6a8f; }
+    .ministry-card h4 { color:#102028; text-shadow:none; font-size:18px; }
+    .ministry-card p { color:#587383; font-size:14px; line-height:1.7; }
+    .ministry-card-arrow { padding-top:2px; color:#006f90; }
   }
 </style>
 
@@ -525,7 +572,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       raf = 0;
       if (!m) measure();
       var r = stage.getBoundingClientRect(), vh = window.innerHeight || 800;
-      var p = clamp((vh * 0.92 - r.top) / (vh * 0.72));
+      var cy = r.top + m.H / 2;                        // 봉투(편지 한가운데)가 화면에서 있는 높이 — 이게 화면 아래쪽에 있을 때는 아직 닫혀 있고, 더 내려와 중간쯤 오면 열린다
+      var p = clamp((vh * 0.78 - cy) / (vh * 0.5));
       var flapK = clamp(p / 0.22), riseK = ease(clamp((p - 0.16) / 0.64)), exitK = clamp((p - 0.5) / 0.4);
       if (p >= 1) {                                   // 다 열렸다 — 편지만 남기고 봉투는 치운다
         done = true;
