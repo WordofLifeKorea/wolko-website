@@ -62,3 +62,11 @@ test('협력 교회 API: CRS 에서 읽은 뒤 저장하고, 읽기에 실패하
     assert.deepEqual(await out.json(), { churches: [] }); assert.equal(out.status, 200);
   } finally { globalThis.fetch = realFetch; }
 });
+
+test('협력 교회 이름: 영문을 괄호로 병기한 긴 이름이 중간에서 잘리지 않는다', () => {
+  const long = '평택대광교회 글로벌디사이플센터 (Global Disciple Center - Pyeongtaek Daekwang Church)';
+  assert.ok(long.length > 60);
+  const names = partnerChurchNames({ a: { churchName: long, stepsVersion: 3, steps: { 1: true } }, b: { churchName: 'x'.repeat(300), stepsVersion: 3, steps: { 1: true } } });
+  assert.ok(names.includes(long), '60자를 넘어도 그대로');
+  assert.ok(names.every(n => n.length <= 120), '너무 긴 값은 120자에서 자른다');
+});

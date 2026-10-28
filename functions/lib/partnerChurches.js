@@ -8,7 +8,7 @@ import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 export const PARTNER_CHURCH_KEY = 'public:partner-churches';
 export const PARTNER_CHURCH_SECONDS = 3600;
 
-const cleanName = v => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
+const cleanName = v => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 120);   // 영문 병기 이름(예: "…교회 (Global … Church)")이 중간에서 잘리지 않을 만큼
 
 /** CRS churches 레코드 → 이름 목록(진행 단계가 있는 교회만, 중복 없이, 가나다순 · 영문은 뒤) */
 export function partnerChurchNames(records) {
