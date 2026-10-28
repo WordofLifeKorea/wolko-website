@@ -851,14 +851,14 @@ body.hub-modal-open { overflow: hidden; }
 /* ── 카드 맨 아래에 쭉 깔리는 작은 장면 (카드 아래쪽 68px 는 내용이 닿지 않게 비워 둔다) ── */
 .hub-dcard-kitchen, .hub-dcard-car { position: relative; overflow: hidden; }
 /* 장면(62px)이 글자 위에 겹치지 않도록 카드 아래쪽을 장면 높이만큼 비워 둔다 — 어떤 화면 폭에서도, 다른 padding 규칙보다 우선 */
-.hub-dcard.hub-dcard-kitchen, .hub-dcard.hub-dcard-car { padding-bottom: 74px !important; }
-.hub-scene { position: absolute; left: 0; right: 0; bottom: 0; height: 62px; overflow: hidden; pointer-events: none; }
+.hub-dcard.hub-dcard-kitchen, .hub-dcard.hub-dcard-car { padding-bottom: 84px !important; }
+.hub-scene { position: absolute; left: 0; right: 0; bottom: 0; height: 78px; overflow: hidden; pointer-events: none; }
 .hub-deco { position: absolute; display: block; width: 64px; height: 44px; color: var(--dc); pointer-events: none; }
 .hub-deco svg { position: relative; display: block; overflow: visible; }
 /* 키친: 조리대 위의 도마(당근 썰기) + 냄비 */
 .hub-counter { position: absolute; left: 0; right: 0; bottom: 0; height: 9px; background: linear-gradient(180deg, #f6e3c4, #efd3a4); border-top: 2px solid #d9b57a; }
 .hub-sc-board { position: absolute; left: 18px; bottom: 5px; overflow: visible; }
-.hub-scene-kitchen .hub-deco-pot { right: 22px; bottom: 11px; width: 64px; height: 48px; }
+.hub-scene-kitchen .hub-deco-pot { right: 18px; bottom: 8px; width: 84px; height: 58px; }
 .hub-face { transform-box: fill-box; transform-origin: 50% 50%; animation: hub-blink 4s ease-in-out infinite; }
 @keyframes hub-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.15); } }
 .hub-carrot { transform-box: fill-box; transform-origin: 0 50%; animation: hub-carrot 3.6s linear infinite; }
@@ -874,12 +874,18 @@ body.hub-modal-open { overflow: hidden; }
 @keyframes hub-slice2 { 0%, 30% { opacity: 0; transform: translate(-8px, -5px); } 34%, 98% { opacity: 1; transform: none; } 100% { opacity: 0; } }
 @keyframes hub-slice3 { 0%, 55% { opacity: 0; transform: translate(-8px, -5px); } 59%, 98% { opacity: 1; transform: none; } 100% { opacity: 0; } }
 @keyframes hub-slice4 { 0%, 80% { opacity: 0; transform: translate(-8px, -5px); } 84%, 98% { opacity: 1; transform: none; } 100% { opacity: 0; } }
-.hub-pot-lid { transform-box: fill-box; transform-origin: 50% 100%; animation: hub-lid 2.4s ease-in-out infinite; }
-@keyframes hub-lid { 0%, 70%, 100% { transform: translateY(0) rotate(0); } 78% { transform: translateY(-2px) rotate(-4deg); } 86% { transform: translateY(-1px) rotate(3deg); } 94% { transform: translateY(-2px) rotate(-2deg); } }
-.hub-deco-pot i { position: absolute; bottom: 38px; width: 4px; height: 16px; border-radius: 4px; background: color-mix(in srgb, var(--dc) 55%, #fff); opacity: 0; animation: hub-steam 2.6s ease-in infinite; }
-.hub-deco-pot i:nth-child(1) { left: 20px; animation-delay: 0s; }
-.hub-deco-pot i:nth-child(2) { left: 30px; animation-delay: .8s; height: 20px; }
-.hub-deco-pot i:nth-child(3) { left: 40px; animation-delay: 1.6s; }
+.hub-pot-lid { transform-box: fill-box; transform-origin: 50% 100%; animation: hub-lid .65s ease-in-out infinite; }
+.hub-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: hub-flame .45s ease-in-out infinite alternate; }
+.hub-flame.f2 { animation-duration: .38s; animation-delay: -.1s; } .hub-flame.f3 { animation-duration: .5s; animation-delay: -.2s; }
+@keyframes hub-flame { from { transform: scale(1, .8); } to { transform: scale(1.1, 1.25); } }
+.hub-bubbles circle { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: hub-bubble 1.3s ease-out infinite; }
+.hub-bubbles .b2 { animation-delay: .35s; } .hub-bubbles .b3 { animation-delay: .7s; } .hub-bubbles .b4 { animation-delay: 1s; }
+@keyframes hub-bubble { 0% { opacity: 0; transform: translate(0, 4px) scale(.5); } 25% { opacity: 1; } 80% { opacity: 1; transform: translate(0, -9px) scale(1.15); } 100% { opacity: 0; transform: translate(0, -12px) scale(1.5); } }
+@keyframes hub-lid { 0%, 100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-2.5px) rotate(-3deg); } 50% { transform: translateY(-.5px) rotate(1.5deg); } 75% { transform: translateY(-2px) rotate(3deg); } }
+.hub-deco-pot i { position: absolute; bottom: 50px; width: 4px; height: 16px; border-radius: 4px; background: color-mix(in srgb, var(--dc) 55%, #fff); opacity: 0; animation: hub-steam 2.6s ease-in infinite; }
+.hub-deco-pot i:nth-child(1) { left: 30px; animation-delay: 0s; }
+.hub-deco-pot i:nth-child(2) { left: 40px; animation-delay: .8s; height: 20px; }
+.hub-deco-pot i:nth-child(3) { left: 50px; animation-delay: 1.6s; }
 @keyframes hub-steam { 0% { opacity: 0; transform: translateY(8px) scaleY(.6); } 25% { opacity: .85; } 100% { opacity: 0; transform: translateY(-22px) translateX(3px) scaleY(1.15); } }
 /* 차량: 나무와 집이 두 겹으로 다른 속도로 스쳐 가는 길 위를 차가 달린다 */
 .hub-sc-far, .hub-sc-near { position: absolute; left: 0; right: 0; bottom: 8px; background-repeat: repeat-x; background-position: 0 100%; }
@@ -1010,3 +1016,24 @@ body.hub-modal-open { overflow: hidden; }
 .hub-runs .hub-chip { padding: 6px 14px; font: 800 15px/1.3 var(--f-body); }
 .hub-run-label { color: var(--text); font: 800 14px/1.3 var(--f-body); }
 .hub-dcard-compact .hub-runs li { padding: 11px 12px; }
+
+/* ── 두 번째 정리: 준비/클린업과 이름의 동그라미 박스를 없애고, "라벨 | 이름" 목록으로 — 좁은 카드에서도 이름이 한 줄로 읽힌다 ── */
+.hub-meal-rows { gap: 0; }
+.hub-meal-rows > div { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: start; gap: 10px; padding: 11px 0; border-top: 1px dashed rgba(16, 42, 56, .16); }
+.hub-meal-rows > div:first-child { padding-top: 2px; border-top: 0; }
+.hub-meal-rows em { margin: 0; padding: 1px 0 0; border-radius: 0; background: none !important; text-align: left; font: 800 14px/1.5 var(--f-body); }
+.hub-meal-rows em.is-prep { color: #137352; }
+.hub-meal-rows em.is-clean { color: #2459a8; }
+.hub-names { display: grid; gap: 3px; }
+.hub-meal-rows .hub-chip { display: block; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--text); font: 800 16px/1.5 var(--f-body); overflow-wrap: anywhere; }
+.hub-runs li { flex-wrap: wrap; gap: 6px 10px; }
+.hub-run-label { flex: 1 1 auto; white-space: nowrap; }
+.hub-runs .hub-chip { margin-left: auto; padding: 0; border-radius: 0; background: none; color: #8a35a0; font: 800 16px/1.4 var(--f-body); }
+.hub-runs .hub-unset { margin-left: auto; }
+
+/* 데스크톱보다 좁은 화면(태블릿·휴대폰 가로): 키친 듀티·차량 운행 카드를 한 줄 가득 쓰고, 안의 칸들(점심·저녁 / 픽업·드롭오프)을 가로로 나란히 둔다 — 좁은 카드 안에서 이름이 세로로 쪼개지지 않게 */
+@media (max-width: 1279px) {
+  .hub-dcard-kitchen, .hub-dcard-car { grid-column: 1 / -1; }
+  .hub-meals { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: stretch; }
+  .hub-runs { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+}
