@@ -1,0 +1,88 @@
+---
+// 기도제목 나누기: 포탈 계정이 있으면 누구나 기도제목을 나누고, 지난 기도제목까지 모두 모아 본다. 제목을 누르면 내용이 열린다.
+// (API: /api/portal/prayers?all=1)
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <script is:inline src="/wolko-lang-sync.js?v=2"></script>
+  <script is:inline src="/wolko-scroll-lock.js?v=1"></script>
+  <title>기도제목 나누기 — WOLKO</title>
+  <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
+  <link rel="stylesheet" href="/car-log.css?v=20">
+  <link rel="stylesheet" href="/prayers-page.css?v=2">
+  <link rel="stylesheet" href="/wolko-rail.css?v=18">
+  <link rel="stylesheet" href="/wolko-header.css?v=14">
+  <link rel="stylesheet" href="/wolko-ui.css?v=6">
+  <link rel="stylesheet" href="/wolko-layout.css?v=15">
+  <script src="/wolko-rail.js?v=32" defer></script>
+  <script src="/prayers-page.js?v=1" defer></script>
+  <meta name="theme-color" content="#004f68">
+</head>
+<body>
+  <header class="car-header">
+    <a class="car-header-logo" href="/portal" title="WOLKO 포탈로 돌아가기">
+      <img src="/images/WOLKO Circle.png" alt="WOLKO">
+      <span data-t="pageTitle">기도제목 나누기</span>
+    </a>
+    <div class="car-header-right">
+      <div class="wl-lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="wl-lang-btn" id="langKoBtn" aria-label="한국어" title="한국어"><img src="https://flagcdn.com/w20/kr.png" alt=""><span>KO</span></button>
+        <button type="button" class="wl-lang-btn" id="langEnBtn" aria-label="English" title="English"><img src="https://flagcdn.com/w20/us.png" alt=""><span>EN</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="log-wrap pr-wrap">
+    <p class="wl-lead" data-t="intro">함께 기도할 제목을 나누고, 지난 기도제목도 한곳에서 모아 봅니다.</p>
+    <p class="log-loading" id="loadStatus" data-t="loading">불러오는 중…</p>
+
+    <section class="log-panel" id="loginPanel" hidden>
+      <div class="log-panel-head"><span class="log-step">01</span><h2 data-t="loginTitle">포탈 로그인</h2></div>
+      <p class="log-help" data-t="loginHelp">WOLKO 포탈 계정으로 로그인해 주세요.</p>
+      <form id="loginForm" class="log-form">
+        <label><span data-t="email">이메일</span><input id="loginEmail" type="email" autocomplete="username" required></label>
+        <label><span data-t="password">비밀번호</span><input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button class="log-primary" type="submit" data-t="loginBtn">로그인하고 계속하기</button>
+      </form>
+      <p class="log-error" id="loginError" role="alert"></p>
+    </section>
+
+    <div id="app" hidden>
+      <section class="log-panel" id="shareWrap">
+        <div class="log-panel-head"><span class="log-step">+</span><h2 data-t="shareTitle">기도제목 나누기</h2></div>
+        <form id="prForm" class="pr-form" novalidate>
+          <input id="prTitle" type="text" maxlength="60" data-ph="titlePh" autocomplete="off">
+          <textarea id="prText" rows="4" maxlength="600" data-ph="textPh"></textarea>
+          <div class="pr-opts">
+            <label class="pr-anon"><input id="prAnon" type="checkbox"> <span data-t="anon">익명으로 올리기</span></label>
+            <button type="submit" class="log-primary" id="prPost" data-t="post">올리기</button>
+          </div>
+          <p class="log-error" id="prError" role="alert"></p>
+        </form>
+      </section>
+
+      <section class="log-panel" id="listWrap">
+        <div class="log-panel-head"><span class="log-step">☰</span><h2 id="listTitle" data-t="listTitle">모든 기도제목</h2></div>
+        <div class="pr-tools">
+          <input id="prSearch" type="search" data-ph="searchPh" autocomplete="off">
+          <div class="pr-filter" role="group">
+            <button type="button" data-filter="all" class="is-on" data-t="fAll">전체</button>
+            <button type="button" data-filter="mine" data-t="fMine">내가 올린 것</button>
+            <button type="button" data-filter="prayed" data-t="fPrayed">함께 기도한 것</button>
+          </div>
+        </div>
+        <div id="prList" class="pr-list"></div>
+        <p class="pr-empty" id="prEmpty" hidden data-t="empty">아직 나눈 기도제목이 없어요.</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -15,6 +15,8 @@
       icon: '<path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="7" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="11" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="14" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="7" r="1" fill="currentColor" stroke="none"/>' },
     { group: 'wolko', href: '/portal/gospel-stats', color: '#e0566c', label: '복음 통계', label_en: 'Gospel Stats',
       icon: '<path d="M4 20V11M10 20V5M16 20v-7M22 20H2"/><circle cx="19" cy="6.5" r="2" fill="currentColor" stroke="none"/>' },
+    { group: 'wolko', href: '/portal/prayers', color: '#d6567a', label: '기도제목 나누기', label_en: 'Prayer Requests',
+      icon: '<path d="M12 21s-7-4.2-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.8-7 10-7 10Z"/>' },
     { group: 'camp', href: '/portal/wolkoadmin', color: '#3b8ff0', label: '캠프 관리자', label_en: 'Camp Manager',
       icon: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>' },
     { group: 'camp', href: '/portal/campstaff', color: '#ec5fa0', label: '카운슬러', label_en: 'Counselor',

@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=47">
+  <link rel="stylesheet" href="/hub.css?v=48">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <link rel="stylesheet" href="/portal-remember.css?v=1">
@@ -250,6 +250,7 @@
 
   <script is:inline>
     const ICONS = {
+      heart: '<path d="M12 21s-7-4.2-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.8-7 10-7 10Z"/>',
       stats: '<path d="M4 20V11M10 20V5M16 20v-7M22 20H2"/><circle cx="19" cy="6.5" r="2" fill="currentColor" stroke="none"/>',
       clipboard: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/>',
       users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4" fill="currentColor" fill-opacity=".12"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
@@ -280,6 +281,9 @@
       { group: 'wolko', href: '/portal/gospel-stats', color: '#e0566c', icon: 'stats',
         title_ko: '복음 통계', title_en: 'Gospel Stats',
         desc_ko: '월간 복음 전도 보고 · 월코/제주 통계', desc_en: 'Monthly Gospel outreach report · WOLKO & Jeju stats' },
+      { group: 'wolko', href: '/portal/prayers', color: '#d6567a', icon: 'heart',
+        title_ko: '기도제목 나누기', title_en: 'Prayer Requests',
+        desc_ko: '기도제목 나눔 · 지난 기도제목 모아 보기', desc_en: 'Share prayer requests · browse past ones' },
       { group: 'camp', href: '/portal/wolkoadmin', color: '#3b8ff0', icon: 'clipboard',
         title_ko: '캠프 관리자', title_en: 'Camp Manager',
         desc_ko: '캠프 신청 현황 · 확정 관리', desc_en: 'Camp registration & confirmation' },
@@ -326,7 +330,7 @@
         dashEvents: '다가오는 일정', dashEventsEmpty: '앞으로 2주 안에 등록된 일정이 없어요.', dashEventsOff: '캘린더가 아직 연결되지 않았어요.', allDay: '종일',
         dashChurches: '최근 업데이트된 교회', dashChurchesEmpty: '최근 업데이트된 교회가 없어요.', dashChurchesOff: '교회 목록(CRS)이 아직 연결되지 않았어요.', churchUpdated: '업데이트', churchVisited: '방문', churchPastor: '담임', churchPastorTitle: '담임목사', churchDone: '완료한 단계', churchNext: '다음 추천 단계', churchMore: function (n) { return '외 ' + n + '개 더'; }, churchAllDone: '12단계를 모두 마쳤어요', churchNoneYet: '아직 완료한 단계가 없어요', churchProgress: '진행', churchStepsOf: function (n) { return n + ' / 12 단계'; }, churchLastVisit: '마지막 방문', churchNoDetail: '아직 입력된 세부 정보가 없어요.',
         dashLoadFail: '불러오지 못했어요.', dashMore: '자세히 보기',
-        dashPrayers: '기도제목', dashPrayerEmpty: '아직 나눈 기도제목이 없어요.', dashPrayerHint: '첫 기도제목을 나눠 보세요. 포탈에 로그인한 사람에게만 보여요.', prayerShare: '기도제목 나누기', prayerPh: '함께 기도해 주었으면 하는 일을 적어 주세요.', prayerAnon: '익명으로 올리기', prayerPost: '올리기', prayerPray: '함께 기도해요', prayerMore: function (n) { return n + '개 더 보기'; }, prayerLess: '접기', prayerAnonName: '익명', prayerDelete: '삭제', prayerDeleteConfirm: '이 기도제목을 지울까요?', prayerPosted: '기도제목을 나눴어요.', prayerDeleted: '기도제목을 지웠어요.', prayerNeedText: '기도제목을 입력해 주세요.', prayerNote: '올린 지 45일이 지나면 자동으로 사라져요.',
+        dashPrayers: '기도제목', dashPrayerEmpty: '아직 나눈 기도제목이 없어요.', dashPrayerHint: '첫 기도제목을 나눠 보세요. 포탈에 로그인한 사람에게만 보여요.', prayerShare: '기도제목 나누기', prayerTitlePh: '제목 (예: 이번 주 캠프를 위해)', prayerPh: '내용 (선택) — 함께 기도해 주었으면 하는 일을 적어 주세요.', prayerAll: function (n) { return '지난 기도제목까지 모두 보기 (' + n + ')'; }, prayerNoBody: '제목만 나눈 기도제목이에요.', prayerAnon: '익명으로 올리기', prayerPost: '올리기', prayerPray: '함께 기도해요', prayerMore: function (n) { return n + '개 더 보기'; }, prayerLess: '접기', prayerAnonName: '익명', prayerDelete: '삭제', prayerDeleteConfirm: '이 기도제목을 지울까요?', prayerPosted: '기도제목을 나눴어요.', prayerDeleted: '기도제목을 지웠어요.', prayerNeedText: '기도제목의 제목을 입력해 주세요.', prayerNote: '지난 기도제목은 "기도제목 나누기" 페이지에서 모두 볼 수 있어요.',
         dashTodayChip: '오늘', dashUnset: '미정', dashClosed: '닫힘', dashWeekOf: function (a, b) { return '이번 주 ' + a + ' – ' + b; }, relToday: '오늘', relYesterday: '어제', relDaysAgo: function (n) { return n + '일 전'; }, dashNoticeHint: '관리자가 이번 주에 꼭 필요한 소식을 여기에 올려요.',
         recentBadge: '최근 사용',
         emailLoginTitle: '포탈 로그인',
@@ -406,7 +410,7 @@
         dashEvents: 'Upcoming Events', dashEventsEmpty: 'No events in the next two weeks.', dashEventsOff: 'The calendar is not connected yet.', allDay: 'All day',
         dashChurches: 'Recently Updated Churches', dashChurchesEmpty: 'No recently updated churches.', dashChurchesOff: 'The church list (CRS) is not connected yet.', churchUpdated: 'Updated', churchVisited: 'Visited', churchPastor: 'Pastor', churchPastorTitle: 'Senior Pastor', churchDone: 'Completed steps', churchNext: 'Recommended next step', churchMore: function (n) { return '+' + n + ' more'; }, churchAllDone: 'All 12 steps completed', churchNoneYet: 'No steps completed yet', churchProgress: 'Progress', churchStepsOf: function (n) { return n + ' / 12 steps'; }, churchLastVisit: 'Last visit', churchNoDetail: 'No details entered yet.',
         dashLoadFail: 'Could not load.', dashMore: 'View all',
-        dashPrayers: 'Prayer requests', dashPrayerEmpty: 'No prayer requests shared yet.', dashPrayerHint: 'Share the first one. Only people signed in to the portal can see them.', prayerShare: 'Share a prayer request', prayerPh: 'What would you like us to pray for?', prayerAnon: 'Post anonymously', prayerPost: 'Post', prayerPray: 'Praying together', prayerMore: function (n) { return 'Show ' + n + ' more'; }, prayerLess: 'Show less', prayerAnonName: 'Anonymous', prayerDelete: 'Delete', prayerDeleteConfirm: 'Delete this prayer request?', prayerPosted: 'Prayer request shared.', prayerDeleted: 'Prayer request deleted.', prayerNeedText: 'Please write your prayer request.', prayerNote: 'Requests disappear automatically after 45 days.',
+        dashPrayers: 'Prayer requests', dashPrayerEmpty: 'No prayer requests shared yet.', dashPrayerHint: 'Share the first one. Only people signed in to the portal can see them.', prayerShare: 'Share a prayer request', prayerTitlePh: 'Title (e.g. For this week’s camp)', prayerPh: 'Details (optional) — what would you like us to pray for?', prayerAll: function (n) { return 'See all, including past requests (' + n + ')'; }, prayerNoBody: 'Shared as a title only.', prayerAnon: 'Post anonymously', prayerPost: 'Post', prayerPray: 'Praying together', prayerMore: function (n) { return 'Show ' + n + ' more'; }, prayerLess: 'Show less', prayerAnonName: 'Anonymous', prayerDelete: 'Delete', prayerDeleteConfirm: 'Delete this prayer request?', prayerPosted: 'Prayer request shared.', prayerDeleted: 'Prayer request deleted.', prayerNeedText: 'Please enter a title for your request.', prayerNote: 'Past requests stay on the prayer page.',
         dashTodayChip: 'Today', dashUnset: 'Not set', dashClosed: 'CLOSED', dashWeekOf: function (a, b) { return 'This week ' + a + ' – ' + b; }, relToday: 'today', relYesterday: 'yesterday', relDaysAgo: function (n) { return n + ' days ago'; }, dashNoticeHint: 'Admins post what everyone needs to know this week.',
         recentBadge: 'Recent',
         emailLoginTitle: 'Portal Login',
@@ -637,12 +641,14 @@
         + '<p class="hub-pop-label hub-pop-label-next">' + esc(t('churchNext')) + '</p>' + nextHtml
         + '<dl>' + rows.map(r => '<div><dt>' + esc(r[0]) + '</dt><dd>' + r[1] + '</dd></div>').join('') + '</dl></div>';
     }
-    /** 기도제목 나눔 — 최근 것 5개를 먼저 보이고 나머지는 "더 보기". 이름은 올린 사람이 익명을 골랐으면 "익명" */
-    const PRAYER_SHOWN = 5;
+    /** 기도제목 나눔 — 첫 화면에는 최근 10개의 "제목"만 보이고, 누르면 내용이 열린다. 지난 것까지 모두는 /portal/prayers 에서 */
+    const prayerOpen = new Set();
+    document.addEventListener('toggle', e => { const d = e.target; if (d && d.classList && d.classList.contains('hub-prayer-item')) { if (d.open) prayerOpen.add(d.dataset.id); else prayerOpen.delete(d.dataset.id); } }, true);
     function renderPrayers(d) {
       const list = d.prayers;
       const form = '<details class="hub-prayer-form"><summary>+ ' + esc(t('prayerShare')) + '</summary>'
-        + '<textarea id="prayerText" rows="3" maxlength="300" placeholder="' + esc(t('prayerPh')) + '"></textarea>'
+        + '<input id="prayerTitle" type="text" maxlength="60" placeholder="' + esc(t('prayerTitlePh')) + '">'
+        + '<textarea id="prayerText" rows="3" maxlength="600" placeholder="' + esc(t('prayerPh')) + '"></textarea>'
         + '<div class="hub-prayer-opts"><label><input id="prayerAnon" type="checkbox"> ' + esc(t('prayerAnon')) + '</label>'
         + '<button type="button" id="prayerPostBtn">' + esc(t('prayerPost')) + '</button></div>'
         + '<p class="hub-prayer-note">' + esc(t('prayerNote')) + '</p></details>';
@@ -650,15 +656,19 @@
       if (list === null) body = dashEmpty('heart', t('dashLoadFail'));
       else if (!list.length) body = dashEmpty('heart', t('dashPrayerEmpty'), t('dashPrayerHint'));
       else {
-        const item = (p, i) => '<li' + (i >= PRAYER_SHOWN ? ' class="is-extra"' : '') + '>'
-          + '<p class="hub-prayer-text">' + linkify(esc(p.text)).replace(/\n/g, '<br>') + '</p>'
-          + '<div class="hub-prayer-meta"><span>' + esc(p.anonymous ? t('prayerAnonName') : p.name) + ' · ' + esc(relDay(Date.parse(p.createdAt), d.today)) + '</span>'
+        const item = p => '<details class="hub-prayer-item" data-id="' + esc(p.id) + '"' + (prayerOpen.has(p.id) ? ' open' : '') + '>'
+          + '<summary><span class="hub-prayer-title">' + esc(p.title) + '</span>'
+          + (p.count ? '<span class="hub-prayer-count">' + p.count + '</span>' : '')
+          + '<span class="hub-prayer-when">' + esc(p.anonymous ? t('prayerAnonName') : p.name) + ' · ' + esc(relDay(Date.parse(p.createdAt), d.today)) + '</span></summary>'
+          + '<div class="hub-prayer-body">' + (p.text ? '<p class="hub-prayer-text">' + linkify(esc(p.text)).replace(/\n/g, '<br>') + '</p>' : '<p class="hub-prayer-text is-none">' + esc(t('prayerNoBody')) + '</p>')
+          + '<div class="hub-prayer-meta">'
+          + '<button type="button" class="hub-pray-btn' + (p.prayed ? ' is-on' : '') + '" data-pray="' + esc(p.id) + '" aria-pressed="' + (p.prayed ? 'true' : 'false') + '">' + esc(t('prayerPray')) + (p.count ? ' <b>' + p.count + '</b>' : '') + '</button>'
           + (p.canDelete ? '<button type="button" class="hub-prayer-del" data-del="' + esc(p.id) + '">' + esc(t('prayerDelete')) + '</button>' : '')
-          + '<button type="button" class="hub-pray-btn' + (p.prayed ? ' is-on' : '') + '" data-pray="' + esc(p.id) + '" aria-pressed="' + (p.prayed ? 'true' : 'false') + '">' + esc(t('prayerPray')) + (p.count ? ' <b>' + p.count + '</b>' : '') + '</button></div></li>';
-        body = '<ul class="hub-prayers">' + list.map(item).join('') + '</ul>'
-          + (list.length > PRAYER_SHOWN ? '<button type="button" class="hub-prayer-more" data-more="' + esc(t('prayerMore', list.length - PRAYER_SHOWN)) + '" data-less="' + esc(t('prayerLess')) + '">' + esc(t('prayerMore', list.length - PRAYER_SHOWN)) + '</button>' : '');
+          + '</div></div></details>';
+        body = '<div class="hub-prayers">' + list.map(item).join('') + '</div>'
+          + ((d.prayerTotal || 0) > list.length ? '<a class="hub-prayer-all" href="/portal/prayers/">' + esc(t('prayerAll', d.prayerTotal)) + ' →</a>' : '');
       }
-      return dashCard('hub-dcard-prayer', '#d6567a', 'heart', t('dashPrayers'), body + form);
+      return dashCard('hub-dcard-prayer', '#d6567a', 'heart', t('dashPrayers'), body + form, '/portal/prayers/');
     }
     function renderChurches(d) {
       let body;
@@ -680,10 +690,10 @@
       if (!el) return;
       if (!dashData) { el.innerHTML = dashFailed ? '<div class="hub-dcard hub-dcard-wide">' + dashEmpty('bell', t('dashLoadFail')) + '</div>' : ''; return; }
       // 공지를 쓰다가 언어를 바꿔도 입력한 내용은 남긴다
-      const keepPrayer = { text: $('prayerText')?.value || '', anon: !!$('prayerAnon')?.checked, open: !!$('hubDash').querySelector('.hub-prayer-form')?.open, more: !!$('hubDash').querySelector('.hub-dcard-prayer.is-expanded') };
+      const keepPrayer = { title: $('prayerTitle')?.value || '', text: $('prayerText')?.value || '', anon: !!$('prayerAnon')?.checked, open: !!$('hubDash').querySelector('.hub-prayer-form')?.open };
       const keep = { title: $('noticeTitle')?.value || '', body: $('noticeBody')?.value || '', due: $('noticeDue')?.value || '', open: $('hubDash').querySelector('.hub-notice-form')?.open };
       el.innerHTML = renderDashHead(dashData) + renderNotices(dashData) + renderEvents(dashData) + renderKitchen(dashData) + renderCar(dashData) + renderPrayers(dashData) + renderChurches(dashData);
-      if ($('prayerText')) { $('prayerText').value = keepPrayer.text; $('prayerAnon').checked = keepPrayer.anon; if (keepPrayer.open) el.querySelector('.hub-prayer-form').open = true; if (keepPrayer.more) { const c = el.querySelector('.hub-dcard-prayer'); c.classList.add('is-expanded'); const mb = c.querySelector('.hub-prayer-more'); if (mb) mb.textContent = mb.dataset.less; } }
+      if ($('prayerText')) { $('prayerTitle').value = keepPrayer.title; $('prayerText').value = keepPrayer.text; $('prayerAnon').checked = keepPrayer.anon; if (keepPrayer.open) el.querySelector('.hub-prayer-form').open = true; }
       if ($('noticeTitle')) { $('noticeTitle').value = keep.title; $('noticeBody').value = keep.body; if ($('noticeDue')) $('noticeDue').value = keep.due; if (keep.open) el.querySelector('.hub-notice-form').open = true; }
     }
     async function loadDashboard() {
@@ -700,8 +710,8 @@
     /** 기도제목 목록만 다시 받아 그린다(첫 화면 전체를 다시 부르지 않는다) */
     async function refreshPrayers(next) {
       try {
-        if (!next) { const res = await fetch('/api/portal/prayers', { headers: authHeaders(), cache: 'no-store' }); if (!res.ok) throw new Error('HTTP ' + res.status); next = (await res.json()).prayers; }
-        if (dashData) { dashData.prayers = next; renderDash(); }
+        if (!next) { const res = await fetch('/api/portal/prayers', { headers: authHeaders(), cache: 'no-store' }); if (!res.ok) throw new Error('HTTP ' + res.status); next = await res.json(); }
+        if (dashData) { dashData.prayers = next.prayers; dashData.prayerTotal = next.total; renderDash(); }
       } catch (err) { showToast(t('dashLoadFail'), true); }
     }
     async function prayerCall(method, url, body) {
@@ -721,20 +731,18 @@
       const pdel = e.target.closest && e.target.closest('.hub-prayer-del');
       if (pdel) {
         if (!confirm(t('prayerDeleteConfirm'))) return;
-        try { const out = await prayerCall('DELETE', '/api/portal/prayers?id=' + encodeURIComponent(pdel.dataset.del)); showToast(t('prayerDeleted')); await refreshPrayers(out.prayers); }
+        try { const out = await prayerCall('DELETE', '/api/portal/prayers?id=' + encodeURIComponent(pdel.dataset.del)); showToast(t('prayerDeleted')); await refreshPrayers(out); }
         catch (err) { showToast(err.message, true); }
         return;
       }
-      const more = e.target.closest && e.target.closest('.hub-prayer-more');
-      if (more) { const c = more.closest('.hub-dcard-prayer'); const on = c.classList.toggle('is-expanded'); more.textContent = on ? more.dataset.less : more.dataset.more; return; }
       if (e.target.id === 'prayerPostBtn') {
-        const text = $('prayerText').value.trim();
-        if (!text) { showToast(t('prayerNeedText'), true); return; }
+        const title = $('prayerTitle').value.trim(), text = $('prayerText').value.trim();
+        if (!title && !text) { showToast(t('prayerNeedText'), true); return; }
         const btn = e.target; btn.disabled = true;
         try {
-          const out = await prayerCall('POST', '/api/portal/prayers', { text, anonymous: $('prayerAnon').checked });
-          showToast(t('prayerPosted')); $('prayerText').value = ''; $('prayerAnon').checked = false;
-          await refreshPrayers(out.prayers);
+          const out = await prayerCall('POST', '/api/portal/prayers', { title, text, anonymous: $('prayerAnon').checked });
+          showToast(t('prayerPosted')); $('prayerTitle').value = ''; $('prayerText').value = ''; $('prayerAnon').checked = false;
+          await refreshPrayers(out);
         } catch (err) { showToast(err.message, true); }
         btn.disabled = false;
         return;

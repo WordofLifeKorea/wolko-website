@@ -901,29 +901,38 @@ body.hub-modal-open { overflow: hidden; }
 .hub-dempty-ic { display: none; }
 .hub-dempty { padding-top: 10px; }
 
-/* ── 기도제목 나눔 ── */
-.hub-prayers { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
-.hub-prayers li { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 18px; background: #fbf4f6; }
-.hub-prayers li.is-extra { display: none; }
-.hub-dcard-prayer.is-expanded .hub-prayers li.is-extra { display: flex; }
-.hub-prayer-text { margin: 0; flex: 1; color: var(--text); font-size: 14px; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere; }
-.hub-prayer-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; color: var(--mid); font-size: 12.5px; }
-.hub-prayer-meta > span { margin-right: auto; font-weight: 700; }
-.hub-prayer-del { padding: 4px 9px; border: 0; border-radius: 999px; background: rgba(196,42,54,.08); color: var(--accent); font: 700 12px/1.2 var(--f-body); cursor: pointer; }
+/* ── 기도제목 나눔: 제목만 한 줄씩, 누르면 내용이 열린다 ── */
+.hub-prayers { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px 14px; align-items: start; }
+.hub-prayer-item { border-radius: 14px; background: #fbf4f6; transition: background .18s; }
+.hub-prayer-item[open] { background: #f8e9ee; }
+.hub-prayer-item > summary { display: flex; align-items: center; gap: 10px; padding: 12px 16px; list-style: none; cursor: pointer; }
+.hub-prayer-item > summary::-webkit-details-marker { display: none; }
+.hub-prayer-item > summary::after { content: ''; flex: 0 0 auto; width: 7px; height: 7px; margin: -3px 2px 0 4px; border-right: 2px solid #c77a93; border-bottom: 2px solid #c77a93; transform: rotate(45deg); transition: transform .2s; }
+.hub-prayer-item[open] > summary::after { margin-top: 3px; transform: rotate(-135deg); }
+.hub-prayer-title { flex: 1; min-width: 0; color: var(--text); font: 700 14px/1.4 var(--f-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hub-prayer-item[open] .hub-prayer-title { white-space: normal; }
+.hub-prayer-count { flex: 0 0 auto; min-width: 22px; padding: 2px 7px; border-radius: 999px; background: #d6567a; color: #fff; font: 800 11px/1.5 var(--f-sans); text-align: center; }
+.hub-prayer-when { flex: 0 0 auto; color: var(--mid); font-size: 12px; }
+.hub-prayer-body { padding: 0 16px 14px; }
+.hub-prayer-text { margin: 0 0 12px; color: var(--text); font-size: 14px; line-height: 1.75; word-break: keep-all; overflow-wrap: anywhere; }
+.hub-prayer-text.is-none { color: var(--mid); font-size: 13px; }
+.hub-prayer-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.hub-prayer-del { margin-left: auto; padding: 4px 9px; border: 0; border-radius: 999px; background: rgba(196,42,54,.08); color: var(--accent); font: 700 12px/1.2 var(--f-body); cursor: pointer; }
 .hub-prayer-del:hover { background: rgba(196,42,54,.16); }
 .hub-pray-btn { padding: 7px 14px; border: 1px solid #ecc4d0; border-radius: 999px; background: #fff; color: #b8416a; font: 800 12.5px/1.2 var(--f-body); cursor: pointer; transition: background .18s, color .18s, border-color .18s; }
 .hub-pray-btn b { margin-left: 4px; font-family: var(--f-sans); }
 .hub-pray-btn:hover { background: #fdeef3; }
 .hub-pray-btn.is-on { background: #d6567a; border-color: #d6567a; color: #fff; }
 .hub-pray-btn:disabled { opacity: .6; cursor: default; }
-.hub-prayer-more { display: block; margin: 12px auto 0; padding: 8px 18px; border: 0; border-radius: 999px; background: #f3f6f8; color: var(--mid); font: 700 13px/1 var(--f-body); cursor: pointer; }
-.hub-prayer-more:hover { background: #e8eef2; }
+.hub-prayer-all { display: block; margin: 14px 0 0; text-align: center; color: #b8416a; font: 800 13px/1.4 var(--f-body); text-decoration: none; }
+.hub-prayer-all:hover { text-decoration: underline; }
 .hub-prayer-form { margin-top: 14px; }
 .hub-prayer-form summary { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 999px; background: #fbe9ef; color: #b8416a; font: 800 13px/1 var(--f-body); cursor: pointer; list-style: none; }
 .hub-prayer-form summary::-webkit-details-marker { display: none; }
 .hub-prayer-form[open] summary { background: #d6567a; color: #fff; }
-.hub-prayer-form textarea { width: 100%; margin-top: 10px; padding: 10px 12px; border: 1px solid #ecd3db; border-radius: 12px; background: #fff; color: var(--text); font: 500 14px/1.5 var(--f-body); resize: vertical; }
-.hub-prayer-form textarea:focus { outline: 2px solid rgba(214,86,122,.25); border-color: #d6567a; }
+.hub-prayer-form input[type="text"], .hub-prayer-form textarea { display: block; width: 100%; margin-top: 10px; padding: 10px 12px; border: 1px solid #ecd3db; border-radius: 12px; background: #fff; color: var(--text); font: 500 14px/1.5 var(--f-body); }
+.hub-prayer-form textarea { resize: vertical; }
+.hub-prayer-form input[type="text"]:focus, .hub-prayer-form textarea:focus { outline: 2px solid rgba(214,86,122,.25); border-color: #d6567a; }
 .hub-prayer-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
 .hub-prayer-opts label { display: inline-flex; align-items: center; gap: 6px; color: var(--mid); font-size: 13px; }
 .hub-prayer-opts button { margin-left: auto; padding: 9px 18px; border: 0; border-radius: 999px; background: #d6567a; color: #fff; font: 800 13px/1 var(--f-body); cursor: pointer; }
