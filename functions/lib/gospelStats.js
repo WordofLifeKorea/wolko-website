@@ -95,11 +95,15 @@ export function shiftMonth(month, delta) {
   return d.toISOString().slice(0, 7);
 }
 
-/** 보고할 수 있는 달: 이번 달부터 12개월 전까지(미래 달은 안 된다) */
+/** 보고하는 달 — 월간 보고는 끝난 달(지난달)의 숫자를 낸다. 지금이 10월이면 9월 */
+export function reportMonth(now = Date.now()) {
+  return shiftMonth(currentMonthKst(now), -1);
+}
+
+/** 보고할 수 있는 달: 지난달부터 12개월 전까지(이번 달·미래 달은 안 된다) */
 export function reportableMonth(month, now = Date.now()) {
   if (!MONTH_RE.test(String(month || ''))) return false;
-  const current = currentMonthKst(now);
-  return month <= current && month >= shiftMonth(current, -MONTHS_BACK);
+  return month <= reportMonth(now) && month >= shiftMonth(currentMonthKst(now), -MONTHS_BACK);
 }
 
 /** 화면이 보낸 값에서 정의된 항목만 0 이상의 정수로 정리한다(비어 있으면 0) */
@@ -164,7 +168,8 @@ async function migrateAnonymous(env, key, report) {
   if (!report || !report.email || !env.ADMIN_PASSWORD) return report;
   const { email, name, ...rest } = report;
   const id = await unitId(env, email, report.scope, report.teamName);
-  const clean = { ...rest, id, owner: await ownerOf(env, email), createdAt: String(report.createdAt || '').slice(0, 10), updatedAt: String(report.updatedAt || '').slice(0, 10) };
+  const reporter = report.scope === 'team' ? { reporterName: cleanText(name, 80), reporterEmail: String(email).trim().toLowerCase() } : {};   // 팀 보고는 누가 냈는지 남긴다
+  const clean = { ...rest, ...reporter, id, owner: await ownerOf(env, email), createdAt: String(report.createdAt || '').slice(0, 10), updatedAt: String(report.updatedAt || '').slice(0, 10) };
   const nextKey = reportKey(report.month, id);
   await env.CAMP_KV.put(nextKey, JSON.stringify(clean));
   if (nextKey !== key) await env.CAMP_KV.delete(key);

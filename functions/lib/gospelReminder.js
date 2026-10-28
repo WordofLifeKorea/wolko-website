@@ -20,6 +20,12 @@ export function isLastDayOfMonth(date) {
   return Number(m[3]) === new Date(Date.UTC(Number(m[1]), Number(m[2]), 0)).getUTCDate();
 }
 
+/** 'YYYY-MM-DD' 가 보고 알림을 보내는 날(매달 1~3일)인지 — 다음 달 초에 지난달 보고를 부탁한다. 같은 사람에게는 달마다 한 번만 간다 */
+export function isReminderDay(date) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date || ''));
+  return !!m && Number(m[3]) >= 1 && Number(m[3]) <= 3;
+}
+
 export async function exemptEmails(env) {
   const out = new Set();
   let cursor;
@@ -64,12 +70,12 @@ export function reminderMail({ name, month, link }) {
   const subject = `[월코] ${y}년 ${Number(m)}월 복음 전도 보고를 부탁드려요 · ${en} Gospel Outreach Report`;
   const html = `<div style="font-family:'Apple SD Gothic Neo',Arial,sans-serif;font-size:15px;line-height:1.75;color:#0d1b24;max-width:560px;">
     <p>${esc(name)}님, 안녕하세요.</p>
-    <p>오늘은 ${Number(m)}월의 마지막 날입니다. <strong>${y}년 ${Number(m)}월 복음 전도 보고</strong>를 작성해 주세요. 숫자가 모두 0이어도 괜찮으니 보고만 남겨 주세요.</p>
+    <p>지난달(${Number(m)}월)이 끝났어요. <strong>${y}년 ${Number(m)}월 복음 전도 보고</strong>를 작성해 주세요. 숫자가 모두 0이어도 괜찮으니 보고만 남겨 주세요.</p>
     <p><a href="${esc(link)}" style="display:inline-block;padding:11px 20px;border-radius:10px;background:#004f68;color:#fff;font-weight:700;text-decoration:none;">보고하러 가기</a></p>
     <p style="color:#5a6f79;font-size:13px;">이미 보고하셨다면 이 메일은 다시 오지 않습니다. 보고할 일이 없는 계정이라면 관리자에게 "보고 제외"를 요청해 주세요.</p>
     <hr style="border:0;border-top:1px solid #dce6ea;margin:22px 0;">
     <p>Hi ${esc(name)},</p>
-    <p>Today is the last day of the month. Please submit your <strong>${esc(en)} Gospel Outreach Report</strong>. Even if every number is 0, please submit it.</p>
+    <p>Last month has ended. Please submit your <strong>${esc(en)} Gospel Outreach Report</strong>. Even if every number is 0, please submit it.</p>
     <p><a href="${esc(link)}" style="color:#004f68;font-weight:700;">Open the report form</a></p>
     <p style="color:#5a6f79;font-size:13px;">Word of Life Korea (WOLKO)</p>
   </div>`;

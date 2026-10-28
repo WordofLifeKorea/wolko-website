@@ -4,7 +4,7 @@ import * as H from '../functions/lib/hubAccounts.js';
 import * as G from '../functions/api/portal/gospel-stats.js';
 import * as Ex from '../functions/api/portal/gospel-exempt.js';
 import { onRequestPost as remind } from '../functions/api/gospel-reminders.js';
-import { isLastDayOfMonth, missingReporters, submittedEmails, reminderMail, reportLink } from '../functions/lib/gospelReminder.js';
+import { isLastDayOfMonth, isReminderDay, missingReporters, submittedEmails, reminderMail, reportLink } from '../functions/lib/gospelReminder.js';
 import { ownerOf } from '../functions/lib/gospelStats.js';
 import { GOSPEL_FIELD_IDS } from '../functions/lib/gospelStats.js';
 
@@ -16,6 +16,7 @@ test('매달 마지막 날 판단(윤년 포함)과 보고 링크', () => {
   assert.equal(isLastDayOfMonth('2028-02-29'), true);
   assert.equal(isLastDayOfMonth('2026-11-30'), true);
   assert.equal(isLastDayOfMonth('garbage'), false);
+  assert.deepEqual(['2026-10-01', '2026-10-03', '2026-10-04', '2026-10-31', 'garbage'].map(isReminderDay), [true, true, false, false, false], '다음 달 1~3일에 지난달 보고를 부탁한다');
   assert.equal(reportLink('2026-10'), 'https://wolko.org/portal/gospel-stats/?write=1&month=2026-10');
 });
 
@@ -56,12 +57,12 @@ function mockResend(t) {
 }
 const call = (env, query = '', secret = 'gs') => remind({ env, request: new Request(`https://wolko.org/api/gospel-reminders${query}`, { method: 'POST', headers: { Authorization: `Bearer ${secret}` } }) });
 
-test('알림 API: 비밀키가 맞아야 하고, 마지막 날이 아니면 보내지 않는다', async t => {
+test('알림 API: 비밀키가 맞아야 하고, 매달 1~3일이 아니면 보내지 않는다', async t => {
   mockResend(t);
   const { env, acc } = setup(); await acc('a@wol.org');
   assert.equal((await call(env, '', 'wrong')).status, 401);
-  const skipped = await (await call(env)).json();     // 오늘이 월말이 아닌 날이면 건너뜀(월말이면 아래 force 시험과 같은 동작)
-  if (skipped.skipped) { assert.equal(skipped.skipped, 'not-last-day'); assert.equal(sentMails.length, 0); }
+  const skipped = await (await call(env)).json();     // 알림일(1~3일)이 아닌 날이면 건너뜀(알림일이면 아래 force 시험과 같은 동작)
+  if (skipped.skipped) { assert.equal(skipped.skipped, 'not-reminder-day'); assert.equal(sentMails.length, 0); }
 });
 
 test('알림 API: 미제출자에게만, 사람마다 한 통, 같은 달에는 한 번만, 20통씩 나눠 보낸다', async t => {

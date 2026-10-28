@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as H from '../functions/lib/hubAccounts.js';
 import * as G from '../functions/api/portal/gospel-stats.js';
-import { cleanValues, summarize, toCsv, shiftMonth, reportableMonth, currentMonthKst, GOSPEL_FIELD_IDS } from '../functions/lib/gospelStats.js';
+import { cleanValues, summarize, toCsv, shiftMonth, reportableMonth, currentMonthKst, reportMonth, GOSPEL_FIELD_IDS } from '../functions/lib/gospelStats.js';
 
 function setup() {
   const store = new Map();
@@ -30,7 +30,7 @@ const master = ['admin@wolko.org', 'master'];
 const admin = ['hkim3@wol.org', 'admin'];
 const anna = ['anna@wol.org', 'counselor'];
 const ben = ['ben@wol.org', 'counselor'];
-const month = currentMonthKst();
+const month = reportMonth();
 const report = (over = {}) => ({ month, scope: 'individual', location: 'mainland', values: { evangelism: 5, salvation: 2 }, ...over });
 
 test('값 정리: 비어 있으면 0, 쉼표·공백 제거, 음수·소수·글자는 거부', () => {
@@ -40,10 +40,13 @@ test('값 정리: 비어 있으면 0, 쉼표·공백 제거, 음수·소수·글
   for (const bad of ['-1', '1.5', 'abc', '2000000']) assert.throws(() => cleanValues({ evangelism: bad }), /INVALID/);
 });
 
-test('달 계산: 이번 달부터 12개월 전까지만 보고할 수 있다', () => {
+test('달 계산: 지난달부터 12개월 전까지만 보고할 수 있다 (지금이 10월이면 9월분)', () => {
   const now = Date.UTC(2026, 9, 23);
   assert.equal(shiftMonth('2026-01', -1), '2025-12');
-  assert.equal(reportableMonth('2026-10', now), true);
+  assert.equal(reportMonth(now), '2026-09');
+  assert.equal(reportMonth(Date.UTC(2026, 0, 5)), '2025-12', '1월에는 지난해 12월분');
+  assert.equal(reportableMonth('2026-09', now), true);
+  assert.equal(reportableMonth('2026-10', now), false, '이번 달은 아직 끝나지 않았다');
   assert.equal(reportableMonth('2025-10', now), true);
   assert.equal(reportableMonth('2025-09', now), false);
   assert.equal(reportableMonth('2026-11', now), false, '미래 달은 안 된다');
@@ -173,7 +176,7 @@ test('CSV: 위치·구분·숫자만 — 이름·팀·이메일 열이 없고, �
 test('모든 숫자가 0(또는 비어 있어도) 보고를 낼 수 있다', async () => {
   const { acc, call } = setup();
   await acc(anna[0]);
-  const month = currentMonthKst();
+  const month = reportMonth();
   const zeros = Object.fromEntries(GOSPEL_FIELD_IDS.map(id => [id, '0']));
   const a = await call('POST', anna, { body: { month, scope: 'individual', location: 'mainland', values: zeros } });
   assert.equal(a.status, 200);
@@ -209,7 +212,7 @@ test('CRS 교회 목록은 이름만 꺼내고, 이름 없는 레코드는 뺀�
 test('교회 행사 저장: 합계 화면에는 행사·숫자만, 메모는 보고한 본인에게만', async () => {
   const { acc, call, designate } = setup();
   await acc(anna[0]); await acc(admin[0], 'admin'); await acc('bob@wol.org'); designate(anna[0]);
-  const month = currentMonthKst();
+  const month = reportMonth();
   const values = Object.fromEntries(GOSPEL_FIELD_IDS.map(id => [id, 0]));
   const entries = [{ churchName: '평택중앙교회', churchId: 'c1', event: '겨울 집회', date: `${month}-12`, students: 40, salvations: 6, dedications: 2, note: '비공개 메모' }];
   assert.equal((await call('POST', anna, { body: { month, scope: 'individual', location: 'mainland', values, churchEntries: entries } })).status, 200);
@@ -268,7 +271,7 @@ test('연간 보기: 그 해의 모든 달을 더하고 다른 해는 섞이지 
   const y24 = await call('GET', anna, { query: '?view=year&year=2024' });
   assert.equal(y24.summary.all.evangelism, 100, '2024년은 12월 보고만 — 2025년이 섞이지 않는다');
   const thisYear = await call('GET', anna, { query: '?view=year' });
-  assert.equal(thisYear.year, currentMonthKst().slice(0, 4), 'year 를 안 주면 올해');
+  assert.equal(thisYear.year, reportMonth().slice(0, 4), 'year 를 안 주면 올해');
   assert.equal((await call('GET', anna, { query: '?view=year&year=2999' })).status, 400, '아직 오지 않은 해');
 });
 
@@ -286,7 +289,7 @@ test('집계 저장(캐시): 한 번 계산한 달은 저장해 두고, 보고�
   assert.equal((await call('GET', anna, { query: '?view=year&year=2025' })).summary.all.evangelism, 10);
   assert.equal((await call('GET', anna, { query: '?view=year&year=2025&fresh=1' })).summary.all.evangelism, 15, 'fresh=1 은 저장값을 건너뛰고 다시 계산');
   // 보고를 저장하면 그 달 저장값이 지워져 곧바로 반영된다
-  const cur = currentMonthKst();
+  const cur = reportMonth();
   const values = Object.fromEntries(GOSPEL_FIELD_IDS.map(id => [id, 0])); values.evangelism = 7;
   assert.equal((await call('POST', anna, { body: { month: cur, scope: 'individual', location: 'jeju', values } })).status, 200);
   assert.equal(store.has(`gospel:agg:${cur}`), false, '저장하면 그 달 저장값이 지워진다');

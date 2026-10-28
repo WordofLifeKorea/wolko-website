@@ -9,7 +9,7 @@ import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 import { prayerBoard } from './prayers.js';
 import { needsTranslation, translateNotice } from './prayerTranslate.js';
 import { alwaysExempt } from './gospelReminder.js';
-import { currentMonthKst, loadMonth, ownerOf } from './gospelStats.js';
+import { reportMonth, loadMonth, ownerOf } from './gospelStats.js';
 
 export const NOTICES_KEY = 'portal:notices';
 /** 마스터·관리자 말고도 공지를 올릴 수 있는 계정 — 본인이 올린 공지만 지울 수 있다 */
@@ -160,7 +160,7 @@ export async function recentChurchList(env) {
   return list;
 }
 
-/** 지금 로그인한 사람에게 해당하는 오늘 할 일 — 주방 당번 칸, 차량 운행 칸, 이번 달 복음 통계 보고(월 후반에 아직 안 냈을 때) */
+/** 지금 로그인한 사람에게 해당하는 오늘 할 일 — 주방 당번 칸, 차량 운행 칸, 지난달 복음 통계 보고(아직 안 냈을 때) */
 export async function mySchedule(env, session, today) {
   const email = String(session?.email || '').trim().toLowerCase();
   if (!email) return null;
@@ -169,8 +169,8 @@ export async function mySchedule(env, session, today) {
   const kitchen = KITCHEN_SLOTS.filter(slot => (day[slot] || []).some(mine));
   const car = [pickup && mine(pickup) ? 'pickup' : '', dropoff && mine(dropoff) ? 'dropoff' : ''].filter(Boolean);
   let gospelPending = false;
-  const month = currentMonthKst(Date.parse(`${today}T12:00:00+09:00`));
-  if (Number(today.slice(8, 10)) >= 15 && !alwaysExempt(email) && !(await env.CAMP_KV.get(`gospel:exempt:${email}`))) {
+  const month = reportMonth(Date.parse(`${today}T12:00:00+09:00`));   // 월간 보고는 지난달 숫자
+  if (!alwaysExempt(email) && !(await env.CAMP_KV.get(`gospel:exempt:${email}`))) {
     const owner = await ownerOf(env, email);
     gospelPending = !(await loadMonth(env, month)).some(r => r.owner === owner);
   }

@@ -7,7 +7,7 @@ import { portalSession } from '../../lib/hubAccounts.js';
 import { firebaseDatabaseToken } from '../../lib/firebaseCrsDatabase.js';
 import { isDesignated } from '../../lib/gospelReporters.js';
 import { slimCrsChurches, ministryFromCrs } from '../../lib/crsMinistry.js';
-import { MONTH_RE, currentMonthKst } from '../../lib/gospelStats.js';
+import { MONTH_RE, reportMonth } from '../../lib/gospelStats.js';
 
 const DATABASE = 'https://wolko-crs-default-rtdb.asia-southeast1.firebasedatabase.app';
 const H = { 'Cache-Control': 'no-store' };
@@ -30,7 +30,7 @@ export async function onRequestGet({ env, request }) {
   if (!session) return Response.json({ error: '포탈 로그인이 필요합니다.' }, { status: 401, headers: H });
   if (!(await isDesignated(env, session))) return Response.json({ error: '보고 담당자만 볼 수 있습니다.' }, { status: 403, headers: H });
   const url = new URL(request.url);
-  const month = url.searchParams.get('month') || currentMonthKst();
+  const month = url.searchParams.get('month') || reportMonth();
   if (!MONTH_RE.test(month)) return Response.json({ error: '달 형식이 올바르지 않습니다.' }, { status: 400, headers: H });
   try {
     const list = await loadSlimChurches(env, { fresh: url.searchParams.get('fresh') === '1' });

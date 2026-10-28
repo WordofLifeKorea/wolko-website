@@ -15,7 +15,7 @@ import { getAccount, portalSession } from '../../lib/hubAccounts.js';
 import { isDesignated, loadReporters } from '../../lib/gospelReporters.js';
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 import {
-  GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, shiftMonth, reportableMonth,
+  GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, reportMonth, shiftMonth, reportableMonth,
   cleanValues, allowedFieldIds, ministryId, cleanChurchEntries, churchEvents, cleanText, unitId, ownerOf, reportKey, loadMonth, summarize, mergeSummaries, toCsv, AGG_KEY, AGG_VERSION, aggTtlSeconds,
 } from '../../lib/gospelStats.js';
 
@@ -67,7 +67,7 @@ async function yearView(env, request, session, url, current) {
   const summary = mergeSummaries(memo.map(x => x.summary));
   const review = canReview(session);
   return Response.json({
-    view: 'year', year, month: months[months.length - 1], current, earliest: shiftMonth(current, -MONTHS_BACK),
+    view: 'year', year, month: months[months.length - 1], current, reportMonth: reportMonth(), earliest: shiftMonth(current, -MONTHS_BACK),
     me: await meOf(env, session, review),
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
     summary, ytd: { year, from: months[0], to: months[months.length - 1], summary },
@@ -85,7 +85,7 @@ export async function onRequestGet({ env, request }) {
   const url = new URL(request.url);
   const current = currentMonthKst();
   if (url.searchParams.get('view') === 'year') return yearView(env, request, session, url, current);
-  const month = url.searchParams.get('month') || current;
+  const month = url.searchParams.get('month') || reportMonth();
   if (!MONTH_RE.test(month)) return fail('달 형식이 올바르지 않습니다. (예: 2026-10)');
   const reports = await loadMonth(env, month);
 
@@ -112,7 +112,7 @@ export async function onRequestGet({ env, request }) {
   const review = canReview(session), owner = await ownerOf(env, session.email), designated = await isDesignated(env, session);
   return Response.json({
     me: await meOf(env, session, review),
-    month, current, earliest: shiftMonth(current, -MONTHS_BACK),
+    month, current, reportMonth: reportMonth(), earliest: shiftMonth(current, -MONTHS_BACK),
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
     summary: summaries.get(month),
     campAuto: camps,
@@ -122,6 +122,8 @@ export async function onRequestGet({ env, request }) {
     mine: reports.filter(r => r.owner === owner && r.scope !== 'ministry').map(({ owner: _o, ...mine }) => mine),   // 내 보고만 — 표식은 내보내지 않는다
     // 사역 현황(제자훈련·지역교회)은 위치마다 한 건을 지정 담당자들이 함께 고친다 — 담당자에게만 보여 준다
     ...(designated ? { ministry: reports.filter(r => r.scope === 'ministry').map(({ owner: _o, ...m }) => m) } : {}),
+    // 팀·사역 현황 보고 내역 — 누가 냈는지 포함. 지정 담당자와 관리자·마스터만
+    ...(designated || review ? { teamReports: reports.filter(r => r.scope === 'team' || r.scope === 'ministry').map(r => ({ id: r.id, scope: r.scope, teamName: r.teamName || '', location: r.location, reporterName: r.reporterName || '', reporterEmail: r.reporterEmail || '', updatedAt: r.updatedAt || '' })) } : {}),
     // 보고 담당자 지정(마스터만)
     ...(session.role === 'master' ? { reporters: await loadReporters(env) } : {}),
     // 보고별 목록(이름·이메일 포함)은 마스터·관리자만. 그 밖의 계정에는 합계만 준다 — 사람별 숫자는 익명이어도 누구의 것인지 알아낼 수 있다
@@ -135,7 +137,7 @@ export async function onRequestPost({ env, request }) {
   let body;
   try { body = await request.json(); } catch { return fail('잘못된 요청입니다.'); }
   const month = String(body?.month || '');
-  if (!reportableMonth(month)) return fail(`보고할 수 있는 달은 이번 달부터 ${MONTHS_BACK}개월 전까지입니다.`);
+  if (!reportableMonth(month)) return fail(`보고는 끝난 달(지난달)부터 ${MONTHS_BACK}개월 전까지 낼 수 있어요.`);
   const scope = SCOPES.includes(body?.scope) ? body.scope : null;
   if (!scope) return fail('개인, 팀 또는 사역 현황을 선택해 주세요.');
   const designated = await isDesignated(env, session);
@@ -155,6 +157,8 @@ export async function onRequestPost({ env, request }) {
   const today = new Date().toISOString().slice(0, 10);      // 시각은 날짜까지만 남긴다
   const report = {
     id, month, owner: await ownerOf(env, session.email), scope, teamName, location, values, churchEntries,
+    // 팀·사역 현황 보고는 누가 냈는지 남긴다(개인 보고는 익명) — 지정 담당자와 관리자만 본다
+    ...(scope !== 'individual' ? { reporterName: displayName(session), reporterEmail: session.email.trim().toLowerCase() } : {}),
     createdAt: previous?.createdAt || today, updatedAt: today,
   };
   await env.CAMP_KV.put(key, JSON.stringify(report));

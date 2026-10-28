@@ -4,7 +4,7 @@ import * as H from '../functions/lib/hubAccounts.js';
 import * as G from '../functions/api/portal/gospel-stats.js';
 import * as R from '../functions/api/portal/gospel-reporters.js';
 import * as M from '../functions/api/portal/gospel-ministry.js';
-import { GOSPEL_SECTIONS, GOSPEL_FIELD_IDS, SNAPSHOT_IDS, allowedFieldIds, mergeSummaries, summarize, emptyTotals, currentMonthKst } from '../functions/lib/gospelStats.js';
+import { GOSPEL_SECTIONS, GOSPEL_FIELD_IDS, SNAPSHOT_IDS, allowedFieldIds, mergeSummaries, summarize, emptyTotals, currentMonthKst, reportMonth } from '../functions/lib/gospelStats.js';
 import { slimCrsChurches, ministryFromCrs, crsLocation } from '../functions/lib/crsMinistry.js';
 
 function setup() {
@@ -30,7 +30,7 @@ function setup() {
 const master = ['admin@wolko.org', 'master'];
 const anna = ['anna@wol.org', 'counselor'];
 const ben = ['ben@wol.org', 'counselor'];
-const month = currentMonthKst();
+const month = reportMonth();
 const zero = () => Object.fromEntries(GOSPEL_FIELD_IDS.map(id => [id, 0]));
 
 test('본부 양식 항목: 캠프 4 · 전도 행사 3 · 개인 전도(본부 외 영적 대화 표시) · 제자훈련 6 · 지역교회 7', () => {
@@ -136,4 +136,26 @@ test('CRS 연동 API: 담당자만, CRS 설정이 없으면 configured:false 와
   t.store.set('gospel:crs-slim', JSON.stringify({ list: [{ location: 'jeju', grade: 'C', leaders: { [month]: 4 } }] }));
   const hit = await t.ministry('GET', anna, { query: `?month=${month}` });
   assert.equal(hit.configured, true); assert.equal(hit.crs.jeju.churchC, 1); assert.equal(hit.crs.jeju.leadershipTraining, 4);
+});
+
+test('팀 보고는 누가 냈는지 남고(지정 담당자·관리자·마스터만 봄), 개인 보고는 계속 익명이다', async () => {
+  const t = setup(); await t.acc(anna[0], 'counselor', 'Anna Lee'); await t.acc(ben[0], 'counselor', 'Ben Kim'); await t.acc('cara@wol.org', 'counselor', 'Cara Park'); await t.acc('hkim3@wol.org', 'admin', 'Adm');
+  await t.reporters('POST', master, { body: { emails: [anna[0], ben[0]] } });
+  await t.stats('POST', anna, { body: { month, location: 'mainland', scope: 'team', teamName: 'Camp Crew', values: { campCount: 1 } } });
+  await t.stats('POST', ben, { body: { month, location: 'jeju', scope: 'ministry', values: { dtc: 3 } } });
+  await t.stats('POST', ['cara@wol.org', 'counselor'], { body: { month, location: 'mainland', scope: 'individual', values: { evangelism: 2 } } });
+
+  const asBen = await t.stats('GET', ben, { query: `?month=${month}` });
+  const team = asBen.teamReports.find(r => r.scope === 'team');
+  assert.equal(team.reporterName, 'Anna Lee'); assert.equal(team.reporterEmail, 'anna@wol.org'); assert.equal(team.teamName, 'Camp Crew');
+  assert.equal(asBen.teamReports.find(r => r.scope === 'ministry').reporterName, 'Ben Kim');
+  assert.equal(asBen.teamReports.length, 2, '개인 보고는 이 목록에 없다');
+  assert.equal(JSON.stringify(asBen).includes('Cara'), false, '개인 보고자는 누구에게도 안 보인다');
+
+  for (const who of [['hkim3@wol.org', 'admin'], master]) assert.equal((await t.stats('GET', who, { query: `?month=${month}` })).teamReports.length, 2);
+  const asCara = await t.stats('GET', ['cara@wol.org', 'counselor'], { query: `?month=${month}` });
+  assert.equal(asCara.teamReports, undefined); assert.equal(JSON.stringify(asCara).includes('Anna'), false);
+  // 저장된 개인 보고에는 보고자 정보가 없다
+  const stored = [...t.store.entries()].filter(([k]) => k.startsWith('gospel:rep:')).map(([, v]) => JSON.parse(v)).find(r => r.scope === 'individual');
+  assert.equal(stored.reporterName, undefined); assert.equal(stored.reporterEmail, undefined);
 });

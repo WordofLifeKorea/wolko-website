@@ -129,7 +129,7 @@ test('only admins can add and delete notices', async () => {
 
 test('내 오늘 할 일: 오늘 내 주방·차량 칸, 월 후반에 아직 안 낸 복음 통계 보고(제외 계정은 빼고)', async () => {
   const { mySchedule } = await import('../functions/lib/portalDashboard.js');
-  const { ownerOf, currentMonthKst } = await import('../functions/lib/gospelStats.js');
+  const { ownerOf, currentMonthKst, reportMonth } = await import('../functions/lib/gospelStats.js');
   const { env, store } = kvEnv({
     [`kitchen:day:${TODAY}`]: { lunch_prep: [{ email: 'amy@wol.org', name: 'Amy' }, { email: 'bob@wol.org', name: 'Bob' }], dinner_clean: [{ email: 'Amy@wol.org', name: 'Amy' }] },
     [`drive:slot:${TODAY}:dropoff`]: { email: 'amy@wol.org', name: 'Amy' },
@@ -140,9 +140,10 @@ test('내 오늘 할 일: 오늘 내 주방·차량 칸, 월 후반에 아직 �
   assert.deepEqual(out.kitchen, ['lunch_prep', 'dinner_clean']);
   assert.deepEqual(out.car, ['dropoff']);
   assert.equal(out.name, 'Amy Lee');
-  assert.equal(out.gospelPending, true, '28일인데 이번 달 보고가 없으면 알린다');
-  assert.equal((await mySchedule(env, amy, '2026-10-10')).gospelPending, false, '15일 전에는 알리지 않는다');
-  const month = currentMonthKst(Date.parse(`${TODAY}T12:00:00+09:00`));
+  assert.equal(out.gospelPending, true, '지난달 보고가 없으면 알린다');
+  assert.equal(out.gospelMonth, '2026-09', '10월이면 9월분을 알린다');
+  assert.equal((await mySchedule(env, amy, '2026-10-10')).gospelPending, true, '월초에도 알린다');
+  const month = reportMonth(Date.parse(`${TODAY}T12:00:00+09:00`));
   store.set(`gospel:rep:${month}:abc`, JSON.stringify({ id: 'abc', month, owner: await ownerOf(env, amy.email), scope: 'individual', location: 'mainland', values: {} }));
   assert.equal((await mySchedule(env, amy, TODAY)).gospelPending, false, '보고했으면 알리지 않는다');
   store.set('gospel:exempt:bob@wol.org', JSON.stringify({ by: 'x' }));
