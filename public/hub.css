@@ -1047,10 +1047,10 @@ body.hub-modal-open { overflow: hidden; }
 .hub-dash-top .hub-dash-date { gap: 4px 12px; font-size: 15px; }
 .hub-dash-top .hub-dash-date b { font-size: 16px; }
 
-/* ── 좁은 화면(휴대폰): 상단 바 왼쪽에 햄버거 버튼, 누르면 도구 사이드바가 왼쪽에서 밀려 나온다 ── */
+/* ── 좁은 화면(휴대폰): 상단 바 맨 오른쪽에 햄버거 버튼, 누르면 도구 사이드바가 오른쪽에서 밀려 나온다 ── */
 .hub-burger, .hub-drawer-head, .hub-nav-backdrop { display: none; }
 @media (max-width: 767px) {
-  .hub-burger { display: inline-flex; flex: 0 0 auto; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 40px; height: 40px; margin: 0 6px 0 -4px; padding: 0; border: 0; border-radius: 12px; background: rgba(255,255,255,.1); cursor: pointer; }
+  .hub-burger { order: 3; display: inline-flex; flex: 0 0 auto; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 40px; height: 40px; margin: 0 -4px 0 8px; padding: 0; border: 0; border-radius: 12px; background: rgba(255,255,255,.1); cursor: pointer; }
   .hub-burger:hover { background: rgba(255,255,255,.18); }
   .hub-burger:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .hub-burger span { display: block; width: 18px; height: 2px; border-radius: 2px; background: #fff; transition: transform .22s, opacity .18s; }
@@ -1058,8 +1058,9 @@ body.hub-modal-open { overflow: hidden; }
   body.hub-nav-open .hub-burger span:nth-child(2) { opacity: 0; }
   body.hub-nav-open .hub-burger span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
   .hub-sidebar-brand { margin-right: auto; }
+  .hub-sidebar-foot { order: 2; }
   /* 서랍: 숨겨 둔 도구 목록(.hub-nav)을 왼쪽에서 밀려 나오는 패널로 */
-  .hub-nav { display: flex; position: fixed; top: 0; bottom: 0; left: 0; z-index: 60; width: min(310px, 86vw); padding: calc(14px + var(--hub-safe-top)) 14px calc(24px + var(--hub-safe-bottom)); flex: none; overflow-y: auto; overscroll-behavior: contain; background: radial-gradient(circle at 15% 0%, rgba(255,255,255,.08), transparent 45%), linear-gradient(175deg, #003548 0%, #004f68 45%, #00668a 100%); box-shadow: 18px 0 40px -12px rgba(0, 20, 30, .5); transform: translateX(-105%); visibility: hidden; transition: transform .28s cubic-bezier(.2, .8, .3, 1), visibility 0s linear .28s; }
+  .hub-nav { display: flex; position: fixed; top: 0; bottom: 0; right: 0; left: auto; z-index: 60; width: min(310px, 86vw); padding: calc(14px + var(--hub-safe-top)) 14px calc(24px + var(--hub-safe-bottom)); flex: none; overflow-y: auto; overscroll-behavior: contain; background: radial-gradient(circle at 15% 0%, rgba(255,255,255,.08), transparent 45%), linear-gradient(175deg, #003548 0%, #004f68 45%, #00668a 100%); box-shadow: -18px 0 40px -12px rgba(0, 20, 30, .5); transform: translateX(105%); visibility: hidden; transition: transform .28s cubic-bezier(.2, .8, .3, 1), visibility 0s linear .28s; }
   body.hub-nav-open .hub-nav { transform: none; visibility: visible; transition: transform .28s cubic-bezier(.2, .8, .3, 1); }
   .hub-nav .hub-nav-label { display: block; }
   .hub-drawer-head { display: flex; align-items: center; gap: 10px; padding: 4px 4px 14px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.12); color: #fff; }
@@ -1073,3 +1074,6 @@ body.hub-modal-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .hub-nav, .hub-nav-backdrop, .hub-burger span { transition: none !important; } }
 .hub-notice-tr { display: block; margin-top: 8px; color: rgba(255,255,255,.62); font-size: 11.5px; }
+
+/* hidden 속성이 있는 상단 버튼(승인 대기 등)은 display 규칙에 밀려 보이지 않도록 한다 */
+.hub-sidebar-lang[hidden] { display: none !important; }
