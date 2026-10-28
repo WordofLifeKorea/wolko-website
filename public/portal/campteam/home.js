@@ -1,9 +1,9 @@
 (function () {
   CT.addDict({
     ko: { homeTitle: '캠프 & 아웃리치 팀 홈', openTasks: '진행 중 업무', overdue: '마감 지남', noOwner: '담당자 미정', completion: '전체 완료율', activeCamps: '진행 중 · 예정 캠프', allCamps: '전체 보기', upcoming: '가까운 업무 마감', attention: '확인이 필요한 업무', agenda: '다음 회의 안건', recentMeetings: '최근 회의록', recentFiles: '최근 업로드 파일', budget: '캠프 예산 요약', budgetLocked: '🔒 예산·금액은 권한이 있는 팀원에게만 보입니다.', planned: '예산 계획', actual: '실제 지출', forecast: '예상 최종', remaining: '총 예산 대비 남음', openBudget: '예산 자세히 보기', lines: '항목 수',
-      none: '표시할 내용이 없어요.', ledgerIncome: '수입', ledgerExpense: '지출', ledgerBalance: '현재 잔액', ledgerPending: '경비 리포트에서 확인할 항목이', ledgerPendingTail: '건 있어요.', ledgerOpen: '회계 장부 열기', ledgerReconDiff: '최근 잔액 대조에서 차이가 있었어요', editHome: '홈 꾸미기', editDone: '편집 끝내기', statsTitle: '핵심 숫자', scopeMine: '내 홈', scopeDefault: '모두의 기본 홈', hintMine: '나에게만 적용돼요. 저장하면 관리자가 정한 기본 홈보다 내 설정이 우선해요.', hintDefault: '개인 설정을 따로 저장하지 않은 모든 팀원에게 적용돼요.', resetMine: '기본 홈으로 되돌리기', resetDefault: '처음 모양으로 되돌리기', saved: '저장했어요.', reset: '되돌렸어요.', secShow: '보이기', secHide: '숨기기', secWide: '넓게', secHalf: '반쪽', secUp: '앞으로', secDown: '뒤로', secDrag: '끌어서 순서 바꾸기', secHiddenTag: '숨김', leaveDirty: '저장하지 않은 변경이 있어요. 버리고 계속할까요?', needOne: '보이는 섹션이 하나는 있어야 해요.', mineOverrides: '내 설정이 적용되어 있어요', noOwnerTag: '담당 미정', noDueTag: '기한 미정', overdueTag: '마감 지남', tasksOf: '업무', doneOf: '완료', owner: '담당', campsCount: '진행 중 캠프', today: '오늘', pending: '논의 필요', discussed: '논의함', decided: '결정됨', planning: '준비 중', active: '진행 중', done: '종료', canceled: '취소', dateTbd: '날짜 미정' },
+      mResize: '꾹 누르고 위아래로 끌어 높이 바꾸기', none: '표시할 내용이 없어요.', ledgerIncome: '수입', ledgerExpense: '지출', ledgerBalance: '현재 잔액', ledgerPending: '경비 리포트에서 확인할 항목이', ledgerPendingTail: '건 있어요.', ledgerOpen: '회계 장부 열기', ledgerReconDiff: '최근 잔액 대조에서 차이가 있었어요', editHome: '홈 꾸미기', editDone: '편집 끝내기', statsTitle: '핵심 숫자', scopeMine: '내 홈', scopeDefault: '모두의 기본 홈', hintMine: '나에게만 적용돼요. 저장하면 관리자가 정한 기본 홈보다 내 설정이 우선해요.', hintDefault: '개인 설정을 따로 저장하지 않은 모든 팀원에게 적용돼요.', resetMine: '기본 홈으로 되돌리기', resetDefault: '처음 모양으로 되돌리기', saved: '저장했어요.', reset: '되돌렸어요.', secShow: '보이기', secHide: '숨기기', secWide: '넓게', secHalf: '반쪽', secUp: '앞으로', secDown: '뒤로', secDrag: '끌어서 순서 바꾸기', secHiddenTag: '숨김', leaveDirty: '저장하지 않은 변경이 있어요. 버리고 계속할까요?', needOne: '보이는 섹션이 하나는 있어야 해요.', mineOverrides: '내 설정이 적용되어 있어요', noOwnerTag: '담당 미정', noDueTag: '기한 미정', overdueTag: '마감 지남', tasksOf: '업무', doneOf: '완료', owner: '담당', campsCount: '진행 중 캠프', today: '오늘', pending: '논의 필요', discussed: '논의함', decided: '결정됨', planning: '준비 중', active: '진행 중', done: '종료', canceled: '취소', dateTbd: '날짜 미정' },
     en: { homeTitle: 'Camp & Outreach Team Home', openTasks: 'Open tasks', overdue: 'Overdue', noOwner: 'No owner', completion: 'Completion', activeCamps: 'Active & upcoming camps', allCamps: 'View all', upcoming: 'Upcoming deadlines', attention: 'Needs attention', agenda: 'Next meeting agenda', recentMeetings: 'Recent meetings', recentFiles: 'Recently uploaded files', budget: 'Camp budget summary', budgetLocked: '🔒 Budget and amounts are visible only to authorized team members.', planned: 'Planned', actual: 'Actual', forecast: 'Forecast', remaining: 'Remaining vs target', openBudget: 'Open budget', lines: 'Line items',
-      none: 'Nothing to show.', ledgerIncome: 'Income', ledgerExpense: 'Expenses', ledgerBalance: 'Balance', ledgerPending: 'Expense report items to check:', ledgerPendingTail: '.', ledgerOpen: 'Open ledger', ledgerReconDiff: 'Last reconciliation showed a difference', editHome: 'Customize home', editDone: 'Done editing', statsTitle: 'Key numbers', scopeMine: 'My home', scopeDefault: 'Default home for everyone', hintMine: 'Applies only to you. Once saved, your layout takes priority over the admin default.', hintDefault: 'Applies to every team member who has not saved a personal layout.', resetMine: 'Back to default home', resetDefault: 'Restore original layout', saved: 'Saved.', reset: 'Restored.', secShow: 'Show', secHide: 'Hide', secWide: 'Wide', secHalf: 'Half', secUp: 'Move earlier', secDown: 'Move later', secDrag: 'Drag to reorder', secHiddenTag: 'Hidden', leaveDirty: 'You have unsaved changes. Discard and continue?', needOne: 'At least one section must stay visible.', mineOverrides: 'Your personal layout is applied', noOwnerTag: 'No owner', noDueTag: 'No due date', overdueTag: 'Overdue', tasksOf: 'tasks', doneOf: 'done', owner: 'Owner', campsCount: 'Active camps', today: 'Today', pending: 'To discuss', discussed: 'Discussed', decided: 'Decided', planning: 'Planning', active: 'Active', done: 'Done', canceled: 'Canceled', dateTbd: 'Date TBD' }
+      mResize: 'Press and hold, then drag up or down to resize', none: 'Nothing to show.', ledgerIncome: 'Income', ledgerExpense: 'Expenses', ledgerBalance: 'Balance', ledgerPending: 'Expense report items to check:', ledgerPendingTail: '.', ledgerOpen: 'Open ledger', ledgerReconDiff: 'Last reconciliation showed a difference', editHome: 'Customize home', editDone: 'Done editing', statsTitle: 'Key numbers', scopeMine: 'My home', scopeDefault: 'Default home for everyone', hintMine: 'Applies only to you. Once saved, your layout takes priority over the admin default.', hintDefault: 'Applies to every team member who has not saved a personal layout.', resetMine: 'Back to default home', resetDefault: 'Restore original layout', saved: 'Saved.', reset: 'Restored.', secShow: 'Show', secHide: 'Hide', secWide: 'Wide', secHalf: 'Half', secUp: 'Move earlier', secDown: 'Move later', secDrag: 'Drag to reorder', secHiddenTag: 'Hidden', leaveDirty: 'You have unsaved changes. Discard and continue?', needOne: 'At least one section must stay visible.', mineOverrides: 'Your personal layout is applied', noOwnerTag: 'No owner', noDueTag: 'No due date', overdueTag: 'Overdue', tasksOf: 'tasks', doneOf: 'done', owner: 'Owner', campsCount: 'Active camps', today: 'Today', pending: 'To discuss', discussed: 'Discussed', decided: 'Decided', planning: 'Planning', active: 'Active', done: 'Done', canceled: 'Canceled', dateTbd: 'Date TBD' }
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   var data = null;
@@ -112,7 +112,10 @@
   var TITLES = { stats: ['statsTitle', 'wStatsD'], camps: ['activeCamps', 'wCampsD'], deadlines: ['upcoming', 'wDeadlinesD'], attention: ['attention', 'wAttentionD'], agenda: ['agenda', 'wAgendaD'], meetings: ['recentMeetings', 'wMeetingsD'], files: ['recentFiles', 'wFilesD'], budget: ['budget', 'wBudgetD'],
     notices: ['noticesTitle', 'wNoticesD'], links: ['linksTitle', 'wLinksD'], mytasks: ['myTasksTitle', 'wMyTasksD'], calendar: ['calTitle', 'wCalendarD'], dday: ['ddayTitle', 'wDdayD'], activity: ['activityTitle', 'wActivityD'], thisweek: ['thisweekTitle', 'wThisweekD'], overdue: ['overdueTitle', 'wOverdueD'], decisions: ['decisionsTitle', 'wDecisionsD'], status: ['statusTitle', 'wStatusD'],
     pnotices: ['pnoticesTitle', 'wPnoticesD'], pkitchen: ['pkitchenTitle', 'wPkitchenD'], pcar: ['pcarTitle', 'wPcarD'], pevents: ['peventsTitle', 'wPeventsD'], pchurches: ['pchurchesTitle', 'wPchurchesD'] };
-  var LINK = { overdue: '/portal/campteam/tasks/', decisions: '/portal/campteam/meetings/', status: '/portal/campteam/tasks/', thisweek: '/portal/campteam/tasks/', camps: '/portal/campteam/camps/', deadlines: '/portal/campteam/tasks/', attention: '/portal/campteam/tasks/', agenda: '/portal/campteam/meetings/', meetings: '/portal/campteam/meetings/', files: '/portal/campteam/files/', mytasks: '/portal/campteam/tasks/', pnotices: '/portal/', pkitchen: '/portal/kitchen', pcar: '/portal/car-drive', pevents: '/portal/', pchurches: '/portal/crs' };
+  var LINK = { overdue: '/portal/campteam/tasks/', decisions: '/portal/campteam/meetings/', status: '/portal/campteam/tasks/', thisweek: '/portal/campteam/tasks/', camps: '/portal/campteam/camps/', deadlines: '/portal/campteam/tasks/', attention: '/portal/campteam/tasks/', agenda: '/portal/campteam/meetings/', meetings: '/portal/campteam/meetings/', files: '/portal/campteam/files/', mytasks: '/portal/campteam/tasks/', pnotices: '/portal/', pkitchen: '/portal/kitchen', pcar: '/portal/car-drive', pevents: '/portal/', pchurches: '/portal/crs', stats: '/portal/campteam/tasks/', calendar: '/portal/campteam/calendar/', budget: '/portal/campteam/finance/' };
+  // 폰에서 목록이 길면 카드 높이 안에서 옆으로 넘겨 보는 위젯(몇 개가 한 쪽에 보일지는 카드 높이가 정한다)
+  var PAGED = { camps: 1, deadlines: 1, attention: 1, agenda: 1, meetings: 1, files: 1, notices: 1, mytasks: 1, thisweek: 1, overdue: 1, decisions: 1, activity: 1, pnotices: 1, pkitchen: 1, pcar: 1, pevents: 1, pchurches: 1 };
+  var MROW = 40, MH_DEFAULT = 6, MH_MIN = 3, MH_MAX = 24;
   var NOCARD = { stats: 1 };
 
   var L = null, editing = false, scope = 'mine', work = null, base = '', calMonth = null, calCache = {}, auditCache = null;
@@ -258,6 +261,14 @@
     for (var y = 0; y < 100; y++) for (var x = 0; x + w <= COLS; x++) if (!collides(items, { x: x, y: y, w: w, h: h })) return { x: x, y: y, found: true };
     return { x: 0, y: items.reduce(function (m, o) { return Math.max(m, o.y + o.h); }, 0), found: false };
   }
+  /** 위젯 하나를 r 자리에 놓았을 때 나머지가 어떻게 밀려나는지 — 겹치는 위젯은 그 아래로 밀리고, 그 아래 위젯도 차례로 밀린다. { uid: y } 또는 자리가 모자라면 null */
+  function reflow(items, uid, r) {
+    var placed = [{ uid: uid, x: r.x, y: r.y, w: r.w, h: r.h }], out = {};
+    if (r.y + r.h > 120) return null;
+    var rest = items.filter(function (o) { return o.uid !== uid; }).sort(function (a, b) { return a.y - b.y || a.x - b.x; });
+    for (var i = 0; i < rest.length; i++) { var o = rest[i], y = o.y; while (collides(placed, { x: o.x, y: y, w: o.w, h: o.h })) y++; if (y + o.h > 120) return null; out[o.uid] = y; placed.push({ uid: o.uid, x: o.x, y: y, w: o.w, h: o.h }); }
+    return out;
+  }
   function tidy(items) {
     var placed = []; items.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; }).forEach(function (it) { var y = 0; while (y < it.y && collides(placed, { x: it.x, y: y, w: it.w, h: it.h })) y++; it.y = y; placed.push(it); });
   }
@@ -277,6 +288,20 @@
     (m || []).forEach(function (u) { var f = byPos.filter(function (i) { return i.uid === u; })[0]; if (f) out.push(f); });
     return out.concat(byPos.filter(function (i) { return out.indexOf(i) < 0; }));
   }
+  var mhOf = function (src, it) { var v = src.mh && src.mh[it.uid]; return Math.max(MH_MIN, Math.min(MH_MAX, +v || MH_DEFAULT)); };
+  /** 폰: 카드 안 내용이 높이를 넘으면 옆 쪽으로 자동으로 넘어간다 — 쪽 표시(점 · 1/3)를 맞춘다 */
+  function bindPagers() {
+    [].forEach.call(document.querySelectorAll('#homeGrid .hs'), function (sec) {
+      var body = sec.querySelector('.pgd'), bar = sec.querySelector('.pgr'); if (!body || !bar) return;
+      var paint = function () {
+        var pages = Math.max(1, Math.round(body.scrollWidth / Math.max(1, body.clientWidth))), cur = Math.min(pages - 1, Math.round(body.scrollLeft / Math.max(1, body.clientWidth)));
+        if (pages < 2) { bar.innerHTML = ''; bar.hidden = true; return; }
+        bar.hidden = false; var dots = ''; for (var i = 0; i < pages; i++) dots += '<i' + (i === cur ? ' class="on"' : '') + '></i>';
+        bar.innerHTML = dots + '<b>' + (cur + 1) + '/' + pages + '</b>';
+      };
+      body.addEventListener('scroll', paint, { passive: true }); paint(); setTimeout(paint, 250);
+    });
+  }
   function render() {
     var d = data, hasTest = [].concat(d.camps, d.deadlines, d.attention, d.agenda, d.meetings, d.files).some(function (r) { return r.isTest; });
     $('homeSub').innerHTML = esc(d.today) + ' · ' + esc(CT.t('campsCount')) + ' ' + d.camps.length + (hasTest ? ' <span class="chip test">' + esc(CT.t('testData')) + '</span>' : '') + (!editing && L.mine ? ' <span class="chip">' + esc(CT.t('mineOverrides')) + '</span>' : '');
@@ -290,16 +315,16 @@
     var ordered = isWide ? items.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; }) : mobileOrder(items, src.m);
     var btn = function (a, label, icon, dis) { return '<button type="button" class="hs-b" data-a="' + a + '" title="' + esc(label) + '" aria-label="' + esc(label) + '"' + (dis ? ' disabled' : '') + '>' + ico(icon) + '</button>'; };
     grid.innerHTML = cells + ordered.map(function (it, idx) {
-      var card = !NOCARD[it.type], link = LINK[it.type];
+      var card = !NOCARD[it.type], link = LINK[it.type], pg = !isWide && PAGED[it.type];
       var head = card ? '<h2><span>' + esc(tt(it.type)) + '</span>' + (link ? '<a href="' + link + '">' + esc(CT.t('allCamps')) + '</a>' : '') + '</h2>' : '';
       var name = '<span class="hs-name">' + esc(tt(it.type)) + (it.show ? '' : ' · ' + esc(CT.t('secHiddenTag'))) + '</span><span class="sp"></span>';
       var eye = btn('show', CT.t(it.show ? 'secHide' : 'secShow'), it.show ? 'eye' : 'eyeOff'), del = btn('remove', CT.t('remove'), 'x'), tools = '';
       if (editing && isWide) tools = '<div class="hs-tools" data-move><span class="hs-grip">' + ico('grip', 16) + '</span>' + name + eye + btn('width', CT.t('widthToggle'), 'width') + del + '</div>';
       else if (editing) tools = '<div class="hs-tools mob">' + name + btn('up', CT.t('moveUp'), 'up', idx === 0) + btn('down', CT.t('moveDown'), 'down', idx === ordered.length - 1) + eye + del + '</div>';
       var place = isWide ? ' style="grid-column:' + (it.x + 1) + ' / span ' + it.w + ';grid-row:' + (it.y + 1) + ' / span ' + it.h + '"' : '';
-      return '<section class="hs ' + (card ? 'card' : 'nocard') + (it.show ? '' : ' off') + '" data-uid="' + esc(it.uid) + '" data-type="' + it.type + '"' + place + '>' + tools + head + '<div class="hs-body">' + widgetBody(it) + '</div>' + (editing && isWide ? '<span class="hs-rs" data-resize title="' + esc(CT.t('resize')) + '"></span>' : '') + '</section>';
+      return '<section class="hs ' + (card ? 'card' : 'nocard') + (it.show ? '' : ' off') + '" data-uid="' + esc(it.uid) + '" data-type="' + it.type + '"' + place + '>' + tools + head + '<div class="hs-body' + (pg ? ' pgd' : '') + '"' + (pg ? ' style="--mh:' + (mhOf(src, it) * MROW) + 'px"' : '') + '>' + widgetBody(it) + '</div>' + (pg ? '<div class="pgr" aria-hidden="true"></div>' : '') + (editing && pg ? '<span class="hs-mrs" data-mresize title="' + esc(CT.t('mResize')) + '"></span>' : '') + (editing && isWide ? '<span class="hs-rs" data-resize title="' + esc(CT.t('resize')) + '"></span>' : '') + '</section>';
     }).join('');
-    renderBar(); loadLate(items);
+    renderBar(); loadLate(items); bindPagers();
   }
 
   // ── 편집 모드 ──
@@ -350,20 +375,27 @@
 
   // 끌어서 옮기기 / 모서리로 크기 조절 (TV 편집기와 같은 방식: 칸에 맞춰지고, 겹치면 원래대로)
   // 끄는 동안 화면 위·아래 가장자리에 가면 자동으로 스크롤되고, 마우스 휠로 스크롤해도 위젯이 커서를 따라간다.
+  /** 끄는 동안 밀려나는 위젯의 자리를 미리 보여 준다(스르륵 움직이게 FLIP) */
+  function showPushed(map, uid) {
+    var grid = $('homeGrid'), els = [].slice.call(grid.querySelectorAll('.hs')).filter(function (el) { return el.dataset.uid !== uid; }), before = els.map(function (el) { return el.getBoundingClientRect().top; });
+    els.forEach(function (el) { var o = findItem(el.dataset.uid); if (!o || map[o.uid] == null) return; el.style.gridRow = (map[o.uid] + 1) + ' / span ' + o.h; });
+    els.forEach(function (el, i) { var d = before[i] - el.getBoundingClientRect().top; if (Math.abs(d) < 1) return; el.style.transition = 'none'; el.style.transform = 'translateY(' + d + 'px)'; el.getBoundingClientRect(); el.style.transition = 'transform .22s ease'; el.style.transform = ''; });
+  }
   function startDrag(e, el, mode) {
     var it = findItem(el.dataset.uid), grid = $('homeGrid'); if (!it) return;
     e.preventDefault();
     var rect = grid.getBoundingClientRect(), colW = (rect.width - GAP * (COLS - 1)) / COLS, sx = colW + GAP, sy = ROW + GAP, x0 = e.clientX, y0 = e.clientY, scroll0 = window.scrollY, r0 = { x: it.x, y: it.y, w: it.w, h: it.h };
     var cat = (L.catalog || []).filter(function (c) { return c.type === it.type; })[0] || { minW: 2, minH: 2 };
     var ghost = document.createElement('div'); ghost.className = 'ghost'; grid.appendChild(ghost);
-    var cur = Object.assign({}, r0), ok = true, last = { x: x0, y: y0 }, raf = 0, alive = true;
+    var cur = Object.assign({}, r0), ok = true, last = { x: x0, y: y0 }, raf = 0, alive = true, pushed = null;
     var place = function (r) { ghost.style.gridColumn = (r.x + 1) + ' / span ' + r.w; ghost.style.gridRow = (r.y + 1) + ' / span ' + r.h; };
     place(cur); el.classList.add('drag');
     var apply = function () {
       var px = last.x - x0, py = last.y - y0 + (window.scrollY - scroll0), dx = px / sx, dy = py / sy; // 스크롤한 만큼도 움직인 것으로 계산
       if (mode === 'move') { cur = { x: Math.max(0, Math.min(COLS - r0.w, Math.round(r0.x + dx))), y: Math.max(0, Math.round(r0.y + dy)), w: r0.w, h: r0.h }; el.style.transform = 'translate(' + px + 'px,' + py + 'px)'; }
       else { cur = { x: r0.x, y: r0.y, w: Math.max(cat.minW, Math.min(COLS - r0.x, Math.round(r0.w + dx))), h: Math.max(cat.minH, Math.round(r0.h + dy)) }; el.style.gridColumn = (cur.x + 1) + ' / span ' + cur.w; el.style.gridRow = (cur.y + 1) + ' / span ' + cur.h; }
-      ok = !collides(work.items, cur, it.uid); ghost.classList.toggle('bad', !ok); place(cur);
+      pushed = reflow(work.items, it.uid, cur); ok = !!pushed; ghost.classList.toggle('bad', !ok); place(cur);
+      if (ok) showPushed(pushed, it.uid);
     };
     var move = function (ev) { last = { x: ev.clientX, y: ev.clientY }; apply(); };
     var onScroll = function () { apply(); };
@@ -377,13 +409,51 @@
       alive = false; clearInterval(raf);
       document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up); window.removeEventListener('scroll', onScroll);
       ghost.remove(); el.style.transform = '';
-      if (ok && (cur.x !== r0.x || cur.y !== r0.y || cur.w !== r0.w || cur.h !== r0.h)) { it.x = cur.x; it.y = cur.y; it.w = cur.w; it.h = cur.h; }
+      if (ok && pushed && (cur.x !== r0.x || cur.y !== r0.y || cur.w !== r0.w || cur.h !== r0.h)) { it.x = cur.x; it.y = cur.y; it.w = cur.w; it.h = cur.h; work.items.forEach(function (o) { if (pushed[o.uid] != null) o.y = pushed[o.uid]; }); }
       render();
     };
     document.addEventListener('pointermove', move); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up); window.addEventListener('scroll', onScroll, { passive: true });
     raf = setInterval(loop, 16);
   }
 
+  /** 폰: 카드 오른쪽 아래 모서리를 꾹 눌렀다가 위아래로 끌어 높이를 바꾼다(아이폰·갤럭시 공통 터치 방식). 높이가 줄면 내용이 다음 쪽으로 넘어간다 */
+  function startMResize(e, sec) {
+    var it = findItem(sec.dataset.uid), body = sec.querySelector('.pgd'); if (!it || !body) return;
+    e.preventDefault();
+    var y0 = e.clientY, h0 = body.clientHeight, armed = false, cur = null, pid = e.pointerId, handle = e.target.closest('[data-mresize]');
+    var timer = setTimeout(function () { armed = true; sec.classList.add('mresizing'); try { handle.setPointerCapture(pid); } catch (x) {} if (navigator.vibrate) navigator.vibrate(12); }, 260);
+    var move = function (ev) {
+      if (!armed) { if (Math.abs(ev.clientY - y0) > 12) end(false); return; }
+      ev.preventDefault(); cur = Math.max(MH_MIN, Math.min(MH_MAX, Math.round((h0 + ev.clientY - y0) / MROW)));
+      body.style.setProperty('--mh', cur * MROW + 'px'); body.dispatchEvent(new Event('scroll'));
+    };
+    var end = function (commit) {
+      clearTimeout(timer); document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', cancel);
+      sec.classList.remove('mresizing');
+      if (commit && armed && cur) { work.mh = work.mh || {}; work.mh[it.uid] = cur; } render();
+    }, up = function () { end(true); }, cancel = function () { end(false); };
+    document.addEventListener('pointermove', move, { passive: false }); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', cancel);
+  }
+  /** 카드를 두 번 누르면(컴퓨터는 더블클릭, 폰은 두 번 탭) 그 카드의 내용이 있는 페이지로 간다 — 링크·버튼·입력칸·달력 조작은 제외, 홈 꾸미기 중에는 쓰지 않는다 */
+  var SKIP = 'a,button,select,input,textarea,summary,label,[data-cal],[data-calview],.pgr,.hs-tools,.hs-rs,.hs-mrs,.cells';
+  function cardUrl(sec) {
+    var t = sec.dataset.type;
+    if (t === 'dday') { var it = (L.effective.items || []).filter(function (w) { return w.uid === sec.dataset.uid; })[0], cid = it && it.opts && it.opts.campId; return cid ? '/portal/campteam/space/?id=' + encodeURIComponent(cid) : '/portal/campteam/camps/'; }
+    return LINK[t] || '';
+  }
+  function goCard(sec) { var u = cardUrl(sec); if (!u) return false; try { window.getSelection().removeAllRanges(); } catch (x) {} location.href = u; return true; }
+  function wireOpen(grid) {
+    grid.addEventListener('dblclick', function (e) { if (editing || e.target.closest(SKIP)) return; var sec = e.target.closest('.hs'); if (sec) goCard(sec); });
+    var down = null, tap = { t: 0, x: 0, y: 0, el: null };
+    grid.addEventListener('pointerdown', function (e) { down = e.pointerType === 'touch' ? { x: e.clientX, y: e.clientY } : null; });
+    grid.addEventListener('pointerup', function (e) {
+      if (editing || e.pointerType !== 'touch' || !down || e.target.closest(SKIP)) return;
+      if (Math.abs(e.clientX - down.x) > 10 || Math.abs(e.clientY - down.y) > 10) return;
+      var sec = e.target.closest('.hs'); if (!sec) return; var now = Date.now();
+      if (tap.el === sec && now - tap.t < 380 && Math.abs(e.clientX - tap.x) < 30 && Math.abs(e.clientY - tap.y) < 30) { tap.t = 0; goCard(sec); }
+      else tap = { t: now, x: e.clientX, y: e.clientY, el: sec };
+    });
+  }
   function wire() {
     $('editHome').onclick = function () { if (editing) { leave(); } else { editing = true; startScope('mine'); render(); } };
     $('editBar').onclick = function (e) {
@@ -395,7 +465,7 @@
       else if (t.dataset.add) addWidget(t.dataset.add);
     };
     document.addEventListener('click', function (e) { var p = $('palette'); if (p && !p.hidden && !e.target.closest('.addwrap')) p.hidden = true; });
-    var grid = $('homeGrid');
+    var grid = $('homeGrid'); wireOpen(grid);
     grid.addEventListener('click', function (e) {
       var cv = e.target.closest('[data-calview]'); if (cv) { calView = cv.dataset.calview; try { localStorage.setItem('ct-cal-view', calView); } catch (x) {} paintLate(); return; }
       var cal = e.target.closest('[data-cal]'); if (cal && cal.tagName === 'BUTTON') { var step = +cal.dataset.cal; if (!calMonth) calHtml(); if (step === 0) { var t = data.today.split('-'); calMonth = { y: +t[0], m: +t[1] - 1 }; } else { var mm = calMonth.m + step; calMonth = { y: calMonth.y + Math.floor(mm / 12), m: ((mm % 12) + 12) % 12 }; } paintLate(); loadCal().then(paintLate); return; }
@@ -410,12 +480,14 @@
         var next = it.w === COLS ? { x: it.x > COLS / 2 ? COLS / 2 : it.x, w: COLS / 2 } : { x: 0, w: COLS };
         if (it.w !== COLS && it.w >= COLS / 2 && it.w < COLS) next = { x: 0, w: COLS };
         var r = { x: next.x, y: it.y, w: next.w, h: it.h };
-        if (collides(work.items, r, it.uid)) { msg(CT.t('overlapMsg'), true); return; }
-        it.x = r.x; it.w = r.w; render();
+        var pm = reflow(work.items, it.uid, r); if (!pm) { msg(CT.t('overlapMsg'), true); return; }
+        it.x = r.x; it.w = r.w; work.items.forEach(function (o) { if (pm[o.uid] != null) o.y = pm[o.uid]; }); render();
       }
     });
     grid.addEventListener('change', function (e) { var s = e.target.closest('.dd-sel'); if (!s || !editing) return; var it = findItem(s.dataset.uid); if (it) { it.opts = s.value ? { campId: s.value } : {}; render(); } });
     grid.addEventListener('pointerdown', function (e) {
+      var mr = editing && !wide() && e.target.closest('[data-mresize]');
+      if (mr) { startMResize(e, mr.closest('.hs')); return; }
       if (!editing || e.button > 0 || !wide()) return;
       var rs = e.target.closest('[data-resize]'), mv = e.target.closest('[data-move]');
       if (e.target.closest('button,select,a')) return;

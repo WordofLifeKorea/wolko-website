@@ -29,7 +29,7 @@ export async function onRequestPut({ env, request }) {
   if (b.scope === 'default' && !s.perms.manageMembers) return needPerm('모두의 기본 홈은 관리자만 바꿀 수 있습니다.');
   const r = sanitizeHomeLayout(b.layout); if (r.error) return badRequest(r.error);
   const scope = b.scope === 'default' ? 'default' : userScope(s.email);
-  if (!isTeamMember(s) && r.layout.items.some((w) => w.type === 'activity')) { r.layout.items = r.layout.items.filter((w) => w.type !== 'activity'); if (r.layout.m) r.layout.m = r.layout.m.filter((u) => r.layout.items.some((w) => w.uid === u)); } // 팀 전용 위젯은 명단에 없는 사람의 "내 홈"에 저장하지 않는다
+  if (!isTeamMember(s) && r.layout.items.some((w) => w.type === 'activity')) { r.layout.items = r.layout.items.filter((w) => w.type !== 'activity'); if (r.layout.m) r.layout.m = r.layout.m.filter((u) => r.layout.items.some((w) => w.uid === u)); if (r.layout.mh) for (const u of Object.keys(r.layout.mh)) if (!r.layout.items.some((w) => w.uid === u)) delete r.layout.mh[u]; } // 팀 전용 위젯은 명단에 없는 사람의 "내 홈"에 저장하지 않는다
   await env.DB.prepare(`INSERT INTO home_layout (scope,json,updatedAt,updatedBy) VALUES (?1,?2,?3,?4) ON CONFLICT(scope) DO UPDATE SET json=?2, updatedAt=?3, updatedBy=?4`)
     .bind(scope, JSON.stringify(r.layout), nowIso(), s.email).run();
   if (b.scope === 'default') await audit(env, s.email, 'save', 'home_layout', 'default', `${r.layout.items.filter((x) => x.show).length} visible widgets`);

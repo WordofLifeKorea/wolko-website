@@ -22,7 +22,8 @@
       fxOn: 'Turn seasonal background on', fxOff: 'Turn seasonal background off', fxLabel: '❄ Snow', fxLabelA: '🍁 Leaves', allDone: "You've finished everything for today! 🎉" },
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
-  var officeEl = null, feed = null, loaded = false, baseTitle = document.title, handlers = {}, lastAt = 0, lastRemaining = null;
+  CT.pre('/api/campteam/portal-feed');   // 이름·날씨는 로그인 확인과 동시에 미리 불러 둔다
+  var HK = 'ct-hero-v1', officeEl = null, feed = null, loaded = false, baseTitle = document.title, handlers = {}, lastAt = 0, lastRemaining = null;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var ls = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 
@@ -50,12 +51,17 @@
       me.gospelPending ? ['<a class="hub-today-chip is-gospel" href="/portal/gospel-stats/?write=1&month=' + encodeURIComponent(me.gospelMonth) + '">' + esc(CT.t('dutyGospel')) + ' <b>' + esc(CT.t('dutyGospelGo')) + ' →</b></a>'] : []);
     return out.length ? '<div class="hub-today-bar">' + out.join('') + '</div>' : '';
   }
+  // 지난번에 본 이름·날씨는 기억해 두었다가 서버 답이 오기 전에도 같은 인사말을 바로 보여 준다(이메일 앞부분을 임시로 보이지 않는다)
+  function cached() { try { var c = JSON.parse(localStorage.getItem(HK) || 'null'); return c && typeof c === 'object' ? c : null; } catch (e) { return null; } }
+  function remember() { try { localStorage.setItem(HK, JSON.stringify({ name: feed.name || '', weather: feed.weather || null, at: Date.now() })); } catch (e) {} }
+  function curWeather() { if (feed) return feed.weather; var c = cached(); return c && c.weather && Date.now() - c.at < 1800000 ? c.weather : null; }
+  function curName() { if (feed && feed.name) return feed.name; var c = cached(); if (c && c.name) return c.name; return loaded && CT.me && CT.me.email ? String(CT.me.email).split('@')[0] : ''; }
   function paintHero() {
     var box = $('hubSkyBody'); if (!box) return;
-    var name = (feed && feed.name) || (CT.me && CT.me.email ? String(CT.me.email).split('@')[0] : '');
+    var name = curName();
     var today = (feed && feed.today) || (window.CT_TODAY || new Date().toISOString().slice(0, 10));
     var full = new Intl.DateTimeFormat(CT.lang() === 'en' ? 'en-US' : 'ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }).format(new Date(today + 'T12:00:00+09:00'));
-    var w = feed && feed.weather;
+    var w = curWeather();
     box.innerHTML = '<div class="hub-dash-top"><div class="hub-dash-date"><b>' + esc(full) + '</b></div><p class="hub-sky-tip">' + esc(w ? wxTip(w) : '') + '</p>' + chips() + '</div>';
     var sky = $('hubSky'); if (sky) sky.dataset.tod = String(tod());
     if (name) setGreeting(CT.t('hello' + tod())(name));
@@ -71,9 +77,9 @@
   }
   var wxKey = '';
   function applyWeather() {
-    var w = feed && feed.weather, key = w ? w.kind + (w.isDay ? 'd' : 'n') : '';
+    var w = curWeather(), key = w ? w.kind + (w.isDay ? 'd' : 'n') : '';
     if (key === wxKey) return; wxKey = key;
-    if (window.HubSky) window.HubSky.setWeather(w || null); else window.addEventListener('load', function () { if (window.HubSky) window.HubSky.setWeather(feed && feed.weather || null); });
+    if (window.HubSky) window.HubSky.setWeather(w || null); else window.addEventListener('load', function () { if (window.HubSky) window.HubSky.setWeather(curWeather() || null); });
     snowBoost(w && w.kind === 'snow');
   }
 
@@ -205,6 +211,7 @@
   function treeSync(on) {
     var art = document.querySelector('#hubSky .hub-sky-content'), has = document.querySelector('.ct-tree');
     if (on && art && !has) art.insertAdjacentHTML('beforeend', TREE); else if (!on && has) has.remove();
+    var hero = document.getElementById('hubSky'); if (hero) hero.classList.toggle('has-tree', !!on);
   }
   // 켜기·끄기
   function loops() {
@@ -245,7 +252,7 @@
   // ── 불러오기 · 5분 자동 새로고침 ──
   async function loadFeed() {
     try { feed = await CT.api('/api/campteam/portal-feed'); } catch (e) { feed = null; }
-    loaded = true; lastAt = Date.now(); paintHero();
+    loaded = true; lastAt = Date.now(); if (feed) remember(); paintHero();
     if (handlers.onFeed) handlers.onFeed();
     if (window.CTA && CTA.renderToday) { try { CTA.renderToday(); } catch (e) {} }
     badge();
@@ -257,6 +264,8 @@
     document.addEventListener('visibilitychange', function () { loops(); if (!document.hidden && Date.now() - lastAt > 120000) refresh(); });
     document.addEventListener('ct-lang', function () { paintHero(); fxButton(); setFx(snow.on); badge(); });
     setInterval(function () { if (!document.hidden && Date.now() - lastAt > 290000) refresh(); }, 30000);
+    // 서버 답이 오래 걸려도 오늘 카드가 영영 비어 있지 않게 6초 뒤에는 있는 만큼 보여 준다
+    setTimeout(function () { if (!loaded) { loaded = true; paintHero(); if (window.CTA && CTA.renderToday) { try { CTA.renderToday(); } catch (e) {} } } }, 6000);
     paintHero(); return loadFeed();
   }
   async function refresh() {
@@ -266,5 +275,5 @@
   }
   document.addEventListener('ct-today', badge);
 
-  window.CTHero = { start: start, widget: widget, todayExtra: todayExtra, badge: badge, refresh: refresh, links: LINKS, markSeen: function () { ls.set('ct-seen-notices', JSON.stringify(((feed && feed.notices) || []).map(function (n) { return n.id; }))); if (window.CTA && CTA.renderToday) CTA.renderToday(); badge(); if (handlers.onFeed) handlers.onFeed(); } };
+  window.CTHero = { pending: function () { return !loaded; }, start: start, widget: widget, todayExtra: todayExtra, badge: badge, refresh: refresh, links: LINKS, markSeen: function () { ls.set('ct-seen-notices', JSON.stringify(((feed && feed.notices) || []).map(function (n) { return n.id; }))); if (window.CTA && CTA.renderToday) CTA.renderToday(); badge(); if (handlers.onFeed) handlers.onFeed(); } };
 })();

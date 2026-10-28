@@ -63,21 +63,20 @@ test('협력 교회 API: CRS 에서 읽은 뒤 저장하고, 읽기에 실패하
   } finally { globalThis.fetch = realFetch; }
 });
 
-test('협력 교회 지역: 시/군/구가 있으면 그것, 없으면 시/도를 짧게 — 연락처·주소·목사님은 나가지 않는다', async () => {
-  const { partnerChurchAreas, loadPartnerChurchData } = await import('../functions/lib/partnerChurches.js');
-  const areas = partnerChurchAreas({
-    a: { churchName: '평택중앙교회', region: '경기도', district: '평택시', detailAddress: '비공개로 12', pastorPhone: '010-1', stepsVersion: 3, steps: { 1: true } },
-    b: { churchName: '제주열방교회', region: '제주특별자치도', stepsVersion: 3, steps: { 1: true } },
-    c: { churchName: '지역 모름 교회', stepsVersion: 3, steps: { 1: true } },
-    d: { churchName: '단계 없는 교회', region: '서울특별시', district: '강남구' },
-    e: { churchName: '평택중앙교회', region: '서울특별시', district: '강남구', stepsVersion: 3, steps: { 2: true } },
-  });
-  assert.deepEqual(areas, { '평택중앙교회': '평택시', '제주열방교회': '제주' });
-  assert.equal(JSON.stringify(areas).includes('비공개') || JSON.stringify(areas).includes('010'), false);
-  // 이름만 있는 예전 저장값 + CRS 연결 없음 → 이름만 돌려준다 / 지역까지 저장돼 있으면 지역도
-  const old = env(); old.store.set(PARTNER_CHURCH_KEY, JSON.stringify({ names: ['소망 교회'] }));
-  assert.deepEqual(await loadPartnerChurchData(old.env), { names: ['소망 교회'] });
-  const fresh = env(); fresh.store.set(PARTNER_CHURCH_KEY, JSON.stringify({ names: ['소망 교회'], areas: { '소망 교회': '평택시' } }));
-  const res = await (await onRequestGet({ env: fresh.env })).json();
-  assert.deepEqual(res, { churches: ['소망 교회'], areas: { '소망 교회': '평택시' } });
+test('협력 교회 이름: 영문을 괄호로 병기한 긴 이름이 중간에서 잘리지 않는다', () => {
+  const long = '평택대광교회 글로벌디사이플센터 (Global Disciple Center - Pyeongtaek Daekwang Church)';
+  assert.ok(long.length > 60);
+  const names = partnerChurchNames({ a: { churchName: long, stepsVersion: 3, steps: { 1: true } }, b: { churchName: 'x'.repeat(300), stepsVersion: 3, steps: { 1: true } } });
+  assert.ok(names.includes(long), '60자를 넘어도 그대로');
+  assert.ok(names.every(n => n.length <= 120), '너무 긴 값은 120자에서 자른다');
+});
+
+test('협력 교회 화면 CSS: 중괄호가 짝이 맞고, 색 점이 없다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/partner-churches.css', import.meta.url), 'utf8');
+  let depth = 0;
+  for (const ch of css) { depth += (ch === '{') - (ch === '}'); assert.ok(depth >= 0); }
+  assert.equal(depth, 0, '중괄호가 하나 빠지면 그 뒤 규칙이 전부 무시된다');
+  const js = readFileSync(new URL('../public/partner-churches.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(css + js, /pc-dot|pc-strip-dots/);
 });

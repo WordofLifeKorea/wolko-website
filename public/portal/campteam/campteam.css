@@ -667,7 +667,7 @@ body.ct-autumn .tdbox.is-over{border-color:#f1b9b4}body.ct-autumn .tdbox.is-toda
 .ct-tree{position:absolute;z-index:-1;right:300px;bottom:-4px;width:150px;height:auto;pointer-events:none;filter:drop-shadow(0 6px 10px rgba(40,10,0,.35))}
 .ct-tree .crown{transform-origin:80px 150px;animation:ct-sway 5s ease-in-out infinite alternate}
 @keyframes ct-sway{from{transform:rotate(-1.6deg)}to{transform:rotate(1.6deg)}}
-@media(max-width:899px){.ct-tree{right:0;bottom:auto;top:-18px;width:96px}}
+@media(max-width:899px){.ct-tree{right:10px;bottom:auto;top:8px;width:84px}.ct-hero.has-tree .sk-sun,.ct-hero.has-tree .sk-moon{opacity:0!important}.ct-hero.has-tree .hub-greeting,.ct-hero.has-tree .hub-dash-date,.ct-hero.has-tree .hub-sky-tip{padding-right:80px}}
 @media (prefers-reduced-motion:reduce){.ct-tree .crown{animation:none}}
 #fxBtn[hidden]{display:none}
 
@@ -678,3 +678,19 @@ body.ct-autumn .tdbox.is-over{border-color:#f1b9b4}body.ct-autumn .tdbox.is-toda
 .nav a.on .ic{background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.28)}
 .nav a.on{background:rgba(255,255,255,.14)}
 @media (prefers-reduced-motion:reduce){.nav a:hover .ic svg.art{transform:none}}
+
+/* ── 폰: 긴 목록은 카드 높이 안에서 옆으로 넘겨 본다(내용이 높이를 넘으면 자동으로 다음 쪽) ── */
+.pgr{display:none}.hs-mrs{display:none}
+@media(max-width:900px){
+  .dash .hs{touch-action:manipulation}
+  .dash .hs-body.pgd{max-height:var(--mh,240px);flex:0 0 auto;columns:1;column-gap:0;column-fill:auto;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .dash .hs-body.pgd::-webkit-scrollbar{display:none}
+  .dash .hs-body.pgd>*{break-inside:avoid;scroll-snap-align:start}
+  .dash .hs-body.pgd>[data-week],.dash .hs-body.pgd>[data-activity]{display:contents}
+  .pgr{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font:700 11px var(--f-body)}.pgr[hidden]{display:none}
+  .pgr i{width:7px;height:7px;border-radius:50%;background:#cfd9df}.pgr i.on{background:var(--blue);width:16px;border-radius:4px}.pgr b{margin-left:6px;color:var(--mid);font-weight:700}
+  .dash.editing .hs-mrs{display:block;position:absolute;right:6px;bottom:6px;width:34px;height:34px;border-radius:10px;background:#eaf4f7;border:1px solid #cfe3ea;touch-action:none;z-index:6}
+  .dash.editing .hs-mrs::after{content:'';position:absolute;right:7px;bottom:7px;width:12px;height:12px;border-right:3px solid var(--blue-lt);border-bottom:3px solid var(--blue-lt);border-radius:0 0 4px 0}
+  .dash .hs.mresizing{outline:2px solid var(--blue-lt);box-shadow:0 12px 28px -14px rgba(0,80,110,.5)}
+  .dash.editing .hs.mresizing .hs-mrs{background:var(--blue-lt)}
+}

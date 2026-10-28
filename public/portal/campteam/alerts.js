@@ -98,6 +98,7 @@
   }
   function renderToday() {
     var host = $('todayBox'); if (!host || !st.today) return; var d = st.today, t = d.today, s = d.summary || {};
+    if (window.CTHero && CTHero.pending && CTHero.pending()) return;   // 듀티·새 공지가 오기 전에는 그리지 않는다(한 번에 완성된 카드로 나오게)
     var ex = (window.CTHero && CTHero.todayExtra) ? CTHero.todayExtra() : { html: '', duties: 0, notices: 0 };
     // 카드 색: 마감 지난 일이 있으면 붉게, 오늘 할 일·듀티·새 공지가 있으면 주황, 모두 끝났으면 초록 — 한눈에 보이도록
     var cls = t.overdue.length ? 'is-over' : (t.today.length || ex.duties || ex.notices) ? 'is-today' : 'is-clear';
