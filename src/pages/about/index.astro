@@ -138,7 +138,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .value-card::after { content:""; position:absolute; right:-24px; bottom:-32px; width:100px; height:100px; border-radius:50%; background:rgba(0,79,104,0.05); transition:transform .22s; }
   .value-card:hover { background:linear-gradient(180deg, #0a5b76 0%, #004f68 100%); border-color:transparent; box-shadow:0 20px 48px rgba(0,79,104,0.22); transform:translateY(-5px); }
   .value-card:hover::after { transform:scale(1.3); }
-  .value-card:hover .value-num { color:#73d1f5; -webkit-text-stroke:2.4px #73d1f5; transform:scale(1.05); }
+  .value-card:hover .value-num { color:#73d1f5; -webkit-text-stroke-color:#73d1f5; transform:scale(1.05); }
   .value-card:hover .value-title, .value-card:hover .value-desc { color:#fff; }
   .value-card:hover .value-desc { color:rgba(255,255,255,0.82); }
   .value-num { font:800 56px/1 Montserrat,sans-serif; letter-spacing:-0.04em; color:transparent; -webkit-text-stroke:1.6px var(--primary); transition:color .22s, -webkit-text-stroke-color .22s, -webkit-text-stroke-width .22s, transform .3s; position:relative; z-index:1; margin-bottom:8px; transform-origin:left bottom; }
@@ -160,17 +160,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   /* ── COMMITMENTS ── */
   .commit-inner { max-width:980px; margin:56px auto 0; }
   .commit-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .commit-card { background:var(--white); border:1px solid var(--primary-line); border-radius:var(--r-lg); padding:30px 30px 32px; display:flex; flex-direction:column; gap:10px; box-shadow:0 8px 24px rgba(16,32,40,0.05); transition:transform .22s, box-shadow .22s, border-color .22s; position:relative; overflow:hidden; }
+  /* 번호는 왼쪽에 크게, 제목과 설명은 오른쪽에. 마우스를 올리면 진한 청록 카드로 바뀌고 번호는 하늘색으로 굵어진다 */
+  .commit-card { background:var(--white); border:1px solid var(--primary-line); border-radius:var(--r-lg); padding:34px 32px; display:grid; grid-template-columns:84px minmax(0,1fr); column-gap:24px; row-gap:8px; align-content:center; box-shadow:0 8px 24px rgba(16,32,40,0.05); transition:transform .22s, box-shadow .22s, border-color .22s, background .22s; position:relative; overflow:hidden; }
   .commit-card::before { content:""; position:absolute; top:-72px; right:-64px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle, rgba(115,209,245,0.17) 0%, rgba(115,209,245,0) 70%); pointer-events:none; transition:transform .3s, opacity .3s; }
-  .commit-card:hover { transform:translateY(-3px); border-color:rgba(0,126,161,0.23); box-shadow:0 18px 44px rgba(0,79,104,0.10); }
-  .commit-card:hover::before { transform:scale(1.16); opacity:.82; }
+  .commit-card:hover { transform:translateY(-4px); background:linear-gradient(180deg, #0a5b76 0%, #004f68 100%); border-color:transparent; box-shadow:0 20px 48px rgba(0,79,104,0.22); }
+  .commit-card:hover::before { transform:scale(1.3); opacity:.9; }
   .commit-card > * { position:relative; z-index:1; }
-  .commit-num { font:800 46px/1 Montserrat,sans-serif; letter-spacing:-0.04em; background:linear-gradient(135deg, var(--primary) 0%, #4cc1e6 100%); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; padding-bottom:14px; position:relative; transition:transform .3s; transform-origin:left bottom; }
-  .commit-num::after { content:""; position:absolute; left:0; bottom:0; width:30px; height:3px; border-radius:3px; background:linear-gradient(90deg, var(--primary), #73d1f5); transition:width .3s; }
-  .commit-card:hover .commit-num { transform:scale(1.06); }
-  .commit-card:hover .commit-num::after { width:52px; }
-  .commit-card h4 { font-size:19px; font-weight:800; letter-spacing:-0.01em; color:#102028; line-height:1.35; }
-  .commit-card p { font-size:14.5px; line-height:1.85; color:var(--muted); }
+  .commit-num { grid-row:1 / span 3; align-self:start; font:800 58px/1 Montserrat,sans-serif; letter-spacing:-0.04em; background:linear-gradient(160deg, var(--primary) 0%, #4cc1e6 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; transition:transform .3s; transform-origin:left top; }
+  .commit-card:hover .commit-num { background:none; -webkit-text-fill-color:#73d1f5; transform:scale(1.06); }
+  .commit-card h4 { grid-column:2; font-size:20px; font-weight:800; letter-spacing:-0.01em; color:#102028; line-height:1.35; transition:color .22s; }
+  .commit-card p { grid-column:2; font-size:14.5px; line-height:1.85; color:var(--muted); transition:color .22s; }
+  .commit-card:hover h4 { color:#fff; }
+  .commit-card:hover p { color:rgba(255,255,255,0.84); }
 
   /* ── MINISTRIES ── */
   .ministry-inner { max-width:1240px; margin:0 auto; }
@@ -221,6 +222,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .intro-card { padding:34px 24px; }
     .intro-card p { font-size:15px; }
     .commit-grid { grid-template-columns:1fr; }
+    .commit-card { grid-template-columns:1fr; padding:28px 24px; }
+    .commit-num { grid-row:auto; font-size:46px; margin-bottom:6px; }
+    .commit-card h4, .commit-card p { grid-column:1; }
   }
 </style>
 
