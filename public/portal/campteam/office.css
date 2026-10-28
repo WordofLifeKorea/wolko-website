@@ -42,3 +42,44 @@
 .ofc-name{max-width:42px;padding:0 3px;font-size:8.5px;line-height:1.6;background:rgba(255,255,255,.14)}.ofc-tag{display:none}.ofc-div{margin:4px 3px}
 .hub-wx-card:has(.ct-office){min-width:236px;max-width:300px}
 @media(max-width:899px){.hub-wx-card:has(.ct-office){max-width:none}.ofc-cell{flex-basis:44px}.ofc-svg{width:44px;height:49px}.ofc-name{max-width:44px}}
+
+/* ── 그림(PNG) 캐릭터 — 관리자가 올린 캐릭터 그림이 있는 사람 ── */
+.ct-office.is-off .ofc-row{display:none}
+.ofc-cell:has(.ofi){flex:0 0 68px}
+.ofi{--s:68px;position:relative;width:var(--s);height:calc(var(--s)*1.22);overflow:visible}
+.ofi img{position:absolute;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.ofi-who,.ofi-set{position:absolute;left:0;top:0;width:var(--s);height:var(--s)}
+.ofi-who img,.ofi-set img{left:0;top:0;width:var(--s);height:var(--s)}
+.ofi-set:not(.set-on){display:none}
+.ofi[data-g="off"] .set-on,.ofi[data-g="up"] .set-on{display:none}.ofi[data-g="off"] .set-off,.ofi[data-g="up"] .set-up{display:block}
+.ofi-who .f1{opacity:0;animation:ofi-type .46s steps(1) infinite;animation-delay:var(--d,0s)}
+.ofi-who .fb{opacity:0;animation:ofi-blink 5.4s steps(1) infinite;animation-delay:var(--d,0s)}
+.ofi-desk{left:calc(var(--s)*-.15);top:calc(var(--s)*.5);width:calc(var(--s)*1.3);clip-path:inset(0 0 26% 0)}
+.ofi-chair{left:calc(var(--s)*.1);top:calc(var(--s)*-.28);width:calc(var(--s)*.8)}
+.ofi-who{animation:none}
+@keyframes ofi-type{0%{opacity:0}50%{opacity:1}}
+@keyframes ofi-blink{0%,93%{opacity:0}93.1%,97%{opacity:1}97.1%,100%{opacity:0}}
+/* 걸어와서 앉기: 옆모습 4프레임을 돌리면서 왼쪽에서 자리까지 이동, 도착하면 앉은 모습이 나타난다 */
+.ofi-walk{position:absolute;left:0;top:calc(var(--s)*-.42);width:var(--s);height:calc(var(--s)*1.5);opacity:0;pointer-events:none}
+.ofi-walk img{left:0;top:0;width:var(--s);height:calc(var(--s)*1.5);opacity:0}
+.ofi-walk .w1{animation:ofi-w1 .56s steps(1) infinite}.ofi-walk .w2{animation:ofi-w2 .56s steps(1) infinite}.ofi-walk .w3{animation:ofi-w3 .56s steps(1) infinite}.ofi-walk .w4{animation:ofi-w4 .56s steps(1) infinite}
+@keyframes ofi-w1{0%{opacity:1}25%,100%{opacity:0}}@keyframes ofi-w2{0%,25%{opacity:0}25.1%{opacity:1}50%,100%{opacity:0}}
+@keyframes ofi-w3{0%,50%{opacity:0}50.1%{opacity:1}75%,100%{opacity:0}}@keyframes ofi-w4{0%,75%{opacity:0}75.1%,100%{opacity:1}}
+.ofc-cell.enter .ofi-walk{animation:ofi-walk-in 1.6s linear both}
+.ofc-cell.enter .ofi-who{animation:ofi-appear 0s 1.6s both;opacity:0}
+@keyframes ofi-walk-in{0%{opacity:1;transform:translateX(calc(var(--s)*-1.4))}92%{opacity:1}100%{opacity:0;transform:translateX(0)}}
+@keyframes ofi-appear{from{opacity:0}to{opacity:1}}
+/* 게스트(그림): 서 있는 모습, 걸어 들어온 뒤 서서 구경 */
+.ofi-guest .ofi-stand{left:0;top:calc(var(--s)*-.28);width:var(--s);height:calc(var(--s)*1.5);animation:ofi-look 5s ease-in-out infinite;transform-origin:50% 100%}
+.ofi-gin .ofi-stand{opacity:0;animation:ofi-appear 0s 2.4s both,ofi-look 5s 2.4s ease-in-out infinite}
+.ofi-guest .ofi-walk{top:calc(var(--s)*-.28);opacity:0}.ofi-gin .ofi-walk{animation:ofi-gwalk 2.4s linear both}
+@keyframes ofi-gwalk{0%{opacity:1;transform:translateX(calc(var(--s)*-2.4))}96%{opacity:1}100%{opacity:0;transform:translateX(0)}}
+@keyframes ofi-look{0%,20%{transform:rotate(0)}35%,50%{transform:rotate(-2.5deg)}65%,85%{transform:rotate(2.5deg)}100%{transform:rotate(0)}}
+@media (prefers-reduced-motion:reduce){.ofi-who .f1,.ofi-who .fb,.ofi-walk img,.ofi-guest .ofi-stand,.ofc-cell.enter .ofi-walk,.ofc-cell.enter .ofi-who,.ofi-gin .ofi-walk,.ofi-gin .ofi-stand{animation:none!important}.ofc-cell.enter .ofi-who{opacity:1}.ofi-gin .ofi-stand{opacity:1}}
+/* 날씨 칸 폭을 고정해서 캐릭터 줄이 길어도 칸이 하늘 영역 밖으로 커지지 않게 한다(넘치면 옆으로 민다) */
+.hub-wx-card:has(.ct-office){width:300px;min-width:0;max-width:calc(100% - 8px)}
+.ct-office,.ofc-row{min-width:0;max-width:100%}
+@media(max-width:899px){.hub-wx-card:has(.ct-office){width:auto;max-width:none}}
+
+/* 데스크톱: 사무실이 켜져 있으면 하늘 영역이 그림 줄 높이만큼만 커진다(끄면 원래 높이) */
+@media(min-width:900px){.ct-hero:has(.ct-office:not(.is-off)){min-height:300px}}

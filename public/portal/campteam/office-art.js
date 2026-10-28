@@ -57,5 +57,45 @@
   // 안경을 쓰고 벗는 캐릭터(varied)는 몇 초마다 한 단계씩: 쓰고 → 벗고 → 머리 위에 → 다시 쓰고
   var ORDER = ['on', 'off', 'head'];
   function tick() { [].forEach.call(document.querySelectorAll('.ofc-varied'), function (svg) { if (Math.random() < 0.55) { var i = ORDER.indexOf(svg.getAttribute('data-g')); svg.setAttribute('data-g', ORDER[(i + 1) % 3]); } }); }
-  window.CTOfficeArt = { desk: desk, guest: guest, tick: tick, esc: esc };
+  // ── 그림(PNG) 캐릭터: 관리자가 올린 캐릭터 그림이 있으면 코드로 그린 캐릭터 대신 쓴다 ──
+  // 그림은 로그인한 사람에게만 보이는 캠프팀 DB 에서 불러온다(<img> 는 로그인 정보를 못 보내서, 불러온 뒤 임시 주소로 바꿔 쓴다).
+  var SP = { ver: null, urls: {}, jobs: {} };
+  var VARIANTS = { on: '', off: '-no-glasses', up: '-glasses-up' };
+  function spName(sprite, kind, v) { return sprite + '-' + kind + (v ? VARIANTS[v] : ''); }
+  function has(n) { return !!(SP.ver && SP.ver[n]); }
+  function setOk(sprite, v) { return has(spName(sprite, 'seated', v)) && has(spName(sprite, 'seated-type', v)) && has(spName(sprite, 'blink', v)); }
+  function fetchImg(n) {
+    if (SP.urls[n]) return Promise.resolve(SP.urls[n]); if (SP.jobs[n]) return SP.jobs[n];
+    return (SP.jobs[n] = fetch('/api/campteam/office-sprite?k=' + encodeURIComponent(n) + '&v=' + encodeURIComponent(SP.ver[n] || ''), { headers: { Authorization: 'Bearer ' + CT.token() } })
+      .then(function (r) { if (!r.ok) throw new Error('x'); return r.blob(); }).then(function (b) { return (SP.urls[n] = URL.createObjectURL(b)); }).catch(function () { delete SP.jobs[n]; return ''; }));
+  }
+  function init() { if (SP.ver) return Promise.resolve(); return CT.api('/api/campteam/office-sprite').then(function (r) { SP.ver = r.sprites || {}; }).catch(function () { SP.ver = {}; }); }
+  /** 이 사람의 앉은 그림(+ 책상·빈 의자)을 불러온다. 다 불러오면 resolve */
+  function load(sprite, glasses) {
+    if (!sprite) return Promise.resolve(false);
+    return init().then(function () {
+      if (!setOk(sprite, 'on') || !has('desk')) return false;
+      var names = ['desk', 'chair-empty'].concat(['seated', 'seated-type', 'blink'].map(function (k) { return spName(sprite, k, 'on'); }));
+      if (glasses === 'varied' && setOk(sprite, 'off') && setOk(sprite, 'up')) ['off', 'up'].forEach(function (v) { ['seated', 'seated-type', 'blink'].forEach(function (k) { names.push(spName(sprite, k, v)); }); });
+      return Promise.all(names.filter(has).map(fetchImg)).then(function () { return true; });
+    });
+  }
+  function loadWalk(sprite) { return init().then(function () { var names = [1, 2, 3, 4].map(function (i) { return sprite + '-walk' + i; }).concat([sprite + '-stand']); if (!names.every(has)) return false; return Promise.all(names.map(fetchImg)).then(function () { return true; }); }); }
+  function ready(sprite) { return !!(sprite && SP.ver && setOk(sprite, 'on') && SP.urls[spName(sprite, 'seated', 'on')] && SP.urls.desk); }
+  function walkReady(sprite) { return !!(sprite && [1, 2, 3, 4].every(function (i) { return SP.urls[sprite + '-walk' + i]; })); }
+  var im = function (n, cls) { return SP.urls[n] ? '<img class="' + cls + '" src="' + SP.urls[n] + '" alt="" draggable="false">' : ''; };
+  function frames(sprite, v) { return '<span class="ofi-set set-' + v + '">' + im(spName(sprite, 'seated', v), 'f0') + im(spName(sprite, 'seated-type', v), 'f1') + im(spName(sprite, 'blink', v), 'fb') + '</span>'; }
+  function walker(sprite) { return '<span class="ofi-walk">' + [1, 2, 3, 4].map(function (i) { return im(sprite + '-walk' + i, 'w' + i); }).join('') + '</span>'; }
+  /** 그림 캐릭터가 책상에 앉은(또는 빈 의자) 모습의 HTML */
+  function deskImg(av, seated, enter) {
+    var sprite = av.sprite, varied = av.glasses === 'varied' && setOk(sprite, 'off') && setOk(sprite, 'up') && SP.urls[spName(sprite, 'seated', 'off')], d = Math.round(Math.random() * 40) / 10;
+    var who = !seated ? im('chair-empty', 'ofi-chair') : '<span class="ofi-who" style="--d:-' + d + 's">' + (varied ? frames(sprite, 'on') + frames(sprite, 'off') + frames(sprite, 'up') : frames(sprite, 'on')) + '</span>' + (enter && walkReady(sprite) ? walker(sprite) : '');
+    return '<div class="ofi' + (varied ? ' ofc-varied' : '') + '" data-g="on">' + who + im('desk', 'ofi-desk') + '</div>';
+  }
+  function guestImg(enter) {
+    if (!SP.urls['guest-stand']) return ''; var walk = [1, 2, 3, 4].every(function (i) { return SP.urls['guest-walk' + i]; });
+    return '<div class="ofi ofi-guest' + (enter && walk ? ' ofi-gin' : '') + '">' + (walk && enter ? '<span class="ofi-walk">' + [1, 2, 3, 4].map(function (i) { return im('guest-walk' + i, 'w' + i); }).join('') + '</span>' : '') + im('guest-stand', 'ofi-stand') + '</div>';
+  }
+  function loadGuest() { return init().then(function () { var names = ['guest-stand', 'guest-walk1', 'guest-walk2', 'guest-walk3', 'guest-walk4']; if (!names.every(has)) return false; return Promise.all(names.map(fetchImg)).then(function () { return true; }); }); }
+  window.CTOfficeArt = { desk: desk, guest: guest, tick: tick, esc: esc, init: init, load: load, loadWalk: loadWalk, loadGuest: loadGuest, ready: ready, walkReady: walkReady, deskImg: deskImg, guestImg: guestImg, guestReady: function () { return !!SP.urls['guest-stand']; } };
 })();

@@ -12,3 +12,12 @@ CREATE TABLE IF NOT EXISTS office_avatars (
   updatedAt TEXT NOT NULL,
   updatedBy TEXT NOT NULL DEFAULT ''
 );
+-- office_sprites: 팀원 캐릭터 그림(PNG). 실제 얼굴을 닮은 그림이라 공개 저장소가 아니라 이 DB 에만 두고, 로그인한 캠프팀 사람에게만 보여 준다.
+-- data 는 PNG 를 base64 글자로 바꾼 것(파일 하나 100KB 안쪽).
+CREATE TABLE IF NOT EXISTS office_sprites (
+  name TEXT PRIMARY KEY,
+  data TEXT NOT NULL,
+  bytes INTEGER NOT NULL,
+  updatedAt TEXT NOT NULL,
+  updatedBy TEXT NOT NULL DEFAULT ''
+);

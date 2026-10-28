@@ -10,6 +10,7 @@ export const TOPS = ['#3b8ff0', '#22b573', '#f0a020', '#8b6cf0', '#ec5fa0', '#14
 export const HAIR_STYLES = ['bald', 'short', 'bangs', 'wavy', 'curly', 'long', 'bun', 'ponytail'];
 export const GLASSES = ['none', 'round', 'square', 'varied'];   // varied: 쓰기 · 벗기 · 머리 위에 올리기를 번갈아
 export const BEARDS = ['none', 'stubble', 'short'];
+export const EYES = ['round', 'almond'];   // 눈 모양: 둥근 눈 · 가는 눈
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const pick = (v, list, d) => (list.includes(v) ? v : d);
@@ -21,6 +22,8 @@ export function sanitizeAvatar(a) {
   return {
     skin: color(o.skin, SKINS[1]), hair: pick(o.hair, HAIR_STYLES, 'short'), hairColor: color(o.hairColor, HAIR_COLORS[0]),
     glasses: pick(o.glasses, GLASSES, 'none'), beard: pick(o.beard, BEARDS, 'none'), top: color(o.top, TOPS[0]),
+    eyes: pick(o.eyes, EYES, 'round'), collar: color(o.collar, ''),
+    sprite: typeof o.sprite === 'string' && /^[a-z0-9-]{2,24}$/.test(o.sprite) ? o.sprite : '',   // 있으면 이 이름의 그림 세트(예: sample)를 쓴다   // collar: 옷깃 색(선택, 비워 두면 없음)
   };
 }
 
@@ -32,7 +35,7 @@ export const publicId = (email) => hashOf('office:' + String(email).trim().toLow
 export function defaultAvatar(email) {
   const h = hashOf(String(email).trim().toLowerCase());
   const at = (list, shift) => list[(h >>> shift) % list.length];
-  return { skin: at(SKINS.slice(0, 4), 3), hair: at(HAIR_STYLES.filter((x) => x !== 'bald'), 5), hairColor: at(HAIR_COLORS.slice(0, 5), 8), glasses: (h >>> 11) % 4 === 0 ? 'round' : 'none', beard: 'none', top: at(TOPS, 14) };
+  return { skin: at(SKINS.slice(0, 4), 3), hair: at(HAIR_STYLES.filter((x) => x !== 'bald'), 5), hairColor: at(HAIR_COLORS.slice(0, 5), 8), glasses: (h >>> 11) % 4 === 0 ? 'round' : 'none', beard: 'none', top: at(TOPS, 14), eyes: (h >>> 17) % 3 === 0 ? 'almond' : 'round', collar: '', sprite: '' };
 }
 
 export const parseAvatar = (json, email) => { try { return sanitizeAvatar(JSON.parse(json)); } catch { return defaultAvatar(email); } };
