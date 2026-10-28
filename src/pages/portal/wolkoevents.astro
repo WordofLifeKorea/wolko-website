@@ -328,7 +328,7 @@
     function closeRsvpAdd() { document.getElementById('rsvpAddOverlay').hidden = true; }
     document.getElementById('rsvpAddCancel').addEventListener('click', closeRsvpAdd);
     document.getElementById('rsvpAddOverlay').addEventListener('click', e => { if (e.target.id === 'rsvpAddOverlay') closeRsvpAdd(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('rsvpAddOverlay').hidden) closeRsvpAdd(); });
+    document.getElementById('rsvpAddOverlay').addEventListener('keydown', e => { if (e.key === 'Escape') closeRsvpAdd(); });   // 창 안에 포커스가 있을 때 Esc 로 닫는다
     document.getElementById('rsvpAddForm').addEventListener('submit', async e => {
       e.preventDefault();
       const err = document.getElementById('rsvpAddError'), save = document.getElementById('rsvpAddSave');

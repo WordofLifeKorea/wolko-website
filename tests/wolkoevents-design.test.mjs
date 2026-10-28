@@ -53,7 +53,7 @@ test('search filters rows without changing total attendance and supports empty r
 });
 
 test('event design uses its own wrapping table and mobile cards without left accents', () => {
-  assert.match(page, /wolkoevents\.css\?v=1/);
+  assert.match(page, /wolkoevents\.css\?v=\d+/);
   assert.doesNotMatch(page, /staff-reg-table/);
   assert.match(css, /white-space: normal/);
   assert.match(css, /@media \(max-width: 760px\)/);
