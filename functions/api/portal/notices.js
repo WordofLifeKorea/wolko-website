@@ -7,6 +7,7 @@
 import { portalSession } from '../../lib/hubAccounts.js';
 import { MAX_NOTICES, NOTICES_KEY, parseNoticeInput, readNotices } from '../../lib/portalDashboard.js';
 import { todayKst } from '../../lib/carDrive.js';
+import { translateNotice } from '../../lib/prayerTranslate.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
@@ -26,7 +27,8 @@ export async function onRequestPost({ env, request }) {
   const parsed = parseNoticeInput(body, todayKst());
   if (parsed.error) return fail(parsed.error);
   const list = await readNotices(env);
-  const notice = { id: crypto.randomUUID(), ...parsed.value, createdAt: new Date().toISOString(), by: session.name || session.email };
+  const tr = await translateNotice(env, parsed.value);          // 한↔영 번역 (키가 없거나 실패하면 원문만 저장 — 나중에 첫 화면을 열 때 다시 시도)
+  const notice = { id: crypto.randomUUID(), ...parsed.value, ...(tr ? { tr } : {}), createdAt: new Date().toISOString(), by: session.name || session.email };
   const next = [notice, ...list].slice(0, MAX_NOTICES);
   await env.CAMP_KV.put(NOTICES_KEY, JSON.stringify(next));
   return Response.json({ ok: true, notice }, { status: 201, headers: H });

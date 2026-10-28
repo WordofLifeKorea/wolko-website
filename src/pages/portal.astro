@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=63">
+  <link rel="stylesheet" href="/hub.css?v=64">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <link rel="stylesheet" href="/portal-remember.css?v=1">
@@ -560,6 +560,12 @@
       const tone = n < 0 ? ' is-over' : n <= 3 ? ' is-soon' : '';
       return '<span class="hub-due' + tone + '"><b>' + esc(label) + '</b><small>' + esc(t('dueUntil', md)) + '</small></span>';
     }
+    /** 공지를 지금 화면 언어로 — 원문과 번역 중 화면 언어인 쪽을 보여 준다(번역이 없으면 원문) */
+    function noticeText(n) {
+      const orig = /[가-힣]/.test((n.title || '') + ' ' + n.body) ? 'ko' : 'en';
+      if (n.tr && hubLang !== orig && (n.tr.title || n.tr.text)) return { title: n.tr.title || n.title, body: n.tr.text || n.body, translated: true };
+      return { title: n.title, body: n.body, translated: false };
+    }
     function renderNotices(d) {
       const list = d.notices;
       const form = d.canEditNotices ? '<details class="hub-notice-form"><summary>+ ' + esc(t('noticeAdd')) + '</summary>'
@@ -572,11 +578,11 @@
       let body;
       if (list === null) body = dashEmpty('bell', t('dashLoadFail'));
       else if (!list.length) body = dashEmpty('bell', t('dashNoticeEmpty'), d.canEditNotices ? '' : t('dashNoticeHint'));
-      else body = '<ul class="hub-notices">' + list.map(n => '<li' + (n.pinned ? ' class="is-pinned"' : '') + '>'
-        + '<div class="hub-notice-top">' + (n.pinned ? '<span class="hub-pin">' + svgi('pin', 11) + esc(t('noticePinned')) + '</span>' : '') + (n.title ? '<b>' + esc(n.title) + '</b>' : '') + dueChip(n.dueDate, d.today) + '</div>'
-        + '<p>' + linkify(esc(n.body)).replace(/\n/g, '<br>') + '</p>'
+      else body = '<ul class="hub-notices">' + list.map(n => { const v = noticeText(n); return '<li' + (n.pinned ? ' class="is-pinned"' : '') + '>'
+        + '<div class="hub-notice-top">' + (n.pinned ? '<span class="hub-pin">' + svgi('pin', 11) + esc(t('noticePinned')) + '</span>' : '') + (v.title ? '<b>' + esc(v.title) + '</b>' : '') + dueChip(n.dueDate, d.today) + '</div>'
+        + '<p>' + linkify(esc(v.body)).replace(/\n/g, '<br>') + '</p>' + (v.translated ? '<small class="hub-notice-tr">' + esc(t('prayerTr')) + '</small>' : '')
         + (d.canEditNotices ? '<button type="button" class="hub-notice-del" data-del="' + esc(n.id) + '">' + esc(t('noticeDelete')) + '</button>' : '')
-        + '</li>').join('') + '</ul>';
+        + '</li>'; }).join('') + '</ul>';
       return dashCard('hub-dcard-notice', '#f0a020', 'bell', t('dashNotices'), body + form);
     }
     /** 카드 맨 아래에 쭉 깔리는 작은 장면 — 키친: 도마 위에서 당근을 써는 칼 + 김이 나는 냄비, 차량: 나무와 집이 스쳐 지나가는 길 위를 달리는 차.

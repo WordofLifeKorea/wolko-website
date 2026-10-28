@@ -151,3 +151,38 @@ test('내 오늘 할 일: 오늘 내 주방·차량 칸, 월 후반에 아직 �
   assert.equal((await mySchedule(env, { role: 'counselor' }, TODAY)), null, '이메일이 없으면 없음');
   assert.deepEqual((await mySchedule(env, { email: 'zed@wol.org', role: 'counselor' }, TODAY)).kitchen, []);
 });
+
+// ── 공지 자동 번역 ──
+const sseText = text => new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text } })}\n\n`)); c.close(); } }), { status: 200 });
+
+test('공지 번역: 올릴 때 한↔영 번역이 함께 저장되고, 번역이 없던 공지는 뒤에서 채워진다(실패하면 1시간 뒤에 다시)', async () => {
+  const { translateMissingNotices, NOTICES_KEY } = await import('../functions/lib/portalDashboard.js');
+  const { env, store } = kvEnv();
+  env.ANTHROPIC_API_KEY = 'k';
+  const realFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => sseText('{"title":"MRIC 교육","text":"모든 스태프는 영상을 시청해 주세요."}');
+    const token = await createHubSessionToken('secret', MASTER_EMAILS[0], 'master');
+    const post = await noticeApi.onRequestPost({ env, request: new Request('https://x/api/portal/notices', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: JSON.stringify({ title: 'MRIC Training', body: 'Every staff should watch the video.', week: 'this' }) }) });
+    assert.equal(post.status, 201);
+    const saved = (await post.json()).notice;
+    assert.deepEqual(saved.tr, { lang: 'ko', title: 'MRIC 교육', text: '모든 스태프는 영상을 시청해 주세요.' });
+
+    // 이미 올라가 있던 번역 없는 공지 — 뒤에서 번역
+    const old = [{ id: 'old1', title: 'MRIC Training', body: 'Every single staff should watch.', weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }, { id: 'has', title: 't', body: 'b', tr: { lang: 'en', title: 'x', text: 'y' }, weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }];
+    store.set(NOTICES_KEY, JSON.stringify(old));
+    assert.equal(await translateMissingNotices(env, { now: 1000 }), 1, '번역이 없는 것만');
+    const after = JSON.parse(store.get(NOTICES_KEY));
+    assert.equal(after[0].tr.lang, 'ko'); assert.equal(after[1].tr.title, 'x', '이미 있던 번역은 그대로');
+
+    // 실패하면 표시만 해 두고 1시간 안에는 다시 시도하지 않는다
+    store.set(NOTICES_KEY, JSON.stringify([{ id: 'n2', title: 'T', body: 'B', weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }]));
+    globalThis.fetch = async () => new Response('down', { status: 503 });
+    assert.equal(await translateMissingNotices(env, { now: 5000 }), 0);
+    assert.equal(JSON.parse(store.get(NOTICES_KEY))[0].trTry, 5000);
+    let calls = 0; globalThis.fetch = async () => { calls++; return sseText('{"title":"티","text":"비"}'); };
+    assert.equal(await translateMissingNotices(env, { now: 5000 + 600000 }), 0); assert.equal(calls, 0, '10분 뒤에는 아직 다시 시도하지 않는다');
+    assert.equal(await translateMissingNotices(env, { now: 5000 + 3700000 }), 1); assert.equal(calls, 1, '1시간이 지나면 다시 시도');
+    assert.equal(await translateMissingNotices({ ...env, ANTHROPIC_API_KEY: '' }, { now: 1 }), 0, '키가 없으면 아무것도 하지 않는다');
+  } finally { globalThis.fetch = realFetch; }
+});

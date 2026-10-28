@@ -7,6 +7,7 @@ import { SLOTS as DRIVE_SLOTS, closedKey as driveClosedKey, currentWeekStart, is
 import { listCalendarEvents } from './googleCalendar.js';
 import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 import { prayerBoard } from './prayers.js';
+import { translateNotice } from './prayerTranslate.js';
 import { alwaysExempt } from './gospelReminder.js';
 import { currentMonthKst, loadMonth, ownerOf } from './gospelStats.js';
 
@@ -25,6 +26,21 @@ const addDays = (date, n) => new Date(Date.parse(`${date}T00:00:00Z`) + n * DAY)
 export async function readNotices(env) {
   const list = await env.CAMP_KV.get(NOTICES_KEY, 'json');
   return Array.isArray(list) ? list.filter(n => n && n.id && n.body) : [];
+}
+
+/** 번역이 아직 없는 공지(이미 올라가 있던 것 · 번역에 실패했던 것)를 번역해 저장한다 — 첫 화면을 열 때 뒤에서 돌고, 실패하면 1시간 뒤에 다시 시도한다 */
+export async function translateMissingNotices(env, { now = Date.now(), limit = 3, fetchImpl } = {}) {
+  if (!env.ANTHROPIC_API_KEY) return 0;
+  const list = await env.CAMP_KV.get(NOTICES_KEY, 'json');
+  if (!Array.isArray(list)) return 0;
+  const todo = list.filter(n => n && n.id && n.body && !n.tr && !(n.trTry && now - n.trTry < 3600000)).slice(0, limit);
+  let done = 0;
+  for (const n of todo) {
+    const tr = await translateNotice(env, n, { fetchImpl });
+    if (tr) { n.tr = tr; delete n.trTry; done++; } else n.trTry = now;
+  }
+  if (todo.length) await env.CAMP_KV.put(NOTICES_KEY, JSON.stringify(list));
+  return done;
 }
 
 /** 이번 주(일요일부터 새 주) 공지 — 고정(pinned) 공지는 먼저, 나머지는 최근 순.
