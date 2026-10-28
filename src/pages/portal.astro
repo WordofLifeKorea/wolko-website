@@ -25,8 +25,8 @@
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
-  <link rel="stylesheet" href="/wolko-rail.css?v=18">
-  <script src="/wolko-rail.js?v=32" defer></script>
+  <link rel="stylesheet" href="/wolko-rail.css?v=19">
+  <script src="/wolko-rail.js?v=33" defer></script>
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -215,8 +215,6 @@
 
         <div class="hub-dash" id="hubDash" aria-live="polite"></div>
 
-        <p class="hub-section-title" data-t="toolsHeading">도구 바로가기</p>
-        <div class="hub-groups" id="hubGrid"></div>
       </div>
     </main>
   </div>
@@ -861,34 +859,6 @@
       }
     });
 
-    function renderGrid() {
-      let lastHref = '';
-      try { lastHref = localStorage.getItem('wolko-hub-last') || ''; } catch (e) {}
-      const card = tool => `
-        <a class="hub-card" href="${tool.href}" style="--tool-color:${tool.color}" onclick="markVisited('${tool.href}')">
-          <span class="hub-card-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
-          </span>
-          <span class="hub-card-body">
-            <span class="hub-card-title-row">
-              <p class="hub-card-title">${hubLang === 'en' ? tool.title_en : tool.title_ko}</p>
-              ${tool.href === lastHref ? `<span class="hub-card-badge">${t('recentBadge')}</span>` : ''}
-            </span>
-            <p class="hub-card-desc">${hubLang === 'en' ? tool.desc_en : tool.desc_ko}</p>
-          </span>
-          <span class="hub-card-arrow">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </a>`;
-      $('hubGrid').innerHTML = GROUPS.map(g => `
-        <section class="hub-group">
-          <p class="hub-group-label">${hubLang === 'en' ? g.en : g.ko}</p>
-          <div class="hub-grid">${TOOLS.filter(x => x.group === g.id).map(card).join('')}</div>
-        </section>
-      `).join('');
-    }
-
-    /* 경비 리포트 알림 배지 — 메일 대신 포탈에서 확인 (승인 대기 / 송금 대기 / 내 리포트 결과) */
     async function loadExpenseBadge() {
       const token = sessionStorage.getItem('wolko-hub-token');
       if (!token) return;
@@ -899,10 +869,11 @@
         let seen = 0; try { seen = Number(localStorage.getItem('wolko-expense-seen')) || 0; } catch (e) {}
         const unseen = (c.alerts || []).filter(a => new Date(a.at).getTime() > seen).length;
         const n = (c.approve || 0) + (c.accounting || 0) + unseen;
-        const row = document.querySelector('a.hub-card[href="/portal/expense"] .hub-card-title-row');
-        if (!row || !n) return;
-        row.querySelector('.hub-card-alert')?.remove();
-        row.insertAdjacentHTML('beforeend', '<span class="hub-card-alert" aria-label="' + n + '">' + n + '</span>');
+        // 경비 리포트 메뉴(사이드바 · 모바일 서랍)에 처리할 건수를 작은 빨간 숫자로 보여 준다
+        document.querySelectorAll('a.hub-nav-item[href="/portal/expense"]').forEach(row => {
+          row.querySelector('.hub-nav-alert')?.remove();
+          if (n) row.insertAdjacentHTML('beforeend', '<span class="hub-nav-alert" aria-label="' + n + '">' + n + '</span>');
+        });
       } catch (e) {}
     }
 
@@ -944,7 +915,6 @@
       $('langKoBtn').classList.toggle('is-active', hubLang === 'ko');
       $('langEnBtn').classList.toggle('is-active', hubLang === 'en');
       renderNav();
-      renderGrid();
       renderDash();
       loadExpenseBadge();
     }
