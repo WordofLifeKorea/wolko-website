@@ -95,3 +95,40 @@ test('기도제목: 제목이 없던 예전 기도제목은 내용 첫 줄이 �
   assert.equal(out.prayers[0].title, '예전 방식으로 올린 기도제목');
   assert.equal(out.prayers[0].text.includes('두 번째 줄'), true);
 });
+
+// ── 자동 번역 ──
+import { buildPrayerPrompt, parsePrayerTranslation, translatePrayer, hasHangul } from '../functions/lib/prayerTranslate.js';
+const sse = text => new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text } })}\n\n`)); c.close(); } }), { status: 200 });
+
+test('기도제목 번역: 한글이면 영어로, 영어면 한글로 / 응답 정리 / 키가 없으면 건너뜀', async () => {
+  assert.equal(hasHangul('온유의 쾌유'), true); assert.equal(hasHangul('Pray for Onyu'), false);
+  assert.match(buildPrayerPrompt({ title: 't', text: 'x' }, 'en').system, /into English/);
+  assert.match(buildPrayerPrompt({ title: 't', text: 'x' }, 'ko').system, /into Korean/);
+  assert.deepEqual(parsePrayerTranslation('설명 {"title":"A","text":"B"} 끝'), { title: 'A', text: 'B' });
+  assert.equal(parsePrayerTranslation('no json'), null);
+  assert.equal(parsePrayerTranslation('{"title":"","text":""}'), null);
+  assert.equal(await translatePrayer({}, { title: '제목', text: '' }), null, '키가 없으면 번역하지 않는다');
+  let sent;
+  const ko = await translatePrayer({ ANTHROPIC_API_KEY: 'k' }, { title: '캠프를 위해', text: '건강을 위해' }, { fetchImpl: async (url, init) => { sent = JSON.parse(init.body); return sse('{"title":"For camp","text":"For health"}'); } });
+  assert.deepEqual(ko, { lang: 'en', title: 'For camp', text: 'For health' });
+  assert.match(sent.system, /into English/); assert.equal(JSON.parse(sent.messages[0].content).title, '캠프를 위해');
+  const en = await translatePrayer({ ANTHROPIC_API_KEY: 'k' }, { title: 'For camp', text: '' }, { fetchImpl: async () => sse('{"title":"캠프를 위해","text":""}') });
+  assert.deepEqual(en, { lang: 'ko', title: '캠프를 위해', text: '' });
+  assert.equal(await translatePrayer({ ANTHROPIC_API_KEY: 'k' }, { title: 'x', text: '' }, { fetchImpl: async () => new Response('err', { status: 500 }) }), null, 'AI 오류여도 던지지 않는다');
+});
+
+test('기도제목: 저장하면 번역이 함께 저장되고 화면에는 번역도 내려간다 (번역이 안 돼도 저장은 된다)', async () => {
+  const realFetch = globalThis.fetch;
+  const t = setup(); t.acc(anna[0], 'counselor', 'Anna Lee'); t.env.ANTHROPIC_API_KEY = 'k';
+  try {
+    globalThis.fetch = async () => sse('{"title":"Hope for Onyu and her family","text":"Pray she endures chemotherapy."}');
+    const ok = await t.call('POST', anna, { body: { title: '온유와 가족에게 희망을', text: '항암치료를 이겨내도록' } });
+    assert.equal(ok.status, 201); assert.equal(ok.translated, true);
+    const item = ok.prayers[0];
+    assert.equal(item.title, '온유와 가족에게 희망을'); assert.equal(item.trLang, 'en'); assert.equal(item.trTitle, 'Hope for Onyu and her family'); assert.equal(item.trText, 'Pray she endures chemotherapy.');
+    globalThis.fetch = async () => new Response('down', { status: 503 });
+    const failed = await t.call('POST', anna, { body: { title: '다른 기도제목' } });
+    assert.equal(failed.status, 201); assert.equal(failed.translated, false);
+    assert.equal(failed.prayers[0].trTitle, '', '번역이 없으면 비어 있다');
+  } finally { globalThis.fetch = realFetch; }
+});

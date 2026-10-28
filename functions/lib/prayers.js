@@ -4,6 +4,7 @@
  * 올린 사람은 서버 비밀값으로 만든 표식(owner)으로만 저장한다. 익명으로 올리면 이름도 저장하지 않는다.
  */
 import { anonHex } from './gospelStats.js';
+import { translatePrayer } from './prayerTranslate.js';
 
 export const PRAYERS_KEY = 'portal:prayers';
 export const MAX_PRAYERS = 500;
@@ -29,7 +30,7 @@ const titleOf = p => p.title || clean(String(p.text).split('\n')[0], 40) + (clea
 /** 화면에 보낼 모양 — 누가 기도했는지(표식)는 내보내지 않고, 건수와 "내가 눌렀는지"만. limit 이 없으면 전부 */
 export function viewPrayers(list, owner, canModerate, limit = Infinity) {
   return list.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0, limit).map(p => ({
-    id: p.id, title: titleOf(p), text: p.text || '', name: p.name || '', anonymous: !p.name, createdAt: p.createdAt,
+    id: p.id, title: titleOf(p), text: p.text || '', trLang: p.tr?.lang || '', trTitle: p.tr?.title || '', trText: p.tr?.text || '', name: p.name || '', anonymous: !p.name, createdAt: p.createdAt,
     count: (p.prayedBy || []).length, prayed: !!owner && (p.prayedBy || []).includes(owner),
     mine: !!owner && p.owner === owner, canDelete: (!!owner && p.owner === owner) || !!canModerate,
   }));
@@ -43,7 +44,7 @@ export function parsePrayerInput(body) {
   return { value: { title, text, anonymous: body?.anonymous === true } };
 }
 
-export async function addPrayer(env, session, body, now = Date.now()) {
+export async function addPrayer(env, session, body, now = Date.now(), { fetchImpl } = {}) {
   const parsed = parsePrayerInput(body);
   if (parsed.error) return { error: parsed.error, status: 400 };
   const owner = await prayerOwner(env, session.email);
@@ -52,9 +53,10 @@ export async function addPrayer(env, session, body, now = Date.now()) {
   const todays = list.filter(p => p.owner === owner && kstDay(Date.parse(p.createdAt)) === kstDay(now)).length;
   if (todays >= DAILY_LIMIT) return { error: `기도제목은 하루에 ${DAILY_LIMIT}개까지 올릴 수 있어요.`, status: 429 };
   const name = parsed.value.anonymous ? '' : clean(session.name, 40) || String(session.email || '').split('@')[0];
-  const prayer = { id: crypto.randomUUID(), title: parsed.value.title, text: parsed.value.text, name, owner, createdAt: new Date(now).toISOString(), prayedBy: [] };
+  const tr = await translatePrayer(env, parsed.value, { fetchImpl });          // 한↔영 번역 (키가 없거나 실패하면 null — 원문만 저장)
+  const prayer = { id: crypto.randomUUID(), title: parsed.value.title, text: parsed.value.text, ...(tr ? { tr } : {}), name, owner, createdAt: new Date(now).toISOString(), prayedBy: [] };
   await env.CAMP_KV.put(PRAYERS_KEY, JSON.stringify([prayer, ...list].slice(0, MAX_PRAYERS)));
-  return { prayer };
+  return { prayer, translated: !!tr };
 }
 
 /** "함께 기도해요" — 누를 때마다 켜고 끈다. 새 건수와 내 상태를 돌려준다 */

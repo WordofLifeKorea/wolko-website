@@ -35,7 +35,7 @@ export async function onRequestPost({ env, request }) {
   }
   const out = await addPrayer(env, session, body);
   if (out.error) return fail(out.error, out.status);
-  return Response.json({ ok: true, ...(await prayerBoard(env, session, { all: wantsAll(request) })) }, { status: 201, headers: H });
+  return Response.json({ ok: true, translated: out.translated, ...(await prayerBoard(env, session, { all: wantsAll(request) })) }, { status: 201, headers: H });
 }
 
 export async function onRequestDelete({ env, request }) {

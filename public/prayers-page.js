@@ -9,7 +9,7 @@
       loginTitle: '포탈 로그인', loginHelp: 'WOLKO 포탈 계정으로 로그인해 주세요.', email: '이메일', password: '비밀번호', loginBtn: '로그인하고 계속하기', loginFail: '로그인하지 못했어요.',
       shareTitle: '기도제목 나누기', titlePh: '제목 (예: 이번 주 캠프를 위해)', textPh: '내용 (선택) — 함께 기도해 주었으면 하는 일을 적어 주세요.', anon: '익명으로 올리기', post: '올리기', posting: '올리는 중…',
       listTitle: function (n) { return '모든 기도제목 (' + n + ')'; }, searchPh: '제목이나 내용으로 찾기', fAll: '전체', fMine: '내가 올린 것', fPrayed: '함께 기도한 것',
-      empty: '아직 나눈 기도제목이 없어요.', noMatch: '조건에 맞는 기도제목이 없어요.', pray: '함께 기도해요', del: '삭제', delConfirm: '이 기도제목을 지울까요?', anonName: '익명', noBody: '제목만 나눈 기도제목이에요.',
+      empty: '아직 나눈 기도제목이 없어요.', noMatch: '조건에 맞는 기도제목이 없어요.', pray: '함께 기도해요', del: '삭제', delConfirm: '이 기도제목을 지울까요?', anonName: '익명', noBody: '제목만 나눈 기도제목이에요.', orig: '원문', tr: '번역 (자동)', note: '한글로 쓰면 영어로, 영어로 쓰면 한글로 자동 번역해 함께 보여 줘요.',
       needTitle: '기도제목의 제목을 입력해 주세요.', sessionEnd: '로그인이 끝났어요. 다시 로그인해 주세요.', failed: '불러오지 못했어요.',
       today: '오늘', yesterday: '어제', daysAgo: function (n) { return n + '일 전'; }, month: function (y, m) { return y + '년 ' + m + '월'; },
     },
@@ -18,7 +18,7 @@
       loginTitle: 'Portal sign-in', loginHelp: 'Please sign in with your WOLKO portal account.', email: 'Email', password: 'Password', loginBtn: 'Sign in and continue', loginFail: 'Could not sign in.',
       shareTitle: 'Share a prayer request', titlePh: 'Title (e.g. For this week’s camp)', textPh: 'Details (optional) — what would you like us to pray for?', anon: 'Post anonymously', post: 'Post', posting: 'Posting…',
       listTitle: function (n) { return 'All prayer requests (' + n + ')'; }, searchPh: 'Search by title or details', fAll: 'All', fMine: 'Mine', fPrayed: 'I prayed',
-      empty: 'No prayer requests shared yet.', noMatch: 'No prayer requests match.', pray: 'Praying together', del: 'Delete', delConfirm: 'Delete this prayer request?', anonName: 'Anonymous', noBody: 'Shared as a title only.',
+      empty: 'No prayer requests shared yet.', noMatch: 'No prayer requests match.', pray: 'Praying together', del: 'Delete', delConfirm: 'Delete this prayer request?', anonName: 'Anonymous', noBody: 'Shared as a title only.', orig: 'Original', tr: 'Translation (auto)', note: 'Korean is translated to English and English to Korean automatically.',
       needTitle: 'Please enter a title for your request.', sessionEnd: 'Your session ended. Please sign in again.', failed: 'Could not load.',
       today: 'today', yesterday: 'yesterday', daysAgo: function (n) { return n + ' days ago'; }, month: function (y, m) { return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }); },
     },
@@ -40,6 +40,12 @@
   function ago(iso) { var n = Math.round((Date.parse(kst(Date.now()) + 'T00:00:00Z') - Date.parse(kst(Date.parse(iso)) + 'T00:00:00Z')) / 86400000); return n <= 0 ? t('today') : n === 1 ? t('yesterday') : t('daysAgo', n); }
 
   var data = { prayers: [], total: 0 }, filter = 'all', query = '', openIds = {};
+  /** 화면 언어로 — 원문과 번역 중 화면 언어인 쪽이 주(main), 나머지는 아래에 작게(alt) */
+  function pick(p) {
+    var orig = /[가-힣]/.test(p.title + ' ' + p.text) ? 'ko' : 'en', has = !!(p.trTitle || p.trText), useTr = has && lang !== orig;
+    var o = { title: p.title, text: p.text }, tr = { title: p.trTitle || '', text: p.trText || '' };
+    return useTr ? { main: { title: tr.title || o.title, text: tr.text }, alt: o, altLabel: t('orig') } : { main: o, alt: has ? tr : null, altLabel: t('tr') };
+  }
 
   function applyText() {
     document.documentElement.lang = lang;
@@ -57,16 +63,18 @@
     var list = data.prayers.filter(function (p) {
       if (filter === 'mine' && !p.mine) return false;
       if (filter === 'prayed' && !p.prayed) return false;
-      return !q || (p.title + ' ' + p.text).toLowerCase().indexOf(q) >= 0;
+      return !q || (p.title + ' ' + p.text + ' ' + (p.trTitle || '') + ' ' + (p.trText || '')).toLowerCase().indexOf(q) >= 0;
     });
     var html = '', lastMonth = '';
     list.forEach(function (p) {
+      var v = pick(p);
       var ym = kst(Date.parse(p.createdAt)).slice(0, 7);
       if (ym !== lastMonth) { lastMonth = ym; html += '<p class="pr-month">' + esc(t('month', Number(ym.slice(0, 4)), Number(ym.slice(5)))) + '</p>'; }
-      html += '<details class="pr-item" data-id="' + esc(p.id) + '"' + (openIds[p.id] ? ' open' : '') + '><summary><span class="pr-title">' + esc(p.title) + '</span>'
+      html += '<details class="pr-item" data-id="' + esc(p.id) + '"' + (openIds[p.id] ? ' open' : '') + '><summary><span class="pr-title">' + esc(v.main.title) + '</span>'
         + (p.count ? '<span class="pr-count">' + p.count + '</span>' : '')
         + '<span class="pr-when">' + esc(p.anonymous ? t('anonName') : p.name) + ' · ' + esc(ago(p.createdAt)) + '</span></summary>'
-        + '<div class="pr-body">' + (p.text ? '<p class="pr-text">' + linkify(esc(p.text)).replace(/\n/g, '<br>') + '</p>' : '<p class="pr-text is-none">' + esc(t('noBody')) + '</p>')
+        + '<div class="pr-body">' + (v.main.text ? '<p class="pr-text">' + linkify(esc(v.main.text)).replace(/\n/g, '<br>') + '</p>' : '<p class="pr-text is-none">' + esc(t('noBody')) + '</p>')
+        + (v.alt && (v.alt.title || v.alt.text) ? '<div class="pr-alt"><small>' + esc(v.altLabel) + '</small><b>' + esc(v.alt.title) + '</b>' + (v.alt.text ? '<p>' + linkify(esc(v.alt.text)).replace(/\n/g, '<br>') + '</p>' : '') + '</div>' : '')
         + '<div class="pr-actions"><button type="button" class="pr-pray' + (p.prayed ? ' is-on' : '') + '" data-pray="' + esc(p.id) + '" aria-pressed="' + (p.prayed ? 'true' : 'false') + '">' + esc(t('pray')) + (p.count ? ' <b>' + p.count + '</b>' : '') + '</button>'
         + (p.canDelete ? '<button type="button" class="pr-del" data-del="' + esc(p.id) + '">' + esc(t('del')) + '</button>' : '') + '</div></div></details>';
     });
