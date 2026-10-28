@@ -21,6 +21,20 @@
 @media (max-width: 640px) { .pc-strip-link { padding: 14px 16px; font-size: 14px; gap: 10px; } }
 @media (prefers-reduced-motion: reduce) { .pc-strip-go { transition: none; } }
 
+/* ── 띠 애니메이션: 처음 나타날 때 떠오르고, 글자에 빛이 훑고 지나가며, 화살표가 주기적으로 앞을 가리킨다 ── */
+.pc-strip:not([hidden]) .pc-strip-link { animation: pc-rise .8s cubic-bezier(.2, .8, .3, 1) both; }
+@keyframes pc-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.pc-strip-text { background: linear-gradient(100deg, #29505f 0%, #29505f 42%, #1fa4cf 50%, #29505f 58%, #29505f 100%) 0 0 / 260% 100% no-repeat; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; animation: pc-shine 6s ease-in-out 1.4s infinite; }
+.pc-strip-text b { -webkit-text-fill-color: #006f90; font-variant-numeric: tabular-nums; }
+@keyframes pc-shine { 0% { background-position: 130% 0; } 45%, 100% { background-position: -30% 0; } }
+.pc-strip-go { animation: pc-nudge 3.2s ease-in-out 2s infinite; }
+@keyframes pc-nudge { 0%, 62%, 100% { transform: translateX(0) rotate(45deg); } 72% { transform: translateX(6px) rotate(45deg); } 82% { transform: translateX(1px) rotate(45deg); } 90% { transform: translateX(4px) rotate(45deg); } }
+.pc-strip-link:hover .pc-strip-go { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .pc-strip:not([hidden]) .pc-strip-link, .pc-strip-text, .pc-strip-go { animation: none; }
+  .pc-strip-text { background: none; -webkit-text-fill-color: currentColor; color: #29505f; }
+}
+
 /* 영문 병기 이름 — 한글 이름 아래에 작게 */
 .pc-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .pc-en { color: #6d8795; font: 600 12.5px/1.35 var(--ff-sans, 'Pretendard Variable', Pretendard, 'Noto Sans KR', sans-serif); letter-spacing: 0; word-break: normal; overflow-wrap: anywhere; }
