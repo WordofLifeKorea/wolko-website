@@ -27,7 +27,7 @@
       denied: '불러오지 못했어요. 잠시 후 다시 시도해 주세요.', sessionEnd: '로그인이 필요해요.',
       lastMonth: '지난달', formDelete: '이 보고 지우기', formDelAsk: '이 보고를 지울까요?', formDeleted: '지웠어요.',
       scopeMinistry: '사역 현황 (제자훈련·지역교회)', formMinistryHint: '평택·제주 위치마다 한 건을 담당자들이 함께 고쳐요. 연결 교회 등급(A/B/C)과 리더십 훈련은 CRS 교회 기록에서 불러와 채워 주고, 고쳐서 저장할 수 있어요.', crsReload: 'CRS에서 다시 불러오기', crsLoading: 'CRS에서 불러오는 중…', crsNone: 'CRS 연결이 설정되지 않아 숫자를 직접 입력해 주세요.', crsFail: 'CRS에서 불러오지 못했어요. 숫자를 직접 입력해 주세요.', crsLoaded: function (place, a, b, c, l) { return 'CRS 기준 · ' + place + ': A ' + a + ' · B ' + b + ' · C ' + c + ' · 리더십 훈련 ' + l + '명 — 채워 넣었어요. 고칠 수 있어요.'; }, crsBadge: 'CRS', crsHint: 'CRS 교회 기록에서 자동으로 채워져요 (고칠 수 있어요)', ministryLabel: '사역 현황', ministrySummary: function (d, c) { return '제자훈련 ' + d + ' · 연결 교회 ' + c; }, needDesignated: '팀 · 캠프 · 전도 행사 · 제자훈련 · 지역교회 보고는 지정된 보고 담당자만 쓸 수 있어요.',
-      hqTitle: '본부 보고용', hqIntro: '미국 본부 Statistics Report 양식과 같은 순서·같은 이름이에요. 숫자를 누르면 그 숫자가, "전체 복사"를 누르면 표 전체가 복사돼요.', hqCopyAll: '전체 복사', hqCopied: '복사했어요.', hqCopyFail: '복사하지 못했어요. 직접 선택해서 복사해 주세요.', hqNeedMonth: '본부 보고는 한 달 단위예요. 월별 보기에서 달을 고르면 표가 나와요.', hqToMonth: '월별로 보기', hqExcluded: '본부 보고 제외 (내부 통계)', hqScopeNote: function (place, month) { return month + ' · ' + place; }, hqSnapshotNote: '※ 교회·클럽 수와 등록 학생 수는 그 달 말 기준으로 입력된 값이에요.', hqCrsNote: '※ 연결 교회 A/B/C와 리더십 훈련은 CRS 교회 기록에서 불러온 값이에요.', hqNoMinistry: '이 달 사역 현황(제자훈련·지역교회)은 아직 입력되지 않았어요.',
+      hqTitle: 'MRIC 보고 레이아웃으로 보기', hqIntro: 'MRIC Statistics Report 입력 화면과 같은 순서·이름·설명이에요. 이 숫자를 보면서 MRIC에 입력하세요.', hqNeedMonth: '본부 보고는 한 달 단위예요. 월별 보기에서 달을 고르면 표가 나와요.', hqToMonth: '월별로 보기', hqExcluded: '본부 보고 제외 (내부 통계)', hqScopeNote: function (place, month) { return month + ' · ' + place; }, hqSnapshotNote: '※ 교회·클럽 수와 등록 학생 수는 그 달 말 기준으로 입력된 값이에요.', hqCrsNote: '※ 연결 교회 A/B/C와 리더십 훈련은 CRS 교회 기록에서 불러온 값이에요.', hqNoMinistry: '이 달 사역 현황(제자훈련·지역교회)은 아직 입력되지 않았어요.',
       hqLocation: 'Location', hqMonth: 'Month', hqYear: 'Year',
       repTitle: '보고 담당자', repHelp: '팀 · 캠프 · 전도 행사 · 제자훈련 · 지역교회 보고는 여기서 지정한 사람(과 마스터)만 쓸 수 있어요. 개인 전도 보고는 누구나 써요.', repAdd: '담당자 추가', repPick: '이름 또는 이메일로 고르기', repNone: '아직 지정한 담당자가 없어요.', repRemove: '빼기', repSaved: '담당자를 저장했어요.', repUnknown: '목록에 없는 계정이에요. 포탈 계정 이메일을 골라 주세요.',
       teamRepTitle: '팀 · 사역 현황 보고 내역', teamRepHelp: '팀과 사역 현황 보고는 누가 냈는지 기록돼요. 지정된 보고 담당자와 관리자만 볼 수 있어요.', teamRepEmpty: '이 달에는 팀 · 사역 현황 보고가 아직 없어요.', trKind: '구분', trWho: '보고자', trUnknown: '기록 없음 (이전 보고)', trUpdated: '수정', teamLabel: function (n) { return '팀 · ' + n; },
@@ -54,7 +54,7 @@
       denied: 'Could not load. Please try again shortly.', sessionEnd: 'Please sign in.',
       lastMonth: 'Last month', formDelete: 'Delete this report', formDelAsk: 'Delete this report?', formDeleted: 'Deleted.',
       scopeMinistry: 'Ministry status (discipleship & local churches)', formMinistryHint: 'One report per location (Pyeongtaek / Jeju), edited together by the reporters. Church grades (A/B/C) and leadership training are filled in from the CRS church records — you can edit them before saving.', crsReload: 'Reload from CRS', crsLoading: 'Loading from CRS…', crsNone: 'CRS is not connected — please enter the numbers yourself.', crsFail: 'Could not load from CRS — please enter the numbers yourself.', crsLoaded: function (place, a, b, c, l) { return 'From CRS · ' + place + ': A ' + a + ' · B ' + b + ' · C ' + c + ' · leaders trained ' + l + ' — filled in, you can edit.'; }, crsBadge: 'CRS', crsHint: 'Filled in automatically from the CRS church records (editable)', ministryLabel: 'Ministry status', ministrySummary: function (d, c) { return 'Discipleship ' + d + ' · Churches ' + c; }, needDesignated: 'Only designated reporters can write team, camp, evangelistic event, discipleship and local church reports.',
-      hqTitle: 'For HQ report', hqIntro: 'Same order and names as the US headquarters Statistics Report form. Click a number to copy it, or use “Copy all” for the whole table.', hqCopyAll: 'Copy all', hqCopied: 'Copied.', hqCopyFail: 'Could not copy — please select and copy manually.', hqNeedMonth: 'The HQ report is monthly. Pick a month in the monthly view to see the table.', hqToMonth: 'Switch to monthly', hqExcluded: 'Not in HQ report (internal stat)', hqScopeNote: function (place, month) { return month + ' · ' + place; }, hqSnapshotNote: '* Church, club and enrolled-student counts are the values entered as of the end of that month.', hqCrsNote: '* Church grades A/B/C and leadership training come from the CRS church records.', hqNoMinistry: 'Ministry status (discipleship & local churches) has not been entered for this month yet.',
+      hqTitle: 'View in MRIC report layout', hqIntro: 'Same order, names and descriptions as the MRIC Statistics Report form. Use these numbers when you enter the report in MRIC.', hqNeedMonth: 'The HQ report is monthly. Pick a month in the monthly view to see the table.', hqToMonth: 'Switch to monthly', hqExcluded: 'Not in HQ report (internal stat)', hqScopeNote: function (place, month) { return month + ' · ' + place; }, hqSnapshotNote: '* Church, club and enrolled-student counts are the values entered as of the end of that month.', hqCrsNote: '* Church grades A/B/C and leadership training come from the CRS church records.', hqNoMinistry: 'Ministry status (discipleship & local churches) has not been entered for this month yet.',
       hqLocation: 'Location', hqMonth: 'Month', hqYear: 'Year',
       repTitle: 'Reporters', repHelp: 'Only the people listed here (and the master) can write team, camp, evangelistic event, discipleship and local church reports. Anyone can write a personal evangelism report.', repAdd: 'Add reporter', repPick: 'Pick by name or email', repNone: 'No reporters designated yet.', repRemove: 'Remove', repSaved: 'Reporters saved.', repUnknown: 'Not in the list — pick a portal account email.',
       teamRepTitle: 'Team & ministry status reports', teamRepHelp: 'Team and ministry status reports record who submitted them. Only designated reporters and admins can see this.', teamRepEmpty: 'No team or ministry status reports for this month yet.', trKind: 'Type', trWho: 'Reported by', trUnknown: 'Not recorded (earlier report)', trUpdated: 'Updated', teamLabel: function (n) { return 'Team · ' + n; },
@@ -269,6 +269,99 @@
   function pill(loc) { return '<span class="gs-pill ' + (loc === 'jeju' ? 'jeju' : 'mainland') + '">' + esc(placeLabel(loc)) + '</span>'; }
   function whoLabel(r) { return r.scope === 'team' ? t('teamOf', r.teamName) : t('individual'); }
   function when(iso) { try { return new Date(iso).toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric' }); } catch (e) { return ''; } }
+
+  /* ───────── 팀 · 사역 현황 보고 내역 (누가 냈는지) ───────── */
+  function renderTeamReports() {
+    var wrap = $('teamWrap'), box = $('teamBox'); if (!wrap || !box) return;
+    var list = view === 'month' ? data.teamReports : null;
+    wrap.hidden = !list; if (!list) return;
+    if (!list.length) { box.innerHTML = '<p class="gs-empty">' + esc(t('teamRepEmpty')) + '</p>'; return; }
+    box.innerHTML = '<p class="gs-ce-hint">' + esc(t('teamRepHelp')) + '</p><div class="gs-tablewrap"><table class="gs-table gs-ctable"><thead><tr><th>' + esc(t('trKind')) + '</th><th>' + esc(t('rPlace')) + '</th><th>' + esc(t('trWho')) + '</th><th>' + esc(t('trUpdated')) + '</th></tr></thead><tbody>'
+      + list.map(function (r) {
+        var who = r.reporterName || r.reporterEmail ? '<strong>' + esc(r.reporterName || r.reporterEmail.split('@')[0]) + '</strong>' + (r.reporterEmail ? '<small class="gs-rmail">' + esc(r.reporterEmail) + '</small>' : '') : '<span class="gs-muted">' + esc(t('trUnknown')) + '</span>';
+        return '<tr><td>' + esc(r.scope === 'ministry' ? t('ministryLabel') : t('teamLabel', r.teamName)) + '</td><td>' + pill(r.location) + '</td><td>' + who + '</td><td>' + esc(r.updatedAt ? when(r.updatedAt) : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  /* ───────── MRIC 보고 레이아웃으로 보기 (MRIC Statistics Report 입력 화면과 같은 순서·이름·설명) ───────── */
+  var HQ_SECTIONS = [
+    { title: 'GOSPEL REACH', cols: ['Events', 'Audience', 'Salvation', 'Dedications'], rows: [
+      { name: 'CAMPS', cells: [['campCount', 'Number of camps this month, one-day or longer.'], ['campAttendance', 'Campers plus camp crew. Monthly total.'], ['campSalvations', 'Total salvations this month in camp ministry.'], ['campDedications', 'Total dedications this month in camp ministry.']] },
+      { name: 'EVANGELISTIC EVENTS', cells: [null, ['eeAttendance', 'Total attendance to all evangelistic events this month (sports, musical, family picnic, etc.)'], ['eeSalvations', 'Total salvations in all evangelistic events this month.'], ['eeDedications', 'Total dedications in all evangelistic events this month.']] },
+      { name: 'PERSONAL EVANGELISM', cells: [null, ['evangelism', 'Total audience in one-on-one or small group Gospel conversations not included in other categories.'], ['salvation', 'Total salvations this month from personal evangelism.'], null] },
+      { name: 'OTHER GOSPEL REACH', header: true },
+      { name: 'Literature Distribution', sub: true, cells: [null, ['literature', 'Total number of tracts (or similar) distributed. No Gospel conversations.'], null, null] },
+      { name: 'Social Media Outreach', sub: true, cells: [null, ['social', 'Total audience of evangelistic social media outreach that month (posts, reels, videos, etc.)'], null, null] },
+    ] },
+    { title: 'DISCIPLESHIP', cols: ['Enrollment'], rows: [
+      { name: 'BIBLE INSTITUTE', cells: [['bibleInstitute', 'Number of students enrolled this month.']] },
+      { name: 'DISCIPLESHIP TRAINING CENTER', note: 'Bible school, trade school, or similar.', cells: [['dtc', 'Number of students enrolled this month.']] },
+      { name: 'SYME/E4L Discipleships Training Center (ESL focus)', cells: [['symeE4l', 'Number of students enrolled this month.']] },
+      { name: 'PRIMARY/SECONDARY SCHOOL', cells: [['school', 'Number of students enrolled this month.']] },
+      { name: 'EXTENSION TRAINING', note: 'Formal Bible courses held off-property.', cells: [['extension', 'Number of students enrolled this month.']] },
+      { name: 'CONFERENCES AND OTHER BIBLE TEACHING EVENTS', cells: [['conferences', 'Total attendance to these events this month.']] },
+    ] },
+    { title: 'LOCAL CHURCH MINISTRIES', cols: ['A', 'B', 'C'], rows: [
+      { name: 'LOCAL CHURCHES CONNECTED TO:', crs: true, cells: [['churchA', 'Number of local churches with close relationship: Bible Club training, use all resources, attend most events.'], ['churchB', 'Number of local churches with good relationship: sporadic training, use some resources, attend some events.'], ['churchC', 'Number of local churches with good contact: Some use of QT, attend some events.']] },
+      { name: 'Count', header: true },
+      { name: 'CHILDREN CLUBS', cells: [['childrenClubs', 'Club Count at the end of the month.']] },
+      { name: 'YOUTH/TEEN/STUDENT CLUBS', cells: [['youthClubs', 'Club Count at the end of the month.']] },
+      { name: 'LEADERSHIP TRAINING ATTENDANCE', crs: true, cells: [['leadershipTraining', 'Number of leaders trained this month.']] },
+      { name: 'WEEKLY CLUB ATTENDANCE', cells: [['weeklyClubAttendance', 'Sum of the weekly average attendance of all club programs for this month.']] },
+    ] },
+  ];
+  function hqPlaceName() { return tab === 'jeju' ? 'Jeju' : tab === 'mainland' ? 'Mainland (Pyeongtaek)' : 'Mainland + Jeju'; }
+  function hqMonthParts() { var p = data.month.split('-'); return { name: new Date(Date.UTC(Number(p[0]), Number(p[1]) - 1, 1)).toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' }), year: p[0] }; }
+  function renderHq() {
+    var box = $('hqBox'), wrap = $('hqWrap'); if (!box || !wrap) return;
+    if (view === 'year') { box.innerHTML = '<p class="gs-empty">' + esc(t('hqNeedMonth')) + ' <button type="button" class="gs-small" id="hqToMonth">' + esc(t('hqToMonth')) + '</button></p>'; return; }
+    var x = totals(data.summary, tab), mp = hqMonthParts();
+    var html = '<div class="gs-mric"><dl class="gs-mricmeta"><div><dt>Location</dt><dd>' + esc(hqPlaceName()) + '</dd></div><div><dt>Month</dt><dd>' + esc(mp.name) + '</dd></div><div><dt>Year</dt><dd>' + esc(mp.year) + '</dd></div></dl>';
+    HQ_SECTIONS.forEach(function (sec) {
+      html += '<h3 class="gs-mrichead">' + esc(sec.title) + '</h3><table class="gs-mrictable"><thead><tr><th></th>' + sec.cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
+      sec.rows.forEach(function (row) {
+        if (row.header) { html += '<tr class="is-group"><th colspan="' + (sec.cols.length + 1) + '">' + esc(row.name) + '</th></tr>'; return; }
+        html += '<tr><th scope="row"' + (row.sub ? ' class="is-sub"' : '') + '>' + esc(row.name) + (row.note ? ' <span class="gs-mricnote">' + esc(row.note) + '</span>' : '') + (row.crs ? ' <span class="gs-crsbadge" title="' + esc(t('crsHint')) + '">' + esc(t('crsBadge')) + '</span>' : '') + '</th>'
+          + sec.cols.map(function (c, i) { var cell = row.cells[i]; return cell ? '<td><div class="gs-mricbox">' + num(x[cell[0]]) + '</div><small>' + esc(cell[1]) + '</small></td>' : '<td></td>'; }).join('') + '</tr>';
+      });
+      html += '</tbody></table>';
+    });
+    var hasMinistry = (data.summary.counts && data.summary.counts.ministry) > 0;
+    html += '</div><p class="gs-hqnote">' + esc(t('hqSnapshotNote')) + '<br>' + esc(t('hqCrsNote')) + (hasMinistry ? '' : '<br><b>' + esc(t('hqNoMinistry')) + '</b>') + '</p>';
+    box.innerHTML = html;
+  }
+
+  /* ───────── 보고 담당자 지정 (마스터만) ───────── */
+  var repInfo = null;
+  async function loadReporterInfo() {
+    try {
+      var res = await fetch('/api/portal/gospel-reporters', { headers: headers() });
+      var body = await res.json().catch(function () { return {}; });
+      if (res.ok) repInfo = body;
+    } catch (e) { /* 다음에 다시 시도 */ }
+    renderReporters();
+  }
+  function renderReporters() {
+    var wrap = $('repWrap'), box = $('repBox'); if (!wrap || !box) return;
+    wrap.hidden = !data.reporters;
+    if (!data.reporters) return;
+    if (!repInfo) { box.innerHTML = '<p class="gs-empty">' + esc(t('loading')) + '</p>'; if (!renderReporters.busy) { renderReporters.busy = true; loadReporterInfo().then(function () { renderReporters.busy = false; }); } return; }
+    var chips = repInfo.reporters.length
+      ? '<ul class="gs-people gs-repchips">' + repInfo.reporters.map(function (p) { return '<li><span><strong>' + esc(p.name) + '</strong><em>' + esc(p.email) + '</em></span><button type="button" class="gs-small" data-rep-remove="' + esc(p.email) + '">' + esc(t('repRemove')) + '</button></li>'; }).join('') + '</ul>'
+      : '<p class="gs-empty">' + esc(t('repNone')) + '</p>';
+    box.innerHTML = '<p class="gs-ce-hint">' + esc(t('repHelp')) + '</p>' + chips
+      + '<div class="gs-repadd"><input id="repInput" class="gs-text" list="repList" autocomplete="off" placeholder="' + esc(t('repPick')) + '" aria-label="' + esc(t('repPick')) + '"><datalist id="repList">'
+      + repInfo.candidates.map(function (c) { return '<option value="' + esc(c.email) + '">' + esc(c.name) + '</option>'; }).join('') + '</datalist><button type="button" class="gs-small" id="repAdd">＋ ' + esc(t('repAdd')) + '</button></div>';
+  }
+  async function saveReporters(emails) {
+    try {
+      var res = await fetch('/api/portal/gospel-reporters', { method: 'POST', headers: headers(true), body: JSON.stringify({ emails: emails }) });
+      var body = await res.json().catch(function () { return {}; });
+      if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); show('login'); return; }
+      if (!res.ok) throw new Error(body.error || t('denied'));
+      repInfo = body; data.reporters = body.reporters.map(function (p) { return p.email; }); clearCache(); renderReporters(); say(t('repSaved'));
+    } catch (error) { say(error.message); }
+  }
 
   /* ───────── 보고 쓰기 ───────── */
   function monthOptions() {
@@ -570,10 +663,8 @@
   });
 
   $('hqWrap').addEventListener('click', function (e) {
-    var num_ = e.target.closest('[data-copy]'), all = e.target.closest('#hqCopyAll'), toMonth = e.target.closest('#hqToMonth');
-    if (num_) { copyText(num_.dataset.copy).then(function () { copyDone(true, num_); }, function () { copyDone(false); }); return; }
-    if (all) { copyText(hqText()).then(function () { copyDone(true, all); }, function () { copyDone(false); }); return; }
-    if (toMonth) { view = 'month'; try { localStorage.setItem('gsView', 'month'); } catch (err) { /* 괜찮다 */ } load(lastMonth || data.reportMonth); }
+    if (!e.target.closest('#hqToMonth')) return;
+    view = 'month'; try { localStorage.setItem('gsView', 'month'); } catch (err) { /* 괜찮다 */ } load(lastMonth || data.reportMonth);
   });
   $('repWrap').addEventListener('click', function (e) {
     var rm = e.target.closest('[data-rep-remove]'), add = e.target.closest('#repAdd');
