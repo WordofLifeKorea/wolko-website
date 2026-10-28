@@ -93,13 +93,16 @@
     transition: background .15s, color .15s;
   }
   .wolko-rail-item-icon svg { width: 15px; height: 15px; }
+  .wolko-rail-item-icon svg.wolko-art { width: 22px; height: 22px; filter: drop-shadow(0 1px 1.5px rgba(0, 20, 30, .35)); transition: transform .18s; }
   /* 메뉴마다 겹치지 않는 색: 평소에도 아이콘이 자기 색으로 보이게 (배경은 연한 색 틴트, 아이콘은 밝은 같은 색) */
-  .wolko-rail-item:not(.wolko-rail-hub) .wolko-rail-item-icon { background: color-mix(in srgb, var(--rail-color) 46%, rgba(255,255,255,.04)); color: #fff; }
+  /* 아이콘은 직접 그린 색 일러스트라 타일은 은은한 흰색 바탕으로만 둔다 */
+  .wolko-rail-item:not(.wolko-rail-hub) .wolko-rail-item-icon { background: rgba(255,255,255,.12); color: #fff; }
   .wolko-rail-item-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .wolko-rail-item:hover { background: rgba(255,255,255,.1); color: #fff; }
-  .wolko-rail-item:hover .wolko-rail-item-icon, .wolko-rail-item:hover:not(.wolko-rail-hub) .wolko-rail-item-icon { background: var(--rail-color, #fff); color: #06232f; }
+  .wolko-rail-item:hover .wolko-rail-item-icon, .wolko-rail-item:hover:not(.wolko-rail-hub) .wolko-rail-item-icon { background: rgba(255,255,255,.24); color: #06232f; }
+  .wolko-rail-item:hover .wolko-art { transform: scale(1.1) rotate(-4deg); }
   .wolko-rail-item.is-active { background: rgba(255,255,255,.14); color: #fff; }
-  .wolko-rail-item.is-active .wolko-rail-item-icon, .wolko-rail-item.is-active:not(.wolko-rail-hub) .wolko-rail-item-icon { background: var(--rail-color, #fff); color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.28); }
+  .wolko-rail-item.is-active .wolko-rail-item-icon, .wolko-rail-item.is-active:not(.wolko-rail-hub) .wolko-rail-item-icon { background: #fff; color: #06232f; box-shadow: 0 0 0 2px rgba(255,255,255,.28); }
 
   .wolko-rail-hub {
     margin-top: auto;
@@ -173,7 +176,9 @@ button.wl-user-chip:hover { background: rgba(255, 255, 255, .24); }
   .wolko-drawer-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; color: rgba(255, 255, 255, .82); text-decoration: none; font: 700 14.5px/1.3 'Noto Sans KR', sans-serif; }
   .wolko-drawer-item:hover, .wolko-drawer-item:focus-visible { background: rgba(255, 255, 255, .1); color: #fff; }
   .wolko-drawer-item.is-active { background: rgba(255, 255, 255, .16); color: #fff; }
-  .wolko-drawer-icon { display: flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px; background: color-mix(in srgb, var(--rail-color, #fff) 46%, rgba(255, 255, 255, .04)); color: #fff; }
+  .wolko-drawer-icon { display: flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px; background: rgba(255, 255, 255, .12); color: #fff; }
+  .wolko-drawer-icon svg.wolko-art { width: 22px; height: 22px; filter: drop-shadow(0 1px 1.5px rgba(0, 20, 30, .35)); }
+  .wolko-drawer-item.is-active .wolko-drawer-icon { background: #fff; }
   .wolko-drawer-hub { margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, .12); border-radius: 0 0 10px 10px; padding-top: 14px; }
   .wolko-drawer-backdrop { display: block; position: fixed; inset: 0; z-index: 9050; background: rgba(0, 18, 28, .52); opacity: 0; pointer-events: none; transition: opacity .25s; }
   body.wolko-drawer-open .wolko-drawer-backdrop { opacity: 1; pointer-events: auto; }

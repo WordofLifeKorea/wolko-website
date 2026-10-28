@@ -19,16 +19,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=76">
-  <link rel="stylesheet" href="/hub-sky.css?v=8">
+  <link rel="stylesheet" href="/hub.css?v=77">
+  <link rel="stylesheet" href="/hub-sky.css?v=9">
   <script src="/hub-sky.js?v=4" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
-  <link rel="stylesheet" href="/wolko-rail.css?v=22">
-  <script src="/wolko-rail.js?v=33" defer></script>
+  <link rel="stylesheet" href="/wolko-rail.css?v=23">
+  <script src="/wolko-rail.js?v=35" defer></script>
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -749,7 +749,7 @@
       return dashCard('hub-dcard-churches', '#7b61e6', 'church', t('dashChurches'), body, '/portal/crs');
     }
     /** 금빛 종 일러스트 — 둥근 몸통에 위아래 빛 번짐, 왼쪽 하이라이트, 아래 테두리와 추 */
-    const BELL_SVG = '<svg class="hub-bell-art" viewBox="0 0 48 52" width="40" height="43" aria-hidden="true" focusable="false">'
+    const BELL_SVG = '<svg class="hub-bell-art" viewBox="0 0 48 52" width="29" height="31" aria-hidden="true" focusable="false">'
       + '<defs><linearGradient id="bellBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0a6"/><stop offset=".45" stop-color="#ffc928"/><stop offset="1" stop-color="#d98a00"/></linearGradient>'
       + '<linearGradient id="bellRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd84a"/><stop offset="1" stop-color="#c47a00"/></linearGradient>'
       + '<radialGradient id="bellClap" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffe98c"/><stop offset="1" stop-color="#d58a00"/></radialGradient></defs>'
@@ -994,7 +994,7 @@
       const item = tool => `
         <a class="hub-nav-item" href="${tool.href}" style="--item-color:${tool.color}" onclick="markVisited('${tool.href}')">
           <span class="hub-nav-item-icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[tool.icon] || ''}</svg>
+            ${(window.WolkoArt && window.WolkoArt[tool.href]) ? '<svg class="wolko-art" width="22" height="22" viewBox="0 0 32 32" aria-hidden="true" focusable="false">' + window.WolkoArt[tool.href] + '</svg>' : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[tool.icon] || '') + '</svg>'}
           </span>
           <span class="hub-nav-item-label">${hubLang === 'en' ? tool.title_en : tool.title_ko}</span>
         </a>`;
@@ -1003,6 +1003,9 @@
         ${TOOLS.filter(x => x.group === g.id).map(item).join('')}
       `).join('');
     }
+
+    // 메뉴 아이콘 일러스트는 지연 로드되는 wolko-rail.js(window.WolkoArt)에서 오므로, 문서가 다 읽힌 뒤 한 번 더 그린다
+    document.addEventListener('DOMContentLoaded', () => { if (window.WolkoArt) { renderNav(); loadExpenseBadge(); } });
 
     /** 좁은 화면의 햄버거 메뉴 — 왼쪽에서 도구 목록(사이드바)이 밀려 나온다. 바깥을 누르거나 Esc, 메뉴를 고르면 닫힌다 */
     function toggleHubNav(force) {
