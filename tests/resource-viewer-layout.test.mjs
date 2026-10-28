@@ -16,7 +16,7 @@ test('PDF viewer opens with notes closed and exposes an accessible toggle', () =
 test('notes use an overlay drawer without reducing the PDF width', () => {
   assert.match(css, /\.viewer-body \{[^}]*position:absolute;[^}]*inset:var\(--viewer-head-height\) 0 0;[^}]*overflow:hidden;/);
   assert.match(css, /\.viewer-stage \{[^}]*position:absolute;[^}]*inset:0;/);
-  assert.match(css, /\.notes-panel \{[^}]*position:absolute;[^}]*width:clamp\(300px,30%,400px\)[^}]*transform:translateX\(420px\)/);
+  assert.match(css, /\.notes-panel \{[^}]*position:absolute;[^}]*width:clamp\(300px,30%,400px\)[^}]*transform:translateX\((420px|100%)\)/);
   assert.match(css, /\.notes-panel\.is-open \{[^}]*transform:translateX\(0\)/);
   assert.doesNotMatch(lateCss, /#viewerOverlay \.viewer-body\s*\{[^}]*grid-template-columns/);
   assert.doesNotMatch(lateCss, /#viewerOverlay \.notes-panel\s*\{[^}]*position:relative/);

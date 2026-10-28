@@ -132,7 +132,8 @@ test('admin uses original application date for Early Bird and preserves old poli
 
 test('registration and admin scripts parse, and admin retains the new policy', () => {
   for (const path of ['src/pages/camp-register/index.astro', 'src/pages/portal/wolkoadmin.astro']) {
-    const page = readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+    // 한 줄짜리 <script … set:html={…} /> 데이터 블록은 닫는 태그가 없어서 뒤쪽 코드까지 삼키므로 먼저 걷어낸다
+    const page = readFileSync(new URL('../' + path, import.meta.url), 'utf8').replace(/<script\b[^>]*\/>/g, '');
     for (const [, , script] of page.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
       if (!script.trim()) continue;
       const result = spawnSync(process.execPath, ['--check', '--input-type=module'], { input: script, encoding: 'utf8' });
