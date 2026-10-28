@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="/wolko-rail.css?v=20">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
-  <link rel="stylesheet" href="/wolkoevents.css?v=1">
+  <link rel="stylesheet" href="/wolkoevents.css?v=2">
   <link rel="stylesheet" href="/wolko-layout.css?v=15">
   <script src="/wolko-rail.js?v=33" defer></script>
   <meta name="theme-color" content="#a5482d">
@@ -78,6 +78,10 @@
         <div class="events-actions">
           <label class="events-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="rsvpSearch" type="search" placeholder="이름, 연락처, 메모 검색" aria-label="신청자 검색"></label>
           <button type="button" class="events-refresh" id="rsvpRefresh" onclick="loadRsvpData()" aria-label="새로고침"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 11-2l3 3M18 17a7 7 0 0 1-11 2l-3-3"/></svg></button>
+          <button type="button" class="events-add" id="rsvpAddBtn" onclick="openRsvpAdd()" hidden>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span data-t="addBtn">참석자 추가</span>
+          </button>
           <button type="button" class="btn-csv events-export" onclick="downloadRsvpCsv()">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -117,6 +121,20 @@
     </div>
   </main>
 
+  <!-- 참석자 직접 추가 (지정 계정 · 마스터 · 관리자) -->
+  <div class="rsvp-add-overlay" id="rsvpAddOverlay" hidden>
+    <form class="rsvp-add-card" id="rsvpAddForm" role="dialog" aria-modal="true" aria-labelledby="rsvpAddTitle" novalidate>
+      <h3 id="rsvpAddTitle" data-t="addTitle">참석자 직접 추가</h3>
+      <label><span data-t="addName">이름 *</span><input id="addName" type="text" maxlength="60" autocomplete="off" required></label>
+      <label><span data-t="addPhone">연락처</span><input id="addPhone" type="tel" inputmode="tel" maxlength="30" autocomplete="off" placeholder="010-1234-5678"></label>
+      <label><span data-t="addEmail">이메일</span><input id="addEmail" type="email" maxlength="120" autocomplete="off"></label>
+      <label><span data-t="addParty">참석 인원 (본인 포함)</span><input id="addParty" type="number" min="1" max="200" value="1" inputmode="numeric"></label>
+      <label><span data-t="addNotes">메모</span><textarea id="addNotes" rows="3" maxlength="1000"></textarea></label>
+      <p class="rsvp-add-error" id="rsvpAddError" role="alert"></p>
+      <div class="rsvp-add-actions"><button type="button" class="rsvp-add-cancel" id="rsvpAddCancel" data-t="addCancel">취소</button><button type="submit" class="rsvp-add-save" id="rsvpAddSave" data-t="addSave">추가</button></div>
+    </form>
+  </div>
+
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
@@ -138,6 +156,7 @@
         csvDownload: 'CSV 다운로드', csvRsvpFile: 'RSVP_명단', csvNoRsvp: '다운로드할 RSVP 신청이 없습니다.', csvRsvpDone: 'RSVP 명단을 CSV로 저장했습니다.',
         loginFirst: '로그인 후 자동으로 불러옵니다.', dataLoadRetry: '데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.',
         noRsvpYet: '아직 참석 신청이 없습니다.',
+        addBtn: '참석자 추가', addTitle: '참석자 직접 추가', addName: '이름 *', addPhone: '연락처', addEmail: '이메일', addParty: '참석 인원 (본인 포함)', addNotes: '메모', addCancel: '취소', addSave: '추가', addSaving: '추가하는 중…', addNeedName: '이름을 입력해 주세요.', addDone: '참석자를 추가했습니다.', addBadge: '직접 추가',
       },
       en: {
         pageTitle: 'Event Management — WOLKO RSVP',
@@ -153,6 +172,7 @@
         csvDownload: 'Export CSV', csvRsvpFile: 'RSVP_List', csvNoRsvp: 'No RSVP entries to download.', csvRsvpDone: 'RSVP list saved as CSV.',
         loginFirst: 'Data will load after login.', dataLoadRetry: 'Could not load data.<br>Please try again shortly.',
         noRsvpYet: 'No RSVPs yet.',
+        addBtn: 'Add attendee', addTitle: 'Add an attendee', addName: 'Name *', addPhone: 'Phone', addEmail: 'Email', addParty: 'Party size (including them)', addNotes: 'Notes', addCancel: 'Cancel', addSave: 'Add', addSaving: 'Adding…', addNeedName: 'Please enter a name.', addDone: 'Attendee added.', addBadge: 'Added manually',
       },
     };
     function t(key) { return ADMIN_T[adminLang]?.[key] ?? ADMIN_T.ko?.[key] ?? key; }
@@ -247,8 +267,8 @@
         const date = new Date(r.createdAt);
         const submitted = Number.isNaN(date.getTime()) ? '—' : date.toLocaleString(adminLang === 'en' ? 'en-US' : 'ko-KR', { timeZone: 'Asia/Seoul', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         return `<tr>
-          <td class="events-applicant"><strong>${esc(r.name)}</strong><time>${esc(submitted)}</time></td>
-          <td class="events-contact" data-label="${esc(t('thContact'))}"><a href="tel:${esc(phone)}">${esc(displayPhone)}</a><a class="events-email" href="mailto:${esc(encodeURIComponent(r.email || ''))}">${esc(r.email)}</a></td>
+          <td class="events-applicant"><strong>${esc(r.name)}</strong>${r.source === 'manual' ? `<span class="events-manual">${esc(t('addBadge'))}</span>` : ''}<time>${esc(submitted)}</time></td>
+          <td class="events-contact" data-label="${esc(t('thContact'))}">${phone ? `<a href="tel:${esc(phone)}">${esc(displayPhone)}</a>` : ''}${r.email ? `<a class="events-email" href="mailto:${esc(encodeURIComponent(r.email))}">${esc(r.email)}</a>` : ''}${!phone && !r.email ? '<span class="events-no-note">—</span>' : ''}</td>
           <td class="events-party" data-label="${esc(t('thParty'))}"><span>${Number(r.partySize) || 0}${adminLang === 'en' ? '' : '명'}</span></td>
           <td class="events-notes" data-label="${esc(t('thNotes'))}">${r.notes ? `<p>${esc(r.notes)}</p>` : '<span class="events-no-note">—</span>'}</td>
         </tr>`;
@@ -266,6 +286,7 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         rsvpEntries = data.rsvps || [];
+        document.getElementById('rsvpAddBtn').hidden = !data.canAdd;
         renderRsvpData();
       } catch (e) {
         body.innerHTML = `<tr><td colspan="4"><div class="state-box"><p>${t('dataLoadRetry')}</p></div></td></tr>`;
@@ -295,6 +316,34 @@
       a.click(); URL.revokeObjectURL(url);
       showToast(t('csvRsvpDone'), 'success');
     }
+
+    // ── 참석자 직접 추가 ──
+    function openRsvpAdd() {
+      document.getElementById('rsvpAddForm').reset();
+      document.getElementById('addParty').value = '1';
+      document.getElementById('rsvpAddError').textContent = '';
+      document.getElementById('rsvpAddOverlay').hidden = false;
+      setTimeout(() => document.getElementById('addName').focus(), 30);
+    }
+    function closeRsvpAdd() { document.getElementById('rsvpAddOverlay').hidden = true; }
+    document.getElementById('rsvpAddCancel').addEventListener('click', closeRsvpAdd);
+    document.getElementById('rsvpAddOverlay').addEventListener('click', e => { if (e.target.id === 'rsvpAddOverlay') closeRsvpAdd(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('rsvpAddOverlay').hidden) closeRsvpAdd(); });
+    document.getElementById('rsvpAddForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const err = document.getElementById('rsvpAddError'), save = document.getElementById('rsvpAddSave');
+      const name = document.getElementById('addName').value.trim();
+      if (!name) { err.textContent = t('addNeedName'); return; }
+      err.textContent = ''; save.disabled = true; save.textContent = t('addSaving');
+      try {
+        const res = await fetch('/api/rsvp-manual', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ eventId: 'thanksgiving-night', name, phone: document.getElementById('addPhone').value, email: document.getElementById('addEmail').value, partySize: document.getElementById('addParty').value, notes: document.getElementById('addNotes').value }) });
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 401) { goToHub(); return; }
+        if (!res.ok) throw new Error(body.error || t('dataLoadRetry'));
+        closeRsvpAdd(); showToast(t('addDone'), 'success'); await loadRsvpData();
+      } catch (error) { err.textContent = error.message; }
+      save.disabled = false; save.textContent = t('addSave');
+    });
 
     // ── 포탈 세션이 유효하면(멤버 누구나) 자동 입장 ──
     const hubToken = sessionStorage.getItem('wolko-hub-token') || '';
