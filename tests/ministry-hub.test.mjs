@@ -45,5 +45,5 @@ test('about commitment cards use a corner glow instead of a side stripe', async 
 
   assert.doesNotMatch(about, /\.commit-card::before\s*\{[^}]*left:0;[^}]*height:100%/s);
   assert.match(about, /\.commit-card::before\s*\{[^}]*right:-64px;[^}]*radial-gradient/s);
-  assert.match(about, /\.commit-icon\s*\{[^}]*linear-gradient/s);
+  assert.match(about, /\.commit-num\s*\{[^}]*linear-gradient/s);   // 아이콘 대신 그라데이션 번호
 });
