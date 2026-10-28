@@ -850,13 +850,17 @@ body.hub-modal-open { overflow: hidden; }
 @keyframes hub-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 /* ── 카드 맨 아래에 쭉 깔리는 작은 장면 (카드 아래쪽 68px 는 내용이 닿지 않게 비워 둔다) ── */
 .hub-dcard-kitchen, .hub-dcard-car { position: relative; overflow: hidden; }
+/* 장면(62px)이 글자 위에 겹치지 않도록 카드 아래쪽을 장면 높이만큼 비워 둔다 — 어떤 화면 폭에서도, 다른 padding 규칙보다 우선 */
+.hub-dcard.hub-dcard-kitchen, .hub-dcard.hub-dcard-car { padding-bottom: 74px !important; }
 .hub-scene { position: absolute; left: 0; right: 0; bottom: 0; height: 62px; overflow: hidden; pointer-events: none; }
-.hub-deco { position: absolute; display: block; width: 54px; height: 38px; color: var(--dc); pointer-events: none; }
+.hub-deco { position: absolute; display: block; width: 64px; height: 44px; color: var(--dc); pointer-events: none; }
 .hub-deco svg { position: relative; display: block; overflow: visible; }
 /* 키친: 조리대 위의 도마(당근 썰기) + 냄비 */
 .hub-counter { position: absolute; left: 0; right: 0; bottom: 0; height: 9px; background: linear-gradient(180deg, #f6e3c4, #efd3a4); border-top: 2px solid #d9b57a; }
 .hub-sc-board { position: absolute; left: 18px; bottom: 5px; overflow: visible; }
-.hub-scene-kitchen .hub-deco-pot { right: 22px; bottom: 12px; }
+.hub-scene-kitchen .hub-deco-pot { right: 22px; bottom: 11px; width: 64px; height: 48px; }
+.hub-face { transform-box: fill-box; transform-origin: 50% 50%; animation: hub-blink 4s ease-in-out infinite; }
+@keyframes hub-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.15); } }
 .hub-carrot { transform-box: fill-box; transform-origin: 0 50%; animation: hub-carrot 3.6s linear infinite; }
 @keyframes hub-carrot { 0%, 5% { transform: scaleX(1); } 7%, 30% { transform: scaleX(.78); } 32%, 55% { transform: scaleX(.56); } 57%, 80% { transform: scaleX(.34); } 82%, 99% { transform: scaleX(.34); } 100% { transform: scaleX(1); } }
 .hub-knife-pos { animation: hub-knife-pos 3.6s linear infinite; }
@@ -872,10 +876,10 @@ body.hub-modal-open { overflow: hidden; }
 @keyframes hub-slice4 { 0%, 80% { opacity: 0; transform: translate(-8px, -5px); } 84%, 98% { opacity: 1; transform: none; } 100% { opacity: 0; } }
 .hub-pot-lid { transform-box: fill-box; transform-origin: 50% 100%; animation: hub-lid 2.4s ease-in-out infinite; }
 @keyframes hub-lid { 0%, 70%, 100% { transform: translateY(0) rotate(0); } 78% { transform: translateY(-2px) rotate(-4deg); } 86% { transform: translateY(-1px) rotate(3deg); } 94% { transform: translateY(-2px) rotate(-2deg); } }
-.hub-deco-pot i { position: absolute; bottom: 26px; width: 4px; height: 16px; border-radius: 4px; background: color-mix(in srgb, var(--dc) 40%, #fff); opacity: 0; animation: hub-steam 2.6s ease-in infinite; }
-.hub-deco-pot i:nth-child(1) { left: 16px; animation-delay: 0s; }
-.hub-deco-pot i:nth-child(2) { left: 25px; animation-delay: .8s; height: 20px; }
-.hub-deco-pot i:nth-child(3) { left: 34px; animation-delay: 1.6s; }
+.hub-deco-pot i { position: absolute; bottom: 38px; width: 4px; height: 16px; border-radius: 4px; background: color-mix(in srgb, var(--dc) 55%, #fff); opacity: 0; animation: hub-steam 2.6s ease-in infinite; }
+.hub-deco-pot i:nth-child(1) { left: 20px; animation-delay: 0s; }
+.hub-deco-pot i:nth-child(2) { left: 30px; animation-delay: .8s; height: 20px; }
+.hub-deco-pot i:nth-child(3) { left: 40px; animation-delay: 1.6s; }
 @keyframes hub-steam { 0% { opacity: 0; transform: translateY(8px) scaleY(.6); } 25% { opacity: .85; } 100% { opacity: 0; transform: translateY(-22px) translateX(3px) scaleY(1.15); } }
 /* 차량: 나무와 집이 두 겹으로 다른 속도로 스쳐 가는 길 위를 차가 달린다 */
 .hub-sc-far, .hub-sc-near { position: absolute; left: 0; right: 0; bottom: 8px; background-repeat: repeat-x; background-position: 0 100%; }
@@ -892,8 +896,8 @@ body.hub-modal-open { overflow: hidden; }
 @keyframes hub-spin { to { transform: rotate(360deg); } }
 @keyframes hub-bounce { from { transform: translateY(0); } to { transform: translateY(-1.2px); } }
 .hub-deco-car i { position: absolute; right: 100%; height: 2px; border-radius: 2px; background: color-mix(in srgb, var(--dc) 40%, #fff); opacity: 0; animation: hub-wind 1.1s ease-out infinite; }
-.hub-deco-car i:nth-child(1) { top: 14px; width: 14px; margin-right: -6px; }
-.hub-deco-car i:nth-child(2) { top: 22px; width: 10px; margin-right: -4px; animation-delay: .5s; }
+.hub-deco-car i:nth-child(1) { top: 16px; width: 14px; margin-right: -6px; }
+.hub-deco-car i:nth-child(2) { top: 24px; width: 10px; margin-right: -4px; animation-delay: .5s; }
 @keyframes hub-wind { 0% { opacity: 0; transform: translateX(8px); } 30% { opacity: .8; } 100% { opacity: 0; transform: translateX(-12px); } }
 @media (prefers-reduced-motion: reduce) { .hub-meals li, .hub-runs li, .hub-pop-track li, .hub-scene *, .hub-scene::after, .hub-sc-far, .hub-sc-near, .hub-road::after { animation: none !important; } .hub-deco-pot i { opacity: .5; } .hub-slices ellipse { opacity: 1; } }
 
@@ -939,6 +943,10 @@ body.hub-modal-open { overflow: hidden; }
 .hub-prayer-body { padding: 0 16px 14px; }
 .hub-prayer-text { margin: 0 0 12px; color: var(--text); font-size: 14px; line-height: 1.75; word-break: keep-all; overflow-wrap: anywhere; }
 .hub-prayer-text.is-none { color: var(--mid); font-size: 13px; }
+.hub-prayer-alt { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.7); color: var(--mid); font-size: 13px; line-height: 1.65; }
+.hub-prayer-alt small { display: block; margin-bottom: 2px; color: #b8416a; font: 800 11px/1.4 var(--f-body); letter-spacing: .04em; }
+.hub-prayer-alt b { display: block; color: var(--text); font-weight: 700; }
+.hub-prayer-alt p { margin: 2px 0 0; overflow-wrap: anywhere; }
 .hub-prayer-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .hub-prayer-del { margin-left: auto; padding: 4px 9px; border: 0; border-radius: 999px; background: rgba(196,42,54,.08); color: var(--accent); font: 700 12px/1.2 var(--f-body); cursor: pointer; }
 .hub-prayer-del:hover { background: rgba(196,42,54,.16); }
