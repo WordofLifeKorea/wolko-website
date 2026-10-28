@@ -1,5 +1,5 @@
 import { campSession, json, needLogin, needPerm, noDb } from '../../lib/campteamAuth.js';
-import { translateTasks, translateConfigured, remaining } from '../../lib/campteamTranslate.js';
+import { translateTasks, translateConfigured, remaining, healTitleCols } from '../../lib/campteamTranslate.js';
 import { audit } from '../../lib/campteamDb.js';
 
 /**
@@ -14,6 +14,7 @@ async function gate(env, request) {
 }
 export async function onRequestGet({ env, request }) {
   const { res } = await gate(env, request); if (res) return res;
+  await healTitleCols(env);
   return json({ configured: translateConfigured(env), untranslated: await remaining(env) });
 }
 export async function onRequestPost({ env, request }) {
