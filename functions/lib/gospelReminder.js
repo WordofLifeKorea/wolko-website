@@ -5,6 +5,7 @@
  *  - 메일은 사람마다 한 통씩(이름·링크), 같은 달에 같은 사람에게는 한 번만(KV gospel:mail:{달}:{이메일}).
  */
 import { listAccounts, normalizeEmail, MASTER_EMAILS } from './hubAccounts.js';
+import { ownerOf } from './gospelStats.js';
 
 export const EXEMPT_PREFIX = 'gospel:exempt:';
 /** 늘 제외되는 계정 — 마스터(공용 관리자) 이메일과 wolkorea1 계정(이메일 앞부분이 wolkorea1). 화면에서 다시 넣을 수 없다 */
@@ -39,12 +40,16 @@ export async function reporterRoster(env) {
     .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }
 
-/** 그 달 보고를 이미 낸 사람의 이메일 모음 (팀 보고도 낸 사람 기준) */
-export const submittedEmails = reports => new Set(reports.map(r => normalizeEmail(r.email)));
+/** 그 달 보고를 이미 낸 사람의 이메일 모음 (팀 보고도 낸 사람 기준). 보고에는 이메일이 없어서, 명단의 이메일로 표식(owner)을 만들어 맞춰 본다 */
+export async function submittedEmails(env, roster, reports) {
+  const owners = new Set(reports.map(r => r.owner).filter(Boolean));
+  const done = new Set();
+  await Promise.all(roster.map(async p => { if (owners.has(await ownerOf(env, p.email))) done.add(p.email); }));
+  return done;
+}
 
-/** 아직 보고하지 않은 사람(보고 제외는 뺀다) */
-export function missingReporters(roster, reports) {
-  const done = submittedEmails(reports);
+/** 아직 보고하지 않은 사람(보고 제외는 뺀다) — done 은 submittedEmails() 결과 */
+export function missingReporters(roster, done) {
   return roster.filter(p => !p.exempt && !done.has(p.email));
 }
 

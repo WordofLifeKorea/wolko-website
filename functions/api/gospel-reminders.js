@@ -8,7 +8,7 @@
  */
 import { sendEmail } from '../lib/hubAccounts.js';
 import { MONTH_RE, loadMonth } from '../lib/gospelStats.js';
-import { MAIL_KEY, isLastDayOfMonth, missingReporters, reminderMail, reportLink, reporterRoster } from '../lib/gospelReminder.js';
+import { MAIL_KEY, isLastDayOfMonth, missingReporters, submittedEmails, reminderMail, reportLink, reporterRoster } from '../lib/gospelReminder.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const BATCH = 20;
@@ -36,7 +36,8 @@ export async function onRequestPost({ env, request }) {
     return Response.json({ ...base, sent: 1, test: true }, { headers: H });
   }
 
-  const missing = missingReporters(await reporterRoster(env), await loadMonth(env, month));
+  const roster = await reporterRoster(env);
+  const missing = missingReporters(roster, await submittedEmails(env, roster, await loadMonth(env, month)));
   const pending = [];
   for (const person of missing) if (!(await env.CAMP_KV.get(MAIL_KEY(month, person.email)))) pending.push(person);
   if (dryRun) return Response.json({ ...base, dryRun: true, missing: missing.length, pending: pending.length }, { headers: H });

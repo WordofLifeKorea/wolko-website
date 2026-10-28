@@ -11,21 +11,27 @@
 import { buildGospelXlsx } from '../../lib/gospelReport.js';
 import { monthCamps, addCampsToSummary } from '../../lib/gospelCamps.js';
 import { reporterRoster, missingReporters, submittedEmails } from '../../lib/gospelReminder.js';
-import { portalSession } from '../../lib/hubAccounts.js';
+import { getAccount, portalSession } from '../../lib/hubAccounts.js';
+import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 import {
   GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, shiftMonth, reportableMonth,
-  cleanValues, cleanChurchEntries, churchEvents, cleanText, unitId, reportKey, loadMonth, summarize, mergeSummaries, toCsv, AGG_KEY, AGG_VERSION, aggTtlSeconds,
+  cleanValues, cleanChurchEntries, churchEvents, cleanText, unitId, ownerOf, reportKey, loadMonth, summarize, mergeSummaries, toCsv, AGG_KEY, AGG_VERSION, aggTtlSeconds,
 } from '../../lib/gospelStats.js';
 
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
 const canReview = session => session.role === 'master' || session.role === 'admin';
+/** 가입할 때 고른 소속(평택 wolko | 제주) → 보고 위치 기본값. 정보가 없으면 '' */
+async function defaultLocation(env, session) {
+  const campus = CAMPUS_OVERRIDES[session.email] || (await getAccount(env, session.email).catch(() => null))?.campus;
+  return campus === 'jeju' ? 'jeju' : campus === 'wolko' ? 'mainland' : '';
+}
 const displayName = session => cleanText(session.name, 80) || session.email.split('@')[0];
 
 /** 마스터·관리자용 — 이 달 보고를 아직 안 낸 사람과 보고 제외 목록 */
 async function submissionStatus(env, reports) {
-  const roster = await reporterRoster(env), done = submittedEmails(reports);
-  const expected = roster.filter(p => !p.exempt), missing = missingReporters(roster, reports);
+  const roster = await reporterRoster(env), done = await submittedEmails(env, roster, reports);
+  const expected = roster.filter(p => !p.exempt), missing = missingReporters(roster, done);
   return { expected: expected.length, submitted: expected.filter(p => done.has(p.email)).length, missing: missing.map(({ email, name }) => ({ email, name })), exempt: roster.filter(p => p.exempt).map(({ email, name, fixed }) => ({ email, name, fixed })) };
 }
 
@@ -55,7 +61,7 @@ async function yearView(env, request, session, url, current) {
   const review = canReview(session);
   return Response.json({
     view: 'year', year, month: months[months.length - 1], current, earliest: shiftMonth(current, -MONTHS_BACK),
-    me: { email: session.email, name: displayName(session), role: session.role, canReview: review },
+    me: { email: session.email, name: displayName(session), role: session.role, canReview: review, location: await defaultLocation(env, session) },
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
     summary, ytd: { year, from: months[0], to: months[months.length - 1], summary },
     campAuto: memo.flatMap(x => x.camps.map(c => ({ ...c, month: x.month }))),
@@ -96,9 +102,9 @@ export async function onRequestGet({ env, request }) {
     return new Response(bytes, { headers: { ...H, 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': `attachment; filename="WOLKO-Gospel-Report-${month}.xlsx"` } });
   }
 
-  const review = canReview(session);
+  const review = canReview(session), owner = await ownerOf(env, session.email);
   return Response.json({
-    me: { email: session.email, name: displayName(session), role: session.role, canReview: review },
+    me: { email: session.email, name: displayName(session), role: session.role, canReview: review, location: await defaultLocation(env, session) },
     month, current, earliest: shiftMonth(current, -MONTHS_BACK),
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
     summary: summaries.get(month),
@@ -106,10 +112,9 @@ export async function onRequestGet({ env, request }) {
     canEditStaff: review,
     churchEvents: churchEvents(reports),
     trend,
-    mine: reports.filter(r => r.email === session.email),
+    mine: reports.filter(r => r.owner === owner).map(({ owner: _o, ...mine }) => mine),   // 내 보고만 — 표식은 내보내지 않는다
     // 보고별 목록(이름·이메일 포함)은 마스터·관리자만. 그 밖의 계정에는 합계만 준다 — 사람별 숫자는 익명이어도 누구의 것인지 알아낼 수 있다
     ...(review ? { submission: await submissionStatus(env, reports) } : {}),
-    ...(review ? { rows: reports.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))) } : {}),
   }, { headers: H });
 }
 
@@ -131,17 +136,18 @@ export async function onRequestPost({ env, request }) {
   let churchEntries;
   try { churchEntries = cleanChurchEntries(body?.churchEntries); } catch (error) { return fail(String(error.message).includes('churchName') ? '교회 행사 기록에는 교회 이름이 필요합니다.' : '교회 행사 기록의 숫자는 0 이상의 정수로 입력해 주세요.'); }
 
-  const id = await unitId(session.email, scope, teamName);
+  const id = await unitId(env, session.email, scope, teamName);
   const key = reportKey(month, id);
   const previous = await env.CAMP_KV.get(key, 'json');
-  const now = new Date().toISOString();
+  const today = new Date().toISOString().slice(0, 10);      // 시각은 날짜까지만 남긴다
   const report = {
-    id, month, email: session.email, name: displayName(session), scope, teamName, location, values, churchEntries,
-    createdAt: previous?.createdAt || now, updatedAt: now,
+    id, month, owner: await ownerOf(env, session.email), scope, teamName, location, values, churchEntries,
+    createdAt: previous?.createdAt || today, updatedAt: today,
   };
   await env.CAMP_KV.put(key, JSON.stringify(report));
   await env.CAMP_KV.delete(AGG_KEY(month));          // 이 달 집계 저장값은 낡았으니 지운다
-  return Response.json({ report, updated: !!previous }, { headers: H });
+  const { owner: _owner, ...shown } = report;
+  return Response.json({ report: shown, updated: !!previous }, { headers: H });
 }
 
 export async function onRequestDelete({ env, request }) {
@@ -154,7 +160,7 @@ export async function onRequestDelete({ env, request }) {
   const key = reportKey(month, id);
   const report = await env.CAMP_KV.get(key, 'json');
   if (!report) return fail('삭제할 보고를 찾을 수 없습니다.', 404);
-  if (report.email !== session.email && session.role !== 'master') return fail('내 보고만 지울 수 있습니다.', 403);
+  if (report.owner !== await ownerOf(env, session.email)) return fail('내 보고만 지울 수 있습니다.', 403);
   await env.CAMP_KV.delete(key);
   await env.CAMP_KV.delete(AGG_KEY(month));
   return Response.json({ ok: true }, { headers: H });

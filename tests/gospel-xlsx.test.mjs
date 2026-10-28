@@ -69,10 +69,12 @@ test('GET format=xlsx: 마스터·관리자만, 요약·추이·보고 목록 �
   assert.match(res.headers.get('content-disposition'), new RegExp(`WOLKO-Gospel-Report-${month}\\.xlsx`));
   const files = unzip(new Uint8Array(await res.arrayBuffer()));
   const workbook = files['xl/workbook.xml'];
-  for (const name of ['월간 요약', '최근 6개월', '보고 목록']) assert.ok(workbook.includes(`name="${name}"`), name + ' 시트');
+  for (const name of ['월간 요약', '최근 6개월', '보고 목록 (익명)']) assert.ok(workbook.includes(`name="${name}"`), name + ' 시트');
   const summary = files['xl/worksheets/sheet1.xml'];
   assert.match(summary, /Monthly Gospel Outreach Report/);
   assert.match(summary, /핵심 지표/);
   assert.match(summary, /<v>2<\/v>/, '통합 합계(두 보고의 합)가 숫자 셀로 들어간다');
-  assert.match(files['xl/worksheets/sheet3.xml'], /평택 팀/);
+  const list = files['xl/worksheets/sheet3.xml'];
+  assert.equal(/평택 팀|anna@wol\.org|admin@wolko\.org/.test(list), false, '보고 목록에는 팀 이름·이메일이 없다');
+  assert.equal(/이름\nName|이메일\nEmail/.test(list), false);
 });

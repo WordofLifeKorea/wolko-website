@@ -1,6 +1,6 @@
 /**
  * 복음 통계 — 엑셀(.xlsx) 보고서. CSV 원본과 달리 제목·핵심 지표·구역별 표·최근 6개월 추이를 보기 좋게 꾸민 파일로 내보낸다.
- * 시트: 월간 요약 / 최근 6개월 / 보고 목록(이름·이메일이 들어 있으니 이 파일은 마스터·관리자만 받는다)
+ * 시트: 월간 요약 / 최근 6개월 / 보고 목록(익명 — 이름·이메일·팀 이름 없이 위치·구분과 숫자만)
  */
 import { GOSPEL_SECTIONS, GOSPEL_FIELDS } from './gospelStats.js';
 import { buildXlsx } from './xlsxLite.js';
@@ -93,23 +93,24 @@ function trendSheet(trend) {
 }
 
 function reportsSheet(reports) {
-  const fixed = [['위치', 'Place', 10], ['구분', 'Type', 9], ['팀', 'Team', 18], ['이름', 'Name', 14], ['이메일', 'Email', 26], ['최종 수정', 'Updated', 17]];
+  // 익명 — 누가 보고했는지 알 수 있는 열(이름·이메일·팀·시각)은 넣지 않는다. 줄은 위치·구분별로 숫자 합이 큰 순서
+  const fixed = [['위치', 'Place', 10], ['구분', 'Type', 9]];
   const head = [...fixed.map(([ko, en]) => ({ v: `${ko}\n${en}`, s: S.head })), ...GOSPEL_FIELDS.map(f => ({ v: `${f.short.ko}\n${f.short.en}`, s: S.head }))];
-  const sorted = reports.slice().sort((a, b) => (a.location === 'jeju') - (b.location === 'jeju') || String(a.teamName || a.name || '').localeCompare(String(b.teamName || b.name || '')));
+  const total = r => GOSPEL_FIELDS.reduce((n, f) => n + (Number(r.values?.[f.id]) || 0), 0);
+  const sorted = reports.slice().sort((a, b) => (a.location === 'jeju') - (b.location === 'jeju') || (a.scope === 'team') - (b.scope === 'team') || total(b) - total(a));
   const rows = [head];
   sorted.forEach((r, i) => {
     const alt = i % 2 === 1, text = alt ? S.cellAlt : S.cell, num = alt ? S.numRowAlt : S.numRow;
     rows.push([
-      { v: r.location === 'jeju' ? '제주' : '평택', s: text }, { v: r.scope === 'team' ? '팀' : '개인', s: text }, { v: r.teamName || '', s: text }, { v: r.name || '', s: text }, { v: r.email || '', s: text },
-      { v: String(r.updatedAt || '').slice(0, 16).replace('T', ' '), s: text },
+      { v: r.location === 'jeju' ? '제주' : '평택', s: text }, { v: r.scope === 'team' ? '팀' : '개인', s: text },
       ...GOSPEL_FIELDS.map(f => ({ v: Number(r.values?.[f.id]) || 0, s: num })),
     ]);
   });
   const lastCol = fixed.length + GOSPEL_FIELDS.length;
-  return { name: '보고 목록', cols: [...fixed.map(f => f[2]), ...GOSPEL_FIELDS.map(() => 13)], rows, rowHeights: { 1: 54 }, freezeRow: 1, filter: `A1:${colName(lastCol - 1)}${Math.max(rows.length, 2)}`, landscape: true };
+  return { name: '보고 목록 (익명)', cols: [...fixed.map(f => f[2]), ...GOSPEL_FIELDS.map(() => 13)], rows, rowHeights: { 1: 54 }, freezeRow: 1, filter: `A1:${colName(lastCol - 1)}${Math.max(rows.length, 2)}`, landscape: true };
 }
 function churchSheet(reports) {
-  const head = [['월', 'Month', 10], ['위치', 'Place', 9], ['교회', 'Church', 26], ['행사', 'Event', 26], ['날짜', 'Date', 12], ['학생', 'Students', 10], ['구원', 'Salvations', 10], ['헌신', 'Dedications', 10], ['보고자 / 팀', 'Reporter / Team', 22], ['메모', 'Note', 36]];
+  const head = [['월', 'Month', 10], ['위치', 'Place', 9], ['교회', 'Church', 26], ['행사', 'Event', 26], ['날짜', 'Date', 12], ['학생', 'Students', 10], ['구원', 'Salvations', 10], ['헌신', 'Dedications', 10]];
   const rows = [head.map(([ko, en]) => ({ v: `${ko}\n${en}`, s: S.head }))];
   const items = [];
   reports.forEach(r => (r.churchEntries || []).forEach(e => items.push({ r, e })));
@@ -117,9 +118,9 @@ function churchSheet(reports) {
   items.forEach(({ r, e }, i) => {
     const alt = i % 2 === 1, text = alt ? S.cellAlt : S.cell, num = alt ? S.numRowAlt : S.numRow;
     rows.push([{ v: r.month || '', s: text }, { v: r.location === 'jeju' ? '제주' : '평택', s: text }, { v: e.churchName, s: text }, { v: e.event || '', s: text }, { v: e.date || '', s: text },
-      { v: e.students || 0, s: num }, { v: e.salvations || 0, s: num }, { v: e.dedications || 0, s: num }, { v: r.scope === 'team' ? (r.teamName || r.name || '') : (r.name || ''), s: text }, { v: e.note || '', s: text }]);
+      { v: e.students || 0, s: num }, { v: e.salvations || 0, s: num }, { v: e.dedications || 0, s: num }]);
   });
-  return { name: '교회별 기록', cols: head.map(h => h[2]), rows, rowHeights: { 1: 40 }, freezeRow: 1, filter: `A1:J${Math.max(rows.length, 2)}`, landscape: true };
+  return { name: '교회별 기록', cols: head.map(h => h[2]), rows, rowHeights: { 1: 40 }, freezeRow: 1, filter: `A1:H${Math.max(rows.length, 2)}`, landscape: true };
 }
 function campAutoSheet(camps) {
   const head = [['캠프', 'Camp', 40], ['위치', 'Place', 9], ['확정 캠퍼', 'Confirmed campers', 14], ['스태프', 'Staff', 10], ['참석 합계', 'Attendance', 12], ['구원', 'Salvations', 10], ['헌신', 'Dedications', 10]];

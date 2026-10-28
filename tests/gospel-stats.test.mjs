@@ -63,7 +63,7 @@ test('집계: 월코(본토) · 제주 · 통합을 따로 더하고 건수를 �
 test('보고 저장: 같은 달·같은 단위는 고쳐 쓰고, 팀은 이름이 필요하며, 개인과 팀은 따로 센다', async () => {
   const t = setup(); await t.acc(anna[0], 'counselor', 'Anna Lee');
   let r = await t.call('POST', anna, { body: report() });
-  assert.equal(r.status, 200); assert.equal(r.updated, false); assert.equal(r.report.name, 'Anna Lee');
+  assert.equal(r.status, 200); assert.equal(r.updated, false); assert.equal(r.report.name, undefined, '이름은 저장하지 않는다');
   r = await t.call('POST', anna, { body: report({ values: { evangelism: 9 } }) });
   assert.equal(r.updated, true, '같은 단위는 덮어쓴다');
   assert.equal((await t.call('GET', anna, { query: `?month=${month}` })).mine.length, 1);
@@ -83,7 +83,7 @@ test('보고 저장: 잘못된 달 · 위치 · 숫자는 거부, 로그인 없�
   assert.equal((await t.call('GET', anna, { query: '?month=oops' })).status, 400);
 });
 
-test('열람 권한: 합계는 모두가, 이름·이메일이 있는 목록과 CSV 는 마스터·관리자만', async () => {
+test('익명: 누가 얼마나 보고했는지는 누구에게도 안 보이고(관리자·마스터 포함), 저장값에도 이름·이메일이 없다', async () => {
   const t = setup(); await t.acc(anna[0], 'counselor', 'Anna Lee'); await t.acc(ben[0], 'counselor', 'Ben Kim'); await t.acc(admin[0], 'admin', 'Admin Kim');
   await t.call('POST', anna, { body: report({ values: { evangelism: 5 } }) });
   await t.call('POST', ben, { body: report({ location: 'jeju', values: { evangelism: 8 } }) });
@@ -91,20 +91,48 @@ test('열람 권한: 합계는 모두가, 이름·이메일이 있는 목록과 
   const asBen = await t.call('GET', ben, { query: `?month=${month}` });
   assert.equal(asBen.summary.all.evangelism, 13);
   assert.equal(asBen.summary.mainland.evangelism, 5); assert.equal(asBen.summary.jeju.evangelism, 8);
-  assert.equal(asBen.rows, undefined, '일반 계정에는 보고별 목록이 없다');
-  assert.equal(asBen.mine.length, 1); assert.equal(asBen.mine[0].email, ben[0], '내 보고만');
-  assert.ok(!JSON.stringify(asBen).includes('anna@wol.org'), '다른 사람의 이메일은 응답 어디에도 없다');
+  assert.equal(asBen.rows, undefined);
+  assert.equal(asBen.mine.length, 1); assert.equal(asBen.mine[0].values.evangelism, 8, '내 보고만');
+  assert.equal(JSON.stringify(asBen).includes('anna@wol.org') || JSON.stringify(asBen).includes('Anna Lee'), false, '다른 사람의 이름·이메일은 응답 어디에도 없다');
   assert.equal(asBen.me.canReview, false);
   assert.equal((await t.call('GET', ben, { query: `?month=${month}&format=csv` })).status, 403);
 
   for (const who of [admin, master]) {
     const r = await t.call('GET', who, { query: `?month=${month}` });
-    assert.equal(r.rows.length, 2); assert.ok(r.rows.some(x => x.name === 'Anna Lee' && x.email === 'anna@wol.org'));
+    assert.equal(r.rows, undefined, '관리자·마스터에게도 보고별 목록은 없다');
+    assert.equal(r.mine.length, 0, '내 보고가 아니면 mine 에 없다');
+    const text = JSON.stringify({ ...r, submission: undefined });       // 제출 현황(보고 여부 명단)만 이름이 있다
+    assert.equal(/Anna Lee|Ben Kim|anna@wol\.org|ben@wol\.org/.test(text), false, '숫자와 이름이 함께 나오는 곳이 없다');
     assert.equal(r.me.canReview, true);
   }
   const csv = await t.call('GET', admin, { query: `?month=${month}&format=csv` });
   assert.equal(csv.status, 200); assert.match(csv.headers.get('content-disposition'), /gospel-stats-\d{4}-\d{2}\.csv/);
-  assert.ok(csv.text.includes('Anna Lee') && csv.text.split('\r\n').length === 3);
+  assert.equal(/Anna|Ben|@wol\.org/.test(csv.text), false, 'CSV 에도 이름·이메일이 없다');
+  assert.equal(csv.text.split('\r\n')[0].includes('email') || csv.text.split('\r\n')[0].includes('name'), false);
+  assert.equal(csv.text.split('\r\n').length, 3);
+  // 저장된 값에도 이름·이메일·정확한 시각이 없다
+  const stored = [...t.store.entries()].filter(([k]) => k.startsWith('gospel:rep:'));
+  assert.equal(stored.length, 2);
+  for (const [, v] of stored) {
+    assert.equal(/anna|ben|Anna|Ben|@/.test(v), false, '저장값에 이름·이메일이 없다');
+    const rec = JSON.parse(v); assert.match(rec.owner, /^[0-9a-f]{32}$/); assert.match(rec.updatedAt, /^\d{4}-\d{2}-\d{2}$/);
+  }
+});
+
+test('익명: 예전에 이름·이메일과 함께 저장된 보고는 읽을 때 익명 형식으로 바뀌고, 내 보고·제출 여부는 그대로 맞는다', async () => {
+  const t = setup(); await t.acc(anna[0], 'counselor', 'Anna Lee'); await t.acc(ben[0], 'counselor', 'Ben Kim');
+  const legacy = { id: 'abcdef012345', month, email: anna[0], name: 'Anna Lee', scope: 'individual', teamName: '', location: 'mainland', values: { evangelism: 7 }, churchEntries: [], createdAt: '2026-10-03T01:02:03Z', updatedAt: '2026-10-04T05:06:07Z' };
+  t.store.set(`gospel:rep:${month}:abcdef012345`, JSON.stringify(legacy));
+  const mine = await t.call('GET', anna, { query: `?month=${month}` });
+  assert.equal(mine.mine.length, 1); assert.equal(mine.mine[0].values.evangelism, 7);
+  assert.equal(mine.summary.all.evangelism, 7);
+  assert.equal((await t.call('GET', ben, { query: `?month=${month}` })).mine.length, 0);
+  const keys = [...t.store.keys()].filter(k => k.startsWith('gospel:rep:'));
+  assert.equal(keys.length, 1); assert.notEqual(keys[0], `gospel:rep:${month}:abcdef012345`, '새 번호로 바뀐다');
+  assert.equal(/anna|Anna|@/.test(t.store.get(keys[0])), false);
+  // 같은 사람이 다시 저장하면 새 번호와 같은 단위라 덮어쓴다(중복되지 않는다)
+  assert.equal((await t.call('POST', anna, { body: report({ values: { evangelism: 9 } }) })).updated, true);
+  assert.equal([...t.store.keys()].filter(k => k.startsWith('gospel:rep:')).length, 1);
 });
 
 test('추이: 선택한 달까지 최근 6개월 합계', async () => {
@@ -116,7 +144,7 @@ test('추이: 선택한 달까지 최근 6개월 합계', async () => {
   assert.equal(r.trend[5].all.evangelism, 4); assert.equal(r.trend[3].all.evangelism, 3);
 });
 
-test('삭제: 내 보고는 내가, 남의 보고는 마스터만', async () => {
+test('삭제: 내 보고만 — 남의 보고는 관리자·마스터도 지울 수 없다', async () => {
   const t = setup(); await t.acc(anna[0]); await t.acc(ben[0]); await t.acc(admin[0], 'admin');
   const saved = (await t.call('POST', anna, { body: report() })).report;
   const q = `?month=${month}&id=${saved.id}`;
@@ -125,14 +153,20 @@ test('삭제: 내 보고는 내가, 남의 보고는 마스터만', async () => 
   assert.equal((await t.call('DELETE', anna, { query: q })).status, 200);
   assert.equal((await t.call('DELETE', anna, { query: q })).status, 404);
   const again = (await t.call('POST', anna, { body: report() })).report;
-  assert.equal((await t.call('DELETE', master, { query: `?month=${month}&id=${again.id}` })).status, 200);
+  assert.equal((await t.call('DELETE', master, { query: `?month=${month}&id=${again.id}` })).status, 403);
 });
 
-test('CSV: 엑셀 수식으로 읽히는 글자는 막고, 쉼표·따옴표는 감싼다', () => {
-  const csv = toCsv('2026-10', [{ location: 'jeju', scope: 'team', teamName: '=HYPERLINK("x")', name: 'A, B', email: 'a@wol.org', values: { evangelism: 3 } }]);
-  assert.ok(csv.startsWith('﻿month,location,type'));
-  assert.ok(csv.includes("\"'=HYPERLINK(\"\"x\"\")\""), '수식 시작 글자 앞에 작은따옴표');
-  assert.ok(csv.includes('"A, B"'));
+test('CSV: 위치·구분·숫자만 — 이름·팀·이메일 열이 없고, 줄은 숫자 합이 큰 순서', () => {
+  const csv = toCsv('2026-10', [
+    { location: 'jeju', scope: 'team', teamName: '=HYPERLINK("x")', name: 'A, B', email: 'a@wol.org', values: { evangelism: 3 } },
+    { location: 'mainland', scope: 'individual', name: 'Z', email: 'z@wol.org', values: { evangelism: 1 } },
+    { location: 'mainland', scope: 'individual', name: 'Y', email: 'y@wol.org', values: { evangelism: 9 } },
+  ]);
+  assert.ok(csv.startsWith('﻿month,location,type,'));
+  assert.equal(/HYPERLINK|A, B|@wol|team,name|,email/.test(csv), false);
+  const rows = csv.split('\r\n').slice(1);
+  assert.equal(rows[0].split(',')[1], 'Mainland'); assert.equal(rows[0].split(',')[3 + GOSPEL_FIELD_IDS.indexOf('evangelism')], '9', '같은 위치·구분에서는 숫자가 큰 줄이 먼저');
+  assert.equal(rows[2].split(',')[1], 'Jeju');
 });
 
 test('모든 숫자가 0(또는 비어 있어도) 보고를 낼 수 있다', async () => {
@@ -171,7 +205,7 @@ test('CRS 교회 목록은 이름만 꺼내고, 이름 없는 레코드는 뺀�
   assert.deepEqual(list, [{ id: 'a', name: '가교회' }, { id: 'b', name: '나교회' }]);
 });
 
-test('교회 행사 저장: 합계 화면에는 행사·숫자만, 메모는 보고자·관리자에게만', async () => {
+test('교회 행사 저장: 합계 화면에는 행사·숫자만, 메모는 보고한 본인에게만', async () => {
   const { acc, call } = setup();
   await acc(anna[0]); await acc(admin[0], 'admin'); await acc('bob@wol.org');
   const month = currentMonthKst();
@@ -187,7 +221,7 @@ test('교회 행사 저장: 합계 화면에는 행사·숫자만, 메모는 보
   const mine = await call('GET', anna, { query: `?month=${month}` });
   assert.equal(mine.mine[0].churchEntries[0].note, '비공개 메모');
   const adm = await call('GET', admin, { query: `?month=${month}` });
-  assert.equal(adm.rows[0].churchEntries[0].note, '비공개 메모');
+  assert.equal(JSON.stringify(adm).includes('비공개 메모'), false, '관리자 화면에도 남의 메모는 없다');
 });
 
 test('교회 목록 API: 로그인 필요, 설정이 없으면 빈 목록, 캐시가 있으면 Firebase 를 부르지 않는다', async () => {
@@ -202,6 +236,16 @@ test('교회 목록 API: 로그인 필요, 설정이 없으면 빈 목록, 캐�
   await kv.put(GC.CHURCH_CACHE_KEY, JSON.stringify({ list: [{ id: 'c1', name: '평택중앙교회' }] }));
   const cached = await (await GC.onRequestGet({ env: { ...env, FIREBASE_CRS_SERVICE_ACCOUNT: '{"broken":true}' }, request: await req(anna) })).json();
   assert.deepEqual(cached, { churches: [{ id: 'c1', name: '평택중앙교회' }], configured: true });
+});
+
+test('보고 위치 기본값: 가입할 때 고른 소속(평택 → mainland, 제주 → jeju), 정보가 없으면 빈 값', async () => {
+  const { store, acc, call } = setup();
+  const put = (email, campus) => store.set(`hub:account:${email}`, JSON.stringify({ email, name: email, role: 'counselor', status: 'approved', ...(campus ? { campus } : {}) }));
+  put(anna[0], 'jeju'); put(ben[0], 'wolko'); put('cara@wol.org', '');
+  assert.equal((await call('GET', anna)).me.location, 'jeju');
+  assert.equal((await call('GET', ben)).me.location, 'mainland');
+  assert.equal((await call('GET', ['cara@wol.org', 'counselor'])).me.location, '');
+  assert.equal((await call('GET', anna, { query: '?view=year' })).me.location, 'jeju', '연간 보기 응답에도 들어 있다');
 });
 
 test('연간 보기: 그 해의 모든 달을 더하고 다른 해는 섞이지 않는다 · 미래의 해는 거절', async () => {

@@ -89,11 +89,19 @@ export function cleanText(value, max) {
 }
 
 /** 같은 (계정, 개인/팀, 팀 이름) 은 같은 id — 달 안에서 한 단위가 한 건이 되게 한다 */
-export async function unitId(email, scope, teamName) {
-  const source = `${String(email).toLowerCase()}|${scope}|${scope === 'team' ? teamName.toLowerCase() : ''}`;
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));
-  return [...new Uint8Array(digest)].slice(0, 6).map(b => b.toString(16).padStart(2, '0')).join('');
+/* ───────── 익명 보관 ─────────
+ * 보고에는 이름·이메일을 저장하지 않는다. 대신 서버 비밀값으로 만든 열쇠 달린 해시(HMAC)를 쓴다 —
+ *   owner  = 보고한 사람 표식(내 보고 찾기·보고 여부 확인용)
+ *   id     = 사람 + 개인/팀 + 팀 이름 단위의 보고 번호(같은 단위는 덮어쓴다)
+ * 비밀값 없이는 이메일을 거꾸로 알아낼 수 없고, 저장된 시각도 날짜까지만 남긴다.
+ * 서버는 로그인한 사람의 이메일로 같은 값을 다시 만들어 "내 보고"를 찾는다. */
+async function anonHex(env, label, text, bytes) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(`gospel-anon:${env.ADMIN_PASSWORD || ''}`), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${label}|${text}`));
+  return [...new Uint8Array(sig)].slice(0, bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 }
+export const ownerOf = (env, email) => anonHex(env, 'owner', String(email).trim().toLowerCase(), 16);
+export const unitId = (env, email, scope, teamName) => anonHex(env, 'unit', `${String(email).trim().toLowerCase()}|${scope}|${scope === 'team' ? String(teamName || '').toLowerCase() : ''}`, 6);
 
 export const reportKey = (month, id) => `${REPORT_PREFIX}${month}:${id}`;
 
@@ -105,8 +113,20 @@ export async function loadMonth(env, month) {
     keys.push(...page.keys.map(k => k.name));
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
-  const items = await Promise.all(keys.map(key => env.CAMP_KV.get(key, 'json')));
+  const items = await Promise.all(keys.map(async key => migrateAnonymous(env, key, await env.CAMP_KV.get(key, 'json'))));
   return items.filter(Boolean);
+}
+
+/** 예전에 이름·이메일과 함께 저장된 보고는 읽을 때 익명 형식으로 바꿔 다시 저장한다 (한 번만) */
+async function migrateAnonymous(env, key, report) {
+  if (!report || !report.email || !env.ADMIN_PASSWORD) return report;
+  const { email, name, ...rest } = report;
+  const id = await unitId(env, email, report.scope, report.teamName);
+  const clean = { ...rest, id, owner: await ownerOf(env, email), createdAt: String(report.createdAt || '').slice(0, 10), updatedAt: String(report.updatedAt || '').slice(0, 10) };
+  const nextKey = reportKey(report.month, id);
+  await env.CAMP_KV.put(nextKey, JSON.stringify(clean));
+  if (nextKey !== key) await env.CAMP_KV.delete(key);
+  return clean;
 }
 
 /** 보고 목록 → { all, mainland, jeju } 합계 + 건수 */
@@ -130,8 +150,11 @@ const csvCell = value => {
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 };
 export function toCsv(month, reports) {
-  const head = ['month', 'location', 'type', 'team', 'name', 'email', ...GOSPEL_FIELD_IDS];
-  const rows = reports.map(r => [month, r.location === 'jeju' ? 'Jeju' : 'Mainland', r.scope, r.teamName || '', r.name || '', r.email, ...GOSPEL_FIELD_IDS.map(id => r.values?.[id] ?? 0)]);
+  // 보고한 사람·팀을 알 수 있는 열(이름·이메일·팀·시각)은 넣지 않는다 — 위치·구분과 숫자만. 줄 순서도 숫자 합이 큰 순서라 보고 순서로 사람을 짐작할 수 없다
+  const head = ['month', 'location', 'type', ...GOSPEL_FIELD_IDS];
+  const total = r => GOSPEL_FIELD_IDS.reduce((n, id) => n + (Number(r.values?.[id]) || 0), 0);
+  const rows = reports.slice().sort((a, b) => (a.location === 'jeju') - (b.location === 'jeju') || (a.scope === 'team') - (b.scope === 'team') || total(b) - total(a))
+    .map(r => [month, r.location === 'jeju' ? 'Jeju' : 'Mainland', r.scope, ...GOSPEL_FIELD_IDS.map(id => r.values?.[id] ?? 0)]);
   return '﻿' + [head, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
 }
 

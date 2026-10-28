@@ -4,7 +4,8 @@ import * as H from '../functions/lib/hubAccounts.js';
 import * as G from '../functions/api/portal/gospel-stats.js';
 import * as Ex from '../functions/api/portal/gospel-exempt.js';
 import { onRequestPost as remind } from '../functions/api/gospel-reminders.js';
-import { isLastDayOfMonth, missingReporters, reminderMail, reportLink } from '../functions/lib/gospelReminder.js';
+import { isLastDayOfMonth, missingReporters, submittedEmails, reminderMail, reportLink } from '../functions/lib/gospelReminder.js';
+import { ownerOf } from '../functions/lib/gospelStats.js';
 import { GOSPEL_FIELD_IDS } from '../functions/lib/gospelStats.js';
 
 test('매달 마지막 날 판단(윤년 포함)과 보고 링크', () => {
@@ -26,9 +27,11 @@ test('알림 메일: 한글·영어, 이름·링크가 들어가고 이름은 �
   assert.equal(m.html.includes('<b>Anna</b>'), false);
 });
 
-test('아직 안 낸 사람: 낸 사람(팀 보고 포함)과 보고 제외는 뺀다', () => {
+test('아직 안 낸 사람: 낸 사람(팀 보고 포함)과 보고 제외는 뺀다', async () => {
   const roster = [{ email: 'a@wol.org', name: 'A', exempt: false }, { email: 'b@wol.org', name: 'B', exempt: false }, { email: 'c@wol.org', name: 'C', exempt: true }, { email: 'd@wol.org', name: 'D', exempt: false }];
-  const missing = missingReporters(roster, [{ email: 'A@wol.org' }, { email: 'b@wol.org', scope: 'team' }]);
+  const env = { ADMIN_PASSWORD: 'secret' };
+  const reports = [{ owner: await ownerOf(env, 'A@wol.org') }, { owner: await ownerOf(env, 'b@wol.org'), scope: 'team' }];   // 보고에는 이메일이 없고 표식만 있다
+  const missing = missingReporters(roster, await submittedEmails(env, roster, reports));
   assert.deepEqual(missing.map(p => p.email), ['d@wol.org']);
 });
 
