@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=45">
+  <link rel="stylesheet" href="/hub.css?v=47">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <link rel="stylesheet" href="/portal-remember.css?v=1">
@@ -326,6 +326,7 @@
         dashEvents: '다가오는 일정', dashEventsEmpty: '앞으로 2주 안에 등록된 일정이 없어요.', dashEventsOff: '캘린더가 아직 연결되지 않았어요.', allDay: '종일',
         dashChurches: '최근 업데이트된 교회', dashChurchesEmpty: '최근 업데이트된 교회가 없어요.', dashChurchesOff: '교회 목록(CRS)이 아직 연결되지 않았어요.', churchUpdated: '업데이트', churchVisited: '방문', churchPastor: '담임', churchPastorTitle: '담임목사', churchDone: '완료한 단계', churchNext: '다음 추천 단계', churchMore: function (n) { return '외 ' + n + '개 더'; }, churchAllDone: '12단계를 모두 마쳤어요', churchNoneYet: '아직 완료한 단계가 없어요', churchProgress: '진행', churchStepsOf: function (n) { return n + ' / 12 단계'; }, churchLastVisit: '마지막 방문', churchNoDetail: '아직 입력된 세부 정보가 없어요.',
         dashLoadFail: '불러오지 못했어요.', dashMore: '자세히 보기',
+        dashPrayers: '기도제목', dashPrayerEmpty: '아직 나눈 기도제목이 없어요.', dashPrayerHint: '첫 기도제목을 나눠 보세요. 포탈에 로그인한 사람에게만 보여요.', prayerShare: '기도제목 나누기', prayerPh: '함께 기도해 주었으면 하는 일을 적어 주세요.', prayerAnon: '익명으로 올리기', prayerPost: '올리기', prayerPray: '함께 기도해요', prayerMore: function (n) { return n + '개 더 보기'; }, prayerLess: '접기', prayerAnonName: '익명', prayerDelete: '삭제', prayerDeleteConfirm: '이 기도제목을 지울까요?', prayerPosted: '기도제목을 나눴어요.', prayerDeleted: '기도제목을 지웠어요.', prayerNeedText: '기도제목을 입력해 주세요.', prayerNote: '올린 지 45일이 지나면 자동으로 사라져요.',
         dashTodayChip: '오늘', dashUnset: '미정', dashClosed: '닫힘', dashWeekOf: function (a, b) { return '이번 주 ' + a + ' – ' + b; }, relToday: '오늘', relYesterday: '어제', relDaysAgo: function (n) { return n + '일 전'; }, dashNoticeHint: '관리자가 이번 주에 꼭 필요한 소식을 여기에 올려요.',
         recentBadge: '최근 사용',
         emailLoginTitle: '포탈 로그인',
@@ -405,6 +406,7 @@
         dashEvents: 'Upcoming Events', dashEventsEmpty: 'No events in the next two weeks.', dashEventsOff: 'The calendar is not connected yet.', allDay: 'All day',
         dashChurches: 'Recently Updated Churches', dashChurchesEmpty: 'No recently updated churches.', dashChurchesOff: 'The church list (CRS) is not connected yet.', churchUpdated: 'Updated', churchVisited: 'Visited', churchPastor: 'Pastor', churchPastorTitle: 'Senior Pastor', churchDone: 'Completed steps', churchNext: 'Recommended next step', churchMore: function (n) { return '+' + n + ' more'; }, churchAllDone: 'All 12 steps completed', churchNoneYet: 'No steps completed yet', churchProgress: 'Progress', churchStepsOf: function (n) { return n + ' / 12 steps'; }, churchLastVisit: 'Last visit', churchNoDetail: 'No details entered yet.',
         dashLoadFail: 'Could not load.', dashMore: 'View all',
+        dashPrayers: 'Prayer requests', dashPrayerEmpty: 'No prayer requests shared yet.', dashPrayerHint: 'Share the first one. Only people signed in to the portal can see them.', prayerShare: 'Share a prayer request', prayerPh: 'What would you like us to pray for?', prayerAnon: 'Post anonymously', prayerPost: 'Post', prayerPray: 'Praying together', prayerMore: function (n) { return 'Show ' + n + ' more'; }, prayerLess: 'Show less', prayerAnonName: 'Anonymous', prayerDelete: 'Delete', prayerDeleteConfirm: 'Delete this prayer request?', prayerPosted: 'Prayer request shared.', prayerDeleted: 'Prayer request deleted.', prayerNeedText: 'Please write your prayer request.', prayerNote: 'Requests disappear automatically after 45 days.',
         dashTodayChip: 'Today', dashUnset: 'Not set', dashClosed: 'CLOSED', dashWeekOf: function (a, b) { return 'This week ' + a + ' – ' + b; }, relToday: 'today', relYesterday: 'yesterday', relDaysAgo: function (n) { return n + ' days ago'; }, dashNoticeHint: 'Admins post what everyone needs to know this week.',
         recentBadge: 'Recent',
         emailLoginTitle: 'Portal Login',
@@ -504,6 +506,7 @@
       up: '<path d="M12 19V5M6 11l6-6 6 6"/>', down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
       pin: '<path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3z"/>',
       chev: '<path d="m9 6 6 6-6 6"/>',
+      heart: '<path d="M12 21s-7-4.2-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.8-7 10-7 10Z"/>',
     };
     const svgi = (name, size) => '<svg width="' + (size || 18) + '" height="' + (size || 18) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + DI[name] + '</svg>';
     function dashLocale() { return hubLang === 'en' ? 'en-US' : 'ko-KR'; }
@@ -634,6 +637,29 @@
         + '<p class="hub-pop-label hub-pop-label-next">' + esc(t('churchNext')) + '</p>' + nextHtml
         + '<dl>' + rows.map(r => '<div><dt>' + esc(r[0]) + '</dt><dd>' + r[1] + '</dd></div>').join('') + '</dl></div>';
     }
+    /** 기도제목 나눔 — 최근 것 5개를 먼저 보이고 나머지는 "더 보기". 이름은 올린 사람이 익명을 골랐으면 "익명" */
+    const PRAYER_SHOWN = 5;
+    function renderPrayers(d) {
+      const list = d.prayers;
+      const form = '<details class="hub-prayer-form"><summary>+ ' + esc(t('prayerShare')) + '</summary>'
+        + '<textarea id="prayerText" rows="3" maxlength="300" placeholder="' + esc(t('prayerPh')) + '"></textarea>'
+        + '<div class="hub-prayer-opts"><label><input id="prayerAnon" type="checkbox"> ' + esc(t('prayerAnon')) + '</label>'
+        + '<button type="button" id="prayerPostBtn">' + esc(t('prayerPost')) + '</button></div>'
+        + '<p class="hub-prayer-note">' + esc(t('prayerNote')) + '</p></details>';
+      let body;
+      if (list === null) body = dashEmpty('heart', t('dashLoadFail'));
+      else if (!list.length) body = dashEmpty('heart', t('dashPrayerEmpty'), t('dashPrayerHint'));
+      else {
+        const item = (p, i) => '<li' + (i >= PRAYER_SHOWN ? ' class="is-extra"' : '') + '>'
+          + '<p class="hub-prayer-text">' + linkify(esc(p.text)).replace(/\n/g, '<br>') + '</p>'
+          + '<div class="hub-prayer-meta"><span>' + esc(p.anonymous ? t('prayerAnonName') : p.name) + ' · ' + esc(relDay(Date.parse(p.createdAt), d.today)) + '</span>'
+          + (p.canDelete ? '<button type="button" class="hub-prayer-del" data-del="' + esc(p.id) + '">' + esc(t('prayerDelete')) + '</button>' : '')
+          + '<button type="button" class="hub-pray-btn' + (p.prayed ? ' is-on' : '') + '" data-pray="' + esc(p.id) + '" aria-pressed="' + (p.prayed ? 'true' : 'false') + '">' + esc(t('prayerPray')) + (p.count ? ' <b>' + p.count + '</b>' : '') + '</button></div></li>';
+        body = '<ul class="hub-prayers">' + list.map(item).join('') + '</ul>'
+          + (list.length > PRAYER_SHOWN ? '<button type="button" class="hub-prayer-more" data-more="' + esc(t('prayerMore', list.length - PRAYER_SHOWN)) + '" data-less="' + esc(t('prayerLess')) + '">' + esc(t('prayerMore', list.length - PRAYER_SHOWN)) + '</button>' : '');
+      }
+      return dashCard('hub-dcard-prayer', '#d6567a', 'heart', t('dashPrayers'), body + form);
+    }
     function renderChurches(d) {
       let body;
       if (d.churches === null) body = dashEmpty('church', t('dashChurchesOff'));
@@ -654,8 +680,10 @@
       if (!el) return;
       if (!dashData) { el.innerHTML = dashFailed ? '<div class="hub-dcard hub-dcard-wide">' + dashEmpty('bell', t('dashLoadFail')) + '</div>' : ''; return; }
       // 공지를 쓰다가 언어를 바꿔도 입력한 내용은 남긴다
+      const keepPrayer = { text: $('prayerText')?.value || '', anon: !!$('prayerAnon')?.checked, open: !!$('hubDash').querySelector('.hub-prayer-form')?.open, more: !!$('hubDash').querySelector('.hub-dcard-prayer.is-expanded') };
       const keep = { title: $('noticeTitle')?.value || '', body: $('noticeBody')?.value || '', due: $('noticeDue')?.value || '', open: $('hubDash').querySelector('.hub-notice-form')?.open };
-      el.innerHTML = renderDashHead(dashData) + renderNotices(dashData) + renderEvents(dashData) + renderKitchen(dashData) + renderCar(dashData) + renderChurches(dashData);
+      el.innerHTML = renderDashHead(dashData) + renderNotices(dashData) + renderEvents(dashData) + renderKitchen(dashData) + renderCar(dashData) + renderPrayers(dashData) + renderChurches(dashData);
+      if ($('prayerText')) { $('prayerText').value = keepPrayer.text; $('prayerAnon').checked = keepPrayer.anon; if (keepPrayer.open) el.querySelector('.hub-prayer-form').open = true; if (keepPrayer.more) { const c = el.querySelector('.hub-dcard-prayer'); c.classList.add('is-expanded'); const mb = c.querySelector('.hub-prayer-more'); if (mb) mb.textContent = mb.dataset.less; } }
       if ($('noticeTitle')) { $('noticeTitle').value = keep.title; $('noticeBody').value = keep.body; if ($('noticeDue')) $('noticeDue').value = keep.due; if (keep.open) el.querySelector('.hub-notice-form').open = true; }
     }
     async function loadDashboard() {
@@ -669,7 +697,48 @@
       } catch (e) { dashFailed = !dashData; }
       renderDash();
     }
+    /** 기도제목 목록만 다시 받아 그린다(첫 화면 전체를 다시 부르지 않는다) */
+    async function refreshPrayers(next) {
+      try {
+        if (!next) { const res = await fetch('/api/portal/prayers', { headers: authHeaders(), cache: 'no-store' }); if (!res.ok) throw new Error('HTTP ' + res.status); next = (await res.json()).prayers; }
+        if (dashData) { dashData.prayers = next; renderDash(); }
+      } catch (err) { showToast(t('dashLoadFail'), true); }
+    }
+    async function prayerCall(method, url, body) {
+      const res = await fetch(url, { method, headers: authHeaders(), ...(body ? { body: JSON.stringify(body) } : {}) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || t('dashLoadFail'));
+      return data;
+    }
     document.addEventListener('click', async e => {
+      const pray = e.target.closest && e.target.closest('.hub-pray-btn');
+      if (pray) {
+        pray.disabled = true;
+        try { const out = await prayerCall('POST', '/api/portal/prayers', { action: 'pray', id: pray.dataset.pray }); const p = (dashData.prayers || []).find(x => x.id === pray.dataset.pray); if (p) { p.count = out.count; p.prayed = out.prayed; } renderDash(); }
+        catch (err) { showToast(err.message, true); pray.disabled = false; }
+        return;
+      }
+      const pdel = e.target.closest && e.target.closest('.hub-prayer-del');
+      if (pdel) {
+        if (!confirm(t('prayerDeleteConfirm'))) return;
+        try { const out = await prayerCall('DELETE', '/api/portal/prayers?id=' + encodeURIComponent(pdel.dataset.del)); showToast(t('prayerDeleted')); await refreshPrayers(out.prayers); }
+        catch (err) { showToast(err.message, true); }
+        return;
+      }
+      const more = e.target.closest && e.target.closest('.hub-prayer-more');
+      if (more) { const c = more.closest('.hub-dcard-prayer'); const on = c.classList.toggle('is-expanded'); more.textContent = on ? more.dataset.less : more.dataset.more; return; }
+      if (e.target.id === 'prayerPostBtn') {
+        const text = $('prayerText').value.trim();
+        if (!text) { showToast(t('prayerNeedText'), true); return; }
+        const btn = e.target; btn.disabled = true;
+        try {
+          const out = await prayerCall('POST', '/api/portal/prayers', { text, anonymous: $('prayerAnon').checked });
+          showToast(t('prayerPosted')); $('prayerText').value = ''; $('prayerAnon').checked = false;
+          await refreshPrayers(out.prayers);
+        } catch (err) { showToast(err.message, true); }
+        btn.disabled = false;
+        return;
+      }
       const del = e.target.closest && e.target.closest('.hub-notice-del');
       if (del) {
         if (!confirm(t('noticeDeleteConfirm'))) return;

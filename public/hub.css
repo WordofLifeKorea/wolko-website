@@ -735,10 +735,10 @@ body.hub-modal-open { overflow: hidden; }
 .hub-section-title { margin: 0 0 14px; font: 800 13px/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--mid); }
 @media (max-width: 1279px) {
   .hub-dcard { grid-column: span 6; }
-  .hub-dcard-notice, .hub-dcard-events, .hub-dcard-churches { grid-column: 1 / -1; }
-  .hub-dcard-notice { order: 1; } .hub-dcard-kitchen { order: 2; } .hub-dcard-car { order: 3; } .hub-dcard-events { order: 4; } .hub-dcard-churches { order: 5; }
+  .hub-dcard-notice, .hub-dcard-events, .hub-dcard-prayer, .hub-dcard-churches { grid-column: 1 / -1; }
+  .hub-dcard-notice { order: 1; } .hub-dcard-kitchen { order: 2; } .hub-dcard-car { order: 3; } .hub-dcard-events { order: 4; } .hub-dcard-prayer { order: 5; } .hub-dcard-churches { order: 6; }
 }
-@media (max-width: 640px) { .hub-dash { gap: 12px; } .hub-dcard, .hub-dcard-notice, .hub-dcard-events, .hub-dcard-churches { grid-column: 1 / -1; min-height: 0; padding: 20px; border-radius: 22px; } }
+@media (max-width: 640px) { .hub-dash { gap: 12px; } .hub-dcard, .hub-dcard-notice, .hub-dcard-events, .hub-dcard-prayer, .hub-dcard-churches { grid-column: 1 / -1; min-height: 0; padding: 20px; border-radius: 22px; } }
 @media (prefers-reduced-motion: reduce) { .hub-dcard { transition: none; } }
 
 /* 교회 행에 마우스를 올리거나 포커스하면 세부 카드가 뜬다 */
@@ -774,7 +774,8 @@ body.hub-modal-open { overflow: hidden; }
   .hub-dcard-kitchen { grid-column: 5 / 9; grid-row: 2; }
   .hub-dcard-car { grid-column: 5 / 9; grid-row: 3; }
   .hub-dcard-events { grid-column: 9 / 13; grid-row: 2 / span 2; }
-  .hub-dcard-churches { grid-column: 1 / -1; grid-row: 4; }
+  .hub-dcard-prayer { grid-column: 1 / -1; grid-row: 4; }
+  .hub-dcard-churches { grid-column: 1 / -1; grid-row: 5; }
 }
 .hub-dcard-churches .hub-churches { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 4px 14px; }
 
@@ -813,7 +814,7 @@ body.hub-modal-open { overflow: hidden; }
 }
 .hub-notices li:has(.hub-notice-del) { padding-right: 66px; }
 .hub-notices li:has(.hub-notice-del) .hub-notice-top { padding-right: 0; }
-@media (min-width: 1280px) { .hub-dash { grid-template-rows: auto 1fr 1fr auto; } }
+@media (min-width: 1280px) { .hub-dash { grid-template-rows: auto 1fr 1fr auto auto; } }
 
 /* ── 교회 세부 카드: 담임목사 · 완료한 단계 · 다음 추천 단계 ── */
 .hub-church-pop { min-width: 300px; padding: 16px 18px; }
@@ -895,3 +896,36 @@ body.hub-modal-open { overflow: hidden; }
 .hub-notice-form .hub-notice-due { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 10px; color: var(--mid); font-size: 13px; }
 .hub-dcard-notice .hub-notice-due { color: rgba(255,255,255,.88); }
 .hub-notice-form .hub-notice-due input[type="text"] { width: 160px; margin: 0; cursor: pointer; }
+
+/* ── 아이콘 정리: 카드 머리의 아이콘 하나만 남기고, 비어 있을 때 나오던 큰 동그라미 아이콘은 뺀다 ── */
+.hub-dempty-ic { display: none; }
+.hub-dempty { padding-top: 10px; }
+
+/* ── 기도제목 나눔 ── */
+.hub-prayers { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.hub-prayers li { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 18px; background: #fbf4f6; }
+.hub-prayers li.is-extra { display: none; }
+.hub-dcard-prayer.is-expanded .hub-prayers li.is-extra { display: flex; }
+.hub-prayer-text { margin: 0; flex: 1; color: var(--text); font-size: 14px; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere; }
+.hub-prayer-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; color: var(--mid); font-size: 12.5px; }
+.hub-prayer-meta > span { margin-right: auto; font-weight: 700; }
+.hub-prayer-del { padding: 4px 9px; border: 0; border-radius: 999px; background: rgba(196,42,54,.08); color: var(--accent); font: 700 12px/1.2 var(--f-body); cursor: pointer; }
+.hub-prayer-del:hover { background: rgba(196,42,54,.16); }
+.hub-pray-btn { padding: 7px 14px; border: 1px solid #ecc4d0; border-radius: 999px; background: #fff; color: #b8416a; font: 800 12.5px/1.2 var(--f-body); cursor: pointer; transition: background .18s, color .18s, border-color .18s; }
+.hub-pray-btn b { margin-left: 4px; font-family: var(--f-sans); }
+.hub-pray-btn:hover { background: #fdeef3; }
+.hub-pray-btn.is-on { background: #d6567a; border-color: #d6567a; color: #fff; }
+.hub-pray-btn:disabled { opacity: .6; cursor: default; }
+.hub-prayer-more { display: block; margin: 12px auto 0; padding: 8px 18px; border: 0; border-radius: 999px; background: #f3f6f8; color: var(--mid); font: 700 13px/1 var(--f-body); cursor: pointer; }
+.hub-prayer-more:hover { background: #e8eef2; }
+.hub-prayer-form { margin-top: 14px; }
+.hub-prayer-form summary { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 999px; background: #fbe9ef; color: #b8416a; font: 800 13px/1 var(--f-body); cursor: pointer; list-style: none; }
+.hub-prayer-form summary::-webkit-details-marker { display: none; }
+.hub-prayer-form[open] summary { background: #d6567a; color: #fff; }
+.hub-prayer-form textarea { width: 100%; margin-top: 10px; padding: 10px 12px; border: 1px solid #ecd3db; border-radius: 12px; background: #fff; color: var(--text); font: 500 14px/1.5 var(--f-body); resize: vertical; }
+.hub-prayer-form textarea:focus { outline: 2px solid rgba(214,86,122,.25); border-color: #d6567a; }
+.hub-prayer-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.hub-prayer-opts label { display: inline-flex; align-items: center; gap: 6px; color: var(--mid); font-size: 13px; }
+.hub-prayer-opts button { margin-left: auto; padding: 9px 18px; border: 0; border-radius: 999px; background: #d6567a; color: #fff; font: 800 13px/1 var(--f-body); cursor: pointer; }
+.hub-prayer-opts button:disabled { opacity: .6; cursor: default; }
+.hub-prayer-note { margin: 8px 0 0; color: var(--light); font-size: 12px; }
