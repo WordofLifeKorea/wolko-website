@@ -25,7 +25,7 @@
   /* ───────── 가로 막대 (분류별 비율) ───────── */
   function bar(id, slices, lang, s) {
     var total = slices.reduce(function (n, x) { return n + x.value; }, 0);
-    if (!total) return '<p class="gc-empty">' + esc(s.empty) + '</p>';
+    if (!total) return '';   // 숫자가 하나도 없으면 카드 안에 안내 글을 반복하지 않는다(카드에는 0 만 보인다)
     var segs = slices.map(function (sl, i) {
       if (!sl.value) return '';
       return '<span class="gc-seg" data-chart="' + id + '" data-i="' + i + '" data-v="' + sl.value + '" style="background:' + sl.color + ';flex-grow:0" tabindex="0" role="img"'
