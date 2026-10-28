@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=48">
+  <link rel="stylesheet" href="/hub.css?v=49">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <link rel="stylesheet" href="/portal-remember.css?v=1">
@@ -576,9 +576,17 @@
         + '</li>').join('') + '</ul>';
       return dashCard('hub-dcard-notice', '#f0a020', 'bell', t('dashNotices'), body + form);
     }
-    /** 카드 오른쪽 아래 작은 그림 — 김이 나는 냄비(키친 듀티), 바퀴가 구르는 차(차량 운행). CSS 애니메이션만 쓰고 움직임 줄이기 설정이면 멈춘다 */
-    const KITCHEN_DECO = '<span class="hub-deco hub-deco-pot" aria-hidden="true"><i></i><i></i><i></i><svg width="54" height="38" viewBox="0 0 54 38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="hub-pot-lid" d="M12 9h30M27 9V6"/><path d="M9 14h36v9a10 10 0 0 1-10 10H19A10 10 0 0 1 9 23z" fill="color-mix(in srgb, currentColor 14%, #fff)"/><path d="M4 17h5M45 17h5"/></svg></span>';
-    const CAR_DECO = '<span class="hub-deco hub-deco-car" aria-hidden="true"><i></i><i></i><svg width="54" height="38" viewBox="0 0 54 38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="hub-car-body"><path d="M5 25v-6a3 3 0 0 1 2.2-2.9l6.3-1.7 5-6.4A3 3 0 0 1 21 7h12a3 3 0 0 1 2.4 1.2L40 14l5 1.6A3 3 0 0 1 47 18.5V25a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="color-mix(in srgb, currentColor 14%, #fff)"/><path d="M17.5 14.5 21 10h11l3.5 4.5z"/><g transform="translate(15 27)"><g class="hub-wheel"><circle r="4.5" fill="#fff"/><path d="M0-2.5v5M-2.5 0h5"/></g></g><g transform="translate(38 27)"><g class="hub-wheel"><circle r="4.5" fill="#fff"/><path d="M0-2.5v5M-2.5 0h5"/></g></g></g></svg></span>';
+    /** 카드 맨 아래에 쭉 깔리는 작은 장면 — 키친: 도마 위에서 당근을 써는 칼 + 김이 나는 냄비, 차량: 나무와 집이 스쳐 지나가는 길 위를 달리는 차.
+     *  CSS 애니메이션만 쓰고, 움직임 줄이기 설정이면 멈춘다 */
+    const POT_SVG = '<span class="hub-deco hub-deco-pot"><i></i><i></i><i></i><svg width="54" height="38" viewBox="0 0 54 38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="hub-pot-lid" d="M12 9h30M27 9V6"/><path d="M9 14h36v9a10 10 0 0 1-10 10H19A10 10 0 0 1 9 23z" fill="color-mix(in srgb, currentColor 14%, #fff)"/><path d="M4 17h5M45 17h5"/></svg></span>';
+    const BOARD_SVG = '<svg class="hub-sc-board" width="124" height="50" viewBox="0 0 124 50" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+      + '<rect x="3" y="32" width="118" height="14" rx="6" fill="#efd3a4" stroke="#c98f3f" stroke-width="2"/><circle cx="111" cy="39" r="2.4" fill="#fff" stroke="#c98f3f" stroke-width="1.5"/>'
+      + '<g class="hub-carrot"><rect x="14" y="23" width="50" height="9" rx="4.5" fill="#f59a3c" stroke="#d9751a" stroke-width="1.5"/><path d="M14 27.5 8 24M14 27.5 7 28M14 27.5 8 31.5" stroke="#4fae7b" stroke-width="2"/></g>'
+      + '<g class="hub-slices" fill="#f8b061" stroke="#d9751a" stroke-width="1.2"><ellipse class="s1" cx="74" cy="29" rx="2.4" ry="4"/><ellipse class="s2" cx="81" cy="29" rx="2.4" ry="4"/><ellipse class="s3" cx="88" cy="29" rx="2.4" ry="4"/><ellipse class="s4" cx="95" cy="29" rx="2.4" ry="4"/></g>'
+      + '<g class="hub-knife-pos"><g class="hub-knife"><path d="M62 14h13v17c-7 0-13-2-13-5z" fill="#eef3f6" stroke="#7d8e98" stroke-width="1.6"/><rect x="63" y="3" width="11" height="11" rx="3.5" fill="#8a5a2b" stroke="#6b4320" stroke-width="1.4"/></g></g></svg>';
+    const KITCHEN_DECO = '<span class="hub-scene hub-scene-kitchen" aria-hidden="true"><span class="hub-counter"></span>' + BOARD_SVG + POT_SVG + '</span>';
+    const CAR_SVG = '<span class="hub-deco hub-deco-car"><i></i><i></i><svg width="54" height="38" viewBox="0 0 54 38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="hub-car-body"><path d="M5 25v-6a3 3 0 0 1 2.2-2.9l6.3-1.7 5-6.4A3 3 0 0 1 21 7h12a3 3 0 0 1 2.4 1.2L40 14l5 1.6A3 3 0 0 1 47 18.5V25a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="color-mix(in srgb, currentColor 14%, #fff)"/><path d="M17.5 14.5 21 10h11l3.5 4.5z"/><g transform="translate(15 27)"><g class="hub-wheel"><circle r="4.5" fill="#fff"/><path d="M0-2.5v5M-2.5 0h5"/></g></g><g transform="translate(38 27)"><g class="hub-wheel"><circle r="4.5" fill="#fff"/><path d="M0-2.5v5M-2.5 0h5"/></g></g></g></svg></span>';
+    const CAR_DECO = '<span class="hub-scene hub-scene-car" aria-hidden="true"><span class="hub-sc-far"></span><span class="hub-sc-near"></span><span class="hub-road"></span>' + CAR_SVG + '</span>';
     function renderKitchen(d) {
       let body;
       if (d.kitchen === null) body = dashEmpty('utensils', t('dashLoadFail'));
