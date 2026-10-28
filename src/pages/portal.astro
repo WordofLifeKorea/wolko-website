@@ -19,13 +19,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=65">
+  <link rel="stylesheet" href="/hub.css?v=67">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
-  <link rel="stylesheet" href="/wolko-rail.css?v=19">
+  <link rel="stylesheet" href="/wolko-rail.css?v=20">
   <script src="/wolko-rail.js?v=33" defer></script>
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
@@ -645,7 +645,7 @@
       ko: ['목사님께 전화 또는 대화', '목사님 방문', '사역 소개 프레젠테이션', '복음 대화 훈련', '청소년 캠프 · 이벤트 참여', '리더 훈련 (Core Training)', '교회의 WOLKO 커리큘럼 사용', '선교사 교회 예배 설교', '후원 요청(God Ask) 프레젠테이션', '선물 전달 · 감사 표현', '교회의 WOLKO 후원', '타 교회에 WOLKO 소개'],
       en: ['Called or talked to pastor', 'Visited pastor', 'Ministry presentation', 'Gospel Conversation Training', 'Youth at camp or event', 'Core Training', 'Uses WOLKO curriculum', 'Missionary speaks at service', '\u201cGod Ask\u201d presentation', 'Gift / thank you', 'Church supports WOLKO', 'Introduces WOLKO to other churches'],
     };
-    /** 마우스를 올리거나 키보드로 들어가면 보이는 교회 세부 카드 — 담임목사, 완료한 단계, 다음 추천 단계 */
+    /** 교회 이름을 눌러 아래로 펼치는 세부 카드 — 담임목사, 완료한 단계, 다음 추천 단계 */
     function churchPop(c, today) {
       const names = CRS_STEPS[hubLang] || CRS_STEPS.ko;
       const done = c.done || [];
@@ -663,16 +663,16 @@
         c.lastVisitDate ? [t('churchLastVisit'), esc(c.lastVisitDate) + (c.visitor ? ' · ' + esc(c.visitor) : '')] : null,
         [t('churchUpdated'), esc(kstParts(c.updatedAt).ymd) + ' (' + esc(relDay(c.updatedAt, today)) + ')'],
       ].filter(Boolean);
-      return '<div class="hub-church-pop" role="tooltip"><div class="hub-pop-head"><b>' + esc(c.name) + '</b>' + (pastor ? '<span class="hub-pop-sep">|</span>' + pastor : '') + '</div>'
+      return '<div class="hub-church-pop" role="region"><div class="hub-pop-head"><b>' + esc(c.name) + '</b>' + (pastor ? '<span class="hub-pop-sep">|</span>' + pastor : '') + '</div>'
         + '<p class="hub-pop-label">' + esc(t('churchProgress')) + ' · ' + esc(t('churchStepsOf', done.length)) + '</p>' + track
         + '<p class="hub-pop-label">' + esc(t('churchDone')) + '</p>' + doneHtml
         + '<p class="hub-pop-label hub-pop-label-next">' + esc(t('churchNext')) + '</p>' + nextHtml
         + '<dl>' + rows.map(r => '<div><dt>' + esc(r[0]) + '</dt><dd>' + r[1] + '</dd></div>').join('') + '</dl></div>';
     }
     /** 기도제목 나눔 — 첫 화면에는 최근 10개의 "제목"만 보이고, 누르면 내용이 열린다. 지난 것까지 모두는 /portal/prayers 에서 */
-    const prayerOpen = new Set();
+    const prayerClosed = new Set();   // 기본은 모두 펼쳐 둔다 — 접은 것만 기억
     let prayerEditing = null;
-    document.addEventListener('toggle', e => { const d = e.target; if (d && d.classList && d.classList.contains('hub-prayer-item')) { if (d.open) prayerOpen.add(d.dataset.id); else prayerOpen.delete(d.dataset.id); } }, true);
+    document.addEventListener('toggle', e => { const d = e.target; if (d && d.classList && d.classList.contains('hub-prayer-item')) { if (d.open) prayerClosed.delete(d.dataset.id); else prayerClosed.add(d.dataset.id); } }, true);
     /** 기도제목을 지금 화면 언어로 — 원문과 번역 중 화면 언어인 쪽이 주(main), 나머지는 아래에 작게(alt) */
     function prayerLang(p) {
       const orig = /[가-힣]/.test(p.title + ' ' + p.text) ? 'ko' : 'en', has = !!(p.trTitle || p.trText), useTr = has && hubLang !== orig;
@@ -691,7 +691,7 @@
       if (list === null) body = dashEmpty('heart', t('dashLoadFail'));
       else if (!list.length) body = dashEmpty('heart', t('dashPrayerEmpty'), t('dashPrayerHint'));
       else {
-        const item = p => { const v = prayerLang(p); return '<details class="hub-prayer-item" data-id="' + esc(p.id) + '"' + (prayerOpen.has(p.id) ? ' open' : '') + '>'
+        const item = p => { const v = prayerLang(p); return '<details class="hub-prayer-item" data-id="' + esc(p.id) + '"' + (prayerClosed.has(p.id) ? '' : ' open') + '>'
           + '<summary><span class="hub-prayer-title">' + esc(v.main.title) + '</span>'
           + (p.count ? '<span class="hub-prayer-count">' + p.count + '</span>' : '')
           + '<span class="hub-prayer-when">' + esc(p.anonymous ? t('prayerAnonName') : p.name) + ' · ' + esc(relDay(Date.parse(p.createdAt), d.today)) + '</span></summary>'
@@ -710,12 +710,18 @@
       }
       return dashCard('hub-dcard-prayer', '#d6567a', 'heart', t('dashPrayers'), body + form, '/portal/prayers/');
     }
+    const churchOpen = new Set();   // 펼친 교회(이름) — 다시 그려도 유지
     function renderChurches(d) {
       let body;
       if (d.churches === null) body = dashEmpty('church', t('dashChurchesOff'));
       else if (!d.churches.length) body = dashEmpty('church', t('dashChurchesEmpty'));
-      else body = '<ul class="hub-churches">' + d.churches.map(c => '<li tabindex="0"><span class="hub-avatar">' + esc(Array.from(c.name)[0] || '') + '</span><span class="hub-church-text"><b>' + esc(c.name) + '</b>'
-        + '<small>' + esc(t('churchUpdated')) + ' ' + esc(relDay(c.updatedAt, d.today)) + (c.lastVisitDate ? ' · ' + esc(t('churchVisited')) + ' ' + esc(c.lastVisitDate) : '') + '</small></span>' + churchPop(c, d.today) + '</li>').join('') + '</ul>';
+      else body = '<div class="hub-churches" role="list">' + d.churches.map((c, i) => {
+        const open = churchOpen.has(c.name);
+        return '<button type="button" class="hub-church-btn' + (open ? ' is-open' : '') + '" role="listitem" aria-expanded="' + (open ? 'true' : 'false') + '" aria-controls="hubChurch' + i + '" data-church="' + esc(c.name) + '">'
+          + '<span class="hub-avatar">' + esc(Array.from(c.name)[0] || '') + '</span><span class="hub-church-text"><b>' + esc(c.name) + '</b>'
+          + '<small>' + esc(t('churchUpdated')) + ' ' + esc(relDay(c.updatedAt, d.today)) + (c.lastVisitDate ? ' · ' + esc(t('churchVisited')) + ' ' + esc(c.lastVisitDate) : '') + '</small></span><span class="hub-church-caret" aria-hidden="true"></span></button>'
+          + '<div class="hub-church-detail' + (open ? ' is-open' : '') + '" id="hubChurch' + i + '">' + churchPop(c, d.today) + '</div>';
+      }).join('') + '</div>';
       return dashCard('hub-dcard-churches', '#7b61e6', 'church', t('dashChurches'), body, '/portal/crs');
     }
     function renderDashHead(d) {
@@ -796,6 +802,14 @@
       if (!res.ok) throw new Error(data.error || t('dashLoadFail'));
       return data;
     }
+    document.addEventListener('click', e => {
+      const cb = e.target.closest && e.target.closest('.hub-church-btn');
+      if (!cb) return;
+      const open = !cb.classList.contains('is-open');
+      cb.classList.toggle('is-open', open); cb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      const panel = document.getElementById(cb.getAttribute('aria-controls')); if (panel) panel.classList.toggle('is-open', open);
+      if (open) churchOpen.add(cb.dataset.church); else churchOpen.delete(cb.dataset.church);
+    });
     document.addEventListener('click', async e => {
       const pray = e.target.closest && e.target.closest('.hub-pray-btn');
       if (pray) {
@@ -805,7 +819,7 @@
         return;
       }
       const pedit = e.target.closest && e.target.closest('.hub-prayer-edit');
-      if (pedit) { prayerEditing = pedit.dataset.edit; prayerOpen.add(prayerEditing); renderDash(); return; }
+      if (pedit) { prayerEditing = pedit.dataset.edit; prayerClosed.delete(prayerEditing); renderDash(); return; }
       if (e.target.closest && e.target.closest('.hub-prayer-cancel')) { prayerEditing = null; renderDash(); return; }
       const psave = e.target.closest && e.target.closest('.hub-prayer-save');
       if (psave) {

@@ -176,3 +176,13 @@ button.wl-user-chip:hover { background: rgba(255, 255, 255, .24); }
 }
 @media (prefers-reduced-motion: reduce) { .wolko-drawer, .wolko-drawer-backdrop, .wolko-burger span { transition: none !important; } }
 
+/* 서랍이 화면보다 길어도 끝까지 보이도록 맨 아래에 여유를 두고, 낮은 화면에서는 항목을 줄인다 */
+@media (max-width: 899px) {
+  .wolko-drawer { padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.35) transparent; }
+}
+@media (max-width: 899px) and (max-height: 820px) {
+  .wolko-drawer-item { padding: 7px 12px; }
+  .wolko-drawer-group { margin-top: 10px; }
+  .wolko-drawer-icon { width: 28px; height: 28px; }
+}
+

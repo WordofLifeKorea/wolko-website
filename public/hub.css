@@ -1081,3 +1081,34 @@ body.hub-modal-open { overflow: hidden; }
 /* 경비 리포트 메뉴 옆의 처리할 건수 */
 .hub-nav-alert { margin-left: auto; min-width: 20px; padding: 2px 6px; border-radius: 999px; background: #e0566c; color: #fff; font: 800 11px/1.4 var(--f-sans); text-align: center; }
 
+/* 메뉴가 화면보다 길어도 끝까지 보이도록: 서랍 · 사이드바 맨 아래에 여유를 두고(브라우저 아래 막대에 가리지 않게), 낮은 화면에서는 항목을 조금 줄이며, 스크롤 막대를 가늘게 보여 준다 */
+@media (max-width: 767px) {
+  .hub-nav { padding-bottom: calc(120px + var(--hub-safe-bottom)); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.35) transparent; }
+}
+@media (max-width: 767px) and (max-height: 820px) {
+  .hub-nav-item { padding: 8px 12px 8px 14px; }
+  .hub-nav .hub-nav-label { margin-top: 10px; }
+  .hub-nav-item-icon { width: 28px; height: 28px; }
+}
+@media (min-width: 768px) {
+  .hub-sidebar { padding-bottom: 36px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.28) transparent; }
+  .hub-sidebar::-webkit-scrollbar { display: block; width: 6px; }
+  .hub-sidebar::-webkit-scrollbar-thumb { border-radius: 6px; background: rgba(255,255,255,.28); }
+}
+
+/* ── 최근 업데이트된 교회: 마우스 올리기 대신 버튼을 눌러 아래로 펼치고 접는다 ── */
+.hub-churches { display: grid; gap: 4px 14px; grid-auto-flow: row dense; }
+.hub-dcard-churches .hub-churches { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.hub-church-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 12px; border: 0; border-radius: 14px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; transition: background .15s; }
+.hub-church-btn:hover { background: #f5f9fb; }
+.hub-church-btn.is-open { background: #f1edfd; }
+.hub-church-btn:focus-visible { outline: 2px solid rgba(0,119,163,.45); outline-offset: 1px; }
+.hub-church-btn .hub-church-text { flex: 1; min-width: 0; }
+.hub-church-caret { flex: 0 0 auto; width: 8px; height: 8px; margin: -3px 4px 0 0; border-right: 2px solid #9a8fd6; border-bottom: 2px solid #9a8fd6; transform: rotate(45deg); transition: transform .22s, margin .22s; }
+.hub-church-btn.is-open .hub-church-caret { margin-top: 3px; transform: rotate(-135deg); }
+.hub-church-detail { grid-column: 1 / -1; display: grid; grid-template-rows: 0fr; opacity: 0; visibility: hidden; transition: grid-template-rows .28s ease, opacity .2s ease, visibility 0s linear .28s; }
+.hub-church-detail.is-open { grid-template-rows: 1fr; opacity: 1; visibility: visible; transition: grid-template-rows .28s ease, opacity .2s ease; }
+.hub-churches .hub-church-detail .hub-church-pop { position: static; min-width: 0; min-height: 0; overflow: hidden; margin: 2px 0 8px; padding: 0 16px; border: 0; border-radius: 16px; background: #f7f5fe; box-shadow: none; opacity: 1; visibility: visible; transform: none; transition: padding .28s ease; }
+.hub-churches .hub-church-detail.is-open .hub-church-pop { padding: 14px 16px 16px; }
+@media (prefers-reduced-motion: reduce) { .hub-church-detail, .hub-church-caret { transition: none; } }
+
