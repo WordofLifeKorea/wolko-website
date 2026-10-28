@@ -126,24 +126,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .history-card p { font-size:15px; line-height:1.88; color:rgba(255,255,255,0.76); }
 
   /* ── CORE VALUES ── */
-  .values-grid { max-width:1240px; margin:56px auto 0; display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:16px; }
+  .values-grid { max-width:1240px; margin:56px auto 0; display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:18px; }
+  .value-card { grid-column:span 2; }
+  .value-card:nth-child(n+4) { grid-column:span 3; }
   .value-card {
     background:#f6f9fb; border:1px solid var(--primary-line); border-radius:var(--r-lg);
-    padding:28px 22px; display:flex; flex-direction:column; gap:14px;
+    padding:34px 32px 36px; display:flex; flex-direction:column; gap:12px;
     transition:transform .22s, background .22s, box-shadow .22s, border-color .22s;
     cursor:default; position:relative; overflow:hidden;
   }
   .value-card::after { content:""; position:absolute; right:-24px; bottom:-32px; width:100px; height:100px; border-radius:50%; background:rgba(0,79,104,0.05); transition:transform .22s; }
   .value-card:hover { background:linear-gradient(180deg, #0a5b76 0%, #004f68 100%); border-color:transparent; box-shadow:0 20px 48px rgba(0,79,104,0.22); transform:translateY(-5px); }
   .value-card:hover::after { transform:scale(1.3); }
-  .value-card:hover .value-num { color:rgba(255,255,255,0.5); }
+  .value-card:hover .value-num { -webkit-text-stroke-color:rgba(255,255,255,0.75); transform:scale(1.05); }
   .value-card:hover .value-title, .value-card:hover .value-desc { color:#fff; }
   .value-card:hover .value-desc { color:rgba(255,255,255,0.82); }
-  .value-card:hover .value-icon-wrap { background:rgba(255,255,255,0.14); color:#fff; }
-  .value-icon-wrap { width:44px; height:44px; border-radius:13px; background:var(--primary-soft); color:var(--primary); display:flex; align-items:center; justify-content:center; transition:background .22s, color .22s; position:relative; z-index:1; }
-  .value-num { font-size:11px; font-weight:800; letter-spacing:0.06em; color:var(--primary); transition:color .22s; position:relative; z-index:1; }
-  .value-title { font-size:18px; font-weight:800; letter-spacing:-0.02em; color:#102028; line-height:1.3; transition:color .22s; position:relative; z-index:1; }
-  .value-desc { font-size:14px; line-height:1.8; color:var(--muted); transition:color .22s; position:relative; z-index:1; }
+  .value-num { font:800 56px/1 Montserrat,sans-serif; letter-spacing:-0.04em; color:transparent; -webkit-text-stroke:1.6px var(--primary); transition:-webkit-text-stroke-color .22s, transform .3s; position:relative; z-index:1; margin-bottom:8px; transform-origin:left bottom; }
+  .value-title { font-size:22px; font-weight:800; letter-spacing:-0.02em; color:#102028; line-height:1.3; transition:color .22s; position:relative; z-index:1; }
+  .value-desc { font-size:15px; line-height:1.8; color:var(--muted); transition:color .22s; position:relative; z-index:1; }
 
   /* ── VISION & MISSION ── */
   .vismis-inner { max-width:1240px; margin:0 auto; }
@@ -199,12 +199,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   /* ── 반응형 ── */
   @media (max-width:1050px) {
-    .values-grid { grid-template-columns:repeat(3,1fr); }
     .ministry-grid { grid-template-columns:repeat(2,1fr); }
   }
   @media (max-width:860px) {
     .history-grid, .vismis-grid, .commit-grid { grid-template-columns:1fr; }
     .values-grid { grid-template-columns:repeat(2,1fr); }
+    .value-card, .value-card:nth-child(n+4) { grid-column:auto; }
+    .value-card:nth-child(5) { grid-column:1 / -1; }
   }
   @media (max-width:640px) {
     .ab-hero { padding:130px 20px 72px; }
@@ -214,6 +215,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     .hero-stat:nth-child(odd) { border-right:1px solid rgba(255,255,255,0.12); }
     .section-title { font-size:30px; }
     .values-grid { grid-template-columns:1fr; }
+    .value-card:nth-child(5) { grid-column:auto; }
     .ministry-grid { grid-template-columns:1fr; }
     .history-card, .vismis-card { padding:34px 26px; }
     .intro-card { padding:34px 24px; }
@@ -324,31 +326,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </div>
   <div class="values-grid page-wrap">
     <div class="value-card">
-      <div class="value-icon-wrap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 0 6.5 7H20v13H6.5A2.5 2.5 0 0 1 4 17.5v-13Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="value-num">01</span>
       <div class="value-title"><span class="wl-ko">성경 중심</span><span class="wl-en">Bible-Centered</span></div>
       <p class="value-desc"><span class="wl-ko">하나님의 말씀이 우리 삶과 사역의 기준입니다.</span><span class="wl-en">The clear truth of God's Word is our guide.</span></p>
     </div>
     <div class="value-card">
-      <div class="value-icon-wrap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="value-num">02</span>
       <div class="value-title"><span class="wl-ko">청소년 사역 중심</span><span class="wl-en">Youth-Focused</span></div>
       <p class="value-desc"><span class="wl-ko">다음 세대 안에 담긴 가능성을 볼 때 우리의 열정이 뜨거워집니다.</span><span class="wl-en">The potential of the next generation is our passion.</span></p>
     </div>
     <div class="value-card">
-      <div class="value-icon-wrap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 21s-6-3.65-6-10a3.5 3.5 0 0 1 6-2.47A3.5 3.5 0 0 1 18 11c0 6.35-6 10-6 10Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="value-num">03</span>
       <div class="value-title"><span class="wl-ko">복음 중심</span><span class="wl-en">Gospel-Driven</span></div>
       <p class="value-desc"><span class="wl-ko">우리가 전하고자 하는 메시지는 바로 예수님의 복음입니다.</span><span class="wl-en">The Good News of Jesus is our message.</span></p>
     </div>
     <div class="value-card">
-      <div class="value-icon-wrap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 12v5c3 3 9 3 12 0v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="value-num">04</span>
       <div class="value-title"><span class="wl-ko">제자 삼기</span><span class="wl-en">Disciple-Making</span></div>
       <p class="value-desc"><span class="wl-ko">다시 제자를 세우는 제자를 훈련하는 것이 우리의 방식입니다.</span><span class="wl-en">The training of multipliers is our method.</span></p>
     </div>
     <div class="value-card">
-      <div class="value-icon-wrap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="m13 2-2 6.5H5l5.5 4-2.1 6.5L13.5 15l5.1 4-2.1-6.5L22 8.5h-6L13 2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="value-num">05</span>
       <div class="value-title"><span class="wl-ko">열정과 헌신</span><span class="wl-en">High-Energy</span></div>
       <p class="value-desc"><span class="wl-ko">그리스도 안에서 누리는 생동감 넘치는 삶이 우리 사역의 원동력입니다.</span><span class="wl-en">The excitement of life in Christ is our culture.</span></p>
