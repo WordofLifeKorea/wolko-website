@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=62">
+  <link rel="stylesheet" href="/hub.css?v=63">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <link rel="stylesheet" href="/portal-remember.css?v=1">
@@ -176,6 +176,7 @@
 
   <div class="hub-shell" id="hubShell" hidden>
     <nav class="hub-sidebar">
+      <button type="button" class="hub-burger" id="hubBurger" aria-label="메뉴 열기" aria-expanded="false" aria-controls="hubNav" onclick="toggleHubNav()"><span></span><span></span><span></span></button>
       <a class="hub-sidebar-brand" href="/">
         <img src="/images/WOLKO Circle.png" alt="WOLKO">
         <span class="hub-sidebar-brand-text">
@@ -185,6 +186,7 @@
       </a>
 
       <div class="hub-nav" id="hubNav"></div>
+      <div class="hub-nav-backdrop" id="hubNavBackdrop" onclick="toggleHubNav(false)"></div>
 
       <div class="hub-sidebar-foot">
         <button class="hub-sidebar-lang" id="pendingBtn" onclick="openPendingPanel()" hidden>
@@ -906,12 +908,21 @@
           </span>
           <span class="hub-nav-item-label">${hubLang === 'en' ? tool.title_en : tool.title_ko}</span>
         </a>`;
-      $('hubNav').innerHTML = GROUPS.map(g => `
+      $('hubNav').innerHTML = `<div class="hub-drawer-head"><img src="/images/WOLKO Circle.png" alt=""><b>WOLKO Portal</b><button type="button" class="hub-drawer-close" aria-label="${hubLang === 'en' ? 'Close menu' : '메뉴 닫기'}" onclick="toggleHubNav(false)">×</button></div>` + GROUPS.map(g => `
         <p class="hub-nav-label">${hubLang === 'en' ? g.en : g.ko}</p>
         ${TOOLS.filter(x => x.group === g.id).map(item).join('')}
       `).join('');
     }
 
+    /** 좁은 화면의 햄버거 메뉴 — 왼쪽에서 도구 목록(사이드바)이 밀려 나온다. 바깥을 누르거나 Esc, 메뉴를 고르면 닫힌다 */
+    function toggleHubNav(force) {
+      const open = typeof force === 'boolean' ? force : !document.body.classList.contains('hub-nav-open');
+      document.body.classList.toggle('hub-nav-open', open);
+      const b = $('hubBurger'); if (b) { b.setAttribute('aria-expanded', open ? 'true' : 'false'); b.setAttribute('aria-label', hubLang === 'en' ? (open ? 'Close menu' : 'Open menu') : (open ? '메뉴 닫기' : '메뉴 열기')); }
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('hub-nav-open')) toggleHubNav(false); });
+    document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.hub-nav-item') && document.body.classList.contains('hub-nav-open')) toggleHubNav(false); });
+    window.addEventListener('resize', () => { if (window.innerWidth >= 768 && document.body.classList.contains('hub-nav-open')) toggleHubNav(false); });
     function applyLangToDOM() {
       document.documentElement.lang = hubLang === 'en' ? 'en' : 'ko';
       document.title = 'WOLKO Portal';

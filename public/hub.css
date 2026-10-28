@@ -1047,3 +1047,29 @@ body.hub-modal-open { overflow: hidden; }
 .hub-dash-top .hub-dash-date { gap: 4px 12px; font-size: 15px; }
 .hub-dash-top .hub-dash-date b { font-size: 16px; }
 
+/* ── 좁은 화면(휴대폰): 상단 바 왼쪽에 햄버거 버튼, 누르면 도구 사이드바가 왼쪽에서 밀려 나온다 ── */
+.hub-burger, .hub-drawer-head, .hub-nav-backdrop { display: none; }
+@media (max-width: 767px) {
+  .hub-burger { display: inline-flex; flex: 0 0 auto; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 40px; height: 40px; margin: 0 6px 0 -4px; padding: 0; border: 0; border-radius: 12px; background: rgba(255,255,255,.1); cursor: pointer; }
+  .hub-burger:hover { background: rgba(255,255,255,.18); }
+  .hub-burger:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .hub-burger span { display: block; width: 18px; height: 2px; border-radius: 2px; background: #fff; transition: transform .22s, opacity .18s; }
+  body.hub-nav-open .hub-burger span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  body.hub-nav-open .hub-burger span:nth-child(2) { opacity: 0; }
+  body.hub-nav-open .hub-burger span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+  .hub-sidebar-brand { margin-right: auto; }
+  /* 서랍: 숨겨 둔 도구 목록(.hub-nav)을 왼쪽에서 밀려 나오는 패널로 */
+  .hub-nav { display: flex; position: fixed; top: 0; bottom: 0; left: 0; z-index: 60; width: min(310px, 86vw); padding: calc(14px + var(--hub-safe-top)) 14px calc(24px + var(--hub-safe-bottom)); flex: none; overflow-y: auto; overscroll-behavior: contain; background: radial-gradient(circle at 15% 0%, rgba(255,255,255,.08), transparent 45%), linear-gradient(175deg, #003548 0%, #004f68 45%, #00668a 100%); box-shadow: 18px 0 40px -12px rgba(0, 20, 30, .5); transform: translateX(-105%); visibility: hidden; transition: transform .28s cubic-bezier(.2, .8, .3, 1), visibility 0s linear .28s; }
+  body.hub-nav-open .hub-nav { transform: none; visibility: visible; transition: transform .28s cubic-bezier(.2, .8, .3, 1); }
+  .hub-nav .hub-nav-label { display: block; }
+  .hub-drawer-head { display: flex; align-items: center; gap: 10px; padding: 4px 4px 14px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.12); color: #fff; }
+  .hub-drawer-head img { width: 32px; height: 32px; border-radius: 9px; }
+  .hub-drawer-head b { flex: 1; font: 800 15px/1.2 var(--f-sans); }
+  .hub-drawer-close { width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.12); color: #fff; font: 400 24px/1 var(--f-sans); cursor: pointer; }
+  .hub-nav-item { padding: 11px 12px 11px 14px; font-size: 14.5px; }
+  .hub-nav-backdrop { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(0, 18, 28, .52); opacity: 0; pointer-events: none; transition: opacity .25s; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+  body.hub-nav-open .hub-nav-backdrop { opacity: 1; pointer-events: auto; }
+  body.hub-nav-open { overflow: hidden; }
+}
+@media (prefers-reduced-motion: reduce) { .hub-nav, .hub-nav-backdrop, .hub-burger span { transition: none !important; } }
+
