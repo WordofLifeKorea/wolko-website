@@ -59,6 +59,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     }
     function applyCrsShellLang(isEn) {
       document.body.classList.toggle('lang-en', isEn);
+      // 좌측 레일(wolko-rail.js)은 <html lang>을 보고 메뉴 언어를 정한다 — 다른 포탈 페이지와 똑같이 맞춰 준다
+      document.documentElement.lang = isEn ? 'en' : 'ko';
       try { localStorage.setItem('wolko-lang', isEn ? 'en' : 'ko'); } catch (e) {}
       syncShellLangToggle(isEn);
     }
