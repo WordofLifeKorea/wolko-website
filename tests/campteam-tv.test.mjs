@@ -39,7 +39,7 @@ test('TV 설정 화면 API: 관리자만, 저장 → 다시 읽기, 열쇠 교�
   const env = makeEnv(fakeD1());
   for (const who of [U.mem, U.fin, U.view]) assert.equal((await call(TvConfig, 'onRequestGet', env, who)).status, 403);
   assert.equal((await call(TvConfig, 'onRequestGet', env, null)).status, 401);
-  const first = await J(await call(TvConfig, 'onRequestGet', env, U.admin)); assert.equal(first.isDefault, true); assert.equal(first.layout.pages.length, 2); assert.equal(first.settings.token, 'testtoken1');
+  const first = await J(await call(TvConfig, 'onRequestGet', env, U.admin)); assert.equal(first.isDefault, true); assert.equal(first.layout.pages.length, 3); assert.equal(first.settings.token, 'testtoken1');
   assert.equal((await call(TvConfig, 'onRequestPut', env, U.mem, { body: { layout: first.layout } })).status, 403);
   assert.equal((await call(TvConfig, 'onRequestPut', env, U.admin, { body: { layout: { pages: [{ items: [{ type: 'nope', x: 0, y: 0, w: 1, h: 1 }] }] } } })).status, 400);
   const mine = { pages: [{ id: 'z', name: '내 화면', secs: 40, items: [{ uid: 'a', type: 'tasks', x: 0, y: 0, w: 8, h: 9, opts: { n: 4, secs: 7 } }, { uid: 'b', type: 'clock', x: 8, y: 0, w: 8, h: 2, opts: {} }] }] };
@@ -59,9 +59,10 @@ test('TV 데이터: 열쇠 없이/틀리면 403, 맞으면 필요한 내용만 �
   const noToken = makeEnv(fakeD1()); noToken.DB.sqlite.exec(`DELETE FROM tv_settings`); assert.equal((await tv(noToken, 'testtoken1')).status, 403, '열쇠를 만들기 전에는 TV 가 열리지 않는다');
   seen.length = 0; const res = await tv(env, 'testtoken1'); assert.equal(res.status, 200); assert.equal(res.headers.get('cache-control'), 'no-store');
   const raw = await res.clone().text(), body = await J(res);
-  assert.equal(seen.some(q => /budget_|file_versions|meeting_texts|camp_members|audit_log/.test(q)), false, '금액·전사문·명단 표는 읽지 않는다');
+  assert.equal(seen.some(q => /budget_|file_versions|meeting_texts|audit_log/.test(q)), false, '금액·전사문·변경 기록 표는 읽지 않는다');
+  assert.deepEqual(seen.filter(q => /camp_members/.test(q)).map(q => q.replace(/\s+/g, ' ').trim()), ['SELECT email FROM camp_members WHERE active = 1'], '명단 표는 "이 사람이 팀원인가" 가리려고 이메일 한 칸만 읽는다(응답에는 넣지 않는다)');
   assert.doesNotMatch(raw, /plannedAmount|actualAmount|@wolko\.org|@wol\.org|token|body"/i, '금액·이메일·열쇠가 응답에 없다');
-  assert.equal('token' in body.settings, false); assert.equal(body.settings.language, 'en'); assert.equal(body.layout.pages.length, 2);
+  assert.equal('token' in body.settings, false); assert.equal(body.settings.language, 'en'); assert.equal(body.layout.pages.length, 3);
   const d = body.data; assert.equal(d.stats.overdue, 1); assert.ok(d.stats.open >= 19 && d.stats.completion >= 0);
   assert.ok(d.tasks.length > 5 && d.tasks.every(t => !['Completed', 'Not Applicable'].includes(t.status)) && d.tasks[0].priority === 'High'); assert.ok(d.tasks.every(t => !('notes' in t) && !('id' in t)));
   assert.ok(d.late.some(l => l.reason === 'noowner') && d.late.some(l => l.reason === 'overdue'));
@@ -76,7 +77,8 @@ test('신청 인원 숫자 읽기: 숫자 한 값만 읽고, 쓰기·목록·개
   assert.equal(await readSubmissionCount({}, 'sample-winter'), null, 'KV 가 없으면 조용히 null');
   assert.deepEqual(log, ['camp:sample-winter:submissions', 'camp:unknown:submissions']);
   const env = makeEnv(fakeD1(), { CAMP_KV: kv }); const body = await J(await tv(env, 'testtoken1'));
-  assert.deepEqual(body.data.campers.map(c => [c.count, c.capacity]), [[17, 40]]); assert.ok(log.every(k => /^camp:[\w-]+:submissions$/.test(k)));
+  assert.deepEqual(body.data.campers.map(c => [c.count, c.capacity]), [[17, 40]]); assert.ok(log.every(k => /^camp:[\w-]+:submissions$/.test(k) || /^(portal:notices|portal:weather|kitchen:day:\d{4}-\d{2}-\d{2}|drive:slot:\d{4}-\d{2}-\d{2}:(pickup|dropoff))$/.test(k)), '읽는 키는 신청 인원 숫자와, 포털 공지·날씨·오늘 키친·차량 칸뿐(전부 읽기만)');
+  assert.ok(log.some(k => k === 'portal:notices') && log.some(k => /^kitchen:day:/.test(k)));
   assert.deepEqual((await J(await tv(makeEnv(fakeD1()), 'testtoken1'))).data.campers, [], '연결 안 됐으면 빈 목록');
   assert.doesNotMatch(readFileSync(root + 'functions/lib/campteamRegistrations.js', 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''), /\.put\(|\.delete\(|\.list\(|:reg:/);
 });

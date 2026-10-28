@@ -1,19 +1,21 @@
 /** TV 대시보드: 위젯 종류, 배치 검사, 토큰 */
-export const TV_APP_VERSION = '1.0.0'; // TV 화면이 이 값이 바뀐 것을 보면 스스로 완전히 새로고침한다
+export const TV_APP_VERSION = '1.1.0'; // TV 화면이 이 값이 바뀐 것을 보면 스스로 완전히 새로고침한다
 export const COLS = 16, ROWS = 9;
 // 위젯 종류와 최소 크기 (편집기와 같은 값)
 export const WIDGETS = {
   brand: [2, 1], weather: [1, 1], clock: [2, 1], stats: [4, 1], dday: [2, 2], progress: [3, 2], theme: [2, 1], campers: [3, 2],
   tasks: [3, 2], events: [3, 2], meetings: [3, 2], notices: [3, 2], late: [3, 2],
+  hero: [4, 2], pnotices: [3, 2], duty: [3, 2], pevents: [3, 2],   // 포털 정보: 인사·날씨, 월코 이번 주 공지, 팀원의 오늘 듀티, 월코 일정
 };
-export const LIST_WIDGETS = ['tasks', 'events', 'meetings', 'notices', 'late'];
+export const LIST_WIDGETS = ['tasks', 'events', 'meetings', 'notices', 'late', 'pnotices', 'pevents'];
 
 /** 기본 배치: 기존 TV 대시보드와 같은 위치(메인) + 전체 업무 화면 */
 export function defaultLayout() {
   const w = (type, x, y, w, h, opts = {}) => ({ uid: type + '-' + x + '-' + y, type, x, y, w, h, opts });
   return { pages: [
-    { id: 'p1', name: 'Main', secs: 30, items: [w('brand', 0, 0, 6, 1), w('weather', 6, 0, 4, 1), w('clock', 10, 0, 6, 1), w('stats', 0, 1, 16, 1), w('tasks', 0, 2, 9, 4, { secs: 10 }), w('events', 9, 2, 7, 4, { secs: 10 }), w('meetings', 0, 6, 9, 3, { secs: 8 }), w('notices', 9, 6, 7, 3, { secs: 15 })] },
+    { id: 'p1', name: 'Main', secs: 30, items: [w('hero', 0, 0, 11, 2), w('clock', 11, 0, 5, 2), w('stats', 0, 2, 16, 1), w('tasks', 0, 3, 8, 3, { secs: 10 }), w('pnotices', 8, 3, 8, 3, { secs: 12 }), w('duty', 0, 6, 5, 3), w('events', 5, 6, 6, 3, { secs: 10 }), w('meetings', 11, 6, 5, 3, { secs: 8 })] },
     { id: 'p2', name: 'All tasks', secs: 30, items: [w('brand', 0, 0, 6, 1), w('weather', 6, 0, 4, 1), w('clock', 10, 0, 6, 1), w('tasks', 0, 1, 10, 8, { secs: 12, compact: 1 }), w('late', 10, 1, 6, 3, { secs: 10 }), w('dday', 10, 4, 6, 2), w('progress', 10, 6, 6, 3)] },
+    { id: 'p3', name: 'WOLKO', secs: 30, items: [w('hero', 0, 0, 16, 2), w('pnotices', 0, 2, 10, 7, { secs: 14 }), w('duty', 10, 2, 6, 3), w('pevents', 10, 5, 6, 4, { secs: 10 })] },
   ] };
 }
 
@@ -48,18 +50,19 @@ export function sanitizeLayout(input) {
 }
 
 const strict = (v, a, b) => { const n = Number(v); return Number.isInteger(n) && n >= a && n <= b ? n : null; }; // 설정은 범위를 벗어나면 맞춰 주지 않고 거부한다
-export const SETTING_KEYS = { theme: ['dark', 'light'], language: ['en', 'ko', 'both'] };
+export const SETTING_KEYS = { theme: ['dark', 'light'], language: ['en', 'ko', 'both'], sky: ['on', 'off'] };
 export function cleanSettings(b) {
   const out = {};
   if (b.theme !== undefined) { if (!SETTING_KEYS.theme.includes(b.theme)) return { error: '테마가 올바르지 않습니다.' }; out.theme = b.theme; }
   if (b.language !== undefined) { if (!SETTING_KEYS.language.includes(b.language)) return { error: '언어가 올바르지 않습니다.' }; out.language = b.language; }
+  if (b.sky !== undefined) { if (!SETTING_KEYS.sky.includes(b.sky)) return { error: '하늘 배경 설정이 올바르지 않습니다.' }; out.sky = b.sky; }
   if (b.refreshSec !== undefined) { const v = strict(b.refreshSec, 30, 600); if (v == null) return { error: '새로고침 주기는 30~600초예요.' }; out.refreshSec = String(v); }
   if (b.reloadHours !== undefined) { const v = strict(b.reloadHours, 1, 48); if (v == null) return { error: '완전 새로고침 간격은 1~48시간이에요.' }; out.reloadHours = String(v); }
   if (b.weatherLabel !== undefined) out.weatherLabel = String(b.weatherLabel).trim().slice(0, 40);
   for (const k of ['weatherLat', 'weatherLon']) if (b[k] !== undefined) { const n = Number(b[k]); if (!Number.isFinite(n) || Math.abs(n) > 180) return { error: '위도/경도가 올바르지 않습니다.' }; out[k] = String(n); }
   return { settings: out };
 }
-export const DEFAULT_SETTINGS = { theme: 'dark', language: 'en', refreshSec: '60', reloadHours: '6', weatherLabel: 'Pyeongtaek', weatherLat: '36.9921', weatherLon: '127.1129' };
+export const DEFAULT_SETTINGS = { theme: 'dark', language: 'en', sky: 'on', refreshSec: '60', reloadHours: '6', weatherLabel: 'Pyeongtaek', weatherLat: '36.9921', weatherLon: '127.1129' };
 
 const ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789'; // 헷갈리는 글자(0 o 1 l i) 제외 — TV 리모컨으로 입력하기 쉽게
 export function newToken(len = 10) {

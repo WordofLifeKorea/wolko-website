@@ -18,9 +18,19 @@
 
   function draw() {
     if (!S.res) return; canvas.className = 'tvc ' + (S.res.settings && S.res.settings.theme === 'light' ? 'tv-light' : 'tv-dark'); box();
-    var c = ctx(), p = curPage(); TVCore.mount(canvas, p, c);
+    var c = ctx(), p = curPage(); TVCore.mount(canvas, p, c); skyUpdate();
     var ps = pages(); canvas.insertAdjacentHTML('beforeend', '<div class="tv-bar" id="tvbar"></div>' + (ps.length > 1 ? '<div class="tv-dots">' + ps.map(function (x, i) { return '<b class="' + (i === S.page % ps.length ? 'on' : '') + '"></b>'; }).join('') + '</div>' : ''));
     S.rot = {}; var now = Date.now(); p.items.forEach(function (it) { S.rot[it.uid] = now; });
+  }
+  /** 날씨·낮밤에 맞는 하늘 배경(밝은 테마에서는 쓰지 않는다). 설정에서 「하늘 배경」을 끌 수 있다 */
+  function skyUpdate() {
+    if (!window.TVSky || !S.res) return; var st = S.res.settings || {}, w = S.weather, h = Number(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul', hour: 'numeric', hour12: false })) % 24;
+    TVSky.mount(canvas, { on: st.sky !== 'off' && st.theme !== 'light', kind: w && w.kind ? w.kind : '', isDay: w && w.isDay != null ? !!w.isDay : (h >= 6 && h < 18) });
+  }
+  /** 서버가 읽어 둔 오늘 날씨(포털과 같은 값)를 쓴다. 없으면 아래 fetchWeather 가 직접 읽는다 */
+  function serverWeather() {
+    var w = S.res && S.res.data && S.res.data.portal && S.res.data.portal.weather; if (!w) return false;
+    S.weather = { temp: w.temp, feels: w.feels, hi: w.hi, lo: w.lo, rain: w.rain, kind: w.kind, isDay: w.isDay, desc: TVCore.wxLabel(w, 'en') }; return true;
   }
   function redrawWidgets(types) { var c = ctx(); curPage().items.forEach(function (it) { if (!types || types.indexOf(it.type) >= 0) TVCore.rerender(canvas, it, c); }); }
   function goPage(i) {
@@ -30,14 +40,15 @@
 
   function apply(j, fromCache) {
     if (!fromCache) {
-      if (S.version && j.version !== S.version) { location.reload(); return; }
+      if (S.version && j.version !== S.version) { try { localStorage.removeItem(CACHE); } catch (e) {} location.reload(); return; }   // 옛 저장본이 남아 있으면 새 버전을 알아챈 뒤에도 계속 옛것을 쓰므로 먼저 지운다
       S.version = j.version; try { localStorage.setItem(CACHE, JSON.stringify({ t: TOKEN, at: Date.now(), res: j })); } catch (e) {}
     }
-    var newLayout = S.stamp !== null && S.stamp !== (j.layoutUpdatedAt || 'default');
-    S.res = j; S.stamp = j.layoutUpdatedAt || 'default';
+    var stamp = j.layoutUpdatedAt || ('default:' + j.version);   // 저장된 배치가 없으면 프로그램 버전이 바뀔 때(기본 배치가 바뀔 때) 새 배치로 본다
+    var newLayout = S.stamp !== null && S.stamp !== stamp;
+    S.res = j; S.stamp = stamp; serverWeather();
     if (!S.timers.refresh || S.refreshSec !== Number(j.settings.refreshSec)) { S.refreshSec = Math.max(30, Number(j.settings.refreshSec) || 60); clearInterval(S.timers.refresh); S.timers.refresh = setInterval(fetchData, S.refreshSec * 1000); }
     if (newLayout) { S.page = 0; S.idx = {}; S.pageStart = Date.now(); }
-    if (!canvas.querySelector('.tvw') || newLayout) draw(); else redrawWidgets();
+    if (!canvas.querySelector('.tvw') || newLayout) draw(); else { redrawWidgets(); skyUpdate(); }
     fetchWeather(false);
   }
   function fetchData() {
@@ -49,6 +60,7 @@
       .catch(function (e) { if (String(e && e.message) === 'forbidden') return; S.online = false; var d = S.lastOk ? new Date(S.lastOk) : null; say('Offline' + (d ? ' · last updated ' + d.toLocaleTimeString('en-US', { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit' }) : ' · waiting for connection'), true); if (!S.res) fullError('Waiting for connection…'); });
   }
   function fetchWeather(force) {
+    if (serverWeather()) return;   // 서버가 날씨를 보내 줬으면 직접 읽지 않는다
     var s = (S.res && S.res.settings) || {}; if (!s.weatherLat || (!force && S.weatherAt && Date.now() - S.weatherAt < 600000)) return; S.weatherAt = Date.now();
     fetch('https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(s.weatherLat) + '&longitude=' + encodeURIComponent(s.weatherLon) + '&current=temperature_2m,weather_code&timezone=Asia%2FSeoul').then(function (r) { return r.json(); })
       .then(function (j) { if (j && j.current) { S.weather = { temp: Math.round(j.current.temperature_2m), desc: TVCore.weatherText(j.current.weather_code) }; redrawWidgets(['weather']); } }).catch(function () { S.weatherAt = Date.now() - 540000; });
