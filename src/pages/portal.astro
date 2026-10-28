@@ -19,13 +19,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/hub.css?v=65">
+  <link rel="stylesheet" href="/hub.css?v=75">
+  <link rel="stylesheet" href="/hub-sky.css?v=4">
+  <script src="/hub-sky.js?v=4" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <link rel="stylesheet" href="/portal-remember.css?v=1">
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
-  <link rel="stylesheet" href="/wolko-rail.css?v=19">
+  <link rel="stylesheet" href="/wolko-rail.css?v=22">
   <script src="/wolko-rail.js?v=33" defer></script>
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
@@ -211,7 +213,15 @@
 
     <main class="hub-main">
       <div class="hub-wrap">
-        <h1 class="hub-greeting" id="hubKicker"></h1>
+        <section class="hub-sky" id="hubSky" data-kind="none" data-day="1" aria-label="오늘">
+          <canvas class="hub-sky-canvas" id="hubSkyCanvas" aria-hidden="true"></canvas>
+          <div class="hub-sky-art" aria-hidden="true"><i class="sk-sun"></i><i class="sk-moon"></i><i class="sk-fog f1"></i><i class="sk-fog f2"></i><i class="sk-cloud c1"></i><i class="sk-cloud c2"></i><i class="sk-cloud c3"></i><i class="sk-flash"></i></div>
+          <div class="hub-sky-content">
+            <h1 class="hub-greeting" id="hubKicker"></h1>
+            <div id="hubSkyBody"></div>
+          </div>
+          <div class="hub-wx" id="hubWx" hidden></div>
+        </section>
 
         <div class="hub-dash" id="hubDash" aria-live="polite"></div>
 
@@ -323,13 +333,13 @@
         pageTitle: '이번 주 월코',
         toolsHeading: '도구 바로가기',
         dashNotices: '이번 주 공지', dashNoticeEmpty: '이번 주 공지가 아직 없어요.', noticeAdd: '공지 올리기', noticeTitlePh: '제목 (선택)', noticeBodyPh: '이번 주에 꼭 알려야 할 내용',
-        noticeThisWeek: '이번 주', noticeNextWeek: '다음 주', noticePin: '맨 위에 고정', noticePost: '올리기', noticeDelete: '삭제', noticeDeleteConfirm: '이 공지를 지울까요?', noticeNeedBody: '공지 내용을 입력해 주세요.', noticePosted: '공지를 올렸어요.', noticeDeleted: '공지를 지웠어요.', noticePinned: '고정', noticeDue: '마감일 (선택)', noticeDueHint: '날짜를 고르면 D-day가 표시돼요', dueToday: 'D-Day', dueUntil: function (md) { return md + '까지'; },
+        noticeEdit: '편집', noticeDone: '완료', noticeSave: '저장', noticeCancel: '취소', noticeEdited: '공지를 고쳤어요.', noticeThisWeek: '이번 주', noticeNextWeek: '다음 주', noticePin: '맨 위에 고정', noticePost: '올리기', noticeDelete: '삭제', noticeDeleteConfirm: '이 공지를 지울까요?', noticeNeedBody: '공지 내용을 입력해 주세요.', noticePosted: '공지를 올렸어요.', noticeDeleted: '공지를 지웠어요.', noticePinned: '고정', noticeDue: '마감일 (선택)', noticeDueHint: '날짜를 고르면 D-day가 표시돼요', dueToday: 'D-Day', dueUntil: function (md) { return md + '까지'; },
         dashKitchen: '오늘 키친 듀티', dashKitchenEmpty: '오늘 신청한 사람이 없어요.', mealAm: '아침', mealLunch: '점심', mealDinner: '저녁', slotPrep: '준비', slotClean: '클린업',
         dashCar: '오늘 차량 운행', dashCarEmpty: '오늘 운행 담당이 정해지지 않았어요.', carPickup: '픽업', carDropoff: '드롭오프',
         dashEvents: '다가오는 일정', dashEventsEmpty: '앞으로 2주 안에 등록된 일정이 없어요.', dashEventsOff: '캘린더가 아직 연결되지 않았어요.', allDay: '종일',
         dashChurches: '최근 업데이트된 교회', dashChurchesEmpty: '최근 업데이트된 교회가 없어요.', dashChurchesOff: '교회 목록(CRS)이 아직 연결되지 않았어요.', churchUpdated: '업데이트', churchVisited: '방문', churchPastor: '담임', churchPastorTitle: '담임목사', churchDone: '완료한 단계', churchNext: '다음 추천 단계', churchMore: function (n) { return '외 ' + n + '개 더'; }, churchAllDone: '12단계를 모두 마쳤어요', churchNoneYet: '아직 완료한 단계가 없어요', churchProgress: '진행', churchStepsOf: function (n) { return n + ' / 12 단계'; }, churchLastVisit: '마지막 방문', churchNoDetail: '아직 입력된 세부 정보가 없어요.',
         dashLoadFail: '불러오지 못했어요.', dashMore: '자세히 보기',
-        dashHello: function (n) { return n + '님, 안녕하세요'; }, todayKitchen: function (meal, slot) { return '오늘 ' + meal + ' ' + slot + ' 담당이에요'; }, todayCar: function (what) { return '오늘 ' + what + ' 운행 담당이에요'; }, todayGospel: '이번 달 복음 통계 보고를 아직 안 했어요', todayGospelGo: '보고하기', todayNothing: '오늘 맡은 일은 없어요', searchPh: '도구 찾기  ( / )', searchNone: '찾는 도구가 없어요',
+        dashHello: function (n) { return n + '님, 안녕하세요'; }, wxKind: { clear: '맑음', partly: '구름 조금', cloudy: '흐림', fog: '안개', rain: '비', snow: '눈', storm: '천둥번개' }, wxNight: '맑은 밤', wxTip: { clear: '하늘이 맑아요. 기분 좋은 하루 보내세요', clearNight: '맑은 밤하늘이에요', partly: '구름이 조금 꼈어요', cloudy: '흐린 하루예요', fog: '안개가 꼈어요. 운전 조심하세요', rain: '비가 와요. 우산 챙기세요', snow: '눈이 와요. 길 조심하세요', storm: '천둥 번개가 쳐요. 야외 활동은 조심하세요' }, wxCold: ' · 쌀쌀해요, 따뜻하게 입으세요', wxHot: ' · 무더워요, 물 많이 드세요', wxFeels: '체감', wxHiLo: function (hi, lo) { return '최고 ' + hi + '° / 최저 ' + lo + '°'; }, wxRain: '강수확률', wxCity: '평택', todayKitchen: function (meal, slot) { return '오늘 ' + meal + ' ' + slot + ' 담당이에요'; }, todayCar: function (what) { return '오늘 ' + what + ' 운행 담당이에요'; }, todayGospel: '지난달 복음 통계 보고를 아직 안 했어요', todayGospelGo: '보고하기', todayNothing: '오늘 맡은 일은 없어요',
         dashPrayers: '기도제목', dashPrayerEmpty: '아직 나눈 기도제목이 없어요.', dashPrayerHint: '첫 기도제목을 나눠 보세요. 포탈에 로그인한 사람에게만 보여요.', prayerShare: '기도제목 나누기', prayerTitlePh: '제목 (예: 이번 주 캠프를 위해)', prayerPh: '내용 (선택) — 함께 기도해 주었으면 하는 일을 적어 주세요.', prayerAll: function (n) { return '지난 기도제목까지 모두 보기 (' + n + ')'; }, prayerNoBody: '제목만 나눈 기도제목이에요.', prayerOrig: '원문', prayerTr: '자동 번역', prayerEdit: '수정', prayerSave: '저장', prayerCancel: '취소', prayerEdited: '기도제목을 고쳤어요.', prayerAnon: '익명으로 올리기', prayerPost: '올리기', prayerPray: '함께 기도해요', prayerMore: function (n) { return n + '개 더 보기'; }, prayerLess: '접기', prayerAnonName: '익명', prayerDelete: '삭제', prayerDeleteConfirm: '이 기도제목을 지울까요?', prayerPosted: '기도제목을 나눴어요.', prayerDeleted: '기도제목을 지웠어요.', prayerNeedText: '기도제목의 제목을 입력해 주세요.', prayerNote: '한글로 쓰면 영어로, 영어로 쓰면 한글로 자동 번역돼요. 언어를 바꾸면 번역으로 보여요. 지난 기도제목은 "기도제목 나누기" 페이지에서 모두 볼 수 있어요.',
         dashTodayChip: '오늘', dashUnset: '미정', dashClosed: '닫힘', dashWeekOf: function (a, b) { return '이번 주 ' + a + ' – ' + b; }, relToday: '오늘', relYesterday: '어제', relDaysAgo: function (n) { return n + '일 전'; }, dashNoticeHint: '관리자가 이번 주에 꼭 필요한 소식을 여기에 올려요.',
         recentBadge: '최근 사용',
@@ -404,13 +414,13 @@
         pageTitle: 'This Week at WOLKO',
         toolsHeading: 'Tools',
         dashNotices: "This week's notices", dashNoticeEmpty: 'No notices for this week yet.', noticeAdd: 'Post a notice', noticeTitlePh: 'Title (optional)', noticeBodyPh: 'What everyone needs to know this week',
-        noticeThisWeek: 'This week', noticeNextWeek: 'Next week', noticePin: 'Pin to top', noticePost: 'Post', noticeDelete: 'Delete', noticeDeleteConfirm: 'Delete this notice?', noticeNeedBody: 'Please enter the notice.', noticePosted: 'Notice posted.', noticeDeleted: 'Notice deleted.', noticePinned: 'Pinned', noticeDue: 'Due date (optional)', noticeDueHint: 'A D-day countdown is shown', dueToday: 'D-Day', dueUntil: function (md) { return 'by ' + md; },
+        noticeEdit: 'Edit', noticeDone: 'Done', noticeSave: 'Save', noticeCancel: 'Cancel', noticeEdited: 'Notice updated.', noticeThisWeek: 'This week', noticeNextWeek: 'Next week', noticePin: 'Pin to top', noticePost: 'Post', noticeDelete: 'Delete', noticeDeleteConfirm: 'Delete this notice?', noticeNeedBody: 'Please enter the notice.', noticePosted: 'Notice posted.', noticeDeleted: 'Notice deleted.', noticePinned: 'Pinned', noticeDue: 'Due date (optional)', noticeDueHint: 'A D-day countdown is shown', dueToday: 'D-Day', dueUntil: function (md) { return 'by ' + md; },
         dashKitchen: "Today's Kitchen Duty", dashKitchenEmpty: 'Nobody has signed up for today.', mealAm: 'Breakfast', mealLunch: 'Lunch', mealDinner: 'Dinner', slotPrep: 'Prep', slotClean: 'Clean-up',
         dashCar: "Today's Vehicle Runs", dashCarEmpty: 'No driver is set for today.', carPickup: 'Pick-up', carDropoff: 'Drop-off',
         dashEvents: 'Upcoming Events', dashEventsEmpty: 'No events in the next two weeks.', dashEventsOff: 'The calendar is not connected yet.', allDay: 'All day',
         dashChurches: 'Recently Updated Churches', dashChurchesEmpty: 'No recently updated churches.', dashChurchesOff: 'The church list (CRS) is not connected yet.', churchUpdated: 'Updated', churchVisited: 'Visited', churchPastor: 'Pastor', churchPastorTitle: 'Senior Pastor', churchDone: 'Completed steps', churchNext: 'Recommended next step', churchMore: function (n) { return '+' + n + ' more'; }, churchAllDone: 'All 12 steps completed', churchNoneYet: 'No steps completed yet', churchProgress: 'Progress', churchStepsOf: function (n) { return n + ' / 12 steps'; }, churchLastVisit: 'Last visit', churchNoDetail: 'No details entered yet.',
         dashLoadFail: 'Could not load.', dashMore: 'View all',
-        dashHello: function (n) { return 'Hello, ' + n; }, todayKitchen: function (meal, slot) { return "You're on " + meal + ' ' + slot + ' today'; }, todayCar: function (what) { return "You're driving the " + what + ' today'; }, todayGospel: "You haven't submitted this month's Gospel report", todayGospelGo: 'Report now', todayNothing: 'Nothing assigned to you today', searchPh: 'Find a tool  ( / )', searchNone: 'No matching tool',
+        dashHello: function (n) { return 'Hello, ' + n; }, wxKind: { clear: 'Clear', partly: 'Partly cloudy', cloudy: 'Cloudy', fog: 'Fog', rain: 'Rain', snow: 'Snow', storm: 'Thunderstorm' }, wxNight: 'Clear night', wxTip: { clear: 'Clear skies. Have a lovely day', clearNight: 'A clear night sky', partly: 'A few clouds today', cloudy: 'A cloudy day', fog: 'Foggy. Drive carefully', rain: "It's raining. Take an umbrella", snow: "It's snowing. Watch your step", storm: 'Thunderstorms. Be careful outdoors' }, wxCold: ' · Chilly, dress warmly', wxHot: ' · Hot, drink plenty of water', wxFeels: 'Feels', wxHiLo: function (hi, lo) { return 'High ' + hi + '° / Low ' + lo + '°'; }, wxRain: 'Rain', wxCity: 'Pyeongtaek', todayKitchen: function (meal, slot) { return "You're on " + meal + ' ' + slot + ' today'; }, todayCar: function (what) { return "You're driving the " + what + ' today'; }, todayGospel: "You haven't submitted last month's Gospel report", todayGospelGo: 'Report now', todayNothing: 'Nothing assigned to you today',
         dashPrayers: 'Prayer requests', dashPrayerEmpty: 'No prayer requests shared yet.', dashPrayerHint: 'Share the first one. Only people signed in to the portal can see them.', prayerShare: 'Share a prayer request', prayerTitlePh: 'Title (e.g. For this week’s camp)', prayerPh: 'Details (optional) — what would you like us to pray for?', prayerAll: function (n) { return 'See all, including past requests (' + n + ')'; }, prayerNoBody: 'Shared as a title only.', prayerOrig: 'Original', prayerTr: 'Auto-translated', prayerEdit: 'Edit', prayerSave: 'Save', prayerCancel: 'Cancel', prayerEdited: 'Prayer request updated.', prayerAnon: 'Post anonymously', prayerPost: 'Post', prayerPray: 'Praying together', prayerMore: function (n) { return 'Show ' + n + ' more'; }, prayerLess: 'Show less', prayerAnonName: 'Anonymous', prayerDelete: 'Delete', prayerDeleteConfirm: 'Delete this prayer request?', prayerPosted: 'Prayer request shared.', prayerDeleted: 'Prayer request deleted.', prayerNeedText: 'Please enter a title for your request.', prayerNote: 'Korean is translated to English and English to Korean automatically; switch the language to read it. Past requests stay on the prayer page.',
         dashTodayChip: 'Today', dashUnset: 'Not set', dashClosed: 'CLOSED', dashWeekOf: function (a, b) { return 'This week ' + a + ' – ' + b; }, relToday: 'today', relYesterday: 'yesterday', relDaysAgo: function (n) { return n + ' days ago'; }, dashNoticeHint: 'Admins post what everyone needs to know this week.',
         recentBadge: 'Recent',
@@ -558,12 +568,15 @@
       const tone = n < 0 ? ' is-over' : n <= 3 ? ' is-soon' : '';
       return '<span class="hub-due' + tone + '"><b>' + esc(label) + '</b><small>' + esc(t('dueUntil', md)) + '</small></span>';
     }
+    /** 글의 언어 — 한글이 글자 수의 30% 이상이면 한국어(영어 글 속의 한글 이름은 무시). 서버(detectLang)와 같은 규칙 */
+    function langOf(s) { const ko = (String(s).match(/[가-힣]/g) || []).length, en = (String(s).match(/[A-Za-z]/g) || []).length; return ko > 0 && ko / (ko + en) >= 0.3 ? 'ko' : 'en'; }
     /** 공지를 지금 화면 언어로 — 원문과 번역 중 화면 언어인 쪽을 보여 준다(번역이 없으면 원문) */
     function noticeText(n) {
-      const orig = /[가-힣]/.test((n.title || '') + ' ' + n.body) ? 'ko' : 'en';
+      const orig = langOf((n.title || '') + ' ' + n.body);
       if (n.tr && hubLang !== orig && (n.tr.title || n.tr.text)) return { title: n.tr.title || n.title, body: n.tr.text || n.body, translated: true };
       return { title: n.title, body: n.body, translated: false };
     }
+    const noticeEditing = new Set();   // 편집 중인 공지 — 편집을 눌러야 삭제 버튼이 보인다
     function renderNotices(d) {
       const list = d.notices;
       const form = d.canEditNotices ? '<details class="hub-notice-form"><summary>+ ' + esc(t('noticeAdd')) + '</summary>'
@@ -576,11 +589,22 @@
       let body;
       if (list === null) body = dashEmpty('bell', t('dashLoadFail'));
       else if (!list.length) body = dashEmpty('bell', t('dashNoticeEmpty'), d.canEditNotices ? '' : t('dashNoticeHint'));
-      else body = '<ul class="hub-notices">' + list.map(n => { const v = noticeText(n); return '<li' + (n.pinned ? ' class="is-pinned"' : '') + '>'
-        + '<div class="hub-notice-top">' + (n.pinned ? '<span class="hub-pin">' + svgi('pin', 11) + esc(t('noticePinned')) + '</span>' : '') + (v.title ? '<b>' + esc(v.title) + '</b>' : '') + dueChip(n.dueDate, d.today) + '</div>'
-        + '<p>' + linkify(esc(v.body)).replace(/\n/g, '<br>') + '</p>' + (v.translated ? '<small class="hub-notice-tr">' + esc(t('prayerTr')) + '</small>' : '')
-        + (d.canEditNotices ? '<button type="button" class="hub-notice-del" data-del="' + esc(n.id) + '">' + esc(t('noticeDelete')) + '</button>' : '')
-        + '</li>'; }).join('') + '</ul>';
+      else body = '<ul class="hub-notices">' + list.map(n => {
+        const v = noticeText(n), editing = noticeEditing.has(n.id);
+        if (editing) {
+          return '<li class="is-editing' + (n.pinned ? ' is-pinned' : '') + '" data-id="' + esc(n.id) + '"><div class="hub-notice-editform">'
+            + '<input class="ne-title" type="text" maxlength="60" value="' + esc(n.title || '') + '" placeholder="' + esc(t('noticeTitlePh')) + '">'
+            + '<textarea class="ne-body" rows="4" maxlength="600" placeholder="' + esc(t('noticeBodyPh')) + '">' + esc(n.body) + '</textarea>'
+            + '<label class="hub-notice-due"><span>' + esc(t('noticeDue')) + '</span><input class="ne-due" type="date" value="' + esc(n.dueDate || '') + '"></label>'
+            + '<label class="hub-notice-pin"><input class="ne-pin" type="checkbox"' + (n.pinned ? ' checked' : '') + '> ' + esc(t('noticePin')) + '</label></div>'
+            + '<div class="hub-notice-foot"><button type="button" class="hub-notice-del" data-del="' + esc(n.id) + '">' + esc(t('noticeDelete')) + '</button><button type="button" class="hub-notice-edit" data-nedit="' + esc(n.id) + '">' + esc(t('noticeCancel')) + '</button><button type="button" class="hub-notice-edit is-on" data-nsave="' + esc(n.id) + '">' + esc(t('noticeSave')) + '</button></div></li>';
+        }
+        return '<li' + (n.pinned ? ' class="is-pinned"' : '') + '>'
+          + '<div class="hub-notice-top">' + (n.pinned ? '<span class="hub-pin">' + svgi('pin', 11) + esc(t('noticePinned')) + '</span>' : '') + (v.title ? '<b>' + esc(v.title) + '</b>' : '') + dueChip(n.dueDate, d.today) + '</div>'
+          + '<p>' + linkify(esc(v.body)).replace(/\n/g, '<br>') + '</p>' + (v.translated ? '<small class="hub-notice-tr">' + esc(t('prayerTr')) + '</small>' : '')
+          + (n.canDelete ? '<div class="hub-notice-foot"><button type="button" class="hub-notice-edit" data-nedit="' + esc(n.id) + '">' + esc(t('noticeEdit')) + '</button></div>' : '')
+          + '</li>';
+      }).join('') + '</ul>';
       return dashCard('hub-dcard-notice', '#f0a020', 'bell', t('dashNotices'), body + form);
     }
     /** 카드 맨 아래에 쭉 깔리는 작은 장면 — 키친: 도마 위에서 당근을 써는 칼 + 김이 나는 냄비, 차량: 나무와 집이 스쳐 지나가는 길 위를 달리는 차.
@@ -600,12 +624,12 @@
       + '<g class="hub-slices" fill="#f8b061" stroke="#d9751a" stroke-width="1.2"><ellipse class="s1" cx="74" cy="29" rx="2.4" ry="4"/><ellipse class="s2" cx="81" cy="29" rx="2.4" ry="4"/><ellipse class="s3" cx="88" cy="29" rx="2.4" ry="4"/><ellipse class="s4" cx="95" cy="29" rx="2.4" ry="4"/></g>'
       + '<g class="hub-knife-pos"><g class="hub-knife"><path d="M62 14h13v17c-7 0-13-2-13-5z" fill="#eef3f6" stroke="#7d8e98" stroke-width="1.6"/><rect x="63" y="3" width="11" height="11" rx="3.5" fill="#8a5a2b" stroke="#6b4320" stroke-width="1.4"/></g></g></svg>';
     const KITCHEN_DECO = '<span class="hub-scene hub-scene-kitchen" aria-hidden="true"><span class="hub-counter"></span>' + BOARD_SVG + POT_SVG + '</span>';
-    const CAR_SVG = '<span class="hub-deco hub-deco-car"><i></i><i></i><svg width="64" height="42" viewBox="0 0 64 42" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="hub-car-body">'
+    const CAR_SVG = '<span class="hub-deco hub-deco-car"><b class="sm s1"></b><b class="sm s2"></b><b class="sm s3"></b><svg width="64" height="42" viewBox="0 0 64 42" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="hub-car-body">'
       + '<path d="M4 29v-7a4 4 0 0 1 3-3.9l7.5-2 6-8.2A4 4 0 0 1 24.7 6h14.6a4 4 0 0 1 3.3 1.7l5 7.4 9 2.6A4 4 0 0 1 59.500 21.600V29a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#c585ec" stroke="#8a35a0" stroke-width="2.2"/>'
       + '<path d="M19 17.500l4.200-6h14.300l4.300 6z" fill="#e4f4ff" stroke="#8a35a0" stroke-width="2"/><path d="M31 11.500v6" stroke="#8a35a0" stroke-width="1.6"/>'
       + '<rect x="52" y="22" width="5" height="4" rx="2" fill="#ffe27a" stroke="#d6a516" stroke-width="1.4"/><path d="M45 25.500c1.400 1.400 3.200 1.400 4.600 0" stroke="#5a2370" stroke-width="1.8"/>'
       + '<g transform="translate(16 32)"><g class="hub-wheel"><circle r="6" fill="#3d3550" stroke="#2a2438" stroke-width="1.6"/><circle r="2.200" fill="#dcd6ee"/><path d="M0-4v8M-4 0h8" stroke="#dcd6ee" stroke-width="1.200"/></g></g>'
-      + '<g transform="translate(44 32)"><g class="hub-wheel"><circle r="6" fill="#3d3550" stroke="#2a2438" stroke-width="1.6"/><circle r="2.200" fill="#dcd6ee"/><path d="M0-4v8M-4 0h8" stroke="#dcd6ee" stroke-width="1.200"/></g></g></g></svg></span>';
+      + '<g transform="translate(47.500 32)"><g class="hub-wheel"><circle r="6" fill="#3d3550" stroke="#2a2438" stroke-width="1.6"/><circle r="2.200" fill="#dcd6ee"/><path d="M0-4v8M-4 0h8" stroke="#dcd6ee" stroke-width="1.200"/></g></g></g></svg></span>';
     const CAR_DECO = '<span class="hub-scene hub-scene-car" aria-hidden="true"><span class="hub-sc-far"></span><span class="hub-sc-near"></span><span class="hub-road"></span>' + CAR_SVG + '</span>';
     function renderKitchen(d) {
       let body;
@@ -645,7 +669,7 @@
       ko: ['목사님께 전화 또는 대화', '목사님 방문', '사역 소개 프레젠테이션', '복음 대화 훈련', '청소년 캠프 · 이벤트 참여', '리더 훈련 (Core Training)', '교회의 WOLKO 커리큘럼 사용', '선교사 교회 예배 설교', '후원 요청(God Ask) 프레젠테이션', '선물 전달 · 감사 표현', '교회의 WOLKO 후원', '타 교회에 WOLKO 소개'],
       en: ['Called or talked to pastor', 'Visited pastor', 'Ministry presentation', 'Gospel Conversation Training', 'Youth at camp or event', 'Core Training', 'Uses WOLKO curriculum', 'Missionary speaks at service', '\u201cGod Ask\u201d presentation', 'Gift / thank you', 'Church supports WOLKO', 'Introduces WOLKO to other churches'],
     };
-    /** 마우스를 올리거나 키보드로 들어가면 보이는 교회 세부 카드 — 담임목사, 완료한 단계, 다음 추천 단계 */
+    /** 교회 이름을 눌러 아래로 펼치는 세부 카드 — 담임목사, 완료한 단계, 다음 추천 단계 */
     function churchPop(c, today) {
       const names = CRS_STEPS[hubLang] || CRS_STEPS.ko;
       const done = c.done || [];
@@ -663,19 +687,19 @@
         c.lastVisitDate ? [t('churchLastVisit'), esc(c.lastVisitDate) + (c.visitor ? ' · ' + esc(c.visitor) : '')] : null,
         [t('churchUpdated'), esc(kstParts(c.updatedAt).ymd) + ' (' + esc(relDay(c.updatedAt, today)) + ')'],
       ].filter(Boolean);
-      return '<div class="hub-church-pop" role="tooltip"><div class="hub-pop-head"><b>' + esc(c.name) + '</b>' + (pastor ? '<span class="hub-pop-sep">|</span>' + pastor : '') + '</div>'
+      return '<div class="hub-church-pop" role="region"><div class="hub-pop-head"><b>' + esc(c.name) + '</b>' + (pastor ? '<span class="hub-pop-sep">|</span>' + pastor : '') + '</div>'
         + '<p class="hub-pop-label">' + esc(t('churchProgress')) + ' · ' + esc(t('churchStepsOf', done.length)) + '</p>' + track
         + '<p class="hub-pop-label">' + esc(t('churchDone')) + '</p>' + doneHtml
         + '<p class="hub-pop-label hub-pop-label-next">' + esc(t('churchNext')) + '</p>' + nextHtml
         + '<dl>' + rows.map(r => '<div><dt>' + esc(r[0]) + '</dt><dd>' + r[1] + '</dd></div>').join('') + '</dl></div>';
     }
     /** 기도제목 나눔 — 첫 화면에는 최근 10개의 "제목"만 보이고, 누르면 내용이 열린다. 지난 것까지 모두는 /portal/prayers 에서 */
-    const prayerOpen = new Set();
+    const prayerClosed = new Set();   // 기본은 모두 펼쳐 둔다 — 접은 것만 기억
     let prayerEditing = null;
-    document.addEventListener('toggle', e => { const d = e.target; if (d && d.classList && d.classList.contains('hub-prayer-item')) { if (d.open) prayerOpen.add(d.dataset.id); else prayerOpen.delete(d.dataset.id); } }, true);
+    document.addEventListener('toggle', e => { const d = e.target; if (d && d.classList && d.classList.contains('hub-prayer-item')) { if (d.open) prayerClosed.delete(d.dataset.id); else prayerClosed.add(d.dataset.id); } }, true);
     /** 기도제목을 지금 화면 언어로 — 원문과 번역 중 화면 언어인 쪽이 주(main), 나머지는 아래에 작게(alt) */
     function prayerLang(p) {
-      const orig = /[가-힣]/.test(p.title + ' ' + p.text) ? 'ko' : 'en', has = !!(p.trTitle || p.trText), useTr = has && hubLang !== orig;
+      const orig = langOf(p.title + ' ' + p.text), has = !!(p.trTitle || p.trText), useTr = has && hubLang !== orig;
       const o = { title: p.title, text: p.text }, tr = { title: p.trTitle || '', text: p.trText || '' };
       return useTr ? { main: { title: tr.title || o.title, text: tr.text }, translated: true } : { main: o, translated: false };
     }
@@ -691,7 +715,7 @@
       if (list === null) body = dashEmpty('heart', t('dashLoadFail'));
       else if (!list.length) body = dashEmpty('heart', t('dashPrayerEmpty'), t('dashPrayerHint'));
       else {
-        const item = p => { const v = prayerLang(p); return '<details class="hub-prayer-item" data-id="' + esc(p.id) + '"' + (prayerOpen.has(p.id) ? ' open' : '') + '>'
+        const item = p => { const v = prayerLang(p); return '<details class="hub-prayer-item" data-id="' + esc(p.id) + '"' + (prayerClosed.has(p.id) ? '' : ' open') + '>'
           + '<summary><span class="hub-prayer-title">' + esc(v.main.title) + '</span>'
           + (p.count ? '<span class="hub-prayer-count">' + p.count + '</span>' : '')
           + '<span class="hub-prayer-when">' + esc(p.anonymous ? t('prayerAnonName') : p.name) + ' · ' + esc(relDay(Date.parse(p.createdAt), d.today)) + '</span></summary>'
@@ -710,21 +734,24 @@
       }
       return dashCard('hub-dcard-prayer', '#d6567a', 'heart', t('dashPrayers'), body + form, '/portal/prayers/');
     }
+    const churchOpen = new Set();   // 펼친 교회(이름) — 다시 그려도 유지
     function renderChurches(d) {
       let body;
       if (d.churches === null) body = dashEmpty('church', t('dashChurchesOff'));
       else if (!d.churches.length) body = dashEmpty('church', t('dashChurchesEmpty'));
-      else body = '<ul class="hub-churches">' + d.churches.map(c => '<li tabindex="0"><span class="hub-avatar">' + esc(Array.from(c.name)[0] || '') + '</span><span class="hub-church-text"><b>' + esc(c.name) + '</b>'
-        + '<small>' + esc(t('churchUpdated')) + ' ' + esc(relDay(c.updatedAt, d.today)) + (c.lastVisitDate ? ' · ' + esc(t('churchVisited')) + ' ' + esc(c.lastVisitDate) : '') + '</small></span>' + churchPop(c, d.today) + '</li>').join('') + '</ul>';
+      else body = '<div class="hub-churches" role="list">' + d.churches.map((c, i) => {
+        const open = churchOpen.has(c.name);
+        return '<button type="button" class="hub-church-btn' + (open ? ' is-open' : '') + '" role="listitem" aria-expanded="' + (open ? 'true' : 'false') + '" aria-controls="hubChurch' + i + '" data-church="' + esc(c.name) + '">'
+          + '<span class="hub-avatar">' + esc(Array.from(c.name)[0] || '') + '</span><span class="hub-church-text"><b>' + esc(c.name) + '</b>'
+          + '<small>' + esc(t('churchUpdated')) + ' ' + esc(relDay(c.updatedAt, d.today)) + (c.lastVisitDate ? ' · ' + esc(t('churchVisited')) + ' ' + esc(c.lastVisitDate) : '') + '</small></span><span class="hub-church-caret" aria-hidden="true"></span></button>'
+          + '<div class="hub-church-detail' + (open ? ' is-open' : '') + '" id="hubChurch' + i + '">' + churchPop(c, d.today) + '</div>';
+      }).join('') + '</div>';
       return dashCard('hub-dcard-churches', '#7b61e6', 'church', t('dashChurches'), body, '/portal/crs');
     }
     function renderDashHead(d) {
       const full = new Intl.DateTimeFormat(dashLocale(), { timeZone: KST, year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }).format(new Date(d.today + 'T12:00:00+09:00'));
-      const short = ymd => { const q = kstParts(ymd, true); return hubLang === 'en' ? q.month + ' ' + q.day : q.month + '/' + q.day; };
-      const end = new Date(Date.parse(d.weekStart + 'T00:00:00Z') + 6 * 86400000).toISOString().slice(0, 10);
-      const date = '<div class="hub-dash-date"><b>' + esc(full) + '</b><span>' + esc(t('dashWeekOf', short(d.weekStart), short(end))) + '</span></div>';
-      const search = '<div class="hub-search"><input id="hubSearch" type="search" autocomplete="off" placeholder="' + esc(t('searchPh')) + '" aria-label="' + esc(t('searchPh')) + '"><ul class="hub-search-list" id="hubSearchList" hidden></ul></div>';
-      return '<div class="hub-dash-top">' + date + search + renderToday(d) + '</div>';
+      const date = '<div class="hub-dash-date"><b>' + esc(full) + '</b></div>';
+      return '<div class="hub-dash-top">' + date + '<p class="hub-sky-tip">' + esc(hubWeather ? wxTip(hubWeather) : '') + '</p>' + renderToday(d) + '</div>';
     }
     /** 내 오늘 — 오늘 내가 맡은 주방·차량, 아직 안 낸 이번 달 복음 통계 보고. 해당하는 것이 없으면 아무것도 보이지 않는다 */
     function renderToday(d) {
@@ -737,38 +764,55 @@
         me.gospelPending ? ['<a class="hub-today-chip is-gospel" href="/portal/gospel-stats/?write=1&month=' + encodeURIComponent(me.gospelMonth) + '">' + esc(t('todayGospel')) + ' <b>' + esc(t('todayGospelGo')) + ' →</b></a>'] : []);
       return chips.length ? '<div class="hub-today-bar">' + chips.join('') + '</div>' : '';
     }
-    /** 도구 찾기 — 제목·설명으로 걸러 보여 주고, Enter 로 첫 결과로 이동한다. "/" 키로 입력창에 바로 이동 */
-    function toolMatches(q) {
-      const k = q.trim().toLowerCase();
-      if (!k) return [];
-      return TOOLS.filter(x => (x.title_ko + ' ' + x.title_en + ' ' + x.desc_ko + ' ' + x.desc_en).toLowerCase().includes(k)).slice(0, 6);
+    /** 이름 인사를 한 글자씩 올라오게 그린다 — 글이 바뀔 때만 다시 그려서, 다른 갱신에는 움직임이 반복되지 않는다 */
+    function setGreeting(text) {
+      const kick = $('hubKicker'); if (!kick || kick.dataset.text === text) return;
+      kick.dataset.text = text; kick.setAttribute('aria-label', text);
+      kick.innerHTML = Array.from(text).map((ch, i) => '<span class="gl" aria-hidden="true" style="--i:' + i + '">' + esc(ch) + '</span>').join('');
     }
-    function paintSearch() {
-      const input = $('hubSearch'), list = $('hubSearchList');
-      if (!input || !list) return;
-      const found = toolMatches(input.value);
-      list.hidden = !input.value.trim();
-      list.innerHTML = found.length ? found.map(x => '<li><a href="' + x.href + '" style="--tool-color:' + x.color + '"><b>' + esc(hubLang === 'en' ? x.title_en : x.title_ko) + '</b><small>' + esc(hubLang === 'en' ? x.desc_en : x.desc_ko) + '</small></a></li>').join('') : '<li class="is-none">' + esc(t('searchNone')) + '</li>';
+    /** 오늘 날씨(평택) — 하늘 배경·애니메이션은 hub-sky.js, 숫자와 안내 글은 여기서 */
+    let hubWeather = null;
+    function wxLabel(w) { return !w.isDay && w.kind === 'clear' ? t('wxNight') : t('wxKind')[w.kind]; }
+    function wxTip(w) {
+      const tips = t('wxTip'); let s = (!w.isDay && w.kind === 'clear') ? tips.clearNight : tips[w.kind];
+      if (w.temp <= 5) s += t('wxCold'); else if (w.temp >= 30) s += t('wxHot');
+      return s;
     }
-    document.addEventListener('input', e => { if (e.target.id === 'hubSearch') paintSearch(); });
-    document.addEventListener('keydown', e => {
-      if (e.target.id === 'hubSearch') {
-        if (e.key === 'Enter') { const first = toolMatches(e.target.value)[0]; if (first) location.href = first.href; }
-        else if (e.key === 'Escape') { e.target.value = ''; paintSearch(); e.target.blur(); }
-      } else if (e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || '')) && !e.target.isContentEditable && $('hubSearch') && !$('hubShell')?.hidden) { e.preventDefault(); $('hubSearch').focus(); }
-    });
-    document.addEventListener('click', e => { if (!e.target.closest || !e.target.closest('.hub-search')) { const l = $('hubSearchList'); if (l) l.hidden = true; } });
+    function renderWx() {
+      const box = $('hubWx'); if (!box) return;
+      const w = hubWeather;
+      if (!w) { box.hidden = true; return; }
+      box.hidden = false;
+      box.innerHTML = '<div class="hub-wx-card"><div class="hub-wx-temp">' + w.temp + '<sup>°</sup></div><div class="hub-wx-label">' + esc(t('wxCity') + ' · ' + wxLabel(w)) + '</div>'
+        + '<div class="hub-wx-sub">' + esc(t('wxFeels') + ' ' + w.feels + '°' + (w.hi != null && w.lo != null ? ' · ' + t('wxHiLo', w.hi, w.lo) : '') + (w.rain != null ? ' · ' + t('wxRain') + ' ' + w.rain + '%' : '')) + '</div></div>';
+      const tip = document.querySelector('#hubSkyBody .hub-sky-tip');
+      if (tip) tip.textContent = wxTip(w);
+    }
+    async function loadWeather() {
+      const token = sessionStorage.getItem('wolko-hub-token'); if (!token) return;
+      let w = null;
+      try { const c = JSON.parse(sessionStorage.getItem('wolko-wx') || 'null'); if (c && Date.now() - c.at < 600000) w = c.w; } catch (e) {}
+      if (!w) {
+        try {
+          const res = await fetch('/api/portal/weather', { headers: { Authorization: 'Bearer ' + token } });
+          if (res.ok) { w = (await res.json()).weather; if (w) try { sessionStorage.setItem('wolko-wx', JSON.stringify({ at: Date.now(), w })); } catch (e) {} }
+        } catch (e) {}
+      }
+      hubWeather = w;
+      if (window.HubSky) window.HubSky.setWeather(w); else document.addEventListener('DOMContentLoaded', () => window.HubSky && window.HubSky.setWeather(hubWeather));
+      renderDash();
+    }
     function renderDash() {
       const el = $('hubDash');
       if (!el) return;
       if (!dashData) { el.innerHTML = dashFailed ? '<div class="hub-dcard hub-dcard-wide">' + dashEmpty('bell', t('dashLoadFail')) + '</div>' : ''; return; }
       // 공지를 쓰다가 언어를 바꿔도 입력한 내용은 남긴다
-      const keepSearch = $('hubSearch')?.value || '', searchFocus = document.activeElement && document.activeElement.id === 'hubSearch';
       const keepPrayer = { title: $('prayerTitle')?.value || '', text: $('prayerText')?.value || '', anon: !!$('prayerAnon')?.checked, open: !!$('hubDash').querySelector('.hub-prayer-form')?.open };
       const keep = { title: $('noticeTitle')?.value || '', body: $('noticeBody')?.value || '', due: $('noticeDue')?.value || '', open: $('hubDash').querySelector('.hub-notice-form')?.open };
-      el.innerHTML = renderDashHead(dashData) + renderNotices(dashData) + renderEvents(dashData) + renderKitchen(dashData) + renderCar(dashData) + renderPrayers(dashData) + renderChurches(dashData);
-      if (keepSearch && $('hubSearch')) { $('hubSearch').value = keepSearch; paintSearch(); if (searchFocus) $('hubSearch').focus(); }
-      const kick = $('hubKicker'); if (kick) kick.textContent = dashData.me ? t('dashHello', dashData.me.name) : '';
+      $('hubSkyBody').innerHTML = renderDashHead(dashData);
+      el.innerHTML = renderNotices(dashData) + renderEvents(dashData) + renderKitchen(dashData) + renderCar(dashData) + renderPrayers(dashData) + renderChurches(dashData);
+      setGreeting(dashData.me ? t('dashHello', dashData.me.name) : '');
+      renderWx();
       if ($('prayerText')) { $('prayerTitle').value = keepPrayer.title; $('prayerText').value = keepPrayer.text; $('prayerAnon').checked = keepPrayer.anon; if (keepPrayer.open) el.querySelector('.hub-prayer-form').open = true; }
       if ($('noticeTitle')) { $('noticeTitle').value = keep.title; $('noticeBody').value = keep.body; if ($('noticeDue')) $('noticeDue').value = keep.due; if (keep.open) el.querySelector('.hub-notice-form').open = true; }
     }
@@ -782,7 +826,9 @@
         dashFailed = false;
       } catch (e) { dashFailed = !dashData; }
       renderDash();
+      if (!weatherAsked) { weatherAsked = true; loadWeather(); }
     }
+    let weatherAsked = false;
     /** 기도제목 목록만 다시 받아 그린다(첫 화면 전체를 다시 부르지 않는다) */
     async function refreshPrayers(next) {
       try {
@@ -796,6 +842,14 @@
       if (!res.ok) throw new Error(data.error || t('dashLoadFail'));
       return data;
     }
+    document.addEventListener('click', e => {
+      const cb = e.target.closest && e.target.closest('.hub-church-btn');
+      if (!cb) return;
+      const open = !cb.classList.contains('is-open');
+      cb.classList.toggle('is-open', open); cb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      const panel = document.getElementById(cb.getAttribute('aria-controls')); if (panel) panel.classList.toggle('is-open', open);
+      if (open) churchOpen.add(cb.dataset.church); else churchOpen.delete(cb.dataset.church);
+    });
     document.addEventListener('click', async e => {
       const pray = e.target.closest && e.target.closest('.hub-pray-btn');
       if (pray) {
@@ -805,7 +859,7 @@
         return;
       }
       const pedit = e.target.closest && e.target.closest('.hub-prayer-edit');
-      if (pedit) { prayerEditing = pedit.dataset.edit; prayerOpen.add(prayerEditing); renderDash(); return; }
+      if (pedit) { prayerEditing = pedit.dataset.edit; prayerClosed.delete(prayerEditing); renderDash(); return; }
       if (e.target.closest && e.target.closest('.hub-prayer-cancel')) { prayerEditing = null; renderDash(); return; }
       const psave = e.target.closest && e.target.closest('.hub-prayer-save');
       if (psave) {
@@ -836,6 +890,21 @@
         btn.disabled = false;
         return;
       }
+      const nsave = e.target.closest && e.target.closest('[data-nsave]');
+      if (nsave) {
+        const li = nsave.closest('li'), body = li.querySelector('.ne-body').value.trim();
+        if (!body) { showToast(t('noticeNeedBody'), true); return; }
+        nsave.disabled = true;
+        try {
+          const res = await fetch('/api/portal/notices', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'edit', id: nsave.dataset.nsave, title: li.querySelector('.ne-title').value, body, dueDate: li.querySelector('.ne-due').value, pinned: li.querySelector('.ne-pin').checked }) });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || t('dashLoadFail'));
+          noticeEditing.delete(nsave.dataset.nsave); showToast(t('noticeEdited')); await loadDashboard();
+        } catch (err) { showToast(err.message, true); nsave.disabled = false; }
+        return;
+      }
+      const nedit = e.target.closest && e.target.closest('.hub-notice-edit');
+      if (nedit) { const id = nedit.dataset.nedit; if (noticeEditing.has(id)) noticeEditing.delete(id); else noticeEditing.add(id); renderDash(); return; }
       const del = e.target.closest && e.target.closest('.hub-notice-del');
       if (del) {
         if (!confirm(t('noticeDeleteConfirm'))) return;
@@ -929,9 +998,10 @@
     function isPortalStandalone() {
       return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     }
+    const SHOW_INSTALL_BUTTON = false;   // 앱 설치 버튼은 일단 숨긴다 — 다시 보이려면 true 로
     function syncInstallButton() {
       const button = $('installAppBtn');
-      if (button) button.hidden = isPortalStandalone();
+      if (button) button.hidden = !SHOW_INSTALL_BUTTON || isPortalStandalone();
     }
     function installHelpMessage() {
       const ua = navigator.userAgent;

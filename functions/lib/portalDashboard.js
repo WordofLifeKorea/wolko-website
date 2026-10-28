@@ -7,11 +7,17 @@ import { SLOTS as DRIVE_SLOTS, closedKey as driveClosedKey, currentWeekStart, is
 import { listCalendarEvents } from './googleCalendar.js';
 import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 import { prayerBoard } from './prayers.js';
-import { translateNotice } from './prayerTranslate.js';
+import { needsTranslation, translateNotice } from './prayerTranslate.js';
 import { alwaysExempt } from './gospelReminder.js';
-import { currentMonthKst, loadMonth, ownerOf } from './gospelStats.js';
+import { reportMonth, loadMonth, ownerOf } from './gospelStats.js';
 
 export const NOTICES_KEY = 'portal:notices';
+/** 마스터·관리자 말고도 공지를 올릴 수 있는 계정 — 본인이 올린 공지만 지울 수 있다 */
+export const NOTICE_POSTER_EMAILS = ['esooy@wol.org'];
+const isAdminRole = session => session?.role === 'master' || session?.role === 'admin';
+export const canPostNotices = session => isAdminRole(session) || NOTICE_POSTER_EMAILS.includes(String(session?.email || '').trim().toLowerCase());
+/** 이 공지를 지울 수 있는지 — 관리자는 모두, 공지 담당 계정은 자기가 올린 것만 */
+export const canDeleteNotice = (session, notice) => isAdminRole(session) || (canPostNotices(session) && !!notice?.byEmail && notice.byEmail === String(session.email).trim().toLowerCase());
 export const MAX_NOTICES = 60;
 const DASH_CHURCH_KEY = 'portal:dash-churches-v3';
 const DASH_CHURCH_SECONDS = 300;
@@ -33,7 +39,7 @@ export async function translateMissingNotices(env, { now = Date.now(), limit = 3
   if (!env.ANTHROPIC_API_KEY) return 0;
   const list = await env.CAMP_KV.get(NOTICES_KEY, 'json');
   if (!Array.isArray(list)) return 0;
-  const todo = list.filter(n => n && n.id && n.body && !n.tr && !(n.trTry && now - n.trTry < 3600000)).slice(0, limit);
+  const todo = list.filter(n => n && n.id && n.body && needsTranslation(n.title || '', n.body, n.tr?.lang) && !(n.trTry && now - n.trTry < 3600000)).slice(0, limit);
   let done = 0;
   for (const n of todo) {
     const tr = await translateNotice(env, n, { fetchImpl });
@@ -154,7 +160,7 @@ export async function recentChurchList(env) {
   return list;
 }
 
-/** 지금 로그인한 사람에게 해당하는 오늘 할 일 — 주방 당번 칸, 차량 운행 칸, 이번 달 복음 통계 보고(월 후반에 아직 안 냈을 때) */
+/** 지금 로그인한 사람에게 해당하는 오늘 할 일 — 주방 당번 칸, 차량 운행 칸, 지난달 복음 통계 보고(아직 안 냈을 때) */
 export async function mySchedule(env, session, today) {
   const email = String(session?.email || '').trim().toLowerCase();
   if (!email) return null;
@@ -163,8 +169,8 @@ export async function mySchedule(env, session, today) {
   const kitchen = KITCHEN_SLOTS.filter(slot => (day[slot] || []).some(mine));
   const car = [pickup && mine(pickup) ? 'pickup' : '', dropoff && mine(dropoff) ? 'dropoff' : ''].filter(Boolean);
   let gospelPending = false;
-  const month = currentMonthKst(Date.parse(`${today}T12:00:00+09:00`));
-  if (Number(today.slice(8, 10)) >= 15 && !alwaysExempt(email) && !(await env.CAMP_KV.get(`gospel:exempt:${email}`))) {
+  const month = reportMonth(Date.parse(`${today}T12:00:00+09:00`));   // 월간 보고는 지난달 숫자
+  if (!alwaysExempt(email) && !(await env.CAMP_KV.get(`gospel:exempt:${email}`))) {
     const owner = await ownerOf(env, email);
     gospelPending = !(await loadMonth(env, month)).some(r => r.owner === owner);
   }
@@ -185,5 +191,5 @@ export async function buildDashboard(env, session, now = Date.now()) {
     settle(() => prayerBoard(env, session)),
     settle(() => mySchedule(env, session, today)),
   ]);
-  return { today, weekStart, canEditNotices: session.role === 'admin' || session.role === 'master', notices, kitchen, car, events, churches, prayers: prayerData ? prayerData.prayers : null, prayerTotal: prayerData ? prayerData.total : 0, me };
+  return { today, weekStart, canEditNotices: canPostNotices(session), notices: notices ? notices.map(({ byEmail, ...n }) => ({ ...n, canDelete: canDeleteNotice(session, { byEmail }) })) : notices, kitchen, car, events, churches, prayers: prayerData ? prayerData.prayers : null, prayerTotal: prayerData ? prayerData.total : 0, me };
 }

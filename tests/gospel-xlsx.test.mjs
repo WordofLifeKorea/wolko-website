@@ -54,7 +54,7 @@ function env() {
 
 test('GET format=xlsx: 마스터·관리자만, 요약·추이·보고 목록 시트와 합계가 들어 있다', async () => {
   const e = env();
-  const month = (await import("../functions/lib/gospelStats.js")).currentMonthKst();
+  const month = (await import("../functions/lib/gospelStats.js")).reportMonth();
   for (const [email, role] of [['admin@wolko.org', 'master'], ['anna@wol.org', 'counselor']]) await e.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: email, role, status: 'approved' }));
   const token = async who => 'Bearer ' + await H.createHubSessionToken('secret', who[0], who[1]);
   const post = async (who, body) => G.onRequestPost({ env: e, request: new Request('https://t.co/api/portal/gospel-stats', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: await token(who) }, body: JSON.stringify(body) }) });

@@ -4,7 +4,7 @@
  * 올린 사람은 서버 비밀값으로 만든 표식(owner)으로만 저장한다. 익명으로 올리면 이름도 저장하지 않는다.
  */
 import { anonHex } from './gospelStats.js';
-import { translatePrayer } from './prayerTranslate.js';
+import { needsTranslation, translatePrayer } from './prayerTranslate.js';
 
 export const PRAYERS_KEY = 'portal:prayers';
 export const MAX_PRAYERS = 500;
@@ -106,4 +106,19 @@ export async function prayerBoard(env, session, { all = false } = {}) {
   const owner = session?.email ? await prayerOwner(env, session.email) : '';
   const list = await readPrayers(env);
   return { prayers: viewPrayers(list, owner, session?.role === 'master' || session?.role === 'admin', all ? Infinity : DASH_SHOWN), total: list.length };
+}
+
+/** 번역이 없거나 번역 언어가 잘못 저장된 기도제목을 뒤에서 번역해 저장한다 — 첫 화면을 열 때 돌고, 실패하면 1시간 뒤에 다시 시도한다 */
+export async function translateMissingPrayers(env, { now = Date.now(), limit = 3, fetchImpl } = {}) {
+  if (!env.ANTHROPIC_API_KEY) return 0;
+  const list = await env.CAMP_KV.get(PRAYERS_KEY, 'json');
+  if (!Array.isArray(list)) return 0;
+  const todo = list.filter(p => p && p.id && (p.title || p.text) && needsTranslation(p.title || '', p.text || '', p.tr?.lang) && !(p.trTry && now - p.trTry < 3600000)).slice(0, limit);
+  let done = 0;
+  for (const p of todo) {
+    const tr = await translatePrayer(env, { title: p.title || '', text: p.text || '' }, { fetchImpl });
+    if (tr) { p.tr = tr; delete p.trTry; done++; } else p.trTry = now;
+  }
+  if (todo.length) await env.CAMP_KV.put(PRAYERS_KEY, JSON.stringify(list));
+  return done;
 }

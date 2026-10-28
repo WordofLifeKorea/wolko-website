@@ -148,6 +148,8 @@ button.wl-user-chip:hover { background: rgba(255, 255, 255, .24); }
 /* 내 정보 창의 ✕ 는 공용 모바일 규칙(버튼 최소 높이 44px)에 늘어나 세로 타원이 되지 않도록 정원으로 고정 */
 :root:root .wl-prof-close { width: 36px !important; height: 36px !important; min-width: 0 !important; min-height: 0 !important; padding: 0 !important; aspect-ratio: 1 / 1; flex: none; display: inline-flex; align-items: center; justify-content: center; }
 
+/* 넓은 화면에서는 레일이 있으니 햄버거가 없어야 한다 — 헤더 공용 버튼 스타일(display:inline-flex !important)이 위의 display:none 을 덮어 빈 상자로 남던 것을 막는다 */
+@media (min-width: 900px) { :root:root:root body > header .wolko-burger, :root:root:root .app-header .wolko-burger { display: none !important; } }
 /* ── 좁은 화면(900px 미만): 헤더 맨 오른쪽 햄버거 → 오른쪽에서 밀려 나오는 도구 서랍 ── */
 .wolko-burger, .wolko-drawer, .wolko-drawer-backdrop { display: none; }
 @media (max-width: 899px) {
@@ -157,6 +159,9 @@ button.wl-user-chip:hover { background: rgba(255, 255, 255, .24); }
   body.wolko-drawer-open .wolko-burger span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
   body.wolko-drawer-open .wolko-burger span:nth-child(2) { opacity: 0; }
   body.wolko-drawer-open .wolko-burger span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+  /* 헤더 공용 버튼 스타일(wolko-header.css: inline-flex 가로 배치 · 좌우 padding · 반투명)이 세 줄을 눌러 버리지 않도록 헤더 안에서도 같은 모양으로 고정 */
+  :root:root:root body > header .wolko-burger { flex-direction: column !important; gap: 4px !important; width: 40px !important; min-width: 40px !important; height: 40px !important; min-height: 40px !important; padding: 0 !important; margin: 0 0 0 8px !important; border: 1px solid rgba(255, 255, 255, .38) !important; border-radius: 12px !important; background: #0a6684 !important; }
+  :root:root:root body > header .wolko-burger span { flex: none; width: 18px; height: 2px; }
   .wolko-burger.is-floating { position: fixed; top: 10px; right: 10px; z-index: 9000; box-shadow: 0 6px 16px rgba(0, 40, 55, .3); }
   .wolko-drawer { display: flex; flex-direction: column; gap: 2px; position: fixed; top: 0; right: 0; bottom: 0; z-index: 9100; width: min(310px, 86vw); padding: 14px 14px 28px; overflow-y: auto; overscroll-behavior: contain; background: radial-gradient(circle at 15% 0%, rgba(255,255,255,.08), transparent 45%), linear-gradient(175deg, #003548 0%, #004f68 45%, #00668a 100%); box-shadow: -18px 0 40px -12px rgba(0, 20, 30, .5); transform: translateX(105%); visibility: hidden; transition: transform .28s cubic-bezier(.2, .8, .3, 1), visibility 0s linear .28s; }
   body.wolko-drawer-open .wolko-drawer { transform: none; visibility: visible; transition: transform .28s cubic-bezier(.2, .8, .3, 1); }
@@ -175,4 +180,14 @@ button.wl-user-chip:hover { background: rgba(255, 255, 255, .24); }
   body.wolko-drawer-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .wolko-drawer, .wolko-drawer-backdrop, .wolko-burger span { transition: none !important; } }
+
+/* 서랍이 화면보다 길어도 끝까지 보이도록 맨 아래에 여유를 두고, 낮은 화면에서는 항목을 줄인다 */
+@media (max-width: 899px) {
+  .wolko-drawer { padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.35) transparent; }
+}
+@media (max-width: 899px) and (max-height: 820px) {
+  .wolko-drawer-item { padding: 7px 12px; }
+  .wolko-drawer-group { margin-top: 10px; }
+  .wolko-drawer-icon { width: 28px; height: 28px; }
+}
 

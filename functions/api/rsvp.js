@@ -8,6 +8,7 @@
  */
 import { parseHubSessionToken, portalSession } from '../lib/hubAccounts.js';
 import { normalizePhone } from '../lib/phone.js';
+import { canAddRsvp } from '../lib/rsvpAccess.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -35,11 +36,6 @@ async function isAdmin(request, env) {
   if (!token) return false;
   const session = await parseHubSessionToken(env.ADMIN_PASSWORD, token);
   return !!session && (session.role === 'admin' || session.role === 'master');
-}
-
-/** 신청 현황 보기는 로그인한 포탈 멤버 누구나 (삭제는 관리자만). */
-async function isMember(request, env) {
-  return !!(await portalSession(request, env));
 }
 
 function buildEmailHtml(rsvp) {
@@ -163,7 +159,8 @@ export async function onRequestPost(context) {
 
 export async function onRequestGet(context) {
   const { request, env } = context;
-  if (!await isMember(request, env)) {
+  const session = await portalSession(request, env);
+  if (!session) {
     return Response.json({ error: 'Unauthorized' }, { status: 401, headers: CORS });
   }
 
@@ -178,7 +175,7 @@ export async function onRequestGet(context) {
   rsvps.sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
   const totalGuests = rsvps.reduce((sum, r) => sum + (Number(r.partySize) || 0), 0);
 
-  return Response.json({ eventId, rsvps, totalRsvps: rsvps.length, totalGuests }, { headers: CORS });
+  return Response.json({ eventId, rsvps, totalRsvps: rsvps.length, totalGuests, canAdd: canAddRsvp(session) }, { headers: CORS });
 }
 
 export async function onRequestDelete(context) {

@@ -129,7 +129,7 @@ test('only admins can add and delete notices', async () => {
 
 test('내 오늘 할 일: 오늘 내 주방·차량 칸, 월 후반에 아직 안 낸 복음 통계 보고(제외 계정은 빼고)', async () => {
   const { mySchedule } = await import('../functions/lib/portalDashboard.js');
-  const { ownerOf, currentMonthKst } = await import('../functions/lib/gospelStats.js');
+  const { ownerOf, currentMonthKst, reportMonth } = await import('../functions/lib/gospelStats.js');
   const { env, store } = kvEnv({
     [`kitchen:day:${TODAY}`]: { lunch_prep: [{ email: 'amy@wol.org', name: 'Amy' }, { email: 'bob@wol.org', name: 'Bob' }], dinner_clean: [{ email: 'Amy@wol.org', name: 'Amy' }] },
     [`drive:slot:${TODAY}:dropoff`]: { email: 'amy@wol.org', name: 'Amy' },
@@ -140,9 +140,10 @@ test('내 오늘 할 일: 오늘 내 주방·차량 칸, 월 후반에 아직 �
   assert.deepEqual(out.kitchen, ['lunch_prep', 'dinner_clean']);
   assert.deepEqual(out.car, ['dropoff']);
   assert.equal(out.name, 'Amy Lee');
-  assert.equal(out.gospelPending, true, '28일인데 이번 달 보고가 없으면 알린다');
-  assert.equal((await mySchedule(env, amy, '2026-10-10')).gospelPending, false, '15일 전에는 알리지 않는다');
-  const month = currentMonthKst(Date.parse(`${TODAY}T12:00:00+09:00`));
+  assert.equal(out.gospelPending, true, '지난달 보고가 없으면 알린다');
+  assert.equal(out.gospelMonth, '2026-09', '10월이면 9월분을 알린다');
+  assert.equal((await mySchedule(env, amy, '2026-10-10')).gospelPending, true, '월초에도 알린다');
+  const month = reportMonth(Date.parse(`${TODAY}T12:00:00+09:00`));
   store.set(`gospel:rep:${month}:abc`, JSON.stringify({ id: 'abc', month, owner: await ownerOf(env, amy.email), scope: 'individual', location: 'mainland', values: {} }));
   assert.equal((await mySchedule(env, amy, TODAY)).gospelPending, false, '보고했으면 알리지 않는다');
   store.set('gospel:exempt:bob@wol.org', JSON.stringify({ by: 'x' }));
@@ -169,7 +170,7 @@ test('공지 번역: 올릴 때 한↔영 번역이 함께 저장되고, 번역�
     assert.deepEqual(saved.tr, { lang: 'ko', title: 'MRIC 교육', text: '모든 스태프는 영상을 시청해 주세요.' });
 
     // 이미 올라가 있던 번역 없는 공지 — 뒤에서 번역
-    const old = [{ id: 'old1', title: 'MRIC Training', body: 'Every single staff should watch.', weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }, { id: 'has', title: 't', body: 'b', tr: { lang: 'en', title: 'x', text: 'y' }, weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }];
+    const old = [{ id: 'old1', title: 'MRIC Training', body: 'Every single staff should watch.', weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }, { id: 'has', title: '제목', body: '내용', tr: { lang: 'en', title: 'x', text: 'y' }, weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }];
     store.set(NOTICES_KEY, JSON.stringify(old));
     assert.equal(await translateMissingNotices(env, { now: 1000 }), 1, '번역이 없는 것만');
     const after = JSON.parse(store.get(NOTICES_KEY));
@@ -185,4 +186,58 @@ test('공지 번역: 올릴 때 한↔영 번역이 함께 저장되고, 번역�
     assert.equal(await translateMissingNotices(env, { now: 5000 + 3700000 }), 1); assert.equal(calls, 1, '1시간이 지나면 다시 시도');
     assert.equal(await translateMissingNotices({ ...env, ANTHROPIC_API_KEY: '' }, { now: 1 }), 0, '키가 없으면 아무것도 하지 않는다');
   } finally { globalThis.fetch = realFetch; }
+});
+
+test('공지 담당 계정(esooy): 올릴 수 있고 자기가 올린 공지만 지울 수 있다 · 일반 계정은 못 올린다', async () => {
+  const { env } = kvEnv();
+  const put = (email, role) => env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: email, role, status: 'approved' }));
+  await put('esooy@wol.org', 'counselor'); await put('anna@wol.org', 'counselor'); await put(MASTER_EMAILS[0], 'master');
+  const call = async (fn, who, url, init = {}) => {
+    const token = await createHubSessionToken('secret', who[0], who[1]);
+    const res = await fn({ env, request: new Request(url, { headers: { Authorization: `Bearer ${token}` }, ...init }) });
+    return { status: res.status, body: await res.json() };
+  };
+  const estelle = ['esooy@wol.org', 'counselor'], anna = ['anna@wol.org', 'counselor'], master = [MASTER_EMAILS[0], 'master'];
+  const url = 'https://x/api/portal/notices';
+  assert.equal((await call(noticeApi.onRequestPost, anna, url, { method: 'POST', body: JSON.stringify({ body: '일반 계정' }) })).status, 403);
+  const mine = await call(noticeApi.onRequestPost, estelle, url, { method: 'POST', body: JSON.stringify({ title: '키친 안내', body: '이번 주 주방 안내' }) });
+  assert.equal(mine.status, 201); assert.equal('byEmail' in mine.body.notice, false, '응답에 이메일은 없다');
+  const adminMade = await call(noticeApi.onRequestPost, master, url, { method: 'POST', body: JSON.stringify({ body: '관리자 공지' }) });
+  // 첫 화면: 공지 담당 계정은 올리기 폼이 보이고, 자기 공지에만 삭제 버튼이 있다
+  const dash = await buildDashboard(env, { email: 'esooy@wol.org', role: 'counselor', name: 'Estelle' }, NOW);
+  assert.equal(dash.canEditNotices, true);
+  const byTitle = Object.fromEntries(dash.notices.map(n => [n.body, n.canDelete]));
+  assert.deepEqual(byTitle, { '이번 주 주방 안내': true, '관리자 공지': false });
+  assert.ok(dash.notices.every(n => !('byEmail' in n)));
+  assert.equal((await buildDashboard(env, { email: 'anna@wol.org', role: 'counselor' }, NOW)).canEditNotices, false);
+  assert.ok((await buildDashboard(env, { email: MASTER_EMAILS[0], role: 'master' }, NOW)).notices.every(n => n.canDelete), '마스터는 모두 지울 수 있다');
+  assert.equal((await call(noticeApi.onRequestDelete, estelle, `${url}?id=${adminMade.body.notice.id}`, { method: 'DELETE' })).status, 403, '남이 올린 공지는 못 지운다');
+  assert.equal((await call(noticeApi.onRequestDelete, estelle, `${url}?id=${mine.body.notice.id}`, { method: 'DELETE' })).status, 200);
+  assert.equal((await call(noticeApi.onRequestDelete, anna, `${url}?id=${adminMade.body.notice.id}`, { method: 'DELETE' })).status, 403);
+});
+
+test('공지 고치기: 제목·내용·마감일·고정을 바꾸고 번역은 새로 만든다 · 지울 수 있는 사람만', async () => {
+  const { env } = kvEnv();
+  const put = (email, role) => env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: email, role, status: 'approved' }));
+  await put('esooy@wol.org', 'counselor'); await put('anna@wol.org', 'counselor'); await put(MASTER_EMAILS[0], 'master');
+  const call = async (fn, who, init = {}, url = 'https://x/api/portal/notices') => {
+    const token = await createHubSessionToken('secret', who[0], who[1]);
+    const res = await fn({ env, request: new Request(url, { headers: { Authorization: `Bearer ${token}` }, ...init }) });
+    return { status: res.status, body: await res.json() };
+  };
+  const estelle = ['esooy@wol.org', 'counselor'], anna = ['anna@wol.org', 'counselor'], master = [MASTER_EMAILS[0], 'master'];
+  const mine = (await call(noticeApi.onRequestPost, estelle, { method: 'POST', body: JSON.stringify({ title: '처음', body: '처음 내용', week: 'next' }) })).body.notice;
+  const others = (await call(noticeApi.onRequestPost, master, { method: 'POST', body: JSON.stringify({ body: '관리자 공지' }) })).body.notice;
+  const edit = (who, id, extra) => call(noticeApi.onRequestPost, who, { method: 'POST', body: JSON.stringify({ action: 'edit', id, ...extra }) });
+  assert.equal((await edit(anna, mine.id, { body: '남이 고침' })).status, 403);
+  assert.equal((await edit(estelle, others.id, { body: '남의 공지' })).status, 403, '공지 담당 계정은 남이 올린 공지를 못 고친다');
+  assert.equal((await edit(estelle, mine.id, { body: ' ' })).status, 400);
+  assert.equal((await edit(estelle, 'nope', { body: 'x' })).status, 404);
+  const ok = await edit(estelle, mine.id, { title: '바뀐 제목', body: '바뀐 내용', dueDate: '2026-11-05', pinned: true });
+  assert.equal(ok.status, 200);
+  assert.deepEqual([ok.body.notice.title, ok.body.notice.body, ok.body.notice.dueDate, ok.body.notice.pinned], ['바뀐 제목', '바뀐 내용', '2026-11-05', true]);
+  assert.equal(ok.body.notice.weekStart, mine.weekStart, '올린 주는 그대로');
+  assert.equal('byEmail' in ok.body.notice, false);
+  assert.equal((await edit(master, others.id, { body: '마스터가 고침' })).status, 200, '관리자는 모두 고칠 수 있다');
+  assert.equal(JSON.parse(await env.CAMP_KV.get('portal:notices'))?.length, 2);
 });

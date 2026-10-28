@@ -35,6 +35,7 @@ export function parseTranslations(raw, ids) {
 export async function translateTasks(env, { ids, limit = 40, fetchImpl } = {}) {
   if (!env.DB || !translateConfigured(env)) return { configured: translateConfigured(env), translated: 0, remaining: null };
   try {
+    await healTitleCols(env);
     const sel = `SELECT id, title, titleKo, titleEn FROM tasks WHERE deletedAt IS NULL AND (titleKo = '' OR titleEn = '')`;
     let rows;
     if (ids && ids.length) rows = (await env.DB.prepare(`${sel} AND id IN (${ids.map(() => '?').join(',')})`).bind(...ids).all()).results;
@@ -47,9 +48,20 @@ export async function translateTasks(env, { ids, limit = 40, fetchImpl } = {}) {
     const got = parseTranslations(out, items.map(i => i.id)); let n = 0;
     for (const it of items) {
       const t = got.get(it.id); if (!t) continue;
-      await env.DB.prepare(`UPDATE tasks SET ${it.to === 'en' ? 'titleEn' : 'titleKo'} = ?2 WHERE id = ?1`).bind(it.id, t).run(); n++;
+      // 번역한 쪽과 함께 처음 쓴 언어 칸도 채워서, 한 번 번역한 업무가 다시 "번역 없음"으로 세어지지 않게 한다
+      await env.DB.prepare(`UPDATE tasks SET ${it.to === 'en' ? 'titleEn' : 'titleKo'} = ?2, ${it.to === 'en' ? 'titleKo' : 'titleEn'} = title WHERE id = ?1`).bind(it.id, t).run(); n++;
     }
     return { configured: true, translated: n, remaining: await remaining(env) };
   } catch { return { configured: true, translated: 0, remaining: null, failed: true }; }
+}
+/**
+ * 한쪽 언어 칸만 채워진 업무를 정리한다: 처음 쓴 제목(title)이 그 언어 칸에도 들어가 있게 한다.
+ * (SQL 로 한꺼번에 넣은 업무는 두 칸이 모두 비어 있고, 예전 번역은 번역된 쪽 칸만 채워서 "번역이 없는 업무"로 계속 세어졌다)
+ */
+export async function healTitleCols(env) {
+  try {
+    await env.DB.prepare(`UPDATE tasks SET titleKo = title WHERE deletedAt IS NULL AND titleKo = '' AND titleEn <> '' AND title GLOB '*[가-힣]*'`).run();
+    await env.DB.prepare(`UPDATE tasks SET titleEn = title WHERE deletedAt IS NULL AND titleEn = '' AND titleKo <> '' AND NOT (title GLOB '*[가-힣]*')`).run();
+  } catch { /* 표가 아직 없는 DB */ }
 }
 export async function remaining(env) { try { return (await env.DB.prepare(`SELECT COUNT(*) AS n FROM tasks WHERE deletedAt IS NULL AND (titleKo = '' OR titleEn = '')`).first()).n; } catch { return null; } }

@@ -1,9 +1,9 @@
 /**
  * GET  /api/admin/registrations        — list all registrations
  * GET  /api/admin/registrations?campId — filter by camp
- * DELETE /api/admin/registrations?regId=&campId= — 신청을 휴지통으로 이동 (30일 보관 후 자동 삭제)
- * GET  /api/admin/registrations?trash=1 — 휴지통 목록 (관리자/마스터)
- * POST /api/admin/registrations         — 휴지통 복원 / 영구 삭제 (관리자/마스터)
+ * DELETE /api/admin/registrations?regId=&campId= — 신청을 휴지통으로 이동 (30일 보관 후 자동 삭제) (관리자/마스터 + 신청자 목록 편집 담당)
+ * GET  /api/admin/registrations?trash=1 — 휴지통 목록 (관리자/마스터 + 신청자 목록 편집 담당)
+ * POST /api/admin/registrations         — 휴지통 복원 (관리자/마스터 + 신청자 목록 편집 담당) / 영구 삭제 (관리자/마스터만)
  *   body: { action: 'restore'|'purge', regId, campId }
  * PATCH /api/admin/registrations       — 예약금 수납 or 최종 확정
  *   body: { regId, campId, action: 'deposit'|'confirm', campTitleKo, campDateKo }
@@ -19,6 +19,7 @@ import { sendAlimtalk } from '../../lib/solapi.js';
 import { sendApplicantNotice } from '../../lib/applicantNotice.js';
 import { parseHubSessionToken, portalSession } from '../../lib/hubAccounts.js';
 import { ACCOUNTANT_EMAILS } from '../../lib/expenses.js';
+import { isCampRegistrationEditor } from '../../lib/campRegistrationAccess.js';
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -77,6 +78,13 @@ async function verifyAdmin(request, env) {
   if (!token) return false;
   const session = await parseHubSessionToken(env.ADMIN_PASSWORD, token);
   return !!session && (session.role === 'admin' || session.role === 'master');
+}
+
+/** 신청 삭제(휴지통 이동)·휴지통 보기·복원: 관리자/마스터, 또는 신청자 목록 편집 담당(functions/lib/campRegistrationAccess.js). 영구 삭제는 verifyAdmin 만. */
+async function verifyEditor(request, env) {
+  if (await verifyAdmin(request, env)) return true;
+  const session = await portalSession(request, env);
+  return !!session && isCampRegistrationEditor(session.email);
 }
 
 /** 잔금까지 확인되어 최종 확정된 신청인지 여부 */
@@ -253,7 +261,7 @@ export async function onRequestGet(context) {
   const campId = url.searchParams.get('campId');
 
   if (url.searchParams.get('trash')) {
-    if (!await verifyAdmin(request, env)) {
+    if (!await verifyEditor(request, env)) {
       return Response.json({ error: '휴지통은 관리자만 볼 수 있습니다.' }, { status: 403, headers: CORS });
     }
     try {
@@ -325,7 +333,7 @@ export async function onRequestGet(context) {
 
 export async function onRequestDelete(context) {
   const { env, request } = context;
-  if (!await verifyAdmin(request, env)) {
+  if (!await verifyEditor(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
   }
 
@@ -376,7 +384,7 @@ export async function onRequestDelete(context) {
  */
 export async function onRequestPost(context) {
   const { env, request } = context;
-  if (!await verifyAdmin(request, env)) {
+  if (!await verifyEditor(request, env)) {
     return Response.json({ error: '인증이 필요합니다.' }, { status: 401, headers: CORS });
   }
 
@@ -384,6 +392,9 @@ export async function onRequestPost(context) {
     const { action, regId, campId } = await request.json();
     if (!regId || !campId || !['restore', 'purge'].includes(action)) {
       return Response.json({ error: 'action, regId, campId가 필요합니다.' }, { status: 400, headers: CORS });
+    }
+    if (action === 'purge' && !await verifyAdmin(request, env)) {
+      return Response.json({ error: '영구 삭제는 관리자만 할 수 있습니다.' }, { status: 403, headers: CORS });
     }
     const tKey = trashKey(campId, regId);
     const trashed = await env.CAMP_KV.get(tKey, 'json');
