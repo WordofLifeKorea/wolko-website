@@ -35,8 +35,8 @@ export async function onRequestGet({ env, request }) {
   ]);
   const here = new Map(presence.map((p) => [p.email.toLowerCase(), p])), av = new Map(avatars.map((a) => [a.email.toLowerCase(), a.json]));
   const seen = new Set(roster.map((r) => r.email.toLowerCase()));
-  // 코드에 고정된 관리자는 명단(DB)에 없어도 자기 자리가 있다
-  const extra = await Promise.all(FIXED_ADMIN_EMAILS.filter((e) => !seen.has(e)).map(async (e) => ({ email: e, name: (await safe(() => getAccount(env, e), null))?.name || e.split('@')[0] })));
+  // 코드에 고정된 관리자는 명단(DB)에 없어도, 지금 접속해 있거나 캐릭터를 정해 둔 경우에만 자리를 보인다(항상 빈 책상이 따로 생기지 않게)
+  const extra = await Promise.all(FIXED_ADMIN_EMAILS.filter((e) => !seen.has(e) && (here.has(e) || av.has(e))).map(async (e) => ({ email: e, name: (await safe(() => getAccount(env, e), null))?.name || e.split('@')[0] })));
   const list = roster.concat(extra);
   const members = list.filter((r) => { const p = here.get(r.email.toLowerCase()); return !(p && p.hidden) || r.email.toLowerCase() === me; }).map((r) => {
     const e = r.email.toLowerCase(), p = here.get(e);

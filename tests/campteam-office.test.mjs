@@ -64,3 +64,16 @@ test('팀 사무실: 0022 가 아직 적용되지 않은 DB 에서도 오류 없
   const j = await J(r); assert.ok(j.members.length >= 1 && j.members.every((m) => !m.seated));
   assert.equal((await call('onRequestPost', env, U.mem, {})).status, 200);
 });
+
+test('팀 사무실: 명단에 없는 고정 관리자는 접속해 있을 때만 자리가 보이고, 평소에는 빈 책상이 따로 생기지 않는다', async () => {
+  const { FIXED_ADMIN_EMAILS } = await import('../functions/lib/campteamAuth.js');
+  const env = makeEnv(fakeD1()), ids = FIXED_ADMIN_EMAILS.map((e) => publicId(e)), rosterIds = (await env.DB.prepare('SELECT email FROM camp_members WHERE active = 1').all()).results.map((r) => publicId(r.email));
+  const extraIds = ids.filter((i) => !rosterIds.includes(i));
+  let j = await J(await call('onRequestGet', env, U.mem));
+  assert.ok(extraIds.length > 0, '시험용 명단에는 고정 관리자가 없다');
+  assert.ok(j.members.every((m) => !extraIds.includes(m.id)), '평소에는 고정 관리자의 빈 책상이 없다');
+  const email = FIXED_ADMIN_EMAILS.find((e) => extraIds.includes(publicId(e)));
+  await env.DB.prepare('INSERT INTO office_presence (email,lastSeen,hidden) VALUES (?1,?2,0)').bind(email, new Date().toISOString()).run();
+  j = await J(await call('onRequestGet', env, U.mem));
+  assert.ok(j.members.some((m) => m.id === publicId(email) && m.seated), '접속하면 자리가 생기고 앉는다');
+});
