@@ -372,3 +372,17 @@
   .gs-tabs { display: flex; width: 100%; box-sizing: border-box; }
   .gs-tab { flex: 1 1 0; justify-content: center; padding: 0 8px !important; }
 }
+
+/* 숫자 카드 안의 도넛 — 막대 대신 작은 원형 그래프 하나와 이름·숫자 세 줄 */
+.gc-donutbox { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.gc-donutsvg { flex: 0 0 auto; width: 88px; height: 88px; transform: rotate(-90deg); overflow: visible; }
+.gc-donutsvg .gc-seg { min-width: 0; flex-basis: auto; border-radius: 0; cursor: pointer; transition: stroke-dasharray 1s cubic-bezier(.2, .8, .2, 1), opacity .15s, stroke-width .15s; }
+.gc-donutsvg .gc-seg.is-on { stroke-width: 6.6; }
+.gc-donutbox .gc-legend { flex: 1 1 112px; min-width: 0; margin: 0; gap: 2px; }
+.gc-donutbox .gc-legend li { grid-template-columns: 10px minmax(0, 1fr) auto; gap: 9px; padding: 5px 4px; font-size: 13.5px; }
+.gc-donutbox .gc-legend i { width: 10px; height: 10px; border-radius: 50%; }
+.gc-donutbox .gc-legend span { overflow: visible; text-overflow: clip; color: color-mix(in srgb, var(--kc, #0a6a8f) 40%, #3b525e); font-weight: 700; }
+.gc-donutbox .gc-legend b { color: var(--ink); font-weight: 800; }
+.gs-kpi .gc-break { border-top: 0; padding-top: 2px; margin-top: 2px; }
+@media (max-width: 640px) { .gc-donutsvg { width: 92px; height: 92px; } .gc-donutbox { flex-wrap: nowrap; gap: 18px; } }
+@media (prefers-reduced-motion: reduce) { .gc-donutsvg .gc-seg { transition: none; } }

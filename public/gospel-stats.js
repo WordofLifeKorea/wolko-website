@@ -194,16 +194,11 @@
     var camps = (data.campAuto || []).filter(function (c) { return tab === 'all' || c.location === tab; });
     var chips = '', note = '';
     if (!camps.length) { box.innerHTML = chips + note + '<p class="gs-empty">' + esc(t('campAutoEmpty')) + '</p>'; return; }
-    var edit = !!data.canEditStaff;
     var counted = camps.filter(function (c) { return c.counted !== false; });
     var sum = counted.reduce(function (n, c) { n.campers += c.campers; n.staff += c.staff; n.salv += c.salvations; n.ded += c.dedications; return n; }, { campers: 0, staff: 0, salv: 0, ded: 0 });
     box.innerHTML = chips + note + '<div class="gs-tablewrap"><table class="gs-table gs-ctable"><thead><tr><th>' + esc(t('caCamp')) + '</th>' + (yearly ? '<th>' + esc(t('caMonth')) + '</th>' : '') + '<th>' + esc(t('caCampers')) + '</th><th>' + esc(t('caStaff')) + '</th><th>' + esc(t('caSalv')) + '</th><th>' + esc(t('caDed')) + '</th></tr></thead><tbody>'
       + camps.map(function (c) {
-        var extra = c.staffExtra || 0, auto = c.staffAuto || 0;
-        var split = '<small class="gs-staffsplit">' + esc(t('caStaffSplit', auto, extra)) + '</small>';
-        var staff = edit
-          ? '<div class="gs-staffcell"><b class="gs-staffnum">' + num(c.staff) + '</b>' + split + '<div class="gs-step gs-step-sm"><button type="button" class="gs-stepbtn" data-staff="-1" data-camp="' + esc(c.id) + '" data-cur="' + extra + '" aria-label="' + esc(t('minus')) + '">−</button><b>' + num(extra) + '</b><button type="button" class="gs-stepbtn" data-staff="1" data-camp="' + esc(c.id) + '" data-cur="' + extra + '" aria-label="' + esc(t('plus')) + '">+</button></div></div>'
-          : '<div class="gs-staffcell"><b class="gs-staffnum">' + num(c.staff) + '</b>' + (extra ? split : '') + '</div>';
+        var staff = '<b class="gs-staffnum">' + num(c.staff) + '</b>';
         var pending = c.counted === false;
         var badge = pending ? ' <span class="gs-pendbadge" title="' + esc(t('caPendingTip')) + '">' + esc(t('caPending', t('mdShort', c.endDate))) + '</span>' : '';
         return '<tr' + (pending ? ' class="gs-pending"' : '') + '><td><strong>' + esc(lang === 'en' ? c.titleEn : c.titleKo) + '</strong> <span class="gs-pill ' + c.location + '">' + esc(c.location === 'jeju' ? t('tabJeju') : t('tabMainland')) + '</span>' + badge + '</td>' + (yearly ? '<td>' + esc(t('monthLabel', c.month || '')) + '</td>' : '') + '<td class="gs-total">' + (pending ? '–' : num(c.campers)) + '</td><td>' + (pending ? '–' : staff) + '</td><td>' + (pending ? '–' : num(c.salvations)) + '</td><td>' + (pending ? '–' : num(c.dedications)) + '</td></tr>';
@@ -590,19 +585,6 @@
       if (!res.ok) throw new Error(body.error || t('denied'));
       clearCache(); await load(viewKey()); say(t('subSaved'));
     } catch (error) { say(error.message); b.disabled = false; }
-  });
-  $('campAuto').addEventListener('click', async function (e) {
-    var b = e.target.closest('[data-staff]'); if (!b || b.disabled) return;
-    var next = Math.max(0, Number(b.dataset.cur) + Number(b.dataset.staff));
-    document.querySelectorAll('#campAuto [data-staff]').forEach(function (x) { x.disabled = true; });
-    try {
-      var res = await fetch('/api/portal/gospel-camps', { method: 'POST', headers: headers(true), body: JSON.stringify({ campId: b.dataset.camp, staff: next }) });
-      var body = await res.json().catch(function () { return {}; });
-      if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); show('login'); return; }
-      if (!res.ok) throw new Error(body.error || t('denied'));
-      clearCache(); await load(viewKey());
-      say(t('caStaffSaved'));
-    } catch (error) { say(error.message); renderCampAuto(); }
   });
 
   /** MRIC 레이아웃은 새 창으로 — 지금 보고 있는 달(연간 보기면 지난달)과 평택·제주·통합 탭을 그대로 가져간다 */

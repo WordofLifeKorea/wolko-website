@@ -72,7 +72,6 @@ async function yearView(env, request, session, url, current) {
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
     summary, ytd: { year, from: months[0], to: months[months.length - 1], summary },
     campAuto: memo.flatMap(x => x.camps.map(c => ({ ...c, month: x.month }))),
-    canEditStaff: review,
     churchEvents: memo.flatMap(x => x.churchEvents.map(e => ({ ...e, month: x.month }))),
     trend: memo.map(x => ({ month: x.month, ...x.summary })),
     mine: [],
@@ -116,7 +115,6 @@ export async function onRequestGet({ env, request }) {
     schema: { sections: GOSPEL_SECTIONS, locations: LOCATIONS, scopes: SCOPES },
     summary: summaries.get(month),
     campAuto: camps,
-    canEditStaff: review,
     churchEvents: churchEvents(reports),
     trend,
     mine: reports.filter(r => r.owner === owner && r.scope !== 'ministry').map(({ owner: _o, ...mine }) => mine),   // 내 보고만 — 표식은 내보내지 않는다

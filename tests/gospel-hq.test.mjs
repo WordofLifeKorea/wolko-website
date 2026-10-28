@@ -196,3 +196,13 @@ test('복음 통계 CSS: 중괄호가 짝이 맞는다 (하나가 빠지면 그 
   for (const ch of css) { depth += (ch === '{') - (ch === '}'); assert.ok(depth >= 0, '닫는 중괄호가 더 많다'); }
   assert.equal(depth, 0);
 });
+
+test('복음 통계 카드 그래프: 가로 막대 대신 도넛(원형) — 조각은 합이 100이 되는 pathLength 기준이고 이름·숫자 목록이 함께 나온다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const js = readFileSync(new URL('../public/gospel-charts.js', import.meta.url), 'utf8');
+  assert.match(js, /class="gc-donutsvg"/); assert.match(js, /pathLength="100"/);
+  assert.doesNotMatch(js, /gc-track/);
+  // 조각 길이 계산(복음 들은 인원 6 / 21 / 30): 모두 더하면 100 - 간격
+  const total = 57, gap = 1.6, lens = [6, 21, 30].map(v => v / total * 100 - gap);
+  assert.ok(Math.abs(lens.reduce((a, b) => a + b, 0) - (100 - 3 * gap)) < 1e-9);
+});

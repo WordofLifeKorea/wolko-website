@@ -76,34 +76,26 @@ test('월 요약에 캠프 자동 집계(캠퍼 + 스태프)가 평택·제주�
   await put('2025-jeju-english', 'e', { registrationType: 'group', status: 'confirmed', participants: [{ name: '가', dedicated: true }, { name: '나' }] });
   await put('2025-test-camp', 'z', { status: 'confirmed' });
 
-  // 스태프는 마스터·관리자만 입력
-  assert.equal((await GCamps.onRequestPost({ env, request: await req('/api/portal/gospel-camps', anna, { method: 'POST', body: JSON.stringify({ campId: '2025-inland-union', staff: 4 }) }) })).status, 403);
-  assert.equal((await GCamps.onRequestPost({ env, request: await req('/api/portal/gospel-camps', null, { method: 'POST', body: '{}' }) })).status, 401);
-  assert.equal((await GCamps.onRequestPost({ env, request: await req('/api/portal/gospel-camps', admin, { method: 'POST', body: JSON.stringify({ campId: 'nope', staff: 4 }) }) })).status, 404);
-  assert.equal((await GCamps.onRequestPost({ env, request: await req('/api/portal/gospel-camps', admin, { method: 'POST', body: JSON.stringify({ campId: '2025-inland-union', staff: -2 }) }) })).status, 400);
-  const ok = await GCamps.onRequestPost({ env, request: await req('/api/portal/gospel-camps', admin, { method: 'POST', body: JSON.stringify({ campId: '2025-inland-union', staff: '4' }) }) });
-  assert.equal(ok.status, 200);
+  // 스태프도 확정된 신청에서 자동으로 센다 — 직접 입력하는 API 는 없다
+  assert.equal(typeof GCamps.onRequestPost, 'undefined');
 
   const res = await G.onRequestGet({ env, request: await req('/api/portal/gospel-stats?month=2025-10', anna) });
   const data = await res.json();
-  assert.equal(data.canEditStaff, false);
+  assert.equal(data.canEditStaff, undefined, '스태프 직접 입력 기능은 없다');
   assert.equal(data.campAuto.length, 2, '시험 캠프와 다른 달 캠프는 빠진다');
   const union = data.campAuto.find(c => c.id === '2025-inland-union');
-  assert.deepEqual([union.campers, union.staff, union.staffAuto, union.staffExtra, union.salvations, union.dedications, union.location], [2, 5, 1, 4, 1, 1, 'mainland'], '스태프 = 확정 신청 1 + 추가 4');
-  assert.equal(data.summary.mainland.campAttendance, 7, '확정 캠퍼 2 + 스태프 5(확정 신청 1 + 추가 4)');
+  assert.deepEqual([union.campers, union.staff, union.salvations, union.dedications, union.location], [2, 1, 1, 1, 'mainland'], '스태프 = 확정된 스태프 신청(자동)');
+  assert.equal(data.summary.mainland.campAttendance, 3, '확정 캠퍼 2 + 확정 스태프 1');
   assert.equal(data.summary.jeju.campAttendance, 2);
-  assert.equal(data.summary.all.campAttendance, 9);
+  assert.equal(data.summary.all.campAttendance, 5);
   assert.equal(data.summary.all.campCount, 2);
   assert.equal(data.summary.all.campSalvations, 1);
   assert.equal(data.summary.all.campDedications, 2);
   assert.equal(/"(가|나|다)"/.test(JSON.stringify(data)), false, '참가자 이름 같은 개인정보는 응답에 없다');
-  const adminView = await (await G.onRequestGet({ env, request: await req('/api/portal/gospel-stats?month=2025-10', admin) })).json();
-  assert.equal(adminView.canEditStaff, true);
-
   // 스태프를 0 으로 되돌리면 지워지고, 캠퍼도 없는 캠프는 목록에서 빠진다
   await env.CAMP_KV.delete('gospel:campauto:2025-jeju-english');
   const trendMonth = data.trend.find(t => t.month === '2025-10');
-  assert.equal(trendMonth.all.campAttendance, 9, '6개월 표에도 같은 자동 집계가 들어간다');
+  assert.equal(trendMonth.all.campAttendance, 5, '6개월 표에도 같은 자동 집계가 들어간다');
   const julyMonth = (await (await G.onRequestGet({ env, request: await req('/api/portal/gospel-stats?month=2025-07', anna) })).json());
   assert.equal(julyMonth.campAuto.length, 0, '7월 캠프는 확정 캠퍼가 없어 목록에 없다');
 });
@@ -119,7 +111,7 @@ test('지난 캠프까지 모두: 달이 달라도 모든 캠프가 최근 시�
   const res = await (await GCamps.onRequestGet({ env, request: await req('/api/portal/gospel-camps', anna) })).json();
   assert.deepEqual(res.camps.map(c => [c.id, c.month]), [['2025-inland-union', '2025-10'], ['2025-inland-english-junior', '2025-07']], '확정 캠퍼가 없는 캠프(제주)는 뺀다');
   assert.equal(res.camps[1].salvations, 1);
-  assert.equal(res.canEditStaff, false);
+  assert.equal(res.canEditStaff, undefined);
 });
 
 test('캠프 끝나는 날 계산: 실제 일정 글 형식들', () => {
