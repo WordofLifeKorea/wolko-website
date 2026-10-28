@@ -24,20 +24,25 @@ export async function readNotices(env) {
   return Array.isArray(list) ? list.filter(n => n && n.id && n.body) : [];
 }
 
-/** 이번 주(일요일부터 새 주) 공지 — 고정(pinned) 공지는 먼저, 나머지는 최근 순 */
-export function noticesForWeek(list, weekStart) {
+/** 이번 주(일요일부터 새 주) 공지 — 고정(pinned) 공지는 먼저, 나머지는 최근 순.
+ *  마감일(dueDate)이 아직 지나지 않은 지난 주 공지도 마감일까지는 계속 보여 준다(today 를 넘겼을 때). */
+export function noticesForWeek(list, weekStart, today = '') {
   return list
-    .filter(n => n.weekStart === weekStart)
+    .filter(n => n.weekStart === weekStart || (today && n.dueDate && n.dueDate >= today && n.weekStart < weekStart))
     .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || String(b.createdAt).localeCompare(String(a.createdAt)));
 }
 
-/** 공지 입력 정리 — 제목(선택)·내용(필수)·적용 주(이번 주/다음 주)·고정 여부 */
+const validYmd = v => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`)) && addDays(v, 0) === v;
+
+/** 공지 입력 정리 — 제목(선택)·내용(필수)·적용 주(이번 주/다음 주)·마감일(선택)·고정 여부 */
 export function parseNoticeInput(body, today) {
   const text = cleanBlock(body?.body, 600);
   if (!text) return { error: '공지 내용을 입력해 주세요.' };
   const thisWeek = currentWeekStart(today);
   const weekStart = body?.week === 'next' ? addDays(thisWeek, 7) : thisWeek;
-  return { value: { title: clean(body?.title, 60), body: text, weekStart, pinned: body?.pinned === true } };
+  const dueRaw = clean(body?.dueDate, 10);
+  if (dueRaw && !validYmd(dueRaw)) return { error: '마감일 형식이 올바르지 않습니다.' };
+  return { value: { title: clean(body?.title, 60), body: text, weekStart, dueDate: dueRaw, pinned: body?.pinned === true } };
 }
 
 /** 오늘 키친 듀티 — 식사별 { meal, prep[], clean[] }, 신청이 있는 식사만 */
@@ -136,7 +141,7 @@ export async function buildDashboard(env, session, now = Date.now()) {
   const weekStart = currentWeekStart(today);
   const settle = async fn => { try { return await fn(); } catch (error) { console.error('dashboard piece failed:', error.message); return null; } };
   const [notices, kitchen, car, events, churches] = await Promise.all([
-    settle(async () => noticesForWeek(await readNotices(env), weekStart)),
+    settle(async () => noticesForWeek(await readNotices(env), weekStart, today)),
     settle(() => kitchenToday(env, today)),
     settle(() => carToday(env, today)),
     settle(() => upcomingEvents(env, today)),

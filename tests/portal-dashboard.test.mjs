@@ -32,6 +32,23 @@ test('notice input: body required, this/next week, trimmed', () => {
   assert.equal(parseNoticeInput({ body: 'x', title: '  T  ', pinned: true }, TODAY).value.title, 'T');
 });
 
+test('notice due date: optional, must be a real date, and keeps a notice visible after its week until the due date', () => {
+  assert.equal(parseNoticeInput({ body: 'x' }, TODAY).value.dueDate, '');
+  assert.equal(parseNoticeInput({ body: 'x', dueDate: ' 2026-11-05 ' }, TODAY).value.dueDate, '2026-11-05');
+  assert.ok(parseNoticeInput({ body: 'x', dueDate: '2026-02-30' }, TODAY).error, '없는 날짜');
+  assert.ok(parseNoticeInput({ body: 'x', dueDate: '11/5' }, TODAY).error, '형식이 다르면 거절');
+  const list = [
+    { id: 'old-due', body: 'a', weekStart: '2026-10-19', dueDate: '2026-10-30', createdAt: '2026-10-20T00:00:00Z' },
+    { id: 'old-over', body: 'b', weekStart: '2026-10-19', dueDate: '2026-10-25', createdAt: '2026-10-20T00:00:00Z' },
+    { id: 'old-none', body: 'c', weekStart: '2026-10-19', createdAt: '2026-10-20T00:00:00Z' },
+    { id: 'now', body: 'd', weekStart: '2026-10-26', createdAt: '2026-10-27T00:00:00Z' },
+  ];
+  assert.deepEqual(noticesForWeek(list, '2026-10-26').map(n => n.id), ['now'], 'today 를 안 주면 이번 주 공지만');
+  assert.deepEqual(noticesForWeek(list, '2026-10-26', TODAY).map(n => n.id).sort(), ['now', 'old-due'], '마감일이 안 지난 지난 주 공지는 계속 보인다');
+  assert.deepEqual(noticesForWeek(list, '2026-10-26', '2026-10-30').map(n => n.id).sort(), ['now', 'old-due'], '마감일 당일까지');
+  assert.deepEqual(noticesForWeek(list, '2026-10-26', '2026-10-31').map(n => n.id), ['now'], '마감일 다음 날부터는 사라진다');
+});
+
 test('kitchen duty today lists only meals that have people', async () => {
   const { env } = kvEnv({ [`kitchen:day:${TODAY}`]: { lunch_prep: [{ email: 'a@b.c', name: 'Amy' }], dinner_clean: [{ email: 'd@e.f', name: 'Dan' }, { email: 'g@h.i', name: 'Eve' }] } });
   const out = await kitchenToday(env, TODAY);
