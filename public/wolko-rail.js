@@ -52,7 +52,7 @@
 
   function syncLabels() {
     var lang = currentLang();
-    document.querySelectorAll('.wolko-rail-item-label[data-ko], .wolko-rail-group[data-ko], .wl-logout[data-ko]').forEach(function (el) {
+    document.querySelectorAll('.wolko-rail-item-label[data-ko], .wolko-rail-group[data-ko], .wl-logout[data-ko], .wolko-drawer-label[data-ko], .wolko-drawer-group[data-ko]').forEach(function (el) {
       el.textContent = lang === 'en' ? el.getAttribute('data-en') : el.getAttribute('data-ko');
     });
   }
@@ -263,6 +263,43 @@
     toggle.parentNode.insertBefore(btn, toggle.nextSibling);
   }
 
+  // 좁은 화면(900px 미만)에서는 레일이 숨으므로, 헤더 맨 오른쪽의 햄버거 버튼으로 같은 도구 목록을 오른쪽에서 밀려 나오는 서랍으로 연다
+  function mountMobileMenu(path) {
+    if (document.querySelector('.wolko-burger')) return;
+    var ko = currentLang() !== 'en';
+    var drawer = document.createElement('nav');
+    drawer.className = 'wolko-drawer'; drawer.id = 'wolkoDrawer'; drawer.setAttribute('aria-label', 'WOLKO Portal');
+    var html = '<div class="wolko-drawer-head"><img src="/images/WOLKO Circle.png" alt=""><b>WOLKO Portal</b><button type="button" class="wolko-drawer-close" aria-label="Close menu">×</button></div>';
+    GROUPS.forEach(function (g) {
+      html += '<div class="wolko-drawer-group" data-ko="' + g.ko + '" data-en="' + g.en + '"></div>';
+      TOOLS.filter(function (tool) { return tool.group === g.id; }).forEach(function (tool) {
+        var active = path === tool.href || (tool.href === '/portal/car-drive' && (path === '/portal/car' || path === '/portal/car-log'));
+        html += '<a class="wolko-drawer-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" style="--rail-color:' + tool.color + '"><span class="wolko-drawer-icon">' + svg(tool.icon, 15) + '</span><span class="wolko-drawer-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
+      });
+    });
+    html += '<a class="wolko-drawer-item wolko-drawer-hub" href="/portal"><span class="wolko-drawer-icon">' + svg(HUB_ICON, 15) + '</span><span class="wolko-drawer-label" data-ko="' + HUB_LABEL.ko + '" data-en="' + HUB_LABEL.en + '"></span></a>';
+    drawer.innerHTML = html;
+    var backdrop = document.createElement('div');
+    backdrop.className = 'wolko-drawer-backdrop';
+    var burger = document.createElement('button');
+    burger.type = 'button'; burger.className = 'wolko-burger'; burger.setAttribute('aria-controls', 'wolkoDrawer'); burger.setAttribute('aria-expanded', 'false'); burger.setAttribute('aria-label', ko ? '메뉴 열기' : 'Open menu');
+    burger.innerHTML = '<span></span><span></span><span></span>';
+    var header = document.querySelector('body > header');
+    if (header) header.appendChild(burger); else { burger.classList.add('is-floating'); document.body.appendChild(burger); }
+    document.body.appendChild(drawer); document.body.appendChild(backdrop);
+    function toggle(open) {
+      document.body.classList.toggle('wolko-drawer-open', open);
+      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      burger.setAttribute('aria-label', currentLang() === 'en' ? (open ? 'Close menu' : 'Open menu') : (open ? '메뉴 닫기' : '메뉴 열기'));
+    }
+    burger.addEventListener('click', function () { toggle(!document.body.classList.contains('wolko-drawer-open')); });
+    backdrop.addEventListener('click', function () { toggle(false); });
+    drawer.querySelector('.wolko-drawer-close').addEventListener('click', function () { toggle(false); });
+    drawer.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('a')) toggle(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') toggle(false); });
+    window.addEventListener('resize', function () { if (window.innerWidth >= 900) toggle(false); });
+  }
+
   function init() {
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
     checkPasswordReset();
@@ -293,6 +330,7 @@
     rail.innerHTML = html;
     document.body.insertBefore(rail, document.body.firstChild);
     document.body.classList.add('wolko-rail-active');
+    mountMobileMenu(path);
     syncLabels();
     syncHeadHeight();
     window.addEventListener('resize', syncHeadHeight);
