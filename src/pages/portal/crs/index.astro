@@ -127,6 +127,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     background-repeat:no-repeat; background-position:right .5rem center;
   }
   .filter-select[hidden] { display:none; }
+  .campus-seg { flex:0 0 auto; display:inline-flex; height:40px; padding:3px; box-sizing:border-box; border-radius:12px; background:#e3edf1; }
+  :root:root .campus-seg button { min-height:0 !important; height:100%; border:0; border-radius:9px; padding:0 .95rem; background:transparent; color:#4d6872; font-size:.88rem; font-weight:800; white-space:nowrap; cursor:pointer; transition:background .18s, color .18s, box-shadow .18s; }
+  :root:root .campus-seg button.on { background:#fff; color:#004f68; box-shadow:0 4px 10px -6px rgba(0,60,80,.55); }
+  .campus-seg button span { margin-left:.25rem; color:#7d939c; font-size:.75rem; font-weight:700; }
   .sort-seg { flex:0 0 auto; display:inline-flex; height:34px; border:1px solid #cedcdf; border-radius:9px; overflow:hidden; background:#fff; }
   :root:root .sort-seg button { min-height:0 !important; height:100%; border:0; border-radius:0; padding:0 .8rem; background:transparent; color:#4d6872; font-size:.78rem; font-weight:700; white-space:nowrap; cursor:pointer; }
   :root:root .sort-seg button + button { border-left:1px solid #dde7ea; }
@@ -899,7 +903,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       pastor_phone: '목사님 연락처', pastor_phone_ph: '예: 010-1234-5678',
       denomination_label: '교단', denomination_ph: '교단 선택 또는 입력',
       missionary_label: '담당 선교사', missionary_ph: '담당 선교사 선택 또는 입력',
-      filter_all: '전체', sort_label: '정렬', sort_number: '번호순', sort_visit: '방문 오래된 순', sort_visit_short: '오래된 방문순',
+      filter_all: '전체', campus_wolko: '평택', campus_jeju: '제주', campus_label: '지역', sort_label: '정렬', sort_number: '번호순', sort_visit: '방문 오래된 순', sort_visit_short: '오래된 방문순',
       visit_date: '방문 날짜', location: '시 / 도', region_ph: '-- 시/도 선택 --',
       district: '시 / 군 / 구', district_ph: '-- 시/도를 먼저 선택하세요 --', district_ph_select: '-- 시/군/구 선택 --',
       purpose: '방문 목적', purpose_ph: '-- 방문 목적 선택 --',
@@ -956,7 +960,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       pastor_phone: 'Pastor\'s Phone', pastor_phone_ph: 'e.g. 010-1234-5678',
       denomination_label: 'Denomination', denomination_ph: 'Select or type a denomination',
       missionary_label: 'Assigned Missionary', missionary_ph: 'Select or type a missionary',
-      filter_all: 'All', sort_label: 'Sort', sort_number: 'By number', sort_visit: 'Longest since visit', sort_visit_short: 'Oldest visit',
+      filter_all: 'All', campus_wolko: 'Pyeongtaek', campus_jeju: 'Jeju', campus_label: 'Area', sort_label: 'Sort', sort_number: 'By number', sort_visit: 'Longest since visit', sort_visit_short: 'Oldest visit',
       visit_date: 'Visit Date', location: 'Province / City', region_ph: '-- Select Province --',
       district: 'City / District', district_ph: '-- Select province first --', district_ph_select: '-- Select district --',
       purpose: 'Visit Purpose', purpose_ph: '-- Select Visit Purpose --',
@@ -1025,6 +1029,10 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let viewingChurch = null;
   let churchColorMap = {};
   let selectedChurchAddress = null;
+  // 평택 | 제주 — 교회의 시/도(region)가 제주면 제주, 아니면 평택으로 나눈다(복음 통계·포탈 홈과 같은 기준). 고른 쪽은 이 브라우저에 기억한다
+  const churchCampus = c => (/제주|jeju/i.test(String(c?.region || '')) ? 'jeju' : 'wolko');
+  let activeCampus = (() => { try { return localStorage.getItem('wolko-crs-campus') === 'jeju' ? 'jeju' : 'wolko'; } catch (e) { return 'wolko'; } })();
+  const campusChurches = () => churches.filter(c => churchCampus(c) === activeCampus);
   let activeMissionaryFilter = null;
   let activeSort = (() => { try { return localStorage.getItem('wolko-crs-sort') === 'visit' ? 'visit' : 'number'; } catch (e) { return 'number'; } })();
   let activeDenominationFilter = null;
@@ -1147,7 +1155,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   // 선교사는 등록된 값으로, 교단은 표시용 큰 분류로 필터링한다.
   function renderFilterSelects() {
-    const missionaries = [...new Set(churches.map(c => c.assignedMissionary).filter(Boolean))].sort();
+    const missionaries = [...new Set(campusChurches().map(c => c.assignedMissionary).filter(Boolean))].sort();
 
     const missionaryEl = document.getElementById('missionaryFilterSelect');
     const denominationEl = document.getElementById('denominationFilterSelect');
@@ -1399,6 +1407,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         <!-- 왼쪽: 교회 목록 -->
         <div class="list-panel" id="listPanel">
           <div class="top-bar">
+            <div class="campus-seg" id="campusSeg" role="group" aria-label="${t('campus_label')}">${campusSegHtml()}</div>
             <input class="search-input" id="searchInput" placeholder="${t('search_ph')}">
             <select class="filter-select" id="missionaryFilterSelect" hidden></select>
             <select class="filter-select" id="denominationFilterSelect" hidden></select>
@@ -1582,6 +1591,14 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     bindCrsLangToggle();
     document.getElementById('logoutBtn').addEventListener('click', () => window.WolkoSession.logoutAll());
     document.getElementById('addChurchBtn').addEventListener('click', () => openEditModal(null));
+    document.getElementById('campusSeg').addEventListener('click', e => {
+      const b = e.target.closest('[data-campus]'); if (!b || b.dataset.campus === activeCampus) return;
+      activeCampus = b.dataset.campus === 'jeju' ? 'jeju' : 'wolko';
+      try { localStorage.setItem('wolko-crs-campus', activeCampus); } catch (err) {}
+      activeMissionaryFilter = null; activeDenominationFilter = null;
+      renderFilterSelects(); renderChurchList(); updateCrsMarkers();
+      if (viewingChurch && churchCampus(viewingChurch) !== activeCampus) closeDetailModal({ useHistory: false });
+    });
     if (currentUserData?.role === 'admin') {
       document.getElementById('adminBtn').addEventListener('click', openAdminModal);
     }
@@ -1754,12 +1771,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   }
 
   // ── 교회 목록 렌더 ──
+  function campusSegHtml() {
+    const n = { wolko: 0, jeju: 0 };
+    churches.forEach(c => { n[churchCampus(c)]++; });
+    return ['wolko', 'jeju'].map(k => `<button type="button" data-campus="${k}" class="${activeCampus === k ? 'on' : ''}" aria-pressed="${activeCampus === k}">${t(k === 'jeju' ? 'campus_jeju' : 'campus_wolko')} <span>${n[k]}</span></button>`).join('');
+  }
   function renderChurchList() {
     renderContactAlerts();
+    const seg = document.getElementById('campusSeg'); if (seg) seg.innerHTML = campusSegHtml();
     const listEl = document.getElementById('churchList');
     if (!listEl) return;
     const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
-    const filtered = churches
+    const filtered = campusChurches()
       .filter(c =>
         ((c.churchName || '').toLowerCase().includes(q) ||
           (c.pastorName || '').toLowerCase().includes(q) ||
@@ -1866,7 +1889,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
     const regionEl   = document.getElementById('fRegion');
     const districtEl = document.getElementById('fDistrict');
-    const savedRegion   = church?.region || '';
+    const savedRegion   = church?.region || (!church && activeCampus === 'jeju' ? '제주특별자치도' : '');   // 새 교회는 보고 있는 지역에 맞춰 시/도를 미리 채운다
     const savedDistrict = church?.district || '';
     regionEl.value = savedRegion;
     if (savedRegion && REGIONS[savedRegion]) {
@@ -2027,7 +2050,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         data.stepsVersion = STEPS_VERSION;
         data.createdAt = now;
         data.createdBy = currentUser.uid;
-        data.number = churches.reduce((max, c) => Math.max(max, c.number || 0), 0) + 1;
+        data.number = churches.filter(c => churchCampus(c) === churchCampus(data)).reduce((max, c) => Math.max(max, c.number || 0), 0) + 1;   // 번호는 평택·제주 각각 이어서 붙는다
         await push(ref(db, 'churches'), data);
       }
       closeEditModal();
@@ -2961,7 +2984,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     crsMarkers = [];
     const markerPositions = [];
 
-    const pinnable = churches.filter(c => getSavedChurchCoords(c));
+    const pinnable = campusChurches().filter(c => getSavedChurchCoords(c));
     const emptyEl = document.getElementById('mapEmpty');
     if (emptyEl) emptyEl.style.display = pinnable.length ? 'none' : 'flex';
 
