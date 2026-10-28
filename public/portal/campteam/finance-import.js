@@ -133,7 +133,7 @@
       var qs = encodeURIComponent(S.pid), all = (await F().api('ledger?periodId=' + qs)).items, cats = await F().api('ledger-categories'), plan = (await F().api('ledger-plan?periodId=' + qs)).items, sum = await F().api('ledger-summary?periodId=' + qs);
       var book = buildBook(p, all, cats, plan, sum), bytes = XlsxLite.write(book), name = (p.name + '_장부_' + F().today().replace(/-/g, '')).replace(/[\\/:*?"<>|]/g, '_') + '.xlsx';
       var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
-      if (S.perms.moneyWrite && p.status === 'open') await F().api('ledger-import', { method: 'POST', body: { action: 'markExported', periodId: S.pid } });
+      if (S.perms.ledgerWrite && p.status === 'open') await F().api('ledger-import', { method: 'POST', body: { action: 'markExported', periodId: S.pid } });
       msg = $('expMsg'); if (msg) msg.textContent = CT.t('exportDone');
     } catch (e) { msg = $('expMsg'); if (msg) { msg.textContent = e.message; msg.style.color = 'var(--accent)'; } else alert(e.message); }
   }

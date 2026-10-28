@@ -7,7 +7,7 @@
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   var S = { month: null, calView: 'grid', cal: null, types: [], sel: null, perms: null };
-  var canWrite = function () { return CT.can('tasks', 'edit'); };
+  var canWrite = function () { return CT.can('calendar', 'edit'); };
   var allCamps = function () { var o = []; S.types.forEach(function (t) { t.camps.forEach(function (c) { o.push(c); }); }); return o; };
   var campOptions = function (sel, none) { return '<option value="">' + esc(none) + '</option>' + allCamps().map(function (c) { return '<option value="' + esc(c.id) + '"' + (sel === c.id ? ' selected' : '') + '>' + esc(CT.pick(c, 'name')) + '</option>'; }).join(''); };
   function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }

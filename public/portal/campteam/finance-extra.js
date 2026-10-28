@@ -27,7 +27,7 @@
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc, F = function () { return window.FIN; }, KRW = function (n) { return CT.money(n, 'KRW'); };
   var X = { data: null, msg: '', busy: false }, R = { items: [], current: null, msg: '' };
   var wname = function (a) { return CT.lang() === 'en' ? a.en : a.ko; };
-  var canAdmin = function () { return !!(F().S.perms && F().S.perms.moneyAdmin); }, canWrite = function () { return !!(F().S.perms && F().S.perms.moneyWrite); };
+  var canAdmin = function () { return !!(F().S.perms && F().S.perms.ledgerAdmin); }, canWrite = function () { return !!(F().S.perms && F().S.perms.ledgerWrite); };
 
   // ───────── 경비 연동 ─────────
   async function exLoad() { try { X.data = await F().api('ledger-expense'); } catch (e) { X.data = null; X.msg = e.message; } }

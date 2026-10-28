@@ -15,7 +15,7 @@ async function req(email, opts) { return reqBase(email, opts); }
 const ADMIN = U.admin, FIN = U.fin, MEM = U.mem, VIEW = U.out; // VIEW: 명단에 없는 포털 사용자
 
 test('권한표: 역할별 조회·작성·금액 권한', () => {
-  const flags = (f) => { const { areas, personal, ...rest } = f; return rest; }; // 항목별 수준(areas)·개인정보는 아래 항목별 권한 시험에서 따로 확인
+  const flags = (f) => { const { areas, personal, ledgerRead, ledgerWrite, ledgerAdmin, ...rest } = f; return rest; }; // 항목별 수준(areas)·개인정보는 아래 항목별 권한 시험에서 따로 확인
   const permsFor = (r) => flags(permsForFull(r));
   const P = (o) => ({ read: true, write: false, moneyRead: false, moneyWrite: false, moneyAdmin: false, manageMembers: false, ...o });
   const FULL = { write: true, moneyRead: true, moneyWrite: true, moneyAdmin: true };

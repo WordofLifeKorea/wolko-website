@@ -18,5 +18,5 @@ export async function onRequestGet({ env, request }) {
     db.prepare(`SELECT id, title, meetDate, meetTime, isTest FROM meetings WHERE deletedAt IS NULL AND meetDate BETWEEN ?1 AND ?2 ORDER BY meetDate, meetTime`).bind(from, to).all(),
   ]);
   const V = (a, list) => (canView(s.perms, a) ? list : []);
-  return json({ events: V('tasks', events.results), camps: V('camps', camps.results), tasks: V('tasks', tasks.results), meetings: V('meetings', meetings.results), perms: s.perms });
+  return json({ events: V('calendar', events.results), camps: V('camps', camps.results), tasks: V('tasks', tasks.results), meetings: V('meetings', meetings.results), perms: s.perms });
 }

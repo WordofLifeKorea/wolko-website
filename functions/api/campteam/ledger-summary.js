@@ -41,6 +41,6 @@ export async function summarize(env, period, s) {
     totals, asOf, balanceAsOf, plan: { income: planIncome, expense: planExpense, expectedBalance: planIncome - planExpense },
     opening: carry ? { kind: carry.kind, amount: carry.amount } : null,
     byCategory, monthly: Object.values(months), needsReview: review.n, lastReconcile: recon || null,
-    canEdit: !!(s && s.perms.moneyWrite) && period.status === 'open', canAdmin: !!(s && s.perms.moneyAdmin),
+    canEdit: !!(s && s.perms.ledgerWrite) && period.status === 'open', canAdmin: !!(s && s.perms.ledgerAdmin),
   };
 }
