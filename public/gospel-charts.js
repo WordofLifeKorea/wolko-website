@@ -1,5 +1,5 @@
 /*
- * 복음 통계 그래프 — 숫자 카드 안의 가로 막대(분류별 비율) + 범례. 라이브러리 없이 그린다.
+ * 복음 통계 그래프 — 숫자 카드 안의 도넛(분류별 비율) + 이름·숫자 목록. 라이브러리 없이 그린다.
  *   GospelCharts.render(container, { data, tab, lang })   data 는 /api/portal/gospel-stats 응답
  * 색은 지역·종류마다 고정(검증한 팔레트), 글자는 글자 색(진한 회색)만 쓴다. 숫자는 항상 범례·표에도 있어 색에만 기대지 않는다.
  */
@@ -22,19 +22,22 @@
   function info(text) { return text ? ' <button type="button" class="gs-info" data-tip="' + esc(text) + '" aria-label="' + esc(text) + '">i</button>' : ''; }
   function pct(part, whole) { return whole ? Math.round(part / whole * 100) : 0; }
 
-  /* ───────── 가로 막대 (분류별 비율) ───────── */
+  /* ───────── 도넛 (분류별 비율) — 가운데는 비우고, 오른쪽에 이름과 숫자만 ───────── */
   function bar(id, slices, lang, s) {
     var total = slices.reduce(function (n, x) { return n + x.value; }, 0);
     if (!total) return '';   // 숫자가 하나도 없으면 카드 안에 안내 글을 반복하지 않는다(카드에는 0 만 보인다)
+    var shown = slices.filter(function (sl) { return sl.value > 0; }), gap = shown.length > 1 ? 1.6 : 0, acc = 0;
     var segs = slices.map(function (sl, i) {
       if (!sl.value) return '';
-      return '<span class="gc-seg" data-chart="' + id + '" data-i="' + i + '" data-v="' + sl.value + '" style="background:' + sl.color + ';flex-grow:0" tabindex="0" role="img"'
-        + ' aria-label="' + esc(sl.name + ' ' + fmt(sl.value, lang) + ' (' + pct(sl.value, total) + '%)') + '" title="' + esc(sl.name + ' ' + fmt(sl.value, lang) + ' · ' + pct(sl.value, total) + '%') + '"></span>';
+      var share = sl.value / total * 100, len = Math.max(0.6, share - gap), at = acc; acc += share;
+      return '<circle class="gc-seg" data-chart="' + id + '" data-i="' + i + '" data-dash="' + len.toFixed(2) + ' ' + (100 - len).toFixed(2) + '" cx="21" cy="21" r="15.9155" pathLength="100" fill="none" stroke="' + sl.color + '" stroke-width="5.4"'
+        + ' stroke-dasharray="0 100" stroke-dashoffset="' + (-at - gap / 2).toFixed(2) + '" tabindex="0" role="img"'
+        + ' aria-label="' + esc(sl.name + ' ' + fmt(sl.value, lang) + ' (' + pct(sl.value, total) + '%)') + '"><title>' + esc(sl.name + ' ' + fmt(sl.value, lang) + ' · ' + pct(sl.value, total) + '%') + '</title></circle>';
     }).join('');
     var legend = slices.map(function (sl, i) {
-      return '<li data-chart="' + id + '" data-i="' + i + '"><i style="background:' + sl.color + '"></i><span>' + esc(sl.name) + '</span><b>' + fmt(sl.value, lang) + '</b><em>' + pct(sl.value, total) + '%</em></li>';
+      return '<li data-chart="' + id + '" data-i="' + i + '" title="' + esc(pct(sl.value, total) + '%') + '"><i style="background:' + sl.color + '"></i><span>' + esc(sl.name) + '</span><b>' + fmt(sl.value, lang) + '</b></li>';
     }).join('');
-    return '<div class="gc-bar" data-chart="' + id + '"><div class="gc-track">' + segs + '</div><ul class="gc-legend">' + legend + '</ul></div>';
+    return '<div class="gc-bar gc-donutbox" data-chart="' + id + '"><svg class="gc-donutsvg" viewBox="0 0 42 42" aria-hidden="false"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="rgba(0,0,0,.05)" stroke-width="5.4"/>' + segs + '</svg><ul class="gc-legend">' + legend + '</ul></div>';
   }
 
   /* ───────── 그리기 ───────── */
@@ -52,12 +55,12 @@
       slot.innerHTML = slots[id] ? bar(id, slots[id], lang, s) : '';
     });
     if (el) el.innerHTML = '';
-    // 막대가 차오르는 모션 — 모션을 줄여 두었으면 바로 완성된 모양으로
-    var segs = document.querySelectorAll('.gc-seg');
+    // 도넛이 돌며 그려지는 모션 — 모션을 줄여 두었으면 바로 완성된 모양으로
+    var segs = document.querySelectorAll('.gc-donutsvg .gc-seg');
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function settle() { segs.forEach(function (g) { g.style.flexGrow = g.dataset.v; }); }
+    function settle() { segs.forEach(function (g) { g.style.strokeDasharray = g.dataset.dash; }); }
     if (reduce) { segs.forEach(function (g) { g.style.transition = 'none'; }); settle(); }
-    else { requestAnimationFrame(function () { requestAnimationFrame(settle); }); setTimeout(function () { if (document.querySelector('.gc-seg')) settle(); }, 1300); }
+    else { requestAnimationFrame(function () { requestAnimationFrame(settle); }); setTimeout(function () { if (document.querySelector('.gc-donutsvg .gc-seg')) settle(); }, 1300); }
   }
 
   /* ───────── 상호작용 (한 번만 연결) ───────── */
