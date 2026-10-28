@@ -82,3 +82,42 @@
   .sk-moon { right: 24px; top: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .sk-sun::before, .sk-sun::after, .sk-cloud, .sk-fog, .hub-greeting .gl, .hub-sky-tip, .hub-wx-card { animation: none !important; } }
+
+/* ── 알림 종 — 배너에는 글을 줄이고, 알림은 종 아이콘 + 숫자 뱃지로 모은다 ── */
+.hub-sky .hub-dash-top { justify-content: flex-start; align-items: center; gap: 10px 14px; }
+.hub-bell { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; transition: transform .15s; -webkit-tap-highlight-color: transparent; }
+.hub-bell:hover { transform: scale(1.08); }
+.hub-bell:active { transform: scale(.94); }
+.hub-bell:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.hub-bell svg { display: block; transform-origin: 50% 10%; filter: drop-shadow(0 5px 6px rgba(0, 30, 70, .38)); }
+.hub-bell.has-new svg { animation: bell-ring 4.6s ease-in-out 1.2s infinite; }
+@keyframes bell-ring { 0%, 22%, 100% { transform: rotate(0); } 3% { transform: rotate(16deg); } 6% { transform: rotate(-14deg); } 9% { transform: rotate(10deg); } 12% { transform: rotate(-7deg); } 15% { transform: rotate(4deg); } 18% { transform: rotate(-2deg); } }
+.hub-bell-badge { position: absolute; top: -2px; right: -2px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border: 2px solid #fff; border-radius: 999px; background: #f0456a; color: #fff; font: 800 11px/16px var(--f-body); text-align: center; box-shadow: 0 4px 10px -4px rgba(120, 10, 40, .6); }
+
+.hub-bell-panel { position: fixed; z-index: 9500; max-height: min(70vh, 420px); overflow: auto; padding: 8px; border: 1px solid #dbe6ec; border-radius: 18px; background: #fff; color: #102a38; box-shadow: 0 24px 50px -20px rgba(0, 40, 60, .45); animation: bell-pop .18s ease-out; }
+.hub-bell-panel[hidden] { display: none; }
+@keyframes bell-pop { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+.hub-bell-head { padding: 8px 10px 6px; color: #5f7681; font: 800 12.5px/1.2 var(--f-body); letter-spacing: .04em; }
+.hub-bell-head b { margin-left: 4px; color: #f0456a; }
+.hub-bell-panel ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.hub-bell-panel a { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px 11px 30px; position: relative; border-radius: 12px; color: #102a38; font: 700 14px/1.4 var(--f-body); text-decoration: none; }
+.hub-bell-panel a:hover { background: #f1f6f9; }
+.hub-bell-panel a::before { content: ''; position: absolute; left: 12px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #7a8c96; }
+.hub-bell-panel a.is-kitchen::before { background: #e08a1e; }
+.hub-bell-panel a.is-car::before { background: #a24bb8; }
+.hub-bell-panel a.is-gospel::before { background: #e0476a; }
+/* 항목 안의 행동 버튼(보고하기 →) — 눈에 띄는 알약 버튼 */
+.hub-bell-panel a { flex-wrap: wrap; row-gap: 8px; }
+.hub-bell-panel a > span { flex: 1 1 150px; min-width: 0; }
+.hub-bell-panel a em { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px 8px 16px; border-radius: 999px; background: linear-gradient(135deg, #1596c4, #0a6a8f); color: #fff; font-style: normal; font-weight: 800; font-size: 13px; line-height: 1; box-shadow: 0 8px 16px -8px rgba(10, 106, 143, .75), inset 0 1px 0 rgba(255, 255, 255, .28); transition: transform .15s, box-shadow .15s, filter .15s; }
+.hub-bell-panel a em::after { content: '→'; display: inline-block; font-weight: 800; transition: transform .18s; }
+.hub-bell-panel a:hover em { transform: translateY(-1px); box-shadow: 0 12px 20px -9px rgba(10, 106, 143, .85), inset 0 1px 0 rgba(255, 255, 255, .32); filter: brightness(1.06); }
+.hub-bell-panel a:hover em::after { transform: translateX(3px); }
+.hub-bell-panel a.is-gospel em { background: linear-gradient(135deg, #f0577b, #c93058); box-shadow: 0 8px 16px -8px rgba(201, 48, 88, .75), inset 0 1px 0 rgba(255, 255, 255, .3); }
+.hub-bell-panel a.is-gospel:hover em { box-shadow: 0 12px 20px -9px rgba(201, 48, 88, .85), inset 0 1px 0 rgba(255, 255, 255, .34); }
+@media (prefers-reduced-motion: reduce) { .hub-bell-panel a em, .hub-bell-panel a em::after { transition: none; } }
+.hub-bell-panel p { margin: 0; padding: 18px 12px 20px; color: #7a8c96; font: 600 14px/1.5 var(--f-body); text-align: center; }
+
+/* 날씨 카드는 숫자만 간단히 */
+.hub-wx-sub { font-size: 12.5px; }
+@media (prefers-reduced-motion: reduce) { .hub-bell.has-new svg, .hub-bell-panel { animation: none; } }
