@@ -7,7 +7,7 @@ import { SLOTS as DRIVE_SLOTS, closedKey as driveClosedKey, currentWeekStart, is
 import { listCalendarEvents } from './googleCalendar.js';
 import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 import { prayerBoard } from './prayers.js';
-import { translateNotice } from './prayerTranslate.js';
+import { needsTranslation, translateNotice } from './prayerTranslate.js';
 import { alwaysExempt } from './gospelReminder.js';
 import { currentMonthKst, loadMonth, ownerOf } from './gospelStats.js';
 
@@ -39,7 +39,7 @@ export async function translateMissingNotices(env, { now = Date.now(), limit = 3
   if (!env.ANTHROPIC_API_KEY) return 0;
   const list = await env.CAMP_KV.get(NOTICES_KEY, 'json');
   if (!Array.isArray(list)) return 0;
-  const todo = list.filter(n => n && n.id && n.body && !n.tr && !(n.trTry && now - n.trTry < 3600000)).slice(0, limit);
+  const todo = list.filter(n => n && n.id && n.body && needsTranslation(n.title || '', n.body, n.tr?.lang) && !(n.trTry && now - n.trTry < 3600000)).slice(0, limit);
   let done = 0;
   for (const n of todo) {
     const tr = await translateNotice(env, n, { fetchImpl });

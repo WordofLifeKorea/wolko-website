@@ -1,5 +1,5 @@
 /* 포탈 첫 화면 맨 위 "하늘" — 오늘 날씨(맑음 · 구름 · 안개 · 비 · 눈 · 천둥)에 맞춰 하늘색과 움직임이 바뀌고,
-   비 · 눈은 캔버스로 내리면서 이름 인사 · 날짜 · 버튼 글자에 부딪혀 튀거나 쌓인다. 마우스를 움직이면 바람이 분다.
+   비 · 눈은 캔버스로 내리면서 이름 인사 · 날짜 · 버튼 글자에 부딪혀 튀거나 쌓인다.
    움직임 줄이기 설정이면 움직이지 않고 정지한 하늘만 보인다.
    HubSky.setWeather({ kind, isDay }) — 종류와 낮/밤을 알려 주면 바뀐다. */
 (function () {
@@ -9,7 +9,7 @@
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var W = 0, H = 0, kind = '', isDay = true;
   var drops = [], flakes = [], splashes = [], landed = [], stars = [], motes = [];
-  var pointer = { x: null, y: null }, wind = 0, running = false, inView = true, lastT = 0, flashAt = 0, bolt = null, obstacles = [], obsAt = 0;
+  var wind = 0, running = false, inView = true, lastT = 0, flashAt = 0, bolt = null, obstacles = [], obsAt = 0;
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function resize() {
@@ -57,8 +57,6 @@
 
   function step(dt, now) {
     measure(now);
-    var windTarget = pointer.x == null ? 0 : Math.max(-1, Math.min(1, (pointer.x - W / 2) / (W / 2))) * 0.9;
-    wind += (windTarget - wind) * Math.min(1, dt * 2.5);
     var i, p, o, j;
     for (i = 0; i < drops.length; i++) {
       p = drops[i]; p.py = p.y; p.y += p.vy * dt; p.x += (wind * 60 + 28 * (kind === 'storm' ? 1 : 0.35)) * dt;
@@ -71,7 +69,6 @@
     }
     for (i = 0; i < flakes.length; i++) {
       p = flakes[i]; p.ph += dt * 1.0; p.y += p.vy * dt; p.x += (Math.sin(p.ph) * p.sw * dt) + wind * 24 * dt;
-      if (pointer.x != null) { var dx = p.x - pointer.x, dy = p.y - pointer.y, d2 = dx * dx + dy * dy; if (d2 < 4900) { var d = Math.sqrt(d2) || 1; p.x += dx / d * 70 * dt; p.y += dy / d * 40 * dt; } }
       var stuck = false;
       for (j = 0; j < obstacles.length; j++) {
         o = obstacles[j];
@@ -126,8 +123,6 @@
     else if (!should && running) { running = false; ctx.clearRect(0, 0, W, H); }
   }
 
-  sky.addEventListener('pointermove', function (e) { var r = sky.getBoundingClientRect(); pointer.x = e.clientX - r.left; pointer.y = e.clientY - r.top; sky.style.setProperty('--px', ((pointer.x / r.width) - 0.5).toFixed(3)); });
-  sky.addEventListener('pointerleave', function () { pointer.x = pointer.y = null; sky.style.setProperty('--px', '0'); });
   window.addEventListener('resize', function () { resize(); sync(); });
   document.addEventListener('visibilitychange', sync);
   if (window.IntersectionObserver) new IntersectionObserver(function (es) { inView = es[0].isIntersecting; sync(); }).observe(sky);

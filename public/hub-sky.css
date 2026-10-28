@@ -18,12 +18,12 @@
 .hub-sky-content { position: relative; z-index: 2; }
 
 /* 해 — 맑음·구름 조금(낮)에서 떠오르고 빛살이 천천히 돈다 */
-.sk-sun { position: absolute; right: calc(300px - var(--px, 0) * 16px); top: 10px; width: 128px; height: 128px; border-radius: 50%; opacity: 0; transform: scale(.8); transition: opacity .8s, transform .8s; background: radial-gradient(circle, #fffbe2 0 20%, #ffe582 36%, rgba(255, 214, 90, .55) 52%, transparent 72%); }
+.sk-sun { position: absolute; right: 300px; top: 10px; width: 128px; height: 128px; border-radius: 50%; opacity: 0; transform: scale(.8); transition: opacity .8s, transform .8s; background: radial-gradient(circle, #fffbe2 0 20%, #ffe582 36%, rgba(255, 214, 90, .55) 52%, transparent 72%); }
 .sk-sun::before { content: ''; position: absolute; inset: -46px; border-radius: 50%; background: repeating-conic-gradient(rgba(255, 244, 180, .34) 0 5deg, transparent 5deg 16deg); -webkit-mask: radial-gradient(circle, transparent 26%, #000 38%, transparent 70%); mask: radial-gradient(circle, transparent 26%, #000 38%, transparent 70%); animation: sk-spin 70s linear infinite; }
 .sk-sun::after { content: ''; position: absolute; inset: 20px; border-radius: 50%; background: #fff6c8; box-shadow: 0 0 40px 16px rgba(255, 232, 120, .65); animation: sk-pulse 4.5s ease-in-out infinite; }
 .hub-sky[data-day="1"][data-kind="clear"] .sk-sun, .hub-sky[data-day="1"][data-kind="partly"] .sk-sun { opacity: 1; transform: none; }
 /* 달 — 맑은 밤 */
-.sk-moon { position: absolute; right: calc(310px - var(--px, 0) * 12px); top: 26px; width: 74px; height: 74px; border-radius: 50%; opacity: 0; transition: opacity .8s; box-shadow: inset -20px 6px 0 0 #fff4cf, 0 0 26px 2px rgba(255, 244, 207, .35); }
+.sk-moon { position: absolute; right: 310px; top: 26px; width: 74px; height: 74px; border-radius: 50%; opacity: 0; transition: opacity .8s; box-shadow: inset -20px 6px 0 0 #fff4cf, 0 0 26px 2px rgba(255, 244, 207, .35); }
 .hub-sky[data-day="0"][data-kind="clear"] .sk-moon, .hub-sky[data-day="0"][data-kind="partly"] .sk-moon { opacity: 1; }
 /* 구름 — 왼쪽에서 오른쪽으로 천천히 흘러간다 */
 .sk-cloud { position: absolute; left: -220px; width: 170px; height: 52px; border-radius: 60px; background: rgba(255, 255, 255, .88); opacity: 0; transition: opacity .8s; animation: sk-drift 90s linear infinite; }

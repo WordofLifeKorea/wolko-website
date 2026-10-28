@@ -160,3 +160,40 @@ test('기도제목 수정: 올린 본인만, 제목·내용·익명 여부가 �
     assert.equal(/anna|Anna|@/.test(stored), false, stored);
   } finally { globalThis.fetch = realFetch; }
 });
+
+import { detectLang, needsTranslation } from '../functions/lib/prayerTranslate.js';
+import { translateMissingPrayers } from '../functions/lib/prayers.js';
+
+test('언어 판정: 영어 글 속의 한글 이름은 영어로 본다 · 번역 언어가 원문과 같으면 다시 번역해야 한다', () => {
+  assert.equal(detectLang('온유의 쾌유를 위해'), 'ko');
+  assert.equal(detectLang('Pray for Onyu and her family'), 'en');
+  assert.equal(detectLang('Thanksgiving night on Nov 26 - praise that 김성은 is coming to give the message for us!'), 'en');
+  assert.equal(detectLang('Camp 캠프 준비 기도'), 'ko', '한글 비중이 크면 한국어');
+  assert.equal(detectLang('1234'), 'en');
+  const en = 'Please pray for the camp next week and for pastor 김성은 who is coming';
+  assert.equal(needsTranslation('t', en, ''), true, '번역이 없다');
+  assert.equal(needsTranslation('t', en, 'en'), true, '영어 글인데 영어로 번역돼 있다(예전 오류)');
+  assert.equal(needsTranslation('t', en, 'ko'), false);
+  assert.equal(needsTranslation('제목', '내용', 'en'), false);
+});
+
+test('기도제목 번역 보충: 번역이 없거나 언어가 잘못 저장된 것만 번역한다(실패하면 1시간 뒤에 다시)', async () => {
+  const t = setup(); t.env.ANTHROPIC_API_KEY = 'k';
+  const base = { name: 'A', owner: 'x', createdAt: new Date().toISOString(), prayedBy: [] };
+  t.store.set(PRAYERS_KEY, JSON.stringify([
+    { id: 'wrong', title: 'Current Ministries', text: 'Thanksgiving night - praise that 김성은 is coming!', tr: { lang: 'en', title: 'Current Ministries', text: 'Thanksgiving night …' }, ...base },
+    { id: 'none', title: '제목만', text: '', ...base },
+    { id: 'ok', title: '좋은 제목', text: '내용', tr: { lang: 'en', title: 'Good', text: 'Body' }, ...base },
+  ]));
+  let calls = 0;
+  const fetchImpl = async () => { calls++; return sse('{"title":"번역된 제목","text":"번역된 내용"}'); };
+  assert.equal(await translateMissingPrayers(t.env, { fetchImpl, now: 1000 }), 2);
+  assert.equal(calls, 2);
+  const after = JSON.parse(t.store.get(PRAYERS_KEY));
+  assert.equal(after[0].tr.lang, 'ko', '영어 글은 한국어로'); assert.equal(after[1].tr.lang, 'en', '한글 글은 영어로'); assert.equal(after[2].tr.title, 'Good', '이미 맞는 번역은 그대로');
+  t.store.set(PRAYERS_KEY, JSON.stringify([{ id: 'f', title: 'Hello', text: '', ...base }]));
+  assert.equal(await translateMissingPrayers(t.env, { fetchImpl: async () => new Response('x', { status: 500 }), now: 5000 }), 0);
+  assert.equal(JSON.parse(t.store.get(PRAYERS_KEY))[0].trTry, 5000);
+  calls = 0; assert.equal(await translateMissingPrayers(t.env, { fetchImpl, now: 5000 + 600000 }), 0); assert.equal(calls, 0);
+  assert.equal(await translateMissingPrayers(t.env, { fetchImpl, now: 5000 + 3700000 }), 1);
+});

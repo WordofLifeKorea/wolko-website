@@ -20,8 +20,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/hub.css?v=70">
-  <link rel="stylesheet" href="/hub-sky.css?v=2">
-  <script src="/hub-sky.js?v=3" defer></script>
+  <link rel="stylesheet" href="/hub-sky.css?v=3">
+  <script src="/hub-sky.js?v=4" defer></script>
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
   <link rel="stylesheet" href="/portal-remember.css?v=1">
@@ -568,9 +568,11 @@
       const tone = n < 0 ? ' is-over' : n <= 3 ? ' is-soon' : '';
       return '<span class="hub-due' + tone + '"><b>' + esc(label) + '</b><small>' + esc(t('dueUntil', md)) + '</small></span>';
     }
+    /** 글의 언어 — 한글이 글자 수의 30% 이상이면 한국어(영어 글 속의 한글 이름은 무시). 서버(detectLang)와 같은 규칙 */
+    function langOf(s) { const ko = (String(s).match(/[가-힣]/g) || []).length, en = (String(s).match(/[A-Za-z]/g) || []).length; return ko > 0 && ko / (ko + en) >= 0.3 ? 'ko' : 'en'; }
     /** 공지를 지금 화면 언어로 — 원문과 번역 중 화면 언어인 쪽을 보여 준다(번역이 없으면 원문) */
     function noticeText(n) {
-      const orig = /[가-힣]/.test((n.title || '') + ' ' + n.body) ? 'ko' : 'en';
+      const orig = langOf((n.title || '') + ' ' + n.body);
       if (n.tr && hubLang !== orig && (n.tr.title || n.tr.text)) return { title: n.tr.title || n.title, body: n.tr.text || n.body, translated: true };
       return { title: n.title, body: n.body, translated: false };
     }
@@ -685,7 +687,7 @@
     document.addEventListener('toggle', e => { const d = e.target; if (d && d.classList && d.classList.contains('hub-prayer-item')) { if (d.open) prayerClosed.delete(d.dataset.id); else prayerClosed.add(d.dataset.id); } }, true);
     /** 기도제목을 지금 화면 언어로 — 원문과 번역 중 화면 언어인 쪽이 주(main), 나머지는 아래에 작게(alt) */
     function prayerLang(p) {
-      const orig = /[가-힣]/.test(p.title + ' ' + p.text) ? 'ko' : 'en', has = !!(p.trTitle || p.trText), useTr = has && hubLang !== orig;
+      const orig = langOf(p.title + ' ' + p.text), has = !!(p.trTitle || p.trText), useTr = has && hubLang !== orig;
       const o = { title: p.title, text: p.text }, tr = { title: p.trTitle || '', text: p.trText || '' };
       return useTr ? { main: { title: tr.title || o.title, text: tr.text }, translated: true } : { main: o, translated: false };
     }
@@ -736,9 +738,7 @@
     }
     function renderDashHead(d) {
       const full = new Intl.DateTimeFormat(dashLocale(), { timeZone: KST, year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }).format(new Date(d.today + 'T12:00:00+09:00'));
-      const short = ymd => { const q = kstParts(ymd, true); return hubLang === 'en' ? q.month + ' ' + q.day : q.month + '/' + q.day; };
-      const end = new Date(Date.parse(d.weekStart + 'T00:00:00Z') + 6 * 86400000).toISOString().slice(0, 10);
-      const date = '<div class="hub-dash-date"><b>' + esc(full) + '</b><span>' + esc(t('dashWeekOf', short(d.weekStart), short(end))) + '</span></div>';
+      const date = '<div class="hub-dash-date"><b>' + esc(full) + '</b></div>';
       return '<div class="hub-dash-top">' + date + '<p class="hub-sky-tip">' + esc(hubWeather ? wxTip(hubWeather) : '') + '</p>' + renderToday(d) + '</div>';
     }
     /** 내 오늘 — 오늘 내가 맡은 주방·차량, 아직 안 낸 이번 달 복음 통계 보고. 해당하는 것이 없으면 아무것도 보이지 않는다 */

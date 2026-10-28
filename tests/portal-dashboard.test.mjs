@@ -169,7 +169,7 @@ test('공지 번역: 올릴 때 한↔영 번역이 함께 저장되고, 번역�
     assert.deepEqual(saved.tr, { lang: 'ko', title: 'MRIC 교육', text: '모든 스태프는 영상을 시청해 주세요.' });
 
     // 이미 올라가 있던 번역 없는 공지 — 뒤에서 번역
-    const old = [{ id: 'old1', title: 'MRIC Training', body: 'Every single staff should watch.', weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }, { id: 'has', title: 't', body: 'b', tr: { lang: 'en', title: 'x', text: 'y' }, weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }];
+    const old = [{ id: 'old1', title: 'MRIC Training', body: 'Every single staff should watch.', weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }, { id: 'has', title: '제목', body: '내용', tr: { lang: 'en', title: 'x', text: 'y' }, weekStart: '2026-10-26', createdAt: '2026-10-26T00:00:00Z' }];
     store.set(NOTICES_KEY, JSON.stringify(old));
     assert.equal(await translateMissingNotices(env, { now: 1000 }), 1, '번역이 없는 것만');
     const after = JSON.parse(store.get(NOTICES_KEY));

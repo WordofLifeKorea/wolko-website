@@ -7,6 +7,13 @@ import { callClaude, DEFAULT_MODEL } from './campteamAi.js';
 import { anthropicRoute } from './anthropicRoute.js';
 
 export const hasHangul = s => /[가-힣]/.test(String(s ?? ''));
+/** 글의 언어 — 한글 글자가 글자 수의 30% 이상이면 한국어, 아니면 영어. 영어 글 속에 한글 이름이 섞여 있어도 영어로 본다 */
+export function detectLang(text) {
+  const s = String(text ?? ''), ko = (s.match(/[가-힣]/g) || []).length, en = (s.match(/[A-Za-z]/g) || []).length;
+  return ko > 0 && ko / (ko + en) >= 0.3 ? 'ko' : 'en';
+}
+/** 번역이 없거나, 번역 언어가 원문 언어와 같아(예전 판정 오류) 다시 해야 하는지 */
+export const needsTranslation = (title, text, trLang) => !trLang || trLang === detectLang(`${title} ${text}`);
 const TIMEOUT_MS = 12000;
 
 export function buildPrayerPrompt({ title, text }, to, kind = 'prayer') {
@@ -31,7 +38,7 @@ export function parsePrayerTranslation(raw) {
 /** → { lang: 'en'|'ko', title, text } 또는 null(번역 설정이 없거나 실패) */
 export async function translatePrayer(env, { title, text }, { fetchImpl, kind = 'prayer' } = {}) {
   if (!env.ANTHROPIC_API_KEY) return null;
-  const to = hasHangul(`${title} ${text}`) ? 'en' : 'ko';
+  const to = detectLang(`${title} ${text}`) === 'ko' ? 'en' : 'ko';
   try {
     const { system, user } = buildPrayerPrompt({ title, text }, to, kind);
     const call = callClaude({ apiKey: env.ANTHROPIC_API_KEY, model: env.CAMPTEAM_AI_MODEL || DEFAULT_MODEL, system, user, maxTokens: 2000, fetchImpl: fetchImpl || fetch, ...anthropicRoute(env, env.CAMPTEAM_AI_URL || undefined) });

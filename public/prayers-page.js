@@ -40,9 +40,10 @@
   function ago(iso) { var n = Math.round((Date.parse(kst(Date.now()) + 'T00:00:00Z') - Date.parse(kst(Date.parse(iso)) + 'T00:00:00Z')) / 86400000); return n <= 0 ? t('today') : n === 1 ? t('yesterday') : t('daysAgo', n); }
 
   var data = { prayers: [], total: 0 }, filter = 'all', query = '', openIds = {}, editingId = null;
+  function langOf(s) { var ko = (String(s).match(/[가-힣]/g) || []).length, en = (String(s).match(/[A-Za-z]/g) || []).length; return ko > 0 && ko / (ko + en) >= 0.3 ? 'ko' : 'en'; }
   /** 화면 언어로 — 원문과 번역 중 화면 언어인 쪽이 주(main), 나머지는 아래에 작게(alt) */
   function pick(p) {
-    var orig = /[가-힣]/.test(p.title + ' ' + p.text) ? 'ko' : 'en', has = !!(p.trTitle || p.trText), useTr = has && lang !== orig;
+    var orig = langOf(p.title + ' ' + p.text), has = !!(p.trTitle || p.trText), useTr = has && lang !== orig;
     var o = { title: p.title, text: p.text }, tr = { title: p.trTitle || '', text: p.trText || '' };
     return useTr ? { main: { title: tr.title || o.title, text: tr.text }, translated: true } : { main: o, translated: false };
   }
