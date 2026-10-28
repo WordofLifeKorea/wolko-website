@@ -9,11 +9,18 @@
  */
 const L = (ko, en) => ({ ko, en });
 
+/* 구역(section)마다
+ *   access: 'all' = 포탈 계정 누구나 쓴다 | 'designated' = 마스터가 지정한 보고 담당자만 쓴다(팀·캠프·행사·교회 보고)
+ *   scope : 'report' = 개인/팀 보고에 들어간다 | 'ministry' = 평택·제주 월별 "사역 현황" 보고(제자훈련·지역교회)에만 들어간다
+ * 항목(field)에는
+ *   hq: false  = 본부(미국) 보고 양식에 없는 우리 내부 항목
+ *   snapshot   = 달말 현재 수(등록 학생·교회 수·클럽 수 등) — 연간 보기에서는 더하지 않고 가장 최근 달의 값을 쓴다
+ *   crs        = CRS(교회 관계 시스템)에서 불러와 채워 주는 항목(고쳐서 저장할 수 있다) */
 export const GOSPEL_SECTIONS = [
   {
-    id: 'personal', title: L('개인 전도', 'Personal Evangelism'),
+    id: 'personal', access: 'all', scope: 'report', title: L('개인 전도', 'Personal Evangelism'),
     fields: [
-      { id: 'preEvangelism', label: L('영적 대화 (마음 밭 갈기) — 복음 이야기로 이어지길 바라며, 일부러 믿음과 영적인 주제로 대화를 나눈 사람', 'Pre-Evangelism (Till the Soil) — people you had intentional spiritual conversations with, hoping to lead to a Gospel conversation'), short: L('영적 대화', 'Spiritual conversations') },
+      { id: 'preEvangelism', label: L('영적 대화 (마음 밭 갈기) — 복음 이야기로 이어지길 바라며, 일부러 믿음과 영적인 주제로 대화를 나눈 사람', 'Pre-Evangelism (Till the Soil) — people you had intentional spiritual conversations with, hoping to lead to a Gospel conversation'), short: L('영적 대화', 'Spiritual conversations'), hq: false },
       { id: 'evangelism', label: L('복음 전하기 (씨 뿌리기) — 일대일이나 소그룹에서 직접 복음을 듣게 된 인원 (고전 15:1–4)', 'Evangelism (Plant the Seed) — people you personally shared the Gospel with, one-on-one or in a small group (1CO 15:1–4)'), short: L('복음 들은 인원', 'Heard the Gospel') },
       { id: 'salvation', label: L('구원 (추수) — 이 복음 대화를 통해 예수님을 믿는다고 고백한 사람', 'Salvation (Reap the Harvest) — people who indicated they believed in Jesus Christ for salvation through these Gospel conversations'), short: L('구원', 'Salvations') },
       { id: 'literature', label: L('복음 전도지 — 복음 대화 없이 나눠 준 전도지 등 자료의 수', 'Gospel Literature — tracts or similar literature distributed without a Gospel conversation'), short: L('전도지', 'Literature') },
@@ -21,7 +28,7 @@ export const GOSPEL_SECTIONS = [
     ],
   },
   {
-    id: 'camps', title: L('캠프', 'Camps'),
+    id: 'camps', access: 'designated', scope: 'report', title: L('캠프', 'Camps'),
     fields: [
       { id: 'campCount', label: L('캠프 횟수 — 이번 달에 열린 캠프 수(하루 이상)', 'Camps — how many camps were held this month (one day or longer)'), short: L('캠프 횟수', 'Camps held') },
       { id: 'campAttendance', label: L('캠프 참석 인원 — 이 캠프들에 참석한 캠퍼와 캠프 크루', 'Camp Attendance — campers and camp crew members who attended these camps'), short: L('캠프 참석 인원', 'Camp attendance') },
@@ -30,19 +37,43 @@ export const GOSPEL_SECTIONS = [
     ],
   },
   {
-    id: 'events', title: L('전도 행사', 'Evangelistic Events'),
+    id: 'events', access: 'designated', scope: 'report', title: L('전도 행사', 'Evangelistic Events'),
     fields: [
       { id: 'eeAttendance', label: L('월코 행사 참석 인원 — 복음을 전한 전도 행사(스포츠, 수련회, 세미나, 지역 교회 사역 등)에 참석한 인원', 'EE Attendance — people who attended evangelistic events (sports, retreats, seminars, local church ministries, etc.) where you and/or your team shared the Gospel'), short: L('월코 행사 참석 인원', 'WOLKO event attendance') },
       { id: 'eeSalvations', label: L('구원 — 이 행사에서 예수님을 믿는다고 고백한 사람', 'Salvations — people who indicated they believed in Jesus for salvation during these events'), short: L('행사 구원', 'Event salvations') },
       { id: 'eeDedications', label: L('헌신 — 이 행사에서 삶을 예수님께 헌신한 사람', 'Dedications — people who dedicated their life to Jesus during these events'), short: L('행사 헌신', 'Event dedications') },
     ],
   },
+  {
+    id: 'discipleship', access: 'designated', scope: 'ministry', title: L('제자훈련', 'Discipleship'),
+    fields: [
+      { id: 'bibleInstitute', label: L('성경 학교(Bible Institute) — 이번 달 등록 학생 수', 'Bible Institute — number of students enrolled this month'), short: L('성경 학교', 'Bible Institute'), snapshot: true },
+      { id: 'dtc', label: L('제자훈련센터(DTC) — 성경 학교·직업 학교 등, 이번 달 등록 학생 수', 'Discipleship Training Center (Bible school, trade school or similar) — students enrolled this month'), short: L('제자훈련센터(DTC)', 'Discipleship Training Center'), snapshot: true },
+      { id: 'symeE4l', label: L('SYME/E4L 제자훈련센터(ESL 중심) — 이번 달 등록 학생 수', 'SYME/E4L Discipleship Training Center (ESL focus) — students enrolled this month'), short: L('SYME/E4L', 'SYME/E4L'), snapshot: true },
+      { id: 'school', label: L('초·중등 학교 — 이번 달 등록 학생 수', 'Primary/Secondary School — students enrolled this month'), short: L('초·중등 학교', 'Primary/Secondary school'), snapshot: true },
+      { id: 'extension', label: L('확장 훈련(Extension) — 사역지 밖에서 열린 정식 성경 과정, 이번 달 등록 학생 수', 'Extension Training — formal Bible courses held off-property, students enrolled this month'), short: L('확장 훈련', 'Extension training'), snapshot: true },
+      { id: 'conferences', label: L('컨퍼런스·기타 성경 교육 행사 — 이번 달 참석 인원 합계', 'Conferences and other Bible teaching events — total attendance this month'), short: L('컨퍼런스·성경 교육', 'Conferences & Bible teaching') },
+    ],
+  },
+  {
+    id: 'church', access: 'designated', scope: 'ministry', title: L('지역교회 사역', 'Local Church Ministries'),
+    fields: [
+      { id: 'churchA', label: L('A 등급 교회 — 가까운 관계: Bible Club 훈련, 자료 모두 사용, 대부분의 행사에 참석 (CRS 등급에서 자동)', 'A — local churches with a close relationship: Bible Club training, use all resources, attend most events (from CRS grades)'), short: L('연결 교회 A', 'Churches A'), snapshot: true, crs: true },
+      { id: 'churchB', label: L('B 등급 교회 — 좋은 관계: 간헐적 훈련, 자료 일부 사용, 일부 행사 참석 (CRS 등급에서 자동)', 'B — local churches with a good relationship: sporadic training, use some resources, attend some events (from CRS grades)'), short: L('연결 교회 B', 'Churches B'), snapshot: true, crs: true },
+      { id: 'churchC', label: L('C 등급 교회 — 좋은 연락: QT 일부 사용, 일부 행사 참석 (CRS 등급에서 자동)', 'C — local churches with good contact: some use of QT, attend some events (from CRS grades)'), short: L('연결 교회 C', 'Churches C'), snapshot: true, crs: true },
+      { id: 'childrenClubs', label: L('어린이 클럽 — 이번 달 말 기준 클럽 수', 'Children Clubs — club count at the end of the month'), short: L('어린이 클럽', 'Children clubs'), snapshot: true },
+      { id: 'youthClubs', label: L('청소년·학생 클럽 — 이번 달 말 기준 클럽 수', 'Youth/Teen/Student Clubs — club count at the end of the month'), short: L('청소년 클럽', 'Youth clubs'), snapshot: true },
+      { id: 'leadershipTraining', label: L('리더십 훈련 참석 — 이번 달 훈련받은 리더 수 (CRS 교회 기록에서 자동)', 'Leadership Training Attendance — leaders trained this month (from CRS church records)'), short: L('리더십 훈련', 'Leadership training'), crs: true },
+      { id: 'weeklyClubAttendance', label: L('주간 클럽 참석 — 모든 클럽 프로그램의 주간 평균 참석 인원 합계', 'Weekly Club Attendance — sum of the weekly average attendance of all club programs this month'), short: L('주간 클럽 참석', 'Weekly club attendance'), snapshot: true },
+    ],
+  },
 ];
 
 export const GOSPEL_FIELDS = GOSPEL_SECTIONS.flatMap(section => section.fields.map(field => ({ ...field, section: section.id })));
 export const GOSPEL_FIELD_IDS = GOSPEL_FIELDS.map(field => field.id);
+export const SNAPSHOT_IDS = new Set(GOSPEL_FIELDS.filter(field => field.snapshot).map(field => field.id));
 export const LOCATIONS = ['mainland', 'jeju'];
-export const SCOPES = ['individual', 'team'];
+export const SCOPES = ['individual', 'team', 'ministry'];   // ministry = 평택·제주 월별 사역 현황(제자훈련·지역교회) — 지정 담당자가 위치마다 한 건을 함께 고친다
 export const REPORT_PREFIX = 'gospel:rep:';
 export const MAX_VALUE = 1_000_000;
 export const MONTHS_BACK = 12;
@@ -72,9 +103,10 @@ export function reportableMonth(month, now = Date.now()) {
 }
 
 /** 화면이 보낸 값에서 정의된 항목만 0 이상의 정수로 정리한다(비어 있으면 0) */
-export function cleanValues(raw) {
+export function cleanValues(raw, allowed = GOSPEL_FIELD_IDS) {
   const out = {};
   for (const id of GOSPEL_FIELD_IDS) {
+    if (!allowed.includes(id)) { out[id] = 0; continue; }      // 이 보고 유형·이 사람이 쓸 수 없는 항목은 0 으로 둔다
     const text = String(raw?.[id] ?? '').replace(/[,\s]/g, '');
     if (text === '') { out[id] = 0; continue; }
     const n = Number(text);
@@ -87,6 +119,16 @@ export function cleanValues(raw) {
 export function cleanText(value, max) {
   return String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
+
+/** 보고 유형(scope)과 작성자 권한에서 쓸 수 있는 항목 id — 개인 전도는 누구나, 캠프·행사는 지정 담당자의 개인/팀 보고, 제자훈련·지역교회는 지정 담당자의 사역 현황 보고 */
+export function allowedFieldIds(scope, designated) {
+  return GOSPEL_SECTIONS
+    .filter(section => (scope === 'ministry' ? section.scope === 'ministry' : section.scope === 'report') && (section.access === 'all' || designated))
+    .flatMap(section => section.fields.map(field => field.id));
+}
+
+/** 사역 현황 보고는 위치(평택/제주)마다 한 건 — 누가 쓰든 같은 번호라 지정 담당자들이 함께 고친다 */
+export const ministryId = (env, location) => anonHex(env, 'unit', `ministry|${location}`, 6);
 
 /** 같은 (계정, 개인/팀, 팀 이름) 은 같은 id — 달 안에서 한 단위가 한 건이 되게 한다 */
 /* ───────── 익명 보관 ─────────
@@ -131,13 +173,14 @@ async function migrateAnonymous(env, key, report) {
 
 /** 보고 목록 → { all, mainland, jeju } 합계 + 건수 */
 export function summarize(reports) {
-  const out = { all: emptyTotals(), mainland: emptyTotals(), jeju: emptyTotals(), counts: { all: 0, mainland: 0, jeju: 0, individual: 0, team: 0 } };
+  const out = { all: emptyTotals(), mainland: emptyTotals(), jeju: emptyTotals(), counts: { all: 0, mainland: 0, jeju: 0, individual: 0, team: 0, ministry: 0 } };
   for (const report of reports) {
     const place = report.location === 'jeju' ? 'jeju' : 'mainland';
     for (const id of GOSPEL_FIELD_IDS) {
       const n = Number(report.values?.[id]) || 0;
       out.all[id] += n; out[place][id] += n;
     }
+    if (report.scope === 'ministry') { out.counts.ministry++; continue; }   // 사역 현황은 '낸 보고 수'에 세지 않는다
     out.counts.all++; out.counts[place]++; out.counts[report.scope === 'team' ? 'team' : 'individual']++;
   }
   return out;
@@ -213,9 +256,15 @@ export function parseCrsChurches(records) {
 
 /** 여러 달의 summarize(+캠프) 결과를 한 해 누적으로 합친다 */
 export function mergeSummaries(list) {
-  const out = { all: emptyTotals(), mainland: emptyTotals(), jeju: emptyTotals(), counts: { all: 0, mainland: 0, jeju: 0, individual: 0, team: 0 } };
+  const out = { all: emptyTotals(), mainland: emptyTotals(), jeju: emptyTotals(), counts: { all: 0, mainland: 0, jeju: 0, individual: 0, team: 0, ministry: 0 } };
   for (const item of list) {
-    for (const place of ['all', 'mainland', 'jeju']) for (const id of GOSPEL_FIELD_IDS) out[place][id] += Number(item?.[place]?.[id]) || 0;
+    for (const place of ['all', 'mainland', 'jeju']) {
+      for (const id of GOSPEL_FIELD_IDS) {
+        const n = Number(item?.[place]?.[id]) || 0;
+        if (SNAPSHOT_IDS.has(id)) { if (n > 0) out[place][id] = n; }   // 달말 현재 수는 더하지 않고 가장 최근 달의 값을 쓴다
+        else out[place][id] += n;
+      }
+    }
     for (const key of Object.keys(out.counts)) out.counts[key] += Number(item?.counts?.[key]) || 0;
   }
   return out;

@@ -23,7 +23,8 @@ function setup() {
     const type = res.headers.get('content-type') || '';
     return { status: res.status, headers: res.headers, ...(type.includes('json') ? await res.json() : { text: await res.text() }) };
   };
-  return { store, acc, call };
+  const designate = (...emails) => store.set('gospel:reporters', JSON.stringify({ emails }));
+  return { store, acc, call, designate };
 }
 const master = ['admin@wolko.org', 'master'];
 const admin = ['hkim3@wol.org', 'admin'];
@@ -57,11 +58,11 @@ test('집계: 월코(본토) · 제주 · 통합을 따로 더하고 건수를 �
   ]);
   assert.equal(s.all.evangelism, 13); assert.equal(s.mainland.evangelism, 5); assert.equal(s.jeju.evangelism, 8);
   assert.equal(s.jeju.campCount, 2); assert.equal(s.all.salvation, 1);
-  assert.deepEqual(s.counts, { all: 3, mainland: 1, jeju: 2, individual: 2, team: 1 });
+  assert.deepEqual(s.counts, { all: 3, mainland: 1, jeju: 2, individual: 2, team: 1, ministry: 0 });
 });
 
 test('보고 저장: 같은 달·같은 단위는 고쳐 쓰고, 팀은 이름이 필요하며, 개인과 팀은 따로 센다', async () => {
-  const t = setup(); await t.acc(anna[0], 'counselor', 'Anna Lee');
+  const t = setup(); await t.acc(anna[0], 'counselor', 'Anna Lee'); t.designate(anna[0]);
   let r = await t.call('POST', anna, { body: report() });
   assert.equal(r.status, 200); assert.equal(r.updated, false); assert.equal(r.report.name, undefined, '이름은 저장하지 않는다');
   r = await t.call('POST', anna, { body: report({ values: { evangelism: 9 } }) });
@@ -206,8 +207,8 @@ test('CRS 교회 목록은 이름만 꺼내고, 이름 없는 레코드는 뺀�
 });
 
 test('교회 행사 저장: 합계 화면에는 행사·숫자만, 메모는 보고한 본인에게만', async () => {
-  const { acc, call } = setup();
-  await acc(anna[0]); await acc(admin[0], 'admin'); await acc('bob@wol.org');
+  const { acc, call, designate } = setup();
+  await acc(anna[0]); await acc(admin[0], 'admin'); await acc('bob@wol.org'); designate(anna[0]);
   const month = currentMonthKst();
   const values = Object.fromEntries(GOSPEL_FIELD_IDS.map(id => [id, 0]));
   const entries = [{ churchName: '평택중앙교회', churchId: 'c1', event: '겨울 집회', date: `${month}-12`, students: 40, salvations: 6, dedications: 2, note: '비공개 메모' }];

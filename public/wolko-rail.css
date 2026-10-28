@@ -148,6 +148,8 @@ button.wl-user-chip:hover { background: rgba(255, 255, 255, .24); }
 /* 내 정보 창의 ✕ 는 공용 모바일 규칙(버튼 최소 높이 44px)에 늘어나 세로 타원이 되지 않도록 정원으로 고정 */
 :root:root .wl-prof-close { width: 36px !important; height: 36px !important; min-width: 0 !important; min-height: 0 !important; padding: 0 !important; aspect-ratio: 1 / 1; flex: none; display: inline-flex; align-items: center; justify-content: center; }
 
+/* 넓은 화면에서는 레일이 있으니 햄버거가 없어야 한다 — 헤더 공용 버튼 스타일(display:inline-flex !important)이 위의 display:none 을 덮어 빈 상자로 남던 것을 막는다 */
+@media (min-width: 900px) { :root:root:root body > header .wolko-burger, :root:root:root .app-header .wolko-burger { display: none !important; } }
 /* ── 좁은 화면(900px 미만): 헤더 맨 오른쪽 햄버거 → 오른쪽에서 밀려 나오는 도구 서랍 ── */
 .wolko-burger, .wolko-drawer, .wolko-drawer-backdrop { display: none; }
 @media (max-width: 899px) {

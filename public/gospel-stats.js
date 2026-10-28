@@ -25,6 +25,10 @@
       needPlace: '위치(평택 또는 제주)를 선택해 주세요.', needTeam: '팀 이름을 입력해 주세요.',
       warnSalv: '구원 고백이 복음을 들은 인원보다 많아요. 맞는지 한 번 더 확인해 주세요.', warnCamp: '캠프의 구원·헌신이 캠프 참석자보다 많아요. 맞는지 확인해 주세요.', warnEvent: '행사의 구원·헌신이 행사 참석자보다 많아요. 맞는지 확인해 주세요.',
       denied: '불러오지 못했어요. 잠시 후 다시 시도해 주세요.', sessionEnd: '로그인이 필요해요.',
+      scopeMinistry: '사역 현황 (제자훈련·지역교회)', formMinistryHint: '평택·제주 위치마다 한 건을 담당자들이 함께 고쳐요. 연결 교회 등급(A/B/C)과 리더십 훈련은 CRS 교회 기록에서 불러와 채워 주고, 고쳐서 저장할 수 있어요.', crsReload: 'CRS에서 다시 불러오기', crsLoading: 'CRS에서 불러오는 중…', crsNone: 'CRS 연결이 설정되지 않아 숫자를 직접 입력해 주세요.', crsFail: 'CRS에서 불러오지 못했어요. 숫자를 직접 입력해 주세요.', crsLoaded: function (place, a, b, c, l) { return 'CRS 기준 · ' + place + ': A ' + a + ' · B ' + b + ' · C ' + c + ' · 리더십 훈련 ' + l + '명 — 채워 넣었어요. 고칠 수 있어요.'; }, crsBadge: 'CRS', crsHint: 'CRS 교회 기록에서 자동으로 채워져요 (고칠 수 있어요)', ministryLabel: '사역 현황', ministrySummary: function (d, c) { return '제자훈련 ' + d + ' · 연결 교회 ' + c; }, needDesignated: '팀 · 캠프 · 전도 행사 · 제자훈련 · 지역교회 보고는 지정된 보고 담당자만 쓸 수 있어요.',
+      hqTitle: '본부 보고용', hqIntro: '미국 본부 Statistics Report 양식과 같은 순서·같은 이름이에요. 숫자를 누르면 그 숫자가, "전체 복사"를 누르면 표 전체가 복사돼요.', hqCopyAll: '전체 복사', hqCopied: '복사했어요.', hqCopyFail: '복사하지 못했어요. 직접 선택해서 복사해 주세요.', hqNeedMonth: '본부 보고는 한 달 단위예요. 월별 보기에서 달을 고르면 표가 나와요.', hqToMonth: '월별로 보기', hqExcluded: '본부 보고 제외 (내부 통계)', hqScopeNote: function (place, month) { return month + ' · ' + place; }, hqSnapshotNote: '※ 교회·클럽 수와 등록 학생 수는 그 달 말 기준으로 입력된 값이에요.', hqCrsNote: '※ 연결 교회 A/B/C와 리더십 훈련은 CRS 교회 기록에서 불러온 값이에요.', hqNoMinistry: '이 달 사역 현황(제자훈련·지역교회)은 아직 입력되지 않았어요.',
+      hqLocation: 'Location', hqMonth: 'Month', hqYear: 'Year',
+      repTitle: '보고 담당자', repHelp: '팀 · 캠프 · 전도 행사 · 제자훈련 · 지역교회 보고는 여기서 지정한 사람(과 마스터)만 쓸 수 있어요. 개인 전도 보고는 누구나 써요.', repAdd: '담당자 추가', repPick: '이름 또는 이메일로 고르기', repNone: '아직 지정한 담당자가 없어요.', repRemove: '빼기', repSaved: '담당자를 저장했어요.', repUnknown: '목록에 없는 계정이에요. 포탈 계정 이메일을 골라 주세요.',
       monthLabel: function (m) { var p = m.split('-'); return p[0] + '년 ' + Number(p[1]) + '월'; },
     },
     en: {
@@ -46,6 +50,10 @@
       needPlace: 'Please choose a location (Pyeongtaek or Jeju).', needTeam: 'Please enter a team name.',
       warnSalv: 'Salvations are higher than the number of people who heard the Gospel. Please double-check.', warnCamp: 'Camp salvations/dedications are higher than camp attendance. Please double-check.', warnEvent: 'Event salvations/dedications are higher than event attendance. Please double-check.',
       denied: 'Could not load. Please try again shortly.', sessionEnd: 'Please sign in.',
+      scopeMinistry: 'Ministry status (discipleship & local churches)', formMinistryHint: 'One report per location (Pyeongtaek / Jeju), edited together by the reporters. Church grades (A/B/C) and leadership training are filled in from the CRS church records — you can edit them before saving.', crsReload: 'Reload from CRS', crsLoading: 'Loading from CRS…', crsNone: 'CRS is not connected — please enter the numbers yourself.', crsFail: 'Could not load from CRS — please enter the numbers yourself.', crsLoaded: function (place, a, b, c, l) { return 'From CRS · ' + place + ': A ' + a + ' · B ' + b + ' · C ' + c + ' · leaders trained ' + l + ' — filled in, you can edit.'; }, crsBadge: 'CRS', crsHint: 'Filled in automatically from the CRS church records (editable)', ministryLabel: 'Ministry status', ministrySummary: function (d, c) { return 'Discipleship ' + d + ' · Churches ' + c; }, needDesignated: 'Only designated reporters can write team, camp, evangelistic event, discipleship and local church reports.',
+      hqTitle: 'For HQ report', hqIntro: 'Same order and names as the US headquarters Statistics Report form. Click a number to copy it, or use “Copy all” for the whole table.', hqCopyAll: 'Copy all', hqCopied: 'Copied.', hqCopyFail: 'Could not copy — please select and copy manually.', hqNeedMonth: 'The HQ report is monthly. Pick a month in the monthly view to see the table.', hqToMonth: 'Switch to monthly', hqExcluded: 'Not in HQ report (internal stat)', hqScopeNote: function (place, month) { return month + ' · ' + place; }, hqSnapshotNote: '* Church, club and enrolled-student counts are the values entered as of the end of that month.', hqCrsNote: '* Church grades A/B/C and leadership training come from the CRS church records.', hqNoMinistry: 'Ministry status (discipleship & local churches) has not been entered for this month yet.',
+      hqLocation: 'Location', hqMonth: 'Month', hqYear: 'Year',
+      repTitle: 'Reporters', repHelp: 'Only the people listed here (and the master) can write team, camp, evangelistic event, discipleship and local church reports. Anyone can write a personal evangelism report.', repAdd: 'Add reporter', repPick: 'Pick by name or email', repNone: 'No reporters designated yet.', repRemove: 'Remove', repSaved: 'Reporters saved.', repUnknown: 'Not in the list — pick a portal account email.',
       monthLabel: function (m) { var p = m.split('-'); return new Date(Date.UTC(Number(p[0]), Number(p[1]) - 1, 1)).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }); },
     },
   };
@@ -138,7 +146,7 @@
     $('csvBtn').hidden = !data.me.canReview;
     $('xlsxBtn').hidden = !data.me.canReview;
     $('dlMenu').hidden = !data.me.canReview;
-    renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderMine();
+    renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderMine(); renderHq(); renderReporters();
   }
 
   /** 교회별 행사 — 같은 교회(CRS 번호, 없으면 이름)의 행사를 모아 참석·구원·헌신을 더한다 */
@@ -257,12 +265,126 @@
   function whoLabel(r) { return r.scope === 'team' ? t('teamOf', r.teamName) : t('individual'); }
   function when(iso) { try { return new Date(iso).toLocaleDateString(lang === 'en' ? 'en-US' : 'ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric' }); } catch (e) { return ''; } }
 
+  function mineSummary(r) {
+    if (r.scope === 'ministry') { var v = r.values || {}; return t('ministrySummary', num((v.bibleInstitute || 0) + (v.dtc || 0) + (v.symeE4l || 0) + (v.school || 0) + (v.extension || 0)), num((v.churchA || 0) + (v.churchB || 0) + (v.churchC || 0))); }
+    return t('kGospel') + ' ' + num(r.values.evangelism) + ' · ' + t('kSalv') + ' ' + num(sumSalv(r.values)) + ' · ' + t('kDed') + ' ' + num(sumDed(r.values));
+  }
+  function mineList() { return (data.mine || []).concat(data.ministry || []); }
   function renderMine() {
-    $('mineWrap').hidden = !data.mine.length;
-    $('mine').innerHTML = data.mine.map(function (r) {
-      return '<div class="gs-minecard"><div><strong>' + esc(whoLabel(r)) + '</strong> ' + pill(r.location) + '<small>' + esc(t('kGospel')) + ' ' + num(r.values.evangelism) + ' · ' + esc(t('kSalv')) + ' ' + num(sumSalv(r.values)) + ' · ' + esc(t('kDed')) + ' ' + num(sumDed(r.values)) + '</small></div>' +
+    var list = mineList();
+    $('mineWrap').hidden = !list.length;
+    $('mine').innerHTML = list.map(function (r) {
+      return '<div class="gs-minecard"><div><strong>' + esc(r.scope === 'ministry' ? t('ministryLabel') : whoLabel(r)) + '</strong> ' + pill(r.location) + '<small>' + esc(mineSummary(r)) + '</small></div>' +
         '<div class="gs-minebtns"><button type="button" class="gs-small" data-edit="' + esc(r.id) + '">' + esc(t('edit')) + '</button><button type="button" class="gs-small" data-del="' + esc(r.id) + '">' + esc(t('del')) + '</button></div></div>';
     }).join('');
+  }
+
+
+  /* ───────── 본부 보고용 (미국 본부 Statistics Report 양식 그대로) ───────── */
+  var HQ_SECTIONS = [
+    { title: 'GOSPEL REACH', cols: ['Events', 'Audience', 'Salvation', 'Dedications'], rows: [
+      { name: 'CAMPS', ids: ['campCount', 'campAttendance', 'campSalvations', 'campDedications'] },
+      { name: 'EVANGELISTIC EVENTS', ids: [null, 'eeAttendance', 'eeSalvations', 'eeDedications'] },
+      { name: 'PERSONAL EVANGELISM', ids: [null, 'evangelism', 'salvation', null] },
+      { name: 'OTHER GOSPEL REACH', header: true },
+      { name: 'Literature Distribution', sub: true, ids: [null, 'literature', null, null] },
+      { name: 'Social Media Outreach', sub: true, ids: [null, 'social', null, null] },
+    ] },
+    { title: 'DISCIPLESHIP', cols: ['Enrollment'], rows: [
+      { name: 'BIBLE INSTITUTE', ids: ['bibleInstitute'] },
+      { name: 'DISCIPLESHIP TRAINING CENTER', ids: ['dtc'] },
+      { name: 'SYME/E4L Discipleships Training Center (ESL focus)', ids: ['symeE4l'] },
+      { name: 'PRIMARY/SECONDARY SCHOOL', ids: ['school'] },
+      { name: 'EXTENSION TRAINING', ids: ['extension'] },
+      { name: 'CONFERENCES AND OTHER BIBLE TEACHING EVENTS (attendance)', ids: ['conferences'] },
+    ] },
+    { title: 'LOCAL CHURCH MINISTRIES', cols: ['A', 'B', 'C'], rows: [
+      { name: 'LOCAL CHURCHES CONNECTED TO:', ids: ['churchA', 'churchB', 'churchC'], crs: true },
+      { name: 'Count', header: true },
+      { name: 'CHILDREN CLUBS', ids: ['childrenClubs'] },
+      { name: 'YOUTH/TEEN/STUDENT CLUBS', ids: ['youthClubs'] },
+      { name: 'LEADERSHIP TRAINING ATTENDANCE', ids: ['leadershipTraining'], crs: true },
+      { name: 'WEEKLY CLUB ATTENDANCE', ids: ['weeklyClubAttendance'] },
+    ] },
+  ];
+  function hqPlaceName() { return tab === 'jeju' ? 'Jeju' : tab === 'mainland' ? 'Mainland (Pyeongtaek)' : 'Mainland + Jeju'; }
+  function hqMonthParts() { var p = data.month.split('-'); return { name: new Date(Date.UTC(Number(p[0]), Number(p[1]) - 1, 1)).toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' }), year: p[0] }; }
+  function hqText() {
+    var x = totals(data.summary, tab), mp = hqMonthParts(), lines = ['Location: ' + hqPlaceName(), 'Month: ' + mp.name, 'Year: ' + mp.year];
+    HQ_SECTIONS.forEach(function (sec) {
+      lines.push('', sec.title);
+      var cols = sec.cols;
+      sec.rows.forEach(function (row) {
+        if (row.header) { lines.push(row.name); return; }
+        var parts = row.ids.map(function (id, i) { return id ? (cols[i] + ': ' + (x[id] || 0)) : null; }).filter(Boolean);
+        lines.push((row.sub ? '  ' : '') + row.name + ' — ' + parts.join(' | '));
+      });
+    });
+    return lines.join('\n');
+  }
+  function renderHq() {
+    var box = $('hqBox'), wrap = $('hqWrap'); if (!box || !wrap) return;
+    $('hqCopyAll').hidden = view === 'year';
+    if (view === 'year') { box.innerHTML = '<p class="gs-empty">' + esc(t('hqNeedMonth')) + ' <button type="button" class="gs-small" id="hqToMonth">' + esc(t('hqToMonth')) + '</button></p>'; return; }
+    var x = totals(data.summary, tab), mp = hqMonthParts();
+    var html = '<div class="gs-hqmeta"><span><em>Location</em> <b>' + esc(hqPlaceName()) + '</b></span><span><em>Month</em> <b>' + esc(mp.name) + '</b></span><span><em>Year</em> <b>' + esc(mp.year) + '</b></span></div><div class="gs-tablewrap">';
+    HQ_SECTIONS.forEach(function (sec) {
+      html += '<table class="gs-table gs-hq"><thead><tr><th>' + esc(sec.title) + '</th>' + sec.cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
+      sec.rows.forEach(function (row) {
+        if (row.header) { html += '<tr class="gs-hq-sub"><td colspan="' + (sec.cols.length + 1) + '">' + esc(row.name) + '</td></tr>'; return; }
+        html += '<tr><td' + (row.sub ? ' class="is-sub"' : '') + '>' + esc(row.name) + (row.crs ? ' <span class="gs-crsbadge" title="' + esc(t('crsHint')) + '">' + esc(t('crsBadge')) + '</span>' : '') + '</td>'
+          + sec.cols.map(function (c, i) { var id = row.ids[i]; return id ? '<td><button type="button" class="gs-hqnum" data-copy="' + (x[id] || 0) + '" title="' + esc(t('hqCopied')) + '">' + num(x[id]) + '</button></td>' : '<td class="is-empty"></td>'; }).join('') + '</tr>';
+      });
+      html += '</tbody></table>';
+    });
+    html += '</div>';
+    var hasMinistry = (data.summary.counts && data.summary.counts.ministry) > 0;
+    html += '<p class="gs-hqnote">' + esc(t('hqSnapshotNote')) + '<br>' + esc(t('hqCrsNote')) + (hasMinistry ? '' : '<br><b>' + esc(t('hqNoMinistry')) + '</b>') + '</p>';
+    box.innerHTML = html;
+  }
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy') ? resolve() : reject(new Error('copy')); } catch (e) { reject(e); } finally { ta.remove(); }
+    });
+  }
+  function copyDone(ok, el) {
+    say(ok ? t('hqCopied') : t('hqCopyFail'));
+    if (ok && el) { el.classList.add('is-copied'); setTimeout(function () { el.classList.remove('is-copied'); }, 900); }
+  }
+
+  /* ───────── 보고 담당자 지정 (마스터만) ───────── */
+  var repInfo = null;
+  async function loadReporterInfo() {
+    try {
+      var res = await fetch('/api/portal/gospel-reporters', { headers: headers() });
+      var body = await res.json().catch(function () { return {}; });
+      if (res.ok) repInfo = body;
+    } catch (e) { /* 다음에 다시 시도 */ }
+    renderReporters();
+  }
+  function renderReporters() {
+    var wrap = $('repWrap'), box = $('repBox'); if (!wrap || !box) return;
+    wrap.hidden = !data.reporters;
+    if (!data.reporters) return;
+    if (!repInfo) { box.innerHTML = '<p class="gs-empty">' + esc(t('loading')) + '</p>'; if (!renderReporters.busy) { renderReporters.busy = true; loadReporterInfo().then(function () { renderReporters.busy = false; }); } return; }
+    var chips = repInfo.reporters.length
+      ? '<ul class="gs-people gs-repchips">' + repInfo.reporters.map(function (p) { return '<li><span><strong>' + esc(p.name) + '</strong><em>' + esc(p.email) + '</em></span><button type="button" class="gs-small" data-rep-remove="' + esc(p.email) + '">' + esc(t('repRemove')) + '</button></li>'; }).join('') + '</ul>'
+      : '<p class="gs-empty">' + esc(t('repNone')) + '</p>';
+    box.innerHTML = '<p class="gs-ce-hint">' + esc(t('repHelp')) + '</p>' + chips
+      + '<div class="gs-repadd"><input id="repInput" class="gs-text" list="repList" autocomplete="off" placeholder="' + esc(t('repPick')) + '" aria-label="' + esc(t('repPick')) + '"><datalist id="repList">'
+      + repInfo.candidates.map(function (c) { return '<option value="' + esc(c.email) + '">' + esc(c.name) + '</option>'; }).join('') + '</datalist><button type="button" class="gs-small" id="repAdd">＋ ' + esc(t('repAdd')) + '</button></div>';
+  }
+  async function saveReporters(emails) {
+    try {
+      var res = await fetch('/api/portal/gospel-reporters', { method: 'POST', headers: headers(true), body: JSON.stringify({ emails: emails }) });
+      var body = await res.json().catch(function () { return {}; });
+      if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); show('login'); return; }
+      if (!res.ok) throw new Error(body.error || t('denied'));
+      repInfo = body; data.reporters = body.reporters.map(function (p) { return p.email; }); clearCache(); renderReporters(); say(t('repSaved'));
+    } catch (error) { say(error.message); }
   }
 
   /* ───────── 보고 쓰기 ───────── */
@@ -324,18 +446,22 @@
     var scope = report ? report.scope : 'individual';
     var place = report ? report.location : ((data.me && data.me.location) || lastPlace()); // 새 보고: 가입할 때 고른 소속(평택/제주)이 기본값
     var v = (report && report.values) || {};
+    var designated = !!(data.me && data.me.designated);
     var html = '<p class="gs-anon">🔒 ' + esc(t('anonNote')) + '</p><div class="gs-meta"><fieldset class="gs-fieldset"><legend>' + esc(t('formMonth')) + '</legend><select id="fMonth" class="gs-select">' + monthOptions().map(function (m) { return '<option value="' + m + '"' + (m === month ? ' selected' : '') + '>' + esc(t('monthLabel', m)) + '</option>'; }).join('') + '</select></fieldset>' +
       '<fieldset class="gs-fieldset"><legend>' + esc(t('formWho')) + '</legend><div class="gs-choices">' +
         '<label class="gs-choice"><input type="radio" name="fScope" value="individual"' + (scope === 'individual' ? ' checked' : '') + '> ' + esc(t('individual')) + '</label>' +
-        '<label class="gs-choice"><input type="radio" name="fScope" value="team"' + (scope === 'team' ? ' checked' : '') + '> ' + esc(t('team')) + '</label></div>' +
+        (designated ? '<label class="gs-choice"><input type="radio" name="fScope" value="team"' + (scope === 'team' ? ' checked' : '') + '> ' + esc(t('team')) + '</label>' +
+        '<label class="gs-choice"><input type="radio" name="fScope" value="ministry"' + (scope === 'ministry' ? ' checked' : '') + '> ' + esc(t('scopeMinistry')) + '</label>' : '') + '</div>' +
         '<input id="fTeam" class="gs-text" type="text" maxlength="60" placeholder="' + esc(t('formTeamPh')) + '" aria-label="' + esc(t('formTeam')) + '" value="' + esc(report ? report.teamName : '') + '"' + (scope === 'team' ? '' : ' hidden') + '></fieldset>' +
       '<fieldset class="gs-fieldset"><legend>' + esc(t('formPlace')) + '</legend><div class="gs-choices">' +
         '<label class="gs-choice"><input type="radio" name="fPlace" value="mainland"' + (place === 'mainland' ? ' checked' : '') + '> ' + esc(t('placeMainland')) + '</label>' +
         '<label class="gs-choice"><input type="radio" name="fPlace" value="jeju"' + (place === 'jeju' ? ' checked' : '') + '> ' + esc(t('placeJeju')) + '</label></div></fieldset></div>';
     data.schema.sections.forEach(function (section) {
-      html += '<section class="gs-sec"><h4 class="gs-sec-head">' + esc(tx(section.title)) + '</h4>' + (section.id === 'camps' ? '<p class="gs-ce-hint gs-sec-note">' + esc(t('campFormHint')) + '</p>' : '') + section.fields.map(function (f) {
+      html += '<section class="gs-sec" data-sec="' + section.id + '"><h4 class="gs-sec-head">' + esc(tx(section.title)) + '</h4>' + (section.id === 'camps' ? '<p class="gs-ce-hint gs-sec-note">' + esc(t('campFormHint')) + '</p>' : '')
+        + (section.scope === 'ministry' && section.id === 'discipleship' ? '<p class="gs-ce-hint gs-sec-note">' + esc(t('formMinistryHint')) + '</p>' : '')
+        + (section.id === 'church' ? '<div class="gs-crsbar"><p class="gs-ce-hint" id="crsNote"></p><button type="button" class="gs-small" id="crsReload">' + esc(t('crsReload')) + '</button></div>' : '') + section.fields.map(function (f) {
         var parts = tx(f.label).split(' — '), title = parts[0], desc = parts.slice(1).join(' — ');
-        return '<div class="gs-row"><div class="gs-row-text"><label for="f_' + f.id + '"><strong>' + esc(title) + '</strong></label>'
+        return '<div class="gs-row"><div class="gs-row-text"><label for="f_' + f.id + '"><strong>' + esc(title) + '</strong></label>' + (f.crs ? '<span class="gs-crsbadge" title="' + esc(t('crsHint')) + '">' + esc(t('crsBadge')) + '</span>' : '')
           + (desc ? '<button type="button" class="gs-info" data-tip="' + esc(desc) + '" aria-label="' + esc(t('infoLabel', title)) + '">i</button>' : '') + '</div>'
           + '<div class="gs-step"><button type="button" class="gs-stepbtn" data-step="-1" data-for="' + f.id + '" aria-label="' + esc(t('minus')) + '">−</button>'
           + '<input id="f_' + f.id + '" type="text" inputmode="numeric" autocomplete="off" data-field="' + f.id + '" value="' + (v[f.id] ? v[f.id] : 0) + '" placeholder="0" aria-label="' + esc(title) + '">'
@@ -346,8 +472,9 @@
       + '<div class="gs-ce-foot"><button type="button" class="gs-small" id="churchAdd">＋ ' + esc(t('churchAdd')) + '</button><span class="gs-ce-total" id="churchTotal"></span><button type="button" class="gs-small" id="churchApply" hidden>' + esc(t('churchApply')) + '</button></div></div></section><datalist id="gsChurchList"></datalist>';
     html += '<p class="gs-warn" id="fWarn" hidden></p><div class="gs-formbtns"><button type="submit" class="gs-primary" id="fSave">' + esc(t('save')) + '</button><button type="button" class="gs-small" id="fCancel">' + esc(t('cancel')) + '</button></div>';
     $('reportForm').innerHTML = html;
-    drafts = {}; formKey = unitKey(currentUnit());
+    drafts = {}; applyScopeUi(); formKey = unitKey(currentUnit());
     updateWarn(); updateChurchTotal(); loadChurches();
+    if (currentUnit().scope === 'ministry' && !report) applyCrs(false);
   }
 
   function formValues() { var out = {}; document.querySelectorAll('#reportForm [data-field]').forEach(function (i) { out[i.dataset.field] = i.value; }); return out; }
@@ -375,7 +502,36 @@
   var drafts = {}, formKey = null;
   function currentUnit() {
     var scope = document.querySelector('input[name="fScope"]:checked').value;
-    return { month: $('fMonth').value, scope: scope, team: scope === 'team' ? ($('fTeam').value || '').trim().toLowerCase() : '' };
+    var placeEl = document.querySelector('input[name="fPlace"]:checked');
+    // 사역 현황은 위치마다 한 건이라 위치가 단위 이름 구실을 한다
+    return { month: $('fMonth').value, scope: scope, team: scope === 'team' ? ($('fTeam').value || '').trim().toLowerCase() : (scope === 'ministry' ? (placeEl ? placeEl.value : '') : '') };
+  }
+  /** 고르기에 따라 쓸 수 있는 구역만 보이게 — 개인 전도는 누구나, 캠프·행사는 담당자의 개인/팀, 제자훈련·지역교회는 담당자의 사역 현황 */
+  function applyScopeUi() {
+    var scope = document.querySelector('input[name="fScope"]:checked').value, designated = !!(data.me && data.me.designated);
+    data.schema.sections.forEach(function (sec) {
+      var el = document.querySelector('#reportForm [data-sec="' + sec.id + '"]'); if (!el) return;
+      var inScope = scope === 'ministry' ? sec.scope === 'ministry' : sec.scope === 'report';
+      el.hidden = !(inScope && (sec.access === 'all' || designated));
+    });
+    var ce = $('churchSec'); if (ce) ce.hidden = !(designated && scope !== 'ministry');
+    if ($('fTeam')) $('fTeam').hidden = scope !== 'team';
+  }
+  /** 사역 현황: CRS 교회 기록에서 연결 교회 A/B/C 수와 그 달 리더십 훈련 인원을 불러와 칸에 채운다 */
+  var crsSeq = 0;
+  async function applyCrs(fresh) {
+    var u = currentUnit(); if (u.scope !== 'ministry' || !u.team) { if ($('crsNote')) $('crsNote').textContent = ''; return; }
+    var note = $('crsNote'), seq = ++crsSeq; if (note) note.textContent = t('crsLoading');
+    try {
+      var res = await fetch('/api/portal/gospel-ministry?month=' + encodeURIComponent(u.month) + (fresh ? '&fresh=1' : ''), { headers: headers() });
+      var body = await res.json().catch(function () { return {}; });
+      if (seq !== crsSeq || !$('crsNote')) return;
+      if (!res.ok) throw new Error(body.error || t('crsFail'));
+      if (!body.configured) { $('crsNote').textContent = t('crsNone'); return; }
+      var c = (body.crs && body.crs[u.team]) || {};
+      ['churchA', 'churchB', 'churchC', 'leadershipTraining'].forEach(function (id) { var el = $('f_' + id); if (el) { el.value = String(c[id] || 0); el.dispatchEvent(new Event('input', { bubbles: true })); } });
+      $('crsNote').textContent = t('crsLoaded', placeLabel(u.team), c.churchA || 0, c.churchB || 0, c.churchC || 0, c.leadershipTraining || 0);
+    } catch (e) { if (seq === crsSeq && $('crsNote')) $('crsNote').textContent = t('crsFail'); }
   }
   function unitKey(u) { return u.month + '|' + u.scope + '|' + u.team; }
   function snapshot() {
@@ -390,6 +546,7 @@
     $('churchRows').innerHTML = (churchEntries || []).map(churchRowHtml).join('');
     updateWarn(); updateChurchTotal();
   }
+  function applyCrsNoteOnly() { var n = $('crsNote'); if (n) n.textContent = ''; }
   async function syncExisting() {
     var unit = currentUnit(), key = unitKey(unit);
     if (key === formKey) return;
@@ -399,12 +556,15 @@
     var info;
     try { info = cache[unit.month] || await fetchMonth(unit.month); } catch (e) { return; }
     if (unitKey(currentUnit()) !== key) return;            // 기다리는 사이 또 바꿨으면 마지막 선택만 처리
-    var match = info.mine.filter(function (r) { return r.scope === unit.scope && (unit.scope === 'individual' || String(r.teamName).toLowerCase() === unit.team); })[0];
+    var pool = unit.scope === 'ministry' ? (info.ministry || []) : info.mine;
+    var match = pool.filter(function (r) { return r.scope === unit.scope && (unit.scope === 'individual' || (unit.scope === 'ministry' ? r.location === unit.team : String(r.teamName).toLowerCase() === unit.team)); })[0];
     var draft = drafts[key];
     $('formError').textContent = '';
-    if (draft) fillForm(draft.values, draft.place, draft.churchEntries);
-    else if (match) { fillForm(match.values, match.location, match.churchEntries); $('formError').textContent = t('formLoaded'); }
-    else if (!prevTeamEmpty) fillForm({}, (data.me && data.me.location) || lastPlace(), []);   // 팀 이름만 막 정한 경우가 아니면 새 보고는 0 에서 시작
+    applyScopeUi();
+    var ministry = unit.scope === 'ministry', placeKeep = ministry ? unit.team : '';
+    if (draft) fillForm(draft.values, ministry ? placeKeep : draft.place, draft.churchEntries);
+    else if (match) { fillForm(match.values, match.location, match.churchEntries); $('formError').textContent = t('formLoaded'); if (ministry) applyCrsNoteOnly(); }
+    else if (!prevTeamEmpty) { fillForm({}, ministry ? placeKeep : ((data.me && data.me.location) || lastPlace()), []); if (ministry) applyCrs(false); }   // 팀 이름만 막 정한 경우가 아니면 새 보고는 0 에서 시작
   }
 
   async function save(event) {
@@ -414,10 +574,11 @@
     var team = ($('fTeam').value || '').trim();
     if (!placeEl) { $('formError').textContent = t('needPlace'); return; }
     if (scope === 'team' && !team) { $('formError').textContent = t('needTeam'); return; }
+    if (scope !== 'individual' && !(data.me && data.me.designated)) { $('formError').textContent = t('needDesignated'); return; }
     $('fSave').disabled = true; $('fSave').textContent = t('saving'); $('formError').textContent = '';
     try {
       var month = $('fMonth').value;
-      var res = await fetch(API, { method: 'POST', headers: headers(true), body: JSON.stringify({ month: month, scope: scope, teamName: team, location: placeEl.value, values: formValues(), churchEntries: churchEntriesFromForm() }) });
+      var res = await fetch(API, { method: 'POST', headers: headers(true), body: JSON.stringify({ month: month, scope: scope, teamName: scope === 'team' ? team : '', location: placeEl.value, values: formValues(), churchEntries: scope === 'ministry' ? [] : churchEntriesFromForm() }) });
       var body = await res.json().catch(function () { return {}; });
       if (res.status === 401) { sessionStorage.removeItem(TOKEN_KEY); show('login'); return; }
       if (!res.ok) throw new Error(body.error || t('denied'));
@@ -470,10 +631,10 @@
   $('nextMonth').addEventListener('click', function () { shift(1); });
   $('thisMonth').addEventListener('click', function () { load(view === 'year' ? data.current.slice(0, 4) : data.current); });
   $('writeBtn').addEventListener('click', function () { openForm(null); });
-  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); });
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderTabs(); renderKpis(); renderCharts(); renderTable(); renderTrend(); renderHq(); });
   $('mine').addEventListener('click', async function (e) {
     var edit = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]');
-    if (edit) { openForm(data.mine.filter(function (r) { return r.id === edit.dataset.edit; })[0]); return; }
+    if (edit) { openForm(mineList().filter(function (r) { return r.id === edit.dataset.edit; })[0]); return; }
     if (del) {
       if (!confirm(t('delAsk'))) return;
       del.disabled = true;
@@ -535,6 +696,23 @@
       say(t('caStaffSaved'));
     } catch (error) { say(error.message); renderCampAuto(); }
   });
+
+  $('hqWrap').addEventListener('click', function (e) {
+    var num_ = e.target.closest('[data-copy]'), all = e.target.closest('#hqCopyAll'), toMonth = e.target.closest('#hqToMonth');
+    if (num_) { copyText(num_.dataset.copy).then(function () { copyDone(true, num_); }, function () { copyDone(false); }); return; }
+    if (all) { copyText(hqText()).then(function () { copyDone(true, all); }, function () { copyDone(false); }); return; }
+    if (toMonth) { view = 'month'; try { localStorage.setItem('gsView', 'month'); } catch (err) { /* 괜찮다 */ } load(lastMonth || data.current); }
+  });
+  $('repWrap').addEventListener('click', function (e) {
+    var rm = e.target.closest('[data-rep-remove]'), add = e.target.closest('#repAdd');
+    if (rm && repInfo) { saveReporters(repInfo.reporters.map(function (p) { return p.email; }).filter(function (m) { return m !== rm.dataset.repRemove; })); return; }
+    if (add && repInfo) {
+      var v = ($('repInput').value || '').trim().toLowerCase();
+      var hit = repInfo.candidates.filter(function (c) { return c.email === v || c.name.toLowerCase() === v; })[0];
+      if (!hit) { say(t('repUnknown')); return; }
+      saveReporters(repInfo.reporters.map(function (p) { return p.email; }).concat([hit.email]));
+    }
+  });
   $('reportForm').addEventListener('submit', save);
   $('reportForm').addEventListener('input', function (e) { if (e.target.matches('[data-field]')) updateWarn(); if (e.target.matches('[data-ce]')) updateChurchTotal(); });
   $('reportForm').addEventListener('change', function (e) {
@@ -544,12 +722,13 @@
   });
   $('reportForm').addEventListener('focusin', function (e) { if (e.target.matches('[data-field]')) setTimeout(function () { e.target.select(); }, 0); });
   $('reportForm').addEventListener('change', function (e) {
-    if (e.target.name === 'fScope') $('fTeam').hidden = e.target.value !== 'team';
-    if (e.target.id === 'fMonth' || e.target.name === 'fScope') syncExisting();
+    if (e.target.name === 'fScope') applyScopeUi();
+    if (e.target.id === 'fMonth' || e.target.name === 'fScope' || (e.target.name === 'fPlace' && document.querySelector('input[name="fScope"]:checked').value === 'ministry')) syncExisting();
   });
   $('reportForm').addEventListener('focusout', function (e) { if (e.target.id === 'fTeam') syncExisting(); });
   $('reportForm').addEventListener('click', function (e) {
     if (e.target.id === 'fCancel') { $('formPanel').hidden = true; return; }
+    if (e.target.id === 'crsReload') { applyCrs(true); return; }
     if (e.target.id === 'churchAdd') { $('churchRows').insertAdjacentHTML('beforeend', churchRowHtml()); updateChurchTotal(); var last = $('churchRows').lastElementChild; if (last) last.querySelector('.gs-ce-church').focus(); return; }
     if (e.target.closest('.gs-ce-del')) { e.target.closest('.gs-ce').remove(); updateChurchTotal(); return; }
     if (e.target.id === 'churchApply') {

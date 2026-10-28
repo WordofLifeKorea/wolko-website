@@ -17,7 +17,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <link rel="icon" type="image/png" href="/images/WOLKO Circle.png">
   <meta name="theme-color" content="#004f68">
   <link rel="stylesheet" href="/wolko-auth.css?v=1">
-  <link rel="stylesheet" href="/wolko-rail.css?v=21">
+  <link rel="stylesheet" href="/wolko-rail.css?v=22">
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
@@ -244,6 +244,26 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
 
   /* ── 교회 상세 모달 ── */
   .detail-info { background:linear-gradient(135deg,#f0f7fa,#f8fbfc); border-radius:12px; padding:1.1rem 1.3rem; margin-bottom:1.2rem; border:1px solid #e2edf2; }
+
+  /* 본부 보고 연동 — 관계 등급 · 리더십 훈련 */
+  .hq-section { margin:0 0 1rem; padding:.85rem .95rem; border:1px solid #dce8ee; border-radius:14px; background:#f8fbfc; }
+  .hq-head { display:flex; flex-direction:column; gap:.1rem; margin-bottom:.6rem; }
+  .hq-title { font-size:.88rem; font-weight:800; color:#0d2b38; }
+  .hq-sub { font-size:.74rem; color:#6d8190; }
+  .hq-grades { display:flex; gap:.4rem; flex-wrap:wrap; }
+  .hq-grade { min-width:44px; height:36px; padding:0 .8rem; border:1px solid #cfdde5; border-radius:10px; background:#fff; color:#4a6070; font-size:.9rem; font-weight:800; cursor:pointer; transition:background .15s, color .15s, border-color .15s; }
+  .hq-grade:hover { border-color:#8fb3c2; }
+  .hq-grade.is-on { background:#004f68; border-color:#004f68; color:#fff; }
+  .hq-grade-none { font-size:.78rem; font-weight:700; }
+  .hq-grade-desc { margin:.55rem 0 0; min-height:2.6em; font-size:.78rem; line-height:1.5; color:#5b7282; }
+  .hq-leaders { display:flex; align-items:center; justify-content:space-between; gap:.6rem; flex-wrap:wrap; margin-top:.5rem; padding-top:.7rem; border-top:1px dashed #d6e3ea; }
+  .hq-leaders-label { font-size:.82rem; font-weight:700; color:#0d2b38; }
+  .hq-month, .hq-count { display:inline-flex; align-items:center; gap:.35rem; }
+  .hq-month b { min-width:78px; text-align:center; font-size:.82rem; color:#4a6070; }
+  .hq-count b { min-width:34px; text-align:center; font-size:1.05rem; color:#004f68; font-variant-numeric:tabular-nums; }
+  .hq-step { width:30px; height:30px; padding:0; border:1px solid #cfdde5; border-radius:8px; background:#fff; color:#004f68; font-size:1rem; font-weight:800; line-height:1; cursor:pointer; }
+  .hq-step:hover:not(:disabled) { background:#eaf3f6; }
+  .hq-step:disabled { opacity:.35; cursor:default; }
   .detail-info-row { display:flex; gap:.6rem; font-size:.88rem; color:#4a6070; margin-bottom:.65rem; flex-wrap:wrap; line-height:1.5; }
   .detail-info-row:last-child { margin-bottom:0; }
   .detail-info-row strong { color:#0d2b38; min-width:76px; flex-shrink:0; font-weight:700; }
@@ -2067,7 +2087,80 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     if (crsMap) setTimeout(() => naver.maps.Event.trigger(crsMap, 'resize'), 50);
   }
 
+  // ── 본부 보고 연동: 관계 등급(A/B/C) · 달별 리더십 훈련 인원 ──
+  // 교회 기록에 grade('A'|'B'|'C') 와 leaderTraining({ 'YYYY-MM': 명 }) 으로 저장하고, 복음 통계 서버가 읽어 지역교회 사역 보고에 채운다.
+  const HQ_GRADE_DESC = {
+    ko: {
+      A: 'A · 가까운 관계 — Bible Club 훈련을 받고, 자료를 모두 쓰며, 대부분의 행사에 참석해요.',
+      B: 'B · 좋은 관계 — 간헐적으로 훈련을 받고, 자료 일부를 쓰며, 일부 행사에 참석해요.',
+      C: 'C · 좋은 연락 — QT를 일부 쓰고, 일부 행사에 참석해요.',
+      '': '관계 등급을 아직 정하지 않았어요. 등급을 정한 교회만 본부 보고의 연결 교회 수에 들어가요.',
+    },
+    en: {
+      A: 'A · Close relationship — Bible Club training, uses all resources, attends most events.',
+      B: 'B · Good relationship — sporadic training, uses some resources, attends some events.',
+      C: 'C · Good contact — some use of QT, attends some events.',
+      '': 'No grade yet. Only churches with a grade are counted as connected churches in the HQ report.',
+    },
+  };
+  const kstMonth = (offset = 0) => {
+    const d = new Date(Date.now() + 9 * 3600000); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + offset);
+    return d.toISOString().slice(0, 7);
+  };
+  function bindHqSection(church) {
+    const isKo = getLang() === 'ko';
+    const section = document.getElementById('hqSection'); if (!section) return;
+    let monthOffset = 0;
+    const desc = document.getElementById('hqGradeDesc');
+    const syncLocal = (patch) => {
+      Object.assign(church, patch);
+      const idx = churches.findIndex(c => c.id === church.id);
+      if (idx !== -1) Object.assign(churches[idx], patch);
+    };
+    const renderLeaders = () => {
+      const month = kstMonth(monthOffset);
+      document.getElementById('hqMonthLabel').textContent = isKo ? `${month.slice(0, 4)}년 ${Number(month.slice(5))}월` : month;
+      document.getElementById('hqLeadCount').textContent = String((church.leaderTraining || {})[month] || 0);
+      document.getElementById('hqMonthNext').disabled = monthOffset >= 0;
+      document.getElementById('hqMonthPrev').disabled = monthOffset <= -12;
+    };
+    const renderGrade = () => {
+      section.querySelectorAll('.hq-grade').forEach(b => { const on = (b.dataset.grade || '') === (church.grade || ''); b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', String(on)); });
+      desc.textContent = HQ_GRADE_DESC[isKo ? 'ko' : 'en'][church.grade || ''];
+    };
+    renderGrade(); renderLeaders();
+    document.getElementById('hqGrades').addEventListener('click', async (e) => {
+      const b = e.target.closest('.hq-grade'); if (!b) return;
+      const next = b.dataset.grade || '';
+      if (next === (church.grade || '')) return;
+      const before = church.grade || '';
+      syncLocal({ grade: next || null }); renderGrade();
+      try { await update(ref(db, `churches/${church.id}`), { grade: next || null }); }
+      catch (err) { syncLocal({ grade: before || null }); renderGrade(); alert((isKo ? '등급을 저장하지 못했어요: ' : 'Could not save the grade: ') + err.message); }
+    });
+    document.getElementById('hqMonthPrev').addEventListener('click', () => { monthOffset -= 1; renderLeaders(); });
+    document.getElementById('hqMonthNext').addEventListener('click', () => { if (monthOffset < 0) { monthOffset += 1; renderLeaders(); } });
+    const bump = async (delta) => {
+      const month = kstMonth(monthOffset);
+      const current = (church.leaderTraining || {})[month] || 0;
+      const next = Math.max(0, current + delta);
+      if (next === current) return;
+      const map = { ...(church.leaderTraining || {}) };
+      if (next > 0) map[month] = next; else delete map[month];
+      syncLocal({ leaderTraining: map }); renderLeaders();
+      try { await update(ref(db, `churches/${church.id}/leaderTraining`), { [month]: next > 0 ? next : null }); }
+      catch (err) {
+        const back = { ...map }; if (current > 0) back[month] = current; else delete back[month];
+        syncLocal({ leaderTraining: back }); renderLeaders();
+        alert((isKo ? '인원을 저장하지 못했어요: ' : 'Could not save the count: ') + err.message);
+      }
+    };
+    document.getElementById('hqLeadMinus').addEventListener('click', () => bump(-1));
+    document.getElementById('hqLeadPlus').addEventListener('click', () => bump(1));
+  }
+
   function renderDetailBody(church) {
+    const isKo = getLang() === 'ko';
     const steps = church.steps || {};
     const done = STEPS.filter((_,i) => steps[i+1]).length;
     const stepsArr = getLang() === 'ko' ? STEPS_KO : STEPS;
@@ -2124,6 +2217,31 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
           <span style="color:#004f68;font-weight:700">${t('done_of', done, STEPS.length)}</span>
         </div>
       </div>
+      <!-- 본부 보고 연동: 교회 관계 등급 + 달별 리더십 훈련 인원 (복음 통계의 지역교회 사역 보고에 자동 반영) -->
+      <section class="hq-section" id="hqSection">
+        <div class="hq-head">
+          <span class="hq-title">${isKo ? '본부 보고 · 관계 등급' : 'HQ report · Relationship grade'}</span>
+          <span class="hq-sub">${isKo ? '복음 통계의 월간 본부 보고에 자동으로 들어가요' : 'Feeds the monthly HQ report in Gospel Stats'}</span>
+        </div>
+        <div class="hq-grades" id="hqGrades" role="group" aria-label="${isKo ? '관계 등급' : 'Relationship grade'}">
+          ${['A', 'B', 'C'].map(g => `<button type="button" class="hq-grade${church.grade === g ? ' is-on' : ''}" data-grade="${g}" aria-pressed="${church.grade === g}">${g}</button>`).join('')}
+          <button type="button" class="hq-grade hq-grade-none${!church.grade ? ' is-on' : ''}" data-grade="" aria-pressed="${!church.grade}">${isKo ? '미지정' : 'None'}</button>
+        </div>
+        <p class="hq-grade-desc" id="hqGradeDesc"></p>
+        <div class="hq-leaders">
+          <span class="hq-leaders-label">${isKo ? '리더십 훈련 참석 (명)' : 'Leadership training (people)'}</span>
+          <div class="hq-month">
+            <button type="button" class="hq-step" id="hqMonthPrev" aria-label="prev">‹</button>
+            <b id="hqMonthLabel"></b>
+            <button type="button" class="hq-step" id="hqMonthNext" aria-label="next">›</button>
+          </div>
+          <div class="hq-count">
+            <button type="button" class="hq-step" id="hqLeadMinus" aria-label="−">−</button>
+            <b id="hqLeadCount">0</b>
+            <button type="button" class="hq-step" id="hqLeadPlus" aria-label="+">＋</button>
+          </div>
+        </div>
+      </section>
       <!-- 방문 기록 섹션 -->
       <section class="visit-section">
         <div class="visit-section-head">
@@ -2180,6 +2298,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       </div>`;
 
     ensureDetailMap(church);
+    bindHqSection(church);
     document.querySelectorAll('.step-item').forEach(item => {
       item.addEventListener('click', () => openStepModal(church, parseInt(item.dataset.step)));
     });
