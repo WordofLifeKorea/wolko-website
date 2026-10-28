@@ -47,3 +47,19 @@ test('포털 정보 피드: 조각 하나가 실패해도(날씨 읽기 실패) 
     assert.equal(j.weather, null); assert.ok(Array.isArray(j.notices)); assert.ok(j.name);
   } finally { globalThis.fetch = origFetch; }
 });
+
+test('포털 정보 피드: 「확인했어요」한 공지는 내 계정에 기록되어 어느 기기에서도 같고, 다른 사람에게는 영향이 없다', async () => {
+  globalThis.fetch = async () => new Response('{}', { status: 500 });
+  try {
+    const env = makeEnv(fakeD1(), { CAMP_KV: kv() });
+    const post = async (who, body) => Feed.onRequestPost({ env, request: await req(who, { method: 'POST', body, url: 'http://localhost:8788/api/campteam/portal-feed' }) });
+    assert.deepEqual((await (await get(env, U.mem)).json()).seen, [], '처음에는 아무것도 확인하지 않음');
+    assert.equal((await post(U.mem, { seen: ['n1', 'n2'] })).status, 200);
+    assert.deepEqual((await (await get(env, U.mem)).json()).seen.sort(), ['n1', 'n2'], '내 계정에서는 계속 확인한 것으로 나온다(다른 기기에서 열어도 같다)');
+    assert.deepEqual((await (await get(env, U.dir)).json()).seen, [], '다른 사람 화면에는 영향이 없다');
+    assert.equal((await post(U.mem, { seen: ['n1'] })).status, 200, '같은 공지를 또 눌러도 오류 없음');
+    assert.equal((await post(U.mem, { seen: 'x' })).status, 400); assert.equal((await post(U.mem, { seen: ['<b>'] })).status, 200, '이상한 번호는 걸러서 저장하지 않는다');
+    assert.ok(!(await (await get(env, U.mem)).json()).seen.some((x) => x.includes('<')));
+    assert.equal((await Feed.onRequestPost({ env, request: new Request('http://localhost:8788/api/campteam/portal-feed', { method: 'POST', body: '{}' }) })).status, 401);
+  } finally { globalThis.fetch = origFetch; }
+});

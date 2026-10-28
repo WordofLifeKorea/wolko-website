@@ -1,8 +1,9 @@
-import { campSession, json, needLogin, noDb } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, noDb, badRequest } from '../../lib/campteamAuth.js';
 import { getAccount } from '../../lib/hubAccounts.js';
 import { currentWeekStart, todayKst } from '../../lib/carDrive.js';
 import { kitchenToday, carToday, upcomingEvents, recentChurchList, readNotices, noticesForWeek, mySchedule } from '../../lib/portalDashboard.js';
 import { loadWeather } from '../../lib/weather.js';
+import { nowIso } from '../../lib/campteamDb.js';
 
 /**
  * 캠프팀 홈이 보여 줄 포털(월코 전체) 정보 — 날씨, 내 오늘 듀티, 이번 주 공지, 키친·차량, 일정, 교회.
@@ -26,7 +27,7 @@ export async function onRequestGet({ env, request }) {
   const s = await campSession(request, env);
   if (!s) return needLogin();
   const today = todayKst(), weekStart = currentWeekStart(today);
-  const [name, weather, notices, kitchen, car, events, churches, me] = await Promise.all([
+  const [name, weather, notices, kitchen, car, events, churches, me, seen] = await Promise.all([
     displayName(env, s.email),
     settle(() => loadWeather(readOnly(env))),
     settle(async () => noticesForWeek(await readNotices(env), weekStart, today).map(({ byEmail, ...n }) => n)),
@@ -35,6 +36,21 @@ export async function onRequestGet({ env, request }) {
     settle(() => upcomingEvents(env, today)),
     settle(() => recentChurchList(env)),
     settle(() => mySchedule(env, { email: s.email }, today)),
+    // 「확인했어요」를 누른 공지(내 계정 기준 — 폰·컴퓨터 어디서 눌러도 같다). 캠프팀 DB 의 알림 확인 표에만 기록한다
+    settle(async () => (await env.DB.prepare(`SELECT alertKey FROM alert_state WHERE email = ?1 AND alertKey LIKE 'pnotice:%'`).bind(s.email.toLowerCase()).all()).results.map((r) => r.alertKey.slice(8))),
   ]);
-  return json({ today, weekStart, name, weather, notices, kitchen, car, events, churches, me: me ? { kitchen: me.kitchen, car: me.car, gospelPending: !!me.gospelPending, gospelMonth: me.gospelMonth } : null });
+  return json({ today, weekStart, name, weather, seen: seen || [], notices, kitchen, car, events, churches, me: me ? { kitchen: me.kitchen, car: me.car, gospelPending: !!me.gospelPending, gospelMonth: me.gospelMonth } : null });
+}
+
+/** POST { seen: [공지 번호…] } — 이 공지들을 「확인했어요」로 기록한다(내 계정). 포털의 공지 자체는 건드리지 않는다. */
+export async function onRequestPost({ env, request }) {
+  if (!env.DB) return noDb();
+  const s = await campSession(request, env);
+  if (!s) return needLogin();
+  let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
+  const ids = Array.isArray(b?.seen) ? b.seen.map((x) => String(x)).filter((x) => /^[A-Za-z0-9_-]{1,64}$/.test(x)).slice(0, 60) : null;
+  if (!ids) return badRequest('공지 번호가 올바르지 않습니다.');
+  const me = s.email.toLowerCase(), now = nowIso();
+  if (ids.length) await env.DB.batch(ids.map((id) => env.DB.prepare(`INSERT INTO alert_state (email, alertKey, state, updatedAt) VALUES (?1,?2,'seen',?3) ON CONFLICT(email, alertKey) DO UPDATE SET state = 'seen', updatedAt = ?3`).bind(me, 'pnotice:' + id, now)));
+  return json({ ok: true, seen: ids });
 }
