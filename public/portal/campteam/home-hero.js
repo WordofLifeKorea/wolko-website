@@ -205,11 +205,11 @@
     requestAnimationFrame(leafFrame);
   }
   // 단풍나무 그림 — 하늘 영역 오른쪽에 서 있고, 잎이 여기서 떨어진다
-  var TREE = '<svg class="ct-tree" viewBox="0 0 160 176" aria-hidden="true"><path d="M70 176c2-30 3-48 1-68h12c-2 22 2 40 6 68z" fill="#6b4426"/><path d="M77 118 60 92M81 124 104 94M78 108V80" stroke="#6b4426" stroke-width="5" stroke-linecap="round" fill="none"/>'
+  var TREE = '<svg class="ct-tree" viewBox="0 0 160 176" aria-hidden="true"><ellipse cx="80" cy="175" rx="30" ry="3.500" fill="rgba(0,0,0,.28)"/><path d="M70 176c2-30 3-48 1-68h12c-2 22 2 40 6 68z" fill="#6b4426"/><path d="M77 118 60 92M81 124 104 94M78 108V80" stroke="#6b4426" stroke-width="5" stroke-linecap="round" fill="none"/>'
     + '<g class="crown"><circle cx="80" cy="62" r="38" fill="#c0392b"/><circle cx="50" cy="78" r="28" fill="#d9462f"/><circle cx="110" cy="76" r="30" fill="#e8742a"/><circle cx="64" cy="42" r="26" fill="#e04f35"/><circle cx="98" cy="44" r="26" fill="#f0a030"/><circle cx="80" cy="84" r="24" fill="#b0301f"/>'
     + '<circle cx="62" cy="58" r="7" fill="#f0a030" opacity=".8"/><circle cx="98" cy="68" r="6" fill="#d9462f" opacity=".8"/><circle cx="82" cy="40" r="6" fill="#e8742a" opacity=".8"/><circle cx="44" cy="84" r="5" fill="#f0a030" opacity=".7"/></g></svg>';
   function treeSync(on) {
-    var art = document.querySelector('#hubSky .hub-sky-content'), has = document.querySelector('.ct-tree');
+    var art = document.querySelector('#hubSky .hub-sky-art'), has = document.querySelector('.ct-tree');
     if (on && art && !has) art.insertAdjacentHTML('beforeend', TREE); else if (!on && has) has.remove();
     var hero = document.getElementById('hubSky'); if (hero) hero.classList.toggle('has-tree', !!on);
   }
