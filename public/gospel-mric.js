@@ -50,10 +50,7 @@
     $('mricMonth').textContent = mp.ko;
     $('mricPrev').disabled = data.month <= data.earliest;
     $('mricNext').disabled = data.month >= data.reportMonth;
-    // 연·월을 누르면 포탈 공용 달력이 열린다 — 아무 날짜나 고르면 그 달로 이동(허용 범위 밖이면 가까운 쪽)
-    var pick = $('mricPick');
-    pick.dataset.calYears = data.earliest.slice(0, 4) + ',' + data.reportMonth.slice(0, 4);
-    pick.value = data.month + '-01';
+
     document.querySelectorAll('[data-place]').forEach(function (b) { b.classList.toggle('is-on', b.dataset.place === place); b.setAttribute('aria-pressed', String(b.dataset.place === place)); });
     var html = '<dl class="gs-mricmeta"><div><dt>Location</dt><dd>' + esc(PLACES[place][1]) + '</dd></div><div><dt>Month</dt><dd>' + esc(mp.name) + '</dd></div><div><dt>Year</dt><dd>' + esc(mp.year) + '</dd></div></dl>';
     HQ_SECTIONS.forEach(function (sec) {
@@ -83,14 +80,10 @@
   }
 
   $('mricPrev').addEventListener('click', function () { if (data) load(shift(data.month, -1)); });
-  $('mricMonth').addEventListener('click', function (e) { if (e.detail === 0) { $('mricPick').focus(); $('mricPick').click(); } });   // 키보드(Enter/Space)로 눌렀을 때
-  $('mricPick').addEventListener('change', function () {
-    if (!data) return;
-    var picked = String($('mricPick').value || '').slice(0, 7);
-    if (!/^\d{4}-\d{2}$/.test(picked)) return;
-    if (picked < data.earliest) picked = data.earliest;
-    if (picked > data.reportMonth) picked = data.reportMonth;
-    if (picked !== data.month) load(picked);
+  /** 연·월 이름을 누르면 연·월 선택기가 열린다 — 일(日)은 고르지 않는다 */
+  $('mricMonth').addEventListener('click', function () {
+    if (!data || !window.GospelMonthPick) return;
+    window.GospelMonthPick.open($('mricMonth'), { mode: 'month', lang: 'ko', value: data.month, min: data.earliest, max: data.reportMonth, onPick: function (v) { if (v !== data.month) load(v); } });
   });
   $('mricNext').addEventListener('click', function () { if (data && data.month < data.reportMonth) load(shift(data.month, 1)); });
   document.querySelectorAll('[data-place]').forEach(function (b) { b.addEventListener('click', function () { place = b.dataset.place; if (data) render(); }); });

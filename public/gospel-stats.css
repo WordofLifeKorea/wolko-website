@@ -431,3 +431,21 @@
 /* MRIC 헤더: 화살표용 30px 고정 규칙이 연·월 버튼에는 적용되지 않게 */
 :root:root .gs-mricmonth .gs-mricmonthbtn { width: auto !important; min-width: 112px !important; height: 30px !important; padding: 0 12px !important; font-size: 14px; }
 .gs-mricmonth { gap: 2px; padding: 3px; }
+
+/* ── 연·월 선택기 (일 없이 달 12칸 / 연도 칸) ── */
+.gs-mp { z-index: 9600; width: 264px; padding: 12px; box-sizing: border-box; border: 1px solid #dbe6ec; border-radius: 18px; background: #fff; color: #102a38; box-shadow: 0 24px 50px -20px rgba(0, 40, 60, .45); animation: gs-mp-in .16s ease-out; }
+@keyframes gs-mp-in { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+.gs-mp-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+.gs-mp-head b { font: 800 16px/1 'Montserrat', 'Noto Sans KR', sans-serif; letter-spacing: -.01em; }
+:root:root .gs-mp button { min-width: 0 !important; min-height: 0 !important; padding: 0 !important; border: 0; background: transparent; font: inherit; cursor: pointer; }
+:root:root .gs-mp .gs-mp-nav { width: 32px !important; height: 32px !important; border-radius: 10px; color: #0a6a8f; font-size: 20px; font-weight: 800; }
+:root:root .gs-mp .gs-mp-nav:hover:not(:disabled) { background: #eaf4f7; }
+.gs-mp-nav:disabled { opacity: .3; cursor: default !important; }
+.gs-mp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.gs-mp-years { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+:root:root .gs-mp .gs-mp-cell { height: 40px !important; border-radius: 12px; color: #29505f; font-size: 14px; font-weight: 700; transition: background .15s, color .15s; }
+:root:root .gs-mp .gs-mp-cell:hover:not(:disabled) { background: #eaf4f7; }
+:root:root .gs-mp .gs-mp-cell.is-on { background: #0a6a8f; color: #fff; }
+:root:root .gs-mp .gs-mp-cell:disabled { color: #b8c8d0; cursor: default; }
+.gs-mp-cell:focus-visible, .gs-mp-nav:focus-visible { outline: 2px solid #0a6a8f; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .gs-mp { animation: none; } }

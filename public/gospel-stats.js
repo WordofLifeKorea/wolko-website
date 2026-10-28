@@ -143,11 +143,6 @@
     $('monthLabel').textContent = yearly ? t('yearLabel', data.year) : t('monthLabel', data.month);
     $('thisMonth').textContent = t(yearly ? 'thisYear' : 'lastMonth');
     $('trendTitleEl').textContent = t(yearly ? 'trendTitleYear' : 'trendTitle');
-    // 이름을 누르면 포탈 공용 달력이 열린다 — 아무 날짜나 고르면 그 날짜가 속한 달(연간 보기에서는 해)로 이동한다(허용 범위 밖이면 가장 가까운 쪽)
-    var pick = $('monthPick');
-    pick.dataset.calYears = data.earliest.slice(0, 4) + ',' + data.current.slice(0, 4);
-    var shownMonth = yearly ? (data.year === data.current.slice(0, 4) ? data.current : data.year + '-12') : data.month;
-    pick.value = shownMonth + '-' + (shownMonth === data.current ? String(new Date().getDate()).padStart(2, '0') : '01');
     $('prevMonth').disabled = yearly ? Number(data.year) <= Number(data.earliest.slice(0, 4)) : data.month <= data.earliest;
     $('nextMonth').disabled = yearly ? Number(data.year) >= Number(data.current.slice(0, 4)) : data.month >= data.reportMonth;
     $('csvBtn').hidden = !data.me.canReview;
@@ -209,9 +204,10 @@
   function renderCharts() { renderSubmission(); renderCampAuto(); renderChurchStats(); if (window.GospelCharts) window.GospelCharts.render($('charts'), { data: data, tab: tab, lang: lang }); }
 
   function renderTabs() {
-    var c = data.summary.counts;
-    var items = [['all', t('tabAll'), c.all], ['mainland', t('tabMainland'), c.mainland], ['jeju', t('tabJeju'), c.jeju]];
-    $('tabs').innerHTML = items.map(function (i) { return '<button type="button" class="gs-tab' + (tab === i[0] ? ' is-active' : '') + '" role="tab" aria-selected="' + (tab === i[0]) + '" data-tab="' + i[0] + '">' + esc(i[1]) + ' <span>' + i[2] + '</span></button>'; }).join('');
+    // 탭의 숫자 = 그 지역에서 복음을 들은 인원(첫 번째 숫자 카드와 같은 값) — 제출된 보고 건수가 아니다
+    var heard = function (key) { return sumHeard(totals(data.summary, key)); };
+    var items = [['all', t('tabAll'), heard('all')], ['mainland', t('tabMainland'), heard('mainland')], ['jeju', t('tabJeju'), heard('jeju')]];
+    $('tabs').innerHTML = items.map(function (i) { return '<button type="button" class="gs-tab' + (tab === i[0] ? ' is-active' : '') + '" role="tab" aria-selected="' + (tab === i[0]) + '" data-tab="' + i[0] + '" title="' + esc(t('kGospel')) + '">' + esc(i[1]) + ' <span>' + num(i[2]) + '</span></button>'; }).join('');
   }
 
   /** 설명을 숨겨 둔 (i) 단추 — 마우스를 올리거나 누르면 말풍선이 뜬다 */
@@ -527,18 +523,15 @@
     if (next < data.earliest || next > data.reportMonth) return;
     load(next);
   }
-  $('monthLabel').addEventListener('click', function (e) { if (e.detail === 0) { $('monthPick').focus(); $('monthPick').click(); } });   // 키보드(Enter/Space)로 눌렀을 때
-  $('monthPick').addEventListener('change', function () {
-    var picked = String($('monthPick').value || '').slice(0, 7);
-    if (!/^\d{4}-\d{2}$/.test(picked)) return;
-    if (view === 'year') {
-      var yr = Math.min(Math.max(Number(picked.slice(0, 4)), Number(data.earliest.slice(0, 4))), Number(data.current.slice(0, 4)));
-      if (String(yr) !== data.year) load(String(yr));
-      return;
-    }
-    if (picked < data.earliest) picked = data.earliest;
-    if (picked > data.reportMonth) picked = data.reportMonth;
-    if (picked !== data.month) load(picked);
+  /** 연·월 이름을 누르면 연·월 선택기가 열린다 — 일(日)은 고르지 않는다. 월별 보기는 해와 달, 연간 보기는 해만 */
+  $('monthLabel').addEventListener('click', function () {
+    if (!data || !window.GospelMonthPick) return;
+    var yearly = view === 'year';
+    window.GospelMonthPick.open($('monthLabel'), {
+      mode: yearly ? 'year' : 'month', lang: lang, value: yearly ? data.year : data.month,
+      min: yearly ? data.earliest.slice(0, 4) + '-01' : data.earliest, max: yearly ? data.current.slice(0, 4) + '-12' : data.reportMonth,
+      onPick: function (v) { if (v !== (yearly ? data.year : data.month)) load(v); },
+    });
   });
   /* 연간 / 월별 보기 전환 — 선택은 이 브라우저에 기억한다 */
   document.querySelector('.gs-viewtoggle').addEventListener('click', function (e) {
