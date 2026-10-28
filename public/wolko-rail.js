@@ -37,6 +37,32 @@
   var HUB_ICON = '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>';
   var HUB_LABEL = { ko: '전체 도구 보기', en: 'View All Tools' };
 
+  /* 메뉴 아이콘 — 직접 그린 색 있는 일러스트(32×32). 그라데이션 없이 단색 면으로만 그려서, 화면에 숨은 서랍과 레일에 같은 그림이 두 번 들어가도 깨지지 않는다.
+     포탈 홈(portal.astro)도 같은 그림을 쓰도록 window.WolkoArt 로 내보낸다 — 키는 도구 주소. */
+  var ART = {
+    '/portal/schedule': '<rect x="4" y="6" width="24" height="22" rx="4" fill="#fff"/><path d="M4 10a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v3H4z" fill="#ef5b4f"/><rect x="9" y="3" width="3.2" height="7" rx="1.6" fill="#fff" stroke="#b83a31" stroke-width="1"/><rect x="19.800" y="3" width="3.2" height="7" rx="1.6" fill="#fff" stroke="#b83a31" stroke-width="1"/><rect x="8.500" y="16.500" width="5" height="4" rx="1.200" fill="#22b573"/><rect x="16.500" y="16.500" width="5" height="4" rx="1.200" fill="#cfd8dc"/><rect x="8.500" y="22.500" width="5" height="3" rx="1.200" fill="#cfd8dc"/><rect x="16.500" y="22.500" width="5" height="3" rx="1.200" fill="#ffd23f"/>',
+    '/portal/crs': '<path d="M16 1.500v5M13.500 4h5" stroke="#f5b82e" stroke-width="2.200" stroke-linecap="round"/><path d="M3.500 16.500 16 7l12.500 9.500z" fill="#c9553d"/><rect x="6.500" y="16" width="19" height="12.500" rx="1" fill="#f7e6c4"/><path d="M12.500 28.500V23a3.500 3.500 0 0 1 7 0v5.500z" fill="#7b4a2e"/><rect x="8.800" y="18.200" width="3" height="4.200" rx="1.500" fill="#6fa8dc"/><rect x="20.200" y="18.200" width="3" height="4.200" rx="1.500" fill="#6fa8dc"/>',
+    '/portal/wolkoevents': '<path d="M4.500 28.500 11 11.500l9.500 9.500z" fill="#f59e0b"/><path d="M4.500 28.500 7.800 20l4.700 4.700z" fill="#d97706"/><path d="M8.800 18.500l6.500 6.500" stroke="#fff" stroke-width="1.400" opacity=".55" stroke-linecap="round"/><circle cx="21" cy="8" r="2.200" fill="#ef5b4f"/><rect x="24" y="13" width="3.400" height="3.400" rx=".8" fill="#3b8ff0" transform="rotate(20 25.700 14.700)"/><circle cx="15.500" cy="5.500" r="1.700" fill="#22b573"/><circle cx="27" cy="5.500" r="1.600" fill="#ffd23f"/><path d="M22 20.500c2.800-1.200 5-.4 6 1.800" stroke="#d155e6" stroke-width="1.900" fill="none" stroke-linecap="round"/><path d="M13 7c1.200 1.400 2.600 1.800 4.200 1.600" stroke="#ffd23f" stroke-width="1.700" fill="none" stroke-linecap="round"/>',
+    '/portal/resource': '<rect x="3" y="6" width="26" height="20" rx="4.500" fill="#d8f6f8"/><circle cx="22.500" cy="12.500" r="3.200" fill="#ffd23f"/><path d="M3 22.500 11.500 14l6.500 6.500 3.500-3.500L29 24.500a4.500 4.500 0 0 1-4.500 4.500h-17A4.500 4.500 0 0 1 3 24.500z" fill="#14b8c4"/><path d="M3 24.500 9 19l6 6-1.500 4h-6.500A4 4 0 0 1 3 25z" fill="#0e8f99"/>',
+    '/portal/gospel-stats': '<rect x="3.500" y="17" width="6.500" height="11" rx="1.800" fill="#f7b267"/><rect x="12.800" y="10" width="6.500" height="18" rx="1.800" fill="#ef5b6c"/><rect x="22" y="4" width="6.500" height="24" rx="1.800" fill="#c93058"/><rect x="2" y="28.200" width="28" height="2" rx="1" fill="#fff" opacity=".7"/><path d="M5 12.500l6-3.500 6-1" stroke="#ffd23f" stroke-width="1.800" fill="none" stroke-linecap="round"/><circle cx="5" cy="12.500" r="1.600" fill="#ffd23f"/>',
+    '/portal/prayers': '<path d="M16 28.500S3.500 21.500 3.500 12.500A6.600 6.600 0 0 1 16 9.200a6.600 6.600 0 0 1 12.500 3.300C28.500 21.500 16 28.500 16 28.500z" fill="#ef5b8a"/><path d="M8.500 11.500c.2-2.200 1.800-3.600 3.800-3.800" stroke="#fff" stroke-width="2" opacity=".6" fill="none" stroke-linecap="round"/><path d="M25.500 2.500l1.100 2.700 2.700 1.100-2.700 1.100-1.100 2.700-1.100-2.700-2.700-1.100 2.700-1.100z" fill="#ffd23f"/>',
+    '/portal/wolkoadmin': '<rect x="5" y="5.500" width="22" height="24" rx="4" fill="#3b8ff0"/><rect x="8" y="9.500" width="16" height="17.500" rx="2" fill="#fff"/><rect x="11" y="3" width="10" height="6.500" rx="2.200" fill="#1f5fbf"/><path d="M11 18.500l3.200 3.200 6.300-7.200" stroke="#22b573" stroke-width="2.700" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    '/portal/campstaff': '<circle cx="22" cy="11" r="4.200" fill="#9aa9ff"/><path d="M14.500 27.500a7.500 7.500 0 0 1 15 0z" fill="#9aa9ff"/><circle cx="12" cy="12" r="5" fill="#ffc9a8"/><path d="M7 11.500a5 5 0 0 1 10 0c-2.700-.9-7.300-.9-10 0z" fill="#6b3f2a"/><path d="M2.500 29.500a9.500 9.500 0 0 1 19 0z" fill="#ec5fa0"/>',
+    '/portal/camp-resources': '<path d="M3 9.500A3.500 3.500 0 0 1 6.500 6h5.500l3 3h10.500a3.500 3.500 0 0 1 3.500 3.500v13A3.500 3.500 0 0 1 25.500 29h-19A3.500 3.500 0 0 1 3 25.500z" fill="#8fb51a"/><rect x="7" y="10.500" width="18" height="8" rx="1.500" fill="#fff"/><path d="M3 15.500A3.500 3.500 0 0 1 6.500 12h19a3.500 3.500 0 0 1 3.500 3.500v10A3.500 3.500 0 0 1 25.500 29h-19A3.500 3.500 0 0 1 3 25.500z" fill="#bddc3c"/>',
+    '/portal/campteam': '<path d="M16 5.500 2.500 27.500h27z" fill="#f5b82e"/><path d="M16 5.500 29.500 27.500H16z" fill="#e39a1a"/><path d="M11.500 27.500 16 17.500l4.500 10z" fill="#5c3720"/><path d="M16 5.500V1.500l5.500 1.900-5.500 1.800" fill="#ef5b4f"/><rect x="1.500" y="27" width="29" height="2.600" rx="1.300" fill="#6bb36b"/>',
+    '/portal/expense': '<path d="M6 3h18v26l-3-2.300L18 29l-3-2.300L12 29l-3-2.300L6 29z" fill="#fff"/><rect x="10" y="8" width="10" height="2.200" rx="1.100" fill="#f0a020"/><rect x="10" y="13" width="10" height="2.200" rx="1.100" fill="#cfd8dc"/><rect x="10" y="18" width="6" height="2.200" rx="1.100" fill="#cfd8dc"/><circle cx="23.500" cy="22.500" r="6.500" fill="#ffc72c"/><circle cx="23.500" cy="22.500" r="4.600" fill="#f0a020"/><path d="M19.800 20.200l1.600 5.200 2.100-4.400 2.100 4.400 1.600-5.200M19.500 22.200h8" stroke="#fff3c4" stroke-width="1.300" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    '/portal/car-drive': '<path d="M3 21v-4a3.200 3.200 0 0 1 2.100-3l2.400-5A3.200 3.200 0 0 1 10.400 7.200h11.200a3.200 3.200 0 0 1 2.900 1.800l2.400 5A3.200 3.200 0 0 1 29 17v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#b24fd0"/><path d="M9 9.500h14l2.300 4.800H6.700z" fill="#dff4ff"/><circle cx="9.500" cy="23" r="3.800" fill="#2b2f3a"/><circle cx="9.500" cy="23" r="1.500" fill="#cfd8dc"/><circle cx="22.500" cy="23" r="3.800" fill="#2b2f3a"/><circle cx="22.500" cy="23" r="1.500" fill="#cfd8dc"/><rect x="25.200" y="16.200" width="3.200" height="2.600" rx="1.100" fill="#ffd23f"/>',
+    '/portal/kitchen': '<path d="M11 6.500c-2.200-1.700 2.200-3.300 0-5.500M21 6.500c-2.200-1.700 2.200-3.300 0-5.500" stroke="#fff" stroke-width="1.700" opacity=".75" fill="none" stroke-linecap="round"/><rect x="13" y="7.500" width="6" height="3.200" rx="1.600" fill="#6b4423"/><rect x="4" y="10.500" width="24" height="4.500" rx="2.200" fill="#a97142"/><path d="M6 15h20v7.500a6.500 6.500 0 0 1-6.500 6.500h-7A6.500 6.500 0 0 1 6 22.500z" fill="#d4a373"/><rect x="1.500" y="16.500" width="4.500" height="3.200" rx="1.600" fill="#6b4423"/><rect x="26" y="16.500" width="4.500" height="3.200" rx="1.600" fill="#6b4423"/><path d="M9.500 18.500v4" stroke="#fff" stroke-width="1.800" opacity=".4" stroke-linecap="round"/>',
+    '/portal/mypage': '<circle cx="16" cy="16" r="14" fill="#2fcfa3"/><circle cx="16" cy="12.500" r="5.200" fill="#fff"/><path d="M6.200 25.200a10.500 10.500 0 0 1 19.600 0 14 14 0 0 1-19.600 0z" fill="#fff"/>',
+    '__hub': '<rect x="3.500" y="3.500" width="11.500" height="11.500" rx="3.200" fill="#22b573"/><rect x="17" y="3.500" width="11.500" height="11.500" rx="3.200" fill="#3b8ff0"/><rect x="3.500" y="17" width="11.500" height="11.500" rx="3.200" fill="#f0643f"/><rect x="17" y="17" width="11.500" height="11.500" rx="3.200" fill="#f5b82e"/>'
+  };
+  window.WolkoArt = ART;
+  function art(key, w) {
+    w = w || 22;
+    return '<svg class="wolko-art" width="' + w + '" height="' + w + '" viewBox="0 0 32 32" aria-hidden="true" focusable="false">' + ART[key] + '</svg>';
+  }
+  function toolIcon(tool) { return ART[tool.href] ? art(tool.href) : toolIcon(tool); }
+
   function svg(paths, w) {
     w = w || 18;
     return '<svg width="' + w + '" height="' + w + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
@@ -274,10 +300,10 @@
       html += '<div class="wolko-drawer-group" data-ko="' + g.ko + '" data-en="' + g.en + '"></div>';
       TOOLS.filter(function (tool) { return tool.group === g.id; }).forEach(function (tool) {
         var active = path === tool.href || (tool.href === '/portal/car-drive' && (path === '/portal/car' || path === '/portal/car-log'));
-        html += '<a class="wolko-drawer-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" style="--rail-color:' + tool.color + '"><span class="wolko-drawer-icon">' + svg(tool.icon, 15) + '</span><span class="wolko-drawer-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
+        html += '<a class="wolko-drawer-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" style="--rail-color:' + tool.color + '"><span class="wolko-drawer-icon">' + toolIcon(tool) + '</span><span class="wolko-drawer-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
       });
     });
-    html += '<a class="wolko-drawer-item wolko-drawer-hub" href="/portal"><span class="wolko-drawer-icon">' + svg(HUB_ICON, 15) + '</span><span class="wolko-drawer-label" data-ko="' + HUB_LABEL.ko + '" data-en="' + HUB_LABEL.en + '"></span></a>';
+    html += '<a class="wolko-drawer-item wolko-drawer-hub" href="/portal"><span class="wolko-drawer-icon">' + art('__hub') + '</span><span class="wolko-drawer-label" data-ko="' + HUB_LABEL.ko + '" data-en="' + HUB_LABEL.en + '"></span></a>';
     drawer.innerHTML = html;
     var backdrop = document.createElement('div');
     backdrop.className = 'wolko-drawer-backdrop';
@@ -320,11 +346,11 @@
       TOOLS.filter(function (tool) { return tool.group === g.id; }).forEach(function (tool) {
       var active = path === tool.href || (tool.href === '/portal/car-drive' && (path === '/portal/car' || path === '/portal/car-log')); // 차량 메뉴: 사용 일지(기본) · 예약현황 · 정비 관리
       html += '<a class="wolko-rail-item' + (active ? ' is-active' : '') + '" href="' + tool.href + '" style="--rail-color:' + tool.color + '">' +
-        '<span class="wolko-rail-item-icon">' + svg(tool.icon, 15) + '</span><span class="wolko-rail-item-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
+        '<span class="wolko-rail-item-icon">' + toolIcon(tool) + '</span><span class="wolko-rail-item-label" data-ko="' + tool.label + '" data-en="' + tool.label_en + '"></span></a>';
       });
     });
 
-    html += '<a class="wolko-rail-item wolko-rail-hub" href="/portal"><span class="wolko-rail-item-icon">' + svg(HUB_ICON, 15) + '</span>' +
+    html += '<a class="wolko-rail-item wolko-rail-hub" href="/portal"><span class="wolko-rail-item-icon">' + art('__hub') + '</span>' +
       '<span class="wolko-rail-item-label" data-ko="' + HUB_LABEL.ko + '" data-en="' + HUB_LABEL.en + '"></span></a>';
 
     rail.innerHTML = html;
