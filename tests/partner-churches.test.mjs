@@ -62,3 +62,22 @@ test('협력 교회 API: CRS 에서 읽은 뒤 저장하고, 읽기에 실패하
     assert.deepEqual(await out.json(), { churches: [] }); assert.equal(out.status, 200);
   } finally { globalThis.fetch = realFetch; }
 });
+
+test('협력 교회 지역: 시/군/구가 있으면 그것, 없으면 시/도를 짧게 — 연락처·주소·목사님은 나가지 않는다', async () => {
+  const { partnerChurchAreas, loadPartnerChurchData } = await import('../functions/lib/partnerChurches.js');
+  const areas = partnerChurchAreas({
+    a: { churchName: '평택중앙교회', region: '경기도', district: '평택시', detailAddress: '비공개로 12', pastorPhone: '010-1', stepsVersion: 3, steps: { 1: true } },
+    b: { churchName: '제주열방교회', region: '제주특별자치도', stepsVersion: 3, steps: { 1: true } },
+    c: { churchName: '지역 모름 교회', stepsVersion: 3, steps: { 1: true } },
+    d: { churchName: '단계 없는 교회', region: '서울특별시', district: '강남구' },
+    e: { churchName: '평택중앙교회', region: '서울특별시', district: '강남구', stepsVersion: 3, steps: { 2: true } },
+  });
+  assert.deepEqual(areas, { '평택중앙교회': '평택시', '제주열방교회': '제주' });
+  assert.equal(JSON.stringify(areas).includes('비공개') || JSON.stringify(areas).includes('010'), false);
+  // 이름만 있는 예전 저장값 + CRS 연결 없음 → 이름만 돌려준다 / 지역까지 저장돼 있으면 지역도
+  const old = env(); old.store.set(PARTNER_CHURCH_KEY, JSON.stringify({ names: ['소망 교회'] }));
+  assert.deepEqual(await loadPartnerChurchData(old.env), { names: ['소망 교회'] });
+  const fresh = env(); fresh.store.set(PARTNER_CHURCH_KEY, JSON.stringify({ names: ['소망 교회'], areas: { '소망 교회': '평택시' } }));
+  const res = await (await onRequestGet({ env: fresh.env })).json();
+  assert.deepEqual(res, { churches: ['소망 교회'], areas: { '소망 교회': '평택시' } });
+});

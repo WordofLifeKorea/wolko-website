@@ -23,14 +23,14 @@ function fixture(email = 'author') {
   vm.runInContext(code, context);
   return { context, elements };
 }
-test('inline reply, header delete and checkbox replace action links', () => {
+test('inline reply and header delete replace action links (the resolve checkbox was removed on purpose)', () => {
   const { context, elements } = fixture();
   context.renderNotesList();
   const html = elements.notesList.innerHTML;
   assert.match(html, /note-comment-input/);
   assert.match(html, /의견 남기기/);
   assert.match(html, /note-delete-button/);
-  assert.match(html, /type="checkbox"/);
+  assert.doesNotMatch(html, /type="checkbox"/, '해결 체크박스는 da9315c5 에서 뺐다');
   assert.doesNotMatch(html, /note-item-actions|openCommentComposer/);
   assert.match(html, /<details class="note-item/);
   assert.match(html, /<summary class="note-summary" onclick=/);
@@ -39,11 +39,10 @@ test('inline reply, header delete and checkbox replace action links', () => {
   context.renderNotesList();
   assert.match(elements.notesList.innerHTML, /data-note-id="a" open/);
 });
-test('other users can reply but cannot delete or resolve', () => {
+test('other users can reply but cannot delete', () => {
   const { context, elements } = fixture('reader');
   context.renderNotesList();
   assert.match(elements.notesList.innerHTML, /note-comment-input/);
-  assert.match(elements.notesList.innerHTML, /type="checkbox"\s+disabled/);
   assert.doesNotMatch(elements.notesList.innerHTML, /note-delete-button/);
 });
 test('posting one reply preserves other note drafts', async () => {
