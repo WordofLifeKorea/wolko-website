@@ -206,3 +206,7 @@ body :is(input, select, textarea):focus-visible { outline: 2px solid var(--wl-ac
     --wl-card-pad: 18px;
   }
 }
+
+/* ── 모바일 안전장치: 어떤 화면에서든 긴 제목·표 하나가 페이지를 옆으로 끌고 가지 않게 ──
+   (문제의 원인은 각 화면에서 고치고, 혹시 놓친 곳이 있어도 가로로 스크롤되지는 않게 한다. 스크롤 컨테이너를 만들지 않는 clip 이라 sticky 헤더에 영향이 없다) */
+@media (max-width: 899px) { html, body { overflow-x: clip; } }

@@ -10,6 +10,8 @@ import { prayerBoard } from './prayers.js';
 import { needsTranslation, translateNotice } from './prayerTranslate.js';
 import { alwaysExempt } from './gospelReminder.js';
 import { reportMonth, loadMonth, ownerOf } from './gospelStats.js';
+import { crsLocation } from './crsMinistry.js';
+import { NOTICE_AUDIENCES, normalizeCampus } from './campus.js';
 
 export const NOTICES_KEY = 'portal:notices';
 /** 마스터·관리자 말고도 공지를 올릴 수 있는 계정 — 본인이 올린 공지만 지울 수 있다 */
@@ -60,6 +62,10 @@ export function noticesForWeek(list, weekStart, today = '') {
 const validYmd = v => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`)) && addDays(v, 0) === v;
 
 /** 공지 입력 정리 — 제목(선택)·내용(필수)·적용 주(이번 주/다음 주)·마감일(선택)·고정 여부 */
+/** 이 소속에게 보이는 공지 — campus 가 'all' 이면 모두, 'wolko'/'jeju' 면 그 소속만. 값이 없는 옛 공지는 평택(처음엔 평택만 쓰던 시스템) */
+export const noticeAudience = n => (NOTICE_AUDIENCES.includes(n?.campus) ? n.campus : 'wolko');
+export const noticesForCampus = (list, campus) => list.filter(n => { const a = noticeAudience(n); return a === 'all' || a === normalizeCampus(campus); });
+
 export function parseNoticeInput(body, today) {
   const text = cleanBlock(body?.body, 600);
   if (!text) return { error: '공지 내용을 입력해 주세요.' };
@@ -67,7 +73,8 @@ export function parseNoticeInput(body, today) {
   const weekStart = body?.week === 'next' ? addDays(thisWeek, 7) : thisWeek;
   const dueRaw = clean(body?.dueDate, 10);
   if (dueRaw && !validYmd(dueRaw)) return { error: '마감일 형식이 올바르지 않습니다.' };
-  return { value: { title: clean(body?.title, 60), body: text, weekStart, dueDate: dueRaw, pinned: body?.pinned === true } };
+  const audience = NOTICE_AUDIENCES.includes(body?.campus) ? body.campus : '';   // '' 이면 올리는 사람 소속으로 (API 에서 채운다)
+  return { value: { title: clean(body?.title, 60), body: text, weekStart, dueDate: dueRaw, pinned: body?.pinned === true, ...(audience ? { campus: audience } : {}) } };
 }
 
 /** 오늘 키친 듀티 — 식사별 { meal, prep[], clean[] }, 신청이 있는 식사만 */
@@ -93,11 +100,13 @@ export async function carToday(env, today) {
 }
 
 /** 오늘부터 14일 안의 일정 몇 개 — 캘린더가 연결되지 않았으면 null */
-export async function upcomingEvents(env, today, limit = 5) {
-  if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !env.GOOGLE_STAFF_CALENDAR_ID) return null;
+export async function upcomingEvents(env, today, limit = 5, campus = 'wolko') {
+  // 제주 캘린더는 나중에 따로 연결한다 — GOOGLE_JEJU_STAFF_CALENDAR_ID 가 생기기 전에는 제주 소속에게 일정 칸을 보이지 않는다
+  const calendarId = normalizeCampus(campus) === 'jeju' ? env.GOOGLE_JEJU_STAFF_CALENDAR_ID : env.GOOGLE_STAFF_CALENDAR_ID;
+  if (!env.GOOGLE_SERVICE_ACCOUNT_JSON || !calendarId) return null;
   const events = await listCalendarEvents({
     serviceAccountJson: env.GOOGLE_SERVICE_ACCOUNT_JSON,
-    calendarId: env.GOOGLE_STAFF_CALENDAR_ID,
+    calendarId,
     timeMin: new Date(`${today}T00:00:00+09:00`).toISOString(),
     timeMax: new Date(`${addDays(today, 14)}T23:59:59+09:00`).toISOString(),
   });
@@ -132,8 +141,10 @@ export function doneSteps(church) {
 }
 
 /** CRS 교회 레코드 → 최근 업데이트 순 [{ name, updatedAt, lastVisitDate, visitor, pastor, steps, done[], next }] (연락처·메모는 꺼내지 않는다) */
-export function recentChurches(records, limit = 5) {
+export function recentChurches(records, limit = 5, campus = 'wolko') {
+  const place = normalizeCampus(campus) === 'jeju' ? 'jeju' : 'mainland';
   return Object.values(records || {})
+    .filter(c => crsLocation(c) === place)      // 교회의 시/도가 제주면 제주, 아니면 평택(본토)
     .map(c => {
       const done = doneSteps(c);
       return {
@@ -148,15 +159,16 @@ export function recentChurches(records, limit = 5) {
 }
 
 /** 최근 업데이트된 교회 — CRS 연결이 없으면 null. 5분 동안 KV 에 담아 둔다 */
-export async function recentChurchList(env) {
+export async function recentChurchList(env, campus = 'wolko') {
   if (!env.FIREBASE_CRS_SERVICE_ACCOUNT) return null;
-  const cached = await env.CAMP_KV.get(DASH_CHURCH_KEY, 'json');
+  const key = `${DASH_CHURCH_KEY}:${normalizeCampus(campus)}`;
+  const cached = await env.CAMP_KV.get(key, 'json');
   if (cached?.list) return cached.list;
   const token = await firebaseDatabaseToken(env.FIREBASE_CRS_SERVICE_ACCOUNT);
   const res = await fetch(`${CRS_DATABASE}/churches.json`, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`CRS ${res.status}`);
-  const list = recentChurches(await res.json());
-  await env.CAMP_KV.put(DASH_CHURCH_KEY, JSON.stringify({ list }), { expirationTtl: DASH_CHURCH_SECONDS });
+  const list = recentChurches(await res.json(), 5, campus);
+  await env.CAMP_KV.put(key, JSON.stringify({ list }), { expirationTtl: DASH_CHURCH_SECONDS });
   return list;
 }
 
@@ -178,18 +190,26 @@ export async function mySchedule(env, session, today) {
 }
 
 /** 대시보드 전체 — 조각마다 실패해도 나머지는 돌려준다(실패한 조각은 null) */
-export async function buildDashboard(env, session, now = Date.now()) {
+export async function buildDashboard(env, session, now = Date.now(), { campus = 'wolko', canSwitchCampus = false } = {}) {
   const today = todayKst(now);
   const weekStart = currentWeekStart(today);
+  campus = normalizeCampus(campus);
+  const jeju = campus === 'jeju';
   const settle = async fn => { try { return await fn(); } catch (error) { console.error('dashboard piece failed:', error.message); return null; } };
+  // 주방 당번·차량 운행은 평택 캠퍼스의 도구라 제주에는 해당 정보가 없다 — 제주에서는 아예 읽지 않고 칸도 보이지 않는다
   const [notices, kitchen, car, events, churches, prayerData, me] = await Promise.all([
-    settle(async () => noticesForWeek(await readNotices(env), weekStart, today)),
-    settle(() => kitchenToday(env, today)),
-    settle(() => carToday(env, today)),
-    settle(() => upcomingEvents(env, today)),
-    settle(() => recentChurchList(env)),
+    settle(async () => noticesForWeek(noticesForCampus(await readNotices(env), campus), weekStart, today)),
+    jeju ? null : settle(() => kitchenToday(env, today)),
+    jeju ? null : settle(() => carToday(env, today)),
+    settle(() => upcomingEvents(env, today, 5, campus)),
+    settle(() => recentChurchList(env, campus)),
     settle(() => prayerBoard(env, session)),
     settle(() => mySchedule(env, session, today)),
   ]);
-  return { today, weekStart, canEditNotices: canPostNotices(session), notices: notices ? notices.map(({ byEmail, ...n }) => ({ ...n, canDelete: canDeleteNotice(session, { byEmail }) })) : notices, kitchen, car, events, churches, prayers: prayerData ? prayerData.prayers : null, prayerTotal: prayerData ? prayerData.total : 0, me };
+  return {
+    today, weekStart, campus, canSwitchCampus, hidden: jeju ? ['kitchen', 'car'] : [],
+    canEditNotices: canPostNotices(session),
+    notices: notices ? notices.map(({ byEmail, ...n }) => ({ ...n, campus: noticeAudience(n), canDelete: canDeleteNotice(session, { byEmail }) })) : notices,
+    kitchen, car, events, churches, prayers: prayerData ? prayerData.prayers : null, prayerTotal: prayerData ? prayerData.total : 0, me,
+  };
 }
