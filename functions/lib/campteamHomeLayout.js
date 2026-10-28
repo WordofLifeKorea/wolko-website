@@ -25,6 +25,12 @@ export const CATALOG = {
   decisions: { w: 6,  h: 8,  minW: 3, minH: 3, max: 1 },
   status:    { w: 6,  h: 7,  minW: 3, minH: 4, max: 1 },
   activity:  { w: 6,  h: 8,  minW: 3, minH: 3, max: 1, teamOnly: true },
+  // 월코 포털(전체)에서 읽어 오는 카드 — 보기만 하고, 쓰기·삭제는 포털에서 한다
+  pnotices:  { w: 6,  h: 8,  minW: 3, minH: 3, max: 1 },
+  pkitchen:  { w: 6,  h: 6,  minW: 3, minH: 3, max: 1 },
+  pcar:      { w: 6,  h: 5,  minW: 3, minH: 3, max: 1 },
+  pevents:   { w: 6,  h: 8,  minW: 3, minH: 3, max: 1 },
+  pchurches: { w: 6,  h: 8,  minW: 3, minH: 3, max: 1 },
 };
 export const TYPES = Object.keys(CATALOG);
 export const catalogList = () => TYPES.map((type) => ({ type, ...CATALOG[type] }));
@@ -32,8 +38,8 @@ export const catalogList = () => TYPES.map((type) => ({ type, ...CATALOG[type] }
 export function defaultHomeLayout() {
   const it = (type, x, y, w, h) => ({ uid: type, type, x, y, w: w ?? CATALOG[type].w, h: h ?? CATALOG[type].h, show: true, opts: {} });
   return { v: 2, items: [
-    it('stats', 0, 0), it('camps', 0, 3), it('deadlines', 6, 3), it('attention', 0, 11), it('agenda', 6, 11),
-    it('meetings', 0, 19), it('files', 6, 19), it('budget', 0, 25),
+    it('stats', 0, 0), it('camps', 0, 3), it('pnotices', 6, 3), it('deadlines', 0, 11), it('attention', 6, 11), it('agenda', 0, 19),
+    it('meetings', 6, 19), it('files', 0, 27, 12), it('budget', 0, 33),
   ] };
 }
 

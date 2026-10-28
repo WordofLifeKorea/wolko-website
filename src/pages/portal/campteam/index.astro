@@ -6,8 +6,20 @@ import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
     <div><div class="h1row"><h1 data-t="homeTitle"></h1><span class="qh" data-h="pageHome"></span></div><div class="sub" id="homeSub"></div></div>
     <div class="actions"><button class="btn" id="editHome" type="button" hidden></button><span class="qh" data-h="editHome"></span></div>
   </div>
+  <section class="hub-sky ct-hero" id="hubSky" data-kind="none" data-day="1" aria-label="Today">
+    <canvas class="hub-sky-canvas" id="hubSkyCanvas" aria-hidden="true"></canvas>
+    <div class="hub-sky-art" aria-hidden="true"><i class="sk-sun"></i><i class="sk-moon"></i><i class="sk-fog f1"></i><i class="sk-fog f2"></i><i class="sk-cloud c1"></i><i class="sk-cloud c2"></i><i class="sk-cloud c3"></i><i class="sk-flash"></i></div>
+    <div class="hub-sky-content">
+      <h2 class="hub-greeting" id="hubKicker"></h2>
+      <div id="hubSkyBody"></div>
+    </div>
+    <div class="hub-wx" id="hubWx" hidden></div>
+  </section>
   <div id="todayBox"></div>
   <div class="editbar" id="editBar" hidden></div>
   <div class="dash" id="homeGrid"></div>
-  <script is:inline slot="scripts" src="/portal/campteam/home.js?v=16"></script>
+  <link slot="head" rel="stylesheet" href="/hub-sky.css?v=4">
+  <script is:inline slot="scripts" src="/hub-sky.js?v=4" defer></script>
+  <script is:inline slot="scripts" src="/portal/campteam/home-hero.js?v=2"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/home.js?v=17"></script>
 </CampTeamLayout>

@@ -28,7 +28,7 @@ const withItem = (layout, item) => ({ v: 2, items: [...layout.items, { uid: item
 const layoutOf = base;
 
 test('홈 배치 검사: 기본 배치는 통과하고 서로 겹치지 않으며, 이상한 값은 모두 거부한다', () => {
-  const d = base(); assert.equal(d.v, 2); assert.ok(sanitizeHomeLayout(d).layout); assert.equal(sanitizeHomeLayout(d).layout.items.length, 8);
+  const d = base(); assert.equal(d.v, 2); assert.ok(sanitizeHomeLayout(d).layout); assert.equal(sanitizeHomeLayout(d).layout.items.length, 9);
   const bad = (mut, re) => { const l = base(); mut(l); const r = sanitizeHomeLayout(l); assert.match(r.error ?? 'NO ERROR', re); };
   for (const x of [null, {}, { v: 1, sections: [] }, { v: 2, items: 'x' }]) assert.ok(sanitizeHomeLayout(x).error, JSON.stringify(x));
   bad((l) => { l.items[1].type = 'hack'; }, /알 수 없는/);
@@ -66,7 +66,7 @@ test('홈 배치 API: 로그인 필요, 내 배치는 누구나·내 것만, 모
   assert.ok((await J(await call(HL, 'onRequestGet', env, U.mem))).catalog.some((c) => c.type === 'activity'), '팀원도 변경 기록 위젯을 쓸 수 있다');
 
   // 조회만 사용자도 "내 홈"은 저장할 수 있지만, 기본 홈은 못 바꾼다
-  const mine = withItem(without('meetings'), { type: 'notices', x: 0, y: 19 });
+  const mine = withItem(without('agenda'), { type: 'notices', x: 0, y: 19 });
   const r = await call(HL, 'onRequestPut', env, U.view, { body: { scope: 'mine', layout: mine } }); assert.equal(r.status, 200);
   assert.ok((await J(r)).effective.items.some((w) => w.type === 'notices'));
   for (const who of [U.view, U.fin, U.mem]) assert.equal((await call(HL, 'onRequestPut', env, who, { body: { scope: 'default', layout: base() } })).status, 403, who);
