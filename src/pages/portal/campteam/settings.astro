@@ -16,23 +16,18 @@ import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
     <form id="onForm" class="actions" style="margin-top:10px;gap:8px"><input id="onName" maxlength="60" data-t-ph="onPh" style="flex:1;min-width:160px"><button class="btn pri" type="submit" data-t="onAdd"></button></form>
     <div class="err" id="onErr" hidden></div>
   </section>
-  <div class="grid">
-    <section class="card">
-      <h2 data-t="addMember"></h2>
-      <form id="addForm" class="form">
-        <label><span data-t="fEmail"></span><input id="fEmail" type="email" required placeholder="name@wolko.org"></label>
-        <label><span data-t="fName"></span><input id="fName" maxlength="60"></label>
-        <label><span data-t="fAliases"></span><input id="fAliases" maxlength="200"></label>
-        <label><span data-t="fRole"></span><select id="roleSel"></select></label>
-        <div class="err" id="addErr" hidden></div>
-        <div><button class="btn pri" type="submit" data-t="save"></button></div>
-      </form>
-    </section>
-    <section class="card">
-      <h2 data-t="rolesTitle"></h2>
-      <div class="hintbox"><p data-t="permAdmin"></p><p data-t="permFinance"></p><p data-t="permMember"></p><p data-t="permViewer" style="margin-bottom:0"></p></div>
-    </section>
-  </div>
+  <section class="card">
+    <h2 data-t="addMember"></h2>
+    <form id="addForm" class="form">
+      <div class="two"><label><span data-t="fEmail"></span><input id="fEmail" type="email" required placeholder="name@wolko.org"></label>
+      <label><span data-t="fName"></span><input id="fName" maxlength="60"></label></div>
+      <div class="two"><label><span data-t="fAliases"></span><input id="fAliases" maxlength="200"></label>
+      <label><span data-t="fRole"></span><select id="roleSel"></select></label></div>
+      <div id="addPerm"></div>
+      <div class="err" id="addErr" hidden></div>
+      <div><button class="btn pri" type="submit" data-t="save"></button></div>
+    </form>
+  </section>
   <section class="card" id="trSec" style="margin-top:16px" hidden>
     <h2><span data-t="trTitle"></span></h2><div class="hintbox" data-t="trHelp" style="margin-bottom:10px"></div>
     <div class="actions"><button class="btn pri" id="trRun" data-t="trRun"></button><span class="hint" id="trStat"></span></div>
@@ -60,7 +55,7 @@ import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
     <div style="overflow:auto"><table id="auTable"></table></div>
   </section>
   <dialog id="dlg" class="wide"><h3 id="dlgTitle"></h3><form id="dlgForm" class="form" method="dialog"><div id="dlgFields" class="form"></div><div class="err" id="dlgErr" hidden></div><div class="dlg-actions" id="dlgActions"></div></form></dialog>
-  <script is:inline slot="scripts" src="/portal/campteam/settings.js?v=3"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/settings.js?v=4"></script>
   <script is:inline slot="scripts" src="/portal/campteam/settings-extra.js?v=5"></script>
   <script is:inline slot="scripts" src="/portal/campteam/owners-admin.js?v=1"></script>
 </CampTeamLayout>

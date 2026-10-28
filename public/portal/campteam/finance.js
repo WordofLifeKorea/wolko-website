@@ -29,13 +29,13 @@
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc, KRW = function (n) { return CT.money(n, 'KRW'); };
   var S = { periods: [], pid: null, tab: 'summary', sum: null, entries: null, cats: null, plan: null, filter: { kind: '', category: '', q: '', month: '' }, perms: null, qa: { date: '', kind: 'expense' } };
   var TABS_PRIMARY = ['summary', 'ledger', 'periods', 'plan'], TABS_MORE = ['import', 'expense', 'recon', 'calc', 'cats'], TABS_ALL = TABS_PRIMARY.concat(TABS_MORE);
-  var allow = function (t) { return t !== 'import' || !!(S.perms && S.perms.moneyWrite); }, tabs = function () { return TABS_ALL.filter(allow); };
+  var allow = function (t) { return t !== 'import' || !!(S.perms && S.perms.ledgerWrite); }, tabs = function () { return TABS_ALL.filter(allow); };
   var tabLabel = function (t) { return CT.t('tab' + t.charAt(0).toUpperCase() + t.slice(1)); };
   var ext = function () { return window.FinTabs && window.FinTabs[S.tab]; }; // 엑셀 가져오기·경비 연동·잔액 대조 등은 별도 파일이 FinTabs 에 등록한다
   var today = function () { var d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); };
   var cur = function () { return S.periods.filter(function (p) { return p.id === S.pid; })[0]; };
-  var canEdit = function () { return !!(S.perms && S.perms.moneyWrite && cur() && cur().status === 'open'); };
-  var canAdmin = function () { return !!(S.perms && S.perms.moneyAdmin); };
+  var canEdit = function () { return !!(S.perms && S.perms.ledgerWrite && cur() && cur().status === 'open'); };
+  var canAdmin = function () { return !!(S.perms && S.perms.ledgerAdmin); };
   var api = function (p, o) { return CT.api('/api/campteam/' + p, o); };
 
   // ── 날짜 도우미 ──
@@ -72,15 +72,15 @@
   // ── 그리기 ──
   function render() {
     var sel = $('fnPeriodSel'); sel.innerHTML = S.periods.map(function (p) { return '<option value="' + esc(p.id) + '"' + (p.id === S.pid ? ' selected' : '') + '>' + esc(p.name) + (p.status === 'closed' ? ' (' + esc(CT.t('perClosed')) + ')' : '') + '</option>'; }).join('');
-    var vo = $('fnViewOnly'), role = CT.me && CT.me.campRole; vo.hidden = !!(S.perms && S.perms.moneyWrite);
+    var vo = $('fnViewOnly'), role = CT.me && CT.me.campRole; vo.hidden = !!(S.perms && S.perms.ledgerWrite);
     if (!vo.hidden) vo.textContent = CT.t(role === 'treasurer' ? 'viewOnlyTre' : 'viewOnlyMem');
-    if (S.pid && cur() && cur().status === 'closed' && S.perms && S.perms.moneyWrite) { vo.hidden = false; vo.textContent = CT.t('closedNote'); }
+    if (S.pid && cur() && cur().status === 'closed' && S.perms && S.perms.ledgerWrite) { vo.hidden = false; vo.textContent = CT.t('closedNote'); }
     var more = TABS_MORE.filter(allow), inMore = more.indexOf(S.tab) >= 0;
     $('fnTabs').innerHTML = TABS_PRIMARY.map(function (t) { return '<button class="tab' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(tabLabel(t)) + '</button>'; }).join('') +
       '<div class="tabmore"><button class="tab' + (inMore ? ' on' : '') + '" id="fnMoreBtn" aria-haspopup="true" aria-expanded="false">' + esc(inMore ? '⋯ ' + tabLabel(S.tab) : CT.t('tabMore')) + '</button><div class="moremenu" id="fnMoreMenu" hidden>' +
       more.map(function (t) { return '<button class="mi' + (S.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + esc(tabLabel(t)) + '</button>'; }).join('') + '<a class="mi" href="/portal/campteam/budget/">' + esc(CT.t('tabCampBudget')) + '</a></div></div>' + CT.help('tab' + S.tab.charAt(0).toUpperCase() + S.tab.slice(1));
     $('fnPerHelp').innerHTML = CT.help('period');
-    $('fnPerManage').hidden = !(S.perms && S.perms.moneyRead); $('fnPerNew').hidden = !canAdmin();
+    $('fnPerManage').hidden = !(S.perms && S.perms.ledgerRead); $('fnPerNew').hidden = !canAdmin();
     $('fnBanner').innerHTML = bannerHtml();
     var body = $('fnBody');
     if (ext()) body.innerHTML = ext().html();
@@ -192,7 +192,7 @@
   // ── 항목 목록 ──
   function catsHtml() {
     if (!S.cats) return '';
-    var ed = !!(S.perms && S.perms.moneyWrite);
+    var ed = !!(S.perms && S.perms.ledgerWrite);
     var col = function (kind, title) {
       var list = S.cats[kind];
       return '<section class="card"><h2>' + esc(title) + '</h2>' + list.map(function (c, i) {
@@ -293,9 +293,9 @@
   window.FIN = { S: S, api: api, KRW: KRW, esc: esc, render: render, loadTab: loadTab, loadPeriods: loadPeriods, canEdit: canEdit, cur: cur, today: today };
   CT.boot(async function (me) {
     S.perms = me.perms; if (wantTab && tabs().indexOf(wantTab) >= 0) S.tab = wantTab;
-    if (!me.perms.moneyRead) { $('fnLocked').hidden = false; return; }
+    if (!me.perms.ledgerRead) { $('fnLocked').hidden = false; return; }
     $('fnMain').hidden = false; wire();
-    if (me.perms.moneyWrite) { try { var a = await api('ledger-expense', { method: 'POST', body: { action: 'autoSync' } }); S.syncInfo = a; } catch (e) { /* 연동이 없거나 실패해도 장부는 그대로 연다 */ } }
+    if (me.perms.ledgerWrite) { try { var a = await api('ledger-expense', { method: 'POST', body: { action: 'autoSync' } }); S.syncInfo = a; } catch (e) { /* 연동이 없거나 실패해도 장부는 그대로 연다 */ } }
     try { await loadPeriods(); await loadTab(); } catch (e) { $('fnBody').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; return; }
     CT.applyI18n(); render();
     document.addEventListener('ct-lang', render);

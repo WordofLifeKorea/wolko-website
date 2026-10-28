@@ -22,18 +22,22 @@ export const FIXED_ADMIN_EMAILS = ['aidenpark@wolko.org', 'hkim3@wol.org'];
 export const isFixedAdmin = (email) => FIXED_ADMIN_EMAILS.includes(String(email || '').trim().toLowerCase());
 
 // ── 항목별 권한 ──
-// 항목(area): tasks 업무·일정 / meetings 회의·결정 / files 자료실 / camps 캠프별 공간(·TV 공지) / money 예산·장부 / personal 신청자 개인정보 / notices 팀 공지 쓰기
+// 항목(area): tasks 업무 / calendar 달력·일정 / meetings 회의록·결정 / files 자료실 / camps 캠프별 공간(·TV 공지) / money 예산 / ledger 장부 / personal 신청자 개인정보 / notices 팀 공지
+// (calendar·ledger 는 예전에 tasks·money 에 묶여 있던 것을 따로 뗀 항목 — 따로 정해 두지 않은 사람은 예전 항목의 값을 그대로 이어받는다)
 // 수준(level): none 안 보임 / view 보기만 / edit 수정 가능 (personal 은 none/view, 개인정보에는 "수정"이 없음)
 // 역할은 기본값 묶음이고, 관리자가 사람마다 달리 정한 칸(member_perms)이 그 위에 덮어쓴다. 관리자 역할은 덮어쓸 수 없다(잠겨 버리는 사고 방지).
-export const AREAS = ['tasks', 'meetings', 'files', 'camps', 'money', 'personal', 'notices'];
-export const AREA_LEVELS = { tasks: ['none', 'view', 'edit'], meetings: ['none', 'view', 'edit'], files: ['none', 'view', 'edit'], camps: ['none', 'view', 'edit'], money: ['none', 'view', 'edit'], personal: ['none', 'view'], notices: ['none', 'view', 'edit'] };
-const GENERAL = ['tasks', 'meetings', 'files', 'camps'];
+export const AREAS = ['tasks', 'calendar', 'meetings', 'files', 'camps', 'money', 'ledger', 'personal', 'notices'];
+/** 새로 뗀 항목이 따로 정해지지 않았을 때 이어받는 예전 항목 */
+export const AREA_PARENT = { calendar: 'tasks', ledger: 'money' };
+export const AREA_LEVELS = { tasks: ['none', 'view', 'edit'], calendar: ['none', 'view', 'edit'], meetings: ['none', 'view', 'edit'], files: ['none', 'view', 'edit'], camps: ['none', 'view', 'edit'], money: ['none', 'view', 'edit'], ledger: ['none', 'view', 'edit'], personal: ['none', 'view'], notices: ['none', 'view', 'edit'] };
+const GENERAL = ['tasks', 'calendar', 'meetings', 'files', 'camps'];
 
 /** 역할 기본값 */
 export function roleAreas(campRole) {
   const r = campRole, money = r === 'admin' || r === 'director' || r === 'finance', editor = money || r === 'member', g = editor ? 'edit' : 'view';
   // 캠프팀 명단 밖의 월코 팀원: 캠프 목록과 "월코 팀 전체 공개" 파일만 (업무·회의는 캠프팀 내부용)
-  return { tasks: r ? g : 'none', meetings: r ? g : 'none', files: g, camps: g, money: money ? 'edit' : (r === 'treasurer' || r === 'member') ? 'view' : 'none', personal: money ? 'view' : 'none', notices: r ? 'edit' : 'none' };
+  const m = money ? 'edit' : (r === 'treasurer' || r === 'member') ? 'view' : 'none';
+  return { tasks: r ? g : 'none', calendar: r ? g : 'none', meetings: r ? g : 'none', files: g, camps: g, money: m, ledger: m, personal: money ? 'view' : 'none', notices: r ? 'edit' : 'none' };
 }
 /** 항목별 수준 → 코드 곳곳에서 쓰는 권한 묶음 */
 export function permsFromAreas(areas, campRole) {
@@ -42,7 +46,10 @@ export function permsFromAreas(areas, campRole) {
     write: GENERAL.some((a) => areas[a] === 'edit'),            // 일반 자료를 하나라도 고칠 수 있음 (항목별 확인은 canWrite/canView)
     moneyRead: areas.money !== 'none',                           // 장부·예산안·금액 자료를 볼 수 있다
     moneyWrite: areas.money === 'edit',                          // 장부·예산안·항목 목록을 고칠 수 있다
-    moneyAdmin: areas.money === 'edit',                          // 기간 만들기·마감·다시 열기, 경비 연동 규칙
+    moneyAdmin: areas.money === 'edit',                          // (예산 쪽) 관리 권한
+    ledgerRead: areas.ledger !== 'none',                         // 장부(수입·지출·기간·대조)를 볼 수 있다
+    ledgerWrite: areas.ledger === 'edit',                        // 장부를 고칠 수 있다
+    ledgerAdmin: areas.ledger === 'edit',                        // 기간 만들기·마감·다시 열기, 경비 연동 규칙
     manageMembers: campRole === 'admin',
     personal: areas.personal === 'view',                         // 신청자 연락처·환불 계좌 등 개인정보
     areas,
@@ -52,7 +59,12 @@ export function permsFor(campRole) { return permsFromAreas(roleAreas(campRole), 
 /** 기본값 위에 사람별 설정(overrides: { area: level })을 얹는다. 모르는 값·허용되지 않는 값은 무시. 관리자 역할은 그대로. */
 export function applyOverrides(campRole, overrides) {
   const areas = roleAreas(campRole);
-  if (campRole && campRole !== 'admin') for (const [a, l] of Object.entries(overrides || {})) if (AREA_LEVELS[a] && AREA_LEVELS[a].includes(l)) areas[a] = l;
+  if (campRole && campRole !== 'admin') {
+    const ov = overrides || {};
+    // 따로 뗀 항목(달력·장부)을 따로 정한 적이 없으면, 예전 항목(업무·예산)에 정해 둔 값을 이어받는다 — 이미 정해 둔 권한이 바뀌지 않게
+    for (const [child, parent] of Object.entries(AREA_PARENT)) if (!(child in ov) && AREA_LEVELS[parent].includes(ov[parent])) areas[child] = ov[parent];
+    for (const [a, l] of Object.entries(ov)) if (AREA_LEVELS[a] && AREA_LEVELS[a].includes(l)) areas[a] = l;
+  }
   return permsFromAreas(areas, campRole);
 }
 const RANK = { none: 0, view: 1, edit: 2 };

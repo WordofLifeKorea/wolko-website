@@ -15,7 +15,7 @@ const TITLE = {
   notice: ['notices', 'message', null], glossary: ['glossary', 'termKo', 'termEn'],
 };
 export const isTeamMember = (s) => !!s && !!s.campRole; // 캠프팀 명단에 있는 모든 역할 (월코 재정 담당 포함)
-const AREA = { task: 'tasks', event: 'tasks', checklist_template: 'tasks', checklist_item: 'tasks', meeting: 'meetings', agenda_item: 'meetings', decision: 'meetings', glossary: 'meetings', file: 'files', camp: 'camps', camp_type: 'camps', notice: 'camps' };
+const AREA = { task: 'tasks', event: 'calendar', checklist_template: 'tasks', checklist_item: 'tasks', meeting: 'meetings', agenda_item: 'meetings', decision: 'meetings', glossary: 'meetings', file: 'files', camp: 'camps', camp_type: 'camps', notice: 'camps' };
 
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();

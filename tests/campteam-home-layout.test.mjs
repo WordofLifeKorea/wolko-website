@@ -213,7 +213,7 @@ test('명단에 없는 사람은 조회만이고, 기존 포털 관리자·마�
     const r = await me.onRequestGet({ env, request: new Request('http://localhost:8788/api/campteam/me', { headers: { Authorization: 'Bearer ' + token } }) });
     const who = await J(r);
     assert.ok(!who.campRole || who.campRole === 'viewer', hubRole);
-    const { areas, personal, ...flags } = who.perms; assert.deepEqual(flags, { read: true, write: false, moneyRead: false, moneyWrite: false, moneyAdmin: false, manageMembers: false }, hubRole); assert.equal(personal, false); assert.equal(areas.money, 'none');
+    const { areas, personal, ledgerRead, ledgerWrite, ledgerAdmin, ...flags } = who.perms; assert.deepEqual(flags, { read: true, write: false, moneyRead: false, moneyWrite: false, moneyAdmin: false, manageMembers: false }, hubRole); assert.equal(personal, false); assert.equal(areas.money, 'none');
     const b = await Budget.onRequestGet({ env, request: new Request('http://localhost:8788/api/campteam/budget?campId=camp-u26', { headers: { Authorization: 'Bearer ' + token } }) });
     assert.equal(b.status, 403, hubRole + ' 는 금액을 볼 수 없다');
     const d = await HL.onRequestPut({ env, request: new Request('http://localhost:8788/api/campteam/home-layout', { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ scope: 'default', layout: layoutOf() }) }) });

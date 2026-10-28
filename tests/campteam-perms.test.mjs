@@ -31,16 +31,16 @@ const J = (r) => r.json(), T = todayKST();
 const set = (env, email, overrides) => call(MP, 'onRequestPut', env, U.admin, { body: { email, overrides } });
 
 test('역할 기본값은 그대로: 항목별 수준과 기존 권한 묶음이 같다', () => {
-  assert.deepEqual(roleAreas('member'), { tasks: 'edit', meetings: 'edit', files: 'edit', camps: 'edit', money: 'view', personal: 'none', notices: 'edit' });
-  assert.deepEqual(roleAreas('treasurer'), { tasks: 'view', meetings: 'view', files: 'view', camps: 'view', money: 'view', personal: 'none', notices: 'edit' });
-  assert.deepEqual(roleAreas('director'), roleAreas('finance')); assert.equal(roleAreas('director').personal, 'view'); assert.deepEqual(roleAreas(null), { tasks: 'none', meetings: 'none', files: 'view', camps: 'view', money: 'none', personal: 'none', notices: 'none' }, '명단 밖: 캠프 목록과 공개 파일만');
+  assert.deepEqual(roleAreas('member'), { tasks: 'edit', calendar: 'edit', meetings: 'edit', files: 'edit', camps: 'edit', money: 'view', ledger: 'view', personal: 'none', notices: 'edit' });
+  assert.deepEqual(roleAreas('treasurer'), { tasks: 'view', calendar: 'view', meetings: 'view', files: 'view', camps: 'view', money: 'view', ledger: 'view', personal: 'none', notices: 'edit' });
+  assert.deepEqual(roleAreas('director'), roleAreas('finance')); assert.equal(roleAreas('director').personal, 'view'); assert.deepEqual(roleAreas(null), { tasks: 'none', calendar: 'none', meetings: 'none', files: 'view', camps: 'view', money: 'none', ledger: 'none', personal: 'none', notices: 'none' }, '명단 밖: 캠프 목록과 공개 파일만');
   assert.equal(permsFor('member').write, true); assert.equal(permsFor('treasurer').write, false); assert.equal(permsFor('member').personal, false);
 });
 
 test('맞춤 권한 적용: 관리자 역할은 못 바꿈, 허용되지 않는 값은 무시, 금액 항목이 곧 금액 권한', () => {
   assert.deepEqual(applyOverrides('admin', { tasks: 'none', money: 'none' }).areas, roleAreas('admin'));
   const p = applyOverrides('member', { tasks: 'view', money: 'edit', personal: 'edit', meetings: 'bogus', zzz: 'edit' });
-  assert.deepEqual(p.areas, { ...roleAreas('member'), tasks: 'view', money: 'edit' }); assert.equal(p.moneyWrite, true); assert.equal(p.moneyAdmin, true); assert.equal(p.write, true);
+  assert.deepEqual(p.areas, { ...roleAreas('member'), tasks: 'view', calendar: 'view', money: 'edit', ledger: 'edit' }, '달력·장부는 따로 정하지 않았으면 업무·예산 값을 이어받는다'); assert.equal(p.moneyWrite, true); assert.equal(p.moneyAdmin, true); assert.equal(p.write, true);
   const q = applyOverrides('member', { tasks: 'none', meetings: 'view', files: 'none', camps: 'view' }); assert.equal(q.write, false, '일반 자료를 하나도 못 고치면 write 도 꺼진다');
   assert.equal(canView(q, 'tasks'), false); assert.equal(canView(q, 'meetings'), true); assert.equal(canWrite(q, 'meetings'), false); assert.equal(applyOverrides('member', { money: 'none' }).moneyRead, false);
 });
@@ -137,4 +137,40 @@ test('명단 밖 월코 팀원: 캠프 목록·공개로 표시한 파일만, �
   await set(env, U.mem, { tasks: 'none' }); const sm = await J(await call(Space, 'onRequestGet', env, U.mem, { qs: '?id=camp-w27' })); assert.deepEqual([sm.tasks.length, sm.stats.open, sm.events.length], [0, 0, 0]); assert.ok(sm.meetings.length > 0);
   // 회의 상세: 업무·자료 영역이 안 보이면 그 내용은 빠진다
   const mt = (await J(await call(Meetings, 'onRequestGet', env, U.dir))).items[0].id; const withTasks = await J(await call(Meeting, 'onRequestGet', env, U.dir, { qs: `?id=${mt}` })); await set(env, U.mem, { tasks: 'none', files: 'none' }); const md = await J(await call(Meeting, 'onRequestGet', env, U.mem, { qs: `?id=${mt}` })); assert.deepEqual([md.tasks.length, md.files.length], [0, 0]); assert.ok(withTasks.meeting);
+});
+
+test('항목 세분화: 달력은 업무와, 장부는 예산과 따로 정할 수 있고, 따로 정하지 않으면 예전 값을 이어받는다', async () => {
+  // 따로 정하면 업무와 달리 달력만 편집/가리기 가능
+  const p = applyOverrides('member', { tasks: 'none', calendar: 'edit', money: 'none', ledger: 'view' });
+  assert.equal(canView(p, 'tasks'), false); assert.equal(canWrite(p, 'calendar'), true, '업무는 가려도 달력은 편집');
+  assert.equal(p.moneyRead, false); assert.equal(p.ledgerRead, true); assert.equal(p.ledgerWrite, false, '예산은 가려도 장부는 조회');
+  // 이어받기: 예전에 업무만 가리도록 정한 사람은 달력도 그대로 가려진다 (이미 정한 권한이 바뀌지 않는다)
+  const q = applyOverrides('member', { tasks: 'none', money: 'none' }); assert.equal(canView(q, 'calendar'), false); assert.equal(q.ledgerRead, false);
+  // 역할 기본값에서 달력은 업무와, 장부는 예산과 같다
+  for (const r of ['admin', 'director', 'finance', 'member', 'treasurer', null]) { const a = roleAreas(r); assert.equal(a.calendar, a.tasks, String(r)); assert.equal(a.ledger, a.money, String(r)); }
+  // 서버: 달력만 편집 가능한 사람은 일정을 만들 수 있고 업무는 못 만든다
+  const env = makeEnv(fakeD1()); env.DB.sqlite.exec('PRAGMA foreign_keys = OFF; DELETE FROM tasks;');
+  assert.equal((await set(env, U.mem, { tasks: 'view', calendar: 'edit' })).status, 200);
+  const Events = await import('../functions/api/campteam/events.js'), Tasks = await import('../functions/api/campteam/tasks.js'), Ledger = await import('../functions/api/campteam/ledger-summary.js');
+  const post = (mod, body) => mod.onRequestPost({ env, request: new Request('http://localhost:8788/api/campteam/x', { method: 'POST', headers: { Authorization: 'x', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) });
+  const asReq = async (path, body) => req(U.mem, { method: 'POST', body, url: 'http://localhost:8788/api/campteam/' + path });
+  assert.equal((await Events.onRequestPost({ env, request: await asReq('events', { title: '일정', startDate: '2027-01-02' }) })).status, 201);
+  assert.equal((await Tasks.onRequestPost({ env, request: await asReq('tasks', { title: '업무' }) })).status, 403);
+  // 장부 조회는 장부 권한으로 (예산이 없어도 장부만 볼 수 있다)
+  assert.equal((await set(env, U.mem, { money: 'none', ledger: 'view' })).status, 200);
+  const sum = await Ledger.onRequestGet({ env, request: await req(U.mem, { url: 'http://localhost:8788/api/campteam/ledger-summary' }) });
+  assert.notEqual(sum.status, 403, '장부 권한만 있어도 장부 화면 요청은 권한 오류가 아니다');
+});
+
+test('권한 설정 API: 사람이 없을 때도 역할 기본값 표를 받을 수 있다(?role=), 관리자만', async () => {
+  const env = makeEnv(fakeD1());
+  assert.equal((await call(MP, 'onRequestGet', env, U.mem, { qs: '?role=member' })).status, 403);
+  const r = await J(await call(MP, 'onRequestGet', env, U.admin, { qs: '?role=treasurer' }));
+  assert.deepEqual(r.areas, AREAS); assert.equal(r.defaults.calendar, 'view'); assert.equal(r.defaults.ledger, 'view'); assert.deepEqual(r.levels.personal, ['none', 'view']);
+  // 새 팀원 추가 흐름: 멤버를 만든 뒤 항목별 권한을 한 번에 저장 — 기본과 다른 칸만 저장되고, 업무를 바꾸면 달력도 정한 값대로 저장된다
+  const Members = await import('../functions/api/campteam/members.js');
+  const add = await Members.onRequestPost({ env, request: await req(U.admin, { method: 'POST', body: { email: 'new-person@wolko.org', name: 'New', role: 'member' }, url: 'http://localhost:8788/api/campteam/members' }) });
+  assert.ok(add.status < 300);
+  const put = await J(await set(env, 'new-person@wolko.org', { tasks: 'view', calendar: 'edit', meetings: 'none', money: 'view', ledger: 'none' }));
+  assert.deepEqual(put.overrides, { tasks: 'view', calendar: 'edit', meetings: 'none', ledger: 'none' }, '기본과 같은 칸(예산 조회)은 저장 안 함 · 업무를 바꿨으므로 달력은 정한 값 그대로 저장');
 });

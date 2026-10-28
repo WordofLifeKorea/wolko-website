@@ -29,7 +29,7 @@
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc, F = function () { return window.FIN; }, KRW = function (n) { return CT.money(n, 'KRW'); }, K = function () { return window.CampCalc; };
   var C = { list: null, cur: null, dirty: false, compare: '', msg: '', camps: null, pCamp: '', pScen: 'expected', pDates: true, pMsg: '' };
-  var canSave = function () { return !!(F().S.perms && F().S.perms.moneyWrite); };
+  var canSave = function () { return !!(F().S.perms && F().S.perms.ledgerWrite); };
   var openingAmt = function () { var s = F().S.sum; return s && s.opening ? (s.opening.kind === 'income' ? s.opening.amount : -s.opening.amount) : 0; };
   var model = function () { return C.cur.model; }, rowsOf = function (side) { return model()[side]; };
   var num = function (v) { return Number(String(v).replace(/[,\s₩원명]/g, '')) || 0; };

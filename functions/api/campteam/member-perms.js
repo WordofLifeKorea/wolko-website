@@ -1,4 +1,4 @@
-import { campSession, json, needLogin, needPerm, badRequest, noDb, AREAS, AREA_LEVELS, roleAreas, applyOverrides, isFixedAdmin } from '../../lib/campteamAuth.js';
+import { campSession, json, needLogin, needPerm, badRequest, noDb, AREAS, AREA_LEVELS, AREA_PARENT, roleAreas, applyOverrides, isFixedAdmin } from '../../lib/campteamAuth.js';
 import { nowIso, audit } from '../../lib/campteamDb.js';
 
 /**
@@ -28,7 +28,9 @@ const loadOverrides = async (env, email) => Object.fromEntries((await env.DB.pre
 
 export async function onRequestGet({ env, request }) {
   const { res } = await admin(env, request); if (res) return res;
-  const email = new URL(request.url).searchParams.get('email');
+  const q = new URL(request.url).searchParams, email = q.get('email');
+  // ?role=member : 새 팀원을 추가하는 창에서 그 역할의 기본 권한 표를 채우기 위해 (사람이 아직 없을 때)
+  if (!email && q.get('role')) return json({ role: q.get('role'), defaults: roleAreas(q.get('role')), areas: AREAS, levels: AREA_LEVELS });
   if (!email) {
     const rows = (await env.DB.prepare('SELECT email, COUNT(*) AS n FROM member_perms GROUP BY email').all()).results;
     return json({ list: rows.map((r) => ({ email: r.email, custom: r.n })) });
@@ -50,6 +52,8 @@ export async function onRequestPut({ env, request }) {
     if (!AREA_LEVELS[a].includes(l)) return badRequest('이 항목에서 고를 수 없는 수준입니다.');
     if (l !== defaults[a]) next[a] = l;
   }
+  // 달력·장부는 업무·예산을 이어받으므로, 업무·예산을 기본값과 다르게 정한 사람은 달력·장부도 (기본값과 같더라도) 따로 저장해 둬야 정한 대로 유지된다
+  for (const [child, parent] of Object.entries(AREA_PARENT)) if (parent in next && !(child in next) && AREA_LEVELS[child].includes(input[child])) next[child] = input[child];
   const before = await loadOverrides(env, m.email), now = nowIso();
   await env.DB.batch([env.DB.prepare('DELETE FROM member_perms WHERE email = ?1').bind(m.email),
     ...Object.entries(next).map(([a, l]) => env.DB.prepare('INSERT INTO member_perms (email,area,level,updatedAt,updatedBy) VALUES (?1,?2,?3,?4,?5)').bind(m.email, a, l, now, s.email.toLowerCase()))]);

@@ -14,7 +14,7 @@ export async function moneyGate(env, request, need) {
   if (!env.DB) return { res: noDb() };
   const s = await campSession(request, env);
   if (!s) return { res: needLogin() };
-  const p = s.perms, ok = need === 'read' ? p.moneyRead : need === 'write' ? p.moneyWrite : p.moneyAdmin;
+  const p = s.perms, ok = need === 'read' ? p.ledgerRead : need === 'write' ? p.ledgerWrite : p.ledgerAdmin;
   if (!ok) return { res: needPerm(need === 'read' ? '금액을 볼 권한이 없습니다.' : need === 'write' ? '장부는 캠프 재정 담당과 디렉터만 고칠 수 있습니다.' : '기간 만들기·마감은 캠프 재정 담당과 디렉터만 할 수 있습니다.') };
   return { s };
 }

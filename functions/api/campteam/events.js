@@ -13,7 +13,7 @@ export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  { const dv = denyView(s.perms, 'tasks', '일정'); if (dv) return dv; }
+  { const dv = denyView(s.perms, 'calendar', '일정'); if (dv) return dv; }
   const p = new URL(request.url).searchParams;
   const from = isDate(p.get('from')) ? p.get('from') : '0000-01-01', to = isDate(p.get('to')) ? p.get('to') : '9999-12-31';
   const rows = (await env.DB.prepare(`SELECT e.id, e.campId, e.title, e.kind, e.startDate, e.endDate, e.startTime, e.endTime, e.location, e.notes, e.isTest, c.nameKo AS campKo, c.nameEn AS campEn
@@ -44,7 +44,7 @@ export async function onRequestPost(context) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!canWrite(s.perms, 'tasks')) return needPerm('작성 권한이 없습니다.');
+  if (!canWrite(s.perms, 'calendar')) return needPerm('작성 권한이 없습니다.');
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const { v, error } = clean(b); if (error) return badRequest(error);
   if (!(await campOk(env, v.campId))) return badRequest('캠프를 찾을 수 없습니다.');
@@ -61,7 +61,7 @@ export async function onRequestPatch(context) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!canWrite(s.perms, 'tasks')) return needPerm('수정 권한이 없습니다.');
+  if (!canWrite(s.perms, 'calendar')) return needPerm('수정 권한이 없습니다.');
   const id = new URL(request.url).searchParams.get('id');
   const row = await env.DB.prepare('SELECT * FROM events WHERE id = ?1 AND deletedAt IS NULL').bind(id).first();
   if (!row) return json({ error: '찾을 수 없습니다.' }, 404);
@@ -80,7 +80,7 @@ export async function onRequestDelete(context) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
-  if (!canWrite(s.perms, 'tasks')) return needPerm('삭제 권한이 없습니다.');
+  if (!canWrite(s.perms, 'calendar')) return needPerm('삭제 권한이 없습니다.');
   const id = new URL(request.url).searchParams.get('id');
   const res = await env.DB.prepare('UPDATE events SET deletedAt = ?2, updatedAt = ?2 WHERE id = ?1 AND deletedAt IS NULL').bind(id, nowIso()).run();
   if (!res.meta?.changes) return json({ error: '찾을 수 없습니다.' }, 404);

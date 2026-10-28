@@ -22,7 +22,7 @@ const KINDS = {
   ledger: { table: 'ledger_entries', label: `CASE WHEN description <> '' THEN description ELSE category END`, sub: `entryDate || ' · ' || amount`, money: true, where: `source <> 'carry'` }, // 장부 거래(이월금 줄은 시스템이 관리하므로 제외)
 };
 // 항목별 권한: 종류마다 어느 영역인지 (그 영역을 볼 수 있어야 목록에 나오고, 수정할 수 있어야 복구할 수 있다)
-const AREA = { tasks: 'tasks', events: 'tasks', templates: 'tasks', template_items: 'tasks', meetings: 'meetings', sections: 'meetings', decisions: 'meetings', files: 'files', camps: 'camps', camp_types: 'camps', notices: 'camps', announcements: 'notices' };
+const AREA = { tasks: 'tasks', events: 'calendar', templates: 'tasks', template_items: 'tasks', meetings: 'meetings', sections: 'meetings', decisions: 'meetings', files: 'files', camps: 'camps', camp_types: 'camps', notices: 'camps', announcements: 'notices', budget: 'money', ledger: 'ledger' };
 async function gate(env, request) {
   if (!env.DB) return { res: noDb() };
   const s = await campSession(request, env);
@@ -43,13 +43,13 @@ const mineArgs = (s) => (s.perms.manageMembers ? [] : [s.email.toLowerCase()]);
 export async function onRequestGet({ env, request }) {
   const { s, res } = await gate(env, request); if (res) return res;
   const kind = new URL(request.url).searchParams.get('kind');
-  const allowed = Object.entries(KINDS).filter(([name, k]) => (k.money ? s.perms.moneyRead : canView(s.perms, AREA[name])));
+  const allowed = Object.entries(KINDS).filter(([name, k]) => canView(s.perms, AREA[name]));
   if (!kind) {
     const counts = {};
     for (const [name, k] of allowed) try { counts[name] = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${k.table} t WHERE t.deletedAt IS NOT NULL ${k.restricted && !s.perms.moneyRead ? `AND t.${k.restricted} = 0` : ''} ${k.where ? 'AND t.' + k.where : ''}${mine(s, 't')}`).bind(...mineArgs(s)).first()).n; } catch { counts[name] = 0; /* 아직 이 표가 없는 DB 는 0개로 본다 */ }
     return json({ counts });
   }
-  const k = KINDS[kind]; if (!k || (k.money ? !s.perms.moneyRead : !canView(s.perms, AREA[kind]))) return badRequest('종류가 올바르지 않습니다.');
+  const k = KINDS[kind]; if (!k || !canView(s.perms, AREA[kind])) return badRequest('종류가 올바르지 않습니다.');
   let rows = [];
   try {
   rows = (await env.DB.prepare(`SELECT t.id, ${k.label} AS label, ${k.sub} AS sub, t.deletedAt,
@@ -64,7 +64,7 @@ export async function onRequestPost({ env, request }) {
   const { s, res } = await gate(env, request); if (res) return res;
   let b; try { b = await request.json(); } catch { return badRequest('요청 형식이 올바르지 않습니다.'); }
   const k = KINDS[b.kind]; if (!k) return badRequest('종류가 올바르지 않습니다.');
-  if (k.money ? !s.perms.moneyWrite : !canWrite(s.perms, AREA[b.kind])) return needPerm('복구 권한이 없습니다.');
+  if (!canWrite(s.perms, AREA[b.kind])) return needPerm('복구 권한이 없습니다.');
   const row = await env.DB.prepare(`SELECT * FROM ${k.table} WHERE id = ?1 AND deletedAt IS NOT NULL`).bind(String(b.id || '')).first();
   if (!row || (k.restricted && row[k.restricted] && !s.perms.moneyWrite)) return json({ error: '찾을 수 없습니다.' }, 404);
   if (!s.perms.manageMembers && !(await env.DB.prepare(`SELECT 1 AS x FROM ${k.table} t WHERE t.id = ?1${mine(s, 't')}`).bind(row.id, ...mineArgs(s)).first())) return json({ error: '내가 지운 항목만 복구할 수 있어요. 다른 사람이 지운 건 관리자에게 요청해 주세요.' }, 404);

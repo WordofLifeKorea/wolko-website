@@ -70,7 +70,7 @@ export async function onRequestGet({ env, request }) {
 
   // 장부 현황: 오늘이 속한 열린 기간(없으면 가장 가까운 열린 기간). 금액 조회 권한이 있을 때만 읽는다.
   let ledger;
-  if (s.perms.moneyRead) {
+  if (s.perms.ledgerRead) {
     const per = await db.prepare(`SELECT id, name, startDate, endDate FROM ledger_periods WHERE deletedAt IS NULL AND status = 'open' ORDER BY (startDate <= ?1 AND endDate >= ?1) DESC, startDate DESC LIMIT 1`).bind(today).first();
     if (per) {
       const t = await periodTotals(env, per.id);
