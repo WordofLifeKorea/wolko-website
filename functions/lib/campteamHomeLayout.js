@@ -75,7 +75,13 @@ export function sanitizeHomeLayout(input) {
   // 폰에서 보이는 순서(선택). 없거나 일부만 있으면 나머지는 위치(위→아래, 왼→오)순으로 이어진다. 배치에 없는 번호는 버린다.
   const m = [];
   if (Array.isArray(input.m)) for (const u of input.m.slice(0, MAX_ITEMS)) if (typeof u === 'string' && uids.has(u) && !m.includes(u)) m.push(u);
-  return { layout: m.length ? { v: 2, items: out, m } : { v: 2, items: out } };
+  // 폰에서 카드 높이(한 칸 = 40px, 3~24칸). 배치에 없는 번호는 버린다. 넓은 화면의 위치·크기와는 따로 저장된다.
+  const mh = {};
+  if (input.mh && typeof input.mh === 'object' && !Array.isArray(input.mh)) for (const [u, v] of Object.entries(input.mh)) if (uids.has(u) && int(v) && v >= 3 && v <= 24) mh[u] = v;
+  const layout = { v: 2, items: out };
+  if (m.length) layout.m = m;
+  if (Object.keys(mh).length) layout.mh = mh;
+  return { layout };
 }
 
 export const userScope = (email) => 'u:' + String(email || '').trim().toLowerCase();
