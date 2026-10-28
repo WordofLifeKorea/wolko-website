@@ -175,20 +175,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .ministry-head { max-width:760px; margin:0 auto 56px; text-align:center; }
   .ministry-grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px; }
   .ministry-card {
-    background:#f6f9fb; border:1px solid var(--primary-line); border-radius:var(--r-lg);
-    padding:30px 26px; display:flex; flex-direction:column; gap:12px;
-    transition:transform .22s, box-shadow .22s, border-color .22s, background .22s;
-    position:relative; overflow:hidden; text-decoration:none; color:inherit;
+    --photo: none;
+    position:relative; overflow:hidden; isolation:isolate; min-height:430px;
+    display:flex; flex-direction:column; justify-content:flex-end; gap:12px;
+    padding:30px 26px; border-radius:var(--r-lg); border:1px solid rgba(255,255,255,0.14);
+    background:#0b2c3a; color:#fff; text-decoration:none;
+    box-shadow:0 14px 34px rgba(0,50,70,0.16);
+    transition:transform .25s, box-shadow .25s;
   }
-  .ministry-card::after { content:""; position:absolute; right:-28px; bottom:-36px; width:130px; height:130px; border-radius:50%; background:rgba(0,79,104,0.05); pointer-events:none; transition:transform .22s; }
-  .ministry-card:hover { transform:translateY(-5px); box-shadow:0 22px 52px rgba(0,79,104,0.13); border-color:rgba(0,79,104,0.2); background:var(--white); }
-  .ministry-card:hover::after { transform:scale(1.2); }
-  .ministry-card-icon { width:48px; height:48px; border-radius:15px; background:var(--primary-soft); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; z-index:1; }
-  .ministry-card-tag { font-size:11px; font-weight:800; letter-spacing:0.05em; color:var(--primary); position:relative; z-index:1; }
-  .ministry-card h4 { font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#102028; line-height:1.3; position:relative; z-index:1; }
-  .ministry-card p { font-size:14px; line-height:1.8; color:var(--muted); position:relative; z-index:1; }
-  .ministry-card-arrow { margin-top:auto; padding-top:16px; font-size:13px; font-weight:800; color:var(--primary); display:flex; align-items:center; gap:5px; position:relative; z-index:1; opacity:0; transition:opacity .22s; }
-  .ministry-card:hover .ministry-card-arrow { opacity:1; }
+  /* 사진 — 마우스를 올리면 천천히 확대 */
+  .ministry-card::before { content:""; position:absolute; inset:0; z-index:-2; background:var(--photo) center/cover no-repeat; transform:scale(1.02); transition:transform .8s cubic-bezier(.2,.7,.2,1); }
+  /* 글자가 잘 읽히도록 아래쪽을 어둡게 */
+  .ministry-card::after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(180deg, rgba(3,26,36,0.18) 0%, rgba(3,26,36,0.42) 38%, rgba(3,24,33,0.88) 78%, rgba(3,22,31,0.95) 100%); transition:opacity .3s; }
+  .ministry-card:hover { transform:translateY(-6px); box-shadow:0 26px 54px rgba(0,50,70,0.28); }
+  .ministry-card:hover::before { transform:scale(1.09); }
+  .ministry-card-icon { width:54px; height:54px; border-radius:16px; margin-bottom:auto; display:flex; align-items:center; justify-content:center; color:#fff; background:rgba(255,255,255,0.16); border:1px solid rgba(255,255,255,0.32); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); box-shadow:0 8px 22px rgba(0,0,0,0.18); }
+  .ministry-card-tag { font-size:11px; font-weight:800; letter-spacing:0.08em; color:#8fe3f7; }
+  .ministry-card h4 { font-size:21px; font-weight:800; letter-spacing:-0.02em; color:#fff; line-height:1.3; text-shadow:0 2px 12px rgba(0,0,0,0.35); }
+  .ministry-card p { font-size:14px; line-height:1.8; color:rgba(255,255,255,0.86); }
+  .ministry-card-arrow { padding-top:8px; font-size:13px; font-weight:800; color:#fff; display:flex; align-items:center; gap:6px; opacity:.9; transition:gap .2s, opacity .2s; }
+  .ministry-card:hover .ministry-card-arrow { opacity:1; gap:10px; }
 
   /* ── 반응형 ── */
   @media (max-width:1050px) {
@@ -427,29 +433,29 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </p>
     </div>
     <div class="ministry-grid">
-      <a href="/camp" class="ministry-card">
-        <div class="ministry-card-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M3 21 12 3l9 18H3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 21v-6h6v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <a href="/camp" class="ministry-card" style="--photo:url('/images/ministries/camp.jpg')">
+        <div class="ministry-card-icon"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 20.5 12 4l9.5 16.5"/><path d="M9.5 20.5 12 15.5l2.5 5"/><path d="M1.5 20.5h21"/><path d="M12 4V2.5"/></svg></div>
         <span class="ministry-card-tag">CAMP MINISTRY</span>
         <h4><span class="wl-ko">캠프 사역</span><span class="wl-en">Camp Ministry</span></h4>
         <p><span class="wl-ko">복음을 집중적으로 경험하는 월코의 핵심 사역입니다.</span><span class="wl-en">WOLKO's signature ministry where youth encounter the Gospel in a focused setting.</span></p>
         <span class="ministry-card-arrow"><span class="wl-ko">자세히 보기 →</span><span class="wl-en">Learn More →</span></span>
       </a>
-      <a href="/youth" class="ministry-card">
-        <div class="ministry-card-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <a href="/youth" class="ministry-card" style="--photo:url('/images/ministries/youth.jpg')">
+        <div class="ministry-card-icon"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M6.5 20v-1.2a5.5 5.5 0 0 1 11 0V20"/><circle cx="4.6" cy="10.2" r="2.1"/><path d="M1.5 19v-.8a3.4 3.4 0 0 1 3.1-3.4"/><circle cx="19.4" cy="10.2" r="2.1"/><path d="M22.5 19v-.8a3.4 3.4 0 0 0-3.1-3.4"/></svg></div>
         <span class="ministry-card-tag">STUDENT MINISTRY</span>
         <h4><span class="wl-ko">청소년 사역 & 코어 트레이닝</span><span class="wl-en">Youth Ministry & Core Training</span></h4>
         <p><span class="wl-ko">교회와 일상 속에서 지속적인 신앙 성장을 돕고 복음 리더로 세웁니다.</span><span class="wl-en">Helping students grow in faith and equipping them as Gospel-centered leaders.</span></p>
         <span class="ministry-card-arrow"><span class="wl-ko">자세히 보기 →</span><span class="wl-en">Learn More →</span></span>
       </a>
-      <a href="/jr-syme" class="ministry-card">
-        <div class="ministry-card-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4 18h16M6 16V7.8c0-.56 0-.84.1-1.08.08-.21.21-.39.38-.54.2-.17.47-.28 1.03-.51l4-1.6c.56-.22.83-.33 1.1-.33.27 0 .54.11 1.1.33l4 1.6c.56.23.83.34 1.03.51.17.15.3.33.38.54.1.24.1.52.1 1.08V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <a href="/jr-syme" class="ministry-card" style="--photo:url('/images/ministries/syme.jpg')">
+        <div class="ministry-card-icon"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"/><path d="M12 13c0-3.6-2.6-6-6.5-6 0 3.6 2.6 6 6.5 6Z"/><path d="M12 11c0-3 2.1-5.5 6.2-5.5 0 3.1-2.1 5.5-6.2 5.5Z"/><path d="M8 21h8"/></svg></div>
         <span class="ministry-card-tag">DISCIPLESHIP</span>
         <h4><span class="wl-ko">Jr. SYME</span><span class="wl-en">Jr. SYME</span></h4>
         <p><span class="wl-ko">중·고등학생 대상 여름·겨울방학 3주 영어 제자훈련 프로그램입니다.</span><span class="wl-en">A 3-week English discipleship training program for middle and high school students each vacation.</span></p>
         <span class="ministry-card-arrow"><span class="wl-ko">자세히 보기 →</span><span class="wl-en">Learn More →</span></span>
       </a>
-      <a href="/wolbi-jeju" class="ministry-card">
-        <div class="ministry-card-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 12v5c3 3 9 3 12 0v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <a href="/wolbi-jeju" class="ministry-card" style="--photo:url('/images/ministries/wolbi.jpg')">
+        <div class="ministry-card-icon"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.6C10.4 5 8 4.4 4 4.4v13.2c4 0 6.4.6 8 2.2 1.6-1.6 4-2.2 8-2.2V4.4c-4 0-6.4.6-8 2.2Z"/><path d="M12 6.6v13.2"/><path d="M15.2 9.3h1.6M7.2 9.3h1.6"/></svg></div>
         <span class="ministry-card-tag">BIBLE INSTITUTE</span>
         <h4><span class="wl-ko">제주월비 (WOLBI)</span><span class="wl-en">WOLBI Jeju</span></h4>
         <p><span class="wl-ko">제주에서 이루어지는 깊이 있는 성경학교 훈련입니다.</span><span class="wl-en">A deep Bible training ministry in Jeju where students are grounded through the Word of God.</span></p>
