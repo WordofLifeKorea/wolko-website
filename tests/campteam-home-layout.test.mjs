@@ -220,3 +220,12 @@ test('명단에 없는 사람은 조회만이고, 기존 포털 관리자·마�
     assert.equal(d.status, 403, hubRole + ' 는 기본 홈을 바꿀 수 없다');
   }
 });
+
+test('홈 배치: 폰 카드 높이(mh)는 3~24칸의 정수만, 배치에 있는 위젯 것만 저장된다', () => {
+  const d = defaultHomeLayout(), l = JSON.parse(JSON.stringify(d));
+  l.mh = { camps: 8, deadlines: 2, attention: 25, agenda: 4.5, nosuch: 6, meetings: '7' };
+  const r = sanitizeHomeLayout(l).layout;
+  assert.deepEqual(r.mh, { camps: 8 }, '범위 안의 정수이고 배치에 있는 위젯만 남는다');
+  assert.equal(sanitizeHomeLayout(JSON.parse(JSON.stringify(d))).layout.mh, undefined, '없으면 필드도 없다');
+  for (const bad of [[], 'x', 5, null]) { const m = JSON.parse(JSON.stringify(d)); m.mh = bad; assert.ok(sanitizeHomeLayout(m).layout, '이상한 값은 무시하고 나머지는 저장'); assert.equal(sanitizeHomeLayout(m).layout.mh, undefined); }
+});
