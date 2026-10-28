@@ -70,3 +70,13 @@ test('협력 교회 이름: 영문을 괄호로 병기한 긴 이름이 중간�
   assert.ok(names.includes(long), '60자를 넘어도 그대로');
   assert.ok(names.every(n => n.length <= 120), '너무 긴 값은 120자에서 자른다');
 });
+
+test('협력 교회 화면 CSS: 중괄호가 짝이 맞고, 색 점이 없다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/partner-churches.css', import.meta.url), 'utf8');
+  let depth = 0;
+  for (const ch of css) { depth += (ch === '{') - (ch === '}'); assert.ok(depth >= 0); }
+  assert.equal(depth, 0, '중괄호가 하나 빠지면 그 뒤 규칙이 전부 무시된다');
+  const js = readFileSync(new URL('../public/partner-churches.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(css + js, /pc-dot|pc-strip-dots/);
+});
