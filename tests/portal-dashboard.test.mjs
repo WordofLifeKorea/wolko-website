@@ -186,3 +186,31 @@ test('공지 번역: 올릴 때 한↔영 번역이 함께 저장되고, 번역�
     assert.equal(await translateMissingNotices({ ...env, ANTHROPIC_API_KEY: '' }, { now: 1 }), 0, '키가 없으면 아무것도 하지 않는다');
   } finally { globalThis.fetch = realFetch; }
 });
+
+test('공지 담당 계정(esooy): 올릴 수 있고 자기가 올린 공지만 지울 수 있다 · 일반 계정은 못 올린다', async () => {
+  const { env } = kvEnv();
+  const put = (email, role) => env.CAMP_KV.put(`hub:account:${email}`, JSON.stringify({ email, name: email, role, status: 'approved' }));
+  await put('esooy@wol.org', 'counselor'); await put('anna@wol.org', 'counselor'); await put(MASTER_EMAILS[0], 'master');
+  const call = async (fn, who, url, init = {}) => {
+    const token = await createHubSessionToken('secret', who[0], who[1]);
+    const res = await fn({ env, request: new Request(url, { headers: { Authorization: `Bearer ${token}` }, ...init }) });
+    return { status: res.status, body: await res.json() };
+  };
+  const estelle = ['esooy@wol.org', 'counselor'], anna = ['anna@wol.org', 'counselor'], master = [MASTER_EMAILS[0], 'master'];
+  const url = 'https://x/api/portal/notices';
+  assert.equal((await call(noticeApi.onRequestPost, anna, url, { method: 'POST', body: JSON.stringify({ body: '일반 계정' }) })).status, 403);
+  const mine = await call(noticeApi.onRequestPost, estelle, url, { method: 'POST', body: JSON.stringify({ title: '키친 안내', body: '이번 주 주방 안내' }) });
+  assert.equal(mine.status, 201); assert.equal('byEmail' in mine.body.notice, false, '응답에 이메일은 없다');
+  const adminMade = await call(noticeApi.onRequestPost, master, url, { method: 'POST', body: JSON.stringify({ body: '관리자 공지' }) });
+  // 첫 화면: 공지 담당 계정은 올리기 폼이 보이고, 자기 공지에만 삭제 버튼이 있다
+  const dash = await buildDashboard(env, { email: 'esooy@wol.org', role: 'counselor', name: 'Estelle' }, NOW);
+  assert.equal(dash.canEditNotices, true);
+  const byTitle = Object.fromEntries(dash.notices.map(n => [n.body, n.canDelete]));
+  assert.deepEqual(byTitle, { '이번 주 주방 안내': true, '관리자 공지': false });
+  assert.ok(dash.notices.every(n => !('byEmail' in n)));
+  assert.equal((await buildDashboard(env, { email: 'anna@wol.org', role: 'counselor' }, NOW)).canEditNotices, false);
+  assert.ok((await buildDashboard(env, { email: MASTER_EMAILS[0], role: 'master' }, NOW)).notices.every(n => n.canDelete), '마스터는 모두 지울 수 있다');
+  assert.equal((await call(noticeApi.onRequestDelete, estelle, `${url}?id=${adminMade.body.notice.id}`, { method: 'DELETE' })).status, 403, '남이 올린 공지는 못 지운다');
+  assert.equal((await call(noticeApi.onRequestDelete, estelle, `${url}?id=${mine.body.notice.id}`, { method: 'DELETE' })).status, 200);
+  assert.equal((await call(noticeApi.onRequestDelete, anna, `${url}?id=${adminMade.body.notice.id}`, { method: 'DELETE' })).status, 403);
+});

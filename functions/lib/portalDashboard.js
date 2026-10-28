@@ -12,6 +12,12 @@ import { alwaysExempt } from './gospelReminder.js';
 import { currentMonthKst, loadMonth, ownerOf } from './gospelStats.js';
 
 export const NOTICES_KEY = 'portal:notices';
+/** 마스터·관리자 말고도 공지를 올릴 수 있는 계정 — 본인이 올린 공지만 지울 수 있다 */
+export const NOTICE_POSTER_EMAILS = ['esooy@wol.org'];
+const isAdminRole = session => session?.role === 'master' || session?.role === 'admin';
+export const canPostNotices = session => isAdminRole(session) || NOTICE_POSTER_EMAILS.includes(String(session?.email || '').trim().toLowerCase());
+/** 이 공지를 지울 수 있는지 — 관리자는 모두, 공지 담당 계정은 자기가 올린 것만 */
+export const canDeleteNotice = (session, notice) => isAdminRole(session) || (canPostNotices(session) && !!notice?.byEmail && notice.byEmail === String(session.email).trim().toLowerCase());
 export const MAX_NOTICES = 60;
 const DASH_CHURCH_KEY = 'portal:dash-churches-v3';
 const DASH_CHURCH_SECONDS = 300;
@@ -185,5 +191,5 @@ export async function buildDashboard(env, session, now = Date.now()) {
     settle(() => prayerBoard(env, session)),
     settle(() => mySchedule(env, session, today)),
   ]);
-  return { today, weekStart, canEditNotices: session.role === 'admin' || session.role === 'master', notices, kitchen, car, events, churches, prayers: prayerData ? prayerData.prayers : null, prayerTotal: prayerData ? prayerData.total : 0, me };
+  return { today, weekStart, canEditNotices: canPostNotices(session), notices: notices ? notices.map(({ byEmail, ...n }) => ({ ...n, canDelete: canDeleteNotice(session, { byEmail }) })) : notices, kitchen, car, events, churches, prayers: prayerData ? prayerData.prayers : null, prayerTotal: prayerData ? prayerData.total : 0, me };
 }
