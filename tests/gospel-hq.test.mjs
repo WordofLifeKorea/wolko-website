@@ -217,3 +217,17 @@ test('복음 통계 숫자 카드 네 장은 같은 구조(라벨 · 숫자 · �
   assert.match(charts, /reach: two\(\['campAttendance', 'eeAttendance'\]\)/);
   assert.match(css, /\.gs-kpi > span \{ min-height: 2\.9em/, '라벨 두 줄 자리를 늘 잡아 숫자 높이가 같다');
 });
+
+test('MRIC 창: 연·월을 누르면 공용 달력이 열리고, 좁은 화면에서도 글자가 겹치거나 접히지 않도록 CSS 가 막아 둔다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const html = readFileSync(new URL('../src/pages/portal/gospel-stats/mric/index.astro', import.meta.url), 'utf8');
+  const js = readFileSync(new URL('../public/gospel-mric.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../public/gospel-stats.css', import.meta.url), 'utf8');
+  assert.match(html, /wolko-datepicker\.js/); assert.match(html, /id="mricPick"[^>]*data-cal-jump/);
+  assert.match(js, /\$\('mricPick'\)\.addEventListener\('change'/);
+  // 도넛 옆 목록은 읽을 수 있는 폭 아래로 줄지 않고(아래 줄로 내려간다), 이름은 숫자를 덮지 않고 말줄임 처리
+  assert.match(css, /\.gc-donutbox \.gc-legend \{[^}]*min-width: 128px/);
+  assert.match(css, /\.gc-donutbox \.gc-legend span \{[^}]*text-overflow: ellipsis[^}]*white-space: nowrap/);
+  // MRIC 헤더의 30px 고정 규칙이 연·월 버튼에 적용되지 않는다
+  assert.match(css, /\.gs-mricmonth \.gs-mricmonthbtn \{[^}]*width: auto !important/);
+});
