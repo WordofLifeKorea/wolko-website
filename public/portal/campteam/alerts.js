@@ -79,7 +79,7 @@
       else if (a === 'annSeen') { e.preventDefault(); await post({ action: 'state', keys: ['ann:' + b.dataset.id], state: 'seen' }); await refreshAll(); }
       else if (a === 'done') { e.preventDefault(); if (!confirm(CT.t('alDoneAsk'))) return; await CT.api('/api/campteam/tasks?id=' + encodeURIComponent(b.dataset.id), { method: 'PATCH', body: { status: 'Completed' } }); await refreshAll(); }
       else if (a === 'weekHide') { e.preventDefault(); await post({ action: 'state', keys: ['weekly:' + b.dataset.date], state: 'dismissed' }); await refreshAll(); }
-      else if (a === 'todayHide') { e.preventDefault(); st.todayHidden = !st.todayHidden; lsSet('ct-today-hidden', st.todayHidden ? '1' : '0'); renderToday(); }
+      else if (a === 'noticeSeen') { e.preventDefault(); if (window.CTHero) CTHero.markSeen(); }
     } catch (er) { alert(er.message || CT.t('alFailed')); }
   }
   async function reload() { var d = await load(!A.wantFull); if (d && A.wantFull) st.today = d; return d; }
@@ -98,18 +98,20 @@
   }
   function renderToday() {
     var host = $('todayBox'); if (!host || !st.today) return; var d = st.today, t = d.today, s = d.summary || {};
-    var taskIds = function (l) { return l.map(function (x) { return x; }); };
-    var h = '<div class="tdhd"><h2>' + esc(CT.t('tdTitle')) + CT.help('today') + '</h2><span class="tddate">' + esc(d.date.replace(/-/g, '.')) + '</span><button type="button" class="btn sm" data-a="todayHide">' + esc(CT.t(st.todayHidden ? 'tdShow' : 'tdHide')) + '</button></div>';
-    if (st.todayHidden) { host.innerHTML = '<section class="tdbox min">' + h + '</section>'; return; }
+    var ex = (window.CTHero && CTHero.todayExtra) ? CTHero.todayExtra() : { html: '', duties: 0, notices: 0 };
+    // 카드 색: 마감 지난 일이 있으면 붉게, 오늘 할 일·듀티·새 공지가 있으면 주황, 모두 끝났으면 초록 — 한눈에 보이도록
+    var cls = t.overdue.length ? 'is-over' : (t.today.length || ex.duties || ex.notices) ? 'is-today' : 'is-clear';
+    var h = '<div class="tdhd"><h2>' + esc(CT.t('tdTitle')) + CT.help('today') + '</h2><span class="tddate">' + esc(d.date.replace(/-/g, '.')) + '</span></div>';
     if (s.daily) h += '<div class="tdai"><span class="chip">' + esc(CT.t('tdAi')) + '</span>' + CT.help('aiSummary') + '<p>' + esc(s.daily) + '</p></div>';
-    var body = todaySection('tdOver', t.overdue, 'over', 5) + todaySection('tdToday', t.today, 'today', 5) + todaySection('tdSoon', t.soon, 'soon', 5) +
+    var body = ex.html + todaySection('tdOver', t.overdue, 'over', 5) + todaySection('tdToday', t.today, 'today', 5) + todaySection('tdSoon', t.soon, 'soon', 5) +
       todaySection('tdMeet', t.meetings.concat(t.events), 'meet', 5) + todaySection('tdDec', t.decisions, 'dec', 3);
     h += body || '<div class="tdnone">' + esc(CT.t('tdNone')) + '</div>';
     if (s.weeklyAvailable && !s.dismissedWeekly && d.week) {
       h += '<div class="tdweek"><div><span class="chip">' + esc(CT.t('tdWeek')) + '</span> <b>' + esc(CT.t('tdWeekLine')) + '</b> ' + esc(CT.t('tdWeekTasks') + ' ' + d.week.tasks + ', ' + CT.t('tdWeekMeet') + ' ' + (d.week.meetings + d.week.events) + (d.week.overdue ? ', ' + CT.t('tdWeekOver') + ' ' + d.week.overdue : '')) + CT.help('weeklyMail') + '</div>' + (s.weekly ? '<p>' + esc(s.weekly) + '</p>' : '') +
         '<button type="button" class="alclose" data-a="weekHide" data-date="' + esc(s.weeklyDate) + '" aria-label="' + esc(CT.t('alDismiss')) + '">✕</button></div>';
     }
-    host.innerHTML = '<section class="tdbox">' + h + '</section>';
+    host.innerHTML = '<section class="tdbox ' + cls + '">' + h + '</section>';
+    document.dispatchEvent(new CustomEvent('ct-today'));
   }
   async function makeSummaries(d) {
     if (!d.ai) return; var s = d.summary || {};
@@ -118,7 +120,7 @@
   }
 
   // ── 시작 ──
-  var A = window.CTA = { load: load, reload: reload, seenAll: seenAll, render: renderPanel, refresh: refreshAll, annHtml: annHtml, itemHtml: itemHtml, label: label, api: api, post: post, st: st, wantFull: false, onRefresh: null };
+  var A = window.CTA = { renderToday: renderToday, load: load, reload: reload, seenAll: seenAll, render: renderPanel, refresh: refreshAll, annHtml: annHtml, itemHtml: itemHtml, label: label, api: api, post: post, st: st, wantFull: false, onRefresh: null };
   document.addEventListener('click', function (e) {
     var t = e.target; if (!t.closest) return;
     if (t.closest('#bellBtn')) { openPanel(!st.open); return; }

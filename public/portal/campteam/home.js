@@ -110,8 +110,9 @@
   // ── 위젯 정의 ──
   var COLS = 12, ROW = 40, GAP = 12;
   var TITLES = { stats: ['statsTitle', 'wStatsD'], camps: ['activeCamps', 'wCampsD'], deadlines: ['upcoming', 'wDeadlinesD'], attention: ['attention', 'wAttentionD'], agenda: ['agenda', 'wAgendaD'], meetings: ['recentMeetings', 'wMeetingsD'], files: ['recentFiles', 'wFilesD'], budget: ['budget', 'wBudgetD'],
-    notices: ['noticesTitle', 'wNoticesD'], links: ['linksTitle', 'wLinksD'], mytasks: ['myTasksTitle', 'wMyTasksD'], calendar: ['calTitle', 'wCalendarD'], dday: ['ddayTitle', 'wDdayD'], activity: ['activityTitle', 'wActivityD'], thisweek: ['thisweekTitle', 'wThisweekD'], overdue: ['overdueTitle', 'wOverdueD'], decisions: ['decisionsTitle', 'wDecisionsD'], status: ['statusTitle', 'wStatusD'] };
-  var LINK = { overdue: '/portal/campteam/tasks/', decisions: '/portal/campteam/meetings/', status: '/portal/campteam/tasks/', thisweek: '/portal/campteam/tasks/', camps: '/portal/campteam/camps/', deadlines: '/portal/campteam/tasks/', attention: '/portal/campteam/tasks/', agenda: '/portal/campteam/meetings/', meetings: '/portal/campteam/meetings/', files: '/portal/campteam/files/', mytasks: '/portal/campteam/tasks/' };
+    notices: ['noticesTitle', 'wNoticesD'], links: ['linksTitle', 'wLinksD'], mytasks: ['myTasksTitle', 'wMyTasksD'], calendar: ['calTitle', 'wCalendarD'], dday: ['ddayTitle', 'wDdayD'], activity: ['activityTitle', 'wActivityD'], thisweek: ['thisweekTitle', 'wThisweekD'], overdue: ['overdueTitle', 'wOverdueD'], decisions: ['decisionsTitle', 'wDecisionsD'], status: ['statusTitle', 'wStatusD'],
+    pnotices: ['pnoticesTitle', 'wPnoticesD'], pkitchen: ['pkitchenTitle', 'wPkitchenD'], pcar: ['pcarTitle', 'wPcarD'], pevents: ['peventsTitle', 'wPeventsD'], pchurches: ['pchurchesTitle', 'wPchurchesD'] };
+  var LINK = { overdue: '/portal/campteam/tasks/', decisions: '/portal/campteam/meetings/', status: '/portal/campteam/tasks/', thisweek: '/portal/campteam/tasks/', camps: '/portal/campteam/camps/', deadlines: '/portal/campteam/tasks/', attention: '/portal/campteam/tasks/', agenda: '/portal/campteam/meetings/', meetings: '/portal/campteam/meetings/', files: '/portal/campteam/files/', mytasks: '/portal/campteam/tasks/', pnotices: '/portal/', pkitchen: '/portal/kitchen', pcar: '/portal/car-drive', pevents: '/portal/', pchurches: '/portal/crs' };
   var NOCARD = { stats: 1 };
 
   var L = null, editing = false, scope = 'mine', work = null, base = '', calMonth = null, calCache = {}, auditCache = null;
@@ -139,7 +140,7 @@
     if (!c || !c.startDate) return sel + '<div class="dday"><div class="dd-n">—</div><div class="dd-t">' + esc(c ? CT.pick(c, 'name') : CT.t('ddayNone')) + '</div><div class="dd-s">' + esc(c ? CT.t('dateTbdLong') : '') + '</div></div>';
     var diff = daysBetween(d.today, c.startDate), end = c.endDate || c.startDate, live = d.today >= c.startDate && d.today <= end, past = d.today > end;
     var n = live ? CT.t('ddayLive') : diff === 0 ? CT.t('ddayDay') : diff > 0 ? 'D-' + diff : 'D+' + (-diff);
-    return sel + '<div class="dday' + (past ? ' past' : live ? ' live' : '') + '"><div class="dd-n">' + esc(n) + '</div><div class="dd-t"><a href="/portal/campteam/space/?id=' + esc(c.id) + '">' + esc(CT.pick(c, 'name')) + '</a></div><div class="dd-s">' + esc(CT.fmtDate(c.startDate)) + (c.endDate ? ' – ' + esc(CT.fmtDate(c.endDate)) : '') + '</div></div>';
+    return sel + '<div class="dday' + (past ? ' past' : live ? ' live' : '') + '"><svg class="dd-tent" viewBox="0 0 64 40" width="64" height="40" aria-hidden="true"><path d="M4 38 32 6l28 32z" fill="#f4b860"/><path d="M32 6 20 38h24z" fill="#e59a3a"/><path d="M26 38l6-14 6 14z" fill="#7a4a1e"/><path class="snow" d="M32 6l-7 8 4-2 3 3 3-3 4 2z" fill="#fff"/><g class="fire"><path d="M52 38c-3-4 0-7 1-10 2 3 4 6 2 10z" fill="#ff7a2f"/></g></svg><div class="dd-n">' + esc(n) + '</div><div class="dd-t"><a href="/portal/campteam/space/?id=' + esc(c.id) + '">' + esc(CT.pick(c, 'name')) + '</a></div><div class="dd-s">' + esc(CT.fmtDate(c.startDate)) + (c.endDate ? ' – ' + esc(CT.fmtDate(c.endDate)) : '') + '</div></div>';
   }
   function linksHtml() {
     var p = data.user.perms, L2 = [['resources', '/portal/campteam/resources/', 'linkResources', '#ec5fa0'], ['files', '/portal/campteam/files/', 'linkFiles', '#f0a020'], ['tasks', '/portal/campteam/tasks/', 'linkTasks', '#22b573'], ['calendar', '/portal/campteam/calendar/', 'linkCalendar', '#3bb3a6'], ['meetings', '/portal/campteam/meetings/', 'linkMeetings', '#8b6cf0'], ['camps', '/portal/campteam/camps/', 'linkCamps', '#9bbf1f'], ['tv', '/portal/campteam/tv/', 'linkTv', '#14b8c4']];
@@ -165,6 +166,7 @@
     if (t === 'overdue') return rowTasks(data.overdue || [], true) || '<div class="empty">' + esc(CT.t('overdueNone')) + '</div>';
     if (t === 'decisions') return decisionsHtml();
     if (t === 'status') return statusHtml();
+    if (t.charAt(0) === 'p' && window.CTHero && ['pnotices', 'pkitchen', 'pcar', 'pevents', 'pchurches'].indexOf(t) >= 0) return CTHero.widget(t);
     return body(t);
   }
 
@@ -431,5 +433,10 @@
     } catch (e) { $('main').insertAdjacentHTML('afterbegin', '<div class="err">' + esc(e.message) + '</div>'); return; }
     CT.applyI18n(); wire(); render();
     document.addEventListener('ct-lang', function () { calCache = calCache; render(); });
+    if (window.CTHero) CTHero.start({
+      onFeed: function () { if (!editing) render(); },
+      busy: function () { return editing; },
+      onRefresh: async function () { data = await CT.api('/api/campteam/home'); if (!editing) render(); if (window.CTA) await CTA.refresh(); }
+    });
   });
 })();
