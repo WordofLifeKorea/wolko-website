@@ -11,7 +11,7 @@ export const NOTICES_KEY = 'portal:notices';
 export const MAX_NOTICES = 60;
 const DASH_CHURCH_KEY = 'portal:dash-churches-v3';
 const DASH_CHURCH_SECONDS = 300;
-const CRS_DATABASE = 'https://wolko-crs-default-rtdb.asia-southeast1.firebasedatabase.app';
+export const CRS_DATABASE = 'https://wolko-crs-default-rtdb.asia-southeast1.firebasedatabase.app';
 const DAY = 86400000;
 
 const clean = (v, max) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
