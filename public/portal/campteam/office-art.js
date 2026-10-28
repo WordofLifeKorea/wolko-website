@@ -87,10 +87,14 @@
   function frames(sprite, v) { return '<span class="ofi-set set-' + v + '">' + im(spName(sprite, 'seated', v), 'f0') + im(spName(sprite, 'seated-type', v), 'f1') + im(spName(sprite, 'blink', v), 'fb') + '</span>'; }
   function walker(sprite) { return '<span class="ofi-walk">' + [1, 2, 3, 4].map(function (i) { return im(sprite + '-walk' + i, 'w' + i); }).join('') + '</span>'; }
   /** 그림 캐릭터가 책상에 앉은(또는 빈 의자) 모습의 HTML */
+  // 책상 위 소품 — 키보드(앉아 있을 때)와 커피잔. 손이 허공에서 움직이는 것처럼 보이지 않게 책상 위에 얹는다
+  var KB = '<svg class="ofi-kb" viewBox="0 0 46 9" aria-hidden="true" focusable="false" shape-rendering="crispEdges"><rect x="1" y="1" width="44" height="8" rx="1.500" fill="#2b1d1a"/><rect x="2" y="1" width="42" height="6.500" rx="1" fill="#e6ebf0"/><path d="M4 2.500h38M4 4.500h38" stroke="#b8c2cc" stroke-width="1.400" stroke-dasharray="2.200 1.200"/><rect x="12" y="5.800" width="22" height="1.200" fill="#b8c2cc"/></svg>';
+  var MUG = '<svg class="ofi-mug" viewBox="0 0 16 18" aria-hidden="true" focusable="false" shape-rendering="crispEdges"><path class="ofi-steam" d="M5 5V2M8 5V1M11 5V2" stroke="#fff" stroke-width="1.100" fill="none" opacity=".65" stroke-linecap="round"/><rect x="2" y="6" width="9" height="10" rx="1.500" fill="#2b1d1a"/><rect x="3" y="7" width="7" height="8" rx="1" fill="#fbfcfd"/><rect x="3" y="7" width="7" height="2.500" fill="#7a4a2a"/><path d="M11 8h2a2 2 0 0 1 0 5h-2" fill="none" stroke="#2b1d1a" stroke-width="2.200"/><path d="M11 9h2a1 1 0 0 1 0 3h-2" fill="none" stroke="#fbfcfd" stroke-width="1"/></svg>';
+  function props(seated) { return (seated ? KB : '') + MUG; }
   function deskImg(av, seated, enter) {
     var sprite = av.sprite, varied = av.glasses === 'varied' && setOk(sprite, 'off') && setOk(sprite, 'up') && SP.urls[spName(sprite, 'seated', 'off')], d = Math.round(Math.random() * 40) / 10;
     var who = !seated ? im('chair-empty', 'ofi-chair') : '<span class="ofi-who" style="--d:-' + d + 's">' + (varied ? frames(sprite, 'on') + frames(sprite, 'off') + frames(sprite, 'up') : frames(sprite, 'on')) + '</span>' + (enter && walkReady(sprite) ? walker(sprite) : '');
-    return '<div class="ofi' + (varied ? ' ofc-varied' : '') + '" data-g="on">' + who + im('desk', 'ofi-desk') + '</div>';
+    return '<div class="ofi' + (varied ? ' ofc-varied' : '') + '" data-g="on">' + who + im('desk', 'ofi-desk') + props(seated) + '</div>';
   }
   function guestImg(enter) {
     if (!SP.urls['guest-stand']) return ''; var walk = [1, 2, 3, 4].every(function (i) { return SP.urls['guest-walk' + i]; });
