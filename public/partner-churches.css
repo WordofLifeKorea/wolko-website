@@ -38,4 +38,20 @@
   .pc-av { width: 46px; height: 46px; font-size: 19px; }
   .pc-name { font-size: 14px; }
 }
+/* 자동 넘김 표시 — 지금 장의 점이 알약으로 늘어나며 다음 장까지 남은 시간만큼 차오른다 */
+:root:root .pc-dots button { position: relative; overflow: hidden; }
+:root:root .pc-dots button.is-on { width: 30px !important; flex: 0 0 30px; border-radius: 999px; transform: none; background: #c3d6de; }
+.pc-dots button.is-on::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: #004f68; transform-origin: left center; transform: scaleX(1); }
+.pc-dots button.is-on.pc-run::after { animation: pc-fill var(--pc-ms, 5500ms) linear both; }
+@keyframes pc-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.pc-pause { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin: 14px auto 0; padding: 0; border: 1px solid #d3e4ec; border-radius: 50%; background: #fff; cursor: pointer; transition: background .2s; }
+.pc-pause:hover { background: #eaf4f8; }
+.pc-pause::before { content: ''; width: 8px; height: 10px; border-left: 3px solid #004f68; border-right: 3px solid #004f68; box-sizing: border-box; }
+.pc-pause.is-paused::before { width: 0; height: 0; border: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 9px solid #004f68; margin-left: 2px; }
+.pc-pause:focus-visible { outline: 2px solid #004f68; outline-offset: 3px; }
+.pc-band { display: block; }
+.pc-band > .pc-pause { display: flex; }
+.pc-viewport.pc-flash { animation: pc-fade .7s ease both; }
+@keyframes pc-fade { from { opacity: .15; } to { opacity: 1; } }
+/* 모션 줄이기: 옆으로 밀리지 않고 부드럽게 바뀐다 — 점의 채움 표시는 움직이지 않는 진행 막대라 그대로 둔다 */
 @media (prefers-reduced-motion: reduce) { .pc-track { transition: none; } .pc-chip { transition: none; } }
