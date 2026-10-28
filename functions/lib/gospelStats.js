@@ -95,7 +95,7 @@ export function cleanText(value, max) {
  *   id     = 사람 + 개인/팀 + 팀 이름 단위의 보고 번호(같은 단위는 덮어쓴다)
  * 비밀값 없이는 이메일을 거꾸로 알아낼 수 없고, 저장된 시각도 날짜까지만 남긴다.
  * 서버는 로그인한 사람의 이메일로 같은 값을 다시 만들어 "내 보고"를 찾는다. */
-async function anonHex(env, label, text, bytes) {
+export async function anonHex(env, label, text, bytes) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(`gospel-anon:${env.ADMIN_PASSWORD || ''}`), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${label}|${text}`));
   return [...new Uint8Array(sig)].slice(0, bytes).map(b => b.toString(16).padStart(2, '0')).join('');

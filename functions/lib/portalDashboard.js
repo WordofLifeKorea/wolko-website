@@ -6,6 +6,7 @@ import { SLOTS as KITCHEN_SLOTS, readDay } from './kitchenDuty.js';
 import { SLOTS as DRIVE_SLOTS, closedKey as driveClosedKey, currentWeekStart, isSlotClosed as driveSlotClosed, periodFor, shownName, slotKey, todayKst } from './carDrive.js';
 import { listCalendarEvents } from './googleCalendar.js';
 import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
+import { prayerList } from './prayers.js';
 
 export const NOTICES_KEY = 'portal:notices';
 export const MAX_NOTICES = 60;
@@ -140,12 +141,13 @@ export async function buildDashboard(env, session, now = Date.now()) {
   const today = todayKst(now);
   const weekStart = currentWeekStart(today);
   const settle = async fn => { try { return await fn(); } catch (error) { console.error('dashboard piece failed:', error.message); return null; } };
-  const [notices, kitchen, car, events, churches] = await Promise.all([
+  const [notices, kitchen, car, events, churches, prayers] = await Promise.all([
     settle(async () => noticesForWeek(await readNotices(env), weekStart, today)),
     settle(() => kitchenToday(env, today)),
     settle(() => carToday(env, today)),
     settle(() => upcomingEvents(env, today)),
     settle(() => recentChurchList(env)),
+    settle(() => prayerList(env, session, now)),
   ]);
-  return { today, weekStart, canEditNotices: session.role === 'admin' || session.role === 'master', notices, kitchen, car, events, churches };
+  return { today, weekStart, canEditNotices: session.role === 'admin' || session.role === 'master', notices, kitchen, car, events, churches, prayers };
 }
