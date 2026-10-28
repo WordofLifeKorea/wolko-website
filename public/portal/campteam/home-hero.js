@@ -39,7 +39,8 @@
   function setGreeting(text) {
     var k = $('hubKicker'); if (!k || k.dataset.text === text) return;
     k.dataset.text = text; k.setAttribute('aria-label', text);
-    k.innerHTML = Array.from(text).map(function (ch, i) { return '<span class="gl" aria-hidden="true" style="--i:' + i + '">' + esc(ch) + '</span>'; }).join('');
+    var i = 0;   // 글자는 한 글자씩 올라오되, 단어 안에서는 줄이 바뀌지 않게 단어 단위로 묶는다
+    k.innerHTML = text.split(' ').map(function (w) { return '<span class="gw">' + Array.from(w).map(function (ch) { return '<span class="gl" aria-hidden="true" style="--i:' + (i++) + '">' + esc(ch) + '</span>'; }).join('') + '</span>'; }).join(' ');
   }
   function wxLabel(w) { return !w.isDay && w.kind === 'clear' ? CT.t('wxNight') : CT.t('wxKind')[w.kind]; }
   function wxTip(w) { var tips = CT.t('wxTip'), s = (!w.isDay && w.kind === 'clear') ? tips.clearNight : tips[w.kind]; if (w.temp <= 5) s += CT.t('wxCold'); else if (w.temp >= 30) s += CT.t('wxHot'); return s; }
@@ -84,7 +85,8 @@
   }
 
   // ── 오늘 카드에 끼워 넣는 알림 (듀티 · 새 공지) ──
-  function seenIds() { try { return JSON.parse(ls.get('ct-seen-notices') || '[]'); } catch (e) { return []; } }
+  // 「확인했어요」 기록은 서버(내 계정)에 있어서 어느 기기에서 눌러도 같다. 예전에 이 브라우저에만 남긴 기록도 함께 인정한다.
+  function seenIds() { var loc = []; try { loc = JSON.parse(ls.get('ct-seen-notices') || '[]'); } catch (e) {} return ((feed && feed.seen) || []).concat(loc); }
   function newNotices() { var seen = seenIds(); return ((feed && feed.notices) || []).filter(function (n) { return seen.indexOf(n.id) < 0; }); }
   function dutyList() {
     var me = feed && feed.me; if (!me) return [];
@@ -275,5 +277,11 @@
   }
   document.addEventListener('ct-today', badge);
 
-  window.CTHero = { pending: function () { return !loaded; }, start: start, widget: widget, todayExtra: todayExtra, badge: badge, refresh: refresh, links: LINKS, markSeen: function () { ls.set('ct-seen-notices', JSON.stringify(((feed && feed.notices) || []).map(function (n) { return n.id; }))); if (window.CTA && CTA.renderToday) CTA.renderToday(); badge(); if (handlers.onFeed) handlers.onFeed(); } };
+  window.CTHero = { pending: function () { return !loaded; }, start: start, widget: widget, todayExtra: todayExtra, badge: badge, refresh: refresh, links: LINKS, markSeen: function () {
+    var ids = ((feed && feed.notices) || []).map(function (n) { return n.id; });
+    if (feed) feed.seen = (feed.seen || []).concat(ids);                 // 먼저 화면에서 사라지게 하고
+    ls.set('ct-seen-notices', JSON.stringify(ids));                     // 서버에 못 보내도 이 기기에서는 유지되게
+    if (window.CTA && CTA.renderToday) CTA.renderToday(); badge(); if (handlers.onFeed) handlers.onFeed();
+    CT.api('/api/campteam/portal-feed', { method: 'POST', body: { seen: ids } }).catch(function () {});   // 서버(내 계정)에 기록 → 다른 기기에서도 사라진다
+  } };
 })();
