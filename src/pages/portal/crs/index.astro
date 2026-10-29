@@ -747,6 +747,25 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     .map-panel-head { display:none; }
     .map-search-box { left:10px; right:10px; width:auto; }
   }
+  /* 넓은 화면: 항목(블록)마다 최대 폭을 두고, 화면 폭에 따라 칸 수가 자동으로 늘고 줄며 정렬된다 — 한 줄이 끝없이 길어져 읽기 힘들어지지 않게. */
+  @media(min-width:769px) {
+    /* 교회 상세: 블록 하나는 최대 720px (좁을 땐 한 줄로 쌓인다) */
+    .detail-panel-body > * { min-width:0; max-width:720px; }
+  }
+  /* 교회 목록: 카드 한 장은 320~560px, 목록 칸이 넓어지는 만큼 여러 칸으로 */
+  @media(min-width:1000px) {
+    .app-body:not(.split) .church-list { grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); align-items:start; }
+    .app-body:not(.split) .church-list > .church-card { max-width:560px; }
+  }
+  /* 교회 상세: 폭이 넉넉하면 지도·정보·본부 보고·방문 기록이 2칸으로 나란히 놓인다 */
+  @media(min-width:1280px) {
+    /* 칸 수는 폭이 정한다(460px 이상이면 한 칸씩 늘어남). 내용 폭은 1300px 에서 멈춰서(= 블록 하나 최대 640px · 최대 2칸) 오른쪽은 여백으로 남는다. */
+    .detail-panel-body { display:grid; grid-template-columns:repeat(auto-fit, minmax(460px, 1fr)); align-content:start; align-items:start; gap:1rem 1.25rem; padding-right:max(1.5rem, calc(100% - 1300px - 1.5rem)); }
+    .detail-panel-body > * { margin-top:0; margin-bottom:0; max-width:640px; }
+    .detail-panel-body > .steps-header, .detail-panel-body > .steps-list, .detail-panel-body > .detail-actions { grid-column:1 / -1; max-width:1300px; }
+    .detail-panel-body > .steps-header { margin-top:.35rem; }
+    .detail-panel-body > .detail-actions { margin:.25rem 0 0; }
+  }
 </style>
 
 <script type="module">
