@@ -77,6 +77,15 @@ test('renderCrowd caps the visible crowd and clears at zero', () => {
   assert.equal(container.innerHTML, '');
 });
 
+test('a large crowd shows well beyond 10 people, spread over front-to-back lanes', () => {
+  assert.ok(MAX_VISIBLE >= 30, 'the old 10-person cap should stay lifted');
+  const container = { innerHTML: '' };
+  renderCrowd(container, 25);
+  assert.equal((container.innerHTML.match(/class="inv-person is-walk-[rl]"/g) || []).length, 25);
+  const bottoms = new Set([...container.innerHTML.matchAll(/;bottom:(\d+)px;z-index:(\d+)"/g)].map(m => `${m[1]}/${m[2]}`));
+  assert.equal(bottoms.size, 3, 'people stand on three lanes, back lanes sit higher and behind');
+});
+
 test('pickRoles hands out at most one role per person and never more roles than people', () => {
   const identity = () => 0.999999; // Fisher-Yates with this rng leaves index order unchanged
   assert.deepEqual(pickRoles(0, identity), {});

@@ -11,7 +11,9 @@ export const PALETTES = [
   { hair: '#4a2f1f', shirt: '#e0b979', pants: '#3a2a22' },
 ];
 
-export const MAX_VISIBLE = 10;
+export const MAX_VISIBLE = 40;
+const LANES = 3;       // 한 줄에 몰리지 않도록 앞뒤 3줄로 나눠 세운다
+const LANE_STEP_PX = 5;
 const ROLES = ['wave', 'lookup'];
 const ROTATE_MIN_MS = 3200;
 const ROTATE_JITTER_MS = 2200;
@@ -21,7 +23,8 @@ export function personMarkup(palette, index) {
   const duration = (16 + (index * 5) % 18).toFixed(1); // 16~34s, 인물마다 속도가 다르다
   const delay = (-((index * 6.7) % Number(duration))).toFixed(1); // 시작 지점을 서로 어긋나게 한다
   const bobDelay = (-(index % 5) * 0.13).toFixed(2);
-  return `<span class="inv-person is-walk-${dir}" style="animation-duration:${duration}s;animation-delay:${delay}s">` +
+  const lane = index % LANES;   // 0이 맨 앞줄 — 뒷줄일수록 위로 올라가고 앞사람 뒤에 가려진다
+  return `<span class="inv-person is-walk-${dir}" style="animation-duration:${duration}s;animation-delay:${delay}s;bottom:${lane * LANE_STEP_PX}px;z-index:${LANES - lane}">` +
     `<svg viewBox="0 0 20 30" style="animation-delay:${bobDelay}s">` +
     `<rect class="inv-person-leg inv-person-leg-l" x="6.3" y="19" width="2.6" height="9" rx="1.3" fill="${palette.pants}"/>` +
     `<rect class="inv-person-leg inv-person-leg-r" x="11.1" y="19" width="2.6" height="9" rx="1.3" fill="${palette.pants}"/>` +
