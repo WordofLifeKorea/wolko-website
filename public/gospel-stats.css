@@ -316,22 +316,26 @@
 .gs-fold > details[open] > summary.log-panel-head { margin-bottom: 20px; }
 .gs-fold > details > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; border-radius: 8px; }
 
-/* 제출 현황 — 보고한 사람별 항목·숫자 (이름을 누르면 펼쳐짐) */
-.gs-reps { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
-.gs-reps > li > details { border: 1px solid var(--line); border-radius: 12px; background: #fff; }
-.gs-reps summary { display: flex; align-items: center; gap: 12px; padding: 10px 14px; list-style: none; cursor: pointer; }
+/* 제출 현황 — 보고한 사람별 항목·숫자 (이름을 누르면 펼쳐짐) — 작게: 이름·이메일 한 줄, 항목은 칩으로 가로 나열 */
+.gs-reps { display: grid; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
+.gs-reps > li > details { border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.gs-reps summary { display: flex; align-items: center; gap: 10px; padding: 6px 12px; list-style: none; cursor: pointer; }
 .gs-reps summary::-webkit-details-marker { display: none; }
-.gs-rep-who { display: grid; min-width: 0; flex: 1 1 auto; }
-.gs-rep-who strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.gs-rep-who em { overflow: hidden; color: var(--muted); font-size: 12.5px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
-.gs-repmeta { display: flex; flex: none; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.gs-rep-who { display: flex; align-items: baseline; gap: 8px; min-width: 0; flex: 1 1 auto; }
+.gs-rep-who strong { flex: none; max-width: 100%; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.gs-rep-who em { min-width: 0; overflow: hidden; color: var(--muted); font-size: 12px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.gs-repmeta { display: flex; flex: none; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.gs-repmeta .gs-pill { height: 20px; padding: 0 8px; font-size: 11px; }
+.gs-repmeta .gs-fold-chev { width: 8px; height: 8px; margin: 0 2px 0 2px; }
 .gs-reps details[open] .gs-fold-chev { transform: rotate(-135deg); }
-.gs-rep-body { padding: 2px 14px 12px; border-top: 1px dashed var(--line); }
-.gs-rep-sec { margin: 12px 0 4px; color: var(--muted); font-size: 12px; font-weight: 800; }
-.gs-rep-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 5px 0; font-size: 14px; }
-.gs-rep-row span { min-width: 0; }
-.gs-rep-row b { flex: none; font-variant-numeric: tabular-nums; }
-@media (max-width: 560px) { .gs-reps summary { flex-wrap: wrap; } .gs-repmeta { justify-content: flex-start; } }
+.gs-rep-body { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 6px; padding: 7px 12px 9px; border-top: 1px dashed var(--line); }
+.gs-rep-sec { flex: none; width: 100%; margin: 3px 0 0; color: var(--muted); font-size: 11px; font-weight: 800; }
+.gs-rep-sec:first-child { margin-top: 0; }
+.gs-rep-row { display: inline-flex; align-items: baseline; gap: 6px; padding: 2px 9px; border-radius: 8px; background: #f1f6f8; font-size: 12.5px; }
+.gs-rep-row span { min-width: 0; color: #35505f; }
+.gs-rep-row b { flex: none; color: var(--ink, #102936); font-variant-numeric: tabular-nums; }
+.gs-rep-body .gs-empty { margin: 0; font-size: 12.5px; }
+@media (max-width: 560px) { .gs-rep-who { flex-direction: column; align-items: flex-start; gap: 0; } .gs-rep-who em { max-width: 100%; } }
 
 /* ── MRIC 새 창 페이지 ── */
 .gs-mricpage { margin: 0; background: #f4f7fa; color: #102936; font-family: 'Noto Sans KR', sans-serif; }
