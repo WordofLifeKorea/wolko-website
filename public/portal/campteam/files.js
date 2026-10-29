@@ -5,6 +5,7 @@
       statusAny: '(상태 없음)', statusdraft: '초안', statusactive: '적용 중', statusarchived: '보관(이전 자료)',
       catprogram: '프로그램·설교자·시간표', catstaff: '스태프·Volunteer·Crew 배정', cattransport: '차량·운송', catsupplies: '재고·준비물·구매', catbudget: '예산·지출 (금액 자료)', catchurch: '교회 연락·협력', catmeeting: '회의 자료', catevaluation: '평가·결과 보고', catpromo: '홍보·디자인', catphoto: '사진', cataudio: '녹음', catetc: '기타',
       kindpdf: 'PDF', kinddoc: 'Word', kindxls: 'Excel', kindppt: 'PowerPoint', kindimg: '사진', kindaudio: '녹음', kindvideo: '영상', kindlink: '외부 링크', kindetc: '기타',
+      mPub: '전체 공개', mPubAll: '모두 전체 공개', mPubHint: '체크하지 않은 파일은 캠프팀 명단 사람만 볼 수 있어요. 체크하면 월코 팀원 모두가 볼 수 있어요.',
       addMaterial: '+ 자료 추가', mkAddTitle: '자료 추가', tabFile: '파일 올리기', tabLink: '링크 연결', pickFiles: '파일 선택', pickFolder: '📁 폴더 선택', dzPickDir: '폴더 열기',
       linkOk: '인식했어요: ', canva: 'Canva 디자인', linkShare: '링크 공유 설정이 「링크가 있는 사람은 볼 수 있음」(또는 팀원 지정)이어야 팀원이 열 수 있어요. Google 문서·Drive·Canva 모두 같아요.',
       folderName: '폴더 이름', folderNameEn: '영문 이름 (선택)', mTitles: '파일 이름 (하나씩 고칠 수 있어요)', mAiBusy: 'AI가 이름을 정리하는 중…', mAiDone: 'AI가 이름을 정리했어요. 고쳐도 돼요.', mAiOff: '기본 정리만 했어요. 고쳐도 돼요.',
@@ -21,6 +22,7 @@
       statusAny: '(none)', statusdraft: 'Draft', statusactive: 'Active', statusarchived: 'Archived',
       catprogram: 'Program · Speakers · Schedule', catstaff: 'Staff · Volunteer · Crew', cattransport: 'Vehicles · Transport', catsupplies: 'Inventory · Supplies', catbudget: 'Budget · Expenses (amounts)', catchurch: 'Church contact · Partners', catmeeting: 'Meeting materials', catevaluation: 'Evaluation · Reports', catpromo: 'Promo · Design', catphoto: 'Photos', cataudio: 'Audio', catetc: 'Other',
       kindpdf: 'PDF', kinddoc: 'Word', kindxls: 'Excel', kindppt: 'PowerPoint', kindimg: 'Photo', kindaudio: 'Audio', kindvideo: 'Video', kindlink: 'External link', kindetc: 'Other',
+      mPub: 'Share with all', mPubAll: 'Share all', mPubHint: 'Unchecked files can be seen only by the camp team roster. Checked files can be seen by the whole WOLKO team.',
       addMaterial: '+ Add material', mkAddTitle: 'Add material', tabFile: 'Upload files', tabLink: 'Link', pickFiles: 'Choose files', pickFolder: '📁 Choose folder', dzPickDir: 'Choose folder',
       linkOk: 'Recognized: ', canva: 'Canva design', linkShare: 'Link sharing must allow the team to open it ("Anyone with the link can view" or specific people). Same for Google Docs, Drive and Canva.',
       folderName: 'Folder name', folderNameEn: 'English name (optional)', mTitles: 'File names (edit each one)', mAiBusy: 'AI is tidying the names…', mAiDone: 'AI tidied the names. You can edit them.', mAiOff: 'Basic tidy only. You can edit them.',
@@ -223,7 +225,7 @@
         '<label>' + esc(CT.t('fStatus')) + '<select name="status"><option value="">' + esc(CT.t('statusAny')) + '</option>' + STATUS.map(function (c) { return '<option value="' + c + '"' + (st === c ? ' selected' : '') + '>' + esc(CT.t('status' + c)) + '</option>'; }).join('') + '</select></label></div>' +
         '<label>' + esc(CT.t('fTopic')) + '<input name="topic" maxlength="60" value="' + esc(val('topic', f ? f.topic : '')) + '"></label>';
       if (mode === 'edit') h += '<label>' + esc(CT.t('fFolder')) + '<select name="folderId">' + folderOptions(f.folderId || '') + '</select></label>';
-      h += '<label class="chk" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" name="publicToAll"' + (val('publicToAll', f && f.isPublic) ? ' checked' : '') + '><span>' + esc(CT.t('fPublic')) + '<small class="hint" style="display:block">' + esc(CT.t('fPublicHint')) + '</small></span></label>';
+      h += '<label class="chk" id="pubLbl" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" name="publicToAll"' + (val('publicToAll', f && f.isPublic) ? ' checked' : '') + '><span>' + esc(CT.t('fPublic')) + '<small class="hint" style="display:block">' + esc(CT.t('fPublicHint')) + '</small></span></label>';
     }
     $('formFields').innerHTML = h; $('formErr').hidden = true; $('prog').hidden = true; $('formSave').disabled = false; $('formSave').textContent = CT.t('save');
     (function () { // 금액 자료(예산 분류)는 월코 팀 전체 공개로 할 수 없다
@@ -251,6 +253,11 @@
     $('pkDirIn').onchange = function () { setPick(fromFileList(this.files, true)); this.value = ''; };
     $('mGroup').onchange = function () { S.pick.group = this.checked; renderPick(); };
     $('mRows').addEventListener('input', function (e) { var i = e.target.dataset.i; if (i != null && S.pick.items[i]) { S.pick.items[i].title = e.target.value; S.pick.items[i].dirty = true; } });
+    $('mRows').addEventListener('change', function (e) {
+      if (e.target.id === 'mPubAll') { S.pick.items.forEach(function (x) { x.pub = e.target.checked; }); renderPick(); }
+      else if (e.target.dataset.pub != null && S.pick.items[e.target.dataset.pub]) { S.pick.items[e.target.dataset.pub].pub = e.target.checked; renderPick(); }
+    });
+    var catSel = $('formFields').querySelector('[name=category]'); if (catSel) catSel.addEventListener('change', function () { if (S.pick) renderPick(); });
     $('mRows').addEventListener('click', function (e) { var b = e.target.closest('[data-rm]'); if (!b) return; S.pick.items.splice(+b.dataset.rm, 1); if (!S.pick.items.length) S.pick = null; renderPick(); });
     $('mFolderName').oninput = function () { S.pick.nameDirty = true; }; $('mFolderEn').oninput = function () { S.pick.enDirty = true; };
     renderPick();
@@ -268,20 +275,23 @@
   function setPick(r) {
     if (!r || !r.items.length) { S.pick = null; renderPick(r && r.skipped); return; }
     var over = r.items.length > MAX_PICK; if (over) r.items = r.items.slice(0, MAX_PICK);
-    S.pick = { items: r.items.map(function (x) { return { file: x.file, dir: x.dir || '', title: (x.dir ? x.dir + ' / ' : '') + tidy(x.file.name), dirty: false }; }), folder: r.folder || '', group: !!r.folder, folderId: '', name: r.folder || '', nameEn: '', nameDirty: false, enDirty: false, note: (r.skipped ? CT.t('mSkipped') + r.skipped + ' ' : '') + (over ? CT.t('mTooMany') : '') };
+    S.pick = { items: r.items.map(function (x) { return { file: x.file, dir: x.dir || '', title: (x.dir ? x.dir + ' / ' : '') + tidy(x.file.name), dirty: false, pub: false }; }), folder: r.folder || '', group: !!r.folder, folderId: '', name: r.folder || '', nameEn: '', nameDirty: false, enDirty: false, note: (r.skipped ? CT.t('mSkipped') + r.skipped + ' ' : '') + (over ? CT.t('mTooMany') : '') };
     renderPick(); if (S.pick.items.length > 1 || S.pick.folder) askNames();
   }
   function isMulti() { return !!S.pick && (S.pick.items.length > 1 || !!S.pick.folder); }
   function renderPick() {
     if (!$('pkSum')) return; var p = S.pick;
     $('pkSum').textContent = p ? p.items.length + CT.t('mSel') + (p.items.length === 1 ? ' — ' + p.items[0].file.name + ' (' + fmtSize(p.items[0].file.size) + ')' : '') + (p.note ? ' · ' + p.note : '') : '';
-    var multi = isMulti(); $('multi').hidden = !multi; $('titleLbl').hidden = multi;
+    var multi = isMulti(); $('multi').hidden = !multi; $('titleLbl').hidden = multi; if ($('pubLbl')) $('pubLbl').hidden = multi; // 여러 개일 때는 파일마다 공개 칸이 있다
     if (!multi) return;
+    var cat = $('formFields').querySelector('[name=category]'), locked = !!cat && cat.value === 'budget'; // 금액 자료는 공개할 수 없다
+    if (locked) p.items.forEach(function (x) { x.pub = false; });
     $('mGroupRow').hidden = !!p.folder; $('mGroup').checked = !!p.group; $('mFolder').hidden = !p.group;
     if (document.activeElement !== $('mFolderName')) $('mFolderName').value = p.name; if (document.activeElement !== $('mFolderEn')) $('mFolderEn').value = p.nameEn;
     $('mAi').textContent = p.aiMsg || '';
-    $('mRows').innerHTML = '<div class="hint">' + esc(CT.t('mTitles')) + '</div>' + p.items.map(function (x, i) {
-      return '<div class="mrow"><input data-i="' + i + '" maxlength="120" value="' + esc(x.title) + '"><small>' + esc((x.dir ? x.dir + '/' : '') + x.file.name) + ' · ' + fmtSize(x.file.size) + '</small><button type="button" class="btn sm" data-rm="' + i + '">' + esc(CT.t('mRemove')) + '</button></div>'; }).join('');
+    var all = p.items.length && p.items.every(function (x) { return x.pub; });
+    $('mRows').innerHTML = '<div class="mhead"><span class="hint">' + esc(CT.t('mTitles')) + '</span><label class="mpub"><input type="checkbox" id="mPubAll"' + (all ? ' checked' : '') + (locked ? ' disabled' : '') + '><span>' + esc(CT.t('mPubAll')) + '</span></label></div><div class="hint">' + esc(CT.t('mPubHint')) + '</div>' + p.items.map(function (x, i) {
+      return '<div class="mrow"><input data-i="' + i + '" maxlength="120" value="' + esc(x.title) + '"><label class="mpub" title="' + esc(CT.t('mPubHint')) + '"><input type="checkbox" data-pub="' + i + '"' + (x.pub ? ' checked' : '') + (locked ? ' disabled' : '') + '><span>' + esc(CT.t('mPub')) + '</span></label><button type="button" class="btn sm" data-rm="' + i + '">' + esc(CT.t('mRemove')) + '</button><small>' + esc((x.dir ? x.dir + '/' : '') + x.file.name) + ' · ' + fmtSize(x.file.size) + '</small></div>'; }).join('');
   }
   async function askNames() { // AI(없으면 기본 정리)가 폴더·파일 이름을 제안한다 — 직접 고친 칸은 건드리지 않는다
     var p = S.pick; if (!p) return; var cat = $('formFields').querySelector('[name=category]');
@@ -346,7 +356,7 @@
       var x = items[i]; $('formSave').textContent = CT.t('uploading') + ' ' + (i + 1) + '/' + total;
       var q = new URLSearchParams(); q.set('title', (x.title || '').trim() || tidy(x.file.name));
       ['description', 'category', 'topic', 'status'].forEach(function (k) { if (v(k)) q.set(k, v(k)); });
-      if (t.campId) q.set('campId', t.campId); if (t.typeId) q.set('typeId', t.typeId); if (pub) q.set('publicToAll', '1'); if (p.folderId) q.set('folderId', p.folderId);
+      if (t.campId) q.set('campId', t.campId); if (t.typeId) q.set('typeId', t.typeId); if (x.pub) q.set('publicToAll', '1'); if (p.folderId) q.set('folderId', p.folderId);
       try { await xhrUpload(x.file, q, function (r) { $('prog').firstElementChild.style.width = Math.round(((i + r) / total) * 100) + '%'; }); done++; }
       catch (e) { fails.push(x); x.err = e.message; }
     }
