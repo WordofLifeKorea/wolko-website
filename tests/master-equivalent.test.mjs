@@ -125,3 +125,66 @@ test('보고 담당자 화면(마스터): 풀타임 선교사로 자동 판정�
   assert.ok(!r.auto.some(p => p.email === 'estelle@wol.org'), '단기 사역자는 자동 담당자가 아니다');
   assert.deepEqual(r.reporters, [], '직접 지정한 담당자와는 따로 보여 준다');
 });
+
+// ── wolkorea1@gmail.com — 임시로 마스터 복구(원복은 MASTER_EQUIVALENT_EMAILS 에서 한 줄 삭제) ──
+import * as L from '../functions/api/hub/account-login.js';
+
+async function loginSetup() {
+  const t = setup();
+  const pw = await H.hashPassword('GmailMaster1!');
+  await t.acc('wolkorea1@gmail.com', 'WOLKO', { role: 'master', passwordHash: pw.hash, passwordSalt: pw.salt });
+  const login = async (email, password) => L.onRequestPost({ env: t.env, request: new Request('https://wolko.org/api/hub/account-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) }) });
+  return { ...t, login };
+}
+
+test('wolkorea1@gmail.com: 로그인되고 마스터 권한(보고 담당자 지정 등)을 쓴다', async () => {
+  const t = await loginSetup();
+  const res = await t.login('wolkorea1@gmail.com', 'GmailMaster1!');
+  const body = await res.json();
+  assert.equal(res.status, 200); assert.equal(body.role, 'master');
+  assert.equal((await H.parseHubSessionToken('secret', body.hubToken)).role, 'master');
+  assert.equal(H.isMasterEmail('wolkorea1@gmail.com'), false, '가입 우회·계정 없이 로그인 특례는 받지 않는다');
+  const r = await t.call(R, 'POST', ['wolkorea1@gmail.com', 'counselor'], { path: 'gospel-reporters', body: { emails: [] } });
+  assert.equal(r.status, 200, '토큰에 일반 멤버로 적혀 있어도 코드의 목록이 기준');
+});
+
+test('wolkorea1@gmail.com: 가입 화면으로는 비밀번호를 덮어쓸 수 없다 (마스터 이메일 admin@wolko.org 도 이미 비밀번호가 있으면 덮어쓰지 못한다)', async () => {
+  const t = await loginSetup();
+  const real = await H.hashPassword('RealMaster1!');
+  await t.acc('admin@wolko.org', 'Real Master', { role: 'master', passwordHash: real.hash, passwordSalt: real.salt });
+  const realFetch = globalThis.fetch; globalThis.fetch = async () => ({ ok: true, text: async () => '' });
+  const signup = (email, over = {}) => S.onRequestPost({ env: t.env, waitUntil: p => p, request: new Request('https://wolko.org/api/hub/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Attacker', phone: '010-1234-5678', email, password: 'Attacker1!x', campus: 'wolko', requestedRole: 'member', ...over }) }) });
+  try {
+    for (const email of ['admin@wolko.org', 'wolkorea1@gmail.com']) {
+      const res = await signup(email);
+      assert.equal(res.status, 409, email);
+      const account = await H.getAccount(t.env, email);
+      assert.equal(await H.verifyPassword('Attacker1!x', account.passwordHash, account.passwordSalt), false, `${email}: 공격자 비밀번호가 먹히면 안 된다`);
+      assert.notEqual(account.name, 'Attacker');
+    }
+    assert.equal((await t.login('admin@wolko.org', 'RealMaster1!')).status, 200, '진짜 마스터 비밀번호는 그대로');
+    // 비밀번호가 없는 상태의 gmail 마스터급 계정도 본인 확인 없이는 누가 정하게 두지 않는다
+    await t.acc('wolkorea1@gmail.com', 'WOLKO', { role: 'master', passwordHash: undefined, passwordSalt: undefined });
+    assert.equal((await signup('wolkorea1@gmail.com')).status, 409);
+    assert.equal((await H.getAccount(t.env, 'wolkorea1@gmail.com')).passwordHash, undefined);
+    // 처음 만드는 마스터(계정이 아직 없음)는 예전처럼 비밀번호를 정하고 들어온다
+    const first = await signup('admin@wolko.org', { password: 'FirstMaster1!' }); void first;
+  } finally { globalThis.fetch = realFetch; }
+});
+
+test('원복: MASTER_EQUIVALENT_EMAILS 에서 한 줄을 지우면 계정은 그대로 두고 등급만 일반 멤버로 돌아간다 (이미 받은 토큰도 바로)', async () => {
+  const t = await loginSetup();
+  const token = (await (await t.login('wolkorea1@gmail.com', 'GmailMaster1!')).json()).hubToken;
+  const asMaster = () => t.call(R, 'GET', ['wolkorea1@gmail.com', 'master'], { path: 'gospel-reporters' });
+  assert.equal((await asMaster()).status, 200);
+  const i = H.MASTER_EQUIVALENT_EMAILS.indexOf('wolkorea1@gmail.com');
+  assert.ok(i >= 0);
+  H.MASTER_EQUIVALENT_EMAILS.splice(i, 1);                       // 원복
+  try {
+    assert.equal(H.effectiveRole('wolkorea1@gmail.com', 'master'), 'counselor');
+    assert.equal((await H.parseHubSessionToken('secret', token)).role, 'counselor', '이미 받은 토큰도 일반 멤버 권한');
+    assert.equal((await asMaster()).status, 403, '마스터 전용 기능은 바로 막힌다');
+    assert.equal((await t.login('wolkorea1@gmail.com', 'GmailMaster1!')).status, 200, '계정은 그대로 — 일반 멤버로 로그인');
+  } finally { H.MASTER_EQUIVALENT_EMAILS.splice(i, 0, 'wolkorea1@gmail.com'); }
+  assert.equal(H.effectiveRole('wolkorea1@gmail.com', 'counselor'), 'master');
+});

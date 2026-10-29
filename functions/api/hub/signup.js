@@ -17,7 +17,7 @@
  * 지정한다. admin 지정은 approve.js가 @wol.org 도메인인지 검증한다.
  */
 import {
-  normalizeEmail, isValidEmail, isValidPassword, isValidPhone, isMasterEmail,
+  normalizeEmail, isValidEmail, isValidPassword, isValidPhone, isMasterEmail, isMasterEquivalentEmail,
   getAccount, putAccount, hashPassword, sendEmail,
   pendingRequestEmailHtml, MASTER_EMAILS, isWolDomain,
 } from '../../lib/hubAccounts.js';
@@ -72,6 +72,11 @@ export async function onRequestPost(context) {
 
     if (isMasterEmail(email)) {
       const existing = await getAccount(env, email);
+      // 이미 비밀번호가 있는 마스터 계정은 가입 화면으로 덮어쓸 수 없다 — 이메일 주소만 알면 누구나 마스터가 되기 때문.
+      // 비밀번호를 잊었으면 로그인 창의 '비밀번호를 잊으셨나요?'(이메일 재설정)를 쓴다.
+      if (existing?.passwordHash) {
+        return Response.json({ error: '이미 가입된 마스터 계정입니다. 로그인하거나 \'비밀번호를 잊으셨나요?\'를 이용해 주세요.' }, { status: 409, headers: CORS });
+      }
       await putAccount(env, {
         ...(existing || {}),
         email, name, phone, campus, role: 'master', status: 'approved',
@@ -132,8 +137,8 @@ export async function onRequestPost(context) {
       return Response.json({ error: '접근이 거부된 계정입니다. 관리자에게 문의해 주세요.' }, { status: 403, headers: CORS });
     }
 
-    // approved 계정: 비밀번호가 아직 없으면(과거 승인분) 이번 요청으로 최초 설정 허용
-    if (!account.passwordHash) {
+    // approved 계정: 비밀번호가 아직 없으면(과거 승인분) 이번 요청으로 최초 설정 허용 — 마스터와 같은 권한 계정은 본인 확인 없이 정할 수 없다
+    if (!account.passwordHash && !isMasterEquivalentEmail(email)) {
       await putAccount(env, { ...account, name, phone, passwordHash: hash, passwordSalt: salt });
       return Response.json({ status: 'approved' }, { headers: CORS });
     }

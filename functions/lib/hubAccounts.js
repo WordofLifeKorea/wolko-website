@@ -25,7 +25,11 @@ export const MASTER_EMAILS = ['admin@wolko.org'];
  * 마스터와 같은 권한을 주는 계정. 역할만 'master' 로 올라가고, 위 MASTER_EMAILS 에만 있는 특례(가입 화면에서 승인 없이
  * 비밀번호를 정하고 바로 로그인, 계정 없이 로그인 등)는 받지 않는다 — 이 계정은 늘 일반 계정처럼 이메일 인증·비밀번호로 들어온다.
  */
-export const MASTER_EQUIVALENT_EMAILS = ['jacobmorse@wol.org'];
+export const MASTER_EQUIVALENT_EMAILS = [
+  'jacobmorse@wol.org',
+  // 임시 복구(2026-10-29): 예전(2026-10-20까지) 마스터 계정. 원복은 아래 한 줄만 지우면 된다 — 그러면 계정은 그대로 두고 등급만 일반 멤버로 돌아간다(권한은 요청마다 이 목록으로 계산되어 바로 적용).
+  'wolkorea1@gmail.com',
+];
 /** 포탈 전체를 유지보수하는 관리자 — 이 목록이 기준이다. 목록에 없는 계정은 모두 일반 멤버(counselor). */
 export const ADMIN_EMAILS = ['hkim3@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org', 'jeremyrodgers@wol.org'];
 
@@ -57,6 +61,11 @@ export function isValidPassword(password) {
 const PHONE_RE = /^[0-9+\-\s()]{7,20}$/;
 export function isValidPhone(phone) {
   return typeof phone === 'string' && PHONE_RE.test(phone);
+}
+
+/** 역할만 마스터인 계정(MASTER_EQUIVALENT_EMAILS) — isMasterEmail 의 가입 우회·계정 없이 로그인 특례는 받지 않는다 */
+export function isMasterEquivalentEmail(email) {
+  return MASTER_EQUIVALENT_EMAILS.includes(normalizeEmail(email));
 }
 
 export function isMasterEmail(email) {
