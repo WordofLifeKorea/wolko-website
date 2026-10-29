@@ -54,6 +54,9 @@ function cleanRows(rawRows) {
       .map(f => ({ id: clip(f?.id, 64), name: clip(f?.name, 160), type: clip(f?.type, 60) }))
       .filter(f => f.id);
 
+    // 고정 지출(자동결제)에서 자동으로 들어온 줄이면 어느 회차인지 남긴다 — 같은 회차가 다시 들어오지 않게 하는 기준이다(functions/lib/expenseRecurring.js)
+    const recurring = r?.recurring && /^[\w-]{1,64}$/.test(String(r.recurring.id || '')) && /^\d{4}-(0[1-9]|1[0-2])$/.test(String(r.recurring.period || ''))
+      ? { id: String(r.recurring.id), period: String(r.recurring.period) } : null;
     rows.push({
       project: clip(r?.project, 160), // 비어 있으면 리포트 상단 Project를 따른다
       source: source || rawAccount, account, currency, amount, amountKrw,
@@ -64,6 +67,7 @@ function cleanRows(rawRows) {
       when: clip(r?.when, 20),
       where: clip(r?.where, 160),
       receipts,
+      ...(recurring ? { recurring } : {}),
     });
   }
   return { rows };

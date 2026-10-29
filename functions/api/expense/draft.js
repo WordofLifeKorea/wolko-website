@@ -23,7 +23,9 @@ export function sanitizeDraft(form) {
       .map(f => ({ ...f, id: clip(f.id, 80), fid: clip(f.fid || f.id, 80), name: clip(f.name, 160), type: clip(f.type, 60) }));
     return r;
   });
-  return { editingId: null, description: clip(form.description, 500), project: clip(form.project, 200), rows };
+  // 작성 중 지운 고정 지출 회차('템플릿id:YYYY-MM') — 이 초안에는 다시 자동으로 넣지 않는다(리포트에 담기 전까지 다음 리포트로 이월된다)
+  const skippedRecurring = (Array.isArray(form.skippedRecurring) ? form.skippedRecurring : []).slice(0, 200).map(k => clip(k, 80)).filter(Boolean);
+  return { editingId: null, description: clip(form.description, 500), project: clip(form.project, 200), rows, skippedRecurring };
 }
 
 export async function onRequestGet({ env, request }) {

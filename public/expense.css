@@ -95,7 +95,7 @@ button, input, select, textarea { font-family: inherit; font-size: 14px; color: 
 .ex-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f4f7; }
 .ex-toggle-row:last-child { border-bottom: 0; }
 
-.ex-toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); background: #1a2d38; color: #fff; padding: 11px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none; transition: all .25s; z-index: 200; max-width: 90vw; }
+.ex-toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); background: #1a2d38; color: #fff; padding: 11px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none; transition: all .25s; z-index: 200; width: max-content; max-width: 90vw; }
 .ex-toast.show { opacity: 1; transform: translate(-50%, 0); }
 .ex-toast.error { background: var(--red); }
 
@@ -1061,3 +1061,31 @@ a.ex-title:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offs
 .ex-draft-status { align-self:center; margin-right:auto; font-size:12px; color:var(--muted, #5b7480); }
 .ex-draft-status.is-fail { color:#c43a47; font-weight:600; }
 .ex-draft-status:empty { display:none; }
+
+/* ── 고정 지출(자동결제) ── */
+.ex-recline { margin: 0 0 8px; }
+.ex-recbadge { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border: 1px solid #b9d9de; border-radius: 999px; background: #eaf6f7; color: var(--blue); font-size: 12px; font-weight: 700; }
+.ex-fxpending { margin: 4px 0 16px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; background: #f6fafb; color: var(--muted, #5f7681); font-size: 13px; font-weight: 600; }
+.ex-fxpending.has { border-color: #b9d9de; background: #eaf6f7; color: var(--blue); }
+.ex-fxlist { display: grid; gap: 10px; }
+.ex-fxempty { margin: 0; color: var(--muted, #5f7681); font-size: 14px; }
+.ex-fxitem { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+.ex-fxitem.is-paused { background: #f6f8f9; }
+.ex-fxitem.is-paused .ex-fxmain { opacity: .6; }
+.ex-fxmain { display: grid; gap: 3px; min-width: 0; }
+.ex-fxmain strong { font-size: 15px; overflow-wrap: anywhere; }
+.ex-fxamt { color: var(--blue); font-weight: 800; font-variant-numeric: tabular-nums; }
+.ex-fxmeta { color: var(--muted, #5f7681); font-size: 12.5px; overflow-wrap: anywhere; }
+.ex-fxbtns { display: flex; flex-wrap: wrap; gap: 6px; }
+.ex-fxform { margin-top: 16px; padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: #fafcfd; }
+.ex-fxform h3 { margin: 0 0 14px; font-size: 16px; }
+.ex-fxgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; margin-bottom: 14px; }
+.ex-fxf { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.ex-fxf.wide { grid-column: 1 / -1; }
+.ex-fxf > span { font-size: 13px; font-weight: 700; }
+.ex-fxf small { color: var(--muted, #5f7681); font-size: 12px; line-height: 1.5; }
+.ex-fxamtrow { display: grid; grid-template-columns: minmax(0, 1fr) 130px; gap: 8px; }
+.ex-fxchoices { display: flex; flex-wrap: wrap; gap: 8px; }
+.ex-fxchoice { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border: 1.5px solid var(--border); border-radius: 10px; background: #fff; font-weight: 600; cursor: pointer; }
+.ex-fxchoice:has(input:checked) { border-color: var(--blue); background: #e8f3f5; color: var(--blue); }
+@media (max-width: 640px) { .ex-fxgrid { grid-template-columns: minmax(0, 1fr); } .ex-fxbtns { width: 100%; } }
