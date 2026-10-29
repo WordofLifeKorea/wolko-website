@@ -2795,6 +2795,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   let crsMarkers = [];
   let crsMapElement = null;
   let crsMapInitTimer = null;
+  let crsMapObserver = null, crsMapResizeTimer = null;
   let detailMap = null;
   let detailMapMarker = null;
   let detailMapInitTimer = null;
@@ -3001,8 +3002,24 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       },
     });
     crsMapElement = mapEl;
+    observeCrsMapSize(mapEl);
     updateCrsMarkers();
     initMapSearch();
+  }
+
+  // 지도 칸의 크기가 바뀌면(창을 늘이거나 줄일 때, 목록·지도 비율이 바뀔 때, 메뉴가 접힐 때) 지도가 새 크기를 다시 재도록 한다.
+  // 지도는 창 크기만 스스로 알아채서, 칸만 커지고 지도 안쪽 그림은 예전 크기로 남아 타일이 비어 보일 수 있다.
+  function observeCrsMapSize(mapEl) {
+    if (crsMapObserver) { crsMapObserver.disconnect(); crsMapObserver = null; }
+    if (!window.ResizeObserver) return;
+    crsMapObserver = new ResizeObserver(() => {
+      clearTimeout(crsMapResizeTimer);
+      crsMapResizeTimer = setTimeout(() => {
+        if (!crsMap || typeof naver === 'undefined') return;
+        try { crsMap.autoResize(); naver.maps.Event.trigger(crsMap, 'resize'); } catch (e) { /* 지도가 이미 없어졌다 */ }
+      }, 120);
+    });
+    crsMapObserver.observe(mapEl);
   }
 
   function ensureCrsMap() {
@@ -3018,6 +3035,8 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     crsMapInitTimer = null;
     crsMarkers.forEach(marker => marker.setMap(null));
     crsMarkers = [];
+    if (crsMapObserver) { crsMapObserver.disconnect(); crsMapObserver = null; }
+    clearTimeout(crsMapResizeTimer);
     if (crsMap) {
       try { crsMap.destroy(); } catch(e) {}
       crsMap = null;
