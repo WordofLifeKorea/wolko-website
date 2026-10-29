@@ -433,10 +433,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     max-width:620px; padding:1.2rem 1.25rem .9rem; gap:.65rem;
     background:rgba(237,242,243,.96); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
   }
-  /* 데스크톱: 목록은 한 줄(카드 1열)로 차분하게 두고 폭만 화면에 맞춰 조금씩 늘며(440~600px), 남는 폭은 지도가 쓴다(예전엔 전체 폭 1440px 에서 멈췄다). 상세가 열린 화면(.split)은 그대로. */
+  /* 데스크톱: 목록은 한 줄(카드 1열)로 차분하게 두고, 남는 폭은 지도(또는 열린 상세)가 쓴다(예전엔 전체 폭 1440px 에서 멈췄다). 목록 폭 고정은 이 파일 맨 아래. */
   @media(min-width:769px) {
     .app-body { max-width:none; }
-    .app-body:not(.split) .list-panel { flex:0 0 clamp(440px, 32vw, 600px); }
     .app-body:not(.split) .map-panel { flex:1 1 0; }
     .list-panel-inner, .top-bar { max-width:none; }
   }
@@ -753,6 +752,18 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .church-card::before, .church-card:hover::before, .church-card.selected::before { display:none; }
   .church-card-body { background:#f7fafb; margin-top:auto; }
   .church-card-header { flex:0 0 auto; }
+  /* 목록 폭은 상세를 열었든 닫았든 항상 같다(420px, 좁은 데스크톱은 340px). 폭이 바뀌어 화면이 출렁이지 않게. */
+  @media(min-width:769px) {
+    .app-body .list-panel, .app-body.split .list-panel { flex:0 0 420px; box-sizing:border-box; border-right:1px solid #dde5ea; }
+  }
+  @media(min-width:769px) and (max-width:980px) {
+    .app-body .list-panel, .app-body.split .list-panel { flex-basis:340px; }
+  }
+  /* 상세 닫기(×): 아이콘을 글자가 아닌 그림으로 그려 버튼 한가운데에 */
+  @media(min-width:769px) {
+    .detail-panel-close-desktop { display:flex; align-items:center; justify-content:center; width:100%; height:100%; line-height:0; }
+    .detail-panel-close { padding:0; }
+  }
   /* 교회 상세(데스크톱): 지도는 한 줄 전체로 크게, 그 아래 카드 네 개(교회 정보 · 방문 기록 · 관계 발전 단계 · 관계 등급)는
      폭이 되면 2칸(왼쪽→오른쪽, 위→아래)으로 놓인다. 카드는 꾹 눌러 끌어서 순서를 바꿀 수 있다(public/crs-block-drag.js). */
   @media(min-width:769px) {
@@ -1516,7 +1527,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
               <p id="detailSubtitle" class="detail-panel-sub"></p>
             </div>
             <button class="detail-panel-close" id="detailPanelClose" type="button" aria-label="${isKo ? '목록으로 돌아가기' : 'Back to list'}">
-              <span class="detail-panel-close-desktop" aria-hidden="true">×</span>
+              <span class="detail-panel-close-desktop" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="display:block"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg></span>
               <span class="detail-panel-close-mobile" aria-hidden="true">← ${isKo ? '목록' : 'List'}</span>
             </button>
             ${crsLangToggleMarkup('detailLangToggle', 'detail-lang-toggle')}
