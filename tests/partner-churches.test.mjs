@@ -91,4 +91,11 @@ test('히어로 아래 띠: 글자는 단색이고, 숫자가 올라가도 줄 �
   assert.match(js, /e\.style\.minWidth = String\(to\)\.length \+ 'ch'/, '숫자 자릿수만큼 폭을 먼저 잡는다');
   assert.match(css, /animation: pc-rise [^;]*backwards/, '들어오는 효과가 끝나면 풀린다(both 를 쓰면 끝난 뒤에도 레이어가 남는다)');
   assert.doesNotMatch(css, /pc-strip-link::before/, '글자 뒤에서 움직이는 별도 요소를 두지 않는다');
+  // 움직임은 글자와 겹치지 않는 별도 요소(점·가장자리 선)로만, transform·opacity 만 쓴다
+  assert.match(css, /\.pc-strip-live::after \{[^}]*animation: pc-ping/);
+  assert.match(css, /@keyframes pc-ping \{[^}]*transform: scale[^}]*opacity/);
+  assert.match(css, /\.pc-strip:not\(\[hidden\]\)::after \{[^}]*animation: pc-travel/);
+  const html = readFileSync(new URL('../src/pages/index.astro', import.meta.url), 'utf8');
+  assert.match(html, /<span class="pc-strip-live" aria-hidden="true"><\/span>\s*<span class="pc-strip-text">/, '점은 글자 칸 밖에 있다');
+  assert.match(css, /prefers-reduced-motion: reduce\) \{[^}]*pc-strip-live::after/, '모션 줄이기에서는 꺼진다');
 });
