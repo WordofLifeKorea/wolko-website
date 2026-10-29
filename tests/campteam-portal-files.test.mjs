@@ -50,7 +50,7 @@ test('권한: 로그인 필요, 명단 밖 월코 팀원은 빈 목록, 자료�
 
 test('저장소가 비었거나 읽기에 실패해도 오류 없이 빈 목록', async () => {
   const env = makeEnv(fakeD1(), { CAMP_KV: kv({}) });
-  assert.deepEqual(await (await get(env, U.mem)).json(), { items: [], total: 0 });
+  assert.deepEqual(await (await get(env, U.mem)).json(), { items: [], total: 0, camps: [], teamOrder: {} });
   const broken = makeEnv(fakeD1(), { CAMP_KV: { async get() { throw new Error('kv down'); } } });
   assert.equal((await (await get(broken, U.mem)).json()).unavailable, true);
   assert.deepEqual(await (await get(makeEnv(fakeD1(), {}), U.mem)).json(), { items: [], total: 0 }, 'KV 연결이 없으면 빈 목록');
@@ -64,4 +64,19 @@ test('통합 검색에도 포털 자료가 나온다 (명단 사람만, 포털 �
   assert.deepEqual(mem.portalFiles.map((i) => i.id), ['portal:t1']); assert.equal(mem.portalFiles[0].readOnly, true);
   assert.deepEqual((await run(U.out)).portalFiles, [], '명단 밖에는 나오지 않는다');
   assert.deepEqual(store.ops, []);
+});
+
+test('포털의 분류 정보(캠프 목록·캠프 번호·팀 폴더 순서)를 함께 주고, 200개를 넘어도 모두 내려준다', async () => {
+  const many = Array.from({ length: 250 }, (_, i) => ({ id: 'm' + i, tab: i % 2 ? 'general' : 'teacher', team: i % 2 ? '' : '레슨플랜', title: '자료 ' + i, url: 'https://example.com/' + i, campIds: [i % 3 ? 'c1' : 'c2'], createdAt: '2026-10-01T00:00:' + String(i % 60).padStart(2, '0') + 'Z' }));
+  const store = kv({ 'teach:data:v1': { items: many }, 'teach:camps:v1': CAMPS, 'teach:folders:v1': { folders: [{ id: 'f1', name: '내 폴더', campId: 'c1', ownerEmail: 'x@example.com' }], removedDefaults: [{ campId: 'c2', name: 'WOLKO' }] } });
+  const env = makeEnv(fakeD1(), { CAMP_KV: store });
+  const d = await (await get(env, U.mem)).json();
+  assert.equal(d.total, 250); assert.equal(d.items.length, 250, '200개에서 잘리지 않는다');
+  assert.deepEqual(d.camps.map((c) => c.id), ['c1', 'c2'], '캠프 목록이 내려온다');
+  assert.deepEqual(d.camps.map((c) => c.name), ['2026 Winter 모멘텀 캠프', '2026 Summer 여름 캠프'], '같은 해에는 겨울이 먼저');
+  assert.ok(d.items.every((i) => Array.isArray(i.campIds) && i.campIds.length === 1));
+  assert.deepEqual(d.teamOrder.c1, ['WOLKO', 'Student Fusion Team Projects', '레슨플랜', '내 폴더'], '기본 폴더 뒤에 직접 만든 폴더');
+  assert.deepEqual(d.teamOrder.c2, ['Student Fusion Team Projects', '레슨플랜'], '포털에서 뺀 기본 폴더는 빠진다');
+  assert.deepEqual(store.ops, []);
+  assert.ok(!JSON.stringify(d).includes('x@example.com'), '폴더 만든 사람 이메일은 내려가지 않는다');
 });

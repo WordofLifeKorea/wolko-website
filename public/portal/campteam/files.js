@@ -7,6 +7,7 @@
       kindpdf: 'PDF', kinddoc: 'Word', kindxls: 'Excel', kindppt: 'PowerPoint', kindimg: '사진', kindaudio: '녹음', kindvideo: '영상', kindlink: '외부 링크', kindetc: '기타',
       mPub: '전체 공개', mPubAll: '모두 전체 공개', mPubHint: '체크하지 않은 파일은 캠프팀 명단 사람만 볼 수 있어요. 체크하면 월코 팀원 모두가 볼 수 있어요.',
       portalFolder: '월코 포털 캠프 자료실', portalChip: '월코 포털', portalRO: '읽기 전용', portalNote: '월코 포털 「캠프 자료실」에 올라온 자료예요. 여기서는 찾고 열기만 돼요 (올리기·수정은 포털에서).', portalOpen: '열기',
+      ppNoCamp: '캠프 미지정', ppNoTeam: '팀 폴더 없음', ppAll: '이 안의 파일 모두 한 번에 보기', ppCards: '← 분류로 보기', ppHint: '포털에서 정한 분류(캠프 → 형식 → 팀 폴더) 그대로 나눠 보여요.',
       addMaterial: '+ 자료 추가', mkAddTitle: '자료 추가', tabFile: '파일 올리기', tabLink: '링크 연결', pickFiles: '파일 선택', pickFolder: '📁 폴더 선택', dzPickDir: '폴더 열기',
       linkOk: '인식했어요: ', canva: 'Canva 디자인', linkShare: '링크 공유 설정이 「링크가 있는 사람은 볼 수 있음」(또는 팀원 지정)이어야 팀원이 열 수 있어요. Google 문서·Drive·Canva 모두 같아요.',
       folderName: '폴더 이름', folderNameEn: '영문 이름 (선택)', mTitles: '파일 이름 (하나씩 고칠 수 있어요)', mAiBusy: 'AI가 이름을 정리하는 중…', mAiDone: 'AI가 이름을 정리했어요. 고쳐도 돼요.', mAiOff: '기본 정리만 했어요. 고쳐도 돼요.',
@@ -25,6 +26,7 @@
       kindpdf: 'PDF', kinddoc: 'Word', kindxls: 'Excel', kindppt: 'PowerPoint', kindimg: 'Photo', kindaudio: 'Audio', kindvideo: 'Video', kindlink: 'External link', kindetc: 'Other',
       mPub: 'Share with all', mPubAll: 'Share all', mPubHint: 'Unchecked files can be seen only by the camp team roster. Checked files can be seen by the whole WOLKO team.',
       portalFolder: 'WOLKO portal · Camp Resources', portalChip: 'WOLKO portal', portalRO: 'Read-only', portalNote: 'Materials from the WOLKO portal "Camp Resources". You can search and open them here (upload or edit in the portal).', portalOpen: 'Open',
+      ppNoCamp: 'No camp', ppNoTeam: 'No team folder', ppAll: 'Show all files here at once', ppCards: '← Back to groups', ppHint: 'Grouped the way the portal groups them (camp → type → team folder).',
       addMaterial: '+ Add material', mkAddTitle: 'Add material', tabFile: 'Upload files', tabLink: 'Link', pickFiles: 'Choose files', pickFolder: '📁 Choose folder', dzPickDir: 'Choose folder',
       linkOk: 'Recognized: ', canva: 'Canva design', linkShare: 'Link sharing must allow the team to open it ("Anyone with the link can view" or specific people). Same for Google Docs, Drive and Canva.',
       folderName: 'Folder name', folderNameEn: 'English name (optional)', mTitles: 'File names (edit each one)', mAiBusy: 'AI is tidying the names…', mAiDone: 'AI tidied the names. You can edit them.', mAiOff: 'Basic tidy only. You can edit them.',
@@ -42,7 +44,7 @@
   var STATUS = ['draft', 'active', 'archived'];
   var KINDS = ['pdf', 'doc', 'xls', 'ppt', 'img', 'audio', 'video', 'link', 'etc'];
   var KIND_LABEL = { img: 'kindimg' };
-  var S = { items: [], total: 0, types: [], perms: null, detailId: null, folders: [], portal: [], portalTotal: 0, view: 'folders', folderId: '', pick: null };
+  var S = { items: [], total: 0, types: [], perms: null, detailId: null, folders: [], portal: [], portalTotal: 0, portalCamps: [], portalOrder: {}, pp: [], ppFlat: false, view: 'folders', folderId: '', pick: null };
   try { if (localStorage.getItem('ct-files-view') === 'all') S.view = 'all'; } catch (e) { /* 저장 못 해도 괜찮다 */ }
   var MAX_PICK = 200; // 한 번에 올릴 수 있는 파일 수
   var HIDDEN = /(^|\/)(\.[^/]*|__MACOSX|Thumbs\.db|desktop\.ini|~\$[^/]*)(\/|$)/i; // 숨김·시스템 파일(.DS_Store 등)은 올리지 않는다
@@ -85,13 +87,44 @@
     var res = await Promise.all([inPortal ? Promise.resolve({ items: [], total: 0, perms: S.perms }) : CT.api('/api/campteam/files?' + q.toString()),
       CT.api('/api/campteam/folders' + fq).catch(function () { return { folders: [] }; }),
       filtered ? Promise.resolve(none) : CT.api('/api/campteam/portal-files' + fq).catch(function () { return none; })]); // 월코 포털 자료(읽기 전용, 캠프팀 명단 사람만)
-    S.items = res[0].items; S.total = res[0].total; S.perms = res[0].perms; S.folders = res[1].folders || []; S.portal = res[2].items || []; S.portalTotal = res[2].total || 0; renderList();
+    S.items = res[0].items; S.total = res[0].total; S.perms = res[0].perms; S.folders = res[1].folders || []; S.portal = res[2].items || []; S.portalTotal = res[2].total || 0; S.portalCamps = res[2].camps || []; S.portalOrder = res[2].teamOrder || {}; renderList();
   }
 
+  /* ---- 월코 포털 자료: 포털의 분류(캠프 → 형식 → 팀 폴더)대로 나눠 보여 준다 ---- */
+  var TAB_ORDER = ['teacher', 'program', 'counselor', 'preacher', 'general'], NOTEAM = '~none';
+  function campKeys(i) { var known = S.portalCamps.map(function (c) { return c.id; }), ks = (i.campIds || []).filter(function (id) { return known.indexOf(id) >= 0; }); return ks.length ? ks : ['']; } // 포털에서 지워진 캠프 번호는 「캠프 미지정」으로 모은다
+  function ppItems(path) {
+    return S.portal.filter(function (i) {
+      var camps = campKeys(i);
+      if (path.length > 0 && camps.indexOf(path[0]) < 0) return false;
+      if (path.length > 1 && i.tab !== path[1]) return false;
+      if (path.length > 2 && (i.team || NOTEAM) !== path[2]) return false;
+      return true;
+    });
+  }
+  function ppLabel(level, key, items) {
+    if (level === 0) { if (!key) return CT.t('ppNoCamp'); var c = S.portalCamps.filter(function (x) { return x.id === key; })[0]; return c ? c.name : key; }
+    if (level === 1) { var f = items[0]; return f ? (CT.lang() === 'en' ? f.tabEn : f.tabKo) : key; }
+    return key === NOTEAM ? CT.t('ppNoTeam') : key;
+  }
+  function ppGroups(path) { // 지금 단계에서 보여 줄 묶음 카드 [{key,label,count}]
+    var level = path.length, items = ppItems(path), counts = {}, keys = [];
+    if (level > 2) return [];
+    items.forEach(function (i) {
+      var ks = level === 0 ? campKeys(i) : level === 1 ? [i.tab] : [i.team || NOTEAM];
+      ks.forEach(function (k) { if (!(k in counts)) { counts[k] = { n: 0, sample: [] }; keys.push(k); } counts[k].n++; if (counts[k].sample.length < 1) counts[k].sample.push(i); });
+    });
+    if (level === 2 && keys.length === 1 && keys[0] === NOTEAM) return []; // 팀 폴더가 하나도 없으면 바로 파일 목록
+    var order = level === 0 ? S.portalCamps.map(function (c) { return c.id; }).concat(['']) : level === 1 ? TAB_ORDER : (S.portalOrder[path[0]] || []).concat([NOTEAM]);
+    keys.sort(function (a, b) { var x = order.indexOf(a), y = order.indexOf(b); return (x < 0 ? 999 : x) - (y < 0 ? 999 : y) || String(a).localeCompare(String(b)); });
+    return keys.map(function (k) { return { key: k, label: ppLabel(level, k, counts[k].sample), count: counts[k].n }; });
+  }
+  function ppInTree() { return S.view === 'folders' && S.folderId === 'portal' && !$('fq').value.trim(); }
+  function ppFiles() { var g = ppGroups(S.pp); return (!g.length || S.ppFlat) ? ppItems(S.pp) : []; } // 묶음 카드가 있으면 카드만, 없으면(또는 모두 보기) 파일
   function renderList() {
     $('addFile').hidden = !canAdd(); renderFolders();
-    var showPortal = S.portal.length && ($('fq').value.trim() || S.view === 'all' || S.folderId === 'portal');
-    $('countLine').textContent = (S.total + (showPortal ? S.portal.length : 0)) + CT.t('count');
+    var tree = ppInTree(), pl = tree ? ppFiles() : S.portal, showPortal = pl.length && ($('fq').value.trim() || S.view === 'all' || S.folderId === 'portal');
+    $('countLine').textContent = tree ? ppItems(S.pp).length + CT.t('count') : (S.total + (showPortal ? pl.length : 0)) + CT.t('count');
     $('list').innerHTML = S.items.length ? S.items.map(function (f) {
       var meta = [f.folderName ? '📁 ' + (CT.lang() === 'en' && f.folderNameEn ? f.folderNameEn : f.folderName) : '', where(f), CT.t('cat' + f.category), f.topic, f.uploadedBy, day(f.createdAt), f.isPublic ? '🌐 ' + CT.t('publicChip') : ''].filter(Boolean).map(esc).join(' · ');
       if (f.storage !== 'link' && f.versionNo) meta += ' · v' + f.versionNo + (f.sizeBytes ? ' · ' + fmtSize(f.sizeBytes) : '');
@@ -101,10 +134,10 @@
         '<small>' + meta + '</small></div>' +
         '<div class="actions"><button class="btn sm" data-open="' + esc(f.id) + '">' + esc(CT.t('details')) + '</button>' +
         (f.storage === 'link' ? '<a class="btn sm pri" href="' + esc(f.externalUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(CT.t('openExternal')) + '</a>' : '<button class="btn sm pri" data-dl="' + esc(f.id) + '">' + esc(CT.t('download')) + '</button>') + '</div></div>';
-    }).join('') + (showPortal ? S.portal.map(portalRow).join('') : '') : (showPortal ? S.portal.map(portalRow).join('') : '<div class="empty">' + esc(CT.t('noFiles')) + '</div>');
+    }).join('') + (showPortal ? pl.map(portalRow).join('') : '') : (showPortal ? pl.map(portalRow).join('') : (tree && ppGroups(S.pp).length ? '' : '<div class="empty">' + esc(CT.t('noFiles')) + '</div>'));
   }
   function portalRow(f) { // 월코 포털 자료: 열기만 된다
-    var tab = CT.lang() === 'en' ? f.tabEn : f.tabKo, meta = [tab, f.team, f.person, f.camps.join(', '), f.uploadedBy, day(f.createdAt)].filter(Boolean).map(esc).join(' · ');
+    var tree = ppInTree(), tab = CT.lang() === 'en' ? f.tabEn : f.tabKo, meta = [tree ? '' : tab, tree && S.pp.length > 2 ? '' : f.team, f.person, tree ? '' : f.camps.join(', '), f.uploadedBy, day(f.createdAt)].filter(Boolean).map(esc).join(' · ');
     return '<div class="file-row portal-row"><span class="ext portal">🌐</span><div class="fm"><b>' + esc(f.title) + '</b><span class="chip gray">' + esc(CT.t('portalChip')) + ' · ' + esc(CT.t('portalRO')) + '</span><small>' + meta + '</small></div>' +
       '<div class="actions"><a class="btn sm pri" href="' + esc(f.openUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(CT.t('portalOpen')) + '</a></div></div>';
   }
@@ -116,7 +149,15 @@
     $('viewBar').hidden = !!term;
     var h = '';
     if (!term && S.view === 'folders' && S.folderId === 'portal') {
-      h = '<div class="crumb"><button type="button" class="btn sm" data-folder="">' + esc(CT.t('backAll')) + '</button><b>🌐 ' + esc(CT.t('portalFolder')) + '</b></div><div class="hint" style="margin:-4px 0 12px">' + esc(CT.t('portalNote')) + '</div>';
+      var segs = ['<button type="button" class="btn sm" data-folder="">' + esc(CT.t('backAll')) + '</button>'], names = ['🌐 ' + CT.t('portalFolder')];
+      S.pp.forEach(function (k, lv) { names.push(ppLabel(lv, k, ppItems(S.pp.slice(0, lv + 1)))); });
+      names.forEach(function (n, i) { segs.push(i === names.length - 1 ? '<b>' + esc(n) + '</b>' : '<button type="button" class="btn sm" data-ppi="' + i + '">' + esc(n) + '</button>'); });
+      var groups = ppGroups(S.pp), icon = ['🏕', '📂', '📁'][S.pp.length] || '📁';
+      h = '<div class="crumb">' + segs.join('<span class="sep">›</span>') + '</div><div class="hint" style="margin:-4px 0 12px">' + esc(CT.t('portalNote')) + ' ' + esc(CT.t('ppHint')) + '</div>';
+      if (groups.length) {
+        h += '<div class="folder-grid">' + (S.ppFlat ? '' : groups.map(function (g) { return '<button type="button" class="folder-card" data-pp="' + esc(g.key) + '"><span class="fi">' + icon + '</span><b>' + esc(g.label) + '</b><small>' + g.count + esc(CT.t('folderFiles')) + '</small></button>'; }).join('')) + '</div>' +
+          '<div class="actions" style="margin:0 0 10px"><button type="button" class="btn sm" data-ppflat="1">' + esc(CT.t(S.ppFlat ? 'ppCards' : 'ppAll')) + '</button></div>';
+      }
     } else if (!term && S.view === 'folders' && S.folderId) {
       h = '<div class="crumb"><button type="button" class="btn sm" data-folder="">' + esc(CT.t('backAll')) + '</button><b>📁 ' + esc(cur ? folderLabel(cur) : '') + '</b>' +
         (cur && can ? '<button type="button" class="btn sm" data-frename="' + esc(cur.id) + '">' + esc(CT.t('folderRename')) + '</button><button type="button" class="btn sm danger" data-fdel="' + esc(cur.id) + '">' + esc(CT.t('folderDel')) + '</button>' : '') + '</div>';
@@ -130,7 +171,11 @@
   async function onFolderClick(e) {
     var o = e.target.closest('[data-folder]'), rn = e.target.closest('[data-frename]'), dl = e.target.closest('[data-fdel]');
     try {
-      if (o) { S.view = 'folders'; S.folderId = o.dataset.folder; if ($('fq').value) $('fq').value = ''; await loadList(); }
+      var pp = e.target.closest('[data-pp]'), ppi = e.target.closest('[data-ppi]'), pf = e.target.closest('[data-ppflat]');
+      if (pp) { S.pp.push(pp.dataset.pp); S.ppFlat = false; renderList(); }
+      else if (ppi) { S.pp = S.pp.slice(0, Number(ppi.dataset.ppi)); S.ppFlat = false; renderList(); }
+      else if (pf) { S.ppFlat = !S.ppFlat; renderList(); }
+      else if (o) { S.view = 'folders'; S.folderId = o.dataset.folder; S.pp = []; S.ppFlat = false; if ($('fq').value) $('fq').value = ''; await loadList(); }
       else if (rn) { var d = S.folders.filter(function (x) { return x.id === rn.dataset.frename; })[0], nm = prompt(CT.t('folderRename'), d ? d.name : ''); if (nm == null || !nm.trim()) return; await CT.api('/api/campteam/folders?id=' + encodeURIComponent(rn.dataset.frename), { method: 'PATCH', body: { name: nm.trim() } }); await loadList(); }
       else if (dl) { if (!confirm(CT.t('confirmFolderDel'))) return; await CT.api('/api/campteam/folders?id=' + encodeURIComponent(dl.dataset.fdel), { method: 'DELETE' }); S.folderId = ''; await loadList(); }
     } catch (err) { alert(err.message); }
