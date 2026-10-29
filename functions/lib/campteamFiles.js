@@ -53,6 +53,7 @@ export function linkKindFor(url) {
     return 'other';
   }
   if (host === 'drive.google.com' || host === 'docs.google.com') return 'drive';
+  if (host === 'canva.com' || host.endsWith('.canva.com') || host === 'canva.link') return 'canva'; // canva.com/design/…, canva.link/… (짧은 공유 주소)
   return 'other';
 }
 export const kindForLink = (linkKind) => ({ 'google-doc': 'doc', 'google-sheet': 'xls', 'google-slide': 'ppt' })[linkKind] || 'etc';

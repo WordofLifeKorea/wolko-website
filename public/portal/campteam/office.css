@@ -76,8 +76,8 @@
 @keyframes ofi-gwalk{0%{opacity:1;transform:translateX(calc(var(--s)*-2.4))}96%{opacity:1}100%{opacity:0;transform:translateX(0)}}
 @keyframes ofi-look{0%,20%{transform:rotate(0)}35%,50%{transform:rotate(-2.5deg)}65%,85%{transform:rotate(2.5deg)}100%{transform:rotate(0)}}
 @media (prefers-reduced-motion:reduce){.ofi-who .f1,.ofi-who .fb,.ofi-walk img,.ofi-guest .ofi-stand,.ofc-cell.enter .ofi-walk,.ofc-cell.enter .ofi-who,.ofi-gin .ofi-walk,.ofi-gin .ofi-stand{animation:none!important}.ofc-cell.enter .ofi-who{opacity:1}.ofi-gin .ofi-stand{opacity:1}}
-/* 날씨 칸 폭을 고정해서 캐릭터 줄이 길어도 칸이 하늘 영역 밖으로 커지지 않게 한다(넘치면 옆으로 민다) */
-.hub-wx-card:has(.ct-office){width:300px;min-width:0;max-width:calc(100% - 8px)}
+/* 날씨 칸은 책상 줄 길이에 맞춰 넓어지되(최소 300px) 하늘 영역 밖으로는 커지지 않는다(그래도 넘칠 때만 옆으로 민다) */
+.hub-wx-card:has(.ct-office){width:max-content;min-width:300px;max-width:calc(100% - 8px)}
 .ct-office,.ofc-row{min-width:0;max-width:100%}
 @media(max-width:899px){.hub-wx-card:has(.ct-office){width:auto;max-width:none}}
 

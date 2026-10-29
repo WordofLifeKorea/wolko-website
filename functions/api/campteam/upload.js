@@ -36,6 +36,8 @@ export async function onRequestPost({ env, request }) {
     const restricted = restrictedFor(category) ? 1 : 0;
     if (!canWriteFile(s.perms, restricted)) return needPerm(restricted ? '금액 자료를 올릴 권한이 없습니다.' : '작성 권한이 없습니다.');
     const ref = await checkRefs(env, p.get('campId'), p.get('typeId')); if (ref) return badRequest(ref);
+    const folderId = p.get('folderId') || '';
+    if (folderId && !(await env.DB.prepare('SELECT 1 AS x FROM file_folders WHERE id = ?1 AND deletedAt IS NULL').bind(folderId).first().catch(() => null))) return badRequest('폴더를 찾을 수 없습니다.');
     fileId = uuid();
     const title = text(p.get('title'), 120) || fileName.replace(/\.[^.]+$/, '');
     const status = p.get('status');
@@ -43,6 +45,7 @@ export async function onRequestPost({ env, request }) {
       VALUES (?1,?2,?3,?4,?5,?6,'nas',?7,?8,?9,?10,?11,?12,?12,?7)`)
       .bind(fileId, p.get('campId') || null, p.get('typeId') || null, title, text(p.get('description'), 500), kind, s.email,
         FILE_STATUSES.includes(status) ? status : '', category, text(p.get('topic'), 60), restricted, now).run();
+    if (folderId) await env.DB.prepare('UPDATE files SET folderId = ?2 WHERE id = ?1').bind(fileId, folderId).run();
     if (p.get('publicToAll') === '1' && !restricted) await setFilePublic(env, fileId, true, s.email);
     file = { id: fileId };
   }
