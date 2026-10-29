@@ -2,7 +2,7 @@
  * /api/todo — 세 번째 모니터용 할 일 화면(/todo)이 쓰는 Google Tasks 중계 API
  *
  *   GET  → { lists: [{ id, title, tasks: [...] }], fetchedAt }
- *   POST → { action: 'add', listId, title, due? }
+ *   POST → { action: 'add', listId, title, due?, parent?, previous? }   (parent = 하위 항목으로 넣을 할 일, previous = 같은 부모 아래 마지막 항목)
  *          { action: 'complete', listId, taskId, completed: true|false }
  *
  * 인증: 화면 전용 키(TODO_DISPLAY_KEY)를 Authorization: Bearer 로 보낸다.
@@ -100,7 +100,13 @@ export async function onRequestPost({ request, env }) {
       if (body.due != null && (typeof body.due !== 'string' || !validDue(body.due))) {
         return json({ error: 'bad_request' }, 400);
       }
-      const task = await addTask({ ...config, listId: body.listId, title, due: body.due || null });
+      for (const field of ['parent', 'previous']) {
+        if (body[field] != null && (typeof body[field] !== 'string' || !ID_PATTERN.test(body[field]))) {
+          return json({ error: 'bad_request' }, 400);
+        }
+      }
+      if (body.previous && !body.parent) return json({ error: 'bad_request' }, 400);
+      const task = await addTask({ ...config, listId: body.listId, title, due: body.due || null, parent: body.parent || null, previous: body.previous || null });
       return json({ task });
     }
 

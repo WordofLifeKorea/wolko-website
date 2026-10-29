@@ -138,13 +138,22 @@ export async function listTaskBoard({ serviceAccountJson, delegatedUser }) {
   }));
 }
 
-/** 새 할 일 추가. due는 'YYYY-MM-DD' 또는 없음. */
-export async function addTask({ serviceAccountJson, delegatedUser, listId, title, due }) {
+/**
+ * 새 할 일 추가. due는 'YYYY-MM-DD' 또는 없음.
+ * parent를 주면 그 할 일의 하위 항목으로 들어간다(Tasks는 하위 항목을 한 단계만 지원).
+ * 새 항목은 기본으로 맨 앞에 들어가므로, 하위 항목을 입력한 순서대로 쌓으려면
+ * previous에 같은 부모 아래 마지막 항목의 id를 준다.
+ */
+export async function addTask({ serviceAccountJson, delegatedUser, listId, title, due, parent, previous }) {
   const body = { title };
   if (due) body.due = `${due}T00:00:00.000Z`;
+  const params = new URLSearchParams();
+  if (parent) params.set('parent', parent);
+  if (parent && previous) params.set('previous', previous);
+  const query = params.toString();
   const item = await tasksFetch(
     { serviceAccountJson, delegatedUser },
-    `/lists/${encodeURIComponent(listId)}/tasks`,
+    `/lists/${encodeURIComponent(listId)}/tasks${query ? `?${query}` : ''}`,
     { method: 'POST', body: JSON.stringify(body) }
   );
   return mapTask(item);

@@ -75,6 +75,8 @@
   let refreshQueued = false;
   let inflight = 0;   // 진행 중인 추가/완료 요청 수
   let mutations = 0;  // 추가/완료 요청을 시작한 횟수 — 조회 도중 바뀌면 그 조회 결과는 버린다
+  let subDraft = null;       // 열어 둔 하위 항목 입력칸 { listId, taskId, value } — 30초마다 목록을 다시 그려도 유지한다
+  const lastChildOf = {};    // 할 일 id → 그 아래 마지막 하위 항목 id (입력한 순서대로 쌓기 위해 previous 로 보낸다)
 
   function getKey() {
     try { return localStorage.getItem(KEY_STORAGE) || ''; } catch (e) { return ''; }
@@ -179,7 +181,53 @@
 
     li.appendChild(check);
     li.appendChild(text);
+    if (depth === 0) {   // Google Tasks 는 하위 항목을 한 단계만 지원한다
+      const add = el('button', 'todo-sub-btn', '＋');
+      add.type = 'button';
+      add.title = '하위 항목 추가';
+      add.setAttribute('aria-label', '하위 항목 추가: ' + task.title);
+      add.addEventListener('click', function () { toggleSubForm(li, listId, task); });
+      li.appendChild(add);
+      if (subDraft && subDraft.taskId === task.id && subDraft.listId === listId) li.appendChild(buildSubForm(listId, task));
+    }
     return li;
+  }
+
+  /** 할 일 줄 아래에 열리는 하위 항목 입력칸. Enter 로 계속 이어서 추가하고 Esc 로 닫는다. */
+  function buildSubForm(listId, task) {
+    const form = el('form', 'todo-subform');
+    const input = el('input', 'todo-sub-input');
+    input.type = 'text';
+    input.maxLength = 1024;
+    input.placeholder = '하위 항목 추가';
+    input.setAttribute('aria-label', '하위 항목 추가: ' + task.title);
+    input.value = subDraft ? subDraft.value : '';
+    input.addEventListener('input', function () { if (subDraft) subDraft.value = input.value; });
+    input.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeSubForm(); });
+    const submit = el('button', 'todo-btn todo-btn-primary', '추가');
+    submit.type = 'submit';
+    form.appendChild(input);
+    form.appendChild(submit);
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      addSubtask(listId, task.id, input, submit);
+    });
+    return form;
+  }
+
+  function closeSubForm() {
+    subDraft = null;
+    document.querySelectorAll('.todo-subform').forEach(function (form) { form.remove(); });
+  }
+
+  function toggleSubForm(li, listId, task) {
+    const same = subDraft && subDraft.taskId === task.id && subDraft.listId === listId;
+    closeSubForm();
+    if (same) return;
+    subDraft = { listId: listId, taskId: task.id, value: '' };
+    const form = buildSubForm(listId, task);
+    li.appendChild(form);
+    form.querySelector('input').focus();
   }
 
   function buildSection(list) {
@@ -219,6 +267,10 @@
   function render(data) {
     const today = seoulToday(Date.now());
     const seen = new Set();
+    const active = document.activeElement;
+    const refocus = active && active.classList && active.classList.contains('todo-sub-input');   // 하위 항목을 입력하던 중이면 다시 그린 뒤에도 이어서 쓰게 한다
+    const caret = refocus ? active.selectionStart : 0;
+    Object.keys(lastChildOf).forEach(function (id) { delete lastChildOf[id]; });
     data.lists.forEach(function (list, index) {
       seen.add(list.id);
       let entry = sections.get(list.id);
@@ -231,6 +283,7 @@
       entry.empty.hidden = list.tasks.length > 0;
       entry.ul.textContent = '';
       nestTasks(list.tasks).forEach(function (item) {
+        if (item.task.parent && item.depth > 0) lastChildOf[item.task.parent] = item.task.id;
         entry.ul.appendChild(buildItem(list.id, item.task, item.depth, today));
       });
       if (board.children[index] !== entry.el) board.insertBefore(entry.el, board.children[index] || null);
@@ -241,6 +294,10 @@
         sections.delete(id);
       }
     });
+    if (refocus) {
+      const input = document.querySelector('.todo-sub-input');
+      if (input) { input.focus(); input.setSelectionRange(caret, caret); }
+    }
   }
 
   // ── 가져오기 / 쓰기 ──
@@ -310,6 +367,34 @@
     if (added) {
       await refresh();
       input.focus();
+    }
+  }
+
+  async function addSubtask(listId, parentId, input, submit) {
+    const title = input.value.trim();
+    if (!title) return;
+    input.disabled = submit.disabled = true;
+    mutations++;
+    inflight++;
+    let added = false;
+    try {
+      const body = { action: 'add', listId: listId, title: title, parent: parentId };
+      if (lastChildOf[parentId]) body.previous = lastChildOf[parentId];
+      const data = await api('POST', body);
+      if (data && data.task && data.task.id) lastChildOf[parentId] = data.task.id;   // 다음 항목이 바로 뒤에 붙게
+      added = true;
+      input.value = '';
+      if (subDraft) subDraft.value = '';
+    } catch (err) {
+      handleError(err);
+    } finally {
+      inflight--;
+      input.disabled = submit.disabled = false;
+    }
+    if (added) {
+      await refresh();
+      const next = document.querySelector('.todo-sub-input');
+      if (next) next.focus();
     }
   }
 

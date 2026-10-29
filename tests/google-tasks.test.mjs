@@ -111,6 +111,20 @@ test('adding sets a UTC-midnight due date; reopening clears the completed time',
   });
 });
 
+test('adding under a parent sends parent and previous so subtasks keep the typed order', async () => {
+  await withFakeGoogle((url, init) => jsonResponse({ id: 'sub', title: JSON.parse(init.body).title, status: 'needsAction', parent: 'p1' }), async (calls) => {
+    const base = { serviceAccountJson: newAccount(), delegatedUser: 'me@wolko.org', listId: 'L1' };
+    const sub = await addTask({ ...base, title: '하위', parent: 'p1', previous: 'c2' });
+    assert.equal(sub.parent, 'p1');
+    await addTask({ ...base, title: '첫 하위', parent: 'p1' });
+    await addTask({ ...base, title: '최상위', previous: 'ignored' });   // previous 는 parent 없이는 쓰지 않는다
+    const posts = calls.filter(c => c.init.method === 'POST' && c.url.includes('/lists/L1/tasks'));
+    assert.equal(posts[0].url, 'https://tasks.googleapis.com/tasks/v1/lists/L1/tasks?parent=p1&previous=c2');
+    assert.equal(posts[1].url, 'https://tasks.googleapis.com/tasks/v1/lists/L1/tasks?parent=p1');
+    assert.equal(posts[2].url, 'https://tasks.googleapis.com/tasks/v1/lists/L1/tasks');
+  });
+});
+
 function request(method, { key = KEY, body } = {}) {
   const headers = {};
   if (key) headers.Authorization = `Bearer ${key}`;
@@ -166,6 +180,10 @@ test('api POST validates input before calling google', async () => {
       { action: 'add', listId: 'L1', title: 'ok', due: '2026-02-30' },
       { action: 'add', listId: 'L1', title: 'ok', due: '내일' },
       { action: 'add', listId: '../evil', title: 'ok' },
+      { action: 'add', listId: 'L1', title: 'ok', parent: '../x' },
+      { action: 'add', listId: 'L1', title: 'ok', parent: 42 },
+      { action: 'add', listId: 'L1', title: 'ok', previous: 'c1' },
+      { action: 'add', listId: 'L1', title: 'ok', parent: 'p1', previous: 'a/b' },
       { action: 'complete', listId: 'L1', taskId: 't1', completed: 'yes' },
       { action: 'complete', listId: 'L1', taskId: 't1/../x', completed: true },
       { action: 'delete', listId: 'L1', taskId: 't1' },
@@ -180,6 +198,10 @@ test('api POST validates input before calling google', async () => {
     const ok = await onRequestPost({ request: request('POST', { body: { action: 'add', listId: 'L1', title: ' 새 일 ', due: '2026-11-01' } }), env });
     assert.equal(ok.status, 200);
     assert.equal(JSON.parse(calls.find(c => c.init.method === 'POST' && c.url.includes('/tasks')).init.body).title, '새 일');
+
+    const sub = await onRequestPost({ request: request('POST', { body: { action: 'add', listId: 'L1', title: '하위', parent: 'p1', previous: 'c1' } }), env });
+    assert.equal(sub.status, 200);
+    assert.ok(calls.some(c => c.url.endsWith('/lists/L1/tasks?parent=p1&previous=c1')));
   });
 });
 
