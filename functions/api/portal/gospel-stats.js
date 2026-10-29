@@ -13,6 +13,8 @@ import { monthCamps, addCampsToSummary } from '../../lib/gospelCamps.js';
 import { reporterRoster, missingReporters, submittedEmails } from '../../lib/gospelReminder.js';
 import { getAccount, portalSession } from '../../lib/hubAccounts.js';
 import { isDesignated, loadReporters } from '../../lib/gospelReporters.js';
+import { ministryFromCrs } from '../../lib/crsMinistry.js';
+import { loadSlimChurches } from './gospel-ministry.js';
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 import {
   GOSPEL_SECTIONS, LOCATIONS, SCOPES, MONTH_RE, MONTHS_BACK, currentMonthKst, reportMonth, shiftMonth, reportableMonth,
@@ -54,6 +56,28 @@ async function submissionStatus(env, reports) {
   return { expected: expected.length, submitted: expected.filter(p => done.has(p.email)).length, missing: missing.map(({ email, name }) => ({ email, name })), exempt: roster.filter(p => p.exempt).map(({ email, name, fixed }) => ({ email, name, fixed })), reports: detail };
 }
 
+/**
+ * 열린 달(보고하는 달 · 이번 달)의 사역 현황은 저장된 값이 아니라 CRS 의 지금 값(교회 등급 A/B/C · 그 달 리더십 훈련)으로 센다 —
+ * CRS 에서 등급을 바꾸면 보고를 다시 저장하지 않아도 통계에 바로 반영된다. 지난 달은 저장해 둔 값을 그대로 쓴다(CRS 에는 등급 이력이 없어서
+ * 지난 달까지 바꾸면 이미 낸 본부 보고 숫자가 달라진다). CRS 를 못 읽으면 저장된 값을 쓴다.
+ */
+async function withLiveCrs(env, list, month, current) {
+  if (month !== current && month !== reportMonth()) return list;
+  let slim;
+  try { slim = await loadSlimChurches(env); } catch { return list; }
+  if (!slim) return list;
+  const live = ministryFromCrs(slim, month);
+  const ids = GOSPEL_SECTIONS.flatMap(sec => sec.fields).filter(f => f.crs).map(f => f.id);
+  const out = list.map(r => ({ ...r }));
+  for (const location of LOCATIONS) {
+    const patch = Object.fromEntries(ids.map(id => [id, live[location]?.[id] || 0]));
+    const saved = out.filter(r => r.scope === 'ministry' && r.location === location);
+    if (saved.length) saved.forEach(r => { r.values = { ...r.values, ...patch }; });
+    else if (ids.some(id => patch[id])) out.push({ scope: 'ministry', location, values: patch, churchEntries: [] });   // 아직 사역 현황 보고가 없어도 CRS 숫자는 센다
+  }
+  return out;
+}
+
 /** 한 달의 집계(합계 + 끝난 캠프 + 교회 행사) — 저장해 둔 값이 있으면 그것을, 없으면 새로 계산해서 저장한다. fresh 면 저장값을 쓰지 않는다 */
 async function aggregateOf(env, request, month, current, { fresh = false, reports = null, camps = null } = {}) {
   if (!fresh) {
@@ -62,7 +86,7 @@ async function aggregateOf(env, request, month, current, { fresh = false, report
   }
   const list = reports || await loadMonth(env, month);
   const monthCampList = camps || await monthCamps(env, request, month);
-  const agg = { v: AGG_VERSION, month, summary: addCampsToSummary(summarize(list), monthCampList), camps: monthCampList, churchEvents: churchEvents(list), at: new Date().toISOString() };
+  const agg = { v: AGG_VERSION, month, summary: addCampsToSummary(summarize(await withLiveCrs(env, list, month, current)), monthCampList), camps: monthCampList, churchEvents: churchEvents(list), at: new Date().toISOString() };
   await env.CAMP_KV.put(AGG_KEY(month), JSON.stringify(agg), { expirationTtl: aggTtlSeconds(month, current) });
   return agg;
 }

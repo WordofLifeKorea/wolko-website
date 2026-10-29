@@ -247,3 +247,34 @@ test('camp auto-count, church events and team report history are folded closed b
   assert.doesNotMatch(page, /<details[^>]*\sopen[\s>]/, 'no fold starts open');
   assert.match(page, /<section class="log-panel gs-fold" id="teamWrap" hidden>/, 'team report fold keeps its hidden-for-non-reporters switch');
 });
+
+test('열린 달(보고하는 달·이번 달)의 사역 현황은 CRS 지금 값으로 세고, 지난 달은 저장값을 쓰며, CRS 를 못 읽으면 저장값을 쓴다', async () => {
+  const { shiftMonth } = await import('../functions/lib/gospelStats.js');
+  const t = setup(); await t.acc(anna[0], 'counselor', 'Anna');
+  await t.reporters('POST', master, { body: { emails: [anna[0]] } });
+  const seed = list => t.store.set('gospel:crs-slim', JSON.stringify({ list }));
+  const church = (location, grade, leaders = {}) => ({ location, grade, leaders });
+  const view = async m => (await t.stats('GET', master, { query: `?month=${m}` })).summary;
+  const old = shiftMonth(month, -3);
+
+  // 사역 현황 보고가 아직 없어도 CRS 숫자는 센다
+  seed([church('mainland', 'A', { [month]: 3 }), church('mainland', 'B'), church('jeju', 'C')]);
+  let s = await view(month);
+  assert.deepEqual([s.mainland.churchA, s.mainland.churchB, s.mainland.churchC, s.mainland.leadershipTraining], [1, 1, 0, 3]);
+  assert.deepEqual([s.jeju.churchC, s.all.churchA + s.all.churchB + s.all.churchC], [1, 3]);
+
+  // 저장된 보고에 옛 숫자가 있어도 CRS 지금 값이 이긴다 — 등급을 바꾸면 바로 반영
+  await t.stats('POST', anna, { body: { month, location: 'mainland', scope: 'ministry', values: { churchA: 9, dtc: 4 } } });
+  assert.equal((await view(month)).mainland.churchA, 1, '저장값 9 가 아니라 CRS 값');
+  assert.equal((await view(month)).mainland.dtc, 4, 'CRS 와 연결되지 않은 항목은 저장값 그대로');
+  seed([church('mainland', 'A'), church('mainland', 'A'), church('mainland', 'B')]);
+  assert.equal((await view(month)).mainland.churchA, 2, 'CRS 에서 등급을 바꾸면 바로 반영');
+
+  // 지난 달은 저장값을 그대로 쓴다(CRS 에는 등급 이력이 없다)
+  await t.stats('POST', anna, { body: { month: old, location: 'mainland', scope: 'ministry', values: { churchA: 7 } } });
+  assert.equal((await view(old)).mainland.churchA, 7);
+
+  // CRS 를 읽을 수 없으면 저장값으로 돌아간다
+  t.store.delete('gospel:crs-slim');
+  assert.equal((await view(month)).mainland.churchA, 9);
+});
