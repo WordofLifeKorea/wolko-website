@@ -95,6 +95,19 @@ test('행사 이름 추천: 연도 계절 이름 순서, 3개까지, 캠프 권�
   });
 });
 
+test('제목만 입력해도 추천한다: 파일 없이 제목 완성·종류·캠프 (설명은 비어 있고, 문서가 아니라고 AI 에 알린다)', async () => {
+  const e = env(), camp = CAMP(e);
+  await withAi({ titles: [{ ko: '2027 겨울 월코 영어 캠프 수업자료', en: '2027 Winter WOLKO English Camp Class Materials' }], description: '지어낸 설명', category: 'program', campId: camp.id }, async (calls) => {
+    const r = await post(e, U.mem, { mode: 'title', title: '2027 겨울 월코 영어', category: 'etc' }); assert.equal(r.status, 200);
+    const d = await r.json(); assert.equal(d.suggestion.titles[0].ko, '2027 겨울 월코 영어 캠프 수업자료'); assert.equal(d.suggestion.campId, camp.id);
+    assert.ok(calls[0].system.includes('NO document') && JSON.stringify(calls[0]).includes('Typed title: 2027 겨울 월코 영어'));
+    assert.equal((await post(e, U.mem, { mode: 'title', title: '   ' })).status, 400);
+    assert.equal((await post(e, U.fin, { mode: 'title', title: '예산안', category: 'budget' })).status, 400, '예산 분류는 보내지 않는다');
+    assert.equal((await post(e, U.view, { mode: 'title', title: 'x y z w v' })).status, 403);
+    assert.equal(calls.length, 1);
+  });
+});
+
 test('파서: 깨진 값은 안전하게 버린다', () => {
   assert.equal(parseFileSuggestion('nope'), null); assert.equal(parseCampNames('{"names":[]}'), null); assert.equal(parseCampNames('x'), null);
   assert.deepEqual(parseFileSuggestion('{"titles":"x","description":5}', []).titles, []);
