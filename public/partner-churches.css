@@ -34,12 +34,16 @@
 @keyframes pc-ping { 0% { transform: scale(1); opacity: .55; } 70%, 100% { transform: scale(3.4); opacity: 0; } }
 .pc-strip:not([hidden])::after { content: ''; position: absolute; left: 0; bottom: 0; width: 30%; height: 2px; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(31, 164, 207, .6), transparent); transform: translateX(-100%); animation: pc-travel 6s ease-in-out 1.6s infinite; }
 @keyframes pc-travel { 0% { transform: translateX(-100%); } 55%, 100% { transform: translateX(340%); } }
+/* 숫자 톡 — 다 올라간 뒤(.is-counted)부터 7초에 한 번 크기만 잠깐 튄다. 크기(transform)만 바뀌어서 줄 배치는 그대로다 */
+.pc-strip.is-counted .pc-strip-text b { transform-origin: 50% 80%; animation: pc-pop 7s ease-in-out 1.4s infinite; }
+@keyframes pc-pop { 0%, 15%, 100% { transform: none; } 4% { transform: translateY(-3px) scale(1.3); } 8% { transform: translateY(0) scale(.94); } 11.5% { transform: scale(1.07); } }
 .pc-strip-go { animation: pc-nudge 3.2s ease-in-out 2s infinite; }
 @keyframes pc-nudge { 0%, 62%, 100% { transform: translateX(0) rotate(45deg); } 72% { transform: translateX(6px) rotate(45deg); } 82% { transform: translateX(1px) rotate(45deg); } 90% { transform: translateX(4px) rotate(45deg); } }
 .pc-strip-link:hover .pc-strip-go { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .pc-strip:not([hidden]) .pc-strip-link, .pc-strip-go, .pc-strip-live::after, .pc-strip:not([hidden])::after { animation: none; }
   .pc-strip-live::after, .pc-strip:not([hidden])::after { display: none; }
+  .pc-strip.is-counted .pc-strip-text b { animation: none; }
 }
 
 /* 영문 병기 이름 — 한글 이름 아래에 작게 */

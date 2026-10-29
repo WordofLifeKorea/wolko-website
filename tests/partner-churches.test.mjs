@@ -98,4 +98,9 @@ test('히어로 아래 띠: 글자는 단색이고, 숫자가 올라가도 줄 �
   const html = readFileSync(new URL('../src/pages/index.astro', import.meta.url), 'utf8');
   assert.match(html, /<span class="pc-strip-live" aria-hidden="true"><\/span>\s*<span class="pc-strip-text">/, '점은 글자 칸 밖에 있다');
   assert.match(css, /prefers-reduced-motion: reduce\) \{[^}]*pc-strip-live::after/, '모션 줄이기에서는 꺼진다');
+  // 숫자 톡 — 다 올라간 뒤에만, 크기(transform)만 바꾼다
+  assert.match(css, /\.pc-strip\.is-counted \.pc-strip-text b \{[^}]*animation: pc-pop/);
+  assert.doesNotMatch(css.match(/@keyframes pc-pop \{[^]*?\n/)[0], /width|margin|padding|font-size|top|left/, '배치를 바꾸는 값은 쓰지 않는다');
+  assert.match(js, /classList\.add\('is-counted'\)/, '숫자가 다 올라가면 표시한다');
+  assert.match(js, /if \(still\) \{ if \(!reduce\)/, '모션 줄이기에서는 표시하지 않는다');
 });

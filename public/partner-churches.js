@@ -11,7 +11,7 @@
     var els = root.querySelectorAll('.pc-count'), done = false;
     var still = reduce || !('IntersectionObserver' in window);
     Array.prototype.forEach.call(els, function (e) { e.style.minWidth = String(to).length + 'ch'; e.textContent = still ? to : 0; });   // 자릿수만큼 폭을 먼저 잡아 두어, 숫자가 올라가도 줄이 밀리지 않는다
-    if (still) return;
+    if (still) { if (!reduce) root.classList.add('is-counted'); return; }   // 숫자가 다 올라간 뒤에만 숫자를 가끔 튀게 한다(숫자가 바뀌는 중에는 튀지 않는다)
     function run() {
       if (done) return; done = true;
       var t0 = null, ms = 1300;
@@ -19,7 +19,7 @@
         if (t0 === null) t0 = t;
         var k = Math.min(1, (t - t0) / ms), v = Math.round(to * (1 - Math.pow(1 - k, 3)));
         Array.prototype.forEach.call(els, function (e) { e.textContent = v; });
-        if (k < 1) requestAnimationFrame(step);
+        if (k < 1) requestAnimationFrame(step); else root.classList.add('is-counted');
       })(performance.now());
     }
     var io = new IntersectionObserver(function (entries) { if (entries[0].isIntersecting) { io.disconnect(); setTimeout(run, 350); } }, { threshold: 0.6 });
