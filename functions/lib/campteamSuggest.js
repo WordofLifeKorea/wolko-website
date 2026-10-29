@@ -22,10 +22,12 @@ export function buildFilePrompt({ name, kind, text, data, mime, camps = [] }) {
     'topic: a short Korean or English keyword (max 30 characters) such as the lesson topic, team or subject. "" if unsure.',
     'year: the 4-digit year the document is for, or null. season: "겨울" (winter), "여름" (summer) or "".',
     camps.length ? 'campId: the id of ONE camp from the list below that this document clearly belongs to, else "". Never invent an id.' : 'campId: always "".',
-    'Output ONE JSON object only (no markdown): {"titles":[{"ko":"","en":""}],"description":"","category":"","topic":"","year":null,"season":"","campId":"","campReason":""}'].join('\n');
-  const meta = `File name: ${clip(name, 160)}\nFile kind: ${kind}\n` + (camps.length ? 'Camps (id | Korean name | English name):\n' + camps.slice(0, LIMITS.camps).map((c) => `${c.id} | ${clip(c.nameKo, 60)} | ${clip(c.nameEn, 60)}`).join('\n') + '\n' : '');
+    kind === 'title' ? 'There is NO document: the person is typing a title and may not have finished. Offer 3 completions or polished versions that START from exactly what they typed (keep their wording and order; only add what is clearly implied, such as 캠프/Camp or a document kind). Do not invent years, names or places they did not type. description must be "". category/topic/campId only if the typed words clearly show them.' : '',
+    'Output ONE JSON object only (no markdown): {"titles":[{"ko":"","en":""}],"description":"","category":"","topic":"","year":null,"season":"","campId":"","campReason":""}'].filter(Boolean).join('\n');
+  const meta = (kind === 'title' ? `Typed title: ${clip(name, 160)}\n` : `File name: ${clip(name, 160)}\nFile kind: ${kind}\n`) + (camps.length ? 'Camps (id | Korean name | English name):\n' + camps.slice(0, LIMITS.camps).map((c) => `${c.id} | ${clip(c.nameKo, 60)} | ${clip(c.nameEn, 60)}`).join('\n') + '\n' : '');
   if (kind === 'pdf' && data) return { system, user: [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data } }, { type: 'text', text: meta }] };
   if (kind === 'image' && data) return { system, user: [{ type: 'image', source: { type: 'base64', media_type: /^image\/(png|jpeg|gif|webp)$/.test(mime) ? mime : 'image/jpeg', data } }, { type: 'text', text: meta }] };
+  if (kind === 'title') return { system, user: meta };
   return { system, user: meta + (text ? `\nDocument text (beginning, may be cut off):\n"""\n${clip(text, LIMITS.textChars)}\n"""` : '\n(No readable text — judge from the file name only.)') };
 }
 
@@ -42,7 +44,7 @@ export function parseFileSuggestion(raw, camps = []) {
 /** payload: { name, kind:'text'|'pdf'|'image'|'none', text?, data?, mime?, category? } → { ok, suggestion } | { ok:false, code } (던지지 않는다) */
 export async function suggestForFile(env, payload, { camps = [], fetchImpl } = {}) {
   if (!aiConfigured(env)) return { ok: false, code: 'ai_off' };
-  const kind = ['text', 'pdf', 'image'].includes(payload.kind) ? payload.kind : 'none', p = { name: payload.name, kind, camps };
+  const kind = ['text', 'pdf', 'image', 'title'].includes(payload.kind) ? payload.kind : 'none', p = { name: payload.name, kind, camps };
   if (kind === 'text') p.text = payload.text; else if (kind === 'pdf' || kind === 'image') { p.data = String(payload.data || ''); p.mime = String(payload.mime || ''); if (!p.data) p.kind = 'none'; }
   const { system, user } = buildFilePrompt(p);
   try {

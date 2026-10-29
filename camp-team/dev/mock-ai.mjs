@@ -11,7 +11,7 @@ const campNames = { names: [{ ko: '2027 겨울 월코 영어 캠프', en: '2027 
 http.createServer((req, res) => {
   let body = ''; req.on('data', c => body += c); req.on('end', () => {
     res.writeHead(200, { 'Content-Type': 'text/event-stream' }); let payload = draft;
-    try { const j = JSON.parse(body), sys = String(j.system || ''); if (sys.includes('file a document')) { const m = /File name: ([^\n]*)/.exec(JSON.stringify(j.messages)) ; payload = fileSuggestion(m ? m[1].replace(/\\n.*/, '') : 'file'); } else if (sys.includes('suggest names for a camp')) payload = campNames; } catch (e) { /* 회의록 초안 */ }
+    try { const j = JSON.parse(body), sys = String(j.system || ''); if (sys.includes('NO document')) { const m = /Typed title: ([^\n"]*)/.exec(JSON.stringify(j.messages).replace(/\\n/g, '\n')); const ty = m ? m[1].trim() : ''; payload = { titles: [{ ko: ty + ' 수업자료 (가짜 AI)', en: ty + ' Class Materials (mock)' }, { ko: ty + ' 안내문', en: ty + ' Notice' }], description: '', category: 'program', topic: '수업', year: null, season: '', campId: '', campReason: '' }; } else if (sys.includes('file a document')) { const m = /File name: ([^\n]*)/.exec(JSON.stringify(j.messages)) ; payload = fileSuggestion(m ? m[1].replace(/\\n.*/, '') : 'file'); } else if (sys.includes('suggest names for a camp')) payload = campNames; } catch (e) { /* 회의록 초안 */ }
     const text = JSON.stringify(payload); let i = 0;
     const t = setInterval(() => { if (i >= text.length) { res.write('event: message_stop\ndata: {"type":"message_stop"}\n\n'); res.end(); clearInterval(t); return; }
       res.write('event: content_block_delta\ndata: ' + JSON.stringify({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: text.slice(i, i + 120) } }) + '\n\n'); i += 120; }, 60);

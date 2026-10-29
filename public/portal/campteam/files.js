@@ -8,7 +8,7 @@
       mPub: '전체 공개', mPubAll: '모두 전체 공개', mPubHint: '체크하지 않은 파일은 캠프팀 명단 사람만 볼 수 있어요. 체크하면 월코 팀원 모두가 볼 수 있어요.',
       portalFolder: '월코 포털 캠프 자료실', portalChip: '월코 포털', portalRO: '읽기 전용', portalNote: '월코 포털 「캠프 자료실」에 올라온 자료예요. 여기서는 찾고 열기만 돼요 (올리기·수정은 포털에서).', portalOpen: '열기',
       ppNoCamp: '캠프 미지정', ppNoTeam: '팀 폴더 없음', ppAll: '이 안의 파일 모두 한 번에 보기', ppCards: '← 분류로 보기', ppHint: '포털에서 정한 분류(캠프 → 형식 → 팀 폴더) 그대로 나눠 보여요.',
-      aiTitle: '✨ AI 도우미', aiSwitch: '파일을 고르면 AI가 내용을 읽고 제목·설명·종류·캠프를 채워 줘요', aiNote: '켜면 고른 파일의 앞부분 글(또는 PDF·사진)이 AI 서비스로 전송돼요. 파일은 저장되지 않고, 저장은 직접 눌러야 해요. 예산(금액) 자료는 보내지 않아요.', aiGo: '✨ 추천 받기', aiBusy: 'AI가 파일을 읽는 중…', aiDone: 'AI가 채웠어요 — 고쳐도 돼요.', aiKoRow: '한글 제목', aiEnRow: 'English title', aiOffMsg: 'AI 추천이 아직 켜지지 않았어요 (관리자가 서버 설정에서 켜야 해요).', aiBudget: '예산(금액) 자료는 AI에 보내지 않아요.', aiFail: 'AI 추천을 받지 못했어요: ', aiNeedFile: '먼저 파일을 골라 주세요.', aiChip: 'AI', aiCamp: '관련 캠프: ', aiNoRead: '이 형식은 내용을 읽지 못해 파일 이름만 보고 추천했어요.',
+      aiTitle: '✨ AI 도우미', aiSwitch: '파일을 고르거나 제목을 입력하면 AI가 제목·종류·캠프를 추천해 줘요', aiNote: '켜면 고른 파일의 앞부분 글(또는 PDF·사진), 파일 없이 제목만 입력했다면 그 제목이 AI 서비스로 전송돼요. 파일은 저장되지 않고, 저장은 직접 눌러야 해요. 예산(금액) 자료는 보내지 않아요.', aiGo: '✨ 추천 받기', aiBusy: 'AI가 파일을 읽는 중…', aiDone: 'AI가 채웠어요 — 고쳐도 돼요.', aiKoRow: '한글 제목', aiEnRow: 'English title', aiOffMsg: 'AI 추천이 아직 켜지지 않았어요 (관리자가 서버 설정에서 켜야 해요).', aiBudget: '예산(금액) 자료는 AI에 보내지 않아요.', aiFail: 'AI 추천을 받지 못했어요: ', aiNeedFile: '먼저 파일을 골라 주세요.', aiChip: 'AI', aiCamp: '관련 캠프: ', aiNoRead: '이 형식은 내용을 읽지 못해 파일 이름만 보고 추천했어요.', autoChip: '자동', aiBusyTitle: 'AI가 제목을 보고 추천하는 중…', aiTitleDone: '제목을 보고 AI가 추천했어요 — 고르거나 고쳐도 돼요.', 
       addMaterial: '+ 자료 추가', mkAddTitle: '자료 추가', tabFile: '파일 올리기', tabLink: '링크 연결', pickFiles: '파일 선택', pickFolder: '📁 폴더 선택', dzPickDir: '폴더 열기',
       linkOk: '인식했어요: ', canva: 'Canva 디자인', linkShare: '링크 공유 설정이 「링크가 있는 사람은 볼 수 있음」(또는 팀원 지정)이어야 팀원이 열 수 있어요. Google 문서·Drive·Canva 모두 같아요.',
       folderName: '폴더 이름', folderNameEn: '영문 이름 (선택)', mTitles: '파일 이름 (하나씩 고칠 수 있어요)', mAiBusy: 'AI가 이름을 정리하는 중…', mAiDone: 'AI가 이름을 정리했어요. 고쳐도 돼요.', mAiOff: '기본 정리만 했어요. 고쳐도 돼요.',
@@ -28,7 +28,7 @@
       mPub: 'Share with all', mPubAll: 'Share all', mPubHint: 'Unchecked files can be seen only by the camp team roster. Checked files can be seen by the whole WOLKO team.',
       portalFolder: 'WOLKO portal · Camp Resources', portalChip: 'WOLKO portal', portalRO: 'Read-only', portalNote: 'Materials from the WOLKO portal "Camp Resources". You can search and open them here (upload or edit in the portal).', portalOpen: 'Open',
       ppNoCamp: 'No camp', ppNoTeam: 'No team folder', ppAll: 'Show all files here at once', ppCards: '← Back to groups', ppHint: 'Grouped the way the portal groups them (camp → type → team folder).',
-      aiTitle: '✨ AI helper', aiSwitch: 'When you pick a file, AI reads it and fills in title, description, type and camp', aiNote: 'When on, the beginning of the file text (or the PDF/photo) is sent to the AI service. The file itself is not stored, and you still press Save yourself. Budget (amount) files are never sent.', aiGo: '✨ Suggest', aiBusy: 'AI is reading the file…', aiDone: 'Filled in by AI — you can edit it.', aiKoRow: '한글 제목', aiEnRow: 'English title', aiOffMsg: 'AI suggestions are not turned on yet (an admin must enable them in the server settings).', aiBudget: 'Budget (amount) files are never sent to AI.', aiFail: 'Could not get AI suggestions: ', aiNeedFile: 'Please choose a file first.', aiChip: 'AI', aiCamp: 'Related camp: ', aiNoRead: 'This format could not be read, so the suggestion is based on the file name only.',
+      aiTitle: '✨ AI helper', aiSwitch: 'When you pick a file or type a title, AI suggests title, type and camp', aiNote: 'When on, the beginning of the file text (or the PDF/photo) — or, without a file, the title you type — is sent to the AI service. The file itself is not stored, and you still press Save yourself. Budget (amount) files are never sent.', aiGo: '✨ Suggest', aiBusy: 'AI is reading the file…', aiDone: 'Filled in by AI — you can edit it.', aiKoRow: '한글 제목', aiEnRow: 'English title', aiOffMsg: 'AI suggestions are not turned on yet (an admin must enable them in the server settings).', aiBudget: 'Budget (amount) files are never sent to AI.', aiFail: 'Could not get AI suggestions: ', aiNeedFile: 'Please choose a file first.', aiChip: 'AI', aiCamp: 'Related camp: ', aiNoRead: 'This format could not be read, so the suggestion is based on the file name only.', autoChip: 'Auto', aiBusyTitle: 'AI is reading your title…', aiTitleDone: 'AI suggested from your title — pick one or edit.', 
       addMaterial: '+ Add material', mkAddTitle: 'Add material', tabFile: 'Upload files', tabLink: 'Link', pickFiles: 'Choose files', pickFolder: '📁 Choose folder', dzPickDir: 'Choose folder',
       linkOk: 'Recognized: ', canva: 'Canva design', linkShare: 'Link sharing must allow the team to open it ("Anyone with the link can view" or specific people). Same for Google Docs, Drive and Canva.',
       folderName: 'Folder name', folderNameEn: 'English name (optional)', mTitles: 'File names (edit each one)', mAiBusy: 'AI is tidying the names…', mAiDone: 'AI tidied the names. You can edit them.', mAiOff: 'Basic tidy only. You can edit them.',
@@ -298,7 +298,7 @@
       var c = $('formFields').querySelector('[name=category]'), pub = $('formFields').querySelector('[name=publicToAll]'); if (!c || !pub) return;
       var sync = function () { var lock = c.value === 'budget'; if (lock) pub.checked = false; pub.disabled = lock; }; c.addEventListener('change', sync); sync();
     })();
-    if (addMode) wireAdd(mode);
+    aiState.syncTitle = null; if (addMode) { wireAdd(mode); wireTitleAssist(); }
     $('detail').close(); if (!dlg.open) dlg.showModal();
   }
   /* 링크 주소를 붙여 넣으면 어떤 문서인지 알려 준다 (서버의 linkKindFor 와 같은 기준) */
@@ -328,8 +328,34 @@
     $('mFolderName').oninput = function () { S.pick.nameDirty = true; }; $('mFolderEn').oninput = function () { S.pick.enDirty = true; };
     wireAi(); renderPick();
   }
+  /* ---- 제목 자동 완성: 제목에 캠프 이름이 있으면 「관련 캠프·행사」를 자동으로 고르고(AI 없이 무료), 파일 없이 제목만 쳐도 AI가 추천한다 ---- */
+  function wireTitleAssist() {
+    var root = $('formFields'), t = root.querySelector('[name=title]'), tg = root.querySelector('[name=target]'); if (!t || !tg || !window.CTTitleMatch) return;
+    var names = []; S.types.forEach(function (ty) { names.push(CT.pick(ty, 'name')); ty.camps.forEach(function (c) { names.push(CT.pick(c, 'name')); }); });
+    t.setAttribute('list', 'titleOpts'); t.setAttribute('autocomplete', 'off'); t.insertAdjacentHTML('afterend', '<datalist id="titleOpts">' + names.filter(function (n, i) { return n && names.indexOf(n) === i; }).map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>');
+    var auto = false, user = !!tg.value, tm, last = '', calls = 0; // 이미 골라져 있거나(목록 필터) 직접 고른 값은 건드리지 않는다
+    var unmark = function () { var c = tg.closest('label').querySelector('.aichip'); if (c) c.remove(); };
+    tg.addEventListener('change', function (e) { if (e.isTrusted) { user = true; auto = false; } });
+    function sync() {
+      if (user) return; var v = window.CTTitleMatch.match(t.value, S.types), has = v && [].some.call(tg.options, function (o) { return o.value === v; });
+      if (has) { tg.value = v; auto = true; unmark(); tg.closest('label').insertAdjacentHTML('afterbegin', '<span class="aichip">' + esc(CT.t('autoChip')) + '</span>'); }
+      else if (auto) { tg.value = ''; auto = false; unmark(); }
+    }
+    aiState.syncTitle = sync;
+    async function askTitle() {
+      var v = t.value.trim(), cat = root.querySelector('[name=category]');
+      if (!document.body.contains(t) || !$('aiBox') || !$('aiOn').checked || aiState.configured === false || S.pick || v.length < 5 || v === last || calls >= 8 || (cat && cat.value === 'budget')) return;
+      last = v; calls++; var tok = ++aiState.ttok; $('aiMsg').textContent = CT.t('aiBusyTitle');
+      try {
+        var r = await CT.api('/api/campteam/ai-suggest', { method: 'POST', body: { mode: 'title', title: v, category: cat ? cat.value : 'etc' } });
+        if (tok !== aiState.ttok || !document.body.contains(t) || S.pick || t.value.trim() !== v) return; applyAi(r.suggestion, false, true); sync();
+      } catch (e) { if (tok === aiState.ttok && $('aiMsg')) $('aiMsg').textContent = CT.t('aiFail') + e.message; }
+    }
+    t.addEventListener('input', function () { sync(); clearTimeout(tm); tm = setTimeout(askTitle, 1300); });
+    sync();
+  }
   /* ---- AI 도우미: 파일 내용을 읽고 제목·설명·종류·주제·캠프를 **제안**한다 (저장은 직접 누른다) ---- */
-  var aiState = { token: 0, configured: null, titleDirty: false };
+  var aiState = { token: 0, ttok: 0, configured: null, titleDirty: false, syncTitle: null };
   function aiOn() { try { return localStorage.getItem('ct-ai-files') === '1'; } catch (e) { return false; } }
   function aiBoxHtml() {
     return '<div class="aibox" id="aiBox"><label class="aisw"><input type="checkbox" id="aiOn"><span>' + esc(CT.t('aiTitle')) + ' — ' + esc(CT.t('aiSwitch')) + '</span></label><div class="hint">' + esc(CT.t('aiNote')) + '</div>' +
@@ -343,7 +369,7 @@
     var root = $('formFields'); // 직접 고친 칸은 「AI」 표시를 지우고, 이후 추천이 덮어쓰지 않는다
     root.addEventListener('input', function (e) { if (!e.isTrusted) return; var lab = e.target.closest('label'); if (lab) { var c = lab.querySelector('.aichip'); if (c) c.remove(); } if (e.target.name === 'title') aiState.titleDirty = true; });
     root.addEventListener('change', function (e) { if (!e.isTrusted) return; var lab = e.target.closest('label'); if (lab) { var c = lab.querySelector('.aichip'); if (c) c.remove(); } });
-    $('aiTitles').addEventListener('click', function (e) { var b = e.target.closest('[data-aitext]'); if (!b) return; var t = root.querySelector('[name=title]'); t.value = b.dataset.aitext; aiState.titleDirty = true; markAi(t); });
+    $('aiTitles').addEventListener('click', function (e) { var b = e.target.closest('[data-aitext]'); if (!b) return; var t = root.querySelector('[name=title]'); t.value = b.dataset.aitext; aiState.titleDirty = true; markAi(t); if (aiState.syncTitle) aiState.syncTitle(); });
     aiState.titleDirty = false;
     if (aiState.configured === null) CT.api('/api/campteam/ai-suggest').then(function (r) { aiState.configured = !!r.configured; if (!aiState.configured && $('aiMsg')) { $('aiMsg').textContent = CT.t('aiOffMsg'); $('aiGo').disabled = true; } }).catch(function () { aiState.configured = null; });
     else if (!aiState.configured) { $('aiMsg').textContent = CT.t('aiOffMsg'); $('aiGo').disabled = true; }
@@ -361,17 +387,17 @@
     } catch (e) { if (token !== aiState.token) return; msg.textContent = CT.t('aiFail') + e.message; }
     finally { if ($('aiGo') && token === aiState.token) $('aiGo').disabled = aiState.configured === false; }
   }
-  function applyAi(s, nameOnly) {
+  function applyAi(s, nameOnly, titleMode) {
     var root = $('formFields'), f = function (n) { return root.querySelector('[name=' + n + ']'); }, t = f('title'), ko = [], en = [];
     (s.titles || []).forEach(function (x) { if (x.ko) ko.push(x.ko); if (x.en) en.push(x.en); });
     var chips = function (label, list) { return list.length ? '<div class="aititles"><small>' + esc(label) + '</small>' + list.map(function (x) { return '<button type="button" class="aichipbtn" data-aitext="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' : ''; };
     $('aiTitles').innerHTML = chips(CT.t('aiKoRow'), ko) + chips(CT.t('aiEnRow'), en);
-    if (t && !aiState.titleDirty && (ko[0] || en[0])) { t.value = ko[0] || en[0]; markAi(t); }
-    var d = f('description'); if (d && !d.value && s.description) { d.value = s.description; markAi(d); }
+    if (!titleMode && t && !aiState.titleDirty && (ko[0] || en[0])) { t.value = ko[0] || en[0]; markAi(t); }
+    var d = f('description'); if (!titleMode && d && !d.value && s.description) { d.value = s.description; markAi(d); }
     var tp = f('topic'); if (tp && !tp.value && s.topic) { tp.value = s.topic; markAi(tp); }
     var cat = f('category'); if (cat && cat.value === 'etc' && s.category && [].some.call(cat.options, function (o) { return o.value === s.category; })) { cat.value = s.category; cat.dispatchEvent(new Event('change')); markAi(cat); }
     var tg = f('target'), campLine = ''; if (tg && !tg.value && s.campId && [].some.call(tg.options, function (o) { return o.value === 'camp:' + s.campId; })) { tg.value = 'camp:' + s.campId; markAi(tg); var o = tg.options[tg.selectedIndex]; campLine = ' ' + CT.t('aiCamp') + o.textContent + (s.campReason ? ' (' + s.campReason + ')' : ''); }
-    $('aiMsg').textContent = CT.t('aiDone') + campLine + (nameOnly ? ' ' + CT.t('aiNoRead') : '');
+    $('aiMsg').textContent = CT.t(titleMode ? 'aiTitleDone' : 'aiDone') + campLine + (nameOnly && !titleMode ? ' ' + CT.t('aiNoRead') : '');
   }
   /* ---- 고른 파일/폴더 목록 ---- */
   function fromFileList(list, asFolder) { // 파일 고르기 창 / 폴더 고르기 창에서 온 목록 → { items, folder }
