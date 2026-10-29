@@ -80,3 +80,11 @@ test('협력 교회 화면 CSS: 중괄호가 짝이 맞고, 색 점이 없다', 
   const js = readFileSync(new URL('../public/partner-churches.js', import.meta.url), 'utf8');
   assert.doesNotMatch(css + js, /pc-dot|pc-strip-dots/);
 });
+
+test('히어로 아래 띠의 글자는 늘 단색이다 — background-clip: text 로 글자를 칠하면 숫자가 바뀔 때 Safari 에서 글자 일부가 사라진다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../public/partner-churches.css', import.meta.url), 'utf8');
+  assert.doesNotMatch(css, /background-clip\s*:\s*text/, 'background-clip: text 를 쓰지 않는다');
+  assert.doesNotMatch(css, /text-fill-color\s*:\s*transparent/, '글자를 투명하게 두지 않는다');
+  assert.match(css, /\.pc-strip-link::before[^}]*animation:\s*pc-sweep/, '빛이 지나가는 효과는 글자 뒤 배경 띠로');
+});
