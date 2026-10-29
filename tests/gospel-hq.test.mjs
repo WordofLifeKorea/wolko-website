@@ -278,3 +278,12 @@ test('열린 달(보고하는 달·이번 달)의 사역 현황은 CRS 지금 �
   t.store.delete('gospel:crs-slim');
   assert.equal((await view(month)).mainland.churchA, 9);
 });
+
+test('항목별 통계 표: 설명은 이름 아래에 그대로 보이고, ⓘ 에는 월코 쪽 추가 설명(CRS·달말 수·본부 제외·캠프 자동)만 들어간다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../public/gospel-stats.js', import.meta.url), 'utf8');
+  assert.match(src, /gs-itemdesc/, '설명은 표 칸 안에 바로 나온다');
+  assert.match(src, /var extra = \[f\.crs \? t\('tipCrs'\)/, 'ⓘ 문구는 추가 설명만 모은다');
+  for (const key of ['tipCrs', 'tipSnap', 'tipNotHq', 'tipCamp']) assert.equal(src.split(`${key}: '`).length, 3, `${key} 는 한국어·영어 문구가 각각 있다`);
+  assert.doesNotMatch(src, /infoBtn\(tx\(f\.label\)\.split/, '설명을 다시 ⓘ 안에 넣지 않는다');
+});
