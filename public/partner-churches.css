@@ -21,20 +21,17 @@
 @media (max-width: 640px) { .pc-strip-link { padding: 14px 16px; font-size: 14px; gap: 10px; } }
 @media (prefers-reduced-motion: reduce) { .pc-strip-go { transition: none; } }
 
-/* ── 띠 애니메이션: 처음 나타날 때 떠오르고, 글자에 빛이 훑고 지나가며, 화살표가 주기적으로 앞을 가리킨다 ── */
-.pc-strip:not([hidden]) .pc-strip-link { animation: pc-rise .8s cubic-bezier(.2, .8, .3, 1) both; }
+/* ── 띠 애니메이션: 처음 나타날 때 떠오르고, 숫자가 올라가며, 화살표가 주기적으로 앞을 가리킨다 ── */
+.pc-strip:not([hidden]) .pc-strip-link { animation: pc-rise .8s cubic-bezier(.2, .8, .3, 1) backwards; }   /* backwards: 끝난 뒤에는 효과가 풀려 그래픽 레이어가 남지 않는다 */
 @keyframes pc-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .pc-strip-text { color: #29505f; }   /* 글자는 늘 단색 — 글자 모양으로 배경을 오려 칠하는 방식은 숫자가 바뀔 때 Safari 에서 글자가 비어 보여서 쓰지 않는다 */
-.pc-strip-link { position: relative; overflow: hidden; isolation: isolate; border-radius: 999px; }
-.pc-strip-link::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 38%; z-index: -1; pointer-events: none; background: linear-gradient(100deg, transparent 0%, rgba(31, 164, 207, .13) 50%, transparent 100%); transform: translateX(-120%) skewX(-16deg); animation: pc-sweep 6s ease-in-out 1.4s infinite; }
-@keyframes pc-sweep { 0% { transform: translateX(-120%) skewX(-16deg); } 45%, 100% { transform: translateX(300%) skewX(-16deg); } }
-.pc-strip-text b { font-variant-numeric: tabular-nums; }
+/* 숫자가 올라가는 동안 줄이 좌우로 밀리지 않도록 숫자 칸의 폭을 처음부터 고정한다(폭이 바뀌면 Safari 가 움직이는 줄의 일부를 다시 그리지 못해 글자가 비어 보였다) */
+.pc-strip-text b { display: inline-block; text-align: center; font-variant-numeric: tabular-nums; }
 .pc-strip-go { animation: pc-nudge 3.2s ease-in-out 2s infinite; }
 @keyframes pc-nudge { 0%, 62%, 100% { transform: translateX(0) rotate(45deg); } 72% { transform: translateX(6px) rotate(45deg); } 82% { transform: translateX(1px) rotate(45deg); } 90% { transform: translateX(4px) rotate(45deg); } }
 .pc-strip-link:hover .pc-strip-go { animation: none; }
 @media (prefers-reduced-motion: reduce) {
-  .pc-strip:not([hidden]) .pc-strip-link, .pc-strip-link::before, .pc-strip-go { animation: none; }
-  .pc-strip-link::before { display: none; }
+  .pc-strip:not([hidden]) .pc-strip-link, .pc-strip-go { animation: none; }
 }
 
 /* 영문 병기 이름 — 한글 이름 아래에 작게 */

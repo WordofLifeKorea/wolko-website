@@ -10,7 +10,7 @@
   function countUp(root, to) {
     var els = root.querySelectorAll('.pc-count'), done = false;
     var still = reduce || !('IntersectionObserver' in window);
-    Array.prototype.forEach.call(els, function (e) { e.textContent = still ? to : 0; });
+    Array.prototype.forEach.call(els, function (e) { e.style.minWidth = String(to).length + 'ch'; e.textContent = still ? to : 0; });   // 자릿수만큼 폭을 먼저 잡아 두어, 숫자가 올라가도 줄이 밀리지 않는다
     if (still) return;
     function run() {
       if (done) return; done = true;

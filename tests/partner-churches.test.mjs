@@ -81,10 +81,14 @@ test('협력 교회 화면 CSS: 중괄호가 짝이 맞고, 색 점이 없다', 
   assert.doesNotMatch(css + js, /pc-dot|pc-strip-dots/);
 });
 
-test('히어로 아래 띠의 글자는 늘 단색이다 — background-clip: text 로 글자를 칠하면 숫자가 바뀔 때 Safari 에서 글자 일부가 사라진다', async () => {
+test('히어로 아래 띠: 글자는 단색이고, 숫자가 올라가도 줄 폭이 변하지 않는다(Safari 에서 글자가 비어 보이던 문제)', async () => {
   const { readFileSync } = await import('node:fs');
   const css = readFileSync(new URL('../public/partner-churches.css', import.meta.url), 'utf8');
-  assert.doesNotMatch(css, /background-clip\s*:\s*text/, 'background-clip: text 를 쓰지 않는다');
+  const js = readFileSync(new URL('../public/partner-churches.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(css, /background-clip\s*:\s*text/, '글자를 배경으로 오려 칠하지 않는다');
   assert.doesNotMatch(css, /text-fill-color\s*:\s*transparent/, '글자를 투명하게 두지 않는다');
-  assert.match(css, /\.pc-strip-link::before[^}]*animation:\s*pc-sweep/, '빛이 지나가는 효과는 글자 뒤 배경 띠로');
+  assert.match(css, /\.pc-strip-text b \{[^}]*display:\s*inline-block/, '숫자 칸은 폭이 고정되는 inline-block');
+  assert.match(js, /e\.style\.minWidth = String\(to\)\.length \+ 'ch'/, '숫자 자릿수만큼 폭을 먼저 잡는다');
+  assert.match(css, /animation: pc-rise [^;]*backwards/, '들어오는 효과가 끝나면 풀린다(both 를 쓰면 끝난 뒤에도 레이어가 남는다)');
+  assert.doesNotMatch(css, /pc-strip-link::before/, '글자 뒤에서 움직이는 별도 요소를 두지 않는다');
 });
