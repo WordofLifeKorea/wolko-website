@@ -8,52 +8,66 @@ const SORTS = {
 const SELECT = `SELECT f.id, f.campId, f.typeId, f.title, f.description, f.category, f.topic, f.kind, f.storage, f.linkKind, f.externalUrl,
     f.uploadedBy, f.statusLabel, f.restricted, f.createdAt, f.updatedAt, f.isTest,
     (SELECT COUNT(*) FROM file_public pb WHERE pb.fileId = f.id) AS isPublic,
+    f.folderId, fd.name AS folderName, fd.nameEn AS folderNameEn,
     c.nameKo AS campKo, c.nameEn AS campEn, t.nameKo AS typeKo, t.nameEn AS typeEn,
     v.id AS versionId, v.versionNo, v.fileName, v.sizeBytes, v.mime,
     (SELECT COUNT(*) FROM file_versions x WHERE x.fileId = f.id AND x.deletedAt IS NULL) AS versionCount,
     (SELECT GROUP_CONCAT(l.campId) FROM file_links l WHERE l.fileId = f.id AND l.deletedAt IS NULL) AS linkedCampIds
   FROM files f
+  LEFT JOIN file_folders fd ON fd.id = f.folderId AND fd.deletedAt IS NULL
   LEFT JOIN camps c ON c.id = f.campId
   LEFT JOIN camp_types t ON t.id = f.typeId
   LEFT JOIN file_versions v ON v.id = f.currentVersionId`;
+// 마이그레이션(0018 공개 표, 0023 폴더)이 아직 없는 DB 에서도 목록은 열린다: 없는 부분만 빼고 다시 묻는다
+const NO_PUBLIC = (sql) => sql.replace('(SELECT COUNT(*) FROM file_public pb WHERE pb.fileId = f.id) AS isPublic', '0 AS isPublic');
+const NO_FOLDER = (sql) => sql.replace('f.folderId, fd.name AS folderName, fd.nameEn AS folderNameEn,', 'NULL AS folderId, NULL AS folderName, NULL AS folderNameEn,').replace('LEFT JOIN file_folders fd ON fd.id = f.folderId AND fd.deletedAt IS NULL\n  ', '');
 
-/** 목록 · 검색 · 필터 · 정렬: ?q= &campId=(없으면 전체, none=공통) &typeId= &category= &status= &kind= &sort= &limit= &offset= */
+/** 목록 · 검색 · 필터 · 정렬: ?q= &campId=(없으면 전체, none=공통) &folderId=(none=폴더 없음) &typeId= &category= &status= &kind= &sort= &limit= &offset= */
 export async function onRequestGet({ env, request }) {
   if (!env.DB) return noDb();
   const s = await campSession(request, env);
   if (!s) return needLogin();
   { const dv = denyView(s.perms, 'files', '자료실'); if (dv) return dv; }
   const p = new URL(request.url).searchParams;
-  const where = ['f.deletedAt IS NULL'], args = [];
-  if (!s.perms.moneyRead) where.push('f.restricted = 0'); // 금액 자료는 권한이 없으면 목록에도 나오지 않는다
-  if (!s.campRole) where.push(PUBLIC_SQL);               // 캠프팀 명단 밖의 월코 팀원은 "월코 팀 전체 공개" 파일만
-  const q = text(p.get('q'), 80);
-  if (q) {
-    const like = `%${q.replace(/[%_\\]/g, m => '\\' + m)}%`;
-    where.push(`(f.title LIKE ? ESCAPE '\\' OR f.description LIKE ? ESCAPE '\\' OR f.topic LIKE ? ESCAPE '\\' OR v.fileName LIKE ? ESCAPE '\\')`);
-    args.push(like, like, like, like);
-  }
-  const campId = p.get('campId');
-  if (campId === 'none') where.push(`(f.campId IS NULL AND NOT EXISTS (SELECT 1 FROM file_links l WHERE l.fileId = f.id AND l.deletedAt IS NULL))`);
-  else if (campId) { where.push(`(f.campId = ? OR EXISTS (SELECT 1 FROM file_links l WHERE l.fileId = f.id AND l.campId = ? AND l.deletedAt IS NULL))`); args.push(campId, campId); }
-  const typeId = p.get('typeId');
-  if (typeId) {
-    where.push(`(f.typeId = ? OR c.typeId = ? OR EXISTS (SELECT 1 FROM file_links l JOIN camps lc ON lc.id = l.campId WHERE l.fileId = f.id AND l.deletedAt IS NULL AND lc.typeId = ?))`);
-    args.push(typeId, typeId, typeId);
-  }
-  if (CATEGORIES.includes(p.get('category'))) { where.push('f.category = ?'); args.push(p.get('category')); }
-  if (FILE_STATUSES.includes(p.get('status')) && p.get('status')) { where.push('f.statusLabel = ?'); args.push(p.get('status')); }
-  const kind = p.get('kind');
-  if (kind === 'link') where.push(`f.storage = 'link'`);
-  else if (kind) { where.push('f.kind = ?'); args.push(text(kind, 10)); }
+  const q = text(p.get('q'), 80), campId = p.get('campId'), typeId = p.get('typeId'), kind = p.get('kind'), folderId = text(p.get('folderId'), 60);
   const order = SORTS[p.get('sort')] || SORTS.newest;
   const limit = Math.min(Math.max(parseInt(p.get('limit'), 10) || 100, 1), 200), offset = Math.max(parseInt(p.get('offset'), 10) || 0, 0);
-  const clause = where.join(' AND ');
-  const run = (sel) => env.DB.prepare(`${sel} WHERE ${clause} ORDER BY ${order}, f.id LIMIT ? OFFSET ?`).bind(...args, limit, offset).all();
-  let rows;
-  try { rows = (await run(SELECT)).results; }
-  catch (e) { if (!/file_public/.test(String(e && e.message))) throw e; rows = (await run(SELECT.replace('(SELECT COUNT(*) FROM file_public pb WHERE pb.fileId = f.id) AS isPublic', '0 AS isPublic'))).results; } // 0018 적용 전에도 목록은 열린다
-  const total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM files f LEFT JOIN camps c ON c.id = f.campId LEFT JOIN file_versions v ON v.id = f.currentVersionId WHERE ${clause}`).bind(...args).first()).n;
+  const build = (folder) => {
+    const where = ['f.deletedAt IS NULL'], args = [];
+    if (!s.perms.moneyRead) where.push('f.restricted = 0'); // 금액 자료는 권한이 없으면 목록에도 나오지 않는다
+    if (!s.campRole) where.push(PUBLIC_SQL);               // 캠프팀 명단 밖의 월코 팀원은 "월코 팀 전체 공개" 파일만
+    if (q) {
+      const like = `%${q.replace(/[%_\\]/g, m => '\\' + m)}%`;
+      where.push(`(f.title LIKE ? ESCAPE '\\' OR f.description LIKE ? ESCAPE '\\' OR f.topic LIKE ? ESCAPE '\\' OR v.fileName LIKE ? ESCAPE '\\'${folder ? ` OR fd.name LIKE ? ESCAPE '\\' OR fd.nameEn LIKE ? ESCAPE '\\'` : ''})`);
+      args.push(like, like, like, like); if (folder) args.push(like, like); // 폴더 이름으로 찾으면 그 폴더 파일이 모두 나온다
+    }
+    if (folderId && folder) { if (folderId === 'none') where.push('f.folderId IS NULL'); else { where.push('f.folderId = ?'); args.push(folderId); } }
+    if (campId === 'none') where.push(`(f.campId IS NULL AND NOT EXISTS (SELECT 1 FROM file_links l WHERE l.fileId = f.id AND l.deletedAt IS NULL))`);
+    else if (campId) { where.push(`(f.campId = ? OR EXISTS (SELECT 1 FROM file_links l WHERE l.fileId = f.id AND l.campId = ? AND l.deletedAt IS NULL))`); args.push(campId, campId); }
+    if (typeId) {
+      where.push(`(f.typeId = ? OR c.typeId = ? OR EXISTS (SELECT 1 FROM file_links l JOIN camps lc ON lc.id = l.campId WHERE l.fileId = f.id AND l.deletedAt IS NULL AND lc.typeId = ?))`);
+      args.push(typeId, typeId, typeId);
+    }
+    if (CATEGORIES.includes(p.get('category'))) { where.push('f.category = ?'); args.push(p.get('category')); }
+    if (FILE_STATUSES.includes(p.get('status')) && p.get('status')) { where.push('f.statusLabel = ?'); args.push(p.get('status')); }
+    if (kind === 'link') where.push(`f.storage = 'link'`);
+    else if (kind) { where.push('f.kind = ?'); args.push(text(kind, 10)); }
+    return { clause: where.join(' AND '), args };
+  };
+  let folder = true, pub = true, rows, total;
+  for (let attempt = 0; ; attempt++) {
+    const { clause, args } = build(folder);
+    let sel = SELECT; if (!pub) sel = NO_PUBLIC(sel); if (!folder) sel = NO_FOLDER(sel);
+    try {
+      rows = (await env.DB.prepare(`${sel} WHERE ${clause} ORDER BY ${order}, f.id LIMIT ? OFFSET ?`).bind(...args, limit, offset).all()).results;
+      total = (await env.DB.prepare(`SELECT COUNT(*) AS n FROM files f ${folder ? 'LEFT JOIN file_folders fd ON fd.id = f.folderId AND fd.deletedAt IS NULL' : ''} LEFT JOIN camps c ON c.id = f.campId LEFT JOIN file_versions v ON v.id = f.currentVersionId WHERE ${clause}`).bind(...args).first()).n;
+      break;
+    } catch (e) {
+      const m = String((e && e.message) || e), noFolder = folder && /file_folders|folderId/.test(m), noPub = pub && /file_public/.test(m);
+      if (attempt > 2 || (!noFolder && !noPub)) throw e;
+      if (noFolder) folder = false; if (noPub) pub = false; // 0018·0023 적용 전에도 목록은 열린다
+    }
+  }
   return json({
     items: rows.map(r => ({ ...r, linkedCampIds: r.linkedCampIds ? r.linkedCampIds.split(',') : [] })),
     total, perms: s.perms,
@@ -107,6 +121,8 @@ export async function onRequestPatch({ env, request }) {
   }
   const campId = 'campId' in b ? (b.campId || null) : row.campId, typeId = 'typeId' in b ? (b.typeId || null) : row.typeId;
   const ref = await checkRefs(env, campId, typeId); if (ref) return badRequest(ref);
+  const folderChange = 'folderId' in b, folderId = String(b.folderId || '');
+  if (folderChange && folderId && !(await env.DB.prepare('SELECT 1 AS x FROM file_folders WHERE id = ?1 AND deletedAt IS NULL').bind(folderId).first().catch(() => null))) return badRequest('폴더를 찾을 수 없습니다.');
   let versionId = row.currentVersionId;
   if (b.currentVersionId) { // 이전 버전으로 되돌리기(이전 버전도 그대로 남는다)
     const v = await env.DB.prepare('SELECT id FROM file_versions WHERE id = ?1 AND fileId = ?2 AND deletedAt IS NULL').bind(String(b.currentVersionId), id).first();
@@ -116,6 +132,7 @@ export async function onRequestPatch({ env, request }) {
   await env.DB.prepare(`UPDATE files SET title=?2, description=?3, category=?4, topic=?5, statusLabel=?6, campId=?7, typeId=?8, externalUrl=?9, linkKind=?10, restricted=?11, currentVersionId=?12, updatedAt=?13 WHERE id=?1`)
     .bind(id, title, 'description' in b ? text(b.description, 500) : row.description, category, 'topic' in b ? text(b.topic, 60) : row.topic,
       'status' in b ? (FILE_STATUSES.includes(b.status) ? b.status : row.statusLabel) : row.statusLabel, campId, typeId, url, linkKind, restricted, versionId, now).run();
+  if (folderChange) await env.DB.prepare('UPDATE files SET folderId = ?2 WHERE id = ?1').bind(id, folderId || null).run(); // 폴더로 옮기기(빈 값이면 폴더 밖으로)
   if (b.addCampId) {
     const camp = await env.DB.prepare('SELECT id FROM camps WHERE id = ?1 AND deletedAt IS NULL').bind(String(b.addCampId)).first();
     if (!camp) return badRequest('연결할 캠프를 찾을 수 없습니다.');

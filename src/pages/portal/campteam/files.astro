@@ -4,12 +4,12 @@ import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
 <CampTeamLayout title="자료실" active="files">
   <div class="top">
     <div><div class="h1row"><h1 data-t="filesTitle"></h1><span class="qh" data-h="pageFiles"></span></div><div class="sub" data-t="filesSub"></div></div>
-    <div class="actions"><button class="btn" id="addLink" hidden data-t="addLink"></button><button class="btn pri" id="addFile" hidden data-t="addFile"></button></div>
+    <div class="actions"><button class="btn pri" id="addFile" hidden data-t="addMaterial"></button></div>
   </div>
   <section class="dropzone" id="dz" hidden>
-    <div class="dz-in"><div class="dz-ic" aria-hidden="true">⬆</div><div class="dz-tx"><b data-t="dzTitle"></b><span><span data-t="dzOr"></span> <button type="button" class="btn sm" id="dzPick" data-t="dzPick"></button></span><small class="hint" data-t="dzHint"></small></div></div>
+    <div class="dz-in"><div class="dz-ic" aria-hidden="true">⬆</div><div class="dz-tx"><b data-t="dzTitle"></b><span><span data-t="dzOr"></span> <button type="button" class="btn sm" id="dzPick" data-t="dzPick"></button> <button type="button" class="btn sm" id="dzPickDir" data-t="dzPickDir"></button></span><small class="hint" data-t="dzHint"></small></div></div>
     <div class="dz-over" data-t="dzDrop"></div><div class="dz-bar"><i id="dzBar"></i></div><div class="dz-msg" id="dzMsg"></div>
-    <input type="file" id="dzInput" multiple hidden>
+    <input type="file" id="dzInput" multiple hidden><input type="file" id="dzDirInput" webkitdirectory hidden>
   </section>
   <div class="filters">
     <input id="fq" type="search" maxlength="80" data-t-ph="searchPh">
@@ -19,6 +19,8 @@ import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
     <select id="fkind"></select>
     <select id="fsort"></select>
   </div>
+  <div class="tabs viewbar" id="viewBar"></div>
+  <div id="folders" hidden></div>
   <div class="count-line" id="countLine"></div>
   <div id="list"></div>
 
@@ -33,5 +35,5 @@ import CampTeamLayout from '../../../layouts/CampTeamLayout.astro';
       <div class="dlg-actions"><button type="button" class="btn" id="formCancel" data-t="cancel"></button><button type="submit" class="btn pri" id="formSave" data-t="save"></button></div>
     </form>
   </dialog>
-  <script is:inline slot="scripts" src="/portal/campteam/files.js?v=5"></script>
+  <script is:inline slot="scripts" src="/portal/campteam/files.js?v=8"></script>
 </CampTeamLayout>

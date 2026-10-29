@@ -1,7 +1,7 @@
 (function () {
   CT.addDict({
-    ko: { srTitle: '통합 검색', srGo: '검색', srNone: '검색 결과가 없어요.', srTasks: '업무', srMeetings: '회의', srSections: '회의 구역(안건별 논의)', srDecisions: '결정', srFiles: '파일', srBudget: '예산 항목', srHint: '두 글자 이상 입력해 주세요.', srCount: '건', srLocked: '금액 자료' },
-    en: { srTitle: 'Search', srGo: 'Search', srNone: 'No results.', srTasks: 'Tasks', srMeetings: 'Meetings', srSections: 'Meeting sections', srDecisions: 'Decisions', srFiles: 'Files', srBudget: 'Budget lines', srHint: 'Please enter at least 2 characters.', srCount: ' results', srLocked: 'Amounts' }
+    ko: { srTitle: '통합 검색', srGo: '검색', srNone: '검색 결과가 없어요.', srTasks: '업무', srMeetings: '회의', srSections: '회의 구역(안건별 논의)', srDecisions: '결정', srFiles: '파일', srFolders: '자료실 폴더', srPortal: '월코 포털 캠프 자료실', srFolderFiles: '개 파일', srBudget: '예산 항목', srHint: '두 글자 이상 입력해 주세요.', srCount: '건', srLocked: '금액 자료' },
+    en: { srTitle: 'Search', srGo: 'Search', srNone: 'No results.', srTasks: 'Tasks', srMeetings: 'Meetings', srSections: 'Meeting sections', srDecisions: 'Decisions', srFiles: 'Files', srFolders: 'Folders', srPortal: 'WOLKO portal Camp Resources', srFolderFiles: ' files', srBudget: 'Budget lines', srHint: 'Please enter at least 2 characters.', srCount: ' results', srLocked: 'Amounts' }
   });
   var $ = function (id) { return document.getElementById(id); }, esc = CT.esc;
   var kindLabel = { proposal: 'proposal', direction: 'direction', final: 'final', hold: 'hold', changed: 'changed' };
@@ -15,7 +15,9 @@
         section(CT.t('srMeetings'), g.meetings, function (m) { return '<div class="row"><div><a href="/portal/campteam/meetings/?open=' + esc(m.id) + '">' + esc(CT.lang() === 'en' && m.titleEn ? m.titleEn : m.title) + '</a><small>' + esc(m.meetDate) + '</small></div></div>'; }) +
         section(CT.t('srSections'), g.sections, function (s) { return '<div class="row"><div><a href="/portal/campteam/meetings/?open=' + esc(s.meetingId) + '">' + esc(CT.lang() === 'en' && s.titleEn ? s.titleEn : s.topic) + '</a><small>' + esc(s.meetDate) + ' · ' + esc(s.meetingTitle) + '</small></div></div>'; }) +
         section(CT.t('srDecisions'), g.decisions, function (d) { return '<div class="row"><div><span class="kindchip kc-' + esc(d.kind) + '">' + esc(d.kind) + '</span> <a href="/portal/campteam/meetings/?open=' + esc(d.meetingId) + '">' + esc(CT.lang() === 'en' && d.textEn ? d.textEn : (d.textKo || d.textEn)) + '</a><small>' + esc(d.decidedDate || '') + ' · ' + esc(d.state) + '</small></div></div>'; }) +
+        section(CT.t('srFolders'), g.folders, function (d) { return '<div class="row"><div><a href="/portal/campteam/files/?folderId=' + esc(d.id) + '">📁 ' + esc(CT.lang() === 'en' && d.nameEn ? d.nameEn : d.name) + '</a><small>' + d.fileCount + CT.t('srFolderFiles') + '</small></div></div>'; }) +
         section(CT.t('srFiles'), g.files, function (f) { return '<div class="row"><div><a href="/portal/campteam/files/">' + esc(f.title) + '</a>' + (f.restricted ? ' <span class="chip lock">🔒 ' + esc(CT.t('srLocked')) + '</span>' : '') + '<small>' + esc(f.fileName || f.kind) + '</small></div></div>'; }) +
+        section(CT.t('srPortal'), g.portalFiles, function (f) { return '<div class="row"><div><a href="' + esc(f.openUrl) + '" target="_blank" rel="noopener noreferrer">🌐 ' + esc(f.title) + '</a><small>' + esc([CT.lang() === 'en' ? f.tabEn : f.tabKo, f.team, f.person, f.camps.join(', ')].filter(Boolean).join(' · ')) + '</small></div></div>'; }) +
         section(CT.t('srBudget'), g.budget, function (b) { return '<div class="row"><div><a href="/portal/campteam/budget/">' + esc(b.label) + '</a><small>' + esc(b.category) + ' · ' + esc(CT.money(b.plannedAmount, b.currency)) + '</small></div></div>'; });
       $('srOut').innerHTML = h || '<div class="empty">' + esc(CT.t('srNone')) + '</div>';
     } catch (e) { $('srOut').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }

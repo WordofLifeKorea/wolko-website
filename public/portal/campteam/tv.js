@@ -17,15 +17,15 @@
   function curPage() { var p = pages(); return p[S.page % Math.max(1, p.length)] || { items: [] }; }
 
   function draw() {
-    if (!S.res) return; canvas.className = 'tvc ' + (S.res.settings && S.res.settings.theme === 'light' ? 'tv-light' : 'tv-dark'); box();
+    if (!S.res) return; canvas.className = 'tvc tv-dark'; box();
     var c = ctx(), p = curPage(); TVCore.mount(canvas, p, c); skyUpdate();
     var ps = pages(); canvas.insertAdjacentHTML('beforeend', '<div class="tv-bar" id="tvbar"></div>' + (ps.length > 1 ? '<div class="tv-dots">' + ps.map(function (x, i) { return '<b class="' + (i === S.page % ps.length ? 'on' : '') + '"></b>'; }).join('') + '</div>' : ''));
     S.rot = {}; var now = Date.now(); p.items.forEach(function (it) { S.rot[it.uid] = now; });
   }
-  /** 날씨·낮밤에 맞는 하늘 배경(밝은 테마에서는 쓰지 않는다). 설정에서 「하늘 배경」을 끌 수 있다 */
+  /** 날씨·낮밤에 맞는 하늘 배경설정에서 「하늘 배경」을 끌 수 있다 */
   function skyUpdate() {
     if (!window.TVSky || !S.res) return; var st = S.res.settings || {}, w = S.weather, h = Number(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul', hour: 'numeric', hour12: false })) % 24;
-    TVSky.mount(canvas, { on: st.sky !== 'off' && st.theme !== 'light', kind: w && w.kind ? w.kind : '', isDay: w && w.isDay != null ? !!w.isDay : (h >= 6 && h < 18) });
+    TVSky.mount(canvas, { on: st.sky !== 'off', kind: w && w.kind ? w.kind : '', isDay: w && w.isDay != null ? !!w.isDay : (h >= 6 && h < 18) });
   }
   /** 서버가 읽어 둔 오늘 날씨(포털과 같은 값)를 쓴다. 없으면 아래 fetchWeather 가 직접 읽는다 */
   function serverWeather() {
