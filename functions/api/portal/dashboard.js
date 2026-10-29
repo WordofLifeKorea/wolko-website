@@ -6,6 +6,7 @@
 import { portalSession } from '../../lib/hubAccounts.js';
 import { buildDashboard, translateMissingNotices } from '../../lib/portalDashboard.js';
 import { campusOf, CAMPUSES } from '../../lib/campus.js';
+import { toolsFor } from '../../lib/portalAccess.js';
 import { translateMissingPrayers } from '../../lib/prayers.js';
 import { needsTranslation } from '../../lib/prayerTranslate.js';
 
@@ -17,7 +18,7 @@ export async function onRequestGet({ env, request, waitUntil }) {
   const isAdmin = session.role === 'master' || session.role === 'admin';
   const asked = new URL(request.url).searchParams.get('campus');
   const campus = isAdmin && CAMPUSES.includes(asked) ? asked : await campusOf(env, session);   // 다른 소속 화면 미리 보기는 관리자만
-  const body = await buildDashboard(env, session, Date.now(), { campus, canSwitchCampus: isAdmin });
+  const body = await buildDashboard(env, session, Date.now(), { campus, canSwitchCampus: isAdmin, tools: await toolsFor(env, session) });
   if (waitUntil) {   // 번역이 없거나 잘못 저장된 공지·기도제목은 뒤에서 번역해 둔다(다음에 열 때 보인다)
     if ((body.notices || []).some(n => needsTranslation(n.title || '', n.body || '', n.tr?.lang))) waitUntil(translateMissingNotices(env).catch(() => 0));
     if ((body.prayers || []).some(p => needsTranslation(p.title || '', p.text || '', p.trLang))) waitUntil(translateMissingPrayers(env).catch(() => 0));

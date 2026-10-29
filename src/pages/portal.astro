@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="/wolko-auth.css?v=4">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
   <link rel="stylesheet" href="/wolko-rail.css?v=23">
-  <script src="/wolko-rail.js?v=41" defer></script>
+  <script src="/wolko-rail.js?v=42" defer></script>
   <link rel="manifest" href="/portal-manifest.json">
   <meta name="theme-color" content="#004f68">
   <meta name="mobile-web-app-capable" content="yes">
@@ -511,6 +511,9 @@
 
     /* ───────── 첫 화면 대시보드: 이번 주 공지 · 오늘 키친 듀티 · 오늘 차량 · 다가오는 일정 · 최근 교회 ───────── */
     let dashData = null, dashFailed = false;
+    // 제주팀 일반 멤버는 쓸 수 있는 도구가 정해져 있다 — 서버(/api/hub/me, /api/portal/dashboard)가 알려 주는 tools. null 이면 전체 메뉴
+    let accessTools = (() => { try { const tk = sessionStorage.getItem('wolko-hub-token'); const me = tk && JSON.parse(sessionStorage.getItem('wolko-hub-me:' + tk.slice(-16)) || 'null'); return me && me.tools !== undefined ? me.tools : null; } catch (e) { return null; } })();
+    const toolOpen = href => !accessTools || accessTools.includes(href);
     const KST = 'Asia/Seoul';
     const DI = {
       bell: '<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9z"/><path d="M10 19a2 2 0 0 0 4 0"/>',
@@ -657,6 +660,7 @@
       return dashCard('hub-dcard-car hub-dcard-compact', '#c24fd6', 'car', t('dashCar'), body + CAR_DECO, '/portal/car-drive');
     }
     function renderEvents(d) {
+      if ((d.hidden || []).includes('events')) return '';   // 월코 캘린더를 쓸 수 없는 계정(제주팀 일반 멤버)
       if (d.campus === 'jeju' && (!d.events || !d.events.length)) return '';   // 제주 캘린더는 나중에 연결 — 내용이 없으면 보이지 않는다
       let body;
       if (d.events === null) body = dashEmpty('calendar', t('dashEventsOff'));
@@ -884,6 +888,7 @@
         if (!res.ok) throw new Error('HTTP ' + res.status);
         dashData = await res.json();
         dashFailed = false;
+        if (dashData.tools !== undefined && JSON.stringify(dashData.tools) !== JSON.stringify(accessTools)) { accessTools = dashData.tools; renderNav(); }
       } catch (e) { dashFailed = !dashData; }
       renderDash();
       if (!weatherAsked) { weatherAsked = true; loadWeather(); }
@@ -1014,10 +1019,13 @@
           </span>
           <span class="hub-nav-item-label">${hubLang === 'en' ? tool.title_en : tool.title_ko}</span>
         </a>`;
-      $('hubNav').innerHTML = `<div class="hub-drawer-head"><img src="/images/WOLKO Circle.png" alt=""><b>WOLKO Portal</b><button type="button" class="hub-drawer-close" aria-label="${hubLang === 'en' ? 'Close menu' : '메뉴 닫기'}" onclick="toggleHubNav(false)">×</button></div>` + GROUPS.map(g => `
+      $('hubNav').innerHTML = `<div class="hub-drawer-head"><img src="/images/WOLKO Circle.png" alt=""><b>WOLKO Portal</b><button type="button" class="hub-drawer-close" aria-label="${hubLang === 'en' ? 'Close menu' : '메뉴 닫기'}" onclick="toggleHubNav(false)">×</button></div>` + GROUPS.map(g => {
+        const open = TOOLS.filter(x => x.group === g.id && toolOpen(x.href));
+        return open.length ? `
         <p class="hub-nav-label">${hubLang === 'en' ? g.en : g.ko}</p>
-        ${TOOLS.filter(x => x.group === g.id).map(item).join('')}
-      `).join('');
+        ${open.map(item).join('')}
+      ` : '';
+      }).join('');
     }
 
     // 메뉴 아이콘 일러스트는 지연 로드되는 wolko-rail.js(window.WolkoArt)에서 오므로, 문서가 다 읽힌 뒤 한 번 더 그린다

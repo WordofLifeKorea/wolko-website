@@ -4,7 +4,9 @@
  *  - 보고 제외: 마스터·관리자가 사람마다 켜고 끈다(KV gospel:exempt:{이메일}) — 보고할 일이 없는 계정(후원자·외부 담당자 등)용.
  *  - 메일은 사람마다 한 통씩(이름·링크), 같은 달에 같은 사람에게는 한 번만(KV gospel:mail:{달}:{이메일}).
  */
-import { listAccounts, normalizeEmail, MASTER_EMAILS } from './hubAccounts.js';
+import { listAccounts, normalizeEmail, MASTER_EMAILS, effectiveRole } from './hubAccounts.js';
+import { allowedTools, canUseTool } from './portalAccess.js';
+import { CAMPUS_OVERRIDES } from '../../src/lib/expense-config.js';
 import { ownerOf } from './gospelStats.js';
 
 export const EXEMPT_PREFIX = 'gospel:exempt:';
@@ -37,11 +39,14 @@ export async function exemptEmails(env) {
   return out;
 }
 
-/** 보고해야 하는 사람 — 승인된 포탈 계정 전체(보고 제외 표시된 사람도 목록에는 넣고 exempt 로 표시) */
+/** 복음 통계 메뉴를 쓸 수 없는 계정(제주팀 일반 멤버)은 보고할 방법이 없으니 보고 대상이 아니다 */
+const canOpenGospel = a => canUseTool(allowedTools({ role: effectiveRole(a.email, a.role), campus: CAMPUS_OVERRIDES[normalizeEmail(a.email)] || a.campus, email: a.email }), '/portal/gospel-stats');
+
+/** 보고해야 하는 사람 — 승인된 포탈 계정 중 복음 통계를 쓸 수 있는 사람(보고 제외 표시된 사람도 목록에는 넣고 exempt 로 표시) */
 export async function reporterRoster(env) {
   const [accounts, exempt] = await Promise.all([listAccounts(env), exemptEmails(env)]);
   return accounts
-    .filter(a => a && a.status === 'approved' && a.email)
+    .filter(a => a && a.status === 'approved' && a.email && canOpenGospel(a))
     .map(a => ({ email: normalizeEmail(a.email), name: String(a.name || '').trim() || String(a.email).split('@')[0], exempt: exempt.has(normalizeEmail(a.email)) || alwaysExempt(a.email), fixed: alwaysExempt(a.email) }))
     .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 }

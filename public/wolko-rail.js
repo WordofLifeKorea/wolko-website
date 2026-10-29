@@ -326,9 +326,18 @@
     window.addEventListener('resize', function () { if (window.innerWidth >= 900) toggle(false); });
   }
 
+  // 제주팀 일반 멤버는 쓸 수 있는 도구가 정해져 있다 — 메뉴 정리와 페이지 안내는 wolko-access.js 가 맡는다
+  function mountAccess() {
+    if (window.WolkoAccess || document.querySelector('script[data-wolko-access]')) return;
+    var script = document.createElement('script');
+    script.src = '/wolko-access.js?v=1'; script.async = true; script.setAttribute('data-wolko-access', '');
+    document.head.appendChild(script);
+  }
+
   function init() {
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
     checkPasswordReset();
+    mountAccess();
     if (path === '/portal') return; // 포탈 런처 자체 사이드바와 중복 방지
     mountUserChip();
     mountLogout();
@@ -357,6 +366,7 @@
     document.body.insertBefore(rail, document.body.firstChild);
     document.body.classList.add('wolko-rail-active');
     mountMobileMenu(path);
+    if (window.WolkoAccess) window.WolkoAccess.apply();   // 쓸 수 있는 도구를 이미 알고 있으면 지금 메뉴를 줄인다(모르면 알게 되는 대로 줄인다)
     syncLabels();
     syncHeadHeight();
     window.addEventListener('resize', syncHeadHeight);

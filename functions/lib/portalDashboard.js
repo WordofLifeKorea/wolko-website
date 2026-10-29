@@ -190,24 +190,35 @@ export async function mySchedule(env, session, today) {
 }
 
 /** 대시보드 전체 — 조각마다 실패해도 나머지는 돌려준다(실패한 조각은 null) */
-export async function buildDashboard(env, session, now = Date.now(), { campus = 'wolko', canSwitchCampus = false } = {}) {
+export async function buildDashboard(env, session, now = Date.now(), { campus = 'wolko', canSwitchCampus = false, tools = null } = {}) {
   const today = todayKst(now);
   const weekStart = currentWeekStart(today);
   campus = normalizeCampus(campus);
   const jeju = campus === 'jeju';
+  // 쓸 수 없는 도구(제주팀 일반 멤버)로 이어지는 칸은 읽지도, 보이지도 않는다. tools 가 null 이면 제한 없음
+  const may = href => !tools || tools.includes(href);
   const settle = async fn => { try { return await fn(); } catch (error) { console.error('dashboard piece failed:', error.message); return null; } };
   // 주방 당번·차량 운행은 평택 캠퍼스의 도구라 제주에는 해당 정보가 없다 — 제주에서는 아예 읽지 않고 칸도 보이지 않는다
   const [notices, kitchen, car, events, churches, prayerData, me] = await Promise.all([
     settle(async () => noticesForWeek(noticesForCampus(await readNotices(env), campus), weekStart, today)),
-    jeju ? null : settle(() => kitchenToday(env, today)),
-    jeju ? null : settle(() => carToday(env, today)),
-    settle(() => upcomingEvents(env, today, 5, campus)),
+    jeju || !may('/portal/kitchen') ? null : settle(() => kitchenToday(env, today)),
+    jeju || !may('/portal/car-drive') ? null : settle(() => carToday(env, today)),
+    may('/portal/schedule') ? settle(() => upcomingEvents(env, today, 5, campus)) : null,
     settle(() => recentChurchList(env, campus)),
     settle(() => prayerBoard(env, session)),
     settle(() => mySchedule(env, session, today)),
   ]);
+  if (me) {   // 내 알림에서도 쓸 수 없는 도구의 항목은 뺀다
+    if (!may('/portal/kitchen')) me.kitchen = [];
+    if (!may('/portal/car-drive')) me.car = [];
+    if (!may('/portal/gospel-stats')) me.gospelPending = false;
+  }
+  const hidden = jeju ? ['kitchen', 'car'] : [];
+  if (!may('/portal/kitchen') && !hidden.includes('kitchen')) hidden.push('kitchen');
+  if (!may('/portal/car-drive') && !hidden.includes('car')) hidden.push('car');
+  if (!may('/portal/schedule')) hidden.push('events');
   return {
-    today, weekStart, campus, canSwitchCampus, hidden: jeju ? ['kitchen', 'car'] : [],
+    today, weekStart, campus, canSwitchCampus, hidden, tools,
     canEditNotices: canPostNotices(session),
     notices: notices ? notices.map(({ byEmail, ...n }) => ({ ...n, campus: noticeAudience(n), canDelete: canDeleteNotice(session, { byEmail }) })) : notices,
     kitchen, car, events, churches, prayers: prayerData ? prayerData.prayers : null, prayerTotal: prayerData ? prayerData.total : 0, me,

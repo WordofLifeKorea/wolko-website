@@ -1,5 +1,5 @@
 /**
- * GET   /api/hub/me — 로그인한 포탈 계정의 이름 · 이메일 · 역할 · 휴대폰 · 소속 (화면 우측 상단 표시와 내 정보 창)
+ * GET   /api/hub/me — 로그인한 포탈 계정의 이름 · 이메일 · 역할 · 휴대폰 · 소속 · 쓸 수 있는 도구(tools) (화면 우측 상단 표시와 내 정보 창, 메뉴 제한)
  * PATCH /api/hub/me { name, phone } — 내 이름과 휴대폰 번호 수정 (소속 · 역할 · 이메일은 여기서 바꾸지 않는다)
  * Authorization: Bearer <포탈 세션 토큰>. 저장소 읽기 1~2회만 쓴다.
  */
@@ -7,6 +7,7 @@ import { getAccount, isMasterEmail, isValidPhone, normalizeEmail, parseHubSessio
 import { ACCOUNTANT_EMAILS, pickName } from '../../lib/expenses.js';
 import { CAMPUS_OVERRIDES } from '../../../src/lib/expense-config.js';
 import { normalizePhone } from '../../lib/phone.js';
+import { allowedTools } from '../../lib/portalAccess.js';
 
 const H = { 'Cache-Control': 'no-store', 'Content-Type': 'application/json' };
 const fail = (error, status) => Response.json({ error }, { status, headers: H });
@@ -28,6 +29,8 @@ const view = (email, account, session) => ({
   role: session.role,
   phone: account?.phone || '',
   campus: CAMPUS_OVERRIDES[email] || account?.campus || 'wolko',
+  // 쓸 수 있는 도구 주소 목록 — null 이면 전체 메뉴 (제주팀 일반 멤버만 목록이 내려간다)
+  tools: allowedTools({ role: session.role, campus: CAMPUS_OVERRIDES[email] || account?.campus || 'wolko', email }),
   mustChangePassword: !!account?.mustChangePassword,
   isAccountant: ACCOUNTANT_EMAILS.includes(email),
 });
