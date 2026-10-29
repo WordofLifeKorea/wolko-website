@@ -38,8 +38,8 @@ export async function onRequestGet({ env, request }) {
     if (!s.campRole) where.push(PUBLIC_SQL);               // 캠프팀 명단 밖의 월코 팀원은 "월코 팀 전체 공개" 파일만
     if (q) {
       const like = `%${q.replace(/[%_\\]/g, m => '\\' + m)}%`;
-      where.push(`(f.title LIKE ? ESCAPE '\\' OR f.description LIKE ? ESCAPE '\\' OR f.topic LIKE ? ESCAPE '\\' OR v.fileName LIKE ? ESCAPE '\\'${folder ? ` OR fd.name LIKE ? ESCAPE '\\' OR fd.nameEn LIKE ? ESCAPE '\\'` : ''})`);
-      args.push(like, like, like, like); if (folder) args.push(like, like); // 폴더 이름으로 찾으면 그 폴더 파일이 모두 나온다
+      where.push(`(f.title LIKE ? ESCAPE '\\' OR f.description LIKE ? ESCAPE '\\' OR f.topic LIKE ? ESCAPE '\\' OR v.fileName LIKE ? ESCAPE '\\' OR c.nameKo LIKE ? ESCAPE '\\' OR c.nameEn LIKE ? ESCAPE '\\'${folder ? ` OR fd.name LIKE ? ESCAPE '\\' OR fd.nameEn LIKE ? ESCAPE '\\'` : ''})`);
+      args.push(like, like, like, like, like, like); if (folder) args.push(like, like); // 캠프 이름(한글·영문)으로도 찾는다 // 폴더 이름으로 찾으면 그 폴더 파일이 모두 나온다
     }
     if (folderId && folder) { if (folderId === 'none') where.push('f.folderId IS NULL'); else { where.push('f.folderId = ?'); args.push(folderId); } }
     if (campId === 'none') where.push(`(f.campId IS NULL AND NOT EXISTS (SELECT 1 FROM file_links l WHERE l.fileId = f.id AND l.deletedAt IS NULL))`);

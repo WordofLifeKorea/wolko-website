@@ -44,7 +44,7 @@
   var STATUS = ['draft', 'active', 'archived'];
   var KINDS = ['pdf', 'doc', 'xls', 'ppt', 'img', 'audio', 'video', 'link', 'etc'];
   var KIND_LABEL = { img: 'kindimg' };
-  var S = { items: [], total: 0, types: [], perms: null, detailId: null, folders: [], portal: [], portalTotal: 0, portalCamps: [], portalOrder: {}, pp: [], ppFlat: false, view: 'folders', folderId: '', pick: null };
+  var S = { items: [], total: 0, types: [], perms: null, detailId: null, folders: [], portal: [], portalTotal: 0, portalCamps: [], portalOrder: {}, pcamp: '', pp: [], ppFlat: false, view: 'folders', folderId: '', pick: null };
   try { if (localStorage.getItem('ct-files-view') === 'all') S.view = 'all'; } catch (e) { /* 저장 못 해도 괜찮다 */ }
   var MAX_PICK = 200; // 한 번에 올릴 수 있는 파일 수
   var HIDDEN = /(^|\/)(\.[^/]*|__MACOSX|Thumbs\.db|desktop\.ini|~\$[^/]*)(\/|$)/i; // 숨김·시스템 파일(.DS_Store 등)은 올리지 않는다
@@ -69,6 +69,7 @@
     var camps = '<option value="">' + esc(CT.t('fAllCamps')) + '</option><option value="none">' + esc(CT.t('fNoCamp')) + '</option>' +
       S.types.map(function (t) { return '<optgroup label="' + esc(CT.pick(t, 'name')) + '"><option value="type:' + esc(t.id) + '">' + esc(CT.t('targetType') + CT.pick(t, 'name')) + '</option>' +
         t.camps.map(function (c) { return '<option value="camp:' + esc(c.id) + '">' + esc(CT.pick(c, 'name')) + '</option>'; }).join('') + '</optgroup>'; }).join('');
+    camps += S.portalCamps.length ? '<optgroup label="' + esc(CT.t('portalFolder')) + '">' + S.portalCamps.map(function (c) { return '<option value="portal:' + esc(c.id) + '">' + esc(pcName(c)) + '</option>'; }).join('') + '</optgroup>' : '';
     sel('fcamp', camps, true);
     sel('fcat', '<option value="">' + esc(CT.t('fAllCat')) + '</option>' + CATS.map(function (c) { return '<option value="' + c + '">' + esc(CT.t('cat' + c)) + '</option>'; }).join(''), true);
     sel('fstatus', '<option value="">' + esc(CT.t('fAllStatus')) + '</option>' + STATUS.map(function (c) { return '<option value="' + c + '">' + esc(CT.t('status' + c)) + '</option>'; }).join(''), true);
@@ -81,17 +82,21 @@
     if (term) q.set('q', term);
     if (t === 'none') q.set('campId', 'none'); else if (t.indexOf('camp:') === 0) q.set('campId', t.slice(5)); else if (t.indexOf('type:') === 0) q.set('typeId', t.slice(5));
     ['fcat:category', 'fstatus:status', 'fkind:kind', 'fsort:sort'].forEach(function (m) { var p = m.split(':'), v = $(p[0]).value; if (v) q.set(p[1], v); });
-    var inPortal = !term && S.view === 'folders' && S.folderId === 'portal', filtered = !!(t || $('fcat').value || $('fstatus').value || $('fkind').value);
+    var pcamp = t.indexOf('portal:') === 0 ? t.slice(7) : '', inPortal = !term && !pcamp && S.view === 'folders' && S.folderId === 'portal', filtered = !!((t && !pcamp) || $('fcat').value || $('fstatus').value || $('fkind').value);
+    if (pcamp) t = '';
     if (!term && S.view === 'folders' && !inPortal) q.set('folderId', S.folderId || 'none'); // 폴더별 보기: 폴더 안, 또는 폴더 없는 자료
     var fq = term ? '?q=' + encodeURIComponent(term) : '', none = { items: [], total: 0 };
-    var res = await Promise.all([inPortal ? Promise.resolve({ items: [], total: 0, perms: S.perms }) : CT.api('/api/campteam/files?' + q.toString()),
+    var res = await Promise.all([inPortal || pcamp ? Promise.resolve({ items: [], total: 0, perms: S.perms }) : CT.api('/api/campteam/files?' + q.toString()),
       CT.api('/api/campteam/folders' + fq).catch(function () { return { folders: [] }; }),
       filtered ? Promise.resolve(none) : CT.api('/api/campteam/portal-files' + fq).catch(function () { return none; })]); // 월코 포털 자료(읽기 전용, 캠프팀 명단 사람만)
-    S.items = res[0].items; S.total = res[0].total; S.perms = res[0].perms; S.folders = res[1].folders || []; S.portal = res[2].items || []; S.portalTotal = res[2].total || 0; S.portalCamps = res[2].camps || []; S.portalOrder = res[2].teamOrder || {}; renderList();
+    S.items = res[0].items; S.total = res[0].total; S.perms = res[0].perms; S.folders = res[1].folders || []; S.portal = res[2].items || []; S.portalTotal = res[2].total || 0; S.portalCamps = res[2].camps || []; S.portalOrder = res[2].teamOrder || {}; S.pcamp = pcamp;
+    if (pcamp) { var all = S.portal; S.portal = all.filter(function (i) { return campKeys(i).indexOf(pcamp) >= 0; }); S.portalTotal = all.length; }
+    renderList();
   }
 
   /* ---- 월코 포털 자료: 포털의 분류(캠프 → 형식 → 팀 폴더)대로 나눠 보여 준다 ---- */
   var TAB_ORDER = ['teacher', 'program', 'counselor', 'preacher', 'general'], NOTEAM = '~none';
+  function pcName(c) { return CT.lang() === 'en' ? c.name : (c.nameKo || c.name); } // 연도 계절 이름 순서로 통일된 캠프 이름(한글/영문)
   function campKeys(i) { var known = S.portalCamps.map(function (c) { return c.id; }), ks = (i.campIds || []).filter(function (id) { return known.indexOf(id) >= 0; }); return ks.length ? ks : ['']; } // 포털에서 지워진 캠프 번호는 「캠프 미지정」으로 모은다
   function ppItems(path) {
     return S.portal.filter(function (i) {
@@ -103,7 +108,7 @@
     });
   }
   function ppLabel(level, key, items) {
-    if (level === 0) { if (!key) return CT.t('ppNoCamp'); var c = S.portalCamps.filter(function (x) { return x.id === key; })[0]; return c ? c.name : key; }
+    if (level === 0) { if (!key) return CT.t('ppNoCamp'); var c = S.portalCamps.filter(function (x) { return x.id === key; })[0]; return c ? pcName(c) : key; }
     if (level === 1) { var f = items[0]; return f ? (CT.lang() === 'en' ? f.tabEn : f.tabKo) : key; }
     return key === NOTEAM ? CT.t('ppNoTeam') : key;
   }
@@ -119,11 +124,11 @@
     keys.sort(function (a, b) { var x = order.indexOf(a), y = order.indexOf(b); return (x < 0 ? 999 : x) - (y < 0 ? 999 : y) || String(a).localeCompare(String(b)); });
     return keys.map(function (k) { return { key: k, label: ppLabel(level, k, counts[k].sample), count: counts[k].n }; });
   }
-  function ppInTree() { return S.view === 'folders' && S.folderId === 'portal' && !$('fq').value.trim(); }
+  function ppInTree() { return !S.pcamp && S.view === 'folders' && S.folderId === 'portal' && !$('fq').value.trim(); }
   function ppFiles() { var g = ppGroups(S.pp); return (!g.length || S.ppFlat) ? ppItems(S.pp) : []; } // 묶음 카드가 있으면 카드만, 없으면(또는 모두 보기) 파일
   function renderList() {
     $('addFile').hidden = !canAdd(); renderFolders();
-    var tree = ppInTree(), pl = tree ? ppFiles() : S.portal, showPortal = pl.length && ($('fq').value.trim() || S.view === 'all' || S.folderId === 'portal');
+    var tree = ppInTree(), pl = tree ? ppFiles() : S.portal, showPortal = pl.length && ($('fq').value.trim() || S.view === 'all' || S.folderId === 'portal' || S.pcamp);
     $('countLine').textContent = tree ? ppItems(S.pp).length + CT.t('count') : (S.total + (showPortal ? pl.length : 0)) + CT.t('count');
     $('list').innerHTML = S.items.length ? S.items.map(function (f) {
       var meta = [f.folderName ? '📁 ' + (CT.lang() === 'en' && f.folderNameEn ? f.folderNameEn : f.folderName) : '', where(f), CT.t('cat' + f.category), f.topic, f.uploadedBy, day(f.createdAt), f.isPublic ? '🌐 ' + CT.t('publicChip') : ''].filter(Boolean).map(esc).join(' · ');
@@ -137,7 +142,7 @@
     }).join('') + (showPortal ? pl.map(portalRow).join('') : '') : (showPortal ? pl.map(portalRow).join('') : (tree && ppGroups(S.pp).length ? '' : '<div class="empty">' + esc(CT.t('noFiles')) + '</div>'));
   }
   function portalRow(f) { // 월코 포털 자료: 열기만 된다
-    var tree = ppInTree(), tab = CT.lang() === 'en' ? f.tabEn : f.tabKo, meta = [tree ? '' : tab, tree && S.pp.length > 2 ? '' : f.team, f.person, tree ? '' : f.camps.join(', '), f.uploadedBy, day(f.createdAt)].filter(Boolean).map(esc).join(' · ');
+    var tree = ppInTree(), tab = CT.lang() === 'en' ? f.tabEn : f.tabKo, meta = [tree ? '' : tab, tree && S.pp.length > 2 ? '' : f.team, f.person, tree ? '' : (CT.lang() === 'en' ? f.camps : (f.campsKo || f.camps)).join(', '), f.uploadedBy, day(f.createdAt)].filter(Boolean).map(esc).join(' · ');
     return '<div class="file-row portal-row"><span class="ext portal">🌐</span><div class="fm"><b>' + esc(f.title) + '</b><span class="chip gray">' + esc(CT.t('portalChip')) + ' · ' + esc(CT.t('portalRO')) + '</span><small>' + meta + '</small></div>' +
       '<div class="actions"><a class="btn sm pri" href="' + esc(f.openUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(CT.t('portalOpen')) + '</a></div></div>';
   }
@@ -146,9 +151,10 @@
   function renderFolders() {
     var term = $('fq').value.trim(), box = $('folders'), cur = S.folderId && S.folders.filter(function (d) { return d.id === S.folderId; })[0], can = canAdd();
     $('viewBar').innerHTML = ['folders', 'all'].map(function (v) { return '<button type="button" class="tab' + (S.view === v ? ' on' : '') + '" data-view="' + v + '">' + esc(CT.t(v === 'folders' ? 'viewFolders' : 'viewAll')) + '</button>'; }).join('');
-    $('viewBar').hidden = !!term;
+    $('viewBar').hidden = !!term || !!S.pcamp;
     var h = '';
-    if (!term && S.view === 'folders' && S.folderId === 'portal') {
+    if (S.pcamp) { h = ''; }
+    else if (!term && S.view === 'folders' && S.folderId === 'portal') {
       var segs = ['<button type="button" class="btn sm" data-folder="">' + esc(CT.t('backAll')) + '</button>'], names = ['🌐 ' + CT.t('portalFolder')];
       S.pp.forEach(function (k, lv) { names.push(ppLabel(lv, k, ppItems(S.pp.slice(0, lv + 1)))); });
       names.forEach(function (n, i) { segs.push(i === names.length - 1 ? '<b>' + esc(n) + '</b>' : '<button type="button" class="btn sm" data-ppi="' + i + '">' + esc(n) + '</button>'); });

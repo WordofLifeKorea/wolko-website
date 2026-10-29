@@ -74,9 +74,29 @@ test('포털의 분류 정보(캠프 목록·캠프 번호·팀 폴더 순서)�
   assert.equal(d.total, 250); assert.equal(d.items.length, 250, '200개에서 잘리지 않는다');
   assert.deepEqual(d.camps.map((c) => c.id), ['c1', 'c2'], '캠프 목록이 내려온다');
   assert.deepEqual(d.camps.map((c) => c.name), ['2026 Winter 모멘텀 캠프', '2026 Summer 여름 캠프'], '같은 해에는 겨울이 먼저');
+  assert.deepEqual(d.camps.map((c) => c.nameKo), ['2026 겨울 모멘텀 캠프', '2026 여름 여름 캠프'], '한글 이름도 연도 계절 이름 순서');
   assert.ok(d.items.every((i) => Array.isArray(i.campIds) && i.campIds.length === 1));
   assert.deepEqual(d.teamOrder.c1, ['WOLKO', 'Student Fusion Team Projects', '레슨플랜', '내 폴더'], '기본 폴더 뒤에 직접 만든 폴더');
   assert.deepEqual(d.teamOrder.c2, ['Student Fusion Team Projects', '레슨플랜'], '포털에서 뺀 기본 폴더는 빠진다');
   assert.deepEqual(store.ops, []);
   assert.ok(!JSON.stringify(d).includes('x@example.com'), '폴더 만든 사람 이메일은 내려가지 않는다');
+});
+
+test('캠프 이름을 연도 → 계절 → 이름 순서로 통일해 보여 준다 (WOLKO→월코, 영어 캠프 띄어쓰기, 이름 속 연도 중복 제거), 한글·영문 어느 쪽으로도 검색된다', async () => {
+  const camps = { camps: [{ id: 'a', year: 2025, season: 'winter', name: 'WOLKO Jr. English Camp' }, { id: 'b', year: 2026, season: 'summer', name: '2026 여름 월코 주니어 영어캠프' }, { id: 'c', year: 2027, season: 'winter', name: 'WOLKO English Camp' }] };
+  const data = { items: [{ id: 'i1', tab: 'general', title: 'Level1', url: 'https://example.com/1', campIds: ['a'], createdAt: '2026-10-01T00:00:00Z' }, { id: 'i2', tab: 'general', title: 'Level2', url: 'https://example.com/2', campIds: ['b'], createdAt: '2026-10-02T00:00:00Z' }] };
+  const env = makeEnv(fakeD1(), { CAMP_KV: kv({ 'teach:data:v1': data, 'teach:camps:v1': camps }) });
+  const d = await (await get(env, U.mem)).json();
+  assert.deepEqual(d.camps.map((c) => [c.name, c.nameKo]), [['2027 Winter WOLKO English Camp', '2027 겨울 월코 영어 캠프'], ['2026 Summer 월코 주니어 영어캠프', '2026 여름 월코 주니어 영어 캠프'], ['2025 Winter WOLKO Jr. English Camp', '2025 겨울 월코 주니어 영어 캠프']]);
+  const find = async (q) => (await (await get(env, U.mem, '?q=' + encodeURIComponent(q))).json()).items.map((i) => i.id);
+  assert.deepEqual(await find('2025 겨울'), ['portal:i1']); assert.deepEqual(await find('Winter WOLKO Jr'), ['portal:i1']); assert.deepEqual(await find('월코 주니어'), ['portal:i2', 'portal:i1']);
+});
+
+test('캠프팀 자료도 캠프 이름(한글·영문)으로 찾는다', async () => {
+  const env = makeEnv(fakeD1(), {});
+  const camp = env.DB.sqlite.prepare("SELECT id, nameKo FROM camps WHERE deletedAt IS NULL LIMIT 1").get();
+  env.DB.sqlite.prepare("INSERT INTO files (id,campId,title,kind,storage,externalUrl,uploadedBy,category,restricted,linkKind,createdAt,updatedAt,createdBy) VALUES ('fx',?1,'캠프로 찾는 자료','etc','link','https://example.com/z','x','etc',0,'other','x','x','x')").run(camp.id);
+  const Files = await import('../functions/api/campteam/files.js');
+  const r = await (await Files.onRequestGet({ env, request: await req(U.mem, { url: 'http://localhost:8788/api/campteam/files?q=' + encodeURIComponent(camp.nameKo.slice(0, 6)) }) })).json();
+  assert.ok(r.items.some((i) => i.id === 'fx'), '캠프 이름 일부로 그 캠프의 자료가 나온다');
 });

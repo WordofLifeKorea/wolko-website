@@ -17,11 +17,15 @@ const https = (u) => { try { return new URL(String(u)).protocol === 'https:' ? S
 // 옛 자료는 tab 이 없다 — 포털과 같은 기준(팀·사람이 있으면 수업자료)으로 읽는다
 const tabOf = (it) => (it.team || it.person ? 'teacher' : (TABS[it.tab] ? it.tab : 'general'));
 
-const campName = (c) => (c ? [c.year, c.season === 'winter' ? 'Winter' : c.season === 'summer' ? 'Summer' : '', str(c.name, 80)].filter(Boolean).join(' ') : '');
+// 캠프 이름을 「연도 계절 이름」 순서로 통일한다(원본 포털 이름은 바꾸지 않고, 보여 줄 때만). 이름 앞에 연도·계절이 이미 있으면 한 번만 쓴다.
+const bareName = (c) => { let n = str(c.name, 80); if (c.year) n = n.replace(new RegExp('^' + String(c.year) + '\\s*(Winter|Summer|겨울|여름)?\\s*', 'i'), ''); return n.trim(); };
+const koWords = (s) => String(s).replace(/WOLKO/gi, '월코').replace(/\bJr\.?(?=\s|$)/gi, '주니어').replace(/English/gi, '영어').replace(/Camps?\b/gi, '캠프').replace(/영어캠프/g, '영어 캠프').replace(/연합캠프/g, '연합 캠프').replace(/\s+/g, ' ').trim();
+const campName = (c) => (c ? [c.year, c.season === 'winter' ? 'Winter' : c.season === 'summer' ? 'Summer' : '', bareName(c)].filter(Boolean).join(' ') : '');
+const campNameKo = (c) => (c ? [c.year, c.season === 'winter' ? '겨울' : c.season === 'summer' ? '여름' : '', koWords(bareName(c))].filter(Boolean).join(' ') : '');
 /** 포털의 캠프 목록(분류 기준) — 최신 연도 먼저, 같은 해에는 겨울 → 여름 */
 export function mapPortalCamps(campsData) {
   return (Array.isArray(campsData && campsData.camps) ? campsData.camps : []).filter((c) => c && c.id)
-    .map((c) => ({ id: str(c.id, 80), name: campName(c), year: Number(c.year) || 0, season: str(c.season, 10) }))
+    .map((c) => ({ id: str(c.id, 80), name: campName(c), nameKo: campNameKo(c), year: Number(c.year) || 0, season: str(c.season, 10) }))
     .sort((a, b) => b.year - a.year || (a.season === b.season ? a.name.localeCompare(b.name) : a.season === 'winter' ? -1 : 1));
 }
 /** 포털의 팀(폴더) 이름 순서 — 캠프마다 기본 폴더 + 직접 만든 폴더. 항목에 있는 이름은 클라이언트가 뒤에 덧붙인다 */
@@ -40,12 +44,13 @@ export function mapPortalItems(data, campsData) {
     return { id: 'portal:' + str(it.id, 80), source: 'portal', readOnly: true, title: str(it.title, 160) || '(제목 없음)', tab, tabKo: TABS[tab][0], tabEn: TABS[tab][1],
       team: str(it.team, 60), person: str(it.person, 80), uploadedBy: str(it.uploaderName, 80), openUrl, isArchive: !!https(it.archiveUrl),
       campIds: (Array.isArray(it.campIds) ? it.campIds : []).map((id) => str(id, 80)).filter(Boolean),
-      camps: (Array.isArray(it.campIds) ? it.campIds : []).map((id) => campName(camps.get(String(id)))).filter(Boolean), createdAt: str(it.createdAt, 40), updatedAt: str(it.updatedAt, 40) };
+      camps: (Array.isArray(it.campIds) ? it.campIds : []).map((id) => campName(camps.get(String(id)))).filter(Boolean),
+      campsKo: (Array.isArray(it.campIds) ? it.campIds : []).map((id) => campNameKo(camps.get(String(id)))).filter(Boolean), createdAt: str(it.createdAt, 40), updatedAt: str(it.updatedAt, 40) };
   }).filter(Boolean);
 }
 export function searchPortalItems(items, q) {
   const t = str(q, 80).toLowerCase(); if (!t) return items;
-  return items.filter((i) => [i.title, i.team, i.person, i.uploadedBy, i.tabKo, i.tabEn, ...i.camps].join(' ').toLowerCase().includes(t));
+  return items.filter((i) => [i.title, i.team, i.person, i.uploadedBy, i.tabKo, i.tabEn, ...i.camps, ...i.campsKo].join(' ').toLowerCase().includes(t));
 }
 
 export async function onRequestGet({ env, request }) {
