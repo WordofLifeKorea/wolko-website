@@ -1,5 +1,5 @@
 /** TV 대시보드: 위젯 종류, 배치 검사, 토큰 */
-export const TV_APP_VERSION = '1.1.0'; // TV 화면이 이 값이 바뀐 것을 보면 스스로 완전히 새로고침한다
+export const TV_APP_VERSION = '1.1.1'; // TV 화면이 이 값이 바뀐 것을 보면 스스로 완전히 새로고침한다
 export const COLS = 16, ROWS = 9;
 // 위젯 종류와 최소 크기 (편집기와 같은 값)
 export const WIDGETS = {

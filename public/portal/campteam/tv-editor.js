@@ -28,12 +28,14 @@
   }
   function draw() {
     var cv = $('tvcanvas'), box = $('tvedit').parentNode; $('tvedit').classList.toggle('editing', !S.preview);
-    cv.className = 'tvc ' + ((S.settings.theme || (S.res && S.res.settings.theme)) === 'light' ? 'tv-light' : 'tv-dark'); $('tvedit').classList.toggle('tv-light', cv.classList.contains('tv-light'));
+    cv.className = 'tvc tv-dark'; $('tvedit').classList.remove('tv-light'); // 색 테마는 항상 진한 청록(하늘 배경은 켜고 끌 수 있다)
     TC.sizeBox(cv, Math.max(300, box.clientWidth - 24), 560); if (!S.res) return;
     TC.mount(cv, page(), ctx(), extra);
-    if (window.TVSky) { var wx = serverWx(), st0 = Object.assign({}, S.res.settings, S.settings); TVSky.mount(cv, { on: st0.sky !== 'off' && st0.theme !== 'light', kind: wx ? wx.kind : '', isDay: wx ? wx.isDay !== false : true }); }
-    tabs(); inspector();
+    if (window.TVSky) { var wx = serverWx(), st0 = Object.assign({}, S.res.settings, S.settings); TVSky.mount(cv, { on: st0.sky !== 'off', kind: wx ? wx.kind : '', isDay: wx ? wx.isDay !== false : true }); }
+    tabs(); inspector(); fitInspector();
   }
+  /* 오른쪽 설정 칸은 미리보기 높이까지만 커지고, 넘치면 그 안에서 스크롤한다(빈 공간이 생기지 않고 아래 「TV 설정」이 한 화면에 들어온다) */
+  function fitInspector() { var el = $('tvInspector'), stage = $('tvedit').parentNode; el.style.maxHeight = window.innerWidth > 1100 ? stage.offsetHeight + 'px' : ''; }
   function tabs() {
     $('pageTabs').innerHTML = S.layout.pages.map(function (p, i) { return '<button class="tab ' + (i === S.cur ? 'on' : '') + '" data-pg="' + i + '">' + esc(p.name) + ' <small>' + p.secs + 's</small></button>'; }).join('') + '<button class="tab" data-addpg>' + esc(CT.t('tvAddPage')) + '</button>';
   }
@@ -115,14 +117,14 @@
   async function loadAdmin() {
     var cfg = await CT.api('/api/campteam/tv-config'); S.layout = cfg.layout; S.saved = clone(cfg.layout); S.settings = cfg.settings; urlUpdate();
     try { var rr = await fetch('/api/campteam/tv-data?t=' + encodeURIComponent(cfg.settings.token), { cache: 'no-store' }); S.res = rr.ok ? await rr.json() : null; } catch (e) { S.res = null; } // 미리보기 자료를 못 가져와도 편집 화면은 열린다
-    var f = $('tvSetForm'); f.theme.innerHTML = '<option value="dark">' + esc(CT.t('themeDark')) + '</option><option value="light">' + esc(CT.t('themeLight')) + '</option>'; f.sky.innerHTML = '<option value="on">' + esc(CT.t('skyOn')) + '</option><option value="off">' + esc(CT.t('skyOff')) + '</option>'; f.language.innerHTML = '<option value="en">' + esc(CT.t('langEn')) + '</option><option value="ko">' + esc(CT.t('langKo')) + '</option><option value="both">' + esc(CT.t('langBoth')) + '</option>';
-    ['theme', 'language', 'sky', 'refreshSec', 'reloadHours', 'weatherLabel', 'weatherLat', 'weatherLon'].forEach(function (k) { f[k].value = cfg.settings[k] || (k === 'sky' ? 'on' : ''); });
+    var f = $('tvSetForm'); f.sky.innerHTML = '<option value="on">' + esc(CT.t('skyOn')) + '</option><option value="off">' + esc(CT.t('skyOff')) + '</option>'; f.language.innerHTML = '<option value="en">' + esc(CT.t('langEn')) + '</option><option value="ko">' + esc(CT.t('langKo')) + '</option><option value="both">' + esc(CT.t('langBoth')) + '</option>';
+    ['language', 'sky', 'refreshSec', 'reloadHours', 'weatherLabel', 'weatherLat', 'weatherLon'].forEach(function (k) { f[k].value = cfg.settings[k] || (k === 'sky' ? 'on' : ''); });
     draw();
   }
   $('tvSave').onclick = save; $('tvRevert').onclick = function () { if (!S.dirty || confirm(CT.t('tvRevert') + '?')) { S.layout = clone(S.saved); S.cur = 0; S.sel = null; dirty(false); draw(); } };
   $('tvCopy').onclick = function () { var u = $('tvUrl').textContent; (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { alert(CT.t('tvCopied')); }, function () { var r = document.createRange(); r.selectNodeContents($('tvUrl')); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }); };
   $('tvRotate').onclick = async function () { if (!confirm(CT.t('tvRotateConfirm'))) return; try { var r = await CT.api('/api/campteam/tv-config', { method: 'POST', body: { action: 'rotate' } }); S.settings.token = r.token; urlUpdate(); S.res = await (await fetch('/api/campteam/tv-data?t=' + encodeURIComponent(r.token), { cache: 'no-store' })).json(); } catch (e) { alert(e.message); } };
-  $('tvSetForm').onsubmit = async function (e) { e.preventDefault(); var f = $('tvSetForm'), b = {}; ['theme', 'language', 'sky', 'refreshSec', 'reloadHours', 'weatherLabel', 'weatherLat', 'weatherLon'].forEach(function (k) { b[k] = f[k].value; }); $('tvSetErr').hidden = true;
+  $('tvSetForm').onsubmit = async function (e) { e.preventDefault(); var f = $('tvSetForm'), b = {}; ['language', 'sky', 'refreshSec', 'reloadHours', 'weatherLabel', 'weatherLat', 'weatherLon'].forEach(function (k) { b[k] = f[k].value; }); $('tvSetErr').hidden = true;
     try { await CT.api('/api/campteam/tv-config', { method: 'PUT', body: { settings: b } }); Object.assign(S.settings, b); draw(); alert(CT.t('tvSaved')); } catch (err) { $('tvSetErr').textContent = err.message; $('tvSetErr').hidden = false; } };
 
   /* 슬라이드쇼 미리보기: TV 와 같이 목록은 설정한 시간마다 넘어가고, 화면도 시간이 되면 바뀐다 */
