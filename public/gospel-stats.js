@@ -185,7 +185,7 @@
         var items = section.fields.filter(function (f) { return Number(r.values[f.id]) > 0; });
         if (items.length) rows.push('<div class="gs-rep-sec">' + esc(tx(section.title)) + '</div>' + items.map(function (f) { return '<div class="gs-rep-row"><span>' + esc(tx(f.short)) + '</span><b>' + num(r.values[f.id]) + '</b></div>'; }).join(''));
       });
-      var who = r.name ? '<strong>' + esc(r.name) + '</strong>' + (r.email ? '<em>' + esc(r.email) + '</em>' : '') : '<strong class="gs-muted">' + esc(t('subNoName')) + '</strong>';
+      var who = r.name ? '<strong' + (r.email ? ' title="' + esc(r.email) + '"' : '') + '>' + esc(r.name) + '</strong>' : '<strong class="gs-muted">' + esc(t('subNoName')) + '</strong>';   // 이메일은 이름에 마우스를 올리면 보인다
       return '<li><details><summary><span class="gs-rep-who">' + who + '</span><span class="gs-repmeta"><span>' + esc(kindOf(r)) + '</span>' + pill(r.location) + '<span class="gs-fold-chev" aria-hidden="true"></span></span></summary>'
         + '<div class="gs-rep-body">' + (rows.length ? rows.join('') : '<p class="gs-empty">' + esc(t('subNoValues')) + '</p>') + '</div></details></li>';
     });
