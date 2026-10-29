@@ -21,6 +21,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   <link rel="stylesheet" href="/wolko-header.css?v=14">
   <link rel="stylesheet" href="/wolko-datepicker.css?v=4">
   <script src="/wolko-datepicker.js?v=4" defer></script>
+  <script src="/crs-block-drag.js?v=1" defer></script>
   <link rel="stylesheet" href="/wolko-lang-toggle.css?v=2">
   <link rel="stylesheet" href="/crs-reminders.css?v=1">
   <link rel="stylesheet" href="/wolko-ui.css?v=6">
@@ -432,12 +433,12 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     max-width:620px; padding:1.2rem 1.25rem .9rem; gap:.65rem;
     background:rgba(237,242,243,.96); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
   }
-  /* 데스크톱: 화면이 넓어지는 만큼 목록과 지도가 함께 늘어난다(예전엔 전체 폭 1440px · 목록 620px 에서 멈췄다). 상세가 열린 화면(.split)은 그대로. */
+  /* 데스크톱: 목록은 한 줄(카드 1열)로 차분하게 두고 폭만 화면에 맞춰 조금씩 늘며(440~600px), 남는 폭은 지도가 쓴다(예전엔 전체 폭 1440px 에서 멈췄다). 상세가 열린 화면(.split)은 그대로. */
   @media(min-width:769px) {
     .app-body { max-width:none; }
-    .app-body:not(.split) .list-panel { flex:42 1 0; }
-    .app-body:not(.split) .map-panel { flex:58 1 0; }
-    .list-panel-inner, .top-bar { max-width:1100px; }
+    .app-body:not(.split) .list-panel { flex:0 0 clamp(440px, 32vw, 600px); }
+    .app-body:not(.split) .map-panel { flex:1 1 0; }
+    .list-panel-inner, .top-bar { max-width:none; }
   }
   .search-input {
     height:2.5rem; padding:0 .9rem; border:1px solid #cedcdf; border-radius:8px;
@@ -752,39 +753,43 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
   .church-card::before, .church-card:hover::before, .church-card.selected::before { display:none; }
   .church-card-body { background:#f7fafb; margin-top:auto; }
   .church-card-header { flex:0 0 auto; }
-  /* 넓은 화면: 항목(블록)마다 최대 폭을 두고, 화면 폭에 따라 칸 수가 자동으로 늘고 줄며 정렬된다 — 한 줄이 끝없이 길어져 읽기 힘들어지지 않게. */
+  /* 교회 상세(데스크톱): 지도는 한 줄 전체로 크게, 그 아래 카드 네 개(교회 정보 · 방문 기록 · 관계 발전 단계 · 관계 등급)는
+     폭이 되면 2칸(왼쪽→오른쪽, 위→아래)으로 놓인다. 카드는 꾹 눌러 끌어서 순서를 바꿀 수 있다(public/crs-block-drag.js). */
   @media(min-width:769px) {
-    /* 교회 상세: 블록 하나는 최대 720px (좁을 땐 한 줄로 쌓인다). 지도는 예전처럼 한 줄 전체로 크게 둔다 */
-    .detail-panel-body > * { min-width:0; max-width:720px; }
+    .detail-panel-body > * { min-width:0; max-width:760px; }
     .detail-panel-body > .detail-map-preview { max-width:none; }
   }
-  /* 교회 목록: 카드 한 장은 320~560px, 목록 칸이 넓어지는 만큼 여러 칸으로 */
-  @media(min-width:1000px) {
-    .app-body:not(.split) .church-list { grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); align-items:stretch; }
-    .app-body:not(.split) .church-list > .church-card { max-width:560px; }
+  @media(min-width:1100px) {
+    .detail-panel-body { display:grid; grid-template-columns:minmax(0, 1fr); align-content:start; align-items:start; gap:1rem 1.25rem; padding-left:max(1.5rem, calc((100% - 1760px) / 2)); padding-right:max(1.5rem, calc((100% - 1760px) / 2)); }
+    .detail-panel-body > * { margin-top:0; margin-bottom:0; max-width:none; }
+    .detail-panel-body > [data-block] { max-width:760px; }
+    .detail-panel-body > .detail-map-preview { grid-column:1 / -1; height:clamp(320px, 24vw, 460px); }
+    .detail-panel-body > .detail-actions, .detail-panel-body > .detail-layout-hint { grid-column:1 / -1; }
+    .detail-panel-body > .detail-actions { margin-top:.25rem; }
   }
-  /* 교회 상세: 폭이 넉넉하면 지도·정보·본부 보고·방문 기록이 2칸으로 나란히 놓인다 */
-  @media(min-width:1280px) {
-    /* 칸 수는 폭이 정한다(460px 이상이면 한 칸씩 늘어남). 내용 폭은 1300px 에서 멈춰서(= 블록 하나 최대 640px · 최대 2칸) 오른쪽은 여백으로 남는다. */
-    .detail-panel-body { display:grid; grid-template-columns:repeat(auto-fit, minmax(460px, 1fr)); align-content:start; align-items:start; gap:1rem 1.25rem; padding-right:max(1.5rem, calc(100% - 1300px - 1.5rem)); }
-    .detail-panel-body > * { margin-top:0; margin-bottom:0; max-width:640px; }
-    .detail-panel-body > .steps-header, .detail-panel-body > .steps-list, .detail-panel-body > .detail-actions { grid-column:1 / -1; max-width:1300px; }
-    .detail-panel-body > .steps-header { margin-top:.35rem; }
-    .detail-panel-body > .detail-actions { margin:.25rem 0 0; }
-    /* 지도는 한 줄 전체로 크게(내용 폭 1300px 까지), 높이도 화면에 맞춰 조금 키운다. 나머지 카드만 2칸으로 */
-    .detail-panel-body > .detail-map-preview { grid-column:1 / -1; max-width:none; height:clamp(320px, 26vw, 440px); }
+  /* 상세 폭이 넉넉해지면(대략 창 1600px 이상) 2칸: 위 줄 교회 정보 · 방문 기록, 아랫줄 관계 발전 단계 · 관계 등급 */
+  @media(min-width:1600px) {
+    .detail-panel-body { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .detail-panel-body > [data-block] { max-width:none; }
   }
-  /* 2칸이 확실한 폭(상세 940px 이상)에서만: 왼쪽에 정보 + 본부 보고, 오른쪽에 방문 기록을 길게 */
-  @media(min-width:1520px) {
-    .detail-panel-body { grid-auto-flow:row dense; }
-    .detail-panel-body > .detail-map-preview { order:0; }
-    .detail-panel-body > .detail-info { order:1; }
-    .detail-panel-body > .visit-section { order:2; grid-row:span 2; }
-    .detail-panel-body > .hq-section { order:3; }
-    .detail-panel-body > .steps-header { order:4; }
-    .detail-panel-body > .steps-list { order:5; }
-    .detail-panel-body > .detail-actions { order:6; }
+  /* 관계 발전 단계: 카드 폭이 넓을 때만 두 줄로(1~6 왼쪽 · 7~12 오른쪽), 좁으면 한 줄로 */
+  .relationship-section[data-block] { container-type:inline-size; }
+  .relationship-section[data-block] .steps-list { grid-template-columns:minmax(0, 1fr); grid-auto-flow:row; grid-template-rows:none; }
+  @container (min-width: 560px) {
+    .relationship-section[data-block] .steps-list { grid-template-columns:repeat(2, minmax(0, 1fr)); grid-auto-flow:column; grid-template-rows:repeat(var(--step-rows, 6), max-content); }
   }
+  [data-block] { cursor:grab; }
+  [data-block] button, [data-block] a, [data-block] select, [data-block] .step-item { cursor:pointer; }
+  [data-block] input, [data-block] textarea { cursor:text; }
+  .relationship-section[data-block] { padding:1rem; border:1px solid #dce7e9; border-radius:10px; background:#fff; box-shadow:0 3px 12px rgba(20,52,64,.045); }
+  .relationship-section[data-block] .steps-header { margin-top:0; }
+  .detail-info[data-block], .hq-section[data-block], .visit-section[data-block] { margin-top:0; }
+  .is-dragging { opacity:.5; outline:2px dashed var(--crs-cyan, #2d9fba); outline-offset:2px; }
+  .drop-target { outline:2px solid var(--crs-cyan, #2d9fba); outline-offset:2px; background-color:#f4fafb; }
+  body.crs-dragging { user-select:none; -webkit-user-select:none; cursor:grabbing; }
+  .crs-drag-chip { position:fixed; z-index:3000; transform:translate(14px, 14px); padding:.38rem .8rem; border-radius:999px; background:#004f68; color:#fff; font-size:.78rem; font-weight:800; box-shadow:0 8px 20px rgba(0,30,44,.28); pointer-events:none; white-space:nowrap; }
+  .detail-layout-hint { display:flex; align-items:center; gap:.6rem; margin:.1rem 0 0; color:#8aa0a8; font-size:.74rem; }
+  .btn-layout-reset { border:none; background:none; padding:0; color:#4a8a9a; font-size:.74rem; font-weight:700; cursor:pointer; text-decoration:underline; }
 </style>
 
 <script type="module">
@@ -2314,7 +2319,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
     const detailCoords = getSavedChurchCoords(church);
     document.getElementById('detailBody').innerHTML = `
       ${detailCoords ? '<div class="detail-map-preview"><div id="detail-map"></div></div>' : ''}
-      <div class="detail-info">
+      <div class="detail-info" data-block="info" data-title="${isKo ? '교회 정보' : 'Church info'}">
         <div class="detail-info-row"><strong>${t('detail_pastor')}</strong> ${esc(trText(church, 'pastorName') || t('not_entered'))}${church.pastorPhone ? ` &nbsp;${esc(church.pastorPhone)}` : ''}</div>
         ${church.location ? `<div class="detail-info-row"><strong>${t('detail_location')}</strong> ${esc(church.location)}</div>` : ''}
         ${church.notes ? `<div class="detail-info-row"><strong>${t('detail_notes')}</strong> ${esc(trText(church, 'notes'))}</div>` : ''}
@@ -2324,7 +2329,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         </div>
       </div>
       <!-- 본부 보고 연동: 교회 관계 등급 + 달별 리더십 훈련 인원 (복음 통계의 지역교회 사역 보고에 자동 반영) -->
-      <section class="hq-section" id="hqSection">
+      <section class="hq-section" id="hqSection" data-block="hq" data-title="${isKo ? '관계 등급' : 'Relationship grade'}">
         <div class="hq-head">
           <span class="hq-title">${isKo ? '본부 보고 · 관계 등급' : 'HQ report · Relationship grade'}</span>
           <span class="hq-sub">${isKo ? '복음 통계의 월간 본부 보고에 자동으로 들어가요' : 'Feeds the monthly HQ report in Gospel Stats'}</span>
@@ -2349,7 +2354,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         </div>
       </section>
       <!-- 방문 기록 섹션 -->
-      <section class="visit-section">
+      <section class="visit-section" data-block="visits" data-title="${t('visit_history')}">
         <div class="visit-section-head">
           <span class="visit-section-title">${t('visit_history')} <span class="visit-count">${allVisits.length}</span></span>
           <button class="btn-add-visit" id="addVisitToggle">${t('add_visit')}</button>
@@ -2390,7 +2395,7 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
         <div id="visitHistoryList">${visitHistoryHtml}</div>
       </section>
 
-      <section class="relationship-section">
+      <section class="relationship-section" data-block="steps" data-title="${t('steps_title')}">
         <div class="steps-header">
           <span class="steps-title">${t('steps_title')}</span>
           <button class="steps-toggle" id="stepsToggle">${t('steps_collapse')}</button>
@@ -2401,7 +2406,9 @@ const naverClientId = import.meta.env.PUBLIC_NAVER_CLIENT_ID ?? '';
       <div class="detail-actions">
         <button class="btn-edit" id="detailEditBtn">${t('btn_edit')}</button>
         <button class="btn-delete" id="detailDeleteBtn">${t('btn_delete')}</button>
-      </div>`;
+      </div>
+      <p class="detail-layout-hint">${isKo ? '카드를 꾹 눌러 끌면 위치를 바꿀 수 있어요.' : 'Press and hold a card, then drag to rearrange.'}<button type="button" class="btn-layout-reset" id="detailLayoutReset" hidden>${isKo ? '배치 초기화' : 'Reset layout'}</button></p>`;
+    if (window.WolkoBlockDrag) WolkoBlockDrag.init(document.getElementById('detailBody'), { resetButton: document.getElementById('detailLayoutReset') });
 
     ensureDetailMap(church);
     bindHqSection(church);
