@@ -177,7 +177,7 @@
     var sub = data.submission; wrap.hidden = !sub; if (!sub) return;
     var pctDone = sub.expected ? Math.round(sub.submitted / sub.expected * 100) : 100;
     var canExempt = data.me && data.me.role === 'master';   // 보고 제외는 마스터만 바꾼다 — 관리자는 목록만 본다
-    var people = function (list, action, label) { return list.map(function (p) { return '<li><span><strong>' + esc(p.name) + '</strong><em>' + esc(p.email) + '</em></span>' + (p.fixed ? '<span class="gs-fixed">' + esc(t('subFixed')) + '</span>' : !canExempt ? '' : '<button type="button" class="gs-small" data-exempt="' + action + '" data-email="' + esc(p.email) + '">' + esc(label) + '</button>') + '</li>'; }).join(''); };
+    var people = function (list, action, label) { return list.map(function (p) { return '<li><span><strong title="' + esc(p.email) + '">' + esc(p.name) + '</strong></span>' + (p.fixed ? '<span class="gs-fixed">' + esc(t('subFixed')) + '</span>' : !canExempt ? '' : '<button type="button" class="gs-small" data-exempt="' + action + '" data-email="' + esc(p.email) + '">' + esc(label) + '</button>') + '</li>'; }).join(''); };
     var kindOf = function (r) { return r.scope === 'ministry' ? t('ministryLabel') : r.scope === 'team' ? t('teamLabel', r.teamName) : t('individual'); };
     var reported = (sub.reports || []).map(function (r) {
       var rows = [];
