@@ -22,8 +22,9 @@ import {
 const H = { 'Cache-Control': 'no-store' };
 const fail = (error, status = 400) => Response.json({ error }, { status, headers: H });
 const canReview = session => session.role === 'master' || session.role === 'admin';
-/** 제출 현황(누가 아직 보고하지 않았는지)은 마스터에게만 — 보고 제외 설정도 마스터만 */
-const canSeeSubmission = session => session.role === 'master';
+/** 제출 현황(누가 아직 보고하지 않았는지)은 마스터와 관리자에게 — 단, 아래 계정은 뺀다. 보고 제외 설정은 마스터만 */
+const SUBMISSION_HIDDEN = ['hkim3@wol.org'];
+const canSeeSubmission = session => session.role === 'master' || (session.role === 'admin' && !SUBMISSION_HIDDEN.includes(String(session.email || '').toLowerCase()));
 /** 가입할 때 고른 소속(평택 wolko | 제주) → 보고 위치 기본값. 정보가 없으면 '' */
 async function defaultLocation(env, session) {
   const campus = CAMPUS_OVERRIDES[session.email] || (await getAccount(env, session.email).catch(() => null))?.campus;
@@ -35,11 +36,22 @@ async function meOf(env, session, review) {
 }
 const displayName = session => cleanText(session.name, 80) || session.email.split('@')[0];
 
-/** 마스터·관리자용 — 이 달 보고를 아직 안 낸 사람과 보고 제외 목록 */
+/** 마스터·관리자용 — 이 달 보고를 아직 안 낸 사람, 보고 제외 목록, 그리고 보고한 사람별 항목·숫자(reports).
+ *  보고에는 이름이 저장돼 있지 않아서(개인 보고는 표식만), 계정 명단의 이메일로 표식을 만들어 누구의 보고인지 맞춘다. */
 async function submissionStatus(env, reports) {
   const roster = await reporterRoster(env), done = await submittedEmails(env, roster, reports);
   const expected = roster.filter(p => !p.exempt), missing = missingReporters(roster, done);
-  return { expected: expected.length, submitted: expected.filter(p => done.has(p.email)).length, missing: missing.map(({ email, name }) => ({ email, name })), exempt: roster.filter(p => p.exempt).map(({ email, name, fixed }) => ({ email, name, fixed })) };
+  const byOwner = new Map(await Promise.all(roster.map(async p => [await ownerOf(env, p.email), p])));
+  const detail = reports.map(r => {
+    const who = byOwner.get(r.owner);
+    const email = r.reporterEmail || who?.email || '';
+    return {
+      id: r.id, scope: r.scope, teamName: r.teamName || '', location: r.location, updatedAt: r.updatedAt || '',
+      name: r.reporterName || who?.name || (email ? email.split('@')[0] : ''), email,
+      values: Object.fromEntries(Object.entries(r.values || {}).filter(([, v]) => Number(v) > 0)),   // 0 인 항목은 빼고 숫자가 있는 것만
+    };
+  }).sort((a, b) => (a.name || '\uffff').localeCompare(b.name || '\uffff', 'ko') || a.scope.localeCompare(b.scope));
+  return { expected: expected.length, submitted: expected.filter(p => done.has(p.email)).length, missing: missing.map(({ email, name }) => ({ email, name })), exempt: roster.filter(p => p.exempt).map(({ email, name, fixed }) => ({ email, name, fixed })), reports: detail };
 }
 
 /** 한 달의 집계(합계 + 끝난 캠프 + 교회 행사) — 저장해 둔 값이 있으면 그것을, 없으면 새로 계산해서 저장한다. fresh 면 저장값을 쓰지 않는다 */
@@ -124,7 +136,7 @@ export async function onRequestGet({ env, request }) {
     ...(designated || review ? { teamReports: reports.filter(r => r.scope === 'team' || r.scope === 'ministry').map(r => ({ id: r.id, scope: r.scope, teamName: r.teamName || '', location: r.location, reporterName: r.reporterName || '', reporterEmail: r.reporterEmail || '', updatedAt: r.updatedAt || '' })) } : {}),
     // 보고 담당자 지정(마스터만)
     ...(session.role === 'master' ? { reporters: await loadReporters(env) } : {}),
-    // 보고별 목록(이름·이메일 포함)은 마스터·관리자만. 그 밖의 계정에는 합계만 준다 — 사람별 숫자는 익명이어도 누구의 것인지 알아낼 수 있다
+    // 보고한 사람별 항목·숫자(이름·이메일 포함)는 마스터와 일부 관리자만(SUBMISSION_HIDDEN 제외). 그 밖의 계정에는 합계만 준다
     ...(canSeeSubmission(session) ? { submission: await submissionStatus(env, reports) } : {}),
   }, { headers: H });
 }
@@ -155,7 +167,7 @@ export async function onRequestPost({ env, request }) {
   const today = new Date().toISOString().slice(0, 10);      // 시각은 날짜까지만 남긴다
   const report = {
     id, month, owner: await ownerOf(env, session.email), scope, teamName, location, values, churchEntries,
-    // 팀·사역 현황 보고는 누가 냈는지 남긴다(개인 보고는 익명) — 지정 담당자와 관리자만 본다
+    // 팀·사역 현황 보고는 누가 냈는지 남긴다(개인 보고는 이름 없이 표식만 저장 — 제출 현황에서 마스터·관리자만 맞춰 본다) — 지정 담당자와 관리자만 본다
     ...(scope !== 'individual' ? { reporterName: displayName(session), reporterEmail: session.email.trim().toLowerCase() } : {}),
     createdAt: previous?.createdAt || today, updatedAt: today,
   };

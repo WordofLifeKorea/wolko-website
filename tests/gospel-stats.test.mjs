@@ -87,7 +87,7 @@ test('보고 저장: 잘못된 달 · 위치 · 숫자는 거부, 로그인 없�
   assert.equal((await t.call('GET', anna, { query: '?month=oops' })).status, 400);
 });
 
-test('익명: 누가 얼마나 보고했는지는 누구에게도 안 보이고(관리자·마스터 포함), 저장값에도 이름·이메일이 없다', async () => {
+test('저장값에는 이름·이메일이 없고, 보고한 사람별 숫자는 제출 현황으로 마스터·일부 관리자에게만 보인다', async () => {
   const t = setup(); await t.acc(anna[0], 'counselor', 'Anna Lee'); await t.acc(ben[0], 'counselor', 'Ben Kim'); await t.acc(admin[0], 'admin', 'Admin Kim');
   await t.call('POST', anna, { body: report({ values: { evangelism: 5 } }) });
   await t.call('POST', ben, { body: report({ location: 'jeju', values: { evangelism: 8 } }) });
@@ -103,12 +103,20 @@ test('익명: 누가 얼마나 보고했는지는 누구에게도 안 보이고(
 
   for (const who of [admin, master]) {
     const r = await t.call('GET', who, { query: `?month=${month}` });
-    assert.equal(r.rows, undefined, '관리자·마스터에게도 보고별 목록은 없다');
+    assert.equal(r.rows, undefined, '보고별 목록(rows)은 따로 없다');
     assert.equal(r.mine.length, 0, '내 보고가 아니면 mine 에 없다');
     const text = JSON.stringify({ ...r, submission: undefined });       // 제출 현황(보고 여부 명단)만 이름이 있다
-    assert.equal(/Anna Lee|Ben Kim|anna@wol\.org|ben@wol\.org/.test(text), false, '숫자와 이름이 함께 나오는 곳이 없다');
+    assert.equal(/Anna Lee|Ben Kim|anna@wol\.org|ben@wol\.org/.test(text), false, '제출 현황 밖에는 숫자와 이름이 함께 나오는 곳이 없다');
     assert.equal(r.me.canReview, true);
   }
+  // 제출 현황(마스터·일부 관리자)에서만 누가 어떤 숫자를 냈는지 보인다 — hkim3(admin)는 제외
+  const asMaster = await t.call('GET', master, { query: `?month=${month}` });
+  const byName = Object.fromEntries(asMaster.submission.reports.map(r => [r.name, r]));
+  assert.equal(byName['Anna Lee'].email, 'anna@wol.org'); assert.equal(byName['Anna Lee'].values.evangelism, 5); assert.equal(byName['Anna Lee'].scope, 'individual');
+  assert.equal(byName['Ben Kim'].values.evangelism, 8); assert.equal(byName['Ben Kim'].location, 'jeju');
+  assert.equal('submission' in await t.call('GET', admin, { query: `?month=${month}` }), false, 'hkim3 에게는 제출 현황이 없다');
+  assert.equal('submission' in asBen, false, '일반 계정에는 제출 현황이 없다');
+  assert.equal(JSON.stringify(asBen).includes('Anna Lee'), false);
   const csv = await t.call('GET', admin, { query: `?month=${month}&format=csv` });
   assert.equal(csv.status, 200); assert.match(csv.headers.get('content-disposition'), /gospel-stats-\d{4}-\d{2}\.csv/);
   assert.equal(/Anna|Ben|@wol\.org/.test(csv.text), false, 'CSV 에도 이름·이메일이 없다');

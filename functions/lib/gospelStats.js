@@ -140,7 +140,8 @@ export const ministryId = (env, location) => anonHex(env, 'unit', `ministry|${lo
  *   owner  = 보고한 사람 표식(내 보고 찾기·보고 여부 확인용)
  *   id     = 사람 + 개인/팀 + 팀 이름 단위의 보고 번호(같은 단위는 덮어쓴다)
  * 비밀값 없이는 이메일을 거꾸로 알아낼 수 없고, 저장된 시각도 날짜까지만 남긴다.
- * 서버는 로그인한 사람의 이메일로 같은 값을 다시 만들어 "내 보고"를 찾는다. */
+ * 서버는 로그인한 사람의 이메일로 같은 값을 다시 만들어 "내 보고"를 찾는다. 마스터·관리자의 제출 현황도 같은 방식으로
+ * 계정 명단의 이메일마다 표식을 만들어 누구의 보고인지 맞춰 보여 준다(저장값에는 여전히 이름이 없다). */
 export async function anonHex(env, label, text, bytes) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(`gospel-anon:${env.ADMIN_PASSWORD || ''}`), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${label}|${text}`));

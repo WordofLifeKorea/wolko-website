@@ -138,7 +138,7 @@ test('CRS 연동 API: 담당자만, CRS 설정이 없으면 configured:false 와
   assert.equal(hit.configured, true); assert.equal(hit.crs.jeju.churchC, 1); assert.equal(hit.crs.jeju.leadershipTraining, 4);
 });
 
-test('팀 보고는 누가 냈는지 남고(지정 담당자·관리자·마스터만 봄), 개인 보고는 계속 익명이다', async () => {
+test('팀 보고는 누가 냈는지 남고(지정 담당자·관리자·마스터만 봄), 개인 보고자는 제출 현황으로 마스터에게만 보인다', async () => {
   const t = setup(); await t.acc(anna[0], 'counselor', 'Anna Lee'); await t.acc(ben[0], 'counselor', 'Ben Kim'); await t.acc('cara@wol.org', 'counselor', 'Cara Park'); await t.acc('hkim3@wol.org', 'admin', 'Adm');
   await t.reporters('POST', master, { body: { emails: [anna[0], ben[0]] } });
   await t.stats('POST', anna, { body: { month, location: 'mainland', scope: 'team', teamName: 'Camp Crew', values: { campCount: 1 } } });
@@ -150,7 +150,11 @@ test('팀 보고는 누가 냈는지 남고(지정 담당자·관리자·마스�
   assert.equal(team.reporterName, 'Anna Lee'); assert.equal(team.reporterEmail, 'anna@wol.org'); assert.equal(team.teamName, 'Camp Crew');
   assert.equal(asBen.teamReports.find(r => r.scope === 'ministry').reporterName, 'Ben Kim');
   assert.equal(asBen.teamReports.length, 2, '개인 보고는 이 목록에 없다');
-  assert.equal(JSON.stringify(asBen).includes('Cara'), false, '개인 보고자는 누구에게도 안 보인다');
+  assert.equal(JSON.stringify(asBen).includes('Cara'), false, '개인 보고자는 보고 담당자에게도 안 보인다');
+  const master_ = await t.stats('GET', master, { query: `?month=${month}` });
+  const cara = master_.submission.reports.find(r => r.name === 'Cara Park');
+  assert.equal(cara.scope, 'individual'); assert.equal(cara.values.evangelism, 2); assert.equal(cara.email, 'cara@wol.org');
+  assert.deepEqual(master_.submission.reports.map(r => r.scope).sort(), ['individual', 'ministry', 'team'], '개인·팀·사역 현황 보고가 모두 나온다');
 
   for (const who of [['hkim3@wol.org', 'admin'], master]) assert.equal((await t.stats('GET', who, { query: `?month=${month}` })).teamReports.length, 2);
   const asCara = await t.stats('GET', ['cara@wol.org', 'counselor'], { query: `?month=${month}` });
