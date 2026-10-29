@@ -113,26 +113,28 @@ test('제출 현황·보고 제외: 마스터와 관리자(hkim3 제외)가 보�
   const get = async who => G.onRequestGet({ env, request: new Request(`https://t.co/api/portal/gospel-stats?month=${month}`, { headers: { Authorization: 'Bearer ' + await H.createHubSessionToken('secret', who[0], who[1]) } }) });
   const post = async (who, body) => Ex.onRequestPost({ env, request: new Request('https://t.co/api/portal/gospel-exempt', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await H.createHubSessionToken('secret', who[0], who[1]) }, body: JSON.stringify(body) }) });
   const admin = ['admin@wolko.org', 'master'], plainAdmin = ['hkim3@wol.org', 'admin'], anna = ['anna@wol.org', 'counselor'];
-  await acc('jacobmorse@wol.org', 'admin');
-  const jacob = ['jacobmorse@wol.org', 'admin'];
+  await acc('samuelsong@wol.org', 'admin'); await acc('jacobmorse@wol.org', 'admin');
+  const samuel = ['samuelsong@wol.org', 'admin'], jacob = ['jacobmorse@wol.org', 'admin'];   // Jacob 은 마스터와 같은 권한, Samuel 은 일반 관리자
 
   const member = await (await get(anna)).json();
   assert.equal('submission' in member, false, '일반 멤버에게는 제출 현황이 없다');
   assert.equal('submission' in await (await get(plainAdmin)).json(), false, 'hkim3 는 관리자여도 제출 현황이 없다');
-  const seen = (await (await get(jacob)).json()).submission;
-  assert.ok(seen && Array.isArray(seen.missing), '다른 관리자(jacobmorse)는 제출 현황을 본다');
-  assert.equal((await post(jacob, { email: 'bob@wol.org', exempt: true })).status, 403, '보고 제외는 관리자도 마스터만');
+  const seen = (await (await get(samuel)).json()).submission;
+  assert.ok(seen && Array.isArray(seen.missing), '다른 관리자(samuelsong)는 제출 현황을 본다');
+  assert.equal((await post(samuel, { email: 'bob@wol.org', exempt: true })).status, 403, '보고 제외는 관리자도 마스터만');
+  assert.ok((await (await get(jacob)).json()).submission, 'Jacob(마스터와 같은 권한)도 제출 현황을 본다');
+  assert.equal((await post(jacob, { email: 'bob@wol.org', exempt: false })).status, 200, 'Jacob 은 보고 제외도 바꿀 수 있다');
   assert.equal((await post(plainAdmin, { email: 'bob@wol.org', exempt: true })).status, 403, '보고 제외도 마스터만');
   const a = await (await get(admin)).json();
-  assert.equal(a.submission.expected, 5, 'admin@wolko.org 와 wolkorea1 계정은 늘 제외'); assert.equal(a.submission.submitted, 1);
-  assert.deepEqual(a.submission.missing.map(p => p.email).sort(), ['bob@wol.org', 'cara@wol.org', 'hkim3@wol.org', 'jacobmorse@wol.org']);
+  assert.equal(a.submission.expected, 6, 'admin@wolko.org 와 wolkorea1 계정은 늘 제외'); assert.equal(a.submission.submitted, 1);
+  assert.deepEqual(a.submission.missing.map(p => p.email).sort(), ['bob@wol.org', 'cara@wol.org', 'hkim3@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org']);
   assert.deepEqual(a.submission.exempt.map(p => [p.email, p.fixed]).sort(), [['admin@wolko.org', true], ['wolkorea1@gmail.com', true]]);
   assert.equal((await post(admin, { email: 'wolkorea1@gmail.com', exempt: false })).status, 400, '항상 제외되는 계정은 다시 넣을 수 없다');
   assert.equal((await post(anna, { email: 'bob@wol.org', exempt: true })).status, 403);
   assert.equal((await post(admin, { email: 'nope', exempt: true })).status, 400);
   assert.equal((await post(admin, { email: 'Bob@wol.org', exempt: true })).status, 200);
   const b = await (await get(admin)).json();
-  assert.equal(b.submission.expected, 4); assert.deepEqual(b.submission.exempt.map(p => p.email).sort(), ['admin@wolko.org', 'bob@wol.org', 'wolkorea1@gmail.com']);
+  assert.equal(b.submission.expected, 5); assert.deepEqual(b.submission.exempt.map(p => p.email).sort(), ['admin@wolko.org', 'bob@wol.org', 'wolkorea1@gmail.com']);
   assert.equal(b.submission.missing.some(p => p.email === 'bob@wol.org'), false);
   await post(admin, { email: 'bob@wol.org', exempt: false });
   assert.deepEqual((await (await get(admin)).json()).submission.exempt.map(p => p.email).sort(), ['admin@wolko.org', 'wolkorea1@gmail.com'], '직접 제외한 계정은 다시 넣을 수 있다');

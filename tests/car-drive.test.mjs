@@ -151,8 +151,13 @@ test('가입 때 등급(관리자/일반 멤버)을 고르고, 관리자는 wolk
 test('등급은 코드의 목록이 기준: 마스터 admin@wolko.org · 관리자 4명 · 나머지는 일반 멤버, 승인에서도 목록 밖은 관리자로 못 올린다', async () => {
   const H = await import('../functions/lib/hubAccounts.js');
   assert.deepEqual(H.MASTER_EMAILS, ['admin@wolko.org']);
-  for (const e of ['hkim3@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org', 'jeremyrodgers@wol.org']) assert.equal(H.effectiveRole(e, 'counselor'), 'admin', e);
+  for (const e of ['hkim3@wol.org', 'samuelsong@wol.org', 'jeremyrodgers@wol.org']) assert.equal(H.effectiveRole(e, 'counselor'), 'admin', e);
   assert.equal(H.effectiveRole('admin@wolko.org', 'counselor'), 'master');
+  // Jacob Morse 는 마스터와 같은 권한(역할이 master) — 하지만 마스터 전용 특례(가입 화면 우회 등)는 admin@wolko.org 에만 있다
+  assert.deepEqual(H.MASTER_EQUIVALENT_EMAILS, ['jacobmorse@wol.org']);
+  assert.equal(H.effectiveRole('jacobmorse@wol.org', 'counselor'), 'master');
+  assert.equal(H.effectiveRole('JacobMorse@wol.org', 'admin'), 'master');
+  assert.equal(H.isMasterEmail('jacobmorse@wol.org'), false, 'isMasterEmail(가입 우회·계정 없이 로그인)은 admin@wolko.org 전용');
   assert.equal(H.effectiveRole('someone@wol.org', 'admin'), 'counselor', '예전에 admin이던 계정도 목록에 없으면 일반 멤버');
   assert.equal(H.effectiveRole('someone@wol.org', 'master'), 'counselor');
   const env = memoryEnv();

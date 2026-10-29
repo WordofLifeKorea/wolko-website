@@ -21,13 +21,18 @@
  */
 
 export const MASTER_EMAILS = ['admin@wolko.org'];
+/**
+ * 마스터와 같은 권한을 주는 계정. 역할만 'master' 로 올라가고, 위 MASTER_EMAILS 에만 있는 특례(가입 화면에서 승인 없이
+ * 비밀번호를 정하고 바로 로그인, 계정 없이 로그인 등)는 받지 않는다 — 이 계정은 늘 일반 계정처럼 이메일 인증·비밀번호로 들어온다.
+ */
+export const MASTER_EQUIVALENT_EMAILS = ['jacobmorse@wol.org'];
 /** 포탈 전체를 유지보수하는 관리자 — 이 목록이 기준이다. 목록에 없는 계정은 모두 일반 멤버(counselor). */
 export const ADMIN_EMAILS = ['hkim3@wol.org', 'jacobmorse@wol.org', 'samuelsong@wol.org', 'jeremyrodgers@wol.org'];
 
 /** 계정에 저장된 값이나 토큰이 뭐라고 하든, 마스터/관리자는 코드의 목록으로만 결정한다 */
 export function effectiveRole(email, _claimed) {
   const e = String(email || '').trim().toLowerCase();
-  if (MASTER_EMAILS.includes(e)) return 'master';
+  if (MASTER_EMAILS.includes(e) || MASTER_EQUIVALENT_EMAILS.includes(e)) return 'master';
   if (ADMIN_EMAILS.includes(e)) return 'admin';
   return 'counselor';
 }

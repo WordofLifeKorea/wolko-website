@@ -43,8 +43,8 @@ test('본부 양식 항목: 캠프 4 · 전도 행사 3 · 개인 전도(본부 
   assert.equal(new Set(GOSPEL_FIELD_IDS).size, GOSPEL_FIELD_IDS.length, '항목 id 가 겹치지 않는다');
 });
 
-test('쓸 수 있는 항목: 개인 전도는 누구나, 캠프·행사는 담당자의 개인/팀 보고, 제자훈련·지역교회는 담당자의 사역 현황 보고', () => {
-  assert.deepEqual(allowedFieldIds('individual', false), ['preEvangelism', 'evangelism', 'salvation', 'literature', 'social']);
+test('쓸 수 있는 항목: 개인 전도와 전도 행사는 누구나, 캠프는 담당자의 개인/팀 보고, 제자훈련·지역교회는 담당자의 사역 현황 보고', () => {
+  assert.deepEqual(allowedFieldIds('individual', false), ['preEvangelism', 'evangelism', 'salvation', 'literature', 'social', 'eeAttendance', 'eeSalvations', 'eeDedications']);
   assert.ok(allowedFieldIds('team', true).includes('campCount') && !allowedFieldIds('team', true).includes('dtc'));
   assert.ok(allowedFieldIds('ministry', true).includes('dtc') && !allowedFieldIds('ministry', true).includes('evangelism'));
   assert.deepEqual(allowedFieldIds('ministry', false), []);
