@@ -27,6 +27,18 @@ const isDir = d.role_badge && d.role_badge.toLowerCase().includes('director');
 const [name1Ko, name2Ko] = d.name_ko.includes(' & ') ? d.name_ko.split(' & ') : [d.name_ko, null];
 const [name1En, name2En] = d.name_en.includes(' & ') ? d.name_en.split(' & ') : [d.name_en, null];
 
+// 맨 위 소개 사진 — 대표 사진이 없으면 이야기 사진을 쓴다.
+// 이야기 칸 사진은 위와 다른 사진(photo_story)이 있을 때만 따로 보여 준다 (같은 사진이 두 번 나오지 않게).
+const heroPhoto = d.photo_url || d.photo_story || '';
+const heroPhotoPos = d.photo_position || 'center top';
+const storyPhoto = d.photo_story && d.photo_story !== heroPhoto ? d.photo_story : '';
+const initial = (d.name_ko || d.name_en || '?').trim().charAt(0);
+// 한 줄 소개 문구(두 부분으로 나뉘어 저장됨)는 이름 아래 큰 문장으로 이어 붙인다.
+// 몇몇은 따옴표까지 저장돼 있어서, 이어 붙일 때 "앞" "뒤" 처럼 보이지 않게 양끝 따옴표를 뗀다.
+const unquote = (s?: string) => (s ?? '').trim().replace(/^["'“”‘’]+|["'“”‘’]+$/g, '').trim();
+const taglineKo = [d.hero_tagline_ko, d.hero_tagline2_ko].map(unquote).filter(Boolean).join(' ');
+const taglineEn = [d.hero_tagline_en, d.hero_tagline2_en].map(unquote).filter(Boolean).join(' ');
+
 // ── Role badge 한/영 매핑 ────────────────────────────────────────
 const ROLE_MAP: Record<string, string> = {
   'Missionary':        '선교사',
@@ -74,489 +86,244 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 ---
 <BaseLayout title={`${d.name_ko} — WOLKO 월코`} description={`${d.name_en} | ${d.title_en} | Word of Life Korea`} activeNav="about">
 <style>
-@import url('https://cdn.jsdelivr.net/npm/pretendard@latest/dist/web/variable/pretendardvariable-dynamic-subset.css');
-
 .mp-wrap * { box-sizing: border-box; }
 
 .mp-wrap {
   --c-deep:  #004f68;
-  --c-mid:   #007ea1;
-  --c-light: #73d1f5;
-  --c-red:   #c42a36;
-  --c-ink:   #0d1b24;
-  --c-sub:   #3d5a6a;
-  --c-muted: #7a9aaa;
-  --c-bg:    #f5f8fa;
-  --c-line:  #dce8ee;
+  --c-navy:  #0b2430;
+  --c-ink:   #10252e;
+  --c-text:  #4a5d66;
+  --c-muted: #587383;
+  --c-label: #5a7380;
+  --c-line:  #d6dee2;
+  --c-soft:  #f6f9fb;
+  --c-fill:  #f3f7f9;
   --c-white: #ffffff;
-  font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
+  font-family: var(--ff-sans);
   color: var(--c-ink);
   background: var(--c-white);
+  word-break: keep-all;
 }
+.mp-shell { width: min(1120px, calc(100% - 96px)); margin-inline: auto; }
+.mp-wrap .mp-ico { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; }
 
-/* 한/영 토글 — 글로벌 셀렉터로 처리 (아래 is:global 블록 참고) */
+/* 작은 표시 — 앞에 가는 선 (사역 페이지와 같은 모양) */
+.mp-eyebrow { display: flex; align-items: center; gap: 12px; color: var(--c-deep); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.mp-eyebrow::before { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
 
-/* BACK BAR */
-.mp-back { background: var(--c-white); border-bottom: 1px solid var(--c-line); padding: 0 5%; }
+/* 한/영 토글 — 글로벌 셀렉터로 처리 (아래 :global 규칙 참고) */
+
+/* ── 맨 위 소개 (사진 + 이름) ───────────────────────── */
+.mp-hero { background: var(--c-soft); padding: 112px 0 88px; border-bottom: 1px solid var(--c-line); }
+.mp-back { margin-bottom: 40px; }
 .mp-back a {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 13px 0; font-size: 13px; font-weight: 600;
-  color: var(--c-sub); text-decoration: none; transition: color 0.2s;
-}
-.mp-back a:hover { color: var(--c-deep); }
-
-/* HERO — 2-column */
-.mp-hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  overflow: hidden;
-}
-.mp-hero-photo {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--c-deep), var(--c-mid));
-  min-height: 80vh;
-}
-.mp-hero-photo img {
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: center top;
-  display: block;
-  animation: mp-zoom-in 1.4s cubic-bezier(0.22,1,0.36,1) forwards;
-}
-@keyframes mp-zoom-in {
-  from { transform: scale(1.08); }
-  to   { transform: scale(1.00); }
-}
-.mp-hero-photo::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 50%, rgba(4,20,32,0.65) 100%);
-}
-.mp-hero-name-layer {
-  position: absolute; bottom: 36px; left: 36px; z-index: 2;
-  animation: mp-fade-up 1s 0.5s both;
-}
-.mp-hero-name-main {
-  font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: clamp(22px, 2.8vw, 38px);
-  font-weight: 700; color: rgba(255,255,255,0.88);
-  line-height: 1.15; letter-spacing: -0.01em;
-}
-.mp-hero-name-sub {
-  font-size: 10px; font-weight: 700;
-  color: var(--c-light); letter-spacing: 2.5px;
-  text-transform: uppercase; margin-top: 6px;
-}
-.mp-hero-content {
-  background: var(--c-deep);
-  display: flex; flex-direction: column; justify-content: center;
-  padding: 64px 52px;
-  min-height: 80vh;
-  position: relative; overflow: hidden;
-}
-.mp-hero-content::before {
-  content: '';
-  position: absolute; width: 420px; height: 420px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(115,209,245,0.055) 0%, transparent 70%);
-  top: -80px; right: -80px; pointer-events: none;
-}
-
-.mp-hero-label {
   display: inline-flex; align-items: center; gap: 10px;
-  font-size: 9.5px; font-weight: 700; letter-spacing: 3px;
-  text-transform: uppercase; color: var(--c-light);
-  margin: 0 0 36px; animation: mp-fade-up 1s 0.2s both;
-  opacity: 0.85;
+  font-size: 13px; font-weight: 600; color: var(--c-muted); text-decoration: none; transition: color .2s, gap .25s;
 }
-.mp-hero-label::before {
-  content: ''; display: block; width: 28px; height: 1px;
-  background: var(--c-light); flex-shrink: 0;
-}
+.mp-back a:hover { color: var(--c-deep); gap: 14px; }
+.mp-hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 72px; align-items: center; }
+.mp-hero-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: #e6eef2; }
+.mp-hero-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; animation: mp-zoom-in 1.4s cubic-bezier(.2,.7,.2,1) both; }
+.mp-hero-initial { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--ff-serif); font-size: 96px; font-weight: 700; color: #a3b6c0; }
+@keyframes mp-zoom-in { from { transform: scale(1.06); } to { transform: none; } }
 
-/* 메인 타이틀 */
+.mp-hero-content > * { animation: mp-fade-up 1s cubic-bezier(.2,.7,.2,1) both; }
+.mp-hero-content > :nth-child(2) { animation-delay: .08s; }
+.mp-hero-content > :nth-child(3) { animation-delay: .16s; }
+.mp-hero-content > :nth-child(4) { animation-delay: .24s; }
+.mp-hero-content > :nth-child(5) { animation-delay: .32s; }
+.mp-hero-content > :nth-child(6) { animation-delay: .4s; }
+
 .mp-hero-title {
-  font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
-  font-size: clamp(46px, 4.8vw, 70px); font-weight: 800;
-  color: var(--c-white); line-height: 1.18;
-  margin: 0; animation: mp-fade-up 1s 0.3s both;
-  word-break: keep-all; letter-spacing: -0.5px;
+  margin-top: 20px;
+  font-family: var(--ff-serif); font-size: clamp(36px, 3.8vw, 54px); font-weight: 700;
+  line-height: 1.18; letter-spacing: -.03em; color: var(--c-navy);
 }
-/* 두 번째 줄 */
-.mp-hero-title-em {
-  display: block;
-  color: var(--c-light);
-  line-height: 1.25;
-  margin-top: 8px;
+.mp-hero-meta { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+.mp-hero-role { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-deep); }
+.mp-hero-campus { display: inline-flex; align-items: center; gap: 20px; font-size: 14px; font-weight: 600; color: var(--c-muted); }
+.mp-hero-campus::before { content: ''; width: 1px; height: 14px; background: var(--c-line); }
+.mp-hero-tagline {
+  margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--c-line);
+  font-size: clamp(19px, 1.6vw, 22px); font-weight: 600; line-height: 1.55; letter-spacing: -.01em; color: var(--c-ink);
 }
-.mp-hero-title-em.ko {
-  font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
-  font-weight: 800; font-style: italic;
-  font-size: clamp(46px, 4.8vw, 70px);
-}
-.mp-hero-title-em.en {
-  font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
-  font-weight: 800; font-style: italic;
-  font-size: clamp(46px, 4.8vw, 70px);
-}
+.mp-hero-desc { margin-top: 16px; max-width: 620px; font-size: 16px; line-height: 1.85; color: var(--c-text); }
+.mp-hero-tagline + .mp-hero-desc { margin-top: 14px; }
+.mp-hero-meta + .mp-hero-desc { margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--c-line); }
 
-.mp-hero-role {
-  display: none; /* 제거 — 눈잡물 */
-}
-
-.mp-hero-desc {
-  font-size: 14px; line-height: 1.85;
-  color: rgba(255,255,255,0.72);
-  margin: 32px 0 40px; animation: mp-fade-up 1s 0.45s both;
-  max-width: 400px;
-  border-left: 2px solid rgba(115,209,245,0.45);
-  padding-left: 20px;
-}
-
-.mp-cta-row {
-  display: flex; gap: 16px; flex-wrap: wrap;
-  animation: mp-fade-up 1s 0.65s both;
-}
+.mp-cta-row { margin-top: 36px; display: flex; gap: 10px; flex-wrap: wrap; }
 .mp-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 13px 22px; border-radius: 50px;
-  font-size: 13px; font-weight: 700;
-  text-decoration: none; transition: all 0.25s;
+  height: 52px; padding: 0 24px;
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 12px;
+  border-radius: 2px; border: 1px solid transparent;
+  font-family: inherit; font-size: 15px; font-weight: 700; line-height: 1;
+  text-decoration: none; cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, gap .25s;
 }
 .mp-btn.wl-en { display: none; }
 :global(.lang-en) .mp-btn.wl-ko { display: none !important; }
 :global(.lang-en) .mp-btn.wl-en { display: inline-flex !important; }
-.mp-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
-.mp-btn-primary { background: var(--c-red); color: #fff !important; }
-.mp-btn-primary:hover { background: #a82230; color: #fff !important; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,42,54,0.4); }
-.mp-btn-secondary { background: rgba(255,255,255,0.15); color: #fff !important; border: 1.5px solid rgba(255,255,255,0.5); }
-.mp-btn-secondary:hover { background: rgba(255,255,255,0.28); color: #fff !important; transform: translateY(-2px); }
+.mp-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.mp-btn-primary { background: var(--c-deep); color: #fff !important; }
+.mp-btn-primary:hover { background: #00384a; color: #fff !important; gap: 16px; }
+.mp-btn-secondary { justify-content: flex-start; background: #fff; color: var(--c-navy) !important; border-color: #b8c7ce; }
+.mp-btn-secondary:hover { border-color: var(--c-deep); color: var(--c-deep) !important; }
+.mp-btn:focus-visible, .mp-back a:focus-visible { outline: 2px solid var(--c-deep); outline-offset: 3px; }
 
-/* VERSE */
-.mp-verse {
-  background: var(--c-ink); padding: 72px 40px;
-  text-align: center; position: relative; overflow: hidden;
-}
-.mp-verse::before {
-  content: '\201C';
-  position: absolute; font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: 220px; color: rgba(115,209,245,0.05);
-  /* 위로 올리면 섹션 밖으로 잘려 쉼표처럼 보이므로 안쪽에 놓는다 */
-  top: 8px; left: 24px; line-height: 1; pointer-events: none;
-}
+/* ── 삶의 말씀 ───────────────────────────────────── */
+.mp-verse { padding: 104px 0 96px; }
+.mp-verse-inner { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 72px; align-items: start; }
 .mp-wrap .mp-verse-text {
-  font-family: 'Pretendard Variable', Pretendard, sans-serif;
-  font-size: clamp(15px, 2vw, 21px); font-weight: 600;
-  color: var(--c-white); line-height: 1.88;
-  max-width: 780px; margin: 0 auto 20px; position: relative;
+  font-size: clamp(18px, 1.6vw, 22px); font-weight: 500;
+  line-height: 1.85; letter-spacing: -.01em; color: var(--c-navy);
 }
-.mp-verse-ref {
-  font-size: 12px; font-weight: 700;
-  letter-spacing: 2px; color: var(--c-light); text-transform: uppercase;
-}
-.mp-verse-copy {
-  max-width: 640px; margin: 14px auto 0; font-size: 10.5px; line-height: 1.5;
-  color: var(--c-light); opacity: .75;
-}
+.mp-verse-ref { margin-top: 24px; display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--c-deep); }
+.mp-verse-ref::before { content: ''; width: 20px; height: 1px; background: currentColor; flex: none; }
+.mp-verse-copy { margin-top: 16px; max-width: 640px; font-size: 11px; line-height: 1.6; color: var(--c-muted); }
 
-/* STORY */
-.mp-story {
-  padding: 88px 40px; max-width: 1080px; margin: 0 auto;
-}
-.mp-story-block {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 72px; align-items: start;
-}
-.mp-story-block--no-photo {
-  grid-template-columns: 1fr;
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
-}
-.mp-story-photo {
-  position: relative; border-radius: 20px; overflow: hidden;
-  aspect-ratio: 3 / 4;
-  box-shadow: 0 20px 60px rgba(0,79,104,0.16);
-  background: linear-gradient(135deg, var(--c-line), var(--c-bg));
-}
-.mp-story-photo img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-}
-.mp-story-photo::before {
-  content: '';
-  position: absolute; width: 80px; height: 80px;
-  background: var(--c-light); opacity: 0.3; border-radius: 50%;
-  top: -20px; right: -20px; z-index: 1;
-}
-.mp-story-photo-tag {
-  position: absolute; bottom: 20px; left: 20px;
-  background: var(--c-deep); color: var(--c-white);
-  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
-  text-transform: uppercase; padding: 6px 14px; border-radius: 30px; z-index: 2;
-}
-.mp-story-photo-placeholder {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-}
-.mp-story-photo-placeholder svg { width: 80px; height: 80px; opacity: 0.2; }
+/* ── 이야기 ─────────────────────────────────────── */
+.mp-story { padding: 0 0 104px; }
+.mp-story-inner { padding-top: 96px; border-top: 1px solid var(--c-line); }
+.mp-story-block { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 72px; align-items: start; }
+/* 사진이 없으면 왼쪽에 제목, 오른쪽에 본문 */
+.mp-story-block--no-photo .mp-story-text { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: 72px; align-items: start; padding-top: 0; }
+.mp-story-block--no-photo { grid-template-columns: 1fr; }
+.mp-story-block--no-photo .mp-story-label { grid-column: 1; grid-row: 1; }
+.mp-story-block--no-photo .mp-story-name { grid-column: 1; grid-row: 2; }
+.mp-story-block--no-photo .mp-bio-wrap,
+.mp-story-block--no-photo .mp-story-empty { grid-column: 2; grid-row: 1 / span 3; }
+.mp-story-block--no-photo .mp-bio-toggle { grid-column: 2; grid-row: 4; justify-self: start; }
 
-/* 두 번째 스토리 블록: 텍스트 왼쪽, 사진 오른쪽 */
-.mp-story-block--reverse .mp-story-text { order: 1; }
-.mp-story-block--reverse .mp-story-photo { order: 2; }
+.mp-story-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--c-fill); }
+.mp-story-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.mp-story-figure { margin: 0; }
+.mp-story-caption { margin-top: 14px; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-label); }
 
-.mp-story-text { padding-top: 12px; }
+/* 두 번째 이야기 블록: 텍스트 왼쪽, 사진 오른쪽 */
+.mp-story-block--reverse { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.mp-story-block--reverse.mp-story-block--no-photo { grid-template-columns: 1fr; }
+
+.mp-story-text { padding-top: 4px; }
+.mp-story-label { color: var(--c-deep); }
+.mp-story-name {
+  margin-top: 18px; margin-bottom: 28px;
+  font-family: var(--ff-serif); font-size: clamp(28px, 2.8vw, 40px); font-weight: 700;
+  line-height: 1.2; letter-spacing: -.03em; color: var(--c-navy);
+}
+.mp-wrap .mp-story-body { font-size: 16px; line-height: 1.9; color: var(--c-text); }
+.mp-wrap .mp-story-body + .mp-story-body { margin-top: 18px; }
 
 /* 더 보기 / 접기 */
-.mp-bio-wrap {
-  position: relative;
-  transition: max-height 0.4s ease;
-  overflow: hidden;
-}
+.mp-bio-wrap { position: relative; transition: max-height .4s ease; overflow: hidden; }
 .mp-bio-wrap.is-clamped::after {
-  content: '';
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 96px;
-  background: linear-gradient(to bottom, transparent, #ffffff);
-  pointer-events: none;
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 96px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), #ffffff); pointer-events: none;
 }
 .mp-bio-toggle {
-  display: none;
-  margin-top: 16px;
-  background: none; border: 1.5px solid var(--c-mid);
-  padding: 7px 18px; border-radius: 20px;
-  font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px;
-  color: var(--c-mid); cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  display: none; margin-top: 20px; height: 44px; padding: 0 20px;
+  align-items: center; gap: 8px;
+  background: #fff; border: 1px solid #b8c7ce; border-radius: 2px;
+  font-family: inherit; font-size: 14px; font-weight: 700; color: var(--c-navy); cursor: pointer;
+  transition: border-color .2s, color .2s;
 }
-.mp-bio-toggle:hover { background: var(--c-mid); color: #fff; }
-.mp-bio-toggle.visible { display: inline-block; }
+.mp-bio-toggle:hover { border-color: var(--c-deep); color: var(--c-deep); }
+.mp-bio-toggle.visible { display: inline-flex; }
 
-.mp-story-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 3.5px;
-  text-transform: uppercase; color: var(--c-mid); margin-bottom: 14px;
-}
-.mp-story-name {
-  font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: clamp(26px, 3.5vw, 40px); font-weight: 800;
-  color: var(--c-deep); line-height: 1.2; margin-bottom: 24px;
-}
-.mp-story-body {
-  font-size: 14.5px; line-height: 1.9; color: var(--c-sub);
-}
-.mp-wrap .mp-story-body + .mp-story-body { margin-top: 16px; }
+.mp-story-empty { background: var(--c-fill); padding: 28px 28px; font-size: 15px; line-height: 1.8; color: var(--c-text); }
 
-.mp-story-empty {
-  background: var(--c-bg); border: 1px dashed var(--c-line);
-  border-radius: 14px; padding: 28px 24px;
-  font-size: 14px; color: var(--c-muted); font-style: italic; line-height: 1.8;
-}
+.mp-story-divider { border: none; border-top: 1px solid var(--c-line); margin: 88px 0; }
 
-.mp-story-divider {
-  border: none; border-top: 1px solid var(--c-line);
-  margin: 56px 0;
-}
-
-/* 모바일: reverse 블록에서 사진을 텍스트 위로 */
 @media (max-width: 900px) {
+  /* 좁은 화면: 사진을 글 위로 */
   .mp-story-block--reverse .mp-story-text { order: 2; }
-  .mp-story-block--reverse .mp-story-photo { order: 1; }
+  .mp-story-block--reverse .mp-story-figure { order: 1; }
 }
 
-/* SPOUSE SECTION */
-.mp-spouse {
-  max-width: 1080px; margin: 0 auto; padding: 0 40px 72px;
-}
-.mp-spouse-card {
-  display: flex; align-items: center; gap: 40px;
-  background: linear-gradient(135deg, var(--c-deep) 0%, #015a7a 100%);
-  border-radius: 24px; padding: 44px 52px;
-  position: relative; overflow: hidden;
-}
-.mp-spouse-card::before {
-  content: ''; position: absolute;
-  top: -60px; right: -60px; width: 240px; height: 240px;
-  border-radius: 50%; background: rgba(115,209,245,0.06); pointer-events: none;
-}
-.mp-spouse-card::after {
-  content: ''; position: absolute;
-  bottom: -40px; left: -40px; width: 180px; height: 180px;
-  border-radius: 50%; background: rgba(255,255,255,0.03); pointer-events: none;
-}
-.mp-spouse-photo-wrap {
-  flex-shrink: 0; width: 120px; height: 120px; border-radius: 50%;
-  overflow: hidden; position: relative; z-index: 1;
-  background: rgba(255,255,255,0.08);
-  border: 3px solid rgba(115,209,245,0.3);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-}
-.mp-spouse-photo-wrap img {
-  width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;
-}
-.mp-spouse-avatar {
-  width: 100%; height: 100%;
-  display: flex; align-items: center; justify-content: center;
-}
-.mp-spouse-avatar svg { width: 52px; height: 52px; opacity: 0.35; }
-.mp-spouse-text { position: relative; z-index: 1; }
-.mp-spouse-eyebrow {
-  font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
-  color: var(--c-light); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
-}
-.mp-spouse-eyebrow::before {
-  content: ''; display: block; width: 20px; height: 1.5px;
-  background: var(--c-light); flex-shrink: 0;
-}
+/* ── 함께 사역하는 배우자 ───────────────────────────── */
+.mp-spouse { padding: 0 0 104px; }
+.mp-spouse-card { display: flex; align-items: center; gap: 40px; padding: 40px; background: var(--c-soft); border: 1px solid var(--c-line); }
+.mp-spouse-photo-wrap { flex: none; width: 128px; aspect-ratio: 4 / 5; overflow: hidden; background: #e6eef2; }
+.mp-spouse-photo-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.mp-spouse-avatar { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.mp-spouse-avatar svg { width: 52px; height: 52px; }
 .mp-spouse-name {
-  font-family: 'GmarketSans', 'Pretendard Variable', sans-serif;
-  font-size: clamp(24px, 3vw, 36px); font-weight: 700;
-  color: #fff; line-height: 1.15; margin-bottom: 14px; letter-spacing: -0.01em;
+  margin-top: 14px;
+  font-family: var(--ff-serif); font-size: clamp(24px, 2.4vw, 32px); font-weight: 700;
+  color: var(--c-navy); line-height: 1.2; letter-spacing: -.03em;
 }
-.mp-spouse-desc {
-  font-size: 14px; line-height: 1.85; color: rgba(255,255,255,0.62);
-  max-width: 480px;
-}
-.mp-spouse-bio {
-  font-size: 14.5px; line-height: 1.9;
-  color: rgba(255,255,255,0.6); max-width: 520px;
-}
-
-/* SPOUSE TOGGLE BAR */
-.mp-story-toggle-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  max-width: 1080px; margin: 0 auto 48px; padding: 0 40px;
-}
-.mp-story-toggle-bar-title {
-  font-size: 10px; font-weight: 700; letter-spacing: 3px;
-  text-transform: uppercase; color: var(--c-muted);
-}
-.mp-spouse-toggle {
-  display: inline-flex; align-items: center; gap: 10px;
-  background: none; border: none; cursor: pointer;
-  padding: 8px 16px 8px 8px;
-  border-radius: 999px; border: 1.5px solid var(--c-line);
-  background: var(--c-white);
-  transition: border-color 0.2s, box-shadow 0.2s;
-  font-family: inherit;
-}
-.mp-spouse-toggle:hover { border-color: var(--c-mid); }
-.mp-spouse-toggle.active { border-color: var(--c-deep); box-shadow: 0 2px 10px rgba(0,79,104,0.10); }
-.mp-spouse-toggle-track {
-  width: 36px; height: 20px; border-radius: 999px;
-  background: var(--c-line); position: relative;
-  transition: background 0.2s; flex-shrink: 0;
-}
-.mp-spouse-toggle.active .mp-spouse-toggle-track { background: var(--c-deep); }
-.mp-spouse-toggle-thumb {
-  position: absolute; top: 3px; left: 3px;
-  width: 14px; height: 14px; border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
-  transition: transform 0.2s;
-}
-.mp-spouse-toggle.active .mp-spouse-toggle-thumb { transform: translateX(16px); }
-.mp-spouse-toggle-text {
-  font-size: 12px; font-weight: 700; color: var(--c-sub); white-space: nowrap;
-}
-.mp-spouse-toggle.active .mp-spouse-toggle-text { color: var(--c-deep); }
+.mp-spouse-desc { margin-top: 12px; max-width: 560px; font-size: 15.5px; line-height: 1.85; color: var(--c-text); }
 
 /* SPOUSE CONTENT WRAPPER */
-.mp-spouse-content {
-  transition: opacity 0.3s, transform 0.3s;
-}
-.mp-spouse-content.mp-spouse-hidden {
-  display: none;
-}
+.mp-spouse-content.mp-spouse-hidden { display: none; }
 
-/* NEWSLETTER / REPORT */
-.mp-report {
-  max-width: 1080px; margin: 0 auto; padding: 0 40px 0;
+/* ── 중보기도 ─────────────────────────────────────── */
+.mp-prayer { padding: 96px 0 112px; background: var(--c-fill); }
+.mp-prayer-inner { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 72px; align-items: start; }
+.mp-prayer-title {
+  margin-top: 18px; font-family: var(--ff-serif); font-size: clamp(28px, 2.8vw, 40px); font-weight: 700;
+  line-height: 1.2; letter-spacing: -.03em; color: var(--c-navy);
 }
-.mp-report-inner {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 20px;
-  background: linear-gradient(135deg, rgba(0,79,104,0.05), rgba(0,126,161,0.09));
-  border: 1px solid rgba(0,79,104,0.12); border-radius: 14px;
-  padding: 22px 28px;
-  flex-wrap: wrap;
+.mp-wrap .mp-prayer-text { font-size: 16.5px; line-height: 1.9; color: var(--c-ink); }
+.mp-prayer-list { list-style: none; padding: 0; margin: 0; counter-reset: mp-prayer; border-bottom: 1px solid var(--c-line); }
+.mp-prayer-list li {
+  counter-increment: mp-prayer;
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 12px;
+  padding: 18px 0; border-top: 1px solid var(--c-line);
+  font-size: 16px; line-height: 1.8; color: var(--c-ink);
 }
-.mp-report-text {}
-.mp-report-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
-  text-transform: uppercase; color: var(--c-mid); margin-bottom: 4px;
+.mp-prayer-list li::before {
+  content: counter(mp-prayer, decimal-leading-zero);
+  font-family: var(--ff-serif); font-size: 14px; line-height: 1.9; color: var(--c-deep);
 }
-.mp-report-desc {
-  font-size: 14px; color: var(--c-sub); line-height: 1.5;
-}
-.mp-report-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 22px;
-  background: var(--c-deep);
-  color: #fff;
-  border-radius: 10px;
-  font-family: var(--f-heading); font-size: 12px; font-weight: 700;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.2s, transform 0.15s;
-}
-.mp-report-btn:hover { background: #00627f; transform: translateY(-1px); }
-.mp-report-btn svg { flex-shrink: 0; }
-@media (max-width: 768px) {
-  .mp-report { padding: 0 24px 0; }
-  .mp-report-inner { flex-direction: column; align-items: flex-start; }
-}
-@media (max-width: 560px) {
-  .mp-report-inner { padding: 18px 20px; }
-}
-
-/* PRAYER */
-.mp-prayer {
-  max-width: 1080px; margin: 0 auto; padding: 0 40px 80px;
-}
-.mp-prayer-inner {
-  background: linear-gradient(135deg, rgba(0,79,104,0.04), rgba(0,126,161,0.07));
-  border: 1px solid rgba(0,79,104,0.10); border-radius: 14px;
-  padding: 28px 32px;
-}
-.mp-prayer-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
-  text-transform: uppercase; color: var(--c-mid); margin-bottom: 10px;
-}
-.mp-prayer-text { font-size: 14px; line-height: 1.8; color: var(--c-sub); }
-.mp-prayer-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.mp-prayer-list li { display: flex; gap: 8px; font-size: 14px; line-height: 1.8; color: var(--c-sub); }
-.mp-prayer-list li::before { content: '–'; color: var(--c-mid); flex-shrink: 0; margin-top: 0; }
 
 /* ANIMATION */
 @keyframes mp-fade-up {
   from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: none; }
 }
-.mp-reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s, transform 0.7s; }
-.mp-reveal.mp-in { opacity: 1; transform: translateY(0); }
+.mp-reveal { opacity: 0; transform: translateY(28px); transition: opacity 1.1s cubic-bezier(.2,.7,.2,1), transform 1.1s cubic-bezier(.2,.7,.2,1); }
+.mp-reveal.mp-in { opacity: 1; transform: none; }
 
 /* RESPONSIVE */
-@media (max-width: 900px) {
-  .mp-hero { grid-template-columns: 1fr; }
-  .mp-hero-photo { height: 72vw; min-height: 420px; }
-  .mp-hero-content { min-height: auto; padding: 44px 32px; }
-  .mp-hero-title { font-size: clamp(28px, 6.5vw, 42px); }
-  .mp-hero-title-em.ko,
-  .mp-hero-title-em.en { font-size: clamp(26px, 6vw, 40px); }
-  .mp-story-block { grid-template-columns: 1fr; gap: 36px; }
-  .mp-story { padding: 56px 24px; }
-  .mp-spouse { padding: 0 24px 56px; }
-  .mp-spouse-card { flex-direction: column; padding: 36px 28px; gap: 24px; text-align: center; }
-  .mp-spouse-eyebrow { justify-content: center; }
-  .mp-spouse-desc, .mp-spouse-bio { max-width: 100%; }
-  .mp-prayer { padding: 0 24px 56px; }
+@media (max-width: 1100px) {
+  .mp-shell { width: calc(100% - 64px); }
+  .mp-hero-grid, .mp-story-block, .mp-story-block--reverse { gap: 48px; }
 }
-@media (max-width: 560px) {
-  .mp-hero-content { padding: 36px 22px; }
-  .mp-hero-name-layer { bottom: 20px; left: 20px; }
-  .mp-hero-title { font-size: clamp(24px, 7vw, 34px); }
-  .mp-hero-title-em.ko,
-  .mp-hero-title-em.en { font-size: clamp(22px, 6.5vw, 32px); }
-  .mp-verse { padding: 56px 24px; }
+@media (max-width: 900px) {
+  .mp-hero { padding-top: 104px; }
+  .mp-hero-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 36px; align-items: start; }
+  .mp-verse-inner, .mp-prayer-inner { grid-template-columns: 1fr; gap: 24px; }
+  .mp-story-block, .mp-story-block--reverse { grid-template-columns: 1fr; gap: 36px; }
+  .mp-story-block--no-photo .mp-story-text { display: block; }
+  .mp-story-figure { max-width: 520px; }
+}
+@media (max-width: 740px) {
+  .mp-shell { width: calc(100% - 40px); }
+  .mp-hero { padding: 96px 0 56px; }
+  .mp-back { margin-bottom: 24px; }
+  .mp-hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .mp-hero-photo { aspect-ratio: 4 / 5; max-height: 72vh; }
+  .mp-hero-title { margin-top: 16px; font-size: clamp(30px, 8.4vw, 38px); }
+  .mp-hero-tagline { margin-top: 24px; padding-top: 22px; font-size: 18px; }
+  .mp-hero-meta + .mp-hero-desc { margin-top: 24px; padding-top: 22px; }
+  .mp-hero-desc { font-size: 15.5px; }
+  .mp-cta-row { margin-top: 28px; flex-direction: column; }
+  .mp-cta-row .mp-btn { width: 100%; }
+  .mp-verse { padding: 64px 0 56px; }
+  .mp-wrap .mp-verse-text { font-size: 17px; }
+  .mp-story { padding-bottom: 64px; }
+  .mp-story-inner { padding-top: 56px; }
+  .mp-story-name { margin-bottom: 20px; }
+  .mp-wrap .mp-story-body { font-size: 15.5px; line-height: 1.85; }
+  .mp-story-divider { margin: 56px 0; }
+  .mp-spouse { padding-bottom: 64px; }
+  .mp-spouse-card { flex-direction: column; align-items: flex-start; gap: 24px; padding: 28px 20px; }
+  .mp-prayer { padding: 64px 0 88px; }
+  .mp-prayer-list li { grid-template-columns: 32px minmax(0, 1fr); font-size: 15.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-hero-photo img, .mp-hero-content > * { animation: none; }
+  .mp-reveal { opacity: 1; transform: none; transition: none; }
+  .mp-btn, .mp-back a, .mp-bio-wrap { transition: none; }
 }
 
 /* ── TEAM NAVIGATOR SIDEBAR ─────────────────────────── */
@@ -564,13 +331,12 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   position: fixed;
   right: 0; top: 0; bottom: 0;
   width: 210px;
-  background: rgba(255,255,255,0.97);
+  background: rgba(255,255,255,0.98);
   backdrop-filter: blur(12px);
-  border-left: 1px solid #dce8ee;
+  border-left: 1px solid var(--c-line, #d6dee2);
   z-index: 200;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 24px rgba(0,40,60,0.08);
   transform: translateX(0);
   transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
 }
@@ -581,28 +347,27 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   left: -32px; top: 50%;
   transform: translateY(-50%);
   width: 32px; height: 64px;
-  background: rgba(255,255,255,0.97);
-  border: 1px solid #dce8ee;
+  background: #fff;
+  border: 1px solid #d6dee2;
   border-right: none;
-  border-radius: 8px 0 0 8px;
+  border-radius: 2px 0 0 2px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: -3px 0 12px rgba(0,40,60,0.08);
-  color: #3d5a6a;
+  color: #4a5d66;
   transition: color 0.2s, background 0.2s;
 }
-.tn-toggle:hover { background: #f0f8fc; color: #004f68; }
+.tn-toggle:hover { background: #f3f7f9; color: #004f68; }
 .tn-toggle svg { transition: transform 0.3s; }
 .tn-sidebar.is-collapsed .tn-toggle svg { transform: rotate(180deg); }
 
 .tn-header {
-  padding: 14px 12px 9px;
-  border-bottom: 1px solid #dce8ee;
-  font-size: 10px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid #d6dee2;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: .12em;
   text-transform: uppercase;
-  color: #5b8fa8;
+  color: #004f68;
   flex-shrink: 0;
 }
 .tn-scroll {
@@ -610,52 +375,46 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   overflow-y: auto;
   padding: 8px 0 24px;
   scrollbar-width: thin;
-  scrollbar-color: #c5dce8 transparent;
+  scrollbar-color: #c9d6dc transparent;
 }
 .tn-campus-label {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: .12em;
   text-transform: uppercase;
-  color: #a0b8c4;
-  padding: 9px 12px 4px;
+  color: #5a7380;
+  padding: 12px 14px 6px;
 }
 .tn-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: 10px;
+  padding: 7px 14px;
   text-decoration: none;
-  color: #3d5a6a;
-  border-radius: 0;
-  transition: background 0.15s;
-  border-left: 3px solid transparent;
+  color: #4a5d66;
+  transition: background 0.15s, color 0.15s;
 }
-.tn-item:hover { background: #f0f8fc; color: #004f68; }
-.tn-item.is-active {
-  background: #e8f5fb;
-  border-left-color: #007ea1;
-  color: #004f68;
-}
+.tn-item:hover { background: #f3f7f9; color: #004f68; }
+/* 지금 보고 있는 사람 — 옅은 바탕 + 굵은 이름 (왼쪽 색 줄은 쓰지 않는다) */
+.tn-item.is-active { background: #e9f1f4; color: #0b2430; }
+.tn-item.is-active .tn-name { font-weight: 700; }
 .tn-avatar {
-  width: 42px; height: 42px;
-  border-radius: 50%;
+  width: 40px; height: 40px;
+  border-radius: 2px;
   object-fit: cover; object-position: top;
-  background: #c5dce8;
+  background: #d6dee2;
   flex-shrink: 0;
-  border: 2px solid #dce8ee;
 }
-.tn-item.is-active .tn-avatar { border-color: #007ea1; }
 .tn-avatar-placeholder {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #c5dce8, #a0b8c4);
+  width: 40px; height: 40px;
+  border-radius: 2px;
+  background: #e2eaee;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
+  font-family: var(--ff-serif);
   font-size: 15px;
   font-weight: 700;
-  color: white;
-  border: 2px solid #dce8ee;
+  color: #5a7380;
 }
 .tn-name {
   font-size: 13px;
@@ -665,9 +424,9 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 }
 .tn-role {
   font-size: 11px;
-  color: #7a9aaa;
+  color: #587383;
   line-height: 1.2;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 @media (max-width: 1100px) {
@@ -686,7 +445,7 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
 }
 
 /* 인턴 섹션 */
-.tn-stw-wrap { border-top: 1px solid #dce8ee; margin-top: 8px; padding-top: 4px; }
+.tn-stw-wrap { border-top: 1px solid #d6dee2; margin-top: 8px; padding-top: 4px; }
 .tn-stw-toggle {
   width: 100%;
   background: none;
@@ -696,8 +455,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   text-align: left;
   transition: background 0.15s;
 }
-.tn-stw-toggle:hover { background: #f0f8fc; }
-.tn-stw-icon { transition: transform 0.25s; color: #a0b8c4; }
+.tn-stw-toggle:hover { background: #f3f7f9; }
+.tn-stw-icon { transition: transform 0.25s; color: #5a7380; }
 .tn-stw-toggle.is-open .tn-stw-icon { transform: rotate(180deg); }
 
 /* ── MOBILE: 플로팅 버튼 + 바텀시트 ──────────────── */
@@ -709,9 +468,8 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   .tn-sheet-backdrop {
     display: block;
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(5,20,28,0.45);
     z-index: 301;
-    backdrop-filter: blur(2px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
@@ -726,12 +484,12 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     bottom: 0; left: 0; right: 0;
     max-height: 72vh;
     background: #fff;
-    border-radius: 20px 20px 0 0;
+    border-radius: 4px 4px 0 0;
     z-index: 302;
     flex-direction: column;
     transform: translateY(100%);
     transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 -8px 40px rgba(0,30,50,0.18);
+    box-shadow: 0 -8px 32px rgba(5,20,28,0.16);
   }
   .tn-sheet.is-open { transform: translateY(0); }
 
@@ -742,33 +500,33 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
     position: fixed;
     bottom: 24px; right: 20px;
     width: 52px; height: 52px;
-    border-radius: 50%;
-    background: #0d1e28;
+    border-radius: 2px;
+    background: #0b2430;
     color: #fff;
     border: none;
     cursor: pointer;
     z-index: 303;
-    box-shadow: 0 4px 20px rgba(0,30,50,0.35);
-    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 6px 20px rgba(5,20,28,0.28);
+    transition: background 0.2s;
   }
-  .tn-fab:hover { transform: scale(1.08); }
-  .tn-fab.is-open { background: #007ea1; }
+  .tn-fab:hover { background: #004f68; }
+  .tn-fab.is-open { background: #004f68; }
 
   .tn-sheet-handle {
     width: 40px; height: 4px;
-    background: #dce8ee;
+    background: #d6dee2;
     border-radius: 2px;
     margin: 12px auto 0;
     flex-shrink: 0;
   }
   .tn-sheet-header {
     padding: 12px 20px 10px;
-    border-bottom: 1px solid #dce8ee;
+    border-bottom: 1px solid #d6dee2;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: .1em;
+    letter-spacing: .12em;
     text-transform: uppercase;
-    color: #5b8fa8;
+    color: #004f68;
     flex-shrink: 0;
   }
   .tn-sheet-scroll {
@@ -779,266 +537,275 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   }
   /* 시트 내 아이템은 조금 더 넓게 */
   .tn-sheet .tn-item { padding: 9px 20px; }
-  .tn-sheet .tn-campus-label { padding: 10px 20px 4px; }
+  .tn-sheet .tn-campus-label { padding: 12px 20px 6px; }
   .tn-sheet .tn-stw-toggle { padding: 10px 20px 6px; }
-  .tn-sheet .tn-avatar { width: 52px; height: 52px; }
-  .tn-sheet .tn-avatar-placeholder { width: 52px; height: 52px; font-size: 19px; }
+  .tn-sheet .tn-avatar { width: 48px; height: 48px; }
+  .tn-sheet .tn-avatar-placeholder { width: 48px; height: 48px; font-size: 18px; }
 }
 </style>
 
 <div class="mp-wrap" data-team-slug={person.slug}>
 
-  <!-- Back bar -->
-  <div class="mp-back">
-    <a href="/people">
-      <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
-        <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span class="wl-ko">섬기는이 전체 보기</span>
-      <span class="wl-en">Back to Our Team</span>
-    </a>
-  </div>
-
-  <!-- Hero — 2-column -->
+  <!-- 맨 위 소개 — 사진 + 이름 + 직책 + 후원 버튼 -->
   <section class="mp-hero">
-    <!-- 사진 패널 -->
-    <div class="mp-hero-photo">
-      {d.photo_url && (
-        <img src={d.photo_url} alt="" loading="eager" onerror="this.style.display='none'"/>
-      )}
-      <div class="mp-hero-name-layer">
-        <div class="mp-hero-name-main">
-          <span class="wl-ko">{d.name_ko}</span>
-          <span class="wl-en">{d.name_en}</span>
-        </div>
-        <div class="mp-hero-name-sub">
-          <span class="wl-ko">{roleBadgeKo}</span>
-          <span class="wl-en">{d.role_badge}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 콘텐츠 패널 -->
-    <div class="mp-hero-content">
-      <div class="mp-hero-label">
-        <span class="wl-ko">{isDir ? '월드오브라이프 코리아 · 대표 선교사' : `월드오브라이프 코리아 · ${d.title_ko}`}</span>
-        <span class="wl-en">{isDir ? 'Word of Life Korea · Field Director' : `Word of Life Korea · ${d.title_en}`}</span>
+    <div class="mp-shell">
+      <!-- Back bar -->
+      <div class="mp-back">
+        <a href="/people">
+          <svg width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M14 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/>
+          </svg>
+          <span class="wl-ko">섬기는이 전체 보기</span>
+          <span class="wl-en">Back to Our Team</span>
+        </a>
       </div>
 
-      <h1 class="mp-hero-title">
-        <span class="wl-ko">
-          {d.hero_tagline_ko || d.name_ko}
-          <span class="mp-hero-title-em ko">{d.hero_tagline2_ko || d.title_ko}</span>
-        </span>
-        <span class="wl-en">
-          {d.hero_tagline_en || d.name_en}
-          <em class="mp-hero-title-em en">{d.hero_tagline2_en || d.title_en}</em>
-        </span>
-      </h1>
-
-      <p class="mp-hero-desc">
-        {d.hero_subtitle_ko || d.hero_subtitle_en ? (
-          <>
-            <span class="wl-ko">{d.hero_subtitle_ko || ''}</span>
-            <span class="wl-en">{d.hero_subtitle_en || ''}</span>
-          </>
-        ) : hasBio ? (
-          <>
-            <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0, 120) + '…' : ''}</span>
-            <span class="wl-en">{d.bio_en ? d.bio_en.substring(0, 140) + '…' : ''}</span>
-          </>
-        ) : (
-          <>
-            <span class="wl-ko">복음으로 한국의 다음 세대를 섬깁니다.</span>
-            <span class="wl-en">Serving Korea's next generation through the Gospel.</span>
-          </>
-        )}
-      </p>
-
-      <div class="mp-cta-row">
-        <a href={d.support_url || d.support_url_en || '/give'} class="mp-btn mp-btn-primary wl-ko" target={(d.support_url || d.support_url_en) ? '_blank' : '_self'} rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          후원하기
-        </a>
-        <a href={d.support_url_en || d.support_url || '/give'} class="mp-btn mp-btn-primary wl-en" target={(d.support_url_en || d.support_url) ? '_blank' : '_self'} rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Support
-        </a>
-        {d.report_url && (
-          d.report_url.endsWith('.pdf') ? (
-            <button class="mp-btn mp-btn-secondary" id="openReportBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              <span class="wl-ko">최근 사역보고</span><span class="wl-en">Ministry Report</span>
-            </button>
+      <div class="mp-hero-grid">
+        <!-- 사진 -->
+        <div class="mp-hero-photo">
+          {heroPhoto ? (
+            <img src={heroPhoto} alt={d.name_ko} loading="eager" style={`object-position:${heroPhotoPos}`} onerror="this.style.display='none'"/>
           ) : (
-            <a href={d.report_url} target="_blank" rel="noopener noreferrer" class="mp-btn mp-btn-secondary" id="openReportBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              <span class="wl-ko">최근 뉴스레터</span><span class="wl-en">Newsletter</span>
+            <span class="mp-hero-initial" aria-hidden="true">{initial}</span>
+          )}
+        </div>
+
+        <!-- 이름 · 직책 · 소개 -->
+        <div class="mp-hero-content">
+          <p class="mp-eyebrow mp-hero-label">
+            <span class="wl-ko">{isDir ? '월드오브라이프 코리아 · 대표 선교사' : `월드오브라이프 코리아 · ${d.title_ko}`}</span>
+            <span class="wl-en">{isDir ? 'Word of Life Korea · Field Director' : `Word of Life Korea · ${d.title_en}`}</span>
+          </p>
+
+          <h1 class="mp-hero-title">
+            <span class="wl-ko">{d.name_ko}</span>
+            <span class="wl-en">{d.name_en}</span>
+          </h1>
+
+          <p class="mp-hero-meta">
+            {d.role_badge && (
+              <span class="mp-hero-role"><span class="wl-ko">{roleBadgeKo}</span><span class="wl-en">{d.role_badge}</span></span>
+            )}
+            <span class="mp-hero-campus"><span class="wl-ko">{campusKo}</span><span class="wl-en">{campusEn}</span></span>
+          </p>
+
+          {(taglineKo || taglineEn) && (
+            <p class="mp-hero-tagline">
+              <span class="wl-ko">{taglineKo || taglineEn}</span>
+              <span class="wl-en">{taglineEn || taglineKo}</span>
+            </p>
+          )}
+
+          <p class="mp-hero-desc">
+            {d.hero_subtitle_ko || d.hero_subtitle_en ? (
+              <>
+                <span class="wl-ko">{d.hero_subtitle_ko || ''}</span>
+                <span class="wl-en">{d.hero_subtitle_en || ''}</span>
+              </>
+            ) : hasBio ? (
+              <>
+                <span class="wl-ko">{d.bio_ko ? d.bio_ko.substring(0, 120) + '…' : ''}</span>
+                <span class="wl-en">{d.bio_en ? d.bio_en.substring(0, 140) + '…' : ''}</span>
+              </>
+            ) : (
+              <>
+                <span class="wl-ko">복음으로 한국의 다음 세대를 섬깁니다.</span>
+                <span class="wl-en">Serving Korea's next generation through the Gospel.</span>
+              </>
+            )}
+          </p>
+
+          <div class="mp-cta-row">
+            <a href={d.support_url || d.support_url_en || '/give'} class="mp-btn mp-btn-primary wl-ko" target={(d.support_url || d.support_url_en) ? '_blank' : '_self'} rel="noopener noreferrer">
+              후원하기
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
             </a>
-          )
-        )}
+            <a href={d.support_url_en || d.support_url || '/give'} class="mp-btn mp-btn-primary wl-en" target={(d.support_url_en || d.support_url) ? '_blank' : '_self'} rel="noopener noreferrer">
+              Support
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+            </a>
+            {d.report_url && (
+              d.report_url.endsWith('.pdf') ? (
+                <button class="mp-btn mp-btn-secondary" id="openReportBtn" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  <span class="wl-ko">최근 사역보고</span><span class="wl-en">Ministry Report</span>
+                </button>
+              ) : (
+                <a href={d.report_url} target="_blank" rel="noopener noreferrer" class="mp-btn mp-btn-secondary" id="openReportBtn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <span class="wl-ko">최근 뉴스레터</span><span class="wl-en">Newsletter</span>
+                </a>
+              )
+            )}
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Verse -->
-  <section class="mp-verse mp-reveal">
-    <p class="mp-verse-text">
-      {(d.verse_ko || d.verse_en) ? (
-        <>
-          {d.verse_ko && <span class="wl-ko-block">"{d.verse_ko}"</span>}
-          {d.verse_en && <span class="wl-en-block">"{d.verse_en}"</span>}
-        </>
-      ) : (
-        <>
-          <span class="wl-ko-block">"무리를 보시고 불쌍히 여기셨으니 이는 그들이 목자 없는 양과 같이 고생하며 기진함이라<br/>이에 제자들에게 이르시되 추수할 것은 많되 일꾼이 적으니<br/>그러므로 추수하는 주인에게 청하여 추수할 일꾼들을 보내 주소서 하라 하시니라"</span>
-          <span class="wl-en-block">"When He saw the crowds, He had compassion on them, because they were harassed and helpless, like sheep without a shepherd.<br/>Then He said to His disciples, 'The harvest is plentiful but the workers are few.<br/>Ask the Lord of the harvest, therefore, to send out workers into His harvest field.'"</span>
-        </>
-      )}
-    </p>
-    <div class="mp-verse-ref">
-      {d.verse_ref ? (
-        <>
-          <span class="wl-ko">{d.verse_ref}</span>
-          <span class="wl-en">{verseRefEn || d.verse_ref}</span>
-        </>
-      ) : (
-        <>
-          <span class="wl-ko">마태복음 9:36–38</span>
-          <span class="wl-en">Matthew 9:36–38</span>
-        </>
-      )}
+  <section class="mp-verse">
+    <div class="mp-shell mp-verse-inner mp-reveal">
+      <p class="mp-eyebrow"><span class="wl-ko">삶의 말씀</span><span class="wl-en">Life Verse</span></p>
+      <div>
+        <p class="mp-verse-text">
+          {(d.verse_ko || d.verse_en) ? (
+            <>
+              {d.verse_ko && <span class="wl-ko-block">"{d.verse_ko}"</span>}
+              {d.verse_en && <span class="wl-en-block">"{d.verse_en}"</span>}
+            </>
+          ) : (
+            <>
+              <span class="wl-ko-block">"무리를 보시고 불쌍히 여기셨으니 이는 그들이 목자 없는 양과 같이 고생하며 기진함이라<br/>이에 제자들에게 이르시되 추수할 것은 많되 일꾼이 적으니<br/>그러므로 추수하는 주인에게 청하여 추수할 일꾼들을 보내 주소서 하라 하시니라"</span>
+              <span class="wl-en-block">"When He saw the crowds, He had compassion on them, because they were harassed and helpless, like sheep without a shepherd.<br/>Then He said to His disciples, 'The harvest is plentiful but the workers are few.<br/>Ask the Lord of the harvest, therefore, to send out workers into His harvest field.'"</span>
+            </>
+          )}
+        </p>
+        <div class="mp-verse-ref">
+          {d.verse_ref ? (
+            <>
+              <span class="wl-ko">{d.verse_ref}</span>
+              <span class="wl-en">{verseRefEn || d.verse_ref}</span>
+            </>
+          ) : (
+            <>
+              <span class="wl-ko">마태복음 9:36–38</span>
+              <span class="wl-en">Matthew 9:36–38</span>
+            </>
+          )}
+        </div>
+        {/\(ESV\)\s*$/.test(String(d.verse_en || '')) && (
+          <p class="mp-verse-copy wl-en-block">Scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</p>
+        )}
+      </div>
     </div>
-    {/\(ESV\)\s*$/.test(String(d.verse_en || '')) && (
-      <p class="mp-verse-copy wl-en-block">Scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</p>
-    )}
   </section>
 
 
   <!-- Story -->
   <section class="mp-story">
+    <div class="mp-shell mp-story-inner">
 
-    <!-- 블록 1: 사진 왼쪽, 텍스트 오른쪽 -->
-    <div class={`mp-story-block mp-reveal${!(d.photo_story || d.photo_url) ? ' mp-story-block--no-photo' : ''}`}>
-      {(d.photo_story || d.photo_url) && (
-        <div class="mp-story-photo">
-          <div class="mp-story-photo-placeholder">
-            <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="40" cy="30" r="16" fill="#8fa8b8"/>
-              <ellipse cx="40" cy="68" rx="26" ry="16" fill="#8fa8b8"/>
-            </svg>
-          </div>
-          <img src={d.photo_story || d.photo_url} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
-          <span class="mp-story-photo-tag">
-            <span class="wl-ko">{roleBadgeKo}</span>
-            <span class="wl-en">{d.role_badge}</span>
-          </span>
-        </div>
-      )}
-
-      <div class="mp-story-text">
-        <div class="mp-story-label">
-          <span class="wl-ko">{d.gender === 'female' ? '그녀의 이야기' : '그의 이야기'}</span>
-          <span class="wl-en">{d.gender === 'female' ? "Her Story" : "His Story"}</span>
-        </div>
-        <h2 class="mp-story-name">
-          <span class="wl-ko">{name1Ko}</span>
-          <span class="wl-en">{name1En}</span>
-        </h2>
-        {hasBio ? (
-          <>
-            <div class="mp-bio-wrap" data-bio-wrap>
-              {d.bio_ko && paras(d.bio_ko).map((t) => <p class="mp-story-body wl-ko-block">{t}</p>)}
-              {d.bio_en && paras(d.bio_en).map((t) => <p class="mp-story-body wl-en-block">{t}</p>)}
-            </div>
-            <button class="mp-bio-toggle" data-bio-toggle>
-              <span class="wl-ko">더 보기 ↓</span>
-              <span class="wl-en">Read more ↓</span>
-            </button>
-          </>
-        ) : (
-          <div class="mp-story-empty">
-            <span class="wl-ko">소개 내용이 곧 업데이트됩니다. 이 사역자를 위해 기도해 주세요.</span>
-            <span class="wl-en">Bio coming soon. Please keep this missionary in your prayers.</span>
-          </div>
-        )}
-      </div>
-    </div>
-
-    <!-- 블록 2 (부부 선교사용) — 항상 표시 -->
-    {hasBio2 && d.show_spouse && (
-      <div class="mp-spouse-content" id="spouseContent">
-        <hr class="mp-story-divider"/>
-        <div class="mp-story-block mp-story-block--reverse mp-reveal">
-          <div class="mp-story-text">
-            <div class="mp-story-label">
-              <span class="wl-ko">그녀의 이야기</span>
-              <span class="wl-en">Her Story</span>
-            </div>
-            <h2 class="mp-story-name">
-              <span class="wl-ko">{d.spouse_ko || name2Ko}</span>
-              <span class="wl-en">{d.spouse_en || name2En}</span>
-            </h2>
-            <div class="mp-bio-wrap" data-bio-wrap>
-              {d.bio_ko_2 && paras(d.bio_ko_2).map((t) => <p class="mp-story-body wl-ko-block">{t}</p>)}
-              {d.bio_en_2 && paras(d.bio_en_2).map((t) => <p class="mp-story-body wl-en-block">{t}</p>)}
-            </div>
-            <button class="mp-bio-toggle" data-bio-toggle>
-              <span class="wl-ko">더 보기 ↓</span>
-              <span class="wl-en">Read more ↓</span>
-            </button>
-          </div>
-          {d.photo_url_2 && (
+      <!-- 블록 1: 사진 왼쪽, 텍스트 오른쪽 (따로 올린 이야기 사진이 없으면 제목 왼쪽, 본문 오른쪽) -->
+      <div class={`mp-story-block mp-reveal${!storyPhoto ? ' mp-story-block--no-photo' : ''}`}>
+        {storyPhoto && (
+          <figure class="mp-story-figure">
             <div class="mp-story-photo">
-              <div class="mp-story-photo-placeholder">
-                <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="40" cy="30" r="16" fill="#8fa8b8"/>
-                  <ellipse cx="40" cy="68" rx="26" ry="16" fill="#8fa8b8"/>
-                </svg>
+              <img src={storyPhoto} alt="" loading="lazy" onerror="this.style.display='none'"/>
+            </div>
+            {d.role_badge && (
+              <figcaption class="mp-story-caption">
+                <span class="wl-ko">{roleBadgeKo}</span>
+                <span class="wl-en">{d.role_badge}</span>
+              </figcaption>
+            )}
+          </figure>
+        )}
+
+        <div class="mp-story-text">
+          <p class="mp-eyebrow mp-story-label">
+            <span class="wl-ko">{d.gender === 'female' ? '그녀의 이야기' : '그의 이야기'}</span>
+            <span class="wl-en">{d.gender === 'female' ? "Her Story" : "His Story"}</span>
+          </p>
+          <h2 class="mp-story-name">
+            <span class="wl-ko">{name1Ko}</span>
+            <span class="wl-en">{name1En}</span>
+          </h2>
+          {hasBio ? (
+            <>
+              <div class="mp-bio-wrap" data-bio-wrap>
+                {d.bio_ko && paras(d.bio_ko).map((t) => <p class="mp-story-body wl-ko-block">{t}</p>)}
+                {d.bio_en && paras(d.bio_en).map((t) => <p class="mp-story-body wl-en-block">{t}</p>)}
               </div>
-              <img src={d.photo_url_2} alt="" loading="lazy" onerror="this.style.display='none'" style="position:absolute;inset:0;z-index:1;object-fit:cover;width:100%;height:100%;"/>
-              <span class="mp-story-photo-tag">
-            <span class="wl-ko">{roleBadgeKo}</span>
-            <span class="wl-en">{d.role_badge}</span>
-          </span>
+              <button class="mp-bio-toggle" data-bio-toggle type="button">
+                <span class="wl-ko">더 보기 ↓</span>
+                <span class="wl-en">Read more ↓</span>
+              </button>
+            </>
+          ) : (
+            <div class="mp-story-empty">
+              <span class="wl-ko">소개 내용이 곧 업데이트됩니다. 이 사역자를 위해 기도해 주세요.</span>
+              <span class="wl-en">Bio coming soon. Please keep this missionary in your prayers.</span>
             </div>
           )}
         </div>
       </div>
-    )}
 
+      <!-- 블록 2 (부부 선교사용) — 항상 표시 -->
+      {hasBio2 && d.show_spouse && (
+        <div class="mp-spouse-content" id="spouseContent">
+          <hr class="mp-story-divider"/>
+          <div class={`mp-story-block mp-story-block--reverse mp-reveal${!d.photo_url_2 ? ' mp-story-block--no-photo' : ''}`}>
+            <div class="mp-story-text">
+              <p class="mp-eyebrow mp-story-label">
+                <span class="wl-ko">그녀의 이야기</span>
+                <span class="wl-en">Her Story</span>
+              </p>
+              <h2 class="mp-story-name">
+                <span class="wl-ko">{d.spouse_ko || name2Ko}</span>
+                <span class="wl-en">{d.spouse_en || name2En}</span>
+              </h2>
+              <div class="mp-bio-wrap" data-bio-wrap>
+                {d.bio_ko_2 && paras(d.bio_ko_2).map((t) => <p class="mp-story-body wl-ko-block">{t}</p>)}
+                {d.bio_en_2 && paras(d.bio_en_2).map((t) => <p class="mp-story-body wl-en-block">{t}</p>)}
+              </div>
+              <button class="mp-bio-toggle" data-bio-toggle type="button">
+                <span class="wl-ko">더 보기 ↓</span>
+                <span class="wl-en">Read more ↓</span>
+              </button>
+            </div>
+            {d.photo_url_2 && (
+              <figure class="mp-story-figure">
+                <div class="mp-story-photo">
+                  <img src={d.photo_url_2} alt="" loading="lazy" onerror="this.style.display='none'"/>
+                </div>
+                {d.role_badge && (
+                  <figcaption class="mp-story-caption">
+                    <span class="wl-ko">{roleBadgeKo}</span>
+                    <span class="wl-en">{d.role_badge}</span>
+                  </figcaption>
+                )}
+              </figure>
+            )}
+          </div>
+        </div>
+      )}
+
+    </div>
   </section>
 
   <!-- 배우자 소개 카드 (bio_ko_2 없을 때) — 항상 표시 -->
   {d.show_spouse && d.spouse_ko && !hasBio2 && (
     <div class="mp-spouse-content" id="spouseContent">
       <div class="mp-spouse">
-        <div class="mp-spouse-card mp-reveal">
-          <div class="mp-spouse-photo-wrap">
-            {d.photo_url_2 ? (
-              <img src={d.photo_url_2} alt={d.spouse_ko} loading="lazy" onerror="this.style.display='none'"/>
-            ) : (
-              <div class="mp-spouse-avatar">
-                <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="40" cy="30" r="16" fill="rgba(255,255,255,0.6)"/>
-                  <ellipse cx="40" cy="68" rx="26" ry="16" fill="rgba(255,255,255,0.6)"/>
-                </svg>
-              </div>
-            )}
-          </div>
-          <div class="mp-spouse-text">
-            <div class="mp-spouse-eyebrow">
-              <span class="wl-ko">함께 사역하는 배우자</span>
-              <span class="wl-en">Serving Together</span>
+        <div class="mp-shell">
+          <div class="mp-spouse-card mp-reveal">
+            <div class="mp-spouse-photo-wrap">
+              {d.photo_url_2 ? (
+                <img src={d.photo_url_2} alt={d.spouse_ko} loading="lazy" onerror="this.style.display='none'"/>
+              ) : (
+                <div class="mp-spouse-avatar">
+                  <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <circle cx="40" cy="30" r="16" fill="#a3b6c0"/>
+                    <ellipse cx="40" cy="68" rx="26" ry="16" fill="#a3b6c0"/>
+                  </svg>
+                </div>
+              )}
             </div>
-            <h2 class="mp-spouse-name">
-              <span class="wl-ko">{d.spouse_ko}</span>
-              <span class="wl-en">{d.spouse_en}</span>
-            </h2>
-            <p class="mp-spouse-desc">
-              <span class="wl-ko">{name1Ko} 선교사와 함께 복음전파와 제자훈련 사역에 헌신하고 있습니다.</span>
-              <span class="wl-en">Serving alongside {name1En} in Gospel proclamation and discipleship ministry.</span>
-            </p>
+            <div class="mp-spouse-text">
+              <p class="mp-eyebrow mp-spouse-eyebrow">
+                <span class="wl-ko">함께 사역하는 배우자</span>
+                <span class="wl-en">Serving Together</span>
+              </p>
+              <h2 class="mp-spouse-name">
+                <span class="wl-ko">{d.spouse_ko}</span>
+                <span class="wl-en">{d.spouse_en}</span>
+              </h2>
+              <p class="mp-spouse-desc">
+                <span class="wl-ko">{name1Ko} 선교사와 함께 복음전파와 제자훈련 사역에 헌신하고 있습니다.</span>
+                <span class="wl-en">Serving alongside {name1En} in Gospel proclamation and discipleship ministry.</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -1046,39 +813,44 @@ const verseRefEn = d.verse_ref ? koRefToEn(d.verse_ref) : null;
   )}
 
   <!-- Prayer -->
-  <div class="mp-prayer">
-    <div class="mp-prayer-inner mp-reveal">
-      <div class="mp-prayer-label">
-        <span class="wl-ko">중보기도</span>
-        <span class="wl-en">Prayer</span>
-      </div>
-      {d.prayer_ko || d.prayer_en ? (
-        (() => {
-          const parseBullets = (text: string) =>
-            text.split(/\n|(?<!\w)\s*-\s+/).map(s => s.replace(/^-\s*/, '').trim()).filter(Boolean);
-          const koItems = parseBullets(d.prayer_ko || d.prayer_en || '');
-          const enItems = parseBullets(d.prayer_en || d.prayer_ko || '');
-          const isList = koItems.length > 1 || enItems.length > 1;
-          return isList ? (
-            <>
-              <div class="wl-ko"><ul class="mp-prayer-list">{koItems.map(item => <li>{item}</li>)}</ul></div>
-              <div class="wl-en"><ul class="mp-prayer-list">{enItems.map(item => <li>{item}</li>)}</ul></div>
-            </>
-          ) : (
-            <p class="mp-prayer-text">
-              <span class="wl-ko">{d.prayer_ko || d.prayer_en}</span>
-              <span class="wl-en">{d.prayer_en || d.prayer_ko}</span>
-            </p>
-          );
-        })()
-      ) : (
-        <p class="mp-prayer-text">
-          <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
-          <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
+  <section class="mp-prayer">
+    <div class="mp-shell mp-prayer-inner mp-reveal">
+      <div>
+        <p class="mp-eyebrow mp-prayer-label">
+          <span class="wl-ko">중보기도</span>
+          <span class="wl-en">Prayer</span>
         </p>
-      )}
+        <h2 class="mp-prayer-title"><span class="wl-ko">기도제목</span><span class="wl-en">Prayer Requests</span></h2>
+      </div>
+      <div>
+        {d.prayer_ko || d.prayer_en ? (
+          (() => {
+            const parseBullets = (text: string) =>
+              text.split(/\n|(?<!\w)\s*-\s+/).map(s => s.replace(/^-\s*/, '').trim()).filter(Boolean);
+            const koItems = parseBullets(d.prayer_ko || d.prayer_en || '');
+            const enItems = parseBullets(d.prayer_en || d.prayer_ko || '');
+            const isList = koItems.length > 1 || enItems.length > 1;
+            return isList ? (
+              <>
+                <div class="wl-ko"><ul class="mp-prayer-list">{koItems.map(item => <li>{item}</li>)}</ul></div>
+                <div class="wl-en"><ul class="mp-prayer-list">{enItems.map(item => <li>{item}</li>)}</ul></div>
+              </>
+            ) : (
+              <p class="mp-prayer-text">
+                <span class="wl-ko">{d.prayer_ko || d.prayer_en}</span>
+                <span class="wl-en">{d.prayer_en || d.prayer_ko}</span>
+              </p>
+            );
+          })()
+        ) : (
+          <p class="mp-prayer-text">
+            <span class="wl-ko">이 사역자를 위한 중보기도가 사역의 힘이 됩니다. 함께 기도해 주세요.</span>
+            <span class="wl-en">Your prayers are the backbone of this ministry. Thank you for interceding for our team.</span>
+          </p>
+        )}
+      </div>
     </div>
-  </div>
+  </section>
 
 </div>
 
