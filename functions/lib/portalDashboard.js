@@ -8,7 +8,7 @@ import { listCalendarEvents } from './googleCalendar.js';
 import { firebaseDatabaseToken } from './firebaseCrsDatabase.js';
 import { prayerBoard } from './prayers.js';
 import { needsTranslation, translateNotice } from './prayerTranslate.js';
-import { alwaysExempt } from './gospelReminder.js';
+import { alwaysExempt, PENDING_ALERT_FROM } from './gospelReminder.js';
 import { reportMonth, loadMonth, ownerOf } from './gospelStats.js';
 import { crsLocation } from './crsMinistry.js';
 import { NOTICE_AUDIENCES, normalizeCampus } from './campus.js';
@@ -182,7 +182,7 @@ export async function mySchedule(env, session, today) {
   const car = [pickup && mine(pickup) ? 'pickup' : '', dropoff && mine(dropoff) ? 'dropoff' : ''].filter(Boolean);
   let gospelPending = false;
   const month = reportMonth(Date.parse(`${today}T12:00:00+09:00`));   // 월간 보고는 지난달 숫자
-  if (!alwaysExempt(email) && !(await env.CAMP_KV.get(`gospel:exempt:${email}`))) {
+  if (month >= PENDING_ALERT_FROM && !alwaysExempt(email) && !(await env.CAMP_KV.get(`gospel:exempt:${email}`))) {
     const owner = await ownerOf(env, email);
     gospelPending = !(await loadMonth(env, month)).some(r => r.owner === owner);
   }

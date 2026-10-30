@@ -13,6 +13,8 @@ export const EXEMPT_PREFIX = 'gospel:exempt:';
 /** 늘 제외되는 계정 — 마스터(공용 관리자) 이메일과 wolkorea1 계정(이메일 앞부분이 wolkorea1). 화면에서 다시 넣을 수 없다 */
 export const alwaysExempt = email => { const e = normalizeEmail(email); return MASTER_EMAILS.map(normalizeEmail).includes(e) || e.split('@')[0] === 'wolkorea1'; };
 export const MAIL_KEY = (month, email) => `gospel:mail:${month}:${email}`;
+/** 포탈 첫 화면의 "지난달 보고 안 했어요" 알림을 띄우기 시작하는 보고 달 — 2026-09 분은 건너뛰고 2026-10 분(11월)부터 */
+export const PENDING_ALERT_FROM = '2026-10';
 const MAIL_TTL = 60 * 60 * 24 * 60;
 
 /** 'YYYY-MM-DD' 가 그 달의 마지막 날인지 */
